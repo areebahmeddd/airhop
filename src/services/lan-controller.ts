@@ -26,6 +26,10 @@ import { dialTargets } from "./lan-dial-policy";
 // costs nothing and polling a network interface in a pocket is not free.
 const BACKOFF_MS = [500, 1500, 4000, 10_000, 30_000] as const;
 
+// How long a run has to last before losing it reads as bad luck rather than
+// flapping. Below it the retry ladder keeps climbing.
+const STABLE_RUN_MS = 60_000;
+
 // How long to wait after a discovery before dialling.
 //
 // mDNS answers arrive in a burst, one per device. Dialling on the first means
@@ -130,6 +134,7 @@ export class LANController {
   private settleTimer: ReturnType<typeof setTimeout> | null = null;
   private reviewTimer: ReturnType<typeof setInterval> | null = null;
   private attempt = 0;
+  private startedAtMs = 0;
   private reconciling = false;
   private dirty = false;
   private disposed = false;
@@ -176,11 +181,15 @@ export class LANController {
   onAvailabilityChanged(available: boolean): void {
     if (this.unsupported) return;
     if (!available) {
+      const ranStably =
+        this.started && Date.now() - this.startedAtMs >= STABLE_RUN_MS;
       this.started = false;
       this.generation += 1;
       this.forgetNetwork();
       void NativeAirhopLAN?.stopLAN().catch(() => {});
-      this.attempt = 0;
+      // Only a run that lasted resets it, for the reason wifi-controller
+      // gives: resetting on every drop turns the retry into a hot loop.
+      if (ranStably) this.attempt = 0;
       this.scheduleRetry();
       return;
     }
@@ -365,8 +374,8 @@ export class LANController {
     }
 
     this.started = true;
+    this.startedAtMs = Date.now();
     this.lastFailure = null;
-    this.attempt = 0;
     this.report(this.linkCount > 0 ? "active" : "searching");
 
     // `stop()` and `dispose()` are synchronous and can land while the start

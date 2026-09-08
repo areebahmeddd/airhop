@@ -56,7 +56,7 @@ const DOWNLOADS = [
 const FACTS = [
   { k: "Name", v: "Airhop" },
   { k: "Category", v: "Messaging" },
-  { k: "Platforms", v: "iOS 16.0 and later, Android 8.0 and later" },
+  { k: "Platforms", v: "iOS 16.0 and later, Android 10.0 and later" },
   { k: "Price", v: "Free. No ads, no subscriptions, no in-app purchases" },
   { k: "Licence", v: "MIT" },
   { k: "Maintainer", v: "Areeb Ahmed, independent" },

@@ -223,7 +223,7 @@ npm run ios
 
 > The first `npm run android` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
-> Requires a physical Android device for BLE mesh testing (the Android Emulator does not support Bluetooth) and supports Android 8.0 (API 26) or later.
+> Requires a physical Android device for BLE mesh testing (the Android Emulator does not support Bluetooth) and supports Android 10.0 (API 29) or later.
 
 > Changing a native dependency also changes `android/app/gradle.lockfile`, which pins exact versions. Regenerate it in the same commit.
 

@@ -42,7 +42,7 @@ const DOWNLOAD_GROUPS: DownloadGroup[] = [
       },
       {
         label: "Google Play",
-        description: "Android 8.0+",
+        description: "Android 10.0+",
         icon: Play,
         href: STORE_LINKS.playStore,
       },

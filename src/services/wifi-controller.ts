@@ -59,6 +59,10 @@ import type { WifiFastPath } from "@store/mesh-state-store";
 // pocket is not.
 const BACKOFF_MS = [500, 1500, 4000, 10_000, 30_000] as const;
 
+// How long a run has to last before losing it reads as bad luck rather than
+// flapping. Below it the retry ladder keeps climbing.
+const STABLE_RUN_MS = 60_000;
+
 // Rejection codes the native modules use. Kept as a union here rather than
 // matched on message text: a human-readable string is a UI concern, and control
 // flow that reads it breaks the first time somebody rewords it.
@@ -128,6 +132,7 @@ export class WiFiController {
 
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private attempt = 0;
+  private startedAtMs = 0;
   // Guards two reconciles overlapping. startWiFi is async and a resume landing
   // mid-attach would otherwise issue a second one, which on Android leaks the
   // first WifiAwareSession.
@@ -188,6 +193,8 @@ export class WiFiController {
   onAvailabilityChanged(available: boolean): void {
     if (this.unsupported) return;
     if (!available) {
+      const ranStably =
+        this.started && Date.now() - this.startedAtMs >= STABLE_RUN_MS;
       this.started = false;
       // Deliberately NOT reported as "WiFi off" here, however much it looks
       // like it. AirhopWiFiModule emits this same `available: false` from two
@@ -211,9 +218,13 @@ export class WiFiController {
       // Android will say when the radio is back, so this is only a backstop
       // there. iOS has no "became available" callback at all - the report only
       // ever comes on a failure - so without this the transport would sit dead
-      // until the user happened to background and reopen the app. The ladder
-      // tops out at half a minute and each refused attempt is cheap.
-      this.attempt = 0;
+      // until the user happened to background and reopen the app.
+      //
+      // Only a run that lasted resets it. Resetting on a start that merely
+      // resolved pins a flapping transport to the first rung: attach, teardown,
+      // re-attach, twice a second for as long as the app is open, which is
+      // radio churn some WiFi stacks do not survive.
+      if (ranStably) this.attempt = 0;
       this.scheduleRetry();
       return;
     }
@@ -346,8 +357,8 @@ export class WiFiController {
     // The handle exists whatever anyone wants now, and something has to release
     // it.
     this.started = true;
+    this.startedAtMs = Date.now();
     this.lastFailure = null;
-    this.attempt = 0;
     this.report("active");
 
     // `stop()` and `dispose()` are synchronous calls that can land while the

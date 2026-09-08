@@ -36,7 +36,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "Which phones does it work on?",
-        a: "Android 8.0 or later, and iPhones on iOS 16.0 or later. A handful of older Android models ship Bluetooth chips that can receive but never advertise; those phones can still join a mesh and read everything, they just will not show up in anyone else's peer list. Everything else works the same on both platforms, because the protocol itself is shared code.",
+        a: "Android 10.0 or later, and iPhones on iOS 16.0 or later. A handful of older Android models ship Bluetooth chips that can receive but never advertise; those phones can still join a mesh and read everything, they just will not show up in anyone else's peer list. Everything else works the same on both platforms, because the protocol itself is shared code.",
       },
       {
         q: "How is it different from bitchat and other apps?",

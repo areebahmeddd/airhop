@@ -185,7 +185,7 @@ The Android implementation (`BluetoothMeshService.kt`, `MeshCore.kt`) uses:
 - **BluetoothGattClientManager**: central/client role.
 - **FragmentManager**: fragmentation/reassembly.
 - **PacketRelayManager**: relay decisions with TTL management.
-- Minimum API level **26 (Android 8.0)**.
+- Minimum API level **29 (Android 10.0)**.
 - Location permission required (Android mandates it for BLE scanning).
 
 ## 4. Transport Layer 2: Nostr (Internet)
@@ -896,7 +896,7 @@ From the whitepaper's "Future Work" section and observed codebase state:
 | Compression    | Raw DEFLATE (`java.util.zip.Deflater`, nowrap) |
 | Key Storage    | Android Keystore                               |
 | Persistence    | Coroutines + ConcurrentHashMap, file system    |
-| Min API        | 26 (Android 8.0)                               |
+| Min API        | 29 (Android 10.0)                              |
 
 ### Georelays
 

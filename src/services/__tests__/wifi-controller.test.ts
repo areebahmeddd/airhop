@@ -175,6 +175,44 @@ describe("losing the radio mid-session", () => {
   });
 });
 
+// A framework that keeps ending our discovery sessions reports a drop moments
+// after each attach succeeds. Resetting the ladder on a start that merely
+// resolved pinned every retry to its first rung, so the transport attached, was
+// torn down and re-attached twice a second for as long as the app was open.
+test("backs off when the transport keeps dropping seconds after it starts", async () => {
+  mockStartWiFi.mockResolvedValue(undefined);
+  const wifi = new WiFiController();
+  wifi.start();
+  await settle();
+  const afterStart = mockStartWiFi.mock.calls.length;
+
+  // Twenty seconds of a transport that will not stay up.
+  for (let i = 0; i < 20; i++) {
+    wifi.onAvailabilityChanged(false);
+    await settle(1_000);
+  }
+
+  // Climbing the ladder, twenty seconds buys the first few rungs. Reset on
+  // every drop, it buys one attach per drop.
+  expect(mockStartWiFi.mock.calls.length - afterStart).toBeLessThan(10);
+});
+
+// The ladder is for a transport nothing has spoken for. A radio saying it is
+// back is not that, and must not be made to wait out a climb it did not cause.
+test("retries at once when the radio reports itself available again", async () => {
+  mockStartWiFi.mockImplementation(() => rejectWith("WIFI_AWARE_UNAVAILABLE"));
+  const wifi = new WiFiController();
+  wifi.start();
+  await settle(60_000);
+  const beforeReturn = mockStartWiFi.mock.calls.length;
+
+  mockStartWiFi.mockResolvedValue(undefined);
+  wifi.onAvailabilityChanged(true);
+  await settle();
+  expect(mockStartWiFi.mock.calls.length).toBeGreaterThan(beforeReturn);
+  expect(wifi.isStarted).toBe(true);
+});
+
 describe("stopping", () => {
   test("going Away brings the transport down and cancels the retry ladder", async () => {
     mockStartWiFi.mockImplementation(() =>
