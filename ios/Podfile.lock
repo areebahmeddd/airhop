@@ -4,7 +4,7 @@ PODS:
     - ExpoModulesCore
   - EXConstants (57.0.17):
     - ExpoModulesCore
-  - Expo (57.0.20):
+  - Expo (57.0.21):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -63,7 +63,7 @@ PODS:
   - ExpoMediaLibrary (57.0.4):
     - ExpoModulesCore
     - React-Core
-  - ExpoModulesCore (57.0.16):
+  - ExpoModulesCore (57.0.17):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -87,13 +87,13 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (57.0.8):
+  - ExpoModulesJSI (57.1.0):
     - React-Core
     - ReactCommon
-  - ExpoModulesWorklets (57.0.16):
+  - ExpoModulesWorklets (57.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
-  - ExpoModulesWorkletsAdapter (57.0.16):
+  - ExpoModulesWorkletsAdapter (57.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
     - ExpoModulesWorklets
@@ -2650,7 +2650,7 @@ SPEC CHECKSUMS:
   Arti: 2143376d0ee664650017b9c1b3038c621cb6a414
   EXApplication: bbd517d50878ca1d121fb3843392beb210181e28
   EXConstants: 799577d2516460afb4b57874d6823a62327ce5c7
-  Expo: 20c445ed59fdd6e967ced0bd3d3e99be771ea176
+  Expo: 8fcd49c9918bb861a881ea9844a3f099a9b0bd3b
   ExpoAsset: bea9115098b9f4ddfb0456961c8a7d2779ccc8f5
   ExpoAudio: bd075db379c5a70b7f9a7b5b541d5c67f59b5dca
   ExpoCamera: 00a098da25adbc6013f051b5db47279cb10a716c
@@ -2667,10 +2667,10 @@ SPEC CHECKSUMS:
   ExpoLocation: cb57588a0dd9f8d732a1cab7674f423b6566d3b3
   ExpoLogBox: 80957303325cd4439137765c90a87d7f22aaf2ff
   ExpoMediaLibrary: 344f5b528a71f34794e9d7396e32589531df146e
-  ExpoModulesCore: 42457475be112891f14c8c5ecb845176259bfb16
-  ExpoModulesJSI: 1a6f80255963c29cdf9a11d59cbdc12b3558d585
-  ExpoModulesWorklets: 161e2e951499cdbadb74acf4af86ff19d02919c9
-  ExpoModulesWorkletsAdapter: 5c62c6f47ad637fad26d685b2677fbafe09c6d13
+  ExpoModulesCore: 61bae974748a3baa3f9095f400c7ce0c213a3fb0
+  ExpoModulesJSI: 9df8e7c9719f59e8c001ec33611774137fc1484a
+  ExpoModulesWorklets: 767d05688faa3bbf38b19c08abca031b5328093a
+  ExpoModulesWorkletsAdapter: 13e111038fec9c5f2e92c16481ba928fa4bf5414
   ExpoNotifications: 42cba361a6b378e6e54b795f55932e4eba058829
   ExpoScreenCapture: 6b82aba55db3ecc6f124ebd45163d6db9b916b2d
   ExpoSecureStore: 536804a6aea15cafa49dc969609cd6636d506e68
