@@ -17,6 +17,17 @@ class MainActivity : ReactActivity() {
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
     super.onCreate(null)
+
+    // Keep the open conversation out of the recents list, which otherwise
+    // holds a screenshot of the last frame. Android draws the icon instead.
+    //
+    // Declarative rather than an overlay on onPause: a permission dialog pauses
+    // the activity without the user having left, and an overlay there dimmed
+    // the screen behind every onboarding prompt. Not FLAG_SECURE either, which
+    // would also block the ordinary screenshots Airhop answers with a notice.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      setRecentsScreenshotEnabled(false)
+    }
   }
 
   /**

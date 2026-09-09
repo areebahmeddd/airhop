@@ -1061,9 +1061,10 @@ function AppContent(): React.JSX.Element {
       // The result was that the OS permission dialog - the single most common
       // way to reach this state, on the very first launch - bounced the scan off
       // and on again underneath itself. Everything else here still treats it as
-      // "not active", which is right for them: a notification should be raised,
-      // chat state should be flushed, and the privacy cover should be up,
-      // because the user genuinely is not reading the screen.
+      // "not active", which is right for them: a notification should be raised
+      // and chat state flushed, because the user genuinely is not reading the
+      // screen. The app-switcher cover is not one of them, and is native for
+      // exactly this reason: it hangs off backgrounding, not off focus.
       getMeshService()?.setAppForeground(next !== "background");
       // Arti needs the same signal, and needs it on the "background" boundary
       // rather than on "active": an app switcher or a permission dialog does not

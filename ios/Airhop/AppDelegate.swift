@@ -47,6 +47,40 @@ class AppDelegate: ExpoAppDelegate {
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  // What the app switcher shows in place of the conversation.
+  private var privacyCover: UIView?
+
+  // Cover the window before iOS photographs it for the app switcher.
+  //
+  // Backgrounding, never `willResignActive`: a permission prompt, a share sheet
+  // and Control Center all resign active with the app still on screen, and
+  // covering there dimmed the app behind every onboarding prompt. iOS takes the
+  // snapshot after this returns, so there is no gap to be caught in.
+  //
+  // App-delegate lifecycle, which UIKit calls only while there is no scene
+  // manifest. Adopting UIScene moves this to sceneDidEnterBackground.
+  public override func applicationDidEnterBackground(_ application: UIApplication) {
+    super.applicationDidEnterBackground(application)
+    guard privacyCover == nil, let window = window else { return }
+    // The launch storyboard, so the switcher shows what opening the app shows:
+    // the mark on the system background, in the current appearance. No second
+    // asset, and nothing to keep in step with the theme.
+    guard
+      let cover = UIStoryboard(name: "SplashScreen", bundle: nil)
+        .instantiateInitialViewController()?.view
+    else { return }
+    cover.frame = window.bounds
+    cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    window.addSubview(cover)
+    privacyCover = cover
+  }
+
+  public override func applicationWillEnterForeground(_ application: UIApplication) {
+    super.applicationWillEnterForeground(application)
+    privacyCover?.removeFromSuperview()
+    privacyCover = nil
+  }
+
   // Linking API
   public override func application(
     _ app: UIApplication,
