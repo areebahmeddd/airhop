@@ -12,6 +12,7 @@
 
 import { type NoiseSession } from "../crypto/noise-xx";
 import { ANNOUNCE_CONNECTED_MAX_MS } from "../mesh/discovery/announce-manager";
+import { originTtl } from "../mesh/routing/origin-ttl";
 import {
   decodeNoisePayload,
   encodeNoisePayload,
@@ -26,40 +27,6 @@ import {
   signPacket,
   type Packet,
 } from "../mesh/wire/packet-codec";
-
-// Origin TTL for a PUBLIC channel message, drawn from a small range instead of
-// the fixed maximum.
-//
-// A relay decrements TTL, so a packet still carrying the protocol maximum was
-// authored by whoever just transmitted it. To a passive listener that separates
-// "this phone is nearby" from "this phone is talking". bitchat lists
-// randomizing origin TTL alongside dropping the neighbour list as a cheap
-// unilateral improvement (PEER-ID-ROTATION.md section 9).
-//
-// Scope, and what it does not buy:
-//
-//   * Public messages only. The reach cost is real, since a message starting at
-//     5 crosses five hops rather than seven, and public messages are the one
-//     type where that is self-healing: a peer beyond the horizon picks it up
-//     from a neighbour on the next gossip round.
-//   * Not announces. The direct-peer rule in mesh-service identifies a
-//     directly-heard announce by `packet.ttl === ANNOUNCE_TTL`, and that rule
-//     is what stops one hostile peer inventing hundreds of "directly connected"
-//     identities immune to eviction. Randomizing announce TTL would disable it
-//     silently, so any change here has to replace that check first.
-//   * It weakens the signal rather than removing it. The top of the range is
-//     still unambiguous, so roughly a third of public messages stay
-//     attributable. Removing it entirely needs relays that sometimes decline to
-//     decrement, which is a coordinated protocol change.
-const ORIGIN_TTL_MIN = 5;
-const ORIGIN_TTL_MAX = 7;
-
-function originPublicTtl(): number {
-  return (
-    ORIGIN_TTL_MIN +
-    Math.floor(Math.random() * (ORIGIN_TTL_MAX - ORIGIN_TTL_MIN + 1))
-  );
-}
 
 // Timeout for a peer directly connected over BLE (no ANNOUNCE heard within this
 // window means the radio link is gone). A backstop only: a real drop fires
@@ -581,7 +548,7 @@ export class MessageRouter {
 
     const packet: Packet = {
       type,
-      ttl: originPublicTtl(),
+      ttl: originTtl(),
       flags: Flags.SIGNED,
       senderID: senderIDBytes,
       recipientID: new Uint8Array(8), // broadcast
@@ -599,7 +566,7 @@ export class MessageRouter {
   sendChannelEnc(sealedPayload: Uint8Array): void {
     const packet: Packet = {
       type: PacketType.CHANNEL_ENC,
-      ttl: 7,
+      ttl: originTtl(),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(8), // broadcast

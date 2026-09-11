@@ -276,6 +276,8 @@ is, since moving it would break every shipped build for no gain.
 - Validated on receipt exactly as a scanned card: peer ID must equal `SHA-256(noisePubKey)[0:16]`. Treated as **not in person**, so it may introduce a contact but never re-pin keys already bound to a peer ID.
 - Threads merge only after **both** cards have crossed. Merging moves replies to the durable rail, which attributes senders by known Nostr key alone; merging earlier strands them in an unattributed thread.
 
+**A Nostr key a peer names for itself is a claim, not a proof.** ANNOUNCE TLV `0x07`, a card from a link, and the card inside `0x22` all say "reach this peer at this key", signed by the peer and never by the key. A receiver treats such a claim as a forwarding address only: the first claim for a key stands, a later one cannot move it, and no claim folds the thread already keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may do those, the same act that may re-pin keys.
+
 Capability bits (ANNOUNCE TLV `0x05` and `0x21` TLV `0x01`, minimal little-endian):
 
 | Bit | Name                 | Meaning                                                   |
@@ -477,21 +479,22 @@ Two rules the routing layer enforces rather than the format:
 
 ## 4. Routing Constants
 
-| Constant                  | Value          | Source                                                               |
-| ------------------------- | -------------- | -------------------------------------------------------------------- |
-| Default TTL               | `7`            | `TransportConfig.swift`                                              |
-| Relay jitter range        | `10–220 ms`    | Random delay before re-broadcast                                     |
-| Fragment frame budget     | `512 bytes`    | ATT attribute ceiling: the whole encoded frame, not the payload      |
-| Fragment data per frame   | `467 bytes`    | Frame budget minus header, senderID, recipientID and fragment header |
-| Max concurrent assemblies | `128`          | In-flight fragment reassembly slots                                  |
-| Max payload length        | `10 MiB`       | Declared wire length AND decompressed output                         |
-| Dedup LRU size            | `1000 entries` | Seen-packetID cache (16-byte IDs)                                    |
-| Dedup expiry window       | `5 minutes`    | PacketID expiry in dedup cache                                       |
-| Fanout subset size        | `~⌈sqrt(n)⌉`   | Deterministic fanout, excludes ingress peer                          |
-| Voice relay jitter        | `8–25 ms`      | Live voice and fragments (`TransportConfig`)                         |
-| Voice relay TTL cap       | `7` / `5`      | Sparse / dense (degree ≥ 6) meshes                                   |
-| Voice jitter buffer       | `350 ms`       | Buffered before live playback starts                                 |
-| Concurrent voice bursts   | `8`            | Inbound assembly cap per device                                      |
+| Constant                        | Value          | Source                                                                         |
+| ------------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| Default TTL                     | `7`            | `TransportConfig.swift`                                                        |
+| Origin TTL, authored broadcasts | `5–7`          | Drawn per packet, per burst for voice. Announces and directed traffic stay `7` |
+| Relay jitter range              | `10–220 ms`    | Random delay before re-broadcast                                               |
+| Fragment frame budget           | `512 bytes`    | ATT attribute ceiling: the whole encoded frame, not the payload                |
+| Fragment data per frame         | `467 bytes`    | Frame budget minus header, senderID, recipientID and fragment header           |
+| Max concurrent assemblies       | `128`          | In-flight fragment reassembly slots                                            |
+| Max payload length              | `10 MiB`       | Declared wire length AND decompressed output                                   |
+| Dedup LRU size                  | `1000 entries` | Seen-packetID cache (16-byte IDs)                                              |
+| Dedup expiry window             | `5 minutes`    | PacketID expiry in dedup cache                                                 |
+| Fanout subset size              | `~⌈sqrt(n)⌉`   | Deterministic fanout, excludes ingress peer                                    |
+| Voice relay jitter              | `8–25 ms`      | Live voice and fragments (`TransportConfig`)                                   |
+| Voice relay TTL cap             | `7` / `5`      | Sparse / dense (degree ≥ 6) meshes                                             |
+| Voice jitter buffer             | `350 ms`       | Buffered before live playback starts                                           |
+| Concurrent voice bursts         | `8`            | Inbound assembly cap per device                                                |
 
 ## 5. Gossip Sync Constants
 

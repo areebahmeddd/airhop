@@ -40,6 +40,7 @@ import {
   wipeWalletStorage,
 } from "@store/wallet-store";
 import { settleOr, withTimeout } from "@utils/with-timeout";
+import { resetBoardAlerts } from "./board-alerts";
 import { wipeCacheDirectory } from "./file-transfer-service";
 import { clearLocationCache } from "./location-service";
 import { dismissAllNotifications } from "./notification-service";
@@ -206,6 +207,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   useTransferStore.getState().clearAll();
   useActivityStore.getState().clearAll();
   useBoardStore.getState().clearAll();
+  resetBoardAlerts();
   useGroupStore.getState().clearAll();
   clearOwedGroupStates();
   useLocationNotesStore.getState().clearAll();

@@ -21,17 +21,25 @@ import {
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import { GCS_MAX_BYTES, GCS_TARGET_FPR } from "@core/mesh/sync/gossip-sync";
+import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
+import {
+  getDiagnosticsReport,
+  shareDiagnostics,
+} from "@services/diagnostics-export";
 import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
+import BottomSheet from "@ui/components/bottom-sheet";
+import { useCopy } from "@ui/hooks/use-copy";
 import { FontFamily, FontSize, Spacing, useThemeColors } from "@ui/theme";
 import { formatNumber } from "@utils/format";
 import { resolveDisplayName } from "@utils/peer-display-name";
-import React, { useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import {
   GroupDivider,
+  SettingLinkRow,
   SettingRow,
   SettingsScroll,
   SubHeader,
@@ -77,6 +85,8 @@ export default function DiagnosticsScreen({
   const Colors = useThemeColors();
   const styles = useSharedStyles();
   const local = useMemo(() => createStyles(Colors), [Colors]);
+  const { copy } = useCopy();
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   const peers = usePeerStore((s) => s.peers);
   const wifiFastPath = useMeshStateStore((s) => s.wifiFastPath);
@@ -96,6 +106,30 @@ export default function DiagnosticsScreen({
     return () => clearInterval(timer);
   }, []);
   const counters = snapshot;
+
+  // Building the report awaits the native log, so a second tap while the first
+  // is still collecting is dropped rather than opening two share sheets. A ref,
+  // not the state: two taps in one tick both read the state as false.
+  const sharingRef = useRef(false);
+  async function handleCopy(): Promise<void> {
+    setShowShareSheet(false);
+    try {
+      copy(await getDiagnosticsReport());
+    } catch {
+      return;
+    }
+  }
+
+  async function handleShare(): Promise<void> {
+    setShowShareSheet(false);
+    if (sharingRef.current) return;
+    sharingRef.current = true;
+    try {
+      await shareDiagnostics();
+    } finally {
+      sharingRef.current = false;
+    }
+  }
 
   const nearby = [...peers.values()]
     .filter((p) => snapshot.now - p.lastSeenMs < REACHABLE_TTL_MS)
@@ -275,8 +309,65 @@ export default function DiagnosticsScreen({
           </View>
         </View>
 
+        <View style={styles.section}>
+          <View style={styles.settingsGroup}>
+            <SettingLinkRow
+              id="share-diagnostics"
+              icon="share"
+              label={T("settings.diag.share")}
+              description={T("settings.diag.share_desc")}
+              onPress={() => setShowShareSheet(true)}
+              chevron={false}
+              accessibilityLabel={T("settings.diag.share")}
+            />
+          </View>
+        </View>
+
         <Text style={local.footnote}>{T("settings.diag.footnote")}</Text>
       </SettingsScroll>
+      <BottomSheet
+        visible={showShareSheet}
+        onClose={() => setShowShareSheet(false)}
+        sheetStyle={styles.sheet}
+      >
+        <Text style={styles.sheetTitle}>{T("settings.diag.share")}</Text>
+        <Text style={styles.sheetSubtitle}>
+          {T("settings.diag.share_desc")}
+        </Text>
+        <View style={[styles.sheetActions, local.sheetActions]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.sheetBtn,
+              local.sheetButton,
+              pressed && styles.sheetBtnPressed,
+            ]}
+            onPress={() => void handleCopy()}
+            accessibilityRole="button"
+            accessibilityLabel={T("common.copy")}
+          >
+            <View style={local.sheetButtonContent}>
+              <Feather name="copy" size={16} color={Colors.textPrimary} />
+              <Text style={styles.sheetBtnText}>{T("common.copy")}</Text>
+            </View>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.sheetBtnPrimary,
+              pressed && styles.sheetBtnPrimaryPressed,
+            ]}
+            onPress={() => void handleShare()}
+            accessibilityRole="button"
+            accessibilityLabel={T("common.share")}
+          >
+            <View style={local.sheetButtonContent}>
+              <Feather name="share" size={16} color={Colors.textInverse} />
+              <Text style={styles.sheetBtnTextPrimary}>
+                {T("common.share")}
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      </BottomSheet>
     </View>
   );
 }
@@ -307,6 +398,17 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontFamily: FontFamily.mono,
       color: Colors.textMuted,
+    },
+    sheetActions: {
+      gap: Spacing.sm,
+    },
+    sheetButton: {
+      marginTop: 0,
+    },
+    sheetButtonContent: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: Spacing.sm,
     },
     // Closes the screen rather than heading a group, so it sits muted and
     // centred instead of taking a section label's weight.

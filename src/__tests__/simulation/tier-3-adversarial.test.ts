@@ -44,6 +44,7 @@ import {
   MESH_PUBLIC_CHANNEL,
 } from "@core/router/message-router";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { RadioFabric } from "./harness/radio-fabric";
@@ -143,6 +144,7 @@ function forgeAnnounce(opts: {
   nickname: string;
   timestamp: number;
   signWith?: Uint8Array;
+  nostrPubKey?: Uint8Array;
 }): string {
   const payload = encodeAnnouncePayload(
     {
@@ -150,6 +152,8 @@ function forgeAnnounce(opts: {
       signingPubKey: opts.signingPubKey,
     } as Identity,
     opts.nickname,
+    [],
+    opts.nostrPubKey,
   );
   const packet: Packet = {
     type: PacketType.ANNOUNCE,
@@ -310,6 +314,109 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
 
   s.expectNone("no forged senders", noForgedSenders(cast));
   s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C10 an announce claiming someone else's Nostr key cannot take their thread or their mail", async () => {
+  // An announce is signed by the announcer, which proves nothing about the
+  // Nostr key it carries. Bob has been writing to alice over Nostr while
+  // offline. Mallory, in range, announces herself with alice's npub. If that
+  // claim could fold alice's thread into mallory's, bob's queued mail would be
+  // re-addressed to mallory and sealed to her Noise key. The only act that may
+  // do either is scanning a card off the other phone.
+  const s = (scenario = new Scenario({
+    id: "C10",
+    title: "nostr key claim in an announce",
+    seed: 70,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  // Alice is away: only bob and mallory share the air.
+  radio.add(bob);
+  radio.add(mallory);
+  s.track(alice, bob, mallory);
+  for (const d of [alice, bob, mallory]) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(mallory.peerID), 20_000);
+  const aliceNpub = hexToBytes(alice.nostrPubkey);
+
+  const aliceKey = `nostr_${alice.nostrPubkey}`;
+  const aliceThread = `dm:${aliceKey}`;
+  bob.sendDm(aliceKey, "for alice only");
+  const outbox = bob.store("outboxStore");
+  const chat = bob.store("chatStore");
+  const queuedFor = (peer: string): number =>
+    (outbox.getState().forPeer as (p: string) => unknown[])(peer).length;
+  s.check(
+    "bob's message to alice is queued for her key",
+    queuedFor(aliceKey) === 1,
+  );
+
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    forgeAnnounce({
+      claimedPeerID: mallory.peerID,
+      noisePubKey: mallory.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "mallory",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+      nostrPubKey: aliceNpub,
+    }),
+  );
+  await s.world.advance(2000);
+
+  const redirects = chat.getState().channelRedirects as Record<string, string>;
+  s.check(
+    "alice's thread was not folded into mallory's",
+    redirects[aliceThread] === undefined,
+    `redirect = ${String(redirects[aliceThread])}`,
+  );
+  s.check(
+    "bob's mail for alice is still queued for alice, none for mallory",
+    queuedFor(aliceKey) === 1 && queuedFor(mallory.peerID) === 0,
+  );
+
+  // The positive control: bob scans alice's real card in person.
+  (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: alice.identity.signingPubKey,
+      nickname: "alice",
+      nostrPubKey: aliceNpub,
+    },
+    { inPerson: true },
+  );
+  await s.world.advance(500);
+  const after = chat.getState().channelRedirects as Record<string, string>;
+  s.check(
+    "an in-person scan folds the thread and re-addresses the mail",
+    after[aliceThread] === `dm:${alice.peerID}` &&
+      queuedFor(aliceKey) === 0 &&
+      queuedFor(alice.peerID) === 1,
+    `redirect = ${String(after[aliceThread])}`,
+  );
+
+  s.expectNone("process health", noCrashes([bob, mallory]));
   s.assert();
 });
 

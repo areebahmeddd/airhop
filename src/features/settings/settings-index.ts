@@ -65,6 +65,7 @@ export type SettingId =
   | "perm-camera"
   | "perm-photos"
   | "perm-microphone"
+  | "share-diagnostics"
   | "help-contact"
   | "help-bug"
   | "help-faq"
@@ -215,6 +216,14 @@ export const SETTINGS_INDEX = [
     sectionKey: HUB,
     icon: "activity",
     target: { kind: "screen", view: "diagnostics" },
+  },
+  {
+    key: "share-diagnostics",
+    labelKey: "settings.diag.share",
+    descriptionKey: "settings.diag.share_desc",
+    sectionKey: "settings.section.diagnostics",
+    icon: "share",
+    target: { kind: "row", view: "diagnostics", id: "share-diagnostics" },
   },
   {
     key: "section-appearance",

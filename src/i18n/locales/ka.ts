@@ -394,6 +394,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "უკან, {count} წაუკითხავი",
   "chat.thread.view_info": "{name}-ის ინფორმაციის ნახვა",
   "chat.thread.notices_new": "ამ არხის განცხადებები, {count} ახალი",
+  "chat.board.urgent_one": "სასწრაფო განცხადება {author}-ისგან · {content}",
+  "chat.board.urgent_many":
+    "{count} ახალი სასწრაფო განცხადება · გახსენით განცხადებები",
   "chat.thread.say_something": "თქვი რამე {channel}-ში.",
   "chat.thread.jump_latest_new": "უახლეს შეტყობინებაზე გადასვლა, {count} ახალი",
   "chat.thread.unconfirmed_since": "{date}-იდან მიწოდება არ დადასტურებულა",
@@ -1632,6 +1635,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} ბაიტი",
   "settings.diag.footnote":
     "აქ არაფრის შეცვლა შეიძლება. ეს მნიშვნელობები ფიქსირებულია, რომ Airhop bitchat-თან თავსებადი დარჩეს.",
+  "settings.diag.share": "დიაგნოსტიკის გაზიარება",
+  "settings.diag.share_desc":
+    "ტრანსპორტისა და პარამეტრების მდგომარეობა ხარვეზის ანგარიშისთვის. არასოდეს შეტყობინებები, სახელები ან გასაღებები.",
   "settings.section.storage_desc": "მოხმარება და ქეში",
   "settings.section.appearance": "გარეგნობა",
   "settings.section.appearance_desc": "თემა, შრიფტი და ენა",

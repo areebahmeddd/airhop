@@ -395,6 +395,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Torna indietro, {count} non letti",
   "chat.thread.view_info": "Vedi le informazioni di {name}",
   "chat.thread.notices_new": "Avvisi di questo canale, {count} nuovi",
+  "chat.board.urgent_one": "Avviso urgente da {author} · {content}",
+  "chat.board.urgent_many": "{count} nuovi avvisi urgenti · apri Avvisi",
   "chat.thread.say_something": "Di’ qualcosa in {channel}.",
   "chat.thread.jump_latest_new": "Vai all’ultimo messaggio, {count} nuovi",
   "chat.thread.unconfirmed_since": "Nessuna consegna confermata dal {date}",
@@ -1650,6 +1652,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Qui non si può cambiare nulla. Questi valori sono fissi perché Airhop resti compatibile con bitchat.",
+  "settings.diag.share": "Condividi diagnostica",
+  "settings.diag.share_desc":
+    "Stato di trasporti e impostazioni per una segnalazione. Mai messaggi, nomi o chiavi.",
   "settings.section.storage_desc": "Utilizzo e cache",
   "settings.section.appearance": "Aspetto",
   "settings.section.appearance_desc": "Tema, carattere e lingua",

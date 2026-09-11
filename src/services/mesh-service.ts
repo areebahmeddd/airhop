@@ -85,6 +85,7 @@ import {
   FragmentManager,
   type FragmentProgress,
 } from "@core/mesh/routing/fragment-manager";
+import { originTtl } from "@core/mesh/routing/origin-ttl";
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
@@ -212,6 +213,7 @@ import {
 } from "nostr-tools";
 import { DeviceEventEmitter, type EventSubscription } from "react-native";
 import { setAudioForPlayback } from "./audio-session";
+import { noteUrgentNotice } from "./board-alerts";
 import { BridgeService } from "./bridge-service";
 import {
   FileTransferService,
@@ -947,7 +949,7 @@ export class MeshService {
           const known = this.registry.get(peerID)?.nostrPubkey;
           if (known) useContactsStore.getState().setNostrPubkey(peerID, known);
         } else {
-          this.nostrPubkeyToPeerID.set(c.nostrPubkeyHex, peerID);
+          this.bindNostrPubkey(c.nostrPubkeyHex, peerID, false);
         }
         // The same race, for the mesh keys a safety number is built from. A
         // peer that proved itself before the contact existed would otherwise
@@ -2772,30 +2774,12 @@ export class MeshService {
       ? bytesToHex(info.nostrPubKey)
       : undefined;
     if (nostrPubkeyHex) {
-      this.nostrPubkeyToPeerID.set(nostrPubkeyHex, peerID);
       // Persist the npub onto their contact (if we have one) so it survives this
       // peer leaving Bluetooth range: the registry entry above expires 60s after
       // their radio goes quiet, but a durable contact keeps the key so a later
       // DM can still fall back to Nostr. No-op for strangers we haven't saved.
       useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
-      // We may already have a thread keyed by their Nostr pubkey, from before
-      // we knew who they were. Now that the ANNOUNCE ties the two identities
-      // together, fold it into the real peer thread so the user sees one
-      // conversation instead of the same person twice.
-      useChatStore
-        .getState()
-        .mergeChannel(`dm:nostr_${nostrPubkeyHex}`, `dm:${peerID}`);
-      // Re-key anything still queued against the pubkey-form identifier so it
-      // now goes out over the (cheaper, offline-capable) mesh route.
-      const outbox = useOutboxStore.getState();
-      for (const msg of outbox.forPeer(`nostr_${nostrPubkeyHex}`)) {
-        outbox.resolve(msg.id);
-        outbox.enqueue({
-          ...msg,
-          recipientPeerID: peerID,
-          channel: `dm:${peerID}`,
-        });
-      }
+      this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
     }
     this.registry.update({
       peerID,
@@ -3750,19 +3734,8 @@ export class MeshService {
     // Carries the history over rather than stranding it in a thread that has
     // stopped working.
     chat.mergeChannel(`dm:nostr_${pubkey}`, to);
-    // And any thread their durable key opened on its own.
-    //
-    // Our card takes a relay round trip to reach them, so for a few seconds
-    // after we merge they are still on the pseudonymous rail while we are on the
-    // durable one. A message we send in that window arrives at a client that
-    // cannot yet attribute our key, and theirs can do the same to us. Folding
-    // the durable-keyed thread in here is the same repair the announce path
-    // already performs, applied at the moment we learn the two are one person.
-    const durableKey =
-      useContactsStore.getState().contacts[peerID]?.nostrPubkeyHex;
-    if (durableKey !== undefined && durableKey.length > 0) {
-      chat.mergeChannel(`dm:nostr_${durableKey}`, to);
-    }
+    // Not the thread their durable key may have opened: the card names that
+    // key, it does not prove it. See bindNostrPubkey.
     chat.addMessage({
       id: `card-done-${pubkey}`,
       channel: to,
@@ -3830,7 +3803,7 @@ export class MeshService {
       nostrPubkeyHex,
     });
     if (nostrPubkeyHex !== undefined) {
-      this.nostrPubkeyToPeerID.set(nostrPubkeyHex, decoded.peerID);
+      this.bindNostrPubkey(nostrPubkeyHex, decoded.peerID, false);
     }
     chat.noteGeoCardExchange(senderPubkey, { theirPeerID: decoded.peerID });
 
@@ -3938,9 +3911,18 @@ export class MeshService {
       return;
     }
     if (Date.now() - post.createdAt > NOTICE_BELL_WINDOW_MS) return;
+    const channel = this.channelForNoticeGeohash(post.geohash);
+    if (isUrgent(post)) {
+      noteUrgentNotice({
+        postID: bytesToHex(post.postID),
+        channel,
+        authorNickname: post.authorNickname,
+        content: post.content,
+      });
+    }
     useActivityStore.getState().record({
       id: bytesToHex(post.postID),
-      channel: this.channelForNoticeGeohash(post.geohash),
+      channel,
       isDM: false,
       senderID: bytesToHex(post.authorSigningKey),
       // Stored empty rather than resolved: a bell entry outlives the language
@@ -4063,7 +4045,7 @@ export class MeshService {
   private broadcastBoardWire(wire: BoardWire): void {
     const packet: Packet = {
       type: PacketType.BOARD_POST,
-      ttl: 7,
+      ttl: originTtl(),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),
@@ -4551,7 +4533,7 @@ export class MeshService {
 
     const packet: Packet = {
       type: PacketType.GROUP_MESSAGE,
-      ttl: 7,
+      ttl: originTtl(),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),
@@ -5494,12 +5476,50 @@ export class MeshService {
     // so a gift-wrapped answer folds into this thread even before any ANNOUNCE.
     // (The contact record itself is written by the QR flow with the same key.)
     if (nostrPubkeyHex) {
-      this.nostrPubkeyToPeerID.set(nostrPubkeyHex, card.peerID);
+      this.bindNostrPubkey(nostrPubkeyHex, card.peerID, opts.inPerson === true);
     }
 
     // They may already be in range, and if so anything queued goes now.
     this.flushOutbox(card.peerID);
     return true;
+  }
+
+  // Tie a Nostr pubkey to a peer ID.
+  //
+  // Every source of this binding is the peer saying "reach me at this key":
+  // an announce, a card in a link or a geohash DM, a saved contact. The key's
+  // owner never signs any of it, so anyone in range can announce someone
+  // else's npub. Such a claim may add a forwarding address for THAT peer, and
+  // nothing more: the first claim for a key stands, and a later one cannot
+  // move it. Only a card scanned off the other phone, the same act that earns
+  // a key re-pin, may override the map, fold the thread already keyed by the
+  // npub into the peer's, and re-address mail queued for it. A claim that
+  // could do those would hand a conversation, and the mail sealed for it, to
+  // whoever announced first.
+  private bindNostrPubkey(
+    nostrPubkeyHex: string,
+    peerID: string,
+    inPerson: boolean,
+  ): void {
+    if (!inPerson) {
+      if (!this.nostrPubkeyToPeerID.has(nostrPubkeyHex)) {
+        this.nostrPubkeyToPeerID.set(nostrPubkeyHex, peerID);
+      }
+      return;
+    }
+    this.nostrPubkeyToPeerID.set(nostrPubkeyHex, peerID);
+    useChatStore
+      .getState()
+      .mergeChannel(`dm:nostr_${nostrPubkeyHex}`, `dm:${peerID}`);
+    const outbox = useOutboxStore.getState();
+    for (const msg of outbox.forPeer(`nostr_${nostrPubkeyHex}`)) {
+      outbox.resolve(msg.id);
+      outbox.enqueue({
+        ...msg,
+        recipientPeerID: peerID,
+        channel: `dm:${peerID}`,
+      });
+    }
   }
 
   // Retry everything queued for a peer that just became reachable.
@@ -5962,8 +5982,8 @@ export class MeshService {
           // their FULL Nostr pubkey rather than a 16-char slice of it. The old
           // slice looked like a peerID but wasn't one: replying fed it to
           // sendDm, which could never resolve a route, so the conversation was
-          // un-repliable. `nostr_` keeps it unambiguous and routable, and
-          // onAnnounce merges the thread once their real peerID shows up.
+          // un-repliable. `nostr_` keeps it unambiguous and routable, and an
+          // in-person scan folds the thread into theirs (bindNostrPubkey).
           const senderKey = peerID ?? `nostr_${dm.senderPubkey}`;
           const channel = `dm:${senderKey}`;
 

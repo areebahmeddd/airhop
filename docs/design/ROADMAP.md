@@ -78,8 +78,8 @@
 │  ┌──────────▼──────────────────────────────────────────────────────────┐    │
 │  │           AIRHOP NATIVE TRANSPORT MODULES                           │    │
 │  │  BLE:  CBCentral/CBPeripheral (Swift), BluetoothGatt (Kotlin)       │    │
-│  │  WiFi: WiFiAware framework (Swift), WifiAwareManager (Kotlin)       │    │
 │  │  LAN:  NWListener/NWBrowser (Swift), NsdManager (Kotlin)            │    │
+│  │  WiFi: WiFiAware framework (Swift), WifiAwareManager (Kotlin)       │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```

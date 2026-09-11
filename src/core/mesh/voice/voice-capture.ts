@@ -25,6 +25,7 @@
 // into a single VOICE_FRAME packet up to PTT_MAX_BURST_BYTES (210 bytes) so
 // the packet never needs BLE fragmentation.
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
+import { originTtl } from "../routing/origin-ttl";
 import {
   Flags,
   PacketType,
@@ -163,6 +164,9 @@ export class VoiceCaptureSession {
   // to retract, and no bubble anywhere to clean up. See sendStartIfNeeded.
   private startSent = false;
   private burstID = new Uint8Array(BURST_ID_SIZE);
+  // One draw per burst. Per frame, at ~15 a second, an observer would see the
+  // top of the range within a fraction of a second.
+  private burstTtl = originTtl();
   private seq = 0; // next seq to emit (0 = START, 1+ = DATA)
   private dataPacketCount = 0;
   private burstStartMs = 0;
@@ -205,6 +209,7 @@ export class VoiceCaptureSession {
     this.startSent = false;
     this.clearRetractTimers();
     this.burstID = randomBytes(BURST_ID_SIZE);
+    this.burstTtl = originTtl();
     // seq 0 belongs to START, which is emitted with the first frame; DATA
     // packets number from 1 whether or not that has happened yet.
     this.seq = 1;
@@ -411,7 +416,7 @@ export class VoiceCaptureSession {
     }
     const packet: Packet = {
       type: PacketType.VOICE_FRAME,
-      ttl: 7,
+      ttl: this.burstTtl,
       flags: Flags.SIGNED,
       senderID: this.senderIDBytes,
       recipientID: new Uint8Array(8), // broadcast

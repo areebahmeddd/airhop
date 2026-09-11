@@ -394,6 +394,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Kembali, {count} belum dibaca",
   "chat.thread.view_info": "Lihat info untuk {name}",
   "chat.thread.notices_new": "Pengumuman untuk kanal ini, {count} baru",
+  "chat.board.urgent_one": "Pengumuman mendesak dari {author} · {content}",
+  "chat.board.urgent_many":
+    "{count} pengumuman mendesak baru · buka Pengumuman",
   "chat.thread.say_something": "Katakan sesuatu di {channel}.",
   "chat.thread.jump_latest_new": "Lompat ke pesan terbaru, {count} baru",
   "chat.thread.unconfirmed_since":
@@ -1635,6 +1638,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} bita",
   "settings.diag.footnote":
     "Tidak ada yang bisa diubah di sini. Nilai-nilai ini dipatok agar Airhop tetap cocok dengan bitchat.",
+  "settings.diag.share": "Bagikan diagnostik",
+  "settings.diag.share_desc":
+    "Status transport dan pengaturan untuk laporan bug. Tidak pernah pesan, nama, atau kunci.",
   "settings.section.storage_desc": "Pemakaian dan singgahan",
   "settings.section.appearance": "Tampilan",
   "settings.section.appearance_desc": "Tema, fon, dan bahasa",

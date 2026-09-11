@@ -253,6 +253,12 @@ class AirhopWiFiModule(
         // Writes arrive on a pooled thread per call, and two interleaved frames
         // corrupt the length prefix and desynchronise the link permanently.
         val writeLock: Any = Any(),
+        // The peer and data path a dialled link belongs to, so closing it can
+        // free both. Absent on an accepted link: the accept loop cannot tell
+        // which peer a socket came from, and the responder's path is released
+        // when the initiator's is.
+        val peer: PeerHandle? = null,
+        val network: ConnectivityManager.NetworkCallback? = null,
     )
 
     // ---- Start / Stop --------------------------------------------------------
@@ -810,14 +816,17 @@ class AirhopWiFiModule(
         val specifier = WifiAwareNetworkSpecifier.Builder(session, peerHandle)
             .setPskPassphrase(DATA_PATH_PASSPHRASE)
             .build()
-        requestAwareNetwork(specifier, peerHandle) { network, info ->
+        requestAwareNetwork(specifier, peerHandle) { network, info, callback ->
             val peerAddress = info.peerIpv6Addr
             val peerPort = info.port
-            // Left marked: the path did come up, so onLost is what ends it
-            // and frees the peer. Clearing here would re-dial a peer that just
-            // proved it has nothing to talk to.
+            // A path that came up but cannot carry a socket is released rather
+            // than kept: onLost never fires for a path that is still up, so
+            // nothing else would free the peer, and the next rediscovery could
+            // not dial it again.
             if (peerAddress == null || peerPort <= 0) {
                 Log.w(TAG, "Aware network came up with no peer address or port")
+                release(callback)
+                forgetAttempt(peerHandle)
                 return@requestAwareNetwork
             }
             ioExecutor.execute {
@@ -826,9 +835,16 @@ class AirhopWiFiModule(
                     // route this over whatever the default network is, which is
                     // never the Aware interface.
                     val socket = network.socketFactory.createSocket(peerAddress, peerPort)
-                    registerLink("wifi-out-${linkCounter.incrementAndGet()}", socket)
+                    registerLink(
+                        "wifi-out-${linkCounter.incrementAndGet()}",
+                        socket,
+                        peerHandle,
+                        callback,
+                    )
                 } catch (e: Exception) {
                     Log.e(TAG, "Subscriber connect failed: ${e.message}")
+                    release(callback)
+                    forgetAttempt(peerHandle)
                 }
             }
         }
@@ -838,7 +854,7 @@ class AirhopWiFiModule(
     private fun requestAwareNetwork(
         specifier: WifiAwareNetworkSpecifier,
         peer: PeerHandle,
-        onPeerReady: ((Network, WifiAwareNetworkInfo) -> Unit)?,
+        onPeerReady: ((Network, WifiAwareNetworkInfo, ConnectivityManager.NetworkCallback) -> Unit)?,
     ) {
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
@@ -863,7 +879,7 @@ class AirhopWiFiModule(
                 // address and could not connect on any device.
                 val info = capabilities.transportInfo as? WifiAwareNetworkInfo ?: return
                 handled = true
-                onPeerReady(network, info)
+                onPeerReady(network, info, this)
             }
 
             override fun onLost(network: Network) {
@@ -909,7 +925,12 @@ class AirhopWiFiModule(
     }
 
     // Register a connected socket as a named link and start its read loop.
-    private fun registerLink(id: String, socket: Socket) {
+    private fun registerLink(
+        id: String,
+        socket: Socket,
+        peer: PeerHandle? = null,
+        network: ConnectivityManager.NetworkCallback? = null,
+    ) {
         try {
             // Frames are small and latency matters more than packing here: the
             // mesh writes one packet per call and waits for nothing.
@@ -925,7 +946,7 @@ class AirhopWiFiModule(
             // the same stated reason (SyncedSocket).
             socket.soTimeout = READ_TIMEOUT_MS
             val output = socket.getOutputStream()
-            val link = LinkState(id, socket, output)
+            val link = LinkState(id, socket, output, peer = peer, network = network)
             links[id] = link
             emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
             Log.d(TAG, "WiFi Aware link connected: $id")
@@ -1000,6 +1021,12 @@ class AirhopWiFiModule(
     private fun handleLinkClose(linkID: String) {
         val link = links.remove(linkID) ?: return
         runCatching { link.socket.close() }
+        // A dead socket on a live path would otherwise leave the peer marked
+        // for good, since onLost only fires when the path itself goes. Releasing
+        // the request ends the path for both ends, so the responder sees onLost
+        // and frees its own mark too.
+        link.network?.let { release(it) }
+        link.peer?.let { forgetAttempt(it) }
         emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply { putString("linkID", linkID) })
     }
 

@@ -397,6 +397,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "ပြန်သွားပါ၊ မဖတ်ရသေးသည် {count} ခု",
   "chat.thread.view_info": "{name} ၏ အချက်အလက်ကို ကြည့်ပါ",
   "chat.thread.notices_new": "ဤချန်နယ်၏ အသိပေးချက်များ၊ အသစ် {count} ခု",
+  "chat.board.urgent_one": "{author} ထံမှ အရေးပေါ် အသိပေးချက် · {content}",
+  "chat.board.urgent_many":
+    "အရေးပေါ် အသိပေးချက်အသစ် {count} ခု · အသိပေးချက်များကို ဖွင့်ပါ",
   "chat.thread.say_something": "{channel} တွင် တစ်ခုခု ပြောပါ။",
   "chat.thread.jump_latest_new":
     "နောက်ဆုံးမက်ဆေ့ဂျ်သို့ ခုန်ပါ၊ အသစ် {count} ခု",
@@ -1655,6 +1658,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} ဘိုက်",
   "settings.diag.footnote":
     "ဤနေရာတွင် ဘာမျှ ပြောင်းလဲ၍ မရပါ။ Airhop သည် bitchat နှင့် ကိုက်ညီနေစေရန် ဤတန်ဖိုးများကို သတ်မှတ်ထားပါသည်။",
+  "settings.diag.share": "ရောဂါရှာဖွေချက် မျှဝေရန်",
+  "settings.diag.share_desc":
+    "ချို့ယွင်းချက် အစီရင်ခံစာအတွက် ချိတ်ဆက်မှုနှင့် ဆက်တင်အသေးစိတ်များ။ စာများ၊ အမည်များနှင့် သော့များ မပါဝင်ပါ။",
   "settings.section.storage_desc": "အသုံးပြုမှုနှင့် ကက်ရှ်",
   "settings.section.appearance": "အသွင်အပြင်",
   "settings.section.appearance_desc": "အပြင်အဆင်၊ ဖောင့်နှင့် ဘာသာစကား",

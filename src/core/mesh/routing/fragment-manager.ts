@@ -126,7 +126,9 @@ export function fragmentPacket(
 
     fragments.push({
       type: OUTER_TYPE,
-      ttl: 7,
+      // Inherited: a public file's fragments must not give away the author
+      // its packet hides.
+      ttl: packet.ttl,
       flags: 0,
       senderID: senderIDBytes,
       // Carry the parent's recipient. A DM's fragments addressed to nobody are

@@ -45,15 +45,16 @@ export const FAQ_SECTIONS: FaqSection[] = [
             Most private messengers fall into three groups. Apps like Signal and Session are strong
             on privacy but need the internet, so they go down when the network does. Meshtastic and
             goTenna work offline but only with a separate radio you have to buy and carry. Briar,
-            Berty, Bridgefy and <TextLink href="https://bitchat.free">bitchat</TextLink> run phone
-            to phone on hardware you already own, and that is where Airhop sits.
+            Berty, Bridgefy and bitchat run phone to phone on hardware you already own, and that is
+            where Airhop sits.
             <br />
             <br />
-            Against bitchat specifically, Airhop is built on top of it and stays wire-compatible,
-            but adds Double Ratchet forward secrecy, Tor on both iOS and Android, offline ecash
-            payments, and an offline AI assistant, none of which bitchat has today. Beyond the
-            protocol itself, <strong>user experience is everything to us</strong>. Great privacy
-            tools should be easy to use, not something people have to figure out.
+            Against <TextLink href="https://bitchat.free">bitchat</TextLink> specifically, Airhop is
+            built on top of it and stays wire-compatible, but adds Double Ratchet forward secrecy,
+            Tor on both iOS and Android, offline ecash payments, and an offline AI assistant, none
+            of which bitchat has today. Beyond the protocol itself,{" "}
+            <strong>user experience is everything to us</strong>. Great privacy tools should be easy
+            to use, not something people have to figure out.
           </>
         ),
       },

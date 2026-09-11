@@ -392,6 +392,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Назад, {count} непрочитанных",
   "chat.thread.view_info": "Показать сведения о {name}",
   "chat.thread.notices_new": "Объявления этого канала, {count} новых",
+  "chat.board.urgent_one": "Срочное объявление от {author} · {content}",
+  "chat.board.urgent_many":
+    "Новых срочных объявлений: {count} · открыть Объявления",
   "chat.thread.say_something": "Скажите что-нибудь в {channel}.",
   "chat.thread.jump_latest_new":
     "Перейти к последнему сообщению, {count} новых",
@@ -1637,6 +1640,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} байт",
   "settings.diag.footnote":
     "Здесь ничего нельзя изменить. Эти значения зафиксированы, чтобы Airhop оставался совместимым с bitchat.",
+  "settings.diag.share": "Поделиться диагностикой",
+  "settings.diag.share_desc":
+    "Сведения о подключении и настройках для отчёта об ошибке. Сообщения, имена и ключи не включаются.",
   "settings.section.storage_desc": "Использование и кэш",
   "settings.section.appearance": "Оформление",
   "settings.section.appearance_desc": "Тема, шрифт и язык",

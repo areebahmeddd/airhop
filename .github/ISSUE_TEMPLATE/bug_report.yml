@@ -78,5 +78,6 @@ body:
   - type: textarea
     id: extra
     attributes:
-      label: Screenshots or logs
-      description: Redact keys, geohashes, and anything that identifies you.
+      label: Screenshots, logs, or diagnostics
+      description: |
+        Optional. For connection issues, open Settings > Diagnostics > Share diagnostics and choose Copy or Share. Redact keys, geohashes, and anything that identifies you.

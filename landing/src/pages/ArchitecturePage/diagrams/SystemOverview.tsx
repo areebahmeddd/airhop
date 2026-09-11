@@ -63,7 +63,7 @@ export function SystemOverview() {
       </Caption>
       <Box x={348} y={54} w={200} h={48} label="BLE mesh" sub="no internet · 7 hops" strong />
       <Box x={348} y={114} w={200} h={48} label="LAN (mDNS)" sub="no internet · one network" />
-      <Box x={348} y={174} w={200} h={48} label="WiFi direct" sub="no internet · same OS only" />
+      <Box x={348} y={174} w={200} h={48} label="WiFi Aware" sub="no internet · same OS only" />
       <Box x={348} y={234} w={200} h={48} label="Nostr relays" sub="internet · optional Tor" />
       <Box x={348} y={294} w={200} h={48} label="Courier" sub="no internet · carried by peers" />
       <Box

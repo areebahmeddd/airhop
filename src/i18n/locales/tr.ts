@@ -392,6 +392,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Geri dön, {count} okunmamış",
   "chat.thread.view_info": "{name} bilgisini görüntüle",
   "chat.thread.notices_new": "Bu kanalın duyuruları, {count} yeni",
+  "chat.board.urgent_one": "{author} kişisinden acil duyuru · {content}",
+  "chat.board.urgent_many": "{count} yeni acil duyuru · Duyuruları aç",
   "chat.thread.say_something": "{channel} kanalında bir şeyler söyle.",
   "chat.thread.jump_latest_new": "En son mesaja atla, {count} yeni",
   "chat.thread.unconfirmed_since": "{date} tarihinden beri teslim onaylanmadı",
@@ -1624,6 +1626,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} bayt",
   "settings.diag.footnote":
     "Buradaki hiçbir şey değiştirilemez. Airhop bitchat ile uyumlu kalsın diye bu değerler sabittir.",
+  "settings.diag.share": "Tanılamayı paylaş",
+  "settings.diag.share_desc":
+    "Hata raporu için bağlantı ve ayar ayrıntıları. Mesajlar, adlar ve anahtarlar hariç tutulur.",
   "settings.section.storage_desc": "Kullanım ve önbellek",
   "settings.section.appearance": "Görünüm",
   "settings.section.appearance_desc": "Tema, yazı tipi ve dil",

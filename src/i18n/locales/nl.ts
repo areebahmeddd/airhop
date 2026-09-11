@@ -394,6 +394,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Terug, {count} ongelezen",
   "chat.thread.view_info": "Info van {name} bekijken",
   "chat.thread.notices_new": "Meldingen van dit kanaal, {count} nieuw",
+  "chat.board.urgent_one": "Dringende melding van {author} · {content}",
+  "chat.board.urgent_many":
+    "{count} nieuwe dringende meldingen · open Meldingen",
   "chat.thread.say_something": "Zeg iets in {channel}.",
   "chat.thread.jump_latest_new": "Naar het laatste bericht, {count} nieuw",
   "chat.thread.unconfirmed_since": "Geen bezorging bevestigd sinds {date}",
@@ -1640,6 +1643,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} bytes",
   "settings.diag.footnote":
     "Hier valt niets te veranderen. Deze waarden liggen vast zodat Airhop compatibel blijft met bitchat.",
+  "settings.diag.share": "Diagnose delen",
+  "settings.diag.share_desc":
+    "Verbindings- en instellingsdetails voor een bugrapport. Berichten, namen en sleutels worden uitgesloten.",
   "settings.section.storage_desc": "Gebruik en cache",
   "settings.section.appearance": "Weergave",
   "settings.section.appearance_desc": "Thema, lettertype en taal",

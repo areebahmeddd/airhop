@@ -399,6 +399,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Miverina, {count} tsy voavaky",
   "chat.thread.view_info": "Jereo ny mombamomba an'i {name}",
   "chat.thread.notices_new": "Filazana amin'ity fantsona ity, {count} vaovao",
+  "chat.board.urgent_one": "Filazana maika avy amin'i {author} · {content}",
+  "chat.board.urgent_many":
+    "{count} filazana maika vaovao · sokafy ny Filazana",
   "chat.thread.say_something": "Milazà zavatra ao amin'ny {channel}.",
   "chat.thread.jump_latest_new":
     "Mankany amin'ny hafatra farany, {count} vaovao",
@@ -1670,6 +1673,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Tsy misy azo ovaina eto. Raikitra ireo sanda ireo mba hijanonan'ny Airhop hifanaraka amin'ny bitchat.",
+  "settings.diag.share": "Zarao ny diagnostika",
+  "settings.diag.share_desc":
+    "Antsipirihan'ny fifandraisana sy ny fandrindrana ho an'ny tatitra olana. Tsy tafiditra ny hafatra, anarana ary lakile.",
   "settings.section.storage_desc": "Fampiasana sy tahiry vonjimaika",
   "settings.section.appearance": "Endrika",
   "settings.section.appearance_desc": "Lohahevitra, endri-tsoratra ary fiteny",

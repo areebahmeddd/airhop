@@ -391,6 +391,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "戻る、未読{count}件",
   "chat.thread.view_info": "{name}の情報を見る",
   "chat.thread.notices_new": "このチャンネルのお知らせ、新着{count}件",
+  "chat.board.urgent_one": "{author} からの緊急のお知らせ · {content}",
+  "chat.board.urgent_many": "新着の緊急のお知らせ {count} 件 · お知らせを開く",
   "chat.thread.say_something": "{channel}で何か話しましょう。",
   "chat.thread.jump_latest_new": "最新のメッセージへ移動、新着{count}件",
   "chat.thread.unconfirmed_since": "{date}以降、配信の確認が取れていません",
@@ -1617,6 +1619,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n}バイト",
   "settings.diag.footnote":
     "ここでは何も変更できません。Airhopがbitchatとの互換性を保つため、これらの値は固定です。",
+  "settings.diag.share": "診断情報を共有",
+  "settings.diag.share_desc":
+    "不具合報告用の通信手段と設定の状態。メッセージ、名前、鍵は含まれません。",
   "settings.section.storage_desc": "使用量とキャッシュ",
   "settings.section.appearance": "外観",
   "settings.section.appearance_desc": "テーマ、フォント、言語",

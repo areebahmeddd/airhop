@@ -390,6 +390,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "वापस जाएँ, {count} अपठित",
   "chat.thread.view_info": "{name} की जानकारी देखें",
   "chat.thread.notices_new": "इस चैनल की सूचनाएँ, {count} नई",
+  "chat.board.urgent_one": "{author} से ज़रूरी सूचना · {content}",
+  "chat.board.urgent_many": "{count} नई ज़रूरी सूचनाएँ · सूचनाएँ खोलें",
   "chat.thread.say_something": "{channel} में कुछ कहें।",
   "chat.thread.jump_latest_new": "नवीनतम संदेश पर जाएँ, {count} नए",
   "chat.thread.unconfirmed_since": "{date} से कोई डिलीवरी पुष्ट नहीं",
@@ -1605,6 +1607,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} बाइट",
   "settings.diag.footnote":
     "यहाँ कुछ भी बदला नहीं जा सकता। ये मान तय हैं ताकि Airhop bitchat के साथ चलता रहे।",
+  "settings.diag.share": "डायग्नोस्टिक्स साझा करें",
+  "settings.diag.share_desc":
+    "बग रिपोर्ट के लिए ट्रांसपोर्ट और सेटिंग्स की स्थिति। कभी संदेश, नाम या कुंजी नहीं।",
   "settings.section.storage_desc": "इस्तेमाल और कैश",
   "settings.section.appearance": "रूप-रंग",
   "settings.section.appearance_desc": "थीम, फ़ॉन्ट और भाषा",

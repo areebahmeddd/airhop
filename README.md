@@ -70,7 +70,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | Forward secrecy           | Double Ratchet protects past messages even if keys are later compromised                                                                     |
 |                   | Panic wipe                | Triple-tap instantly erases keys and local messages (nuke your account)                                                                      |
 | 🕸️ **Networking** | Bluetooth mesh            | Communicate with nearby devices without internet                                                                                             |
-|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware                                |
+|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
 |                   | Mesh bridge               | Link this area's public #bluetooth chat with another out-of-range Bluetooth crowd over the internet                                          |
 |                   | WiFi Aware                | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                      |
 |                   | Multi-hop routing         | Messages automatically relay across nearby devices (up to 7 hops)                                                                            |

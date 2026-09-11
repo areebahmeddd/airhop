@@ -141,8 +141,9 @@ interface ChatState {
   // invite so every member subscribes the same way.
   channelReach: Record<string, "ble" | "ble+nostr">;
   // Threads folded into another one, `from` to `to`. A DM is keyed
-  // `dm:nostr_<pubkey>` until the sender's announce identifies them, then
-  // `dm:<peerID>`; mergeChannel folds the first into the second. Anything still
+  // `dm:nostr_<pubkey>` until an in-person scan or a mutual card exchange ties
+  // the key to a peer, then `dm:<peerID>`; mergeChannel folds the first into
+  // the second. Anything still
   // holding the old name resolves through here: the open thread, the
   // last-thread restore, a tapped notification, a bell row.
   channelRedirects: Record<string, string>;

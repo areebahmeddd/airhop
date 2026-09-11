@@ -66,6 +66,7 @@ import { useSettingsStore } from "@store/settings-store";
 import { systemPreview } from "@utils/message-text";
 import { truncateToUtf8Bytes } from "@utils/utf8-budget";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
+import { noteUrgentNotice } from "./board-alerts";
 import { getCoarseLocation, type Coords } from "./location-service";
 
 import {
@@ -1247,13 +1248,22 @@ export class GeohashChannelService {
     // Log a live note on the bell + the room's board badge. Own notes are
     // already filtered above; the recency gate skips replayed history.
     if (Date.now() - createdAtMs <= NOTICE_BELL_WINDOW_MS) {
+      const channel =
+        this.namedChannelForGeohash(geohash) ?? geohashChannel(geohash);
+      if (isUrgent) {
+        noteUrgentNotice({
+          postID: event.id,
+          channel,
+          authorNickname: nickname ?? "",
+          content,
+        });
+      }
       // Same shape as the mesh board's bell entry in mesh-service. An absent
       // nickname is stored empty rather than resolved, so the bell renders
       // "someone" in the language being read now.
       useActivityStore.getState().record({
         id: event.id,
-        channel:
-          this.namedChannelForGeohash(geohash) ?? geohashChannel(geohash),
+        channel,
         isDM: false,
         senderID: event.pubkey,
         senderNickname: nickname ?? "",

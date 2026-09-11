@@ -225,6 +225,7 @@ node's authority, forge money, or hold the phone.
 | C02 | Correctly signed message from that peer (control)                             | Accepted, so C01 is the signature rule rather than a blanket refusal           |
 | C08 | Forged ANNOUNCE rebinding a known peer's signing key                          | Refused at all three layers; the victim's real key survives and still verifies |
 | C09 | Forged LEAVE claiming a peer has departed                                     | Neither acted on nor relayed onward; a genuine departure still announces       |
+| C10 | Announce naming someone else's Nostr key                                      | Takes no thread and no queued mail; an in-person scan still folds both         |
 | M08 | Attachment forged, aimed at the wrong thread, or tagged into an unjoined room | Refused on all three; an attachment carries the same rules text does           |
 | C03 | Replay of captured packets                                                    | Deduplicated; nothing renders twice                                            |
 | S03 | Stale packet with a perfect signature, into a phone that never saw it         | Refused on age; the matched fresh copy is accepted, so age is what refused it  |

@@ -390,6 +390,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Tillbaka, {count} olästa",
   "chat.thread.view_info": "Visa info om {name}",
   "chat.thread.notices_new": "Anslag för den här kanalen, {count} nya",
+  "chat.board.urgent_one": "Brådskande anslag från {author} · {content}",
+  "chat.board.urgent_many": "{count} nya brådskande anslag · öppna Anslag",
   "chat.thread.say_something": "Säg något i {channel}.",
   "chat.thread.jump_latest_new": "Hoppa till senaste meddelandet, {count} nya",
   "chat.thread.unconfirmed_since": "Ingen leverans bekräftad sedan {date}",
@@ -1617,6 +1619,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Inget här går att ändra. Värdena är låsta för att Airhop ska förbli kompatibelt med bitchat.",
+  "settings.diag.share": "Dela diagnostik",
+  "settings.diag.share_desc":
+    "Anslutnings- och inställningsdetaljer för en felrapport. Meddelanden, namn och nycklar utesluts.",
   "settings.section.storage_desc": "Användning och cache",
   "settings.section.appearance": "Utseende",
   "settings.section.appearance_desc": "Tema, teckensnitt och språk",

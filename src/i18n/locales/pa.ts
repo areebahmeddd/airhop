@@ -390,6 +390,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "ਵਾਪਸ ਜਾਓ, {count} ਅਣਪੜ੍ਹੇ",
   "chat.thread.view_info": "{name} ਦੀ ਜਾਣਕਾਰੀ ਦੇਖੋ",
   "chat.thread.notices_new": "ਇਸ ਚੈਨਲ ਲਈ ਨੋਟਿਸ, {count} ਨਵੇਂ",
+  "chat.board.urgent_one": "{author} ਵੱਲੋਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · {content}",
+  "chat.board.urgent_many": "{count} ਨਵੇਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · ਨੋਟਿਸ ਖੋਲ੍ਹੋ",
   "chat.thread.say_something": "{channel} ਵਿੱਚ ਕੁਝ ਕਹੋ।",
   "chat.thread.jump_latest_new": "ਸਭ ਤੋਂ ਨਵੇਂ ਸੁਨੇਹੇ ’ਤੇ ਜਾਓ, {count} ਨਵੇਂ",
   "chat.thread.unconfirmed_since":
@@ -1609,6 +1611,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} ਬਾਈਟ",
   "settings.diag.footnote":
     "ਇੱਥੇ ਕੁਝ ਵੀ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ। ਇਹ ਮੁੱਲ ਪੱਕੇ ਹਨ ਤਾਂ ਜੋ Airhop bitchat ਨਾਲ ਅਨੁਕੂਲ ਰਹੇ।",
+  "settings.diag.share": "ਡਾਇਗਨੌਸਟਿਕਸ ਸਾਂਝੇ ਕਰੋ",
+  "settings.diag.share_desc":
+    "ਬੱਗ ਰਿਪੋਰਟ ਲਈ ਕਨੈਕਸ਼ਨ ਅਤੇ ਸੈਟਿੰਗਾਂ ਦੇ ਵੇਰਵੇ। ਸੁਨੇਹੇ, ਨਾਂ ਅਤੇ ਕੁੰਜੀਆਂ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।",
   "settings.section.storage_desc": "ਵਰਤੋਂ ਅਤੇ ਕੈਸ਼",
   "settings.section.appearance": "ਦਿੱਖ",
   "settings.section.appearance_desc": "ਥੀਮ, ਫ਼ੌਂਟ ਅਤੇ ਭਾਸ਼ਾ",

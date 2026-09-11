@@ -384,6 +384,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "กลับ ยังไม่อ่าน {count}",
   "chat.thread.view_info": "ดูข้อมูลของ {name}",
   "chat.thread.notices_new": "ประกาศสำหรับช่องนี้ ใหม่ {count}",
+  "chat.board.urgent_one": "ประกาศด่วนจาก {author} · {content}",
+  "chat.board.urgent_many": "ประกาศด่วนใหม่ {count} รายการ · เปิดประกาศ",
   "chat.thread.say_something": "พูดอะไรสักอย่างใน {channel}",
   "chat.thread.jump_latest_new": "ข้ามไปยังข้อความล่าสุด ใหม่ {count}",
   "chat.thread.unconfirmed_since": "ไม่มีการยืนยันการส่งถึงตั้งแต่ {date}",
@@ -1579,6 +1581,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} ไบต์",
   "settings.diag.footnote":
     "ที่นี่เปลี่ยนอะไรไม่ได้ ค่าเหล่านี้ถูกกำหนดตายตัวเพื่อให้ Airhop ยังเข้ากันได้กับ bitchat",
+  "settings.diag.share": "แชร์ข้อมูลวินิจฉัย",
+  "settings.diag.share_desc":
+    "รายละเอียดการเชื่อมต่อและการตั้งค่าสำหรับรายงานข้อบกพร่อง ไม่รวมข้อความ ชื่อ หรือคีย์",
   "settings.section.storage_desc": "การใช้งานและแคช",
   "settings.section.appearance": "รูปลักษณ์",
   "settings.section.appearance_desc": "ธีม แบบอักษร และภาษา",

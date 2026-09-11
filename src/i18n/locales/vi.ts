@@ -388,6 +388,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Quay lại, {count} chưa đọc",
   "chat.thread.view_info": "Xem thông tin của {name}",
   "chat.thread.notices_new": "Bản tin của kênh này, {count} mới",
+  "chat.board.urgent_one": "Bản tin khẩn từ {author} · {content}",
+  "chat.board.urgent_many": "{count} bản tin khẩn mới · mở Bản tin",
   "chat.thread.say_something": "Nói gì đó trong {channel} đi.",
   "chat.thread.jump_latest_new": "Nhảy tới tin nhắn mới nhất, {count} mới",
   "chat.thread.unconfirmed_since":
@@ -1622,6 +1624,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Không có gì ở đây đổi được. Các giá trị này cố định để Airhop giữ được tính tương thích với bitchat.",
+  "settings.diag.share": "Chia sẻ chẩn đoán",
+  "settings.diag.share_desc":
+    "Chi tiết kết nối và cài đặt cho báo cáo lỗi. Tin nhắn, tên và khóa được loại trừ.",
   "settings.section.storage_desc": "Mức dùng và bộ nhớ đệm",
   "settings.section.appearance": "Giao diện",
   "settings.section.appearance_desc": "Giao diện, phông chữ và ngôn ngữ",

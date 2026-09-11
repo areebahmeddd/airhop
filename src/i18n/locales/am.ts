@@ -366,6 +366,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "ተመለስ፣ {count} ያልተነበቡ",
   "chat.thread.view_info": "የ{name} መረጃን ተመልከት",
   "chat.thread.notices_new": "የዚህ ሰርጥ ማስታወቂያዎች፣ {count} አዲስ",
+  "chat.board.urgent_one": "አስቸኳይ ማስታወቂያ ከ {author} · {content}",
+  "chat.board.urgent_many": "{count} አዲስ አስቸኳይ ማስታወቂያዎች · ማስታወቂያዎችን ይክፈቱ",
   "chat.thread.say_something": "በ{channel} ውስጥ የሆነ ነገር ተናገር።",
   "chat.thread.jump_latest_new": "ወደ የቅርቡ መልእክት ዝለል፣ {count} አዲስ",
   "chat.thread.unconfirmed_since": "ከ{date} ጀምሮ የደረሰ ነገር አልተረጋገጠም",
@@ -1513,6 +1515,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} ባይት",
   "settings.diag.footnote":
     "እዚህ ምንም ሊቀየር አይችልም። Airhop ከbitchat ጋር ተኳሃኝ ሆኖ እንዲቀጥል እነዚህ እሴቶች ቋሚ ናቸው።",
+  "settings.diag.share": "የምርመራ መረጃ አጋራ",
+  "settings.diag.share_desc":
+    "ለስህተት ሪፖርት የመተላለፊያ እና የቅንብር ዝርዝሮች። መልእክቶች፣ ስሞች ወይም ቁልፎች በፍጹም አይካተቱም።",
   "settings.section.storage_desc": "አጠቃቀምና ጊዜያዊ ማከማቻ",
   "settings.section.appearance": "መልክ",
   "settings.section.appearance_desc": "ገጽታ፣ ቅርጸ ቁምፊና ቋንቋ",

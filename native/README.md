@@ -4,10 +4,10 @@ The two compiled dependencies Airhop ships. Both are built from source here rath
 
 ## Directory layout
 
-| Directory                     | Holds                                                            |
-| ----------------------------- | ---------------------------------------------------------------- |
-| [`arti/`](arti)               | The embedded Tor client, in Rust. One crate, two FFI faces       |
-| [`iptproxy/`](iptproxy)       | obfs4 and Snowflake, in Go, as a library rather than processes   |
+| Directory               | Holds                                                          |
+| ----------------------- | -------------------------------------------------------------- |
+| [`arti/`](arti)         | The embedded Tor client, in Rust. One crate, two FFI faces     |
+| [`iptproxy/`](iptproxy) | obfs4 and Snowflake, in Go, as a library rather than processes |
 
 `arti/` puts a SOCKS5 listener on loopback; `iptproxy/` runs the transports that reach a bridge and hands `arti/` the ports they landed on. Each directory has its own README covering its build, what that build verifies, and how to update it.
 

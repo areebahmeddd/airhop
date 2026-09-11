@@ -399,6 +399,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "பின் செல், {count} படிக்கப்படாதவை",
   "chat.thread.view_info": "{name} இன் தகவலைப் பார்",
   "chat.thread.notices_new": "இந்தச் சேனலின் அறிவிப்புகள், {count} புதியவை",
+  "chat.board.urgent_one": "{author} இடமிருந்து அவசர அறிவிப்பு · {content}",
+  "chat.board.urgent_many":
+    "{count} புதிய அவசர அறிவிப்புகள் · அறிவிப்புகளைத் திறக்கவும்",
   "chat.thread.say_something": "{channel} இல் ஏதேனும் சொல்லுங்கள்.",
   "chat.thread.jump_latest_new": "சமீபத்திய செய்திக்குச் செல், {count} புதியவை",
   "chat.thread.unconfirmed_since":
@@ -1671,6 +1674,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} பைட்டுகள்",
   "settings.diag.footnote":
     "இங்கே எதையும் மாற்ற முடியாது. Airhop bitchat உடன் இயைந்திருக்கவே இந்த மதிப்புகள் நிலைநிறுத்தப்பட்டுள்ளன.",
+  "settings.diag.share": "கண்டறிதலைப் பகிர்",
+  "settings.diag.share_desc":
+    "பிழை அறிக்கைக்கான இணைப்பு மற்றும் அமைப்பு விவரங்கள். செய்திகள், பெயர்கள் மற்றும் விசைகள் சேர்க்கப்படாது.",
   "settings.section.storage_desc": "பயன்பாடும் தற்காலிகச் சேமிப்பும்",
   "settings.section.appearance": "தோற்றம்",
   "settings.section.appearance_desc": "தீம், எழுத்துரு, மொழி",

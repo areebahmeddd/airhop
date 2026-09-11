@@ -371,6 +371,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "返回，{count} 則未讀",
   "chat.thread.view_info": "查看 {name} 的資訊",
   "chat.thread.notices_new": "本頻道的公告，{count} 則新的",
+  "chat.board.urgent_one": "來自 {author} 的緊急公告 · {content}",
+  "chat.board.urgent_many": "{count} 則新的緊急公告 · 開啟公告",
   "chat.thread.say_something": "在 {channel} 裡說點什麼吧。",
   "chat.thread.jump_latest_new": "跳到最新訊息，{count} 則新的",
   "chat.thread.unconfirmed_since": "自 {date} 起沒有確認過遞送",
@@ -1519,6 +1521,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} 位元組",
   "settings.diag.footnote":
     "這裡的內容都不能改。這些數值是固定的，好讓 Airhop 保持與 bitchat 相容。",
+  "settings.diag.share": "分享診斷資訊",
+  "settings.diag.share_desc":
+    "用於錯誤回報的連線與設定詳情。不包含訊息、名字或金鑰。",
   "settings.section.storage_desc": "用量與快取",
   "settings.section.appearance": "外觀",
   "settings.section.appearance_desc": "主題、字體和語言",

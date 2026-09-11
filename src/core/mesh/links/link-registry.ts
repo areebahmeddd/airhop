@@ -22,11 +22,10 @@
 // `SEND_PREFERENCE`: this is "what order do we list things in", that is "which
 // link do we use".
 //
-// Bluetooth first, and LAN last, because the announce carries only the first
-// ten `directPeers()` as its neighbour list (TLV 0x04) and that list is the
-// mesh graph other clients draw. A phone on a busy network holds more LAN peers
-// than Bluetooth ones, and letting them crowd out the Bluetooth neighbours
-// would hand bitchat a graph full of edges it cannot use.
+// Bluetooth first, and LAN last: couriers are the first few `directPeers()`,
+// and a phone on a busy network holds more LAN peers than Bluetooth ones. A
+// Bluetooth neighbour walks away with the mail; a LAN peer is only reachable
+// while the network is.
 export const TRANSPORT_KINDS = ["ble", "wifi", "lan"] as const;
 
 export type TransportKind = (typeof TRANSPORT_KINDS)[number];

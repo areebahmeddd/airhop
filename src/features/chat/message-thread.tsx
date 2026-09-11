@@ -85,6 +85,7 @@ import {
 import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
 import { channelInviteLink } from "@utils/deep-link";
 import { unconfirmedSince } from "@utils/delivery-silence";
+import { emoteLine } from "@utils/emote";
 import {
   formatBytes,
   formatClockTime,
@@ -364,6 +365,14 @@ function mediaHeightForAspect(aspect: number | null): number {
     Math.max(MEDIA_MIN_ASPECT, aspect ?? MEDIA_DEFAULT_ASPECT),
   );
   return Math.round(MEDIA_BUBBLE_WIDTH / ratio);
+}
+
+function systemRowIcon(
+  key: string | undefined,
+): "camera" | "alert-circle" | "info" {
+  if (key?.startsWith("chat.board.urgent") === true) return "alert-circle";
+  if (key?.startsWith("chat.screenshot") === true) return "camera";
+  return "info";
 }
 
 function screenshotNoticeText(nickname: string): string {
@@ -4394,6 +4403,9 @@ export default function MessageThread({
             const isSystemRow = item.isSystem === true;
 
             if (isSystemRow) {
+              // An urgent board line points at the Notices sheet, so it opens it.
+              const isUrgentNotice =
+                item.systemKey?.startsWith("chat.board.urgent") === true;
               return (
                 <View>
                   {needsDateSeparator(index) && (
@@ -4405,23 +4417,32 @@ export default function MessageThread({
                       <View style={styles.dateLine} />
                     </View>
                   )}
-                  <View style={styles.systemRow}>
-                    <Feather name="camera" size={12} color={Colors.textMuted} />
+                  <Pressable
+                    style={styles.systemRow}
+                    onPress={isUrgentNotice ? openNotices : undefined}
+                    disabled={!isUrgentNotice}
+                    accessibilityRole={isUrgentNotice ? "button" : undefined}
+                  >
+                    <Feather
+                      name={systemRowIcon(item.systemKey)}
+                      size={12}
+                      color={Colors.textMuted}
+                    />
                     <Text style={styles.systemRowText}>
                       {messageText(item)}
                     </Text>
-                  </View>
+                  </Pressable>
                 </View>
               );
             }
 
             // IRC-style emote (/hug, /slap): a real message wrapped in "* ... *",
             // rendered centered and italic like an action rather than a bubble.
-            const isEmoteRow =
-              item.isSystem !== true &&
-              item.attachment === undefined &&
-              /^\* .+ \*$/.test(item.text);
-            if (isEmoteRow) {
+            const emote =
+              item.isSystem !== true && item.attachment === undefined
+                ? emoteLine(item.text, item.senderNickname)
+                : null;
+            if (emote !== null) {
               return (
                 <View>
                   {needsDateSeparator(index) && (
@@ -4434,9 +4455,7 @@ export default function MessageThread({
                     </View>
                   )}
                   <View style={styles.systemRow}>
-                    <Text style={styles.emoteText}>
-                      {item.text.replace(/^\* /, "").replace(/ \*$/, "")}
-                    </Text>
+                    <Text style={styles.emoteText}>{emote}</Text>
                   </View>
                 </View>
               );

@@ -396,6 +396,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Rudi nyuma, {count} hazijasomwa",
   "chat.thread.view_info": "Tazama taarifa za {name}",
   "chat.thread.notices_new": "Matangazo ya kituo hiki, {count} mapya",
+  "chat.board.urgent_one": "Tangazo la dharura kutoka kwa {author} · {content}",
+  "chat.board.urgent_many":
+    "Matangazo {count} mapya ya dharura · fungua Matangazo",
   "chat.thread.say_something": "Sema kitu kwenye {channel}.",
   "chat.thread.jump_latest_new": "Rukia ujumbe wa hivi punde, {count} mpya",
   "chat.thread.unconfirmed_since":
@@ -1648,6 +1651,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "Baiti {n}",
   "settings.diag.footnote":
     "Hakuna kinachoweza kubadilishwa hapa. Thamani hizi zimewekwa ili Airhop iendelee kuoana na bitchat.",
+  "settings.diag.share": "Shiriki uchunguzi",
+  "settings.diag.share_desc":
+    "Maelezo ya muunganisho na mipangilio kwa ripoti ya hitilafu. Ujumbe, majina na funguo hazijumuishwi.",
   "settings.section.storage_desc": "Matumizi na akiba",
   "settings.section.appearance": "Muonekano",
   "settings.section.appearance_desc": "Mandhari, fonti na lugha",

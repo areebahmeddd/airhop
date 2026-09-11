@@ -385,6 +385,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "뒤로 가기, 읽지 않음 {count}개",
   "chat.thread.view_info": "{name}의 정보 보기",
   "chat.thread.notices_new": "이 채널의 공지, 새 항목 {count}개",
+  "chat.board.urgent_one": "{author} 님의 긴급 공지 · {content}",
+  "chat.board.urgent_many": "새 긴급 공지 {count}개 · 공지 열기",
   "chat.thread.say_something": "{channel}에서 한마디 하세요.",
   "chat.thread.jump_latest_new": "최신 메시지로 이동, 새 항목 {count}개",
   "chat.thread.unconfirmed_since": "{date} 이후 전달이 확인되지 않음",
@@ -1592,6 +1594,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} 바이트",
   "settings.diag.footnote":
     "여기서는 아무것도 바꿀 수 없습니다. Airhop이 bitchat과 계속 호환되도록 이 값들은 고정되어 있습니다.",
+  "settings.diag.share": "진단 정보 공유",
+  "settings.diag.share_desc":
+    "버그 신고용 연결 및 설정 세부 정보입니다. 메시지, 이름, 키는 포함되지 않습니다.",
   "settings.section.storage_desc": "사용량과 캐시",
   "settings.section.appearance": "화면",
   "settings.section.appearance_desc": "테마, 글꼴, 언어",

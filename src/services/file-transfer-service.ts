@@ -16,6 +16,7 @@ import {
   fragmentPacket,
   MAX_BLE_FRAME,
 } from "@core/mesh/routing/fragment-manager";
+import { originTtl } from "@core/mesh/routing/origin-ttl";
 import {
   decodeFilePacket,
   encodeFilePacket,
@@ -605,7 +606,7 @@ export class FileTransferService {
       (() => {
         const raw: Packet = {
           type: PacketType.FILE_TRANSFER,
-          ttl: 7,
+          ttl: isDM ? 7 : originTtl(),
           flags: isDM ? Flags.HAS_RECIPIENT | Flags.SIGNED : Flags.SIGNED,
           senderID: hexToBytes(this.identity.peerID),
           recipientID: isDM

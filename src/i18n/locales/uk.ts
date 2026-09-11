@@ -391,6 +391,9 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "Назад, {count} непрочитаних",
   "chat.thread.view_info": "Переглянути відомості про {name}",
   "chat.thread.notices_new": "Оголошення цього каналу, {count} нових",
+  "chat.board.urgent_one": "Термінове оголошення від {author} · {content}",
+  "chat.board.urgent_many":
+    "Нових термінових оголошень: {count} · відкрити Оголошення",
   "chat.thread.say_something": "Скажіть щось у {channel}.",
   "chat.thread.jump_latest_new":
     "Перейти до найновішого повідомлення, {count} нових",
@@ -1631,6 +1634,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} байтів",
   "settings.diag.footnote":
     "Тут нічого не можна змінити. Ці значення закріплені, щоб Airhop лишався сумісним із bitchat.",
+  "settings.diag.share": "Поділитися діагностикою",
+  "settings.diag.share_desc":
+    "Відомості про підключення та налаштування для звіту про помилку. Повідомлення, імена та ключі не включаються.",
   "settings.section.storage_desc": "Використання та кеш",
   "settings.section.appearance": "Вигляд",
   "settings.section.appearance_desc": "Тема, шрифт і мова",

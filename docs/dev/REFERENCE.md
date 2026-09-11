@@ -125,7 +125,7 @@ Messages propagate through a **deterministic controlled flood** (not pure floodi
 
 **TTL (Time-To-Live):**
 
-- Packets originate with **TTL = 7** (7 hops maximum).
+- Packets originate with **TTL = 7** (7 hops maximum). A broadcast this phone authored draws 5 to 7 instead, so the maximum alone does not mark the author.
 - Dense graphs (≥ 6 links): broadcast TTL clamped to 5.
 - Thin chains (≤ 2 links): relay at full incoming TTL depth.
 - Directed traffic (handshakes, private messages): relayed with TTL − 1.

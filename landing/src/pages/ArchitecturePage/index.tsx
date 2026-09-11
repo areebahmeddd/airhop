@@ -316,7 +316,7 @@ export default function ArchitecturePage() {
                   ["src/bridge/", "TurboModule specs, the only meeting point", "Interface only"],
                   [
                     "ios/ · android/",
-                    "CoreBluetooth, GATT server, Arti, foreground service",
+                    "CoreBluetooth, GATT server, WiFi Aware, mDNS, Arti, foreground service",
                     "Yes",
                   ],
                 ]}
@@ -367,8 +367,7 @@ export default function ArchitecturePage() {
               <p>
                 Two cases fall through tier 1 that the diagram cannot show.{" "}
                 <strong className="text-ink">
-                  A Noise session can only be established over a direct BLE link, never across
-                  relays.
+                  A Noise session can only be established over a direct link, never across relays.
                 </strong>{" "}
                 So a peer four hops away that you have never messaged has no session to use, and
                 first contact goes over Nostr or courier even though the mesh could physically reach
@@ -408,7 +407,7 @@ export default function ArchitecturePage() {
                   [
                     "GATT central and peripheral",
                     "The scanning role and the advertising role",
-                    "Every phone runs both at once, which is what makes this a mesh rather than a star",
+                    "Every phone runs both at once, which is what makes this a mesh and not a star",
                   ],
                   [
                     "TTL",
@@ -417,7 +416,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Flooding",
-                    "Rebroadcasting to everyone in range rather than routing along one chosen path",
+                    "Rebroadcasting to everyone in range instead of routing along one chosen path",
                     "The default, because a mesh of strangers cannot agree on a map",
                   ],
                   [
@@ -522,7 +521,7 @@ export default function ArchitecturePage() {
                   [
                     "secp256k1",
                     "The elliptic curve Bitcoin and Nostr both use",
-                    "Your Nostr identity, derived from the signing key rather than stored separately",
+                    "Your Nostr identity, derived from the signing key, never stored on its own",
                   ],
                 ]}
               />
@@ -638,10 +637,10 @@ export default function ArchitecturePage() {
               id="transports"
               eyebrow="The system · 05"
               title="Transports"
-              lede="Five ways a message can move. Bluetooth is the only one that needs no internet and no network at all, which is why it is the default."
+              lede="Five ways a message can move. Bluetooth is the default because it needs nothing: no internet, no router, no setup. The others each cover a case Bluetooth cannot."
             >
               <Table
-                head={["", "BLE mesh", "LAN (mDNS)", "WiFi direct", "Nostr relays", "Courier"]}
+                head={["", "BLE mesh", "LAN (mDNS)", "WiFi Aware", "Nostr relays", "Courier"]}
                 rows={[
                   [
                     "Carries",
@@ -688,53 +687,69 @@ export default function ArchitecturePage() {
                 ]}
               />
 
+              <h3 className="text-ink pt-2 text-base font-bold">Bluetooth</h3>
               <p>
-                The WiFi column needs two caveats. Both platforms run{" "}
-                <TextLink href="https://wi-fi.org/discover-wi-fi/wi-fi-aware">WiFi Aware</TextLink>,
-                the same protocol on the same radio, but{" "}
+                Every phone scans and advertises at once, so two phones in range find each other
+                with nobody in the middle. A message hops from phone to phone up to seven times,
+                which is how a room becomes a mesh. It works in a field, a basement, a blackout. The
+                cost is speed: a BLE write is small, and the stack drops writes handed over faster
+                than it can send them, so fragments are paced apart. The fragment size never changes
+                across transports, because the receiver reassembles by index and the next hop may be
+                Bluetooth again.
+              </p>
+
+              <h3 className="text-ink pt-2 text-base font-bold">Local network</h3>
+              <p>
+                Two phones on the same router can reach each other over that network instead of over
+                the radio. A phone hotspot is a router too: turn one on, let the others join, and
+                the group has a network with no internet behind it. Phones find each other with{" "}
+                <TextLink href="https://en.wikipedia.org/wiki/Multicast_DNS">mDNS</TextLink> and
+                talk over ordinary TCP, carrying the same packet frames Bluetooth carries. A socket
+                has its own flow control, so nothing is paced. Being plain IP, it does not care
+                which phone you own: this is the path that joins an iPhone to an Android without the
+                internet. It shines where Bluetooth struggles but a network already exists, like a
+                ship with steel between decks, a hotel, a conference floor. Its one weak spot is
+                guest WiFi: many hotels and venues block phones from reaching each other at the
+                access point, and nothing announces that in advance.
+              </p>
+
+              <h3 className="text-ink pt-2 text-base font-bold">WiFi Aware</h3>
+              <p>
+                <TextLink href="https://wi-fi.org/discover-wi-fi/wi-fi-aware">WiFi Aware</TextLink>{" "}
+                is the WiFi radio without a router. Two phones talk directly, which is why it works
+                in an empty field, at WiFi speed. Both platforms run the same protocol, but{" "}
                 <strong className="text-ink">
                   Apple requires a paired data path that Android cannot complete,
                 </strong>{" "}
-                so this path is Android-to-Android or iPhone-to-iPhone only. The LAN transport is
-                what carries an iPhone to an Android over a shared network.
-              </p>
-              <p>
-                Fragments are paced apart on Bluetooth because the stack drops writes handed over
-                faster than it can make them. A socket has flow control of its own, so the gap is
-                applied only where a Bluetooth radio is actually carrying the file. The fragment
-                size itself never changes: the receiver reassembles by index, and the next hop may
-                well be Bluetooth.
+                so it links Android to Android (Android 10.0 and up) or iPhone to iPhone (iOS 26.0
+                and up), never across. The two WiFi paths do not overlap: Aware works with no
+                network at all, which LAN cannot do, and LAN reaches every phone on a network across
+                both platforms, which Aware cannot do.
               </p>
 
+              <h3 className="text-ink pt-2 text-base font-bold">Nostr relays</h3>
               <p>
-                There is a second thing the word WiFi hides. WiFi direct is a{" "}
-                <strong className="text-ink">radio protocol</strong>: two phones talk to each other
-                with no router involved, which is why it works in an empty field and why the two
-                platforms cannot meet on it. Being on the same WiFi network is a different question,
-                and the LAN column answers it. Two phones joined to one router reach each other
-                across that network instead of falling back to Bluetooth.
-              </p>
-              <p>
-                <TextLink href="https://en.wikipedia.org/wiki/Multicast_DNS">mDNS</TextLink>{" "}
-                discovery, with ordinary TCP links behind it, closes that gap. Being plain IP, it
-                does not care which phone you own, and the links carry the same packet frames
-                Bluetooth carries. It earns its place where Bluetooth struggles but a network
-                already exists: a ship with steel between decks, a hotel, a conference floor.
+                When there is internet, small signed events go through public relays, and Tor can
+                sit in front of them. Relays carry DMs and location channel traffic, but never
+                files. The usual workaround is to upload the file to an HTTP host and post a link,
+                and that host is a central server that can log, throttle or remove your files, which
+                is what this project exists to avoid. So attachments travel over Bluetooth, LAN or
+                WiFi Aware, or they do not travel.
               </p>
 
-              <Note label="Why both WiFi paths stay">
-                WiFi direct works where there is no network at all, which LAN cannot do. LAN reaches
-                everyone on the network and works across platforms, which WiFi direct cannot do.
-                Neither one covers the other's case. LAN fails in one common place: much of the
-                guest WiFi in hotels and venues blocks phones from reaching each other at the access
-                point, and nothing announces that in advance.
-              </Note>
+              <h3 className="text-ink pt-2 text-base font-bold">Courier</h3>
+              <p>
+                When no path exists right now, a sealed envelope waits on other people's phones
+                until one of them meets the recipient. The carrier cannot read it. The mesh section
+                below covers how the pool is bounded.
+              </p>
 
-              <Note label="Why Nostr never carries files">
-                Relays carry small signed events, not file bytes. The usual workaround is to upload
-                the file to an HTTP host and post a link. That host is a central server that can
-                log, throttle or take down your files, which is the thing this project exists to
-                avoid. So attachments travel over Bluetooth, LAN or WiFi, or they do not travel.
+              <Note label="How they combine">
+                A phone runs every transport it can at once. When a peer is reachable more than one
+                way, a packet takes the fastest link: WiFi Aware, then LAN, then Bluetooth. If that
+                link drops mid-transfer the next one carries on, and the receiver reassembles by
+                index, so a file that started over WiFi and finished over Bluetooth looks the same
+                on arrival.
               </Note>
             </Section>
 
@@ -957,8 +972,8 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong>{" "}
                 Triple-tapping the logo zeroizes keys in memory, deletes every Keychain and Keystore
                 entry, clears all MMKV partitions, and deletes the app sandbox, in under a second.
-                The wallet partition is removed with a full delete rather than a clear, because a
-                file whose key has just been destroyed cannot be reliably reopened.
+                The wallet partition gets a full delete, not a clear, because a file whose key has
+                just been destroyed cannot be reliably reopened.
               </p>
             </Section>
 
@@ -966,7 +981,7 @@ export default function ArchitecturePage() {
               id="encryption"
               eyebrow="The system · 08"
               title="Encryption"
-              lede="Different things get different protection. Two rows in the grid below say no, and both are deliberate trade-offs."
+              lede="Different things get different protection. Two rows in the grid below say no, and both are trade-offs made on purpose."
             >
               <p>
                 Live sessions use{" "}
@@ -1088,8 +1103,7 @@ export default function ArchitecturePage() {
                 Photos are fitted before they leave. The longest edge comes down to 1600 pixels,
                 which is still worth looking at full screen, and the file is re-encoded until it
                 fits the budget: quality first, then resolution once quality alone stops helping.
-                Most photos need one pass. A photo already under the cap is left untouched rather
-                than re-encoded for nothing.
+                Most photos need one pass. A photo already under the cap is left untouched.
               </p>
 
               <Note label="What the quality setting actually does">
@@ -1103,16 +1117,16 @@ export default function ArchitecturePage() {
               </Note>
 
               <p>
-                Two checks earn their keep. The MIME type is resolved rather than passed through,
-                because pickers routinely return nothing and a file with no type is dropped on
-                arrival by both apps, which looks exactly like a successful send from the other end.
-                And on receive, the declared type is checked against the file's magic bytes, so a
-                file cannot claim to be a photo and arrive as something else.
+                Two checks earn their keep. The MIME type is resolved, not passed through, because
+                pickers routinely return nothing and a file with no type is dropped on arrival by
+                both apps, which looks exactly like a successful send from the other end. And on
+                receive, the declared type is checked against the file's magic bytes, so a file
+                cannot claim to be a photo and arrive as something else.
               </p>
               <p>
                 Received files live in the app's own cache, not your gallery, and Settings shows
-                what they cost with a button that actually frees it. Saving one to the gallery is a
-                deliberate act, from the photo viewer or the long-press menu.
+                what they cost with a button that actually frees it. Saving one to the gallery is
+                something you do yourself, from the photo viewer or the long-press menu.
               </p>
             </Section>
 
@@ -1213,7 +1227,7 @@ export default function ArchitecturePage() {
               <p>
                 That choice is not fixed. Any relay can be pinned by hand, and discovery can be
                 turned off entirely so only the pinned ones are used. A relay has to be a public
-                host reached over TLS, which is deliberate:{" "}
+                host reached over TLS, and that rule is strict for a reason:{" "}
                 <strong className="text-ink">
                   allowing an unencrypted relay would mean allowing unencrypted traffic across the
                   whole app,
@@ -1262,12 +1276,12 @@ export default function ArchitecturePage() {
               <h3 className="text-ink pt-2 text-base font-bold">Presence and its limits</h3>
               <p>
                 Location channels show how many people are around. Broadcasting that is a location
-                leak, so it is deliberately restricted: heartbeats are only sent for coarse cells at
-                geohash precision 5 or less, roughly a 5 km square and upward. Finer channels get no
-                presence broadcast at all, and the app shows <C>[? people]</C> rather than{" "}
-                <C>[0 people]</C> so nobody mistakes silence for an empty room. Heartbeats go out
-                every 40 to 80 seconds, randomized so devices in one cell do not announce in
-                lockstep, and a key stays listed for 5 minutes after its last event.
+                leak, so it is kept coarse: heartbeats are only sent for cells at geohash precision
+                5 or less, roughly a 5 km square and upward. Finer channels get no presence
+                broadcast at all, and the app shows <C>[? people]</C>, not <C>[0 people]</C> so
+                nobody mistakes silence for an empty room. Heartbeats go out every 40 to 80 seconds,
+                randomized so devices in one cell do not announce in lockstep, and a key stays
+                listed for 5 minutes after its last event.
               </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">The internet gateway</h3>
@@ -1327,7 +1341,7 @@ export default function ArchitecturePage() {
               <p>
                 <strong className="text-ink">Failing closed is structural, not timed.</strong> Arti
                 has no clearnet path at all, so a request made before the first circuit exists fails
-                rather than quietly taking the direct route. Protection starts when you turn Tor on,
+                instead of quietly taking the direct route. Protection starts when you turn Tor on,
                 not when the circuit finishes forming. If a network blocks Tor outright, the
                 internet half stops and the app says so instead of falling back.
               </p>
@@ -1388,12 +1402,12 @@ export default function ArchitecturePage() {
                 normally run whichever one you chose as a child process. iOS forbids an app spawning
                 an executable, so Airhop compiles all three in and reaches them over loopback
                 instead: each listens on a port the library picks, and Arti dials it as an unmanaged
-                transport. One design that holds on both platforms, rather than a child process on
+                transport. One design that holds on both platforms, instead of a child process on
                 Android and something else on the phone that cannot have one.
               </p>
 
               <p>
-                The built-in obfs4 lines are synced from the Tor Project in CI rather than frozen at
+                The built-in obfs4 lines are synced from the Tor Project in CI, not frozen at
                 release, because a list that goes stale between store updates fails exactly where
                 somebody needed it. Custom bridges take obfs4 and webtunnel lines from{" "}
                 <TextLink href="https://bridges.torproject.org">bridges.torproject.org</TextLink>{" "}
@@ -1404,7 +1418,7 @@ export default function ArchitecturePage() {
 
               <Note label="Why iOS blocks mint traffic under Tor">
                 Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
-                expose your IP alongside your coins. Rather than leak that quietly, Airhop refuses
+                expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
                 mint requests entirely while Tor is on and tells you why, with a switch in Settings
                 if you decide the trade is acceptable. Sending and receiving ecash over Bluetooth
                 never touches a mint, so that keeps working either way.
@@ -1469,13 +1483,13 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">DLEQ proves origin, not freshness.</strong> A valid
                 proof shows the mint really signed that coin. It can never show the sender did not
                 already spend it, because only the mint knows that. So a coin received offline is
-                shown as unconfirmed on its own line rather than folded silently into your balance.
+                shown as unconfirmed on its own line, not folded silently into your balance.
                 <br />
                 <br />
                 <strong className="text-ink">Reclaiming is a race.</strong> An undelivered send can
-                be reclaimed because the coins were reserved rather than deleted, but if the
-                recipient already holds the token string, whoever reaches the mint first keeps the
-                money. The app says so before you tap.
+                be reclaimed because the coins were reserved, not deleted, but if the recipient
+                already holds the token string, whoever reaches the mint first keeps the money. The
+                app says so before you tap.
               </Note>
 
               <p>
@@ -1488,7 +1502,7 @@ export default function ArchitecturePage() {
               <p>
                 Proofs are bearer secrets, so they get their own MMKV partition opened with an
                 explicit AES-256 key held in the Keychain or Keystore. If that key cannot be read,
-                the wallet reports itself locked rather than falling back to writing coins in
+                the wallet reports itself locked instead of falling back to writing coins in
                 plaintext.
               </p>
             </Section>
@@ -1523,7 +1537,7 @@ export default function ArchitecturePage() {
               lede="An Ed25519 key pair is already enough to be a Bluesky account or a Fediverse actor. Airhop can lend yours to either, without registering anywhere and without touching the mesh."
             >
               <p>
-                Both networks build identity out of keys rather than usernames. The{" "}
+                Both networks build identity out of keys, not usernames. The{" "}
                 <TextLink href="https://atproto.com">AT Protocol</TextLink>, which Bluesky runs on,
                 derives a <C>did:key</C> from your signing key.{" "}
                 <TextLink href="https://w3.org/TR/activitypub/">ActivityPub</TextLink>, the W3C
@@ -1610,7 +1624,7 @@ export default function ArchitecturePage() {
                   ["core/crypto/", "identity, noise-xx, noise-x, double-ratchet, contact-exchange"],
                   [
                     "core/mesh/",
-                    "packet-codec, flood-router, deduplicator, fragment-manager, gossip-sync, courier-store, announce-manager, group-protocol, channel-crypto, prekey-store, board-packet",
+                    "packet-codec, flood-router, deduplicator, fragment-manager, gossip-sync, courier-store, announce-manager, group-protocol, channel-crypto, prekey-store, board-packet, link-registry",
                   ],
                   [
                     "core/nostr/",
@@ -1629,10 +1643,11 @@ export default function ArchitecturePage() {
               <p>
                 <strong className="text-ink">The bridge is kept tiny</strong>, because anything
                 richer would put protocol knowledge on the native side. TypeScript calls down to
-                start and stop advertising, start and stop scanning, and write bytes to a link.
-                Native calls back up with four events: a packet arrived, a link connected, a link
-                disconnected, a signal reading changed. Bytes cross base64-encoded, because that is
-                the only representation both runtimes agree on safely.
+                start and stop advertising, start and stop scanning, open a network listener, and
+                write bytes to a link. Native calls back up with four events: a packet arrived, a
+                link connected, a link disconnected, a signal reading changed. Bytes cross
+                base64-encoded, because that is the only representation both runtimes agree on
+                safely.
               </p>
             </Section>
 
@@ -1669,8 +1684,8 @@ export default function ArchitecturePage() {
                 Everything up to <C>0x29</C> is bitchat-defined and shared. bitchat allocates
                 forward and has reached <C>0x2c</C>, so Airhop's own types start at <C>0x50</C>,
                 well clear of the values bitchat is still handing out. A type one side does not
-                recognize is relayed rather than read, so an Airhop extension crosses a mesh of
-                bitchat phones without ever being shown to their users.
+                recognize is relayed, not read, so an Airhop extension crosses a mesh of bitchat
+                phones without ever being shown to their users.
               </p>
 
               <Table
@@ -1716,7 +1731,7 @@ export default function ArchitecturePage() {
               id="threat"
               eyebrow="For developers · 19"
               title="Threat model"
-              lede="What the design defends against, and the six things it does not."
+              lede="What the design defends against, and the seven things it does not."
             >
               <Table
                 head={["Threat", "Countermeasure"]}
@@ -1731,7 +1746,15 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Message forgery",
-                    "Ed25519 checked against the key bound to the claimed sender, before anything is shown. A missing key fails the check rather than skipping it",
+                    "Ed25519 checked against the key bound to the claimed sender, before anything is shown. A missing key fails the check, it does not skip it",
+                  ],
+                  [
+                    "System-line spoofing",
+                    "A peer's text renders as an action line only when it is exactly a /hug or /slap from that sender to one name. Anything else is a normal bubble under their name",
+                  ],
+                  [
+                    "Claiming someone else's Nostr key",
+                    "The key a peer announces for itself is a forwarding address for that peer and nothing more. It never folds a conversation keyed by that npub or redirects mail waiting for it; only a card scanned in person can",
                   ],
                   ["Man in the middle", "Noise XX mutual authentication on every session"],
                   [
@@ -1791,6 +1814,12 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">Timing correlation.</strong> An observer watching
                 several radios at once can infer patterns from when packets move, even without
                 reading them.
+                <br />
+                <br />
+                <strong className="text-ink">Who wrote a broadcast, some of the time.</strong> A
+                packet you author leaves with a hop budget drawn from 5 to 7 instead of always 7, so
+                a listener cannot read authorship off the maximum. A 7 is still unambiguous, so
+                about a third of broadcasts remain attributable to the radio that sent them.
                 <br />
                 <br />
                 <strong className="text-ink">A compromised operating system.</strong> If the OS is

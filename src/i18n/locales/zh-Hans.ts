@@ -371,6 +371,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "返回，{count} 条未读",
   "chat.thread.view_info": "查看 {name} 的信息",
   "chat.thread.notices_new": "本频道的公告，{count} 条新的",
+  "chat.board.urgent_one": "来自 {author} 的紧急公告 · {content}",
+  "chat.board.urgent_many": "{count} 条新的紧急公告 · 打开公告",
   "chat.thread.say_something": "在 {channel} 里说点什么吧。",
   "chat.thread.jump_latest_new": "跳到最新消息，{count} 条新的",
   "chat.thread.unconfirmed_since": "自 {date} 起没有确认过送达",
@@ -1517,6 +1519,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} 字节",
   "settings.diag.footnote":
     "这里的内容都不能改。这些数值是固定的，好让 Airhop 保持与 bitchat 兼容。",
+  "settings.diag.share": "分享诊断信息",
+  "settings.diag.share_desc":
+    "用于错误报告的连接与设置详情。不包含消息、名字或密钥。",
   "settings.section.storage_desc": "用量与缓存",
   "settings.section.appearance": "外观",
   "settings.section.appearance_desc": "主题、字体和语言",

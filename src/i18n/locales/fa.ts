@@ -388,6 +388,8 @@ export const strings: Strings = {
   "chat.thread.go_back_unread": "بازگشت، {count} خوانده‌نشده",
   "chat.thread.view_info": "دیدن اطلاعات {name}",
   "chat.thread.notices_new": "اعلان‌های این کانال، {count} تازه",
+  "chat.board.urgent_one": "اعلان فوری از {author} · {content}",
+  "chat.board.urgent_many": "{count} اعلان فوری تازه · اعلان‌ها را باز کنید",
   "chat.thread.say_something": "در {channel} چیزی بگویید.",
   "chat.thread.jump_latest_new": "پرش به تازه‌ترین پیام، {count} تازه",
   "chat.thread.unconfirmed_since": "از {date} تحویلی تأیید نشده است",
@@ -1615,6 +1617,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} بایت",
   "settings.diag.footnote":
     "اینجا چیزی قابل تغییر نیست. این مقادیر ثابت‌اند تا Airhop با bitchat سازگار بماند.",
+  "settings.diag.share": "هم‌رسانی عیب‌یابی",
+  "settings.diag.share_desc":
+    "وضعیت انتقال و تنظیمات برای گزارش خطا. هرگز پیام، نام یا کلید نه.",
   "settings.section.storage_desc": "مصرف و حافظهٔ نهان",
   "settings.section.appearance": "ظاهر",
   "settings.section.appearance_desc": "پوسته، قلم و زبان",

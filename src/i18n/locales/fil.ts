@@ -402,6 +402,9 @@ export const strings: Strings = {
   "chat.thread.view_info": "Tingnan ang impormasyon para kay {name}",
   "chat.thread.notices_new":
     "Mga paskil para sa channel na ito, {count} ang bago",
+  "chat.board.urgent_one": "Mahalagang paskil mula kay {author} · {content}",
+  "chat.board.urgent_many":
+    "{count} bagong mahalagang paskil · buksan ang Mga paskil",
   "chat.thread.say_something": "Magsabi ng kahit ano sa {channel}.",
   "chat.thread.jump_latest_new":
     "Tumalon sa pinakabagong mensahe, {count} ang bago",
@@ -1675,6 +1678,9 @@ export const strings: Strings = {
   "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Walang mababago rito. Nakatakda ang mga halagang ito para manatiling tugma ang Airhop sa bitchat.",
+  "settings.diag.share": "Ibahagi ang diagnostics",
+  "settings.diag.share_desc":
+    "Estado ng transport at settings para sa bug report. Walang mensahe, pangalan, o key kailanman.",
   "settings.section.storage_desc": "Paggamit at cache",
   "settings.section.appearance": "Anyo",
   "settings.section.appearance_desc": "Tema, font at wika",
