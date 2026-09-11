@@ -5,6 +5,17 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- feat: add diagnostics sharing + other fixes (by @areebahmeddd) [ae081d1]
+- feat: privacy cover for app switcher (by @areebahmeddd) [e391a97]
+- chore: update dependencies and improve platform compatibility (by @areebahmeddd) [d58d513]
+- fix: correct canonical URL generation to ensure proper trailing slash for root paths (by @areebahmeddd) [37a6c4e]
+- fix: improve mesh state store logic to display new banner messages based on local transport states (by @areebahmeddd) [63e20d3]
+- test: ios release (by @areebahmeddd) [7756858]
+
+**Full changelog:** [v1.0.4..v1.0.5](https://github.com/areebahmeddd/airhop/compare/v1.0.4..v1.0.5)
+
+## What's New
+
 - feat: add search functionality in settings + fix minor bugs + add tests for rust code (by @areebahmeddd) [7123cb6]
 - fix: some minor bugs reported from field testing (by @areebahmeddd) [b234a5d]
 - feat: add bridges and pluggable transports for censored networks (by @areebahmeddd) [7477564]
