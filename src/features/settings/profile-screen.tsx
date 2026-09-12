@@ -821,11 +821,10 @@ export default function ProfileScreen({
           </Pressable>
         </View>
 
-        {/* The connectivity toggles, in the box the feature list used to hold.
-          Wallet/AI/Feeds were a standing statement about the app rather than
-          controls, so they read as chrome on the first screen and have moved
-          under General; these four are the switches people open Settings to
-          flip, and they belong where the thumb already is. */}
+        {/* The connectivity toggles. Wallet/AI/Feeds are a standing statement
+          about the app, not controls, so they live under General; these four
+          are the switches people open Settings to flip, and they belong where
+          the thumb already is. */}
         <ConnectivityGroup onOpenTor={() => openSection("tor")} />
 
         {/* Settings nav: each row drills into its own sub-screen */}
@@ -1061,9 +1060,9 @@ export default function ProfileScreen({
           </View>
         </BottomSheet>
 
-        {/* Peer ID sheet. The pill used to open the OS share sheet directly, which
-          left no room to say what a bare ID can and cannot do - and it cannot do
-          the thing most people reach for it to do. */}
+        {/* Peer ID sheet, not the OS share sheet directly: there has to be room
+          to say what a bare ID can and cannot do, and it cannot do the thing
+          most people reach for it to do. */}
         <BottomSheet
           visible={showPeerIDModal}
           onClose={() => setShowPeerIDModal(false)}

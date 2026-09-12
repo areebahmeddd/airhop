@@ -81,9 +81,8 @@ export const enum PacketType {
 
 // Retired values, recorded so they are not reintroduced:
 //
-//   0x30 VIDEO_FRAME  specified over WiFi Aware or MultipeerConnectivity, which
-//                     cannot interoperate, so cross-platform video was never
-//                     reachable on that path.
+//   0x30 VIDEO_FRAME  specified over a same-platform WiFi path, so
+//                     cross-platform video was never reachable on it.
 //   0x40 CASHU_TOKEN  ecash travels as text inside an ordinary encrypted DM and
 //                     is found by findTokensInText(). A dedicated type would be
 //                     a second path to keep in sync.

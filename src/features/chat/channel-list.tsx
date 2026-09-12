@@ -288,10 +288,8 @@ export default function ChannelList({
   // possibly-collapsed/sliced `data` below) so the badge stays accurate even
   // while a section is collapsed or showing only its top rows.
   //
-  // Delegates to utils/unread rather than re-implementing the muted rule, which
-  // is what this had been doing: the same "a muted channel keeps its own row
-  // count but adds to no header" decision written out twice, in two shapes, in
-  // two files that both have to change together.
+  // Delegates to utils/unread so the muted rule ("a muted channel keeps its
+  // own row count but adds to no header") is written once, not once per file.
   function sectionUnread(list: string[]): number {
     const inSection = new Set(list);
     return sumUnread(unreadCounts, mutedChannels, (channel) =>

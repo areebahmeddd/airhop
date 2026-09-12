@@ -2381,10 +2381,9 @@ export default function MessageThread({
       }
     } else {
       // Three outcomes: it reached a link or a live relay ("sent"), a gateway
-      // peer took it to publish for us ("carried"), or it went nowhere. The
-      // middle two used to collapse into the first, because the old result flag
-      // meant "this channel can use the internet" rather than "the internet was
-      // there", so a location channel on Bluetooth alone showed a sent tick.
+      // peer took it to publish for us ("carried"), or it went nowhere. Read
+      // from what happened, not from whether the channel may use the internet,
+      // or a location channel on Bluetooth alone shows a sent tick.
       const sent = service.sendChannelMessage(msgChannel, msg.text, nearbyOnly);
       if (sent.meshLinks > 0 || sent.nostr) {
         setStatus(msgChannel, msg.id, "sent");
@@ -3762,9 +3761,9 @@ export default function MessageThread({
   //
   // `hold` is the press this belongs to; everything after an await is checked
   // against it. Opening the mic is not instant (a permission prompt can sit for
-  // seconds), so a quick tap released first used to start recording unheld,
-  // leaving a bar only another full hold could dismiss. Same rule the live path
-  // has always had. Omitted by hands-free callers, which have no release to race.
+  // seconds), so a quick tap released first would otherwise start recording
+  // unheld, leaving a bar only another full hold could dismiss. Same rule as
+  // the live path. Omitted by hands-free callers, which have no release to race.
   async function startRecording(hold?: number): Promise<boolean> {
     const stillHeld = (): boolean =>
       hold === undefined || hold === holdSeqRef.current;
@@ -5067,9 +5066,9 @@ export default function MessageThread({
             // a runaway paste cannot build a packet nothing will carry.
             maxLength={2000}
             // Autocorrect, spellcheck and capitalisation stay at the platform
-            // defaults. The Privacy switch that used to gate them promised more
-            // than it delivered: the learned dictionary belongs to the OS, so
-            // turning it off only stopped future learning in this one field.
+            // defaults. A switch here would promise more than it can deliver:
+            // the learned dictionary belongs to the OS, so turning it off only
+            // stops future learning in this one field.
             returnKeyType="send"
             submitBehavior="blurAndSubmit"
             onSubmitEditing={handleSend}
@@ -5207,8 +5206,8 @@ export default function MessageThread({
           {/* Two ways in, two ways out. Started by tap, no finger is held, so an
               ordinary button ends it. Started by holding the mic, lifting to
               reach anything here IS the release: a tap in this bar could only
-              land after the recording had been sent, which is what the X used to
-              do. That path gets slide-to-cancel instead. */}
+              land after the recording had been sent. That path gets
+              slide-to-cancel instead. */}
           {handsFreeRecording ? (
             <Pressable
               style={styles.recordingCancel}

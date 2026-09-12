@@ -37,6 +37,10 @@ secrets/
 *.pem
 *.p8
 *.p12
+*.cer
+*.csr
+*.key
+*.mobileprovision
 
 # iOS
 ios/Pods/
@@ -97,3 +101,10 @@ $RECYCLE.BIN/
 # Rust build
 native/arti/target/
 .native-build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+*.ipa
+*.dSYM.zip

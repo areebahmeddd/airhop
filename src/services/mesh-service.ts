@@ -1,12 +1,12 @@
-// BLE mesh wiring service.
+// Mesh wiring service.
 //
-// Bridges the native AirhopBLE TurboModule to the core TypeScript engine.
-// One singleton instance is created after identity generation and lives for
-// the app's lifetime.
+// Bridges the native transport modules (BLE, WiFi Aware, LAN) to the core
+// TypeScript engine. One singleton instance is created after identity
+// generation and lives for the app's lifetime.
 //
 // Responsibilities:
 //   - Start BLE advertising (peripheral) + scanning (central)
-//   - Start WiFi direct transport (MC on iOS, WiFi Aware on Android)
+//   - Start the WiFi Aware and LAN (mDNS + TCP) transports where available
 //   - Send periodic ANNOUNCE packets via AnnounceManager
 //   - Receive raw bytes, reassemble fragments, and route inner packets
 //   - Dispatch ANNOUNCE payloads to PeerStore (UI layer)
@@ -2068,6 +2068,20 @@ export class MeshService {
     }
   }
 
+  // Sealed traffic arrived from a peer we hold no session with. They still
+  // hold theirs: a crash or a dead battery is a link drop with no LEAVE, and
+  // the other side keeps its session on purpose. Nobody would initiate (they
+  // have a session, we are not sending), so the sender's retries stay
+  // undecryptable. Open the handshake from here, as bitchat does on the same
+  // packet. Only for a peer that has announced, so a spray of forged sender
+  // IDs cannot fan out into flooded handshakes; and only when there is no
+  // session, so a replay or a forged ciphertext never evicts working keys.
+  private recoverSession(senderID: string): void {
+    const peer = this.registry.get(senderID);
+    if (peer === undefined || peer.session !== undefined) return;
+    this.ensureNoiseSession(senderID);
+  }
+
   // Start a Noise XX handshake with a peer we can reach over the mesh but have
   // no session for. No-op when a session or an in-flight handshake already
   // exists, so it is safe to call speculatively.
@@ -2412,7 +2426,10 @@ export class MeshService {
     if (useBlockedStore.getState().isBlocked(senderID)) return;
 
     const payload = this.router.decryptDm(packet, senderID);
-    if (payload === null) return;
+    if (payload === null) {
+      this.recoverSession(senderID);
+      return;
+    }
     const channel = `dm:${senderID}`;
 
     // Identity proof. Handled before anything else in this method, because
@@ -2523,7 +2540,10 @@ export class MeshService {
     if (useBlockedStore.getState().isBlocked(senderID)) return;
 
     const state = this.drStates.get(senderID);
-    if (!state) return;
+    if (!state) {
+      this.recoverSession(senderID);
+      return;
+    }
 
     let plaintext: Uint8Array;
     try {
@@ -2569,7 +2589,10 @@ export class MeshService {
     const nickname = peer?.nickname ?? senderID.slice(0, 8);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
-      id: `${senderID}-${String(packet.timestamp)}-dr`,
+      // The sender's id, so a retry of an unacknowledged message lands on the
+      // bubble it already has. The timestamp form is only for a legacy payload
+      // that carries no id.
+      id: payload.messageId || `${senderID}-${String(packet.timestamp)}-dr`,
       channel,
       senderID,
       senderNickname: nickname,
@@ -5073,32 +5096,17 @@ export class MeshService {
     // Whether the mesh could deliver this without guessing. A flood has no
     // acknowledgement, so "we sent it into the mesh" and "they got it" are not
     // the same claim.
-    const hadDirectLink = this.links.hasPeer(recipientPeerID);
-
     const result = this.trySendDm(recipientPeerID, text, msgID);
 
-    // A DM with no direct link is FLOODED and hoped for: any neighbour makes
-    // `canReachMesh` true, so the packet goes out at TTL 7 and trySendDm
-    // reports "sent". If the recipient is not actually within those seven hops
-    // - they walked out of the building, they are asleep in a bag - nothing
-    // ever says so. The message was reported sent, was never queued, and was
-    // gone for good the moment it failed to land.
-    //
-    // Queue it as well. A flood that DID land is resolved by the delivery
-    // receipt, and if a retry goes out anyway the recipient collapses it by
-    // message id, which is the same dedupe the courier path already relies on.
-    // The cost of a redundant queue entry is nothing; the cost of the old
-    // behaviour was a lost message under a confident tick.
-    // Queue whenever delivery is not established. Two cases, one rule:
-    //
-    //   handshaking  nothing has gone out yet; the session does not exist
-    //   sent + no direct link  it was FLOODED at TTL 7 with nothing to
-    //                          acknowledge it, so "sent" means "it left the
-    //                          device", not "they have it"
-    //
-    // A delivery receipt resolves the entry, so a message that really did land
-    // stops being retried the moment the recipient says so.
-    if (result === "handshaking" || (result === "sent" && !hadDirectLink)) {
+    // "sent" means it left the device, not that they have it. A flood at TTL 7
+    // has nothing to acknowledge it, and even a direct link can carry a packet
+    // sealed under a session the other side no longer holds: a peer whose app
+    // was killed, or whose phone died, comes back with no session and drops
+    // the message silently until the next handshake. So every mesh send stays
+    // queued until a delivery receipt resolves it. A retry reuses the message
+    // id and the recipient collapses the duplicate, which is the same dedupe
+    // the courier path relies on.
+    if (result === "handshaking" || result === "sent") {
       useOutboxStore.getState().enqueue({
         id: msgID,
         recipientPeerID,
@@ -5339,8 +5347,9 @@ export class MeshService {
   // (DM) or broadcast (channel). The receiver reassembles, saves to cache, and
   // adds a ChatMessage.
   //
-  // Media rides BLE only (never Nostr), so returns whether a route exists right
-  // now: for a DM, a direct link to that peer; for a channel, any live link.
+  // Media rides the mesh only (never Nostr), so returns whether a route exists
+  // right now: for a DM, a direct link to that peer; for a channel, any live
+  // link.
   // The reach is checked BEFORE starting the transfer, so an unreachable send
   // never spins up a progress card that would falsely reach 100%. False means it
   // went nowhere, so the caller surfaces that instead of a confident "sent"
@@ -5979,11 +5988,10 @@ export class MeshService {
             return;
           }
           // When we don't know this sender's peerID yet, key the thread by
-          // their FULL Nostr pubkey rather than a 16-char slice of it. The old
-          // slice looked like a peerID but wasn't one: replying fed it to
-          // sendDm, which could never resolve a route, so the conversation was
-          // un-repliable. `nostr_` keeps it unambiguous and routable, and an
-          // in-person scan folds the thread into theirs (bindNostrPubkey).
+          // their FULL Nostr pubkey, never a 16-char slice: a slice looks like
+          // a peerID, and sendDm could never resolve a route for it. `nostr_`
+          // keeps it unambiguous and routable, and an in-person scan folds the
+          // thread into theirs (bindNostrPubkey).
           const senderKey = peerID ?? `nostr_${dm.senderPubkey}`;
           const channel = `dm:${senderKey}`;
 

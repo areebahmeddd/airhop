@@ -1,0 +1,1 @@
+mesh,bluetooth,offline,messenger,private,encrypted,nostr,cashu,ecash,peer to peer,walkie talkie

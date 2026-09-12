@@ -22,7 +22,7 @@ receive(packet, send) -> boolean
 
 ### TTL Handling
 
-TTL is decremented **before** relay. The relayed copy has `packet.ttl - 1`. A packet with `ttl <= 1` is never relayed (only handled locally if new). Default TTL is `7`.
+TTL is decremented **before** relay. The relayed copy has `packet.ttl - 1`. A packet with `ttl <= 1` is never relayed (only handled locally if new). The maximum is `7`. A broadcast this node authors (channel, group, board, public file, live voice per burst) leaves with a draw from `5..7` (`core/mesh/routing/origin-ttl.ts`), so the maximum alone does not mark the author; announces and directed traffic keep `7`.
 
 Relays decrement TTL but do not re-sign. The original signature remains valid because signing normalizes TTL to `0` (see `bitchat-wire-format` skill).
 
@@ -96,13 +96,13 @@ Partial assemblies are silently dropped after 30 seconds. The sender must retran
 
 ## Gossip Sync
 
-`REQUEST_SYNC` packets (type `0x21`) use TTL=2 intentionally. They propagate only to immediate mesh neighbors, not across the wider network. This is by design: gossip reconciliation is a local-mesh operation.
+`REQUEST_SYNC` packets (type `0x21`) carry TTL=0 and are never relayed. Gossip reconciliation is a question about the far end of one link, so it stays on that link.
 
 Gossip uses a Golomb-Coded Set (GCS) filter, not a bloom filter. The false positive rate formula is different. See `src/core/mesh/sync/gossip-sync.ts` and the reference `bitchat/ios/bitchat/Sync/GossipSyncManager.swift`.
 
 ## Announce Broadcasts
 
-`ANNOUNCE` packets are broadcast every 30 seconds. Receiving a valid `ANNOUNCE` is how a node learns another peer's `senderID` to `signingPubKey` mapping. This mapping must be verified before relaying any other packet from that sender.
+`ANNOUNCE` packets go out every 4 seconds while a node is alone, then every 15 to 30 seconds (jittered) once it has a peer. Receiving a valid `ANNOUNCE` is how a node learns another peer's `senderID` to `signingPubKey` mapping. This mapping must be verified before relaying any other packet from that sender.
 
 ## What Not to Do
 

@@ -194,6 +194,33 @@ function formatFixed(value: number, fractionDigits: number): string {
   }).format(value);
 }
 
+// A whole number the user typed, whatever digits their keyboard emits.
+//
+// The inverse of `formatNumber`: output is pinned to Latin digits, but a number
+// pad on a Persian, Arabic, Hindi or Bengali keyboard types its own script, and
+// `parseInt` reads those as NaN, which on a payment field is a button that
+// does nothing and says nothing.
+// Every Unicode decimal digit sits in a run of ten that starts at its zero, so
+// the value is the offset into that run. Whitespace is dropped; anything
+// else makes the input invalid, since a separator is a grouping mark in one
+// locale and a decimal point in the next, and amounts here are whole sats.
+export function parseWholeNumber(text: string): number | null {
+  let digits = "";
+  for (const ch of text) {
+    if (/\p{Nd}/u.test(ch)) {
+      const cp = ch.codePointAt(0) ?? 0;
+      let zero = cp;
+      while (/\p{Nd}/u.test(String.fromCodePoint(zero - 1))) zero--;
+      digits += String((cp - zero) % 10);
+    } else if (!/\s/.test(ch)) {
+      return null;
+    }
+  }
+  if (digits.length === 0) return null;
+  const value = Number.parseInt(digits, 10);
+  return Number.isSafeInteger(value) && value > 0 ? value : null;
+}
+
 // ---- Money ----
 //
 // These live here rather than beside the Cashu code they describe because

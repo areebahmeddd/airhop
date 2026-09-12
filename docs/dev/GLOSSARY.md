@@ -12,13 +12,13 @@
 
 **[ChaCha20-Poly1305](https://datatracker.ietf.org/doc/html/rfc7539)**: An authenticated encryption cipher (AEAD). Used as the symmetric cipher inside the Noise XX and Noise X handshakes.
 
-**[XChaCha20-Poly1305](https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction)**: ChaCha20-Poly1305 with a 192-bit nonce instead of 96-bit. Used by NIP-44 for Nostr DM encryption; the extended nonce eliminates nonce-reuse risk.
+**[XChaCha20-Poly1305](https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction)**: ChaCha20-Poly1305 with a 192-bit nonce instead of 96-bit. Used by bitchat's NIP-44 variant for Nostr DM encryption (see PROTOCOLS.md section 7.1); the extended nonce eliminates nonce-reuse risk.
 
-**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for building authenticated key exchange protocols. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live BLE sessions (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` for one-way courier envelope sealing.
+**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for building authenticated key exchange protocols. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` for one-way courier envelope sealing.
 
 **[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: A key agreement algorithm that provides per-message forward secrecy. The same algorithm used by Signal and WhatsApp. Airhop applies it to all stored DMs so that compromise of one message key does not expose others.
 
-**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Extended Triple Diffie-Hellman. A key agreement protocol that lets a sender initiate a Double Ratchet session with a recipient who is offline, using prekey bundles the recipient publishes in advance. Airhop deliberately does not use X3DH: the Noise handshake already seeds the ratchet, and one-time prekeys are gossiped over the mesh as `0x24`, never published to Nostr.
+**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Extended Triple Diffie-Hellman. A key agreement protocol that lets a sender initiate a Double Ratchet session with a recipient who is offline, using prekey bundles the recipient publishes in advance. Airhop does not use X3DH: the Noise handshake already seeds the ratchet, and one-time prekeys are gossiped over the mesh as `0x24`, never published to Nostr.
 
 ## Networking and Transport
 
@@ -48,7 +48,7 @@
 
 **[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Nostr relay-managed groups. Considered and rejected for Airhop: it puts membership enforcement on a relay. See ARCHITECTURE.md section 6, Channels and Groups.
 
-**[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: The Nostr encryption standard using XChaCha20-Poly1305 with versioning. Used inside NIP-17 gift-wrap envelopes.
+**[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: The Nostr encryption standard, versioned. The published construction is ChaCha20 with an HMAC-SHA256 tag; bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead (PROTOCOLS.md section 7.1). Used inside NIP-17 gift-wrap envelopes.
 
 **[NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.md)**: See Gift-wrap above.
 
@@ -82,7 +82,7 @@
 
 **[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust implementation of the Tor client. Airhop embeds it on both platforms, built from `native/arti/` and linked as an xcframework on iOS and a JNI library on Android. Off by default; when on, it exposes a SOCKS5 listener on loopback that the app points its sockets at.
 
-**[TurboModule](https://reactnative.dev/docs/the-new-architecture/what-are-turbo-native-modules)**: React Native's new architecture native module system. `src/bridge/NativeAirhopBLE.ts` is a TurboModule TypeScript spec (Codegen input) that provides a typed interface over the Swift and Kotlin BLE implementations.
+**[TurboModule](https://reactnative.dev/docs/the-new-architecture/what-are-turbo-native-modules)**: React Native's new architecture native module system. `src/bridge/NativeAirhopBLE.ts` is a hand-maintained TypeScript spec resolved through the interop layer, not Codegen input that provides a typed interface over the Swift and Kotlin BLE implementations.
 
 ## Localization
 

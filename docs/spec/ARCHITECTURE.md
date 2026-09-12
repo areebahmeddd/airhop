@@ -31,14 +31,16 @@ Every layer and the reasoning behind it. For what is being built and when, see
 | Private DMs               | Yes, Noise XX (+DR)      | Yes, NIP-17 wrap    | Receipts on every path. DR only between Airhop peers                                                                                                                                             |
 | Bulletin board            | Yes, signed `0x23`       | Yes, kind 1 mirror  | Public and signed, 1 to 7 day expiry, gossip catch-up. An urgent post also writes one line into the chat it belongs to                                                                           |
 | Voice notes               | Yes, as a file           | No                  | Recorded AAC, not live                                                                                                                                                                           |
-| Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
+| Live push-to-talk         | Yes, `0x29` bursts       | No                  | AAC-LC 16 kHz mono, 350 ms jitter buffer. Also shipped by bitchat, so it works between the two                                                                                                   |
 | Video sharing             | Yes, as a file           | No                  | Recorded and played inline. Live streaming is not possible across platforms                                                                                                                      |
 | File transfer             | Yes, per-type caps       | No                  | 512 KiB photos and voice, 1 MiB otherwise. Enforced by bitchat's decoder, so not ours to raise                                                                                                   |
+| Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
 | Store-and-forward courier | Yes, sealed envelope     | Yes, parked drop    | 24 hour life, as bitchat carriers enforce. Sealed to a one-time prekey for forward secrecy                                                                                                       |
-| Live push-to-talk         | Yes, `0x29` bursts       | No                  | AAC-LC 16 kHz mono, 350 ms jitter buffer. Also shipped by bitchat, so it works between the two                                                                                                   |
-| Payments (Cashu)          | Yes, token in a message  | Yes, NIP-61 nutzap  | Transfer works offline, redemption needs internet                                                                                                                                                |
 | Contact verification      | Yes, QR or safety number | n/a                 | Two ways in: a camera scan, or reading a six-word safety number to each other. `source` records how keys arrived, `verification` whether a human checked. Only an in-person scan may re-pin keys |
 | Panic wipe                | Yes                      | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                                                                         |
+| Payments (Cashu)          | Yes, token in a message  | Yes, NIP-61 nutzap  | Transfer works offline, redemption needs internet                                                                                                                                                |
+| LAN mesh                  | Yes, mDNS + TCP          | No                  | Same wire format as Bluetooth. Runs the whole mesh over a shared WiFi network or a phone hotspot, iPhone to Android unlike WiFi Aware                                                            |
+| WiFi Aware                | Yes, NAN                 | No                  | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                                                                          |
 | Internet gateway          | Relays for others        | Yes                 | Off by default. Carries public location traffic for offline peers                                                                                                                                |
 | Tor routing               | n/a                      | Yes                 | Embedded Arti on both. BLE is local, so nothing to route                                                                                                                                         |
 | Relay discovery           | n/a                      | Yes                 | Bundled CSV, refreshed from the georelays repo                                                                                                                                                   |
@@ -46,13 +48,15 @@ Every layer and the reasoning behind it. For what is being built and when, see
 
 Optional, shipped but switchable:
 
-| Feature         | Needs internet | Notes                                               |
-| --------------- | -------------- | --------------------------------------------------- |
-| Cashu ecash     | Only to redeem | Tokens move device to device over the mesh          |
-| Nutzaps         | Yes            | NIP-61 ecash locked to the recipient key            |
-| Local assistant | No             | On-device inference, nothing leaves the phone       |
-| AT Protocol     | Yes            | Opt-in bridge to Bluesky using the Airhop identity  |
-| ActivityPub     | Yes            | Opt-in bridge to Mastodon using the Airhop identity |
+| Feature         | Needs internet | Notes                                                                                             |
+| --------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| Cashu ecash     | Only to redeem | Tokens move device to device over the mesh                                                        |
+| Lightning       | Yes            | Top up or cash out through the mint you choose (NUT-04 / NUT-05)                                  |
+| Nutzaps         | Yes            | NIP-61 ecash locked to the recipient key                                                          |
+| Wallet recovery | Yes            | Off by default. 12-word phrase rebuilds a balance from the mints that signed it (NUT-13 / NUT-09) |
+| Local assistant | No             | On-device inference, nothing leaves the phone                                                     |
+| AT Protocol     | Yes            | Opt-in bridge to Bluesky using the Airhop identity                                                |
+| ActivityPub     | Yes            | Opt-in bridge to Mastodon using the Airhop identity                                               |
 
 ## 2. Identity
 
@@ -415,7 +419,7 @@ types as unknown without disruption.
 Protocol: Noise_XX_25519_ChaChaPoly_SHA256
 ```
 
-Used for every live BLE DM session.
+Used for every live DM session, over whichever direct link the peer is on.
 
 - Pattern XX mutually authenticates both parties, each sending their static key encrypted
 - Ephemeral keys are fresh per session, so a leaked static key does not expose past sessions
@@ -592,11 +596,15 @@ Two rules hold across the ladder:
 
 ### Recovery
 
-Off by default. Enabling it generates a 12-word BIP-39 phrase, stored in the
-keychain beside the identity keys, and switches proof creation from random
-secrets to NUT-13 deterministic derivation. Recovery (NUT-09) re-derives those
-secrets on any device and asks each mint which of them it signed, so the balance
-is rebuilt from the mint's records rather than from a backup file.
+The seed exists from the first launch: a 12-word BIP-39 phrase is generated and
+stored in the keychain beside the identity keys before the first mint
+operation, so every proof the wallet creates uses NUT-13 deterministic secrets
+from day one. What is off by default is the backup itself: the shield turns on
+only once the user has viewed the phrase and confirmed they hold it, since
+"covered" is a promise about the person, not the crypto. Recovery (NUT-09)
+re-derives those secrets on any device and asks each mint which of them it
+signed, so the balance is rebuilt from the mint's records rather than from a
+backup file.
 
 | Coverage |                                                                                                                                                  |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -604,7 +612,7 @@ is rebuilt from the mint's records rather than from a backup file.
 | Excludes | The Airhop identity, chats, contacts and the mint list                                                                                           |
 | Excludes | Coins received and never swapped, which carry the sender's secrets. They come under the phrase once swapped, which is what `refreshAccount` does |
 
-- The keychain is the source of truth. If the flag says backup is on but the phrase is gone, startup clears the flag rather than claiming coverage the user does not have.
+- The keychain is the source of truth. If the flag says backup is on but the phrase is gone, startup clears the flag and seeds a fresh phrase, which covers coins from then on rather than claiming coverage the user does not have. If the keychain refuses the write, the wallet falls back to random secrets and says nothing is covered.
 - `StoredProof.derived` tracks which proofs the phrase can rebuild, and the UI shows the uncovered remainder rather than folding it into a green tick.
 - There is no way to turn backup off, since deleting a phrase that coins derive from is indistinguishable from deleting the coins. Only the panic wipe removes it.
 
@@ -750,7 +758,7 @@ immediately.
 3. Empty the cache directory. Not just the files Airhop prefixes: a sent
    document, a sent video, an image small enough to send unmodified and the
    saved QR card all live under other names or in the pickers' own
-   subdirectories, and every one of them used to survive
+   subdirectories, and a prefix-only sweep leaves every one of them behind
 4. Stop Arti and delete its data directory, on both platforms. It sits outside
    the media cache (Application Support on iOS, the files directory on Android)
    and holds a cached consensus, chosen guard nodes and timestamps, which is
@@ -783,9 +791,9 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Message forgery                    | Ed25519 signature verified against the key bound to the claimed sender. A missing key or missing SIGNED flag is a failed check, never a skipped one                                                                                                                                                                                                                                                                 |
 | System-line spoofing               | A peer's `* … *` text renders as an action only when it is exactly the `/hug` or `/slap` template with the wire sender as actor and a single name as target. Anything else is a normal bubble under their name                                                                                                                                                                                                      |
-| Nostr key claim in an announce     | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#33-noise-inner-payload-types)                                                                                                               |
 | Identity impersonation             | `peerID == SHA-256(noiseStaticPubKey)[0:16]`, enforced on announces and completed Noise sessions, so a peer ID cannot be claimed without its key                                                                                                                                                                                                                                                                    |
 | Signing-key substitution           | Two tiers. An announce is self-signed, so TOFU pinning holds the first key seen and never replaces it over the air. A key proven inside a Noise session (payload `0x21`) outranks that and may correct a pin an attacker won the race for. No announce can overwrite a proven key, and only an in-person QR scan may re-pin otherwise                                                                               |
+| Nostr key claim in an announce     | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#33-noise-inner-payload-types)                                                                                                               |
 | Capability downgrade               | Announced bits are a discovery hint and never authorise a change in how we send. Encrypted private media is selected only on an authenticated capability, so nobody in radio range can force an attachment into the clear by announcing the bit off                                                                                                                                                                 |
 | Replay                             | Content-derived packet IDs, a deduplicator, and a ±2 minute freshness window on every packet at ingress, so stale packets are neither relayed nor acted on. Solicited sync responses are exempt only when tagged `IS_RSR` and attributable to a request made in the last 30 s. Live voice uses a tighter 30 s window                                                                                                |
 | Sync amplification                 | `REQUEST_SYNC` and every packet answering one ride at TTL 0, so a rejoining peer's catch-up cannot re-flood the mesh. Responses to one peer are capped at 8 per 30 s                                                                                                                                                                                                                                                |
@@ -1009,9 +1017,11 @@ None of them knows anything about packets, routing or encryption.
 
 ### The native contract
 
-Bridge specs live in `src/bridge/`, and React Native Codegen turns them into the
-native bridge for both platforms. Bytes cross base64-encoded, the only
-representation both runtimes agree on safely.
+Bridge specs live in `src/bridge/`. They are hand-maintained, not Codegen
+input: the native modules are legacy bridge modules reached through the New
+Architecture interop layer, and the spec shape keeps both platforms exposing
+the same surface. Bytes cross base64-encoded, the only representation both
+runtimes agree on safely.
 
 `src/bridge/NativeAirhopBLE.ts` is the largest, at ten methods:
 
@@ -1037,7 +1047,7 @@ the framework's WiFi Aware state broadcast; iOS has no such broadcast and
 reports only the falling edge, so the reconciler answers a drop with its retry
 ladder rather than by waiting to be told the radio came back.
 
-`AirhopWiFiPairing` is iOS-only and deliberately not part of that contract:
+`AirhopWiFiPairing` is iOS-only and not part of that contract:
 pairing is a precondition to HAVING links on one platform, not a property of a
 link, so folding it in would make the Kotlin module answer three questions that
 mean nothing there. Two methods (`getPairingState`, `presentPairing`) and one

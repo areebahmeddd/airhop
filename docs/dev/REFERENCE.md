@@ -620,7 +620,7 @@ bitchat/android/app/src/main/java/com/bitchat/android/
 
 ### Android Fragment Fix
 
-A critical cross-platform bug was fixed in v0.7: Android was fragmenting at 500 bytes (vs iOS's ~469/150 bytes), breaking iOS-Android messaging. This was corrected in the changelog entry for v0.7.
+Android and iOS must fragment at the same size. bitchat's Android client once fragmented at 500 bytes against iOS's ~469, which broke iOS-to-Android messaging until v0.7 aligned them; the shared 467-byte data size is the constraint every client inherits.
 
 ## 12. Georelays Infrastructure
 

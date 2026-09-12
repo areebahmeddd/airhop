@@ -10,6 +10,7 @@ import {
   formatListTimestamp,
   formatNumber,
   formatTokenSummary,
+  parseWholeNumber,
 } from "../format";
 
 // A fixed "now" so the calendar-distance branches are deterministic. Midday on
@@ -168,5 +169,35 @@ describe("formatTokenSummary", () => {
 
   it("groups a large amount", () => {
     expect(formatTokenSummary(info(21_500, "sat"))).toBe("21,500 sat");
+  });
+});
+
+// Output digits are pinned to Latin; input has to accept whatever the keyboard
+// emits, or a Persian or Hindi user's Send button does nothing.
+describe("parseWholeNumber", () => {
+  it("reads Latin, Arabic-Indic, Persian, Devanagari, Bengali and fullwidth digits", () => {
+    expect(parseWholeNumber("100")).toBe(100);
+    expect(parseWholeNumber("١٠٠")).toBe(100);
+    expect(parseWholeNumber("۱۲۳")).toBe(123);
+    expect(parseWholeNumber("१५०")).toBe(150);
+    expect(parseWholeNumber("২১")).toBe(21);
+    expect(parseWholeNumber("２１")).toBe(21);
+  });
+
+  it("drops whitespace only", () => {
+    expect(parseWholeNumber(" 42 ")).toBe(42);
+    expect(parseWholeNumber("1 000")).toBe(1000);
+  });
+
+  // A separator is grouping in one locale and decimal in the next, so it is
+  // refused rather than guessed at.
+  it("refuses anything that is not a positive whole number", () => {
+    expect(parseWholeNumber("")).toBeNull();
+    expect(parseWholeNumber("0")).toBeNull();
+    expect(parseWholeNumber("-5")).toBeNull();
+    expect(parseWholeNumber("1.5")).toBeNull();
+    expect(parseWholeNumber("1,000")).toBeNull();
+    expect(parseWholeNumber("abc")).toBeNull();
+    expect(parseWholeNumber("12a")).toBeNull();
   });
 });

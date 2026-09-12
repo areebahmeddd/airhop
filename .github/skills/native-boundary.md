@@ -32,7 +32,7 @@ Every feature is implemented in `src/core/`. Native code is a thin I/O driver.
 
 ## TurboModule Contract
 
-The spec file is `src/bridge/NativeAirhopBLE.ts`. It is Codegen input only. React Native generates the native bridge headers from it automatically. Do not add business logic to this file.
+The spec file is `src/bridge/NativeAirhopBLE.ts`. It is hand-maintained, not Codegen input (`package.json` declares no `codegenConfig`): the modules behind it are legacy bridge modules resolved through the New Architecture interop layer, and the spec shape is kept so both platforms expose the same surface. Do not add business logic to this file.
 
 ### Methods
 
@@ -63,15 +63,16 @@ TurboModule spec files must be named `Native<Name>.ts` (PascalCase) in `src/brid
 
 The modules:
 
-| File                         | Registered as         | Purpose                        |
-| ---------------------------- | --------------------- | ------------------------------ |
-| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | BLE peripheral and central I/O |
-| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | WiFi Aware fast path I/O       |
-| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links   |
-| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS Wi-Fi Aware pairing sheet  |
-| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | AAC-LC capture and playback    |
-| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Tor lifecycle (embedded Arti)  |
-| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | The SOCKS socket Arti fronts   |
+| File                         | Registered as         | Purpose                                                      |
+| ---------------------------- | --------------------- | ------------------------------------------------------------ |
+| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | BLE peripheral and central I/O                               |
+| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | WiFi Aware fast path I/O                                     |
+| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links                                 |
+| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS Wi-Fi Aware pairing sheet                                |
+| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | AAC-LC capture and playback                                  |
+| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Tor lifecycle (embedded Arti)                                |
+| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | The SOCKS socket Arti fronts                                 |
+| `NativeAirhopApp.ts`         | `"AirhopApp"`         | Android only: process restart, recent logcat for diagnostics |
 
 ## BLE UUIDs
 

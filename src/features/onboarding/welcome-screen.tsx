@@ -95,9 +95,9 @@ export default function WelcomeScreen({
       {/* Scrolls only when it has to. `flexGrow: 1` on the content lets the hero
           keep its `flex: 1` and stay centered on a normal portrait screen; on a
           short viewport (landscape, a small phone at the largest OS text size)
-          the wordmark, CTA and consent row used to be clipped off the bottom
-          with no way to reach them, which on the very first screen means the
-          app cannot be started at all. */}
+          the wordmark, CTA and consent row would clip off the bottom with no
+          way to reach them, which on the very first screen means the app
+          cannot be started at all. */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}

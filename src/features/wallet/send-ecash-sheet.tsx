@@ -29,7 +29,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { formatNumber } from "@utils/format";
+import { formatNumber, parseWholeNumber } from "@utils/format";
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -68,8 +68,8 @@ export default function SendEcashSheet({
   }
 
   async function handleSend(): Promise<void> {
-    const sats = parseInt(amount, 10);
-    if (!sats || sats <= 0 || sending) return;
+    const sats = parseWholeNumber(amount);
+    if (sats === null || sending) return;
 
     // Quoting and the nutzap lookup both await the network, so without this a
     // double tap starts two payments.

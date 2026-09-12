@@ -1,0 +1,104 @@
+# iOS release lanes, run by the ios-release job in release.yml.
+#
+# beta      sign, archive, upload to TestFlight
+# metadata  create the App Store version for this tag, push listing and screenshots
+#
+# Versions are stamped into the Xcode project by the workflow before either
+# lane runs, so nothing here bumps anything. Submitting for review is manual.
+#
+# Signing material arrives as two files decoded from secrets by the workflow,
+# the same way the Android job receives its keystore. The distribution
+# certificate (.p12) and the App Store profile (.mobileprovision) are created
+# once in the Apple Developer portal; the profile is re-downloaded when the
+# entitlement set changes. No match, no second repository.
+
+# fastlane regenerates fastlane/README.md after every run; ours is hand-written.
+skip_docs
+
+default_platform(:ios)
+
+WORKSPACE = "ios/Airhop.xcworkspace"
+PROJECT = "ios/Airhop.xcodeproj"
+SCHEME = "Airhop"
+APP_IDENTIFIER = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+TEAM_ID = CredentialsManager::AppfileConfig.try_fetch_value(:team_id)
+
+platform :ios do
+  private_lane :authenticate do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_KEY_P8"),
+      is_key_content_base64: true,
+    )
+  end
+
+  desc "Sign, archive, and upload to TestFlight"
+  lane :beta do
+    # Ephemeral keychain; setup_ci exports its name and password.
+    setup_ci
+    authenticate
+
+    import_certificate(
+      certificate_path: ENV.fetch("IOS_CERTIFICATE_FILE"),
+      certificate_password: ENV.fetch("IOS_CERTIFICATE_PASSWORD"),
+      keychain_name: ENV.fetch("MATCH_KEYCHAIN_NAME"),
+      keychain_password: ENV.fetch("MATCH_KEYCHAIN_PASSWORD"),
+    )
+    profile_path = ENV.fetch("IOS_PROVISIONING_PROFILE_FILE")
+    install_provisioning_profile(path: profile_path)
+    profile_uuid = FastlaneCore::ProvisioningProfile.uuid(profile_path)
+
+    # The checked-in project has no team and no signing style, so ci.yml can
+    # build it unsigned. Signing is applied here, on the throwaway runner.
+    update_code_signing_settings(
+      path: PROJECT,
+      targets: [SCHEME],
+      use_automatic_signing: false,
+      team_id: TEAM_ID,
+      code_sign_identity: "Apple Distribution",
+      profile_uuid: profile_uuid,
+      bundle_identifier: APP_IDENTIFIER,
+    )
+
+    build_app(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "ios/build",
+      output_name: "Airhop.ipa",
+      export_options: { provisioningProfiles: { APP_IDENTIFIER => profile_uuid } },
+    )
+
+    # Apple's processing takes minutes; the build appears in TestFlight on its own.
+    upload_to_testflight(skip_waiting_for_build_processing: true)
+  end
+
+  desc "Push the App Store listing and screenshots"
+  lane :metadata do
+    authenticate
+
+    version = get_version_number(xcodeproj: PROJECT, target: SCHEME)
+    build = get_build_number(xcodeproj: PROJECT)
+
+    # The build number equals the Android versionCode, so the Play changelog
+    # file doubles as What's New. Missing file: the version is still created,
+    # the field is left blank.
+    notes_path = File.expand_path("metadata/android/en-US/changelogs/#{build}.txt", __dir__)
+    release_notes = File.exist?(notes_path) ? { "en-US" => File.read(notes_path) } : nil
+    UI.important("No release notes at #{notes_path}") if release_notes.nil?
+
+    upload_to_app_store(
+      app_identifier: APP_IDENTIFIER,
+      app_version: version,
+      metadata_path: File.expand_path("metadata/ios", __dir__),
+      screenshots_path: File.expand_path("screenshots", __dir__),
+      release_notes: release_notes,
+      skip_binary_upload: true,
+      overwrite_screenshots: true,
+      submit_for_review: false,
+      force: true, # no HTML preview prompt on a runner
+    )
+  end
+end

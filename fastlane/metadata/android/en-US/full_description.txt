@@ -37,4 +37,4 @@ Airhop speaks the same protocol as bitchat. Airhop and bitchat users automatical
 
 ## About
 
-Airhop is an independent project built on bitchat's public-domain protocol. It is not affiliated with or endorsed by permissionlesstech or the bitchat project.
+Airhop is an independent project built on bitchat's public-domain protocol. It is not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.

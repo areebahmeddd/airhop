@@ -109,10 +109,8 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
 
-        {/* Blocked peers. Blocking was previously a one-way door: the only
-            entry point was a DM info sheet, and nothing anywhere called
-            unblockPeer, so short of a full panic wipe a block could never be
-            undone. */}
+        {/* Blocked peers. The one place a block can be undone; without it the
+            only way out is a full panic wipe. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{T("settings.group.blocked")}</Text>
           <View style={styles.settingsGroup}>

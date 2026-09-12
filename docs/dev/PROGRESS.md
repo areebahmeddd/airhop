@@ -73,7 +73,7 @@ checkable against the code rather than taken on trust.
 ## v0.8.0: Identity + Forward Secrecy ✅
 
 - [x] `src/core/crypto/double-ratchet.ts`: Signal DR per-message forward secrecy. The root key comes from the Noise XX **exporter secret**, so it cannot be rebuilt from long-lived keys or from the public handshake bytes
-- [x] One-time prekey bundles (`prekey-bundle.ts`, `prekey-store.ts`) gossiped as `0x24`. **X3DH is deliberately not used**: the handshake already seeds the ratchet (see `ARCHITECTURE.md` section 5)
+- [x] One-time prekey bundles (`prekey-bundle.ts`, `prekey-store.ts`) gossiped as `0x24`. **X3DH is not used**: the handshake already seeds the ratchet (see `ARCHITECTURE.md` section 5)
 - [x] `src/core/crypto/contact-exchange.ts`: binary ContactCard over the QR scheme, peer ID checked against the keys it carries; a card arriving by link is recorded unverified
 - [x] `src/utils/username.ts`: deterministic adjective-noun-suffix from peer ID, 128-entry word lists
 - [x] `src/services/panic-wipe.ts`: clears every keychain item, all MMKV partitions, the media cache, the notification tray and Arti's data directory, and reports whether the keys were destroyed. `wipe-marker.ts` records the intent first, so a wipe killed mid-run is finished on next launch
@@ -219,29 +219,30 @@ false while refusing. Grouped by what the attacker is after: be someone else,
 replay them, read what is not theirs, exhaust or crash a node, borrow an honest
 node's authority, forge money, or hold the phone.
 
-| ID  | Attack                                                                        | Outcome                                                                        |
-| --- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| C01 | Message claiming a known peer's ID, unsigned or wrongly signed                | Refused; a missing sender key is a failed check, not a skipped one             |
-| C02 | Correctly signed message from that peer (control)                             | Accepted, so C01 is the signature rule rather than a blanket refusal           |
-| C08 | Forged ANNOUNCE rebinding a known peer's signing key                          | Refused at all three layers; the victim's real key survives and still verifies |
-| C09 | Forged LEAVE claiming a peer has departed                                     | Neither acted on nor relayed onward; a genuine departure still announces       |
-| C10 | Announce naming someone else's Nostr key                                      | Takes no thread and no queued mail; an in-person scan still folds both         |
-| M08 | Attachment forged, aimed at the wrong thread, or tagged into an unjoined room | Refused on all three; an attachment carries the same rules text does           |
-| C03 | Replay of captured packets                                                    | Deduplicated; nothing renders twice                                            |
-| S03 | Stale packet with a perfect signature, into a phone that never saw it         | Refused on age; the matched fresh copy is accepted, so age is what refused it  |
-| M07 | Recorded voice burst played out of a stranger's phone later                   | Refused on freshness; a valid signature does not make a burst live             |
-| F01 | Outsider standing next to a private group                                     | Ciphertext only; no metadata leak                                              |
-| M09 | Private photo crossing a relay that is not the recipient                      | Sealed inside the Noise session, never signed in the open                      |
-| F03 | Store-and-forward carrier inspecting what it carries                          | Sealed; the carrier cannot read it                                             |
-| F04 | Tor unavailable                                                               | Fails closed; never silently falls back to clearnet                            |
-| C04 | Sybil flood of fabricated peers                                               | Real neighbours never evicted; caps hold                                       |
-| B03 | Corrupted packets on the wire                                                 | Rejected; no crash                                                             |
-| M03 | File lying about its type (magic bytes vs extension)                          | Refused                                                                        |
-| N14 | Gateway asked to publish a deposit aimed at a cell it is not in               | Refused on the `g` tag; a gateway is not an open proxy                         |
-| N07 | Nearby-only message reaching the bridge                                       | Never bridged off-mesh                                                         |
-| W03 | Same ecash token redeemed twice                                               | Refused by a real BDHKE mint                                                   |
-| W14 | Tampered proof handed over with no mint reachable to ask                      | Refused offline on its NUT-12 witness; a real proof still clears               |
-| C06 | Phone taken, panic wipe run                                                   | Nothing survives; the rest of the room carries on                              |
+| ID  | Attack                                                                        | Outcome                                                                           |
+| --- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| C01 | Message claiming a known peer's ID, unsigned or wrongly signed                | Refused; a missing sender key is a failed check, not a skipped one                |
+| C02 | Correctly signed message from that peer (control)                             | Accepted, so C01 is the signature rule rather than a blanket refusal              |
+| C08 | Forged ANNOUNCE rebinding a known peer's signing key                          | Refused at all three layers; the victim's real key survives and still verifies    |
+| C09 | Forged LEAVE claiming a peer has departed                                     | Neither acted on nor relayed onward; a genuine departure still announces          |
+| C10 | Announce naming someone else's Nostr key                                      | Takes no thread and no queued mail; an in-person scan still folds both            |
+| M08 | Attachment forged, aimed at the wrong thread, or tagged into an unjoined room | Refused on all three; an attachment carries the same rules text does              |
+| C03 | Replay of captured packets                                                    | Deduplicated; nothing renders twice                                               |
+| S03 | Stale packet with a perfect signature, into a phone that never saw it         | Refused on age; the matched fresh copy is accepted, so age is what refused it     |
+| M07 | Recorded voice burst played out of a stranger's phone later                   | Refused on freshness; a valid signature does not make a burst live                |
+| F01 | Outsider standing next to a private group                                     | Ciphertext only; no metadata leak                                                 |
+| M09 | Private photo crossing a relay that is not the recipient                      | Sealed inside the Noise session, never signed in the open                         |
+| F03 | Store-and-forward carrier inspecting what it carries                          | Sealed; the carrier cannot read it                                                |
+| F04 | Tor unavailable                                                               | Fails closed; never silently falls back to clearnet                               |
+| C04 | Sybil flood of fabricated peers                                               | Real neighbours never evicted; caps hold                                          |
+| B03 | Corrupted packets on the wire                                                 | Rejected; no crash                                                                |
+| B08 | DM into a peer that rebooted and lost its session                             | Recovered: the receiver opens a handshake, the retry lands once, marked delivered |
+| M03 | File lying about its type (magic bytes vs extension)                          | Refused                                                                           |
+| N14 | Gateway asked to publish a deposit aimed at a cell it is not in               | Refused on the `g` tag; a gateway is not an open proxy                            |
+| N07 | Nearby-only message reaching the bridge                                       | Never bridged off-mesh                                                            |
+| W03 | Same ecash token redeemed twice                                               | Refused by a real BDHKE mint                                                      |
+| W14 | Tampered proof handed over with no mint reachable to ask                      | Refused offline on its NUT-12 witness; a real proof still clears                  |
+| C06 | Phone taken, panic wipe run                                                   | Nothing survives; the rest of the room carries on                                 |
 
 Invariants asserted across all of the above rather than per-scenario: everyone
 converges, nothing renders twice, nothing forged renders at all, delivery state
@@ -252,7 +253,7 @@ destroyed.
 
 Automated security review over the whole codebase, by domain: crypto and key
 lifecycle, radio-facing wire parsing, Nostr and payments, native BLE, and the
-app layer. Ordered by severity.
+app layer.
 
 | #   | Finding                                                                   | Severity | Status                                                                                                |
 | --- | ------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
