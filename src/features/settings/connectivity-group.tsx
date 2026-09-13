@@ -7,10 +7,9 @@
 // toggle owns an async start, all four toggles share a confirm sheet, and none
 // of that belongs in a screen whose job is navigation.
 //
-// Every one of the four confirms in both directions, through the same sheet.
-// Before, live voice and Tor flipped silently while the gateway and the bridge
-// asked once and then went quiet, so the same gesture on four adjacent rows
-// did three different things. Each of these changes what your phone does with
+// Every one of the four confirms in both directions, through the same sheet,
+// so the same gesture on four adjacent rows does one thing. Each of these
+// changes what your phone does with
 // other people's radios, data, or voices, and the direction you are moving in
 // is exactly what the sheet spells out: what turning it on costs, or what you
 // lose by turning it off.

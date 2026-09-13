@@ -59,10 +59,8 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<!-- The App Store category, matching bitchat's. Set here as well as in App
-	     Store Connect so the bundle is self-describing and the two cannot
-	     disagree. LSMinimumSystemVersion used to sit next to this at 12.0; it is
-	     a macOS key that iOS ignores, it came from the template, and the real
-	     floor is IPHONEOS_DEPLOYMENT_TARGET in the Xcode project. -->
+	     Store Connect so the two cannot disagree. No LSMinimumSystemVersion: it
+	     is a macOS key; the iOS floor is IPHONEOS_DEPLOYMENT_TARGET. -->
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.social-networking</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -78,9 +76,8 @@
 	<string>Airhop uses Bluetooth to communicate with nearby devices on the mesh.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Airhop uses Bluetooth to advertise your presence to nearby peers.</string>
-	<!-- The Wi-Fi fast path carries video and large files between two devices on
-	     the same network, once Bluetooth has introduced them. Without this key
-	     iOS substitutes its own generic wording. -->
+	<!-- The LAN transport: mDNS discovery and TCP links over the network the
+	     phone is on. Without this key iOS shows its own generic wording. -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Airhop uses the local network to connect directly to nearby devices for high-bandwidth transfers (video, large files).</string>
 	<!-- The mDNS service the LAN transport browses for. Declaring it is what
@@ -132,10 +129,7 @@
 	<false/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDefault</string>
-	<!-- Portrait only, matching app.json's orientation and the Android
-	     activity's screenOrientation. Upside-down came from the template; most
-	     iPhones refuse it anyway, so allowing it only meant the two platforms
-	     disagreed on paper. -->
+	<!-- Portrait only, matching app.json and the Android activity. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

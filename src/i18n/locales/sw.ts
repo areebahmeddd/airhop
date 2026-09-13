@@ -1478,6 +1478,8 @@ export const strings: Strings = {
     "Imefungwa kwenye ufunguo wao lakini bado haijafikishwa. Shiriki tokeni kutoka muamala huu ili kuikamilisha.",
   "wallet.svc.swap_lost":
     "Mint haikuwahi kukamilisha ubadilishaji huu, kwa hivyo hakuna kilichotolewa dhidi yake.",
+  "wallet.svc.mint_lost":
+    "Mint ilitoa amana hii, lakini sarafu zake hazikuweza kujengwa upya. Kurejesha kutoka kwa kifungu chako cha urejeshaji kunazirudisha.",
   "wallet.svc.swap_unreadable":
     "Ubadilishaji huu ulihifadhiwa kwa namna ambayo toleo hili haliwezi kuicheza tena.",
 

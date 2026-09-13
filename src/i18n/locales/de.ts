@@ -1486,6 +1486,8 @@ export const strings: Strings = {
     "An ihren Schlüssel gebunden, aber noch nicht zugestellt. Teile den Token aus dieser Transaktion, um sie abzuschließen.",
   "wallet.svc.swap_lost":
     "Der Mint hat diesen Tausch nie abgeschlossen, es wurde also nichts dagegen ausgegeben.",
+  "wallet.svc.mint_lost":
+    "Der Mint hat diese Einzahlung ausgegeben, aber ihre Münzen konnten nicht wiederhergestellt werden. Eine Wiederherstellung aus der Wiederherstellungsphrase holt sie zurück.",
   "wallet.svc.swap_unreadable":
     "Dieser Tausch wurde in einer Form gespeichert, die diese Version nicht erneut ausführen kann.",
 

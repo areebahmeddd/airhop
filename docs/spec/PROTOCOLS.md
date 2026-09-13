@@ -36,7 +36,7 @@ Neither platform advertises a `bitchat-` name prefix. A scanner that finds no
 peer ID in the advertisement still connects and learns the peer from its first
 `ANNOUNCE`, which is what happens on every iOS-to-Android link.
 
-## 1.1 WiFi Aware Identifiers
+### 1.1 WiFi Aware Identifiers
 
 The same-platform fast path is a second radio carrying the same packet frames.
 Its identifiers are protocol constants in the same sense the BLE UUIDs are: NAN
@@ -64,6 +64,27 @@ initiator holds the lower token and drops the other before reporting a link.
 Android needs none of it, because it breaks the same tie before connecting, using
 a token in the publish config's `serviceSpecificInfo`. The two platforms cannot
 form a link with each other in any case, so the asymmetry costs nothing.
+
+### 1.2 LAN Identifiers
+
+The third radio is the network itself: mDNS discovery plus a TCP link, carrying
+the same packet frames as Bluetooth and WiFi Aware. It is the one path that
+joins an iPhone to an Android without the internet.
+
+| Identifier        | Value                    | Notes                                                                    |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------ |
+| **Service type**  | `_airhop-lan-v1._tcp`    | Airhop only. Distinct from the WiFi Aware name so the two never cross    |
+| **Instance name** | Random per session       | Never the peer ID or nickname; a durable name would link across networks |
+| **Frame**         | `[u32 BE length][bytes]` | Same framing as WiFi Aware, length excludes the prefix                   |
+| **Max frame**     | `65544`                  | 64 KiB payload plus the prefix                                           |
+| **Link cap**      | `8`                      | `MAX_LAN_LINKS`, sized against bitchat's `bleMaxCentralLinks` of 6       |
+
+mDNS returns every device on the network, so the cap and the choice of whom to
+dial are policy in `src/services/lan-dial-policy.ts`, not native: every device
+sorts the discovered instance names into one ring and links to the four either
+side of itself, dialling only the pairs that sort after its own name so no two
+devices dial each other. The service type appears in `AirhopLANModule.kt` and
+`AirhopLANModule.swift` and must agree.
 
 ## 2. Packet Frame Layout
 
@@ -225,7 +246,7 @@ refused. Airhop checks before the first fragment goes out.
 > [!IMPORTANT]
 > **These caps cannot be raised unilaterally.** bitchat-iOS refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android allows 10 MiB, so the ceiling is iOS's alone and there is no cross-platform number to raise to.
 >
-> Airhop is deliberately on both sides of the split, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. The generic decompression bound (`MAX_PAYLOAD_BYTES`, [section 4](#4-routing-constants)) is Android's 10 MiB, because Airhop caps inflation at the declared size while it runs rather than checking afterwards, so a large declared size costs nothing to refuse. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
+> Airhop is on both sides of the split on purpose, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. The generic decompression bound (`MAX_PAYLOAD_BYTES`, [section 4](#4-routing-constants)) is Android's 10 MiB, because Airhop caps inflation at the declared size while it runs rather than checking afterwards, so a large declared size costs nothing to refuse. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
 >
 > `conformance.test.ts` reads `maxPayloadBytes` out of the vendored `FileTransferLimits.swift` and fails if the caps above no longer fit under the ceiling it implies, so this stays enforced rather than remembered.
 
@@ -548,7 +569,7 @@ request carrying it is answered with the types bitchat does know, and bitchat
 never sets it. Named public channels need their own bit because they no longer
 ride `0x02`; without one they would have no catch-up at all.
 
-Every other type is deliberately absent from both implementations. Courier envelopes are directed deposits and must not spread by gossip; ping, pong and gateway carriers are ephemeral and would replay as unanswerable echoes; live voice is only useful in the moment and receivers drop stale frames anyway; rotating-ID presence is valid only inside its epoch, and syncing it would let a device that was never in radio range collect presence it could not otherwise observe.
+Every other type is absent from both implementations by design. Courier envelopes are directed deposits and must not spread by gossip; ping, pong and gateway carriers are ephemeral and would replay as unanswerable echoes; live voice is only useful in the moment and receivers drop stale frames anyway; rotating-ID presence is valid only inside its epoch, and syncing it would let a device that was never in radio range collect presence it could not otherwise observe.
 
 **Bit 9 is the one gap.** Airhop distributes its own prekey bundle by flooding it to each new link, and accepts and verifies bundles that reach it that way, but it does not reconcile them through sync. The effect is narrow: a device that arrives after a bundle has already flooded cannot pull it from a peer that still holds one, so a courier message it seals to that owner falls back to the owner's long-lived static key instead of a one-time prekey. The message is still delivered and still encrypted; what is lost is forward secrecy for that envelope.
 
@@ -583,8 +604,8 @@ characters) on all three implementations, and all three return nothing rather
 than truncating. A message too long to encode has no courier representation
 anywhere and stays in the sender's outbox instead.
 
-The message ID is what makes the rest work. Spray-and-wait deliberately puts
-several copies on the mesh, each resealed by its carrier, so no envelope-derived
+The message ID is what makes the rest work. Spray-and-wait puts several
+copies on the mesh by design, each resealed by its carrier, so no envelope-derived
 identity can collapse them; the recipient dedupes on the sender's ID, and can
 acknowledge the message because it has one to name.
 
@@ -636,7 +657,7 @@ bitchat labels its relay-DM encryption `nip44-v2`, and the name is misleading: i
 | Padding      | Padded to a power-of-two bucket            | None                                           |
 | Framing      | base64, version byte inside the payload    | `"v2:"` prefix plus base64url                  |
 
-**Airhop implements bitchat's construction deliberately, and must keep doing so.** The Nostr event signature covers the encrypted content, so byte-identical output is the whole of DM interoperability: a real NIP-44 payload is not something a bitchat client can open, and vice versa. The implementation and its reasoning are in [`src/core/nostr/bitchat-nip44.ts`](../../src/core/nostr/bitchat-nip44.ts).
+**Airhop implements bitchat's construction on purpose, and must keep doing so.** The Nostr event signature covers the encrypted content, so byte-identical output is the whole of DM interoperability: a real NIP-44 payload is not something a bitchat client can open, and vice versa. The implementation and its reasoning are in [`src/core/nostr/bitchat-nip44.ts`](../../src/core/nostr/bitchat-nip44.ts).
 
 The envelope around it **is** NIP-17-shaped: kinds 13, 14 and 1059 in section 8 carry their standard meanings, and the gift-wrap layering is the one NIP-17 describes. Only the encryption inside each layer diverges. So "NIP-17 gift-wrap" elsewhere in these docs is accurate about the structure and should be read as excluding the cipher.
 
@@ -743,7 +764,7 @@ the field.
 and never announces (`sim/harness/relay-node.ts`): delivery through one relay,
 discovery without the relay entering the roster, a two-relay chain with no person
 between, a three-relay ring forwarding each packet once, and a private message
-crossing a node that cannot read it. That is the bare shape deliberately, because
+crossing a node that cannot read it. That is the bare shape on purpose, because
 it is the weakest thing Airhop has to work with. A peer relay is an ordinary peer
 to everything upstream of the roster, and the `0xB1` handling is covered in
 `announce-manager.test.ts`.

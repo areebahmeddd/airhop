@@ -38,7 +38,7 @@ import {
   TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
-import { formatNumber } from "@utils/format";
+import { formatNumber, parseWholeNumber } from "@utils/format";
 import {
   resolveDisplayName,
   resolvePeerOwnName,
@@ -254,10 +254,7 @@ export default function PeerList({
   // no way to tell it from a failed send. One source of validity now drives
   // both the button's disabled state and the send.
   const parsedSats = useMemo(() => {
-    const trimmed = sendSatsAmount.trim();
-    if (!/^\d+$/.test(trimmed)) return null;
-    const value = Number.parseInt(trimmed, 10);
-    return Number.isSafeInteger(value) && value > 0 ? value : null;
+    return parseWholeNumber(sendSatsAmount);
   }, [sendSatsAmount]);
 
   function handleQRScanned(peerID: string): void {

@@ -5,7 +5,12 @@
 // screens it describes. A renamed row or a mistargeted entry both fail silently
 // at runtime, so both are checked here by reading the screens' source.
 
-import { SETTINGS_INDEX, type SettingsEntry } from "../settings-index";
+import { t } from "@i18n";
+import {
+  searchSettings,
+  SETTINGS_INDEX,
+  type SettingsEntry,
+} from "../settings-index";
 
 // Declared rather than pulled in via @types/node, as conformance.test.ts does:
 // the app ships with no Node type dependency, and one readFileSync in a test is
@@ -99,5 +104,27 @@ describe("settings index", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+describe("searchSettings", () => {
+  const labels = (q: string): string[] =>
+    searchSettings(q, t).map((h) => t(h.entry.labelKey));
+
+  it("ranks a name match above a section match above a description match", () => {
+    const hits = labels("cache");
+    expect(hits[0]).toBe(t("settings.storage.cache"));
+    expect(hits.length).toBeGreaterThan(1);
+  });
+
+  it("matches every word of a query, in any order", () => {
+    expect(labels("storage data")[0]).toBe(t("settings.section.storage"));
+    expect(labels("data storage")[0]).toBe(t("settings.section.storage"));
+    expect(labels("report bug")[0]).toBe(t("settings.help.bug"));
+  });
+
+  it("returns nothing for a word that lands on no entry", () => {
+    expect(labels("storage zzzz")).toEqual([]);
+    expect(labels("   ")).toEqual([]);
   });
 });

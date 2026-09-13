@@ -1,0 +1,40 @@
+Offline doesn't mean disconnected.
+
+Airhop lets nearby phones communicate directly over Bluetooth. Chat, share photos and videos, make offline payments, and talk with live push-to-talk, all without mobile data, Wi-Fi, or servers.
+
+No account. No phone number. No server. Just open the app and you're reachable.
+
+FEATURES
+
+- Public rooms for everyone nearby
+- End-to-end encrypted direct messages
+- Private groups and invite-only channels
+- Photo, video, and voice note sharing
+- Live push-to-talk, like a walkie-talkie
+- Bulletin boards for persistent local announcements
+- Send and receive Cashu ecash
+
+WORKS WITH BITCHAT
+
+Airhop speaks the same protocol as bitchat. Airhop and bitchat users automatically discover each other over Bluetooth and can exchange messages without either side needing to know they're using different apps.
+
+OPTIONAL INTERNET MODE
+
+- Enable internet bridging via Nostr relays to reach people beyond Bluetooth range when internet access is available.
+- Tor routing and bridges are built in, helping route traffic through Tor and connect on networks that block or monitor Tor. No separate app required.
+
+PRIVACY AND SECURITY
+
+- Open source under the MIT License
+- Every message is digitally signed to prevent impersonation
+- Attachments are automatically deleted after seven days
+- Panic wipe permanently deletes all messages and cryptographic keys stored on the device
+
+WHAT AIRHOP DOESN'T PROMISE
+
+- Public rooms are exactly that: public. Anyone within Bluetooth range can read messages sent there.
+- We document the system's limits instead of implying guarantees we cannot make.
+
+ABOUT
+
+Airhop is an independent project built on bitchat's public-domain protocol. It is not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.

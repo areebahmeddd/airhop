@@ -1456,6 +1456,8 @@ export const strings: Strings = {
     "Đã khóa vào khóa của họ nhưng chưa chuyển tới. Hãy chia sẻ token từ giao dịch này để hoàn tất.",
   "wallet.svc.swap_lost":
     "Nhà đúc chưa bao giờ hoàn tất lần hoán đổi này, nên không có gì được phát hành dựa trên nó.",
+  "wallet.svc.mint_lost":
+    "Mint đã phát hành khoản nạp này, nhưng không thể dựng lại các đồng xu. Khôi phục từ cụm từ khôi phục sẽ lấy lại chúng.",
   "wallet.svc.swap_unreadable":
     "Lần hoán đổi này được lưu ở dạng mà phiên bản hiện tại không phát lại được.",
 

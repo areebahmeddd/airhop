@@ -1459,6 +1459,8 @@ export const strings: Strings = {
     "Anahtarlarına kilitlendi ama henüz teslim edilmedi. Tamamlamak için bu işlemdeki jetonu paylaş.",
   "wallet.svc.swap_lost":
     "Darphane bu takası hiç tamamlamadı, bu yüzden karşılığında hiçbir şey çıkarılmadı.",
+  "wallet.svc.mint_lost":
+    "Mint bu yatırmayı verdi, ancak paraları yeniden oluşturulamadı. Kurtarma ifadenizden geri yüklemek onları geri getirir.",
   "wallet.svc.swap_unreadable":
     "Bu takas, bu sürümün yeniden oynatamayacağı bir biçimde kaydedilmiş.",
 

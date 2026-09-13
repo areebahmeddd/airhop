@@ -299,11 +299,11 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               onPress={() => setShowRetentionSheet(true)}
             />
             <GroupDivider />
-            {/* Not a download switch, whatever it used to be called. Media
-                arrives as one packet and is already on disk before any of this
-                runs, so there is nothing here to decline; what this controls is
-                whether it appears by itself or waits behind a tap. Worth having
-                for the shoulder-surfing case, worth naming honestly. */}
+            {/* Not a download switch. Media arrives as one packet and is on
+                disk before any of this runs, so there is nothing to decline;
+                this only decides whether it shows by itself or waits behind a
+                tap. Worth having for the shoulder-surfing case, worth naming
+                honestly. */}
             <SettingRow
               id="show-media"
               icon="eye"

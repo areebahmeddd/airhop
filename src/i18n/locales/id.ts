@@ -1465,6 +1465,8 @@ export const strings: Strings = {
     "Terkunci ke kunci mereka tetapi belum terkirim. Bagikan token dari transaksi ini untuk menuntaskannya.",
   "wallet.svc.swap_lost":
     "Mint tidak pernah menuntaskan penukaran ini, jadi tidak ada yang diterbitkan atasnya.",
+  "wallet.svc.mint_lost":
+    "Mint telah menerbitkan setoran ini, tetapi koinnya tidak dapat dibangun ulang. Memulihkan dari frasa pemulihan Anda akan mengembalikannya.",
   "wallet.svc.swap_unreadable":
     "Penukaran ini tersimpan dalam bentuk yang tidak bisa diputar ulang oleh versi ini.",
 

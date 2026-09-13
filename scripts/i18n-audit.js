@@ -86,9 +86,11 @@ const SKIP_FILES = [
   "src/data/bridges.ts",
   // The catalog itself.
   "src/i18n/",
-  // Protocol internals: every string here is a `throw` aimed at a stack trace,
-  // never at a user. The two screens that do render a raw error string are
-  // passing through a remote mint's own wording.
+  // Diagnostics bundle for maintainers triaging bug reports, not user-facing text.
+  // Keep it in English so reports are consistent and comparable across locales.
+  "src/services/diagnostics-export.ts",
+  // Protocol internals: strings here are thrown for stack traces, never shown to users.
+  // Raw error strings shown on the two screens come from the remote mint.
   "src/core/",
   "src/bridge/",
 ];
@@ -134,7 +136,6 @@ const JSX_TEXT = />\s*([A-Z][^<>{}\n]{2,200}?)\s*<\//g;
 // A regex cannot do this: `/"([^"]{2,})"/` matches the gap *between* two
 // literals in `<Feather name="x" size={22} color="#FFF" />`, because the engine
 // may start at the first closing quote. Scanning left to right is exact.
-// /
 function scanLiterals(line) {
   const literals = [];
   let code = "";

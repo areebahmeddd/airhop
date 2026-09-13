@@ -1449,6 +1449,8 @@ export const strings: Strings = {
     "Låst till deras nyckel men ännu inte levererat. Dela tokenet från den här transaktionen för att slutföra den.",
   "wallet.svc.swap_lost":
     "Minten slutförde aldrig bytet, så inget gavs ut mot det.",
+  "wallet.svc.mint_lost":
+    "Minten har gett ut den här insättningen, men dess mynt kunde inte återskapas. Att återställa från din återställningsfras hämtar tillbaka dem.",
   "wallet.svc.swap_unreadable":
     "Bytet sparades i en form som den här versionen inte kan spela upp igen.",
 

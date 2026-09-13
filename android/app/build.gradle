@@ -4,20 +4,18 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
-// Single source of truth for the app version: app.json's expo.version, the same
-// value the release workflow stamps from the git tag. Read it here so the APK's
-// versionName and versionCode always track the tag instead of a hardcoded number
-// that silently drifts. versionCode is a monotonic integer derived from the
-// three-part version (major*10000 + minor*100 + patch), so 1.0.4 -> 10004.
+// The version comes from app.json's expo.version, which the release workflow
+// stamps from the git tag, so versionName and versionCode cannot drift from
+// it. versionCode is major*10000 + minor*100 + patch, so 1.0.4 -> 10004.
 def expoVersion = new groovy.json.JsonSlurper()
     .parseText(new File(projectRoot, "app.json").text).expo.version
 def (verMajor, verMinor, verPatch) = expoVersion.tokenize('.').collect { it.toInteger() }
 def computedVersionCode = verMajor * 10000 + verMinor * 100 + verPatch
 
-/**
- * This is the configuration block to customize your React Native Android app.
- * By default you don't need to apply any configuration, just uncomment the lines you need.
- */
+// The React Native Gradle plugin's configuration. Every path is resolved
+// through node so the build follows whatever `npm install` put in
+// node_modules; the JS bundle is produced by Expo CLI (`export:embed`) so
+// Metro runs with the Expo config.
 react {
     entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())
     reactNativeDir = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
@@ -25,70 +23,16 @@ react {
     codegenDir = new File(["node", "--print", "require.resolve('@react-native/codegen/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
 
     enableBundleCompression = (findProperty('android.enableBundleCompression') ?: false).toBoolean()
-    // Use Expo CLI to bundle the app, this ensures the Metro config
-    // works correctly with Expo projects.
     cliFile = new File(["node", "--print", "require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })"].execute(null, rootDir).text.trim())
     bundleCommand = "export:embed"
 
-    /* Folders */
-     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
-    // root = file("../../")
-    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
-    // reactNativeDir = file("../../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
-    // codegenDir = file("../../node_modules/@react-native/codegen")
-
-    /* Variants */
-    //   The list of variants to that are debuggable. For those we're going to
-    //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
-    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "prodDebug"]
-
-    /* Bundling */
-    //   A list containing the node command and its flags. Default is just 'node'.
-    // nodeExecutableAndArgs = ["node"]
-
-    //
-    //   The path to the CLI configuration file. Default is empty.
-    // bundleConfig = file(../rn-cli.config.js)
-    //
-    //   The name of the generated asset file containing your JS bundle
-    // bundleAssetName = "MyApplication.android.bundle"
-    //
-    //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
-    // entryFile = file("../js/MyApplication.android.js")
-    //
-    //   A list of extra flags to pass to the 'bundle' commands.
-    //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
-    // extraPackagerArgs = []
-
-    /* Hermes Commands */
-    //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
-    //
-    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
-    // hermesFlags = ["-O", "-output-source-map"]
-
-    /* Autolinking */
     autolinkLibrariesWithApp()
 }
 
-/**
- * Set this to true in release builds to optimize the app using [R8](https://developer.android.com/topic/performance/app-optimization/enable-app-optimization).
- */
+// R8 in release builds, wired to proguard-rules.pro below.
 def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()
 
-/**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US. Note that
- * this variant is about 6MiB larger per architecture than default.
- */
+// JavaScriptCore, used only when Hermes is disabled in gradle.properties.
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
@@ -114,13 +58,11 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        // Real release key, populated from the environment. The release workflow
-        // decodes the keystore from a GitHub secret and exports these four vars;
-        // a developer can sign locally by exporting the same four. When none are
-        // set (a normal dev machine or a PR build) this stays empty and the
-        // release buildType below falls back to the debug key, so unsigned local
-        // builds still produce an installable APK. The keystore file is never
-        // committed (see .gitignore).
+        // The release key comes from four environment variables: the release
+        // workflow exports them from a secret, a developer can export the same
+        // four to sign locally. Unset, this stays empty and the release
+        // buildType falls back to the debug key, so a local or PR build still
+        // installs. The keystore file is never committed.
         release {
             def ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
             if (ksFile) {
@@ -136,40 +78,17 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Sign with the real release key when it is present in the environment
-            // (CI decodes it from a secret, see the release workflow), otherwise
-            // fall back to the debug key so local and PR builds still produce an
-            // installable APK. The debug fallback never ships: the release job
-            // always has the secret.
             signingConfig System.getenv("ANDROID_KEYSTORE_FILE") ? signingConfigs.release : signingConfigs.debug
-            // NOTE: there is deliberately no `ndk { abiFilters ... }` here, and
-            // the ABIs of a release build are NOT set in this file.
-            //
-            // There used to be a filter here, set to arm64-v8a alone and
-            // commented as halving the native payload, and it did nothing at
-            // all. The React Native Gradle plugin puts `reactNativeArchitectures`
-            // into defaultConfig.ndk.abiFilters (NdkConfiguratorUtils.kt), AGP
-            // MERGES defaultConfig and buildType filters rather than letting the
-            // more specific one win, and a union can only ever add. Every
-            // release APK built since carried the x86_64 copy of all 26 native
-            // libraries the comment claimed had been dropped, which is 28 MB of
-            // an 90 MB download.
-            //
-            // A per-variant `packaging.jniLibs.excludes` rule was tried next and
-            // is not the answer either: it removes 20 of the 26 and leaves the
-            // prebuilt React Native core (libreactnative, libhermesvm, libjsi,
-            // libfbjni, libhermestooling, libc++_shared) behind, because those
-            // arrive by a different route.
-            //
-            // The one control that works is the property the plugin actually
-            // reads. gradle.properties carries the development value, which
-            // includes x86_64 so emulators keep working, and both release paths
-            // pass the shipping set explicitly:
-            //
-            //   ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
-            //
-            // See .github/workflows/release.yml and ci.yml. A release built
-            // locally without that flag is correct, just larger.
+            // No `ndk { abiFilters }` here, on purpose. The React Native plugin
+            // puts `reactNativeArchitectures` into defaultConfig's filters and
+            // AGP merges those with a buildType's rather than letting the
+            // narrower win, so a filter here can only add ABIs. A per-variant
+            // `packaging.jniLibs.excludes` misses the prebuilt React Native
+            // core, which arrives by another route. The property is the one
+            // control: gradle.properties holds the development set (with
+            // x86_64 for emulators) and the release workflows pass
+            // -PreactNativeArchitectures=arm64-v8a,armeabi-v7a. A release
+            // built locally without that flag is correct, just larger.
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds
@@ -189,20 +108,15 @@ android {
     }
 }
 
-// Apply static values from `gradle.properties` to the `android.packagingOptions`
-// Accepts values in comma delimited lists, example:
-// android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini
+// Comma-separated `android.packagingOptions.<prop>` values from
+// gradle.properties, e.g. android.packagingOptions.pickFirsts=/LICENSE,**/x.
 ["pickFirsts", "excludes", "merges", "doNotStrip"].each { prop ->
-    // Split option: 'foo,bar' -> ['foo', 'bar']
     def options = (findProperty("android.packagingOptions.$prop") ?: "").split(",");
-    // Trim all elements in place.
     for (i in 0..<options.size()) options[i] = options[i].trim();
-    // `[] - ""` is essentially `[""].filter(Boolean)` removing all empty strings.
     options -= ""
 
     if (options.length > 0) {
         println "android.packagingOptions.$prop += $options ($options.length)"
-        // Ex: android.packagingOptions.pickFirsts += '**/SCCS/**'
         options.each {
             android.packagingOptions[prop] += it
         }
@@ -210,12 +124,12 @@ android {
 }
 
 dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
+    // Versioned by the React Native Gradle plugin.
     implementation("com.facebook.react:react-android")
 
     // The pluggable transports, built by native/iptproxy and committed under
-    // libs/. A file dependency rather than a Maven coordinate, because the
-    // artifact is one this repository produces and hashes.
+    // libs/. A file, not a Maven coordinate: this repository produces and
+    // hashes the artifact.
     implementation(files("libs/IPtProxy.aar"))
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
@@ -223,15 +137,12 @@ dependencies {
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
 
     if (isGifEnabled) {
-        // For animated gif support
         implementation("com.facebook.fresco:animated-gif:${expoLibs.versions.fresco.get()}")
     }
 
     if (isWebpEnabled) {
-        // For webp support
         implementation("com.facebook.fresco:webpsupport:${expoLibs.versions.fresco.get()}")
         if (isWebpAnimatedEnabled) {
-            // Animated webp support
             implementation("com.facebook.fresco:animated-webp:${expoLibs.versions.fresco.get()}")
         }
     }

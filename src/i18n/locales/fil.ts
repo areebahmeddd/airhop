@@ -1506,6 +1506,8 @@ export const strings: Strings = {
     "Nakakandado sa susi nila pero hindi pa naihahatid. Ibahagi ang token mula sa transaksyong ito para makumpleto ito.",
   "wallet.svc.swap_lost":
     "Hindi kailanman natapos ng mint ang palitang ito, kaya walang inilabas laban dito.",
+  "wallet.svc.mint_lost":
+    "Inisyu ng mint ang deposit na ito, pero hindi na-rebuild ang mga coin nito. Maibabalik ang mga ito sa pag-restore mula sa recovery phrase mo.",
   "wallet.svc.swap_unreadable":
     "Na-save ang palitang ito sa anyong hindi kayang ulitin ng bersyong ito.",
 

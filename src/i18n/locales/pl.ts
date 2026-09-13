@@ -1474,6 +1474,8 @@ export const strings: Strings = {
     "Przypisane do ich klucza, ale jeszcze niedostarczone. Udostępnij token z tej transakcji, żeby ją dokończyć.",
   "wallet.svc.swap_lost":
     "Mennica nigdy nie dokończyła tej wymiany, więc nic pod nią nie wydano.",
+  "wallet.svc.mint_lost":
+    "Mint wydał tę wpłatę, ale nie udało się odtworzyć jej monet. Przywrócenie z frazy odzyskiwania je odzyska.",
   "wallet.svc.swap_unreadable":
     "Ta wymiana została zapisana w postaci, której ta wersja nie odtworzy.",
 

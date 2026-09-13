@@ -565,8 +565,13 @@ const DESCRIPTION_WEIGHT = 1;
 // because this matches what is on screen, and a module-level `t` would freeze
 // at the language the app started in.
 export function searchSettings(query: string, T: Translator): SettingsHit[] {
-  const q = searchKey(query.trim());
-  if (!q) return [];
+  // Word by word, in any order: "storage data" has to find "Storage & data"
+  // and "report bug" has to find "Report a bug". Every word must land
+  // somewhere on the entry; the score is the sum of each word's best field.
+  const words = searchKey(query)
+    .split(/\s+/)
+    .filter((w) => w.length > 0);
+  if (words.length === 0) return [];
   const hits: SettingsHit[] = [];
   // Widened: the const assertion holds the literals to the shape, it is not
   // meant to be read back one tuple member at a time.
@@ -575,13 +580,23 @@ export function searchSettings(query: string, T: Translator): SettingsHit[] {
     if (entry.platform !== undefined && entry.platform !== Platform.OS) {
       continue;
     }
-    const score = Math.max(
-      fieldScore(T(entry.labelKey), q) * LABEL_WEIGHT,
-      fieldScore(T(entry.sectionKey), q) * SECTION_WEIGHT,
-      entry.descriptionKey === undefined
-        ? 0
-        : fieldScore(T(entry.descriptionKey), q) * DESCRIPTION_WEIGHT,
-    );
+    const label = T(entry.labelKey);
+    const section = T(entry.sectionKey);
+    const description =
+      entry.descriptionKey === undefined ? "" : T(entry.descriptionKey);
+    let score = 0;
+    for (const w of words) {
+      const best = Math.max(
+        fieldScore(label, w) * LABEL_WEIGHT,
+        fieldScore(section, w) * SECTION_WEIGHT,
+        fieldScore(description, w) * DESCRIPTION_WEIGHT,
+      );
+      if (best === 0) {
+        score = 0;
+        break;
+      }
+      score += best;
+    }
     if (score > 0) hits.push({ entry, score });
   }
   return hits.sort(

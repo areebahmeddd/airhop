@@ -1432,6 +1432,8 @@ export const strings: Strings = {
     "상대의 키에 잠겼지만 아직 전달되지 않았습니다. 이 거래의 토큰을 공유해 마무리하세요.",
   "wallet.svc.swap_lost":
     "민트가 이 교환을 끝내지 않아 그에 대해 발행된 것이 없습니다.",
+  "wallet.svc.mint_lost":
+    "민트가 이 입금을 발행했지만 코인을 다시 만들지 못했습니다. 복구 문구로 복원하면 되찾을 수 있습니다.",
   "wallet.svc.swap_unreadable":
     "이 교환은 이 버전이 다시 처리할 수 없는 형식으로 저장되었습니다.",
 

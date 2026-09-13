@@ -1,25 +1,19 @@
 // Key generation, peer ID derivation, and secure storage for Airhop identity.
 //
-// One identity = one key pair. The Ed25519 signing key doubles as the Nostr
-// identity (npub). The X25519 static key is used exclusively for Noise XX
-// session establishment. Both private keys live in the OS Keychain/Keystore
-// via ./keychain and never leave the device.
+// One identity = two key pairs. The X25519 static key is used only for Noise
+// XX sessions and derives the peer ID. The Ed25519 key signs packets and seeds
+// the Nostr identity. Both private keys live in the OS Keychain/Keystore via
+// ./keychain and never leave the device.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "./keychain";
 
-// Deliberately NOT here: the Nostr public key.
-//
-// This carried a `nostrPubKey` field set to the Ed25519 signing public key, and
-// a comment claiming that was the npub in hex. Both were wrong. The Nostr
-// identity is secp256k1, and it comes from HKDF over the signing PRIVATE key
-// (deriveNostrPrivKey, core/nostr/gift-wrap) - the Ed25519 public key bears no
-// relation to it at all. Nothing ever read the field, so nothing was broken;
-// it was a plausible-looking value that would have published an address no
-// relay could deliver to. MeshService owns the real one as `nostrPubKeyHex`,
-// derived once at construction, and that is what the ANNOUNCE TLV and the QR
-// contact card carry.
+// Not here: the Nostr public key. It is secp256k1, derived by HKDF over the
+// signing PRIVATE key (deriveNostrPrivKey, core/nostr/gift-wrap), so the
+// Ed25519 public key bears no relation to it. MeshService owns it as
+// `nostrPubKeyHex`, derived once at construction, and that is what the
+// ANNOUNCE TLV and the QR contact card carry.
 export interface Identity {
   // X25519 static key pair - used for Noise XX session encryption only
   noiseStaticPrivKey: Uint8Array;

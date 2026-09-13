@@ -78,31 +78,31 @@ A bitchat node never interprets a type it does not know, but it does relay it,
 so an extension still crosses a mesh of bitchat phones. Relaying is not the
 risk; two projects assigning meaning to the same number is.
 
-| Name                 | Hex    | Direction         | Description                                                                |
-| -------------------- | ------ | ----------------- | -------------------------------------------------------------------------- |
-| `ANNOUNCE`           | `0x01` | Broadcast         | Signed presence heartbeat; TLV payload                                     |
-| `CHANNEL_MSG`        | `0x02` | Broadcast         | Public channel message                                                     |
-| `LEAVE`              | `0x03` | Broadcast         | Peer departing                                                             |
-| `COURIER_ENV`        | `0x04` | Directed          | Store-and-forward sealed envelope                                          |
-| `NOISE_HANDSHAKE`    | `0x10` | Unicast           | Noise XX handshake message                                                 |
-| `NOISE_ENCRYPTED`    | `0x11` | Unicast           | Post-handshake payload (DM, receipts, group invites, private media, voice) |
-| `DR_ENCRYPTED`       | `0x12` | Unicast           | Double Ratchet DM (Airhop extension)                                       |
-| `FRAGMENT`           | `0x20` | Broadcast/Unicast | BLE fragment of a larger message                                           |
-| `REQUEST_SYNC`       | `0x21` | Broadcast         | GCS gossip request; TTL=2 (local mesh only)                                |
-| `FILE_TRANSFER`      | `0x22` | Broadcast/Unicast | Binary file, audio, or image payload; 1 MiB cap                            |
-| `BOARD_POST`         | `0x23` | Broadcast         | Signed bulletin-board post or tombstone                                    |
-| `PREKEY_BUNDLE`      | `0x24` | Broadcast         | Signed batch of one-time public prekeys                                    |
-| `GROUP_MESSAGE`      | `0x25` | Broadcast         | Group-encrypted message (groupID + epoch, ChaChaPoly)                      |
-| `PING`               | `0x26` | Unicast           | Directed echo request (nonce + origin TTL)                                 |
-| `PONG`               | `0x27` | Unicast           | Directed echo reply (echoed nonce)                                         |
-| `NOSTR_CARRIER`      | `0x28` | Broadcast/Unicast | Gateway-ferried signed Nostr event                                         |
-| `VOICE_FRAME`        | `0x29` | Broadcast         | Live PTT audio burst, signed like a public message                         |
-| `CHANNEL_ENC`        | `0x50` | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop extension)                     |
-| `CHANNEL_MSG_AIRHOP` | `0x51` | Broadcast         | Named Airhop public channel, i.e. a location cell (Airhop extension)       |
+| Name                 | Hex    | Direction         | Description                                                                       |
+| -------------------- | ------ | ----------------- | --------------------------------------------------------------------------------- |
+| `ANNOUNCE`           | `0x01` | Broadcast         | Signed presence heartbeat; TLV payload                                            |
+| `CHANNEL_MSG`        | `0x02` | Broadcast         | Public channel message                                                            |
+| `LEAVE`              | `0x03` | Broadcast         | Peer departing                                                                    |
+| `COURIER_ENV`        | `0x04` | Directed          | Store-and-forward sealed envelope                                                 |
+| `NOISE_HANDSHAKE`    | `0x10` | Unicast           | Noise XX handshake message                                                        |
+| `NOISE_ENCRYPTED`    | `0x11` | Unicast           | Post-handshake payload (DM, receipts, group invites, private media, voice)        |
+| `DR_ENCRYPTED`       | `0x12` | Unicast           | Double Ratchet DM (Airhop extension)                                              |
+| `FRAGMENT`           | `0x20` | Broadcast/Unicast | BLE fragment of a larger message                                                  |
+| `REQUEST_SYNC`       | `0x21` | Unicast           | GCS gossip request; TTL=0, never relayed (broadcast only as a discovery fallback) |
+| `FILE_TRANSFER`      | `0x22` | Broadcast/Unicast | Binary file, audio, or image payload; 1 MiB cap                                   |
+| `BOARD_POST`         | `0x23` | Broadcast         | Signed bulletin-board post or tombstone                                           |
+| `PREKEY_BUNDLE`      | `0x24` | Broadcast         | Signed batch of one-time public prekeys                                           |
+| `GROUP_MESSAGE`      | `0x25` | Broadcast         | Group-encrypted message (groupID + epoch, ChaChaPoly)                             |
+| `PING`               | `0x26` | Unicast           | Directed echo request (nonce + origin TTL)                                        |
+| `PONG`               | `0x27` | Unicast           | Directed echo reply (echoed nonce)                                                |
+| `NOSTR_CARRIER`      | `0x28` | Broadcast/Unicast | Gateway-ferried signed Nostr event                                                |
+| `VOICE_FRAME`        | `0x29` | Broadcast         | Live PTT audio burst, signed like a public message                                |
+| `CHANNEL_ENC`        | `0x50` | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop extension)                            |
+| `CHANNEL_MSG_AIRHOP` | `0x51` | Broadcast         | Named Airhop public channel, i.e. a location cell (Airhop extension)              |
 
-Two types were specified and then deliberately removed. Do not reintroduce them:
+Two types were specified and then removed. Do not reintroduce them:
 
-- `0x30 VIDEO_FRAME`: was specified over WiFi Aware / MultipeerConnectivity, which are different protocols that cannot interoperate, so iOS-to-Android video was never achievable. Video ships as a file over `FILE_TRANSFER` instead.
+- `0x30 VIDEO_FRAME`: was specified over a same-platform WiFi path, so iOS-to-Android video was never achievable. Video ships as a file over `FILE_TRANSFER` instead.
 - `0x40 CASHU_TOKEN`: ecash travels as text inside an ordinary encrypted DM and is detected by `findTokensInText()`. A dedicated type would be a second path to keep in sync for no gain.
 
 ## Public Channel Message Payloads
@@ -152,12 +152,15 @@ end-to-end behaviour by the three-node scenario in
 
 The `ANNOUNCE` packet payload is TLV-encoded. TLV format: `[type u8][length u8][value N bytes]`.
 
-| Tag    | Field           | Size           | Notes                           |
-| ------ | --------------- | -------------- | ------------------------------- |
-| `0x01` | nickname        | up to 32 bytes | UTF-8                           |
-| `0x02` | Noise pub key   | 32 bytes       | X25519 static public key        |
-| `0x03` | signing pub key | 32 bytes       | Ed25519 public key              |
-| `0x04` | neighbor IDs    | up to 80 bytes | Optional; up to 10 x 8-byte IDs |
+| Tag    | Field           | Size           | Notes                                                                                                                          |
+| ------ | --------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `0x01` | nickname        | up to 32 bytes | UTF-8                                                                                                                          |
+| `0x02` | Noise pub key   | 32 bytes       | X25519 static public key                                                                                                       |
+| `0x03` | signing pub key | 32 bytes       | Ed25519 public key                                                                                                             |
+| `0x04` | neighbor IDs    | up to 80 bytes | Optional; up to 10 x 8-byte IDs. Decoded, never emitted by Airhop: the list hands a passive listener the local adjacency graph |
+| `0x05` | capabilities    | 1 to 4 bytes   | bitchat capability bits, little-endian                                                                                         |
+| `0x06` | bridge geohash  | up to 12 bytes | bitchat rendezvous cell for the mesh bridge                                                                                    |
+| `0x07` | Nostr pub key   | 32 bytes       | Airhop extension, secp256k1 X-only. A claim signed by the announcer, not by the key: see `bindNostrPubkey` in mesh-service     |
 
 ## BLE Identifiers
 
@@ -167,7 +170,7 @@ These must never change without a coordinated protocol version bump.
 | ------------------- | -------------------------------------- |
 | Service UUID        | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C` |
 | Characteristic UUID | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D` |
-| Local name prefix   | `bitchat-`                             |
+| Peer ID in advert   | iOS local name, Android service data   |
 | Protocol version    | `2`                                    |
 
 ## Peer ID Derivation

@@ -334,7 +334,8 @@ export class AnnounceManager {
   private broadcastFn: (() => void) | null = null;
 
   // Build and return a signed ANNOUNCE packet ready to send.
-  // Pass neighborIDs (each 8 bytes) to include TLV 0x04 so topology gossip works.
+  // neighborIDs (each 8 bytes) fill TLV 0x04; Airhop always passes none, since
+  // the list hands a passive listener the local adjacency graph.
   // Pass nostrPubKey (32 bytes secp256k1 X-only) to include TLV 0x07 for Nostr DMs.
   // Pass capabilities (bitchat capability bits) to include TLV 0x05.
   buildPacket(
@@ -376,9 +377,9 @@ export class AnnounceManager {
   // jittered 15-30s once at least one peer is connected. Pass getPeerCount so
   // the manager can tell which state it is in on each tick.
   //
-  // Pass getNeighborIDs to include TLV 0x04 in each ANNOUNCE. The callback is
-  // called on every broadcast tick so the neighbor list stays current.
-  // Pass nostrPubKey to include TLV 0x05 (constant for the session lifetime).
+  // getNeighborIDs fills TLV 0x04 on each tick; Airhop passes none (see
+  // buildPacket).
+  // Pass nostrPubKey to include TLV 0x07 (constant for the session lifetime).
   // Pass getCapabilities to include TLV 0x05; it is read on every tick so a
   // toggled capability (e.g. the internet gateway) rides the next announce.
   start(

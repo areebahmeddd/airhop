@@ -1,20 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
-  <!-- Location is for LOCATION CHANNELS, not for Bluetooth.
-
-       This was a hard mesh prerequisite while BLUETOOTH_SCAN carried no
-       neverForLocation flag, which cost two things: a backgrounded app is not
-       foreground-for-location without a `location`-typed service, so scan
-       results were withheld exactly when the notification claimed otherwise,
-       and choosing "Approximate" left the mesh unable to find anyone.
-
-       BLE needs no location from API 31 (see the flag below). Location is
-       requested only when a location channel is opened.
-
-       FINE stays unrestricted rather than capped at API 30: #block is geohash
-       precision 7 (~150 m) and a coarse fix is snapped to a far larger grid, so
-       a COARSE-only build would place people in the wrong cell. On API <=30
-       both are still required for BLE; utils/ble-permissions.ts knows the
-       difference. -->
+  <!-- Location is for location channels, not for Bluetooth. BLE needs no
+       location from API 31 (neverForLocation below), so it is requested only
+       when a location channel is opened. FINE is not capped at API 30: #block
+       is geohash precision 7 (~150 m) and a coarse fix snaps to a far larger
+       grid, so a coarse-only build would place people in the wrong cell. On
+       API <=30 both are still required for BLE; utils/ble-permissions.ts
+       knows the difference. -->
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -23,26 +14,23 @@
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-  <!-- neverForLocation: Airhop derives no physical location from a scan result.
-       It reads the service UUID, the 8-byte peer ID in the scan response, and
-       RSSI for the radar ring, none of which is a position. Asserting it
-       decouples the mesh from the location permission and the OS toggle on API
-       31+, which is what makes background discovery work. The system scrubs
-       iBeacon and Eddystone payloads in exchange; Airhop's own 128-bit service
-       data is untouched, so discovery and bitchat interop are unaffected. -->
+  <!-- neverForLocation: a scan result is read for the service UUID, the peer
+       ID in the scan response and RSSI, none of which is a position. The flag
+       decouples the mesh from the location permission and toggle on API 31+,
+       which is what lets discovery run in the background. The system scrubs
+       iBeacon and Eddystone payloads in exchange; Airhop's 128-bit service
+       data is untouched, so bitchat interop is unaffected. -->
   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
   <uses-permission android:name="android.permission.CAMERA"/>
   <!-- ConnectivityManager.requestNetwork() throws SecurityException without
-       this or WRITE_SETTINGS, and it is the only way to stand up a WiFi Aware
-       data path. Everything before it works regardless, so the absence is
-       invisible until two peers try to open a socket. Normal protection level,
-       so it is granted on install with nothing for the user to answer. -->
+       this, and it is the only way to stand up a WiFi Aware data path.
+       Discovery works without it, so the absence is invisible until two peers
+       open a socket. Normal protection level, granted on install. -->
   <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
   <!-- Lets the LAN transport hold a MulticastLock. WiFi power save drops
        multicast when the screen goes off, and mDNS is multicast, so without
-       this the transport finds peers while somebody is looking at the phone and
-       silently stops finding them the moment it is pocketed. Normal protection
+       this discovery stops the moment the phone is pocketed. Normal protection
        level, granted on install. -->
   <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -69,17 +57,12 @@
   <!-- Android 13+ runtime permission for local message notifications -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <!-- Hands a downloaded release APK to the system installer, for the update
-       path on the Version screen. An offline-first app whose users may have no
-       reachable store cannot depend on one to ship a fix.
-
-       Buys nothing but the right to OPEN the installer. The user confirms in a
-       system dialog, Android wants "Install unknown apps" allowed for Airhop on
-       top of that, and it refuses any APK not signed by our release key, so
-       this cannot deliver a build that is not ours.
-
-       Strip it, and the screen's download path with it, in any Play-distributed
-       flavour: Play's Device and Network Abuse policy forbids an app shipped
-       there from updating itself by any route but Play. -->
+       path on the Version screen: users with no reachable store still need a
+       way to get a fix. It only opens the installer; the user confirms in a
+       system dialog, "Install unknown apps" must be allowed, and Android
+       refuses an APK not signed by the release key. Strip it, and the download
+       path with it, from any Play-distributed flavour: Play forbids an app
+       updating itself by any other route. -->
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
@@ -89,35 +72,21 @@
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
-  <!-- Hardware Airhop needs, stated explicitly.
-
-       Google Play hides an app from devices that lack a feature declared
-       required="true", and it INFERS required features from permissions unless
-       we say otherwise. Left alone, that inference is backwards for this app:
-       CAMERA implies a rear autofocus camera and RECORD_AUDIO implies a
-       microphone, so Play was filtering out hardware the mesh runs fine on,
-       while nothing implied Bluetooth LE - the one thing Airhop cannot work
-       without. Every line below either corrects that or makes an existing
-       implication explicit. bitchat/android declares the same set.
-
-       Bluetooth LE is the mesh. Without it the app has no offline transport at
-       all, so an install on such a device is a broken install. BLUETOOTH and
-       BLUETOOTH_ADMIN above already imply android.hardware.bluetooth; it is
-       repeated here so the requirement is readable rather than inferred. -->
+  <!-- Hardware, stated explicitly. Play hides an app from devices lacking a
+       required feature and infers requirements from permissions: CAMERA
+       implies an autofocus camera and RECORD_AUDIO a microphone, neither of
+       which the mesh needs, while nothing implies Bluetooth LE, the one thing
+       it cannot run without. bitchat/android declares the same set. -->
   <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
-  <!-- The camera scans contact QR codes and captures attachments. Both are
-       optional paths: a contact can be added from a link or by hand, and
-       attachments can be picked from the library. Autofocus is implied by the
-       CAMERA permission and is not needed at all, so both are released. -->
+  <!-- QR scanning and capture are optional: a contact can be added from a link
+       and attachments picked from the library. -->
   <uses-feature android:name="android.hardware.camera" android:required="false"/>
   <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
-  <!-- The microphone records voice notes and push-to-talk. Messaging works
-       without either, so a device with no microphone should still install. -->
+  <!-- Voice notes and push-to-talk are optional. -->
   <uses-feature android:name="android.hardware.microphone" android:required="false"/>
-  <!-- WiFi Aware powers the optional same-platform (Android-to-Android) fast
-       path. required="false" so phones without WiFi Aware hardware, and iPhones,
-       still install and run on the BLE mesh. -->
+  <!-- The same-platform fast path is optional; phones without it run on the
+       BLE mesh. -->
   <uses-feature android:name="android.hardware.wifi.aware" android:required="false"/>
   <queries>
     <intent>
@@ -126,40 +95,23 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  <!-- enableOnBackInvokedCallback stays FALSE, and is not an oversight.
-
-       React Native 0.86's ReactActivity registers its OnBackPressedCallback only
-       when the DEVICE is API 36+ and the app targets 36+ (see
-       AndroidVersion.isAtLeastTargetSdk36). On API 36 the platform enforces
-       predictive back and ignores this flag anyway, so BackHandler keeps working.
-
-       Below API 36 the flag decides. Setting it true would have AndroidX route
-       back into OnBackPressedDispatcher, bypassing ReactActivity's
-       onBackPressed() override - the only thing that reaches BackHandler - and
-       with no RN callback registered there the dispatcher falls through to
-       Activity.super.onBackPressed(). In-thread back, search cancel and the
-       profile back handler would close the app on Android 13, 14 and 15.
-
-       Revisit when React Native registers its callback unconditionally. -->
+  <!-- enableOnBackInvokedCallback stays false. React Native 0.86's
+       ReactActivity registers its OnBackPressedCallback only on API 36+ with
+       targetSdk 36+, where the platform enforces predictive back regardless.
+       Below that, true would route back through OnBackPressedDispatcher,
+       bypassing the onBackPressed() override that reaches BackHandler, and
+       every in-app back would close the app on Android 13 to 15. Revisit when
+       React Native registers its callback unconditionally. -->
   <!-- Puts Airhop under Settings > Apps > Airhop > Language on Android 13, so
        someone whose system language Airhop does not ship can still pick one it
        does. Reaches only the strings the OS renders. Inert below API 33. -->
   <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:localeConfig="@xml/locales_config" tools:targetApi="33">
-    <!-- Android 16 ignores screenOrientation, resizability and aspect-ratio
-         restrictions on any display at least 600dp wide, so the portrait lock on
-         MainActivity below stops applying on a foldable's inner screen, a tablet
-         or a desktop window. The four-tab shell in App.tsx has no breakpoints and
-         is laid out for a phone in portrait, so being handed a large resizable
-         window is a worse experience than compatibility mode, not a better one.
-
-         This buys time on Android 16 only, and the expiry is earlier than it
-         looks: the opt-out was removed in Android 17, so it stops applying on an
-         Android 17 device at this targetSdk, not only once targetSdk reaches 37.
-
-         Verified on a Pixel 10 Pro Fold: the activity gets the full 851dp inner
-         display with no pillarboxing. It renders correctly, so this is a polish
-         gap rather than a break; the MAX_CANVAS cap in radar-view.tsx exists
-         because of that test. -->
+    <!-- Android 16 ignores the portrait lock on any display at least 600dp
+         wide (a foldable's inner screen, a tablet, a desktop window). The shell
+         has no breakpoints and is laid out for a phone in portrait, so
+         compatibility mode is the better experience. Android 17 removed this
+         opt-out, so it stops applying there whatever the targetSdk; the app
+         still renders on a large display, only unpolished. -->
     <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true"/>
     <!-- Read by expo-notifications at runtime. Written here rather than through
          the config plugin because prebuild is never run in this repo, so the
@@ -173,16 +125,12 @@
     <meta-data android:name="expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT" android:value="true"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
-    <!-- expo-audio's AudioControlsService and FOREGROUND_SERVICE_MEDIA_PLAYBACK
-         were written here by a past prebuild and are deliberately gone. That
-         service starts from one call, AudioPlayer.setActiveForLockScreen(),
-         which Airhop never makes. Carrying it cost a second Play
-         foreground-service declaration, each needing its own screen recording,
-         for a service that can never start.
-
-         If lock-screen controls are ever wanted, the permission and this block
-         come back TOGETHER; removing one alone is a crash on Android 14+. Until
-         then the call degrades to an expo-audio error log. -->
+    <!-- No expo-audio AudioControlsService and no
+         FOREGROUND_SERVICE_MEDIA_PLAYBACK: the service starts only from
+         AudioPlayer.setActiveForLockScreen(), which Airhop never calls, and
+         each foreground-service type declared costs a separate Play review.
+         If lock-screen controls are ever wanted, the permission and the service
+         come back together; one without the other crashes on Android 14+. -->
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize|assetsPaths" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -196,7 +144,7 @@
         <data android:scheme="airhop"/>
       </intent-filter>
     </activity>
-    <!-- Foreground service that keeps BLE scanning/advertising alive in the background -->
+    <!-- Keeps the mesh radios running with the app off screen. -->
     <service
       android:name="org.onemindlabs.airhop.service.AirhopForegroundService"
       android:foregroundServiceType="connectedDevice"

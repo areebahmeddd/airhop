@@ -1481,6 +1481,8 @@ export const strings: Strings = {
     "Trancado na chave da pessoa mas ainda não entregue. Partilha o token desta transação para concluir.",
   "wallet.svc.swap_lost":
     "A casa de emissão nunca concluiu esta troca, por isso nada foi emitido em contrapartida.",
+  "wallet.svc.mint_lost":
+    "O mint emitiu este depósito, mas não foi possível reconstruir as suas moedas. Restaurar a partir da frase de recuperação recupera-as.",
   "wallet.svc.swap_unreadable":
     "Esta troca foi guardada num formato que esta versão não consegue repetir.",
 

@@ -1478,6 +1478,8 @@ export const strings: Strings = {
     "Vincolato alla loro chiave ma non ancora consegnato. Condividi il token di questa transazione per completarla.",
   "wallet.svc.swap_lost":
     "Il mint non ha mai completato questo scambio, quindi non è stato emesso nulla in cambio.",
+  "wallet.svc.mint_lost":
+    "Il mint ha emesso questo deposito, ma le sue monete non sono state ricostruite. Il ripristino dalla frase di recupero le recupera.",
   "wallet.svc.swap_unreadable":
     "Questo scambio è stato salvato in un formato che questa versione non può rieseguire.",
 

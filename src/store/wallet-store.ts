@@ -143,6 +143,12 @@ export interface WalletTx {
   // unrecoverable. Persisting them first lets `reconcile` rebuild it later.
   // Cleared once the change has been credited.
   meltOutputs?: unknown;
+  // Mint only: the blinded outputs sent to be signed, serialised the same way,
+  // written before the /v1/mint request and cleared once the proofs are in
+  // hand. The mint marks the quote ISSUED on its side of that request, so a
+  // response lost to a kill leaves paid-for coins that only these blinding
+  // factors can rebuild.
+  mintOutputs?: unknown;
   // Swap only: the prepared swap (inputs plus blinded outputs), serialised by
   // `core/payments/swap-preview.ts`, written before the /v1/swap request goes
   // out and cleared once the outputs are in hand.

@@ -1,9 +1,8 @@
 // Location-scoped channels bridged over Nostr.
 //
 // This is what makes #block / #neighborhood / #city / #province / #region mean
-// something. Until now they were BLE-only broadcasts despite being described in
-// the UI as "bridged over Nostr", so two people in the same city but out of
-// Bluetooth range could sit in #city and never see each other.
+// something: two people in the same city but out of Bluetooth range still see
+// each other in #city.
 //
 // How it works:
 //   - The device's coarse position is truncated to a geohash. Each channel maps

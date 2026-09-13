@@ -3,7 +3,7 @@
 //   node press/build.mjs                everything, light and dark
 //   node press/build.mjs --light        light only
 //   node press/build.mjs --only=social  one group (screens|social|icon)
-//   node press/build.mjs --fastlane=DIR also write a fastlane metadata tree
+//   node press/build.mjs --fastlane=DIR also copy the store sets into fastlane/
 //
 // Each asset is an HTML page screenshot by headless Chrome at 2x. Pages are
 // kept in press/.build/ and can be opened in a browser.
@@ -336,26 +336,26 @@ async function renderIcon(chrome) {
   await shoot(chrome, "graphics/icon-512.png", html, [ICON_PX, ICON_PX], 1);
 }
 
-// A fastlane tree wants the Android set under its own numbered filenames.
-// Written on request rather than kept as a second copy in the repo.
+// Light sets, numbered 1..n in panel order, at the paths supply and deliver
+// read. The brand card is for social only and stays out.
 function writeFastlaneTree(dest) {
-  const dst = join(dest, "en-US/images");
-  const shots = join(dst, "phoneScreenshots");
-  mkdirSync(shots, { recursive: true });
+  const android = join(dest, "metadata/android/en-US/images");
+  const androidShots = join(android, "phoneScreenshots");
+  const iosShots = join(dest, "screenshots/en-US");
+  mkdirSync(androidShots, { recursive: true });
+  mkdirSync(iosShots, { recursive: true });
 
-  const ordered = ["00-brand", ...PANELS.map((p) => p.id)];
-  ordered.forEach((id, i) => {
-    copyFileSync(
-      join(OUT, "screenshots/android/light", `${id}.png`),
-      join(shots, `${i + 1}.png`),
-    );
+  PANELS.forEach(({ id }, i) => {
+    const name = `${i + 1}.png`;
+    copyFileSync(join(OUT, "screenshots/android/light", `${id}.png`), join(androidShots, name));
+    copyFileSync(join(OUT, "screenshots/ios/light", `${id}.png`), join(iosShots, name));
   });
   copyFileSync(
     join(OUT, "graphics/feature-graphic/light/feature-graphic.png"),
-    join(dst, "featureGraphic.png"),
+    join(android, "featureGraphic.png"),
   );
-  copyFileSync(join(OUT, "graphics/icon-512.png"), join(dst, "icon.png"));
-  console.log(`\nfastlane tree written to ${dst}`);
+  copyFileSync(join(OUT, "graphics/icon-512.png"), join(android, "icon.png"));
+  console.log(`\nfastlane sets written to ${dest}`);
 }
 
 // ---------------------------------------------------------------------------

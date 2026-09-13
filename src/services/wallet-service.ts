@@ -34,6 +34,7 @@ import {
   type GetInfoResponse,
   type KeyChainCache,
   type MeltQuoteBolt11Response,
+  type MintPreview,
   type MintQuoteBolt11Response,
   type Proof,
   type ProofLike,
@@ -2374,6 +2375,13 @@ export async function createLightningDeposit(params: {
 // Poll a deposit quote and mint the proofs once the invoice is paid. Throws
 // while the invoice is still unpaid, so callers can poll on a timer or leave it
 // to `reconcile` on next launch.
+// Quotes with a claim on the wire in this process. The deposit sheet polls
+// and `reconcile` runs on the foreground edge, so two claims for one quote can
+// overlap; the mint would issue against one and refuse the other, and the
+// loser's outputs would overwrite the winner's record. The second caller is
+// told to wait, which reads as "still unpaid" to both.
+const claimsInFlight = new Set<string>();
+
 export async function claimLightningDeposit(
   mintUrl: string,
   unit: string,
@@ -2381,6 +2389,22 @@ export async function claimLightningDeposit(
 ): Promise<number> {
   assertUnlocked();
   assertMintNetworkAllowed();
+  if (claimsInFlight.has(quoteId)) {
+    throw new WalletError("offline", t("wallet.svc.invoice_unpaid"));
+  }
+  claimsInFlight.add(quoteId);
+  try {
+    return await claimLightningDepositOnce(mintUrl, unit, quoteId);
+  } finally {
+    claimsInFlight.delete(quoteId);
+  }
+}
+
+async function claimLightningDepositOnce(
+  mintUrl: string,
+  unit: string,
+  quoteId: string,
+): Promise<number> {
   const url = normalizeMintUrl(mintUrl);
   const store = useWalletStore.getState();
   const tx = store.history.find(
@@ -2397,9 +2421,13 @@ export async function claimLightningDeposit(
   }
 
   // NUT-04 states: UNPAID -> PAID -> ISSUED. Only PAID can be minted, and only
-  // once; ISSUED means we already claimed it (a duplicate poll, or a retry that
-  // actually succeeded), so close the transaction rather than erroring.
+  // once. ISSUED with outputs still on the transaction is a claim whose answer
+  // never arrived; without them it is a duplicate poll or a retry that landed,
+  // so the transaction just closes.
   if (quote.state === "ISSUED") {
+    if (tx.mintOutputs !== undefined) {
+      return recoverMintOutputs(wallet, tx, quote);
+    }
     store.updateTx(tx.id, { status: "completed" });
     return 0;
   }
@@ -2416,18 +2444,121 @@ export async function claimLightningDeposit(
     throw new WalletError("offline", t("wallet.svc.invoice_unpaid"));
   }
 
+  // Split like the melt: the outputs exist on disk before the request does,
+  // so a response lost to a kill is replayed by the ISSUED branch above.
+  let preview: MintPreview<MintQuoteBolt11Response>;
+  try {
+    preview = await wallet.prepareMint("bolt11", tx.amount, quote);
+  } catch (err) {
+    throw asWalletError(err, "mint-error");
+  }
+  store.updateTx(tx.id, {
+    mintOutputs: preview.outputData.map((output) =>
+      OutputData.serialize(output),
+    ),
+  });
   let proofs: Proof[];
   try {
-    proofs = await wallet.mintProofsBolt11(tx.amount, quote);
+    proofs = await wallet.completeMint(preview);
   } catch (err) {
     const walletErr = asWalletError(err, "mint-error");
     store.updateTx(tx.id, { error: walletErr.message });
     throw walletErr;
   }
-
   creditProofs(url, unit, proofs, { verified: true });
   const minted = proofs.reduce((s, p) => s + p.amount.toNumber(), 0);
-  store.updateTx(tx.id, { status: "completed", amount: minted });
+  store.updateTx(tx.id, {
+    status: "completed",
+    amount: minted,
+    mintOutputs: undefined,
+  });
+  return minted;
+}
+
+// Rebuild the coins of a deposit the mint says it issued but this device never
+// received. Same two ways back as a lost swap: replay the byte-identical
+// request (NUT-19 returns the cached signatures), else ask the mint which of
+// these blinded messages it signed (NUT-09). If neither answers, the
+// transaction closes with a note, since the mint's answer will not change and
+// a restore from the recovery phrase still reaches deterministic outputs.
+async function recoverMintOutputs(
+  wallet: Wallet,
+  tx: WalletTx,
+  quote: MintQuoteBolt11Response,
+): Promise<number> {
+  const store = useWalletStore.getState();
+  let outputs: OutputData[];
+  try {
+    outputs = (tx.mintOutputs as SerializedOutputData[]).map((entry) =>
+      OutputData.deserialize(entry),
+    );
+  } catch {
+    outputs = [];
+  }
+  const keysetId = outputs[0]?.blindedMessage.id;
+  if (outputs.length === 0 || keysetId === undefined) {
+    store.updateTx(tx.id, {
+      status: "completed",
+      mintOutputs: undefined,
+      error: t("wallet.svc.mint_lost"),
+    });
+    return 0;
+  }
+
+  let proofs: Proof[] = [];
+  try {
+    proofs = await wallet.completeMint({
+      method: "bolt11",
+      payload: {
+        quote: quote.quote,
+        outputs: outputs.map((output) => output.blindedMessage),
+      },
+      outputData: outputs,
+      keysetId,
+      quote,
+    });
+  } catch (err) {
+    // Only a refusal is final. Anything else is the network, and the next
+    // pass asks again.
+    if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
+  }
+
+  if (proofs.length === 0) {
+    try {
+      const response = await wallet.mint.restore({
+        outputs: outputs.map((output) => output.blindedMessage),
+      });
+      const byBlinded = new Map(
+        outputs.map((output) => [output.blindedMessage.B_, output]),
+      );
+      // The keyset may have rotated out of the snapshot since the outputs
+      // were built; the melt recovery makes the same request.
+      await wallet.ensureOperableKeysets([keysetId]);
+      persistMintSnapshot(tx.mintUrl, tx.unit, wallet);
+      const keyset = wallet.getKeyset(keysetId);
+      response.outputs.forEach((output, position) => {
+        const target = byBlinded.get(output.B_);
+        const signature = response.signatures[position];
+        if (target !== undefined && signature !== undefined) {
+          proofs.push(target.toProof(signature, keyset));
+        }
+      });
+    } catch (err) {
+      if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
+    }
+  }
+
+  const minted = proofs.reduce((sum, p) => sum + p.amount.toNumber(), 0);
+  if (minted > 0) {
+    creditProofs(tx.mintUrl, tx.unit, proofs, { verified: true });
+  }
+  store.updateTx(tx.id, {
+    status: "completed",
+    mintOutputs: undefined,
+    ...(minted > 0
+      ? { amount: minted, error: undefined }
+      : { error: t("wallet.svc.mint_lost") }),
+  });
   return minted;
 }
 

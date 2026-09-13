@@ -2,8 +2,8 @@ name: Sync Relay Directory
 
 on:
   schedule:
-    # Daily at 07:00 UTC
-    - cron: "0 7 * * *"
+    # Weekly on Sunday at 07:00 UTC
+    - cron: "0 7 * * 0"
   workflow_dispatch:
 
 permissions:

@@ -1362,6 +1362,8 @@ export const strings: Strings = {
     "已鎖到對方的金鑰但尚未送達。從這筆交易分享代幣就能完成。",
   "wallet.svc.swap_lost":
     "鑄幣廠始終沒有完成這次換新，所以沒有憑它發行任何東西。",
+  "wallet.svc.mint_lost":
+    "鑄幣方已發放這筆存款，但無法重建其代幣。從復原詞組復原即可取回。",
   "wallet.svc.swap_unreadable": "這次換新存下來的格式，目前版本無法重放。",
 
   // ---- Contacts: add and share ----

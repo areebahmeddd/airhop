@@ -114,6 +114,11 @@ export interface MintConditions {
   // OS kill on a backgrounded app), and the one the persisted swap preview
   // exists to survive.
   swapResponseLost: boolean;
+  // The same failure on a deposit: the mint signs the outputs and marks the
+  // quote ISSUED, and the answer never reaches the wallet. There is a quote to
+  // ask afterwards, but it only says ISSUED; the coins themselves need the
+  // blinding factors the wallet stored before the request.
+  mintResponseLost: boolean;
   // Whether the mint caches successful responses (NUT-19) and says so in
   // /v1/info. Off models the mints that do not, where an identical retry is a
   // fresh request and the inputs are already spent.
@@ -170,6 +175,7 @@ const DEFAULT_CONDITIONS: MintConditions = {
   latencyMs: 20,
   swapVanishes: false,
   swapResponseLost: false,
+  mintResponseLost: false,
   nut19: true,
   inputFeePpk: 0,
   depositUnpaid: false,
@@ -383,13 +389,24 @@ export class MintFabric {
   // outage that outlives the retry budget, or the process that does not survive
   // to see the answer.
   private failIfSwapResponseLost(path: string): void {
-    if (!this.conditions.swapResponseLost) return;
-    if (!path.startsWith("/v1/swap")) return;
-    this.world.say(
-      "MINT_SWAP_RESPONSE_LOST",
-      "inputs spent, outputs signed, and the answer never landed",
-    );
-    throw new TypeError("Network request failed");
+    if (this.conditions.swapResponseLost && path.startsWith("/v1/swap")) {
+      this.world.say(
+        "MINT_SWAP_RESPONSE_LOST",
+        "inputs spent, outputs signed, and the answer never landed",
+      );
+      throw new TypeError("Network request failed");
+    }
+    if (
+      this.conditions.mintResponseLost &&
+      path.startsWith("/v1/mint/bolt11") &&
+      !path.startsWith("/v1/mint/bolt11/quote")
+    ) {
+      this.world.say(
+        "MINT_RESPONSE_LOST",
+        "quote issued, outputs signed, and the answer never landed",
+      );
+      throw new TypeError("Network request failed");
+    }
   }
 
   private dispatch(path: string, body: Record<string, unknown>): Response {

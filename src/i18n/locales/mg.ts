@@ -1501,6 +1501,8 @@ export const strings: Strings = {
     "Mihidy amin'ny lakiley fa tsy mbola voatatitra. Zarao ny tapakila avy amin'ity fifanakalozana ity mba hamitana.",
   "wallet.svc.swap_lost":
     "Tsy vitan'ny mpamoaka mihitsy ity fifanakalozana ity, ka tsy nisy navoaka ho takalony.",
+  "wallet.svc.mint_lost":
+    "Navoakan'ny mint ity fampidiram-bola ity, fa tsy azo naorina indray ny vola madinika. Mamerina azy ny famerenana avy amin'ny fehezanteny famerenana.",
   "wallet.svc.swap_unreadable":
     "Voatahiry tamin'ny endrika tsy azon'ity kinova ity averina ity fifanakalozana ity.",
 

@@ -1471,6 +1471,8 @@ export const strings: Strings = {
     "Vastgezet aan hun sleutel maar nog niet afgeleverd. Deel het token van deze transactie om het af te ronden.",
   "wallet.svc.swap_lost":
     "De mint heeft deze omruil nooit afgemaakt, dus er is er niets tegenover uitgegeven.",
+  "wallet.svc.mint_lost":
+    "De mint heeft deze storting uitgegeven, maar de munten konden niet worden hersteld. Herstellen vanuit je herstelzin haalt ze terug.",
   "wallet.svc.swap_unreadable":
     "Deze omruil is opgeslagen in een vorm die deze versie niet opnieuw kan afspelen.",
 

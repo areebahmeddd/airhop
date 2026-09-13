@@ -1470,6 +1470,8 @@ export const strings: Strings = {
     "Dikunci kepada kunci mereka tetapi belum dihantar. Kongsikan token daripada urus niaga ini untuk melengkapkannya.",
   "wallet.svc.swap_lost":
     "Mint tidak pernah melengkapkan pertukaran ini, jadi tiada apa-apa dikeluarkan terhadapnya.",
+  "wallet.svc.mint_lost":
+    "Mint telah mengeluarkan deposit ini, tetapi syilingnya tidak dapat dibina semula. Memulihkan daripada frasa pemulihan anda akan mengembalikannya.",
   "wallet.svc.swap_unreadable":
     "Pertukaran ini disimpan dalam bentuk yang tidak boleh dimainkan semula oleh versi ini.",
 

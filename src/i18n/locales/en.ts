@@ -1467,6 +1467,8 @@ export const strings = {
     "Locked to their key but not yet delivered. Share the token from this transaction to complete it.",
   "wallet.svc.swap_lost":
     "The mint never completed this swap, so nothing was issued against it.",
+  "wallet.svc.mint_lost":
+    "The mint issued this deposit, but its coins could not be rebuilt. Restoring from your recovery phrase recovers them.",
   "wallet.svc.swap_unreadable":
     "This swap was saved in a form this version cannot replay.",
 

@@ -100,7 +100,12 @@ import {
   TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
-import { formatAmount, formatListTimestamp, formatNumber } from "@utils/format";
+import {
+  formatAmount,
+  formatListTimestamp,
+  formatNumber,
+  parseWholeNumber,
+} from "@utils/format";
 import { nostrShortLabel, peerIDToUsername } from "@utils/username";
 import * as Clipboard from "expo-clipboard";
 import { nip19 } from "nostr-tools";
@@ -616,24 +621,34 @@ export default function WalletScreen({
   // ---- Send ----
 
   async function handleSend(): Promise<void> {
-    const amount = Number.parseInt(sendAmount, 10);
-    if (!amount || amount <= 0) return;
+    const amount = parseWholeNumber(sendAmount);
+    if (amount === null) return;
     setBusy("send");
     try {
       // Quote first so an inexact amount is explained before anything is
       // reserved, rather than after the proofs have already moved.
       const quote = await quoteSend({ amount, unit: primary.unit });
+      // Also the confirm of the inexact alert below, which runs after this
+      // function's own guard has ended, so it carries the busy flag and the
+      // error report itself.
       const commit = async (allowInexact: boolean): Promise<void> => {
-        const prepared = await prepareSend({
-          amount,
-          unit: primary.unit,
-          memo: sendMemo.trim() || undefined,
-          allowInexact,
-        });
-        setShowSend(false);
-        setSendAmount("");
-        setSendMemo("");
-        setPending(prepared);
+        setBusy("send");
+        try {
+          const prepared = await prepareSend({
+            amount,
+            unit: primary.unit,
+            memo: sendMemo.trim() || undefined,
+            allowInexact,
+          });
+          setShowSend(false);
+          setSendAmount("");
+          setSendMemo("");
+          setPending(prepared);
+        } catch (err) {
+          reportError(err, t("wallet.send.build_failed"));
+        } finally {
+          setBusy(null);
+        }
       };
 
       if (!quote.exact) {
@@ -784,8 +799,8 @@ export default function WalletScreen({
 
   async function handleZap(): Promise<void> {
     const npubRaw = zapNpub.trim();
-    const amount = Number.parseInt(zapAmount, 10);
-    if (!npubRaw || !amount || amount <= 0) return;
+    const amount = parseWholeNumber(zapAmount);
+    if (!npubRaw || amount === null) return;
 
     let recipientPubkey: string;
     try {
@@ -1211,9 +1226,9 @@ export default function WalletScreen({
   // ---- Lightning deposit ----
 
   async function handleCreateDeposit(): Promise<void> {
-    const amount = Number.parseInt(depositAmount, 10);
+    const amount = parseWholeNumber(depositAmount);
     const mintUrl = activeMint ?? mintList[0]?.url;
-    if (!amount || amount <= 0 || !mintUrl) return;
+    if (amount === null || !mintUrl) return;
     setBusy("deposit");
     try {
       const created = await createLightningDeposit({
@@ -1385,9 +1400,9 @@ export default function WalletScreen({
             }
           >
             {/* 38pt digits, so a seven-figure balance or a large OS text size
-                used to run off the edge of the card and get clipped: the one
-                number in the app that must never be half-visible. Shrinking to
-                fit keeps it on one line and keeps the unit beside it. */}
+                would run off the card: the one number in the app that must
+                never be half-visible. Shrinking to fit keeps it on one line
+                with the unit beside it. */}
             <Text
               style={styles.balanceAmount}
               numberOfLines={1}

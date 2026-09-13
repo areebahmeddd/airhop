@@ -1481,6 +1481,8 @@ export const strings: Strings = {
     "Bloqueado a su clave pero aún sin entregar. Comparte el token de esta transacción para completarlo.",
   "wallet.svc.swap_lost":
     "La casa de cambio nunca completó este intercambio, así que no se emitió nada a cambio.",
+  "wallet.svc.mint_lost":
+    "El mint emitió este depósito, pero no se pudieron reconstruir sus monedas. Restaurar desde tu frase de recuperación las recupera.",
   "wallet.svc.swap_unreadable":
     "Este intercambio se guardó en un formato que esta versión no puede reproducir.",
 

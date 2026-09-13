@@ -603,13 +603,13 @@ export function isLikelyTestMint(mint: {
 // means a higher QR version, more modules in the same square, and fewer screen
 // pixels per module.
 //
-// This pair budgets roughly 2.7 screen pixels per module at the ceiling:
-//   264 px drawn / version 20 (97 modules) = 2.72 px per module
-// which reads reliably screen to screen. The previous pair promised the format
-// maximum (2953 chars, version 40, 177 modules) inside a 200 px square, or 1.1
-// px per module: a code that is valid, renders fine, and cannot be scanned by
-// anything. A 10 sat token from a mint that issues DLEQ witnesses is already
-// ~650 characters, so that ceiling was routinely being handed out.
+// This pair budgets roughly 2.3 screen pixels per module at the ceiling:
+// 1159 bytes at error correction L is QR version 24 (113 modules), and
+// 264 px / 113 = 2.34 px per module, above the 2 px floor phone cameras read
+// screen to screen. The format maximum (2953 chars, version 40, 177 modules)
+// in the same square would be 1.5 px per module: valid, rendered, unscannable.
+// A 10 sat token from a mint that issues DLEQ witnesses is already ~650
+// characters, so the ceiling is reached in ordinary use.
 export const TOKEN_QR_SIZE = 264;
 export const TOKEN_QR_MAX_CHARS = 1159;
 export const TOKEN_QR_ERROR_CORRECTION = "L";

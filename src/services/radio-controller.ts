@@ -44,8 +44,7 @@ import { useSettingsStore } from "@store/settings-store";
 import { PowerPolicy } from "./power-policy";
 
 // The facts the device reports about itself. Every field is observed, never
-// assumed - the previous code assumed all of them and was wrong about each one
-// on some device.
+// assumed: each one is wrong on some device when guessed.
 export interface RadioFacts {
   // This device has a Bluetooth LE radio at all.
   supported: boolean;

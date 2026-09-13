@@ -495,3 +495,58 @@ test("B07 a crowd forming does not drown itself in control traffic", async () =>
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("B08 a message sent to a peer that just rebooted still arrives, once", async () => {
+  // A link drop keeps the Noise session and ratchet on purpose (radios drop
+  // links constantly). A crash or a dead battery is a link drop with no LEAVE,
+  // so the other side comes back with no session while this one still seals
+  // to the old chain. The message is dropped on arrival until the next
+  // handshake, and a direct-link "sent" used to be the one send that was not
+  // queued for retry. Now it stays queued until the receipt, and the retry
+  // reuses the message id so the recipient shows it exactly once.
+  const s = (scenario = new Scenario({
+    id: "B08",
+    title: "a DM into a peer that lost its session",
+    seed: 8,
+  }));
+  const { devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+
+  bob.send(`dm:${alice.peerID}`, "before your reboot");
+  await waitFor(s.world, () => alice.texts(`dm:${bob.peerID}`).length > 0);
+
+  alice.relaunch();
+  // Straight away, before the fresh handshake can complete. Bob still holds
+  // the old session, so this goes out under a chain alice no longer has.
+  bob.send(`dm:${alice.peerID}`, "after your reboot");
+
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("after your reboot"),
+    60_000,
+  );
+  s.check("the message reaches the rebooted peer", landed);
+
+  await waitFor(
+    s.world,
+    () =>
+      bob
+        .messages(`dm:${alice.peerID}`)
+        .find((m) => m.text === "after your reboot")?.status === "delivered",
+    60_000,
+  );
+  const copies = alice
+    .texts(`dm:${bob.peerID}`)
+    .filter((t) => t === "after your reboot").length;
+  s.check("and shows exactly once", copies === 1, `copies=${String(copies)}`);
+  s.check(
+    "the sender sees it delivered, not a lone sent tick",
+    bob
+      .messages(`dm:${alice.peerID}`)
+      .find((m) => m.text === "after your reboot")?.status === "delivered",
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});

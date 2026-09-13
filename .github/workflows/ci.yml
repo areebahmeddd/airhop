@@ -103,7 +103,7 @@ jobs:
   android-build:
     name: Android Build
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     needs: lint
 
     steps:
@@ -181,7 +181,7 @@ jobs:
   ios-build:
     name: iOS Build
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 60
     needs: lint
 
     steps:

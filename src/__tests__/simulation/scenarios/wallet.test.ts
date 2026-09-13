@@ -1572,3 +1572,53 @@ test("W18 a mint with no response cache still gives the outputs back", async () 
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("W22 a deposit whose answer never arrives is rebuilt, not written off", async () => {
+  // The mint signs the outputs and marks the quote ISSUED, then the connection
+  // drops. The quote can be asked what happened, but it only says ISSUED; the
+  // coins exist nowhere until the outputs the wallet stored before the request
+  // are replayed (NUT-19) or asked about (NUT-09). Both mints are tried.
+  for (const nut19 of [true, false]) {
+    const s = (scenario = new Scenario({
+      id: "W22",
+      title: `mint response lost, NUT-19 ${nut19 ? "on" : "off"}`,
+      seed: nut19 ? 122 : 123,
+    }));
+    const mint = new MintFabric(s.world);
+    mint.install();
+    mint.setConditions({ nut19 });
+    const { devices } = room(s, [android("alice", 11)]);
+    const [alice] = devices;
+    await alice.walletReady();
+    await alice.addMint(mint.url);
+
+    mint.setConditions({ mintResponseLost: true });
+    const claimed = await alice.depositSats(500);
+    s.check("the claim could not report success", !claimed);
+    s.check(
+      "nothing is credited on a lost answer",
+      alice.balance() === 0,
+      `balance=${alice.balance()}`,
+    );
+
+    // The wire comes back. On any launch the wallet asks the mint, sees
+    // ISSUED, and rebuilds the coins from the outputs it kept.
+    mint.setConditions({ mintResponseLost: false });
+    await alice.reconcile();
+    s.check(
+      "reconcile rebuilt the deposit from the stored outputs",
+      alice.balance() === 500,
+      `balance=${alice.balance()}`,
+    );
+    await alice.reconcile();
+    s.check(
+      "and a second pass does not credit it twice",
+      alice.balance() === 500,
+      `balance=${alice.balance()}`,
+    );
+    s.expectNone("process health", noCrashes(devices));
+    s.assert(true);
+    s.close();
+    scenario = null;
+  }
+});

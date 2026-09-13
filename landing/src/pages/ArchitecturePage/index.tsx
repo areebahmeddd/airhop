@@ -553,7 +553,7 @@ export default function ArchitecturePage() {
                   [
                     "BIP-39",
                     "Twelve words that encode a seed",
-                    "The opt-in recovery phrase, off unless you turn it on",
+                    "The recovery phrase. Created on first launch so every coin is derived from it; backup counts as on once you have viewed and confirmed it",
                   ],
                   [
                     "bolt11",
@@ -607,11 +607,7 @@ export default function ArchitecturePage() {
                   ],
                   ["Ed25519 signing private key", "Keychain / Keystore", "No"],
                   ["Wallet AES-256 key", "Keychain / Keystore", "No"],
-                  [
-                    "Recovery phrase (opt-in)",
-                    "Keychain / Keystore",
-                    "No, unless you wrote it down",
-                  ],
+                  ["Recovery phrase", "Keychain / Keystore", "No, unless you wrote it down"],
                   ["Cashu proofs", "MMKV, AES-256 encrypted", "No"],
                   ["Message history", "MMKV, encrypted at rest", "No"],
                 ]}
@@ -1600,7 +1596,7 @@ export default function ArchitecturePage() {
                   ["The wallet", "Off. Nothing happens until you add a mint yourself"],
                   [
                     "Recovery phrase",
-                    "Off, and one-way once enabled, because a deleted phrase is indistinguishable from deleted coins",
+                    "The phrase exists from first launch, so coins are recoverable from day one. Backup counts as on once you have viewed and confirmed it, and stays on: deleting a phrase that coins derive from is deleting the coins",
                   ],
                   ["AI assistant", "Off. Nothing downloads until you pick a model"],
                   ["Social bridges", "Off. Individually, per plugin"],
@@ -1745,16 +1741,16 @@ export default function ArchitecturePage() {
                     "The first signing key seen for a peer is pinned, and no announce can replace it. A key proven inside a Noise session can correct that pin, and otherwise only an in-person QR scan re-pins",
                   ],
                   [
+                    "Claiming someone else's Nostr key",
+                    "The key a peer announces for itself is a forwarding address for that peer and nothing more. It never folds a conversation keyed by that npub or redirects mail waiting for it; only a card scanned in person can",
+                  ],
+                  [
                     "Message forgery",
                     "Ed25519 checked against the key bound to the claimed sender, before anything is shown. A missing key fails the check, it does not skip it",
                   ],
                   [
                     "System-line spoofing",
                     "A peer's text renders as an action line only when it is exactly a /hug or /slap from that sender to one name. Anything else is a normal bubble under their name",
-                  ],
-                  [
-                    "Claiming someone else's Nostr key",
-                    "The key a peer announces for itself is a forwarding address for that peer and nothing more. It never folds a conversation keyed by that npub or redirects mail waiting for it; only a card scanned in person can",
                   ],
                   ["Man in the middle", "Noise XX mutual authentication on every session"],
                   [

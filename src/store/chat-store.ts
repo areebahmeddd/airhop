@@ -785,13 +785,13 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
-      // Fold one thread into another when an announce ties two channel keys to
-      // the same person.
+      // Fold one thread into another once two channel keys are known to be
+      // the same person (an in-person scan, or a mutual geohash card exchange).
       //
       // `from` may be the thread the user has open: a conversation carried over
-      // Nostr before this peer was seen on Bluetooth is merged the moment they
-      // walk into range. So the pointers move with the messages, or the open
-      // thread renders a channel that no longer exists.
+      // Nostr is merged the moment the scan lands. So the pointers move with
+      // the messages, or the open thread renders a channel that no longer
+      // exists.
       noteGeoCardExchange(
         pubkey: string,
         half: { theirPeerID?: string; sentMine?: boolean },

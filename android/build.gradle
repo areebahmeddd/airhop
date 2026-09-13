@@ -1,5 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
   repositories {
     google()
@@ -19,34 +17,18 @@ allprojects {
     maven { url 'https://www.jitpack.io' }
   }
 
-  // Pin every resolved dependency, transitive ones included, to the versions
-  // recorded in the per-project gradle.lockfile.
-  //
-  // npm writes package-lock.json on its own; Gradle does not lock unless asked,
-  // so without this two builds of the same commit could resolve different
-  // versions on different days and nothing would record it. That is the same
-  // guarantee we already rely on for JavaScript, applied to the Android side.
-  //
-  // Regenerate deliberately when upgrading, and review the diff. The root task
-  // does not resolve subprojects, so the app module needs its own pass:
+  // Pin every resolved dependency, transitive ones included, to the
+  // per-project gradle.lockfile, so two builds of one commit resolve the same
+  // versions. Regenerate when upgrading and review the diff; the root task
+  // does not resolve subprojects, so both are needed:
   //   ./gradlew dependencies --write-locks
   //   ./gradlew :app:dependencies --write-locks
   //
-  // What this does and does not cover, because the two halves are easy to
-  // confuse:
-  //
-  //   * Locked here: external Maven artifacts. AndroidX, Kotlin, and the Expo
-  //     modules, which publish real coordinates (expo-audio 57.0.3 resolves as
-  //     expo.modules.audio:57.0.3). Bumping one of those npm packages changes
-  //     what Gradle resolves, so the lockfile has to be regenerated in the same
-  //     commit.
-  //   * NOT locked here: community React Native modules autolinked out of
-  //     node_modules. Those come in as Gradle project dependencies built from
-  //     source, so they carry no version to pin. package-lock.json is what
-  //     fixes them, and it already does.
-  //
-  // So the two lockfiles are complementary rather than overlapping, and a stale
-  // one fails the build instead of drifting quietly.
+  // Locked here: external Maven artifacts (AndroidX, Kotlin, the Expo modules,
+  // which publish real coordinates), so bumping one of those npm packages
+  // means regenerating in the same commit. Not locked here: community React
+  // Native modules autolinked from node_modules, which are project
+  // dependencies built from source and are fixed by package-lock.json.
   dependencyLocking {
     lockAllConfigurations()
   }

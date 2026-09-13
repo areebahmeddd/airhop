@@ -1485,6 +1485,8 @@ export const strings: Strings = {
     "Verrouillé sur leur clé mais pas encore remis. Partage le jeton de cette transaction pour l’achever.",
   "wallet.svc.swap_lost":
     "Le mint n’a jamais achevé cet échange, rien n’a donc été émis en contrepartie.",
+  "wallet.svc.mint_lost":
+    "Le mint a émis ce dépôt, mais ses pièces n’ont pas pu être reconstruites. Une restauration depuis votre phrase de récupération les récupère.",
   "wallet.svc.swap_unreadable":
     "Cet échange a été enregistré dans un format que cette version ne peut pas rejouer.",
 
