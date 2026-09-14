@@ -355,7 +355,7 @@ class AirhopLANModule(
         }
         val listener = object : NsdManager.RegistrationListener {
             override fun onServiceRegistered(info: NsdServiceInfo) {
-                Log.d(TAG, "Published as ${info.serviceName}")
+                Log.i(TAG, "Published as ${info.serviceName}")
             }
 
             override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {
@@ -429,7 +429,7 @@ class AirhopLANModule(
             next,
             object : NsdManager.ResolveListener {
                 override fun onResolveFailed(info: NsdServiceInfo, errorCode: Int) {
-                    Log.d(TAG, "Resolve failed for ${info.serviceName}: $errorCode")
+                    Log.w(TAG, "Resolve failed for ${info.serviceName}: $errorCode")
                     drainResolves()
                 }
 
@@ -487,7 +487,7 @@ class AirhopLANModule(
                 } catch (e: Exception) {
                     // Most often client isolation, which every guest network
                     // enables and which cannot be detected before trying.
-                    Log.d(TAG, "Dial to $serviceName failed: ${e.message}")
+                    Log.w(TAG, "Dial to $serviceName failed: ${e.message}")
                     promise.reject("CONNECT_FAILED", e.message, e)
                 }
             }
@@ -515,7 +515,7 @@ class AirhopLANModule(
             val client = try {
                 socket.accept()
             } catch (e: Exception) {
-                Log.d(TAG, "Accept loop ended: ${e.message}")
+                Log.i(TAG, "Accept loop ended: ${e.message}")
                 return
             }
             registerLink("lan-in-${linkCounter.incrementAndGet()}", client)
@@ -536,7 +536,7 @@ class AirhopLANModule(
                 nameByLink[id] = serviceName
             }
             emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
-            Log.d(TAG, "LAN link connected: $id")
+            Log.i(TAG, "LAN link connected: $id")
             startReadLoop(id, socket.getInputStream())
         } catch (e: Exception) {
             Log.e(TAG, "Could not register link $id: ${e.message}")
@@ -577,7 +577,7 @@ class AirhopLANModule(
                     }
                     promise.resolve(null)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Write failed on $linkID: ${e.message}")
+                    Log.w(TAG, "Write failed on $linkID: ${e.message}")
                     handleLinkClose(linkID)
                     promise.reject("WRITE_FAILED", e.message, e)
                 }
@@ -626,12 +626,12 @@ class AirhopLANModule(
                     // with nothing in between says the far side is gone.
                     idleTimeouts++
                     if (idleTimeouts >= MAX_IDLE_TIMEOUTS) {
-                        Log.d(TAG, "Link $linkID idle past the deadline, closing")
+                        Log.i(TAG, "Link $linkID idle past the deadline, closing")
                         handleLinkClose(linkID)
                         return@execute
                     }
                 } catch (e: Exception) {
-                    Log.d(TAG, "Read loop ended for $linkID: ${e.message}")
+                    Log.i(TAG, "Read loop ended for $linkID: ${e.message}")
                     handleLinkClose(linkID)
                     return@execute
                 }

@@ -43,12 +43,13 @@ Its identifiers are protocol constants in the same sense the BLE UUIDs are: NAN
 derives the on-air service ID by hashing the service name, so one different
 character means two devices never match.
 
-| Identifier       | Value                    | Notes                                                      |
-| ---------------- | ------------------------ | ---------------------------------------------------------- |
-| **Service name** | `_airhop-mesh-v1._tcp`   | Airhop only. bitchat publishes `bitchat` and never matches |
-| **Frame**        | `[u32 BE length][bytes]` | Length excludes the prefix                                 |
-| **Max frame**    | `65544`                  | 64 KiB payload plus the prefix, with room to spare         |
-| **Link hello**   | 8 random bytes, iOS only | First frame of every connection, never surfaced to JS      |
+| Identifier       | Value                        | Notes                                                                                                                                                                                                     |
+| ---------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Service name** | `_airhop-mesh-v1._tcp`       | Airhop only. bitchat publishes `bitchat` and never matches                                                                                                                                                |
+| **Frame**        | `[u32 BE length][bytes]`     | Length excludes the prefix                                                                                                                                                                                |
+| **Max frame**    | `65544`                      | 64 KiB payload plus the prefix, with room to spare                                                                                                                                                        |
+| **Link hello**   | 8 random bytes, iOS only     | First frame of every connection, never surfaced to JS                                                                                                                                                     |
+| **Instance id**  | 8 random bytes, Android only | Per process, after the token in `serviceSpecificInfo` and after the connect request byte. Names a device across the new `PeerHandle` a session restart hands out, so a linked peer is never dialled twice |
 
 The DNS-SD wrapper is Apple's requirement rather than the Alliance's: iOS accepts
 only `_name._tcp` or `_name._udp`, with a name component of at most 15 characters

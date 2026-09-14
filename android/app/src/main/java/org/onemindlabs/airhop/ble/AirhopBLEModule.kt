@@ -192,14 +192,12 @@ class AirhopBLEModule(
 
     override fun getName(): String = "AirhopBLE"
 
-    // Both of these are nullable and both are resolved lazily.
-    //
-    // They used to be non-null `val`s initialised in the constructor. The module
-    // is built eagerly by AirhopBLEPackage.createNativeModules, i.e. during
-    // ReactHost construction, so on a device with no Bluetooth radio - or an
-    // adapter mid-reset - Kotlin's intrinsic null check threw there, before any
-    // Airhop code ran and with nothing above it to catch. The app did not fail
-    // to find peers; it failed to launch.
+    // Both nullable and both resolved lazily. The module is built eagerly by
+    // AirhopBLEPackage.createNativeModules, during ReactHost construction, so a
+    // device with no Bluetooth radio, or an adapter mid-reset, would otherwise
+    // fail a non-null check before any Airhop code ran and with nothing above
+    // it to catch: an app that fails to launch, not one that fails to find
+    // peers.
     private val bluetoothManager: BluetoothManager? by lazy {
         try {
             reactContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
@@ -227,8 +225,8 @@ class AirhopBLEModule(
     private val centralLinks    = ConcurrentHashMap<String, BluetoothGatt>()
     // Negotiated ATT MTU per central link. A write without response cannot
     // exceed MTU-3, and the stack truncates rather than refusing, so a frame
-    // over that budget used to leave the link silently mangling every fragment
-    // of a transfer. Recorded here so the write path can pick a type that can
+    // over that budget silently mangles every fragment of a transfer.
+    // Recorded here so the write path can pick a type that can
     // actually carry the frame. Absent means negotiation has not answered yet,
     // in which case the BLE default applies.
     private val centralMtu = ConcurrentHashMap<String, Int>()
@@ -330,6 +328,7 @@ class AirhopBLEModule(
     }
 
     private fun noteLinkOpened(linkID: String) {
+        Log.i(TAG, "BLE link up: $linkID")
         // Seeded at open so the first-traffic deadline is measured from the
         // moment the link came up, not from the first byte that never arrives.
         lastHeardAt[linkID] = System.currentTimeMillis()
@@ -337,6 +336,7 @@ class AirhopBLEModule(
     }
 
     private fun noteLinkClosed(linkID: String, status: Int) {
+        Log.i(TAG, "BLE link down: $linkID, status $status")
         lastHeardAt.remove(linkID)
         everSpoke.remove(linkID)
         if (status == BluetoothGatt.GATT_SUCCESS) return
@@ -378,7 +378,7 @@ class AirhopBLEModule(
                         if (everSpoke.contains(linkID)) inactivityTimeoutMs
                         else firstTrafficDeadlineMs
                     if (silentFor > limit) {
-                        Log.d(TAG, "Reaping $linkID after ${silentFor}ms of silence")
+                        Log.i(TAG, "Reaping $linkID after ${silentFor}ms of silence")
                         disconnectLink(linkID)
                     }
                 }
@@ -607,7 +607,7 @@ class AirhopBLEModule(
             return
         }
         powerMode = next
-        Log.d(TAG, "Power mode -> $next")
+        Log.i(TAG, "Power mode -> $next")
         try {
             // Re-advertise at the new rate/power, if we were advertising.
             if (advertisingActive) {
@@ -1482,7 +1482,7 @@ class AirhopBLEModule(
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settings: AdvertiseSettings?) {
-            Log.d(TAG, "Advertising started")
+            Log.i(TAG, "Advertising started")
         }
         override fun onStartFailure(errorCode: Int) {
             Log.e(TAG, "Advertising failed: $errorCode")

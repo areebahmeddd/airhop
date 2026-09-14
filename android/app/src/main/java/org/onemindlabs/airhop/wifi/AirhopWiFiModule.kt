@@ -62,6 +62,7 @@ import android.net.wifi.aware.WifiAwareNetworkInfo
 import android.net.wifi.aware.WifiAwareNetworkSpecifier
 import android.net.wifi.aware.WifiAwareSession
 import android.os.Build
+import android.os.SystemClock
 import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -79,7 +80,10 @@ import java.net.Socket
 import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 private const val TAG = "AirhopWiFiModule"
 
@@ -93,15 +97,8 @@ private const val TAG = "AirhopWiFiModule"
 // The DNS-SD wrapper is Apple's requirement rather than Android's: iOS accepts
 // only `_name._tcp` or `_name._udp`, with a name component of at most 15
 // characters from [A-Za-z0-9-]. Android accepts any ASCII string under 255
-// bytes, so it is the side that moves. "airhop-mesh-v1" is 14 characters and
-// legal, which is why the name itself did not have to change.
-//
-// This was "airhop-mesh-v1", so an Android build from before this change and one
-// from after it do not form an Aware link. That is deliberate and it is cheap:
-// they still meet over BLE, which is where every compatibility promise actually
-// lives, and doing the rename now rather than when iOS to Android becomes
-// possible avoids a flag day later. bitchat is unaffected either way, since it
-// publishes "bitchat" and never matched this service under any name.
+// bytes, so it is the side that follows. bitchat publishes "bitchat" and never
+// matches this service.
 private const val SERVICE_NAME = "_airhop-mesh-v1._tcp"
 
 // Events emitted to TypeScript.
@@ -113,8 +110,8 @@ private const val EVT_LINK_DISCONNECTED = "AirhopWiFi.linkDisconnected"
 private const val EVT_AVAILABILITY_CHANGED = "AirhopWiFi.availabilityChanged"
 
 // Sent by a subscriber that has decided to dial, so the publisher knows to
-// stand up its side of the data path. One byte, and its value is the version:
-// anything else is from a build that does not exist yet and is ignored.
+// stand up its side of the data path. The byte is the version, followed by
+// the subscriber's instance id.
 private const val MSG_CONNECT_REQUEST: Byte = 0x01
 
 // Sent back by the publisher once its own requestNetwork() is outstanding, and
@@ -133,8 +130,20 @@ private const val NETWORK_REQUEST_TIMEOUT_MS = 30_000
 // room to spare.
 private const val MAX_FRAME = 65544
 
-// Bytes of tiebreak token carried in serviceSpecificInfo.
+// Bytes of tiebreak token carried in serviceSpecificInfo, and of the instance
+// id carried beside it.
 private const val TOKEN_BYTES = 8
+
+// Which device a discovery belongs to, across the framework handing out a new
+// PeerHandle for it. A peer that restarts its session (a WiFi toggle, a
+// re-attach) is rediscovered under a fresh handle, and dialling it again
+// requests a second data path to a device already holding one: the framework
+// replaces the first, the live socket dies, and the new connect aborts on the
+// interface that just flipped. Eight random bytes per process, so a peer is
+// recognised for as long as its app runs and unlinkable once it restarts.
+// Carried after the token in serviceSpecificInfo, and again after the
+// MSG_CONNECT_REQUEST byte so the responder learns it too.
+private const val INSTANCE_BYTES = 8
 
 // How long a link may be silent before its read is abandoned and the link torn
 // down. Generous: the mesh is bursty and a quiet conversation is normal, so this
@@ -145,6 +154,16 @@ private const val READ_TIMEOUT_MS = 90_000
 // 90s is four and a half minutes of a link that has delivered nothing, which is
 // well past any normal quiet period including a backgrounded pair under Doze.
 private const val MAX_IDLE_TIMEOUTS = 3
+
+// How long an attached session may go without discovering anyone, holding no
+// link, before it is restarted. A publish/subscribe pair can go quiet under the
+// framework without any callback saying so, and the only cure is the one a
+// WiFi toggle applies: close the session and attach again. bitchat/android
+// refreshes on the same rule at five minutes. Checked once a minute, and the
+// clock restarts on every attach, so an empty room costs one re-attach per
+// five minutes and a room with a link costs nothing.
+private const val DISCOVERY_IDLE_REFRESH_MS = 5 * 60_000L
+private const val DISCOVERY_IDLE_CHECK_MS = 60_000L
 
 // WifiAwareNetworkInfo, and therefore any way to learn the peer's address, is
 // API 29. Below that the discovery half of WiFi Aware works and the data path
@@ -176,13 +195,10 @@ class AirhopWiFiModule(
             false
         }
 
-    // Resolved per call, never cached.
-    //
-    // This used to be a `val` read once when the module was constructed, which
-    // is early in app startup. A service not yet ready at that moment latched
-    // null for the life of the process, and every later check reported "not
-    // supported" on a device that supports it perfectly well. bitchat calls
-    // getSystemService at check time for the same reason.
+    // Resolved per call, never cached: the module is constructed early in
+    // startup, and a service not yet ready at that moment would read as absent
+    // for the life of the process. bitchat calls getSystemService at check time
+    // for the same reason.
     //
     // The typed overload rather than the string constant plus a cast: a failed
     // `as?` is indistinguishable from an absent service, and one of those is
@@ -211,6 +227,16 @@ class AirhopWiFiModule(
     // callback, and only the second is a reason to re-attach.
     private val sessionGeneration = AtomicInteger(0)
     private val ioExecutor = Executors.newCachedThreadPool()
+
+    // The idle watch. One thread, one scheduled task per attach, cancelled by
+    // teardown.
+    private val watchExecutor = Executors.newSingleThreadScheduledExecutor()
+    @Volatile
+    private var idleWatch: ScheduledFuture<*>? = null
+    // Last time discovery showed any sign of life: a peer found, a connect
+    // message, a link. Seeded by the attach so a fresh session is never judged
+    // idle on its first tick. Monotonic, so a clock change cannot fire it.
+    private val lastDiscoveryAtMs = AtomicLong(0)
 
     // Every registered network callback, so stopWiFi and invalidate can hand
     // them back. ConnectivityManager caps an app at roughly a hundred
@@ -244,6 +270,19 @@ class AirhopWiFiModule(
     @Volatile
     private var localToken: ByteArray = ByteArray(0)
 
+    private val instanceId: ByteArray =
+        ByteArray(INSTANCE_BYTES).also { SecureRandom().nextBytes(it) }
+    // Instance id of the device on each link, so a rediscovery of a linked peer
+    // is not a second dial, and a connect request from a linked peer replaces
+    // the link it must have lost.
+    private val linkedInstances = ConcurrentHashMap<String, String>()
+    // Peer address of a responder-side data path, recorded when it comes up,
+    // so the socket the accept loop hands over can be tied to its instance.
+    private val instanceByPeerAddress = ConcurrentHashMap<String, String>()
+    // Initiator side: the instance behind a handle being dialled, carried
+    // through to the link once the socket connects.
+    private val pendingInstances = ConcurrentHashMap<PeerHandle, String>()
+
     private var listenerCount = 0
 
     private data class LinkState(
@@ -259,6 +298,7 @@ class AirhopWiFiModule(
         // when the initiator's is.
         val peer: PeerHandle? = null,
         val network: ConnectivityManager.NetworkCallback? = null,
+        val instance: String? = null,
     )
 
     // ---- Start / Stop --------------------------------------------------------
@@ -268,9 +308,9 @@ class AirhopWiFiModule(
         // UNSUPPORTED, not UNAVAILABLE, and the distinction is the whole reason
         // the JS reconciler can exist. No Aware hardware and an OS below the
         // data-path floor are permanent facts about this device; WiFi being off
-        // is a fact about this minute. Both used to reject with the same code,
-        // so a caller could only choose between retrying a device that will
-        // never answer and never retrying one that would have.
+        // is a fact about this minute. One code for both would leave a caller
+        // choosing between retrying a device that will never answer and never
+        // retrying one that would have.
         //
         // Order matters: the permanent facts are asked first, so a device that
         // genuinely cannot do this is never told to try again later.
@@ -323,7 +363,7 @@ class AirhopWiFiModule(
                         )
                         return
                     }
-                    Log.d(TAG, "WiFi Aware attached")
+                    Log.i(TAG, "WiFi Aware attached")
                     // Re-checked rather than relied on from the guard above:
                     // lint cannot follow an API level check across a callback
                     // boundary, and everything below this line is API 29+.
@@ -339,13 +379,10 @@ class AirhopWiFiModule(
                     // is what setPort() advertises to every peer that dials in.
                     //
                     // The session is adopted only once everything below it has
-                    // succeeded. Assigning `awareSession` first, as this used to,
-                    // meant a failed socket rejected the promise while leaving the
-                    // handle set - and the early return at the top of this method
-                    // then made every later startWiFi() resolve instantly with
-                    // nothing published, nothing subscribed and nothing listening.
-                    // The transport was permanently "started" and permanently
-                    // dead, with no way back short of restarting the process.
+                    // succeeded. A handle set before a failed step would make
+                    // the early return at the top of this method resolve every
+                    // later startWiFi() instantly, over a transport with nothing
+                    // published, subscribed or listening.
                     if (!ensureServerSocket()) {
                         session.close()
                         promise.reject("WIFI_AWARE_ATTACH_FAILED", "Could not open the data-path socket")
@@ -353,19 +390,10 @@ class AirhopWiFiModule(
                     }
                     awareSession = session
                     // Both must actually start, or the attach did not give us a
-                    // usable transport.
-                    //
-                    // These swallowed their SecurityException and only logged,
-                    // while the promise resolved regardless. On a device where
-                    // attach() is permitted but publish/subscribe are refused -
-                    // the NEARBY_WIFI_DEVICES-granted-late race the reconciler
-                    // exists for - startWiFi() reported success, the controller
-                    // latched "started", and every later pass returned early at
-                    // its already-started guard. The transport stayed
-                    // permanently up with nothing published and nothing
-                    // subscribed. This is the same failure the socket check a
-                    // few lines above was added to prevent, applied to the two
-                    // calls that sit right after it.
+                    // usable transport. attach() can be permitted while publish
+                    // and subscribe are refused (NEARBY_WIFI_DEVICES granted a
+                    // moment late), and a resolved promise there would latch the
+                    // controller on a transport with nothing published.
                     if (!startPublish(session) || !startSubscribe(session)) {
                         teardown()
                         promise.reject(
@@ -374,6 +402,7 @@ class AirhopWiFiModule(
                         )
                         return
                     }
+                    startIdleWatch(generation)
                     promise.resolve(null)
                 }
 
@@ -400,6 +429,8 @@ class AirhopWiFiModule(
     // resource that outlives the thing that would have released it.
     private fun teardown() {
         sessionGeneration.incrementAndGet()
+        idleWatch?.cancel(false)
+        idleWatch = null
         for (callback in networkCallbacks) {
             runCatching { connectivityManager.unregisterNetworkCallback(callback) }
         }
@@ -407,6 +438,8 @@ class AirhopWiFiModule(
         dialledPeers.clear()
         respondedPeers.clear()
         initiatedPeers.clear()
+        linkedInstances.clear()
+        instanceByPeerAddress.clear()
 
         runCatching { publishSession?.close() }
         runCatching { subscribeSession?.close() }
@@ -430,6 +463,30 @@ class AirhopWiFiModule(
             })
         }
         links.clear()
+    }
+
+    // ---- Idle discovery ------------------------------------------------------
+
+    private fun noteDiscoveryActivity() {
+        lastDiscoveryAtMs.set(SystemClock.elapsedRealtime())
+    }
+
+    // Restart a session that has found nobody for DISCOVERY_IDLE_REFRESH_MS
+    // while holding no link. Goes out through reportUnavailable, so the JS
+    // reconciler sees exactly what a framework teardown looks like and
+    // re-attaches on its ladder; a run this long counts as stable there, so the
+    // re-attach is immediate.
+    private fun startIdleWatch(generation: Int) {
+        noteDiscoveryActivity()
+        idleWatch?.cancel(false)
+        idleWatch = watchExecutor.scheduleWithFixedDelay({
+            if (generation != sessionGeneration.get()) return@scheduleWithFixedDelay
+            if (links.isNotEmpty()) return@scheduleWithFixedDelay
+            val idleFor = SystemClock.elapsedRealtime() - lastDiscoveryAtMs.get()
+            if (idleFor < DISCOVERY_IDLE_REFRESH_MS) return@scheduleWithFixedDelay
+            Log.i(TAG, "WiFi Aware discovery idle for ${idleFor / 1000}s, restarting session")
+            reportUnavailable()
+        }, DISCOVERY_IDLE_CHECK_MS, DISCOVERY_IDLE_CHECK_MS, TimeUnit.MILLISECONDS)
     }
 
     // ---- Availability --------------------------------------------------------
@@ -544,6 +601,7 @@ class AirhopWiFiModule(
         }
         teardown()
         runCatching { ioExecutor.shutdownNow() }
+        runCatching { watchExecutor.shutdownNow() }
         super.invalidate()
     }
 
@@ -589,7 +647,7 @@ class AirhopWiFiModule(
                     }
                     promise.resolve(null)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Write failed on $linkID: ${e.message}")
+                    Log.w(TAG, "Write failed on $linkID: ${e.message}")
                     handleLinkClose(linkID)
                     promise.reject("WRITE_FAILED", e.message, e)
                 }
@@ -622,9 +680,9 @@ class AirhopWiFiModule(
     private fun startPublish(session: WifiAwareSession): Boolean {
         val config = PublishConfig.Builder()
             .setServiceName(SERVICE_NAME)
-            // Carries this device's tiebreak token to every subscriber that
-            // matches, so exactly one side of a pair dials.
-            .setServiceSpecificInfo(localToken)
+            // The tiebreak token, so exactly one side of a pair dials, then the
+            // instance id, so a rediscovered peer is not dialled twice.
+            .setServiceSpecificInfo(localToken + instanceId)
             .build()
 
         val generation = sessionGeneration.get()
@@ -636,7 +694,7 @@ class AirhopWiFiModule(
 
                 override fun onPublishStarted(started: PublishDiscoverySession) {
                     publishSession = started
-                    Log.d(TAG, "WiFi Aware publish started on port $serverPort")
+                    Log.i(TAG, "WiFi Aware publish started on port $serverPort")
                 }
 
                 override fun onSessionTerminated() {
@@ -645,11 +703,22 @@ class AirhopWiFiModule(
                 }
 
                 override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
+                    noteDiscoveryActivity()
                     if (message.isEmpty() || message[0] != MSG_CONNECT_REQUEST) return
                     val active = publishSession ?: return
+                    // A request from a device we already hold a link with means
+                    // its side of that link is gone. Drop ours so the pair does
+                    // not sit on a dead socket until the read deadline.
+                    val instance = instanceFrom(message, 1)
+                    if (instance != null) {
+                        linkedInstances[instance]?.let { stale ->
+                            Log.i(TAG, "Peer reconnecting, closing stale link $stale")
+                            handleLinkClose(stale)
+                        }
+                    }
                     // Stand up our half. The subscriber connects to the port we
                     // advertise here; we accept it in the accept loop.
-                    openResponderNetwork(active, peerHandle)
+                    openResponderNetwork(active, peerHandle, instance)
                     // Our request is outstanding now, so the subscriber may make
                     // its own. Unconditional: a repeated MSG_CONNECT_REQUEST is a
                     // peer still waiting, openResponderNetwork is idempotent, and
@@ -657,7 +726,7 @@ class AirhopWiFiModule(
                     runCatching {
                         active.sendMessage(peerHandle, 0, byteArrayOf(MSG_CONNECT_READY))
                     }.onFailure {
-                        Log.e(TAG, "Could not send connect-ready: ${it.message}")
+                        Log.w(TAG, "Could not send connect-ready: ${it.message}")
                     }
                 }
             }, null)
@@ -685,7 +754,7 @@ class AirhopWiFiModule(
 
                 override fun onSubscribeStarted(started: SubscribeDiscoverySession) {
                     subscribeSession = started
-                    Log.d(TAG, "WiFi Aware subscribe started")
+                    Log.i(TAG, "WiFi Aware subscribe started")
                 }
 
                 override fun onServiceDiscovered(
@@ -693,22 +762,28 @@ class AirhopWiFiModule(
                     serviceSpecificInfo: ByteArray?,
                     matchFilter: List<ByteArray>?,
                 ) {
+                    noteDiscoveryActivity()
                     val active = subscribeSession ?: return
                     // Both devices publish and subscribe, so both discover each
                     // other. Only the lower token dials; the other side sits in
                     // its accept loop and is connected to.
                     if (!shouldDial(serviceSpecificInfo)) return
+                    // The same device under a new handle is not a new peer.
+                    val instance = serviceSpecificInfo?.let { instanceFrom(it, TOKEN_BYTES) }
+                    if (instance != null && linkedInstances.containsKey(instance)) return
                     // A match is re-reported while the peer stays in range, and
                     // every report would otherwise be another socket.
                     if (!dialledPeers.add(peerHandle)) return
+                    // Carried to the link once its socket connects.
+                    if (instance != null) pendingInstances[peerHandle] = instance
 
-                    Log.d(TAG, "Dialling WiFi Aware peer $peerHandle")
+                    Log.i(TAG, "Dialling WiFi Aware peer $peerHandle")
                     try {
                         // Ask the responder to stand up its side, and stop there.
                         // Requesting here would fire before the responder had
                         // even read this, against a peer with nothing
                         // outstanding. Its MSG_CONNECT_READY is the cue.
-                        active.sendMessage(peerHandle, 0, byteArrayOf(MSG_CONNECT_REQUEST))
+                        active.sendMessage(peerHandle, 0, byteArrayOf(MSG_CONNECT_REQUEST) + instanceId)
                     } catch (e: SecurityException) {
                         dialledPeers.remove(peerHandle)
                         Log.e(TAG, "sendMessage refused: ${e.message}")
@@ -719,10 +794,11 @@ class AirhopWiFiModule(
                 // The responder saying its request is in flight. Sent from the
                 // publish session that received ours, so it lands here.
                 override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
+                    noteDiscoveryActivity()
                     if (message.isEmpty() || message[0] != MSG_CONNECT_READY) return
                     val active = subscribeSession ?: return
                     if (!initiatedPeers.add(peerHandle)) return
-                    Log.d(TAG, "Peer $peerHandle is ready, requesting data path")
+                    Log.i(TAG, "Peer $peerHandle is ready, requesting data path")
                     openInitiatorNetwork(active, peerHandle)
                 }
 
@@ -732,6 +808,7 @@ class AirhopWiFiModule(
                     // fresh one issues fresh handles for the same peers.
                     dialledPeers.clear()
                     initiatedPeers.clear()
+                    pendingInstances.clear()
                     reportSessionTerminated("subscribe", generation)
                 }
             }, null)
@@ -742,11 +819,10 @@ class AirhopWiFiModule(
         }
     }
 
-    // Lower token dials. A peer that advertises no token at all is from a build
-    // that predates the tiebreak, so we dial it and accept the duplicate rather
-    // than leaving the pair unconnected.
+    // Lower token dials. A peer that advertises no token is dialled anyway and
+    // the duplicate accepted, rather than leaving the pair unconnected.
     private fun shouldDial(peerToken: ByteArray?): Boolean {
-        if (peerToken == null || peerToken.size != TOKEN_BYTES) return true
+        if (peerToken == null || peerToken.size < TOKEN_BYTES) return true
         val mine = localToken
         if (mine.size != TOKEN_BYTES) return true
         for (i in 0 until TOKEN_BYTES) {
@@ -784,17 +860,22 @@ class AirhopWiFiModule(
                 socket.accept()
             } catch (e: Exception) {
                 // Closed by teardown, or the interface went away.
-                Log.d(TAG, "Accept loop ended: ${e.message}")
+                Log.i(TAG, "Accept loop ended: ${e.message}")
                 return
             }
-            registerLink("wifi-in-${linkCounter.incrementAndGet()}", client)
+            val instance = client.inetAddress?.let { instanceByPeerAddress.remove(addressKey(it)) }
+            registerLink("wifi-in-${linkCounter.incrementAndGet()}", client, instance = instance)
         }
     }
 
     // Responder side: a data path whose specifier names the port we are already
     // listening on. Nothing else to do here - the initiator connects to us.
     @RequiresApi(AWARE_DATA_PATH_MIN_API)
-    private fun openResponderNetwork(session: PublishDiscoverySession, peerHandle: PeerHandle) {
+    private fun openResponderNetwork(
+        session: PublishDiscoverySession,
+        peerHandle: PeerHandle,
+        instance: String?,
+    ) {
         // One data path per peer, however many connect requests arrive. The
         // rate is set by the other device, and each request would register a
         // NetworkCallback; ConnectivityManager caps an app at roughly a hundred
@@ -805,7 +886,14 @@ class AirhopWiFiModule(
             .setPskPassphrase(DATA_PATH_PASSPHRASE)
             .setPort(serverPort)
             .build()
-        requestAwareNetwork(specifier, peerHandle, onPeerReady = null)
+        // The accept loop only ever sees a socket, so the peer's address on
+        // the path is what ties that socket back to the device that dialled.
+        requestAwareNetwork(specifier, peerHandle) { _, info, _ ->
+            val address = info.peerIpv6Addr?.let { addressKey(it) }
+            if (instance != null && address != null) {
+                instanceByPeerAddress[address] = instance
+            }
+        }
     }
 
     // Initiator side: no port on the specifier (that is the responder's to set),
@@ -840,9 +928,10 @@ class AirhopWiFiModule(
                         socket,
                         peerHandle,
                         callback,
+                        pendingInstances.remove(peerHandle),
                     )
                 } catch (e: Exception) {
-                    Log.e(TAG, "Subscriber connect failed: ${e.message}")
+                    Log.w(TAG, "Subscriber connect failed: ${e.message}")
                     release(callback)
                     forgetAttempt(peerHandle)
                 }
@@ -873,23 +962,21 @@ class AirhopWiFiModule(
                 capabilities: NetworkCapabilities,
             ) {
                 if (onPeerReady == null || handled) return
-                // The peer's address lives here and nowhere else. A callback
-                // that only overrides onAvailable never learns it, which is why
-                // the previous implementation dialled a hardcoded Wi-Fi Direct
-                // address and could not connect on any device.
+                // The peer's address lives here and nowhere else; a callback
+                // that only overrides onAvailable never learns it.
                 val info = capabilities.transportInfo as? WifiAwareNetworkInfo ?: return
                 handled = true
                 onPeerReady(network, info, this)
             }
 
             override fun onLost(network: Network) {
-                Log.d(TAG, "WiFi Aware network lost")
+                Log.i(TAG, "WiFi Aware network lost")
                 release(this)
                 forgetAttempt(peer)
             }
 
             override fun onUnavailable() {
-                Log.d(TAG, "WiFi Aware network request unavailable")
+                Log.w(TAG, "WiFi Aware network request unavailable")
                 release(this)
                 forgetAttempt(peer)
             }
@@ -922,6 +1009,7 @@ class AirhopWiFiModule(
         dialledPeers.remove(peer)
         initiatedPeers.remove(peer)
         respondedPeers.remove(peer)
+        pendingInstances.remove(peer)
     }
 
     // Register a connected socket as a named link and start its read loop.
@@ -930,7 +1018,17 @@ class AirhopWiFiModule(
         socket: Socket,
         peer: PeerHandle? = null,
         network: ConnectivityManager.NetworkCallback? = null,
+        instance: String? = null,
     ) {
+        noteDiscoveryActivity()
+        // The initiator only dials an unlinked instance, so a second link to one
+        // means the first is dead on their side; keep the newer.
+        if (instance != null) {
+            linkedInstances.put(instance, id)?.let { stale ->
+                Log.i(TAG, "Replacing stale link $stale for a reconnected peer")
+                handleLinkClose(stale)
+            }
+        }
         try {
             // Frames are small and latency matters more than packing here: the
             // mesh writes one packet per call and waits for nothing.
@@ -946,16 +1044,29 @@ class AirhopWiFiModule(
             // the same stated reason (SyncedSocket).
             socket.soTimeout = READ_TIMEOUT_MS
             val output = socket.getOutputStream()
-            val link = LinkState(id, socket, output, peer = peer, network = network)
+            val link = LinkState(id, socket, output, peer = peer, network = network, instance = instance)
             links[id] = link
             emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
-            Log.d(TAG, "WiFi Aware link connected: $id")
+            Log.i(TAG, "WiFi Aware link connected: $id")
             startReadLoop(id, socket.getInputStream())
         } catch (e: Exception) {
             Log.e(TAG, "Could not register link $id: ${e.message}")
+            if (instance != null) linkedInstances.remove(instance, id)
             runCatching { socket.close() }
         }
     }
+
+    // The instance id at `offset` in a discovery payload, as hex, or null when
+    // the payload is too short to carry one.
+    private fun instanceFrom(bytes: ByteArray, offset: Int): String? {
+        if (bytes.size < offset + INSTANCE_BYTES) return null
+        return bytes.copyOfRange(offset, offset + INSTANCE_BYTES).joinToString("") { "%02x".format(it) }
+    }
+
+    // A link-local address without its scope suffix, since the two sides of a
+    // path report the same address with different interface names.
+    private fun addressKey(address: java.net.InetAddress): String =
+        address.hostAddress?.substringBefore('%') ?: address.toString()
 
     // Read length-prefixed frames from the socket and emit them as events.
     private fun startReadLoop(linkID: String, input: InputStream) {
@@ -1001,16 +1112,15 @@ class AirhopWiFiModule(
                     // There is no keepalive here, so silence is normal: liveness
                     // comes from ANNOUNCE, and JS timers are throttled under
                     // Doze, so a backgrounded pair can easily miss one deadline.
-                    // Closing on the first timeout churned healthy links every
-                    // 90s. Several consecutive timeouts with nothing arriving is
-                    // the half-open case the deadline is actually for.
+                    // Several consecutive timeouts with nothing arriving is the
+                    // half-open case the deadline is for.
                     idleTimeouts += 1
                     if (idleTimeouts < MAX_IDLE_TIMEOUTS) continue
-                    Log.d(TAG, "WiFi link $linkID idle past deadline, closing")
+                    Log.i(TAG, "WiFi link $linkID idle past deadline, closing")
                     handleLinkClose(linkID)
                     return@execute
                 } catch (e: Exception) {
-                    Log.d(TAG, "Read loop ended for $linkID: ${e.message}")
+                    Log.i(TAG, "Read loop ended for $linkID: ${e.message}")
                     handleLinkClose(linkID)
                     return@execute
                 }
@@ -1020,6 +1130,7 @@ class AirhopWiFiModule(
 
     private fun handleLinkClose(linkID: String) {
         val link = links.remove(linkID) ?: return
+        link.instance?.let { linkedInstances.remove(it, linkID) }
         runCatching { link.socket.close() }
         // A dead socket on a live path would otherwise leave the peer marked
         // for good, since onLost only fires when the path itself goes. Releasing

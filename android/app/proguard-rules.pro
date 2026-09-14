@@ -38,13 +38,10 @@
 
 # Drop debug logging from release builds.
 #
-# Minifying does not remove a Log call: every line compiled in still prints to a
-# buffer adb reads off an unlocked phone. Takes the optimizing config to apply at
-# all, which the proguardFiles line in build.gradle already selects.
-#
-# Removes the call, not always the string built for it, so a leftover
-# concatenation costs cycles and emits nothing. w and e stay: they carry caught
-# exception text rather than state, and are what makes a field report answerable.
+# Airhop modules log only at i/w/e; d/v logs come from bundled libraries like RN, Expo, Fresco.
+# This rule prevents their d/v logs from filling the shared buffer on release devices.
+# Minification alone doesn't remove Log calls; this applies only to the optimizing ProGuard config.
+# Calls are removed, though some string-building/concatenation may remain and cost CPU.
 -assumenosideeffects class android.util.Log {
     public static int d(...);
     public static int v(...);

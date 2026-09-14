@@ -112,7 +112,7 @@ class AirhopTorModule(
             if (ports == null) {
                 // Fail closed. Starting Arti now would drop the bridge and take
                 // a direct route for a user who asked not to have one.
-                Log.w(TAG, "pluggable transports did not start")
+                Log.e(TAG, "pluggable transports did not start")
                 emitStatus()
                 promise.reject("tor_transport_failed", "pluggable transports did not start")
                 return@execute
@@ -126,7 +126,7 @@ class AirhopTorModule(
                 ports[AirhopTransport.SNOWFLAKE] ?: 0,
             )
             if (rc != ArtiNative.OK && rc != ArtiNative.ERR_ALREADY_RUNNING) {
-                Log.w(TAG, "arti start failed (rc=$rc)")
+                Log.e(TAG, "arti start failed (rc=$rc)")
                 AirhopIPtProxy.stop()
                 emitStatus()
                 // Rejected, not resolved, so the caller learns now.

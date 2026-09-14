@@ -79,7 +79,7 @@ object AirhopIPtProxy {
                 } catch (e: Throwable) {
                     // Throwable: a libgojni load or link failure arrives as an
                     // Error, and uncaught on this worker it kills the process.
-                    Log.w(TAG, "${transport.id} did not start: ${e.message}")
+                    Log.e(TAG, "${transport.id} did not start: ${e.message}")
                     stopLocked()
                     return null
                 }
@@ -89,7 +89,7 @@ object AirhopIPtProxy {
             // listener is not up despite start having returned.
             val port = controller.port(transport.id).toInt()
             if (port !in 1..65535) {
-                Log.w(TAG, "${transport.id} reported port $port")
+                Log.i(TAG, "${transport.id} reported port $port")
                 stopLocked()
                 return null
             }
@@ -143,7 +143,7 @@ object AirhopIPtProxy {
         val created = try {
             Controller(dir.absolutePath, false, false, "ERROR", null)
         } catch (e: Throwable) {
-            Log.w(TAG, "controller did not initialise: ${e.message}")
+            Log.e(TAG, "controller did not initialise: ${e.message}")
             return null
         }
 

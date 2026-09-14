@@ -271,7 +271,7 @@ class AirhopVoiceModule(
             feedEndOfStream(encoder)
             drainEncoder(encoder, info, generation)
         } catch (e: Exception) {
-            Log.w(TAG, "capture failed", e)
+            Log.e(TAG, "capture failed", e)
             failCapture(generation, e.message ?: "Recording failed")
         } finally {
             // Only if this thread is still the current capture. A successor has
