@@ -519,6 +519,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "zachód",
   "chat.location.direction.nw": "północny zachód",
   "chat.attach.send_anyway": "Wyślij mimo to",
+  "chat.ring.sent_summary": "Zadzwonił",
+  "chat.ring.received_summary": "Zadzwonił do ciebie",
+  "chat.ring.alert.title": "{sender} dzwoni do ciebie",
+  "chat.ring.alert.body": "Sprawdź swoje wiadomości",
+  "chat.ring.alert.open": "Otwórz",
+  "chat.ring.alert.snooze": "Odłóż na 1 godzinę",
+  "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
+  "chat.contact.allow_ring_desc":
+    "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona",
+  "chat.contact.ring_action": "Zadzwoń",
+  "chat.contact.ringing": "Dzwoni…",
+  "settings.security.ring_alerts": "Alerty dzwonienia",
+  "settings.security.ring_alerts_desc":
+    "Główny przełącznik dzwonienia. Wyłączenie odrzuca natychmiast każde dzwonienie, niezależnie od tego, na co zezwoliłeś poszczególnym kontaktom.",
+  "notif.channel.ring": "Dzwonienie",
+  "notif.channel.ring_desc":
+    "Alerty od kontaktów, którym zezwoliłeś na dzwonienie do ciebie.",
+  "notif.ring.hidden": "Dzwonienie",
+  "notif.ring.title": "{sender} dzwoni do ciebie",
+  "notif.ring.body": "Sprawdź swoje wiadomości",
   "chat.attach.bitchat_too_big": "To może nie dotrzeć",
   "chat.attach.bitchat_too_big_body":
     "{name} używa aplikacji bitchat, która poddaje się w połowie przy dużym pliku. Poniżej mniej więcej 350 KiB jest niezawodnie. Wysyłka do kontaktu z Airhop nie ma takiego limitu.",

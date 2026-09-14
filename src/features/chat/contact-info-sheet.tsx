@@ -9,6 +9,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { textAlignEnd } from "@i18n/layout";
+import { rejected } from "@platform/haptics";
 import { getMeshService } from "@services/mesh-service";
 import { useChatStore } from "@store/chat-store";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
+import { useRingStore } from "@store/ring-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -44,6 +46,7 @@ import { isNostrId, NOSTR_ID_PREFIX, peerIDToUsername } from "@utils/username";
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import VerifyContactScreen from "../contacts/verify-contact-screen";
+import { SettingRow, SettingSwitch } from "../settings/settings-primitives";
 import SendEcashSheet from "../wallet/send-ecash-sheet";
 
 const CORNER_BTN_SIZE = 32;
@@ -197,6 +200,27 @@ export default function ContactInfoSheet({
 
   function handleCopyID(): void {
     copy(idValue);
+  }
+
+  // Ring, sender side. Offered only once peerAcceptsRing confirms their
+  // proven capability, so it never shows for a bitchat peer or one who has
+  // granted nobody. Greyed out, not hidden, while our last ring is pending.
+  const canRing =
+    peerID !== null && (getMeshService()?.peerAcceptsRing(peerID) ?? false);
+  const ringSending = useRingStore((s) =>
+    peerID !== null ? s.isSending(peerID, nowMs) : false,
+  );
+  function handleRing(): void {
+    if (peerID === null) return;
+    // Null means no live session carried it. Rare, since the button only
+    // shows once the peer has proven capability, but must not go silent.
+    if (getMeshService()?.sendRing(peerID) === null) rejected();
+  }
+
+  // Ring, receiver side: a revocable per-contact grant, see Contact.allowRing.
+  function handleAllowRingChange(allow: boolean): void {
+    if (peerID !== null)
+      useContactsStore.getState().setAllowRing(peerID, allow);
   }
 
   // The info card's rows, top to bottom. Relationship leads, then the
@@ -435,6 +459,24 @@ export default function ContactInfoSheet({
                   </React.Fragment>
                 ))}
               </View>
+              {/* A permission, not a fact, so it's kept apart from infoCard's
+                  static rows. Offered only with real keys for this person
+                  (renameable is the same hasKeys gate setAllowRing enforces). */}
+              {renameable && (
+                <View style={styles.infoCard}>
+                  <SettingRow
+                    icon="bell"
+                    label={T("chat.contact.allow_ring")}
+                    description={T("chat.contact.allow_ring_desc")}
+                    control={
+                      <SettingSwitch
+                        value={contact?.allowRing === true}
+                        onValueChange={handleAllowRingChange}
+                      />
+                    }
+                  />
+                </View>
+              )}
             </View>
 
             <View style={styles.actions}>
@@ -488,6 +530,24 @@ export default function ContactInfoSheet({
                 <Feather name="zap" size={16} color={Colors.textPrimary} />
                 <Text style={styles.payText}>{T("wallet.pay.action")}</Text>
               </Pressable>
+              {/* Same disabled-not-vanished treatment `kept` gets above. */}
+              {canRing && (
+                <Pressable
+                  style={[styles.payBtn, ringSending && styles.keepBtnDone]}
+                  onPress={handleRing}
+                  disabled={ringSending}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: ringSending }}
+                  accessibilityLabel={T("chat.contact.ring_action")}
+                >
+                  <Feather name="bell" size={16} color={Colors.textPrimary} />
+                  <Text style={styles.payText}>
+                    {ringSending
+                      ? T("chat.contact.ringing")
+                      : T("chat.contact.ring_action")}
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </>
         )}

@@ -505,20 +505,15 @@ export const strings = {
   "chat.attach.title": "Attach",
 
   // ---- Chat: location pin ----
-  // Shown wherever a card cannot be: the conversation list, a notification.
   "chat.location.sent_summary": "Shared a location",
   "chat.location.received_summary": "Shared their location",
   "chat.location.title": "Location",
-  // Distance and direction from where the reader is standing.
   "chat.location.away": "{distance} {direction}",
   "chat.location.taken": "Taken {ago} ago",
   "chat.location.open_maps": "Open in Maps",
   "chat.location.no_forward": "Locations are not forwarded",
   "chat.location.no_forward_body":
     "A location is sent to one person. Share your own instead if you want somebody else to have it.",
-  // The reader has not allowed location, so there is nothing to measure from.
-  // States it instead of prompting: a pin is theirs to read, not a reason to
-  // ask for a permission.
   "chat.location.no_fix": "Allow location to see how far away this is",
   "chat.location.send_title": "Send your location",
   "chat.location.send_body":
@@ -539,6 +534,15 @@ export const strings = {
   "chat.location.direction.sw": "south-west",
   "chat.location.direction.w": "west",
   "chat.location.direction.nw": "north-west",
+
+  // ---- Chat: ring ----
+  "chat.ring.sent_summary": "Rang",
+  "chat.ring.received_summary": "Rang you",
+  "chat.ring.alert.title": "{sender} is ringing",
+  "chat.ring.alert.body": "Check your messages",
+  "chat.ring.alert.open": "Open",
+  "chat.ring.alert.snooze": "Snooze for 1 hour",
+
   "chat.attach.send_anyway": "Send anyway",
   "chat.attach.bitchat_too_big": "This may not arrive",
   "chat.attach.bitchat_too_big_body":
@@ -725,6 +729,11 @@ export const strings = {
   "chat.contact.renamed_by_you": "Your name for them",
   "chat.contact.copy_peer_id": "Copy peer ID",
   "chat.contact.verify": "Verify contact",
+  "chat.contact.allow_ring": "Allow ring alerts",
+  "chat.contact.allow_ring_desc":
+    "Let them ring your phone to get your attention, even if this conversation is muted",
+  "chat.contact.ring_action": "Ring",
+  "chat.contact.ringing": "Ringing…",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Notices",
@@ -1709,6 +1718,9 @@ export const strings = {
   "settings.security.hide_previews": "Hide notification previews",
   "settings.security.hide_previews_desc":
     "Keeps the sender and message off your lock screen, which shows them without unlocking",
+  "settings.security.ring_alerts": "Ring alerts",
+  "settings.security.ring_alerts_desc":
+    "Master switch for Ring. Off refuses every ring at once, whatever you have granted individual contacts.",
   "settings.security.no_blocked": "No blocked peers",
   "settings.security.no_blocked_desc":
     "Blocked peers can’t message you or appear on the Mesh tab",
@@ -1949,18 +1961,10 @@ export const strings = {
   "settings.language.uk": "Ukrainian",
   "settings.language.ur": "Urdu",
   "settings.language.vi": "Vietnamese",
-  // Debug builds only. Not a language, so it takes no endonym and is named for
-  // what it is: English stretched, accented and bracketed, to find the screens
-  // that cannot hold a longer string before any real translation inherits them.
   "settings.language.pseudo": "Pseudolocale",
   "settings.language.soon": "Coming soon",
   "settings.language.soon_a11y": "{value}, coming soon",
   "settings.language.set_a11y": "Set language to {value}",
-  // Shown on the row for a right-to-left language the user has chosen but that
-  // has not taken effect yet. See the direction note in src/i18n/index.ts: React
-  // Native fixes layout direction when the process starts, and Airhop will not
-  // restart itself to force it, because a relaunch drops every Noise session and
-  // empties the peer table.
   "settings.language.pending": "On next open",
   "settings.language.pending_a11y":
     "{value}, applies the next time you open Airhop",
@@ -2125,6 +2129,9 @@ export const strings = {
   "notif.channel.nearby": "Nearby peers",
   "notif.channel.nearby_desc":
     "An occasional notice when the mesh finds people in Bluetooth range.",
+  "notif.channel.ring": "Ring",
+  "notif.channel.ring_desc":
+    "Alerts from contacts you have allowed to ring you.",
   "notif.nearby.body": "In Bluetooth range now. Tap to open the mesh.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "Someone",
@@ -2140,6 +2147,9 @@ export const strings = {
   "notif.hidden.channel": "New activity",
   "notif.hidden.mention": "You were mentioned",
   "notif.mention.title": "{sender} mentioned you",
+  "notif.ring.hidden": "Ring",
+  "notif.ring.title": "{sender} is ringing you",
+  "notif.ring.body": "Check your messages",
 } as const;
 
 // Plural forms live apart from the flat strings because plural categories are

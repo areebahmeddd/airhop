@@ -513,6 +513,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "დასავლეთით",
   "chat.location.direction.nw": "ჩრდილო-დასავლეთით",
   "chat.attach.send_anyway": "მაინც გაგზავნა",
+  "chat.ring.sent_summary": "დარეკა",
+  "chat.ring.received_summary": "შენ დაგირეკა",
+  "chat.ring.alert.title": "{sender} გირეკავს",
+  "chat.ring.alert.body": "შეამოწმე შენი შეტყობინებები",
+  "chat.ring.alert.open": "გახსნა",
+  "chat.ring.alert.snooze": "1 საათით გადადება",
+  "chat.contact.allow_ring": "ზარის შეტყობინებების დაშვება",
+  "chat.contact.allow_ring_desc":
+    "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია",
+  "chat.contact.ring_action": "დარეკვა",
+  "chat.contact.ringing": "რეკავს…",
+  "settings.security.ring_alerts": "ზარის შეტყობინებები",
+  "settings.security.ring_alerts_desc":
+    "ზარის მთავარი გადამრთველი. გამორთვა მაშინვე უარყოფს ყველა ზარს, მიუხედავად იმისა, რაც შენ დართე ცალკეულ კონტაქტებს.",
+  "notif.channel.ring": "ზარი",
+  "notif.channel.ring_desc":
+    "შეტყობინებები კონტაქტებისგან, ვისაც დაუშვი დარეკვა.",
+  "notif.ring.hidden": "ზარი",
+  "notif.ring.title": "{sender} გირეკავს",
+  "notif.ring.body": "შეამოწმე შენი შეტყობინებები",
   "chat.attach.bitchat_too_big": "ეს შეიძლება ვერ მივიდეს",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat-ზეა, რომელიც დიდ ფაილს შუა გზაზე ანებებს თავს. დაახლოებით 350 KiB-ზე ნაკლები საიმედოა. Airhop-ის კონტაქტისთვის გაგზავნას ასეთი ზღვარი არ აქვს.",

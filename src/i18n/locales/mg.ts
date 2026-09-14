@@ -522,6 +522,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "andrefana",
   "chat.location.direction.nw": "avaratra-andrefana",
   "chat.attach.send_anyway": "Alefaso ihany",
+  "chat.ring.sent_summary": "Niantso",
+  "chat.ring.received_summary": "Niantso anao",
+  "chat.ring.alert.title": "Miantso i {sender}",
+  "chat.ring.alert.body": "Jereo ny hafatrao",
+  "chat.ring.alert.open": "Sokafy",
+  "chat.ring.alert.snooze": "Ahemoro 1 ora",
+  "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
+  "chat.contact.allow_ring_desc":
+    "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity",
+  "chat.contact.ring_action": "Antsoy",
+  "chat.contact.ringing": "Miantso…",
+  "settings.security.ring_alerts": "Fampandrenesana antso",
+  "settings.security.ring_alerts_desc":
+    "Brotantsivana lehibe ho an'ny Antso. Ny fanafenana dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",
+  "notif.channel.ring": "Antso",
+  "notif.channel.ring_desc":
+    "Fampandrenesana avy amin'ireo olona nomenao alalana hiantso anao.",
+  "notif.ring.hidden": "Antso",
+  "notif.ring.title": "Miantso anao i {sender}",
+  "notif.ring.body": "Jereo ny hafatrao",
   "chat.attach.bitchat_too_big": "Mety tsy ho tonga ity",
   "chat.attach.bitchat_too_big_body":
     "Ao amin'ny bitchat i {name}, izay mandao antsasa-dalana ny rakitra lehibe. Azo antoka ny latsaky ny 350 KiB eo ho eo. Tsy misy fetra toy izany ny fandefasana amin'ny fifandraisana Airhop.",

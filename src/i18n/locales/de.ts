@@ -520,6 +520,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "westlich",
   "chat.location.direction.nw": "nordwestlich",
   "chat.attach.send_anyway": "Trotzdem senden",
+  "chat.ring.sent_summary": "Geklingelt",
+  "chat.ring.received_summary": "Hat dich angeklingelt",
+  "chat.ring.alert.title": "{sender} klingelt",
+  "chat.ring.alert.body": "Sieh nach deinen Nachrichten",
+  "chat.ring.alert.open": "Öffnen",
+  "chat.ring.alert.snooze": "1 Stunde stummschalten",
+  "chat.contact.allow_ring": "Klingelbenachrichtigungen erlauben",
+  "chat.contact.allow_ring_desc":
+    "Erlaube ihnen, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist",
+  "chat.contact.ring_action": "Klingeln",
+  "chat.contact.ringing": "Klingelt…",
+  "settings.security.ring_alerts": "Klingelbenachrichtigungen",
+  "settings.security.ring_alerts_desc":
+    "Hauptschalter für Klingeln. Aus lehnt jedes Klingeln sofort ab, unabhängig davon, was du einzelnen Kontakten erlaubt hast.",
+  "notif.channel.ring": "Klingeln",
+  "notif.channel.ring_desc":
+    "Benachrichtigungen von Kontakten, denen du erlaubt hast, dich anzuklingeln.",
+  "notif.ring.hidden": "Klingeln",
+  "notif.ring.title": "{sender} klingelt bei dir",
+  "notif.ring.body": "Sieh nach deinen Nachrichten",
   "chat.attach.bitchat_too_big": "Das kommt vielleicht nicht an",
   "chat.attach.bitchat_too_big_body":
     "{name} nutzt bitchat, und das bricht bei einer großen Datei mittendrin ab. Unter etwa 350 KiB ist zuverlässig. An einen Airhop-Kontakt gesendet gibt es diese Grenze nicht.",

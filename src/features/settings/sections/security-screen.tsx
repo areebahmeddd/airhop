@@ -36,6 +36,7 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
   const hideNotificationPreviews = useSettingsStore(
     (s) => s.hideNotificationPreviews,
   );
+  const ringAlertsEnabled = useSettingsStore((s) => s.ringAlertsEnabled);
 
   function confirmUnblock(peerID: string): void {
     showAlert(
@@ -57,9 +58,6 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
     <View style={styles.container}>
       <SubHeader title={T("settings.section.privacy")} onBack={onBack} />
       <SettingsScroll>
-        {/* Always-on guarantees: not choices, just what is true of every
-            message. Shown as a locked-on switch so it reads as "on and not
-            changeable" rather than plain text. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {T("settings.group.always_on")}
@@ -83,15 +81,26 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
 
-        {/* The choices, below the guarantees: those describe what is true, these
-            ask the user something. Both are the same question in different
-            clothes - what does this device leak to something outside the app? -
-            so they share one box: the lock screen and the disk. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {T("settings.group.notifications")}
           </Text>
           <View style={styles.settingsGroup}>
+            <SettingRow
+              id="ring-alerts"
+              icon="bell"
+              label={T("settings.security.ring_alerts")}
+              description={T("settings.security.ring_alerts_desc")}
+              control={
+                <SettingSwitch
+                  value={ringAlertsEnabled}
+                  onValueChange={(v) =>
+                    useSettingsStore.getState().setRingAlertsEnabled(v)
+                  }
+                />
+              }
+            />
+            <GroupDivider />
             <SettingRow
               id="hide-previews"
               icon="eye-off"
@@ -109,8 +118,6 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
 
-        {/* Blocked peers. The one place a block can be undone; without it the
-            only way out is a full panic wipe. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{T("settings.group.blocked")}</Text>
           <View style={styles.settingsGroup}>

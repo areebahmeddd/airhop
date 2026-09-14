@@ -276,6 +276,8 @@ The plaintext inside a `NOISE_ENCRYPTED` packet is `[type: u8][body]`. Values ma
 | `0x21` | AUTHENTICATED_PEER_STATE | `[version=0x01][TLV…]`: `0x01` capabilities, `0x02` Ed25519 key                                |
 | `0x22` | CONTACT_CARD             | Contact card binary, same encoding as the QR card                                              |
 | `0x50` | LOCATION_PIN             | One place, sent once, to one person. 19-byte fixed layout ([section 3.8](#38-location-pin))    |
+| `0x51` | RING                     | UTF-8 ringID. A "check your messages" alert ([below](#33-noise-inner-payload-types))           |
+| `0x52` | RING_ACK                 | UTF-8 ringID, sent only when the receiver responds                                             |
 
 **`0x20` is how a DM attachment travels.** The cleartext directed `FILE_TRANSFER` is signed, so a relay cannot forge it, but it is not confidential, and every node it crosses can read the whole file. bitchat classifies that form as the legacy migration fallback and has scheduled its removal. Airhop seals to `0x20` whenever the recipient has **proven** capability bit 8, and falls back to the signed cleartext form only for peers that have not.
 
@@ -300,6 +302,16 @@ is, since moving it would break every shipped build for no gain.
 
 **A Nostr key a peer names for itself is a claim, not a proof.** ANNOUNCE TLV `0x07`, a card from a link, and the card inside `0x22` all say "reach this peer at this key", signed by the peer and never by the key. A receiver treats such a claim as a forwarding address only: the first claim for a key stands, a later one cannot move it, and no claim folds the thread already keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may do those, the same act that may re-pin keys.
 
+**`0x51` rings through mute, so the receiver holds every gate.** Offered only
+to a peer whose proven `0x21` state carries bit 10. Accepted only from a saved
+contact granted ring permission, with the master switch on, not snoozed, at
+least five minutes after the last accepted ring from that sender, and no more
+than two minutes old by its signed timestamp. Never queued for the courier.
+Foreground: an overlay that pulses for 45 s. Background: Android posts a
+heads-up on its own channel; iOS posts one notification, since a loop there
+needs VoIP push and a server. Neither crosses Do Not Disturb or the silent
+switch.
+
 Capability bits (ANNOUNCE TLV `0x05` and `0x21` TLV `0x01`, minimal little-endian):
 
 | Bit | Name                 | Meaning                                                   |
@@ -307,6 +319,7 @@ Capability bits (ANNOUNCE TLV `0x05` and `0x21` TLV `0x01`, minimal little-endia
 | 0–7 | prekeys … bridge     | As bitchat `PeerCapabilities`                             |
 | 8   | privateMedia         | Reads Noise `0x20`. Only the **authenticated** bit counts |
 | 9   | privateMediaReceipts | Durable dedup of stable media IDs; permits bounded retry  |
+| 10  | ring                 | Currently accepts a Ring (`0x51`). A discovery hint only  |
 
 ### 3.4 Fragmentation: the budget is the frame
 

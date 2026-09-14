@@ -520,6 +520,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "အနောက်",
   "chat.location.direction.nw": "အနောက်မြောက်",
   "chat.attach.send_anyway": "မည်သို့ပင်ဖြစ်စေ ပို့ပါ",
+  "chat.ring.sent_summary": "ခေါ်ဆိုခဲ့သည်",
+  "chat.ring.received_summary": "သင့်ကို ခေါ်ဆိုခဲ့သည်",
+  "chat.ring.alert.title": "{sender} က သင့်ကို ခေါ်ဆိုနေသည်",
+  "chat.ring.alert.body": "သင့်စာများကို စစ်ဆေးပါ",
+  "chat.ring.alert.open": "ဖွင့်ရန်",
+  "chat.ring.alert.snooze": "1 နာရီ ဆိုင်းငံ့ရန်",
+  "chat.contact.allow_ring": "ဖုန်းမြည်သံ သတိပေးချက်များကို ခွင့်ပြုပါ",
+  "chat.contact.allow_ring_desc":
+    "ဤစကားပြောကို အသံပိတ်ထားသော်လည်း၊ သင့်အာရုံစိုက်မှုရရှိရန် သူတို့ကို သင့်ဖုန်းမြည်စေခွင့်ပြုပါ",
+  "chat.contact.ring_action": "ဖုန်းမြည်စေမည်",
+  "chat.contact.ringing": "ဖုန်းမြည်နေသည်…",
+  "settings.security.ring_alerts": "ဖုန်းမြည်သံ သတိပေးချက်များ",
+  "settings.security.ring_alerts_desc":
+    "ဖုန်းမြည်ခြင်းအတွက် အဓိက ခလုတ်။ ပိတ်ထားခြင်းသည် တစ်ဦးချင်း လုပ်ဖော်ကိုင်ဖက်များအား ခွင့်ပြုထားသည်ဖြစ်စေ ဖုန်းမြည်သံအားလုံးကို ချက်ချင်း ငြင်းပယ်သည်။",
+  "notif.channel.ring": "ဖုန်းမြည်သံ",
+  "notif.channel.ring_desc":
+    "သင့်ကို ဖုန်းခေါ်ခွင့်ပြုထားသော လုပ်ဖော်ကိုင်ဖက်များထံမှ သတိပေးချက်များ။",
+  "notif.ring.hidden": "ဖုန်းမြည်သံ",
+  "notif.ring.title": "{sender} က သင့်ကို ခေါ်ဆိုနေသည်",
+  "notif.ring.body": "သင့်စာများကို စစ်ဆေးပါ",
   "chat.attach.bitchat_too_big": "ဤအရာ မရောက်နိုင်ပါ",
   "chat.attach.bitchat_too_big_body":
     "{name} သည် bitchat ပေါ်တွင် ရှိပြီး ၎င်းက ဖိုင်ကြီးကို လမ်းတစ်ဝက်တွင် စွန့်ပစ်တတ်သည်။ 350 KiB ခန့်အောက်သည် စိတ်ချရသည်။ Airhop အဆက်အသွယ်ထံ ပို့လျှင် ထိုကန့်သတ်ချက် မရှိပါ။",

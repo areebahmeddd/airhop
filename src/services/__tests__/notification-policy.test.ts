@@ -13,6 +13,7 @@
 // own sentence, so the isolation is asserted rather than stripped.
 import { stripIsolates } from "@i18n";
 import type { ChatMessage } from "@store/chat-store";
+import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
 import {
   attachmentSummary,
   isDirectMessage,
@@ -20,6 +21,8 @@ import {
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
+  ringNotificationContent,
+  shouldAllowRing,
   shouldHapticPing,
   shouldNotifyNearby,
   shouldSystemNotify,
@@ -325,5 +328,71 @@ describe("notificationContentFor a mention", () => {
     expect(
       notificationContentFor(msg({ text: "@bob hey" }), undefined, false, true),
     ).toEqual({ title: "alice", body: "@bob hey" });
+  });
+});
+
+// A ring rings through mute, so every rule here is a reason to refuse one.
+describe("shouldAllowRing", () => {
+  const base = {
+    globallyEnabled: true,
+    senderMayRing: true,
+    isSnoozed: false,
+    msSinceLastReceived: null,
+    ringAgeMs: 0,
+  };
+
+  it("allows a fresh ring from a permitted, unsnoozed contact", () => {
+    expect(shouldAllowRing(base)).toBe(true);
+  });
+
+  it("refuses when the global master switch is off, regardless of permission", () => {
+    expect(shouldAllowRing({ ...base, globallyEnabled: false })).toBe(false);
+  });
+
+  it("refuses a sender never granted the permission (the default)", () => {
+    expect(shouldAllowRing({ ...base, senderMayRing: false })).toBe(false);
+  });
+
+  it("refuses while snoozed, even from a permitted contact", () => {
+    expect(shouldAllowRing({ ...base, isSnoozed: true })).toBe(false);
+  });
+
+  it("refuses a ring that took too long in transit to still be urgent", () => {
+    expect(shouldAllowRing({ ...base, ringAgeMs: RING_STALENESS_MS + 1 })).toBe(
+      false,
+    );
+  });
+
+  it("allows a ring right at the staleness boundary", () => {
+    expect(shouldAllowRing({ ...base, ringAgeMs: RING_STALENESS_MS })).toBe(
+      true,
+    );
+  });
+
+  it("refuses a repeat from the same sender inside the cooldown", () => {
+    expect(
+      shouldAllowRing({ ...base, msSinceLastReceived: RING_COOLDOWN_MS - 1 }),
+    ).toBe(false);
+  });
+
+  it("allows again once the cooldown has fully elapsed", () => {
+    expect(
+      shouldAllowRing({ ...base, msSinceLastReceived: RING_COOLDOWN_MS }),
+    ).toBe(true);
+  });
+});
+
+describe("ringNotificationContent", () => {
+  it("names the sender and says to check messages", () => {
+    expect(ringNotificationContent("alice")).toEqual({
+      title: isolated("alice") + " is ringing you",
+      body: "Check your messages",
+    });
+  });
+
+  it("names nobody and shows nothing once previews are hidden", () => {
+    const content = ringNotificationContent("alice", true);
+    expect(content.title).not.toContain("alice");
+    expect(content.body).not.toContain("alice");
   });
 });

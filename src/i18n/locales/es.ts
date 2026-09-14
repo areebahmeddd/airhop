@@ -514,6 +514,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "al oeste",
   "chat.location.direction.nw": "al noroeste",
   "chat.attach.send_anyway": "Enviar igualmente",
+  "chat.ring.sent_summary": "Llamó",
+  "chat.ring.received_summary": "Te llamó",
+  "chat.ring.alert.title": "{sender} te está llamando",
+  "chat.ring.alert.body": "Revisa tus mensajes",
+  "chat.ring.alert.open": "Abrir",
+  "chat.ring.alert.snooze": "Posponer 1 hora",
+  "chat.contact.allow_ring": "Permitir alertas de llamada",
+  "chat.contact.allow_ring_desc":
+    "Permite que hagan sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada",
+  "chat.contact.ring_action": "Llamar",
+  "chat.contact.ringing": "Llamando…",
+  "settings.security.ring_alerts": "Alertas de llamada",
+  "settings.security.ring_alerts_desc":
+    "Interruptor principal de Llamada. Desactivarlo rechaza todas las llamadas de inmediato, sin importar lo que hayas concedido a cada contacto.",
+  "notif.channel.ring": "Llamada",
+  "notif.channel.ring_desc":
+    "Alertas de contactos a los que has permitido llamarte.",
+  "notif.ring.hidden": "Llamada",
+  "notif.ring.title": "{sender} te está llamando",
+  "notif.ring.body": "Revisa tus mensajes",
   "chat.attach.bitchat_too_big": "Puede que no llegue",
   "chat.attach.bitchat_too_big_body":
     "{name} usa bitchat, que abandona a medio camino con archivos grandes. Por debajo de unos 350 KiB es fiable. Enviárselo a un contacto de Airhop no tiene ese límite.",

@@ -127,6 +127,15 @@ export const Capability = {
   // Stable private-media IDs are durably deduplicated by the receiver, so a
   // sender may safely retry. Does not replace bit 8; it only adds retry.
   privateMediaReceipts: 1 << 9,
+  // This device currently accepts a Ring (NoisePayloadType.RING, 0x51) from
+  // someone. Airhop-only; bitchat never sets it, so this is what hides the
+  // Ring action from a bitchat peer's thread.
+  //
+  // A discovery hint, same rule as bit 8: an announce is self-signed and
+  // proves nothing, so this only decides whether to OFFER the action. Each
+  // ring is still checked fresh on arrival (contact, permission, rate limit,
+  // snooze in ring-store.ts).
+  ring: 1 << 10,
 } as const;
 
 // Minimal little-endian encoding with trailing zero bytes dropped, always at

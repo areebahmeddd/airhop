@@ -497,6 +497,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "غربًا",
   "chat.location.direction.nw": "شمال غرب",
   "chat.attach.send_anyway": "أرسل على أي حال",
+  "chat.ring.sent_summary": "رنّ",
+  "chat.ring.received_summary": "رنّ لك",
+  "chat.ring.alert.title": "{sender} يرنّ لك",
+  "chat.ring.alert.body": "تحقق من رسائلك",
+  "chat.ring.alert.open": "فتح",
+  "chat.ring.alert.snooze": "تأجيل لمدة ساعة واحدة",
+  "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
+  "chat.contact.allow_ring_desc":
+    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة",
+  "chat.contact.ring_action": "رنّ",
+  "chat.contact.ringing": "يرنّ…",
+  "settings.security.ring_alerts": "تنبيهات الرنين",
+  "settings.security.ring_alerts_desc":
+    "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
+  "notif.channel.ring": "رنين",
+  "notif.channel.ring_desc":
+    "تنبيهات من جهات الاتصال التي سمحت لها بالرنين لك.",
+  "notif.ring.hidden": "رنين",
+  "notif.ring.title": "{sender} يرنّ لك",
+  "notif.ring.body": "تحقق من رسائلك",
   "chat.attach.bitchat_too_big": "قد لا يصل هذا",
   "chat.attach.bitchat_too_big_body":
     "{name} يستخدم bitchat، وهو يتوقف في منتصف الملف الكبير. ما دون 350 KiB تقريبًا موثوق. أما الإرسال إلى جهة اتصال على Airhop فلا حد له.",

@@ -508,6 +508,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "पश्चिम",
   "chat.location.direction.nw": "उत्तर-पश्चिम",
   "chat.attach.send_anyway": "फिर भी भेजें",
+  "chat.ring.sent_summary": "घंटी बजाई",
+  "chat.ring.received_summary": "आपको घंटी बजाई",
+  "chat.ring.alert.title": "{sender} आपको घंटी बजा रहे हैं",
+  "chat.ring.alert.body": "अपने संदेश जाँचें",
+  "chat.ring.alert.open": "खोलें",
+  "chat.ring.alert.snooze": "1 घंटे के लिए स्नूज़ करें",
+  "chat.contact.allow_ring": "घंटी अलर्ट की अनुमति दें",
+  "chat.contact.allow_ring_desc":
+    "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो",
+  "chat.contact.ring_action": "घंटी बजाएँ",
+  "chat.contact.ringing": "घंटी बज रही है…",
+  "settings.security.ring_alerts": "घंटी अलर्ट",
+  "settings.security.ring_alerts_desc":
+    "घंटी सुविधा के लिए मुख्य स्विच। बंद करने पर हर घंटी तुरंत अस्वीकार हो जाती है, चाहे आपने व्यक्तिगत संपर्कों को जो भी अनुमति दी हो।",
+  "notif.channel.ring": "घंटी",
+  "notif.channel.ring_desc":
+    "उन संपर्कों से अलर्ट जिन्हें आपने घंटी बजाने की अनुमति दी है।",
+  "notif.ring.hidden": "घंटी",
+  "notif.ring.title": "{sender} आपको घंटी बजा रहे हैं",
+  "notif.ring.body": "अपने संदेश जाँचें",
   "chat.attach.bitchat_too_big": "यह शायद न पहुँचे",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat पर हैं, जो बड़ी फ़ाइल बीच में ही छोड़ देता है। लगभग 350 KiB से कम भरोसेमंद है। किसी Airhop संपर्क को भेजने पर ऐसी कोई सीमा नहीं।",

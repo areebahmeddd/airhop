@@ -1600,6 +1600,10 @@ export default function ArchitecturePage() {
                   ],
                   ["AI assistant", "Off. Nothing downloads until you pick a model"],
                   ["Social bridges", "Off. Individually, per plugin"],
+                  [
+                    "Ring",
+                    "Off per contact. Nobody can ring your phone until you allow that person, and you can snooze or switch it off for everyone",
+                  ],
                 ]}
               />
             </Section>

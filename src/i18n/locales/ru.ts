@@ -514,6 +514,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "к западу",
   "chat.location.direction.nw": "к северо-западу",
   "chat.attach.send_anyway": "Всё равно отправить",
+  "chat.ring.sent_summary": "Позвонил",
+  "chat.ring.received_summary": "Позвонил вам",
+  "chat.ring.alert.title": "{sender} звонит вам",
+  "chat.ring.alert.body": "Проверьте свои сообщения",
+  "chat.ring.alert.open": "Открыть",
+  "chat.ring.alert.snooze": "Отложить на 1 час",
+  "chat.contact.allow_ring": "Разрешить уведомления о звонке",
+  "chat.contact.allow_ring_desc":
+    "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён",
+  "chat.contact.ring_action": "Позвонить",
+  "chat.contact.ringing": "Звонит…",
+  "settings.security.ring_alerts": "Уведомления о звонке",
+  "settings.security.ring_alerts_desc":
+    "Главный переключатель звонка. Выключение мгновенно отклоняет любой звонок, независимо от того, что вы разрешили отдельным контактам.",
+  "notif.channel.ring": "Звонок",
+  "notif.channel.ring_desc":
+    "Уведомления от контактов, которым вы разрешили звонить вам.",
+  "notif.ring.hidden": "Звонок",
+  "notif.ring.title": "{sender} звонит вам",
+  "notif.ring.body": "Проверьте свои сообщения",
   "chat.attach.bitchat_too_big": "Это может не дойти",
   "chat.attach.bitchat_too_big_body":
     "{name} пользуется bitchat, а он бросает большой файл на полпути. Примерно до 350 KiB надёжно. При отправке контакту в Airhop такого ограничения нет.",

@@ -197,6 +197,7 @@ import { groupChannel, useGroupStore } from "@store/group-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore, type PendingMessage } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
+import { notifyInboundRing, useRingStore } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
 import { geohashChannel, isManualGeoChannel } from "@utils/channel-key";
@@ -226,6 +227,7 @@ import {
   type GeoParticipant,
 } from "./geohash-channel-service";
 import { LANController, newInstanceName } from "./lan-controller";
+import { shouldAllowRing } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
 import { RadioController } from "./radio-controller";
@@ -2215,10 +2217,21 @@ export class MeshService {
       this.bridgeService?.advertisedBridgeGeohash() !== undefined
         ? Capability.bridge
         : 0;
+    // Advertised only while it could reach someone: at least one contact
+    // holds the allowRing grant. Otherwise the button would light up and
+    // silently do nothing.
+    const ring =
+      settings.ringAlertsEnabled &&
+      useContactsStore
+        .getState()
+        .all()
+        .some((c) => c.allowRing === true)
+        ? Capability.ring
+        : 0;
     // Unconditional: we always accept and always send encrypted private media
     // to a peer that has proven the same. It is a property of the build, not a
     // user setting.
-    return gateway | bridge | Capability.privateMedia;
+    return gateway | bridge | Capability.privateMedia | ring;
   }
 
   // Peers we have already answered with our own state this session, so the
@@ -2236,6 +2249,16 @@ export class MeshService {
     return this.registry.hasAuthenticatedCapability(
       recipientPeerID,
       Capability.privateMedia,
+    );
+  }
+
+  // Whether to offer the Ring action for this peer: they have proven, inside
+  // their own 0x21 state, that they currently accept one. A hint, same as
+  // privateMedia above; bitchat peers never set it, which hides the action.
+  peerAcceptsRing(recipientPeerID: string): boolean {
+    return this.registry.hasAuthenticatedCapability(
+      recipientPeerID,
+      Capability.ring,
     );
   }
 
@@ -2344,6 +2367,128 @@ export class MeshService {
       isMine: false,
       locationPin: pin,
     });
+  }
+
+  // Ring: a contacts-only, opt-in "come check your messages" alert, over the
+  // same Noise session every DM uses. Refusing an inbound one is
+  // onRing/shouldAllowRing's job, not this method's.
+  //
+  // Returns the ring id, or null when no session exists to carry it.
+  sendRing(peerID: string): string | null {
+    const ringID = newMessageId();
+    const sent = this.router.sendNoisePayload(
+      peerID,
+      NoisePayloadType.RING,
+      new TextEncoder().encode(ringID),
+    );
+    if (!sent) {
+      // Start the handshake so a retry a few seconds later succeeds.
+      this.ensureNoiseSession(peerID);
+      return null;
+    }
+
+    useRingStore.getState().recordSent(peerID, Date.now());
+    const channel = `dm:${peerID}`;
+    useChatStore.getState().addChannel(channel);
+    useChatStore.getState().addMessage({
+      id: ringID,
+      channel,
+      senderID: this.identity.peerID,
+      senderNickname: this.nickname,
+      ...systemRow("chat.ring.sent_summary"),
+      timestampMs: Date.now(),
+      isMine: true,
+      ring: true,
+      status: "sent",
+    });
+    return ringID;
+  }
+
+  // A ring arrived from a peer we hold a session with. shouldAllowRing owns
+  // every reason to refuse one; this runs once none apply.
+  private onRing(
+    senderID: string,
+    channel: string,
+    body: Uint8Array,
+    packetTimestampMs: number,
+  ): void {
+    const ringID = new TextDecoder().decode(body);
+    if (!ringID) return;
+
+    const nowMs = Date.now();
+    const contact = useContactsStore.getState().getContact(senderID);
+    const ringStore = useRingStore.getState();
+    const allowed = shouldAllowRing({
+      globallyEnabled: useSettingsStore.getState().ringAlertsEnabled,
+      senderMayRing: contact?.allowRing === true,
+      isSnoozed: ringStore.isSnoozed(senderID, nowMs),
+      msSinceLastReceived: ringStore.msSinceLastReceived(senderID, nowMs),
+      // Clamped: a skewed clock could otherwise go negative.
+      ringAgeMs: Math.max(0, nowMs - packetTimestampMs),
+    });
+    if (!allowed) return;
+
+    ringStore.recordReceived(senderID, nowMs);
+
+    const peer = this.registry.get(senderID);
+    const nickname =
+      peer?.nickname ?? contact?.nickname ?? senderID.slice(0, 8);
+    useChatStore.getState().addChannel(channel);
+    useChatStore.getState().addMessage({
+      id: ringID,
+      channel,
+      senderID,
+      senderNickname: nickname,
+      ...systemRow("chat.ring.received_summary"),
+      timestampMs: nowMs,
+      isMine: false,
+      ring: true,
+    });
+
+    // app.tsx decides foreground overlay vs backgrounded notification.
+    notifyInboundRing({
+      peerID: senderID,
+      ringID,
+      senderName: nickname,
+      receivedAtMs: nowMs,
+    });
+  }
+
+  // Sent once the alert is dismissed or the thread opens, never
+  // automatically. Most callers want acknowledgeRingsIn below.
+  acknowledgeRing(peerID: string, ringID: string): void {
+    this.router.sendNoisePayload(
+      peerID,
+      NoisePayloadType.RING_ACK,
+      new TextEncoder().encode(ringID),
+    );
+  }
+
+  // Acknowledges every unread ring from this peer in this conversation.
+  // Called wherever sendReadReceipts is, and from the Ring alert sheet's own
+  // buttons. shouldAllowRing's cooldown keeps this to one or two rows.
+  acknowledgeRingsIn(channel: string, peerID: string): void {
+    const messages = useChatStore.getState().messages[channel] ?? [];
+    for (const m of messages) {
+      if (m.ring === true && !m.isMine && m.status !== "read") {
+        this.acknowledgeRing(peerID, m.id);
+        useChatStore
+          .getState()
+          .setMessageStatus(channel, m.id, "read", Date.now());
+      }
+    }
+  }
+
+  // The other side acknowledged a ring we sent: "sent" becomes "read", and
+  // ring-store.isSending clears.
+  private onRingAck(senderID: string, body: Uint8Array): void {
+    const ringID = new TextDecoder().decode(body);
+    if (!ringID) return;
+    const nowMs = Date.now();
+    useRingStore.getState().recordAcked(senderID, nowMs);
+    useChatStore
+      .getState()
+      .setMessageStatus(`dm:${senderID}`, ringID, "read", nowMs);
   }
 
   // Send our capabilities and signing key inside an established session.
@@ -2497,6 +2642,14 @@ export class MeshService {
     }
     if (payload.type === NoisePayloadType.LOCATION_PIN) {
       this.onLocationPin(senderID, channel, payload.body);
+      return;
+    }
+    if (payload.type === NoisePayloadType.RING) {
+      this.onRing(senderID, channel, payload.body, packet.timestamp);
+      return;
+    }
+    if (payload.type === NoisePayloadType.RING_ACK) {
+      this.onRingAck(senderID, payload.body);
       return;
     }
     if (payload.type !== NoisePayloadType.PRIVATE_MESSAGE) return;

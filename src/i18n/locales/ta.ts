@@ -523,6 +523,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "மேற்கு",
   "chat.location.direction.nw": "வடமேற்கு",
   "chat.attach.send_anyway": "எப்படியும் அனுப்பு",
+  "chat.ring.sent_summary": "அழைத்தார்",
+  "chat.ring.received_summary": "உங்களை அழைத்தார்",
+  "chat.ring.alert.title": "{sender} உங்களை அழைக்கிறார்",
+  "chat.ring.alert.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
+  "chat.ring.alert.open": "திற",
+  "chat.ring.alert.snooze": "1 மணிநேரம் ஒத்திவை",
+  "chat.contact.allow_ring": "அழைப்பு எச்சரிக்கைகளை அனுமதி",
+  "chat.contact.allow_ring_desc":
+    "இந்த உரையாடல் ஒலியடக்கப்பட்டிருந்தாலும், உங்கள் கவனத்தை ஈர்க்க அவர்கள் உங்கள் தொலைபேசியை அழைக்க அனுமதிக்கவும்",
+  "chat.contact.ring_action": "அழை",
+  "chat.contact.ringing": "அழைக்கிறது…",
+  "settings.security.ring_alerts": "அழைப்பு எச்சரிக்கைகள்",
+  "settings.security.ring_alerts_desc":
+    "அழைப்புக்கான முதன்மை நிலைமாற்றி. அணைத்தால், தனிப்பட்ட தொடர்புகளுக்கு நீங்கள் வழங்கியதைப் பொருட்படுத்தாமல் ஒவ்வொரு அழைப்பையும் உடனடியாக நிராகரிக்கும்.",
+  "notif.channel.ring": "அழைப்பு",
+  "notif.channel.ring_desc":
+    "உங்களை அழைக்க நீங்கள் அனுமதித்த தொடர்புகளிடமிருந்து எச்சரிக்கைகள்.",
+  "notif.ring.hidden": "அழைப்பு",
+  "notif.ring.title": "{sender} உங்களை அழைக்கிறார்",
+  "notif.ring.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
   "chat.attach.bitchat_too_big": "இது சென்றடையாமல் போகலாம்",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat இல் இருக்கிறார், அது பெரிய கோப்பில் பாதியிலேயே விட்டுவிடும். சுமார் 350 KiB க்குக் கீழ் நம்பகமானது. Airhop தொடர்புக்கு அனுப்பினால் அப்படி எந்த வரம்பும் இல்லை.",

@@ -516,6 +516,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "захід",
   "chat.location.direction.nw": "північний захід",
   "chat.attach.send_anyway": "Усе одно надіслати",
+  "chat.ring.sent_summary": "Подзвонив",
+  "chat.ring.received_summary": "Подзвонив вам",
+  "chat.ring.alert.title": "{sender} дзвонить вам",
+  "chat.ring.alert.body": "Перевірте свої повідомлення",
+  "chat.ring.alert.open": "Відкрити",
+  "chat.ring.alert.snooze": "Відкласти на 1 годину",
+  "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
+  "chat.contact.allow_ring_desc":
+    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено",
+  "chat.contact.ring_action": "Подзвонити",
+  "chat.contact.ringing": "Дзвонить…",
+  "settings.security.ring_alerts": "Сповіщення про дзвінок",
+  "settings.security.ring_alerts_desc":
+    "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
+  "notif.channel.ring": "Дзвінок",
+  "notif.channel.ring_desc":
+    "Сповіщення від контактів, яким ви дозволили дзвонити вам.",
+  "notif.ring.hidden": "Дзвінок",
+  "notif.ring.title": "{sender} дзвонить вам",
+  "notif.ring.body": "Перевірте свої повідомлення",
   "chat.attach.bitchat_too_big": "Це може не дійти",
   "chat.attach.bitchat_too_big_body":
     "{name} користується bitchat, який здається на півдорозі, коли файл великий. Приблизно до 350 KiB надійно. Надсилання контакту в Airhop такої межі не має.",

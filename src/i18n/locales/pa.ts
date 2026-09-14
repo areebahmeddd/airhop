@@ -508,6 +508,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "ਪੱਛਮ",
   "chat.location.direction.nw": "ਉੱਤਰ-ਪੱਛਮ",
   "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
+  "chat.ring.sent_summary": "ਘੰਟੀ ਵਜਾਈ",
+  "chat.ring.received_summary": "ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਈ",
+  "chat.ring.alert.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
+  "chat.ring.alert.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
+  "chat.ring.alert.open": "ਖੋਲ੍ਹੋ",
+  "chat.ring.alert.snooze": "1 ਘੰਟੇ ਲਈ ਰੋਕੋ",
+  "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
+  "chat.contact.allow_ring_desc":
+    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ",
+  "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
+  "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
+  "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
+  "settings.security.ring_alerts_desc":
+    "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",
+  "notif.channel.ring": "ਘੰਟੀ",
+  "notif.channel.ring_desc":
+    "ਉਹਨਾਂ ਸੰਪਰਕਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਜਿਨ੍ਹਾਂ ਨੂੰ ਤੁਸੀਂ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ।",
+  "notif.ring.hidden": "ਘੰਟੀ",
+  "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
+  "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
   "chat.attach.bitchat_too_big": "ਸ਼ਾਇਦ ਇਹ ਨਾ ਪਹੁੰਚੇ",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat ’ਤੇ ਹਨ, ਜੋ ਵੱਡੀ ਫ਼ਾਈਲ ਵਿਚਕਾਰੋਂ ਹੀ ਛੱਡ ਦਿੰਦਾ ਹੈ। ਲਗਭਗ 350 KiB ਤੋਂ ਘੱਟ ਭਰੋਸੇਯੋਗ ਹੈ। ਕਿਸੇ Airhop ਸੰਪਰਕ ਨੂੰ ਭੇਜਣ ’ਤੇ ਅਜਿਹੀ ਕੋਈ ਹੱਦ ਨਹੀਂ ਹੁੰਦੀ।",

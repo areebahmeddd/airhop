@@ -52,6 +52,7 @@ export type SettingId =
   | "forward-secrecy"
   | "signed-packets"
   | "hide-previews"
+  | "ring-alerts"
   | "internet"
   | "relay-discovery"
   | "bitchat"
@@ -346,6 +347,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.privacy",
     icon: "eye-off",
     target: { kind: "row", view: "security", id: "hide-previews" },
+  },
+  {
+    key: "ring-alerts",
+    labelKey: "settings.security.ring_alerts",
+    descriptionKey: "settings.security.ring_alerts_desc",
+    sectionKey: "settings.section.privacy",
+    icon: "bell",
+    target: { kind: "row", view: "security", id: "ring-alerts" },
   },
 
   // ---- Network & relays ----

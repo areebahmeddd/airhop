@@ -527,6 +527,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "kanluran",
   "chat.location.direction.nw": "hilagang-kanluran",
   "chat.attach.send_anyway": "Ipadala pa rin",
+  "chat.ring.sent_summary": "Tumawag",
+  "chat.ring.received_summary": "Tumawag sa iyo",
+  "chat.ring.alert.title": "Tumatawag si {sender}",
+  "chat.ring.alert.body": "Suriin ang iyong mga mensahe",
+  "chat.ring.alert.open": "Buksan",
+  "chat.ring.alert.snooze": "I-snooze ng 1 oras",
+  "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
+  "chat.contact.allow_ring_desc":
+    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito",
+  "chat.contact.ring_action": "Tumawag",
+  "chat.contact.ringing": "Tumatawag…",
+  "settings.security.ring_alerts": "Mga alerto ng tawag",
+  "settings.security.ring_alerts_desc":
+    "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
+  "notif.channel.ring": "Tawag",
+  "notif.channel.ring_desc":
+    "Mga alerto mula sa mga kontaktong pinayagan mong tumawag sa iyo.",
+  "notif.ring.hidden": "Tawag",
+  "notif.ring.title": "Tinatawagan ka ni {sender}",
+  "notif.ring.body": "Suriin ang iyong mga mensahe",
   "chat.attach.bitchat_too_big": "Maaaring hindi ito dumating",
   "chat.attach.bitchat_too_big_body":
     "Nasa bitchat si {name}, na sumusuko sa gitna kapag malaki ang file. Maaasahan ang mas mababa sa mga 350 KiB. Walang ganoong limitasyon kapag ipinadala ito sa isang contact sa Airhop.",

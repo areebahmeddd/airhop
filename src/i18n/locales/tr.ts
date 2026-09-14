@@ -511,6 +511,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "batı",
   "chat.location.direction.nw": "kuzeybatı",
   "chat.attach.send_anyway": "Yine de gönder",
+  "chat.ring.sent_summary": "Çaldı",
+  "chat.ring.received_summary": "Seni aradı",
+  "chat.ring.alert.title": "{sender} seni arıyor",
+  "chat.ring.alert.body": "Mesajlarını kontrol et",
+  "chat.ring.alert.open": "Aç",
+  "chat.ring.alert.snooze": "1 saat ertele",
+  "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
+  "chat.contact.allow_ring_desc":
+    "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver",
+  "chat.contact.ring_action": "Çağır",
+  "chat.contact.ringing": "Çalıyor…",
+  "settings.security.ring_alerts": "Çağrı uyarıları",
+  "settings.security.ring_alerts_desc":
+    "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",
+  "notif.channel.ring": "Çağrı",
+  "notif.channel.ring_desc":
+    "Seni aramasına izin verdiğin kişilerden gelen uyarılar.",
+  "notif.ring.hidden": "Çağrı",
+  "notif.ring.title": "{sender} seni arıyor",
+  "notif.ring.body": "Mesajlarını kontrol et",
   "chat.attach.bitchat_too_big": "Bu ulaşmayabilir",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat kullanıyor ve büyük bir dosyada yarı yolda pes ediyor. Yaklaşık 350 KiB altı güvenilirdir. Bir Airhop kişisine göndermenin böyle bir sınırı yoktur.",

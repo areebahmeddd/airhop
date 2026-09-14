@@ -60,6 +60,8 @@ import {
   dismissNotificationsFor,
   handleInboundMessage,
   handleNearbyPeers,
+  isAppActive,
+  raiseRingNotification,
   requestNotificationPermission,
   setAppBadgeCount,
   setMeshNavigator,
@@ -98,6 +100,7 @@ import {
   subscribeInboundMessages,
   useChatStore,
 } from "@store/chat-store";
+import { useIncomingRingStore } from "@store/incoming-ring-store";
 import {
   useMeshBanners,
   useMeshStateStore,
@@ -113,6 +116,7 @@ import {
   showPermissionPrimer,
   usePermissionPrimerStore,
 } from "@store/permission-primer-store";
+import { subscribeInboundRings } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
 import { useWalletStore } from "@store/wallet-store";
@@ -123,6 +127,7 @@ import {
   installGlobalErrorHandler,
 } from "@ui/components/error-boundary";
 import MeshStatusBar from "@ui/components/mesh-status-bar";
+import RingAlertSheet from "@ui/components/ring-alert-sheet";
 import SearchField from "@ui/components/search-field";
 import TransferBadge from "@ui/components/transfer-badge";
 import {
@@ -1180,10 +1185,20 @@ function AppContent(): React.JSX.Element {
         countReachablePeers(prev.peers, nowMs),
       );
     });
+    // mesh-service.onRing already decided this ring should alert; only the
+    // foreground-vs-backgrounded choice happens here.
+    const unsubscribeRings = subscribeInboundRings((ring) => {
+      if (isAppActive()) {
+        useIncomingRingStore.getState().show(ring);
+      } else {
+        void raiseRingNotification(ring.peerID, ring.senderName);
+      }
+    });
     void configureNotifications();
     return () => {
       unsubscribe();
       unsubscribePeers();
+      unsubscribeRings();
     };
   }, [appReady, onboardingStep, username]);
 
@@ -1481,6 +1496,7 @@ function AppContent(): React.JSX.Element {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
         <AlertModal />
+        <RingAlertSheet />
         {/* Mounted beside the alert, not inside the onboarding flow: the primer
             is shown on the first launch that actually needs a permission, which
             for someone who killed the app mid-onboarding is a launch that skips

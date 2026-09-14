@@ -516,6 +516,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "barat",
   "chat.location.direction.nw": "barat laut",
   "chat.attach.send_anyway": "Kirim saja",
+  "chat.ring.sent_summary": "Membunyikan bel",
+  "chat.ring.received_summary": "Membunyikan bel untuk Anda",
+  "chat.ring.alert.title": "{sender} membunyikan bel",
+  "chat.ring.alert.body": "Periksa pesan Anda",
+  "chat.ring.alert.open": "Buka",
+  "chat.ring.alert.snooze": "Tunda 1 jam",
+  "chat.contact.allow_ring": "Izinkan peringatan bel",
+  "chat.contact.allow_ring_desc":
+    "Izinkan mereka membunyikan bel ponsel Anda untuk menarik perhatian, meskipun percakapan ini dibisukan",
+  "chat.contact.ring_action": "Bunyikan bel",
+  "chat.contact.ringing": "Membunyikan bel…",
+  "settings.security.ring_alerts": "Peringatan bel",
+  "settings.security.ring_alerts_desc":
+    "Saklar utama untuk fitur Bel. Nonaktifkan untuk menolak semua bel sekaligus, apa pun izin yang telah Anda berikan ke masing-masing kontak.",
+  "notif.channel.ring": "Bel",
+  "notif.channel.ring_desc":
+    "Peringatan dari kontak yang Anda izinkan membunyikan bel.",
+  "notif.ring.hidden": "Bel",
+  "notif.ring.title": "{sender} membunyikan bel untuk Anda",
+  "notif.ring.body": "Periksa pesan Anda",
   "chat.attach.bitchat_too_big": "Ini mungkin tidak sampai",
   "chat.attach.bitchat_too_big_body":
     "{name} memakai bitchat, yang menyerah di tengah jalan pada berkas besar. Di bawah kira-kira 350 KiB terbilang andal. Mengirimkannya ke kontak Airhop tidak punya batas seperti itu.",

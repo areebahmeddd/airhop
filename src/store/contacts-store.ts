@@ -87,6 +87,11 @@ export interface Contact {
   // Absent on records predating the field; readers fall back to `addedAtMs`,
   // which those records were stamped with at confirmation time.
   verifiedAtMs?: number;
+  // Whether this contact may Ring you: an alert that rings/vibrates through
+  // mute until acknowledged. Absent or false means no. A per-contact grant,
+  // separate from just being a contact, the same way `verification` is kept
+  // apart from `source`. Never leaves the device.
+  allowRing?: boolean;
 }
 
 // Ordering for the merge, so a write can never lower a contact's standing. A
@@ -203,6 +208,8 @@ interface ContactsState {
   // rename. A label on an identity the app cannot address is a label on
   // nothing, which is the case the gate still refuses.
   setLocalNickname: (peerID: string, nickname: string) => void;
+  // Grant or revoke Ring for one contact. Same key gate as setLocalNickname.
+  setAllowRing: (peerID: string, allow: boolean) => void;
   getContact: (peerID: string) => Contact | undefined;
   // Display name for a peer ID, or undefined to fall back to a generated one.
   nicknameFor: (peerID: string) => string | undefined;
@@ -269,6 +276,8 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
         : next.nostrPubkeyHex,
     // Never dropped by a write that did not set one.
     localNickname: next.localNickname ?? prior.localNickname,
+    // A re-add (e.g. re-scanning a QR) must never revoke a ring grant.
+    allowRing: next.allowRing ?? prior.allowRing,
   };
 }
 
@@ -416,6 +425,20 @@ export const useContactsStore = create<ContactsState>()(
                 ...existing,
                 localNickname: trimmed.length > 0 ? trimmed : undefined,
               },
+            },
+          };
+        });
+      },
+
+      setAllowRing(peerID, allow) {
+        set((state) => {
+          const existing = state.contacts[peerID];
+          if (!existing) return state;
+          if (!hasKeys(existing)) return state;
+          return {
+            contacts: {
+              ...state.contacts,
+              [peerID]: { ...existing, allowRing: allow },
             },
           };
         });

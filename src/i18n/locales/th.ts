@@ -500,6 +500,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "ทิศตะวันตก",
   "chat.location.direction.nw": "ทิศตะวันตกเฉียงเหนือ",
   "chat.attach.send_anyway": "ส่งต่อไป",
+  "chat.ring.sent_summary": "โทรเรียก",
+  "chat.ring.received_summary": "โทรเรียกคุณ",
+  "chat.ring.alert.title": "{sender} กำลังโทรเรียกคุณ",
+  "chat.ring.alert.body": "ตรวจสอบข้อความของคุณ",
+  "chat.ring.alert.open": "เปิด",
+  "chat.ring.alert.snooze": "เลื่อนออกไป 1 ชั่วโมง",
+  "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
+  "chat.contact.allow_ring_desc":
+    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้",
+  "chat.contact.ring_action": "โทรเรียก",
+  "chat.contact.ringing": "กำลังโทรเรียก…",
+  "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
+  "settings.security.ring_alerts_desc":
+    "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
+  "notif.channel.ring": "เสียงเรียก",
+  "notif.channel.ring_desc":
+    "การแจ้งเตือนจากผู้ติดต่อที่คุณอนุญาตให้โทรเรียกคุณ",
+  "notif.ring.hidden": "เสียงเรียก",
+  "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
+  "notif.ring.body": "ตรวจสอบข้อความของคุณ",
   "chat.attach.bitchat_too_big": "สิ่งนี้อาจไปไม่ถึง",
   "chat.attach.bitchat_too_big_body":
     "{name} ใช้ bitchat ซึ่งจะล้มเลิกกลางคันกับไฟล์ขนาดใหญ่ ต่ำกว่าราว 350 KiB จะเชื่อถือได้ การส่งให้ผู้ติดต่อที่ใช้ Airhop ไม่มีขีดจำกัดแบบนี้",

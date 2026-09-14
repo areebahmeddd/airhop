@@ -509,6 +509,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "tây",
   "chat.location.direction.nw": "tây bắc",
   "chat.attach.send_anyway": "Vẫn gửi",
+  "chat.ring.sent_summary": "Đã gọi chuông",
+  "chat.ring.received_summary": "Đã gọi chuông cho bạn",
+  "chat.ring.alert.title": "{sender} đang gọi chuông",
+  "chat.ring.alert.body": "Hãy kiểm tra tin nhắn của bạn",
+  "chat.ring.alert.open": "Mở",
+  "chat.ring.alert.snooze": "Tạm hoãn 1 giờ",
+  "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
+  "chat.contact.allow_ring_desc":
+    "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng",
+  "chat.contact.ring_action": "Gọi chuông",
+  "chat.contact.ringing": "Đang gọi chuông…",
+  "settings.security.ring_alerts": "Cảnh báo chuông",
+  "settings.security.ring_alerts_desc":
+    "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",
+  "notif.channel.ring": "Chuông",
+  "notif.channel.ring_desc":
+    "Cảnh báo từ những liên hệ bạn đã cho phép gọi chuông cho bạn.",
+  "notif.ring.hidden": "Chuông",
+  "notif.ring.title": "{sender} đang gọi chuông cho bạn",
+  "notif.ring.body": "Hãy kiểm tra tin nhắn của bạn",
   "chat.attach.bitchat_too_big": "Tệp này có thể không tới nơi",
   "chat.attach.bitchat_too_big_body":
     "{name} đang dùng bitchat, ứng dụng này bỏ dở giữa chừng với tệp lớn. Dưới khoảng 350 KiB thì đáng tin cậy. Gửi cho một liên hệ Airhop thì không có giới hạn như vậy.",

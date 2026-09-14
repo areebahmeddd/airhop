@@ -518,6 +518,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "à l’ouest",
   "chat.location.direction.nw": "au nord-ouest",
   "chat.attach.send_anyway": "Envoyer quand même",
+  "chat.ring.sent_summary": "A sonné",
+  "chat.ring.received_summary": "T’a sonné",
+  "chat.ring.alert.title": "{sender} vous appelle",
+  "chat.ring.alert.body": "Consultez vos messages",
+  "chat.ring.alert.open": "Ouvrir",
+  "chat.ring.alert.snooze": "Suspendre 1 heure",
+  "chat.contact.allow_ring": "Autoriser les alertes de sonnerie",
+  "chat.contact.allow_ring_desc":
+    "Autorisez-les à faire sonner votre téléphone pour attirer votre attention, même si cette conversation est en sourdine",
+  "chat.contact.ring_action": "Sonner",
+  "chat.contact.ringing": "Sonnerie en cours…",
+  "settings.security.ring_alerts": "Alertes de sonnerie",
+  "settings.security.ring_alerts_desc":
+    "Interrupteur principal pour la sonnerie. Le désactiver refuse instantanément toute sonnerie, quelle que soit l’autorisation accordée à chaque contact.",
+  "notif.channel.ring": "Sonnerie",
+  "notif.channel.ring_desc":
+    "Alertes des contacts que vous avez autorisés à vous appeler.",
+  "notif.ring.hidden": "Sonnerie",
+  "notif.ring.title": "{sender} vous appelle",
+  "notif.ring.body": "Consultez vos messages",
   "chat.attach.bitchat_too_big": "Cela pourrait ne pas arriver",
   "chat.attach.bitchat_too_big_body":
     "{name} est sur bitchat, qui abandonne en cours de route sur un gros fichier. En dessous de 350 KiB environ, c’est fiable. L’envoyer à un contact Airhop n’a pas cette limite.",

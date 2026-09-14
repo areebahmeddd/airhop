@@ -517,6 +517,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "a ovest",
   "chat.location.direction.nw": "a nord-ovest",
   "chat.attach.send_anyway": "Invia comunque",
+  "chat.ring.sent_summary": "Ha suonato",
+  "chat.ring.received_summary": "Ti ha suonato",
+  "chat.ring.alert.title": "{sender} ti sta chiamando",
+  "chat.ring.alert.body": "Controlla i tuoi messaggi",
+  "chat.ring.alert.open": "Apri",
+  "chat.ring.alert.snooze": "Posticipa di 1 ora",
+  "chat.contact.allow_ring": "Consenti avvisi di chiamata",
+  "chat.contact.allow_ring_desc":
+    "Consenti loro di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata",
+  "chat.contact.ring_action": "Chiama",
+  "chat.contact.ringing": "In chiamata…",
+  "settings.security.ring_alerts": "Avvisi di chiamata",
+  "settings.security.ring_alerts_desc":
+    "Interruttore principale per Chiamata. Disattivarlo rifiuta ogni chiamata all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",
+  "notif.channel.ring": "Chiamata",
+  "notif.channel.ring_desc":
+    "Avvisi dai contatti a cui hai consentito di chiamarti.",
+  "notif.ring.hidden": "Chiamata",
+  "notif.ring.title": "{sender} ti sta chiamando",
+  "notif.ring.body": "Controlla i tuoi messaggi",
   "chat.attach.bitchat_too_big": "Potrebbe non arrivare",
   "chat.attach.bitchat_too_big_body":
     "{name} usa bitchat, che si arrende a metà strada con i file grandi. Sotto i 350 KiB circa è affidabile. Inviarlo a un contatto Airhop non ha questo limite.",

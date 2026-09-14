@@ -504,6 +504,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "غرب",
   "chat.location.direction.nw": "شمال غرب",
   "chat.attach.send_anyway": "به هر حال بفرست",
+  "chat.ring.sent_summary": "زنگ زد",
+  "chat.ring.received_summary": "برایتان زنگ زد",
+  "chat.ring.alert.title": "{sender} برای شما زنگ می‌زند",
+  "chat.ring.alert.body": "پیام‌هایتان را بررسی کنید",
+  "chat.ring.alert.open": "باز کردن",
+  "chat.ring.alert.snooze": "به تعویق انداختن 1 ساعت",
+  "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
+  "chat.contact.allow_ring_desc":
+    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند",
+  "chat.contact.ring_action": "زنگ زدن",
+  "chat.contact.ringing": "در حال زنگ زدن…",
+  "settings.security.ring_alerts": "هشدارهای زنگ",
+  "settings.security.ring_alerts_desc":
+    "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
+  "notif.channel.ring": "زنگ",
+  "notif.channel.ring_desc":
+    "هشدار از مخاطبانی که اجازهٔ زنگ زدن به آن‌ها داده‌اید.",
+  "notif.ring.hidden": "زنگ",
+  "notif.ring.title": "{sender} برای شما زنگ می‌زند",
+  "notif.ring.body": "پیام‌هایتان را بررسی کنید",
   "chat.attach.bitchat_too_big": "شاید نرسد",
   "chat.attach.bitchat_too_big_body":
     "{name} روی bitchat است، که فایل بزرگ را در میانهٔ راه رها می‌کند. کمتر از حدود 350 KiB مطمئن است. فرستادن به یک مخاطب Airhop چنین محدودیتی ندارد.",

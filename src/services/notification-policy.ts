@@ -13,6 +13,7 @@
 
 import { t, tPlural } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
+import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
 import { messageText } from "@utils/message-text";
 
 // A DM channel is keyed "dm:<peerID>" (see chat-store). Everything else is a
@@ -186,5 +187,56 @@ export function nearbyNotificationContent(peerCount: number): {
   return {
     title: tPlural("notif.nearby.title", peerCount),
     body: t("notif.nearby.body"),
+  };
+}
+
+// Ring: a contacts-only, opt-in "come check your messages" alert (see
+// PROTOCOLS.md section 3.3, NoisePayloadType.RING). It rings through mute,
+// so every guard against abuse lives here, not in the mute logic.
+//
+// Blocked senders aren't a check here: mesh-service refuses every packet
+// from a blocked peer before any handler runs, this one included.
+//
+// Each check below is a reason to refuse; the first match wins. A refused
+// ring never reaches chat-store or the tray.
+export function shouldAllowRing(p: {
+  // Settings > Security's master switch. Off refuses every ring at once,
+  // regardless of what any contact was granted.
+  globallyEnabled: boolean;
+  // Whether the sender is a saved contact holding the allowRing grant.
+  senderMayRing: boolean;
+  isSnoozed: boolean;
+  // Milliseconds since we last accepted a ring from this sender, or null
+  // if never.
+  msSinceLastReceived: number | null;
+  // Age of the ring packet at decrypt time: now minus its signed timestamp.
+  ringAgeMs: number;
+}): boolean {
+  if (!p.globallyEnabled) return false;
+  if (!p.senderMayRing) return false;
+  if (p.isSnoozed) return false;
+  if (p.ringAgeMs > RING_STALENESS_MS) return false;
+  if (
+    p.msSinceLastReceived !== null &&
+    p.msSinceLastReceived < RING_COOLDOWN_MS
+  ) {
+    return false;
+  }
+  return true;
+}
+
+// Title/body for the Ring alert. Shared by the foreground overlay and the
+// backgrounded notification so the two never disagree. Not routed through
+// notificationContentFor: a ring is a signal, not a message with a preview.
+export function ringNotificationContent(
+  senderName: string,
+  hidePreviews = false,
+): { title: string; body: string } {
+  if (hidePreviews) {
+    return { title: t("notif.hidden.title"), body: t("notif.ring.hidden") };
+  }
+  return {
+    title: t("notif.ring.title", { sender: senderName }),
+    body: t("notif.ring.body"),
   };
 }

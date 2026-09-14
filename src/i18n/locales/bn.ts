@@ -506,6 +506,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "পশ্চিম",
   "chat.location.direction.nw": "উত্তর-পশ্চিম",
   "chat.attach.send_anyway": "তবুও পাঠান",
+  "chat.ring.sent_summary": "রিং করেছেন",
+  "chat.ring.received_summary": "আপনাকে রিং করেছেন",
+  "chat.ring.alert.title": "{sender} আপনাকে রিং করছেন",
+  "chat.ring.alert.body": "আপনার বার্তা দেখুন",
+  "chat.ring.alert.open": "খুলুন",
+  "chat.ring.alert.snooze": "1 ঘণ্টার জন্য স্নুজ করুন",
+  "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
+  "chat.contact.allow_ring_desc":
+    "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন",
+  "chat.contact.ring_action": "রিং করুন",
+  "chat.contact.ringing": "রিং হচ্ছে…",
+  "settings.security.ring_alerts": "রিং সতর্কতা",
+  "settings.security.ring_alerts_desc":
+    "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",
+  "notif.channel.ring": "রিং",
+  "notif.channel.ring_desc":
+    "আপনি যাদের রিং করার অনুমতি দিয়েছেন তাদের কাছ থেকে সতর্কতা।",
+  "notif.ring.hidden": "রিং",
+  "notif.ring.title": "{sender} আপনাকে রিং করছেন",
+  "notif.ring.body": "আপনার বার্তা দেখুন",
   "chat.attach.bitchat_too_big": "এটি না-ও পৌঁছাতে পারে",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat ব্যবহার করছেন, যা বড় ফাইলে মাঝপথে হাল ছেড়ে দেয়। প্রায় 350 KiB-এর নিচে নির্ভরযোগ্য। Airhop-এর পরিচিতিকে পাঠালে এমন কোনো সীমা নেই।",

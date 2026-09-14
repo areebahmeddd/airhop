@@ -1941,7 +1941,12 @@ export default function MessageThread({
     return () => sub.remove();
   }, []);
   useEffect(() => {
-    if (isDM && appActive) getMeshService()?.sendReadReceipts(channel.slice(3));
+    if (isDM && appActive) {
+      const peerID = channel.slice(3);
+      getMeshService()?.sendReadReceipts(peerID);
+      // Opening the thread also acknowledges any ring waiting in it.
+      getMeshService()?.acknowledgeRingsIn(channel, peerID);
+    }
   }, [isDM, channel, msgs, appActive]);
 
   // Where the reader is in the thread. Refs, not state: these are read inside

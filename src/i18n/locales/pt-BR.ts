@@ -515,6 +515,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "a oeste",
   "chat.location.direction.nw": "a noroeste",
   "chat.attach.send_anyway": "Enviar mesmo assim",
+  "chat.ring.sent_summary": "Chamou",
+  "chat.ring.received_summary": "Chamou você",
+  "chat.ring.alert.title": "{sender} está chamando você",
+  "chat.ring.alert.body": "Confira suas mensagens",
+  "chat.ring.alert.open": "Abrir",
+  "chat.ring.alert.snooze": "Adiar por 1 hora",
+  "chat.contact.allow_ring": "Permitir alertas de chamada",
+  "chat.contact.allow_ring_desc":
+    "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada",
+  "chat.contact.ring_action": "Chamar",
+  "chat.contact.ringing": "Chamando…",
+  "settings.security.ring_alerts": "Alertas de chamada",
+  "settings.security.ring_alerts_desc":
+    "Interruptor principal da Chamada. Desativar recusa toda chamada instantaneamente, independentemente do que você concedeu a contatos individuais.",
+  "notif.channel.ring": "Chamada",
+  "notif.channel.ring_desc":
+    "Alertas de contatos que você permitiu chamar você.",
+  "notif.ring.hidden": "Chamada",
+  "notif.ring.title": "{sender} está chamando você",
+  "notif.ring.body": "Confira suas mensagens",
   "chat.attach.bitchat_too_big": "Isto pode não chegar",
   "chat.attach.bitchat_too_big_body":
     "{name} está no bitchat, que desiste no meio do caminho com arquivos grandes. Abaixo de uns 350 KiB é confiável. Enviar para um contato do Airhop não tem esse limite.",

@@ -113,6 +113,10 @@ interface SettingsState {
   // have them. Either way the routing payload is unaffected, so tapping a
   // notification still opens the right thread.
   hideNotificationPreviews: boolean;
+  // Master switch for Ring. ON by default, so a contact's own allowRing
+  // grant works; this is the one flip that refuses every ring at once,
+  // regardless of what any contact holds.
+  ringAlertsEnabled: boolean;
   uploadQuality: UploadQuality;
   // How many days an attachment survives on disk. Seven by default, matching
   // bitchat's sweep; see MEDIA_RETENTION_DAY_OPTIONS for why it is a choice.
@@ -208,6 +212,7 @@ interface SettingsState {
   setBackgroundMeshEnabled: (enabled: boolean) => void;
   setLanTransportEnabled: (enabled: boolean) => void;
   setHideNotificationPreviews: (hide: boolean) => void;
+  setRingAlertsEnabled: (enabled: boolean) => void;
   setUploadQuality: (quality: UploadQuality) => void;
   setMediaRetentionDays: (days: MediaRetentionDays) => void;
   setGatewayEnabled: (enabled: boolean) => void;
@@ -244,6 +249,7 @@ const DEFAULTS = {
   lanTransportEnabled: false,
   // Private by default; see the field comment above for why.
   hideNotificationPreviews: true,
+  ringAlertsEnabled: true,
   uploadQuality: "high",
   mediaRetentionDays: 7,
   gatewayEnabled: false,
@@ -305,6 +311,9 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setHideNotificationPreviews(hide) {
         set({ hideNotificationPreviews: hide });
+      },
+      setRingAlertsEnabled(enabled) {
+        set({ ringAlertsEnabled: enabled });
       },
       setUploadQuality(quality) {
         set({ uploadQuality: quality });

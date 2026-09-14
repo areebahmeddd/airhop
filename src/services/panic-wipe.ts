@@ -26,12 +26,14 @@ import { useContactsStore } from "@store/contacts-store";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { clearOwedGroupStates } from "@store/group-invite-outbox-store";
 import { useGroupStore } from "@store/group-store";
+import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { getStorage } from "@store/mmkv";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
 import { usePlaceNamesStore } from "@store/place-names-store";
+import { useRingStore } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
 import {
@@ -114,6 +116,9 @@ export const MMKV_STORE_IDS = [
   // place-names-store caches geocoded names for cells the user has opened, which
   // trace the places they have been active in; cleared on panic.
   "place-names-store",
+  // ring-store holds who rang whom and when, and any active snooze: the
+  // same relationship and timing metadata activity-store is here for.
+  "ring-store",
 ] as const;
 
 // What the wipe managed to do. Only the one claim the caller must not make
@@ -127,6 +132,11 @@ export interface PanicWipeResult {
 }
 
 export async function panicWipe(): Promise<PanicWipeResult> {
+  // -1. Silence a live Ring alert first: clearing this store stops
+  //     ring-alert-sheet's haptic loop and its bell card immediately,
+  //     before the rest of the sequence even starts.
+  useIncomingRingStore.getState().clear();
+
   // 0. Record the intent BEFORE anything is destroyed. Everything below is a
   //    sequence, not a transaction, and the process can die anywhere in it.
   //    See ./wipe-marker.
@@ -214,6 +224,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   useChannelMembersStore.getState().clearAll();
   useGeohashBookmarksStore.getState().clearAll();
   usePlaceNamesStore.getState().clearAll();
+  useRingStore.getState().clearAll();
   useSettingsStore.getState().reset();
   useBlockedStore.setState({ blockedPeerIDs: [] });
   // Transport health is live device state, not user data, but a wipe is meant

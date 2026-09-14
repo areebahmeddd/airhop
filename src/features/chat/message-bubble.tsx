@@ -283,6 +283,17 @@ function MessageBubble({
               </View>
             )}
 
+            {/* Tagged like a forwarded message: icon and label above the
+                translated text below, findable at a glance in a thread. */}
+            {item.ring === true && (
+              <View style={styles.ringTag}>
+                <Feather name="bell" size={11} color={Colors.accent} />
+                <Text style={styles.ringTagText}>
+                  {T("chat.contact.ring_action")}
+                </Text>
+              </View>
+            )}
+
             {item.attachment && renderAttachment(item.attachment)}
 
             {/* The message text is the one-line summary the conversation list
@@ -617,6 +628,17 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textMuted,
     },
     forwardedTagTextMine: { color: Colors.textInverse },
+    ringTag: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginBottom: 4,
+    },
+    ringTagText: {
+      fontSize: FontSize.xs,
+      fontWeight: FontWeight.semibold,
+      color: Colors.accent,
+    },
   });
 }
 

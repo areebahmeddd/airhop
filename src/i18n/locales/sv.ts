@@ -509,6 +509,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "väster",
   "chat.location.direction.nw": "nordväst",
   "chat.attach.send_anyway": "Skicka ändå",
+  "chat.ring.sent_summary": "Ringde",
+  "chat.ring.received_summary": "Ringde dig",
+  "chat.ring.alert.title": "{sender} ringer dig",
+  "chat.ring.alert.body": "Kolla dina meddelanden",
+  "chat.ring.alert.open": "Öppna",
+  "chat.ring.alert.snooze": "Snooza i 1 timme",
+  "chat.contact.allow_ring": "Tillåt ringsignaler",
+  "chat.contact.allow_ring_desc":
+    "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad",
+  "chat.contact.ring_action": "Ring",
+  "chat.contact.ringing": "Ringer…",
+  "settings.security.ring_alerts": "Ringsignaler",
+  "settings.security.ring_alerts_desc":
+    "Huvudbrytare för Ring. Avstängd avvisar alla ringningar direkt, oavsett vad du har beviljat enskilda kontakter.",
+  "notif.channel.ring": "Ring",
+  "notif.channel.ring_desc":
+    "Aviseringar från kontakter du har tillåtit att ringa dig.",
+  "notif.ring.hidden": "Ring",
+  "notif.ring.title": "{sender} ringer dig",
+  "notif.ring.body": "Kolla dina meddelanden",
   "chat.attach.bitchat_too_big": "Det här kanske inte kommer fram",
   "chat.attach.bitchat_too_big_body":
     "{name} använder bitchat, som ger upp halvvägs vid en stor fil. Under ungefär 350 KiB är tillförlitligt. Att skicka den till en Airhop-kontakt har ingen sådan gräns.",

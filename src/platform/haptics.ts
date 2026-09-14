@@ -75,3 +75,10 @@ export function rejected(): void {
     () => {},
   );
 }
+
+// One pulse of a foreground Ring alert. The one function here meant to run
+// on a loop: ring-alert-sheet repeats it on an interval while the alert is
+// on screen. Heavy impact, so it reads as insistent, not a confirmation.
+export function ringPulse(): void {
+  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+}

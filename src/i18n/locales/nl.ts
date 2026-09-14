@@ -515,6 +515,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "westen",
   "chat.location.direction.nw": "noordwesten",
   "chat.attach.send_anyway": "Toch sturen",
+  "chat.ring.sent_summary": "Gebeld",
+  "chat.ring.received_summary": "Heeft je gebeld",
+  "chat.ring.alert.title": "{sender} belt je",
+  "chat.ring.alert.body": "Bekijk je berichten",
+  "chat.ring.alert.open": "Openen",
+  "chat.ring.alert.snooze": "1 uur uitstellen",
+  "chat.contact.allow_ring": "Belmeldingen toestaan",
+  "chat.contact.allow_ring_desc":
+    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is",
+  "chat.contact.ring_action": "Bellen",
+  "chat.contact.ringing": "Belt…",
+  "settings.security.ring_alerts": "Belmeldingen",
+  "settings.security.ring_alerts_desc":
+    "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
+  "notif.channel.ring": "Bellen",
+  "notif.channel.ring_desc":
+    "Meldingen van contacten die je hebt toegestaan je te bellen.",
+  "notif.ring.hidden": "Bellen",
+  "notif.ring.title": "{sender} belt je",
+  "notif.ring.body": "Bekijk je berichten",
   "chat.attach.bitchat_too_big": "Dit komt misschien niet aan",
   "chat.attach.bitchat_too_big_body":
     "{name} zit op bitchat, dat halverwege opgeeft bij een groot bestand. Onder ongeveer 350 KiB is betrouwbaar. Naar een Airhop-contact sturen kent die grens niet.",

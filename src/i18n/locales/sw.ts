@@ -516,6 +516,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "magharibi",
   "chat.location.direction.nw": "kaskazini-magharibi",
   "chat.attach.send_anyway": "Tuma hata hivyo",
+  "chat.ring.sent_summary": "Alipiga kengele",
+  "chat.ring.received_summary": "Alikupigia kengele",
+  "chat.ring.alert.title": "{sender} anakupigia kengele",
+  "chat.ring.alert.body": "Angalia ujumbe wako",
+  "chat.ring.alert.open": "Fungua",
+  "chat.ring.alert.snooze": "Ahirisha kwa saa 1",
+  "chat.contact.allow_ring": "Ruhusu arifa za kengele",
+  "chat.contact.allow_ring_desc":
+    "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa",
+  "chat.contact.ring_action": "Piga kengele",
+  "chat.contact.ringing": "Inapiga kengele…",
+  "settings.security.ring_alerts": "Arifa za kengele",
+  "settings.security.ring_alerts_desc":
+    "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",
+  "notif.channel.ring": "Kengele",
+  "notif.channel.ring_desc":
+    "Arifa kutoka kwa watu uliowaruhusu kukupigia kengele.",
+  "notif.ring.hidden": "Kengele",
+  "notif.ring.title": "{sender} anakupigia kengele",
+  "notif.ring.body": "Angalia ujumbe wako",
   "chat.attach.bitchat_too_big": "Hii huenda isifike",
   "chat.attach.bitchat_too_big_body":
     "{name} yupo kwenye bitchat, ambayo hukata tamaa katikati ya faili kubwa. Chini ya takribani 350 KiB hutegemewa. Kuituma kwa anwani ya Airhop hakuna kikomo cha aina hiyo.",

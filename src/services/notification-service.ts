@@ -23,6 +23,7 @@ import {
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
+  ringNotificationContent,
   shouldHapticPing,
   shouldNotifyNearby,
   shouldSystemNotify,
@@ -41,6 +42,12 @@ const MESSAGES_CHANNEL_ID = "messages";
 const NEARBY_CHANNEL_ID = "nearby";
 // One id, so a later notice replaces the last rather than stacking.
 const NEARBY_NOTIFICATION_ID = "nearby_peers";
+
+// Own channel, same reason nearby has one: per-category system control, so
+// silencing messages doesn't silence Ring or vice versa. MAX importance and
+// a distinct pattern, the loudest this phase offers without a native
+// full-screen intent (PROTOCOLS.md section 3.3).
+const RING_CHANNEL_ID = "ring";
 
 // Live view state the policy consults. Kept module-local (not in a store)
 // because only this service reads it and it must be readable synchronously from
@@ -64,8 +71,21 @@ function channelToId(channel: string): string {
   return `msg_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
 
+// Separate from the conversation's message id, so a ring never coalesces
+// with or gets overwritten by an unread-message banner for the same thread.
+function ringIdFor(channel: string): string {
+  return `ring_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
+}
+
 export function setNotificationsAppActive(active: boolean): void {
   appActive = active;
+}
+
+// For a caller outside this module that needs the same foreground check:
+// app.tsx's subscribeInboundRings wiring, choosing between the live overlay
+// and raiseRingNotification below.
+export function isAppActive(): boolean {
+  return appActive;
 }
 
 export function setNotificationsActiveChannel(channel: string): void {
@@ -74,6 +94,13 @@ export function setNotificationsActiveChannel(channel: string): void {
 
 export function setNotificationNavigator(fn: (channel: string) => void): void {
   navigate = fn;
+}
+
+// Opens a conversation from somewhere other than a tapped notification, e.g.
+// ring-alert-sheet's "Open" action. Same registered navigator as a tapped
+// notification. A no-op before it's registered (app still booting).
+export function openConversation(channel: string): void {
+  navigate?.(channel);
 }
 
 // Where a nearby-peers notice goes when tapped. Separate from the conversation
@@ -147,6 +174,15 @@ export async function configureNotifications(): Promise<void> {
         vibrationPattern: null,
         lockscreenVisibility:
           Notifications.AndroidNotificationVisibility.PRIVATE,
+      });
+      await Notifications.setNotificationChannelAsync(RING_CHANNEL_ID, {
+        name: t("notif.channel.ring"),
+        description: t("notif.channel.ring_desc"),
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 400, 200, 400, 200, 400],
+        lockscreenVisibility:
+          Notifications.AndroidNotificationVisibility.PRIVATE,
+        bypassDnd: false,
       });
     } catch {
       // Android will deliver on the default channel instead.
@@ -322,6 +358,47 @@ export async function dismissNotificationsFor(channel: string): Promise<void> {
     await Notifications.dismissNotificationAsync(channelToId(channel));
   } catch {
     // Nothing delivered for this channel, or the platform has no tray: ignore.
+  }
+  try {
+    await Notifications.dismissNotificationAsync(ringIdFor(channel));
+  } catch {
+    // Nothing delivered, or no tray.
+  }
+}
+
+// The backgrounded alert for a ring that already passed every check in
+// mesh-service.onRing. Foreground gets the live overlay instead (see
+// app.tsx's subscribeInboundRings wiring).
+//
+// `sound: "default"` on a MAX-importance channel is the ceiling for this
+// phase: no native loop or full-screen intent yet (PROTOCOLS.md section
+// 3.3). A heads-up card and a distinct vibration pattern, and unlike an
+// ordinary message it ignores the active-thread suppression
+// handleInboundMessage applies.
+export async function raiseRingNotification(
+  peerID: string,
+  senderName: string,
+): Promise<void> {
+  const channel = `dm:${peerID}`;
+  const { title, body } = ringNotificationContent(
+    senderName,
+    useSettingsStore.getState().hideNotificationPreviews,
+  );
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: ringIdFor(channel),
+      content: {
+        title,
+        body,
+        data: { channel },
+        sound: "default",
+        // No badge field: app.tsx already syncs the badge to total unread.
+      },
+      trigger:
+        Platform.OS === "android" ? { channelId: RING_CHANNEL_ID } : null,
+    });
+  } catch {
+    // The sender's own bell row is still waiting in the thread.
   }
 }
 

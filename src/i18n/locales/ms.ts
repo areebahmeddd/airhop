@@ -511,6 +511,26 @@ export const strings: Strings = {
   "chat.location.direction.w": "barat",
   "chat.location.direction.nw": "barat laut",
   "chat.attach.send_anyway": "Hantar juga",
+  "chat.ring.sent_summary": "Berdering",
+  "chat.ring.received_summary": "Berdering kepada anda",
+  "chat.ring.alert.title": "{sender} sedang berdering",
+  "chat.ring.alert.body": "Semak mesej anda",
+  "chat.ring.alert.open": "Buka",
+  "chat.ring.alert.snooze": "Tunda 1 jam",
+  "chat.contact.allow_ring": "Benarkan makluman dering",
+  "chat.contact.allow_ring_desc":
+    "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan",
+  "chat.contact.ring_action": "Dering",
+  "chat.contact.ringing": "Sedang berdering…",
+  "settings.security.ring_alerts": "Makluman dering",
+  "settings.security.ring_alerts_desc":
+    "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",
+  "notif.channel.ring": "Dering",
+  "notif.channel.ring_desc":
+    "Makluman daripada kenalan yang anda benarkan untuk berdering kepada anda.",
+  "notif.ring.hidden": "Dering",
+  "notif.ring.title": "{sender} sedang berdering kepada anda",
+  "notif.ring.body": "Semak mesej anda",
   "chat.attach.bitchat_too_big": "Ini mungkin tidak sampai",
   "chat.attach.bitchat_too_big_body":
     "{name} menggunakan bitchat, yang mengalah di pertengahan jalan bagi fail besar. Di bawah kira-kira 350 KiB adalah boleh diharap. Menghantarnya kepada kenalan Airhop tidak mempunyai had sebegitu.",

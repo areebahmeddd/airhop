@@ -101,6 +101,9 @@ export interface ChatMessage {
     accuracyM?: number;
     takenAtMs: number;
   };
+  // A Ring alert, tagged with a bell in message-bubble.tsx. `status` covers
+  // its full lifecycle: "sent" until acknowledged, "read" once it is.
+  ring?: true;
   // Delivery status (own outgoing messages only). Undefined on received
   // messages and legacy rows. See MessageStatus.
   status?: MessageStatus;
@@ -530,7 +533,12 @@ export const useChatStore = create<ChatState>()(
           };
         });
 
-        if (!isDuplicate && !msg.isMine) {
+        // Ring is excluded: mesh-service.onRing already decided whether to
+        // alert (notification-policy.shouldAllowRing) and raises it through
+        // its own path (ring-store.notifyInboundRing). Reaching these
+        // listeners too would ring twice, and let mute suppress the one
+        // thing Ring is meant to get past.
+        if (!isDuplicate && !msg.isMine && !msg.ring) {
           for (const fn of inboundListeners) fn(msg);
         }
       },
