@@ -1797,6 +1797,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "با بسته شدن Airhop مش هم متوقف شود؟",
   "settings.conn.background_off_body":
     "پیام‌ها فقط وقتی می‌رسند که Airhop باز باشد، و این گوشی بازپخش برای اطرافیان را متوقف می‌کند. اعلان پایدار از میان می‌رود.",
+  "settings.conn.autostart": "شروع خودکار",
+  "settings.conn.autostart_desc":
+    "شبکه را پس از راه‌اندازی مجدد گوشی از نو شروع می‌کند",
+  "settings.conn.autostart_on_title": "Airhop پس از راه‌اندازی مجدد شروع شود؟",
+  "settings.conn.autostart_on_body":
+    "Airhop خودش شروع می‌شود و در راه‌اندازی مجدد بعدی گوشی‌تان دوباره به شبکه می‌پیوندد، بدون هیچ اعلانی تا زمانی که این کار را انجام دهد. برخی سازندگان گوشی این کار را مسدود می‌کنند مگر آنکه آن را در تنظیمات باتری خودشان هم مجاز کنید.",
+  "settings.conn.autostart_off_title": "شروع پس از راه‌اندازی مجدد متوقف شود؟",
+  "settings.conn.autostart_off_body":
+    "Airhop پس از راه‌اندازی مجدد گوشی‌تان بسته می‌ماند، تا زمانی که خودتان آن را باز کنید.",
   "settings.conn.live_voice": "صدای زنده",
   "settings.conn.live_voice_desc": "مانند بی‌سیم با آدم‌های نزدیک حرف بزنید",
   "settings.conn.live_voice_on_title": "صدای زنده روشن شود؟",

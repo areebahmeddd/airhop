@@ -39,6 +39,7 @@ export type SettingsSheet = "appearance" | "status";
 // because the index below is typed against it.
 export type SettingId =
   | "background"
+  | "auto-start-boot"
   | "live-voice"
   | "mesh-bridge"
   | "gateway"
@@ -118,6 +119,15 @@ export const SETTINGS_INDEX = [
     sectionKey: HUB,
     icon: "power",
     target: { kind: "row", view: "root", id: "background" },
+    platform: "android",
+  },
+  {
+    key: "auto-start-boot",
+    labelKey: "settings.conn.autostart",
+    descriptionKey: "settings.conn.autostart_desc",
+    sectionKey: HUB,
+    icon: "refresh-cw",
+    target: { kind: "row", view: "root", id: "auto-start-boot" },
     platform: "android",
   },
   {

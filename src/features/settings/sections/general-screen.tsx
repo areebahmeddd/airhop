@@ -14,6 +14,7 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useT, useTPlural, type TranslationKey, type Translator } from "@i18n";
+import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { getMeshService } from "@services/mesh-service";
 import { setTorRouting } from "@services/tor-routing";
 import { showAlert } from "@store/alert-store";
@@ -168,6 +169,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
     useSettingsStore.getState().reset();
     if (torWasOn) void setTorRouting(false);
     getMeshService()?.applyInternetEnabled(true);
+    // Lives outside this store; AirhopBootReceiver reads it with no JS up.
+    syncAutoStartOnBoot(false);
   }
 
   function handleReset(): void {

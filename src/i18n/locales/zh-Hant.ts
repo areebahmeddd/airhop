@@ -1691,6 +1691,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop 關掉時停止網狀網路嗎？",
   "settings.conn.background_off_body":
     "只有 Airhop 開著時訊息才會送到，這支手機也不再替附近的人做中繼。那則常駐通知會消失。",
+  "settings.conn.autostart": "自動啟動",
+  "settings.conn.autostart_desc": "手機重新啟動後重新啟動網狀網路",
+  "settings.conn.autostart_on_title": "重新啟動後啟動 Airhop？",
+  "settings.conn.autostart_on_body":
+    "下次手機重新啟動時，Airhop 會自行啟動並重新加入網狀網路，在此之前不會顯示任何通知。部分手機廠商會封鎖此操作，除非你也在其自家的電池設定中允許。",
+  "settings.conn.autostart_off_title": "停止在重新啟動後啟動？",
+  "settings.conn.autostart_off_body":
+    "手機重新啟動後 Airhop 將保持關閉，直到你自己打開它。",
   "settings.conn.live_voice": "即時語音",
   "settings.conn.live_voice_desc": "像對講機一樣和附近的人說話",
   "settings.conn.live_voice_on_title": "要開啟即時語音嗎？",

@@ -1840,6 +1840,15 @@ export const strings: Strings = {
     "Fermare la mesh alla chiusura di Airhop?",
   "settings.conn.background_off_body":
     "I messaggi arriveranno solo con Airhop aperta, e questo telefono smetterà di inoltrare per chi è nelle vicinanze. La notifica permanente sparisce.",
+  "settings.conn.autostart": "Avvio automatico",
+  "settings.conn.autostart_desc":
+    "Riavvia la rete mesh dopo il riavvio del telefono",
+  "settings.conn.autostart_on_title": "Avviare Airhop dopo un riavvio?",
+  "settings.conn.autostart_on_body":
+    "Airhop si avvia da solo e torna a far parte della rete mesh al prossimo riavvio del telefono, senza alcuna notifica finché non lo fa. Alcuni produttori bloccano questa funzione a meno che tu non la consenta anche nelle loro impostazioni della batteria.",
+  "settings.conn.autostart_off_title": "Smettere di avviarsi dopo un riavvio?",
+  "settings.conn.autostart_off_body":
+    "Airhop resterà chiuso dopo il riavvio del telefono, finché non lo apri tu stesso.",
   "settings.conn.live_voice": "Voce in diretta",
   "settings.conn.live_voice_desc":
     "Parla con chi è vicino come con un walkie-talkie",

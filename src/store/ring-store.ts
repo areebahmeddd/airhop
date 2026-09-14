@@ -16,16 +16,18 @@ export const RING_COOLDOWN_MS = 5 * 60 * 1000;
 // A ring older than this by the time it decrypts is stale.
 export const RING_STALENESS_MS = 2 * 60 * 1000;
 
-// How long the sender's own "Ringing..." state holds, absent an ack.
-// Matches RING_COOLDOWN_MS so both sides agree on what "still ringing" means.
+/**
+ * How long the sender's own "Ringing..." state holds, absent an ack.
+ * @alias Matches RING_COOLDOWN_MS so both sides agree on what "still
+ * ringing" means; knip reads the tag, so it stays a JSDoc block.
+ */
 export const RING_SENDER_TIMEOUT_MS = RING_COOLDOWN_MS;
 
 // How long the foreground alert keeps pulsing before it gives up.
 export const RING_ALERT_DURATION_MS = 45 * 1000;
 
-// Snooze presets offered on the alert itself.
+// Snooze preset offered on the alert itself.
 export const RING_SNOOZE_1H_MS = 60 * 60 * 1000;
-export const RING_SNOOZE_8H_MS = 8 * 60 * 60 * 1000;
 
 interface RingState {
   lastSentAtMs: Record<string, number>;

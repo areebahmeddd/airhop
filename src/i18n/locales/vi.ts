@@ -1809,6 +1809,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Dừng mạng lưới khi Airhop đóng?",
   "settings.conn.background_off_body":
     "Tin nhắn chỉ tới nơi khi Airhop đang mở, và chiếc điện thoại này ngừng chuyển tiếp giúp những người ở gần. Thông báo thường trực sẽ biến mất.",
+  "settings.conn.autostart": "Tự động khởi động",
+  "settings.conn.autostart_desc":
+    "Khởi động lại mạng lưới sau khi điện thoại của bạn khởi động lại",
+  "settings.conn.autostart_on_title": "Khởi động Airhop sau khi khởi động lại?",
+  "settings.conn.autostart_on_body":
+    "Airhop sẽ tự khởi động và tham gia lại mạng lưới vào lần khởi động lại điện thoại tiếp theo của bạn, không có thông báo nào cho đến khi việc đó xảy ra. Một số nhà sản xuất điện thoại chặn điều này trừ khi bạn cũng cho phép trong cài đặt pin riêng của họ.",
+  "settings.conn.autostart_off_title": "Ngừng khởi động sau khi khởi động lại?",
+  "settings.conn.autostart_off_body":
+    "Airhop sẽ vẫn đóng sau khi điện thoại của bạn khởi động lại, cho đến khi bạn tự mở nó.",
   "settings.conn.live_voice": "Thoại trực tiếp",
   "settings.conn.live_voice_desc": "Nói chuyện với người ở gần như dùng bộ đàm",
   "settings.conn.live_voice_on_title": "Bật thoại trực tiếp?",

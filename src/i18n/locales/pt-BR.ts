@@ -1830,6 +1830,17 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Parar a malha quando o Airhop fechar?",
   "settings.conn.background_off_body":
     "As mensagens só vão chegar com o Airhop aberto, e este celular para de repassar para quem está por perto. A notificação fixa some.",
+  "settings.conn.autostart": "Iniciar automaticamente",
+  "settings.conn.autostart_desc":
+    "Reinicia a rede depois que seu celular reinicia",
+  "settings.conn.autostart_on_title":
+    "Iniciar o Airhop após uma reinicialização?",
+  "settings.conn.autostart_on_body":
+    "O Airhop inicia sozinho e volta a participar da rede na próxima vez que seu celular reiniciar, sem nenhuma notificação até que isso aconteça. Alguns fabricantes bloqueiam isso, a menos que você também permita nas configurações de bateria deles.",
+  "settings.conn.autostart_off_title":
+    "Parar de iniciar após uma reinicialização?",
+  "settings.conn.autostart_off_body":
+    "O Airhop permanece fechado depois que seu celular reinicia, até que você mesmo o abra.",
   "settings.conn.live_voice": "Voz ao vivo",
   "settings.conn.live_voice_desc":
     "Fale com quem está por perto como num walkie-talkie",

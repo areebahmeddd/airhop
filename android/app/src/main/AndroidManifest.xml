@@ -38,6 +38,11 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+  <!-- Off by default (Settings > Connectivity); AirhopBootReceiver checks
+       the user's own preference before doing anything with it. -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <!-- A few seconds only, while AirhopBootService gets the JS runtime up. -->
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <!-- Android 13+ (API 33) runtime permission for WiFi Aware discovery. The
        same-platform WiFi fast path is optional, so a denial never blocks the
        BLE mesh. On API <=32 the location permissions above already cover it.
@@ -149,5 +154,19 @@
       android:name="org.onemindlabs.airhop.service.AirhopForegroundService"
       android:foregroundServiceType="connectedDevice"
       android:exported="false"/>
+    <!-- See AirhopBootReceiver: the mesh restart itself lands here. -->
+    <service
+      android:name="org.onemindlabs.airhop.service.AirhopBootService"
+      android:foregroundServiceType="connectedDevice"
+      android:exported="false"/>
+    <!-- exported=true: BOOT_COMPLETED is a protected broadcast, and API 33+
+         requires every manifest receiver to state exported explicitly. -->
+    <receiver
+      android:name="org.onemindlabs.airhop.service.AirhopBootReceiver"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+      </intent-filter>
+    </receiver>
   </application>
 </manifest>

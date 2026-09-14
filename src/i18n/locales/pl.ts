@@ -1829,6 +1829,15 @@ export const strings: Strings = {
     "Zatrzymać sieć mesh po zamknięciu Airhop?",
   "settings.conn.background_off_body":
     "Wiadomości będą docierać tylko wtedy, gdy Airhop jest otwarty, a ten telefon przestanie przekazywać dla ludzi w pobliżu. Stałe powiadomienie znika.",
+  "settings.conn.autostart": "Uruchamiaj automatycznie",
+  "settings.conn.autostart_desc":
+    "Uruchamia sieć ponownie po restarcie telefonu",
+  "settings.conn.autostart_on_title": "Uruchamiać Airhop po restarcie?",
+  "settings.conn.autostart_on_body":
+    "Airhop uruchomi się sam i ponownie dołączy do sieci przy następnym restarcie telefonu, bez żadnego powiadomienia, dopóki to nie nastąpi. Niektórzy producenci telefonów blokują to, jeśli nie zezwolisz na to również we własnych ustawieniach baterii.",
+  "settings.conn.autostart_off_title": "Przestać uruchamiać po restarcie?",
+  "settings.conn.autostart_off_body":
+    "Airhop pozostanie zamknięty po restarcie telefonu, dopóki sam go nie otworzysz.",
   "settings.conn.live_voice": "Głos na żywo",
   "settings.conn.live_voice_desc":
     "Rozmawiaj z ludźmi w pobliżu jak przez krótkofalówkę",

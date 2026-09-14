@@ -1843,6 +1843,16 @@ export const strings: Strings = {
     "Das Mesh stoppen, wenn Airhop schließt?",
   "settings.conn.background_off_body":
     "Nachrichten kommen dann nur an, während Airhop offen ist, und dieses Telefon leitet nichts mehr für Leute in der Nähe weiter. Die dauerhafte Mitteilung verschwindet.",
+  "settings.conn.autostart": "Automatisch starten",
+  "settings.conn.autostart_desc":
+    "Startet den Mesh neu, wenn dein Telefon neu startet",
+  "settings.conn.autostart_on_title": "Airhop nach einem Neustart starten?",
+  "settings.conn.autostart_on_body":
+    "Airhop startet sich selbst und tritt dem Mesh wieder bei, sobald dein Telefon das nächste Mal neu startet, ohne Benachrichtigung, bis es so weit ist. Manche Hersteller blockieren das, sofern du es nicht zusätzlich in ihren eigenen Akkueinstellungen erlaubst.",
+  "settings.conn.autostart_off_title":
+    "Nach einem Neustart nicht mehr starten?",
+  "settings.conn.autostart_off_body":
+    "Airhop bleibt nach einem Neustart deines Telefons geschlossen, bis du es selbst öffnest.",
   "settings.conn.live_voice": "Live-Sprache",
   "settings.conn.live_voice_desc":
     "Mit Menschen in der Nähe sprechen wie mit einem Funkgerät",

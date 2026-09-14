@@ -1687,6 +1687,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ሲዘጋ ሜሹ ይቁም?",
   "settings.conn.background_off_body":
     "መልእክቶች የሚደርሱት Airhop ክፍት ሲሆን ብቻ ነው፤ ይህ ስልክ ደግሞ በአቅራቢያ ላሉ ሰዎች ማስተላለፉን ያቆማል። ቀጣዩ ማሳወቂያ ይጠፋል።",
+  "settings.conn.autostart": "በራስ-ሰር ጀምር",
+  "settings.conn.autostart_desc": "ስልክህ እንደገና ሲጀምር ሜሹን መልሶ ይጀምራል",
+  "settings.conn.autostart_on_title": "እንደገና ከተጀመረ በኋላ Airhop ይጀምር?",
+  "settings.conn.autostart_on_body":
+    "ስልክህ በሚቀጥለው ጊዜ እንደገና ሲጀምር Airhop ራሱ ይጀምርና ወደ ሜሹ መልሶ ይቀላቀላል፣ ይህ እስኪሆን ድረስ ምንም ማንቂያ አይታይም። አንዳንድ የስልክ አምራቾች በራሳቸው የባትሪ ቅንብሮች ውስጥ ካልፈቀድክ በስተቀር ይህን ያግዳሉ።",
+  "settings.conn.autostart_off_title": "እንደገና ከተጀመረ በኋላ መጀመርን አቁም?",
+  "settings.conn.autostart_off_body":
+    "ራስህ እስክትከፍተው ድረስ Airhop ስልክህ እንደገና ከተጀመረ በኋላ ዝግ ሆኖ ይቆያል።",
   "settings.conn.live_voice": "ቀጥታ ድምፅ",
   "settings.conn.live_voice_desc": "በአቅራቢያ ካሉ ሰዎች ጋር እንደ ዋኪ-ቶኪ ተነጋገር",
   "settings.conn.live_voice_on_title": "ቀጥታ ድምፅ ይብራ?",

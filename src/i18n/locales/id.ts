@@ -1821,6 +1821,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Hentikan mesh saat Airhop tertutup?",
   "settings.conn.background_off_body":
     "Pesan hanya akan tiba selagi Airhop terbuka, dan ponsel ini berhenti meneruskan untuk orang di dekat sini. Notifikasi berjalannya hilang.",
+  "settings.conn.autostart": "Mulai otomatis",
+  "settings.conn.autostart_desc": "Mulai ulang mesh setelah ponsel Anda reboot",
+  "settings.conn.autostart_on_title": "Mulai Airhop setelah reboot?",
+  "settings.conn.autostart_on_body":
+    "Airhop akan mulai sendiri dan bergabung kembali ke mesh saat ponsel Anda reboot berikutnya, tanpa notifikasi apa pun sampai itu terjadi. Beberapa produsen ponsel memblokir ini kecuali Anda juga mengizinkannya di pengaturan baterai bawaan mereka.",
+  "settings.conn.autostart_off_title":
+    "Berhenti mulai otomatis setelah reboot?",
+  "settings.conn.autostart_off_body":
+    "Airhop akan tetap tertutup setelah ponsel Anda reboot, sampai Anda membukanya sendiri.",
   "settings.conn.live_voice": "Suara langsung",
   "settings.conn.live_voice_desc":
     "Bicara dengan orang di dekat sini seperti walkie-talkie",

@@ -1787,6 +1787,17 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop بند ہونے پر میش روک دیں؟",
   "settings.conn.background_off_body":
     "پیغام صرف تبھی پہنچیں گے جب Airhop کھلا ہو، اور یہ فون قریبی لوگوں کے لیے پہنچانا بند کر دے گا۔ جاری اطلاع ختم ہو جائے گی۔",
+  "settings.conn.autostart": "خودکار آغاز",
+  "settings.conn.autostart_desc":
+    "آپ کے فون کے دوبارہ شروع ہونے کے بعد میش کو دوبارہ شروع کرتا ہے",
+  "settings.conn.autostart_on_title":
+    "دوبارہ شروع ہونے کے بعد Airhop شروع کریں؟",
+  "settings.conn.autostart_on_body":
+    "اگلی بار جب آپ کا فون دوبارہ شروع ہوگا تو Airhop خود بخود شروع ہو کر میش میں دوبارہ شامل ہو جائے گا، اور ایسا ہونے تک کوئی اطلاع نہیں دکھائی جائے گی۔ کچھ فون بنانے والے اس کو روکتے ہیں جب تک آپ اسے اپنی بیٹری کی ترتیبات میں بھی اجازت نہ دیں۔",
+  "settings.conn.autostart_off_title":
+    "دوبارہ شروع ہونے کے بعد شروع ہونا بند کریں؟",
+  "settings.conn.autostart_off_body":
+    "جب تک آپ خود نہ کھولیں، Airhop آپ کے فون کے دوبارہ شروع ہونے کے بعد بند ہی رہے گا۔",
   "settings.conn.live_voice": "براہ راست آواز",
   "settings.conn.live_voice_desc": "قریبی لوگوں سے واکی ٹاکی کی طرح بات کریں",
   "settings.conn.live_voice_on_title": "براہ راست آواز چالو کریں؟",

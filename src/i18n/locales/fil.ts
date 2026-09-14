@@ -1864,6 +1864,17 @@ export const strings: Strings = {
     "Itigil ang mesh kapag nagsara ang Airhop?",
   "settings.conn.background_off_body":
     "Darating lang ang mga mensahe habang bukas ang Airhop, at titigil ang teleponong ito sa pagpapasa para sa mga taong malapit. Mawawala ang patuloy na abiso.",
+  "settings.conn.autostart": "Awtomatikong simulan",
+  "settings.conn.autostart_desc":
+    "Simulan muli ang mesh pagkatapos mag-restart ang iyong telepono",
+  "settings.conn.autostart_on_title":
+    "Simulan ang Airhop pagkatapos ng restart?",
+  "settings.conn.autostart_on_body":
+    "Awtomatikong magsisimula ang Airhop at sasali muli sa mesh sa susunod na pag-restart ng iyong telepono, nang walang abiso hangga't hindi pa ito nangyayari. Hinaharangan ito ng ilang tagagawa ng telepono maliban kung papayagan mo rin ito sa sarili nilang mga setting ng baterya.",
+  "settings.conn.autostart_off_title":
+    "Itigil ang pagsisimula pagkatapos ng restart?",
+  "settings.conn.autostart_off_body":
+    "Mananatiling sarado ang Airhop pagkatapos mag-restart ang iyong telepono, hanggang sa buksan mo ito mismo.",
   "settings.conn.live_voice": "Live na boses",
   "settings.conn.live_voice_desc":
     "Makipag-usap sa mga taong malapit na parang walkie-talkie",

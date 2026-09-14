@@ -1783,6 +1783,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop বন্ধ হলে মেশ থামাবেন?",
   "settings.conn.background_off_body":
     "কেবল Airhop খোলা থাকলেই বার্তা পৌঁছাবে, আর এই ফোন কাছের লোকদের জন্য আর পার করবে না। স্থায়ী বিজ্ঞপ্তিটি চলে যাবে।",
+  "settings.conn.autostart": "স্বয়ংক্রিয়ভাবে শুরু করুন",
+  "settings.conn.autostart_desc":
+    "আপনার ফোন রিস্টার্ট হওয়ার পর মেশ আবার চালু করে",
+  "settings.conn.autostart_on_title": "রিস্টার্টের পর Airhop চালু করবেন?",
+  "settings.conn.autostart_on_body":
+    "আপনার ফোন পরের বার রিস্টার্ট হলে Airhop নিজে থেকেই চালু হয়ে মেশে আবার যুক্ত হবে, এবং তা না হওয়া পর্যন্ত কোনো বিজ্ঞপ্তি দেখাবে না। কিছু ফোন নির্মাতা তাদের নিজস্ব ব্যাটারি সেটিংসেও অনুমতি না দিলে এটি বন্ধ করে দেয়।",
+  "settings.conn.autostart_off_title": "রিস্টার্টের পর চালু হওয়া বন্ধ করবেন?",
+  "settings.conn.autostart_off_body":
+    "আপনি নিজে না খোলা পর্যন্ত Airhop আপনার ফোন রিস্টার্ট হওয়ার পরও বন্ধ থাকবে।",
   "settings.conn.live_voice": "সরাসরি কথা",
   "settings.conn.live_voice_desc":
     "ওয়াকি-টকির মতো কাছের লোকদের সঙ্গে কথা বলুন",

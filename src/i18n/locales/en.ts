@@ -1802,6 +1802,14 @@ export const strings = {
   "settings.conn.background_off_title": "Stop the mesh when Airhop closes?",
   "settings.conn.background_off_body":
     "Messages will only arrive while Airhop is open, and this phone stops relaying for people nearby. The ongoing notification goes away.",
+  "settings.conn.autostart": "Start automatically",
+  "settings.conn.autostart_desc": "Restart the mesh after your phone reboots",
+  "settings.conn.autostart_on_title": "Start Airhop after a restart?",
+  "settings.conn.autostart_on_body":
+    "Airhop starts itself and rejoins the mesh the next time your phone restarts, with no notification until it does. Some phone makers block this unless you also allow it in their own battery settings.",
+  "settings.conn.autostart_off_title": "Stop starting after a restart?",
+  "settings.conn.autostart_off_body":
+    "Airhop stays closed after your phone restarts, until you open it yourself.",
   "settings.conn.live_voice": "Live voice",
   "settings.conn.live_voice_desc": "Talk to nearby people like a walkie-talkie",
   "settings.conn.live_voice_on_title": "Turn on live voice?",

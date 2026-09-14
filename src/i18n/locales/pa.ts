@@ -1790,6 +1790,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ਬੰਦ ਹੋਣ ’ਤੇ ਮੈਸ਼ ਰੋਕ ਦੇਣਾ ਹੈ?",
   "settings.conn.background_off_body":
     "ਸੁਨੇਹੇ ਸਿਰਫ਼ ਉਦੋਂ ਹੀ ਪਹੁੰਚਣਗੇ ਜਦੋਂ Airhop ਖੁੱਲ੍ਹਾ ਹੋਵੇ, ਅਤੇ ਇਹ ਫ਼ੋਨ ਨੇੜਲੇ ਲੋਕਾਂ ਲਈ ਅੱਗੇ ਭੇਜਣਾ ਬੰਦ ਕਰ ਦਿੰਦਾ ਹੈ। ਚੱਲਦੀ ਸੂਚਨਾ ਚਲੀ ਜਾਂਦੀ ਹੈ।",
+  "settings.conn.autostart": "ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਕਰੋ",
+  "settings.conn.autostart_desc":
+    "ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਰੀਸਟਾਰਟ ਹੋਣ ਮਗਰੋਂ ਮੈਸ਼ ਨੂੰ ਮੁੜ ਸ਼ੁਰੂ ਕਰਦਾ ਹੈ",
+  "settings.conn.autostart_on_title": "ਰੀਸਟਾਰਟ ਮਗਰੋਂ Airhop ਸ਼ੁਰੂ ਕਰੀਏ?",
+  "settings.conn.autostart_on_body":
+    "ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਅਗਲੀ ਵਾਰ ਰੀਸਟਾਰਟ ਹੋਣ ਤੇ Airhop ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋ ਕੇ ਮੈਸ਼ ਨਾਲ ਮੁੜ ਜੁੜ ਜਾਵੇਗਾ, ਅਤੇ ਜਦੋਂ ਤੱਕ ਅਜਿਹਾ ਨਹੀਂ ਹੁੰਦਾ ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ ਦਿਖੇਗੀ। ਕੁਝ ਫ਼ੋਨ ਨਿਰਮਾਤਾ ਇਸਨੂੰ ਓਦੋਂ ਤੱਕ ਰੋਕਦੇ ਹਨ ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਇਸਨੂੰ ਆਪਣੀ ਬੈਟਰੀ ਸੈਟਿੰਗ ਵਿੱਚ ਵੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੰਦੇ।",
+  "settings.conn.autostart_off_title": "ਰੀਸਟਾਰਟ ਮਗਰੋਂ ਸ਼ੁਰੂ ਹੋਣਾ ਬੰਦ ਕਰੀਏ?",
+  "settings.conn.autostart_off_body":
+    "ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਖੁਦ ਨਹੀਂ ਖੋਲ੍ਹਦੇ, ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਰੀਸਟਾਰਟ ਹੋਣ ਮਗਰੋਂ Airhop ਬੰਦ ਹੀ ਰਹੇਗਾ।",
   "settings.conn.live_voice": "ਸਿੱਧੀ ਆਵਾਜ਼",
   "settings.conn.live_voice_desc": "ਨੇੜਲੇ ਲੋਕਾਂ ਨਾਲ ਵਾਕੀ-ਟਾਕੀ ਵਾਂਗ ਗੱਲ ਕਰੋ",
   "settings.conn.live_voice_on_title": "ਸਿੱਧੀ ਆਵਾਜ਼ ਚਾਲੂ ਕਰਨੀ ਹੈ?",

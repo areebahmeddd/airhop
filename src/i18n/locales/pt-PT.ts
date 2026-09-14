@@ -1837,6 +1837,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Parar a malha quando o Airhop fecha?",
   "settings.conn.background_off_body":
     "As mensagens só chegam com o Airhop aberto, e este telemóvel deixa de repassar para quem está por perto. A notificação permanente desaparece.",
+  "settings.conn.autostart": "Iniciar automaticamente",
+  "settings.conn.autostart_desc":
+    "Reinicia a rede depois de o teu telemóvel reiniciar",
+  "settings.conn.autostart_on_title": "Iniciar o Airhop após um reinício?",
+  "settings.conn.autostart_on_body":
+    "O Airhop inicia-se sozinho e volta a juntar-se à rede da próxima vez que o teu telemóvel reiniciar, sem qualquer notificação até isso acontecer. Alguns fabricantes bloqueiam isto a menos que também o permitas nas definições de bateria deles.",
+  "settings.conn.autostart_off_title": "Parar de iniciar após um reinício?",
+  "settings.conn.autostart_off_body":
+    "O Airhop permanece fechado depois de o teu telemóvel reiniciar, até o abrires tu mesmo.",
   "settings.conn.live_voice": "Voz em direto",
   "settings.conn.live_voice_desc":
     "Fala com quem está por perto como num walkie-talkie",

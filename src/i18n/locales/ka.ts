@@ -1817,6 +1817,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "შევაჩეროთ მეში Airhop-ის დახურვისას?",
   "settings.conn.background_off_body":
     "შეტყობინებები მხოლოდ Airhop-ის გახსნისას მოვა, და ეს ტელეფონი ახლომდებარეებისთვის გადაცემას შეწყვეტს. მუდმივი შეტყობინება გაქრება.",
+  "settings.conn.autostart": "ავტომატური გაშვება",
+  "settings.conn.autostart_desc":
+    "გადატვირთავს ქსელს ტელეფონის გადატვირთვის შემდეგ",
+  "settings.conn.autostart_on_title": "გაეშვას Airhop გადატვირთვის შემდეგ?",
+  "settings.conn.autostart_on_body":
+    "Airhop თავად გაეშვება და ხელახლა შეუერთდება ქსელს შენი ტელეფონის შემდეგი გადატვირთვისას, ისე რომ ამის შესახებ შეტყობინება არ გამოჩნდება. ზოგიერთი მწარმოებელი ამას ბლოკავს, თუ ამასთანავე საკუთარ ბატარეის პარამეტრებშიც არ დართავ.",
+  "settings.conn.autostart_off_title": "შეწყდეს გაშვება გადატვირთვის შემდეგ?",
+  "settings.conn.autostart_off_body":
+    "Airhop დახურული დარჩება შენი ტელეფონის გადატვირთვის შემდეგ, სანამ თავად არ გახსნი.",
   "settings.conn.live_voice": "პირდაპირი ხმა",
   "settings.conn.live_voice_desc": "ესაუბრე ახლომდებარე ადამიანებს რაციასავით",
   "settings.conn.live_voice_on_title": "ჩავრთოთ პირდაპირი ხმა?",

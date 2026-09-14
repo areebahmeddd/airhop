@@ -327,8 +327,12 @@ class AirhopBLEModule(
         everSpoke.add(linkID)
     }
 
+    // linkID carries the peer's MAC; the diagnostics export reads BLE logs, so never log it raw.
+    private fun linkRole(linkID: String): String =
+        if (linkID.startsWith("c:")) "central" else "peripheral"
+
     private fun noteLinkOpened(linkID: String) {
-        Log.i(TAG, "BLE link up: $linkID")
+        Log.i(TAG, "BLE link up (${linkRole(linkID)})")
         // Seeded at open so the first-traffic deadline is measured from the
         // moment the link came up, not from the first byte that never arrives.
         lastHeardAt[linkID] = System.currentTimeMillis()
@@ -336,7 +340,7 @@ class AirhopBLEModule(
     }
 
     private fun noteLinkClosed(linkID: String, status: Int) {
-        Log.i(TAG, "BLE link down: $linkID, status $status")
+        Log.i(TAG, "BLE link down (${linkRole(linkID)}), status $status")
         lastHeardAt.remove(linkID)
         everSpoke.remove(linkID)
         if (status == BluetoothGatt.GATT_SUCCESS) return
@@ -378,7 +382,7 @@ class AirhopBLEModule(
                         if (everSpoke.contains(linkID)) inactivityTimeoutMs
                         else firstTrafficDeadlineMs
                     if (silentFor > limit) {
-                        Log.i(TAG, "Reaping $linkID after ${silentFor}ms of silence")
+                        Log.i(TAG, "Reaping BLE link (${linkRole(linkID)}) after ${silentFor}ms of silence")
                         disconnectLink(linkID)
                     }
                 }

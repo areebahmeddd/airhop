@@ -1844,6 +1844,16 @@ export const strings: Strings = {
     "Arrêter le maillage à la fermeture d’Airhop ?",
   "settings.conn.background_off_body":
     "Les messages n’arriveront que quand Airhop est ouvert, et ce téléphone cessera de relayer pour les gens à proximité. La notification permanente disparaît.",
+  "settings.conn.autostart": "Démarrer automatiquement",
+  "settings.conn.autostart_desc":
+    "Redémarre le réseau maillé après le redémarrage de votre téléphone",
+  "settings.conn.autostart_on_title": "Démarrer Airhop après un redémarrage ?",
+  "settings.conn.autostart_on_body":
+    "Airhop démarre tout seul et rejoint le réseau maillé au prochain redémarrage de votre téléphone, sans aucune notification jusque-là. Certains fabricants bloquent cela à moins que vous ne l’autorisiez aussi dans leurs propres paramètres de batterie.",
+  "settings.conn.autostart_off_title":
+    "Arrêter de démarrer après un redémarrage ?",
+  "settings.conn.autostart_off_body":
+    "Airhop reste fermé après le redémarrage de votre téléphone, jusqu’à ce que vous l’ouvriez vous-même.",
   "settings.conn.live_voice": "Voix en direct",
   "settings.conn.live_voice_desc":
     "Parle aux gens à proximité comme avec un talkie-walkie",

@@ -1865,6 +1865,17 @@ export const strings: Strings = {
     "Ajanona ny harato rehefa mihidy ny Airhop?",
   "settings.conn.background_off_body":
     "Rehefa misokatra ny Airhop ihany no ahatongavan'ny hafatra, ary mitsahatra tsy mampita ho an'ny olona akaiky ity findy ity. Ho lasa ny fampandrenesana maharitra.",
+  "settings.conn.autostart": "Manomboka ho azy",
+  "settings.conn.autostart_desc":
+    "Manomboka indray ny tambajotra rehefa mi-restart ny findainao",
+  "settings.conn.autostart_on_title":
+    "Hatomboka ve i Airhop rehefa avy mi-restart?",
+  "settings.conn.autostart_on_body":
+    "Manomboka ho azy i Airhop ary miverina midray amin'ny tambajotra rehefa mi-restart indray ny findainao, tsy misy fampandrenesana raha mbola tsy tonga izany. Tsy avelan'ny mpanamboatra findaina sasany izany raha tsy avelanao koa ao amin'ny fanamboarana ny batterian'izy ireo manokana.",
+  "settings.conn.autostart_off_title":
+    "Hatsahatra ve ny fanombohana rehefa avy mi-restart?",
+  "settings.conn.autostart_off_body":
+    "Mijanona mihidy i Airhop rehefa avy mi-restart ny findainao, mandra-pahasokafanao azy manokana.",
   "settings.conn.live_voice": "Feo mivantana",
   "settings.conn.live_voice_desc":
     "Miresaha amin'ny olona akaiky toy ny amin'ny radiô",

@@ -92,6 +92,10 @@ interface SettingsState {
   // Distinct from Away, which stops the mesh even in the foreground. The middle
   // state: run while I am using it, stop when I am not.
   backgroundMeshEnabled: boolean;
+  // Android only. Off by default, and its own switch even though only
+  // offered while backgroundMeshEnabled is on - starting itself is a bigger
+  // step than staying up. See services/boot-start.ts.
+  autoStartOnBoot: boolean;
   // Whether to run the mesh over the WiFi network this phone is joined to.
   //
   // Off by default, and the only transport that is. Publishing an mDNS record
@@ -210,6 +214,7 @@ interface SettingsState {
   setAutoDownloadMedia: (enabled: boolean) => void;
   setLiveVoiceEnabled: (enabled: boolean) => void;
   setBackgroundMeshEnabled: (enabled: boolean) => void;
+  setAutoStartOnBoot: (enabled: boolean) => void;
   setLanTransportEnabled: (enabled: boolean) => void;
   setHideNotificationPreviews: (hide: boolean) => void;
   setRingAlertsEnabled: (enabled: boolean) => void;
@@ -246,6 +251,7 @@ const DEFAULTS = {
   autoDownloadMedia: true,
   liveVoiceEnabled: true,
   backgroundMeshEnabled: true,
+  autoStartOnBoot: false,
   lanTransportEnabled: false,
   // Private by default; see the field comment above for why.
   hideNotificationPreviews: true,
@@ -302,6 +308,9 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setBackgroundMeshEnabled(enabled) {
         set({ backgroundMeshEnabled: enabled });
+      },
+      setAutoStartOnBoot(enabled) {
+        set({ autoStartOnBoot: enabled });
       },
       setLanTransportEnabled(enabled) {
         set({ lanTransportEnabled: enabled });

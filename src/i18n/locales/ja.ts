@@ -1798,6 +1798,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhopを閉じたらメッシュを止めますか",
   "settings.conn.background_off_body":
     "メッセージはAirhopを開いている間しか届かなくなり、この端末は近くの人のための中継もやめます。常時表示の通知は消えます。",
+  "settings.conn.autostart": "自動的に起動",
+  "settings.conn.autostart_desc": "端末の再起動後にメッシュを再度起動します",
+  "settings.conn.autostart_on_title": "再起動後にAirhopを起動しますか？",
+  "settings.conn.autostart_on_body":
+    "次回端末が再起動すると、Airhopは自動的に起動してメッシュに再び参加します。それまで通知は表示されません。一部の端末メーカーは、独自のバッテリー設定でも許可しない限りこれをブロックします。",
+  "settings.conn.autostart_off_title": "再起動後の起動を停止しますか？",
+  "settings.conn.autostart_off_body":
+    "自分で開くまで、端末を再起動してもAirhopは閉じたままです。",
   "settings.conn.live_voice": "ライブ通話",
   "settings.conn.live_voice_desc": "トランシーバーのように近くの人と話します",
   "settings.conn.live_voice_on_title": "ライブ通話をオンにしますか",

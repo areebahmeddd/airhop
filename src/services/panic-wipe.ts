@@ -43,6 +43,7 @@ import {
 } from "@store/wallet-store";
 import { settleOr, withTimeout } from "@utils/with-timeout";
 import { resetBoardAlerts } from "./board-alerts";
+import { syncAutoStartOnBoot } from "./boot-sync";
 import { wipeCacheDirectory } from "./file-transfer-service";
 import { clearLocationCache } from "./location-service";
 import { dismissAllNotifications } from "./notification-service";
@@ -226,6 +227,9 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   usePlaceNamesStore.getState().clearAll();
   useRingStore.getState().clearAll();
   useSettingsStore.getState().reset();
+  // Lives outside every store this wipe clears (AirhopBootReceiver reads it
+  // with no JS up), so a wiped identity would still auto-start into nothing.
+  syncAutoStartOnBoot(false);
   useBlockedStore.setState({ blockedPeerIDs: [] });
   // Transport health is live device state, not user data, but a wipe is meant
   // to leave a clean first-run state and the mesh is gone by this point. Left

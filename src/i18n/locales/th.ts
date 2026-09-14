@@ -1760,6 +1760,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "หยุดเมชเมื่อปิด Airhop หรือไม่",
   "settings.conn.background_off_body":
     "ข้อความจะมาถึงเฉพาะตอนที่ Airhop เปิดอยู่ และโทรศัพท์เครื่องนี้จะหยุดส่งต่อให้ผู้คนที่อยู่ใกล้ การแจ้งเตือนค้างจะหายไป",
+  "settings.conn.autostart": "เริ่มโดยอัตโนมัติ",
+  "settings.conn.autostart_desc": "เริ่มเมชใหม่หลังโทรศัพท์ของคุณรีสตาร์ท",
+  "settings.conn.autostart_on_title": "เริ่ม Airhop หลังรีสตาร์ทหรือไม่",
+  "settings.conn.autostart_on_body":
+    "Airhop จะเริ่มทำงานเองและกลับเข้าร่วมเมชอีกครั้งเมื่อโทรศัพท์ของคุณรีสตาร์ทครั้งถัดไป โดยไม่มีการแจ้งเตือนใดๆ จนกว่าจะเกิดขึ้น ผู้ผลิตโทรศัพท์บางรายบล็อกสิ่งนี้ไว้ เว้นแต่คุณจะอนุญาตในการตั้งค่าแบตเตอรี่ของพวกเขาด้วย",
+  "settings.conn.autostart_off_title": "หยุดเริ่มหลังรีสตาร์ทหรือไม่",
+  "settings.conn.autostart_off_body":
+    "Airhop จะปิดอยู่หลังโทรศัพท์ของคุณรีสตาร์ท จนกว่าคุณจะเปิดเอง",
   "settings.conn.live_voice": "เสียงสด",
   "settings.conn.live_voice_desc": "คุยกับคนใกล้เคียงเหมือนวิทยุสื่อสาร",
   "settings.conn.live_voice_on_title": "เปิดเสียงสดหรือไม่",

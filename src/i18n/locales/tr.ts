@@ -1806,6 +1806,17 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop kapanınca mesh dursun mu?",
   "settings.conn.background_off_body":
     "Mesajlar yalnızca Airhop açıkken ulaşır ve bu telefon yakındakiler için aktarmayı bırakır. Kalıcı bildirim kaybolur.",
+  "settings.conn.autostart": "Otomatik başlat",
+  "settings.conn.autostart_desc":
+    "Telefonun yeniden başladığında ağı yeniden başlatır",
+  "settings.conn.autostart_on_title":
+    "Yeniden başlatmadan sonra Airhop başlatılsın mı?",
+  "settings.conn.autostart_on_body":
+    "Telefonun bir dahaki sefere yeniden başladığında Airhop kendiliğinden başlar ve ağa yeniden katılır, bu gerçekleşene kadar hiçbir bildirim gösterilmez. Bazı telefon üreticileri, kendi pil ayarlarında da izin vermediğin sürece bunu engeller.",
+  "settings.conn.autostart_off_title":
+    "Yeniden başlatmadan sonra başlatmayı durdur?",
+  "settings.conn.autostart_off_body":
+    "Sen kendin açana kadar Airhop, telefonun yeniden başlamasından sonra kapalı kalır.",
   "settings.conn.live_voice": "Canlı ses",
   "settings.conn.live_voice_desc": "Yakındaki insanlarla telsiz gibi konuş",
   "settings.conn.live_voice_on_title": "Canlı ses açılsın mı?",

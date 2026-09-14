@@ -139,7 +139,7 @@ Comments here are dense on purpose. The bar for keeping one is that it says some
 - **Explain why, not what.** Justify a magic number, name a platform quirk, state an invariant. A comment restating the signature below it is noise.
 - **No history.** A file is not a changelog. Keep the rule a war story justified and drop the story; the commit message is where it belongs.
 - **File headers stay** on every non-trivial module: one sentence on what it is, then only what a reader needs to change it safely. Length tracks load-bearing content, not the file's age.
-- **`//` everywhere**, headers and members alike. The only block comments are two tool pragmas a line comment is invisible to: `/** @jest-environment node */` and a `/** @public */` knip suppression.
+- **`//` everywhere**, headers and members alike. The only block comments are tool pragmas a line comment is invisible to: `/** @jest-environment node */`, and knip's `@public` (an intentionally unused export) and `@alias` (an intentional duplicate export) tags.
 - **Section banners** (`// ---- Name ----`) belong only in a long file or a flat data table, where they are the only navigation.
 - **Style blocks**: justify a number, a touch target or a platform quirk, or say nothing.
 - **Describe the system, not the authors.** The exception is protocol code, where "we" means _this node_ rather than the peer, a distinction the prose needs.

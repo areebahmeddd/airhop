@@ -1786,6 +1786,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop बंद होते ही मेश रोक दें?",
   "settings.conn.background_off_body":
     "संदेश तभी पहुँचेंगे जब Airhop खुला हो, और यह फ़ोन आस-पास के लोगों के लिए संदेश आगे भेजना बंद कर देगा। चालू सूचना हट जाएगी।",
+  "settings.conn.autostart": "अपने आप शुरू करें",
+  "settings.conn.autostart_desc":
+    "आपका फ़ोन रीस्टार्ट होने पर मेश को फिर से शुरू करता है",
+  "settings.conn.autostart_on_title": "रीस्टार्ट के बाद Airhop शुरू करें?",
+  "settings.conn.autostart_on_body":
+    "जब भी आपका फ़ोन अगली बार रीस्टार्ट होगा, Airhop खुद शुरू होकर मेश से दोबारा जुड़ जाएगा, और ऐसा होने तक कोई सूचना नहीं दिखेगी। कुछ फ़ोन निर्माता इसे तब तक रोकते हैं जब तक आप इसे उनकी अपनी बैटरी सेटिंग में भी अनुमति न दें।",
+  "settings.conn.autostart_off_title": "रीस्टार्ट के बाद शुरू होना बंद करें?",
+  "settings.conn.autostart_off_body":
+    "आपका फ़ोन रीस्टार्ट होने के बाद Airhop बंद ही रहेगा, जब तक आप इसे खुद न खोलें।",
   "settings.conn.live_voice": "लाइव वॉइस",
   "settings.conn.live_voice_desc":
     "आस-पास के लोगों से वॉकी-टॉकी की तरह बात करें",

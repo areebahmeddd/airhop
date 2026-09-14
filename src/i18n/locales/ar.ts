@@ -1747,6 +1747,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "إيقاف الشبكة عند إغلاق Airhop؟",
   "settings.conn.background_off_body":
     "لن تصل الرسائل إلا وAirhop مفتوح، وسيتوقف هذا الهاتف عن التمرير لمن حوله. ويختفي الإشعار المستمر.",
+  "settings.conn.autostart": "التشغيل التلقائي",
+  "settings.conn.autostart_desc": "يعيد تشغيل الشبكة بعد إعادة تشغيل هاتفك",
+  "settings.conn.autostart_on_title": "تشغيل Airhop بعد إعادة التشغيل؟",
+  "settings.conn.autostart_on_body":
+    "سيبدأ Airhop تلقائيًا وينضم إلى الشبكة مرة أخرى في المرة القادمة التي يُعاد فيها تشغيل هاتفك، دون أي إشعار إلى أن يحدث ذلك. تحظر بعض الشركات المصنعة للهواتف هذا الأمر ما لم تسمح به أيضًا في إعدادات البطارية الخاصة بها.",
+  "settings.conn.autostart_off_title": "إيقاف التشغيل بعد إعادة التشغيل؟",
+  "settings.conn.autostart_off_body":
+    "سيبقى Airhop مغلقًا بعد إعادة تشغيل هاتفك، إلى أن تفتحه بنفسك.",
   "settings.conn.live_voice": "الصوت المباشر",
   "settings.conn.live_voice_desc": "تحدث إلى من هم بالجوار كجهاز لاسلكي",
   "settings.conn.live_voice_on_title": "تفعيل الصوت المباشر؟",

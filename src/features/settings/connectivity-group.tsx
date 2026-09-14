@@ -15,6 +15,7 @@
 // lose by turning it off.
 
 import { useT, type TranslationKey } from "@i18n";
+import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { requestLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
@@ -31,7 +32,8 @@ import {
   useSharedStyles,
 } from "./settings-primitives";
 
-type ToggleKey = "liveVoice" | "background" | "gateway" | "bridge";
+type ToggleKey =
+  "background" | "autoStartOnBoot" | "liveVoice" | "bridge" | "gateway";
 
 // Keys rather than text: this is a module constant, so it cannot call a hook,
 // and building it once at module load would freeze the copy in whichever
@@ -59,6 +61,18 @@ const CONFIRM: Record<ToggleKey, { on: ConfirmCopy; off: ConfirmCopy }> = {
       action: "settings.conn.turn_off",
     },
   },
+  autoStartOnBoot: {
+    on: {
+      title: "settings.conn.autostart_on_title",
+      body: "settings.conn.autostart_on_body",
+      action: "settings.conn.turn_on",
+    },
+    off: {
+      title: "settings.conn.autostart_off_title",
+      body: "settings.conn.autostart_off_body",
+      action: "settings.conn.turn_off",
+    },
+  },
   liveVoice: {
     on: {
       title: "settings.conn.live_voice_on_title",
@@ -71,18 +85,6 @@ const CONFIRM: Record<ToggleKey, { on: ConfirmCopy; off: ConfirmCopy }> = {
       action: "settings.conn.turn_off",
     },
   },
-  gateway: {
-    on: {
-      title: "settings.conn.gateway_on_title",
-      body: "settings.conn.gateway_on_body",
-      action: "settings.conn.turn_on",
-    },
-    off: {
-      title: "settings.conn.gateway_off_title",
-      body: "settings.conn.gateway_off_body",
-      action: "settings.conn.turn_off",
-    },
-  },
   bridge: {
     on: {
       title: "settings.conn.bridge_on_title",
@@ -92,6 +94,18 @@ const CONFIRM: Record<ToggleKey, { on: ConfirmCopy; off: ConfirmCopy }> = {
     off: {
       title: "settings.conn.bridge_off_title",
       body: "settings.conn.bridge_off_body",
+      action: "settings.conn.turn_off",
+    },
+  },
+  gateway: {
+    on: {
+      title: "settings.conn.gateway_on_title",
+      body: "settings.conn.gateway_on_body",
+      action: "settings.conn.turn_on",
+    },
+    off: {
+      title: "settings.conn.gateway_off_title",
+      body: "settings.conn.gateway_off_body",
       action: "settings.conn.turn_off",
     },
   },
@@ -121,6 +135,8 @@ export default function ConnectivityGroup({
   const backgroundMeshEnabled = useSettingsStore(
     (s) => s.backgroundMeshEnabled,
   );
+  const autoStartOnBoot = useSettingsStore((s) => s.autoStartOnBoot);
+  const setAutoStartOnBoot = useSettingsStore((s) => s.setAutoStartOnBoot);
   const setBackgroundMeshEnabled = useSettingsStore(
     (s) => s.setBackgroundMeshEnabled,
   );
@@ -174,17 +190,21 @@ export default function ConnectivityGroup({
     const { key, next } = pending;
     setConfirmVisible(false);
     switch (key) {
-      case "liveVoice":
-        setLiveVoiceEnabled(next);
-        break;
       case "background":
         setBackgroundMeshEnabled(next);
         break;
-      case "gateway":
-        setGatewayEnabled(next);
+      case "autoStartOnBoot":
+        setAutoStartOnBoot(next);
+        syncAutoStartOnBoot(next);
+        break;
+      case "liveVoice":
+        setLiveVoiceEnabled(next);
         break;
       case "bridge":
         setBridgeEnabled(next);
+        break;
+      case "gateway":
+        setGatewayEnabled(next);
         break;
     }
   }
@@ -260,6 +280,24 @@ export default function ConnectivityGroup({
                 <SettingSwitch
                   value={backgroundMeshEnabled}
                   onValueChange={(v) => requestToggle("background", v)}
+                />
+              }
+            />
+            <GroupDivider />
+            {/* Gated on the row above: auto-start is pointless if the mesh
+                does not also stay up once the app is closed. Off by default
+                regardless, and its own confirm - starting itself is a
+                bigger step than staying up. */}
+            <SettingRow
+              id="auto-start-boot"
+              icon="refresh-cw"
+              label={T("settings.conn.autostart")}
+              description={T("settings.conn.autostart_desc")}
+              control={
+                <SettingSwitch
+                  value={autoStartOnBoot}
+                  onValueChange={(v) => requestToggle("autoStartOnBoot", v)}
+                  disabled={!backgroundMeshEnabled}
                 />
               }
             />

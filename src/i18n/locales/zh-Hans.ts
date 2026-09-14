@@ -1688,6 +1688,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop 关闭时停止网状网络？",
   "settings.conn.background_off_body":
     "只有 Airhop 打开时消息才会送达，这台手机也不再为附近的人做中继。那条常驻通知会消失。",
+  "settings.conn.autostart": "自动启动",
+  "settings.conn.autostart_desc": "手机重启后重新启动网状网络",
+  "settings.conn.autostart_on_title": "重启后启动 Airhop？",
+  "settings.conn.autostart_on_body":
+    "下次手机重启时，Airhop 会自行启动并重新加入网状网络，在此之前不会显示任何通知。部分手机厂商会阻止此操作，除非你也在其自带的电池设置中允许。",
+  "settings.conn.autostart_off_title": "停止在重启后启动？",
+  "settings.conn.autostart_off_body":
+    "手机重启后 Airhop 将保持关闭，直到你自己打开它。",
   "settings.conn.live_voice": "实时语音",
   "settings.conn.live_voice_desc": "像对讲机一样和附近的人说话",
   "settings.conn.live_voice_on_title": "开启实时语音？",

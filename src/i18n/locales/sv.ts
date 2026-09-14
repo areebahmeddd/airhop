@@ -1799,6 +1799,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Stoppa meshen när Airhop stängs?",
   "settings.conn.background_off_body":
     "Meddelanden kommer bara fram medan Airhop är öppet, och telefonen slutar skicka vidare åt folk i närheten. Den pågående aviseringen försvinner.",
+  "settings.conn.autostart": "Starta automatiskt",
+  "settings.conn.autostart_desc":
+    "Startar om nätverket efter att din telefon startat om",
+  "settings.conn.autostart_on_title": "Starta Airhop efter en omstart?",
+  "settings.conn.autostart_on_body":
+    "Airhop startar sig självt och ansluter till nätverket igen nästa gång din telefon startar om, utan någon avisering förrän det sker. Vissa telefontillverkare blockerar detta om du inte också tillåter det i deras egna batteriinställningar.",
+  "settings.conn.autostart_off_title": "Sluta starta efter en omstart?",
+  "settings.conn.autostart_off_body":
+    "Airhop förblir stängt efter att din telefon startat om, tills du själv öppnar det.",
   "settings.conn.live_voice": "Direktröst",
   "settings.conn.live_voice_desc":
     "Prata med folk i närheten som med en walkie-talkie",

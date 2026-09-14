@@ -21,6 +21,11 @@ import com.facebook.react.bridge.ReactMethod
 
 private const val TAG = "AirhopAppModule"
 
+// Mirrors settings-store's autoStartOnBoot. AirhopBootReceiver reads this
+// with no JS runtime up, so SharedPreferences instead of MMKV.
+private const val BOOT_PREFS_NAME = "airhop_boot_prefs"
+private const val KEY_AUTO_START = "auto_start_on_boot"
+
 // Only the tags this app writes, plus the crash reporter. An allowlist rather
 // than the whole process log, which React Native fills freely; none of these
 // tags ever print message content, nicknames or keys.
@@ -73,6 +78,18 @@ class AirhopAppModule(
         // Settled before the exit, so an awaiting caller is never left hanging.
         promise.resolve(null)
         Runtime.getRuntime().exit(0)
+    }
+
+    // Fire-and-forget: `.apply()` writes async, so a write that loses a
+    // race with a reboot just leaves the old value in effect, not a bad one.
+    @ReactMethod
+    fun setAutoStartOnBoot(enabled: Boolean, promise: Promise) {
+        reactContext.applicationContext
+            .getSharedPreferences(BOOT_PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_AUTO_START, enabled)
+            .apply()
+        promise.resolve(null)
     }
 
     // The process's recent logcat, filtered to LOG_TAGS, oldest first.

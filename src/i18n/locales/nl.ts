@@ -1824,6 +1824,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Mesh stoppen als Airhop dichtgaat?",
   "settings.conn.background_off_body":
     "Berichten komen dan alleen aan terwijl Airhop open is, en deze telefoon geeft niets meer door voor mensen in de buurt. De blijvende melding verdwijnt.",
+  "settings.conn.autostart": "Automatisch starten",
+  "settings.conn.autostart_desc":
+    "Start het netwerk opnieuw op nadat je telefoon herstart",
+  "settings.conn.autostart_on_title": "Airhop starten na een herstart?",
+  "settings.conn.autostart_on_body":
+    "Airhop start zichzelf en sluit weer aan bij het netwerk zodra je telefoon opnieuw opstart, zonder melding totdat dat gebeurt. Sommige telefoonmakers blokkeren dit tenzij je het ook toestaat in hun eigen batterij-instellingen.",
+  "settings.conn.autostart_off_title": "Stoppen met starten na een herstart?",
+  "settings.conn.autostart_off_body":
+    "Airhop blijft gesloten nadat je telefoon herstart, totdat je het zelf opent.",
   "settings.conn.live_voice": "Live spraak",
   "settings.conn.live_voice_desc":
     "Praat met mensen in de buurt als met een portofoon",

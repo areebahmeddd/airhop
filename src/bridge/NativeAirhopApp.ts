@@ -23,6 +23,9 @@ export interface Spec extends TurboModule {
   // reporter, oldest first. Empty on a device that refuses logcat, which is a
   // report with no log section rather than a failure.
   recentLog(): Promise<string>;
+  // The native flag AirhopBootReceiver reads with no JS runtime up. Android
+  // only; iOS has no way to launch itself after a reboot.
+  setAutoStartOnBoot(enabled: boolean): Promise<void>;
 }
 
 // `get`, not `getEnforcing`: absent on iOS, and a missing module is an answer

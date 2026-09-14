@@ -1836,6 +1836,15 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Usimamishe mesh Airhop inapofungwa?",
   "settings.conn.background_off_body":
     "Jumbe zitafika tu wakati Airhop imefunguliwa, na simu hii itaacha kupitisha kwa ajili ya watu walio karibu. Arifa inayoendelea itatoweka.",
+  "settings.conn.autostart": "Anza kiotomatiki",
+  "settings.conn.autostart_desc":
+    "Anzisha upya mtandao baada ya simu yako kuwasha upya",
+  "settings.conn.autostart_on_title": "Anzisha Airhop baada ya kuwasha upya?",
+  "settings.conn.autostart_on_body":
+    "Airhop itajianzisha yenyewe na kujiunga tena na mtandao wakati simu yako itakapowashwa upya tena, bila arifa yoyote hadi hapo itakapotokea. Watengenezaji wengine wa simu huzuia hili isipokuwa pia uruhusu katika mipangilio yao ya betri.",
+  "settings.conn.autostart_off_title": "Acha kuanza baada ya kuwasha upya?",
+  "settings.conn.autostart_off_body":
+    "Airhop itabaki imefungwa baada ya simu yako kuwashwa upya, hadi utakapoifungua mwenyewe.",
   "settings.conn.live_voice": "Sauti ya moja kwa moja",
   "settings.conn.live_voice_desc":
     "Zungumza na watu walio karibu kama redio ya mkononi",

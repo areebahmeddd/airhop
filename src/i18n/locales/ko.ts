@@ -1772,6 +1772,14 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop을 닫으면 메시를 중단할까요?",
   "settings.conn.background_off_body":
     "Airhop이 열려 있을 때만 메시지가 도착하며, 이 휴대폰은 근처 사람들을 위한 중계를 중단합니다. 진행 중 알림은 사라집니다.",
+  "settings.conn.autostart": "자동으로 시작",
+  "settings.conn.autostart_desc": "휴대폰이 재부팅되면 메시를 다시 시작합니다",
+  "settings.conn.autostart_on_title": "재부팅 후 Airhop을 시작할까요?",
+  "settings.conn.autostart_on_body":
+    "다음에 휴대폰이 재부팅되면 Airhop이 스스로 시작되어 메시에 다시 참여하며, 그렇게 될 때까지 알림은 표시되지 않습니다. 일부 휴대폰 제조사는 자체 배터리 설정에서도 허용하지 않으면 이를 차단합니다.",
+  "settings.conn.autostart_off_title": "재부팅 후 시작을 중지할까요?",
+  "settings.conn.autostart_off_body":
+    "휴대폰이 재부팅된 후에도 Airhop은 직접 열기 전까지 닫힌 채로 있습니다.",
   "settings.conn.live_voice": "실시간 음성",
   "settings.conn.live_voice_desc": "근처 사람들과 무전기처럼 대화하기",
   "settings.conn.live_voice_on_title": "실시간 음성을 켤까요?",

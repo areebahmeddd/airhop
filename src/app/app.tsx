@@ -47,6 +47,10 @@ import {
 } from "@platform/ble-permissions";
 import { showBlockedAlert } from "@platform/permissions";
 import { setAudioForPlayback } from "@services/audio-session";
+import {
+  registerBootStartTask,
+  syncAutoStartOnBoot,
+} from "@services/boot-start";
 import { sweepExpiredAttachments } from "@services/file-transfer-service";
 import { applyAirhopLink } from "@services/link-router";
 import {
@@ -192,6 +196,10 @@ initI18n();
 
 type OnboardingStep = "welcome" | "generating" | "reveal";
 type MainTab = "chats" | "mesh" | "wallet" | "profile";
+// A boot-triggered headless launch never mounts AppContent, so this must
+// run at module load rather than wait for it.
+registerBootStartTask();
+
 type ChatSubTab = "channels" | "dms";
 type ChatView =
   { kind: "list" } | { kind: "thread"; channel: string } | { kind: "search" };
@@ -318,6 +326,9 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
+  // Re-syncs the native auto-start flag on every real launch, in case a
+  // toggle's own write was ever missed.
+  syncAutoStartOnBoot(useSettingsStore.getState().autoStartOnBoot);
   // The grant may have landed while the mesh was still being built, and the
   // controller stops retrying once it has published a permission blocker. This
   // is the nudge that turns "denied" into a running radio without a relaunch.
