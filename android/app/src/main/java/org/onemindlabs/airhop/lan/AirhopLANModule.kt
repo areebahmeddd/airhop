@@ -23,6 +23,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
@@ -109,6 +112,13 @@ class AirhopLANModule(
             null
         }
 
+    private fun connectivityManager(): ConnectivityManager? =
+        try {
+            reactContext.applicationContext.getSystemService(ConnectivityManager::class.java)
+        } catch (_: Exception) {
+            null
+        }
+
     private val ioExecutor = Executors.newCachedThreadPool()
     private val linkCounter = AtomicInteger(0)
 
@@ -143,6 +153,7 @@ class AirhopLANModule(
     private var registrationListener: NsdManager.RegistrationListener? = null
     private var discoveryListener: NsdManager.DiscoveryListener? = null
     private var networkReceiver: BroadcastReceiver? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     // Multicast is dropped by WiFi power save unless something holds this lock,
     // which is why the app can find peers while the screen is on and silently
@@ -192,7 +203,7 @@ class AirhopLANModule(
 
         this.instanceName = instanceName
         acquireMulticastLock()
-        registerNetworkReceiver()
+        registerNetworkWatchers()
 
         try {
             registerService(nsd, instanceName)
@@ -232,6 +243,8 @@ class AirhopLANModule(
 
         networkReceiver?.let { runCatching { reactContext.unregisterReceiver(it) } }
         networkReceiver = null
+        networkCallback?.let { runCatching { connectivityManager()?.unregisterNetworkCallback(it) } }
+        networkCallback = null
 
         multicastLock?.let { runCatching { if (it.isHeld) it.release() } }
         multicastLock = null
@@ -314,34 +327,54 @@ class AirhopLANModule(
     // The interface going away is the case that is otherwise unrecoverable: the
     // listener and the browser are dead while this module still believes it is
     // running, so every later start resolves instantly having done nothing.
-    private fun registerNetworkReceiver() {
-        if (networkReceiver != null) return
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                emitEvent(
-                    EVT_AVAILABILITY_CHANGED,
-                    WritableNativeMap().apply { putBoolean("available", hasLocalNetwork()) },
-                )
+    //
+    // Two watchers: NetworkCallback for a WiFi or ethernet network joining or
+    // leaving, TETHER_STATE_CHANGED for a hotspot. A served network gets no
+    // Network object, so the callback alone would miss that case.
+    private fun registerNetworkWatchers() {
+        if (networkCallback == null) {
+            val request = NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+                .build()
+            val callback = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) = reportAvailability()
+                override fun onLost(network: Network) = reportAvailability()
+            }
+            try {
+                connectivityManager()?.registerNetworkCallback(request, callback)
+                networkCallback = callback
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not watch WiFi/ethernet state: ${e.message}")
             }
         }
-        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
-            // A hotspot starting or stopping does not reliably raise
-            // CONNECTIVITY_ACTION. Named rather than referenced: the constant is
-            // on TetheringManager (API 30) and ConnectivityManager's copy is
-            // hidden.
-            addAction("android.net.conn.TETHER_STATE_CHANGED")
-        }
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                reactContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-            } else {
-                @Suppress("UnspecifiedRegisterReceiverFlag")
-                reactContext.registerReceiver(receiver, filter)
+
+        if (networkReceiver == null) {
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) = reportAvailability()
             }
-            networkReceiver = receiver
-        } catch (e: Exception) {
-            Log.w(TAG, "Could not watch the network state: ${e.message}")
+            // Named rather than referenced: the constant is on TetheringManager
+            // (API 30) and ConnectivityManager's copy is hidden.
+            val filter = IntentFilter("android.net.conn.TETHER_STATE_CHANGED")
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    reactContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                } else {
+                    @Suppress("UnspecifiedRegisterReceiverFlag")
+                    reactContext.registerReceiver(receiver, filter)
+                }
+                networkReceiver = receiver
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not watch tethering state: ${e.message}")
+            }
         }
+    }
+
+    private fun reportAvailability() {
+        emitEvent(
+            EVT_AVAILABILITY_CHANGED,
+            WritableNativeMap().apply { putBoolean("available", hasLocalNetwork()) },
+        )
     }
 
     // ---- Discovery -----------------------------------------------------------
