@@ -1568,6 +1568,12 @@ export const strings: Strings = {
   "settings.peer_id": "ID nút mạng",
   "settings.share_peer_id": "Chia sẻ ID nút mạng của bạn",
   "settings.share_id_short": "Chia sẻ ID",
+  "settings.share_app": "Chia sẻ ứng dụng Airhop",
+  "settings.share_app_short": "Chia sẻ app",
+  "settings.share_app_dialog": "Nhận Airhop",
+  "settings.share_app_unsupported": "Không thể chia sẻ bản cài đặt này",
+  "settings.share_app_unsupported_body":
+    "Bản sao Airhop này được cài đặt thành nhiều phần và không thể chia sẻ dưới dạng một tệp. Thay vào đó, hãy tải phiên bản một tệp duy nhất về từ GitHub Releases.",
   "settings.peer_id_sheet.title": "ID nút mạng của bạn",
   "settings.peer_id_sheet.copy": "Sao chép ID nút mạng",
   "settings.peer_id_sheet.note":

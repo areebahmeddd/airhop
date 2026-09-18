@@ -1587,6 +1587,12 @@ export const strings: Strings = {
   "settings.peer_id": "Identyfikator peera",
   "settings.share_peer_id": "Udostępnij swój identyfikator peera",
   "settings.share_id_short": "Udostępnij ID",
+  "settings.share_app": "Udostępnij aplikację Airhop",
+  "settings.share_app_short": "Udostępnij aplikację",
+  "settings.share_app_dialog": "Pobierz Airhop",
+  "settings.share_app_unsupported": "Nie da się udostępnić tej instalacji",
+  "settings.share_app_unsupported_body":
+    "Ta instalacja Airhop składa się z wielu plików i nie można jej udostępnić jako jednego pliku. Zamiast tego pobierz z GitHub Releases wersję z jednym plikiem.",
   "settings.peer_id_sheet.title": "Twój identyfikator peera",
   "settings.peer_id_sheet.copy": "Kopiuj identyfikator peera",
   "settings.peer_id_sheet.note":

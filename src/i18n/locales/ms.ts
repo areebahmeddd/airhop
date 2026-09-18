@@ -1583,6 +1583,12 @@ export const strings: Strings = {
   "settings.peer_id": "ID rakan",
   "settings.share_peer_id": "Kongsi ID rakan anda",
   "settings.share_id_short": "Kongsi ID",
+  "settings.share_app": "Kongsi aplikasi Airhop",
+  "settings.share_app_short": "Kongsi app",
+  "settings.share_app_dialog": "Dapatkan Airhop",
+  "settings.share_app_unsupported": "Tidak dapat kongsi pemasangan ini",
+  "settings.share_app_unsupported_body":
+    "Salinan Airhop ini dipasang dalam beberapa bahagian dan tidak dapat dikongsi sebagai satu fail. Muat turun versi fail tunggal daripada GitHub Releases sebaliknya.",
   "settings.peer_id_sheet.title": "ID rakan anda",
   "settings.peer_id_sheet.copy": "Salin ID rakan",
   "settings.peer_id_sheet.note":

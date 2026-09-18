@@ -80,7 +80,7 @@ You must read these four documents before making any code suggestions:
 
 - Swift lives in `ios/`. Kotlin lives in `android/`. They expose **raw bytes** to TypeScript.
 - **No protocol logic in native code.** No routing decisions. No crypto in Swift or Kotlin.
-- Native modules: `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` (Swift + Kotlin), `AirhopForegroundService` (Kotlin), `AirhopTorSocket` and `AirhopWiFiPairing` (Swift). `AirhopAppModule` diverges by platform: iOS rejects `restart`/`setAutoStartOnBoot`, since it can relaunch nothing and has no boot receiver.
+- Native modules: `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` (Swift + Kotlin), `AirhopForegroundService` (Kotlin), `AirhopTorSocket` and `AirhopWiFiPairing` (Swift). `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot` and `copyApkToCache`, since it can relaunch nothing, has no boot receiver, and has no sideloading to share an APK into.
 - Rust lives in `native/arti/`, and it is the one exception to "native code exposes raw bytes": it is a Tor client, so it owns a SOCKS5 listener and its own lifecycle. It still knows nothing about packets, routing or encryption, and both platforms compile the same crate.
 
 ### Build Order

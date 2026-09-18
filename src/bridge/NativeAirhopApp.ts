@@ -3,8 +3,9 @@
 // Hand-maintained, not Codegen input. See NativeAirhopBLE.ts for why.
 //
 // Backed by AirhopAppModule.kt (Android) and AirhopAppModule.swift (iOS).
-// restart and setAutoStartOnBoot reject immediately on iOS: no supported
-// relaunch path, no boot receiver. recentLog runs on both.
+// restart, setAutoStartOnBoot and copyApkToCache reject immediately on iOS:
+// no supported relaunch path, no boot receiver, no sideloading. recentLog
+// runs on both.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -28,6 +29,13 @@ export interface Spec extends TurboModule {
   // The native flag AirhopBootReceiver reads with no JS runtime up. Rejects on
   // iOS: no boot receiver to sync with.
   setAutoStartOnBoot(enabled: boolean): Promise<void>;
+  // Copies this build's own installed APK into the cache and resolves a
+  // file:// URI to it, ready for Sharing.shareAsync.
+  //
+  //   SPLIT_INSTALL   a Play bundle install, no single file to share (Android)
+  //   COPY_FAILED     the copy failed, e.g. out of storage (Android)
+  //   UNSUPPORTED     iOS has no sideloading to share an APK into
+  copyApkToCache(): Promise<string>;
 }
 
 // `get`, not `getEnforcing`: a missing module is an answer, not a crash.

@@ -1613,6 +1613,12 @@ export const strings: Strings = {
   "settings.peer_id": "ID-n'ny teboka",
   "settings.share_peer_id": "Zarao ny ID-n'ny tebokanao",
   "settings.share_id_short": "Zarao ny ID",
+  "settings.share_app": "Zarao ny rindranasa Airhop",
+  "settings.share_app_short": "Zarao ny rindranasa",
+  "settings.share_app_dialog": "Alao Airhop",
+  "settings.share_app_unsupported": "Tsy azo zaraina ity fametrahana ity",
+  "settings.share_app_unsupported_body":
+    "Voapetraka ao anatin'ampahany maromaro ity kopian'ny Airhop ity, ka tsy azo zaraina ho rakitra iray. Alaivo kosa ny kinova misy rakitra iray ihany avy amin'ny GitHub Releases.",
   "settings.peer_id_sheet.title": "Ny ID-n'ny tebokanao",
   "settings.peer_id_sheet.copy": "Adikao ny ID-n'ny teboka",
   "settings.peer_id_sheet.note":

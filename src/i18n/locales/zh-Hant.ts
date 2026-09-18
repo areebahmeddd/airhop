@@ -1470,6 +1470,12 @@ export const strings: Strings = {
   "settings.peer_id": "節點 ID",
   "settings.share_peer_id": "分享你的節點 ID",
   "settings.share_id_short": "分享 ID",
+  "settings.share_app": "分享 Airhop App",
+  "settings.share_app_short": "分享 App",
+  "settings.share_app_dialog": "取得 Airhop",
+  "settings.share_app_unsupported": "無法分享此安裝版本",
+  "settings.share_app_unsupported_body":
+    "這份 Airhop 是分成多個部分安裝的，無法以單一檔案分享。請改為從 GitHub Releases 下載單檔版本。",
   "settings.peer_id_sheet.title": "你的節點 ID",
   "settings.peer_id_sheet.copy": "複製節點 ID",
   "settings.peer_id_sheet.note":

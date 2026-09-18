@@ -1619,6 +1619,12 @@ export const strings: Strings = {
   "settings.peer_id": "Peer ID",
   "settings.share_peer_id": "Ibahagi ang iyong Peer ID",
   "settings.share_id_short": "Ibahagi ang ID",
+  "settings.share_app": "Ibahagi ang app ng Airhop",
+  "settings.share_app_short": "Ibahagi ang app",
+  "settings.share_app_dialog": "Kunin ang Airhop",
+  "settings.share_app_unsupported": "Hindi maibahagi ang pag-install na ito",
+  "settings.share_app_unsupported_body":
+    "Naka-install ang kopyang ito ng Airhop nang paisa-isang bahagi kaya hindi ito maibabahagi bilang iisang file. I-download na lang ang bersyon na single-file mula sa GitHub Releases.",
   "settings.peer_id_sheet.title": "Ang peer ID mo",
   "settings.peer_id_sheet.copy": "Kopyahin ang peer ID",
   "settings.peer_id_sheet.note":

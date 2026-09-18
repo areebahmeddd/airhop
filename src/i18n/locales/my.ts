@@ -1601,6 +1601,12 @@ export const strings: Strings = {
   "settings.peer_id": "လုပ်ဖော်ကိုင်ဖက် ID",
   "settings.share_peer_id": "သင့်လုပ်ဖော်ကိုင်ဖက် ID ကို မျှဝေပါ",
   "settings.share_id_short": "ID မျှဝေပါ",
+  "settings.share_app": "Airhop အက်ပ်ကို မျှဝေပါ",
+  "settings.share_app_short": "အက်ပ် မျှဝေပါ",
+  "settings.share_app_dialog": "Airhop ရယူပါ",
+  "settings.share_app_unsupported": "ဤထည့်သွင်းမှုကို မျှဝေ၍ မရပါ",
+  "settings.share_app_unsupported_body":
+    "ဤ Airhop မိတ္တူသည် အစိတ်အပိုင်းများစွာဖြင့် ထည့်သွင်းထားသဖြင့် ဖိုင်တစ်ခုတည်းအဖြစ် မျှဝေ၍ မရပါ။ ယင်းအစား GitHub Releases မှ တစ်ဖိုင်တည်းပါသော ဗားရှင်းကို ဒေါင်းလုဒ်လုပ်ပါ။",
   "settings.peer_id_sheet.title": "သင့်လုပ်ဖော်ကိုင်ဖက် ID",
   "settings.peer_id_sheet.copy": "လုပ်ဖော်ကိုင်ဖက် ID ကူးပါ",
   "settings.peer_id_sheet.note":

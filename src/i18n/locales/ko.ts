@@ -1543,6 +1543,12 @@ export const strings: Strings = {
   "settings.peer_id": "피어 ID",
   "settings.share_peer_id": "내 피어 ID 공유",
   "settings.share_id_short": "ID 공유",
+  "settings.share_app": "Airhop 앱 공유",
+  "settings.share_app_short": "앱 공유",
+  "settings.share_app_dialog": "Airhop 받기",
+  "settings.share_app_unsupported": "이 설치본은 공유할 수 없음",
+  "settings.share_app_unsupported_body":
+    "이 Airhop 설치본은 여러 파일로 나뉘어 있어 하나의 파일로 공유할 수 없습니다. 대신 GitHub Releases에서 단일 파일 버전을 다운로드하세요.",
   "settings.peer_id_sheet.title": "내 피어 ID",
   "settings.peer_id_sheet.copy": "피어 ID 복사",
   "settings.peer_id_sheet.note":

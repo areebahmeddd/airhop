@@ -1553,6 +1553,12 @@ export const strings: Strings = {
   "settings.peer_id": "پیئر شناخت",
   "settings.share_peer_id": "اپنی پیئر شناخت شیئر کریں",
   "settings.share_id_short": "شناخت شیئر کریں",
+  "settings.share_app": "Airhop ایپ شیئر کریں",
+  "settings.share_app_short": "ایپ شیئر کریں",
+  "settings.share_app_dialog": "Airhop حاصل کریں",
+  "settings.share_app_unsupported": "یہ انسٹال شیئر نہیں ہو سکتا۔",
+  "settings.share_app_unsupported_body":
+    "Airhop کی یہ کاپی متعدد حصوں میں انسٹال ہے، اور اسے ایک فائل کے طور پر شیئر نہیں کیا جا سکتا۔ اس کے بجائے GitHub Releases سے سنگل فائل ورژن ڈاؤن لوڈ کریں۔",
   "settings.peer_id_sheet.title": "آپ کی پیئر شناخت",
   "settings.peer_id_sheet.copy": "پیئر شناخت کاپی کریں",
   "settings.peer_id_sheet.note":

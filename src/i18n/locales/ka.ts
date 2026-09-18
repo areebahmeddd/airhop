@@ -1577,6 +1577,12 @@ export const strings: Strings = {
   "settings.peer_id": "კვანძის ID",
   "settings.share_peer_id": "შენი კვანძის ID-ის გაზიარება",
   "settings.share_id_short": "ID-ის გაზიარება",
+  "settings.share_app": "Airhop-ის აპლიკაციის გაზიარება",
+  "settings.share_app_short": "აპის გაზიარება",
+  "settings.share_app_dialog": "მიიღე Airhop",
+  "settings.share_app_unsupported": "ეს დაყენება ვერ გაზიარდება",
+  "settings.share_app_unsupported_body":
+    "Airhop-ის ეს ასლი რამდენიმე ნაწილად არის დაყენებული და ერთ ფაილად ვერ გაზიარდება. სანაცვლოდ, ჩამოტვირთე ერთფაილიანი ვერსია GitHub Releases-დან.",
   "settings.peer_id_sheet.title": "შენი კვანძის ID",
   "settings.peer_id_sheet.copy": "კვანძის ID-ის კოპირება",
   "settings.peer_id_sheet.note":

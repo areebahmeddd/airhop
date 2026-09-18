@@ -1464,6 +1464,12 @@ export const strings: Strings = {
   "settings.peer_id": "የአቻ መለያ",
   "settings.share_peer_id": "የአቻ መለያህን አጋራ",
   "settings.share_id_short": "መለያ አጋራ",
+  "settings.share_app": "የAirhop መተግበሪያውን አጋራ",
+  "settings.share_app_short": "መተግበሪያ አጋራ",
+  "settings.share_app_dialog": "Airhop አግኝ",
+  "settings.share_app_unsupported": "ይህን ጭነት ማጋራት አይቻልም",
+  "settings.share_app_unsupported_body":
+    "ይህ የAirhop ቅጂ በበርካታ ክፍሎች ተጭኗል፤ እንደ አንድ ፋይል ሊጋራ አይችልም። በምትኩ ከGitHub Releases የነጠላ ፋይል ስሪቱን አውርድ።",
   "settings.peer_id_sheet.title": "የአንተ የአቻ መለያ",
   "settings.peer_id_sheet.copy": "የአቻ መለያን ቅዳ",
   "settings.peer_id_sheet.note":

@@ -1515,6 +1515,12 @@ export const strings: Strings = {
   "settings.peer_id": "معرّف النظير",
   "settings.share_peer_id": "مشاركة معرّف النظير الخاص بك",
   "settings.share_id_short": "مشاركة المعرّف",
+  "settings.share_app": "مشاركة تطبيق Airhop",
+  "settings.share_app_short": "مشاركة التطبيق",
+  "settings.share_app_dialog": "احصل على Airhop",
+  "settings.share_app_unsupported": "تعذّرت مشاركة هذا التثبيت",
+  "settings.share_app_unsupported_body":
+    "هذا التثبيت من Airhop مقسّم إلى عدة أجزاء ولا يمكن مشاركته كملف واحد. نزّل بدلاً من ذلك نسخة الملف الواحد من GitHub Releases.",
   "settings.peer_id_sheet.title": "معرّف النظير الخاص بك",
   "settings.peer_id_sheet.copy": "نسخ معرّف النظير",
   "settings.peer_id_sheet.note":

@@ -1568,6 +1568,12 @@ export const strings = {
   "settings.peer_id": "Peer ID",
   "settings.share_peer_id": "Share your Peer ID",
   "settings.share_id_short": "Share ID",
+  "settings.share_app": "Share the Airhop app",
+  "settings.share_app_short": "Share App",
+  "settings.share_app_dialog": "Get Airhop",
+  "settings.share_app_unsupported": "Can’t share this install",
+  "settings.share_app_unsupported_body":
+    "This copy of Airhop is installed in multiple parts and can’t be shared as one file. Download the single-file version from GitHub Releases instead.",
   "settings.peer_id_sheet.title": "Your peer ID",
   "settings.peer_id_sheet.copy": "Copy peer ID",
   "settings.peer_id_sheet.note":
@@ -1803,7 +1809,7 @@ export const strings = {
   "settings.conn.background_off_body":
     "Messages will only arrive while Airhop is open, and this phone stops relaying for people nearby. The ongoing notification goes away.",
   "settings.conn.autostart": "Start automatically",
-  "settings.conn.autostart_desc": "Restart the mesh after your phone reboots",
+  "settings.conn.autostart_desc": "Restart the mesh after your phone restarts",
   "settings.conn.autostart_on_title": "Start Airhop after a restart?",
   "settings.conn.autostart_on_body":
     "Airhop starts itself and rejoins the mesh the next time your phone restarts, with no notification until it does. Some phone makers block this unless you also allow it in their own battery settings.",

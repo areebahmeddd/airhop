@@ -1581,6 +1581,12 @@ export const strings: Strings = {
   "settings.peer_id": "Идентификатор узла",
   "settings.share_peer_id": "Поделиться своим идентификатором узла",
   "settings.share_id_short": "Поделиться ID",
+  "settings.share_app": "Поделиться приложением Airhop",
+  "settings.share_app_short": "Поделиться Airhop",
+  "settings.share_app_dialog": "Получи Airhop",
+  "settings.share_app_unsupported": "Не удаётся поделиться этой установкой",
+  "settings.share_app_unsupported_body":
+    "Эта копия Airhop установлена в виде нескольких частей, и её нельзя отправить одним файлом. Вместо этого скачайте однофайловую версию с GitHub Releases.",
   "settings.peer_id_sheet.title": "Ваш идентификатор узла",
   "settings.peer_id_sheet.copy": "Копировать идентификатор узла",
   "settings.peer_id_sheet.note":

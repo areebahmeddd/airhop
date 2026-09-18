@@ -1564,6 +1564,12 @@ export const strings: Strings = {
   "settings.peer_id": "ピアID",
   "settings.share_peer_id": "自分のピアIDを共有",
   "settings.share_id_short": "IDを共有",
+  "settings.share_app": "Airhopアプリを共有",
+  "settings.share_app_short": "アプリを共有",
+  "settings.share_app_dialog": "Airhopを入手",
+  "settings.share_app_unsupported": "このインストールは共有できません",
+  "settings.share_app_unsupported_body":
+    "このAirhopは複数のファイルに分かれてインストールされているため、単一のファイルとして共有できません。代わりにGitHub Releasesからシングルファイル版をダウンロードしてください。",
   "settings.peer_id_sheet.title": "あなたのピアID",
   "settings.peer_id_sheet.copy": "ピアIDをコピー",
   "settings.peer_id_sheet.note":

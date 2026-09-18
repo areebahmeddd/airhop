@@ -1576,6 +1576,12 @@ export const strings: Strings = {
   "settings.peer_id": "Ідентифікатор піра",
   "settings.share_peer_id": "Поділитися своїм ідентифікатором піра",
   "settings.share_id_short": "Поділитися ID",
+  "settings.share_app": "Поділитися застосунком Airhop",
+  "settings.share_app_short": "Поділитися Airhop",
+  "settings.share_app_dialog": "Отримай Airhop",
+  "settings.share_app_unsupported": "Не вдається поділитися цим встановленням",
+  "settings.share_app_unsupported_body":
+    "Ця копія Airhop встановлена кількома частинами, і її не можна надіслати як один файл. Натомість завантажте однофайлову версію з GitHub Releases.",
   "settings.peer_id_sheet.title": "Ваш ідентифікатор піра",
   "settings.peer_id_sheet.copy": "Копіювати ідентифікатор піра",
   "settings.peer_id_sheet.note":

@@ -1593,6 +1593,13 @@ export const strings: Strings = {
   "settings.peer_id": "ID peer",
   "settings.share_peer_id": "Condividi il tuo ID peer",
   "settings.share_id_short": "Condividi ID",
+  "settings.share_app": "Condividi l’app Airhop",
+  "settings.share_app_short": "Condividi app",
+  "settings.share_app_dialog": "Ottieni Airhop",
+  "settings.share_app_unsupported":
+    "Non si può condividere questa installazione",
+  "settings.share_app_unsupported_body":
+    "Questa copia di Airhop è installata in più parti e non può essere condivisa come un unico file. Scarica invece la versione a file singolo da GitHub Releases.",
   "settings.peer_id_sheet.title": "Il tuo ID peer",
   "settings.peer_id_sheet.copy": "Copia l’ID peer",
   "settings.peer_id_sheet.note":

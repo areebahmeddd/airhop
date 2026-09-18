@@ -1560,6 +1560,12 @@ export const strings: Strings = {
   "settings.peer_id": "شناسهٔ همتا",
   "settings.share_peer_id": "هم‌رسانی شناسهٔ همتای شما",
   "settings.share_id_short": "هم‌رسانی شناسه",
+  "settings.share_app": "هم‌رسانی برنامهٔ Airhop",
+  "settings.share_app_short": "هم‌رسانی برنامه",
+  "settings.share_app_dialog": "Airhop را دریافت کنید",
+  "settings.share_app_unsupported": "هم‌رسانی این نصب ممکن نیست",
+  "settings.share_app_unsupported_body":
+    "این نسخهٔ Airhop در چند بخش نصب شده و نمی‌توان آن را به‌صورت یک فایل هم‌رسانی کرد. در عوض، نسخهٔ تک‌فایلی را از GitHub Releases دانلود کنید.",
   "settings.peer_id_sheet.title": "شناسهٔ همتای شما",
   "settings.peer_id_sheet.copy": "کپی شناسهٔ همتا",
   "settings.peer_id_sheet.note":

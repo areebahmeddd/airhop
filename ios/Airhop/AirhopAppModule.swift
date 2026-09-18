@@ -3,9 +3,10 @@
 // Bridge file: AirhopAppModule.mm
 // TypeScript spec: src/bridge/NativeAirhopApp.ts
 //
-// restart and setAutoStartOnBoot reject immediately here: iOS has no
-// relaunch path and no boot receiver. recentLog is the real half, reading
-// back what AirhopLog's categories wrote to the log store.
+// restart, setAutoStartOnBoot and copyApkToCache reject immediately here: iOS
+// has no relaunch path, no boot receiver, and no sideloading to share an APK
+// into. recentLog is the real half, reading back what AirhopLog's categories
+// wrote to the log store.
 import Foundation
 import OSLog
 import React
@@ -28,6 +29,12 @@ final class AirhopAppModule: NSObject, RCTBridgeModule {
                              resolver resolve: @escaping RCTPromiseResolveBlock,
                              rejecter reject: @escaping RCTPromiseRejectBlock) {
         reject("UNSUPPORTED", "no boot receiver on iOS", nil)
+    }
+
+    @objc
+    func copyApkToCache(_ resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        reject("UNSUPPORTED", "iOS has no sideloading to share an APK into", nil)
     }
 
     // Last 30 minutes, Airhop's own categories only, oldest first, capped at

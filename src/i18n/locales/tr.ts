@@ -1571,6 +1571,12 @@ export const strings: Strings = {
   "settings.peer_id": "Eş kimliği",
   "settings.share_peer_id": "Eş kimliğini paylaş",
   "settings.share_id_short": "Kimliği paylaş",
+  "settings.share_app": "Airhop uygulamasını paylaş",
+  "settings.share_app_short": "Uygulamayı paylaş",
+  "settings.share_app_dialog": "Airhop'u edin",
+  "settings.share_app_unsupported": "Bu yükleme paylaşılamıyor",
+  "settings.share_app_unsupported_body":
+    "Airhop'un bu kopyası birden fazla parça halinde yüklü ve tek dosya olarak paylaşılamıyor. Bunun yerine GitHub Releases üzerinden tek dosyalık sürümü indir.",
   "settings.peer_id_sheet.title": "Eş kimliğin",
   "settings.peer_id_sheet.copy": "Eş kimliğini kopyala",
   "settings.peer_id_sheet.note":

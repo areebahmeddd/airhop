@@ -19,6 +19,7 @@ import {
 } from "@i18n";
 import { warned } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import { shareApk } from "@services/apk-share";
 import { destroyMeshService, getMeshService } from "@services/mesh-service";
 import { panicWipe } from "@services/panic-wipe";
 import { applyPresence } from "@services/presence-service";
@@ -60,6 +61,7 @@ import React, {
 } from "react";
 import {
   BackHandler,
+  Platform,
   Pressable,
   ScrollView,
   Share,
@@ -626,6 +628,26 @@ export default function ProfileScreen({
     });
   }
 
+  // Guards against a double tap starting two overlapping copies of the same
+  // cache file. See diagnostics-screen's identical guard on shareDiagnostics.
+  const sharingApkRef = useRef(false);
+
+  async function handleShareApk(): Promise<void> {
+    if (sharingApkRef.current) return;
+    sharingApkRef.current = true;
+    try {
+      const result = await shareApk();
+      if (!result.ok && result.reason === "unsupported") {
+        showAlert(
+          t("settings.share_app_unsupported"),
+          t("settings.share_app_unsupported_body"),
+        );
+      }
+    } finally {
+      sharingApkRef.current = false;
+    }
+  }
+
   // ---- Sub-screens ----
   //
   // One function rather than bare early returns, so the highlight provider can
@@ -819,6 +841,27 @@ export default function ProfileScreen({
               </Text>
             </View>
           </Pressable>
+          {/* Android only. For someone who does not have Airhop yet, beside
+            the two pills for someone who already does. */}
+          {Platform.OS === "android" && (
+            <Pressable
+              style={styles.sharePill}
+              onPress={() => void handleShareApk()}
+              accessibilityRole="button"
+              accessibilityLabel={T("settings.share_app")}
+            >
+              <View style={styles.sharePillInner}>
+                <Feather
+                  name="package"
+                  size={13}
+                  color={Colors.textSecondary}
+                />
+                <Text style={styles.sharePillText} numberOfLines={1}>
+                  {T("settings.share_app_short")}
+                </Text>
+              </View>
+            </Pressable>
+          )}
         </View>
 
         {/* The connectivity toggles. Wallet/AI/Feeds are a standing statement

@@ -1592,6 +1592,12 @@ export const strings: Strings = {
   "settings.peer_id": "Kitambulisho cha peer",
   "settings.share_peer_id": "Shiriki kitambulisho chako cha peer",
   "settings.share_id_short": "Shiriki kitambulisho",
+  "settings.share_app": "Shiriki programu ya Airhop",
+  "settings.share_app_short": "Shiriki programu",
+  "settings.share_app_dialog": "Pata Airhop",
+  "settings.share_app_unsupported": "Haiwezi kushiriki usakinishaji huu",
+  "settings.share_app_unsupported_body":
+    "Nakala hii ya Airhop imesakinishwa katika sehemu kadhaa na haiwezi kushirikiwa kama faili moja. Badala yake, pakua toleo la faili moja kutoka GitHub Releases.",
   "settings.peer_id_sheet.title": "Kitambulisho chako cha peer",
   "settings.peer_id_sheet.copy": "Nakili kitambulisho cha peer",
   "settings.peer_id_sheet.note":

@@ -1548,6 +1548,12 @@ export const strings: Strings = {
   "settings.peer_id": "পিয়ার আইডি",
   "settings.share_peer_id": "আপনার পিয়ার আইডি ভাগ করুন",
   "settings.share_id_short": "আইডি ভাগ করুন",
+  "settings.share_app": "Airhop অ্যাপ ভাগ করুন",
+  "settings.share_app_short": "অ্যাপ ভাগ করুন",
+  "settings.share_app_dialog": "Airhop নিন",
+  "settings.share_app_unsupported": "এই ইনস্টল ভাগ করা যাচ্ছে না",
+  "settings.share_app_unsupported_body":
+    "Airhop-এর এই কপিটি একাধিক অংশে ইনস্টল করা আছে এবং একটি ফাইল হিসেবে ভাগ করা যায় না। এর বদলে GitHub Releases থেকে সিঙ্গেল-ফাইল সংস্করণটি নামান।",
   "settings.peer_id_sheet.title": "আপনার পিয়ার আইডি",
   "settings.peer_id_sheet.copy": "পিয়ার আইডি কপি করুন",
   "settings.peer_id_sheet.note":

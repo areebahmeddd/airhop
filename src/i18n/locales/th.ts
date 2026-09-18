@@ -1527,6 +1527,12 @@ export const strings: Strings = {
   "settings.peer_id": "ID ของเพียร์",
   "settings.share_peer_id": "แชร์ ID ของเพียร์ของคุณ",
   "settings.share_id_short": "แชร์ ID",
+  "settings.share_app": "แชร์แอป Airhop",
+  "settings.share_app_short": "แชร์แอป",
+  "settings.share_app_dialog": "รับ Airhop",
+  "settings.share_app_unsupported": "แชร์การติดตั้งนี้ไม่ได้",
+  "settings.share_app_unsupported_body":
+    "Airhop ชุดนี้ติดตั้งแบบแยกหลายไฟล์ จึงแชร์เป็นไฟล์เดียวไม่ได้ ดาวน์โหลดเวอร์ชันไฟล์เดียวจาก GitHub Releases แทน",
   "settings.peer_id_sheet.title": "ID ของเพียร์ของคุณ",
   "settings.peer_id_sheet.copy": "คัดลอก ID ของเพียร์",
   "settings.peer_id_sheet.note":

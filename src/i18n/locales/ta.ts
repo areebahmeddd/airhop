@@ -1615,6 +1615,12 @@ export const strings: Strings = {
   "settings.peer_id": "பியர் அடையாளம்",
   "settings.share_peer_id": "உங்கள் பியர் அடையாளத்தைப் பகிர்",
   "settings.share_id_short": "அடையாளத்தைப் பகிர்",
+  "settings.share_app": "Airhop செயலியைப் பகிர்",
+  "settings.share_app_short": "செயலியைப் பகிர்",
+  "settings.share_app_dialog": "Airhop-ஐப் பெறு",
+  "settings.share_app_unsupported": "இந்த நிறுவலைப் பகிர முடியாது",
+  "settings.share_app_unsupported_body":
+    "இந்த Airhop பிரதி பல பகுதிகளாக நிறுவப்பட்டுள்ளது, ஒரே கோப்பாகப் பகிர முடியாது. அதற்குப் பதிலாக GitHub Releases இலிருந்து ஒற்றைக் கோப்பு பதிப்பைப் பதிவிறக்கவும்.",
   "settings.peer_id_sheet.title": "உங்கள் பியர் அடையாளம்",
   "settings.peer_id_sheet.copy": "பியர் அடையாளத்தை நகலெடு",
   "settings.peer_id_sheet.note":

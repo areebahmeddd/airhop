@@ -8,11 +8,16 @@
 // Recent log, because a field report without one is a guess. Android lets a
 // process read its own logcat lines and nobody else's, so this needs no
 // permission and cannot see another app.
+//
+// APK copy, because sharing the app to a phone with no Airhop yet means
+// handing over the install file itself, and only this process can read it.
 package org.onemindlabs.airhop.app
 
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -44,6 +49,10 @@ private val LOG_TAGS = listOf(
 // Lines, not time. A busy mesh writes a lot and a quiet one very little, and a
 // cap by count bounds the bundle either way.
 private const val LOG_MAX_LINES = 3000
+
+// Cache subdirectory the OS may reclaim, same as the update download.
+private const val APK_SHARE_DIR = "apk-share"
+private const val APK_SHARE_FILE = "Airhop.apk"
 
 class AirhopAppModule(
     private val reactContext: ReactApplicationContext,
@@ -90,6 +99,36 @@ class AirhopAppModule(
             .putBoolean(KEY_AUTO_START, enabled)
             .apply()
         promise.resolve(null)
+    }
+
+    // Copies this build's own APK into the cache and hands back a file:// URI
+    // for Sharing.shareAsync. Off the calling thread: base.apk runs tens of MiB.
+    //
+    // publicSourceDir, not sourceDir: the one guaranteed readable outside this
+    // process. Refuses on splitSourceDirs (a Play bundle install, one APK per
+    // ABI/density/language) rather than share a base.apk missing real chunks
+    // of the app.
+    @ReactMethod
+    fun copyApkToCache(promise: Promise) {
+        Thread {
+            try {
+                val appInfo = reactContext.applicationContext.applicationInfo
+                if (!appInfo.splitSourceDirs.isNullOrEmpty()) {
+                    promise.reject(
+                        "SPLIT_INSTALL",
+                        "This install has more than one package part",
+                    )
+                    return@Thread
+                }
+                val shareDir = File(reactContext.cacheDir, APK_SHARE_DIR).apply { mkdirs() }
+                val dest = File(shareDir, APK_SHARE_FILE)
+                File(appInfo.publicSourceDir).copyTo(dest, overwrite = true)
+                promise.resolve(Uri.fromFile(dest).toString())
+            } catch (e: Exception) {
+                Log.e(TAG, "APK copy failed: ${e.message}")
+                promise.reject("COPY_FAILED", e.message, e)
+            }
+        }.start()
     }
 
     // The process's recent logcat, filtered to LOG_TAGS, oldest first.
