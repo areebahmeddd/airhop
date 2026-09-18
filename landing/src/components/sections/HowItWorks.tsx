@@ -52,7 +52,7 @@ export default function HowItWorks() {
 
         <div className="mt-6 flex justify-center">
           <Link
-            to="/architecture"
+            to="/architecture/"
             className="label group border-line bg-card-subtle text-secondary hover:border-line-strong hover:bg-inner hover:text-ink inline-flex h-11 items-center gap-2 rounded-full border ps-5 pe-4 text-[11px] font-semibold tracking-widest transition-colors duration-150"
           >
             {T("home.how.cta")}

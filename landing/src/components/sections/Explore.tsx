@@ -43,7 +43,7 @@ const LINKS: {
     titleKey: "home.explore.architecture.title",
     descKey: "home.explore.architecture.desc",
     Icon: Layers,
-    href: "/architecture",
+    href: "/architecture/",
     internal: true,
   },
   {
@@ -62,7 +62,7 @@ const LINKS: {
     titleKey: "home.explore.brand.title",
     descKey: "home.explore.brand.desc",
     Icon: Palette,
-    href: "/brand",
+    href: "/brand/",
     internal: true,
   },
 ];

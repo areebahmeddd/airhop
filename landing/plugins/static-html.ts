@@ -14,6 +14,7 @@ import {
   alternates,
   breadcrumbSchema,
   canonicalUrl,
+  isIndexable,
   NOT_FOUND_SEO,
   PAGES,
   type PageSeo,
@@ -43,14 +44,24 @@ function headBlock(page: PageSeo, language: LanguageCode): string {
   const title = escapeAttr(T(page.titleKey));
   const description = escapeAttr(T(page.descriptionKey));
   const crumbs = breadcrumbSchema(page, language);
+  const indexable = isIndexable(page, language);
 
   const lines = [
     "<!-- seo:start -->",
     `<title>${title}</title>`,
     `<meta name="description" content="${description}" />`,
-    page.noIndex
-      ? `<meta name="robots" content="noindex, nofollow" />`
-      : `<link rel="canonical" href="${url}" />`,
+  ];
+
+  if (page.noIndex) {
+    lines.push(`<meta name="robots" content="noindex, nofollow" />`);
+  } else {
+    lines.push(`<link rel="canonical" href="${url}" />`);
+    if (!indexable) {
+      lines.push(`<meta name="robots" content="noindex, follow" />`);
+    }
+  }
+
+  lines.push(
     `<meta property="og:type" content="${page.type}" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
@@ -58,14 +69,14 @@ function headBlock(page: PageSeo, language: LanguageCode): string {
     `<meta property="og:locale" content="${spec.ogLocale}" />`,
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${description}" />`,
-  ];
+  );
 
-  for (const code of LANGUAGE_ORDER) {
-    if (code === language) continue;
-    lines.push(`<meta property="og:locale:alternate" content="${LANGUAGES[code].ogLocale}" />`);
-  }
+  if (page.translated) {
+    for (const code of LANGUAGE_ORDER) {
+      if (code === language) continue;
+      lines.push(`<meta property="og:locale:alternate" content="${LANGUAGES[code].ogLocale}" />`);
+    }
 
-  if (!page.noIndex) {
     for (const link of alternates(page.path)) {
       lines.push(
         `<link rel="alternate" hreflang="${link.hrefLang}" href="${escapeAttr(link.href)}" />`,
@@ -84,18 +95,21 @@ function headBlock(page: PageSeo, language: LanguageCode): string {
 }
 
 function sitemap(pages: PageSeo[]): string {
-  const entries = pages.flatMap((page) =>
-    LANGUAGE_ORDER.map((language) => {
+  const entries = pages.flatMap((page) => {
+    const languages = page.translated ? LANGUAGE_ORDER : (["en"] as const);
+    return languages.map((language) => {
       const loc = canonicalUrl(language, page.path);
-      const links = alternates(page.path)
-        .map(
-          (link) =>
-            `    <xhtml:link rel="alternate" hreflang="${link.hrefLang}" href="${escapeAttr(link.href)}" />`,
-        )
-        .join("\n");
-      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${page.lastmod}</lastmod>\n${links}\n  </url>`;
-    }),
-  );
+      const links = page.translated
+        ? alternates(page.path)
+            .map(
+              (link) =>
+                `    <xhtml:link rel="alternate" hreflang="${link.hrefLang}" href="${escapeAttr(link.href)}" />\n`,
+            )
+            .join("")
+        : "";
+      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${page.lastmod}</lastmod>\n${links}  </url>`;
+    });
+  });
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join("\n")}\n</urlset>\n`;
 }

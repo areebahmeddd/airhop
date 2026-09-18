@@ -473,9 +473,10 @@ export function resolveLanguage(pathname: string): LanguageCode {
 }
 
 export function localizedPath(code: LanguageCode, route: string): string {
+  const trimmed = route.length > 1 && route.endsWith("/") ? route.slice(0, -1) : route;
   const base = basenameFor(code);
-  if (base === "/") return route;
-  return route === "/" ? base : `${base}${route}`;
+  const path = base === "/" ? trimmed : trimmed === "/" ? base : `${base}${trimmed}`;
+  return path === "/" ? "/" : `${path}/`;
 }
 
 const TAG_ALIASES: [string, LanguageCode][] = [

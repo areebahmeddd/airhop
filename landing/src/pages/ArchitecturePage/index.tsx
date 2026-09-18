@@ -1858,7 +1858,7 @@ export default function ArchitecturePage() {
                 .
               </p>
               <p className="text-secondary mt-4 text-sm leading-relaxed">
-                Shorter answers to most of this are in the <TextLink href="/faq">FAQ</TextLink>.
+                Shorter answers to most of this are in the <TextLink href="/faq/">FAQ</TextLink>.
               </p>
             </div>
           </div>

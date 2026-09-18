@@ -78,9 +78,9 @@ const NAV_COLUMNS: {
   {
     headingKey: "footer.group.resources",
     links: [
-      { labelKey: "footer.link.architecture", href: "/architecture", external: false },
-      { labelKey: "footer.link.blogs", href: "/blogs", external: false },
-      { labelKey: "footer.link.faq", href: "/faq", external: false },
+      { labelKey: "footer.link.architecture", href: "/architecture/", external: false },
+      { labelKey: "footer.link.blogs", href: "/blogs/", external: false },
+      { labelKey: "footer.link.faq", href: "/faq/", external: false },
     ],
   },
   {
@@ -94,8 +94,8 @@ const NAV_COLUMNS: {
   {
     headingKey: "footer.group.legal",
     links: [
-      { labelKey: "footer.link.terms", href: "/terms-of-service", external: false },
-      { labelKey: "footer.link.privacy", href: "/privacy-policy", external: false },
+      { labelKey: "footer.link.terms", href: "/terms-of-service/", external: false },
+      { labelKey: "footer.link.privacy", href: "/privacy-policy/", external: false },
       { labelKey: "footer.link.license", href: REPO_LINKS.license, external: true },
     ],
   },

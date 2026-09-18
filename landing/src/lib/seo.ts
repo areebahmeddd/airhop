@@ -18,6 +18,9 @@ export interface PageSeo {
   breadcrumbKey?: TranslationKey;
   lastmod: string;
   noIndex?: boolean;
+  // Only "/" is localized; keep English-only variants out of hreflang/sitemap and noindex them
+  // to avoid Google folding 35 near-identical URLs together.
+  translated?: boolean;
 }
 
 export const SEO: Record<string, PageSeo> = {
@@ -27,6 +30,7 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.home.description",
     type: "website",
     lastmod: LAST_UPDATED,
+    translated: true,
   },
   "/architecture": {
     path: "/architecture",
@@ -51,6 +55,7 @@ export const SEO: Record<string, PageSeo> = {
     type: "website",
     breadcrumbKey: "seo.blogs.breadcrumb",
     lastmod: LAST_UPDATED,
+    translated: true,
   },
   "/brand": {
     path: "/brand",
@@ -91,7 +96,11 @@ export const PAGES: PageSeo[] = Object.values(SEO);
 
 export function canonicalUrl(language: LanguageCode, path: string): string {
   const localized = localizedPath(language, path);
-  return localized === "/" ? SITE_URL : `${SITE_URL}${localized}/`;
+  return localized === "/" ? SITE_URL : `${SITE_URL}${localized}`;
+}
+
+export function isIndexable(page: PageSeo, language: LanguageCode): boolean {
+  return page.translated === true || language === "en";
 }
 
 export interface Alternate {

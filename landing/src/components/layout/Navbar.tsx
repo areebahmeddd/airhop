@@ -7,8 +7,8 @@ import { Link } from "react-router-dom";
 
 const NAV_ITEMS: { labelKey: TranslationKey; href: string }[] = [
   { labelKey: "nav.how_it_works", href: "/#how-it-works" },
-  { labelKey: "nav.architecture", href: "/architecture" },
-  { labelKey: "nav.faq", href: "/faq" },
+  { labelKey: "nav.architecture", href: "/architecture/" },
+  { labelKey: "nav.faq", href: "/faq/" },
 ];
 
 const MENU_ID = "primary-navigation";

@@ -174,7 +174,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             Live voice can be switched off entirely in Settings, and incoming audio only plays while
             you have that conversation open in front of you. The{" "}
-            <TextLink href="/architecture">architecture page</TextLink> describes how the frames
+            <TextLink href="/architecture/">architecture page</TextLink> describes how the frames
             travel.
           </>
         ),
