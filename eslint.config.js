@@ -28,10 +28,9 @@ module.exports = defineConfig([
   {
     // One haptic vocabulary.
     //
-    // src/platform/haptics.ts names every buzz by the situation that earns it,
-    // so two call sites meaning the same thing to the user cannot drift into
-    // two feedback types. That only holds while it is the one place that talks
-    // to the motor.
+    // haptics.ts names each buzz by the user-facing situation,
+    // keeping equivalent call sites from drifting into different feedback.
+    // This only holds while it remains the sole place that talks to the motor.
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/platform/haptics.ts"],
     rules: {
@@ -92,8 +91,7 @@ module.exports = defineConfig([
     },
   },
   {
-    // format.ts owns the decision, and the benchmarks print to a terminal
-    // rather than to a user.
+    // format.ts owns the decision, and benchmarks print to a terminal rather than to a user.
     files: ["src/utils/format.ts", "src/**/__benchmarks__/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-syntax": "off",

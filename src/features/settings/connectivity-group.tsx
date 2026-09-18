@@ -240,8 +240,6 @@ export default function ConnectivityGroup({
 
   return (
     <View style={styles.section}>
-      {/* All but live voice ride the internet, so they are disabled while
-          Internet fallback is off (a note explains where). */}
       <View style={styles.settingsGroup}>
         {!internetEnabled && (
           <>
@@ -253,22 +251,6 @@ export default function ConnectivityGroup({
             <GroupDivider />
           </>
         )}
-        {/* First, because it is the widest switch in the group: everything
-            below decides how the mesh behaves, this one decides whether it is
-            running at all once the app is closed.
-
-            Android only. The switch drives `setBackgroundServiceEnabled`,
-            which starts or stops the foreground service holding the process up;
-            on iOS that call is a declared no-op, because background BLE there
-            comes from the `bluetooth-central` mode, a build-time entitlement no
-            runtime call can withdraw.
-
-            Hidden rather than reworded, and rather than faked by suspending the
-            radios on background: CoreBluetooth relaunches the app on a BLE
-            event through the restoration identifier, so a suspend is undone by
-            the platform at the moment it matters. A control that cannot be
-            honoured is worse than an absent one on the screen where people
-            decide what their phone does for other people. */}
         {Platform.OS === "android" && (
           <>
             <SettingRow
@@ -284,10 +266,6 @@ export default function ConnectivityGroup({
               }
             />
             <GroupDivider />
-            {/* Gated on the row above: auto-start is pointless if the mesh
-                does not also stay up once the app is closed. Off by default
-                regardless, and its own confirm - starting itself is a
-                bigger step than staying up. */}
             <SettingRow
               id="auto-start-boot"
               icon="refresh-cw"
@@ -304,9 +282,6 @@ export default function ConnectivityGroup({
             <GroupDivider />
           </>
         )}
-        {/* Above the internet toggles because it is not one of them: live
-            voice never leaves Bluetooth, so it stays available when
-            everything below is greyed out. */}
         <SettingRow
           id="live-voice"
           icon="mic"
@@ -333,10 +308,6 @@ export default function ConnectivityGroup({
             />
           }
         />
-        {/* The bridge derives its neighborhood cell from a location fix, so
-            without permission it stays inert. Offer a one-tap grant rather
-            than leaving it silently doing nothing. Stays directly under the
-            bridge row, wherever that row sits. */}
         {bridgeEnabled && !locationGranted && (
           <>
             <GroupDivider />
@@ -360,10 +331,6 @@ export default function ConnectivityGroup({
           </>
         )}
         <GroupDivider />
-        {/* Last of the switches, and the only one that buys the phone holding
-            it nothing: it spends your data and battery so another phone can
-            reach the channels. "cast" rather than "radio", which the hub's own
-            Network & Relays row already wears. */}
         <SettingRow
           id="gateway"
           icon="cast"
@@ -378,10 +345,6 @@ export default function ConnectivityGroup({
           }
         />
         <GroupDivider />
-        {/* Closes the group, below the switches rather than among them: it is
-            the one row that drills in, and Tor qualifies how everything above
-            reaches the internet rather than being another thing to turn on.
-            The value keeps the answer visible without opening the screen. */}
         <SettingLinkRow
           icon="globe"
           label={T("settings.conn.tor")}
@@ -411,9 +374,6 @@ export default function ConnectivityGroup({
         )}
       </View>
 
-      {/* The one confirm sheet, shared by all four switches in both
-          directions: same layout, same button order, only the words change.
-          Left-aligned like the app's other explain-then-act sheets. */}
       {copy !== null && (
         <BottomSheet
           visible={confirmVisible}

@@ -18,6 +18,7 @@
 //   AirhopVoice.captureError  { message }
 import AVFoundation
 import Foundation
+import OSLog
 import React
 
 // MARK: - Constants
@@ -223,6 +224,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
                 self.isCapturing = true
                 resolve(nil)
             } catch {
+                AirhopLog.voice.error("capture failed: \(error.localizedDescription, privacy: .public)")
                 self.isCapturing = false
                 self.teardownCapture()
                 reject("VOICE_CAPTURE", error.localizedDescription, error)
@@ -516,6 +518,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
                 self.isPlaying = true
                 resolve(nil)
             } catch {
+                AirhopLog.voice.warning("playback failed: \(error.localizedDescription, privacy: .public)")
                 self.teardownPlayback()
                 reject("VOICE_PLAYBACK", error.localizedDescription, error)
             }

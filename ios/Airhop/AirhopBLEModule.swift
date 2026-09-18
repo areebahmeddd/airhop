@@ -10,6 +10,7 @@
 // TypeScript (src/core/). This file has no knowledge of packet types.
 import CoreBluetooth
 import Foundation
+import OSLog
 import React
 
 // MARK: - Constants
@@ -709,6 +710,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
 
     func centralManager(_ central: CBCentralManager,
                         didConnect peripheral: CBPeripheral) {
+        AirhopLog.ble.notice("BLE link up (central)")
         let linkID = centralLinkID(for: peripheral)
         centralLinks[linkID] = peripheral
         // linkConnected is deliberately NOT emitted here: the characteristic is
@@ -735,6 +737,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager,
                         didFailToConnect peripheral: CBPeripheral,
                         error: Error?) {
+        AirhopLog.ble.notice("BLE link failed (central)")
         // Release the retain so a later advertisement can retry this peer.
         let linkID = centralLinkID(for: peripheral)
         centralLinks.removeValue(forKey: linkID)
@@ -744,6 +747,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager,
                         didDisconnectPeripheral peripheral: CBPeripheral,
                         error: Error?) {
+        AirhopLog.ble.notice("BLE link down (central)")
         let linkID = centralLinkID(for: peripheral)
         centralLinks.removeValue(forKey: linkID)
         readyCentralLinks.remove(linkID)
@@ -915,6 +919,7 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager,
                            central: CBCentral,
                            didSubscribeTo characteristic: CBCharacteristic) {
+        AirhopLog.ble.notice("BLE link up (peripheral)")
         let linkID = peripheralLinkID(for: central)
         peripheralLinks[linkID] = central
         sendEvent(withName: BLEEvent.linkConnected,
@@ -924,6 +929,7 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager,
                            central: CBCentral,
                            didUnsubscribeFrom characteristic: CBCharacteristic) {
+        AirhopLog.ble.notice("BLE link down (peripheral)")
         let linkID = peripheralLinkID(for: central)
         peripheralLinks.removeValue(forKey: linkID)
         sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])

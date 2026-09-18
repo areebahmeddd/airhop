@@ -2,10 +2,9 @@
 //
 // Hand-maintained, not Codegen input. See NativeAirhopBLE.ts for why.
 //
-// Backed by AirhopAppModule.kt, and Android only for a reason rather than for
-// now: iOS gives an app no supported way to relaunch itself, and `exit()` there
-// is grounds for rejection, and the native modules there write no log to read.
-// Callers optional-chain and fall back to asking, or to a report without one.
+// Backed by AirhopAppModule.kt (Android) and AirhopAppModule.swift (iOS).
+// restart and setAutoStartOnBoot reject immediately on iOS: no supported
+// relaunch path, no boot receiver. recentLog runs on both.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -14,20 +13,22 @@ export interface Spec extends TurboModule {
   // nothing after the call runs. Foreground only: from API 29 Android forbids a
   // background activity start.
   //
-  //   NO_LAUNCH_INTENT  no launcher activity in this build
-  //   RESTART_FAILED    the platform refused the start
+  //   NO_LAUNCH_INTENT  no launcher activity in this build (Android)
+  //   RESTART_FAILED    the platform refused the start (Android)
+  //   UNSUPPORTED       iOS has no supported way to relaunch itself
   //
-  // Both leave the app running, so a caller that cannot restart says so instead.
+  // Always leaves the app running, so a caller that cannot restart says so
+  // instead.
   restart(): Promise<void>;
-  // This process's recent logcat, filtered to Airhop's own tags and the crash
-  // reporter, oldest first. Empty on a device that refuses logcat, which is a
-  // report with no log section rather than a failure.
+  // This process's recent log, filtered to Airhop's own modules: logcat on
+  // Android (plus the crash reporter tag), the unified log store on iOS.
+  // Oldest first. Empty on a device that refuses it: a report with no log
+  // section, not a failure.
   recentLog(): Promise<string>;
-  // The native flag AirhopBootReceiver reads with no JS runtime up. Android
-  // only; iOS has no way to launch itself after a reboot.
+  // The native flag AirhopBootReceiver reads with no JS runtime up. Rejects on
+  // iOS: no boot receiver to sync with.
   setAutoStartOnBoot(enabled: boolean): Promise<void>;
 }
 
-// `get`, not `getEnforcing`: absent on iOS, and a missing module is an answer
-// rather than a crash.
+// `get`, not `getEnforcing`: a missing module is an answer, not a crash.
 export default TurboModuleRegistry.get<Spec>("AirhopApp");

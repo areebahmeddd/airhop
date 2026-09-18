@@ -2,8 +2,8 @@ name: Sync Bridge Directory
 
 on:
   schedule:
-    # Weekly on Sunday at 07:00 UTC
-    - cron: "0 7 * * 0"
+    # Weekly on Friday at 07:00 UTC
+    - cron: "0 7 * * 5"
   workflow_dispatch:
 
 permissions:

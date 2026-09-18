@@ -632,9 +632,10 @@ function AppContent(): React.JSX.Element {
     const inTarget = translatorFor(target);
     // Offered where the platform allows it, not merely asked for: a warm start
     // flips the frame while the JS context survives, so only a cold process gets
-    // both. iOS cannot relaunch itself, so there this stays a notice.
-    const canRestart =
-      NativeAirhopApp !== null && NativeAirhopApp !== undefined;
+    // both. iOS cannot relaunch itself (App Store policy), so there this stays a
+    // notice. Platform check, not module presence: AirhopApp exists on iOS too,
+    // for recentLog, and rejects restart there.
+    const canRestart = Platform.OS === "android";
     showAlert(
       inTarget("settings.language.rtl_title"),
       inTarget("settings.language.rtl_body", {

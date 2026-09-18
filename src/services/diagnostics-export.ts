@@ -48,8 +48,8 @@ export interface DiagnosticsSnapshot {
     torBridgeMode: string;
     liveVoice: boolean;
   };
-  // Absent where there is nothing to read (iOS: the native modules write no
-  // log). Empty where logcat refused.
+  // Absent only if the native module itself is missing. Empty where the
+  // platform refused to hand back a log.
   log?: string;
 }
 

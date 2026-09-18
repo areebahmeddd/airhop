@@ -28,11 +28,10 @@ import org.onemindlabs.airhop.R
 
 private const val TAG = "AirhopBootService"
 
-// Same channel, title and text as AirhopForegroundService, but a different
-// id: NotificationManager keys a posted notification by (package, id) with
-// no notion of which service posted it, so sharing 1001 would let this
-// service's own stop cancel a notification AirhopForegroundService has
-// already taken over.
+// Same channel and text as AirhopForegroundService, but a different id:
+// NotificationManager keys by (package, id), not by service, so sharing
+// 1001 could let this service's stop cancel a notification that
+// AirhopForegroundService has already taken over.
 private const val CHANNEL_ID = "airhop_mesh_bg"
 private const val NOTIFICATION_ID = 1002
 

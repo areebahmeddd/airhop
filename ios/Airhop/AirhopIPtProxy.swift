@@ -15,6 +15,7 @@
 
 import Foundation
 import IPtProxy
+import OSLog
 
 enum AirhopTransport: String {
     case obfs4
@@ -92,6 +93,7 @@ final class AirhopIPtProxy: @unchecked Sendable {
                     // No upstream proxy: Arti is the only thing dialling these.
                     try controller.start(transport.rawValue, proxy: "")
                 } catch {
+                    AirhopLog.iptProxy.error("\(transport.rawValue, privacy: .public) did not start")
                     stopLocked()
                     return nil
                 }
@@ -101,9 +103,11 @@ final class AirhopIPtProxy: @unchecked Sendable {
             // listener is not up despite start having returned.
             let port = controller.port(transport.rawValue)
             guard port > 0, port <= 65535 else {
+                AirhopLog.iptProxy.error("\(transport.rawValue, privacy: .public) reported no port")
                 stopLocked()
                 return nil
             }
+            AirhopLog.iptProxy.notice("\(transport.rawValue, privacy: .public) reported port \(port, privacy: .public)")
             ports[transport] = UInt16(port)
         }
         return ports

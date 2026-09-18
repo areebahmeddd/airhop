@@ -5,8 +5,8 @@
 
 import NativeAirhopApp from "@bridge/NativeAirhopApp";
 
-// Writes the flag AirhopBootReceiver reads. No-op on iOS: NativeAirhopApp
-// is null there, and there is no boot receiver to sync with.
+// Writes the flag AirhopBootReceiver reads. No-op on iOS: there is no boot
+// receiver to sync with, and AirhopApp rejects the call there.
 export function syncAutoStartOnBoot(enabled: boolean): void {
   void NativeAirhopApp?.setAutoStartOnBoot(enabled).catch(() => {
     // Best effort; the next toggle or launch resyncs it.

@@ -31,6 +31,7 @@
 
 import Foundation
 import Network
+import OSLog
 import React
 
 enum LANConst {
@@ -409,6 +410,7 @@ private final class LANTransport {
                         settled = true
                         onReady?(nil)
                     }
+                    AirhopLog.lan.notice("LAN link up: \(linkID, privacy: .public)")
                     self.emit(LANEvent.linkConnected, ["linkID": linkID])
                     self.readFrame(linkID: linkID, connection: connection)
                 case let .failed(error):
@@ -525,6 +527,7 @@ private final class LANTransport {
         if let name = link.serviceName, linkByName[name] == linkID {
             linkByName.removeValue(forKey: name)
         }
+        AirhopLog.lan.notice("LAN link down: \(linkID, privacy: .public)")
         emit(LANEvent.linkDisconnected, ["linkID": linkID])
     }
 }

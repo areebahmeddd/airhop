@@ -12,6 +12,7 @@
 // they bind to cannot drift without the build saying so.
 
 import Foundation
+import OSLog
 #if canImport(Network)
 import Network
 #endif
@@ -506,6 +507,7 @@ public final class AirhopTorManager: ObservableObject {
         isStarting = status.running && !status.ready && !status.blocked
         if status.ready, !isReady {
             isReady = true
+            AirhopLog.tor.notice("Tor ready")
             NotificationCenter.default.post(name: .AirhopTorDidBecomeReady, object: nil)
         } else if !status.ready {
             isReady = false
@@ -516,6 +518,7 @@ public final class AirhopTorManager: ObservableObject {
     private func failAttempt(_ epoch: Int) {
         guard epoch == attemptEpoch else { return }
         isStarting = false
+        AirhopLog.tor.error("Tor start failed")
         NotificationCenter.default.post(name: .AirhopTorDidStall, object: nil)
     }
 
@@ -525,6 +528,7 @@ public final class AirhopTorManager: ObservableObject {
         isStarting = false
         isReady = false
         stopStatusPoll()
+        AirhopLog.tor.error("Tor stalled")
         NotificationCenter.default.post(name: .AirhopTorDidStall, object: nil)
     }
 

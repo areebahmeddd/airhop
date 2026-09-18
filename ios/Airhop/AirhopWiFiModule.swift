@@ -26,6 +26,7 @@
 // rebind `wifiPeerToLink` to whichever announced last. Hence the link hello.
 import Foundation
 import Network
+import OSLog
 import React
 import WiFiAware
 
@@ -417,6 +418,7 @@ private actor WiFiAwareTransport {
             // Holding the guard would stop a reconnect once this link drops.
             dialling.remove(deviceID)
         }
+        AirhopLog.wifi.notice("WiFi link up: \(linkID, privacy: .public)")
         emit(WiFiEvent.linkConnected, ["linkID": linkID])
         return linkID
     }
@@ -485,6 +487,7 @@ private actor WiFiAwareTransport {
             if linkByDevice[deviceID] == linkID { linkByDevice.removeValue(forKey: deviceID) }
             dialling.remove(deviceID)
         }
+        AirhopLog.wifi.notice("WiFi link down: \(linkID, privacy: .public)")
         emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
     }
 }

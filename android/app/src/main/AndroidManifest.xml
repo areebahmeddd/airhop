@@ -38,8 +38,8 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-  <!-- Off by default (Settings > Connectivity); AirhopBootReceiver checks
-       the user's own preference before doing anything with it. -->
+  <!-- Off by default; AirhopBootReceiver checks the user's own
+       preference before doing anything with it. -->
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
   <!-- A few seconds only, while AirhopBootService gets the JS runtime up. -->
   <uses-permission android:name="android.permission.WAKE_LOCK"/>

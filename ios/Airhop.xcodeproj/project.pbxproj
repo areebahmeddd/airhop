@@ -14,9 +14,12 @@
 		8FBB5FE8FB9D02456B274AFA /* libPods-Airhop.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 000D0CEF937A22045C2E2D0B /* libPods-Airhop.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		29977927D520A508D19B41F8 /* AirhopAppModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */; };
+		D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FA0E833A874E33409274CD /* AirhopAppModule.swift */; };
 		EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */; };
 		19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */; };
 		A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */; };
+		166BDE042C843A9400350594 /* AirhopLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27C0090533B740D2B558EEA /* AirhopLog.swift */; };
 		6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120EE9C30B11446E9538C928 /* AirhopTorManager.swift */; };
 		E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */; };
 		636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */; };
@@ -47,9 +50,12 @@
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Airhop/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Airhop-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Airhop-Bridging-Header.h"; path = "Airhop/Airhop-Bridging-Header.h"; sourceTree = "<group>"; };
 		F73C4B2BCE44B84717C4386B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Airhop/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */ = {isa = PBXFileReference; name = "AirhopAppModule.mm"; path = "Airhop/AirhopAppModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
+		73FA0E833A874E33409274CD /* AirhopAppModule.swift */ = {isa = PBXFileReference; name = "AirhopAppModule.swift"; path = "Airhop/AirhopAppModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 		3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */ = {isa = PBXFileReference; name = "AirhopBLEModule.mm"; path = "Airhop/AirhopBLEModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
 		76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */ = {isa = PBXFileReference; name = "AirhopBLEModule.swift"; path = "Airhop/AirhopBLEModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 		A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */ = {isa = PBXFileReference; name = "AirhopIPtProxy.swift"; path = "Airhop/AirhopIPtProxy.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
+		C27C0090533B740D2B558EEA /* AirhopLog.swift */ = {isa = PBXFileReference; name = "AirhopLog.swift"; path = "Airhop/AirhopLog.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 		120EE9C30B11446E9538C928 /* AirhopTorManager.swift */ = {isa = PBXFileReference; name = "AirhopTorManager.swift"; path = "Airhop/AirhopTorManager.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 		39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */ = {isa = PBXFileReference; name = "AirhopTorModule.mm"; path = "Airhop/AirhopTorModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
 		21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */ = {isa = PBXFileReference; name = "AirhopTorModule.swift"; path = "Airhop/AirhopTorModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
@@ -123,11 +129,14 @@
 				A17H0PF11FDBB12D087E7F60 /* InfoPlist.strings */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
 				F73C4B2BCE44B84717C4386B /* PrivacyInfo.xcprivacy */,
+				9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */,
+				73FA0E833A874E33409274CD /* AirhopAppModule.swift */,
 				3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */,
 				76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */,
 				A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */,
 				A1D3C4E5B6074F1288AA0103 /* AirhopLANModule.mm */,
 				A1D3C4E5B6074F1288AA0104 /* AirhopLANModule.swift */,
+				C27C0090533B740D2B558EEA /* AirhopLog.swift */,
 				120EE9C30B11446E9538C928 /* AirhopTorManager.swift */,
 				39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */,
 				21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */,
@@ -457,11 +466,14 @@
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				85697010AA2B5354025C23E1 /* ExpoModulesProvider.swift in Sources */,
+				29977927D520A508D19B41F8 /* AirhopAppModule.mm in Resources */,
+				D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */,
 				EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Resources */,
 				19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */,
 				A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */,
 				A1D3C4E5B6074F1288AA0101 /* AirhopLANModule.mm in Resources */,
 				A1D3C4E5B6074F1288AA0102 /* AirhopLANModule.swift in Sources */,
+				166BDE042C843A9400350594 /* AirhopLog.swift in Sources */,
 				6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */,
 				E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Resources */,
 				636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */,
