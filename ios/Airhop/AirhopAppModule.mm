@@ -19,4 +19,7 @@ RCT_EXTERN_METHOD(setAutoStartOnBoot:(BOOL)enabled
 RCT_EXTERN_METHOD(recentLog:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(copyApkToCache:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

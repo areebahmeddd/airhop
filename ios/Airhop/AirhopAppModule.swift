@@ -14,6 +14,12 @@ import React
 @objc(AirhopAppModule)
 final class AirhopAppModule: NSObject, RCTBridgeModule {
 
+    // Matches the name AirhopAppModule.mm registers via
+    // RCT_EXTERN_REMAP_MODULE, so conformance does not depend on that file.
+    static func moduleName() -> String! {
+        "AirhopApp"
+    }
+
     static func requiresMainQueueSetup() -> Bool {
         false
     }

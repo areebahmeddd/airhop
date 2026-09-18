@@ -129,7 +129,7 @@ export function filterMessages(
         snippet = built.snippet;
         matchStart = built.matchStart;
         matchEnd = built.matchEnd;
-        score = scoreMatch(hay, index);
+        score = scoreMatch(hay, index, q.length);
       }
 
       hits.push({
@@ -250,7 +250,11 @@ export function searchChats(query: string, channels: string[]): ChatHit[] {
     const index = hay.indexOf(q);
     if (index === -1) continue;
     // The row still shows the name as written; only the match ran on the key.
-    hits.push({ channel, displayName: name, score: scoreMatch(hay, index) });
+    hits.push({
+      channel,
+      displayName: name,
+      score: scoreMatch(hay, index, q.length),
+    });
   }
   return hits.sort(
     // Ordered in the language being read, not the runner's: `localeCompare`
@@ -290,7 +294,7 @@ export function searchNotices(
         snippet,
         matchStart,
         matchEnd,
-        score: scoreMatch(content.hay, contentIndex),
+        score: scoreMatch(content.hay, contentIndex, q.length),
       });
       continue;
     }
@@ -311,7 +315,7 @@ export function searchNotices(
       snippet,
       matchStart: 0,
       matchEnd: 0,
-      score: scoreMatch(author.hay, authorIndex),
+      score: scoreMatch(author.hay, authorIndex, q.length),
     });
   }
   hits.sort((a, b) => b.score - a.score || b.timestampMs - a.timestampMs);
@@ -346,7 +350,7 @@ export function searchMessages(
         snippet,
         matchStart,
         matchEnd,
-        score: scoreMatch(hay, index),
+        score: scoreMatch(hay, index, q.length),
       });
     }
   }

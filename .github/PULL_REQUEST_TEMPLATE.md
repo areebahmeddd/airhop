@@ -17,14 +17,6 @@
 - [ ] Android device
 - [ ] Simulator only
 
-## Screenshots
+## Screenshots (if applicable)
 
 <!-- Any UI change: before and after, light and dark. -->
-
-## Checklist
-
-- [ ] `npm run verify:invisibles` and `npm run verify:vendored` pass
-- [ ] `npm run i18n:audit -- --max 0` and `npm run i18n:native` pass
-- [ ] `npm run deadcode` reports nothing new
-- [ ] `npm run typecheck`, `npm run format:check`, `npm run lint`, and `npm run coverage` pass
-- [ ] Commits are signed off (`git commit -s`)

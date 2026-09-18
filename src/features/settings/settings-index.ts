@@ -631,5 +631,5 @@ export function searchSettings(query: string, T: Translator): SettingsHit[] {
 function fieldScore(text: string, q: string): number {
   const hay = searchKey(text);
   const index = hay.indexOf(q);
-  return index === -1 ? 0 : scoreMatch(hay, index);
+  return index === -1 ? 0 : scoreMatch(hay, index, q.length);
 }

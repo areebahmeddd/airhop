@@ -15,7 +15,7 @@
     {
       "guid": "airhop",
       "name": "Airhop",
-      "description": "Airhop is a private messaging app for Android and iOS, with desktop, browser and terminal clients in development, that works with no internet, no accounts and no central servers. Messages relay directly between phones over a Bluetooth Low Energy mesh, up to seven hops, so people stay in contact when the network is unavailable, saturated, surveilled or shut down. It is wire-compatible with bitchat, so devices running either app join the same mesh with zero setup. Identity is an Ed25519 key pair held only on the device, live sessions use the Noise XX handshake with Double Ratchet forward secrecy, and Nostr relays over Tor carry traffic when a connection is available. It also carries offline Cashu ecash payments that settle between two phones with no internet on either side.",
+      "description": "Airhop is a private messaging app for Android, iOS, desktop, smartwatches and CLI that works with no internet, no accounts and no central servers. Messages relay directly between devices over a Bluetooth Low Energy mesh, up to seven hops, so people stay in contact when the network is unavailable, saturated, surveilled or shut down. It is wire-compatible with bitchat, so devices running either app join the same mesh with zero setup. Identity is an Ed25519 key pair held only on the device, live sessions use the Noise XX handshake with Double Ratchet forward secrecy, and Nostr relays over Tor carry traffic when a connection is available. It also carries offline Cashu ecash payments that settle between two devices with no internet on either side.",
       "webpageUrl": {
         "url": "https://airhop.1mindlabs.org"
       },

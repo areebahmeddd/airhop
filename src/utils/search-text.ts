@@ -10,11 +10,20 @@ export function searchKey(text: string): string {
   return stripIsolates(text.normalize("NFC")).toLowerCase();
 }
 
+// Below this, a mid-word match is likely a coincidence: "tor" sits inside
+// "storage", "id" inside "guide". Prefix and word-boundary matches count at
+// any length regardless.
+const MIN_MIDWORD_QUERY_LENGTH = 4;
+
 // matchIndex === 0: prefix match. Match starts right after whitespace: word
-// boundary. Anything else: mid-word substring match.
-export function scoreMatch(text: string, matchIndex: number): number {
+// boundary. Anything else: mid-word substring match, only past the floor above.
+export function scoreMatch(
+  text: string,
+  matchIndex: number,
+  queryLength: number,
+): number {
   if (matchIndex === 0) return 3;
   const precedingChar = text[matchIndex - 1];
   if (precedingChar !== undefined && /\s/.test(precedingChar)) return 2;
-  return 1;
+  return queryLength >= MIN_MIDWORD_QUERY_LENGTH ? 1 : 0;
 }
