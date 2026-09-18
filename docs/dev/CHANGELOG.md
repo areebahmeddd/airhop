@@ -5,6 +5,20 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- fix(ci): add copyApkToCache method and improve search scoring logic (by @areebahmeddd) [f7bc61c]
+- fix: update links to include trailing slashes for consistency (SEO fixed) (by @areebahmeddd) [4705a6f]
+- fix(LAN): implement network state watchers for improved connectivity handling (by @areebahmeddd) [699c9d0]
+- feat: add APK sharing on Android (by @areebahmeddd) [b020162]
+- feat: improve debugging for ios + other minor fixes (by @areebahmeddd) [12d45ae]
+- feat: add auto-start feature for Airhop on device boot (by @areebahmeddd) [8df606e]
+- feat(notifications): add Ring, an opt-in urgent alert (by @areebahmeddd) [9fa8205]
+- fix(wifi-aware): recognise a peer across its session restart, restart idle discovery (by @areebahmeddd) [996969f]
+- fix: ios workflow, i18n script, agent docs, minor bugs (by @areebahmeddd) [657f275]
+
+**Full changelog:** [v1.0.5..v1.0.6](https://github.com/areebahmeddd/airhop/compare/v1.0.5..v1.0.6)
+
+## What's New
+
 - feat: add diagnostics sharing + other fixes (by @areebahmeddd) [ae081d1]
 - feat: privacy cover for app switcher (by @areebahmeddd) [e391a97]
 - chore: update dependencies and improve platform compatibility (by @areebahmeddd) [d58d513]
