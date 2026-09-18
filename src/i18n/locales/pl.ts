@@ -527,9 +527,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Odłóż na 1 godzinę",
   "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
   "chat.contact.allow_ring_desc":
-    "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona",
+    "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
   "chat.contact.ring_action": "Zadzwoń",
   "chat.contact.ringing": "Dzwoni…",
+  "chat.ring.sent_snoozed": "Zadzwoniono, odłożone",
+  "chat.ring.sent_too_soon": "Zadzwoniono, za wcześnie",
+  "chat.ring.sent_not_allowed": "Zadzwoniono, niedozwolone",
+  "chat.contact.ring_hint_nearby":
+    "Dzwonienie działa tylko wtedy, gdy są w pobliżu",
+  "chat.contact.ring_hint_not_allowed": "Nie pozwolili ci do siebie dzwonić",
+  "chat.contact.ring_hint_snoozed": "Na razie odłożyli dzwonienie",
+  "chat.contact.ring_hint_too_soon": "Dzwoniono do nich przed chwilą",
+  "chat.contact.ring_hint_again_in": "Zadzwoń ponownie za {time}",
   "settings.security.ring_alerts": "Alerty dzwonienia",
   "settings.security.ring_alerts_desc":
     "Główny przełącznik dzwonienia. Wyłączenie odrzuca natychmiast każde dzwonienie, niezależnie od tego, na co zezwoliłeś poszczególnym kontaktom.",

@@ -524,9 +524,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Відкласти на 1 годину",
   "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
   "chat.contact.allow_ring_desc":
-    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено",
+    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
   "chat.contact.ring_action": "Подзвонити",
   "chat.contact.ringing": "Дзвонить…",
+  "chat.ring.sent_snoozed": "Подзвонили, відкладено",
+  "chat.ring.sent_too_soon": "Подзвонили, зарано",
+  "chat.ring.sent_not_allowed": "Подзвонили, не дозволено",
+  "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
+  "chat.contact.ring_hint_not_allowed": "Вони не дозволили вам їм дзвонити",
+  "chat.contact.ring_hint_snoozed": "Вони поки що відклали дзвінки",
+  "chat.contact.ring_hint_too_soon": "Їм щойно дзвонили",
+  "chat.contact.ring_hint_again_in": "Подзвонити знову через {time}",
   "settings.security.ring_alerts": "Сповіщення про дзвінок",
   "settings.security.ring_alerts_desc":
     "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",

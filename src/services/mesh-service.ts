@@ -154,6 +154,15 @@ import {
   verifyPrekeyBundle,
 } from "@core/mesh/wire/prekey-bundle";
 import {
+  decodeRing,
+  decodeRingAck,
+  decodeRingRefused,
+  encodeRing,
+  encodeRingAck,
+  encodeRingRefused,
+  RingRefusalReason,
+} from "@core/mesh/wire/ring-payload";
+import {
   decodeBitchatEnvelope,
   encodeBitchatAckEnvelope,
   encodeBitchatDmEnvelope,
@@ -187,7 +196,7 @@ import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
-import { useContactsStore } from "@store/contacts-store";
+import { hasKeys, useContactsStore } from "@store/contacts-store";
 import {
   evictExpiredOwedGroupStates,
   queueOwedGroupState,
@@ -227,7 +236,7 @@ import {
   type GeoParticipant,
 } from "./geohash-channel-service";
 import { LANController, newInstanceName } from "./lan-controller";
-import { shouldAllowRing } from "./notification-policy";
+import { ringVerdict } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
 import { RadioController } from "./radio-controller";
@@ -458,6 +467,9 @@ export class MeshService {
   private gatewayUnsub: (() => void) | null = null;
   // Unsubscribe for the settings listener that toggles the bridge on/off.
   private bridgeUnsub: (() => void) | null = null;
+  // Unsubscribe for the settings listener that re-proves ring grants when the
+  // master switch flips.
+  private ringUnsub: (() => void) | null = null;
   private internetUnsub: (() => void) | null = null;
   private relayPrefsUnsub: (() => void) | null = null;
   // Unsubscribe for the settings listener that tears live voice down when the
@@ -832,6 +844,13 @@ export class MeshService {
         this.announceManager.announceNow();
       }
     });
+    // The per-contact grant is watched in the contacts subscription below.
+    this.ringUnsub?.();
+    this.ringUnsub = useSettingsStore.subscribe((state, prev) => {
+      if (state.ringAlertsEnabled !== prev.ringAlertsEnabled) {
+        this.reproveRingGrants();
+      }
+    });
 
     // The internet master switch, watched here rather than trusted to whoever
     // writes it.
@@ -974,6 +993,8 @@ export class MeshService {
           }
         }
       }
+      // A grant flipped, or a contact holding one was removed.
+      this.reproveRingGrants();
     });
     // Retry queued DMs over the internet on a slow cadence. flushOutbox routes
     // through trySendDm, whose Nostr tier uses the durable contact npub, so a
@@ -1063,10 +1084,11 @@ export class MeshService {
             // genuine reconnect is not throttled by traffic that is now gone.
             this.requestSync.forget(peerID);
             this.gossip.forgetPeer(peerID);
-            // The echo budget is per session too. A reconnect negotiates a
-            // fresh Noise session and both sides prove themselves again, so a
-            // peer that has been away must be answerable again - and without
-            // this the set only ever grows.
+            // The echo budget is per session. An ordinary drop keeps the
+            // session (resuming one is far cheaper than a handshake), but a
+            // peer that has been away long enough to restart comes back with
+            // a fresh one and must be answerable again; without this the set
+            // only ever grows.
             this.peerStateEchoed.delete(peerID);
           }
         },
@@ -2191,7 +2213,11 @@ export class MeshService {
   // forge) and the authenticated 0x21 proof must never disagree about what this
   // device does. Two copies would drift, and the drift would read as a
   // downgrade attack.
-  private localCapabilities(): number {
+  //
+  // `forPeer` is the one exception: a 0x21 goes to one peer inside their
+  // session, so it can carry a bit that is only true about them. The announce
+  // goes to everyone and never carries it.
+  private localCapabilities(forPeer?: string): number {
     const settings = useSettingsStore.getState();
     // Only advertise gateway when we can actually serve: internet on and the
     // toggle enabled. The bridge self-gates (advertisedBridgeGeohash is
@@ -2217,21 +2243,48 @@ export class MeshService {
       this.bridgeService?.advertisedBridgeGeohash() !== undefined
         ? Capability.bridge
         : 0;
-    // Advertised only while it could reach someone: at least one contact
-    // holds the allowRing grant. Otherwise the button would light up and
-    // silently do nothing.
+    // "I accept a ring from you", true of exactly the contacts holding the
+    // grant. A broadcast bit could only mean "from somebody", which offers
+    // the action to people who would then be refused.
     const ring =
-      settings.ringAlertsEnabled &&
-      useContactsStore
-        .getState()
-        .all()
-        .some((c) => c.allowRing === true)
-        ? Capability.ring
-        : 0;
+      forPeer !== undefined && this.ringGrantFor(forPeer) ? Capability.ring : 0;
     // Unconditional: we always accept and always send encrypted private media
     // to a peer that has proven the same. It is a property of the build, not a
     // user setting.
     return gateway | bridge | Capability.privateMedia | ring;
+  }
+
+  // The permission half of ringVerdict, the part that can be told in advance.
+  private ringGrantFor(peerID: string): boolean {
+    return (
+      useSettingsStore.getState().ringAlertsEnabled &&
+      useContactsStore.getState().getContact(peerID)?.allowRing === true
+    );
+  }
+
+  // What each live session was last told about the ring grant, recorded only
+  // when the packet left. Cleared with the session.
+  private readonly ringGrantProven = new Map<string, boolean>();
+
+  // Re-send our 0x21 to a peer in session whose ring answer moved since they
+  // were last told. Safe to repeat: onAuthenticatedPeerState overwrites and
+  // echoes at most once per session on both Airhop and bitchat. Called from
+  // the announce handler too, which is what catches a peer who was past the
+  // reachability window when the grant flipped.
+  private reproveRingGrant(peerID: string): void {
+    if (this.registry.sessionFor(peerID) === undefined) {
+      this.ringGrantProven.delete(peerID);
+      return;
+    }
+    if (this.ringGrantFor(peerID) !== this.ringGrantProven.get(peerID)) {
+      this.sendPeerState(peerID);
+    }
+  }
+
+  private reproveRingGrants(): void {
+    for (const peerID of [...this.ringGrantProven.keys()]) {
+      this.reproveRingGrant(peerID);
+    }
   }
 
   // Peers we have already answered with our own state this session, so the
@@ -2252,9 +2305,9 @@ export class MeshService {
     );
   }
 
-  // Whether to offer the Ring action for this peer: they have proven, inside
-  // their own 0x21 state, that they currently accept one. A hint, same as
-  // privateMedia above; bitchat peers never set it, which hides the action.
+  // Whether this peer has proven, inside their own 0x21 state, that they
+  // currently accept a ring from us. The contact sheet subscribes to the same
+  // fact through NearbyPeer.acceptsRing; this is for callers outside React.
   peerAcceptsRing(recipientPeerID: string): boolean {
     return this.registry.hasAuthenticatedCapability(
       recipientPeerID,
@@ -2379,7 +2432,7 @@ export class MeshService {
     const sent = this.router.sendNoisePayload(
       peerID,
       NoisePayloadType.RING,
-      new TextEncoder().encode(ringID),
+      encodeRing(ringID),
     );
     if (!sent) {
       // Start the handshake so a retry a few seconds later succeeds.
@@ -2404,21 +2457,21 @@ export class MeshService {
     return ringID;
   }
 
-  // A ring arrived from a peer we hold a session with. shouldAllowRing owns
-  // every reason to refuse one; this runs once none apply.
+  // A ring arrived from a peer we hold a session with. ringVerdict owns every
+  // reason to refuse one.
   private onRing(
     senderID: string,
     channel: string,
     body: Uint8Array,
     packetTimestampMs: number,
   ): void {
-    const ringID = new TextDecoder().decode(body);
-    if (!ringID) return;
+    const ringID = decodeRing(body);
+    if (ringID === null) return;
 
     const nowMs = Date.now();
     const contact = useContactsStore.getState().getContact(senderID);
     const ringStore = useRingStore.getState();
-    const allowed = shouldAllowRing({
+    const verdict = ringVerdict({
       globallyEnabled: useSettingsStore.getState().ringAlertsEnabled,
       senderMayRing: contact?.allowRing === true,
       isSnoozed: ringStore.isSnoozed(senderID, nowMs),
@@ -2426,7 +2479,15 @@ export class MeshService {
       // Clamped: a skewed clock could otherwise go negative.
       ringAgeMs: Math.max(0, nowMs - packetTimestampMs),
     });
-    if (!allowed) return;
+    if (verdict === "stale") return;
+    if (verdict !== "allow") {
+      this.router.sendNoisePayload(
+        senderID,
+        NoisePayloadType.RING_REFUSED,
+        encodeRingRefused(ringID, verdict),
+      );
+      return;
+    }
 
     ringStore.recordReceived(senderID, nowMs);
 
@@ -2460,7 +2521,7 @@ export class MeshService {
     this.router.sendNoisePayload(
       peerID,
       NoisePayloadType.RING_ACK,
-      new TextEncoder().encode(ringID),
+      encodeRingAck(ringID),
     );
   }
 
@@ -2482,13 +2543,37 @@ export class MeshService {
   // The other side acknowledged a ring we sent: "sent" becomes "read", and
   // ring-store.isSending clears.
   private onRingAck(senderID: string, body: Uint8Array): void {
-    const ringID = new TextDecoder().decode(body);
-    if (!ringID) return;
+    const ringID = decodeRingAck(body);
+    if (ringID === null) return;
     const nowMs = Date.now();
     useRingStore.getState().recordAcked(senderID, nowMs);
     useChatStore
       .getState()
       .setMessageStatus(`dm:${senderID}`, ringID, "read", nowMs);
+  }
+
+  // The other side refused a ring we sent, and said why. The row is marked
+  // delivered rather than failed: the ring reached the phone, and a failed
+  // row would offer a retry.
+  private onRingRefused(senderID: string, body: Uint8Array): void {
+    const decoded = decodeRingRefused(body);
+    if (decoded === null) return;
+    const nowMs = Date.now();
+    const channel = `dm:${senderID}`;
+    useRingStore.getState().recordRefused(senderID, decoded.reason, nowMs);
+    const chat = useChatStore.getState();
+    chat.setMessageStatus(channel, decoded.ringID, "delivered", nowMs);
+    chat.setSystemRow(
+      channel,
+      decoded.ringID,
+      systemRow(
+        decoded.reason === RingRefusalReason.SNOOZED
+          ? "chat.ring.sent_snoozed"
+          : decoded.reason === RingRefusalReason.COOLDOWN
+            ? "chat.ring.sent_too_soon"
+            : "chat.ring.sent_not_allowed",
+      ),
+    );
   }
 
   // Send our capabilities and signing key inside an established session.
@@ -2498,18 +2583,22 @@ export class MeshService {
   // sends first and the other answers. The echo below covers msg3 and the proof
   // racing each other across different mesh links.
   private sendPeerState(peerID: string): void {
+    const ringGrant = this.ringGrantFor(peerID);
     const body = encodePeerStatePacket({
-      capabilities: this.localCapabilities(),
+      capabilities: this.localCapabilities(peerID),
       signingPubKey: this.identity.signingPubKey,
     });
     // Plain Noise, never the ratchet. A peer's first proof has to be readable
     // by anything that completed the handshake, including bitchat, which has no
     // Double Ratchet at all.
-    this.router.sendNoisePayload(
+    const sent = this.router.sendNoisePayload(
       peerID,
       NoisePayloadType.AUTHENTICATED_PEER_STATE,
       body,
     );
+    // The router refuses a peer past the reachability window even with a
+    // session held, and they must not be recorded as told.
+    if (sent) this.ringGrantProven.set(peerID, ringGrant);
   }
 
   // A peer proved its signing key and capabilities inside the session.
@@ -2532,6 +2621,11 @@ export class MeshService {
     // Two different proven keys for one peer ID cannot both be real. The first
     // stands; this session is talking to something that is not who it was.
     if (!accepted) return;
+
+    // Mirrored so the contact sheet re-renders the moment the proof lands.
+    usePeerStore
+      .getState()
+      .setAcceptsRing(peerID, (state.capabilities & Capability.ring) !== 0);
 
     // Persist what was just proven, onto a contact saved without it.
     //
@@ -2646,6 +2740,10 @@ export class MeshService {
     }
     if (payload.type === NoisePayloadType.RING) {
       this.onRing(senderID, channel, payload.body, packet.timestamp);
+      return;
+    }
+    if (payload.type === NoisePayloadType.RING_REFUSED) {
+      this.onRingRefused(senderID, payload.body);
       return;
     }
     if (payload.type === NoisePayloadType.RING_ACK) {
@@ -2989,12 +3087,32 @@ export class MeshService {
         // Relay nodes announce like anyone else, so without this they sit in
         // the Mesh tab as a person who never replies.
         isInfrastructure: info.isInfrastructure,
+        // On every announce, not only when a proof lands: this store evicts a
+        // peer quiet for a minute, and the session and its proof outlive that.
+        acceptsRing: this.registry.hasAuthenticatedCapability(
+          peerID,
+          Capability.ring,
+        ),
       });
       // This peer is reachable again: deliver anything we owe them. Covers the
       // ordinary case of someone walking back into range.
       this.flushOutbox(peerID);
       // And hand them any envelopes we're carrying for third parties.
       this.sprayCourierTo(peerID);
+      // A saved contact on a link we hold gets a session now rather than on
+      // the first message, so everything a session proves (signing key, ring
+      // grant, private media) holds before either side types. bitchat opens
+      // one on the same edge for a peer whose announce hints at private
+      // media; a contact is the better gate, since an announce is free to
+      // mint. Direct only: a flooded msg1 to every contact on the mesh would
+      // cost a room what the announce throttle saves it.
+      if (
+        isDirectAnnounce &&
+        hasKeys(useContactsStore.getState().getContact(peerID))
+      ) {
+        this.ensureNoiseSession(peerID);
+      }
+      this.reproveRingGrant(peerID);
     }
   }
 
@@ -3557,6 +3675,7 @@ export class MeshService {
     // purpose, because resuming one is far cheaper than a fresh handshake and
     // radios drop links constantly.
     this.registry.clearSession(senderID);
+    this.ringGrantProven.delete(senderID);
   }
 
   // Tell nearby peers we're going away, so we disappear from their Mesh tab at
@@ -6414,9 +6533,13 @@ export class MeshService {
     // would be answering a question from a session that no longer exists, and
     // must be held to the ordinary freshness window like anything else.
     this.requestSync.reset();
-    // Echo bookkeeping is per session, and every session dies with the mesh. A
-    // fresh handshake after a restart must be able to answer a proof again.
+    // Every session dies with the mesh on both sides: the LEAVE above makes
+    // each peer drop theirs, and one kept here would seal the next message
+    // under keys nobody else holds. The echo budget and the ring proofs are
+    // per session and go with them.
+    this.registry.clearAllSessions();
     this.peerStateEchoed.clear();
+    this.ringGrantProven.clear();
     // A clock-skew claim is evidence about a mesh we are no longer part of.
     // Leaving the banner up after the radios come down would blame the clock
     // for an empty room that is empty because we stopped listening.
@@ -6435,6 +6558,8 @@ export class MeshService {
     this.backgroundPrefUnsub = null;
     this.bridgeUnsub?.();
     this.bridgeUnsub = null;
+    this.ringUnsub?.();
+    this.ringUnsub = null;
     this.internetUnsub?.();
     this.internetUnsub = null;
     this.relayPrefsUnsub?.();

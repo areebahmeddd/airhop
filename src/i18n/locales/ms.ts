@@ -519,9 +519,20 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Tunda 1 jam",
   "chat.contact.allow_ring": "Benarkan makluman dering",
   "chat.contact.allow_ring_desc":
-    "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan",
+    "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan. Mod senyap dan Jangan Ganggu masih terpakai.",
   "chat.contact.ring_action": "Dering",
   "chat.contact.ringing": "Sedang berdering…",
+  "chat.ring.sent_snoozed": "Berdering, ditangguhkan",
+  "chat.ring.sent_too_soon": "Berdering, terlalu awal",
+  "chat.ring.sent_not_allowed": "Berdering, tidak dibenarkan",
+  "chat.contact.ring_hint_nearby":
+    "Deringan hanya berfungsi semasa mereka berdekatan",
+  "chat.contact.ring_hint_not_allowed":
+    "Mereka belum membenarkan anda mendering mereka",
+  "chat.contact.ring_hint_snoozed":
+    "Mereka menangguhkan deringan buat masa ini",
+  "chat.contact.ring_hint_too_soon": "Mereka baru sahaja didering",
+  "chat.contact.ring_hint_again_in": "Dering semula dalam {time}",
   "settings.security.ring_alerts": "Makluman dering",
   "settings.security.ring_alerts_desc":
     "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",

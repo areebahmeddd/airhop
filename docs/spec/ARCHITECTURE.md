@@ -35,6 +35,7 @@ Every layer and the reasoning behind it. For what is being built and when, see
 | Video sharing             | Yes, as a file           | No                  | Recorded and played inline. Live streaming is not possible across platforms                                                                                                                      |
 | File transfer             | Yes, per-type caps       | No                  | 512 KiB photos and voice, 1 MiB otherwise. Enforced by bitchat's decoder, so not ours to raise                                                                                                   |
 | Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
+| Ring                      | Yes, sealed `0x51`       | No                  | Airhop only. A doorbell for someone in range: opt-in per contact, proven per session, rings for 45 s or until answered, and every refusal is answered so the sender is never left guessing       |
 | Store-and-forward courier | Yes, sealed envelope     | Yes, parked drop    | 24 hour life, as bitchat carriers enforce. Sealed to a one-time prekey for forward secrecy                                                                                                       |
 | Contact verification      | Yes, QR or safety number | n/a                 | Two ways in: a camera scan, or reading a six-word safety number to each other. `source` records how keys arrived, `verification` whether a human checked. Only an in-person scan may re-pin keys |
 | Panic wipe                | Yes                      | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                                                                         |
@@ -765,8 +766,9 @@ immediately.
    the media cache (Application Support on iOS, the files directory on Android)
    and holds a cached consensus, chosen guard nodes and timestamps, which is
    evidence that this device used Tor and roughly when
-5. Take every delivered notification out of the system tray. Each carries a
-   sender name and a message preview, and they outlive the process
+5. Take every delivered notification out of the system tray, and cancel any
+   still scheduled (a ring pulse). Each carries a sender name and a message
+   preview, and they outlive the process
 
 The keychain step is best-effort like the rest, and the wipe continues past a
 failure rather than abandoning the data. It is the one step whose outcome is

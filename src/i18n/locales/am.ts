@@ -485,9 +485,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "ለ1 ሰዓት አዘግይ",
   "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
   "chat.contact.allow_ring_desc":
-    "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው",
+    "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
   "chat.contact.ring_action": "ደውል",
   "chat.contact.ringing": "እየደወለ ነው…",
+  "chat.ring.sent_snoozed": "ደውሏል፣ ተላልፏል",
+  "chat.ring.sent_too_soon": "ደውሏል፣ በጣም ቶሎ",
+  "chat.ring.sent_not_allowed": "ደውሏል፣ አልተፈቀደም",
+  "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",
+  "chat.contact.ring_hint_not_allowed": "እንድትደውልላቸው አልፈቀዱልህም",
+  "chat.contact.ring_hint_snoozed": "ደወሎችን ለአሁኑ አዘግይተዋል",
+  "chat.contact.ring_hint_too_soon": "ከትንሽ ጊዜ በፊት ተደውሎላቸዋል",
+  "chat.contact.ring_hint_again_in": "በ{time} ውስጥ እንደገና ደውል",
   "settings.security.ring_alerts": "የደወል ማንቂያዎች",
   "settings.security.ring_alerts_desc":
     "ለደወል ዋና መቀየሪያ። ማጥፋት ለእያንዳንዱ እውቂያ የፈቀድከውን ሳይለይ ሁሉንም ጥሪ በአንድ ጊዜ ውድቅ ያደርጋል።",

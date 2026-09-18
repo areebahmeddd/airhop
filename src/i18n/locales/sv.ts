@@ -517,9 +517,20 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Snooza i 1 timme",
   "chat.contact.allow_ring": "Tillåt ringsignaler",
   "chat.contact.allow_ring_desc":
-    "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad",
+    "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringer…",
+  "chat.ring.sent_snoozed": "Ringde, uppskjutet",
+  "chat.ring.sent_too_soon": "Ringde, för tidigt",
+  "chat.ring.sent_not_allowed": "Ringde, inte tillåtet",
+  "chat.contact.ring_hint_nearby":
+    "Ringning fungerar bara medan de är i närheten",
+  "chat.contact.ring_hint_not_allowed":
+    "De har inte tillåtit dig att ringa dem",
+  "chat.contact.ring_hint_snoozed":
+    "De har skjutit upp ringningar för tillfället",
+  "chat.contact.ring_hint_too_soon": "De blev uppringda alldeles nyss",
+  "chat.contact.ring_hint_again_in": "Ring igen om {time}",
   "settings.security.ring_alerts": "Ringsignaler",
   "settings.security.ring_alerts_desc":
     "Huvudbrytare för Ring. Avstängd avvisar alla ringningar direkt, oavsett vad du har beviljat enskilda kontakter.",

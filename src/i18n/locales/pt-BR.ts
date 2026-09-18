@@ -523,9 +523,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Adiar por 1 hora",
   "chat.contact.allow_ring": "Permitir alertas de chamada",
   "chat.contact.allow_ring_desc":
-    "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada",
+    "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não perturbe continuam valendo.",
   "chat.contact.ring_action": "Chamar",
   "chat.contact.ringing": "Chamando…",
+  "chat.ring.sent_snoozed": "Chamou, adiado",
+  "chat.ring.sent_too_soon": "Chamou, cedo demais",
+  "chat.ring.sent_not_allowed": "Chamou, não permitido",
+  "chat.contact.ring_hint_nearby":
+    "Chamar só funciona enquanto estão por perto",
+  "chat.contact.ring_hint_not_allowed": "Eles não permitiram que você os chame",
+  "chat.contact.ring_hint_snoozed": "Eles adiaram as chamadas por enquanto",
+  "chat.contact.ring_hint_too_soon": "Eles foram chamados há pouco",
+  "chat.contact.ring_hint_again_in": "Chamar de novo em {time}",
   "settings.security.ring_alerts": "Alertas de chamada",
   "settings.security.ring_alerts_desc":
     "Interruptor principal da Chamada. Desativar recusa toda chamada instantaneamente, independentemente do que você concedeu a contatos individuais.",

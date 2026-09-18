@@ -14,7 +14,9 @@
 
 import { t } from "@i18n";
 import { succeeded } from "@platform/haptics";
+import { stopRingAlert } from "@platform/ring-alert";
 import type { ChatMessage } from "@store/chat-store";
+import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { channelLabel } from "@utils/conversation-display-name";
 import * as Notifications from "expo-notifications";
@@ -44,10 +46,23 @@ const NEARBY_CHANNEL_ID = "nearby";
 const NEARBY_NOTIFICATION_ID = "nearby_peers";
 
 // Own channel, same reason nearby has one: per-category system control, so
-// silencing messages doesn't silence Ring or vice versa. MAX importance and
-// a distinct pattern, the loudest this phase offers without a native
-// full-screen intent (PROTOCOLS.md section 3.3).
-const RING_CHANNEL_ID = "ring";
+// silencing messages doesn't silence Ring or vice versa. MAX importance for
+// the heads-up card; the ringing itself is the overlay's native loop
+// (PROTOCOLS.md section 3.3), so one card is enough. Re-posting would only
+// get quieter under Android 15's notification cooldown.
+//
+// PUBLIC on the lock screen: the card says "X is ringing you" and nothing
+// else, and hide-previews already blanks the name. Android fixes a channel's
+// settings at creation, so the earlier PRIVATE channel is deleted at
+// configure time rather than updated.
+const RING_CHANNEL_ID = "ring_alert";
+const RETIRED_RING_CHANNEL_ID = "ring";
+
+// iOS cannot loop a sound outside a call, so a ring there is a chain of local
+// notifications with the default sound, cancelled together when the ring is
+// answered. Three: enough to be a ring rather than a ping, few enough that a
+// phone left on a desk is not still buzzing a minute later.
+const IOS_RING_PULSE_SECONDS = [0, 15, 30];
 
 // Live view state the policy consults. Kept module-local (not in a store)
 // because only this service reads it and it must be readable synchronously from
@@ -72,9 +87,15 @@ function channelToId(channel: string): string {
 }
 
 // Separate from the conversation's message id, so a ring never coalesces
-// with or gets overwritten by an unread-message banner for the same thread.
-function ringIdFor(channel: string): string {
-  return `ring_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
+// with an unread-message banner for the same thread. One id per pulse, since
+// a scheduled notification replaces any pending one with the same id.
+function ringIdFor(channel: string, pulse = 0): string {
+  const base = `ring_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
+  return pulse === 0 ? base : `${base}_${String(pulse)}`;
+}
+
+function isRingNotification(n: Notifications.Notification): boolean {
+  return n.request.identifier.startsWith("ring_");
 }
 
 export function setNotificationsAppActive(active: boolean): void {
@@ -90,6 +111,12 @@ export function isAppActive(): boolean {
 
 export function setNotificationsActiveChannel(channel: string): void {
   activeChannel = channel;
+}
+
+// Whether the user is looking at this conversation right now: app in front,
+// thread open.
+export function isReadingChannel(channel: string): boolean {
+  return appActive && activeChannel === channel;
 }
 
 export function setNotificationNavigator(fn: (channel: string) => void): void {
@@ -134,14 +161,18 @@ export async function configureNotifications(): Promise<void> {
   configured = true;
 
   Notifications.setNotificationHandler({
-    handleNotification: () =>
+    handleNotification: (notification) =>
       Promise.resolve({
         // We only present while backgrounded; if one is delivered while the app
         // is foregrounded, keep it quiet since the in-app badges already cover
         // it. Badge/list still update so nothing is lost.
+        //
+        // A ring is the exception for sound alone: on iOS the overlay can only
+        // buzz, and these pulses are what make a foreground ring audible. No
+        // banner, since the overlay is the banner.
         shouldShowBanner: !appActive,
         shouldShowList: true,
-        shouldPlaySound: !appActive,
+        shouldPlaySound: !appActive || isRingNotification(notification),
         shouldSetBadge: true,
       }),
   });
@@ -181,11 +212,18 @@ export async function configureNotifications(): Promise<void> {
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 400, 200, 400, 200, 400],
         lockscreenVisibility:
-          Notifications.AndroidNotificationVisibility.PRIVATE,
+          Notifications.AndroidNotificationVisibility.PUBLIC,
         bypassDnd: false,
       });
     } catch {
       // Android will deliver on the default channel instead.
+    }
+    try {
+      await Notifications.deleteNotificationChannelAsync(
+        RETIRED_RING_CHANNEL_ID,
+      );
+    } catch {
+      // Never created on this install, or already gone.
     }
   }
 
@@ -352,29 +390,58 @@ export async function dismissNearbyNotification(): Promise<void> {
 }
 
 // Clear the notification for a conversation once the user opens it, matching how
-// every chat app clears a chat's notification when you read it.
+// every chat app clears a chat's notification when you read it. Opening the
+// thread also answers a ring, so the ring ends here too.
 export async function dismissNotificationsFor(channel: string): Promise<void> {
   try {
     await Notifications.dismissNotificationAsync(channelToId(channel));
   } catch {
     // Nothing delivered for this channel, or the platform has no tray: ignore.
   }
-  try {
-    await Notifications.dismissNotificationAsync(ringIdFor(channel));
-  } catch {
-    // Nothing delivered, or no tray.
+  await endRingAlertFor(channel);
+}
+
+// Stop a ring for this conversation wherever it is sounding: the overlay
+// (whose teardown stops the native loop it started), the delivered card, and
+// on iOS every pulse still scheduled. Safe when nothing is ringing. The store
+// update happens before the first await, so a caller may rely on the overlay
+// having moved on.
+//
+// The loop is stopped directly only when no overlay owns it, which is the
+// state after a JS reload mid-ring. With an overlay up for somebody else,
+// their ring keeps sounding: opening one conversation must not silence a
+// ring from another.
+export async function endRingAlertFor(channel: string): Promise<void> {
+  const overlay = useIncomingRingStore.getState();
+  if (overlay.current === null) {
+    await stopRingAlert();
+  } else if (channel.startsWith("dm:")) {
+    overlay.removeFor(channel.slice(3));
+  }
+  for (let pulse = 0; pulse < IOS_RING_PULSE_SECONDS.length; pulse++) {
+    const id = ringIdFor(channel, pulse);
+    try {
+      await Notifications.cancelScheduledNotificationAsync(id);
+    } catch {
+      // Not scheduled, or already fired.
+    }
+    try {
+      await Notifications.dismissNotificationAsync(id);
+    } catch {
+      // Nothing delivered, or no tray.
+    }
   }
 }
 
-// The backgrounded alert for a ring that already passed every check in
-// mesh-service.onRing. Foreground gets the live overlay instead (see
-// app.tsx's subscribeInboundRings wiring).
+// The system-tray half of a ring that already passed every check in
+// mesh-service.onRing, raised beside the overlay (app.tsx's
+// subscribeInboundRings wiring). The overlay owns the ringing itself.
 //
-// `sound: "default"` on a MAX-importance channel is the ceiling for this
-// phase: no native loop or full-screen intent yet (PROTOCOLS.md section
-// 3.3). A heads-up card and a distinct vibration pattern, and unlike an
-// ordinary message it ignores the active-thread suppression
-// handleInboundMessage applies.
+// Android: one heads-up card, only when the app is not in front. iOS: the
+// pulse chain, in the foreground too, since it is the only sound an iOS ring
+// has. Each pulse is time-sensitive so it lands through a Focus the user has
+// let the app through; the silent switch still wins, as for every app
+// without the critical-alert entitlement.
 export async function raiseRingNotification(
   peerID: string,
   senderName: string,
@@ -384,21 +451,43 @@ export async function raiseRingNotification(
     senderName,
     useSettingsStore.getState().hideNotificationPreviews,
   );
-  try {
-    await Notifications.scheduleNotificationAsync({
-      identifier: ringIdFor(channel),
-      content: {
-        title,
-        body,
-        data: { channel },
-        sound: "default",
-        // No badge field: app.tsx already syncs the badge to total unread.
-      },
-      trigger:
-        Platform.OS === "android" ? { channelId: RING_CHANNEL_ID } : null,
-    });
-  } catch {
-    // The sender's own bell row is still waiting in the thread.
+  const content: Notifications.NotificationContentInput = {
+    title,
+    body,
+    data: { channel },
+    sound: "default",
+    interruptionLevel: "timeSensitive",
+    // No badge field: app.tsx already syncs the badge to total unread.
+  };
+  if (Platform.OS === "android") {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: ringIdFor(channel),
+        content,
+        trigger: { channelId: RING_CHANNEL_ID },
+      });
+    } catch {
+      // The overlay's loop still rings, and the bell row waits in the thread.
+    }
+    return;
+  }
+  for (let pulse = 0; pulse < IOS_RING_PULSE_SECONDS.length; pulse++) {
+    const seconds = IOS_RING_PULSE_SECONDS[pulse];
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: ringIdFor(channel, pulse),
+        content,
+        trigger:
+          seconds === 0
+            ? null
+            : {
+                type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                seconds,
+              },
+      });
+    } catch {
+      // A pulse that could not be scheduled is one fewer; the others stand.
+    }
   }
 }
 
@@ -414,6 +503,13 @@ export async function dismissAllNotifications(): Promise<void> {
     await Notifications.dismissAllNotificationsAsync();
   } catch {
     // No tray on this platform, or nothing delivered.
+  }
+  // Pending as well as delivered: a ring pulse still scheduled would name its
+  // sender on the lock screen after the wipe.
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch {
+    // Nothing scheduled, or unsupported here.
   }
   try {
     await Notifications.setBadgeCountAsync(0);

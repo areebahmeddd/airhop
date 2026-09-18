@@ -3,9 +3,10 @@
 // Hand-maintained, not Codegen input. See NativeAirhopBLE.ts for why.
 //
 // Backed by AirhopAppModule.kt (Android) and AirhopAppModule.swift (iOS).
-// restart, setAutoStartOnBoot and copyApkToCache reject immediately on iOS:
-// no supported relaunch path, no boot receiver, no sideloading. recentLog
-// runs on both.
+// restart, setAutoStartOnBoot, copyApkToCache, startRingAlert and
+// stopRingAlert reject immediately on iOS: no supported relaunch path, no
+// boot receiver, no sideloading, and no ringtone loop outside CallKit.
+// recentLog runs on both.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -36,6 +37,15 @@ export interface Spec extends TurboModule {
   //   COPY_FAILED     the copy failed, e.g. out of storage (Android)
   //   UNSUPPORTED     iOS has no sideloading to share an APK into
   copyApkToCache(): Promise<string>;
+  // Loop the default ringtone and a vibration pattern for up to durationMs,
+  // honouring ringer mode and Do Not Disturb. Resolves true when anything
+  // audible or tactile started, false when the phone is set to stay quiet.
+  // Calling it again restarts the clock.
+  //
+  //   UNSUPPORTED     iOS cannot loop a ringtone outside a call
+  startRingAlert(durationMs: number): Promise<boolean>;
+  // Safe when nothing is ringing.
+  stopRingAlert(): Promise<void>;
 }
 
 // `get`, not `getEnforcing`: a missing module is an answer, not a crash.

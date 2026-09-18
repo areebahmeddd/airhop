@@ -524,9 +524,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Ahirisha kwa saa 1",
   "chat.contact.allow_ring": "Ruhusu arifa za kengele",
   "chat.contact.allow_ring_desc":
-    "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa",
+    "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
   "chat.contact.ring_action": "Piga kengele",
   "chat.contact.ringing": "Inapiga kengele…",
+  "chat.ring.sent_snoozed": "Imepigwa kengele, imeahirishwa",
+  "chat.ring.sent_too_soon": "Imepigwa kengele, mapema mno",
+  "chat.ring.sent_not_allowed": "Imepigwa kengele, hairuhusiwi",
+  "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",
+  "chat.contact.ring_hint_not_allowed": "Hawajakuruhusu kuwapigia kengele",
+  "chat.contact.ring_hint_snoozed": "Wameahirisha kengele kwa sasa",
+  "chat.contact.ring_hint_too_soon": "Walipigiwa kengele muda mfupi uliopita",
+  "chat.contact.ring_hint_again_in": "Piga kengele tena baada ya {time}",
   "settings.security.ring_alerts": "Arifa za kengele",
   "settings.security.ring_alerts_desc":
     "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",

@@ -516,9 +516,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 ਘੰਟੇ ਲਈ ਰੋਕੋ",
   "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
   "chat.contact.allow_ring_desc":
-    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ",
+    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
   "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
   "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
+  "chat.ring.sent_snoozed": "ਘੰਟੀ ਵਜਾਈ, ਟਾਲੀ ਗਈ",
+  "chat.ring.sent_too_soon": "ਘੰਟੀ ਵਜਾਈ, ਬਹੁਤ ਜਲਦੀ",
+  "chat.ring.sent_not_allowed": "ਘੰਟੀ ਵਜਾਈ, ਇਜਾਜ਼ਤ ਨਹੀਂ",
+  "chat.contact.ring_hint_nearby":
+    "ਘੰਟੀ ਸਿਰਫ਼ ਉਦੋਂ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ",
+  "chat.contact.ring_hint_not_allowed":
+    "ਉਹਨਾਂ ਨੇ ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ",
+  "chat.contact.ring_hint_snoozed": "ਉਹਨਾਂ ਨੇ ਫ਼ਿਲਹਾਲ ਘੰਟੀਆਂ ਟਾਲ ਦਿੱਤੀਆਂ ਹਨ",
+  "chat.contact.ring_hint_too_soon": "ਉਹਨਾਂ ਨੂੰ ਹੁਣੇ ਹੀ ਘੰਟੀ ਵਜਾਈ ਗਈ ਸੀ",
+  "chat.contact.ring_hint_again_in": "{time} ਵਿੱਚ ਦੁਬਾਰਾ ਘੰਟੀ ਵਜਾਓ",
   "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
   "settings.security.ring_alerts_desc":
     "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",

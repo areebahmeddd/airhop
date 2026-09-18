@@ -522,9 +522,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Adiar 1 hora",
   "chat.contact.allow_ring": "Permitir alertas de toque",
   "chat.contact.allow_ring_desc":
-    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada",
+    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
   "chat.contact.ring_action": "Tocar",
   "chat.contact.ringing": "A tocar…",
+  "chat.ring.sent_snoozed": "Tocou, adiado",
+  "chat.ring.sent_too_soon": "Tocou, demasiado cedo",
+  "chat.ring.sent_not_allowed": "Tocou, não permitido",
+  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
+  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
+  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
+  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
+  "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
   "settings.security.ring_alerts": "Alertas de toque",
   "settings.security.ring_alerts_desc":
     "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",

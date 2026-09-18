@@ -509,9 +509,20 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1시간 동안 끄기",
   "chat.contact.allow_ring": "벨 알림 허용",
   "chat.contact.allow_ring_desc":
-    "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다",
+    "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
   "chat.contact.ring_action": "벨 울리기",
   "chat.contact.ringing": "벨을 울리는 중…",
+  "chat.ring.sent_snoozed": "벨 울림, 미룸",
+  "chat.ring.sent_too_soon": "벨 울림, 너무 이름",
+  "chat.ring.sent_not_allowed": "벨 울림, 허용되지 않음",
+  "chat.contact.ring_hint_nearby":
+    "벨 울리기는 상대방이 근처에 있을 때만 작동합니다",
+  "chat.contact.ring_hint_not_allowed":
+    "상대방이 벨 울리기를 허용하지 않았습니다",
+  "chat.contact.ring_hint_snoozed":
+    "상대방이 지금은 벨 울리기를 미뤄 두었습니다",
+  "chat.contact.ring_hint_too_soon": "상대방에게 방금 벨을 울렸습니다",
+  "chat.contact.ring_hint_again_in": "{time} 후에 다시 울릴 수 있습니다",
   "settings.security.ring_alerts": "벨 알림",
   "settings.security.ring_alerts_desc":
     "벨 알림의 마스터 스위치입니다. 끄면 개별 연락처에 부여한 권한과 관계없이 모든 벨 알림을 거부합니다.",

@@ -528,9 +528,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 Stunde stummschalten",
   "chat.contact.allow_ring": "Klingelbenachrichtigungen erlauben",
   "chat.contact.allow_ring_desc":
-    "Erlaube ihnen, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist",
+    "Erlaube ihnen, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
   "chat.contact.ring_action": "Klingeln",
   "chat.contact.ringing": "Klingelt…",
+  "chat.ring.sent_snoozed": "Geklingelt, zurückgestellt",
+  "chat.ring.sent_too_soon": "Geklingelt, zu früh",
+  "chat.ring.sent_not_allowed": "Geklingelt, nicht erlaubt",
+  "chat.contact.ring_hint_nearby":
+    "Klingeln funktioniert nur, solange sie in der Nähe sind",
+  "chat.contact.ring_hint_not_allowed":
+    "Sie haben dir das Klingeln nicht erlaubt",
+  "chat.contact.ring_hint_snoozed": "Sie haben Klingeln vorerst zurückgestellt",
+  "chat.contact.ring_hint_too_soon": "Bei ihnen wurde gerade erst geklingelt",
+  "chat.contact.ring_hint_again_in": "Erneut klingeln in {time}",
   "settings.security.ring_alerts": "Klingelbenachrichtigungen",
   "settings.security.ring_alerts_desc":
     "Hauptschalter für Klingeln. Aus lehnt jedes Klingeln sofort ab, unabhängig davon, was du einzelnen Kontakten erlaubt hast.",

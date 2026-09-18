@@ -530,9 +530,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Ahemoro 1 ora",
   "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
   "chat.contact.allow_ring_desc":
-    "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity",
+    "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
   "chat.contact.ring_action": "Antsoy",
   "chat.contact.ringing": "Miantso…",
+  "chat.ring.sent_snoozed": "Niantso, nahemotra",
+  "chat.ring.sent_too_soon": "Niantso, aloha loatra",
+  "chat.ring.sent_not_allowed": "Niantso, tsy azo atao",
+  "chat.contact.ring_hint_nearby":
+    "Tsy mandeha ny fiantsoana raha tsy eo akaiky izy",
+  "chat.contact.ring_hint_not_allowed": "Tsy navelany hiantso azy ianao",
+  "chat.contact.ring_hint_snoozed": "Nahemony aloha ny fiantsoana amin'izao",
+  "chat.contact.ring_hint_too_soon": "Vao nantsoina izy",
+  "chat.contact.ring_hint_again_in": "Antsoy indray afaka {time}",
   "settings.security.ring_alerts": "Fampandrenesana antso",
   "settings.security.ring_alerts_desc":
     "Brotantsivana lehibe ho an'ny Antso. Ny fanafenana dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",

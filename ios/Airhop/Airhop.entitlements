@@ -3,21 +3,22 @@
 <plist version="1.0">
   <dict>
     <!-- Wi-Fi Aware, for the same-platform fast path (AirhopWiFiModule.swift).
-
-         Both values, because Airhop is symmetric: every device publishes the
-         service so it can be found and subscribes to it so it can find, and the
-         transport runs a listener and a browser at once.
-
-         This is a managed capability. Declaring it here does not grant it: the
-         capability has to be enabled for the App ID and present in the
-         provisioning profile before the app can be signed, and the framework
-         refuses at runtime otherwise. A build without it still runs the mesh,
-         because the fast path is an accelerator and Bluetooth carries
-         everything. -->
+         Both values, because every device publishes the service to be found
+         and subscribes to find. A managed capability: it has to be enabled for
+         the App ID and present in the provisioning profile before the app can
+         be signed, and the framework refuses at runtime otherwise. A build
+         without it still runs the mesh, since Bluetooth carries everything. -->
     <key>com.apple.developer.wifi-aware</key>
     <array>
       <string>Publish</string>
       <string>Subscribe</string>
     </array>
+    <!-- Time Sensitive notifications, for the Ring alert (notification-service.ts).
+         iOS honours the interruption level only when the App ID carries this
+         capability; without it a ring still arrives as an ordinary
+         notification. Critical alerts are not requested: they bypass the
+         silent switch and Apple grants them to nobody. -->
+    <key>com.apple.developer.usernotifications.time-sensitive</key>
+    <true/>
   </dict>
 </plist>

@@ -1,23 +1,35 @@
-// Foreground Ring alert, mounted once at the app root like AlertModal.
-// A backgrounded ring goes through raiseRingNotification instead; see
-// app.tsx's subscribeInboundRings wiring.
+// The Ring alert: the overlay that owns the ringing.
 //
-// A haptic pulse loops while this is on screen, for up to
-// RING_ALERT_DURATION_MS. Backdrop dismiss and the timeout send no
-// acknowledgement; only Open or Snooze do.
-
+// Mounted once at the app root like AlertModal, and shown for every ring not
+// arriving in the thread on screen, in front or not, so somebody who opens
+// the app mid-ring finds it waiting. Out of the foreground the system tray
+// carries the same ring (raiseRingNotification); rings from other people
+// wait in incoming-ring-store's queue.
+//
+// Rings for RING_ALERT_DURATION_MS from arrival: Android's ringtone loop, or
+// a haptic pulse where the loop cannot start (iOS, silent mode, Do Not
+// Disturb). Only Open and Snooze answer the sender. Closing the sheet
+// silences it and sends nothing, as swiping a call banner away does; the
+// bell row and tray card stay as the record.
 import { useT } from "@i18n";
 import { ringPulse } from "@platform/haptics";
+import { startRingAlert, stopRingAlert } from "@platform/ring-alert";
 import { getMeshService } from "@services/mesh-service";
-import { openConversation } from "@services/notification-service";
-import { useIncomingRingStore } from "@store/incoming-ring-store";
+import {
+  endRingAlertFor,
+  openConversation,
+} from "@services/notification-service";
+import {
+  type IncomingRing,
+  useIncomingRingStore,
+} from "@store/incoming-ring-store";
 import {
   RING_ALERT_DURATION_MS,
   RING_SNOOZE_1H_MS,
   useRingStore,
 } from "@store/ring-store";
 import React, { useEffect, useMemo, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   BUTTON_HEIGHT,
@@ -38,59 +50,89 @@ export default function RingAlertSheet(): React.JSX.Element {
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const insets = useSafeAreaInsets();
   const ring = useIncomingRingStore((s) => s.current);
-  const clear = useIncomingRingStore((s) => s.clear);
   const visible = ring !== null;
-  // Ref so the interval, timeout and handlers read the latest ring without
-  // retriggering on every update. Set in an effect, never during render.
+  // Ref so the handlers read the latest ring without retriggering on every
+  // update.
   const ringRef = useRef(ring);
   useEffect(() => {
     ringRef.current = ring;
   }, [ring]);
 
   useEffect(() => {
-    if (!visible) return;
-    ringPulse();
-    const pulse = setInterval(ringPulse, PULSE_INTERVAL_MS);
-    const timeout = setTimeout(() => {
-      // No close animation: it just stops asking.
-      useIncomingRingStore.getState().clear();
-    }, RING_ALERT_DURATION_MS);
-    return () => {
-      clearInterval(pulse);
-      clearTimeout(timeout);
+    if (ring === null) return;
+    // Measured from arrival, not from this effect. iOS suspends JS shortly
+    // after the app leaves the screen, so a timer can fire late, on a resume
+    // minutes later, and flash the overlay for a ring long over. The resume
+    // check below covers a suspension that began inside the window.
+    const remainingMs = ring.receivedAtMs + RING_ALERT_DURATION_MS - Date.now();
+    if (remainingMs <= 0) {
+      useIncomingRingStore.getState().dismiss();
+      return;
+    }
+    let pulse: ReturnType<typeof setInterval> | null = null;
+    let cancelled = false;
+    // Haptics only where the loop could not start, so a phone in silent mode
+    // still says something under the thumb.
+    void startRingAlert(remainingMs).then((ringing) => {
+      if (ringing || cancelled) return;
+      ringPulse();
+      pulse = setInterval(ringPulse, PULSE_INTERVAL_MS);
+    });
+    const expire = (): void => {
+      useIncomingRingStore.getState().dismiss();
     };
-  }, [visible, ring?.ringID]);
+    const timeout = setTimeout(expire, remainingMs);
+    const resumed = AppState.addEventListener("change", (next) => {
+      if (
+        next === "active" &&
+        Date.now() >= ring.receivedAtMs + RING_ALERT_DURATION_MS
+      ) {
+        expire();
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (pulse !== null) clearInterval(pulse);
+      clearTimeout(timeout);
+      resumed.remove();
+      void stopRingAlert();
+    };
+  }, [ring]);
 
-  function handleOpen(): void {
-    const current = ringRef.current;
-    if (current === null) return;
-    clear();
-    openConversation(`dm:${current.peerID}`);
-    // Ack now, so the sender sees it before navigation settles.
+  // endRingAlertFor takes this ring out of the store before its first await,
+  // which moves the overlay on and stops the loop through the effect cleanup.
+  function answer(current: IncomingRing): void {
+    void endRingAlertFor(`dm:${current.peerID}`);
     getMeshService()?.acknowledgeRingsIn(
       `dm:${current.peerID}`,
       current.peerID,
     );
+  }
+
+  function handleOpen(): void {
+    const current = ringRef.current;
+    if (current === null) return;
+    answer(current);
+    openConversation(`dm:${current.peerID}`);
   }
 
   function handleSnooze(): void {
     const current = ringRef.current;
     if (current === null) return;
-    clear();
     useRingStore
       .getState()
       .snooze(current.peerID, Date.now() + RING_SNOOZE_1H_MS);
-    // A snooze is still a response; ack it so the sender isn't stuck on "Ringing...".
-    getMeshService()?.acknowledgeRingsIn(
-      `dm:${current.peerID}`,
-      current.peerID,
-    );
+    answer(current);
+  }
+
+  function handleDismiss(): void {
+    useIncomingRingStore.getState().dismiss();
   }
 
   return (
     <BottomSheet
       visible={visible}
-      onClose={clear}
+      onClose={handleDismiss}
       sheetStyle={[styles.sheet, { paddingBottom: Spacing.xl + insets.bottom }]}
     >
       <View style={styles.bellRow}>

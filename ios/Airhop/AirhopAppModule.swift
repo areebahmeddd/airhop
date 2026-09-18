@@ -1,12 +1,14 @@
 // AirhopAppModule: process-level operations that belong to no radio.
 //
+// Only recentLog does anything here, reading back what AirhopLog's categories
+// wrote to the log store. restart, setAutoStartOnBoot, copyApkToCache,
+// startRingAlert and stopRingAlert reject immediately: iOS has no relaunch
+// path, no boot receiver, no sideloading to share an APK into, and no ringtone
+// loop outside CallKit, which is for calls. A ring on iOS is the notification
+// chain in notification-service.ts.
+//
 // Bridge file: AirhopAppModule.mm
 // TypeScript spec: src/bridge/NativeAirhopApp.ts
-//
-// restart, setAutoStartOnBoot and copyApkToCache reject immediately here: iOS
-// has no relaunch path, no boot receiver, and no sideloading to share an APK
-// into. recentLog is the real half, reading back what AirhopLog's categories
-// wrote to the log store.
 import Foundation
 import OSLog
 import React
@@ -41,6 +43,19 @@ final class AirhopAppModule: NSObject, RCTBridgeModule {
     func copyApkToCache(_ resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         reject("UNSUPPORTED", "iOS has no sideloading to share an APK into", nil)
+    }
+
+    @objc
+    func startRingAlert(_ durationMs: Double,
+                        resolver resolve: @escaping RCTPromiseResolveBlock,
+                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        reject("UNSUPPORTED", "iOS cannot loop a ringtone outside a call", nil)
+    }
+
+    @objc
+    func stopRingAlert(_ resolve: @escaping RCTPromiseResolveBlock,
+                       rejecter reject: @escaping RCTPromiseRejectBlock) {
+        reject("UNSUPPORTED", "iOS cannot loop a ringtone outside a call", nil)
     }
 
     // Last 30 minutes, Airhop's own categories only, oldest first, capped at

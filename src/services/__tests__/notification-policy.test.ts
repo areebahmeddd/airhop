@@ -11,6 +11,7 @@
 // directional isolates `interpolate` adds. A lock screen is where those matter
 // most, being the one surface that shows a stranger's nickname inside Airhop's
 // own sentence, so the isolation is asserted rather than stripped.
+import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
 import { stripIsolates } from "@i18n";
 import type { ChatMessage } from "@store/chat-store";
 import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
@@ -22,7 +23,7 @@ import {
   nearbyNotificationContent,
   notificationContentFor,
   ringNotificationContent,
-  shouldAllowRing,
+  ringVerdict,
   shouldHapticPing,
   shouldNotifyNearby,
   shouldSystemNotify,
@@ -331,8 +332,9 @@ describe("notificationContentFor a mention", () => {
   });
 });
 
-// A ring rings through mute, so every rule here is a reason to refuse one.
-describe("shouldAllowRing", () => {
+// A ring rings through mute, so every rule here is a reason to refuse one,
+// and each refusal names itself so the sender can be told.
+describe("ringVerdict", () => {
   const base = {
     globallyEnabled: true,
     senderMayRing: true,
@@ -342,43 +344,58 @@ describe("shouldAllowRing", () => {
   };
 
   it("allows a fresh ring from a permitted, unsnoozed contact", () => {
-    expect(shouldAllowRing(base)).toBe(true);
+    expect(ringVerdict(base)).toBe("allow");
   });
 
   it("refuses when the global master switch is off, regardless of permission", () => {
-    expect(shouldAllowRing({ ...base, globallyEnabled: false })).toBe(false);
-  });
-
-  it("refuses a sender never granted the permission (the default)", () => {
-    expect(shouldAllowRing({ ...base, senderMayRing: false })).toBe(false);
-  });
-
-  it("refuses while snoozed, even from a permitted contact", () => {
-    expect(shouldAllowRing({ ...base, isSnoozed: true })).toBe(false);
-  });
-
-  it("refuses a ring that took too long in transit to still be urgent", () => {
-    expect(shouldAllowRing({ ...base, ringAgeMs: RING_STALENESS_MS + 1 })).toBe(
-      false,
+    expect(ringVerdict({ ...base, globallyEnabled: false })).toBe(
+      RingRefusalReason.NOT_ALLOWED,
     );
   });
 
+  it("refuses a sender never granted the permission (the default)", () => {
+    expect(ringVerdict({ ...base, senderMayRing: false })).toBe(
+      RingRefusalReason.NOT_ALLOWED,
+    );
+  });
+
+  it("refuses while snoozed, even from a permitted contact", () => {
+    expect(ringVerdict({ ...base, isSnoozed: true })).toBe(
+      RingRefusalReason.SNOOZED,
+    );
+  });
+
+  it("drops a ring that took too long in transit, and tells nobody", () => {
+    expect(ringVerdict({ ...base, ringAgeMs: RING_STALENESS_MS + 1 })).toBe(
+      "stale",
+    );
+    // Stale outranks every other answer: a replay must not learn whether its
+    // sender is still permitted.
+    expect(
+      ringVerdict({
+        ...base,
+        ringAgeMs: RING_STALENESS_MS + 1,
+        senderMayRing: false,
+      }),
+    ).toBe("stale");
+  });
+
   it("allows a ring right at the staleness boundary", () => {
-    expect(shouldAllowRing({ ...base, ringAgeMs: RING_STALENESS_MS })).toBe(
-      true,
+    expect(ringVerdict({ ...base, ringAgeMs: RING_STALENESS_MS })).toBe(
+      "allow",
     );
   });
 
   it("refuses a repeat from the same sender inside the cooldown", () => {
     expect(
-      shouldAllowRing({ ...base, msSinceLastReceived: RING_COOLDOWN_MS - 1 }),
-    ).toBe(false);
+      ringVerdict({ ...base, msSinceLastReceived: RING_COOLDOWN_MS - 1 }),
+    ).toBe(RingRefusalReason.COOLDOWN);
   });
 
   it("allows again once the cooldown has fully elapsed", () => {
     expect(
-      shouldAllowRing({ ...base, msSinceLastReceived: RING_COOLDOWN_MS }),
-    ).toBe(true);
+      ringVerdict({ ...base, msSinceLastReceived: RING_COOLDOWN_MS }),
+    ).toBe("allow");
   });
 });
 

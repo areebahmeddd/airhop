@@ -53,14 +53,13 @@ export const NoisePayloadType = {
   // bitchat drops a payload type it does not know, which is correct for a
   // client with no concept of a location pin.
   LOCATION_PIN: 0x50,
-  // A "come check your messages" alert, and its acknowledgement. Airhop-only:
-  // bitchat drops an unknown NoisePayload type, so a ring toward a bitchat
-  // peer is silently absorbed and the UI never offers the action there
-  // (gated on the peer's proven capability bits, peer-state-packet.ts).
-  // Permission, rate limiting and snooze are enforced above this file, in
-  // ring-store.ts and mesh-service.ts. The wire format is just a receipt.
+  // A "come check your messages" alert, its acknowledgement, and its refusal.
+  // Bodies in ring-payload.ts. Airhop-only: bitchat drops an unknown
+  // NoisePayload type, and the action is never offered toward a peer whose
+  // proven capability bits (peer-state-packet.ts) lack it.
   RING: 0x51,
   RING_ACK: 0x52,
+  RING_REFUSED: 0x53,
 } as const;
 export type NoisePayloadTypeValue =
   (typeof NoisePayloadType)[keyof typeof NoisePayloadType];

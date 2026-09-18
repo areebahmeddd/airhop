@@ -535,9 +535,20 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "I-snooze ng 1 oras",
   "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
   "chat.contact.allow_ring_desc":
-    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito",
+    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
   "chat.contact.ring_action": "Tumawag",
   "chat.contact.ringing": "Tumatawag…",
+  "chat.ring.sent_snoozed": "Tumawag, ipinagpaliban",
+  "chat.ring.sent_too_soon": "Tumawag, masyadong maaga",
+  "chat.ring.sent_not_allowed": "Tumawag, hindi pinapayagan",
+  "chat.contact.ring_hint_nearby":
+    "Gumagana lang ang pagtawag habang malapit sila",
+  "chat.contact.ring_hint_not_allowed":
+    "Hindi ka nila pinayagang tumawag sa kanila",
+  "chat.contact.ring_hint_snoozed":
+    "Ipinagpaliban nila ang mga tawag sa ngayon",
+  "chat.contact.ring_hint_too_soon": "Katatawag lang sa kanila",
+  "chat.contact.ring_hint_again_in": "Tumawag muli sa loob ng {time}",
   "settings.security.ring_alerts": "Mga alerto ng tawag",
   "settings.security.ring_alerts_desc":
     "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",

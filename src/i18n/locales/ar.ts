@@ -505,9 +505,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "تأجيل لمدة ساعة واحدة",
   "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
   "chat.contact.allow_ring_desc":
-    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة",
+    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
   "chat.contact.ring_action": "رنّ",
   "chat.contact.ringing": "يرنّ…",
+  "chat.ring.sent_snoozed": "رنّ، مؤجَّل",
+  "chat.ring.sent_too_soon": "رنّ، مبكر جدًا",
+  "chat.ring.sent_not_allowed": "رنّ، غير مسموح",
+  "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
+  "chat.contact.ring_hint_not_allowed": "لم يسمحوا لك بالرنين لهم",
+  "chat.contact.ring_hint_snoozed": "أجّلوا الرنين في الوقت الحالي",
+  "chat.contact.ring_hint_too_soon": "تم الرنين لهم قبل لحظات",
+  "chat.contact.ring_hint_again_in": "رنّ مجددًا بعد {time}",
   "settings.security.ring_alerts": "تنبيهات الرنين",
   "settings.security.ring_alerts_desc":
     "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",

@@ -45,6 +45,7 @@ import {
   hasBlePermissions,
   type BlePermissionResult,
 } from "@platform/ble-permissions";
+import { ringPulse } from "@platform/haptics";
 import { showBlockedAlert } from "@platform/permissions";
 import { setAudioForPlayback } from "@services/audio-session";
 import {
@@ -65,6 +66,7 @@ import {
   handleInboundMessage,
   handleNearbyPeers,
   isAppActive,
+  isReadingChannel,
   raiseRingNotification,
   requestNotificationPermission,
   setAppBadgeCount,
@@ -151,6 +153,7 @@ import { parseAirhopLink } from "@utils/deep-link";
 import { formatNumber } from "@utils/format";
 import { mentionsNickname } from "@utils/mentions";
 import { messagePreviewEntry } from "@utils/message-preview";
+import { systemPreview } from "@utils/message-text";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
 import { settleOr, withTimeout } from "@utils/with-timeout";
@@ -1197,12 +1200,32 @@ function AppContent(): React.JSX.Element {
         countReachablePeers(prev.peers, nowMs),
       );
     });
-    // mesh-service.onRing already decided this ring should alert; only the
-    // foreground-vs-backgrounded choice happens here.
+    // mesh-service.onRing already decided this ring should alert; only where
+    // is decided here. Looking at the sender's own thread gets one pulse: the
+    // bell row has just landed in front of them and the thread's read-receipt
+    // effect acknowledges it. Otherwise the overlay goes up, foreground or
+    // not, the way a call screen does; the tray is told as well when the
+    // overlay cannot be seen, and always on iOS, where the tray's pulses are
+    // the only sound a ring has.
     const unsubscribeRings = subscribeInboundRings((ring) => {
-      if (isAppActive()) {
-        useIncomingRingStore.getState().show(ring);
-      } else {
+      const channel = `dm:${ring.peerID}`;
+      if (isReadingChannel(channel)) {
+        ringPulse();
+        return;
+      }
+      // Logged like any other notification, so a ring missed while the phone
+      // was in a bag is found under the bell.
+      useActivityStore.getState().record({
+        id: ring.ringID,
+        channel,
+        isDM: true,
+        senderID: ring.peerID,
+        senderNickname: ring.senderName,
+        ...systemPreview("chat.ring.received_summary"),
+        timestampMs: ring.receivedAtMs,
+      });
+      useIncomingRingStore.getState().show(ring);
+      if (!isAppActive() || Platform.OS === "ios") {
         void raiseRingNotification(ring.peerID, ring.senderName);
       }
     });

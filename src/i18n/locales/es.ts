@@ -522,9 +522,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Posponer 1 hora",
   "chat.contact.allow_ring": "Permitir alertas de llamada",
   "chat.contact.allow_ring_desc":
-    "Permite que hagan sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada",
+    "Permite que hagan sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada. El modo silencio y No molestar siguen aplicándose.",
   "chat.contact.ring_action": "Llamar",
   "chat.contact.ringing": "Llamando…",
+  "chat.ring.sent_snoozed": "Llamada, pospuesta",
+  "chat.ring.sent_too_soon": "Llamada, demasiado pronto",
+  "chat.ring.sent_not_allowed": "Llamada, no permitida",
+  "chat.contact.ring_hint_nearby": "Llamar solo funciona mientras están cerca",
+  "chat.contact.ring_hint_not_allowed": "No te han permitido llamarles",
+  "chat.contact.ring_hint_snoozed": "Han pospuesto las llamadas por ahora",
+  "chat.contact.ring_hint_too_soon": "Se les llamó hace un momento",
+  "chat.contact.ring_hint_again_in": "Llamar de nuevo en {time}",
   "settings.security.ring_alerts": "Alertas de llamada",
   "settings.security.ring_alerts_desc":
     "Interruptor principal de Llamada. Desactivarlo rechaza todas las llamadas de inmediato, sin importar lo que hayas concedido a cada contacto.",

@@ -11,6 +11,10 @@
 // language list) is mocked in tests and falls back to English if it throws. The
 // decisions above it stay independent of it either way.
 
+import {
+  RingRefusalReason,
+  type RingRefusalReasonValue,
+} from "@core/mesh/wire/ring-payload";
 import { t, tPlural } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
 import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
@@ -197,9 +201,14 @@ export function nearbyNotificationContent(peerCount: number): {
 // Blocked senders aren't a check here: mesh-service refuses every packet
 // from a blocked peer before any handler runs, this one included.
 //
-// Each check below is a reason to refuse; the first match wins. A refused
-// ring never reaches chat-store or the tray.
-export function shouldAllowRing(p: {
+// Each check below is a reason to refuse; the first match wins, and a refused
+// ring never reaches chat-store or the tray. The verdict is what the receiver
+// tells the sender (RING_REFUSED). "stale" is checked first and never sent
+// back: a ring that old is treated as never having arrived, and answering it
+// would let a replay probe whether its sender is still permitted.
+export type RingVerdict = "allow" | "stale" | RingRefusalReasonValue;
+
+export function ringVerdict(p: {
   // Settings > Security's master switch. Off refuses every ring at once,
   // regardless of what any contact was granted.
   globallyEnabled: boolean;
@@ -211,18 +220,18 @@ export function shouldAllowRing(p: {
   msSinceLastReceived: number | null;
   // Age of the ring packet at decrypt time: now minus its signed timestamp.
   ringAgeMs: number;
-}): boolean {
-  if (!p.globallyEnabled) return false;
-  if (!p.senderMayRing) return false;
-  if (p.isSnoozed) return false;
-  if (p.ringAgeMs > RING_STALENESS_MS) return false;
+}): RingVerdict {
+  if (p.ringAgeMs > RING_STALENESS_MS) return "stale";
+  if (!p.globallyEnabled) return RingRefusalReason.NOT_ALLOWED;
+  if (!p.senderMayRing) return RingRefusalReason.NOT_ALLOWED;
+  if (p.isSnoozed) return RingRefusalReason.SNOOZED;
   if (
     p.msSinceLastReceived !== null &&
     p.msSinceLastReceived < RING_COOLDOWN_MS
   ) {
-    return false;
+    return RingRefusalReason.COOLDOWN;
   }
-  return true;
+  return "allow";
 }
 
 // Title/body for the Ring alert. Shared by the foreground overlay and the

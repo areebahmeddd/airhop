@@ -517,9 +517,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1時間スヌーズ",
   "chat.contact.allow_ring": "呼び出しを許可",
   "chat.contact.allow_ring_desc":
-    "会話がミュートでも、相手があなたの電話を鳴らせるようにします",
+    "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
   "chat.contact.ring_action": "呼び出す",
   "chat.contact.ringing": "呼び出し中…",
+  "chat.ring.sent_snoozed": "呼び出し済み、スヌーズ中",
+  "chat.ring.sent_too_soon": "呼び出し済み、早すぎます",
+  "chat.ring.sent_not_allowed": "呼び出し済み、許可なし",
+  "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",
+  "chat.contact.ring_hint_not_allowed":
+    "相手はあなたからの呼び出しを許可していません",
+  "chat.contact.ring_hint_snoozed":
+    "相手は今のところ呼び出しをスヌーズしています",
+  "chat.contact.ring_hint_too_soon": "相手はつい先ほど呼び出されました",
+  "chat.contact.ring_hint_again_in": "{time}後に再度呼び出せます",
   "settings.security.ring_alerts": "呼び出しアラート",
   "settings.security.ring_alerts_desc":
     "呼び出し機能のマスタースイッチです。オフにすると、個々の連絡先への許可に関わらずすべての呼び出しを拒否します。",

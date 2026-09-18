@@ -514,9 +514,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 ঘণ্টার জন্য স্নুজ করুন",
   "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
   "chat.contact.allow_ring_desc":
-    "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন",
+    "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন। নীরব মোড ও বিরক্ত করবেন না তবুও প্রযোজ্য।",
   "chat.contact.ring_action": "রিং করুন",
   "chat.contact.ringing": "রিং হচ্ছে…",
+  "chat.ring.sent_snoozed": "রিং হয়েছে, স্থগিত",
+  "chat.ring.sent_too_soon": "রিং হয়েছে, খুব তাড়াতাড়ি",
+  "chat.ring.sent_not_allowed": "রিং হয়েছে, অনুমতি নেই",
+  "chat.contact.ring_hint_nearby": "রিং কেবল তারা কাছে থাকলেই কাজ করে",
+  "chat.contact.ring_hint_not_allowed": "তারা আপনাকে রিং করার অনুমতি দেননি",
+  "chat.contact.ring_hint_snoozed": "তারা আপাতত রিং স্থগিত রেখেছেন",
+  "chat.contact.ring_hint_too_soon": "একটু আগেই তাদের রিং করা হয়েছে",
+  "chat.contact.ring_hint_again_in": "{time} পরে আবার রিং করুন",
   "settings.security.ring_alerts": "রিং সতর্কতা",
   "settings.security.ring_alerts_desc":
     "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",

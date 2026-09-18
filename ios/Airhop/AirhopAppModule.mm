@@ -22,4 +22,11 @@ RCT_EXTERN_METHOD(recentLog:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(copyApkToCache:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(startRingAlert:(double)durationMs
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(stopRingAlert:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

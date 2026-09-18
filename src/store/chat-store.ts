@@ -258,6 +258,14 @@ interface ChatState {
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
+  // Rewrite a row the app itself wrote once its outcome is known (a refused
+  // ring reads "Rang, snoozed"). Only rows carrying a systemKey qualify: those
+  // are the only words that belong to Airhop rather than to a person.
+  setSystemRow: (
+    channel: string,
+    id: string,
+    row: Pick<ChatMessage, "text" | "systemKey" | "systemVars">,
+  ) => void;
   // Give up on messages left mid-flight by a process that died, so a retry can
   // be offered instead of an hourglass that never resolves.
   //
@@ -534,7 +542,7 @@ export const useChatStore = create<ChatState>()(
         });
 
         // Ring is excluded: mesh-service.onRing already decided whether to
-        // alert (notification-policy.shouldAllowRing) and raises it through
+        // alert (notification-policy.ringVerdict) and raises it through
         // its own path (ring-store.notifyInboundRing). Reaching these
         // listeners too would ring twice, and let mute suppress the one
         // thing Ring is meant to get past.
@@ -604,6 +612,21 @@ export const useChatStore = create<ChatState>()(
           if (existing === undefined) return state;
           const next = existing.filter((m) => m.id !== id);
           if (next.length === existing.length) return state;
+          return { messages: { ...state.messages, [channel]: next } };
+        });
+      },
+
+      setSystemRow(channel, id, row) {
+        set((state) => {
+          const existing = state.messages[channel];
+          if (existing === undefined) return state;
+          let changed = false;
+          const next = existing.map((m) => {
+            if (m.id !== id || m.systemKey === undefined) return m;
+            changed = true;
+            return { ...m, ...row };
+          });
+          if (!changed) return state;
           return { messages: { ...state.messages, [channel]: next } };
         });
       },

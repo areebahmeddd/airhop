@@ -521,9 +521,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 საათით გადადება",
   "chat.contact.allow_ring": "ზარის შეტყობინებების დაშვება",
   "chat.contact.allow_ring_desc":
-    "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია",
+    "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია. უხმო რეჟიმი და „არ შემაწუხო“ მაინც მოქმედებს.",
   "chat.contact.ring_action": "დარეკვა",
   "chat.contact.ringing": "რეკავს…",
+  "chat.ring.sent_snoozed": "დარეკა, გადაიდო",
+  "chat.ring.sent_too_soon": "დარეკა, ძალიან ადრე",
+  "chat.ring.sent_not_allowed": "დარეკა, არ არის დაშვებული",
+  "chat.contact.ring_hint_nearby":
+    "დარეკვა მუშაობს მხოლოდ მაშინ, როცა ისინი ახლოს არიან",
+  "chat.contact.ring_hint_not_allowed": "მათ არ დაგრთეს დარეკვის უფლება",
+  "chat.contact.ring_hint_snoozed": "მათ ჯერჯერობით გადადეს დარეკვები",
+  "chat.contact.ring_hint_too_soon": "მათთან სულ ახლახან დარეკეს",
+  "chat.contact.ring_hint_again_in": "ხელახლა დარეკვა {time}-ში",
   "settings.security.ring_alerts": "ზარის შეტყობინებები",
   "settings.security.ring_alerts_desc":
     "ზარის მთავარი გადამრთველი. გამორთვა მაშინვე უარყოფს ყველა ზარს, მიუხედავად იმისა, რაც შენ დართე ცალკეულ კონტაქტებს.",

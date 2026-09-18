@@ -19,6 +19,13 @@ export interface NearbyPeer {
   // on a pole. Self-declared and therefore forgeable, which is why it decides
   // nothing beyond presentation. See announce-manager.
   isInfrastructure?: boolean;
+  // Whether this peer has proven, inside the Noise session we hold with them,
+  // that they currently accept a Ring from us. A projection of the registry's
+  // authenticated capability, so the contact sheet can subscribe to it; the
+  // registry decides for sending (mesh-service.sendRing). Refreshed on every
+  // announce and the moment a proof lands, and gone with the entry when the
+  // peer ages out, which is what "Ring works only nearby" means.
+  acceptsRing?: boolean;
 }
 
 interface PeerState {
@@ -36,6 +43,9 @@ interface PeerState {
   // rather than from announce contents. A link is physical: it cannot be
   // claimed, only held.
   setDirect: (peerID: string, isDirect: boolean) => void;
+  // No-op for a peer the map does not hold: a proof is per session, and a
+  // session exists only with someone who announced.
+  setAcceptsRing: (peerID: string, acceptsRing: boolean) => void;
   removePeer: (peerID: string) => void;
   evictStale: (ttlMs?: number) => void;
   getPeer: (peerID: string) => NearbyPeer | undefined;
@@ -150,6 +160,17 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
         return state;
       const next = new Map(state.peers);
       next.set(peerID, { ...existing, isDirect });
+      return { peers: next };
+    });
+  },
+
+  setAcceptsRing(peerID: string, acceptsRing: boolean) {
+    set((state) => {
+      const existing = state.peers.get(peerID);
+      if (existing === undefined || existing.acceptsRing === acceptsRing)
+        return state;
+      const next = new Map(state.peers);
+      next.set(peerID, { ...existing, acceptsRing });
       return { peers: next };
     });
   },

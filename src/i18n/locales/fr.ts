@@ -526,9 +526,20 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Suspendre 1 heure",
   "chat.contact.allow_ring": "Autoriser les alertes de sonnerie",
   "chat.contact.allow_ring_desc":
-    "Autorisez-les à faire sonner votre téléphone pour attirer votre attention, même si cette conversation est en sourdine",
+    "Autorisez-les à faire sonner votre téléphone pour attirer votre attention, même si cette conversation est en sourdine. Le mode silencieux et Ne pas déranger s’appliquent toujours.",
   "chat.contact.ring_action": "Sonner",
   "chat.contact.ringing": "Sonnerie en cours…",
+  "chat.ring.sent_snoozed": "Sonné, reporté",
+  "chat.ring.sent_too_soon": "Sonné, trop tôt",
+  "chat.ring.sent_not_allowed": "Sonné, non autorisé",
+  "chat.contact.ring_hint_nearby":
+    "La sonnerie ne fonctionne que lorsqu’ils sont à proximité",
+  "chat.contact.ring_hint_not_allowed":
+    "Ils ne vous ont pas autorisé à les faire sonner",
+  "chat.contact.ring_hint_snoozed":
+    "Ils ont reporté les sonneries pour le moment",
+  "chat.contact.ring_hint_too_soon": "Ils ont été sonnés il y a un instant",
+  "chat.contact.ring_hint_again_in": "Sonner à nouveau dans {time}",
   "settings.security.ring_alerts": "Alertes de sonnerie",
   "settings.security.ring_alerts_desc":
     "Interrupteur principal pour la sonnerie. Le désactiver refuse instantanément toute sonnerie, quelle que soit l’autorisation accordée à chaque contact.",

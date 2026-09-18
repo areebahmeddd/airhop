@@ -525,9 +525,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Posticipa di 1 ora",
   "chat.contact.allow_ring": "Consenti avvisi di chiamata",
   "chat.contact.allow_ring_desc":
-    "Consenti loro di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata",
+    "Consenti loro di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
   "chat.contact.ring_action": "Chiama",
   "chat.contact.ringing": "In chiamata…",
+  "chat.ring.sent_snoozed": "Squillo inviato, rimandato",
+  "chat.ring.sent_too_soon": "Squillo inviato, troppo presto",
+  "chat.ring.sent_not_allowed": "Squillo inviato, non consentito",
+  "chat.contact.ring_hint_nearby":
+    "Lo squillo funziona solo mentre sono nelle vicinanze",
+  "chat.contact.ring_hint_not_allowed":
+    "Non ti hanno consentito di farli squillare",
+  "chat.contact.ring_hint_snoozed": "Hanno rimandato gli squilli per ora",
+  "chat.contact.ring_hint_too_soon": "Hanno ricevuto uno squillo un attimo fa",
+  "chat.contact.ring_hint_again_in": "Squilla di nuovo tra {time}",
   "settings.security.ring_alerts": "Avvisi di chiamata",
   "settings.security.ring_alerts_desc":
     "Interruttore principale per Chiamata. Disattivarlo rifiuta ogni chiamata all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",

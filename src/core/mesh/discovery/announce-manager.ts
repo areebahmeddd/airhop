@@ -128,13 +128,15 @@ export const Capability = {
   // sender may safely retry. Does not replace bit 8; it only adds retry.
   privateMediaReceipts: 1 << 9,
   // This device currently accepts a Ring (NoisePayloadType.RING, 0x51) from
-  // someone. Airhop-only; bitchat never sets it, so this is what hides the
-  // Ring action from a bitchat peer's thread.
+  // the peer it is talking to. Airhop-only; bitchat never sets it, which is
+  // what hides the action toward a bitchat peer.
   //
-  // A discovery hint, same rule as bit 8: an announce is self-signed and
-  // proves nothing, so this only decides whether to OFFER the action. Each
-  // ring is still checked fresh on arrival (contact, permission, rate limit,
-  // snooze in ring-store.ts).
+  // Proven, never announced. A ring grant is per contact, so the bit only
+  // means something inside a 0x21 addressed to one peer ("I accept a ring
+  // from you"); a broadcast could only say "from somebody", which offers the
+  // action to people who would then be refused. The proof is re-sent whenever
+  // that peer's answer changes (mesh-service.reproveRingGrant). Each ring is
+  // still checked on arrival (notification-policy.ringVerdict).
   ring: 1 << 10,
 } as const;
 

@@ -516,9 +516,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 घंटे के लिए स्नूज़ करें",
   "chat.contact.allow_ring": "घंटी अलर्ट की अनुमति दें",
   "chat.contact.allow_ring_desc":
-    "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो",
+    "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो। साइलेंट मोड और परेशान न करें फिर भी लागू रहते हैं।",
   "chat.contact.ring_action": "घंटी बजाएँ",
   "chat.contact.ringing": "घंटी बज रही है…",
+  "chat.ring.sent_snoozed": "घंटी बजाई, टाल दी गई",
+  "chat.ring.sent_too_soon": "घंटी बजाई, बहुत जल्दी",
+  "chat.ring.sent_not_allowed": "घंटी बजाई, अनुमति नहीं",
+  "chat.contact.ring_hint_nearby": "घंटी तभी काम करती है जब वे पास हों",
+  "chat.contact.ring_hint_not_allowed":
+    "उन्होंने आपको घंटी बजाने की अनुमति नहीं दी है",
+  "chat.contact.ring_hint_snoozed": "उन्होंने फ़िलहाल घंटियाँ टाल दी हैं",
+  "chat.contact.ring_hint_too_soon": "उन्हें अभी-अभी घंटी बजाई गई है",
+  "chat.contact.ring_hint_again_in": "{time} में फिर से घंटी बजाएँ",
   "settings.security.ring_alerts": "घंटी अलर्ट",
   "settings.security.ring_alerts_desc":
     "घंटी सुविधा के लिए मुख्य स्विच। बंद करने पर हर घंटी तुरंत अस्वीकार हो जाती है, चाहे आपने व्यक्तिगत संपर्कों को जो भी अनुमति दी हो।",

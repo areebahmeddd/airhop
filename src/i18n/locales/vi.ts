@@ -517,9 +517,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Tạm hoãn 1 giờ",
   "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
   "chat.contact.allow_ring_desc":
-    "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng",
+    "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
   "chat.contact.ring_action": "Gọi chuông",
   "chat.contact.ringing": "Đang gọi chuông…",
+  "chat.ring.sent_snoozed": "Đã gọi chuông, tạm hoãn",
+  "chat.ring.sent_too_soon": "Đã gọi chuông, quá sớm",
+  "chat.ring.sent_not_allowed": "Đã gọi chuông, không được phép",
+  "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",
+  "chat.contact.ring_hint_not_allowed": "Họ chưa cho phép bạn gọi chuông",
+  "chat.contact.ring_hint_snoozed": "Họ đang tạm hoãn chuông lúc này",
+  "chat.contact.ring_hint_too_soon":
+    "Họ vừa được gọi chuông cách đây không lâu",
+  "chat.contact.ring_hint_again_in": "Gọi chuông lại sau {time}",
   "settings.security.ring_alerts": "Cảnh báo chuông",
   "settings.security.ring_alerts_desc":
     "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",

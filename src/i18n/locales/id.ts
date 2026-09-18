@@ -524,9 +524,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Tunda 1 jam",
   "chat.contact.allow_ring": "Izinkan peringatan bel",
   "chat.contact.allow_ring_desc":
-    "Izinkan mereka membunyikan bel ponsel Anda untuk menarik perhatian, meskipun percakapan ini dibisukan",
+    "Izinkan mereka membunyikan bel ponsel Anda untuk menarik perhatian, meskipun percakapan ini dibisukan. Mode senyap dan Jangan Ganggu tetap berlaku.",
   "chat.contact.ring_action": "Bunyikan bel",
   "chat.contact.ringing": "Membunyikan bel…",
+  "chat.ring.sent_snoozed": "Bel dibunyikan, ditunda",
+  "chat.ring.sent_too_soon": "Bel dibunyikan, terlalu cepat",
+  "chat.ring.sent_not_allowed": "Bel dibunyikan, tidak diizinkan",
+  "chat.contact.ring_hint_nearby":
+    "Bel hanya berfungsi saat mereka berada di dekat Anda",
+  "chat.contact.ring_hint_not_allowed":
+    "Mereka belum mengizinkan Anda membunyikan bel",
+  "chat.contact.ring_hint_snoozed": "Mereka menunda bel untuk saat ini",
+  "chat.contact.ring_hint_too_soon": "Bel mereka baru saja dibunyikan",
+  "chat.contact.ring_hint_again_in": "Bunyikan bel lagi dalam {time}",
   "settings.security.ring_alerts": "Peringatan bel",
   "settings.security.ring_alerts_desc":
     "Saklar utama untuk fitur Bel. Nonaktifkan untuk menolak semua bel sekaligus, apa pun izin yang telah Anda berikan ke masing-masing kontak.",

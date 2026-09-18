@@ -514,9 +514,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 گھنٹے کے لیے ملتوی کریں",
   "chat.contact.allow_ring": "گھنٹی الرٹس کی اجازت دیں",
   "chat.contact.allow_ring_desc":
-    "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو",
+    "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو۔ خاموش موڈ اور ڈسٹرب نہ کریں پھر بھی لاگو رہتے ہیں۔",
   "chat.contact.ring_action": "گھنٹی بجائیں",
   "chat.contact.ringing": "گھنٹی بج رہی ہے…",
+  "chat.ring.sent_snoozed": "گھنٹی بجائی، مؤخر",
+  "chat.ring.sent_too_soon": "گھنٹی بجائی، بہت جلدی",
+  "chat.ring.sent_not_allowed": "گھنٹی بجائی، اجازت نہیں",
+  "chat.contact.ring_hint_nearby":
+    "گھنٹی صرف اس وقت کام کرتی ہے جب وہ قریب ہوں",
+  "chat.contact.ring_hint_not_allowed":
+    "انہوں نے آپ کو گھنٹی بجانے کی اجازت نہیں دی",
+  "chat.contact.ring_hint_snoozed": "انہوں نے فی الحال گھنٹیاں مؤخر کر دی ہیں",
+  "chat.contact.ring_hint_too_soon": "انہیں ابھی ابھی گھنٹی بجائی گئی تھی",
+  "chat.contact.ring_hint_again_in": "{time} میں دوبارہ گھنٹی بجائیں",
   "settings.security.ring_alerts": "گھنٹی الرٹس",
   "settings.security.ring_alerts_desc":
     "گھنٹی کے لیے مرکزی سوئچ۔ بند کرنے سے ہر گھنٹی فوراً مسترد ہو جاتی ہے، چاہے آپ نے انفرادی رابطوں کو جو بھی اجازت دی ہو۔",

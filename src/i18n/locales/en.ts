@@ -542,6 +542,9 @@ export const strings = {
   "chat.ring.alert.body": "Check your messages",
   "chat.ring.alert.open": "Open",
   "chat.ring.alert.snooze": "Snooze for 1 hour",
+  "chat.ring.sent_snoozed": "Rang, snoozed",
+  "chat.ring.sent_too_soon": "Rang, too soon",
+  "chat.ring.sent_not_allowed": "Rang, not allowed",
 
   "chat.attach.send_anyway": "Send anyway",
   "chat.attach.bitchat_too_big": "This may not arrive",
@@ -731,9 +734,15 @@ export const strings = {
   "chat.contact.verify": "Verify contact",
   "chat.contact.allow_ring": "Allow ring alerts",
   "chat.contact.allow_ring_desc":
-    "Let them ring your phone to get your attention, even if this conversation is muted",
+    "Let them ring your phone to get your attention, even if this conversation is muted. Silent mode and Do Not Disturb still apply.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringing…",
+  "chat.contact.ring_hint_nearby": "Ring works only while they are nearby",
+  "chat.contact.ring_hint_not_allowed":
+    "They have not allowed you to ring them",
+  "chat.contact.ring_hint_snoozed": "They snoozed rings for now",
+  "chat.contact.ring_hint_too_soon": "They were rung a moment ago",
+  "chat.contact.ring_hint_again_in": "Ring again in {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Notices",

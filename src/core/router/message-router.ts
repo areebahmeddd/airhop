@@ -268,6 +268,17 @@ export class PeerRegistry {
     if (e) e.session = undefined;
   }
 
+  // For the mesh stopping. A stop sends LEAVE, and every peer that hears it
+  // drops its session with us, so one kept here would seal the next message
+  // under keys the far side does not hold. Proven capabilities belong to the
+  // session and go with it; pinned keys stay.
+  clearAllSessions(): void {
+    for (const e of this.peers.values()) {
+      e.session = undefined;
+      e.authenticatedCapabilities = undefined;
+    }
+  }
+
   setNostrPubkey(peerID: string, nostrPubkey: string): void {
     const e = this.peers.get(peerID);
     if (e) e.nostrPubkey = nostrPubkey;

@@ -523,9 +523,19 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 uur uitstellen",
   "chat.contact.allow_ring": "Belmeldingen toestaan",
   "chat.contact.allow_ring_desc":
-    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is",
+    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
   "chat.contact.ring_action": "Bellen",
   "chat.contact.ringing": "Belt…",
+  "chat.ring.sent_snoozed": "Gebeld, uitgesteld",
+  "chat.ring.sent_too_soon": "Gebeld, te vroeg",
+  "chat.ring.sent_not_allowed": "Gebeld, niet toegestaan",
+  "chat.contact.ring_hint_nearby":
+    "Bellen werkt alleen zolang ze in de buurt zijn",
+  "chat.contact.ring_hint_not_allowed":
+    "Ze hebben je niet toegestaan om ze te bellen",
+  "chat.contact.ring_hint_snoozed": "Ze hebben bellen voorlopig uitgesteld",
+  "chat.contact.ring_hint_too_soon": "Ze zijn zojuist al gebeld",
+  "chat.contact.ring_hint_again_in": "Opnieuw bellen over {time}",
   "settings.security.ring_alerts": "Belmeldingen",
   "settings.security.ring_alerts_desc":
     "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",

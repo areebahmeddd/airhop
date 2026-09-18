@@ -519,9 +519,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 saat ertele",
   "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
   "chat.contact.allow_ring_desc":
-    "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver",
+    "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
   "chat.contact.ring_action": "Çağır",
   "chat.contact.ringing": "Çalıyor…",
+  "chat.ring.sent_snoozed": "Çaldırıldı, ertelendi",
+  "chat.ring.sent_too_soon": "Çaldırıldı, çok erken",
+  "chat.ring.sent_not_allowed": "Çaldırıldı, izin verilmedi",
+  "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",
+  "chat.contact.ring_hint_not_allowed": "Onları çaldırmana izin vermediler",
+  "chat.contact.ring_hint_snoozed": "Şimdilik çaldırmaları ertelediler",
+  "chat.contact.ring_hint_too_soon": "Az önce çaldırıldılar",
+  "chat.contact.ring_hint_again_in": "{time} sonra yeniden çaldır",
   "settings.security.ring_alerts": "Çağrı uyarıları",
   "settings.security.ring_alerts_desc":
     "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",

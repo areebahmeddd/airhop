@@ -53,6 +53,7 @@ const P = {
   meshStateStore: "@store/mesh-state-store",
   settingsStore: "@store/settings-store",
   contactsStore: "@store/contacts-store",
+  ringStore: "@store/ring-store",
   walletStore: "@store/wallet-store",
   outboxStore: "@store/outbox-store",
   groupStore: "@store/group-store",
@@ -116,6 +117,7 @@ export interface SeenMessage {
   isSystem?: boolean;
   status?: string;
   viaBridge?: boolean;
+  ring?: true;
   attachment?: {
     type: string;
     // Where the received bytes were cached. Reading it back is how a scenario
@@ -266,6 +268,7 @@ interface MeshLike {
     onOutcome?: (ok: boolean) => void,
   ) => boolean;
   sendReadReceipts: (peerID: string) => void;
+  acknowledgeRingsIn: (channel: string, peerID: string) => void;
   sendLocationPin: (
     peerID: string,
     pin: { lat: number; lng: number; takenAtMs: number },
@@ -297,6 +300,8 @@ interface MeshLike {
   getNostrPrivKey: () => Uint8Array;
   getChannelGeohash: (channel: string) => string | null;
   canSealPrivateMedia: (peerID: string) => boolean;
+  peerAcceptsRing: (peerID: string) => boolean;
+  sendRing: (peerID: string) => string | null;
   applyInternetEnabled: (enabled: boolean) => void;
   [k: string]: unknown;
 }
@@ -593,6 +598,9 @@ export class SimDevice {
     call(this.inner.stores.chatStore, "markChannelRead", channel);
     if (channel.startsWith("dm:")) {
       this.mesh?.sendReadReceipts(channel.slice(3));
+      // Opening the thread also answers any ring waiting in it, as the
+      // screen's read-receipt effect does.
+      this.mesh?.acknowledgeRingsIn(channel, channel.slice(3));
     }
   }
 
@@ -641,7 +649,22 @@ export class SimDevice {
 
     let status: string;
     if (channel.startsWith("dm:")) {
-      const result = service.sendDm(channel.slice(3), text, id);
+      // Sending to someone saves them as a contact, as message-thread.tsx
+      // does, with whatever keys the peer store holds for them right now.
+      const dmPeerID = channel.slice(3);
+      const peers = this.inner.stores.peerStore.getState().peers as Map<
+        string,
+        { nickname: string; noisePubKeyHex: string }
+      >;
+      const known = peers.get(dmPeerID);
+      call(
+        this.inner.stores.contactsStore,
+        "saveIfAbsent",
+        dmPeerID,
+        known?.nickname ?? dmPeerID.slice(0, 8),
+        known?.noisePubKeyHex ?? "",
+      );
+      const result = service.sendDm(dmPeerID, text, id);
       status =
         result === "needs-courier"
           ? "carried"
@@ -846,6 +869,80 @@ export class SimDevice {
     const c = (this.inner.stores.contactsStore.getState().contacts ??
       {}) as Record<string, unknown>;
     return Object.keys(c);
+  }
+
+  // ---- ring ----
+
+  // The contact sheet's "Allow ring alerts" switch.
+  allowRing(peerID: string, allow: boolean): void {
+    this.log("ALLOW_RING", `${peerID.slice(0, 8)}: ${String(allow)}`);
+    call(this.inner.stores.contactsStore, "setAllowRing", peerID, allow);
+  }
+
+  // Whether the sheet would offer Ring for this peer.
+  peerAcceptsRing(peerID: string): boolean {
+    const peers = this.inner.stores.peerStore.getState().peers as Map<
+      string,
+      { acceptsRing?: boolean }
+    >;
+    return peers.get(peerID)?.acceptsRing === true;
+  }
+
+  // The registry's answer, for checking it never disagrees with the sheet's.
+  meshPeerAcceptsRing(peerID: string): boolean {
+    return this.mesh?.peerAcceptsRing(peerID) ?? false;
+  }
+
+  // Tap Ring. Null means no session carried it.
+  ring(peerID: string): string | null {
+    this.log("RING", peerID.slice(0, 8));
+    return this.mesh?.sendRing(peerID) ?? null;
+  }
+
+  // What ring-store says about the last ring we sent this peer.
+  ringState(peerID: string): {
+    sending: boolean;
+    refusal: number | null;
+    acked: boolean;
+  } {
+    const st = this.inner.stores.ringStore.getState() as {
+      isSending: (p: string, now: number) => boolean;
+      lastRefusal: (p: string) => number | null;
+      lastAckedAtMs: Record<string, number>;
+      lastSentAtMs: Record<string, number>;
+    };
+    const sent = st.lastSentAtMs[peerID];
+    const acked = st.lastAckedAtMs[peerID];
+    return {
+      sending: st.isSending(peerID, this.world.wallClock()),
+      refusal: st.lastRefusal(peerID),
+      acked: sent !== undefined && acked !== undefined && acked >= sent,
+    };
+  }
+
+  // The sender's own gate, as the sheet reads it.
+  ringCooldownMs(peerID: string): number {
+    const st = this.inner.stores.ringStore.getState() as {
+      cooldownRemainingMs: (p: string, now: number) => number;
+    };
+    return st.cooldownRemainingMs(peerID, this.world.wallClock());
+  }
+
+  // The overlay's Snooze, with a duration a scenario can wait out.
+  snoozeRings(peerID: string, forMs: number): void {
+    this.log("SNOOZE_RINGS", `${peerID.slice(0, 8)} for ${String(forMs)}ms`);
+    call(
+      this.inner.stores.ringStore,
+      "snooze",
+      peerID,
+      this.world.wallClock() + forMs,
+    );
+  }
+
+  // The bell rows in a DM thread, as the receiver sees them.
+  ringsReceived(channel: string): number {
+    return this.messages(channel).filter((m) => m.ring === true && !m.isMine)
+      .length;
   }
 
   // ---- private groups ----
@@ -1595,6 +1692,7 @@ function buildSandbox(
       meshStateStore: require(P.meshStateStore).useMeshStateStore,
       settingsStore: require(P.settingsStore).useSettingsStore,
       contactsStore: require(P.contactsStore).useContactsStore,
+      ringStore: require(P.ringStore).useRingStore,
       outboxStore: require(P.outboxStore).useOutboxStore,
       groupStore: require(P.groupStore).useGroupStore,
       boardStore: require(P.boardStore).useBoardStore,

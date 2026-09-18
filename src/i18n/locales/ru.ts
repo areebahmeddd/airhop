@@ -522,9 +522,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "Отложить на 1 час",
   "chat.contact.allow_ring": "Разрешить уведомления о звонке",
   "chat.contact.allow_ring_desc":
-    "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён",
+    "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён. Беззвучный режим и «Не беспокоить» по-прежнему действуют.",
   "chat.contact.ring_action": "Позвонить",
   "chat.contact.ringing": "Звонит…",
+  "chat.ring.sent_snoozed": "Позвонили, отложено",
+  "chat.ring.sent_too_soon": "Позвонили, слишком рано",
+  "chat.ring.sent_not_allowed": "Позвонили, не разрешено",
+  "chat.contact.ring_hint_nearby": "Звонок работает, только пока они рядом",
+  "chat.contact.ring_hint_not_allowed": "Они не разрешили вам им звонить",
+  "chat.contact.ring_hint_snoozed": "Они пока отложили звонки",
+  "chat.contact.ring_hint_too_soon": "Им звонили только что",
+  "chat.contact.ring_hint_again_in": "Позвонить снова через {time}",
   "settings.security.ring_alerts": "Уведомления о звонке",
   "settings.security.ring_alerts_desc":
     "Главный переключатель звонка. Выключение мгновенно отклоняет любой звонок, независимо от того, что вы разрешили отдельным контактам.",

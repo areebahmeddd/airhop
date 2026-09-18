@@ -277,7 +277,8 @@ The plaintext inside a `NOISE_ENCRYPTED` packet is `[type: u8][body]`. Values ma
 | `0x22` | CONTACT_CARD             | Contact card binary, same encoding as the QR card                                              |
 | `0x50` | LOCATION_PIN             | One place, sent once, to one person. 19-byte fixed layout ([section 3.8](#38-location-pin))    |
 | `0x51` | RING                     | UTF-8 ringID. A "check your messages" alert ([below](#33-noise-inner-payload-types))           |
-| `0x52` | RING_ACK                 | UTF-8 ringID, sent only when the receiver responds                                             |
+| `0x52` | RING_ACK                 | UTF-8 ringID, sent only when a person answers the ring                                         |
+| `0x53` | RING_REFUSED             | `[reason: u8]` then UTF-8 ringID. Sent when the receiver's phone chose to stay quiet           |
 
 **`0x20` is how a DM attachment travels.** The cleartext directed `FILE_TRANSFER` is signed, so a relay cannot forge it, but it is not confidential, and every node it crosses can read the whole file. bitchat classifies that form as the legacy migration fallback and has scheduled its removal. Airhop seals to `0x20` whenever the recipient has **proven** capability bit 8, and falls back to the signed cleartext form only for peers that have not.
 
@@ -302,24 +303,30 @@ is, since moving it would break every shipped build for no gain.
 
 **A Nostr key a peer names for itself is a claim, not a proof.** ANNOUNCE TLV `0x07`, a card from a link, and the card inside `0x22` all say "reach this peer at this key", signed by the peer and never by the key. A receiver treats such a claim as a forwarding address only: the first claim for a key stands, a later one cannot move it, and no claim folds the thread already keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may do those, the same act that may re-pin keys.
 
-**`0x51` rings through mute, so the receiver holds every gate.** Offered only
-to a peer whose proven `0x21` state carries bit 10. Accepted only from a saved
-contact granted ring permission, with the master switch on, not snoozed, at
-least five minutes after the last accepted ring from that sender, and no more
-than two minutes old by its signed timestamp. Never queued for the courier.
-Foreground: an overlay that pulses for 45 s. Background: Android posts a
-heads-up on its own channel; iOS posts one notification, since a loop there
-needs VoIP push and a server. Neither crosses Do Not Disturb or the silent
-switch.
+**`0x51` rings through mute, so the receiver holds every gate.** Offered only to a peer whose proven `0x21` state carries bit 10, set for us specifically. Accepted only from a saved contact granted ring permission, with the master switch on, not snoozed, outside the cooldown, and inside the staleness window. Never couriered.
+
+- **The sender is always answered.** `0x52` when a person answers (opens the thread, taps Open or Snooze; closing the alert only silences it, like swiping a call banner away). `0x53` when the ring is refused, with a reason: `0x01` not allowed (no grant, or the master switch off; one value, since the sender's next step is the same), `0x02` snoozed, `0x03` inside the cooldown. A stale ring gets neither, so a replay cannot probe whether its sender is still permitted.
+- **The overlay owns the ringing** and goes up whether or not the app is in front; a ring from the thread already on screen is one pulse and the thread's own receipt. Rings from different people queue, one sounding at a time, each inside its own window.
+- **Android** loops the default ringtone and vibration from the foreground service, honouring ringer mode and Do Not Disturb, and posts one heads-up card when the app is not in front (Android 15's notification cooldown quiets a second). **iOS** schedules time-sensitive notifications, in the foreground too since they are the only sound an iOS ring has, and cancels the rest when answered; nothing short of CallKit can loop a sound there. Neither crosses the silent switch.
+
+| Constant        | Value           | Where it applies                                                                 |
+| --------------- | --------------- | -------------------------------------------------------------------------------- |
+| Ring window     | `45 s`          | From arrival on the receiver, from send on the sender's "Ringing…"               |
+| Native loop cap | `60 s`          | Android, whatever JS asked, so a lost stop cannot leave a phone ringing          |
+| Cooldown        | `5 min`         | Per person, both sides: the sender's button holds, the receiver refuses (`0x03`) |
+| Staleness       | `2 min`         | By signed timestamp on arrival; dropped without a reply                          |
+| Snooze          | `1 h`           | The overlay's preset; the sender is told (`0x02`)                                |
+| iOS pulses      | `0, 15, 30 s`   | Inside the window, cancelled together when answered                              |
+| Reachability    | `45 s` / `60 s` | Since the last announce, direct / mesh; past it the button is not offered        |
 
 Capability bits (ANNOUNCE TLV `0x05` and `0x21` TLV `0x01`, minimal little-endian):
 
-| Bit | Name                 | Meaning                                                   |
-| --- | -------------------- | --------------------------------------------------------- |
-| 0–7 | prekeys … bridge     | As bitchat `PeerCapabilities`                             |
-| 8   | privateMedia         | Reads Noise `0x20`. Only the **authenticated** bit counts |
-| 9   | privateMediaReceipts | Durable dedup of stable media IDs; permits bounded retry  |
-| 10  | ring                 | Currently accepts a Ring (`0x51`). A discovery hint only  |
+| Bit | Name                 | Meaning                                                                                                                           |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 0–7 | prekeys … bridge     | As bitchat `PeerCapabilities`                                                                                                     |
+| 8   | privateMedia         | Reads Noise `0x20`. Only the **authenticated** bit counts                                                                         |
+| 9   | privateMediaReceipts | Durable dedup of stable media IDs; permits bounded retry                                                                          |
+| 10  | ring                 | Proven only, never announced. In a `0x21` to peer X: "I currently accept a Ring (`0x51`) from X". Re-proven whenever that changes |
 
 ### 3.4 Fragmentation: the budget is the frame
 

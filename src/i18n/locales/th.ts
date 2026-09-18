@@ -508,9 +508,17 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "เลื่อนออกไป 1 ชั่วโมง",
   "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
   "chat.contact.allow_ring_desc":
-    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้",
+    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
   "chat.contact.ring_action": "โทรเรียก",
   "chat.contact.ringing": "กำลังโทรเรียก…",
+  "chat.ring.sent_snoozed": "โทรเรียกแล้ว เลื่อนไว้",
+  "chat.ring.sent_too_soon": "โทรเรียกแล้ว เร็วเกินไป",
+  "chat.ring.sent_not_allowed": "โทรเรียกแล้ว ไม่ได้รับอนุญาต",
+  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
+  "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
+  "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
+  "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
+  "chat.contact.ring_hint_again_in": "โทรเรียกอีกครั้งได้ใน {time}",
   "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
   "settings.security.ring_alerts_desc":
     "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",

@@ -515,9 +515,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "1 घण्टाका लागि स्थगन गर्नुहोस्",
   "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
   "chat.contact.allow_ring_desc":
-    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्",
+    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
   "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
   "chat.contact.ringing": "घण्टी बज्दै छ…",
+  "chat.ring.sent_snoozed": "घण्टी बज्यो, पछि सारियो",
+  "chat.ring.sent_too_soon": "घण्टी बज्यो, धेरै चाँडो",
+  "chat.ring.sent_not_allowed": "घण्टी बज्यो, अनुमति छैन",
+  "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",
+  "chat.contact.ring_hint_not_allowed":
+    "उनीहरूले तपाईंलाई घण्टी बजाउन अनुमति दिएका छैनन्",
+  "chat.contact.ring_hint_snoozed": "उनीहरूले अहिलेलाई घण्टी पछि सारेका छन्",
+  "chat.contact.ring_hint_too_soon": "उनीहरूलाई भर्खरै घण्टी बजाइएको थियो",
+  "chat.contact.ring_hint_again_in": "{time} पछि फेरि घण्टी बजाउनुहोस्",
   "settings.security.ring_alerts": "घण्टी अलर्टहरू",
   "settings.security.ring_alerts_desc":
     "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",

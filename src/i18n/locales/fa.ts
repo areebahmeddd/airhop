@@ -512,9 +512,18 @@ export const strings: Strings = {
   "chat.ring.alert.snooze": "به تعویق انداختن 1 ساعت",
   "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
   "chat.contact.allow_ring_desc":
-    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند",
+    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
   "chat.contact.ring_action": "زنگ زدن",
   "chat.contact.ringing": "در حال زنگ زدن…",
+  "chat.ring.sent_snoozed": "زنگ زده شد، به تعویق افتاد",
+  "chat.ring.sent_too_soon": "زنگ زده شد، خیلی زود",
+  "chat.ring.sent_not_allowed": "زنگ زده شد، مجاز نیست",
+  "chat.contact.ring_hint_nearby":
+    "زنگ زدن فقط وقتی کار می‌کند که آن‌ها نزدیک باشند",
+  "chat.contact.ring_hint_not_allowed": "به شما اجازه زنگ زدن نداده‌اند",
+  "chat.contact.ring_hint_snoozed": "فعلاً زنگ‌ها را به تعویق انداخته‌اند",
+  "chat.contact.ring_hint_too_soon": "لحظاتی پیش به آن‌ها زنگ زده شد",
+  "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
   "settings.security.ring_alerts": "هشدارهای زنگ",
   "settings.security.ring_alerts_desc":
     "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",

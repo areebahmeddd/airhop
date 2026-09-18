@@ -6,6 +6,7 @@
 // chatting, reachability, verification, and the encryption guarantee, plus the
 // Remove contact / Block actions.
 
+import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
 import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { textAlignEnd } from "@i18n/layout";
@@ -37,13 +38,13 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { formatLongDate } from "@utils/format";
+import { formatDuration, formatLongDate } from "@utils/format";
 import {
   resolveDisplayName,
   resolvePeerOwnName,
 } from "@utils/peer-display-name";
 import { isNostrId, NOSTR_ID_PREFIX, peerIDToUsername } from "@utils/username";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import VerifyContactScreen from "../contacts/verify-contact-screen";
 import { SettingRow, SettingSwitch } from "../settings/settings-primitives";
@@ -77,8 +78,11 @@ export default function ContactInfoSheet({
     peerID ? s.contacts[peerID] : undefined,
   );
   const peer = usePeerStore((s) => (peerID ? s.peers.get(peerID) : undefined));
-  // Snapshot on open, so the reachability line is honest without a live timer.
-  const [nowMs] = useState(() => Date.now());
+  // Refreshed when the sheet opens and every second while a ring timer runs
+  // (the effect below the ring state). At open rather than at mount: this
+  // component stays mounted beside the thread and the DM list, so a mount
+  // snapshot ages for as long as the screen behind it stays up.
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [verifying, setVerifying] = useState(false);
   const [paying, setPaying] = useState(false);
 
@@ -202,19 +206,72 @@ export default function ContactInfoSheet({
     copy(idValue);
   }
 
-  // Ring, sender side. Offered only once peerAcceptsRing confirms their
-  // proven capability, so it never shows for a bitchat peer or one who has
-  // granted nobody. Greyed out, not hidden, while our last ring is pending.
-  const canRing =
-    peerID !== null && (getMeshService()?.peerAcceptsRing(peerID) ?? false);
+  // Ring, sender side. Offered only while they are nearby and have proven,
+  // inside the session we hold with them, that they accept a ring from us.
+  // Held, not hidden, while our last ring is still sounding on their phone
+  // and through the cooldown after it.
+  const acceptsRing = peer?.acceptsRing === true;
+  const canRing = isOnline && acceptsRing;
   const ringSending = useRingStore((s) =>
     peerID !== null ? s.isSending(peerID, nowMs) : false,
   );
+  const ringCooldownMs = useRingStore((s) =>
+    peerID !== null ? s.cooldownRemainingMs(peerID, nowMs) : 0,
+  );
+  const ringRefusal = useRingStore((s) =>
+    peerID !== null ? s.lastRefusal(peerID) : null,
+  );
+  // A live clock only while there is something to count. The open-time
+  // refresh is deferred by a tick so the effect body itself sets no state.
+  const ringTimerRunning =
+    channel !== null && (ringSending || ringCooldownMs > 0);
+  useEffect(() => {
+    if (channel === null) return;
+    const tick = (): void => setNowMs(Date.now());
+    const first = setTimeout(tick, 0);
+    const every = ringTimerRunning ? setInterval(tick, 1000) : null;
+    return () => {
+      clearTimeout(first);
+      if (every !== null) clearInterval(every);
+    };
+  }, [channel, ringTimerRunning]);
+  // Why there is no Ring button, or what became of the last ring, so an
+  // absent control is never a mystery. Shown for the same people the grant
+  // switch is shown for. A tap the mesh could not carry (the peer store's
+  // 60 s window outlives the registry's 45 s for a direct peer) reads as
+  // "nearby only" rather than a haptic and silence; keyed by peer, since this
+  // sheet is reused for everyone.
+  const [ringFailedFor, setRingFailedFor] = useState<string | null>(null);
+  const ringHint: string | null = !renameable
+    ? null
+    : ringSending
+      ? null
+      : ringFailedFor === peerID
+        ? T("chat.contact.ring_hint_nearby")
+        : ringRefusal === RingRefusalReason.SNOOZED
+          ? T("chat.contact.ring_hint_snoozed")
+          : ringRefusal === RingRefusalReason.COOLDOWN
+            ? T("chat.contact.ring_hint_too_soon")
+            : ringRefusal === RingRefusalReason.NOT_ALLOWED
+              ? T("chat.contact.ring_hint_not_allowed")
+              : ringCooldownMs > 0
+                ? T("chat.contact.ring_hint_again_in", {
+                    time: formatDuration(Math.ceil(ringCooldownMs / 1000)),
+                  })
+                : !isOnline
+                  ? T("chat.contact.ring_hint_nearby")
+                  : !acceptsRing
+                    ? T("chat.contact.ring_hint_not_allowed")
+                    : null;
   function handleRing(): void {
     if (peerID === null) return;
-    // Null means no live session carried it. Rare, since the button only
-    // shows once the peer has proven capability, but must not go silent.
-    if (getMeshService()?.sendRing(peerID) === null) rejected();
+    // Null means no live session carried it.
+    if (getMeshService()?.sendRing(peerID) === null) {
+      rejected();
+      setRingFailedFor(peerID);
+      return;
+    }
+    setRingFailedFor(null);
   }
 
   // Ring, receiver side: a revocable per-contact grant, see Contact.allowRing.
@@ -533,11 +590,16 @@ export default function ContactInfoSheet({
               {/* Same disabled-not-vanished treatment `kept` gets above. */}
               {canRing && (
                 <Pressable
-                  style={[styles.payBtn, ringSending && styles.keepBtnDone]}
+                  style={[
+                    styles.payBtn,
+                    (ringSending || ringCooldownMs > 0) && styles.keepBtnDone,
+                  ]}
                   onPress={handleRing}
-                  disabled={ringSending}
+                  disabled={ringSending || ringCooldownMs > 0}
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: ringSending }}
+                  accessibilityState={{
+                    disabled: ringSending || ringCooldownMs > 0,
+                  }}
                   accessibilityLabel={T("chat.contact.ring_action")}
                 >
                   <Feather name="bell" size={16} color={Colors.textPrimary} />
@@ -547,6 +609,9 @@ export default function ContactInfoSheet({
                       : T("chat.contact.ring_action")}
                   </Text>
                 </Pressable>
+              )}
+              {ringHint !== null && (
+                <Text style={styles.ringHint}>{ringHint}</Text>
               )}
             </View>
           </>
@@ -798,6 +863,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.base,
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
+    },
+    ringHint: {
+      fontSize: FontSize.xs,
+      lineHeight: FontSize.xs * 1.5,
+      color: Colors.textMuted,
+      textAlign: "center",
+      paddingHorizontal: Spacing.md,
     },
   });
 }

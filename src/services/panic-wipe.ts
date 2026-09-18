@@ -133,10 +133,11 @@ export interface PanicWipeResult {
 }
 
 export async function panicWipe(): Promise<PanicWipeResult> {
-  // -1. Silence a live Ring alert first: clearing this store stops
-  //     ring-alert-sheet's haptic loop and its bell card immediately,
-  //     before the rest of the sequence even starts.
-  useIncomingRingStore.getState().clear();
+  // -1. Silence a live Ring alert first: emptying this store stops
+  //     ring-alert-sheet's loop and its overlay before the rest of the
+  //     sequence starts. The tray copy goes with every other notification in
+  //     step 5.
+  useIncomingRingStore.getState().clearAll();
 
   // 0. Record the intent BEFORE anything is destroyed. Everything below is a
   //    sequence, not a transaction, and the process can die anywhere in it.
