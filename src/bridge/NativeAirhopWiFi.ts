@@ -56,8 +56,9 @@ export interface Spec extends TurboModule {
   addListener(eventName: string): void;
   removeListeners(count: number): void;
 
-  // Peers, links and the transport's recent log, for the support bundle.
-  // Android only, hence optional.
+  // Live counts for the support bundle, nothing that identifies a peer.
+  // Android also folds in its recent log, since Samsung builds drop
+  // informational logcat lines; iOS skips that, recentLog() covers it there.
   dumpState?(): Promise<string>;
 }
 

@@ -18,4 +18,7 @@ RCT_EXTERN_METHOD(writeToWiFiLink:(NSString *)linkID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(dumpState:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

@@ -518,6 +518,22 @@ private actor WiFiAwareTransport {
         AirhopLog.wifi.notice("WiFi link down: \(linkID, privacy: .public)")
         emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
     }
+
+    // MARK: Diagnostics
+
+    /// Counts only, nothing that identifies a peer: WAPairedDevice.ID survives
+    /// a pairing indefinitely, unlike Android's per-attach instance token.
+    /// History lives in AirhopAppModule.swift's recentLog(), which already
+    /// reads these notices back.
+    func dumpState() -> String {
+        """
+        attached: \(isRunning)
+        peers known: \(endpoints.count)
+        links up: \(links.count)
+        dials in flight: \(dialling.count)
+        backing off: \(redialDelay.count)
+        """
+    }
 }
 
 // MARK: - Failures
@@ -700,6 +716,31 @@ final class AirhopWiFiModule: RCTEventEmitter {
             } catch {
                 reject("WRITE_FAILED", String(describing: error), error)
             }
+        }
+    }
+
+    // Never rejects: below the floor or unattached both read as zero, same as
+    // `dumpState()`'s own idle counts.
+    @objc(dumpState:rejecter:)
+    func dumpState(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        guard #available(iOS 26.0, *) else {
+            resolve("attached: false")
+            return
+        }
+        dumpState(resolve: resolve)
+    }
+
+    @available(iOS 26.0, *)
+    private func dumpState(resolve: @escaping RCTPromiseResolveBlock) {
+        guard let transport = box as? WiFiAwareTransport else {
+            resolve("attached: false")
+            return
+        }
+        Task {
+            resolve(await transport.dumpState())
         }
     }
 

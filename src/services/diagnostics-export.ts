@@ -52,10 +52,9 @@ export interface DiagnosticsSnapshot {
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
   log?: string;
-  // The Wi-Fi Aware transport's own account of its peers, links and recent
-  // events. Android only. Kept in the process because Samsung retail builds
-  // drop every informational logcat line, which is where a transport's life
-  // is until it fails.
+  // The Wi-Fi Aware transport's own live counts. Android folds its recent
+  // log in too (Samsung builds drop logcat info lines); iOS's is already in
+  // the log section above.
   wifiTransport?: string;
 }
 
