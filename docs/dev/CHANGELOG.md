@@ -5,6 +5,13 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- fix: rebuild wifi aware connection logic as a per-peer state machine with retries, heartbeats and self-healing discovery (#37) (by @areebahmeddd) [25900a6]
+- fix: ring alert functionality and notification handling (by @areebahmeddd) [31d26f9]
+
+**Full changelog:** [v1.0.6..v1.0.7](https://github.com/areebahmeddd/airhop/compare/v1.0.6..v1.0.7)
+
+## What's New
+
 - fix(ci): add copyApkToCache method and improve search scoring logic (by @areebahmeddd) [f7bc61c]
 - fix: update links to include trailing slashes for consistency (SEO fixed) (by @areebahmeddd) [4705a6f]
 - fix(LAN): implement network state watchers for improved connectivity handling (by @areebahmeddd) [699c9d0]
