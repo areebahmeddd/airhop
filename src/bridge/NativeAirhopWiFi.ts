@@ -2,7 +2,7 @@
 //
 // Hand-maintained, not Codegen input. See NativeAirhopBLE.ts for why.
 //
-// Backed by AirhopWiFiModule.kt (NAN, API 26+) and AirhopWiFiModule.swift
+// Backed by AirhopWiFiModule.kt (NAN, API 29+) and AirhopWiFiModule.swift
 // (WiFiAware, iOS 26+). One contract, two implementations of the same radio
 // protocol, and the mesh engine does not know which it has.
 //
@@ -20,10 +20,13 @@
 //   AirhopWiFi.linkDisconnected    { linkID }
 //   AirhopWiFi.availabilityChanged { available }
 //
-// availabilityChanged tells the reconciler to forget it is started. Android
-// carries both edges off the framework's state broadcast, so it recovers without
-// a relaunch. iOS has no such broadcast and reports only the falling edge, which
-// is why the controller answers a drop with a retry ladder.
+// availabilityChanged tells the reconciler to forget it is started. It is sent
+// when the radio is gone or the attach has to be rebuilt, never for what native
+// recovers from on its own (a discovery session ending, a peer not answering, a
+// data path dropping), so the links JS holds survive those. Android carries both
+// edges off the framework's state broadcast; iOS has no such broadcast and
+// reports only the falling edge, which is why the controller answers a drop
+// with a retry ladder.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -52,9 +55,14 @@ export interface Spec extends TurboModule {
   // Required by the NativeEventEmitter contract.
   addListener(eventName: string): void;
   removeListeners(count: number): void;
+
+  // Peers, links and the transport's recent log, for the support bundle.
+  // Android only, hence optional.
+  dumpState?(): Promise<string>;
 }
 
-// `get`, not `getEnforcing`: the Android package does not register below API 26,
-// and a device without the fast path must still run the mesh. iOS always
-// registers and refuses inside `startWiFi`, its floor being a runtime check.
+// `get`, not `getEnforcing`: the Android package does not register below API 29,
+// where the data path does not exist, and a device without the fast path must
+// still run the mesh. iOS always registers and refuses inside `startWiFi`, its
+// floor being a runtime check.
 export default TurboModuleRegistry.get<Spec>("AirhopWiFi");

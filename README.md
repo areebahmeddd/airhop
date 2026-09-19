@@ -118,7 +118,7 @@ Airhop chooses a transport per message. Bluetooth is the only one that needs no 
 | iPhone to Android | Yes                                                                | Yes                                     | No                                | Yes                              | Yes                                      |
 | Range             | ~10-30 m indoors, up to ~100 m line of sight, extended by each hop | Wherever the network reaches            | ~30 m                             | Global                           | Wherever the carrier walks               |
 | Max hops          | 7                                                                  | 1                                       | 1                                 | 1                                | 1 carrier, but unbounded in time         |
-| Speed             | ~18 KiB/s to one peer, ~15 KiB/s to a channel                      | Network speed, with no radio pacing     | ~18 KiB/s, paced like Bluetooth   | Not used for files               | Not used for files                       |
+| Speed             | ~18 KiB/s to one peer, ~15 KiB/s to a channel                      | Network speed, with no radio pacing     | Link speed, with no radio pacing  | Not used for files               | Not used for files                       |
 | Latency per hop   | 10-220 ms (randomized to avoid collisions)                         | Network round trip                      | n/a                               | Relay round trip; more over Tor  | Whenever the carrier meets the recipient |
 
 Notes on the numbers:

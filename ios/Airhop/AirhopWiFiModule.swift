@@ -144,6 +144,12 @@ private actor WiFiAwareTransport {
     private var dialling: Set<WAPairedDevice.ID> = []
     /// Last endpoint per device, so an inbound tiebreak loss can dial at once.
     private var endpoints: [WAPairedDevice.ID: WAEndpoint] = [:]
+    /// Wait before the next dial to a device whose link ended or whose dial
+    /// failed, doubling to a minute. The browser reports a device once and
+    /// stays silent while it remains in range, so nothing else would try again.
+    private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
+    private static let redialFloor: Duration = .seconds(2)
+    private static let redialCeiling: Duration = .seconds(60)
 
     private var linkSeq = 0
     private var runTask: Task<Void, Never>?
@@ -211,6 +217,7 @@ private actor WiFiAwareTransport {
         linkByDevice.removeAll()
         dialling.removeAll()
         endpoints.removeAll()
+        redialDelay.removeAll()
     }
 
     // MARK: Publish and subscribe
@@ -286,6 +293,17 @@ private actor WiFiAwareTransport {
         Task { await self.dial(endpoint) }
     }
 
+    /// Both ends of a dropped link redial, and the tiebreak collapses the pair.
+    private func scheduleRedial(_ deviceID: WAPairedDevice.ID?) {
+        guard isRunning, let deviceID, let endpoint = endpoints[deviceID] else { return }
+        let delay = redialDelay[deviceID] ?? Self.redialFloor
+        redialDelay[deviceID] = min(delay * 2, Self.redialCeiling)
+        Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            await self?.considerDial(endpoint)
+        }
+    }
+
     private func dial(_ endpoint: WAEndpoint) async {
         let connection = NetworkConnection(
             to: endpoint,
@@ -332,13 +350,19 @@ private actor WiFiAwareTransport {
         // Acted on in the defer, not inline: `considerDial` takes the dial guard
         // and the `releaseDial` below would hand it straight back.
         var redial: WAEndpoint?
+        // False only where the peer's own connection is the one that survives.
+        var retryLater = true
         defer {
             // Hello failed, tiebreak lost or read loop ended, this is the one
             // place a link stops existing. A registry entry left behind holds the
             // connection alive with nobody reading it.
             if let linkID { retire(linkID) }
             releaseDial(deviceID)
-            if let redial { considerDial(redial) }
+            if let redial {
+                considerDial(redial)
+            } else if retryLater {
+                scheduleRedial(deviceID)
+            }
         }
 
         do {
@@ -370,11 +394,13 @@ private actor WiFiAwareTransport {
                 // Losing an INBOUND connection means our token is the lower one,
                 // so we are the side that should dial. The peer has stopped
                 // trying and nothing else would close the loop.
+                retryLater = false
                 if !weInitiated, let deviceID { redial = endpoints[deviceID] }
                 return
             }
 
             guard let id = adopt(connection, deviceID: deviceID, handle: handle) else {
+                retryLater = false
                 return
             }
             linkID = id
@@ -417,6 +443,7 @@ private actor WiFiAwareTransport {
             linkByDevice[deviceID] = linkID
             // Holding the guard would stop a reconnect once this link drops.
             dialling.remove(deviceID)
+            redialDelay.removeValue(forKey: deviceID)
         }
         AirhopLog.wifi.notice("WiFi link up: \(linkID, privacy: .public)")
         emit(WiFiEvent.linkConnected, ["linkID": linkID])
@@ -432,9 +459,10 @@ private actor WiFiAwareTransport {
 
     /// Read length-prefixed frames until the connection ends.
     ///
-    /// No read deadline, unlike the Kotlin module's 90 seconds: Apple collects
-    /// idle connections and closes a suspended app's outright, both of which
-    /// surface as a receive error below. A timer would only close healthy links
+    /// No read deadline and no heartbeat, unlike the Kotlin module: Apple
+    /// collects idle connections and closes a suspended app's outright, both of
+    /// which surface as a receive error below, and the framework owns the data
+    /// path's liveness on this platform. A timer would only close healthy links
     /// early.
     private func readLoop(linkID: String, connection: NetworkConnection<TCP>) async {
         while !Task.isCancelled {

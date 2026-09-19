@@ -376,9 +376,9 @@ describe("reporting the fast path's state", () => {
     expect(seen).toEqual(["active", "unavailable"]);
   });
 
-  // The same `available: false` also arrives when discovery is refused on a
-  // device whose WiFi is on (AirhopWiFiModule.reportDiscoveryRefused). Calling
-  // that "WiFi off" would send the user to a toggle that is already on.
+  // The same `available: false` also arrives when native rebuilds the attach
+  // on a device whose WiFi is on. Calling that "WiFi off" would send the user
+  // to a toggle that is already on.
   test("does not blame WiFi for a drop that turns out to be a refusal", async () => {
     mockStartWiFi.mockResolvedValue(undefined);
     const seen: string[] = [];

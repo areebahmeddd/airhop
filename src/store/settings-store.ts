@@ -50,178 +50,77 @@ export type TorBridgeMode = "off" | "obfs4" | "snowflake" | "custom";
 
 interface SettingsState {
   theme: ThemePreference;
-  // The language the app is read in.
-  //
-  // "system" is the unset state rather than a listed choice, the same shape as
-  // `theme` above: until you pick one, Airhop is whichever language the phone
-  // is, falling back to English when the phone's language is one Airhop does
-  // not ship. Picking explicitly pins it, so a user reading Airhop in Spanish
-  // on an English phone keeps Spanish.
-  //
-  // Stored as a preference, not as the language being rendered. The two differ
-  // for exactly one case: Arabic, Persian and Urdu read right to left, and
-  // React Native fixes layout direction when the process starts, so choosing
-  // one of those takes effect on the next launch. See the direction note in
-  // `@i18n`.
+  // "system" follows the device language; an explicit choice pins Airhop to it.
+  // The stored preference can differ from the rendered language while a restart
+  // is required to apply a right-to-left layout direction.
   language: LanguagePreference;
-  // The language the native layout flag is currently set for.
-  //
-  // Not a preference and never shown: Airhop's record of a value living outside
-  // its stores, in NSUserDefaults and SharedPreferences. At boot
-  // `I18nManager.isRTL` gives the frame's direction and this names the language
-  // it was built for, which a bare direction cannot: three shipped languages are
-  // right to left.
-  //
-  // Written by `applyLayoutDirection`, read once by `initI18n`, and survives
-  // `reset()` because the native flag survives a panic wipe.
+  // Language recorded for the native layout direction. It lives outside MMKV,
+  // so it survives the panic wipe along with the native RTL flag and is read
+  // once during i18n startup to distinguish Arabic, Persian, and Urdu.
   frameLanguage: LanguageCode | null;
+  // Monospace typeface for keys, IDs, geohashes, and amounts.
+  monoFont: MonoFont;
+  // Seconds to hold a sent message for undo. Zero sends immediately.
+  undoSendSeconds: number;
   autoDownloadMedia: boolean;
-  // Whether holding the mic streams live to everyone in Bluetooth range
-  // (walkie-talkie) or just records a voice note to send on release. On by
-  // default, matching bitchat's PTTSettings. Turning it off makes voice behave
-  // exactly as it did before live voice existed, in both directions: no live
-  // sending, and incoming bursts are ignored rather than played.
-  liveVoiceEnabled: boolean;
-  // Whether the mesh keeps running once the app is closed.
-  //
-  // On by default: a mesh that stops when you look away is not a mesh. Off
-  // trades that for a phone with no persistent notification and no radio work
-  // in the background, and the cost is stated plainly on the row - messages
-  // stop arriving until Airhop is opened again.
-  //
-  // Distinct from Away, which stops the mesh even in the foreground. The middle
-  // state: run while I am using it, stop when I am not.
-  backgroundMeshEnabled: boolean;
-  // Android only. Off by default, and its own switch even though only
-  // offered while backgroundMeshEnabled is on - starting itself is a bigger
-  // step than staying up. See services/boot-start.ts.
-  autoStartOnBoot: boolean;
-  // Whether to run the mesh over the WiFi network this phone is joined to.
-  //
-  // Off by default, and the only transport that is. Publishing an mDNS record
-  // broadcasts to every device on the network, and to whoever runs it, that
-  // this phone is carrying Airhop. On a venue, campus or corporate network that
-  // is logged by ordinary infrastructure with no app installed, so it is the
-  // user's call rather than ours.
-  lanTransportEnabled: boolean;
-  // Whether a system notification withholds the sender and the message body.
-  //
-  // ON by default, which is the deliberate part. The lock screen is rendered by
-  // the OS without unlocking the phone, so a full preview narrates DMs to
-  // anyone who can see the screen: someone standing behind you, or a phone left
-  // face-up on a table. For the situations this app is built for the realistic
-  // compromise is a device taken and looked at, not traffic intercepted, and a
-  // notification is the one place plaintext leaves the app by design.
-  //
-  // Turning it off restores the sender and preview for anyone who would rather
-  // have them. Either way the routing payload is unaffected, so tapping a
-  // notification still opens the right thread.
-  hideNotificationPreviews: boolean;
-  // Master switch for Ring. ON by default, so a contact's own allowRing
-  // grant works; this is the one flip that refuses every ring at once,
-  // regardless of what any contact holds.
-  ringAlertsEnabled: boolean;
   uploadQuality: UploadQuality;
-  // How many days an attachment survives on disk. Seven by default, matching
-  // bitchat's sweep; see MEDIA_RETENTION_DAY_OPTIONS for why it is a choice.
+  // Days an attachment stays on disk before the launch sweep removes it.
   mediaRetentionDays: MediaRetentionDays;
-  // Whether this device acts as an internet gateway: relaying mesh-only peers'
-  // geohash events to Nostr (toGateway carriers) and, in future, rebroadcasting
-  // relay traffic to the mesh. Off by default, matching bitchat; enabling it
-  // spends this device's battery and data on behalf of nearby offline peers.
-  gatewayEnabled: boolean;
-  // Whether this device bridges its public #bluetooth mesh chat to a geohash-cell
-  // rendezvous on Nostr, stitching separate mesh islands together over the
-  // internet. Off by default: enabling it publishes your public messages (signed
-  // by an unlinkable per-cell key) so an out-of-range island can see them. A
-  // per-message "nearby only" control keeps any single message radio-only.
-  bridgeEnabled: boolean;
-  // Whether internet traffic is routed through Tor. Both platforms run the same
-  // embedded Arti and drive it from this one preference.
-  // Persisted so the choice is applied before the first relay connects at
-  // startup (see tor-routing.ts), never leaking the clear net for a Tor user.
+  // Whether holding the mic streams live or records a voice note.
+  liveVoiceEnabled: boolean;
+  // Whether notifications hide the sender and message body on the lock screen.
+  hideNotificationPreviews: boolean;
+  // Master switch for Ring, regardless of each contact's allowRing grant.
+  ringAlertsEnabled: boolean;
+  // Whether the mesh keeps running after the app is closed.
+  backgroundMeshEnabled: boolean;
+  // Android only: start the mesh automatically after boot.
+  autoStartOnBoot: boolean;
+  // Whether to run the mesh over the current WiFi network.
+  lanTransportEnabled: boolean;
+  // Master switch for Nostr and other internet-backed features.
+  internetEnabled: boolean;
+  // Off requires a custom relay; otherwise relay discovery could silently fall
+  // back to the bundled directory. The store and merge hook enforce this too.
+  geoRelayDiscovery: boolean;
+  // User-added relay URLs, also the sole source when discovery is off.
+  customRelays: string[];
+  // Whether internet traffic uses the embedded Tor client. Persisted so startup
+  // never briefly connects to a relay over the clear net.
   torEnabled: boolean;
-  // Which bridge configuration Tor uses, and the lines behind "custom".
-  //
-  // Bridges are fixed when the client is built, so changing either while Tor is
-  // running restarts it; tor-routing.ts owns that. Persisted for the same reason
-  // torEnabled is: a relaunch has to come back on the route the user chose.
+  // Tor bridge mode and custom bridge lines.
   torBridgeMode: TorBridgeMode;
   torBridgeLines: string;
-  // Set before the native Tor client is asked to start and cleared when it
-  // answers. Persisted, so it survives a process that does not.
-  //
-  // torEnabled is written before the client exists so a relaunch mid-bootstrap
-  // comes back on Tor rather than on the clear net. This is what keeps that
-  // ordering safe: a native failure severe enough to end the process would
-  // otherwise be replayed by every launch after it, and the only way out of that
-  // loop is clearing app data, which is the user's keys, history and wallet.
-  //
-  // Still set at launch means the last start never finished, and tor-routing
-  // turns Tor off. Reading it beside `torEnabled` is how the Tor screen knows to
-  // say so: reverting a privacy choice silently is the one thing it must not do.
+  // Set before native Tor startup and cleared on its response. If it survives a
+  // relaunch, the previous bootstrap failed and the preference is reverted.
   torStartPending: boolean;
-  // Whether Cashu mint HTTP calls may go out over the clear net while Tor is
-  // on. Tor covers only Nostr WebSockets on iOS, and mint calls are plain fetch,
-  // so with Tor enabled a mint request would reveal this device's IP to the mint
-  // and link it to the proofs being swapped. Off by default: mint calls are
-  // refused instead, and the wallet stays fully usable offline. Android installs
-  // the proxy into the HTTP client every socket is built from, so a mint call is
-  // already covered there and this flag is only consulted on iOS.
+  // iOS mint requests use plain fetch, so Tor cannot cover them. This opt-in
+  // allows that clear-net request; Android's proxied client does not need it.
   allowMintOverClearnet: boolean;
-  // Master switch for all internet (Nostr) connectivity: DM/channel fallback,
-  // location channels, courier drops, the gateway, and the mesh bridge. On by
-  // default. Off makes Airhop pure Bluetooth: no relay is contacted at all, and
-  // the internet-dependent features are inert (and shown disabled).
-  internetEnabled: boolean;
-  // Whether the app auto-selects the nearest relays for a cell from its vendored
-  // directory. On by default; off uses only the custom relays.
-  //
-  // RELAY_SOURCE_INVARIANT: never off with an empty customRelays. Held by
-  // setGeoRelayDiscovery, removeCustomRelay and the merge hook, because "off
-  // with nothing pinned" leaves the switch claiming the app does not
-  // auto-select relays while mergeGeoRelays falls back to doing exactly that.
-  geoRelayDiscovery: boolean;
-  // User-added relay URLs (wss://...), always tried for location channels in
-  // addition to discovery, and the sole source when discovery is off. Capped at
-  // MAX_CUSTOM_RELAYS: each one is a socket held open on top of the cell's
-  // discovered set, and NostrClient's per-call ceiling is sized to fit both.
-  customRelays: string[];
-  // Whether balances read in satoshis or in bitcoin. A display choice only:
-  // one bitcoin is exactly 100,000,000 satoshis, so this is a rename rather
-  // than a conversion, needs no price feed, and works offline.
+  // Whether this device relays nearby mesh traffic to the internet.
+  gatewayEnabled: boolean;
+  // Whether this device bridges public mesh chat to Nostr.
+  bridgeEnabled: boolean;
+  // Display unit only: satoshis or bitcoin. No conversion or price feed needed.
   bitcoinUnit: BitcoinUnit;
-  // Monospace typeface for keys/IDs/geohashes/amounts. Live: changing it
-  // recomputes styles immediately via useThemeColors (see ui/theme.ts).
-  monoFont: MonoFont;
-  // How long (seconds) a sent message is held with an "undo" pill before it
-  // transmits. 0 means no hold: messages send immediately. Default 2.
-  undoSendSeconds: number;
-  // Whether the one-time screen explaining WHY a chat app needs Bluetooth and
-  // Location has been shown. Not a preference, but it belongs here because it
-  // has to survive relaunch and be cleared by the panic wipe: after a wipe the
-  // app is a first-run install again, and the next person deserves the same
-  // explanation before the OS asks them for anything.
+  // Whether the one-time Bluetooth and Location explanation was shown.
   permissionPrimerSeen: boolean;
-  // Whether the user has dealt with (or dismissed) the note about aggressive
-  // OEM background limits. One-time advice, not a setting, and never shown again
-  // once acknowledged - the alternative is a banner that nags forever, because
-  // there is no reliable way to detect an OEM autostart whitelist.
+  // Whether the OEM background-limit notice was acknowledged.
   backgroundLimitsAcknowledged: boolean;
   setTheme: (theme: ThemePreference) => void;
   setLanguage: (language: LanguagePreference) => void;
   setFrameLanguage: (code: LanguageCode) => void;
+  setMonoFont: (font: MonoFont) => void;
+  setUndoSendSeconds: (seconds: number) => void;
   setAutoDownloadMedia: (enabled: boolean) => void;
+  setUploadQuality: (quality: UploadQuality) => void;
+  setMediaRetentionDays: (days: MediaRetentionDays) => void;
   setLiveVoiceEnabled: (enabled: boolean) => void;
+  setHideNotificationPreviews: (hide: boolean) => void;
+  setRingAlertsEnabled: (enabled: boolean) => void;
   setBackgroundMeshEnabled: (enabled: boolean) => void;
   setAutoStartOnBoot: (enabled: boolean) => void;
   setLanTransportEnabled: (enabled: boolean) => void;
-  setHideNotificationPreviews: (hide: boolean) => void;
-  setRingAlertsEnabled: (enabled: boolean) => void;
-  setUploadQuality: (quality: UploadQuality) => void;
-  setMediaRetentionDays: (days: MediaRetentionDays) => void;
-  setGatewayEnabled: (enabled: boolean) => void;
-  setBridgeEnabled: (enabled: boolean) => void;
   setInternetEnabled: (enabled: boolean) => void;
   setGeoRelayDiscovery: (enabled: boolean) => void;
   addCustomRelay: (url: string) => void;
@@ -230,10 +129,10 @@ interface SettingsState {
   setTorBridgeMode: (mode: TorBridgeMode) => void;
   setTorBridgeLines: (lines: string) => void;
   setTorStartPending: (pending: boolean) => void;
-  setBitcoinUnit: (unit: BitcoinUnit) => void;
   setAllowMintOverClearnet: (allowed: boolean) => void;
-  setMonoFont: (font: MonoFont) => void;
-  setUndoSendSeconds: (seconds: number) => void;
+  setGatewayEnabled: (enabled: boolean) => void;
+  setBridgeEnabled: (enabled: boolean) => void;
+  setBitcoinUnit: (unit: BitcoinUnit) => void;
   markPermissionPrimerSeen: () => void;
   markBackgroundLimitsAcknowledged: () => void;
   // Restore first-run defaults. Used by the panic wipe.
@@ -241,25 +140,22 @@ interface SettingsState {
 }
 
 const DEFAULTS = {
-  // Follow the OS appearance by default so a new user gets whichever of light or
-  // dark their phone is already set to, rather than being forced into dark.
   theme: "system",
   language: "system",
   // Unknown until the first `applyLayoutDirection`. A fresh install has never
   // called `forceRTL`, so its frame is left to right regardless.
   frameLanguage: null as LanguageCode | null,
+  monoFont: "system",
+  undoSendSeconds: 2,
   autoDownloadMedia: true,
+  uploadQuality: "high",
+  mediaRetentionDays: 7,
   liveVoiceEnabled: true,
+  hideNotificationPreviews: true,
+  ringAlertsEnabled: true,
   backgroundMeshEnabled: true,
   autoStartOnBoot: false,
   lanTransportEnabled: false,
-  // Private by default; see the field comment above for why.
-  hideNotificationPreviews: true,
-  ringAlertsEnabled: true,
-  uploadQuality: "high",
-  mediaRetentionDays: 7,
-  gatewayEnabled: false,
-  bridgeEnabled: false,
   internetEnabled: true,
   geoRelayDiscovery: true,
   customRelays: [] as string[],
@@ -268,13 +164,9 @@ const DEFAULTS = {
   torBridgeLines: "",
   torStartPending: false,
   allowMintOverClearnet: false,
-  // Sats by default: it is the unit people actually quote amounts in, and it
-  // avoids showing a new user a balance that reads 0.00000000.
+  gatewayEnabled: false,
+  bridgeEnabled: false,
   bitcoinUnit: "sat",
-  // The device's own monospace by default, so a new install looks native and
-  // familiar. JetBrains Mono is offered as an opt-in choice under Appearance.
-  monoFont: "system",
-  undoSendSeconds: 2,
   permissionPrimerSeen: false,
   backgroundLimitsAcknowledged: false,
 } satisfies Partial<SettingsState>;
@@ -303,17 +195,20 @@ export const useSettingsStore = create<SettingsState>()(
       setFrameLanguage(code) {
         set({ frameLanguage: code });
       },
+      setMonoFont(font) {
+        set({ monoFont: font });
+      },
+      setUndoSendSeconds(seconds) {
+        set({ undoSendSeconds: seconds });
+      },
       setAutoDownloadMedia(enabled) {
         set({ autoDownloadMedia: enabled });
       },
-      setBackgroundMeshEnabled(enabled) {
-        set({ backgroundMeshEnabled: enabled });
+      setUploadQuality(quality) {
+        set({ uploadQuality: quality });
       },
-      setAutoStartOnBoot(enabled) {
-        set({ autoStartOnBoot: enabled });
-      },
-      setLanTransportEnabled(enabled) {
-        set({ lanTransportEnabled: enabled });
+      setMediaRetentionDays(days) {
+        set({ mediaRetentionDays: days });
       },
       setLiveVoiceEnabled(enabled) {
         set({ liveVoiceEnabled: enabled });
@@ -324,17 +219,14 @@ export const useSettingsStore = create<SettingsState>()(
       setRingAlertsEnabled(enabled) {
         set({ ringAlertsEnabled: enabled });
       },
-      setUploadQuality(quality) {
-        set({ uploadQuality: quality });
+      setBackgroundMeshEnabled(enabled) {
+        set({ backgroundMeshEnabled: enabled });
       },
-      setMediaRetentionDays(days) {
-        set({ mediaRetentionDays: days });
+      setAutoStartOnBoot(enabled) {
+        set({ autoStartOnBoot: enabled });
       },
-      setGatewayEnabled(enabled) {
-        set({ gatewayEnabled: enabled });
-      },
-      setBridgeEnabled(enabled) {
-        set({ bridgeEnabled: enabled });
+      setLanTransportEnabled(enabled) {
+        set({ lanTransportEnabled: enabled });
       },
       setInternetEnabled(enabled) {
         set({ internetEnabled: enabled });
@@ -388,17 +280,17 @@ export const useSettingsStore = create<SettingsState>()(
         if (get().torStartPending === pending) return;
         set({ torStartPending: pending });
       },
-      setBitcoinUnit(unit) {
-        set({ bitcoinUnit: unit });
-      },
       setAllowMintOverClearnet(allowed) {
         set({ allowMintOverClearnet: allowed });
       },
-      setUndoSendSeconds(seconds) {
-        set({ undoSendSeconds: seconds });
+      setGatewayEnabled(enabled) {
+        set({ gatewayEnabled: enabled });
       },
-      setMonoFont(font) {
-        set({ monoFont: font });
+      setBridgeEnabled(enabled) {
+        set({ bridgeEnabled: enabled });
+      },
+      setBitcoinUnit(unit) {
+        set({ bitcoinUnit: unit });
       },
       markPermissionPrimerSeen() {
         set({ permissionPrimerSeen: true });

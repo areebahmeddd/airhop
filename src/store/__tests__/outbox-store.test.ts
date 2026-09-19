@@ -8,6 +8,7 @@
 // delivered twice, and nothing lingers forever.
 
 import {
+  ATTEMPT_MIN_INTERVAL_MS,
   MAX_PENDING_PER_PEER,
   MAX_SEND_ATTEMPTS,
   OUTBOX_TTL_MS,
@@ -95,9 +96,21 @@ describe("ordering and resolution", () => {
   });
 
   it("records delivery attempts without dropping the message", () => {
+    const now = Date.now();
     enqueue("m1", PEER_A);
-    state().markAttempted("m1");
-    state().markAttempted("m1");
+    state().markAttempted("m1", now);
+    state().markAttempted("m1", now + ATTEMPT_MIN_INTERVAL_MS);
+    expect(state().forPeer(PEER_A)[0].attempts).toBe(2);
+  });
+
+  it("does not charge attempts that land inside the spacing window", () => {
+    const now = Date.now();
+    enqueue("m1", PEER_A);
+    state().markAttempted("m1", now);
+    state().markAttempted("m1", now + 20_000);
+    state().markAttempted("m1", now + 40_000);
+    expect(state().forPeer(PEER_A)[0].attempts).toBe(1);
+    state().markAttempted("m1", now + ATTEMPT_MIN_INTERVAL_MS);
     expect(state().forPeer(PEER_A)[0].attempts).toBe(2);
   });
 });
@@ -153,7 +166,9 @@ describe("expiry", () => {
     // turn a seven-day queue into six minutes.
     const now = Date.now();
     enqueue("tried", PEER_A, now);
-    for (let i = 0; i < MAX_SEND_ATTEMPTS; i++) state().markAttempted("tried");
+    for (let i = 0; i < MAX_SEND_ATTEMPTS; i++) {
+      state().markAttempted("tried", now + i * ATTEMPT_MIN_INTERVAL_MS);
+    }
 
     const dropped = state().evictExpired(now);
     expect(dropped.map((m) => m.id)).toEqual(["tried"]);
@@ -163,8 +178,9 @@ describe("expiry", () => {
   it("keeps a message that has not used its attempts up", () => {
     const now = Date.now();
     enqueue("owed", PEER_A, now);
-    for (let i = 0; i < MAX_SEND_ATTEMPTS - 1; i++)
-      state().markAttempted("owed");
+    for (let i = 0; i < MAX_SEND_ATTEMPTS - 1; i++) {
+      state().markAttempted("owed", now + i * ATTEMPT_MIN_INTERVAL_MS);
+    }
 
     expect(state().evictExpired(now)).toEqual([]);
     expect(state().forPeer(PEER_A)).toHaveLength(1);

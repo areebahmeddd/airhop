@@ -9,6 +9,10 @@ jest.mock("@bridge/NativeAirhopApp", () => ({
   __esModule: true,
   default: null,
 }));
+jest.mock("@bridge/NativeAirhopWiFi", () => ({
+  __esModule: true,
+  default: null,
+}));
 jest.mock("expo-file-system", () => ({}));
 jest.mock("expo-sharing", () => ({}));
 jest.mock("@services/mesh-service", () => ({ getMeshService: () => null }));
@@ -75,6 +79,21 @@ describe("buildDiagnosticsReport", () => {
     });
     expect(report).toContain("WiFi Aware attached");
     expect(report).toContain("this app's tags only");
+  });
+
+  it("carries the WiFi transport's own account when the module has one", () => {
+    const report = buildDiagnosticsReport({
+      ...SNAPSHOT,
+      log: "",
+      wifiTransport: "attached: true for 12s\npeers: 1\n  ab12cd34 connected\n",
+    });
+    expect(report).toContain("Wi-Fi Aware transport");
+    expect(report).toContain("  attached: true for 12s");
+    expect(report).toContain("    ab12cd34 connected");
+    // Nothing to say on a platform without it.
+    expect(buildDiagnosticsReport({ ...SNAPSHOT, log: "" })).not.toContain(
+      "Wi-Fi Aware transport",
+    );
   });
 
   // Nothing in the snapshot's shape can hold a message, a nickname or a key,

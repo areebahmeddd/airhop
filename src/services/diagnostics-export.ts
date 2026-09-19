@@ -8,6 +8,7 @@
 // content, nicknames, keys, or peer IDs beyond the counts Diagnostics shows.
 
 import NativeAirhopApp from "@bridge/NativeAirhopApp";
+import NativeAirhopWiFi from "@bridge/NativeAirhopWiFi";
 import type { TransportKind } from "@core/mesh/links/link-registry";
 import { APP_VERSION } from "@data/app-info";
 import { t } from "@i18n";
@@ -51,6 +52,11 @@ export interface DiagnosticsSnapshot {
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
   log?: string;
+  // The Wi-Fi Aware transport's own account of its peers, links and recent
+  // events. Android only. Kept in the process because Samsung retail builds
+  // drop every informational logcat line, which is where a transport's life
+  // is until it fails.
+  wifiTransport?: string;
 }
 
 export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
@@ -86,6 +92,16 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Live voice: ${yes(s.settings.liveVoice)}`,
     "",
   ];
+  if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
+    lines.push(
+      "Wi-Fi Aware transport",
+      ...s.wifiTransport
+        .trimEnd()
+        .split("\n")
+        .map((line) => `  ${line}`),
+      "",
+    );
+  }
   if (s.log === undefined) {
     lines.push("Recent log", "  Not available on this platform.");
   } else if (s.log.trim().length === 0) {
@@ -143,6 +159,9 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
 
   // Undefined, not empty, on a platform with no module: the report says which.
   const log = await NativeAirhopApp?.recentLog().catch(() => "");
+  const wifiTransport = await NativeAirhopWiFi?.dumpState?.().catch(
+    () => undefined,
+  );
 
   return {
     generatedAt: new Date().toISOString(),
@@ -174,6 +193,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       liveVoice: settings.liveVoiceEnabled,
     },
     log,
+    wifiTransport,
   };
 }
 

@@ -16,9 +16,11 @@ class AirhopWiFiPackage : ReactPackage {
     override fun createNativeModules(
         reactContext: ReactApplicationContext,
     ): List<NativeModule> {
-        // WiFi Aware requires API 26+. On older devices the module is simply
-        // absent; TypeScript checks NativeModules.AirhopWiFi before using it.
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // The data path needs API 29: the peer's address is a link-local IPv6
+        // delivered in WifiAwareNetworkInfo, which does not exist below it.
+        // Discovery alone is no use, so on older devices the module is simply
+        // absent and TypeScript reads a missing module as unsupported.
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             listOf(AirhopWiFiModule(reactContext))
         } else {
             emptyList()

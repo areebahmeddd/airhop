@@ -678,8 +678,9 @@ export class MeshService {
       //
       //   * Only the BLE send originates into the flood router. A WiFi link is
       //     point to point, so the packet is not entering the flood.
-      //   * Only a refused WiFi write closes the link. A refused BLE write
-      //     usually means a full queue on a healthy link.
+      //   * Only a refused WiFi write closes the link, through onLinkGone so
+      //     the peer is demoted with it. A refused BLE write usually means a
+      //     full queue on a healthy link.
       const link = this.links.linkFor(recipientPeerID);
       if (link !== undefined) {
         if (link.kind === "ble") this.floodRouter.originate(packet);
@@ -688,7 +689,7 @@ export class MeshService {
           .then(
             () => true,
             () => {
-              if (link.kind === "wifi") this.links.close(link.id);
+              if (link.kind === "wifi") this.onLinkGone(link.id);
               return false;
             },
           );
@@ -1069,28 +1070,7 @@ export class MeshService {
       DeviceEventEmitter.addListener(
         "AirhopBLE.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
-          // A peer comes back only when this was its last link. A phone we
-          // also hold a second link to has not left, so none of the departure
-          // work below is owed for it.
-          const peerID = this.links.close(linkID);
-          if (peerID !== undefined) {
-            this.registry.markIndirect(peerID);
-            // The link is gone, so the peer is no longer a direct neighbour and
-            // loses the protection that came with it.
-            usePeerStore.getState().setDirect(peerID, false);
-            // Sync state is per link session. Forget the outstanding request so
-            // a device reconnecting under this ID cannot inherit the previous
-            // session's freshness exemption, and clear its response budget so a
-            // genuine reconnect is not throttled by traffic that is now gone.
-            this.requestSync.forget(peerID);
-            this.gossip.forgetPeer(peerID);
-            // The echo budget is per session. An ordinary drop keeps the
-            // session (resuming one is far cheaper than a handshake), but a
-            // peer that has been away long enough to restart comes back with
-            // a fresh one and must be answerable again; without this the set
-            // only ever grows.
-            this.peerStateEchoed.delete(peerID);
-          }
+          this.onLinkGone(linkID);
         },
       ),
 
@@ -1158,7 +1138,7 @@ export class MeshService {
             // discovering it one failed write at a time: the native disconnect
             // events cover an orderly close, not a radio pulled out from under
             // the transport.
-            this.links.closeAll("wifi");
+            this.closeLinksOf("wifi");
           }
         },
       ),
@@ -1196,10 +1176,7 @@ export class MeshService {
       DeviceEventEmitter.addListener(
         "AirhopWiFi.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
-          // Bookkeeping only. Unlike a BLE drop this owes the peer nothing
-          // elsewhere: BLE still carries the mesh, so the peer has not left and
-          // its session, presence and sync budgets stand.
-          this.links.close(linkID);
+          this.onLinkGone(linkID);
         },
       ),
       DeviceEventEmitter.addListener(
@@ -1219,7 +1196,7 @@ export class MeshService {
             // The sockets went with the network. Forget them here rather than
             // finding out one failed write at a time: the disconnect events
             // cover an orderly close, not an interface disappearing.
-            this.links.closeAll("lan");
+            this.closeLinksOf("lan");
             this.lan.setLinkCount(0);
           }
         },
@@ -1261,9 +1238,7 @@ export class MeshService {
       DeviceEventEmitter.addListener(
         "AirhopLAN.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
-          // Bookkeeping only, as with WiFi: Bluetooth still carries the mesh,
-          // so a closing LAN link does not mean the peer has left.
-          this.links.close(linkID);
+          this.onLinkGone(linkID);
           this.lan.setLinkCount(this.links.size("lan"));
         },
       ),
@@ -1416,6 +1391,31 @@ export class MeshService {
     }
 
     this.links.relay(b64, ingressLinkID);
+  }
+
+  // A link closed on any transport. A peer whose last link this was is no
+  // longer a direct neighbour, whichever radio carried it, and everything
+  // scoped to the link session goes with it. A peer we still hold another
+  // link to has not left.
+  private onLinkGone(linkID: string): void {
+    const peerID = this.links.close(linkID);
+    if (peerID === undefined) return;
+    this.registry.markIndirect(peerID);
+    usePeerStore.getState().setDirect(peerID, false);
+    // Sync state is per link session: a device reconnecting under this ID must
+    // not inherit the old freshness exemption or be throttled by a budget the
+    // old traffic spent.
+    this.requestSync.forget(peerID);
+    this.gossip.forgetPeer(peerID);
+    // The echo budget is per session too, and a peer away long enough to
+    // restart comes back with a fresh one.
+    this.peerStateEchoed.delete(peerID);
+  }
+
+  // Every link on one transport, when the OS withdraws the radio or the
+  // network and the per-link disconnect events stop arriving.
+  private closeLinksOf(kind: TransportKind): void {
+    for (const linkID of this.links.linkIDs(kind)) this.onLinkGone(linkID);
   }
 
   private handleRaw(linkID: string, dataBase64: string): void {

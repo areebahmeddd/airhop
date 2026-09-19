@@ -1,19 +1,12 @@
-// Pending outbound DMs awaiting a route to their recipient.
+// Pending outbound DMs awaiting a route to their recipient: the queue behind
+// the "queued for delivery" the UI shows. MeshService enqueues every mesh send
+// and flushes when the peer becomes reachable again (its ANNOUNCE, a session
+// coming up), and a delivery receipt resolves the entry. Persisted, since the
+// promise has to survive a restart.
 //
-// `MessageRouter.sendDm` returns "needs-courier" when a peer has no Noise
-// session, no WiFi or BLE link and no known Nostr pubkey. This store is the queue
-// behind the "queued for delivery" the UI shows for that case: MeshService
-// enqueues on failure and flushes when the peer becomes reachable again, either
-// through their ANNOUNCE or once a Noise or Double Ratchet session exists.
-// Without it that promise is a lie and every out-of-range DM is lost.
-//
-// Persisted, because "I'll deliver this when they're back in range" has to
-// survive an app restart to mean anything.
-//
-// This is deliberately NOT the full store-and-forward courier described in the
-// architecture docs (sealed envelopes relayed via third-party peers). It covers
-// the case that actually matters day to day, the recipient becoming reachable
-// again, without trusting intermediates to carry ciphertext.
+// Not the store-and-forward courier (sealed envelopes carried by third
+// parties); this covers the recipient coming back to us, without trusting
+// intermediates.
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -27,36 +20,28 @@ export interface PendingMessage {
   text: string;
   createdAtMs: number;
   attempts: number;
+  // When the last charged attempt went out. Absent until the first one.
+  lastAttemptMs?: number;
 }
 
 // Give up after this long. A week-old "hi" is noise, not a message.
 export const OUTBOX_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Hard cap PER RECIPIENT, so a long offline stretch cannot grow the store
-// without bound.
-//
-// Per recipient rather than global, matching bitchat's maxMessagesPerPeer. A
-// single global cap evicted the OLDEST entry whatever it was, so one chatty
-// unreachable peer silently deleted somebody else's queued mail - and the
-// sender was never told, because eviction is invisible. A per-peer cap makes
-// the cost of an unreachable conversation land on that conversation.
+// Per recipient, so one unreachable conversation cannot evict another's mail.
+// Eviction is invisible to the sender.
 export const MAX_PENDING_PER_PEER = 100;
 
-// How many real send opportunities a message gets before it is called failed.
-//
-// bitchat's number, and now bitchat's meaning. An attempt is charged only when
-// something actually went out over a route that could have acknowledged it: the
-// courier branch, which sends nothing, does not charge, and neither does the
-// expiry timer, which no longer sends at all. Retries fire on delivery
-// opportunities - a peer announcing, the app coming forward, relays
-// reconnecting - so eight of them is eight genuine chances, not eight ticks of
-// a clock.
-//
-// Getting that ordering wrong is what makes this constant dangerous: charged
-// per timer tick it turns a seven-day queue into six minutes and marks messages
-// failed that relays have already published. Charged per opportunity it bounds
-// both retention and airtime, which is the job it does in bitchat.
+// Real send opportunities before a message is called failed. An attempt is
+// charged only when something went out over a route that could have
+// acknowledged it: never by the courier branch, which sends nothing, and never
+// by a timer.
 export const MAX_SEND_ATTEMPTS = 8;
+
+// The least time between two charged attempts on one message. Opportunities
+// cluster: a direct peer announces every fifteen to thirty seconds and each
+// announce flushes the queue, so charged per announce the eight attempts would
+// be gone in minutes. Sends in between still go out; they are not charged.
+export const ATTEMPT_MIN_INTERVAL_MS = 2 * 60 * 1000;
 
 interface OutboxState {
   pending: PendingMessage[];
@@ -66,14 +51,11 @@ interface OutboxState {
   resolve: (id: string) => void;
   // Everything still owed to a given peer, oldest first.
   forPeer: (peerID: string) => PendingMessage[];
-  markAttempted: (id: string) => void;
-  // Drop anything past OUTBOX_TTL_MS or MAX_SEND_ATTEMPTS, and report what
-  // was dropped so the sender's bubble can stop claiming it is still coming.
-  //
-  // Returning the dropped entries rather than swallowing them is the point: an
-  // expired message disappearing from the queue while its bubble keeps the
-  // hourglass forever is the same silent-loss shape the queue exists to prevent.
-  // Called before each flush.
+  // Charge one attempt, unless the last charged one was under
+  // ATTEMPT_MIN_INTERVAL_MS ago.
+  markAttempted: (id: string, nowMs?: number) => void;
+  // Drop anything past OUTBOX_TTL_MS or MAX_SEND_ATTEMPTS. Returns what was
+  // dropped so the sender's bubble can stop claiming it is still coming.
   evictExpired: (nowMs?: number) => PendingMessage[];
   clearAll: () => void;
 }
@@ -120,11 +102,18 @@ export const useOutboxStore = create<OutboxState>()(
           .sort((a, b) => a.createdAtMs - b.createdAtMs);
       },
 
-      markAttempted(id) {
+      markAttempted(id, nowMs = Date.now()) {
         set((state) => ({
-          pending: state.pending.map((p) =>
-            p.id === id ? { ...p, attempts: p.attempts + 1 } : p,
-          ),
+          pending: state.pending.map((p) => {
+            if (p.id !== id) return p;
+            if (
+              p.lastAttemptMs !== undefined &&
+              nowMs - p.lastAttemptMs < ATTEMPT_MIN_INTERVAL_MS
+            ) {
+              return p;
+            }
+            return { ...p, attempts: p.attempts + 1, lastAttemptMs: nowMs };
+          }),
         }));
       },
 
