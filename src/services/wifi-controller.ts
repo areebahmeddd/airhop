@@ -25,6 +25,22 @@ const BACKOFF_MS = [500, 1500, 4000, 10_000, 30_000] as const;
 // climbing rather than resetting.
 const STABLE_RUN_MS = 60_000;
 
+// The breaker. Some chips reset when an Aware data path is opened, which drops
+// the router connection and Aware with it; Aware comes back seconds later and a
+// plain retry resets the chip again, once a minute, for as long as the app
+// runs. Three runs ended by the framework within three minutes of attaching,
+// inside a quarter of an hour, is that loop. Longer than STABLE_RUN_MS on
+// purpose: the first path attempt waits on discovery, which can take over a
+// minute on its own.
+const UNSTABLE_RUN_MS = 3 * 60_000;
+const UNSTABLE_RUNS = 3;
+const UNSTABLE_WINDOW_MS = 15 * 60_000;
+
+// Why native reported the transport gone: the radio switched off, or the
+// framework ended the session under a live radio. Only the second is the
+// device's fault, so only the second counts toward the breaker.
+export type WiFiDropReason = "radio" | "session";
+
 // Matched on `code`, never on message text, which is a UI concern.
 type WiFiFailure =
   // No Aware hardware, or an OS too old for the data path. Permanent.
@@ -68,6 +84,9 @@ export class WiFiController {
   }
 
   private desiredRunning = false;
+  // The user's switch. Flipping it on is what clears `unstable` short of a
+  // relaunch, since it is the one signal that carries intent.
+  private enabled = true;
   // Paired devices, or null where there is no gate. Null on iOS too until the
   // first report, since attaching earlier would run a radio for devices not
   // yet confirmed to exist.
@@ -78,6 +97,8 @@ export class WiFiController {
   // Never cleared: nothing about a chipset or an OS version changes within a
   // process.
   private unsupported = false;
+  private unstable = false;
+  private shortRunsAtMs: number[] = [];
   private lastFailure: WiFiFailure | null = null;
 
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -98,6 +119,20 @@ export class WiFiController {
     this.desiredRunning = true;
     this.attempt = 0;
     void this.reconcile();
+  }
+
+  setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return;
+    this.enabled = enabled;
+    this.generation += 1;
+    if (enabled) this.clearUnstable();
+    this.attempt = 0;
+    void this.reconcile();
+  }
+
+  private clearUnstable(): void {
+    this.unstable = false;
+    this.shortRunsAtMs = [];
   }
 
   stop(): void {
@@ -127,11 +162,20 @@ export class WiFiController {
   // A drop means the attach is gone or has to be rebuilt; anything native
   // recovers from on its own never reaches here. Forgetting `started` is what
   // lets the next pass do real work rather than returning at the guard.
-  onAvailabilityChanged(available: boolean): void {
-    if (this.unsupported) return;
+  onAvailabilityChanged(available: boolean, reason?: WiFiDropReason): void {
+    if (this.unsupported || this.unstable) return;
     if (!available) {
-      const ranStably =
-        this.started && Date.now() - this.startedAtMs >= STABLE_RUN_MS;
+      const now = Date.now();
+      const ran = this.started ? now - this.startedAtMs : 0;
+      const ranStably = ran >= STABLE_RUN_MS;
+      if (ran >= UNSTABLE_RUN_MS) {
+        this.shortRunsAtMs = [];
+      } else if (this.started && reason === "session") {
+        this.shortRunsAtMs = this.shortRunsAtMs.filter(
+          (t) => now - t < UNSTABLE_WINDOW_MS,
+        );
+        this.shortRunsAtMs.push(now);
+      }
       this.started = false;
       // Not reported as "WiFi off": the same edge arrives when native rebuilds
       // the attach on a device whose WiFi is on. The retry answers within half
@@ -144,6 +188,12 @@ export class WiFiController {
       // run that lasted resets it: a flapping transport pinned to the first rung
       // is radio churn some WiFi stacks do not survive.
       if (ranStably) this.attempt = 0;
+      if (this.shortRunsAtMs.length >= UNSTABLE_RUNS) {
+        this.unstable = true;
+        this.clearTimer();
+        this.report("unstable");
+        return;
+      }
       this.scheduleRetry();
       return;
     }
@@ -211,6 +261,14 @@ export class WiFiController {
     }
 
     if (this.unsupported) return;
+
+    if (!this.enabled) {
+      if (this.started) await this.releaseNative();
+      this.report("off");
+      return;
+    }
+
+    if (this.unstable) return;
 
     // Ahead of the `started` guard: this edge has to tear an attached
     // transport down when the last pairing goes.
@@ -286,6 +344,10 @@ export class WiFiController {
 
   get isUnsupported(): boolean {
     return this.unsupported;
+  }
+
+  get isUnstable(): boolean {
+    return this.unstable;
   }
 
   get failure(): WiFiFailure | null {

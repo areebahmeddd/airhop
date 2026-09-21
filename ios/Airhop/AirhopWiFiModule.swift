@@ -276,7 +276,7 @@ private actor WiFiAwareTransport {
         stop()
         guard lastReportedAvailable != false else { return }
         lastReportedAvailable = false
-        emit(WiFiEvent.availabilityChanged, ["available": false])
+        emit(WiFiEvent.availabilityChanged, ["available": false, "reason": "session"])
     }
 
     // MARK: Dialling

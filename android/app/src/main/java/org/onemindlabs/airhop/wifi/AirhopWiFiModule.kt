@@ -115,8 +115,12 @@ private const val EVT_PACKET_RECEIVED = "AirhopWiFi.packetReceived"
 private const val EVT_LINK_CONNECTED = "AirhopWiFi.linkConnected"
 private const val EVT_LINK_DISCONNECTED = "AirhopWiFi.linkDisconnected"
 // Sent only when the radio is gone or the attach has to be rebuilt. Discovery
-// restarts and redials happen below this line and keep their links.
+// restarts and redials happen below this line and keep their links. A drop
+// names which of the two it was: the JS breaker counts a session the framework
+// ended under a live radio, never a radio the user switched off.
 private const val EVT_AVAILABILITY_CHANGED = "AirhopWiFi.availabilityChanged"
+private const val REASON_RADIO = "radio"
+private const val REASON_SESSION = "session"
 
 // Follow-up messages: type byte, instance id, epoch.
 private const val MSG_CONNECT_REQUEST: Byte = 0x01
@@ -161,9 +165,13 @@ private const val CONNECT_TIMEOUT_MS = 7_000
 private const val RESPONDER_GRACE_MS = 20_000L
 
 // Per-peer retry backoff: 3 s doubling to a minute, with jitter so two phones
-// do not retry in lockstep.
+// do not retry in lockstep. A path the framework refuses outright, well inside
+// its own timeout, is a device saying no rather than a peer being slow, and on
+// some chips the refusal comes with a Wi-Fi reset; that peer waits the full
+// minute before being asked again.
 private const val BACKOFF_BASE_MS = 3_000L
 private const val BACKOFF_MAX_MS = 60_000L
+private const val PATH_REFUSED_FAST_MS = 2_000L
 
 private const val MAINTENANCE_MS = 15_000L
 
@@ -534,6 +542,7 @@ class AirhopWiFiModule(
                 if (!available) teardown()
                 emitEvent(EVT_AVAILABILITY_CHANGED, WritableNativeMap().apply {
                     putBoolean("available", available)
+                    putString("reason", REASON_RADIO)
                 })
             }
         }
@@ -546,6 +555,7 @@ class AirhopWiFiModule(
         lastReportedAvailable = false
         emitEvent(EVT_AVAILABILITY_CHANGED, WritableNativeMap().apply {
             putBoolean("available", false)
+            putString("reason", REASON_SESSION)
         })
     }
 
@@ -1166,7 +1176,11 @@ class AirhopWiFiModule(
                 onState {
                     if (peer.network !== this) return@onState
                     logW("Data path to ${peer.instance.take(8)} could not be set up")
+                    val refusedFast = now() - peer.stateSinceMs < PATH_REFUSED_FAST_MS
                     pathGone(peer)
+                    if (refusedFast && peer.state == DialState.IDLE) {
+                        peer.nextAttemptAtMs = now() + BACKOFF_MAX_MS
+                    }
                 }
             }
         }

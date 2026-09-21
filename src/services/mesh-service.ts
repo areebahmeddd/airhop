@@ -245,7 +245,7 @@ import {
   NativeAudioCapture,
   NativeAudioPlayback,
 } from "./voice-audio-backend";
-import { WiFiController } from "./wifi-controller";
+import { WiFiController, type WiFiDropReason } from "./wifi-controller";
 import { WiFiPairingWatcher } from "./wifi-pairing-service";
 
 // ---- Constants ----
@@ -610,6 +610,7 @@ export class MeshService {
     useMeshStateStore.getState().setLanState(state),
   );
   private lanPrefUnsub: (() => void) | null = null;
+  private wifiPrefUnsub: (() => void) | null = null;
 
   // Which devices the WiFi fast path is allowed to reach, iOS only.
   //
@@ -1131,8 +1132,14 @@ export class MeshService {
       // "unsupported" on its first pass.
       DeviceEventEmitter.addListener(
         "AirhopWiFi.availabilityChanged",
-        ({ available }: { available: boolean }) => {
-          this.wifi.onAvailabilityChanged(available);
+        ({
+          available,
+          reason,
+        }: {
+          available: boolean;
+          reason?: WiFiDropReason;
+        }) => {
+          this.wifi.onAvailabilityChanged(available, reason);
           if (!available) {
             // The sockets are gone with the radio. Forget them here rather than
             // discovering it one failed write at a time: the native disconnect
@@ -1267,7 +1274,13 @@ export class MeshService {
     // has a paired count on a platform that gates on one, and this is what
     // delivers the first.
     this.wifiPairing.start();
+    this.wifi.setEnabled(useSettingsStore.getState().wifiAwareEnabled);
     this.wifi.start();
+    this.wifiPrefUnsub?.();
+    this.wifiPrefUnsub = useSettingsStore.subscribe((state, prev) => {
+      if (state.wifiAwareEnabled === prev.wifiAwareEnabled) return;
+      this.wifi.setEnabled(state.wifiAwareEnabled);
+    });
 
     // The LAN transport runs only when the user has asked for it, so its
     // switch is read here and watched below. Unlike the radios, a mesh that is
@@ -6618,6 +6631,8 @@ export class MeshService {
     this.lan.stop();
     this.lanPrefUnsub?.();
     this.lanPrefUnsub = null;
+    this.wifiPrefUnsub?.();
+    this.wifiPrefUnsub = null;
     // Same reason the WiFi links are cleared below: a LAN link is a socket that
     // stopLAN() destroys, and the disconnect events cannot clean up because the
     // subscriptions are already gone.

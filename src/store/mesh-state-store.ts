@@ -68,13 +68,21 @@ export type TorBootstrapPhase = "idle" | "starting" | "blocked";
 //                that grants Bluetooth grants it too and this state is close to
 //                unreachable. A banner for it would carry more weight than the
 //                situation has.
+//   off          the user switched it off. A resting state.
+//   unstable     paused for this session because the transport kept dying
+//                within a minute of starting. On some phones opening an Aware
+//                data path resets the Wi-Fi chip, which drops the router
+//                connection every time we retry; stopping is the only fix the
+//                app has, and the switch is the user's.
 export type WifiFastPath =
   | "unknown"
   | "unsupported"
   | "active"
   | "unavailable"
   | "unpaired"
-  | "permission";
+  | "permission"
+  | "off"
+  | "unstable";
 
 // What the LAN transport is doing, for the Mesh tab and the Network screen.
 //

@@ -536,3 +536,132 @@ describe("the pairing gate", () => {
     expect(seen).toEqual(["unpaired"]);
   });
 });
+
+describe("the user's switch", () => {
+  test("off releases the transport and reports off; on brings it back", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+
+    wifi.start();
+    await settle();
+    expect(wifi.isStarted).toBe(true);
+
+    wifi.setEnabled(false);
+    await settle();
+    expect(mockStopWiFi).toHaveBeenCalled();
+    expect(wifi.isStarted).toBe(false);
+
+    // Nothing retries while it is off, whatever the radio reports.
+    wifi.onAvailabilityChanged(true);
+    wifi.refresh();
+    await settle(60_000);
+    expect(mockStartWiFi).toHaveBeenCalledTimes(1);
+
+    wifi.setEnabled(true);
+    await settle();
+    expect(wifi.isStarted).toBe(true);
+    expect(seen).toEqual(["active", "off", "active"]);
+  });
+});
+
+describe("a transport that keeps dying right after it starts", () => {
+  // Some phones reset their Wi-Fi chip when an Aware data path is opened. The
+  // radio comes back a few seconds later, so a plain reconciler re-attaches,
+  // opens a path, and resets the chip again, once a minute, for as long as the
+  // app runs. Three short runs is the signal to stop.
+  async function shortRun(wifi: WiFiController): Promise<void> {
+    wifi.onAvailabilityChanged(true);
+    await settle();
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+  }
+
+  test("is paused for the session after three short runs", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+
+    wifi.start();
+    await settle();
+    expect(wifi.isStarted).toBe(true);
+
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+    await shortRun(wifi);
+    await shortRun(wifi);
+
+    expect(wifi.isUnstable).toBe(true);
+    expect(seen.at(-1)).toBe("unstable");
+    const attempts = mockStartWiFi.mock.calls.length;
+
+    // The radio saying it is back is exactly the edge that restarted the
+    // loop. It no longer does, and neither does a resume.
+    wifi.onAvailabilityChanged(true);
+    wifi.refresh();
+    await settle(60_000);
+    expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
+  });
+
+  test("is not tripped by short runs spread across a long, working session", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const wifi = new WiFiController();
+
+    wifi.start();
+    await settle();
+    // Two short runs, then a run that lasts, which clears the count.
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+    await shortRun(wifi);
+    wifi.onAvailabilityChanged(true);
+    await settle();
+    jest.advanceTimersByTime(5 * 60_000);
+    wifi.onAvailabilityChanged(false);
+    await settle();
+    await shortRun(wifi);
+
+    expect(wifi.isUnstable).toBe(false);
+  });
+
+  test("ignores a radio the user switched off, however often", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const wifi = new WiFiController();
+
+    wifi.start();
+    await settle();
+    for (let i = 0; i < 4; i++) {
+      jest.advanceTimersByTime(20_000);
+      wifi.onAvailabilityChanged(false, "radio");
+      await settle();
+      wifi.onAvailabilityChanged(true);
+      await settle();
+    }
+
+    expect(wifi.isUnstable).toBe(false);
+    expect(wifi.isStarted).toBe(true);
+  });
+
+  test("the switch is what clears it", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const wifi = new WiFiController();
+
+    wifi.start();
+    await settle();
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+    await shortRun(wifi);
+    await shortRun(wifi);
+    expect(wifi.isUnstable).toBe(true);
+
+    wifi.setEnabled(false);
+    await settle();
+    wifi.setEnabled(true);
+    await settle();
+    expect(wifi.isUnstable).toBe(false);
+    expect(wifi.isStarted).toBe(true);
+  });
+});

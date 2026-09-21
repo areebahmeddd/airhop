@@ -78,6 +78,9 @@ interface SettingsState {
   autoStartOnBoot: boolean;
   // Whether to run the mesh over the current WiFi network.
   lanTransportEnabled: boolean;
+  // Whether to run the Wi-Fi Aware fast path. On by default; the switch exists
+  // for phones whose Wi-Fi chip resets when a data path is opened.
+  wifiAwareEnabled: boolean;
   // Master switch for Nostr and other internet-backed features.
   internetEnabled: boolean;
   // Off requires a custom relay; otherwise relay discovery could silently fall
@@ -121,6 +124,7 @@ interface SettingsState {
   setBackgroundMeshEnabled: (enabled: boolean) => void;
   setAutoStartOnBoot: (enabled: boolean) => void;
   setLanTransportEnabled: (enabled: boolean) => void;
+  setWifiAwareEnabled: (enabled: boolean) => void;
   setInternetEnabled: (enabled: boolean) => void;
   setGeoRelayDiscovery: (enabled: boolean) => void;
   addCustomRelay: (url: string) => void;
@@ -156,6 +160,7 @@ const DEFAULTS = {
   backgroundMeshEnabled: true,
   autoStartOnBoot: false,
   lanTransportEnabled: false,
+  wifiAwareEnabled: true,
   internetEnabled: true,
   geoRelayDiscovery: true,
   customRelays: [] as string[],
@@ -227,6 +232,9 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setLanTransportEnabled(enabled) {
         set({ lanTransportEnabled: enabled });
+      },
+      setWifiAwareEnabled(enabled) {
+        set({ wifiAwareEnabled: enabled });
       },
       setInternetEnabled(enabled) {
         set({ internetEnabled: enabled });
