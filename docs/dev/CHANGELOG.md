@@ -5,6 +5,19 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- fix(release): don't block the clean-tree check on untracked files (by @areebahmeddd) [9a548e7]
+- test(native): add unit tests for ios and android platforms (by @areebahmeddd) [28bfb3d]
+- feat(chat): filter sheet on the chats screen and a verified badge (by @areebahmeddd) [9f18d90]
+- fix(lan): heartbeat and close idle links, time out dials on both platforms (by @areebahmeddd) [ab76b5a]
+- fix(wifi): pause wifi aware for the session when it keeps resetting the phone's wifi (by @areebahmeddd) [b89faec]
+- fix(ring): hand a foreground ring to the tray when the app is backgrounded (by @areebahmeddd) [09bb8c2]
+- chore: update workflows and dependencies (by @areebahmeddd) [1522fa7]
+- feat(ios): add dumpState method for Wi-Fi Aware transport diagnostics (by @areebahmeddd) [caac2ff]
+
+**Full changelog:** [v1.0.7..v1.0.8](https://github.com/areebahmeddd/airhop/compare/v1.0.7..v1.0.8)
+
+## What's New
+
 - fix: rebuild wifi aware connection logic as a per-peer state machine with retries, heartbeats and self-healing discovery (#37) (by @areebahmeddd) [25900a6]
 - fix: ring alert functionality and notification handling (by @areebahmeddd) [31d26f9]
 
@@ -49,10 +62,10 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - chore: update deps (by @areebahmeddd) [28f6d89]
 - chore(arti): update to arti-client 0.46 and pin the transport toolchain (by @areebahmeddd) [d3114a5]
 - fix: mesh communication for mDNS transport (by @areebahmeddd) [692acdb]
-- feat: embedded Tor via Arti on iOS and Android (#54) (by @Areeb Ahmed) [3790036]
+- feat: embedded Tor via Arti on iOS and Android (#54) (by @Areeb Ahmed) (#54) [3790036]
 - ci: add the Arti build workflow (by @areebahmeddd) [12ceb0a]
 - refactor: documentation and code structure for clarity and consistency (by @areebahmeddd) [8961ccf]
-- feat: LAN transport over mDNS and TCP (#53) (by @Areeb Ahmed) [6a9f1b2]
+- feat: LAN transport over mDNS and TCP (#53) (by @Areeb Ahmed) (#53) [6a9f1b2]
 - refactor: update progress docs and versioning (by @areebahmeddd) [87c97c8]
 
 **Full changelog:** [v1.0.3..v1.0.4](https://github.com/areebahmeddd/airhop/compare/v1.0.3..v1.0.4)
@@ -64,7 +77,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - feat: add AirhopAppModule for process-level operations and RTL support (by @areebahmeddd) [27f9fc0]
 - refactor: mesh service to utilize LinkRegistry for managing links across radios (by @areebahmeddd) [1dee3ed]
 - feat: update Bonjour service name for LAN transport and add usage description (by @areebahmeddd) [1a1c646]
-- feat(ios): Wi-Fi Aware fast path (#51) (by @Areeb Ahmed) [99b000f]
+- feat(ios): Wi-Fi Aware fast path (#51) (by @Areeb Ahmed) (#51) [99b000f]
 - refactor: update button styles and clean up file transfer service logic (by @areebahmeddd) [7169da2]
 - feat: add CHANGE_NETWORK_STATE permission for WiFi Aware functionality (by @areebahmeddd) [96d5c25]
 - feat: enhance file transfer pacing and add WiFi peer link check (by @areebahmeddd) [cb1fe43]
@@ -80,7 +93,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - fix(wifi): wait for the responder before requesting the Aware data path (by @areebahmeddd) [a497193]
 - refactor: remove unused landing project configuration (by @areebahmeddd) [59b2cb9]
 - fix: revert breaking deps (by @areebahmeddd) [6e25a01]
-- release: v1.0.2 (#48) (by @Areeb Ahmed) [c6efeb6]
+- release: v1.0.2 (#48) (by @Areeb Ahmed) (#48) [c6efeb6]
 - feat: add unseen peers tracking and update Mesh screen behavior (by @areebahmeddd) [cb5fb41]
 - feat: implement panic wipe functionality with progress indication (by @areebahmeddd) [c04c5dd]
 - chore: fix stale docs (by @areebahmeddd) [5f9fa9d]
@@ -132,7 +145,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 ## What's New
 
 - feat: enhance contact management and display names (#10) (by @areebahmeddd) [a66e515]
-- feat: implement internationalization (i18n) support with language management and translation functionality (#23) (by @Areeb Ahmed) [c516e64]
+- feat: implement internationalization (i18n) support with language management and translation functionality (#23) (by @Areeb Ahmed) (#23) [c516e64]
 - feat: add LanguagePicker and ThemeToggle components (by @areebahmeddd) [d55c98d]
 - feat: enhance audio capture and playback with loudness level tracking (by @areebahmeddd) [6bcebfd]
 
@@ -192,7 +205,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 ## What's New
 
 - feat(landing): add architecture diagrams for airhop (by @areebahmeddd) [f323a58]
-- feat(wallet): rebuild Cashu ecash end to end, with Lightning and recovery (#7) (by @Areeb Ahmed) [aaaa15a]
+- feat(wallet): rebuild Cashu ecash end to end, with Lightning and recovery (#7) (by @Areeb Ahmed) (#7) [aaaa15a]
 - fix: major bug fixes after testing locally with friends [ see description ] (by @areebahmeddd) [c88a6fa]
 - feat(FAQ): enhance FAQ section with detailed encryption and payment information (by @areebahmeddd) [012f367]
 - feat: update UI elements and improve user experience across various screens (by @areebahmeddd) [34a68ad]
