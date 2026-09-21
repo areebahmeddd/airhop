@@ -1,0 +1,101 @@
+name: Format Swift
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UPDATE_BRANCH: bot/format-swift
+  PR_TITLE: "style(ios): format swift with swift-format"
+
+jobs:
+  format:
+    name: Format and scan
+    runs-on: macos-26
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JavaScript toolchain
+        uses: ./.github/actions/setup-js
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          pod_version="$(awk '/^COCOAPODS: /{ print $2 }' Podfile.lock)"
+          sudo gem install cocoapods --version "$pod_version" --no-document
+          pod "_${pod_version}_" install
+
+      # The homebrew-core formula; the peripheryapp tap lags behind it.
+      # Configured by ios/.periphery.yml. A report, so it never fails the run.
+      - name: Scan for unused Swift
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          brew install periphery
+          periphery version
+          periphery scan --disable-update-check > ../periphery.txt || true
+          wc -l < ../periphery.txt
+
+      - name: Format
+        run: |
+          set -euo pipefail
+          swift format --version
+          swift format --in-place --recursive ios/Airhop ios/Tests ios/Package.swift
+          git status --short -- ios
+
+      # Same shape as Sync Bridges: a bot branch and a pull request against
+      # the branch this ran on, never a push to it. The Periphery findings
+      # ride in the body; a symbol reached only from TypeScript through the
+      # .mm bridges looks unused to the indexer, so they are read, not applied.
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          body="$(printf '%s\n' \
+            "Formatted by \`swift format\` on \`${BASE_REF}\`." \
+            "" \
+            "## Periphery findings" \
+            "" \
+            "Read before acting: anything reached only from TypeScript through the \`.mm\` bridges looks unused to the indexer." \
+            "" \
+            '```' \
+            "$(head -c 60000 periphery.txt)" \
+            '```')"
+
+          if git diff --quiet -- ios; then
+            echo "Already formatted; opening no pull request."
+            printf '%s\n' "$body"
+            exit 0
+          fi
+
+          git checkout -B "$UPDATE_BRANCH"
+          git add -- ios
+          git commit -s -m "$PR_TITLE"
+          git push --force-with-lease origin "$UPDATE_BRANCH"
+
+          if [ -z "$(gh pr list --head "$UPDATE_BRANCH" --base "$BASE_REF" --state open --json number --jq '.[0].number')" ]; then
+            gh pr create --base "$BASE_REF" --head "$UPDATE_BRANCH" --title "$PR_TITLE" --body "$body"
+          else
+            gh pr edit "$UPDATE_BRANCH" --body "$body"
+          fi

@@ -14,12 +14,11 @@ class AirhopAppPackage : ReactPackage {
     // codegen TurboModules), but legacy interop still requires it until
     // AirhopAppModule is fully migrated. Same position as the other three.
     @Suppress("OVERRIDE_DEPRECATION")
-    override fun createNativeModules(
-        reactContext: ReactApplicationContext,
-    ): List<NativeModule> = listOf(AirhopAppModule(reactContext))
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
+        listOf(AirhopAppModule(reactContext))
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createViewManagers(
-        reactContext: ReactApplicationContext,
+        reactContext: ReactApplicationContext
     ): List<ViewManager<*, *>> = emptyList()
 }

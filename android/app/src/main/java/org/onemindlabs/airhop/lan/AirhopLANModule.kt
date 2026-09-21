@@ -38,7 +38,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import org.onemindlabs.airhop.transport.Framing
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet4Address
@@ -51,6 +50,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import org.onemindlabs.airhop.transport.Framing
 
 private const val TAG = "AirhopLANModule"
 
@@ -67,8 +67,7 @@ private const val SERVICE_TYPE = "_airhop-lan-v1._tcp"
 // USB tethering. Cellular (rmnet, ccmni) is absent because nobody else is on it.
 // Android identifies its own access point the same way, by name
 // (config_tether_wifi_regexs).
-private val LOCAL_IFACE_PREFIXES =
-    arrayOf("wlan", "softap", "ap", "swlan", "eth", "rndis", "usb")
+private val LOCAL_IFACE_PREFIXES = arrayOf("wlan", "softap", "ap", "swlan", "eth", "rndis", "usb")
 
 private const val EVT_PEER_DISCOVERED = "AirhopLAN.peerDiscovered"
 private const val EVT_PEER_LOST = "AirhopLAN.peerLost"
@@ -90,9 +89,8 @@ private const val IDLE_LIMIT = 3
 // than as a refusal, so an unbounded connect would hold a thread forever.
 private const val CONNECT_TIMEOUT_MS = 5_000
 
-class AirhopLANModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopLANModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = "AirhopLAN"
 
@@ -247,7 +245,9 @@ class AirhopLANModule(
 
         networkReceiver?.let { runCatching { reactContext.unregisterReceiver(it) } }
         networkReceiver = null
-        networkCallback?.let { runCatching { connectivityManager()?.unregisterNetworkCallback(it) } }
+        networkCallback?.let {
+            runCatching { connectivityManager()?.unregisterNetworkCallback(it) }
+        }
         networkCallback = null
 
         multicastLock?.let { runCatching { if (it.isHeld) it.release() } }
@@ -314,18 +314,19 @@ class AirhopLANModule(
 
     private fun acquireMulticastLock() {
         if (multicastLock != null) return
-        multicastLock = try {
-            wifiManager()?.createMulticastLock("airhop-lan")?.apply {
-                setReferenceCounted(false)
-                acquire()
+        multicastLock =
+            try {
+                wifiManager()?.createMulticastLock("airhop-lan")?.apply {
+                    setReferenceCounted(false)
+                    acquire()
+                }
+            } catch (e: Exception) {
+                // Not fatal. Discovery still works with the screen on, which is
+                // when most of it happens, so a missing lock is a degradation
+                // rather than a reason to refuse the transport.
+                Log.w(TAG, "No multicast lock: ${e.message}")
+                null
             }
-        } catch (e: Exception) {
-            // Not fatal. Discovery still works with the screen on, which is
-            // when most of it happens, so a missing lock is a degradation
-            // rather than a reason to refuse the transport.
-            Log.w(TAG, "No multicast lock: ${e.message}")
-            null
-        }
     }
 
     // The interface going away is the case that is otherwise unrecoverable: the
@@ -337,14 +338,17 @@ class AirhopLANModule(
     // Network object, so the callback alone would miss that case.
     private fun registerNetworkWatchers() {
         if (networkCallback == null) {
-            val request = NetworkRequest.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
-                .build()
-            val callback = object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) = reportAvailability()
-                override fun onLost(network: Network) = reportAvailability()
-            }
+            val request =
+                NetworkRequest.Builder()
+                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+                    .build()
+            val callback =
+                object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) = reportAvailability()
+
+                    override fun onLost(network: Network) = reportAvailability()
+                }
             try {
                 connectivityManager()?.registerNetworkCallback(request, callback)
                 networkCallback = callback
@@ -354,9 +358,11 @@ class AirhopLANModule(
         }
 
         if (networkReceiver == null) {
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) = reportAvailability()
-            }
+            val receiver =
+                object : BroadcastReceiver() {
+                    override fun onReceive(context: Context?, intent: Intent?) =
+                        reportAvailability()
+                }
             // Named rather than referenced: the constant is on TetheringManager
             // (API 30) and ConnectivityManager's copy is hidden.
             val filter = IntentFilter("android.net.conn.TETHER_STATE_CHANGED")
@@ -385,56 +391,60 @@ class AirhopLANModule(
 
     private fun registerService(nsd: NsdManager, name: String) {
         val generation = sessionGeneration.get()
-        val info = NsdServiceInfo().apply {
-            serviceName = name
-            serviceType = SERVICE_TYPE
-            port = serverPort
-        }
-        val listener = object : NsdManager.RegistrationListener {
-            override fun onServiceRegistered(info: NsdServiceInfo) {
-                Log.i(TAG, "Published as ${info.serviceName}")
+        val info =
+            NsdServiceInfo().apply {
+                serviceName = name
+                serviceType = SERVICE_TYPE
+                port = serverPort
             }
+        val listener =
+            object : NsdManager.RegistrationListener {
+                override fun onServiceRegistered(info: NsdServiceInfo) {
+                    Log.i(TAG, "Published as ${info.serviceName}")
+                }
 
-            override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {
-                reportUnavailable("publish refused: $errorCode", generation)
+                override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {
+                    reportUnavailable("publish refused: $errorCode", generation)
+                }
+
+                override fun onServiceUnregistered(info: NsdServiceInfo) = Unit
+
+                override fun onUnregistrationFailed(info: NsdServiceInfo, errorCode: Int) = Unit
             }
-
-            override fun onServiceUnregistered(info: NsdServiceInfo) = Unit
-            override fun onUnregistrationFailed(info: NsdServiceInfo, errorCode: Int) = Unit
-        }
         registrationListener = listener
         nsd.registerService(info, NsdManager.PROTOCOL_DNS_SD, listener)
     }
 
     private fun startDiscovery(nsd: NsdManager) {
         val generation = sessionGeneration.get()
-        val listener = object : NsdManager.DiscoveryListener {
-            override fun onDiscoveryStarted(serviceType: String) = Unit
+        val listener =
+            object : NsdManager.DiscoveryListener {
+                override fun onDiscoveryStarted(serviceType: String) = Unit
 
-            override fun onServiceFound(info: NsdServiceInfo) {
-                // Our own record comes back off the network like anyone else's.
-                if (info.serviceName == instanceName) return
-                enqueueResolve(info)
+                override fun onServiceFound(info: NsdServiceInfo) {
+                    // Our own record comes back off the network like anyone else's.
+                    if (info.serviceName == instanceName) return
+                    enqueueResolve(info)
+                }
+
+                override fun onServiceLost(info: NsdServiceInfo) {
+                    discovered.remove(info.serviceName)
+                    emitEvent(
+                        EVT_PEER_LOST,
+                        WritableNativeMap().apply { putString("serviceName", info.serviceName) },
+                    )
+                }
+
+                override fun onDiscoveryStopped(serviceType: String) {
+                    reportUnavailable("browse stopped", generation)
+                }
+
+                override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
+                    reportUnavailable("browse refused: $errorCode", generation)
+                }
+
+                override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) = Unit
             }
-
-            override fun onServiceLost(info: NsdServiceInfo) {
-                discovered.remove(info.serviceName)
-                emitEvent(
-                    EVT_PEER_LOST,
-                    WritableNativeMap().apply { putString("serviceName", info.serviceName) },
-                )
-            }
-
-            override fun onDiscoveryStopped(serviceType: String) {
-                reportUnavailable("browse stopped", generation)
-            }
-
-            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                reportUnavailable("browse refused: $errorCode", generation)
-            }
-
-            override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) = Unit
-        }
         discoveryListener = listener
         nsd.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
     }
@@ -449,11 +459,12 @@ class AirhopLANModule(
     }
 
     private fun drainResolves() {
-        val next = synchronized(resolveLock) {
-            val head = resolveQueue.removeFirstOrNull()
-            if (head == null) resolving = false
-            head
-        } ?: return
+        val next =
+            synchronized(resolveLock) {
+                val head = resolveQueue.removeFirstOrNull()
+                if (head == null) resolving = false
+                head
+            } ?: return
 
         val nsd = nsdManager()
         if (nsd == null) {
@@ -549,12 +560,13 @@ class AirhopLANModule(
 
     private fun acceptLoop(socket: ServerSocket) {
         while (!socket.isClosed) {
-            val client = try {
-                socket.accept()
-            } catch (e: Exception) {
-                Log.i(TAG, "Accept loop ended: ${e.message}")
-                return
-            }
+            val client =
+                try {
+                    socket.accept()
+                } catch (e: Exception) {
+                    Log.i(TAG, "Accept loop ended: ${e.message}")
+                    return
+                }
             registerLink("lan-in-${linkCounter.incrementAndGet()}", client)
         }
     }
@@ -573,15 +585,21 @@ class AirhopLANModule(
                 linkByName[serviceName] = id
                 nameByLink[id] = serviceName
             }
-            link.heartbeat = heartbeatExecutor.scheduleWithFixedDelay({
-                ioExecutor.execute {
-                    try {
-                        writeFrame(link, ByteArray(0))
-                    } catch (e: Exception) {
-                        handleLinkClose(id)
-                    }
-                }
-            }, HEARTBEAT_MS, HEARTBEAT_MS, TimeUnit.MILLISECONDS)
+            link.heartbeat =
+                heartbeatExecutor.scheduleWithFixedDelay(
+                    {
+                        ioExecutor.execute {
+                            try {
+                                writeFrame(link, ByteArray(0))
+                            } catch (e: Exception) {
+                                handleLinkClose(id)
+                            }
+                        }
+                    },
+                    HEARTBEAT_MS,
+                    HEARTBEAT_MS,
+                    TimeUnit.MILLISECONDS,
+                )
             emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
             Log.i(TAG, "LAN link connected: $id")
             startReadLoop(id, socket.getInputStream())
@@ -607,12 +625,13 @@ class AirhopLANModule(
             promise.reject("UNKNOWN_LINK", "No active LAN link: $linkID")
             return
         }
-        val data = try {
-            Base64.decode(dataBase64, Base64.NO_WRAP)
-        } catch (e: Exception) {
-            promise.reject("INVALID_DATA", "Invalid base64 payload", e)
-            return
-        }
+        val data =
+            try {
+                Base64.decode(dataBase64, Base64.NO_WRAP)
+            } catch (e: Exception) {
+                promise.reject("INVALID_DATA", "Invalid base64 payload", e)
+                return
+            }
         if (data.size > Framing.MAX_FRAME - Framing.PREFIX_BYTES) {
             promise.reject("FRAME_TOO_LARGE", "Frame of ${data.size} exceeds the peer's read limit")
             return
@@ -653,8 +672,9 @@ class AirhopLANModule(
                         if (n < 0) throw java.io.EOFException("EOF in length prefix")
                         inFrame += n
                     }
-                    val len = Framing.length(lenBuf)
-                        ?: throw Exception("LAN link $linkID: invalid frame length")
+                    val len =
+                        Framing.length(lenBuf)
+                            ?: throw Exception("LAN link $linkID: invalid frame length")
                     idleTimeouts = 0
                     // A heartbeat carries nothing.
                     if (len == 0) continue

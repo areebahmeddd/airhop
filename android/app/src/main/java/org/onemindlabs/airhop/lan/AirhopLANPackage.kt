@@ -9,7 +9,8 @@ import com.facebook.react.uimanager.ViewManager
 
 class AirhopLANPackage : ReactPackage {
 
-    // ReactPackage.createNativeModules is deprecated in New Architecture (use codegen TurboModules),
+    // ReactPackage.createNativeModules is deprecated in New Architecture (use codegen
+    // TurboModules),
     // but legacy interop still requires it until AirhopLANModule is fully migrated.
     //
     // No API gate, unlike the WiFi package: NsdManager has been available since
@@ -17,12 +18,11 @@ class AirhopLANPackage : ReactPackage {
     // unavailability instead, since a device with mDNS can still be on no
     // network at all.
     @Suppress("OVERRIDE_DEPRECATION")
-    override fun createNativeModules(
-        reactContext: ReactApplicationContext,
-    ): List<NativeModule> = listOf(AirhopLANModule(reactContext))
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
+        listOf(AirhopLANModule(reactContext))
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createViewManagers(
-        reactContext: ReactApplicationContext,
+        reactContext: ReactApplicationContext
     ): List<ViewManager<*, *>> = emptyList()
 }

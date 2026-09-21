@@ -76,7 +76,7 @@ The modules:
 
 ## BLE UUIDs
 
-The Service and Characteristic UUIDs are passed to `startAdvertising` and `startScanning` at runtime from TypeScript constants in `docs/spec/PROTOCOLS.md`. They are not hardcoded in native code.
+Both native modules hold the Service and Characteristic UUIDs as constants and advertise, scan and serve on those. The `serviceUUID` arguments to `startAdvertising` and `startScanning` are part of the bridge shape and are not read; TypeScript passes the same values from `docs/spec/PROTOCOLS.md`, so all three copies must agree.
 
 | Identifier          | Value                                  |
 | ------------------- | -------------------------------------- |

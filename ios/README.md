@@ -69,3 +69,12 @@ The unified log redacts interpolated values in a release build. Mark
 `privacy: .public` only what cannot identify a peer, device or key; the
 categories in `AirhopLog` are what `AirhopAppModule` reads back for the
 diagnostics export.
+
+## Formatting
+
+swift-format, as shipped with Xcode, checked in CI.
+
+```sh
+swift format lint --strict --recursive Airhop Tests Package.swift   # what CI checks
+swift format --in-place --recursive Airhop Tests Package.swift      # format
+```

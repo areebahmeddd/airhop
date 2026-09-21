@@ -32,21 +32,23 @@ data class ArtiStatus(
         private const val BIT_BRIDGED = 1 shl 3
         private const val PROGRESS_SHIFT = 8
 
-        fun decode(packed: Int): ArtiStatus = ArtiStatus(
-            running = packed and BIT_RUNNING != 0,
-            ready = packed and BIT_READY != 0,
-            blocked = packed and BIT_BLOCKED != 0,
-            progress = (packed shr PROGRESS_SHIFT) and 0xFF,
-            bridged = packed and BIT_BRIDGED != 0,
-        )
+        fun decode(packed: Int): ArtiStatus =
+            ArtiStatus(
+                running = packed and BIT_RUNNING != 0,
+                ready = packed and BIT_READY != 0,
+                blocked = packed and BIT_BLOCKED != 0,
+                progress = (packed shr PROGRESS_SHIFT) and 0xFF,
+                bridged = packed and BIT_BRIDGED != 0,
+            )
 
-        val STOPPED = ArtiStatus(
-            running = false,
-            ready = false,
-            blocked = false,
-            progress = 0,
-            bridged = false,
-        )
+        val STOPPED =
+            ArtiStatus(
+                running = false,
+                ready = false,
+                blocked = false,
+                progress = 0,
+                bridged = false,
+            )
     }
 }
 
@@ -69,14 +71,15 @@ object ArtiNative {
     // An ABI the library was not packaged for must degrade to "Tor unavailable"
     // rather than taking the process down the first time somebody opens Settings.
     @JvmStatic
-    val isAvailable: Boolean = try {
-        System.loadLibrary("arti_airhop")
-        true
-    } catch (_: UnsatisfiedLinkError) {
-        false
-    } catch (_: SecurityException) {
-        false
-    }
+    val isAvailable: Boolean =
+        try {
+            System.loadLibrary("arti_airhop")
+            true
+        } catch (_: UnsatisfiedLinkError) {
+            false
+        } catch (_: SecurityException) {
+            false
+        }
 
     // Returns once the SOCKS listener is accepting, which is before the first
     // circuit exists. Blocks while the client is built and the port bound, so
@@ -100,8 +103,7 @@ object ArtiNative {
             ERR_CLIENT
         }
 
-    @JvmStatic
-    fun stop(): Int = if (isAvailable) nativeStop() else ERR_NOT_RUNNING
+    @JvmStatic fun stop(): Int = if (isAvailable) nativeStop() else ERR_NOT_RUNNING
 
     // Dormancy, not a stop, for the app leaving the foreground. Android
     // keeps the process alive through the foreground service, so without this a
@@ -116,8 +118,7 @@ object ArtiNative {
         if (isAvailable) ArtiStatus.decode(nativeStatus()) else ArtiStatus.STOPPED
 
     // Arti's own description of the current stage. Display and logs only.
-    @JvmStatic
-    fun summary(): String = if (isAvailable) nativeSummary().orEmpty() else ""
+    @JvmStatic fun summary(): String = if (isAvailable) nativeSummary().orEmpty() else ""
 
     private external fun nativeStart(
         dataDir: String,
@@ -126,8 +127,12 @@ object ArtiNative {
         obfs4Port: Int,
         snowflakePort: Int,
     ): Int
+
     private external fun nativeStop(): Int
+
     private external fun nativeSetDormant(dormant: Boolean): Int
+
     private external fun nativeStatus(): Int
+
     private external fun nativeSummary(): String?
 }

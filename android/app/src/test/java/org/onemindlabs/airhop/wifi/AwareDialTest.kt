@@ -8,7 +8,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AwareDialTest {
-    private val instance = byteArrayOf(0x01, 0x23, 0x45, 0x67, 0x89.toByte(), 0xab.toByte(), 0xcd.toByte(), 0xef.toByte())
+    private val instance =
+        byteArrayOf(
+            0x01,
+            0x23,
+            0x45,
+            0x67,
+            0x89.toByte(),
+            0xab.toByte(),
+            0xcd.toByte(),
+            0xef.toByte(),
+        )
     private val instanceHex = "0123456789abcdef"
 
     // ---- Follow-up messages ----
@@ -103,7 +113,9 @@ class AwareDialTest {
     fun tiebreakIsAntisymmetric() {
         val mine = byteArrayOf(9, 8, 7, 6, 5, 4, 3, 2)
         val theirs = byteArrayOf(9, 8, 7, 6, 5, 4, 3, 1)
-        assertTrue(AwareDial.prefersInitiator(mine, theirs) != AwareDial.prefersInitiator(theirs, mine))
+        assertTrue(
+            AwareDial.prefersInitiator(mine, theirs) != AwareDial.prefersInitiator(theirs, mine)
+        )
     }
 
     @Test

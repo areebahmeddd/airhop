@@ -97,14 +97,14 @@ import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.ArrayDeque
 import java.util.Date
-import org.onemindlabs.airhop.transport.Framing
-import org.onemindlabs.airhop.wifi.AwareDial.toHex
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import org.onemindlabs.airhop.transport.Framing
+import org.onemindlabs.airhop.wifi.AwareDial.toHex
 
 private const val TAG = "AirhopWiFiModule"
 
@@ -191,21 +191,28 @@ private const val LOG_CAPACITY = 300
 // API 29; below it there is no data path and AirhopWiFiPackage registers
 // nothing.
 @RequiresApi(Build.VERSION_CODES.Q)
-class AirhopWiFiModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = "AirhopWiFi"
 
     // ---- State model ---------------------------------------------------------
 
-    private enum class Role { INITIATOR, RESPONDER }
+    private enum class Role {
+        INITIATOR,
+        RESPONDER,
+    }
 
     //   IDLE          known, nothing in flight; the tick decides when to dial
     //   REQUESTED     REQUEST sent, waiting for READY
     //   PATH_PENDING  a requestNetwork() is outstanding, in either role
     //   CONNECTED     a socket is open and registered
-    private enum class DialState { IDLE, REQUESTED, PATH_PENDING, CONNECTED }
+    private enum class DialState {
+        IDLE,
+        REQUESTED,
+        PATH_PENDING,
+        CONNECTED,
+    }
 
     // Handles are session-scoped: cleared on every discovery restart, refilled
     // by the next match or message.
@@ -323,11 +330,12 @@ class AirhopWiFiModule(
 
     private fun log(priority: Int, message: String) {
         Log.println(priority, TAG, message)
-        val level = when (priority) {
-            Log.ERROR -> 'E'
-            Log.WARN -> 'W'
-            else -> 'I'
-        }
+        val level =
+            when (priority) {
+                Log.ERROR -> 'E'
+                Log.WARN -> 'W'
+                else -> 'I'
+            }
         // The formatter is not thread-safe.
         synchronized(recentLog) {
             if (recentLog.size >= LOG_CAPACITY) recentLog.removeFirst()
@@ -336,7 +344,9 @@ class AirhopWiFiModule(
     }
 
     private fun logI(message: String) = log(Log.INFO, message)
+
     private fun logW(message: String) = log(Log.WARN, message)
+
     private fun logE(message: String) = log(Log.ERROR, message)
 
     // ---- Thread hopping ------------------------------------------------------
@@ -401,28 +411,31 @@ class AirhopWiFiModule(
         val generation = sessionGeneration.get()
         attaching = true
         try {
-            manager.attach(object : AttachCallback() {
-                override fun onAttached(session: WifiAwareSession) {
-                    onState {
-                        attaching = false
-                        adoptSession(session, generation, promise)
+            manager.attach(
+                object : AttachCallback() {
+                    override fun onAttached(session: WifiAwareSession) {
+                        onState {
+                            attaching = false
+                            adoptSession(session, generation, promise)
+                        }
                     }
-                }
 
-                override fun onAttachFailed() {
-                    onState { attaching = false }
-                    logW("WiFi Aware attach failed")
-                    promise.reject("WIFI_AWARE_ATTACH_FAILED", "Failed to attach to WiFi Aware")
-                }
-
-                override fun onAwareSessionTerminated() {
-                    onState {
-                        if (generation != sessionGeneration.get()) return@onState
-                        logW("WiFi Aware session terminated by the framework")
-                        reportUnavailable()
+                    override fun onAttachFailed() {
+                        onState { attaching = false }
+                        logW("WiFi Aware attach failed")
+                        promise.reject("WIFI_AWARE_ATTACH_FAILED", "Failed to attach to WiFi Aware")
                     }
-                }
-            }, null)
+
+                    override fun onAwareSessionTerminated() {
+                        onState {
+                            if (generation != sessionGeneration.get()) return@onState
+                            logW("WiFi Aware session terminated by the framework")
+                            reportUnavailable()
+                        }
+                    }
+                },
+                null,
+            )
         } catch (e: SecurityException) {
             attaching = false
             promise.reject("PERMISSION_DENIED", "WiFi Aware permission missing", e)
@@ -459,12 +472,16 @@ class AirhopWiFiModule(
             return
         }
         maintenance?.cancel(false)
-        maintenance = state.scheduleWithFixedDelay(
-            { runCatching { maintain() }.onFailure { logE("Maintenance failed: ${it.message}") } },
-            MAINTENANCE_MS,
-            MAINTENANCE_MS,
-            TimeUnit.MILLISECONDS,
-        )
+        maintenance =
+            state.scheduleWithFixedDelay(
+                {
+                    runCatching { maintain() }
+                        .onFailure { logE("Maintenance failed: ${it.message}") }
+                },
+                MAINTENANCE_MS,
+                MAINTENANCE_MS,
+                TimeUnit.MILLISECONDS,
+            )
         promise.resolve(null)
     }
 
@@ -510,34 +527,41 @@ class AirhopWiFiModule(
 
     // The broadcast carries no extras by design; the state is read back from
     // the manager.
-    private val awareStateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != WifiAwareManager.ACTION_WIFI_AWARE_STATE_CHANGED) return
-            onState {
-                val available = awareManager()?.isAvailable == true
-                if (available == lastReportedAvailable) return@onState
-                lastReportedAvailable = available
-                logI("WiFi Aware ${if (available) "available" else "unavailable"}")
-                // Torn down before JS is told, so a reconcile prompted by the
-                // event cannot race a half-released session.
-                if (!available) teardown()
-                emitEvent(EVT_AVAILABILITY_CHANGED, WritableNativeMap().apply {
-                    putBoolean("available", available)
-                    putString("reason", REASON_RADIO)
-                })
+    private val awareStateReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != WifiAwareManager.ACTION_WIFI_AWARE_STATE_CHANGED) return
+                onState {
+                    val available = awareManager()?.isAvailable == true
+                    if (available == lastReportedAvailable) return@onState
+                    lastReportedAvailable = available
+                    logI("WiFi Aware ${if (available) "available" else "unavailable"}")
+                    // Torn down before JS is told, so a reconcile prompted by the
+                    // event cannot race a half-released session.
+                    if (!available) teardown()
+                    emitEvent(
+                        EVT_AVAILABILITY_CHANGED,
+                        WritableNativeMap().apply {
+                            putBoolean("available", available)
+                            putString("reason", REASON_RADIO)
+                        },
+                    )
+                }
             }
         }
-    }
 
     // Reported as unavailable so the reconciler forgets it is started and
     // re-attaches on its ladder.
     private fun reportUnavailable() {
         teardown()
         lastReportedAvailable = false
-        emitEvent(EVT_AVAILABILITY_CHANGED, WritableNativeMap().apply {
-            putBoolean("available", false)
-            putString("reason", REASON_SESSION)
-        })
+        emitEvent(
+            EVT_AVAILABILITY_CHANGED,
+            WritableNativeMap().apply {
+                putBoolean("available", false)
+                putString("reason", REASON_SESSION)
+            },
+        )
     }
 
     // The framework re-broadcasts on transitions either side of the state that
@@ -589,12 +613,13 @@ class AirhopWiFiModule(
             promise.reject("UNKNOWN_LINK", "No active WiFi link: $linkID")
             return
         }
-        val data = try {
-            Base64.decode(dataBase64, Base64.NO_WRAP)
-        } catch (e: Exception) {
-            promise.reject("INVALID_DATA", "Invalid base64 payload", e)
-            return
-        }
+        val data =
+            try {
+                Base64.decode(dataBase64, Base64.NO_WRAP)
+            } catch (e: Exception) {
+                promise.reject("INVALID_DATA", "Invalid base64 payload", e)
+                return
+            }
         if (data.size > Framing.MAX_FRAME - Framing.PREFIX_BYTES) {
             promise.reject("FRAME_TOO_LARGE", "Frame of ${data.size} exceeds the peer's read limit")
             return
@@ -661,11 +686,16 @@ class AirhopWiFiModule(
             out.append("peers: ").append(peers.size).append('\n')
             val t = now()
             for (peer in peers.values) {
-                out.append("  ").append(peer.instance.take(8))
-                    .append(' ').append(peer.state.name.lowercase())
+                out.append("  ")
+                    .append(peer.instance.take(8))
+                    .append(' ')
+                    .append(peer.state.name.lowercase())
                     .append(peer.role?.let { " as ${it.name.lowercase()}" } ?: "")
-                    .append(", seen ").append((t - peer.lastSeenAtMs) / 1000).append("s ago")
-                    .append(", attempts ").append(peer.attempts)
+                    .append(", seen ")
+                    .append((t - peer.lastSeenAtMs) / 1000)
+                    .append("s ago")
+                    .append(", attempts ")
+                    .append(peer.attempts)
                     .append(", handles ")
                     .append(if (peer.subscribeHandle != null) "s" else "-")
                     .append(if (peer.publishHandle != null) "p" else "-")
@@ -674,8 +704,10 @@ class AirhopWiFiModule(
             }
             out.append("links: ").append(links.size).append('\n')
             for (link in links.values) {
-                out.append("  ").append(link.id)
-                    .append(' ').append(link.peerInstance?.take(8) ?: "no hello yet")
+                out.append("  ")
+                    .append(link.id)
+                    .append(' ')
+                    .append(link.peerInstance?.take(8) ?: "no hello yet")
                     .append('\n')
             }
             out.append("log:\n")
@@ -691,11 +723,15 @@ class AirhopWiFiModule(
     // answer to "attached and nothing ever connects".
     private fun appendResources(out: StringBuilder) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        val resources = runCatching { awareManager()?.availableAwareResources }.getOrNull() ?: return
+        val resources =
+            runCatching { awareManager()?.availableAwareResources }.getOrNull() ?: return
         out.append("resources: ")
-            .append(resources.availableDataPathsCount).append(" data paths, ")
-            .append(resources.availablePublishSessionsCount).append(" publish, ")
-            .append(resources.availableSubscribeSessionsCount).append(" subscribe\n")
+            .append(resources.availableDataPathsCount)
+            .append(" data paths, ")
+            .append(resources.availablePublishSessionsCount)
+            .append(" publish, ")
+            .append(resources.availableSubscribeSessionsCount)
+            .append(" subscribe\n")
     }
 
     // ---- Discovery -----------------------------------------------------------
@@ -743,8 +779,9 @@ class AirhopWiFiModule(
         logW("WiFi Aware $which session terminated by the framework")
         val t = now()
         sessionTerminationsAtMs.addLast(t)
-        while (sessionTerminationsAtMs.isNotEmpty() &&
-            t - sessionTerminationsAtMs.first() > SESSION_TERMINATIONS_WINDOW_MS
+        while (
+            sessionTerminationsAtMs.isNotEmpty() &&
+                t - sessionTerminationsAtMs.first() > SESSION_TERMINATIONS_WINDOW_MS
         ) {
             sessionTerminationsAtMs.removeFirst()
         }
@@ -754,19 +791,26 @@ class AirhopWiFiModule(
             return
         }
         val attach = sessionGeneration.get()
-        state.schedule({
-            if (attach != sessionGeneration.get()) return@schedule
-            if (generation != discoveryGeneration.get()) return@schedule
-            restartDiscovery("$which session ended")
-        }, SESSION_RESTART_DELAY_MS, TimeUnit.MILLISECONDS)
+        state.schedule(
+            {
+                if (attach != sessionGeneration.get()) return@schedule
+                if (generation != discoveryGeneration.get()) return@schedule
+                restartDiscovery("$which session ended")
+            },
+            SESSION_RESTART_DELAY_MS,
+            TimeUnit.MILLISECONDS,
+        )
     }
 
     private fun publishConfig(): PublishConfig {
-        val builder = PublishConfig.Builder()
-            .setServiceName(SERVICE_NAME)
-            .setServiceSpecificInfo(localToken + instanceId)
+        val builder =
+            PublishConfig.Builder()
+                .setServiceName(SERVICE_NAME)
+                .setServiceSpecificInfo(localToken + instanceId)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && instantModeOn()) {
-            runCatching { builder.setInstantCommunicationModeEnabled(true, ScanResult.WIFI_BAND_24_GHZ) }
+            runCatching {
+                builder.setInstantCommunicationModeEnabled(true, ScanResult.WIFI_BAND_24_GHZ)
+            }
         }
         return builder.build()
     }
@@ -774,7 +818,9 @@ class AirhopWiFiModule(
     private fun subscribeConfig(): SubscribeConfig {
         val builder = SubscribeConfig.Builder().setServiceName(SERVICE_NAME)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && instantModeOn()) {
-            runCatching { builder.setInstantCommunicationModeEnabled(true, ScanResult.WIFI_BAND_24_GHZ) }
+            runCatching {
+                builder.setInstantCommunicationModeEnabled(true, ScanResult.WIFI_BAND_24_GHZ)
+            }
         }
         return builder.build()
     }
@@ -784,47 +830,53 @@ class AirhopWiFiModule(
     // spends its time. The setter throws where the device has it off, and only
     // some chipsets accept 5 GHz for it.
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun instantModeOn(): Boolean =
-        runCatching { awareManager()?.isInstantCommunicationModeEnabled == true }.getOrDefault(false)
+    private fun instantModeOn(): Boolean {
+        val on = runCatching { awareManager()?.isInstantCommunicationModeEnabled == true }
+        return on.getOrDefault(false)
+    }
 
     private fun startPublish(session: WifiAwareSession, generation: Int): Boolean {
         try {
-            session.publish(publishConfig(), object : DiscoverySessionCallback() {
-                override fun onSessionConfigFailed() {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        logE("WiFi Aware publish config refused")
-                        reportUnavailable()
-                    }
-                }
-
-                override fun onPublishStarted(started: PublishDiscoverySession) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) {
-                            runCatching { started.close() }
-                            return@onState
-                        }
-                        publishSession = started
-                        logI("WiFi Aware publish started")
-                    }
-                }
-
-                override fun onSessionTerminated() {
-                    onState {
-                        if (generation == discoveryGeneration.get()) publishSession = null
-                        onDiscoverySessionTerminated("publish", generation)
-                    }
-                }
-
-                override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_REQUEST)) {
-                            onConnectRequest(peerHandle, message)
+            session.publish(
+                publishConfig(),
+                object : DiscoverySessionCallback() {
+                    override fun onSessionConfigFailed() {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            logE("WiFi Aware publish config refused")
+                            reportUnavailable()
                         }
                     }
-                }
-            }, null)
+
+                    override fun onPublishStarted(started: PublishDiscoverySession) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) {
+                                runCatching { started.close() }
+                                return@onState
+                            }
+                            publishSession = started
+                            logI("WiFi Aware publish started")
+                        }
+                    }
+
+                    override fun onSessionTerminated() {
+                        onState {
+                            if (generation == discoveryGeneration.get()) publishSession = null
+                            onDiscoverySessionTerminated("publish", generation)
+                        }
+                    }
+
+                    override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_REQUEST)) {
+                                onConnectRequest(peerHandle, message)
+                            }
+                        }
+                    }
+                },
+                null,
+            )
             return true
         } catch (e: Exception) {
             logE("Publish refused: ${e.message}")
@@ -834,78 +886,82 @@ class AirhopWiFiModule(
 
     private fun startSubscribe(session: WifiAwareSession, generation: Int): Boolean {
         try {
-            session.subscribe(subscribeConfig(), object : DiscoverySessionCallback() {
-                override fun onSessionConfigFailed() {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        logE("WiFi Aware subscribe config refused")
-                        reportUnavailable()
-                    }
-                }
-
-                override fun onSubscribeStarted(started: SubscribeDiscoverySession) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) {
-                            runCatching { started.close() }
-                            return@onState
-                        }
-                        subscribeSession = started
-                        logI("WiFi Aware subscribe started")
-                    }
-                }
-
-                override fun onServiceDiscovered(
-                    peerHandle: PeerHandle,
-                    serviceSpecificInfo: ByteArray?,
-                    matchFilter: List<ByteArray>?,
-                ) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        onPeerDiscovered(peerHandle, serviceSpecificInfo)
-                    }
-                }
-
-                // API 31; never invoked below it.
-                override fun onServiceLost(peerHandle: PeerHandle, reason: Int) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        val instance = subscribeHandles.remove(peerHandle) ?: return@onState
-                        val peer = peers[instance] ?: return@onState
-                        if (peer.subscribeHandle == peerHandle) peer.subscribeHandle = null
-                        logI("Peer ${instance.take(8)} lost from discovery (reason $reason)")
-                    }
-                }
-
-                override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
-                    onState {
-                        if (generation != discoveryGeneration.get()) return@onState
-                        if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_READY)) {
-                            onConnectReady(peerHandle, message)
+            session.subscribe(
+                subscribeConfig(),
+                object : DiscoverySessionCallback() {
+                    override fun onSessionConfigFailed() {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            logE("WiFi Aware subscribe config refused")
+                            reportUnavailable()
                         }
                     }
-                }
 
-                override fun onMessageSendSucceeded(messageId: Int) {
-                    onState { pendingSends.remove(messageId) }
-                }
-
-                override fun onMessageSendFailed(messageId: Int) {
-                    onState {
-                        val instance = pendingSends.remove(messageId) ?: return@onState
-                        val peer = peers[instance] ?: return@onState
-                        if (peer.state != DialState.REQUESTED) return@onState
-                        logW("Connect request to ${instance.take(8)} could not be sent")
-                        attemptFailed(peer)
+                    override fun onSubscribeStarted(started: SubscribeDiscoverySession) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) {
+                                runCatching { started.close() }
+                                return@onState
+                            }
+                            subscribeSession = started
+                            logI("WiFi Aware subscribe started")
+                        }
                     }
-                }
 
-                override fun onSessionTerminated() {
-                    onState {
-                        if (generation == discoveryGeneration.get()) subscribeSession = null
-                        onDiscoverySessionTerminated("subscribe", generation)
+                    override fun onServiceDiscovered(
+                        peerHandle: PeerHandle,
+                        serviceSpecificInfo: ByteArray?,
+                        matchFilter: List<ByteArray>?,
+                    ) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            onPeerDiscovered(peerHandle, serviceSpecificInfo)
+                        }
                     }
-                }
-            }, null)
+
+                    // API 31; never invoked below it.
+                    override fun onServiceLost(peerHandle: PeerHandle, reason: Int) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            val instance = subscribeHandles.remove(peerHandle) ?: return@onState
+                            val peer = peers[instance] ?: return@onState
+                            if (peer.subscribeHandle == peerHandle) peer.subscribeHandle = null
+                            logI("Peer ${instance.take(8)} lost from discovery (reason $reason)")
+                        }
+                    }
+
+                    override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
+                        onState {
+                            if (generation != discoveryGeneration.get()) return@onState
+                            if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_READY)) {
+                                onConnectReady(peerHandle, message)
+                            }
+                        }
+                    }
+
+                    override fun onMessageSendSucceeded(messageId: Int) {
+                        onState { pendingSends.remove(messageId) }
+                    }
+
+                    override fun onMessageSendFailed(messageId: Int) {
+                        onState {
+                            val instance = pendingSends.remove(messageId) ?: return@onState
+                            val peer = peers[instance] ?: return@onState
+                            if (peer.state != DialState.REQUESTED) return@onState
+                            logW("Connect request to ${instance.take(8)} could not be sent")
+                            attemptFailed(peer)
+                        }
+                    }
+
+                    override fun onSessionTerminated() {
+                        onState {
+                            if (generation == discoveryGeneration.get()) subscribeSession = null
+                            onDiscoverySessionTerminated("subscribe", generation)
+                        }
+                    }
+                },
+                null,
+            )
             return true
         } catch (e: Exception) {
             logE("Subscribe refused: ${e.message}")
@@ -918,12 +974,13 @@ class AirhopWiFiModule(
     private fun peerFor(instance: String): Peer {
         val t = now()
         lastActivityAtMs = t
-        val peer = peers.getOrPut(instance) {
-            Peer(instance).also {
-                it.idleSinceMs = t
-                logI("New peer ${instance.take(8)}")
+        val peer =
+            peers.getOrPut(instance) {
+                Peer(instance).also {
+                    it.idleSinceMs = t
+                    logI("New peer ${instance.take(8)}")
+                }
             }
-        }
         peer.lastSeenAtMs = t
         return peer
     }
@@ -935,8 +992,12 @@ class AirhopWiFiModule(
         peer.subscribeHandle = peerHandle
         peer.token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
         subscribeHandles[peerHandle] = instance
-        logI("Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}")
-        if (peer.state == DialState.IDLE && prefersInitiator(peer) && now() >= peer.nextAttemptAtMs) {
+        logI(
+            "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}"
+        )
+        if (
+            peer.state == DialState.IDLE && prefersInitiator(peer) && now() >= peer.nextAttemptAtMs
+        ) {
             dial(peer)
         }
     }
@@ -959,7 +1020,11 @@ class AirhopWiFiModule(
         logI("Dialling ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
         try {
             pendingSends[messageId] = peer.instance
-            session.sendMessage(handle, messageId, AwareDial.followUp(AwareDial.MSG_CONNECT_REQUEST, instanceId, peer.epoch))
+            session.sendMessage(
+                handle,
+                messageId,
+                AwareDial.followUp(AwareDial.MSG_CONNECT_REQUEST, instanceId, peer.epoch),
+            )
         } catch (e: Exception) {
             pendingSends.remove(messageId)
             logW("Connect request to ${peer.instance.take(8)} refused: ${e.message}")
@@ -980,9 +1045,10 @@ class AirhopWiFiModule(
         logI("Peer ${instance.take(8)} is ready, requesting data path")
         peer.state = DialState.PATH_PENDING
         peer.stateSinceMs = now()
-        val specifier = WifiAwareNetworkSpecifier.Builder(session, peerHandle)
-            .setPskPassphrase(DATA_PATH_PASSPHRASE)
-            .build()
+        val specifier =
+            WifiAwareNetworkSpecifier.Builder(session, peerHandle)
+                .setPskPassphrase(DATA_PATH_PASSPHRASE)
+                .build()
         requestPath(peer, specifier) { network, info, callback ->
             val address = info.peerIpv6Addr
             val port = info.port
@@ -1031,7 +1097,9 @@ class AirhopWiFiModule(
                 failure = e
                 runCatching { socket?.close() }
                 if (attempt < CONNECT_ATTEMPTS) {
-                    logI("Connect to ${peer.instance.take(8)} attempt $attempt failed: ${e.message}")
+                    logI(
+                        "Connect to ${peer.instance.take(8)} attempt $attempt failed: ${e.message}"
+                    )
                 }
             }
         }
@@ -1068,7 +1136,8 @@ class AirhopWiFiModule(
                 logI("Peer ${instance.take(8)} reconnecting, dropping our link ${peer.linkID}")
                 peer.linkID?.let { closeLink(it, "peer reconnecting") }
             }
-            DialState.REQUESTED, DialState.PATH_PENDING -> {
+            DialState.REQUESTED,
+            DialState.PATH_PENDING -> {
                 // Both dialled at once. The tokens settle it the same way on
                 // both ends: the lower keeps its attempt, the higher yields.
                 if (peer.role == Role.INITIATOR) {
@@ -1086,11 +1155,12 @@ class AirhopWiFiModule(
         peer.state = DialState.PATH_PENDING
         peer.role = Role.RESPONDER
         peer.stateSinceMs = now()
-        val specifier = WifiAwareNetworkSpecifier.Builder(session, peerHandle)
-            .setPskPassphrase(DATA_PATH_PASSPHRASE)
-            .setPort(serverPort)
-            .setTransportProtocol(OsConstants.IPPROTO_TCP)
-            .build()
+        val specifier =
+            WifiAwareNetworkSpecifier.Builder(session, peerHandle)
+                .setPskPassphrase(DATA_PATH_PASSPHRASE)
+                .setPort(serverPort)
+                .setTransportProtocol(OsConstants.IPPROTO_TCP)
+                .build()
         requestPath(peer, specifier, null)
         // Sent once our request is outstanding, which is the framework's order.
         sendReady(session, peerHandle, epoch)
@@ -1098,8 +1168,13 @@ class AirhopWiFiModule(
 
     private fun sendReady(session: PublishDiscoverySession, peerHandle: PeerHandle, epoch: Int) {
         runCatching {
-            session.sendMessage(peerHandle, sendCounter.getAndIncrement(), AwareDial.followUp(AwareDial.MSG_CONNECT_READY, instanceId, epoch))
-        }.onFailure { logW("Could not send connect-ready: ${it.message}") }
+            session.sendMessage(
+                peerHandle,
+                sendCounter.getAndIncrement(),
+                AwareDial.followUp(AwareDial.MSG_CONNECT_READY, instanceId, epoch),
+            )
+        }
+            .onFailure { logW("Could not send connect-ready: ${it.message}") }
     }
 
     // ---- Data path -----------------------------------------------------------
@@ -1107,47 +1182,53 @@ class AirhopWiFiModule(
     private fun requestPath(
         peer: Peer,
         specifier: WifiAwareNetworkSpecifier,
-        onPeerReady: ((Network, WifiAwareNetworkInfo, ConnectivityManager.NetworkCallback) -> Unit)?,
+        onPeerReady:
+            ((Network, WifiAwareNetworkInfo, ConnectivityManager.NetworkCallback) -> Unit)?,
     ) {
         releasePath(peer)
-        val request = NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
-            .setNetworkSpecifier(specifier)
-            .build()
+        val request =
+            NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
+                .setNetworkSpecifier(specifier)
+                .build()
 
-        val callback = object : ConnectivityManager.NetworkCallback() {
-            // Capabilities may be re-delivered; connecting twice is two sockets.
-            private var handled = false
+        val callback =
+            object : ConnectivityManager.NetworkCallback() {
+                // Capabilities may be re-delivered; connecting twice is two sockets.
+                private var handled = false
 
-            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
-                val info = capabilities.transportInfo as? WifiAwareNetworkInfo ?: return
-                onState {
-                    if (handled || onPeerReady == null || peer.network !== this) return@onState
-                    handled = true
-                    onPeerReady(network, info, this)
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    capabilities: NetworkCapabilities,
+                ) {
+                    val info = capabilities.transportInfo as? WifiAwareNetworkInfo ?: return
+                    onState {
+                        if (handled || onPeerReady == null || peer.network !== this) return@onState
+                        handled = true
+                        onPeerReady(network, info, this)
+                    }
                 }
-            }
 
-            override fun onLost(network: Network) {
-                onState {
-                    if (peer.network !== this) return@onState
-                    logI("Data path to ${peer.instance.take(8)} lost")
-                    pathGone(peer)
+                override fun onLost(network: Network) {
+                    onState {
+                        if (peer.network !== this) return@onState
+                        logI("Data path to ${peer.instance.take(8)} lost")
+                        pathGone(peer)
+                    }
                 }
-            }
 
-            override fun onUnavailable() {
-                onState {
-                    if (peer.network !== this) return@onState
-                    logW("Data path to ${peer.instance.take(8)} could not be set up")
-                    val refusedFast = now() - peer.stateSinceMs < PATH_REFUSED_FAST_MS
-                    pathGone(peer)
-                    if (refusedFast && peer.state == DialState.IDLE) {
-                        peer.nextAttemptAtMs = now() + AwareDial.BACKOFF_MAX_MS
+                override fun onUnavailable() {
+                    onState {
+                        if (peer.network !== this) return@onState
+                        logW("Data path to ${peer.instance.take(8)} could not be set up")
+                        val refusedFast = now() - peer.stateSinceMs < PATH_REFUSED_FAST_MS
+                        pathGone(peer)
+                        if (refusedFast && peer.state == DialState.IDLE) {
+                            peer.nextAttemptAtMs = now() + AwareDial.BACKOFF_MAX_MS
+                        }
                     }
                 }
             }
-        }
 
         try {
             connectivityManager.requestNetwork(request, callback, NETWORK_REQUEST_TIMEOUT_MS)
@@ -1188,7 +1269,9 @@ class AirhopWiFiModule(
         val backoff = AwareDial.backoffMs(peer.attempts)
         val jitter = (backoff / 4 * (Math.random() * 2 - 1)).toLong()
         peer.nextAttemptAtMs = now() + backoff + jitter
-        logI("Attempt with ${peer.instance.take(8)} failed (${peer.attempts}), next in ${(backoff + jitter) / 1000}s")
+        logI(
+            "Attempt with ${peer.instance.take(8)} failed (${peer.attempts}), next in ${(backoff + jitter) / 1000}s"
+        )
     }
 
     // ---- Maintenance ---------------------------------------------------------
@@ -1271,12 +1354,13 @@ class AirhopWiFiModule(
     // IO thread. An accepted socket is attributed by the hello it sends.
     private fun acceptLoop(socket: ServerSocket) {
         while (!socket.isClosed) {
-            val client = try {
-                socket.accept()
-            } catch (e: Exception) {
-                logI("Accept loop ended: ${e.message}")
-                return
-            }
+            val client =
+                try {
+                    socket.accept()
+                } catch (e: Exception) {
+                    logI("Accept loop ended: ${e.message}")
+                    return
+                }
             onState {
                 if (serverSocket !== socket) {
                     runCatching { client.close() }
@@ -1308,9 +1392,13 @@ class AirhopWiFiModule(
         if (peer != null) attachLink(link, peer)
         emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
         logI("WiFi Aware link connected: $id${peer?.let { " to ${it.instance.take(8)}" } ?: ""}")
-        state.schedule({
-            if (links[id] === link && !link.hasHello) closeLink(id, "no hello")
-        }, HELLO_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+        state.schedule(
+            {
+                if (links[id] === link && !link.hasHello) closeLink(id, "no hello")
+            },
+            HELLO_TIMEOUT_MS,
+            TimeUnit.MILLISECONDS,
+        )
         val input = socket.getInputStream()
         onIo { readLoop(link, input) }
     }
@@ -1337,21 +1425,29 @@ class AirhopWiFiModule(
         if (link.peerInstance == null) {
             attachLink(link, peerFor(instance))
         } else if (link.peerInstance != instance) {
-            logW("Link ${link.id} hello names ${instance.take(8)}, expected ${link.peerInstance?.take(8)}")
+            logW(
+                "Link ${link.id} hello names ${instance.take(8)}, expected ${link.peerInstance?.take(8)}"
+            )
             closeLink(link.id, "hello mismatch")
             return
         }
         if (link.hasHello) return
         link.hasHello = true
-        link.heartbeat = state.scheduleWithFixedDelay({
-            onIo {
-                try {
-                    writeFrame(link, ByteArray(0))
-                } catch (e: Exception) {
-                    onState { closeLink(link.id, "heartbeat failed") }
-                }
-            }
-        }, HEARTBEAT_MS, HEARTBEAT_MS, TimeUnit.MILLISECONDS)
+        link.heartbeat =
+            state.scheduleWithFixedDelay(
+                {
+                    onIo {
+                        try {
+                            writeFrame(link, ByteArray(0))
+                        } catch (e: Exception) {
+                            onState { closeLink(link.id, "heartbeat failed") }
+                        }
+                    }
+                },
+                HEARTBEAT_MS,
+                HEARTBEAT_MS,
+                TimeUnit.MILLISECONDS,
+            )
     }
 
     // IO thread.
@@ -1388,10 +1484,13 @@ class AirhopWiFiModule(
                     continue
                 }
                 if (!link.hasHello) throw Exception("traffic before hello")
-                emitEvent(EVT_PACKET_RECEIVED, WritableNativeMap().apply {
-                    putString("linkID", link.id)
-                    putString("dataBase64", Base64.encodeToString(data, Base64.NO_WRAP))
-                })
+                emitEvent(
+                    EVT_PACKET_RECEIVED,
+                    WritableNativeMap().apply {
+                        putString("linkID", link.id)
+                        putString("dataBase64", Base64.encodeToString(data, Base64.NO_WRAP))
+                    },
+                )
             } catch (e: SocketTimeoutException) {
                 if (inFrame > 0) {
                     onState { closeLink(link.id, "stalled mid-frame") }

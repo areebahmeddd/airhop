@@ -67,3 +67,13 @@ Samsung retail builds drop every informational logcat line. The Wi-Fi Aware
 module keeps its own ring buffer and peer table for that reason, read back by
 `dumpState()` into the diagnostics export. Use `AirhopAppModule`'s tag
 allowlist for anything that should reach the export.
+
+## Formatting
+
+ktfmt, pinned to one version and checked in CI.
+
+```sh
+curl -sSfL -o /tmp/ktfmt.jar https://repo1.maven.org/maven2/com/facebook/ktfmt/0.64/ktfmt-0.64-with-dependencies.jar
+java -jar /tmp/ktfmt.jar --kotlinlang-style app/src            # format
+java -jar /tmp/ktfmt.jar --kotlinlang-style --dry-run app/src  # what CI checks
+```

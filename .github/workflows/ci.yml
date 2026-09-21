@@ -114,6 +114,17 @@ jobs:
       - name: Set up Android toolchain
         uses: ./.github/actions/setup-android
 
+      # Kotlin counterpart of format:check; ktfmt has no config, so the pin is the policy.
+      - name: Check Kotlin formatting
+        env:
+          KTFMT_VERSION: "0.64"
+          KTFMT_SHA256: "5b3d5286fd2defcc7dc8e28c21ddf156cc6b2d8682bdcd929ce4333e7a6201f2"
+        run: |
+          set -euo pipefail
+          curl -sSfL -o ktfmt.jar "https://repo1.maven.org/maven2/com/facebook/ktfmt/${KTFMT_VERSION}/ktfmt-${KTFMT_VERSION}-with-dependencies.jar"
+          echo "${KTFMT_SHA256}  ktfmt.jar" | sha256sum -c -
+          java -jar ktfmt.jar --kotlinlang-style --dry-run --set-exit-if-changed android/app/src
+
       # Build the same release artifacts and ABI set shipped in production.
       # Dependency locking also fails this step when android/app/gradle.lockfile
       # no longer matches what node_modules resolves to.
@@ -197,6 +208,10 @@ jobs:
         run: |
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
+
+      # Swift counterpart of format:check; swift-format uses Xcode defaults.
+      - name: Check Swift formatting
+        run: swift format lint --strict --recursive ios/Airhop ios/Tests ios/Package.swift
 
       - name: Run Swift unit tests
         run: swift test --package-path ios

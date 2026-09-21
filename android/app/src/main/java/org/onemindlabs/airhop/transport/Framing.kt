@@ -24,10 +24,11 @@ internal object Framing {
     // either of which means the stream is not ours or has lost sync.
     fun length(prefix: ByteArray): Int? {
         if (prefix.size < PREFIX_BYTES) return null
-        val len = ((prefix[0].toInt() and 0xff) shl 24) or
-            ((prefix[1].toInt() and 0xff) shl 16) or
-            ((prefix[2].toInt() and 0xff) shl 8) or
-            (prefix[3].toInt() and 0xff)
+        val len =
+            ((prefix[0].toInt() and 0xff) shl 24) or
+                ((prefix[1].toInt() and 0xff) shl 16) or
+                ((prefix[2].toInt() and 0xff) shl 8) or
+                (prefix[3].toInt() and 0xff)
         if (len < 0 || len > MAX_FRAME) return null
         return len
     }

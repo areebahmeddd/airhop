@@ -44,7 +44,9 @@ class FramingTest {
     @Test
     fun highBitIsRefused() {
         assertNull(Framing.length(byteArrayOf(0x80.toByte(), 0, 0, 0)))
-        assertNull(Framing.length(byteArrayOf(0xff.toByte(), 0xff.toByte(), 0xff.toByte(), 0xff.toByte())))
+        assertNull(
+            Framing.length(byteArrayOf(0xff.toByte(), 0xff.toByte(), 0xff.toByte(), 0xff.toByte()))
+        )
     }
 
     @Test

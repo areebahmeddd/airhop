@@ -20,9 +20,8 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class AirhopTorModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopTorModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     companion object {
         private const val TAG = "AirhopTorModule"
@@ -72,19 +71,16 @@ class AirhopTorModule(
     // reschedules itself and by the JS thread when a stop cancels it;
     // `listenerCount` is written by the JS thread and read by the scheduler
     // thread before every emit.
-    @Volatile
-    private var pollTask: ScheduledFuture<*>? = null
+    @Volatile private var pollTask: ScheduledFuture<*>? = null
 
-    @Volatile
-    private var listenerCount = 0
+    @Volatile private var listenerCount = 0
 
     // A poll belonging to a superseded attempt can still be scheduled, and
     // would otherwise report a stopped client as if it were the live one.
     private val attemptEpoch = AtomicInteger(0)
 
     // The last payload sent to JS, so an unchanged status is not re-sent.
-    @Volatile
-    private var lastEmitted: String? = null
+    @Volatile private var lastEmitted: String? = null
 
     private fun dataDir(): File = File(reactContext.filesDir, DATA_DIR)
 
@@ -118,13 +114,14 @@ class AirhopTorModule(
                 return@execute
             }
 
-            val rc = ArtiNative.start(
-                dir.absolutePath,
-                SOCKS_PORT,
-                bridgeLines,
-                ports[AirhopTransport.OBFS4] ?: 0,
-                ports[AirhopTransport.SNOWFLAKE] ?: 0,
-            )
+            val rc =
+                ArtiNative.start(
+                    dir.absolutePath,
+                    SOCKS_PORT,
+                    bridgeLines,
+                    ports[AirhopTransport.OBFS4] ?: 0,
+                    ports[AirhopTransport.SNOWFLAKE] ?: 0,
+                )
             if (rc != ArtiNative.OK && rc != ArtiNative.ERR_ALREADY_RUNNING) {
                 Log.e(TAG, "arti start failed (rc=$rc)")
                 AirhopIPtProxy.stop()
@@ -268,16 +265,21 @@ class AirhopTorModule(
     }
 
     private fun schedulePoll(epoch: Int, delayMs: Long) {
-        pollTask = scheduler.schedule({
-            if (epoch != attemptEpoch.get()) return@schedule
-            val status = ArtiNative.status()
-            emitStatus()
-            // Nothing more will change on its own once Arti has given up, and a
-            // timer that keeps asking a dead client is battery spent to learn
-            // the same answer. The next start reschedules.
-            if (status.blocked || !status.running) return@schedule
-            schedulePoll(epoch, if (status.ready) POLL_IDLE_MS else POLL_ACTIVE_MS)
-        }, delayMs, TimeUnit.MILLISECONDS)
+        pollTask =
+            scheduler.schedule(
+                {
+                    if (epoch != attemptEpoch.get()) return@schedule
+                    val status = ArtiNative.status()
+                    emitStatus()
+                    // Nothing more will change on its own once Arti has given up, and a
+                    // timer that keeps asking a dead client is battery spent to learn
+                    // the same answer. The next start reschedules.
+                    if (status.blocked || !status.running) return@schedule
+                    schedulePoll(epoch, if (status.ready) POLL_IDLE_MS else POLL_ACTIVE_MS)
+                },
+                delayMs,
+                TimeUnit.MILLISECONDS,
+            )
     }
 
     private fun stopPolling() {
