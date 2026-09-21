@@ -124,7 +124,7 @@ channel must send and accept the bare form.
 No message ID is needed there because both implementations derive the same one
 from sender, timestamp and content, in `MeshMessageIdentity.stableID` and
 `bridgeStableID` respectively. The payload is decoded strictly: invalid UTF-8 is
-dropped rather than rendered as replacement characters, matching bitchat-iOS.
+dropped rather than rendered as replacement characters, matching bitchat-ios.
 
 Airhop's other public channels are location cells, which bitchat has no room to
 put and no channel field to name. They travel under `CHANNEL_MSG_AIRHOP` instead,

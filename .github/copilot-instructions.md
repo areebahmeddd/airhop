@@ -29,7 +29,8 @@ Before working on any code, read in this order:
 
 ```
 src/
-  bridge/       # TurboModule TypeScript specs (Codegen input only)
+  app/          # root component and tab state machine
+  bridge/       # TurboModule TypeScript specs (hand-maintained, interop layer)
   i18n/         # translation runtime + the bundled English catalog
   core/
     crypto/     # identity, keychain, noise-xx, noise-x, double-ratchet, contact-exchange
@@ -44,9 +45,10 @@ src/
   platform/     # thin wrappers over OS APIs
   utils/        # pure helpers
 
-android/        # Kotlin: BLE, WiFi Aware, voice, Tor modules + AirhopForegroundService
-ios/            # Swift: BLE, WiFi Aware, pairing, voice, Tor modules
+android/        # Kotlin: BLE, WiFi Aware, LAN, voice, Tor, app modules + AirhopForegroundService
+ios/            # Swift: BLE, WiFi Aware, pairing, LAN, voice, Tor, app modules
 native/arti/    # Rust: the embedded Tor client both platforms compile
+native/iptproxy/ # Go: the pluggable transports it dials to reach a bridge
 
 assets/data/    # nostr_relays.csv (bundled from bitchat/georelays/, CI-refreshed)
 docs/

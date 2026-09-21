@@ -23,12 +23,11 @@ jobs:
     name: Create Release
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # Create the GitHub release and update the tracked project version.
+    # Create the GitHub release; version and changelog are already in the tag.
     permissions:
       contents: write
     outputs:
       tag: ${{ steps.resolve.outputs.tag }}
-      version: ${{ steps.resolve.outputs.version }}
 
     steps:
       - name: Checkout repository
@@ -61,16 +60,8 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Generate changelog
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
-        with:
-          config: cliff.toml
-          args: --output docs/dev/CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Generate release notes
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff.toml
           args: --latest --strip header --output RELEASE_NOTES.md
@@ -84,7 +75,8 @@ jobs:
           set -euo pipefail
           cat >> RELEASE_NOTES.md <<EOF
 
-          ## Verify this download
+          <details>
+          <summary><strong>Verify this download</strong></summary>
 
           The APK is signed with the Airhop release key and carries SLSA build provenance from this repository.
 
@@ -94,7 +86,10 @@ jobs:
 
           The same provenance is attached as \`airhop.apk.intoto.jsonl\` for offline checks.
 
-          ## Verify the source
+          </details>
+
+          <details>
+          <summary><strong>Verify the source</strong></summary>
 
           \`airhop-${TAG}-sources.sha256\` lists the SHA-256 of every tracked file in this release.
 
@@ -104,6 +99,8 @@ jobs:
           \`\`\`
 
           The second command must print nothing. Hashes prove the listed files are unmodified; only an empty status proves no extra file was added, and the build compiles whatever is present.
+
+          </details>
           EOF
 
       - name: Compose release title
@@ -128,41 +125,6 @@ jobs:
           name: ${{ steps.title.outputs.name }}
           body_path: RELEASE_NOTES.md
 
-      - name: Commit version and changelog to main
-        env:
-          VERSION: ${{ steps.resolve.outputs.version }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          cp docs/dev/CHANGELOG.md "${RUNNER_TEMP}/CHANGELOG.md"
-          git fetch origin main
-          # Restore the generated changelog after switching to main.
-          git checkout -f -B main origin/main
-          cp "${RUNNER_TEMP}/CHANGELOG.md" docs/dev/CHANGELOG.md
-          # Keep app.json and iOS MARKETING_VERSION in sync with the tag so version
-          # reporting stays consistent. Android reads app.json at build time; iOS reads
-          # MARKETING_VERSION from the Xcode project.
-          sed -i -E "s/(\"version\": \")[^\"]*(\")/\1${VERSION}\2/" app.json
-          grep -q "\"version\": \"${VERSION}\"" app.json
-          sed -i -E "s/(MARKETING_VERSION = )[^;]*(;)/\1${VERSION}\2/" ios/Airhop.xcodeproj/project.pbxproj
-          grep -q "MARKETING_VERSION = ${VERSION};" ios/Airhop.xcodeproj/project.pbxproj
-          # Keep iOS CFBundleVersion monotonic for App Store Connect.
-          # Matches the versioning scheme used by Android versionCode.
-          IOS_BUILD=$(( ${VERSION%%.*} * 10000
-            + $(echo "${VERSION}" | cut -d. -f2) * 100
-            + $(echo "${VERSION}" | cut -d. -f3) ))
-          sed -i -E "s/(CURRENT_PROJECT_VERSION = )[^;]*(;)/\1${IOS_BUILD}\2/" ios/Airhop.xcodeproj/project.pbxproj
-          grep -q "CURRENT_PROJECT_VERSION = ${IOS_BUILD};" ios/Airhop.xcodeproj/project.pbxproj
-          echo "iOS CFBundleVersion set to ${IOS_BUILD}"
-          git add docs/dev/CHANGELOG.md app.json ios/Airhop.xcodeproj/project.pbxproj
-          if git diff --staged --quiet; then
-            echo "Version and changelog unchanged."
-          else
-            git commit -m "chore(release): set version and changelog for ${{ steps.resolve.outputs.tag }} [skip ci]"
-            git push origin main
-          fi
-
   android-release:
     name: Release Android APK
     runs-on: ubuntu-24.04
@@ -179,14 +141,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release.outputs.tag }}
-
-      - name: Stamp app version from tag
-        env:
-          VERSION: ${{ needs.release.outputs.version }}
-        run: |
-          set -euo pipefail
-          sed -i -E "s/(\"version\": \")[^\"]*(\")/\1${VERSION}\2/" app.json
-          grep -q "\"version\": \"${VERSION}\"" app.json
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -301,19 +255,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release.outputs.tag }}
-
-      - name: Stamp app version from tag
-        env:
-          VERSION: ${{ needs.release.outputs.version }}
-        run: |
-          set -euo pipefail
-          IOS_BUILD=$(( ${VERSION%%.*} * 10000 \
-            + $(echo "${VERSION}" | cut -d. -f2) * 100 \
-            + $(echo "${VERSION}" | cut -d. -f3) ))
-          sed -i '' -E "s/(MARKETING_VERSION = )[^;]*(;)/\1${VERSION}\2/" ios/Airhop.xcodeproj/project.pbxproj
-          sed -i '' -E "s/(CURRENT_PROJECT_VERSION = )[^;]*(;)/\1${IOS_BUILD}\2/" ios/Airhop.xcodeproj/project.pbxproj
-          grep -q "MARKETING_VERSION = ${VERSION};" ios/Airhop.xcodeproj/project.pbxproj
-          grep -q "CURRENT_PROJECT_VERSION = ${IOS_BUILD};" ios/Airhop.xcodeproj/project.pbxproj
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js

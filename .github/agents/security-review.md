@@ -76,7 +76,7 @@ Check for:
 - No TTL range check (must be `1–7`): **WARN**
 - Timestamp outside ±15-minute window not rejected (replay attack vector): **FAIL**
 - No validation of senderID format (must be 8 bytes of valid hex): **WARN**
-- Large payload not size-checked before LZ4 decompression (zip-bomb vector): **FAIL**
+- Large payload not size-checked before zlib decompression (zip-bomb vector): **FAIL**
 
 ### 5. Noise Protocol Implementation
 

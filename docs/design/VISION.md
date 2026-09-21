@@ -48,6 +48,7 @@ What each feature is for, and when someone would actually reach for it.
 - Public channels. Open rooms anyone nearby can join. `#bluetooth` stays inside Bluetooth range.
 - Location channels. Rooms scoped to a cell, from a block to a region, bridged over the internet, so `#city` works when you are the only person on your street with the app. Open any cell by its geohash to follow a place you are not in.
 - Bulletin board. Signed notices that outlive a conversation, pinned to your mesh or your area for one to seven days, with an urgent flag. "Water station at the south entrance," left for whoever walks past an hour later.
+- Ring. A doorbell for someone in range, for when a message may sit unseen. Their phone rings for 45 seconds or until they look, and only contacts they have allowed can do it. You have lost your friend in the crowd, so you ring them instead of typing "where are you" again.
 
 ### Sharing
 

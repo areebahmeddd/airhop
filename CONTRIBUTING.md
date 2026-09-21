@@ -25,7 +25,7 @@ src/core/ -> Native modules -> src/features/ -> src/ui/
 
 - **Do not write `src/features/` code** until the `src/core/` service it depends on has passing unit tests.
 - **Do not write `src/ui/` code** until the feature logic in `src/features/` is proved functional.
-- **Native code** (`android/`, `ios/`, `native/arti/`, `native/iptproxy/`) is written once during initial development and touched only to fix hardware bugs or to bump the embedded Tor client and its transports. Protocol logic lives in TypeScript.
+- **Native code** (`android/`, `ios/`, `native/arti/`, `native/iptproxy/`) is a thin I/O layer. It changes when a radio or the OS demands it (a transport's connection handling, a platform quirk, a Tor bump), never to carry protocol logic, which lives in TypeScript.
 
 ## 3. Coding Standards
 
@@ -35,7 +35,7 @@ src/core/ -> Native modules -> src/features/ -> src/ui/
 - No `any` types in `src/core/` or `src/bridge/`. Period.
 - Named exports only. No default exports in `src/core/` or `src/bridge/`.
 - File naming: `kebab-case.ts` throughout.
-- Keep files under 400 lines. If it's longer, it has more than one responsibility.
+- One concern per `src/core/` module, each independently testable. A file that needs "and" to describe it is two files. `src/services/mesh-service.ts` and several `src/features/` screens are far past that; they are known refactor targets, not precedent.
 
 ### Native Code (Android + iOS)
 

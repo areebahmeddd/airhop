@@ -8,7 +8,7 @@ architectural layer.
 | Directory        | Responsibility                                                                 |
 | ---------------- | ------------------------------------------------------------------------------ |
 | `app/`           | The root component and the tab state machine                                   |
-| `bridge/`        | React Native TurboModule TypeScript specifications (Codegen input only)        |
+| `bridge/`        | Hand-maintained TurboModule specs, resolved through the interop layer          |
 | `core/crypto/`   | Identity, Noise XX/X, Double Ratchet, and contact exchange                     |
 | `core/encoding/` | Binary and base64 encoding helpers shared across the protocol                  |
 | `core/mesh/`     | The mesh protocol, split by concern (see below)                                |

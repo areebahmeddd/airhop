@@ -59,20 +59,20 @@ writeToLink(linkID: string, dataBase64: string): Promise<void>
 
 ## Naming Convention
 
-TurboModule spec files must be named `Native<Name>.ts` (PascalCase) in `src/bridge/`. This is required by React Native Codegen for automatic module discovery. It is the only place in `src/` where PascalCase file names are used.
+TurboModule spec files are named `Native<Name>.ts` (PascalCase) in `src/bridge/`. That is Codegen's convention, kept so the specs can become Codegen input without a rename. It is the only place in `src/` where PascalCase file names are used.
 
 The modules:
 
-| File                         | Registered as         | Purpose                                                      |
-| ---------------------------- | --------------------- | ------------------------------------------------------------ |
-| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | BLE peripheral and central I/O                               |
-| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | WiFi Aware fast path I/O                                     |
-| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links                                 |
-| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS Wi-Fi Aware pairing sheet                                |
-| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | AAC-LC capture and playback                                  |
-| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Tor lifecycle (embedded Arti)                                |
-| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | The SOCKS socket Arti fronts                                 |
-| `NativeAirhopApp.ts`         | `"AirhopApp"`         | Android only: process restart, recent logcat for diagnostics |
+| File                         | Registered as         | Purpose                                                                                     |
+| ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------- |
+| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | BLE peripheral and central I/O                                                              |
+| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | WiFi Aware fast path I/O                                                                    |
+| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links                                                                |
+| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS Wi-Fi Aware pairing sheet                                                               |
+| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | AAC-LC capture and playback                                                                 |
+| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Tor lifecycle (embedded Arti)                                                               |
+| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | The SOCKS socket Arti fronts                                                                |
+| `NativeAirhopApp.ts`         | `"AirhopApp"`         | Process-level: recent log on both; restart, boot start, APK share and ring alert on Android |
 
 ## BLE UUIDs
 
@@ -91,4 +91,4 @@ There is one native BLE module (`AirhopBLEModule`). Do not create a second BLE m
 
 - `bitchat/ios/bitchat/Services/BLE/BLEService.swift`: the reference iOS BLE implementation
 - `bitchat/android/.../ble/`: the reference Android implementation
-- `src/bridge/NativeAirhopBLE.ts`: the current Codegen spec
+- `src/bridge/NativeAirhopBLE.ts`: the hand-maintained spec

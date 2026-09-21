@@ -3,16 +3,11 @@
 # beta      sign, archive, upload to TestFlight
 # metadata  create the App Store version for this tag, push listing and screenshots
 #
-# Versions are stamped into the Xcode project by the workflow before either
-# lane runs, so nothing here bumps anything. Submitting for review is manual.
-#
-# Signing material arrives as two files decoded from secrets by the workflow,
-# the same way the Android job receives its keystore. The distribution
-# certificate (.p12) and the App Store profile (.mobileprovision) are created
-# once in the Apple Developer portal; the profile is re-downloaded when the
-# entitlement set changes. No match, no second repository.
+# Signing files are decoded from workflow secrets on the runner. The
+# distribution certificate and App Store profile are managed in Apple Developer
+# and refreshed when entitlements change. TestFlight uploads are automated;
+# submitting a build for App Store review remains manual.
 
-# fastlane regenerates fastlane/README.md after every run; ours is hand-written.
 skip_docs
 
 default_platform(:ios)

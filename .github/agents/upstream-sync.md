@@ -23,10 +23,10 @@ You are the Upstream Sync agent for the Airhop project. Your job is to monitor c
 
 ## Upstream Repositories
 
-- **iOS (canonical):** `permissionlesstech/bitchat`
-- **Android:** `permissionlesstech/bitchat-android`
+- **bitchat-ios (canonical):** `permissionlesstech/bitchat`
+- **bitchat-android:** `permissionlesstech/bitchat-android`
 
-Airhop treats bitchat-iOS as the canonical spec. Both bitchat platforms use `Noise_XX_25519_ChaChaPoly_SHA256`. there is NO cipher divergence.
+Airhop treats bitchat-ios as the canonical spec. Both bitchat platforms use `Noise_XX_25519_ChaChaPoly_SHA256`; there is no cipher divergence.
 
 ## Invocation Modes
 
@@ -88,8 +88,8 @@ Output the checklist in this format:
 ## bitchat Upstream Sync Report
 
 **Date:** [today]
-**iOS upstream:** permissionlesstech/bitchat @ [latest tag or commit]
-**Android upstream:** permissionlesstech/bitchat-android @ [latest tag or commit]
+**bitchat-ios:** permissionlesstech/bitchat @ [latest tag or commit]
+**bitchat-android:** permissionlesstech/bitchat-android @ [latest tag or commit]
 **Compared from:** [previous tag or "first sync"]
 
 ### 🔴 PROTOCOL Changes: Evaluate Immediately
