@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "ძებნა მიმოწერებსა და შეტყობინებებში",
   "chat.search.close": "ძებნის დახურვა",
   "chat.search.clear": "ძებნის გასუფთავება",
+  "chat.filter.a11y": "ჩატების გაფილტვრა",
+  "chat.filter.all": "ყველა",
+  "chat.filter.unread": "წაუკითხავი",
+  "chat.filter.verified": "გადამოწმებულია",
+  "chat.filter.nearby": "ახლოს",
+  "chat.filter.private": "პირადი",
+  "chat.filter.none": "ამ ფილტრს არცერთი ჩატი არ ემთხვევა",
   "mesh.view.radar": "რადარის ხედი",
   "mesh.view.list": "სიის ხედი",
   "mesh.view.radar_short": "რადარი",
@@ -98,9 +105,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "არა",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "კეთილი იყოს შენი მობრძანება Airhop-ში",
+  "onboarding.hello.title": "კეთილი იყოს შენი მობრძანება Airhop-ში!",
   "onboarding.hello.p1":
-    "გამარჯობა. Airhop აგებულია bitchat-ის საფუძველზე, როგორც დამოუკიდებელი, ღია კოდის პარალელური პროექტი. ის არ არის დაკავშირებული bitchat-ის პროექტთან ან permissionless tech-თან და მათ მიერ მოწონებულიც არ არის — უბრალოდ რაღაც, რისი შექმნაც და საზოგადოებასთან გაზიარებაც მსიამოვნებს.",
+    "Airhop აგებულია bitchat-ის საფუძველზე, როგორც დამოუკიდებელი, ღია კოდის პარალელური პროექტი. ის არ არის დაკავშირებული bitchat-ის პროექტთან და მისგან მოწონებულიც არ არის, ასევე არ არის რომელიმე არსებული აპლიკაციის ან სერვისის იმიტაცია, უბრალოდ რაღაც, რისი შექმნაც და საზოგადოებასთან გაზიარებაც მსიამოვნებს.",
   "onboarding.hello.p2":
     "ეს პირველი iOS-ისა და Android-ის გამოშვებაა, ამიტომ მიუხედავად იმისა, რომ მეგობრებთან ერთად გამოვცადე, სავარაუდოდ რამდენიმე შეცდომას წააწყდები. თუ ასე მოხდა, ან თუ ფუნქციის იდეა გაქვს, სიამოვნებით მოგისმენ. გახსენი issue {github}-ზე ან მომწერე {email}-ზე.",
   "onboarding.hello.p3":
@@ -1806,6 +1813,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "ამ მოწყობილობაზე მიუწვდომელია",
   "settings.network.lan_foreground":
     "ჩერდება, როცა Airhop ფონურ რეჟიმშია. Bluetooth აგრძელებს მუშაობას.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "ფოტოებისა და ფაილების უფრო სწრაფი გადაცემა ერთი პლატფორმის ორ ტელეფონს შორის. Bluetooth ყველაფერს მაინც ატარებს.",
+  "settings.network.wifi_unstable":
+    "შეჩერებულია. ამ ტელეფონზე მუდმივად აფერხებდა Wi-Fi-ს. ხელახლა საცდელად გამორთეთ და ჩართეთ.",
   "settings.network.wifi_pair": "დაწყვილება",
   "settings.network.wifi_paired": "დაწყვილებული მოწყობილობები",
   "settings.network.wifi_pair_find": "მოწყობილობის პოვნა",

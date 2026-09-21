@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "چیٹس اور پیغامات میں تلاش کریں",
   "chat.search.close": "تلاش بند کریں",
   "chat.search.clear": "تلاش صاف کریں",
+  "chat.filter.a11y": "چیٹس فلٹر کریں",
+  "chat.filter.all": "سب",
+  "chat.filter.unread": "غیر پڑھی ہوئی",
+  "chat.filter.verified": "تصدیق شدہ",
+  "chat.filter.nearby": "قریب",
+  "chat.filter.private": "نجی",
+  "chat.filter.none": "اس فلٹر سے کوئی چیٹ میل نہیں کھاتی",
   "mesh.view.radar": "ریڈار منظر",
   "mesh.view.list": "فہرست منظر",
   "mesh.view.radar_short": "ریڈار",
@@ -99,9 +106,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "کوئی نہیں",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop میں خوش آمدید",
+  "onboarding.hello.title": "Airhop میں خوش آمدید!",
   "onboarding.hello.p1":
-    "سلام۔ Airhop کو bitchat کے اوپر ایک خودمختار، کھلے ماخذ کے ضمنی منصوبے کے طور پر بنایا گیا ہے۔ یہ نہ bitchat منصوبے سے وابستہ ہے نہ permissionless tech سے، اور نہ ہی ان کی توثیق شدہ ہے، بس ایک ایسی چیز ہے جسے بنانا اور برادری کے ساتھ بانٹنا مجھے اچھا لگتا ہے۔",
+    "Airhop کو bitchat کے اوپر ایک خودمختار، کھلے ماخذ کے ضمنی منصوبے کے طور پر بنایا گیا ہے۔ یہ نہ bitchat منصوبے سے وابستہ ہے، نہ اس کی توثیق شدہ ہے، اور نہ ہی کسی موجودہ ایپ یا سروس کی نقل ہے، بس ایک ایسی چیز ہے جسے بنانا اور برادری کے ساتھ بانٹنا مجھے اچھا لگتا ہے۔",
   "onboarding.hello.p2":
     "یہ iOS اور Android کے لیے پہلا اجرا ہے، اس لیے اگرچہ میں نے اسے دوستوں کے ساتھ آزمایا ہے، آپ کو شاید چند خرابیاں ملیں گی۔ ایسا ہو، یا آپ کے پاس کسی خصوصیت کا خیال ہو، تو مجھے سن کر خوشی ہو گی۔ {github} پر مسئلہ درج کریں یا مجھے {email} پر ای میل کریں۔",
   "onboarding.hello.p3":
@@ -1778,6 +1785,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "اس آلے پر دستیاب نہیں",
   "settings.network.lan_foreground":
     "Airhop کے پس منظر میں جانے پر رک جاتا ہے۔ بلوٹوتھ چلتا رہتا ہے۔",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "ایک ہی پلیٹ فارم کے دو فونز کے درمیان تیز تصاویر اور فائلوں کی منتقلی۔ بلوٹوتھ بہرحال سب کچھ لے جاتا ہے۔",
+  "settings.network.wifi_unstable":
+    "روک دیا گیا۔ یہ اس فون پر بار بار Wi-Fi میں خلل ڈال رہا تھا۔ دوبارہ کوشش کے لیے بند کر کے آن کریں۔",
   "settings.network.wifi_pair": "جوڑا بنانا",
   "settings.network.wifi_paired": "جوڑے گئے آلات",
   "settings.network.wifi_pair_find": "آلہ تلاش کریں",

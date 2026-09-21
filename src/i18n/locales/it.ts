@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Cerca nelle chat e nei messaggi",
   "chat.search.close": "Chiudi la ricerca",
   "chat.search.clear": "Cancella la ricerca",
+  "chat.filter.a11y": "Filtra le chat",
+  "chat.filter.all": "Tutte",
+  "chat.filter.unread": "Non lette",
+  "chat.filter.verified": "Verificato",
+  "chat.filter.nearby": "Vicinanze",
+  "chat.filter.private": "Private",
+  "chat.filter.none": "Nessuna chat corrisponde a questo filtro",
   "mesh.view.radar": "Vista radar",
   "mesh.view.list": "Vista elenco",
   "mesh.view.radar_short": "Radar",
@@ -99,9 +106,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Nessuno",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Benvenuto in Airhop",
+  "onboarding.hello.title": "Benvenuto in Airhop!",
   "onboarding.hello.p1":
-    "Ciao. Airhop è costruito su bitchat come progetto parallelo indipendente e open source. Non è affiliato né approvato dal progetto bitchat o da permissionless tech: è semplicemente qualcosa che mi piace costruire e condividere con la comunità.",
+    "Airhop è costruito su bitchat come progetto parallelo indipendente e open source. Non è affiliato né approvato dal progetto bitchat, né è un’imitazione di alcuna app o servizio esistente: è semplicemente qualcosa che mi piace costruire e condividere con la comunità.",
   "onboarding.hello.p2":
     "Questa è la prima versione per iOS e Android, quindi anche se l’ho provata con degli amici probabilmente incontrerai qualche errore. Se succede, o se hai un’idea per una funzione, mi farebbe piacere saperlo. Apri una segnalazione su {github} oppure scrivimi a {email}.",
   "onboarding.hello.p3":
@@ -1828,6 +1835,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Non disponibile su questo dispositivo",
   "settings.network.lan_foreground":
     "Si interrompe quando Airhop è in background. Il Bluetooth continua.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Trasferimento più rapido di foto e file tra due telefoni della stessa piattaforma. Il Bluetooth trasporta comunque tutto.",
+  "settings.network.wifi_unstable":
+    "In pausa. Continuava a disturbare il Wi-Fi di questo telefono. Spegni e riaccendi per riprovare.",
   "settings.network.wifi_pair": "Abbinamento",
   "settings.network.wifi_paired": "Dispositivi abbinati",
   "settings.network.wifi_pair_find": "Trova un dispositivo",

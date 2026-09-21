@@ -69,6 +69,10 @@ function wifiLabel(state: string): string {
       return t("settings.diag.wifi_unavailable");
     case "unpaired":
       return t("settings.diag.wifi_unpaired");
+    case "off":
+      return t("common.off");
+    case "unstable":
+      return t("settings.network.wifi_unstable");
     default:
       return t("settings.diag.wifi_unknown");
   }

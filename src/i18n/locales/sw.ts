@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Tafuta kwenye gumzo na jumbe",
   "chat.search.close": "Funga utafutaji",
   "chat.search.clear": "Futa utafutaji",
+  "chat.filter.a11y": "Chuja mazungumzo",
+  "chat.filter.all": "Yote",
+  "chat.filter.unread": "Hayajasomwa",
+  "chat.filter.verified": "Amethibitishwa",
+  "chat.filter.nearby": "Karibu",
+  "chat.filter.private": "Faragha",
+  "chat.filter.none": "Hakuna mazungumzo yanayolingana na kichujio hiki",
   "mesh.view.radar": "Mwonekano wa rada",
   "mesh.view.list": "Mwonekano wa orodha",
   "mesh.view.radar_short": "Rada",
@@ -99,9 +106,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Hakuna",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Karibu Airhop",
+  "onboarding.hello.title": "Karibu Airhop!",
   "onboarding.hello.p1":
-    "Habari. Airhop imejengwa juu ya bitchat kama mradi wa pembeni unaojitegemea wenye msimbo huria. Hauhusiani na wala hauidhinishwi na mradi wa bitchat au permissionless tech, ni kitu tu ninachofurahia kujenga na kushiriki na jamii.",
+    "Airhop imejengwa juu ya bitchat kama mradi wa pembeni unaojitegemea wenye msimbo huria. Hauhusiani na wala hauidhinishwi na mradi wa bitchat, wala si nakala ya programu au huduma yoyote iliyopo, ni kitu tu ninachofurahia kujenga na kushiriki na jamii.",
   "onboarding.hello.p2":
     "Hili ni toleo la kwanza kwa iOS na Android, kwa hivyo ingawa nimelijaribu na marafiki, huenda ukakutana na hitilafu chache. Ikitokea hivyo, au ukiwa na wazo la kipengele, ningependa kusikia. Fungua suala kwenye {github} au nitumie barua pepe kwenye {email}.",
   "onboarding.hello.p3":
@@ -1823,6 +1830,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Haipatikani kwenye kifaa hiki",
   "settings.network.lan_foreground":
     "Husimama Airhop inapokuwa nyuma. Bluetooth inaendelea.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Uhamishaji wa picha na faili kwa haraka zaidi kati ya simu mbili za jukwaa moja. Bluetooth hubeba kila kitu hata hivyo.",
+  "settings.network.wifi_unstable":
+    "Imesitishwa. Iliendelea kuvuruga Wi-Fi kwenye simu hii. Zima na uwashe ili kujaribu tena.",
   "settings.network.wifi_pair": "Uoanishaji",
   "settings.network.wifi_paired": "Vifaa vilivyooanishwa",
   "settings.network.wifi_pair_find": "Tafuta kifaa",

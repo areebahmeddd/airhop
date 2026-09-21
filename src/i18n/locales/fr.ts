@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Rechercher dans les discussions et les messages",
   "chat.search.close": "Fermer la recherche",
   "chat.search.clear": "Effacer la recherche",
+  "chat.filter.a11y": "Filtrer les discussions",
+  "chat.filter.all": "Toutes",
+  "chat.filter.unread": "Non lues",
+  "chat.filter.verified": "Vérifié",
+  "chat.filter.nearby": "À proximité",
+  "chat.filter.private": "Privées",
+  "chat.filter.none": "Aucune discussion ne correspond à ce filtre",
   "mesh.view.radar": "Vue radar",
   "mesh.view.list": "Vue liste",
   "mesh.view.radar_short": "Radar",
@@ -99,9 +106,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Aucun",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Bienvenue dans Airhop",
+  "onboarding.hello.title": "Bienvenue dans Airhop !",
   "onboarding.hello.p1":
-    "Bonjour. Airhop est construit au-dessus de bitchat comme un projet parallèle indépendant et open source. Il n’est ni affilié ni approuvé par le projet bitchat ou par permissionless tech : c’est simplement quelque chose que j’aime construire et partager avec la communauté.",
+    "Airhop est construit au-dessus de bitchat comme un projet parallèle indépendant et open source. Il n’est ni affilié ni approuvé par le projet bitchat, et ce n’est l’imitation d’aucune application ou d’aucun service existant : c’est simplement quelque chose que j’aime construire et partager avec la communauté.",
   "onboarding.hello.p2":
     "C’est la première version pour iOS et Android, donc même si je l’ai testée avec des amis, tu tomberas sans doute sur quelques bugs. Si c’est le cas, ou si tu as une idée de fonctionnalité, ça me ferait plaisir d’en entendre parler. Ouvre un ticket sur {github} ou écris-moi à {email}.",
   "onboarding.hello.p3":
@@ -1832,6 +1839,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Non disponible sur cet appareil",
   "settings.network.lan_foreground":
     "S’interrompt quand Airhop passe en arrière-plan. Le Bluetooth continue.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Transferts de photos et de fichiers plus rapides entre deux téléphones de la même plateforme. Le Bluetooth transporte tout de toute façon.",
+  "settings.network.wifi_unstable":
+    "En pause. Il perturbait sans cesse le Wi-Fi de ce téléphone. Éteignez puis rallumez pour réessayer.",
   "settings.network.wifi_pair": "Jumelage",
   "settings.network.wifi_paired": "Appareils jumelés",
   "settings.network.wifi_pair_find": "Trouver un appareil",

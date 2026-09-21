@@ -18,6 +18,7 @@ import EmptyState from "@ui/components/empty-state";
 import {
   FontSize,
   FontWeight,
+  MIN_TOUCH,
   Radius,
   Spacing,
   useThemeColors,
@@ -211,6 +212,7 @@ export default function ChatSearchResults({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chipRow}
         keyboardShouldPersistTaps="handled"
+        accessibilityRole="tablist"
       >
         {MEDIA_FILTERS.map((f) => {
           const selected = filter === f.key;
@@ -219,7 +221,7 @@ export default function ChatSearchResults({
               key={f.key}
               style={[styles.chip, selected && styles.chipSelected]}
               onPress={() => setFilter(selected ? null : f.key)}
-              accessibilityRole="button"
+              accessibilityRole="tab"
               accessibilityState={{ selected }}
               accessibilityLabel={t("chat.search.filter_by", {
                 filter: t(f.labelKey),
@@ -567,8 +569,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
+      minHeight: MIN_TOUCH,
       paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm,
       borderRadius: Radius.full,
       backgroundColor: Colors.surfaceRaised,
       borderWidth: 1,

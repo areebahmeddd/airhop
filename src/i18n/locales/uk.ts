@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Пошук у чатах і повідомленнях",
   "chat.search.close": "Закрити пошук",
   "chat.search.clear": "Очистити пошук",
+  "chat.filter.a11y": "Фільтр чатів",
+  "chat.filter.all": "Усі",
+  "chat.filter.unread": "Непрочитані",
+  "chat.filter.verified": "Підтверджено",
+  "chat.filter.nearby": "Поблизу",
+  "chat.filter.private": "Приватні",
+  "chat.filter.none": "Жоден чат не відповідає цьому фільтру",
   "mesh.view.radar": "Вигляд радара",
   "mesh.view.list": "Вигляд списку",
   "mesh.view.radar_short": "Радар",
@@ -96,9 +103,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Немає",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Ласкаво просимо до Airhop",
+  "onboarding.hello.title": "Ласкаво просимо до Airhop!",
   "onboarding.hello.p1":
-    "Вітаю. Airhop побудований поверх bitchat як самостійний побічний проєкт з відкритим кодом. Він не пов’язаний із проєктом bitchat чи permissionless tech і не схвалений ними, це просто те, що мені подобається створювати й ділитися зі спільнотою.",
+    "Airhop побудований поверх bitchat як самостійний побічний проєкт з відкритим кодом. Він не пов’язаний із проєктом bitchat і не схвалений ним, а також не є імітацією жодного наявного застосунку чи сервісу, це просто те, що мені подобається створювати й ділитися зі спільнотою.",
   "onboarding.hello.p2":
     "Це перший випуск для iOS та Android, тож хоча я випробував його з друзями, ви, найімовірніше, натрапите на кілька помилок. Якщо так станеться або якщо у вас є ідея функції, я радо про це почую. Відкрийте запит на {github} або напишіть мені на {email}.",
   "onboarding.hello.p3":
@@ -1801,6 +1808,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Недоступно на цьому пристрої",
   "settings.network.lan_foreground":
     "Зупиняється, коли Airhop у фоні. Bluetooth продовжує працювати.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Швидша передача фото та файлів між двома телефонами однієї платформи. Bluetooth у будь-якому разі переносить усе.",
+  "settings.network.wifi_unstable":
+    "Призупинено. Воно постійно порушувало Wi-Fi на цьому телефоні. Вимкніть і ввімкніть, щоб спробувати ще раз.",
   "settings.network.wifi_pair": "Спарювання",
   "settings.network.wifi_paired": "З’єднані пристрої",
   "settings.network.wifi_pair_find": "Знайти пристрій",

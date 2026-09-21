@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "ਗੱਲਬਾਤਾਂ ਅਤੇ ਸੁਨੇਹੇ ਖੋਜੋ",
   "chat.search.close": "ਖੋਜ ਬੰਦ ਕਰੋ",
   "chat.search.clear": "ਖੋਜ ਸਾਫ਼ ਕਰੋ",
+  "chat.filter.a11y": "ਚੈਟਾਂ ਫਿਲਟਰ ਕਰੋ",
+  "chat.filter.all": "ਸਾਰੀਆਂ",
+  "chat.filter.unread": "ਅਣਪੜ੍ਹੀਆਂ",
+  "chat.filter.verified": "ਪੁਸ਼ਟੀਸ਼ੁਦਾ",
+  "chat.filter.nearby": "ਨੇੜੇ",
+  "chat.filter.private": "ਨਿੱਜੀ",
+  "chat.filter.none": "ਇਸ ਫਿਲਟਰ ਨਾਲ ਕੋਈ ਚੈਟ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ",
   "mesh.view.radar": "ਰਡਾਰ ਝਲਕ",
   "mesh.view.list": "ਸੂਚੀ ਝਲਕ",
   "mesh.view.radar_short": "ਰਡਾਰ",
@@ -94,9 +101,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "ਕੋਈ ਨਹੀਂ",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ",
+  "onboarding.hello.title": "Airhop ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ!",
   "onboarding.hello.p1":
-    "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ। Airhop bitchat ਦੇ ਉੱਤੇ ਇੱਕ ਵੱਖਰੇ, ਖੁੱਲ੍ਹੇ ਸਰੋਤ ਵਾਲੇ ਪਾਸੇ ਦੇ ਪ੍ਰੋਜੈਕਟ ਵਜੋਂ ਬਣਾਇਆ ਗਿਆ ਹੈ। ਇਹ ਨਾ bitchat ਪ੍ਰੋਜੈਕਟ ਜਾਂ permissionless tech ਨਾਲ ਜੁੜਿਆ ਹੋਇਆ ਹੈ ਨਾ ਉਹਨਾਂ ਵੱਲੋਂ ਪਰਵਾਨ, ਬੱਸ ਕੁਝ ਅਜਿਹਾ ਹੈ ਜੋ ਬਣਾਉਣਾ ਅਤੇ ਭਾਈਚਾਰੇ ਨਾਲ ਸਾਂਝਾ ਕਰਨਾ ਮੈਨੂੰ ਚੰਗਾ ਲੱਗਦਾ ਹੈ।",
+    "Airhop bitchat ਦੇ ਉੱਤੇ ਇੱਕ ਵੱਖਰੇ, ਖੁੱਲ੍ਹੇ ਸਰੋਤ ਵਾਲੇ ਪਾਸੇ ਦੇ ਪ੍ਰੋਜੈਕਟ ਵਜੋਂ ਬਣਾਇਆ ਗਿਆ ਹੈ। ਇਹ ਨਾ bitchat ਪ੍ਰੋਜੈਕਟ ਨਾਲ ਜੁੜਿਆ ਹੋਇਆ ਹੈ ਨਾ ਉਸ ਵੱਲੋਂ ਪਰਵਾਨ, ਅਤੇ ਨਾ ਹੀ ਇਹ ਕਿਸੇ ਮੌਜੂਦਾ ਐਪ ਜਾਂ ਸੇਵਾ ਦੀ ਨਕਲ ਹੈ, ਬੱਸ ਕੁਝ ਅਜਿਹਾ ਹੈ ਜੋ ਬਣਾਉਣਾ ਅਤੇ ਭਾਈਚਾਰੇ ਨਾਲ ਸਾਂਝਾ ਕਰਨਾ ਮੈਨੂੰ ਚੰਗਾ ਲੱਗਦਾ ਹੈ।",
   "onboarding.hello.p2":
     "ਇਹ iOS ਅਤੇ Android ਲਈ ਪਹਿਲੀ ਰਿਲੀਜ਼ ਹੈ, ਇਸ ਲਈ ਭਾਵੇਂ ਮੈਂ ਇਸ ਨੂੰ ਦੋਸਤਾਂ ਨਾਲ ਪਰਖਿਆ ਹੈ, ਤੁਹਾਨੂੰ ਸ਼ਾਇਦ ਕੁਝ ਖ਼ਰਾਬੀਆਂ ਮਿਲਣਗੀਆਂ। ਜੇ ਮਿਲਣ, ਜਾਂ ਜੇ ਤੁਹਾਡੇ ਕੋਲ ਕਿਸੇ ਸਹੂਲਤ ਦਾ ਵਿਚਾਰ ਹੋਵੇ, ਤਾਂ ਮੈਂ ਸੁਣਨਾ ਚਾਹਾਂਗਾ। {github} ’ਤੇ issue ਖੋਲ੍ਹੋ ਜਾਂ ਮੈਨੂੰ {email} ’ਤੇ ਈਮੇਲ ਭੇਜੋ।",
   "onboarding.hello.p3":
@@ -1781,6 +1788,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਉਪਲਬਧ ਨਹੀਂ",
   "settings.network.lan_foreground":
     "Airhop ਦੇ ਬੈਕਗਰਾਊਂਡ ਵਿੱਚ ਜਾਣ ਉੱਤੇ ਰੁਕ ਜਾਂਦਾ ਹੈ। ਬਲੂਟੁੱਥ ਚੱਲਦਾ ਰਹਿੰਦਾ ਹੈ।",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "ਇੱਕੋ ਪਲੇਟਫਾਰਮ ਦੇ ਦੋ ਫ਼ੋਨਾਂ ਵਿਚਕਾਰ ਤੇਜ਼ ਫ਼ੋਟੋ ਅਤੇ ਫ਼ਾਈਲ ਟ੍ਰਾਂਸਫਰ। ਬਲੂਟੁੱਥ ਕਿਸੇ ਵੀ ਹਾਲ ਵਿੱਚ ਸਭ ਕੁਝ ਲੈ ਜਾਂਦਾ ਹੈ।",
+  "settings.network.wifi_unstable":
+    "ਰੋਕਿਆ ਗਿਆ। ਇਹ ਇਸ ਫ਼ੋਨ ’ਤੇ ਵਾਰ-ਵਾਰ Wi-Fi ਵਿੱਚ ਵਿਘਨ ਪਾ ਰਿਹਾ ਸੀ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਲਈ ਬੰਦ ਕਰਕੇ ਚਾਲੂ ਕਰੋ।",
   "settings.network.wifi_pair": "ਜੋੜਾ ਬਣਾਉਣਾ",
   "settings.network.wifi_paired": "ਜੋੜੇ ਗਏ ਡਿਵਾਈਸ",
   "settings.network.wifi_pair_find": "ਡਿਵਾਈਸ ਲੱਭੋ",

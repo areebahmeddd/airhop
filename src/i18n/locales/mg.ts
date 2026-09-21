@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Karohy ao amin'ny resaka sy ny hafatra",
   "chat.search.close": "Akatony ny fikarohana",
   "chat.search.clear": "Fafao ny fikarohana",
+  "chat.filter.a11y": "Sivana ny resaka",
+  "chat.filter.all": "Rehetra",
+  "chat.filter.unread": "Tsy mbola novakiana",
+  "chat.filter.verified": "Voamarina",
+  "chat.filter.nearby": "Akaiky",
+  "chat.filter.private": "Manokana",
+  "chat.filter.none": "Tsy misy resaka mifanaraka amin'ity sivana ity",
   "mesh.view.radar": "Fijery radara",
   "mesh.view.list": "Fijery lisitra",
   "mesh.view.radar_short": "Radara",
@@ -97,9 +104,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Tsia",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Tongasoa eto amin'ny Airhop",
+  "onboarding.hello.title": "Tongasoa eto amin'ny Airhop!",
   "onboarding.hello.p1":
-    "Salama. Naorina ambonin'ny bitchat ny Airhop, ho tetikasa an-tsehatra mahaleo tena sy misokatra. Tsy mifandray amin'ny tetikasa bitchat na ny permissionless tech izy ary tsy notohanan'izy ireo, zavatra tiako amboarina sy zaraina amin'ny fiaraha-monina fotsiny.",
+    "Naorina ambonin'ny bitchat ny Airhop, ho tetikasa an-tsehatra mahaleo tena sy misokatra. Tsy mifandray amin'ny tetikasa bitchat izy ary tsy notohanany, ary tsy fakan-tahaka amin'ny rindrankajy na tolotra efa misy, zavatra tiako amboarina sy zaraina amin'ny fiaraha-monina fotsiny.",
   "onboarding.hello.p2":
     "Ity no famoahana voalohany ho an'ny iOS sy Android, ka na dia nozahako niaraka tamin'ny namana aza izy, mety hisy diso hitanao. Raha misy, na raha manana hevitra momba ny fiasa ianao, dia faly hihaino aho. Manokafa issue ao amin'ny {github} na manorata amiko ao amin'ny {email}.",
   "onboarding.hello.p3":
@@ -1851,6 +1858,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Tsy misy amin'ity fitaovana ity",
   "settings.network.lan_foreground":
     "Mijanona rehefa any ambadika i Airhop. Mitohy ny Bluetooth.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Famindrana sary sy rakitra haingana kokoa eo amin'ny finday roa mitovy sehatra. Ny Bluetooth no mitondra ny zava-drehetra na izany aza.",
+  "settings.network.wifi_unstable":
+    "Najanona. Nanelingelina ny Wi-Fi amin'ity finday ity foana izy. Vonoy dia alefaso indray raha hanandrana.",
   "settings.network.wifi_pair": "Fampifanarahana",
   "settings.network.wifi_paired": "Fitaovana nampifanarahana",
   "settings.network.wifi_pair_find": "Hitady fitaovana",

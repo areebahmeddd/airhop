@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "البحث في المحادثات والرسائل",
   "chat.search.close": "إغلاق البحث",
   "chat.search.clear": "مسح البحث",
+  "chat.filter.a11y": "تصفية الدردشات",
+  "chat.filter.all": "الكل",
+  "chat.filter.unread": "غير المقروءة",
+  "chat.filter.verified": "موثّق",
+  "chat.filter.nearby": "بالجوار",
+  "chat.filter.private": "خاصة",
+  "chat.filter.none": "لا توجد دردشات تطابق هذا المرشّح",
   "mesh.view.radar": "عرض الرادار",
   "mesh.view.list": "عرض القائمة",
   "mesh.view.radar_short": "رادار",
@@ -95,9 +102,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "لا يوجد",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "مرحبًا بك في Airhop",
+  "onboarding.hello.title": "مرحبًا بك في Airhop!",
   "onboarding.hello.p1":
-    "أهلًا. بُني Airhop فوق bitchat كمشروع جانبي مستقل ومفتوح المصدر. وهو غير تابع لمشروع bitchat ولا لـ permissionless tech ولا معتمد منهما، بل هو ببساطة شيء أستمتع ببنائه ومشاركته مع المجتمع.",
+    "بُني Airhop فوق bitchat كمشروع جانبي مستقل ومفتوح المصدر. وهو غير تابع لمشروع bitchat ولا معتمد منه، وليس تقليدًا لأي تطبيق أو خدمة موجودة، بل هو ببساطة شيء أستمتع ببنائه ومشاركته مع المجتمع.",
   "onboarding.hello.p2":
     "هذا أول إصدار لنظامي iOS وAndroid، ومع أنني اختبرته مع أصدقائي، فمن المرجّح أن تصادف بعض الأخطاء. إن حدث ذلك، أو كانت لديك فكرة لميزة، يسعدني أن أسمع منك. افتح مشكلة على {github} أو راسلني على {email}.",
   "onboarding.hello.p3":
@@ -1735,6 +1742,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "غير متاح على هذا الجهاز",
   "settings.network.lan_foreground":
     "يتوقف عندما يكون Airhop في الخلفية. تبقى البلوتوث تعمل.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "نقل أسرع للصور والملفات بين هاتفين على نفس المنصة. يحمل البلوتوث كل شيء في كل الأحوال.",
+  "settings.network.wifi_unstable":
+    "متوقف مؤقتًا. استمر في تعطيل Wi-Fi على هذا الهاتف. أطفئه ثم شغّله للمحاولة مجددًا.",
   "settings.network.wifi_pair": "الاقتران",
   "settings.network.wifi_paired": "الأجهزة المقترنة",
   "settings.network.wifi_pair_find": "ابحث عن جهاز",

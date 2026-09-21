@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "채팅과 메시지 검색",
   "chat.search.close": "검색 닫기",
   "chat.search.clear": "검색 지우기",
+  "chat.filter.a11y": "채팅 필터",
+  "chat.filter.all": "전체",
+  "chat.filter.unread": "읽지 않음",
+  "chat.filter.verified": "확인됨",
+  "chat.filter.nearby": "근처",
+  "chat.filter.private": "비공개",
+  "chat.filter.none": "이 필터와 일치하는 채팅이 없습니다",
   "mesh.view.radar": "레이더 보기",
   "mesh.view.list": "목록 보기",
   "mesh.view.radar_short": "레이더",
@@ -94,9 +101,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "없음",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop에 오신 것을 환영합니다",
+  "onboarding.hello.title": "Airhop에 오신 것을 환영합니다!",
   "onboarding.hello.p1":
-    "안녕하세요. Airhop은 bitchat 위에 만든 독립적인 오픈 소스 사이드 프로젝트입니다. bitchat 프로젝트나 permissionless tech와 제휴하거나 승인받은 관계가 아니며, 그저 제가 만들고 커뮤니티와 나누는 것을 즐기는 결과물입니다.",
+    "Airhop은 bitchat 위에 만든 독립적인 오픈 소스 사이드 프로젝트입니다. bitchat 프로젝트와 제휴하거나 승인받은 관계가 아니며, 기존 앱이나 서비스를 사칭한 것도 아닙니다. 그저 제가 만들고 커뮤니티와 나누는 것을 즐기는 결과물입니다.",
   "onboarding.hello.p2":
     "이번이 첫 iOS 및 Android 릴리스입니다. 친구들과 테스트하긴 했지만 몇 가지 버그를 만나실 겁니다. 그런 일이 있거나 기능 아이디어가 있다면 꼭 들려주세요. {github}에 이슈를 열거나 {email}로 이메일을 보내주세요.",
   "onboarding.hello.p3":
@@ -1762,6 +1769,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "이 기기에서는 사용할 수 없습니다",
   "settings.network.lan_foreground":
     "Airhop이 백그라운드로 가면 멈춥니다. 블루투스는 계속 작동합니다.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "같은 플랫폼의 두 기기 사이에서 사진과 파일을 더 빠르게 전송합니다. 블루투스는 어차피 모든 것을 전달합니다.",
+  "settings.network.wifi_unstable":
+    "일시 중지됨. 이 기기의 Wi-Fi를 계속 방해했습니다. 다시 시도하려면 껐다가 켜세요.",
   "settings.network.wifi_pair": "페어링",
   "settings.network.wifi_paired": "페어링된 기기",
   "settings.network.wifi_pair_find": "기기 찾기",

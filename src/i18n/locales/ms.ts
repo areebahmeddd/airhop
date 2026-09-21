@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Cari dalam sembang dan mesej",
   "chat.search.close": "Tutup carian",
   "chat.search.clear": "Kosongkan carian",
+  "chat.filter.a11y": "Tapis sembang",
+  "chat.filter.all": "Semua",
+  "chat.filter.unread": "Belum dibaca",
+  "chat.filter.verified": "Disahkan",
+  "chat.filter.nearby": "Berdekatan",
+  "chat.filter.private": "Peribadi",
+  "chat.filter.none": "Tiada sembang sepadan dengan penapis ini",
   "mesh.view.radar": "Paparan radar",
   "mesh.view.list": "Paparan senarai",
   "mesh.view.radar_short": "Radar",
@@ -97,9 +104,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Tiada",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Selamat datang ke Airhop",
+  "onboarding.hello.title": "Selamat datang ke Airhop!",
   "onboarding.hello.p1":
-    "Hai. Airhop dibina di atas bitchat sebagai projek sampingan sumber terbuka yang berdiri sendiri. Ia tidak bergabung dengan dan tidak disokong oleh projek bitchat mahupun permissionless tech, cuma sesuatu yang saya seronok bina dan kongsikan dengan komuniti.",
+    "Airhop dibina di atas bitchat sebagai projek sampingan sumber terbuka yang berdiri sendiri. Ia tidak bergabung dengan dan tidak disokong oleh projek bitchat, dan bukan tiruan mana-mana aplikasi atau perkhidmatan sedia ada, cuma sesuatu yang saya seronok bina dan kongsikan dengan komuniti.",
   "onboarding.hello.p2":
     "Ini keluaran pertama untuk iOS dan Android, jadi walaupun saya sudah mengujinya bersama rakan-rakan, anda mungkin masih terjumpa beberapa pepijat. Kalau begitu, atau kalau anda ada idea ciri, saya ingin mendengarnya. Buka isu di {github} atau e-mel saya di {email}.",
   "onboarding.hello.p3":
@@ -1817,6 +1824,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Tidak tersedia pada peranti ini",
   "settings.network.lan_foreground":
     "Berhenti apabila Airhop di latar belakang. Bluetooth terus berjalan.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Pemindahan foto dan fail lebih pantas antara dua telefon pada platform yang sama. Bluetooth tetap membawa semuanya.",
+  "settings.network.wifi_unstable":
+    "Dijeda. Ia terus mengganggu Wi-Fi pada telefon ini. Matikan dan hidupkan untuk mencuba lagi.",
   "settings.network.wifi_pair": "Gandingan",
   "settings.network.wifi_paired": "Peranti bergandingan",
   "settings.network.wifi_pair_find": "Cari peranti",

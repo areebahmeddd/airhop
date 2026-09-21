@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Sök i chattar och meddelanden",
   "chat.search.close": "Stäng sökningen",
   "chat.search.clear": "Rensa sökningen",
+  "chat.filter.a11y": "Filtrera chattar",
+  "chat.filter.all": "Alla",
+  "chat.filter.unread": "Olästa",
+  "chat.filter.verified": "Verifierad",
+  "chat.filter.nearby": "I närheten",
+  "chat.filter.private": "Privata",
+  "chat.filter.none": "Inga chattar matchar det här filtret",
   "mesh.view.radar": "Radarvy",
   "mesh.view.list": "Listvy",
   "mesh.view.radar_short": "Radar",
@@ -95,9 +102,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Inget",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Välkommen till Airhop",
+  "onboarding.hello.title": "Välkommen till Airhop!",
   "onboarding.hello.p1":
-    "Hej där. Airhop är byggt ovanpå bitchat som ett fristående sidoprojekt med öppen källkod. Det är varken knutet till eller godkänt av bitchat-projektet eller permissionless tech, utan bara något jag tycker om att bygga och dela med gemenskapen.",
+    "Airhop är byggt ovanpå bitchat som ett fristående sidoprojekt med öppen källkod. Det är varken knutet till eller godkänt av bitchat-projektet, och det är inte heller en imitation av någon befintlig app eller tjänst, utan bara något jag tycker om att bygga och dela med gemenskapen.",
   "onboarding.hello.p2":
     "Det här är den första utgåvan för iOS och Android, så även om jag har testat den med vänner kommer du nog att stöta på några buggar. Hör gärna av dig om du gör det, eller om du har en idé på en funktion. Öppna ett ärende på {github} eller mejla mig på {email}.",
   "onboarding.hello.p3":
@@ -1789,6 +1796,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Inte tillgängligt på den här enheten",
   "settings.network.lan_foreground":
     "Pausar när Airhop är i bakgrunden. Bluetooth fortsätter.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Snabbare överföring av foton och filer mellan två telefoner på samma plattform. Bluetooth bär ändå allt.",
+  "settings.network.wifi_unstable":
+    "Pausad. Den fortsatte störa wifi på den här telefonen. Stäng av och slå på för att försöka igen.",
   "settings.network.wifi_pair": "Parkoppling",
   "settings.network.wifi_paired": "Parkopplade enheter",
   "settings.network.wifi_pair_find": "Hitta en enhet",

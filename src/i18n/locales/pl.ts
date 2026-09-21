@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Szukaj w czatach i wiadomościach",
   "chat.search.close": "Zamknij wyszukiwanie",
   "chat.search.clear": "Wyczyść wyszukiwanie",
+  "chat.filter.a11y": "Filtruj czaty",
+  "chat.filter.all": "Wszystkie",
+  "chat.filter.unread": "Nieprzeczytane",
+  "chat.filter.verified": "Zweryfikowany",
+  "chat.filter.nearby": "W pobliżu",
+  "chat.filter.private": "Prywatne",
+  "chat.filter.none": "Żaden czat nie pasuje do tego filtra",
   "mesh.view.radar": "Widok radaru",
   "mesh.view.list": "Widok listy",
   "mesh.view.radar_short": "Radar",
@@ -98,9 +105,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Brak",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Witaj w Airhop",
+  "onboarding.hello.title": "Witaj w Airhop!",
   "onboarding.hello.p1":
-    "Cześć. Airhop powstał na bazie aplikacji bitchat jako niezależny projekt poboczny o otwartym kodzie. Nie jest powiązany ani firmowany przez projekt bitchat czy permissionless tech, to po prostu coś, co lubię budować i dzielić się tym ze społecznością.",
+    "Airhop powstał na bazie aplikacji bitchat jako niezależny projekt poboczny o otwartym kodzie. Nie jest powiązany ani firmowany przez projekt bitchat, ani nie jest imitacją żadnej istniejącej aplikacji czy usługi, to po prostu coś, co lubię budować i dzielić się tym ze społecznością.",
   "onboarding.hello.p2":
     "To pierwsze wydanie na iOS i Androida, więc choć testowałem je ze znajomymi, pewnie natrafisz na kilka błędów. Jeśli tak, albo jeśli masz pomysł na funkcję, chętnie o tym usłyszę. Załóż zgłoszenie na {github} albo napisz do mnie na {email}.",
   "onboarding.hello.p3":
@@ -1816,6 +1823,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Niedostępne na tym urządzeniu",
   "settings.network.lan_foreground":
     "Zatrzymuje się, gdy Airhop działa w tle. Bluetooth działa dalej.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Szybszy transfer zdjęć i plików między dwoma telefonami na tej samej platformie. Bluetooth i tak przenosi wszystko.",
+  "settings.network.wifi_unstable":
+    "Wstrzymane. Ciągle zakłócało Wi-Fi w tym telefonie. Wyłącz i włącz, aby spróbować ponownie.",
   "settings.network.wifi_pair": "Parowanie",
   "settings.network.wifi_paired": "Sparowane urządzenia",
   "settings.network.wifi_pair_find": "Znajdź urządzenie",

@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Tìm trong cuộc trò chuyện và tin nhắn",
   "chat.search.close": "Đóng tìm kiếm",
   "chat.search.clear": "Xóa nội dung tìm kiếm",
+  "chat.filter.a11y": "Lọc cuộc trò chuyện",
+  "chat.filter.all": "Tất cả",
+  "chat.filter.unread": "Chưa đọc",
+  "chat.filter.verified": "Đã xác minh",
+  "chat.filter.nearby": "Ở gần",
+  "chat.filter.private": "Riêng tư",
+  "chat.filter.none": "Không có cuộc trò chuyện nào khớp với bộ lọc này",
   "mesh.view.radar": "Dạng ra đa",
   "mesh.view.list": "Dạng danh sách",
   "mesh.view.radar_short": "Ra đa",
@@ -97,9 +104,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Không",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Chào mừng đến với Airhop",
+  "onboarding.hello.title": "Chào mừng đến với Airhop!",
   "onboarding.hello.p1":
-    "Xin chào. Airhop được dựng trên nền bitchat như một dự án phụ nguồn mở, độc lập. Nó không trực thuộc và cũng không được bảo trợ bởi dự án bitchat hay permissionless tech, chỉ là thứ tôi thích làm và chia sẻ với cộng đồng.",
+    "Airhop được dựng trên nền bitchat như một dự án phụ nguồn mở, độc lập. Nó không trực thuộc và cũng không được bảo trợ bởi dự án bitchat, và cũng không phải là bản sao của bất kỳ ứng dụng hay dịch vụ nào đã tồn tại, chỉ là thứ tôi thích làm và chia sẻ với cộng đồng.",
   "onboarding.hello.p2":
     "Đây là bản phát hành iOS và Android đầu tiên, nên dù tôi đã thử với bạn bè, bạn hẳn vẫn sẽ gặp vài lỗi. Nếu gặp, hoặc nếu bạn có ý tưởng cho một tính năng, tôi rất muốn nghe. Hãy mở một issue trên {github} hoặc gửi thư cho tôi ở {email}.",
   "onboarding.hello.p3":
@@ -1798,6 +1805,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Không khả dụng trên thiết bị này",
   "settings.network.lan_foreground":
     "Tạm dừng khi Airhop chạy nền. Bluetooth vẫn tiếp tục.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Truyền ảnh và tệp nhanh hơn giữa hai điện thoại cùng nền tảng. Bluetooth vẫn truyền mọi thứ.",
+  "settings.network.wifi_unstable":
+    "Đã tạm dừng. Nó liên tục làm gián đoạn Wi-Fi trên điện thoại này. Tắt rồi bật lại để thử lại.",
   "settings.network.wifi_pair": "Ghép đôi",
   "settings.network.wifi_paired": "Thiết bị đã ghép đôi",
   "settings.network.wifi_pair_find": "Tìm một thiết bị",

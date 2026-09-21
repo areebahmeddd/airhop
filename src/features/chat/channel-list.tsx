@@ -8,7 +8,7 @@
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
 
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { t, tPlural, type TranslationKey, useT, useTPlural } from "@i18n";
+import { t, tPlural, useT, useTPlural, type TranslationKey } from "@i18n";
 import { trailingSwipeActions } from "@i18n/layout";
 import { useRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
@@ -38,6 +38,7 @@ import {
   useThemeColors,
 } from "@ui/theme";
 import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
+import { channelMatches, type ChannelFilter } from "@utils/chat-filter";
 import { sortConversationsByActivity } from "@utils/conversation-order";
 import { formatListTimestamp } from "@utils/format";
 import { messagePreviewText } from "@utils/message-preview";
@@ -141,6 +142,7 @@ interface ChannelSection {
 
 interface Props {
   onSelectChannel: (channel: string) => void;
+  filter: ChannelFilter;
 }
 
 // Human-readable label for a channel key, for dialogs and sheet headers that
@@ -161,6 +163,7 @@ function channelLabel(channel: string): string {
 
 export default function ChannelList({
   onSelectChannel,
+  filter,
 }: Props): React.JSX.Element {
   const T = useT();
   const TP = useTPlural();
@@ -174,6 +177,7 @@ export default function ChannelList({
   });
   const {
     channels,
+    channelKeys,
     messages,
     removeChannel,
     unreadCounts,
@@ -263,12 +267,21 @@ export default function ChannelList({
 
   // ---- Derived channel lists ----
 
+  // A group is private by construction; a channel is private when it carries
+  // a key, which is what separates an invite-only room from a public one.
+  const kept = channels.filter((c) =>
+    channelMatches(c, filter, {
+      unreadCount: (channel) => unreadCounts[channel] ?? 0,
+      isPrivate: (channel) =>
+        channel.startsWith("group:") || channelKeys[channel] !== undefined,
+    }),
+  );
   // Public channels only (exclude dm: and group: prefixed channels).
-  const publicChannels = channels.filter(
+  const publicChannels = kept.filter(
     (c) => !c.startsWith("dm:") && !c.startsWith("group:"),
   );
   // Private groups the user belongs to, keyed as group:<id>.
-  const groupChannels = channels.filter((c) => c.startsWith("group:"));
+  const groupChannels = kept.filter((c) => c.startsWith("group:"));
   const defaultChannels = publicChannels.filter((c) =>
     DEFAULT_CHANNEL_NAMES.has(c),
   );
@@ -297,6 +310,8 @@ export default function ChannelList({
     );
   }
 
+  // Under a filter an empty section is dropped, and an empty list says why.
+  const filtering = filter !== "all";
   const sections: ChannelSection[] = [
     {
       title: T("chat.channels.default"),
@@ -304,7 +319,7 @@ export default function ChannelList({
       unread: sectionUnread(defaultChannels),
       data: collapsedSections.has(T("chat.channels.default"))
         ? []
-        : showAllDefault
+        : showAllDefault || filtering
           ? defaultChannels
           : defaultChannels.slice(0, DEFAULT_VISIBLE_COUNT),
     },
@@ -314,7 +329,11 @@ export default function ChannelList({
       unread: sectionUnread(ownChannels),
       data: collapsedSections.has(T("chat.channels.yours")) ? [] : ownChannels,
     },
-  ];
+  ].filter(
+    (section) =>
+      !filtering ||
+      (section.isDefault ? defaultChannels : ownChannels).length > 0,
+  );
 
   // ---- Handlers ----
 
@@ -642,7 +661,7 @@ export default function ChannelList({
           );
         }}
         renderSectionFooter={({ section }) => {
-          if (collapsedSections.has(section.title)) return null;
+          if (filtering || collapsedSections.has(section.title)) return null;
 
           if (section.isDefault) {
             const hiddenCount = defaultChannels.length - DEFAULT_VISIBLE_COUNT;
@@ -692,6 +711,11 @@ export default function ChannelList({
           />
         }
         stickySectionHeadersEnabled={false}
+        ListEmptyComponent={
+          filtering ? (
+            <EmptyState icon="filter" title={T("chat.filter.none")} />
+          ) : null
+        }
         contentContainerStyle={styles.list}
       />
 

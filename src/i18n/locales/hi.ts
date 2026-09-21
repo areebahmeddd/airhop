@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "चैट और संदेश खोजें",
   "chat.search.close": "खोज बंद करें",
   "chat.search.clear": "खोज साफ़ करें",
+  "chat.filter.a11y": "चैट फ़िल्टर करें",
+  "chat.filter.all": "सभी",
+  "chat.filter.unread": "अपठित",
+  "chat.filter.verified": "सत्यापित",
+  "chat.filter.nearby": "आस-पास",
+  "chat.filter.private": "निजी",
+  "chat.filter.none": "इस फ़िल्टर से कोई चैट मेल नहीं खाती",
   "mesh.view.radar": "रडार व्यू",
   "mesh.view.list": "सूची व्यू",
   "mesh.view.radar_short": "रडार",
@@ -96,9 +103,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "कोई नहीं",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop में आपका स्वागत है",
+  "onboarding.hello.title": "Airhop में आपका स्वागत है!",
   "onboarding.hello.p1":
-    "नमस्ते। Airhop को bitchat के ऊपर एक स्वतंत्र, ओपन सोर्स साइड प्रोजेक्ट के तौर पर बनाया गया है। यह bitchat प्रोजेक्ट या permissionless tech से न जुड़ा है न उनका समर्थित, यह बस कुछ ऐसा है जिसे बनाना और समुदाय के साथ बाँटना मुझे अच्छा लगता है।",
+    "Airhop को bitchat के ऊपर एक स्वतंत्र, ओपन सोर्स साइड प्रोजेक्ट के तौर पर बनाया गया है। यह न bitchat प्रोजेक्ट से जुड़ा है, न उससे समर्थित है, और न ही किसी मौजूदा ऐप या सेवा की नकल है, यह बस कुछ ऐसा है जिसे बनाना और समुदाय के साथ बाँटना मुझे अच्छा लगता है।",
   "onboarding.hello.p2":
     "यह पहला iOS और Android रिलीज़ है, तो दोस्तों के साथ जाँचने के बावजूद आपको कुछ गड़बड़ियाँ ज़रूर मिलेंगी। ऐसा हो, या किसी फ़ीचर का विचार हो, तो मुझे सुनकर खुशी होगी। {github} पर issue खोलें या {email} पर ईमेल भेजें।",
   "onboarding.hello.p3":
@@ -1776,6 +1783,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "इस डिवाइस पर उपलब्ध नहीं",
   "settings.network.lan_foreground":
     "Airhop के बैकग्राउंड में जाने पर रुक जाता है। ब्लूटूथ चलता रहता है।",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "एक ही प्लेटफ़ॉर्म के दो फ़ोन के बीच तेज़ फ़ोटो और फ़ाइल ट्रांसफर। ब्लूटूथ वैसे भी सब कुछ ले जाता है।",
+  "settings.network.wifi_unstable":
+    "रोका गया। यह इस फ़ोन पर बार-बार Wi-Fi बाधित कर रहा था। फिर से आज़माने के लिए बंद करके चालू करें।",
   "settings.network.wifi_pair": "पेयरिंग",
   "settings.network.wifi_paired": "पेयर किए गए डिवाइस",
   "settings.network.wifi_pair_find": "डिवाइस ढूँढें",

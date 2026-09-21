@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "চ্যাট ও বার্তায় খুঁজুন",
   "chat.search.close": "খোঁজা বন্ধ করুন",
   "chat.search.clear": "খোঁজা মুছুন",
+  "chat.filter.a11y": "চ্যাট ফিল্টার করুন",
+  "chat.filter.all": "সব",
+  "chat.filter.unread": "অপঠিত",
+  "chat.filter.verified": "যাচাই করা",
+  "chat.filter.nearby": "কাছে",
+  "chat.filter.private": "ব্যক্তিগত",
+  "chat.filter.none": "এই ফিল্টারের সাথে কোনো চ্যাট মেলে না",
   "mesh.view.radar": "রাডার দৃশ্য",
   "mesh.view.list": "তালিকা দৃশ্য",
   "mesh.view.radar_short": "রাডার",
@@ -95,9 +102,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "লাগে না",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop-এ স্বাগতম",
+  "onboarding.hello.title": "Airhop-এ স্বাগতম!",
   "onboarding.hello.p1":
-    "নমস্কার। Airhop bitchat-এর উপর গড়া একটি স্বাধীন, ওপেন সোর্স শখের প্রকল্প। এটি bitchat প্রকল্প বা permissionless tech-এর সঙ্গে যুক্ত নয় এবং তাদের অনুমোদিতও নয়, কেবল এমন কিছু যা বানাতে ও সম্প্রদায়ের সঙ্গে ভাগ করে নিতে আমার ভালো লাগে।",
+    "Airhop bitchat-এর উপর গড়া একটি স্বাধীন, ওপেন সোর্স শখের প্রকল্প। এটি bitchat প্রকল্পের সঙ্গে যুক্ত নয় এবং তাদের অনুমোদিতও নয়, আবার বিদ্যমান কোনো অ্যাপ বা পরিষেবার নকলও নয়, কেবল এমন কিছু যা বানাতে ও সম্প্রদায়ের সঙ্গে ভাগ করে নিতে আমার ভালো লাগে।",
   "onboarding.hello.p2":
     "এটি প্রথম iOS ও Android সংস্করণ, তাই বন্ধুদের সঙ্গে পরখ করলেও আপনি সম্ভবত কিছু ত্রুটির মুখে পড়বেন। পড়লে, বা কোনো সুবিধার ভাবনা থাকলে, শুনতে ভালো লাগবে। {github}-এ একটি issue খুলুন বা {email}-এ আমাকে একটি ইমেল পাঠান।",
   "onboarding.hello.p3":
@@ -1772,6 +1779,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "এই ডিভাইসে উপলব্ধ নয়",
   "settings.network.lan_foreground":
     "Airhop ব্যাকগ্রাউন্ডে গেলে থেমে যায়। ব্লুটুথ চলতে থাকে।",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "একই প্ল্যাটফর্মের দুটি ফোনের মধ্যে দ্রুত ছবি ও ফাইল স্থানান্তর। ব্লুটুথ যেকোনো অবস্থায় সবকিছু বহন করে।",
+  "settings.network.wifi_unstable":
+    "থামানো হয়েছে। এটি এই ফোনে বারবার Wi-Fi ব্যাহত করছিল। আবার চেষ্টা করতে বন্ধ করে চালু করুন।",
   "settings.network.wifi_pair": "জোড়া লাগানো",
   "settings.network.wifi_paired": "জোড়া লাগানো ডিভাইস",
   "settings.network.wifi_pair_find": "একটি ডিভাইস খুঁজুন",

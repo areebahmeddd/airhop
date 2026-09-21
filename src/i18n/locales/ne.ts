@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "च्याट र सन्देशमा खोज्नुहोस्",
   "chat.search.close": "खोज बन्द गर्नुहोस्",
   "chat.search.clear": "खोज सफा गर्नुहोस्",
+  "chat.filter.a11y": "च्याटहरू फिल्टर गर्नुहोस्",
+  "chat.filter.all": "सबै",
+  "chat.filter.unread": "नपढिएका",
+  "chat.filter.verified": "प्रमाणित",
+  "chat.filter.nearby": "नजिकै",
+  "chat.filter.private": "निजी",
+  "chat.filter.none": "यो फिल्टरसँग कुनै च्याट मेल खाँदैन",
   "mesh.view.radar": "रडार दृश्य",
   "mesh.view.list": "सूची दृश्य",
   "mesh.view.radar_short": "रडार",
@@ -96,9 +103,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "छैन",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop मा स्वागत छ",
+  "onboarding.hello.title": "Airhop मा स्वागत छ!",
   "onboarding.hello.p1":
-    "नमस्कार। Airhop लाई bitchat माथि एउटा स्वतन्त्र, खुला स्रोतको सहायक परियोजनाका रूपमा बनाइएको हो। यो न bitchat परियोजना वा permissionless tech सँग सम्बद्ध छ, न तिनको समर्थनप्राप्त, बस एउटा यस्तो कुरा हो जुन बनाउन र समुदायसँग बाँड्न मलाई रमाइलो लाग्छ।",
+    "Airhop लाई bitchat माथि एउटा स्वतन्त्र, खुला स्रोतको सहायक परियोजनाका रूपमा बनाइएको हो। यो न bitchat परियोजनासँग सम्बद्ध छ, न त्यसको समर्थनप्राप्त, न कुनै अवस्थित एप वा सेवाको नक्कल हो, बस एउटा यस्तो कुरा हो जुन बनाउन र समुदायसँग बाँड्न मलाई रमाइलो लाग्छ।",
   "onboarding.hello.p2":
     "यो iOS र Android का लागि पहिलो संस्करण हो, त्यसैले साथीहरूसँग परीक्षण गरे पनि तपाईंले केही त्रुटि भेट्नुहुने सम्भावना छ। त्यसो भयो भने, वा तपाईंसँग कुनै सुविधाको विचार छ भने, म सुन्न पाए खुसी हुनेछु। {github} मा विषय खोल्नुहोस् वा मलाई {email} मा इमेल गर्नुहोस्।",
   "onboarding.hello.p3":
@@ -1772,6 +1779,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "यो यन्त्रमा उपलब्ध छैन",
   "settings.network.lan_foreground":
     "Airhop पृष्ठभूमिमा जाँदा रोकिन्छ। ब्लुटुथ चलिरहन्छ।",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "एउटै प्लेटफर्मका दुई फोनबीच छिटो फोटो र फाइल स्थानान्तरण। ब्लुटुथले जे भए पनि सबै बोक्छ।",
+  "settings.network.wifi_unstable":
+    "रोकिएको। यसले यो फोनमा बारम्बार Wi-Fi बाधा पुर्‍याइरहेको थियो। फेरि प्रयास गर्न बन्द गरी खोल्नुहोस्।",
   "settings.network.wifi_pair": "जोडा मिलाउने",
   "settings.network.wifi_paired": "जोडा मिलाइएका उपकरण",
   "settings.network.wifi_pair_find": "उपकरण खोज्नुहोस्",

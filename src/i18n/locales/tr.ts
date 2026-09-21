@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Sohbetlerde ve mesajlarda ara",
   "chat.search.close": "Aramayı kapat",
   "chat.search.clear": "Aramayı temizle",
+  "chat.filter.a11y": "Sohbetleri filtrele",
+  "chat.filter.all": "Tümü",
+  "chat.filter.unread": "Okunmamış",
+  "chat.filter.verified": "Doğrulandı",
+  "chat.filter.nearby": "Yakında",
+  "chat.filter.private": "Özel",
+  "chat.filter.none": "Bu filtreyle eşleşen sohbet yok",
   "mesh.view.radar": "Radar görünümü",
   "mesh.view.list": "Liste görünümü",
   "mesh.view.radar_short": "Radar",
@@ -100,9 +107,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Yok",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop'a hoş geldin",
+  "onboarding.hello.title": "Airhop'a hoş geldin!",
   "onboarding.hello.p1":
-    "Merhaba. Airhop, bitchat üzerine kurulmuş bağımsız ve açık kaynaklı bir yan projedir. bitchat projesiyle ya da permissionless tech ile bağlantılı değildir, onlar tarafından desteklenmez; yalnızca geliştirmekten ve toplulukla paylaşmaktan keyif aldığım bir şeydir.",
+    "Airhop, bitchat üzerine kurulmuş bağımsız ve açık kaynaklı bir yan projedir. bitchat projesiyle bağlantılı değildir, onun tarafından desteklenmez ve mevcut herhangi bir uygulamanın ya da hizmetin taklidi de değildir; yalnızca geliştirmekten ve toplulukla paylaşmaktan keyif aldığım bir şeydir.",
   "onboarding.hello.p2":
     "Bu, iOS ve Android için ilk sürüm. Arkadaşlarımla denemiş olsam da muhtemelen birkaç hatayla karşılaşacaksın. Karşılaşırsan ya da bir özellik fikrin varsa duymak isterim. {github} üzerinde bir konu aç ya da bana {email} adresinden yaz.",
   "onboarding.hello.p3":
@@ -1793,6 +1800,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Bu cihazda kullanılamıyor",
   "settings.network.lan_foreground":
     "Airhop arka plana geçtiğinde durur. Bluetooth çalışmaya devam eder.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Aynı platformdaki iki telefon arasında daha hızlı fotoğraf ve dosya aktarımı. Bluetooth her durumda her şeyi taşır.",
+  "settings.network.wifi_unstable":
+    "Duraklatıldı. Bu telefonda Wi-Fi'yi sürekli bozuyordu. Yeniden denemek için kapatıp açın.",
   "settings.network.wifi_pair": "Eşleştirme",
   "settings.network.wifi_paired": "Eşleştirilmiş cihazlar",
   "settings.network.wifi_pair_find": "Cihaz bul",

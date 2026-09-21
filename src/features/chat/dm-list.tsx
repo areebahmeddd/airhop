@@ -12,7 +12,7 @@ import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
-import { useContactsStore } from "@store/contacts-store";
+import { isVerified, useContactsStore } from "@store/contacts-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
@@ -30,6 +30,7 @@ import {
   TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
+import { dmMatches, type DmFilter } from "@utils/chat-filter";
 import { sortConversationsByActivity } from "@utils/conversation-order";
 import { formatListTimestamp } from "@utils/format";
 import { messagePreviewText } from "@utils/message-preview";
@@ -51,9 +52,13 @@ import ContactInfoSheet from "./contact-info-sheet";
 
 interface Props {
   onSelectDM: (channel: string) => void;
+  filter: DmFilter;
 }
 
-export default function DmList({ onSelectDM }: Props): React.JSX.Element {
+export default function DmList({
+  onSelectDM,
+  filter,
+}: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
@@ -71,6 +76,7 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
   } = useChatStore();
   const blockPeer = useBlockedStore((s) => s.blockPeer);
   const removeContact = useContactsStore((s) => s.removeContact);
+  const contacts = useContactsStore((s) => s.contacts);
   // Subscribe to the peers Map so the list re-renders when any peer
   // comes online or goes offline (Map reference changes on every upsert).
   const peerMap = usePeerStore((s) => s.peers);
@@ -202,7 +208,20 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
   // DM channels are prefixed "dm:<16-hex peerID>", ordered pinned-first then by
   // most recent activity, the same rule the channel list uses.
   const dmChannels = sortConversationsByActivity(
-    channels.filter((c) => c.startsWith("dm:")),
+    channels.filter(
+      (c) =>
+        c.startsWith("dm:") &&
+        dmMatches(c, filter, {
+          unreadCount: (channel) => unreadCounts[channel] ?? 0,
+          isVerified: (peerID) => isVerified(contacts[peerID]),
+          isNearby: (peerID) => {
+            const entry = peerMap.get(peerID);
+            return (
+              entry !== undefined && nowMs - entry.lastSeenMs < REACHABLE_TTL_MS
+            );
+          },
+        }),
+    ),
     messages,
     pinnedChannels,
   );
@@ -223,6 +242,7 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
             nowMs - peerEntry.lastSeenMs < REACHABLE_TTL_MS;
           const isPinned = pinnedChannels.includes(item);
           const isMuted = mutedChannels.includes(item);
+          const verified = isVerified(contacts[peerID]);
 
           // Formatted once for both the visible timestamp and the label below.
           const timeLabel =
@@ -231,6 +251,7 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
           // The whole row as one sentence, matching the channel list.
           const rowLabel = [
             username,
+            verified ? t("chat.contact.verified") : null,
             isOnline ? t("chat.dm.in_range") : null,
             (unreadCounts[item] ?? 0) > 0
               ? tPlural("chat.a11y.unread", unreadCounts[item] ?? 0)
@@ -278,9 +299,20 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
               {/* Content */}
               <View style={styles.rowContent}>
                 <View style={styles.rowTop}>
-                  <Text style={styles.username} numberOfLines={1}>
-                    {username}
-                  </Text>
+                  <View style={styles.nameRow}>
+                    <Text style={styles.username} numberOfLines={1}>
+                      {username}
+                    </Text>
+                    {/* Blue means verified app-wide. No mark for anyone
+                        else: absence is the signal. */}
+                    {verified && (
+                      <Feather
+                        name="shield"
+                        size={14}
+                        color={Colors.verified}
+                      />
+                    )}
+                  </View>
                   <View style={styles.rowMeta}>
                     {last ? (
                       <Text style={styles.timestamp}>{timeLabel}</Text>
@@ -387,11 +419,15 @@ export default function DmList({ onSelectDM }: Props): React.JSX.Element {
           />
         }
         ListEmptyComponent={
-          <EmptyState
-            icon="message-circle"
-            title={T("chat.dm.none")}
-            subtitle={T("chat.dm.none_desc")}
-          />
+          filter === "all" ? (
+            <EmptyState
+              icon="message-circle"
+              title={T("chat.dm.none")}
+              subtitle={T("chat.dm.none_desc")}
+            />
+          ) : (
+            <EmptyState icon="filter" title={T("chat.filter.none")} />
+          )
         }
         contentContainerStyle={styles.list}
       />
@@ -600,11 +636,18 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 0,
       marginStart: Spacing.sm,
     },
+    nameRow: {
+      flex: 1,
+      minWidth: 0,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: Spacing.xs,
+    },
     username: {
       fontSize: FontSize.base,
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
-      flex: 1,
+      flexShrink: 1,
     },
     timestamp: {
       fontSize: FontSize.xs,

@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "ค้นหาแชทและข้อความ",
   "chat.search.close": "ปิดการค้นหา",
   "chat.search.clear": "ล้างการค้นหา",
+  "chat.filter.a11y": "กรองแชท",
+  "chat.filter.all": "ทั้งหมด",
+  "chat.filter.unread": "ยังไม่ได้อ่าน",
+  "chat.filter.verified": "ยืนยันแล้ว",
+  "chat.filter.nearby": "ใกล้เคียง",
+  "chat.filter.private": "ส่วนตัว",
+  "chat.filter.none": "ไม่มีแชทที่ตรงกับตัวกรองนี้",
   "mesh.view.radar": "มุมมองเรดาร์",
   "mesh.view.list": "มุมมองรายการ",
   "mesh.view.radar_short": "เรดาร์",
@@ -95,9 +102,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "ไม่ต้อง",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "ยินดีต้อนรับสู่ Airhop",
+  "onboarding.hello.title": "ยินดีต้อนรับสู่ Airhop!",
   "onboarding.hello.p1":
-    "สวัสดีครับ Airhop สร้างขึ้นบน bitchat ในฐานะโปรเจกต์เสริมโอเพนซอร์สที่เป็นอิสระ ไม่ได้มีความเกี่ยวข้องกับหรือได้รับการรับรองจากโปรเจกต์ bitchat หรือ permissionless tech เป็นเพียงสิ่งที่ผมสนุกกับการสร้างและแบ่งปันกับชุมชน",
+    "Airhop สร้างขึ้นบน bitchat ในฐานะโปรเจกต์เสริมโอเพนซอร์สที่เป็นอิสระ ไม่ได้มีความเกี่ยวข้องกับหรือได้รับการรับรองจากโปรเจกต์ bitchat และไม่ได้เลียนแบบแอปหรือบริการที่มีอยู่แล้วใด ๆ เป็นเพียงสิ่งที่ผมสนุกกับการสร้างและแบ่งปันกับชุมชน",
   "onboarding.hello.p2":
     "นี่เป็นรุ่นแรกสำหรับ iOS และ Android แม้ผมจะทดสอบกับเพื่อน ๆ แล้ว คุณก็คงเจอข้อผิดพลาดอยู่บ้าง หากเจอ หรือหากคุณมีไอเดียสำหรับฟีเจอร์ใหม่ ผมยินดีรับฟัง เปิด issue ที่ {github} หรือส่งอีเมลถึงผมที่ {email}",
   "onboarding.hello.p3":
@@ -1748,6 +1755,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "ใช้ไม่ได้บนอุปกรณ์นี้",
   "settings.network.lan_foreground":
     "หยุดเมื่อ Airhop อยู่เบื้องหลัง บลูทูธยังทำงานต่อ",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "โอนรูปภาพและไฟล์ได้เร็วขึ้นระหว่างโทรศัพท์สองเครื่องบนแพลตฟอร์มเดียวกัน บลูทูธยังคงส่งทุกอย่างได้อยู่ดี",
+  "settings.network.wifi_unstable":
+    "หยุดชั่วคราว มันรบกวน Wi-Fi บนโทรศัพท์เครื่องนี้ซ้ำๆ ปิดแล้วเปิดใหม่เพื่อลองอีกครั้ง",
   "settings.network.wifi_pair": "การจับคู่",
   "settings.network.wifi_paired": "อุปกรณ์ที่จับคู่แล้ว",
   "settings.network.wifi_pair_find": "ค้นหาอุปกรณ์",

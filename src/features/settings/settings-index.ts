@@ -57,6 +57,7 @@ export type SettingId =
   | "internet"
   | "relay-discovery"
   | "bitchat"
+  | "wifi-aware"
   | "lan"
   | "network-usage"
   | "storage-usage"
@@ -391,6 +392,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.network",
     icon: "bluetooth",
     target: { kind: "row", view: "network", id: "bitchat" },
+  },
+  {
+    key: "wifi-aware",
+    labelKey: "settings.network.wifi_aware",
+    descriptionKey: "settings.network.wifi_aware_desc",
+    sectionKey: "settings.section.network",
+    icon: "zap",
+    target: { kind: "row", view: "network", id: "wifi-aware" },
   },
   {
     key: "lan",

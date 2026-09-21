@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "စကားပြောများနှင့် မက်ဆေ့ဂျ်များ ရှာပါ",
   "chat.search.close": "ရှာဖွေမှု ပိတ်ပါ",
   "chat.search.clear": "ရှာဖွေမှု ရှင်းပါ",
+  "chat.filter.a11y": "စကားဝိုင်းများ စစ်ထုတ်ရန်",
+  "chat.filter.all": "အားလုံး",
+  "chat.filter.unread": "မဖတ်ရသေး",
+  "chat.filter.verified": "အတည်ပြုပြီး",
+  "chat.filter.nearby": "အနီးအနား",
+  "chat.filter.private": "သီးသန့်",
+  "chat.filter.none": "ဤစစ်ထုတ်မှုနှင့် ကိုက်ညီသော စကားဝိုင်း မရှိပါ",
   "mesh.view.radar": "ရေဒါမြင်ကွင်း",
   "mesh.view.list": "စာရင်းမြင်ကွင်း",
   "mesh.view.radar_short": "ရေဒါ",
@@ -96,9 +103,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "မလိုပါ",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop မှ ကြိုဆိုပါသည်",
+  "onboarding.hello.title": "Airhop မှ ကြိုဆိုပါသည်!",
   "onboarding.hello.p1":
-    "မင်္ဂလာပါ။ Airhop ကို bitchat အပေါ်တွင် တည်ဆောက်ထားသော သီးခြားလွတ်လပ်သည့် ပွင့်လင်းအရင်းအမြစ် ဘေးထွက်စီမံကိန်းတစ်ခုအဖြစ် ရေးသားထားပါသည်။ bitchat စီမံကိန်း သို့မဟုတ် permissionless tech နှင့် ဆက်စပ်မှုမရှိသလို ၎င်းတို့၏ ထောက်ခံမှုလည်း မရရှိထားပါ။ ကျွန်ုပ်တည်ဆောက်ရတာ နှစ်သက်ပြီး အသိုက်အဝန်းနှင့် မျှဝေလိုသည့် အရာတစ်ခုသာ ဖြစ်ပါသည်။",
+    "Airhop ကို bitchat အပေါ်တွင် တည်ဆောက်ထားသော သီးခြားလွတ်လပ်သည့် ပွင့်လင်းအရင်းအမြစ် ဘေးထွက်စီမံကိန်းတစ်ခုအဖြစ် ရေးသားထားပါသည်။ bitchat စီမံကိန်းနှင့် ဆက်စပ်မှုမရှိသလို ၎င်း၏ ထောက်ခံမှုလည်း မရရှိထားပါ။ ရှိပြီးသား အက်ပ် သို့မဟုတ် ဝန်ဆောင်မှုတစ်ခုခုကို အတုယူထားခြင်းလည်း မဟုတ်ပါ။ ကျွန်ုပ်တည်ဆောက်ရတာ နှစ်သက်ပြီး အသိုက်အဝန်းနှင့် မျှဝေလိုသည့် အရာတစ်ခုသာ ဖြစ်ပါသည်။",
   "onboarding.hello.p2":
     "ဤသည်မှာ ပထမဆုံး iOS နှင့် Android ထုတ်ဝေမှုဖြစ်သဖြင့် သူငယ်ချင်းများနှင့် စမ်းသပ်ထားသော်လည်း ချွတ်ယွင်းချက်အနည်းငယ် တွေ့နိုင်ပါသည်။ တွေ့ခဲ့လျှင်၊ သို့မဟုတ် လုပ်ဆောင်ချက်အတွက် အကြံရှိလျှင် ကြားလိုပါသည်။ {github} တွင် issue ဖွင့်ပါ သို့မဟုတ် {email} သို့ အီးမေးလ်ပို့ပါ။",
   "onboarding.hello.p3":
@@ -1838,6 +1845,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "ဤစက်တွင် မရရှိနိုင်ပါ",
   "settings.network.lan_foreground":
     "Airhop နောက်ကွယ်သို့ ရောက်သောအခါ ရပ်သွားသည်။ ဘလူးတုသ်က ဆက်လက်အလုပ်လုပ်သည်။",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "တူညီသောပလက်ဖောင်းရှိ ဖုန်းနှစ်လုံးကြား ဓာတ်ပုံနှင့် ဖိုင်များကို ပိုမြန်စွာ လွှဲပြောင်းသည်။ Bluetooth က မည်သို့ပင်ဖြစ်စေ အားလုံးကို သယ်ဆောင်သည်။",
+  "settings.network.wifi_unstable":
+    "ခေတ္တရပ်ထားသည်။ ဤဖုန်းရှိ Wi-Fi ကို ထပ်ခါထပ်ခါ အနှောင့်အယှက်ဖြစ်စေခဲ့သည်။ ထပ်စမ်းရန် ပိတ်ပြီး ပြန်ဖွင့်ပါ။",
   "settings.network.wifi_pair": "တွဲချိတ်ခြင်း",
   "settings.network.wifi_paired": "တွဲထားသော ကိရိယာများ",
   "settings.network.wifi_pair_find": "ကိရိယာ ရှာပါ",

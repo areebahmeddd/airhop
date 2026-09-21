@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "جستجوی گفتگوها و پیام‌ها",
   "chat.search.close": "بستن جستجو",
   "chat.search.clear": "پاک کردن جستجو",
+  "chat.filter.a11y": "فیلتر گفتگوها",
+  "chat.filter.all": "همه",
+  "chat.filter.unread": "خوانده‌نشده",
+  "chat.filter.verified": "تأییدشده",
+  "chat.filter.nearby": "نزدیک",
+  "chat.filter.private": "خصوصی",
+  "chat.filter.none": "هیچ گفتگویی با این فیلتر مطابقت ندارد",
   "mesh.view.radar": "نمای رادار",
   "mesh.view.list": "نمای فهرست",
   "mesh.view.radar_short": "رادار",
@@ -95,9 +102,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "ندارد",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "به Airhop خوش آمدید",
+  "onboarding.hello.title": "به Airhop خوش آمدید!",
   "onboarding.hello.p1":
-    "سلام. Airhop روی بستر bitchat و به عنوان یک پروژهٔ جانبی مستقل و متن‌باز ساخته شده است. وابسته به پروژهٔ bitchat یا permissionless tech نیست و مورد تأیید آن‌ها هم نیست، فقط چیزی است که از ساختن و به اشتراک گذاشتنش با جامعه لذت می‌برم.",
+    "Airhop روی بستر bitchat و به عنوان یک پروژهٔ جانبی مستقل و متن‌باز ساخته شده است. وابسته به پروژهٔ bitchat نیست و مورد تأیید آن هم نیست، و همچنین تقلیدی از هیچ اپلیکیشن یا سرویس موجودی نیست، فقط چیزی است که از ساختن و به اشتراک گذاشتنش با جامعه لذت می‌برم.",
   "onboarding.hello.p2":
     "این نخستین انتشار برای iOS و Android است، پس با اینکه آن را با دوستانم آزمایش کرده‌ام، احتمالاً به چند اشکال برمی‌خورید. اگر چنین شد، یا اگر ایده‌ای برای یک قابلیت دارید، خوشحال می‌شوم بشنوم. در {github} یک issue باز کنید یا به {email} ایمیل بزنید.",
   "onboarding.hello.p3":
@@ -1785,6 +1792,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "روی این دستگاه در دسترس نیست",
   "settings.network.lan_foreground":
     "وقتی Airhop در پس‌زمینه باشد متوقف می‌شود. بلوتوث همچنان کار می‌کند.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "انتقال سریع‌تر عکس‌ها و فایل‌ها بین دو گوشی هم‌پلتفرم. بلوتوث در هر صورت همه‌چیز را منتقل می‌کند.",
+  "settings.network.wifi_unstable":
+    "متوقف شد. مدام Wi-Fi این گوشی را مختل می‌کرد. برای تلاش دوباره خاموش و روشن کنید.",
   "settings.network.wifi_pair": "جفت‌شدن",
   "settings.network.wifi_paired": "دستگاه‌های جفت‌شده",
   "settings.network.wifi_pair_find": "یافتن یک دستگاه",

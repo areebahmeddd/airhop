@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "チャットとメッセージを検索",
   "chat.search.close": "検索を閉じる",
   "chat.search.clear": "検索をクリア",
+  "chat.filter.a11y": "チャットを絞り込む",
+  "chat.filter.all": "すべて",
+  "chat.filter.unread": "未読",
+  "chat.filter.verified": "検証済み",
+  "chat.filter.nearby": "近く",
+  "chat.filter.private": "プライベート",
+  "chat.filter.none": "この条件に一致するチャットはありません",
   "mesh.view.radar": "レーダー表示",
   "mesh.view.list": "リスト表示",
   "mesh.view.radar_short": "レーダー",
@@ -94,9 +101,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "不要",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhopへようこそ",
+  "onboarding.hello.title": "Airhopへようこそ！",
   "onboarding.hello.p1":
-    "こんにちは。Airhopはbitchatを土台にした、独立したオープンソースの個人プロジェクトです。bitchatプロジェクトやpermissionless techとは提携しておらず、承認も受けていません。ただ、作って共有するのが楽しいから続けているものです。",
+    "Airhopはbitchatを土台にした、独立したオープンソースの個人プロジェクトです。bitchatプロジェクトとは提携しておらず、承認も受けておらず、既存のアプリやサービスを模倣したものでもありません。ただ、作って共有するのが楽しいから続けているものです。",
   "onboarding.hello.p2":
     "これはiOSとAndroidの最初のリリースです。友人と試してはいますが、いくつか不具合に出会うと思います。もし見つけたら、あるいは機能の案があれば、ぜひ知らせてください。{github}でissueを立てるか、{email}までメールをください。",
   "onboarding.hello.p3":
@@ -1789,6 +1796,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "この端末では利用できません",
   "settings.network.lan_foreground":
     "Airhopがバックグラウンドになると停止します。Bluetoothは動き続けます。",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "同じプラットフォームの2台の間で、写真やファイルをより高速に転送します。Bluetoothはいずれにせよすべてを運びます。",
+  "settings.network.wifi_unstable":
+    "一時停止中。この端末のWi-Fiを繰り返し妨げていました。オフにしてからオンにすると再試行します。",
   "settings.network.wifi_pair": "ペアリング",
   "settings.network.wifi_paired": "ペアリング済みデバイス",
   "settings.network.wifi_pair_find": "デバイスを探す",

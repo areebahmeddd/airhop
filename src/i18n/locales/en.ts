@@ -78,6 +78,13 @@ export const strings = {
   "chat.search.a11y": "Search chats and messages",
   "chat.search.close": "Close search",
   "chat.search.clear": "Clear search",
+  "chat.filter.a11y": "Filter chats",
+  "chat.filter.all": "All",
+  "chat.filter.unread": "Unread",
+  "chat.filter.verified": "Verified",
+  "chat.filter.nearby": "Nearby",
+  "chat.filter.private": "Private",
+  "chat.filter.none": "No chats match this filter",
   "mesh.view.radar": "Radar view",
   "mesh.view.list": "List view",
   "mesh.view.radar_short": "Radar",
@@ -127,9 +134,9 @@ export const strings = {
   "onboarding.username.prop.account_value": "None",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Welcome to Airhop",
+  "onboarding.hello.title": "Welcome to Airhop!",
   "onboarding.hello.p1":
-    "Hey there. Airhop is built on top of bitchat as an independent, open source side project. It’s not affiliated with or endorsed by the bitchat project or permissionless tech, just something I enjoy building and sharing with the community.",
+    "Airhop is built on top of bitchat as an independent, open source side project. It’s not affiliated with or endorsed by the bitchat project, and not an impersonation of any existing app or service, just something I enjoy building and sharing with the community.",
   "onboarding.hello.p2":
     "This is the first iOS and Android release, so while I’ve tested it with friends, you’ll probably run into a few bugs. If you do, or if you have an idea for a feature, I’d love to hear from you. Open an issue on {github} or send me an email at {email}.",
   "onboarding.hello.p3":
@@ -1790,6 +1797,11 @@ export const strings = {
   "settings.network.lan_unsupported": "Not available on this device",
   "settings.network.lan_foreground":
     "Pauses when Airhop is in the background. Bluetooth keeps running.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Faster photo and file transfers between two phones on the same platform. Bluetooth carries everything either way.",
+  "settings.network.wifi_unstable":
+    "Paused. It kept disrupting Wi-Fi on this phone. Switch it off and on to try again.",
   "settings.network.wifi_pair": "Pairing",
   "settings.network.wifi_paired": "Paired devices",
   "settings.network.wifi_pair_find": "Find a device",

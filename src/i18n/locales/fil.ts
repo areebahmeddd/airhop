@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Maghanap sa mga chat at mensahe",
   "chat.search.close": "Isara ang paghahanap",
   "chat.search.clear": "Linisin ang paghahanap",
+  "chat.filter.a11y": "I-filter ang mga chat",
+  "chat.filter.all": "Lahat",
+  "chat.filter.unread": "Hindi pa nababasa",
+  "chat.filter.verified": "Na-verify",
+  "chat.filter.nearby": "Sa malapit",
+  "chat.filter.private": "Pribado",
+  "chat.filter.none": "Walang chat na tumutugma sa filter na ito",
   "mesh.view.radar": "Tanawing radar",
   "mesh.view.list": "Tanawing listahan",
   "mesh.view.radar_short": "Radar",
@@ -99,9 +106,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Wala",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Maligayang pagdating sa Airhop",
+  "onboarding.hello.title": "Maligayang pagdating sa Airhop!",
   "onboarding.hello.p1":
-    "Kumusta. Itinayo ang Airhop sa ibabaw ng bitchat bilang isang malayang open source na side project. Hindi ito kaugnay ng o inendorso ng proyektong bitchat o ng permissionless tech, isang bagay lang itong kinatutuwaan kong buuin at ibahagi sa komunidad.",
+    "Itinayo ang Airhop sa ibabaw ng bitchat bilang isang malayang open source na side project. Hindi ito kaugnay ng o inendorso ng proyektong bitchat, at hindi rin ito panggagaya sa anumang umiiral na app o serbisyo, isang bagay lang itong kinatutuwaan kong buuin at ibahagi sa komunidad.",
   "onboarding.hello.p2":
     "Ito ang unang release para sa iOS at Android, kaya kahit nasubukan ko na ito kasama ang mga kaibigan, malamang na makatagpo ka pa rin ng ilang bug. Kung mangyari iyon, o kung may ideya kang feature, ikatutuwa kong marinig iyon. Magbukas ng issue sa {github} o mag-email sa akin sa {email}.",
   "onboarding.hello.p3":
@@ -1852,6 +1859,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Hindi available sa device na ito",
   "settings.network.lan_foreground":
     "Humihinto kapag nasa background ang Airhop. Tuloy ang Bluetooth.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Mas mabilis na paglipat ng mga larawan at file sa pagitan ng dalawang telepono sa parehong platform. Dala pa rin ng Bluetooth ang lahat.",
+  "settings.network.wifi_unstable":
+    "Naka-pause. Paulit-ulit nitong ginugulo ang Wi-Fi sa teleponong ito. I-off at i-on para subukan ulit.",
   "settings.network.wifi_pair": "Pagpapares",
   "settings.network.wifi_paired": "Mga nakapares na device",
   "settings.network.wifi_pair_find": "Maghanap ng device",

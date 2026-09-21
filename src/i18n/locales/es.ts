@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Buscar en chats y mensajes",
   "chat.search.close": "Cerrar la búsqueda",
   "chat.search.clear": "Borrar la búsqueda",
+  "chat.filter.a11y": "Filtrar chats",
+  "chat.filter.all": "Todos",
+  "chat.filter.unread": "No leídos",
+  "chat.filter.verified": "Verificado",
+  "chat.filter.nearby": "Cerca",
+  "chat.filter.private": "Privados",
+  "chat.filter.none": "Ningún chat coincide con este filtro",
   "mesh.view.radar": "Vista de radar",
   "mesh.view.list": "Vista de lista",
   "mesh.view.radar_short": "Radar",
@@ -98,9 +105,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Ninguna",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Te damos la bienvenida a Airhop",
+  "onboarding.hello.title": "¡Te damos la bienvenida a Airhop!",
   "onboarding.hello.p1":
-    "Hola. Airhop está construido sobre bitchat como un proyecto paralelo independiente y de código abierto. No está afiliado ni respaldado por el proyecto bitchat ni por permissionless tech; simplemente es algo que disfruto construyendo y compartiendo con la comunidad.",
+    "Airhop está construido sobre bitchat como un proyecto paralelo independiente y de código abierto. No está afiliado ni respaldado por el proyecto bitchat, ni es una imitación de ninguna aplicación o servicio existente; simplemente es algo que disfruto construyendo y compartiendo con la comunidad.",
   "onboarding.hello.p2":
     "Esta es la primera versión para iOS y Android, así que aunque la he probado con amigos, seguramente te encuentres con algún fallo. Si es así, o si tienes una idea para una función, me encantaría saberlo. Abre una incidencia en {github} o escríbeme a {email}.",
   "onboarding.hello.p3":
@@ -1822,6 +1829,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "No disponible en este dispositivo",
   "settings.network.lan_foreground":
     "Se pausa cuando Airhop está en segundo plano. El Bluetooth sigue funcionando.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Transferencia más rápida de fotos y archivos entre dos teléfonos de la misma plataforma. Bluetooth lo lleva todo de todos modos.",
+  "settings.network.wifi_unstable":
+    "En pausa. Interrumpía el Wi-Fi de este teléfono una y otra vez. Apágalo y enciéndelo para reintentar.",
   "settings.network.wifi_pair": "Vinculación",
   "settings.network.wifi_paired": "Dispositivos vinculados",
   "settings.network.wifi_pair_find": "Buscar un dispositivo",

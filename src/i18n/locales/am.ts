@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "ውይይቶችንና መልእክቶችን ፈልግ",
   "chat.search.close": "ፍለጋን ዝጋ",
   "chat.search.clear": "ፍለጋን አጽዳ",
+  "chat.filter.a11y": "ውይይቶችን አጣራ",
+  "chat.filter.all": "ሁሉም",
+  "chat.filter.unread": "ያልተነበበ",
+  "chat.filter.verified": "የተረጋገጠ",
+  "chat.filter.nearby": "በአቅራቢያ",
+  "chat.filter.private": "የግል",
+  "chat.filter.none": "ከዚህ ማጣሪያ ጋር የሚዛመድ ውይይት የለም",
   "mesh.view.radar": "የራዳር እይታ",
   "mesh.view.list": "የዝርዝር እይታ",
   "mesh.view.radar_short": "ራዳር",
@@ -93,9 +100,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "አያስፈልግም",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "እንኳን ወደ Airhop በደህና መጣህ",
+  "onboarding.hello.title": "እንኳን ወደ Airhop በደህና መጣህ!",
   "onboarding.hello.p1":
-    "ሰላም። Airhop በbitchat ላይ ተመስርቶ የተሠራ ራሱን የቻለ ክፍት ምንጭ የጎን ፕሮጀክት ነው። ከbitchat ፕሮጀክት ወይም ከpermissionless tech ጋር ግንኙነት የለውም፤ በእነሱም አልተደገፈም። መገንባቱንና ከማህበረሰቡ ጋር መጋራቱን የምወደው ነገር ብቻ ነው።",
+    "Airhop በbitchat ላይ ተመስርቶ የተሠራ ራሱን የቻለ ክፍት ምንጭ የጎን ፕሮጀክት ነው። ከbitchat ፕሮጀክት ጋር ግንኙነት የለውም፣ በእሱም አልተደገፈም፤ እንዲሁም ነባር መተግበሪያ ወይም አገልግሎትን የመምሰል ነገር አይደለም። መገንባቱንና ከማህበረሰቡ ጋር መጋራቱን የምወደው ነገር ብቻ ነው።",
   "onboarding.hello.p2":
     "ይህ የመጀመሪያው የiOS እና የAndroid ልቀት ነው፤ ስለዚህ ከጓደኞቼ ጋር ብሞክረውም ጥቂት ስህተቶች ልታገኝ ትችላለህ። ካጋጠመህ፣ ወይም ስለ አንድ ባህሪ ሐሳብ ካለህ፣ ብትነግረኝ ደስ ይለኛል። በ{github} ላይ issue ክፈት ወይም በ{email} ኢሜይል ላክልኝ።",
   "onboarding.hello.p3":
@@ -1676,6 +1683,11 @@ export const strings: Strings = {
   "settings.network.lan_permission": "የAirhop የአካባቢ አውታረ መረብ መዳረሻ ጠፍቷል",
   "settings.network.lan_unsupported": "በዚህ መሣሪያ ላይ አይገኝም",
   "settings.network.lan_foreground": "Airhop በጀርባ ሲሆን ይቆማል። ብሉቱዝ መስራቱን ይቀጥላል።",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "በአንድ መድረክ ላይ ባሉ ሁለት ስልኮች መካከል ፈጣን የፎቶና የፋይል ዝውውር። ብሉቱዝ በማንኛውም ሁኔታ ሁሉንም ያደርሳል።",
+  "settings.network.wifi_unstable":
+    "ቆሟል። በዚህ ስልክ ላይ Wi-Fiን ደጋግሞ አውኳል። እንደገና ለመሞከር አጥፍተው ያብሩ።",
   "settings.network.wifi_pair": "ማጣመር",
   "settings.network.wifi_paired": "የተጣመሩ መሣሪያዎች",
   "settings.network.wifi_pair_find": "መሣሪያ ፈልግ",

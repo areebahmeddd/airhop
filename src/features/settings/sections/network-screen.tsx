@@ -21,7 +21,11 @@ import { getMeshService } from "@services/mesh-service";
 import { applyInternetAvailability } from "@services/tor-routing";
 import { presentWiFiPairing } from "@services/wifi-pairing-service";
 import { showAlert } from "@store/alert-store";
-import { type LanState, useMeshStateStore } from "@store/mesh-state-store";
+import {
+  type LanState,
+  type WifiFastPath,
+  useMeshStateStore,
+} from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import { formatNumber } from "@utils/format";
@@ -36,6 +40,26 @@ import {
   SubHeader,
   useSharedStyles,
 } from "../settings-primitives";
+
+function wifiStatusText(state: WifiFastPath): string {
+  switch (state) {
+    case "active":
+      return t("settings.diag.wifi_active");
+    case "unavailable":
+      return t("settings.diag.wifi_unavailable");
+    case "permission":
+      return t("settings.diag.wifi_permission");
+    case "unpaired":
+      return t("settings.diag.wifi_unpaired");
+    case "unstable":
+      return t("settings.network.wifi_unstable");
+    case "unsupported":
+      return t("settings.diag.wifi_unsupported");
+    case "off":
+    case "unknown":
+      return t("settings.diag.wifi_unknown");
+  }
+}
 
 function lanStatusText(state: LanState): string {
   switch (state) {
@@ -73,6 +97,10 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   const lanState = useMeshStateStore((s) => s.lanState);
   const lanEnabled = useSettingsStore((s) => s.lanTransportEnabled);
   const setLanEnabled = useSettingsStore((s) => s.setLanTransportEnabled);
+  const wifiFastPath = useMeshStateStore((s) => s.wifiFastPath);
+  const wifiAwareEnabled = useSettingsStore((s) => s.wifiAwareEnabled);
+  const setWifiAwareEnabled = useSettingsStore((s) => s.setWifiAwareEnabled);
+  const wifiSupported = wifiFastPath !== "unsupported";
   const internetEnabled = useSettingsStore((s) => s.internetEnabled);
   const setInternetEnabled = useSettingsStore((s) => s.setInternetEnabled);
   const geoRelayDiscovery = useSettingsStore((s) => s.geoRelayDiscovery);
@@ -442,6 +470,30 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{T("settings.group.local")}</Text>
           <View style={styles.settingsGroup}>
+            <SettingRow
+              id="wifi-aware"
+              icon="zap"
+              label={T("settings.network.wifi_aware")}
+              description={T("settings.network.wifi_aware_desc")}
+              control={
+                <SettingSwitch
+                  value={wifiAwareEnabled && wifiSupported}
+                  onValueChange={setWifiAwareEnabled}
+                  disabled={!wifiSupported}
+                />
+              }
+            />
+            {wifiAwareEnabled && wifiSupported && (
+              <>
+                <GroupDivider />
+                <SettingRow
+                  icon="activity"
+                  label={T("settings.status.title")}
+                  description={wifiStatusText(wifiFastPath)}
+                />
+              </>
+            )}
+            <GroupDivider />
             <SettingRow
               id="lan"
               icon="wifi"

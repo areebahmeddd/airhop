@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "搜尋聊天與訊息",
   "chat.search.close": "關閉搜尋",
   "chat.search.clear": "清除搜尋",
+  "chat.filter.a11y": "篩選聊天",
+  "chat.filter.all": "全部",
+  "chat.filter.unread": "未讀",
+  "chat.filter.verified": "已驗證",
+  "chat.filter.nearby": "附近",
+  "chat.filter.private": "私密",
+  "chat.filter.none": "沒有符合此篩選條件的聊天",
   "mesh.view.radar": "雷達檢視",
   "mesh.view.list": "清單檢視",
   "mesh.view.radar_short": "雷達",
@@ -94,9 +101,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "不需要",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "歡迎來到 Airhop",
+  "onboarding.hello.title": "歡迎來到 Airhop！",
   "onboarding.hello.p1":
-    "你好。Airhop 是以 bitchat 為基礎打造的一個獨立開源業餘專案。它和 bitchat 專案或 permissionless tech 沒有從屬關係，也未獲其背書，只是我樂於打造並分享給社群的東西。",
+    "Airhop 是以 bitchat 為基礎打造的一個獨立開源業餘專案。它和 bitchat 專案沒有從屬關係，也未獲其背書，也不是對任何現有應用程式或服務的仿冒，只是我樂於打造並分享給社群的東西。",
   "onboarding.hello.p2":
     "這是第一個 iOS 和 Android 發行版，雖然我和朋友們一起測試過，你多半還是會遇到一些問題。如果遇到了，或者你對功能有什麼想法，我很想聽聽。可以在 {github} 上開一個 issue，或者寄電子郵件到 {email}。",
   "onboarding.hello.p3":
@@ -1681,6 +1688,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "此裝置不支援",
   "settings.network.lan_foreground":
     "Airhop 進入背景時會暫停。藍牙會繼續運作。",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "同一平台的兩部手機之間更快地傳輸照片和檔案。藍牙無論如何都會傳送一切。",
+  "settings.network.wifi_unstable":
+    "已暫停。它一直干擾這部手機的 Wi-Fi。關閉再開啟可重試。",
   "settings.network.wifi_pair": "配對",
   "settings.network.wifi_paired": "已配對的裝置",
   "settings.network.wifi_pair_find": "尋找裝置",

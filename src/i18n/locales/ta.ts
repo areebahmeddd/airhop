@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "அரட்டைகளிலும் செய்திகளிலும் தேடு",
   "chat.search.close": "தேடலை மூடு",
   "chat.search.clear": "தேடலை அழி",
+  "chat.filter.a11y": "அரட்டைகளை வடிகட்டு",
+  "chat.filter.all": "அனைத்தும்",
+  "chat.filter.unread": "படிக்காதவை",
+  "chat.filter.verified": "சரிபார்க்கப்பட்டது",
+  "chat.filter.nearby": "அருகில்",
+  "chat.filter.private": "தனிப்பட்டவை",
+  "chat.filter.none": "இந்த வடிகட்டியுடன் பொருந்தும் அரட்டைகள் இல்லை",
   "mesh.view.radar": "ரேடார் காட்சி",
   "mesh.view.list": "பட்டியல் காட்சி",
   "mesh.view.radar_short": "ரேடார்",
@@ -98,9 +105,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "இல்லை",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Airhop க்கு வருக",
+  "onboarding.hello.title": "Airhop க்கு வருக!",
   "onboarding.hello.p1":
-    "வணக்கம். Airhop ஆனது bitchat மீது கட்டப்பட்ட, தனித்து இயங்கும் திறந்த மூல ஓய்வுநேரத் திட்டம். இது bitchat திட்டத்துடனோ permissionless tech உடனோ தொடர்புடையதோ அவற்றால் ஆதரிக்கப்படுவதோ அல்ல, கட்டுவதிலும் சமூகத்துடன் பகிர்வதிலும் எனக்கு மகிழ்ச்சி தரும் ஒன்று, அவ்வளவே.",
+    "Airhop ஆனது bitchat மீது கட்டப்பட்ட, தனித்து இயங்கும் திறந்த மூல ஓய்வுநேரத் திட்டம். இது bitchat திட்டத்துடன் தொடர்புடையதோ அதனால் ஆதரிக்கப்படுவதோ அல்ல, மேலும் இது ஏற்கெனவே உள்ள எந்த ஆப் அல்லது சேவையையும் பின்பற்றி செய்யப்பட்டதும் அல்ல, கட்டுவதிலும் சமூகத்துடன் பகிர்வதிலும் எனக்கு மகிழ்ச்சி தரும் ஒன்று, அவ்வளவே.",
   "onboarding.hello.p2":
     "இது iOS மற்றும் Android க்கான முதல் வெளியீடு, எனவே நண்பர்களுடன் சோதித்திருந்தாலும் சில பிழைகளை நீங்கள் சந்திக்க நேரலாம். அப்படி நேர்ந்தால், அல்லது ஏதேனும் அம்சம் குறித்த யோசனை இருந்தால், கேட்க விரும்புகிறேன். {github} இல் ஒரு சிக்கலைத் திறங்கள் அல்லது {email} க்கு மின்னஞ்சல் அனுப்புங்கள்.",
   "onboarding.hello.p3":
@@ -1851,6 +1858,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "இந்த சாதனத்தில் கிடைக்கவில்லை",
   "settings.network.lan_foreground":
     "Airhop பின்னணிக்குச் சென்றால் நிற்கும். புளூடூத் தொடர்ந்து இயங்கும்.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "ஒரே தளத்தில் உள்ள இரு போன்களுக்கு இடையே வேகமான புகைப்படம் மற்றும் கோப்பு பரிமாற்றம். புளூடூத் எப்படியும் அனைத்தையும் கொண்டு செல்கிறது.",
+  "settings.network.wifi_unstable":
+    "இடைநிறுத்தப்பட்டது. இது இந்த போனில் Wi-Fi-ஐ தொடர்ந்து சீர்குலைத்தது. மீண்டும் முயற்சிக்க அணைத்து இயக்கவும்.",
   "settings.network.wifi_pair": "இணைத்தல்",
   "settings.network.wifi_paired": "இணைக்கப்பட்ட சாதனங்கள்",
   "settings.network.wifi_pair_find": "ஒரு சாதனத்தைத் தேடு",

@@ -12,6 +12,7 @@ import {
 } from "@expo-google-fonts/jetbrains-mono";
 import { Feather } from "@expo/vector-icons";
 import ChannelList from "@features/chat/channel-list";
+import ChatFilterSheet from "@features/chat/chat-filter-sheet";
 import ChatSearchResults from "@features/chat/chat-search-results";
 import DmList from "@features/chat/dm-list";
 import MessageThread from "@features/chat/message-thread";
@@ -149,6 +150,12 @@ import {
   useResolvedTheme,
   useThemeColors,
 } from "@ui/theme";
+import {
+  CHANNEL_FILTERS,
+  DM_FILTERS,
+  type ChannelFilter,
+  type DmFilter,
+} from "@utils/chat-filter";
 import { parseAirhopLink } from "@utils/deep-link";
 import { formatNumber } from "@utils/format";
 import { mentionsNickname } from "@utils/mentions";
@@ -699,6 +706,12 @@ function AppContent(): React.JSX.Element {
   const [profileCanGoBack, setProfileCanGoBack] = useState(false);
   const [profilePopSignal, setProfilePopSignal] = useState(0);
   const [chatSubTab, setChatSubTab] = useState<ChatSubTab>("channels");
+  // One filter per list, never persisted: a list that opens narrowed the next
+  // day reads as missing conversations.
+  const [channelFilter, setChannelFilter] = useState<ChannelFilter>("all");
+  const [dmFilter, setDmFilter] = useState<DmFilter>("all");
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const activeFilter = chatSubTab === "channels" ? channelFilter : dmFilter;
   const [chatView, setChatView] = useState<ChatView>({ kind: "list" });
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<TextInput>(null);
@@ -2043,8 +2056,51 @@ function AppContent(): React.JSX.Element {
                     accessibilityLabel={T("chat.search.a11y")}
                     clearAccessibilityLabel={T("chat.search.clear")}
                   />
+                  {chatView.kind !== "search" && (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.newChannelPill,
+                        activeFilter !== "all" && styles.filterPillActive,
+                        pressed && styles.headerPillPressed,
+                      ]}
+                      onPress={() => setFilterSheetOpen(true)}
+                      hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: activeFilter !== "all" }}
+                      accessibilityLabel={T("chat.filter.a11y")}
+                    >
+                      <Feather
+                        name="filter"
+                        size={18}
+                        color={
+                          activeFilter !== "all"
+                            ? Colors.textInverse
+                            : Colors.textSecondary
+                        }
+                      />
+                    </Pressable>
+                  )}
                 </View>
               )}
+
+              {tab === "chats" &&
+                (chatSubTab === "channels" ? (
+                  <ChatFilterSheet
+                    visible={filterSheetOpen}
+                    options={CHANNEL_FILTERS}
+                    selected={channelFilter}
+                    onSelect={setChannelFilter}
+                    onClose={() => setFilterSheetOpen(false)}
+                  />
+                ) : (
+                  <ChatFilterSheet
+                    visible={filterSheetOpen}
+                    options={DM_FILTERS}
+                    selected={dmFilter}
+                    onSelect={setDmFilter}
+                    onClose={() => setFilterSheetOpen(false)}
+                  />
+                ))}
 
               {/* Transport banner. Mesh tab only: that is where an empty screen
                   needs explaining, and it is where the buttons that fix each
@@ -2090,10 +2146,8 @@ function AppContent(): React.JSX.Element {
                           : undefined
                       }
                       onNavigateToChannel={openChannel}
-                      // Scoped to the list this thread sits under, so the back
-                      // button counts what you would actually find on the
-                      // screen it returns to. Same split the Channels/Direct
-                      // segments use, from the same source.
+                      // Scoped to this thread's list so the back button reflects what the user
+                      // actually returns to, matching the Channels/Direct split.
                       backUnreadCount={
                         openThread.startsWith("dm:")
                           ? dmsUnread
@@ -2107,9 +2161,12 @@ function AppContent(): React.JSX.Element {
                       onSelectMessage={handleSelectMessageResult}
                     />
                   ) : tab === "chats" && chatSubTab === "channels" ? (
-                    <ChannelList onSelectChannel={openChannel} />
+                    <ChannelList
+                      onSelectChannel={openChannel}
+                      filter={channelFilter}
+                    />
                   ) : tab === "chats" ? (
-                    <DmList onSelectDM={openChannel} />
+                    <DmList onSelectDM={openChannel} filter={dmFilter} />
                   ) : tab === "mesh" ? (
                     <PeerList
                       onOpenDM={openDMFromMesh}
@@ -2469,6 +2526,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     headerPillDisabled: {
       opacity: DISABLED_OPACITY,
+    },
+    filterPillActive: {
+      backgroundColor: Colors.accent,
     },
     headerPillPressed: {
       backgroundColor: Colors.surfacePressed,

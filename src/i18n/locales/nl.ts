@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Chats en berichten doorzoeken",
   "chat.search.close": "Zoeken sluiten",
   "chat.search.clear": "Zoekopdracht wissen",
+  "chat.filter.a11y": "Chats filteren",
+  "chat.filter.all": "Alle",
+  "chat.filter.unread": "Ongelezen",
+  "chat.filter.verified": "Geverifieerd",
+  "chat.filter.nearby": "In de buurt",
+  "chat.filter.private": "Privé",
+  "chat.filter.none": "Geen chats voldoen aan dit filter",
   "mesh.view.radar": "Radarweergave",
   "mesh.view.list": "Lijstweergave",
   "mesh.view.radar_short": "Radar",
@@ -100,9 +107,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Geen",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Welkom bij Airhop",
+  "onboarding.hello.title": "Welkom bij Airhop!",
   "onboarding.hello.p1":
-    "Hoi. Airhop is bovenop bitchat gebouwd als een onafhankelijk, opensource nevenproject. Het is niet verbonden aan of goedgekeurd door het bitchat-project of permissionless tech; het is gewoon iets wat ik met plezier bouw en met de community deel.",
+    "Airhop is bovenop bitchat gebouwd als een onafhankelijk, opensource nevenproject. Het is niet verbonden aan of goedgekeurd door het bitchat-project, en het is ook geen imitatie van een bestaande app of dienst; het is gewoon iets wat ik met plezier bouw en met de community deel.",
   "onboarding.hello.p2":
     "Dit is de eerste versie voor iOS en Android, dus ook al heb ik hem met vrienden getest, je loopt vast tegen een paar fouten aan. Als dat gebeurt, of als je een idee voor een functie hebt, hoor ik het graag. Open een issue op {github} of mail me op {email}.",
   "onboarding.hello.p3":
@@ -1813,6 +1820,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Niet beschikbaar op dit apparaat",
   "settings.network.lan_foreground":
     "Pauzeert wanneer Airhop op de achtergrond staat. Bluetooth blijft draaien.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Snellere overdracht van foto’s en bestanden tussen twee telefoons op hetzelfde platform. Bluetooth draagt hoe dan ook alles.",
+  "settings.network.wifi_unstable":
+    "Gepauzeerd. Het bleef de wifi op deze telefoon verstoren. Zet uit en aan om opnieuw te proberen.",
   "settings.network.wifi_pair": "Koppelen",
   "settings.network.wifi_paired": "Gekoppelde apparaten",
   "settings.network.wifi_pair_find": "Een apparaat zoeken",

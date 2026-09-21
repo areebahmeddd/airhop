@@ -46,6 +46,13 @@ export const strings: Strings = {
   "chat.search.a11y": "Chats und Nachrichten durchsuchen",
   "chat.search.close": "Suche schließen",
   "chat.search.clear": "Suche leeren",
+  "chat.filter.a11y": "Chats filtern",
+  "chat.filter.all": "Alle",
+  "chat.filter.unread": "Ungelesen",
+  "chat.filter.verified": "Verifiziert",
+  "chat.filter.nearby": "In der Nähe",
+  "chat.filter.private": "Privat",
+  "chat.filter.none": "Keine Chats passen zu diesem Filter",
   "mesh.view.radar": "Radaransicht",
   "mesh.view.list": "Listenansicht",
   "mesh.view.radar_short": "Radar",
@@ -98,9 +105,9 @@ export const strings: Strings = {
   "onboarding.username.prop.account_value": "Keines",
 
   // ---- Onboarding: the author's note ----
-  "onboarding.hello.title": "Willkommen bei Airhop",
+  "onboarding.hello.title": "Willkommen bei Airhop!",
   "onboarding.hello.p1":
-    "Hallo. Airhop baut auf bitchat auf und ist ein unabhängiges Open-Source-Nebenprojekt. Es steht in keiner Verbindung zum bitchat-Projekt oder zu permissionless tech und wird von ihnen auch nicht unterstützt, sondern ist einfach etwas, das ich gern baue und mit der Community teile.",
+    "Airhop baut auf bitchat auf und ist ein unabhängiges Open-Source-Nebenprojekt. Es steht in keiner Verbindung zum bitchat-Projekt und wird von ihm auch nicht unterstützt, und es ist auch keine Nachahmung einer bestehenden App oder eines bestehenden Dienstes, sondern einfach etwas, das ich gern baue und mit der Community teile.",
   "onboarding.hello.p2":
     "Dies ist die erste Version für iOS und Android. Ich habe sie mit Freunden getestet, trotzdem wirst du wahrscheinlich auf ein paar Fehler stoßen. Wenn das passiert, oder wenn du eine Idee für eine Funktion hast, höre ich gern von dir. Öffne ein Issue auf {github} oder schreib mir eine E-Mail an {email}.",
   "onboarding.hello.p3":
@@ -1832,6 +1839,11 @@ export const strings: Strings = {
   "settings.network.lan_unsupported": "Auf diesem Gerät nicht verfügbar",
   "settings.network.lan_foreground":
     "Pausiert, wenn Airhop im Hintergrund ist. Bluetooth läuft weiter.",
+  "settings.network.wifi_aware": "Wi-Fi Aware",
+  "settings.network.wifi_aware_desc":
+    "Schnellere Übertragung von Fotos und Dateien zwischen zwei Telefonen derselben Plattform. Bluetooth trägt ohnehin alles.",
+  "settings.network.wifi_unstable":
+    "Pausiert. Es hat das WLAN auf diesem Telefon wiederholt gestört. Zum erneuten Versuch aus- und einschalten.",
   "settings.network.wifi_pair": "Kopplung",
   "settings.network.wifi_paired": "Gekoppelte Geräte",
   "settings.network.wifi_pair_find": "Gerät finden",
