@@ -36,9 +36,6 @@ enum WiFiConst {
     // in AirhopWiFiModule.kt and `WiFiAwareServices` in Info.plist character for
     // character. Apple requires DNS-SD form and traps on launch on an invalid one.
     static let serviceName = "_airhop-mesh-v1._tcp"
-    // 64 KiB chunk plus the length prefix. Matches MAX_FRAME on the Kotlin side.
-    static let maxFrame = 65_544
-    static let tokenBytes = 8
 }
 
 private enum WiFiEvent {
@@ -46,41 +43,6 @@ private enum WiFiEvent {
     static let linkConnected = "AirhopWiFi.linkConnected"
     static let linkDisconnected = "AirhopWiFi.linkDisconnected"
     static let availabilityChanged = "AirhopWiFi.availabilityChanged"
-}
-
-// MARK: - Framing
-
-/// `[4-byte big-endian length][payload]`, byte-identical to the Kotlin module.
-///
-/// Big-endian by hand rather than `receive(as: UInt32.self)`, which reads in host
-/// order and would yield a byte-swapped length on every device this runs on.
-private enum Frame {
-    static func encode(_ payload: Data) -> Data {
-        let length = UInt32(payload.count)
-        var out = Data(capacity: 4 + payload.count)
-        out.append(UInt8((length >> 24) & 0xff))
-        out.append(UInt8((length >> 16) & 0xff))
-        out.append(UInt8((length >> 8) & 0xff))
-        out.append(UInt8(length & 0xff))
-        out.append(payload)
-        return out
-    }
-
-    static func decodeLength(_ header: Data) -> Int? {
-        guard header.count == 4 else { return nil }
-        let bytes = [UInt8](header)
-        let length =
-            (Int(bytes[0]) << 24) | (Int(bytes[1]) << 16) | (Int(bytes[2]) << 8) | Int(bytes[3])
-        guard length > 0, length <= WiFiConst.maxFrame else { return nil }
-        return length
-    }
-}
-
-/// The ordering `shouldDial` uses in AirhopWiFiModule.kt.
-private func tokenIsLower(_ a: Data, than b: Data) -> Bool {
-    guard a.count == b.count else { return a.count < b.count }
-    for (x, y) in zip(a, b) where x != y { return x < y }
-    return false
 }
 
 // MARK: - Serial sender
@@ -145,11 +107,9 @@ private actor WiFiAwareTransport {
     /// Last endpoint per device, so an inbound tiebreak loss can dial at once.
     private var endpoints: [WAPairedDevice.ID: WAEndpoint] = [:]
     /// Wait before the next dial to a device whose link ended or whose dial
-    /// failed, doubling to a minute. The browser reports a device once and
-    /// stays silent while it remains in range, so nothing else would try again.
+    /// failed. The browser reports a device once and stays silent while it
+    /// remains in range, so nothing else would try again.
     private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
-    private static let redialFloor: Duration = .seconds(2)
-    private static let redialCeiling: Duration = .seconds(60)
 
     private var linkSeq = 0
     private var runTask: Task<Void, Never>?
@@ -193,7 +153,7 @@ private actor WiFiAwareTransport {
         // sheet that could not help.
         guard AirhopWiFiPairing.pairedDeviceCount > 0 else { throw WiFiFailure.unpaired }
 
-        localToken = Data((0..<WiFiConst.tokenBytes).map { _ in UInt8.random(in: 0...255) })
+        localToken = Data((0..<AwareDial.tokenBytes).map { _ in UInt8.random(in: 0...255) })
         lastReportedAvailable = nil
 
         runTask = Task { [weak self] in
@@ -296,8 +256,8 @@ private actor WiFiAwareTransport {
     /// Both ends of a dropped link redial, and the tiebreak collapses the pair.
     private func scheduleRedial(_ deviceID: WAPairedDevice.ID?) {
         guard isRunning, let deviceID, let endpoint = endpoints[deviceID] else { return }
-        let delay = redialDelay[deviceID] ?? Self.redialFloor
-        redialDelay[deviceID] = min(delay * 2, Self.redialCeiling)
+        let delay = redialDelay[deviceID] ?? AwareDial.redialFloor
+        redialDelay[deviceID] = AwareDial.nextRedial(after: delay)
         Task { [weak self] in
             try? await Task.sleep(for: delay)
             await self?.considerDial(endpoint)
@@ -368,10 +328,10 @@ private actor WiFiAwareTransport {
         do {
             // Sending first drives the connection to `ready`, which is what
             // makes `currentPath` answer below.
-            try await connection.send(Frame.encode(localToken))
+            try await connection.send(Framing.encode(localToken))
 
-            let header = try await connection.receive(exactly: 4).content
-            guard let length = Frame.decodeLength(header), length == WiFiConst.tokenBytes else { return }
+            let header = try await connection.receive(exactly: Framing.prefixBytes).content
+            guard let length = Framing.length(header), length == AwareDial.tokenBytes else { return }
             let peerToken = try await connection.receive(exactly: length).content
 
             // After the hello, not before: the path only populates once ready.
@@ -385,12 +345,7 @@ private actor WiFiAwareTransport {
                     try? await connection.currentPath?.wifiAware?.endpoint.device.id
             }
 
-            // Keep the connection whose initiator holds the lower token.
-            let keep =
-                weInitiated
-                ? tokenIsLower(localToken, than: peerToken)
-                : tokenIsLower(peerToken, than: localToken)
-            guard keep else {
+            guard AwareDial.keeps(localToken: localToken, peerToken: peerToken, weInitiated: weInitiated) else {
                 // Losing an INBOUND connection means our token is the lower one,
                 // so we are the side that should dial. The peer has stopped
                 // trying and nothing else would close the loop.
@@ -467,8 +422,10 @@ private actor WiFiAwareTransport {
     private func readLoop(linkID: String, connection: NetworkConnection<TCP>) async {
         while !Task.isCancelled {
             do {
-                let header = try await connection.receive(exactly: 4).content
-                guard let length = Frame.decodeLength(header) else { return }
+                let header = try await connection.receive(exactly: Framing.prefixBytes).content
+                guard let length = Framing.length(header) else { return }
+                // A heartbeat carries nothing.
+                if length == 0 { continue }
                 let payload = try await connection.receive(exactly: length).content
                 emit(
                     WiFiEvent.packetReceived,
@@ -484,7 +441,7 @@ private actor WiFiAwareTransport {
 
     func write(linkID: String, payload: Data) async throws {
         guard let link = links[linkID] else { throw WiFiFailure.unknownLink(linkID) }
-        let frame = Frame.encode(payload)
+        let frame = Framing.encode(payload)
         let connection = link.connection
         let task = await link.sender.send { try await connection.send(frame) }
         do {
@@ -681,7 +638,7 @@ final class AirhopWiFiModule: RCTEventEmitter {
             reject("INVALID_DATA", "Invalid base64 payload", nil)
             return
         }
-        guard payload.count <= WiFiConst.maxFrame - 4 else {
+        guard payload.count <= Framing.maxFrame - Framing.prefixBytes else {
             reject(
                 "FRAME_TOO_LARGE",
                 "Frame of \(payload.count) exceeds the peer's read limit",

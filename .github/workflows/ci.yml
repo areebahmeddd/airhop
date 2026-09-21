@@ -123,6 +123,10 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 
+      - name: Run Android unit tests
+        working-directory: android
+        run: ./gradlew :app:testReleaseUnitTest --no-daemon
+
       # Verify native libraries meet Android 15's 16 KB page alignment
       # requirement to avoid Play Store upload failures.
       - name: Check 16 KB page alignment
@@ -193,6 +197,9 @@ jobs:
         run: |
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Run Swift unit tests
+        run: swift test --package-path ios
 
       - name: Install CocoaPods dependencies
         working-directory: ios

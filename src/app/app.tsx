@@ -706,8 +706,6 @@ function AppContent(): React.JSX.Element {
   const [profileCanGoBack, setProfileCanGoBack] = useState(false);
   const [profilePopSignal, setProfilePopSignal] = useState(0);
   const [chatSubTab, setChatSubTab] = useState<ChatSubTab>("channels");
-  // One filter per list, never persisted: a list that opens narrowed the next
-  // day reads as missing conversations.
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>("all");
   const [dmFilter, setDmFilter] = useState<DmFilter>("all");
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);

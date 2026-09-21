@@ -97,6 +97,8 @@ import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.ArrayDeque
 import java.util.Date
+import org.onemindlabs.airhop.transport.Framing
+import org.onemindlabs.airhop.wifi.AwareDial.toHex
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -122,26 +124,8 @@ private const val EVT_AVAILABILITY_CHANGED = "AirhopWiFi.availabilityChanged"
 private const val REASON_RADIO = "radio"
 private const val REASON_SESSION = "session"
 
-// Follow-up messages: type byte, instance id, epoch.
-private const val MSG_CONNECT_REQUEST: Byte = 0x01
-private const val MSG_CONNECT_READY: Byte = 0x02
-private const val MSG_BYTES = 1 + 8 + 1
-
-// The tiebreak token is regenerated per attach so it never identifies the
-// device across sessions; the instance id is per process so a peer is
-// recognised while its app runs and unlinkable once it restarts. Both travel
-// in serviceSpecificInfo, token first.
-private const val TOKEN_BYTES = 8
-private const val INSTANCE_BYTES = 8
-
-// Hello frame: magic, version, instance id. 'A' can never be an Airhop packet's
-// version byte, which is what tells the hello apart from traffic.
-private val HELLO_MAGIC = "AHWA".toByteArray(Charsets.US_ASCII)
-private const val HELLO_VERSION: Byte = 0x01
-private const val HELLO_BYTES = 4 + 1 + INSTANCE_BYTES
-
-// One 64 KiB file chunk plus the length prefix.
-private const val MAX_FRAME = 65544
+// Message and hello layouts, the tiebreak and the backoff ladder are in
+// AwareDial; the stream framing is in Framing.
 
 // The two-argument requestNetwork() leaves a failed request pending for the
 // life of the process; only the timeout overload makes failure observable.
@@ -164,13 +148,10 @@ private const val CONNECT_TIMEOUT_MS = 7_000
 // have matched us.
 private const val RESPONDER_GRACE_MS = 20_000L
 
-// Per-peer retry backoff: 3 s doubling to a minute, with jitter so two phones
-// do not retry in lockstep. A path the framework refuses outright, well inside
-// its own timeout, is a device saying no rather than a peer being slow, and on
-// some chips the refusal comes with a Wi-Fi reset; that peer waits the full
-// minute before being asked again.
-private const val BACKOFF_BASE_MS = 3_000L
-private const val BACKOFF_MAX_MS = 60_000L
+// A path the framework refuses outright, well inside its own timeout, is a
+// device saying no rather than a peer being slow, and on some chips the
+// refusal comes with a Wi-Fi reset; that peer waits the full backoff before
+// being asked again.
 private const val PATH_REFUSED_FAST_MS = 2_000L
 
 private const val MAINTENANCE_MS = 15_000L
@@ -323,7 +304,7 @@ class AirhopWiFiModule(
 
     private var localToken: ByteArray = ByteArray(0)
     private val instanceId: ByteArray =
-        ByteArray(INSTANCE_BYTES).also { SecureRandom().nextBytes(it) }
+        ByteArray(AwareDial.INSTANCE_BYTES).also { SecureRandom().nextBytes(it) }
     private val instanceHex: String = instanceId.toHex()
 
     private var lastActivityAtMs = 0L
@@ -416,7 +397,7 @@ class AirhopWiFiModule(
             return
         }
 
-        localToken = ByteArray(TOKEN_BYTES).also { SecureRandom().nextBytes(it) }
+        localToken = ByteArray(AwareDial.TOKEN_BYTES).also { SecureRandom().nextBytes(it) }
         val generation = sessionGeneration.get()
         attaching = true
         try {
@@ -614,7 +595,7 @@ class AirhopWiFiModule(
             promise.reject("INVALID_DATA", "Invalid base64 payload", e)
             return
         }
-        if (data.size > MAX_FRAME - 4) {
+        if (data.size > Framing.MAX_FRAME - Framing.PREFIX_BYTES) {
             promise.reject("FRAME_TOO_LARGE", "Frame of ${data.size} exceeds the peer's read limit")
             return
         }
@@ -639,13 +620,7 @@ class AirhopWiFiModule(
     // Blocking. IO thread, except the hello, which is a few bytes into an
     // empty buffer.
     private fun writeFrame(link: LinkState, data: ByteArray) {
-        val frame = ByteArray(4 + data.size)
-        val len = data.size
-        frame[0] = (len shr 24).toByte()
-        frame[1] = (len shr 16).toByte()
-        frame[2] = (len shr 8).toByte()
-        frame[3] = len.toByte()
-        data.copyInto(frame, 4)
+        val frame = Framing.encode(data)
         synchronized(link.writeLock) {
             link.output.write(frame)
             link.output.flush()
@@ -844,7 +819,7 @@ class AirhopWiFiModule(
                 override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
                     onState {
                         if (generation != discoveryGeneration.get()) return@onState
-                        if (message.size == MSG_BYTES && message[0] == MSG_CONNECT_REQUEST) {
+                        if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_REQUEST)) {
                             onConnectRequest(peerHandle, message)
                         }
                     }
@@ -904,7 +879,7 @@ class AirhopWiFiModule(
                 override fun onMessageReceived(peerHandle: PeerHandle, message: ByteArray) {
                     onState {
                         if (generation != discoveryGeneration.get()) return@onState
-                        if (message.size == MSG_BYTES && message[0] == MSG_CONNECT_READY) {
+                        if (AwareDial.isFollowUp(message, AwareDial.MSG_CONNECT_READY)) {
                             onConnectReady(peerHandle, message)
                         }
                     }
@@ -954,11 +929,11 @@ class AirhopWiFiModule(
     }
 
     private fun onPeerDiscovered(peerHandle: PeerHandle, ssi: ByteArray?) {
-        val instance = ssi?.let { instanceFrom(it, TOKEN_BYTES) } ?: return
+        val instance = ssi?.let { AwareDial.instanceFrom(it, AwareDial.TOKEN_BYTES) } ?: return
         if (instance == instanceHex) return
         val peer = peerFor(instance)
         peer.subscribeHandle = peerHandle
-        peer.token = ssi.copyOfRange(0, TOKEN_BYTES)
+        peer.token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
         subscribeHandles[peerHandle] = instance
         logI("Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}")
         if (peer.state == DialState.IDLE && prefersInitiator(peer) && now() >= peer.nextAttemptAtMs) {
@@ -966,19 +941,8 @@ class AirhopWiFiModule(
         }
     }
 
-    // Lower token dials first. A tie is a 1-in-2^64 coincidence, and dialling
-    // on it beats both sides waiting.
-    private fun prefersInitiator(peer: Peer): Boolean {
-        val theirs = peer.token ?: return true
-        val mine = localToken
-        if (mine.size != TOKEN_BYTES || theirs.size != TOKEN_BYTES) return true
-        for (i in 0 until TOKEN_BYTES) {
-            val a = mine[i].toInt() and 0xff
-            val b = theirs[i].toInt() and 0xff
-            if (a != b) return a < b
-        }
-        return true
-    }
+    private fun prefersInitiator(peer: Peer): Boolean =
+        AwareDial.prefersInitiator(localToken, peer.token)
 
     // ---- Initiator -----------------------------------------------------------
 
@@ -995,7 +959,7 @@ class AirhopWiFiModule(
         logI("Dialling ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
         try {
             pendingSends[messageId] = peer.instance
-            session.sendMessage(handle, messageId, followUp(MSG_CONNECT_REQUEST, peer.epoch))
+            session.sendMessage(handle, messageId, AwareDial.followUp(AwareDial.MSG_CONNECT_REQUEST, instanceId, peer.epoch))
         } catch (e: Exception) {
             pendingSends.remove(messageId)
             logW("Connect request to ${peer.instance.take(8)} refused: ${e.message}")
@@ -1004,12 +968,12 @@ class AirhopWiFiModule(
     }
 
     private fun onConnectReady(peerHandle: PeerHandle, message: ByteArray) {
-        val instance = instanceFrom(message, 1) ?: return
+        val instance = AwareDial.instanceFrom(message, 1) ?: return
         val peer = peers[instance] ?: return
         peer.lastSeenAtMs = now()
         lastActivityAtMs = peer.lastSeenAtMs
         if (peer.state != DialState.REQUESTED) return
-        if (epochOf(message) != peer.epoch) return
+        if (AwareDial.epochOf(message) != peer.epoch) return
         val session = subscribeSession ?: return
         peer.subscribeHandle = peerHandle
         subscribeHandles[peerHandle] = instance
@@ -1079,9 +1043,9 @@ class AirhopWiFiModule(
 
     private fun onConnectRequest(peerHandle: PeerHandle, message: ByteArray) {
         val session = publishSession ?: return
-        val instance = instanceFrom(message, 1) ?: return
+        val instance = AwareDial.instanceFrom(message, 1) ?: return
         if (instance == instanceHex) return
-        val epoch = epochOf(message)
+        val epoch = AwareDial.epochOf(message)
         val peer = peerFor(instance)
         peer.publishHandle = peerHandle
 
@@ -1134,7 +1098,7 @@ class AirhopWiFiModule(
 
     private fun sendReady(session: PublishDiscoverySession, peerHandle: PeerHandle, epoch: Int) {
         runCatching {
-            session.sendMessage(peerHandle, sendCounter.getAndIncrement(), followUp(MSG_CONNECT_READY, epoch))
+            session.sendMessage(peerHandle, sendCounter.getAndIncrement(), AwareDial.followUp(AwareDial.MSG_CONNECT_READY, instanceId, epoch))
         }.onFailure { logW("Could not send connect-ready: ${it.message}") }
     }
 
@@ -1179,7 +1143,7 @@ class AirhopWiFiModule(
                     val refusedFast = now() - peer.stateSinceMs < PATH_REFUSED_FAST_MS
                     pathGone(peer)
                     if (refusedFast && peer.state == DialState.IDLE) {
-                        peer.nextAttemptAtMs = now() + BACKOFF_MAX_MS
+                        peer.nextAttemptAtMs = now() + AwareDial.BACKOFF_MAX_MS
                     }
                 }
             }
@@ -1220,7 +1184,8 @@ class AirhopWiFiModule(
         peer.state = DialState.IDLE
         peer.role = null
         peer.attempts += 1
-        val backoff = minOf(BACKOFF_MAX_MS, BACKOFF_BASE_MS shl minOf(peer.attempts - 1, 5))
+        // Jitter, so two phones do not retry in lockstep.
+        val backoff = AwareDial.backoffMs(peer.attempts)
         val jitter = (backoff / 4 * (Math.random() * 2 - 1)).toLong()
         peer.nextAttemptAtMs = now() + backoff + jitter
         logI("Attempt with ${peer.instance.take(8)} failed (${peer.attempts}), next in ${(backoff + jitter) / 1000}s")
@@ -1332,7 +1297,7 @@ class AirhopWiFiModule(
             socket.keepAlive = true
             socket.soTimeout = READ_TIMEOUT_MS
             link = LinkState(id, socket, socket.getOutputStream())
-            writeFrame(link, HELLO_MAGIC + byteArrayOf(HELLO_VERSION) + instanceId)
+            writeFrame(link, AwareDial.hello(instanceId))
         } catch (e: Exception) {
             logE("Could not register link $id: ${e.message}")
             runCatching { socket.close() }
@@ -1404,11 +1369,7 @@ class AirhopWiFiModule(
                     if (n < 0) throw EOFException("EOF in length prefix")
                     inFrame += n
                 }
-                val len = ((lenBuf[0].toInt() and 0xff) shl 24) or
-                    ((lenBuf[1].toInt() and 0xff) shl 16) or
-                    ((lenBuf[2].toInt() and 0xff) shl 8) or
-                    (lenBuf[3].toInt() and 0xff)
-                if (len < 0 || len > MAX_FRAME) throw Exception("invalid frame length $len")
+                val len = Framing.length(lenBuf) ?: throw Exception("invalid frame length")
                 idleTimeouts = 0
                 link.lastReadAtMs = now()
                 if (len == 0) continue
@@ -1421,7 +1382,7 @@ class AirhopWiFiModule(
                     received += n
                     inFrame += n
                 }
-                val hello = helloInstance(data)
+                val hello = AwareDial.helloInstance(data)
                 if (hello != null) {
                     onState { onHello(link, hello) }
                     continue
@@ -1467,25 +1428,6 @@ class AirhopWiFiModule(
     }
 
     // ---- Helpers -------------------------------------------------------------
-
-    private fun followUp(type: Byte, epoch: Int): ByteArray =
-        byteArrayOf(type) + instanceId + byteArrayOf(epoch.toByte())
-
-    private fun epochOf(message: ByteArray): Int = message[MSG_BYTES - 1].toInt() and 0xff
-
-    private fun instanceFrom(bytes: ByteArray, offset: Int): String? {
-        if (bytes.size < offset + INSTANCE_BYTES) return null
-        return bytes.copyOfRange(offset, offset + INSTANCE_BYTES).toHex()
-    }
-
-    private fun helloInstance(frame: ByteArray): String? {
-        if (frame.size != HELLO_BYTES) return null
-        for (i in HELLO_MAGIC.indices) if (frame[i] != HELLO_MAGIC[i]) return null
-        if (frame[HELLO_MAGIC.size] != HELLO_VERSION) return null
-        return instanceFrom(frame, HELLO_MAGIC.size + 1)
-    }
-
-    private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
 
     // Every caller is on the state thread or an IO thread with no handler
     // above it, and getJSModule throws whenever no runtime is attached.

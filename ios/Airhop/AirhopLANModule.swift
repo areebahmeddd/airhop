@@ -44,8 +44,6 @@ enum LANConst {
     // network, this is mDNS over an ordinary one.
     static let serviceType = "_airhop-lan-v1._tcp"
     static let domain = "local."
-    // 64 KiB payload plus the length prefix. Matches MAX_FRAME on the Kotlin side.
-    static let maxFrame = 65_544
 }
 
 /// Liveness, the same numbers as the Kotlin side: a zero-length heartbeat every
@@ -69,35 +67,6 @@ private enum LANEvent {
     static let linkDisconnected = "AirhopLAN.linkDisconnected"
     static let packetReceived = "AirhopLAN.packetReceived"
     static let availabilityChanged = "AirhopLAN.availabilityChanged"
-}
-
-// MARK: - Framing
-
-/// `[4-byte big-endian length][payload]`, byte-identical to the Kotlin module
-/// and to AirhopWiFiModule.
-///
-/// Big-endian by hand rather than reading a `UInt32`, which would come back in
-/// host order and be byte-swapped on every device this runs on.
-private enum LANFrame {
-    static func encode(_ payload: Data) -> Data {
-        let length = UInt32(payload.count)
-        var out = Data(capacity: 4 + payload.count)
-        out.append(UInt8((length >> 24) & 0xff))
-        out.append(UInt8((length >> 16) & 0xff))
-        out.append(UInt8((length >> 8) & 0xff))
-        out.append(UInt8(length & 0xff))
-        out.append(payload)
-        return out
-    }
-
-    static func decodeLength(_ header: Data) -> Int? {
-        guard header.count == 4 else { return nil }
-        let bytes = [UInt8](header)
-        let length =
-            (Int(bytes[0]) << 24) | (Int(bytes[1]) << 16) | (Int(bytes[2]) << 8) | Int(bytes[3])
-        guard length >= 0, length <= LANConst.maxFrame else { return nil }
-        return length
-    }
 }
 
 // MARK: - Failures
@@ -308,7 +277,7 @@ private final class LANTransport {
                 continue
             }
             link.connection.send(
-                content: LANFrame.encode(Data()),
+                content: Framing.encode(Data()),
                 completion: .contentProcessed { [weak self] error in
                     guard error != nil else { return }
                     self?.queue.async { self?.closeLink(linkID) }
@@ -509,13 +478,13 @@ private final class LANTransport {
     /// `receive` is callback-based: each completion queues the following read.
     private func readFrame(linkID: String, connection: NWConnection) {
         connection.receive(
-            minimumIncompleteLength: 4,
-            maximumLength: 4
+            minimumIncompleteLength: Framing.prefixBytes,
+            maximumLength: Framing.prefixBytes
         ) { [weak self] header, _, isComplete, error in
             guard let self else { return }
             self.queue.async {
                 guard error == nil, !isComplete, let header,
-                    let length = LANFrame.decodeLength(header)
+                    let length = Framing.length(header)
                 else {
                     self.closeLink(linkID)
                     return
@@ -571,7 +540,7 @@ private final class LANTransport {
             // connection go out in order and cannot interleave, which is what
             // the Wi-Fi module needs a SerialSender to guarantee.
             link.connection.send(
-                content: LANFrame.encode(payload),
+                content: Framing.encode(payload),
                 completion: .contentProcessed { [weak self] error in
                     guard let self else { return }
                     self.queue.async {
@@ -693,7 +662,7 @@ final class AirhopLANModule: RCTEventEmitter {
             reject("INVALID_DATA", "Invalid base64 payload", nil)
             return
         }
-        guard payload.count <= LANConst.maxFrame - 4 else {
+        guard payload.count <= Framing.maxFrame - Framing.prefixBytes else {
             reject(
                 "FRAME_TOO_LARGE",
                 "Frame of \(payload.count) exceeds the peer's read limit",

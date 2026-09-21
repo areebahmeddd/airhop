@@ -46,6 +46,8 @@ secrets/
 ios/Pods/
 ios/build/
 ios/DerivedData/
+ios/.build/
+ios/.swiftpm/
 ios/.xcode.env.local
 *.xcworkspace
 !ios/*.xcworkspace

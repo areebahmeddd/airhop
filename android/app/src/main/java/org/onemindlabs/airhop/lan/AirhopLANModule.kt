@@ -38,6 +38,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import org.onemindlabs.airhop.transport.Framing
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet4Address
@@ -75,9 +76,6 @@ private const val EVT_LINK_CONNECTED = "AirhopLAN.linkConnected"
 private const val EVT_LINK_DISCONNECTED = "AirhopLAN.linkDisconnected"
 private const val EVT_PACKET_RECEIVED = "AirhopLAN.packetReceived"
 private const val EVT_AVAILABILITY_CHANGED = "AirhopLAN.availabilityChanged"
-
-// Matches AirhopWiFiModule and the iOS side: 64 KiB of payload plus the prefix.
-private const val MAX_FRAME = 65544
 
 // Liveness, the same numbers as the WiFi module: a zero-length heartbeat every
 // 8 s against a 10 s read deadline, three misses allowed, so a peer that walked
@@ -593,15 +591,9 @@ class AirhopLANModule(
         }
     }
 
-    // Length-prefixed frame: [4-byte BE length][data]. Blocking; IO thread.
+    // Blocking; IO thread.
     private fun writeFrame(link: LinkState, data: ByteArray) {
-        val frame = ByteArray(4 + data.size)
-        val len = data.size
-        frame[0] = (len shr 24).toByte()
-        frame[1] = (len shr 16).toByte()
-        frame[2] = (len shr 8).toByte()
-        frame[3] = len.toByte()
-        data.copyInto(frame, 4)
+        val frame = Framing.encode(data)
         synchronized(link.writeLock) {
             link.output.write(frame)
             link.output.flush()
@@ -621,7 +613,7 @@ class AirhopLANModule(
             promise.reject("INVALID_DATA", "Invalid base64 payload", e)
             return
         }
-        if (data.size > MAX_FRAME - 4) {
+        if (data.size > Framing.MAX_FRAME - Framing.PREFIX_BYTES) {
             promise.reject("FRAME_TOO_LARGE", "Frame of ${data.size} exceeds the peer's read limit")
             return
         }
@@ -661,13 +653,8 @@ class AirhopLANModule(
                         if (n < 0) throw java.io.EOFException("EOF in length prefix")
                         inFrame += n
                     }
-                    val len = ((lenBuf[0].toInt() and 0xff) shl 24) or
-                        ((lenBuf[1].toInt() and 0xff) shl 16) or
-                        ((lenBuf[2].toInt() and 0xff) shl 8) or
-                        (lenBuf[3].toInt() and 0xff)
-                    if (len < 0 || len > MAX_FRAME) {
-                        throw Exception("LAN link $linkID: invalid frame length $len")
-                    }
+                    val len = Framing.length(lenBuf)
+                        ?: throw Exception("LAN link $linkID: invalid frame length")
                     idleTimeouts = 0
                     // A heartbeat carries nothing.
                     if (len == 0) continue

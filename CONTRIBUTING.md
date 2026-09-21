@@ -88,6 +88,15 @@ These rules exist because a bug here breaks Airhop's interoperability with bitch
 
 Run tests: `npm test -- --testPathPattern=src/core`
 
+### Native
+
+The pure parts of the native modules have unit tests on both platforms: the stream framing every TCP link uses (`Framing`) and the Wi-Fi Aware dial rules (`AwareDial`, which differ by platform on purpose). Anything that touches a radio is covered by the simulator and by devices, not here. Keep new logic of that kind in a pure object beside its module so it can be tested the same way; each platform's README says how.
+
+```sh
+cd android && ./gradlew :app:testDebugUnitTest   # android/app/src/test/
+swift test --package-path ios                    # ios/Tests/, any Mac
+```
+
 ## 7. AI Agent Usage
 
 Three specialized agents are available in `.github/agents/`. Invoke them via VS Code Copilot chat.

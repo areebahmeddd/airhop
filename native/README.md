@@ -35,7 +35,7 @@ Output is written straight into `android/` and `ios/`. [`scripts/verify-vendored
 
 ## Tests
 
-Only `arti/` has them. `iptproxy/` is upstream Go behind a generated binding, so what it needs checking is the binding surface and the packaged slices, which its build does.
+Only `arti/` has them here. `iptproxy/` is upstream Go behind a generated binding, so what it needs checking is the binding surface and the packaged slices, which its build does. The Swift and Kotlin modules that consume both have their own tests under `ios/` and `android/`; see each README.
 
 ```sh
 # The first step of either arti build script, before any cross compiling
