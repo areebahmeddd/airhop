@@ -11,6 +11,7 @@
 package org.onemindlabs.airhop.ble
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -34,7 +35,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.app.Activity
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.BatteryManager
@@ -55,30 +55,30 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import org.onemindlabs.airhop.service.AirhopForegroundService
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import org.onemindlabs.airhop.service.AirhopForegroundService
 
 private const val TAG = "AirhopBLEModule"
 
 // BLE constants per PROTOCOLS.md - must never change without a version bump.
-private val SERVICE_UUID         = UUID.fromString("F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C")
-private val CHARACTERISTIC_UUID  = UUID.fromString("A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D")
+private val SERVICE_UUID = UUID.fromString("F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C")
+private val CHARACTERISTIC_UUID = UUID.fromString("A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D")
 // Standard CCCD descriptor UUID required for BLE notifications
-private val CCCD_UUID            = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB")
+private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB")
 
 // Event names emitted to TypeScript
-private const val EVT_PACKET_RECEIVED   = "AirhopBLE.packetReceived"
-private const val EVT_LINK_CONNECTED    = "AirhopBLE.linkConnected"
+private const val EVT_PACKET_RECEIVED = "AirhopBLE.packetReceived"
+private const val EVT_LINK_CONNECTED = "AirhopBLE.linkConnected"
 private const val EVT_LINK_DISCONNECTED = "AirhopBLE.linkDisconnected"
-private const val EVT_RSSI_UPDATED      = "AirhopBLE.rssiUpdated"
+private const val EVT_RSSI_UPDATED = "AirhopBLE.rssiUpdated"
 // Bluetooth radio turned on/off at the OS level. Without this the UI cannot
 // tell "Bluetooth is off" apart from "nobody is nearby". Both look like an
 // empty peer list, which is impossible for a user to diagnose.
-private const val EVT_ADAPTER_STATE     = "AirhopBLE.adapterStateChanged"
+private const val EVT_ADAPTER_STATE = "AirhopBLE.adapterStateChanged"
 // The platform refused a scan after startScan() returned cleanly. Without it
 // the reconciler believes it is scanning and never retries.
-private const val EVT_SCAN_FAILED       = "AirhopBLE.scanFailed"
+private const val EVT_SCAN_FAILED = "AirhopBLE.scanFailed"
 // The user tapped "Stop mesh" on the background notification. Handled in JS so
 // the shutdown is the same one the Status picker performs.
 private const val EVT_MESH_STOP_REQUESTED = "AirhopBLE.meshStopRequested"
@@ -128,38 +128,47 @@ private enum class PowerMode(
         ScanSettings.SCAN_MODE_LOW_LATENCY,
         AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY,
         AdvertiseSettings.ADVERTISE_TX_POWER_HIGH,
-        5_000L, 0L, 0L,
+        5_000L,
+        0L,
+        0L,
     ),
     BALANCED(
         ScanSettings.SCAN_MODE_BALANCED,
         AdvertiseSettings.ADVERTISE_MODE_BALANCED,
         AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM,
-        10_000L, 0L, 0L,
+        10_000L,
+        0L,
+        0L,
     ),
     POWER_SAVER(
         ScanSettings.SCAN_MODE_LOW_POWER,
         AdvertiseSettings.ADVERTISE_MODE_LOW_POWER,
         AdvertiseSettings.ADVERTISE_TX_POWER_LOW,
-        30_000L, 2_000L, 28_000L,
+        30_000L,
+        2_000L,
+        28_000L,
     ),
     ULTRA_LOW_POWER(
         ScanSettings.SCAN_MODE_LOW_POWER,
         AdvertiseSettings.ADVERTISE_MODE_LOW_POWER,
         AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW,
-        60_000L, 1_000L, 29_000L,
+        60_000L,
+        1_000L,
+        29_000L,
     );
 
     companion object {
         // Unknown names fall back to BALANCED rather than throwing. A bad string
         // is a bug in the caller, and taking the mesh down over it would turn a
         // typo into an outage.
-        fun fromName(name: String): PowerMode = when (name) {
-            "performance" -> PERFORMANCE
-            "balanced" -> BALANCED
-            "power-saver" -> POWER_SAVER
-            "ultra-low-power" -> ULTRA_LOW_POWER
-            else -> BALANCED
-        }
+        fun fromName(name: String): PowerMode =
+            when (name) {
+                "performance" -> PERFORMANCE
+                "balanced" -> BALANCED
+                "power-saver" -> POWER_SAVER
+                "ultra-low-power" -> ULTRA_LOW_POWER
+                else -> BALANCED
+            }
     }
 }
 
@@ -186,9 +195,8 @@ private const val BATTERY_REPORT_STEP = 5
 // The OS Bluetooth radio state, and now also the battery.
 private const val EVT_POWER_STATE = "AirhopBLE.powerStateChanged"
 
-class AirhopBLEModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = "AirhopBLE"
 
@@ -208,11 +216,12 @@ class AirhopBLEModule(
     }
 
     private val adapter: BluetoothAdapter?
-        get() = try {
-            bluetoothManager?.adapter
-        } catch (e: Exception) {
-            null
-        }
+        get() =
+            try {
+                bluetoothManager?.adapter
+            } catch (e: Exception) {
+                null
+            }
 
     // GATT server (peripheral role)
     private var gattServer: BluetoothGattServer? = null
@@ -222,7 +231,7 @@ class AirhopBLEModule(
     // Peripheral-role links are remote devices that connected to our GATT server.
     private val peripheralLinks = ConcurrentHashMap<String, BluetoothDevice>()
     // Central-role links are GATT clients we connected to as central.
-    private val centralLinks    = ConcurrentHashMap<String, BluetoothGatt>()
+    private val centralLinks = ConcurrentHashMap<String, BluetoothGatt>()
     // Negotiated ATT MTU per central link. A write without response cannot
     // exceed MTU-3, and the stack truncates rather than refusing, so a frame
     // over that budget silently mangles every fragment of a transfer.
@@ -247,7 +256,8 @@ class AirhopBLEModule(
         // Sticky: once a chunk is refused the reassembly is unusable and the
         // EXECUTE must not commit a frame with a hole in it.
         var failed = false
-        val length: Int get() = buffer.size()
+        val length: Int
+            get() = buffer.size()
     }
 
     // Our own peerID hex (16 chars), advertised as 8-byte scan-response service
@@ -369,26 +379,30 @@ class AirhopBLEModule(
     // timer of its own so it stops with the module.
     private fun startDeviceMonitor() {
         if (monitorTask != null) return
-        val task = object : Runnable {
-            override fun run() {
-                val now = System.currentTimeMillis()
-                for ((linkID, heardAt) in lastHeardAt) {
-                    val silentFor = now - heardAt
-                    // A device that has never spoken is a prober and gets the
-                    // short window. One that spoke and then stopped is a peer
-                    // that walked away, and gets the 60s reachability window
-                    // before its slot is reclaimed.
-                    val limit =
-                        if (everSpoke.contains(linkID)) inactivityTimeoutMs
-                        else firstTrafficDeadlineMs
-                    if (silentFor > limit) {
-                        Log.i(TAG, "Reaping BLE link (${linkRole(linkID)}) after ${silentFor}ms of silence")
-                        disconnectLink(linkID)
+        val task =
+            object : Runnable {
+                override fun run() {
+                    val now = System.currentTimeMillis()
+                    for ((linkID, heardAt) in lastHeardAt) {
+                        val silentFor = now - heardAt
+                        // A device that has never spoken is a prober and gets the
+                        // short window. One that spoke and then stopped is a peer
+                        // that walked away, and gets the 60s reachability window
+                        // before its slot is reclaimed.
+                        val limit =
+                            if (everSpoke.contains(linkID)) inactivityTimeoutMs
+                            else firstTrafficDeadlineMs
+                        if (silentFor > limit) {
+                            Log.i(
+                                TAG,
+                                "Reaping BLE link (${linkRole(linkID)}) after ${silentFor}ms of silence",
+                            )
+                            disconnectLink(linkID)
+                        }
                     }
+                    mainHandler.postDelayed(this, 5_000L)
                 }
-                mainHandler.postDelayed(this, 5_000L)
             }
-        }
         monitorTask = task
         mainHandler.postDelayed(task, 5_000L)
     }
@@ -421,9 +435,12 @@ class AirhopBLEModule(
             Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
         }
         linkToAdvertisedPeerID.remove(linkID)?.let { centralPeerIDs.remove(it) }
-        emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply {
-            putString("linkID", linkID)
-        })
+        emitEvent(
+            EVT_LINK_DISCONNECTED,
+            WritableNativeMap().apply {
+                putString("linkID", linkID)
+            },
+        )
     }
 
     // Everything the monitor knows is per session. The panic wipe clears it
@@ -443,82 +460,84 @@ class AirhopBLEModule(
     // twice. On its own this is a small economy; combined with the reconciler in
     // radio-controller.ts it is what makes an adapter event unable to trigger a
     // restart that triggers another adapter event.
-    @Volatile
-    private var lastReportedEnabled: Boolean? = null
+    @Volatile private var lastReportedEnabled: Boolean? = null
 
     // Current radio effort. Starts BALANCED so a mesh that comes up before JS
     // has said anything is already not running flat out.
-    @Volatile
-    private var powerMode: PowerMode = PowerMode.BALANCED
+    @Volatile private var powerMode: PowerMode = PowerMode.BALANCED
 
     // Latest battery reading, and the last one we reported.
-    @Volatile
-    private var batteryPercent: Int = -1
-    @Volatile
-    private var charging: Boolean = false
-    @Volatile
-    private var lastReportedBattery: Int = -1
-    @Volatile
-    private var lastReportedCharging: Boolean? = null
+    @Volatile private var batteryPercent: Int = -1
+    @Volatile private var charging: Boolean = false
+    @Volatile private var lastReportedBattery: Int = -1
+    @Volatile private var lastReportedCharging: Boolean? = null
 
-    private val batteryReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
-            val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-            val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-            if (level < 0 || scale <= 0) return
-            val percent = (level * 100) / scale
-            val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-            val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL
+    private val batteryReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+                val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                if (level < 0 || scale <= 0) return
+                val percent = (level * 100) / scale
+                val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                val isCharging =
+                    status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                        status == BatteryManager.BATTERY_STATUS_FULL
 
-            batteryPercent = percent
-            charging = isCharging
+                batteryPercent = percent
+                charging = isCharging
 
-            // Only speak up when the number has moved enough to possibly change
-            // a decision, or the charger went in or out. No policy here - the
-            // thresholds that matter live in TypeScript - only a filter on how
-            // chatty this gets.
-            val movedEnough =
-                lastReportedBattery < 0 ||
-                    kotlin.math.abs(percent - lastReportedBattery) >= BATTERY_REPORT_STEP
-            if (!movedEnough && lastReportedCharging == isCharging) return
-            lastReportedBattery = percent
-            lastReportedCharging = isCharging
-            emitEvent(EVT_POWER_STATE, WritableNativeMap().apply {
-                putInt("batteryPercent", percent)
-                putBoolean("charging", isCharging)
-            })
+                // Only speak up when the number has moved enough to possibly change
+                // a decision, or the charger went in or out. No policy here - the
+                // thresholds that matter live in TypeScript - only a filter on how
+                // chatty this gets.
+                val movedEnough =
+                    lastReportedBattery < 0 ||
+                        kotlin.math.abs(percent - lastReportedBattery) >= BATTERY_REPORT_STEP
+                if (!movedEnough && lastReportedCharging == isCharging) return
+                lastReportedBattery = percent
+                lastReportedCharging = isCharging
+                emitEvent(
+                    EVT_POWER_STATE,
+                    WritableNativeMap().apply {
+                        putInt("batteryPercent", percent)
+                        putBoolean("charging", isCharging)
+                    },
+                )
+            }
         }
-    }
 
-    private val adapterStateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != BluetoothAdapter.ACTION_STATE_CHANGED) return
-            val state = intent.getIntExtra(
-                BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR,
-            )
-            when (state) {
-                BluetoothAdapter.STATE_ON -> emitAdapterState(true)
-                // Tear down on TURNING_OFF rather than waiting for OFF. By the
-                // time OFF arrives the stack has already invalidated every
-                // handle we hold, and any call we make in between is rejected
-                // as API misuse. Getting our own state retired first means JS
-                // stops addressing dead links immediately.
-                BluetoothAdapter.STATE_TURNING_OFF -> {
-                    releaseRadioState()
-                    emitAdapterState(false)
-                }
-                BluetoothAdapter.STATE_OFF -> {
-                    releaseRadioState()
-                    emitAdapterState(false)
-                }
+    private val adapterStateReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != BluetoothAdapter.ACTION_STATE_CHANGED) return
+                val state =
+                    intent.getIntExtra(
+                        BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR,
+                    )
+                when (state) {
+                    BluetoothAdapter.STATE_ON -> emitAdapterState(true)
+                    // Tear down on TURNING_OFF rather than waiting for OFF. By the
+                    // time OFF arrives the stack has already invalidated every
+                    // handle we hold, and any call we make in between is rejected
+                    // as API misuse. Getting our own state retired first means JS
+                    // stops addressing dead links immediately.
+                    BluetoothAdapter.STATE_TURNING_OFF -> {
+                        releaseRadioState()
+                        emitAdapterState(false)
+                    }
+                    BluetoothAdapter.STATE_OFF -> {
+                        releaseRadioState()
+                        emitAdapterState(false)
+                    }
                 // STATE_TURNING_ON is deliberately not reported: the radio
                 // cannot accept work yet, and saying "on" here would invite a
                 // scan the stack silently drops.
+                }
             }
         }
-    }
 
     // Registered in initialize(), NOT in init{}.
     //
@@ -568,8 +587,7 @@ class AirhopBLEModule(
             }
         }
 
-    @Volatile
-    private var receiverRegistered = false
+    @Volatile private var receiverRegistered = false
 
     private fun registerAdapterReceiver() {
         if (receiverRegistered) return
@@ -644,23 +662,22 @@ class AirhopBLEModule(
     // continuous scan, and telling JS the radio stopped would have the
     // reconciler try to "fix" a state that is working as intended.
 
-    @Volatile
-    private var scanningRequested = false
-    @Volatile
-    private var scanBurstActive = false
+    @Volatile private var scanningRequested = false
+    @Volatile private var scanBurstActive = false
 
-    private val scanBurstToggle = object : Runnable {
-        override fun run() {
-            if (!scanningRequested) return
-            if (scanBurstActive) {
-                stopPlatformScan()
-                mainHandler.postDelayed(this, powerMode.scanOffMs)
-            } else {
-                startPlatformScan()
-                mainHandler.postDelayed(this, powerMode.scanOnMs)
+    private val scanBurstToggle =
+        object : Runnable {
+            override fun run() {
+                if (!scanningRequested) return
+                if (scanBurstActive) {
+                    stopPlatformScan()
+                    mainHandler.postDelayed(this, powerMode.scanOffMs)
+                } else {
+                    startPlatformScan()
+                    mainHandler.postDelayed(this, powerMode.scanOnMs)
+                }
             }
         }
-    }
 
     private fun beginScanCycle() {
         // Idempotent: the same Runnable can sit in the queue twice, and two
@@ -686,12 +703,8 @@ class AirhopBLEModule(
         if (scanBurstActive) return
         val scanner = adapter?.bluetoothLeScanner ?: return
         try {
-            val filter = ScanFilter.Builder()
-                .setServiceUuid(ParcelUuid(SERVICE_UUID))
-                .build()
-            val settings = ScanSettings.Builder()
-                .setScanMode(powerMode.scanMode)
-                .build()
+            val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid(SERVICE_UUID)).build()
+            val settings = ScanSettings.Builder().setScanMode(powerMode.scanMode).build()
             scanner.startScan(listOf(filter), settings, scanCallback)
             scanBurstActive = true
         } catch (e: SecurityException) {
@@ -778,9 +791,12 @@ class AirhopBLEModule(
     // one failed write at a time.
     private fun releaseRadioState() {
         for (linkID in peripheralLinks.keys + centralLinks.keys) {
-            emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-            })
+            emitEvent(
+                EVT_LINK_DISCONNECTED,
+                WritableNativeMap().apply {
+                    putString("linkID", linkID)
+                },
+            )
         }
         stopRssiPolling()
         // The adapter took the scan and the advertiser down with it, so the
@@ -814,9 +830,12 @@ class AirhopBLEModule(
     private fun emitAdapterState(enabled: Boolean) {
         if (lastReportedEnabled == enabled) return
         lastReportedEnabled = enabled
-        emitEvent(EVT_ADAPTER_STATE, WritableNativeMap().apply {
-            putBoolean("enabled", enabled)
-        })
+        emitEvent(
+            EVT_ADAPTER_STATE,
+            WritableNativeMap().apply {
+                putBoolean("enabled", enabled)
+            },
+        )
     }
 
     // Everything the device will tell us about whether BLE can run right now.
@@ -870,19 +889,19 @@ class AirhopBLEModule(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // neverForLocation means location is not part of this from API 31:
             // the three Bluetooth runtime permissions are the requirement.
-            val needed = listOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_ADVERTISE,
-                Manifest.permission.BLUETOOTH_CONNECT,
-            )
+            val needed =
+                listOf(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                )
             return if (needed.all(::hasPermission)) "granted" else "denied"
         }
         // API <=30: BLUETOOTH and BLUETOOTH_ADMIN are install-time normal
         // permissions and are always held, but a scan is a location access with
         // no way to say otherwise, so ACCESS_FINE_LOCATION is the runtime
         // permission the mesh is really waiting on.
-        return if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) "granted"
-        else "denied"
+        return if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) "granted" else "denied"
     }
 
     // Whether a BLE scan on this device counts as a location access.
@@ -894,8 +913,7 @@ class AirhopBLEModule(
     //
     // Reported to JS rather than acted on here, so services/radio-controller.ts
     // keeps deciding what blocks the mesh and stays testable without a device.
-    private fun locationRequiredForScan(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+    private fun locationRequiredForScan(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
 
     // The OS-wide location toggle, which is NOT the location permission. Only
     // load-bearing while locationRequiredForScan() is true. From API 28 there is
@@ -932,8 +950,9 @@ class AirhopBLEModule(
             return
         }
         // From API 31 the enable dialog itself requires BLUETOOTH_CONNECT.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
         ) {
             promise.resolve(false)
             return
@@ -969,11 +988,12 @@ class AirhopBLEModule(
     }
 
     private fun resolvePendingEnable(enabled: Boolean) {
-        val promise = synchronized(this) {
-            val p = pendingEnablePromise
-            pendingEnablePromise = null
-            p
-        }
+        val promise =
+            synchronized(this) {
+                val p = pendingEnablePromise
+                pendingEnablePromise = null
+                p
+            }
         try {
             promise?.resolve(enabled)
         } catch (e: Exception) {
@@ -987,9 +1007,10 @@ class AirhopBLEModule(
     @ReactMethod
     fun openLocationSettings(promise: Promise) {
         try {
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val intent =
+                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
             reactContext.startActivity(intent)
             promise.resolve(true)
         } catch (e: Exception) {
@@ -1018,7 +1039,10 @@ class AirhopBLEModule(
             // Typically a background-start restriction on Android 12+. The mesh
             // runs fine in the foreground either way; the reconciler retries on
             // the next resume.
-            Log.w(TAG, "Foreground service ${if (enabled) "start" else "stop"} refused: ${e.message}")
+            Log.w(
+                TAG,
+                "Foreground service ${if (enabled) "start" else "stop"} refused: ${e.message}",
+            )
             promise.reject("FGS_REFUSED", e.message, e)
         }
     }
@@ -1031,18 +1055,19 @@ class AirhopBLEModule(
     // seconds on a pocketed phone was paying a radio round trip per peer for a
     // screen nobody is looking at.
     private var rssiPollingActive = false
-    private val rssiPoller = object : Runnable {
-        override fun run() {
-            for (gatt in centralLinks.values) {
-                try {
-                    gatt.readRemoteRssi()
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+    private val rssiPoller =
+        object : Runnable {
+            override fun run() {
+                for (gatt in centralLinks.values) {
+                    try {
+                        gatt.readRemoteRssi()
+                    } catch (e: SecurityException) {
+                        Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                    }
                 }
+                if (rssiPollingActive) mainHandler.postDelayed(this, powerMode.rssiIntervalMs)
             }
-            if (rssiPollingActive) mainHandler.postDelayed(this, powerMode.rssiIntervalMs)
         }
-    }
 
     private fun startRssiPolling() {
         if (rssiPollingActive) return
@@ -1080,8 +1105,9 @@ class AirhopBLEModule(
             promise.reject("RADIO_OFF", "Bluetooth is switched off")
             return
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                !hasPermission(Manifest.permission.BLUETOOTH_ADVERTISE)
         ) {
             promise.reject("PERMISSION_DENIED", "BLUETOOTH_ADVERTISE not granted yet")
             return
@@ -1101,7 +1127,11 @@ class AirhopBLEModule(
             // through setBackgroundServiceEnabled() - see the note there.
             promise.resolve(null)
         } catch (e: SecurityException) {
-            promise.reject("PERMISSION_DENIED", "BLE advertising requires BLUETOOTH_ADVERTISE permission", e)
+            promise.reject(
+                "PERMISSION_DENIED",
+                "BLE advertising requires BLUETOOTH_ADVERTISE permission",
+                e,
+            )
         } catch (e: Exception) {
             promise.reject("BLE_ERROR", "Failed to start advertising: ${e.message}", e)
         }
@@ -1109,8 +1139,7 @@ class AirhopBLEModule(
 
     // Whether the platform advertiser is currently running, so a power-mode
     // change knows whether there is anything to restart.
-    @Volatile
-    private var advertisingActive = false
+    @Volatile private var advertisingActive = false
 
     // Start (or restart) advertising at the current power mode's rate and TX
     // power. Split out of startAdvertising so setPowerMode can re-apply it
@@ -1118,22 +1147,23 @@ class AirhopBLEModule(
     private fun beginAdvertising() {
         val advertiser = adapter?.bluetoothLeAdvertiser ?: return
 
-        val settings = AdvertiseSettings.Builder()
-            .setAdvertiseMode(powerMode.advertiseMode)
-            .setConnectable(true)
-            .setTimeout(0)
-            .setTxPowerLevel(powerMode.txPower)
-            .build()
+        val settings =
+            AdvertiseSettings.Builder()
+                .setAdvertiseMode(powerMode.advertiseMode)
+                .setConnectable(true)
+                .setTimeout(0)
+                .setTxPowerLevel(powerMode.txPower)
+                .build()
 
-        val data = AdvertiseData.Builder()
-            .setIncludeDeviceName(false)
-            .setIncludeTxPowerLevel(false)
-            .addServiceUuid(ParcelUuid(SERVICE_UUID))
-            .build()
+        val data =
+            AdvertiseData.Builder()
+                .setIncludeDeviceName(false)
+                .setIncludeTxPowerLevel(false)
+                .addServiceUuid(ParcelUuid(SERVICE_UUID))
+                .build()
 
-        val scanResponseBuilder = AdvertiseData.Builder()
-            .setIncludeDeviceName(false)
-            .setIncludeTxPowerLevel(false)
+        val scanResponseBuilder =
+            AdvertiseData.Builder().setIncludeDeviceName(false).setIncludeTxPowerLevel(false)
         hexToPeerIDBytes(localPeerIDHex)?.let { peerIDBytes ->
             scanResponseBuilder.addServiceData(ParcelUuid(SERVICE_UUID), peerIDBytes)
         }
@@ -1226,7 +1256,11 @@ class AirhopBLEModule(
             startDeviceMonitor()
             promise.resolve(null)
         } catch (e: SecurityException) {
-            promise.reject("PERMISSION_DENIED", "BLE scanning requires BLUETOOTH_SCAN permission", e)
+            promise.reject(
+                "PERMISSION_DENIED",
+                "BLE scanning requires BLUETOOTH_SCAN permission",
+                e,
+            )
         } catch (e: Exception) {
             promise.reject("BLE_ERROR", "Failed to start scanning: ${e.message}", e)
         }
@@ -1248,17 +1282,17 @@ class AirhopBLEModule(
 
     @ReactMethod
     fun writeToLink(linkID: String, dataBase64: String, promise: Promise) {
-        val data = try {
-            Base64.decode(dataBase64, Base64.DEFAULT)
-        } catch (e: Exception) {
-            promise.reject("INVALID_DATA", "Invalid base64 payload", e)
-            return
-        }
+        val data =
+            try {
+                Base64.decode(dataBase64, Base64.DEFAULT)
+            } catch (e: Exception) {
+                promise.reject("INVALID_DATA", "Invalid base64 payload", e)
+                return
+            }
 
         // Central role: write to a connected GATT peripheral
         centralLinks[linkID]?.let { gatt ->
-            val char = gatt.getService(SERVICE_UUID)
-                ?.getCharacteristic(CHARACTERISTIC_UUID)
+            val char = gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID)
             if (char == null) {
                 promise.reject("NO_CHARACTERISTIC", "Characteristic not found for link $linkID")
                 return
@@ -1281,9 +1315,12 @@ class AirhopBLEModule(
 
                 val accepted: Boolean
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    accepted = gatt.writeCharacteristic(
-                        char, data, writeType,
-                    ) == BluetoothStatusCodes.SUCCESS
+                    accepted =
+                        gatt.writeCharacteristic(
+                            char,
+                            data,
+                            writeType,
+                        ) == BluetoothStatusCodes.SUCCESS
                 } else {
                     @Suppress("DEPRECATION")
                     char.writeType = writeType
@@ -1349,8 +1386,7 @@ class AirhopBLEModule(
         // handled by a Service, which has no bridge of its own; this is how it
         // reaches JS so the teardown runs through the one code path that knows
         // how to shut a mesh down (see services/presence.ts).
-        @Volatile
-        private var live: AirhopBLEModule? = null
+        @Volatile private var live: AirhopBLEModule? = null
 
         // Ask JS to stop the mesh. Returns false when there is no JS to ask -
         // the process outlived its React context - and the caller then has to
@@ -1424,20 +1460,22 @@ class AirhopBLEModule(
         // rejected with UNSUPPORTED by the time we could get here.
         val manager = bluetoothManager ?: return
 
-        val char = BluetoothGattCharacteristic(
-            CHARACTERISTIC_UUID,
-            BluetoothGattCharacteristic.PROPERTY_READ or
+        val char =
+            BluetoothGattCharacteristic(
+                CHARACTERISTIC_UUID,
+                BluetoothGattCharacteristic.PROPERTY_READ or
                     BluetoothGattCharacteristic.PROPERTY_WRITE or
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE or
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-            BluetoothGattCharacteristic.PERMISSION_READ or
-                    BluetoothGattCharacteristic.PERMISSION_WRITE
-        )
+                BluetoothGattCharacteristic.PERMISSION_READ or
+                    BluetoothGattCharacteristic.PERMISSION_WRITE,
+            )
 
-        val cccd = BluetoothGattDescriptor(
-            CCCD_UUID,
-            BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
-        )
+        val cccd =
+            BluetoothGattDescriptor(
+                CCCD_UUID,
+                BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE,
+            )
         char.addDescriptor(cccd)
         characteristic = char
 
@@ -1484,349 +1522,413 @@ class AirhopBLEModule(
 
     // MARK: - Callbacks
 
-    private val advertiseCallback = object : AdvertiseCallback() {
-        override fun onStartSuccess(settings: AdvertiseSettings?) {
-            Log.i(TAG, "Advertising started")
+    private val advertiseCallback =
+        object : AdvertiseCallback() {
+            override fun onStartSuccess(settings: AdvertiseSettings?) {
+                Log.i(TAG, "Advertising started")
+            }
+
+            override fun onStartFailure(errorCode: Int) {
+                Log.e(TAG, "Advertising failed: $errorCode")
+            }
         }
-        override fun onStartFailure(errorCode: Int) {
-            Log.e(TAG, "Advertising failed: $errorCode")
-        }
-    }
 
-    private val scanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            val device = result.device
-            val linkID = "c:${device.address}"
-            if (centralLinks.containsKey(linkID)) return
+    private val scanCallback =
+        object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                val device = result.device
+                val linkID = "c:${device.address}"
+                if (centralLinks.containsKey(linkID)) return
 
-            // A device that repeatedly disconnects with an error is refused
-            // before we spend a connection slot on it. Every retry costs one of
-            // the six or seven this radio has.
-            if (isBlocked(device.address)) return
+                // A device that repeatedly disconnects with an error is refused
+                // before we spend a connection slot on it. Every retry costs one of
+                // the six or seven this radio has.
+                if (isBlocked(device.address)) return
 
-            // At capacity: stay a peripheral to this one. It can still dial us,
-            // and we still hear it relayed through the neighbours we do have.
-            if (centralLinks.size >= MAX_CENTRAL_LINKS) return
+                // At capacity: stay a peripheral to this one. It can still dial us,
+                // and we still hear it relayed through the neighbours we do have.
+                if (centralLinks.size >= MAX_CENTRAL_LINKS) return
 
-            // Identify the remote by its advertised peerID (scan-response service
-            // data) and skip if we already have a link to that peer. This dedups
-            // MAC rotation and repeated scan callbacks for the same device.
-            val serviceData = result.scanRecord?.getServiceData(ParcelUuid(SERVICE_UUID))
-            val advertisedPeerID = if (serviceData != null && serviceData.size >= 8) {
-                serviceData.take(8).joinToString("") { "%02x".format(it) }
-            } else null
-            if (advertisedPeerID != null && centralPeerIDs.contains(advertisedPeerID)) return
+                // Identify the remote by its advertised peerID (scan-response service
+                // data) and skip if we already have a link to that peer. This dedups
+                // MAC rotation and repeated scan callbacks for the same device.
+                val serviceData = result.scanRecord?.getServiceData(ParcelUuid(SERVICE_UUID))
+                val advertisedPeerID =
+                    if (serviceData != null && serviceData.size >= 8) {
+                        serviceData.take(8).joinToString("") { "%02x".format(it) }
+                    } else null
+                if (advertisedPeerID != null && centralPeerIDs.contains(advertisedPeerID)) return
 
-            try {
-                if (advertisedPeerID != null) {
-                    centralPeerIDs.add(advertisedPeerID)
-                    linkToAdvertisedPeerID[linkID] = advertisedPeerID
+                try {
+                    if (advertisedPeerID != null) {
+                        centralPeerIDs.add(advertisedPeerID)
+                        linkToAdvertisedPeerID[linkID] = advertisedPeerID
+                    }
+                    // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it
+                    // is a common source of spurious GATT status 133 failures.
+                    val gatt =
+                        device.connectGatt(
+                            reactContext,
+                            false,
+                            gattClientCallback,
+                            BluetoothDevice.TRANSPORT_LE,
+                        )
+                    centralLinks[linkID] = gatt
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
                 }
-                // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it
-                // is a common source of spurious GATT status 133 failures.
-                val gatt = device.connectGatt(
-                    reactContext, false, gattClientCallback, BluetoothDevice.TRANSPORT_LE,
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                Log.e(TAG, "Scan failed: $errorCode")
+                // Stand down rather than note the burst died. The duty-cycle toggle
+                // is still queued and would restart the scan within seconds, which
+                // against SCAN_FAILED_SCANNING_TOO_FREQUENTLY spends the next window
+                // being refused again while JS holds a backoff it believes it is
+                // enforcing. The restart belongs to the reconciler.
+                scanBurstActive = false
+                stopScanCycle()
+                emitEvent(
+                    EVT_SCAN_FAILED,
+                    WritableNativeMap().apply {
+                        putInt("errorCode", errorCode)
+                    },
                 )
-                centralLinks[linkID] = gatt
-            } catch (e: SecurityException) {
-                Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
             }
         }
 
-        override fun onScanFailed(errorCode: Int) {
-            Log.e(TAG, "Scan failed: $errorCode")
-            // Stand down rather than note the burst died. The duty-cycle toggle
-            // is still queued and would restart the scan within seconds, which
-            // against SCAN_FAILED_SCANNING_TOO_FREQUENTLY spends the next window
-            // being refused again while JS holds a backoff it believes it is
-            // enforcing. The restart belongs to the reconciler.
-            scanBurstActive = false
-            stopScanCycle()
-            emitEvent(EVT_SCAN_FAILED, WritableNativeMap().apply {
-                putInt("errorCode", errorCode)
-            })
-        }
-    }
-
-    private val gattServerCallback = object : BluetoothGattServerCallback() {
-        override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
-            val linkID = "p:${device.address}"
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                // Refused at the server as well as when we dial out, or it
-                // simply connects to us instead and keeps the slot it lost.
-                if (isBlocked(device.address)) {
-                    try {
-                        gattServer?.cancelConnection(device)
-                    } catch (e: SecurityException) {
-                        Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+    private val gattServerCallback =
+        object : BluetoothGattServerCallback() {
+            override fun onConnectionStateChange(
+                device: BluetoothDevice,
+                status: Int,
+                newState: Int,
+            ) {
+                val linkID = "p:${device.address}"
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    // Refused at the server as well as when we dial out, or it
+                    // simply connects to us instead and keeps the slot it lost.
+                    if (isBlocked(device.address)) {
+                        try {
+                            gattServer?.cancelConnection(device)
+                        } catch (e: SecurityException) {
+                            Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                        }
+                        return
                     }
-                    return
-                }
-                // Track the device but DON'T announce the link yet: the central
-                // hasn't enabled notifications, so anything we notify now is lost.
-                // linkConnected fires from onDescriptorWriteRequest (CCCD enable).
-                peripheralLinks[linkID] = device
-                noteLinkOpened(linkID)
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                peripheralLinks.remove(linkID)
-                // A long write abandoned mid-transaction. Dropped, or the next
-                // connection from the same MAC resumes into a half-written frame.
-                preparedWrites.remove(linkID)
-                noteLinkClosed(linkID, status)
-                emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply {
-                    putString("linkID", linkID)
-                })
-            }
-        }
-
-        // Handles both shapes of inbound write. A frame over MTU-3 cannot go
-        // unacknowledged, so the sender falls back to an acknowledged write and
-        // the stack turns that into the ATT long-write procedure: PREPARE
-        // requests at successive offsets, then one EXECUTE. iOS does the same.
-        // Treating each PREPARE as a whole packet corrupted every attachment
-        // fragment on any controller granting under a 515-byte MTU.
-        override fun onCharacteristicWriteRequest(
-            device: BluetoothDevice,
-            requestId: Int,
-            characteristic: BluetoothGattCharacteristic,
-            preparedWrite: Boolean,
-            responseNeeded: Boolean,
-            offset: Int,
-            value: ByteArray,
-        ) {
-            if (characteristic.uuid != CHARACTERISTIC_UUID) return
-            val linkID = "p:${device.address}"
-
-            if (preparedWrite) {
-                // computeIfAbsent, not getOrPut: the extension is get-then-put,
-                // so two chunks on different binder threads would each build a
-                // buffer and one would be discarded.
-                val state = preparedWrites.computeIfAbsent(linkID) { PreparedWrite() }
-                val status = synchronized(state) {
-                    when {
-                        // A gap means the reassembly cannot be trusted. Refusing
-                        // makes the client abort the transaction, which is a
-                        // retry; accepting delivers a corrupt frame as valid.
-                        offset != state.length -> {
-                            state.failed = true
-                            BluetoothGatt.GATT_INVALID_OFFSET
-                        }
-                        state.length + value.size > MAX_BLE_FRAME -> {
-                            state.failed = true
-                            BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH
-                        }
-                        else -> {
-                            state.buffer.write(value)
-                            BluetoothGatt.GATT_SUCCESS
-                        }
-                    }
-                }
-                // A prepare response echoes offset and bytes verbatim; the
-                // client compares and aborts on mismatch, so the previous
-                // (0, null) reply failed every long write on its own.
-                if (responseNeeded) {
-                    gattServer?.sendResponse(device, requestId, status, offset, value)
-                }
-                return
-            }
-
-            // A plain write. Offset is always 0 for one of these; anything else
-            // is a client doing something we have no way to reassemble.
-            if (offset != 0) {
-                if (responseNeeded) {
-                    gattServer?.sendResponse(
-                        device, requestId, BluetoothGatt.GATT_INVALID_OFFSET, offset, null,
+                    // Track the device but DON'T announce the link yet: the central
+                    // hasn't enabled notifications, so anything we notify now is lost.
+                    // linkConnected fires from onDescriptorWriteRequest (CCCD enable).
+                    peripheralLinks[linkID] = device
+                    noteLinkOpened(linkID)
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    peripheralLinks.remove(linkID)
+                    // A long write abandoned mid-transaction. Dropped, or the next
+                    // connection from the same MAC resumes into a half-written frame.
+                    preparedWrites.remove(linkID)
+                    noteLinkClosed(linkID, status)
+                    emitEvent(
+                        EVT_LINK_DISCONNECTED,
+                        WritableNativeMap().apply {
+                            putString("linkID", linkID)
+                        },
                     )
                 }
-                return
             }
-            noteTraffic(linkID)
-            emitEvent(EVT_PACKET_RECEIVED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-                putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
-            })
-            if (responseNeeded) {
-                gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
-            }
-        }
 
-        // The commit half of a long write. Only here is the reassembled frame a
-        // packet; `execute` false is the client abandoning the transaction,
-        // which discards it.
-        override fun onExecuteWrite(device: BluetoothDevice, requestId: Int, execute: Boolean) {
-            val linkID = "p:${device.address}"
-            val state = preparedWrites.remove(linkID)
-            // Read under the same lock the chunks were written under: these
-            // callbacks arrive on a binder pool and the EXECUTE need not land on
-            // the thread that wrote the last PREPARE.
-            val data = if (state == null) null else synchronized(state) {
-                if (state.failed) null else state.buffer.toByteArray()
-            }
-            if (execute && data != null && data.isNotEmpty()) {
-                noteTraffic(linkID)
-                emitEvent(EVT_PACKET_RECEIVED, WritableNativeMap().apply {
-                    putString("linkID", linkID)
-                    putString("dataBase64", Base64.encodeToString(data, Base64.NO_WRAP))
-                })
-            }
-            gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
-        }
-
-        override fun onDescriptorWriteRequest(
-            device: BluetoothDevice,
-            requestId: Int,
-            descriptor: BluetoothGattDescriptor,
-            preparedWrite: Boolean,
-            responseNeeded: Boolean,
-            offset: Int,
-            value: ByteArray,
-        ) {
-            // A CCCD write whose first byte is 0x01 = ENABLE_NOTIFICATION_VALUE.
-            // Only now is it safe to notify this central, so surface the link.
-            if (descriptor.uuid == CCCD_UUID && value.isNotEmpty() && value[0].toInt() == 0x01) {
+            // Handles both shapes of inbound write. A frame over MTU-3 cannot go
+            // unacknowledged, so the sender falls back to an acknowledged write and
+            // the stack turns that into the ATT long-write procedure: PREPARE
+            // requests at successive offsets, then one EXECUTE. iOS does the same.
+            // Treating each PREPARE as a whole packet corrupted every attachment
+            // fragment on any controller granting under a 515-byte MTU.
+            override fun onCharacteristicWriteRequest(
+                device: BluetoothDevice,
+                requestId: Int,
+                characteristic: BluetoothGattCharacteristic,
+                preparedWrite: Boolean,
+                responseNeeded: Boolean,
+                offset: Int,
+                value: ByteArray,
+            ) {
+                if (characteristic.uuid != CHARACTERISTIC_UUID) return
                 val linkID = "p:${device.address}"
-                if (peripheralLinks.containsKey(linkID)) {
-                    emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply {
-                        putString("linkID", linkID)
-                        putString("role", "peripheral")
-                        putInt("rssi", -99)
-                    })
-                }
-            }
-            if (responseNeeded) {
-                gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
-            }
-        }
-    }
 
-    private val gattClientCallback = object : BluetoothGattCallback() {
-        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            val linkID = "c:${gatt.device.address}"
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                noteLinkOpened(linkID)
-                // Negotiate a larger MTU BEFORE service discovery or any I/O.
-                // At the default 23-byte MTU, ANNOUNCE/handshake writes silently
-                // truncate and nothing works. Service discovery is deferred to
-                // onMtuChanged. The 200 ms settle matches bitchat and improves
-                // MTU-request reliability across controllers.
-                mainHandler.postDelayed({
-                    try {
-                        gatt.requestMtu(517)
-                    } catch (e: SecurityException) {
-                        Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                if (preparedWrite) {
+                    // computeIfAbsent, not getOrPut: the extension is get-then-put,
+                    // so two chunks on different binder threads would each build a
+                    // buffer and one would be discarded.
+                    val state = preparedWrites.computeIfAbsent(linkID) { PreparedWrite() }
+                    val status =
+                        synchronized(state) {
+                            when {
+                                // A gap means the reassembly cannot be trusted. Refusing
+                                // makes the client abort the transaction, which is a
+                                // retry; accepting delivers a corrupt frame as valid.
+                                offset != state.length -> {
+                                    state.failed = true
+                                    BluetoothGatt.GATT_INVALID_OFFSET
+                                }
+                                state.length + value.size > MAX_BLE_FRAME -> {
+                                    state.failed = true
+                                    BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH
+                                }
+                                else -> {
+                                    state.buffer.write(value)
+                                    BluetoothGatt.GATT_SUCCESS
+                                }
+                            }
+                        }
+                    // A prepare response echoes offset and bytes verbatim; the
+                    // client compares and aborts on mismatch, so the previous
+                    // (0, null) reply failed every long write on its own.
+                    if (responseNeeded) {
+                        gattServer?.sendResponse(device, requestId, status, offset, value)
                     }
-                }, 200)
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                centralLinks.remove(linkID)
-                centralMtu.remove(linkID)
-                linkToAdvertisedPeerID.remove(linkID)?.let { centralPeerIDs.remove(it) }
-                noteLinkClosed(linkID, status)
-                try { gatt.close() } catch (e: Exception) { /* already closed */ }
-                emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply {
-                    putString("linkID", linkID)
-                })
-            }
-        }
-
-        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
-            val linkID = "c:${gatt.device.address}"
-            // Record what the controller actually granted, which is often less
-            // than the 517 we asked for. The write path needs it to choose
-            // between an unacknowledged write and a long write.
-            if (status == BluetoothGatt.GATT_SUCCESS && mtu > 0) {
-                centralMtu[linkID] = mtu
-            }
-            // Proceed regardless of status: on a failed negotiation we keep the
-            // default MTU rather than stranding the peer (there is no reconnect
-            // state machine to fall back on).
-            try {
-                gatt.discoverServices()
-            } catch (e: SecurityException) {
-                Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
-            }
-        }
-
-        override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-            if (status != BluetoothGatt.GATT_SUCCESS) return
-            val char = gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID) ?: return
-
-            // Subscribe to notifications. linkConnected is emitted only once the
-            // CCCD write confirms (onDescriptorWrite), so we never send on a link
-            // before the far side can actually receive.
-            try {
-                gatt.setCharacteristicNotification(char, true)
-                val descriptor = char.getDescriptor(CCCD_UUID)
-                if (descriptor == null) {
-                    // No CCCD => can't receive notifications => unusable link.
-                    gatt.disconnect()
                     return
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    gatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    @Suppress("DEPRECATION")
-                    gatt.writeDescriptor(descriptor)
+
+                // A plain write. Offset is always 0 for one of these; anything else
+                // is a client doing something we have no way to reassemble.
+                if (offset != 0) {
+                    if (responseNeeded) {
+                        gattServer?.sendResponse(
+                            device,
+                            requestId,
+                            BluetoothGatt.GATT_INVALID_OFFSET,
+                            offset,
+                            null,
+                        )
+                    }
+                    return
                 }
-            } catch (e: SecurityException) {
-                Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                noteTraffic(linkID)
+                emitEvent(
+                    EVT_PACKET_RECEIVED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                        putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
+                    },
+                )
+                if (responseNeeded) {
+                    gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
+                }
+            }
+
+            // The commit half of a long write. Only here is the reassembled frame a
+            // packet; `execute` false is the client abandoning the transaction,
+            // which discards it.
+            override fun onExecuteWrite(device: BluetoothDevice, requestId: Int, execute: Boolean) {
+                val linkID = "p:${device.address}"
+                val state = preparedWrites.remove(linkID)
+                // Read under the same lock the chunks were written under: these
+                // callbacks arrive on a binder pool and the EXECUTE need not land on
+                // the thread that wrote the last PREPARE.
+                val data =
+                    if (state == null) null
+                    else
+                        synchronized(state) {
+                            if (state.failed) null else state.buffer.toByteArray()
+                        }
+                if (execute && data != null && data.isNotEmpty()) {
+                    noteTraffic(linkID)
+                    emitEvent(
+                        EVT_PACKET_RECEIVED,
+                        WritableNativeMap().apply {
+                            putString("linkID", linkID)
+                            putString("dataBase64", Base64.encodeToString(data, Base64.NO_WRAP))
+                        },
+                    )
+                }
+                gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
+            }
+
+            override fun onDescriptorWriteRequest(
+                device: BluetoothDevice,
+                requestId: Int,
+                descriptor: BluetoothGattDescriptor,
+                preparedWrite: Boolean,
+                responseNeeded: Boolean,
+                offset: Int,
+                value: ByteArray,
+            ) {
+                // A CCCD write whose first byte is 0x01 = ENABLE_NOTIFICATION_VALUE.
+                // Only now is it safe to notify this central, so surface the link.
+                if (
+                    descriptor.uuid == CCCD_UUID && value.isNotEmpty() && value[0].toInt() == 0x01
+                ) {
+                    val linkID = "p:${device.address}"
+                    if (peripheralLinks.containsKey(linkID)) {
+                        emitEvent(
+                            EVT_LINK_CONNECTED,
+                            WritableNativeMap().apply {
+                                putString("linkID", linkID)
+                                putString("role", "peripheral")
+                                putInt("rssi", -99)
+                            },
+                        )
+                    }
+                }
+                if (responseNeeded) {
+                    gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
+                }
             }
         }
 
-        override fun onDescriptorWrite(
-            gatt: BluetoothGatt,
-            descriptor: BluetoothGattDescriptor,
-            status: Int,
-        ) {
-            if (descriptor.uuid != CCCD_UUID) return
-            // Notifications active: the central link is now fully usable.
-            val linkID = "c:${gatt.device.address}"
-            emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-                putString("role", "central")
-                putInt("rssi", -99)
-            })
-        }
+    private val gattClientCallback =
+        object : BluetoothGattCallback() {
+            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                val linkID = "c:${gatt.device.address}"
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    noteLinkOpened(linkID)
+                    // Negotiate a larger MTU BEFORE service discovery or any I/O.
+                    // At the default 23-byte MTU, ANNOUNCE/handshake writes silently
+                    // truncate and nothing works. Service discovery is deferred to
+                    // onMtuChanged. The 200 ms settle matches bitchat and improves
+                    // MTU-request reliability across controllers.
+                    mainHandler.postDelayed(
+                        {
+                            try {
+                                gatt.requestMtu(517)
+                            } catch (e: SecurityException) {
+                                Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                            }
+                        },
+                        200,
+                    )
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    centralLinks.remove(linkID)
+                    centralMtu.remove(linkID)
+                    linkToAdvertisedPeerID.remove(linkID)?.let { centralPeerIDs.remove(it) }
+                    noteLinkClosed(linkID, status)
+                    try {
+                        gatt.close()
+                    } catch (e: Exception) {
+                        /* already closed */
+                    }
+                    emitEvent(
+                        EVT_LINK_DISCONNECTED,
+                        WritableNativeMap().apply {
+                            putString("linkID", linkID)
+                        },
+                    )
+                }
+            }
 
-        override fun onCharacteristicChanged(
-            gatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            value: ByteArray,
-        ) {
-            if (characteristic.uuid != CHARACTERISTIC_UUID) return
-            val linkID = "c:${gatt.device.address}"
-            noteTraffic(linkID)
-            emitEvent(EVT_PACKET_RECEIVED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-                putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
-            })
-        }
+            override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+                val linkID = "c:${gatt.device.address}"
+                // Record what the controller actually granted, which is often less
+                // than the 517 we asked for. The write path needs it to choose
+                // between an unacknowledged write and a long write.
+                if (status == BluetoothGatt.GATT_SUCCESS && mtu > 0) {
+                    centralMtu[linkID] = mtu
+                }
+                // Proceed regardless of status: on a failed negotiation we keep the
+                // default MTU rather than stranding the peer (there is no reconnect
+                // state machine to fall back on).
+                try {
+                    gatt.discoverServices()
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                }
+            }
 
-        // Deprecated version for API < 33
-        @Suppress("DEPRECATION")
-        override fun onCharacteristicChanged(
-            gatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-        ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return
-            if (characteristic.uuid != CHARACTERISTIC_UUID) return
-            val value = characteristic.value ?: return
-            val linkID = "c:${gatt.device.address}"
-            noteTraffic(linkID)
-            emitEvent(EVT_PACKET_RECEIVED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-                putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
-            })
-        }
+            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                if (status != BluetoothGatt.GATT_SUCCESS) return
+                val char =
+                    gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID) ?: return
 
-        override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {
-            if (status != BluetoothGatt.GATT_SUCCESS) return
-            val linkID = "c:${gatt.device.address}"
-            emitEvent(EVT_RSSI_UPDATED, WritableNativeMap().apply {
-                putString("linkID", linkID)
-                putInt("rssi", rssi)
-            })
+                // Subscribe to notifications. linkConnected is emitted only once the
+                // CCCD write confirms (onDescriptorWrite), so we never send on a link
+                // before the far side can actually receive.
+                try {
+                    gatt.setCharacteristicNotification(char, true)
+                    val descriptor = char.getDescriptor(CCCD_UUID)
+                    if (descriptor == null) {
+                        // No CCCD => can't receive notifications => unusable link.
+                        gatt.disconnect()
+                        return
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        gatt.writeDescriptor(
+                            descriptor,
+                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE,
+                        )
+                    } else {
+                        @Suppress("DEPRECATION")
+                        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        @Suppress("DEPRECATION") gatt.writeDescriptor(descriptor)
+                    }
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+                }
+            }
+
+            override fun onDescriptorWrite(
+                gatt: BluetoothGatt,
+                descriptor: BluetoothGattDescriptor,
+                status: Int,
+            ) {
+                if (descriptor.uuid != CCCD_UUID) return
+                // Notifications active: the central link is now fully usable.
+                val linkID = "c:${gatt.device.address}"
+                emitEvent(
+                    EVT_LINK_CONNECTED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                        putString("role", "central")
+                        putInt("rssi", -99)
+                    },
+                )
+            }
+
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                value: ByteArray,
+            ) {
+                if (characteristic.uuid != CHARACTERISTIC_UUID) return
+                val linkID = "c:${gatt.device.address}"
+                noteTraffic(linkID)
+                emitEvent(
+                    EVT_PACKET_RECEIVED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                        putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
+                    },
+                )
+            }
+
+            // Deprecated version for API < 33
+            @Suppress("DEPRECATION")
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+            ) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return
+                if (characteristic.uuid != CHARACTERISTIC_UUID) return
+                val value = characteristic.value ?: return
+                val linkID = "c:${gatt.device.address}"
+                noteTraffic(linkID)
+                emitEvent(
+                    EVT_PACKET_RECEIVED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                        putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
+                    },
+                )
+            }
+
+            override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {
+                if (status != BluetoothGatt.GATT_SUCCESS) return
+                val linkID = "c:${gatt.device.address}"
+                emitEvent(
+                    EVT_RSSI_UPDATED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                        putInt("rssi", rssi)
+                    },
+                )
+            }
         }
-    }
 }

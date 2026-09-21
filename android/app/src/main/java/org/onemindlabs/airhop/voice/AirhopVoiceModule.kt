@@ -23,7 +23,6 @@ package org.onemindlabs.airhop.voice
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaCodec
@@ -111,9 +110,8 @@ private const val MAX_QUEUED_FRAMES = 32
 // instead of hanging on the button.
 private const val CAPTURE_HANDOFF_TIMEOUT_MS = 500L
 
-class AirhopVoiceModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = "AirhopVoice"
 
@@ -135,16 +133,14 @@ class AirhopVoiceModule(
     // listener as if they were the new burst's audio.
     private val captureGeneration = AtomicInteger(0)
 
-    @Volatile
-    private var captureThread: Thread? = null
+    @Volatile private var captureThread: Thread? = null
 
     // Loudness of the most recent block of microphone audio, ridden along on the
     // next frame event rather than sent on its own. The frames already cross the
     // bridge fifteen times a second, which is the rate a meter wants, so this
     // costs no extra traffic and cannot drift out of step with the audio it
     // describes. See rmsLevel.
-    @Volatile
-    private var captureLevel = 0.0
+    @Volatile private var captureLevel = 0.0
 
     // ---- Playback state ------------------------------------------------------
 
@@ -166,14 +162,18 @@ class AirhopVoiceModule(
         }
         val generation = captureGeneration.incrementAndGet()
         val previous = captureThread
-        val thread = Thread({
-            // The previous capture may still be releasing the microphone and
-            // its encoder. Opening AudioRecord on top of it fails to
-            // initialise, so wait it out - here on the new audio thread, never
-            // on the caller, which is the mic button's own release path.
-            runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
-            runCapture(generation)
-        }, "AirhopVoiceCapture")
+        val thread =
+            Thread(
+                {
+                    // The previous capture may still be releasing the microphone and
+                    // its encoder. Opening AudioRecord on top of it fails to
+                    // initialise, so wait it out - here on the new audio thread, never
+                    // on the caller, which is the mic button's own release path.
+                    runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
+                    runCapture(generation)
+                },
+                "AirhopVoiceCapture",
+            )
         // Audio threads must not be starved by ordinary background work.
         thread.priority = Thread.MAX_PRIORITY
         captureThread = thread
@@ -202,46 +202,49 @@ class AirhopVoiceModule(
         var record: AudioRecord? = null
         var encoder: MediaCodec? = null
         try {
-            val minBuffer = AudioRecord.getMinBufferSize(
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-            )
+            val minBuffer =
+                AudioRecord.getMinBufferSize(
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                )
             if (minBuffer <= 0) {
                 failCapture(generation, "Microphone does not support 16 kHz mono capture")
                 return
             }
-            record = AudioRecord(
-                // VOICE_COMMUNICATION gets the platform's echo cancellation and
-                // noise suppression, which is what makes a walkie-talkie usable
-                // on speakerphone.
-                MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4),
-            )
+            record =
+                AudioRecord(
+                    // VOICE_COMMUNICATION gets the platform's echo cancellation and
+                    // noise suppression, which is what makes a walkie-talkie usable
+                    // on speakerphone.
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4),
+                )
             if (record.state != AudioRecord.STATE_INITIALIZED) {
                 failCapture(generation, "Microphone unavailable")
                 return
             }
 
-            encoder = MediaCodec.createEncoderByType(AAC_MIME).apply {
-                configure(
-                    MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
-                        setInteger(
-                            MediaFormat.KEY_AAC_PROFILE,
-                            MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                        )
-                        setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
-                        setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, PCM_BYTES_PER_FRAME * 2)
-                    },
-                    null,
-                    null,
-                    MediaCodec.CONFIGURE_FLAG_ENCODE,
-                )
-                start()
-            }
+            encoder =
+                MediaCodec.createEncoderByType(AAC_MIME).apply {
+                    configure(
+                        MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
+                            setInteger(
+                                MediaFormat.KEY_AAC_PROFILE,
+                                MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                            )
+                            setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
+                            setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, PCM_BYTES_PER_FRAME * 2)
+                        },
+                        null,
+                        null,
+                        MediaCodec.CONFIGURE_FLAG_ENCODE,
+                    )
+                    start()
+                }
 
             record.startRecording()
             val pcm = ByteArray(PCM_BYTES_PER_FRAME)
@@ -384,51 +387,54 @@ class AirhopVoiceModule(
         var decoder: MediaCodec? = null
         var track: AudioTrack? = null
         try {
-            decoder = MediaCodec.createDecoderByType(AAC_MIME).apply {
-                configure(
-                    MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
-                        setInteger(
-                            MediaFormat.KEY_AAC_PROFILE,
-                            MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                        )
-                        setInteger(MediaFormat.KEY_IS_ADTS, 0)
-                        // Handed the config directly: the wire carries raw
-                        // frames only, and the codec byte already says what
-                        // they are.
-                        setByteBuffer("csd-0", ByteBuffer.wrap(AAC_CSD0))
-                    },
-                    null,
-                    null,
-                    0,
-                )
-                start()
-            }
+            decoder =
+                MediaCodec.createDecoderByType(AAC_MIME).apply {
+                    configure(
+                        MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
+                            setInteger(
+                                MediaFormat.KEY_AAC_PROFILE,
+                                MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                            )
+                            setInteger(MediaFormat.KEY_IS_ADTS, 0)
+                            // Handed the config directly: the wire carries raw
+                            // frames only, and the codec byte already says what
+                            // they are.
+                            setByteBuffer("csd-0", ByteBuffer.wrap(AAC_CSD0))
+                        },
+                        null,
+                        null,
+                        0,
+                    )
+                    start()
+                }
 
-            val minBuffer = AudioTrack.getMinBufferSize(
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-            )
-            track = AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        // VOICE_COMMUNICATION routes to the earpiece/speaker the
-                        // way a call does and ducks other apps, which is the
-                        // behaviour a walkie-talkie wants.
-                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build(),
+            val minBuffer =
+                AudioTrack.getMinBufferSize(
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
                 )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(SAMPLE_RATE)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build(),
-                )
-                .setBufferSizeInBytes(maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4))
-                .setTransferMode(AudioTrack.MODE_STREAM)
-                .build()
+            track =
+                AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            // VOICE_COMMUNICATION routes to the earpiece/speaker the
+                            // way a call does and ducks other apps, which is the
+                            // behaviour a walkie-talkie wants.
+                            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(SAMPLE_RATE)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4))
+                    .setTransferMode(AudioTrack.MODE_STREAM)
+                    .build()
             track.play()
 
             val info = MediaCodec.BufferInfo()

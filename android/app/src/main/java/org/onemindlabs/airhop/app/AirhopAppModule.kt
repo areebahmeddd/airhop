@@ -31,13 +31,13 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 
 private const val TAG = "AirhopAppModule"
 
@@ -49,17 +49,18 @@ private const val KEY_AUTO_START = "auto_start_on_boot"
 // Only the tags this app writes, plus the crash reporter. An allowlist rather
 // than the whole process log, which React Native fills freely; none of these
 // tags ever print message content, nicknames or keys.
-private val LOG_TAGS = listOf(
-    "AirhopBLEModule",
-    "AirhopWiFiModule",
-    "AirhopLANModule",
-    "AirhopTorModule",
-    "AirhopIPtProxy",
-    "AirhopVoiceModule",
-    "AirhopForegroundService",
-    "AirhopAppModule",
-    "AndroidRuntime",
-)
+private val LOG_TAGS =
+    listOf(
+        "AirhopBLEModule",
+        "AirhopWiFiModule",
+        "AirhopLANModule",
+        "AirhopTorModule",
+        "AirhopIPtProxy",
+        "AirhopVoiceModule",
+        "AirhopForegroundService",
+        "AirhopAppModule",
+        "AndroidRuntime",
+    )
 
 // Lines, not time. A busy mesh writes a lot and a quiet one very little, and a
 // cap by count bounds the bundle either way.
@@ -77,9 +78,8 @@ private val RING_VIBRATION = longArrayOf(0, 400, 200, 400, 200, 400, 1200)
 // reload mid-ring) cannot leave a phone ringing.
 private const val RING_MAX_MS = 60_000L
 
-class AirhopAppModule(
-    private val reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+class AirhopAppModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = "AirhopApp"
 
@@ -163,7 +163,8 @@ class AirhopAppModule(
                 Log.e(TAG, "APK copy failed: ${e.message}")
                 promise.reject("COPY_FAILED", e.message, e)
             }
-        }.start()
+        }
+            .start()
     }
 
     // Resolves true when anything audible or tactile started, false when the
@@ -175,12 +176,14 @@ class AirhopAppModule(
             stopRingOnMain()
             val context = reactContext.applicationContext
             val notifications = context.getSystemService(NotificationManager::class.java)
-            val filter = notifications?.currentInterruptionFilter
-                ?: NotificationManager.INTERRUPTION_FILTER_ALL
+            val filter =
+                notifications?.currentInterruptionFilter
+                    ?: NotificationManager.INTERRUPTION_FILTER_ALL
             // Anything narrower than "all" is a Do Not Disturb of some shape;
             // the ring channel declares bypassDnd false, and so does this.
-            if (filter != NotificationManager.INTERRUPTION_FILTER_ALL &&
-                filter != NotificationManager.INTERRUPTION_FILTER_UNKNOWN
+            if (
+                filter != NotificationManager.INTERRUPTION_FILTER_ALL &&
+                    filter != NotificationManager.INTERRUPTION_FILTER_UNKNOWN
             ) {
                 promise.resolve(false)
                 return@post
@@ -213,22 +216,27 @@ class AirhopAppModule(
     // The default ringtone, looping. A device with no ringtone set (a tablet)
     // gets the notification sound; one with neither reports false.
     private fun startRingtone(context: Context): Boolean {
-        val uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_RINGTONE)
-            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION)
-            ?: return false
-        return try {
-            val player = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build(),
+        val uri =
+            RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_RINGTONE)
+                ?: RingtoneManager.getActualDefaultRingtoneUri(
+                    context,
+                    RingtoneManager.TYPE_NOTIFICATION,
                 )
-                setDataSource(context, uri)
-                isLooping = true
-                prepare()
-                start()
-            }
+                ?: return false
+        return try {
+            val player =
+                MediaPlayer().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                    setDataSource(context, uri)
+                    isLooping = true
+                    prepare()
+                    start()
+                }
             ringPlayer = player
             true
         } catch (e: Exception) {
@@ -238,12 +246,14 @@ class AirhopAppModule(
     }
 
     private fun startVibration(context: Context): Boolean {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        }
+        val vibrator =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)
+                    ?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
         if (vibrator == null || !vibrator.hasVibrator()) return false
         return try {
             vibrator.vibrate(VibrationEffect.createWaveform(RING_VIBRATION, 0))
@@ -279,11 +289,13 @@ class AirhopAppModule(
     fun recentLog(promise: Promise) {
         Thread {
             try {
-                val args = mutableListOf("logcat", "-d", "-v", "time", "-t", LOG_MAX_LINES.toString())
+                val args =
+                    mutableListOf("logcat", "-d", "-v", "time", "-t", LOG_MAX_LINES.toString())
                 for (tag in LOG_TAGS) args.add("$tag:*")
                 args.add("*:S")
                 val process = ProcessBuilder(args).redirectErrorStream(true).start()
-                val text = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
+                val text =
+                    BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
                 process.waitFor()
                 promise.resolve(text)
             } catch (e: Exception) {
@@ -292,6 +304,7 @@ class AirhopAppModule(
                 Log.w(TAG, "Could not read logcat: ${e.message}")
                 promise.resolve("")
             }
-        }.start()
+        }
+            .start()
     }
 }

@@ -32,17 +32,17 @@ import WiFiAware
 
 // Not private: AirhopWiFiPairing.swift publishes the same service.
 enum WiFiConst {
-    // NAN hashes this into the on-air service ID, so it must match `SERVICE_NAME`
-    // in AirhopWiFiModule.kt and `WiFiAwareServices` in Info.plist character for
-    // character. Apple requires DNS-SD form and traps on launch on an invalid one.
-    static let serviceName = "_airhop-mesh-v1._tcp"
+  // NAN hashes this into the on-air service ID, so it must match `SERVICE_NAME`
+  // in AirhopWiFiModule.kt and `WiFiAwareServices` in Info.plist character for
+  // character. Apple requires DNS-SD form and traps on launch on an invalid one.
+  static let serviceName = "_airhop-mesh-v1._tcp"
 }
 
 private enum WiFiEvent {
-    static let packetReceived = "AirhopWiFi.packetReceived"
-    static let linkConnected = "AirhopWiFi.linkConnected"
-    static let linkDisconnected = "AirhopWiFi.linkDisconnected"
-    static let availabilityChanged = "AirhopWiFi.availabilityChanged"
+  static let packetReceived = "AirhopWiFi.packetReceived"
+  static let linkConnected = "AirhopWiFi.linkConnected"
+  static let linkDisconnected = "AirhopWiFi.linkDisconnected"
+  static let availabilityChanged = "AirhopWiFi.availabilityChanged"
 }
 
 // MARK: - Serial sender
@@ -57,17 +57,17 @@ private enum WiFiEvent {
 /// A failed predecessor is awaited and its error discarded: one refused frame
 /// must not fail every frame queued behind it.
 private actor SerialSender {
-    private var tail: Task<Void, Error>?
+  private var tail: Task<Void, Error>?
 
-    func send(_ body: @escaping @Sendable () async throws -> Void) -> Task<Void, Error> {
-        let previous = tail
-        let task = Task {
-            _ = try? await previous?.value
-            try await body()
-        }
-        tail = task
-        return task
+  func send(_ body: @escaping @Sendable () async throws -> Void) -> Task<Void, Error> {
+    let previous = tail
+    let task = Task {
+      _ = try? await previous?.value
+      try await body()
     }
+    tail = task
+    return task
+  }
 }
 
 // MARK: - Link handle
@@ -77,7 +77,7 @@ private actor SerialSender {
 /// `spawnLink` suspends, so no link ever exists uncancellable.
 @available(iOS 26.0, *)
 private final class LinkHandle {
-    var task: Task<Void, Never>?
+  var task: Task<Void, Never>?
 }
 
 // MARK: - Transport
@@ -87,410 +87,411 @@ private final class LinkHandle {
 /// dial guards are touched from several threads at once.
 @available(iOS 26.0, *)
 private actor WiFiAwareTransport {
-    /// A connection that won its tiebreak and was announced to TypeScript.
-    private struct Link {
-        let connection: NetworkConnection<TCP>
-        let deviceID: WAPairedDevice.ID?
-        let sender: SerialSender
-        let handle: LinkHandle
+  /// A connection that won its tiebreak and was announced to TypeScript.
+  private struct Link {
+    let connection: NetworkConnection<TCP>
+    let deviceID: WAPairedDevice.ID?
+    let sender: SerialSender
+    let handle: LinkHandle
+  }
+
+  private let emit: @Sendable (String, [String: Any]) -> Void
+
+  private var links: [String: Link] = [:]
+  /// linkID by device. A link whose device could not be resolved is absent and
+  /// never deduplicated, which costs nothing: the tiebreak already collapsed
+  /// the pair by then.
+  private var linkByDevice: [WAPairedDevice.ID: String] = [:]
+  /// Dials in flight, so a re-reported peer does not open a second connection.
+  private var dialling: Set<WAPairedDevice.ID> = []
+  /// Last endpoint per device, so an inbound tiebreak loss can dial at once.
+  private var endpoints: [WAPairedDevice.ID: WAEndpoint] = [:]
+  /// Wait before the next dial to a device whose link ended or whose dial
+  /// failed. The browser reports a device once and stays silent while it
+  /// remains in range, so nothing else would try again.
+  private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
+
+  private var linkSeq = 0
+  private var runTask: Task<Void, Never>?
+  /// Regenerated per attach, so it never identifies this device across sessions.
+  private var localToken = Data()
+  /// Cleared by `start`, never by `stop`: a second `available: false` while
+  /// already reported down resets the JS controller's backoff, turning the
+  /// retry ladder into a tight loop.
+  private var lastReportedAvailable: Bool?
+
+  init(emit: @escaping @Sendable (String, [String: Any]) -> Void) {
+    self.emit = emit
+  }
+
+  /// The one test for "should anything still be happening". `stop()` clears
+  /// `runTask` before anything else, so this falls false first.
+  private var isRunning: Bool { runTask != nil }
+
+  // MARK: Start and stop
+
+  func start() throws {
+    // Resolving rather than restarting: an overlapping reconcile pass must
+    // not leak a second listener.
+    if runTask != nil { return }
+
+    guard !WACapabilities.supportedFeatures.isEmpty else {
+      throw WiFiFailure.unsupported("Wi-Fi Aware is not supported on this device")
+    }
+    // Missing means Info.plist does not declare it: a fact about the build,
+    // so permanent like the check above.
+    guard let publishable = WAPublishableService.allServices[WiFiConst.serviceName],
+      let subscribable = WASubscribableService.allServices[WiFiConst.serviceName]
+    else {
+      throw WiFiFailure.unsupported(
+        "Wi-Fi Aware service \(WiFiConst.serviceName) is not declared"
+      )
     }
 
-    private let emit: @Sendable (String, [String: Any]) -> Void
+    // After the two above, never before: a device with no Wi-Fi Aware also
+    // has nothing paired, and "nothing paired" would send the user to a
+    // sheet that could not help.
+    guard AirhopWiFiPairing.pairedDeviceCount > 0 else { throw WiFiFailure.unpaired }
 
-    private var links: [String: Link] = [:]
-    /// linkID by device. A link whose device could not be resolved is absent and
-    /// never deduplicated, which costs nothing: the tiebreak already collapsed
-    /// the pair by then.
-    private var linkByDevice: [WAPairedDevice.ID: String] = [:]
-    /// Dials in flight, so a re-reported peer does not open a second connection.
-    private var dialling: Set<WAPairedDevice.ID> = []
-    /// Last endpoint per device, so an inbound tiebreak loss can dial at once.
-    private var endpoints: [WAPairedDevice.ID: WAEndpoint] = [:]
-    /// Wait before the next dial to a device whose link ended or whose dial
-    /// failed. The browser reports a device once and stays silent while it
-    /// remains in range, so nothing else would try again.
-    private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
+    localToken = Data((0..<AwareDial.tokenBytes).map { _ in UInt8.random(in: 0...255) })
+    lastReportedAvailable = nil
 
-    private var linkSeq = 0
-    private var runTask: Task<Void, Never>?
-    /// Regenerated per attach, so it never identifies this device across sessions.
-    private var localToken = Data()
-    /// Cleared by `start`, never by `stop`: a second `available: false` while
-    /// already reported down resets the JS controller's backoff, turning the
-    /// retry ladder into a tight loop.
-    private var lastReportedAvailable: Bool?
-
-    init(emit: @escaping @Sendable (String, [String: Any]) -> Void) {
-        self.emit = emit
+    runTask = Task { [weak self] in
+      await withTaskGroup(of: Void.self) { group in
+        group.addTask { await self?.runListener(publishable) }
+        group.addTask { await self?.runBrowser(subscribable) }
+      }
     }
+  }
 
-    /// The one test for "should anything still be happening". `stop()` clears
-    /// `runTask` before anything else, so this falls false first.
-    private var isRunning: Bool { runTask != nil }
+  func stop() {
+    runTask?.cancel()
+    runTask = nil
+    // Announced before the registry is cleared, so JS stops addressing a
+    // dead link at once rather than one refused write at a time.
+    for (linkID, link) in links {
+      link.handle.task?.cancel()
+      emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
+    }
+    links.removeAll()
+    linkByDevice.removeAll()
+    dialling.removeAll()
+    endpoints.removeAll()
+    redialDelay.removeAll()
+  }
 
-    // MARK: Start and stop
+  // MARK: Publish and subscribe
 
-    func start() throws {
-        // Resolving rather than restarting: an overlapping reconcile pass must
-        // not leak a second listener.
-        if runTask != nil { return }
+  private func runListener(_ service: WAPublishableService) async {
+    do {
+      try await NetworkListener(
+        for: .wifiAware(.connecting(to: service, from: .allPairedDevices)),
+        using: .parameters { TCP() }
+          // `bulk` prioritises throughput, power and coexistence with
+          // infrastructure Wi-Fi, and is the whole battery policy here.
+          // power-policy.ts scales the BLE radios and leaves this one
+          // alone on both platforms: the OS withdraws Aware under
+          // battery saver, which arrives as availabilityChanged(false).
+          .wifiAware { $0.performanceMode = .bulk }
+      )
+      .run { connection in
+        // Held for the link's life. `run` starts a subtask per
+        // connection, so blocking here still accepts others, and
+        // returning early would cancel the link we just adopted.
+        await self.spawnLink(connection, endpoint: nil, weInitiated: false)
+      }
+    } catch {
+      // Cancellation is `stop()` doing its job, not a fault.
+      guard !Task.isCancelled else { return }
+      reportUnavailable()
+    }
+  }
 
-        guard !WACapabilities.supportedFeatures.isEmpty else {
-            throw WiFiFailure.unsupported("Wi-Fi Aware is not supported on this device")
+  private func runBrowser(_ service: WASubscribableService) async {
+    do {
+      // `.continue` forever: this is the mesh's standing discovery, not a
+      // one-shot picker. `.allPairedDevices` is taken to be live, so a
+      // device paired mid-browse turns up without a restart; a second
+      // pairing that needs a relaunch would point here.
+      _ = try await NetworkBrowser(
+        for: .wifiAware(.connecting(to: .allPairedDevices, from: service))
+      )
+      .run { found in
+        for endpoint in found {
+          Task { await self.considerDial(endpoint) }
         }
-        // Missing means Info.plist does not declare it: a fact about the build,
-        // so permanent like the check above.
-        guard let publishable = WAPublishableService.allServices[WiFiConst.serviceName],
-            let subscribable = WASubscribableService.allServices[WiFiConst.serviceName]
-        else {
-            throw WiFiFailure.unsupported(
-                "Wi-Fi Aware service \(WiFiConst.serviceName) is not declared"
-            )
-        }
+      }
+    } catch {
+      guard !Task.isCancelled else { return }
+      reportUnavailable()
+    }
+  }
 
-        // After the two above, never before: a device with no Wi-Fi Aware also
-        // has nothing paired, and "nothing paired" would send the user to a
-        // sheet that could not help.
-        guard AirhopWiFiPairing.pairedDeviceCount > 0 else { throw WiFiFailure.unpaired }
+  /// Discovery or the data path was refused after start resolved.
+  ///
+  /// Reported so the JS reconciler forgets it is started and retries, rather
+  /// than latching over a transport with nothing published or subscribed. No
+  /// matching `true` edge: iOS has no state broadcast to hang one on.
+  private func reportUnavailable() {
+    stop()
+    guard lastReportedAvailable != false else { return }
+    lastReportedAvailable = false
+    emit(WiFiEvent.availabilityChanged, ["available": false, "reason": "session"])
+  }
 
-        localToken = Data((0..<AwareDial.tokenBytes).map { _ in UInt8.random(in: 0...255) })
-        lastReportedAvailable = nil
+  // MARK: Dialling
 
-        runTask = Task { [weak self] in
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { await self?.runListener(publishable) }
-                group.addTask { await self?.runBrowser(subscribable) }
-            }
-        }
+  private func considerDial(_ endpoint: WAEndpoint) {
+    // A browser update spawned before cancellation landed, or the redial in
+    // `serve`'s defer, both reach here after `stop()`. Either would dial a
+    // torn-down transport and leave a `dialling` entry the sweep has passed.
+    guard isRunning else { return }
+    let deviceID = endpoint.device.id
+    endpoints[deviceID] = endpoint
+    guard linkByDevice[deviceID] == nil, !dialling.contains(deviceID) else { return }
+    dialling.insert(deviceID)
+    Task { await self.dial(endpoint) }
+  }
+
+  /// Both ends of a dropped link redial, and the tiebreak collapses the pair.
+  private func scheduleRedial(_ deviceID: WAPairedDevice.ID?) {
+    guard isRunning, let deviceID, let endpoint = endpoints[deviceID] else { return }
+    let delay = redialDelay[deviceID] ?? AwareDial.redialFloor
+    redialDelay[deviceID] = AwareDial.nextRedial(after: delay)
+    Task { [weak self] in
+      try? await Task.sleep(for: delay)
+      await self?.considerDial(endpoint)
+    }
+  }
+
+  private func dial(_ endpoint: WAEndpoint) async {
+    let connection = NetworkConnection(
+      to: endpoint,
+      using: .parameters { TCP() }
+        .wifiAware { $0.performanceMode = .bulk }
+    )
+    await spawnLink(connection, endpoint: endpoint, weInitiated: true)
+  }
+
+  // MARK: Link lifetime
+
+  /// Own one connection for its whole life. The inner task exists only so the
+  /// link can be cancelled from outside: `serve` blocks in `receive`, which
+  /// nothing but cancellation interrupts.
+  private func spawnLink(
+    _ connection: NetworkConnection<TCP>,
+    endpoint: WAEndpoint?,
+    weInitiated: Bool
+  ) async {
+    let handle = LinkHandle()
+    let task = Task { [weak self] in
+      // Unwrapped, not chained: `self?.serve(...)` types the task
+      // `Task<()?, Never>` and the handle holds `Task<Void, Never>`.
+      guard let self else { return }
+      await self.serve(
+        connection,
+        endpoint: endpoint,
+        weInitiated: weInitiated,
+        handle: handle
+      )
+    }
+    handle.task = task
+    await task.value
+  }
+
+  private func serve(
+    _ connection: NetworkConnection<TCP>,
+    endpoint: WAEndpoint?,
+    weInitiated: Bool,
+    handle: LinkHandle
+  ) async {
+    var deviceID = endpoint?.device.id
+    var linkID: String?
+    // Acted on in the defer, not inline: `considerDial` takes the dial guard
+    // and the `releaseDial` below would hand it straight back.
+    var redial: WAEndpoint?
+    // False only where the peer's own connection is the one that survives.
+    var retryLater = true
+    defer {
+      // Hello failed, tiebreak lost or read loop ended, this is the one
+      // place a link stops existing. A registry entry left behind holds the
+      // connection alive with nobody reading it.
+      if let linkID { retire(linkID) }
+      releaseDial(deviceID)
+      if let redial {
+        considerDial(redial)
+      } else if retryLater {
+        scheduleRedial(deviceID)
+      }
     }
 
-    func stop() {
-        runTask?.cancel()
-        runTask = nil
-        // Announced before the registry is cleared, so JS stops addressing a
-        // dead link at once rather than one refused write at a time.
-        for (linkID, link) in links {
-            link.handle.task?.cancel()
-            emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
-        }
-        links.removeAll()
-        linkByDevice.removeAll()
-        dialling.removeAll()
-        endpoints.removeAll()
-        redialDelay.removeAll()
+    do {
+      // Sending first drives the connection to `ready`, which is what
+      // makes `currentPath` answer below.
+      try await connection.send(Framing.encode(localToken))
+
+      let header = try await connection.receive(exactly: Framing.prefixBytes).content
+      guard let length = Framing.length(header), length == AwareDial.tokenBytes else { return }
+      let peerToken = try await connection.receive(exactly: length).content
+
+      // After the hello, not before: the path only populates once ready.
+      if deviceID == nil {
+        // `try await` spans the whole chain. The effects sit on the
+        // Wi-Fi Aware accessor, not on `currentPath`, so parenthesising
+        // the first term leaves the rest unmarked and this will not
+        // compile. `try?` because failing to name the device costs the
+        // dial guard a hint, not the link.
+        deviceID =
+          try? await connection.currentPath?.wifiAware?.endpoint.device.id
+      }
+
+      guard AwareDial.keeps(localToken: localToken, peerToken: peerToken, weInitiated: weInitiated)
+      else {
+        // Losing an INBOUND connection means our token is the lower one,
+        // so we are the side that should dial. The peer has stopped
+        // trying and nothing else would close the loop.
+        retryLater = false
+        if !weInitiated, let deviceID { redial = endpoints[deviceID] }
+        return
+      }
+
+      guard let id = adopt(connection, deviceID: deviceID, handle: handle) else {
+        retryLater = false
+        return
+      }
+      linkID = id
+      await readLoop(linkID: id, connection: connection)
+    } catch {
+      // Every failure here is the same failure: this connection did not
+      // become a link, or stopped being one. The defer above is the
+      // response.
+    }
+  }
+
+  /// Register a connection that won its tiebreak, and tell TypeScript.
+  ///
+  /// Nil when the transport stopped underneath it. `stop()` only cancels links
+  /// it knows about, and one still exchanging its hello is not in the registry:
+  /// its task is unstructured, so cancelling the listener does not reach it.
+  /// Going Away while a peer connects is the ordinary way to hit this.
+  private func adopt(
+    _ connection: NetworkConnection<TCP>,
+    deviceID: WAPairedDevice.ID?,
+    handle: LinkHandle
+  ) -> String? {
+    guard isRunning else { return nil }
+    // A later connection to a device we already hold: a re-dial after the far
+    // side saw a drop we did not. Newest wins, since it is the one both ends
+    // can write to. The tiebreak already resolved the simultaneous case.
+    if let deviceID, let existing = linkByDevice[deviceID] {
+      closeLink(existing)
     }
 
-    // MARK: Publish and subscribe
-
-    private func runListener(_ service: WAPublishableService) async {
-        do {
-            try await NetworkListener(
-                for: .wifiAware(.connecting(to: service, from: .allPairedDevices)),
-                using: .parameters { TCP() }
-                    // `bulk` prioritises throughput, power and coexistence with
-                    // infrastructure Wi-Fi, and is the whole battery policy here.
-                    // power-policy.ts scales the BLE radios and leaves this one
-                    // alone on both platforms: the OS withdraws Aware under
-                    // battery saver, which arrives as availabilityChanged(false).
-                    .wifiAware { $0.performanceMode = .bulk }
-            )
-            .run { connection in
-                // Held for the link's life. `run` starts a subtask per
-                // connection, so blocking here still accepts others, and
-                // returning early would cancel the link we just adopted.
-                await self.spawnLink(connection, endpoint: nil, weInitiated: false)
-            }
-        } catch {
-            // Cancellation is `stop()` doing its job, not a fault.
-            guard !Task.isCancelled else { return }
-            reportUnavailable()
-        }
+    linkSeq += 1
+    let linkID = "wifi-\(linkSeq)"
+    links[linkID] = Link(
+      connection: connection,
+      deviceID: deviceID,
+      sender: SerialSender(),
+      handle: handle
+    )
+    if let deviceID {
+      linkByDevice[deviceID] = linkID
+      // Holding the guard would stop a reconnect once this link drops.
+      dialling.remove(deviceID)
+      redialDelay.removeValue(forKey: deviceID)
     }
+    AirhopLog.wifi.notice("WiFi link up: \(linkID, privacy: .public)")
+    emit(WiFiEvent.linkConnected, ["linkID": linkID])
+    return linkID
+  }
 
-    private func runBrowser(_ service: WASubscribableService) async {
-        do {
-            // `.continue` forever: this is the mesh's standing discovery, not a
-            // one-shot picker. `.allPairedDevices` is taken to be live, so a
-            // device paired mid-browse turns up without a restart; a second
-            // pairing that needs a relaunch would point here.
-            _ = try await NetworkBrowser(
-                for: .wifiAware(.connecting(to: .allPairedDevices, from: service))
-            )
-            .run { found in
-                for endpoint in found {
-                    Task { await self.considerDial(endpoint) }
-                }
-            }
-        } catch {
-            guard !Task.isCancelled else { return }
-            reportUnavailable()
-        }
-    }
+  private func releaseDial(_ deviceID: WAPairedDevice.ID?) {
+    guard let deviceID else { return }
+    dialling.remove(deviceID)
+  }
 
-    /// Discovery or the data path was refused after start resolved.
-    ///
-    /// Reported so the JS reconciler forgets it is started and retries, rather
-    /// than latching over a transport with nothing published or subscribed. No
-    /// matching `true` edge: iOS has no state broadcast to hang one on.
-    private func reportUnavailable() {
-        stop()
-        guard lastReportedAvailable != false else { return }
-        lastReportedAvailable = false
-        emit(WiFiEvent.availabilityChanged, ["available": false, "reason": "session"])
-    }
+  // MARK: Reading
 
-    // MARK: Dialling
-
-    private func considerDial(_ endpoint: WAEndpoint) {
-        // A browser update spawned before cancellation landed, or the redial in
-        // `serve`'s defer, both reach here after `stop()`. Either would dial a
-        // torn-down transport and leave a `dialling` entry the sweep has passed.
-        guard isRunning else { return }
-        let deviceID = endpoint.device.id
-        endpoints[deviceID] = endpoint
-        guard linkByDevice[deviceID] == nil, !dialling.contains(deviceID) else { return }
-        dialling.insert(deviceID)
-        Task { await self.dial(endpoint) }
-    }
-
-    /// Both ends of a dropped link redial, and the tiebreak collapses the pair.
-    private func scheduleRedial(_ deviceID: WAPairedDevice.ID?) {
-        guard isRunning, let deviceID, let endpoint = endpoints[deviceID] else { return }
-        let delay = redialDelay[deviceID] ?? AwareDial.redialFloor
-        redialDelay[deviceID] = AwareDial.nextRedial(after: delay)
-        Task { [weak self] in
-            try? await Task.sleep(for: delay)
-            await self?.considerDial(endpoint)
-        }
-    }
-
-    private func dial(_ endpoint: WAEndpoint) async {
-        let connection = NetworkConnection(
-            to: endpoint,
-            using: .parameters { TCP() }
-                .wifiAware { $0.performanceMode = .bulk }
+  /// Read length-prefixed frames until the connection ends.
+  ///
+  /// No read deadline and no heartbeat, unlike the Kotlin module: Apple
+  /// collects idle connections and closes a suspended app's outright, both of
+  /// which surface as a receive error below, and the framework owns the data
+  /// path's liveness on this platform. A timer would only close healthy links
+  /// early.
+  private func readLoop(linkID: String, connection: NetworkConnection<TCP>) async {
+    while !Task.isCancelled {
+      do {
+        let header = try await connection.receive(exactly: Framing.prefixBytes).content
+        guard let length = Framing.length(header) else { return }
+        // A heartbeat carries nothing.
+        if length == 0 { continue }
+        let payload = try await connection.receive(exactly: length).content
+        emit(
+          WiFiEvent.packetReceived,
+          ["linkID": linkID, "dataBase64": payload.base64EncodedString()]
         )
-        await spawnLink(connection, endpoint: endpoint, weInitiated: true)
+      } catch {
+        return
+      }
     }
+  }
 
-    // MARK: Link lifetime
+  // MARK: Writing
 
-    /// Own one connection for its whole life. The inner task exists only so the
-    /// link can be cancelled from outside: `serve` blocks in `receive`, which
-    /// nothing but cancellation interrupts.
-    private func spawnLink(
-        _ connection: NetworkConnection<TCP>,
-        endpoint: WAEndpoint?,
-        weInitiated: Bool
-    ) async {
-        let handle = LinkHandle()
-        let task = Task { [weak self] in
-            // Unwrapped, not chained: `self?.serve(...)` types the task
-            // `Task<()?, Never>` and the handle holds `Task<Void, Never>`.
-            guard let self else { return }
-            await self.serve(
-                connection,
-                endpoint: endpoint,
-                weInitiated: weInitiated,
-                handle: handle
-            )
-        }
-        handle.task = task
-        await task.value
+  func write(linkID: String, payload: Data) async throws {
+    guard let link = links[linkID] else { throw WiFiFailure.unknownLink(linkID) }
+    let frame = Framing.encode(payload)
+    let connection = link.connection
+    let task = await link.sender.send { try await connection.send(frame) }
+    do {
+      try await task.value
+    } catch {
+      // A refused write cannot carry the rest of the transfer either, so
+      // tear down here rather than wait for the read loop to notice.
+      closeLink(linkID)
+      throw WiFiFailure.writeFailed(String(describing: error))
     }
+  }
 
-    private func serve(
-        _ connection: NetworkConnection<TCP>,
-        endpoint: WAEndpoint?,
-        weInitiated: Bool,
-        handle: LinkHandle
-    ) async {
-        var deviceID = endpoint?.device.id
-        var linkID: String?
-        // Acted on in the defer, not inline: `considerDial` takes the dial guard
-        // and the `releaseDial` below would hand it straight back.
-        var redial: WAEndpoint?
-        // False only where the peer's own connection is the one that survives.
-        var retryLater = true
-        defer {
-            // Hello failed, tiebreak lost or read loop ended, this is the one
-            // place a link stops existing. A registry entry left behind holds the
-            // connection alive with nobody reading it.
-            if let linkID { retire(linkID) }
-            releaseDial(deviceID)
-            if let redial {
-                considerDial(redial)
-            } else if retryLater {
-                scheduleRedial(deviceID)
-            }
-        }
+  // MARK: Teardown
 
-        do {
-            // Sending first drives the connection to `ready`, which is what
-            // makes `currentPath` answer below.
-            try await connection.send(Framing.encode(localToken))
+  /// Ask a link to end. The cancellation unwinds `serve`, whose defer calls
+  /// `retire`, which is what reports it.
+  private func closeLink(_ linkID: String) {
+    links[linkID]?.handle.task?.cancel()
+  }
 
-            let header = try await connection.receive(exactly: Framing.prefixBytes).content
-            guard let length = Framing.length(header), length == AwareDial.tokenBytes else { return }
-            let peerToken = try await connection.receive(exactly: length).content
-
-            // After the hello, not before: the path only populates once ready.
-            if deviceID == nil {
-                // `try await` spans the whole chain. The effects sit on the
-                // Wi-Fi Aware accessor, not on `currentPath`, so parenthesising
-                // the first term leaves the rest unmarked and this will not
-                // compile. `try?` because failing to name the device costs the
-                // dial guard a hint, not the link.
-                deviceID =
-                    try? await connection.currentPath?.wifiAware?.endpoint.device.id
-            }
-
-            guard AwareDial.keeps(localToken: localToken, peerToken: peerToken, weInitiated: weInitiated) else {
-                // Losing an INBOUND connection means our token is the lower one,
-                // so we are the side that should dial. The peer has stopped
-                // trying and nothing else would close the loop.
-                retryLater = false
-                if !weInitiated, let deviceID { redial = endpoints[deviceID] }
-                return
-            }
-
-            guard let id = adopt(connection, deviceID: deviceID, handle: handle) else {
-                retryLater = false
-                return
-            }
-            linkID = id
-            await readLoop(linkID: id, connection: connection)
-        } catch {
-            // Every failure here is the same failure: this connection did not
-            // become a link, or stopped being one. The defer above is the
-            // response.
-        }
+  /// Forget a link and tell TypeScript. Idempotent: `serve`'s defer runs once
+  /// per link and nothing else calls it.
+  private func retire(_ linkID: String) {
+    guard let link = links.removeValue(forKey: linkID) else { return }
+    if let deviceID = link.deviceID {
+      // Only if it still points at us: a newer link may have claimed the
+      // slot, and clearing it would orphan the live one.
+      if linkByDevice[deviceID] == linkID { linkByDevice.removeValue(forKey: deviceID) }
+      dialling.remove(deviceID)
     }
+    AirhopLog.wifi.notice("WiFi link down: \(linkID, privacy: .public)")
+    emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
+  }
 
-    /// Register a connection that won its tiebreak, and tell TypeScript.
-    ///
-    /// Nil when the transport stopped underneath it. `stop()` only cancels links
-    /// it knows about, and one still exchanging its hello is not in the registry:
-    /// its task is unstructured, so cancelling the listener does not reach it.
-    /// Going Away while a peer connects is the ordinary way to hit this.
-    private func adopt(
-        _ connection: NetworkConnection<TCP>,
-        deviceID: WAPairedDevice.ID?,
-        handle: LinkHandle
-    ) -> String? {
-        guard isRunning else { return nil }
-        // A later connection to a device we already hold: a re-dial after the far
-        // side saw a drop we did not. Newest wins, since it is the one both ends
-        // can write to. The tiebreak already resolved the simultaneous case.
-        if let deviceID, let existing = linkByDevice[deviceID] {
-            closeLink(existing)
-        }
+  // MARK: Diagnostics
 
-        linkSeq += 1
-        let linkID = "wifi-\(linkSeq)"
-        links[linkID] = Link(
-            connection: connection,
-            deviceID: deviceID,
-            sender: SerialSender(),
-            handle: handle
-        )
-        if let deviceID {
-            linkByDevice[deviceID] = linkID
-            // Holding the guard would stop a reconnect once this link drops.
-            dialling.remove(deviceID)
-            redialDelay.removeValue(forKey: deviceID)
-        }
-        AirhopLog.wifi.notice("WiFi link up: \(linkID, privacy: .public)")
-        emit(WiFiEvent.linkConnected, ["linkID": linkID])
-        return linkID
-    }
-
-    private func releaseDial(_ deviceID: WAPairedDevice.ID?) {
-        guard let deviceID else { return }
-        dialling.remove(deviceID)
-    }
-
-    // MARK: Reading
-
-    /// Read length-prefixed frames until the connection ends.
-    ///
-    /// No read deadline and no heartbeat, unlike the Kotlin module: Apple
-    /// collects idle connections and closes a suspended app's outright, both of
-    /// which surface as a receive error below, and the framework owns the data
-    /// path's liveness on this platform. A timer would only close healthy links
-    /// early.
-    private func readLoop(linkID: String, connection: NetworkConnection<TCP>) async {
-        while !Task.isCancelled {
-            do {
-                let header = try await connection.receive(exactly: Framing.prefixBytes).content
-                guard let length = Framing.length(header) else { return }
-                // A heartbeat carries nothing.
-                if length == 0 { continue }
-                let payload = try await connection.receive(exactly: length).content
-                emit(
-                    WiFiEvent.packetReceived,
-                    ["linkID": linkID, "dataBase64": payload.base64EncodedString()]
-                )
-            } catch {
-                return
-            }
-        }
-    }
-
-    // MARK: Writing
-
-    func write(linkID: String, payload: Data) async throws {
-        guard let link = links[linkID] else { throw WiFiFailure.unknownLink(linkID) }
-        let frame = Framing.encode(payload)
-        let connection = link.connection
-        let task = await link.sender.send { try await connection.send(frame) }
-        do {
-            try await task.value
-        } catch {
-            // A refused write cannot carry the rest of the transfer either, so
-            // tear down here rather than wait for the read loop to notice.
-            closeLink(linkID)
-            throw WiFiFailure.writeFailed(String(describing: error))
-        }
-    }
-
-    // MARK: Teardown
-
-    /// Ask a link to end. The cancellation unwinds `serve`, whose defer calls
-    /// `retire`, which is what reports it.
-    private func closeLink(_ linkID: String) {
-        links[linkID]?.handle.task?.cancel()
-    }
-
-    /// Forget a link and tell TypeScript. Idempotent: `serve`'s defer runs once
-    /// per link and nothing else calls it.
-    private func retire(_ linkID: String) {
-        guard let link = links.removeValue(forKey: linkID) else { return }
-        if let deviceID = link.deviceID {
-            // Only if it still points at us: a newer link may have claimed the
-            // slot, and clearing it would orphan the live one.
-            if linkByDevice[deviceID] == linkID { linkByDevice.removeValue(forKey: deviceID) }
-            dialling.remove(deviceID)
-        }
-        AirhopLog.wifi.notice("WiFi link down: \(linkID, privacy: .public)")
-        emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
-    }
-
-    // MARK: Diagnostics
-
-    /// Counts only, nothing that identifies a peer: WAPairedDevice.ID survives
-    /// a pairing indefinitely, unlike Android's per-attach instance token.
-    /// History lives in AirhopAppModule.swift's recentLog(), which already
-    /// reads these notices back.
-    func dumpState() -> String {
-        """
-        attached: \(isRunning)
-        peers known: \(endpoints.count)
-        links up: \(links.count)
-        dials in flight: \(dialling.count)
-        backing off: \(redialDelay.count)
-        """
-    }
+  /// Counts only, nothing that identifies a peer: WAPairedDevice.ID survives
+  /// a pairing indefinitely, unlike Android's per-attach instance token.
+  /// History lives in AirhopAppModule.swift's recentLog(), which already
+  /// reads these notices back.
+  func dumpState() -> String {
+    """
+    attached: \(isRunning)
+    peers known: \(endpoints.count)
+    links up: \(links.count)
+    dials in flight: \(dialling.count)
+    backing off: \(redialDelay.count)
+    """
+  }
 }
 
 // MARK: - Failures
@@ -499,30 +500,30 @@ private actor WiFiAwareTransport {
 /// AirhopWiFiModule.kt so one `classify` covers both platforms. They separate
 /// retrying from waiting for a pairing from giving up.
 private enum WiFiFailure: Error {
-    /// No hardware, an OS below iOS 26, or an undeclared service. Permanent.
-    case unsupported(String)
-    /// Nobody to reach. Clears when AirhopWiFiPairing reports a pairing.
-    case unpaired
-    case unknownLink(String)
-    case writeFailed(String)
+  /// No hardware, an OS below iOS 26, or an undeclared service. Permanent.
+  case unsupported(String)
+  /// Nobody to reach. Clears when AirhopWiFiPairing reports a pairing.
+  case unpaired
+  case unknownLink(String)
+  case writeFailed(String)
 
-    var code: String {
-        switch self {
-        case .unsupported: return "WIFI_AWARE_UNSUPPORTED"
-        case .unpaired: return "WIFI_AWARE_UNPAIRED"
-        case .unknownLink: return "UNKNOWN_LINK"
-        case .writeFailed: return "WRITE_FAILED"
-        }
+  var code: String {
+    switch self {
+    case .unsupported: return "WIFI_AWARE_UNSUPPORTED"
+    case .unpaired: return "WIFI_AWARE_UNPAIRED"
+    case .unknownLink: return "UNKNOWN_LINK"
+    case .writeFailed: return "WRITE_FAILED"
     }
+  }
 
-    var message: String {
-        switch self {
-        case .unsupported(let m): return m
-        case .unpaired: return "No device is paired for Wi-Fi Aware"
-        case .unknownLink(let id): return "No active WiFi link: \(id)"
-        case .writeFailed(let m): return m
-        }
+  var message: String {
+    switch self {
+    case .unsupported(let m): return m
+    case .unpaired: return "No device is paired for Wi-Fi Aware"
+    case .unknownLink(let id): return "No active WiFi link: \(id)"
+    case .writeFailed(let m): return m
     }
+  }
 }
 
 // MARK: - Module
@@ -530,190 +531,190 @@ private enum WiFiFailure: Error {
 @objc(AirhopWiFiModule)
 final class AirhopWiFiModule: RCTEventEmitter {
 
-    /// Held as `Any` because its type is gated to iOS 26 and a stored property
-    /// cannot be. The accessor below is the one place the cast lives.
-    private var box: Any?
+  /// Held as `Any` because its type is gated to iOS 26 and a stored property
+  /// cannot be. The accessor below is the one place the cast lives.
+  private var box: Any?
 
-    @available(iOS 26.0, *)
-    private var transport: WiFiAwareTransport {
-        if let existing = box as? WiFiAwareTransport { return existing }
-        // Weak: the actor is stored here, so a strong capture closes a cycle.
-        let created = WiFiAwareTransport { [weak self] name, body in
-            self?.emit(name, body)
-        }
-        box = created
-        return created
+  @available(iOS 26.0, *)
+  private var transport: WiFiAwareTransport {
+    if let existing = box as? WiFiAwareTransport { return existing }
+    // Weak: the actor is stored here, so a strong capture closes a cycle.
+    let created = WiFiAwareTransport { [weak self] name, body in
+      self?.emit(name, body)
     }
+    box = created
+    return created
+  }
 
-    @objc override static func requiresMainQueueSetup() -> Bool { false }
+  @objc override static func requiresMainQueueSetup() -> Bool { false }
 
-    override func supportedEvents() -> [String]! {
-        [
-            WiFiEvent.packetReceived,
-            WiFiEvent.linkConnected,
-            WiFiEvent.linkDisconnected,
-            WiFiEvent.availabilityChanged,
-        ]
+  override func supportedEvents() -> [String]! {
+    [
+      WiFiEvent.packetReceived,
+      WiFiEvent.linkConnected,
+      WiFiEvent.linkDisconnected,
+      WiFiEvent.availabilityChanged,
+    ]
+  }
+
+  /// Callers are framework callbacks and detached tasks with no bridge above
+  /// them, and sending into a departed runtime traps.
+  private func emit(_ name: String, _ body: [String: Any]) {
+    guard bridge != nil else { return }
+    sendEvent(withName: name, body: body)
+  }
+
+  // MARK: Exported
+
+  @objc(startWiFi:rejecter:)
+  func startWiFi(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    // Below iOS 26 there is no framework. Asked first, so a device that can
+    // never do this is not told to try again.
+    guard #available(iOS 26.0, *) else {
+      reject("WIFI_AWARE_UNSUPPORTED", "Wi-Fi Aware needs iOS 26 or later", nil)
+      return
     }
+    start(resolve: resolve, reject: reject)
+  }
 
-    /// Callers are framework callbacks and detached tasks with no bridge above
-    /// them, and sending into a departed runtime traps.
-    private func emit(_ name: String, _ body: [String: Any]) {
-        guard bridge != nil else { return }
-        sendEvent(withName: name, body: body)
+  /// `#available` narrows the scope it guards but does not reliably carry into
+  /// an escaping closure, and this runs inside a `Task`. An annotated method
+  /// gives that closure a context of its own, which is why all three exported
+  /// methods hand off to one of these.
+  @available(iOS 26.0, *)
+  private func start(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let transport = self.transport
+    Task {
+      do {
+        try await transport.start()
+        resolve(nil)
+      } catch let failure as WiFiFailure {
+        reject(failure.code, failure.message, nil)
+      } catch {
+        reject("WIFI_AWARE_ATTACH_FAILED", String(describing: error), error)
+      }
     }
+  }
 
-    // MARK: Exported
-
-    @objc(startWiFi:rejecter:)
-    func startWiFi(
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        // Below iOS 26 there is no framework. Asked first, so a device that can
-        // never do this is not told to try again.
-        guard #available(iOS 26.0, *) else {
-            reject("WIFI_AWARE_UNSUPPORTED", "Wi-Fi Aware needs iOS 26 or later", nil)
-            return
-        }
-        start(resolve: resolve, reject: reject)
+  @objc(stopWiFi:rejecter:)
+  func stopWiFi(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard #available(iOS 26.0, *) else {
+      // Nothing was started, so stopping succeeded. Idempotent, because
+      // the reconciler calls this without tracking whether it is up.
+      resolve(nil)
+      return
     }
+    stop(resolve: resolve)
+  }
 
-    /// `#available` narrows the scope it guards but does not reliably carry into
-    /// an escaping closure, and this runs inside a `Task`. An annotated method
-    /// gives that closure a context of its own, which is why all three exported
-    /// methods hand off to one of these.
-    @available(iOS 26.0, *)
-    private func start(
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        let transport = self.transport
-        Task {
-            do {
-                try await transport.start()
-                resolve(nil)
-            } catch let failure as WiFiFailure {
-                reject(failure.code, failure.message, nil)
-            } catch {
-                reject("WIFI_AWARE_ATTACH_FAILED", String(describing: error), error)
-            }
-        }
+  @available(iOS 26.0, *)
+  private func stop(resolve: @escaping RCTPromiseResolveBlock) {
+    guard let transport = box as? WiFiAwareTransport else {
+      resolve(nil)
+      return
     }
-
-    @objc(stopWiFi:rejecter:)
-    func stopWiFi(
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        guard #available(iOS 26.0, *) else {
-            // Nothing was started, so stopping succeeded. Idempotent, because
-            // the reconciler calls this without tracking whether it is up.
-            resolve(nil)
-            return
-        }
-        stop(resolve: resolve)
+    Task {
+      await transport.stop()
+      resolve(nil)
     }
+  }
 
-    @available(iOS 26.0, *)
-    private func stop(resolve: @escaping RCTPromiseResolveBlock) {
-        guard let transport = box as? WiFiAwareTransport else {
-            resolve(nil)
-            return
-        }
-        Task {
-            await transport.stop()
-            resolve(nil)
-        }
+  @objc(writeToWiFiLink:dataBase64:resolver:rejecter:)
+  func writeToWiFiLink(
+    linkID: String,
+    dataBase64: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let payload = Data(base64Encoded: dataBase64) else {
+      reject("INVALID_DATA", "Invalid base64 payload", nil)
+      return
     }
-
-    @objc(writeToWiFiLink:dataBase64:resolver:rejecter:)
-    func writeToWiFiLink(
-        linkID: String,
-        dataBase64: String,
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        guard let payload = Data(base64Encoded: dataBase64) else {
-            reject("INVALID_DATA", "Invalid base64 payload", nil)
-            return
-        }
-        guard payload.count <= Framing.maxFrame - Framing.prefixBytes else {
-            reject(
-                "FRAME_TOO_LARGE",
-                "Frame of \(payload.count) exceeds the peer's read limit",
-                nil
-            )
-            return
-        }
-        guard #available(iOS 26.0, *) else {
-            reject("LINK_CLOSED", "WiFi transport is not running", nil)
-            return
-        }
-        write(linkID: linkID, payload: payload, resolve: resolve, reject: reject)
+    guard payload.count <= Framing.maxFrame - Framing.prefixBytes else {
+      reject(
+        "FRAME_TOO_LARGE",
+        "Frame of \(payload.count) exceeds the peer's read limit",
+        nil
+      )
+      return
     }
-
-    @available(iOS 26.0, *)
-    private func write(
-        linkID: String,
-        payload: Data,
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        guard let transport = box as? WiFiAwareTransport else {
-            reject("LINK_CLOSED", "WiFi transport is not running", nil)
-            return
-        }
-        Task {
-            do {
-                try await transport.write(linkID: linkID, payload: payload)
-                resolve(nil)
-            } catch let failure as WiFiFailure {
-                reject(failure.code, failure.message, nil)
-            } catch {
-                reject("WRITE_FAILED", String(describing: error), error)
-            }
-        }
+    guard #available(iOS 26.0, *) else {
+      reject("LINK_CLOSED", "WiFi transport is not running", nil)
+      return
     }
+    write(linkID: linkID, payload: payload, resolve: resolve, reject: reject)
+  }
 
-    // Never rejects: below the floor or unattached both read as zero, same as
-    // `dumpState()`'s own idle counts.
-    @objc(dumpState:rejecter:)
-    func dumpState(
-        resolve: @escaping RCTPromiseResolveBlock,
-        reject: @escaping RCTPromiseRejectBlock
-    ) {
-        guard #available(iOS 26.0, *) else {
-            resolve("attached: false")
-            return
-        }
-        dumpState(resolve: resolve)
+  @available(iOS 26.0, *)
+  private func write(
+    linkID: String,
+    payload: Data,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let transport = box as? WiFiAwareTransport else {
+      reject("LINK_CLOSED", "WiFi transport is not running", nil)
+      return
     }
-
-    @available(iOS 26.0, *)
-    private func dumpState(resolve: @escaping RCTPromiseResolveBlock) {
-        guard let transport = box as? WiFiAwareTransport else {
-            resolve("attached: false")
-            return
-        }
-        Task {
-            resolve(await transport.dumpState())
-        }
+    Task {
+      do {
+        try await transport.write(linkID: linkID, payload: payload)
+        resolve(nil)
+      } catch let failure as WiFiFailure {
+        reject(failure.code, failure.message, nil)
+      } catch {
+        reject("WRITE_FAILED", String(describing: error), error)
+      }
     }
+  }
 
-    // MARK: Lifecycle
-
-    /// Every link exists to hand bytes to a runtime that is gone, and a listener
-    /// nobody hears is a radio left running.
-    override func invalidate() {
-        if #available(iOS 26.0, *) { releaseTransport() }
-        box = nil
-        super.invalidate()
+  // Never rejects: below the floor or unattached both read as zero, same as
+  // `dumpState()`'s own idle counts.
+  @objc(dumpState:rejecter:)
+  func dumpState(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard #available(iOS 26.0, *) else {
+      resolve("attached: false")
+      return
     }
+    dumpState(resolve: resolve)
+  }
 
-    @available(iOS 26.0, *)
-    private func releaseTransport() {
-        guard let transport = box as? WiFiAwareTransport else { return }
-        Task { await transport.stop() }
+  @available(iOS 26.0, *)
+  private func dumpState(resolve: @escaping RCTPromiseResolveBlock) {
+    guard let transport = box as? WiFiAwareTransport else {
+      resolve("attached: false")
+      return
     }
+    Task {
+      resolve(await transport.dumpState())
+    }
+  }
+
+  // MARK: Lifecycle
+
+  /// Every link exists to hand bytes to a runtime that is gone, and a listener
+  /// nobody hears is a radio left running.
+  override func invalidate() {
+    if #available(iOS 26.0, *) { releaseTransport() }
+    box = nil
+    super.invalidate()
+  }
+
+  @available(iOS 26.0, *)
+  private func releaseTransport() {
+    guard let transport = box as? WiFiAwareTransport else { return }
+    Task { await transport.stop() }
+  }
 }

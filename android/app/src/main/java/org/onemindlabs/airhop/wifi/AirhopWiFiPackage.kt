@@ -10,12 +10,11 @@ import com.facebook.react.uimanager.ViewManager
 
 class AirhopWiFiPackage : ReactPackage {
 
-    // ReactPackage.createNativeModules is deprecated in New Architecture (use codegen TurboModules),
+    // ReactPackage.createNativeModules is deprecated in New Architecture (use codegen
+    // TurboModules),
     // but legacy interop still requires it until AirhopWiFiModule is fully migrated.
     @Suppress("OVERRIDE_DEPRECATION")
-    override fun createNativeModules(
-        reactContext: ReactApplicationContext,
-    ): List<NativeModule> {
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         // The data path needs API 29: the peer's address is a link-local IPv6
         // delivered in WifiAwareNetworkInfo, which does not exist below it.
         // Discovery alone is no use, so on older devices the module is simply
@@ -29,6 +28,6 @@ class AirhopWiFiPackage : ReactPackage {
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createViewManagers(
-        reactContext: ReactApplicationContext,
+        reactContext: ReactApplicationContext
     ): List<ViewManager<*, *>> = emptyList()
 }

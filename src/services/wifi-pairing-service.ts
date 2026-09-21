@@ -67,7 +67,7 @@ export async function presentWiFiPairing(
   await active?.refresh();
 }
 
-// Narrowed to the five the launcher paints with, so the bridge payload cannot
+// Narrowed to the four the launcher paints with, so the bridge payload cannot
 // become a second copy of the palette.
 function palette(colors: ThemeColors): PairingColors {
   return {
@@ -75,7 +75,6 @@ function palette(colors: ThemeColors): PairingColors {
     surface: colors.surface,
     border: colors.border,
     textPrimary: colors.textPrimary,
-    textMuted: colors.textMuted,
   };
 }
 

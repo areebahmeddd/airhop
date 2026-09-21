@@ -15,8 +15,7 @@ import java.io.File
 
 enum class AirhopTransport(val id: String) {
     OBFS4("obfs4"),
-    SNOWFLAKE("snowflake"),
-    ;
+    SNOWFLAKE("snowflake");
 
     companion object {
         // The transports named by a newline-separated list of bridge lines.
@@ -98,8 +97,7 @@ object AirhopIPtProxy {
         return ports
     }
 
-    @Synchronized
-    fun stop() = stopLocked()
+    @Synchronized fun stop() = stopLocked()
 
     // Panic wipe only: the state directory records which transports ran.
     @Synchronized
@@ -127,7 +125,9 @@ object AirhopIPtProxy {
     }
 
     private fun ensureController(context: Context): Controller? {
-        controller?.let { return it }
+        controller?.let {
+            return it
+        }
 
         val dir = stateDir(context)
         dir.mkdirs()
@@ -140,15 +140,15 @@ object AirhopIPtProxy {
         // rather than null, and a missing or rejected library as an Error, which
         // is why this catches Throwable. Either has to stop the start rather
         // than reach Arti.
-        val created = try {
-            Controller(dir.absolutePath, false, false, "ERROR", null)
-        } catch (e: Throwable) {
-            Log.e(TAG, "controller did not initialise: ${e.message}")
-            return null
-        }
+        val created =
+            try {
+                Controller(dir.absolutePath, false, false, "ERROR", null)
+            } catch (e: Throwable) {
+                Log.e(TAG, "controller did not initialise: ${e.message}")
+                return null
+            }
 
         controller = created
         return created
     }
 }
-

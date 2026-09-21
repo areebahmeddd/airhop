@@ -30,7 +30,7 @@ import org.onemindlabs.airhop.ble.AirhopBLEModule
 
 private const val TAG = "AirhopForegroundService"
 
-private const val CHANNEL_ID      = "airhop_mesh_bg"
+private const val CHANNEL_ID = "airhop_mesh_bg"
 private const val NOTIFICATION_ID = 1001
 
 // Sent by the notification's "Stop mesh" button.
@@ -70,8 +70,9 @@ class AirhopForegroundService : Service() {
                 },
             )
         } catch (e: Exception) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                e is ForegroundServiceStartNotAllowedException
+            if (
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    e is ForegroundServiceStartNotAllowedException
             ) {
                 Log.w(TAG, "Not allowed to start in the foreground right now")
             } else {
@@ -112,36 +113,44 @@ class AirhopForegroundService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.mesh_channel_name),
-                NotificationManager.IMPORTANCE_LOW, // silent but persistent
-            ).apply {
-                description = getString(R.string.mesh_channel_description)
-                setShowBadge(false)
-            }
+            val channel =
+                NotificationChannel(
+                        CHANNEL_ID,
+                        getString(R.string.mesh_channel_name),
+                        NotificationManager.IMPORTANCE_LOW, // silent but persistent
+                    )
+                    .apply {
+                        description = getString(R.string.mesh_channel_description)
+                        setShowBadge(false)
+                    }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
     }
 
     private fun buildNotification(): Notification {
-        val launchIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, launchIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val launchIntent =
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        val pendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                launchIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
 
         // An ongoing notification the user cannot dismiss needs a way out that
         // isn't force-stop. Without this the only exits are Settings or killing
         // the app, and neither is something a person should have to discover.
-        val stopIntent = PendingIntent.getService(
-            this, 1,
-            Intent(this, AirhopForegroundService::class.java).setAction(ACTION_STOP),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val stopIntent =
+            PendingIntent.getService(
+                this,
+                1,
+                Intent(this, AirhopForegroundService::class.java).setAction(ACTION_STOP),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.mesh_notification_title))

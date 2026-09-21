@@ -45,7 +45,6 @@ export interface PairingColors {
   surface: string;
   border: string;
   textPrimary: string;
-  textMuted: string;
 }
 
 export interface Spec extends TurboModule {

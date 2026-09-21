@@ -56,8 +56,9 @@ class AirhopBootService : HeadlessJsTaskService() {
                 },
             )
         } catch (e: Exception) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                e is ForegroundServiceStartNotAllowedException
+            if (
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    e is ForegroundServiceStartNotAllowedException
             ) {
                 Log.w(TAG, "Not allowed to start in the foreground right now")
             } else {
@@ -69,14 +70,16 @@ class AirhopBootService : HeadlessJsTaskService() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.mesh_channel_name),
-                NotificationManager.IMPORTANCE_LOW,
-            ).apply {
-                description = getString(R.string.mesh_channel_description)
-                setShowBadge(false)
-            }
+            val channel =
+                NotificationChannel(
+                        CHANNEL_ID,
+                        getString(R.string.mesh_channel_name),
+                        NotificationManager.IMPORTANCE_LOW,
+                    )
+                    .apply {
+                        description = getString(R.string.mesh_channel_description)
+                        setShowBadge(false)
+                    }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
@@ -85,13 +88,17 @@ class AirhopBootService : HeadlessJsTaskService() {
     // No "Stop mesh" action here, unlike AirhopForegroundService's: tapping
     // it before the mesh exists would have nothing to stop.
     private fun buildNotification(): Notification {
-        val launchIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, launchIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val launchIntent =
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        val pendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                launchIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.mesh_notification_title))
             .setContentText(getString(R.string.mesh_notification_text))

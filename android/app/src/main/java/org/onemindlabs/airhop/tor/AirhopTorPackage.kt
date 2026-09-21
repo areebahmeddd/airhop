@@ -19,12 +19,11 @@ class AirhopTorPackage : ReactPackage {
     // the Tor toggle explain itself rather than the app crashing the first time
     // somebody opens Settings.
     @Suppress("OVERRIDE_DEPRECATION")
-    override fun createNativeModules(
-        reactContext: ReactApplicationContext,
-    ): List<NativeModule> = listOf(AirhopTorModule(reactContext))
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
+        listOf(AirhopTorModule(reactContext))
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createViewManagers(
-        reactContext: ReactApplicationContext,
+        reactContext: ReactApplicationContext
     ): List<ViewManager<*, *>> = emptyList()
 }
