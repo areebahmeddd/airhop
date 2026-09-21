@@ -81,33 +81,38 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
   // MARK: - Task registry (atomic claim so exactly one path reports close)
 
   private func store(_ id: String, _ task: URLSessionWebSocketTask) {
-    lock.lock(); defer { lock.unlock() }
+    lock.lock()
+    defer { lock.unlock() }
     tasks[id] = task
   }
 
   private func peek(_ id: String) -> URLSessionWebSocketTask? {
-    lock.lock(); defer { lock.unlock() }
+    lock.lock()
+    defer { lock.unlock() }
     return tasks[id]
   }
 
   // Remove and return the task for `id`, or nil if it was already claimed. The
   // caller that gets a non-nil result owns emitting the single close event.
   private func claim(_ id: String) -> URLSessionWebSocketTask? {
-    lock.lock(); defer { lock.unlock() }
+    lock.lock()
+    defer { lock.unlock() }
     let task = tasks[id]
     tasks[id] = nil
     return task
   }
 
   private func claim(byTask task: URLSessionTask) -> String? {
-    lock.lock(); defer { lock.unlock() }
+    lock.lock()
+    defer { lock.unlock() }
     guard let id = tasks.first(where: { $0.value === task })?.key else { return nil }
     tasks[id] = nil
     return id
   }
 
   private func id(forTask task: URLSessionTask) -> String? {
-    lock.lock(); defer { lock.unlock() }
+    lock.lock()
+    defer { lock.unlock() }
     return tasks.first(where: { $0.value === task })?.key
   }
 
@@ -116,8 +121,9 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
   @objc(connect:url:)
   func connect(_ id: String, url urlString: String) {
     guard let url = URL(string: urlString),
-          let scheme = url.scheme?.lowercased(),
-          scheme == "wss" || scheme == "ws" else {
+      let scheme = url.scheme?.lowercased(),
+      scheme == "wss" || scheme == "ws"
+    else {
       emit(id, "error", ["message": "invalid websocket url"])
       emit(id, "close", ["code": 1006, "reason": "invalid websocket url"])
       return
@@ -176,25 +182,29 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
         @unknown default:
           break
         }
-        self.receive(id) // keep reading until the socket closes
+        self.receive(id)  // keep reading until the socket closes
       }
     }
   }
 
   // MARK: - URLSessionWebSocketDelegate
 
-  func urlSession(_ session: URLSession,
-                  webSocketTask: URLSessionWebSocketTask,
-                  didOpenWithProtocol protocolName: String?) {
+  func urlSession(
+    _ session: URLSession,
+    webSocketTask: URLSessionWebSocketTask,
+    didOpenWithProtocol protocolName: String?
+  ) {
     if let id = id(forTask: webSocketTask) {
       emit(id, "open")
     }
   }
 
-  func urlSession(_ session: URLSession,
-                  webSocketTask: URLSessionWebSocketTask,
-                  didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
-                  reason: Data?) {
+  func urlSession(
+    _ session: URLSession,
+    webSocketTask: URLSessionWebSocketTask,
+    didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
+    reason: Data?
+  ) {
     guard let id = claim(byTask: webSocketTask) else { return }
     let reasonStr = reason.flatMap { String(data: $0, encoding: .utf8) } ?? ""
     emit(id, "close", ["code": closeCode.rawValue, "reason": reasonStr])
@@ -202,9 +212,11 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
 
   // Surface transport-level failures, including SOCKS/connect errors when Arti
   // is not yet listening, as an error + close so the JS relay can retry.
-  func urlSession(_ session: URLSession,
-                  task: URLSessionTask,
-                  didCompleteWithError error: Error?) {
+  func urlSession(
+    _ session: URLSession,
+    task: URLSessionTask,
+    didCompleteWithError error: Error?
+  ) {
     guard let error = error, let id = claim(byTask: task) else { return }
     emit(id, "error", ["message": error.localizedDescription])
     emit(id, "close", ["code": 1006, "reason": error.localizedDescription])

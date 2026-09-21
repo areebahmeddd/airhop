@@ -7,17 +7,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "AirhopTransport",
-    platforms: [.macOS(.v13), .iOS(.v16)],
-    targets: [
-        .target(
-            name: "AirhopTransport",
-            path: "Airhop/Transport"
-        ),
-        .testTarget(
-            name: "AirhopTransportTests",
-            dependencies: ["AirhopTransport"],
-            path: "Tests/AirhopTransportTests"
-        ),
-    ]
+  name: "AirhopTransport",
+  platforms: [.macOS(.v13), .iOS(.v16)],
+  targets: [
+    .target(
+      name: "AirhopTransport",
+      path: "Airhop/Transport"
+    ),
+    .testTarget(
+      name: "AirhopTransportTests",
+      dependencies: ["AirhopTransport"],
+      path: "Tests/AirhopTransportTests"
+    ),
+  ]
 )

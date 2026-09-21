@@ -20,29 +20,30 @@ class AppDelegate: ExpoAppDelegate {
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-#if os(iOS) || os(tvOS)
-    window = UIWindow(frame: UIScreen.main.bounds)
-    factory.startReactNative(
-      withModuleName: "main",
-      in: window,
-      launchOptions: launchOptions)
-#endif
+    #if os(iOS) || os(tvOS)
+      window = UIWindow(frame: UIScreen.main.bounds)
+      factory.startReactNative(
+        withModuleName: "main",
+        in: window,
+        launchOptions: launchOptions)
+    #endif
 
-#if os(iOS)
-    // Bluetooth state restoration, only on a restoration launch.
-    //
-    // iOS expects the manager with the matching restore identifier to exist
-    // before this method returns, which React Native cannot do: the BLE module
-    // is built by the bridge and its managers later still. Creating them here
-    // unconditionally would raise the Bluetooth prompt on the splash screen, so
-    // this is gated on the launch keys, which are present only when iOS is
-    // waking us for BLE and therefore only when the permission already exists.
-    // See AirhopBLERestoration in AirhopBLEModule.swift.
-    if launchOptions?[.bluetoothCentrals] != nil
-        || launchOptions?[.bluetoothPeripherals] != nil {
-      AirhopBLERestoration.shared.prepare()
-    }
-#endif
+    #if os(iOS)
+      // Bluetooth state restoration, only on a restoration launch.
+      //
+      // iOS expects the manager with the matching restore identifier to exist
+      // before this method returns, which React Native cannot do: the BLE module
+      // is built by the bridge and its managers later still. Creating them here
+      // unconditionally would raise the Bluetooth prompt on the splash screen, so
+      // this is gated on the launch keys, which are present only when iOS is
+      // waking us for BLE and therefore only when the permission already exists.
+      // See AirhopBLERestoration in AirhopBLEModule.swift.
+      if launchOptions?[.bluetoothCentrals] != nil
+        || launchOptions?[.bluetoothPeripherals] != nil
+      {
+        AirhopBLERestoration.shared.prepare()
+      }
+    #endif
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -87,7 +88,8 @@ class AppDelegate: ExpoAppDelegate {
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-    return super.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
+    return super.application(app, open: url, options: options)
+      || RCTLinkingManager.application(app, open: url, options: options)
   }
 
   // Universal Links
@@ -96,8 +98,10 @@ class AppDelegate: ExpoAppDelegate {
     continue userActivity: NSUserActivity,
     restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
   ) -> Bool {
-    let result = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
-    return super.application(application, continue: userActivity, restorationHandler: restorationHandler) || result
+    let result = RCTLinkingManager.application(
+      application, continue: userActivity, restorationHandler: restorationHandler)
+    return super.application(
+      application, continue: userActivity, restorationHandler: restorationHandler) || result
   }
 }
 
@@ -110,10 +114,11 @@ class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
   }
 
   override func bundleURL() -> URL? {
-#if DEBUG
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
-#else
-    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-#endif
+    #if DEBUG
+      return RCTBundleURLProvider.sharedSettings().jsBundleURL(
+        forBundleRoot: ".expo/.virtual-metro-entry")
+    #else
+      return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    #endif
   }
 }

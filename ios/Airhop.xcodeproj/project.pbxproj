@@ -7,107 +7,107 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		012A2DC7FB6347ACB2C832E6 /* AirhopWiFiPairing.mm in Sources */ = {isa = PBXBuildFile; fileRef = C105DF90A0A74D54A7BDC67F /* AirhopWiFiPairing.mm */; };
+		04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		166BDE042C843A9400350594 /* AirhopLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27C0090533B740D2B558EEA /* AirhopLog.swift */; };
+		19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */; };
+		29977927D520A508D19B41F8 /* AirhopAppModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */; };
 		347CCEE0477D755AE7F3CBEF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F73C4B2BCE44B84717C4386B /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		85697010AA2B5354025C23E1 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FC1806596E87D38D8BF088 /* ExpoModulesProvider.swift */; };
-		8FBB5FE8FB9D02456B274AFA /* libPods-Airhop.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 000D0CEF937A22045C2E2D0B /* libPods-Airhop.a */; };
-		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		29977927D520A508D19B41F8 /* AirhopAppModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */; };
-		D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FA0E833A874E33409274CD /* AirhopAppModule.swift */; };
-		EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */; };
-		19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */; };
-		A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */; };
-		166BDE042C843A9400350594 /* AirhopLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27C0090533B740D2B558EEA /* AirhopLog.swift */; };
-		6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120EE9C30B11446E9538C928 /* AirhopTorManager.swift */; };
-		E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */; };
-		636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */; };
-		8C58E4B38D9145A688D15229 /* AirhopTorSocket.mm in Resources */ = {isa = PBXBuildFile; fileRef = 7C16D0E978324981A4FBA7CA /* AirhopTorSocket.mm */; };
-		BBBFF42043AE47019FA225ED /* AirhopTorSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */; };
-		04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */; };
 		56B4EC76AA924F30BDF0032B /* AirhopVoiceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E175A8511747A080C246EA /* AirhopVoiceModule.swift */; };
-		7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = 708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */; };
-		A1D3C4E5B6074F1288AA0101 /* AirhopLANModule.mm in Resources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0103 /* AirhopLANModule.mm */; };
+		6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120EE9C30B11446E9538C928 /* AirhopTorManager.swift */; };
+		636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */; };
+		6A37230833884F4497E0773D /* AirhopWiFiModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A2C8F11CF745C28428706A /* AirhopWiFiModule.swift */; };
+		7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */; };
+		85697010AA2B5354025C23E1 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FC1806596E87D38D8BF088 /* ExpoModulesProvider.swift */; };
+		8BBD9D4FF4E442FE94D3D9BA /* AirhopWiFiPairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1C4EDECF004DA490E3BF35 /* AirhopWiFiPairing.swift */; };
+		8C58E4B38D9145A688D15229 /* AirhopTorSocket.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C16D0E978324981A4FBA7CA /* AirhopTorSocket.mm */; };
+		8FBB5FE8FB9D02456B274AFA /* libPods-Airhop.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 000D0CEF937A22045C2E2D0B /* libPods-Airhop.a */; };
+		A17H0P77B140A537DA25BDCF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A17H0PF11FDBB12D087E7F60 /* InfoPlist.strings */; };
+		A1D3C4E5B6074F1288AA0101 /* AirhopLANModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0103 /* AirhopLANModule.mm */; };
 		A1D3C4E5B6074F1288AA0102 /* AirhopLANModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0104 /* AirhopLANModule.swift */; };
+		A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */; };
 		A1D3C4E5B6074F1288AA0301 /* Framing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0303 /* Framing.swift */; };
 		A1D3C4E5B6074F1288AA0302 /* AwareDial.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */; };
-		6A37230833884F4497E0773D /* AirhopWiFiModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A2C8F11CF745C28428706A /* AirhopWiFiModule.swift */; };
-		012A2DC7FB6347ACB2C832E6 /* AirhopWiFiPairing.mm in Resources */ = {isa = PBXBuildFile; fileRef = C105DF90A0A74D54A7BDC67F /* AirhopWiFiPairing.mm */; };
-		8BBD9D4FF4E442FE94D3D9BA /* AirhopWiFiPairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1C4EDECF004DA490E3BF35 /* AirhopWiFiPairing.swift */; };
-		A17H0P77B140A537DA25BDCF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A17H0PF11FDBB12D087E7F60 /* InfoPlist.strings */; };
+		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		BBBFF42043AE47019FA225ED /* AirhopTorSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */; };
+		D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FA0E833A874E33409274CD /* AirhopAppModule.swift */; };
+		E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */; };
+		EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */; };
+		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		000D0CEF937A22045C2E2D0B /* libPods-Airhop.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Airhop.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		11FC1806596E87D38D8BF088 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Airhop/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		120EE9C30B11446E9538C928 /* AirhopTorManager.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopTorManager.swift; path = Airhop/AirhopTorManager.swift; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Airhop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Airhop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Airhop/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Airhop/Info.plist; sourceTree = "<group>"; };
+		21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopTorModule.swift; path = Airhop/AirhopTorModule.swift; sourceTree = "<group>"; };
 		23C14556EFBEB06A3DE0FB6B /* Pods-Airhop.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Airhop.release.xcconfig"; path = "Target Support Files/Pods-Airhop/Pods-Airhop.release.xcconfig"; sourceTree = "<group>"; };
+		39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopTorModule.mm; path = Airhop/AirhopTorModule.mm; sourceTree = "<group>"; };
+		3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopBLEModule.mm; path = Airhop/AirhopBLEModule.mm; sourceTree = "<group>"; };
+		66E175A8511747A080C246EA /* AirhopVoiceModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVoiceModule.swift; path = Airhop/AirhopVoiceModule.swift; sourceTree = "<group>"; };
+		708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopWiFiModule.mm; path = Airhop/AirhopWiFiModule.mm; sourceTree = "<group>"; };
+		73FA0E833A874E33409274CD /* AirhopAppModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopAppModule.swift; path = Airhop/AirhopAppModule.swift; sourceTree = "<group>"; };
+		76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopBLEModule.swift; path = Airhop/AirhopBLEModule.swift; sourceTree = "<group>"; };
+		7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopTorSocket.swift; path = Airhop/AirhopTorSocket.swift; sourceTree = "<group>"; };
+		7C16D0E978324981A4FBA7CA /* AirhopTorSocket.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopTorSocket.mm; path = Airhop/AirhopTorSocket.mm; sourceTree = "<group>"; };
 		87A7C786351BCB6BCEF24E5A /* Pods-Airhop.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Airhop.debug.xcconfig"; path = "Target Support Files/Pods-Airhop/Pods-Airhop.debug.xcconfig"; sourceTree = "<group>"; };
+		8B1C4EDECF004DA490E3BF35 /* AirhopWiFiPairing.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopWiFiPairing.swift; path = Airhop/AirhopWiFiPairing.swift; sourceTree = "<group>"; };
+		9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopAppModule.mm; path = Airhop/AirhopAppModule.mm; sourceTree = "<group>"; };
+		A17H0P171FA68CEF91040B0C /* fil */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fil; path = Airhop/fil.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P1CAAE2B574C725813D /* tr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = tr; path = Airhop/tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P32A0B2CD87D9DB2E9C /* am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = am; path = Airhop/am.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P38F23E7869E3B02CDC /* ms */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ms; path = Airhop/ms.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P461B16F42482897141 /* uk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = uk; path = Airhop/uk.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P47665BAC34DD1F5D32 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = Airhop/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P476A65CD7313FB1228 /* it */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = it; path = Airhop/it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P4BF81CFAB2E8C63E7E /* ar */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ar; path = Airhop/ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P4CBAB500D1563578CB /* th */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = th; path = Airhop/th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P51A772BC401F8407FD /* vi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = vi; path = Airhop/vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P58729A8ED7E59D400A /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "Airhop/zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A17H0P5A4B71ACC20A5AE5FE /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = de; path = Airhop/de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P722AA36E90AD09CE3A /* ur */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ur; path = Airhop/ur.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P73B30867F57DAC2A6D /* ja */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ja; path = Airhop/ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P7597925779403BDF9D /* ko */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ko; path = Airhop/ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P76C794747E69B95063 /* hi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = hi; path = Airhop/hi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P7D43007BEC1ABD8EFF /* fa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fa; path = Airhop/fa.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P7E3C6B6B0016F0C27A /* mg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = mg; path = Airhop/mg.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P89C3C4F1B66E0FCFC7 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ru; path = Airhop/ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P946B734E080FB7009C /* nl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = nl; path = Airhop/nl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P954BEC60C05D4FDAD1 /* sw */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sw; path = Airhop/sw.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0P9A463E9E1017243C97 /* id */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = id; path = Airhop/id.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PA992AE8E6710E3FBB3 /* ne */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ne; path = Airhop/ne.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PAA2D0684DE4D36D991 /* zh-Hant */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "Airhop/zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A17H0PAB177D153012A22A23 /* sv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sv; path = Airhop/sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PB36173EF5FC1BE0C85 /* pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pl; path = Airhop/pl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PBB970EB9BB9014D1DA /* ka */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ka; path = Airhop/ka.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PCC3E579B9F12924653 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fr; path = Airhop/fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PD33B1D037F69C3B83E /* my */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = my; path = Airhop/my.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PDC0B085F14AF668FA7 /* pt-BR */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Airhop/pt-BR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A17H0PE35D27C69B31241792 /* es */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = es; path = Airhop/es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PE7E391F74A8F9B41F8 /* ta */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ta; path = Airhop/ta.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PEF7CE9AA6F970B92A3 /* bn */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bn; path = Airhop/bn.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PF1C8242768F53DC32B /* pa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pa; path = Airhop/pa.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A17H0PF3DE03A02653ACD3A3 /* pt-PT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "Airhop/pt-PT.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0103 /* AirhopLANModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopLANModule.mm; path = Airhop/AirhopLANModule.mm; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0104 /* AirhopLANModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopLANModule.swift; path = Airhop/AirhopLANModule.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopIPtProxy.swift; path = Airhop/AirhopIPtProxy.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0303 /* Framing.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = Framing.swift; path = Airhop/Transport/Framing.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AwareDial.swift; path = Airhop/Transport/AwareDial.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Airhop/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopVoiceModule.mm; path = Airhop/AirhopVoiceModule.mm; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C105DF90A0A74D54A7BDC67F /* AirhopWiFiPairing.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopWiFiPairing.mm; path = Airhop/AirhopWiFiPairing.mm; sourceTree = "<group>"; };
+		C27C0090533B740D2B558EEA /* AirhopLog.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopLog.swift; path = Airhop/AirhopLog.swift; sourceTree = "<group>"; };
+		D5A2C8F11CF745C28428706A /* AirhopWiFiModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopWiFiModule.swift; path = Airhop/AirhopWiFiModule.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Airhop/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Airhop-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Airhop-Bridging-Header.h"; path = "Airhop/Airhop-Bridging-Header.h"; sourceTree = "<group>"; };
 		F73C4B2BCE44B84717C4386B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Airhop/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		9BE95663353D62C98BFD7565 /* AirhopAppModule.mm */ = {isa = PBXFileReference; name = "AirhopAppModule.mm"; path = "Airhop/AirhopAppModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		73FA0E833A874E33409274CD /* AirhopAppModule.swift */ = {isa = PBXFileReference; name = "AirhopAppModule.swift"; path = "Airhop/AirhopAppModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */ = {isa = PBXFileReference; name = "AirhopBLEModule.mm"; path = "Airhop/AirhopBLEModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		76C2CC9F14BB4C94B2DF8C49 /* AirhopBLEModule.swift */ = {isa = PBXFileReference; name = "AirhopBLEModule.swift"; path = "Airhop/AirhopBLEModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */ = {isa = PBXFileReference; name = "AirhopIPtProxy.swift"; path = "Airhop/AirhopIPtProxy.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		C27C0090533B740D2B558EEA /* AirhopLog.swift */ = {isa = PBXFileReference; name = "AirhopLog.swift"; path = "Airhop/AirhopLog.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		120EE9C30B11446E9538C928 /* AirhopTorManager.swift */ = {isa = PBXFileReference; name = "AirhopTorManager.swift"; path = "Airhop/AirhopTorManager.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */ = {isa = PBXFileReference; name = "AirhopTorModule.mm"; path = "Airhop/AirhopTorModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */ = {isa = PBXFileReference; name = "AirhopTorModule.swift"; path = "Airhop/AirhopTorModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		7C16D0E978324981A4FBA7CA /* AirhopTorSocket.mm */ = {isa = PBXFileReference; name = "AirhopTorSocket.mm"; path = "Airhop/AirhopTorSocket.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */ = {isa = PBXFileReference; name = "AirhopTorSocket.swift"; path = "Airhop/AirhopTorSocket.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */ = {isa = PBXFileReference; name = "AirhopVoiceModule.mm"; path = "Airhop/AirhopVoiceModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		66E175A8511747A080C246EA /* AirhopVoiceModule.swift */ = {isa = PBXFileReference; name = "AirhopVoiceModule.swift"; path = "Airhop/AirhopVoiceModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */ = {isa = PBXFileReference; name = "AirhopWiFiModule.mm"; path = "Airhop/AirhopWiFiModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		A1D3C4E5B6074F1288AA0103 /* AirhopLANModule.mm */ = {isa = PBXFileReference; name = "AirhopLANModule.mm"; path = "Airhop/AirhopLANModule.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		A1D3C4E5B6074F1288AA0104 /* AirhopLANModule.swift */ = {isa = PBXFileReference; name = "AirhopLANModule.swift"; path = "Airhop/AirhopLANModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		A1D3C4E5B6074F1288AA0303 /* Framing.swift */ = {isa = PBXFileReference; name = "Framing.swift"; path = "Airhop/Transport/Framing.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */ = {isa = PBXFileReference; name = "AwareDial.swift"; path = "Airhop/Transport/AwareDial.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		D5A2C8F11CF745C28428706A /* AirhopWiFiModule.swift */ = {isa = PBXFileReference; name = "AirhopWiFiModule.swift"; path = "Airhop/AirhopWiFiModule.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		C105DF90A0A74D54A7BDC67F /* AirhopWiFiPairing.mm */ = {isa = PBXFileReference; name = "AirhopWiFiPairing.mm"; path = "Airhop/AirhopWiFiPairing.mm"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = sourcecode.cpp.objcpp; explicitFileType = undefined; includeInIndex = 0; };
-		8B1C4EDECF004DA490E3BF35 /* AirhopWiFiPairing.swift */ = {isa = PBXFileReference; name = "AirhopWiFiPairing.swift"; path = "Airhop/AirhopWiFiPairing.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		A17H0P47665BAC34DD1F5D32 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = "Airhop/en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P32A0B2CD87D9DB2E9C /* am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = am; path = "Airhop/am.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P4BF81CFAB2E8C63E7E /* ar */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ar; path = "Airhop/ar.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P5A4B71ACC20A5AE5FE /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = de; path = "Airhop/de.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PE35D27C69B31241792 /* es */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = es; path = "Airhop/es.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P7D43007BEC1ABD8EFF /* fa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fa; path = "Airhop/fa.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P171FA68CEF91040B0C /* fil */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fil; path = "Airhop/fil.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PCC3E579B9F12924653 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fr; path = "Airhop/fr.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P76C794747E69B95063 /* hi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = hi; path = "Airhop/hi.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P9A463E9E1017243C97 /* id */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = id; path = "Airhop/id.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P476A65CD7313FB1228 /* it */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = it; path = "Airhop/it.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P73B30867F57DAC2A6D /* ja */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ja; path = "Airhop/ja.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P7597925779403BDF9D /* ko */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ko; path = "Airhop/ko.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P38F23E7869E3B02CDC /* ms */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ms; path = "Airhop/ms.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PD33B1D037F69C3B83E /* my */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = my; path = "Airhop/my.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PA992AE8E6710E3FBB3 /* ne */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ne; path = "Airhop/ne.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P946B734E080FB7009C /* nl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = nl; path = "Airhop/nl.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PB36173EF5FC1BE0C85 /* pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pl; path = "Airhop/pl.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PDC0B085F14AF668FA7 /* pt-BR */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Airhop/pt-BR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P89C3C4F1B66E0FCFC7 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ru; path = "Airhop/ru.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PAB177D153012A22A23 /* sv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sv; path = "Airhop/sv.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P954BEC60C05D4FDAD1 /* sw */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sw; path = "Airhop/sw.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PE7E391F74A8F9B41F8 /* ta */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ta; path = "Airhop/ta.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P4CBAB500D1563578CB /* th */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = th; path = "Airhop/th.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P1CAAE2B574C725813D /* tr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = tr; path = "Airhop/tr.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P461B16F42482897141 /* uk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = uk; path = "Airhop/uk.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P722AA36E90AD09CE3A /* ur */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ur; path = "Airhop/ur.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P51A772BC401F8407FD /* vi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = vi; path = "Airhop/vi.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P58729A8ED7E59D400A /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "Airhop/zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PAA2D0684DE4D36D991 /* zh-Hant */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "Airhop/zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PEF7CE9AA6F970B92A3 /* bn */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bn; path = "Airhop/bn.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PBB970EB9BB9014D1DA /* ka */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ka; path = "Airhop/ka.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0P7E3C6B6B0016F0C27A /* mg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = mg; path = "Airhop/mg.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PF1C8242768F53DC32B /* pa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pa; path = "Airhop/pa.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A17H0PF3DE03A02653ACD3A3 /* pt-PT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "Airhop/pt-PT.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -384,22 +384,40 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Airhop/Pods-Airhop-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoCamera/ExpoCamera.framework/ExpoCamera",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoCameraBarcodeScanning/ExpoCameraBarcodeScanning.framework/ExpoCameraBarcodeScanning",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoCameraBarcodeScanning/ZXingObjC.framework/ZXingObjC",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem.framework/ExpoFileSystem",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoFont/ExpoFont.framework/ExpoFont",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoImageManipulator/ExpoImageManipulator.framework/ExpoImageManipulator",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoImageManipulator/SDWebImage.framework/SDWebImage",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoImageManipulator/SDWebImageWebPCoder.framework/SDWebImageWebPCoder",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoLocation/ExpoLocation.framework/ExpoLocation",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoMediaLibrary/ExpoMediaLibrary.framework/ExpoMediaLibrary",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesCore/ExpoModulesCore.framework/ExpoModulesCore",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesJSI/ExpoModulesJSI.framework/ExpoModulesJSI",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesWorklets/ExpoModulesWorklets.framework/ExpoModulesWorklets",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoVideo/ExpoVideo.framework/ExpoVideo",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoCamera.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoCameraBarcodeScanning.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZXingObjC.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoFileSystem.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoFont.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoImageManipulator.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImageWebPCoder.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoLocation.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoMediaLibrary.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoModulesCore.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoModulesJSI.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoModulesWorklets.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoVideo.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
@@ -440,20 +458,28 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Airhop/Pods-Airhop-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoMediaLibrary/ExpoMediaLibrary_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoNotifications/ExpoNotifications_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoSystemUI/ExpoSystemUI_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-timing/React-timing_privacy.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoApplication_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoMediaLibrary_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoNotifications_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoSystemUI_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-timing_privacy.bundle",
@@ -472,26 +498,26 @@
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				85697010AA2B5354025C23E1 /* ExpoModulesProvider.swift in Sources */,
-				29977927D520A508D19B41F8 /* AirhopAppModule.mm in Resources */,
+				29977927D520A508D19B41F8 /* AirhopAppModule.mm in Sources */,
 				D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */,
-				EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Resources */,
+				EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Sources */,
 				19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */,
 				A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */,
-				A1D3C4E5B6074F1288AA0101 /* AirhopLANModule.mm in Resources */,
+				A1D3C4E5B6074F1288AA0101 /* AirhopLANModule.mm in Sources */,
 				A1D3C4E5B6074F1288AA0102 /* AirhopLANModule.swift in Sources */,
 				A1D3C4E5B6074F1288AA0302 /* AwareDial.swift in Sources */,
 				A1D3C4E5B6074F1288AA0301 /* Framing.swift in Sources */,
 				166BDE042C843A9400350594 /* AirhopLog.swift in Sources */,
 				6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */,
-				E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Resources */,
+				E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Sources */,
 				636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */,
-				8C58E4B38D9145A688D15229 /* AirhopTorSocket.mm in Resources */,
+				8C58E4B38D9145A688D15229 /* AirhopTorSocket.mm in Sources */,
 				BBBFF42043AE47019FA225ED /* AirhopTorSocket.swift in Sources */,
-				04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Resources */,
+				04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Sources */,
 				56B4EC76AA924F30BDF0032B /* AirhopVoiceModule.swift in Sources */,
-				7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Resources */,
+				7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Sources */,
 				6A37230833884F4497E0773D /* AirhopWiFiModule.swift in Sources */,
-				012A2DC7FB6347ACB2C832E6 /* AirhopWiFiPairing.mm in Resources */,
+				012A2DC7FB6347ACB2C832E6 /* AirhopWiFiPairing.mm in Sources */,
 				8BBD9D4FF4E442FE94D3D9BA /* AirhopWiFiPairing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

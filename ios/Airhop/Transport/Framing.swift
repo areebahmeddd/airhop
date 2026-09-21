@@ -7,30 +7,30 @@
 import Foundation
 
 enum Framing {
-    // One 64 KiB file chunk plus the length prefix.
-    static let maxFrame = 65_544
-    static let prefixBytes = 4
+  // One 64 KiB file chunk plus the length prefix.
+  static let maxFrame = 65_544
+  static let prefixBytes = 4
 
-    static func encode(_ payload: Data) -> Data {
-        let length = UInt32(payload.count)
-        var out = Data(capacity: prefixBytes + payload.count)
-        out.append(UInt8((length >> 24) & 0xff))
-        out.append(UInt8((length >> 16) & 0xff))
-        out.append(UInt8((length >> 8) & 0xff))
-        out.append(UInt8(length & 0xff))
-        out.append(payload)
-        return out
-    }
+  static func encode(_ payload: Data) -> Data {
+    let length = UInt32(payload.count)
+    var out = Data(capacity: prefixBytes + payload.count)
+    out.append(UInt8((length >> 24) & 0xff))
+    out.append(UInt8((length >> 16) & 0xff))
+    out.append(UInt8((length >> 8) & 0xff))
+    out.append(UInt8(length & 0xff))
+    out.append(payload)
+    return out
+  }
 
-    // The body length a prefix announces, or nil when the prefix cannot be
-    // trusted: a claim past maxFrame means the stream is not ours or has lost
-    // sync.
-    static func length(_ prefix: Data) -> Int? {
-        guard prefix.count == prefixBytes else { return nil }
-        let bytes = [UInt8](prefix)
-        let length =
-            (Int(bytes[0]) << 24) | (Int(bytes[1]) << 16) | (Int(bytes[2]) << 8) | Int(bytes[3])
-        guard length <= maxFrame else { return nil }
-        return length
-    }
+  // The body length a prefix announces, or nil when the prefix cannot be
+  // trusted: a claim past maxFrame means the stream is not ours or has lost
+  // sync.
+  static func length(_ prefix: Data) -> Int? {
+    guard prefix.count == prefixBytes else { return nil }
+    let bytes = [UInt8](prefix)
+    let length =
+      (Int(bytes[0]) << 24) | (Int(bytes[1]) << 16) | (Int(bytes[2]) << 8) | Int(bytes[3])
+    guard length <= maxFrame else { return nil }
+    return length
+  }
 }
