@@ -384,6 +384,7 @@ half each person is playing.
 - NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte-for-byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - Kinds 20000 and 20001 for geohash channels and presence heartbeats
 - `SimplePool` connects to 3 to 5 relays at once and takes the first ACK, so no single relay is load-bearing
+- A network coming back is one debounced event (`src/services/reachability.ts`, on `expo-network`), not a wait on a timer: it rebuilds the pool when no relay is live, re-checks Tor, and retries queued mail. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
 - Tor off by default on both platforms, behind one toggle
 
 ### Radio power policy (Android)
