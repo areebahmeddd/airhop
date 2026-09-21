@@ -25,8 +25,8 @@ if [ "$BRANCH" != "main" ]; then
   exit 1
 fi
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "Working tree is not clean." >&2
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+  echo "Working tree has uncommitted changes to tracked files." >&2
   exit 1
 fi
 
