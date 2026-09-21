@@ -277,6 +277,15 @@ network, and whoever runs it, that this phone is carrying Airhop, which on a
 workplace or venue network is an attendance list. The Settings copy says that
 rather than selling the speed.
 
+Links carry the same liveness as Wi-Fi Aware: a zero-length heartbeat every
+8 s, closed after 30 s of silence, on both platforms. A LAN link outranks
+Bluetooth for a peer held on both, so a phone that walked off the network
+without a FIN must be noticed in seconds rather than minutes or every DM to it
+goes into a dead socket. Dials time out at 5 s on both platforms; on iOS a
+connection left `.waiting` by a network that drops peer traffic is treated as a
+failed dial, since Network framework would otherwise wait for a better path
+forever.
+
 | Constraint       | Consequence                                                                                                                                                                                                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Client isolation | Most guest and venue WiFi blocks peer-to-peer traffic at the access point, and it cannot be detected before trying. The UI has to say "No Airhop devices on this network" rather than spin                                                                                                                         |
@@ -345,7 +354,13 @@ the framework ended (with a rebuild if it keeps happening), after three idle
 minutes with no link, and when a peer has failed four attempts over two minutes.
 `availabilityChanged(false)` means the radio is gone or the attach must be
 rebuilt, nothing less, so the JS ladder is a backstop rather than the recovery
-path. The module keeps its own event log and peer table for Diagnostics
+path. The ladder also carries a breaker: three sessions the framework ends
+within three minutes of attaching, inside a quarter of an hour, pause the
+transport for the session, because on some phones opening a data path resets
+the Wi-Fi chip and a plain retry would drop the router connection once a minute
+for as long as the app runs. A radio the user switched off never counts; the
+drop names which it was. The transport has a switch on the Network screen, on
+by default, and flipping it is what clears the breaker. The module keeps its own event log and peer table for Diagnostics
 (`dumpState()`), because Samsung retail builds drop every informational logcat
 line.
 
@@ -694,12 +709,6 @@ Two limits that wallets often blur:
 | History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                 |
 
 The mint is a minimal trust party and holds no custody of the device's proofs.
-
-### Library
-
-`@cashu/cashu-ts` v4.7 (MIT, TypeScript-first, ESM) owns proof selection (RGLI),
-fee arithmetic, blinding, and the mint HTTP surface.
-`src/services/wallet-service.ts` owns everything above it.
 
 ## 8. Privacy and Tor
 

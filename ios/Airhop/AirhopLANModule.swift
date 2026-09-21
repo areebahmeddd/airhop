@@ -48,6 +48,20 @@ enum LANConst {
     static let maxFrame = 65_544
 }
 
+/// Liveness, the same numbers as the Kotlin side: a zero-length heartbeat every
+/// 8 s, and a link that has carried nothing for 30 s is closed. Matters more
+/// here than on any other link: a LAN link outranks Bluetooth for a peer held
+/// on both, so a dead one would take every DM to that peer until it was noticed.
+///
+/// The dial timeout matches Android's 5 s. Without it a connect on a network
+/// that drops peer traffic (client isolation) sits in `.waiting` for good, and
+/// Network framework never fails it on its own.
+private enum LANLiveness {
+    static let heartbeat: TimeInterval = 8
+    static let deadline: TimeInterval = 30
+    static let connectTimeoutSeconds = 5
+}
+
 private enum LANEvent {
     static let peerDiscovered = "AirhopLAN.peerDiscovered"
     static let peerLost = "AirhopLAN.peerLost"
@@ -81,7 +95,7 @@ private enum LANFrame {
         let bytes = [UInt8](header)
         let length =
             (Int(bytes[0]) << 24) | (Int(bytes[1]) << 16) | (Int(bytes[2]) << 8) | Int(bytes[3])
-        guard length > 0, length <= LANConst.maxFrame else { return nil }
+        guard length >= 0, length <= LANConst.maxFrame else { return nil }
         return length
     }
 }
@@ -145,6 +159,9 @@ private final class LANTransport {
         /// nothing here needs the name for anything but answering "already
         /// connected" to a repeat dial.
         let serviceName: String?
+        var ready = false
+        /// Monotonic, so a clock change cannot trip the deadline.
+        var lastReadAt = ProcessInfo.processInfo.systemUptime
         var closing = false
     }
 
@@ -153,6 +170,8 @@ private final class LANTransport {
 
     private var listener: NWListener?
     private var browser: NWBrowser?
+    /// One timer for every link: sends the heartbeats and applies the deadline.
+    private var liveness: DispatchSourceTimer?
     private var links: [String: Link] = [:]
     /// Endpoints Bonjour has told us about, by the name they publish. Held
     /// because a dial names a peer, not an address: Bonjour resolves lazily
@@ -208,17 +227,7 @@ private final class LANTransport {
             self.lastReportedAvailable = nil
             self.pendingStart = completion
 
-            let parameters = NWParameters.tcp
-            // Frames are small and latency matters more than packing: the mesh
-            // writes one packet per call and waits for nothing.
-            if let tcp = parameters.defaultProtocolStack.transportProtocol
-                as? NWProtocolTCP.Options
-            {
-                tcp.noDelay = true
-            }
-            // Peer-to-peer so the listener is reachable over a link-local
-            // address as well as a routed one.
-            parameters.includePeerToPeer = true
+            let parameters = self.tcpParameters()
 
             let listener: NWListener
             do {
@@ -259,6 +268,52 @@ private final class LANTransport {
             listener.start(queue: self.queue)
 
             self.startBrowsing(parameters: parameters)
+            self.startLiveness()
+        }
+    }
+
+    /// Shared by the listener and every dial. `noDelay` because frames are small
+    /// and latency matters more than packing; peer-to-peer so a link-local
+    /// address is reachable as well as a routed one; the connect timeout is the
+    /// only thing that ends a dial a network is silently dropping.
+    private func tcpParameters() -> NWParameters {
+        let parameters = NWParameters.tcp
+        if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
+            tcp.noDelay = true
+            tcp.enableKeepalive = true
+            tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+        }
+        parameters.includePeerToPeer = true
+        return parameters
+    }
+
+    private func startLiveness() {
+        liveness?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + LANLiveness.heartbeat, repeating: LANLiveness.heartbeat)
+        timer.setEventHandler { [weak self] in self?.tick() }
+        timer.resume()
+        liveness = timer
+    }
+
+    /// Every link that is up gets a heartbeat; one silent past the deadline is
+    /// closed. `send` on a dead connection reports the error, which closes it
+    /// the same way.
+    private func tick() {
+        let now = ProcessInfo.processInfo.systemUptime
+        for (linkID, link) in links where link.ready && !link.closing {
+            if now - link.lastReadAt > LANLiveness.deadline {
+                AirhopLog.lan.notice("LAN link idle past deadline: \(linkID, privacy: .public)")
+                closeLink(linkID)
+                continue
+            }
+            link.connection.send(
+                content: LANFrame.encode(Data()),
+                completion: .contentProcessed { [weak self] error in
+                    guard error != nil else { return }
+                    self?.queue.async { self?.closeLink(linkID) }
+                }
+            )
         }
     }
 
@@ -283,6 +338,8 @@ private final class LANTransport {
     /// `queue`. Keys copied before closing, matching the Kotlin side, so the
     /// loop does not walk a dictionary its own body is emptying.
     private func teardown() {
+        liveness?.cancel()
+        liveness = nil
         browser?.cancel()
         browser = nil
         listener?.cancel()
@@ -373,9 +430,7 @@ private final class LANTransport {
                 completion(nil)
                 return
             }
-            let parameters = NWParameters.tcp
-            parameters.includePeerToPeer = true
-            let connection = NWConnection(to: endpoint, using: parameters)
+            let connection = NWConnection(to: endpoint, using: self.tcpParameters())
             self.adopt(
                 connection,
                 direction: "out",
@@ -410,9 +465,23 @@ private final class LANTransport {
                         settled = true
                         onReady?(nil)
                     }
+                    if var link = self.links[linkID] {
+                        link.ready = true
+                        link.lastReadAt = ProcessInfo.processInfo.systemUptime
+                        self.links[linkID] = link
+                    }
                     AirhopLog.lan.notice("LAN link up: \(linkID, privacy: .public)")
                     self.emit(LANEvent.linkConnected, ["linkID": linkID])
                     self.readFrame(linkID: linkID, connection: connection)
+                case let .waiting(error):
+                    // No path, or a connect the network is dropping. Network
+                    // framework waits for a better path indefinitely; a link is
+                    // not one, so this ends here as a failure.
+                    if !settled {
+                        settled = true
+                        onReady?(.connectFailed(String(describing: error)))
+                    }
+                    self.closeLink(linkID)
                 case let .failed(error):
                     if !settled {
                         settled = true
@@ -451,6 +520,12 @@ private final class LANTransport {
                     self.closeLink(linkID)
                     return
                 }
+                self.noteRead(linkID)
+                // A heartbeat carries nothing.
+                if length == 0 {
+                    self.readFrame(linkID: linkID, connection: connection)
+                    return
+                }
                 connection.receive(
                     minimumIncompleteLength: length,
                     maximumLength: length
@@ -474,6 +549,12 @@ private final class LANTransport {
                 }
             }
         }
+    }
+
+    private func noteRead(_ linkID: String) {
+        guard var link = links[linkID] else { return }
+        link.lastReadAt = ProcessInfo.processInfo.systemUptime
+        links[linkID] = link
     }
 
     func write(
@@ -618,6 +699,11 @@ final class AirhopLANModule: RCTEventEmitter {
                 "Frame of \(payload.count) exceeds the peer's read limit",
                 nil
             )
+            return
+        }
+        // The empty frame is the heartbeat.
+        guard !payload.isEmpty else {
+            reject("INVALID_DATA", "Empty frame", nil)
             return
         }
         transport.write(linkID: linkID, payload: payload) { failure in

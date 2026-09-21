@@ -47,6 +47,8 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "AirhopLANModule"
@@ -77,12 +79,13 @@ private const val EVT_AVAILABILITY_CHANGED = "AirhopLAN.availabilityChanged"
 // Matches AirhopWiFiModule and the iOS side: 64 KiB of payload plus the prefix.
 private const val MAX_FRAME = 65544
 
-// A read deadline is what turns a half-open link into a closed one. Without it
-// a socket whose far side vanished without a FIN sits in `links` until a write
-// happens to fail, and the courier counts links to decide whether it has anyone
-// to hand mail to. Same value and same reason as the WiFi module.
-private const val READ_TIMEOUT_MS = 90_000
-private const val MAX_IDLE_TIMEOUTS = 3
+// Liveness, the same numbers as the WiFi module: a zero-length heartbeat every
+// 8 s against a 10 s read deadline, three misses allowed, so a peer that walked
+// off the network without a FIN is closed in about thirty seconds. LAN outranks
+// Bluetooth for a peer held on both, so a dead one would take every DM until noticed.
+private const val HEARTBEAT_MS = 8_000L
+private const val READ_TIMEOUT_MS = 10_000
+private const val IDLE_LIMIT = 3
 
 // How long to wait for a dial before giving up. Client isolation, which most
 // guest networks enable, shows up here as a connect that never completes rather
@@ -120,6 +123,7 @@ class AirhopLANModule(
         }
 
     private val ioExecutor = Executors.newCachedThreadPool()
+    private val heartbeatExecutor = Executors.newSingleThreadScheduledExecutor()
     private val linkCounter = AtomicInteger(0)
 
     private class LinkState(
@@ -127,7 +131,9 @@ class AirhopLANModule(
         val socket: Socket,
         val output: OutputStream,
         val writeLock: Any = Any(),
-    )
+    ) {
+        @Volatile var heartbeat: ScheduledFuture<*>? = null
+    }
 
     private val links = ConcurrentHashMap<String, LinkState>()
 
@@ -561,19 +567,44 @@ class AirhopLANModule(
     private fun registerLink(id: String, socket: Socket, serviceName: String? = null) {
         try {
             socket.tcpNoDelay = true
+            socket.keepAlive = true
             socket.soTimeout = READ_TIMEOUT_MS
-            val output = socket.getOutputStream()
-            links[id] = LinkState(id, socket, output)
+            val link = LinkState(id, socket, socket.getOutputStream())
+            links[id] = link
             if (serviceName != null) {
                 linkByName[serviceName] = id
                 nameByLink[id] = serviceName
             }
+            link.heartbeat = heartbeatExecutor.scheduleWithFixedDelay({
+                ioExecutor.execute {
+                    try {
+                        writeFrame(link, ByteArray(0))
+                    } catch (e: Exception) {
+                        handleLinkClose(id)
+                    }
+                }
+            }, HEARTBEAT_MS, HEARTBEAT_MS, TimeUnit.MILLISECONDS)
             emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
             Log.i(TAG, "LAN link connected: $id")
             startReadLoop(id, socket.getInputStream())
         } catch (e: Exception) {
             Log.e(TAG, "Could not register link $id: ${e.message}")
             runCatching { socket.close() }
+        }
+    }
+
+    // Length-prefixed frame: [4-byte BE length][data]. Blocking; IO thread.
+    private fun writeFrame(link: LinkState, data: ByteArray) {
+        val frame = ByteArray(4 + data.size)
+        val len = data.size
+        frame[0] = (len shr 24).toByte()
+        frame[1] = (len shr 16).toByte()
+        frame[2] = (len shr 8).toByte()
+        frame[3] = len.toByte()
+        data.copyInto(frame, 4)
+        synchronized(link.writeLock) {
+            link.output.write(frame)
+            link.output.flush()
         }
     }
 
@@ -594,20 +625,15 @@ class AirhopLANModule(
             promise.reject("FRAME_TOO_LARGE", "Frame of ${data.size} exceeds the peer's read limit")
             return
         }
+        // The empty frame is the heartbeat.
+        if (data.isEmpty()) {
+            promise.reject("INVALID_DATA", "Empty frame")
+            return
+        }
         try {
             ioExecutor.execute {
                 try {
-                    val frame = ByteArray(4 + data.size)
-                    val len = data.size
-                    frame[0] = (len shr 24).toByte()
-                    frame[1] = (len shr 16).toByte()
-                    frame[2] = (len shr 8).toByte()
-                    frame[3] = len.toByte()
-                    data.copyInto(frame, 4)
-                    synchronized(link.writeLock) {
-                        link.output.write(frame)
-                        link.output.flush()
-                    }
+                    writeFrame(link, data)
                     promise.resolve(null)
                 } catch (e: Exception) {
                     Log.w(TAG, "Write failed on $linkID: ${e.message}")
@@ -624,29 +650,35 @@ class AirhopLANModule(
         ioExecutor.execute {
             val lenBuf = ByteArray(4)
             var idleTimeouts = 0
+            // A deadline that lands with part of a frame in hand cannot be
+            // waited out: the next read would take the rest of it for a prefix.
+            var inFrame = 0
             while (true) {
                 try {
-                    var read = 0
-                    while (read < 4) {
-                        val n = input.read(lenBuf, read, 4 - read)
+                    inFrame = 0
+                    while (inFrame < 4) {
+                        val n = input.read(lenBuf, inFrame, 4 - inFrame)
                         if (n < 0) throw java.io.EOFException("EOF in length prefix")
-                        read += n
+                        inFrame += n
                     }
                     val len = ((lenBuf[0].toInt() and 0xff) shl 24) or
                         ((lenBuf[1].toInt() and 0xff) shl 16) or
                         ((lenBuf[2].toInt() and 0xff) shl 8) or
                         (lenBuf[3].toInt() and 0xff)
-                    if (len <= 0 || len > MAX_FRAME) {
+                    if (len < 0 || len > MAX_FRAME) {
                         throw Exception("LAN link $linkID: invalid frame length $len")
                     }
+                    idleTimeouts = 0
+                    // A heartbeat carries nothing.
+                    if (len == 0) continue
                     val payload = ByteArray(len)
                     var got = 0
                     while (got < len) {
                         val n = input.read(payload, got, len - got)
                         if (n < 0) throw java.io.EOFException("EOF in payload")
                         got += n
+                        inFrame += n
                     }
-                    idleTimeouts = 0
                     emitEvent(
                         EVT_PACKET_RECEIVED,
                         WritableNativeMap().apply {
@@ -655,10 +687,13 @@ class AirhopLANModule(
                         },
                     )
                 } catch (e: java.net.SocketTimeoutException) {
-                    // A quiet link is not a dead one. Only a run of deadlines
-                    // with nothing in between says the far side is gone.
+                    if (inFrame > 0) {
+                        Log.i(TAG, "Link $linkID stalled mid-frame, closing")
+                        handleLinkClose(linkID)
+                        return@execute
+                    }
                     idleTimeouts++
-                    if (idleTimeouts >= MAX_IDLE_TIMEOUTS) {
+                    if (idleTimeouts >= IDLE_LIMIT) {
                         Log.i(TAG, "Link $linkID idle past the deadline, closing")
                         handleLinkClose(linkID)
                         return@execute
@@ -674,6 +709,7 @@ class AirhopLANModule(
 
     private fun handleLinkClose(linkID: String) {
         val link = links.remove(linkID) ?: return
+        link.heartbeat?.cancel(false)
         val name = nameByLink.remove(linkID)
         // Only if it still points here: a newer link may have claimed the name,
         // and clearing it would make the live one look absent.
@@ -696,6 +732,7 @@ class AirhopLANModule(
 
     override fun invalidate() {
         teardown()
+        heartbeatExecutor.shutdownNow()
         ioExecutor.shutdownNow()
         super.invalidate()
     }
