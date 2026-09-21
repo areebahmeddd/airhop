@@ -9,6 +9,10 @@ jest.mock("../mesh-service", () => ({
 jest.mock("../tor-routing", () => ({
   revalidateTorRouting: () => mockRevalidateTor(),
 }));
+const mockReconcileIfDue = jest.fn();
+jest.mock("../wallet-service", () => ({
+  reconcileIfDue: () => mockReconcileIfDue(),
+}));
 
 type NetworkMock = typeof Network & {
   emit: (state: Network.NetworkState) => void;
@@ -16,14 +20,25 @@ type NetworkMock = typeof Network & {
   addNetworkStateListener: jest.Mock;
 };
 
-const WIFI: Network.NetworkState = { type: "WIFI" as never, isConnected: true };
+const WIFI: Network.NetworkState = {
+  type: "WIFI" as never,
+  isConnected: true,
+  isInternetReachable: true,
+};
+const WIFI_UNVALIDATED: Network.NetworkState = {
+  type: "WIFI" as never,
+  isConnected: true,
+  isInternetReachable: false,
+};
 const CELL: Network.NetworkState = {
   type: "CELLULAR" as never,
   isConnected: true,
+  isInternetReachable: true,
 };
 const NONE: Network.NetworkState = {
   type: "NONE" as never,
   isConnected: false,
+  isInternetReachable: false,
 };
 
 // Module state is per watch, so every test gets a fresh module.
@@ -53,6 +68,7 @@ beforeEach(() => {
   jest.useFakeTimers();
   mockOnNetworkChanged.mockClear();
   mockRevalidateTor.mockClear();
+  mockReconcileIfDue.mockClear();
 });
 
 afterEach(() => {
@@ -71,6 +87,21 @@ test("a network coming back nudges the mesh and Tor once, after it settles", asy
   jest.advanceTimersByTime(600);
   expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
   expect(mockRevalidateTor).toHaveBeenCalledTimes(1);
+  expect(mockReconcileIfDue).toHaveBeenCalledTimes(1);
+});
+
+// Android: connected first, validated a few seconds later. A relay dialled in
+// between fails and is dropped, so the validation nudges again.
+test("a network validating after it connected nudges again", async () => {
+  await watch(WIFI);
+  emit(NONE);
+  jest.advanceTimersByTime(3_000);
+  emit(WIFI_UNVALIDATED);
+  jest.advanceTimersByTime(3_000);
+  expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
+  emit(WIFI);
+  jest.advanceTimersByTime(3_000);
+  expect(mockOnNetworkChanged).toHaveBeenCalledTimes(2);
 });
 
 test("a flap inside the window is one event, not several", async () => {

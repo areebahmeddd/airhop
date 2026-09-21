@@ -6077,8 +6077,6 @@ export class MeshService {
   // A network came back, or changed under a live one (services/reachability).
   // The pool is rebuilt only when no relay is live: one with a relay up heals
   // its own drops, and a teardown on a handoff would cost every subscription.
-  // With none live it has given up (a first connect that failed is not
-  // retried) or is deep in its ladder, and a rebuild is the fastest way back.
   onNetworkChanged(): void {
     if (!this.running) return;
     if (this.nostrClient !== null && !this.nostrClient.isConnected) {

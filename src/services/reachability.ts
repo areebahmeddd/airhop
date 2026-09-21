@@ -1,8 +1,7 @@
 // Tells the internet-facing services when a network came back, so they act on
-// the event rather than on their own timers: a relay whose first connect
-// failed is never retried by the pool, a dropped one climbs a ladder that
-// reaches a minute, and Tor's status feed cannot report a change it slept
-// through.
+// the event rather than on their own timers: the relay pool never retries a
+// first connect that failed, a dropped relay waits up to a minute, and Tor's
+// status feed cannot report a change it slept through.
 //
 // A nudge, never a gate. Nothing refuses to connect because the OS reports no
 // network: the mesh is offline-first and a captive portal reads as connected.
@@ -10,6 +9,7 @@
 import * as Network from "expo-network";
 import { getMeshService } from "./mesh-service";
 import { revalidateTorRouting } from "./tor-routing";
+import { reconcileIfDue } from "./wallet-service";
 
 // A Wi-Fi to cellular handoff reports several states inside a second; a change
 // counts once it has held this long.
@@ -17,6 +17,10 @@ const SETTLE_MS = 2_500;
 
 interface Reading {
   reachable: boolean;
+  // Android reports a network before it has validated internet on it, then
+  // again once it has. A relay dialled in between fails and is dropped, so
+  // the validation is an edge of its own.
+  validated: boolean;
   type: string;
 }
 
@@ -27,19 +31,27 @@ let settleTimer: ReturnType<typeof setTimeout> | null = null;
 let committed: Reading | null = null;
 
 function readingOf(state: Network.NetworkState): Reading {
-  // Not `isInternetReachable`: on Android that waits for validation, and an
-  // unvalidated network is exactly the one worth trying.
-  return { reachable: state.isConnected !== false, type: state.type ?? "" };
+  return {
+    reachable: state.isConnected !== false,
+    validated: state.isInternetReachable === true,
+    type: state.type ?? "",
+  };
 }
 
-// Acts on a network becoming usable, or changing type under a usable one.
+// Acts on a network becoming usable, validating, or changing type under a
+// usable one. Never on loss.
 function commit(next: Reading): void {
   const previous = committed;
   committed = next;
   if (previous === null || !next.reachable) return;
-  if (previous.reachable && next.type === previous.type) return;
+  const cameBack = !previous.reachable;
+  const validated = next.validated && !previous.validated;
+  const moved = next.type !== previous.type;
+  if (!cameBack && !validated && !moved) return;
   void revalidateTorRouting();
   getMeshService()?.onNetworkChanged();
+  // Throttled inside; a paid Lightning invoice waits on a mint round trip.
+  reconcileIfDue();
 }
 
 function observe(state: Network.NetworkState): void {
