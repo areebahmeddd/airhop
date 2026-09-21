@@ -632,6 +632,14 @@ export class MeshService {
     return { sent: this.links.bytesSent, received: this.bytesReceived };
   }
 
+  // Frames a decoder threw on, as opposed to refused. Zero is the expected
+  // reading; anything else is a parser bug.
+  private decoderFaults = 0;
+
+  getDecoderFaultCount(): number {
+    return this.decoderFaults;
+  }
+
   // Live radio links, split by transport, for the Diagnostics screen.
   //
   // A link is a socket we hold, which is a different question from how many
@@ -1431,7 +1439,19 @@ export class MeshService {
     for (const linkID of this.links.linkIDs(kind)) this.onLinkGone(linkID);
   }
 
+  // The trust boundary: bytes from anyone in radio range, before any signature
+  // check. A throw that escaped this listener would end the process, so a
+  // decoder that throws costs one frame here. decoder-fuzz.test.ts holds every
+  // decoder to returning null instead.
   private handleRaw(linkID: string, dataBase64: string): void {
+    try {
+      this.handleFrame(linkID, dataBase64);
+    } catch {
+      this.decoderFaults += 1;
+    }
+  }
+
+  private handleFrame(linkID: string, dataBase64: string): void {
     let bytes: Uint8Array;
     try {
       bytes = base64ToBytes(dataBase64);

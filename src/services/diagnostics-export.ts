@@ -31,6 +31,7 @@ export interface DiagnosticsSnapshot {
     lan: string;
     nostr: string;
     links: Record<TransportKind, number>;
+    decoderFaults: number;
   };
   mesh: {
     reachablePeers: number;
@@ -72,6 +73,7 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Wi-Fi Aware: ${s.transports.wifiAware} · ${s.transports.links.wifi} links`,
     `  Local network: ${s.transports.lan} · ${s.transports.links.lan} links`,
     `  Nostr: ${s.transports.nostr}`,
+    `  Decoder faults: ${s.transports.decoderFaults}`,
     "",
     "Mesh",
     `  Reachable peers: ${s.mesh.reachablePeers}`,
@@ -173,6 +175,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       lan: mesh.lanState,
       nostr: mesh.nostrConnected ? "connected" : "not connected",
       links,
+      decoderFaults: getMeshService()?.getDecoderFaultCount() ?? 0,
     },
     mesh: {
       reachablePeers: peers.reachablePeers().length,

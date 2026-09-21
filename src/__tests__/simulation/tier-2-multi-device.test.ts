@@ -235,6 +235,15 @@ test("B03 corrupted packets are rejected and nothing crashes", async () => {
     `corrupted=${radio.packetsCorrupted}`,
   );
   s.expectNone("no crashes on malformed input", noCrashes(devices));
+  // Refused by a decoder, never caught at the ingress.
+  const faults = devices
+    .map((d) => d.mesh?.getDecoderFaultCount() ?? 0)
+    .reduce((a, b) => a + b, 0);
+  s.check(
+    "no corrupted packet made a decoder throw",
+    faults === 0,
+    `decoder faults = ${String(faults)}`,
+  );
   s.expectNone("no forged senders", noForgedSenders(devices));
   s.expectNone("exactly once", exactlyOnce(devices));
   // A corrupted packet must never surface as content. Every rendered message

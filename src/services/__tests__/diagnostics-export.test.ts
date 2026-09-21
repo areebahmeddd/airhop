@@ -33,6 +33,7 @@ const SNAPSHOT: DiagnosticsSnapshot = {
     lan: "off",
     nostr: "connected",
     links: { ble: 2, wifi: 1, lan: 0 },
+    decoderFaults: 0,
   },
   mesh: {
     reachablePeers: 1,
