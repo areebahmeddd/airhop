@@ -17,6 +17,7 @@ import { succeeded } from "@platform/haptics";
 import { stopRingAlert } from "@platform/ring-alert";
 import type { ChatMessage } from "@store/chat-store";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
+import { RING_ALERT_DURATION_MS } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { channelLabel } from "@utils/conversation-display-name";
 import * as Notifications from "expo-notifications";
@@ -434,17 +435,18 @@ export async function endRingAlertFor(channel: string): Promise<void> {
 }
 
 // The system-tray half of a ring that already passed every check in
-// mesh-service.onRing, raised beside the overlay (app.tsx's
-// subscribeInboundRings wiring). The overlay owns the ringing itself.
+// mesh-service.onRing. The overlay owns the ringing; this is what answers it
+// from outside the app. Raised on arrival, or when the app is backgrounded
+// mid-ring, with `remainingMs` trimming the iOS pulses to the window left.
 //
 // Android: one heads-up card, only when the app is not in front. iOS: the
 // pulse chain, in the foreground too, since it is the only sound an iOS ring
-// has. Each pulse is time-sensitive so it lands through a Focus the user has
-// let the app through; the silent switch still wins, as for every app
-// without the critical-alert entitlement.
+// has. Pulses are time-sensitive so they land through a Focus the user has
+// let the app through; the silent switch still wins.
 export async function raiseRingNotification(
   peerID: string,
   senderName: string,
+  remainingMs = RING_ALERT_DURATION_MS,
 ): Promise<void> {
   const channel = `dm:${peerID}`;
   const { title, body } = ringNotificationContent(
@@ -473,6 +475,7 @@ export async function raiseRingNotification(
   }
   for (let pulse = 0; pulse < IOS_RING_PULSE_SECONDS.length; pulse++) {
     const seconds = IOS_RING_PULSE_SECONDS[pulse];
+    if (seconds * 1000 >= remainingMs) break;
     try {
       await Notifications.scheduleNotificationAsync({
         identifier: ringIdFor(channel, pulse),

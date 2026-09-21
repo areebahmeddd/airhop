@@ -18,6 +18,7 @@ import { getMeshService } from "@services/mesh-service";
 import {
   endRingAlertFor,
   openConversation,
+  raiseRingNotification,
 } from "@services/notification-service";
 import {
   type IncomingRing,
@@ -29,7 +30,14 @@ import {
   useRingStore,
 } from "@store/ring-store";
 import React, { useEffect, useMemo, useRef } from "react";
-import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  AppState,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   BUTTON_HEIGHT,
@@ -82,19 +90,27 @@ export default function RingAlertSheet(): React.JSX.Element {
       useIncomingRingStore.getState().dismiss();
     };
     const timeout = setTimeout(expire, remainingMs);
-    const resumed = AppState.addEventListener("change", (next) => {
-      if (
-        next === "active" &&
-        Date.now() >= ring.receivedAtMs + RING_ALERT_DURATION_MS
-      ) {
-        expire();
+    // Backgrounding mid-ring posts the tray card, so a phone still ringing
+    // has something to answer from. iOS posted its pulses on arrival.
+    // Resuming past the window clears a ring JS slept through.
+    let handedToTray = Platform.OS === "ios";
+    const moved = AppState.addEventListener("change", (next) => {
+      const endsAtMs = ring.receivedAtMs + RING_ALERT_DURATION_MS;
+      if (next === "background" && !handedToTray && Date.now() < endsAtMs) {
+        handedToTray = true;
+        void raiseRingNotification(
+          ring.peerID,
+          ring.senderName,
+          endsAtMs - Date.now(),
+        );
       }
+      if (next === "active" && Date.now() >= endsAtMs) expire();
     });
     return () => {
       cancelled = true;
       if (pulse !== null) clearInterval(pulse);
       clearTimeout(timeout);
-      resumed.remove();
+      moved.remove();
       void stopRingAlert();
     };
   }, [ring]);

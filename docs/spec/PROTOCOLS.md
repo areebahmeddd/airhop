@@ -6,11 +6,11 @@
 >
 > **They do not implement the same set of packet types.** bitchat-android's
 > `MessageType` enum carries `0x01`–`0x03`, `0x10`, `0x11`, `0x20`–`0x22` and
-> `0x29`. Everything else is bitchat-iOS only: `0x04` courier envelope, `0x23`
+> `0x29`. Everything else is bitchat-ios only: `0x04` courier envelope, `0x23`
 > board post, `0x24` prekey bundle, `0x25` group message, `0x26`/`0x27`
 > ping/pong, `0x28` gateway carrier. Airhop sending one of those reaches iOS
 > peers and is ignored by Android ones, exactly as an unknown type should be.
-> Read every "bitchat compatible" note in these docs as "bitchat-iOS
+> Read every "bitchat compatible" note in these docs as "bitchat-ios
 > compatible, ignored by bitchat-android" for those types.
 
 ## 1. BLE Identifiers
@@ -245,7 +245,7 @@ refused. Airhop checks before the first fragment goes out.
 | Anything else | 1 MiB   |
 
 > [!IMPORTANT]
-> **These caps cannot be raised unilaterally.** bitchat-iOS refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android allows 10 MiB, so the ceiling is iOS's alone and there is no cross-platform number to raise to.
+> **These caps cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
 >
 > Airhop is on both sides of the split on purpose, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. The generic decompression bound (`MAX_PAYLOAD_BYTES`, [section 4](#4-routing-constants)) is Android's 10 MiB, because Airhop caps inflation at the declared size while it runs rather than checking afterwards, so a large declared size costs nothing to refuse. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
 >
@@ -271,7 +271,7 @@ The plaintext inside a `NOISE_ENCRYPTED` packet is `[type: u8][body]`. Values ma
 | `0x06` | GROUP_INVITE             | Creator-signed group state                                                                     |
 | `0x07` | GROUP_KEY_UPDATE         | Creator-signed group state (rotation / roster)                                                 |
 | `0x08` | VOICE_FRAME              | `VoiceBurstPacket` ([section 3.1](#31-voice-burst-payload))                                    |
-| `0x09` | _(accepted, never sent)_ | Alias for `0x20` emitted by prerelease bitchat-iOS builds                                      |
+| `0x09` | _(accepted, never sent)_ | Alias for `0x20` emitted by prerelease bitchat-ios builds                                      |
 | `0x20` | PRIVATE_FILE             | `BitchatFilePacket` TLV ([section 3.2](#32-file-packet-payload)), encrypted before fragmenting |
 | `0x21` | AUTHENTICATED_PEER_STATE | `[version=0x01][TLV…]`: `0x01` capabilities, `0x02` Ed25519 key                                |
 | `0x22` | CONTACT_CARD             | Contact card binary, same encoding as the QR card                                              |
@@ -307,7 +307,7 @@ is, since moving it would break every shipped build for no gain.
 
 - **The sender is always answered.** `0x52` when a person answers (opens the thread, taps Open or Snooze; closing the alert only silences it, like swiping a call banner away). `0x53` when the ring is refused, with a reason: `0x01` not allowed (no grant, or the master switch off; one value, since the sender's next step is the same), `0x02` snoozed, `0x03` inside the cooldown. A stale ring gets neither, so a replay cannot probe whether its sender is still permitted.
 - **The overlay owns the ringing** and goes up whether or not the app is in front; a ring from the thread already on screen is one pulse and the thread's own receipt. Rings from different people queue, one sounding at a time, each inside its own window.
-- **Android** loops the default ringtone and vibration from the foreground service, honouring ringer mode and Do Not Disturb, and posts one heads-up card when the app is not in front (Android 15's notification cooldown quiets a second). **iOS** schedules time-sensitive notifications, in the foreground too since they are the only sound an iOS ring has, and cancels the rest when answered; nothing short of CallKit can loop a sound there. Neither crosses the silent switch.
+- **Android** loops the default ringtone and vibration from the foreground service, honouring ringer mode and Do Not Disturb, and posts one heads-up card when the app is not in front, at arrival or the moment the app is backgrounded mid-ring (Android 15's notification cooldown quiets a second). **iOS** schedules time-sensitive notifications, in the foreground too since they are the only sound an iOS ring has, and cancels the rest when answered; nothing short of CallKit can loop a sound there. Neither crosses the silent switch.
 
 | Constant        | Value           | Where it applies                                                                 |
 | --------------- | --------------- | -------------------------------------------------------------------------------- |
@@ -462,7 +462,7 @@ That channel carries no message ID and needs none: both implementations derive
 the same content-stable identifier from sender, timestamp and content
 (`bridgeStableID` here, `MeshMessageIdentity.stableID` in bitchat), which is
 what `onChannelMsg` keys the bridge channel on and what the Nostr bridge dedupes
-against. The payload is decoded strictly, matching bitchat-iOS: invalid UTF-8 is
+against. The payload is decoded strictly, matching bitchat-ios: invalid UTF-8 is
 dropped rather than rendered as replacement characters.
 
 **Every other public channel carries its own type, because bitchat reaches those
@@ -540,9 +540,9 @@ Two rules the routing layer enforces rather than the format:
 
 ## 5. Gossip Sync Constants
 
-> **iOS vs Android divergence:** bitchat-iOS and bitchat-android have different default values for these constants. Airhop uses bitchat-iOS values as canonical unless noted.
+> **iOS vs Android divergence:** bitchat-ios and bitchat-android have different default values for these constants. Airhop uses bitchat-ios values as canonical unless noted.
 
-| Constant                        | Airhop / iOS                                          | bitchat-Android                    | Notes                                          |
+| Constant                        | Airhop / bitchat-ios                                  | bitchat-android                    | Notes                                          |
 | ------------------------------- | ----------------------------------------------------- | ---------------------------------- | ---------------------------------------------- |
 | Sync interval                   | `15 seconds`                                          | `30 seconds`                       | How often REQUEST_SYNC is broadcast            |
 | Triggered sync delay            | `5 seconds`                                           | `5 seconds`                        | After first announce from new direct peer      |
@@ -715,7 +715,7 @@ bitchat reached the same conclusion about its own docs and has relabelled them (
 | Noise XX cipher suite | `25519_ChaChaPoly_SHA256` | `25519_ChaChaPoly_SHA256` | `25519_ChaChaPoly_SHA256` | ✅ Identical |
 | Packet types `0x50+`  | Airhop extensions         | Relayed, not interpreted  | Relayed, not interpreted  | ✅ Safe      |
 
-> ✅ **Crypto note (corrected):** all three clients use `Noise_XX_25519_ChaChaPoly_SHA256`. An earlier version of this doc claimed bitchat-Android had diverged to AES-256-GCM; that was incorrect. Its vendored noise-java library contains AES-GCM cipher classes, but the only protocol name ever instantiated is ChaChaPoly, so those classes are never selected. There is no divergence and no platform to choose between.
+> ✅ **Crypto note (corrected):** all three clients use `Noise_XX_25519_ChaChaPoly_SHA256`. An earlier version of this doc claimed bitchat-android had diverged to AES-256-GCM; that was incorrect. Its vendored noise-java library contains AES-GCM cipher classes, but the only protocol name ever instantiated is ChaChaPoly, so those classes are never selected. There is no divergence and no platform to choose between.
 
 ## 10. Relay Nodes
 
