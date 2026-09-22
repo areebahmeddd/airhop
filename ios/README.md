@@ -63,13 +63,6 @@ swift test --package-path ios
 Keep new logic of that kind in a pure enum under `Airhop/Transport/`, the
 package's source root, so it can be tested the same way.
 
-## Logging
-
-The unified log redacts interpolated values in a release build. Mark
-`privacy: .public` only what cannot identify a peer, device or key; the
-categories in `AirhopLog` are what `AirhopAppModule` reads back for the
-diagnostics export.
-
 ## Formatting
 
 swift-format, as shipped with Xcode, checked in CI.
@@ -78,3 +71,10 @@ swift-format, as shipped with Xcode, checked in CI.
 swift format --in-place --recursive Airhop Tests Package.swift
 git diff --exit-code -- .    # what CI checks: the formatter changed nothing
 ```
+
+## Logging
+
+The unified log redacts interpolated values in a release build. Mark
+`privacy: .public` only what cannot identify a peer, device or key; the
+categories in `AirhopLog` are what `AirhopAppModule` reads back for the
+diagnostics export.
