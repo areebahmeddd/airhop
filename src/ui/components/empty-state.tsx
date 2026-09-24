@@ -20,7 +20,13 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { FontSize, FontWeight, Spacing, useThemeColors } from "../theme";
+import {
+  FontSize,
+  FontWeight,
+  LineHeight,
+  Spacing,
+  useThemeColors,
+} from "../theme";
 
 // Held down so the glyph reads as a watermark behind the words rather than
 // competing with them for the eye. One value, not 0.4 or 0.6 by file.
@@ -107,7 +113,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
   });
 }

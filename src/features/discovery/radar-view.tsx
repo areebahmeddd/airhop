@@ -710,7 +710,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       position: "absolute",
       width: AVATAR_SIZE,
       alignItems: "center",
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     statusBadge: {
       position: "absolute",

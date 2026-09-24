@@ -90,6 +90,7 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
+  LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
   Radius,
@@ -470,7 +471,7 @@ export default function WalletScreen({
   const { width: windowWidth } = useWindowDimensions();
   const qrSize = Math.min(
     TOKEN_QR_SIZE,
-    windowWidth - Spacing.xl * 2 - Spacing.base * 2,
+    windowWidth - 2 * (Spacing.xl + Spacing.base),
   );
 
   // Two or more means no payment can exceed the largest single mint balance.
@@ -3604,7 +3605,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     // The accent inverts with the theme, so text uses textInverse and dims by
     // opacity: the grey tokens are tuned for the page, not this fill.
@@ -3635,7 +3636,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize["3xl"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: FontSize["3xl"] * 1.1,
+      lineHeight: LineHeight["3xl"],
     },
     balanceUnit: {
       fontSize: FontSize.lg,
@@ -3718,7 +3719,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     pendingBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     pendingActions: {
       flexDirection: "row",
@@ -3769,7 +3770,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     npubRow: {
       flexDirection: "row",
@@ -3802,7 +3803,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     zapContactChip: {
       paddingHorizontal: Spacing.sm,
-      paddingVertical: 4,
+      paddingVertical: Spacing.xs,
       borderRadius: Radius.full,
       backgroundColor: Colors.surfaceRaised,
       borderWidth: 1,
@@ -3890,7 +3891,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     pill: {
       paddingHorizontal: Spacing.sm,
-      paddingVertical: 2,
+      paddingVertical: Spacing["2xs"],
       borderRadius: Radius.full,
       borderWidth: 1,
       borderColor: Colors.border,
@@ -3917,7 +3918,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     backupBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     backupWarnRow: {
       flexDirection: "row",
@@ -3931,7 +3932,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     backupActions: {
       flexDirection: "row",
@@ -3971,7 +3972,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     phraseGrid: {
       flexDirection: "row",
@@ -4032,7 +4033,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     pickInfo: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     pickTitle: {
       fontSize: FontSize.base,
@@ -4062,7 +4063,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     historyText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     historyTitle: {
       fontSize: FontSize.sm,
@@ -4128,7 +4129,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing.xs,
     },
     infoPanelIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
       flexShrink: 0,
     },
     infoPanelText: {
@@ -4143,7 +4144,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     infoPanelBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     infoPanelDivider: {
       height: StyleSheet.hairlineWidth,
@@ -4237,7 +4238,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     modalSubtitle: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     tokenInput: {
       backgroundColor: Colors.surfaceRaised,
@@ -4278,7 +4279,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontFamily: FontFamily.mono,
       letterSpacing: 0.3,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     modalActions: {
       width: "100%",
@@ -4401,7 +4402,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.xs * 1.6,
+      lineHeight: LineHeight.xs,
       paddingHorizontal: Spacing.sm,
     },
     generatedActions: {
@@ -4455,7 +4456,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     peerPickerInfo: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     peerPickerName: {
       fontSize: FontSize.base,

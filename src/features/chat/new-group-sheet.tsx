@@ -17,6 +17,7 @@ import {
   BUTTON_HEIGHT,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -253,13 +254,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // Nudge the leading icon down so it optically centers on the first text
     // line (the text's lineHeight otherwise leaves the icon sitting high).
     noteIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     privacyNoteText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     input: {
       backgroundColor: Colors.surfaceRaised,
@@ -283,7 +284,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     empty: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     list: { flexGrow: 0, flexShrink: 1 },
     row: {

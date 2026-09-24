@@ -34,6 +34,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -962,7 +963,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     description: {
       fontSize: FontSize.base,
       color: Colors.textSecondary,
-      lineHeight: 22,
+      lineHeight: LineHeight.base,
     },
     factsWrap: {
       gap: Spacing.sm,
@@ -1011,7 +1012,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     relayList: {
       paddingBottom: Spacing.md,
       paddingStart: 16 + Spacing.md,
-      gap: 6,
+      gap: Spacing["xs-sm"],
     },
     relayRow: {
       flexDirection: "row",
@@ -1026,7 +1027,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     relayTag: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     relayEmpty: {
@@ -1048,13 +1049,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       lineHeight: 18,
     },
     memberList: {
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     memberRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.sm,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
     },
     memberName: {
       flex: 1,
@@ -1066,12 +1067,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // matching size and lineHeight keeps them on one baseline.
     memberTag: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     memberYou: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
     },
@@ -1086,7 +1087,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
       paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       fontSize: FontSize.sm,
       color: Colors.textPrimary,
     },

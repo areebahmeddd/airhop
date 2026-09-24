@@ -31,6 +31,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -460,7 +461,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tab: {
       flex: 1,
       flexDirection: "row",
-      gap: 6,
+      gap: Spacing["xs-sm"],
       paddingVertical: Spacing.sm,
       alignItems: "center",
       justifyContent: "center",
@@ -496,9 +497,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     urgentToggle: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: Spacing.xs,
       paddingHorizontal: Spacing.sm,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
       borderRadius: Radius.full,
       backgroundColor: Colors.surface,
     },
@@ -520,7 +521,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     chip: {
       paddingHorizontal: Spacing.md,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
       borderRadius: Radius.full,
     },
     chipActive: { backgroundColor: Colors.accent },
@@ -539,13 +540,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // Nudge the leading icon down so it optically centers on the first text
     // line, since the copy wraps at this size.
     permanentNoteIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     permanentNoteText: {
       flex: 1,
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: 15,
+      lineHeight: LineHeight.xs,
     },
     postBtn: {
       marginTop: Spacing.md,
@@ -576,15 +577,15 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.sm,
-      marginBottom: 4,
+      marginBottom: Spacing.xs,
     },
     urgentBadge: {
       flexDirection: "row",
       alignItems: "center",
       gap: 3,
       backgroundColor: Colors.danger,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: Spacing["xs-sm"],
+      paddingVertical: Spacing["2xs"],
       borderRadius: Radius.sm,
     },
     urgentBadgeText: {
@@ -607,13 +608,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     rowContent: {
       fontSize: FontSize.base,
       color: Colors.textPrimary,
-      lineHeight: 21,
+      lineHeight: LineHeight.base,
     },
     rowFoot: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: 6,
+      marginTop: Spacing["xs-sm"],
     },
     rowFade: { fontSize: FontSize.xs, color: Colors.textMuted },
     rowDelete: {

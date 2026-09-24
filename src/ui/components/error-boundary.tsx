@@ -29,6 +29,7 @@ import {
   DarkColors,
   FontSize,
   FontWeight,
+  LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
   Radius,
@@ -172,14 +173,14 @@ function createStyles(C: ThemeColors) {
       fontSize: FontSize.sm,
       color: C.textSecondary,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     // PrimaryButton's pill, restated: that component themes through the store
     // this screen cannot read. Same geometry and type as every other CTA.
     button: {
       marginTop: Spacing.md,
       paddingHorizontal: Spacing.xl,
-      paddingVertical: Spacing.md + 2,
+      paddingVertical: Spacing["md-base"],
       minHeight: MIN_TOUCH,
       alignItems: "center",
       justifyContent: "center",

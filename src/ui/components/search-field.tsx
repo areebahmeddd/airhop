@@ -91,7 +91,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.sm,
       paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       borderRadius: Radius.full,
       backgroundColor: Colors.surfaceRaised,
       borderWidth: 1,

@@ -396,7 +396,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     peerMeta: {
       alignItems: "flex-end" as const,
-      gap: Spacing.xs / 2,
+      gap: Spacing["2xs"],
     },
     peerID: {
       fontSize: FontSize.xs,

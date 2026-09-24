@@ -33,6 +33,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   TAB_BAR_CLEARANCE,
@@ -829,7 +830,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     relayNoteBody: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 20,
+      lineHeight: LineHeight.sm,
     },
     sheetMessageBtn: {
       backgroundColor: Colors.accent,

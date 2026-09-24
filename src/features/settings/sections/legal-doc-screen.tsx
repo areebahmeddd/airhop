@@ -15,6 +15,7 @@ import { t } from "@i18n";
 import {
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   TAB_BAR_CLEARANCE,
@@ -168,7 +169,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     paragraph: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     bold: {
       fontWeight: FontWeight.semibold,
@@ -191,14 +192,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: 4,
       borderRadius: Radius.full,
       backgroundColor: Colors.textMuted,
-      marginTop: 8,
+      marginTop: Spacing.sm,
       flexShrink: 0,
     },
     listText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
   });
 }

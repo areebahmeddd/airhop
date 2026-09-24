@@ -18,6 +18,7 @@ import {
   DISABLED_OPACITY,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -164,7 +165,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     subtitle: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     input: {
       backgroundColor: Colors.surfaceRaised,

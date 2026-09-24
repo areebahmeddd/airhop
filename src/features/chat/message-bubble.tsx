@@ -20,6 +20,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   LONG_PRESS_MS,
   Radius,
   Spacing,
@@ -523,7 +524,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
     messageRow: {
       flexDirection: "row",
-      marginVertical: 2,
+      marginVertical: Spacing["2xs"],
       alignItems: "flex-end",
       gap: Spacing.sm,
     },
@@ -558,8 +559,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     senderNameRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
-      marginBottom: 2,
+      gap: Spacing.xs,
+      marginBottom: Spacing["2xs"],
     },
     senderName: {
       fontSize: FontSize.xs,
@@ -568,7 +569,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     bubble: {
       paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       borderRadius: Radius.xl,
     },
     bubbleMine: { backgroundColor: Colors.myBubble },
@@ -583,7 +584,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     messageText: {
       fontSize: FontSize.base,
-      lineHeight: FontSize.base * 1.5,
+      lineHeight: LineHeight.base,
     },
     messageTextMine: { color: Colors.textInverse },
     messageTextTheirs: { color: Colors.textPrimary },
@@ -607,8 +608,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "flex-end",
-      gap: 6,
-      marginTop: 4,
+      gap: Spacing["xs-sm"],
+      marginTop: Spacing.xs,
     },
     timestamp: {
       fontSize: FontSize.xs,
@@ -618,8 +619,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     forwardedTag: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
-      marginBottom: 4,
+      gap: Spacing.xs,
+      marginBottom: Spacing.xs,
     },
     forwardedTagMine: { opacity: 0.7 },
     forwardedTagText: {
@@ -631,8 +632,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     ringTag: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
-      marginBottom: 4,
+      gap: Spacing.xs,
+      marginBottom: Spacing.xs,
     },
     ringTagText: {
       fontSize: FontSize.xs,

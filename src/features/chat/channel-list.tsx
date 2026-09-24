@@ -889,7 +889,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: 16,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 4,
+      paddingHorizontal: Spacing.xs,
       marginStart: Spacing.xs,
     },
     sectionBadgeText: {
@@ -910,7 +910,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       paddingHorizontal: ROW_INSET,
-      paddingVertical: Spacing.md + 2,
+      paddingVertical: Spacing["md-base"],
       minHeight: 72,
     },
     // Shared by the rows and the More sheet, so both press the same way.
@@ -919,7 +919,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     channelRowBody: {
       flex: 1,
-      gap: Spacing.xs + 2,
+      gap: Spacing["xs-sm"],
     },
     channelRowHead: {
       flexDirection: "row",
@@ -929,7 +929,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     channelNameGroup: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: Spacing.xs,
       flex: 1,
       marginEnd: Spacing.sm,
       overflow: "hidden",
@@ -1008,7 +1008,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: 72,
       alignItems: "center",
       justifyContent: "center",
-      gap: 4,
+      gap: Spacing.xs,
       backgroundColor: Colors.border,
     },
     swipeActionText: {

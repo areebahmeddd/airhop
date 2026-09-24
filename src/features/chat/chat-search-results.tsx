@@ -19,6 +19,7 @@ import EmptyState from "@ui/components/empty-state";
 import {
   FontSize,
   FontWeight,
+  LineHeight,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -573,7 +574,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     chip: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
+      gap: Spacing["xs-sm"],
       minHeight: MIN_TOUCH,
       paddingHorizontal: Spacing.md,
       borderRadius: Radius.full,
@@ -645,7 +646,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     messageBody: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     messageHead: {
       flexDirection: "row",
@@ -665,7 +666,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     messageSnippet: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.4,
+      lineHeight: LineHeight.sm,
     },
     messageSender: {
       color: Colors.textPrimary,

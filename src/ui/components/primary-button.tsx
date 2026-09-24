@@ -79,7 +79,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     button: {
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
-      paddingVertical: Spacing.md + 2,
+      paddingVertical: Spacing["md-base"],
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",

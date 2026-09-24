@@ -129,6 +129,7 @@ import {
   FontSize,
   FontWeight,
   hitSlopFor,
+  LineHeight,
   MaxFontScale,
   PRESSED_OPACITY,
   Radius,
@@ -2254,7 +2255,7 @@ const HEADER_ICON_SIZE = 32;
 // iOS sits low on Android.
 const BADGE_DIGIT = {
   includeFontPadding: false,
-  lineHeight: FontSize["2xs"] + 2,
+  lineHeight: LineHeight["2xsTight"],
 } as const;
 
 // ---- Styles ----
@@ -2286,7 +2287,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     header: {
       flexDirection: "row",
@@ -2334,7 +2335,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.full,
-      padding: 2,
+      padding: Spacing["2xs"],
       flexShrink: 1,
       minWidth: 0,
     },
@@ -2355,7 +2356,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     segIconText: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: Spacing.xs,
     },
     // On dark the shadow is invisible and `surface` is darker than the
     // `surfaceRaised` track, so the lift inverts and the thumb recedes. The
@@ -2411,7 +2412,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: 16,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 4,
+      paddingHorizontal: Spacing.xs,
       borderWidth: 1.5,
       borderColor: Colors.bg,
     },
@@ -2457,14 +2458,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       alignItems: "center",
       paddingBottom: Spacing.xs,
-      gap: 4,
+      gap: Spacing.xs,
     },
     tabIndicator: {
       width: 24,
       height: 3,
       borderRadius: Radius.xs,
       backgroundColor: "transparent",
-      marginBottom: 2,
+      marginBottom: Spacing["2xs"],
     },
     tabIndicatorActive: {
       backgroundColor: Colors.accent,

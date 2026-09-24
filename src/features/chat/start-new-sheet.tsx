@@ -16,6 +16,7 @@ import {
   DISABLED_OPACITY,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -397,7 +398,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     modalInput: {
       backgroundColor: Colors.surfaceRaised,
@@ -415,7 +416,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     inputError: {
       fontSize: FontSize.xs,
       color: Colors.danger,
-      marginTop: 4,
+      marginTop: Spacing.xs,
     },
     optionGroup: {
       gap: Spacing.xs,
@@ -459,7 +460,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     reachHint: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: 17,
+      lineHeight: LineHeight.xs,
     },
     joinLinkRow: {
       flexDirection: "row",

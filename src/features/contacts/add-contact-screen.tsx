@@ -42,6 +42,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -775,7 +776,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     optionText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     optionTitle: {
       fontSize: FontSize.base,
@@ -797,7 +798,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     primaryBtn: {
       width: "100%",
@@ -840,7 +841,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.full,
       paddingHorizontal: Spacing.md,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
       marginTop: Spacing.sm,
     },
     verifyText: {

@@ -169,10 +169,17 @@ export const DarkColors = {
   overlay: "rgba(0,0,0,0.6)",
 } as const;
 
+// A 4pt grid, with in-between steps named for the two they sit between. Each
+// is a deliberate value used in several places: "sm-md" pads list rows,
+// search fields and bubbles.
 export const Spacing = {
+  "2xs": 2,
   xs: 4,
+  "xs-sm": 6,
   sm: 8,
+  "sm-md": 10,
   md: 12,
+  "md-base": 14,
   base: 16,
   lg: 20,
   xl: 24,
@@ -201,6 +208,19 @@ export const FontSize = {
   xl: 24,
   "2xl": 30,
   "3xl": 38,
+} as const;
+
+// One line height per text size, so a size cannot drift across screens. Body
+// sizes sit near 1.5x, the display size near 1.05x. The "Tight" pair is for a
+// single glyph centred in a fixed pill: a badge digit, a dismiss cross.
+export const LineHeight = {
+  "2xsTight": 12,
+  "2xs": 15,
+  xs: 16,
+  sm: 20,
+  baseTight: 17,
+  base: 22,
+  "3xl": 40,
 } as const;
 
 // Caps for OS text scaling, applied via `maxFontSizeMultiplier`.
@@ -266,8 +286,8 @@ export const Radius = {
 
 // One value for "this control is inactive", so header pills, sheet confirms and
 // settings switches cannot drift apart. 0.4 is the floor at which a glyph still
-// reads as a shape
-// (so the control's affordance survives) while clearly not inviting a tap.
+// reads as a shape (so the control's affordance survives) while clearly not
+// inviting a tap.
 // WCAG exempts inactive controls from the 4.5:1 text rule (1.4.3), which is why
 // this is allowed to be a dim rather than a colour change, but every disabled
 // control also carries accessibilityState.disabled so it is never dim ALONE.

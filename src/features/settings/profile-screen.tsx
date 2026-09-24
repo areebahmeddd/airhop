@@ -40,6 +40,7 @@ import {
   FontSize,
   FontWeight,
   hitSlopFor,
+  LineHeight,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -1588,7 +1589,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     statusLabel: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     appearanceGroupLabel: {
       fontSize: FontSize.xs,
@@ -1672,7 +1673,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       minHeight: MIN_TOUCH,
       borderRadius: Radius.full,
       backgroundColor: Colors.surface,
@@ -1710,7 +1711,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     dangerRowContent: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     dangerLabel: {
       fontSize: FontSize.base,
@@ -1721,7 +1722,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.danger,
       opacity: 0.7,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
     },
     qrSheetTitle: {
       textAlign: "center",
@@ -1740,7 +1741,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     noteText: {
       flex: 1,
       fontSize: FontSize.xs,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     idBox: {
@@ -1779,7 +1780,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     codeBoxText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     codeBoxLabel: {
       fontSize: FontSize.xs,

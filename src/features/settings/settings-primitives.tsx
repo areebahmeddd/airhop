@@ -15,6 +15,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
   Radius,
@@ -485,7 +486,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     settingLabelGroup: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     settingLabel: {
       fontSize: FontSize.base,
@@ -495,7 +496,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     settingDescription: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
     },
     // The prose face, not mono: most values are words, and the mono font
     // covers only three of the scripts Airhop ships.
@@ -555,7 +556,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       textAlign: "auto",
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     sheetActions: {
       width: "100%",
@@ -660,7 +661,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     optionText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     optionLabel: {
       fontSize: FontSize.base,
@@ -670,7 +671,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     optionDescription: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: FontSize.xs * 1.4,
+      lineHeight: LineHeight.xs,
     },
   });
 }

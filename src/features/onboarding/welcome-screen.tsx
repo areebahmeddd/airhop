@@ -11,6 +11,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -254,7 +255,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.bold,
       color: Colors.textPrimary,
       letterSpacing: -1.5,
-      lineHeight: FontSize["3xl"] * 1.05,
+      lineHeight: LineHeight["3xl"],
     },
     tagline: {
       fontSize: FontSize.md,
@@ -289,7 +290,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     agreementText: {
       flex: 1,
       fontSize: FontSize.sm,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
       color: Colors.textSecondary,
     },
     link: {

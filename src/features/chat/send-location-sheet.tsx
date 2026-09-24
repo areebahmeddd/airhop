@@ -20,6 +20,7 @@ import {
   BUTTON_HEIGHT,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -219,7 +220,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.45,
+      lineHeight: LineHeight.sm,
     },
     primary: {
       alignSelf: "stretch",

@@ -30,6 +30,7 @@ import PrimaryButton from "@ui/components/primary-button";
 import {
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   TAB_BAR_CLEARANCE,
@@ -726,7 +727,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
       textAlign: "center",
     },
     resultLink: {

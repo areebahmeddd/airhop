@@ -22,6 +22,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -274,13 +275,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Nudge the leading icon down so it optically centers on the first text line.
     noteIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     privacyNoteText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     inputRow: {
       flexDirection: "row",
@@ -303,7 +304,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       marginTop: -Spacing.xs,
-      lineHeight: 17,
+      lineHeight: LineHeight.xs,
     },
     error: {
       fontSize: FontSize.xs,

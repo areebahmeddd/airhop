@@ -717,7 +717,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: 72,
       alignItems: "center",
       justifyContent: "center",
-      gap: 4,
+      gap: Spacing.xs,
       backgroundColor: Colors.border,
     },
     swipeActionText: {

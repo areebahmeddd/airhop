@@ -82,6 +82,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   MaxFontScale,
   MIN_TOUCH,
   PRESSED_OPACITY,
@@ -835,7 +836,7 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.xs,
       backgroundColor: Colors.border,
       overflow: "hidden",
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     fill: { height: 3, borderRadius: Radius.xs },
   });
@@ -5833,7 +5834,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: 12,
+      lineHeight: LineHeight["2xsTight"],
     },
     headerCenter: {
       flex: 1,
@@ -5855,7 +5856,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.sm,
       paddingHorizontal: 5,
-      paddingVertical: 2,
+      paddingVertical: Spacing["2xs"],
     },
     encryptedBadgeText: {
       fontSize: FontSize["2xs"],
@@ -5923,7 +5924,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: 12,
+      lineHeight: LineHeight["2xsTight"],
     },
     dateSeparator: {
       flexDirection: "row",
@@ -5984,7 +5985,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.xs,
       paddingHorizontal: Spacing.base,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
       backgroundColor: Colors.surfaceRaised,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: Colors.border,
@@ -6120,11 +6121,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
       paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       color: Colors.textPrimary,
       fontSize: FontSize.base,
       maxHeight: 120,
-      lineHeight: FontSize.base * 1.4,
+      lineHeight: LineHeight.base,
     },
     sendButton: {
       width: COMPOSE_BUTTON_SIZE,
@@ -6257,7 +6258,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     attachOptionDesc: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     attachSeparator: {
       height: StyleSheet.hairlineWidth,
@@ -6274,7 +6275,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     attachNoteText: {
       flex: 1,
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     attachCancel: {
@@ -6503,7 +6504,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       flexDirection: "row",
       alignItems: "center",
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     attachVoiceBar: {
       width: 3,
@@ -6585,7 +6586,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderColor: Colors.border,
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
-      gap: 4,
+      gap: Spacing.xs,
     },
     keyBoxLabel: {
       fontSize: FontSize.xs,
@@ -6605,11 +6606,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontFamily: FontFamily.mono,
       color: Colors.textSecondary,
       letterSpacing: 0.3,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     keyBoxNote: {
       fontSize: FontSize["2xs"],
-      lineHeight: FontSize["2xs"] * 1.5,
+      lineHeight: LineHeight["2xs"],
       color: Colors.textMuted,
       marginTop: Spacing.sm,
     },
@@ -6722,7 +6723,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.accentGhost,
       borderWidth: 1,
       borderColor: Colors.accent,
-      gap: 4,
+      gap: Spacing.xs,
       minWidth: 190,
     },
     paymentCardHeader: {
