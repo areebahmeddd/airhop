@@ -67,6 +67,15 @@ describe("FloodRouter", () => {
       expect(sent[0].ttl).toBe(6);
     });
 
+    // TTL is unsigned and set by the sender, so a hostile peer can claim 255 to
+    // push its flood to every phone. The relay caps it to our own default.
+    it("clamps an inflated TTL before relaying", () => {
+      const sent: Packet[] = [];
+      router.receive(makePacket(0x01, 255), (p) => sent.push(p));
+      jest.advanceTimersByTime(221);
+      expect(sent[0].ttl).toBe(6);
+    });
+
     it("does not relay when TTL = 1 (would become 0)", () => {
       const sent: Packet[] = [];
       router.receive(makePacket(0x01, 1), (p) => sent.push(p));
