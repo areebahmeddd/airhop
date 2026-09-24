@@ -350,6 +350,29 @@ describe("FragmentManager reassembly timeout", () => {
 
     expect(reassembled).toBeNull();
   });
+
+  test("continues() recognises only a live stream, without starting one", () => {
+    // The receive path admits a late fragment on this answer, so it must say
+    // no to a stream it has never seen, and asking must not create one.
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+
+    const packet = makeLargePacket(FRAG_DATA_SIZE * 4, identity);
+    const frags = fragmentPacket(packet, identity);
+    const manager = new FragmentManager();
+    const senderID = frags[0].senderID;
+
+    expect(manager.continues(senderID, frags[1].payload)).toBe(false);
+    expect(manager.size).toBe(0);
+
+    manager.receive(senderID, frags[0].payload, () => undefined);
+    expect(manager.continues(senderID, frags[1].payload)).toBe(true);
+    // Another sender claiming the same stream is not that stream.
+    expect(manager.continues(new Uint8Array(8), frags[1].payload)).toBe(false);
+
+    jest.advanceTimersByTime(31_000);
+    expect(manager.continues(senderID, frags[1].payload)).toBe(false);
+  });
 });
 
 // ---- Adversarial reassembly ----

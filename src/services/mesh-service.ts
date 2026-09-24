@@ -1454,6 +1454,23 @@ export class MeshService {
     return this.requestSync.isValidResponse(linkPeer, true, now);
   }
 
+  // A late fragment of a transfer already under way. bitchat-ios and
+  // bitchat-android stamp every fragment with the time of the packet inside,
+  // so a transfer that outlasts the window (a large file at their pacing, a
+  // retransmit, a relay, a sender clock running slow) would lose every fragment
+  // after that point. A stream whose first fragment passed the ingress checks
+  // is live traffic, not a replay. An unknown stream still has to pass them, so
+  // nothing old starts an assembly or gets relayed, and onReassembled still
+  // dates the packet inside against the transfer's start.
+  //
+  // Checked before isFreshOrSolicited so these fragments do not count toward
+  // the clock-skew warning.
+  private continuesTransfer(packet: Packet): boolean {
+    if (packet.type !== PacketType.FRAGMENT) return false;
+    if (packet.timestamp > Date.now() + PACKET_MAX_SKEW_MS) return false;
+    return this.fragmentManager.continues(packet.senderID, packet.payload);
+  }
+
   // Relay one packet onward, following a source route when the sender planned
   // one through us and flooding when they did not.
   //
@@ -1632,7 +1649,12 @@ export class MeshService {
     const packet = decodePacket(bytes);
     if (!packet) return;
 
-    if (!this.isFreshOrSolicited(packet, linkID)) return;
+    if (
+      !this.continuesTransfer(packet) &&
+      !this.isFreshOrSolicited(packet, linkID)
+    ) {
+      return;
+    }
 
     // FRAGMENT packets are flood-routed (so multi-hop file transfers work),
     // then fed into the assembler. When all fragments arrive the reassembled
@@ -1715,17 +1737,18 @@ export class MeshService {
   // a whole one. Its fragments were already relayed, so it is not relayed
   // again.
   //
-  // Only the fragments were checked for freshness, and a fragment's stamp says
-  // nothing about the packet inside (ours are stamped when cut). That packet may predate
-  // the window in two honest ways. A slow transfer completes minutes after its
-  // inner timestamp, but that timestamp is no older than the stream's first
+  // Only the fragments were checked for freshness (or, late ones, for belonging
+  // to a live stream), and a fragment's stamp says nothing about the packet
+  // inside (ours are stamped when cut). That packet may predate the window in
+  // two honest ways. A slow transfer completes minutes after its inner
+  // timestamp, but that timestamp is no older than the stream's first
   // fragment. A sync reply is as old as the history it replays, and passes
   // only as a whole one would: carrying IS_RSR, from the peer on the one link
   // every fragment arrived over, which we asked. An old signed packet wrapped
   // in fresh fragments by anyone else is neither.
   //
   // `linkID` is the link the last fragment came over, which is what dispatch
-  // attributes the packet to, as it always has.
+  // attributes the packet to.
   private onReassembled(
     inner: Packet,
     info: AssemblyInfo,

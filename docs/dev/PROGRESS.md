@@ -227,6 +227,7 @@ node's authority, forge money, or hold the phone.
 | M08 | Attachment forged, aimed at the wrong thread, or tagged into an unjoined room | Refused on all three; an attachment carries the same rules text does              |
 | C03 | Replay of captured packets                                                    | Deduplicated; nothing renders twice                                               |
 | S03 | Stale packet with a perfect signature, into a phone that never saw it         | Refused on age; the matched fresh copy is accepted, so age is what refused it     |
+| S09 | Old fragments opening a transfer, beside a genuine slow one                   | Refused and not relayed; the genuine transfer still completes past the window     |
 | M07 | Recorded voice burst played out of a stranger's phone later                   | Refused on freshness; a valid signature does not make a burst live                |
 | F01 | Outsider standing next to a private group                                     | Ciphertext only; no metadata leak                                                 |
 | M09 | Private photo crossing a relay that is not the recipient                      | Sealed inside the Noise session, never signed in the open                         |
