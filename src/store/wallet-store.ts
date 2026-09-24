@@ -164,6 +164,10 @@ export interface WalletTx {
   // replayed long after the watcher moved on can still mark the zap redeemed,
   // and so a redemption already in flight is not started a second time.
   nutzapEventId?: string;
+  // Swap only: this row records proofs the mint reported already spent, which
+  // were dropped from the balance. The one swap whose value really left; every
+  // other swap, finished or failed, reissues or keeps what it was given.
+  spentRemoved?: boolean;
   // Populated on `failed`, shown verbatim in the transaction detail sheet.
   error?: string;
 }
@@ -264,6 +268,11 @@ interface WalletState {
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
   markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
+  // Forget that any held proof came from the recovery phrase. Called when the
+  // phrase is replaced: coins derived from the old one are still spendable but
+  // the new phrase cannot rebuild them, so they must read as uncovered until a
+  // refresh re-issues them.
+  clearDerived: () => void;
 
   // ---- Reservations ----
   // Move proofs out of the spendable pool and hold them against `txId`.
@@ -311,6 +320,32 @@ interface WalletState {
 
 // Keep history bounded: MMKV holds the whole blob in memory on read.
 const MAX_HISTORY = 500;
+
+// Trim history to MAX_HISTORY, oldest first, without ever dropping a row that
+// something still depends on. A pending transaction is how `reconcile` finds a
+// deposit to claim or a send to settle, a reservation is keyed by its id, and
+// the swap, melt and mint outputs on it are the only way back to coins whose
+// answer went missing. Losing any of those to a busy week of history would lose
+// the money with it, so they stay, and only settled rows make room.
+function capHistory(
+  history: WalletTx[],
+  reserved: Record<string, unknown>,
+): WalletTx[] {
+  if (history.length <= MAX_HISTORY) return history;
+  const pinned = (tx: WalletTx): boolean =>
+    tx.status === "pending" ||
+    reserved[tx.id] !== undefined ||
+    tx.swapPreview !== undefined ||
+    tx.meltOutputs !== undefined ||
+    tx.mintOutputs !== undefined;
+  let room = MAX_HISTORY - history.filter(pinned).length;
+  return history.filter((tx) => {
+    if (pinned(tx)) return true;
+    if (room <= 0) return false;
+    room -= 1;
+    return true;
+  });
+}
 
 // Ring buffer of redeemed nutzap ids. Well past any relay's replay window.
 const MAX_REDEEMED_NUTZAPS = 1000;
@@ -365,6 +400,9 @@ type MMKVLike = ReturnType<typeof createMMKV>;
 
 let instance: MMKVLike | null = null;
 let ready: Promise<MMKVLike> | null = null;
+// Bumped by every reset, so a bootstrap still waiting on the keychain when a
+// wipe lands cannot install its handle into the module afterwards.
+let storageGeneration = 0;
 
 function randomKey(): string {
   // Base64 of 24 bytes is 32 characters.
@@ -385,6 +423,7 @@ async function loadOrCreateEncryptionKey(): Promise<string> {
 // first call wins and every later one awaits the same promise.
 export function bootstrapWalletStorage(): Promise<MMKVLike> {
   ready ??= (async () => {
+    const generation = storageGeneration;
     let encryptionKey: string | undefined;
     try {
       encryptionKey = await loadOrCreateEncryptionKey();
@@ -398,6 +437,9 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
     }
     if (encryptionKey === undefined) {
       throw new Error("wallet-keystore-unavailable");
+    }
+    if (generation !== storageGeneration) {
+      throw new Error("wallet-storage-reset");
     }
     const mmkv = createMMKV({
       id: WALLET_STORAGE_ID,
@@ -459,6 +501,7 @@ export function wipeWalletStorage(): void {
 }
 
 export function resetWalletStorage(): void {
+  storageGeneration += 1;
   instance = null;
   ready = null;
   hydrated = false;
@@ -484,6 +527,11 @@ export function resetWalletStorage(): void {
 let hydrated = false;
 let hydrationSettled = false;
 const hydrationWaiters: (() => void)[] = [];
+// The storage generation the latest hydration read from. zustand hydrates once,
+// when the store is created, so after a panic wipe resets the partition nothing
+// would ever read the fresh one: re-onboarding in the same process would wait
+// out HYDRATION_TIMEOUT_MS and leave the wallet locked until a relaunch.
+let hydrationGeneration = 0;
 
 // How long startup will wait for hydration before giving up on it. Only reached
 // if the storage promise never settles at all; a normal failure settles fast.
@@ -507,6 +555,18 @@ export function isWalletStorageReady(): boolean {
   return instance !== null && hydrated;
 }
 
+// Read the partition into the store again when it was reset since the last
+// read. A no-op at first launch, where the store's own hydration is already
+// reading the current partition.
+export function rehydrateAfterReset(): void {
+  if (hydrationGeneration === storageGeneration) return;
+  // A waiter that timed out while onboarding may already have settled this
+  // generation as failed; the read below is the one that answers for it.
+  hydrated = false;
+  hydrationSettled = false;
+  void useWalletStore.persist.rehydrate();
+}
+
 // Resolves once hydration has settled, successfully or not. Callers must
 // re-check `isWalletStorageReady()` afterwards rather than assuming success.
 export function whenWalletHydrated(): Promise<void> {
@@ -527,20 +587,55 @@ export function whenWalletHydrated(): Promise<void> {
   });
 }
 
+// The handle a write may go through, or null when there is none.
+//
+// Writes never open the partition. Opening mints an AES key when the keychain
+// has none, and after a panic wipe it has none: an operation still in flight
+// (a melt can hold a request open for minutes) would then persist the wallet
+// the user just destroyed into a fresh file under a fresh key. Only the read
+// that hydrates the store, and `initWalletService`, open it.
+//
+// A write that raced a bootstrap waits for it, then checks the handle is still
+// the current one, so a reset that landed in between is honoured too.
+async function openHandle(): Promise<MMKVLike | null> {
+  if (instance !== null) return instance;
+  const pending = ready;
+  if (pending === null) return null;
+  let mmkv: MMKVLike;
+  try {
+    mmkv = await pending;
+  } catch {
+    return null;
+  }
+  return instance === mmkv ? mmkv : null;
+}
+
 const asyncMMKVStorage = {
   async getItem(name: string): Promise<string | null> {
     const mmkv = await bootstrapWalletStorage();
     return mmkv.getString(name) ?? null;
   },
   async setItem(name: string, value: string): Promise<void> {
-    const mmkv = await bootstrapWalletStorage();
-    mmkv.set(name, value);
+    const mmkv = await openHandle();
+    mmkv?.set(name, value);
   },
   async removeItem(name: string): Promise<void> {
-    const mmkv = await bootstrapWalletStorage();
-    mmkv.remove(name);
+    const mmkv = await openHandle();
+    mmkv?.remove(name);
   },
 };
+
+// Size of the encrypted wallet file, for the storage meter. Read through the
+// handle this module owns, since a second handle on the partition is what
+// store/mmkv exists to prevent, and zero while the partition is not open.
+export function walletStorageByteSize(): number {
+  if (instance === null) return 0;
+  try {
+    return instance.byteSize;
+  } catch {
+    return 0;
+  }
+}
 
 // ---- Selectors ----
 
@@ -802,6 +897,22 @@ export const useWalletStore = create<WalletState>()(
         });
       },
 
+      clearDerived() {
+        const strip = (list: StoredProof[]): StoredProof[] =>
+          list.map((p) => (p.derived === true ? { ...p, derived: false } : p));
+        set((state) => {
+          const proofs: Record<string, StoredProof[]> = {};
+          for (const [key, list] of Object.entries(state.proofs)) {
+            proofs[key] = strip(list);
+          }
+          const reserved: WalletState["reserved"] = {};
+          for (const [txId, entry] of Object.entries(state.reserved)) {
+            reserved[txId] = { ...entry, proofs: strip(entry.proofs) };
+          }
+          return { proofs, reserved };
+        });
+      },
+
       // ---- Reservations ----
 
       reserveProofs(txId, mintUrl, unit, proofs) {
@@ -874,7 +985,7 @@ export const useWalletStore = create<WalletState>()(
 
       addTx(tx) {
         set((state) => ({
-          history: [tx, ...state.history].slice(0, MAX_HISTORY),
+          history: capHistory([tx, ...state.history], state.reserved),
         }));
       },
 
@@ -989,8 +1100,14 @@ export const useWalletStore = create<WalletState>()(
       // is tracked here rather than through `onFinishHydration`. A failure
       // means the on-disk state could not be read, so the wallet presents
       // itself as locked instead of as empty.
-      onRehydrateStorage: () => (_state, error) => {
-        settleHydration(error === undefined);
+      onRehydrateStorage: () => {
+        const generation = storageGeneration;
+        hydrationGeneration = generation;
+        return (_state, error) => {
+          // A read that straddled a reset describes a file that is gone.
+          if (generation !== storageGeneration) return;
+          settleHydration(error === undefined);
+        };
       },
       // Actions are recreated by the initializer; only data is persisted.
       partialize: (state) =>

@@ -9,15 +9,19 @@
 //
 // Uses the in-memory MMKV mock, so no native module and no network.
 
+import * as mmkv from "react-native-mmkv";
 import {
   accountKey,
+  bootstrapWalletStorage,
   normalizeMintUrl,
   parseAccountKey,
+  resetWalletStorage,
   selectAccounts,
   selectBalanceForUnit,
   selectSecrets,
   selectUnits,
   useWalletStore,
+  walletStorageByteSize,
   type StoredProof,
   type WalletTx,
 } from "../wallet-store";
@@ -328,6 +332,33 @@ describe("history", () => {
     state().updateTx("a", { status: "completed" });
     expect(state().history.find((t) => t.id === "a")?.status).toBe("completed");
   });
+
+  it("trims settled rows but never one that money still depends on", () => {
+    // The oldest rows are the ones a cap drops first, and the oldest rows are
+    // exactly where a deposit nobody has claimed yet, a send still reserved,
+    // or a swap whose answer went missing end up after a busy week.
+    state().addTx(tx({ id: "pending", status: "pending" }));
+    state().addTx(
+      tx({ id: "swap", kind: "swap", status: "failed", swapPreview: {} }),
+    );
+    state().addTx(
+      tx({ id: "melt", kind: "melt", status: "failed", meltOutputs: [] }),
+    );
+    state().addTx(tx({ id: "reserved", status: "completed" }));
+    state().reserveProofs("reserved", MINT, "sat", []);
+    for (let i = 0; i < 600; i++) {
+      state().addTx(tx({ id: `done-${String(i)}`, status: "completed" }));
+    }
+
+    const ids = state().history.map((t) => t.id);
+    expect(ids).toHaveLength(500);
+    for (const id of ["pending", "swap", "melt", "reserved"]) {
+      expect(ids).toContain(id);
+    }
+    // Newest first still, and the settled rows that went are the oldest.
+    expect(ids[0]).toBe("done-599");
+    expect(ids).not.toContain("done-0");
+  });
 });
 
 // ---- Nutzap replay guard ----
@@ -449,6 +480,27 @@ describe("backup coverage", () => {
     expect(account.balance).toBe(30);
     expect(account.unbacked).toBe(20);
   });
+
+  it("stops calling coins covered once the phrase behind them is replaced", () => {
+    // A restored phrase cannot rebuild coins derived from the one it replaced,
+    // so reading them as covered would promise a restore that cannot happen.
+    state().setBackupEnabled(true);
+    state().addProofs(MINT, "sat", [
+      { ...makeProof(10), secret: "held", derived: true },
+      { ...makeProof(20), secret: "sent", derived: true },
+    ]);
+    state().reserveProofs("tx-send", MINT, "sat", [
+      { ...makeProof(20), secret: "sent", derived: true },
+    ]);
+
+    state().clearDerived();
+
+    expect(
+      state().proofs[accountKey(MINT, "sat")]?.every((p) => !p.derived),
+    ).toBe(true);
+    expect(state().reserved["tx-send"]?.proofs[0]?.derived).toBe(false);
+    expect(selectAccounts(state())[0]?.unbacked).toBe(10);
+  });
 });
 
 // ---- NUT-13 counters ----
@@ -516,5 +568,43 @@ describe("clearAll", () => {
     expect(Object.keys(state().reserved)).toHaveLength(0);
     expect(Object.keys(state().mints)).toHaveLength(0);
     expect(state().history).toHaveLength(0);
+  });
+});
+
+// ---- After a wipe ----
+
+// The panic wipe forgets the open partition and destroys its key. Operations
+// still in flight (a melt can hold a request open for minutes) keep writing to
+// the store afterwards, and a write that opened the partition again would mint
+// a fresh key and persist the wallet the user had just destroyed.
+describe("writes after the partition is reset", () => {
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    // Leave the partition open for whatever runs next.
+    await bootstrapWalletStorage();
+  });
+
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 5; i++) await new Promise((r) => setTimeout(r, 0));
+  }
+
+  it("never open it again, and never land in the old file", async () => {
+    const old = await bootstrapWalletStorage();
+    resetWalletStorage();
+    const opened = jest.spyOn(mmkv, "createMMKV");
+
+    state().addTx(tx({ id: "after-wipe" }));
+    await settle();
+
+    expect(opened).not.toHaveBeenCalled();
+    expect(old.getString("wallet-state") ?? "").not.toContain("after-wipe");
+    expect(walletStorageByteSize()).toBe(0);
+  });
+
+  it("still persist through the open partition in normal use", async () => {
+    const handle = await bootstrapWalletStorage();
+    state().addTx(tx({ id: "normal" }));
+    await settle();
+    expect(handle.getString("wallet-state") ?? "").toContain("normal");
   });
 });

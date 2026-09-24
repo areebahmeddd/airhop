@@ -29,7 +29,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { formatNumber, parseWholeNumber } from "@utils/format";
+import { amountParts, parseWholeNumber } from "@utils/format";
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -81,6 +81,7 @@ export default function SendEcashSheet({
         ...(nostrPubkey !== undefined ? { nostrPubkey } : {}),
         amount: sats,
         memo: memo.trim() || undefined,
+        recipientName: displayName,
         ...(senderNickname !== undefined ? { senderNickname } : {}),
       });
     } finally {
@@ -93,8 +94,7 @@ export default function SendEcashSheet({
     onClose();
     showAlert(
       T("wallet.pay.sent_title", {
-        amount: formatNumber(result.amount),
-        unit: result.unit,
+        ...amountParts(result.amount, result.unit),
         name: displayName,
       }),
       describePayResult(result),

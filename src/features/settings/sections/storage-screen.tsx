@@ -17,7 +17,7 @@ import {
 import { getMeshService } from "@services/mesh-service";
 import { MMKV_STORE_IDS } from "@services/panic-wipe";
 import { showAlert } from "@store/alert-store";
-import { WALLET_STORAGE_ID } from "@store/wallet-store";
+import { walletStorageByteSize } from "@store/wallet-store";
 import { formatBytes } from "@utils/format";
 import React, { useCallback, useMemo, useState } from "react";
 import { Text, View } from "react-native";
@@ -37,14 +37,12 @@ interface Props {
 }
 
 function readStorageStats() {
-  // The wallet store is not in MMKV_STORE_IDS (the panic wipe deletes its file
-  // rather than clearing it, since it is encrypted), so it is measured
-  // separately. `byteSize` reads the file length and needs no decryption key,
-  // which is why opening it without one is fine here.
-  const messagesBytes = [...MMKV_STORE_IDS, WALLET_STORAGE_ID].reduce(
-    (sum, id) => sum + getStorage(id).byteSize,
-    0,
-  );
+  // The wallet partition is not in MMKV_STORE_IDS: it is encrypted and owns
+  // its only handle, so it is measured through that handle rather than by
+  // opening a second one here, which store/mmkv forbids.
+  const messagesBytes =
+    MMKV_STORE_IDS.reduce((sum, id) => sum + getStorage(id).byteSize, 0) +
+    walletStorageByteSize();
   const cacheBytes = getAttachmentCacheBytes();
   const network = getMeshService()?.getByteCounters() ?? {
     sent: 0,

@@ -122,6 +122,20 @@ export function formatListTimestamp(ms: number): string {
   }).format(then);
 }
 
+// How long ago, for a row whose age matters more than its clock time: "just
+// now", "5m ago", "2h ago", "3d ago", then the dated form past a week, where a
+// count of days stops being easier to read than the date.
+export function formatAgo(ms: number, now: number = Date.now()): string {
+  const minutes = Math.floor(Math.max(0, now - ms) / 60_000);
+  if (minutes < 1) return t("format.just_now");
+  if (minutes < 60) return t("format.minutes_ago", { count: minutes });
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return t("format.hours_ago", { count: hours });
+  const days = Math.floor(hours / 24);
+  if (days < 7) return t("format.days_ago", { count: days });
+  return formatListTimestamp(ms);
+}
+
 // A date separator inside a thread: "Today", "Yesterday", then the full date.
 // Same calendar-day rule as the row timestamps above, so a thread opened just
 // after midnight cannot label the message above it both "Today" and "Tue".
@@ -229,12 +243,42 @@ export function parseWholeNumber(text: string): number | null {
 // cannot live there. The dependency runs the other way: this file reaches into
 // core for `satsToBtc`, which is exact integer arithmetic on money.
 
+// Units a mint may issue that are not ISO 4217 currencies, and so have no
+// minor unit to scale by.
+const NON_FIAT_UNITS = new Set(["sat", "msat", "btc", "auth"]);
+
+// ISO 4217 currencies with no minor unit. Every other three-letter code a mint
+// is likely to issue has two decimal places.
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  "clp",
+  "isk",
+  "jpy",
+  "krw",
+  "pyg",
+  "ugx",
+  "vnd",
+  "xaf",
+  "xof",
+]);
+
+// Decimal places of a fiat unit, or null for a unit that is not a currency.
+//
+// A Cashu amount is an integer in the unit's smallest denomination (NUT-00),
+// so 150 in a usd keyset is a dollar fifty. Shown raw it reads as a hundred and
+// fifty dollars, a hundredfold error on the balance card.
+function fiatMinorDigits(unit: string): number | null {
+  const code = unit.toLowerCase();
+  if (NON_FIAT_UNITS.has(code) || !/^[a-z]{3}$/.test(code)) return null;
+  return ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 2;
+}
+
 // Render an amount in the denomination the user picked.
 //
 // Only `sat` amounts have a bitcoin denomination to switch to. Every other unit
 // is the mint's own (a mint may issue usd or eur directly), and those are
 // already the thing they say they are: reformatting them as bitcoin would
-// invent an exchange rate nobody supplied.
+// invent an exchange rate nobody supplied. A fiat unit is shown in major units
+// with its currency code, grouped in the app's language like any other number.
 //
 // Returns the number and its label separately so the caller can style them
 // apart, which the balance card does.
@@ -243,6 +287,16 @@ export function formatAmount(
   unit: string,
   display: BitcoinUnit,
 ): { value: string; label: string } {
+  const minor = fiatMinorDigits(unit);
+  if (minor !== null) {
+    return {
+      value: numberFormatter({
+        minimumFractionDigits: minor,
+        maximumFractionDigits: minor,
+      }).format(amount / 10 ** minor),
+      label: unit.toUpperCase(),
+    };
+  }
   if (unit !== "sat" || display === "sat") {
     return { value: formatNumber(amount), label: unit };
   }
@@ -251,10 +305,26 @@ export function formatAmount(
   return { value: satsToBtc(amount), label: "BTC" };
 }
 
+// An amount in the unit it is held in ("500 sat", "1.50 USD"), for every place
+// that prints a unit beside the number.
+export function formatUnitAmount(amount: number, unit: string): string {
+  const { value, label } = formatAmount(amount, unit, "sat");
+  return `${value} ${label}`;
+}
+
+// The same, as the {amount} and {unit} placeholders of a translated sentence.
+export function amountParts(
+  amount: number,
+  unit: string,
+): { amount: string; unit: string } {
+  const { value, label } = formatAmount(amount, unit, "sat");
+  return { amount: value, unit: label };
+}
+
 // "500 sat" / "500 sat - coffee money", for chat search previews and
 // accessibility labels.
 export function formatTokenSummary(info: TokenInfo): string {
-  const amount = `${formatNumber(info.amount)} ${info.unit}`;
+  const amount = formatUnitAmount(info.amount, info.unit);
   return info.memo ? `${amount} - ${info.memo}` : amount;
 }
 

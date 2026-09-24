@@ -29,8 +29,9 @@ import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { useWalletStore } from "@store/wallet-store";
-import { formatNumber } from "@utils/format";
+import { amountParts } from "@utils/format";
 import { systemRow } from "@utils/message-text";
+import { resolveDisplayName } from "@utils/peer-display-name";
 import { isNostrId, NOSTR_ID_PREFIX } from "@utils/username";
 import { getMeshService, type MeshService } from "./mesh-service";
 import {
@@ -98,6 +99,10 @@ export interface PayPersonParams {
   // Sender display name for the local echo. The DM thread has the user's real
   // nickname; the peer sheet and wallet picker only need "You".
   senderNickname?: string;
+  // Who the confirmation names. Callers that show a name on screen pass it so
+  // the two agree; anything else is resolved the way the rest of the app
+  // names a peer.
+  recipientName?: string;
 }
 
 // Pay someone. Returns null when the user cancelled or the wallet refused;
@@ -122,6 +127,7 @@ export async function payPerson(
 
   const payee = resolvePayee(params, service);
   if (payee === null) return null;
+  const name = params.recipientName ?? resolveDisplayName(payee.peerID);
 
   try {
     // Rail 1. A direct radio link means they are right here: hand it over now
@@ -143,6 +149,10 @@ export async function payPerson(
           client,
         });
         if (lookup.ok) {
+          // Asked here, once the rail is known, because only this rail cannot
+          // be undone and the question has to say so before anything is locked.
+          const confirmed = await confirmPayment(amount, unit, name, true);
+          if (!confirmed) return null;
           const paid = await payAsNutzap({
             target: lookup.target,
             recipientPubkey: payee.nostrPubkey,
@@ -155,6 +165,18 @@ export async function payPerson(
             privKey,
           });
           if (paid !== null) return paid;
+          // The lock refused before committing anything. The user has already
+          // agreed to pay, so the lesser rail goes ahead without asking twice.
+          return await payAsToken({
+            peerID: payee.peerID,
+            amount,
+            unit,
+            memo: params.memo,
+            senderNickname: params.senderNickname,
+            fallbackReason: payee.fallbackReason,
+            name,
+            confirmed: true,
+          });
         } else {
           // Remember why, so the confirmation can say "sent as a token
           // because they have not published nutzap info" rather than leaving
@@ -174,6 +196,8 @@ export async function payPerson(
       memo: params.memo,
       senderNickname: params.senderNickname,
       fallbackReason: payee.fallbackReason,
+      name,
+      confirmed: false,
     });
   } catch (err) {
     reportWalletError(err);
@@ -259,16 +283,15 @@ async function payAsNutzap(params: {
       unit: params.unit,
       recipientPubkey: params.target.p2pkPubkey,
     });
-  } catch {
-    // Mint unreachable, Tor blocking, denominations short: almost always
-    // nothing left the wallet, so the token rails below are the right next move.
-    //
-    // One exception, narrow but real. The request may have reached the mint with
-    // only its answer lost, in which case those proofs are spent and the token
-    // rail hands over a dud. No value is destroyed: the swap preview is on disk
-    // and `reconcile` recovers the locked outputs as a token to deliver by hand.
-    // Telling the two apart needs the mint, which is what is missing here, so
-    // the ladder carries on rather than stalling.
+  } catch (err) {
+    // A request that may have reached the mint is a payment that may have been
+    // made. Its coins are held against the lock until `reconcile` learns which,
+    // and a token sent now would pay the same person a second time, so the
+    // ladder stops here and the error says what is going on.
+    if (err instanceof WalletError && err.inDoubt) throw err;
+    // Mint unreachable before the request left, Tor blocking, a refusal,
+    // denominations short: nothing left the wallet, so the token rails below
+    // are the right next move.
     return null;
   }
 
@@ -358,8 +381,7 @@ function noteNutzapInThread(
     // stale separator is a far smaller thing than a receipt stuck in a
     // language its reader does not have.
     ...systemRow("wallet.pay.thread_receipt", {
-      amount: formatNumber(amount),
-      unit,
+      ...amountParts(amount, unit),
     }),
     timestampMs: Date.now(),
     isMine: true,
@@ -375,20 +397,34 @@ async function payAsToken(params: {
   memo?: string;
   senderNickname?: string;
   fallbackReason?: string;
+  name: string;
+  // Whether the user has already agreed to this payment. The inexact warning
+  // is asked regardless, since overpaying is a separate question.
+  confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
+  if (quote.exact && !params.confirmed) {
+    const confirmed = await confirmPayment(
+      params.amount,
+      params.unit,
+      params.name,
+      false,
+    );
+    if (!confirmed) return null;
+  }
   if (!quote.exact) {
     // Ask before reserving anything. An inexact offline send overpays and
     // cannot be undone once the recipient redeems.
     const confirmed = await confirm(
       t("wallet.err.exact_amount"),
       t("wallet.xfer.inexact_body", {
-        amount: formatNumber(params.amount),
-        unit: params.unit,
-        spend: formatNumber(quote.spend),
-        extra: formatNumber(quote.spend - params.amount),
+        ...amountParts(params.amount, params.unit),
+        spend: amountParts(quote.spend, params.unit).amount,
+        extra: amountParts(quote.spend - params.amount, params.unit).amount,
       }),
-      t("wallet.xfer.send_amount", { amount: formatNumber(quote.spend) }),
+      t("wallet.xfer.send_amount", {
+        amount: amountParts(quote.spend, params.unit).amount,
+      }),
     );
     if (!confirmed) return null;
   }
@@ -398,7 +434,9 @@ async function payAsToken(params: {
     unit: params.unit,
     memo: params.memo,
     counterparty: params.peerID,
-    allowInexact: true,
+    // Only what the user was shown. The pool can change while a dialog is
+    // open, and an exact quote gone inexact would otherwise overpay unasked.
+    allowInexact: !quote.exact,
   });
 
   const route = deliverTokenToPeer({
@@ -583,6 +621,12 @@ export function reclaimTokenSend(txId: string): boolean {
 // Map a WalletError onto the alert the user sees. Kept here rather than in each
 // screen so the wording for "not enough balance" is identical everywhere.
 export function reportWalletError(err: unknown): void {
+  // Titled by its own message: under a code's title ("Mint refused") it would
+  // contradict a body saying nobody knows yet.
+  if (err instanceof WalletError && err.inDoubt) {
+    showAlert(err.message, err.detail ?? "");
+    return;
+  }
   if (err instanceof WalletError) {
     const titles: Record<string, string> = {
       locked: t("wallet.err.locked"),
@@ -605,6 +649,25 @@ export function reportWalletError(err: unknown): void {
     return;
   }
   showAlert(t("wallet.xfer.could_not_send"), String(err));
+}
+
+// The one question every payment asks before money moves: how much, to whom,
+// and whether it can be taken back. Every door reaches it through `payPerson`,
+// so none of them can skip it.
+function confirmPayment(
+  amount: number,
+  unit: string,
+  name: string,
+  final: boolean,
+): Promise<boolean> {
+  return confirm(
+    t("wallet.pay.confirm_title", {
+      ...amountParts(amount, unit),
+      name,
+    }),
+    final ? t("wallet.pay.confirm_final") : t("wallet.pay.confirm_reclaimable"),
+    t("wallet.xfer.send_amount", { amount: amountParts(amount, unit).amount }),
+  );
 }
 
 // The app's alert store is callback-based; this wraps it so the send flow above

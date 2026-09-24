@@ -29,6 +29,7 @@ import {
 } from "@core/payments/cashu";
 import {
   isValidRecoveryPhrase,
+  normalizeRecoveryPhrase,
   pickVerificationPositions,
   unknownWordsIn,
   verifyPositions,
@@ -101,9 +102,11 @@ import {
   useThemeColors,
 } from "@ui/theme";
 import {
+  amountParts,
+  formatAgo,
   formatAmount,
-  formatListTimestamp,
   formatNumber,
+  formatUnitAmount,
   parseWholeNumber,
 } from "@utils/format";
 import { nostrShortLabel, peerIDToUsername } from "@utils/username";
@@ -545,7 +548,7 @@ export default function WalletScreen({
       const where = hostOf(result.mintUrl);
       if (result.outcome === "swapped") {
         showAlert(
-          `+${formatNumber(result.amount)} ${result.unit}`,
+          `+${formatUnitAmount(result.amount, result.unit)}`,
           t("wallet.receive.redeemed_here", { mint: where }) +
             (result.memo
               ? t("wallet.receive.memo_quoted", { memo: result.memo })
@@ -553,7 +556,7 @@ export default function WalletScreen({
         );
       } else {
         showAlert(
-          `+${formatNumber(result.amount)} ${result.unit}`,
+          `+${formatUnitAmount(result.amount, result.unit)}`,
           // Three sentences assembled at runtime, each its own key so a
           // translator can reword or reorder them. The joining space lives
           // here rather than being baked onto the front of the copy.
@@ -693,8 +696,7 @@ export default function WalletScreen({
       t("wallet.delivered.title"),
       tx !== undefined
         ? t("wallet.delivered.body", {
-            amount: formatNumber(tx.amount),
-            unit: tx.unit,
+            ...amountParts(tx.amount, tx.unit),
           })
         : t("wallet.delivered.body_generic"),
       [
@@ -720,8 +722,7 @@ export default function WalletScreen({
     showAlert(
       t("wallet.reclaim.title"),
       t("wallet.reclaim.body", {
-        amount: formatNumber(tx.amount),
-        unit: tx.unit,
+        ...amountParts(tx.amount, tx.unit),
       }),
       [
         { text: t("wallet.reclaim.keep"), style: "cancel" },
@@ -833,6 +834,7 @@ export default function WalletScreen({
         amount,
         memo: zapNote.trim() || undefined,
         unit: primary.unit,
+        recipientName: zapRecipientLabel(recipientPubkey),
       });
       if (!result) return;
       setZapNpub("");
@@ -1080,7 +1082,7 @@ export default function WalletScreen({
   // Wraps the callback-based alert so the restore flow reads as a straight
   // line. Backdrop dismissal counts as cancel, which is why this watches the
   // store's visibility rather than relying on a button firing.
-  function confirmReplacePhrase(): Promise<boolean> {
+  function confirmReplacePhrase(body: string): Promise<boolean> {
     return new Promise((resolve) => {
       let settled = false;
       const finish = (value: boolean): void => {
@@ -1093,22 +1095,18 @@ export default function WalletScreen({
         if (state.visible) return;
         setTimeout(() => finish(false), 0);
       });
-      showAlert(
-        t("wallet.backup.replace_title"),
-        t("wallet.backup.replace_body"),
-        [
-          {
-            text: T("common.cancel"),
-            style: "cancel",
-            onPress: () => finish(false),
-          },
-          {
-            text: t("wallet.backup.replace"),
-            style: "destructive",
-            onPress: () => finish(true),
-          },
-        ],
-      );
+      showAlert(t("wallet.backup.replace_title"), body, [
+        {
+          text: T("common.cancel"),
+          style: "cancel",
+          onPress: () => finish(false),
+        },
+        {
+          text: t("wallet.backup.replace"),
+          style: "destructive",
+          onPress: () => finish(true),
+        },
+      ]);
     });
   }
 
@@ -1123,10 +1121,6 @@ export default function WalletScreen({
 
   async function handleRestore(): Promise<void> {
     const input = restoreInput.trim();
-    // Restoring replaces the stored phrase. Coins already derived from the old
-    // one stay spendable here, but they stop being restorable, so this is the
-    // one place a wrong tap can quietly cost someone their backup.
-    if (backupEnabled && !(await confirmReplacePhrase())) return;
     if (!isValidRecoveryPhrase(input)) {
       const unknown = unknownWordsIn(input);
       showAlert(
@@ -1145,6 +1139,24 @@ export default function WalletScreen({
         t("wallet.backup.add_mint_first_body"),
       );
       return;
+    }
+    // Restoring replaces the stored phrase. Coins already derived from the old
+    // one stay spendable here, but they stop being restorable, so this is the
+    // one place a wrong tap can quietly cost someone their backup.
+    //
+    // Asked whenever there is something to lose, not only once backup is on:
+    // the phrase is generated with the wallet, so somebody who never opened the
+    // backup screen still has coins that only it can rebuild.
+    const current = await getRecoveryPhrase().catch(() => null);
+    const samePhrase =
+      current !== null &&
+      normalizeRecoveryPhrase(current) === normalizeRecoveryPhrase(input);
+    const holdsValue = accounts.some((a) => a.balance > 0 || a.reserved > 0);
+    if (current !== null && !samePhrase && (backupEnabled || holdsValue)) {
+      const body = backupEnabled
+        ? t("wallet.backup.replace_body")
+        : t("wallet.backup.replace_unseen_body");
+      if (!(await confirmReplacePhrase(body))) return;
     }
 
     setBusy("restore");
@@ -1184,6 +1196,9 @@ export default function WalletScreen({
     setBusy("consolidate");
     let moved = 0;
     let fees = 0;
+    // Paid out of the source, with the destination's coins still to be claimed.
+    // Money in transit, not money that failed to move.
+    const inTransit: string[] = [];
     const failures: string[] = [];
     try {
       for (const source of sources) {
@@ -1193,6 +1208,17 @@ export default function WalletScreen({
             toMintUrl: target,
             unit: primary.unit,
           });
+          if (result.depositPending) {
+            inTransit.push(
+              t("wallet.mint.deposit_pending", {
+                amount: formatNumber(result.spent - result.fee),
+                unit: primary.unit,
+                mint: hostOf(source.mintUrl),
+                target: hostOf(target),
+              }),
+            );
+            continue;
+          }
           moved += result.received;
           fees += result.fee;
         } catch (err) {
@@ -1203,7 +1229,11 @@ export default function WalletScreen({
       }
       setShowConsolidate(false);
       showAlert(
-        moved > 0 ? t("wallet.mint.moved") : t("wallet.mint.nothing_moved"),
+        moved > 0
+          ? t("wallet.mint.moved")
+          : inTransit.length > 0
+            ? t("wallet.mint.move_pending")
+            : t("wallet.mint.nothing_moved"),
         [
           moved > 0
             ? t("wallet.mint.moved_body", {
@@ -1213,6 +1243,7 @@ export default function WalletScreen({
                 fees: formatNumber(fees),
               })
             : null,
+          inTransit.length > 0 ? inTransit.join("\n") : null,
           failures.length > 0 ? failures.join("\n") : null,
         ]
           .filter(Boolean)
@@ -1486,10 +1517,10 @@ export default function WalletScreen({
                     color={Colors.textSecondary}
                   />
                   <Text style={styles.pendingAmount}>
-                    {formatNumber(tx.amount)} {tx.unit}
+                    {formatUnitAmount(tx.amount, tx.unit)}
                   </Text>
                   <Text style={styles.pendingTime}>
-                    {relativeTime(tx.createdAtMs)}
+                    {formatAgo(tx.createdAtMs)}
                   </Text>
                 </View>
                 <Text style={styles.pendingBody}>
@@ -1943,7 +1974,7 @@ export default function WalletScreen({
                   <View style={styles.historyText}>
                     <Text style={styles.historyTitle}>{txTitle(tx)}</Text>
                     <Text style={styles.historySub}>
-                      {relativeTime(tx.createdAtMs)}
+                      {formatAgo(tx.createdAtMs)}
                       {" · "}
                       {hostOf(tx.mintUrl)}
                       {txStatusNote(tx) !== undefined
@@ -1969,13 +2000,19 @@ export default function WalletScreen({
                       styles.historyAmount,
                       isVoided(tx)
                         ? styles.historyVoid
-                        : isCredit(tx)
-                          ? styles.historyCredit
-                          : styles.historyDebit,
+                        : isNeutral(tx)
+                          ? styles.historyNeutral
+                          : isCredit(tx)
+                            ? styles.historyCredit
+                            : styles.historyDebit,
                     ]}
                   >
-                    {isVoided(tx) ? "" : isCredit(tx) ? "+" : "−"}
-                    {formatNumber(tx.amount)}
+                    {isVoided(tx) || isNeutral(tx)
+                      ? ""
+                      : isCredit(tx)
+                        ? "+"
+                        : "−"}
+                    {formatAmount(tx.amount, tx.unit, "sat").value}
                   </Text>
                 </View>
               </View>
@@ -2679,7 +2716,7 @@ export default function WalletScreen({
             <QuoteRow
               styles={styles}
               label={T("wallet.ln.invoice")}
-              value={`${formatNumber(withdrawQuote.amount)} ${withdrawQuote.unit}`}
+              value={formatUnitAmount(withdrawQuote.amount, withdrawQuote.unit)}
             />
             <QuoteRow
               styles={styles}
@@ -3049,7 +3086,7 @@ export default function WalletScreen({
       >
         <Text style={styles.modalTitle}>
           {qrToken
-            ? `${formatNumber(qrToken.amount)} ${qrToken.unit}`
+            ? formatUnitAmount(qrToken.amount, qrToken.unit)
             : T("wallet.token")}
         </Text>
         <Text style={styles.modalSubtitle}>{T("wallet.send.scan_note")}</Text>
@@ -3305,11 +3342,17 @@ function isCredit(tx: WalletTx): boolean {
 // keys off `kind` alone, so all three printed a red debit; a reclaim showed
 // "-500" for money that had just come back.
 //
-// A failed swap is the exception. It removes proofs the mint says are already
-// spent, which is a real reduction.
+// The exception is the row recording proofs the mint says are already spent,
+// which is a real reduction. A swap that failed any other way never happened.
 function isVoided(tx: WalletTx): boolean {
   if (tx.status === "reclaimed" || tx.status === "expired") return true;
-  return tx.status === "failed" && tx.kind !== "swap";
+  return tx.status === "failed" && tx.spentRemoved !== true;
+}
+
+// A swap trades coins for coins at the same mint, so it is neither money in
+// nor money out. Signing it would read a routine refresh as a payment.
+function isNeutral(tx: WalletTx): boolean {
+  return tx.kind === "swap" && tx.status !== "failed";
 }
 
 function txIcon(tx: WalletTx): React.ComponentProps<typeof Feather>["name"] {
@@ -3355,7 +3398,8 @@ function txTitle(tx: WalletTx): string {
     case "nutzap-out":
       return t("wallet.zap.sent");
     case "swap":
-      if (tx.status === "failed") return t("wallet.activity.spent_removed");
+      if (tx.spentRemoved === true) return t("wallet.activity.spent_removed");
+      if (tx.status === "failed") return t("wallet.refresh.failed");
       // A swap is persisted before its request goes out, so it can be seen in
       // flight. Past tense would claim the coins were reissued while the mint
       // has not answered.
@@ -3385,21 +3429,6 @@ function txStatusNote(tx: WalletTx): string | undefined {
     case "expired":
       return t("wallet.activity.status_expired");
   }
-}
-
-function relativeTime(ms: number): string {
-  const delta = Date.now() - ms;
-  if (delta < 60_000) return t("wallet.activity.just_now");
-  const minutes = Math.floor(delta / 60_000);
-  if (minutes < 60) return t("format.minutes_ago", { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("format.hours_ago", { count: hours });
-  const days = Math.floor(hours / 24);
-  if (days < 7) return t("format.days_ago", { count: days });
-  // Past a week, the same dated form every other list row uses ("4 Mar", or
-  // "4 Mar 2025" once the year is ambiguous). Only its older branches are
-  // reachable; the ladder above owns everything inside a week.
-  return formatListTimestamp(ms);
 }
 
 // Whole seconds under a minute, m:ss above it. Never negative: the expired
@@ -4044,6 +4073,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     historyVoid: {
       color: Colors.textMuted,
       textDecorationLine: "line-through",
+    },
+    historyNeutral: {
+      color: Colors.textMuted,
     },
     historyDivider: {
       height: StyleSheet.hairlineWidth,

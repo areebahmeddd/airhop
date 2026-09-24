@@ -54,6 +54,7 @@ jest.mock("../mesh-service", () => ({
   getMeshService: jest.fn(),
 }));
 
+import { useAlertStore } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { getMeshService } from "../mesh-service";
@@ -65,6 +66,7 @@ import {
   publishLockedNutzap,
   quoteSend,
   settleNutzap,
+  WalletError,
 } from "../wallet-service";
 
 const MINT = "https://mint.example.com";
@@ -109,10 +111,39 @@ function useMesh(options: Parameters<typeof fakeMesh>[0]) {
   return mesh;
 }
 
+// Every payment asks first. The person answering it is this: they agree unless
+// a test says otherwise, and every question asked is kept so a test can read
+// what the user was told.
+let answer: "confirm" | "cancel" = "confirm";
+let asked: { title: string; message?: string }[] = [];
+let stopAnswering: (() => void) | null = null;
+
+afterEach(() => {
+  stopAnswering?.();
+  stopAnswering = null;
+  useAlertStore.getState().hide();
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
   useChatStore.getState().clearAll();
   useContactsStore.getState().clearAll();
+
+  answer = "confirm";
+  asked = [];
+  stopAnswering = useAlertStore.subscribe((state, previous) => {
+    if (!state.visible || previous.visible) return;
+    const button = state.buttons.find((b) =>
+      answer === "confirm" ? b.style === "destructive" : b.style === "cancel",
+    );
+    if (button === undefined) return;
+    asked.push({ title: state.title, message: state.message });
+    // The modal hides itself and then runs the button, in that order.
+    queueMicrotask(() => {
+      useAlertStore.getState().hide();
+      button.onPress?.();
+    });
+  });
 
   mockedQuote.mockResolvedValue({
     mintUrl: MINT,
@@ -382,6 +413,65 @@ describe("payPerson identity resolution", () => {
     useMesh({ directLink: false });
 
     expect(await payPerson({ amount: 500 })).toBeNull();
+    expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+});
+
+describe("payPerson asks before money moves", () => {
+  it("asks once, naming the amount and the person, and says a nutzap is final", async () => {
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked).toHaveLength(1);
+    expect(asked[0]?.title).toContain("500");
+    expect(asked[0]?.title).toContain("Ana");
+    expect(asked[0]?.message).toMatch(/cannot be taken back/);
+  });
+
+  it("says a token can be reclaimed, since it can", async () => {
+    useMesh({ directLink: true, route: "sent" });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked).toHaveLength(1);
+    expect(asked[0]?.message).toMatch(/reclaim/);
+  });
+
+  it("spends nothing when the user says no", async () => {
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY });
+    answer = "cancel";
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result).toBeNull();
+    expect(mockedLock).not.toHaveBeenCalled();
+    expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+
+  it("does not ask twice when a refused lock falls back to a token", async () => {
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedLock.mockRejectedValue(new Error("mint unreachable"));
+
+    await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(asked).toHaveLength(1);
+    expect(mockedPrepare).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("a lock whose answer went missing", () => {
+  it("stops the ladder rather than paying again as a token", async () => {
+    // The mint may have locked the coins to them. A token now would be a second
+    // payment for the same tap, and the first is recovered by reconcile.
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedLock.mockRejectedValue(
+      Object.assign(new WalletError("offline", "in doubt"), { inDoubt: true }),
+    );
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result).toBeNull();
     expect(mockedPrepare).not.toHaveBeenCalled();
   });
 });

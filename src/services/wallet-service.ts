@@ -88,6 +88,7 @@ import {
   isWalletStorageReady,
   normalizeMintUrl,
   parseAccountKey,
+  rehydrateAfterReset,
   selectKeysetIds,
   useWalletStore,
   whenWalletHydrated,
@@ -181,13 +182,35 @@ export type WalletErrorCode =
 export class WalletError extends Error {
   readonly code: WalletErrorCode;
   readonly detail?: string;
+  // The request reached the point where the mint may have acted on it and the
+  // answer never said whether it did. The money is committed until `reconcile`
+  // finds out, so a caller must not treat this as "nothing happened" and pay
+  // again another way.
+  readonly inDoubt: boolean;
 
-  constructor(code: WalletErrorCode, message: string, detail?: string) {
+  constructor(
+    code: WalletErrorCode,
+    message: string,
+    detail?: string,
+    opts: { inDoubt?: boolean } = {},
+  ) {
     super(message);
     this.name = "WalletError";
     this.code = code;
     this.detail = detail;
+    this.inDoubt = opts.inDoubt === true;
   }
+}
+
+// Whether a failure after a swap was staged proves the mint did nothing. Only
+// an answer from the mint refusing the request does, and not every refusal:
+// "already spent" may describe our own first attempt (see
+// `isAlreadySpentError`). Anything else, including an error raised here after
+// the mint's answer arrived, leaves the question open, because the mint may
+// have signed outputs that only the stored preview can recover.
+function isDefiniteRefusal(err: unknown): boolean {
+  if (!isMintOperationError(err)) return false;
+  return !isAlreadySpentError(asWalletError(err, "mint-error"));
 }
 
 // Whether the mint refused because it has already seen these inputs.
@@ -583,6 +606,8 @@ export function resetWalletService(): void {
   // recalled, but the transaction it belonged to is gone, so holding its id back
   // from a later pass protects nothing and only leaks the entry.
   swapsInFlight.clear();
+  // Same for melts, for the same reason.
+  meltsInFlight.clear();
   walletEpoch += 1;
   // The recovery phrase went with the keychain the wipe just cleared, so the
   // in-memory seed has to go too. Leaving it would keep deriving proofs from a
@@ -605,6 +630,7 @@ export async function initWalletService(): Promise<boolean> {
   } catch {
     return false;
   }
+  rehydrateAfterReset();
   // Opening the file is not the same as having read it. zustand overwrites the
   // store with the persisted snapshot when hydration lands, so anything that
   // credits or spends before that point is discarded. Wait for it, then check:
@@ -658,6 +684,9 @@ async function loadBackupState(): Promise<void> {
       const fresh = generateRecoveryPhrase();
       await storePhrase(fresh);
       phrase = fresh;
+      // Anything marked as derived came from the phrase that went missing, and
+      // the fresh one cannot rebuild it.
+      useWalletStore.getState().clearDerived();
     } catch {
       // The keychain is unavailable (locked device, or a platform refusing the
       // write). Random secrets are the honest fallback: the wallet still works
@@ -787,11 +816,24 @@ export async function restoreFromRecoveryPhrase(params: {
   }
 
   const seed = recoveryPhraseToSeed(phrase);
+  const epoch = walletEpoch;
+  const previous = await loadStoredPhrase();
+  // A wipe during the read must not be followed by writing a phrase back into
+  // the keychain it just cleared.
+  assertSameWallet(epoch);
 
   // Switch over before scanning: the restore itself creates no new outputs, but
   // everything after it must derive from this phrase or the recovered coins and
   // the new ones would need two different backups.
   await storePhrase(phrase);
+  assertSameWallet(epoch);
+  // Coins held now came from the phrase being replaced, which is about to stop
+  // existing anywhere. They stay spendable, but reading them as covered would
+  // promise a restore the new words cannot perform, so they are marked
+  // uncovered and the next refresh re-issues them under the new phrase.
+  if (previous !== null && normalizeRecoveryPhrase(previous) !== phrase) {
+    useWalletStore.getState().clearDerived();
+  }
   activeSeed = seed;
   useWalletStore.getState().setBackupEnabled(true);
   // Someone restoring has demonstrably got the phrase in front of them, so
@@ -850,6 +892,7 @@ export async function restoreFromRecoveryPhrase(params: {
           // Push the cursor past everything the mint has ever signed for this
           // keyset. Without this the next swap would re-derive a counter the mint
           // already knows and be rejected as a duplicate.
+          assertSameWallet(epoch);
           if (typeof lastCounterWithSignature === "number") {
             store.advanceCounter(keyset.id, lastCounterWithSignature + 1);
           }
@@ -858,6 +901,7 @@ export async function restoreFromRecoveryPhrase(params: {
           // The mint signed these, but plenty will have been spent since. Only
           // the unspent ones are money.
           const grouped = await wallet.groupProofsByState(proofs);
+          assertSameWallet(epoch);
           alreadySpent += grouped.spent.length;
           const live = [...grouped.unspent, ...grouped.pending];
           if (live.length === 0) continue;
@@ -871,6 +915,7 @@ export async function restoreFromRecoveryPhrase(params: {
       }
       mintsScanned.push(url);
     } catch (err) {
+      if (walletReplaced(epoch)) throw lockedError();
       mintsFailed.push({
         mintUrl: url,
         reason: asWalletError(err, "mint-error").message,
@@ -897,13 +942,28 @@ export async function restoreFromRecoveryPhrase(params: {
 }
 
 function assertUnlocked(): void {
-  if (!isWalletStorageReady()) {
-    throw new WalletError(
-      "locked",
-      t("wallet.svc.storage_locked"),
-      t("wallet.svc.storage_locked_body"),
-    );
-  }
+  if (!isWalletStorageReady()) throw lockedError();
+}
+
+function lockedError(): WalletError {
+  return new WalletError(
+    "locked",
+    t("wallet.svc.storage_locked"),
+    t("wallet.svc.storage_locked_body"),
+  );
+}
+
+// Whether the wallet an operation started in is gone. A panic wipe can land
+// while a mint round trip is open, and anything the operation writes afterwards
+// lands in the store the wipe just emptied: the old wallet's proofs and history
+// back in memory, and on disk with the next write. Checked after every await
+// that precedes a write.
+function walletReplaced(epoch: number): boolean {
+  return walletEpoch !== epoch || !isWalletStorageReady();
+}
+
+function assertSameWallet(epoch: number): void {
+  if (walletReplaced(epoch)) throw lockedError();
 }
 
 // ---- Mints ----
@@ -1032,6 +1092,14 @@ async function prepareRecoverableSwap(
 // transactions as replayable rather than as in flight.
 const swapsInFlight = new Set<string>();
 
+// Melts with a request on the wire in this process, skipped by `reconcile` for
+// a sharper reason than swaps are. Between the blanks being saved and the mint
+// marking the quote PENDING, the quote still reads UNPAID, and a pass that
+// believed it would release the reservation and fail the transaction a moment
+// before the melt spends those same proofs. In memory only, like the swaps: a
+// process that dies mid-melt leaves exactly what `recoverMeltChange` is for.
+const meltsInFlight = new Set<string>();
+
 async function completeSwapInFlight(
   wallet: Wallet,
   txId: string,
@@ -1075,6 +1143,7 @@ export async function receiveToken(
   opts: { preferOffline?: boolean; counterparty?: string } = {},
 ): Promise<ReceiveResult> {
   assertUnlocked();
+  const epoch = walletEpoch;
 
   const info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
   if (!info) {
@@ -1191,6 +1260,22 @@ export async function receiveToken(
   const dleqLabel =
     dleq.status === "valid" ? ("valid" as const) : ("unchecked" as const);
 
+  // A token already taken in once, whose own proofs have since been swapped for
+  // fresh ones, so the checks above cannot see it. Staging it again would open a
+  // pending "Received" row for a swap the mint is certain to refuse, and that
+  // row would sit there until `reconcile` got round to failing it.
+  const firstSecret = info.token.proofs[0]?.secret;
+  if (firstSecret !== undefined && store.claimedTokens.includes(firstSecret)) {
+    return {
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      memo: info.memo,
+      outcome: "duplicate",
+      dleq: dleqLabel,
+    };
+  }
+
   // Online path: swap the proofs so they are provably unspent and no longer
   // known to the sender. This is what makes a received token safe to hold.
   if (opts.preferOffline !== true) {
@@ -1221,6 +1306,7 @@ export async function receiveToken(
           }),
         await getNutzapPrivKeyHex(),
       );
+      assertSameWallet(epoch);
       // On disk before the request leaves. From here a process kill costs the
       // user a delay rather than the money.
       store.addTx({
@@ -1239,6 +1325,7 @@ export async function receiveToken(
       staged = true;
 
       const result = await completeSwapInFlight(wallet, txId, preview);
+      assertSameWallet(epoch);
       creditProofs(url, info.unit, result.keep, { verified: true });
       markClaimed(info);
       store.updateTx(txId, { status: "completed", swapPreview: undefined });
@@ -1251,6 +1338,7 @@ export async function receiveToken(
         dleq: dleqLabel,
       };
     } catch (err) {
+      if (walletReplaced(epoch)) throw lockedError();
       const walletErr = asWalletError(err, "mint-error");
       // Nothing here clears the preview, whatever the mint said. An error never
       // settles the only question that matters - did the mint take the inputs -
@@ -1721,6 +1809,7 @@ export async function refreshAccount(
   const url = normalizeMintUrl(mintUrl);
   const store = useWalletStore.getState();
   const key = accountKey(url, unit);
+  const epoch = walletEpoch;
   const claimed = secretsAwaitingSwapReplay();
   const held = (store.proofs[key] ?? []).filter((p) => !claimed.has(p.secret));
   if (held.length === 0) {
@@ -1742,6 +1831,7 @@ export async function refreshAccount(
   try {
     const bySecret = new Map(held.map((p) => [p.secret, p]));
     const grouped = await wallet.groupProofsByState(held.map(toProofLike));
+    assertSameWallet(epoch);
     const pick = (list: ProofLike[]): StoredProof[] =>
       list
         .map((p) => bySecret.get(p.secret))
@@ -1765,6 +1855,7 @@ export async function refreshAccount(
       amount: spent.reduce((s, p) => s + p.amount, 0),
       unit,
       mintUrl: url,
+      spentRemoved: true,
       error: t("wallet.svc.mint_says_spent"),
     });
   }
@@ -1812,6 +1903,7 @@ export async function refreshAccount(
   // so there is no partial-loss window.
   const face = toSwap.reduce((s, p) => s + p.amount, 0);
   const txId = newTxId();
+  let staged = false;
   try {
     // Prepared, persisted, then sent, so a response lost to a process kill can
     // be replayed instead of taking these proofs with it. See
@@ -1823,6 +1915,11 @@ export async function refreshAccount(
         requireDleq: false,
       }),
     );
+    assertSameWallet(epoch);
+    // Out of the spendable pool before the request leaves, so a payment made
+    // while the mint is answering cannot pick the same coins and hand somebody
+    // a token this swap is about to spend.
+    reserveSwapInputs(txId, url, unit, toSwap);
     store.addTx({
       id: txId,
       kind: "swap",
@@ -1834,13 +1931,11 @@ export async function refreshAccount(
       updatedAtMs: Date.now(),
       swapPreview: stored,
     });
+    staged = true;
 
     const result = await completeSwapInFlight(wallet, txId, preview);
-    store.removeProofs(
-      url,
-      unit,
-      toSwap.map((p) => p.secret),
-    );
+    assertSameWallet(epoch);
+    store.dropReserved(txId);
     creditProofs(url, unit, result.keep, { verified: true });
     const received = result.keep.reduce((s, p) => s + p.amount.toNumber(), 0);
     store.updateTx(txId, {
@@ -1878,13 +1973,52 @@ export async function refreshAccount(
     // is in a better state than before even though the swap failed. Surface the
     // error rather than reporting success, but do not undo step 1.
     //
-    // The transaction stays pending with its preview on it. Whether the mint
-    // took the inputs before the answer went missing is not knowable from here,
-    // and `reconcile` is the only thing that can ask.
+    // The transaction stays pending with its preview and its reservation on
+    // it. Whether the mint took the inputs before the answer went missing is
+    // not knowable from here, and `reconcile` is the only thing that can ask.
+    // A plain refusal is the exception: the mint did nothing, so the coins go
+    // straight back.
+    if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
-    store.updateTx(txId, { error: walletErr.message });
+    if (staged && isDefiniteRefusal(err)) {
+      abandonStagedSwap(txId, walletErr.message);
+    } else if (staged) {
+      store.updateTx(txId, { error: walletErr.message });
+    } else {
+      store.releaseReserved(txId);
+    }
     throw walletErr;
   }
+}
+
+// Hold a swap's inputs against its transaction, or refuse. A swap that spends
+// coins a concurrent payment has just reserved would kill that payment's token,
+// so losing this race is a retry, exactly as it is for a send.
+function reserveSwapInputs(
+  txId: string,
+  mintUrl: string,
+  unit: string,
+  inputs: StoredProof[],
+): void {
+  if (!useWalletStore.getState().reserveProofs(txId, mintUrl, unit, inputs)) {
+    throw new WalletError(
+      "insufficient",
+      t("wallet.svc.coins_raced"),
+      t("wallet.svc.coins_raced_body"),
+    );
+  }
+}
+
+// Undo a staged swap the mint refused outright: the inputs are untouched, so
+// they go back into the balance, and nothing is left for `reconcile` to chase.
+function abandonStagedSwap(txId: string, reason: string): void {
+  const store = useWalletStore.getState();
+  store.releaseReserved(txId);
+  store.updateTx(txId, {
+    status: "failed",
+    swapPreview: undefined,
+    error: reason,
+  });
 }
 
 // Re-check every pending transaction. Safe to call on app resume and whenever
@@ -2043,6 +2177,14 @@ const MAX_SWAP_REPLAYS_PER_PASS = 4;
 //
 // If neither answers, the swap did not happen and the transaction stops
 // claiming to be in flight.
+//
+// The replay is only sent while every input is still ours. A token taken in
+// while its swap was in doubt stays spendable (see `secretsAwaitingSwapReplay`),
+// so it may have been handed on since. A mint that never saw the first request
+// would process the replay as new, spend coins that now belong to somebody
+// else, and kill the token they are holding. Once any input has left, NUT-09 is
+// the only question left to ask: it answers whether the swap happened without
+// making it happen.
 async function replayLostSwap(
   tx: WalletTx,
   wiped: () => boolean,
@@ -2053,7 +2195,9 @@ async function replayLostSwap(
     // Written by a build that stored a different shape, or corrupted on disk.
     // Replaying half a preview would send the mint a request it has never seen,
     // which is a fresh spend rather than a recovery, so there is nothing safe
-    // to do but stop showing this as in flight.
+    // to do but stop showing this as in flight. Inputs held against it go back;
+    // if the mint did spend them, `dropSpentProofs` finds out.
+    store.releaseReserved(tx.id);
     store.updateTx(tx.id, {
       status: "failed",
       swapPreview: undefined,
@@ -2064,16 +2208,31 @@ async function replayLostSwap(
 
   const wallet = await getWallet(tx.mintUrl, tx.unit);
   if (wiped() || !isWalletStorageReady()) return;
-
-  try {
-    const result = await wallet.completeSwap(preview);
-    if (wiped() || !isWalletStorageReady()) return;
-    settleReplayedSwap(tx, preview, result.keep, result.send);
+  // Settled, or started again in this process, since the pass read history.
+  const live = useWalletStore.getState().history.find((t) => t.id === tx.id);
+  if (
+    swapsInFlight.has(tx.id) ||
+    live?.status !== "pending" ||
+    live.swapPreview === undefined
+  ) {
     return;
-  } catch (err) {
-    // Only a refusal from the mint is final. Anything else is the network, and
-    // the next pass asks again.
-    if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
+  }
+
+  // A nutzap's inputs are the sender's proofs locked to our key. They were
+  // never in this wallet, so there is nothing to have handed on, and nobody but
+  // us can spend them.
+  const replayable = tx.kind === "nutzap-in" || swapInputsHeld(tx, preview);
+  if (replayable) {
+    try {
+      const result = await wallet.completeSwap(preview);
+      if (wiped() || !isWalletStorageReady()) return;
+      settleReplayedSwap(tx, preview, result.keep, result.send);
+      return;
+    } catch (err) {
+      // Only a refusal from the mint is final. Anything else is the network,
+      // and the next pass asks again.
+      if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
+    }
   }
 
   if (wiped() || !isWalletStorageReady()) return;
@@ -2094,14 +2253,48 @@ async function replayLostSwap(
     return;
   }
 
-  // The mint never signed these outputs, so the swap did not complete. Whatever
-  // became of the inputs is a question about proofs rather than about this
-  // transaction, and `dropSpentProofs` settles that on its own schedule.
+  // A token stored offline and then passed on, whose swap never happened. The
+  // receive stands exactly as any offline receive does: the proofs came in and
+  // went out as they were, so only the claim that a swap is in flight goes.
+  if (
+    !replayable &&
+    tx.kind === "receive" &&
+    tokenWasStored(preview.inputs.map((p) => p.secret))
+  ) {
+    store.updateTx(tx.id, { swapPreview: undefined, error: undefined });
+    return;
+  }
+
+  // The mint never signed these outputs, so the swap did not complete, and any
+  // inputs held against it go back. Whatever became of them is a question
+  // about proofs rather than about this transaction, and `dropSpentProofs`
+  // settles that on its own schedule.
+  store.releaseReserved(tx.id);
   store.updateTx(tx.id, {
     status: "failed",
     swapPreview: undefined,
     error: t("wallet.svc.swap_lost"),
   });
+}
+
+// Whether every input of a swap is still this wallet's to spend: in the
+// account's spendable pool, or held against the swap itself.
+function swapInputsHeld(tx: WalletTx, preview: SwapPreview): boolean {
+  const state = useWalletStore.getState();
+  const held = new Set(
+    (state.proofs[accountKey(tx.mintUrl, tx.unit)] ?? []).map((p) => p.secret),
+  );
+  for (const proof of state.reserved[tx.id]?.proofs ?? []) {
+    held.add(proof.secret);
+  }
+  return preview.inputs.every((input) => held.has(input.secret));
+}
+
+// Whether a token with these proofs was ever taken into the wallet, by swap or
+// by storing it offline. `markClaimed` keys on one of its secrets.
+function tokenWasStored(secrets: string[]): boolean {
+  const claimed = new Set(useWalletStore.getState().claimedTokens);
+  return secrets.some((secret) => claimed.has(secret));
 }
 
 // Ask the mint whether it ever signed a preview's blinded messages (NUT-09).
@@ -2145,6 +2338,31 @@ async function restoreSwapOutputs(
   return { keep, send };
 }
 
+// A send whose token carries coins a swap of ours has just spent. The value
+// came back through the swap, so the token is dead: the recipient's claim can
+// only fail. The send is closed as failed rather than left for `reconcile` to
+// read the spent proofs as "they redeemed it", and the rest of its reservation,
+// still good, goes back into the balance.
+function voidSendsSpentBySwap(spent: Set<string>): void {
+  const store = useWalletStore.getState();
+  for (const [txId, entry] of Object.entries(store.reserved)) {
+    if (!entry.proofs.some((p) => spent.has(p.secret))) continue;
+    const send = store.history.find((t) => t.id === txId);
+    if (send?.kind !== "send") continue;
+    const { mintUrl, unit } = parseAccountKey(entry.account);
+    store.dropReserved(txId);
+    store.addProofs(
+      mintUrl,
+      unit,
+      entry.proofs.filter((p) => !spent.has(p.secret)),
+    );
+    store.updateTx(txId, {
+      status: "failed",
+      error: t("wallet.svc.send_spent_by_swap"),
+    });
+  }
+}
+
 // Book a recovered swap: the inputs are gone for good and the outputs are ours.
 function settleReplayedSwap(
   tx: WalletTx,
@@ -2157,11 +2375,10 @@ function settleReplayedSwap(
   // definitively spent. Anything still holding them - a token stored offline
   // while the swap was in doubt, or the balance a refresh was swapping - is no
   // longer money, and leaving it would count the same value twice.
-  store.removeProofs(
-    tx.mintUrl,
-    tx.unit,
-    preview.inputs.map((p) => p.secret),
-  );
+  const spent = preview.inputs.map((p) => p.secret);
+  store.removeProofs(tx.mintUrl, tx.unit, spent);
+  store.dropReserved(tx.id);
+  voidSendsSpentBySwap(new Set(spent));
   if (keep.length > 0) {
     creditProofs(tx.mintUrl, tx.unit, keep, { verified: true });
   }
@@ -2221,6 +2438,8 @@ async function runReconcilePass(): Promise<void> {
   for (const tx of state.history) {
     if (tx.kind !== "melt" || tx.status !== "pending") continue;
     if (!tx.quoteId || tx.meltOutputs === undefined) continue;
+    // Its answer is not late, it is still on its way.
+    if (meltsInFlight.has(tx.id)) continue;
     if (wiped()) return;
     try {
       await recoverMeltChange(tx);
@@ -2252,15 +2471,34 @@ async function runReconcilePass(): Promise<void> {
   // Reserved sends whose proofs the recipient has now redeemed: the value is
   // gone for good, so close them out rather than offering a reclaim that would
   // fail at the mint.
-  for (const [txId, entry] of Object.entries(state.reserved)) {
-    const tx = state.history.find((t) => t.id === txId);
+  //
+  // Only sends and melts. A swap or a lock holds its inputs against its own
+  // transaction, and those are spent BECAUSE the swap happened: closing them
+  // here would throw away the outputs only the replay above can recover. A
+  // send holding coins an unsettled swap may have spent is left for that
+  // replay too, since "spent" there can mean our own swap took them rather
+  // than the recipient.
+  //
+  // Read fresh rather than from the snapshot the pass started with: the replays
+  // above can already have closed a send, and confirming it on stale state
+  // would overwrite that with "completed".
+  const awaitingReplay = secretsAwaitingSwapReplay();
+  const current = useWalletStore.getState();
+  for (const [txId, entry] of Object.entries(current.reserved)) {
+    const tx = current.history.find((t) => t.id === txId);
     if (!tx || tx.status !== "pending") continue;
+    if (tx.kind === "swap" || tx.kind === "nutzap-out") continue;
+    if (tx.swapPreview !== undefined || meltsInFlight.has(txId)) continue;
+    if (entry.proofs.some((p) => awaitingReplay.has(p.secret))) continue;
     if (wiped()) return;
     try {
       const wallet = await getWallet(tx.mintUrl, tx.unit);
       const grouped = await wallet.groupProofsByState(
         entry.proofs.map(toProofLike),
       );
+      if (wiped()) return;
+      // Reclaimed or settled while the mint was answering.
+      if (useWalletStore.getState().reserved[txId] === undefined) continue;
       if (grouped.spent.length === entry.proofs.length) confirmSend(txId);
     } catch {
       // Unreachable mint: leave the reservation alone.
@@ -2407,6 +2645,7 @@ async function claimLightningDepositOnce(
 ): Promise<number> {
   const url = normalizeMintUrl(mintUrl);
   const store = useWalletStore.getState();
+  const epoch = walletEpoch;
   const tx = store.history.find(
     (t) => t.quoteId === quoteId && t.kind === "mint",
   );
@@ -2419,6 +2658,7 @@ async function claimLightningDepositOnce(
   } catch (err) {
     throw asWalletError(err, "mint-error");
   }
+  assertSameWallet(epoch);
 
   // NUT-04 states: UNPAID -> PAID -> ISSUED. Only PAID can be minted, and only
   // once. ISSUED with outputs still on the transaction is a claim whose answer
@@ -2452,6 +2692,7 @@ async function claimLightningDepositOnce(
   } catch (err) {
     throw asWalletError(err, "mint-error");
   }
+  assertSameWallet(epoch);
   store.updateTx(tx.id, {
     mintOutputs: preview.outputData.map((output) =>
       OutputData.serialize(output),
@@ -2461,10 +2702,12 @@ async function claimLightningDepositOnce(
   try {
     proofs = await wallet.completeMint(preview);
   } catch (err) {
+    if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
     store.updateTx(tx.id, { error: walletErr.message });
     throw walletErr;
   }
+  assertSameWallet(epoch);
   creditProofs(url, unit, proofs, { verified: true });
   const minted = proofs.reduce((s, p) => s + p.amount.toNumber(), 0);
   store.updateTx(tx.id, {
@@ -2487,6 +2730,7 @@ async function recoverMintOutputs(
   quote: MintQuoteBolt11Response,
 ): Promise<number> {
   const store = useWalletStore.getState();
+  const epoch = walletEpoch;
   let outputs: OutputData[];
   try {
     outputs = (tx.mintOutputs as SerializedOutputData[]).map((entry) =>
@@ -2548,6 +2792,7 @@ async function recoverMintOutputs(
     }
   }
 
+  assertSameWallet(epoch);
   const minted = proofs.reduce((sum, p) => sum + p.amount.toNumber(), 0);
   if (minted > 0) {
     creditProofs(tx.mintUrl, tx.unit, proofs, { verified: true });
@@ -2616,8 +2861,12 @@ async function rebuildMeltChange(
 async function recoverMeltChange(tx: WalletTx): Promise<void> {
   if (!tx.quoteId) return;
   const store = useWalletStore.getState();
+  const epoch = walletEpoch;
   const wallet = await getWallet(tx.mintUrl, tx.unit);
   const quote = await wallet.checkMeltQuoteBolt11(tx.quoteId);
+  if (walletReplaced(epoch)) return;
+  // The melt was started in this process after the pass read the history.
+  if (meltsInFlight.has(tx.id)) return;
 
   if (quote.state === "PENDING") return;
 
@@ -2650,6 +2899,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
         // Unresolvable, or the mint is unreachable again. The rebuild below
         // decides; keys that did land are kept either way.
       }
+      if (walletReplaced(epoch)) return;
       const change = wallet.createMeltChangeProofs(outputs, signatures);
       if (change.length > 0) {
         creditProofs(tx.mintUrl, tx.unit, change, { verified: true });
@@ -2844,9 +3094,12 @@ async function swapDownForMelt(
   if (overage * 100 < quote.total * MELT_SWAPDOWN_PERCENT) return selection;
 
   const store = useWalletStore.getState();
+  const epoch = walletEpoch;
   const txId = newTxId();
   let staged = false;
   let result: SendResponse;
+  const offered = new Set(selection.selected.map((p) => p.secret));
+  let spending = 0;
   try {
     const online = await getWallet(quote.mintUrl, quote.unit);
     const { preview, stored } = await prepareRecoverableSwap(online, () =>
@@ -2856,11 +3109,25 @@ async function swapDownForMelt(
         { includeFees: true },
       ),
     );
+    assertSameWallet(epoch);
+    // Only the proofs the swap actually spends. The rest of the selection is
+    // echoed back untouched and never left the pool.
+    const inputs = matchStored(selection.selected, preview.inputs);
+    if (inputs.length !== preview.inputs.length) return selection;
+    try {
+      reserveSwapInputs(txId, quote.mintUrl, quote.unit, inputs);
+    } catch {
+      // Taken by another payment since the selection was made. Nothing was
+      // sent, so the melt goes ahead as it would have, and its own reservation
+      // reports the race.
+      return selection;
+    }
+    spending = inputs.reduce((sum, p) => sum + p.amount, 0);
     store.addTx({
       id: txId,
       kind: "swap",
       status: "pending",
-      amount: selection.total,
+      amount: spending,
       unit: quote.unit,
       mintUrl: quote.mintUrl,
       createdAtMs: Date.now(),
@@ -2869,26 +3136,36 @@ async function swapDownForMelt(
     });
     staged = true;
     result = await completeSwapInFlight(online, txId, preview);
+    assertSameWallet(epoch);
   } catch (err) {
-    if (!staged) return selection;
+    if (walletReplaced(epoch)) throw lockedError();
+    if (!staged) {
+      store.releaseReserved(txId);
+      return selection;
+    }
     const walletErr = asWalletError(err, "mint-error");
-    store.updateTx(txId, { error: walletErr.message });
+    if (isDefiniteRefusal(err)) {
+      abandonStagedSwap(txId, walletErr.message);
+    } else {
+      store.updateTx(txId, { error: walletErr.message });
+    }
     throw walletErr;
   }
 
-  // Everything offered that did not come back was consumed. `keep` carries the
-  // untouched originals alongside the fresh change, so the difference is exactly
-  // what the mint took.
-  const consumed = new Set(selection.selected.map((p) => p.secret));
-  for (const kept of result.keep) consumed.delete(kept.secret);
-  store.removeProofs(quote.mintUrl, quote.unit, [...consumed]);
-  const fresh = [...result.keep, ...result.send];
+  // The reserved inputs are spent. `keep` also echoes the untouched originals,
+  // which never left the pool, so only what is new is credited: crediting an
+  // original would put back a proof that something else may have spent or
+  // reserved in the meantime.
+  store.dropReserved(txId);
+  const fresh = [...result.keep, ...result.send].filter(
+    (p) => !offered.has(p.secret),
+  );
   creditProofs(quote.mintUrl, quote.unit, fresh, { verified: true });
   const received = fresh.reduce((sum, p) => sum + p.amount.toNumber(), 0);
   store.updateTx(txId, {
     status: "completed",
     amount: received,
-    fee: Math.max(0, selection.total - received),
+    fee: Math.max(0, spending - received),
     swapPreview: undefined,
   });
 
@@ -2922,13 +3199,15 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
 
   const store = useWalletStore.getState();
   const key = accountKey(quote.mintUrl, quote.unit);
+  const epoch = walletEpoch;
 
   const wallet = await getWallet(quote.mintUrl, quote.unit, { offline: true });
   const selection = await swapDownForMelt(
     wallet,
     quote,
-    selectForMelt(wallet, quote, store.proofs[key] ?? []),
+    selectForMelt(wallet, quote, useWalletStore.getState().proofs[key] ?? []),
   );
+  assertSameWallet(epoch);
 
   const txId = newTxId();
   if (
@@ -2955,8 +3234,14 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     counterparty: "lightning",
   });
 
+  // In flight from before the blanks are written until this call settles, so a
+  // reconcile pass cannot read the quote as UNPAID in the moment before the
+  // mint marks it PENDING, release these proofs, and then watch the melt spend
+  // them anyway.
+  meltsInFlight.add(txId);
   try {
     const wallet = await getWallet(quote.mintUrl, quote.unit);
+    assertSameWallet(epoch);
 
     // Split into prepare and complete so the blank change outputs exist before
     // the request does. Their blinding factors are the only way to unblind the
@@ -2967,6 +3252,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
       quote.raw,
       selection.selected.map(toProofLike),
     );
+    assertSameWallet(epoch);
     store.updateTx(txId, {
       meltOutputs: preview.outputData.map((output) =>
         OutputData.serialize(output),
@@ -2977,16 +3263,19 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     let preimage: string | undefined;
     try {
       const result = await withMeltTimeout(() => wallet.completeMelt(preview));
+      assertSameWallet(epoch);
       change = result.change;
       preimage = result.quote.payment_preimage ?? undefined;
     } catch (err) {
       if (!(err instanceof MeltChangeError)) throw err;
+      assertSameWallet(epoch);
       // The one failure here that is not a failure. NUT-08 blanks are signed
       // after the mint has already taken the inputs, so a melt that cannot
       // rebuild its change is a PAID invoice whose refund of the unused routing
       // reserve is stuck behind keys the wallet cannot resolve, most often a
       // keyset that rotated between the quote and the settlement.
       change = await rebuildMeltChange(wallet, quote.mintUrl, quote.unit, err);
+      assertSameWallet(epoch);
       // Change was signed and is still not in hand. Do not close the
       // transaction: leaving it pending with its blanks is what lets
       // `recoverMeltChange` finish the job once the keys are reachable.
@@ -3029,6 +3318,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
       preimage,
     };
   } catch (err) {
+    if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
     // Only put the proofs back when the mint definitively refused. A network
     // error means the payment may have gone through; restoring the proofs then
@@ -3066,6 +3356,8 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
       });
     }
     throw walletErr;
+  } finally {
+    meltsInFlight.delete(txId);
   }
 }
 
@@ -3080,6 +3372,10 @@ export interface ConsolidateResult {
   // What arrived at the destination.
   received: number;
   fee: number;
+  // The source paid and the destination has not issued yet. Nothing failed:
+  // the deposit is pending in history and `reconcile` claims it, so `received`
+  // is zero only until then.
+  depositPending?: boolean;
 }
 
 // Lightning fee reserves are usually well under 1%, but a first guess has to
@@ -3189,8 +3485,28 @@ export async function consolidateMints(params: {
     }
 
     // Committed from here. The source pays; the destination issues on claim.
-    const melt = await payLightningInvoice(quote);
-    const received = await claimLightningDeposit(to, unit, deposit.quoteId);
+    let meltFee: number;
+    try {
+      meltFee = (await payLightningInvoice(quote)).fee;
+    } catch (err) {
+      // Paid, with only the unused routing reserve still to come back. The
+      // move happened, so it is reported as one, at its worst-case fee.
+      if (!(err instanceof WalletError && err.code === "change-pending")) {
+        throw err;
+      }
+      meltFee = quote.feeReserve;
+    }
+    // Once the melt has paid, a failed claim is a delay, not a failure. The
+    // invoice is paid and the deposit stays pending, so reporting "nothing
+    // moved" would hide money that has left the source mint.
+    let received = 0;
+    let depositPending = false;
+    try {
+      received = await claimLightningDeposit(to, unit, deposit.quoteId);
+    } catch (err) {
+      if (err instanceof WalletError && err.code === "locked") throw err;
+      depositPending = true;
+    }
 
     // Report what the move actually cost, not what it might have.
     //
@@ -3198,8 +3514,8 @@ export async function consolidateMints(params: {
     // reserve. The mint returns the unused part of that reserve as change, so
     // using the quote here told the user a move cost eight sats when it cost
     // one, and made the arithmetic on screen disagree with their own balance.
-    // `melt.fee` is what the route really charged.
-    const spent = quote.amount + melt.fee;
+    // `meltFee` is what the route really charged.
+    const spent = quote.amount + meltFee;
 
     return {
       fromMintUrl: from,
@@ -3207,7 +3523,8 @@ export async function consolidateMints(params: {
       unit,
       spent,
       received,
-      fee: spent - received,
+      fee: depositPending ? meltFee : spent - received,
+      ...(depositPending ? { depositPending } : {}),
     };
   }
 
@@ -3348,6 +3665,7 @@ async function redeemNutzapProofs(params: {
     );
   }
 
+  const epoch = walletEpoch;
   const wallet = await getWallet(url, params.unit);
   const privkey = await getNutzapPrivKeyHex();
   const txId = newTxId();
@@ -3362,6 +3680,7 @@ async function redeemNutzapProofs(params: {
       () => wallet.prepareSwapToReceive(params.proofs),
       privkey,
     );
+    assertSameWallet(epoch);
     store.addTx({
       id: txId,
       kind: "nutzap-in",
@@ -3377,7 +3696,9 @@ async function redeemNutzapProofs(params: {
       swapPreview: stored,
     });
     result = await completeSwapInFlight(wallet, txId, preview);
+    assertSameWallet(epoch);
   } catch (err) {
+    if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
     store.updateTx(txId, { error: walletErr.message });
     throw walletErr;
@@ -3408,12 +3729,19 @@ export async function lockProofsForNutzap(params: {
   const url = normalizeMintUrl(params.mintUrl);
   const store = useWalletStore.getState();
   const key = accountKey(url, params.unit);
-  const available = store.proofs[key] ?? [];
+  const epoch = walletEpoch;
 
   const wallet = await getWallet(url, params.unit);
+  assertSameWallet(epoch);
   const txId = newTxId();
+  // Read after the await, so a payment that reserved coins while the keysets
+  // loaded is not offered its own proofs again. The reservation below is what
+  // settles any race that is left.
+  const available = useWalletStore.getState().proofs[key] ?? [];
+  const offered = new Set(available.map((p) => p.secret));
 
   let result: SendResponse;
+  let staged = false;
   try {
     // Always a swap: a lock lives in the output's secret, so there is nothing
     // to retro-fit onto proofs already held and the offline exact-match
@@ -3428,6 +3756,12 @@ export async function lockProofsForNutzap(params: {
         { send: { type: "p2pk", options: { pubkey: params.recipientPubkey } } },
       ),
     );
+    assertSameWallet(epoch);
+    const inputs = matchStored(available, preview.inputs);
+    if (inputs.length !== preview.inputs.length) {
+      throw new WalletError("insufficient", t("wallet.svc.coins_raced"));
+    }
+    reserveSwapInputs(txId, url, params.unit, inputs);
     store.addTx({
       id: txId,
       kind: "nutzap-out",
@@ -3440,25 +3774,43 @@ export async function lockProofsForNutzap(params: {
       counterparty: params.recipientPubkey,
       swapPreview: stored,
     });
+    staged = true;
     result = await completeSwapInFlight(wallet, txId, preview);
+    assertSameWallet(epoch);
   } catch (err) {
+    if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
+    if (!staged) {
+      store.releaseReserved(txId);
+      throw walletErr;
+    }
+    if (isDefiniteRefusal(err)) {
+      abandonStagedSwap(txId, walletErr.message);
+      throw walletErr;
+    }
+    // The mint may have locked these coins to the recipient. They stay held
+    // against this transaction until `reconcile` asks, and the caller is told
+    // plainly, because paying again another way could pay twice.
     store.updateTx(txId, { error: walletErr.message });
-    throw walletErr;
+    throw new WalletError(
+      walletErr.code,
+      t("wallet.svc.lock_in_doubt"),
+      t("wallet.svc.lock_in_doubt_body"),
+      { inDoubt: true },
+    );
   }
 
-  // Work out which proofs the mint actually consumed.
-  //
-  // cashu-ts returns `keep` as [change proofs, ...proofs it never selected], so
-  // the originals it left alone come back with their own secrets intact. The
-  // difference between what we offered and what came back is therefore exactly
-  // the set that was spent. Removing that set and then crediting `keep` is
-  // safe in either order because `addProofs` deduplicates by secret, so the
-  // untouched originals are not re-added.
-  const consumed = new Set(available.map((p) => p.secret));
-  for (const kept of result.keep) consumed.delete(kept.secret);
-  store.removeProofs(url, params.unit, [...consumed]);
-  creditProofs(url, params.unit, result.keep, { verified: true });
+  // The reserved inputs are spent. `keep` is [change, ...proofs it never
+  // selected], and the unselected originals never left the pool, so only the
+  // change is credited: crediting an original would put back a proof that a
+  // concurrent payment may have spent or reserved since.
+  store.dropReserved(txId);
+  creditProofs(
+    url,
+    params.unit,
+    result.keep.filter((p) => !offered.has(p.secret)),
+    { verified: true },
+  );
 
   const sent = result.send.reduce((s, p) => s + p.amount.toNumber(), 0);
   // The locked outputs are in hand, so the preview has served its purpose. The

@@ -1,7 +1,11 @@
 /** @jest-environment node */
 
 import type { TokenInfo } from "@core/payments/cashu";
+import { stripIsolates } from "@i18n";
+import { useSettingsStore } from "@store/settings-store";
 import {
+  amountParts,
+  formatAgo,
   formatAmount,
   formatBytes,
   formatClockTime,
@@ -10,6 +14,7 @@ import {
   formatListTimestamp,
   formatNumber,
   formatTokenSummary,
+  formatUnitAmount,
   parseWholeNumber,
 } from "../format";
 
@@ -67,6 +72,26 @@ describe("formatListTimestamp", () => {
     expect(formatListTimestamp(new Date(2025, 2, 4, 12).getTime())).toContain(
       "2025",
     );
+  });
+});
+
+describe("formatAgo", () => {
+  const now = Date.UTC(2026, 5, 15, 12);
+  const MIN = 60_000;
+
+  it.each([
+    [0, "just now"],
+    [59_000, "just now"],
+    [5 * MIN, "5m ago"],
+    [2 * 60 * MIN, "2h ago"],
+    [3 * 24 * 60 * MIN, "3d ago"],
+  ])("reads %i ms as %s", (age, label) => {
+    expect(stripIsolates(formatAgo(now - age, now))).toBe(label);
+  });
+
+  it("dates anything past a week", () => {
+    const then = now - 8 * 24 * 60 * MIN;
+    expect(formatAgo(then, now)).toBe(formatListTimestamp(then));
   });
 });
 
@@ -146,9 +171,40 @@ describe("formatAmount", () => {
     // A mint issuing usd is already quoting a currency. Reformatting it as
     // bitcoin would invent an exchange rate nobody supplied.
     expect(formatAmount(500, "usd", "btc")).toEqual({
-      value: formatNumber(500),
-      label: "usd",
+      value: "5.00",
+      label: "USD",
     });
+  });
+
+  it("shows a fiat unit in major units, since Cashu counts its cents", () => {
+    // 150 in a usd keyset is a dollar fifty. Raw, it reads as 150 dollars.
+    expect(formatAmount(150, "usd", "sat")).toEqual({
+      value: "1.50",
+      label: "USD",
+    });
+    expect(formatAmount(123_456, "eur", "sat").value).toBe("1,234.56");
+    expect(formatAmount(7, "eur", "sat").value).toBe("0.07");
+    // A currency with no minor unit is not divided.
+    expect(formatAmount(500, "jpy", "sat")).toEqual({
+      value: "500",
+      label: "JPY",
+    });
+  });
+
+  it("uses the app's language for the fiat separators", () => {
+    const before = useSettingsStore.getState().language;
+    useSettingsStore.setState({ language: "de" });
+    try {
+      expect(formatAmount(123_456, "eur", "sat").value).toBe("1.234,56");
+    } finally {
+      useSettingsStore.setState({ language: before });
+    }
+  });
+
+  it("summarises a fiat token in major units", () => {
+    expect(formatTokenSummary({ amount: 250, unit: "usd" } as TokenInfo)).toBe(
+      "2.50 USD",
+    );
   });
 
   it("shows an empty wallet as 0, not 0.00000000", () => {
@@ -169,6 +225,23 @@ describe("formatTokenSummary", () => {
 
   it("groups a large amount", () => {
     expect(formatTokenSummary(info(21_500, "sat"))).toBe("21,500 sat");
+  });
+});
+
+// Every row and alert that names a unit, so a fiat amount never shows its cents
+// as whole units there while the balance card gets it right.
+describe("formatUnitAmount and amountParts", () => {
+  it("keeps sat amounts as they were", () => {
+    expect(formatUnitAmount(21_500, "sat")).toBe("21,500 sat");
+    expect(amountParts(21_500, "sat")).toEqual({
+      amount: "21,500",
+      unit: "sat",
+    });
+  });
+
+  it("shows a fiat unit in major units", () => {
+    expect(formatUnitAmount(150, "usd")).toBe("1.50 USD");
+    expect(amountParts(150, "usd")).toEqual({ amount: "1.50", unit: "USD" });
   });
 });
 
