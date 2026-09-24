@@ -14,6 +14,7 @@
 
 import type { Event } from "nostr-tools";
 import { finalizeEvent } from "nostr-tools";
+import { secureRandom } from "../crypto/secure-random";
 import type { EventHandler, NostrClient } from "./nostr-client";
 
 // Event kind constants per PROTOCOLS.md section 8.
@@ -298,7 +299,7 @@ export class GeohashPresence {
 // what keeps a peer inside everyone else's five-minute online window with room
 // for a missed round.
 export function nextHeartbeatDelayMs(
-  random: () => number = Math.random,
+  random: () => number = secureRandom,
 ): number {
   return HEARTBEAT_MIN_MS + random() * (HEARTBEAT_MAX_MS - HEARTBEAT_MIN_MS);
 }
@@ -309,7 +310,7 @@ export function nextHeartbeatDelayMs(
 // leaks: three unfamiliar pubkeys arriving in the same instant, round after
 // round, group into one device by timing alone.
 export function decorrelationDelayMs(
-  random: () => number = Math.random,
+  random: () => number = secureRandom,
 ): number {
   return 2_000 + random() * 3_000;
 }
