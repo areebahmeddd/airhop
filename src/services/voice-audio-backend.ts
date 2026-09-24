@@ -7,8 +7,7 @@
 // them is AudioRecord/MediaCodec on Android and AVAudioEngine/AVAudioConverter
 // on iOS. This file is the seam, and it is deliberately thin.
 //
-// If the native module is missing (an older build, or a platform where it did
-// not register), `isLiveVoiceAvailable` reports false and the app keeps using
+// If the native module is missing (a platform where it did not register), `isLiveVoiceAvailable` reports false and the app keeps using
 // voice notes. Live voice degrading to a voice note is a designed fallback, not
 // a failure: the whole feature is an optimisation of a gesture that already
 // works.

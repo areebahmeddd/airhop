@@ -36,7 +36,6 @@ import {
   useThemeColors,
 } from "@ui/theme";
 import { File, Paths } from "expo-file-system";
-import { getContentUriAsync } from "expo-file-system/legacy";
 import * as IntentLauncher from "expo-intent-launcher";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -158,7 +157,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
       setDownload({ status: "ready", uri: file.uri });
       // A device with no installer to open is the one case where the file
       // arrived and still nothing can happen, so it reads as a failure.
-      if (!(await launchInstaller(file.uri))) {
+      if (!(await launchInstaller(file))) {
         setDownload({ status: "failed" });
       }
     } catch {
@@ -180,11 +179,10 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   // Returns whether the installer opened, so a device that cannot show one says
   // so rather than leaving a tap with nothing behind it. A cancelled install
   // keeps the file, and the button stays on "Install".
-  async function launchInstaller(fileUri: string): Promise<boolean> {
+  async function launchInstaller(file: File): Promise<boolean> {
     try {
-      const contentUri = await getContentUriAsync(fileUri);
       await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-        data: contentUri,
+        data: file.contentUri,
         type: "application/vnd.android.package-archive",
         flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
       });
@@ -396,7 +394,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
               // A downloaded APK the user backed out of: straight back to the
               // installer, no second download.
               if (download.status === "ready") {
-                void launchInstaller(download.uri).then((opened) => {
+                void launchInstaller(new File(download.uri)).then((opened) => {
                   if (!opened) setDownload({ status: "failed" });
                 });
                 return;
