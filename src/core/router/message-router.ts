@@ -10,6 +10,7 @@
 // as plain callbacks. The optional Nostr and WiFi send functions are injected at
 // construction time so the router stays testable without a live transport.
 
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { type NoiseSession } from "../crypto/noise-xx";
 import { ANNOUNCE_CONNECTED_MAX_MS } from "../mesh/discovery/announce-manager";
 import { originTtl } from "../mesh/routing/origin-ttl";
@@ -737,14 +738,4 @@ export class MessageRouter {
       return null;
     }
   }
-}
-
-// ---- Helpers ----
-
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length >> 1);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
 }

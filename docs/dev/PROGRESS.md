@@ -131,6 +131,19 @@ checkable against the code rather than taken on trust.
 - [x] App Store and Play Store submission
 - [x] YouTube demo series
 
+## Device Transfer ✅
+
+- [x] Transfer to a new phone ([#8](https://github.com/areebahmeddd/airhop/issues/8)): the new phone shows a code, the old phone scans it, and the identity, contacts, groups, rooms, chat history and wallet cross one TCP connection on the local network. No internet, no server, no backup file
+- [x] A move, not a copy: the old phone erases itself (the panic wipe) once the new one commits, and a transfer that ends unconfirmed freezes it until the person answers
+- [x] `src/core/move/`: the code (`airhop-move:v1/`), a Noise XX handshake pinned to the scanned key with the code's token as prologue, the bundle and its messages (PROTOCOLS.md section 11)
+- [x] `src/services/move-snapshot.ts`: what moves, as a table typed against the panic wipe's registry. One-time prekey private halves never leave the phone; the wallet lands under the new phone's own file key
+- [x] Owner check before any key is read (Face ID, fingerprint or passcode, `expo-local-authentication`)
+- [x] Crash-safe on both sides through `move-marker.ts`: a half-written install is wiped, an unconfirmed send asks, and an Android boot start waits
+- [x] A Mesh banner when this identity is running on another phone too: an announce under our own peer ID, signed with our key, that this run never sent
+- [x] The wallet's file key survives the launch sweep and follows a reopen in the same process, so a wallet written before a relaunch or after a wipe stays readable
+- [x] Verified end to end by `move-session.test.ts`: two isolated phones over an in-memory socket, with the happy path, a wrong phone, cancels on either side, an older app, a refused keychain, and the link dying mid-stream and after the commit
+- [x] No wire change: the same keys give the same peer ID, name, npub and safety numbers, so contacts stay verified and bitchat peers notice nothing. A verified LEAVE drops the ratchet as well as the session, so the first DM to the moved identity re-handshakes
+
 ## v1.1.0: AI Assistant
 
 - [ ] Model picker and download flow: small offline-capable GGUF models (1–3B params, e.g. Gemma 4), size and RAM shown before download

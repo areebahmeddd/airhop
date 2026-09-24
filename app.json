@@ -67,6 +67,7 @@
         "NSMicrophoneUsageDescription": "Airhop uses the microphone to record voice notes and to carry live voice to nearby peers.",
         "NSPhotoLibraryUsageDescription": "Airhop accesses your photo library to share images and videos over the mesh.",
         "NSPhotoLibraryAddUsageDescription": "Airhop saves photos and videos to your photo library when you choose to save one, and when you download your QR code.",
+        "NSFaceIDUsageDescription": "Airhop uses Face ID to confirm it is you before moving your identity to a new phone.",
         "NSBonjourServices": ["_airhop-lan-v1._tcp"],
         "UIBackgroundModes": ["bluetooth-central", "bluetooth-peripheral"],
         "WiFiAwareServices": {

@@ -176,6 +176,16 @@ const DEFAULTS = {
   backgroundLimitsAcknowledged: false,
 } satisfies Partial<SettingsState>;
 
+// Settings about this install rather than the person, left behind by a
+// transfer: native state, and what this OS has been asked.
+export const DEVICE_SETTINGS = [
+  "frameLanguage",
+  "autoStartOnBoot",
+  "torStartPending",
+  "permissionPrimerSeen",
+  "backgroundLimitsAcknowledged",
+] as const satisfies readonly (keyof SettingsState)[];
+
 const storage = getStorage("settings-store");
 
 const mmkvStorage = {

@@ -9,6 +9,7 @@ import {
   DISABLED_OPACITY,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -117,7 +118,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     detail: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.4,
+      lineHeight: LineHeight.sm,
     },
   });
 }

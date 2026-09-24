@@ -1,6 +1,17 @@
 name: Sync Native Lockfiles
 
 on:
+  push:
+    paths:
+      - package.json
+      - package-lock.json
+      - ios/Podfile
+      - ios/Podfile.properties.json
+      - ios/*.podspec
+      - android/build.gradle
+      - android/app/build.gradle
+      - android/settings.gradle
+      - android/gradle.properties
   workflow_dispatch:
 
 permissions:
@@ -87,6 +98,7 @@ jobs:
     needs: [gradle, pods]
     permissions:
       contents: write
+      actions: write
 
     steps:
       - name: Checkout repository
@@ -134,7 +146,7 @@ jobs:
             -m "Regenerated from node_modules: Gradle on ubuntu, CocoaPods on macOS."
           git push origin "HEAD:$TARGET_REF"
 
-          {
-            echo "Synced native lockfiles on \`$TARGET_REF\`."
-            echo "Re-run CI on this branch; a token-pushed commit does not start one."
-          } >> "$GITHUB_STEP_SUMMARY"
+          # A token push starts no CI; a dispatch is exempt.
+          gh workflow run ci.yml --ref "$TARGET_REF"
+
+          echo "Synced native lockfiles on \`$TARGET_REF\` and dispatched CI." >> "$GITHUB_STEP_SUMMARY"

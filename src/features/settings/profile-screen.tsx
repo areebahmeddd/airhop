@@ -40,6 +40,7 @@ import {
   FontSize,
   FontWeight,
   hitSlopFor,
+  LineHeight,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -95,6 +96,7 @@ import {
   useSharedStyles,
 } from "./settings-primitives";
 import SettingsSearch from "./settings-search";
+import TransferOutFlow from "./transfer-out-flow";
 
 // Share sheets are fire-and-forget: a rejection (the OS refusing to present, a
 // provider crash) is not something the user can act on, and leaving it
@@ -211,34 +213,6 @@ const THEME_META: Record<
 };
 const THEME_ORDER: ResolvedTheme[] = ["light", "dark"];
 
-// What a phone-to-phone move will carry. Shown in the transfer sheet so the
-// scope of the feature is stated before it exists: people ask "does my wallet
-// come with me" long before they ask how it works.
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in. The
-// component translates them on render. Guarded by `npm run i18n:audit`.
-const TRANSFER_ITEMS: {
-  icon: keyof typeof Feather.glyphMap;
-  labelKey: TranslationKey;
-  descriptionKey: TranslationKey;
-}[] = [
-  {
-    icon: "key",
-    labelKey: "settings.transfer.identity",
-    descriptionKey: "settings.transfer.identity_desc",
-  },
-  {
-    icon: "message-square",
-    labelKey: "settings.transfer.chats",
-    descriptionKey: "settings.transfer.chats_desc",
-  },
-  {
-    icon: "credit-card",
-    labelKey: "settings.transfer.wallet",
-    descriptionKey: "settings.transfer.wallet_desc",
-  },
-];
-
 // Where hardware back should land for a sub-screen nested one level deeper
 // than its section (e.g. Terms/Privacy under Help, Licenses under About).
 // Any view not listed here falls back to "root".
@@ -258,6 +232,7 @@ interface Props {
   // way to say so.
   onWipeStart?: () => void;
   onWipe?: () => void;
+  onResumeMesh?: () => void;
   // This screen owns a navigation stack the shell cannot see: its sections are
   // early returns, not routes. The shell needs its depth so a horizontal swipe
   // inside a section goes back rather than stepping to the next tab.
@@ -272,6 +247,7 @@ export default function ProfileScreen({
   username,
   onWipeStart,
   onWipe,
+  onResumeMesh,
   onCanGoBackChange,
   popSignal = 0,
 }: Props): React.JSX.Element {
@@ -470,6 +446,18 @@ export default function ProfileScreen({
     // wiping again. Set after panicWipe, whose own store reset would otherwise
     // clear it. Re-derived on every launch from the keychain itself, so a retry
     // that succeeds takes it away without anything having to remember.
+    if (!keysDestroyed) {
+      useMeshStateStore.getState().setWipeIncomplete(true);
+      showAlert(
+        t("settings.wipe.keys_failed"),
+        t("settings.wipe.keys_failed_body"),
+      );
+    }
+  }
+
+  // A transfer erases through the panic wipe, so it lands where a wipe does.
+  function handleTransferErased(keysDestroyed: boolean): void {
+    onWipe?.();
     if (!keysDestroyed) {
       useMeshStateStore.getState().setWipeIncomplete(true);
       showAlert(
@@ -949,11 +937,9 @@ export default function ProfileScreen({
           </View>
         </View>
 
-        {/* Moving to a new phone. Not built yet, so the row carries the same
-          "Coming soon" tag as the unshipped feature rows above, and opens a
-          sheet describing the move rather than starting one. It sits directly
-          above the danger zone because both answer "I am leaving this device",
-          and the safe answer should be the one you reach first. */}
+        {/* Moving to a new phone. Directly above the danger zone because both
+          answer "I am leaving this device", and the safe answer should be the
+          one you reach first. */}
         <View style={shared.section}>
           <View style={shared.settingsGroup}>
             <SettingLinkRow
@@ -962,13 +948,6 @@ export default function ProfileScreen({
               label={T("settings.transfer.title")}
               description={T("settings.transfer.desc")}
               onPress={() => setShowTransferModal(true)}
-              chevron={false}
-              control={
-                <Text style={shared.comingSoon}>
-                  {T("settings.coming_soon")}
-                </Text>
-              }
-              accessibilityLabel={T("settings.transfer.coming_soon_a11y")}
             />
           </View>
         </View>
@@ -1452,57 +1431,12 @@ export default function ProfileScreen({
           </ScrollView>
         </BottomSheet>
 
-        {/* Transfer sheet: a preview, not a flow. It states what a move will
-          carry and how it will run, so the shape of the feature is settled
-          before anything is behind it. There is nothing to start yet, so the
-          only action is dismissing it. */}
-        <BottomSheet
+        <TransferOutFlow
           visible={showTransferModal}
           onClose={() => setShowTransferModal(false)}
-          sheetStyle={shared.sheet}
-        >
-          <Text style={shared.sheetTitle}>{T("settings.transfer.title")}</Text>
-          <Text style={shared.sheetSubtitle}>
-            {T("settings.transfer.body")}
-          </Text>
-          <View style={[shared.settingsGroup, styles.appearanceGroup]}>
-            {TRANSFER_ITEMS.map((item, i) => (
-              <React.Fragment key={item.labelKey}>
-                {i > 0 && <View style={shared.groupDivider} />}
-                <View style={styles.optionRowGrouped}>
-                  <View style={styles.optionIconGrouped}>
-                    <Feather
-                      name={item.icon}
-                      size={18}
-                      color={Colors.textSecondary}
-                    />
-                  </View>
-                  <View style={shared.optionText}>
-                    <Text style={shared.optionLabel}>{T(item.labelKey)}</Text>
-                    <Text style={shared.optionDescription}>
-                      {T(item.descriptionKey)}
-                    </Text>
-                  </View>
-                </View>
-              </React.Fragment>
-            ))}
-          </View>
-          <View style={shared.sheetActions}>
-            <Pressable
-              style={({ pressed }) => [
-                shared.sheetBtnPrimary,
-                pressed && shared.sheetBtnPrimaryPressed,
-              ]}
-              onPress={() => setShowTransferModal(false)}
-              accessibilityRole="button"
-              accessibilityLabel={T("settings.wipe.got_it")}
-            >
-              <Text style={shared.sheetBtnTextPrimary}>
-                {T("settings.wipe.got_it")}
-              </Text>
-            </Pressable>
-          </View>
-        </BottomSheet>
+          onResumeMesh={() => onResumeMesh?.()}
+          onErased={handleTransferErased}
+        />
 
         {/* Panic wipe modal: confirm, then wipe and drop straight to onboarding
           rather than making the user tap through a second "Wiped" screen. */}
@@ -1588,7 +1522,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     statusLabel: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     appearanceGroupLabel: {
       fontSize: FontSize.xs,
@@ -1602,10 +1536,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: "100%",
       marginBottom: Spacing.lg,
     },
-    // Small group header inside the Appearance sheet (theme / font / language).
     // Capped so the language list scrolls inside the sheet instead of pushing
-    // the sheet past the top of the screen, where it would clip rather than
-    // scroll (a sheet body is a plain View).
+    // it past the top of the screen, where it would clip.
     appearanceSheet: {
       maxHeight: "85%",
     },
@@ -1674,7 +1606,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       minHeight: MIN_TOUCH,
       borderRadius: Radius.full,
       backgroundColor: Colors.surface,
@@ -1712,7 +1644,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     dangerRowContent: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     dangerLabel: {
       fontSize: FontSize.base,
@@ -1723,7 +1655,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.danger,
       opacity: 0.7,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
     },
     qrSheetTitle: {
       textAlign: "center",
@@ -1742,7 +1674,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     noteText: {
       flex: 1,
       fontSize: FontSize.xs,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     idBox: {
@@ -1781,7 +1713,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     codeBoxText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     codeBoxLabel: {
       fontSize: FontSize.xs,

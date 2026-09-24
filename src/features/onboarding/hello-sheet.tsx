@@ -11,7 +11,13 @@ import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import BottomSheet from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
-import { FontSize, FontWeight, Spacing, useThemeColors } from "@ui/theme";
+import {
+  FontSize,
+  FontWeight,
+  LineHeight,
+  Spacing,
+  useThemeColors,
+} from "@ui/theme";
 import React, { useMemo } from "react";
 import { Linking, Platform, StyleSheet, Text, View } from "react-native";
 
@@ -110,7 +116,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     paragraph: {
       fontSize: FontSize.sm,
-      lineHeight: FontSize.sm * 1.55,
+      lineHeight: LineHeight.sm,
       color: Colors.textSecondary,
     },
     link: {

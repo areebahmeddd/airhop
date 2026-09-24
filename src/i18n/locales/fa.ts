@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "باز کردن سیاست حریم خصوصی",
   "onboarding.welcome.consent":
     "با زدن {cta}، شما با {terms} و {privacy} ما موافقت می‌کنید.",
+  "onboarding.welcome.transfer": "انتقال از گوشی دیگر",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "در حال ساخت هویت شما",
@@ -101,6 +102,40 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "فقط کلیدان سیستم‌عامل",
   "onboarding.username.prop.account": "نیاز به حساب",
   "onboarding.username.prop.account_value": "ندارد",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "انتقال از گوشی دیگر",
+  "onboarding.transfer.preparing": "در حال آماده‌سازی",
+  "onboarding.transfer.scan_heading": "این کد را با گوشی قدیمی‌تان اسکن کنید",
+  "onboarding.transfer.step_open": "Airhop را روی گوشی قدیمی‌تان باز کنید",
+  "onboarding.transfer.step_go": "به {tab} بروید، سپس {row}",
+  "onboarding.transfer.step_scan": "آن را رو به این کد بگیرید",
+  "onboarding.transfer.network_note":
+    "هر دو گوشی باید روی یک Wi-Fi یا یک هات‌اسپات باشند. چیزی از اینترنت نمی‌گذرد.",
+  "onboarding.transfer.qr_a11y":
+    "کد انتقال. آن را با Airhop روی گوشی قدیمی‌تان اسکن کنید.",
+  "onboarding.transfer.offline_title": "به Wi-Fi وصل شوید",
+  "onboarding.transfer.offline_body":
+    "هر دو گوشی را به یک Wi-Fi وصل کنید، یا هات‌اسپات یکی را روشن کنید و با دیگری به آن بپیوندید. نیازی به اینترنت نیست.",
+  "onboarding.transfer.incoming": "در حال انتقال {name}",
+  "onboarding.transfer.receiving": "در حال دریافت {percent}%",
+  "onboarding.transfer.saving": "در حال ذخیره روی این گوشی",
+  "onboarding.transfer.releasing": "در حال پایان کار روی گوشی قدیمی‌تان",
+  "onboarding.transfer.keep_open": "تا پایان کار، هر دو گوشی را باز نگه دارید.",
+  "onboarding.transfer.check_title": "گوشی قدیمی‌تان را بررسی کنید",
+  "onboarding.transfer.check_body":
+    "همه چیز روی این گوشی است. پیش از ادامه، مطمئن شوید گوشی قدیمی‌تان می‌گوید پاک شده است، یا روی آن «پاک کردن این گوشی» را بزنید.",
+  "onboarding.transfer.failed_title": "انتقال کامل نشد",
+  "onboarding.transfer.failed_cancelled":
+    "انتقال روی گوشی قدیمی‌تان لغو شد. چیزی اینجا ذخیره نشد.",
+  "onboarding.transfer.failed_interrupted":
+    "اتصال قطع شد. چیزی اینجا ذخیره نشد.",
+  "onboarding.transfer.failed_storage":
+    "این گوشی نتوانست آنچه رسید را ذخیره کند، پس چیزی نگه داشته نشد.",
+  "onboarding.transfer.failed_incompatible":
+    "گوشی قدیمی‌تان نسخهٔ تازه‌تری از Airhop دارد. این گوشی را به‌روز کنید و دوباره امتحان کنید.",
+  "onboarding.transfer.failed_unavailable":
+    "این گوشی نمی‌تواند اتصال شبکهٔ محلی برقرار کند.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "به Airhop خوش آمدید!",
@@ -176,6 +211,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
   "chat.channels.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
   "chat.dm.you_prefix": "شما:",
+  "chat.draft_prefix": "پیش‌نویس:",
   "chat.dm.none": "پیام مستقیمی نیست",
   "chat.dm.none_desc":
     "به زبانهٔ مش بروید و روی یک همتا بزنید تا یک پیام مستقیم رمزگذاری‌شده آغاز شود.",
@@ -201,6 +237,8 @@ export const strings: Strings = {
   "chat.group_badge": "گروه",
   "chat.more": "بیشتر",
   "chat.no_messages": "هنوز پیامی نیست",
+  "chat.presence.nearby_none": "کسی نزدیک نیست",
+  "chat.presence.active_none": "کسی فعال نیست",
   "chat.you": "شما",
   "chat.a11y.channel": "کانال {name}",
   "chat.a11y.group": "گروه {name}",
@@ -823,6 +861,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ذخیرهٔ باتری · پویش کم‌تر",
   "mesh.banner.wipe_incomplete":
     "پاک‌سازی ناتمام · ممکن است داده‌هایی مانده باشد، با باز کردن دوباره تلاش می‌شود",
+  "mesh.banner.identity_elsewhere":
+    "هویت شما روی گوشی دیگری هم هست · گوشی‌ای را که استفاده نمی‌کنید پاک کنید",
   "mesh.banner.wifi_off": "Wi-Fi خاموش · فایل‌های بزرگ کندتر می‌روند",
   "mesh.banner.clock_skew":
     "ساعت این گوشی نادرست است · تاریخ و ساعت را روی خودکار بگذارید",
@@ -1243,9 +1283,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "گرفتند",
   "wallet.reclaim.title": "این توکن پس گرفته شود؟",
   "wallet.reclaim.body":
-    "مبلغ {amount} {unit} به موجودی شما بازمی‌گردد. تنها وقتی این کار را بکنید که توکن هرگز به کسی نرسیده باشد: اگر رشته را همین حالا داشته باشند، هر کس زودتر آن را در ضراب‌خانه بازخرید کند پول را نگه می‌دارد، و آن می‌تواند خودشان باشند.",
+    "مبلغ {amount} {unit} به موجودی شما بازمی‌گردد، و توکنی که داده‌اید به محض دسترسی به ضراب‌خانه دیگر کار نمی‌کند. اگر پیش از آن بازخریدش کنند، مال خودشان می‌ماند.",
   "wallet.reclaim.keep": "در انتظار نگه دار",
   "wallet.reclaim.confirm": "پس گرفتن",
+  "wallet.reclaim.claimed_title": "از پیش بازخریدش کرده‌اند",
+  "wallet.reclaim.claimed_body":
+    "ضراب‌خانه می‌گوید این توکن از پیش بازخرید شده است، پس {amount} {unit} به دستشان رسید و چیزی به موجودی شما بازنگشت.",
   "wallet.copied.token_body":
     "توکن در بریده‌دان شماست. تا وقتی رسیده علامتش نزنید اینجا کنارگذاشته می‌ماند، پس اگر تلاش نخست شکست خورد می‌توانید دوباره بچسبانیدش.",
   "wallet.copied.phrase_body":
@@ -1272,6 +1315,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "پس گرفتن این توکن به موجودی شما",
   "wallet.activity.title": "فعالیت",
   "wallet.activity.none": "هنوز چیزی نیست",
+  "wallet.activity.none_hint":
+    "با ecash آشنا نیستید؟ برای دیدن طرز کارش، {help} بالا را بزنید.",
   "wallet.activity.show_fewer": "نمایش پرداخت‌های کمتر",
   "wallet.activity.show_less": "کمتر نشان بده",
   "wallet.activity.received_unconfirmed": "دریافت‌شده، تأییدنشده",
@@ -1320,7 +1365,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "پرداخت‌های قفل‌شده پس گرفته نمی‌شوند: اکنون تنها کلید خودشان می‌تواند این سکه‌ها را خرج کند.",
   "wallet.pay.reclaimable":
-    "تا وقتی رسیدنش را تأیید کنید از زبانهٔ کیف پول پس‌گرفتنی می‌ماند.",
+    "تا وقتی رسیدنش را تأیید کنید از «فعالیت» پس‌گرفتنی می‌ماند.",
   "wallet.pay.why": "به این شیوه فرستاده شد چون {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} به {name}",
   "wallet.pay.thread_receipt":
@@ -2054,14 +2099,58 @@ export const strings: Strings = {
   "settings.transfer.chats": "گفتگوها و تاریخچه",
   "settings.transfer.chats_desc":
     "گفتگوها، گروه‌ها و کانال‌هایی که به آن‌ها پیوسته‌اید",
+  "settings.transfer.chats_without": "اتاق‌ها و گروه‌هایتان، بدون پیام‌هایشان",
   "settings.transfer.wallet": "موجودی کیف پول",
   "settings.transfer.wallet_desc": "Ecash و تاریخچهٔ تراکنش‌ها",
   "settings.transfer.title": "انتقال به گوشی تازه",
   "settings.transfer.desc":
     "هویت، گفتگوها و کیف پول خود را به دستگاهی دیگر ببرید",
-  "settings.transfer.coming_soon_a11y": "انتقال به گوشی تازه، به‌زودی",
-  "settings.transfer.body":
-    "دو گوشی را کنار هم نگه دارید و همه چیز را از راه بلوتوث منتقل کنید. چیزی از سرور نمی‌گذرد، پس بدون اینترنت هم کار می‌کند.",
+  "settings.transfer.intro":
+    "روی گوشی تازه، Airhop را باز کنید و «انتقال از گوشی دیگر» را بزنید. هر دو گوشی باید روی یک Wi-Fi یا یک هات‌اسپات باشند، نه اینترنت.",
+  "settings.transfer.erase_note":
+    "وقتی همه چیز به گوشی تازه رسید، این گوشی پاک می‌شود. عکس‌ها و فایل‌ها منتقل نمی‌شوند.",
+  "settings.transfer.auth_prompt":
+    "برای انتقال هویت‌تان تأیید کنید که خودتان هستید",
+  "settings.transfer.scan_title": "کد روی گوشی تازه‌تان را اسکن کنید",
+  "settings.transfer.aim": "دوربین را رو به کد روی گوشی تازه‌تان بگیرید",
+  "settings.transfer.wrong_code":
+    "این کد یک مخاطب است. کد روی گوشی تازه‌تان را اسکن کنید.",
+  "settings.transfer.camera_off_body":
+    "برای اسکن کد روی گوشی تازه‌تان، دسترسی دوربین را در تنظیمات روشن کنید.",
+  "settings.transfer.confirm_title": "انتقال به این گوشی؟",
+  "settings.transfer.confirm_body":
+    "همه چیزِ اینجا به گوشی‌ای می‌رود که این کد را نشان می‌دهد. وقتی رسید، این گوشی پاک می‌شود.",
+  "settings.transfer.confirm_cta": "انتقال",
+  "settings.transfer.connecting": "در حال اتصال به گوشی تازه‌تان",
+  "settings.transfer.connecting_hint":
+    "اگر این گوشی برای یافتن دستگاه‌های شبکهٔ محلی اجازه خواست، اجازه دهید.",
+  "settings.transfer.sending": "در حال انتقال {percent}%",
+  "settings.transfer.keep_open": "تا پایان کار، هر دو گوشی را باز نگه دارید.",
+  "settings.transfer.finishing": "در حال پایان کار روی گوشی تازه‌تان",
+  "settings.transfer.erasing": "در حال پاک کردن این گوشی",
+  "settings.transfer.done_title": "منتقل شد",
+  "settings.transfer.done_body":
+    "هویت شما اکنون روی گوشی تازه‌تان است و این گوشی پاک شده است.",
+  "settings.transfer.failed_title": "انتقال کامل نشد",
+  "settings.transfer.failed_unreachable":
+    "به گوشی تازه‌تان دسترسی پیدا نشد. هر دو گوشی را به یک Wi-Fi وصل کنید، یا هات‌اسپات یکی را روشن کنید و با دیگری به آن بپیوندید.",
+  "settings.transfer.failed_permission":
+    "Airhop برای رسیدن به گوشی تازه‌تان به دسترسی شبکهٔ محلی نیاز دارد. آن را در تنظیمات مجاز کنید و دوباره امتحان کنید.",
+  "settings.transfer.failed_wrong_phone":
+    "گوشی‌ای که پاسخ داد همان گوشی‌ای نیست که کدش را اسکن کردید.",
+  "settings.transfer.failed_incompatible":
+    "گوشی تازه‌تان نسخهٔ قدیمی‌تری از Airhop دارد. آن را به‌روز کنید و دوباره امتحان کنید.",
+  "settings.transfer.failed_cancelled": "انتقال روی گوشی تازه‌تان لغو شد.",
+  "settings.transfer.failed_storage":
+    "گوشی تازه‌تان نتوانست همه چیز را ذخیره کند.",
+  "settings.transfer.failed_interrupted": "اتصال پیش از ارسال همه چیز قطع شد.",
+  "settings.transfer.unchanged":
+    "چیزی منتقل نشد و این گوشی مثل قبل کار می‌کند.",
+  "settings.transfer.unconfirmed_title": "انتقال کامل شد؟",
+  "settings.transfer.unconfirmed_body":
+    "ارتباط این گوشی با گوشی تازه‌تان پیش از تأیید قطع شد. اگر گوشی تازه‌تان نام شما را نشان می‌دهد، این گوشی را پاک کنید. اگر نه، با همین گوشی ادامه دهید و دوباره امتحان کنید.",
+  "settings.transfer.erase_cta": "پاک کردن این گوشی",
+  "settings.transfer.keep_cta": "ادامه با همین گوشی",
   "settings.qr.permission_label": "دسترسی عکس",
   "settings.qr.permission_purpose": "ذخیرهٔ کد QR شما",
   "settings.qr.saved": "ذخیره شد",
@@ -2284,6 +2373,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} نفر نزدیک",
     other: "{count} نفر نزدیک",
+  },
+  "chat.presence.members": {
+    one: "{count} عضو",
+    other: "{count} عضو",
   },
 
   // ---- Wallet: mints ----

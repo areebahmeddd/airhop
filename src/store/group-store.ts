@@ -52,6 +52,8 @@ interface GroupState {
   remove: (groupIDHex: string) => void;
   leave: (groupIDHex: string) => void;
   hasLeft: (groupIDHex: string) => boolean;
+  // Re-reads disk after a transfer wrote underneath the store.
+  reload: () => void;
   clearAll: () => void;
 }
 
@@ -240,6 +242,10 @@ export const useGroupStore = create<GroupState>((set, get) => {
 
     hasLeft(groupIDHex) {
       return get().left.includes(groupIDHex);
+    },
+
+    reload() {
+      set({ groups: load(), left: loadLeft() });
     },
 
     clearAll() {

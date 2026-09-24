@@ -5,7 +5,7 @@
 
 import { THIRD_PARTY_LICENSES } from "@data/licenses";
 import { useT } from "@i18n";
-import { FontSize, Spacing, useThemeColors } from "@ui/theme";
+import { FontSize, LineHeight, Spacing, useThemeColors } from "@ui/theme";
 import React, { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import {
@@ -77,7 +77,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     description: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
       paddingHorizontal: Spacing.xs,
     },
   });

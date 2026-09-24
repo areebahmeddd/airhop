@@ -12,17 +12,18 @@ description: >
 
 Tokens: `src/ui/theme.ts`. Shared components: `src/ui/components/`. Hooks: `src/ui/hooks/`.
 
-| Fact              | Value                                                |
-| ----------------- | ---------------------------------------------------- |
-| Spacing           | 4pt grid: 4, 8, 12, 16, 20, 24, 32, 48, 64           |
-| Type              | 10, 11, 13, 15, 17, 20, 24, 30, 38; 10 is glyph-only |
-| Radius            | 2, 6, 10, 14, 20, 28, `full`                         |
-| Motion            | `Duration.base` 180ms, `Duration.slow` 220ms         |
-| Touch floor       | `MIN_TOUCH` 44                                       |
-| Full-width button | `BUTTON_HEIGHT` 50                                   |
-| Long press        | `LONG_PRESS_MS` 320                                  |
-| Press, disabled   | `PRESSED_OPACITY` 0.85, `DISABLED_OPACITY` 0.4       |
-| Palette           | `useThemeColors()`, never `Colors` directly          |
+| Fact              | Value                                                             |
+| ----------------- | ----------------------------------------------------------------- |
+| Spacing           | 4pt grid: 4, 8, 12, 16, 20, 24, 32, 48, 64; between: 2, 6, 10, 14 |
+| Type              | 10, 11, 13, 15, 17, 20, 24, 30, 38; 10 is glyph-only              |
+| Line height       | One per size: 15, 16, 20, 22, 40; tight 12, 17 for a pill glyph   |
+| Radius            | 2, 6, 10, 14, 20, 28, `full`                                      |
+| Motion            | `Duration.base` 180ms, `Duration.slow` 220ms                      |
+| Touch floor       | `MIN_TOUCH` 44                                                    |
+| Full-width button | `BUTTON_HEIGHT` 50                                                |
+| Long press        | `LONG_PRESS_MS` 320                                               |
+| Press, disabled   | `PRESSED_OPACITY` 0.85, `DISABLED_OPACITY` 0.4                    |
+| Palette           | `useThemeColors()`, never `Colors` directly                       |
 
 ## The Rule
 

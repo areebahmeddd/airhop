@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Fungua Sera ya Faragha",
   "onboarding.welcome.consent":
     "Kwa kugusa {cta}, unakubali {terms} na {privacy} zetu.",
+  "onboarding.welcome.transfer": "Hamisha kutoka simu nyingine",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Inatengeneza utambulisho wako",
@@ -105,6 +106,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Kihifadhi funguo cha mfumo pekee",
   "onboarding.username.prop.account": "Akaunti inahitajika",
   "onboarding.username.prop.account_value": "Hakuna",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Hamisha kutoka simu nyingine",
+  "onboarding.transfer.preparing": "Inajiandaa",
+  "onboarding.transfer.scan_heading":
+    "Changanua msimbo huu kwa simu yako ya zamani",
+  "onboarding.transfer.step_open": "Fungua Airhop kwenye simu yako ya zamani",
+  "onboarding.transfer.step_go": "Nenda kwenye {tab}, kisha {row}",
+  "onboarding.transfer.step_scan": "Ielekeze kwenye msimbo huu",
+  "onboarding.transfer.network_note":
+    "Simu zote mbili zinahitaji Wi-Fi moja au hotspot. Hakuna kinachopita kwenye intaneti.",
+  "onboarding.transfer.qr_a11y":
+    "Msimbo wa uhamisho. Uchanganue kwa Airhop kwenye simu yako ya zamani.",
+  "onboarding.transfer.offline_title": "Unganisha kwenye Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Weka simu zote mbili kwenye Wi-Fi moja, au washa hotspot kwenye moja na ujiunge nayo kutoka nyingine. Intaneti haihitajiki.",
+  "onboarding.transfer.incoming": "Inahamisha {name}",
+  "onboarding.transfer.receiving": "Inapokea {percent}%",
+  "onboarding.transfer.saving": "Inahifadhi kwenye simu hii",
+  "onboarding.transfer.releasing": "Inakamilisha kwenye simu yako ya zamani",
+  "onboarding.transfer.keep_open":
+    "Acha simu zote mbili wazi hadi hili likamilike.",
+  "onboarding.transfer.check_title": "Angalia simu yako ya zamani",
+  "onboarding.transfer.check_body":
+    "Kila kitu kiko kwenye simu hii. Kabla ya kuendelea, hakikisha simu yako ya zamani inaonyesha kwamba imefutwa, au uchague Futa simu hii kwenye simu hiyo.",
+  "onboarding.transfer.failed_title": "Uhamisho haukukamilika",
+  "onboarding.transfer.failed_cancelled":
+    "Uhamisho ulighairiwa kwenye simu yako ya zamani. Hakuna kilichohifadhiwa hapa.",
+  "onboarding.transfer.failed_interrupted":
+    "Muunganisho ulikatika. Hakuna kilichohifadhiwa hapa.",
+  "onboarding.transfer.failed_storage":
+    "Simu hii haikuweza kuhifadhi kilichowasili, kwa hivyo hakuna kilichobakishwa.",
+  "onboarding.transfer.failed_incompatible":
+    "Simu yako ya zamani ina toleo jipya zaidi la Airhop. Sasisha simu hii, kisha jaribu tena.",
+  "onboarding.transfer.failed_unavailable":
+    "Simu hii haiwezi kufungua muunganisho wa mtandao wa ndani.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Karibu Airhop!",
@@ -181,6 +218,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
   "chat.channels.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
   "chat.dm.you_prefix": "Wewe:",
+  "chat.draft_prefix": "Rasimu:",
   "chat.dm.none": "Hakuna jumbe za moja kwa moja",
   "chat.dm.none_desc":
     "Nenda kwenye kichupo cha Mesh na uguse peer ili kuanzisha ujumbe wa moja kwa moja uliosimbwa.",
@@ -206,6 +244,8 @@ export const strings: Strings = {
   "chat.group_badge": "Kikundi",
   "chat.more": "Zaidi",
   "chat.no_messages": "Bado hakuna jumbe",
+  "chat.presence.nearby_none": "Hakuna aliye karibu",
+  "chat.presence.active_none": "Hakuna aliye hai",
   "chat.you": "Wewe",
   "chat.a11y.channel": "Kituo {name}",
   "chat.a11y.group": "Kikundi {name}",
@@ -839,6 +879,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Kiokoa betri · inachanganua mara chache zaidi",
   "mesh.banner.wipe_incomplete":
     "Ufutaji haujakamilika · baadhi ya data huenda ikabaki, itajaribiwa tena wakati wa kufungua upya",
+  "mesh.banner.identity_elsewhere":
+    "Utambulisho wako upo pia kwenye simu nyingine · futa ile usiyoitumia",
   "mesh.banner.wifi_off": "Wi-Fi imezimwa · faili kubwa hutumwa polepole zaidi",
   "mesh.banner.clock_skew":
     "Saa ya simu hii si sahihi · weka tarehe na saa kuwa otomatiki",
@@ -1267,9 +1309,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Wameipata",
   "wallet.reclaim.title": "Urudishe tokeni hii?",
   "wallet.reclaim.body":
-    "{amount} {unit} zitarudi kwenye salio lako. Fanya hivi tu kama tokeni haikumfikia mtu yeyote: kama tayari wana mfuatano huo, yeyote anayeikomboa kwenye mint kwanza ndiye anayeshikilia pesa, na huenda wakawa wao.",
+    "{amount} {unit} zitarudi kwenye salio lako, na tokeni uliyotoa itaacha kufanya kazi mara tu mint itakapofikika. Wakiikomboa kabla ya hapo, pesa zitabaki kuwa zao.",
   "wallet.reclaim.keep": "Acha ikisubiri",
   "wallet.reclaim.confirm": "Rudisha",
+  "wallet.reclaim.claimed_title": "Tayari wameikomboa",
+  "wallet.reclaim.claimed_body":
+    "Mint inasema tokeni hii tayari imekombolewa, kwa hivyo {amount} {unit} ziliwafikia na hakuna kilichorudi kwenye salio lako.",
   "wallet.copied.token_body":
     "Tokeni ipo kwenye ubao wako wa kunakili. Hubaki imetengwa hapa hadi utakapoiweka alama kuwa imefika, kwa hivyo unaweza kuibandika tena kama jaribio la kwanza litashindwa.",
   "wallet.copied.phrase_body":
@@ -1297,6 +1342,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Rudisha tokeni hii kwenye salio lako",
   "wallet.activity.title": "Shughuli",
   "wallet.activity.none": "Bado hakuna kitu",
+  "wallet.activity.none_hint":
+    "Ecash ni mpya kwako? Gusa {help} hapo juu ili kuona jinsi inavyofanya kazi.",
   "wallet.activity.show_fewer": "Onyesha malipo machache zaidi",
   "wallet.activity.show_less": "Onyesha kidogo",
   "wallet.activity.received_unconfirmed": "Yamepokelewa, hayajathibitishwa",
@@ -1346,7 +1393,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Malipo yaliyofungwa hayawezi kurudishwa: ufunguo wao pekee ndio unaoweza kutumia sarafu hizi sasa.",
   "wallet.pay.reclaimable":
-    "Bado inaweza kurudishwa kutoka kichupo cha Pochi hadi uthibitishe kuwa imefika.",
+    "Bado inaweza kurudishwa kutoka Shughuli hadi uthibitishe kuwa imefika.",
   "wallet.pay.why": "Imetumwa kwa njia hii kwa sababu {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} kwa {name}",
   "wallet.pay.thread_receipt":
@@ -2103,15 +2150,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "Gumzo na historia",
   "settings.transfer.chats_desc":
     "Mazungumzo, vikundi, na vituo ulivyojiunga navyo",
+  "settings.transfer.chats_without": "Vituo na vikundi vyako, bila jumbe zake",
   "settings.transfer.wallet": "Salio la pochi",
   "settings.transfer.wallet_desc": "Ecash na historia ya miamala",
   "settings.transfer.title": "Hamishia kwenye simu mpya",
   "settings.transfer.desc":
     "Hamisha utambulisho, gumzo na pochi yako kwenye kifaa kingine",
-  "settings.transfer.coming_soon_a11y":
-    "Hamishia kwenye simu mpya, inakuja hivi karibuni",
-  "settings.transfer.body":
-    "Shikilia simu zote mbili pamoja na uhamishe kila kitu kupitia Bluetooth. Hakuna kinachopita kwenye seva, kwa hivyo hufanya kazi bila intaneti.",
+  "settings.transfer.intro":
+    "Kwenye simu mpya, fungua Airhop na uchague Hamisha kutoka simu nyingine. Simu zote mbili zinahitaji Wi-Fi moja au hotspot, si intaneti.",
+  "settings.transfer.erase_note":
+    "Simu mpya ikishapokea kila kitu, simu hii itafutwa. Picha na faili hazihamishwi.",
+  "settings.transfer.auth_prompt":
+    "Thibitisha kuwa ni wewe ili kuhamisha utambulisho wako",
+  "settings.transfer.scan_title": "Changanua msimbo kwenye simu yako mpya",
+  "settings.transfer.aim":
+    "Elekeza kamera kwenye msimbo ulio kwenye simu yako mpya",
+  "settings.transfer.wrong_code":
+    "Huo ni msimbo wa anwani. Changanua msimbo kwenye simu yako mpya.",
+  "settings.transfer.camera_off_body":
+    "Ruhusu ufikiaji wa kamera kwenye Mipangilio ili kuchanganua msimbo kwenye simu yako mpya.",
+  "settings.transfer.confirm_title": "Hamishia kwenye simu hii?",
+  "settings.transfer.confirm_body":
+    "Kila kitu hapa kitahamia kwenye simu inayoonyesha msimbo huu. Kikishafika, simu hii itafutwa.",
+  "settings.transfer.confirm_cta": "Hamisha",
+  "settings.transfer.connecting": "Inaunganisha na simu yako mpya",
+  "settings.transfer.connecting_hint":
+    "Simu hii ikiomba kutafuta vifaa kwenye mtandao wa ndani, iruhusu.",
+  "settings.transfer.sending": "Inahamisha {percent}%",
+  "settings.transfer.keep_open":
+    "Acha simu zote mbili wazi hadi hili likamilike.",
+  "settings.transfer.finishing": "Inakamilisha kwenye simu yako mpya",
+  "settings.transfer.erasing": "Inafuta simu hii",
+  "settings.transfer.done_title": "Imehamishwa",
+  "settings.transfer.done_body":
+    "Utambulisho wako sasa uko kwenye simu yako mpya, na simu hii imefutwa.",
+  "settings.transfer.failed_title": "Uhamisho haukukamilika",
+  "settings.transfer.failed_unreachable":
+    "Haikuweza kufikia simu yako mpya. Weka simu zote mbili kwenye Wi-Fi moja, au washa hotspot kwenye moja na ujiunge nayo kutoka nyingine.",
+  "settings.transfer.failed_permission":
+    "Airhop inahitaji ufikiaji wa mtandao wa ndani ili kufikia simu yako mpya. Uruhusu kwenye Mipangilio, kisha jaribu tena.",
+  "settings.transfer.failed_wrong_phone":
+    "Simu iliyojibu si ile ambayo msimbo wake uliuchanganua.",
+  "settings.transfer.failed_incompatible":
+    "Simu yako mpya ina toleo la zamani la Airhop. Isasishe, kisha jaribu tena.",
+  "settings.transfer.failed_cancelled":
+    "Uhamisho ulighairiwa kwenye simu yako mpya.",
+  "settings.transfer.failed_storage":
+    "Simu yako mpya haikuweza kuhifadhi kila kitu.",
+  "settings.transfer.failed_interrupted":
+    "Muunganisho ulikatika kabla kila kitu hakijatumwa.",
+  "settings.transfer.unchanged":
+    "Hakuna kilichohamishwa, na simu hii inafanya kazi kama awali.",
+  "settings.transfer.unconfirmed_title": "Je, uhamisho ulikamilika?",
+  "settings.transfer.unconfirmed_body":
+    "Simu hii ilipoteza mawasiliano na simu yako mpya kabla haijathibitisha. Ikiwa simu yako mpya inaonyesha jina lako, futa simu hii. Ikiwa sivyo, endelea kutumia hii na ujaribu tena.",
+  "settings.transfer.erase_cta": "Futa simu hii",
+  "settings.transfer.keep_cta": "Endelea kutumia simu hii",
   "settings.qr.permission_label": "Ufikiaji wa picha",
   "settings.qr.permission_purpose": "kuhifadhi msimbo wako wa QR",
   "settings.qr.saved": "Imehifadhiwa",
@@ -2340,6 +2434,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} yuko karibu",
     other: "{count} wako karibu",
+  },
+  "chat.presence.members": {
+    one: "mwanachama {count}",
+    other: "wanachama {count}",
   },
 
   // ---- Wallet: mints ----

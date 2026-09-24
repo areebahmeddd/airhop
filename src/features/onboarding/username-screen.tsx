@@ -9,6 +9,7 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -233,7 +234,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     props: {
       alignSelf: "stretch",
-      gap: Spacing.xs + 2,
+      gap: Spacing["xs-sm"],
     },
     propRow: {
       flexDirection: "row",
@@ -252,7 +253,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
       paddingHorizontal: Spacing.md,
     },
     footer: {

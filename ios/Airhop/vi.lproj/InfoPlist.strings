@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop dùng micrô để ghi tin nhắn thoại và để truyền giọng nói trực tiếp tới các nút mạng ở gần.";
 "NSPhotoLibraryUsageDescription" = "Airhop truy cập thư viện ảnh của bạn để chia sẻ hình ảnh và video qua mạng lưới.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop lưu ảnh và video vào thư viện ảnh của bạn khi bạn chọn lưu một mục, và khi bạn tải mã QR của mình về.";
+"NSFaceIDUsageDescription" = "Airhop dùng Face ID để xác nhận đó là bạn trước khi chuyển danh tính của bạn sang điện thoại mới.";
 "NSLocationWhenInUseUsageDescription" = "Airhop dùng vị trí gần đúng của bạn để đặt bạn vào các kênh khu vực ở gần (khu phố, thành phố, vùng). Vị trí chính xác của bạn không bao giờ rời khỏi thiết bị.";

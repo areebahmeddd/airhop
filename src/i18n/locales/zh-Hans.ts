@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "打开隐私政策",
   "onboarding.welcome.consent":
     "点按{cta}即表示你同意我们的{terms}和{privacy}。",
+  "onboarding.welcome.transfer": "从另一台手机转移",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "正在生成你的身份",
@@ -100,6 +101,38 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "仅系统钥匙串",
   "onboarding.username.prop.account": "需要账户",
   "onboarding.username.prop.account_value": "无",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "从另一台手机转移",
+  "onboarding.transfer.preparing": "正在准备",
+  "onboarding.transfer.scan_heading": "用旧手机扫描这个码",
+  "onboarding.transfer.step_open": "在旧手机上打开 Airhop",
+  "onboarding.transfer.step_go": "前往 {tab}，然后选择 {row}",
+  "onboarding.transfer.step_scan": "把相机对准这个码",
+  "onboarding.transfer.network_note":
+    "两台手机需要连接同一个 Wi-Fi 或热点。所有内容都不经过互联网。",
+  "onboarding.transfer.qr_a11y": "转移码。用旧手机上的 Airhop 扫描。",
+  "onboarding.transfer.offline_title": "连接 Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "让两台手机连接同一个 Wi-Fi，或者在一台手机上打开热点，再用另一台连上。不需要互联网。",
+  "onboarding.transfer.incoming": "正在转移 {name}",
+  "onboarding.transfer.receiving": "正在接收 {percent}%",
+  "onboarding.transfer.saving": "正在保存到这台手机",
+  "onboarding.transfer.releasing": "正在旧手机上收尾",
+  "onboarding.transfer.keep_open": "完成之前，请让两台手机都保持打开。",
+  "onboarding.transfer.check_title": "检查你的旧手机",
+  "onboarding.transfer.check_body":
+    "所有内容都已在这台手机上。继续之前，请确认旧手机显示已抹除，或者在旧手机上选择“抹除这台手机”。",
+  "onboarding.transfer.failed_title": "转移未完成",
+  "onboarding.transfer.failed_cancelled":
+    "旧手机上取消了转移。这里没有保存任何内容。",
+  "onboarding.transfer.failed_interrupted":
+    "连接中断了。这里没有保存任何内容。",
+  "onboarding.transfer.failed_storage":
+    "这台手机无法保存收到的内容，所以什么也没有保留。",
+  "onboarding.transfer.failed_incompatible":
+    "旧手机上的 Airhop 版本更新。请先更新这台手机，然后再试一次。",
+  "onboarding.transfer.failed_unavailable": "这台手机无法建立局域网连接。",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "欢迎来到 Airhop！",
@@ -172,6 +205,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "双击并按住可查看更多选项",
   "chat.channels.row_hint": "双击并按住可查看更多选项",
   "chat.dm.you_prefix": "你：",
+  "chat.draft_prefix": "草稿：",
   "chat.dm.none": "没有私信",
   "chat.dm.none_desc": "前往网状网络标签页，点按一个节点即可开始加密私信。",
   "chat.dm.contact_info": "联系人信息",
@@ -195,6 +229,8 @@ export const strings: Strings = {
   "chat.group_badge": "群组",
   "chat.more": "更多",
   "chat.no_messages": "还没有消息",
+  "chat.presence.nearby_none": "附近没有人",
+  "chat.presence.active_none": "无人活跃",
   "chat.you": "你",
   "chat.a11y.channel": "频道 {name}",
   "chat.a11y.group": "群组 {name}",
@@ -783,6 +819,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "省电模式 · 扫描频率降低",
   "mesh.banner.wipe_incomplete":
     "抹除未完成 · 可能还有残留数据，重新打开会再试一次",
+  "mesh.banner.identity_elsewhere":
+    "你的身份也在另一台手机上 · 请抹除你不用的那台",
   "mesh.banner.wifi_off": "Wi-Fi 已关 · 大文件发得更慢",
   "mesh.banner.clock_skew": "这台手机的时钟不对 · 请把日期和时间设为自动",
   "mesh.banner.internet_off": "互联网已关 · 仅蓝牙",
@@ -1179,9 +1217,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "对方收到了",
   "wallet.reclaim.title": "收回这个代币？",
   "wallet.reclaim.body":
-    "这 {amount} {unit} 会回到你的余额。只有在代币确实没到任何人手上时才这么做：如果对方已经拿到了那串字符，谁先在铸币厂兑付谁就拿走这笔钱，而那有可能是对方。",
+    "这 {amount} {unit} 会回到你的余额，一旦能连上铸币厂，你发出去的代币就会失效。如果对方在此之前兑付，钱就归对方。",
   "wallet.reclaim.keep": "保持待处理",
   "wallet.reclaim.confirm": "收回",
+  "wallet.reclaim.claimed_title": "对方已经兑付了",
+  "wallet.reclaim.claimed_body":
+    "铸币厂表示这个代币已被兑付，所以这 {amount} {unit} 已经到了对方手上，你的余额没有收回任何东西。",
   "wallet.copied.token_body":
     "代币已在你的剪贴板上。在你标记为已送达之前它一直预留在这里，所以第一次没成的话可以再粘贴一次。",
   "wallet.copied.phrase_body":
@@ -1205,6 +1246,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "把这个代币收回你的余额",
   "wallet.activity.title": "动态",
   "wallet.activity.none": "还没有内容",
+  "wallet.activity.none_hint":
+    "第一次用 ecash？点按上方的 {help} 了解它的工作原理。",
   "wallet.activity.show_fewer": "少显示一些付款",
   "wallet.activity.show_less": "收起",
   "wallet.activity.received_unconfirmed": "已收到，未确认",
@@ -1250,7 +1293,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_undelivered":
     "已锁定到对方的密钥，但还没有东西能把它带过去。它已排队，代币在动态里。",
   "wallet.pay.final": "已锁定的付款无法收回：现在只有对方的密钥能花这些币。",
-  "wallet.pay.reclaimable": "在你确认它已送达之前，都可以从钱包标签页收回。",
+  "wallet.pay.reclaimable": "在你确认它已送达之前，都可以在“动态”中收回。",
   "wallet.pay.why": "之所以走这条路，是因为{reason}。",
   "wallet.pay.sent_title": "{amount} {unit} 给 {name}",
   "wallet.pay.thread_receipt": "你发出了 {amount} {unit}，已锁定到对方的密钥。",
@@ -1936,13 +1979,52 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "你的节点 ID、用户名和联系人",
   "settings.transfer.chats": "聊天与历史记录",
   "settings.transfer.chats_desc": "对话、群组，以及你加入过的频道",
+  "settings.transfer.chats_without": "你的频道和群组，不含其中的消息",
   "settings.transfer.wallet": "钱包余额",
   "settings.transfer.wallet_desc": "Ecash 与交易记录",
   "settings.transfer.title": "转移到新手机",
   "settings.transfer.desc": "把你的身份、聊天和钱包搬到另一台设备",
-  "settings.transfer.coming_soon_a11y": "转移到新手机，即将推出",
-  "settings.transfer.body":
-    "把两台手机靠在一起，通过蓝牙把所有内容搬过去。不经过任何服务器，所以没有互联网也能用。",
+  "settings.transfer.intro":
+    "在新手机上打开 Airhop，选择“从另一台手机转移”。两台手机需要连接同一个 Wi-Fi 或热点，不需要互联网。",
+  "settings.transfer.erase_note":
+    "新手机收到所有内容后，这台手机会被抹除。照片和文件不会转移。",
+  "settings.transfer.auth_prompt": "确认是你本人，以转移你的身份",
+  "settings.transfer.scan_title": "扫描新手机上的码",
+  "settings.transfer.aim": "把相机对准新手机上的码",
+  "settings.transfer.wrong_code": "这是联系人的码。请扫描新手机上的码。",
+  "settings.transfer.camera_off_body":
+    "请在设置中允许相机访问，才能扫描新手机上的码。",
+  "settings.transfer.confirm_title": "转移到这台手机？",
+  "settings.transfer.confirm_body":
+    "这里的所有内容会转移到显示这个码的手机上。转移完成后，这台手机会被抹除。",
+  "settings.transfer.confirm_cta": "转移",
+  "settings.transfer.connecting": "正在连接新手机",
+  "settings.transfer.connecting_hint":
+    "如果这台手机询问是否允许查找局域网中的设备，请允许。",
+  "settings.transfer.sending": "正在转移 {percent}%",
+  "settings.transfer.keep_open": "完成之前，请让两台手机都保持打开。",
+  "settings.transfer.finishing": "正在新手机上收尾",
+  "settings.transfer.erasing": "正在抹除这台手机",
+  "settings.transfer.done_title": "已转移",
+  "settings.transfer.done_body": "你的身份现在在新手机上，这台手机已被抹除。",
+  "settings.transfer.failed_title": "转移未完成",
+  "settings.transfer.failed_unreachable":
+    "无法连接新手机。让两台手机连接同一个 Wi-Fi，或者在一台手机上打开热点，再用另一台连上。",
+  "settings.transfer.failed_permission":
+    "Airhop 需要局域网访问权限才能连接新手机。请在设置中允许，然后再试一次。",
+  "settings.transfer.failed_wrong_phone":
+    "回应的手机不是你扫描的那个码所属的手机。",
+  "settings.transfer.failed_incompatible":
+    "新手机上的 Airhop 版本较旧。请先更新，然后再试一次。",
+  "settings.transfer.failed_cancelled": "新手机上取消了转移。",
+  "settings.transfer.failed_storage": "新手机无法保存全部内容。",
+  "settings.transfer.failed_interrupted": "全部发送完之前，连接中断了。",
+  "settings.transfer.unchanged": "什么都没有转移，这台手机照常可用。",
+  "settings.transfer.unconfirmed_title": "转移完成了吗？",
+  "settings.transfer.unconfirmed_body":
+    "新手机确认之前，这台手机就和它断开了连接。如果新手机上显示了你的名字，就抹除这台手机。如果没有，继续使用这台手机，然后再试一次。",
+  "settings.transfer.erase_cta": "抹除这台手机",
+  "settings.transfer.keep_cta": "继续使用这台手机",
   "settings.qr.permission_label": "照片访问权限",
   "settings.qr.permission_purpose": "保存你的二维码",
   "settings.qr.saved": "已保存",
@@ -2140,6 +2222,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "{count} 位在附近",
+  },
+  "chat.presence.members": {
+    other: "{count} 位成员",
   },
 
   // ---- Wallet: mints ----

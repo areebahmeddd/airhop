@@ -54,6 +54,7 @@ import {
   type ChatAttachment,
   type ChatMessage,
 } from "@store/chat-store";
+import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGroupStore } from "@store/group-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
@@ -81,6 +82,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   MaxFontScale,
   MIN_TOUCH,
   PRESSED_OPACITY,
@@ -834,7 +836,7 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.xs,
       backgroundColor: Colors.border,
       overflow: "hidden",
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     fill: { height: 3, borderRadius: Radius.xs },
   });
@@ -1422,17 +1424,17 @@ export default function MessageThread({
   const privateMemberCount = useChannelMembersStore(
     (s) => (s.byChannel[channel] ?? []).length,
   );
-  // Every kind counts yourself, so the subtitle, the chat-list row and the
-  // member sheet report the same number. A group's roster already lists you; the
-  // others are others-only lists, so they add one, matching the "You" row the
-  // sheet renders.
+  // A roster counts you, a presence count does not. A group's roster already
+  // lists you, and a private channel's members are its key-holders plus you,
+  // as the member sheet shows them. "Nearby" and "active" are others only, the
+  // same number the chat-list row shows.
   const memberCount = isGroup
     ? (getMeshService()?.groupMemberCount(channel.slice("group:".length)) ?? 0)
     : isGeo
-      ? geoMembers.length + 1
+      ? geoMembers.length
       : isPrivate
         ? privateMemberCount + 1
-        : peerCount + 1;
+        : peerCount;
 
   // Reverse-geocoded name for a location channel's cell, shown in the header
   // subtitle as "~Kumaraswamy Layout". Present once the cell has a geohash
@@ -1503,9 +1505,18 @@ export default function MessageThread({
   if (isGeo && geoPlaceName !== undefined) {
     channelSubtitleParts.push(`~${geoPlaceName}`);
   }
-  if (memberCount > 0) {
+  if (isPrivate) {
+    channelSubtitleParts.push(TP("chat.presence.members", memberCount));
+  } else if (!isGeo || channelGeohash !== null) {
+    // A location cell that has not resolved yet reports nothing, so the
+    // fallback below still names it a location channel.
     channelSubtitleParts.push(
-      TP(isGeo ? "chat.presence.active" : "chat.presence.nearby", memberCount),
+      memberCount === 0
+        ? T(isGeo ? "chat.presence.active_none" : "chat.presence.nearby_none")
+        : TP(
+            isGeo ? "chat.presence.active" : "chat.presence.nearby",
+            memberCount,
+          ),
     );
   }
   // On the public mesh channel, show that it is bridged (and how many are
@@ -1603,7 +1614,11 @@ export default function MessageThread({
     geoDmCell !== undefined &&
     liveGeoCells !== null &&
     !liveGeoCells.includes(geoDmCell);
-  const [draft, setDraft] = useState("");
+  // The thread remounts per conversation, so the text is kept outside it.
+  const [draft, setDraft] = useState(() => loadDraft(channel));
+  useEffect(() => {
+    saveDraft(channel, draft);
+  }, [channel, draft]);
   // Focused when something else drafts into the composer, so the text is not
   // left behind a closed keyboard.
   const composerRef = useRef<TextInput>(null);
@@ -5797,10 +5812,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // Same badge as the tab bar and the Channels/Direct segments: accent fill,
-    // inverse text, hairline ring in the surface behind it so it reads as a
-    // cutout rather than a sticker. Sits on the chevron so "what is behind this
-    // button" is answered by the button itself.
+    // Same badge as the tab bar and the segments, ringed in the surface colour
+    // so it reads as a cutout. On the back chevron, so the button itself says
+    // what is waiting behind it.
     backBadge: {
       position: "absolute",
       top: 0,
@@ -5820,7 +5834,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: 12,
+      lineHeight: LineHeight["2xsTight"],
     },
     headerCenter: {
       flex: 1,
@@ -5842,7 +5856,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.sm,
       paddingHorizontal: 5,
-      paddingVertical: 2,
+      paddingVertical: Spacing["2xs"],
     },
     encryptedBadgeText: {
       fontSize: FontSize["2xs"],
@@ -5910,7 +5924,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: 12,
+      lineHeight: LineHeight["2xsTight"],
     },
     dateSeparator: {
       flexDirection: "row",
@@ -5971,7 +5985,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.xs,
       paddingHorizontal: Spacing.base,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
       backgroundColor: Colors.surfaceRaised,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: Colors.border,
@@ -6107,11 +6121,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
       paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       color: Colors.textPrimary,
       fontSize: FontSize.base,
       maxHeight: 120,
-      lineHeight: FontSize.base * 1.4,
+      lineHeight: LineHeight.base,
     },
     sendButton: {
       width: COMPOSE_BUTTON_SIZE,
@@ -6244,7 +6258,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     attachOptionDesc: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     attachSeparator: {
       height: StyleSheet.hairlineWidth,
@@ -6261,7 +6275,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     attachNoteText: {
       flex: 1,
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     attachCancel: {
@@ -6350,11 +6364,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       flexShrink: 0,
     },
-    // Attachment bubbles (rendered inside the chat bubble)
-    // Height comes from the photo's own aspect at render time; see
-    // mediaHeightForAspect. A percentage width was what made these render as
-    // slivers: the bubble's width is decided by its caption, so "100%" of a
-    // two-character caption is a two-character-wide photo.
+    // Attachment bubbles. A fixed width, not a percentage: a bubble is as wide
+    // as its caption, so 100% of a short caption is a sliver. Height comes
+    // from the photo's aspect (mediaHeightForAspect).
     attachImage: {
       width: MEDIA_BUBBLE_WIDTH,
       borderRadius: Radius.md,
@@ -6492,7 +6504,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       flexDirection: "row",
       alignItems: "center",
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     attachVoiceBar: {
       width: 3,
@@ -6574,7 +6586,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderColor: Colors.border,
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
-      gap: 4,
+      gap: Spacing.xs,
     },
     keyBoxLabel: {
       fontSize: FontSize.xs,
@@ -6594,11 +6606,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontFamily: FontFamily.mono,
       color: Colors.textSecondary,
       letterSpacing: 0.3,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     keyBoxNote: {
       fontSize: FontSize["2xs"],
-      lineHeight: FontSize["2xs"] * 1.5,
+      lineHeight: LineHeight["2xs"],
       color: Colors.textMuted,
       marginTop: Spacing.sm,
     },
@@ -6711,7 +6723,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.accentGhost,
       borderWidth: 1,
       borderColor: Colors.accent,
-      gap: 4,
+      gap: Spacing.xs,
       minWidth: 190,
     },
     paymentCardHeader: {

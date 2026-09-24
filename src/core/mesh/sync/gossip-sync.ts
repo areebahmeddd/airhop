@@ -34,7 +34,7 @@
 //   0x05  since   (uint64 BE) filter-coverage cursor, ms since epoch
 
 import { sha256 } from "@noble/hashes/sha2.js";
-import { concatBytes } from "@noble/hashes/utils.js";
+import { concatBytes, hexToBytes } from "@noble/hashes/utils.js";
 import {
   computePacketId,
   Flags,
@@ -797,14 +797,6 @@ export class GossipSync {
 
 function isGossipType(type: PacketType): boolean {
   return syncBitForType(type) !== null;
-}
-
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length >> 1);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
 }
 
 function bytesToHex(bytes: Uint8Array): string {

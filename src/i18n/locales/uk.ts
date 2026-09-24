@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Відкрити Політику приватності",
   "onboarding.welcome.consent":
     "Натискаючи {cta}, ви погоджуєтеся з нашими {terms} та {privacy}.",
+  "onboarding.welcome.transfer": "Перенести з іншого телефона",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Створюємо вашу особистість",
@@ -102,6 +103,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Лише сховище ключів системи",
   "onboarding.username.prop.account": "Потрібен обліковий запис",
   "onboarding.username.prop.account_value": "Немає",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Перенести з іншого телефона",
+  "onboarding.transfer.preparing": "Підготовка",
+  "onboarding.transfer.scan_heading": "Відскануйте цей код старим телефоном",
+  "onboarding.transfer.step_open": "Відкрийте Airhop на старому телефоні",
+  "onboarding.transfer.step_go": "Перейдіть до {tab}, потім до {row}",
+  "onboarding.transfer.step_scan": "Наведіть камеру на цей код",
+  "onboarding.transfer.network_note":
+    "Обидва телефони мають бути в одній мережі Wi-Fi або на одній точці доступу. Через інтернет нічого не передається.",
+  "onboarding.transfer.qr_a11y":
+    "Код перенесення. Відскануйте його в Airhop на старому телефоні.",
+  "onboarding.transfer.offline_title": "Підключіться до Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Підключіть обидва телефони до однієї мережі Wi-Fi або ввімкніть точку доступу на одному й підключіться до неї з іншого. Інтернет не потрібен.",
+  "onboarding.transfer.incoming": "Переносимо {name}",
+  "onboarding.transfer.receiving": "Отримання {percent}%",
+  "onboarding.transfer.saving": "Зберігаємо на цей телефон",
+  "onboarding.transfer.releasing": "Завершуємо на старому телефоні",
+  "onboarding.transfer.keep_open":
+    "Не закривайте застосунок на обох телефонах, доки перенесення не завершиться.",
+  "onboarding.transfer.check_title": "Перевірте старий телефон",
+  "onboarding.transfer.check_body":
+    "Усе вже на цьому телефоні. Перш ніж продовжити, переконайтеся, що старий телефон повідомив про стирання, або виберіть на ньому «Стерти цей телефон».",
+  "onboarding.transfer.failed_title": "Перенесення не завершено",
+  "onboarding.transfer.failed_cancelled":
+    "Перенесення скасовано на старому телефоні. Тут нічого не збережено.",
+  "onboarding.transfer.failed_interrupted":
+    "З’єднання обірвалося. Тут нічого не збережено.",
+  "onboarding.transfer.failed_storage":
+    "Цей телефон не зміг зберегти отримане, тому нічого не залишено.",
+  "onboarding.transfer.failed_incompatible":
+    "На старому телефоні новіша версія Airhop. Оновіть цей телефон і спробуйте ще раз.",
+  "onboarding.transfer.failed_unavailable":
+    "Цей телефон не може відкрити з’єднання через локальну мережу.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Ласкаво просимо до Airhop!",
@@ -179,6 +215,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "Торкніться двічі й утримуйте, щоб побачити більше варіантів",
   "chat.dm.you_prefix": "Ви:",
+  "chat.draft_prefix": "Чернетка:",
   "chat.dm.none": "Немає прямих повідомлень",
   "chat.dm.none_desc":
     "Перейдіть на вкладку Mesh і торкніться піра, щоб почати зашифроване пряме повідомлення.",
@@ -204,6 +241,8 @@ export const strings: Strings = {
   "chat.group_badge": "Група",
   "chat.more": "Ще",
   "chat.no_messages": "Повідомлень поки немає",
+  "chat.presence.nearby_none": "Нікого поблизу",
+  "chat.presence.active_none": "Ніхто не активний",
   "chat.you": "Ви",
   "chat.a11y.channel": "Канал {name}",
   "chat.a11y.group": "Група {name}",
@@ -842,6 +881,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Заощадження заряду · сканує рідше",
   "mesh.banner.wipe_incomplete":
     "Очищення незавершене · частина даних могла лишитися, спробуємо знову після повторного відкриття",
+  "mesh.banner.identity_elsewhere":
+    "Ваша особистість є й на іншому телефоні · зітріть той, яким не користуєтеся",
   "mesh.banner.wifi_off": "Wi-Fi вимкнено · великі файли йдуть повільніше",
   "mesh.banner.clock_skew":
     "Годинник цього телефона неправильний · встановіть автоматичні дату й час",
@@ -1260,9 +1301,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Вони отримали",
   "wallet.reclaim.title": "Забрати цей токен?",
   "wallet.reclaim.body":
-    "{amount} {unit} повернуться на ваш баланс. Робіть це, лише якщо токен нікого не досяг: якщо рядок уже в них, гроші дістануться тому, хто перший викупить його в мінті, а це можуть бути вони.",
+    "{amount} {unit} повернуться на ваш баланс, а виданий вами токен перестане працювати, щойно мінт стане досяжним. Якщо вони викуплять його раніше, гроші залишаться в них.",
   "wallet.reclaim.keep": "Лишити в очікуванні",
   "wallet.reclaim.confirm": "Забрати",
+  "wallet.reclaim.claimed_title": "Вони вже викупили його",
+  "wallet.reclaim.claimed_body":
+    "Мінт повідомляє, що цей токен уже викуплено, тож {amount} {unit} дійшли до них, і на ваш баланс нічого не повернулося.",
   "wallet.copied.token_body":
     "Токен у вашому буфері обміну. Він лишається відкладеним тут, доки ви не позначите його доставленим, тож ви зможете вставити його знову, якщо перша спроба не вдасться.",
   "wallet.copied.phrase_body":
@@ -1289,6 +1333,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Забрати цей токен на ваш баланс",
   "wallet.activity.title": "Активність",
   "wallet.activity.none": "Поки нічого",
+  "wallet.activity.none_hint":
+    "Вперше користуєтеся ecash? Торкніться {help} угорі, щоб дізнатися, як це працює.",
   "wallet.activity.show_fewer": "Показати менше платежів",
   "wallet.activity.show_less": "Показати менше",
   "wallet.activity.received_unconfirmed": "Отримано, не підтверджено",
@@ -1337,7 +1383,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Прив’язані платежі забрати не можна: витратити ці монети тепер здатен лише їхній ключ.",
   "wallet.pay.reclaimable":
-    "Забрати це можна з вкладки Гаманець, доки ви не підтвердите, що воно дійшло.",
+    "Забрати це можна в розділі «Активність», доки ви не підтвердите, що воно дійшло.",
   "wallet.pay.why": "Надіслано цим шляхом, бо {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} для {name}",
   "wallet.pay.thread_receipt":
@@ -2078,14 +2124,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "Чати та історія",
   "settings.transfer.chats_desc":
     "Розмови, групи та канали, до яких ви приєдналися",
+  "settings.transfer.chats_without":
+    "Ваші кімнати й групи, але без повідомлень",
   "settings.transfer.wallet": "Баланс гаманця",
   "settings.transfer.wallet_desc": "Ecash та історія операцій",
   "settings.transfer.title": "Перенести на новий телефон",
   "settings.transfer.desc":
     "Перенесіть свою особистість, чати та гаманець на інший пристрій",
-  "settings.transfer.coming_soon_a11y": "Перенести на новий телефон, незабаром",
-  "settings.transfer.body":
-    "Тримайте обидва телефони поруч і перенесіть усе через Bluetooth. Ніщо не проходить через сервер, тож це працює без інтернету.",
+  "settings.transfer.intro":
+    "На новому телефоні відкрийте Airhop і виберіть «Перенести з іншого телефона». Обидва телефони мають бути в одній мережі Wi-Fi або на одній точці доступу, інтернет не потрібен.",
+  "settings.transfer.erase_note":
+    "Коли новий телефон отримає все, цей телефон буде стерто. Фото й файли не переносяться.",
+  "settings.transfer.auth_prompt":
+    "Підтвердьте, що це ви, щоб перенести свою особистість",
+  "settings.transfer.scan_title": "Відскануйте код на новому телефоні",
+  "settings.transfer.aim": "Наведіть камеру на код на новому телефоні",
+  "settings.transfer.wrong_code":
+    "Це код контакту. Відскануйте код на новому телефоні.",
+  "settings.transfer.camera_off_body":
+    "Увімкніть доступ до камери в Налаштуваннях, щоб відсканувати код на новому телефоні.",
+  "settings.transfer.confirm_title": "Перенести на цей телефон?",
+  "settings.transfer.confirm_body":
+    "Усе звідси перейде на телефон, що показує цей код. Щойно перенесення завершиться, цей телефон буде стерто.",
+  "settings.transfer.confirm_cta": "Перенести",
+  "settings.transfer.connecting": "Під’єднуємося до нового телефона",
+  "settings.transfer.connecting_hint":
+    "Якщо телефон попросить дозвіл на пошук пристроїв у локальній мережі, дозвольте.",
+  "settings.transfer.sending": "Перенесення {percent}%",
+  "settings.transfer.keep_open":
+    "Не закривайте застосунок на обох телефонах, доки перенесення не завершиться.",
+  "settings.transfer.finishing": "Завершуємо на новому телефоні",
+  "settings.transfer.erasing": "Стираємо цей телефон",
+  "settings.transfer.done_title": "Перенесено",
+  "settings.transfer.done_body":
+    "Ваша особистість тепер на новому телефоні, а цей телефон стерто.",
+  "settings.transfer.failed_title": "Перенесення не завершено",
+  "settings.transfer.failed_unreachable":
+    "Не вдалося зв’язатися з новим телефоном. Підключіть обидва телефони до однієї мережі Wi-Fi або ввімкніть точку доступу на одному й підключіться до неї з іншого.",
+  "settings.transfer.failed_permission":
+    "Airhop потрібен доступ до локальної мережі, щоб зв’язатися з новим телефоном. Дозвольте його в Налаштуваннях і спробуйте ще раз.",
+  "settings.transfer.failed_wrong_phone":
+    "Відповів не той телефон, чий код ви відсканували.",
+  "settings.transfer.failed_incompatible":
+    "На новому телефоні старіша версія Airhop. Оновіть її і спробуйте ще раз.",
+  "settings.transfer.failed_cancelled":
+    "Перенесення скасовано на новому телефоні.",
+  "settings.transfer.failed_storage": "Новий телефон не зміг зберегти все.",
+  "settings.transfer.failed_interrupted":
+    "З’єднання обірвалося, перш ніж усе було надіслано.",
+  "settings.transfer.unchanged":
+    "Нічого не перенесено, цей телефон працює як раніше.",
+  "settings.transfer.unconfirmed_title": "Перенесення завершено?",
+  "settings.transfer.unconfirmed_body":
+    "Цей телефон втратив зв’язок з новим до підтвердження. Якщо новий телефон показує ваше ім’я, зітріть цей телефон. Якщо ні, користуйтеся цим далі й спробуйте ще раз.",
+  "settings.transfer.erase_cta": "Стерти цей телефон",
+  "settings.transfer.keep_cta": "Залишити цей телефон",
   "settings.qr.permission_label": "Доступ до фото",
   "settings.qr.permission_purpose": "зберегти ваш QR-код",
   "settings.qr.saved": "Збережено",
@@ -2343,6 +2436,12 @@ export const plurals: Plurals = {
     few: "{count} поблизу",
     many: "{count} поблизу",
     other: "{count} поблизу",
+  },
+  "chat.presence.members": {
+    one: "{count} учасник",
+    few: "{count} учасники",
+    many: "{count} учасників",
+    other: "{count} учасника",
   },
 
   // ---- Wallet: mints ----

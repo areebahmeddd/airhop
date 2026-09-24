@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Abrir la Política de privacidad",
   "onboarding.welcome.consent":
     "Al tocar {cta}, aceptas nuestros {terms} y nuestra {privacy}.",
+  "onboarding.welcome.transfer": "Pasar desde otro teléfono",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Generando tu identidad",
@@ -104,6 +105,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Solo el llavero del sistema",
   "onboarding.username.prop.account": "Cuenta necesaria",
   "onboarding.username.prop.account_value": "Ninguna",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Pasar desde otro teléfono",
+  "onboarding.transfer.preparing": "Preparando",
+  "onboarding.transfer.scan_heading":
+    "Escanea este código con tu teléfono antiguo",
+  "onboarding.transfer.step_open": "Abre Airhop en tu teléfono antiguo",
+  "onboarding.transfer.step_go": "Ve a {tab} y luego a {row}",
+  "onboarding.transfer.step_scan": "Apunta a este código",
+  "onboarding.transfer.network_note":
+    "Los dos teléfonos deben estar en la misma red Wi-Fi o en un punto de acceso. Nada pasa por internet.",
+  "onboarding.transfer.qr_a11y":
+    "Código de transferencia. Escanéalo con Airhop en tu teléfono antiguo.",
+  "onboarding.transfer.offline_title": "Conéctate a una red Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Pon los dos teléfonos en la misma red Wi-Fi, o activa el punto de acceso en uno y conecta el otro a él. No hace falta internet.",
+  "onboarding.transfer.incoming": "Transfiriendo a {name}",
+  "onboarding.transfer.receiving": "Recibiendo {percent}%",
+  "onboarding.transfer.saving": "Guardando en este teléfono",
+  "onboarding.transfer.releasing": "Terminando en tu teléfono antiguo",
+  "onboarding.transfer.keep_open":
+    "Mantén Airhop abierto en los dos teléfonos hasta que termine.",
+  "onboarding.transfer.check_title": "Revisa tu teléfono antiguo",
+  "onboarding.transfer.check_body":
+    "Todo está en este teléfono. Antes de seguir, comprueba que tu teléfono antiguo indica que se ha borrado, o elige Borrar este teléfono en él.",
+  "onboarding.transfer.failed_title": "La transferencia no terminó",
+  "onboarding.transfer.failed_cancelled":
+    "La transferencia se canceló en tu teléfono antiguo. No se guardó nada aquí.",
+  "onboarding.transfer.failed_interrupted":
+    "Se cortó la conexión. No se guardó nada aquí.",
+  "onboarding.transfer.failed_storage":
+    "Este teléfono no pudo guardar lo recibido, así que no se conservó nada.",
+  "onboarding.transfer.failed_incompatible":
+    "Tu teléfono antiguo tiene una versión más reciente de Airhop. Actualiza este teléfono e inténtalo de nuevo.",
+  "onboarding.transfer.failed_unavailable":
+    "Este teléfono no puede abrir una conexión de red local.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "¡Te damos la bienvenida a Airhop!",
@@ -180,6 +217,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Toca dos veces y mantén para ver más opciones",
   "chat.channels.row_hint": "Toca dos veces y mantén para ver más opciones",
   "chat.dm.you_prefix": "Tú:",
+  "chat.draft_prefix": "Borrador:",
   "chat.dm.none": "No hay mensajes directos",
   "chat.dm.none_desc":
     "Ve a la pestaña Malla y toca un par para empezar un mensaje directo cifrado.",
@@ -205,6 +243,8 @@ export const strings: Strings = {
   "chat.group_badge": "Grupo",
   "chat.more": "Más",
   "chat.no_messages": "Todavía no hay mensajes",
+  "chat.presence.nearby_none": "Nadie cerca",
+  "chat.presence.active_none": "Nadie activo",
   "chat.you": "Tú",
   "chat.a11y.channel": "Canal {name}",
   "chat.a11y.group": "Grupo {name}",
@@ -840,6 +880,8 @@ export const strings: Strings = {
     "Ahorro de batería · se busca con menos frecuencia",
   "mesh.banner.wipe_incomplete":
     "Borrado incompleto · pueden quedar datos, al reabrir se reintenta",
+  "mesh.banner.identity_elsewhere":
+    "Tu identidad también está en otro teléfono · borra el que no uses",
   "mesh.banner.wifi_off":
     "Wi-Fi desactivado · los archivos grandes se envían más despacio",
   "mesh.banner.clock_skew":
@@ -1269,9 +1311,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Lo han recibido",
   "wallet.reclaim.title": "¿Recuperar este token?",
   "wallet.reclaim.body":
-    "Los {amount} {unit} vuelven a tu saldo. Hazlo solo si el token nunca llegó a nadie: si ya tienen la cadena, quien lo canjee primero en la casa de cambio se queda el dinero, y podrían ser ellos.",
+    "Los {amount} {unit} vuelven a tu saldo, y el token que entregaste deja de funcionar en cuanto se pueda contactar con la casa de cambio. Si lo canjean antes, se lo quedan.",
   "wallet.reclaim.keep": "Dejar pendiente",
   "wallet.reclaim.confirm": "Recuperar",
+  "wallet.reclaim.claimed_title": "Ya lo canjearon",
+  "wallet.reclaim.claimed_body":
+    "La casa de cambio indica que este token ya se canjeó, así que los {amount} {unit} les llegaron y no volvió nada a tu saldo.",
   "wallet.copied.token_body":
     "El token está en tu portapapeles. Sigue reservado aquí hasta que lo marques como entregado, así que puedes volver a pegarlo si el primer intento falla.",
   "wallet.copied.phrase_body":
@@ -1299,6 +1344,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Recuperar este token en tu saldo",
   "wallet.activity.title": "Actividad",
   "wallet.activity.none": "Todavía nada",
+  "wallet.activity.none_hint":
+    "¿Nuevo en ecash? Toca {help} arriba para ver cómo funciona.",
   "wallet.activity.show_fewer": "Mostrar menos pagos",
   "wallet.activity.show_less": "Mostrar menos",
   "wallet.activity.received_unconfirmed": "Recibido, sin confirmar",
@@ -1348,7 +1395,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Los pagos bloqueados no se pueden recuperar: ahora solo su clave puede gastar estas monedas.",
   "wallet.pay.reclaimable":
-    "Se puede recuperar desde la pestaña Cartera hasta que confirmes que llegó.",
+    "Se puede recuperar desde Actividad hasta que confirmes que llegó.",
   "wallet.pay.why": "Se envió así porque {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} para {name}",
   "wallet.pay.thread_receipt":
@@ -2103,14 +2150,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "Chats e historial",
   "settings.transfer.chats_desc":
     "Conversaciones, grupos y los canales a los que te has unido",
+  "settings.transfer.chats_without": "Tus salas y grupos, sin sus mensajes",
   "settings.transfer.wallet": "Saldo de la cartera",
   "settings.transfer.wallet_desc": "Ecash e historial de transacciones",
   "settings.transfer.title": "Pasar a un teléfono nuevo",
   "settings.transfer.desc":
     "Lleva tu identidad, tus chats y tu cartera a otro dispositivo",
-  "settings.transfer.coming_soon_a11y": "Pasar a un teléfono nuevo, muy pronto",
-  "settings.transfer.body":
-    "Junta los dos teléfonos y pásalo todo por Bluetooth. Nada atraviesa un servidor, así que funciona sin internet.",
+  "settings.transfer.intro":
+    "En el teléfono nuevo, abre Airhop y elige Pasar desde otro teléfono. Los dos teléfonos deben estar en la misma red Wi-Fi o en un punto de acceso, no hace falta internet.",
+  "settings.transfer.erase_note":
+    "En cuanto el teléfono nuevo lo tenga todo, este teléfono se borra. Las fotos y los archivos no se pasan.",
+  "settings.transfer.auth_prompt":
+    "Confirma que eres tú para pasar tu identidad",
+  "settings.transfer.scan_title": "Escanea el código de tu teléfono nuevo",
+  "settings.transfer.aim":
+    "Apunta con la cámara al código de tu teléfono nuevo",
+  "settings.transfer.wrong_code":
+    "Ese es un código de contacto. Escanea el código de tu teléfono nuevo.",
+  "settings.transfer.camera_off_body":
+    "Activa el acceso a la cámara en los ajustes para escanear el código de tu teléfono nuevo.",
+  "settings.transfer.confirm_title": "¿Pasar a este teléfono?",
+  "settings.transfer.confirm_body":
+    "Todo lo que hay aquí pasa al teléfono que muestra este código. Cuando llegue, este teléfono se borra.",
+  "settings.transfer.confirm_cta": "Pasar",
+  "settings.transfer.connecting": "Conectando con tu teléfono nuevo",
+  "settings.transfer.connecting_hint":
+    "Si este teléfono pide buscar dispositivos en tu red local, permítelo.",
+  "settings.transfer.sending": "Transfiriendo {percent}%",
+  "settings.transfer.keep_open":
+    "Mantén Airhop abierto en los dos teléfonos hasta que termine.",
+  "settings.transfer.finishing": "Terminando en tu teléfono nuevo",
+  "settings.transfer.erasing": "Borrando este teléfono",
+  "settings.transfer.done_title": "Transferido",
+  "settings.transfer.done_body":
+    "Tu identidad ya está en tu teléfono nuevo, y este teléfono se ha borrado.",
+  "settings.transfer.failed_title": "La transferencia no terminó",
+  "settings.transfer.failed_unreachable":
+    "No se pudo contactar con tu teléfono nuevo. Pon los dos teléfonos en la misma red Wi-Fi, o activa el punto de acceso en uno y conecta el otro a él.",
+  "settings.transfer.failed_permission":
+    "Airhop necesita acceso a la red local para contactar con tu teléfono nuevo. Permítelo en los ajustes e inténtalo de nuevo.",
+  "settings.transfer.failed_wrong_phone":
+    "El teléfono que respondió no es el del código que escaneaste.",
+  "settings.transfer.failed_incompatible":
+    "Tu teléfono nuevo tiene una versión más antigua de Airhop. Actualízalo e inténtalo de nuevo.",
+  "settings.transfer.failed_cancelled":
+    "La transferencia se canceló en tu teléfono nuevo.",
+  "settings.transfer.failed_storage":
+    "Tu teléfono nuevo no pudo guardarlo todo.",
+  "settings.transfer.failed_interrupted":
+    "Se cortó la conexión antes de enviarlo todo.",
+  "settings.transfer.unchanged":
+    "No se ha movido nada y este teléfono funciona como antes.",
+  "settings.transfer.unconfirmed_title": "¿Terminó la transferencia?",
+  "settings.transfer.unconfirmed_body":
+    "Este teléfono perdió el contacto con el nuevo antes de que confirmara. Si tu teléfono nuevo muestra tu nombre, borra este teléfono. Si no, sigue usando este e inténtalo de nuevo.",
+  "settings.transfer.erase_cta": "Borrar este teléfono",
+  "settings.transfer.keep_cta": "Seguir usando este teléfono",
   "settings.qr.permission_label": "Acceso a las fotos",
   "settings.qr.permission_purpose": "guardar tu código QR",
   "settings.qr.saved": "Guardado",
@@ -2355,6 +2450,11 @@ export const plurals: Plurals = {
     one: "{count} cerca",
     many: "{count} cerca",
     other: "{count} cerca",
+  },
+  "chat.presence.members": {
+    one: "{count} miembro",
+    many: "{count} miembros",
+    other: "{count} miembros",
   },
 
   // ---- Wallet: mints ----

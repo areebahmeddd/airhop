@@ -34,6 +34,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -640,6 +641,9 @@ export default function ContactInfoSheet({
   );
 }
 
+// The info row's icon box, which its divider inset has to clear.
+const INFO_ICON_WIDTH = 18;
+
 function createStyles(Colors: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
     sheet: {
@@ -697,7 +701,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     renameBlockedNote: {
       fontSize: FontSize.xs,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
       textAlign: "center",
       paddingHorizontal: Spacing.md,
@@ -721,7 +725,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.sm,
       paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
     },
     identityLabel: {
       fontSize: FontSize.xs,
@@ -743,7 +747,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     keyBoxNote: {
       fontSize: FontSize["2xs"],
-      lineHeight: FontSize["2xs"] * 1.5,
+      lineHeight: LineHeight["2xs"],
       color: Colors.textMuted,
       marginTop: Spacing.sm,
     },
@@ -762,7 +766,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderColor: Colors.border,
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
-      gap: 4,
+      gap: Spacing.xs,
     },
     keyBoxLabel: {
       fontSize: FontSize.xs,
@@ -782,7 +786,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontFamily: FontFamily.mono,
       color: Colors.textSecondary,
       letterSpacing: 0.3,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     infoCard: {
       alignSelf: "stretch",
@@ -801,12 +805,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing.md,
     },
     infoIcon: {
-      width: 18,
+      width: INFO_ICON_WIDTH,
       alignItems: "center",
     },
     infoText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     infoLabel: {
       fontSize: FontSize.sm,
@@ -816,12 +820,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     infoSub: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: FontSize.xs * 1.4,
+      lineHeight: LineHeight.xs,
     },
     infoDivider: {
       height: StyleSheet.hairlineWidth,
       backgroundColor: Colors.border,
-      marginStart: Spacing.base + 18 + Spacing.md,
+      // Starts under the text, past the row's padding, icon and gap.
+      marginStart: Spacing.base + INFO_ICON_WIDTH + Spacing.md,
     },
     actions: {
       gap: Spacing.sm,
@@ -863,7 +868,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     ringHint: {
       fontSize: FontSize.xs,
-      lineHeight: FontSize.xs * 1.5,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
       textAlign: "center",
       paddingHorizontal: Spacing.md,

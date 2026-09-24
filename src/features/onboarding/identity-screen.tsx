@@ -11,6 +11,7 @@ import {
   Duration,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -264,12 +265,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1.5,
       borderColor: "transparent",
       borderTopColor: Colors.accent,
-      // The border token, never a hardcoded rgba(0,0,0,0.08): black on black
-      // leaves the ring's trailing arc invisible in dark mode, and the spinner
-      // reads as a single floating tick.
-      //
-      // Physical on purpose: this ring is artwork that spins, so which side
-      // carries the muted arc is a starting rotation and nothing more.
+      // The border token, not a fixed rgba: black on black hides the trailing
+      // arc in dark mode. A physical side on purpose, since it is artwork that
+      // spins.
       // eslint-disable-next-line no-restricted-syntax
       borderRightColor: Colors.border,
     },
@@ -293,7 +291,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     steps: {
       alignSelf: "stretch",

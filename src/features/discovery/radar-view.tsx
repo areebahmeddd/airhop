@@ -710,7 +710,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       position: "absolute",
       width: AVATAR_SIZE,
       alignItems: "center",
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     statusBadge: {
       position: "absolute",
@@ -720,11 +720,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.full,
       padding: 1,
     },
-    // Physical marginLeft on purpose. The radar is a polar plot of where people
-    // actually are, so it never mirrors and everything inside it is positioned
-    // in screen space. This label is 16pt wider than the avatar it names and
-    // pulled back by half that to centre over it; marginStart would flip in
-    // Arabic and push every name 8pt off its peer.
+    // Physical marginLeft on purpose: the radar maps real positions and never
+    // mirrors. The label is 16pt wider than its avatar, pulled back by half to
+    // centre over it.
     peerLabel: {
       fontSize: FontSize["2xs"],
       color: Colors.textMuted,

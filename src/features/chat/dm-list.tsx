@@ -12,6 +12,7 @@ import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
+import { loadDraft } from "@store/composer-drafts";
 import { isVerified, useContactsStore } from "@store/contacts-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
@@ -241,6 +242,8 @@ export default function DmList({
           const username = resolveDisplayName(peerID);
           const msgs = messages[item] ?? [];
           const last = msgs[msgs.length - 1];
+          // One line, as a preview is: newlines and runs of spaces collapse.
+          const draft = loadDraft(item).replace(/\s+/g, " ").trim();
           const peerEntry = peerMap.get(peerID);
           const isOnline =
             peerEntry !== undefined &&
@@ -263,9 +266,11 @@ export default function DmList({
               : null,
             isMuted ? t("chat.a11y.muted") : null,
             isPinned ? t("chat.a11y.pinned") : null,
-            last
-              ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
-              : T("chat.no_messages"),
+            draft.length > 0
+              ? `${T("chat.draft_prefix")} ${draft}`
+              : last
+                ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
+                : T("chat.no_messages"),
             timeLabel,
           ]
             .filter((part) => part !== null)
@@ -339,7 +344,14 @@ export default function DmList({
                   </View>
                 </View>
                 <View style={styles.rowBottom}>
-                  {last ? (
+                  {draft.length > 0 ? (
+                    <Text style={styles.preview} numberOfLines={1}>
+                      <Text style={styles.previewDraft}>
+                        {T("chat.draft_prefix")}{" "}
+                      </Text>
+                      {draft}
+                    </Text>
+                  ) : last ? (
                     <Text style={styles.preview} numberOfLines={1}>
                       {last.isMine ? (
                         <Text style={styles.previewSender}>
@@ -666,6 +678,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     previewSender: {
       color: Colors.textMuted,
     },
+    previewDraft: {
+      color: Colors.textPrimary,
+      fontWeight: FontWeight.semibold,
+    },
     previewEmpty: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
@@ -701,7 +717,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: 72,
       alignItems: "center",
       justifyContent: "center",
-      gap: 4,
+      gap: Spacing.xs,
       backgroundColor: Colors.border,
     },
     swipeActionText: {
@@ -725,16 +741,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
     },
-    // Two grouped boxes: neutral actions in one card, destructive in another, so
-    // a mis-tap cannot cross from Mute into Block. Rows are transparent; the card
-    // owns the background and the rounded corners (overflow clips the rows to the
-    // radius).
-    //
-    // The "-Danger" halves of all three of these were byte-identical copies of
-    // their neutral counterparts, kept alive by a comment promising "a solid red
-    // card" that the code never delivered. What separates the destructive group
-    // is being a separate box with red content in it, and that is what these
-    // three styles plus moreRowTextDanger now say, once each.
+    // Two boxes, neutral actions and destructive ones, so a mis-tap cannot
+    // cross from Mute into Block. Overflow clips the rows to the corners.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,

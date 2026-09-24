@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop använder mikrofonen för att spela in röstmeddelanden och för att bära live-röst till peers i närheten.";
 "NSPhotoLibraryUsageDescription" = "Airhop använder ditt fotobibliotek för att dela bilder och videor över meshen.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop sparar foton och videor i ditt fotobibliotek när du väljer att spara något och när du laddar ner din QR-kod.";
+"NSFaceIDUsageDescription" = "Airhop använder Face ID för att bekräfta att det är du innan din identitet flyttas till en ny telefon.";
 "NSLocationWhenInUseUsageDescription" = "Airhop använder din ungefärliga plats för att placera dig i områdeskanaler i närheten (kvarter, stad, region). Din exakta position lämnar aldrig din enhet.";

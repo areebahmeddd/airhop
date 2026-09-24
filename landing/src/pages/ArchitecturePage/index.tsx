@@ -627,6 +627,17 @@ export default function ArchitecturePage() {
                 local nickname for their conversations. It changes only the local display label,
                 never the cryptographic identity.
               </p>
+              <p>
+                <strong className="text-ink">A new phone gets the keys, not a copy.</strong> The new
+                phone shows a QR code, the old one scans it after Face ID or its passcode, and
+                everything crosses one encrypted connection over the same Wi-Fi or a hotspot. The{" "}
+                <TextLink href="https://noiseprotocol.org/noise.html">Noise XX</TextLink> handshake
+                is pinned to the key in the code, so no other device on the network can stand in.
+                The keys are identical, so the peer ID, name and safety numbers are too, and
+                contacts stay verified without doing anything. Once the new phone confirms it has
+                everything, the old one erases itself, and if both ever run at once, each warns that
+                the identity is on another phone.
+              </p>
             </Section>
 
             <Section
@@ -968,8 +979,8 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong>{" "}
                 Triple-tapping the logo zeroizes keys in memory, deletes every Keychain and Keystore
                 entry, clears all MMKV partitions, and deletes the app sandbox, in under a second.
-                The wallet partition gets a full delete, not a clear, because a file whose key has
-                just been destroyed cannot be reliably reopened.
+                The wallet file is emptied and its key destroyed, so what stays on disk cannot be
+                read.
               </p>
             </Section>
 
@@ -1482,10 +1493,11 @@ export default function ArchitecturePage() {
                 shown as unconfirmed on its own line, not folded silently into your balance.
                 <br />
                 <br />
-                <strong className="text-ink">Reclaiming is a race.</strong> An undelivered send can
-                be reclaimed because the coins were reserved, not deleted, but if the recipient
-                already holds the token string, whoever reaches the mint first keeps the money. The
-                app says so before you tap.
+                <strong className="text-ink">Reclaiming settles at the mint.</strong> An undelivered
+                send can be reclaimed because the coins were reserved, not deleted. Online, the
+                coins are swapped at once, so the token you handed out stops working, and if the
+                recipient redeemed it first the app tells you. Offline, they come back unconfirmed
+                until the mint can be asked.
               </Note>
 
               <p>
@@ -1786,6 +1798,10 @@ export default function ArchitecturePage() {
                     "Connection slots reclaimed from peers that never announce",
                   ],
                   ["Device seizure", "Panic wipe, keys in hardware-backed storage"],
+                  [
+                    "Moving to a new phone",
+                    "Owner check first, a handshake pinned to the scanned code, and the old phone erased once the new one has everything",
+                  ],
                   [
                     "Cloud backups",
                     "Nothing is backed up or copied to a new phone by the OS, so an iCloud or Google backup holds no chats, contacts or keys",

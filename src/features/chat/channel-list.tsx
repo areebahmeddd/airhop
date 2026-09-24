@@ -18,6 +18,7 @@ import {
 import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
+import { loadDraft } from "@store/composer-drafts";
 import { useGroupStore } from "@store/group-store";
 import { usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
@@ -386,6 +387,8 @@ export default function ChannelList({
   ): React.JSX.Element {
     const msgs = messages[item] ?? [];
     const last = msgs[msgs.length - 1];
+    // One line, as a preview is: newlines and runs of spaces collapse.
+    const draft = loadDraft(item).replace(/\s+/g, " ").trim();
     const unread = unreadCounts[item] ?? 0;
     // A teleported cell (geohash:<gh>) is a location channel keyed by a fixed
     // geohash. It has no CHANNEL_SCOPE entry, so its scope line is derived from
@@ -420,18 +423,17 @@ export default function ChannelList({
     const groupName = isGroup
       ? useGroupStore.getState().nameForChannel(item)
       : undefined;
-    // Count yourself. A member count answers "who is in this room", and you are
-    // one of them, as the member sheet counts (it renders a You row) and every
-    // messenger counts a participant list. Applied to both kinds so the row,
-    // the thread header and the sheet agree.
-    //
-    // Not the same question the Mesh tab answers: "peers in range" is a count
-    // of other devices this radio can reach, and it stays exclusive.
-    const presenceCount = (isGeo ? (geoCounts[item] ?? 0) : peerCount) + 1;
-    const presenceText = TP(
-      isGeo ? "chat.presence.active" : "chat.presence.nearby",
-      presenceCount,
-    );
+    // Others only. "Nearby" and "active" say who else can hear you, as the
+    // Mesh tab and bitchat count them; alone, the row says so rather than
+    // "1 nearby". Rosters (groups, a private channel's members) count you.
+    const presenceCount = isGeo ? (geoCounts[item] ?? 0) : peerCount;
+    const presenceText =
+      presenceCount === 0
+        ? T(isGeo ? "chat.presence.active_none" : "chat.presence.nearby_none")
+        : TP(
+            isGeo ? "chat.presence.active" : "chat.presence.nearby",
+            presenceCount,
+          );
 
     // Formatted once for both the visible timestamp and the label below: each
     // call builds several Dates, on the app's longest list.
@@ -448,9 +450,11 @@ export default function ChannelList({
       unread > 0 ? tPlural("chat.a11y.unread", unread) : null,
       isMuted ? t("chat.a11y.muted") : null,
       isPinned ? t("chat.a11y.pinned") : null,
-      last
-        ? `${last.isMine ? t("chat.you") : last.senderNickname}: ${messagePreviewText(last)}`
-        : t("chat.no_messages"),
+      draft.length > 0
+        ? `${t("chat.draft_prefix")} ${draft}`
+        : last
+          ? `${last.isMine ? t("chat.you") : last.senderNickname}: ${messagePreviewText(last)}`
+          : t("chat.no_messages"),
       timeLabel,
     ]
       .filter((part) => part !== null)
@@ -522,7 +526,14 @@ export default function ChannelList({
 
           {/* Foot line: preview + unread badge */}
           <View style={styles.channelRowFoot}>
-            {last ? (
+            {draft.length > 0 ? (
+              <Text style={styles.channelPreview} numberOfLines={1}>
+                <Text style={styles.channelPreviewDraft}>
+                  {T("chat.draft_prefix")}{" "}
+                </Text>
+                {draft}
+              </Text>
+            ) : last ? (
               <Text style={styles.channelPreview} numberOfLines={1}>
                 <Text style={styles.channelPreviewSender}>
                   {last.isMine ? t("chat.you") : last.senderNickname}:{" "}
@@ -851,15 +862,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
-
-    // No justifyContent: "space-between". With a variable number of children
-    // (title, optional badge, chevron) space-between would spread space across
-    // ALL of them instead of just pushing the chevron to the far edge.
-    // sectionHeaderSpacer (flex: 1) does that job instead, so the title always
-    // sits flush at the same start inset (ROW_INSET) as a channel row's "#".
-    // paddingBottom is md, not sm: the header is tappable (it collapses the
-    // section) and sm leaves it under MIN_TOUCH. hitSlop is no use here, since
-    // it would reach into the first row beneath.
+    // A spacer, not space-between, pushes the chevron to the end, so the title
+    // stays at ROW_INSET beside an optional badge. Bottom padding is md so the
+    // tappable header reaches MIN_TOUCH; hitSlop would reach into the first row.
     sectionHeader: {
       flexDirection: "row",
       alignItems: "center",
@@ -884,7 +889,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: 16,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 4,
+      paddingHorizontal: Spacing.xs,
       marginStart: Spacing.xs,
     },
     sectionBadgeText: {
@@ -899,29 +904,22 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-
-    // Same ROW_INSET as sectionHeader (above), applied directly on this
-    // full-bleed Pressable so its background spans edge to edge while its
-    // content still starts flush with the section title above it.
-    // No per-row background, just flat rows directly on the screen background,
-    // divided only by the hairline separator below. Matches the WhatsApp
-    // chat-list look rather than a "card per row" treatment.
+    // Full-bleed, so the pressed background spans the width while the content
+    // lines up with the section title. Flat rows split by hairlines, not cards.
     channelRow: {
       flexDirection: "row",
       alignItems: "center",
       paddingHorizontal: ROW_INSET,
-      paddingVertical: Spacing.md + 2,
+      paddingVertical: Spacing["md-base"],
       minHeight: 72,
     },
-    // The one press treatment for a row, shared by this list's channel rows
-    // and its action sheet. See PRESSED_OPACITY in ui/theme.
+    // Shared by the rows and the More sheet, so both press the same way.
     rowPressed: {
       backgroundColor: Colors.surfacePressed,
     },
-    // Single child of channelRow, so no `gap` here: it would be a no-op.
     channelRowBody: {
       flex: 1,
-      gap: Spacing.xs + 2,
+      gap: Spacing["xs-sm"],
     },
     channelRowHead: {
       flexDirection: "row",
@@ -931,7 +929,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     channelNameGroup: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: Spacing.xs,
       flex: 1,
       marginEnd: Spacing.sm,
       overflow: "hidden",
@@ -974,6 +972,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     channelPreviewSender: {
       color: Colors.textMuted,
     },
+    channelPreviewDraft: {
+      color: Colors.textPrimary,
+      fontWeight: FontWeight.semibold,
+    },
     channelPreviewEmpty: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
@@ -998,7 +1000,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: StyleSheet.hairlineWidth,
       backgroundColor: Colors.border,
     },
-
     swipeActions: {
       flexDirection: "row",
       height: "100%",
@@ -1007,7 +1008,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: 72,
       alignItems: "center",
       justifyContent: "center",
-      gap: 4,
+      gap: Spacing.xs,
       backgroundColor: Colors.border,
     },
     swipeActionText: {
@@ -1015,13 +1016,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textSecondary,
       fontWeight: FontWeight.medium,
     },
-
-    // Tight, boxed group, not spread out with the sheet's default gap, which
-    // reads as loose and disconnected for a same-purpose action list. Rows are
-    // transparent; the card owns the background and the rounded corners
-    // (overflow clips the rows to the radius). Leave uses the same box: what
-    // sets it apart is being a separate box, with the red on its icon and
-    // label rather than the card.
+    // One tight box per group of actions; overflow clips the rows to its
+    // corners. Leave gets a box of its own, red on its icon and label only.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,
@@ -1033,8 +1029,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       paddingVertical: Spacing.md,
       paddingHorizontal: Spacing.base,
-      // Padding alone leaves the row under 44pt, and every action here is one
-      // tap, several of them destructive.
+      // Padding alone leaves the row under 44pt.
       minHeight: MIN_TOUCH,
     },
     moreDivider: {
@@ -1050,7 +1045,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     moreRowTextDanger: {
       color: Colors.danger,
     },
-
     showMoreBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -1065,7 +1059,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.medium,
       color: Colors.textMuted,
     },
-
     ownEmptyHint: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
@@ -1075,7 +1068,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.accent,
       fontWeight: FontWeight.semibold,
     },
-
     modalSheet: {
       paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.xl,

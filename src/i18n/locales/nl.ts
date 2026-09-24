@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Privacybeleid openen",
   "onboarding.welcome.consent":
     "Door op {cta} te tikken ga je akkoord met onze {terms} en ons {privacy}.",
+  "onboarding.welcome.transfer": "Overzetten van een andere telefoon",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Je identiteit wordt aangemaakt",
@@ -106,6 +107,41 @@ export const strings: Strings = {
     "Alleen de sleutelhanger van het systeem",
   "onboarding.username.prop.account": "Account nodig",
   "onboarding.username.prop.account_value": "Geen",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Overzetten van een andere telefoon",
+  "onboarding.transfer.preparing": "Voorbereiden",
+  "onboarding.transfer.scan_heading": "Scan deze code met je oude telefoon",
+  "onboarding.transfer.step_open": "Open Airhop op je oude telefoon",
+  "onboarding.transfer.step_go": "Ga naar {tab} en dan naar {row}",
+  "onboarding.transfer.step_scan": "Richt hem op deze code",
+  "onboarding.transfer.network_note":
+    "Beide telefoons moeten op hetzelfde Wi-Fi-netwerk of een hotspot zitten. Er gaat niets via internet.",
+  "onboarding.transfer.qr_a11y":
+    "Overzetcode. Scan hem met Airhop op je oude telefoon.",
+  "onboarding.transfer.offline_title": "Verbind met Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Zet beide telefoons op hetzelfde Wi-Fi-netwerk, of zet op de ene de hotspot aan en verbind de andere daarmee. Geen internet nodig.",
+  "onboarding.transfer.incoming": "{name} wordt overgezet",
+  "onboarding.transfer.receiving": "Ontvangen {percent}%",
+  "onboarding.transfer.saving": "Opslaan op deze telefoon",
+  "onboarding.transfer.releasing": "Afronden op je oude telefoon",
+  "onboarding.transfer.keep_open":
+    "Houd Airhop op beide telefoons open tot dit klaar is.",
+  "onboarding.transfer.check_title": "Kijk op je oude telefoon",
+  "onboarding.transfer.check_body":
+    "Alles staat op deze telefoon. Controleer voordat je verdergaat of je oude telefoon meldt dat hij gewist is, of kies daar Deze telefoon wissen.",
+  "onboarding.transfer.failed_title": "Overzetten niet voltooid",
+  "onboarding.transfer.failed_cancelled":
+    "Het overzetten is geannuleerd op je oude telefoon. Hier is niets opgeslagen.",
+  "onboarding.transfer.failed_interrupted":
+    "De verbinding is weggevallen. Hier is niets opgeslagen.",
+  "onboarding.transfer.failed_storage":
+    "Deze telefoon kon niet opslaan wat er binnenkwam, dus er is niets bewaard.",
+  "onboarding.transfer.failed_incompatible":
+    "Op je oude telefoon draait een nieuwere Airhop. Werk deze telefoon bij en probeer het opnieuw.",
+  "onboarding.transfer.failed_unavailable":
+    "Deze telefoon kan geen verbinding via het lokale netwerk openen.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Welkom bij Airhop!",
@@ -181,6 +217,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Tik twee keer en houd vast voor meer opties",
   "chat.channels.row_hint": "Tik twee keer en houd vast voor meer opties",
   "chat.dm.you_prefix": "Jij:",
+  "chat.draft_prefix": "Concept:",
   "chat.dm.none": "Geen directe berichten",
   "chat.dm.none_desc":
     "Ga naar het Mesh-tabblad en tik op een peer om een versleuteld direct bericht te beginnen.",
@@ -206,6 +243,8 @@ export const strings: Strings = {
   "chat.group_badge": "Groep",
   "chat.more": "Meer",
   "chat.no_messages": "Nog geen berichten",
+  "chat.presence.nearby_none": "Niemand in de buurt",
+  "chat.presence.active_none": "Niemand actief",
   "chat.you": "Jij",
   "chat.a11y.channel": "Kanaal {name}",
   "chat.a11y.group": "Groep {name}",
@@ -840,6 +879,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Batterijbesparing · minder vaak scannen",
   "mesh.banner.wipe_incomplete":
     "Wissen niet afgemaakt · er kan wat data over zijn, opnieuw openen probeert het nog eens",
+  "mesh.banner.identity_elsewhere":
+    "Je identiteit staat ook op een andere telefoon · wis de telefoon die je niet gebruikt",
   "mesh.banner.wifi_off": "Wi-Fi uit · grote bestanden gaan langzamer",
   "mesh.banner.clock_skew":
     "De klok van deze telefoon klopt niet · zet datum en tijd op automatisch",
@@ -1265,9 +1306,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Ze hebben het",
   "wallet.reclaim.title": "Dit token terugnemen?",
   "wallet.reclaim.body":
-    "De {amount} {unit} gaat terug naar je saldo. Doe dit alleen als het token nooit iemand heeft bereikt: hebben ze de reeks al, dan houdt degene die hem als eerste bij de mint inwisselt het geld, en dat kunnen zij zijn.",
+    "De {amount} {unit} gaat terug naar je saldo, en het token dat je hebt doorgegeven werkt niet meer zodra de mint bereikbaar is. Wisselen ze het eerder in, dan blijft het geld van hen.",
   "wallet.reclaim.keep": "In afwachting laten",
   "wallet.reclaim.confirm": "Terugnemen",
+  "wallet.reclaim.claimed_title": "Ze hebben het al ingewisseld",
+  "wallet.reclaim.claimed_body":
+    "Volgens de mint is dit token al ingewisseld, dus de {amount} {unit} is bij hen aangekomen en er is niets naar je saldo teruggegaan.",
   "wallet.copied.token_body":
     "Het token staat op je klembord. Het blijft hier apart gezet tot je het als afgeleverd markeert, dus je kunt het opnieuw plakken als de eerste poging mislukt.",
   "wallet.copied.phrase_body":
@@ -1292,6 +1336,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Dit token terugnemen in je saldo",
   "wallet.activity.title": "Activiteit",
   "wallet.activity.none": "Nog niets",
+  "wallet.activity.none_hint":
+    "Nieuw met ecash? Tik hierboven op {help} om te zien hoe het werkt.",
   "wallet.activity.show_fewer": "Minder betalingen tonen",
   "wallet.activity.show_less": "Minder tonen",
   "wallet.activity.received_unconfirmed": "Ontvangen, niet bevestigd",
@@ -1341,7 +1387,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Vastgezette betalingen kun je niet terugnemen: alleen hun sleutel kan deze munten nu nog uitgeven.",
   "wallet.pay.reclaimable":
-    "Je kunt het terugnemen vanaf het Portemonnee-tabblad tot je bevestigt dat het is aangekomen.",
+    "Je kunt het terugnemen via Activiteit tot je bevestigt dat het is aangekomen.",
   "wallet.pay.why": "Zo verstuurd omdat {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} naar {name}",
   "wallet.pay.thread_receipt":
@@ -2090,15 +2136,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "Chats en geschiedenis",
   "settings.transfer.chats_desc":
     "Gesprekken, groepen en de kanalen waar je in zit",
+  "settings.transfer.chats_without":
+    "Je ruimtes en groepen, zonder hun berichten",
   "settings.transfer.wallet": "Portemonneesaldo",
   "settings.transfer.wallet_desc": "Ecash en transactiegeschiedenis",
   "settings.transfer.title": "Overzetten naar een nieuwe telefoon",
   "settings.transfer.desc":
     "Verhuis je identiteit, chats en portemonnee naar een ander toestel",
-  "settings.transfer.coming_soon_a11y":
-    "Overzetten naar een nieuwe telefoon, binnenkort",
-  "settings.transfer.body":
-    "Houd de twee telefoons bij elkaar en zet alles over via Bluetooth. Er gaat niets langs een server, dus het werkt zonder internet.",
+  "settings.transfer.intro":
+    "Open Airhop op de nieuwe telefoon en kies Overzetten van een andere telefoon. Beide telefoons moeten op hetzelfde Wi-Fi-netwerk of een hotspot zitten, internet is niet nodig.",
+  "settings.transfer.erase_note":
+    "Zodra de nieuwe telefoon alles heeft, wordt deze telefoon gewist. Foto’s en bestanden gaan niet mee.",
+  "settings.transfer.auth_prompt":
+    "Bevestig dat jij het bent om je identiteit over te zetten",
+  "settings.transfer.scan_title": "Scan de code op je nieuwe telefoon",
+  "settings.transfer.aim": "Richt de camera op de code op je nieuwe telefoon",
+  "settings.transfer.wrong_code":
+    "Dat is een contactcode. Scan de code op je nieuwe telefoon.",
+  "settings.transfer.camera_off_body":
+    "Zet cameratoegang aan in de instellingen om de code op je nieuwe telefoon te scannen.",
+  "settings.transfer.confirm_title": "Overzetten naar deze telefoon?",
+  "settings.transfer.confirm_body":
+    "Alles hier gaat naar de telefoon die deze code toont. Zodra het er is, wordt deze telefoon gewist.",
+  "settings.transfer.confirm_cta": "Overzetten",
+  "settings.transfer.connecting": "Verbinden met je nieuwe telefoon",
+  "settings.transfer.connecting_hint":
+    "Als deze telefoon vraagt om apparaten op je lokale netwerk te zoeken, sta dat toe.",
+  "settings.transfer.sending": "Overzetten {percent}%",
+  "settings.transfer.keep_open":
+    "Houd Airhop op beide telefoons open tot dit klaar is.",
+  "settings.transfer.finishing": "Afronden op je nieuwe telefoon",
+  "settings.transfer.erasing": "Deze telefoon wordt gewist",
+  "settings.transfer.done_title": "Overgezet",
+  "settings.transfer.done_body":
+    "Je identiteit staat nu op je nieuwe telefoon, en deze telefoon is gewist.",
+  "settings.transfer.failed_title": "Overzetten niet voltooid",
+  "settings.transfer.failed_unreachable":
+    "Je nieuwe telefoon is niet bereikbaar. Zet beide telefoons op hetzelfde Wi-Fi-netwerk, of zet op de ene de hotspot aan en verbind de andere daarmee.",
+  "settings.transfer.failed_permission":
+    "Airhop heeft toegang tot het lokale netwerk nodig om je nieuwe telefoon te bereiken. Sta het toe in de instellingen en probeer het opnieuw.",
+  "settings.transfer.failed_wrong_phone":
+    "De telefoon die antwoordde is niet de telefoon waarvan je de code hebt gescand.",
+  "settings.transfer.failed_incompatible":
+    "Op je nieuwe telefoon draait een oudere Airhop. Werk hem bij en probeer het opnieuw.",
+  "settings.transfer.failed_cancelled":
+    "Het overzetten is geannuleerd op je nieuwe telefoon.",
+  "settings.transfer.failed_storage":
+    "Je nieuwe telefoon kon niet alles opslaan.",
+  "settings.transfer.failed_interrupted":
+    "De verbinding viel weg voordat alles was verstuurd.",
+  "settings.transfer.unchanged":
+    "Er is niets verplaatst, en deze telefoon werkt zoals eerst.",
+  "settings.transfer.unconfirmed_title": "Is het overzetten klaar?",
+  "settings.transfer.unconfirmed_body":
+    "Deze telefoon verloor het contact met je nieuwe telefoon voordat die het bevestigde. Toont je nieuwe telefoon je naam, wis dan deze telefoon. Zo niet, blijf deze gebruiken en probeer het opnieuw.",
+  "settings.transfer.erase_cta": "Deze telefoon wissen",
+  "settings.transfer.keep_cta": "Deze telefoon blijven gebruiken",
   "settings.qr.permission_label": "Fototoegang",
   "settings.qr.permission_purpose": "je QR-code opslaan",
   "settings.qr.saved": "Opgeslagen",
@@ -2325,6 +2418,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} in de buurt",
     other: "{count} in de buurt",
+  },
+  "chat.presence.members": {
+    one: "{count} lid",
+    other: "{count} leden",
   },
 
   // ---- Wallet: mints ----

@@ -106,6 +106,7 @@ export const strings = {
   "onboarding.welcome.open_privacy": "Open Privacy Policy",
   "onboarding.welcome.consent":
     "By tapping {cta}, you agree to our {terms} and {privacy}.",
+  "onboarding.welcome.transfer": "Transfer from another phone",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Generating your identity",
@@ -133,6 +134,40 @@ export const strings = {
   "onboarding.username.prop.storage_value": "OS Keychain only",
   "onboarding.username.prop.account": "Account required",
   "onboarding.username.prop.account_value": "None",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Transfer from another phone",
+  "onboarding.transfer.preparing": "Getting ready",
+  "onboarding.transfer.scan_heading": "Scan this code with your old phone",
+  "onboarding.transfer.step_open": "Open Airhop on your old phone",
+  "onboarding.transfer.step_go": "Go to {tab}, then {row}",
+  "onboarding.transfer.step_scan": "Point it at this code",
+  "onboarding.transfer.network_note":
+    "Both phones need the same Wi-Fi or a hotspot. Nothing goes over the internet.",
+  "onboarding.transfer.qr_a11y":
+    "Transfer code. Scan it with Airhop on your old phone.",
+  "onboarding.transfer.offline_title": "Connect to Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Put both phones on the same Wi-Fi, or turn on the hotspot on one and join it from the other. No internet needed.",
+  "onboarding.transfer.incoming": "Transferring {name}",
+  "onboarding.transfer.receiving": "Receiving {percent}%",
+  "onboarding.transfer.saving": "Saving to this phone",
+  "onboarding.transfer.releasing": "Finishing on your old phone",
+  "onboarding.transfer.keep_open": "Keep both phones open until this finishes.",
+  "onboarding.transfer.check_title": "Check your old phone",
+  "onboarding.transfer.check_body":
+    "Everything is on this phone. Before you continue, make sure your old phone says it was erased, or choose Erase this phone on it.",
+  "onboarding.transfer.failed_title": "Transfer didn’t finish",
+  "onboarding.transfer.failed_cancelled":
+    "The transfer was canceled on your old phone. Nothing was saved here.",
+  "onboarding.transfer.failed_interrupted":
+    "The connection dropped. Nothing was saved here.",
+  "onboarding.transfer.failed_storage":
+    "This phone couldn’t save what arrived, so nothing was kept.",
+  "onboarding.transfer.failed_incompatible":
+    "Your old phone runs a newer Airhop. Update this phone, then try again.",
+  "onboarding.transfer.failed_unavailable":
+    "This phone can’t open a local network connection.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Welcome to Airhop!",
@@ -207,6 +242,7 @@ export const strings = {
   "chat.dm.row_hint": "Double tap and hold for more options",
   "chat.channels.row_hint": "Double tap and hold for more options",
   "chat.dm.you_prefix": "You:",
+  "chat.draft_prefix": "Draft:",
   "chat.dm.none": "No direct messages",
   "chat.dm.none_desc":
     "Go to the Mesh tab and tap a peer to start an encrypted DM.",
@@ -232,6 +268,8 @@ export const strings = {
   "chat.group_badge": "Group",
   "chat.more": "More",
   "chat.no_messages": "No messages yet",
+  "chat.presence.nearby_none": "No one nearby",
+  "chat.presence.active_none": "No one active",
   "chat.you": "You",
   "chat.a11y.channel": "Channel {name}",
   "chat.a11y.group": "Group {name}",
@@ -850,6 +888,8 @@ export const strings = {
   "mesh.banner.battery_saver": "Battery saver · scanning less often",
   "mesh.banner.wipe_incomplete":
     "Wipe incomplete · some data may remain, reopening retries",
+  "mesh.banner.identity_elsewhere":
+    "Your identity is on another phone too · erase the one you don’t use",
   "mesh.banner.wifi_off": "Wi-Fi off · large files send slower",
   "mesh.banner.clock_skew":
     "This phone’s clock is wrong · set the date and time to automatic",
@@ -1264,9 +1304,12 @@ export const strings = {
   "wallet.delivered.confirm": "They got it",
   "wallet.reclaim.title": "Reclaim this token?",
   "wallet.reclaim.body":
-    "The {amount} {unit} goes back into your balance. Only do this if the token never reached anyone: if they already have the string, whoever redeems it at the mint first keeps the money, and that could be them.",
+    "The {amount} {unit} goes back into your balance, and the token you handed out stops working once the mint can be reached. If they redeem it before then, it stays theirs.",
   "wallet.reclaim.keep": "Keep pending",
   "wallet.reclaim.confirm": "Reclaim",
+  "wallet.reclaim.claimed_title": "They already claimed it",
+  "wallet.reclaim.claimed_body":
+    "The mint says this token was already redeemed, so the {amount} {unit} reached them and nothing came back to your balance.",
   "wallet.copied.token_body":
     "The token is on your clipboard. It stays reserved here until you mark it delivered, so you can paste it again if the first attempt fails.",
   "wallet.copied.phrase_body":
@@ -1294,6 +1337,8 @@ export const strings = {
   "wallet.pending.reclaim_into": "Reclaim this token into your balance",
   "wallet.activity.title": "Activity",
   "wallet.activity.none": "Nothing yet",
+  "wallet.activity.none_hint":
+    "New to ecash? Tap {help} above to see how it works.",
   "wallet.activity.show_fewer": "Show fewer payments",
   "wallet.activity.show_less": "Show less",
   "wallet.activity.received_unconfirmed": "Received, unconfirmed",
@@ -1342,7 +1387,7 @@ export const strings = {
   "wallet.pay.final":
     "Locked payments cannot be reclaimed: only their key can spend these coins now.",
   "wallet.pay.reclaimable":
-    "It stays reclaimable from the Wallet tab until you confirm it arrived.",
+    "It stays reclaimable in Activity until you confirm it arrived.",
   "wallet.pay.why": "Sent this way because {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} to {name}",
   "wallet.pay.thread_receipt": "You sent {amount} {unit}, locked to their key.",
@@ -2060,14 +2105,60 @@ export const strings = {
   "settings.transfer.chats": "Chats and history",
   "settings.transfer.chats_desc":
     "Conversations, groups, and the channels you have joined",
+  "settings.transfer.chats_without":
+    "Your rooms and groups, without their messages",
   "settings.transfer.wallet": "Wallet balance",
   "settings.transfer.wallet_desc": "Ecash and transaction history",
   "settings.transfer.title": "Transfer to a new phone",
   "settings.transfer.desc":
     "Move your identity, chats, and wallet to another device",
-  "settings.transfer.coming_soon_a11y": "Transfer to a new phone, coming soon",
-  "settings.transfer.body":
-    "Hold both phones together and move everything across over Bluetooth. Nothing passes through a server, so it works with no internet.",
+  "settings.transfer.intro":
+    "On the new phone, open Airhop and choose Transfer from another phone. Both phones need the same Wi-Fi or a hotspot, not the internet.",
+  "settings.transfer.erase_note":
+    "Once the new phone has everything, this phone is erased. Photos and files aren’t transferred.",
+  "settings.transfer.auth_prompt": "Confirm it’s you to transfer your identity",
+  "settings.transfer.scan_title": "Scan the code on your new phone",
+  "settings.transfer.aim": "Point the camera at the code on your new phone",
+  "settings.transfer.wrong_code":
+    "That’s a contact code. Scan the code on your new phone.",
+  "settings.transfer.camera_off_body":
+    "Allow camera access in Settings to scan the code on your new phone.",
+  "settings.transfer.confirm_title": "Transfer to this phone?",
+  "settings.transfer.confirm_body":
+    "Everything here moves to the phone showing this code. Once it arrives, this phone is erased.",
+  "settings.transfer.confirm_cta": "Transfer",
+  "settings.transfer.connecting": "Connecting to your new phone",
+  "settings.transfer.connecting_hint":
+    "If this phone asks to find devices on your local network, allow it.",
+  "settings.transfer.sending": "Transferring {percent}%",
+  "settings.transfer.keep_open": "Keep both phones open until this finishes.",
+  "settings.transfer.finishing": "Finishing on your new phone",
+  "settings.transfer.erasing": "Erasing this phone",
+  "settings.transfer.done_title": "Transferred",
+  "settings.transfer.done_body":
+    "Your identity is on your new phone now, and this phone has been erased.",
+  "settings.transfer.failed_title": "Transfer didn’t finish",
+  "settings.transfer.failed_unreachable":
+    "Couldn’t reach your new phone. Put both phones on the same Wi-Fi, or turn on the hotspot on one and join it from the other.",
+  "settings.transfer.failed_permission":
+    "Airhop needs local network access to reach your new phone. Allow it in Settings, then try again.",
+  "settings.transfer.failed_wrong_phone":
+    "The phone that answered isn’t the one whose code you scanned.",
+  "settings.transfer.failed_incompatible":
+    "Your new phone runs an older Airhop. Update it, then try again.",
+  "settings.transfer.failed_cancelled":
+    "The transfer was canceled on your new phone.",
+  "settings.transfer.failed_storage":
+    "Your new phone couldn’t save everything.",
+  "settings.transfer.failed_interrupted":
+    "The connection dropped before everything was sent.",
+  "settings.transfer.unchanged":
+    "Nothing moved, and this phone works as before.",
+  "settings.transfer.unconfirmed_title": "Did the transfer finish?",
+  "settings.transfer.unconfirmed_body":
+    "This phone lost touch with your new one before it confirmed. If your new phone shows your name, erase this phone. If not, keep using this one and try again.",
+  "settings.transfer.erase_cta": "Erase this phone",
+  "settings.transfer.keep_cta": "Keep using this phone",
   "settings.qr.permission_label": "Photo access",
   "settings.qr.permission_purpose": "save your QR code",
   "settings.qr.saved": "Saved",
@@ -2293,6 +2384,10 @@ export const plurals = {
   "chat.presence.nearby": {
     one: "{count} nearby",
     other: "{count} nearby",
+  },
+  "chat.presence.members": {
+    one: "{count} member",
+    other: "{count} members",
   },
 
   // ---- Wallet: mints ----

@@ -30,6 +30,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { t, tPlural, useT, useTPlural } from "@i18n";
 import { chevronForward, textAlignEnd } from "@i18n/layout";
+import { useRichText } from "@i18n/rich-text";
 import { acknowledged, succeeded } from "@platform/haptics";
 import { getMeshService } from "@services/mesh-service";
 import {
@@ -38,6 +39,7 @@ import {
   describeRoute,
   payPerson,
   reclaimTokenSend,
+  settleReclaimedSend,
 } from "@services/payment-router";
 import {
   addMint as addMintService,
@@ -89,6 +91,7 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
+  LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
   Radius,
@@ -384,6 +387,9 @@ export default function WalletScreen({
   );
 
   const recent = useMemo(() => history.slice(0, 12), [history]);
+  const activityHint = useRichText("wallet.activity.none_hint", {
+    help: <Text style={styles.activityHintAccent}>?</Text>,
+  });
 
   const [showAllActivity, setShowAllActivity] = useState(false);
   const visibleActivity = showAllActivity
@@ -469,7 +475,7 @@ export default function WalletScreen({
   const { width: windowWidth } = useWindowDimensions();
   const qrSize = Math.min(
     TOKEN_QR_SIZE,
-    windowWidth - Spacing.xl * 2 - Spacing.base * 2,
+    windowWidth - 2 * (Spacing.xl + Spacing.base),
   );
 
   // Two or more means no payment can exceed the largest single mint balance.
@@ -683,8 +689,6 @@ export default function WalletScreen({
   }
 
   // Drops the reservation, forfeiting reclaim for good, so it asks first.
-  // Reclaim only returns money to the balance; the confirm belongs on the
-  // door that does not reopen.
   function markDelivered(txId: string): void {
     const tx = pending?.txId === txId ? pending : undefined;
     showAlert(
@@ -709,7 +713,7 @@ export default function WalletScreen({
     );
   }
 
-  // The transfer never landed. Puts the proofs back into the balance.
+  // Instant, even offline; the mint's half follows in settleReclaimedSend.
   function handleReclaim(tx: WalletTx | PreparedSend): void {
     // WalletTx `id` and PreparedSend `txId` are the same value.
     const txId = "txId" in tx ? tx.txId : tx.id;
@@ -724,8 +728,17 @@ export default function WalletScreen({
           text: t("wallet.reclaim.confirm"),
           style: "destructive",
           onPress: () => {
-            reclaimTokenSend(txId);
+            if (!reclaimTokenSend(txId)) return;
             setPending(null);
+            void settleReclaimedSend(txId).then((outcome) => {
+              if (outcome !== "claimed") return;
+              showAlert(
+                t("wallet.reclaim.claimed_title"),
+                t("wallet.reclaim.claimed_body", {
+                  ...amountParts(tx.amount, tx.unit),
+                }),
+              );
+            });
           },
         },
       ],
@@ -1714,8 +1727,8 @@ export default function WalletScreen({
 
       {backupRow}
 
-      {/* Always shown, so an empty wallet does not look like a lost history
-          and the tab does not reflow on the first payment. */}
+      {/* Always shown, so an empty wallet does not look like a lost history.
+          Newest first; three rows until "Show more". */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{T("wallet.activity.title")}</Text>
         {/* Unclaimed sends lead, with their actions: their proofs are
@@ -1793,9 +1806,12 @@ export default function WalletScreen({
           );
         })}
         {recent.length === 0 ? (
-          <View style={[styles.emptyCard, styles.activityEmpty]}>
-            <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
-          </View>
+          <>
+            <View style={styles.activityEmpty}>
+              <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
+            </View>
+            <Text style={styles.activityHint}>{activityHint}</Text>
+          </>
         ) : (
           <View style={styles.historyCard}>
             {visibleActivity.map((tx, index) => (
@@ -2108,18 +2124,15 @@ export default function WalletScreen({
             />
           )}
 
+          {/* The sheet's one action: filled, above the way out, as in SheetActions. */}
           <Pressable
-            style={({ pressed }) => [
-              styles.modalCancel,
-              styles.pillWithIcon,
-              pressed && styles.listRowPressed,
-            ]}
+            style={[styles.modalConfirm, styles.pillWithIcon]}
             onPress={() => switchSheet(() => setShowAddMint(true))}
             accessibilityRole="button"
             accessibilityLabel={T("wallet.mint.add")}
           >
-            <Feather name="plus" size={16} color={Colors.textPrimary} />
-            <Text style={styles.modalCancelText}>{T("wallet.mint.add")}</Text>
+            <Feather name="plus" size={16} color={Colors.textInverse} />
+            <Text style={styles.modalConfirmText}>{T("wallet.mint.add")}</Text>
           </Pressable>
           <Pressable
             style={styles.modalCancel}
@@ -2621,76 +2634,82 @@ export default function WalletScreen({
           </>
         ) : (
           <>
-            <Text style={styles.modalSubtitle}>
-              {T("wallet.ln.pay_invoice_for", {
-                ...amountParts(deposit.amount, deposit.unit),
-              })}
-            </Text>
-            {/* bech32 uppercases losslessly into QR alphanumeric mode, a
+            {/* An expired invoice cannot be paid, so none of it is offered:
+                no QR to scan, no text to copy, only a new invoice. */}
+            {!depositExpired && (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  {T("wallet.ln.pay_invoice_for", {
+                    ...amountParts(deposit.amount, deposit.unit),
+                  })}
+                </Text>
+                {/* bech32 uppercases losslessly into QR alphanumeric mode, a
                 denser code. Length checked so a long invoice falls back to
                 text instead of throwing. */}
-            {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
-              <View style={styles.qrFrame}>
-                <QRCode
-                  value={deposit.invoice.toUpperCase()}
-                  size={qrSize}
-                  ecl={TOKEN_QR_ERROR_CORRECTION}
-                  backgroundColor="#FFFFFF"
-                  color="#000000"
-                />
-              </View>
-            )}
-            {/* Head first: the `lnbc` prefix and amount are all a person can
+                {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
+                  <View style={styles.qrFrame}>
+                    <QRCode
+                      value={deposit.invoice.toUpperCase()}
+                      size={qrSize}
+                      ecl={TOKEN_QR_ERROR_CORRECTION}
+                      backgroundColor="#FFFFFF"
+                      color="#000000"
+                    />
+                  </View>
+                )}
+                {/* Head first: the `lnbc` prefix and amount are all a person can
                 check by eye. */}
-            <View style={styles.readonlyValueBox}>
-              <Text
-                style={styles.readonlyValue}
-                selectable
-                numberOfLines={4}
-                ellipsizeMode="tail"
-              >
-                {deposit.invoice}
-              </Text>
-            </View>
-            {/* Weighted, not equal: Open finishes the job on this phone and
+                <View style={styles.readonlyValueBox}>
+                  <Text
+                    style={styles.readonlyValue}
+                    selectable
+                    numberOfLines={4}
+                    ellipsizeMode="tail"
+                  >
+                    {deposit.invoice}
+                  </Text>
+                </View>
+                {/* Weighted, not equal: Open finishes the job on this phone and
                 leads, Copy serves other routes, Close walks away. */}
-            <View style={styles.generatedActions}>
-              <Pressable
-                style={styles.generatedPrimaryBtn}
-                onPress={() => void openInvoiceInWallet(deposit.invoice)}
-                accessibilityRole="button"
-                accessibilityLabel={T("wallet.ln.open_wallet")}
-              >
-                <Feather
-                  name="external-link"
-                  size={18}
-                  color={Colors.textInverse}
-                />
-                <Text style={styles.generatedPrimaryText}>
-                  {T("wallet.ln.open_wallet_short")}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.generatedActionBtn,
-                  pressed && styles.generatedActionBtnPressed,
-                ]}
-                onPress={() => copyInvoice(deposit.invoice)}
-                accessibilityRole="button"
-                accessibilityLabel={T("wallet.ln.copy_invoice")}
-              >
-                <CopyGlyph
-                  copied={invoiceCopied}
-                  size={18}
-                  color={Colors.accent}
-                />
-                <Text style={styles.generatedActionText}>
-                  {invoiceCopied
-                    ? T("common.copied")
-                    : T("wallet.ln.copy_invoice")}
-                </Text>
-              </Pressable>
-            </View>
+                <View style={styles.generatedActions}>
+                  <Pressable
+                    style={styles.generatedPrimaryBtn}
+                    onPress={() => void openInvoiceInWallet(deposit.invoice)}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("wallet.ln.open_wallet")}
+                  >
+                    <Feather
+                      name="external-link"
+                      size={18}
+                      color={Colors.textInverse}
+                    />
+                    <Text style={styles.generatedPrimaryText}>
+                      {T("wallet.ln.open_wallet_short")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.generatedActionBtn,
+                      pressed && styles.generatedActionBtnPressed,
+                    ]}
+                    onPress={() => copyInvoice(deposit.invoice)}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("wallet.ln.copy_invoice")}
+                  >
+                    <CopyGlyph
+                      copied={invoiceCopied}
+                      size={18}
+                      color={Colors.accent}
+                    />
+                    <Text style={styles.generatedActionText}>
+                      {invoiceCopied
+                        ? T("common.copied")
+                        : T("wallet.ln.copy_invoice")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            )}
             {depositExpired ? (
               <View style={styles.waitingRow}>
                 <Feather name="clock" size={16} color={Colors.textMuted} />
@@ -2713,15 +2732,6 @@ export default function WalletScreen({
               </View>
             )}
             <View style={styles.modalActions}>
-              {/* Borderless, so it does not read as a peer of the two above. */}
-              <Pressable
-                style={styles.modalDismiss}
-                onPress={() => setShowDeposit(false)}
-                accessibilityRole="button"
-                accessibilityLabel={T("common.close")}
-              >
-                <Text style={styles.modalDismissText}>{T("common.close")}</Text>
-              </Pressable>
               {depositExpired && (
                 <Pressable
                   style={styles.modalConfirm}
@@ -2738,6 +2748,15 @@ export default function WalletScreen({
                   </Text>
                 </Pressable>
               )}
+              {/* Borderless, so it does not read as a peer of the actions above. */}
+              <Pressable
+                style={styles.modalDismiss}
+                onPress={() => setShowDeposit(false)}
+                accessibilityRole="button"
+                accessibilityLabel={T("common.close")}
+              >
+                <Text style={styles.modalDismissText}>{T("common.close")}</Text>
+              </Pressable>
             </View>
           </>
         )}
@@ -3593,7 +3612,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     // The accent inverts with the theme, so text uses textInverse and dims by
     // opacity: the grey tokens are tuned for the page, not this fill.
@@ -3624,7 +3643,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize["3xl"],
       fontWeight: FontWeight.bold,
       color: Colors.textInverse,
-      lineHeight: FontSize["3xl"] * 1.1,
+      lineHeight: LineHeight["3xl"],
     },
     balanceUnit: {
       fontSize: FontSize.lg,
@@ -3707,7 +3726,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     pendingBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     pendingActions: {
       flexDirection: "row",
@@ -3758,7 +3777,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     npubRow: {
       flexDirection: "row",
@@ -3791,7 +3810,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     zapContactChip: {
       paddingHorizontal: Spacing.sm,
-      paddingVertical: 4,
+      paddingVertical: Spacing.xs,
       borderRadius: Radius.full,
       backgroundColor: Colors.surfaceRaised,
       borderWidth: 1,
@@ -3879,7 +3898,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     pill: {
       paddingHorizontal: Spacing.sm,
-      paddingVertical: 2,
+      paddingVertical: Spacing["2xs"],
       borderRadius: Radius.full,
       borderWidth: 1,
       borderColor: Colors.border,
@@ -3906,7 +3925,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     backupBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     backupWarnRow: {
       flexDirection: "row",
@@ -3920,7 +3939,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     backupActions: {
       flexDirection: "row",
@@ -3960,7 +3979,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     phraseGrid: {
       flexDirection: "row",
@@ -4021,7 +4040,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     pickInfo: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     pickTitle: {
       fontSize: FontSize.base,
@@ -4051,7 +4070,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     historyText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     historyTitle: {
       fontSize: FontSize.sm,
@@ -4117,7 +4136,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing.xs,
     },
     infoPanelIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
       flexShrink: 0,
     },
     infoPanelText: {
@@ -4132,7 +4151,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     infoPanelBody: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     infoPanelDivider: {
       height: StyleSheet.hairlineWidth,
@@ -4206,10 +4225,26 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       gap: Spacing.sm,
     },
-    // The collapsed Activity height, so the first payment causes no jump.
+    // Exactly one Activity row tall, the height of the recovery phrase row
+    // above it, rather than a box held open for rows that are not there.
+    activityHint: {
+      fontSize: FontSize.sm,
+      color: Colors.textMuted,
+      textAlign: "center",
+    },
+    activityHintAccent: {
+      color: Colors.accent,
+      fontWeight: FontWeight.semibold,
+    },
     activityEmpty: {
-      minHeight: ACTIVITY_COLLAPSED_COUNT * ACTIVITY_ROW_HEIGHT,
+      minHeight: ACTIVITY_ROW_HEIGHT,
+      alignItems: "center",
       justifyContent: "center",
+      paddingHorizontal: Spacing.base,
+      borderRadius: Radius.lg,
+      borderWidth: 1,
+      borderColor: Colors.border,
+      backgroundColor: Colors.surface,
     },
     modalTitle: {
       fontSize: FontSize.md,
@@ -4219,7 +4254,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     modalSubtitle: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     tokenInput: {
       backgroundColor: Colors.surfaceRaised,
@@ -4260,7 +4295,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontFamily: FontFamily.mono,
       letterSpacing: 0.3,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
     },
     modalActions: {
       width: "100%",
@@ -4383,7 +4418,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       textAlign: "center",
-      lineHeight: FontSize.xs * 1.6,
+      lineHeight: LineHeight.xs,
       paddingHorizontal: Spacing.sm,
     },
     generatedActions: {
@@ -4437,7 +4472,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     peerPickerInfo: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     peerPickerName: {
       fontSize: FontSize.base,

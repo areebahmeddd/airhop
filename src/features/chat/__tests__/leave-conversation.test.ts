@@ -34,6 +34,7 @@ jest.mock("@services/mesh-service", () => ({
 // Keys stand in for copy, so each assertion names the string it expects.
 jest.mock("@i18n", () => ({ t: (key: string) => key }));
 
+import { loadDraft, saveDraft } from "@store/composer-drafts";
 import {
   confirmLeaveConversation,
   leaveConversation,
@@ -67,6 +68,12 @@ describe("leaveConversation", () => {
       expect(mockRemoveChannel).toHaveBeenCalledWith(channel);
     },
   );
+
+  it("drops the conversation's unsent draft", () => {
+    saveDraft("#mesh", "never sent");
+    leaveConversation("#mesh");
+    expect(loadDraft("#mesh")).toBe("");
+  });
 
   it("clears the conversation's delivered notification", () => {
     // Tapping one afterwards would open an empty thread under its name.

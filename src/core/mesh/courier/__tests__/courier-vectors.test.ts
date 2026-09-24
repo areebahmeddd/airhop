@@ -1,28 +1,37 @@
 /**
  * @jest-environment node
  */
-// The courier wire format, asserted against the published vectors.
+// The courier wire format, checked against two published vector files.
 //
-// `docs/spec/courier-test-vectors.json` lets a second implementation be written
-// without reading this codebase. A published file nothing checks is worse than
-// none: it looks authoritative and drifts. So every value is read FROM the JSON
-// and compared against the running code.
+// `courier-test-vectors.json` is ours, so another implementation can be written
+// without reading this code. `courier-test-vectors-bitchat.json` is bitchat's,
+// kept as published. Every value is read from the files, so neither can drift
+// from the code while this suite passes.
 //
-// Three ways of getting the format wrong fail silently, each with a case below:
+// Three mistakes fail silently, each pinned below: expiry in seconds rather
+// than milliseconds, a copies TLV written at 1 rather than omitted, and a
+// recipient tag not rotated daily off the recipient's public key.
 //
-//   * expiry is milliseconds, not seconds
-//   * the copies TLV is omitted at 1, not written as 1
-//   * the recipient tag rotates daily off the recipient's PUBLIC key
-//
-// Not pinned: the Ed25519 signature bytes. Signing is randomized in some
-// implementations and deterministic in others, and both verify, so pinning them
-// would fail a correct client. The signed pre-image is what must match, and the
-// packet codec's own vectors cover it.
+// Signature bytes are not pinned: Ed25519 signing is randomized in some
+// implementations, and both forms verify. The signed pre-image is what must
+// match.
 
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "@noble/hashes/utils.js";
+import upstream from "../../../../../docs/spec/courier-test-vectors-bitchat.json";
 import vectors from "../../../../../docs/spec/courier-test-vectors.json";
 import {
+  decodePacket,
+  encodePacket,
+  Flags,
+  PacketType,
+  signPacket,
+  verifyPacket,
+  type Packet,
+} from "../../wire/packet-codec";
+import {
   computeRecipientTag,
+  decodeEnvelopePayload,
   encodeEnvelopePayload,
   ENVELOPE_TTL_MS,
 } from "../courier-store";
@@ -115,5 +124,94 @@ describe("published limits match the implementation", () => {
     // carriage, so publishing the wrong number here would produce envelopes
     // that are refused everywhere.
     expect(vectors.limits.envelopeTtlMillis).toBe(ENVELOPE_TTL_MS);
+  });
+});
+
+describe("bitchat's published vectors", () => {
+  const input = upstream.inputs;
+  const envelope = (copies: number, prekeyID?: number): Uint8Array =>
+    encodeEnvelopePayload({
+      recipientTag: hexToBytes(input.recipientTag),
+      expiryMs: input.expiryMillis,
+      copies,
+      ciphertext: hexToBytes(input.ciphertext),
+      ...(prekeyID === undefined ? {} : { prekeyID }),
+    });
+
+  it("encodes and decodes the envelope, prekey ID included", () => {
+    const { copies, prekeyID, encoded } = upstream.envelopeTLV;
+    expect(hex(envelope(copies, prekeyID))).toBe(encoded);
+    const decoded = decodeEnvelopePayload(hexToBytes(encoded));
+    expect(decoded?.copies).toBe(copies);
+    expect(decoded?.prekeyID).toBe(prekeyID);
+  });
+
+  it.each(upstream.copiesClamping.cases)(
+    "clamps a requested $requested copies to $stored rather than refusing",
+    ({ requested, stored }) => {
+      expect(decodeEnvelopePayload(envelope(requested))?.copies).toBe(stored);
+    },
+  );
+
+  it("derives the same recipient tag", () => {
+    const { epochDay, expected } = upstream.recipientTagDerivation;
+    const tag = computeRecipientTag(
+      hexToBytes(input.noiseStaticKey),
+      epochDay * 86_400_000,
+    );
+    expect(hex(tag)).toBe(expected);
+  });
+
+  // The pre-image is private to the codec, so it is checked the way the vector
+  // file says a second implementation should be: a signature made here must
+  // verify against bitchat's published pre-image under bitchat's key.
+  it("signs the same pre-image, so a bitchat carrier accepts the deposit", () => {
+    const packet: Packet = {
+      version: upstream.packetSigning.packet.version,
+      type: PacketType.COURIER_ENV,
+      ttl: upstream.packetSigning.packet.ttlOnWire,
+      flags: Flags.SIGNED,
+      senderID: hexToBytes(input.senderID),
+      recipientID: hexToBytes(input.recipientID),
+      timestamp: input.timestampMillis,
+      signature: new Uint8Array(64),
+      payload: hexToBytes(upstream.envelopeTLV.encoded),
+    };
+    const seed = hexToBytes(input.signingSeed);
+    const publicKey = ed25519.getPublicKey(seed);
+    expect(hex(publicKey)).toBe(upstream.signature.publicKey);
+
+    packet.signature = signPacket(packet, seed);
+    expect(
+      ed25519.verify(
+        packet.signature,
+        hexToBytes(upstream.packetSigning.signingPreimage),
+        publicKey,
+      ),
+    ).toBe(true);
+
+    const wire = encodePacket(packet);
+    expect(wire).toHaveLength(upstream.packetSigning.signedWireLength);
+    const received = decodePacket(wire);
+    expect(received).not.toBeNull();
+    expect(verifyPacket(received!, publicKey)).toBe(true);
+  });
+
+  it("frames the unsigned packet as published", () => {
+    const unsigned = encodePacket(
+      {
+        version: upstream.packetSigning.packet.version,
+        type: PacketType.COURIER_ENV,
+        ttl: upstream.packetSigning.packet.ttlOnWire,
+        flags: 0,
+        senderID: hexToBytes(input.senderID),
+        recipientID: hexToBytes(input.recipientID),
+        timestamp: input.timestampMillis,
+        signature: new Uint8Array(0),
+        payload: hexToBytes(upstream.envelopeTLV.encoded),
+      },
+      false,
+    );
+    expect(hex(unsigned)).toBe(upstream.packetSigning.unsignedUnpadded);
   });
 });

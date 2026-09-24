@@ -30,6 +30,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -588,7 +589,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: "rgba(255,255,255,0.75)",
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.4,
+      lineHeight: LineHeight.sm,
     },
     primaryBtn: {
       minWidth: 200,
@@ -629,7 +630,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     methodText: {
       flex: 1,
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     methodTitle: {
       fontSize: FontSize.base,

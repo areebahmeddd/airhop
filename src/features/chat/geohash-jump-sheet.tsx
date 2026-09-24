@@ -22,6 +22,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -375,13 +376,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Nudge the leading icon down so it optically centers on the first text line.
     noteIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     privacyNoteText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     inputRow: {
       flexDirection: "row",
@@ -416,9 +417,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.danger,
     },
     // ---- Saved places (bookmarks) ----
-    // flexShrink so the saved-places list yields height when the sheet is
-    // squeezed (keyboard up on a short screen) rather than pushing the Back/Go
-    // row past the sheet's maxHeight, where it would be clipped and unreachable.
+    // flexShrink, so with the keyboard up the list yields height rather than
+    // pushing Back and Go out of the clipped sheet.
     saved: {
       gap: Spacing.sm,
       flexShrink: 1,
@@ -484,7 +484,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     footNote: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
-      lineHeight: 17,
+      lineHeight: LineHeight.xs,
     },
     actions: {
       flexDirection: "row",

@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop የድምፅ መልእክቶችን ለመቅዳት እና በአቅራቢያ ላሉ አቻዎች ቀጥታ ድምፅ ለማድረስ ማይክሮፎኑን ይጠቀማል።";
 "NSPhotoLibraryUsageDescription" = "Airhop ምስሎችንና ቪዲዮዎችን በሜሹ ላይ ለመጋራት የፎቶ ቤተ-መጻሕፍትዎን ይጠቀማል።";
 "NSPhotoLibraryAddUsageDescription" = "Airhop እርስዎ ለማስቀመጥ ሲመርጡ እና የQR ኮድዎን ሲያወርዱ ፎቶዎችንና ቪዲዮዎችን ወደ ፎቶ ቤተ-መጻሕፍትዎ ያስቀምጣል።";
+"NSFaceIDUsageDescription" = "Airhop ማንነትዎን ወደ አዲስ ስልክ ከማዛወሩ በፊት እርስዎ መሆንዎን ለማረጋገጥ Face ID ን ይጠቀማል።";
 "NSLocationWhenInUseUsageDescription" = "Airhop በአቅራቢያ ባሉ የአካባቢ ሰርጦች (ብሎክ፣ ከተማ፣ ክልል) ውስጥ ሊያስቀምጥዎ ግምታዊ አካባቢዎን ይጠቀማል። ትክክለኛ ቦታዎ ከመሣሪያዎ ፈጽሞ አይወጣም።";

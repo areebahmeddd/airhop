@@ -35,9 +35,12 @@ jest.mock("expo-secure-store", () => ({
 import { KEYCHAIN_ITEMS, sweepOrphanedSecrets } from "../keychain";
 
 // Everything the sweep may touch: the registry minus the identity, which
-// onboarding is about to write and which must survive an in-flight sweep.
+// onboarding is about to write and which must survive an in-flight sweep, and
+// minus the wallet's file key, which the wallet partition is already open under.
 const ORPHANABLE = Object.values(KEYCHAIN_ITEMS).filter(
-  (item) => item !== KEYCHAIN_ITEMS.identity,
+  (item) =>
+    item !== KEYCHAIN_ITEMS.identity &&
+    item !== KEYCHAIN_ITEMS.walletEncryptionKey,
 );
 
 beforeEach(() => {
@@ -69,6 +72,20 @@ describe("sweepOrphanedSecrets", () => {
 
     expect(mockDelete).not.toHaveBeenCalledWith(KEYCHAIN_ITEMS.identity);
     expect(mockGet).not.toHaveBeenCalledWith(KEYCHAIN_ITEMS.identity);
+  });
+
+  // The partition opens at launch under this key whether or not there is an
+  // identity, so deleting it made everything written that session unreadable
+  // on the next launch: a first install lost the coins it received.
+  it("never touches the wallet's file key, which its open partition needs", async () => {
+    mockDelete.mockResolvedValue(undefined);
+    mockGet.mockResolvedValue(null);
+
+    await sweepOrphanedSecrets();
+
+    expect(mockDelete).not.toHaveBeenCalledWith(
+      KEYCHAIN_ITEMS.walletEncryptionKey,
+    );
   });
 
   // And it must not report one either: a surviving identity is exactly what a
@@ -129,7 +146,7 @@ describe("sweepOrphanedSecrets", () => {
   // one value may well release the next.
   it("attempts every item even after one is refused", async () => {
     mockDelete.mockImplementation((key) =>
-      key === KEYCHAIN_ITEMS.walletEncryptionKey
+      key === KEYCHAIN_ITEMS.walletRecoveryPhrase
         ? Promise.reject(new Error("keystore refused"))
         : Promise.resolve(),
     );

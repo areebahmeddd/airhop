@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Mở Chính sách quyền riêng tư",
   "onboarding.welcome.consent":
     "Khi chạm {cta}, bạn đồng ý với {terms} và {privacy} của chúng tôi.",
+  "onboarding.welcome.transfer": "Chuyển từ điện thoại khác",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Đang tạo danh tính của bạn",
@@ -103,6 +104,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Chỉ chuỗi khóa hệ điều hành",
   "onboarding.username.prop.account": "Cần tài khoản",
   "onboarding.username.prop.account_value": "Không",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Chuyển từ điện thoại khác",
+  "onboarding.transfer.preparing": "Đang chuẩn bị",
+  "onboarding.transfer.scan_heading": "Quét mã này bằng điện thoại cũ của bạn",
+  "onboarding.transfer.step_open": "Mở Airhop trên điện thoại cũ",
+  "onboarding.transfer.step_go": "Vào {tab}, rồi chọn {row}",
+  "onboarding.transfer.step_scan": "Hướng máy ảnh vào mã này",
+  "onboarding.transfer.network_note":
+    "Hai điện thoại cần dùng chung Wi-Fi hoặc điểm phát sóng. Không có gì đi qua Internet.",
+  "onboarding.transfer.qr_a11y":
+    "Mã chuyển dữ liệu. Hãy quét bằng Airhop trên điện thoại cũ.",
+  "onboarding.transfer.offline_title": "Kết nối Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Hãy cho hai điện thoại vào cùng một mạng Wi-Fi, hoặc bật điểm phát sóng trên một máy rồi kết nối từ máy kia. Không cần Internet.",
+  "onboarding.transfer.incoming": "Đang chuyển {name}",
+  "onboarding.transfer.receiving": "Đang nhận {percent}%",
+  "onboarding.transfer.saving": "Đang lưu vào điện thoại này",
+  "onboarding.transfer.releasing": "Đang hoàn tất trên điện thoại cũ",
+  "onboarding.transfer.keep_open":
+    "Hãy để cả hai điện thoại mở ứng dụng cho đến khi xong.",
+  "onboarding.transfer.check_title": "Kiểm tra điện thoại cũ",
+  "onboarding.transfer.check_body":
+    "Mọi thứ đã có trên điện thoại này. Trước khi tiếp tục, hãy chắc chắn điện thoại cũ báo đã xóa, hoặc chọn “Xóa điện thoại này” trên máy đó.",
+  "onboarding.transfer.failed_title": "Chưa chuyển xong",
+  "onboarding.transfer.failed_cancelled":
+    "Việc chuyển đã bị hủy trên điện thoại cũ. Chưa có gì được lưu ở đây.",
+  "onboarding.transfer.failed_interrupted":
+    "Mất kết nối. Chưa có gì được lưu ở đây.",
+  "onboarding.transfer.failed_storage":
+    "Điện thoại này không lưu được dữ liệu nhận về, nên không giữ lại gì.",
+  "onboarding.transfer.failed_incompatible":
+    "Điện thoại cũ đang chạy Airhop mới hơn. Hãy cập nhật điện thoại này rồi thử lại.",
+  "onboarding.transfer.failed_unavailable":
+    "Điện thoại này không mở được kết nối mạng nội bộ.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Chào mừng đến với Airhop!",
@@ -179,6 +215,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
   "chat.channels.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
   "chat.dm.you_prefix": "Bạn:",
+  "chat.draft_prefix": "Bản nháp:",
   "chat.dm.none": "Không có tin nhắn riêng",
   "chat.dm.none_desc":
     "Vào thẻ Mạng lưới và chạm một nút mạng để bắt đầu tin nhắn riêng được mã hóa.",
@@ -204,6 +241,8 @@ export const strings: Strings = {
   "chat.group_badge": "Nhóm",
   "chat.more": "Thêm",
   "chat.no_messages": "Chưa có tin nhắn nào",
+  "chat.presence.nearby_none": "Không có ai ở gần",
+  "chat.presence.active_none": "Không có ai đang hoạt động",
   "chat.you": "Bạn",
   "chat.a11y.channel": "Kênh {name}",
   "chat.a11y.group": "Nhóm {name}",
@@ -830,6 +869,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Tiết kiệm pin · quét thưa hơn",
   "mesh.banner.wipe_incomplete":
     "Xóa chưa xong · có thể còn sót dữ liệu, mở lại sẽ thử tiếp",
+  "mesh.banner.identity_elsewhere":
+    "Danh tính của bạn cũng có trên một điện thoại khác · hãy xóa máy bạn không dùng",
   "mesh.banner.wifi_off": "Wi-Fi đã tắt · tệp lớn gửi chậm hơn",
   "mesh.banner.clock_skew":
     "Đồng hồ của điện thoại này sai · hãy đặt ngày giờ về tự động",
@@ -1252,9 +1293,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Họ đã nhận được",
   "wallet.reclaim.title": "Thu hồi token này?",
   "wallet.reclaim.body":
-    "{amount} {unit} sẽ quay về số dư của bạn. Chỉ làm vậy nếu token chưa từng tới tay ai: nếu họ đã có chuỗi ký tự đó, ai đổi nó ở nhà đúc trước thì người đó giữ số tiền, và người đó có thể chính là họ.",
+    "{amount} {unit} sẽ quay về số dư của bạn, và token bạn đã trao đi sẽ ngừng hoạt động ngay khi kết nối được với nhà đúc. Nếu họ đổi nó trước lúc đó, số tiền vẫn thuộc về họ.",
   "wallet.reclaim.keep": "Giữ đang chờ",
   "wallet.reclaim.confirm": "Thu hồi",
+  "wallet.reclaim.claimed_title": "Họ đã đổi nó rồi",
+  "wallet.reclaim.claimed_body":
+    "Nhà đúc cho biết token này đã được đổi, nên {amount} {unit} đã tới tay họ và không có gì quay về số dư của bạn.",
   "wallet.copied.token_body":
     "Token đang nằm trên bảng nhớ tạm của bạn. Nó vẫn được giữ ở đây cho tới khi bạn đánh dấu là đã chuyển, nên bạn dán lại được nếu lần đầu không thành.",
   "wallet.copied.phrase_body":
@@ -1282,6 +1326,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Thu hồi token này về số dư của bạn",
   "wallet.activity.title": "Hoạt động",
   "wallet.activity.none": "Chưa có gì",
+  "wallet.activity.none_hint":
+    "Mới làm quen với ecash? Chạm {help} ở trên để xem cách hoạt động.",
   "wallet.activity.show_fewer": "Hiện ít khoản thanh toán hơn",
   "wallet.activity.show_less": "Thu gọn",
   "wallet.activity.received_unconfirmed": "Đã nhận, chưa xác nhận",
@@ -1330,7 +1376,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Các khoản thanh toán đã khóa thì không thu hồi được: giờ chỉ khóa của họ mới tiêu được những đồng này.",
   "wallet.pay.reclaimable":
-    "Nó vẫn thu hồi được từ thẻ Ví cho tới khi bạn xác nhận nó đã tới nơi.",
+    "Nó vẫn thu hồi được từ mục Hoạt động cho tới khi bạn xác nhận nó đã tới nơi.",
   "wallet.pay.why": "Được gửi theo cách này vì {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} cho {name}",
   "wallet.pay.thread_receipt":
@@ -2066,14 +2112,60 @@ export const strings: Strings = {
   "settings.transfer.chats": "Cuộc trò chuyện và lịch sử",
   "settings.transfer.chats_desc":
     "Các cuộc trò chuyện, nhóm và những kênh bạn đã tham gia",
+  "settings.transfer.chats_without":
+    "Các kênh và nhóm của bạn, không kèm tin nhắn",
   "settings.transfer.wallet": "Số dư ví",
   "settings.transfer.wallet_desc": "Ecash và lịch sử giao dịch",
   "settings.transfer.title": "Chuyển sang điện thoại mới",
   "settings.transfer.desc":
     "Dời danh tính, cuộc trò chuyện và ví của bạn sang một thiết bị khác",
-  "settings.transfer.coming_soon_a11y": "Chuyển sang điện thoại mới, sắp có",
-  "settings.transfer.body":
-    "Hãy để hai điện thoại sát nhau và dời mọi thứ qua Bluetooth. Không có gì đi qua máy chủ, nên nó chạy được khi không có Internet.",
+  "settings.transfer.intro":
+    "Trên điện thoại mới, mở Airhop và chọn “Chuyển từ điện thoại khác”. Hai điện thoại cần dùng chung Wi-Fi hoặc điểm phát sóng, không cần Internet.",
+  "settings.transfer.erase_note":
+    "Khi điện thoại mới đã nhận đủ mọi thứ, điện thoại này sẽ bị xóa. Ảnh và tệp không được chuyển theo.",
+  "settings.transfer.auth_prompt": "Xác nhận đó là bạn để chuyển danh tính",
+  "settings.transfer.scan_title": "Quét mã trên điện thoại mới",
+  "settings.transfer.aim": "Hướng máy ảnh vào mã trên điện thoại mới",
+  "settings.transfer.wrong_code":
+    "Đây là mã liên hệ. Hãy quét mã trên điện thoại mới.",
+  "settings.transfer.camera_off_body":
+    "Hãy cho phép truy cập máy ảnh trong Cài đặt để quét mã trên điện thoại mới.",
+  "settings.transfer.confirm_title": "Chuyển sang điện thoại này?",
+  "settings.transfer.confirm_body":
+    "Mọi thứ ở đây sẽ chuyển sang điện thoại đang hiện mã này. Khi chuyển xong, điện thoại này sẽ bị xóa.",
+  "settings.transfer.confirm_cta": "Chuyển",
+  "settings.transfer.connecting": "Đang kết nối với điện thoại mới",
+  "settings.transfer.connecting_hint":
+    "Nếu điện thoại này hỏi quyền tìm thiết bị trong mạng nội bộ, hãy cho phép.",
+  "settings.transfer.sending": "Đang chuyển {percent}%",
+  "settings.transfer.keep_open":
+    "Hãy để cả hai điện thoại mở ứng dụng cho đến khi xong.",
+  "settings.transfer.finishing": "Đang hoàn tất trên điện thoại mới",
+  "settings.transfer.erasing": "Đang xóa điện thoại này",
+  "settings.transfer.done_title": "Đã chuyển",
+  "settings.transfer.done_body":
+    "Danh tính của bạn giờ đã ở trên điện thoại mới, và điện thoại này đã bị xóa.",
+  "settings.transfer.failed_title": "Chưa chuyển xong",
+  "settings.transfer.failed_unreachable":
+    "Không kết nối được với điện thoại mới. Hãy cho hai điện thoại vào cùng một mạng Wi-Fi, hoặc bật điểm phát sóng trên một máy rồi kết nối từ máy kia.",
+  "settings.transfer.failed_permission":
+    "Airhop cần quyền truy cập mạng nội bộ để kết nối với điện thoại mới. Hãy cho phép trong Cài đặt rồi thử lại.",
+  "settings.transfer.failed_wrong_phone":
+    "Điện thoại vừa phản hồi không phải là máy có mã bạn đã quét.",
+  "settings.transfer.failed_incompatible":
+    "Điện thoại mới đang chạy Airhop cũ hơn. Hãy cập nhật máy đó rồi thử lại.",
+  "settings.transfer.failed_cancelled":
+    "Việc chuyển đã bị hủy trên điện thoại mới.",
+  "settings.transfer.failed_storage": "Điện thoại mới không lưu được mọi thứ.",
+  "settings.transfer.failed_interrupted":
+    "Mất kết nối trước khi gửi xong mọi thứ.",
+  "settings.transfer.unchanged":
+    "Chưa có gì được chuyển, và điện thoại này vẫn dùng như trước.",
+  "settings.transfer.unconfirmed_title": "Đã chuyển xong chưa?",
+  "settings.transfer.unconfirmed_body":
+    "Điện thoại này mất liên lạc với máy mới trước khi máy mới xác nhận. Nếu điện thoại mới hiện tên bạn, hãy xóa điện thoại này. Nếu không, hãy tiếp tục dùng máy này và thử lại.",
+  "settings.transfer.erase_cta": "Xóa điện thoại này",
+  "settings.transfer.keep_cta": "Tiếp tục dùng điện thoại này",
   "settings.qr.permission_label": "Quyền truy cập ảnh",
   "settings.qr.permission_purpose": "lưu mã QR của bạn",
   "settings.qr.saved": "Đã lưu",
@@ -2281,6 +2373,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "{count} ở gần",
+  },
+  "chat.presence.members": {
+    other: "{count} thành viên",
   },
 
   // ---- Wallet: mints ----

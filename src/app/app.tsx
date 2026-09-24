@@ -21,6 +21,8 @@ import { StartNewSheet } from "@features/chat/start-new-sheet";
 import PeerList from "@features/discovery/peer-list";
 import IdentityScreen from "@features/onboarding/identity-screen";
 import PermissionPrimerSheet from "@features/onboarding/permission-primer-sheet";
+import TransferInScreen from "@features/onboarding/transfer-in-screen";
+import TransferRecoveryScreen from "@features/onboarding/transfer-recovery-screen";
 import UsernameScreen from "@features/onboarding/username-screen";
 import WelcomeScreen from "@features/onboarding/welcome-screen";
 import ProfileScreen from "@features/settings/profile-screen";
@@ -64,6 +66,7 @@ import {
   initMeshService,
   type MeshService,
 } from "@services/mesh-service";
+import { clearMoveMarker, readMoveMarker } from "@services/move-marker";
 import { startNotificationPipeline } from "@services/notification-pipeline";
 import {
   configureNotifications,
@@ -129,6 +132,7 @@ import {
   FontSize,
   FontWeight,
   hitSlopFor,
+  LineHeight,
   MaxFontScale,
   PRESSED_OPACITY,
   Radius,
@@ -188,7 +192,8 @@ initI18n();
 
 // ---- Navigation types ----
 
-type OnboardingStep = "welcome" | "generating" | "reveal";
+// "transfer" replaces "generating" when the identity comes from the old phone.
+type OnboardingStep = "welcome" | "generating" | "transfer" | "reveal";
 type MainTab = "chats" | "mesh" | "wallet" | "profile";
 // A boot-triggered headless launch never mounts AppContent, so this must
 // run at module load rather than wait for it.
@@ -697,14 +702,31 @@ function AppContent(): React.JSX.Element {
   //
   // Seeded in the initialiser rather than an effect, so a launch with a wipe to
   // finish renders the wiping screen on its first frame.
-  const [wipeInProgress, setWipeInProgress] = useState(() =>
-    isPanicWipePending(),
+  //
+  // An unfinished incoming transfer is finished the same way: wiped.
+  const [wipeInProgress, setWipeInProgress] = useState(
+    () => isPanicWipePending() || readMoveMarker() === "receiving",
   );
   // The same answer, where the mount effect can read it. Seeded from the state
   // above so the marker is consulted once per launch rather than from two places
   // that could disagree, and a ref so the effect stays mount-only instead of
   // carrying a dependency it must never re-run on.
   const resumingWipe = useRef(wipeInProgress);
+  // A transfer left unresolved is asked about before anything starts (see
+  // services/move-marker). A resuming wipe clears the marker instead.
+  const [transferRecovery, setTransferRecovery] = useState<
+    "sender" | "receiver" | null
+  >(() => {
+    if (wipeInProgress) return null;
+    const marker = readMoveMarker();
+    if (marker === "sent") return "sender";
+    if (marker === "committed") return "receiver";
+    return null;
+  });
+  // The launch sequence, parked while that question is open.
+  const holdForTransfer = useRef(transferRecovery !== null);
+  const startBootRef = useRef<(() => void) | null>(null);
+  const eraseAndBootRef = useRef<(() => void) | null>(null);
   // Load JetBrains Mono in the background so it is ready the instant a user
   // picks it under Appearance. Startup is NOT gated on it: the app defaults to
   // the system monospace, so there is nothing to wait for and a missing/unlinked
@@ -716,6 +738,9 @@ function AppContent(): React.JSX.Element {
   );
   const [generatedPeerID, setGeneratedPeerID] =
     useState<string>(FALLBACK_PEER_ID);
+  // Held here so backing out of a transfer asks neither again.
+  const [welcomeAgreed, setWelcomeAgreed] = useState(false);
+  const [welcomeGreeted, setWelcomeGreeted] = useState(false);
   const [tab, setTab] = useState<MainTab>("mesh");
   // Bumped whenever the Profile tab is tapped, so tapping "You" while inside a
   // sub-screen (About, Version, ...) pops ProfileScreen back to its root, the
@@ -887,36 +912,46 @@ function AppContent(): React.JSX.Element {
         });
     };
 
+    const eraseAndBoot = (): void => {
+      void (async () => {
+        // Torn down first, as the in-session wipe does. `startBoot` has not
+        // run, but the process can outlive the Activity and still hold a mesh,
+        // and a live one keeps writing into the stores being cleared.
+        destroyMeshService();
+        let keysDestroyed = false;
+        try {
+          ({ keysDestroyed } = await panicWipe());
+        } catch {
+          // The marker is still set, so the next launch tries again. This one
+          // still has to open: an app that will not start is not a safer place
+          // to be stuck than one wiped twice.
+        }
+        // Set AFTER panicWipe, whose own store reset would otherwise clear it.
+        // The banner then stands until a launch shows it is no longer true.
+        if (!keysDestroyed) {
+          useMeshStateStore.getState().setWipeIncomplete(true);
+        }
+        setWipeInProgress(false);
+        startBoot();
+      })();
+    };
+    startBootRef.current = startBoot;
+    eraseAndBootRef.current = eraseAndBoot;
+
     // Finish a wipe the last session did not. See services/wipe-marker.
     //
     // Ahead of everything, including the identity read: nothing may start under
     // an identity this launch is about to destroy, and the mesh must not
     // advertise one.
-    if (!resumingWipe.current) {
-      startBoot();
+    if (resumingWipe.current) {
+      eraseAndBoot();
       return;
     }
-    void (async () => {
-      // Torn down first, as the in-session wipe does. `startBoot` has not run,
-      // but the process can outlive the Activity and still hold a mesh, and a
-      // live one keeps writing into the stores being cleared.
-      destroyMeshService();
-      let keysDestroyed = false;
-      try {
-        ({ keysDestroyed } = await panicWipe());
-      } catch {
-        // The marker is still set, so the next launch tries again. This one
-        // still has to open: an app that will not start is not a safer place to
-        // be stuck than one wiped twice.
-      }
-      // Set AFTER panicWipe, whose own store reset would otherwise clear it.
-      // The banner then stands until a launch shows it is no longer true.
-      if (!keysDestroyed) {
-        useMeshStateStore.getState().setWipeIncomplete(true);
-      }
-      setWipeInProgress(false);
-      startBoot();
-    })();
+    // The recovery screen resumes the launch once answered.
+    if (holdForTransfer.current) return;
+    // A send that died mid-stream moved nothing.
+    if (readMoveMarker() === "sending") clearMoveMarker();
+    startBoot();
   }, []);
 
   // Aggregate unread for the badges, muted conversations excluded (their
@@ -1457,6 +1492,40 @@ function AppContent(): React.JSX.Element {
     );
   }
 
+  // Ahead of the appReady gate, like the wiping screen: the launch waits on it.
+  if (transferRecovery !== null) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          {transferRecovery === "sender" ? (
+            <TransferRecoveryScreen
+              role="sender"
+              onErase={() => {
+                setTransferRecovery(null);
+                setWipeInProgress(true);
+                eraseAndBootRef.current?.();
+              }}
+              onKeep={() => {
+                clearMoveMarker();
+                setTransferRecovery(null);
+                startBootRef.current?.();
+              }}
+            />
+          ) : (
+            <TransferRecoveryScreen
+              role="receiver"
+              onContinue={() => {
+                clearMoveMarker();
+                setTransferRecovery(null);
+                startBootRef.current?.();
+              }}
+            />
+          )}
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  }
+
   // Render nothing until the identity check resolves (and the bundled font is
   // ready). This prevents a flash of the welcome screen for returning users on
   // every app launch, and of system-font mono text before JetBrains Mono loads.
@@ -1498,7 +1567,21 @@ function AppContent(): React.JSX.Element {
             <>
               {onboardingStep === "welcome" && (
                 <WelcomeScreen
+                  agreed={welcomeAgreed}
+                  onAgreedChange={setWelcomeAgreed}
+                  greet={!welcomeGreeted}
+                  onGreeted={() => setWelcomeGreeted(true)}
                   onContinue={() => setOnboardingStep("generating")}
+                  onTransfer={() => setOnboardingStep("transfer")}
+                />
+              )}
+              {onboardingStep === "transfer" && (
+                <TransferInScreen
+                  onCancel={() => setOnboardingStep("welcome")}
+                  onComplete={(peerID) => {
+                    setGeneratedPeerID(peerID);
+                    setOnboardingStep("reveal");
+                  }}
                 />
               )}
               {onboardingStep === "generating" && (
@@ -2053,6 +2136,21 @@ function AppContent(): React.JSX.Element {
                       // Before the first byte is destroyed, so the wiping
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
+                      onResumeMesh={() => {
+                        // Starting the mesh sets Online; keep an earlier Away.
+                        const presence =
+                          useMeshStateStore.getState().presenceStatus;
+                        loadIdentity()
+                          .then(async (id) => {
+                            if (!id) return;
+                            const nickname = peerIDToUsername(id.peerID);
+                            await startMeshWithPermissions(id, nickname);
+                            if (presence !== "online") {
+                              applyPresence(presence, nickname);
+                            }
+                          })
+                          .catch(() => {});
+                      }}
                       onWipe={() => {
                         // The mesh is already down and its keys released: the
                         // wipe does that first, before it clears anything.
@@ -2060,6 +2158,8 @@ function AppContent(): React.JSX.Element {
                         // a first-run state.
                         setWipeInProgress(false);
                         setGeneratedPeerID(FALLBACK_PEER_ID);
+                        setWelcomeAgreed(false);
+                        setWelcomeGreeted(false);
                         // Reset navigation to the fresh-start landing tab.
                         // Panic wipe is triggered from Profile, so without this
                         // the re-onboarded app reopens on the Profile screen
@@ -2254,7 +2354,7 @@ const HEADER_ICON_SIZE = 32;
 // iOS sits low on Android.
 const BADGE_DIGIT = {
   includeFontPadding: false,
-  lineHeight: FontSize["2xs"] + 2,
+  lineHeight: LineHeight["2xsTight"],
 } as const;
 
 // ---- Styles ----
@@ -2286,7 +2386,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       textAlign: "center",
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
     header: {
       flexDirection: "row",
@@ -2303,13 +2403,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
       letterSpacing: -0.2,
-      // The Wallet header packs four action pills beside this title, so a long
-      // translation overflows the row on a narrow device.
-      //
-      // Grow, because under `space-between` free space lands between the title
-      // and the controls, and an intrinsically-sized title would ellipsize with
-      // a gap beside it. Shrink 2 against the controls' 1, so an overflow costs
-      // the title more than the segment labels.
+      // The Chats header puts the Channels/Direct control and two pills beside
+      // this title. Grow, so space-between leaves no gap beside a short title;
+      // shrink 2 against the controls' 1, so a long translation costs the title.
       flexGrow: 1,
       flexShrink: 2,
       marginEnd: Spacing.sm,
@@ -2317,10 +2413,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     searchRow: {
       flexDirection: "row",
       alignItems: "center",
-      // Spacing.md, not sm. Each pill is 32pt with 6pt of slop per side, so an
-      // 8pt gap puts centres 40pt apart and overlaps adjacent 44pt touch boxes
-      // by 4, resolved by view order rather than by which is nearer the finger.
-      // On the wallet header that would put Send next to Receive.
+      // md, not sm: 32pt controls with 6pt of slop need 12pt between them, or
+      // their 44pt touch areas overlap.
       gap: Spacing.md,
       paddingHorizontal: Spacing.base,
       paddingTop: Spacing.sm,
@@ -2340,7 +2434,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.full,
-      padding: 2,
+      padding: Spacing["2xs"],
       flexShrink: 1,
       minWidth: 0,
     },
@@ -2358,11 +2452,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: "transparent",
     },
-
     segIconText: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: Spacing.xs,
     },
     // On dark the shadow is invisible and `surface` is darker than the
     // `surfaceRaised` track, so the lift inverts and the thumb recedes. The
@@ -2400,7 +2493,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     chromePressed: {
       opacity: PRESSED_OPACITY,
     },
-
     headerIconBtn: {
       width: HEADER_ICON_SIZE,
       height: HEADER_ICON_SIZE,
@@ -2419,7 +2511,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: 16,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 4,
+      paddingHorizontal: Spacing.xs,
       borderWidth: 1.5,
       borderColor: Colors.bg,
     },
@@ -2465,14 +2557,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       alignItems: "center",
       paddingBottom: Spacing.xs,
-      gap: 4,
+      gap: Spacing.xs,
     },
     tabIndicator: {
       width: 24,
       height: 3,
       borderRadius: Radius.xs,
       backgroundColor: "transparent",
-      marginBottom: 2,
+      marginBottom: Spacing["2xs"],
     },
     tabIndicatorActive: {
       backgroundColor: Colors.accent,
@@ -2518,11 +2610,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       ...BADGE_DIGIT,
     },
-    // Unread badge on the Channels/Direct segmented control, the same visual
-    // language as tabBadge, just anchored to a smaller pill instead of a tab icon.
-    // 16pt, matching the tab and bell badges: all three sit on chrome, so they
-    // are the same object at the same size. It was 15, which read as a third
-    // badge size for no reason anyone could name.
+    // The unread badge on the Channels/Direct control: 16pt, like the tab and
+    // bell badges, since all three sit on chrome.
     segBadge: {
       position: "absolute",
       top: -5,

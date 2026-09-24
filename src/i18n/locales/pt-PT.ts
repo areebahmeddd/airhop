@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Abrir a Política de Privacidade",
   "onboarding.welcome.consent":
     "Ao tocares em {cta}, aceitas os nossos {terms} e a nossa {privacy}.",
+  "onboarding.welcome.transfer": "Transferir de outro telemóvel",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "A gerar a tua identidade",
@@ -103,6 +104,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Apenas o porta-chaves do sistema",
   "onboarding.username.prop.account": "Conta necessária",
   "onboarding.username.prop.account_value": "Nenhuma",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Transferir de outro telemóvel",
+  "onboarding.transfer.preparing": "A preparar",
+  "onboarding.transfer.scan_heading": "Lê este código com o telemóvel antigo",
+  "onboarding.transfer.step_open": "Abre o Airhop no telemóvel antigo",
+  "onboarding.transfer.step_go": "Vai a {tab} e depois a {row}",
+  "onboarding.transfer.step_scan": "Aponta-o para este código",
+  "onboarding.transfer.network_note":
+    "Os dois telemóveis precisam da mesma rede Wi-Fi ou de um ponto de acesso. Nada passa pela Internet.",
+  "onboarding.transfer.qr_a11y":
+    "Código de transferência. Lê-o com o Airhop no telemóvel antigo.",
+  "onboarding.transfer.offline_title": "Liga-te a uma rede Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Põe os dois telemóveis na mesma rede Wi-Fi, ou ativa o ponto de acesso num deles e liga o outro a ele. Não é preciso Internet.",
+  "onboarding.transfer.incoming": "A transferir {name}",
+  "onboarding.transfer.receiving": "A receber {percent}%",
+  "onboarding.transfer.saving": "A guardar neste telemóvel",
+  "onboarding.transfer.releasing": "A concluir no telemóvel antigo",
+  "onboarding.transfer.keep_open":
+    "Mantém a aplicação aberta nos dois telemóveis até terminar.",
+  "onboarding.transfer.check_title": "Verifica o telemóvel antigo",
+  "onboarding.transfer.check_body":
+    "Está tudo neste telemóvel. Antes de continuares, confirma que o telemóvel antigo diz que foi limpo, ou escolhe Limpar este telemóvel nele.",
+  "onboarding.transfer.failed_title": "A transferência não terminou",
+  "onboarding.transfer.failed_cancelled":
+    "A transferência foi cancelada no telemóvel antigo. Nada foi guardado aqui.",
+  "onboarding.transfer.failed_interrupted":
+    "A ligação caiu. Nada foi guardado aqui.",
+  "onboarding.transfer.failed_storage":
+    "Este telemóvel não conseguiu guardar o que chegou, por isso nada foi mantido.",
+  "onboarding.transfer.failed_incompatible":
+    "O telemóvel antigo tem um Airhop mais recente. Atualiza este telemóvel e tenta de novo.",
+  "onboarding.transfer.failed_unavailable":
+    "Este telemóvel não consegue abrir uma ligação de rede local.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Bem-vindo ao Airhop!",
@@ -178,6 +214,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Toca duas vezes e mantém para mais opções",
   "chat.channels.row_hint": "Toca duas vezes e mantém para mais opções",
   "chat.dm.you_prefix": "Tu:",
+  "chat.draft_prefix": "Rascunho:",
   "chat.dm.none": "Nenhuma mensagem direta",
   "chat.dm.none_desc":
     "Vai ao separador Malha e toca num par para começares uma mensagem direta encriptada.",
@@ -203,6 +240,8 @@ export const strings: Strings = {
   "chat.group_badge": "Grupo",
   "chat.more": "Mais",
   "chat.no_messages": "Ainda não há mensagens",
+  "chat.presence.nearby_none": "Ninguém por perto",
+  "chat.presence.active_none": "Ninguém ativo",
   "chat.you": "Tu",
   "chat.a11y.channel": "Canal {name}",
   "chat.a11y.group": "Grupo {name}",
@@ -840,6 +879,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Poupança de bateria · procura menos frequente",
   "mesh.banner.wipe_incomplete":
     "Limpeza incompleta · pode ter sobrado algum dado; reabrir tenta de novo",
+  "mesh.banner.identity_elsewhere":
+    "A tua identidade também está noutro telemóvel · limpa o que não usas",
   "mesh.banner.wifi_off":
     "Wi-Fi desligado · os ficheiros grandes saem mais devagar",
   "mesh.banner.clock_skew":
@@ -1271,9 +1312,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "A pessoa recebeu",
   "wallet.reclaim.title": "Retomar este token?",
   "wallet.reclaim.body":
-    "Os {amount} {unit} voltam para o teu saldo. Só faças isto se o token nunca chegou a ninguém: se a pessoa já tem a sequência, quem resgatar primeiro na casa de emissão fica com o dinheiro, e pode ser ela.",
+    "Os {amount} {unit} voltam para o teu saldo, e o token que entregaste deixa de funcionar assim que a casa de emissão estiver acessível. Se a pessoa o resgatar antes disso, o dinheiro fica com ela.",
   "wallet.reclaim.keep": "Deixar pendente",
   "wallet.reclaim.confirm": "Retomar",
+  "wallet.reclaim.claimed_title": "A pessoa já o resgatou",
+  "wallet.reclaim.claimed_body":
+    "A casa de emissão indica que este token já foi resgatado, por isso os {amount} {unit} chegaram à pessoa e nada voltou para o teu saldo.",
   "wallet.copied.token_body":
     "O token está na tua área de transferência. Continua reservado aqui até o marcares como entregue, por isso podes colá-lo de novo se a primeira tentativa falhar.",
   "wallet.copied.phrase_body":
@@ -1301,6 +1345,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Retomar este token para o teu saldo",
   "wallet.activity.title": "Atividade",
   "wallet.activity.none": "Ainda nada",
+  "wallet.activity.none_hint":
+    "Primeira vez com ecash? Toca em {help} acima para veres como funciona.",
   "wallet.activity.show_fewer": "Mostrar menos pagamentos",
   "wallet.activity.show_less": "Mostrar menos",
   "wallet.activity.received_unconfirmed": "Recebido, por confirmar",
@@ -1350,7 +1396,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Pagamentos trancados não podem ser retomados: agora só a chave da pessoa pode gastar estas moedas.",
   "wallet.pay.reclaimable":
-    "Continua retomável pelo separador Carteira até confirmares que chegou.",
+    "Continua retomável em Atividade até confirmares que chegou.",
   "wallet.pay.why": "Enviado assim porque {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} para {name}",
   "wallet.pay.thread_receipt":
@@ -2105,15 +2151,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "Conversas e histórico",
   "settings.transfer.chats_desc":
     "Conversas, grupos e os canais em que entraste",
+  "settings.transfer.chats_without": "As tuas salas e grupos, sem as mensagens",
   "settings.transfer.wallet": "Saldo da carteira",
   "settings.transfer.wallet_desc": "Ecash e histórico de transações",
   "settings.transfer.title": "Transferir para um telemóvel novo",
   "settings.transfer.desc":
     "Move a tua identidade, conversas e carteira para outro dispositivo",
-  "settings.transfer.coming_soon_a11y":
-    "Transferir para um telemóvel novo, em breve",
-  "settings.transfer.body":
-    "Encosta os dois telemóveis um ao outro e passa tudo por Bluetooth. Nada passa por um servidor, por isso funciona sem Internet.",
+  "settings.transfer.intro":
+    "No telemóvel novo, abre o Airhop e escolhe Transferir de outro telemóvel. Os dois telemóveis precisam da mesma rede Wi-Fi ou de um ponto de acesso, não da Internet.",
+  "settings.transfer.erase_note":
+    "Quando o telemóvel novo tiver tudo, este telemóvel é limpo. As fotografias e os ficheiros não são transferidos.",
+  "settings.transfer.auth_prompt":
+    "Confirma que és tu para transferir a tua identidade",
+  "settings.transfer.scan_title": "Lê o código no telemóvel novo",
+  "settings.transfer.aim": "Aponta a câmara para o código no telemóvel novo",
+  "settings.transfer.wrong_code":
+    "Esse é o código de um contacto. Lê o código no telemóvel novo.",
+  "settings.transfer.camera_off_body":
+    "Liga o acesso à câmara nas definições para leres o código no telemóvel novo.",
+  "settings.transfer.confirm_title": "Transferir para este telemóvel?",
+  "settings.transfer.confirm_body":
+    "Tudo o que está aqui passa para o telemóvel que mostra este código. Quando chegar, este telemóvel é limpo.",
+  "settings.transfer.confirm_cta": "Transferir",
+  "settings.transfer.connecting": "A ligar ao telemóvel novo",
+  "settings.transfer.connecting_hint":
+    "Se este telemóvel pedir para encontrar dispositivos na rede local, permite.",
+  "settings.transfer.sending": "A transferir {percent}%",
+  "settings.transfer.keep_open":
+    "Mantém a aplicação aberta nos dois telemóveis até terminar.",
+  "settings.transfer.finishing": "A concluir no telemóvel novo",
+  "settings.transfer.erasing": "A limpar este telemóvel",
+  "settings.transfer.done_title": "Transferido",
+  "settings.transfer.done_body":
+    "A tua identidade está agora no telemóvel novo, e este telemóvel foi limpo.",
+  "settings.transfer.failed_title": "A transferência não terminou",
+  "settings.transfer.failed_unreachable":
+    "Não foi possível chegar ao telemóvel novo. Põe os dois telemóveis na mesma rede Wi-Fi, ou ativa o ponto de acesso num deles e liga o outro a ele.",
+  "settings.transfer.failed_permission":
+    "O Airhop precisa de acesso à rede local para chegar ao telemóvel novo. Permite-o nas definições e tenta de novo.",
+  "settings.transfer.failed_wrong_phone":
+    "O telemóvel que respondeu não é aquele cujo código leste.",
+  "settings.transfer.failed_incompatible":
+    "O telemóvel novo tem um Airhop mais antigo. Atualiza-o e tenta de novo.",
+  "settings.transfer.failed_cancelled":
+    "A transferência foi cancelada no telemóvel novo.",
+  "settings.transfer.failed_storage":
+    "O telemóvel novo não conseguiu guardar tudo.",
+  "settings.transfer.failed_interrupted":
+    "A ligação caiu antes de tudo ser enviado.",
+  "settings.transfer.unchanged":
+    "Nada foi movido, e este telemóvel funciona como antes.",
+  "settings.transfer.unconfirmed_title": "A transferência terminou?",
+  "settings.transfer.unconfirmed_body":
+    "Este telemóvel perdeu o contacto com o novo antes da confirmação. Se o telemóvel novo mostrar o teu nome, limpa este telemóvel. Se não, continua a usar este e tenta de novo.",
+  "settings.transfer.erase_cta": "Limpar este telemóvel",
+  "settings.transfer.keep_cta": "Continuar a usar este telemóvel",
   "settings.qr.permission_label": "Acesso às fotografias",
   "settings.qr.permission_purpose": "guardar o teu código QR",
   "settings.qr.saved": "Guardado",
@@ -2356,6 +2448,11 @@ export const plurals: Plurals = {
     one: "{count} por perto",
     many: "{count} por perto",
     other: "{count} por perto",
+  },
+  "chat.presence.members": {
+    one: "{count} membro",
+    many: "{count} membros",
+    other: "{count} membros",
   },
 
   // ---- Wallet: mints ----

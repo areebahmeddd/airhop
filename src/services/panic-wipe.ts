@@ -22,6 +22,7 @@ import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { dropPendingChatPersistence, useChatStore } from "@store/chat-store";
+import { clearDrafts } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { clearOwedGroupStates } from "@store/group-invite-outbox-store";
@@ -121,6 +122,9 @@ export const MMKV_STORE_IDS = [
   // ring-store holds who rang whom and when, and any active snooze: the
   // same relationship and timing metadata activity-store is here for.
   "ring-store",
+  // move-marker records a transfer in progress. Unlike the wipe marker it
+  // belongs here: an erased phone has no transfer left to recover.
+  "move-marker",
 ] as const;
 
 // What the wipe managed to do. Only the one claim the caller must not make
@@ -226,6 +230,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   useActivityStore.getState().clearAll();
   useBoardStore.getState().clearAll();
   resetBoardAlerts();
+  clearDrafts();
   useGroupStore.getState().clearAll();
   clearOwedGroupStates();
   useLocationNotesStore.getState().clearAll();
@@ -265,6 +270,8 @@ export async function panicWipe(): Promise<PanicWipeResult> {
     // longer exists. A first-run state should not open by diagnosing a mesh the
     // user has just destroyed.
     clockSkewed: false,
+    // About an identity this wipe just destroyed.
+    identityElsewhere: false,
     // Same rule, and no risk of disagreeing with the controller that publishes
     // it: destroyMeshService() ran before this, so the WiFiController holding
     // the last reading is already gone and the next one starts from "unknown"

@@ -21,6 +21,7 @@ import BottomSheet from "@ui/components/bottom-sheet";
 import {
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -299,7 +300,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     previewText: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     rows: {
       gap: Spacing.xs,
@@ -308,7 +309,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.md,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       paddingHorizontal: Spacing.sm,
     },
     lineText: {

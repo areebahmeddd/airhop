@@ -188,6 +188,15 @@ would free the native instance under a write still in flight, and uses
 `deleteMMKV` only when nothing opened it. Either way the same wipe destroys the
 key, so what stays on disk cannot be read.
 
+Two rules keep the key and the file in step. MMKV keeps one native instance per
+id for the life of the process and hands it back to every later open with the
+key it was first opened under, so a reopen after a wipe in the same session
+(re-onboarding, or a transfer arriving) re-keys it with `encrypt` onto the key
+the keychain now holds. And the launch sweep of orphaned secrets leaves this key
+alone: the partition opens at launch on every install, identity or not, and
+deleting its key under it left a first install unable to read its own wallet on
+the next launch.
+
 ### Data at rest
 
 Outside the keychain, only the wallet partition carries a key of Airhop's own.
@@ -212,8 +221,79 @@ the source instead. Nothing is backed up or transferred:
 
 Nothing is lost by it. A restored copy would not bring Airhop back, since the
 identity is a this-device-only keychain item, so a backup only ever copied the
-data off the phone. Moving to a new phone belongs to an in-app transfer that
-moves the identity rather than cloning it, which is not built yet.
+data off the phone. Moving to a new phone is an in-app transfer that moves the
+identity rather than cloning it, described next.
+
+### Moving to a new phone
+
+Profile, Transfer to a new phone, on the old phone; Transfer from another phone
+on the new phone's welcome screen. The new phone shows a QR code, the old phone
+scans it, and everything crosses one TCP connection on the local network: the
+same WiFi, or a hotspot either phone serves. No internet, no server, no file.
+
+The exact keys move, so nothing on the wire changes. The peer ID, the username,
+the npub, every geohash pseudonym and every safety number are derived from the
+two private keys and come out identical. Contacts see the old phone say goodbye
+and the same identity come back, and a verified contact stays verified, because
+the keys they checked are the keys that arrived. No protocol version bump, and
+bitchat peers notice nothing.
+
+It is a move, not a copy. Two phones holding one identity would each answer its
+handshakes and remotes would flip their session between them, so the old phone
+erases itself (the panic wipe) once the new one confirms it has everything.
+
+| What                         | Moves | Why                                                                         |
+| ---------------------------- | ----- | --------------------------------------------------------------------------- |
+| Noise and signing keys       | Yes   | They are the identity. Written last on the new phone                        |
+| Contacts, blocks, groups     | Yes   | Group epoch keys included, so the creator can still rotate                  |
+| Rooms and their keys         | Yes   | Private channel keys ride in the chat store                                 |
+| Chat history and outbox      | Yes   | Unless the person switches history off; the rooms still move                |
+| Wallet, phrase, P2PK key     | Yes   | The wallet lands under the new phone's own file key                         |
+| Settings                     | Yes   | Less the ones describing the old phone (`DEVICE_SETTINGS`)                  |
+| One-time prekey private keys | No    | Never leave the phone that made them; the new phone publishes a fresh batch |
+| Noise and ratchet sessions   | No    | Memory only. Renegotiated on first contact, as after any restart            |
+| Carried courier mail, board  | No    | Other people's mail, and public posts the mesh gossips back                 |
+| Media files, Tor state       | No    | Attachments render as "not on this device"; Tor state is this phone's own   |
+
+`src/services/move-snapshot.ts` holds this table as code, typed against the
+panic wipe's registry, so a store added later does not compile until someone
+decides whether it moves.
+
+The sequence, and where it can stop:
+
+1. The old phone asks the OS to confirm the owner (Face ID, fingerprint or
+   passcode) before any key is read. A phone with no lock at all has no owner
+   to ask, and the confirmation after the scan still stands.
+2. The new phone listens on a free port and shows a code carrying a one-time
+   X25519 key, a random token and its addresses (PROTOCOLS.md section 11).
+3. The old phone dials and runs Noise XX as initiator with its identity key,
+   the token as prologue. It refuses any responder whose key is not the one it
+   scanned; the new phone learns the identity by possession.
+4. The old phone writes a `sending` marker, stops the mesh (its goodbye retires
+   remotes' sessions) and sends the bundle, moving the marker to `sent` just
+   before the last message.
+5. The new phone holds the bundle whole, checks it, then writes under a
+   `receiving` marker: every partition, the wallet, its secrets, and the
+   identity last, each read back. It marks `committed` and sends the commit.
+6. The old phone erases itself and says so. The new phone clears its marker.
+
+| Stopped at                        | On relaunch                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| New phone mid-install             | `receiving`: wiped like an interrupted panic wipe, back to welcome          |
+| Old phone before the stream ended | `sending`: nothing can have moved, so it clears and starts as usual         |
+| Old phone after, with no commit   | `sent`: asks. Neither phone can know which holds the identity               |
+| New phone committed, no release   | `committed`: asks the person to check the old phone before joining the mesh |
+
+If the person keeps both phones anyway (Keep using this phone, after the new one
+had committed), the mesh says so. An announce under our own peer ID, signed with
+our key, stamped after this run started and not one this run sent, can only be
+this identity on another phone, and both phones raise a Mesh banner until the
+other goes quiet for five minutes.
+
+A backup file was the alternative and was turned down. A file is a copy by
+construction: restorable twice, brute-forceable offline, and a backup to compel,
+which VISION.md rules out. The wallet's recovery phrase stays the answer for a
+lost phone.
 
 ## 3. Transport Stack
 
@@ -696,9 +776,12 @@ a banner and disables what would fail.
 | IP linkage over Tor | The mint network gate above                                                                                                                             |
 
 Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
-sender has not spent it. And reclaiming an undelivered send races the recipient:
-if they also hold the token, whoever reaches the mint first keeps it, which the
-UI says before reclaiming.
+sender has not spent it. And a reclaimed send races the recipient until the mint
+is reached. Online, reclaiming swaps the coins at once, as cashu.me does by
+receiving its own token, so the copy handed out stops working; if the recipient
+redeemed it first, the send is marked completed rather than shown as balance.
+Offline, the coins come back unconfirmed until the next refresh swaps them. The
+UI says so before reclaiming.
 
 ### Recovery
 
@@ -911,6 +994,7 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly                                                                                                                                                                                                                                                                                                                                              |
 | Physical device seizure            | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (Privacy -> Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                    |
 | Cloud backup or phone transfer     | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                            |
+| Identity lifted by a transfer      | Started only after the OS confirms the owner. The old phone reaches only the phone whose code it scanned (Noise XX pinned to the key in the code, the token as prologue), nothing is advertised on the network, and it erases itself once the new phone commits. A transfer that ends unconfirmed freezes the old phone rather than let two run one identity. See [Moving to a new phone](#moving-to-a-new-phone)                |
 | Screen surveillance                | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked |
 
 ### Out of scope
@@ -1037,7 +1121,7 @@ lives in `android/` or `ios/`.
 | `native/iptproxy/` | The obfs4 and Snowflake transports in Go, and the pinned build that produces them |
 | `src/app/`         | The root component and the four-tab state machine                                 |
 | `src/bridge/`      | TurboModule specs, the only place native and TypeScript meet                      |
-| `src/core/`        | The protocol in pure TypeScript: crypto, mesh, nostr, payments, routing           |
+| `src/core/`        | The protocol in pure TypeScript: crypto, mesh, nostr, payments, routing, move     |
 | `src/services/`    | Long-lived runtime wiring, chiefly the mesh service that owns the radios          |
 | `src/features/`    | Screens and screen-level logic                                                    |
 | `src/store/`       | Zustand state with MMKV persistence                                               |
@@ -1160,7 +1244,7 @@ So there is one module per hardware capability and no more.
 | `AirhopBLEModule`   | Both     | BLE GATT Peripheral and Central, radio state, power mode |
 | `AirhopVoiceModule` | Both     | AAC-LC capture and playback for voice notes and PTT      |
 | `AirhopWiFiModule`  | Both     | WiFi Aware same-platform fast path                       |
-| `AirhopLANModule`   | Both     | mDNS discovery and the TCP links behind it               |
+| `AirhopLANModule`   | Both     | mDNS discovery, its TCP links, and the transfer socket   |
 | `AirhopWiFiPairing` | iOS      | The system pairing sheet that fast path needs            |
 | `AirhopTorModule`   | Both     | Embedded Arti's lifecycle and bootstrap status           |
 | `AirhopTorSocket`   | iOS      | The SOCKS5 WebSocket that iOS needs and Android does not |

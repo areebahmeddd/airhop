@@ -268,11 +268,15 @@ interface MeshStateStore {
   // Set only when several different peers look out of time, since one peer
   // sending stale packets is that peer's problem rather than our clock.
   clockSkewed: boolean;
+  // Another phone is running this identity, which splits its sessions between
+  // the two. Cleared once the other goes quiet, and whenever the mesh stops.
+  identityElsewhere: boolean;
   // Chosen presence. Session-level: the mesh starts Online on every launch, so
   // this resets to match rather than being restored from disk.
   presenceStatus: PresenceStatus;
 
   setClockSkewed: (skewed: boolean) => void;
+  setIdentityElsewhere: (elsewhere: boolean) => void;
   setBleBlocker: (blocker: BleBlocker) => void;
   setBleAdvertisingUnsupported: (unsupported: boolean) => void;
   setBlePermissionBlocked: (blocked: boolean) => void;
@@ -310,10 +314,14 @@ export const useMeshStateStore = create<MeshStateStore>()((set) => ({
   bridgeActive: false,
   bridgePeopleAcross: 0,
   clockSkewed: false,
+  identityElsewhere: false,
   presenceStatus: "online",
 
   setClockSkewed(skewed) {
     set({ clockSkewed: skewed });
+  },
+  setIdentityElsewhere(elsewhere) {
+    set({ identityElsewhere: elsewhere });
   },
   setBleBlocker(blocker) {
     set({ bleBlocker: blocker });
@@ -397,6 +405,8 @@ export interface MeshBannerInputs {
   // A panic wipe left secrets behind. Optional, defaulting to the case where
   // nothing has told us otherwise.
   wipeIncomplete?: boolean;
+  // Optional for the same reason.
+  identityElsewhere?: boolean;
   nostrConnected: boolean;
   torActive: boolean;
   // Optional so existing callers keep compiling; absent reads as "idle".
@@ -542,6 +552,16 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     banners.push({
       key: "wipe-incomplete",
       label: t("mesh.banner.wipe_incomplete"),
+      tone: "danger",
+    });
+  }
+
+  // Ranked with the wipe warning: every private message is now a coin toss
+  // between phones. No button, since only the person knows which to erase.
+  if (inputs.identityElsewhere === true) {
+    banners.push({
+      key: "identity-elsewhere",
+      label: t("mesh.banner.identity_elsewhere"),
       tone: "danger",
     });
   }
@@ -771,6 +791,7 @@ export function useMeshBanners(): MeshBanner[] {
   const wifiFastPath = useMeshStateStore((s) => s.wifiFastPath);
   const lanState = useMeshStateStore((s) => s.lanState);
   const wipeIncomplete = useMeshStateStore((s) => s.wipeIncomplete);
+  const identityElsewhere = useMeshStateStore((s) => s.identityElsewhere);
   const backgroundLimitsBrand =
     !backgroundLimitsAcknowledged && needsBatteryOptimizationPrompt()
       ? getDeviceBrand()
@@ -786,6 +807,7 @@ export function useMeshBanners(): MeshBanner[] {
     wifiFastPath,
     lanState,
     wipeIncomplete,
+    identityElsewhere,
     nostrConnected,
     torActive,
     torBootstrap,

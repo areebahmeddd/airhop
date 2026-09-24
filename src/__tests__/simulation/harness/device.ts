@@ -197,6 +197,7 @@ interface WalletServiceLike {
   }) => Promise<{ txId: string; token: string }>;
   confirmSend: (txId: string) => void;
   reclaimSend: (txId: string) => boolean;
+  settleReclaim: (txId: string) => Promise<string>;
   receiveToken: (
     raw: string,
     opts?: { preferOffline?: boolean },
@@ -1157,6 +1158,12 @@ export class SimDevice {
   reclaimLastSend(): boolean {
     if (this.lastTxId === null) return false;
     return this.inner.wallet.reclaimSend(this.lastTxId);
+  }
+
+  // The mint's half of the last reclaim: "secured", "claimed" or "deferred".
+  async settleLastReclaim(): Promise<string> {
+    if (this.lastTxId === null) return "deferred";
+    return this.world.resolve(this.inner.wallet.settleReclaim(this.lastTxId));
   }
 
   confirmLastSend(): void {

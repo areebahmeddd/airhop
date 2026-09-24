@@ -272,8 +272,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.md,
-      paddingVertical: Spacing.sm + 2,
-      paddingHorizontal: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
+      paddingHorizontal: Spacing["sm-md"],
     },
     // A room that cannot take this selection. Still tappable, so the tap can
     // explain; the same treatment the composer's attach button gets.

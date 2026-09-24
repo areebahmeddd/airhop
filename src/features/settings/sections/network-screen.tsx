@@ -27,7 +27,7 @@ import {
   useMeshStateStore,
 } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
-import { HIT_SLOP, useThemeColors } from "@ui/theme";
+import { HIT_SLOP, Spacing, useThemeColors } from "@ui/theme";
 import { formatNumber } from "@utils/format";
 import React, { useState } from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
@@ -385,8 +385,8 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
                       styles.settingDescription,
                       {
                         color: Colors.danger,
-                        paddingHorizontal: 16,
-                        paddingBottom: 10,
+                        paddingHorizontal: Spacing.base,
+                        paddingBottom: Spacing["sm-md"],
                       },
                     ]}
                   >

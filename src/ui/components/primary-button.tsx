@@ -1,7 +1,8 @@
 // PrimaryButton component.
 // The single filled CTA surface for a screen's primary action (onboarding,
 // confirmations). Near-black fill + inverse text, matching the same
-// iMessage-style inversion used for outgoing message bubbles.
+// iMessage-style inversion used for outgoing message bubbles. The outline
+// variant is the bordered pill of a second action beside it, as in the sheets.
 
 import React, { useMemo } from "react";
 import {
@@ -34,6 +35,7 @@ interface Props {
   // press feedback, and taps do nothing. Used for gated CTAs (e.g. an
   // agreement checkbox must be ticked first).
   disabled?: boolean;
+  variant?: "filled" | "outline";
 }
 
 export default function PrimaryButton({
@@ -43,6 +45,7 @@ export default function PrimaryButton({
   accessibilityHint,
   style,
   disabled = false,
+  variant = "filled",
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
@@ -53,9 +56,12 @@ export default function PrimaryButton({
       // row cannot afford.
       style={({ pressed }) => [
         styles.button,
+        variant === "outline" && styles.outline,
         style,
         disabled && styles.disabled,
-        !disabled && pressed && styles.pressed,
+        !disabled &&
+          pressed &&
+          (variant === "outline" ? styles.outlinePressed : styles.pressed),
       ]}
       onPress={onPress}
       disabled={disabled}
@@ -65,7 +71,11 @@ export default function PrimaryButton({
       accessibilityState={{ disabled }}
     >
       <Text
-        style={[styles.label, disabled && styles.labelDisabled]}
+        style={[
+          styles.label,
+          variant === "outline" && styles.labelOutline,
+          disabled && styles.labelDisabled,
+        ]}
         numberOfLines={1}
       >
         {label}
@@ -79,26 +89,28 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     button: {
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
-      paddingVertical: Spacing.md + 2,
+      paddingVertical: Spacing["md-base"],
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",
-      // A transparent hairline in the enabled state, so switching to `disabled`
-      // below only changes the border's COLOUR and never the button's geometry.
-      // Adding a border only when disabled would shift the label by a pixel and
-      // make the gate feel like a glitch.
+      // A transparent border when enabled, so disabling changes only its colour,
+      // never the button's geometry.
       borderWidth: 1,
       borderColor: "transparent",
     },
     pressed: {
       opacity: PRESSED_OPACITY,
     },
-    // A disabled CTA still has to read as a button, just plainly not yours yet.
-    // `surfaceRaised` (#F0F0F0) on the onboarding background (#F8F8F8) is a
-    // 1.03:1 difference, so on its own the pill had no visible edge and the
-    // gated "Get started" looked like a stray line of grey text rather than a
-    // control waiting on the checkbox below it. The border is what keeps the
-    // shape; the muted fill and label are what say it is inactive.
+    outline: {
+      backgroundColor: Colors.surfaceRaised,
+      borderColor: Colors.borderStrong,
+    },
+    // A neutral fill darkens rather than dims.
+    outlinePressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    // Disabled keeps a visible border: the raised fill barely differs from the
+    // onboarding background, so without it the pill reads as stray grey text.
     disabled: {
       backgroundColor: Colors.surfaceRaised,
       borderColor: Colors.border,
@@ -108,6 +120,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textInverse,
       letterSpacing: 0.1,
+    },
+    labelOutline: {
+      color: Colors.textPrimary,
     },
     labelDisabled: {
       color: Colors.textMuted,

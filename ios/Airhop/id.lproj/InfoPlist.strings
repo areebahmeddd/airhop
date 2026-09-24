@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop memakai mikrofon untuk merekam catatan suara dan untuk membawa suara langsung ke rekan terdekat.";
 "NSPhotoLibraryUsageDescription" = "Airhop mengakses galeri foto Anda untuk membagikan gambar dan video lewat mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop menyimpan foto dan video ke galeri Anda saat Anda memilih menyimpannya, dan saat Anda mengunduh kode QR Anda.";
+"NSFaceIDUsageDescription" = "Airhop memakai Face ID untuk memastikan bahwa itu Anda sebelum memindahkan identitas Anda ke ponsel baru.";
 "NSLocationWhenInUseUsageDescription" = "Airhop memakai perkiraan lokasi Anda untuk menempatkan Anda di kanal wilayah terdekat (blok kota, kota, wilayah). Posisi persis Anda tidak pernah meninggalkan perangkat Anda.";

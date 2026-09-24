@@ -15,8 +15,12 @@ package org.onemindlabs.airhop.lan
 // connecting to everyone is a full mesh. That decision lives in TypeScript
 // (services/lan-dial-policy.ts).
 //
-// The instance name comes from TypeScript and is never the peer ID. See
-// services/lan-controller.ts for why it rotates.
+// The instance name comes from TypeScript and is never the peer ID (see
+// services/lan-controller.ts for why it rotates). A transfer to a new phone
+// needs no name at all: it rides a second socket (services/move-link.ts) with
+// the same framing, heartbeat and read loop, its own listener and events, and
+// no mDNS. Each link knows which socket it belongs to, so stopLAN never cuts a
+// transfer and neither can write to the other's connections.
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -32,6 +36,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Base64
 import android.util.Log
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -75,6 +80,9 @@ private const val EVT_LINK_CONNECTED = "AirhopLAN.linkConnected"
 private const val EVT_LINK_DISCONNECTED = "AirhopLAN.linkDisconnected"
 private const val EVT_PACKET_RECEIVED = "AirhopLAN.packetReceived"
 private const val EVT_AVAILABILITY_CHANGED = "AirhopLAN.availabilityChanged"
+private const val EVT_MOVE_CONNECTED = "AirhopLAN.moveConnected"
+private const val EVT_MOVE_DATA = "AirhopLAN.moveData"
+private const val EVT_MOVE_CLOSED = "AirhopLAN.moveClosed"
 
 // Liveness, the same numbers as the WiFi module: a zero-length heartbeat every
 // 8 s against a 10 s read deadline, three misses allowed, so a peer that walked
@@ -126,6 +134,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         val id: String,
         val socket: Socket,
         val output: OutputStream,
+        // A transfer connection rather than a mesh link.
+        val move: Boolean,
         val writeLock: Any = Any(),
     ) {
         @Volatile var heartbeat: ScheduledFuture<*>? = null
@@ -151,6 +161,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private var serverSocket: ServerSocket? = null
     private var serverPort: Int = 0
     private var instanceName: String? = null
+
+    private var moveServer: ServerSocket? = null
 
     private var registrationListener: NsdManager.RegistrationListener? = null
     private var discoveryListener: NsdManager.DiscoveryListener? = null
@@ -258,8 +270,10 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         serverPort = 0
         instanceName = null
 
-        for (id in links.keys.toList()) handleLinkClose(id)
-        links.clear()
+        // Mesh links only: a transfer runs with the mesh stopped.
+        for ((id, link) in links.entries.toList()) {
+            if (!link.move) handleLinkClose(id)
+        }
         discovered.clear()
         linkByName.clear()
         nameByLink.clear()
@@ -574,12 +588,17 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     // `serviceName` is known only for a dial we made. An accepted connection is
     // anonymous until its peer announces, and nothing here needs to know: the
     // name is used solely to answer "already connected" for an outbound dial.
-    private fun registerLink(id: String, socket: Socket, serviceName: String? = null) {
+    private fun registerLink(
+        id: String,
+        socket: Socket,
+        serviceName: String? = null,
+        move: Boolean = false,
+    ): Boolean {
         try {
             socket.tcpNoDelay = true
             socket.keepAlive = true
             socket.soTimeout = READ_TIMEOUT_MS
-            val link = LinkState(id, socket, socket.getOutputStream())
+            val link = LinkState(id, socket, socket.getOutputStream(), move)
             links[id] = link
             if (serviceName != null) {
                 linkByName[serviceName] = id
@@ -600,12 +619,22 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                     HEARTBEAT_MS,
                     TimeUnit.MILLISECONDS,
                 )
-            emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
+            if (move) {
+                emitEvent(
+                    EVT_MOVE_CONNECTED,
+                    WritableNativeMap().apply { putString("connectionID", id) },
+                )
+            } else {
+                emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
+            }
             Log.i(TAG, "LAN link connected: $id")
-            startReadLoop(id, socket.getInputStream())
+            startReadLoop(id, socket.getInputStream(), move)
+            return true
         } catch (e: Exception) {
             Log.e(TAG, "Could not register link $id: ${e.message}")
+            links.remove(id)?.heartbeat?.cancel(false)
             runCatching { socket.close() }
+            return false
         }
     }
 
@@ -621,10 +650,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun writeToLANLink(linkID: String, dataBase64: String, promise: Promise) {
         val link = links[linkID]
-        if (link == null) {
+        if (link == null || link.move) {
             promise.reject("UNKNOWN_LINK", "No active LAN link: $linkID")
             return
         }
+        write(link, dataBase64, promise)
+    }
+
+    private fun write(link: LinkState, dataBase64: String, promise: Promise) {
+        val linkID = link.id
         val data =
             try {
                 Base64.decode(dataBase64, Base64.NO_WRAP)
@@ -657,7 +691,9 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    private fun startReadLoop(linkID: String, input: InputStream) {
+    private fun startReadLoop(linkID: String, input: InputStream, move: Boolean) {
+        val dataEvent = if (move) EVT_MOVE_DATA else EVT_PACKET_RECEIVED
+        val idKey = if (move) "connectionID" else "linkID"
         ioExecutor.execute {
             val lenBuf = ByteArray(4)
             var idleTimeouts = 0
@@ -687,9 +723,9 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                         inFrame += n
                     }
                     emitEvent(
-                        EVT_PACKET_RECEIVED,
+                        dataEvent,
                         WritableNativeMap().apply {
-                            putString("linkID", linkID)
+                            putString(idKey, linkID)
                             putString("dataBase64", Base64.encodeToString(payload, Base64.NO_WRAP))
                         },
                     )
@@ -722,7 +758,140 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         // and clearing it would make the live one look absent.
         if (name != null && linkByName[name] == linkID) linkByName.remove(name)
         runCatching { link.socket.close() }
-        emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply { putString("linkID", linkID) })
+        if (link.move) {
+            emitEvent(
+                EVT_MOVE_CLOSED,
+                WritableNativeMap().apply { putString("connectionID", linkID) },
+            )
+        } else {
+            emitEvent(
+                EVT_LINK_DISCONNECTED,
+                WritableNativeMap().apply { putString("linkID", linkID) },
+            )
+        }
+    }
+
+    // ---- Transfer ------------------------------------------------------------
+
+    // IPv4 addresses on the interfaces hasLocalNetwork counts: a served hotspot
+    // included, cellular not.
+    private fun localHosts(): List<String> =
+        try {
+            NetworkInterface.getNetworkInterfaces()
+                .asSequence()
+                .filter { iface ->
+                    iface.isUp &&
+                        !iface.isLoopback &&
+                        LOCAL_IFACE_PREFIXES.any { iface.name.startsWith(it) }
+                }
+                .flatMap { it.inetAddresses.asSequence() }
+                .filterIsInstance<Inet4Address>()
+                .filter { !it.isLinkLocalAddress && !it.isLoopbackAddress }
+                .mapNotNull { it.hostAddress }
+                .distinct()
+                .toList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+
+    @ReactMethod
+    fun startMoveListener(promise: Promise) {
+        val port =
+            synchronized(this) {
+                moveServer?.localPort
+                    ?: try {
+                        val socket = ServerSocket(0)
+                        moveServer = socket
+                        ioExecutor.execute { moveAcceptLoop(socket) }
+                        socket.localPort
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Could not open the move socket: ${e.message}")
+                        null
+                    }
+            }
+        if (port == null) {
+            promise.reject("MOVE_LISTEN_FAILED", "Could not open the move socket")
+            return
+        }
+        val hosts = Arguments.createArray()
+        for (host in localHosts()) hosts.pushString(host)
+        promise.resolve(
+            WritableNativeMap().apply {
+                putInt("port", port)
+                putArray("hosts", hosts)
+            }
+        )
+    }
+
+    private fun moveAcceptLoop(socket: ServerSocket) {
+        while (!socket.isClosed) {
+            val client =
+                try {
+                    socket.accept()
+                } catch (e: Exception) {
+                    Log.i(TAG, "Move accept loop ended: ${e.message}")
+                    return
+                }
+            registerLink("move-in-${linkCounter.incrementAndGet()}", client, move = true)
+        }
+    }
+
+    @ReactMethod
+    fun stopMove(promise: Promise) {
+        closeMoveSide()
+        promise.resolve(null)
+    }
+
+    @Synchronized
+    private fun closeMoveSide() {
+        runCatching { moveServer?.close() }
+        moveServer = null
+        for ((id, link) in links.entries.toList()) {
+            if (link.move) handleLinkClose(id)
+        }
+    }
+
+    @ReactMethod
+    fun dialMove(host: String, port: Double, promise: Promise) {
+        try {
+            ioExecutor.execute {
+                val socket = Socket()
+                try {
+                    socket.connect(
+                        java.net.InetSocketAddress(host, port.toInt()),
+                        CONNECT_TIMEOUT_MS,
+                    )
+                } catch (e: Exception) {
+                    runCatching { socket.close() }
+                    promise.reject("CONNECT_FAILED", e.message, e)
+                    return@execute
+                }
+                val id = "move-out-${linkCounter.incrementAndGet()}"
+                if (registerLink(id, socket, move = true)) {
+                    promise.resolve(id)
+                } else {
+                    promise.reject("CONNECT_FAILED", "Could not open the move connection")
+                }
+            }
+        } catch (e: Exception) {
+            promise.reject("CONNECT_FAILED", "LAN transport is shutting down", e)
+        }
+    }
+
+    @ReactMethod
+    fun writeMove(connectionID: String, dataBase64: String, promise: Promise) {
+        val link = links[connectionID]
+        if (link == null || !link.move) {
+            promise.reject("UNKNOWN_LINK", "No move connection: $connectionID")
+            return
+        }
+        write(link, dataBase64, promise)
+    }
+
+    @ReactMethod
+    fun closeMove(connectionID: String, promise: Promise) {
+        if (links[connectionID]?.move == true) handleLinkClose(connectionID)
+        promise.resolve(null)
     }
 
     // ---- Required NativeEventEmitter contract --------------------------------
@@ -739,6 +908,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
     override fun invalidate() {
         teardown()
+        closeMoveSide()
         heartbeatExecutor.shutdownNow()
         ioExecutor.shutdownNow()
         super.invalidate()

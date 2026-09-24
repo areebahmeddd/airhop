@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "개인정보 처리방침 열기",
   "onboarding.welcome.consent":
     "{cta}을(를) 누르면 {terms} 및 {privacy}에 동의하는 것입니다.",
+  "onboarding.welcome.transfer": "다른 휴대폰에서 옮겨오기",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "신원을 생성하는 중",
@@ -100,6 +101,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "OS 키체인에만",
   "onboarding.username.prop.account": "계정 필요",
   "onboarding.username.prop.account_value": "없음",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "다른 휴대폰에서 옮겨오기",
+  "onboarding.transfer.preparing": "준비하는 중",
+  "onboarding.transfer.scan_heading": "이전 휴대폰으로 이 코드를 스캔하세요",
+  "onboarding.transfer.step_open": "이전 휴대폰에서 Airhop 열기",
+  "onboarding.transfer.step_go": "{tab}에서 {row} 선택",
+  "onboarding.transfer.step_scan": "이 코드에 카메라 맞추기",
+  "onboarding.transfer.network_note":
+    "두 휴대폰이 같은 Wi-Fi나 핫스팟에 연결되어 있어야 합니다. 인터넷으로는 아무것도 전송되지 않습니다.",
+  "onboarding.transfer.qr_a11y":
+    "옮기기 코드. 이전 휴대폰의 Airhop으로 스캔하세요.",
+  "onboarding.transfer.offline_title": "Wi-Fi에 연결하세요",
+  "onboarding.transfer.offline_body":
+    "두 휴대폰을 같은 Wi-Fi에 연결하거나, 한 휴대폰에서 핫스팟을 켜고 다른 휴대폰으로 접속하세요. 인터넷은 필요 없습니다.",
+  "onboarding.transfer.incoming": "{name} 옮기는 중",
+  "onboarding.transfer.receiving": "받는 중 {percent}%",
+  "onboarding.transfer.saving": "이 휴대폰에 저장하는 중",
+  "onboarding.transfer.releasing": "이전 휴대폰에서 마무리하는 중",
+  "onboarding.transfer.keep_open":
+    "끝날 때까지 두 휴대폰 모두 앱을 열어 두세요.",
+  "onboarding.transfer.check_title": "이전 휴대폰을 확인하세요",
+  "onboarding.transfer.check_body":
+    "모든 것이 이 휴대폰으로 옮겨졌습니다. 계속하기 전에 이전 휴대폰에 삭제되었다고 표시되는지 확인하거나, 이전 휴대폰에서 “이 휴대폰 삭제”를 선택하세요.",
+  "onboarding.transfer.failed_title": "옮기기를 완료하지 못했습니다",
+  "onboarding.transfer.failed_cancelled":
+    "이전 휴대폰에서 옮기기가 취소되었습니다. 이 휴대폰에는 아무것도 저장되지 않았습니다.",
+  "onboarding.transfer.failed_interrupted":
+    "연결이 끊어졌습니다. 이 휴대폰에는 아무것도 저장되지 않았습니다.",
+  "onboarding.transfer.failed_storage":
+    "받은 내용을 이 휴대폰에 저장하지 못해 아무것도 남기지 않았습니다.",
+  "onboarding.transfer.failed_incompatible":
+    "이전 휴대폰의 Airhop이 더 최신 버전입니다. 이 휴대폰을 업데이트한 뒤 다시 시도하세요.",
+  "onboarding.transfer.failed_unavailable":
+    "이 휴대폰에서 로컬 네트워크 연결을 열 수 없습니다.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop에 오신 것을 환영합니다!",
@@ -175,6 +211,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
   "chat.channels.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
   "chat.dm.you_prefix": "나:",
+  "chat.draft_prefix": "임시 저장:",
   "chat.dm.none": "다이렉트 메시지가 없습니다",
   "chat.dm.none_desc": "메시 탭에서 피어를 탭해 암호화된 DM을 시작하세요.",
   "chat.dm.contact_info": "연락처 정보",
@@ -199,6 +236,8 @@ export const strings: Strings = {
   "chat.group_badge": "그룹",
   "chat.more": "더 보기",
   "chat.no_messages": "아직 메시지가 없습니다",
+  "chat.presence.nearby_none": "근처에 아무도 없음",
+  "chat.presence.active_none": "활동 중인 사람 없음",
   "chat.you": "나",
   "chat.a11y.channel": "채널 {name}",
   "chat.a11y.group": "그룹 {name}",
@@ -818,6 +857,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "배터리 절약 모드 · 스캔 빈도 감소",
   "mesh.banner.wipe_incomplete":
     "삭제 미완료 · 일부 데이터가 남아 있을 수 있으며 다시 열면 재시도합니다",
+  "mesh.banner.identity_elsewhere":
+    "신원이 다른 휴대폰에도 있습니다 · 사용하지 않는 휴대폰을 삭제하세요",
   "mesh.banner.wifi_off": "Wi-Fi 꺼짐 · 큰 파일 전송이 느려집니다",
   "mesh.banner.clock_skew":
     "이 휴대폰의 시계가 맞지 않습니다 · 날짜와 시간을 자동으로 설정하세요",
@@ -1233,9 +1274,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "상대방이 받았습니다",
   "wallet.reclaim.title": "이 토큰을 회수할까요?",
   "wallet.reclaim.body":
-    "{amount} {unit}이(가) 잔액으로 돌아옵니다. 토큰이 아무에게도 닿지 않은 경우에만 하세요. 상대가 이미 그 문자열을 가지고 있다면, 민트에서 먼저 교환하는 쪽이 돈을 갖게 되고 그것이 상대일 수 있습니다.",
+    "{amount} {unit}이(가) 잔액으로 돌아오며, 건넨 토큰은 민트에 연결되는 즉시 작동하지 않게 됩니다. 그 전에 상대가 교환하면 그 돈은 상대의 것으로 남습니다.",
   "wallet.reclaim.keep": "대기 상태로 두기",
   "wallet.reclaim.confirm": "회수",
+  "wallet.reclaim.claimed_title": "상대가 이미 교환했습니다",
+  "wallet.reclaim.claimed_body":
+    "민트에 따르면 이 토큰은 이미 교환되었으므로, {amount} {unit}은(는) 상대에게 도착했고 잔액으로 돌아온 것은 없습니다.",
   "wallet.copied.token_body":
     "토큰이 클립보드에 있습니다. 전달 완료로 표시하기 전까지는 여기 예약된 채로 남으므로, 첫 시도가 실패하면 다시 붙여넣을 수 있습니다.",
   "wallet.copied.phrase_body":
@@ -1263,6 +1307,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "이 토큰을 잔액으로 회수",
   "wallet.activity.title": "활동",
   "wallet.activity.none": "아직 없음",
+  "wallet.activity.none_hint":
+    "ecash가 처음이세요? 위의 {help}을(를) 눌러 작동 방식을 확인하세요.",
   "wallet.activity.show_fewer": "결제 적게 보기",
   "wallet.activity.show_less": "적게 보기",
   "wallet.activity.received_unconfirmed": "받음, 미확인",
@@ -1311,7 +1357,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "잠긴 결제는 회수할 수 없습니다. 이제 이 코인들은 상대의 키로만 쓸 수 있습니다.",
   "wallet.pay.reclaimable":
-    "도착했음을 확인하기 전까지는 지갑 탭에서 회수할 수 있습니다.",
+    "도착했음을 확인하기 전까지는 활동에서 회수할 수 있습니다.",
   "wallet.pay.why": "{reason} 때문에 이 방법으로 보냈습니다.",
   "wallet.pay.sent_title": "{name}에게 {amount} {unit}",
   "wallet.pay.thread_receipt":
@@ -2029,13 +2075,58 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "피어 ID, 사용자 이름, 연락처",
   "settings.transfer.chats": "채팅과 기록",
   "settings.transfer.chats_desc": "대화, 그룹, 참여한 채널",
+  "settings.transfer.chats_without": "채널과 그룹만, 메시지는 제외",
   "settings.transfer.wallet": "지갑 잔액",
   "settings.transfer.wallet_desc": "ecash와 거래 내역",
   "settings.transfer.title": "새 휴대폰으로 옮기기",
   "settings.transfer.desc": "신원, 채팅, 지갑을 다른 기기로 옮깁니다",
-  "settings.transfer.coming_soon_a11y": "새 휴대폰으로 옮기기, 곧 제공",
-  "settings.transfer.body":
-    "두 휴대폰을 가까이 두고 블루투스로 모든 것을 옮깁니다. 서버를 거치지 않으므로 인터넷 없이도 작동합니다.",
+  "settings.transfer.intro":
+    "새 휴대폰에서 Airhop을 열고 “다른 휴대폰에서 옮겨오기”를 선택하세요. 두 휴대폰이 같은 Wi-Fi나 핫스팟에 연결되어 있으면 되며, 인터넷은 필요 없습니다.",
+  "settings.transfer.erase_note":
+    "새 휴대폰이 모든 것을 받으면 이 휴대폰은 삭제됩니다. 사진과 파일은 옮겨지지 않습니다.",
+  "settings.transfer.auth_prompt": "신원을 옮기려면 본인임을 확인하세요",
+  "settings.transfer.scan_title": "새 휴대폰의 코드 스캔",
+  "settings.transfer.aim": "새 휴대폰에 표시된 코드에 카메라를 맞추세요",
+  "settings.transfer.wrong_code":
+    "연락처 코드입니다. 새 휴대폰의 코드를 스캔하세요.",
+  "settings.transfer.camera_off_body":
+    "새 휴대폰의 코드를 스캔하려면 설정에서 카메라 접근을 허용하세요.",
+  "settings.transfer.confirm_title": "이 휴대폰으로 옮길까요?",
+  "settings.transfer.confirm_body":
+    "여기 있는 모든 것이 이 코드를 표시한 휴대폰으로 옮겨집니다. 옮기기가 끝나면 이 휴대폰은 삭제됩니다.",
+  "settings.transfer.confirm_cta": "옮기기",
+  "settings.transfer.connecting": "새 휴대폰에 연결하는 중",
+  "settings.transfer.connecting_hint":
+    "로컬 네트워크에서 기기를 찾도록 허용할지 물으면 허용하세요.",
+  "settings.transfer.sending": "옮기는 중 {percent}%",
+  "settings.transfer.keep_open": "끝날 때까지 두 휴대폰 모두 앱을 열어 두세요.",
+  "settings.transfer.finishing": "새 휴대폰에서 마무리하는 중",
+  "settings.transfer.erasing": "이 휴대폰을 삭제하는 중",
+  "settings.transfer.done_title": "옮기기 완료",
+  "settings.transfer.done_body":
+    "이제 신원이 새 휴대폰에 있으며, 이 휴대폰은 삭제되었습니다.",
+  "settings.transfer.failed_title": "옮기기를 완료하지 못했습니다",
+  "settings.transfer.failed_unreachable":
+    "새 휴대폰에 연결할 수 없습니다. 두 휴대폰을 같은 Wi-Fi에 연결하거나, 한 휴대폰에서 핫스팟을 켜고 다른 휴대폰으로 접속하세요.",
+  "settings.transfer.failed_permission":
+    "새 휴대폰에 연결하려면 Airhop에 로컬 네트워크 접근 권한이 필요합니다. 설정에서 허용한 뒤 다시 시도하세요.",
+  "settings.transfer.failed_wrong_phone":
+    "응답한 휴대폰이 스캔한 코드의 휴대폰이 아닙니다.",
+  "settings.transfer.failed_incompatible":
+    "새 휴대폰의 Airhop이 이전 버전입니다. 업데이트한 뒤 다시 시도하세요.",
+  "settings.transfer.failed_cancelled":
+    "새 휴대폰에서 옮기기가 취소되었습니다.",
+  "settings.transfer.failed_storage":
+    "새 휴대폰에 모든 것을 저장하지 못했습니다.",
+  "settings.transfer.failed_interrupted":
+    "모두 보내기 전에 연결이 끊어졌습니다.",
+  "settings.transfer.unchanged":
+    "아무것도 옮겨지지 않았으며, 이 휴대폰은 전과 같이 작동합니다.",
+  "settings.transfer.unconfirmed_title": "옮기기가 끝났나요?",
+  "settings.transfer.unconfirmed_body":
+    "새 휴대폰이 확인해 주기 전에 연결이 끊어졌습니다. 새 휴대폰에 내 이름이 보이면 이 휴대폰을 삭제하세요. 그렇지 않다면 이 휴대폰을 계속 사용하고 다시 시도하세요.",
+  "settings.transfer.erase_cta": "이 휴대폰 삭제",
+  "settings.transfer.keep_cta": "이 휴대폰 계속 사용",
   "settings.qr.permission_label": "사진 접근",
   "settings.qr.permission_purpose": "QR 코드를 저장하기",
   "settings.qr.saved": "저장됨",
@@ -2240,6 +2331,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "근처에 {count}명",
+  },
+  "chat.presence.members": {
+    other: "멤버 {count}명",
   },
 
   // ---- Wallet: mints ----

@@ -34,6 +34,7 @@ import {
   FontWeight,
   HIT_SLOP,
   hitSlopFor,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -399,10 +400,9 @@ export default function ChannelInfoSheet({
   // One unified member list for all channel kinds. A group's signed roster, a
   // geo cell's active participants, a private channel's proven key-holders, or
   // the nearby BLE peers all normalise to the same shape and render identically
-  // (You row, chat action, search). Self is counted the way bitchat counts it,
-  // included in the total. A group roster already lists you, so it is not
-  // re-added; the other lists are others-only, so you appear as a "You" row and
-  // add one to the count.
+  // (You row, chat action, search). This is a roster, so it lists and counts
+  // you: a group roster already has you, and the others-only lists gain a "You"
+  // row. The header's "nearby" and "active" are presence, and count others only.
   //
   // The nearby-peers fallback is right for `#bluetooth`, where radio range is
   // the room, and wrong for anything invite-only, where membership is
@@ -963,7 +963,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     description: {
       fontSize: FontSize.base,
       color: Colors.textSecondary,
-      lineHeight: 22,
+      lineHeight: LineHeight.base,
     },
     factsWrap: {
       gap: Spacing.sm,
@@ -1012,7 +1012,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     relayList: {
       paddingBottom: Spacing.md,
       paddingStart: 16 + Spacing.md,
-      gap: 6,
+      gap: Spacing["xs-sm"],
     },
     relayRow: {
       flexDirection: "row",
@@ -1027,7 +1027,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     relayTag: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     relayEmpty: {
@@ -1049,13 +1049,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       lineHeight: 18,
     },
     memberList: {
-      gap: 2,
+      gap: Spacing["2xs"],
     },
     memberRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.sm,
-      paddingVertical: 6,
+      paddingVertical: Spacing["xs-sm"],
     },
     memberName: {
       flex: 1,
@@ -1067,12 +1067,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // matching size and lineHeight keeps them on one baseline.
     memberTag: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       color: Colors.textMuted,
     },
     memberYou: {
       fontSize: FontSize.xs,
-      lineHeight: 16,
+      lineHeight: LineHeight.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
     },
@@ -1087,7 +1087,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
       paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing["sm-md"],
       fontSize: FontSize.sm,
       color: Colors.textPrimary,
     },

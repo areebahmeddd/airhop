@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Buka Kebijakan Privasi",
   "onboarding.welcome.consent":
     "Dengan menekan {cta}, kamu menyetujui {terms} dan {privacy} kami.",
+  "onboarding.welcome.transfer": "Pindahkan dari ponsel lain",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Membuat identitasmu",
@@ -103,6 +104,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Hanya gantungan kunci sistem",
   "onboarding.username.prop.account": "Perlu akun",
   "onboarding.username.prop.account_value": "Tidak ada",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Pindahkan dari ponsel lain",
+  "onboarding.transfer.preparing": "Menyiapkan",
+  "onboarding.transfer.scan_heading": "Pindai kode ini dengan ponsel lamamu",
+  "onboarding.transfer.step_open": "Buka Airhop di ponsel lamamu",
+  "onboarding.transfer.step_go": "Buka {tab}, lalu {row}",
+  "onboarding.transfer.step_scan": "Arahkan ke kode ini",
+  "onboarding.transfer.network_note":
+    "Kedua ponsel harus di Wi-Fi yang sama atau di satu hotspot. Tidak ada yang lewat internet.",
+  "onboarding.transfer.qr_a11y":
+    "Kode pemindahan. Pindai dengan Airhop di ponsel lamamu.",
+  "onboarding.transfer.offline_title": "Sambungkan ke Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Sambungkan kedua ponsel ke Wi-Fi yang sama, atau nyalakan hotspot di salah satunya lalu sambungkan yang lain ke situ. Tidak perlu internet.",
+  "onboarding.transfer.incoming": "Memindahkan {name}",
+  "onboarding.transfer.receiving": "Menerima {percent}%",
+  "onboarding.transfer.saving": "Menyimpan ke ponsel ini",
+  "onboarding.transfer.releasing": "Menyelesaikan di ponsel lamamu",
+  "onboarding.transfer.keep_open":
+    "Biarkan Airhop terbuka di kedua ponsel sampai ini selesai.",
+  "onboarding.transfer.check_title": "Periksa ponsel lamamu",
+  "onboarding.transfer.check_body":
+    "Semuanya sudah ada di ponsel ini. Sebelum lanjut, pastikan ponsel lamamu menyatakan sudah dibersihkan, atau pilih Bersihkan ponsel ini di sana.",
+  "onboarding.transfer.failed_title": "Pemindahan tidak selesai",
+  "onboarding.transfer.failed_cancelled":
+    "Pemindahan dibatalkan di ponsel lamamu. Tidak ada yang disimpan di sini.",
+  "onboarding.transfer.failed_interrupted":
+    "Koneksi terputus. Tidak ada yang disimpan di sini.",
+  "onboarding.transfer.failed_storage":
+    "Ponsel ini tidak bisa menyimpan data yang masuk, jadi tidak ada yang disimpan.",
+  "onboarding.transfer.failed_incompatible":
+    "Ponsel lamamu memakai Airhop yang lebih baru. Perbarui ponsel ini, lalu coba lagi.",
+  "onboarding.transfer.failed_unavailable":
+    "Ponsel ini tidak bisa membuka koneksi jaringan lokal.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Selamat datang di Airhop!",
@@ -180,6 +216,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Ketuk dua kali lalu tahan untuk pilihan lain",
   "chat.channels.row_hint": "Ketuk dua kali lalu tahan untuk pilihan lain",
   "chat.dm.you_prefix": "Kamu:",
+  "chat.draft_prefix": "Draf:",
   "chat.dm.none": "Tidak ada pesan langsung",
   "chat.dm.none_desc":
     "Buka tab Mesh lalu ketuk seorang rekan untuk memulai pesan langsung yang terenkripsi.",
@@ -205,6 +242,8 @@ export const strings: Strings = {
   "chat.group_badge": "Grup",
   "chat.more": "Lainnya",
   "chat.no_messages": "Belum ada pesan",
+  "chat.presence.nearby_none": "Tidak ada orang di dekat sini",
+  "chat.presence.active_none": "Tidak ada yang aktif",
   "chat.you": "Kamu",
   "chat.a11y.channel": "Kanal {name}",
   "chat.a11y.group": "Grup {name}",
@@ -839,6 +878,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Penghemat baterai · memindai lebih jarang",
   "mesh.banner.wipe_incomplete":
     "Pembersihan belum tuntas · sebagian data mungkin tersisa, dicoba lagi saat dibuka kembali",
+  "mesh.banner.identity_elsewhere":
+    "Identitasmu juga ada di ponsel lain · bersihkan yang tidak kamu pakai",
   "mesh.banner.wifi_off": "Wi-Fi mati · berkas besar terkirim lebih lambat",
   "mesh.banner.clock_skew":
     "Jam ponsel ini salah · setel tanggal dan waktu ke otomatis",
@@ -1262,9 +1303,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Mereka menerimanya",
   "wallet.reclaim.title": "Tarik kembali token ini?",
   "wallet.reclaim.body":
-    "{amount} {unit} kembali ke saldomu. Lakukan ini hanya kalau tokennya tidak pernah sampai ke siapa pun: kalau deretnya sudah ada pada mereka, siapa pun yang lebih dulu menukarkannya di mint akan memegang uangnya, dan itu bisa saja mereka.",
+    "{amount} {unit} kembali ke saldomu, dan token yang kamu berikan berhenti bekerja begitu mint bisa dihubungi. Kalau mereka menukarkannya sebelum itu, uangnya tetap milik mereka.",
   "wallet.reclaim.keep": "Biarkan tertunda",
   "wallet.reclaim.confirm": "Tarik kembali",
+  "wallet.reclaim.claimed_title": "Mereka sudah menukarkannya",
+  "wallet.reclaim.claimed_body":
+    "Menurut mint, token ini sudah ditukarkan, jadi {amount} {unit} sudah sampai ke mereka dan tidak ada yang kembali ke saldomu.",
   "wallet.copied.token_body":
     "Tokennya ada di papan klipmu. Ia tetap dicadangkan di sini sampai kamu menandainya terkirim, jadi kamu bisa menempelnya lagi kalau percobaan pertama gagal.",
   "wallet.copied.phrase_body":
@@ -1292,6 +1336,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Tarik token ini kembali ke saldomu",
   "wallet.activity.title": "Aktivitas",
   "wallet.activity.none": "Belum ada apa-apa",
+  "wallet.activity.none_hint":
+    "Baru mengenal ecash? Ketuk {help} di atas untuk melihat cara kerjanya.",
   "wallet.activity.show_fewer": "Tampilkan lebih sedikit pembayaran",
   "wallet.activity.show_less": "Tampilkan lebih sedikit",
   "wallet.activity.received_unconfirmed": "Diterima, belum dikonfirmasi",
@@ -1341,7 +1387,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Pembayaran yang terkunci tidak bisa ditarik kembali: kini hanya kunci mereka yang bisa membelanjakan koin-koin ini.",
   "wallet.pay.reclaimable":
-    "Ia tetap bisa ditarik kembali dari tab Dompet sampai kamu memastikan bahwa ia sampai.",
+    "Ia tetap bisa ditarik kembali dari Aktivitas sampai kamu memastikan bahwa ia sampai.",
   "wallet.pay.why": "Dikirim lewat jalur ini karena {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} ke {name}",
   "wallet.pay.thread_receipt":
@@ -2084,15 +2130,61 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "ID rekan, nama pengguna, dan kontakmu",
   "settings.transfer.chats": "Obrolan dan riwayat",
   "settings.transfer.chats_desc": "Percakapan, grup, dan kanal yang kamu ikuti",
+  "settings.transfer.chats_without": "Ruang dan grupmu, tanpa pesannya",
   "settings.transfer.wallet": "Saldo dompet",
   "settings.transfer.wallet_desc": "Ecash dan riwayat transaksi",
   "settings.transfer.title": "Pindahkan ke ponsel baru",
   "settings.transfer.desc":
     "Pindahkan identitas, obrolan, dan dompetmu ke perangkat lain",
-  "settings.transfer.coming_soon_a11y":
-    "Pindahkan ke ponsel baru, segera hadir",
-  "settings.transfer.body":
-    "Dekatkan kedua ponsel lalu pindahkan semuanya lewat Bluetooth. Tidak ada yang melewati server, jadi ini bekerja tanpa internet.",
+  "settings.transfer.intro":
+    "Di ponsel baru, buka Airhop dan pilih Pindahkan dari ponsel lain. Kedua ponsel harus di Wi-Fi yang sama atau di satu hotspot, bukan internet.",
+  "settings.transfer.erase_note":
+    "Setelah ponsel baru menerima semuanya, ponsel ini dibersihkan. Foto dan berkas tidak ikut dipindahkan.",
+  "settings.transfer.auth_prompt":
+    "Pastikan ini kamu untuk memindahkan identitasmu",
+  "settings.transfer.scan_title": "Pindai kode di ponsel barumu",
+  "settings.transfer.aim": "Arahkan kamera ke kode di ponsel barumu",
+  "settings.transfer.wrong_code":
+    "Itu kode kontak. Pindai kode di ponsel barumu.",
+  "settings.transfer.camera_off_body":
+    "Izinkan akses kamera di Pengaturan untuk memindai kode di ponsel barumu.",
+  "settings.transfer.confirm_title": "Pindahkan ke ponsel ini?",
+  "settings.transfer.confirm_body":
+    "Semua yang ada di sini pindah ke ponsel yang menampilkan kode ini. Setelah sampai, ponsel ini dibersihkan.",
+  "settings.transfer.confirm_cta": "Pindahkan",
+  "settings.transfer.connecting": "Menyambung ke ponsel barumu",
+  "settings.transfer.connecting_hint":
+    "Kalau ponsel ini meminta izin mencari perangkat di jaringan lokal, izinkan.",
+  "settings.transfer.sending": "Memindahkan {percent}%",
+  "settings.transfer.keep_open":
+    "Biarkan Airhop terbuka di kedua ponsel sampai ini selesai.",
+  "settings.transfer.finishing": "Menyelesaikan di ponsel barumu",
+  "settings.transfer.erasing": "Membersihkan ponsel ini",
+  "settings.transfer.done_title": "Sudah dipindahkan",
+  "settings.transfer.done_body":
+    "Identitasmu sekarang ada di ponsel barumu, dan ponsel ini sudah dibersihkan.",
+  "settings.transfer.failed_title": "Pemindahan tidak selesai",
+  "settings.transfer.failed_unreachable":
+    "Tidak bisa menjangkau ponsel barumu. Sambungkan kedua ponsel ke Wi-Fi yang sama, atau nyalakan hotspot di salah satunya lalu sambungkan yang lain ke situ.",
+  "settings.transfer.failed_permission":
+    "Airhop perlu akses jaringan lokal untuk menjangkau ponsel barumu. Izinkan di Pengaturan, lalu coba lagi.",
+  "settings.transfer.failed_wrong_phone":
+    "Ponsel yang menjawab bukan ponsel yang kodenya kamu pindai.",
+  "settings.transfer.failed_incompatible":
+    "Ponsel barumu memakai Airhop yang lebih lama. Perbarui dulu, lalu coba lagi.",
+  "settings.transfer.failed_cancelled":
+    "Pemindahan dibatalkan di ponsel barumu.",
+  "settings.transfer.failed_storage":
+    "Ponsel barumu tidak bisa menyimpan semuanya.",
+  "settings.transfer.failed_interrupted":
+    "Koneksi terputus sebelum semuanya terkirim.",
+  "settings.transfer.unchanged":
+    "Tidak ada yang dipindahkan, dan ponsel ini tetap berfungsi seperti biasa.",
+  "settings.transfer.unconfirmed_title": "Apakah pemindahan selesai?",
+  "settings.transfer.unconfirmed_body":
+    "Ponsel ini kehilangan kontak dengan ponsel barumu sebelum ada konfirmasi. Kalau ponsel barumu menampilkan namamu, bersihkan ponsel ini. Kalau tidak, tetap pakai ponsel ini dan coba lagi.",
+  "settings.transfer.erase_cta": "Bersihkan ponsel ini",
+  "settings.transfer.keep_cta": "Tetap pakai ponsel ini",
   "settings.qr.permission_label": "Akses foto",
   "settings.qr.permission_purpose": "menyimpan kode QR-mu",
   "settings.qr.saved": "Tersimpan",
@@ -2302,6 +2394,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "{count} di dekat sini",
+  },
+  "chat.presence.members": {
+    other: "{count} anggota",
   },
 
   // ---- Wallet: mints ----

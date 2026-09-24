@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop은 음성 메모를 녹음하고 근처 피어에게 실시간 음성을 전달하기 위해 마이크를 사용합니다.";
 "NSPhotoLibraryUsageDescription" = "Airhop은 메시로 이미지와 동영상을 공유하기 위해 사진 라이브러리에 접근합니다.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop은 사용자가 저장을 선택할 때와 QR 코드를 다운로드할 때 사진과 동영상을 사진 라이브러리에 저장합니다.";
+"NSFaceIDUsageDescription" = "Airhop은 신원을 새 휴대폰으로 옮기기 전에 본인인지 확인하기 위해 Face ID를 사용합니다.";
 "NSLocationWhenInUseUsageDescription" = "Airhop은 근처 지역 채널(도시 블록, 도시, 지역)에 사용자를 배치하기 위해 대략적인 위치를 사용합니다. 정확한 위치는 절대 기기를 떠나지 않습니다.";

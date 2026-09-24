@@ -33,6 +33,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   TAB_BAR_CLEARANCE,
@@ -710,11 +711,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
-    // No row background, matching dm-list and channel-list: flat on the screen
-    // background with only a hairline between rows. On the same screen as the
-    // radar the two
-    // Mesh views therefore had different canvases, and switching Radar/List
-    // changed the page colour as well as the content.
+    // Flat rows on the screen background, like the chat lists and the radar,
+    // so switching Radar and List changes only the content.
     row: {
       flexDirection: "row",
       alignItems: "center",
@@ -832,7 +830,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     relayNoteBody: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 20,
+      lineHeight: LineHeight.sm,
     },
     sheetMessageBtn: {
       backgroundColor: Colors.accent,

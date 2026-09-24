@@ -1490,15 +1490,61 @@ export function confirmSend(txId: string): void {
   store.updateTx(txId, { status: "completed" });
 }
 
-// Put the proofs back; no swap happened, so they are valid at the mint. The
-// recipient may still hold a copy, so offer this only when delivery failed;
-// `refreshAccount` re-checks state afterwards.
+// Put the proofs back, offline if need be. They come back unverified: the
+// token still exists, and whoever holds it can redeem it first, so they are
+// only ours once swapped for fresh secrets. `settleReclaim` does that swap
+// when the mint is reachable; otherwise the next refresh does.
 export function reclaimSend(txId: string): boolean {
   const store = useWalletStore.getState();
+  const account = store.reserved[txId]?.account;
   const restored = store.releaseReserved(txId);
-  if (!restored) return false;
+  if (!restored || account === undefined) return false;
+  const { mintUrl, unit } = parseAccountKey(account);
+  const secrets = restored.map((p) => p.secret);
+  store.markUnverified(mintUrl, unit, secrets);
   store.updateTx(txId, { status: "reclaimed" });
+  reclaimedSecrets.set(txId, secrets);
   return true;
+}
+
+// What each reclaim put back, for `settleReclaim`. Not persisted: after a
+// restart the unverified flag alone still gets the coins swapped by a refresh.
+const reclaimedSecrets = new Map<string, string[]>();
+
+export type ReclaimOutcome = "secured" | "claimed" | "deferred";
+
+// Finish a reclaim at the mint, as cashu.me does by receiving its own token.
+// "secured": the coins were swapped, so the token handed out no longer works.
+// "claimed": the recipient redeemed it first; the coins are dropped and the
+// send counts as completed, since the money did arrive. "deferred": the mint
+// could not be asked, and the next refresh settles it.
+export async function settleReclaim(txId: string): Promise<ReclaimOutcome> {
+  const secrets = reclaimedSecrets.get(txId);
+  const tx = useWalletStore.getState().history.find((t) => t.id === txId);
+  if (secrets === undefined || tx === undefined) return "deferred";
+  if (mintNetworkBlock() !== null) return "deferred";
+  const epoch = walletEpoch;
+  try {
+    const held = (
+      useWalletStore.getState().proofs[accountKey(tx.mintUrl, tx.unit)] ?? []
+    ).filter((p) => secrets.includes(p.secret));
+    if (held.length === 0) return "deferred";
+    const wallet = await getWallet(tx.mintUrl, tx.unit);
+    const grouped = await wallet.groupProofsByState(held.map(toProofLike));
+    assertSameWallet(epoch);
+    if (grouped.spent.length === held.length) {
+      const store = useWalletStore.getState();
+      store.removeProofs(tx.mintUrl, tx.unit, secrets);
+      store.updateTx(txId, { status: "completed" });
+      reclaimedSecrets.delete(txId);
+      return "claimed";
+    }
+    await refreshAccount(tx.mintUrl, tx.unit);
+    reclaimedSecrets.delete(txId);
+    return "secured";
+  } catch {
+    return "deferred";
+  }
 }
 
 // Keeps the reservation so the token can still be reclaimed or re-shared.

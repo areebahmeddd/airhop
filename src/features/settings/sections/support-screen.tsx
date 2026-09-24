@@ -19,7 +19,13 @@
 // anyone using it.
 
 import { useT } from "@i18n";
-import { FontSize, Radius, Spacing, useThemeColors } from "@ui/theme";
+import {
+  FontSize,
+  LineHeight,
+  Radius,
+  Spacing,
+  useThemeColors,
+} from "@ui/theme";
 import React, { useMemo } from "react";
 import { Linking, StyleSheet, Text, View } from "react-native";
 import {
@@ -95,7 +101,7 @@ function createLocalStyles(Colors: ReturnType<typeof useThemeColors>) {
     noteText: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: FontSize.sm * 1.6,
+      lineHeight: LineHeight.sm,
     },
   });
 }

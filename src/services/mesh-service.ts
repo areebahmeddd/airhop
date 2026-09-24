@@ -386,6 +386,10 @@ const LATE_FRAME_MS = 5_000;
 // is low enough to catch it in a room with only a couple of neighbours.
 const CLOCK_SKEW_PEER_THRESHOLD = 2;
 
+// The other phone announces every 4 to 30 seconds and not every one reaches us,
+// so the warning waits out several missed announces before coming down.
+const IDENTITY_ELSEWHERE_QUIET_MS = 5 * 60 * 1000;
+
 // How long a sealed stream must be before its progress gets a file card. The
 // largest non-file Noise payload is a group roster at its 16-member cap, under
 // 3 KiB sealed; a file shorter than this completes before a card could be read.
@@ -1408,6 +1412,27 @@ export class MeshService {
   // Peers whose packets we have rejected as stale since the last one we
   // accepted. Its size is the signal, not its contents.
   private readonly staleFromPeers = new Set<string>();
+
+  // Announces under our peer ID stamped earlier may be a previous run's echoes.
+  private readonly startedAtMs = Date.now();
+  private identityElsewhereTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // An announce under our peer ID, signed with our key, that this run never
+  // sent: the signature proves it is this identity running on another phone,
+  // as after "Keep using this phone" once the new one had committed.
+  private noteOwnAnnounce(packet: Packet): void {
+    if (packet.timestamp < this.startedAtMs) return;
+    if (this.announceManager.sentHere(packet.timestamp)) return;
+    if (!verifyPacket(packet, this.identity.signingPubKey)) return;
+    useMeshStateStore.getState().setIdentityElsewhere(true);
+    if (this.identityElsewhereTimer !== null) {
+      clearTimeout(this.identityElsewhereTimer);
+    }
+    this.identityElsewhereTimer = setTimeout(() => {
+      this.identityElsewhereTimer = null;
+      useMeshStateStore.getState().setIdentityElsewhere(false);
+    }, IDENTITY_ELSEWHERE_QUIET_MS);
+  }
 
   // Whether our own clock is the thing out of step, reported to the Mesh tab.
   //
@@ -3265,8 +3290,11 @@ export class MeshService {
     // BLEAnnouncePreflightPolicy: .senderMismatch(derivedPeerID:).
     if (bytesToHex(sha256(info.noisePubKey)).slice(0, 16) !== peerID) return;
 
-    // Ignore echoes of our own announcements.
-    if (peerID === this.identity.peerID) return;
+    // Ours: an echo, or this identity running on another phone.
+    if (peerID === this.identity.peerID) {
+      this.noteOwnAnnounce(packet);
+      return;
+    }
 
     // ANNOUNCE packets are self-authenticating: the signing pubkey is in the
     // TLV payload (0x03), so decode first, then verify against it.
@@ -3968,6 +3996,10 @@ export class MeshService {
     // purpose, because resuming one is far cheaper than a fresh handshake and
     // radios drop links constantly.
     this.registry.clearSession(senderID);
+    // And the ratchet seeded from it: DMs use the ratchet before any session
+    // lookup, so a stale one would seal the next message to state that side no
+    // longer has, after a restart or a transfer alike.
+    this.drStates.delete(senderID);
     this.ringGrantProven.delete(senderID);
   }
 
@@ -6992,6 +7024,12 @@ export class MeshService {
     // for an empty room that is empty because we stopped listening.
     this.staleFromPeers.clear();
     useMeshStateStore.getState().setClockSkewed(false);
+    // Evidence only while we are listening.
+    if (this.identityElsewhereTimer !== null) {
+      clearTimeout(this.identityElsewhereTimer);
+      this.identityElsewhereTimer = null;
+    }
+    useMeshStateStore.getState().setIdentityElsewhere(false);
     this.floodRouter.flush();
     for (const sub of this.subs) sub.remove();
     this.subs = [];

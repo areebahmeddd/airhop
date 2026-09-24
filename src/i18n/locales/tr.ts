@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Gizlilik Politikası'nı aç",
   "onboarding.welcome.consent":
     "{cta} düğmesine dokunarak {terms} ve {privacy} metinlerimizi kabul etmiş olursun.",
+  "onboarding.welcome.transfer": "Başka bir telefondan taşı",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Kimliğin oluşturuluyor",
@@ -106,6 +107,41 @@ export const strings: Strings = {
     "Yalnızca işletim sistemi anahtar zinciri",
   "onboarding.username.prop.account": "Hesap gerekir",
   "onboarding.username.prop.account_value": "Yok",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Başka bir telefondan taşı",
+  "onboarding.transfer.preparing": "Hazırlanıyor",
+  "onboarding.transfer.scan_heading": "Bu kodu eski telefonunla tara",
+  "onboarding.transfer.step_open": "Eski telefonunda Airhop'u aç",
+  "onboarding.transfer.step_go": "{tab} sekmesine, ardından {row} satırına git",
+  "onboarding.transfer.step_scan": "Kamerayı bu koda doğrult",
+  "onboarding.transfer.network_note":
+    "İki telefon da aynı Wi-Fi ağında ya da aynı erişim noktasında olmalı. Hiçbir şey internetten geçmez.",
+  "onboarding.transfer.qr_a11y":
+    "Taşıma kodu. Eski telefonundaki Airhop ile tara.",
+  "onboarding.transfer.offline_title": "Wi-Fi'ye bağlan",
+  "onboarding.transfer.offline_body":
+    "İki telefonu aynı Wi-Fi ağına bağla ya da birinde erişim noktasını açıp diğerini ona bağla. İnternet gerekmez.",
+  "onboarding.transfer.incoming": "{name} taşınıyor",
+  "onboarding.transfer.receiving": "Alınıyor {percent}%",
+  "onboarding.transfer.saving": "Bu telefona kaydediliyor",
+  "onboarding.transfer.releasing": "Eski telefonda tamamlanıyor",
+  "onboarding.transfer.keep_open":
+    "Bu işlem bitene kadar iki telefonda da uygulamayı açık tut.",
+  "onboarding.transfer.check_title": "Eski telefonunu kontrol et",
+  "onboarding.transfer.check_body":
+    "Her şey bu telefonda. Devam etmeden önce eski telefonunun temizlendiğini söylediğinden emin ol ya da orada “Bu telefonu temizle” seçeneğine dokun.",
+  "onboarding.transfer.failed_title": "Taşıma tamamlanmadı",
+  "onboarding.transfer.failed_cancelled":
+    "Taşıma eski telefonunda iptal edildi. Burada hiçbir şey kaydedilmedi.",
+  "onboarding.transfer.failed_interrupted":
+    "Bağlantı koptu. Burada hiçbir şey kaydedilmedi.",
+  "onboarding.transfer.failed_storage":
+    "Bu telefon gelenleri kaydedemedi, bu yüzden hiçbir şey tutulmadı.",
+  "onboarding.transfer.failed_incompatible":
+    "Eski telefonunda Airhop'un daha yeni bir sürümü var. Bu telefonu güncelle ve yeniden dene.",
+  "onboarding.transfer.failed_unavailable":
+    "Bu telefon yerel ağ bağlantısı açamıyor.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop'a hoş geldin!",
@@ -182,6 +218,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
   "chat.channels.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
   "chat.dm.you_prefix": "Sen:",
+  "chat.draft_prefix": "Taslak:",
   "chat.dm.none": "Doğrudan mesaj yok",
   "chat.dm.none_desc":
     "Şifreli bir doğrudan mesaj başlatmak için Mesh sekmesine gidip bir eşe dokun.",
@@ -207,6 +244,8 @@ export const strings: Strings = {
   "chat.group_badge": "Grup",
   "chat.more": "Daha fazla",
   "chat.no_messages": "Henüz mesaj yok",
+  "chat.presence.nearby_none": "Yakında kimse yok",
+  "chat.presence.active_none": "Etkin kimse yok",
   "chat.you": "Sen",
   "chat.a11y.channel": "{name} kanalı",
   "chat.a11y.group": "{name} grubu",
@@ -836,6 +875,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Pil tasarrufu · daha seyrek tarama",
   "mesh.banner.wipe_incomplete":
     "Temizlik yarım kaldı · bazı veriler kalmış olabilir, yeniden açılınca tekrar denenir",
+  "mesh.banner.identity_elsewhere":
+    "Kimliğin başka bir telefonda da var · kullanmadığını temizle",
   "mesh.banner.wifi_off": "Wi-Fi kapalı · büyük dosyalar daha yavaş gider",
   "mesh.banner.clock_skew":
     "Bu telefonun saati yanlış · tarih ve saati otomatiğe al",
@@ -1254,9 +1295,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Aldılar",
   "wallet.reclaim.title": "Bu jeton geri alınsın mı?",
   "wallet.reclaim.body":
-    "{amount} {unit} bakiyene geri döner. Bunu yalnızca jeton hiç kimseye ulaşmadıysa yap: dizeyi zaten ellerindeyse, darphanede ilk bozduran parayı alır ve bu onlar olabilir.",
+    "{amount} {unit} bakiyene geri döner ve verdiğin jeton, darphaneye ulaşılabildiği anda çalışmayı bırakır. Onlar bundan önce bozdurursa, para onlarda kalır.",
   "wallet.reclaim.keep": "Bekliyor bırak",
   "wallet.reclaim.confirm": "Geri al",
+  "wallet.reclaim.claimed_title": "Onlar zaten bozdurmuş",
+  "wallet.reclaim.claimed_body":
+    "Darphane bu jetonun zaten bozdurulduğunu söylüyor, yani {amount} {unit} onlara ulaştı ve bakiyene hiçbir şey geri dönmedi.",
   "wallet.copied.token_body":
     "Jeton panonda. Teslim edildi olarak işaretleyene kadar burada ayrılmış kalır, bu yüzden ilk deneme başarısız olursa yeniden yapıştırabilirsin.",
   "wallet.copied.phrase_body":
@@ -1283,6 +1327,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Bu jetonu bakiyene geri al",
   "wallet.activity.title": "Etkinlik",
   "wallet.activity.none": "Henüz bir şey yok",
+  "wallet.activity.none_hint":
+    "Ecash'e yeni misin? Nasıl çalıştığını görmek için yukarıdaki {help} düğmesine dokun.",
   "wallet.activity.show_fewer": "Daha az ödeme göster",
   "wallet.activity.show_less": "Daha az göster",
   "wallet.activity.received_unconfirmed": "Alındı, onaylanmadı",
@@ -1331,7 +1377,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Kilitli ödemeler geri alınamaz: bu jetonları artık yalnızca onların anahtarı harcayabilir.",
   "wallet.pay.reclaimable":
-    "Ulaştığını onaylayana kadar Cüzdan sekmesinden geri alınabilir kalır.",
+    "Ulaştığını onaylayana kadar Etkinlik'ten geri alınabilir kalır.",
   "wallet.pay.why": "Bu yolla gönderildi, çünkü {reason}.",
   "wallet.pay.sent_title": "{name} kişisine {amount} {unit}",
   "wallet.pay.thread_receipt":
@@ -2068,14 +2114,58 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "Eş kimliğin, kullanıcı adın ve kişilerin",
   "settings.transfer.chats": "Sohbetler ve geçmiş",
   "settings.transfer.chats_desc": "Konuşmalar, gruplar ve katıldığın kanallar",
+  "settings.transfer.chats_without": "Odaların ve grupların, mesajları olmadan",
   "settings.transfer.wallet": "Cüzdan bakiyesi",
   "settings.transfer.wallet_desc": "Ecash ve işlem geçmişi",
   "settings.transfer.title": "Yeni telefona taşı",
   "settings.transfer.desc":
     "Kimliğini, sohbetlerini ve cüzdanını başka bir cihaza taşı",
-  "settings.transfer.coming_soon_a11y": "Yeni telefona taşı, yakında",
-  "settings.transfer.body":
-    "İki telefonu yan yana tut ve her şeyi Bluetooth üzerinden aktar. Hiçbir şey bir sunucudan geçmez, bu yüzden internetsiz çalışır.",
+  "settings.transfer.intro":
+    "Yeni telefonda Airhop'u aç ve “Başka bir telefondan taşı” seçeneğine dokun. İki telefon da internete değil, aynı Wi-Fi ağına ya da aynı erişim noktasına bağlı olmalı.",
+  "settings.transfer.erase_note":
+    "Yeni telefon her şeyi aldığında bu telefon temizlenir. Fotoğraflar ve dosyalar taşınmaz.",
+  "settings.transfer.auth_prompt": "Kimliğini taşımak için sen olduğunu onayla",
+  "settings.transfer.scan_title": "Yeni telefonundaki kodu tara",
+  "settings.transfer.aim": "Kamerayı yeni telefonundaki koda doğrult",
+  "settings.transfer.wrong_code":
+    "Bu bir kişi kodu. Yeni telefonundaki kodu tara.",
+  "settings.transfer.camera_off_body":
+    "Yeni telefonundaki kodu taramak için Ayarlar'dan kamera erişimini aç.",
+  "settings.transfer.confirm_title": "Bu telefona taşınsın mı?",
+  "settings.transfer.confirm_body":
+    "Buradaki her şey bu kodu gösteren telefona taşınır. Aktarım bitince bu telefon temizlenir.",
+  "settings.transfer.confirm_cta": "Taşı",
+  "settings.transfer.connecting": "Yeni telefonuna bağlanılıyor",
+  "settings.transfer.connecting_hint":
+    "Bu telefon yerel ağdaki cihazları bulmak için izin isterse izin ver.",
+  "settings.transfer.sending": "Taşınıyor {percent}%",
+  "settings.transfer.keep_open":
+    "Bu işlem bitene kadar iki telefonda da uygulamayı açık tut.",
+  "settings.transfer.finishing": "Yeni telefonda tamamlanıyor",
+  "settings.transfer.erasing": "Bu telefon temizleniyor",
+  "settings.transfer.done_title": "Taşındı",
+  "settings.transfer.done_body":
+    "Kimliğin artık yeni telefonunda ve bu telefon temizlendi.",
+  "settings.transfer.failed_title": "Taşıma tamamlanmadı",
+  "settings.transfer.failed_unreachable":
+    "Yeni telefonuna ulaşılamadı. İki telefonu aynı Wi-Fi ağına bağla ya da birinde erişim noktasını açıp diğerini ona bağla.",
+  "settings.transfer.failed_permission":
+    "Airhop'un yeni telefonuna ulaşmak için yerel ağ erişimine ihtiyacı var. Ayarlar'dan izin ver ve yeniden dene.",
+  "settings.transfer.failed_wrong_phone":
+    "Yanıt veren telefon, kodunu taradığın telefon değil.",
+  "settings.transfer.failed_incompatible":
+    "Yeni telefonunda Airhop'un daha eski bir sürümü var. Onu güncelle ve yeniden dene.",
+  "settings.transfer.failed_cancelled": "Taşıma yeni telefonunda iptal edildi.",
+  "settings.transfer.failed_storage": "Yeni telefonun her şeyi kaydedemedi.",
+  "settings.transfer.failed_interrupted":
+    "Her şey gönderilmeden bağlantı koptu.",
+  "settings.transfer.unchanged":
+    "Hiçbir şey taşınmadı, bu telefon eskisi gibi çalışıyor.",
+  "settings.transfer.unconfirmed_title": "Taşıma tamamlandı mı?",
+  "settings.transfer.unconfirmed_body":
+    "Bu telefon, yeni telefon onaylamadan önce onunla bağlantısını kaybetti. Yeni telefonun adını gösteriyorsa bu telefonu temizle. Göstermiyorsa bunu kullanmaya devam et ve yeniden dene.",
+  "settings.transfer.erase_cta": "Bu telefonu temizle",
+  "settings.transfer.keep_cta": "Bu telefonu kullanmaya devam et",
   "settings.qr.permission_label": "Fotoğraf erişimi",
   "settings.qr.permission_purpose": "QR kodunu kaydetmek",
   "settings.qr.saved": "Kaydedildi",
@@ -2300,6 +2390,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "yakında {count}",
     other: "yakında {count}",
+  },
+  "chat.presence.members": {
+    one: "{count} üye",
+    other: "{count} üye",
   },
 
   // ---- Wallet: mints ----

@@ -17,6 +17,7 @@ import {
   BUTTON_HEIGHT,
   FontSize,
   FontWeight,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -253,13 +254,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // Nudge the leading icon down so it optically centers on the first text
     // line (the text's lineHeight otherwise leaves the icon sitting high).
     noteIcon: {
-      marginTop: 2,
+      marginTop: Spacing["2xs"],
     },
     privacyNoteText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     input: {
       backgroundColor: Colors.surfaceRaised,
@@ -271,11 +272,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
     },
-    // flexShrink so the member list gives up height when the sheet is squeezed
-    // (keyboard up on a short screen) instead of pushing the Back/Create row off
-    // the bottom of a maxHeight-clipped sheet. RN defaults flexShrink to 0, so
-    // without this the list keeps its full height and the actions - the only way
-    // to finish or leave - are what gets cut.
+    // flexShrink, since RN defaults it to 0: with the keyboard up the list
+    // would otherwise push Back and Create out of the clipped sheet.
     section: { gap: Spacing.sm, flexShrink: 1 },
     sectionLabel: {
       fontSize: FontSize.xs,
@@ -286,7 +284,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     empty: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
-      lineHeight: 19,
+      lineHeight: LineHeight.sm,
     },
     list: { flexGrow: 0, flexShrink: 1 },
     row: {

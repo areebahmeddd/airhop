@@ -20,6 +20,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  LineHeight,
   Radius,
   Spacing,
   useThemeColors,
@@ -279,7 +280,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       textAlign: "center",
       paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.xl,
-      lineHeight: FontSize.sm * 1.5,
+      lineHeight: LineHeight.sm,
     },
     sheet: {
       backgroundColor: Colors.surface,

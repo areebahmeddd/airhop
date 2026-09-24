@@ -51,12 +51,12 @@ module.exports = defineConfig([
   {
     // Right-to-left safety.
     //
-    // A physical property is invisible until somebody opens the app in Arabic,
-    // where it puts a badge on the wrong side of a glyph or a message tail
-    // pointing away from its sender. React Native flips the logical forms on its
-    // own, so the fix is always to name the edge logically. `textAlign` is the
-    // exception: it has no logical "end", so the trailing edge comes from
-    // `textAlignEnd` in i18n/layout.ts and the leading edge is "auto".
+    // A physical side looks fine until the app runs in Arabic, where a badge
+    // lands on the wrong side or a message tail points away from its sender.
+    // React Native flips logical sides on its own, so always name the edge
+    // logically; textAlign has no logical end, so use textAlignEnd from
+    // i18n/layout.ts, or "auto" for the start. The other two rules live in this
+    // list because a later no-restricted-syntax would replace it, not extend it.
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/i18n/layout.ts", "src/features/discovery/radar-view.tsx"],
     rules: {
@@ -86,6 +86,15 @@ module.exports = defineConfig([
             "CallExpression > MemberExpression[property.name=/^toLocale(String|DateString|TimeString)$/]",
           message:
             "Reads the device locale, not the app's language. Use formatNumber, formatAmount or one of the date formatters from @utils/format.",
+        },
+        {
+          // Scaling a token or nudging it by a number invents a size the
+          // design system does not know, so screens drift a point at a time.
+          // Summing tokens to line elements up is fine.
+          selector:
+            ":matches(BinaryExpression[operator=/^[*\/]$/][left.object.name=/^(Spacing|FontSize|Radius|LineHeight)$/], BinaryExpression[operator=/^[*\/]$/][right.object.name=/^(Spacing|FontSize|Radius|LineHeight)$/], BinaryExpression[operator=/^[-+]$/][right.type='Literal'][left.object.name=/^(Spacing|FontSize|Radius|LineHeight)$/])",
+          message:
+            "Arithmetic on a theme token. Use a token from src/ui/theme.ts, adding it to the scale if the value is missing.",
         },
       ],
     },

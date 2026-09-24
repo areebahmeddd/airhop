@@ -26,6 +26,7 @@ import {
   FontSize,
   FontWeight,
   hitSlopFor,
+  LineHeight,
   MaxFontScale,
   Radius,
   Spacing,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.xs + 2,
+    paddingVertical: Spacing["xs-sm"],
     gap: Spacing.sm,
   },
   indicator: {
@@ -227,6 +228,6 @@ const styles = StyleSheet.create({
   dismissText: {
     fontSize: FontSize.base,
     fontWeight: FontWeight.medium,
-    lineHeight: FontSize.base + 2,
+    lineHeight: LineHeight.baseTight,
   },
 });

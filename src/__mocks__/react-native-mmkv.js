@@ -47,6 +47,9 @@ class MMKVInstance {
     return Array.from(this._store.keys());
   }
 
+  // Nothing is encrypted in the mock.
+  encrypt() {}
+
   clearAll() {
     this._store.clear();
     clearAllSpy();

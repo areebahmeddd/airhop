@@ -7,6 +7,7 @@
 // prefix, so we must produce and parse it to interoperate. The packet is exactly
 // our BLE wire format, so this reuses packet-codec + noise-payload.
 
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
 import {
   decodeNoisePayload,
@@ -35,14 +36,12 @@ export interface BitchatDmContent {
   body?: Uint8Array;
 }
 
+// Strict: parseInt would also read "+f" or " 1", giving one ID several
+// spellings. Anything but 16 hex digits encodes as zeros.
 function peerIdBytes(peerID: string | null): Uint8Array {
   if (peerID === null) return BROADCAST_ID;
-  const clean = peerID.length >= 16 ? peerID.slice(0, 16) : peerID;
-  const out = new Uint8Array(8);
-  for (let i = 0; i < 8 && i * 2 + 1 < clean.length; i++) {
-    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16) || 0;
-  }
-  return out;
+  const head = peerID.slice(0, 16);
+  return /^[0-9a-f]{16}$/i.test(head) ? hexToBytes(head) : new Uint8Array(8);
 }
 
 // A null sender is a pseudonymous DM (a location channel), which must not carry

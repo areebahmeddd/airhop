@@ -28,6 +28,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 // ---- Constants ----
 
 export const WALLET_STORAGE_ID = "wallet-store";
+// Predates the naming convention (ARCHITECTURE.md) and stays as it is.
+const WALLET_PERSIST_NAME = "wallet-state";
 
 const ENCRYPTION_KEY_ITEM = KEYCHAIN_ITEMS.walletEncryptionKey;
 
@@ -193,6 +195,9 @@ interface WalletState {
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
   markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
+  // For coins someone else may also hold, such as a reclaimed token: the next
+  // refresh swaps them, which is what makes them ours alone.
+  markUnverified: (mintUrl: string, unit: string, secrets: string[]) => void;
   // On phrase replacement: old coins stay spendable but the new phrase cannot
   // rebuild them, so they read as uncovered until a refresh re-issues them.
   clearDerived: () => void;
@@ -301,6 +306,25 @@ export function parseAccountKey(key: string): {
   return { mintUrl: key.slice(0, idx), unit: key.slice(idx + 1) };
 }
 
+function setVerified(
+  state: WalletState,
+  mintUrl: string,
+  unit: string,
+  secrets: string[],
+  verified: boolean,
+): Partial<WalletState> {
+  const key = accountKey(mintUrl, unit);
+  const existing = state.proofs[key];
+  if (!existing) return state;
+  const mark = new Set(secrets);
+  return {
+    proofs: {
+      ...state.proofs,
+      [key]: existing.map((p) => (mark.has(p.secret) ? { ...p, verified } : p)),
+    },
+  };
+}
+
 // ---- Encrypted storage bootstrap ----
 
 // MMKV needs its key at construction and the keychain is async, so the instance
@@ -311,6 +335,9 @@ type MMKVLike = ReturnType<typeof createMMKV>;
 
 let instance: MMKVLike | null = null;
 let ready: Promise<MMKVLike> | null = null;
+// Never reset. MMKV hands every later open the instance it first created, with
+// the key it was first opened under; a reopen after a wipe must re-key it.
+let openedThisProcess = false;
 // Bumped on reset, so a bootstrap straddling a wipe cannot install its handle.
 let storageGeneration = 0;
 
@@ -352,6 +379,9 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
       encryptionKey,
       encryptionType: "AES-256",
     });
+    // A no-op when the keys already agree.
+    if (openedThisProcess) mmkv.encrypt(encryptionKey, "AES-256");
+    openedThisProcess = true;
     instance = mmkv;
     return mmkv;
   })();
@@ -486,6 +516,28 @@ const asyncMMKVStorage = {
     mmkv?.remove(name);
   },
 };
+
+// The persisted wallet, decrypted, for a transfer. Throws when locked rather
+// than carry an empty wallet. Read after a macrotask, so the async adapter's
+// last write has landed.
+export async function exportWalletState(): Promise<string | null> {
+  const mmkv = await bootstrapWalletStorage();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return mmkv.getString(WALLET_PERSIST_NAME) ?? null;
+}
+
+// Installs a transferred wallet under this phone's own file key, read back, then
+// rehydrated so the store's launch-time empty state is not written back.
+export async function importWalletState(raw: string): Promise<void> {
+  const mmkv = await bootstrapWalletStorage();
+  mmkv.set(WALLET_PERSIST_NAME, raw);
+  if (mmkv.getString(WALLET_PERSIST_NAME) !== raw) {
+    throw new Error("wallet-import-readback");
+  }
+  hydrated = false;
+  hydrationSettled = false;
+  await useWalletStore.persist.rehydrate();
+}
 
 // Through the one handle this module owns; zero while not open.
 export function walletStorageByteSize(): number {
@@ -720,22 +772,15 @@ export const useWalletStore = create<WalletState>()(
         set((state) => ({ proofs: { ...state.proofs, [key]: proofs } }));
       },
 
+      // Nothing to mark skips the write, which would persist an unchanged store.
       markVerified(mintUrl, unit, secrets) {
         if (secrets.length === 0) return;
-        const key = accountKey(mintUrl, unit);
-        const mark = new Set(secrets);
-        set((state) => {
-          const existing = state.proofs[key];
-          if (!existing) return state;
-          return {
-            proofs: {
-              ...state.proofs,
-              [key]: existing.map((p) =>
-                mark.has(p.secret) ? { ...p, verified: true } : p,
-              ),
-            },
-          };
-        });
+        set((state) => setVerified(state, mintUrl, unit, secrets, true));
+      },
+
+      markUnverified(mintUrl, unit, secrets) {
+        if (secrets.length === 0) return;
+        set((state) => setVerified(state, mintUrl, unit, secrets, false));
       },
 
       clearDerived() {
@@ -926,7 +971,7 @@ export const useWalletStore = create<WalletState>()(
       },
     }),
     {
-      name: "wallet-state",
+      name: WALLET_PERSIST_NAME,
       storage: createJSONStorage(() => asyncMMKVStorage),
       version: 1,
       // Fires on success and failure (see `settleHydration`).

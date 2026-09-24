@@ -358,7 +358,7 @@ export class GeohashChannelService {
 
     // Drop subscriptions for channels the user has since left.
     for (const channel of [...this.subscriptions.keys()]) {
-      if (!joined.includes(channel)) this.unsubscribeChannel(channel);
+      if (!joined.includes(channel)) this.leaveCell(channel);
     }
 
     for (const channel of joined) {
@@ -366,14 +366,14 @@ export class GeohashChannelService {
       if (geohash === null) {
         // A named channel with no location fix: it runs BLE-only, so make sure
         // it isn't left subscribed to a stale cell from before permission went.
-        if (this.channelGeohash.has(channel)) this.unsubscribeChannel(channel);
+        if (this.channelGeohash.has(channel)) this.leaveCell(channel);
         continue;
       }
       if (this.channelGeohash.get(channel) === geohash) continue; // unchanged
 
       // New cell (moved, or first resolve): the old cell's traffic is no
       // longer ours.
-      this.unsubscribeChannel(channel);
+      this.leaveCell(channel);
       this.channelGeohash.set(channel, geohash);
       this.subscribeChannel(channel, geohash);
     }
@@ -1325,9 +1325,17 @@ export class GeohashChannelService {
     this.channelGeohash.delete(channel);
   }
 
+  // Unsubscribing, plus forgetting who spoke there. Separate from
+  // unsubscribeChannel because applyRelayChange reopens the same cell, whose
+  // people are still the ones in it.
+  private leaveCell(channel: string): void {
+    this.unsubscribeChannel(channel);
+    this.participants.delete(channel);
+  }
+
   private teardownAll(): void {
     for (const channel of [...this.subscriptions.keys()]) {
-      this.unsubscribeChannel(channel);
+      this.leaveCell(channel);
     }
   }
 
@@ -1341,6 +1349,12 @@ export class GeohashChannelService {
     if (map === undefined) {
       map = new Map();
       this.participants.set(channel, map);
+    }
+    // Pruned as it grows rather than only filtered on read, so a busy cell
+    // holds its last few minutes of speakers, not everyone it ever heard.
+    const cutoff = Date.now() - PARTICIPANT_TTL_MS;
+    for (const [key, p] of map) {
+      if (p.lastSeenMs < cutoff) map.delete(key);
     }
     map.set(pubkey, { pubkey, nickname, lastSeenMs: Date.now(), teleported });
   }
