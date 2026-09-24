@@ -314,6 +314,13 @@ export interface VoiceLevel {
   inbound: number;
 }
 
+// The last frame that threw at the ingress, for the diagnostics export.
+// `packetType` is null when the frame never decoded as far as a type.
+export interface IngressFault {
+  error: string;
+  packetType: number | null;
+}
+
 // TTL a ping launches with (also the hop-count reference for the pong).
 const MESH_PING_TTL = 7;
 // How long to wait for a pong before resolving the probe as unreachable.
@@ -390,6 +397,15 @@ function clampNickname(nickname: string): string {
   let n = nickname;
   while (new TextEncoder().encode(n).length > 64) n = n.slice(0, -1);
   return n;
+}
+
+// Re-read for the fault record. Guarded, because the decode may be what threw.
+function packetTypeOf(dataBase64: string): number | null {
+  try {
+    return decodePacket(base64ToBytes(dataBase64))?.type ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ---- MeshService ----
@@ -632,12 +648,15 @@ export class MeshService {
     return { sent: this.links.bytesSent, received: this.bytesReceived };
   }
 
-  // Frames a decoder threw on, as opposed to refused. Zero is the expected
-  // reading; anything else is a parser bug.
-  private decoderFaults = 0;
+  // Frames that threw between decode and dispatch, as opposed to being refused.
+  // Anything above zero is a bug in a decoder or a handler. The last fault keeps
+  // only an error name and a packet type: a message can quote the bytes, and
+  // the diagnostics report is shared.
+  private ingressFaults = 0;
+  private lastIngressFault: IngressFault | null = null;
 
-  getDecoderFaultCount(): number {
-    return this.decoderFaults;
+  getIngressFaults(): { count: number; last: IngressFault | null } {
+    return { count: this.ingressFaults, last: this.lastIngressFault };
   }
 
   // Live radio links, split by transport, for the Diagnostics screen.
@@ -1440,14 +1459,23 @@ export class MeshService {
   }
 
   // The trust boundary: bytes from anyone in radio range, before any signature
-  // check. A throw that escaped this listener would end the process, so a
-  // decoder that throws costs one frame here. decoder-fuzz.test.ts holds every
-  // decoder to returning null instead.
+  // check. A throw escaping this listener reaches the global handler, which in
+  // a release build swaps the whole app for the error screen, so it costs only
+  // this frame instead. It wraps dispatch as well as decode because most
+  // handlers have no catch of their own; decoder-fuzz.test.ts covers decoders.
+  //
+  // Logged in development only, since in release anyone in range could fill
+  // the log.
   private handleRaw(linkID: string, dataBase64: string): void {
     try {
       this.handleFrame(linkID, dataBase64);
-    } catch {
-      this.decoderFaults += 1;
+    } catch (error) {
+      this.ingressFaults += 1;
+      this.lastIngressFault = {
+        error: error instanceof Error ? error.name : typeof error,
+        packetType: packetTypeOf(dataBase64),
+      };
+      if (__DEV__) console.error("Airhop.Ingress", error);
     }
   }
 

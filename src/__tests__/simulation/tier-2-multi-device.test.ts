@@ -237,12 +237,12 @@ test("B03 corrupted packets are rejected and nothing crashes", async () => {
   s.expectNone("no crashes on malformed input", noCrashes(devices));
   // Refused by a decoder, never caught at the ingress.
   const faults = devices
-    .map((d) => d.mesh?.getDecoderFaultCount() ?? 0)
+    .map((d) => d.mesh?.getIngressFaults().count ?? 0)
     .reduce((a, b) => a + b, 0);
   s.check(
-    "no corrupted packet made a decoder throw",
+    "no corrupted packet threw at the ingress",
     faults === 0,
-    `decoder faults = ${String(faults)}`,
+    `ingress faults = ${String(faults)}`,
   );
   s.expectNone("no forged senders", noForgedSenders(devices));
   s.expectNone("exactly once", exactlyOnce(devices));

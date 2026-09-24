@@ -1,48 +1,76 @@
 /** @jest-environment node */
-// Every decoder that runs on unauthenticated bytes returns a value or null
-// for any input, and never throws. mesh-service's ingress would catch a throw
-// and drop the frame, but a decoder that can throw is a parser bug, and this
-// is where it is found.
+// Every decoder that runs on unauthenticated bytes returns a value or null for
+// any input and never throws. The mesh-service ingress catches a throw, but a
+// decoder that throws is still a parser bug, and this is where it is found.
 //
-// Random bytes fail the first length check and never reach the code worth
-// testing, so most inputs start as a valid encoding and are damaged. Seeded,
-// so a failure prints the bytes and replays.
+// Random bytes rarely get past a structured decoder's first field, so each of
+// those is also fed damaged copies of its own encoding, built by the encoder
+// the app sends with. Seeded, so a failure prints the bytes and replays.
 //
 // FUZZ_ITERATIONS=200000 npm test -- decoder-fuzz   for a deep run.
 
 import { bytesToHex } from "@noble/hashes/utils.js";
-import { decodeEnvelopePayload } from "../../courier/courier-store";
+import {
+  decodeAirhopChannelPayload,
+  decodeMeshPublicPayload,
+} from "../../../router/message-router";
+import {
+  decodeEnvelopePayload,
+  encodeEnvelopePayload,
+} from "../../courier/courier-store";
 import {
   decodeAnnouncePayload,
   decodeCapabilities,
+  encodeAnnouncePayload,
 } from "../../discovery/announce-manager";
 import {
   decodeGroupEnvelope,
   decodeGroupState,
   decodeRoster,
+  encodeGroupEnvelope,
+  encodeGroupState,
+  encodeRoster,
+  type GroupMember,
 } from "../../rooms/group-protocol";
 import { decodeFragmentPayload } from "../../routing/fragment-manager";
 import {
   decodeGcsFilter,
   decodeGossipFilterPayload,
+  encodeGossipFilterPayload,
 } from "../../sync/gossip-sync";
-import { decodeBurstPacket } from "../../voice/voice-capture";
-import { decodeBoardWire } from "../board-packet";
+import { decodeBurstPacket, encodeBurstData } from "../../voice/voice-capture";
+import { decodeBoardWire, encodeBoardWire } from "../board-packet";
 import { decodeDmPayload } from "../dm-payload";
 import { decodeFilePacket, encodeFilePacket } from "../file-packet";
-import { decodeLocationPin } from "../location-pin";
+import { decodeLocationPin, encodeLocationPin } from "../location-pin";
 import { decodeMeshPing } from "../mesh-ping";
 import {
   decodeNoisePayload,
   decodePrivateMessagePacket,
+  encodePrivateMessagePacket,
 } from "../noise-payload";
-import { decodeNostrCarrier } from "../nostr-carrier";
+import {
+  CarrierDirection,
+  decodeNostrCarrier,
+  encodeNostrCarrier,
+} from "../nostr-carrier";
 import { decodePacket, encodePacket, type Packet } from "../packet-codec";
-import { decodePeerStatePacket } from "../peer-state-packet";
-import { decodePrekeyBundle } from "../prekey-bundle";
-import { decodeRing, decodeRingAck, decodeRingRefused } from "../ring-payload";
+import {
+  decodePeerStatePacket,
+  encodePeerStatePacket,
+} from "../peer-state-packet";
+import { decodePrekeyBundle, encodePrekeyBundle } from "../prekey-bundle";
+import {
+  decodeRing,
+  decodeRingAck,
+  decodeRingRefused,
+  encodeRingRefused,
+  RingRefusalReason,
+} from "../ring-payload";
 
-const ITERATIONS = Number(process.env.FUZZ_ITERATIONS ?? 3_000);
+// A typo falls back to the default, not to NaN, which would run nothing and pass.
+const ITERATIONS =
+  Number.parseInt(process.env.FUZZ_ITERATIONS ?? "", 10) || 3_000;
 const SEED = 0x9e3779b9;
 
 // xorshift32: the run has to replay.
@@ -85,7 +113,7 @@ function packetSeed(): Uint8Array {
 function fileSeed(): Uint8Array {
   return (
     encodeFilePacket({
-      fileName: rnd() < 0.8 ? `img_${int(1e6)}.jpg` : undefined,
+      fileName: rnd() < 0.8 ? `img_${String(int(1e6))}.jpg` : undefined,
       mimeType: rnd() < 0.8 ? "image/jpeg" : undefined,
       content: bytes(1 + int(300)),
       channel: rnd() < 0.5 ? "#bluetooth" : undefined,
@@ -93,6 +121,14 @@ function fileSeed(): Uint8Array {
       caption: rnd() < 0.3 ? "x".repeat(int(40)) : undefined,
     }) ?? bytes(32)
   );
+}
+
+function members(): GroupMember[] {
+  return Array.from({ length: 1 + int(4) }, () => ({
+    fingerprint: bytesToHex(bytes(32)),
+    signingKey: bytes(32),
+    nickname: `n${String(int(1e4))}`,
+  }));
 }
 
 // ---- Mutations that keep the frame plausible ----
@@ -151,66 +187,241 @@ function mutate(src: Uint8Array): Uint8Array {
   return b;
 }
 
-function input(): Uint8Array {
-  const r = rnd();
-  if (r < 0.4) return mutate(packetSeed());
-  if (r < 0.7) return mutate(fileSeed());
-  if (r < 0.85) return bytes(int(700));
-  return bytes(int(24));
+function randomInput(): Uint8Array {
+  return rnd() < 0.5 ? bytes(int(700)) : bytes(int(24));
 }
 
+// ---- Targets ----
+
 // A decoder that takes more than the bytes gets plausible values for the rest.
+// `seed` is set only where random bytes rarely get past the first field: a TLV
+// with a 16-bit length, a version byte, a fixed-size key.
+interface Target {
+  name: string;
+  decode: (b: Uint8Array) => unknown;
+  seed?: () => Uint8Array | null;
+}
+
 const senderID = bytes(8);
-const decoders: [string, (b: Uint8Array) => unknown][] = [
-  ["decodePacket", (b) => decodePacket(b)],
-  ["decodeFilePacket", (b) => decodeFilePacket(b)],
-  ["decodeNoisePayload", (b) => decodeNoisePayload(b)],
-  ["decodePrivateMessagePacket", (b) => decodePrivateMessagePacket(b)],
-  ["decodeDmPayload", (b) => decodeDmPayload(b)],
-  ["decodeFragmentPayload", (b) => decodeFragmentPayload(b)],
-  ["decodeGossipFilterPayload", (b) => decodeGossipFilterPayload(b)],
-  ["decodeGcsFilter", (b) => decodeGcsFilter(1 + int(30), 1 + int(1 << 20), b)],
-  ["decodeNostrCarrier", (b) => decodeNostrCarrier(b)],
-  ["decodeAnnouncePayload", (b) => decodeAnnouncePayload(b, senderID)],
-  ["decodeCapabilities", (b) => decodeCapabilities(b)],
-  ["decodeEnvelopePayload", (b) => decodeEnvelopePayload(b)],
-  ["decodePrekeyBundle", (b) => decodePrekeyBundle(b)],
-  ["decodeBoardWire", (b) => decodeBoardWire(b)],
-  ["decodePeerStatePacket", (b) => decodePeerStatePacket(b)],
-  ["decodeLocationPin", (b) => decodeLocationPin(b)],
-  ["decodeMeshPing", (b) => decodeMeshPing(b)],
-  ["decodeRing", (b) => decodeRing(b)],
-  ["decodeRingAck", (b) => decodeRingAck(b)],
-  ["decodeRingRefused", (b) => decodeRingRefused(b)],
-  ["decodeRoster", (b) => decodeRoster(b)],
-  ["decodeGroupState", (b) => decodeGroupState(b)],
-  ["decodeGroupEnvelope", (b) => decodeGroupEnvelope(b)],
-  ["decodeBurstPacket", (b) => decodeBurstPacket(b)],
+const targets: Target[] = [
+  { name: "decodePacket", decode: decodePacket, seed: packetSeed },
+  { name: "decodeFilePacket", decode: decodeFilePacket, seed: fileSeed },
+  { name: "decodeNoisePayload", decode: decodeNoisePayload },
+  {
+    name: "decodePrivateMessagePacket",
+    decode: decodePrivateMessagePacket,
+    seed: () =>
+      encodePrivateMessagePacket(`m${String(int(1e6))}`, "x".repeat(int(200))),
+  },
+  { name: "decodeDmPayload", decode: decodeDmPayload },
+  { name: "decodeFragmentPayload", decode: decodeFragmentPayload },
+  {
+    name: "decodeGossipFilterPayload",
+    decode: decodeGossipFilterPayload,
+    seed: () =>
+      encodeGossipFilterPayload({
+        p: 1 + int(30),
+        m: 1 + int(1 << 20),
+        data: bytes(int(400)),
+        types: rnd() < 0.5 ? int(256) : undefined,
+        since: rnd() < 0.5 ? 1_700_000_000_000 : undefined,
+      }),
+  },
+  {
+    name: "decodeGcsFilter",
+    decode: (b) => decodeGcsFilter(1 + int(30), 1 + int(1 << 20), b),
+  },
+  {
+    name: "decodeNostrCarrier",
+    decode: decodeNostrCarrier,
+    seed: () =>
+      encodeNostrCarrier({
+        direction: pick([
+          CarrierDirection.TO_GATEWAY,
+          CarrierDirection.FROM_GATEWAY,
+          CarrierDirection.TO_BRIDGE,
+          CarrierDirection.FROM_BRIDGE,
+        ]),
+        geohash: "u4pruyd".slice(0, 1 + int(7)),
+        eventJSON: bytes(1 + int(300)),
+      }),
+  },
+  {
+    name: "decodeAnnouncePayload",
+    decode: (b) => decodeAnnouncePayload(b, senderID),
+    seed: () =>
+      encodeAnnouncePayload(
+        {
+          noiseStaticPrivKey: bytes(32),
+          noiseStaticPubKey: bytes(32),
+          signingPrivKey: bytes(32),
+          signingPubKey: bytes(32),
+          peerID: bytesToHex(senderID),
+        },
+        `peer${String(int(1e4))}`,
+        Array.from({ length: int(4) }, () => bytes(8)),
+        rnd() < 0.5 ? bytes(32) : undefined,
+        int(1 << 16),
+        rnd() < 0.3 ? "u4pru" : undefined,
+      ),
+  },
+  { name: "decodeCapabilities", decode: decodeCapabilities },
+  {
+    name: "decodeEnvelopePayload",
+    decode: decodeEnvelopePayload,
+    seed: () =>
+      encodeEnvelopePayload({
+        recipientTag: bytes(16),
+        expiryMs: 1_700_000_000_000 + int(1e6),
+        copies: int(8),
+        ciphertext: bytes(1 + int(300)),
+        prekeyID: rnd() < 0.5 ? int(1 << 30) : undefined,
+      }),
+  },
+  {
+    name: "decodePrekeyBundle",
+    decode: decodePrekeyBundle,
+    seed: () =>
+      encodePrekeyBundle({
+        noiseStaticPublicKey: bytes(32),
+        prekeys: Array.from({ length: 1 + int(4) }, () => ({
+          id: int(1 << 30),
+          publicKey: bytes(32),
+        })),
+        generatedAt: 1_700_000_000_000 + int(1e6),
+        signature: bytes(64),
+      }),
+  },
+  {
+    name: "decodeBoardWire",
+    decode: decodeBoardWire,
+    seed: () =>
+      encodeBoardWire({
+        kind: "post",
+        post: {
+          postID: bytes(16),
+          geohash: rnd() < 0.5 ? "" : "u4pru",
+          content: "x".repeat(int(200)),
+          authorSigningKey: bytes(32),
+          authorNickname: `a${String(int(1e4))}`,
+          createdAt: 1_700_000_000_000,
+          expiresAt: 1_700_000_000_000 + int(1e8),
+          flags: int(2),
+          signature: bytes(64),
+        },
+      }),
+  },
+  {
+    name: "decodePeerStatePacket",
+    decode: decodePeerStatePacket,
+    seed: () =>
+      encodePeerStatePacket({
+        capabilities: int(1 << 16),
+        signingPubKey: bytes(32),
+      }),
+  },
+  {
+    name: "decodeLocationPin",
+    decode: decodeLocationPin,
+    seed: () =>
+      encodeLocationPin({
+        lat: rnd() * 180 - 90,
+        lng: rnd() * 360 - 180,
+        accuracyM: rnd() < 0.5 ? int(5000) : undefined,
+        takenAtMs: 1_700_000_000_000,
+      }),
+  },
+  { name: "decodeMeshPing", decode: decodeMeshPing },
+  { name: "decodeRing", decode: decodeRing },
+  { name: "decodeRingAck", decode: decodeRingAck },
+  {
+    name: "decodeRingRefused",
+    decode: decodeRingRefused,
+    seed: () =>
+      encodeRingRefused(
+        `r${String(int(1e6))}`,
+        pick(Object.values(RingRefusalReason)),
+      ),
+  },
+  {
+    name: "decodeRoster",
+    decode: decodeRoster,
+    seed: () => encodeRoster(members()),
+  },
+  {
+    name: "decodeGroupState",
+    decode: decodeGroupState,
+    seed: () =>
+      encodeGroupState({
+        groupID: bytes(16),
+        name: `g${String(int(1e4))}`,
+        epoch: int(1 << 20),
+        members: members(),
+        creatorFingerprint: bytesToHex(bytes(32)),
+        key: bytes(32),
+        signature: bytes(64),
+      }),
+  },
+  {
+    name: "decodeGroupEnvelope",
+    decode: decodeGroupEnvelope,
+    seed: () =>
+      encodeGroupEnvelope({
+        groupID: bytes(16),
+        epoch: int(1 << 20),
+        nonce: bytes(12),
+        ciphertext: bytes(16 + int(300)),
+      }),
+  },
+  {
+    name: "decodeBurstPacket",
+    decode: decodeBurstPacket,
+    seed: () =>
+      encodeBurstData(
+        bytes(8),
+        int(1 << 16),
+        Array.from({ length: 1 + int(4) }, () => bytes(1 + int(80))),
+      ),
+  },
+  { name: "decodeMeshPublicPayload", decode: decodeMeshPublicPayload },
+  { name: "decodeAirhopChannelPayload", decode: decodeAirhopChannelPayload },
 ];
 
 test(`no decoder throws on ${String(ITERATIONS)} hostile inputs`, () => {
   const failures: string[] = [];
+  const attempt = (t: Target, b: Uint8Array, i: number): void => {
+    try {
+      t.decode(b);
+    } catch (error) {
+      failures.push(
+        `${t.name} threw ${String(error)} at iteration ${String(i)} on ${String(b.length)} bytes: ${bytesToHex(b.slice(0, 64))}`,
+      );
+    }
+  };
   for (let i = 0; i < ITERATIONS && failures.length < 10; i++) {
-    const b = input();
-    for (const [name, decode] of decoders) {
-      try {
-        decode(b);
-      } catch (error) {
-        failures.push(
-          `${name} threw ${String(error)} at iteration ${String(i)} on ${String(b.length)} bytes: ${bytesToHex(b.slice(0, 64))}`,
-        );
-      }
+    const shared = randomInput();
+    for (const t of targets) {
+      attempt(t, shared, i);
+      const valid = t.seed?.();
+      if (valid) attempt(t, mutate(valid), i);
     }
   }
   expect(failures).toEqual([]);
 });
 
-// A share of the damaged packets must still decode, or every input was
-// refused at the door and the loop above tested nothing.
-test("mutated packets still reach the parser", () => {
-  let decoded = 0;
-  for (let i = 0; i < 500; i++) {
-    if (decodePacket(mutate(packetSeed())) !== null) decoded++;
-  }
-  expect(decoded).toBeGreaterThan(50);
-});
+// A seed is worth something only if its mutants get past the first guard, or
+// every input was refused at the door and the loop above tested nothing.
+test.each(targets.filter((t) => t.seed !== undefined))(
+  "$name mutants still reach the parser",
+  ({ decode, seed }) => {
+    const valid = seed?.();
+    if (!valid) throw new Error("the encoder refused its own seed");
+    expect(decode(valid)).not.toBeNull();
+    let decoded = 0;
+    for (let i = 0; i < 300; i++) {
+      const next = seed?.();
+      if (next && decode(mutate(next)) !== null) decoded++;
+    }
+    expect(decoded).toBeGreaterThan(30);
+  },
+);
