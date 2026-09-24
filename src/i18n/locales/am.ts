@@ -1243,6 +1243,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ይህን ቶከን ወደ ቀሪ ሂሳብህ መልሰህ አግኝ",
   "wallet.activity.title": "እንቅስቃሴ",
   "wallet.activity.none": "ገና ምንም የለም",
+  "wallet.activity.none_hint":
+    "ecash አዲስ ነገር ነው? እንዴት እንደሚሰራ ለማየት ከላይ {help} ን ንካ።",
   "wallet.activity.show_fewer": "ጥቂት ክፍያዎችን አሳይ",
   "wallet.activity.show_less": "ጥቂት አሳይ",
   "wallet.activity.received_unconfirmed": "ደርሷል፣ አልተረጋገጠም",

@@ -1336,6 +1336,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Tarik token ini kembali ke saldomu",
   "wallet.activity.title": "Aktivitas",
   "wallet.activity.none": "Belum ada apa-apa",
+  "wallet.activity.none_hint":
+    "Baru mengenal ecash? Ketuk {help} di atas untuk melihat cara kerjanya.",
   "wallet.activity.show_fewer": "Tampilkan lebih sedikit pembayaran",
   "wallet.activity.show_less": "Tampilkan lebih sedikit",
   "wallet.activity.received_unconfirmed": "Diterima, belum dikonfirmasi",

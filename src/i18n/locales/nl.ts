@@ -1336,6 +1336,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Dit token terugnemen in je saldo",
   "wallet.activity.title": "Activiteit",
   "wallet.activity.none": "Nog niets",
+  "wallet.activity.none_hint":
+    "Nieuw met ecash? Tik hierboven op {help} om te zien hoe het werkt.",
   "wallet.activity.show_fewer": "Minder betalingen tonen",
   "wallet.activity.show_less": "Minder tonen",
   "wallet.activity.received_unconfirmed": "Ontvangen, niet bevestigd",

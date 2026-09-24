@@ -1315,6 +1315,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "پس گرفتن این توکن به موجودی شما",
   "wallet.activity.title": "فعالیت",
   "wallet.activity.none": "هنوز چیزی نیست",
+  "wallet.activity.none_hint":
+    "با ecash آشنا نیستید؟ برای دیدن طرز کارش، {help} بالا را بزنید.",
   "wallet.activity.show_fewer": "نمایش پرداخت‌های کمتر",
   "wallet.activity.show_less": "کمتر نشان بده",
   "wallet.activity.received_unconfirmed": "دریافت‌شده، تأییدنشده",

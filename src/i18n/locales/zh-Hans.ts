@@ -1246,6 +1246,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "把这个代币收回你的余额",
   "wallet.activity.title": "动态",
   "wallet.activity.none": "还没有内容",
+  "wallet.activity.none_hint":
+    "第一次用 ecash？点按上方的 {help} 了解它的工作原理。",
   "wallet.activity.show_fewer": "少显示一些付款",
   "wallet.activity.show_less": "收起",
   "wallet.activity.received_unconfirmed": "已收到，未确认",

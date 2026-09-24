@@ -1346,6 +1346,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Odzyskaj ten token na swoje saldo",
   "wallet.activity.title": "Aktywność",
   "wallet.activity.none": "Jeszcze nic",
+  "wallet.activity.none_hint":
+    "Nie znasz jeszcze ecash? Naciśnij {help} powyżej, żeby zobaczyć, jak to działa.",
   "wallet.activity.show_fewer": "Pokaż mniej płatności",
   "wallet.activity.show_less": "Pokaż mniej",
   "wallet.activity.received_unconfirmed": "Odebrane, niepotwierdzone",

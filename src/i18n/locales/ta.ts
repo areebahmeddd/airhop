@@ -1364,6 +1364,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "இந்த டோக்கனை உங்கள் இருப்புக்கு மீட்டெடு",
   "wallet.activity.title": "செயல்பாடு",
   "wallet.activity.none": "இன்னும் எதுவும் இல்லை",
+  "wallet.activity.none_hint":
+    "ecash உங்களுக்குப் புதிதா? அது எப்படிச் செயல்படுகிறது என்று பார்க்க மேலே உள்ள {help} ஐத் தட்டுங்கள்.",
   "wallet.activity.show_fewer": "குறைவான பணப்பரிமாற்றங்களைக் காட்டு",
   "wallet.activity.show_less": "குறைவாகக் காட்டு",
   "wallet.activity.received_unconfirmed": "பெறப்பட்டது, உறுதிசெய்யப்படவில்லை",

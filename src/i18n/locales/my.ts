@@ -1360,6 +1360,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ဤတိုကင်ကို သင့်လက်ကျန်သို့ ပြန်ယူပါ",
   "wallet.activity.title": "လှုပ်ရှားမှု",
   "wallet.activity.none": "ဘာမျှ မရှိသေးပါ",
+  "wallet.activity.none_hint":
+    "ecash ကို မသိသေးဘူးလား? အလုပ်လုပ်ပုံကို ကြည့်ရန် အပေါ်က {help} ကို နှိပ်ပါ။",
   "wallet.activity.show_fewer": "ငွေပေးချေမှု နည်းနည်း ပြပါ",
   "wallet.activity.show_less": "နည်းနည်း ပြပါ",
   "wallet.activity.received_unconfirmed": "လက်ခံရရှိ၊ အတည်မပြုရသေး",

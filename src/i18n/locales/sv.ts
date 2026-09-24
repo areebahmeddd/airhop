@@ -1323,6 +1323,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Ta tillbaka tokenet till ditt saldo",
   "wallet.activity.title": "Aktivitet",
   "wallet.activity.none": "Inget än",
+  "wallet.activity.none_hint":
+    "Första gången med ecash? Tryck på {help} ovan för att se hur det fungerar.",
   "wallet.activity.show_fewer": "Visa färre betalningar",
   "wallet.activity.show_less": "Visa mindre",
   "wallet.activity.received_unconfirmed": "Mottaget, obekräftat",

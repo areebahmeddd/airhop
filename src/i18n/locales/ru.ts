@@ -1334,6 +1334,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Вернуть этот токен на баланс",
   "wallet.activity.title": "Активность",
   "wallet.activity.none": "Пока ничего",
+  "wallet.activity.none_hint":
+    "Впервые пользуетесь ecash? Нажмите {help} вверху, чтобы узнать, как это работает.",
   "wallet.activity.show_fewer": "Показать меньше платежей",
   "wallet.activity.show_less": "Показать меньше",
   "wallet.activity.received_unconfirmed": "Получено, не подтверждено",

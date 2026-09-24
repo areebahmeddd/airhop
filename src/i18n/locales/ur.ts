@@ -1313,6 +1313,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "یہ ٹوکن اپنے بیلنس میں واپس لیں",
   "wallet.activity.title": "سرگرمی",
   "wallet.activity.none": "ابھی کچھ نہیں",
+  "wallet.activity.none_hint":
+    "ecash آپ کے لیے نیا ہے؟ یہ کیسے کام کرتا ہے، یہ دیکھنے کے لیے اوپر {help} چھوئیں۔",
   "wallet.activity.show_fewer": "کم ادائیگیاں دکھائیں",
   "wallet.activity.show_less": "کم دکھائیں",
   "wallet.activity.received_unconfirmed": "موصول، تصدیق نہیں ہوئی",

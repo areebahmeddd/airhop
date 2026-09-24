@@ -1364,6 +1364,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Avereno amin'ny volanao ity tapakila ity",
   "wallet.activity.title": "Hetsika",
   "wallet.activity.none": "Mbola tsy misy",
+  "wallet.activity.none_hint":
+    "Vaovao aminao ve ny ecash? Tsindrio ny {help} eo ambony mba hahitana ny fomba fiasany.",
   "wallet.activity.show_fewer": "Asehoy fandoavam-bola vitsy kokoa",
   "wallet.activity.show_less": "Asehoy vitsy kokoa",
   "wallet.activity.received_unconfirmed": "Voaray, tsy voamarina",

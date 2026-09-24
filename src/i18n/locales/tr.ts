@@ -1327,6 +1327,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Bu jetonu bakiyene geri al",
   "wallet.activity.title": "Etkinlik",
   "wallet.activity.none": "Henüz bir şey yok",
+  "wallet.activity.none_hint":
+    "Ecash'e yeni misin? Nasıl çalıştığını görmek için yukarıdaki {help} düğmesine dokun.",
   "wallet.activity.show_fewer": "Daha az ödeme göster",
   "wallet.activity.show_less": "Daha az göster",
   "wallet.activity.received_unconfirmed": "Alındı, onaylanmadı",

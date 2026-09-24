@@ -1372,6 +1372,8 @@ export const strings: Strings = {
     "Bawiin ang token na ito pabalik sa balanse mo",
   "wallet.activity.title": "Aktibidad",
   "wallet.activity.none": "Wala pa",
+  "wallet.activity.none_hint":
+    "Bago sa ecash? I-tap ang {help} sa itaas para makita kung paano ito gumagana.",
   "wallet.activity.show_fewer": "Magpakita ng mas kaunting bayad",
   "wallet.activity.show_less": "Magpakita ng mas kaunti",
   "wallet.activity.received_unconfirmed": "Natanggap, hindi pa nakumpirma",

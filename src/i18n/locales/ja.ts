@@ -1327,6 +1327,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "このトークンを残高に回収",
   "wallet.activity.title": "履歴",
   "wallet.activity.none": "まだ何もありません",
+  "wallet.activity.none_hint":
+    "ecashは初めてですか？上の{help}をタップして仕組みを確認してください。",
   "wallet.activity.show_fewer": "表示する支払いを減らす",
   "wallet.activity.show_less": "表示を減らす",
   "wallet.activity.received_unconfirmed": "受け取り済み、未確認",

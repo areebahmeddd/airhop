@@ -1333,6 +1333,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Забрати цей токен на ваш баланс",
   "wallet.activity.title": "Активність",
   "wallet.activity.none": "Поки нічого",
+  "wallet.activity.none_hint":
+    "Вперше користуєтеся ecash? Торкніться {help} угорі, щоб дізнатися, як це працює.",
   "wallet.activity.show_fewer": "Показати менше платежів",
   "wallet.activity.show_less": "Показати менше",
   "wallet.activity.received_unconfirmed": "Отримано, не підтверджено",

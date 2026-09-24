@@ -1337,6 +1337,8 @@ export const strings = {
   "wallet.pending.reclaim_into": "Reclaim this token into your balance",
   "wallet.activity.title": "Activity",
   "wallet.activity.none": "Nothing yet",
+  "wallet.activity.none_hint":
+    "New to ecash? Tap {help} above to see how it works.",
   "wallet.activity.show_fewer": "Show fewer payments",
   "wallet.activity.show_less": "Show less",
   "wallet.activity.received_unconfirmed": "Received, unconfirmed",

@@ -1310,6 +1310,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "यो टोकन आफ्नो ब्यालेन्समा फिर्ता लिनुहोस्",
   "wallet.activity.title": "गतिविधि",
   "wallet.activity.none": "अझै केही छैन",
+  "wallet.activity.none_hint":
+    "ecash मा नयाँ हुनुहुन्छ? यो कसरी काम गर्छ हेर्न माथिको {help} थिच्नुहोस्।",
   "wallet.activity.show_fewer": "कम भुक्तानी देखाउनुहोस्",
   "wallet.activity.show_less": "कम देखाउनुहोस्",
   "wallet.activity.received_unconfirmed": "लिइयो, पुष्टि छैन",

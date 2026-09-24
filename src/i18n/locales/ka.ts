@@ -1331,6 +1331,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ამ ტოკენის დაბრუნება შენს ბალანსში",
   "wallet.activity.title": "აქტივობა",
   "wallet.activity.none": "ჯერ არაფერია",
+  "wallet.activity.none_hint":
+    "ecash ახალია შენთვის? შეეხე ზემოთ {help}-ს, რომ ნახო, როგორ მუშაობს.",
   "wallet.activity.show_fewer": "ნაკლები გადახდის ჩვენება",
   "wallet.activity.show_less": "ნაკლების ჩვენება",
   "wallet.activity.received_unconfirmed": "მიღებულია, დაუდასტურებელი",

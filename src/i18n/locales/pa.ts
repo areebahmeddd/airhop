@@ -1315,6 +1315,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਲਵੋ",
   "wallet.activity.title": "ਸਰਗਰਮੀ",
   "wallet.activity.none": "ਹਾਲੇ ਕੁਝ ਨਹੀਂ",
+  "wallet.activity.none_hint":
+    "ecash ਤੁਹਾਡੇ ਲਈ ਨਵਾਂ ਹੈ? ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ, ਇਹ ਦੇਖਣ ਲਈ ਉੱਪਰ {help} ਦਬਾਓ।",
   "wallet.activity.show_fewer": "ਘੱਟ ਭੁਗਤਾਨ ਦਿਖਾਓ",
   "wallet.activity.show_less": "ਘੱਟ ਦਿਖਾਓ",
   "wallet.activity.received_unconfirmed": "ਮਿਲਿਆ, ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ",

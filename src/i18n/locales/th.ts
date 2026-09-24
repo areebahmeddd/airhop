@@ -1292,6 +1292,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "เรียกคืนโทเคนนี้เข้ายอดคงเหลือของคุณ",
   "wallet.activity.title": "กิจกรรม",
   "wallet.activity.none": "ยังไม่มีอะไร",
+  "wallet.activity.none_hint":
+    "เพิ่งรู้จัก ecash ใช่ไหม แตะ {help} ด้านบนเพื่อดูวิธีการทำงาน",
   "wallet.activity.show_fewer": "แสดงการชำระเงินน้อยลง",
   "wallet.activity.show_less": "แสดงน้อยลง",
   "wallet.activity.received_unconfirmed": "ได้รับ ยังไม่ยืนยัน",

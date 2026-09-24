@@ -1281,6 +1281,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "استرجاع هذا التوكن إلى رصيدك",
   "wallet.activity.title": "النشاط",
   "wallet.activity.none": "لا شيء بعد",
+  "wallet.activity.none_hint":
+    "جديد على النقد الإلكتروني؟ اضغط {help} في الأعلى لترى كيف يعمل.",
   "wallet.activity.show_fewer": "عرض عدد أقل من المدفوعات",
   "wallet.activity.show_less": "عرض أقل",
   "wallet.activity.received_unconfirmed": "مستلمة، غير مؤكدة",

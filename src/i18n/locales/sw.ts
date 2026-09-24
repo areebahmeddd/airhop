@@ -1342,6 +1342,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Rudisha tokeni hii kwenye salio lako",
   "wallet.activity.title": "Shughuli",
   "wallet.activity.none": "Bado hakuna kitu",
+  "wallet.activity.none_hint":
+    "Ecash ni mpya kwako? Gusa {help} hapo juu ili kuona jinsi inavyofanya kazi.",
   "wallet.activity.show_fewer": "Onyesha malipo machache zaidi",
   "wallet.activity.show_less": "Onyesha kidogo",
   "wallet.activity.received_unconfirmed": "Yamepokelewa, hayajathibitishwa",

@@ -1326,6 +1326,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Thu hồi token này về số dư của bạn",
   "wallet.activity.title": "Hoạt động",
   "wallet.activity.none": "Chưa có gì",
+  "wallet.activity.none_hint":
+    "Mới làm quen với ecash? Chạm {help} ở trên để xem cách hoạt động.",
   "wallet.activity.show_fewer": "Hiện ít khoản thanh toán hơn",
   "wallet.activity.show_less": "Thu gọn",
   "wallet.activity.received_unconfirmed": "Đã nhận, chưa xác nhận",

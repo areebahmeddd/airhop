@@ -30,6 +30,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { t, tPlural, useT, useTPlural } from "@i18n";
 import { chevronForward, textAlignEnd } from "@i18n/layout";
+import { useRichText } from "@i18n/rich-text";
 import { acknowledged, succeeded } from "@platform/haptics";
 import { getMeshService } from "@services/mesh-service";
 import {
@@ -386,6 +387,9 @@ export default function WalletScreen({
   );
 
   const recent = useMemo(() => history.slice(0, 12), [history]);
+  const activityHint = useRichText("wallet.activity.none_hint", {
+    help: <Text style={styles.activityHintAccent}>?</Text>,
+  });
 
   const [showAllActivity, setShowAllActivity] = useState(false);
   const visibleActivity = showAllActivity
@@ -1802,9 +1806,12 @@ export default function WalletScreen({
           );
         })}
         {recent.length === 0 ? (
-          <View style={styles.activityEmpty}>
-            <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
-          </View>
+          <>
+            <View style={styles.activityEmpty}>
+              <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
+            </View>
+            <Text style={styles.activityHint}>{activityHint}</Text>
+          </>
         ) : (
           <View style={styles.historyCard}>
             {visibleActivity.map((tx, index) => (
@@ -4220,6 +4227,15 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Exactly one Activity row tall, the height of the recovery phrase row
     // above it, rather than a box held open for rows that are not there.
+    activityHint: {
+      fontSize: FontSize.sm,
+      color: Colors.textMuted,
+      textAlign: "center",
+    },
+    activityHintAccent: {
+      color: Colors.accent,
+      fontWeight: FontWeight.semibold,
+    },
     activityEmpty: {
       minHeight: ACTIVITY_ROW_HEIGHT,
       alignItems: "center",

@@ -1307,6 +1307,8 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "이 토큰을 잔액으로 회수",
   "wallet.activity.title": "활동",
   "wallet.activity.none": "아직 없음",
+  "wallet.activity.none_hint":
+    "ecash가 처음이세요? 위의 {help}을(를) 눌러 작동 방식을 확인하세요.",
   "wallet.activity.show_fewer": "결제 적게 보기",
   "wallet.activity.show_less": "적게 보기",
   "wallet.activity.received_unconfirmed": "받음, 미확인",
