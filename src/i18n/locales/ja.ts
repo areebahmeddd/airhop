@@ -948,20 +948,38 @@ export const strings: Strings = {
     "ウォレットの保存領域がロックされています。ecashのプルーフは暗号化ファイルに入っていて、その鍵は端末のキーチェーンにありますが、開けませんでした。端末のロックを解除してAirhopを開き直してください。",
   "wallet.balance.tor_blocked":
     "Torがオンのため、ミントへのリクエストはブロックされています。素のネットワークを通ってしまい、あなたのIPとプルーフが結び付くからです。メッシュ経由の送受信は引き続き使えます。ミントへの通信は設定のセキュリティから許可できます。",
+  "wallet.balance.offline":
+    "オフラインです。近くの人への支払いとトークンの送信はそのまま使えます。",
+  "wallet.balance.internet_off":
+    "インターネットがオフのため、ウォレットは近くでのみ使えます。ミントに接続するには、設定で{setting}をオンにしてください。",
   "wallet.balance.unconfirmed_note": "{amount}はミントでまだ確認されていません",
   "wallet.balance.reserved_note": "{amount}は送信中のために確保されています",
   "wallet.balance.other_mint_note": "{amount}は別のミントの口座にあります",
   "wallet.balance.test_mint_note":
     "テスト用ミントの遊び金が含まれます。ビットコインではなく、出金もできません。",
   "wallet.token": "トークン",
-  "wallet.action.send": "ecashトークンを送る",
   "wallet.action.send_disabled":
     "ecashトークンを送る、残高がないため使えません",
-  "wallet.action.receive": "ecashトークンを受け取る",
-  "wallet.action.zap": "Nostrの連絡先にzapを送る",
-  "wallet.action.zap_disabled":
-    "Nostrの連絡先にzapを送る、残高がないため使えません",
-  "wallet.action.add_mint": "Cashuのミントを追加",
+  "wallet.action.scan": "スキャン",
+  "wallet.action.scan_a11y": "トークン、請求書、npub をスキャン",
+  "wallet.choose.paste": "トークンを貼り付け",
+  "wallet.choose.paste_desc": "オフラインでも使えます",
+  "wallet.choose.scan": "QRコードをスキャン",
+  "wallet.choose.scan_desc": "どのウォレットの Cashu トークンでも",
+  "wallet.choose.topup": "Lightning でチャージ",
+  "wallet.choose.topup_desc":
+    "どの Lightning ウォレットからでも請求書を支払えます",
+  "wallet.choose.token": "トークンを作成",
+  "wallet.choose.token_desc":
+    "共有するか QR コードで見せられ、オフラインでも使えます",
+  "wallet.choose.zap": "Nostr の連絡先に zap",
+  "wallet.choose.zap_desc": "相手の npub へ、インターネット経由で",
+  "wallet.choose.invoice": "Lightning の請求書を支払う",
+  "wallet.choose.invoice_desc": "どの Lightning ウォレットへも出金できます",
+  "wallet.choose.tor_paused": "Tor がオンの間は停止中",
+  "wallet.choose.offline": "インターネットが必要です",
+  "wallet.choose.internet_off": "インターネットがオフです",
+  "wallet.choose.needs_mint": "先にミントを追加してください",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "トークンを作成できませんでした",
@@ -1069,9 +1087,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint}をウォレットから削除しますか。保存された鍵も一緒に消えるので、このミントのトークンはオフラインで検証できなくなります。",
   "wallet.mint.title": "ミント",
-  "wallet.mint.none": "ミントがまだありません",
   "wallet.mint.none_desc":
-    "ミントはあなたのecashを発行し、引き換えます。Lightningで入金するには追加してください。トークンを受け取れば、そのミントは自動的に追加されます。",
+    "ミントは ecash を発行し、換金します。Lightning でチャージしたり、そのミントのトークンを受け取ったりするには追加してください。",
   "wallet.mint.add": "ミントを追加",
   "wallet.mint.add_body":
     "ミントはあなたのecashを裏付けるビットコインを預かるので、そこに置く残高を任せられる相手を選んでください。URLは保存前に検証されます。誰も信頼したくない場合はNutshellで自分のミントを運用できます。",
@@ -1083,8 +1100,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ミントを削除",
   "wallet.mint.delete_anyway": "それでも削除",
   "wallet.mint.consolidate": "すべての残高を1つのミントへ移動",
-  "wallet.mint.confirm_with": "{mint}でプルーフを確認",
-  "wallet.mint.remove_a11y": "{mint}を削除",
+  "wallet.mint.confirm_with": "{mint} で残高を確認",
   "wallet.mint.available_amount": "{amount} {unit}が利用可能",
   "wallet.mint.split_across":
     "残高が{count}のミントに分かれています。1つにまとめてください。",
@@ -1115,9 +1131,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Lightningで{paid}サトシを支払いました。ミントは経路手数料として{fee}サトシを差し引き、準備金のうち{change}サトシを残高に戻しました。",
   "wallet.ln.payment_failed": "支払いに失敗しました",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightningのサトシを、オフラインで使えるecashに変えられます。逆に、ecashを任意のLightning請求書へ出金することもできます。どちらもインターネットとミントが必要です。",
   "wallet.ln.deposit_body":
     "ミントが請求書を発行します。任意のLightningウォレットで支払うと、サトシがオフラインで使えるecashとして戻ってきます。",
   "wallet.ln.pay_invoice_for":
@@ -1130,10 +1143,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最大{amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit}を支払う",
-  "wallet.ln.deposit": "Lightningでサトシを入金",
-  "wallet.ln.deposit_short": "入金",
-  "wallet.ln.withdraw": "Lightning請求書へ出金",
-  "wallet.ln.withdraw_short": "出金",
   "wallet.ln.deposit_title": "Lightningで入金",
   "wallet.ln.amount_placeholder": "サトシで金額",
   "wallet.ln.requesting": "リクエスト中…",
@@ -1154,7 +1163,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "見積もりを取得",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "バックアップ",
   "wallet.backup.setup_failed": "バックアップを設定できませんでした",
   "wallet.backup.on": "バックアップがオン",
   "wallet.backup.on_body":
@@ -1266,7 +1274,6 @@ export const strings: Strings = {
   "wallet.refresh.secured": "{amount} {unit}が復元フレーズの対象になりました。",
   "wallet.refresh.all_confirmed":
     "ここにあるものはすべて、すでにミントで確認済みでした。",
-  "wallet.pending.title": "保留中",
   "wallet.pending.reserved_desc":
     "作成して確保済み、配信は未確認です。二重に使えないよう、プルーフは残高から外して保持されています。",
   "wallet.pending.locked_desc":
@@ -1279,8 +1286,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "このトークンを残高に回収",
   "wallet.activity.title": "履歴",
   "wallet.activity.none": "まだ何もありません",
-  "wallet.activity.none_desc":
-    "送受信した支払いが、新しい順に、それぞれのミントと手数料とともにここに表示されます。",
   "wallet.activity.show_fewer": "表示する支払いを減らす",
   "wallet.activity.show_less": "表示を減らす",
   "wallet.activity.received_unconfirmed": "受け取り済み、未確認",
@@ -1296,9 +1301,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightningでの入金",
   "wallet.activity.ln_withdrawal": "Lightningでの出金",
   "wallet.activity.nutzap_received": "nutzapを受け取りました",
-  "wallet.activity.spent_removed": "使用済みプルーフを削除",
-  "wallet.activity.refreshed": "プルーフを更新しました",
-  "wallet.activity.refreshing": "プルーフを更新中",
+  "wallet.activity.spent_removed": "使用済みのコインを削除しました",
+  "wallet.activity.refreshed": "ミントで確認済み",
+  "wallet.activity.refreshing": "ミントで確認中",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "メッシュがオフラインです",
@@ -1365,10 +1370,11 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "LightningのQRコードにカメラを向けてください。",
   "wallet.scan.title_token": "ecashを読み取る",
   "wallet.scan.title_invoice": "請求書を読み取る",
-  "wallet.scan.desc_token":
-    "別のウォレットのCashuトークンを読み取ります。Airhopに限らず、どのCashuウォレットでも使えます。",
-  "wallet.scan.desc_invoice":
-    "残高から支払うために、Lightningの請求書を読み取ります。",
+  "wallet.scan.title_any": "QRコードをスキャン",
+  "wallet.scan.aim_any":
+    "トークン、請求書、npub の QR コードにカメラを向けてください。",
+  "wallet.scan.no_any":
+    "その画像にトークン、請求書、npub は見つかりませんでした。",
   "wallet.scan.use_camera_a11y": "カメラで読み取る",
   "wallet.scan.use_camera": "カメラを使う",
   "wallet.scan.pick_image_a11y": "保存した画像からQRコードを読み取る",
@@ -1411,6 +1417,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "iOSではミントへのリクエストはTorを通りません。",
   "wallet.svc.tor_ios_body":
     "ArtiがくるむのはNostrのWebSocketだけなので、このリクエストは素のネットワークでミントに届き、あなたのIPとこのプルーフを結び付けてしまいます。設定＞セキュリティで許可するか、先にTorをオフにしてください。メッシュ経由のecashの送受信は引き続き使えます。",
+  "wallet.svc.internet_off":
+    "インターネットがオフのため、ミントに接続できません。",
+  "wallet.svc.internet_off_body":
+    "設定で{setting}をオンにしてください。近くでの ecash の送受信はそのまま使えます。",
   "wallet.svc.keys_uncached": "このミントの鍵はこの端末に保存されていません。",
   "wallet.svc.keys_uncached_body":
     "オンラインのときにウォレットを一度開いて取得してください。",
@@ -2264,9 +2274,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count}件のミント",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint}は{count}個のプルーフに{balance} {unit}を保持しています。削除するとそのプルーフはこの端末から永久に消え、バックアップもありません。先に残高を出金するか送ってください。",
@@ -2295,9 +2302,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count}件が未確認",
-  },
-  "wallet.proof_count": {
-    other: "{count}個のプルーフ",
   },
   "wallet.spent_removed_detail": {
     other: "{count}個のプルーフはすでに使用済みだったため削除しました。",

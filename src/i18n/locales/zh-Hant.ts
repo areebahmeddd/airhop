@@ -884,18 +884,34 @@ export const strings: Strings = {
     "錢包儲存已鎖定。Ecash 憑證存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中，現在打不開。請解鎖裝置並重新開啟 Airhop。",
   "wallet.balance.tor_blocked":
     "Tor 已開啟，所以鑄幣廠請求被擋下：它們會走明網送出，把你的 IP 和你的憑證連在一起。透過網狀網路收付仍然可用。可在設定的安全裡允許鑄幣廠流量。",
+  "wallet.balance.offline": "離線中。你仍可以付款給附近的人，也可以傳送代幣。",
+  "wallet.balance.internet_off":
+    "網路已關閉，錢包只能在附近使用。要連線鑄幣廠，請在設定中開啟{setting}。",
   "wallet.balance.unconfirmed_note": "{amount} 尚未向鑄幣廠確認",
   "wallet.balance.reserved_note": "{amount} 已為一筆在途的傳送保留",
   "wallet.balance.other_mint_note": "{amount} 放在另一個鑄幣廠帳戶裡",
   "wallet.balance.test_mint_note":
     "其中包含測試鑄幣廠發的遊戲幣。它不是比特幣，也無法兌現。",
   "wallet.token": "代幣",
-  "wallet.action.send": "傳送 ecash 代幣",
   "wallet.action.send_disabled": "傳送 ecash 代幣，餘額為零時無法使用",
-  "wallet.action.receive": "接收 ecash 代幣",
-  "wallet.action.zap": "打閃給 Nostr 聯絡人",
-  "wallet.action.zap_disabled": "打閃給 Nostr 聯絡人，餘額為零時無法使用",
-  "wallet.action.add_mint": "新增 Cashu 鑄幣廠",
+  "wallet.action.scan": "掃描",
+  "wallet.action.scan_a11y": "掃描代幣、發票或 npub",
+  "wallet.choose.paste": "貼上代幣",
+  "wallet.choose.paste_desc": "離線也能用",
+  "wallet.choose.scan": "掃描 QR 碼",
+  "wallet.choose.scan_desc": "來自任何錢包的 Cashu 代幣",
+  "wallet.choose.topup": "透過 Lightning 儲值",
+  "wallet.choose.topup_desc": "用任何 Lightning 錢包支付發票",
+  "wallet.choose.token": "建立代幣",
+  "wallet.choose.token_desc": "分享或出示 QR 碼，離線也可以",
+  "wallet.choose.zap": "給 Nostr 聯絡人發 zap",
+  "wallet.choose.zap_desc": "發到對方的 npub，經由網路",
+  "wallet.choose.invoice": "支付 Lightning 發票",
+  "wallet.choose.invoice_desc": "提領到任何 Lightning 錢包",
+  "wallet.choose.tor_paused": "Tor 開啟時暫停",
+  "wallet.choose.offline": "需要連網",
+  "wallet.choose.internet_off": "網路已關閉",
+  "wallet.choose.needs_mint": "請先新增鑄幣廠",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "無法建立這個代幣",
@@ -1003,9 +1019,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "把 {mint} 從你的錢包移除？它快取的金鑰也會一併刪掉，來自它的代幣將無法再離線核對。",
   "wallet.mint.title": "鑄幣廠",
-  "wallet.mint.none": "還沒有鑄幣廠",
   "wallet.mint.none_desc":
-    "鑄幣廠負責發行和兌付你的 ecash。新增一個就能透過 Lightning 存入，或者乾脆收一個代幣，它的鑄幣廠就會自動幫你加上。",
+    "鑄幣廠發行並兌付你的 ecash。新增一個，就能透過 Lightning 儲值或接收它的代幣。",
   "wallet.mint.add": "新增鑄幣廠",
   "wallet.mint.add_body":
     "鑄幣廠替你的 ecash 保管背後的比特幣，所以請挑一個你願意託付這筆餘額的。URL 在儲存前會先核對。如果你不想信任任何人，可以用 Nutshell 自己架一個。",
@@ -1017,8 +1032,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "移除鑄幣廠",
   "wallet.mint.delete_anyway": "還是刪除",
   "wallet.mint.consolidate": "把所有餘額整合到一個鑄幣廠",
-  "wallet.mint.confirm_with": "向 {mint} 確認憑證",
-  "wallet.mint.remove_a11y": "移除 {mint}",
+  "wallet.mint.confirm_with": "向 {mint} 核對餘額",
   "wallet.mint.available_amount": "可用 {amount} {unit}",
   "wallet.mint.split_across": "餘額分散在 {count} 個鑄幣廠。把它整合到一個。",
   "wallet.mint.move_everything_to": "把全部搬到 {mint}",
@@ -1048,9 +1062,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "已透過 Lightning 付出 {paid} sat。鑄幣廠收了 {fee} sat 的路由費，並把保留額中剩下的 {change} sat 退回你的餘額。",
   "wallet.ln.payment_failed": "付款失敗",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "把 Lightning 上的 sat 變成可以離線花的 ecash，或者把 ecash 兌付到任何一張 Lightning 發票。兩者都需要網路和一個鑄幣廠。",
   "wallet.ln.deposit_body":
     "鑄幣廠給你一張發票。用任何 Lightning 錢包付掉它，這些 sat 就會以 ecash 的形式回來，可以離線花。",
   "wallet.ln.pay_invoice_for":
@@ -1063,10 +1074,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最多 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "付 {amount} {unit}",
-  "wallet.ln.deposit": "透過 Lightning 存入 sat",
-  "wallet.ln.deposit_short": "存入",
-  "wallet.ln.withdraw": "提領到一張 Lightning 發票",
-  "wallet.ln.withdraw_short": "提領",
   "wallet.ln.deposit_title": "透過 Lightning 存入",
   "wallet.ln.amount_placeholder": "金額（sat）",
   "wallet.ln.requesting": "請求中…",
@@ -1087,7 +1094,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "取得報價",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "備份",
   "wallet.backup.setup_failed": "無法設定備份",
   "wallet.backup.on": "備份已開啟",
   "wallet.backup.on_body":
@@ -1192,7 +1198,6 @@ export const strings: Strings = {
   "wallet.refresh.swapped": "{amount} {unit} 已確認並換成了新的憑證。",
   "wallet.refresh.secured": "{amount} {unit} 現在已被你的復原助記詞涵蓋。",
   "wallet.refresh.all_confirmed": "這裡的一切都已經向鑄幣廠確認過了。",
-  "wallet.pending.title": "待處理",
   "wallet.pending.reserved_desc":
     "已建立並保留，送達未確認。這些憑證被從你的餘額扣住，以免被花兩次。",
   "wallet.pending.locked_desc":
@@ -1205,8 +1210,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "把這個代幣收回你的餘額",
   "wallet.activity.title": "動態",
   "wallet.activity.none": "還沒有內容",
-  "wallet.activity.none_desc":
-    "你送出和收到的付款會顯示在這裡，最新的在前，並附上各自的鑄幣廠和手續費。",
   "wallet.activity.show_fewer": "少顯示一些付款",
   "wallet.activity.show_less": "收合",
   "wallet.activity.received_unconfirmed": "已收到，未確認",
@@ -1222,9 +1225,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning 存入",
   "wallet.activity.ln_withdrawal": "Lightning 提領",
   "wallet.activity.nutzap_received": "收到 Nutzap",
-  "wallet.activity.spent_removed": "已花用的憑證已移除",
-  "wallet.activity.refreshed": "憑證已重新整理",
-  "wallet.activity.refreshing": "正在重新整理憑證",
+  "wallet.activity.spent_removed": "已移除已花費的幣",
+  "wallet.activity.refreshed": "已向鑄幣廠核對",
+  "wallet.activity.refreshing": "正在向鑄幣廠核對",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "網狀網路已離線",
@@ -1283,9 +1286,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "對準一個 Lightning 發票 QR 碼。",
   "wallet.scan.title_token": "掃描 ecash",
   "wallet.scan.title_invoice": "掃描發票",
-  "wallet.scan.desc_token":
-    "讀取來自另一個錢包的 Cashu 代幣。任何 Cashu 錢包都適用，不限於 Airhop。",
-  "wallet.scan.desc_invoice": "讀取一張 Lightning 發票，用你的餘額付掉它。",
+  "wallet.scan.title_any": "掃描 QR 碼",
+  "wallet.scan.aim_any": "對準代幣、發票或 npub 的 QR 碼。",
+  "wallet.scan.no_any": "那張圖裡沒有找到代幣、發票或 npub。",
   "wallet.scan.use_camera_a11y": "用相機掃描",
   "wallet.scan.use_camera": "使用相機",
   "wallet.scan.pick_image_a11y": "從已儲存的圖片中讀取 QR 碼",
@@ -1328,6 +1331,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "在 iOS 上，鑄幣廠請求不走 Tor。",
   "wallet.svc.tor_ios_body":
     "Arti 只包住 Nostr 的 WebSocket，所以這個請求會走明網到鑄幣廠，把你的 IP 和這些憑證連在一起。可以在設定 > 安全裡允許它，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
+  "wallet.svc.internet_off": "網路已關閉，無法連線鑄幣廠。",
+  "wallet.svc.internet_off_body":
+    "請在設定中開啟{setting}。在附近收發 ecash 仍然可用。",
   "wallet.svc.keys_uncached": "這個鑄幣廠的金鑰沒有快取在這台裝置上。",
   "wallet.svc.keys_uncached_body": "連上網路時開啟一次錢包就能取回它們。",
   "wallet.svc.phrase_invalid": "那組復原助記詞無效。",
@@ -2139,9 +2145,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} 個鑄幣廠",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint} 那裡有 {count} 份憑證，共 {balance} {unit}。移除會把這些憑證從這台裝置上永久抹掉，而且它們沒有備份。請先把餘額領走或送出去。",
@@ -2170,9 +2173,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} 份未確認",
-  },
-  "wallet.proof_count": {
-    other: "{count} 份憑證",
   },
   "wallet.spent_removed_detail": {
     other: "有 {count} 份憑證早就被花掉了，它們已經被移除。",

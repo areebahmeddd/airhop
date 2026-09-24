@@ -985,6 +985,10 @@ export const strings: Strings = {
     "Naka-lock ang imbakan ng wallet. Nasa naka-encrypt na file ang mga patunay ng ecash at nasa keychain ng device ang susi nito, at hindi ito nabuksan. I-unlock ang device mo at buksang muli ang Airhop.",
   "wallet.balance.tor_blocked":
     "Naka-on ang Tor, kaya naka-block ang mga hiling sa mint: dadaan sana ang mga ito sa bukas na net at maiuugnay ang IP mo sa mga patunay mo. Gumagana pa rin ang pagpapadala at pagtanggap sa mesh. Payagan ang trapiko ng mint sa ilalim ng Mga Setting, Seguridad.",
+  "wallet.balance.offline":
+    "Offline. Makakapagbayad ka pa rin sa mga tao sa malapit at makakapagpadala ng token.",
+  "wallet.balance.internet_off":
+    "Naka-off ang internet, kaya sa malapit lang gumagana ang wallet. I-on ang {setting} sa Settings para maabot ang mga mint.",
   "wallet.balance.unconfirmed_note":
     "{amount} ang hindi pa nakukumpirma sa mint",
   "wallet.balance.reserved_note":
@@ -993,14 +997,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Kasama ang pera-perahan mula sa isang test mint. Hindi ito bitcoin at hindi ito maipapalit sa pera.",
   "wallet.token": "Token",
-  "wallet.action.send": "Magpadala ng token ng ecash",
   "wallet.action.send_disabled":
     "Magpadala ng token ng ecash, hindi available sa walang lamang balanse",
-  "wallet.action.receive": "Tumanggap ng token ng ecash",
-  "wallet.action.zap": "Mag-zap ng contact sa Nostr",
-  "wallet.action.zap_disabled":
-    "Mag-zap ng contact sa Nostr, hindi available sa walang lamang balanse",
-  "wallet.action.add_mint": "Magdagdag ng mint ng Cashu",
+  "wallet.action.scan": "I-scan",
+  "wallet.action.scan_a11y": "I-scan ang token, invoice o npub",
+  "wallet.choose.paste": "Mag-paste ng token",
+  "wallet.choose.paste_desc": "Gumagana kahit offline",
+  "wallet.choose.scan": "Mag-scan ng QR code",
+  "wallet.choose.scan_desc": "Cashu token mula sa kahit anong wallet",
+  "wallet.choose.topup": "Mag-top up gamit ang Lightning",
+  "wallet.choose.topup_desc":
+    "Magbayad ng invoice mula sa kahit anong Lightning wallet",
+  "wallet.choose.token": "Gumawa ng token",
+  "wallet.choose.token_desc": "Ibahagi o ipakita bilang QR code, kahit offline",
+  "wallet.choose.zap": "Mag-zap sa isang contact sa Nostr",
+  "wallet.choose.zap_desc": "Sa kanilang npub, sa internet",
+  "wallet.choose.invoice": "Magbayad ng invoice ng Lightning",
+  "wallet.choose.invoice_desc": "I-withdraw sa kahit anong Lightning wallet",
+  "wallet.choose.tor_paused": "Naka-pause habang naka-on ang Tor",
+  "wallet.choose.offline": "Kailangan ng internet",
+  "wallet.choose.internet_off": "Naka-off ang internet",
+  "wallet.choose.needs_mint": "Magdagdag muna ng mint",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Hindi nabuo ang token",
@@ -1111,9 +1128,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Alisin ang {mint} sa wallet mo? Kasama ring mawawala ang mga naka-imbak nitong susi, kaya hindi na masusuri nang offline ang mga token mula rito.",
   "wallet.mint.title": "Mga Mint",
-  "wallet.mint.none": "Wala pang mint",
   "wallet.mint.none_desc":
-    "Naglalabas at tumutubos ng ecash mo ang isang mint. Magdagdag ng isa para magdeposito sa Lightning, o tumanggap na lang ng token at maidaragdag na ang mint nito para sa iyo.",
+    "Ang mint ang naglalabas at tumutubos ng iyong ecash. Magdagdag ng isa para mag-top up gamit ang Lightning o tumanggap ng mga token nito.",
   "wallet.mint.add": "Magdagdag ng mint",
   "wallet.mint.add_body":
     "Hawak ng mint ang Bitcoin na sumusuporta sa ecash mo, kaya pumili ng isang pagkakatiwalaan mo sa balanseng itinatago mo roon. Sinusuri ang URL bago ito i-save. Magpatakbo ng sarili mo gamit ang Nutshell kung mas gusto mong huwag magtiwala kaninuman.",
@@ -1125,8 +1141,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Alisin ang mint",
   "wallet.mint.delete_anyway": "Burahin pa rin",
   "wallet.mint.consolidate": "Ilipat ang lahat ng balanse sa isang mint",
-  "wallet.mint.confirm_with": "Kumpirmahin ang mga patunay sa {mint}",
-  "wallet.mint.remove_a11y": "Alisin ang {mint}",
+  "wallet.mint.confirm_with": "Suriin ang balanse sa {mint}",
   "wallet.mint.available_amount": "{amount} {unit} ang available",
   "wallet.mint.split_across":
     "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
@@ -1157,9 +1172,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sat ang nabayaran sa Lightning. Naningil ang mint ng {fee} sat na bayarin sa pagruruta, at ibinalik ang {change} sat ng reserba sa balanse mo.",
   "wallet.ln.payment_failed": "Nabigo ang bayad",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Gawing ecash ang mga sat ng Lightning na kaya mong gastusin nang offline, o ipalit ang ecash pabalik sa kahit anong invoice ng Lightning. Kailangan ng pareho ang internet at isang mint.",
   "wallet.ln.deposit_body":
     "Bibigyan ka ng mint ng invoice. Bayaran ito mula sa kahit anong wallet ng Lightning at babalik ang mga sat bilang ecash na kaya mong gastusin nang offline.",
   "wallet.ln.pay_invoice_for":
@@ -1173,10 +1185,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "hanggang {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Magbayad ng {amount} {unit}",
-  "wallet.ln.deposit": "Magdeposito ng sat sa Lightning",
-  "wallet.ln.deposit_short": "Magdeposito",
-  "wallet.ln.withdraw": "Mag-withdraw sa isang invoice ng Lightning",
-  "wallet.ln.withdraw_short": "Mag-withdraw",
   "wallet.ln.deposit_title": "Magdeposito sa Lightning",
   "wallet.ln.amount_placeholder": "Halaga sa sat",
   "wallet.ln.requesting": "Humihiling…",
@@ -1197,7 +1205,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Kumuha ng quote",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Backup",
   "wallet.backup.setup_failed": "Hindi naitakda ang backup",
   "wallet.backup.on": "Naka-on ang backup",
   "wallet.backup.on_body":
@@ -1312,7 +1319,6 @@ export const strings: Strings = {
   "wallet.refresh.secured":
     "Sakop na ngayon ng parirala mo sa pagbawi ang {amount} {unit}.",
   "wallet.refresh.all_confirmed": "Nakumpirma na sa mint ang lahat ng narito.",
-  "wallet.pending.title": "Nakabinbin",
   "wallet.pending.reserved_desc":
     "Nabuo at nakalaan, hindi pa nakukumpirma ang paghahatid. Hawak ang mga patunay sa labas ng balanse mo para hindi ito magastos nang dalawang beses.",
   "wallet.pending.locked_desc":
@@ -1326,8 +1332,6 @@ export const strings: Strings = {
     "Bawiin ang token na ito pabalik sa balanse mo",
   "wallet.activity.title": "Aktibidad",
   "wallet.activity.none": "Wala pa",
-  "wallet.activity.none_desc":
-    "Lumilitaw dito ang mga bayad na ipinapadala at natatanggap mo, pinakabago muna, kasama ang mint at bayarin ng bawat isa.",
   "wallet.activity.show_fewer": "Magpakita ng mas kaunting bayad",
   "wallet.activity.show_less": "Magpakita ng mas kaunti",
   "wallet.activity.received_unconfirmed": "Natanggap, hindi pa nakumpirma",
@@ -1343,9 +1347,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Deposito sa Lightning",
   "wallet.activity.ln_withdrawal": "Withdrawal sa Lightning",
   "wallet.activity.nutzap_received": "Natanggap na nutzap",
-  "wallet.activity.spent_removed": "Inalis ang mga nagastos na patunay",
-  "wallet.activity.refreshed": "Na-refresh ang mga patunay",
-  "wallet.activity.refreshing": "Nire-refresh ang mga patunay",
+  "wallet.activity.spent_removed": "Inalis ang mga nagastos na coin",
+  "wallet.activity.refreshed": "Nasuri sa mint",
+  "wallet.activity.refreshing": "Sinusuri sa mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Offline ang mesh",
@@ -1413,10 +1417,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Itutok sa isang QR code ng invoice ng Lightning.",
   "wallet.scan.title_token": "Mag-scan ng ecash",
   "wallet.scan.title_invoice": "Mag-scan ng invoice",
-  "wallet.scan.desc_token":
-    "Magbasa ng token ng Cashu mula sa ibang wallet. Gumagana sa kahit anong wallet ng Cashu, hindi lang sa Airhop.",
-  "wallet.scan.desc_invoice":
-    "Magbasa ng invoice ng Lightning para bayaran ito mula sa balanse mo.",
+  "wallet.scan.title_any": "Mag-scan ng QR code",
+  "wallet.scan.aim_any": "Itutok sa QR code ng token, invoice o npub.",
+  "wallet.scan.no_any":
+    "Walang natagpuang token, invoice o npub sa imaheng iyon.",
   "wallet.scan.use_camera_a11y": "Mag-scan gamit ang camera",
   "wallet.scan.use_camera": "Gamitin ang camera",
   "wallet.scan.pick_image_a11y":
@@ -1460,6 +1464,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Hindi dumadaan sa Tor ang mga hiling sa mint sa iOS.",
   "wallet.svc.tor_ios_body":
     "Mga WebSocket lang ng Nostr ang binabalot ng Arti, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa mga patunay na ito. Payagan ito sa ilalim ng Mga Setting > Seguridad, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
+  "wallet.svc.internet_off":
+    "Naka-off ang internet, kaya hindi maabot ang mint.",
+  "wallet.svc.internet_off_body":
+    "I-on ang {setting} sa Settings. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa malapit.",
   "wallet.svc.keys_uncached":
     "Hindi nakaimbak sa device na ito ang mga susi ng mint na ito.",
   "wallet.svc.keys_uncached_body":
@@ -2362,10 +2370,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    other: "{count} na mint",
-  },
   "wallet.mint.remove_body": {
     one: "May hawak ang {mint} na {balance} {unit} sa {count} patunay. Kapag inalis ito, permanenteng mabubura ang patunay na iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
     other:
@@ -2403,10 +2407,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} hindi pa nakumpirma",
     other: "{count} na hindi pa nakumpirma",
-  },
-  "wallet.proof_count": {
-    one: "{count} patunay",
-    other: "{count} na patunay",
   },
   "wallet.spent_removed_detail": {
     one: "Nagastos na ang {count} patunay at inalis na ito.",

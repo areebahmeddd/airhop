@@ -947,6 +947,10 @@ export const strings: Strings = {
     "Kho ví đang bị khóa. Chứng từ ecash được giữ trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị, và tệp đó không mở được. Hãy mở khóa thiết bị rồi mở lại Airhop.",
   "wallet.balance.tor_blocked":
     "Tor đang bật, nên các yêu cầu tới nhà đúc bị chặn: chúng sẽ đi ra qua mạng trần và gắn IP của bạn với chứng từ của bạn. Gửi và nhận qua mạng lưới vẫn chạy. Hãy cho phép lưu lượng nhà đúc trong Cài đặt, Bảo mật.",
+  "wallet.balance.offline":
+    "Ngoại tuyến. Bạn vẫn có thể trả cho người ở gần và gửi token.",
+  "wallet.balance.internet_off":
+    "Internet đang tắt nên ví chỉ dùng được ở gần. Bật {setting} trong Cài đặt để kết nối nhà đúc.",
   "wallet.balance.unconfirmed_note": "{amount} chưa được nhà đúc xác nhận",
   "wallet.balance.reserved_note":
     "{amount} đang giữ cho một lần gửi đang trên đường",
@@ -954,14 +958,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Bao gồm tiền chơi từ một nhà đúc thử nghiệm. Đó không phải bitcoin và không rút ra được.",
   "wallet.token": "Token",
-  "wallet.action.send": "Gửi token ecash",
   "wallet.action.send_disabled":
     "Gửi token ecash, không dùng được khi số dư bằng không",
-  "wallet.action.receive": "Nhận token ecash",
-  "wallet.action.zap": "Zap một liên hệ Nostr",
-  "wallet.action.zap_disabled":
-    "Zap một liên hệ Nostr, không dùng được khi số dư bằng không",
-  "wallet.action.add_mint": "Thêm một nhà đúc Cashu",
+  "wallet.action.scan": "Quét",
+  "wallet.action.scan_a11y": "Quét token, hóa đơn hoặc npub",
+  "wallet.choose.paste": "Dán token",
+  "wallet.choose.paste_desc": "Dùng được khi ngoại tuyến",
+  "wallet.choose.scan": "Quét mã QR",
+  "wallet.choose.scan_desc": "Token Cashu từ bất kỳ ví nào",
+  "wallet.choose.topup": "Nạp qua Lightning",
+  "wallet.choose.topup_desc": "Thanh toán hóa đơn từ bất kỳ ví Lightning nào",
+  "wallet.choose.token": "Tạo token",
+  "wallet.choose.token_desc": "Chia sẻ hoặc hiện mã QR, kể cả khi ngoại tuyến",
+  "wallet.choose.zap": "Zap một liên hệ Nostr",
+  "wallet.choose.zap_desc": "Tới npub của họ, qua internet",
+  "wallet.choose.invoice": "Thanh toán hóa đơn Lightning",
+  "wallet.choose.invoice_desc": "Rút về bất kỳ ví Lightning nào",
+  "wallet.choose.tor_paused": "Tạm dừng khi Tor đang bật",
+  "wallet.choose.offline": "Cần có internet",
+  "wallet.choose.internet_off": "Internet đang tắt",
+  "wallet.choose.needs_mint": "Hãy thêm một nhà đúc trước",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Không dựng được token",
@@ -1071,9 +1087,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Gỡ {mint} khỏi ví của bạn? Khóa lưu sẵn của nó cũng mất theo, nên token từ nó không kiểm tra được khi ngoại tuyến nữa.",
   "wallet.mint.title": "Nhà đúc",
-  "wallet.mint.none": "Chưa có nhà đúc nào",
   "wallet.mint.none_desc":
-    "Nhà đúc phát hành và đổi ecash của bạn. Hãy thêm một nhà đúc để nạp qua Lightning, hoặc cứ nhận một token thì nhà đúc của nó tự được thêm giúp bạn.",
+    "Nhà đúc phát hành và quy đổi ecash của bạn. Hãy thêm một nhà đúc để nạp qua Lightning hoặc nhận token của nó.",
   "wallet.mint.add": "Thêm một nhà đúc",
   "wallet.mint.add_body":
     "Nhà đúc giữ số Bitcoin bảo chứng cho ecash của bạn, nên hãy chọn một nơi bạn tin tưởng với số dư bạn để ở đó. URL được kiểm tra trước khi lưu. Hãy tự chạy một nhà đúc bằng Nutshell nếu bạn không muốn tin ai cả.",
@@ -1085,8 +1100,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Gỡ nhà đúc",
   "wallet.mint.delete_anyway": "Vẫn xóa",
   "wallet.mint.consolidate": "Dời toàn bộ số dư về một nhà đúc",
-  "wallet.mint.confirm_with": "Xác nhận chứng từ với {mint}",
-  "wallet.mint.remove_a11y": "Gỡ {mint}",
+  "wallet.mint.confirm_with": "Kiểm tra số dư với {mint}",
   "wallet.mint.available_amount": "Có sẵn {amount} {unit}",
   "wallet.mint.split_across":
     "Số dư trải khắp {count} nhà đúc. Hãy dời về một nơi.",
@@ -1117,9 +1131,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Đã trả {paid} sat qua Lightning. Nhà đúc thu {fee} sat phí định tuyến, và trả lại {change} sat trong phần dự phòng về số dư của bạn.",
   "wallet.ln.payment_failed": "Thanh toán thất bại",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Biến sat trên Lightning thành ecash tiêu được khi ngoại tuyến, hoặc rút ecash ra trả cho bất kỳ hóa đơn Lightning nào. Cả hai đều cần Internet và một nhà đúc.",
   "wallet.ln.deposit_body":
     "Nhà đúc đưa bạn một hóa đơn. Hãy trả nó từ bất kỳ ví Lightning nào và số sat sẽ quay về dưới dạng ecash tiêu được khi ngoại tuyến.",
   "wallet.ln.pay_invoice_for":
@@ -1132,10 +1143,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "tối đa {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Trả {amount} {unit}",
-  "wallet.ln.deposit": "Nạp sat qua Lightning",
-  "wallet.ln.deposit_short": "Nạp",
-  "wallet.ln.withdraw": "Rút về một hóa đơn Lightning",
-  "wallet.ln.withdraw_short": "Rút",
   "wallet.ln.deposit_title": "Nạp qua Lightning",
   "wallet.ln.amount_placeholder": "Số tiền tính bằng sat",
   "wallet.ln.requesting": "Đang yêu cầu…",
@@ -1156,7 +1163,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Lấy báo giá",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Sao lưu",
   "wallet.backup.setup_failed": "Không thiết lập được sao lưu",
   "wallet.backup.on": "Sao lưu đang bật",
   "wallet.backup.on_body":
@@ -1269,7 +1275,6 @@ export const strings: Strings = {
     "{amount} {unit} giờ đã được cụm từ khôi phục của bạn bao phủ.",
   "wallet.refresh.all_confirmed":
     "Mọi thứ ở đây đều đã được nhà đúc xác nhận từ trước.",
-  "wallet.pending.title": "Đang chờ",
   "wallet.pending.reserved_desc":
     "Đã dựng và đang giữ, chưa xác nhận chuyển thành công. Các chứng từ được tách khỏi số dư của bạn để không bị tiêu hai lần.",
   "wallet.pending.locked_desc":
@@ -1282,8 +1287,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Thu hồi token này về số dư của bạn",
   "wallet.activity.title": "Hoạt động",
   "wallet.activity.none": "Chưa có gì",
-  "wallet.activity.none_desc":
-    "Các khoản bạn gửi và nhận sẽ hiện ở đây, mới nhất trước, kèm nhà đúc và mức phí của từng khoản.",
   "wallet.activity.show_fewer": "Hiện ít khoản thanh toán hơn",
   "wallet.activity.show_less": "Thu gọn",
   "wallet.activity.received_unconfirmed": "Đã nhận, chưa xác nhận",
@@ -1299,9 +1302,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Nạp qua Lightning",
   "wallet.activity.ln_withdrawal": "Rút qua Lightning",
   "wallet.activity.nutzap_received": "Đã nhận Nutzap",
-  "wallet.activity.spent_removed": "Đã gỡ các chứng từ đã tiêu",
-  "wallet.activity.refreshed": "Đã làm mới chứng từ",
-  "wallet.activity.refreshing": "Đang làm mới chứng từ",
+  "wallet.activity.spent_removed": "Đã xóa các đồng đã tiêu",
+  "wallet.activity.refreshed": "Đã kiểm tra với nhà đúc",
+  "wallet.activity.refreshing": "Đang kiểm tra với nhà đúc",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mạng lưới ngoại tuyến",
@@ -1368,10 +1371,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Hãy hướng vào mã QR của một hóa đơn Lightning.",
   "wallet.scan.title_token": "Quét ecash",
   "wallet.scan.title_invoice": "Quét hóa đơn",
-  "wallet.scan.desc_token":
-    "Đọc một token Cashu từ ví khác. Dùng được với mọi ví Cashu, không riêng gì Airhop.",
-  "wallet.scan.desc_invoice":
-    "Đọc một hóa đơn Lightning để trả nó từ số dư của bạn.",
+  "wallet.scan.title_any": "Quét mã QR",
+  "wallet.scan.aim_any": "Hãy hướng vào mã QR của token, hóa đơn hoặc npub.",
+  "wallet.scan.no_any":
+    "Không tìm thấy token, hóa đơn hay npub nào trong hình đó.",
   "wallet.scan.use_camera_a11y": "Quét bằng máy ảnh",
   "wallet.scan.use_camera": "Dùng máy ảnh",
   "wallet.scan.pick_image_a11y": "Đọc một mã QR từ hình ảnh đã lưu",
@@ -1414,6 +1417,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Trên iOS, các yêu cầu tới nhà đúc không đi qua Tor.",
   "wallet.svc.tor_ios_body":
     "Arti chỉ bọc WebSocket của Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với những chứng từ này. Hãy cho phép nó trong Cài đặt > Bảo mật, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
+  "wallet.svc.internet_off": "Internet đang tắt nên không thể kết nối nhà đúc.",
+  "wallet.svc.internet_off_body":
+    "Bật {setting} trong Cài đặt. Gửi và nhận ecash ở gần vẫn hoạt động.",
   "wallet.svc.keys_uncached":
     "Khóa của nhà đúc này không được lưu sẵn trên thiết bị này.",
   "wallet.svc.keys_uncached_body":
@@ -2273,9 +2279,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} nhà đúc",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint} giữ {balance} {unit} trong {count} chứng từ. Gỡ nó đi sẽ hủy vĩnh viễn những chứng từ đó khỏi thiết bị này, và chúng không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
@@ -2305,9 +2308,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} chưa xác nhận",
-  },
-  "wallet.proof_count": {
-    other: "{count} chứng từ",
   },
   "wallet.spent_removed_detail": {
     other: "{count} chứng từ đã bị tiêu từ trước, và chúng đã được gỡ đi.",

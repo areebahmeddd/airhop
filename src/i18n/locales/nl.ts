@@ -958,6 +958,10 @@ export const strings: Strings = {
     "De opslag van de portemonnee zit op slot. Ecash-bewijzen staan in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit, en dat bestand ging niet open. Ontgrendel je toestel en open Airhop opnieuw.",
   "wallet.balance.tor_blocked":
     "Tor staat aan, dus mintverzoeken zijn geblokkeerd: ze zouden over het open net gaan en je IP aan je bewijzen koppelen. Sturen en ontvangen over de mesh werkt gewoon. Sta mintverkeer toe onder Instellingen, Beveiliging.",
+  "wallet.balance.offline":
+    "Offline. Je kunt nog steeds mensen in de buurt betalen en tokens sturen.",
+  "wallet.balance.internet_off":
+    "Internet staat uit, dus de wallet werkt alleen in de buurt. Zet {setting} aan in Instellingen om mints te bereiken.",
   "wallet.balance.unconfirmed_note": "{amount} nog niet bevestigd bij de mint",
   "wallet.balance.reserved_note":
     "{amount} apart gezet voor een lopende verzending",
@@ -965,14 +969,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Bevat speelgeld van een testmint. Dat is geen bitcoin en kan niet worden uitbetaald.",
   "wallet.token": "Token",
-  "wallet.action.send": "Een ecash-token sturen",
   "wallet.action.send_disabled":
     "Een ecash-token sturen, niet mogelijk met een leeg saldo",
-  "wallet.action.receive": "Een ecash-token ontvangen",
-  "wallet.action.zap": "Een Nostr-contact zappen",
-  "wallet.action.zap_disabled":
-    "Een Nostr-contact zappen, niet mogelijk met een leeg saldo",
-  "wallet.action.add_mint": "Een Cashu-mint toevoegen",
+  "wallet.action.scan": "Scannen",
+  "wallet.action.scan_a11y": "Een token, factuur of npub scannen",
+  "wallet.choose.paste": "Token plakken",
+  "wallet.choose.paste_desc": "Werkt offline",
+  "wallet.choose.scan": "QR-code scannen",
+  "wallet.choose.scan_desc": "Een Cashu-token uit elke wallet",
+  "wallet.choose.topup": "Opwaarderen via Lightning",
+  "wallet.choose.topup_desc": "Betaal een factuur vanuit elke Lightning-wallet",
+  "wallet.choose.token": "Token maken",
+  "wallet.choose.token_desc": "Deel het of toon een QR-code, ook offline",
+  "wallet.choose.zap": "Een Nostr-contact zappen",
+  "wallet.choose.zap_desc": "Naar hun npub, via internet",
+  "wallet.choose.invoice": "Lightning-factuur betalen",
+  "wallet.choose.invoice_desc": "Uitbetalen naar elke Lightning-wallet",
+  "wallet.choose.tor_paused": "Gepauzeerd zolang Tor aan staat",
+  "wallet.choose.offline": "Heeft internet nodig",
+  "wallet.choose.internet_off": "Internet staat uit",
+  "wallet.choose.needs_mint": "Voeg eerst een mint toe",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Het token kon niet worden gemaakt",
@@ -1083,9 +1099,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} uit je portemonnee halen? De opgeslagen sleutels gaan mee, dus tokens ervan zijn dan offline niet meer te controleren.",
   "wallet.mint.title": "Mints",
-  "wallet.mint.none": "Nog geen mint",
   "wallet.mint.none_desc":
-    "Een mint geeft je ecash uit en wisselt het in. Voeg er een toe om via Lightning te storten, of ontvang gewoon een token en de bijbehorende mint komt er vanzelf bij.",
+    "Een mint geeft je ecash uit en wisselt het in. Voeg er een toe om via Lightning op te waarderen of tokens ervan te accepteren.",
   "wallet.mint.add": "Een mint toevoegen",
   "wallet.mint.add_body":
     "Een mint houdt de Bitcoin die achter je ecash zit, dus kies er een die je het saldo toevertrouwt dat je daar bewaart. De URL wordt gecontroleerd voordat hij wordt opgeslagen. Draai je eigen mint met Nutshell als je liever niemand vertrouwt.",
@@ -1097,8 +1112,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Mint weghalen",
   "wallet.mint.delete_anyway": "Toch verwijderen",
   "wallet.mint.consolidate": "Alle saldo’s naar één mint verplaatsen",
-  "wallet.mint.confirm_with": "Bewijzen bevestigen bij {mint}",
-  "wallet.mint.remove_a11y": "{mint} weghalen",
+  "wallet.mint.confirm_with": "Saldo controleren bij {mint}",
   "wallet.mint.available_amount": "{amount} {unit} beschikbaar",
   "wallet.mint.split_across":
     "Saldo verdeeld over {count} mints. Verplaats het naar één.",
@@ -1129,9 +1143,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats betaald via Lightning. De mint rekende {fee} sats aan routeringskosten en gaf {change} sats van de reserve terug aan je saldo.",
   "wallet.ln.payment_failed": "Betaling mislukt",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Verander Lightning-sats in ecash dat je offline kunt uitgeven, of betaal ecash uit naar een willekeurige Lightning-factuur. Voor allebei heb je internet en een mint nodig.",
   "wallet.ln.deposit_body":
     "De mint geeft je een factuur. Betaal hem vanuit een willekeurige Lightning-portemonnee en de sats komen terug als ecash dat je offline kunt uitgeven.",
   "wallet.ln.pay_invoice_for":
@@ -1145,10 +1156,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "tot {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} betalen",
-  "wallet.ln.deposit": "Sats storten via Lightning",
-  "wallet.ln.deposit_short": "Storten",
-  "wallet.ln.withdraw": "Uitbetalen naar een Lightning-factuur",
-  "wallet.ln.withdraw_short": "Uitbetalen",
   "wallet.ln.deposit_title": "Storten via Lightning",
   "wallet.ln.amount_placeholder": "Bedrag in sats",
   "wallet.ln.requesting": "Bezig met aanvragen…",
@@ -1169,7 +1176,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Offerte ophalen",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Back-up",
   "wallet.backup.setup_failed": "De back-up kon niet worden ingesteld",
   "wallet.backup.on": "Back-up aan",
   "wallet.backup.on_body":
@@ -1279,7 +1285,6 @@ export const strings: Strings = {
     "{amount} {unit} bevestigd en omgeruild voor nieuwe bewijzen.",
   "wallet.refresh.secured": "{amount} {unit} valt nu onder je herstelzin.",
   "wallet.refresh.all_confirmed": "Alles hier was al bij de mint bevestigd.",
-  "wallet.pending.title": "In afwachting",
   "wallet.pending.reserved_desc":
     "Gemaakt en apart gezet, aflevering niet bevestigd. De bewijzen blijven buiten je saldo zodat ze niet twee keer uitgegeven kunnen worden.",
   "wallet.pending.locked_desc":
@@ -1292,8 +1297,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Dit token terugnemen in je saldo",
   "wallet.activity.title": "Activiteit",
   "wallet.activity.none": "Nog niets",
-  "wallet.activity.none_desc":
-    "Betalingen die je stuurt en ontvangt komen hier te staan, de nieuwste bovenaan, met de mint en de kosten van elk.",
   "wallet.activity.show_fewer": "Minder betalingen tonen",
   "wallet.activity.show_less": "Minder tonen",
   "wallet.activity.received_unconfirmed": "Ontvangen, niet bevestigd",
@@ -1309,9 +1312,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-storting",
   "wallet.activity.ln_withdrawal": "Lightning-uitbetaling",
   "wallet.activity.nutzap_received": "Nutzap ontvangen",
-  "wallet.activity.spent_removed": "Bestede bewijzen weggehaald",
-  "wallet.activity.refreshed": "Bewijzen ververst",
-  "wallet.activity.refreshing": "Bewijzen worden ververst",
+  "wallet.activity.spent_removed": "Uitgegeven munten verwijderd",
+  "wallet.activity.refreshed": "Gecontroleerd bij de mint",
+  "wallet.activity.refreshing": "Controleren bij de mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1379,10 +1382,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Richt op de QR-code van een Lightning-factuur.",
   "wallet.scan.title_token": "Ecash scannen",
   "wallet.scan.title_invoice": "Factuur scannen",
-  "wallet.scan.desc_token":
-    "Lees een Cashu-token uit een andere portemonnee. Werkt met elke Cashu-portemonnee, niet alleen met Airhop.",
-  "wallet.scan.desc_invoice":
-    "Lees een Lightning-factuur om hem met je saldo te betalen.",
+  "wallet.scan.title_any": "QR-code scannen",
+  "wallet.scan.aim_any": "Richt op de QR-code van een token, factuur of npub.",
+  "wallet.scan.no_any":
+    "Geen token, factuur of npub gevonden in die afbeelding.",
   "wallet.scan.use_camera_a11y": "Scannen met de camera",
   "wallet.scan.use_camera": "Camera gebruiken",
   "wallet.scan.pick_image_a11y":
@@ -1426,6 +1429,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Op iOS gaan mintverzoeken niet via Tor.",
   "wallet.svc.tor_ios_body":
     "Arti omhult alleen Nostr-WebSockets, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze bewijzen koppelen. Sta het toe onder Instellingen > Beveiliging, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
+  "wallet.svc.internet_off":
+    "Internet staat uit, dus de mint is niet bereikbaar.",
+  "wallet.svc.internet_off_body":
+    "Zet {setting} aan in Instellingen. Ecash in de buurt sturen en ontvangen werkt nog steeds.",
   "wallet.svc.keys_uncached":
     "De sleutels van deze mint staan niet op dit toestel.",
   "wallet.svc.keys_uncached_body":
@@ -2317,10 +2324,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    other: "{count} mints",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} houdt {balance} {unit} in {count} bewijs. Verwijderen wist dat bewijs definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
     other:
@@ -2357,10 +2360,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} onbevestigd",
     other: "{count} onbevestigd",
-  },
-  "wallet.proof_count": {
-    one: "{count} bewijs",
-    other: "{count} bewijzen",
   },
   "wallet.spent_removed_detail": {
     one: "{count} bewijs was al besteed en is verwijderd.",

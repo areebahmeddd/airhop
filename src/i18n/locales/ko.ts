@@ -929,6 +929,10 @@ export const strings: Strings = {
     "지갑 저장소가 잠겨 있습니다. ecash 증명은 기기 키체인에 키가 있는 암호화된 파일에 보관되는데, 그 파일을 열지 못했습니다. 기기 잠금을 풀고 Airhop을 다시 여세요.",
   "wallet.balance.tor_blocked":
     "Tor가 켜져 있어 민트 요청이 차단되었습니다. 요청이 일반 네트워크로 나가 IP와 증명이 연결되기 때문입니다. 메시를 통한 송수신은 계속 작동합니다. 설정, 보안에서 민트 트래픽을 허용하세요.",
+  "wallet.balance.offline":
+    "오프라인입니다. 근처 사람에게 결제하고 토큰을 보내는 것은 여전히 됩니다.",
+  "wallet.balance.internet_off":
+    "인터넷이 꺼져 있어 지갑은 근처에서만 작동합니다. 민트에 연결하려면 설정에서 {setting}을(를) 켜세요.",
   "wallet.balance.unconfirmed_note":
     "{amount}이(가) 아직 민트에서 확인되지 않음",
   "wallet.balance.reserved_note": "{amount}이(가) 진행 중인 전송을 위해 예약됨",
@@ -936,14 +940,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "테스트 민트의 모의 자금이 포함되어 있습니다. 비트코인이 아니며 현금화할 수 없습니다.",
   "wallet.token": "토큰",
-  "wallet.action.send": "ecash 토큰 보내기",
   "wallet.action.send_disabled":
     "ecash 토큰 보내기, 잔액이 없어 사용할 수 없음",
-  "wallet.action.receive": "ecash 토큰 받기",
-  "wallet.action.zap": "Nostr 연락처에게 zap 보내기",
-  "wallet.action.zap_disabled":
-    "Nostr 연락처에게 zap 보내기, 잔액이 없어 사용할 수 없음",
-  "wallet.action.add_mint": "Cashu 민트 추가",
+  "wallet.action.scan": "스캔",
+  "wallet.action.scan_a11y": "토큰, 인보이스 또는 npub 스캔",
+  "wallet.choose.paste": "토큰 붙여넣기",
+  "wallet.choose.paste_desc": "오프라인에서도 됩니다",
+  "wallet.choose.scan": "QR 코드 스캔",
+  "wallet.choose.scan_desc": "어떤 지갑의 Cashu 토큰이든",
+  "wallet.choose.topup": "Lightning으로 충전",
+  "wallet.choose.topup_desc": "어떤 Lightning 지갑으로든 인보이스를 결제하세요",
+  "wallet.choose.token": "토큰 만들기",
+  "wallet.choose.token_desc":
+    "공유하거나 QR 코드로 보여 줄 수 있고 오프라인에서도 됩니다",
+  "wallet.choose.zap": "Nostr 연락처에게 zap 보내기",
+  "wallet.choose.zap_desc": "상대의 npub으로, 인터넷을 통해",
+  "wallet.choose.invoice": "Lightning 인보이스 결제",
+  "wallet.choose.invoice_desc": "어떤 Lightning 지갑으로든 출금하세요",
+  "wallet.choose.tor_paused": "Tor가 켜져 있는 동안 일시 중지됨",
+  "wallet.choose.offline": "인터넷이 필요합니다",
+  "wallet.choose.internet_off": "인터넷이 꺼져 있습니다",
+  "wallet.choose.needs_mint": "먼저 민트를 추가하세요",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "토큰을 만들지 못했습니다",
@@ -1051,9 +1068,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint}을(를) 지갑에서 제거할까요? 캐시된 키도 함께 사라지므로 이 민트의 토큰을 오프라인에서 검증할 수 없게 됩니다.",
   "wallet.mint.title": "민트",
-  "wallet.mint.none": "아직 민트가 없습니다",
   "wallet.mint.none_desc":
-    "민트는 ecash를 발행하고 교환해 줍니다. Lightning으로 입금하려면 하나 추가하거나, 그냥 토큰을 받으면 해당 민트가 자동으로 추가됩니다.",
+    "민트는 ecash를 발행하고 환전합니다. Lightning으로 충전하거나 그 민트의 토큰을 받으려면 추가하세요.",
   "wallet.mint.add": "민트 추가",
   "wallet.mint.add_body":
     "민트는 ecash를 뒷받침하는 Bitcoin을 보유하므로, 거기 둘 잔액을 맡길 만큼 신뢰하는 곳을 고르세요. URL은 저장하기 전에 확인합니다. 아무도 신뢰하고 싶지 않다면 Nutshell로 직접 운영하세요.",
@@ -1065,8 +1081,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "민트 제거",
   "wallet.mint.delete_anyway": "그래도 삭제",
   "wallet.mint.consolidate": "모든 잔액을 한 민트로 옮기기",
-  "wallet.mint.confirm_with": "{mint}에서 증명 확인",
-  "wallet.mint.remove_a11y": "{mint} 제거",
+  "wallet.mint.confirm_with": "{mint}에서 잔액 확인",
   "wallet.mint.available_amount": "{amount} {unit} 사용 가능",
   "wallet.mint.split_across":
     "잔액이 민트 {count}곳에 나뉘어 있습니다. 한 곳으로 옮기세요.",
@@ -1097,9 +1112,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Lightning으로 {paid} sats을 지급했습니다. 민트가 라우팅 수수료로 {fee} sats을 받고, 예약분 중 {change} sats을 잔액으로 돌려주었습니다.",
   "wallet.ln.payment_failed": "결제 실패",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning sats을 오프라인에서 쓸 수 있는 ecash로 바꾸거나, ecash를 어떤 Lightning 인보이스로든 현금화하세요. 둘 다 인터넷과 민트가 필요합니다.",
   "wallet.ln.deposit_body":
     "민트가 인보이스를 발행합니다. 아무 Lightning 지갑으로 결제하면 sats이 오프라인에서 쓸 수 있는 ecash로 돌아옵니다.",
   "wallet.ln.pay_invoice_for":
@@ -1112,10 +1124,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "최대 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} 결제",
-  "wallet.ln.deposit": "Lightning으로 sats 입금",
-  "wallet.ln.deposit_short": "입금",
-  "wallet.ln.withdraw": "Lightning 인보이스로 출금",
-  "wallet.ln.withdraw_short": "출금",
   "wallet.ln.deposit_title": "Lightning으로 입금",
   "wallet.ln.amount_placeholder": "sats 단위 금액",
   "wallet.ln.requesting": "요청하는 중…",
@@ -1136,7 +1144,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "견적 받기",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "백업",
   "wallet.backup.setup_failed": "백업을 설정하지 못했습니다",
   "wallet.backup.on": "백업 켜짐",
   "wallet.backup.on_body":
@@ -1248,7 +1255,6 @@ export const strings: Strings = {
     "이제 {amount} {unit}이(가) 복구 문구로 보장됩니다.",
   "wallet.refresh.all_confirmed":
     "여기 있는 것은 모두 이미 민트에서 확인된 상태였습니다.",
-  "wallet.pending.title": "대기 중",
   "wallet.pending.reserved_desc":
     "생성해 예약했으며 전달은 확인되지 않았습니다. 이중 지출을 막기 위해 증명을 잔액에서 빼두었습니다.",
   "wallet.pending.locked_desc":
@@ -1261,8 +1267,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "이 토큰을 잔액으로 회수",
   "wallet.activity.title": "활동",
   "wallet.activity.none": "아직 없음",
-  "wallet.activity.none_desc":
-    "보내고 받은 결제가 최신순으로 여기에 표시되며, 각각의 민트와 수수료도 함께 나옵니다.",
   "wallet.activity.show_fewer": "결제 적게 보기",
   "wallet.activity.show_less": "적게 보기",
   "wallet.activity.received_unconfirmed": "받음, 미확인",
@@ -1278,9 +1282,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning 입금",
   "wallet.activity.ln_withdrawal": "Lightning 출금",
   "wallet.activity.nutzap_received": "Nutzap 받음",
-  "wallet.activity.spent_removed": "사용된 증명 제거됨",
-  "wallet.activity.refreshed": "증명을 새로 고침",
-  "wallet.activity.refreshing": "증명을 새로 고치는 중",
+  "wallet.activity.spent_removed": "사용된 코인 제거됨",
+  "wallet.activity.refreshed": "민트에서 확인됨",
+  "wallet.activity.refreshing": "민트에서 확인 중",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "메시 오프라인",
@@ -1346,9 +1350,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning 인보이스 QR 코드를 비추세요.",
   "wallet.scan.title_token": "ecash 스캔",
   "wallet.scan.title_invoice": "인보이스 스캔",
-  "wallet.scan.desc_token":
-    "다른 지갑의 Cashu 토큰을 읽습니다. Airhop뿐 아니라 모든 Cashu 지갑과 함께 작동합니다.",
-  "wallet.scan.desc_invoice": "잔액으로 결제할 Lightning 인보이스를 읽습니다.",
+  "wallet.scan.title_any": "QR 코드 스캔",
+  "wallet.scan.aim_any": "토큰, 인보이스 또는 npub QR 코드를 비추세요.",
+  "wallet.scan.no_any": "그 이미지에서 토큰, 인보이스, npub을 찾지 못했습니다.",
   "wallet.scan.use_camera_a11y": "카메라로 스캔",
   "wallet.scan.use_camera": "카메라 사용",
   "wallet.scan.pick_image_a11y": "저장된 이미지에서 QR 코드 읽기",
@@ -1391,6 +1395,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "iOS에서는 민트 요청이 Tor를 거치지 않습니다.",
   "wallet.svc.tor_ios_body":
     "Arti는 Nostr WebSocket만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 증명들을 연결하게 됩니다. 설정 > 보안에서 허용하거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
+  "wallet.svc.internet_off": "인터넷이 꺼져 있어 민트에 연결할 수 없습니다.",
+  "wallet.svc.internet_off_body":
+    "설정에서 {setting}을(를) 켜세요. 근처에서 ecash를 보내고 받는 것은 계속 됩니다.",
   "wallet.svc.keys_uncached":
     "이 민트의 키가 이 기기에 캐시되어 있지 않습니다.",
   "wallet.svc.keys_uncached_body":
@@ -2231,9 +2238,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "민트 {count}곳",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint}이(가) 증명 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 해당 증명이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
@@ -2263,9 +2267,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "미확인 {count}개",
-  },
-  "wallet.proof_count": {
-    other: "증명 {count}개",
   },
   "wallet.spent_removed_detail": {
     other: "증명 {count}개가 이미 사용되어 제거되었습니다.",

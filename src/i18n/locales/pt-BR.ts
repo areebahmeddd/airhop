@@ -960,6 +960,10 @@ export const strings: Strings = {
     "O armazenamento da carteira está trancado. As provas de ecash ficam num arquivo criptografado cuja chave vive no chaveiro do aparelho, e não foi possível abri-lo. Desbloqueie o aparelho e abra o Airhop de novo.",
   "wallet.balance.tor_blocked":
     "O Tor está ligado, então os pedidos à casa de emissão estão bloqueados: eles sairiam pela rede aberta e ligariam seu IP às suas provas. Enviar e receber pela malha continua funcionando. Libere o tráfego com a casa de emissão em Configurações, Segurança.",
+  "wallet.balance.offline":
+    "Offline. Você ainda pode pagar pessoas por perto e enviar tokens.",
+  "wallet.balance.internet_off":
+    "A internet está desligada, então a carteira só funciona por perto. Ative {setting} em Configurações para alcançar as casas de emissão.",
   "wallet.balance.unconfirmed_note":
     "{amount} ainda não confirmados com a casa de emissão",
   "wallet.balance.reserved_note":
@@ -969,14 +973,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Inclui dinheiro de brincadeira de uma casa de emissão de teste. Não é bitcoin e não dá para sacar.",
   "wallet.token": "Token",
-  "wallet.action.send": "Enviar um token de ecash",
   "wallet.action.send_disabled":
     "Enviar um token de ecash, indisponível com saldo zerado",
-  "wallet.action.receive": "Receber um token de ecash",
-  "wallet.action.zap": "Mandar um zap para um contato do Nostr",
-  "wallet.action.zap_disabled":
-    "Mandar um zap para um contato do Nostr, indisponível com saldo zerado",
-  "wallet.action.add_mint": "Adicionar uma casa de emissão Cashu",
+  "wallet.action.scan": "Escanear",
+  "wallet.action.scan_a11y": "Escanear um token, uma fatura ou um npub",
+  "wallet.choose.paste": "Colar um token",
+  "wallet.choose.paste_desc": "Funciona offline",
+  "wallet.choose.scan": "Escanear um código QR",
+  "wallet.choose.scan_desc": "Um token Cashu de qualquer carteira",
+  "wallet.choose.topup": "Recarregar via Lightning",
+  "wallet.choose.topup_desc": "Pague uma fatura de qualquer carteira Lightning",
+  "wallet.choose.token": "Criar um token",
+  "wallet.choose.token_desc":
+    "Compartilhe ou mostre um código QR, mesmo offline",
+  "wallet.choose.zap": "Enviar um zap para um contato no Nostr",
+  "wallet.choose.zap_desc": "Para o npub da pessoa, pela internet",
+  "wallet.choose.invoice": "Pagar uma fatura Lightning",
+  "wallet.choose.invoice_desc": "Saque para qualquer carteira Lightning",
+  "wallet.choose.tor_paused": "Pausado enquanto o Tor está ligado",
+  "wallet.choose.offline": "Precisa de internet",
+  "wallet.choose.internet_off": "Internet desligada",
+  "wallet.choose.needs_mint": "Adicione uma casa de emissão primeiro",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Não foi possível montar o token",
@@ -1086,9 +1103,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Remover {mint} da sua carteira? As chaves guardadas vão junto, então os tokens dela não poderão mais ser verificados offline.",
   "wallet.mint.title": "Casas de emissão",
-  "wallet.mint.none": "Nenhuma casa de emissão ainda",
   "wallet.mint.none_desc":
-    "Uma casa de emissão emite e resgata seu ecash. Adicione uma para depositar por Lightning, ou receba um token e a dele é adicionada sozinha.",
+    "A casa de emissão emite e resgata seu ecash. Adicione uma para recarregar via Lightning ou aceitar os tokens dela.",
   "wallet.mint.add": "Adicionar uma casa de emissão",
   "wallet.mint.add_body":
     "Uma casa de emissão guarda o Bitcoin que lastreia seu ecash, então escolha uma em que você confiaria o saldo que mantiver lá. A URL é conferida antes de salvar. Rode a sua com o Nutshell se preferir não confiar em ninguém.",
@@ -1100,8 +1116,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Remover a casa de emissão",
   "wallet.mint.delete_anyway": "Excluir assim mesmo",
   "wallet.mint.consolidate": "Mover todos os saldos para uma casa de emissão",
-  "wallet.mint.confirm_with": "Confirmar as provas com {mint}",
-  "wallet.mint.remove_a11y": "Remover {mint}",
+  "wallet.mint.confirm_with": "Verificar o saldo com {mint}",
   "wallet.mint.available_amount": "{amount} {unit} disponíveis",
   "wallet.mint.split_across":
     "Saldo espalhado por {count} casas de emissão. Mova para uma só.",
@@ -1132,9 +1147,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats pagos por Lightning. A casa de emissão cobrou {fee} sats em taxas de roteamento e devolveu {change} sats da reserva ao seu saldo.",
   "wallet.ln.payment_failed": "O pagamento falhou",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Transforme sats da Lightning em ecash que você gasta offline, ou saque ecash para qualquer fatura Lightning. As duas coisas precisam de internet e de uma casa de emissão.",
   "wallet.ln.deposit_body":
     "A casa de emissão te dá uma fatura. Pague por qualquer carteira Lightning e os sats voltam como ecash que você gasta offline.",
   "wallet.ln.pay_invoice_for":
@@ -1147,10 +1159,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "até {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Pagar {amount} {unit}",
-  "wallet.ln.deposit": "Depositar sats por Lightning",
-  "wallet.ln.deposit_short": "Depositar",
-  "wallet.ln.withdraw": "Sacar para uma fatura Lightning",
-  "wallet.ln.withdraw_short": "Sacar",
   "wallet.ln.deposit_title": "Depositar por Lightning",
   "wallet.ln.amount_placeholder": "Valor em sats",
   "wallet.ln.requesting": "Solicitando…",
@@ -1171,7 +1179,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Obter uma cotação",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Backup",
   "wallet.backup.setup_failed": "Não foi possível configurar o backup",
   "wallet.backup.on": "Backup ligado",
   "wallet.backup.on_body":
@@ -1286,7 +1293,6 @@ export const strings: Strings = {
     "{amount} {unit} agora estão cobertos pela sua frase de recuperação.",
   "wallet.refresh.all_confirmed":
     "Tudo aqui já estava confirmado com a casa de emissão.",
-  "wallet.pending.title": "Pendentes",
   "wallet.pending.reserved_desc":
     "Montado e reservado, entrega não confirmada. As provas ficam fora do seu saldo para não poderem ser gastas duas vezes.",
   "wallet.pending.locked_desc":
@@ -1299,8 +1305,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Retomar este token para o seu saldo",
   "wallet.activity.title": "Atividade",
   "wallet.activity.none": "Nada ainda",
-  "wallet.activity.none_desc":
-    "Os pagamentos que você envia e recebe aparecem aqui, dos mais recentes aos mais antigos, com a casa de emissão e a taxa de cada um.",
   "wallet.activity.show_fewer": "Mostrar menos pagamentos",
   "wallet.activity.show_less": "Mostrar menos",
   "wallet.activity.received_unconfirmed": "Recebido, não confirmado",
@@ -1316,9 +1320,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Depósito Lightning",
   "wallet.activity.ln_withdrawal": "Saque Lightning",
   "wallet.activity.nutzap_received": "Nutzap recebido",
-  "wallet.activity.spent_removed": "Provas gastas removidas",
-  "wallet.activity.refreshed": "Provas atualizadas",
-  "wallet.activity.refreshing": "Atualizando as provas",
+  "wallet.activity.spent_removed": "Moedas gastas removidas",
+  "wallet.activity.refreshed": "Verificado com a casa de emissão",
+  "wallet.activity.refreshing": "Verificando com a casa de emissão",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malha offline",
@@ -1384,10 +1388,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Aponte para o código QR de uma fatura Lightning.",
   "wallet.scan.title_token": "Escanear ecash",
   "wallet.scan.title_invoice": "Escanear fatura",
-  "wallet.scan.desc_token":
-    "Leia um token Cashu de outra carteira. Funciona com qualquer carteira Cashu, não só com o Airhop.",
-  "wallet.scan.desc_invoice":
-    "Leia uma fatura Lightning para pagar com o seu saldo.",
+  "wallet.scan.title_any": "Escanear um código QR",
+  "wallet.scan.aim_any":
+    "Aponte para o código QR de um token, uma fatura ou um npub.",
+  "wallet.scan.no_any": "Nenhum token, fatura ou npub encontrado nessa imagem.",
   "wallet.scan.use_camera_a11y": "Escanear com a câmera",
   "wallet.scan.use_camera": "Usar a câmera",
   "wallet.scan.pick_image_a11y": "Ler um código QR de uma imagem salva",
@@ -1431,6 +1435,10 @@ export const strings: Strings = {
     "No iOS os pedidos à casa de emissão não passam pelo Tor.",
   "wallet.svc.tor_ios_body":
     "O Arti envolve só os WebSockets do Nostr, então este pedido chegaria à casa de emissão pela rede aberta e ligaria seu IP a estas provas. Libere em Configurações > Segurança, ou desligue o Tor antes. Enviar e receber ecash pela malha continua funcionando.",
+  "wallet.svc.internet_off":
+    "A internet está desligada, então não dá para acessar a casa de emissão.",
+  "wallet.svc.internet_off_body":
+    "Ative {setting} em Configurações. Enviar e receber ecash por perto continua funcionando.",
   "wallet.svc.keys_uncached":
     "As chaves desta casa de emissão não estão guardadas neste aparelho.",
   "wallet.svc.keys_uncached_body":
@@ -2340,11 +2348,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} casa de emissão",
-    many: "{count} casas de emissão",
-    other: "{count} casas de emissão",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} guarda {balance} {unit} em {count} prova. Removê-la apaga essa prova deste aparelho em definitivo e não existe backup. Saque ou envie o saldo antes.",
     many: "{mint} guarda {balance} {unit} em {count} provas. Removê-la apaga essas provas deste aparelho em definitivo e não existe backup. Saque ou envie o saldo antes.",
@@ -2388,11 +2391,6 @@ export const plurals: Plurals = {
     one: "{count} não confirmada",
     many: "{count} não confirmadas",
     other: "{count} não confirmadas",
-  },
-  "wallet.proof_count": {
-    one: "{count} prova",
-    many: "{count} provas",
-    other: "{count} provas",
   },
   "wallet.spent_removed_detail": {
     one: "{count} prova já estava gasta e foi removida.",

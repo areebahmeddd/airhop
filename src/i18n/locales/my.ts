@@ -973,6 +973,10 @@ export const strings: Strings = {
     "ပိုက်ဆံအိတ်သိုလှောင်မှု သော့ခတ်ထားသည်။ ecash သက်သေများကို စက်၏သော့သိမ်းတွင် သော့ရှိသည့် စာဝှက်ဖိုင်တစ်ခုအတွင်း သိမ်းထားပြီး ထိုဖိုင်ကို မဖွင့်နိုင်ခဲ့ပါ။ သင့်စက်၏သော့ကို ဖွင့်ပြီး Airhop ကို ပြန်ဖွင့်ပါ။",
   "wallet.balance.tor_blocked":
     "Tor ဖွင့်ထားသဖြင့် မင့်တောင်းဆိုမှုများကို ပိတ်ဆို့ထားသည် — ၎င်းတို့သည် ပွင့်လင်းကွန်ရက်ပေါ်မှ ထွက်သွားပြီး သင့် IP ကို သင့်သက်သေများနှင့် ချိတ်ဆက်စေမည်။ မက်ရှ်ပေါ်တွင် ပို့ခြင်းနှင့် လက်ခံခြင်းမှာ ဆက်လုပ်နိုင်ဆဲဖြစ်သည်။ ဆက်တင်များ၊ လုံခြုံရေးအောက်တွင် မင့်အသွားအလာကို ခွင့်ပြုပါ။",
+  "wallet.balance.offline":
+    "အော့ဖ်လိုင်းဖြစ်နေသည်။ အနီးရှိလူများကို ပေးချေခြင်းနှင့် တိုကင်ပို့ခြင်းကို ဆက်လုပ်နိုင်သည်။",
+  "wallet.balance.internet_off":
+    "အင်တာနက် ပိတ်ထားသဖြင့် ပိုက်ဆံအိတ်သည် အနီးတွင်သာ အလုပ်လုပ်သည်။ မင့်များသို့ ရောက်ရန် ဆက်တင်များတွင် {setting} ကို ဖွင့်ပါ။",
   "wallet.balance.unconfirmed_note": "{amount} ကို မင့်နှင့် အတည်မပြုရသေးပါ",
   "wallet.balance.reserved_note": "{amount} ကို ပို့နေဆဲငွေအတွက် သီးသန့်ထားသည်",
   "wallet.balance.other_mint_note":
@@ -980,14 +984,30 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "စမ်းသပ်မင့်မှ ကစားငွေ ပါဝင်သည်။ ဘစ်ကွိုင် မဟုတ်သလို ငွေအဖြစ် ထုတ်၍လည်း မရပါ။",
   "wallet.token": "တိုကင်",
-  "wallet.action.send": "ecash တိုကင် ပို့ပါ",
   "wallet.action.send_disabled":
     "ecash တိုကင် ပို့ပါ၊ လက်ကျန်ဗလာဖြစ်နေချိန် မရနိုင်ပါ",
-  "wallet.action.receive": "ecash တိုကင် လက်ခံပါ",
-  "wallet.action.zap": "Nostr အဆက်အသွယ်တစ်ဦးကို zap ပို့ပါ",
-  "wallet.action.zap_disabled":
-    "Nostr အဆက်အသွယ်တစ်ဦးကို zap ပို့ပါ၊ လက်ကျန်ဗလာဖြစ်နေချိန် မရနိုင်ပါ",
-  "wallet.action.add_mint": "Cashu မင့်တစ်ခု ထည့်ပါ",
+  "wallet.action.scan": "စကင်န်",
+  "wallet.action.scan_a11y":
+    "တိုကင်၊ ငွေတောင်းခံလွှာ သို့မဟုတ် npub စကင်န်ဖတ်ရန်",
+  "wallet.choose.paste": "တိုကင် ကူးထည့်ရန်",
+  "wallet.choose.paste_desc": "အော့ဖ်လိုင်းတွင်လည်း အလုပ်လုပ်သည်",
+  "wallet.choose.scan": "QR ကုဒ် စကင်န်ဖတ်ရန်",
+  "wallet.choose.scan_desc": "မည်သည့် ပိုက်ဆံအိတ်မှမဆို Cashu တိုကင်",
+  "wallet.choose.topup": "Lightning ဖြင့် ငွေဖြည့်ရန်",
+  "wallet.choose.topup_desc":
+    "မည်သည့် Lightning ပိုက်ဆံအိတ်မှမဆို ငွေတောင်းခံလွှာကို ပေးချေပါ",
+  "wallet.choose.token": "တိုကင် ဖန်တီးရန်",
+  "wallet.choose.token_desc":
+    "မျှဝေပါ သို့မဟုတ် QR ကုဒ်ပြပါ၊ အော့ဖ်လိုင်းတွင်ပင်",
+  "wallet.choose.zap": "Nostr အဆက်အသွယ်ထံ zap ပို့ရန်",
+  "wallet.choose.zap_desc": "၎င်းတို့၏ npub သို့၊ အင်တာနက်မှတစ်ဆင့်",
+  "wallet.choose.invoice": "Lightning ငွေတောင်းခံလွှာ ပေးချေရန်",
+  "wallet.choose.invoice_desc":
+    "မည်သည့် Lightning ပိုက်ဆံအိတ်သို့မဆို ငွေထုတ်ပါ",
+  "wallet.choose.tor_paused": "Tor ဖွင့်ထားစဉ် ခေတ္တရပ်ထားသည်",
+  "wallet.choose.offline": "အင်တာနက် လိုအပ်သည်",
+  "wallet.choose.internet_off": "အင်တာနက် ပိတ်ထားသည်",
+  "wallet.choose.needs_mint": "မင့်တစ်ခု အရင်ထည့်ပါ",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "တိုကင်ကို မတည်ဆောက်နိုင်ပါ",
@@ -1097,9 +1117,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} ကို သင့်ပိုက်ဆံအိတ်မှ ဖယ်မလား? သိမ်းထားသောသော့များလည်း ပါသွားမည်ဖြစ်၍ ၎င်း၏တိုကင်များကို အော့ဖ်လိုင်းတွင် မစစ်ဆေးနိုင်တော့ပါ။",
   "wallet.mint.title": "မင့်များ",
-  "wallet.mint.none": "မင့် မရှိသေးပါ",
   "wallet.mint.none_desc":
-    "မင့်သည် သင့် ecash ကို ထုတ်ပေးပြီး ရွေးနုတ်ပေးသည်။ Lightning ဖြင့် ငွေသွင်းရန် တစ်ခုထည့်ပါ၊ သို့မဟုတ် တိုကင်တစ်ခု လက်ခံလိုက်ရုံဖြင့် ၎င်း၏မင့်ကို သင့်အတွက် ထည့်ပေးပါမည်။",
+    "မင့်သည် သင့် ecash ကို ထုတ်ပေးပြီး ပြန်လဲပေးသည်။ Lightning ဖြင့် ငွေဖြည့်ရန် သို့မဟုတ် ၎င်း၏ တိုကင်များ လက်ခံရန် တစ်ခုထည့်ပါ။",
   "wallet.mint.add": "မင့်တစ်ခု ထည့်ပါ",
   "wallet.mint.add_body":
     "မင့်သည် သင့် ecash ကို ထောက်ပံ့ထားသော Bitcoin ကို ကိုင်ထားသဖြင့် ထိုနေရာတွင် သိမ်းမည့်လက်ကျန်ကို အပ်နှံရန် ယုံကြည်ရသောတစ်ခုကို ရွေးပါ။ လိပ်စာကို မသိမ်းမီ စစ်ဆေးပါသည်။ မည်သူ့ကိုမျှ မယုံကြည်လိုပါက Nutshell ဖြင့် ကိုယ်ပိုင်တစ်ခု လည်ပတ်ပါ။",
@@ -1111,8 +1130,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "မင့် ဖယ်ပါ",
   "wallet.mint.delete_anyway": "မည်သို့ပင်ဖြစ်စေ ဖျက်ပါ",
   "wallet.mint.consolidate": "လက်ကျန်အားလုံးကို မင့်တစ်ခုတည်းသို့ ရွှေ့ပါ",
-  "wallet.mint.confirm_with": "{mint} နှင့် သက်သေများ အတည်ပြုပါ",
-  "wallet.mint.remove_a11y": "{mint} ဖယ်ပါ",
+  "wallet.mint.confirm_with": "{mint} နှင့် လက်ကျန်ငွေ စစ်ဆေးရန်",
   "wallet.mint.available_amount": "{amount} {unit} ရနိုင်သည်",
   "wallet.mint.split_across":
     "လက်ကျန်ကို မင့် {count} ခုတွင် ခွဲထားသည်။ တစ်ခုတည်းသို့ ရွှေ့ပါ။",
@@ -1143,9 +1161,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats ကို Lightning မှတစ်ဆင့် ပေးချေပြီးပါပြီ။ မင့်က လမ်းကြောင်းအခကြေးငွေ {fee} sats ကောက်ခံပြီး သီးသန့်ထားငွေမှ {change} sats ကို သင့်လက်ကျန်သို့ ပြန်ပေးခဲ့သည်။",
   "wallet.ln.payment_failed": "ငွေပေးချေမှု မအောင်မြင်ပါ",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning sats ကို အော့ဖ်လိုင်းတွင် သုံးနိုင်သော ecash အဖြစ် ပြောင်းပါ၊ သို့မဟုတ် ecash ကို မည်သည့် Lightning ငွေတောင်းခံလွှာသို့မဆို ပြန်ထုတ်ပါ။ နှစ်မျိုးလုံး အင်တာနက်နှင့် မင့်တစ်ခု လိုအပ်သည်။",
   "wallet.ln.deposit_body":
     "မင့်က သင့်အား ငွေတောင်းခံလွှာတစ်ခု ပေးသည်။ မည်သည့် Lightning ပိုက်ဆံအိတ်မှမဆို ပေးချေလိုက်လျှင် sats သည် အော့ဖ်လိုင်းတွင် သုံးနိုင်သော ecash အဖြစ် ပြန်ရောက်လာမည်။",
   "wallet.ln.pay_invoice_for":
@@ -1159,10 +1174,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} အထိ",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ပေးချေပါ",
-  "wallet.ln.deposit": "Lightning မှတစ်ဆင့် sats သွင်းပါ",
-  "wallet.ln.deposit_short": "သွင်းပါ",
-  "wallet.ln.withdraw": "Lightning ငွေတောင်းခံလွှာသို့ ထုတ်ပါ",
-  "wallet.ln.withdraw_short": "ထုတ်ပါ",
   "wallet.ln.deposit_title": "Lightning မှတစ်ဆင့် သွင်းပါ",
   "wallet.ln.amount_placeholder": "ပမာဏ sats ဖြင့်",
   "wallet.ln.requesting": "တောင်းဆိုနေသည်…",
@@ -1183,7 +1194,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ခန့်မှန်းချက် ရယူပါ",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "အရန်သိမ်းခြင်း",
   "wallet.backup.setup_failed": "အရန်သိမ်းခြင်းကို မတည်ဆောက်နိုင်ပါ",
   "wallet.backup.on": "အရန်သိမ်းခြင်း ဖွင့်ထားသည်",
   "wallet.backup.on_body":
@@ -1298,7 +1308,6 @@ export const strings: Strings = {
     "ယခု {amount} {unit} ကို သင့်ပြန်လည်ရယူရေးစကားစုက လွှမ်းခြုံထားပါပြီ။",
   "wallet.refresh.all_confirmed":
     "ဤနေရာရှိ အားလုံးကို မင့်နှင့် အတည်ပြုပြီးဖြစ်ပါသည်။",
-  "wallet.pending.title": "စောင့်ဆိုင်းဆဲ",
   "wallet.pending.reserved_desc":
     "တည်ဆောက်ပြီး သီးသန့်ထားသည်၊ ရောက်ရှိမှုကို အတည်မပြုရသေး။ နှစ်ကြိမ်မသုံးမိစေရန် သက်သေများကို သင့်လက်ကျန်မှ ခွဲထုတ်ထားသည်။",
   "wallet.pending.locked_desc":
@@ -1311,8 +1320,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ဤတိုကင်ကို သင့်လက်ကျန်သို့ ပြန်ယူပါ",
   "wallet.activity.title": "လှုပ်ရှားမှု",
   "wallet.activity.none": "ဘာမျှ မရှိသေးပါ",
-  "wallet.activity.none_desc":
-    "သင်ပို့ပြီး လက်ခံသော ငွေပေးချေမှုများသည် အသစ်ဆုံးမှစ၍ မင့်နှင့် အခကြေးငွေတစ်ခုစီနှင့်အတူ ဤနေရာတွင် ပေါ်လာပါမည်။",
   "wallet.activity.show_fewer": "ငွေပေးချေမှု နည်းနည်း ပြပါ",
   "wallet.activity.show_less": "နည်းနည်း ပြပါ",
   "wallet.activity.received_unconfirmed": "လက်ခံရရှိ၊ အတည်မပြုရသေး",
@@ -1328,9 +1335,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning ငွေသွင်း",
   "wallet.activity.ln_withdrawal": "Lightning ငွေထုတ်",
   "wallet.activity.nutzap_received": "Nutzap လက်ခံရရှိ",
-  "wallet.activity.spent_removed": "သုံးပြီးသောသက်သေများ ဖယ်ရှားပြီး",
-  "wallet.activity.refreshed": "သက်သေများ ပြန်လည်စစ်ဆေးပြီး",
-  "wallet.activity.refreshing": "သက်သေများ ပြန်လည်စစ်ဆေးနေသည်",
+  "wallet.activity.spent_removed": "သုံးပြီးသား ဒင်္ဂါးများ ဖယ်ရှားပြီး",
+  "wallet.activity.refreshed": "မင့်နှင့် စစ်ဆေးပြီး",
+  "wallet.activity.refreshing": "မင့်နှင့် စစ်ဆေးနေသည်",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "မက်ရှ် အော့ဖ်လိုင်း",
@@ -1397,10 +1404,11 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning ငွေတောင်းခံလွှာ QR ကုဒ်ဆီ ချိန်ပါ။",
   "wallet.scan.title_token": "ecash စကန်ဖတ်ပါ",
   "wallet.scan.title_invoice": "ငွေတောင်းခံလွှာ စကန်ဖတ်ပါ",
-  "wallet.scan.desc_token":
-    "အခြားပိုက်ဆံအိတ်မှ Cashu တိုကင်ကို ဖတ်ပါ။ Airhop သာမက မည်သည့် Cashu ပိုက်ဆံအိတ်နှင့်မဆို အလုပ်လုပ်သည်။",
-  "wallet.scan.desc_invoice":
-    "သင့်လက်ကျန်မှ ပေးချေရန် Lightning ငွေတောင်းခံလွှာကို ဖတ်ပါ။",
+  "wallet.scan.title_any": "QR ကုဒ် စကင်န်ဖတ်ရန်",
+  "wallet.scan.aim_any":
+    "တိုကင်၊ ငွေတောင်းခံလွှာ သို့မဟုတ် npub QR ကုဒ်ဆီ ချိန်ပါ။",
+  "wallet.scan.no_any":
+    "ထိုပုံတွင် တိုကင်၊ ငွေတောင်းခံလွှာ သို့မဟုတ် npub မတွေ့ပါ။",
   "wallet.scan.use_camera_a11y": "ကင်မရာဖြင့် စကန်ဖတ်ပါ",
   "wallet.scan.use_camera": "ကင်မရာ သုံးပါ",
   "wallet.scan.pick_image_a11y": "သိမ်းထားသောပုံမှ QR ကုဒ်ကို ဖတ်ပါ",
@@ -1444,6 +1452,9 @@ export const strings: Strings = {
     "iOS ပေါ်တွင် မင့်တောင်းဆိုမှုများသည် Tor မှ မဖြတ်သန်းပါ။",
   "wallet.svc.tor_ios_body":
     "Arti သည် Nostr WebSocket များကိုသာ ဖုံးအုပ်ပေးသဖြင့် ဤတောင်းဆိုမှုသည် ပွင့်လင်းကွန်ရက်မှတစ်ဆင့် မင့်ထံရောက်ပြီး သင့် IP ကို ဤသက်သေများနှင့် ချိတ်ဆက်စေမည်။ ဆက်တင်များ > လုံခြုံရေးအောက်တွင် ခွင့်ပြုပါ၊ သို့မဟုတ် Tor ကို အရင်ပိတ်ပါ။ မက်ရှ်ပေါ်တွင် ecash ပို့ခြင်းနှင့် လက်ခံခြင်းမှာ ဆက်လုပ်နိုင်ဆဲဖြစ်သည်။",
+  "wallet.svc.internet_off": "အင်တာနက် ပိတ်ထားသဖြင့် မင့်ကို ဆက်သွယ်၍ မရပါ။",
+  "wallet.svc.internet_off_body":
+    "ဆက်တင်များတွင် {setting} ကို ဖွင့်ပါ။ အနီးရှိ ecash ပို့ခြင်းနှင့် လက်ခံခြင်းမှာ ဆက်အလုပ်လုပ်သည်။",
   "wallet.svc.keys_uncached": "ဤမင့်၏သော့များကို ဤစက်ပေါ်တွင် မသိမ်းထားပါ။",
   "wallet.svc.keys_uncached_body":
     "၎င်းတို့ကို ရယူရန် အွန်လိုင်းဖြစ်စဉ် ပိုက်ဆံအိတ်ကို တစ်ကြိမ် ဖွင့်ပါ။",
@@ -2331,9 +2342,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "မင့် {count} ခု",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint} တွင် {balance} {unit} ကို သက်သေ {count} ခုအဖြစ် သိမ်းထားသည်။ ဖယ်ရှားလိုက်လျှင် ထိုသက်သေများသည် ဤစက်မှ အပြီးအပိုင် ပျက်သွားပြီး အရန်သိမ်းထားခြင်းလည်း မရှိပါ။ လက်ကျန်ငွေကို အရင်ထုတ်ပါ သို့မဟုတ် ပို့ပါ။",
@@ -2363,9 +2371,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "အတည်မပြုရသေးသည် {count} ခု",
-  },
-  "wallet.proof_count": {
-    other: "သက်သေ {count} ခု",
   },
   "wallet.spent_removed_detail": {
     other: "သက်သေ {count} ခုကို သုံးပြီးဖြစ်သဖြင့် ဖယ်ရှားလိုက်ပါပြီ။",

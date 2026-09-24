@@ -912,20 +912,36 @@ export const strings: Strings = {
     "تخزين المحفظة مقفل. تُحفظ إثباتات النقد الإلكتروني في ملف مشفّر مفتاحه في سلسلة مفاتيح الجهاز، وتعذّر فتحه. افتح قفل جهازك ثم أعد فتح Airhop.",
   "wallet.balance.tor_blocked":
     "Tor مفعّل، لذا طلبات دار السك محظورة: فهي ستخرج عبر الشبكة المكشوفة وتربط عنوان IP الخاص بك بإثباتاتك. الإرسال والاستقبال عبر الشبكة ما زالا يعملان. اسمح بحركة دار السك من الإعدادات، الأمان.",
+  "wallet.balance.offline":
+    "أنت غير متصل. ما زال بإمكانك الدفع للأشخاص القريبين وإرسال التوكنات.",
+  "wallet.balance.internet_off":
+    "الإنترنت متوقف، لذا تعمل المحفظة مع القريبين فقط. شغّل {setting} من الإعدادات للوصول إلى دور السك.",
   "wallet.balance.unconfirmed_note": "{amount} لم تُؤكَّد بعد مع دار السك",
   "wallet.balance.reserved_note": "{amount} محجوزة لإرسال قيد التنفيذ",
   "wallet.balance.other_mint_note": "{amount} في حساب دار سك منفصل",
   "wallet.balance.test_mint_note":
     "يشمل نقودًا تجريبية من دار سك اختبارية. ليست بيتكوين ولا يمكن صرفها.",
   "wallet.token": "توكن",
-  "wallet.action.send": "إرسال توكن نقد إلكتروني",
   "wallet.action.send_disabled":
     "إرسال توكن نقد إلكتروني، غير متاح مع رصيد فارغ",
-  "wallet.action.receive": "استقبال توكن نقد إلكتروني",
-  "wallet.action.zap": "إرسال زاب إلى جهة اتصال على Nostr",
-  "wallet.action.zap_disabled":
-    "إرسال زاب إلى جهة اتصال على Nostr، غير متاح مع رصيد فارغ",
-  "wallet.action.add_mint": "إضافة دار سك Cashu",
+  "wallet.action.scan": "مسح",
+  "wallet.action.scan_a11y": "امسح توكنًا أو فاتورة أو npub",
+  "wallet.choose.paste": "الصق توكنًا",
+  "wallet.choose.paste_desc": "يعمل دون اتصال",
+  "wallet.choose.scan": "مسح رمز استجابة سريعة",
+  "wallet.choose.scan_desc": "توكن Cashu من أي محفظة",
+  "wallet.choose.topup": "اشحن عبر Lightning",
+  "wallet.choose.topup_desc": "ادفع فاتورة من أي محفظة Lightning",
+  "wallet.choose.token": "أنشئ توكنًا",
+  "wallet.choose.token_desc": "شاركه أو اعرض رمز استجابة سريعة، حتى دون اتصال",
+  "wallet.choose.zap": "أرسل zap إلى جهة اتصال على Nostr",
+  "wallet.choose.zap_desc": "إلى npub الخاص به، عبر الإنترنت",
+  "wallet.choose.invoice": "ادفع فاتورة Lightning",
+  "wallet.choose.invoice_desc": "اسحب إلى أي محفظة Lightning",
+  "wallet.choose.tor_paused": "متوقف أثناء تشغيل Tor",
+  "wallet.choose.offline": "يحتاج إلى الإنترنت",
+  "wallet.choose.internet_off": "الإنترنت متوقف",
+  "wallet.choose.needs_mint": "أضف دار سك أولًا",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "تعذّر بناء التوكن",
@@ -1033,9 +1049,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "إزالة {mint} من محفظتك؟ ستُزال مفاتيحها المخزّنة معها، فلن يعود بالإمكان التحقق من توكناتها دون اتصال.",
   "wallet.mint.title": "دور السك",
-  "wallet.mint.none": "لا دار سك بعد",
   "wallet.mint.none_desc":
-    "دار السك تصدر نقدك الإلكتروني وتصرفه. أضف واحدة لتودع عبر Lightning، أو استقبل توكنًا فحسب فتُضاف دار سكه نيابة عنك.",
+    "دار السك تُصدر نقدك الإلكتروني وتستردّه. أضف واحدة لتشحن عبر Lightning أو لتقبل التوكنات الصادرة عنها.",
   "wallet.mint.add": "إضافة دار سك",
   "wallet.mint.add_body":
     "دار السك تحتفظ بالبيتكوين الذي يغطي نقدك الإلكتروني، فاختر واحدة تأتمنها على الرصيد الذي تبقيه فيها. يُفحص الرابط قبل حفظه. شغّل دارك الخاصة عبر Nutshell إن كنت تفضّل ألا تأتمن أحدًا.",
@@ -1047,8 +1062,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "إزالة دار السك",
   "wallet.mint.delete_anyway": "احذف على أي حال",
   "wallet.mint.consolidate": "نقل كل الأرصدة إلى دار سك واحدة",
-  "wallet.mint.confirm_with": "تأكيد الإثباتات مع {mint}",
-  "wallet.mint.remove_a11y": "إزالة {mint}",
+  "wallet.mint.confirm_with": "تحقّق من الرصيد مع {mint}",
   "wallet.mint.available_amount": "{amount} {unit} متاحة",
   "wallet.mint.split_across":
     "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
@@ -1079,9 +1093,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "دُفعت {paid} ساتس عبر Lightning. واقتطعت دار السك {fee} ساتس رسوم توجيه، وأعادت {change} ساتس من الاحتياطي إلى رصيدك.",
   "wallet.ln.payment_failed": "فشلت الدفعة",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "حوّل ساتس Lightning إلى نقد إلكتروني تنفقه دون اتصال، أو اصرف النقد الإلكتروني إلى أي فاتورة Lightning. كلاهما يحتاج إنترنت ودار سك.",
   "wallet.ln.deposit_body":
     "تعطيك دار السك فاتورة. ادفعها من أي محفظة Lightning وتعود الساتس نقدًا إلكترونيًا تنفقه دون اتصال.",
   "wallet.ln.pay_invoice_for":
@@ -1094,10 +1105,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "حتى {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "دفع {amount} {unit}",
-  "wallet.ln.deposit": "إيداع ساتس عبر Lightning",
-  "wallet.ln.deposit_short": "إيداع",
-  "wallet.ln.withdraw": "سحب إلى فاتورة Lightning",
-  "wallet.ln.withdraw_short": "سحب",
   "wallet.ln.deposit_title": "الإيداع عبر Lightning",
   "wallet.ln.amount_placeholder": "المبلغ بالساتس",
   "wallet.ln.requesting": "جارٍ الطلب…",
@@ -1118,7 +1125,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "احصل على عرض",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "النسخ الاحتياطي",
   "wallet.backup.setup_failed": "تعذّر إعداد النسخ الاحتياطي",
   "wallet.backup.on": "النسخ الاحتياطي مفعّل",
   "wallet.backup.on_body":
@@ -1226,7 +1232,6 @@ export const strings: Strings = {
   "wallet.refresh.secured":
     "{amount} {unit} أصبحت الآن مغطاة بعبارة الاستعادة الخاصة بك.",
   "wallet.refresh.all_confirmed": "كل ما هنا كان مؤكدًا بالفعل مع دار السك.",
-  "wallet.pending.title": "المعلّقة",
   "wallet.pending.reserved_desc":
     "بُنيت وحُجزت، والتسليم غير مؤكد. تُحجز الإثباتات خارج رصيدك لئلا تُنفق مرتين.",
   "wallet.pending.locked_desc":
@@ -1239,8 +1244,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "استرجاع هذا التوكن إلى رصيدك",
   "wallet.activity.title": "النشاط",
   "wallet.activity.none": "لا شيء بعد",
-  "wallet.activity.none_desc":
-    "المدفوعات التي ترسلها وتستلمها تظهر هنا، الأحدث أولًا، مع دار السك والرسوم لكل منها.",
   "wallet.activity.show_fewer": "عرض عدد أقل من المدفوعات",
   "wallet.activity.show_less": "عرض أقل",
   "wallet.activity.received_unconfirmed": "مستلمة، غير مؤكدة",
@@ -1256,9 +1259,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "إيداع Lightning",
   "wallet.activity.ln_withdrawal": "سحب Lightning",
   "wallet.activity.nutzap_received": "وصل نَتزاب",
-  "wallet.activity.spent_removed": "أُزيلت الإثباتات المنفقة",
-  "wallet.activity.refreshed": "حُدّثت الإثباتات",
-  "wallet.activity.refreshing": "جارٍ تحديث الإثباتات",
+  "wallet.activity.spent_removed": "أُزيلت العملات المنفَقة",
+  "wallet.activity.refreshed": "تم التحقق مع دار السك",
+  "wallet.activity.refreshing": "جارٍ التحقق مع دار السك",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "الشبكة غير متصلة",
@@ -1322,9 +1325,10 @@ export const strings: Strings = {
     "وجّه الكاميرا نحو رمز استجابة سريعة لفاتورة Lightning.",
   "wallet.scan.title_token": "مسح نقد إلكتروني",
   "wallet.scan.title_invoice": "مسح فاتورة",
-  "wallet.scan.desc_token":
-    "اقرأ توكن Cashu من محفظة أخرى. يعمل مع أي محفظة Cashu، لا مع Airhop وحده.",
-  "wallet.scan.desc_invoice": "اقرأ فاتورة Lightning لدفعها من رصيدك.",
+  "wallet.scan.title_any": "مسح رمز استجابة سريعة",
+  "wallet.scan.aim_any":
+    "وجّه الكاميرا نحو رمز استجابة سريعة لتوكن أو فاتورة أو npub.",
+  "wallet.scan.no_any": "لم يُعثر على توكن أو فاتورة أو npub في تلك الصورة.",
   "wallet.scan.use_camera_a11y": "المسح بالكاميرا",
   "wallet.scan.use_camera": "استخدام الكاميرا",
   "wallet.scan.pick_image_a11y": "قراءة رمز استجابة سريعة من صورة محفوظة",
@@ -1367,6 +1371,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "طلبات دار السك لا تمر عبر Tor على iOS.",
   "wallet.svc.tor_ios_body":
     "لا يغلّف Arti سوى مقابس Nostr، فسيصل هذا الطلب إلى دار السك عبر الشبكة المكشوفة ويربط عنوان IP الخاص بك بهذه الإثباتات. اسمح به من الإعدادات > الأمان، أو عطّل Tor أولًا. إرسال النقد الإلكتروني واستقباله عبر الشبكة ما زالا يعملان.",
+  "wallet.svc.internet_off": "الإنترنت متوقف، لذا لا يمكن الوصول إلى دار السك.",
+  "wallet.svc.internet_off_body":
+    "شغّل {setting} من الإعدادات. ما زال إرسال النقد الإلكتروني واستقباله مع القريبين يعمل.",
   "wallet.svc.keys_uncached": "مفاتيح دار السك هذه غير مخزّنة على هذا الجهاز.",
   "wallet.svc.keys_uncached_body": "افتح المحفظة مرة واحدة وأنت متصل لجلبها.",
   "wallet.svc.phrase_invalid": "عبارة الاستعادة هذه غير صالحة.",
@@ -2284,14 +2291,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    zero: "{count} دار سك",
-    one: "دار سك واحدة",
-    two: "دارا سك",
-    few: "{count} دور سك",
-    many: "{count} دار سك",
-    other: "{count} دار سك",
-  },
   "wallet.mint.remove_body": {
     zero: "تحمل {mint} مبلغ {balance} {unit} في {count} إثبات. إزالتها تحذف تلك الإثباتات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
     one: "تحمل {mint} مبلغ {balance} {unit} في إثبات واحد. إزالتها تحذف ذلك الإثبات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
@@ -2356,14 +2355,6 @@ export const plurals: Plurals = {
     few: "{count} غير مؤكدة",
     many: "{count} غير مؤكدة",
     other: "{count} غير مؤكدة",
-  },
-  "wallet.proof_count": {
-    zero: "{count} إثبات",
-    one: "إثبات واحد",
-    two: "إثباتان",
-    few: "{count} إثباتات",
-    many: "{count} إثباتًا",
-    other: "{count} إثبات",
   },
   "wallet.spent_removed_detail": {
     zero: "{count} إثبات كان منفقًا بالفعل وقد أُزيل.",

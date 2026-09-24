@@ -920,6 +920,9 @@ export const strings: Strings = {
     "ที่จัดเก็บของกระเป๋าเงินถูกล็อกอยู่ พรูฟ ecash ถูกเก็บไว้ในไฟล์ที่เข้ารหัสซึ่งกุญแจอยู่ใน keychain ของเครื่อง และเปิดไฟล์นั้นไม่ได้ ปลดล็อกเครื่องของคุณแล้วเปิด Airhop ใหม่",
   "wallet.balance.tor_blocked":
     "Tor เปิดอยู่ คำขอไปยังมินต์จึงถูกบล็อก เพราะจะออกไปทางเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับพรูฟของคุณ การส่งและรับผ่านเมชยังทำงานอยู่ อนุญาตการรับส่งข้อมูลกับมินต์ได้ในการตั้งค่า ความปลอดภัย",
+  "wallet.balance.offline": "ออฟไลน์ คุณยังจ่ายให้คนใกล้ ๆ และส่งโทเคนได้",
+  "wallet.balance.internet_off":
+    "อินเทอร์เน็ตปิดอยู่ กระเป๋าจึงใช้ได้เฉพาะกับคนใกล้ ๆ เปิด {setting} ในการตั้งค่าเพื่อติดต่อมินต์",
   "wallet.balance.unconfirmed_note": "{amount} ยังไม่ได้ยืนยันกับมินต์",
   "wallet.balance.reserved_note":
     "{amount} ถูกกันไว้สำหรับการส่งที่กำลังดำเนินอยู่",
@@ -927,14 +930,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "รวมเงินทดลองจากมินต์สำหรับทดสอบ ไม่ใช่บิตคอยน์และถอนออกไม่ได้",
   "wallet.token": "โทเคน",
-  "wallet.action.send": "ส่งโทเคน ecash",
   "wallet.action.send_disabled":
     "ส่งโทเคน ecash ใช้ไม่ได้เมื่อยอดคงเหลือเป็นศูนย์",
-  "wallet.action.receive": "รับโทเคน ecash",
-  "wallet.action.zap": "Zap ผู้ติดต่อบน Nostr",
-  "wallet.action.zap_disabled":
-    "Zap ผู้ติดต่อบน Nostr ใช้ไม่ได้เมื่อยอดคงเหลือเป็นศูนย์",
-  "wallet.action.add_mint": "เพิ่มมินต์ Cashu",
+  "wallet.action.scan": "สแกน",
+  "wallet.action.scan_a11y": "สแกนโทเคน ใบแจ้งหนี้ หรือ npub",
+  "wallet.choose.paste": "วางโทเคน",
+  "wallet.choose.paste_desc": "ใช้ได้แม้ออฟไลน์",
+  "wallet.choose.scan": "สแกนคิวอาร์โค้ด",
+  "wallet.choose.scan_desc": "โทเคน Cashu จากกระเป๋าใดก็ได้",
+  "wallet.choose.topup": "เติมเงินผ่าน Lightning",
+  "wallet.choose.topup_desc": "จ่ายใบแจ้งหนี้จากกระเป๋า Lightning ใดก็ได้",
+  "wallet.choose.token": "สร้างโทเคน",
+  "wallet.choose.token_desc": "แชร์หรือแสดงคิวอาร์โค้ด แม้ออฟไลน์",
+  "wallet.choose.zap": "ส่ง zap ให้ผู้ติดต่อใน Nostr",
+  "wallet.choose.zap_desc": "ไปยัง npub ของเขา ผ่านอินเทอร์เน็ต",
+  "wallet.choose.invoice": "จ่ายใบแจ้งหนี้ Lightning",
+  "wallet.choose.invoice_desc": "ถอนไปยังกระเป๋า Lightning ใดก็ได้",
+  "wallet.choose.tor_paused": "หยุดไว้ขณะเปิด Tor",
+  "wallet.choose.offline": "ต้องใช้อินเทอร์เน็ต",
+  "wallet.choose.internet_off": "อินเทอร์เน็ตปิดอยู่",
+  "wallet.choose.needs_mint": "เพิ่มมินต์ก่อน",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "สร้างโทเคนไม่สำเร็จ",
@@ -1043,9 +1058,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "นำ {mint} ออกจากกระเป๋าเงินของคุณหรือไม่ กุญแจที่แคชไว้จะหายไปด้วย โทเคนจากมินต์นี้จึงตรวจสอบแบบออฟไลน์ไม่ได้อีก",
   "wallet.mint.title": "มินต์",
-  "wallet.mint.none": "ยังไม่มีมินต์",
   "wallet.mint.none_desc":
-    "มินต์เป็นผู้ออกและแลก ecash ของคุณ เพิ่มสักแห่งเพื่อฝากผ่าน Lightning หรือเพียงรับโทเคนมาแล้วมินต์ของมันจะถูกเพิ่มให้คุณเอง",
+    "มินต์ออกและไถ่ถอน ecash ของคุณ เพิ่มสักแห่งเพื่อเติมเงินผ่าน Lightning หรือรับโทเคนของมินต์นั้น",
   "wallet.mint.add": "เพิ่มมินต์",
   "wallet.mint.add_body":
     "มินต์ถือ Bitcoin ที่หนุนหลัง ecash ของคุณ จึงควรเลือกแห่งที่คุณไว้ใจกับยอดเงินที่คุณเก็บไว้ที่นั่น URL จะถูกตรวจสอบก่อนบันทึก หากไม่อยากไว้ใจใครเลย ให้รันมินต์ของคุณเองด้วย Nutshell",
@@ -1057,8 +1071,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "นำมินต์ออก",
   "wallet.mint.delete_anyway": "ลบต่อไป",
   "wallet.mint.consolidate": "ย้ายยอดทั้งหมดไปมินต์เดียว",
-  "wallet.mint.confirm_with": "ยืนยันพรูฟกับ {mint}",
-  "wallet.mint.remove_a11y": "นำ {mint} ออก",
+  "wallet.mint.confirm_with": "ตรวจยอดเงินกับ {mint}",
   "wallet.mint.available_amount": "ใช้ได้ {amount} {unit}",
   "wallet.mint.split_across":
     "ยอดคงเหลือกระจายอยู่ใน {count} มินต์ ย้ายไปรวมที่เดียว",
@@ -1089,9 +1102,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "จ่าย {paid} sats ผ่าน Lightning แล้ว มินต์เก็บค่าธรรมเนียมกำหนดเส้นทาง {fee} sats และคืนเงินกันไว้ {change} sats กลับเข้ายอดคงเหลือของคุณ",
   "wallet.ln.payment_failed": "การชำระเงินไม่สำเร็จ",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "เปลี่ยน sats บน Lightning ให้เป็น ecash ที่ใช้จ่ายแบบออฟไลน์ได้ หรือถอน ecash ออกไปยังใบแจ้งหนี้ Lightning ใดก็ได้ ทั้งสองอย่างต้องใช้อินเทอร์เน็ตและมินต์",
   "wallet.ln.deposit_body":
     "มินต์จะออกใบแจ้งหนี้ให้คุณ ชำระจากกระเป๋าเงิน Lightning ใดก็ได้ แล้ว sats จะกลับมาเป็น ecash ที่คุณใช้จ่ายแบบออฟไลน์ได้",
   "wallet.ln.pay_invoice_for":
@@ -1104,10 +1114,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "ไม่เกิน {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "จ่าย {amount} {unit}",
-  "wallet.ln.deposit": "ฝาก sats ผ่าน Lightning",
-  "wallet.ln.deposit_short": "ฝาก",
-  "wallet.ln.withdraw": "ถอนไปยังใบแจ้งหนี้ Lightning",
-  "wallet.ln.withdraw_short": "ถอน",
   "wallet.ln.deposit_title": "ฝากผ่าน Lightning",
   "wallet.ln.amount_placeholder": "จำนวนเป็น sats",
   "wallet.ln.requesting": "กำลังขอ…",
@@ -1128,7 +1134,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ขอใบเสนอราคา",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ข้อมูลสำรอง",
   "wallet.backup.setup_failed": "ตั้งค่าข้อมูลสำรองไม่สำเร็จ",
   "wallet.backup.on": "เปิดข้อมูลสำรองแล้ว",
   "wallet.backup.on_body":
@@ -1237,7 +1242,6 @@ export const strings: Strings = {
   "wallet.refresh.secured":
     "ตอนนี้ {amount} {unit} อยู่ภายใต้วลีกู้คืนของคุณแล้ว",
   "wallet.refresh.all_confirmed": "ทุกอย่างที่นี่ได้รับการยืนยันกับมินต์ไปแล้ว",
-  "wallet.pending.title": "รอดำเนินการ",
   "wallet.pending.reserved_desc":
     "สร้างและกันไว้แล้ว ยังไม่ยืนยันการส่งถึง พรูฟถูกกันออกจากยอดคงเหลือของคุณเพื่อไม่ให้ถูกใช้ซ้ำ",
   "wallet.pending.locked_desc":
@@ -1250,8 +1254,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "เรียกคืนโทเคนนี้เข้ายอดคงเหลือของคุณ",
   "wallet.activity.title": "กิจกรรม",
   "wallet.activity.none": "ยังไม่มีอะไร",
-  "wallet.activity.none_desc":
-    "การชำระเงินที่คุณส่งและรับจะปรากฏที่นี่ ใหม่สุดก่อน พร้อมมินต์และค่าธรรมเนียมของแต่ละรายการ",
   "wallet.activity.show_fewer": "แสดงการชำระเงินน้อยลง",
   "wallet.activity.show_less": "แสดงน้อยลง",
   "wallet.activity.received_unconfirmed": "ได้รับ ยังไม่ยืนยัน",
@@ -1267,9 +1269,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "ฝากผ่าน Lightning",
   "wallet.activity.ln_withdrawal": "ถอนผ่าน Lightning",
   "wallet.activity.nutzap_received": "ได้รับ Nutzap",
-  "wallet.activity.spent_removed": "นำพรูฟที่ถูกใช้แล้วออก",
-  "wallet.activity.refreshed": "รีเฟรชพรูฟแล้ว",
-  "wallet.activity.refreshing": "กำลังรีเฟรชพรูฟ",
+  "wallet.activity.spent_removed": "ลบเหรียญที่ใช้แล้ว",
+  "wallet.activity.refreshed": "ตรวจกับมินต์แล้ว",
+  "wallet.activity.refreshing": "กำลังตรวจกับมินต์",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "เมชออฟไลน์",
@@ -1334,10 +1336,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "หันไปที่คิวอาร์โค้ดใบแจ้งหนี้ Lightning",
   "wallet.scan.title_token": "สแกน ecash",
   "wallet.scan.title_invoice": "สแกนใบแจ้งหนี้",
-  "wallet.scan.desc_token":
-    "อ่านโทเคน Cashu จากกระเป๋าเงินอื่น ใช้ได้กับกระเป๋าเงิน Cashu ทุกแบบ ไม่ใช่แค่ Airhop",
-  "wallet.scan.desc_invoice":
-    "อ่านใบแจ้งหนี้ Lightning เพื่อจ่ายจากยอดคงเหลือของคุณ",
+  "wallet.scan.title_any": "สแกนคิวอาร์โค้ด",
+  "wallet.scan.aim_any": "หันไปที่คิวอาร์โค้ดของโทเคน ใบแจ้งหนี้ หรือ npub",
+  "wallet.scan.no_any": "ไม่พบโทเคน ใบแจ้งหนี้ หรือ npub ในรูปนั้น",
   "wallet.scan.use_camera_a11y": "สแกนด้วยกล้อง",
   "wallet.scan.use_camera": "ใช้กล้อง",
   "wallet.scan.pick_image_a11y": "อ่านคิวอาร์โค้ดจากรูปที่บันทึกไว้",
@@ -1380,6 +1381,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "คำขอไปยังมินต์ไม่ได้ผ่าน Tor บน iOS",
   "wallet.svc.tor_ios_body":
     "Arti ห่อหุ้มเฉพาะ WebSocket ของ Nostr คำขอนี้จึงจะไปถึงมินต์ผ่านเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับพรูฟเหล่านี้ อนุญาตได้ที่การตั้งค่า > ความปลอดภัย หรือปิด Tor ก่อน การส่งและรับ ecash ผ่านเมชยังทำงานอยู่",
+  "wallet.svc.internet_off": "อินเทอร์เน็ตปิดอยู่ จึงติดต่อมินต์ไม่ได้",
+  "wallet.svc.internet_off_body":
+    "เปิด {setting} ในการตั้งค่า การส่งและรับ ecash กับคนใกล้ ๆ ยังใช้ได้",
   "wallet.svc.keys_uncached": "กุญแจของมินต์นี้ไม่ได้แคชไว้บนเครื่องนี้",
   "wallet.svc.keys_uncached_body":
     "เปิดกระเป๋าเงินสักครั้งขณะออนไลน์เพื่อดึงกุญแจมา",
@@ -2220,9 +2224,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} มินต์",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint} ถือ {balance} {unit} อยู่ใน {count} พรูฟ การลบออกจะลบพรูฟเหล่านั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
@@ -2252,9 +2253,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "ยังไม่ยืนยัน {count}",
-  },
-  "wallet.proof_count": {
-    other: "{count} พรูฟ",
   },
   "wallet.spent_removed_detail": {
     other: "พรูฟ {count} รายการถูกใช้ไปแล้วและถูกลบออก",

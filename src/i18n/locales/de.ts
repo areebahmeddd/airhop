@@ -963,6 +963,10 @@ export const strings: Strings = {
     "Der Wallet-Speicher ist gesperrt. Ecash-Proofs liegen in einer verschlüsselten Datei, deren Schlüssel im Geräteschlüsselbund liegt, und sie konnte nicht geöffnet werden. Entsperre dein Gerät und öffne Airhop erneut.",
   "wallet.balance.tor_blocked":
     "Tor ist an, deshalb sind Mint-Anfragen blockiert: sie würden über das offene Netz laufen und deine IP mit deinen Proofs verknüpfen. Senden und Empfangen über das Mesh funktioniert weiterhin. Erlaube Mint-Verkehr unter Einstellungen, Sicherheit.",
+  "wallet.balance.offline":
+    "Offline. Du kannst Leuten in der Nähe trotzdem zahlen und Token senden.",
+  "wallet.balance.internet_off":
+    "Das Internet ist aus, daher funktioniert die Wallet nur in der Nähe. Schalte in den Einstellungen {setting} ein, um Mints zu erreichen.",
   "wallet.balance.unconfirmed_note":
     "{amount} noch nicht mit dem Mint bestätigt",
   "wallet.balance.reserved_note":
@@ -971,14 +975,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Enthält Spielgeld von einem Test-Mint. Es ist kein Bitcoin und lässt sich nicht auszahlen.",
   "wallet.token": "Token",
-  "wallet.action.send": "Ecash-Token senden",
   "wallet.action.send_disabled":
     "Ecash-Token senden, bei leerem Guthaben nicht verfügbar",
-  "wallet.action.receive": "Ecash-Token empfangen",
-  "wallet.action.zap": "Einen Nostr-Kontakt zappen",
-  "wallet.action.zap_disabled":
-    "Einen Nostr-Kontakt zappen, bei leerem Guthaben nicht verfügbar",
-  "wallet.action.add_mint": "Einen Cashu-Mint hinzufügen",
+  "wallet.action.scan": "Scannen",
+  "wallet.action.scan_a11y": "Token, Rechnung oder npub scannen",
+  "wallet.choose.paste": "Token einfügen",
+  "wallet.choose.paste_desc": "Funktioniert offline",
+  "wallet.choose.scan": "QR-Code scannen",
+  "wallet.choose.scan_desc": "Ein Cashu-Token aus einer beliebigen Wallet",
+  "wallet.choose.topup": "Über Lightning aufladen",
+  "wallet.choose.topup_desc":
+    "Eine Rechnung aus einer beliebigen Lightning-Wallet bezahlen",
+  "wallet.choose.token": "Token erstellen",
+  "wallet.choose.token_desc": "Teilen oder als QR-Code zeigen, auch offline",
+  "wallet.choose.zap": "Einen Nostr-Kontakt zappen",
+  "wallet.choose.zap_desc": "An ihre npub, über das Internet",
+  "wallet.choose.invoice": "Lightning-Rechnung bezahlen",
+  "wallet.choose.invoice_desc": "Auf eine beliebige Lightning-Wallet auszahlen",
+  "wallet.choose.tor_paused": "Pausiert, solange Tor an ist",
+  "wallet.choose.offline": "Braucht Internet",
+  "wallet.choose.internet_off": "Internet ist aus",
+  "wallet.choose.needs_mint": "Zuerst einen Mint hinzufügen",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Der Token konnte nicht erstellt werden",
@@ -1089,9 +1106,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} aus deiner Wallet entfernen? Die zwischengespeicherten Schlüssel gehen mit, sodass Token von ihm offline nicht mehr überprüft werden können.",
   "wallet.mint.title": "Mints",
-  "wallet.mint.none": "Noch kein Mint",
   "wallet.mint.none_desc":
-    "Ein Mint gibt dein Ecash aus und löst es ein. Füge einen hinzu, um über Lightning einzuzahlen, oder empfange einfach einen Token, und sein Mint wird für dich hinzugefügt.",
+    "Ein Mint gibt dein Ecash aus und löst es ein. Füge einen hinzu, um über Lightning aufzuladen oder Token von ihm anzunehmen.",
   "wallet.mint.add": "Einen Mint hinzufügen",
   "wallet.mint.add_body":
     "Ein Mint hält das Bitcoin, das dein Ecash deckt, wähle also einen, dem du das Guthaben anvertrauen würdest, das du dort hältst. Die URL wird vor dem Speichern geprüft. Betreibe mit Nutshell deinen eigenen, wenn du niemandem vertrauen möchtest.",
@@ -1103,8 +1119,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Mint entfernen",
   "wallet.mint.delete_anyway": "Trotzdem löschen",
   "wallet.mint.consolidate": "Alle Guthaben auf einen Mint verschieben",
-  "wallet.mint.confirm_with": "Proofs mit {mint} bestätigen",
-  "wallet.mint.remove_a11y": "{mint} entfernen",
+  "wallet.mint.confirm_with": "Guthaben bei {mint} prüfen",
   "wallet.mint.available_amount": "{amount} {unit} verfügbar",
   "wallet.mint.split_across":
     "Guthaben auf {count} Mints verteilt. Verschiebe es auf einen.",
@@ -1135,9 +1150,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} Sats über Lightning gezahlt. Der Mint hat {fee} Sats an Routing-Gebühren berechnet und {change} Sats der Reserve an dein Guthaben zurückgegeben.",
   "wallet.ln.payment_failed": "Zahlung fehlgeschlagen",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Verwandle Lightning-Sats in Ecash, das du offline ausgeben kannst, oder zahle Ecash an eine beliebige Lightning-Rechnung aus. Beides braucht Internet und einen Mint.",
   "wallet.ln.deposit_body":
     "Der Mint gibt dir eine Rechnung. Bezahle sie aus einer beliebigen Lightning-Wallet, und die Sats kommen als Ecash zurück, das du offline ausgeben kannst.",
   "wallet.ln.pay_invoice_for":
@@ -1150,10 +1162,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "bis zu {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} zahlen",
-  "wallet.ln.deposit": "Sats über Lightning einzahlen",
-  "wallet.ln.deposit_short": "Einzahlen",
-  "wallet.ln.withdraw": "An eine Lightning-Rechnung auszahlen",
-  "wallet.ln.withdraw_short": "Auszahlen",
   "wallet.ln.deposit_title": "Über Lightning einzahlen",
   "wallet.ln.amount_placeholder": "Betrag in Sats",
   "wallet.ln.requesting": "Wird angefordert…",
@@ -1174,7 +1182,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Angebot holen",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Sicherung",
   "wallet.backup.setup_failed":
     "Die Sicherung konnte nicht eingerichtet werden",
   "wallet.backup.on": "Sicherung an",
@@ -1291,7 +1298,6 @@ export const strings: Strings = {
     "{amount} {unit} sind jetzt von deiner Wiederherstellungsphrase abgedeckt.",
   "wallet.refresh.all_confirmed":
     "Alles hier war bereits mit dem Mint bestätigt.",
-  "wallet.pending.title": "Ausstehend",
   "wallet.pending.reserved_desc":
     "Erstellt und reserviert, Zustellung unbestätigt. Die Proofs werden aus deinem Guthaben herausgehalten, damit sie nicht doppelt ausgegeben werden.",
   "wallet.pending.locked_desc":
@@ -1304,8 +1310,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Diesen Token in dein Guthaben zurückholen",
   "wallet.activity.title": "Aktivität",
   "wallet.activity.none": "Noch nichts",
-  "wallet.activity.none_desc":
-    "Zahlungen, die du sendest und empfängst, erscheinen hier, die neuesten zuerst, jeweils mit Mint und Gebühr.",
   "wallet.activity.show_fewer": "Weniger Zahlungen anzeigen",
   "wallet.activity.show_less": "Weniger anzeigen",
   "wallet.activity.received_unconfirmed": "Empfangen, unbestätigt",
@@ -1321,9 +1325,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-Einzahlung",
   "wallet.activity.ln_withdrawal": "Lightning-Auszahlung",
   "wallet.activity.nutzap_received": "Nutzap empfangen",
-  "wallet.activity.spent_removed": "Ausgegebene Proofs entfernt",
-  "wallet.activity.refreshed": "Proofs aktualisiert",
-  "wallet.activity.refreshing": "Proofs werden aktualisiert",
+  "wallet.activity.spent_removed": "Ausgegebene Münzen entfernt",
+  "wallet.activity.refreshed": "Mit dem Mint abgeglichen",
+  "wallet.activity.refreshing": "Wird mit dem Mint abgeglichen",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1391,10 +1395,11 @@ export const strings: Strings = {
     "Richte die Kamera auf den QR-Code einer Lightning-Rechnung.",
   "wallet.scan.title_token": "Ecash scannen",
   "wallet.scan.title_invoice": "Rechnung scannen",
-  "wallet.scan.desc_token":
-    "Lies einen Cashu-Token aus einer anderen Wallet. Funktioniert mit jeder Cashu-Wallet, nicht nur mit Airhop.",
-  "wallet.scan.desc_invoice":
-    "Lies eine Lightning-Rechnung, um sie aus deinem Guthaben zu bezahlen.",
+  "wallet.scan.title_any": "QR-Code scannen",
+  "wallet.scan.aim_any":
+    "Richte die Kamera auf den QR-Code eines Tokens, einer Rechnung oder einer npub.",
+  "wallet.scan.no_any":
+    "In diesem Bild wurde kein Token, keine Rechnung und keine npub gefunden.",
   "wallet.scan.use_camera_a11y": "Mit der Kamera scannen",
   "wallet.scan.use_camera": "Kamera nutzen",
   "wallet.scan.pick_image_a11y":
@@ -1438,6 +1443,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Mint-Anfragen laufen unter iOS nicht über Tor.",
   "wallet.svc.tor_ios_body":
     "Arti umschließt nur Nostr-WebSockets, deshalb würde diese Anfrage den Mint über das offene Netz erreichen und deine IP mit diesen Proofs verknüpfen. Erlaube es unter Einstellungen > Sicherheit, oder schalte Tor zuerst aus. Ecash über das Mesh zu senden und zu empfangen funktioniert weiterhin.",
+  "wallet.svc.internet_off":
+    "Das Internet ist aus, der Mint ist daher nicht erreichbar.",
+  "wallet.svc.internet_off_body":
+    "Schalte in den Einstellungen {setting} ein. Ecash in der Nähe senden und empfangen funktioniert weiterhin.",
   "wallet.svc.keys_uncached":
     "Die Schlüssel dieses Mints sind auf diesem Gerät nicht zwischengespeichert.",
   "wallet.svc.keys_uncached_body":
@@ -2340,10 +2349,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} Mint",
-    other: "{count} Mints",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} hält {balance} {unit} in {count} Proof. Ihn zu entfernen löscht diesen Proof dauerhaft von diesem Gerät, und es gibt keine Sicherung. Zahle das Guthaben zuerst aus oder sende es weg.",
     other:
@@ -2380,10 +2385,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} unbestätigt",
     other: "{count} unbestätigt",
-  },
-  "wallet.proof_count": {
-    one: "{count} Proof",
-    other: "{count} Proofs",
   },
   "wallet.spent_removed_detail": {
     one: "{count} Proof war bereits ausgegeben und wurde entfernt.",

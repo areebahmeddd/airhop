@@ -955,6 +955,10 @@ export const strings: Strings = {
     "Penyimpanan dompet terkunci. Bukti ecash disimpan dalam berkas terenkripsi yang kuncinya berada di gantungan kunci perangkat, dan berkas itu tidak bisa dibuka. Buka kunci perangkatmu lalu buka Airhop kembali.",
   "wallet.balance.tor_blocked":
     "Tor menyala, jadi permintaan ke mint diblokir: permintaan itu akan lewat jaringan terbuka dan mengaitkan IP-mu dengan buktimu. Mengirim dan menerima lewat mesh tetap bekerja. Izinkan lalu lintas mint di Pengaturan, Keamanan.",
+  "wallet.balance.offline":
+    "Offline. Kamu tetap bisa membayar orang di dekatmu dan mengirim token.",
+  "wallet.balance.internet_off":
+    "Internet mati, jadi dompet hanya bekerja di sekitar. Nyalakan {setting} di Pengaturan untuk menjangkau mint.",
   "wallet.balance.unconfirmed_note": "{amount} belum dikonfirmasi oleh mint",
   "wallet.balance.reserved_note":
     "{amount} dicadangkan untuk kiriman yang sedang berjalan",
@@ -962,14 +966,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Termasuk uang mainan dari mint uji coba. Ini bukan bitcoin dan tidak bisa dicairkan.",
   "wallet.token": "Token",
-  "wallet.action.send": "Kirim token ecash",
   "wallet.action.send_disabled":
     "Kirim token ecash, tidak tersedia saat saldo kosong",
-  "wallet.action.receive": "Terima token ecash",
-  "wallet.action.zap": "Zap sebuah kontak Nostr",
-  "wallet.action.zap_disabled":
-    "Zap sebuah kontak Nostr, tidak tersedia saat saldo kosong",
-  "wallet.action.add_mint": "Tambah sebuah mint Cashu",
+  "wallet.action.scan": "Pindai",
+  "wallet.action.scan_a11y": "Pindai token, faktur, atau npub",
+  "wallet.choose.paste": "Tempel token",
+  "wallet.choose.paste_desc": "Bisa offline",
+  "wallet.choose.scan": "Pindai kode QR",
+  "wallet.choose.scan_desc": "Token Cashu dari dompet mana pun",
+  "wallet.choose.topup": "Isi ulang lewat Lightning",
+  "wallet.choose.topup_desc": "Bayar faktur dari dompet Lightning mana pun",
+  "wallet.choose.token": "Buat token",
+  "wallet.choose.token_desc":
+    "Bagikan atau tunjukkan kode QR, bahkan saat offline",
+  "wallet.choose.zap": "Kirim zap ke kontak Nostr",
+  "wallet.choose.zap_desc": "Ke npub mereka, lewat internet",
+  "wallet.choose.invoice": "Bayar faktur Lightning",
+  "wallet.choose.invoice_desc": "Tarik ke dompet Lightning mana pun",
+  "wallet.choose.tor_paused": "Dijeda selama Tor aktif",
+  "wallet.choose.offline": "Butuh internet",
+  "wallet.choose.internet_off": "Internet mati",
+  "wallet.choose.needs_mint": "Tambahkan mint dulu",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Token tidak bisa dirakit",
@@ -1079,9 +1096,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Singkirkan {mint} dari dompetmu? Kunci yang tersimpan ikut hilang, jadi token darinya tidak lagi bisa diperiksa secara luring.",
   "wallet.mint.title": "Mint",
-  "wallet.mint.none": "Belum ada mint",
   "wallet.mint.none_desc":
-    "Sebuah mint menerbitkan dan menukar ecash-mu. Tambahkan satu untuk menyetor lewat Lightning, atau cukup terima sebuah token dan mint-nya ditambahkan untukmu.",
+    "Mint menerbitkan dan menukarkan ecash kamu. Tambahkan satu untuk isi ulang lewat Lightning atau menerima tokennya.",
   "wallet.mint.add": "Tambah sebuah mint",
   "wallet.mint.add_body":
     "Sebuah mint memegang Bitcoin yang menopang ecash-mu, jadi pilih yang kamu percaya memegang saldo yang kamu simpan di sana. Alamatnya diperiksa sebelum disimpan. Jalankan sendiri dengan Nutshell kalau kamu lebih suka tidak memercayai siapa pun.",
@@ -1093,8 +1109,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Singkirkan mint",
   "wallet.mint.delete_anyway": "Hapus saja",
   "wallet.mint.consolidate": "Pindahkan semua saldo ke satu mint",
-  "wallet.mint.confirm_with": "Konfirmasi bukti dengan {mint}",
-  "wallet.mint.remove_a11y": "Singkirkan {mint}",
+  "wallet.mint.confirm_with": "Periksa saldo dengan {mint}",
   "wallet.mint.available_amount": "{amount} {unit} tersedia",
   "wallet.mint.split_across":
     "Saldo terbelah di {count} mint. Pindahkan ke satu saja.",
@@ -1125,9 +1140,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sat terbayar lewat Lightning. Mint menarik {fee} sat sebagai biaya perutean, lalu mengembalikan {change} sat dari cadangan ke saldomu.",
   "wallet.ln.payment_failed": "Pembayaran gagal",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Ubah sat Lightning menjadi ecash yang bisa kamu belanjakan secara luring, atau cairkan ecash ke faktur Lightning mana pun. Keduanya butuh internet dan sebuah mint.",
   "wallet.ln.deposit_body":
     "Mint memberimu sebuah faktur. Bayar dari dompet Lightning mana pun dan sat-nya kembali sebagai ecash yang bisa kamu belanjakan secara luring.",
   "wallet.ln.pay_invoice_for":
@@ -1141,10 +1153,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "sampai {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Bayar {amount} {unit}",
-  "wallet.ln.deposit": "Setor sat lewat Lightning",
-  "wallet.ln.deposit_short": "Setor",
-  "wallet.ln.withdraw": "Tarik ke sebuah faktur Lightning",
-  "wallet.ln.withdraw_short": "Tarik",
   "wallet.ln.deposit_title": "Setor lewat Lightning",
   "wallet.ln.amount_placeholder": "Jumlah dalam sat",
   "wallet.ln.requesting": "Meminta…",
@@ -1165,7 +1173,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Ambil penawaran",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Cadangan",
   "wallet.backup.setup_failed": "Cadangan tidak bisa disiapkan",
   "wallet.backup.on": "Cadangan menyala",
   "wallet.backup.on_body":
@@ -1278,7 +1285,6 @@ export const strings: Strings = {
     "{amount} {unit} kini tercakup oleh frasa pemulihanmu.",
   "wallet.refresh.all_confirmed":
     "Semua yang ada di sini sudah dikonfirmasi oleh mint.",
-  "wallet.pending.title": "Tertunda",
   "wallet.pending.reserved_desc":
     "Dirakit dan dicadangkan, pengirimannya belum dipastikan. Buktinya ditahan di luar saldomu supaya tidak bisa dibelanjakan dua kali.",
   "wallet.pending.locked_desc":
@@ -1291,8 +1297,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Tarik token ini kembali ke saldomu",
   "wallet.activity.title": "Aktivitas",
   "wallet.activity.none": "Belum ada apa-apa",
-  "wallet.activity.none_desc":
-    "Pembayaran yang kamu kirim dan terima muncul di sini, terbaru lebih dulu, lengkap dengan mint dan biaya masing-masing.",
   "wallet.activity.show_fewer": "Tampilkan lebih sedikit pembayaran",
   "wallet.activity.show_less": "Tampilkan lebih sedikit",
   "wallet.activity.received_unconfirmed": "Diterima, belum dikonfirmasi",
@@ -1308,9 +1312,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Setoran Lightning",
   "wallet.activity.ln_withdrawal": "Penarikan Lightning",
   "wallet.activity.nutzap_received": "Nutzap diterima",
-  "wallet.activity.spent_removed": "Bukti terpakai disingkirkan",
-  "wallet.activity.refreshed": "Bukti tersegarkan",
-  "wallet.activity.refreshing": "Menyegarkan bukti",
+  "wallet.activity.spent_removed": "Koin terpakai dihapus",
+  "wallet.activity.refreshed": "Diperiksa dengan mint",
+  "wallet.activity.refreshing": "Memeriksa dengan mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh luring",
@@ -1377,10 +1381,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Arahkan ke kode QR faktur Lightning.",
   "wallet.scan.title_token": "Pindai ecash",
   "wallet.scan.title_invoice": "Pindai faktur",
-  "wallet.scan.desc_token":
-    "Baca token Cashu dari dompet lain. Bekerja dengan dompet Cashu mana pun, bukan hanya Airhop.",
-  "wallet.scan.desc_invoice":
-    "Baca faktur Lightning untuk membayarnya dari saldomu.",
+  "wallet.scan.title_any": "Pindai kode QR",
+  "wallet.scan.aim_any": "Arahkan ke kode QR token, faktur, atau npub.",
+  "wallet.scan.no_any": "Tidak ada token, faktur, atau npub pada gambar itu.",
   "wallet.scan.use_camera_a11y": "Pindai dengan kamera",
   "wallet.scan.use_camera": "Pakai kamera",
   "wallet.scan.pick_image_a11y": "Baca kode QR dari gambar tersimpan",
@@ -1423,6 +1426,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Permintaan ke mint tidak lewat Tor di iOS.",
   "wallet.svc.tor_ios_body":
     "Arti hanya membungkus WebSocket Nostr, jadi permintaan ini akan mencapai mint lewat jaringan terbuka dan mengaitkan IP-mu dengan bukti-bukti ini. Izinkan di Pengaturan > Keamanan, atau matikan Tor dulu. Mengirim dan menerima ecash lewat mesh tetap bekerja.",
+  "wallet.svc.internet_off": "Internet mati, jadi mint tidak bisa dihubungi.",
+  "wallet.svc.internet_off_body":
+    "Nyalakan {setting} di Pengaturan. Mengirim dan menerima ecash di sekitar tetap berfungsi.",
   "wallet.svc.keys_uncached":
     "Kunci mint ini tidak tersimpan di perangkat ini.",
   "wallet.svc.keys_uncached_body":
@@ -2294,9 +2300,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} mint",
-  },
   "wallet.mint.remove_body": {
     other:
       "{mint} menyimpan {balance} {unit} dalam {count} bukti. Menghapusnya menghapus bukti itu dari perangkat ini secara permanen dan tidak ada cadangannya. Tarik atau kirim saldonya lebih dulu.",
@@ -2326,9 +2329,6 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} belum dikonfirmasi",
-  },
-  "wallet.proof_count": {
-    other: "{count} bukti",
   },
   "wallet.spent_removed_detail": {
     other: "{count} bukti sudah terpakai dan telah dihapus.",

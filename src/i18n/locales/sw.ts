@@ -955,6 +955,10 @@ export const strings: Strings = {
     "Hifadhi ya pochi imefungwa. Thibitisho za ecash huwekwa kwenye faili iliyosimbwa ambayo ufunguo wake upo kwenye kihifadhi funguo cha kifaa, na haikuweza kufunguliwa. Fungua kifaa chako kisha ufungue Airhop tena.",
   "wallet.balance.tor_blocked":
     "Tor imewashwa, kwa hivyo maombi ya mint yamezuiwa: yangepita kwenye mtandao wazi na kuunganisha IP yako na thibitisho zako. Kutuma na kupokea kupitia mesh bado kunafanya kazi. Ruhusu trafiki ya mint chini ya Mipangilio, Usalama.",
+  "wallet.balance.offline":
+    "Nje ya mtandao. Bado unaweza kuwalipa watu walio karibu na kutuma tokeni.",
+  "wallet.balance.internet_off":
+    "Intaneti imezimwa, kwa hivyo pochi inafanya kazi karibu tu. Washa {setting} kwenye Mipangilio ili kufikia mint.",
   "wallet.balance.unconfirmed_note": "{amount} bado haijathibitishwa na mint",
   "wallet.balance.reserved_note":
     "{amount} imetengwa kwa ajili ya utumaji unaoendelea",
@@ -962,14 +966,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Inajumuisha pesa za mchezo kutoka mint ya majaribio. Si bitcoin na haiwezi kutolewa kama fedha.",
   "wallet.token": "Tokeni",
-  "wallet.action.send": "Tuma tokeni ya ecash",
   "wallet.action.send_disabled":
     "Tuma tokeni ya ecash, haipatikani salio likiwa tupu",
-  "wallet.action.receive": "Pokea tokeni ya ecash",
-  "wallet.action.zap": "Mtumie zap anwani ya Nostr",
-  "wallet.action.zap_disabled":
-    "Mtumie zap anwani ya Nostr, haipatikani salio likiwa tupu",
-  "wallet.action.add_mint": "Ongeza mint ya Cashu",
+  "wallet.action.scan": "Changanua",
+  "wallet.action.scan_a11y": "Changanua tokeni, ankara au npub",
+  "wallet.choose.paste": "Bandika tokeni",
+  "wallet.choose.paste_desc": "Hufanya kazi nje ya mtandao",
+  "wallet.choose.scan": "Changanua msimbo wa QR",
+  "wallet.choose.scan_desc": "Tokeni ya Cashu kutoka pochi yoyote",
+  "wallet.choose.topup": "Ongeza salio kupitia Lightning",
+  "wallet.choose.topup_desc": "Lipa ankara kutoka pochi yoyote ya Lightning",
+  "wallet.choose.token": "Unda tokeni",
+  "wallet.choose.token_desc":
+    "Ishiriki au onyesha msimbo wa QR, hata nje ya mtandao",
+  "wallet.choose.zap": "Tuma zap kwa mwasiliani wa Nostr",
+  "wallet.choose.zap_desc": "Kwa npub yao, kupitia intaneti",
+  "wallet.choose.invoice": "Lipa ankara ya Lightning",
+  "wallet.choose.invoice_desc": "Toa kwenda pochi yoyote ya Lightning",
+  "wallet.choose.tor_paused": "Imesitishwa wakati Tor imewashwa",
+  "wallet.choose.offline": "Inahitaji intaneti",
+  "wallet.choose.internet_off": "Intaneti imezimwa",
+  "wallet.choose.needs_mint": "Ongeza mint kwanza",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokeni haikuweza kutengenezwa",
@@ -1080,9 +1097,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Uondoe {mint} kwenye pochi yako? Funguo zake zilizohifadhiwa nazo zitaondoka, kwa hivyo tokeni zitokazo kwake hazitaweza kukaguliwa nje ya mtandao.",
   "wallet.mint.title": "Mint",
-  "wallet.mint.none": "Bado hakuna mint",
   "wallet.mint.none_desc":
-    "Mint hutoa na kukomboa ecash yako. Ongeza moja ili kuweka amana kupitia Lightning, au pokea tu tokeni na mint yake itaongezwa kwa ajili yako.",
+    "Mint hutoa na kukomboa ecash yako. Ongeza moja ili kuongeza salio kupitia Lightning au kupokea tokeni zake.",
   "wallet.mint.add": "Ongeza mint",
   "wallet.mint.add_body":
     "Mint hushikilia Bitcoin inayoshikilia thamani ya ecash yako, kwa hivyo chagua ile ambayo ungeiamini na salio unaloliweka hapo. URL hukaguliwa kabla ya kuhifadhiwa. Endesha yako mwenyewe kwa Nutshell kama huoni haja ya kumwamini mtu yeyote.",
@@ -1094,8 +1110,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Ondoa mint",
   "wallet.mint.delete_anyway": "Futa hata hivyo",
   "wallet.mint.consolidate": "Hamisha masalio yote kwenye mint moja",
-  "wallet.mint.confirm_with": "Thibitisha thibitisho na {mint}",
-  "wallet.mint.remove_a11y": "Ondoa {mint}",
+  "wallet.mint.confirm_with": "Kagua salio na {mint}",
   "wallet.mint.available_amount": "{amount} {unit} zinapatikana",
   "wallet.mint.split_across":
     "Salio limegawanywa kwenye mint {count}. Lihamishie kwenye moja.",
@@ -1126,9 +1141,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Sat {paid} zimelipwa kupitia Lightning. Mint ilitoza sat {fee} kama ada za uelekezaji, na kurudisha sat {change} za akiba kwenye salio lako.",
   "wallet.ln.payment_failed": "Malipo yameshindwa",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Geuza sat za Lightning kuwa ecash unayoweza kutumia nje ya mtandao, au toa ecash kwenye ankara yoyote ya Lightning. Vyote viwili vinahitaji intaneti na mint.",
   "wallet.ln.deposit_body":
     "Mint hukupa ankara. Ilipe kutoka pochi yoyote ya Lightning na sat zitarudi kama ecash unayoweza kutumia nje ya mtandao.",
   "wallet.ln.pay_invoice_for":
@@ -1142,10 +1154,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "hadi {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Lipa {amount} {unit}",
-  "wallet.ln.deposit": "Weka amana ya sat kupitia Lightning",
-  "wallet.ln.deposit_short": "Weka amana",
-  "wallet.ln.withdraw": "Toa kwenye ankara ya Lightning",
-  "wallet.ln.withdraw_short": "Toa",
   "wallet.ln.deposit_title": "Weka amana kupitia Lightning",
   "wallet.ln.amount_placeholder": "Kiasi katika sat",
   "wallet.ln.requesting": "Inaomba…",
@@ -1166,7 +1174,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Pata bei",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Nakala rudufu",
   "wallet.backup.setup_failed": "Nakala rudufu haikuweza kuwekwa",
   "wallet.backup.on": "Nakala rudufu imewashwa",
   "wallet.backup.on_body":
@@ -1283,7 +1290,6 @@ export const strings: Strings = {
     "{amount} {unit} sasa zinashikiliwa na kifungu chako cha urejeshaji.",
   "wallet.refresh.all_confirmed":
     "Kila kilichopo hapa tayari kilikuwa kimethibitishwa na mint.",
-  "wallet.pending.title": "Zinazosubiri",
   "wallet.pending.reserved_desc":
     "Imetengenezwa na kutengwa, ufikishaji haujathibitishwa. Thibitisho hushikiliwa nje ya salio lako ili zisitumike mara mbili.",
   "wallet.pending.locked_desc":
@@ -1296,8 +1302,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Rudisha tokeni hii kwenye salio lako",
   "wallet.activity.title": "Shughuli",
   "wallet.activity.none": "Bado hakuna kitu",
-  "wallet.activity.none_desc":
-    "Malipo unayotuma na kupokea huonekana hapa, mapya kwanza, pamoja na mint na ada ya kila moja.",
   "wallet.activity.show_fewer": "Onyesha malipo machache zaidi",
   "wallet.activity.show_less": "Onyesha kidogo",
   "wallet.activity.received_unconfirmed": "Yamepokelewa, hayajathibitishwa",
@@ -1313,9 +1317,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Amana ya Lightning",
   "wallet.activity.ln_withdrawal": "Utoaji wa Lightning",
   "wallet.activity.nutzap_received": "Nutzap imepokelewa",
-  "wallet.activity.spent_removed": "Thibitisho zilizotumika zimeondolewa",
-  "wallet.activity.refreshed": "Thibitisho zimesasishwa",
-  "wallet.activity.refreshing": "Inasasisha thibitisho",
+  "wallet.activity.spent_removed": "Sarafu zilizotumika zimeondolewa",
+  "wallet.activity.refreshed": "Imekaguliwa na mint",
+  "wallet.activity.refreshing": "Inakagua na mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh haipo mtandaoni",
@@ -1385,10 +1389,11 @@ export const strings: Strings = {
     "Elekeza kwenye msimbo wa QR wa ankara ya Lightning.",
   "wallet.scan.title_token": "Changanua ecash",
   "wallet.scan.title_invoice": "Changanua ankara",
-  "wallet.scan.desc_token":
-    "Soma tokeni ya Cashu kutoka pochi nyingine. Hufanya kazi na pochi yoyote ya Cashu, si Airhop pekee.",
-  "wallet.scan.desc_invoice":
-    "Soma ankara ya Lightning ili kuilipa kutoka salio lako.",
+  "wallet.scan.title_any": "Changanua msimbo wa QR",
+  "wallet.scan.aim_any":
+    "Elekeza kwenye msimbo wa QR wa tokeni, ankara au npub.",
+  "wallet.scan.no_any":
+    "Hakuna tokeni, ankara au npub iliyopatikana kwenye picha hiyo.",
   "wallet.scan.use_camera_a11y": "Changanua kwa kamera",
   "wallet.scan.use_camera": "Tumia kamera",
   "wallet.scan.pick_image_a11y":
@@ -1432,6 +1437,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Maombi ya mint hayapiti kwenye Tor kwenye iOS.",
   "wallet.svc.tor_ios_body":
     "Arti hufunika WebSocket za Nostr pekee, kwa hivyo ombi hili lingeifikia mint kupitia mtandao wazi na kuunganisha IP yako na thibitisho hizi. Liruhusu chini ya Mipangilio > Usalama, au zima Tor kwanza. Kutuma na kupokea ecash kupitia mesh bado kunafanya kazi.",
+  "wallet.svc.internet_off": "Intaneti imezimwa, kwa hivyo mint haipatikani.",
+  "wallet.svc.internet_off_body":
+    "Washa {setting} kwenye Mipangilio. Kutuma na kupokea ecash karibu bado kunafanya kazi.",
   "wallet.svc.keys_uncached":
     "Funguo za mint hii hazijahifadhiwa kwenye kifaa hiki.",
   "wallet.svc.keys_uncached_body":
@@ -2330,10 +2338,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "mint {count}",
-    other: "mint {count}",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} inashikilia {balance} {unit} katika uthibitisho {count}. Kuiondoa kunafuta uthibitisho huo kwenye kifaa hiki kabisa na hakuna nakala rudufu. Toa au tuma salio kwanza.",
     other:
@@ -2370,10 +2374,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} haijathibitishwa",
     other: "{count} hazijathibitishwa",
-  },
-  "wallet.proof_count": {
-    one: "uthibitisho {count}",
-    other: "thibitisho {count}",
   },
   "wallet.spent_removed_detail": {
     one: "Uthibitisho {count} ulikuwa umeshatumika na umeondolewa.",

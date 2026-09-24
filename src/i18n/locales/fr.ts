@@ -969,6 +969,10 @@ export const strings: Strings = {
     "Le stockage du portefeuille est verrouillé. Les preuves ecash sont conservées dans un fichier chiffré dont la clé se trouve dans le trousseau de l’appareil, et il n’a pas pu être ouvert. Déverrouille l’appareil et rouvre Airhop.",
   "wallet.balance.tor_blocked":
     "Tor est actif, donc les requêtes au mint sont bloquées : elles sortiraient sur le réseau en clair et relieraient ton IP à tes preuves. Envoyer et recevoir sur le maillage fonctionne toujours. Autorise le trafic vers le mint dans Réglages, Sécurité.",
+  "wallet.balance.offline":
+    "Hors ligne. Tu peux toujours payer les gens à proximité et envoyer des jetons.",
+  "wallet.balance.internet_off":
+    "Internet est désactivé, le portefeuille ne fonctionne donc qu’à proximité. Active {setting} dans les Réglages pour joindre les mints.",
   "wallet.balance.unconfirmed_note":
     "{amount} pas encore confirmés auprès du mint",
   "wallet.balance.reserved_note": "{amount} réservés pour un envoi en cours",
@@ -976,14 +980,29 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Comprend de l’argent fictif issu d’un mint de test. Ce n’est pas du bitcoin et ça ne peut pas être encaissé.",
   "wallet.token": "Jeton",
-  "wallet.action.send": "Envoyer un jeton ecash",
   "wallet.action.send_disabled":
     "Envoyer un jeton ecash, indisponible avec un solde vide",
-  "wallet.action.receive": "Recevoir un jeton ecash",
-  "wallet.action.zap": "Envoyer un zap à un contact Nostr",
-  "wallet.action.zap_disabled":
-    "Envoyer un zap à un contact Nostr, indisponible avec un solde vide",
-  "wallet.action.add_mint": "Ajouter un mint Cashu",
+  "wallet.action.scan": "Scanner",
+  "wallet.action.scan_a11y": "Scanner un jeton, une facture ou un npub",
+  "wallet.choose.paste": "Coller un jeton",
+  "wallet.choose.paste_desc": "Fonctionne hors ligne",
+  "wallet.choose.scan": "Scanner un code QR",
+  "wallet.choose.scan_desc": "Un jeton Cashu de n’importe quel portefeuille",
+  "wallet.choose.topup": "Recharger via Lightning",
+  "wallet.choose.topup_desc":
+    "Paie une facture depuis n’importe quel portefeuille Lightning",
+  "wallet.choose.token": "Créer un jeton",
+  "wallet.choose.token_desc":
+    "Partage-le ou montre un code QR, même hors ligne",
+  "wallet.choose.zap": "Envoyer un zap à un contact Nostr",
+  "wallet.choose.zap_desc": "À son npub, par internet",
+  "wallet.choose.invoice": "Payer une facture Lightning",
+  "wallet.choose.invoice_desc":
+    "Retire vers n’importe quel portefeuille Lightning",
+  "wallet.choose.tor_paused": "En pause tant que Tor est activé",
+  "wallet.choose.offline": "Nécessite internet",
+  "wallet.choose.internet_off": "Internet désactivé",
+  "wallet.choose.needs_mint": "Ajoute d’abord un mint",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Impossible de construire le jeton",
@@ -1094,9 +1113,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Retirer {mint} de ton portefeuille ? Ses clés conservées partent aussi, ses jetons ne pourront donc plus être vérifiés hors ligne.",
   "wallet.mint.title": "Mints",
-  "wallet.mint.none": "Pas encore de mint",
   "wallet.mint.none_desc":
-    "Un mint émet et encaisse tes ecash. Ajoutes-en un pour déposer via Lightning, ou reçois simplement un jeton et son mint est ajouté pour toi.",
+    "Un mint émet et rembourse ton ecash. Ajoute-en un pour recharger via Lightning ou accepter ses jetons.",
   "wallet.mint.add": "Ajouter un mint",
   "wallet.mint.add_body":
     "Un mint détient le Bitcoin qui garantit tes ecash, alors choisis-en un à qui tu confierais le solde que tu y laisses. L’URL est vérifiée avant d’être enregistrée. Fais tourner le tien avec Nutshell si tu préfères ne faire confiance à personne.",
@@ -1108,8 +1126,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Retirer le mint",
   "wallet.mint.delete_anyway": "Supprimer quand même",
   "wallet.mint.consolidate": "Déplacer tous les soldes vers un seul mint",
-  "wallet.mint.confirm_with": "Confirmer les preuves auprès de {mint}",
-  "wallet.mint.remove_a11y": "Retirer {mint}",
+  "wallet.mint.confirm_with": "Vérifier le solde auprès de {mint}",
   "wallet.mint.available_amount": "{amount} {unit} disponibles",
   "wallet.mint.split_across":
     "Solde réparti sur {count} mints. Déplace-le vers un seul.",
@@ -1140,9 +1157,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats payés via Lightning. Le mint a prélevé {fee} sats de frais de routage et a rendu {change} sats de la réserve à ton solde.",
   "wallet.ln.payment_failed": "Le paiement a échoué",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Transforme des sats Lightning en ecash dépensables hors ligne, ou encaisse des ecash vers n’importe quelle facture Lightning. Les deux demandent internet et un mint.",
   "wallet.ln.deposit_body":
     "Le mint te donne une facture. Paie-la depuis n’importe quel portefeuille Lightning et les sats reviennent en ecash dépensables hors ligne.",
   "wallet.ln.pay_invoice_for":
@@ -1156,10 +1170,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "jusqu’à {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Payer {amount} {unit}",
-  "wallet.ln.deposit": "Déposer des sats via Lightning",
-  "wallet.ln.deposit_short": "Déposer",
-  "wallet.ln.withdraw": "Retirer vers une facture Lightning",
-  "wallet.ln.withdraw_short": "Retirer",
   "wallet.ln.deposit_title": "Déposer via Lightning",
   "wallet.ln.amount_placeholder": "Montant en sats",
   "wallet.ln.requesting": "Demande…",
@@ -1180,7 +1190,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Obtenir un devis",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Sauvegarde",
   "wallet.backup.setup_failed": "Impossible de configurer la sauvegarde",
   "wallet.backup.on": "Sauvegarde active",
   "wallet.backup.on_body":
@@ -1295,7 +1304,6 @@ export const strings: Strings = {
     "{amount} {unit} sont maintenant couverts par ta phrase de récupération.",
   "wallet.refresh.all_confirmed":
     "Tout ce qui se trouve ici était déjà confirmé auprès du mint.",
-  "wallet.pending.title": "En attente",
   "wallet.pending.reserved_desc":
     "Construit et réservé, remise non confirmée. Les preuves sont mises de côté hors de ton solde pour ne pas pouvoir être dépensées deux fois.",
   "wallet.pending.locked_desc":
@@ -1308,8 +1316,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Récupérer ce jeton dans ton solde",
   "wallet.activity.title": "Activité",
   "wallet.activity.none": "Rien pour l’instant",
-  "wallet.activity.none_desc":
-    "Les paiements que tu envoies et reçois apparaissent ici, du plus récent au plus ancien, avec le mint et les frais de chacun.",
   "wallet.activity.show_fewer": "Afficher moins de paiements",
   "wallet.activity.show_less": "Afficher moins",
   "wallet.activity.received_unconfirmed": "Reçu, non confirmé",
@@ -1325,9 +1331,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Dépôt Lightning",
   "wallet.activity.ln_withdrawal": "Retrait Lightning",
   "wallet.activity.nutzap_received": "Nutzap reçu",
-  "wallet.activity.spent_removed": "Preuves dépensées retirées",
-  "wallet.activity.refreshed": "Preuves actualisées",
-  "wallet.activity.refreshing": "Actualisation des preuves",
+  "wallet.activity.spent_removed": "Pièces dépensées retirées",
+  "wallet.activity.refreshed": "Vérifié auprès du mint",
+  "wallet.activity.refreshing": "Vérification auprès du mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Maillage hors ligne",
@@ -1395,10 +1401,11 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Vise le code QR d’une facture Lightning.",
   "wallet.scan.title_token": "Scanner des ecash",
   "wallet.scan.title_invoice": "Scanner une facture",
-  "wallet.scan.desc_token":
-    "Lis un jeton Cashu depuis un autre portefeuille. Fonctionne avec n’importe quel portefeuille Cashu, pas seulement Airhop.",
-  "wallet.scan.desc_invoice":
-    "Lis une facture Lightning pour la payer avec ton solde.",
+  "wallet.scan.title_any": "Scanner un code QR",
+  "wallet.scan.aim_any":
+    "Vise le code QR d’un jeton, d’une facture ou d’un npub.",
+  "wallet.scan.no_any":
+    "Aucun jeton, aucune facture ni aucun npub trouvé dans cette image.",
   "wallet.scan.use_camera_a11y": "Scanner avec la caméra",
   "wallet.scan.use_camera": "Utiliser la caméra",
   "wallet.scan.pick_image_a11y": "Lire un code QR depuis une image enregistrée",
@@ -1441,6 +1448,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Sur iOS, les requêtes au mint ne passent pas par Tor.",
   "wallet.svc.tor_ios_body":
     "Arti n’enveloppe que les WebSockets Nostr, cette requête atteindrait donc le mint sur le réseau en clair et relierait ton IP à ces preuves. Autorise-le dans Réglages > Sécurité, ou désactive Tor d’abord. Envoyer et recevoir des ecash sur le maillage fonctionne toujours.",
+  "wallet.svc.internet_off":
+    "Internet est désactivé, le mint est donc injoignable.",
+  "wallet.svc.internet_off_body":
+    "Active {setting} dans les Réglages. Envoyer et recevoir de l’ecash à proximité fonctionne toujours.",
   "wallet.svc.keys_uncached":
     "Les clés de ce mint ne sont pas conservées sur cet appareil.",
   "wallet.svc.keys_uncached_body":
@@ -2362,11 +2373,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    many: "{count} mints",
-    other: "{count} mints",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} détient {balance} {unit} dans {count} preuve. La retirer supprime cette preuve de cet appareil définitivement et il n’existe aucune sauvegarde. Retire ou envoie d’abord le solde.",
     many: "{mint} détient {balance} {unit} dans {count} preuves. La retirer supprime ces preuves de cet appareil définitivement et il n’existe aucune sauvegarde. Retire ou envoie d’abord le solde.",
@@ -2410,11 +2416,6 @@ export const plurals: Plurals = {
     one: "{count} non confirmée",
     many: "{count} non confirmées",
     other: "{count} non confirmées",
-  },
-  "wallet.proof_count": {
-    one: "{count} preuve",
-    many: "{count} preuves",
-    other: "{count} preuves",
   },
   "wallet.spent_removed_detail": {
     one: "{count} preuve était déjà dépensée et a été supprimée.",

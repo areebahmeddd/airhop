@@ -940,19 +940,36 @@ export const strings: Strings = {
     "ਵਾਲਿਟ ਦਾ ਭੰਡਾਰ ਲਾਕ ਹੈ। ecash ਪਰੂਫ਼ ਇੱਕ ਇਨਕ੍ਰਿਪਟਡ ਫ਼ਾਈਲ ਵਿੱਚ ਰੱਖੇ ਜਾਂਦੇ ਹਨ ਜਿਸ ਦੀ ਕੁੰਜੀ ਡੀਵਾਈਸ ਦੀ ਕੀਚੇਨ ਵਿੱਚ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਇਹ ਖੁੱਲ੍ਹ ਨਹੀਂ ਸਕੀ। ਆਪਣਾ ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ Airhop ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
   "wallet.balance.tor_blocked":
     "Tor ਚਾਲੂ ਹੈ, ਇਸ ਲਈ ਮਿੰਟ ਦੀਆਂ ਬੇਨਤੀਆਂ ਰੋਕ ਦਿੱਤੀਆਂ ਗਈਆਂ ਹਨ: ਇਹ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਜਾਣਗੀਆਂ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਤੁਹਾਡੇ ਪਰੂਫ਼ਾਂ ਨਾਲ ਜੋੜ ਦੇਣਗੀਆਂ। ਮੈਸ਼ ’ਤੇ ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ। ਸੈਟਿੰਗਾਂ, ਸੁਰੱਖਿਆ ਵਿੱਚੋਂ ਮਿੰਟ ਦੀ ਆਵਾਜਾਈ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।",
+  "wallet.balance.offline":
+    "ਔਫਲਾਈਨ। ਤੁਸੀਂ ਹਾਲੇ ਵੀ ਨੇੜਲੇ ਲੋਕਾਂ ਨੂੰ ਭੁਗਤਾਨ ਕਰ ਸਕਦੇ ਹੋ ਅਤੇ ਟੋਕਨ ਭੇਜ ਸਕਦੇ ਹੋ।",
+  "wallet.balance.internet_off":
+    "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ, ਇਸ ਲਈ ਵਾਲਿਟ ਸਿਰਫ਼ ਨੇੜੇ ਕੰਮ ਕਰਦਾ ਹੈ। ਮਿੰਟ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ।",
   "wallet.balance.unconfirmed_note": "{amount} ਹਾਲੇ ਮਿੰਟ ਨਾਲ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਇਆ",
   "wallet.balance.reserved_note": "{amount} ਰਾਹ ਵਿੱਚ ਪਏ ਭੇਜਣ ਲਈ ਰਾਖਵਾਂ",
   "wallet.balance.other_mint_note": "{amount} ਇੱਕ ਵੱਖਰੇ ਮਿੰਟ ਖਾਤੇ ’ਤੇ",
   "wallet.balance.test_mint_note":
     "ਇਸ ਵਿੱਚ ਟੈਸਟ ਮਿੰਟ ਦਾ ਖੇਡ ਵਾਲਾ ਪੈਸਾ ਸ਼ਾਮਲ ਹੈ। ਇਹ ਬਿਟਕੌਇਨ ਨਹੀਂ ਹੈ ਅਤੇ ਕਢਵਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।",
   "wallet.token": "ਟੋਕਨ",
-  "wallet.action.send": "ecash ਟੋਕਨ ਭੇਜੋ",
   "wallet.action.send_disabled": "ecash ਟੋਕਨ ਭੇਜੋ, ਖ਼ਾਲੀ ਬੈਲੰਸ ਨਾਲ ਉਪਲਬਧ ਨਹੀਂ",
-  "wallet.action.receive": "ecash ਟੋਕਨ ਲਵੋ",
-  "wallet.action.zap": "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਕਰੋ",
-  "wallet.action.zap_disabled":
-    "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਕਰੋ, ਖ਼ਾਲੀ ਬੈਲੰਸ ਨਾਲ ਉਪਲਬਧ ਨਹੀਂ",
-  "wallet.action.add_mint": "Cashu ਮਿੰਟ ਜੋੜੋ",
+  "wallet.action.scan": "ਸਕੈਨ",
+  "wallet.action.scan_a11y": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਸਕੈਨ ਕਰੋ",
+  "wallet.choose.paste": "ਟੋਕਨ ਪੇਸਟ ਕਰੋ",
+  "wallet.choose.paste_desc": "ਔਫਲਾਈਨ ਵੀ ਚੱਲਦਾ ਹੈ",
+  "wallet.choose.scan": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
+  "wallet.choose.scan_desc": "ਕਿਸੇ ਵੀ ਵਾਲਿਟ ਦਾ Cashu ਟੋਕਨ",
+  "wallet.choose.topup": "Lightning ਨਾਲ ਟੌਪ ਅੱਪ",
+  "wallet.choose.topup_desc":
+    "ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਤੋਂ ਇਨਵੌਇਸ ਦਾ ਭੁਗਤਾਨ ਕਰੋ",
+  "wallet.choose.token": "ਟੋਕਨ ਬਣਾਓ",
+  "wallet.choose.token_desc": "ਸਾਂਝਾ ਕਰੋ ਜਾਂ QR ਕੋਡ ਦਿਖਾਓ, ਔਫਲਾਈਨ ਵੀ",
+  "wallet.choose.zap": "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਭੇਜੋ",
+  "wallet.choose.zap_desc": "ਉਹਨਾਂ ਦੇ npub ਨੂੰ, ਇੰਟਰਨੈੱਟ ਰਾਹੀਂ",
+  "wallet.choose.invoice": "Lightning ਇਨਵੌਇਸ ਦਾ ਭੁਗਤਾਨ ਕਰੋ",
+  "wallet.choose.invoice_desc": "ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਵਿੱਚ ਕਢਵਾਓ",
+  "wallet.choose.tor_paused": "Tor ਚਾਲੂ ਹੋਣ ਤੱਕ ਰੁਕਿਆ ਹੋਇਆ",
+  "wallet.choose.offline": "ਇੰਟਰਨੈੱਟ ਚਾਹੀਦਾ ਹੈ",
+  "wallet.choose.internet_off": "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ",
+  "wallet.choose.needs_mint": "ਪਹਿਲਾਂ ਇੱਕ ਮਿੰਟ ਜੋੜੋ",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ਟੋਕਨ ਨਹੀਂ ਬਣ ਸਕਿਆ",
@@ -1062,9 +1079,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} ਨੂੰ ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ ਹਟਾਉਣਾ ਹੈ? ਇਸ ਦੀਆਂ ਕੈਸ਼ ਕੀਤੀਆਂ ਕੁੰਜੀਆਂ ਵੀ ਚਲੀਆਂ ਜਾਣਗੀਆਂ, ਇਸ ਲਈ ਇਸ ਦੇ ਟੋਕਨਾਂ ਦੀ ਪੁਸ਼ਟੀ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਨਹੀਂ ਹੋ ਸਕੇਗੀ।",
   "wallet.mint.title": "ਮਿੰਟ",
-  "wallet.mint.none": "ਹਾਲੇ ਕੋਈ ਮਿੰਟ ਨਹੀਂ",
   "wallet.mint.none_desc":
-    "ਮਿੰਟ ਤੁਹਾਡਾ ecash ਜਾਰੀ ਕਰਦਾ ਅਤੇ ਭੁਨਾਉਂਦਾ ਹੈ। Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰਨ ਲਈ ਇੱਕ ਜੋੜੋ, ਜਾਂ ਬੱਸ ਕੋਈ ਟੋਕਨ ਲਵੋ ਅਤੇ ਇਸ ਦਾ ਮਿੰਟ ਤੁਹਾਡੇ ਲਈ ਆਪੇ ਜੁੜ ਜਾਂਦਾ ਹੈ।",
+    "ਮਿੰਟ ਤੁਹਾਡਾ ecash ਜਾਰੀ ਕਰਦਾ ਅਤੇ ਭੁਨਾਉਂਦਾ ਹੈ। Lightning ਨਾਲ ਟੌਪ ਅੱਪ ਕਰਨ ਜਾਂ ਉਸਦੇ ਟੋਕਨ ਲੈਣ ਲਈ ਇੱਕ ਜੋੜੋ।",
   "wallet.mint.add": "ਮਿੰਟ ਜੋੜੋ",
   "wallet.mint.add_body":
     "ਮਿੰਟ ਤੁਹਾਡੇ ecash ਦੇ ਪਿੱਛੇ ਦਾ ਬਿਟਕੌਇਨ ਰੱਖਦਾ ਹੈ, ਇਸ ਲਈ ਉਹੀ ਚੁਣੋ ਜਿਸ ’ਤੇ ਤੁਸੀਂ ਉੱਥੇ ਰੱਖੇ ਬੈਲੰਸ ਦਾ ਭਰੋਸਾ ਕਰ ਸਕੋ। ਸੰਭਾਲਣ ਤੋਂ ਪਹਿਲਾਂ URL ਜਾਂਚਿਆ ਜਾਂਦਾ ਹੈ। ਜੇ ਤੁਸੀਂ ਕਿਸੇ ’ਤੇ ਭਰੋਸਾ ਨਹੀਂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਤਾਂ Nutshell ਨਾਲ ਆਪਣਾ ਚਲਾਓ।",
@@ -1076,8 +1092,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ਮਿੰਟ ਹਟਾਓ",
   "wallet.mint.delete_anyway": "ਫਿਰ ਵੀ ਮਿਟਾਓ",
   "wallet.mint.consolidate": "ਸਾਰੇ ਬੈਲੰਸ ਇੱਕ ਮਿੰਟ ’ਤੇ ਲੈ ਜਾਓ",
-  "wallet.mint.confirm_with": "{mint} ਨਾਲ ਪਰੂਫ਼ਾਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
-  "wallet.mint.remove_a11y": "{mint} ਹਟਾਓ",
+  "wallet.mint.confirm_with": "{mint} ਨਾਲ ਬਕਾਇਆ ਜਾਂਚੋ",
   "wallet.mint.available_amount": "{amount} {unit} ਉਪਲਬਧ",
   "wallet.mint.split_across":
     "ਬੈਲੰਸ {count} ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ। ਇਸ ਨੂੰ ਇੱਕ ’ਤੇ ਲੈ ਜਾਓ।",
@@ -1108,9 +1123,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats Lightning ’ਤੇ ਭੇਜੇ ਗਏ। ਮਿੰਟ ਨੇ {fee} sats ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਲਈ, ਅਤੇ ਰਾਖਵੇਂ ਵਿੱਚੋਂ {change} sats ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਪਾ ਦਿੱਤੇ।",
   "wallet.ln.payment_failed": "ਭੁਗਤਾਨ ਅਸਫਲ",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning sats ਨੂੰ ਅਜਿਹੇ ecash ਵਿੱਚ ਬਦਲੋ ਜੋ ਤੁਸੀਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਖ਼ਰਚ ਸਕੋ, ਜਾਂ ecash ਨੂੰ ਕਿਸੇ ਵੀ Lightning ਇਨਵੌਇਸ ’ਤੇ ਵਾਪਸ ਕਢਵਾਓ। ਦੋਵਾਂ ਲਈ ਇੰਟਰਨੈੱਟ ਅਤੇ ਇੱਕ ਮਿੰਟ ਚਾਹੀਦਾ ਹੈ।",
   "wallet.ln.deposit_body":
     "ਮਿੰਟ ਤੁਹਾਨੂੰ ਇਨਵੌਇਸ ਦਿੰਦਾ ਹੈ। ਇਸ ਨੂੰ ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਤੋਂ ਭਰੋ ਅਤੇ sats ਅਜਿਹੇ ecash ਵਜੋਂ ਵਾਪਸ ਆ ਜਾਂਦੇ ਹਨ ਜੋ ਤੁਸੀਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਖ਼ਰਚ ਸਕਦੇ ਹੋ।",
   "wallet.ln.pay_invoice_for":
@@ -1123,10 +1135,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} ਤੱਕ",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ਭਰੋ",
-  "wallet.ln.deposit": "Lightning ’ਤੇ sats ਜਮ੍ਹਾਂ ਕਰੋ",
-  "wallet.ln.deposit_short": "ਜਮ੍ਹਾਂ ਕਰੋ",
-  "wallet.ln.withdraw": "Lightning ਇਨਵੌਇਸ ’ਤੇ ਕਢਵਾਓ",
-  "wallet.ln.withdraw_short": "ਕਢਵਾਓ",
   "wallet.ln.deposit_title": "Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰੋ",
   "wallet.ln.amount_placeholder": "sats ਵਿੱਚ ਰਕਮ",
   "wallet.ln.requesting": "ਬੇਨਤੀ ਕਰ ਰਹੇ ਹਾਂ…",
@@ -1147,7 +1155,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ਹਵਾਲਾ ਲਵੋ",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ਬੈਕਅੱਪ",
   "wallet.backup.setup_failed": "ਬੈਕਅੱਪ ਸੈੱਟ ਨਹੀਂ ਹੋ ਸਕਿਆ",
   "wallet.backup.on": "ਬੈਕਅੱਪ ਚਾਲੂ",
   "wallet.backup.on_body":
@@ -1258,7 +1265,6 @@ export const strings: Strings = {
     "{amount} {unit} ਹੁਣ ਤੁਹਾਡੇ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਦੇ ਘੇਰੇ ਵਿੱਚ ਹਨ।",
   "wallet.refresh.all_confirmed":
     "ਇੱਥੇ ਸਭ ਕੁਝ ਪਹਿਲਾਂ ਹੀ ਮਿੰਟ ਨਾਲ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਸੀ।",
-  "wallet.pending.title": "ਬਕਾਇਆ",
   "wallet.pending.reserved_desc":
     "ਬਣਾਇਆ ਅਤੇ ਰਾਖਵਾਂ ਕੀਤਾ, ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ। ਪਰੂਫ਼ ਤੁਹਾਡੇ ਬੈਲੰਸ ਤੋਂ ਬਾਹਰ ਰੱਖੇ ਗਏ ਹਨ ਤਾਂ ਜੋ ਇਹ ਦੋ ਵਾਰ ਖ਼ਰਚ ਨਾ ਹੋ ਸਕਣ।",
   "wallet.pending.locked_desc":
@@ -1271,8 +1277,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਲਵੋ",
   "wallet.activity.title": "ਸਰਗਰਮੀ",
   "wallet.activity.none": "ਹਾਲੇ ਕੁਝ ਨਹੀਂ",
-  "wallet.activity.none_desc":
-    "ਤੁਹਾਡੇ ਭੇਜੇ ਅਤੇ ਲਏ ਭੁਗਤਾਨ ਇੱਥੇ ਦਿਸਦੇ ਹਨ, ਸਭ ਤੋਂ ਨਵੇਂ ਪਹਿਲਾਂ, ਹਰ ਇੱਕ ਦੇ ਮਿੰਟ ਅਤੇ ਫ਼ੀਸ ਸਮੇਤ।",
   "wallet.activity.show_fewer": "ਘੱਟ ਭੁਗਤਾਨ ਦਿਖਾਓ",
   "wallet.activity.show_less": "ਘੱਟ ਦਿਖਾਓ",
   "wallet.activity.received_unconfirmed": "ਮਿਲਿਆ, ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ",
@@ -1288,9 +1292,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning ਜਮ੍ਹਾਂ",
   "wallet.activity.ln_withdrawal": "Lightning ਨਿਕਾਸੀ",
   "wallet.activity.nutzap_received": "Nutzap ਮਿਲਿਆ",
-  "wallet.activity.spent_removed": "ਖ਼ਰਚੇ ਪਰੂਫ਼ ਹਟਾਏ",
-  "wallet.activity.refreshed": "ਪਰੂਫ਼ ਤਾਜ਼ਾ ਹੋਏ",
-  "wallet.activity.refreshing": "ਪਰੂਫ਼ ਤਾਜ਼ਾ ਕਰ ਰਹੇ ਹਾਂ",
+  "wallet.activity.spent_removed": "ਖਰਚੇ ਗਏ ਸਿੱਕੇ ਹਟਾਏ ਗਏ",
+  "wallet.activity.refreshed": "ਮਿੰਟ ਨਾਲ ਜਾਂਚਿਆ ਗਿਆ",
+  "wallet.activity.refreshing": "ਮਿੰਟ ਨਾਲ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ਮੈਸ਼ ਆਫ਼ਲਾਈਨ",
@@ -1356,10 +1360,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning ਇਨਵੌਇਸ ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
   "wallet.scan.title_token": "ecash ਸਕੈਨ ਕਰੋ",
   "wallet.scan.title_invoice": "ਇਨਵੌਇਸ ਸਕੈਨ ਕਰੋ",
-  "wallet.scan.desc_token":
-    "ਕਿਸੇ ਹੋਰ ਵਾਲਿਟ ਵਿੱਚੋਂ Cashu ਟੋਕਨ ਪੜ੍ਹੋ। ਕਿਸੇ ਵੀ Cashu ਵਾਲਿਟ ਨਾਲ ਚੱਲਦਾ ਹੈ, ਸਿਰਫ਼ Airhop ਨਾਲ ਨਹੀਂ।",
-  "wallet.scan.desc_invoice":
-    "Lightning ਇਨਵੌਇਸ ਪੜ੍ਹੋ ਤਾਂ ਜੋ ਇਸ ਨੂੰ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚੋਂ ਭਰ ਸਕੋ।",
+  "wallet.scan.title_any": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
+  "wallet.scan.aim_any": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
+  "wallet.scan.no_any": "ਉਸ ਤਸਵੀਰ ਵਿੱਚ ਕੋਈ ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਨਹੀਂ ਮਿਲਿਆ।",
   "wallet.scan.use_camera_a11y": "ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.use_camera": "ਕੈਮਰਾ ਵਰਤੋ",
   "wallet.scan.pick_image_a11y": "ਸੰਭਾਲੀ ਤਸਵੀਰ ਵਿੱਚੋਂ QR ਕੋਡ ਪੜ੍ਹੋ",
@@ -1402,6 +1405,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "iOS ’ਤੇ ਮਿੰਟ ਦੀਆਂ ਬੇਨਤੀਆਂ Tor ਰਾਹੀਂ ਨਹੀਂ ਜਾਂਦੀਆਂ।",
   "wallet.svc.tor_ios_body":
     "Arti ਸਿਰਫ਼ Nostr WebSockets ਨੂੰ ਲਪੇਟਦਾ ਹੈ, ਇਸ ਲਈ ਇਹ ਬੇਨਤੀ ਮਿੰਟ ਤੱਕ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਪਹੁੰਚੇਗੀ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਇਹਨਾਂ ਪਰੂਫ਼ਾਂ ਨਾਲ ਜੋੜ ਦੇਵੇਗੀ। ਸੈਟਿੰਗਾਂ > ਸੁਰੱਖਿਆ ਹੇਠੋਂ ਇਸ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਾਂ ਪਹਿਲਾਂ Tor ਬੰਦ ਕਰੋ। ਮੈਸ਼ ’ਤੇ ecash ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ।",
+  "wallet.svc.internet_off":
+    "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ, ਇਸ ਲਈ ਮਿੰਟ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚਿਆ ਜਾ ਸਕਦਾ।",
+  "wallet.svc.internet_off_body":
+    "ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ। ਨੇੜੇ ecash ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਹਾਲੇ ਵੀ ਚੱਲਦਾ ਹੈ।",
   "wallet.svc.keys_uncached":
     "ਇਸ ਮਿੰਟ ਦੀਆਂ ਕੁੰਜੀਆਂ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਕੈਸ਼ ਨਹੀਂ ਹਨ।",
   "wallet.svc.keys_uncached_body":
@@ -2271,10 +2278,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ਮਿੰਟ",
-    other: "{count} ਮਿੰਟ",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} ਕੋਲ {count} ਪਰੂਫ਼ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਪਰੂਫ਼ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
     other:
@@ -2311,10 +2314,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} ਅਪੁਸ਼ਟ",
     other: "{count} ਅਪੁਸ਼ਟ",
-  },
-  "wallet.proof_count": {
-    one: "{count} ਪਰੂਫ਼",
-    other: "{count} ਪਰੂਫ਼",
   },
   "wallet.spent_removed_detail": {
     one: "{count} ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤਾ ਗਿਆ।",

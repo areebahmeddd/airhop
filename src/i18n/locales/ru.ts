@@ -953,6 +953,10 @@ export const strings: Strings = {
     "Хранилище кошелька заблокировано. Доказательства ecash лежат в зашифрованном файле, ключ от которого хранится в связке ключей устройства, и открыть его не удалось. Разблокируйте устройство и откройте Airhop заново.",
   "wallet.balance.tor_blocked":
     "Tor включён, поэтому запросы к монетному двору заблокированы: они пошли бы по открытой сети и связали ваш IP с вашими доказательствами. Отправка и приём через сеть по-прежнему работают. Разрешите трафик к монетному двору в разделе «Настройки», «Безопасность».",
+  "wallet.balance.offline":
+    "Нет сети. Вы по-прежнему можете платить людям рядом и отправлять токены.",
+  "wallet.balance.internet_off":
+    "Интернет выключен, поэтому кошелёк работает только рядом. Включите {setting} в Настройках, чтобы связаться с монетными дворами.",
   "wallet.balance.unconfirmed_note":
     "{amount} ещё не подтверждено монетным двором",
   "wallet.balance.reserved_note":
@@ -961,14 +965,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Включает игровые деньги с тестового монетного двора. Это не биткойн, и обналичить их нельзя.",
   "wallet.token": "Токен",
-  "wallet.action.send": "Отправить токен ecash",
   "wallet.action.send_disabled":
     "Отправить токен ecash — недоступно при нулевом балансе",
-  "wallet.action.receive": "Получить токен ecash",
-  "wallet.action.zap": "Отправить zap контакту в Nostr",
-  "wallet.action.zap_disabled":
-    "Отправить zap контакту в Nostr — недоступно при нулевом балансе",
-  "wallet.action.add_mint": "Добавить монетный двор Cashu",
+  "wallet.action.scan": "Сканировать",
+  "wallet.action.scan_a11y": "Сканировать токен, счёт или npub",
+  "wallet.choose.paste": "Вставить токен",
+  "wallet.choose.paste_desc": "Работает без сети",
+  "wallet.choose.scan": "Сканировать QR-код",
+  "wallet.choose.scan_desc": "Токен Cashu из любого кошелька",
+  "wallet.choose.topup": "Пополнить через Lightning",
+  "wallet.choose.topup_desc": "Оплатите счёт из любого кошелька Lightning",
+  "wallet.choose.token": "Создать токен",
+  "wallet.choose.token_desc": "Поделитесь или покажите QR-код, даже без сети",
+  "wallet.choose.zap": "Отправить zap контакту в Nostr",
+  "wallet.choose.zap_desc": "На его npub, через интернет",
+  "wallet.choose.invoice": "Оплатить счёт Lightning",
+  "wallet.choose.invoice_desc": "Выведите на любой кошелёк Lightning",
+  "wallet.choose.tor_paused": "Приостановлено, пока включён Tor",
+  "wallet.choose.offline": "Нужен интернет",
+  "wallet.choose.internet_off": "Интернет выключен",
+  "wallet.choose.needs_mint": "Сначала добавьте монетный двор",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не удалось собрать токен",
@@ -1079,9 +1095,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Убрать {mint} из кошелька? Сохранённые ключи уйдут вместе с ним, и токены от него больше нельзя будет проверить офлайн.",
   "wallet.mint.title": "Монетные дворы",
-  "wallet.mint.none": "Монетного двора пока нет",
   "wallet.mint.none_desc":
-    "Монетный двор выпускает и гасит ваши ecash. Добавьте его, чтобы пополнять через Lightning, или просто получите токен — и его двор добавится сам.",
+    "Монетный двор выпускает и погашает ваш ecash. Добавьте его, чтобы пополнять через Lightning или принимать его токены.",
   "wallet.mint.add": "Добавить монетный двор",
   "wallet.mint.add_body":
     "Монетный двор держит биткойн, обеспечивающий ваши ecash, поэтому выбирайте тот, которому доверили бы хранимый там баланс. Адрес проверяется перед сохранением. Запустите свой через Nutshell, если не хотите доверять никому.",
@@ -1093,8 +1108,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Убрать монетный двор",
   "wallet.mint.delete_anyway": "Всё равно удалить",
   "wallet.mint.consolidate": "Перенести все балансы в один двор",
-  "wallet.mint.confirm_with": "Подтвердить доказательства в {mint}",
-  "wallet.mint.remove_a11y": "Убрать {mint}",
+  "wallet.mint.confirm_with": "Проверить баланс в {mint}",
   "wallet.mint.available_amount": "Доступно {amount} {unit}",
   "wallet.mint.split_across":
     "Баланс разбит по монетным дворам: {count}. Перенесите его в один.",
@@ -1125,9 +1139,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} сатоши оплачено через Lightning. Монетный двор удержал {fee} сатоши комиссии за маршрутизацию и вернул {change} сатоши резерва на ваш баланс.",
   "wallet.ln.payment_failed": "Платёж не прошёл",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Превратите сатоши из Lightning в ecash, который можно тратить офлайн, или обналичьте ecash на любой счёт Lightning. И то, и другое требует интернета и монетного двора.",
   "wallet.ln.deposit_body":
     "Монетный двор выставит вам счёт. Оплатите его из любого кошелька Lightning, и сатоши вернутся как ecash, который можно тратить офлайн.",
   "wallet.ln.pay_invoice_for":
@@ -1140,10 +1151,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "до {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Оплатить {amount} {unit}",
-  "wallet.ln.deposit": "Пополнить сатоши через Lightning",
-  "wallet.ln.deposit_short": "Пополнить",
-  "wallet.ln.withdraw": "Вывести на счёт Lightning",
-  "wallet.ln.withdraw_short": "Вывести",
   "wallet.ln.deposit_title": "Пополнение через Lightning",
   "wallet.ln.amount_placeholder": "Сумма в сатоши",
   "wallet.ln.requesting": "Запрашиваем…",
@@ -1164,7 +1171,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Получить расчёт",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Резервная копия",
   "wallet.backup.setup_failed": "Не удалось настроить резервную копию",
   "wallet.backup.on": "Резервная копия включена",
   "wallet.backup.on_body":
@@ -1277,7 +1283,6 @@ export const strings: Strings = {
     "{amount} {unit} теперь покрыто вашей фразой восстановления.",
   "wallet.refresh.all_confirmed":
     "Здесь всё уже было подтверждено монетным двором.",
-  "wallet.pending.title": "Ожидающие",
   "wallet.pending.reserved_desc":
     "Собрано и зарезервировано, доставка не подтверждена. Доказательства выведены из баланса, чтобы их нельзя было потратить дважды.",
   "wallet.pending.locked_desc":
@@ -1290,8 +1295,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Вернуть этот токен на баланс",
   "wallet.activity.title": "Активность",
   "wallet.activity.none": "Пока ничего",
-  "wallet.activity.none_desc":
-    "Платежи, которые вы отправляете и получаете, появятся здесь, начиная с новых, с монетным двором и комиссией для каждого.",
   "wallet.activity.show_fewer": "Показать меньше платежей",
   "wallet.activity.show_less": "Показать меньше",
   "wallet.activity.received_unconfirmed": "Получено, не подтверждено",
@@ -1307,9 +1310,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Пополнение Lightning",
   "wallet.activity.ln_withdrawal": "Вывод через Lightning",
   "wallet.activity.nutzap_received": "Nutzap получен",
-  "wallet.activity.spent_removed": "Потраченные доказательства удалены",
-  "wallet.activity.refreshed": "Доказательства обновлены",
-  "wallet.activity.refreshing": "Обновляем доказательства",
+  "wallet.activity.spent_removed": "Потраченные монеты удалены",
+  "wallet.activity.refreshed": "Проверено у монетного двора",
+  "wallet.activity.refreshing": "Проверка у монетного двора",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Сеть отключена",
@@ -1375,10 +1378,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Наведите камеру на QR-код счёта Lightning.",
   "wallet.scan.title_token": "Сканировать ecash",
   "wallet.scan.title_invoice": "Сканировать счёт",
-  "wallet.scan.desc_token":
-    "Прочитайте токен Cashu из другого кошелька. Работает с любым кошельком Cashu, не только с Airhop.",
-  "wallet.scan.desc_invoice":
-    "Прочитайте счёт Lightning, чтобы оплатить его с баланса.",
+  "wallet.scan.title_any": "Сканировать QR-код",
+  "wallet.scan.aim_any": "Наведите камеру на QR-код токена, счёта или npub.",
+  "wallet.scan.no_any": "На этом изображении не найден токен, счёт или npub.",
   "wallet.scan.use_camera_a11y": "Сканировать камерой",
   "wallet.scan.use_camera": "Использовать камеру",
   "wallet.scan.pick_image_a11y": "Прочитать QR-код из сохранённого изображения",
@@ -1421,6 +1423,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Запросы к монетному двору на iOS не идут через Tor.",
   "wallet.svc.tor_ios_body":
     "Arti оборачивает только веб-сокеты Nostr, поэтому этот запрос дошёл бы до монетного двора по открытой сети и связал ваш IP с этими доказательствами. Разрешите это в разделе «Настройки» > «Безопасность» или сначала выключите Tor. Отправка и приём ecash по сети по-прежнему работают.",
+  "wallet.svc.internet_off":
+    "Интернет выключен, поэтому с монетным двором не связаться.",
+  "wallet.svc.internet_off_body":
+    "Включите {setting} в Настройках. Отправка и приём ecash рядом по-прежнему работают.",
   "wallet.svc.keys_uncached":
     "Ключи этого монетного двора не сохранены на этом устройстве.",
   "wallet.svc.keys_uncached_body":
@@ -2344,12 +2350,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} монетный двор",
-    few: "{count} монетных двора",
-    many: "{count} монетных дворов",
-    other: "{count} монетного двора",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} держит {balance} {unit} в {count} доказательстве. Удаление навсегда сотрёт его с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
     few: "{mint} держит {balance} {unit} в {count} доказательствах. Удаление навсегда сотрёт их с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
@@ -2400,12 +2400,6 @@ export const plurals: Plurals = {
     few: "{count} не подтверждено",
     many: "{count} не подтверждено",
     other: "{count} не подтверждено",
-  },
-  "wallet.proof_count": {
-    one: "{count} доказательство",
-    few: "{count} доказательства",
-    many: "{count} доказательств",
-    other: "{count} доказательства",
   },
   "wallet.spent_removed_detail": {
     one: "{count} доказательство было уже потрачено и удалено.",

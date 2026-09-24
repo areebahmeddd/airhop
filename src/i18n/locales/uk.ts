@@ -954,20 +954,37 @@ export const strings: Strings = {
     "Сховище гаманця заблоковано. Докази ecash зберігаються в зашифрованому файлі, ключ до якого живе у сховищі ключів пристрою, і його не вдалося відкрити. Розблокуйте пристрій і відкрийте Airhop знову.",
   "wallet.balance.tor_blocked":
     "Tor увімкнено, тож запити до мінта заблоковано: вони пішли б відкритою мережею і пов’язали б вашу IP-адресу з вашими доказами. Надсилання й отримання через mesh працює далі. Дозвольте трафік мінта в Налаштуваннях, Безпека.",
+  "wallet.balance.offline":
+    "Ви офлайн. Ви все одно можете платити людям поруч і надсилати токени.",
+  "wallet.balance.internet_off":
+    "Інтернет вимкнено, тож гаманець працює лише поруч. Увімкніть {setting} у Налаштуваннях, щоб зв’язатися з мінтами.",
   "wallet.balance.unconfirmed_note": "{amount} ще не підтверджено мінтом",
   "wallet.balance.reserved_note": "{amount} відкладено для надсилання в дорозі",
   "wallet.balance.other_mint_note": "{amount} в іншому мінті",
   "wallet.balance.test_mint_note":
     "Містить іграшкові гроші з тестового мінта. Це не біткоїн, і вивести їх не можна.",
   "wallet.token": "Токен",
-  "wallet.action.send": "Надіслати токен ecash",
   "wallet.action.send_disabled":
     "Надіслати токен ecash, недоступно за порожнього балансу",
-  "wallet.action.receive": "Отримати токен ecash",
-  "wallet.action.zap": "Надіслати zap контакту в Nostr",
-  "wallet.action.zap_disabled":
-    "Надіслати zap контакту в Nostr, недоступно за порожнього балансу",
-  "wallet.action.add_mint": "Додати мінт Cashu",
+  "wallet.action.scan": "Сканувати",
+  "wallet.action.scan_a11y": "Сканувати токен, рахунок або npub",
+  "wallet.choose.paste": "Вставити токен",
+  "wallet.choose.paste_desc": "Працює офлайн",
+  "wallet.choose.scan": "Сканувати QR-код",
+  "wallet.choose.scan_desc": "Токен Cashu з будь-якого гаманця",
+  "wallet.choose.topup": "Поповнити через Lightning",
+  "wallet.choose.topup_desc":
+    "Оплатіть рахунок із будь-якого гаманця Lightning",
+  "wallet.choose.token": "Створити токен",
+  "wallet.choose.token_desc": "Поділіться або покажіть QR-код, навіть офлайн",
+  "wallet.choose.zap": "Надіслати zap контакту в Nostr",
+  "wallet.choose.zap_desc": "На його npub, через інтернет",
+  "wallet.choose.invoice": "Оплатити рахунок Lightning",
+  "wallet.choose.invoice_desc": "Виведіть на будь-який гаманець Lightning",
+  "wallet.choose.tor_paused": "Призупинено, поки Tor увімкнено",
+  "wallet.choose.offline": "Потрібен інтернет",
+  "wallet.choose.internet_off": "Інтернет вимкнено",
+  "wallet.choose.needs_mint": "Спершу додайте мінт",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не вдалося зібрати токен",
@@ -1077,9 +1094,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Вилучити {mint} з вашого гаманця? Збережені ключі підуть разом із ним, тож токени від нього більше не перевірити офлайн.",
   "wallet.mint.title": "Мінти",
-  "wallet.mint.none": "Мінта ще немає",
   "wallet.mint.none_desc":
-    "Мінт випускає та викуповує ваш ecash. Додайте один, щоб поповнити через Lightning, або просто отримайте токен, і його мінт додасться сам.",
+    "Мінт випускає й погашає ваш ecash. Додайте його, щоб поповнювати через Lightning або приймати його токени.",
   "wallet.mint.add": "Додати мінт",
   "wallet.mint.add_body":
     "Мінт тримає біткоїн, що стоїть за вашим ecash, тож виберіть той, якому довірили б баланс, що зберігаєте там. URL перевіряється перед збереженням. Запустіть власний на Nutshell, якщо волієте нікому не довіряти.",
@@ -1091,8 +1107,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Вилучити мінт",
   "wallet.mint.delete_anyway": "Усе одно видалити",
   "wallet.mint.consolidate": "Перенести всі баланси в один мінт",
-  "wallet.mint.confirm_with": "Підтвердити докази в {mint}",
-  "wallet.mint.remove_a11y": "Вилучити {mint}",
+  "wallet.mint.confirm_with": "Перевірити баланс у {mint}",
   "wallet.mint.available_amount": "Доступно {amount} {unit}",
   "wallet.mint.split_across":
     "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
@@ -1123,9 +1138,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} сатів оплачено через Lightning. Мінт узяв {fee} сатів комісії за маршрутизацію і повернув {change} сатів резерву на ваш баланс.",
   "wallet.ln.payment_failed": "Платіж не вдався",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Оберніть сати Lightning на ecash, який можна витрачати офлайн, або виведіть ecash на будь-який рахунок Lightning. Обидва потребують інтернету та мінта.",
   "wallet.ln.deposit_body":
     "Мінт дає вам рахунок. Оплатіть його з будь-якого гаманця Lightning, і сати повернуться як ecash, який можна витрачати офлайн.",
   "wallet.ln.pay_invoice_for":
@@ -1138,10 +1150,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "до {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Оплатити {amount} {unit}",
-  "wallet.ln.deposit": "Поповнити сатами через Lightning",
-  "wallet.ln.deposit_short": "Поповнити",
-  "wallet.ln.withdraw": "Вивести на рахунок Lightning",
-  "wallet.ln.withdraw_short": "Вивести",
   "wallet.ln.deposit_title": "Поповнення через Lightning",
   "wallet.ln.amount_placeholder": "Сума в сатах",
   "wallet.ln.requesting": "Запитуємо…",
@@ -1162,7 +1170,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Отримати розрахунок",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Резервна копія",
   "wallet.backup.setup_failed": "Не вдалося налаштувати резервну копію",
   "wallet.backup.on": "Резервну копію увімкнено",
   "wallet.backup.on_body":
@@ -1275,7 +1282,6 @@ export const strings: Strings = {
   "wallet.refresh.secured":
     "{amount} {unit} тепер покриває ваша фраза відновлення.",
   "wallet.refresh.all_confirmed": "Усе тут уже було підтверджено мінтом.",
-  "wallet.pending.title": "Очікують",
   "wallet.pending.reserved_desc":
     "Зібрано й відкладено, доставлення не підтверджено. Докази тримають поза вашим балансом, щоб їх не витратили двічі.",
   "wallet.pending.locked_desc":
@@ -1288,8 +1294,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Забрати цей токен на ваш баланс",
   "wallet.activity.title": "Активність",
   "wallet.activity.none": "Поки нічого",
-  "wallet.activity.none_desc":
-    "Платежі, які ви надсилаєте й отримуєте, з’являються тут, найновіші згори, разом із мінтом і комісією кожного з них.",
   "wallet.activity.show_fewer": "Показати менше платежів",
   "wallet.activity.show_less": "Показати менше",
   "wallet.activity.received_unconfirmed": "Отримано, не підтверджено",
@@ -1305,9 +1309,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Поповнення через Lightning",
   "wallet.activity.ln_withdrawal": "Виведення через Lightning",
   "wallet.activity.nutzap_received": "Nutzap отримано",
-  "wallet.activity.spent_removed": "Витрачені докази вилучено",
-  "wallet.activity.refreshed": "Докази оновлено",
-  "wallet.activity.refreshing": "Оновлюємо докази",
+  "wallet.activity.spent_removed": "Витрачені монети вилучено",
+  "wallet.activity.refreshed": "Перевірено в мінті",
+  "wallet.activity.refreshing": "Перевірка в мінті",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh офлайн",
@@ -1373,10 +1377,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Наведіть на QR-код рахунку Lightning.",
   "wallet.scan.title_token": "Сканування ecash",
   "wallet.scan.title_invoice": "Сканування рахунку",
-  "wallet.scan.desc_token":
-    "Прочитайте токен Cashu з іншого гаманця. Працює з будь-яким гаманцем Cashu, не лише з Airhop.",
-  "wallet.scan.desc_invoice":
-    "Прочитайте рахунок Lightning, щоб оплатити його зі свого балансу.",
+  "wallet.scan.title_any": "Сканувати QR-код",
+  "wallet.scan.aim_any": "Наведіть на QR-код токена, рахунку або npub.",
+  "wallet.scan.no_any":
+    "На тому зображенні не знайдено токена, рахунку чи npub.",
   "wallet.scan.use_camera_a11y": "Сканувати камерою",
   "wallet.scan.use_camera": "Скористатися камерою",
   "wallet.scan.pick_image_a11y": "Прочитати QR-код зі збереженого зображення",
@@ -1419,6 +1423,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "На iOS запити до мінта не йдуть через Tor.",
   "wallet.svc.tor_ios_body":
     "Arti загортає лише вебсокети Nostr, тож цей запит дістався б мінта відкритою мережею і пов’язав би вашу IP-адресу з цими доказами. Дозвольте це в Налаштуваннях > Безпека або спершу вимкніть Tor. Надсилання й отримання ecash через mesh працює далі.",
+  "wallet.svc.internet_off": "Інтернет вимкнено, тож мінт недоступний.",
+  "wallet.svc.internet_off_body":
+    "Увімкніть {setting} у Налаштуваннях. Надсилання й отримання ecash поруч і далі працює.",
   "wallet.svc.keys_uncached":
     "Ключі цього мінта не збережено на цьому пристрої.",
   "wallet.svc.keys_uncached_body":
@@ -2334,12 +2341,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} мінт",
-    few: "{count} мінти",
-    many: "{count} мінтів",
-    other: "{count} мінта",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} тримає {balance} {unit} в {count} доказі. Видалення назавжди стирає цей доказ із цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
     few: "{mint} тримає {balance} {unit} у {count} доказах. Видалення назавжди стирає ці докази з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
@@ -2390,12 +2391,6 @@ export const plurals: Plurals = {
     few: "{count} непідтверджені",
     many: "{count} непідтверджених",
     other: "{count} непідтвердженого",
-  },
-  "wallet.proof_count": {
-    one: "{count} доказ",
-    few: "{count} докази",
-    many: "{count} доказів",
-    other: "{count} доказу",
   },
   "wallet.spent_removed_detail": {
     one: "{count} доказ уже було витрачено, і його вилучено.",

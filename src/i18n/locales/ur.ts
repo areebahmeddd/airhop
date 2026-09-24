@@ -939,6 +939,10 @@ export const strings: Strings = {
     "بٹوے کا ذخیرہ مقفل ہے۔ ecash کے ثبوت ایک خفیہ فائل میں رکھے جاتے ہیں جس کی کلید آلے کی کلید زنجیر میں رہتی ہے، اور وہ فائل نہ کھل سکی۔ اپنا آلہ کھولیں اور Airhop دوبارہ کھولیں۔",
   "wallet.balance.tor_blocked":
     "Tor چالو ہے، اس لیے ٹکسال کی درخواستیں مسدود ہیں: وہ کھلے نیٹ سے جاتیں اور آپ کا IP آپ کے ثبوتوں سے جوڑ دیتیں۔ میش پر بھیجنا اور وصول کرنا پھر بھی کام کرتا ہے۔ ترتیبات، تحفظ کے تحت ٹکسال کی ٹریفک کی اجازت دیں۔",
+  "wallet.balance.offline":
+    "آف لائن۔ آپ اب بھی قریبی لوگوں کو ادائیگی کر سکتے ہیں اور ٹوکن بھیج سکتے ہیں۔",
+  "wallet.balance.internet_off":
+    "انٹرنیٹ بند ہے، اس لیے والیٹ صرف قریب کام کرتا ہے۔ ٹکسالوں تک پہنچنے کے لیے ترتیبات میں {setting} آن کریں۔",
   "wallet.balance.unconfirmed_note": "{amount} ابھی ٹکسال سے تصدیق شدہ نہیں",
   "wallet.balance.reserved_note":
     "{amount} راستے میں موجود ایک ترسیل کے لیے مختص",
@@ -946,13 +950,25 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "اس میں آزمائشی ٹکسال کے کھلونا پیسے شامل ہیں۔ یہ bitcoin نہیں اور اسے نقد نہیں کرایا جا سکتا۔",
   "wallet.token": "ٹوکن",
-  "wallet.action.send": "ecash ٹوکن بھیجیں",
   "wallet.action.send_disabled": "ecash ٹوکن بھیجیں، خالی بیلنس پر دستیاب نہیں",
-  "wallet.action.receive": "ecash ٹوکن وصول کریں",
-  "wallet.action.zap": "کسی Nostr رابطے کو zap بھیجیں",
-  "wallet.action.zap_disabled":
-    "کسی Nostr رابطے کو zap بھیجیں، خالی بیلنس پر دستیاب نہیں",
-  "wallet.action.add_mint": "Cashu ٹکسال شامل کریں",
+  "wallet.action.scan": "اسکین",
+  "wallet.action.scan_a11y": "ٹوکن، بل یا npub اسکین کریں",
+  "wallet.choose.paste": "ٹوکن پیسٹ کریں",
+  "wallet.choose.paste_desc": "آف لائن بھی چلتا ہے",
+  "wallet.choose.scan": "QR کوڈ اسکین کریں",
+  "wallet.choose.scan_desc": "کسی بھی والیٹ کا Cashu ٹوکن",
+  "wallet.choose.topup": "Lightning سے ٹاپ اپ",
+  "wallet.choose.topup_desc": "کسی بھی Lightning والیٹ سے بل ادا کریں",
+  "wallet.choose.token": "ٹوکن بنائیں",
+  "wallet.choose.token_desc": "شیئر کریں یا QR کوڈ دکھائیں، آف لائن بھی",
+  "wallet.choose.zap": "کسی Nostr رابطے کو zap بھیجیں",
+  "wallet.choose.zap_desc": "ان کے npub پر، انٹرنیٹ کے ذریعے",
+  "wallet.choose.invoice": "Lightning بل ادا کریں",
+  "wallet.choose.invoice_desc": "کسی بھی Lightning والیٹ میں نکالیں",
+  "wallet.choose.tor_paused": "Tor آن ہونے تک رکا ہوا ہے",
+  "wallet.choose.offline": "انٹرنیٹ درکار ہے",
+  "wallet.choose.internet_off": "انٹرنیٹ بند ہے",
+  "wallet.choose.needs_mint": "پہلے ایک ٹکسال شامل کریں",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ٹوکن نہ بن سکا",
@@ -1062,9 +1078,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} کو اپنے بٹوے سے ہٹائیں؟ اس کی محفوظ کلیدیں بھی ساتھ جائیں گی، سو اس کے ٹوکن آف لائن جانچے نہیں جا سکیں گے۔",
   "wallet.mint.title": "ٹکسالیں",
-  "wallet.mint.none": "ابھی کوئی ٹکسال نہیں",
   "wallet.mint.none_desc":
-    "ٹکسال آپ کا ecash جاری اور بھناتی ہے۔ Lightning سے جمع کرنے کے لیے ایک شامل کریں، یا بس ایک ٹوکن وصول کریں اور اس کی ٹکسال خود شامل ہو جائے گی۔",
+    "ٹکسال آپ کا ecash جاری کرتی اور چھڑاتی ہے۔ Lightning سے ٹاپ اپ کرنے یا اس کے ٹوکن لینے کے لیے ایک شامل کریں۔",
   "wallet.mint.add": "ٹکسال شامل کریں",
   "wallet.mint.add_body":
     "ٹکسال وہ Bitcoin رکھتی ہے جو آپ کے ecash کی پشت پر ہے، سو ایسی چنیں جس پر آپ اتنا بیلنس رکھنے کا بھروسا کریں جتنا وہاں رکھتے ہیں۔ محفوظ کرنے سے پہلے URL جانچا جاتا ہے۔ اگر آپ کسی پر بھروسا نہ کرنا چاہیں تو Nutshell سے اپنی ٹکسال چلائیں۔",
@@ -1076,8 +1091,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ٹکسال ہٹائیں",
   "wallet.mint.delete_anyway": "پھر بھی حذف کریں",
   "wallet.mint.consolidate": "تمام بیلنس ایک ٹکسال میں منتقل کریں",
-  "wallet.mint.confirm_with": "{mint} سے ثبوت تصدیق کریں",
-  "wallet.mint.remove_a11y": "{mint} ہٹائیں",
+  "wallet.mint.confirm_with": "{mint} کے ساتھ بیلنس چیک کریں",
   "wallet.mint.available_amount": "{amount} {unit} دستیاب",
   "wallet.mint.split_across":
     "بیلنس {count} ٹکسالوں میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
@@ -1108,9 +1122,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Lightning سے {paid} sat ادا ہوئے۔ ٹکسال نے {fee} sat رخ بندی فیس لی، اور ذخیرے کے {change} sat آپ کے بیلنس میں واپس کیے۔",
   "wallet.ln.payment_failed": "ادائیگی ناکام",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning کے sat کو ایسے ecash میں بدلیں جو آپ آف لائن خرچ کر سکیں، یا ecash کو کسی بھی Lightning بل پر نکال لیں۔ دونوں کے لیے انٹرنیٹ اور ایک ٹکسال درکار ہے۔",
   "wallet.ln.deposit_body":
     "ٹکسال آپ کو ایک بل دیتی ہے۔ اسے کسی بھی Lightning بٹوے سے ادا کریں اور sat ایسے ecash کے طور پر واپس آ جائیں گے جو آپ آف لائن خرچ کر سکیں۔",
   "wallet.ln.pay_invoice_for":
@@ -1123,10 +1134,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} تک",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ادا کریں",
-  "wallet.ln.deposit": "Lightning سے sat جمع کریں",
-  "wallet.ln.deposit_short": "جمع کریں",
-  "wallet.ln.withdraw": "کسی Lightning بل پر نکالیں",
-  "wallet.ln.withdraw_short": "نکالیں",
   "wallet.ln.deposit_title": "Lightning سے جمع کرنا",
   "wallet.ln.amount_placeholder": "sat میں رقم",
   "wallet.ln.requesting": "درخواست دی جا رہی ہے…",
@@ -1147,7 +1154,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "تخمینہ لیں",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "بیک اپ",
   "wallet.backup.setup_failed": "بیک اپ ترتیب نہ ہو سکا",
   "wallet.backup.on": "بیک اپ چالو",
   "wallet.backup.on_body":
@@ -1257,7 +1263,6 @@ export const strings: Strings = {
     "{amount} {unit} تصدیق ہوئے اور نئے ثبوتوں سے بدل دیے گئے۔",
   "wallet.refresh.secured": "{amount} {unit} اب آپ کے بحالی فقرے کے تحت ہیں۔",
   "wallet.refresh.all_confirmed": "یہاں سب کچھ پہلے ہی ٹکسال سے تصدیق شدہ تھا۔",
-  "wallet.pending.title": "زیر التوا",
   "wallet.pending.reserved_desc":
     "بن گیا اور مختص ہے، پہنچنے کی تصدیق نہیں ہوئی۔ ثبوت آپ کے بیلنس سے باہر رکھے جاتے ہیں تاکہ دو بار خرچ نہ ہوں۔",
   "wallet.pending.locked_desc":
@@ -1270,8 +1275,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "یہ ٹوکن اپنے بیلنس میں واپس لیں",
   "wallet.activity.title": "سرگرمی",
   "wallet.activity.none": "ابھی کچھ نہیں",
-  "wallet.activity.none_desc":
-    "جو ادائیگیاں آپ بھیجتے اور وصول کرتے ہیں وہ یہاں نظر آتی ہیں، نئی پہلے، ہر ایک کی ٹکسال اور فیس کے ساتھ۔",
   "wallet.activity.show_fewer": "کم ادائیگیاں دکھائیں",
   "wallet.activity.show_less": "کم دکھائیں",
   "wallet.activity.received_unconfirmed": "موصول، تصدیق نہیں ہوئی",
@@ -1287,9 +1290,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning جمع",
   "wallet.activity.ln_withdrawal": "Lightning نکاسی",
   "wallet.activity.nutzap_received": "nutzap موصول",
-  "wallet.activity.spent_removed": "خرچ شدہ ثبوت ہٹا دیے گئے",
-  "wallet.activity.refreshed": "ثبوت تازہ ہو گئے",
-  "wallet.activity.refreshing": "ثبوت تازہ کیے جا رہے ہیں",
+  "wallet.activity.spent_removed": "خرچ شدہ سکے ہٹا دیے گئے",
+  "wallet.activity.refreshed": "ٹکسال سے جانچا گیا",
+  "wallet.activity.refreshing": "ٹکسال سے جانچ ہو رہی ہے",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "میش آف لائن",
@@ -1355,10 +1358,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning بل کے QR کوڈ پر رکھیں۔",
   "wallet.scan.title_token": "ecash اسکین کریں",
   "wallet.scan.title_invoice": "بل اسکین کریں",
-  "wallet.scan.desc_token":
-    "کسی دوسرے بٹوے سے Cashu ٹوکن پڑھیں۔ کسی بھی Cashu بٹوے کے ساتھ کام کرتا ہے، صرف Airhop کے ساتھ نہیں۔",
-  "wallet.scan.desc_invoice":
-    "اپنے بیلنس سے ادا کرنے کے لیے Lightning بل پڑھیں۔",
+  "wallet.scan.title_any": "QR کوڈ اسکین کریں",
+  "wallet.scan.aim_any": "ٹوکن، بل یا npub کے QR کوڈ پر رکھیں۔",
+  "wallet.scan.no_any": "اس تصویر میں کوئی ٹوکن، بل یا npub نہیں ملا۔",
   "wallet.scan.use_camera_a11y": "کیمرے سے اسکین کریں",
   "wallet.scan.use_camera": "کیمرا استعمال کریں",
   "wallet.scan.pick_image_a11y": "محفوظ تصویر سے QR کوڈ پڑھیں",
@@ -1401,6 +1403,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "iOS پر ٹکسال کی درخواستیں Tor سے نہیں جاتیں۔",
   "wallet.svc.tor_ios_body":
     "Arti صرف Nostr کے WebSocket لپیٹتا ہے، سو یہ درخواست ٹکسال تک کھلے نیٹ سے پہنچتی اور آپ کا IP ان ثبوتوں سے جوڑ دیتی۔ ترتیبات > تحفظ کے تحت اس کی اجازت دیں، یا پہلے Tor بند کریں۔ میش پر ecash بھیجنا اور وصول کرنا پھر بھی کام کرتا ہے۔",
+  "wallet.svc.internet_off":
+    "انٹرنیٹ بند ہے، اس لیے ٹکسال تک رسائی نہیں ہو سکتی۔",
+  "wallet.svc.internet_off_body":
+    "ترتیبات میں {setting} آن کریں۔ قریب ecash بھیجنا اور وصول کرنا اب بھی چلتا ہے۔",
   "wallet.svc.keys_uncached": "اس ٹکسال کی کلیدیں اس آلے پر محفوظ نہیں۔",
   "wallet.svc.keys_uncached_body":
     "انہیں لانے کے لیے آن لائن رہتے ہوئے بٹوہ ایک بار کھولیں۔",
@@ -2271,10 +2277,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ٹکسال",
-    other: "{count} ٹکسالیں",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} کے پاس {count} ثبوت میں {balance} {unit} ہیں۔ اسے ہٹانے سے وہ ثبوت اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
     other:
@@ -2311,10 +2313,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} غیر تصدیق شدہ",
     other: "{count} غیر تصدیق شدہ",
-  },
-  "wallet.proof_count": {
-    one: "{count} ثبوت",
-    other: "{count} ثبوت",
   },
   "wallet.spent_removed_detail": {
     one: "{count} ثبوت پہلے ہی خرچ ہو چکا تھا اور اسے ہٹا دیا گیا ہے۔",

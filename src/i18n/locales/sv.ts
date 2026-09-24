@@ -944,6 +944,10 @@ export const strings: Strings = {
     "Plånbokens lagring är låst. Ecash-bevis ligger i en krypterad fil vars nyckel finns i enhetens nyckelring, och den gick inte att öppna. Lås upp enheten och öppna Airhop igen.",
   "wallet.balance.tor_blocked":
     "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till dina bevis. Att skicka och ta emot över meshen fungerar ändå. Tillåt mint-trafik under Inställningar, Säkerhet.",
+  "wallet.balance.offline":
+    "Offline. Du kan fortfarande betala folk i närheten och skicka token.",
+  "wallet.balance.internet_off":
+    "Internet är avstängt, så plånboken fungerar bara i närheten. Slå på {setting} i Inställningar för att nå minter.",
   "wallet.balance.unconfirmed_note":
     "{amount} är ännu inte bekräftat hos minten",
   "wallet.balance.reserved_note":
@@ -952,14 +956,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Innehåller låtsaspengar från en testmint. Det är inte bitcoin och går inte att lösa in.",
   "wallet.token": "Token",
-  "wallet.action.send": "Skicka ett ecash-token",
   "wallet.action.send_disabled":
     "Skicka ett ecash-token, går inte med tomt saldo",
-  "wallet.action.receive": "Ta emot ett ecash-token",
-  "wallet.action.zap": "Zappa en Nostr-kontakt",
-  "wallet.action.zap_disabled":
-    "Zappa en Nostr-kontakt, går inte med tomt saldo",
-  "wallet.action.add_mint": "Lägg till en Cashu-mint",
+  "wallet.action.scan": "Skanna",
+  "wallet.action.scan_a11y": "Skanna en token, faktura eller npub",
+  "wallet.choose.paste": "Klistra in en token",
+  "wallet.choose.paste_desc": "Fungerar offline",
+  "wallet.choose.scan": "Skanna en QR-kod",
+  "wallet.choose.scan_desc": "En Cashu-token från valfri plånbok",
+  "wallet.choose.topup": "Fyll på via Lightning",
+  "wallet.choose.topup_desc": "Betala en faktura från valfri Lightning-plånbok",
+  "wallet.choose.token": "Skapa en token",
+  "wallet.choose.token_desc": "Dela den eller visa en QR-kod, även offline",
+  "wallet.choose.zap": "Zappa en Nostr-kontakt",
+  "wallet.choose.zap_desc": "Till deras npub, över internet",
+  "wallet.choose.invoice": "Betala en Lightning-faktura",
+  "wallet.choose.invoice_desc": "Ta ut till valfri Lightning-plånbok",
+  "wallet.choose.tor_paused": "Pausad medan Tor är på",
+  "wallet.choose.offline": "Kräver internet",
+  "wallet.choose.internet_off": "Internet är avstängt",
+  "wallet.choose.needs_mint": "Lägg till en mint först",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokenet kunde inte byggas",
@@ -1067,9 +1083,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Ta bort {mint} från din plånbok? Dess sparade nycklar följer med, så token därifrån går inte längre att kontrollera offline.",
   "wallet.mint.title": "Mintar",
-  "wallet.mint.none": "Ingen mint än",
   "wallet.mint.none_desc":
-    "En mint ger ut och löser in din ecash. Lägg till en för att sätta in över Lightning, eller ta bara emot ett token så läggs dess mint till åt dig.",
+    "En mint ger ut och löser in din ecash. Lägg till en för att fylla på via Lightning eller ta emot token från den.",
   "wallet.mint.add": "Lägg till en mint",
   "wallet.mint.add_body":
     "En mint håller de bitcoin som täcker din ecash, så välj en du skulle anförtro det saldo du har där. URL:en kontrolleras innan den sparas. Kör en egen med Nutshell om du hellre slipper lita på någon.",
@@ -1081,8 +1096,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Ta bort mint",
   "wallet.mint.delete_anyway": "Radera ändå",
   "wallet.mint.consolidate": "Flytta alla saldon till en mint",
-  "wallet.mint.confirm_with": "Bekräfta bevis hos {mint}",
-  "wallet.mint.remove_a11y": "Ta bort {mint}",
+  "wallet.mint.confirm_with": "Kontrollera saldot hos {mint}",
   "wallet.mint.available_amount": "{amount} {unit} tillgängligt",
   "wallet.mint.split_across":
     "Saldot är uppdelat på {count} mintar. Flytta det till en.",
@@ -1113,9 +1127,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats betalt över Lightning. Minten tog {fee} sats i routingavgift och lämnade tillbaka {change} sats av reserven till ditt saldo.",
   "wallet.ln.payment_failed": "Betalningen misslyckades",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Gör om Lightning-sats till ecash du kan använda offline, eller lös ut ecash till vilken Lightning-faktura som helst. Båda kräver internet och en mint.",
   "wallet.ln.deposit_body":
     "Minten ger dig en faktura. Betala den från vilken Lightning-plånbok som helst så kommer satsen tillbaka som ecash du kan använda offline.",
   "wallet.ln.pay_invoice_for":
@@ -1128,10 +1139,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "upp till {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Betala {amount} {unit}",
-  "wallet.ln.deposit": "Sätt in sats över Lightning",
-  "wallet.ln.deposit_short": "Sätt in",
-  "wallet.ln.withdraw": "Lös ut till en Lightning-faktura",
-  "wallet.ln.withdraw_short": "Lös ut",
   "wallet.ln.deposit_title": "Sätt in över Lightning",
   "wallet.ln.amount_placeholder": "Belopp i sats",
   "wallet.ln.requesting": "Begär…",
@@ -1152,7 +1159,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Hämta offert",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Säkerhetskopia",
   "wallet.backup.setup_failed": "Säkerhetskopian kunde inte ställas in",
   "wallet.backup.on": "Säkerhetskopia på",
   "wallet.backup.on_body":
@@ -1265,7 +1271,6 @@ export const strings: Strings = {
   "wallet.refresh.secured":
     "{amount} {unit} täcks nu av din återställningsfras.",
   "wallet.refresh.all_confirmed": "Allt här var redan bekräftat hos minten.",
-  "wallet.pending.title": "Väntande",
   "wallet.pending.reserved_desc":
     "Byggt och reserverat, leveransen obekräftad. Bevisen hålls utanför saldot så att de inte kan användas två gånger.",
   "wallet.pending.locked_desc":
@@ -1278,8 +1283,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Ta tillbaka tokenet till ditt saldo",
   "wallet.activity.title": "Aktivitet",
   "wallet.activity.none": "Inget än",
-  "wallet.activity.none_desc":
-    "Betalningar du skickar och tar emot dyker upp här, nyast först, med mint och avgift för var och en.",
   "wallet.activity.show_fewer": "Visa färre betalningar",
   "wallet.activity.show_less": "Visa mindre",
   "wallet.activity.received_unconfirmed": "Mottaget, obekräftat",
@@ -1295,9 +1298,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-insättning",
   "wallet.activity.ln_withdrawal": "Lightning-uttag",
   "wallet.activity.nutzap_received": "Nutzap mottagen",
-  "wallet.activity.spent_removed": "Förbrukade bevis borttagna",
-  "wallet.activity.refreshed": "Bevis uppdaterade",
-  "wallet.activity.refreshing": "Uppdaterar bevis",
+  "wallet.activity.spent_removed": "Spenderade mynt borttagna",
+  "wallet.activity.refreshed": "Kontrollerad hos minten",
+  "wallet.activity.refreshing": "Kontrollerar hos minten",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Meshen är offline",
@@ -1363,10 +1366,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Rikta mot QR-koden för en Lightning-faktura.",
   "wallet.scan.title_token": "Skanna ecash",
   "wallet.scan.title_invoice": "Skanna faktura",
-  "wallet.scan.desc_token":
-    "Läs ett Cashu-token från en annan plånbok. Fungerar med vilken Cashu-plånbok som helst, inte bara Airhop.",
-  "wallet.scan.desc_invoice":
-    "Läs en Lightning-faktura för att betala den ur ditt saldo.",
+  "wallet.scan.title_any": "Skanna en QR-kod",
+  "wallet.scan.aim_any": "Rikta mot QR-koden för en token, faktura eller npub.",
+  "wallet.scan.no_any": "Ingen token, faktura eller npub hittades i bilden.",
   "wallet.scan.use_camera_a11y": "Skanna med kameran",
   "wallet.scan.use_camera": "Använd kameran",
   "wallet.scan.pick_image_a11y": "Läs en QR-kod ur en sparad bild",
@@ -1409,6 +1411,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Mint-förfrågningar går inte genom Tor på iOS.",
   "wallet.svc.tor_ios_body":
     "Arti omsluter bara Nostr-WebSockets, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till de här bevisen. Tillåt det under Inställningar > Säkerhet, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
+  "wallet.svc.internet_off": "Internet är avstängt, så minten går inte att nå.",
+  "wallet.svc.internet_off_body":
+    "Slå på {setting} i Inställningar. Att skicka och ta emot ecash i närheten fungerar fortfarande.",
   "wallet.svc.keys_uncached": "Den här mintens nycklar finns inte på enheten.",
   "wallet.svc.keys_uncached_body":
     "Öppna plånboken en gång medan du är online för att hämta dem.",
@@ -2290,10 +2295,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    other: "{count} mintar",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} håller {balance} {unit} i {count} bevis. Att ta bort den raderar det beviset från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
     other:
@@ -2330,10 +2331,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} obekräftad",
     other: "{count} obekräftade",
-  },
-  "wallet.proof_count": {
-    one: "{count} bevis",
-    other: "{count} bevis",
   },
   "wallet.spent_removed_detail": {
     one: "{count} bevis var redan förbrukat och har tagits bort.",

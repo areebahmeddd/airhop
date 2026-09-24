@@ -949,6 +949,10 @@ export const strings: Strings = {
     "საფულის საცავი ჩაკეტილია. Ecash-ის დასტურები ინახება დაშიფრულ ფაილში, რომლის გასაღებიც მოწყობილობის საკვანძოშია, და მისი გახსნა ვერ მოხერხდა. განბლოკე მოწყობილობა და ხელახლა გახსენი Airhop.",
   "wallet.balance.tor_blocked":
     "Tor ჩართულია, ამიტომ ზარაფხანასთან მოთხოვნები დაბლოკილია: ისინი ღია ქსელით გავიდოდა და შენს IP-ს დასტურებთან დააკავშირებდა. მეშით გაგზავნა და მიღება მაინც მუშაობს. დაუშვი ზარაფხანის ტრაფიკი პარამეტრებში, უსაფრთხოებაში.",
+  "wallet.balance.offline":
+    "ხაზგარეშე ხარ. მაინც შეგიძლია ახლომყოფებს გადაუხადო და ტოკენები გაგზავნო.",
+  "wallet.balance.internet_off":
+    "ინტერნეტი გამორთულია, ამიტომ საფულე მხოლოდ ახლოს მუშაობს. ზარაფხანებთან დასაკავშირებლად ჩართე {setting} პარამეტრებში.",
   "wallet.balance.unconfirmed_note": "{amount} ჯერ არ დადასტურდა ზარაფხანასთან",
   "wallet.balance.reserved_note":
     "{amount} დარეზერვებულია მიმდინარე გაგზავნისთვის",
@@ -956,14 +960,27 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "მოიცავს სატესტო ზარაფხანის სათამაშო ფულს. ეს არ არის ბიტკოინი და გატანა შეუძლებელია.",
   "wallet.token": "ტოკენი",
-  "wallet.action.send": "ecash ტოკენის გაგზავნა",
   "wallet.action.send_disabled":
     "ecash ტოკენის გაგზავნა, ნულოვანი ბალანსით მიუწვდომელია",
-  "wallet.action.receive": "ecash ტოკენის მიღება",
-  "wallet.action.zap": "Nostr-ის კონტაქტისთვის zap-ის გაგზავნა",
-  "wallet.action.zap_disabled":
-    "Nostr-ის კონტაქტისთვის zap-ის გაგზავნა, ნულოვანი ბალანსით მიუწვდომელია",
-  "wallet.action.add_mint": "Cashu ზარაფხანის დამატება",
+  "wallet.action.scan": "სკანირება",
+  "wallet.action.scan_a11y": "ტოკენის, ინვოისის ან npub-ის სკანირება",
+  "wallet.choose.paste": "ტოკენის ჩასმა",
+  "wallet.choose.paste_desc": "ხაზგარეშეც მუშაობს",
+  "wallet.choose.scan": "QR კოდის სკანირება",
+  "wallet.choose.scan_desc": "Cashu ტოკენი ნებისმიერი საფულიდან",
+  "wallet.choose.topup": "Lightning-ით შევსება",
+  "wallet.choose.topup_desc":
+    "გადაიხადე ინვოისი ნებისმიერი Lightning საფულიდან",
+  "wallet.choose.token": "ტოკენის შექმნა",
+  "wallet.choose.token_desc": "გააზიარე ან აჩვენე QR კოდი, ხაზგარეშეც",
+  "wallet.choose.zap": "Nostr-ის კონტაქტისთვის zap-ის გაგზავნა",
+  "wallet.choose.zap_desc": "მის npub-ზე, ინტერნეტით",
+  "wallet.choose.invoice": "Lightning ინვოისის გადახდა",
+  "wallet.choose.invoice_desc": "გაიტანე ნებისმიერ Lightning საფულეში",
+  "wallet.choose.tor_paused": "შეჩერებულია, სანამ Tor ჩართულია",
+  "wallet.choose.offline": "ინტერნეტი სჭირდება",
+  "wallet.choose.internet_off": "ინტერნეტი გამორთულია",
+  "wallet.choose.needs_mint": "ჯერ დაამატე ზარაფხანა",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ტოკენის აწყობა ვერ მოხერხდა",
@@ -1074,9 +1091,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "წავშალოთ {mint} შენი საფულიდან? მისი შენახული გასაღებებიც წაიშლება, ამიტომ მისი ტოკენების ოფლაინში შემოწმება აღარ იქნება შესაძლებელი.",
   "wallet.mint.title": "ზარაფხანები",
-  "wallet.mint.none": "ჯერ ზარაფხანა არ არის",
   "wallet.mint.none_desc":
-    "ზარაფხანა გამოსცემს და გამოისყიდის შენს ecash-ს. დაამატე ერთი, რომ Lightning-ით შეიტანო, ან უბრალოდ მიიღე ტოკენი და მისი ზარაფხანა შენთვის თავად დაემატება.",
+    "ზარაფხანა გამოსცემს და ანაღდებს შენს ecash-ს. დაამატე, რომ Lightning-ით შეავსო ან მისი ტოკენები მიიღო.",
   "wallet.mint.add": "ზარაფხანის დამატება",
   "wallet.mint.add_body":
     "ზარაფხანა ინახავს ბიტკოინს, რომელიც შენს ecash-ს უზრუნველყოფს, ამიტომ აირჩიე ისეთი, რომელსაც იქ დაგროვილ ბალანსს ანდობდი. URL შენახვამდე მოწმდება. თუ არავის ენდობი, გაუშვი შენი საკუთარი Nutshell-ით.",
@@ -1088,8 +1104,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ზარაფხანის წაშლა",
   "wallet.mint.delete_anyway": "მაინც წაშლა",
   "wallet.mint.consolidate": "ყველა ბალანსის ერთ ზარაფხანაში გადატანა",
-  "wallet.mint.confirm_with": "დასტურების დადასტურება {mint}-თან",
-  "wallet.mint.remove_a11y": "{mint}-ის წაშლა",
+  "wallet.mint.confirm_with": "ბალანსის შემოწმება {mint}-თან",
   "wallet.mint.available_amount": "ხელმისაწვდომია {amount} {unit}",
   "wallet.mint.split_across":
     "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
@@ -1120,9 +1135,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sat გადახდილია Lightning-ით. ზარაფხანამ {fee} sat მარშრუტიზაციის საკომისიო ჩამოჭრა და რეზერვიდან {change} sat შენს ბალანსს დაუბრუნა.",
   "wallet.ln.payment_failed": "გადახდა ვერ მოხერხდა",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "აქციე Lightning-ის sat-ები ecash-ად, რომელსაც ოფლაინში დახარჯავ, ან გაიტანე ecash ნებისმიერ Lightning ინვოისზე. ორივეს ინტერნეტი და ზარაფხანა სჭირდება.",
   "wallet.ln.deposit_body":
     "ზარაფხანა გაძლევს ინვოისს. გადაიხადე ნებისმიერი Lightning საფულიდან და sat-ები დაბრუნდება ecash-ად, რომელსაც ოფლაინში დახარჯავ.",
   "wallet.ln.pay_invoice_for":
@@ -1135,10 +1147,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "მაქსიმუმ {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit}-ის გადახდა",
-  "wallet.ln.deposit": "sat-ების შეტანა Lightning-ით",
-  "wallet.ln.deposit_short": "შეტანა",
-  "wallet.ln.withdraw": "გატანა Lightning ინვოისზე",
-  "wallet.ln.withdraw_short": "გატანა",
   "wallet.ln.deposit_title": "შეტანა Lightning-ით",
   "wallet.ln.amount_placeholder": "თანხა sat-ებში",
   "wallet.ln.requesting": "ითხოვს…",
@@ -1159,7 +1167,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "შეთავაზების მიღება",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "სარეზერვო ასლი",
   "wallet.backup.setup_failed": "სარეზერვო ასლის დაყენება ვერ მოხერხდა",
   "wallet.backup.on": "სარეზერვო ასლი ჩართულია",
   "wallet.backup.on_body":
@@ -1273,7 +1280,6 @@ export const strings: Strings = {
     "{amount} {unit} ახლა შენი აღდგენის ფრაზითაა დაფარული.",
   "wallet.refresh.all_confirmed":
     "აქ ყველაფერი უკვე დადასტურებული იყო ზარაფხანასთან.",
-  "wallet.pending.title": "მოლოდინში",
   "wallet.pending.reserved_desc":
     "აწყობილი და დარეზერვებული, მიწოდება დაუდასტურებელი. დასტურები შენი ბალანსიდან გამოტანილია, რომ ორჯერ ვერ დაიხარჯოს.",
   "wallet.pending.locked_desc":
@@ -1286,8 +1292,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ამ ტოკენის დაბრუნება შენს ბალანსში",
   "wallet.activity.title": "აქტივობა",
   "wallet.activity.none": "ჯერ არაფერია",
-  "wallet.activity.none_desc":
-    "გადახდები, რომლებსაც გზავნი და იღებ, აქ გამოჩნდება, უახლესი პირველი, თითოეულის ზარაფხანითა და საკომისიოთი.",
   "wallet.activity.show_fewer": "ნაკლები გადახდის ჩვენება",
   "wallet.activity.show_less": "ნაკლების ჩვენება",
   "wallet.activity.received_unconfirmed": "მიღებულია, დაუდასტურებელი",
@@ -1303,9 +1307,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-ის შეტანა",
   "wallet.activity.ln_withdrawal": "Lightning-ის გატანა",
   "wallet.activity.nutzap_received": "Nutzap მიღებულია",
-  "wallet.activity.spent_removed": "დახარჯული დასტურები წაიშალა",
-  "wallet.activity.refreshed": "დასტურები განახლდა",
-  "wallet.activity.refreshing": "დასტურები ახლდება",
+  "wallet.activity.spent_removed": "დახარჯული მონეტები წაიშალა",
+  "wallet.activity.refreshed": "ზარაფხანასთან შემოწმდა",
+  "wallet.activity.refreshing": "მოწმდება ზარაფხანასთან",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "მეში ოფლაინია",
@@ -1371,10 +1375,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "მიმართე Lightning ინვოისის QR კოდზე.",
   "wallet.scan.title_token": "ecash-ის სკანირება",
   "wallet.scan.title_invoice": "ინვოისის სკანირება",
-  "wallet.scan.desc_token":
-    "წაიკითხე Cashu ტოკენი სხვა საფულიდან. მუშაობს ნებისმიერ Cashu საფულესთან, არა მხოლოდ Airhop-თან.",
-  "wallet.scan.desc_invoice":
-    "წაიკითხე Lightning ინვოისი, რომ შენი ბალანსიდან გადაიხადო.",
+  "wallet.scan.title_any": "QR კოდის სკანირება",
+  "wallet.scan.aim_any": "მიმართე ტოკენის, ინვოისის ან npub-ის QR კოდზე.",
+  "wallet.scan.no_any": "ამ სურათში ტოკენი, ინვოისი ან npub არ მოიძებნა.",
   "wallet.scan.use_camera_a11y": "სკანირება კამერით",
   "wallet.scan.use_camera": "კამერის გამოყენება",
   "wallet.scan.pick_image_a11y": "QR კოდის წაკითხვა შენახული სურათიდან",
@@ -1417,6 +1420,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "iOS-ზე ზარაფხანასთან მოთხოვნები Tor-ით არ გადის.",
   "wallet.svc.tor_ios_body":
     "Arti მხოლოდ Nostr-ის WebSocket-ებს ფარავს, ამიტომ ეს მოთხოვნა ზარაფხანას ღია ქსელით მიაღწევდა და შენს IP-ს ამ დასტურებთან დააკავშირებდა. დაუშვი პარამეტრები > უსაფრთხოება-ში, ან ჯერ გამორთე Tor. მეშით ecash-ის გაგზავნა და მიღება მაინც მუშაობს.",
+  "wallet.svc.internet_off":
+    "ინტერნეტი გამორთულია, ამიტომ ზარაფხანასთან დაკავშირება შეუძლებელია.",
+  "wallet.svc.internet_off_body":
+    "ჩართე {setting} პარამეტრებში. ახლომყოფებთან ecash-ის გაგზავნა და მიღება კვლავ მუშაობს.",
   "wallet.svc.keys_uncached":
     "ამ ზარაფხანის გასაღებები ამ მოწყობილობაზე არ ინახება.",
   "wallet.svc.keys_uncached_body":
@@ -2304,10 +2311,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ზარაფხანა",
-    other: "{count} ზარაფხანა",
-  },
   "wallet.mint.remove_body": {
     one: "{mint}-ს აქვს {balance} {unit} {count} დასტურში. მისი წაშლა ამ დასტურს სამუდამოდ შლის ამ მოწყობილობიდან, და მისი სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
     other:
@@ -2344,10 +2347,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} დაუდასტურებელი",
     other: "{count} დაუდასტურებელი",
-  },
-  "wallet.proof_count": {
-    one: "{count} დასტური",
-    other: "{count} დასტური",
   },
   "wallet.spent_removed_detail": {
     one: "{count} დასტური უკვე დახარჯული იყო და წაიშალა.",

@@ -881,18 +881,35 @@ export const strings: Strings = {
     "የቦርሳው ማከማቻ ተቆልፏል። የecash ማረጋገጫዎች ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ይቀመጣሉ፤ ያ ፋይል ሊከፈት አልቻለም። መሣሪያህን ክፈትና Airhop ን እንደገና ክፈት።",
   "wallet.balance.tor_blocked":
     "Tor በርቷል፤ ስለዚህ የሚንት ጥያቄዎች ታግደዋል፦ በክፍት አውታረ መረብ ላይ ወጥተው የIP አድራሻህን ከማረጋገጫዎችህ ጋር ያገናኙታል። በሜሽ ላይ መላክና መቀበል አሁንም ይሠራል። በቅንብሮች፣ ደህንነት ስር የሚንት ትራፊክን ፍቀድ።",
+  "wallet.balance.offline":
+    "ከመስመር ውጭ ነዎት። አሁንም በአቅራቢያ ላሉ ሰዎች መክፈልና ቶከን መላክ ይችላሉ።",
+  "wallet.balance.internet_off":
+    "ኢንተርኔት ጠፍቷል፣ ስለዚህ ቦርሳው በአቅራቢያ ብቻ ይሰራል። ሚንቶችን ለመድረስ በቅንብሮች ውስጥ {setting}ን ያብሩ።",
   "wallet.balance.unconfirmed_note": "{amount} ገና ከሚንቱ ጋር አልተረጋገጠም",
   "wallet.balance.reserved_note": "{amount} በመንገድ ላይ ላለ ክፍያ ተይዟል",
   "wallet.balance.other_mint_note": "{amount} በተለየ የሚንት መለያ ውስጥ",
   "wallet.balance.test_mint_note":
     "ከሙከራ ሚንት የመጣ የጨዋታ ገንዘብ ያካትታል። ቢትኮይን አይደለም፤ ሊመነዘርም አይችልም።",
   "wallet.token": "ቶከን",
-  "wallet.action.send": "የecash ቶከን ላክ",
   "wallet.action.send_disabled": "የecash ቶከን ላክ፤ ቀሪ ሂሳብ ሲኖርህ ብቻ ይገኛል",
-  "wallet.action.receive": "የecash ቶከን ተቀበል",
-  "wallet.action.zap": "ለNostr እውቂያ zap ላክ",
-  "wallet.action.zap_disabled": "ለNostr እውቂያ zap ላክ፤ ቀሪ ሂሳብ ሲኖርህ ብቻ ይገኛል",
-  "wallet.action.add_mint": "የCashu ሚንት ጨምር",
+  "wallet.action.scan": "ቃኝ",
+  "wallet.action.scan_a11y": "ቶከን፣ ደረሰኝ ወይም npub ቃኝ",
+  "wallet.choose.paste": "ቶከን ለጥፍ",
+  "wallet.choose.paste_desc": "ከመስመር ውጭም ይሰራል",
+  "wallet.choose.scan": "QR ኮድ ቃኝ",
+  "wallet.choose.scan_desc": "ከማንኛውም ቦርሳ የመጣ የCashu ቶከን",
+  "wallet.choose.topup": "በLightning ሙላ",
+  "wallet.choose.topup_desc": "ከማንኛውም የLightning ቦርሳ ደረሰኝ ይክፈሉ",
+  "wallet.choose.token": "ቶከን ፍጠር",
+  "wallet.choose.token_desc": "ያጋሩት ወይም QR ኮድ ያሳዩ፣ ከመስመር ውጭም ቢሆን",
+  "wallet.choose.zap": "ለNostr እውቂያ ዛፕ ላክ",
+  "wallet.choose.zap_desc": "ወደ npubቸው፣ በኢንተርኔት",
+  "wallet.choose.invoice": "የLightning ደረሰኝ ክፈል",
+  "wallet.choose.invoice_desc": "ወደ ማንኛውም የLightning ቦርሳ ያውጡ",
+  "wallet.choose.tor_paused": "Tor ሲበራ ቆሟል",
+  "wallet.choose.offline": "ኢንተርኔት ያስፈልገዋል",
+  "wallet.choose.internet_off": "ኢንተርኔት ጠፍቷል",
+  "wallet.choose.needs_mint": "መጀመሪያ ሚንት ያክሉ",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ቶከኑ ሊገነባ አልቻለም",
@@ -999,9 +1016,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} ከቦርሳህ ይወገድ? የተከማቹ ቁልፎቹም አብረው ይሄዳሉ፤ ስለዚህ ከእሱ የሚመጡ ቶከኖች ከመስመር ውጭ ሊረጋገጡ አይችሉም።",
   "wallet.mint.title": "ሚንቶች",
-  "wallet.mint.none": "ገና ሚንት የለም",
   "wallet.mint.none_desc":
-    "ሚንት የአንተን ecash ያወጣል፤ ይመነዝራልም። በLightning ለማስገባት አንድ ጨምር፣ ወይም ቶከን ብቻ ተቀበልና ሚንቱ ለአንተ ይጨመራል።",
+    "ሚንት የእርስዎን ecash ያወጣል እንዲሁም ይመልሳል። በLightning ለመሙላት ወይም ከእሱ ቶከኖችን ለመቀበል አንዱን ያክሉ።",
   "wallet.mint.add": "ሚንት ጨምር",
   "wallet.mint.add_body":
     "ሚንት የecash ህን የሚደግፈውን Bitcoin ይይዛል፤ ስለዚህ እዚያ ከምታስቀምጠው ቀሪ ሂሳብ ጋር የምታምነውን ምረጥ። አድራሻው ከመቀመጡ በፊት ይመረመራል። ማንንም ማመን ካልፈለግህ በNutshell የራስህን አሂድ።",
@@ -1013,8 +1029,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ሚንት አስወግድ",
   "wallet.mint.delete_anyway": "ለማንኛውም ሰርዝ",
   "wallet.mint.consolidate": "ሁሉንም ቀሪ ሂሳቦች ወደ አንድ ሚንት አዛውር",
-  "wallet.mint.confirm_with": "ማረጋገጫዎችን ከ{mint} ጋር አረጋግጥ",
-  "wallet.mint.remove_a11y": "{mint} አስወግድ",
+  "wallet.mint.confirm_with": "ቀሪ ሂሳብን ከ{mint} ጋር አረጋግጥ",
   "wallet.mint.available_amount": "{amount} {unit} ይገኛል",
   "wallet.mint.split_across": "ቀሪ ሂሳቡ በ{count} ሚንቶች ተከፋፍሏል። ወደ አንድ አዛውረው።",
   "wallet.mint.move_everything_to": "ሁሉንም ወደ {mint} አዛውር",
@@ -1044,9 +1059,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "{paid} sats በLightning ተከፍሏል። ሚንቱ {fee} sats የመተላለፊያ ክፍያ አስከፍሎ ከተያዘው ውስጥ {change} sats ወደ ቀሪ ሂሳብህ መልሷል።",
   "wallet.ln.payment_failed": "ክፍያው አልተሳካም",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "የLightning sats ን ከመስመር ውጭ ልታወጣው ወደምትችለው ecash ቀይር፣ ወይም ecash ን ወደ ማንኛውም የLightning ደረሰኝ መልሰህ አውጣ። ሁለቱም ኢንተርኔትና ሚንት ይፈልጋሉ።",
   "wallet.ln.deposit_body":
     "ሚንቱ ደረሰኝ ይሰጥሃል። ከማንኛውም የLightning ቦርሳ ክፈለውና sats ከመስመር ውጭ ልታወጣው በምትችለው ecash መልክ ይመለሳል።",
   "wallet.ln.pay_invoice_for":
@@ -1059,10 +1071,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "እስከ {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ክፈል",
-  "wallet.ln.deposit": "sats በLightning አስገባ",
-  "wallet.ln.deposit_short": "አስገባ",
-  "wallet.ln.withdraw": "ወደ የLightning ደረሰኝ አውጣ",
-  "wallet.ln.withdraw_short": "አውጣ",
   "wallet.ln.deposit_title": "በLightning አስገባ",
   "wallet.ln.amount_placeholder": "መጠን በsats",
   "wallet.ln.requesting": "እየተጠየቀ…",
@@ -1083,7 +1091,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ግምት አግኝ",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ምትኬ",
   "wallet.backup.setup_failed": "ምትኬው ሊዘጋጅ አልቻለም",
   "wallet.backup.on": "ምትኬ በርቷል",
   "wallet.backup.on_body":
@@ -1188,7 +1195,6 @@ export const strings: Strings = {
   "wallet.refresh.swapped": "{amount} {unit} ተረጋግጦ በአዲስ ማረጋገጫዎች ተለውጧል።",
   "wallet.refresh.secured": "አሁን {amount} {unit} በማገገሚያ ሐረግህ ተሸፍኗል።",
   "wallet.refresh.all_confirmed": "እዚህ ያለው ሁሉ አስቀድሞ ከሚንቱ ጋር ተረጋግጦ ነበር።",
-  "wallet.pending.title": "በመጠባበቅ ላይ",
   "wallet.pending.reserved_desc":
     "ተገንብቶ ተይዟል፤ መድረሱ አልተረጋገጠም። ማረጋገጫዎቹ ሁለት ጊዜ እንዳይወጡ ከቀሪ ሂሳብህ ውጭ ተይዘዋል።",
   "wallet.pending.locked_desc":
@@ -1201,8 +1207,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ይህን ቶከን ወደ ቀሪ ሂሳብህ መልሰህ አግኝ",
   "wallet.activity.title": "እንቅስቃሴ",
   "wallet.activity.none": "ገና ምንም የለም",
-  "wallet.activity.none_desc":
-    "የምትልካቸውና የምትቀበላቸው ክፍያዎች እዚህ ይታያሉ፤ አዲሶቹ መጀመሪያ፣ ከእያንዳንዱ ሚንትና ክፍያ ጋር።",
   "wallet.activity.show_fewer": "ጥቂት ክፍያዎችን አሳይ",
   "wallet.activity.show_less": "ጥቂት አሳይ",
   "wallet.activity.received_unconfirmed": "ደርሷል፣ አልተረጋገጠም",
@@ -1218,9 +1222,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "የLightning ተቀማጭ",
   "wallet.activity.ln_withdrawal": "የLightning ወጪ",
   "wallet.activity.nutzap_received": "Nutzap ደርሷል",
-  "wallet.activity.spent_removed": "የወጡ ማረጋገጫዎች ተወግደዋል",
-  "wallet.activity.refreshed": "ማረጋገጫዎች ታድሰዋል",
-  "wallet.activity.refreshing": "ማረጋገጫዎች እየታደሱ ነው",
+  "wallet.activity.spent_removed": "ወጪ የሆኑ ሳንቲሞች ተወግደዋል",
+  "wallet.activity.refreshed": "ከሚንቱ ጋር ተረጋግጧል",
+  "wallet.activity.refreshing": "ከሚንቱ ጋር በማረጋገጥ ላይ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ሜሽ ከመስመር ውጭ",
@@ -1280,9 +1284,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "ወደ የLightning ደረሰኝ QR ኮድ አነጣጥር።",
   "wallet.scan.title_token": "ecash ቃኝ",
   "wallet.scan.title_invoice": "ደረሰኝ ቃኝ",
-  "wallet.scan.desc_token":
-    "ከሌላ ቦርሳ የCashu ቶከን አንብብ። ከAirhop ብቻ ሳይሆን ከማንኛውም የCashu ቦርሳ ጋር ይሠራል።",
-  "wallet.scan.desc_invoice": "ከቀሪ ሂሳብህ ለመክፈል የLightning ደረሰኝ አንብብ።",
+  "wallet.scan.title_any": "QR ኮድ ቃኝ",
+  "wallet.scan.aim_any": "ወደ ቶከን፣ ደረሰኝ ወይም npub QR ኮድ አነጣጥር።",
+  "wallet.scan.no_any": "በዚያ ምስል ውስጥ ቶከን፣ ደረሰኝ ወይም npub አልተገኘም።",
   "wallet.scan.use_camera_a11y": "በካሜራ ቃኝ",
   "wallet.scan.use_camera": "ካሜራ ተጠቀም",
   "wallet.scan.pick_image_a11y": "ከተቀመጠ ምስል የQR ኮድ አንብብ",
@@ -1325,6 +1329,9 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "በiOS ላይ የሚንት ጥያቄዎች በTor አያልፉም።",
   "wallet.svc.tor_ios_body":
     "Arti የሚሸፍነው የNostr WebSocket ን ብቻ ነው፤ ስለዚህ ይህ ጥያቄ በክፍት አውታረ መረብ ሚንቱ ላይ ደርሶ የIP አድራሻህን ከእነዚህ ማረጋገጫዎች ጋር ያገናኘዋል። በቅንብሮች > ደህንነት ስር ፍቀደው፣ ወይም መጀመሪያ Tor ን አጥፋ። በሜሽ ላይ ecash መላክና መቀበል አሁንም ይሠራል።",
+  "wallet.svc.internet_off": "ኢንተርኔት ጠፍቷል፣ ስለዚህ ሚንቱን መድረስ አይቻልም።",
+  "wallet.svc.internet_off_body":
+    "በቅንብሮች ውስጥ {setting}ን ያብሩ። በአቅራቢያ ecash መላክና መቀበል አሁንም ይሰራል።",
   "wallet.svc.keys_uncached": "የዚህ ሚንት ቁልፎች በዚህ መሣሪያ ላይ አልተከማቹም።",
   "wallet.svc.keys_uncached_body": "እነሱን ለማምጣት በመስመር ላይ ሆነህ ቦርሳውን አንድ ጊዜ ክፈት።",
   "wallet.svc.phrase_invalid": "ያ የማገገሚያ ሐረግ ልክ አይደለም።",
@@ -2148,10 +2155,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ሚንት",
-    other: "{count} ሚንቶች",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} {balance} {unit} በ{count} ማረጋገጫ ውስጥ ይዟል። ማስወገዱ ያንን ማረጋገጫ ከዚህ መሣሪያ ለዘለቄታው ይሰርዘዋል፤ ምትኬም የለም። መጀመሪያ ቀሪ ሂሳቡን አውጣ ወይም ላክ።",
     other:
@@ -2187,10 +2190,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} ያልተረጋገጠ",
     other: "{count} ያልተረጋገጡ",
-  },
-  "wallet.proof_count": {
-    one: "{count} ማረጋገጫ",
-    other: "{count} ማረጋገጫዎች",
   },
   "wallet.spent_removed_detail": {
     one: "{count} ማረጋገጫ አስቀድሞ ወጪ ሆኖ ስለነበር ተወግዷል።",

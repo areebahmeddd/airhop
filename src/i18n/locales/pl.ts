@@ -965,6 +965,10 @@ export const strings: Strings = {
     "Pamięć portfela jest zablokowana. Dowody ecash leżą w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia, i nie dało się go otworzyć. Odblokuj urządzenie i otwórz Airhop ponownie.",
   "wallet.balance.tor_blocked":
     "Tor jest włączony, więc zapytania do mennicy są blokowane: poszłyby otwartą siecią i powiązały twoje IP z twoimi dowodami. Wysyłanie i odbieranie przez sieć mesh działa dalej. Zezwól na ruch do mennicy w Ustawieniach, w sekcji Bezpieczeństwo.",
+  "wallet.balance.offline":
+    "Offline. Nadal możesz płacić osobom w pobliżu i wysyłać tokeny.",
+  "wallet.balance.internet_off":
+    "Internet jest wyłączony, więc portfel działa tylko w pobliżu. Włącz {setting} w Ustawieniach, aby łączyć się z mennicami.",
   "wallet.balance.unconfirmed_note":
     "{amount} jeszcze niepotwierdzone przez mennicę",
   "wallet.balance.reserved_note": "{amount} zarezerwowane na wysyłkę w drodze",
@@ -972,14 +976,26 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Zawiera zabawkowe pieniądze z mennicy testowej. To nie jest bitcoin i nie da się tego wypłacić.",
   "wallet.token": "Token",
-  "wallet.action.send": "Wyślij token ecash",
   "wallet.action.send_disabled":
     "Wyślij token ecash, niedostępne przy pustym saldzie",
-  "wallet.action.receive": "Odbierz token ecash",
-  "wallet.action.zap": "Zapnij kontakt Nostr",
-  "wallet.action.zap_disabled":
-    "Zapnij kontakt Nostr, niedostępne przy pustym saldzie",
-  "wallet.action.add_mint": "Dodaj mennicę Cashu",
+  "wallet.action.scan": "Skanuj",
+  "wallet.action.scan_a11y": "Zeskanuj token, fakturę lub npub",
+  "wallet.choose.paste": "Wklej token",
+  "wallet.choose.paste_desc": "Działa offline",
+  "wallet.choose.scan": "Zeskanuj kod QR",
+  "wallet.choose.scan_desc": "Token Cashu z dowolnego portfela",
+  "wallet.choose.topup": "Doładuj przez Lightning",
+  "wallet.choose.topup_desc": "Opłać fakturę z dowolnego portfela Lightning",
+  "wallet.choose.token": "Utwórz token",
+  "wallet.choose.token_desc": "Udostępnij lub pokaż kod QR, nawet offline",
+  "wallet.choose.zap": "Wyślij zap do kontaktu w Nostr",
+  "wallet.choose.zap_desc": "Na jego npub, przez internet",
+  "wallet.choose.invoice": "Opłać fakturę Lightning",
+  "wallet.choose.invoice_desc": "Wypłać do dowolnego portfela Lightning",
+  "wallet.choose.tor_paused": "Wstrzymane, gdy Tor jest włączony",
+  "wallet.choose.offline": "Wymaga internetu",
+  "wallet.choose.internet_off": "Internet wyłączony",
+  "wallet.choose.needs_mint": "Najpierw dodaj mennicę",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Nie udało się zbudować tokena",
@@ -1090,9 +1106,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Usunąć {mint} z portfela? Zapisane klucze znikają razem z nią, więc tokenów z niej nie da się już sprawdzić offline.",
   "wallet.mint.title": "Mennice",
-  "wallet.mint.none": "Jeszcze żadnej mennicy",
   "wallet.mint.none_desc":
-    "Mennica wydaje i realizuje twój ecash. Dodaj jedną, żeby wpłacić przez Lightning, albo po prostu odbierz token, a jego mennica dopisze się sama.",
+    "Mennica wydaje i wykupuje twój ecash. Dodaj jedną, aby doładować przez Lightning lub przyjmować jej tokeny.",
   "wallet.mint.add": "Dodaj mennicę",
   "wallet.mint.add_body":
     "Mennica trzyma bitcoiny stojące za twoim ecashem, więc wybierz taką, której powierzyłbyś trzymane tam saldo. Adres jest sprawdzany przed zapisaniem. Postaw własną na Nutshellu, jeśli wolisz nikomu nie ufać.",
@@ -1104,8 +1119,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Usuń mennicę",
   "wallet.mint.delete_anyway": "Mimo to usuń",
   "wallet.mint.consolidate": "Przenieś wszystkie salda do jednej mennicy",
-  "wallet.mint.confirm_with": "Potwierdź dowody w {mint}",
-  "wallet.mint.remove_a11y": "Usuń {mint}",
+  "wallet.mint.confirm_with": "Sprawdź saldo w {mint}",
   "wallet.mint.available_amount": "dostępne: {amount} {unit}",
   "wallet.mint.split_across":
     "Saldo rozbite na {count} mennic. Przenieś je do jednej.",
@@ -1136,9 +1150,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Zapłacono {paid} satów przez Lightning. Mennica pobrała {fee} satów opłat za trasowanie i zwróciła {change} satów rezerwy na twoje saldo.",
   "wallet.ln.payment_failed": "Płatność się nie powiodła",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Zamień saty z Lightning na ecash, który wydasz offline, albo wypłać ecash na dowolną fakturę Lightning. Jedno i drugie wymaga internetu i mennicy.",
   "wallet.ln.deposit_body":
     "Mennica daje ci fakturę. Opłać ją z dowolnego portfela Lightning, a saty wrócą jako ecash, który wydasz offline.",
   "wallet.ln.pay_invoice_for":
@@ -1151,10 +1162,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "do {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Zapłać {amount} {unit}",
-  "wallet.ln.deposit": "Wpłać saty przez Lightning",
-  "wallet.ln.deposit_short": "Wpłać",
-  "wallet.ln.withdraw": "Wypłać na fakturę Lightning",
-  "wallet.ln.withdraw_short": "Wypłać",
   "wallet.ln.deposit_title": "Wpłata przez Lightning",
   "wallet.ln.amount_placeholder": "Kwota w satach",
   "wallet.ln.requesting": "Wysyłanie żądania…",
@@ -1175,7 +1182,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Pobierz wycenę",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Kopia zapasowa",
   "wallet.backup.setup_failed": "Nie udało się skonfigurować kopii zapasowej",
   "wallet.backup.on": "Kopia zapasowa włączona",
   "wallet.backup.on_body":
@@ -1289,7 +1295,6 @@ export const strings: Strings = {
     "{amount} {unit} jest teraz objęte twoją frazą odzyskiwania.",
   "wallet.refresh.all_confirmed":
     "Wszystko tutaj było już potwierdzone przez mennicę.",
-  "wallet.pending.title": "Oczekujące",
   "wallet.pending.reserved_desc":
     "Zbudowane i zarezerwowane, dostawa niepotwierdzona. Dowody są trzymane poza saldem, żeby nie dało się ich wydać dwa razy.",
   "wallet.pending.locked_desc":
@@ -1302,8 +1307,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Odzyskaj ten token na swoje saldo",
   "wallet.activity.title": "Aktywność",
   "wallet.activity.none": "Jeszcze nic",
-  "wallet.activity.none_desc":
-    "Płatności, które wysyłasz i odbierasz, pojawiają się tutaj, od najnowszych, wraz z mennicą i opłatą przy każdej z nich.",
   "wallet.activity.show_fewer": "Pokaż mniej płatności",
   "wallet.activity.show_less": "Pokaż mniej",
   "wallet.activity.received_unconfirmed": "Odebrane, niepotwierdzone",
@@ -1319,9 +1322,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Wpłata przez Lightning",
   "wallet.activity.ln_withdrawal": "Wypłata przez Lightning",
   "wallet.activity.nutzap_received": "Odebrano nutzapa",
-  "wallet.activity.spent_removed": "Usunięto wydane dowody",
-  "wallet.activity.refreshed": "Dowody odświeżone",
-  "wallet.activity.refreshing": "Odświeżanie dowodów",
+  "wallet.activity.spent_removed": "Usunięto wydane monety",
+  "wallet.activity.refreshed": "Sprawdzono w mennicy",
+  "wallet.activity.refreshing": "Sprawdzanie w mennicy",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Sieć mesh offline",
@@ -1387,10 +1390,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Wyceluj w kod QR faktury Lightning.",
   "wallet.scan.title_token": "Skanowanie ecash",
   "wallet.scan.title_invoice": "Skanowanie faktury",
-  "wallet.scan.desc_token":
-    "Odczytaj token Cashu z innego portfela. Działa z dowolnym portfelem Cashu, nie tylko z Airhop.",
-  "wallet.scan.desc_invoice":
-    "Odczytaj fakturę Lightning, żeby opłacić ją ze swojego salda.",
+  "wallet.scan.title_any": "Zeskanuj kod QR",
+  "wallet.scan.aim_any": "Wyceluj w kod QR tokena, faktury lub npub.",
+  "wallet.scan.no_any":
+    "Nie znaleziono tokena, faktury ani npub na tym obrazie.",
   "wallet.scan.use_camera_a11y": "Skanuj aparatem",
   "wallet.scan.use_camera": "Użyj aparatu",
   "wallet.scan.pick_image_a11y": "Odczytaj kod QR z zapisanego obrazu",
@@ -1433,6 +1436,10 @@ export const strings: Strings = {
   "wallet.svc.tor_ios": "Zapytania do mennicy nie idą przez Tor na iOS.",
   "wallet.svc.tor_ios_body":
     "Arti otacza tylko WebSockety Nostr, więc to zapytanie dotarłoby do mennicy otwartą siecią i powiązało twoje IP z tymi dowodami. Zezwól na to w Ustawieniach > Bezpieczeństwo albo najpierw wyłącz Tor. Wysyłanie i odbieranie ecash przez sieć mesh działa dalej.",
+  "wallet.svc.internet_off":
+    "Internet jest wyłączony, więc nie można połączyć się z mennicą.",
+  "wallet.svc.internet_off_body":
+    "Włącz {setting} w Ustawieniach. Wysyłanie i odbieranie ecash w pobliżu nadal działa.",
   "wallet.svc.keys_uncached": "Kluczy tej mennicy nie ma na tym urządzeniu.",
   "wallet.svc.keys_uncached_body":
     "Otwórz portfel raz przy internecie, żeby je pobrać.",
@@ -2352,12 +2359,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mennica",
-    few: "{count} mennice",
-    many: "{count} mennic",
-    other: "{count} mennicy",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} przechowuje {balance} {unit} w {count} dowodzie. Usunięcie kasuje ten dowód z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
     few: "{mint} przechowuje {balance} {unit} w {count} dowodach. Usunięcie kasuje te dowody z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
@@ -2408,12 +2409,6 @@ export const plurals: Plurals = {
     few: "{count} niepotwierdzone",
     many: "{count} niepotwierdzonych",
     other: "{count} niepotwierdzonego",
-  },
-  "wallet.proof_count": {
-    one: "{count} dowód",
-    few: "{count} dowody",
-    many: "{count} dowodów",
-    other: "{count} dowodu",
   },
   "wallet.spent_removed_detail": {
     one: "{count} dowód był już wydany i został usunięty.",

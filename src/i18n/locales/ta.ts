@@ -974,6 +974,10 @@ export const strings: Strings = {
     "பணப்பைச் சேமிப்பு பூட்டப்பட்டுள்ளது. ecash சான்றுகள் ஒரு குறியாக்கக் கோப்பில் வைக்கப்படுகின்றன, அதன் சாவி சாதனத்தின் சாவிக்கொத்தில் இருக்கிறது, அந்தக் கோப்பைத் திறக்க முடியவில்லை. உங்கள் சாதனத்தைத் திறந்து Airhop ஐ மீண்டும் திறங்கள்.",
   "wallet.balance.tor_blocked":
     "Tor இயக்கத்தில் உள்ளது, எனவே நாணயச்சாலைக் கோரிக்கைகள் தடுக்கப்பட்டுள்ளன: அவை திறந்த வலை வழியாகச் சென்று உங்கள் IP ஐ உங்கள் சான்றுகளுடன் இணைத்துவிடும். மெஷ் வழியாக அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும். அமைப்புகள், பாதுகாப்பின் கீழ் நாணயச்சாலைப் போக்குவரத்தை அனுமதியுங்கள்.",
+  "wallet.balance.offline":
+    "இணைப்பில்லை. அருகிலுள்ளவர்களுக்குப் பணம் செலுத்தவும் டோக்கன் அனுப்பவும் இன்னும் முடியும்.",
+  "wallet.balance.internet_off":
+    "இணையம் அணைக்கப்பட்டுள்ளது, எனவே வாலட் அருகில் மட்டுமே இயங்கும். நாணயச்சாலைகளை அடைய அமைப்புகளில் {setting} ஐ இயக்கு.",
   "wallet.balance.unconfirmed_note":
     "{amount} இன்னும் நாணயச்சாலையால் உறுதிசெய்யப்படவில்லை",
   "wallet.balance.reserved_note":
@@ -982,14 +986,28 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "இதில் சோதனை நாணயச்சாலையின் விளையாட்டுப் பணம் உள்ளது. இது bitcoin அல்ல, இதைப் பணமாக்க முடியாது.",
   "wallet.token": "டோக்கன்",
-  "wallet.action.send": "ecash டோக்கனை அனுப்பு",
   "wallet.action.send_disabled":
     "ecash டோக்கனை அனுப்பு, இருப்பு காலியாக இருக்கும்போது கிடைக்காது",
-  "wallet.action.receive": "ecash டோக்கனைப் பெறு",
-  "wallet.action.zap": "ஒரு Nostr தொடர்புக்கு zap அனுப்பு",
-  "wallet.action.zap_disabled":
-    "ஒரு Nostr தொடர்புக்கு zap அனுப்பு, இருப்பு காலியாக இருக்கும்போது கிடைக்காது",
-  "wallet.action.add_mint": "Cashu நாணயச்சாலையைச் சேர்",
+  "wallet.action.scan": "ஸ்கேன்",
+  "wallet.action.scan_a11y": "டோக்கன், இன்வாய்ஸ் அல்லது npub-ஐ ஸ்கேன் செய்",
+  "wallet.choose.paste": "டோக்கனை ஒட்டு",
+  "wallet.choose.paste_desc": "இணைப்பில்லாமலும் இயங்கும்",
+  "wallet.choose.scan": "QR குறியீட்டை ஸ்கேன் செய்",
+  "wallet.choose.scan_desc": "எந்த வாலட்டிலிருந்தும் Cashu டோக்கன்",
+  "wallet.choose.topup": "Lightning மூலம் நிரப்பு",
+  "wallet.choose.topup_desc":
+    "எந்த Lightning வாலட்டிலிருந்தும் இன்வாய்ஸைச் செலுத்து",
+  "wallet.choose.token": "டோக்கனை உருவாக்கு",
+  "wallet.choose.token_desc":
+    "பகிர் அல்லது QR குறியீட்டைக் காட்டு, இணைப்பில்லாமலும்",
+  "wallet.choose.zap": "ஒரு Nostr தொடர்புக்கு zap அனுப்பு",
+  "wallet.choose.zap_desc": "அவர்களின் npub-க்கு, இணையம் வழியாக",
+  "wallet.choose.invoice": "Lightning இன்வாய்ஸைச் செலுத்து",
+  "wallet.choose.invoice_desc": "எந்த Lightning வாலட்டுக்கும் எடு",
+  "wallet.choose.tor_paused": "Tor இயங்கும் வரை நிறுத்தப்பட்டுள்ளது",
+  "wallet.choose.offline": "இணையம் தேவை",
+  "wallet.choose.internet_off": "இணையம் அணைக்கப்பட்டுள்ளது",
+  "wallet.choose.needs_mint": "முதலில் ஒரு நாணயச்சாலையைச் சேர்",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "டோக்கனை உருவாக்க முடியவில்லை",
@@ -1100,9 +1118,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} ஐ உங்கள் பணப்பையிலிருந்து அகற்றவா? அதன் சேமித்த சாவிகளும் சேர்ந்து போகும், எனவே அதன் டோக்கன்களை இனி ஆஃப்லைனில் சரிபார்க்க முடியாது.",
   "wallet.mint.title": "நாணயச்சாலைகள்",
-  "wallet.mint.none": "இன்னும் நாணயச்சாலை இல்லை",
   "wallet.mint.none_desc":
-    "நாணயச்சாலை உங்கள் ecash ஐ வழங்கியும் மீட்டும் தருகிறது. Lightning வழியாகச் செலுத்த ஒன்றைச் சேருங்கள், அல்லது ஒரு டோக்கனைப் பெற்றால் அதன் நாணயச்சாலை உங்களுக்காகச் சேர்க்கப்படும்.",
+    "நாணயச்சாலை உங்கள் ecash-ஐ வெளியிட்டு மீட்கிறது. Lightning மூலம் நிரப்ப அல்லது அதன் டோக்கன்களை ஏற்க ஒன்றைச் சேர்.",
   "wallet.mint.add": "நாணயச்சாலையைச் சேர்",
   "wallet.mint.add_body":
     "உங்கள் ecash க்குப் பின்னால் உள்ள Bitcoin ஐ நாணயச்சாலை வைத்திருக்கிறது, எனவே அங்கு வைக்கும் இருப்பை நம்பி ஒப்படைக்கக்கூடிய ஒன்றைத் தேர்ந்தெடுங்கள். சேமிப்பதற்கு முன் URL சரிபார்க்கப்படும். யாரையும் நம்ப விரும்பவில்லை எனில் Nutshell கொண்டு உங்கள் சொந்த நாணயச்சாலையை இயக்குங்கள்.",
@@ -1114,8 +1131,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "நாணயச்சாலையை அகற்று",
   "wallet.mint.delete_anyway": "எப்படியும் நீக்கு",
   "wallet.mint.consolidate": "எல்லா இருப்புகளையும் ஒரே நாணயச்சாலைக்கு நகர்த்து",
-  "wallet.mint.confirm_with": "{mint} இடம் சான்றுகளை உறுதிசெய்",
-  "wallet.mint.remove_a11y": "{mint} ஐ அகற்று",
+  "wallet.mint.confirm_with": "{mint}-உடன் இருப்பைச் சரிபார்",
   "wallet.mint.available_amount": "{amount} {unit} கிடைக்கிறது",
   "wallet.mint.split_across":
     "இருப்பு {count} நாணயச்சாலைகளில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
@@ -1146,9 +1162,6 @@ export const strings: Strings = {
   "wallet.ln.withdrawn_with_change":
     "Lightning வழியாக {paid} sat செலுத்தப்பட்டது. நாணயச்சாலை {fee} sat திசைவழிக் கட்டணமாக எடுத்து, ஒதுக்கீட்டிலிருந்து {change} sat ஐ உங்கள் இருப்புக்குத் திருப்பியது.",
   "wallet.ln.payment_failed": "பணப்பரிமாற்றம் தோல்வி",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning sat ஐ ஆஃப்லைனில் செலவழிக்கக்கூடிய ecash ஆக மாற்றுங்கள், அல்லது ecash ஐ எந்த Lightning பட்டியலுக்கும் திருப்பி எடுங்கள். இரண்டுக்கும் இணையமும் ஒரு நாணயச்சாலையும் தேவை.",
   "wallet.ln.deposit_body":
     "நாணயச்சாலை உங்களுக்கு ஒரு பட்டியலைத் தருகிறது. எந்த Lightning பணப்பையிலிருந்தும் அதைச் செலுத்துங்கள், sat ஆஃப்லைனில் செலவழிக்கக்கூடிய ecash ஆகத் திரும்பும்.",
   "wallet.ln.pay_invoice_for":
@@ -1162,10 +1175,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} வரை",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} செலுத்து",
-  "wallet.ln.deposit": "Lightning வழியாக sat செலுத்து",
-  "wallet.ln.deposit_short": "செலுத்து",
-  "wallet.ln.withdraw": "ஒரு Lightning பட்டியலுக்கு எடு",
-  "wallet.ln.withdraw_short": "எடு",
   "wallet.ln.deposit_title": "Lightning வழியாகச் செலுத்துதல்",
   "wallet.ln.amount_placeholder": "sat இல் தொகை",
   "wallet.ln.requesting": "கோருகிறது…",
@@ -1186,7 +1195,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "மதிப்பீட்டைப் பெறு",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "காப்புப்பிரதி",
   "wallet.backup.setup_failed": "காப்புப்பிரதியை அமைக்க முடியவில்லை",
   "wallet.backup.on": "காப்புப்பிரதி இயக்கத்தில்",
   "wallet.backup.on_body":
@@ -1302,7 +1310,6 @@ export const strings: Strings = {
     "{amount} {unit} இப்போது உங்கள் மீட்புச் சொற்றொடரால் உள்ளடக்கப்படுகிறது.",
   "wallet.refresh.all_confirmed":
     "இங்குள்ள அனைத்தும் ஏற்கெனவே நாணயச்சாலையால் உறுதிசெய்யப்பட்டிருந்தன.",
-  "wallet.pending.title": "நிலுவையில் உள்ளவை",
   "wallet.pending.reserved_desc":
     "உருவாக்கப்பட்டு ஒதுக்கப்பட்டது, சென்றடைந்தது உறுதிசெய்யப்படவில்லை. இருமுறை செலவழிக்கப்படாமல் இருக்கச் சான்றுகள் உங்கள் இருப்புக்கு வெளியே வைக்கப்படுகின்றன.",
   "wallet.pending.locked_desc":
@@ -1315,8 +1322,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "இந்த டோக்கனை உங்கள் இருப்புக்கு மீட்டெடு",
   "wallet.activity.title": "செயல்பாடு",
   "wallet.activity.none": "இன்னும் எதுவும் இல்லை",
-  "wallet.activity.none_desc":
-    "நீங்கள் அனுப்பும், பெறும் பணப்பரிமாற்றங்கள் இங்கே தோன்றும், புதியவை முதலில், ஒவ்வொன்றின் நாணயச்சாலையும் கட்டணமும் சேர்த்து.",
   "wallet.activity.show_fewer": "குறைவான பணப்பரிமாற்றங்களைக் காட்டு",
   "wallet.activity.show_less": "குறைவாகக் காட்டு",
   "wallet.activity.received_unconfirmed": "பெறப்பட்டது, உறுதிசெய்யப்படவில்லை",
@@ -1332,9 +1337,9 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning செலுத்துதல்",
   "wallet.activity.ln_withdrawal": "Lightning எடுத்தல்",
   "wallet.activity.nutzap_received": "nutzap பெறப்பட்டது",
-  "wallet.activity.spent_removed": "செலவழிக்கப்பட்ட சான்றுகள் அகற்றப்பட்டன",
-  "wallet.activity.refreshed": "சான்றுகள் புதுப்பிக்கப்பட்டன",
-  "wallet.activity.refreshing": "சான்றுகள் புதுப்பிக்கப்படுகின்றன",
+  "wallet.activity.spent_removed": "செலவான நாணயங்கள் நீக்கப்பட்டன",
+  "wallet.activity.refreshed": "நாணயச்சாலையுடன் சரிபார்க்கப்பட்டது",
+  "wallet.activity.refreshing": "நாணயச்சாலையுடன் சரிபார்க்கிறது",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "மெஷ் ஆஃப்லைன்",
@@ -1404,10 +1409,11 @@ export const strings: Strings = {
     "ஒரு Lightning பட்டியலின் QR குறியீட்டில் காட்டுங்கள்.",
   "wallet.scan.title_token": "ecash ஸ்கேன்",
   "wallet.scan.title_invoice": "பட்டியல் ஸ்கேன்",
-  "wallet.scan.desc_token":
-    "வேறொரு பணப்பையிலிருந்து Cashu டோக்கனைப் படியுங்கள். Airhop மட்டுமல்ல, எந்த Cashu பணப்பையுடனும் இது வேலை செய்யும்.",
-  "wallet.scan.desc_invoice":
-    "உங்கள் இருப்பிலிருந்து செலுத்த ஒரு Lightning பட்டியலைப் படியுங்கள்.",
+  "wallet.scan.title_any": "QR குறியீட்டை ஸ்கேன் செய்",
+  "wallet.scan.aim_any":
+    "டோக்கன், இன்வாய்ஸ் அல்லது npub QR குறியீட்டில் காட்டுங்கள்.",
+  "wallet.scan.no_any":
+    "அந்தப் படத்தில் டோக்கன், இன்வாய்ஸ் அல்லது npub எதுவும் கிடைக்கவில்லை.",
   "wallet.scan.use_camera_a11y": "கேமராவால் ஸ்கேன் செய்",
   "wallet.scan.use_camera": "கேமராவைப் பயன்படுத்து",
   "wallet.scan.pick_image_a11y": "சேமித்த படத்திலிருந்து QR குறியீட்டைப் படி",
@@ -1451,6 +1457,10 @@ export const strings: Strings = {
     "iOS இல் நாணயச்சாலைக் கோரிக்கைகள் Tor வழியாகச் செல்வதில்லை.",
   "wallet.svc.tor_ios_body":
     "Arti, Nostr WebSocket களை மட்டுமே மூடுகிறது, எனவே இந்தக் கோரிக்கை திறந்த வலை வழியாக நாணயச்சாலையை அடைந்து உங்கள் IP ஐ இந்தச் சான்றுகளுடன் இணைக்கும். அமைப்புகள் > பாதுகாப்பின் கீழ் அதை அனுமதியுங்கள், அல்லது முதலில் Tor ஐ முடக்குங்கள். மெஷ் வழியாக ecash அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும்.",
+  "wallet.svc.internet_off":
+    "இணையம் அணைக்கப்பட்டுள்ளது, எனவே நாணயச்சாலையை அணுக முடியாது.",
+  "wallet.svc.internet_off_body":
+    "அமைப்புகளில் {setting} ஐ இயக்கு. அருகில் ecash அனுப்புவதும் பெறுவதும் இன்னும் இயங்கும்.",
   "wallet.svc.keys_uncached":
     "இந்த நாணயச்சாலையின் சாவிகள் இந்தச் சாதனத்தில் சேமிக்கப்படவில்லை.",
   "wallet.svc.keys_uncached_body":
@@ -2368,10 +2378,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} நாணயச்சாலை",
-    other: "{count} நாணயச்சாலைகள்",
-  },
   "wallet.mint.remove_body": {
     one: "{mint} இடம் {count} சான்றில் {balance} {unit} உள்ளது. அகற்றினால் அந்தச் சான்று இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
     other:
@@ -2408,10 +2414,6 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} உறுதிசெய்யப்படாதது",
     other: "{count} உறுதிசெய்யப்படாதவை",
-  },
-  "wallet.proof_count": {
-    one: "{count} சான்று",
-    other: "{count} சான்றுகள்",
   },
   "wallet.spent_removed_detail": {
     one: "{count} சான்று ஏற்கெனவே செலவழிக்கப்பட்டிருந்தது, அது அகற்றப்பட்டுவிட்டது.",
