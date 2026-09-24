@@ -955,7 +955,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Der Wallet-Speicher ist gesperrt. Dein Ecash liegt in einer verschlüsselten Datei, deren Schlüssel im Geräteschlüsselbund liegt, und sie konnte nicht geöffnet werden. Entsperre dein Gerät und öffne Airhop erneut.",
   "wallet.balance.tor_blocked":
-    "Tor ist an, deshalb sind Mint-Anfragen blockiert: sie würden über das offene Netz laufen und deine IP mit deinem Ecash verknüpfen. Senden und Empfangen über das Mesh funktioniert weiterhin. Erlaube Mint-Verkehr unter Einstellungen, Sicherheit.",
+    "Tor ist an, deshalb sind Mint-Anfragen blockiert: sie würden über das offene Netz laufen und deine IP mit deinem Ecash verknüpfen. Senden und Empfangen über das Mesh funktioniert weiterhin. Um Mints trotzdem zu erreichen, schalte in den Einstellungen {setting} ein.",
   "wallet.balance.offline":
     "Offline. Du kannst Leuten in der Nähe trotzdem zahlen und Token senden.",
   "wallet.balance.internet_off":
@@ -1003,7 +1003,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Dieser Token ist auf zu viele Münzen aufgeteilt, um in einen QR-Code zu passen. Teile oder kopiere ihn stattdessen, oder aktualisiere beim Mint, um zusammenzufassen.",
   "wallet.send.bearer_note":
-    "Wer diese Zeichenfolge hat, besitzt das Geld. Die Münzen sind reserviert, nicht ausgegeben: falls sie niemanden erreicht, kannst du sie unter Ausstehend zurückholen.",
+    "Wer diese Zeichenfolge hat, besitzt das Geld. Die Münzen sind reserviert, nicht ausgegeben: falls sie niemanden erreicht, kannst du sie unter Aktivität zurückholen.",
   "wallet.send.qr_too_big_short":
     "Dieser Token ist auf zu viele Münzen aufgeteilt, um in einen QR-Code zu passen. Teile oder kopiere ihn stattdessen.",
   "wallet.send.scan_note":
@@ -1021,7 +1021,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} senden",
   "wallet.send.sent_to": "{amount} {unit} an {name} gesendet",
   "wallet.send.sent_to_body":
-    "{route} Es bleibt unter Ausstehend zurückholbar, bis du bestätigst, dass es angekommen ist, oder bis der Mint uns meldet, dass der Token eingelöst wurde.",
+    "{route} Es bleibt unter Aktivität zurückholbar, bis du bestätigst, dass es angekommen ist, oder bis der Mint uns meldet, dass der Token eingelöst wurde.",
   "wallet.send.copy_token": "Token kopieren",
   "wallet.send.share_token": "Token teilen",
   "wallet.send.open_in_wallet": "Diesen Token in einer anderen Wallet öffnen",
@@ -1325,7 +1325,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
   "wallet.mesh_offline_body":
-    "Der Mesh-Dienst läuft nicht, es gibt also niemanden, dem der Token übergeben werden könnte. Er bleibt unter Ausstehend reserviert.",
+    "Der Mesh-Dienst läuft nicht, es gibt also niemanden, dem der Token übergeben werden könnte. Er bleibt unter Aktivität reserviert.",
   "wallet.xfer.route_mesh": "Direkt über das Mesh an ihr Gerät übergeben.",
   "wallet.xfer.route_nostr":
     "Die Person war außerhalb der Bluetooth-Reichweite, deshalb ging es stattdessen über das Internet.",
@@ -1347,7 +1347,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "An ihren Schlüssel gebunden. Das Relay hat es nicht angenommen, deshalb ging es stattdessen als Nachricht raus.",
   "wallet.pay.rail_nutzap_undelivered":
-    "An ihren Schlüssel gebunden, aber noch konnte es nichts tragen. Es steht in der Warteschlange, und der Token liegt unter Ausstehend.",
+    "An ihren Schlüssel gebunden, aber noch konnte es nichts tragen. Es steht in der Warteschlange, und der Token liegt unter Aktivität.",
   "wallet.pay.final":
     "Gebundene Zahlungen lassen sich nicht zurückholen: nur ihr Schlüssel kann diese Münzen jetzt noch ausgeben.",
   "wallet.pay.reclaimable":
@@ -1367,7 +1367,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Es wird an ihren Schlüssel gebunden. Einmal gesendet, lässt es sich nicht zurückholen.",
   "wallet.pay.confirm_reclaimable":
-    "Du kannst es unter Ausstehend zurückholen, bis es eingelöst wird.",
+    "Du kannst es unter Aktivität zurückholen, bis es eingelöst wird.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kamerazugriff",
@@ -1435,7 +1435,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Der Mint war nicht erreichbar.",
   "wallet.svc.tor_ios": "Mint-Anfragen laufen unter iOS nicht über Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti umschließt nur Nostr-WebSockets, deshalb würde diese Anfrage den Mint über das offene Netz erreichen und deine IP mit diesem Ecash verknüpfen. Erlaube es unter Einstellungen > Sicherheit, oder schalte Tor zuerst aus. Ecash über das Mesh zu senden und zu empfangen funktioniert weiterhin.",
+    "Tor deckt unter iOS nur Nostr ab, deshalb würde diese Anfrage den Mint über das offene Netz erreichen und deine IP mit diesem Ecash verknüpfen. Schalte in den Einstellungen {setting} ein, oder schalte Tor zuerst aus. Ecash über das Mesh zu senden und zu empfangen funktioniert weiterhin.",
   "wallet.svc.internet_off":
     "Das Internet ist aus, der Mint ist daher nicht erreichbar.",
   "wallet.svc.internet_off_body":
@@ -1553,7 +1553,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Es ist unklar, ob diese Zahlung durchgegangen ist.",
   "wallet.svc.lock_in_doubt_body":
-    "Sonst wurde nichts gesendet. Die Münzen bleiben zurückgehalten, bis der Mint das Ergebnis bestätigt. Ist die Zahlung durch, erscheint der gesperrte Token unter Ausstehend zum Übergeben. Wenn nicht, kommen die Münzen zurück.",
+    "Sonst wurde nichts gesendet. Die Münzen bleiben zurückgehalten, bis der Mint das Ergebnis bestätigt. Ist die Zahlung durch, erscheint der gesperrte Token unter Aktivität zum Übergeben. Wenn nicht, kommen die Münzen zurück.",
   "wallet.svc.send_spent_by_swap":
     "Diese Coins wurden in deine Wallet zurückgetauscht, bevor das Token eingelöst wurde, daher lässt es sich nicht mehr einlösen. Der Betrag ist in deinem Guthaben.",
 

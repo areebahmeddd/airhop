@@ -947,7 +947,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Hifadhi ya pochi imefungwa. Ecash yako huwekwa kwenye faili iliyosimbwa ambayo ufunguo wake upo kwenye kihifadhi funguo cha kifaa, na haikuweza kufunguliwa. Fungua kifaa chako kisha ufungue Airhop tena.",
   "wallet.balance.tor_blocked":
-    "Tor imewashwa, kwa hivyo maombi ya mint yamezuiwa: yangepita kwenye mtandao wazi na kuunganisha IP yako na ecash yako. Kutuma na kupokea kupitia mesh bado kunafanya kazi. Ruhusu trafiki ya mint chini ya Mipangilio, Usalama.",
+    "Tor imewashwa, kwa hivyo maombi ya mint yamezuiwa: yangepita kwenye mtandao wazi na kuunganisha IP yako na ecash yako. Kutuma na kupokea kupitia mesh bado kunafanya kazi. Ili kufikia mint hata hivyo, washa {setting} kwenye Mipangilio.",
   "wallet.balance.offline":
     "Nje ya mtandao. Bado unaweza kuwalipa watu walio karibu na kutuma tokeni.",
   "wallet.balance.internet_off":
@@ -994,7 +994,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Tokeni hii imegawanywa kwenye sarafu nyingi mno kiasi kwamba haiwezi kutoshea kwenye msimbo wa QR. Ishiriki au inakili badala yake, au sasisha kwenye mint ili kuziunganisha.",
   "wallet.send.bearer_note":
-    "Yeyote anayeshikilia mfuatano huu ndiye anayemiliki pesa. Sarafu zimetengwa, hazijatumika: kama haitamfikia mtu yeyote unaweza kuzirudisha chini ya Zinazosubiri.",
+    "Yeyote anayeshikilia mfuatano huu ndiye anayemiliki pesa. Sarafu zimetengwa, hazijatumika: kama haitamfikia mtu yeyote unaweza kuzirudisha chini ya Shughuli.",
   "wallet.send.qr_too_big_short":
     "Tokeni hii imegawanywa kwenye sarafu nyingi mno kiasi kwamba haiwezi kutoshea kwenye msimbo wa QR. Ishiriki au inakili badala yake.",
   "wallet.send.scan_note":
@@ -1012,7 +1012,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Tuma {amount}",
   "wallet.send.sent_to": "{amount} {unit} zimetumwa kwa {name}",
   "wallet.send.sent_to_body":
-    "{route} Bado inaweza kurudishwa chini ya Zinazosubiri hadi uthibitishe kuwa wameipata, au hadi mint itakapotuambia kuwa tokeni imekombolewa.",
+    "{route} Bado inaweza kurudishwa chini ya Shughuli hadi uthibitishe kuwa wameipata, au hadi mint itakapotuambia kuwa tokeni imekombolewa.",
   "wallet.send.copy_token": "Nakili tokeni",
   "wallet.send.share_token": "Shiriki tokeni",
   "wallet.send.open_in_wallet": "Fungua tokeni hii kwenye pochi nyingine",
@@ -1317,7 +1317,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh haipo mtandaoni",
   "wallet.mesh_offline_body":
-    "Huduma ya mesh haiendeshwi, kwa hivyo hakuna wa kumkabidhi tokeni. Hubaki imetengwa chini ya Zinazosubiri.",
+    "Huduma ya mesh haiendeshwi, kwa hivyo hakuna wa kumkabidhi tokeni. Hubaki imetengwa chini ya Shughuli.",
   "wallet.xfer.route_mesh":
     "Imekabidhiwa moja kwa moja kwa kifaa chao kupitia mesh.",
   "wallet.xfer.route_nostr":
@@ -1340,7 +1340,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Imefungwa kwenye ufunguo wao. Relay haikuikubali, kwa hivyo iliwaendea kama ujumbe badala yake.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Imefungwa kwenye ufunguo wao, lakini bado hakuna kilichoweza kuibeba. Ipo kwenye foleni, na tokeni ipo chini ya Zinazosubiri.",
+    "Imefungwa kwenye ufunguo wao, lakini bado hakuna kilichoweza kuibeba. Ipo kwenye foleni, na tokeni ipo chini ya Shughuli.",
   "wallet.pay.final":
     "Malipo yaliyofungwa hayawezi kurudishwa: ufunguo wao pekee ndio unaoweza kutumia sarafu hizi sasa.",
   "wallet.pay.reclaimable":
@@ -1360,7 +1360,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Imefungwa kwa ufunguo wao. Ikishatumwa, haiwezi kurudishwa.",
   "wallet.pay.confirm_reclaimable":
-    "Unaweza kuirudisha kutoka Inasubiri hadi waichukue.",
+    "Unaweza kuirudisha kutoka Shughuli hadi waichukue.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Ufikiaji wa kamera",
@@ -1429,7 +1429,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Haikuweza kuifikia mint.",
   "wallet.svc.tor_ios": "Maombi ya mint hayapiti kwenye Tor kwenye iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti hufunika WebSocket za Nostr pekee, kwa hivyo ombi hili lingeifikia mint kupitia mtandao wazi na kuunganisha IP yako na ecash hii. Liruhusu chini ya Mipangilio > Usalama, au zima Tor kwanza. Kutuma na kupokea ecash kupitia mesh bado kunafanya kazi.",
+    "Tor kwenye iOS hufunika Nostr pekee, kwa hivyo ombi hili lingeifikia mint kupitia mtandao wazi na kuunganisha IP yako na ecash hii. Washa {setting} kwenye Mipangilio, au zima Tor kwanza. Kutuma na kupokea ecash kupitia mesh bado kunafanya kazi.",
   "wallet.svc.internet_off": "Intaneti imezimwa, kwa hivyo mint haipatikani.",
   "wallet.svc.internet_off_body":
     "Washa {setting} kwenye Mipangilio. Kutuma na kupokea ecash karibu bado kunafanya kazi.",
@@ -1540,7 +1540,7 @@ export const strings: Strings = {
     "Ubadilishaji huu ulihifadhiwa kwa namna ambayo toleo hili haliwezi kuicheza tena.",
   "wallet.svc.lock_in_doubt": "Malipo haya huenda yamepita au hayajapita.",
   "wallet.svc.lock_in_doubt_body":
-    "Hakuna kingine kilichotumwa. Sarafu zimeshikiliwa hadi mint ithibitishe matokeo. Ikiwa malipo yalipita, tokeni iliyofungwa itaonekana chini ya Zinazosubiri ili uikabidhi. Kama sivyo, sarafu zinarudi.",
+    "Hakuna kingine kilichotumwa. Sarafu zimeshikiliwa hadi mint ithibitishe matokeo. Ikiwa malipo yalipita, tokeni iliyofungwa itaonekana chini ya Shughuli ili uikabidhi. Kama sivyo, sarafu zinarudi.",
   "wallet.svc.send_spent_by_swap":
     "Sarafu hizi zilibadilishwa kurudi kwenye pochi yako kabla tokeni hii haijachukuliwa, kwa hivyo haiwezi kuchukuliwa tena. Thamani iko kwenye salio lako.",
 

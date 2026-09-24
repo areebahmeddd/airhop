@@ -941,7 +941,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "ウォレットの保存領域がロックされています。ecashは暗号化ファイルに入っていて、その鍵は端末のキーチェーンにありますが、開けませんでした。端末のロックを解除してAirhopを開き直してください。",
   "wallet.balance.tor_blocked":
-    "Torがオンのため、ミントへのリクエストはブロックされています。素のネットワークを通ってしまい、あなたのIPとecashが結び付くからです。メッシュ経由の送受信は引き続き使えます。ミントへの通信は設定のセキュリティから許可できます。",
+    "Torがオンのため、ミントへのリクエストはブロックされています。素のネットワークを通ってしまい、あなたのIPとecashが結び付くからです。メッシュ経由の送受信は引き続き使えます。それでもミントに接続するには、設定で{setting}をオンにしてください。",
   "wallet.balance.offline":
     "オフラインです。近くの人への支払いとトークンの送信はそのまま使えます。",
   "wallet.balance.internet_off":
@@ -988,7 +988,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "このトークンはコインに細かく分かれすぎていて、QRコードに収まりません。共有かコピーを使うか、ミントで更新してまとめてください。",
   "wallet.send.bearer_note":
-    "この文字列を持っている人がそのお金の持ち主です。コインは使用済みではなく確保された状態なので、誰にも届かなかった場合は「保留中」から回収できます。",
+    "この文字列を持っている人がそのお金の持ち主です。コインは使用済みではなく確保された状態なので、誰にも届かなかった場合は「履歴」から回収できます。",
   "wallet.send.qr_too_big_short":
     "このトークンはコインに細かく分かれすぎていて、QRコードに収まりません。共有かコピーを使ってください。",
   "wallet.send.scan_note":
@@ -1006,7 +1006,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount}を送る",
   "wallet.send.sent_to": "{amount} {unit}を{name}に送りました",
   "wallet.send.sent_to_body":
-    "{route} 相手が受け取ったと確認するか、ミントからトークンが引き換え済みと知らされるまで、「保留中」から回収できます。",
+    "{route} 相手が受け取ったと確認するか、ミントからトークンが引き換え済みと知らされるまで、「履歴」から回収できます。",
   "wallet.send.copy_token": "トークンをコピー",
   "wallet.send.share_token": "トークンを共有",
   "wallet.send.open_in_wallet": "このトークンを別のウォレットで開く",
@@ -1302,7 +1302,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "メッシュがオフラインです",
   "wallet.mesh_offline_body":
-    "メッシュのサービスが動いていないため、トークンを渡す相手がいません。「保留中」で確保されたままです。",
+    "メッシュのサービスが動いていないため、トークンを渡す相手がいません。「履歴」で確保されたままです。",
   "wallet.xfer.route_mesh": "メッシュ経由で相手の端末に直接渡しました。",
   "wallet.xfer.route_nostr":
     "相手がBluetooth圏外だったため、代わりにインターネット経由で送りました。",
@@ -1324,7 +1324,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "相手の鍵に結び付けました。リレーが受け付けなかったため、メッセージとして相手に送りました。",
   "wallet.pay.rail_nutzap_undelivered":
-    "相手の鍵に結び付けましたが、まだ運べていません。順番待ちで、トークンは「保留中」にあります。",
+    "相手の鍵に結び付けましたが、まだ運べていません。順番待ちで、トークンは「履歴」にあります。",
   "wallet.pay.final":
     "結び付けた支払いは回収できません。このコインを使えるのは相手の鍵だけです。",
   "wallet.pay.reclaimable":
@@ -1344,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "相手の鍵にロックされます。送信後は取り消せません。",
   "wallet.pay.confirm_reclaimable":
-    "相手が受け取るまでは、保留中から取り戻せます。",
+    "相手が受け取るまでは、履歴から取り戻せます。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "カメラへのアクセス",
@@ -1410,7 +1410,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ミントに接続できませんでした。",
   "wallet.svc.tor_ios": "iOSではミントへのリクエストはTorを通りません。",
   "wallet.svc.tor_ios_body":
-    "ArtiがくるむのはNostrのWebSocketだけなので、このリクエストは素のネットワークでミントに届き、あなたのIPとこのecashを結び付けてしまいます。設定＞セキュリティで許可するか、先にTorをオフにしてください。メッシュ経由のecashの送受信は引き続き使えます。",
+    "iOSではTorはNostrしか覆わないため、このリクエストは素のネットワークでミントに届き、あなたのIPとこのecashを結び付けてしまいます。設定で{setting}をオンにするか、先にTorをオフにしてください。メッシュ経由のecashの送受信は引き続き使えます。",
   "wallet.svc.internet_off":
     "インターネットがオフのため、ミントに接続できません。",
   "wallet.svc.internet_off_body":
@@ -1518,7 +1518,7 @@ export const strings: Strings = {
     "この交換は、このバージョンでは再実行できない形式で保存されています。",
   "wallet.svc.lock_in_doubt": "この支払いが完了したかどうかは不明です。",
   "wallet.svc.lock_in_doubt_body":
-    "ほかには何も送られていません。ミントが結果を確認するまでコインは保留されます。完了していれば、ロックされたトークンが保留中に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
+    "ほかには何も送られていません。ミントが結果を確認するまでコインは保留されます。完了していれば、ロックされたトークンが履歴に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
   "wallet.svc.send_spent_by_swap":
     "このトークンが受け取られる前に、コインはスワップされてウォレットに戻りました。そのため受け取りはできなくなっています。金額は残高に入っています。",
 

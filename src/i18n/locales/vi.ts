@@ -939,7 +939,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Kho ví đang bị khóa. Ecash của bạn được giữ trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị, và tệp đó không mở được. Hãy mở khóa thiết bị rồi mở lại Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor đang bật, nên các yêu cầu tới nhà đúc bị chặn: chúng sẽ đi ra qua mạng trần và gắn IP của bạn với ecash của bạn. Gửi và nhận qua mạng lưới vẫn chạy. Hãy cho phép lưu lượng nhà đúc trong Cài đặt, Bảo mật.",
+    "Tor đang bật, nên các yêu cầu tới nhà đúc bị chặn: chúng sẽ đi ra qua mạng trần và gắn IP của bạn với ecash của bạn. Gửi và nhận qua mạng lưới vẫn chạy. Nếu vẫn muốn kết nối nhà đúc, hãy bật {setting} trong Cài đặt.",
   "wallet.balance.offline":
     "Ngoại tuyến. Bạn vẫn có thể trả cho người ở gần và gửi token.",
   "wallet.balance.internet_off":
@@ -985,7 +985,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Token này bị chia thành quá nhiều đồng để vừa một mã QR. Hãy chia sẻ hoặc sao chép nó, hoặc làm mới ở nhà đúc để gộp lại.",
   "wallet.send.bearer_note":
-    "Ai giữ chuỗi ký tự này thì người đó sở hữu số tiền. Các đồng đang được giữ chứ chưa tiêu: nếu nó không bao giờ tới tay ai, bạn có thể thu hồi chúng trong mục Đang chờ.",
+    "Ai giữ chuỗi ký tự này thì người đó sở hữu số tiền. Các đồng đang được giữ chứ chưa tiêu: nếu nó không bao giờ tới tay ai, bạn có thể thu hồi chúng trong mục Hoạt động.",
   "wallet.send.qr_too_big_short":
     "Token này bị chia thành quá nhiều đồng để vừa một mã QR. Hãy chia sẻ hoặc sao chép nó.",
   "wallet.send.scan_note":
@@ -1003,7 +1003,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Gửi {amount}",
   "wallet.send.sent_to": "Đã gửi {amount} {unit} cho {name}",
   "wallet.send.sent_to_body":
-    "{route} Nó vẫn thu hồi được trong mục Đang chờ cho tới khi bạn xác nhận họ đã nhận, hoặc cho tới khi nhà đúc báo rằng token đã được đổi.",
+    "{route} Nó vẫn thu hồi được trong mục Hoạt động cho tới khi bạn xác nhận họ đã nhận, hoặc cho tới khi nhà đúc báo rằng token đã được đổi.",
   "wallet.send.copy_token": "Sao chép token",
   "wallet.send.share_token": "Chia sẻ token",
   "wallet.send.open_in_wallet": "Mở token này trong một ví khác",
@@ -1302,7 +1302,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mạng lưới ngoại tuyến",
   "wallet.mesh_offline_body":
-    "Dịch vụ mạng lưới không chạy, nên không có nơi nào để giao token. Nó vẫn được giữ trong mục Đang chờ.",
+    "Dịch vụ mạng lưới không chạy, nên không có nơi nào để giao token. Nó vẫn được giữ trong mục Hoạt động.",
   "wallet.xfer.route_mesh": "Đã giao thẳng tới thiết bị của họ qua mạng lưới.",
   "wallet.xfer.route_nostr":
     "Họ ở ngoài tầm Bluetooth, nên nó đi qua Internet thay vì vậy.",
@@ -1324,7 +1324,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Đã khóa vào khóa của họ. Bộ chuyển tiếp không nhận, nên nó đi tới họ dưới dạng một tin nhắn.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Đã khóa vào khóa của họ, nhưng chưa có gì mang nó đi được. Nó đã vào hàng đợi, và token nằm trong mục Đang chờ.",
+    "Đã khóa vào khóa của họ, nhưng chưa có gì mang nó đi được. Nó đã vào hàng đợi, và token nằm trong mục Hoạt động.",
   "wallet.pay.final":
     "Các khoản thanh toán đã khóa thì không thu hồi được: giờ chỉ khóa của họ mới tiêu được những đồng này.",
   "wallet.pay.reclaimable":
@@ -1344,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Khoản này được khóa vào khóa của họ. Đã gửi thì không thể lấy lại.",
   "wallet.pay.confirm_reclaimable":
-    "Bạn có thể lấy lại từ mục Đang chờ cho đến khi họ nhận.",
+    "Bạn có thể lấy lại từ mục Hoạt động cho đến khi họ nhận.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Quyền truy cập máy ảnh",
@@ -1409,7 +1409,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Không kết nối được tới nhà đúc.",
   "wallet.svc.tor_ios": "Trên iOS, các yêu cầu tới nhà đúc không đi qua Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti chỉ bọc WebSocket của Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với khoản ecash này. Hãy cho phép nó trong Cài đặt > Bảo mật, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
+    "Tor trên iOS chỉ bao được Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với khoản ecash này. Bật {setting} trong Cài đặt, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
   "wallet.svc.internet_off": "Internet đang tắt nên không thể kết nối nhà đúc.",
   "wallet.svc.internet_off_body":
     "Bật {setting} trong Cài đặt. Gửi và nhận ecash ở gần vẫn hoạt động.",
@@ -1516,7 +1516,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Khoản thanh toán này có thể đã hoặc chưa thực hiện.",
   "wallet.svc.lock_in_doubt_body":
-    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Đang chờ để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
+    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Hoạt động để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
   "wallet.svc.send_spent_by_swap":
     "Các đồng xu này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
 

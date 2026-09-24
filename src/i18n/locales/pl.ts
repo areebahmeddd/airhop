@@ -957,7 +957,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Pamięć portfela jest zablokowana. Twój ecash leży w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia, i nie dało się go otworzyć. Odblokuj urządzenie i otwórz Airhop ponownie.",
   "wallet.balance.tor_blocked":
-    "Tor jest włączony, więc zapytania do mennicy są blokowane: poszłyby otwartą siecią i powiązały twoje IP z twoim ecash. Wysyłanie i odbieranie przez sieć mesh działa dalej. Zezwól na ruch do mennicy w Ustawieniach, w sekcji Bezpieczeństwo.",
+    "Tor jest włączony, więc zapytania do mennicy są blokowane: poszłyby otwartą siecią i powiązały twoje IP z twoim ecash. Wysyłanie i odbieranie przez sieć mesh działa dalej. Aby mimo to łączyć się z mennicami, włącz {setting} w Ustawieniach.",
   "wallet.balance.offline":
     "Offline. Nadal możesz płacić osobom w pobliżu i wysyłać tokeny.",
   "wallet.balance.internet_off":
@@ -1003,7 +1003,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Ten token jest rozbity na zbyt wiele monet, żeby zmieścił się w kodzie QR. Udostępnij go albo skopiuj, albo odśwież w mennicy, żeby go scalić.",
   "wallet.send.bearer_note":
-    "Kto ma ten ciąg znaków, ten ma pieniądze. Monety są zarezerwowane, nie wydane: jeśli token nigdy do nikogo nie dotrze, możesz je odzyskać w sekcji Oczekujące.",
+    "Kto ma ten ciąg znaków, ten ma pieniądze. Monety są zarezerwowane, nie wydane: jeśli token nigdy do nikogo nie dotrze, możesz je odzyskać w sekcji Aktywność.",
   "wallet.send.qr_too_big_short":
     "Ten token jest rozbity na zbyt wiele monet, żeby zmieścił się w kodzie QR. Udostępnij go albo skopiuj.",
   "wallet.send.scan_note":
@@ -1021,7 +1021,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Wyślij {amount}",
   "wallet.send.sent_to": "Wysłano {amount} {unit} do {name}",
   "wallet.send.sent_to_body":
-    "{route} Da się to odzyskać w sekcji Oczekujące, dopóki nie potwierdzisz, że dostali, albo dopóki mennica nie powie nam, że token został zrealizowany.",
+    "{route} Da się to odzyskać w sekcji Aktywność, dopóki nie potwierdzisz, że dostali, albo dopóki mennica nie powie nam, że token został zrealizowany.",
   "wallet.send.copy_token": "Kopiuj token",
   "wallet.send.share_token": "Udostępnij token",
   "wallet.send.open_in_wallet": "Otwórz ten token w innym portfelu",
@@ -1322,7 +1322,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Sieć mesh offline",
   "wallet.mesh_offline_body":
-    "Usługa sieci mesh nie działa, więc nie ma komu wręczyć tokena. Zostaje zarezerwowany w sekcji Oczekujące.",
+    "Usługa sieci mesh nie działa, więc nie ma komu wręczyć tokena. Zostaje zarezerwowany w sekcji Aktywność.",
   "wallet.xfer.route_mesh": "Wręczone prosto ich urządzeniu przez sieć mesh.",
   "wallet.xfer.route_nostr":
     "Byli poza zasięgiem Bluetooth, więc poszło przez internet.",
@@ -1344,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Przypisane do ich klucza. Przekaźnik tego nie przyjął, więc poszło do nich jako wiadomość.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Przypisane do ich klucza, ale nic nie mogło tego jeszcze ponieść. Czeka w kolejce, a token jest w sekcji Oczekujące.",
+    "Przypisane do ich klucza, ale nic nie mogło tego jeszcze ponieść. Czeka w kolejce, a token jest w sekcji Aktywność.",
   "wallet.pay.final":
     "Przypisanych płatności nie da się odzyskać: tylko ich klucz może teraz wydać te monety.",
   "wallet.pay.reclaimable":
@@ -1364,7 +1364,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Jest zablokowane na ich klucz. Po wysłaniu nie da się go cofnąć.",
   "wallet.pay.confirm_reclaimable":
-    "Możesz je odzyskać w sekcji Oczekujące, dopóki go nie odbiorą.",
+    "Możesz je odzyskać w sekcji Aktywność, dopóki go nie odbiorą.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Dostęp do aparatu",
@@ -1428,7 +1428,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Nie udało się połączyć z mennicą.",
   "wallet.svc.tor_ios": "Zapytania do mennicy nie idą przez Tor na iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti otacza tylko WebSockety Nostr, więc to zapytanie dotarłoby do mennicy otwartą siecią i powiązało twoje IP z tym ecash. Zezwól na to w Ustawieniach > Bezpieczeństwo albo najpierw wyłącz Tor. Wysyłanie i odbieranie ecash przez sieć mesh działa dalej.",
+    "Tor na iOS obejmuje tylko Nostr, więc to zapytanie dotarłoby do mennicy otwartą siecią i powiązało twoje IP z tym ecash. Włącz {setting} w Ustawieniach albo najpierw wyłącz Tor. Wysyłanie i odbieranie ecash przez sieć mesh działa dalej.",
   "wallet.svc.internet_off":
     "Internet jest wyłączony, więc nie można połączyć się z mennicą.",
   "wallet.svc.internet_off_body":
@@ -1535,7 +1535,7 @@ export const strings: Strings = {
     "Ta wymiana została zapisana w postaci, której ta wersja nie odtworzy.",
   "wallet.svc.lock_in_doubt": "Ta płatność mogła przejść albo nie.",
   "wallet.svc.lock_in_doubt_body":
-    "Nic więcej nie wysłano. Monety są wstrzymane, dopóki mennica nie potwierdzi wyniku. Jeśli płatność przeszła, zablokowany token pojawi się w Oczekujących do przekazania. Jeśli nie, monety wrócą.",
+    "Nic więcej nie wysłano. Monety są wstrzymane, dopóki mennica nie potwierdzi wyniku. Jeśli płatność przeszła, zablokowany token pojawi się w Aktywności do przekazania. Jeśli nie, monety wrócą.",
   "wallet.svc.send_spent_by_swap":
     "Te monety zostały wymienione z powrotem do twojego portfela, zanim token odebrano, więc nie da się go już odebrać. Kwota jest na twoim saldzie.",
 
@@ -2417,7 +2417,7 @@ export const plurals: Plurals = {
     one: "{count} moneta była już wydana i została usunięta.",
     few: "{count} monety były już wydane i zostały usunięte.",
     many: "{count} monet było już wydanych i zostało usuniętych.",
-    other: "{count} monety było już wydane i zostało usunięte.",
+    other: "Usunięto {count} już wydanej monety.",
   },
 
   // ---- System notifications ----

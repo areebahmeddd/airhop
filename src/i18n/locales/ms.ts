@@ -949,7 +949,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Storan dompet dikunci. Ecash anda disimpan dalam fail tersulit yang kuncinya berada dalam rantai kunci peranti, dan fail itu tidak dapat dibuka. Buka kunci peranti anda dan buka Airhop semula.",
   "wallet.balance.tor_blocked":
-    "Tor dihidupkan, jadi permintaan mint disekat: ia akan keluar melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash anda. Menghantar dan menerima melalui mesh tetap berfungsi. Benarkan trafik mint di bawah Tetapan, Keselamatan.",
+    "Tor dihidupkan, jadi permintaan mint disekat: ia akan keluar melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash anda. Menghantar dan menerima melalui mesh tetap berfungsi. Jika masih mahu mencapai mint, hidupkan {setting} dalam Tetapan.",
   "wallet.balance.offline":
     "Luar talian. Anda masih boleh membayar orang berdekatan dan menghantar token.",
   "wallet.balance.internet_off":
@@ -997,7 +997,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Token ini terbelah kepada terlalu banyak syiling untuk muat dalam kod QR. Kongsi atau salin sahaja, atau segar semula di mint untuk menyatukannya.",
   "wallet.send.bearer_note":
-    "Sesiapa yang memegang rentetan ini memiliki wangnya. Syilingnya disimpan, bukan dibelanjakan: kalau ia tidak sampai kepada sesiapa, anda boleh menuntutnya semula di bawah Tertunda.",
+    "Sesiapa yang memegang rentetan ini memiliki wangnya. Syilingnya disimpan, bukan dibelanjakan: kalau ia tidak sampai kepada sesiapa, anda boleh menuntutnya semula di bawah Aktiviti.",
   "wallet.send.qr_too_big_short":
     "Token ini terbelah kepada terlalu banyak syiling untuk muat dalam kod QR. Kongsi atau salin sahaja.",
   "wallet.send.scan_note":
@@ -1015,7 +1015,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Hantar {amount}",
   "wallet.send.sent_to": "{amount} {unit} dihantar kepada {name}",
   "wallet.send.sent_to_body":
-    "{route} Ia kekal boleh dituntut semula di bawah Tertunda sehingga anda mengesahkan mereka menerimanya, atau sehingga mint memberitahu kami token itu sudah ditebus.",
+    "{route} Ia kekal boleh dituntut semula di bawah Aktiviti sehingga anda mengesahkan mereka menerimanya, atau sehingga mint memberitahu kami token itu sudah ditebus.",
   "wallet.send.copy_token": "Salin token",
   "wallet.send.share_token": "Kongsi token",
   "wallet.send.open_in_wallet": "Buka token ini dalam dompet lain",
@@ -1316,7 +1316,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh luar talian",
   "wallet.mesh_offline_body":
-    "Perkhidmatan mesh tidak berjalan, jadi tiada sesiapa untuk diserahkan tokennya. Ia kekal disimpan di bawah Tertunda.",
+    "Perkhidmatan mesh tidak berjalan, jadi tiada sesiapa untuk diserahkan tokennya. Ia kekal disimpan di bawah Aktiviti.",
   "wallet.xfer.route_mesh":
     "Diserahkan terus kepada peranti mereka melalui mesh.",
   "wallet.xfer.route_nostr":
@@ -1339,7 +1339,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Dikunci kepada kunci mereka. Geganti enggan menerimanya, jadi ia dihantar kepada mereka sebagai mesej.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Dikunci kepada kunci mereka, tetapi belum ada apa-apa yang dapat membawanya. Ia beratur, dan tokennya berada di bawah Tertunda.",
+    "Dikunci kepada kunci mereka, tetapi belum ada apa-apa yang dapat membawanya. Ia beratur, dan tokennya berada di bawah Aktiviti.",
   "wallet.pay.final":
     "Bayaran yang dikunci tidak boleh dituntut semula: hanya kunci mereka boleh membelanjakan syiling ini sekarang.",
   "wallet.pay.reclaimable":
@@ -1359,7 +1359,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Ia dikunci kepada kunci mereka. Setelah dihantar, ia tidak boleh ditarik balik.",
   "wallet.pay.confirm_reclaimable":
-    "Anda boleh menuntutnya semula dari Belum selesai sehingga mereka menuntutnya.",
+    "Anda boleh menuntutnya semula dari Aktiviti sehingga mereka menuntutnya.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Capaian kamera",
@@ -1422,7 +1422,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Mint tidak dapat dicapai.",
   "wallet.svc.tor_ios": "Permintaan mint tidak melalui Tor pada iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti hanya membalut WebSocket Nostr, jadi permintaan ini akan sampai kepada mint melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash ini. Benarkannya di bawah Tetapan > Keselamatan, atau matikan Tor dahulu. Menghantar dan menerima ecash melalui mesh tetap berfungsi.",
+    "Tor pada iOS hanya meliputi Nostr, jadi permintaan ini akan sampai kepada mint melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash ini. Hidupkan {setting} dalam Tetapan, atau matikan Tor dahulu. Menghantar dan menerima ecash melalui mesh tetap berfungsi.",
   "wallet.svc.internet_off":
     "Internet dimatikan, jadi mint tidak dapat dihubungi.",
   "wallet.svc.internet_off_body":
@@ -1536,7 +1536,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Pembayaran ini mungkin sudah atau belum berjaya.",
   "wallet.svc.lock_in_doubt_body":
-    "Tiada apa lagi yang dihantar. Syiling ditahan sehingga mint mengesahkan hasilnya. Jika berjaya, token berkunci muncul di Tertunda untuk anda serahkan. Jika tidak, syiling dikembalikan.",
+    "Tiada apa lagi yang dihantar. Syiling ditahan sehingga mint mengesahkan hasilnya. Jika berjaya, token berkunci muncul di Aktiviti untuk anda serahkan. Jika tidak, syiling dikembalikan.",
   "wallet.svc.send_spent_by_swap":
     "Syiling ini ditukar kembali ke dompet anda sebelum token ini dituntut, jadi ia tidak boleh dituntut lagi. Nilainya ada dalam baki anda.",
 

@@ -950,7 +950,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "O armazenamento da carteira está trancado. O teu ecash fica num ficheiro encriptado cuja chave vive no porta-chaves do dispositivo, e não foi possível abri-lo. Desbloqueia o dispositivo e abre o Airhop de novo.",
   "wallet.balance.tor_blocked":
-    "O Tor está ligado, por isso os pedidos à casa de emissão estão bloqueados: sairiam pela rede aberta e ligariam o teu IP ao teu ecash. Enviar e receber pela malha continua a funcionar. Permite o tráfego com a casa de emissão em Definições, Segurança.",
+    "O Tor está ligado, por isso os pedidos à casa de emissão estão bloqueados: sairiam pela rede aberta e ligariam o teu IP ao teu ecash. Enviar e receber pela malha continua a funcionar. Para chegar às casas de emissão mesmo assim, liga {setting} nas Definições.",
   "wallet.balance.offline":
     "Offline. Ainda podes pagar a pessoas por perto e enviar tokens.",
   "wallet.balance.internet_off":
@@ -999,7 +999,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Este token está dividido em moedas a mais para caber num código QR. Partilha ou copia, ou atualiza na casa de emissão para as juntar.",
   "wallet.send.bearer_note":
-    "Quem tiver esta sequência é dono do dinheiro. As moedas estão reservadas, não gastas: se não chegar a ninguém, podes retomá-las em Pendentes.",
+    "Quem tiver esta sequência é dono do dinheiro. As moedas estão reservadas, não gastas: se não chegar a ninguém, podes retomá-las em Atividade.",
   "wallet.send.qr_too_big_short":
     "Este token está dividido em moedas a mais para caber num código QR. Partilha ou copia.",
   "wallet.send.scan_note":
@@ -1017,7 +1017,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Enviar {amount}",
   "wallet.send.sent_to": "{amount} {unit} enviados para {name}",
   "wallet.send.sent_to_body":
-    "{route} Continua retomável em Pendentes até confirmares que a pessoa recebeu, ou até a casa de emissão avisar que o token foi resgatado.",
+    "{route} Continua retomável em Atividade até confirmares que a pessoa recebeu, ou até a casa de emissão avisar que o token foi resgatado.",
   "wallet.send.copy_token": "Copiar o token",
   "wallet.send.share_token": "Partilhar o token",
   "wallet.send.open_in_wallet": "Abrir este token noutra carteira",
@@ -1321,7 +1321,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malha offline",
   "wallet.mesh_offline_body":
-    "O serviço da malha não está a correr, por isso não há a quem entregar o token. Continua reservado em Pendentes.",
+    "O serviço da malha não está a correr, por isso não há a quem entregar o token. Continua reservado em Atividade.",
   "wallet.xfer.route_mesh":
     "Entregue diretamente no dispositivo da pessoa pela malha.",
   "wallet.xfer.route_nostr":
@@ -1344,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Trancado na chave da pessoa. O relay não o aceitou, por isso chegou como uma mensagem.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Trancado na chave da pessoa, mas ainda nada o conseguiu levar. Está em fila, e o token está em Pendentes.",
+    "Trancado na chave da pessoa, mas ainda nada o conseguiu levar. Está em fila, e o token está em Atividade.",
   "wallet.pay.final":
     "Pagamentos trancados não podem ser retomados: agora só a chave da pessoa pode gastar estas moedas.",
   "wallet.pay.reclaimable":
@@ -1364,7 +1364,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Fica bloqueado na chave da pessoa. Depois de enviado, não pode ser recuperado.",
   "wallet.pay.confirm_reclaimable":
-    "Pode recuperá-lo em Pendentes até que seja resgatado.",
+    "Pode recuperá-lo em Atividade até que seja resgatado.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Acesso à câmara",
@@ -1430,7 +1430,7 @@ export const strings: Strings = {
   "wallet.svc.tor_ios":
     "No iOS os pedidos à casa de emissão não passam pelo Tor.",
   "wallet.svc.tor_ios_body":
-    "O Arti envolve só os WebSockets do Nostr, por isso este pedido chegaria à casa de emissão pela rede aberta e ligaria o teu IP a este ecash. Permite-o em Definições > Segurança, ou desliga antes o Tor. Enviar e receber ecash pela malha continua a funcionar.",
+    "No iOS o Tor só cobre o Nostr, por isso este pedido chegaria à casa de emissão pela rede aberta e ligaria o teu IP a este ecash. Liga {setting} nas Definições, ou desliga antes o Tor. Enviar e receber ecash pela malha continua a funcionar.",
   "wallet.svc.internet_off":
     "A internet está desligada, por isso não é possível contactar a casa de emissão.",
   "wallet.svc.internet_off_body":
@@ -1544,7 +1544,7 @@ export const strings: Strings = {
     "Esta troca foi guardada num formato que esta versão não consegue repetir.",
   "wallet.svc.lock_in_doubt": "Este pagamento pode ou não ter sido feito.",
   "wallet.svc.lock_in_doubt_body":
-    "Não foi enviado mais nada. As moedas ficam retidas até a casa de emissão confirmar o resultado. Se o pagamento passou, o token bloqueado aparece em Pendentes para o entregar. Se não, as moedas voltam.",
+    "Não foi enviado mais nada. As moedas ficam retidas até a casa de emissão confirmar o resultado. Se o pagamento passou, o token bloqueado aparece em Atividade para o entregar. Se não, as moedas voltam.",
   "wallet.svc.send_spent_by_swap":
     "Estas moedas foram trocadas de volta para a sua carteira antes de este token ser resgatado, por isso já não pode ser resgatado. O valor está no seu saldo.",
 

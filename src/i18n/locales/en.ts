@@ -952,7 +952,7 @@ export const strings = {
   "wallet.balance.locked":
     "Wallet storage is locked. Your ecash is kept in an encrypted file whose key lives in the device keychain, and it could not be opened. Unlock your device and reopen Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor is on, so mint requests are blocked: they would go out over the clear net and link your IP to your ecash. Sending and receiving over the mesh still works. Allow mint traffic under Settings, Security.",
+    "Tor is on, so mint requests are blocked: they would go out over the clear net and link your IP to your ecash. Sending and receiving over the mesh still works. To reach mints anyway, turn on {setting} in Settings.",
   "wallet.balance.offline":
     "Offline. You can still pay people nearby and send tokens.",
   "wallet.balance.internet_off":
@@ -997,7 +997,7 @@ export const strings = {
   "wallet.send.qr_too_big":
     "This token is split across too many coins to fit in a QR code. Share or copy it instead, or refresh at the mint to consolidate.",
   "wallet.send.bearer_note":
-    "Whoever holds this string owns the money. The coins are reserved, not spent: if it never reaches anyone you can reclaim them under Pending.",
+    "Whoever holds this string owns the money. The coins are reserved, not spent: if it never reaches anyone you can reclaim them in Activity.",
   "wallet.send.qr_too_big_short":
     "This token is split across too many coins to fit in a QR code. Share or copy it instead.",
   "wallet.send.scan_note":
@@ -1015,7 +1015,7 @@ export const strings = {
   "wallet.send.send_amount": "Send {amount}",
   "wallet.send.sent_to": "{amount} {unit} sent to {name}",
   "wallet.send.sent_to_body":
-    "{route} It stays reclaimable under Pending until you confirm they got it, or until the mint tells us the token was redeemed.",
+    "{route} It stays reclaimable in Activity until you confirm they got it, or until the mint tells us the token was redeemed.",
   "wallet.send.copy_token": "Copy token",
   "wallet.send.share_token": "Share token",
   "wallet.send.open_in_wallet": "Open this token in another wallet",
@@ -1314,7 +1314,7 @@ export const strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
   "wallet.mesh_offline_body":
-    "The mesh service is not running, so there is nothing to hand the token to. It stays reserved under Pending.",
+    "The mesh service is not running, so there is nothing to hand the token to. It stays reserved in Activity.",
   "wallet.xfer.route_mesh": "Handed straight to their device over the mesh.",
   "wallet.xfer.route_nostr":
     "They were out of Bluetooth range, so it went over the internet instead.",
@@ -1336,7 +1336,7 @@ export const strings = {
   "wallet.pay.rail_nutzap_dm":
     "Locked to their key. The relay would not take it, so it went to them as a message instead.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Locked to their key, but nothing could carry it yet. It is queued, and the token is under Pending.",
+    "Locked to their key, but nothing could carry it yet. It is queued, and the token is in Activity.",
   "wallet.pay.final":
     "Locked payments cannot be reclaimed: only their key can spend these coins now.",
   "wallet.pay.reclaimable":
@@ -1355,7 +1355,7 @@ export const strings = {
   "wallet.pay.confirm_final":
     "It is locked to their key. Once sent, it cannot be taken back.",
   "wallet.pay.confirm_reclaimable":
-    "You can reclaim it from Pending until they claim it.",
+    "You can reclaim it from Activity until they claim it.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Camera access",
@@ -1418,7 +1418,7 @@ export const strings = {
   "wallet.svc.mint_unreachable": "Could not reach the mint.",
   "wallet.svc.tor_ios": "Mint requests do not go through Tor on iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti only wraps Nostr WebSockets, so this request would reach the mint over the clear net and link your IP to this ecash. Allow it under Settings > Security, or turn Tor off first. Sending and receiving ecash over the mesh still works.",
+    "On iOS, Tor only covers Nostr, so this request would reach the mint over the clear net and link your IP to this ecash. Turn on {setting} in Settings, or turn Tor off first. Sending and receiving ecash over the mesh still works.",
   "wallet.svc.internet_off": "Internet is off, so the mint cannot be reached.",
   "wallet.svc.internet_off_body":
     "Turn on {setting} in Settings. Sending and receiving ecash nearby still works.",
@@ -1523,7 +1523,7 @@ export const strings = {
     "This swap was saved in a form this version cannot replay.",
   "wallet.svc.lock_in_doubt": "This payment may or may not have gone through.",
   "wallet.svc.lock_in_doubt_body":
-    "Nothing else was sent. The coins are held until the mint confirms the outcome. If it went through, the locked token appears under Pending for you to hand over. If not, the coins come back.",
+    "Nothing else was sent. The coins are held until the mint confirms the outcome. If it went through, the locked token appears in Activity for you to hand over. If not, the coins come back.",
   "wallet.svc.send_spent_by_swap":
     "These coins were swapped back into your wallet before this token was claimed, so it can no longer be claimed. The value is in your balance.",
 

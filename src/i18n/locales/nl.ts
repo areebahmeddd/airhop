@@ -950,7 +950,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "De opslag van de portemonnee zit op slot. Je ecash staat in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit, en dat bestand ging niet open. Ontgrendel je toestel en open Airhop opnieuw.",
   "wallet.balance.tor_blocked":
-    "Tor staat aan, dus mintverzoeken zijn geblokkeerd: ze zouden over het open net gaan en je IP aan je ecash koppelen. Sturen en ontvangen over de mesh werkt gewoon. Sta mintverkeer toe onder Instellingen, Beveiliging.",
+    "Tor staat aan, dus mintverzoeken zijn geblokkeerd: ze zouden over het open net gaan en je IP aan je ecash koppelen. Sturen en ontvangen over de mesh werkt gewoon. Wil je toch mints bereiken, zet dan {setting} aan in Instellingen.",
   "wallet.balance.offline":
     "Offline. Je kunt nog steeds mensen in de buurt betalen en tokens sturen.",
   "wallet.balance.internet_off":
@@ -996,7 +996,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Dit token is over te veel munten verdeeld om in een QR-code te passen. Deel of kopieer het, of ververs bij de mint om het samen te voegen.",
   "wallet.send.bearer_note":
-    "Wie deze reeks heeft, is eigenaar van het geld. De munten zijn apart gezet, niet uitgegeven: als hij niemand bereikt, kun je ze terugnemen onder In afwachting.",
+    "Wie deze reeks heeft, is eigenaar van het geld. De munten zijn apart gezet, niet uitgegeven: als hij niemand bereikt, kun je ze terugnemen onder Activiteit.",
   "wallet.send.qr_too_big_short":
     "Dit token is over te veel munten verdeeld om in een QR-code te passen. Deel of kopieer het.",
   "wallet.send.scan_note":
@@ -1014,7 +1014,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} sturen",
   "wallet.send.sent_to": "{amount} {unit} naar {name} gestuurd",
   "wallet.send.sent_to_body":
-    "{route} Je kunt het terugnemen onder In afwachting tot je bevestigt dat ze het hebben, of tot de mint ons vertelt dat het token is ingewisseld.",
+    "{route} Je kunt het terugnemen onder Activiteit tot je bevestigt dat ze het hebben, of tot de mint ons vertelt dat het token is ingewisseld.",
   "wallet.send.copy_token": "Token kopiëren",
   "wallet.send.share_token": "Token delen",
   "wallet.send.open_in_wallet": "Dit token in een andere portemonnee openen",
@@ -1312,7 +1312,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
   "wallet.mesh_offline_body":
-    "De meshdienst draait niet, dus er is niemand om het token aan te geven. Het blijft apart gezet onder In afwachting.",
+    "De meshdienst draait niet, dus er is niemand om het token aan te geven. Het blijft apart gezet onder Activiteit.",
   "wallet.xfer.route_mesh":
     "Rechtstreeks aan hun toestel gegeven over de mesh.",
   "wallet.xfer.route_nostr":
@@ -1335,7 +1335,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Vastgezet aan hun sleutel. De relay nam het niet aan, dus het ging als bericht naar ze toe.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Vastgezet aan hun sleutel, maar er kon nog niets het meedragen. Het staat in de wachtrij, en het token staat onder In afwachting.",
+    "Vastgezet aan hun sleutel, maar er kon nog niets het meedragen. Het staat in de wachtrij, en het token staat onder Activiteit.",
   "wallet.pay.final":
     "Vastgezette betalingen kun je niet terugnemen: alleen hun sleutel kan deze munten nu nog uitgeven.",
   "wallet.pay.reclaimable":
@@ -1355,7 +1355,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Het wordt aan hun sleutel vergrendeld. Eenmaal verstuurd kun je het niet terugnemen.",
   "wallet.pay.confirm_reclaimable":
-    "Je kunt het terughalen via In behandeling zolang het niet is opgehaald.",
+    "Je kunt het terughalen via Activiteit zolang het niet is opgehaald.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Cameratoegang",
@@ -1421,7 +1421,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "De mint kon niet worden bereikt.",
   "wallet.svc.tor_ios": "Op iOS gaan mintverzoeken niet via Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti omhult alleen Nostr-WebSockets, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze ecash koppelen. Sta het toe onder Instellingen > Beveiliging, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
+    "Tor op iOS dekt alleen Nostr, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze ecash koppelen. Zet {setting} aan in Instellingen, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
   "wallet.svc.internet_off":
     "Internet staat uit, dus de mint is niet bereikbaar.",
   "wallet.svc.internet_off_body":
@@ -1535,7 +1535,7 @@ export const strings: Strings = {
     "Deze omruil is opgeslagen in een vorm die deze versie niet opnieuw kan afspelen.",
   "wallet.svc.lock_in_doubt": "Deze betaling is misschien wel of niet gelukt.",
   "wallet.svc.lock_in_doubt_body":
-    "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint de uitkomst bevestigt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder In afwachting om over te dragen. Zo niet, dan komen de munten terug.",
+    "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint de uitkomst bevestigt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder Activiteit om over te dragen. Zo niet, dan komen de munten terug.",
   "wallet.svc.send_spent_by_swap":
     "Deze munten zijn teruggewisseld naar je wallet voordat dit token werd opgehaald, dus het kan niet meer worden opgehaald. Het bedrag staat in je saldo.",
 

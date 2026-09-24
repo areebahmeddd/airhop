@@ -276,7 +276,9 @@ function assertMintNetworkAllowed(): void {
   throw new WalletError(
     "tor-blocked",
     t("wallet.svc.tor_ios"),
-    t("wallet.svc.tor_ios_body"),
+    t("wallet.svc.tor_ios_body", {
+      setting: t("settings.conn.mint_clearnet"),
+    }),
   );
 }
 

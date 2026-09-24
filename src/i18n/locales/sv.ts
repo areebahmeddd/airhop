@@ -936,7 +936,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Plånbokens lagring är låst. Din ecash ligger i en krypterad fil vars nyckel finns i enhetens nyckelring, och den gick inte att öppna. Lås upp enheten och öppna Airhop igen.",
   "wallet.balance.tor_blocked":
-    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till din ecash. Att skicka och ta emot över meshen fungerar ändå. Tillåt mint-trafik under Inställningar, Säkerhet.",
+    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till din ecash. Att skicka och ta emot över meshen fungerar ändå. Vill du nå minter trots det, slå på {setting} i Inställningar.",
   "wallet.balance.offline":
     "Offline. Du kan fortfarande betala folk i närheten och skicka token.",
   "wallet.balance.internet_off":
@@ -983,7 +983,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Tokenet är uppdelat på för många mynt för att rymmas i en QR-kod. Dela eller kopiera det i stället, eller uppdatera hos minten för att slå ihop dem.",
   "wallet.send.bearer_note":
-    "Den som har den här strängen äger pengarna. Mynten är reserverade, inte förbrukade: om den aldrig når någon kan du ta tillbaka dem under Väntande.",
+    "Den som har den här strängen äger pengarna. Mynten är reserverade, inte förbrukade: om den aldrig når någon kan du ta tillbaka dem under Aktivitet.",
   "wallet.send.qr_too_big_short":
     "Tokenet är uppdelat på för många mynt för att rymmas i en QR-kod. Dela eller kopiera det i stället.",
   "wallet.send.scan_note":
@@ -1001,7 +1001,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Skicka {amount}",
   "wallet.send.sent_to": "{amount} {unit} skickat till {name}",
   "wallet.send.sent_to_body":
-    "{route} Det går att ta tillbaka under Väntande tills du bekräftar att de fick det, eller tills minten säger att tokenet har lösts in.",
+    "{route} Det går att ta tillbaka under Aktivitet tills du bekräftar att de fick det, eller tills minten säger att tokenet har lösts in.",
   "wallet.send.copy_token": "Kopiera token",
   "wallet.send.share_token": "Dela token",
   "wallet.send.open_in_wallet": "Öppna tokenet i en annan plånbok",
@@ -1298,7 +1298,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Meshen är offline",
   "wallet.mesh_offline_body":
-    "Meshtjänsten är inte igång, så det finns ingen att lämna tokenet till. Det förblir reserverat under Väntande.",
+    "Meshtjänsten är inte igång, så det finns ingen att lämna tokenet till. Det förblir reserverat under Aktivitet.",
   "wallet.xfer.route_mesh": "Överlämnat direkt till deras enhet över meshen.",
   "wallet.xfer.route_nostr":
     "De var utom Bluetooth-räckhåll, så det gick över internet i stället.",
@@ -1320,7 +1320,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Låst till deras nyckel. Reläet tog inte emot det, så det gick till dem som ett meddelande i stället.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Låst till deras nyckel, men inget kunde bära det än. Det ligger i kö, och tokenet finns under Väntande.",
+    "Låst till deras nyckel, men inget kunde bära det än. Det ligger i kö, och tokenet finns under Aktivitet.",
   "wallet.pay.final":
     "Låsta betalningar går inte att ta tillbaka: bara deras nyckel kan använda mynten nu.",
   "wallet.pay.reclaimable":
@@ -1340,7 +1340,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Det låses till deras nyckel. När det väl är skickat kan det inte tas tillbaka.",
   "wallet.pay.confirm_reclaimable":
-    "Du kan ta tillbaka det under Väntande tills det har lösts in.",
+    "Du kan ta tillbaka det under Aktivitet tills det har lösts in.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kameraåtkomst",
@@ -1403,7 +1403,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Minten kunde inte nås.",
   "wallet.svc.tor_ios": "Mint-förfrågningar går inte genom Tor på iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti omsluter bara Nostr-WebSockets, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till den här ecashen. Tillåt det under Inställningar > Säkerhet, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
+    "Tor på iOS täcker bara Nostr, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till den här ecashen. Slå på {setting} i Inställningar, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
   "wallet.svc.internet_off": "Internet är avstängt, så minten går inte att nå.",
   "wallet.svc.internet_off_body":
     "Slå på {setting} i Inställningar. Att skicka och ta emot ecash i närheten fungerar fortfarande.",
@@ -1512,7 +1512,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Den här betalningen kan ha gått igenom eller inte.",
   "wallet.svc.lock_in_doubt_body":
-    "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas den låsta token under Väntande så att du kan lämna över den. Annars kommer mynten tillbaka.",
+    "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas den låsta token under Aktivitet så att du kan lämna över den. Annars kommer mynten tillbaka.",
   "wallet.svc.send_spent_by_swap":
     "De här mynten växlades tillbaka till din plånbok innan token löstes in, så den kan inte längre lösas in. Beloppet finns i ditt saldo.",
 

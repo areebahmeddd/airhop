@@ -954,7 +954,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "L’archivio del portafoglio è bloccato. Il tuo ecash è conservato in un file cifrato la cui chiave sta nel portachiavi del dispositivo, e non è stato possibile aprirlo. Sblocca il dispositivo e riapri Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor è attivo, quindi le richieste al mint sono bloccate: uscirebbero sulla rete in chiaro e collegherebbero il tuo IP al tuo ecash. Inviare e ricevere sulla mesh continua a funzionare. Consenti il traffico verso il mint in Impostazioni, Sicurezza.",
+    "Tor è attivo, quindi le richieste al mint sono bloccate: uscirebbero sulla rete in chiaro e collegherebbero il tuo IP al tuo ecash. Inviare e ricevere sulla mesh continua a funzionare. Per raggiungere comunque i mint, attiva {setting} nelle Impostazioni.",
   "wallet.balance.offline":
     "Offline. Puoi comunque pagare le persone vicine e inviare token.",
   "wallet.balance.internet_off":
@@ -1001,7 +1001,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Questo token è suddiviso tra troppe monete per entrare in un codice QR. Condividilo o copialo, oppure aggiorna presso il mint per consolidarlo.",
   "wallet.send.bearer_note":
-    "Chi possiede questa stringa possiede il denaro. Le monete sono riservate, non spese: se non arriva a nessuno puoi riprendertele in Sospesi.",
+    "Chi possiede questa stringa possiede il denaro. Le monete sono riservate, non spese: se non arriva a nessuno puoi riprendertele in Attività.",
   "wallet.send.qr_too_big_short":
     "Questo token è suddiviso tra troppe monete per entrare in un codice QR. Condividilo o copialo.",
   "wallet.send.scan_note":
@@ -1019,7 +1019,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Invia {amount}",
   "wallet.send.sent_to": "{amount} {unit} inviati a {name}",
   "wallet.send.sent_to_body":
-    "{route} Resta recuperabile in Sospesi finché non confermi che l’hanno ricevuto, o finché il mint non ci dice che il token è stato riscosso.",
+    "{route} Resta recuperabile in Attività finché non confermi che l’hanno ricevuto, o finché il mint non ci dice che il token è stato riscosso.",
   "wallet.send.copy_token": "Copia il token",
   "wallet.send.share_token": "Condividi il token",
   "wallet.send.open_in_wallet": "Apri questo token in un altro portafoglio",
@@ -1320,7 +1320,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
   "wallet.mesh_offline_body":
-    "Il servizio mesh non è in funzione, quindi non c’è a chi consegnare il token. Resta riservato in Sospesi.",
+    "Il servizio mesh non è in funzione, quindi non c’è a chi consegnare il token. Resta riservato in Attività.",
   "wallet.xfer.route_mesh":
     "Consegnato direttamente al loro dispositivo sulla mesh.",
   "wallet.xfer.route_nostr":
@@ -1343,7 +1343,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Vincolato alla loro chiave. Il relay non l’ha accettato, quindi è arrivato loro come messaggio.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Vincolato alla loro chiave, ma finora nulla è riuscito a trasportarlo. È in coda e il token è tra i Sospesi.",
+    "Vincolato alla loro chiave, ma finora nulla è riuscito a trasportarlo. È in coda e il token è in Attività.",
   "wallet.pay.final":
     "I pagamenti vincolati non si possono recuperare: ora solo la loro chiave può spendere queste monete.",
   "wallet.pay.reclaimable":
@@ -1363,7 +1363,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "È bloccato sulla sua chiave. Una volta inviato, non si può riprendere.",
   "wallet.pay.confirm_reclaimable":
-    "Puoi riprenderlo da In sospeso finché non lo riscuotono.",
+    "Puoi riprenderlo da Attività finché non lo riscuotono.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Accesso alla fotocamera",
@@ -1429,7 +1429,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Non è stato possibile raggiungere il mint.",
   "wallet.svc.tor_ios": "Su iOS le richieste al mint non passano da Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti copre solo i WebSocket di Nostr, quindi questa richiesta raggiungerebbe il mint sulla rete in chiaro e collegherebbe il tuo IP a questo ecash. Consentilo in Impostazioni > Sicurezza, oppure disattiva prima Tor. Inviare e ricevere ecash sulla mesh continua a funzionare.",
+    "Su iOS Tor copre solo Nostr, quindi questa richiesta raggiungerebbe il mint sulla rete in chiaro e collegherebbe il tuo IP a questo ecash. Attiva {setting} nelle Impostazioni, oppure disattiva prima Tor. Inviare e ricevere ecash sulla mesh continua a funzionare.",
   "wallet.svc.internet_off":
     "Internet è disattivato, quindi il mint non è raggiungibile.",
   "wallet.svc.internet_off_body":
@@ -1543,7 +1543,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Questo pagamento potrebbe essere andato a buon fine oppure no.",
   "wallet.svc.lock_in_doubt_body":
-    "Non è stato inviato altro. Le monete restano trattenute finché il mint non conferma l’esito. Se è andato a buon fine, il token bloccato compare in Sospesi da consegnare. Altrimenti le monete tornano.",
+    "Non è stato inviato altro. Le monete restano trattenute finché il mint non conferma l’esito. Se è andato a buon fine, il token bloccato compare in Attività da consegnare. Altrimenti le monete tornano.",
   "wallet.svc.send_spent_by_swap":
     "Queste monete sono state scambiate di nuovo nel tuo wallet prima che il token venisse riscosso, quindi non si può più riscuotere. L’importo è nel tuo saldo.",
 

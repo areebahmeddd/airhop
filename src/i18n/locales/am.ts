@@ -874,7 +874,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "የቦርሳው ማከማቻ ተቆልፏል። ecash ህ ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ይቀመጣል፤ ያ ፋይል ሊከፈት አልቻለም። መሣሪያህን ክፈትና Airhop ን እንደገና ክፈት።",
   "wallet.balance.tor_blocked":
-    "Tor በርቷል፤ ስለዚህ የሚንት ጥያቄዎች ታግደዋል፦ በክፍት አውታረ መረብ ላይ ወጥተው የIP አድራሻህን ከecash ህ ጋር ያገናኙታል። በሜሽ ላይ መላክና መቀበል አሁንም ይሠራል። በቅንብሮች፣ ደህንነት ስር የሚንት ትራፊክን ፍቀድ።",
+    "Tor በርቷል፤ ስለዚህ የሚንት ጥያቄዎች ታግደዋል፦ በክፍት አውታረ መረብ ላይ ወጥተው የIP አድራሻህን ከecash ህ ጋር ያገናኙታል። በሜሽ ላይ መላክና መቀበል አሁንም ይሠራል። ቢሆንም ሚንቶችን ለመድረስ በቅንብሮች ውስጥ {setting}ን ያብሩ።",
   "wallet.balance.offline":
     "ከመስመር ውጭ ነዎት። አሁንም በአቅራቢያ ላሉ ሰዎች መክፈልና ቶከን መላክ ይችላሉ።",
   "wallet.balance.internet_off":
@@ -918,7 +918,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "ይህ ቶከን በጣም በብዙ ሳንቲሞች ተከፋፍሎ በQR ኮድ ውስጥ አይገባም። በምትኩ አጋራው ወይም ቅዳው፤ ወይም አንድ ላይ ለማድረግ በሚንቱ ላይ አድስ።",
   "wallet.send.bearer_note":
-    "ይህን ሕብረቁምፊ የያዘ ማንኛውም ሰው የገንዘቡ ባለቤት ነው። ሳንቲሞቹ ተይዘዋል እንጂ አልወጡም፦ ወደ ማንም ካልደረሰ በመጠባበቅ ላይ ስር መልሰህ ልታገኛቸው ትችላለህ።",
+    "ይህን ሕብረቁምፊ የያዘ ማንኛውም ሰው የገንዘቡ ባለቤት ነው። ሳንቲሞቹ ተይዘዋል እንጂ አልወጡም፦ ወደ ማንም ካልደረሰ በእንቅስቃሴ ስር መልሰህ ልታገኛቸው ትችላለህ።",
   "wallet.send.qr_too_big_short":
     "ይህ ቶከን በጣም በብዙ ሳንቲሞች ተከፋፍሎ በQR ኮድ ውስጥ አይገባም። በምትኩ አጋራው ወይም ቅዳው።",
   "wallet.send.scan_note":
@@ -936,7 +936,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} ላክ",
   "wallet.send.sent_to": "{amount} {unit} ወደ {name} ተልኳል",
   "wallet.send.sent_to_body":
-    "{route} እነሱ መቀበላቸውን እስክታረጋግጥ ድረስ፣ ወይም ሚንቱ ቶከኑ መመንዘሩን እስኪነግረን ድረስ፣ በመጠባበቅ ላይ ስር መልሶ የሚገኝ ሆኖ ይቆያል።",
+    "{route} እነሱ መቀበላቸውን እስክታረጋግጥ ድረስ፣ ወይም ሚንቱ ቶከኑ መመንዘሩን እስኪነግረን ድረስ፣ በእንቅስቃሴ ስር መልሶ የሚገኝ ሆኖ ይቆያል።",
   "wallet.send.copy_token": "ቶከኑን ቅዳ",
   "wallet.send.share_token": "ቶከኑን አጋራ",
   "wallet.send.open_in_wallet": "ይህን ቶከን በሌላ ቦርሳ ውስጥ ክፈት",
@@ -1223,7 +1223,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ሜሽ ከመስመር ውጭ",
   "wallet.mesh_offline_body":
-    "የሜሽ አገልግሎቱ እየሠራ አይደለም፤ ስለዚህ ቶከኑን የሚሰጠው ነገር የለም። በመጠባበቅ ላይ ስር ተይዞ ይቆያል።",
+    "የሜሽ አገልግሎቱ እየሠራ አይደለም፤ ስለዚህ ቶከኑን የሚሰጠው ነገር የለም። በእንቅስቃሴ ስር ተይዞ ይቆያል።",
   "wallet.xfer.route_mesh": "በሜሽ በኩል በቀጥታ ወደ መሣሪያቸው ተላልፏል።",
   "wallet.xfer.route_nostr": "ከብሉቱዝ ክልል ውጭ ስለነበሩ በምትኩ በኢንተርኔት ሄደ።",
   "wallet.xfer.route_courier":
@@ -1244,7 +1244,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "በቁልፋቸው ተቆልፏል። አስተላላፊው ስላልተቀበለው በምትኩ እንደ መልእክት ወደ እነሱ ሄደ።",
   "wallet.pay.rail_nutzap_undelivered":
-    "በቁልፋቸው ተቆልፏል፤ ግን ገና የሚያጓጉዘው ነገር አልተገኘም። በተራ ላይ ነው፤ ቶከኑም በመጠባበቅ ላይ ስር ነው።",
+    "በቁልፋቸው ተቆልፏል፤ ግን ገና የሚያጓጉዘው ነገር አልተገኘም። በተራ ላይ ነው፤ ቶከኑም በእንቅስቃሴ ስር ነው።",
   "wallet.pay.final":
     "የተቆለፉ ክፍያዎች መልሰው አይገኙም፦ አሁን እነዚህን ሳንቲሞች ማውጣት የሚችለው ቁልፋቸው ብቻ ነው።",
   "wallet.pay.reclaimable": "መድረሱን እስክታረጋግጥ ድረስ ከቦርሳ ትሩ መልሶ የሚገኝ ሆኖ ይቆያል።",
@@ -1260,7 +1260,7 @@ export const strings: Strings = {
   "wallet.pay.action": "ecash ላክ",
   "wallet.pay.confirm_title": "{amount} {unit} ለ{name} ይላክ?",
   "wallet.pay.confirm_final": "በእነሱ ቁልፍ ተቆልፏል። አንዴ ከተላከ መመለስ አይቻልም።",
-  "wallet.pay.confirm_reclaimable": "እስኪወስዱት ድረስ ከበመጠባበቅ ላይ መልሰው መውሰድ ይችላሉ።",
+  "wallet.pay.confirm_reclaimable": "እስኪወስዱት ድረስ ከእንቅስቃሴ መልሰው መውሰድ ይችላሉ።",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "የካሜራ መዳረሻ",
@@ -1322,7 +1322,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ሚንቱ ሊደረስበት አልቻለም።",
   "wallet.svc.tor_ios": "በiOS ላይ የሚንት ጥያቄዎች በTor አያልፉም።",
   "wallet.svc.tor_ios_body":
-    "Arti የሚሸፍነው የNostr WebSocket ን ብቻ ነው፤ ስለዚህ ይህ ጥያቄ በክፍት አውታረ መረብ ሚንቱ ላይ ደርሶ የIP አድራሻህን ከዚህ ecash ጋር ያገናኘዋል። በቅንብሮች > ደህንነት ስር ፍቀደው፣ ወይም መጀመሪያ Tor ን አጥፋ። በሜሽ ላይ ecash መላክና መቀበል አሁንም ይሠራል።",
+    "በiOS ላይ Tor የሚሸፍነው Nostr ን ብቻ ነው፤ ስለዚህ ይህ ጥያቄ በክፍት አውታረ መረብ ሚንቱ ላይ ደርሶ የIP አድራሻህን ከዚህ ecash ጋር ያገናኘዋል። በቅንብሮች ውስጥ {setting}ን ያብሩ፣ ወይም መጀመሪያ Tor ን አጥፋ። በሜሽ ላይ ecash መላክና መቀበል አሁንም ይሠራል።",
   "wallet.svc.internet_off": "ኢንተርኔት ጠፍቷል፣ ስለዚህ ሚንቱን መድረስ አይቻልም።",
   "wallet.svc.internet_off_body":
     "በቅንብሮች ውስጥ {setting}ን ያብሩ። በአቅራቢያ ecash መላክና መቀበል አሁንም ይሰራል።",
@@ -1415,7 +1415,7 @@ export const strings: Strings = {
   "wallet.svc.swap_unreadable": "ይህ ልውውጥ ይህ ስሪት እንደገና ሊያሄደው በማይችል መልክ ተቀምጧል።",
   "wallet.svc.lock_in_doubt": "ይህ ክፍያ ሄዶ ሊሆን ወይም ላይሆን ይችላል።",
   "wallet.svc.lock_in_doubt_body":
-    "ሌላ ምንም አልተላከም። ሚንቱ ውጤቱን እስኪያረጋግጥ ድረስ ሳንቲሞቹ ተይዘዋል። ከሄደ፣ የተቆለፈው ቶከን እንድታስረክበው በመጠባበቅ ላይ ስር ይታያል። ካልሄደ ሳንቲሞቹ ይመለሳሉ።",
+    "ሌላ ምንም አልተላከም። ሚንቱ ውጤቱን እስኪያረጋግጥ ድረስ ሳንቲሞቹ ተይዘዋል። ከሄደ፣ የተቆለፈው ቶከን እንድታስረክበው በእንቅስቃሴ ስር ይታያል። ካልሄደ ሳንቲሞቹ ይመለሳሉ።",
   "wallet.svc.send_spent_by_swap":
     "ይህ ቶከን ከመወሰዱ በፊት እነዚህ ሳንቲሞች ወደ ቦርሳዎ ተመልሰው ተለውጠዋል፣ ስለዚህ ከአሁን በኋላ ሊወሰድ አይችልም። ዋጋው በቀሪ ሂሳብዎ ውስጥ ነው።",
 

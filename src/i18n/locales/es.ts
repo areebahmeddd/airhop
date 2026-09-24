@@ -950,7 +950,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "El almacenamiento de la cartera está bloqueado. Tu ecash se guarda en un archivo cifrado cuya clave vive en el llavero del dispositivo, y no se pudo abrir. Desbloquea el dispositivo y vuelve a abrir Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor está activo, así que las peticiones a la casa de cambio están bloqueadas: saldrían por la red abierta y vincularían tu IP con tu ecash. Enviar y recibir por la malla sigue funcionando. Permite el tráfico con la casa de cambio en Ajustes, Seguridad.",
+    "Tor está activo, así que las peticiones a la casa de cambio están bloqueadas: saldrían por la red abierta y vincularían tu IP con tu ecash. Enviar y recibir por la malla sigue funcionando. Para llegar a las casas de cambio de todos modos, activa {setting} en Ajustes.",
   "wallet.balance.offline":
     "Sin conexión. Aún puedes pagar a gente cercana y enviar tokens.",
   "wallet.balance.internet_off":
@@ -999,7 +999,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Este token está repartido entre demasiadas monedas para caber en un código QR. Compártelo o cópialo, o actualiza en la casa de cambio para consolidarlo.",
   "wallet.send.bearer_note":
-    "Quien tenga esta cadena es el dueño del dinero. Las monedas están reservadas, no gastadas: si nunca llega a nadie, puedes recuperarlas en Pendientes.",
+    "Quien tenga esta cadena es el dueño del dinero. Las monedas están reservadas, no gastadas: si nunca llega a nadie, puedes recuperarlas en Actividad.",
   "wallet.send.qr_too_big_short":
     "Este token está repartido entre demasiadas monedas para caber en un código QR. Compártelo o cópialo.",
   "wallet.send.scan_note":
@@ -1017,7 +1017,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Enviar {amount}",
   "wallet.send.sent_to": "{amount} {unit} enviados a {name}",
   "wallet.send.sent_to_body":
-    "{route} Se puede recuperar en Pendientes hasta que confirmes que lo recibieron, o hasta que la casa de cambio nos diga que el token se canjeó.",
+    "{route} Se puede recuperar en Actividad hasta que confirmes que lo recibieron, o hasta que la casa de cambio nos diga que el token se canjeó.",
   "wallet.send.copy_token": "Copiar el token",
   "wallet.send.share_token": "Compartir el token",
   "wallet.send.open_in_wallet": "Abrir este token en otra cartera",
@@ -1319,7 +1319,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malla sin conexión",
   "wallet.mesh_offline_body":
-    "El servicio de malla no está en marcha, así que no hay a quién entregar el token. Sigue reservado en Pendientes.",
+    "El servicio de malla no está en marcha, así que no hay a quién entregar el token. Sigue reservado en Actividad.",
   "wallet.xfer.route_mesh":
     "Entregado directamente a su dispositivo por la malla.",
   "wallet.xfer.route_nostr":
@@ -1342,7 +1342,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Bloqueado a su clave. El relé no lo aceptó, así que les llegó como un mensaje.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Bloqueado a su clave, pero todavía no ha podido transportarlo nada. Está en cola y el token está en Pendientes.",
+    "Bloqueado a su clave, pero todavía no ha podido transportarlo nada. Está en cola y el token está en Actividad.",
   "wallet.pay.final":
     "Los pagos bloqueados no se pueden recuperar: ahora solo su clave puede gastar estas monedas.",
   "wallet.pay.reclaimable":
@@ -1362,7 +1362,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Queda bloqueado a su clave. Una vez enviado, no se puede recuperar.",
   "wallet.pay.confirm_reclaimable":
-    "Puedes recuperarlo desde Pendientes hasta que lo cobren.",
+    "Puedes recuperarlo desde Actividad hasta que lo cobren.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Acceso a la cámara",
@@ -1429,7 +1429,7 @@ export const strings: Strings = {
   "wallet.svc.tor_ios":
     "En iOS, las peticiones a la casa de cambio no pasan por Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti solo envuelve los WebSockets de Nostr, así que esta petición llegaría a la casa de cambio por la red abierta y vincularía tu IP con este ecash. Permítelo en Ajustes > Seguridad, o desactiva Tor antes. Enviar y recibir ecash por la malla sigue funcionando.",
+    "En iOS, Tor solo cubre Nostr, así que esta petición llegaría a la casa de cambio por la red abierta y vincularía tu IP con este ecash. Activa {setting} en Ajustes, o desactiva Tor antes. Enviar y recibir ecash por la malla sigue funcionando.",
   "wallet.svc.internet_off":
     "Internet está desactivado, así que no se puede llegar a la casa de cambio.",
   "wallet.svc.internet_off_body":
@@ -1546,7 +1546,7 @@ export const strings: Strings = {
     "Este intercambio se guardó en un formato que esta versión no puede reproducir.",
   "wallet.svc.lock_in_doubt": "Puede que este pago se haya realizado o no.",
   "wallet.svc.lock_in_doubt_body":
-    "No se envió nada más. Las monedas quedan retenidas hasta que la casa de cambio confirme el resultado. Si se realizó, el token bloqueado aparece en Pendientes para que lo entregues. Si no, las monedas vuelven.",
+    "No se envió nada más. Las monedas quedan retenidas hasta que la casa de cambio confirme el resultado. Si se realizó, el token bloqueado aparece en Actividad para que lo entregues. Si no, las monedas vuelven.",
   "wallet.svc.send_spent_by_swap":
     "Estas monedas se canjearon de vuelta a tu billetera antes de que se cobrara este token, así que ya no se puede cobrar. El valor está en tu saldo.",
 

@@ -922,7 +922,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "지갑 저장소가 잠겨 있습니다. ecash는 기기 키체인에 키가 있는 암호화된 파일에 보관되는데, 그 파일을 열지 못했습니다. 기기 잠금을 풀고 Airhop을 다시 여세요.",
   "wallet.balance.tor_blocked":
-    "Tor가 켜져 있어 민트 요청이 차단되었습니다. 요청이 일반 네트워크로 나가 IP와 ecash가 연결되기 때문입니다. 메시를 통한 송수신은 계속 작동합니다. 설정, 보안에서 민트 트래픽을 허용하세요.",
+    "Tor가 켜져 있어 민트 요청이 차단되었습니다. 요청이 일반 네트워크로 나가 IP와 ecash가 연결되기 때문입니다. 메시를 통한 송수신은 계속 작동합니다. 그래도 민트에 연결하려면 설정에서 {setting}을(를) 켜세요.",
   "wallet.balance.offline":
     "오프라인입니다. 근처 사람에게 결제하고 토큰을 보내는 것은 여전히 됩니다.",
   "wallet.balance.internet_off":
@@ -969,7 +969,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "이 토큰은 너무 많은 코인으로 나뉘어 QR 코드에 담기지 않습니다. 대신 공유하거나 복사하세요. 또는 민트에서 새로 고쳐 하나로 합치세요.",
   "wallet.send.bearer_note":
-    "이 문자열을 가진 사람이 곧 돈의 주인입니다. 코인은 사용된 것이 아니라 예약된 상태이므로, 아무에게도 닿지 않았다면 대기 중 항목에서 회수할 수 있습니다.",
+    "이 문자열을 가진 사람이 곧 돈의 주인입니다. 코인은 사용된 것이 아니라 예약된 상태이므로, 아무에게도 닿지 않았다면 활동 항목에서 회수할 수 있습니다.",
   "wallet.send.qr_too_big_short":
     "이 토큰은 너무 많은 코인으로 나뉘어 QR 코드에 담기지 않습니다. 대신 공유하거나 복사하세요.",
   "wallet.send.scan_note":
@@ -987,7 +987,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} 보내기",
   "wallet.send.sent_to": "{amount} {unit}을(를) {name}에게 보냈습니다",
   "wallet.send.sent_to_body":
-    "{route} 상대방이 받았음을 확인하거나 민트가 토큰이 사용되었다고 알려줄 때까지, 대기 중 항목에서 회수할 수 있습니다.",
+    "{route} 상대방이 받았음을 확인하거나 민트가 토큰이 사용되었다고 알려줄 때까지, 활동 항목에서 회수할 수 있습니다.",
   "wallet.send.copy_token": "토큰 복사",
   "wallet.send.share_token": "토큰 공유",
   "wallet.send.open_in_wallet": "이 토큰을 다른 지갑에서 열기",
@@ -1283,7 +1283,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "메시 오프라인",
   "wallet.mesh_offline_body":
-    "메시 서비스가 실행 중이 아니라 토큰을 건넬 곳이 없습니다. 대기 중 항목에 예약된 채로 남습니다.",
+    "메시 서비스가 실행 중이 아니라 토큰을 건넬 곳이 없습니다. 활동 항목에 예약된 채로 남습니다.",
   "wallet.xfer.route_mesh": "메시를 통해 상대 기기에 곧바로 전달했습니다.",
   "wallet.xfer.route_nostr":
     "상대가 블루투스 범위 밖에 있어 인터넷으로 보냈습니다.",
@@ -1305,7 +1305,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "상대의 키에 잠겼습니다. 릴레이가 받아주지 않아 메시지 형태로 전달되었습니다.",
   "wallet.pay.rail_nutzap_undelivered":
-    "상대의 키에 잠겼지만 아직 실어 나를 경로가 없습니다. 대기열에 있으며 토큰은 대기 중 항목에 있습니다.",
+    "상대의 키에 잠겼지만 아직 실어 나를 경로가 없습니다. 대기열에 있으며 토큰은 활동 항목에 있습니다.",
   "wallet.pay.final":
     "잠긴 결제는 회수할 수 없습니다. 이제 이 코인들은 상대의 키로만 쓸 수 있습니다.",
   "wallet.pay.reclaimable":
@@ -1325,7 +1325,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "상대의 키에 잠깁니다. 보낸 뒤에는 되돌릴 수 없습니다.",
   "wallet.pay.confirm_reclaimable":
-    "상대가 받기 전까지는 대기 중에서 되찾을 수 있습니다.",
+    "상대가 받기 전까지는 활동에서 되찾을 수 있습니다.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "카메라 접근",
@@ -1388,7 +1388,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "민트에 연결하지 못했습니다.",
   "wallet.svc.tor_ios": "iOS에서는 민트 요청이 Tor를 거치지 않습니다.",
   "wallet.svc.tor_ios_body":
-    "Arti는 Nostr WebSocket만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 ecash를 연결하게 됩니다. 설정 > 보안에서 허용하거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
+    "iOS의 Tor는 Nostr만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 ecash를 연결하게 됩니다. 설정에서 {setting}을(를) 켜거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
   "wallet.svc.internet_off": "인터넷이 꺼져 있어 민트에 연결할 수 없습니다.",
   "wallet.svc.internet_off_body":
     "설정에서 {setting}을(를) 켜세요. 근처에서 ecash를 보내고 받는 것은 계속 됩니다.",
@@ -1495,7 +1495,7 @@ export const strings: Strings = {
     "이 교환은 이 버전이 다시 처리할 수 없는 형식으로 저장되었습니다.",
   "wallet.svc.lock_in_doubt": "이 결제가 처리되었는지 알 수 없습니다.",
   "wallet.svc.lock_in_doubt_body":
-    "다른 것은 보내지지 않았습니다. 민트가 결과를 확인할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 대기 중에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
+    "다른 것은 보내지지 않았습니다. 민트가 결과를 확인할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 활동에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
   "wallet.svc.send_spent_by_swap":
     "이 토큰을 받기 전에 코인이 스왑되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
 

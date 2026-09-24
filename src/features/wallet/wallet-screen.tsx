@@ -1566,7 +1566,9 @@ export default function WalletScreen({
         <View style={[styles.banner, styles.bannerTor]}>
           <Feather name="shield" size={16} color={Colors.tor} />
           <Text style={styles.bannerText}>
-            {T("wallet.balance.tor_blocked")}
+            {T("wallet.balance.tor_blocked", {
+              setting: T("settings.conn.mint_clearnet"),
+            })}
           </Text>
         </View>
       )}

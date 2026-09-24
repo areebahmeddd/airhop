@@ -877,7 +877,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "錢包儲存已鎖定。你的 ecash 存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中，現在打不開。請解鎖裝置並重新開啟 Airhop。",
   "wallet.balance.tor_blocked":
-    "Tor 已開啟，所以鑄幣廠請求被擋下：它們會走明網送出，把你的 IP 和你的 ecash 連在一起。透過網狀網路收付仍然可用。可在設定的安全裡允許鑄幣廠流量。",
+    "Tor 已開啟，所以鑄幣廠請求被擋下：它們會走明網送出，把你的 IP 和你的 ecash 連在一起。透過網狀網路收付仍然可用。如仍要連線鑄幣廠，請在設定中開啟{setting}。",
   "wallet.balance.offline": "離線中。你仍可以付款給附近的人，也可以傳送代幣。",
   "wallet.balance.internet_off":
     "網路已關閉，錢包只能在附近使用。要連線鑄幣廠，請在設定中開啟{setting}。",
@@ -920,7 +920,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "這個代幣拆成的幣太多，塞不進一個 QR 碼。請改用分享或複製，或者到鑄幣廠重新整理以合併。",
   "wallet.send.bearer_note":
-    "誰拿著這串字，錢就是誰的。這些幣是被保留而不是花掉：如果它始終沒有送到任何人手上，你可以在待處理裡收回。",
+    "誰拿著這串字，錢就是誰的。這些幣是被保留而不是花掉：如果它始終沒有送到任何人手上，你可以在動態裡收回。",
   "wallet.send.qr_too_big_short":
     "這個代幣拆成的幣太多，塞不進一個 QR 碼。請改用分享或複製。",
   "wallet.send.scan_note":
@@ -938,7 +938,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "傳送 {amount}",
   "wallet.send.sent_to": "{amount} {unit} 已傳送給 {name}",
   "wallet.send.sent_to_body":
-    "{route} 在你確認對方收到之前，或者在鑄幣廠告知代幣已被兌付之前，它都留在待處理裡可以收回。",
+    "{route} 在你確認對方收到之前，或者在鑄幣廠告知代幣已被兌付之前，它都留在動態裡可以收回。",
   "wallet.send.copy_token": "複製代幣",
   "wallet.send.share_token": "分享代幣",
   "wallet.send.open_in_wallet": "在另一個錢包中開啟這個代幣",
@@ -1226,7 +1226,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "網狀網路已離線",
   "wallet.mesh_offline_body":
-    "網狀網路服務沒有在跑，所以沒有地方可以把代幣交出去。它會留在待處理裡保持保留。",
+    "網狀網路服務沒有在跑，所以沒有地方可以把代幣交出去。它會留在動態裡保持保留。",
   "wallet.xfer.route_mesh": "已透過網狀網路直接交到對方裝置上。",
   "wallet.xfer.route_nostr": "對方不在藍牙範圍內，所以改走了網路。",
   "wallet.xfer.route_courier":
@@ -1247,7 +1247,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "已鎖到對方的金鑰。中繼不肯收，所以它改以訊息的形式送給了對方。",
   "wallet.pay.rail_nutzap_undelivered":
-    "已鎖到對方的金鑰，但還沒有東西能把它帶過去。它已排隊，代幣在待處理裡。",
+    "已鎖到對方的金鑰，但還沒有東西能把它帶過去。它已排隊，代幣在動態裡。",
   "wallet.pay.final": "已鎖定的付款無法收回：現在只有對方的金鑰花得了這些幣。",
   "wallet.pay.reclaimable": "在你確認它已送達之前，都可以從錢包分頁收回。",
   "wallet.pay.why": "之所以走這條路，是因為{reason}。",
@@ -1262,8 +1262,7 @@ export const strings: Strings = {
   "wallet.pay.action": "傳送 ecash",
   "wallet.pay.confirm_title": "向 {name} 傳送 {amount} {unit}？",
   "wallet.pay.confirm_final": "它會鎖定到對方的金鑰。一旦傳送便無法撤回。",
-  "wallet.pay.confirm_reclaimable":
-    "在對方領取之前，你可以在「待處理」中收回。",
+  "wallet.pay.confirm_reclaimable": "在對方領取之前，你可以在「動態」中收回。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "相機存取權",
@@ -1324,7 +1323,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "連不上鑄幣廠。",
   "wallet.svc.tor_ios": "在 iOS 上，鑄幣廠請求不走 Tor。",
   "wallet.svc.tor_ios_body":
-    "Arti 只包住 Nostr 的 WebSocket，所以這個請求會走明網到鑄幣廠，把你的 IP 和這筆 ecash 連在一起。可以在設定 > 安全裡允許它，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
+    "iOS 上的 Tor 只涵蓋 Nostr，所以這個請求會走明網到鑄幣廠，把你的 IP 和這筆 ecash 連在一起。請在設定中開啟{setting}，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
   "wallet.svc.internet_off": "網路已關閉，無法連線鑄幣廠。",
   "wallet.svc.internet_off_body":
     "請在設定中開啟{setting}。在附近收發 ecash 仍然可用。",
@@ -1418,7 +1417,7 @@ export const strings: Strings = {
   "wallet.svc.swap_unreadable": "這次換新存下來的格式，目前版本無法重放。",
   "wallet.svc.lock_in_doubt": "這筆付款可能已完成，也可能沒有。",
   "wallet.svc.lock_in_doubt_body":
-    "沒有傳送其他任何東西。在鑄幣廠確認結果之前，這些幣會被保留。若付款已完成，鎖定的代幣會出現在「待處理」中供你轉交。若未完成，幣會退回。",
+    "沒有傳送其他任何東西。在鑄幣廠確認結果之前，這些幣會被保留。若付款已完成，鎖定的代幣會出現在「動態」中供你轉交。若未完成，幣會退回。",
   "wallet.svc.send_spent_by_swap":
     "在此代幣被領取之前，這些幣已被兌換回你的錢包，因此它已無法領取。金額在你的餘額中。",
 

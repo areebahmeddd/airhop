@@ -941,7 +941,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Cüzdan deposu kilitli. Ecash'in, anahtarı cihazın anahtar zincirinde duran şifreli bir dosyada tutulur ve o dosya açılamadı. Cihazının kilidini açıp Airhop'u yeniden aç.",
   "wallet.balance.tor_blocked":
-    "Tor açık, bu yüzden darphane istekleri engelleniyor: açık ağ üzerinden gider ve IP adresini ecash'inle ilişkilendirirdi. Mesh üzerinden gönderip almak çalışmayı sürdürüyor. Darphane trafiğine Ayarlar, Güvenlik altından izin ver.",
+    "Tor açık, bu yüzden darphane istekleri engelleniyor: açık ağ üzerinden gider ve IP adresini ecash'inle ilişkilendirirdi. Mesh üzerinden gönderip almak çalışmayı sürdürüyor. Darphanelere yine de ulaşmak için Ayarlar'da {setting} seçeneğini aç.",
   "wallet.balance.offline":
     "Çevrimdışısın. Yakındaki kişilere yine de ödeme yapabilir ve jeton gönderebilirsin.",
   "wallet.balance.internet_off":
@@ -986,7 +986,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Bu jeton bir QR koda sığamayacak kadar çok jetona bölünmüş. Bunun yerine paylaş ya da kopyala, ya da birleştirmek için darphanede yenile.",
   "wallet.send.bearer_note":
-    "Bu dizeyi kim tutuyorsa para onundur. Jetonlar ayrıldı, harcanmadı: hiç kimseye ulaşmazsa Bekleyenler altından geri alabilirsin.",
+    "Bu dizeyi kim tutuyorsa para onundur. Jetonlar ayrıldı, harcanmadı: hiç kimseye ulaşmazsa Etkinlik altından geri alabilirsin.",
   "wallet.send.qr_too_big_short":
     "Bu jeton bir QR koda sığamayacak kadar çok jetona bölünmüş. Bunun yerine paylaş ya da kopyala.",
   "wallet.send.scan_note":
@@ -1004,7 +1004,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} gönder",
   "wallet.send.sent_to": "{name} kişisine {amount} {unit} gönderildi",
   "wallet.send.sent_to_body":
-    "{route} Aldıklarını onaylayana ya da darphane jetonun bozdurulduğunu bize söyleyene kadar Bekleyenler altında geri alınabilir kalır.",
+    "{route} Aldıklarını onaylayana ya da darphane jetonun bozdurulduğunu bize söyleyene kadar Etkinlik altında geri alınabilir kalır.",
   "wallet.send.copy_token": "Jetonu kopyala",
   "wallet.send.share_token": "Jetonu paylaş",
   "wallet.send.open_in_wallet": "Bu jetonu başka bir cüzdanda aç",
@@ -1303,7 +1303,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh çevrimdışı",
   "wallet.mesh_offline_body":
-    "Mesh hizmeti çalışmıyor, bu yüzden jetonu verecek kimse yok. Bekleyenler altında ayrılmış kalır.",
+    "Mesh hizmeti çalışmıyor, bu yüzden jetonu verecek kimse yok. Etkinlik altında ayrılmış kalır.",
   "wallet.xfer.route_mesh": "Mesh üzerinden doğrudan cihazlarına verildi.",
   "wallet.xfer.route_nostr":
     "Bluetooth menzilinin dışındaydılar, bu yüzden internet üzerinden gitti.",
@@ -1325,7 +1325,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Anahtarlarına kilitlendi. Aktarıcı kabul etmedi, bu yüzden onlara bir mesaj olarak gitti.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Anahtarlarına kilitlendi ama henüz hiçbir şey taşıyamadı. Sırada bekliyor ve jeton Bekleyenler altında.",
+    "Anahtarlarına kilitlendi ama henüz hiçbir şey taşıyamadı. Sırada bekliyor ve jeton Etkinlik altında.",
   "wallet.pay.final":
     "Kilitli ödemeler geri alınamaz: bu jetonları artık yalnızca onların anahtarı harcayabilir.",
   "wallet.pay.reclaimable":
@@ -1345,7 +1345,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Onların anahtarına kilitlenir. Gönderildikten sonra geri alınamaz.",
   "wallet.pay.confirm_reclaimable":
-    "Onlar alana kadar Bekleyenler'den geri alabilirsin.",
+    "Onlar alana kadar Etkinlik'ten geri alabilirsin.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kamera erişimi",
@@ -1408,7 +1408,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Darphaneye ulaşılamadı.",
   "wallet.svc.tor_ios": "iOS'ta darphane istekleri Tor üzerinden gitmez.",
   "wallet.svc.tor_ios_body":
-    "Arti yalnızca Nostr WebSocket'lerini sarar, bu yüzden bu istek darphaneye açık ağ üzerinden ulaşır ve IP adresini bu ecash ile ilişkilendirir. Ayarlar > Güvenlik altından izin ver ya da önce Tor'u kapat. Mesh üzerinden ecash gönderip almak çalışmayı sürdürür.",
+    "iOS'ta Tor yalnızca Nostr'ı kapsar, bu yüzden bu istek darphaneye açık ağ üzerinden ulaşır ve IP adresini bu ecash ile ilişkilendirir. Ayarlar'da {setting} seçeneğini aç ya da önce Tor'u kapat. Mesh üzerinden ecash gönderip almak çalışmayı sürdürür.",
   "wallet.svc.internet_off":
     "İnternet kapalı, bu yüzden darphaneye ulaşılamıyor.",
   "wallet.svc.internet_off_body":
@@ -1520,7 +1520,7 @@ export const strings: Strings = {
     "Bu takas, bu sürümün yeniden oynatamayacağı bir biçimde kaydedilmiş.",
   "wallet.svc.lock_in_doubt": "Bu ödeme gerçekleşmiş de olabilir, olmamış da.",
   "wallet.svc.lock_in_doubt_body":
-    "Başka bir şey gönderilmedi. Darphane sonucu onaylayana kadar paralar bekletiliyor. Ödeme gerçekleştiyse kilitli token, teslim etmen için Bekleyenler'de görünür. Gerçekleşmediyse paralar geri gelir.",
+    "Başka bir şey gönderilmedi. Darphane sonucu onaylayana kadar paralar bekletiliyor. Ödeme gerçekleştiyse kilitli token, teslim etmen için Etkinlik'te görünür. Gerçekleşmediyse paralar geri gelir.",
   "wallet.svc.send_spent_by_swap":
     "Bu paralar, token alınmadan önce cüzdanına geri takas edildi, bu yüzden artık alınamaz. Tutar bakiyende.",
 

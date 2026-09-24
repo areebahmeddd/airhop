@@ -961,7 +961,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Le stockage du portefeuille est verrouillé. Tes ecash sont conservés dans un fichier chiffré dont la clé se trouve dans le trousseau de l’appareil, et il n’a pas pu être ouvert. Déverrouille l’appareil et rouvre Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor est actif, donc les requêtes au mint sont bloquées : elles sortiraient sur le réseau en clair et relieraient ton IP à tes ecash. Envoyer et recevoir sur le maillage fonctionne toujours. Autorise le trafic vers le mint dans Réglages, Sécurité.",
+    "Tor est actif, donc les requêtes au mint sont bloquées : elles sortiraient sur le réseau en clair et relieraient ton IP à tes ecash. Envoyer et recevoir sur le maillage fonctionne toujours. Pour joindre les mints malgré tout, active {setting} dans les Réglages.",
   "wallet.balance.offline":
     "Hors ligne. Tu peux toujours payer les gens à proximité et envoyer des jetons.",
   "wallet.balance.internet_off":
@@ -1010,7 +1010,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Ce jeton est réparti sur trop de pièces pour tenir dans un code QR. Partage-le ou copie-le, ou actualise auprès du mint pour le consolider.",
   "wallet.send.bearer_note":
-    "Celui qui détient cette chaîne possède l’argent. Les pièces sont réservées, pas dépensées : si elle n’atteint personne, tu peux les récupérer dans En attente.",
+    "Celui qui détient cette chaîne possède l’argent. Les pièces sont réservées, pas dépensées : si elle n’atteint personne, tu peux les récupérer dans Activité.",
   "wallet.send.qr_too_big_short":
     "Ce jeton est réparti sur trop de pièces pour tenir dans un code QR. Partage-le ou copie-le.",
   "wallet.send.scan_note":
@@ -1028,7 +1028,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Envoyer {amount}",
   "wallet.send.sent_to": "{amount} {unit} envoyés à {name}",
   "wallet.send.sent_to_body":
-    "{route} Il reste récupérable dans En attente jusqu’à ce que tu confirmes la réception, ou que le mint nous dise que le jeton a été encaissé.",
+    "{route} Il reste récupérable dans Activité jusqu’à ce que tu confirmes la réception, ou que le mint nous dise que le jeton a été encaissé.",
   "wallet.send.copy_token": "Copier le jeton",
   "wallet.send.share_token": "Partager le jeton",
   "wallet.send.open_in_wallet": "Ouvrir ce jeton dans un autre portefeuille",
@@ -1331,7 +1331,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Maillage hors ligne",
   "wallet.mesh_offline_body":
-    "Le service de maillage ne tourne pas, il n’y a donc personne à qui remettre le jeton. Il reste réservé dans En attente.",
+    "Le service de maillage ne tourne pas, il n’y a donc personne à qui remettre le jeton. Il reste réservé dans Activité.",
   "wallet.xfer.route_mesh":
     "Remis directement à leur appareil sur le maillage.",
   "wallet.xfer.route_nostr":
@@ -1354,7 +1354,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Verrouillé sur leur clé. Le relais ne l’a pas accepté, il leur est donc parvenu sous forme de message.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Verrouillé sur leur clé, mais rien n’a encore pu le transporter. C’est en file d’attente, et le jeton se trouve dans En attente.",
+    "Verrouillé sur leur clé, mais rien n’a encore pu le transporter. C’est en file d’attente, et le jeton se trouve dans Activité.",
   "wallet.pay.final":
     "Les paiements verrouillés ne peuvent pas être récupérés : seule leur clé peut désormais dépenser ces pièces.",
   "wallet.pay.reclaimable":
@@ -1374,7 +1374,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Il est verrouillé sur sa clé. Une fois envoyé, il ne peut pas être repris.",
   "wallet.pay.confirm_reclaimable":
-    "Tu peux le récupérer depuis En attente tant qu’il n’est pas réclamé.",
+    "Tu peux le récupérer depuis Activité tant qu’il n’est pas réclamé.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Accès à la caméra",
@@ -1440,7 +1440,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Impossible de joindre le mint.",
   "wallet.svc.tor_ios": "Sur iOS, les requêtes au mint ne passent pas par Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti n’enveloppe que les WebSockets Nostr, cette requête atteindrait donc le mint sur le réseau en clair et relierait ton IP à ces ecash. Autorise-le dans Réglages > Sécurité, ou désactive Tor d’abord. Envoyer et recevoir des ecash sur le maillage fonctionne toujours.",
+    "Sur iOS, Tor ne couvre que Nostr, cette requête atteindrait donc le mint sur le réseau en clair et relierait ton IP à ces ecash. Active {setting} dans les Réglages, ou désactive Tor d’abord. Envoyer et recevoir des ecash sur le maillage fonctionne toujours.",
   "wallet.svc.internet_off":
     "Internet est désactivé, le mint est donc injoignable.",
   "wallet.svc.internet_off_body":
@@ -1555,7 +1555,7 @@ export const strings: Strings = {
   "wallet.svc.lock_in_doubt":
     "Ce paiement est peut-être passé, ou peut-être pas.",
   "wallet.svc.lock_in_doubt_body":
-    "Rien d’autre n’a été envoyé. Les pièces sont retenues jusqu’à ce que le mint confirme le résultat. Si le paiement est passé, le jeton verrouillé apparaît dans En attente pour que tu le remettes. Sinon, les pièces reviennent.",
+    "Rien d’autre n’a été envoyé. Les pièces sont retenues jusqu’à ce que le mint confirme le résultat. Si le paiement est passé, le jeton verrouillé apparaît dans Activité pour que tu le remettes. Sinon, les pièces reviennent.",
   "wallet.svc.send_spent_by_swap":
     "Ces pièces ont été échangées vers ton portefeuille avant que ce jeton soit réclamé, il ne peut donc plus l’être. Le montant est dans ton solde.",
 

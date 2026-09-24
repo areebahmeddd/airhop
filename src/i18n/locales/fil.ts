@@ -977,7 +977,7 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Naka-lock ang imbakan ng wallet. Nasa naka-encrypt na file ang ecash mo at nasa keychain ng device ang susi nito, at hindi ito nabuksan. I-unlock ang device mo at buksang muli ang Airhop.",
   "wallet.balance.tor_blocked":
-    "Naka-on ang Tor, kaya naka-block ang mga hiling sa mint: dadaan sana ang mga ito sa bukas na net at maiuugnay ang IP mo sa ecash mo. Gumagana pa rin ang pagpapadala at pagtanggap sa mesh. Payagan ang trapiko ng mint sa ilalim ng Mga Setting, Seguridad.",
+    "Naka-on ang Tor, kaya naka-block ang mga hiling sa mint: dadaan sana ang mga ito sa bukas na net at maiuugnay ang IP mo sa ecash mo. Gumagana pa rin ang pagpapadala at pagtanggap sa mesh. Para maabot ang mga mint kahit ganoon, i-on ang {setting} sa Settings.",
   "wallet.balance.offline":
     "Offline. Makakapagbayad ka pa rin sa mga tao sa malapit at makakapagpadala ng token.",
   "wallet.balance.internet_off":
@@ -1025,7 +1025,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Nahahati ang token na ito sa napakaraming barya kaya hindi ito kasya sa QR code. Ibahagi o kopyahin na lang ito, o mag-refresh sa mint para pagsamahin ang mga ito.",
   "wallet.send.bearer_note":
-    "Kung sino ang may hawak ng string na ito ang nagmamay-ari ng pera. Nakalaan ang mga barya, hindi nagastos: kung wala itong maabot na tao, mababawi mo ang mga ito sa ilalim ng Nakabinbin.",
+    "Kung sino ang may hawak ng string na ito ang nagmamay-ari ng pera. Nakalaan ang mga barya, hindi nagastos: kung wala itong maabot na tao, mababawi mo ang mga ito sa ilalim ng Aktibidad.",
   "wallet.send.qr_too_big_short":
     "Nahahati ang token na ito sa napakaraming barya kaya hindi ito kasya sa QR code. Ibahagi o kopyahin na lang ito.",
   "wallet.send.scan_note":
@@ -1043,7 +1043,7 @@ export const strings: Strings = {
   "wallet.send.send_amount": "Magpadala ng {amount}",
   "wallet.send.sent_to": "{amount} {unit} ang naipadala kay {name}",
   "wallet.send.sent_to_body":
-    "{route} Mananatili itong mababawi sa ilalim ng Nakabinbin hangga't hindi mo kinukumpirmang natanggap nila ito, o hangga't hindi sinasabi ng mint na natubos na ang token.",
+    "{route} Mananatili itong mababawi sa ilalim ng Aktibidad hangga't hindi mo kinukumpirmang natanggap nila ito, o hangga't hindi sinasabi ng mint na natubos na ang token.",
   "wallet.send.copy_token": "Kopyahin ang token",
   "wallet.send.share_token": "Ibahagi ang token",
   "wallet.send.open_in_wallet": "Buksan ang token na ito sa ibang wallet",
@@ -1347,7 +1347,7 @@ export const strings: Strings = {
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Offline ang mesh",
   "wallet.mesh_offline_body":
-    "Hindi tumatakbo ang serbisyo ng mesh, kaya walang mapagbibigyan ng token. Mananatili itong nakalaan sa ilalim ng Nakabinbin.",
+    "Hindi tumatakbo ang serbisyo ng mesh, kaya walang mapagbibigyan ng token. Mananatili itong nakalaan sa ilalim ng Aktibidad.",
   "wallet.xfer.route_mesh":
     "Direktang ibinigay sa device nila sa pamamagitan ng mesh.",
   "wallet.xfer.route_nostr":
@@ -1370,7 +1370,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Nakakandado sa susi nila. Ayaw itong tanggapin ng relay, kaya napunta ito sa kanila bilang mensahe.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Nakakandado sa susi nila, pero wala pang nakakapagdala nito. Nakapila ito, at nasa ilalim ng Nakabinbin ang token.",
+    "Nakakandado sa susi nila, pero wala pang nakakapagdala nito. Nakapila ito, at nasa ilalim ng Aktibidad ang token.",
   "wallet.pay.final":
     "Hindi mababawi ang mga nakakandadong bayad: susi lang nila ang makakagastos ng mga baryang ito ngayon.",
   "wallet.pay.reclaimable":
@@ -1390,7 +1390,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Naka-lock ito sa kanilang key. Kapag naipadala, hindi na ito mababawi.",
   "wallet.pay.confirm_reclaimable":
-    "Mababawi mo ito mula sa Nakabinbin hangga't hindi pa nila ito kinukuha.",
+    "Mababawi mo ito mula sa Aktibidad hangga't hindi pa nila ito kinukuha.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Pag-access sa camera",
@@ -1456,7 +1456,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Hindi naabot ang mint.",
   "wallet.svc.tor_ios": "Hindi dumadaan sa Tor ang mga hiling sa mint sa iOS.",
   "wallet.svc.tor_ios_body":
-    "Mga WebSocket lang ng Nostr ang binabalot ng Arti, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa ecash na ito. Payagan ito sa ilalim ng Mga Setting > Seguridad, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
+    "Nostr lang ang sakop ng Tor sa iOS, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa ecash na ito. I-on ang {setting} sa Settings, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
   "wallet.svc.internet_off":
     "Naka-off ang internet, kaya hindi maabot ang mint.",
   "wallet.svc.internet_off_body":
@@ -1573,7 +1573,7 @@ export const strings: Strings = {
     "Na-save ang palitang ito sa anyong hindi kayang ulitin ng bersyong ito.",
   "wallet.svc.lock_in_doubt": "Maaaring natuloy o hindi ang bayad na ito.",
   "wallet.svc.lock_in_doubt_body":
-    "Walang ibang naipadala. Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan. Kung natuloy, lalabas ang naka-lock na token sa Nakabinbin para iabot mo. Kung hindi, babalik ang mga barya.",
+    "Walang ibang naipadala. Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan. Kung natuloy, lalabas ang naka-lock na token sa Aktibidad para iabot mo. Kung hindi, babalik ang mga barya.",
   "wallet.svc.send_spent_by_swap":
     "Na-swap pabalik sa iyong wallet ang mga coin na ito bago na-claim ang token na ito, kaya hindi na ito ma-claim. Nasa balanse mo ang halaga.",
 
