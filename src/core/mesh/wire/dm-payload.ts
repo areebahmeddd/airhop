@@ -11,11 +11,6 @@
 //   [1]              idLen   u8   (bytes of the message id, 0 to 255)
 //   [2 .. 2+idLen]   id      UTF-8 message id
 //   [2+idLen .. ]    text    UTF-8 text (type 0x01 only, empty for receipts)
-//
-// Anything that is not a well-formed envelope (too short, unknown type byte, an
-// idLen that does not fit) is read as legacy raw text. UTF-8 text never starts
-// with a 0x01, 0x02 or 0x03 control byte, so the two cannot be confused, and a
-// peer on the old format still renders correctly, just without receipts.
 
 export const DmPayloadType = {
   MESSAGE: 0x01,
@@ -29,8 +24,7 @@ export type DmPayloadTypeValue =
 export interface DmPayload {
   type: DmPayloadTypeValue;
   // Message id this payload is about: the message's own id (MESSAGE) or the id
-  // being acknowledged (receipts). Empty string only for a legacy message with
-  // no id on the wire.
+  // being acknowledged (receipts). Never empty.
   messageId: string;
   // Present for MESSAGE; empty for receipts.
   text: string;
@@ -68,30 +62,24 @@ function encodeEnvelope(
   return out;
 }
 
-// Decode a decrypted DM payload. Never throws: an unrecognised buffer falls
-// back to a legacy raw-text message so old-format DMs keep working.
-export function decodeDmPayload(bytes: Uint8Array): DmPayload {
-  if (bytes.length >= 2) {
-    const type = bytes[0];
-    const idLen = bytes[1];
-    if (
-      (type === DmPayloadType.MESSAGE ||
-        type === DmPayloadType.READ_RECEIPT ||
-        type === DmPayloadType.DELIVERED) &&
-      2 + idLen <= bytes.length
-    ) {
-      const messageId = decoder.decode(bytes.slice(2, 2 + idLen));
-      const text =
-        type === DmPayloadType.MESSAGE
-          ? decoder.decode(bytes.slice(2 + idLen))
-          : "";
-      return { type, messageId, text };
-    }
+// Decode a decrypted DM payload. Null for anything that is not a well-formed
+// envelope: an unknown type, an id that is empty or overruns the buffer.
+export function decodeDmPayload(bytes: Uint8Array): DmPayload | null {
+  if (bytes.length < 2) return null;
+  const type = bytes[0];
+  const idLen = bytes[1];
+  if (
+    type !== DmPayloadType.MESSAGE &&
+    type !== DmPayloadType.READ_RECEIPT &&
+    type !== DmPayloadType.DELIVERED
+  ) {
+    return null;
   }
-  // Legacy path: the whole buffer is the message text, no id on the wire.
-  return {
-    type: DmPayloadType.MESSAGE,
-    messageId: "",
-    text: decoder.decode(bytes),
-  };
+  if (idLen === 0 || 2 + idLen > bytes.length) return null;
+  const messageId = decoder.decode(bytes.slice(2, 2 + idLen));
+  const text =
+    type === DmPayloadType.MESSAGE
+      ? decoder.decode(bytes.slice(2 + idLen))
+      : "";
+  return { type, messageId, text };
 }

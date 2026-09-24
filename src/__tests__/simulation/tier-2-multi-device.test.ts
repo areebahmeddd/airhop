@@ -25,6 +25,7 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice, type DeviceSpec } from "./harness/device";
 import {
   badgeMatchesThreads,
@@ -37,6 +38,7 @@ import {
   unreadCoherent,
 } from "./harness/invariants";
 import { RadioFabric } from "./harness/radio-fabric";
+import { RelayFabric } from "./harness/relay-fabric";
 import {
   advanceFor,
   Scenario,
@@ -548,5 +550,112 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
       .find((m) => m.text === "after your reboot")?.status === "delivered",
   );
   s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});
+
+test("B09 an internet DM shows the contact's name and is acknowledged once", async () => {
+  // Alice scanned bob's card and filed him under a name of her own. His DMs
+  // reach her over the relays, never the radio, and must still carry it. A
+  // rebuild of her relay pool replays everything the relays hold, and that must
+  // not acknowledge the same DM a second time.
+  const s = (scenario = new Scenario({
+    id: "B09",
+    title: "internet DM naming and receipts",
+    seed: 90,
+  }));
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(
+    s.world,
+    { id: "alice", platform: "android", seedByte: 11, internetEnabled: true },
+    relay,
+  );
+  const bob = SimDevice.create(
+    s.world,
+    { id: "bob", platform: "android", seedByte: 22, internetEnabled: true },
+    relay,
+  );
+  s.track(alice, bob);
+  alice.launch();
+  bob.launch();
+  await waitFor(
+    s.world,
+    () =>
+      relay.connectionCount("alice") > 0 && relay.connectionCount("bob") > 0,
+    20_000,
+  );
+
+  (
+    alice.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: bob.peerID,
+      noisePubKey: bob.identity.noiseStaticPubKey,
+      signingPubKey: bob.identity.signingPubKey,
+      nickname: "bob",
+      nostrPubKey: hexToBytes(bob.nostrPubkey),
+    },
+    { inPerson: true },
+  );
+  // What the QR flow writes beside the call above.
+  (alice.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: bob.peerID,
+    noisePubKeyHex: bytesToHex(bob.identity.noiseStaticPubKey),
+    signingPubKeyHex: bytesToHex(bob.identity.signingPubKey),
+    nickname: "bob",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+    verifiedAtMs: s.world.wallClock(),
+    nostrPubkeyHex: bob.nostrPubkey,
+  });
+  (
+    alice.store("contactsStore").getState().setLocalNickname as (
+      peerID: string,
+      nickname: string,
+    ) => void
+  )(bob.peerID, "Sahl");
+
+  bob.sendDm(`nostr_${alice.nostrPubkey}`, "over the internet");
+  const thread = `dm:${bob.peerID}`;
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(thread).includes("over the internet"),
+    60_000,
+  );
+  s.check("the DM lands in bob's thread", landed);
+  const received = alice
+    .messages(thread)
+    .find((m) => m.text === "over the internet");
+  s.check(
+    "it carries the name alice gave him",
+    received?.senderNickname === "Sahl",
+    `name=${String(received?.senderNickname)}`,
+  );
+
+  // Receipts from alice to bob are the only wraps addressed to him.
+  const wrapsToBob = (): number =>
+    new Set(
+      relay
+        .eventsOfKind(1059)
+        .filter((e) =>
+          e.tags.some((t) => t[0] === "p" && t[1] === bob.nostrPubkey),
+        )
+        .map((e) => e.id),
+    ).size;
+  await s.world.advance(5_000);
+  const before = wrapsToBob();
+  s.check("alice acknowledged it", before > 0);
+
+  (alice.mesh as unknown as { restartNostr: () => void }).restartNostr();
+  await waitFor(s.world, () => relay.connectionCount("alice") > 0, 20_000);
+  await s.world.advance(10_000);
+  s.check(
+    "a rebuilt pool does not acknowledge it again",
+    wrapsToBob() === before,
+    `before=${String(before)} after=${String(wrapsToBob())}`,
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });

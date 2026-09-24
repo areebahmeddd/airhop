@@ -399,7 +399,7 @@ function applyBlePermissionResult(perm: BlePermissionResult): void {
 // Separated from the mesh start so it is unmistakable that nothing here can
 // prevent the mesh existing. Every branch is fire-and-forget by design.
 function startMeshDependents(): void {
-  // A network coming back nudges relays, Tor and queued mail.
+  // A network coming back nudges relays, Tor, queued mail and the wallet.
   startReachabilityWatch();
 
   // Open the encrypted ecash store and settle anything left in flight. Proofs

@@ -204,7 +204,11 @@ import {
 } from "@store/group-invite-outbox-store";
 import { groupChannel, useGroupStore } from "@store/group-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { useOutboxStore, type PendingMessage } from "@store/outbox-store";
+import {
+  OUTBOX_TTL_MS,
+  useOutboxStore,
+  type PendingMessage,
+} from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
 import { notifyInboundRing, useRingStore } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -318,6 +322,17 @@ export interface VoiceLevel {
 const MESH_PING_TTL = 7;
 // How long to wait for a pong before resolving the probe as unreachable.
 const MESH_PING_TIMEOUT_MS = 10_000;
+
+// How far back the DM inbox asks relays for mail. bitchat asks for 24 h, but an
+// Airhop sender keeps unacknowledged mail for OUTBOX_TTL_MS and republishes it
+// only on a delivery opportunity, not on a timer, so a phone away for longer
+// than a day would never see a message published once while it was gone.
+// Anything older than this has expired at the sender anyway.
+const INBOX_LOOKBACK_SECONDS = OUTBOX_TTL_MS / 1000;
+
+// Bound on the gift wraps remembered as opened. Well past what one inbox's
+// lookback holds; past it, the oldest is forgotten and at worst opened again.
+const MAX_OPENED_GIFT_WRAPS = 5_000;
 
 // Minimum spacing between pong replies on one ingress link (anti-amplification).
 const MESH_PONG_MIN_INTERVAL_MS = 100;
@@ -729,7 +744,7 @@ export class MeshService {
       { peerID: identity.peerID, signingPrivKey: identity.signingPrivKey },
       broadcastFn,
       unicastFn,
-      (peerID) => this.registry.get(peerID)?.nickname,
+      resolveDisplayName,
       (recipientPeerID, fileTlv) =>
         this.sealFileForPeer(recipientPeerID, fileTlv),
       // Whether this transfer has to be paced for the Bluetooth radio.
@@ -2418,8 +2433,7 @@ export class MeshService {
     // nothing beats an arrow pointing at a place that cannot exist.
     if (pin === null) return;
 
-    const peer = this.registry.get(senderID);
-    const nickname = peer?.nickname ?? senderID.slice(0, 8);
+    const nickname = resolveDisplayName(senderID);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       // Derived from the sender and the fix rather than random, so a pin that
@@ -2504,9 +2518,7 @@ export class MeshService {
 
     ringStore.recordReceived(senderID, nowMs);
 
-    const peer = this.registry.get(senderID);
-    const nickname =
-      peer?.nickname ?? contact?.nickname ?? senderID.slice(0, 8);
+    const nickname = resolveDisplayName(senderID);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       id: ringID,
@@ -2768,8 +2780,7 @@ export class MeshService {
     const pm = decodePrivateMessagePacket(payload.body);
     if (pm === null) return;
 
-    const peer = this.registry.get(senderID);
-    const nickname = peer?.nickname ?? senderID.slice(0, 8);
+    const nickname = resolveDisplayName(senderID);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       // Use the sender's message id so a delivery/read receipt we send back, and
@@ -2821,42 +2832,31 @@ export class MeshService {
     const channel = `dm:${senderID}`;
 
     // The decrypted payload is either a message or a receipt (see dm-payload).
-    // Backward-compatible: a legacy raw-text DM decodes as a message with no id.
     const payload = decodeDmPayload(plaintext);
+    if (payload === null) return;
 
     if (payload.type === DmPayloadType.DELIVERED) {
-      if (payload.messageId) {
-        useChatStore
-          .getState()
-          .setMessageStatus(
-            channel,
-            payload.messageId,
-            "delivered",
-            Date.now(),
-          );
-        // Acknowledged, so stop owing it. Same rule on every transport.
-        useOutboxStore.getState().resolve(payload.messageId);
-        this.courieredTo.delete(payload.messageId);
-      }
+      useChatStore
+        .getState()
+        .setMessageStatus(channel, payload.messageId, "delivered", Date.now());
+      // Acknowledged, so stop owing it. Same rule on every transport.
+      useOutboxStore.getState().resolve(payload.messageId);
+      this.courieredTo.delete(payload.messageId);
       return;
     }
     if (payload.type === DmPayloadType.READ_RECEIPT) {
-      if (payload.messageId) {
-        useChatStore
-          .getState()
-          .setMessageStatus(channel, payload.messageId, "read", Date.now());
-      }
+      useChatStore
+        .getState()
+        .setMessageStatus(channel, payload.messageId, "read", Date.now());
       return;
     }
 
-    const peer = this.registry.get(senderID);
-    const nickname = peer?.nickname ?? senderID.slice(0, 8);
+    const nickname = resolveDisplayName(senderID);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       // The sender's id, so a retry of an unacknowledged message lands on the
-      // bubble it already has. The timestamp form is only for a legacy payload
-      // that carries no id.
-      id: payload.messageId || `${senderID}-${String(packet.timestamp)}-dr`,
+      // bubble it already has.
+      id: payload.messageId,
       channel,
       senderID,
       senderNickname: nickname,
@@ -2867,12 +2867,10 @@ export class MeshService {
 
     // Tell the sender it arrived, and remember to send a read receipt when the
     // user opens this conversation. Both are best-effort over the same DR link.
-    if (payload.messageId) {
-      this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
-      const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
-      pending.add(payload.messageId);
-      this.pendingReadAcks.set(senderID, pending);
-    }
+    this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
+    const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
+    pending.add(payload.messageId);
+    this.pendingReadAcks.set(senderID, pending);
   }
 
   // Send a delivery/read receipt back to a message's sender over the Double
@@ -4932,8 +4930,7 @@ export class MeshService {
         id,
         direction: "receive",
         channel: `dm:${senderHex}`,
-        peerLabel:
-          this.registry.get(senderHex)?.nickname ?? senderHex.slice(0, 8),
+        peerLabel: resolveDisplayName(senderHex),
         // Real type/name are unknown until the file's TLV decodes on completion.
         type: "document",
         name: t("notif.incoming_file"),
@@ -6074,15 +6071,24 @@ export class MeshService {
     this.retryQueuedOverInternet();
   }
 
-  // A network came back, or changed under a live one (services/reachability).
-  // The pool is rebuilt only when no relay is live: one with a relay up heals
-  // its own drops, and a teardown on a handoff would cost every subscription.
-  onNetworkChanged(): void {
+  // A network came back, changed, or validated (services/reachability).
+  //
+  // `networkReplaced` means the relay sockets were opened on a network that has
+  // gone, so the pool is rebuilt even if some still read as live: nothing pings
+  // the relays, and a socket on a dead interface can look open for minutes.
+  // Otherwise it is rebuilt only when no relay is live, since a pool with one
+  // up heals its own drops.
+  //
+  // Mail is retried only when the pool survives. A rebuilt pool retries on its
+  // own connect, and retrying now would find no relay yet spend the throttle.
+  onNetworkChanged(networkReplaced: boolean): void {
     if (!this.running) return;
-    if (this.nostrClient !== null && !this.nostrClient.isConnected) {
-      this.restartNostr();
-    }
     this.lan.refresh();
+    const client = this.nostrClient;
+    if (client !== null && (networkReplaced || !client.isConnected)) {
+      this.restartNostr();
+      return;
+    }
     this.retryQueuedOverInternet();
   }
 
@@ -6260,19 +6266,37 @@ export class MeshService {
   // Subscribe to gift-wrap DMs (kind 1059) addressed to our Nostr pubkey. Split
   // out so it can be re-run after the pool is rebuilt for a Tor toggle: the old
   // subscription dies with the old pool, so a fresh one must be opened.
+  // Gift wraps already opened this session. Every rebuild of the relay pool
+  // replays the whole lookback, and each replay would otherwise be decrypted
+  // and acknowledged again. Keyed by the
+  // wrap's event ID, not the message ID: a sender who never saw our receipt
+  // retries in a new wrap, and that one still has to be acknowledged.
+  private readonly openedGiftWraps = new Set<string>();
+
+  private noteOpenedGiftWrap(eventID: string): void {
+    // Oldest first, since a Set iterates in insertion order.
+    if (this.openedGiftWraps.size >= MAX_OPENED_GIFT_WRAPS) {
+      const oldest = this.openedGiftWraps.values().next().value;
+      if (oldest !== undefined) this.openedGiftWraps.delete(oldest);
+    }
+    this.openedGiftWraps.add(eventID);
+  }
+
   private subscribeNostrInbox(): void {
     if (this.nostrClient === null) return;
     this.nostrClient.subscribe(
-      [{ kinds: [1059], "#p": [this.nostrPubKeyHex] }],
+      [
+        {
+          kinds: [1059],
+          "#p": [this.nostrPubKeyHex],
+          since: Math.floor(Date.now() / 1000) - INBOX_LOOKBACK_SECONDS,
+        },
+      ],
       (event) => {
+        if (this.openedGiftWraps.has(event.id)) return;
         try {
-          // No `since` on this subscription, so only the future bound applies: a
-          // relay may hold a genuinely old DM from while we were away.
-          const dm = unwrapDm(
-            event,
-            this.nostrPrivKey,
-            Number.POSITIVE_INFINITY,
-          );
+          const dm = unwrapDm(event, this.nostrPrivKey, INBOX_LOOKBACK_SECONDS);
+          this.noteOpenedGiftWrap(event.id);
           // Map sender Nostr pubkey back to their peerID if we know them.
           const peerID = this.nostrPubkeyToPeerID.get(dm.senderPubkey);
           // Blocking has to be honoured on the internet path too, otherwise a
@@ -6319,14 +6343,12 @@ export class MeshService {
           }
           if (env.type !== NoisePayloadType.PRIVATE_MESSAGE) return;
 
-          const peer = peerID ? this.registry.get(peerID) : undefined;
           useChatStore.getState().addChannel(channel);
           useChatStore.getState().addMessage({
             id: env.messageID,
             channel,
             senderID: senderKey,
-            senderNickname:
-              peer?.nickname ?? `npub…${dm.senderPubkey.slice(-6)}`,
+            senderNickname: resolveDisplayName(senderKey),
             text: env.content,
             timestampMs: dm.timestamp * 1000,
             isMine: false,

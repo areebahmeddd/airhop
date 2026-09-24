@@ -11,11 +11,13 @@
 // through Tor is done one level up, by swapping nostr-tools' WebSocket
 // implementation (see tor-routing.ts): on iOS for TorWebSocket, which tunnels
 // over Arti's SOCKS5 proxy, and on Android by the proxy installed into the
-// shared OkHttp client every socket is built from. The pool
-// is created with auto-reconnect so that when the transport is swapped (or a
-// relay drops) connections re-open on their own, and so a pool primed for Tor
-// before Arti has finished bootstrapping simply retries until the circuit is up
-// rather than ever falling back to the clear net.
+// shared OkHttp client every socket is built from.
+//
+// Auto-reconnect covers a relay that drops after connecting, and only that.
+// nostr-tools never retries a relay whose first connect fails: it is dropped,
+// with its subscriptions, for the life of this client. So callers build a
+// client only once there is a route for it, and build a new one when the
+// network comes back.
 
 import type { Event } from "nostr-tools";
 import type { Filter } from "nostr-tools/filter";
@@ -26,6 +28,7 @@ import {
   GEO_RELAY_COUNT,
   MAX_CUSTOM_RELAYS,
 } from "./geo-relay";
+import { KIND_GIFT_WRAP } from "./gift-wrap";
 
 // Maximum relays in the default pool (DM / gift-wrap traffic).
 const MAX_RELAY_COUNT = 5;
@@ -44,6 +47,11 @@ const MAX_OVERRIDE_RELAY_COUNT = GEO_RELAY_COUNT + MAX_CUSTOM_RELAYS;
 // How long to wait for a publish ACK from at least one relay.
 const PUBLISH_TIMEOUT_MS = 8_000;
 
+// A relay that misses its first connect is dropped for good (see the header),
+// so this covers the slowest honest connect, not the typical one: TLS across a
+// three-hop Tor circuit, or a congested cellular link. nostr-tools allows 3 s.
+const CONNECT_TIMEOUT_MS = 10_000;
+
 // Ceiling on a one-shot read (querySync / get). Without it these resolve only
 // once every relay has sent EOSE, which never happens on a connection that went
 // away without closing - the case where you walk out of Wi-Fi range mid-request.
@@ -51,6 +59,8 @@ const PUBLISH_TIMEOUT_MS = 8_000;
 // loading state for the rest of the session with no way back. Returning
 // whatever arrived inside the window is both bounded and honest: these reads
 // are best-effort lookups across a relay set that is never guaranteed complete.
+// Counted per relay from its connect, so a relay slow to connect adds up to
+// CONNECT_TIMEOUT_MS on top.
 const QUERY_MAX_WAIT_MS = 6_000;
 
 // How long the inbound pump may run handlers before handing the thread back.
@@ -96,11 +106,8 @@ export class NostrClient {
 
   constructor(config: NostrClientConfig = {}) {
     this.onConnectionChange = config.onConnectionChange;
-    // enableReconnect: relays that drop (or whose first connect fails, e.g. when
-    // the pool is primed for Tor before Arti is ready) retry with backoff and
-    // re-open their subscriptions, so the transport self-heals without a manual
-    // resubscribe. See tor-routing.ts, which rebuilds this pool on a Tor toggle.
     this.pool = new SimplePool({ enableReconnect: true });
+    this.pool.maxWaitForConnection = CONNECT_TIMEOUT_MS;
     // The pool tells us as relays connect and drop (set as properties: the
     // SimplePool constructor doesn't accept these in its options). We translate
     // that into a single "any live relay" boolean for the caller.
@@ -187,13 +194,14 @@ export class NostrClient {
     // SimplePool.subscribeMany takes a single merged filter. Merge all filters
     // into one using OR semantics via the ids/kinds/authors fields approach:
     // for multiple filters we subscribe each separately and merge the closers.
-    if (filters.length === 1) {
-      return this.pool.subscribeMany(targets, filters[0], {
+    const pinned = filters.map(pinGiftWrapSince);
+    if (pinned.length === 1) {
+      return this.pool.subscribeMany(targets, pinned[0], {
         onevent: deliver,
         oneose: deliverEose,
       });
     }
-    const closers = filters.map((f) =>
+    const closers = pinned.map((f) =>
       this.pool.subscribeMany(targets, f, { onevent: deliver }),
     );
     return {
@@ -346,6 +354,22 @@ export class NostrClient {
     // pending drain finds an empty queue and stops.
     this.pending.length = 0;
   }
+}
+
+// nostr-tools moves a subscription's `since` to just past the newest
+// `created_at` it has delivered whenever a relay reconnects. A gift wrap's
+// `created_at` is blurred up to 15 minutes either side of the send time, so
+// that move can land in the future, and relays then withhold every newer wrap
+// until the clock catches up. A gift-wrap filter keeps the `since` it was
+// given: the library writes to the field, and the write is ignored.
+function pinGiftWrapSince(filter: Filter): Filter {
+  if (filter.kinds?.includes(KIND_GIFT_WRAP) !== true) return filter;
+  const { since, ...rest } = filter;
+  return Object.defineProperty(rest, "since", {
+    enumerable: true,
+    get: () => since,
+    set: () => {},
+  });
 }
 
 // Ensure a relay URL starts with wss:// or ws://, and strip a trailing slash.

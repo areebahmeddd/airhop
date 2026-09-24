@@ -436,7 +436,7 @@ export class FileTransferService {
   private readonly identity: ServiceIdentity;
   private readonly broadcast: PacedBroadcastFn;
   private readonly unicast: PacedUnicastFn;
-  private readonly resolveNickname?: (peerID: string) => string | undefined;
+  private readonly resolveNickname: (peerID: string) => string;
 
   // Send-side progress accounting, keyed by the UI transfer id.
   private readonly outbound = new Map<
@@ -477,7 +477,7 @@ export class FileTransferService {
     identity: ServiceIdentity,
     broadcast: PacedBroadcastFn,
     unicast: PacedUnicastFn,
-    resolveNickname?: (peerID: string) => string | undefined,
+    resolveNickname: (peerID: string) => string,
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
   ) {
@@ -644,10 +644,7 @@ export class FileTransferService {
       id: transferId,
       direction: "send",
       channel,
-      peerLabel: isDM
-        ? (this.resolveNickname?.(recipientPeerID) ??
-          recipientPeerID.slice(0, 8))
-        : "",
+      peerLabel: isDM ? this.resolveNickname(recipientPeerID) : "",
       type: meta.type,
       name: fileName,
       totalBytes: fileBytes.length,
@@ -833,8 +830,7 @@ export class FileTransferService {
       id: `ft-fail-${senderPeerID}-${Date.now()}`,
       channel,
       senderID: senderPeerID,
-      senderNickname:
-        this.resolveNickname?.(senderPeerID) ?? senderPeerID.slice(0, 8),
+      senderNickname: this.resolveNickname(senderPeerID),
       // Airhop's words, so the row re-reads them in the language it is opened
       // in later.
       ...systemRow(attachmentFailureKey(reason)),
@@ -957,8 +953,7 @@ export class FileTransferService {
       id: `ft-${senderPeerID}-${Date.now()}`,
       channel,
       senderID: senderPeerID,
-      senderNickname:
-        this.resolveNickname?.(senderPeerID) ?? senderPeerID.slice(0, 8),
+      senderNickname: this.resolveNickname(senderPeerID),
       // The caption rides with the file, so the received bubble shows the media
       // and its caption together, exactly as the sender composed it.
       text: fp.caption ?? "",

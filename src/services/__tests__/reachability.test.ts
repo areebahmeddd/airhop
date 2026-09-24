@@ -86,6 +86,7 @@ test("a network coming back nudges the mesh and Tor once, after it settles", asy
   expect(mockOnNetworkChanged).not.toHaveBeenCalled();
   jest.advanceTimersByTime(600);
   expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
+  expect(mockOnNetworkChanged).toHaveBeenCalledWith(true);
   expect(mockRevalidateTor).toHaveBeenCalledTimes(1);
   expect(mockReconcileIfDue).toHaveBeenCalledTimes(1);
 });
@@ -102,6 +103,8 @@ test("a network validating after it connected nudges again", async () => {
   emit(WIFI);
   jest.advanceTimersByTime(3_000);
   expect(mockOnNetworkChanged).toHaveBeenCalledTimes(2);
+  // Same network, now usable: the pool is rebuilt only if nothing is live.
+  expect(mockOnNetworkChanged).toHaveBeenLastCalledWith(false);
 });
 
 test("a flap inside the window is one event, not several", async () => {
@@ -119,10 +122,31 @@ test("a flap inside the window is one event, not several", async () => {
   expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
 });
 
-test("a handoff between two live networks nudges", async () => {
+test("a handoff between two live networks replaces the pool", async () => {
   await watch(WIFI);
   emit(CELL);
   jest.advanceTimersByTime(3_000);
+  expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
+  expect(mockOnNetworkChanged).toHaveBeenCalledWith(true);
+});
+
+test("a flap back to the same network is not a change", async () => {
+  await watch(WIFI);
+  emit(NONE);
+  jest.advanceTimersByTime(1_000);
+  emit(WIFI);
+  jest.advanceTimersByTime(5_000);
+  expect(mockOnNetworkChanged).not.toHaveBeenCalled();
+});
+
+// Android reports again on every signal-strength change.
+test("repeated reports do not hold a change off", async () => {
+  await watch(WIFI);
+  emit(CELL);
+  for (let i = 0; i < 3; i++) {
+    jest.advanceTimersByTime(1_000);
+    emit(CELL);
+  }
   expect(mockOnNetworkChanged).toHaveBeenCalledTimes(1);
 });
 
