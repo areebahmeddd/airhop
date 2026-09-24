@@ -56,6 +56,8 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (57.0.2):
     - ExpoModulesCore
+  - ExpoLocalAuthentication (57.0.3):
+    - ExpoModulesCore
   - ExpoLocation (57.0.20):
     - ExpoModulesCore
   - ExpoLogBox (57.0.4):
@@ -2314,6 +2316,7 @@ DEPENDENCIES:
   - ExpoImageManipulator (from `../node_modules/expo-image-manipulator/ios/ExpoImageManipulator.podspec`)
   - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo/node_modules/expo-keep-awake/ios`)
+  - ExpoLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - ExpoLocation (from `../node_modules/expo-location/ios/ExpoLocation.podspec`)
   - "ExpoLogBox (from `../node_modules/expo/node_modules/@expo/log-box`)"
   - ExpoMediaLibrary (from `../node_modules/expo-media-library/ios/ExpoMediaLibrary.podspec`)
@@ -2453,6 +2456,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo/node_modules/expo-keep-awake/ios"
+  ExpoLocalAuthentication:
+    :path: "../node_modules/expo-local-authentication/ios"
   ExpoLocation:
     :podspec: "../node_modules/expo-location/ios/ExpoLocation.podspec"
   ExpoLogBox:
@@ -2669,6 +2674,7 @@ SPEC CHECKSUMS:
   ExpoImageManipulator: e795a8d623905815a335edda5c967a88e25b5539
   ExpoImagePicker: 661e13a7616fbcea630cfb9409b7483094978e02
   ExpoKeepAwake: 72af0b3be3615e59bc819d26061ff4e06b155ee0
+  ExpoLocalAuthentication: 1e4aef156a3a1f953f8278b8d8309f6118919640
   ExpoLocation: 52c126a493087ac247cf213ef9f737c5b298c1d4
   ExpoLogBox: 80957303325cd4439137765c90a87d7f22aaf2ff
   ExpoMediaLibrary: 341321256621e7bf220b6272c42fedcb095607d0
