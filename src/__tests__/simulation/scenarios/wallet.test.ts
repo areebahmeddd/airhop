@@ -1,18 +1,13 @@
 /**
  * @jest-environment node
  */
-// Money.
+// Money, end to end across simulated phones.
 //
-// Every other feature can lose a message and be forgiven. This one cannot lose
-// a sat, and it cannot claim a sat it does not have. The scenarios here are
-// therefore written against conservation rather than against outcomes: the sum
-// of what everybody holds, plus what is reserved, plus what is in flight, must
-// equal what the mint actually put into circulation - under every interleaving,
-// every crash, and every mint failure.
-//
-// The mint is real BDHKE against a real secp256k1 keyset, so a double-spend is
-// refused by the same arithmetic a real mint uses rather than by a flag in a
-// stub.
+// Scenarios assert conservation rather than outcomes: what everybody holds,
+// plus what is reserved or in flight, equals what the mint put into
+// circulation, under every interleaving, crash and mint failure. The mint runs
+// real BDHKE on a real secp256k1 keyset, so a double-spend is refused by the
+// same arithmetic a real mint uses.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
@@ -59,10 +54,13 @@ afterAll(() => {
   jest.useRealTimers();
 });
 
+// Internet on: the wallet makes no mint call while the Internet switch is off.
+// "No signal" is the mint fabric going offline, not the switch.
 const android = (id: string, seedByte: number): DeviceSpec => ({
   id,
   platform: "android",
   seedByte,
+  internetEnabled: true,
 });
 
 // Rewrite a token so it claims twice what the mint signed, which is the forgery
@@ -202,9 +200,9 @@ test("W02 ecash moves device to device with the radio off", async () => {
     `bob holds ${bob.totalHeld()} (unverified ${bob.unverifiedBalance()}), alice handed over ${handedOver}`,
   );
 
-  // Bob gets internet back and redeems. Alice's send is confirmed, which is
-  // what the Wallet screen does once delivery is acknowledged - until then her
-  // reserve is still legitimately hers.
+  // Bob gets internet back and redeems. Alice's send is confirmed, as the
+  // Wallet screen does once delivery is acknowledged; until then her reserve is
+  // still hers.
   mint.setConditions({ offline: false });
   alice.confirmLastSend();
   await bob.refreshWallet();
@@ -243,9 +241,8 @@ test("W03 the same token cannot be redeemed twice", async () => {
   for (const d of devices) await d.addMint(mint.url);
   await alice.depositSats(500);
 
-  // A bearer token is exactly that: whoever holds the string can try to spend
-  // it. Alice hands the same one to two people, which the docs are explicit
-  // about being possible - the mint is the only thing that resolves it.
+  // Whoever holds a bearer token can try to spend it. Alice hands the same one
+  // to two people, and only the mint resolves it.
   const token = await alice.prepareSend(64);
   s.check("a token was produced", token !== null);
   if (token === null) {
@@ -256,9 +253,8 @@ test("W03 the same token cannot be redeemed twice", async () => {
   const handedOver = alice.reservedBalance();
   const bobGot = await bob.receiveToken(token);
   const carolGot = await carol.receiveToken(token);
-  // Alice handed the token over and one of them took it, so the send is done
-  // from her side. Until confirmSend runs, her reserve is still counted as hers
-  // - correctly, because an unconfirmed send is reclaimable.
+  // One of them took it, so the send is done from her side. Until confirmSend
+  // her reserve still counts as hers, since an unconfirmed send is reclaimable.
   alice.confirmLastSend();
 
   s.check(
@@ -431,11 +427,9 @@ test("W06 a locked nutzap that reached its owner late stops looking pending", as
     !alice.reclaimLastSend(),
   );
 
-  // The outbox gets it there eventually and bob redeems it. Nothing tells
-  // alice's wallet that happened: no receipt, no relay event, no reservation for
-  // the old sweep to notice. Without the nutzap pass in reconcile, alice's
-  // Pending list shows this payment forever, and the only way she can act on it
-  // is to hand over a token that has already been spent.
+  // The outbox gets it there and bob redeems it. Nothing tells alice: no
+  // receipt, no relay event, no reservation. Only the nutzap pass in reconcile
+  // stops it sitting in Activity forever, offering a token already spent.
   await bob.receiveToken(token ?? "");
   s.check(
     "bob really did redeem it",
@@ -472,16 +466,8 @@ test("W07 a nutzap crosses the internet, locked to a key only the recipient hold
   // No radio link between them on purpose: this is the rail for someone you
   // cannot reach over Bluetooth, which is the only time the ladder reaches for
   // NIP-61 at all.
-  const alice = SimDevice.create(
-    s.world,
-    { ...android("alice", 11), internetEnabled: true },
-    relay,
-  );
-  const bob = SimDevice.create(
-    s.world,
-    { ...android("bob", 22), internetEnabled: true },
-    relay,
-  );
+  const alice = SimDevice.create(s.world, android("alice", 11), relay);
+  const bob = SimDevice.create(s.world, android("bob", 22), relay);
   radio.add(alice);
   s.track(alice, bob);
   alice.launch();
@@ -674,9 +660,8 @@ test("W10 a wiped phone gets its money back from twelve words", async () => {
   await alice.walletReady();
   await alice.addMint(mint.url);
 
-  // Backup FIRST. Coins minted before the phrase exists have random secrets
-  // and are not derivable from it, which is exactly what the Wallet screen
-  // means by "not covered yet".
+  // The phrase already exists from first launch; this hands it over and marks
+  // backup on. The deposit below derives from it.
   const phrase = await alice.enableBackup();
   s.check(
     "backup produced a twelve word phrase",
@@ -837,9 +822,8 @@ test("W21 a withdrawal whose change is unreachable is not read as a refusal", as
     `reserved=${alice.reservedBalance()}`,
   );
   // The full 116 leaves: the invoice, plus a reserve whose change is signed
-  // against keys that do not exist anywhere. Unrecoverable is a real outcome
-  // and the honest one to record - what matters is that the 384 still held was
-  // never at risk while the wallet worked that out.
+  // under keys that exist nowhere. That loss is real and recorded; the 384
+  // still held was never at risk.
   s.check(
     "the payment is accounted for and the balance is not double-counted",
     alice.totalHeld() === before - 116,
@@ -902,10 +886,8 @@ test("W12 a balance split across two mints can be moved onto one", async () => {
     (moved?.received ?? 0) >= 230,
     `received=${String(moved?.received)} of 256`,
   );
-  // The only sat that may go missing is the one Lightning actually charged.
-  // Everything else - the safety buffer consolidate holds back, the unused
-  // routing reserve - has to come back, or a user loses money every time they
-  // tidy up a split balance.
+  // Only the sat Lightning charged may go missing. The buffer consolidate
+  // holds back and the unused routing reserve both come back.
   s.check(
     "and nothing was lost beyond the real routing fee",
     alice.totalHeld() === before - (moved?.fee ?? 0),
@@ -937,19 +919,15 @@ test("W13 Tor on iOS blocks mint traffic instead of leaking it", async () => {
   const mint = new MintFabric(s.world);
   mint.install();
   const radio = new RadioFabric(s.world);
-  // iOS specifically. Arti wraps WebSockets, not fetch, so a mint request made
-  // while Tor is up would leave the device in the clear while the user believes
-  // everything is routed. Android routes every socket through the embedded
-  // proxy, so it does not have this problem and must NOT be blocked.
+  // iOS only: Arti wraps WebSockets, not fetch, so a mint request under Tor
+  // would leave in the clear. `Platform.OS` is one global in the harness, so
+  // the Android side is covered in services/__tests__/mint-network-gate.test.ts.
   const iphone = SimDevice.create(s.world, {
     id: "iphone",
     platform: "ios",
     seedByte: 31,
+    internetEnabled: true,
   });
-  //
-  // Only the iPhone here: `Platform.OS` is one global inside the harness, so
-  // two devices cannot disagree about it. The Android side of the branch is
-  // covered in services/__tests__/mint-network-gate.test.ts, which can mock it.
   radio.add(iphone);
   s.track(iphone);
   iphone.launch();
@@ -970,8 +948,8 @@ test("W13 Tor on iOS blocks mint traffic instead of leaking it", async () => {
     "the UI greys the buttons off this",
   );
 
-  // Blocked means refused, not merely discouraged: a deposit must not reach the
-  // network, and must not deduct anything on the way to failing.
+  // Blocked means refused: the withdrawal must not reach the network or deduct
+  // anything on the way to failing.
   const before = iphone.totalHeld();
   const withdrew = await iphone.withdraw(simInvoice(100));
   s.check("a withdrawal while blocked fails", withdrew === null);
@@ -997,10 +975,9 @@ test("W13 Tor on iOS blocks mint traffic instead of leaking it", async () => {
 });
 
 test("W14 a tampered token is refused in a dead zone, a real one is not", async () => {
-  // The offline forgery check, which is the only defence when there is no mint
-  // to ask whether a proof is unspent. It could not be written until the mint
-  // issued NUT-12 witnesses: without one every verdict is "unchecked", so a
-  // forgery and a legitimate offline transfer looked identical from here.
+  // The offline forgery check, the only defence with no mint to ask. It needs
+  // the mint to issue NUT-12 witnesses: without one every verdict is
+  // "unchecked", and a forgery looks like a legitimate offline transfer.
   const s = (scenario = new Scenario({
     id: "W14",
     title: "offline DLEQ accepts real ecash and refuses a forged proof",
@@ -1037,8 +1014,7 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
     accepted !== null && accepted.outcome === "stored",
     accepted === null ? "refused" : `outcome=${accepted.outcome}`,
   );
-  // The branch that had no coverage at all before this scenario existed. The
-  // mint really signed it, and the phone can prove that without the mint.
+  // The mint really signed it, and the phone proves that without the mint.
   s.check(
     "and its witness verifies against the cached mint keys",
     accepted?.dleq === "valid",
@@ -1296,11 +1272,9 @@ test("W17 a swap whose answer never came back is replayed, not written off", asy
 });
 
 test("W20 a mint that charges input fees is paid what it asks, and no more", async () => {
-  // Every scenario before this one ran against a mint charging nothing, so the
-  // wallet's fee arithmetic was written, reviewed, and never once exercised.
-  // Real mints do charge: Nutshell's default is 100 parts per thousand per
-  // input, which under NUT-02's round-the-total-up rule is a whole sat on any
-  // spend of ten proofs or fewer.
+  // The other scenarios run against a fee-free mint. Nutshell's default is 100
+  // parts per thousand per input, which under NUT-02's round-the-total-up rule
+  // is a whole sat on any spend of ten proofs or fewer.
   //
   // Two claims are on the line, and both are things the wallet says out loud.
   // The Send sheet promises "they receive N" while showing a larger figure
@@ -1414,12 +1388,10 @@ test("W19 a withdrawal does not lock the whole balance while Lightning routes", 
   // mint the whole 512 and waiting for 404 to come back as change, and a melt
   // can sit in routing for minutes.
   //
-  // Nothing is lost by that - `prepareMelt` sizes the NUT-08 blanks from the
-  // real overage, so the excess does return - but on this app "waiting" is
-  // usually "waiting with no signal", and a user who walks out of range with
-  // four fifths of their money locked behind a payment cannot hand anybody
-  // ecash. That is the one thing the app exists for, so the selection is broken
-  // up first and only what the payment needs is tied up.
+  // Nothing is lost (`prepareMelt` sizes the NUT-08 blanks from the real
+  // overage), but a user who walks out of range with four fifths of their
+  // money locked behind a payment cannot hand anybody ecash. So the selection
+  // is broken up first and only what the payment needs is tied up.
   const s = (scenario = new Scenario({
     id: "W19",
     title: "an oversized melt selection is swapped down before it is reserved",
@@ -1479,7 +1451,7 @@ test("W19 a withdrawal does not lock the whole balance while Lightning routes", 
   alice.reclaimLastSend();
   mint.setConditions({ offline: false });
 
-  // And the payment itself still settles the way it always did.
+  // And the payment itself still settles.
   await alice.reconcile();
   s.check(
     "the withdrawal settles once the mint can be asked",
