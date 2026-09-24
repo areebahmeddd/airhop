@@ -19,9 +19,10 @@ Step back and review the change against the issue and the surrounding codebase f
 - Verify the core issue is actually addressed, not just the immediate symptom.
 - Trace the relevant code paths and callers end to end, from the user's point of view: the normal scenario, then the chaos scenarios, including race conditions or leaks.
 - Ensure the implementation is logical, coherent, clean, and internally consistent, following SOLID and sound system design principles as Airhop's own codebase applies them.
+- If the change touches UI, check it against the Laws of UX and established human interaction principles, and keep it consistent with Airhop's existing design flows and interactions.
 - Check for gaps, regressions, unnecessary complexity, or duplicated logic.
 - Be balanced: do not over-engineer or overdo it. Prefer the simplest sound solution that fits the existing design.
-- Review it the way you'd want a senior engineer to review it before it reaches production. Fix issues found within scope and avoid unrelated refactors.
+- Review it the way you'd want a senior engineer to review it before it reaches production.
 
 ---
 
@@ -33,7 +34,7 @@ Review only the code changed within the current scope.
 - Keep comments only for non-obvious invariants, magic numbers, platform quirks, or intentional deviations.
 - No em dashes, in code or docs. Write in proper, natural English grammar.
 - Follow existing naming and file conventions, and correct any that don't hold up: variables, constants, and functions named per current industry and language-standard convention, files named per the project's own pattern. Do not introduce new conventions of your own.
-- Keep the code production-ready, minimal, and idiomatic. Do not change behavior unless required to fix a clear issue.
+- Keep the code production-ready, **minimal**, and idiomatic.
 - Run the full check suite and fix anything it surfaces:
 
 ```bash
