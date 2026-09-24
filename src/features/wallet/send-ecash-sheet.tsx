@@ -1,16 +1,9 @@
-// The one sheet for paying a person.
-//
-// Shown from every door that pays somebody: the DM thread's attach menu, the
-// contact info sheet, the Mesh tab's peer sheet, and the Wallet tab's Zap. It is
-// deliberately the SAME component in all of them, for the same reason
-// contact-info-sheet is: four copies of an amount field are four chances to
-// disagree about what happens after the user taps Send, and this one is spending
-// their money.
-//
-// The sheet does not choose a rail. `payPerson` does, from who the recipient is
-// and what is reachable, and hands back which rail it used and whether the
-// payment can still be pulled back. All this does is collect an amount and
-// report that answer in the same words every time.
+// The sheet for paying a person, shared by the DM thread and the contact info
+// sheet so there is one amount field and one account of what Send did: copies
+// would drift on what happens to the user's money. It picks no rail.
+// `payPerson` chooses from who the recipient is and what is reachable, and
+// returns the rail used and whether the payment can still be reclaimed; this
+// reports that answer in the same words every time.
 
 import { useT } from "@i18n";
 import {
@@ -36,13 +29,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 interface Props {
   visible: boolean;
   onClose: () => void;
-  // Who is being paid. At least one of these must be set; both is better,
-  // because the peer ID names the thread and the Nostr key unlocks NIP-61.
+  // At least one must be set. The peer ID names the thread; the Nostr key
+  // unlocks NIP-61.
   peerID?: string;
   nostrPubkey?: string;
   displayName: string;
-  // The sender's real nickname, for the local echo in the thread. Callers
-  // outside a conversation can leave it out and get "You".
+  // For the local echo in the thread; omitted, it reads "You".
   senderNickname?: string;
 }
 
@@ -71,8 +63,8 @@ export default function SendEcashSheet({
     const sats = parseWholeNumber(amount);
     if (sats === null || sending) return;
 
-    // Quoting and the nutzap lookup both await the network, so without this a
-    // double tap starts two payments.
+    // Quoting and the nutzap lookup await the network, so a double tap would
+    // start two payments.
     setSending(true);
     let result: PayResult | null;
     try {

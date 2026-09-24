@@ -115,7 +115,6 @@ import {
 } from "@store/permission-primer-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
-import { useWalletStore } from "@store/wallet-store";
 import AlertModal from "@ui/components/alert-modal";
 import Avatar from "@ui/components/avatar";
 import {
@@ -127,7 +126,6 @@ import RingAlertSheet from "@ui/components/ring-alert-sheet";
 import SearchField from "@ui/components/search-field";
 import TransferBadge from "@ui/components/transfer-badge";
 import {
-  DISABLED_OPACITY,
   FontSize,
   FontWeight,
   hitSlopFor,
@@ -752,11 +750,6 @@ function AppContent(): React.JSX.Element {
   // rather than on every ANNOUNCE.
   const meshHasNewPeers = usePeerStore(hasUnseenPeers);
 
-  // Whether there is any ecash at all to spend. Selected as a boolean so the
-  // header only re-renders when the answer flips, not on every proof change.
-  const hasSpendableEcash = useWalletStore((s) =>
-    Object.values(s.proofs).some((list) => list.length > 0),
-  );
   const [walletActionTrigger, setWalletActionTrigger] = useState(0);
   // Notification center (bell) visibility, and the count of unseen activity
   // that badges the bell. Subscribing to entries keeps the badge live.
@@ -1855,9 +1848,8 @@ function AppContent(): React.JSX.Element {
                       </View>
                     </>
                   ) : tab === "wallet" ? (
-                    // Wallet header: title left, quick actions right, the same
-                    // icon-box style as Mesh's "add contact" pill, moved up
-                    // here from a row inside the balance card.
+                    // Wallet header: title left, the Cashu explainer right, in
+                    // the same icon-box style as Mesh's "add contact" pill.
                     <>
                       <Text
                         style={styles.headerTitle}
@@ -1867,85 +1859,20 @@ function AppContent(): React.JSX.Element {
                         {T("nav.tab.wallet")}
                       </Text>
                       <View style={styles.headerControls}>
-                        {/* Send and Zap spend, so they dim on an empty balance
-                            rather than opening a sheet that can only fail.
-                            Receive and Add mint stay live: that is how a new
-                            wallet starts. A dim glyph does not say why, so the
-                            reason rides in the accessibility label. */}
-                        <Pressable
-                          style={({ pressed }) => [
-                            styles.newChannelPill,
-                            !hasSpendableEcash && styles.headerPillDisabled,
-                            pressed && styles.headerPillPressed,
-                          ]}
-                          disabled={!hasSpendableEcash}
-                          onPress={() => triggerWalletAction("send")}
-                          hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
-                          accessibilityRole="button"
-                          accessibilityState={{ disabled: !hasSpendableEcash }}
-                          accessibilityLabel={
-                            hasSpendableEcash
-                              ? T("wallet.action.send")
-                              : T("wallet.action.send_disabled")
-                          }
-                        >
-                          <Feather
-                            name="arrow-up"
-                            size={18}
-                            color={Colors.textSecondary}
-                          />
-                        </Pressable>
+                        {/* The wallet's actions are labelled on the screen
+                            itself; the header only explains what ecash is. */}
                         <Pressable
                           style={({ pressed }) => [
                             styles.newChannelPill,
                             pressed && styles.headerPillPressed,
                           ]}
-                          onPress={() => triggerWalletAction("receive")}
+                          onPress={() => triggerWalletAction("help")}
                           hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
                           accessibilityRole="button"
-                          accessibilityLabel={T("wallet.action.receive")}
+                          accessibilityLabel={T("wallet.explain.title")}
                         >
                           <Feather
-                            name="arrow-down"
-                            size={18}
-                            color={Colors.textSecondary}
-                          />
-                        </Pressable>
-                        <Pressable
-                          style={({ pressed }) => [
-                            styles.newChannelPill,
-                            !hasSpendableEcash && styles.headerPillDisabled,
-                            pressed && styles.headerPillPressed,
-                          ]}
-                          disabled={!hasSpendableEcash}
-                          onPress={() => triggerWalletAction("zap")}
-                          hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
-                          accessibilityRole="button"
-                          accessibilityState={{ disabled: !hasSpendableEcash }}
-                          accessibilityLabel={
-                            hasSpendableEcash
-                              ? T("wallet.action.zap")
-                              : T("wallet.action.zap_disabled")
-                          }
-                        >
-                          <Feather
-                            name="zap"
-                            size={18}
-                            color={Colors.textSecondary}
-                          />
-                        </Pressable>
-                        <Pressable
-                          style={({ pressed }) => [
-                            styles.newChannelPill,
-                            pressed && styles.headerPillPressed,
-                          ]}
-                          onPress={() => triggerWalletAction("addMint")}
-                          hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
-                          accessibilityRole="button"
-                          accessibilityLabel={T("wallet.action.add_mint")}
-                        >
-                          <Feather
-                            name="plus"
+                            name="help-circle"
                             size={18}
                             color={Colors.textSecondary}
                           />
@@ -2461,9 +2388,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: Colors.surfaceRaised,
-    },
-    headerPillDisabled: {
-      opacity: DISABLED_OPACITY,
     },
     filterPillActive: {
       backgroundColor: Colors.accent,

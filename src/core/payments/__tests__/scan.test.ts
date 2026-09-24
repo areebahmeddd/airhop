@@ -3,23 +3,14 @@
  */
 // What the camera is allowed to hand the wallet.
 //
-// Scanning is the one input path where the user cannot proof-read what they are
-// giving the app: they point a camera and trust the result. Two failure shapes
-// matter, and they fail in opposite directions:
-//
-//   * Too strict, and a perfectly good QR from another wallet does nothing at
-//     all. The camera just sits there, and there is nowhere for the app to put
-//     an error message, so it reads as broken hardware.
-//   * Too loose, and the wrong kind of string is accepted. A testnet invoice
-//     pasted into a mainnet withdrawal spends real sats at a worthless invoice.
-//
-// The round-trip case is the one worth stating outright: a token this wallet
-// produced, rendered as a QR and scanned back by this wallet, must come out
-// identical. That is the Wallet tab's own share-and-scan loop.
+// Too strict, and a good QR from another wallet does nothing, with nowhere to
+// show an error. Too loose, and the wrong kind of string reaches a sheet that
+// acts on it. A token this wallet built must also scan back unchanged: that is
+// the Wallet tab's own share-and-scan loop.
 
 import type { StoredProof } from "@store/wallet-store";
 import { buildToken } from "../cashu";
-import { bareInvoice, readScan } from "../scan";
+import { bareInvoice, classifyScan, readScan } from "../scan";
 
 const MINT = "https://mint.airhop.example";
 
@@ -99,5 +90,30 @@ describe("readScan for an invoice", () => {
     // A prefix with no amount digit after it is not an invoice either.
     expect(bareInvoice("lnbc")).toBeNull();
     expect(bareInvoice("")).toBeNull();
+  });
+});
+
+// The wallet's own Scan button: one camera, routed by what it sees.
+describe("classifyScan", () => {
+  const NPUB = "npub1" + "q".repeat(58);
+
+  it("tells a token, an invoice and an npub apart", () => {
+    const token = buildToken(MINT, [proof(4, 1)]);
+    expect(classifyScan(token)).toEqual({ kind: "token", value: token });
+    expect(classifyScan("lightning:LNBC500N1PJQXYZ")).toEqual({
+      kind: "invoice",
+      value: "lnbc500n1pjqxyz",
+    });
+    expect(classifyScan(`nostr:${NPUB}`)).toEqual({
+      kind: "npub",
+      value: NPUB,
+    });
+  });
+
+  it("refuses what the wallet cannot act on", () => {
+    expect(classifyScan("https://example.com")).toBeNull();
+    expect(classifyScan("npub1short")).toBeNull();
+    expect(classifyScan("nsec1" + "q".repeat(58))).toBeNull();
+    expect(readScan("bitcoin:bc1qxyz", "any")).toBeNull();
   });
 });

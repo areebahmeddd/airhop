@@ -1,21 +1,16 @@
 // The Chats header "+" flow: pick what to start, then fill in that form.
-//
-// Mounted alongside the Chats list rather than inside channel-list, because the
-// Direct sub-tab unmounts that list and the "+" has to work on both. One
-// component means both sub-tabs share the same button and sheets, with no second
-// copy of the chooser to keep in sync.
-//
-// The chooser comes first so a channel and a group are seen side by side at the
-// moment of deciding: both are private and both are encrypted, so the actual
-// difference (a shareable link and no member cap versus a fixed signed roster
-// that stays on Bluetooth) has to be stated where the choice is made. Picking
-// one closes the chooser and opens that form; its Back button returns here.
+// Mounted beside the Chats list, not inside channel-list, because the Direct
+// sub-tab unmounts that list and the "+" must work on both; one mount means
+// no second chooser to keep in sync. Channel and group sit side by side because
+// both are private and encrypted, so their real difference (shareable link, no
+// cap vs a fixed signed roster on Bluetooth) is stated at the choice.
 
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
 import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { useChatStore } from "@store/chat-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import ChoiceList from "@ui/components/choice-list";
 import {
   BUTTON_HEIGHT,
   DISABLED_OPACITY,
@@ -32,8 +27,8 @@ import { JoinLinkSheet } from "./join-link-sheet";
 import { NewGroupSheet } from "./new-group-sheet";
 
 interface Props {
-  // Increment this to open the chooser (from the App.tsx header + button).
-  // Counter pattern avoids the boolean edge cases of an open/close flag.
+  // Increment to open the chooser. A counter avoids an open/close flag's
+  // edge cases.
   trigger: number;
   // Open a channel once it has been created or joined.
   onOpenChannel: (channel: string) => void;
@@ -55,12 +50,10 @@ export function StartNewSheet({
   const [showGeohash, setShowGeohash] = useState(false);
   const [showJoinLink, setShowJoinLink] = useState(false);
   const [newChannel, setNewChannel] = useState("");
-  // Reach for a new channel. Defaults to Bluetooth-only, the most private
-  // option; the user opts into internet reach.
+  // Defaults to Bluetooth only, the most private reach.
   const [newChannelOverNostr, setNewChannelOverNostr] = useState(false);
 
-  // Watch the trigger counter from the App.tsx header button. Initialise with
-  // the current value so a remount (e.g. coming back from a thread) does not
+  // Seeded with the current value so a remount (back from a thread) does not
   // reopen the chooser.
   const prevTrigger = useRef(trigger);
   useEffect(() => {
@@ -70,8 +63,7 @@ export function StartNewSheet({
     }
   }, [trigger]);
 
-  // Normalised input for duplicate detection (shown while typing). Groups and
-  // DMs are keyed by prefix and can't collide with a #channel name.
+  // Groups and DMs are keyed by prefix, so only #channels can collide.
   const normalizedInput = newChannel.trim().replace(/^#*/, "#").toLowerCase();
   const nameAlreadyExists =
     normalizedInput.length > 1 &&
@@ -81,20 +73,13 @@ export function StartNewSheet({
         !c.startsWith("group:") &&
         c.toLowerCase() === normalizedInput,
     );
-  // A name needs at least one character after the "#".
-  //
-  // handleAdd already refused anything shorter, but it refused it by returning
-  // silently while Create sat there at full contrast. So an empty field, or a
-  // lone "#", gave a live button that did nothing: the user cannot tell that
-  // from a broken app. Both reasons a name is unusable now gate the same button,
-  // and both say so.
+  // At least one character after the "#". Both unusable-name reasons disable
+  // Create and say why, so the button is never live yet inert.
   const nameTooShort = normalizedInput.length < 2;
   const canCreate = !nameTooShort && !nameAlreadyExists;
 
-  // Close the channel form and clear its inputs. `backToChooser` reopens the
-  // step before it, so Back reads as "go back" rather than "lose my place": the
-  // user came here from a choice and may have picked the wrong one. Dismissing
-  // by backdrop or system back leaves entirely, as usual.
+  // `backToChooser` reopens the chooser, since the user may have picked the
+  // wrong option. Backdrop or system back leaves entirely.
   function resetJoinModal(backToChooser = false): void {
     setNewChannel("");
     setNewChannelOverNostr(false);
@@ -105,15 +90,12 @@ export function StartNewSheet({
   function handleAdd(): void {
     const name = newChannel.trim().replace(/^#*/, "#");
     if (!canCreate) return;
-    // Every custom channel is private and end-to-end encrypted: it gets a fresh
-    // key here, shared only with people you send the invite link to. Reach is
-    // the creator's choice: local mesh only, or also bridged over Nostr.
+    // Every custom channel is end-to-end encrypted under a fresh key, shared
+    // only through its invite link.
     joinPrivateChannel(name, generateChannelKey(), newChannelOverNostr);
-    // Created, so there is nothing to go back to.
     resetJoinModal();
-    // Land in the new channel, like the group and geohash paths do. Without it a
-    // channel started from the Direct sub-tab would appear on the other one and
-    // read as nothing having happened.
+    // Without this, a channel started from the Direct sub-tab appears on the
+    // other one and reads as nothing having happened.
     onOpenChannel(name);
   }
 
@@ -127,73 +109,43 @@ export function StartNewSheet({
       >
         <Text style={styles.modalTitle}>{T("chat.new.title")}</Text>
 
-        <View style={styles.chooserGroup}>
-          <Pressable
-            style={styles.chooserRow}
-            onPress={() => {
-              setShowChooser(false);
-              setShowJoinModal(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={T("chat.new.channel")}
-          >
-            <View style={styles.chooserIcon}>
-              <Feather name="hash" size={18} color={Colors.textPrimary} />
-            </View>
-            <View style={styles.chooserText}>
-              <Text style={styles.chooserTitle}>
-                {T("chat.new.channel_label")}
-              </Text>
-              <Text style={styles.chooserDesc}>
-                {T("chat.new.channel_desc")}
-              </Text>
-            </View>
-          </Pressable>
-
-          <View style={styles.chooserDivider} />
-
-          <Pressable
-            style={styles.chooserRow}
-            onPress={() => {
-              setShowChooser(false);
-              setShowNewGroup(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={T("chat.new.group")}
-          >
-            <View style={styles.chooserIcon}>
-              <Feather name="users" size={18} color={Colors.textPrimary} />
-            </View>
-            <View style={styles.chooserText}>
-              <Text style={styles.chooserTitle}>
-                {T("chat.new.group_label")}
-              </Text>
-              <Text style={styles.chooserDesc}>{T("chat.new.group_desc")}</Text>
-            </View>
-          </Pressable>
-
-          <View style={styles.chooserDivider} />
-
-          <Pressable
-            style={styles.chooserRow}
-            onPress={() => {
-              setShowChooser(false);
-              setShowGeohash(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={T("chat.new.place")}
-          >
-            <View style={styles.chooserIcon}>
-              <Feather name="map-pin" size={18} color={Colors.textPrimary} />
-            </View>
-            <View style={styles.chooserText}>
-              <Text style={styles.chooserTitle}>
-                {T("chat.new.place_label")}
-              </Text>
-              <Text style={styles.chooserDesc}>{T("chat.new.place_desc")}</Text>
-            </View>
-          </Pressable>
-        </View>
+        <ChoiceList
+          choices={[
+            {
+              key: "channel",
+              icon: "hash",
+              title: T("chat.new.channel_label"),
+              detail: T("chat.new.channel_desc"),
+              a11yLabel: T("chat.new.channel"),
+              onPress: () => {
+                setShowChooser(false);
+                setShowJoinModal(true);
+              },
+            },
+            {
+              key: "group",
+              icon: "users",
+              title: T("chat.new.group_label"),
+              detail: T("chat.new.group_desc"),
+              a11yLabel: T("chat.new.group"),
+              onPress: () => {
+                setShowChooser(false);
+                setShowNewGroup(true);
+              },
+            },
+            {
+              key: "place",
+              icon: "map-pin",
+              title: T("chat.new.place_label"),
+              detail: T("chat.new.place_desc"),
+              a11yLabel: T("chat.new.place"),
+              onPress: () => {
+                setShowChooser(false);
+                setShowGeohash(true);
+              },
+            },
+          ]}
+        />
 
         <Pressable
           style={styles.modalCancel}
@@ -259,8 +211,8 @@ export function StartNewSheet({
           )}
         </View>
 
-        {/* Reach. Encryption is always on; this only picks the send path:
-            local mesh, or also sealed over Nostr for out-of-range members. */}
+        {/* Encryption is always on; this picks the send path: mesh only, or
+            also sealed over Nostr for members out of range. */}
         <View style={styles.optionGroup}>
           <Text style={styles.optionLabel}>{T("chat.new.reach")}</Text>
           <View style={styles.optionRow}>
@@ -324,11 +276,9 @@ export function StartNewSheet({
           </Text>
         </View>
 
-        {/* The other half of this sheet: a private channel is either one you
-            start or one you were invited to, and both belong to the same
-            decision. It sits below the form rather than beside it because
-            creating is the common case and joining is the answer to "I already
-            have a link". The typed name is kept, so Back lands where it left. */}
+        {/* Creating and joining are one decision, so joining sits here, below
+            the form since creating is the common case. The typed name is kept,
+            so Back lands where it left. */}
         <Pressable
           style={styles.joinLinkRow}
           onPress={() => {
@@ -401,9 +351,8 @@ export function StartNewSheet({
         }}
       />
 
-      {/* Step 3: paste an invite. Reached from the private-channel form, so
-          Back returns there rather than to the chooser. Opens whatever the link
-          points at, which is usually a channel but may be a DM or a card. */}
+      {/* Step 3: paste an invite. Back returns to the channel form. The link
+          may open a channel, a DM or a card. */}
       <JoinLinkSheet
         visible={showJoinLink}
         onClose={() => setShowJoinLink(false)}
@@ -413,7 +362,6 @@ export function StartNewSheet({
         }}
         onJoined={(channel) => {
           setShowJoinLink(false);
-          // Joined, so the half-typed create form behind this is finished with.
           resetJoinModal();
           onOpenChannel(channel);
         }}
@@ -483,10 +431,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       gap: Spacing.sm,
     },
-    // paddingVertical 9, not 7: at 7 the chip measured ~30pt and these two sit
-    // side by side, so hitSlop would overlap and blur the boundary between
-    // "Bluetooth only" and "Bluetooth + Internet". Same fix, and the same
-    // number, as the header's segmented control.
     optionChip: {
       flexDirection: "row",
       alignItems: "center",
@@ -538,6 +482,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       minHeight: BUTTON_HEIGHT,
       backgroundColor: Colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: Colors.border,
       borderRadius: Radius.full,
       paddingVertical: Spacing.md,
       alignItems: "center",
@@ -564,45 +510,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.base,
       color: Colors.textInverse,
       fontWeight: FontWeight.semibold,
-    },
-    chooserGroup: {
-      backgroundColor: Colors.surfaceRaised,
-      borderRadius: Radius.lg,
-      overflow: "hidden",
-    },
-    chooserDivider: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: Colors.border,
-      marginStart: Spacing.base,
-    },
-    chooserRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.md,
-      paddingVertical: Spacing.base,
-      paddingHorizontal: Spacing.base,
-    },
-    chooserIcon: {
-      width: 38,
-      height: 38,
-      borderRadius: Radius.full,
-      backgroundColor: Colors.surface,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    chooserText: {
-      flex: 1,
-      gap: 2,
-    },
-    chooserTitle: {
-      fontSize: FontSize.base,
-      fontWeight: FontWeight.semibold,
-      color: Colors.textPrimary,
-    },
-    chooserDesc: {
-      fontSize: FontSize.sm,
-      color: Colors.textSecondary,
-      lineHeight: 18,
     },
   });
 }

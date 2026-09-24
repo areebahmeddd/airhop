@@ -1,22 +1,14 @@
-// Wallet screen: Cashu ecash balance, mints, transfers and history.
+// Wallet screen: a balance card holding Receive, Send, Scan and Mints, the
+// recovery phrase row, Activity, and the sheets those open.
 //
-// Every operation goes through `services/wallet-service`, which owns proof
-// selection, reservations and mint calls. This file is presentation: it decides
-// what to ask, what to show, and how to describe what happened. It deliberately
-// does no proof arithmetic of its own, because the same logic also runs from
-// the DM thread and the peer sheet and the three must not drift.
-//
-// Three ideas drive the layout:
-//
-//   * Money that is not fully yours yet is shown as such. Proofs received over
-//     the mesh are real value, but the mint has not confirmed they are unspent,
-//     so they get an "unconfirmed" line rather than being folded silently into
-//     the headline number.
-//   * A send in flight is a first-class object. Building a token reserves the
-//     proofs; until the user says it landed, the token stays here to re-share
-//     or reclaim. Closing a sheet can no longer destroy value.
-//   * Anything that needs the internet says so before it is tapped, and says
-//     why when it cannot run (offline, Tor, or a mint that lacks the NUT).
+// Presentation only. `services/wallet-service` owns proof selection,
+// reservations and mint calls; no proof arithmetic happens here, because the
+// DM thread and contact sheet run the same logic and must not drift. Rules:
+//   * Value the mint has not confirmed unspent gets an "unconfirmed" line,
+//     never folded into the headline.
+//   * A built token stays reserved and listed in Activity, to re-share or
+//     reclaim, until the user says it landed.
+//   * An action that needs the internet says why when it cannot run.
 
 import {
   bareToken,
@@ -27,6 +19,7 @@ import {
   TOKEN_QR_SIZE,
   tokenQrPayload,
 } from "@core/payments/cashu";
+import { classifyScan } from "@core/payments/scan";
 import {
   isValidRecoveryPhrase,
   normalizeRecoveryPhrase,
@@ -36,8 +29,8 @@ import {
 } from "@core/payments/wallet-seed";
 import { Feather } from "@expo/vector-icons";
 import { t, tPlural, useT, useTPlural } from "@i18n";
-import { textAlignEnd } from "@i18n/layout";
-import { acknowledged } from "@platform/haptics";
+import { chevronForward, textAlignEnd } from "@i18n/layout";
+import { acknowledged, succeeded } from "@platform/haptics";
 import { getMeshService } from "@services/mesh-service";
 import {
   deliverTokenToPeer,
@@ -55,8 +48,8 @@ import {
   enableWalletBackup,
   getRecoveryPhrase,
   hostOf,
-  isMintNetworkBlocked,
   markBackupVerified,
+  mintNetworkBlock,
   payLightningInvoice,
   prepareSend,
   quoteLightningWithdrawal,
@@ -73,6 +66,7 @@ import {
 } from "@services/wallet-service";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useContactsStore } from "@store/contacts-store";
+import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import {
@@ -85,6 +79,7 @@ import {
 } from "@store/wallet-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
+import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
 import { useCopy } from "@ui/hooks/use-copy";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
@@ -94,8 +89,8 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
-  hitSlopFor,
   MIN_TOUCH,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   TAB_BAR_CLEARANCE,
@@ -112,6 +107,7 @@ import {
 } from "@utils/format";
 import { nostrShortLabel, peerIDToUsername } from "@utils/username";
 import * as Clipboard from "expo-clipboard";
+import { useNetworkState } from "expo-network";
 import { nip19 } from "nostr-tools";
 import React, {
   useCallback,
@@ -136,8 +132,22 @@ import {
 import QRCode from "react-native-qrcode-svg";
 import TokenScanSheet, { type ScanTarget } from "./token-scan-sheet";
 
-// The four quick actions triggered from the App-level header.
-export type WalletAction = "receive" | "send" | "zap" | "addMint";
+// What the App-level header can ask of this screen.
+export type WalletAction = "help";
+
+// Secondary text on the accent-filled balance card. Measured on both fills:
+// white at this opacity on #111111, and #111111 on #F5F5F5, both clear 4.5:1.
+const SECONDARY_ON_ACCENT = 0.72;
+
+// The action circles in the balance card. The column around a circle is the
+// MIN_TOUCH target.
+const ACTION_CIRCLE = 48;
+
+// Matches ChoiceList's glyph circle, so sheet lists read as one family.
+const LIST_ICON = 38;
+
+// One Activity row: a title and a meta line between Spacing.md paddings.
+const ACTIVITY_ROW_HEIGHT = 64;
 
 // How long a bottom sheet takes to slide out. Presenting the camera before it
 // has gone would stack two modals, which iOS refuses.
@@ -146,20 +156,12 @@ const SHEET_EXIT_MS = 260;
 // How often to poll a pending Lightning deposit while its sheet is open.
 const DEPOSIT_POLL_MS = 3000;
 
-// Activity rows shown before the list has to be asked for. Three is enough to
-// answer "did that go through", which is the only question this section gets
-// asked on the way past; the rest is history and can wait for a tap.
+// Three rows answer "did that go through"; the rest waits for a tap.
 const ACTIVITY_COLLAPSED_COUNT = 3;
 
 // A day, which is also how long wallet-service trusts a cached fee schedule, so
 // "at least this old" and "possibly out of date" are the same threshold.
 const FEE_CACHE_STALE_MS = 24 * 60 * 60 * 1000;
-
-// Drawn size of the per-mint icon buttons (confirm proofs, remove mint). Small
-// on purpose so a mint row stays a row rather than a card, with hitSlopFor()
-// making the target up to MIN_TOUCH. One of the two deletes proofs permanently,
-// so it is not a target to leave at 28pt.
-const MINT_ICON_SIZE = 28;
 
 interface Props {
   action?: WalletAction | null;
@@ -176,8 +178,7 @@ export default function WalletScreen({
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const pullRefreshColors = usePullRefreshColors();
 
-  // Narrow subscriptions: the whole store changes on every history write, and
-  // this screen re-renders a list of peers on a timer as it is.
+  // Narrow subscriptions: the store changes on every history write.
   const proofs = useWalletStore((s) => s.proofs);
   const mints = useWalletStore((s) => s.mints);
   const reserved = useWalletStore((s) => s.reserved);
@@ -192,10 +193,8 @@ export default function WalletScreen({
 
   const [locked, setLocked] = useState(() => !isWalletStorageReady());
   useEffect(() => {
-    // The encrypted store opens and hydrates asynchronously at app start, so
-    // the banner clears itself rather than needing a tab switch. Settles once:
-    // when the keychain is unavailable the wallet stays locked for good, and
-    // polling for a state that will never change just burns battery.
+    // The encrypted store hydrates asynchronously, so the banner clears
+    // itself. Settles once: with no keychain the wallet stays locked for good.
     if (!locked) return;
     let cancelled = false;
     void whenWalletHydrated().then(() => {
@@ -227,14 +226,17 @@ export default function WalletScreen({
   const [showPeerPicker, setShowPeerPicker] = useState(false);
   const [showConsolidate, setShowConsolidate] = useState(false);
   const [scannerTarget, setScannerTarget] = useState<ScanTarget | null>(null);
+  // Receive and Send open a chooser first; Lightning and Zap live behind it.
+  const [chooser, setChooser] = useState<"receive" | "send" | null>(null);
+  const [showMints, setShowMints] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showBackup, setShowBackup] = useState(false);
   const [pullRefreshing, setPullRefreshing] = useState(false);
   // A pending send re-shown as a QR, for handing it over after the fact.
   const [qrToken, setQrToken] = useState<WalletTx | null>(null);
   const [showRestore, setShowRestore] = useState(false);
 
-  // Recovery-phrase sheet. One sheet, three steps, because they have to happen
-  // in order: understand the risk, read the words, prove you wrote them down.
-  // "view" is the read-only variant shown once backup is already on.
+  // Steps in order: warn, show, verify. "view" is read-only, once backup is on.
   const [backupStep, setBackupStep] = useState<
     "warn" | "show" | "verify" | "view" | null
   >(null);
@@ -259,9 +261,7 @@ export default function WalletScreen({
   const [sendMemo, setSendMemo] = useState("");
   const [zapNpub, setZapNpub] = useState("");
 
-  // Zapping addresses an identity, so both halves need one on screen: theirs to
-  // send to, and ours to hand out. Without this the Zap sheet asked for
-  // something the app never showed you anywhere.
+  // Shown in Receive, so the key a Zap needs is somewhere the user can find it.
   const myNpub = useMemo(() => {
     const hex = getMeshService()?.getNostrPubKeyHex();
     if (hex === undefined || hex.length === 0) return null;
@@ -272,9 +272,8 @@ export default function WalletScreen({
     }
   }, []);
 
-  // Contacts learned from a QR card or an ANNOUNCE already carry a Nostr key.
-  // Typing 63 characters by hand when the app knows them is a self-inflicted
-  // wound, so offer them instead.
+  // Contacts from a QR card or an ANNOUNCE already carry a Nostr key, so offer
+  // them rather than 63 typed characters.
   const contacts = useContactsStore((c) => c.contacts);
   const zapContacts = useMemo(
     () =>
@@ -288,17 +287,15 @@ export default function WalletScreen({
   const [zapNote, setZapNote] = useState("");
   const [mintUrlInput, setMintUrlInput] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
-  // Which mint the Lightning sheets act on. Both deposit and withdraw work
-  // against a single mint at a time, since ecash cannot be pooled across them.
+  // Lightning acts on one mint at a time: ecash cannot be pooled across mints.
   const [activeMint, setActiveMint] = useState<string | null>(null);
   const [withdrawInvoice, setWithdrawInvoice] = useState("");
   const [withdrawQuote, setWithdrawQuote] = useState<MeltQuote | null>(null);
 
-  // The token produced by the most recent send, still reserved and reclaimable.
+  // The latest send's token, still reserved and reclaimable.
   const [pending, setPending] = useState<PreparedSend | null>(null);
   const [deposit, setDeposit] = useState<LightningDeposit | null>(null);
-  // The widest control in the panel, so the confirmation is a word rather than
-  // only a glyph swap.
+  // Copy invoice is wide enough to confirm in words, not only a glyph swap.
   const { copied: invoiceCopied, copy: copyInvoice } = useCopy();
 
   const [depositClock, setDepositClock] = useState(0);
@@ -306,12 +303,22 @@ export default function WalletScreen({
   const depositExpired =
     depositExpiresAtMs !== undefined && depositClock >= depositExpiresAtMs;
 
-  // One busy flag per long-running action, so a spinner sits on the button that
-  // caused it instead of blocking the whole screen.
+  // Per action, so the spinner sits on the button that caused it.
   const [busy, setBusy] = useState<string | null>(null);
   const [refreshingMint, setRefreshingMint] = useState<string | null>(null);
 
-  const networkBlocked = isMintNetworkBlocked();
+  // Subscribed, so flipping Internet or Tor in Settings re-renders the gate.
+  useSettingsStore((st) => st.internetEnabled);
+  useSettingsStore((st) => st.torEnabled);
+  useSettingsStore((st) => st.allowMintOverClearnet);
+  useMeshStateStore((st) => st.torActive);
+  const networkBlock = mintNetworkBlock();
+  const networkBlocked = networkBlock !== null;
+  // A hint, never a gate: a captive portal reads as connected, and every mint
+  // call reports its own failure.
+  const network = useNetworkState();
+  const offline =
+    network.isConnected === false || network.isInternetReachable === false;
 
   // ---- Header action handoff ----
   const prevActionTrigger = useRef(actionTrigger ?? 0);
@@ -323,19 +330,15 @@ export default function WalletScreen({
       return;
     }
     prevActionTrigger.current = actionTrigger;
-    // Imperative one-shot handoff from a header button press, guarded above so
-    // it fires at most once per press.
+    // One-shot handoff from the header's help button, once per press.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (action === "receive") setShowReceive(true);
-    else if (action === "send") setShowSend(true);
-    else if (action === "zap") setShowZap(true);
-    else if (action === "addMint") setShowAddMint(true);
+    if (action === "help") setShowHelp(true);
   }, [action, actionTrigger]);
 
   // ---- Derived balances ----
 
-  // Units are separate currencies and are never summed. Sats lead because it is
-  // the only unit Airhop mints into; anything else appears as its own row.
+  // Units are separate currencies, never summed. Sats lead: the only unit
+  // Airhop mints into.
   const unitTotals = useMemo(() => {
     const totals = new Map<
       string,
@@ -360,15 +363,10 @@ export default function WalletScreen({
   const primary = unitTotals.find((u) => u.unit === "sat") ??
     unitTotals[0] ?? { unit: "sat", balance: 0, unverified: 0, reserved: 0 };
 
-  // Sends whose proofs are still held: the token exists, delivery is unproven.
-  // Anything still owed to somebody and still holding a token the user can
-  // hand over.
-  //
-  // Two shapes end up here. A normal send has its proofs reserved and can be
-  // reclaimed. A nutzap whose relay publish failed has no reservation, because
-  // its proofs are already locked to the recipient's key and are not ours to
-  // take back, but it still carries a token that needs delivering. Leaving that
-  // second case out would strand the value with no way to reach it.
+  // Sends with a token still to hand over. A normal send is reserved and
+  // reclaimable. A nutzap whose relay publish failed is locked to the
+  // recipient, so has no reservation, but still needs delivering; leaving it
+  // out would strand the value.
   const pendingSends = useMemo(
     () =>
       history.filter(
@@ -394,14 +392,8 @@ export default function WalletScreen({
 
   const mintList = useMemo(() => Object.values(mints), [mints]);
 
-  // A mint that advertises several currencies produces one account per
-  // currency, so adding a single mint can spill four near-identical rows that
-  // all read as separate mints and all hold nothing. Show the accounts that
-  // actually hold something, and for a mint holding nothing anywhere keep one
-  // row so it stays visible after being added. Preferring the sat row for that
-  // placeholder matches what the rest of the wallet is denominated in.
-  // Test mints hand out fake sats. Nothing stops you using one, but a balance
-  // that cannot be cashed out should never look like one that can.
+  // Test mints hand out fake sats; a balance that cannot be cashed out must
+  // never look like one that can.
   const holdsTestMoney = useMemo(
     () =>
       accounts.some(
@@ -416,6 +408,9 @@ export default function WalletScreen({
     [accounts, mints],
   );
 
+  // For the Mints sheet. A multi-currency mint has one account per unit, so
+  // show funded accounts plus one row (sat preferred) per empty mint, not four
+  // empty rows that read as four mints.
   const visibleAccounts = useMemo(() => {
     const funded = accounts.filter(
       (a) => a.balance > 0 || a.reserved > 0 || a.proofCount > 0,
@@ -435,11 +430,9 @@ export default function WalletScreen({
     return [...funded, ...placeholders.values()];
   }, [accounts]);
 
-  // How much of the primary unit the recovery phrase could NOT rebuild. Coins
-  // received from other people carry their secrets, so they sit outside the
-  // phrase until a swap re-issues them under ours. Only the shortfall is
-  // counted: the card states the guarantee in general terms and names an
-  // amount only where the guarantee does not hold.
+  // What the recovery phrase could NOT rebuild: received coins carry the
+  // sender's secrets until a swap re-issues them under ours. The backup sheet
+  // names an amount only where the guarantee does not hold.
   const unbackedBalance = useMemo(
     () =>
       accounts
@@ -448,9 +441,8 @@ export default function WalletScreen({
     [accounts, primary.unit],
   );
 
-  // Denomination the user last chose. Purely a display preference: sats and
-  // bitcoin are the same number scaled by a constant, so nothing here touches a
-  // balance, a quote, or anything that gets sent.
+  // Display only: sats and bitcoin differ by a constant, so nothing sent or
+  // quoted depends on it.
   const bitcoinUnit = useSettingsStore((s) => s.bitcoinUnit);
   const setBitcoinUnit = useSettingsStore((s) => s.setBitcoinUnit);
 
@@ -459,33 +451,28 @@ export default function WalletScreen({
     [primary.balance, primary.unit, bitcoinUnit],
   );
 
-  // Only sat balances have a bitcoin denomination to switch to; a mint issuing
-  // usd is already quoting a currency, so the toggle is inert there.
+  // Only sat balances have a bitcoin denomination to switch to.
   function toggleBitcoinUnit(): void {
     if (primary.unit !== "sat") return;
     setBitcoinUnit(bitcoinUnit === "sat" ? "btc" : "sat");
   }
 
-  // "21,500 sat" / "0.000215 BTC", for the lines that sit under the headline
-  // and must agree with it.
+  // For the lines under the headline, which must agree with it.
   function showAmount(amount: number, unit: string): string {
     const formatted = formatAmount(amount, unit, bitcoinUnit);
     return `${formatted.value} ${formatted.label}`;
   }
 
-  // How big a hand-off QR is drawn. TOKEN_QR_SIZE is the size its character
-  // ceiling was budgeted against, clamped to what the sheet actually has: the
-  // sheet's own padding plus the white frame's takes 80, and on a narrow phone
-  // the full size would be clipped, which reads as a broken code rather than a
-  // small one.
+  // TOKEN_QR_SIZE (what the character ceiling was budgeted for), clamped to
+  // the sheet width less its padding and the frame's (80pt). A clipped code
+  // reads as broken.
   const { width: windowWidth } = useWindowDimensions();
   const qrSize = Math.min(
     TOKEN_QR_SIZE,
     windowWidth - Spacing.xl * 2 - Spacing.base * 2,
   );
 
-  // Mints holding spendable value in the primary unit. Two or more means the
-  // balance cannot pay any amount larger than the biggest single mint holds.
+  // Two or more means no payment can exceed the largest single mint balance.
   const splitAccounts = useMemo(
     () => accounts.filter((a) => a.unit === primary.unit && a.balance > 0),
     [accounts, primary.unit],
@@ -493,9 +480,7 @@ export default function WalletScreen({
 
   // ---- Error surface ----
 
-  // One place that turns a WalletError into something a person can act on. The
-  // service already carries the "why" in `detail`; this only decides the title
-  // and whether there is a follow-up action worth offering.
+  // The service carries the "why" in `detail`; this only picks the title.
   const reportError = useCallback((err: unknown, fallbackTitle: string) => {
     if (err instanceof WalletError) {
       const titles: Record<string, string> = {
@@ -558,9 +543,8 @@ export default function WalletScreen({
       } else {
         showAlert(
           `+${formatUnitAmount(result.amount, result.unit)}`,
-          // Three sentences assembled at runtime, each its own key so a
-          // translator can reword or reorder them. The joining space lives
-          // here rather than being baked onto the front of the copy.
+          // Separate keys so translators can reword each; the joining space
+          // lives here, not in the copy.
           [
             t("wallet.receive.stored_unconfirmed", {
               mint: where,
@@ -580,13 +564,11 @@ export default function WalletScreen({
     }
   }
 
-  // The camera is presented from inside the Receive sheet, and iOS shows one
-  // modal at a time: opening the scanner while the sheet is still on screen
-  // silently does nothing. So the sheet closes first, its exit animation is
-  // allowed to finish, and only then does the camera come up. Every path back
-  // restores the sheet the same way, so the scanner always feels like a
-  // detour rather than somewhere the user got dropped.
+  // iOS shows one modal at a time, so opening the scanner over a sheet
+  // silently does nothing. The sheet closes, its exit finishes, then the camera
+  // opens; every path back restores the sheet the same way.
   function reopenSheetFor(target: ScanTarget): void {
+    if (target === "any") return;
     setTimeout(() => {
       if (target === "token") setShowReceive(true);
       else setShowWithdraw(true);
@@ -594,9 +576,18 @@ export default function WalletScreen({
   }
 
   function openScanner(target: ScanTarget): void {
+    setChooser(null);
     if (target === "token") setShowReceive(false);
-    else setShowWithdraw(false);
+    else if (target === "invoice") setShowWithdraw(false);
     setTimeout(() => setScannerTarget(target), SHEET_EXIT_MS);
+  }
+
+  // Same one-modal-at-a-time rule as the scanner.
+  function switchSheet(open: () => void): void {
+    setChooser(null);
+    setShowMints(false);
+    setShowBackup(false);
+    setTimeout(open, SHEET_EXIT_MS);
   }
 
   function closeScanner(): void {
@@ -606,20 +597,28 @@ export default function WalletScreen({
     reopenSheetFor(target);
   }
 
-  // A scan fills the field rather than acting on the spot. The sheet already
-  // shows what is about to happen, and silently claiming or paying whatever the
-  // camera saw would remove the last chance to check it.
+  // A scan fills the field rather than acting. The sheet shows what is about
+  // to happen; claiming or paying whatever the camera saw would remove the last
+  // chance to check it.
   function handleScanned(value: string): void {
     if (scannerTarget === null) return;
     const target = scannerTarget;
-    if (target === "token") {
+    setScannerTarget(null);
+    // "any" (the Scan action) routes by what it saw.
+    const kind =
+      target === "any" ? (classifyScan(value)?.kind ?? null) : target;
+    if (kind === "token") {
       setTokenInput(value);
-    } else {
+      reopenSheetFor("token");
+    } else if (kind === "invoice") {
+      if (target === "any") setActiveMint(splitAccounts[0]?.mintUrl ?? null);
       setWithdrawInvoice(value);
       setWithdrawQuote(null);
+      reopenSheetFor("invoice");
+    } else if (kind === "npub") {
+      setZapNpub(value);
+      setTimeout(() => setShowZap(true), SHEET_EXIT_MS);
     }
-    setScannerTarget(null);
-    reopenSheetFor(target);
   }
 
   // ---- Send ----
@@ -630,11 +629,10 @@ export default function WalletScreen({
     setBusy("send");
     try {
       // Quote first so an inexact amount is explained before anything is
-      // reserved, rather than after the proofs have already moved.
+      // reserved.
       const quote = await quoteSend({ amount, unit: primary.unit });
-      // Also the confirm of the inexact alert below, which runs after this
-      // function's own guard has ended, so it carries the busy flag and the
-      // error report itself.
+      // Also the inexact alert's confirm, which runs after this function's
+      // guard has ended, so it owns its busy flag and error report.
       const commit = async (allowInexact: boolean): Promise<void> => {
         setBusy("send");
         try {
@@ -684,12 +682,9 @@ export default function WalletScreen({
     }
   }
 
-  // The user confirmed the token reached its destination. Drops the reservation.
-  //
-  // Confirmed, because this is the irreversible one. It permanently forfeits the
-  // ability to pull the money back, and it sat one tap away while Reclaim - the
-  // action that safely RETURNS the money - asked for two. That is the wrong way
-  // round: the confirm belongs on the door that does not reopen.
+  // Drops the reservation, forfeiting reclaim for good, so it asks first.
+  // Reclaim only returns money to the balance; the confirm belongs on the
+  // door that does not reopen.
   function markDelivered(txId: string): void {
     const tx = pending?.txId === txId ? pending : undefined;
     showAlert(
@@ -716,8 +711,7 @@ export default function WalletScreen({
 
   // The transfer never landed. Puts the proofs back into the balance.
   function handleReclaim(tx: WalletTx | PreparedSend): void {
-    // WalletTx keys the transaction as `id`, PreparedSend as `txId`; they are
-    // the same value, and both carry amount and unit.
+    // WalletTx `id` and PreparedSend `txId` are the same value.
     const txId = "txId" in tx ? tx.txId : tx.id;
     showAlert(
       t("wallet.reclaim.title"),
@@ -748,20 +742,16 @@ export default function WalletScreen({
     showAlert(T("common.copied"), t("wallet.copied.token_body"));
   }
 
-  // Copying a seed phrase is a real risk: clipboards are readable by other apps
-  // and sync across devices on some setups. But refusing to offer it just
-  // pushes people to screenshot instead, which is worse and permanent. Offer
-  // it, and say plainly why it needs cleaning up afterwards.
+  // Clipboards leak to other apps and sync, but refusing pushes people to a
+  // screenshot, which is worse. Offer it and say to clean up after.
   async function handleCopyPhrase(): Promise<void> {
     await Clipboard.setStringAsync(phrase);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.phrase_body"));
   }
 
-  // Hands the token the user already built to a nearby peer. Uses the shared
-  // delivery helper rather than posting the DM here, so the message id, the
-  // delivery status and the pending transaction line up exactly as they do
-  // when the send starts from a chat or the Mesh tab.
+  // Through the shared helper, so message id, delivery status and pending
+  // transaction line up as they do for a send from a chat.
   function handleSendTokenToPeer(peerID: string): void {
     if (!pending) return;
     if (!getMeshService()) {
@@ -771,8 +761,7 @@ export default function WalletScreen({
     const route = deliverTokenToPeer({ peerID, prepared: pending });
     const amount = pending.amount;
     const unit = pending.unit;
-    // Handed off, not proven delivered. The transaction stays pending so it can
-    // still be reclaimed if it never lands.
+    // Handed off, not proven delivered, so it stays pending and reclaimable.
     setShowPeerPicker(false);
     setPending(null);
     showAlert(
@@ -786,10 +775,7 @@ export default function WalletScreen({
 
   // ---- Zap ----
 
-  // Name the person in the confirmation. A pubkey the user picked from their
-  // contacts has a nickname worth showing; anything typed by hand only has its
-  // key, so it gets the same npub...tail the rest of the app uses rather than 63
-  // characters of hex in an alert title.
+  // A contact's nickname, else the app's usual short npub label.
   function zapRecipientLabel(pubkeyHex: string): string {
     const known = Object.values(contacts).find(
       (c) => c.nostrPubkeyHex === pubkeyHex,
@@ -824,10 +810,8 @@ export default function WalletScreen({
     setBusy("zap");
     setShowZap(false);
     try {
-      // The same ladder every other door uses. This screen only knows a public
-      // key, so `payPerson` matches it against contacts first: paying someone
-      // you already have a thread with should land in that thread, not open a
-      // second conversation with the same person under their npub.
+      // `payPerson` matches the key against contacts first, so a payment to
+      // someone with a thread lands there, not in a second conversation.
       const result = await payPerson({
         nostrPubkey: recipientPubkey,
         amount,
@@ -840,9 +824,7 @@ export default function WalletScreen({
       setZapAmount("");
       setZapNote("");
 
-      // Nothing carried it. Hand the token back so it can be shared by hand,
-      // exactly as the Send flow does, rather than leaving the user with a
-      // pending entry and no way to act on it.
+      // Nothing carried it: hand the token back to share by hand, as Send does.
       if (result.token !== undefined) {
         setPending({
           txId: result.txId,
@@ -896,31 +878,21 @@ export default function WalletScreen({
     }
   }
 
-  // The global counterpart to the per-mint buttons. Pull is the standard
-  // gesture for "bring this up to date", so it does the whole job: settle
-  // anything left hanging first, then reconcile every funded account with its
-  // mint.
-  //
-  // Deliberately silent on success. The gesture is its own feedback and the
-  // numbers changing is the result, so an alert per mint would turn a routine
-  // pull into a stack of dialogs to dismiss. Only trouble is worth speaking up
-  // about, and then once, not once per mint.
+  // Settles anything left hanging, then refreshes every funded account. Silent
+  // on success; trouble is reported once, not per mint.
   async function handlePullRefresh(): Promise<void> {
-    // Empty accounts exist purely because a mint advertises the currency, and
-    // there is nothing at the mint to reconcile them against.
+    // Empty accounts exist only because the mint advertises the unit.
     const funded = accounts.filter((a) => a.proofCount > 0 || a.reserved > 0);
-    if (locked) return;
+    // Gate closed: every call would fail into an alert repeating the banner.
+    if (locked || networkBlocked) return;
     setPullRefreshing(true);
     try {
-      // Sequenced, not raced: this claims paid deposits and recovers melt
-      // change, so it adds proofs to the very accounts the refresh below is
-      // about to swap. Running both at once would have them treading on each
-      // other for no gain, since neither is slow enough to be worth it.
+      // Sequenced, not raced: reconcile claims deposits and melt change into
+      // the accounts the refresh below swaps.
       try {
         await reconcile();
       } catch {
-        // Best effort. A mint that cannot be reached here gets another chance
-        // on the next pull, and the refresh below is still worth attempting.
+        // Best effort; the refresh is still worth attempting.
       }
       const results = await Promise.allSettled(
         funded.map((a) => refreshAccount(a.mintUrl, a.unit)),
@@ -962,8 +934,7 @@ export default function WalletScreen({
       if (result.spentRemoved > 0) {
         parts.push(tPlural("wallet.spent_removed_detail", result.spentRemoved));
       }
-      // Worth naming separately: this value was never in doubt, it was just
-      // outside the recovery phrase until the swap re-issued it.
+      // Never in doubt, only outside the recovery phrase until this swap.
       if (result.securedForBackup > 0) {
         parts.push(
           t("wallet.refresh.secured", {
@@ -982,6 +953,31 @@ export default function WalletScreen({
     } finally {
       setRefreshingMint(null);
     }
+  }
+
+  // Removal confirms in its own alert, once this one has gone.
+  function openMintActions(account: AccountBalance): void {
+    const record = mints[account.mintUrl];
+    const host = hostOf(account.mintUrl);
+    showAlert(record?.name ?? host, record?.name !== undefined ? host : "", [
+      ...(networkBlocked
+        ? []
+        : [
+            {
+              text: t("wallet.mint.confirm_with", { mint: host }),
+              onPress: () =>
+                void handleRefreshMint(account.mintUrl, account.unit),
+            },
+          ]),
+      {
+        text: t("wallet.mint.remove"),
+        style: "destructive" as const,
+        onPress: () => {
+          setTimeout(() => handleRemoveMint(account), SHEET_EXIT_MS);
+        },
+      },
+      { text: t("common.cancel"), style: "cancel" as const },
+    ]);
   }
 
   function handleRemoveMint(account: AccountBalance): void {
@@ -1009,16 +1005,14 @@ export default function WalletScreen({
 
   // ---- Backup ----
 
-  // Step 1 of setup. Deliberately starts on a warning rather than on the words:
-  // showing twelve words with no context invites a screenshot, and a screenshot
-  // in a photo library is the most common way seed phrases get stolen.
+  // Starts on a warning: bare words invite a screenshot, the most common way
+  // seed phrases are stolen.
   function handleStartBackup(): void {
     setBackupStep("warn");
   }
 
-  // Step 2. Generates (or re-reads) the phrase and switches new proofs over to
-  // deterministic secrets straight away, so anything minted from here on is
-  // covered even if the user abandons the verification step.
+  // Switches to deterministic secrets now, so new coins are covered even if
+  // verification is abandoned.
   async function handleRevealPhrase(): Promise<void> {
     setBusy("backup");
     try {
@@ -1036,8 +1030,7 @@ export default function WalletScreen({
     }
   }
 
-  // Step 3. Two words, chosen at random each time, so passing once does not
-  // teach anyone how to pass again.
+  // Positions are random each time, so passing once teaches nothing.
   function handleVerifyPhrase(): void {
     if (verifyPositions(phrase, verifyAnswers)) {
       markBackupVerified();
@@ -1060,9 +1053,7 @@ export default function WalletScreen({
         return;
       }
       setPhrase(stored);
-      // Someone who set the phrase up but never confirmed a written copy gets
-      // the full write-it-down flow again rather than a read-only view, so the
-      // unconfirmed state has an obvious way out.
+      // Unverified goes back through write-it-down, the way out of that state.
       if (backupVerified) {
         setBackupStep("view");
       } else {
@@ -1076,9 +1067,8 @@ export default function WalletScreen({
     }
   }
 
-  // Wraps the callback-based alert so the restore flow reads as a straight
-  // line. Backdrop dismissal counts as cancel, which is why this watches the
-  // store's visibility rather than relying on a button firing.
+  // Watches the alert store's visibility: a backdrop dismissal fires no button
+  // and must count as cancel.
   function confirmReplacePhrase(body: string): Promise<boolean> {
     return new Promise((resolve) => {
       let settled = false;
@@ -1109,8 +1099,7 @@ export default function WalletScreen({
 
   function closeBackupSheet(): void {
     setBackupStep(null);
-    // The phrase is the money. Do not leave it sitting in component state after
-    // the sheet closes.
+    // The phrase is the money; never leave it in state.
     setPhrase("");
     setVerifyAnswers({});
     setVerifyError(false);
@@ -1137,13 +1126,9 @@ export default function WalletScreen({
       );
       return;
     }
-    // Restoring replaces the stored phrase. Coins already derived from the old
-    // one stay spendable here, but they stop being restorable, so this is the
-    // one place a wrong tap can quietly cost someone their backup.
-    //
-    // Asked whenever there is something to lose, not only once backup is on:
-    // the phrase is generated with the wallet, so somebody who never opened the
-    // backup screen still has coins that only it can rebuild.
+    // Coins from the old phrase stay spendable but stop being restorable.
+    // Asked whenever value is held, not only with backup on: the phrase exists
+    // from wallet creation.
     const current = await getRecoveryPhrase().catch(() => null);
     const samePhrase =
       current !== null &&
@@ -1193,8 +1178,7 @@ export default function WalletScreen({
     setBusy("consolidate");
     let moved = 0;
     let fees = 0;
-    // Paid out of the source, with the destination's coins still to be claimed.
-    // Money in transit, not money that failed to move.
+    // Paid out of the source, not yet claimed: in transit, not failed.
     const inTransit: string[] = [];
     const failures: string[] = [];
     try {
@@ -1273,24 +1257,21 @@ export default function WalletScreen({
     }
   }
 
-  // A bolt11 invoice is only good for a few minutes. Without a clock the sheet
-  // would sit on "Waiting for payment..." forever against an invoice nobody can
-  // pay any more, which reads as a hang rather than an expiry.
+  // A bolt11 invoice expires in minutes; without a clock the wait reads as a
+  // hang.
   useEffect(() => {
     if (!showDeposit || depositExpiresAtMs === undefined) return;
     const timer = setInterval(() => setDepositClock(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [showDeposit, depositExpiresAtMs]);
 
-  // Poll the open deposit until the invoice is paid. Stops as soon as the sheet
-  // closes or the invoice expires; an unclaimed deposit is picked up by
-  // `reconcile` on next launch, so nothing is lost by giving up here.
+  // Stops when the sheet closes or the invoice expires. Giving up loses
+  // nothing: `reconcile` claims a late payment on the next launch or pull.
   useEffect(() => {
     if (!deposit || !showDeposit || depositExpired) return;
     let cancelled = false;
-    // A mint round trip can outlast the poll interval. Without this guard two
-    // claims race for the same quote, and the loser reports a spurious error on
-    // a deposit that actually succeeded.
+    // A round trip can outlast the interval; two claims on one quote make the
+    // loser report a spurious error.
     let inFlight = false;
     const timer = setInterval(() => {
       if (inFlight) return;
@@ -1303,6 +1284,8 @@ export default function WalletScreen({
             deposit.quoteId,
           );
           if (cancelled || minted <= 0) return;
+          // Usually paid from another app, so the buzz says it landed.
+          succeeded();
           setDeposit(null);
           setShowDeposit(false);
           showAlert(
@@ -1371,6 +1354,180 @@ export default function WalletScreen({
     }
   }
 
+  const hasSpendable = accounts.some((a) => a.balance > 0);
+  // Why Lightning cannot run right now, shown in place of its description.
+  const lightningBlockedReason =
+    networkBlock === "internet-off"
+      ? T("wallet.choose.internet_off")
+      : networkBlock === "tor"
+        ? T("wallet.choose.tor_paused")
+        : offline
+          ? T("wallet.choose.offline")
+          : null;
+  const depositBlockedReason =
+    lightningBlockedReason ??
+    (mintList.length === 0 ? T("wallet.choose.needs_mint") : null);
+
+  // The phrase exists from wallet creation; what backup adds is twelve words
+  // written down and kept. So it reads safe only
+  // once verified: an unwritten phrase implies a safety net that is not there,
+  // and unconfirmed is shown as unsafe, not half-safe.
+  const backupSafe = backupEnabled && backupVerified;
+  const backupStatus = backupEnabled
+    ? backupVerified
+      ? T("wallet.backup.on")
+      : T("wallet.backup.state_unconfirmed")
+    : T("wallet.backup.state_off");
+
+  // Status in plain words; detail and actions live in the sheet it opens.
+  const backupRow = (
+    <Pressable
+      style={({ pressed }) => [
+        styles.backupRow,
+        pressed && styles.backupRowPressed,
+      ]}
+      onPress={() => setShowBackup(true)}
+      accessibilityRole="button"
+      accessibilityLabel={T("wallet.backup.phrase")}
+      accessibilityHint={backupStatus}
+    >
+      <Feather
+        name={backupSafe ? "shield" : "shield-off"}
+        size={18}
+        color={backupSafe ? Colors.verified : Colors.danger}
+      />
+      <View style={styles.backupRowText}>
+        <Text style={styles.backupRowTitle}>{T("wallet.backup.phrase")}</Text>
+        <Text style={styles.backupRowStatus}>{backupStatus}</Text>
+      </View>
+      <Feather name={chevronForward} size={16} color={Colors.textMuted} />
+    </Pressable>
+  );
+
+  const backupDetails = (
+    <>
+      <View style={styles.backupHeader}>
+        {/* Only a verified backup gets an intact shield, in verified blue
+            (never encrypted green). Off and unconfirmed are both struck red. */}
+        <Feather
+          name={backupEnabled && backupVerified ? "shield" : "shield-off"}
+          size={16}
+          color={
+            backupEnabled && backupVerified ? Colors.verified : Colors.danger
+          }
+        />
+        <Text style={styles.backupTitle}>{T("wallet.explain.phrase")}</Text>
+        <View
+          style={[
+            styles.pill,
+            backupEnabled && backupVerified && styles.pillOn,
+            backupEnabled && !backupVerified && styles.pillWarn,
+          ]}
+          accessibilityLabel={
+            backupEnabled
+              ? backupVerified
+                ? T("wallet.backup.on")
+                : T("wallet.backup.state_unconfirmed")
+              : T("wallet.backup.state_off")
+          }
+        >
+          <Text
+            style={[
+              styles.pillText,
+              backupEnabled && backupVerified && styles.pillTextOn,
+              backupEnabled && !backupVerified && styles.pillTextWarn,
+            ]}
+          >
+            {backupEnabled
+              ? backupVerified
+                ? T("wallet.backup.badge_on")
+                : T("wallet.backup.badge_unconfirmed")
+              : T("wallet.backup.badge_off")}
+          </Text>
+        </View>
+      </View>
+
+      {backupEnabled ? (
+        <>
+          <Text style={styles.backupBody}>
+            {T("wallet.backup.on_body_short")}
+          </Text>
+          {/* Unconfirmed is the most dangerous state: it reads as protected
+              while the words live only on the phone that may be lost. */}
+          {!backupVerified && (
+            <View style={styles.backupWarnRow}>
+              <Feather name="alert-triangle" size={13} color={Colors.danger} />
+              <Text style={styles.backupWarnText}>
+                {T("wallet.backup.unconfirmed_body")}
+              </Text>
+            </View>
+          )}
+          {unbackedBalance > 0 && (
+            <View style={styles.backupWarnRow}>
+              <Feather
+                name="alert-circle"
+                size={13}
+                color={Colors.textSecondary}
+              />
+              <Text style={styles.backupWarnText}>
+                {T("wallet.backup.not_covered", {
+                  amount: formatUnitAmount(unbackedBalance, primary.unit),
+                })}
+              </Text>
+            </View>
+          )}
+        </>
+      ) : (
+        <Text style={styles.backupBody}>{T("wallet.backup.off_body")}</Text>
+      )}
+
+      <View style={styles.backupActions}>
+        <Pressable
+          style={styles.backupBtn}
+          onPress={() =>
+            switchSheet(() => {
+              if (backupEnabled) void handleViewPhrase();
+              else void handleStartBackup();
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={
+            backupEnabled ? T("wallet.backup.view") : T("wallet.backup.setup")
+          }
+        >
+          <Feather
+            name={backupEnabled ? "eye" : "key"}
+            size={16}
+            color={Colors.accent}
+          />
+          <Text style={styles.backupBtnText}>
+            {backupEnabled
+              ? T("wallet.backup.view_short")
+              : T("wallet.backup.setup_short")}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[styles.backupBtn, networkBlocked && styles.smallBtnDisabled]}
+          disabled={networkBlocked}
+          onPress={() =>
+            switchSheet(() => {
+              setRestoreInput("");
+              setRestoreResult(null);
+              setShowRestore(true);
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={T("wallet.backup.restore")}
+        >
+          <Feather name="download-cloud" size={16} color={Colors.accent} />
+          <Text style={styles.backupBtnText}>
+            {T("wallet.backup.restore_short")}
+          </Text>
+        </Pressable>
+      </View>
+    </>
+  );
+
   // ---- Render ----
 
   return (
@@ -1393,561 +1550,248 @@ export default function WalletScreen({
         </View>
       )}
 
-      {networkBlocked && !locked && (
+      {networkBlock === "internet-off" && !locked && (
         <View style={[styles.banner, styles.bannerWarn]}>
-          <Feather name="shield" size={16} color={Colors.textSecondary} />
+          <Feather name="cloud-off" size={16} color={Colors.textSecondary} />
+          <Text style={styles.bannerText}>
+            {T("wallet.balance.internet_off", {
+              setting: T("settings.network.internet"),
+            })}
+          </Text>
+        </View>
+      )}
+
+      {networkBlock === "tor" && !locked && (
+        <View style={[styles.banner, styles.bannerTor]}>
+          <Feather name="shield" size={16} color={Colors.tor} />
           <Text style={styles.bannerText}>
             {T("wallet.balance.tor_blocked")}
           </Text>
         </View>
       )}
 
-      {/* Balance */}
-      <View style={styles.section}>
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>
-            {T("wallet.balance.spendable")}
-          </Text>
-          {/* Tapping the balance switches between sats and bitcoin. No
-              animation on purpose: a balance that morphs is a balance people
-              stop trusting. Same place, same size, instant. */}
-          <Pressable
-            style={styles.balanceRow}
-            onPress={toggleBitcoinUnit}
-            disabled={primary.unit !== "sat"}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.balance.a11y", {
-              value: headline.value,
-              unit: headline.label,
-            })}
-            accessibilityHint={
-              primary.unit === "sat" ? T("wallet.balance.unit_hint") : undefined
-            }
+      {offline && !networkBlocked && !locked && (
+        <View style={[styles.banner, styles.bannerWarn]}>
+          <Feather name="wifi-off" size={16} color={Colors.textSecondary} />
+          <Text style={styles.bannerText}>{T("wallet.balance.offline")}</Text>
+        </View>
+      )}
+
+      {/* Accent-filled, like the user's own chat bubbles. */}
+      <View style={styles.balanceCard}>
+        <Text style={styles.balanceLabel}>{T("wallet.balance.spendable")}</Text>
+        {/* Tap toggles sats and bitcoin. No animation: a balance that morphs
+            is one people stop trusting. */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.balanceRow,
+            pressed && styles.balanceRowPressed,
+          ]}
+          onPress={toggleBitcoinUnit}
+          disabled={primary.unit !== "sat"}
+          accessibilityRole="button"
+          accessibilityLabel={T("wallet.balance.a11y", {
+            value: headline.value,
+            unit: headline.label,
+          })}
+          accessibilityHint={
+            primary.unit === "sat" ? T("wallet.balance.unit_hint") : undefined
+          }
+        >
+          {/* Shrinks rather than wraps, so a large balance at a large OS
+              text size stays on one line beside its unit: the one number
+              that must never be half-visible. */}
+          <Text
+            style={styles.balanceAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
           >
-            {/* 38pt digits, so a seven-figure balance or a large OS text size
-                would run off the card: the one number in the app that must
-                never be half-visible. Shrinking to fit keeps it on one line
-                with the unit beside it. */}
-            <Text
-              style={styles.balanceAmount}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.6}
-            >
-              {headline.value}
+            {headline.value}
+          </Text>
+          <Text style={styles.balanceUnit}>{headline.label}</Text>
+        </Pressable>
+
+        {/* Anything not plainly spendable is stated, never folded in. */}
+        {primary.unverified > 0 && (
+          <View style={styles.balanceNote}>
+            <Feather name="clock" size={12} color={Colors.textInverse} />
+            <Text style={styles.balanceNoteText}>
+              {T("wallet.balance.unconfirmed_note", {
+                amount: showAmount(primary.unverified, primary.unit),
+              })}
             </Text>
-            <Text style={styles.balanceUnit}>{headline.label}</Text>
-          </Pressable>
-
-          {/* Everything that is not plain spendable balance is stated
-              explicitly rather than folded into the number above. */}
-          {primary.unverified > 0 && (
-            <View style={styles.balanceNote}>
-              <Feather name="clock" size={12} color={Colors.textMuted} />
+          </View>
+        )}
+        {primary.reserved > 0 && (
+          <View style={styles.balanceNote}>
+            <Feather
+              name="arrow-up-right"
+              size={12}
+              color={Colors.textInverse}
+            />
+            <Text style={styles.balanceNoteText}>
+              {T("wallet.balance.reserved_note", {
+                amount: showAmount(primary.reserved, primary.unit),
+              })}
+            </Text>
+          </View>
+        )}
+        {unitTotals
+          .filter((u) => u.unit !== primary.unit && u.balance > 0)
+          .map((u) => (
+            <View key={u.unit} style={styles.balanceNote}>
               <Text style={styles.balanceNoteText}>
-                {T("wallet.balance.unconfirmed_note", {
-                  amount: showAmount(primary.unverified, primary.unit),
-                })}
-              </Text>
-            </View>
-          )}
-          {primary.reserved > 0 && (
-            <View style={styles.balanceNote}>
-              <Feather
-                name="arrow-up-right"
-                size={12}
-                color={Colors.textMuted}
-              />
-              <Text style={styles.balanceNoteText}>
-                {T("wallet.balance.reserved_note", {
-                  amount: showAmount(primary.reserved, primary.unit),
-                })}
-              </Text>
-            </View>
-          )}
-
-          {unitTotals
-            .filter((u) => u.unit !== primary.unit && u.balance > 0)
-            .map((u) => (
-              <Text key={u.unit} style={styles.balanceNoteText}>
                 {T("wallet.balance.other_mint_note", {
                   amount: showAmount(u.balance, u.unit),
                 })}
               </Text>
-            ))}
-
-          {holdsTestMoney && (
-            <Text style={styles.testNote}>
-              {T("wallet.balance.test_mint_note")}
-            </Text>
-          )}
-
-          <Text style={styles.balanceSubtitle}>
-            {TP("wallet.mint_count", mintList.length)}
-            {" · "}
-            {TP(
-              "wallet.proof_count",
-              accounts.reduce((s, a) => s + a.proofCount, 0),
-            )}
-          </Text>
-        </View>
-      </View>
-
-      {/* Pending sends: reserved proofs the user can still recover. */}
-      {pendingSends.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("wallet.pending.title")}</Text>
-          {pendingSends.map((tx) => {
-            // Reclaim is only meaningful while the proofs are still ours. A
-            // nutzap that failed to publish is already locked to the
-            // recipient's key, so offering to pull it back would be a lie.
-            const reclaimable = reserved[tx.id] !== undefined;
-            return (
-              <View key={tx.id} style={styles.pendingCard}>
-                <View style={styles.pendingHeader}>
-                  <Feather
-                    name="clock"
-                    size={15}
-                    color={Colors.textSecondary}
-                  />
-                  <Text style={styles.pendingAmount}>
-                    {formatUnitAmount(tx.amount, tx.unit)}
-                  </Text>
-                  <Text style={styles.pendingTime}>
-                    {formatAgo(tx.createdAtMs)}
-                  </Text>
-                </View>
-                <Text style={styles.pendingBody}>
-                  {reclaimable
-                    ? t("wallet.pending.reserved_desc")
-                    : t("wallet.pending.locked_desc")}
-                  {tx.error ? `\n\n${tx.error}` : ""}
-                </Text>
-                <View style={styles.pendingActions}>
-                  <Pressable
-                    style={styles.pendingBtn}
-                    onPress={() => setQrToken(tx)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("wallet.pending.show_qr")}
-                  >
-                    <Text style={styles.pendingBtnText}>QR</Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.pendingBtn}
-                    onPress={() => void handleCopyToken(tx.token ?? "")}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("wallet.pending.copy_again")}
-                  >
-                    <Text style={styles.pendingBtnText}>
-                      {T("common.copy")}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.pendingBtn}
-                    onPress={() => handleShareToken(tx.token ?? "")}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("wallet.pending.share_again")}
-                  >
-                    <Text style={styles.pendingBtnText}>
-                      {T("common.share")}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.pendingBtn}
-                    onPress={() => markDelivered(tx.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("wallet.pending.mark_delivered")}
-                  >
-                    <Text style={styles.pendingBtnText}>
-                      {t("wallet.pending.delivered")}
-                    </Text>
-                  </Pressable>
-                  {reclaimable && (
-                    <Pressable
-                      style={[styles.pendingBtn, styles.pendingBtnDanger]}
-                      onPress={() => handleReclaim(tx)}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("wallet.pending.reclaim_into")}
-                    >
-                      <Text style={styles.pendingBtnDangerText}>
-                        {T("wallet.reclaim.confirm")}
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      )}
-
-      {/* Mint accounts */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{T("wallet.mint.title")}</Text>
-        {visibleAccounts.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>{T("wallet.mint.none")}</Text>
-            <Text style={styles.emptyBody}>{T("wallet.mint.none_desc")}</Text>
-            {/* The header has an Add mint icon, but an empty screen should
-                offer the next step rather than expect it to be found. */}
-            <Pressable
-              style={styles.emptyCta}
-              onPress={() => setShowAddMint(true)}
-              accessibilityRole="button"
-              accessibilityLabel={T("wallet.mint.add")}
-            >
-              <Feather name="plus" size={15} color={Colors.accent} />
-              <Text style={styles.emptyCtaText}>{T("wallet.mint.add")}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          visibleAccounts.map((account) => {
-            const record = mints[account.mintUrl];
-            return (
-              <View key={account.key} style={styles.mintRow}>
-                <View style={styles.mintLeft}>
-                  <View style={styles.mintIconCircle}>
-                    <Feather
-                      name="database"
-                      size={16}
-                      color={Colors.textSecondary}
-                    />
-                  </View>
-                  <View style={styles.mintInfo}>
-                    <View style={styles.mintNameRow}>
-                      <Text style={styles.mintName} numberOfLines={1}>
-                        {record?.name ?? hostOf(account.mintUrl)}
-                      </Text>
-                      {isLikelyTestMint({
-                        url: account.mintUrl,
-                        name: record?.name,
-                        description: record?.description,
-                      }) && (
-                        <View style={styles.testBadge}>
-                          <Text style={styles.testBadgeText}>TEST</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={styles.mintMeta} numberOfLines={1}>
-                      {[
-                        record?.name !== undefined
-                          ? hostOf(account.mintUrl)
-                          : null,
-                        TP("wallet.proof_count", account.proofCount),
-                        account.unverified > 0
-                          ? TP(
-                              "wallet.mint.unconfirmed_count",
-                              account.unverified,
-                            )
-                          : null,
-                      ]
-                        .filter((part) => part !== null)
-                        .join(" · ")}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.mintRight}>
-                  <Text style={styles.mintBalance}>
-                    {
-                      formatAmount(account.balance, account.unit, bitcoinUnit)
-                        .value
-                    }
-                  </Text>
-                  <Text style={styles.mintUnit}>
-                    {
-                      formatAmount(account.balance, account.unit, bitcoinUnit)
-                        .label
-                    }
-                  </Text>
-                  <View style={styles.mintActions}>
-                    <Pressable
-                      style={[
-                        styles.iconBtn,
-                        networkBlocked && styles.smallBtnDisabled,
-                      ]}
-                      disabled={networkBlocked || refreshingMint !== null}
-                      onPress={() =>
-                        void handleRefreshMint(account.mintUrl, account.unit)
-                      }
-                      hitSlop={hitSlopFor(MINT_ICON_SIZE)}
-                      accessibilityRole="button"
-                      accessibilityLabel={T("wallet.mint.confirm_with", {
-                        mint: hostOf(account.mintUrl),
-                      })}
-                    >
-                      {refreshingMint === account.mintUrl ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={Colors.textSecondary}
-                        />
-                      ) : (
-                        <Feather
-                          name="refresh-cw"
-                          size={13}
-                          color={Colors.textSecondary}
-                        />
-                      )}
-                    </Pressable>
-                    <Pressable
-                      style={styles.iconBtn}
-                      onPress={() => handleRemoveMint(account)}
-                      hitSlop={hitSlopFor(MINT_ICON_SIZE)}
-                      accessibilityRole="button"
-                      accessibilityLabel={T("wallet.mint.remove_a11y", {
-                        mint: hostOf(account.mintUrl),
-                      })}
-                    >
-                      <Feather
-                        name="x"
-                        size={14}
-                        color={Colors.textSecondary}
-                      />
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-            );
-          })
-        )}
-
-        {/* Ecash from two mints can never become one token, so a split balance
-            is a real wall. Moving it is possible over Lightning, and this is
-            the only place that says so. */}
-        {splitAccounts.length > 1 && (
-          <Pressable
-            style={[
-              styles.inlineAction,
-              networkBlocked && styles.smallBtnDisabled,
-            ]}
-            disabled={networkBlocked}
-            onPress={() => {
-              setConsolidateTarget(splitAccounts[0].mintUrl);
-              setShowConsolidate(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.mint.consolidate")}
-          >
-            <Feather name="git-merge" size={15} color={Colors.accent} />
-            <Text style={styles.inlineActionText}>
-              {T("wallet.mint.split_across", {
-                count: splitAccounts.length,
-              })}
-            </Text>
-          </Pressable>
-        )}
-      </View>
-
-      {/* Lightning: the only way value enters or leaves without a token. */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{T("wallet.ln.title")}</Text>
-        <View style={styles.lightningCard}>
-          <Text style={styles.lightningBody}>{T("wallet.ln.body")}</Text>
-          <View style={styles.lightningActions}>
-            <Pressable
-              style={[
-                styles.lightningBtn,
-                (networkBlocked || mintList.length === 0) &&
-                  styles.smallBtnDisabled,
-              ]}
-              disabled={networkBlocked || mintList.length === 0}
-              onPress={() => {
-                setActiveMint(mintList[0]?.url ?? null);
-                setDeposit(null);
-                setShowDeposit(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={T("wallet.ln.deposit")}
-            >
-              <Feather name="download" size={16} color={Colors.accent} />
-              <Text style={styles.lightningBtnText}>
-                {T("wallet.ln.deposit_short")}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.lightningBtn,
-                (networkBlocked || primary.balance === 0) &&
-                  styles.smallBtnDisabled,
-              ]}
-              disabled={networkBlocked || primary.balance === 0}
-              onPress={() => {
-                setActiveMint(splitAccounts[0]?.mintUrl ?? null);
-                setWithdrawQuote(null);
-                setShowWithdraw(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={T("wallet.ln.withdraw")}
-            >
-              <Feather name="upload" size={16} color={Colors.accent} />
-              <Text style={styles.lightningBtnText}>
-                {T("wallet.ln.withdraw_short")}
-              </Text>
-            </Pressable>
-          </View>
-          {pendingDeposits.length > 0 && (
-            <Text style={styles.lightningPending}>
+            </View>
+          ))}
+        {pendingDeposits.length > 0 && (
+          <View style={styles.balanceNote}>
+            <Feather name="download" size={12} color={Colors.textInverse} />
+            <Text style={styles.balanceNoteText}>
               {TP("wallet.ln.pending_deposits", pendingDeposits.length)}
             </Text>
-          )}
+          </View>
+        )}
+        {holdsTestMoney && (
+          <View style={styles.balanceNote}>
+            <Text style={styles.balanceNoteText}>
+              {T("wallet.balance.test_mint_note")}
+            </Text>
+          </View>
+        )}
+        {/* Send dims on an empty balance rather than opening a list that can
+            only fail. */}
+        <View style={styles.actionRow}>
+          <ActionButton
+            styles={styles}
+            Colors={Colors}
+            icon="arrow-down"
+            label={T("wallet.explain.receive")}
+            a11yLabel={T("wallet.explain.receive")}
+            disabled={locked}
+            onPress={() => setChooser("receive")}
+          />
+          <ActionButton
+            styles={styles}
+            Colors={Colors}
+            icon="arrow-up"
+            label={T("wallet.explain.send")}
+            a11yLabel={
+              hasSpendable
+                ? T("wallet.explain.send")
+                : T("wallet.action.send_disabled")
+            }
+            disabled={locked || !hasSpendable}
+            onPress={() => setChooser("send")}
+          />
+          <ActionButton
+            styles={styles}
+            Colors={Colors}
+            icon="maximize"
+            label={T("wallet.action.scan")}
+            a11yLabel={T("wallet.action.scan_a11y")}
+            disabled={locked}
+            onPress={() => openScanner("any")}
+          />
+          <ActionButton
+            styles={styles}
+            Colors={Colors}
+            icon="database"
+            label={T("wallet.mint.title")}
+            a11yLabel={T("wallet.mint.title")}
+            disabled={locked}
+            onPress={() => setShowMints(true)}
+          />
         </View>
       </View>
 
-      {/* Backup. Starts off, because what the user accepts here is a commitment
-          rather than a setting: the phrase already exists and already covers
-          their coins, and what is missing is twelve words written down and
-          kept. A phrase nobody wrote down is worse than none at all, since it
-          implies a safety net that is not there. */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{T("wallet.backup.title")}</Text>
-        <View style={styles.backupCard}>
-          <View style={styles.backupHeader}>
-            {/* Only a finished backup earns an intact shield, and the calm
-                color is the blue this app reserves for verified, never the
-                green that means end-to-end encrypted.
+      {backupRow}
 
-                Both unsafe states are a struck shield in red: no phrase at all,
-                and a phrase whose written copy was never confirmed. The second
-                is the more dangerous of the two, so it must not borrow the
-                reassuring glyph while the setup is still half-done. */}
-            <Feather
-              name={backupEnabled && backupVerified ? "shield" : "shield-off"}
-              size={16}
-              color={
-                backupEnabled && backupVerified
-                  ? Colors.verified
-                  : Colors.danger
-              }
-            />
-            <Text style={styles.backupTitle}>{T("wallet.explain.phrase")}</Text>
-            <View
-              style={[
-                styles.pill,
-                backupEnabled && backupVerified && styles.pillOn,
-                backupEnabled && !backupVerified && styles.pillWarn,
-              ]}
-              accessibilityLabel={
-                backupEnabled
-                  ? backupVerified
-                    ? T("wallet.backup.on")
-                    : T("wallet.backup.state_unconfirmed")
-                  : T("wallet.backup.state_off")
-              }
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  backupEnabled && backupVerified && styles.pillTextOn,
-                  backupEnabled && !backupVerified && styles.pillTextWarn,
-                ]}
-              >
-                {backupEnabled
-                  ? backupVerified
-                    ? T("wallet.backup.badge_on")
-                    : T("wallet.backup.badge_unconfirmed")
-                  : T("wallet.backup.badge_off")}
-              </Text>
-            </View>
-          </View>
-
-          {backupEnabled ? (
-            <>
-              <Text style={styles.backupBody}>
-                {T("wallet.backup.on_body_short")}
-              </Text>
-              {/* A phrase that exists but was never copied out is the most
-                  dangerous state of all: the card would otherwise read as
-                  protected while the words live only on the phone that is
-                  about to be lost. */}
-              {!backupVerified && (
-                <View style={styles.backupWarnRow}>
-                  <Feather
-                    name="alert-triangle"
-                    size={13}
-                    color={Colors.danger}
-                  />
-                  <Text style={styles.backupWarnText}>
-                    {T("wallet.backup.unconfirmed_body")}
-                  </Text>
-                </View>
-              )}
-              {unbackedBalance > 0 && (
-                <View style={styles.backupWarnRow}>
-                  <Feather
-                    name="alert-circle"
-                    size={13}
-                    color={Colors.textSecondary}
-                  />
-                  <Text style={styles.backupWarnText}>
-                    {T("wallet.backup.not_covered", {
-                      amount: formatUnitAmount(unbackedBalance, primary.unit),
-                    })}
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <Text style={styles.backupBody}>{T("wallet.backup.off_body")}</Text>
-          )}
-
-          <View style={styles.backupActions}>
-            <Pressable
-              style={styles.backupBtn}
-              onPress={() => {
-                if (backupEnabled) void handleViewPhrase();
-                else void handleStartBackup();
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={
-                backupEnabled
-                  ? T("wallet.backup.view")
-                  : T("wallet.backup.setup")
-              }
-            >
-              <Feather
-                name={backupEnabled ? "eye" : "key"}
-                size={16}
-                color={Colors.accent}
-              />
-              <Text style={styles.backupBtnText}>
-                {backupEnabled
-                  ? T("wallet.backup.view_short")
-                  : T("wallet.backup.setup_short")}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.backupBtn,
-                networkBlocked && styles.smallBtnDisabled,
-              ]}
-              disabled={networkBlocked}
-              onPress={() => {
-                setRestoreInput("");
-                setRestoreResult(null);
-                setShowRestore(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={T("wallet.backup.restore")}
-            >
-              <Feather name="download-cloud" size={16} color={Colors.accent} />
-              <Text style={styles.backupBtnText}>
-                {T("wallet.backup.restore_short")}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-
-      {/* Activity. Always shown: a section that disappears when empty leaves
-          people wondering whether the app forgot their payments or never had
-          them, and it makes the tab reflow as soon as the first one lands. */}
+      {/* Always shown, so an empty wallet does not look like a lost history
+          and the tab does not reflow on the first payment. */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{T("wallet.activity.title")}</Text>
+        {/* Unclaimed sends lead, with their actions: their proofs are
+            reserved, not spent, and until one is marked delivered or
+            reclaimed this card is the only way back to that value. */}
+        {pendingSends.map((tx) => {
+          // An unpublished nutzap is locked to the recipient: no reclaim.
+          const reclaimable = reserved[tx.id] !== undefined;
+          return (
+            <View key={tx.id} style={styles.pendingCard}>
+              <View style={styles.pendingHeader}>
+                <Feather name="clock" size={15} color={Colors.textSecondary} />
+                <Text style={styles.pendingAmount}>
+                  {formatUnitAmount(tx.amount, tx.unit)}
+                </Text>
+                <Text style={styles.pendingTime}>
+                  {formatAgo(tx.createdAtMs)}
+                </Text>
+              </View>
+              <Text style={styles.pendingBody}>
+                {reclaimable
+                  ? t("wallet.pending.reserved_desc")
+                  : t("wallet.pending.locked_desc")}
+                {tx.error ? `\n\n${tx.error}` : ""}
+              </Text>
+              <View style={styles.pendingActions}>
+                <Pressable
+                  style={styles.pendingBtn}
+                  onPress={() => setQrToken(tx)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("wallet.pending.show_qr")}
+                >
+                  <Text style={styles.pendingBtnText}>QR</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.pendingBtn}
+                  onPress={() => void handleCopyToken(tx.token ?? "")}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("wallet.pending.copy_again")}
+                >
+                  <Text style={styles.pendingBtnText}>{T("common.copy")}</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.pendingBtn}
+                  onPress={() => handleShareToken(tx.token ?? "")}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("wallet.pending.share_again")}
+                >
+                  <Text style={styles.pendingBtnText}>{T("common.share")}</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.pendingBtn}
+                  onPress={() => markDelivered(tx.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("wallet.pending.mark_delivered")}
+                >
+                  <Text style={styles.pendingBtnText}>
+                    {t("wallet.pending.delivered")}
+                  </Text>
+                </Pressable>
+                {reclaimable && (
+                  <Pressable
+                    style={[styles.pendingBtn, styles.pendingBtnDanger]}
+                    onPress={() => handleReclaim(tx)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("wallet.pending.reclaim_into")}
+                  >
+                    <Text style={styles.pendingBtnDangerText}>
+                      {T("wallet.reclaim.confirm")}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          );
+        })}
         {recent.length === 0 ? (
-          <View style={styles.emptyCard}>
+          <View style={[styles.emptyCard, styles.activityEmpty]}>
             <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
-            <Text style={styles.emptyBody}>
-              {T("wallet.activity.none_desc")}
-            </Text>
           </View>
         ) : (
           <View style={styles.historyCard}>
@@ -1975,16 +1819,8 @@ export default function WalletScreen({
                         ? ` · ${txStatusNote(tx)}`
                         : ""}
                     </Text>
-                    {/*
-                      The failure reason lives here, not only on the pending
-                      sends card. That card is filtered to sends, so a Lightning
-                      deposit or withdrawal wrote an explanation onto the
-                      transaction that rendered nowhere - including the one case
-                      where money is genuinely ambiguous, a melt whose answer
-                      never arrived and whose stored reason says the payment may
-                      have gone through. The row read "Pending" forever and the
-                      app kept the explanation to itself.
-                    */}
+                    {/* Every kind shows its reason, including a melt with no
+                        answer whose payment may have gone through. */}
                     {tx.error !== undefined && tx.error.length > 0 ? (
                       <Text style={styles.historyError}>{tx.error}</Text>
                     ) : null}
@@ -2048,61 +1884,324 @@ export default function WalletScreen({
         )}
       </View>
 
-      {/* What each header action does, and whether it needs internet. */}
-      <View style={styles.section}>
-        <View style={styles.infoPanel}>
-          {[
+      {/* ---- Sheets ---- */}
+
+      <BottomSheet
+        visible={chooser === "receive"}
+        onClose={() => setChooser(null)}
+        sheetStyle={styles.modalSheet}
+      >
+        <Text style={styles.modalTitle}>{T("wallet.explain.receive")}</Text>
+        <ChoiceList
+          choices={[
             {
-              icon: "help-circle" as const,
-              title: T("wallet.explain.title"),
-              body: T("wallet.explain.intro"),
+              key: "scan",
+              icon: "maximize",
+              title: T("wallet.choose.scan"),
+              detail: T("wallet.choose.scan_desc"),
+              // Ecash only: inside Receive, an invoice or npub would turn the
+              // scan into a payment. The card's Scan is the one that routes.
+              onPress: () => openScanner("token"),
             },
             {
-              icon: "arrow-up" as const,
-              title: T("wallet.explain.send"),
-              body: T("wallet.explain.send_desc"),
+              key: "paste",
+              icon: "clipboard",
+              title: T("wallet.choose.paste"),
+              detail: T("wallet.choose.paste_desc"),
+              onPress: () => switchSheet(() => setShowReceive(true)),
             },
             {
-              icon: "arrow-down" as const,
-              title: T("wallet.explain.receive"),
-              body: T("wallet.explain.receive_desc"),
+              key: "topup",
+              icon: "download",
+              title: T("wallet.choose.topup"),
+              detail: depositBlockedReason ?? T("wallet.choose.topup_desc"),
+              disabled: depositBlockedReason !== null,
+              onPress: () =>
+                switchSheet(() => {
+                  setActiveMint(mintList[0]?.url ?? null);
+                  setDeposit(null);
+                  setShowDeposit(true);
+                }),
+            },
+          ]}
+        />
+        <Pressable
+          style={styles.modalCancel}
+          onPress={() => setChooser(null)}
+          accessibilityRole="button"
+          accessibilityLabel={T("common.cancel")}
+        >
+          <Text style={styles.modalCancelText}>{T("common.cancel")}</Text>
+        </Pressable>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={chooser === "send"}
+        onClose={() => setChooser(null)}
+        sheetStyle={styles.modalSheet}
+      >
+        <Text style={styles.modalTitle}>{T("wallet.explain.send")}</Text>
+        <ChoiceList
+          choices={[
+            {
+              key: "token",
+              icon: "grid",
+              title: T("wallet.choose.token"),
+              detail: T("wallet.choose.token_desc"),
+              onPress: () => switchSheet(() => setShowSend(true)),
             },
             {
-              icon: "zap" as const,
-              title: T("wallet.explain.zap"),
-              body: T("wallet.explain.zap_desc"),
+              key: "zap",
+              icon: "zap",
+              title: T("wallet.choose.zap"),
+              detail: T("wallet.choose.zap_desc"),
+              onPress: () => switchSheet(() => setShowZap(true)),
             },
             {
-              icon: "plus" as const,
-              title: T("wallet.mint.add_short"),
-              body: T("wallet.explain.add_mint_desc"),
+              key: "invoice",
+              icon: "upload",
+              title: T("wallet.choose.invoice"),
+              detail: lightningBlockedReason ?? T("wallet.choose.invoice_desc"),
+              disabled: lightningBlockedReason !== null,
+              onPress: () =>
+                switchSheet(() => {
+                  setActiveMint(splitAccounts[0]?.mintUrl ?? null);
+                  setWithdrawQuote(null);
+                  setShowWithdraw(true);
+                }),
             },
-            {
-              icon: "shield" as const,
-              title: T("wallet.backup.phrase"),
-              body: T("wallet.explain.phrase_desc"),
-            },
-          ].map((row, index) => (
-            <View key={row.title}>
-              {index > 0 && <View style={styles.infoPanelDivider} />}
-              <View style={styles.infoPanelRow}>
-                <Feather
-                  name={row.icon}
-                  size={16}
-                  color={Colors.textMuted}
-                  style={styles.infoPanelIcon}
-                />
-                <View style={styles.infoPanelText}>
-                  <Text style={styles.infoPanelTitle}>{row.title}</Text>
-                  <Text style={styles.infoPanelBody}>{row.body}</Text>
+          ]}
+        />
+        <Pressable
+          style={styles.modalCancel}
+          onPress={() => setChooser(null)}
+          accessibilityRole="button"
+          accessibilityLabel={T("common.cancel")}
+        >
+          <Text style={styles.modalCancelText}>{T("common.cancel")}</Text>
+        </Pressable>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showMints}
+        onClose={() => setShowMints(false)}
+        sheetStyle={[styles.modalSheet, styles.scrollSheet]}
+        scrollable
+      >
+        <View style={styles.sheetHeader}>
+          <Text style={styles.modalTitle}>{T("wallet.mint.title")}</Text>
+          {mintList.length > 0 && (
+            <Text style={styles.sheetHeaderNote}>
+              {formatNumber(mintList.length)}
+            </Text>
+          )}
+        </View>
+        <ScrollView
+          contentContainerStyle={styles.sheetList}
+          showsVerticalScrollIndicator={false}
+        >
+          {visibleAccounts.length === 0 ? (
+            <Text style={styles.modalSubtitle}>
+              {T("wallet.mint.none_desc")}
+            </Text>
+          ) : (
+            <View style={styles.listGroup}>
+              {visibleAccounts.map((account, index) => {
+                const record = mints[account.mintUrl];
+                const shown = formatAmount(
+                  account.balance,
+                  account.unit,
+                  bitcoinUnit,
+                );
+                const meta = [
+                  record?.name !== undefined ? hostOf(account.mintUrl) : null,
+                  account.unverified > 0
+                    ? TP("wallet.mint.unconfirmed_count", account.unverified)
+                    : null,
+                ].filter((part) => part !== null);
+                return (
+                  <View key={account.key}>
+                    {index > 0 && <View style={styles.listDivider} />}
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.listRow,
+                        pressed && styles.listRowPressed,
+                      ]}
+                      onPress={() => openMintActions(account)}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        record?.name ?? hostOf(account.mintUrl)
+                      }
+                      accessibilityHint={`${shown.value} ${shown.label}`}
+                    >
+                      <View style={styles.listIcon}>
+                        {refreshingMint === account.mintUrl ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={Colors.textSecondary}
+                          />
+                        ) : (
+                          <Feather
+                            name="database"
+                            size={16}
+                            color={Colors.textPrimary}
+                          />
+                        )}
+                      </View>
+                      <View style={styles.listText}>
+                        <View style={styles.mintNameRow}>
+                          <Text style={styles.listTitle} numberOfLines={1}>
+                            {record?.name ?? hostOf(account.mintUrl)}
+                          </Text>
+                          {isLikelyTestMint({
+                            url: account.mintUrl,
+                            name: record?.name,
+                            description: record?.description,
+                          }) && (
+                            <View style={styles.testBadge}>
+                              <Text style={styles.testBadgeText}>TEST</Text>
+                            </View>
+                          )}
+                        </View>
+                        {meta.length > 0 && (
+                          <Text style={styles.listMeta} numberOfLines={1}>
+                            {meta.join(" · ")}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.listAmount}>
+                        <Text style={styles.mintBalance}>{shown.value}</Text>
+                        <Text style={styles.mintUnit}>{shown.label}</Text>
+                      </View>
+                    </Pressable>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Two mints' ecash can never form one token; Lightning is the
+              only way to merge them. */}
+          {splitAccounts.length > 1 && (
+            <ChoiceList
+              choices={[
+                {
+                  key: "consolidate",
+                  icon: "git-merge",
+                  title: T("wallet.mint.consolidate"),
+                  detail:
+                    lightningBlockedReason ??
+                    T("wallet.mint.split_across", {
+                      count: splitAccounts.length,
+                    }),
+                  disabled: lightningBlockedReason !== null,
+                  onPress: () =>
+                    switchSheet(() => {
+                      setConsolidateTarget(splitAccounts[0].mintUrl);
+                      setShowConsolidate(true);
+                    }),
+                },
+              ]}
+            />
+          )}
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.modalCancel,
+              styles.pillWithIcon,
+              pressed && styles.listRowPressed,
+            ]}
+            onPress={() => switchSheet(() => setShowAddMint(true))}
+            accessibilityRole="button"
+            accessibilityLabel={T("wallet.mint.add")}
+          >
+            <Feather name="plus" size={16} color={Colors.textPrimary} />
+            <Text style={styles.modalCancelText}>{T("wallet.mint.add")}</Text>
+          </Pressable>
+          <Pressable
+            style={styles.modalCancel}
+            onPress={() => setShowMints(false)}
+            accessibilityRole="button"
+            accessibilityLabel={T("common.done")}
+          >
+            <Text style={styles.modalCancelText}>{T("common.done")}</Text>
+          </Pressable>
+        </ScrollView>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showBackup}
+        onClose={() => setShowBackup(false)}
+        sheetStyle={[styles.modalSheet, styles.scrollSheet]}
+        scrollable
+      >
+        <ScrollView
+          contentContainerStyle={styles.sheetList}
+          showsVerticalScrollIndicator={false}
+        >
+          {backupDetails}
+        </ScrollView>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showHelp}
+        onClose={() => setShowHelp(false)}
+        sheetStyle={[styles.modalSheet, styles.scrollSheet]}
+        scrollable
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.infoPanel}>
+            {[
+              {
+                icon: "help-circle" as const,
+                title: T("wallet.explain.title"),
+                body: T("wallet.explain.intro"),
+              },
+              {
+                icon: "arrow-up" as const,
+                title: T("wallet.explain.send"),
+                body: T("wallet.explain.send_desc"),
+              },
+              {
+                icon: "arrow-down" as const,
+                title: T("wallet.explain.receive"),
+                body: T("wallet.explain.receive_desc"),
+              },
+              {
+                icon: "zap" as const,
+                title: T("wallet.explain.zap"),
+                body: T("wallet.explain.zap_desc"),
+              },
+              {
+                icon: "plus" as const,
+                title: T("wallet.mint.add_short"),
+                body: T("wallet.explain.add_mint_desc"),
+              },
+              {
+                icon: "shield" as const,
+                title: T("wallet.backup.phrase"),
+                body: T("wallet.explain.phrase_desc"),
+              },
+            ].map((row, index) => (
+              <View key={row.title}>
+                {index > 0 && <View style={styles.infoPanelDivider} />}
+                <View style={styles.infoPanelRow}>
+                  <Feather
+                    name={row.icon}
+                    size={16}
+                    color={Colors.textMuted}
+                    style={styles.infoPanelIcon}
+                  />
+                  <View style={styles.infoPanelText}>
+                    <Text style={styles.infoPanelTitle}>{row.title}</Text>
+                    <Text style={styles.infoPanelBody}>{row.body}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* ---- Sheets ---- */}
+            ))}
+          </View>
+        </ScrollView>
+      </BottomSheet>
 
       <BottomSheet
         visible={showReceive}
@@ -2358,11 +2457,9 @@ export default function WalletScreen({
               })}
             </Text>
           )}
-          {/* Fees are cached for a day so a send can be priced with no signal,
-              which is right for an offline-first wallet and still something the
-              user should be able to see the age of: a mint that has raised its
-              input fee since will take more than the quote said. Shown only
-              once the cache is genuinely old, so the ordinary case stays quiet. */}
+          {/* Fees are cached so a send prices offline, but a mint that has
+              raised its input fee since takes more than the quote said.
+              Shown only once the cache is stale, so the usual case is quiet. */}
           {pending !== null &&
             pending.pricedFromCacheAgeMs !== undefined &&
             pending.pricedFromCacheAgeMs >= FEE_CACHE_STALE_MS && (
@@ -2375,10 +2472,9 @@ export default function WalletScreen({
               </Text>
             )}
         </View>
-        {/* A QR rather than the raw string: nobody reads 400 characters of
-            base64, and this is the one form every Cashu wallet can take. Falls
-            back to the text for a token too large to encode, which needs an
-            unusually fragmented balance. */}
+        {/* A QR rather than 400 characters of base64, and every Cashu
+            wallet scans one. Text fallback for a token too large to encode (an unusually
+            fragmented balance). */}
         {pending !== null && canEncodeTokenQr(pending.token) ? (
           <View style={styles.qrFrame}>
             <QRCode
@@ -2527,10 +2623,9 @@ export default function WalletScreen({
                 ...amountParts(deposit.amount, deposit.unit),
               })}
             </Text>
-            {/* bolt11 is bech32, so the all-uppercase form is equivalent and
-                encodes in the QR alphanumeric mode: same invoice, denser code,
-                easier scan. Length is checked so an unusually long invoice
-                degrades to the text field instead of throwing. */}
+            {/* bech32 uppercases losslessly into QR alphanumeric mode, a
+                denser code. Length checked so a long invoice falls back to
+                text instead of throwing. */}
             {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
               <View style={styles.qrFrame}>
                 <QRCode
@@ -2542,9 +2637,8 @@ export default function WalletScreen({
                 />
               </View>
             )}
-            {/* Head first, truncated at the end: the `lnbc` prefix and the
-                amount are the only part of an invoice a person can check by
-                eye, and Copy sits right below for the rest. */}
+            {/* Head first: the `lnbc` prefix and amount are all a person can
+                check by eye. */}
             <View style={styles.readonlyValueBox}>
               <Text
                 style={styles.readonlyValue}
@@ -2555,12 +2649,8 @@ export default function WalletScreen({
                 {deposit.invoice}
               </Text>
             </View>
-            {/* Three actions of visibly different weight, because they are not
-                equals. Opening a wallet is the one that finishes the job on this
-                phone, so it leads; copying serves the other routes (a second
-                device, a paste elsewhere); closing walks away. Rendered
-                identically they read as a menu to be deciphered rather than a
-                path to follow. Same three-tier pattern the QR sheet uses. */}
+            {/* Weighted, not equal: Open finishes the job on this phone and
+                leads, Copy serves other routes, Close walks away. */}
             <View style={styles.generatedActions}>
               <Pressable
                 style={styles.generatedPrimaryBtn}
@@ -2620,9 +2710,7 @@ export default function WalletScreen({
               </View>
             )}
             <View style={styles.modalActions}>
-              {/* Plain, not a third pill. Walking away is not a peer of the two
-                  actions above it, and giving it the same shape is what made
-                  the sheet read as three equal choices. */}
+              {/* Borderless, so it does not read as a peer of the two above. */}
               <Pressable
                 style={styles.modalDismiss}
                 onPress={() => setShowDeposit(false)}
@@ -2702,8 +2790,7 @@ export default function WalletScreen({
           selected={activeMint}
           onSelect={(url) => {
             setActiveMint(url);
-            // A quote is priced against one mint's fee schedule, so switching
-            // mints invalidates it.
+            // A quote is priced against one mint's fees.
             setWithdrawQuote(null);
           }}
         />
@@ -3173,10 +3260,53 @@ export default function WalletScreen({
 // ---- Small presentational pieces ----
 
 type Styles = ReturnType<typeof createStyles>;
+type FeatherName = React.ComponentProps<typeof Feather>["name"];
 
-// The stacked confirm/cancel pair every sheet in the app uses. The secondary
-// label is overridable because a step in the middle of a flow goes back rather
-// than out, and "Cancel" there reads as "throw away what I just did".
+// The whole column, label included, is the target, not only the circle.
+function ActionButton({
+  styles,
+  Colors,
+  icon,
+  label,
+  a11yLabel,
+  disabled = false,
+  onPress,
+}: {
+  styles: Styles;
+  Colors: ReturnType<typeof useThemeColors>;
+  icon: FeatherName;
+  label: string;
+  a11yLabel: string;
+  disabled?: boolean;
+  onPress: () => void;
+}): React.JSX.Element {
+  return (
+    <Pressable
+      style={[styles.actionBtn, disabled && styles.actionBtnDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      accessibilityLabel={a11yLabel}
+    >
+      {({ pressed }) => (
+        <>
+          <View
+            style={[styles.actionCircle, pressed && styles.actionCirclePressed]}
+          >
+            <Feather name={icon} size={20} color={Colors.textInverse} />
+          </View>
+          <Text style={styles.actionLabel} numberOfLines={2}>
+            {label}
+          </Text>
+        </>
+      )}
+    </Pressable>
+  );
+}
+
+// `cancelLabel` is overridable: mid-flow the secondary goes back, and "Cancel"
+// there reads as discarding the step.
 function SheetActions({
   styles,
   confirmLabel,
@@ -3218,8 +3348,7 @@ function SheetActions({
   );
 }
 
-// Choose which mint an operation acts on. Renders nothing for a single option,
-// because a picker with one row is just noise.
+// A single option renders as a line of text, not a one-row picker.
 function MintPicker({
   styles,
   Colors,
@@ -3290,21 +3419,12 @@ function QuoteRow({
   );
 }
 
-// ---- Transaction formatting ----
+// ---- Wallet handoff ----
 
-// Hand a payment instrument to whichever app claims its URI scheme.
-//
-// Try, do not ask. `canOpenURL` answers "no" unless the scheme is declared in
-// the Android manifest's `queries` and in iOS's LSApplicationQueriesSchemes, so
-// gating on it hides the button exactly where a wallet is installed. `openURL`
-// rejects when nothing handles the URI: the same answer, with nothing to
-// declare on either platform.
-//
-// Share is the fallback, never the handoff. It is the "send this text to..."
-// sheet, which lists Messages and Drive rather than wallets, so it cannot be
-// what a button labelled "Open in wallet" does. It is the right thing to reach
-// when no app claims the scheme, because the instrument still has to get onto
-// another device somehow.
+// Try, do not ask: `canOpenURL` says "no" unless the scheme is declared in the
+// Android `queries` and iOS LSApplicationQueriesSchemes, while `openURL` just
+// rejects when nothing handles it. Share is only the fallback: it lists
+// Messages and Drive, not wallets.
 async function handOffToWallet(uri: string): Promise<void> {
   try {
     await Linking.openURL(uri);
@@ -3312,45 +3432,37 @@ async function handOffToWallet(uri: string): Promise<void> {
     try {
       await Share.share({ message: uri });
     } catch {
-      // Silent by design: the instrument is on screen with Copy beside it, so
-      // an alert here would report a dead end the sheet disproves.
+      // Silent: the instrument is on screen with Copy beside it.
     }
   }
 }
 
-// A bolt11 invoice, for the Lightning wallet the user pays it FROM.
+// For the Lightning wallet the user pays it FROM.
 function openInvoiceInWallet(invoice: string): Promise<void> {
   return handOffToWallet(`lightning:${invoice}`);
 }
 
-// A Cashu token, for another wallet on the same phone. `cashu:` is NUT-00's own
-// scheme, not one invented here.
-//
-// Only the handoff wears it. Share still passes the BARE token, because that
-// goes to a person: every wallet reads the bare form, only some strip a scheme.
-// `bareToken` keeps the two from compounding into `cashu:cashu:`.
+// `cashu:` is NUT-00's scheme. Only the handoff wears it; Share passes the bare
+// token, which every wallet reads. `bareToken` prevents `cashu:cashu:`.
 function openTokenInWallet(token: string): Promise<void> {
   return handOffToWallet(`cashu:${bareToken(token) ?? token}`);
 }
+
+// ---- Transaction formatting ----
 
 function isCredit(tx: WalletTx): boolean {
   return tx.kind === "receive" || tx.kind === "mint" || tx.kind === "nutzap-in";
 }
 
-// Rows where no money moved: a reclaimed send came back into the balance, an
-// expired mint quote never arrived, and a failed send never left. `isCredit`
-// keys off `kind` alone, so all three printed a red debit; a reclaim showed
-// "-500" for money that had just come back.
-//
-// The exception is the row recording proofs the mint says are already spent,
-// which is a real reduction. A swap that failed any other way never happened.
+// No money moved: a reclaim, an expired mint quote, a failed send. `isCredit`
+// keys off `kind` alone, so these are checked first. A failed swap that
+// removed already-spent proofs is a real reduction.
 function isVoided(tx: WalletTx): boolean {
   if (tx.status === "reclaimed" || tx.status === "expired") return true;
   return tx.status === "failed" && tx.spentRemoved !== true;
 }
 
-// A swap trades coins for coins at the same mint, so it is neither money in
-// nor money out. Signing it would read a routine refresh as a payment.
+// A swap trades coins at the same mint; signing it would read as a payment.
 function isNeutral(tx: WalletTx): boolean {
   return tx.kind === "swap" && tx.status !== "failed";
 }
@@ -3376,16 +3488,12 @@ function txIcon(tx: WalletTx): React.ComponentProps<typeof Feather>["name"] {
 function txTitle(tx: WalletTx): string {
   switch (tx.kind) {
     case "receive":
-      // The title is the line somebody scanning the list reads, and nothing
-      // arrived, so the failure belongs there rather than in a note under
-      // "Received".
+      // Nothing arrived, so the failure goes in the title, not a note.
       if (tx.status === "failed") return t("wallet.activity.receive_failed");
       return tx.status === "pending"
         ? t("wallet.activity.received_unconfirmed")
         : t("wallet.activity.received");
     case "send":
-      // Every other title here is a past-tense event ("Received", "Sent").
-      // "Send reclaimed" was a noun phrase, and a failed send read as "Sent".
       if (tx.status === "reclaimed") return t("wallet.activity.reclaimed");
       if (tx.status === "failed") return t("wallet.activity.send_failed");
       return t("wallet.activity.sent");
@@ -3400,18 +3508,16 @@ function txTitle(tx: WalletTx): string {
     case "swap":
       if (tx.spentRemoved === true) return t("wallet.activity.spent_removed");
       if (tx.status === "failed") return t("wallet.refresh.failed");
-      // A swap is persisted before its request goes out, so it can be seen in
-      // flight. Past tense would claim the coins were reissued while the mint
-      // has not answered.
+      // Persisted before the request, so visible in flight; past tense would
+      // claim a reissue the mint has not confirmed.
       return tx.status === "pending"
         ? t("wallet.activity.refreshing")
         : t("wallet.activity.refreshed");
   }
 }
 
-// State note appended to a row's subtitle. Undefined when the title already
-// carries it, so a reclaim no longer reads "Reclaimed · reclaimed". The raw enum
-// value interpolated here would be uncovered by any catalog.
+// Undefined when the title already says it (no "Reclaimed · reclaimed").
+// Catalog keys, never the raw enum value.
 function txStatusNote(tx: WalletTx): string | undefined {
   if (tx.status === "completed") return undefined;
   if (
@@ -3431,9 +3537,8 @@ function txStatusNote(tx: WalletTx): string | undefined {
   }
 }
 
-// Whole seconds under a minute, m:ss above it. Never negative: the expired
-// branch takes over at zero, but a clock that ticks past the deadline between
-// renders should not flash "-1s".
+// Clamped at zero: a tick past the deadline before the expired branch renders
+// must not flash "-1s".
 function formatCountdown(remainingMs: number): string {
   const total = Math.max(0, Math.ceil(remainingMs / 1000));
   if (total < 60) return `${total}s`;
@@ -3477,23 +3582,29 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfaceRaised,
       borderColor: Colors.border,
     },
+    bannerTor: {
+      backgroundColor: Colors.torDim,
+      borderColor: Colors.torDim,
+    },
     bannerText: {
       flex: 1,
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       lineHeight: FontSize.sm * 1.5,
     },
+    // The accent inverts with the theme, so text uses textInverse and dims by
+    // opacity: the grey tokens are tuned for the page, not this fill.
     balanceCard: {
-      backgroundColor: Colors.surfaceRaised,
-      borderRadius: Radius.lg,
-      borderWidth: 1,
-      borderColor: Colors.border,
+      backgroundColor: Colors.accent,
+      borderRadius: Radius.xl,
       padding: Spacing.lg,
       gap: Spacing.sm,
+      alignItems: "center",
     },
     balanceLabel: {
       fontSize: FontSize.xs,
-      color: Colors.textMuted,
+      color: Colors.textInverse,
+      opacity: SECONDARY_ON_ACCENT,
       letterSpacing: 0.8,
       textTransform: "uppercase",
     },
@@ -3502,32 +3613,69 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "flex-end",
       gap: Spacing.sm,
     },
+    // Dims rather than darkens: the row sits on the accent fill.
+    balanceRowPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     balanceAmount: {
       fontSize: FontSize["3xl"],
       fontWeight: FontWeight.bold,
-      color: Colors.textPrimary,
+      color: Colors.textInverse,
       lineHeight: FontSize["3xl"] * 1.1,
     },
     balanceUnit: {
       fontSize: FontSize.lg,
-      color: Colors.textMuted,
+      color: Colors.textInverse,
+      opacity: SECONDARY_ON_ACCENT,
       fontWeight: FontWeight.medium,
-      marginBottom: 4,
+      marginBottom: Spacing.xs,
     },
     balanceNote: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "center",
       gap: Spacing.xs,
+      opacity: SECONDARY_ON_ACCENT,
     },
     balanceNoteText: {
       fontSize: FontSize.sm,
-      color: Colors.textMuted,
-      flex: 1,
+      color: Colors.textInverse,
+      flexShrink: 1,
+      textAlign: "center",
     },
-    balanceSubtitle: {
+    // Inside the balance card, so it stretches past the card's centring.
+    actionRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignSelf: "stretch",
+      marginTop: Spacing.base,
+    },
+    actionBtn: {
+      flex: 1,
+      alignItems: "center",
+      gap: Spacing.xs,
+      paddingVertical: Spacing.xs,
+    },
+    actionBtnDisabled: {
+      opacity: DISABLED_OPACITY,
+    },
+    actionCircle: {
+      width: ACTION_CIRCLE,
+      height: ACTION_CIRCLE,
+      borderRadius: Radius.full,
+      backgroundColor: Colors.onAccentFill,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    actionCirclePressed: {
+      backgroundColor: Colors.onAccentPressed,
+    },
+    // Allowed two lines: a quarter row is narrow for "Монетные дворы".
+    actionLabel: {
       fontSize: FontSize.sm,
-      color: Colors.textMuted,
-      marginTop: Spacing.xs,
+      fontWeight: FontWeight.medium,
+      color: Colors.textInverse,
+      textAlign: "center",
     },
     pendingCard: {
       backgroundColor: Colors.surface,
@@ -3563,11 +3711,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexWrap: "wrap",
       gap: Spacing.sm,
     },
-    // The five pending-send actions (QR, Copy, Share, Delivered, Reclaim) are the
-    // smallest targets in the app: 4pt of padding around 13pt of text is ~21pt
-    // tall, in a tight horizontal row, and one of them moves money back into the
-    // balance. They sit in a flexWrap row, so giving them a
-    // real height costs a wrap on a narrow screen and nothing else.
+    // MIN_TOUCH even in a tight row, since one of these moves money. The row
+    // wraps, so the height costs only a wrap on a narrow screen.
     pendingBtn: {
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
@@ -3611,71 +3756,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textMuted,
       textAlign: "center",
       lineHeight: FontSize.sm * 1.6,
-    },
-    emptyCta: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.xs,
-      marginTop: Spacing.xs,
-      paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.sm,
-      minHeight: MIN_TOUCH,
-      borderRadius: Radius.full,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      backgroundColor: Colors.surfaceRaised,
-    },
-    emptyCtaText: {
-      fontSize: FontSize.sm,
-      fontWeight: FontWeight.semibold,
-      color: Colors.accent,
-    },
-    mintRow: {
-      backgroundColor: Colors.surface,
-      borderRadius: Radius.lg,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      paddingHorizontal: Spacing.base,
-      paddingVertical: Spacing.md,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    mintLeft: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.md,
-      flex: 1,
-    },
-    mintIconCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: Radius.full,
-      backgroundColor: Colors.surfaceRaised,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    },
-    mintInfo: {
-      flexShrink: 1,
-      flex: 1,
-      gap: 2,
-    },
-    mintName: {
-      fontSize: FontSize.base,
-      fontWeight: FontWeight.medium,
-      color: Colors.textPrimary,
-      fontFamily: FontFamily.mono,
-    },
-    mintMeta: {
-      fontSize: FontSize.xs,
-      color: Colors.textMuted,
-    },
-    mintRight: {
-      alignItems: "flex-end",
-      gap: 1,
     },
     npubRow: {
       flexDirection: "row",
@@ -3725,22 +3805,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.accent,
       fontWeight: FontWeight.semibold,
     },
-    mintActions: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.xs,
-      marginTop: Spacing.xs,
-    },
-    iconBtn: {
-      width: MINT_ICON_SIZE,
-      height: MINT_ICON_SIZE,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: Radius.full,
-      backgroundColor: Colors.surfaceRaised,
-      borderWidth: 1,
-      borderColor: Colors.border,
-    },
     mintNameRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -3759,11 +3823,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textMuted,
       letterSpacing: 0.5,
     },
-    testNote: {
-      fontSize: FontSize.sm,
-      color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.4,
-    },
     mintBalance: {
       fontSize: FontSize.md,
       fontWeight: FontWeight.bold,
@@ -3774,50 +3833,35 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
     },
-    smallBtn: {
-      marginTop: 4,
-      minWidth: 64,
-      alignItems: "center",
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: 3,
-      borderRadius: Radius.full,
-      backgroundColor: Colors.surfaceRaised,
-      borderWidth: 1,
-      borderColor: Colors.border,
-    },
     smallBtnDisabled: {
       opacity: DISABLED_OPACITY,
     },
-    smallBtnText: {
-      fontSize: FontSize.xs,
-      color: Colors.textSecondary,
-      fontWeight: FontWeight.medium,
-    },
-    inlineAction: {
+    backupRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: Spacing.sm,
+      gap: Spacing.md,
       paddingHorizontal: Spacing.base,
       paddingVertical: Spacing.md,
       minHeight: MIN_TOUCH,
       borderRadius: Radius.lg,
       borderWidth: 1,
       borderColor: Colors.border,
-      backgroundColor: Colors.surfaceRaised,
-    },
-    inlineActionText: {
-      flex: 1,
-      fontSize: FontSize.sm,
-      color: Colors.accent,
-      fontWeight: FontWeight.medium,
-    },
-    backupCard: {
       backgroundColor: Colors.surface,
-      borderRadius: Radius.lg,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      padding: Spacing.base,
-      gap: Spacing.md,
+    },
+    backupRowPressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    backupRowText: {
+      flex: 1,
+    },
+    backupRowTitle: {
+      fontSize: FontSize.base,
+      fontWeight: FontWeight.medium,
+      color: Colors.textPrimary,
+    },
+    backupRowStatus: {
+      fontSize: FontSize.sm,
+      color: Colors.textMuted,
     },
     backupHeader: {
       flexDirection: "row",
@@ -3881,7 +3925,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     backupBtn: {
       flex: 1,
-      minHeight: 44,
+      minHeight: MIN_TOUCH,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
@@ -3983,44 +4027,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontFamily: FontFamily.mono,
     },
     pickSub: {
-      fontSize: FontSize.xs,
-      color: Colors.textMuted,
-    },
-    lightningCard: {
-      backgroundColor: Colors.surface,
-      borderRadius: Radius.lg,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      padding: Spacing.base,
-      gap: Spacing.md,
-    },
-    lightningBody: {
-      fontSize: FontSize.sm,
-      color: Colors.textMuted,
-      lineHeight: FontSize.sm * 1.5,
-    },
-    lightningActions: {
-      flexDirection: "row",
-      gap: Spacing.sm,
-    },
-    lightningBtn: {
-      flex: 1,
-      minHeight: 44,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: Spacing.xs,
-      borderRadius: Radius.full,
-      backgroundColor: Colors.surfaceRaised,
-      borderWidth: 1,
-      borderColor: Colors.border,
-    },
-    lightningBtnText: {
-      fontSize: FontSize.sm,
-      fontWeight: FontWeight.semibold,
-      color: Colors.accent,
-    },
-    lightningPending: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
     },
@@ -4134,6 +4140,74 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingBottom: Spacing.xl,
       gap: Spacing.md,
     },
+    // The Mints, backup and help sheets can outgrow the screen.
+    scrollSheet: {
+      maxHeight: "80%",
+    },
+    sheetList: {
+      gap: Spacing.sm,
+    },
+    sheetHeader: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      justifyContent: "space-between",
+    },
+    sheetHeaderNote: {
+      fontSize: FontSize.sm,
+      color: Colors.textMuted,
+    },
+    listGroup: {
+      backgroundColor: Colors.surfaceRaised,
+      borderRadius: Radius.lg,
+      overflow: "hidden",
+    },
+    listDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: Colors.border,
+      marginStart: Spacing.base + LIST_ICON + Spacing.md,
+    },
+    listRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: Spacing.md,
+      padding: Spacing.base,
+    },
+    listRowPressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    listIcon: {
+      width: LIST_ICON,
+      height: LIST_ICON,
+      borderRadius: Radius.full,
+      backgroundColor: Colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    listText: {
+      flex: 1,
+    },
+    listTitle: {
+      flexShrink: 1,
+      fontSize: FontSize.base,
+      fontWeight: FontWeight.semibold,
+      color: Colors.textPrimary,
+    },
+    listMeta: {
+      fontSize: FontSize.sm,
+      color: Colors.textSecondary,
+    },
+    listAmount: {
+      alignItems: "flex-end",
+    },
+    pillWithIcon: {
+      flexDirection: "row",
+      gap: Spacing.sm,
+    },
+    // The collapsed Activity height, so the first payment causes no jump.
+    activityEmpty: {
+      minHeight: ACTIVITY_COLLAPSED_COUNT * ACTIVITY_ROW_HEIGHT,
+      justifyContent: "center",
+    },
     modalTitle: {
       fontSize: FontSize.md,
       fontWeight: FontWeight.semibold,
@@ -4166,17 +4240,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       letterSpacing: 0.3,
     },
-    // A long machine string the user reads but never types: a bolt11 invoice, a
-    // cashu token. Same box as `tokenInput` so the sheets keep one shape, but a
-    // Text and not a disabled TextInput, because on Android `numberOfLines`
-    // pins a multiline TextInput to that many lines and then scrolls the
-    // overflow to the cursor, which sits at the end of a programmatic value.
-    // The box showed the tail of the string with the `lnbc`/`cashuB` head, the
-    // part that says what the thing even is, scrolled out of sight above, and
-    // left a row of half-glyphs along the top edge that reads as a rendering
-    // fault. Text lays out from the top and never scrolls, so the head is
-    // always what you see and the ellipsis reads as deliberate. Copy stays the
-    // way to get the whole string; nobody transcribes 300 characters by eye.
+    // Text, not a disabled TextInput: on Android a multiline TextInput with
+    // `numberOfLines` scrolls to the cursor at the end, hiding the
+    // `lnbc`/`cashuB` head behind half-clipped glyphs.
     readonlyValueBox: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.xl,
