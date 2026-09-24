@@ -69,10 +69,8 @@ function setTorBootstrap(phase: TorBootstrapPhase): void {
   useMeshStateStore.getState().setTorBootstrap(phase);
 }
 
-// The gate is not a safety measure: both platforms fail closed at the socket, so
-// nothing reaches the clear net whether it is set or not. It prevents futility,
-// a phone on a network that blocks Tor reconnecting a relay pool through a proxy
-// that will never answer.
+// The gate holds the relay pool until a circuit can carry it. Why it exists is
+// on `nostrBlockedByTor` in mesh-state-store.
 //
 // Returns whether it moved. Callers that rebuild anyway use this, so one
 // teardown covers both; a second would drop the sockets the first just
@@ -203,10 +201,11 @@ function watchTorBootstrap(): void {
       setTorBootstrap("starting");
       return;
     }
-    // Neither ready nor starting, with the preference on, is the terminal shape:
-    // Arti gave up. Stand the claim down and say why. The socket path stays on
-    // Tor, because falling back to a direct one would put traffic on the clear
-    // net that the user never agreed to.
+    // Neither ready nor starting, with the preference on: Arti is blocked or
+    // gone. Stand the claim down and say why. Blocked is not final, and a later
+    // ready status reopens everything above. The socket path stays on Tor,
+    // because falling back to a direct one would put traffic on the clear net
+    // that the user never agreed to.
     if (useSettingsStore.getState().torEnabled) {
       // Closed BEFORE the claim is lowered, so there is no instant in which the
       // UI says Tor is off while the sockets it was covering are still open.
@@ -262,7 +261,7 @@ export async function setTorBridgeMode(
   if (!settings.torEnabled) return { ok: true };
   if (needsBridgeLines() && bridgeLinesForStart() === "") return { ok: true };
 
-  await disableTorRouting();
+  await disableTorRouting(true);
   return enableTorRouting();
 }
 
@@ -280,24 +279,20 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
   }
 
   try {
-    // Swap the socket and rebuild the pool before awaiting the circuit.
-    // Awaiting first would leave the clear-net pool live for the whole
-    // bootstrap, up to a minute of subscriptions and DMs going out unprotected
-    // after the user asked for Tor.
-    //
-    // nostr-tools captures the socket constructor per relay as the relay is
-    // built, so the order is load-bearing: install the factory, tear the old
-    // pool down, let it rebuild on the new one.
     watchTorBootstrap();
     setTorBootstrap("starting");
     installTorSocket();
     // Persist first, so a relaunch during the bootstrap comes back on Tor rather
     // than on the clear net.
     useSettingsStore.getState().setTorEnabled(true);
+    // The clear-net pool goes now, not after the bootstrap: waiting would leave
+    // up to a minute of subscriptions and DMs going out unprotected after the
+    // user asked for Tor. With the gate up the restart only tears down, and the
+    // watcher rebuilds on the Tor socket once the circuit is ready.
+    setNostrBlocked(true);
     // Native points its own HTTP client at the proxy inside startTor, before the
     // client is even built, so there is no window on either platform.
     await startNativeTor(NativeAirhopTor);
-    getMeshService()?.restartNostr();
 
     const ready = await NativeAirhopTor.awaitTorReady(
       TOR_READY_TIMEOUT_S[useSettingsStore.getState().torBridgeMode],
@@ -317,6 +312,9 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     }
     setTorActive(true);
     setTorBootstrap("idle");
+    // A no-op if the watcher already opened it. Not left to the watcher alone: a
+    // client that was ready before the gate went up reports no further change.
+    setNostrBlocked(false);
     return { ok: true };
   } catch {
     // A throw is different from a slow bootstrap: the module itself failed, so
@@ -333,17 +331,25 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
   }
 }
 
-async function disableTorRouting(): Promise<void> {
+// `restarting` is a bridge change: Tor comes straight back up, so the pool is
+// torn down and held rather than reopened on the direct route in between. It
+// goes before the stop, because on Android the stop is what routes new sockets
+// around the proxy.
+async function disableTorRouting(restarting = false): Promise<void> {
   stopWatchingTorBootstrap();
   installDirectSocket();
   // Nothing is starting, so the marker has nothing left to warn about. It also
   // clears the notice a previous recovery left on the Tor screen.
   useSettingsStore.getState().setTorStartPending(false);
-  // Nobody is asking for Tor, so nothing may be held down in its name. This is
-  // also the way out of the blocked state, which is why that state needs no
-  // rescue of its own: turning Tor off brings the internet half back. Written
-  // rather than applied, so the restart at the end of this function covers both.
-  writeNostrBlocked(false);
+  if (restarting) {
+    setNostrBlocked(true);
+  } else {
+    // Nobody is asking for Tor, so nothing may be held down in its name. This
+    // is also the way out of the blocked state: turning Tor off brings the
+    // internet half back. Written rather than applied, so the restart at the
+    // end covers both.
+    writeNostrBlocked(false);
+  }
   // The preference goes down first, so anything still racing sees consent
   // withdrawn and stands down instead of writing over this.
   useSettingsStore.getState().setTorEnabled(false);
@@ -353,7 +359,7 @@ async function disableTorRouting(): Promise<void> {
   // client is down, so there is no instant in which the proxy is gone while
   // something still believes it is covered.
   await NativeAirhopTor?.stopTor().catch(() => {});
-  getMeshService()?.restartNostr();
+  if (!restarting) getMeshService()?.restartNostr();
 }
 
 // Apply the persisted Tor preference at app startup, BEFORE the mesh service is
@@ -383,8 +389,12 @@ export function primeTorRoutingOnStartup(): void {
   }
 
   // The socket path goes on immediately: traffic must be fail-closed from the
-  // first relay attempt, before anything is known about the circuit.
+  // first relay attempt, before anything is known about the circuit. The pool
+  // waits for the circuit, and the watcher opens the gate when Arti is ready.
+  // Applied rather than written, so a pool built on the direct socket before
+  // this ran is torn down instead of outliving the switch to Tor.
   installTorSocket();
+  setNostrBlocked(true);
   // The claim does not. Asserting it here would assert onion routing before a
   // circuit existed, and on a network that blocks Tor it would sit green for
   // the whole session. The watcher raises it when Arti reports ready.
@@ -451,8 +461,11 @@ export function notifyTorAppForeground(foreground: boolean): void {
 export async function revalidateTorRouting(): Promise<void> {
   // Guarded on the PREFERENCE, not the claim. `torActive` is false throughout a
   // blocked state, so an early return on it would make foreground the one
-  // trigger that can never recover a session.
-  if (!useSettingsStore.getState().torEnabled) return;
+  // trigger that can never recover a session. With the internet off, Arti is
+  // stopped on purpose, and reading that as blocked would say so on the Tor
+  // screen.
+  const { torEnabled, internetEnabled } = useSettingsStore.getState();
+  if (!torEnabled || !internetEnabled) return;
   if (NativeAirhopTor == null) return;
 
   try {

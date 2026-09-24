@@ -126,13 +126,14 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   // turning it on is harmless and does not prompt. Cancelling leaves the switch
   // on, because it is driven by the persisted setting we never changed.
   function setInternet(value: boolean): void {
+    // Tor follows the master switch, because the sheet above says it does, and
+    // goes first: the preference builds the relay pool the moment it flips, and
+    // with Tor wanted that pool has to wait behind Tor's gate rather than open
+    // on the direct socket. The Tor preference itself is untouched, so
+    // switching the internet back on restores it.
+    applyInternetAvailability(value);
     setInternetEnabled(value);
     getMeshService()?.applyInternetEnabled(value);
-    // Tor follows the master switch, because the sheet above says it does.
-    // Without this the relay pool went away and Arti kept running underneath
-    // it, holding guards and refreshing a consensus for nobody. The Tor
-    // preference is untouched, so switching the internet back on restores it.
-    applyInternetAvailability(value);
   }
   function handleInternetToggle(value: boolean): void {
     if (value) {

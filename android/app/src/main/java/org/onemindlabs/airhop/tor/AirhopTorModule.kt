@@ -271,11 +271,15 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                     if (epoch != attemptEpoch.get()) return@schedule
                     val status = ArtiNative.status()
                     emitStatus()
-                    // Nothing more will change on its own once Arti has given up, and a
-                    // timer that keeps asking a dead client is battery spent to learn
-                    // the same answer. The next start reschedules.
-                    if (status.blocked || !status.running) return@schedule
-                    schedulePoll(epoch, if (status.ready) POLL_IDLE_MS else POLL_ACTIVE_MS)
+                    // A stopped client will not change on its own, and the next start
+                    // reschedules. A blocked one will: Arti keeps retrying and clears the
+                    // flag once a circuit lands. iOS recovers the same way through its
+                    // path monitor.
+                    if (!status.running) return@schedule
+                    schedulePoll(
+                        epoch,
+                        if (status.ready || status.blocked) POLL_IDLE_MS else POLL_ACTIVE_MS,
+                    )
                 },
                 delayMs,
                 TimeUnit.MILLISECONDS,
