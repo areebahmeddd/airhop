@@ -200,6 +200,8 @@ export const strings: Strings = {
   "chat.group_badge": "그룹",
   "chat.more": "더 보기",
   "chat.no_messages": "아직 메시지가 없습니다",
+  "chat.presence.nearby_none": "근처에 아무도 없음",
+  "chat.presence.active_none": "활동 중인 사람 없음",
   "chat.you": "나",
   "chat.a11y.channel": "채널 {name}",
   "chat.a11y.group": "그룹 {name}",
@@ -2244,6 +2246,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "근처에 {count}명",
+  },
+  "chat.presence.members": {
+    other: "멤버 {count}명",
   },
 
   // ---- Wallet: mints ----

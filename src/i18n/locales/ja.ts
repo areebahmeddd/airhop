@@ -201,6 +201,8 @@ export const strings: Strings = {
   "chat.group_badge": "グループ",
   "chat.more": "その他",
   "chat.no_messages": "メッセージはまだありません",
+  "chat.presence.nearby_none": "近くに誰もいません",
+  "chat.presence.active_none": "アクティブな人はいません",
   "chat.you": "あなた",
   "chat.a11y.channel": "チャンネル {name}",
   "chat.a11y.group": "グループ {name}",
@@ -2278,6 +2280,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "近くに{count}人",
+  },
+  "chat.presence.members": {
+    other: "メンバー{count}人",
   },
 
   // ---- Wallet: mints ----

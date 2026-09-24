@@ -205,6 +205,8 @@ export const strings: Strings = {
   "chat.group_badge": "Nhóm",
   "chat.more": "Thêm",
   "chat.no_messages": "Chưa có tin nhắn nào",
+  "chat.presence.nearby_none": "Không có ai ở gần",
+  "chat.presence.active_none": "Không có ai đang hoạt động",
   "chat.you": "Bạn",
   "chat.a11y.channel": "Kênh {name}",
   "chat.a11y.group": "Nhóm {name}",
@@ -2285,6 +2287,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "{count} ở gần",
+  },
+  "chat.presence.members": {
+    other: "{count} thành viên",
   },
 
   // ---- Wallet: mints ----

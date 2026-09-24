@@ -206,6 +206,8 @@ export const strings: Strings = {
   "chat.group_badge": "အဖွဲ့",
   "chat.more": "ထပ်မံ",
   "chat.no_messages": "မက်ဆေ့ဂျ် မရှိသေးပါ",
+  "chat.presence.nearby_none": "အနီးအနားတွင် မည်သူမျှ မရှိ",
+  "chat.presence.active_none": "လှုပ်ရှားနေသူ မရှိ",
   "chat.you": "သင်",
   "chat.a11y.channel": "ချန်နယ် {name}",
   "chat.a11y.group": "အဖွဲ့ {name}",
@@ -2348,6 +2350,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "အနီးအနားတွင် {count} ဦး",
+  },
+  "chat.presence.members": {
+    other: "အဖွဲ့ဝင် {count} ဦး",
   },
 
   // ---- Wallet: mints ----

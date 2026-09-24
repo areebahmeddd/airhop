@@ -1423,17 +1423,17 @@ export default function MessageThread({
   const privateMemberCount = useChannelMembersStore(
     (s) => (s.byChannel[channel] ?? []).length,
   );
-  // Every kind counts yourself, so the subtitle, the chat-list row and the
-  // member sheet report the same number. A group's roster already lists you; the
-  // others are others-only lists, so they add one, matching the "You" row the
-  // sheet renders.
+  // A roster counts you, a presence count does not. A group's roster already
+  // lists you, and a private channel's members are its key-holders plus you,
+  // as the member sheet shows them. "Nearby" and "active" are others only, the
+  // same number the chat-list row shows.
   const memberCount = isGroup
     ? (getMeshService()?.groupMemberCount(channel.slice("group:".length)) ?? 0)
     : isGeo
-      ? geoMembers.length + 1
+      ? geoMembers.length
       : isPrivate
         ? privateMemberCount + 1
-        : peerCount + 1;
+        : peerCount;
 
   // Reverse-geocoded name for a location channel's cell, shown in the header
   // subtitle as "~Kumaraswamy Layout". Present once the cell has a geohash
@@ -1504,9 +1504,18 @@ export default function MessageThread({
   if (isGeo && geoPlaceName !== undefined) {
     channelSubtitleParts.push(`~${geoPlaceName}`);
   }
-  if (memberCount > 0) {
+  if (isPrivate) {
+    channelSubtitleParts.push(TP("chat.presence.members", memberCount));
+  } else if (!isGeo || channelGeohash !== null) {
+    // A location cell that has not resolved yet reports nothing, so the
+    // fallback below still names it a location channel.
     channelSubtitleParts.push(
-      TP(isGeo ? "chat.presence.active" : "chat.presence.nearby", memberCount),
+      memberCount === 0
+        ? T(isGeo ? "chat.presence.active_none" : "chat.presence.nearby_none")
+        : TP(
+            isGeo ? "chat.presence.active" : "chat.presence.nearby",
+            memberCount,
+          ),
     );
   }
   // On the public mesh channel, show that it is bridged (and how many are

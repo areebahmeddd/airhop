@@ -207,6 +207,8 @@ export const strings: Strings = {
   "chat.group_badge": "குழு",
   "chat.more": "மேலும்",
   "chat.no_messages": "இன்னும் செய்திகள் இல்லை",
+  "chat.presence.nearby_none": "அருகில் யாரும் இல்லை",
+  "chat.presence.active_none": "யாரும் செயலில் இல்லை",
   "chat.you": "நீங்கள்",
   "chat.a11y.channel": "சேனல் {name}",
   "chat.a11y.group": "குழு {name}",
@@ -2383,6 +2385,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} அருகில்",
     other: "{count} அருகில்",
+  },
+  "chat.presence.members": {
+    one: "{count} உறுப்பினர்",
+    other: "{count} உறுப்பினர்கள்",
   },
 
   // ---- Wallet: mints ----

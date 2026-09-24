@@ -196,6 +196,8 @@ export const strings: Strings = {
   "chat.group_badge": "群组",
   "chat.more": "更多",
   "chat.no_messages": "还没有消息",
+  "chat.presence.nearby_none": "附近没有人",
+  "chat.presence.active_none": "无人活跃",
   "chat.you": "你",
   "chat.a11y.channel": "频道 {name}",
   "chat.a11y.group": "群组 {name}",
@@ -2144,6 +2146,9 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     other: "{count} 位在附近",
+  },
+  "chat.presence.members": {
+    other: "{count} 位成员",
   },
 
   // ---- Wallet: mints ----

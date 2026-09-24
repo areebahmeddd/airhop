@@ -206,6 +206,8 @@ export const strings: Strings = {
   "chat.group_badge": "ჯგუფი",
   "chat.more": "მეტი",
   "chat.no_messages": "ჯერ შეტყობინებები არ არის",
+  "chat.presence.nearby_none": "ახლოს არავინაა",
+  "chat.presence.active_none": "აქტიური არავინაა",
   "chat.you": "შენ",
   "chat.a11y.channel": "არხი {name}",
   "chat.a11y.group": "ჯგუფი {name}",
@@ -2317,6 +2319,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} ახლოს",
     other: "{count} ახლოს",
+  },
+  "chat.presence.members": {
+    one: "{count} წევრი",
+    other: "{count} წევრი",
   },
 
   // ---- Wallet: mints ----

@@ -207,6 +207,8 @@ export const strings: Strings = {
   "chat.group_badge": "Kikundi",
   "chat.more": "Zaidi",
   "chat.no_messages": "Bado hakuna jumbe",
+  "chat.presence.nearby_none": "Hakuna aliye karibu",
+  "chat.presence.active_none": "Hakuna aliye hai",
   "chat.you": "Wewe",
   "chat.a11y.channel": "Kituo {name}",
   "chat.a11y.group": "Kikundi {name}",
@@ -2344,6 +2346,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} yuko karibu",
     other: "{count} wako karibu",
+  },
+  "chat.presence.members": {
+    one: "mwanachama {count}",
+    other: "wanachama {count}",
   },
 
   // ---- Wallet: mints ----

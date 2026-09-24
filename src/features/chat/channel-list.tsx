@@ -423,18 +423,17 @@ export default function ChannelList({
     const groupName = isGroup
       ? useGroupStore.getState().nameForChannel(item)
       : undefined;
-    // Count yourself. A member count answers "who is in this room", and you are
-    // one of them, as the member sheet counts (it renders a You row) and every
-    // messenger counts a participant list. Applied to both kinds so the row,
-    // the thread header and the sheet agree.
-    //
-    // Not the same question the Mesh tab answers: "peers in range" is a count
-    // of other devices this radio can reach, and it stays exclusive.
-    const presenceCount = (isGeo ? (geoCounts[item] ?? 0) : peerCount) + 1;
-    const presenceText = TP(
-      isGeo ? "chat.presence.active" : "chat.presence.nearby",
-      presenceCount,
-    );
+    // Others only. "Nearby" and "active" say who else can hear you, as the
+    // Mesh tab and bitchat count them; alone, the row says so rather than
+    // "1 nearby". Rosters (groups, a private channel's members) count you.
+    const presenceCount = isGeo ? (geoCounts[item] ?? 0) : peerCount;
+    const presenceText =
+      presenceCount === 0
+        ? T(isGeo ? "chat.presence.active_none" : "chat.presence.nearby_none")
+        : TP(
+            isGeo ? "chat.presence.active" : "chat.presence.nearby",
+            presenceCount,
+          );
 
     // Formatted once for both the visible timestamp and the label below: each
     // call builds several Dates, on the app's longest list.
@@ -985,11 +984,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     channelPreviewSender: {
       color: Colors.textMuted,
+    },
     // Weight, not colour: green and red already mean encrypted and failed.
     channelPreviewDraft: {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
-    },
     },
     channelPreviewEmpty: {
       fontSize: FontSize.sm,

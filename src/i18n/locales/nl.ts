@@ -207,6 +207,8 @@ export const strings: Strings = {
   "chat.group_badge": "Groep",
   "chat.more": "Meer",
   "chat.no_messages": "Nog geen berichten",
+  "chat.presence.nearby_none": "Niemand in de buurt",
+  "chat.presence.active_none": "Niemand actief",
   "chat.you": "Jij",
   "chat.a11y.channel": "Kanaal {name}",
   "chat.a11y.group": "Groep {name}",
@@ -2329,6 +2331,10 @@ export const plurals: Plurals = {
   "chat.presence.nearby": {
     one: "{count} in de buurt",
     other: "{count} in de buurt",
+  },
+  "chat.presence.members": {
+    one: "{count} lid",
+    other: "{count} leden",
   },
 
   // ---- Wallet: mints ----
