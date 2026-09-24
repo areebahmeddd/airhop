@@ -916,9 +916,14 @@ other device's limits, not ours. The code is the authority for the rest.
 
 Deliberate differences, all of them local-only:
 
-| Constant   | bitchat | Airhop | Where                       |
-| ---------- | ------- | ------ | --------------------------- |
-| Outbox TTL | 24 h    | 7 days | `src/store/outbox-store.ts` |
+| Constant                | bitchat | Airhop | Where                          |
+| ----------------------- | ------- | ------ | ------------------------------ |
+| Outbox TTL              | 24 h    | 7 days | `src/store/outbox-store.ts`    |
+| DM inbox relay lookback | 24 h    | 7 days | `src/services/mesh-service.ts` |
+
+The inbox lookback follows the outbox TTL. A sender republishes unacknowledged
+mail only on a delivery opportunity, not on a timer, so a 24 h window would lose
+a message published once to someone away for longer than a day.
 
 The per-peer cap (100) and the retry cap (8 attempts) match bitchat exactly, so
 they are not listed above. The TTL is the one deliberate divergence, and it is
