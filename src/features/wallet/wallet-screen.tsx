@@ -1722,8 +1722,8 @@ export default function WalletScreen({
 
       {backupRow}
 
-      {/* Always shown, so an empty wallet does not look like a lost history
-          and the tab does not reflow on the first payment. */}
+      {/* Always shown, so an empty wallet does not look like a lost history.
+          Newest first; three rows until "Show more". */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{T("wallet.activity.title")}</Text>
         {/* Unclaimed sends lead, with their actions: their proofs are
@@ -1801,7 +1801,7 @@ export default function WalletScreen({
           );
         })}
         {recent.length === 0 ? (
-          <View style={[styles.emptyCard, styles.activityEmpty]}>
+          <View style={styles.activityEmpty}>
             <Text style={styles.emptyTitle}>{T("wallet.activity.none")}</Text>
           </View>
         ) : (
@@ -4217,10 +4217,17 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       gap: Spacing.sm,
     },
-    // The collapsed Activity height, so the first payment causes no jump.
+    // Exactly one Activity row tall, the height of the recovery phrase row
+    // above it, rather than a box held open for rows that are not there.
     activityEmpty: {
-      minHeight: ACTIVITY_COLLAPSED_COUNT * ACTIVITY_ROW_HEIGHT,
+      minHeight: ACTIVITY_ROW_HEIGHT,
+      alignItems: "center",
       justifyContent: "center",
+      paddingHorizontal: Spacing.base,
+      borderRadius: Radius.lg,
+      borderWidth: 1,
+      borderColor: Colors.border,
+      backgroundColor: Colors.surface,
     },
     modalTitle: {
       fontSize: FontSize.md,
