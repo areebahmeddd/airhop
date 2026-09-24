@@ -26,9 +26,10 @@ import {
 } from "@core/mesh/rooms/channel-crypto";
 import { TAG_MESSAGE_ID } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
+import { useBlockedStore } from "@store/blocked-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
-import { channelSenderName } from "@utils/peer-display-name";
+import { unverifiedSenderName } from "@utils/peer-display-name";
 import type { Event } from "nostr-tools";
 import { finalizeEvent } from "nostr-tools";
 
@@ -44,9 +45,14 @@ const INITIAL_LIMIT = 200;
 export class PrivateChannelService {
   private readonly client: NostrClient;
   private readonly localPeerID: string;
-  // channel -> unsubscribe.
-  private readonly subscriptions = new Map<string, () => void>();
-  // channel -> derived Nostr identity (cached).
+  // channel -> the key it was opened with, and its unsubscribe.
+  private readonly subscriptions = new Map<
+    string,
+    { keyB64: string; close: () => void }
+  >();
+  // Channel key -> derived Nostr identity (cached). Keyed by the key, never the
+  // name: a name is a local label, and a new room reusing a left room's name
+  // must not publish under, or listen to, the old room's author.
   private readonly identities = new Map<string, ChannelNostrIdentity>();
 
   constructor(client: NostrClient, localPeerID: string) {
@@ -54,16 +60,13 @@ export class PrivateChannelService {
     this.localPeerID = localPeerID;
   }
 
-  private identityFor(
-    channel: string,
-    keyB64: string,
-  ): ChannelNostrIdentity | null {
-    let id = this.identities.get(channel);
+  private identityFor(keyB64: string): ChannelNostrIdentity | null {
+    let id = this.identities.get(keyB64);
     if (id === undefined) {
       const derived = deriveChannelNostrIdentity(keyB64);
       if (derived === null) return null;
       id = derived;
-      this.identities.set(channel, id);
+      this.identities.set(keyB64, id);
     }
     return id;
   }
@@ -79,8 +82,14 @@ export class PrivateChannelService {
         state.channelReach[c] === "ble+nostr",
     );
 
-    for (const channel of [...this.subscriptions.keys()]) {
-      if (!wanted.includes(channel)) this.unsubscribe(channel);
+    // A label now holding a different key is a different room: the old
+    // subscription would decrypt nothing and hide the new room's traffic.
+    for (const [channel, sub] of [...this.subscriptions]) {
+      if (
+        !wanted.includes(channel) ||
+        sub.keyB64 !== state.channelKeys[channel]
+      )
+        this.unsubscribe(channel);
     }
     for (const channel of wanted) {
       if (!this.subscriptions.has(channel)) {
@@ -89,14 +98,10 @@ export class PrivateChannelService {
     }
   }
 
-  // Publish an already-sealed private-channel message over Nostr.
-  publish(
-    channel: string,
-    keyB64: string,
-    blob: Uint8Array,
-    msgId: string,
-  ): void {
-    const identity = this.identityFor(channel, keyB64);
+  // Publish an already-sealed private-channel message over Nostr. The author is
+  // derived from the key alone.
+  publish(keyB64: string, blob: Uint8Array, msgId: string): void {
+    const identity = this.identityFor(keyB64);
     if (identity === null) return;
     try {
       const event = finalizeEvent(
@@ -122,7 +127,7 @@ export class PrivateChannelService {
   }
 
   private subscribe(channel: string, keyB64: string): void {
-    const identity = this.identityFor(channel, keyB64);
+    const identity = this.identityFor(keyB64);
     if (identity === null) return;
 
     const filter = {
@@ -139,9 +144,12 @@ export class PrivateChannelService {
       if (opened === null) return;
       // Ignore our own echo (rendered optimistically) and stale membership.
       if (opened.senderID === this.localPeerID) return;
-      if (!useChatStore.getState().channels.includes(channel)) return;
+      const chat = useChatStore.getState();
+      if (!chat.channels.includes(channel)) return;
+      if (chat.channelKeys[channel] !== keyB64) return;
+      if (useBlockedStore.getState().isBlocked(opened.senderID)) return;
 
-      const senderNickname = channelSenderName(
+      const senderNickname = unverifiedSenderName(
         opened.senderID,
         opened.senderNickname,
       );
@@ -159,18 +167,20 @@ export class PrivateChannelService {
         senderID: opened.senderID,
         senderNickname,
         text: opened.text,
-        timestampMs: event.created_at * 1000,
+        // Clamped: a future-dated event would pin itself below every message.
+        timestampMs:
+          Math.min(event.created_at, Math.floor(Date.now() / 1000)) * 1000,
         isMine: false,
       });
     });
 
-    this.subscriptions.set(channel, () => closer.close());
+    this.subscriptions.set(channel, { keyB64, close: () => closer.close() });
   }
 
   private unsubscribe(channel: string): void {
-    const close = this.subscriptions.get(channel);
-    if (close !== undefined) {
-      close();
+    const sub = this.subscriptions.get(channel);
+    if (sub !== undefined) {
+      sub.close();
       this.subscriptions.delete(channel);
     }
   }

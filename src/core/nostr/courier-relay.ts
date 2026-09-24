@@ -2,7 +2,7 @@
 //
 // When BLE mesh delivery is not possible, sealed courier envelopes can be
 // parked on Nostr relays under a rotating daily recipient tag. The recipient
-// polls for matching events when they come online. This mirrors bitchat iOS
+// polls for matching events when they come online. This mirrors bitchat-ios
 // NostrProtocol.EventKind.courierDrop.
 //
 // Event format (kind 1401):

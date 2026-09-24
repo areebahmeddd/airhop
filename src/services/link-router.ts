@@ -18,15 +18,19 @@ import type { DeepLink } from "@utils/deep-link";
 import { getMeshService } from "./mesh-service";
 
 // Apply a link and return the conversation to open, or null when the link
-// carried something we could not accept (a forged contact card). The caller
-// navigates; nothing here touches navigation state.
+// carried something we could not accept: a forged contact card, or an invite
+// whose key is malformed. The caller navigates; nothing here touches
+// navigation state.
 export function applyAirhopLink(link: DeepLink): string | null {
   if (link.kind === "channel") {
     // A private channel invite carries its E2E key; a public one does not.
     // joinPrivateChannel answers with the room it actually landed in, which
     // differs from the name asked for when that name is already taken by a
     // different key.
-    if (link.key !== undefined && isValidChannelKey(link.key)) {
+    if (link.key !== undefined) {
+      // Refused, never joined as the public room of that name: the user would
+      // believe it private and talk in the clear.
+      if (!isValidChannelKey(link.key)) return null;
       return useChatStore
         .getState()
         .joinPrivateChannel(link.channel, link.key, link.overNostr);

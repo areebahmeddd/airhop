@@ -62,7 +62,7 @@ export function deriveGeohashIdentity(
   for (let i = 0; i < 10; i++) {
     const input = new Uint8Array(label.length + 4);
     input.set(label, 0);
-    // Big-endian counter (bitchat-iOS uses BE here; Android uses LE, which is
+    // Big-endian counter (bitchat-ios uses BE here; Android uses LE, which is
     // a latent divergence on their side. It only matters if i > 0, which
     // essentially never happens: a random 32-byte HMAC is a valid scalar with
     // overwhelming probability.)

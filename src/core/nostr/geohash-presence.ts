@@ -10,7 +10,7 @@
 // Presence heartbeats are ephemeral (kind 2xxxx in Nostr) and are not
 // persisted by relays.
 //
-// Heartbeat interval: 40-80 s (jittered) matching bitchat iOS behavior.
+// Heartbeat interval: 40-80 s (jittered) matching bitchat-ios behavior.
 
 import type { Event } from "nostr-tools";
 import { finalizeEvent } from "nostr-tools";

@@ -3,7 +3,9 @@
  */
 // Geohash DM: a message sent from one per-cell identity is gift-wrapped so only
 // the recipient's per-cell identity can open it, wrapped in a bitchat1 envelope.
+import { base64UrlToBytes } from "@core/encoding/base64";
 import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
+import { decodePacket } from "@core/mesh/wire/packet-codec";
 import { decodeBitchatEnvelope } from "@core/nostr/bitchat-envelope";
 import {
   deriveGeohashIdentity,
@@ -14,6 +16,7 @@ import type { NostrClient } from "@core/nostr/nostr-client";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { useChatStore } from "@store/chat-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
+import { useOutboxStore } from "@store/outbox-store";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import { GeohashChannelService } from "../geohash-channel-service";
 
@@ -51,7 +54,6 @@ describe("geohash DM", () => {
       mockClient(published),
       senderSigning,
       "alice",
-      "aabbccdd00112233",
     );
 
     // The recipient's per-cell identity (a different device/seed).
@@ -87,11 +89,69 @@ describe("geohash DM", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "bob",
-      "1122334455667788",
     );
     expect(
       service.sendGeoDm(GEOHASH, "aa".repeat(32), "m", "x".repeat(256)),
     ).toBe(false);
+  });
+
+  // The envelope's sender field would otherwise tie this per-cell identity to
+  // our durable mesh ID.
+  it("fills the envelope's sender with fresh random bytes each time", () => {
+    const published: { content: string; pubkey: string }[] = [];
+    const service = new GeohashChannelService(
+      mockClient(published),
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+    const recip = deriveGeohashIdentity(
+      deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+      GEOHASH,
+    );
+    service.sendGeoDm(GEOHASH, recip.pubKeyHex, "m1", "one");
+    service.sendGeoDm(GEOHASH, recip.pubKeyHex, "m2", "two");
+
+    const [a, b] = published.map((event) => {
+      const { content } = unwrapDm(
+        event as never,
+        recip.privKey,
+        Number.POSITIVE_INFINITY,
+      );
+      return decodePacket(base64UrlToBytes(content.slice("bitchat1:".length)))!
+        .senderID;
+    });
+    expect(a).not.toEqual(b);
+  });
+
+  // Relays replay the lookback on every resubscribe.
+  it("acknowledges a replayed wrap only once", () => {
+    useChatStore.getState().clearAll();
+    const sent: { content: string; pubkey: string }[] = [];
+    const bobPublished: { content: string; pubkey: string }[] = [];
+    const bobSigning = ed25519.utils.randomSecretKey();
+    const alice = new GeohashChannelService(
+      mockClient(sent),
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+    const bob = new GeohashChannelService(
+      mockClient(bobPublished),
+      bobSigning,
+      "bob",
+    );
+    const bobCell = deriveGeohashIdentity(
+      deriveGeohashSeed(bobSigning),
+      GEOHASH,
+    );
+    alice.sendGeoDm(GEOHASH, bobCell.pubKeyHex, "m1", "hi");
+
+    const receive = (
+      bob as unknown as { handleGeoDm: (e: unknown, g: string) => void }
+    ).handleGeoDm.bind(bob);
+    receive(sent[0], GEOHASH);
+    receive(sent[0], GEOHASH);
+
+    expect(bobPublished).toHaveLength(1);
   });
 });
 
@@ -116,12 +176,7 @@ describe("the geo-DM cell binding", () => {
 
   it("survives the service being rebuilt, as a relaunch rebuilds it", () => {
     const signing = ed25519.utils.randomSecretKey();
-    const first = new GeohashChannelService(
-      mockClient([]),
-      signing,
-      "alice",
-      "aabbccdd00112233",
-    );
+    const first = new GeohashChannelService(mockClient([]), signing, "alice");
     first.registerGeoDmPeer(PEER, GEOHASH);
 
     // A new process: same stores, a brand-new service instance.
@@ -129,7 +184,6 @@ describe("the geo-DM cell binding", () => {
       mockClient([]),
       signing,
       "alice",
-      "aabbccdd00112233",
     );
     expect(relaunched.geohashForGeoDmPeer(PEER)).toBe(GEOHASH);
   });
@@ -141,7 +195,6 @@ describe("the geo-DM cell binding", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     expect(service.geohashForGeoDmPeer("cc".repeat(32))).toBeUndefined();
   });
@@ -153,7 +206,6 @@ describe("the geo-DM cell binding", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     service.registerGeoDmPeer(PEER, GEOHASH);
     useChatStore.getState().removeChannel(`dm:nostr_${PEER}`);
@@ -165,7 +217,6 @@ describe("the geo-DM cell binding", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     service.registerGeoDmPeer(PEER, GEOHASH);
     useChatStore.getState().clearAll();
@@ -194,7 +245,6 @@ describe("the live-cell signal", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     await service.refresh();
     expect(useMeshStateStore.getState().liveGeoCells).toBeNull();
@@ -207,7 +257,6 @@ describe("the live-cell signal", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     await service.refresh();
 
@@ -231,7 +280,6 @@ describe("the live-cell signal", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     await service.refresh();
     expect(useMeshStateStore.getState().liveGeoCells).not.toBeNull();
@@ -261,7 +309,6 @@ describe("handing over a contact card in a location channel", () => {
       mockClient(published),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     const recipient = deriveGeohashIdentity(
       deriveGeohashSeed(ed25519.utils.randomSecretKey()),
@@ -294,7 +341,6 @@ describe("handing over a contact card in a location channel", () => {
       mockClient(published),
       signing,
       "alice",
-      "aabbccdd00112233",
     );
     const recipient = deriveGeohashIdentity(
       deriveGeohashSeed(ed25519.utils.randomSecretKey()),
@@ -319,7 +365,6 @@ describe("handing over a contact card in a location channel", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     const recipient = deriveGeohashIdentity(
       deriveGeohashSeed(ed25519.utils.randomSecretKey()),
@@ -485,7 +530,6 @@ describe("carrying a location peer's name out of the channel", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     service.registerGeoDmPeer(PUBKEY, GEOHASH, "NeverDie#0c08");
 
@@ -499,7 +543,6 @@ describe("carrying a location peer's name out of the channel", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     service.registerGeoDmPeer(PUBKEY, GEOHASH, "NeverDie#0c08");
     service.registerGeoDmPeer(PUBKEY, GEOHASH);
@@ -512,11 +555,48 @@ describe("carrying a location peer's name out of the channel", () => {
       mockClient([]),
       ed25519.utils.randomSecretKey(),
       "alice",
-      "aabbccdd00112233",
     );
     service.registerGeoDmPeer(PUBKEY, GEOHASH, "NeverDie#0c08");
     useChatStore.getState().removeChannel(`dm:nostr_${PUBKEY}`);
 
     expect(resolveDisplayName(`nostr_${PUBKEY}`)).toBe("anon#0c08");
+  });
+});
+
+// A geo DM no relay would take must not leave a confident "sent" behind it.
+describe("a geo DM the relays refuse", () => {
+  const GEOHASH = "u4pruy";
+
+  it("is parked in the outbox under the Nostr-only keys", async () => {
+    useOutboxStore.getState().clearAll();
+    const client = {
+      subscribe: () => ({ close: () => undefined }),
+      publish: () => Promise.reject(new Error("no relay accepted")),
+    } as unknown as NostrClient;
+    const service = new GeohashChannelService(
+      client,
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+    const pubkey = deriveGeohashIdentity(
+      deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+      GEOHASH,
+    ).pubKeyHex;
+
+    // A retry, so it is parked under the time it first queued: a message the
+    // relays always refuse must still expire.
+    const firstQueuedAt = Date.now() - 60_000;
+    expect(
+      service.sendGeoDm(GEOHASH, pubkey, "gm-9", "hello", firstQueuedAt),
+    ).toBe(true);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const queued = useOutboxStore.getState().pending;
+    expect(
+      queued.map((p) => [p.id, p.recipientPeerID, p.channel, p.createdAtMs]),
+    ).toEqual([
+      ["gm-9", `nostr_${pubkey}`, `dm:nostr_${pubkey}`, firstQueuedAt],
+    ]);
   });
 });

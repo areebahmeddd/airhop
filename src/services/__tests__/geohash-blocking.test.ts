@@ -30,6 +30,7 @@ import type { NostrClient } from "@core/nostr/nostr-client";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
+import { useLocationNotesStore } from "@store/location-notes-store";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { GeohashChannelService } from "../geohash-channel-service";
 
@@ -49,6 +50,8 @@ interface Harness {
   emitChannelEvent: (event: NostrEvent) => void;
   // The handler the per-cell DM inbox registered (kind 1059 gift wraps).
   emitDmEvent: (event: NostrEvent) => void;
+  // The handler the location-note feed registered (kind 1).
+  emitNoteEvent: (event: NostrEvent) => void;
   // The device's own per-cell identity, derived the same way the service
   // derives it internally, so a test can address a wrap to this device.
   inbox: GeohashIdentity;
@@ -71,12 +74,7 @@ async function harness(): Promise<Harness> {
   } as unknown as NostrClient;
 
   const signingKey = ed25519.utils.randomSecretKey();
-  const service = new GeohashChannelService(
-    client,
-    signingKey,
-    "me",
-    "aabbccdd00112233",
-  );
+  const service = new GeohashChannelService(client, signingKey, "me");
 
   useChatStore.getState().addChannel(CHANNEL);
   await service.refresh();
@@ -93,6 +91,7 @@ async function harness(): Promise<Harness> {
     service,
     emitChannelEvent: pick(20000),
     emitDmEvent: pick(1059),
+    emitNoteEvent: pick(1),
     inbox: deriveGeohashIdentity(deriveGeohashSeed(signingKey), GEOHASH),
   };
 }
@@ -215,5 +214,33 @@ describe("a blocked person in a location channel", () => {
     // block visibly does nothing for the first several minutes.
     block(noisy);
     expect(h.service.participantsFor(CHANNEL)).toEqual([]);
+  });
+});
+
+describe("a blocked person on the location board", () => {
+  function note(from: GeohashIdentity, text: string): NostrEvent {
+    return finalizeEvent(
+      {
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [["g", GEOHASH]],
+        content: text,
+      },
+      from.privKey,
+    );
+  }
+
+  it("cannot pin a note, while everyone else still can", async () => {
+    useLocationNotesStore.getState().clearAll();
+    const h = await harness();
+    const muted = stranger();
+    const other = stranger();
+    block(muted);
+
+    h.emitNoteEvent(note(muted, "still here"));
+    h.emitNoteEvent(note(other, "allowed"));
+
+    const notes = useLocationNotesStore.getState().notesByGeohash[GEOHASH];
+    expect((notes ?? []).map((n) => n.content)).toEqual(["allowed"]);
   });
 });

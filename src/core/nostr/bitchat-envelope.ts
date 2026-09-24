@@ -45,8 +45,12 @@ function peerIdBytes(peerID: string | null): Uint8Array {
   return out;
 }
 
+// A null sender is a pseudonymous DM (a location channel), which must not carry
+// our durable mesh ID: that would tie the per-cell identity to it. It gets
+// fresh random bytes per envelope instead, as bitchat does. No receiver reads
+// the field; the gift wrap authenticates the sender.
 function wrap(
-  senderPeerID: string,
+  senderPeerID: string | null,
   recipientPeerID: string | null,
   noisePayload: Uint8Array,
 ): string {
@@ -54,7 +58,10 @@ function wrap(
     type: PacketType.NOISE_ENCRYPTED,
     ttl: 7,
     flags: 0, // unsigned: the Nostr gift-wrap already authenticates the sender
-    senderID: peerIdBytes(senderPeerID),
+    senderID:
+      senderPeerID === null
+        ? crypto.getRandomValues(new Uint8Array(8))
+        : peerIdBytes(senderPeerID),
     recipientID: peerIdBytes(recipientPeerID),
     timestamp: Date.now(),
     signature: new Uint8Array(64),
@@ -66,7 +73,7 @@ function wrap(
 // Build the "bitchat1:" content for a private message. Null when the content is
 // longer than one PrivateMessagePacket (255 bytes), matching bitchat.
 export function encodeBitchatDmEnvelope(
-  senderPeerID: string,
+  senderPeerID: string | null,
   recipientPeerID: string | null,
   messageID: string,
   content: string,
@@ -78,7 +85,7 @@ export function encodeBitchatDmEnvelope(
 
 // Build the "bitchat1:" content for a delivery/read receipt.
 export function encodeBitchatAckEnvelope(
-  senderPeerID: string,
+  senderPeerID: string | null,
   recipientPeerID: string | null,
   type:
     typeof NoisePayloadType.DELIVERED | typeof NoisePayloadType.READ_RECEIPT,
@@ -100,7 +107,7 @@ export function encodeBitchatAckEnvelope(
 // carries, and because a bitchat client then drops it on the unknown type rather
 // than rendering something it cannot read.
 export function encodeBitchatCardEnvelope(
-  senderPeerID: string,
+  senderPeerID: string | null,
   recipientPeerID: string | null,
   card: Uint8Array,
 ): string {

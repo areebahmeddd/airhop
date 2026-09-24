@@ -55,12 +55,14 @@ import {
 } from "@core/nostr/geohash-presence";
 import { unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
+import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
+import { useOutboxStore } from "@store/outbox-store";
 import { useSettingsStore } from "@store/settings-store";
 import { systemPreview } from "@utils/message-text";
 import { truncateToUtf8Bytes } from "@utils/utf8-budget";
@@ -256,8 +258,6 @@ export class GeohashChannelService {
   private readonly client: NostrClient;
   private readonly relayDirectory = new GeoRelayDirectory();
   private readonly nickname: string;
-  // Our mesh peer ID, embedded in the bitchat1 envelope of a geo DM.
-  private readonly localPeerID: string;
   // Seed for per-geohash key derivation. Never published.
   private readonly geohashSeed: Uint8Array;
 
@@ -299,6 +299,7 @@ export class GeohashChannelService {
   private readonly identities = new Map<string, GeohashIdentity>();
   // One presence broadcaster per geohash, since each signs with its own key.
   private readonly presenceByGeohash = new Map<string, GeohashPresence>();
+  private readonly openedGiftWraps = new OpenedGiftWraps();
 
   // Mesh<->internet bridge hooks, injected by MeshService. Undefined in tests
   // and in an internet-only build.
@@ -308,12 +309,10 @@ export class GeohashChannelService {
     client: NostrClient,
     signingPrivKey: Uint8Array,
     nickname: string,
-    localPeerID: string,
     gateway?: GatewayHooks,
   ) {
     this.client = client;
     this.nickname = nickname;
-    this.localPeerID = localPeerID;
     this.gateway = gateway;
     this.geohashSeed = deriveGeohashSeed(signingPrivKey);
     // Load the vendored relay directory synchronously. It is kept current by a
@@ -812,26 +811,33 @@ export class GeohashChannelService {
   // our own per-geohash identity for that cell. Returns false if the content is
   // too long for one PrivateMessagePacket.
   //
-  // The envelope names us by durable peer ID and omits the recipient, matching
-  // bitchat (NostrTransport.sendPrivateMessageGeohash). Sealed, so no relay sees
-  // it, but the recipient does from the first message. That ID carries no keys
-  // and cannot be used to reach us, but it does not rotate per cell, so a
-  // correspondent who meets us in two neighbourhoods can link the two. Public
-  // channel notes carry nothing of the sort.
+  // True is optimistic, as for any Nostr DM: no relay has answered yet. If none
+  // accepts it, the message is parked in the outbox under the same keys a
+  // Nostr-only send queues with, so the retry sweep routes it back here and the
+  // bubble resolves through the outbox rather than claiming a send that died.
+  //
+  // The envelope carries a random sender ID and no recipient, never our mesh
+  // peer ID, matching bitchat. That ID does not rotate per cell, so it would let
+  // a correspondent who meets us in two neighbourhoods link the two.
   sendGeoDm(
     geohash: string,
     recipientPubkey: string,
     messageID: string,
     text: string,
+    queuedAtMs = Date.now(),
   ): boolean {
-    const envelope = encodeBitchatDmEnvelope(
-      this.localPeerID,
-      null,
-      messageID,
-      text,
-    );
+    const envelope = encodeBitchatDmEnvelope(null, null, messageID, text);
     if (envelope === null) return false;
-    this.publishGeoWrap(geohash, recipientPubkey, envelope);
+    this.publishGeoWrap(geohash, recipientPubkey, envelope, () => {
+      const recipientPeerID = `nostr_${recipientPubkey}`;
+      useOutboxStore.getState().enqueue({
+        id: messageID,
+        recipientPeerID,
+        channel: `dm:${recipientPeerID}`,
+        text,
+        createdAtMs: queuedAtMs,
+      });
+    });
     this.registerGeoDmPeer(recipientPubkey, geohash);
     return true;
   }
@@ -843,10 +849,10 @@ export class GeohashChannelService {
   // a cell key works only in its own cell, so both sides lose the thread as soon
   // as either one moves.
   //
-  // What it discloses is the KEYS, not the name. Our peer ID already reached this
-  // recipient inside every DM envelope (see sendGeoDm); what is new is the Noise,
-  // Ed25519 and durable Nostr keys, which turn a handle they cannot use into an
-  // identity they can verify, encrypt to and reach anywhere.
+  // It is the first thing to name us: the envelopes so far carried a random
+  // sender ID (see sendGeoDm). The card holds our peer ID and the Noise, Ed25519
+  // and durable Nostr keys, an identity they can verify, encrypt to and reach
+  // anywhere.
   //
   // Never automatic, and never a reply to receiving one. It has to be a tap.
   //
@@ -861,7 +867,7 @@ export class GeohashChannelService {
     this.publishGeoWrap(
       geohash,
       recipientPubkey,
-      encodeBitchatCardEnvelope(this.localPeerID, null, card),
+      encodeBitchatCardEnvelope(null, null, card),
     );
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
@@ -877,7 +883,7 @@ export class GeohashChannelService {
         geohash,
         pubkey,
         encodeBitchatAckEnvelope(
-          this.localPeerID,
+          null,
           null,
           NoisePayloadType.READ_RECEIPT,
           messageID,
@@ -889,18 +895,22 @@ export class GeohashChannelService {
 
   // Gift-wrap `envelope` from our per-cell identity to `recipientPubkey` and
   // publish it to the default relays (matching bitchat's geo-DM transport).
+  // `onRejected` runs when no relay accepted it; receipts and cards pass none,
+  // since a lost one of those has nothing to retry.
   private publishGeoWrap(
     geohash: string,
     recipientPubkey: string,
     envelope: string,
+    onRejected?: () => void,
   ): void {
     const identity = this.identityFor(geohash);
     const { event } = wrapDm(envelope, identity.privKey, recipientPubkey);
-    void this.client.publish(event).catch(() => {});
+    void this.client.publish(event).catch(() => onRejected?.());
   }
 
   // Handle an inbound gift wrap on a cell's DM inbox.
   private handleGeoDm(event: NostrEvent, geohash: string): void {
+    if (this.openedGiftWraps.has(event.id)) return;
     let dm: { content: string; senderPubkey: string; timestamp: number };
     try {
       dm = unwrapDm(
@@ -911,6 +921,7 @@ export class GeohashChannelService {
     } catch {
       return;
     }
+    this.openedGiftWraps.add(event.id);
     // Before the peer binding and before the delivery ack: a blocked person
     // must not learn we are here, and must not be able to reopen a thread the
     // block closed.
@@ -978,7 +989,7 @@ export class GeohashChannelService {
       geohash,
       dm.senderPubkey,
       encodeBitchatAckEnvelope(
-        this.localPeerID,
+        null,
         null,
         NoisePayloadType.DELIVERED,
         env.messageID,
@@ -1211,6 +1222,8 @@ export class GeohashChannelService {
     selfPubkey: string,
   ): boolean {
     if (event.pubkey === selfPubkey) return false;
+    // Same rule as the channel: a block silences them on the board too.
+    if (isBlockedPubkey(event.pubkey)) return false;
     const matched = event.tags.find(
       ([t, v]) => t === TAG_GEOHASH && v === geohash,
     );
