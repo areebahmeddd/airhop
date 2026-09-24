@@ -373,7 +373,9 @@ function renderMessageText(
   linkStyle: StyleProp<TextStyle>,
   onLongPress: () => void,
 ): React.ReactNode {
-  const re = /(^|\s)(@[A-Za-z0-9_-]+)|(https?:\/\/\S+|www\.\S+)/g;
+  // Letters, marks and digits in any script, the set mentionsNickname notifies
+  // on, so every @name that notifies is also highlighted.
+  const re = /(^|\s)(@[\p{L}\p{M}\p{N}_-]+)|(https?:\/\/\S+|www\.\S+)/gu;
   const out: React.ReactNode[] = [];
   let last = 0;
   let key = 0;
