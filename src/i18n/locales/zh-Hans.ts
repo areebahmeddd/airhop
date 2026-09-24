@@ -290,6 +290,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "无法移除对方",
   "chat.group.remove_failed_body":
     "没有任何变化。只有创建群组的人才能更改群成员。",
+  "chat.group.leave_creator_body":
+    "退出 {name}？这个群组是你创建的，只有创建者才能添加或移除成员，所以你退出后就没有人能这样做了。它的历史记录会从这台设备上移除。",
   "chat.group.e2ee": "端到端加密。只有成员能读到消息。",
   "chat.group.cap":
     "由你挑选，最多 16 人。没有邀请链接，所以不会有人靠转发来的链接进来。",

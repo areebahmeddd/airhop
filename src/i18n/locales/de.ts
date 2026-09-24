@@ -313,6 +313,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Entfernen nicht möglich",
   "chat.group.remove_failed_body":
     "Nichts hat sich geändert. Nur wer die Gruppe erstellt hat, kann ändern, wer darin ist.",
+  "chat.group.leave_creator_body":
+    "{name} verlassen? Du hast diese Gruppe erstellt, und nur wer sie erstellt hat, kann Mitglieder hinzufügen oder entfernen, also kann das nach deinem Austritt niemand mehr. Der Verlauf wird von diesem Gerät entfernt.",
   "chat.group.e2ee":
     "Ende-zu-Ende-verschlüsselt. Nur Mitglieder können die Nachrichten lesen.",
   "chat.group.cap":

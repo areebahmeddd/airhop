@@ -313,6 +313,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Tsy voaesotra izy",
   "chat.group.remove_failed_body":
     "Tsy nisy niova. Ny olona namorona ny vondrona ihany no afaka manova hoe iza no ao anatiny.",
+  "chat.group.leave_creator_body":
+    "Hialana amin'ny {name}? Ianao no namorona ity vondrona ity, ary ny mpamorona ihany no afaka mampiditra na manaisotra mpikambana, ka tsy hisy afaka manao izany intsony rehefa miala ianao. Hesorina amin'ity fitaovana ity ny tantarany.",
   "chat.group.e2ee":
     "Voafono tanteraka. Ny mpikambana ihany no mahavaky ny hafatra.",
   "chat.group.cap":

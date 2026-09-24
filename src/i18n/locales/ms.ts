@@ -305,6 +305,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Mereka tidak dapat dikeluarkan",
   "chat.group.remove_failed_body":
     "Tiada apa-apa berubah. Hanya orang yang mencipta kumpulan itu boleh mengubah siapa yang ada di dalamnya.",
+  "chat.group.leave_creator_body":
+    "Tinggalkan {name}? Anda yang mencipta kumpulan ini, dan hanya penciptanya boleh menambah atau mengeluarkan ahli, jadi tiada sesiapa boleh berbuat demikian selepas anda keluar. Sejarahnya dibuang daripada peranti ini.",
   "chat.group.e2ee":
     "Disulitkan hujung ke hujung. Hanya ahli boleh membaca mesejnya.",
   "chat.group.cap":

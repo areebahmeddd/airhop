@@ -305,6 +305,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "削除できませんでした",
   "chat.group.remove_failed_body":
     "何も変わっていません。メンバーを変更できるのはグループを作った人だけです。",
+  "chat.group.leave_creator_body":
+    "{name}を退出しますか。このグループはあなたが作成したもので、メンバーを追加・削除できるのは作成者だけのため、退出後は誰も変更できなくなります。履歴はこの端末から削除されます。",
   "chat.group.e2ee":
     "エンドツーエンド暗号化。メッセージを読めるのはメンバーだけです。",
   "chat.group.cap":

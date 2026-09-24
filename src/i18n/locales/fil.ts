@@ -315,6 +315,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Hindi sila naalis",
   "chat.group.remove_failed_body":
     "Walang nagbago. Ang gumawa lang ng grupo ang makakapagpalit kung sino ang nandoon.",
+  "chat.group.leave_creator_body":
+    "Umalis sa {name}? Ikaw ang gumawa ng grupong ito, at ang gumawa lang ang makakapagdagdag o makakapagtanggal ng mga miyembro, kaya wala nang makakagawa nito pag-alis mo. Aalisin sa device na ito ang kasaysayan nito.",
   "chat.group.e2ee":
     "Naka-encrypt nang dulo-sa-dulo. Mga miyembro lang ang makakabasa ng mga mensahe.",
   "chat.group.cap":

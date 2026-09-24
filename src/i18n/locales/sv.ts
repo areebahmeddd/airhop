@@ -303,6 +303,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Kunde inte ta bort dem",
   "chat.group.remove_failed_body":
     "Inget ändrades. Bara den som skapade gruppen kan ändra vilka som är med.",
+  "chat.group.leave_creator_body":
+    "Lämna {name}? Du skapade gruppen, och bara den som skapade den kan lägga till eller ta bort medlemmar, så ingen kan göra det när du har lämnat. Historiken tas bort från den här enheten.",
   "chat.group.e2ee":
     "Krypterad hela vägen. Bara medlemmar kan läsa meddelandena.",
   "chat.group.cap":

@@ -303,6 +303,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Không gỡ được họ",
   "chat.group.remove_failed_body":
     "Không có gì thay đổi. Chỉ người tạo nhóm mới đổi được thành phần nhóm.",
+  "chat.group.leave_creator_body":
+    "Rời {name}? Bạn đã tạo nhóm này, và chỉ người tạo mới thêm hoặc gỡ được thành viên, nên sau khi bạn rời sẽ không ai làm được việc đó nữa. Lịch sử của nhóm bị gỡ khỏi thiết bị này.",
   "chat.group.e2ee": "Mã hóa đầu cuối. Chỉ thành viên đọc được tin nhắn.",
   "chat.group.cap":
     "Tối đa 16 người, do bạn chọn. Không có liên kết mời, nên không ai vào được nhờ được chuyển tiếp một liên kết.",

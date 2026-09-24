@@ -1,8 +1,8 @@
-// Shared channel detail bottom sheet.
-// Used by both channel-list (info icon tap) and message-thread (header tap).
-// Shows About, an at-a-glance facts card (privacy, reach, geohash), and Members.
-// Read-only: it describes what a channel is and who is in it. Default channels
-// add a protocol lock notice; a location channel adds a bookmark toggle.
+// Channel and group detail sheet, opened from the chat list's info icon and
+// the thread header. Shows About, an at-a-glance facts card (privacy, reach,
+// geohash) and Members, then the actions: a group's creator adds members, and
+// Leave asks first. A default channel cannot be left, so it shows a protocol
+// lock notice instead.
 
 import { GROUP_MAX_MEMBERS } from "@core/mesh/rooms/group-protocol";
 import { relayDisplayHost } from "@core/nostr/geo-relay";
@@ -50,7 +50,7 @@ import {
   View,
 } from "react-native";
 
-import { leaveConversation } from "./leave-conversation";
+import { confirmLeaveConversation } from "./leave-conversation";
 
 // Protocol-defined default channels. Read-only, cannot be left.
 const DEFAULT_CHANNEL_NAMES = new Set([
@@ -106,13 +106,10 @@ const CHANNEL_SCOPE: Record<
   },
 };
 
-// Transport / visibility option lists lived here. Removed alongside the store
-// fields they fed, since nothing in the send path ever read them.
-
 interface Props {
   channel: string | null;
   onClose: () => void;
-  // Called after leaving so the parent can navigate away if needed.
+  // Called once a leave is confirmed, so the parent can navigate away.
   onLeave?: () => void;
   // Open a DM (or other channel) from a tapped member; navigates the app.
   onNavigateToChannel?: (channel: string) => void;
@@ -152,7 +149,7 @@ export default function ChannelInfoSheet({
 
   // Members is the last section in this sheet, so its search field sits near the
   // bottom of a long scroll. Opening it raises the keyboard, which shortens the
-  // sheet from below - and the field the user just asked for can end up under
+  // sheet from below, and the field the user just asked for can end up under
   // the fold. Riding to the end of the scroll puts the field and the list it
   // filters back in view, which is where someone who just tapped Search is
   // looking. Deferred a frame so the layout has already shrunk.
@@ -172,8 +169,8 @@ export default function ChannelInfoSheet({
   const groupName = useGroupStore((s) =>
     channel !== null ? s.nameForChannel(channel) : undefined,
   );
-  // Reactive roster snapshot, so add/remove-member updates refresh this sheet
-  // live (the roster is mutable now, unlike the earlier read-once assumption).
+  // Subscribed rather than read once, so adding or removing a member updates
+  // this sheet while it is open.
   const groupRaw = useGroupStore((s) => {
     const c = channel ?? "";
     if (!c.startsWith("group:")) return undefined;
@@ -260,8 +257,6 @@ export default function ChannelInfoSheet({
   // A private group is also end-to-end encrypted (a signed roster + epoch key),
   // just via group-store rather than a chat-store channel key.
   const encrypted = isPrivate || isGroup;
-  // Group roster, read once: it only changes on an epoch update, which replaces
-  // the whole sheet's channel anyway.
   const groupIDHex = isGroup ? channel.slice("group:".length) : "";
   const groupMembers = groupRaw?.members ?? [];
   const groupCreatorFp = groupRaw?.creatorFingerprint;
@@ -337,9 +332,16 @@ export default function ChannelInfoSheet({
   }
 
   function handleLeave(): void {
-    leaveConversation(channel!);
-    onClose();
-    onLeave?.();
+    // The name the chat list's Leave uses, so both confirmations read the same.
+    const name = isGroup
+      ? (groupName ?? t("chat.group_badge"))
+      : isManualGeo
+        ? `#${manualGh}`
+        : channel!;
+    confirmLeaveConversation(channel!, name, () => {
+      onClose();
+      onLeave?.();
+    });
   }
 
   function handleRemoveMember(fingerprint: string, memberName: string): void {
@@ -768,9 +770,6 @@ export default function ChannelInfoSheet({
           </View>
         </View>
 
-        {/* Share */}
-        {/* (removed: channel name visible in every screen header) */}
-
         {/* Actions: add members (creator only), then leave. Both full-width
             pills in one stack, so a group's two management actions read as a
             pair instead of one sitting under the roster and one below it. */}
@@ -1064,8 +1063,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.medium,
       color: Colors.textPrimary,
     },
-    // "Teleported" tag and the "You" marker sit on the right of a member row;
-    // matching size + lineHeight keeps them on one clean baseline.
+    // "Teleported" tag and the "You" marker sit at the end of a member row;
+    // matching size and lineHeight keeps them on one baseline.
     memberTag: {
       fontSize: FontSize.xs,
       lineHeight: 16,

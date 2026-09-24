@@ -300,6 +300,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "제외하지 못했습니다",
   "chat.group.remove_failed_body":
     "바뀐 것은 없습니다. 그룹 구성원을 바꿀 수 있는 사람은 그룹을 만든 사람뿐입니다.",
+  "chat.group.leave_creator_body":
+    "{name}에서 나갈까요? 이 그룹은 내가 만들었으며, 멤버를 추가하거나 제외할 수 있는 사람은 만든 사람뿐이므로 나간 후에는 아무도 할 수 없습니다. 기록은 이 기기에서 제거됩니다.",
   "chat.group.e2ee": "종단 간 암호화. 멤버만 메시지를 읽을 수 있습니다.",
   "chat.group.cap":
     "내가 고른 최대 16명. 초대 링크가 없으므로 링크를 전달받아 들어오는 사람은 없습니다.",

@@ -309,6 +309,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Non è stato possibile rimuoverli",
   "chat.group.remove_failed_body":
     "Non è cambiato nulla. Solo chi ha creato il gruppo può cambiarne i membri.",
+  "chat.group.leave_creator_body":
+    "Lasciare {name}? Hai creato tu questo gruppo, e solo il suo creatore può aggiungere o rimuovere membri, quindi nessuno potrà più farlo dopo che te ne sarai andato. La sua cronologia verrà rimossa da questo dispositivo.",
   "chat.group.e2ee":
     "Cifrato da un capo all’altro. Solo i membri possono leggere i messaggi.",
   "chat.group.cap":

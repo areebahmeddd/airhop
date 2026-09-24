@@ -310,6 +310,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Hawakuweza kuondolewa",
   "chat.group.remove_failed_body":
     "Hakuna kilichobadilika. Ni mtu aliyetengeneza kikundi pekee anayeweza kubadilisha nani yumo ndani yake.",
+  "chat.group.leave_creator_body":
+    "Uondoke kwenye {name}? Wewe ndiye uliyetengeneza kikundi hiki, na mtengenezaji pekee ndiye anayeweza kuongeza au kuondoa wanachama, kwa hivyo hakuna atakayeweza baada ya wewe kuondoka. Historia yake itaondolewa kwenye kifaa hiki.",
   "chat.group.e2ee":
     "Imesimbwa mwanzo hadi mwisho. Wanachama pekee ndio wanaoweza kusoma jumbe.",
   "chat.group.cap":

@@ -306,6 +306,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Çıkarılamadılar",
   "chat.group.remove_failed_body":
     "Hiçbir şey değişmedi. Grubun kimlerden oluştuğunu yalnızca onu oluşturan kişi değiştirebilir.",
+  "chat.group.leave_creator_body":
+    "{name} grubundan ayrılınsın mı? Bu grubu sen oluşturdun ve yalnızca onu oluşturan kişi üye ekleyip çıkarabilir, bu yüzden sen ayrıldıktan sonra kimse bunu yapamayacak. Geçmişi bu cihazdan kaldırılacak.",
   "chat.group.e2ee": "Uçtan uca şifreli. Mesajları yalnızca üyeler okuyabilir.",
   "chat.group.cap":
     "Senin seçtiğin en fazla 16 kişi. Davet bağlantısı yoktur, bu yüzden kimse iletilen bir bağlantıyla katılamaz.",

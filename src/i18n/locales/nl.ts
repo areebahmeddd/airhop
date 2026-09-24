@@ -308,6 +308,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Weghalen lukte niet",
   "chat.group.remove_failed_body":
     "Er is niets veranderd. Alleen wie de groep heeft gemaakt kan bepalen wie erin zit.",
+  "chat.group.leave_creator_body":
+    "{name} verlaten? Jij hebt deze groep gemaakt, en alleen de maker kan leden toevoegen of weghalen, dus na je vertrek kan niemand dat meer. De geschiedenis wordt van dit toestel gehaald.",
   "chat.group.e2ee":
     "End-to-end versleuteld. Alleen leden kunnen de berichten lezen.",
   "chat.group.cap":
