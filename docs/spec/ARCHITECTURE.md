@@ -396,8 +396,9 @@ BLE scanning is the largest battery cost in the app. A continuous
 radios scale with what the device can afford.
 
 Policy lives in TypeScript, mechanism in Kotlin. `src/services/power-policy.ts`
-is a pure function of four facts; the native module reports the battery and
-applies whichever mode it is given, and decides nothing itself. This keeps the
+is a pure function of five facts; the native module reports the battery and the
+OS Battery Saver switch and applies whichever mode it is given, and decides
+nothing itself. This keeps the
 decision testable without a device and puts "how hard to run the radios" beside
 "whether to run them at all" in `src/services/radio-controller.ts`.
 
@@ -411,14 +412,18 @@ low at `≤20%`.
 | `power-saver`     | `LOW_POWER`   | `LOW_POWER`   | `LOW`       | 30s       | 2s on / 28s off |
 | `ultra-low-power` | `LOW_POWER`   | `LOW_POWER`   | `ULTRA_LOW` | 60s       | 1s on / 29s off |
 
-Selection order matches bitchat's `PowerProfileResolver`, and the order carries
-the policy:
+Selection order follows bitchat's `PowerProfileResolver`, with one input added,
+and the order carries the policy:
 
 1. Backgrounded gives `power-saver`, or `ultra-low-power` on a critical battery.
    Nobody is waiting on discovery latency off screen, and this is where a phone
    spends nearly all of its day.
-2. Charging in the foreground gives `performance`, since the cost is someone else's.
-3. Otherwise the battery band decides: critical gives `ultra-low-power`, low
+2. Battery Saver on gives the same two answers in the foreground. It is the user
+   saying outright to spend less, so it outranks the charger, which only implies
+   what they can afford. Android turns it off on the charger by default, so the
+   two rarely meet. bitchat does not read it.
+3. Charging in the foreground gives `performance`, since the cost is someone else's.
+4. Otherwise the battery band decides: critical gives `ultra-low-power`, low
    gives `power-saver`, anything else gives `balanced`.
 
 Foreground on battery is `balanced` rather than `performance` because a balanced
@@ -441,10 +446,12 @@ keeps getting it while native decides the rate. A burst ending is never reported
 as an adapter or link change, or the reconciler would try to repair a state that
 is working correctly.
 
-In the foreground on a low battery, peers can take up to half a minute to appear,
+In the foreground on a low battery or under Battery Saver, peers can take up to
+half a minute to appear,
 which is indistinguishable from a broken mesh unless it is stated. The Mesh tab
 shows a muted `Battery saver · scanning less often` note, with no button since
-charging is the fix, and no dismiss since it clears itself. It stays silent while
+charging or leaving Battery Saver is the fix, and no dismiss since it clears
+itself. It stays silent while
 backgrounded, where nobody is waiting on the scan.
 
 > [!IMPORTANT]
@@ -452,7 +459,9 @@ backgrounded, where nobody is waiting on the scan.
 > throttles background BLE aggressively. `setPowerMode` exists on both platforms
 > so the shared reconciler has one code path, and `getRadioState` reports
 > `batteryPercent: -1` there, which the policy reads as unknown and leaves the
-> mode alone.
+> mode alone. Low Power Mode is reported as `powerSaveMode: false` for the same
+> reason: the OS already throttles BLE under it, and reading it would only raise
+> a "scanning less often" note for a change nothing here can make.
 
 ## 4. Messaging Protocol
 
@@ -895,8 +904,8 @@ uplinks.
 ## 10. Localization
 
 Airhop ships in 35 languages. Every user-facing string lives in one catalog per
-language under `src/i18n/locales/`, compiled into the bundle: 1,535 strings and
-27 plural keys, byte-identical on every device. Working reference:
+language under `src/i18n/locales/`, compiled into the bundle and byte-identical
+on every device. Working reference:
 [`.github/skills/i18n.md`](../../.github/skills/i18n.md).
 
 ### Why this sits in the spec

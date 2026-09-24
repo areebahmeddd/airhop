@@ -609,7 +609,7 @@ export default function ArchitecturePage() {
                   ["Wallet AES-256 key", "Keychain / Keystore", "No"],
                   ["Recovery phrase", "Keychain / Keystore", "No, unless you wrote it down"],
                   ["Cashu proofs", "MMKV, AES-256 encrypted", "No"],
-                  ["Message history", "MMKV, encrypted at rest", "No"],
+                  ["Message history", "MMKV, protected by OS disk encryption", "No"],
                 ]}
               />
 
@@ -836,7 +836,7 @@ export default function ArchitecturePage() {
                     "5 seconds after first ANNOUNCE",
                     "Lets a joiner catch up fast",
                   ],
-                  ["Gossip cache", "1000 packets", "Rolling window the filter describes"],
+                  ["Gossip cache", "1000 packets or 8 MiB", "Rolling window the filter describes"],
                   ["False positive rate", "1%", "A missed packet, never a wrong one"],
                   ["Filter budget", "~400 bytes", "Fits comfortably inside one exchange"],
                   ["Relayed?", "Never", "REQUEST_SYNC stays between neighbors"],

@@ -374,8 +374,6 @@ This phase exists because cryptographic correctness cannot be self-certified. Th
 
 - [ ] Engage a third-party security firm (Cure53 or equivalent) for a full cryptographic audit covering `src/core/crypto/`, packet signing, key storage, and the public API surface of `@airhop/core`
 - [ ] Engage a second independent auditor for the BLE mesh layer, Nostr bridge, and `@airhop/ble` (two firms, separate scopes)
-- [ ] Fuzz the packet codec and fragment reassembly engine with malformed, truncated, and oversized inputs
-- [ ] Chaos testing: random packet corruption mid-relay, partial fragment delivery, out-of-order reassembly, simultaneous peer disconnects
 - [ ] Adversarial peer simulation: malicious relay injecting forged packets, Sybil node flooding, replay attack attempts, TTL manipulation
 - [ ] Verify that all unsigned and signature-invalid packets are silently dropped with no observable side effects
 - [ ] Remediate all findings from both audits before proceeding to v2.0.0

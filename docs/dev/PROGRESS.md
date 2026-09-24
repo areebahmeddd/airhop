@@ -188,8 +188,6 @@ checkable against the code rather than taken on trust.
 
 - [ ] Third-party cryptographic audit (Cure53 or equivalent), covering `src/core/crypto/`, packet signing, key storage, and `@airhop/core` public API
 - [ ] Second independent audit, BLE mesh layer, Nostr bridge, and `@airhop/ble` scope
-- [ ] Fuzz testing: packet codec, fragment reassembly, malformed inputs
-- [ ] Chaos testing: packet corruption, adversarial peers, replay attacks, Sybil flooding
 - [ ] Remediate all audit findings; publish reports publicly
 
 ## v2.0.0: Flagship Interface

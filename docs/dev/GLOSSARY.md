@@ -36,7 +36,7 @@
 
 **GCS (Golomb-Coded Set)**: A probabilistic data structure, more compact than a Bloom filter, that encodes a set of hashes. Used in gossip sync to let two peers compare which messages each holds and exchange only what is missing. See [Golomb coding](https://en.wikipedia.org/wiki/Golomb_coding).
 
-**[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: A cache eviction policy that removes the least-recently-accessed entry when the cache is full. Used for the 1,000-entry packet deduplication seen-set and the 1,000-packet gossip cache.
+**[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: A cache eviction policy that removes the least-recently-accessed entry when the cache is full. Used for the 1,000-entry packet deduplication seen-set and the gossip cache (1,000 packets or 8 MiB, whichever fills first).
 
 ## Nostr Protocol
 
