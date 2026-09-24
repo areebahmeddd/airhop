@@ -1,13 +1,9 @@
-// Gift wraps already opened this session, by event ID.
-//
-// A DM inbox is re-subscribed with a lookback on every relay-pool rebuild, so
-// relays replay the whole window each time, and each replay would otherwise be
-// decrypted and acknowledged again. Keyed by the wrap's event ID, not the
-// message ID: a sender who never saw our receipt retries in a new wrap, and
-// that one still has to be acknowledged.
+// Gift wraps already opened this session, so a relay replaying the lookback
+// window after a pool rebuild is not decrypted and acknowledged again. Keyed by
+// wrap event ID, not message ID: a sender's retry comes in a new wrap and still
+// needs acknowledging.
 
-// Well past what one inbox's lookback holds. Past it, the oldest is forgotten
-// and at worst opened once more.
+// Well past one inbox's lookback. Evicting the oldest costs at most a reopen.
 const MAX_OPENED = 5_000;
 
 export class OpenedGiftWraps {
@@ -19,7 +15,7 @@ export class OpenedGiftWraps {
 
   add(eventID: string): void {
     if (this.ids.size >= MAX_OPENED) {
-      // A Set iterates in insertion order, so this is the oldest.
+      // Sets iterate in insertion order.
       const oldest = this.ids.values().next().value;
       if (oldest !== undefined) this.ids.delete(oldest);
     }

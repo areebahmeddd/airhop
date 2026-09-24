@@ -1,36 +1,22 @@
-// NIP-61 Nutzaps: Cashu ecash sent over Nostr, for when the internet is up.
+// NIP-61 nutzaps: Cashu proofs P2PK-locked (NUT-11) to the recipient and
+// published in a public event. A nutzap is the payment itself, not a request:
+// anyone can read it, only the key holder can swap it, so the relay never holds
+// spendable value and the recipient need not be online to be paid.
 //
-// A nutzap is not a request to pay; it *is* the payment. The sender mints
-// proofs locked to the recipient's public key (NUT-11 P2PK) and publishes them
-// in a public event. Anyone can read the event, but only the holder of the
-// matching private key can swap the proofs, so the relay never holds
-// spendable value and the recipient does not need to be online to be paid.
+//   kind 10019  "how to pay me", replaceable, published by the receiver
+//               ["relay", <url>]            where to send nutzaps
+//               ["mint", <url>, <unit>...]  mints they accept
+//               ["pubkey", <33-byte hex>]   the P2PK key to lock to
+//   kind 9321   the nutzap, published by the sender; content is the comment
+//               ["proof", <proof JSON>]     one tag per locked proof
+//               ["u", <mint url>]           the issuing mint
+//               ["p", <recipient pubkey>]   who it is for
+//               ["e", <event id>, <relay>]  optional, what is being zapped
 //
-// Two event kinds, both defined by NIP-61:
-//
-//   kind 10019  "here is how to pay me", replaceable, published by the receiver
-//               tags: ["relay", <url>]           where to send nutzaps
-//                     ["mint", <url>, <unit>...]   which mints they will accept
-//                     ["pubkey", <33-byte hex>]  the P2PK key to lock to
-//
-//   kind 9321   the nutzap itself, published by the sender
-//               content: optional comment
-//               tags: ["proof", <proof JSON>]    one tag per locked proof
-//                     ["u", <mint url>]          which mint issued them
-//                     ["p", <recipient pubkey>]  who they are for
-//                     ["e", <event id>, <relay>] optional, what is being zapped
-//
-// Two rules are easy to get wrong and both lose money:
-//   - The mint the proofs come from MUST be one the recipient listed in their
-//     kind 10019. Proofs from an untrusted mint are worthless to them.
-//   - The `pubkey` tag is a 33-byte compressed secp256k1 key, NOT the Nostr
-//     pubkey. Nostr keys are 32-byte x-only. Locking to the wrong form makes
-//     the proofs unspendable by everyone, including the sender.
-//
-// References:
-//   NIP-61 https://github.com/nostr-protocol/nips/blob/master/61.md
-//   NIP-60 https://github.com/nostr-protocol/nips/blob/master/60.md
-//   PROTOCOLS.md section 8 for the kind numbers Airhop uses.
+// Two rules lose money if broken: proofs must come from a mint the recipient
+// listed (others are worthless to them), and the lock key is the 33-byte
+// compressed `pubkey` tag, never the 32-byte x-only Nostr key (that lock is
+// unspendable by anyone, sender included). Kind numbers: PROTOCOLS.md section 8.
 
 import type { Proof, ProofLike } from "@cashu/cashu-ts";
 import { finalizeEvent, type Event } from "nostr-tools";
@@ -40,9 +26,8 @@ import type { NostrClient } from "../nostr/nostr-client";
 export const KIND_NUTZAP = 9321;
 export const KIND_NUTZAP_INFO = 10019;
 
-// Guard rails on relay-supplied content. A nutzap event is public and
-// unauthenticated apart from its signature, so every field is treated as
-// hostile until it has been parsed.
+// A nutzap event is public and unauthenticated apart from its signature, so
+// every relay-supplied field is hostile until parsed.
 const MAX_PROOFS_PER_NUTZAP = 64;
 const MAX_PROOF_TAG_LENGTH = 4096;
 const MAX_COMMENT_LENGTH = 280;
@@ -55,8 +40,7 @@ const LOOKBACK_S = 60 * 60 * 24 * 30;
 export interface NutzapInfo {
   // Nostr pubkey of the person being paid (hex, x-only).
   pubkey: string;
-  // Mints they will accept proofs from, normalised, in their stated order of
-  // preference.
+  // In their stated order of preference.
   mintUrls: string[];
   // 33-byte compressed secp256k1 key to lock proofs to (hex).
   p2pkPubkey: string;
@@ -73,17 +57,13 @@ export interface ReceivedNutzap {
   proofs: ProofLike[];
   amount: number;
   comment?: string;
-  // The event this nutzap was attached to, when the sender tagged one.
   targetEventId?: string;
 }
 
-// Announce where and how we can be paid. Without this event nobody can nutzap
-// us at all: a sender has no way to know which mints we trust or which key to
-// lock proofs to, and NIP-61 explicitly says not to guess.
-//
-// This is a replaceable event, so publishing again simply supersedes the last
-// one. The P2PK key must stay stable across republishes or proofs locked
-// against an older announcement become unspendable.
+// Without this nobody can nutzap us: a sender cannot know our mints or lock
+// key, and NIP-61 says not to guess. Replaceable, so a republish supersedes.
+// The P2PK key must stay stable across republishes, or proofs locked to an
+// older announcement become unspendable.
 export async function publishNutzapInfo(params: {
   mintUrls: string[];
   p2pkPubkey: string;
@@ -96,8 +76,7 @@ export async function publishNutzapInfo(params: {
     throw new Error("nutzap info needs at least one mint");
   }
   if (!/^0[23][0-9a-f]{64}$/i.test(params.p2pkPubkey)) {
-    // A 32-byte x-only Nostr key here is the classic NIP-61 mistake: the mint
-    // would accept the lock and nobody could ever unlock it.
+    // The classic NIP-61 mistake: an x-only key locks proofs nobody can unlock.
     throw new Error(
       "p2pk pubkey must be a 33-byte compressed secp256k1 key (02/03 prefix)",
     );
@@ -109,9 +88,8 @@ export async function publishNutzapInfo(params: {
       created_at: Math.floor(Date.now() / 1000),
       tags: [
         ...params.relays.slice(0, MAX_RELAYS).map((url) => ["relay", url]),
-        // The trailing entries are the units we accept from that mint. "sat"
-        // is the only unit Airhop holds today; listing it explicitly saves a
-        // sender from guessing.
+        // Trailing entries are accepted units. Airhop holds only sat, listed
+        // explicitly so a sender need not guess.
         ...mints.map((url) => ["mint", url, "sat"]),
         ["pubkey", params.p2pkPubkey.toLowerCase()],
       ],
@@ -124,9 +102,7 @@ export async function publishNutzapInfo(params: {
   return event;
 }
 
-// Look up how to pay someone. Returns null when they have never published a
-// kind 10019, which is the normal case for most Nostr users and the signal to
-// fall back to an unlocked token in a DM.
+// Null (no kind 10019, the common case) means fall back to a token in a DM.
 export async function fetchNutzapInfo(
   recipientPubkey: string,
   client: NostrClient,
@@ -160,21 +136,17 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
     }
   }
 
-  // Both are load-bearing. Without a mint we do not know what they will accept;
-  // without a valid P2PK key we cannot lock proofs to them. Falling back to
-  // `event.pubkey` as the lock key (as the previous implementation did) locks
-  // proofs to a 32-byte x-only Nostr key, which no mint can unlock.
+  // Both are load-bearing: without a mint we do not know what they accept,
+  // without a P2PK key we cannot lock. Never fall back to `event.pubkey` as
+  // the lock key: it is x-only, and no mint can unlock proofs locked to it.
   if (mintUrls.length === 0 || p2pkPubkey === undefined) return null;
 
   return { pubkey: event.pubkey, mintUrls, p2pkPubkey, relays };
 }
 
-// Send P2PK-locked proofs to a recipient.
-//
 // `proofs` must already be locked to the recipient's `p2pkPubkey` (see
-// `lockProofsForNutzap` in wallet-service) and must come from a mint in their
-// kind 10019 list. Publishing unlocked proofs here would put spendable bearer
-// tokens on a public relay for anyone to grab.
+// `lockProofsForNutzap` in wallet-service) and come from a mint they listed.
+// Unlocked proofs here are bearer tokens on a public relay for anyone to grab.
 export async function publishNutzap(params: {
   proofs: Proof[];
   mintUrl: string;
@@ -183,12 +155,10 @@ export async function publishNutzap(params: {
   client: NostrClient;
   comment?: string;
   targetEventId?: string;
-  // The relays THEY listed in their kind 10019. NIP-61 is explicit that a
-  // nutzap goes to the recipient's relays, and it matters: the recipient
-  // subscribes to their own set, so publishing to ours instead puts the payment
-  // somewhere they never look. That is invisible between two Airhop users, who
-  // share a default pool, and completely broken against any other NIP-61 wallet.
-  // Empty falls back to our own pool, for a kind 10019 with no relay tags.
+  // The recipient's kind 10019 relays, as NIP-61 requires: they subscribe to
+  // their own set, so publishing to ours puts the payment where they never
+  // look. Invisible between two Airhop users (one default pool), broken against
+  // any other NIP-61 wallet. Empty (no relay tags) falls back to our pool.
   relays?: string[];
 }): Promise<Event> {
   if (params.proofs.length === 0) throw new Error("nutzap needs proofs");
@@ -201,10 +171,8 @@ export async function publishNutzap(params: {
       kind: KIND_NUTZAP,
       created_at: Math.floor(Date.now() / 1000),
       tags: [
-        // One tag per proof, each holding the serialised proof object. This is
-        // the NIP-61 wire format; putting the whole array in `content` (as the
-        // previous implementation did) produces an event no other Nostr wallet
-        // can read.
+        // One tag per proof is the NIP-61 wire format. An array in `content`
+        // is an event no other Nostr wallet can read.
         ...params.proofs.map((proof) => [
           "proof",
           JSON.stringify({
@@ -215,8 +183,8 @@ export async function publishNutzap(params: {
             ...(proof.witness !== undefined ? { witness: proof.witness } : {}),
           }),
         ]),
-        // "u" is the mint URL, and there must be exactly one: a second "u" tag
-        // holding the unit is parsed by readers as a second mint.
+        // Exactly one "u", the mint URL: readers take a second "u" (say, a
+        // unit) as a second mint.
         ["u", params.mintUrl],
         ["p", params.recipientPubkey],
         ...(params.targetEventId ? [["e", params.targetEventId]] : []),
@@ -230,9 +198,8 @@ export async function publishNutzap(params: {
   return event;
 }
 
-// Watch for nutzaps addressed to us. The callback fires once per event; the
-// caller is responsible for redeeming and for ignoring events it has already
-// redeemed (wallet-store tracks those ids, since a relay can and will replay).
+// Fires once per event. Relays replay, so the caller dedupes (wallet-store
+// tracks redeemed ids).
 export function subscribeNutzaps(
   myPubkey: string,
   client: NostrClient,
@@ -276,8 +243,6 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
     }
   }
 
-  // No mint means we cannot redeem, and no proofs means there is nothing to
-  // redeem. Either way there is nothing to show the user.
   if (proofs.length === 0 || mintUrl === undefined) return null;
 
   const amount = proofs.reduce((total, p) => total + Number(p.amount), 0);
@@ -291,7 +256,7 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
     createdAt: event.created_at,
     mintUrl,
     // NIP-61 carries no unit tag; sat is the NUT-00 default and the only unit
-    // Airhop's nutzap info advertises.
+    // our kind 10019 advertises.
     unit: "sat",
     proofs,
     amount,
@@ -300,9 +265,8 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
   };
 }
 
-// One `["proof", "<json>"]` tag. Rejects anything that is not a structurally
-// complete proof: a half-parsed proof would be shown as incoming money and then
-// fail at the mint.
+// Rejects anything not structurally complete, which would show as incoming
+// money and then fail at the mint.
 function parseProofTag(raw: string): ProofLike | null {
   let parsed: unknown;
   try {

@@ -3,12 +3,11 @@
  */
 // A token signed under a keyset this wallet has not fetched yet.
 //
-// A V4 `cashuB` token carries a v2 keyset id as its first 8 bytes, which only
-// the mint's keyset list can expand. When a mint rotates, or the cached list is
-// otherwise behind, the token fails the full decode while its mint is one the
-// user holds. These pin that the wallet fetches that mint's keysets and reads
-// the token, says honestly when the mint cannot be reached, and never contacts
-// a mint the user has not added.
+// A `cashuB` token carries a v2 keyset id as its first 8 bytes, which only the
+// mint's keyset list expands, so after a mint rotates keysets the full decode
+// fails until the list is refreshed. For a held mint the wallet fetches it and
+// reads the token, says so when the mint is out of reach, and never contacts a
+// mint the user has not added.
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { decodeToken } from "@core/payments/cashu";

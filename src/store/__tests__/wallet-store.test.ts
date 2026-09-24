@@ -181,8 +181,7 @@ describe("reservations", () => {
     const proof = makeProof(64, "held");
     state().addProofs(MINT, "sat", [proof]);
     state().reserveProofs("tx-1", MINT, "sat", [proof]);
-    // Simulate the same proof arriving again (the recipient bounced the token
-    // back) before the reservation was released.
+    // The same proof arrives again before the reservation is released.
     useWalletStore.setState({
       proofs: { [accountKey(MINT, "sat")]: [proof] },
     });
@@ -373,14 +372,9 @@ describe("redeemed nutzaps", () => {
 
 // ---- What survives a restart ----
 
-// `partialize` decides what is written to disk, and a field left out of it is
-// silently reset on every launch. Nothing else catches that: the field is
-// declared, typed and written to all session long, and only a restart shows it
-// was never kept.
-//
-// The key list is asserted as a whole on purpose. Adding a field to the store
-// should require a deliberate answer to "does this need to outlive the process",
-// and a test that has to be updated is how the question gets asked.
+// A field left out of `partialize` silently resets on every launch. The key
+// list is asserted whole so that adding a field forces a decision on whether
+// it must outlive the process.
 describe("persistence", () => {
   function persisted(): Record<string, unknown> {
     const partialize = useWalletStore.persist.getOptions().partialize;
@@ -458,8 +452,8 @@ describe("selectors", () => {
 
 describe("backup coverage", () => {
   it("reports nothing as unbacked while backup is off", () => {
-    // With no recovery phrase there is no coverage to be inside or outside of,
-    // so flagging proofs as "unbacked" would be noise.
+    // `backupEnabled` records that the user has seen the phrase. Until then the
+    // recovery row asks them to back up, and an uncovered figure is noise.
     state().addProofs(MINT, "sat", [makeProof(10), makeProof(20)]);
     expect(selectAccounts(state())[0].unbacked).toBe(0);
   });

@@ -1,17 +1,15 @@
 /**
  * @jest-environment node
  */
-// What the wallet does when two things want the same coins, or when an answer
-// from the mint goes missing while the rest of the wallet carries on.
+// Two operations wanting the same coins, or a mint answer that goes missing
+// while the wallet carries on.
 //
-// Every case here runs the real wallet service against the simulated mint
-// (real blinding, real double-spend refusal, real NUT-19 cache and NUT-09
-// restore), because the bugs in this area are all about ordering between the
-// wallet and the mint and a stub would agree with whatever the code assumed.
+// Runs the real wallet service against the simulated mint (real blinding,
+// double-spend refusal, NUT-19 cache and NUT-09 restore): the risk here is
+// ordering between wallet and mint, which a stub would simply agree with.
 //
-// The rule each test defends is the same one: a coin is in exactly one place.
-// It is spendable, or held against the one operation that may have spent it,
-// or gone because the mint says so. Never two of those, never none.
+// The invariant: a coin is spendable, or held against the one operation that
+// may have spent it, or gone because the mint says so. Exactly one.
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { generateRecoveryPhrase } from "@core/payments/wallet-seed";
@@ -43,9 +41,7 @@ import {
   restoreFromRecoveryPhrase,
 } from "../wallet-service";
 
-// The keychain holds the partition key, the recovery phrase and the P2PK key.
-// Only the two accessors are replaced, for the reason wallet-send-lifecycle
-// gives.
+// Only the two accessors are replaced; see wallet-send-lifecycle for why.
 jest.mock("@core/crypto/keychain", () => {
   const secrets = new Map<string, string>();
   return {
@@ -437,10 +433,9 @@ describe("a panic wipe during a mint round trip", () => {
     expect(useWalletStore.getState().proofs).toEqual({});
     expect(useWalletStore.getState().history).toEqual([]);
 
-    // The wipe drops to onboarding in the same process, and the next
-    // identity's mesh unlocks the wallet again. Without a fresh read of the new
-    // partition that unlock waited out the hydration timeout and reported the
-    // wallet locked until a relaunch.
+    // The wipe drops to onboarding in the same process, and the next identity
+    // unlocks the wallet again. That must read the new partition at once, not
+    // wait out the hydration timeout.
     const started = Date.now();
     expect(await initWalletService()).toBe(true);
     expect(Date.now() - started).toBeLessThan(1_000);
