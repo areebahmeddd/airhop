@@ -72,6 +72,14 @@ airhop/
             </p>
           </div>
 
+          <p class="kt-note">
+            Each native tree now has its own README (<code>native/README.md</code>,
+            <code>android/README.md</code>, <code>ios/README.md</code>), and
+            <code>ios/Package.swift</code> lets the Swift framing and dial rules be
+            unit tested outside Xcode. <code>scripts/release.sh</code> is the local
+            release entry point.
+          </p>
+
           <h2 id="layer-rule">The layering rule</h2>
           <p>
             One rule explains most of the structure:
@@ -209,7 +217,7 @@ airhop/
             <table>
               <thead><tr><th>File</th><th>Lines</th><th>Owns</th></tr></thead>
               <tbody>
-                <tr><td><code>mesh-service.ts</code></td><td>6,349</td><td>The centre of the app. Owns both radios, the flood router, the peer registry, the courier, gossip sync, the Nostr client, groups, the board, prekeys, live voice, the gateway, and the DM send path. Every handler for every packet type is here.</td></tr>
+                <tr><td><code>mesh-service.ts</code></td><td>6,812</td><td>The centre of the app. Owns both radios, the flood router, the peer registry, the courier, gossip sync, the Nostr client, groups, the board, prekeys, live voice, the gateway, and the DM send path. Every handler for every packet type is here.</td></tr>
                 <tr><td><code>wallet-service.ts</code></td><td>3,595</td><td>Everything that talks to a mint: mint, melt, swap, restore, consolidate, nutzaps.</td></tr>
                 <tr><td><code>geohash-channel-service.ts</code></td><td>1,319</td><td>Location channels over Nostr: cell resolution, subscription, presence, geo DMs.</td></tr>
                 <tr><td><code>file-transfer-service.ts</code></td><td>922</td><td>Attachment send and receive, the paced fragment queue, the on-disk cache and its retention sweep.</td></tr>
@@ -367,7 +375,7 @@ airhop/
               <thead><tr><th>Lines</th><th>File</th><th>Why it is that big</th></tr></thead>
               <tbody>
                 <tr><td>6,625</td><td><code>features/chat/message-thread.tsx</code></td><td>One screen that renders text, media, voice, payment cards, location pins, receipts, reactions, forwarding, search and the composer, for six different kinds of conversation.</td></tr>
-                <tr><td>6,349</td><td><code>services/mesh-service.ts</code></td><td>The composition root of the whole protocol. Twenty packet handlers, two radios, six subsystems.</td></tr>
+                <tr><td>6,812</td><td><code>services/mesh-service.ts</code></td><td>The composition root of the whole protocol. Twenty packet handlers, two radios, six subsystems.</td></tr>
                 <tr><td>4,337</td><td><code>features/wallet/wallet-screen.tsx</code></td><td>Balance, send, receive, deposit, withdraw, history, mints, backup, consolidation.</td></tr>
                 <tr><td>3,595</td><td><code>services/wallet-service.ts</code></td><td>Every mint interaction, each with an interrupted-network recovery path.</td></tr>
                 <tr><td>2,615</td><td><code>app/app.tsx</code></td><td>Onboarding, the tab machine, permissions, deep links, foreground and background transitions, notification routing.</td></tr>

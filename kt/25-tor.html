@@ -300,6 +300,16 @@
             differs is how much of the app the protection reaches.
           </p>
 
+          <h3>The relay pool waits for a circuit</h3>
+          <p>
+            With Tor wanted and no circuit yet, the Nostr pool is held down
+            (<code>nostrBlockedByTor</code> in the mesh state store) rather than
+            left dialling sockets that cannot connect. This is about futility, not
+            leakage, since Arti cannot take a clearnet route anyway. When the
+            circuit arrives the pool is rebuilt once: a second teardown would drop
+            the sockets the first just opened.
+          </p>
+
           <h2 id="mint">The mint hole</h2>
           <div class="box bad">
             <p class="box-title">The honest statement of it</p>

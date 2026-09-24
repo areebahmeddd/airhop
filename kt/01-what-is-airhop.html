@@ -267,6 +267,13 @@
                 <tr><td>Internet gateway</td><td>Lend your connection to a nearby offline phone for location channels. Packet type <code>0x28</code>. Off by default.</td><td><span class="pill ok">shipped</span></td></tr>
                 <tr><td>Tor</td><td>Arti embedded on <strong>both</strong> platforms, one Rust crate, no third-party app. Android covers every socket; iOS covers the Nostr WebSocket. Off by default. Chapter <a href="25-tor.html">25</a>.</td><td><span class="pill ok">shipped</span></td></tr>
                 <tr><td>Bridges and pluggable transports</td><td>obfs4 and Snowflake compiled in, for networks that block Tor. Built-in directory synced weekly from Moat, plus custom lines. Chapter <a href="26-bridges.html">26</a>.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Ring</td><td>An opt-in urgent alert. A contact you have allowed can make your phone ring through silent mode, for 45 seconds, with a 5 minute cooldown per sender and a snooze. Carried as three Noise payload types. Chapter <a href="41-ui-ux.html">41</a>.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Start on boot</td><td>Android only: brings the mesh up after a reboot without opening the app, through a boot receiver. iOS has no equivalent.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Share the app</td><td>Android only: hands the installed APK to the share sheet, so the app can spread phone to phone with no store and no internet.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Privacy cover</td><td>Hides the app's contents in the app switcher snapshot.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Settings search</td><td>One search field across every settings screen.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Diagnostics export</td><td>A support bundle the user shares themselves: transport state, switches and the recent log. No message content, nicknames, keys or peer IDs, and no endpoint: nothing leaves the phone unasked.</td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td>Chat filters</td><td>A filter sheet on the chats screen, and a verified badge on verified contacts.</td><td><span class="pill ok">shipped</span></td></tr>
               </tbody>
             </table>
           </div>

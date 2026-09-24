@@ -404,6 +404,19 @@
             peer that could never be dialled again.
           </p>
 
+          <h3>Liveness and dial timeouts</h3>
+          <p>
+            A peer that walks off the network without a TCP FIN would otherwise
+            hold its link open indefinitely, and LAN outranks Bluetooth in
+            <code>SEND_PREFERENCE</code>, so a dead LAN link would swallow every DM
+            to that peer. Both platforms send a zero-length heartbeat every
+            <strong>8 s</strong> against a <strong>10 s</strong> read deadline and
+            allow three misses, closing a silent link in about thirty seconds. A
+            dial times out after <strong>5 s</strong>. Same numbers as the WiFi
+            module. Network state watchers restart the transport when the phone
+            changes network.
+          </p>
+
           <h2 id="states">Six states, and searching</h2>
           <div class="table-wrap">
             <table>

@@ -16,7 +16,7 @@
           <h1>The mesh service</h1>
           <p class="kt-lede">
             Chapters 09 to 14 described the parts. This is the object that holds
-            all of them at once. It is a single file of 6,349 lines, the largest
+            all of them at once. It is a single file of 6,812 lines, the largest
             in the repository by a wide margin, and the first thing every new
             maintainer asks about. The answer is not "nobody got round to
             splitting it".
@@ -89,7 +89,7 @@
           <div class="box warn">
             <p class="box-title">The honest counterpoint</p>
             <p>
-              This is a defensible shape, not an unimprovable one. 6,349 lines
+              This is a defensible shape, not an unimprovable one. 6,812 lines
               is past the point where a reader can hold the whole file in their
               head, and it is the file most in need of a second pass. The
               engineering review names it explicitly. The realistic improvement
@@ -478,7 +478,7 @@
                 <tr><th>Value</th><th>What it is</th><th>Why</th></tr>
               </thead>
               <tbody>
-                <tr><td>6,349</td><td>Lines in <code>mesh-service.ts</code></td><td>Composition root for eleven engines and three transports. Largest file in the repository; named as a review finding.</td></tr>
+                <tr><td>6,812</td><td>Lines in <code>mesh-service.ts</code></td><td>Composition root for eleven engines and three transports. Largest file in the repository; named as a review finding.</td></tr>
                 <tr><td>1</td><td>Instances per process</td><td>It owns hardware handles and the identity. Two instances would mean two advertisers under one peer ID.</td></tr>
                 <tr><td>19</td><td>Packet types dispatched</td><td>The full protocol surface. Anything not in the switch is dropped, which is how forward compatibility works.</td></tr>
                 <tr><td>51</td><td>Public methods</td><td>The whole contract the feature layer may use.</td></tr>
@@ -571,7 +571,7 @@
           <h2 id="drills">Drills</h2>
           <ul class="drill">
             <li>
-              <span class="q">Defend a 6,349 line file to a reviewer who has already decided it is technical debt.</span>
+              <span class="q">Defend a 6,812 line file to a reviewer who has already decided it is technical debt.</span>
               <span class="a">Agree with the discomfort and then separate two claims. The claim "this file is too long to read comfortably" is true and is recorded as a review finding. The claim "this length is caused by mixing responsibilities" is false: the responsibilities are already separated into eleven engines under <code>src/core/mesh</code>, each independently unit tested without a phone. What remains is wiring, and wiring is exactly the thing that cannot be split without either passing a large context object into every handler or creating circular imports. The improvement worth making is extracting cohesive groups that share a narrow slice of state, such as voice or the Nostr bridge, not a mechanical split by line count.</span>
             </li>
             <li>

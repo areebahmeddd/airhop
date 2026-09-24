@@ -55,13 +55,13 @@
                 <tr><th></th><th>Bluetooth LE mesh</th><th>WiFi Aware</th><th>LAN (mDNS)</th><th>Nostr</th><th>Courier</th></tr>
               </thead>
               <tbody>
-                <tr><td><strong>Status</strong></td><td><span class="pill ok">shipped</span></td><td><span class="pill ok">Android only</span></td><td><span class="pill ok">shipped</span>, off by default</td><td><span class="pill ok">shipped</span></td><td><span class="pill ok">shipped</span></td></tr>
+                <tr><td><strong>Status</strong></td><td><span class="pill ok">shipped</span></td><td><span class="pill ok">shipped</span>, same platform</td><td><span class="pill ok">shipped</span>, off by default</td><td><span class="pill ok">shipped</span></td><td><span class="pill ok">shipped</span></td></tr>
                 <tr><td><strong>Carries</strong></td><td>Everything</td><td>DMs and files, when a link exists</td><td>Everything Bluetooth carries</td><td>DMs and geohash channel messages</td><td>Sealed text envelopes, 16 KiB each</td></tr>
                 <tr><td><strong>Needs internet</strong></td><td>No</td><td>No</td><td>No, but everyone on one network</td><td>Yes</td><td>No</td></tr>
                 <tr><td><strong>iPhone to Android</strong></td><td><strong>Yes</strong></td><td>No</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
                 <tr><td><strong>Range</strong></td><td>10 to 30 m indoors, up to 100 m line of sight, extended by each hop</td><td>~30 m</td><td>Wherever the network reaches</td><td>Global</td><td>Wherever the carrier walks</td></tr>
                 <tr><td><strong>Max hops</strong></td><td><strong>7</strong></td><td>1</td><td>1</td><td>1</td><td>1 carrier, unbounded in time</td></tr>
-                <tr><td><strong>Speed</strong></td><td>~18 KiB/s to one peer, ~15 KiB/s to a channel</td><td>~18 KiB/s (shares the paced queue for now)</td><td>Network speed, no radio pacing</td><td>Not used for files</td><td>Not used for files</td></tr>
+                <tr><td><strong>Speed</strong></td><td>~18 KiB/s to one peer, ~15 KiB/s to a channel</td><td>Network speed. The Bluetooth pacing gap is skipped when nothing on the path is Bluetooth.</td><td>Network speed, no radio pacing</td><td>Not used for files</td><td>Not used for files</td></tr>
                 <tr><td><strong>Latency per hop</strong></td><td>10 to 220 ms, randomised</td><td>n/a</td><td>Network round trip</td><td>Relay round trip, more over Tor</td><td>Whenever the carrier meets the recipient</td></tr>
               </tbody>
             </table>
@@ -145,7 +145,7 @@
           <p>
             WiFi Aware, also called Neighbour Awareness Networking, is a
             radio protocol for direct device-to-device WiFi with no router and no
-            internet. It is <strong>Android only</strong> in Airhop.
+            internet. Airhop runs it on both platforms (Android API 29+, iOS 26+), and it is <strong>same-platform only</strong>: Apple requires a paired data path Android cannot complete.
           </p>
           <div class="table-wrap">
             <table>
@@ -168,17 +168,35 @@
             reclaims the radio for tethering, or when battery saver intervenes.
             That is what lets the fast path recover without a relaunch.
           </p>
-          <div class="box warn">
-            <p class="box-title">The honest assessment of the fast path today</p>
+          <div class="box ok">
+            <p class="box-title">The fast path is now actually fast</p>
             <p>
-              WiFi currently <strong>shares the same paced fragment queue</strong>
-              as Bluetooth, so it runs at roughly the same 18 KiB/s. The 25 ms
-              pacing is a Bluetooth requirement, not a protocol one, and lifting
-              it for WiFi links is planned rather than done. So the feature
-              currently buys link diversity and a second path, not speed. Given
-              the protocol caps a file at 1 MiB anyway, the ceiling BLE has to
-              clear is seconds rather than minutes, which is part of why lifting
-              it has not been urgent.
+              The Bluetooth pacing gap used to apply to WiFi too, so a 1 MiB file
+              over Aware took the same 56 seconds Bluetooth does. The pacer now asks
+              whether anything on the path touches the Bluetooth radio and skips the
+              gap when nothing does. Chapter <a href="10-fragmentation.html">10</a>.
+            </p>
+          </div>
+          <h3>Per-peer state machine, and the breaker</h3>
+          <p>
+            Connections are a state machine per peer, with retries, heartbeats and
+            discovery that restarts itself when idle, and a peer is recognised
+            across its own session restart. Liveness is a zero-length heartbeat
+            every 8 s against a 10 s read deadline, three misses allowed. Dial
+            rules live in <code>AwareDial.kt</code> and <code>AwareDial.swift</code>,
+            which have native unit tests.
+          </p>
+          <div class="box warn">
+            <p class="box-title">Some chips reset the phone's WiFi when a data path opens</p>
+            <p>
+              That drops the router connection and Aware with it. Aware returns
+              seconds later, a plain retry resets the chip again, and the loop runs
+              about once a minute for as long as the app does. The breaker in
+              <code>wifi-controller.ts</code> spots it: three sessions ended by the
+              framework within three minutes of attaching, inside fifteen minutes,
+              pauses Aware for the session. Only a framework-ended session counts,
+              not the user switching WiFi off, and turning the Aware switch back on
+              clears it, since that is the one signal that carries intent.
             </p>
           </div>
 

@@ -405,6 +405,22 @@
             trading interoperability for control.
           </p>
 
+          <h3>Reconnecting when the network returns</h3>
+          <p>
+            <code>src/services/reachability.ts</code> tells the internet-facing
+            services when a network came back or changed, so they act on the event
+            rather than their own timers. Without it the relay pool never retried
+            a first connect that had failed, and a dropped relay waited up to a
+            minute. A change counts once it has held briefly, because a WiFi to
+            cellular handoff reports several states inside a second; bitchat's
+            <code>NetworkReachabilityMonitor</code> uses the same window.
+          </p>
+          <p>
+            It is a nudge, never a gate: nothing refuses to connect because the OS
+            reports no network, since the mesh is offline-first and a captive
+            portal reads as connected.
+          </p>
+
           <h2 id="pow">Proof of work</h2>
           <p>
             NIP-13 defines optional proof of work for Nostr: grind the event's

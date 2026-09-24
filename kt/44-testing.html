@@ -373,6 +373,25 @@
             node nothing while still crossing it. X03 is the constant check.
           </p>
 
+          <h2 id="fuzz">Fuzzing and native unit tests</h2>
+          <p>
+            <code>src/core/mesh/wire/__tests__/decoder-fuzz.test.ts</code> throws
+            random and mutated bytes at every wire decoder. The rule it enforces is
+            that a decoder returns null or throws a caught error, never crashes the
+            handler, and the mesh service contains a fault in one inbound packet so
+            it cannot take down the handling of the next. A radio is an untrusted
+            input from anyone in range, which is why this is a test and not a hope.
+          </p>
+          <p>
+            Native code gets unit tests of its own for the pieces that are pure
+            logic: the length-prefixed <strong>framing</strong> both socket
+            transports share (<code>Framing.kt</code>, <code>Framing.swift</code>)
+            and the WiFi Aware <strong>dial rules</strong>
+            (<code>AwareDial.kt</code>, <code>AwareDial.swift</code>), under
+            <code>android/app/src/test/</code> and <code>ios/Tests/</code>. The Rust
+            crate carries its own <code>cargo test</code> suite.
+          </p>
+
           <h2 id="cannot">What cannot be tested this way</h2>
           <div class="box warn">
             <p class="box-title">The simulation models the OS contract. It cannot prove the hardware honours it.</p>

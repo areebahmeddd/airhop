@@ -319,6 +319,41 @@
             cover the app-switcher snapshot, and says so.
           </p>
 
+          <h3>Ring, the one alert allowed to be loud</h3>
+          <p>
+            Every other notification respects the phone's silent switch. Ring does
+            not, which is exactly why it is opt-in per contact
+            (<code>allowRing</code> on the contact record) and heavily limited.
+          </p>
+          <pre class="ascii">
+  NoisePayloadType, inside an encrypted session. Airhop only;
+  bitchat drops a payload type it does not know.
+
+    RING          0x51   utf8(ringID)
+    RING_ACK      0x52   utf8(ringID)            a person saw it
+    RING_REFUSED  0x53   reason ++ utf8(ringID)  why it stayed quiet:
+                                                NOT_ALLOWED, SNOOZED, COOLDOWN
+
+  RING_COOLDOWN_MS        5 min   per sender; the sender's button holds
+                                  for the same window, so it never
+                                  offers a tap that would be refused
+  RING_STALENESS_MS       2 min   older than this on decrypt: ignored,
+                                  and NO reply, so a replay cannot probe
+                                  whether its sender is still permitted
+  RING_ALERT_DURATION_MS  45 s    overlay, Android sound loop and iOS
+                                  notification chain all stop here
+
+  never couriered: an urgent alert delivered a day late is noise
+</pre>
+          <p>
+            NOT_ALLOWED covers both "no grant" and "master switch off", on
+            purpose: which one applies is the receiver's business, and the
+            sender's next step is the same. On Android the ring uses a sound
+            loop in <code>AirhopAppModule</code> and hands itself to the tray if the
+            app is backgrounded; on iOS, with no ringtone loop outside CallKit, it
+            is a chain of notifications.
+          </p>
+
           <h2 id="design">The design system</h2>
           <p class="kt-note">
             The summary below is the shape of it. Every token, the reasoning
