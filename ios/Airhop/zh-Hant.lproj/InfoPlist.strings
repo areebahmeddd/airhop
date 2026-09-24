@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop 使用麥克風錄製語音留言，並把即時語音傳給附近的節點。";
 "NSPhotoLibraryUsageDescription" = "Airhop 存取你的照片圖庫，以便透過網狀網路分享圖片和影片。";
 "NSPhotoLibraryAddUsageDescription" = "當你選擇儲存，以及下載自己的 QR 碼時，Airhop 會把照片和影片儲存到你的照片圖庫。";
+"NSFaceIDUsageDescription" = "Airhop 使用 Face ID 確認是你本人，然後才把你的身分轉移到新手機。";
 "NSLocationWhenInUseUsageDescription" = "Airhop 使用你的大致位置，把你放進附近的區域頻道（街廓、城市、地區）。你的精確位置永遠不會離開這台裝置。";

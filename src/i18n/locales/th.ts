@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "เปิดนโยบายความเป็นส่วนตัว",
   "onboarding.welcome.consent":
     "เมื่อแตะ {cta} แสดงว่าคุณยอมรับ {terms} และ {privacy} ของเรา",
+  "onboarding.welcome.transfer": "ย้ายจากโทรศัพท์เครื่องอื่น",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "กำลังสร้างตัวตนของคุณ",
@@ -101,6 +102,40 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "OS Keychain เท่านั้น",
   "onboarding.username.prop.account": "ต้องมีบัญชี",
   "onboarding.username.prop.account_value": "ไม่ต้อง",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "ย้ายจากโทรศัพท์เครื่องอื่น",
+  "onboarding.transfer.preparing": "กำลังเตรียมพร้อม",
+  "onboarding.transfer.scan_heading": "สแกนโค้ดนี้ด้วยโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.step_open": "เปิด Airhop บนโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.step_go": "ไปที่ {tab} แล้วเลือก {row}",
+  "onboarding.transfer.step_scan": "หันกล้องไปที่โค้ดนี้",
+  "onboarding.transfer.network_note":
+    "โทรศัพท์ทั้งสองเครื่องต้องใช้ Wi-Fi เดียวกันหรือฮอตสปอต ไม่มีสิ่งใดผ่านอินเทอร์เน็ต",
+  "onboarding.transfer.qr_a11y":
+    "โค้ดสำหรับย้ายข้อมูล สแกนด้วย Airhop บนโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.offline_title": "เชื่อมต่อ Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "ให้โทรศัพท์ทั้งสองเครื่องใช้ Wi-Fi เดียวกัน หรือเปิดฮอตสปอตบนเครื่องหนึ่งแล้วเชื่อมต่อจากอีกเครื่อง ไม่ต้องใช้อินเทอร์เน็ต",
+  "onboarding.transfer.incoming": "กำลังย้าย {name}",
+  "onboarding.transfer.receiving": "กำลังรับ {percent}%",
+  "onboarding.transfer.saving": "กำลังบันทึกลงโทรศัพท์เครื่องนี้",
+  "onboarding.transfer.releasing": "กำลังเสร็จสิ้นบนโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.keep_open": "เปิดแอปไว้บนทั้งสองเครื่องจนกว่าจะเสร็จ",
+  "onboarding.transfer.check_title": "ตรวจสอบโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.check_body":
+    "ทุกอย่างอยู่บนโทรศัพท์เครื่องนี้แล้ว ก่อนดำเนินการต่อ ตรวจสอบให้แน่ใจว่าเครื่องเก่าแจ้งว่าล้างแล้ว หรือเลือก “ล้างโทรศัพท์เครื่องนี้” บนเครื่องเก่า",
+  "onboarding.transfer.failed_title": "การย้ายไม่เสร็จสมบูรณ์",
+  "onboarding.transfer.failed_cancelled":
+    "การย้ายถูกยกเลิกบนโทรศัพท์เครื่องเก่า ไม่มีสิ่งใดถูกบันทึกไว้ที่นี่",
+  "onboarding.transfer.failed_interrupted":
+    "การเชื่อมต่อขาดหาย ไม่มีสิ่งใดถูกบันทึกไว้ที่นี่",
+  "onboarding.transfer.failed_storage":
+    "โทรศัพท์เครื่องนี้บันทึกสิ่งที่ได้รับไม่ได้ จึงไม่ได้เก็บสิ่งใดไว้",
+  "onboarding.transfer.failed_incompatible":
+    "โทรศัพท์เครื่องเก่าใช้ Airhop เวอร์ชันใหม่กว่า อัปเดตเครื่องนี้แล้วลองอีกครั้ง",
+  "onboarding.transfer.failed_unavailable":
+    "โทรศัพท์เครื่องนี้เปิดการเชื่อมต่อเครือข่ายภายในไม่ได้",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "ยินดีต้อนรับสู่ Airhop!",
@@ -813,6 +848,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "โหมดประหยัดแบตเตอรี่ · สแกนถี่น้อยลง",
   "mesh.banner.wipe_incomplete":
     "ล้างข้อมูลไม่ครบ · อาจมีข้อมูลบางส่วนหลงเหลือ เปิดใหม่แล้วจะลองอีกครั้ง",
+  "mesh.banner.identity_elsewhere":
+    "ตัวตนของคุณอยู่บนโทรศัพท์อีกเครื่องด้วย · ล้างเครื่องที่คุณไม่ได้ใช้",
   "mesh.banner.wifi_off": "Wi-Fi ปิดอยู่ · ไฟล์ขนาดใหญ่จะส่งช้าลง",
   "mesh.banner.clock_skew":
     "นาฬิกาของโทรศัพท์เครื่องนี้ผิด · ตั้งวันที่และเวลาเป็นอัตโนมัติ",
@@ -2019,14 +2056,56 @@ export const strings: Strings = {
     "ID ของเพียร์ ชื่อผู้ใช้ และผู้ติดต่อของคุณ",
   "settings.transfer.chats": "แชทและประวัติ",
   "settings.transfer.chats_desc": "บทสนทนา กลุ่ม และช่องที่คุณเข้าร่วม",
+  "settings.transfer.chats_without": "ช่องและกลุ่มของคุณ โดยไม่มีข้อความ",
   "settings.transfer.wallet": "ยอดในกระเป๋าเงิน",
   "settings.transfer.wallet_desc": "ecash และประวัติธุรกรรม",
   "settings.transfer.title": "ย้ายไปยังโทรศัพท์เครื่องใหม่",
   "settings.transfer.desc": "ย้ายตัวตน แชท และกระเป๋าเงินของคุณไปยังอีกเครื่อง",
-  "settings.transfer.coming_soon_a11y":
-    "ย้ายไปยังโทรศัพท์เครื่องใหม่ เร็ว ๆ นี้",
-  "settings.transfer.body":
-    "วางโทรศัพท์ทั้งสองเครื่องไว้ด้วยกันแล้วย้ายทุกอย่างผ่านบลูทูธ ไม่มีสิ่งใดผ่านเซิร์ฟเวอร์ จึงใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต",
+  "settings.transfer.intro":
+    "บนโทรศัพท์เครื่องใหม่ เปิด Airhop แล้วเลือก “ย้ายจากโทรศัพท์เครื่องอื่น” โทรศัพท์ทั้งสองเครื่องต้องใช้ Wi-Fi เดียวกันหรือฮอตสปอต ไม่ต้องใช้อินเทอร์เน็ต",
+  "settings.transfer.erase_note":
+    "เมื่อเครื่องใหม่ได้รับทุกอย่างแล้ว โทรศัพท์เครื่องนี้จะถูกล้าง รูปภาพและไฟล์จะไม่ถูกย้ายไปด้วย",
+  "settings.transfer.auth_prompt": "ยืนยันว่าเป็นคุณเพื่อย้ายตัวตนของคุณ",
+  "settings.transfer.scan_title": "สแกนโค้ดบนโทรศัพท์เครื่องใหม่",
+  "settings.transfer.aim": "หันกล้องไปที่โค้ดบนโทรศัพท์เครื่องใหม่",
+  "settings.transfer.wrong_code":
+    "นี่คือโค้ดของผู้ติดต่อ สแกนโค้ดบนโทรศัพท์เครื่องใหม่แทน",
+  "settings.transfer.camera_off_body":
+    "อนุญาตการเข้าถึงกล้องในการตั้งค่าเพื่อสแกนโค้ดบนโทรศัพท์เครื่องใหม่",
+  "settings.transfer.confirm_title": "ย้ายไปยังโทรศัพท์เครื่องนี้ไหม",
+  "settings.transfer.confirm_body":
+    "ทุกอย่างที่นี่จะย้ายไปยังโทรศัพท์ที่แสดงโค้ดนี้ เมื่อย้ายถึงแล้ว โทรศัพท์เครื่องนี้จะถูกล้าง",
+  "settings.transfer.confirm_cta": "ย้าย",
+  "settings.transfer.connecting": "กำลังเชื่อมต่อกับโทรศัพท์เครื่องใหม่",
+  "settings.transfer.connecting_hint":
+    "หากเครื่องนี้ขอค้นหาอุปกรณ์ในเครือข่ายภายใน ให้กดอนุญาต",
+  "settings.transfer.sending": "กำลังย้าย {percent}%",
+  "settings.transfer.keep_open": "เปิดแอปไว้บนทั้งสองเครื่องจนกว่าจะเสร็จ",
+  "settings.transfer.finishing": "กำลังเสร็จสิ้นบนโทรศัพท์เครื่องใหม่",
+  "settings.transfer.erasing": "กำลังล้างโทรศัพท์เครื่องนี้",
+  "settings.transfer.done_title": "ย้ายแล้ว",
+  "settings.transfer.done_body":
+    "ตอนนี้ตัวตนของคุณอยู่บนโทรศัพท์เครื่องใหม่ และโทรศัพท์เครื่องนี้ถูกล้างแล้ว",
+  "settings.transfer.failed_title": "การย้ายไม่เสร็จสมบูรณ์",
+  "settings.transfer.failed_unreachable":
+    "ติดต่อโทรศัพท์เครื่องใหม่ไม่ได้ ให้โทรศัพท์ทั้งสองเครื่องใช้ Wi-Fi เดียวกัน หรือเปิดฮอตสปอตบนเครื่องหนึ่งแล้วเชื่อมต่อจากอีกเครื่อง",
+  "settings.transfer.failed_permission":
+    "Airhop ต้องเข้าถึงเครือข่ายภายในเพื่อติดต่อโทรศัพท์เครื่องใหม่ อนุญาตในการตั้งค่าแล้วลองอีกครั้ง",
+  "settings.transfer.failed_wrong_phone":
+    "โทรศัพท์ที่ตอบกลับไม่ใช่เครื่องที่คุณสแกนโค้ด",
+  "settings.transfer.failed_incompatible":
+    "โทรศัพท์เครื่องใหม่ใช้ Airhop เวอร์ชันเก่ากว่า อัปเดตแล้วลองอีกครั้ง",
+  "settings.transfer.failed_cancelled": "การย้ายถูกยกเลิกบนโทรศัพท์เครื่องใหม่",
+  "settings.transfer.failed_storage": "โทรศัพท์เครื่องใหม่บันทึกทุกอย่างไม่ได้",
+  "settings.transfer.failed_interrupted":
+    "การเชื่อมต่อขาดหายก่อนส่งทุกอย่างเสร็จ",
+  "settings.transfer.unchanged":
+    "ไม่มีสิ่งใดถูกย้าย และโทรศัพท์เครื่องนี้ใช้งานได้เหมือนเดิม",
+  "settings.transfer.unconfirmed_title": "ย้ายเสร็จแล้วหรือยัง",
+  "settings.transfer.unconfirmed_body":
+    "เครื่องนี้ขาดการติดต่อกับเครื่องใหม่ก่อนที่เครื่องใหม่จะยืนยัน หากเครื่องใหม่แสดงชื่อของคุณ ให้ล้างโทรศัพท์เครื่องนี้ หากไม่ ให้ใช้เครื่องนี้ต่อแล้วลองอีกครั้ง",
+  "settings.transfer.erase_cta": "ล้างโทรศัพท์เครื่องนี้",
+  "settings.transfer.keep_cta": "ใช้โทรศัพท์เครื่องนี้ต่อ",
   "settings.qr.permission_label": "การเข้าถึงรูปภาพ",
   "settings.qr.permission_purpose": "บันทึกคิวอาร์โค้ดของคุณ",
   "settings.qr.saved": "บันทึกแล้ว",

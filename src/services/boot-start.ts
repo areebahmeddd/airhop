@@ -17,6 +17,7 @@ import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
 
 import { sweepMediaIfDue } from "./media-retention";
+import { readMoveMarker } from "./move-marker";
 import { startNotificationPipeline } from "./notification-pipeline";
 import { startReachabilityWatch } from "./reachability";
 import { isPanicWipePending } from "./wipe-marker";
@@ -40,6 +41,10 @@ async function bootStartMesh(): Promise<void> {
   // would advertise an identity the user asked to destroy. Checked before the
   // keychain read for the same reason.
   if (isPanicWipePending()) return;
+  // An unresolved transfer is the person's question to answer (see
+  // ./move-marker). A send that never finished its stream moved nothing.
+  const marker = readMoveMarker();
+  if (marker !== null && marker !== "sending") return;
 
   const identity = await loadIdentity();
   if (identity === null) return; // no onboarded identity to start as

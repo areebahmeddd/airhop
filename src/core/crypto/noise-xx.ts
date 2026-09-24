@@ -236,7 +236,11 @@ export class NoiseHandshake {
   private remoteEphemeralPub: Uint8Array | null = null;
   private remoteStaticPub: Uint8Array | null = null;
 
-  private constructor(localStaticPriv: Uint8Array, role: NoiseRole) {
+  private constructor(
+    localStaticPriv: Uint8Array,
+    role: NoiseRole,
+    prologue: Uint8Array,
+  ) {
     this.role = role;
     this.localStaticPriv = localStaticPriv.slice();
     this.localStaticPub = x25519.getPublicKey(localStaticPriv);
@@ -252,18 +256,25 @@ export class NoiseHandshake {
     // SHA-256(protocol_name). Skipping it left our handshake hash one hash behind
     // bitchat's, which is used as the AEAD associated data when the static key is
     // sealed in message 2: same key, different AAD, so the tag mismatches and no
-    // bitchat<->Airhop handshake could ever complete. The prologue is empty on
-    // both sides (see NoiseSession call sites), so no data is carried, only the
-    // hash step.
-    this.mixHash(new Uint8Array(0));
+    // bitchat<->Airhop handshake could ever complete.
+    //
+    // Empty on every mesh session, as bitchat sends it. Only a transfer binds
+    // one, to the scanned code.
+    this.mixHash(prologue);
   }
 
-  static createInitiator(localStaticPrivKey: Uint8Array): NoiseHandshake {
-    return new NoiseHandshake(localStaticPrivKey, "initiator");
+  static createInitiator(
+    localStaticPrivKey: Uint8Array,
+    prologue: Uint8Array = new Uint8Array(0),
+  ): NoiseHandshake {
+    return new NoiseHandshake(localStaticPrivKey, "initiator", prologue);
   }
 
-  static createResponder(localStaticPrivKey: Uint8Array): NoiseHandshake {
-    return new NoiseHandshake(localStaticPrivKey, "responder");
+  static createResponder(
+    localStaticPrivKey: Uint8Array,
+    prologue: Uint8Array = new Uint8Array(0),
+  ): NoiseHandshake {
+    return new NoiseHandshake(localStaticPrivKey, "responder", prologue);
   }
 
   // msg1: initiator -> responder (-> e)

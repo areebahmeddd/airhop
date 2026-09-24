@@ -1,12 +1,16 @@
 // Onboarding step 1: Welcome.
 // The cover of the book. Bold wordmark, one sentence, one action. Nothing
 // else. The design communicates confidence through restraint.
+//
+// Transfer from another phone sits under it as quieter text: most people have
+// nothing to bring.
 
 import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged } from "@platform/haptics";
 import PrimaryButton from "@ui/components/primary-button";
+import TextButton from "@ui/components/text-button";
 import {
   FontSize,
   FontWeight,
@@ -16,7 +20,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Linking,
   Pressable,
@@ -32,22 +36,30 @@ import HelloSheet from "./hello-sheet";
 const TERMS_URL = "https://airhop.1mindlabs.org/terms-of-service";
 const PRIVACY_URL = "https://airhop.1mindlabs.org/privacy-policy";
 
+// The agreement and the note live in the shell, so Back from a transfer asks
+// neither again. Neither is stored.
 interface Props {
+  agreed: boolean;
+  onAgreedChange: (agreed: boolean) => void;
+  // Whether the author's note opens with the screen.
+  greet: boolean;
+  onGreeted: () => void;
   onContinue: () => void;
+  onTransfer: () => void;
 }
 
 export default function WelcomeScreen({
+  agreed,
+  onAgreedChange,
+  greet,
+  onGreeted,
   onContinue,
+  onTransfer,
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const T = useT();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const { width } = useWindowDimensions();
-  const [agreed, setAgreed] = useState(false);
-  // Opens with the screen. This screen is only ever reached on a fresh install
-  // or after a panic wipe, so the note lands exactly where it should with no
-  // "seen it" flag to store (and nothing left behind for a wipe to miss).
-  const [showHello, setShowHello] = useState(true);
   // Size the bird to about half the screen width, capped, so it reads big on
   // phones without overflowing tablets. Cell rounded to a whole pixel keeps
   // the pixel edges crisp.
@@ -88,7 +100,7 @@ export default function WelcomeScreen({
     // A selection tick, the lightest feedback the OS offers, matching how a
     // native checkbox or picker feels. Not an impact: nothing happened yet.
     acknowledged();
-    setAgreed((v) => !v);
+    onAgreedChange(!agreed);
   }
 
   return (
@@ -142,6 +154,19 @@ export default function WelcomeScreen({
                 agreed ? undefined : T("onboarding.welcome.cta_hint")
               }
             />
+            {/* Gated by the same agreement: the terms cover an identity
+                brought from another phone as much as a new one. */}
+            <View style={styles.transfer}>
+              <TextButton
+                label={T("onboarding.welcome.transfer")}
+                onPress={onTransfer}
+                tone="primary"
+                disabled={!agreed}
+                accessibilityHint={
+                  agreed ? undefined : T("onboarding.welcome.cta_hint")
+                }
+              />
+            </View>
             <Pressable
               style={styles.agreement}
               onPress={toggleAgreed}
@@ -181,7 +206,7 @@ export default function WelcomeScreen({
         </View>
       </ScrollView>
 
-      <HelloSheet visible={showHello} onClose={() => setShowHello(false)} />
+      <HelloSheet visible={greet} onClose={onGreeted} />
     </SafeAreaView>
   );
 }
@@ -265,6 +290,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     actions: {
       gap: Spacing.base,
+    },
+    // Pulled up to pair with the primary; the consent row governs both.
+    transfer: {
+      marginTop: -Spacing.sm,
     },
     agreement: {
       flexDirection: "row",

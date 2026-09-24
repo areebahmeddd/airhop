@@ -107,6 +107,10 @@
 	<string>Airhop accesses your photo library to share images and videos over the mesh.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Airhop saves photos and videos to your photo library when you choose to save one, and when you download your QR code.</string>
+	<!-- Face ID confirms the owner before an identity moves to a new phone.
+	     Without this string iOS terminates the app the moment Face ID is asked. -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Airhop uses Face ID to confirm it is you before moving your identity to a new phone.</string>
 	<!-- Location resolves which geohash cell the location channels (#block,
 	     #city, #region, and so on) belong to. Raw coordinates never leave the
 	     device; only the truncated geohash is published. -->

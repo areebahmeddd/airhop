@@ -362,3 +362,29 @@ describe("Bitle role TLV (0xB1)", () => {
     expect(mgr.validateAndParse(pkt)).toBeNull();
   });
 });
+
+// What lets a phone tell an echo of its own announce from the same identity
+// announcing on another phone.
+describe("AnnounceManager.sentHere", () => {
+  it("remembers the stamp of every announce it built, and nothing else", () => {
+    const manager = new AnnounceManager();
+    const packet = manager.buildPacket(makeIdentity(), "alice");
+    expect(manager.sentHere(packet.timestamp)).toBe(true);
+    expect(manager.sentHere(packet.timestamp + 1)).toBe(false);
+    expect(new AnnounceManager().sentHere(packet.timestamp)).toBe(false);
+  });
+
+  it("forgets stamps older than the freshness window", () => {
+    jest.useFakeTimers();
+    try {
+      const manager = new AnnounceManager();
+      const identity = makeIdentity();
+      const first = manager.buildPacket(identity, "alice");
+      jest.setSystemTime(first.timestamp + ANNOUNCE_MAX_SKEW_MS + 1);
+      manager.buildPacket(identity, "alice");
+      expect(manager.sentHere(first.timestamp)).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});

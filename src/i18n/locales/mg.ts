@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Sokafy ny Politikan'ny fiainana manokana",
   "onboarding.welcome.consent":
     "Rehefa mitsindry {cta} ianao dia manaiky ny {terms} sy ny {privacy} anay.",
+  "onboarding.welcome.transfer": "Mamindra avy amin'ny findy hafa",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Amboarina ny maha-ianao anao",
@@ -103,6 +104,42 @@ export const strings: Strings = {
     "Ny fitehirizan-dakilen'ny rafitra ihany",
   "onboarding.username.prop.account": "Mila kaonty",
   "onboarding.username.prop.account_value": "Tsia",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Mamindra avy amin'ny findy hafa",
+  "onboarding.transfer.preparing": "Manomana",
+  "onboarding.transfer.scan_heading":
+    "Alaivo sary amin'ny findinao taloha ity kaody ity",
+  "onboarding.transfer.step_open": "Sokafy ny Airhop amin'ny findinao taloha",
+  "onboarding.transfer.step_go": "Mandehana any amin'ny {tab}, avy eo {row}",
+  "onboarding.transfer.step_scan": "Atodiho amin'ity kaody ity izy",
+  "onboarding.transfer.network_note":
+    "Tsy maintsy ao amin'ny Wi-Fi iray na hotspot iray ny findy roa. Tsy misy mandalo amin'ny Internet.",
+  "onboarding.transfer.qr_a11y":
+    "Kaody famindrana. Alaivo sary amin'ny Airhop ao amin'ny findinao taloha izy.",
+  "onboarding.transfer.offline_title": "Mifandraisa amin'ny Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Ampidiro ao amin'ny Wi-Fi iray ihany ny findy roa, na alefaso ny hotspot amin'ny iray ary midira ao aminy avy amin'ny iray hafa. Tsy ilaina ny Internet.",
+  "onboarding.transfer.incoming": "Mamindra an'i {name}",
+  "onboarding.transfer.receiving": "Mandray {percent}%",
+  "onboarding.transfer.saving": "Mitahiry eto amin'ity findy ity",
+  "onboarding.transfer.releasing": "Mamarana amin'ny findinao taloha",
+  "onboarding.transfer.keep_open":
+    "Avelao hisokatra ny findy roa mandra-pahavitan'izao.",
+  "onboarding.transfer.check_title": "Jereo ny findinao taloha",
+  "onboarding.transfer.check_body":
+    "Efa eto amin'ity findy ity ny zava-drehetra. Alohan'ny hanohizanao, ataovy azo antoka fa milaza ny findinao taloha fa voafafa izy, na safidio ao aminy ny Fafao ity findy ity.",
+  "onboarding.transfer.failed_title": "Tsy vita ny famindrana",
+  "onboarding.transfer.failed_cancelled":
+    "Nofoanana tamin'ny findinao taloha ny famindrana. Tsy nisy voatahiry teto.",
+  "onboarding.transfer.failed_interrupted":
+    "Tapaka ny fifandraisana. Tsy nisy voatahiry teto.",
+  "onboarding.transfer.failed_storage":
+    "Tsy nahatahiry izay tonga ity findy ity, ka tsy nisy notazonina.",
+  "onboarding.transfer.failed_incompatible":
+    "Airhop vaovao kokoa no mandeha amin'ny findinao taloha. Havaozy ity findy ity, dia andramo indray.",
+  "onboarding.transfer.failed_unavailable":
+    "Tsy afaka manokatra fifandraisana amin'ny tambajotra eo an-toerana ity findy ity.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Tongasoa eto amin'ny Airhop!",
@@ -854,6 +891,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Fitsitsiana batera · mikaroka vitsy kokoa",
   "mesh.banner.wipe_incomplete":
     "Tsy vita ny famafana · mety mbola misy angona sisa, ny fanokafana indray dia manandrana indray",
+  "mesh.banner.identity_elsewhere":
+    "Ao amin'ny findy hafa koa ny maha-izy anao · fafao izay tsy ampiasainao",
   "mesh.banner.wifi_off":
     "Vonoina ny Wi-Fi · miadana kokoa ny fandefasana rakitra lehibe",
   "mesh.banner.clock_skew":
@@ -2142,15 +2181,64 @@ export const strings: Strings = {
     "Ny ID-n'ny tebokanao, ny anaram-pikambanao ary ny fifandraisanao",
   "settings.transfer.chats": "Resaka sy tantara",
   "settings.transfer.chats_desc": "Resaka, vondrona ary ny fantsona nidiranao",
+  "settings.transfer.chats_without":
+    "Ny fantsonao sy ny vondronao, tsy misy ny hafany",
   "settings.transfer.wallet": "Volan'ny kitapom-bola",
   "settings.transfer.wallet_desc": "Ecash sy tantaran'ny fifanakalozana",
   "settings.transfer.title": "Mamindra amin'ny findy vaovao",
   "settings.transfer.desc":
     "Afindrao amin'ny fitaovana hafa ny maha-ianao anao, ny resakao ary ny kitapom-bolanao",
-  "settings.transfer.coming_soon_a11y":
-    "Mamindra amin'ny findy vaovao, ho avy tsy ho ela",
-  "settings.transfer.body":
-    "Ampifanatony ny findy roa ary afindrao amin'ny Bluetooth ny zava-drehetra. Tsy misy mandalo mpizara, ka miasa tsy misy Internet.",
+  "settings.transfer.intro":
+    "Ao amin'ny findy vaovao, sokafy ny Airhop ary safidio ny Mamindra avy amin'ny findy hafa. Tsy maintsy ao amin'ny Wi-Fi iray na hotspot iray ny findy roa, fa tsy ilaina ny Internet.",
+  "settings.transfer.erase_note":
+    "Rehefa azon'ny findy vaovao ny zava-drehetra, dia fafana ity findy ity. Tsy afindra ny sary sy ny rakitra.",
+  "settings.transfer.auth_prompt":
+    "Hamafiso fa ianao tokoa mba hamindrana ny maha-izy anao",
+  "settings.transfer.scan_title":
+    "Alaivo sary ny kaody eo amin'ny findinao vaovao",
+  "settings.transfer.aim":
+    "Atodiho amin'ny kaody eo amin'ny findinao vaovao ny fakan-tsary",
+  "settings.transfer.wrong_code":
+    "Kaody fifandraisana izany. Alaivo sary ny kaody eo amin'ny findinao vaovao.",
+  "settings.transfer.camera_off_body":
+    "Omeo alalana hiditra amin'ny fakan-tsary ao amin'ny Fandrindrana mba haka sary ny kaody eo amin'ny findinao vaovao.",
+  "settings.transfer.confirm_title": "Hamindra amin'ity findy ity?",
+  "settings.transfer.confirm_body":
+    "Hifindra any amin'ny findy mampiseho ity kaody ity ny zava-drehetra eto. Raha vao tonga izany, dia fafana ity findy ity.",
+  "settings.transfer.confirm_cta": "Afindrao",
+  "settings.transfer.connecting": "Mifandray amin'ny findinao vaovao",
+  "settings.transfer.connecting_hint":
+    "Raha mangataka hitady fitaovana ao amin'ny tambajotra eo an-toerana ity findy ity, dia avelao.",
+  "settings.transfer.sending": "Mamindra {percent}%",
+  "settings.transfer.keep_open":
+    "Avelao hisokatra ny findy roa mandra-pahavitan'izao.",
+  "settings.transfer.finishing": "Mamarana amin'ny findinao vaovao",
+  "settings.transfer.erasing": "Mamafa ity findy ity",
+  "settings.transfer.done_title": "Voafindra",
+  "settings.transfer.done_body":
+    "Efa ao amin'ny findinao vaovao ny maha-izy anao izao, ary voafafa ity findy ity.",
+  "settings.transfer.failed_title": "Tsy vita ny famindrana",
+  "settings.transfer.failed_unreachable":
+    "Tsy tratra ny findinao vaovao. Ampidiro ao amin'ny Wi-Fi iray ihany ny findy roa, na alefaso ny hotspot amin'ny iray ary midira ao aminy avy amin'ny iray hafa.",
+  "settings.transfer.failed_permission":
+    "Mila fidirana amin'ny tambajotra eo an-toerana ny Airhop mba hahatratra ny findinao vaovao. Avelao ao amin'ny Fandrindrana, dia andramo indray.",
+  "settings.transfer.failed_wrong_phone":
+    "Tsy ilay findy nalainao sary ny kaodiny ilay findy namaly.",
+  "settings.transfer.failed_incompatible":
+    "Airhop taloha kokoa no mandeha amin'ny findinao vaovao. Havaozy izy, dia andramo indray.",
+  "settings.transfer.failed_cancelled":
+    "Nofoanana tamin'ny findinao vaovao ny famindrana.",
+  "settings.transfer.failed_storage":
+    "Tsy nahatahiry ny zava-drehetra ny findinao vaovao.",
+  "settings.transfer.failed_interrupted":
+    "Tapaka ny fifandraisana talohan'ny nandefasana ny zava-drehetra.",
+  "settings.transfer.unchanged":
+    "Tsy nisy nifindra, ary mandeha toy ny teo aloha ity findy ity.",
+  "settings.transfer.unconfirmed_title": "Vita ve ny famindrana?",
+  "settings.transfer.unconfirmed_body":
+    "Tapaka ny fifandraisan'ity findy ity tamin'ilay vaovao talohan'ny nanamafisany. Raha miseho amin'ny findinao vaovao ny anaranao, fafao ity findy ity. Raha tsy izany, mbola ampiasao ity ary andramo indray.",
+  "settings.transfer.erase_cta": "Fafao ity findy ity",
+  "settings.transfer.keep_cta": "Mbola ampiasao ity findy ity",
   "settings.qr.permission_label": "Fidirana amin'ny sary",
   "settings.qr.permission_purpose": "hitahiry ny kaody QR-nao",
   "settings.qr.saved": "Voatahiry",

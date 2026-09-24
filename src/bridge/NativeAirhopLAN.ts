@@ -77,6 +77,32 @@ export interface Spec extends TurboModule {
   // INVALID_DATA, FRAME_TOO_LARGE, WRITE_FAILED or LINK_CLOSED.
   writeToLANLink(linkID: string, dataBase64: string): Promise<void>;
 
+  // ---- Transfer ----
+  //
+  // A second, separate socket for moving an identity to a new phone. No mDNS:
+  // the new phone's code carries its addresses, so nothing about a move is
+  // advertised. Independent of startLAN, runs with the mesh stopped, and never
+  // shares a link with it: a mesh write cannot reach a move connection and a
+  // move write cannot reach a mesh link.
+  //
+  //   AirhopLAN.moveConnected { connectionID }   an accept or a dial
+  //   AirhopLAN.moveData      { connectionID, dataBase64 }
+  //   AirhopLAN.moveClosed    { connectionID }
+  //
+  // Open a listening socket on a free port, or keep the open one. Resolves with
+  // the port and this phone's IPv4 addresses on local interfaces (WiFi joined
+  // or served, ethernet, USB tethering), read afresh on every call so a caller
+  // can poll while the person joins a network. Rejects with MOVE_LISTEN_FAILED.
+  startMoveListener(): Promise<{ port: number; hosts: string[] }>;
+  // Close the listener and every move connection.
+  stopMove(): Promise<void>;
+  // Resolves with the connection ID once connected. Rejects with
+  // PERMISSION_DENIED (iOS local network access refused) or CONNECT_FAILED.
+  dialMove(host: string, port: number): Promise<string>;
+  // Same framing and limits as writeToLANLink.
+  writeMove(connectionID: string, dataBase64: string): Promise<void>;
+  closeMove(connectionID: string): Promise<void>;
+
   // Required by the NativeEventEmitter contract.
   addListener(eventName: string): void;
   removeListeners(count: number): void;

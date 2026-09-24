@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Öppna integritetspolicyn",
   "onboarding.welcome.consent":
     "Genom att trycka på {cta} godkänner du våra {terms} och vår {privacy}.",
+  "onboarding.welcome.transfer": "Flytta från en annan telefon",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Skapar din identitet",
@@ -101,6 +102,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Endast systemets nyckelring",
   "onboarding.username.prop.account": "Konto krävs",
   "onboarding.username.prop.account_value": "Inget",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Flytta från en annan telefon",
+  "onboarding.transfer.preparing": "Förbereder",
+  "onboarding.transfer.scan_heading":
+    "Skanna den här koden med din gamla telefon",
+  "onboarding.transfer.step_open": "Öppna Airhop på din gamla telefon",
+  "onboarding.transfer.step_go": "Gå till {tab} och sedan {row}",
+  "onboarding.transfer.step_scan": "Rikta den mot den här koden",
+  "onboarding.transfer.network_note":
+    "Båda telefonerna måste vara på samma Wi-Fi eller en surfzon. Inget går via internet.",
+  "onboarding.transfer.qr_a11y":
+    "Flyttkod. Skanna den med Airhop på din gamla telefon.",
+  "onboarding.transfer.offline_title": "Anslut till Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Anslut båda telefonerna till samma Wi-Fi, eller slå på surfzonen på den ena och anslut den andra till den. Inget internet behövs.",
+  "onboarding.transfer.incoming": "Flyttar {name}",
+  "onboarding.transfer.receiving": "Tar emot {percent}%",
+  "onboarding.transfer.saving": "Sparar på den här telefonen",
+  "onboarding.transfer.releasing": "Slutför på din gamla telefon",
+  "onboarding.transfer.keep_open":
+    "Håll Airhop öppet på båda telefonerna tills det är klart.",
+  "onboarding.transfer.check_title": "Kolla din gamla telefon",
+  "onboarding.transfer.check_body":
+    "Allt finns på den här telefonen. Innan du fortsätter, se till att din gamla telefon säger att den har rensats, eller välj Rensa den här telefonen på den.",
+  "onboarding.transfer.failed_title": "Flytten slutfördes inte",
+  "onboarding.transfer.failed_cancelled":
+    "Flytten avbröts på din gamla telefon. Inget sparades här.",
+  "onboarding.transfer.failed_interrupted":
+    "Anslutningen bröts. Inget sparades här.",
+  "onboarding.transfer.failed_storage":
+    "Den här telefonen kunde inte spara det som kom fram, så inget behölls.",
+  "onboarding.transfer.failed_incompatible":
+    "Din gamla telefon kör en nyare Airhop. Uppdatera den här telefonen och försök sedan igen.",
+  "onboarding.transfer.failed_unavailable":
+    "Den här telefonen kan inte öppna en anslutning i det lokala nätverket.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Välkommen till Airhop!",
@@ -836,6 +873,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Batterisparläge · skannar mer sällan",
   "mesh.banner.wipe_incomplete":
     "Rensningen är ofullständig · en del data kan finnas kvar, nytt försök när appen öppnas igen",
+  "mesh.banner.identity_elsewhere":
+    "Din identitet finns även på en annan telefon · rensa den du inte använder",
   "mesh.banner.wifi_off": "Wi-Fi av · stora filer skickas långsammare",
   "mesh.banner.clock_skew":
     "Telefonens klocka går fel · ställ in datum och tid på automatiskt",
@@ -2069,15 +2108,60 @@ export const strings: Strings = {
   "settings.transfer.chats": "Chattar och historik",
   "settings.transfer.chats_desc":
     "Konversationer, grupper och kanalerna du har gått med i",
+  "settings.transfer.chats_without":
+    "Dina rum och grupper, utan deras meddelanden",
   "settings.transfer.wallet": "Plånbokssaldo",
   "settings.transfer.wallet_desc": "Ecash och transaktionshistorik",
   "settings.transfer.title": "Flytta till en ny telefon",
   "settings.transfer.desc":
     "Flytta din identitet, dina chattar och din plånbok till en annan enhet",
-  "settings.transfer.coming_soon_a11y":
-    "Flytta till en ny telefon, kommer snart",
-  "settings.transfer.body":
-    "Håll telefonerna mot varandra och flytta över allt via Bluetooth. Inget passerar en server, så det fungerar utan internet.",
+  "settings.transfer.intro":
+    "Öppna Airhop på den nya telefonen och välj Flytta från en annan telefon. Båda telefonerna måste vara på samma Wi-Fi eller en surfzon, internet behövs inte.",
+  "settings.transfer.erase_note":
+    "När den nya telefonen har fått allt rensas den här telefonen. Foton och filer följer inte med.",
+  "settings.transfer.auth_prompt":
+    "Bekräfta att det är du för att flytta din identitet",
+  "settings.transfer.scan_title": "Skanna koden på din nya telefon",
+  "settings.transfer.aim": "Rikta kameran mot koden på din nya telefon",
+  "settings.transfer.wrong_code":
+    "Det där är en kontaktkod. Skanna koden på din nya telefon.",
+  "settings.transfer.camera_off_body":
+    "Slå på kameraåtkomst i Inställningar för att skanna koden på din nya telefon.",
+  "settings.transfer.confirm_title": "Flytta till den här telefonen?",
+  "settings.transfer.confirm_body":
+    "Allt här flyttas till telefonen som visar den här koden. När det har kommit fram rensas den här telefonen.",
+  "settings.transfer.confirm_cta": "Flytta",
+  "settings.transfer.connecting": "Ansluter till din nya telefon",
+  "settings.transfer.connecting_hint":
+    "Om den här telefonen ber om att få hitta enheter i ditt lokala nätverk, tillåt det.",
+  "settings.transfer.sending": "Flyttar {percent}%",
+  "settings.transfer.keep_open":
+    "Håll Airhop öppet på båda telefonerna tills det är klart.",
+  "settings.transfer.finishing": "Slutför på din nya telefon",
+  "settings.transfer.erasing": "Rensar den här telefonen",
+  "settings.transfer.done_title": "Flytten är klar",
+  "settings.transfer.done_body":
+    "Din identitet finns nu på din nya telefon, och den här telefonen har rensats.",
+  "settings.transfer.failed_title": "Flytten slutfördes inte",
+  "settings.transfer.failed_unreachable":
+    "Kunde inte nå din nya telefon. Anslut båda telefonerna till samma Wi-Fi, eller slå på surfzonen på den ena och anslut den andra till den.",
+  "settings.transfer.failed_permission":
+    "Airhop behöver åtkomst till lokalt nätverk för att nå din nya telefon. Tillåt det i Inställningar och försök sedan igen.",
+  "settings.transfer.failed_wrong_phone":
+    "Telefonen som svarade är inte den vars kod du skannade.",
+  "settings.transfer.failed_incompatible":
+    "Din nya telefon kör en äldre Airhop. Uppdatera den och försök sedan igen.",
+  "settings.transfer.failed_cancelled": "Flytten avbröts på din nya telefon.",
+  "settings.transfer.failed_storage": "Din nya telefon kunde inte spara allt.",
+  "settings.transfer.failed_interrupted":
+    "Anslutningen bröts innan allt hade skickats.",
+  "settings.transfer.unchanged":
+    "Inget flyttades, och den här telefonen fungerar som förut.",
+  "settings.transfer.unconfirmed_title": "Blev flytten klar?",
+  "settings.transfer.unconfirmed_body":
+    "Den här telefonen tappade kontakten med din nya innan den hann bekräfta. Om din nya telefon visar ditt namn, rensa den här telefonen. Om inte, fortsätt använda den här och försök igen.",
+  "settings.transfer.erase_cta": "Rensa den här telefonen",
+  "settings.transfer.keep_cta": "Fortsätt använda den här telefonen",
   "settings.qr.permission_label": "Fotoåtkomst",
   "settings.qr.permission_purpose": "spara din QR-kod",
   "settings.qr.saved": "Sparad",

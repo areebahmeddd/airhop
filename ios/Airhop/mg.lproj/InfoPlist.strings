@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Mampiasa ny mikrô ny Airhop mba handraikitra naoty feo sy hitondra feo mivantana amin'ny teboka akaiky.";
 "NSPhotoLibraryUsageDescription" = "Midira amin'ny tahirin-tsarinao ny Airhop mba hizara sary sy horonan-tsary amin'ny harato.";
 "NSPhotoLibraryAddUsageDescription" = "Mitahiry sary sy horonan-tsary ao amin'ny tahirinao ny Airhop rehefa mifidy hitahiry iray ianao, sy rehefa maka ny kaody QR-nao.";
+"NSFaceIDUsageDescription" = "Mampiasa ny Face ID ny Airhop mba hanamafisana fa ianao tokoa alohan'ny hamindrana ny maha-izy anao amin'ny findy vaovao.";
 "NSLocationWhenInUseUsageDescription" = "Mampiasa ny toerana manodidina anao ny Airhop mba hametrahana anao amin'ny fantsonan'ny faritra akaiky (bloka, tanàna, faritra). Tsy mivoaka ny fitaovanao mihitsy ny toeranao marina.";

@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Buka Dasar Privasi",
   "onboarding.welcome.consent":
     "Dengan menekan {cta}, anda bersetuju dengan {terms} dan {privacy} kami.",
+  "onboarding.welcome.transfer": "Pindahkan dari telefon lain",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Menjana identiti anda",
@@ -103,6 +104,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Rantai kunci sistem sahaja",
   "onboarding.username.prop.account": "Akaun diperlukan",
   "onboarding.username.prop.account_value": "Tiada",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Pindahkan dari telefon lain",
+  "onboarding.transfer.preparing": "Sedang bersedia",
+  "onboarding.transfer.scan_heading": "Imbas kod ini dengan telefon lama anda",
+  "onboarding.transfer.step_open": "Buka Airhop pada telefon lama anda",
+  "onboarding.transfer.step_go": "Pergi ke {tab}, kemudian {row}",
+  "onboarding.transfer.step_scan": "Halakan ke kod ini",
+  "onboarding.transfer.network_note":
+    "Kedua-dua telefon perlu berada pada Wi-Fi yang sama atau satu tempat liputan. Tiada apa-apa melalui internet.",
+  "onboarding.transfer.qr_a11y":
+    "Kod pemindahan. Imbas dengan Airhop pada telefon lama anda.",
+  "onboarding.transfer.offline_title": "Sambung ke Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Sambungkan kedua-dua telefon ke Wi-Fi yang sama, atau hidupkan tempat liputan pada satu telefon dan sertainya dari telefon yang lain. Internet tidak diperlukan.",
+  "onboarding.transfer.incoming": "Memindahkan {name}",
+  "onboarding.transfer.receiving": "Menerima {percent}%",
+  "onboarding.transfer.saving": "Menyimpan ke telefon ini",
+  "onboarding.transfer.releasing": "Menyelesaikan pada telefon lama anda",
+  "onboarding.transfer.keep_open":
+    "Biarkan Airhop terbuka pada kedua-dua telefon sehingga selesai.",
+  "onboarding.transfer.check_title": "Semak telefon lama anda",
+  "onboarding.transfer.check_body":
+    "Semuanya sudah ada pada telefon ini. Sebelum meneruskan, pastikan telefon lama anda menyatakan ia telah dibersihkan, atau pilih Bersihkan telefon ini padanya.",
+  "onboarding.transfer.failed_title": "Pemindahan tidak selesai",
+  "onboarding.transfer.failed_cancelled":
+    "Pemindahan dibatalkan pada telefon lama anda. Tiada apa-apa disimpan di sini.",
+  "onboarding.transfer.failed_interrupted":
+    "Sambungan terputus. Tiada apa-apa disimpan di sini.",
+  "onboarding.transfer.failed_storage":
+    "Telefon ini tidak dapat menyimpan apa yang diterima, jadi tiada apa-apa disimpan.",
+  "onboarding.transfer.failed_incompatible":
+    "Telefon lama anda menjalankan Airhop yang lebih baharu. Kemas kini telefon ini, kemudian cuba lagi.",
+  "onboarding.transfer.failed_unavailable":
+    "Telefon ini tidak dapat membuka sambungan rangkaian setempat.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Selamat datang ke Airhop!",
@@ -842,6 +878,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Penjimat bateri · mengimbas lebih jarang",
   "mesh.banner.wipe_incomplete":
     "Pembersihan belum selesai · sebahagian data mungkin tinggal, dicuba lagi apabila dibuka semula",
+  "mesh.banner.identity_elsewhere":
+    "Identiti anda juga ada pada telefon lain · bersihkan telefon yang tidak anda gunakan",
   "mesh.banner.wifi_off":
     "Wi-Fi dimatikan · fail besar dihantar lebih perlahan",
   "mesh.banner.clock_skew":
@@ -2103,15 +2141,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "Sembang dan sejarah",
   "settings.transfer.chats_desc":
     "Perbualan, kumpulan dan saluran yang anda sertai",
+  "settings.transfer.chats_without": "Bilik dan kumpulan anda, tanpa mesejnya",
   "settings.transfer.wallet": "Baki dompet",
   "settings.transfer.wallet_desc": "Ecash dan sejarah urus niaga",
   "settings.transfer.title": "Pindahkan ke telefon baharu",
   "settings.transfer.desc":
     "Pindahkan identiti, sembang dan dompet anda ke peranti lain",
-  "settings.transfer.coming_soon_a11y":
-    "Pindahkan ke telefon baharu, akan datang",
-  "settings.transfer.body":
-    "Rapatkan kedua-dua telefon dan pindahkan semuanya melalui Bluetooth. Tiada apa-apa melalui pelayan, jadi ia berfungsi tanpa internet.",
+  "settings.transfer.intro":
+    "Pada telefon baharu, buka Airhop dan pilih Pindahkan dari telefon lain. Kedua-dua telefon perlu berada pada Wi-Fi yang sama atau satu tempat liputan, bukan internet.",
+  "settings.transfer.erase_note":
+    "Sebaik sahaja telefon baharu menerima semuanya, telefon ini dibersihkan. Gambar dan fail tidak dipindahkan.",
+  "settings.transfer.auth_prompt":
+    "Sahkan ini anda untuk memindahkan identiti anda",
+  "settings.transfer.scan_title": "Imbas kod pada telefon baharu anda",
+  "settings.transfer.aim": "Halakan kamera ke kod pada telefon baharu anda",
+  "settings.transfer.wrong_code":
+    "Itu kod kenalan. Imbas kod pada telefon baharu anda.",
+  "settings.transfer.camera_off_body":
+    "Benarkan capaian kamera dalam Tetapan untuk mengimbas kod pada telefon baharu anda.",
+  "settings.transfer.confirm_title": "Pindahkan ke telefon ini?",
+  "settings.transfer.confirm_body":
+    "Semua di sini berpindah ke telefon yang memaparkan kod ini. Sebaik sahaja ia tiba, telefon ini dibersihkan.",
+  "settings.transfer.confirm_cta": "Pindahkan",
+  "settings.transfer.connecting": "Menyambung ke telefon baharu anda",
+  "settings.transfer.connecting_hint":
+    "Jika telefon ini meminta untuk mencari peranti pada rangkaian setempat anda, benarkannya.",
+  "settings.transfer.sending": "Memindahkan {percent}%",
+  "settings.transfer.keep_open":
+    "Biarkan Airhop terbuka pada kedua-dua telefon sehingga selesai.",
+  "settings.transfer.finishing": "Menyelesaikan pada telefon baharu anda",
+  "settings.transfer.erasing": "Membersihkan telefon ini",
+  "settings.transfer.done_title": "Dipindahkan",
+  "settings.transfer.done_body":
+    "Identiti anda kini berada pada telefon baharu anda, dan telefon ini telah dibersihkan.",
+  "settings.transfer.failed_title": "Pemindahan tidak selesai",
+  "settings.transfer.failed_unreachable":
+    "Tidak dapat mencapai telefon baharu anda. Sambungkan kedua-dua telefon ke Wi-Fi yang sama, atau hidupkan tempat liputan pada satu telefon dan sertainya dari telefon yang lain.",
+  "settings.transfer.failed_permission":
+    "Airhop memerlukan capaian rangkaian setempat untuk mencapai telefon baharu anda. Benarkannya dalam Tetapan, kemudian cuba lagi.",
+  "settings.transfer.failed_wrong_phone":
+    "Telefon yang menjawab bukan telefon yang kodnya anda imbas.",
+  "settings.transfer.failed_incompatible":
+    "Telefon baharu anda menjalankan Airhop yang lebih lama. Kemas kininya, kemudian cuba lagi.",
+  "settings.transfer.failed_cancelled":
+    "Pemindahan dibatalkan pada telefon baharu anda.",
+  "settings.transfer.failed_storage":
+    "Telefon baharu anda tidak dapat menyimpan semuanya.",
+  "settings.transfer.failed_interrupted":
+    "Sambungan terputus sebelum semuanya dihantar.",
+  "settings.transfer.unchanged":
+    "Tiada apa-apa dipindahkan, dan telefon ini berfungsi seperti biasa.",
+  "settings.transfer.unconfirmed_title": "Adakah pemindahan selesai?",
+  "settings.transfer.unconfirmed_body":
+    "Telefon ini terputus hubungan dengan telefon baharu anda sebelum ia mengesahkan. Jika telefon baharu anda memaparkan nama anda, bersihkan telefon ini. Jika tidak, teruskan menggunakan telefon ini dan cuba lagi.",
+  "settings.transfer.erase_cta": "Bersihkan telefon ini",
+  "settings.transfer.keep_cta": "Terus guna telefon ini",
   "settings.qr.permission_label": "Capaian gambar",
   "settings.qr.permission_purpose": "menyimpan kod QR anda",
   "settings.qr.saved": "Disimpan",

@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Privacybeleid openen",
   "onboarding.welcome.consent":
     "Door op {cta} te tikken ga je akkoord met onze {terms} en ons {privacy}.",
+  "onboarding.welcome.transfer": "Overzetten van een andere telefoon",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Je identiteit wordt aangemaakt",
@@ -106,6 +107,41 @@ export const strings: Strings = {
     "Alleen de sleutelhanger van het systeem",
   "onboarding.username.prop.account": "Account nodig",
   "onboarding.username.prop.account_value": "Geen",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Overzetten van een andere telefoon",
+  "onboarding.transfer.preparing": "Voorbereiden",
+  "onboarding.transfer.scan_heading": "Scan deze code met je oude telefoon",
+  "onboarding.transfer.step_open": "Open Airhop op je oude telefoon",
+  "onboarding.transfer.step_go": "Ga naar {tab} en dan naar {row}",
+  "onboarding.transfer.step_scan": "Richt hem op deze code",
+  "onboarding.transfer.network_note":
+    "Beide telefoons moeten op hetzelfde Wi-Fi-netwerk of een hotspot zitten. Er gaat niets via internet.",
+  "onboarding.transfer.qr_a11y":
+    "Overzetcode. Scan hem met Airhop op je oude telefoon.",
+  "onboarding.transfer.offline_title": "Verbind met Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Zet beide telefoons op hetzelfde Wi-Fi-netwerk, of zet op de ene de hotspot aan en verbind de andere daarmee. Geen internet nodig.",
+  "onboarding.transfer.incoming": "{name} wordt overgezet",
+  "onboarding.transfer.receiving": "Ontvangen {percent}%",
+  "onboarding.transfer.saving": "Opslaan op deze telefoon",
+  "onboarding.transfer.releasing": "Afronden op je oude telefoon",
+  "onboarding.transfer.keep_open":
+    "Houd Airhop op beide telefoons open tot dit klaar is.",
+  "onboarding.transfer.check_title": "Kijk op je oude telefoon",
+  "onboarding.transfer.check_body":
+    "Alles staat op deze telefoon. Controleer voordat je verdergaat of je oude telefoon meldt dat hij gewist is, of kies daar Deze telefoon wissen.",
+  "onboarding.transfer.failed_title": "Overzetten niet voltooid",
+  "onboarding.transfer.failed_cancelled":
+    "Het overzetten is geannuleerd op je oude telefoon. Hier is niets opgeslagen.",
+  "onboarding.transfer.failed_interrupted":
+    "De verbinding is weggevallen. Hier is niets opgeslagen.",
+  "onboarding.transfer.failed_storage":
+    "Deze telefoon kon niet opslaan wat er binnenkwam, dus er is niets bewaard.",
+  "onboarding.transfer.failed_incompatible":
+    "Op je oude telefoon draait een nieuwere Airhop. Werk deze telefoon bij en probeer het opnieuw.",
+  "onboarding.transfer.failed_unavailable":
+    "Deze telefoon kan geen verbinding via het lokale netwerk openen.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Welkom bij Airhop!",
@@ -843,6 +879,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Batterijbesparing · minder vaak scannen",
   "mesh.banner.wipe_incomplete":
     "Wissen niet afgemaakt · er kan wat data over zijn, opnieuw openen probeert het nog eens",
+  "mesh.banner.identity_elsewhere":
+    "Je identiteit staat ook op een andere telefoon · wis de telefoon die je niet gebruikt",
   "mesh.banner.wifi_off": "Wi-Fi uit · grote bestanden gaan langzamer",
   "mesh.banner.clock_skew":
     "De klok van deze telefoon klopt niet · zet datum en tijd op automatisch",
@@ -2096,15 +2134,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "Chats en geschiedenis",
   "settings.transfer.chats_desc":
     "Gesprekken, groepen en de kanalen waar je in zit",
+  "settings.transfer.chats_without":
+    "Je ruimtes en groepen, zonder hun berichten",
   "settings.transfer.wallet": "Portemonneesaldo",
   "settings.transfer.wallet_desc": "Ecash en transactiegeschiedenis",
   "settings.transfer.title": "Overzetten naar een nieuwe telefoon",
   "settings.transfer.desc":
     "Verhuis je identiteit, chats en portemonnee naar een ander toestel",
-  "settings.transfer.coming_soon_a11y":
-    "Overzetten naar een nieuwe telefoon, binnenkort",
-  "settings.transfer.body":
-    "Houd de twee telefoons bij elkaar en zet alles over via Bluetooth. Er gaat niets langs een server, dus het werkt zonder internet.",
+  "settings.transfer.intro":
+    "Open Airhop op de nieuwe telefoon en kies Overzetten van een andere telefoon. Beide telefoons moeten op hetzelfde Wi-Fi-netwerk of een hotspot zitten, internet is niet nodig.",
+  "settings.transfer.erase_note":
+    "Zodra de nieuwe telefoon alles heeft, wordt deze telefoon gewist. Foto’s en bestanden gaan niet mee.",
+  "settings.transfer.auth_prompt":
+    "Bevestig dat jij het bent om je identiteit over te zetten",
+  "settings.transfer.scan_title": "Scan de code op je nieuwe telefoon",
+  "settings.transfer.aim": "Richt de camera op de code op je nieuwe telefoon",
+  "settings.transfer.wrong_code":
+    "Dat is een contactcode. Scan de code op je nieuwe telefoon.",
+  "settings.transfer.camera_off_body":
+    "Zet cameratoegang aan in de instellingen om de code op je nieuwe telefoon te scannen.",
+  "settings.transfer.confirm_title": "Overzetten naar deze telefoon?",
+  "settings.transfer.confirm_body":
+    "Alles hier gaat naar de telefoon die deze code toont. Zodra het er is, wordt deze telefoon gewist.",
+  "settings.transfer.confirm_cta": "Overzetten",
+  "settings.transfer.connecting": "Verbinden met je nieuwe telefoon",
+  "settings.transfer.connecting_hint":
+    "Als deze telefoon vraagt om apparaten op je lokale netwerk te zoeken, sta dat toe.",
+  "settings.transfer.sending": "Overzetten {percent}%",
+  "settings.transfer.keep_open":
+    "Houd Airhop op beide telefoons open tot dit klaar is.",
+  "settings.transfer.finishing": "Afronden op je nieuwe telefoon",
+  "settings.transfer.erasing": "Deze telefoon wordt gewist",
+  "settings.transfer.done_title": "Overgezet",
+  "settings.transfer.done_body":
+    "Je identiteit staat nu op je nieuwe telefoon, en deze telefoon is gewist.",
+  "settings.transfer.failed_title": "Overzetten niet voltooid",
+  "settings.transfer.failed_unreachable":
+    "Je nieuwe telefoon is niet bereikbaar. Zet beide telefoons op hetzelfde Wi-Fi-netwerk, of zet op de ene de hotspot aan en verbind de andere daarmee.",
+  "settings.transfer.failed_permission":
+    "Airhop heeft toegang tot het lokale netwerk nodig om je nieuwe telefoon te bereiken. Sta het toe in de instellingen en probeer het opnieuw.",
+  "settings.transfer.failed_wrong_phone":
+    "De telefoon die antwoordde is niet de telefoon waarvan je de code hebt gescand.",
+  "settings.transfer.failed_incompatible":
+    "Op je nieuwe telefoon draait een oudere Airhop. Werk hem bij en probeer het opnieuw.",
+  "settings.transfer.failed_cancelled":
+    "Het overzetten is geannuleerd op je nieuwe telefoon.",
+  "settings.transfer.failed_storage":
+    "Je nieuwe telefoon kon niet alles opslaan.",
+  "settings.transfer.failed_interrupted":
+    "De verbinding viel weg voordat alles was verstuurd.",
+  "settings.transfer.unchanged":
+    "Er is niets verplaatst, en deze telefoon werkt zoals eerst.",
+  "settings.transfer.unconfirmed_title": "Is het overzetten klaar?",
+  "settings.transfer.unconfirmed_body":
+    "Deze telefoon verloor het contact met je nieuwe telefoon voordat die het bevestigde. Toont je nieuwe telefoon je naam, wis dan deze telefoon. Zo niet, blijf deze gebruiken en probeer het opnieuw.",
+  "settings.transfer.erase_cta": "Deze telefoon wissen",
+  "settings.transfer.keep_cta": "Deze telefoon blijven gebruiken",
   "settings.qr.permission_label": "Fototoegang",
   "settings.qr.permission_purpose": "je QR-code opslaan",
   "settings.qr.saved": "Opgeslagen",

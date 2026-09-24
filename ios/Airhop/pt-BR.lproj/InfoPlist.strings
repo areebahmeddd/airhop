@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "O Airhop usa o microfone para gravar notas de voz e para levar voz ao vivo aos pares próximos.";
 "NSPhotoLibraryUsageDescription" = "O Airhop acessa sua galeria de fotos para compartilhar imagens e vídeos pela malha.";
 "NSPhotoLibraryAddUsageDescription" = "O Airhop salva fotos e vídeos na sua galeria quando você escolhe salvar uma e quando você baixa seu código QR.";
+"NSFaceIDUsageDescription" = "O Airhop usa o Face ID para confirmar que é você antes de passar sua identidade para um celular novo.";
 "NSLocationWhenInUseUsageDescription" = "O Airhop usa sua localização aproximada para colocar você nos canais das áreas próximas (quadra, cidade, região). Sua posição exata nunca sai do seu dispositivo.";

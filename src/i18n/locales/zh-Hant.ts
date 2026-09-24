@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "開啟隱私權政策",
   "onboarding.welcome.consent":
     "點一下{cta}即表示你同意我們的{terms}和{privacy}。",
+  "onboarding.welcome.transfer": "從另一支手機轉移",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "正在產生你的身分",
@@ -100,6 +101,38 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "僅系統鑰匙圈",
   "onboarding.username.prop.account": "需要帳戶",
   "onboarding.username.prop.account_value": "不需要",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "從另一支手機轉移",
+  "onboarding.transfer.preparing": "正在準備",
+  "onboarding.transfer.scan_heading": "用舊手機掃描這個碼",
+  "onboarding.transfer.step_open": "在舊手機上開啟 Airhop",
+  "onboarding.transfer.step_go": "前往 {tab}，然後選擇 {row}",
+  "onboarding.transfer.step_scan": "把相機對準這個碼",
+  "onboarding.transfer.network_note":
+    "兩支手機需要連上同一個 Wi-Fi 或熱點。所有內容都不會經過網際網路。",
+  "onboarding.transfer.qr_a11y": "轉移碼。用舊手機上的 Airhop 掃描。",
+  "onboarding.transfer.offline_title": "連上 Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "讓兩支手機連上同一個 Wi-Fi，或在一支手機上開啟熱點，再用另一支連上。不需要網際網路。",
+  "onboarding.transfer.incoming": "正在轉移 {name}",
+  "onboarding.transfer.receiving": "正在接收 {percent}%",
+  "onboarding.transfer.saving": "正在儲存到這支手機",
+  "onboarding.transfer.releasing": "正在舊手機上收尾",
+  "onboarding.transfer.keep_open": "完成之前，請讓兩支手機都保持開啟。",
+  "onboarding.transfer.check_title": "檢查你的舊手機",
+  "onboarding.transfer.check_body":
+    "所有內容都已在這支手機上。繼續之前，請確認舊手機顯示已抹除，或在舊手機上選擇「抹除這支手機」。",
+  "onboarding.transfer.failed_title": "轉移未完成",
+  "onboarding.transfer.failed_cancelled":
+    "舊手機上取消了轉移。這裡沒有儲存任何內容。",
+  "onboarding.transfer.failed_interrupted":
+    "連線中斷了。這裡沒有儲存任何內容。",
+  "onboarding.transfer.failed_storage":
+    "這支手機無法儲存收到的內容，所以什麼都沒有保留。",
+  "onboarding.transfer.failed_incompatible":
+    "舊手機上的 Airhop 版本較新。請先更新這支手機，然後再試一次。",
+  "onboarding.transfer.failed_unavailable": "這支手機無法建立區域網路連線。",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "歡迎來到 Airhop！",
@@ -786,6 +819,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "省電模式 · 掃描次數減少",
   "mesh.banner.wipe_incomplete":
     "抹除未完成 · 可能還有殘留資料，重新開啟會再試一次",
+  "mesh.banner.identity_elsewhere":
+    "你的身分也在另一支手機上 · 請抹除你不用的那支",
   "mesh.banner.wifi_off": "Wi-Fi 已關 · 大檔案傳得比較慢",
   "mesh.banner.clock_skew": "這支手機的時鐘不對 · 請把日期與時間設為自動",
   "mesh.banner.internet_off": "網路已關 · 僅藍牙",
@@ -1946,13 +1981,52 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "你的節點 ID、使用者名稱和聯絡人",
   "settings.transfer.chats": "聊天與歷史紀錄",
   "settings.transfer.chats_desc": "對話、群組，以及你加入過的頻道",
+  "settings.transfer.chats_without": "你的頻道和群組，不含其中的訊息",
   "settings.transfer.wallet": "錢包餘額",
   "settings.transfer.wallet_desc": "Ecash 與交易紀錄",
   "settings.transfer.title": "轉移到新手機",
   "settings.transfer.desc": "把你的身分、聊天和錢包搬到另一台裝置",
-  "settings.transfer.coming_soon_a11y": "轉移到新手機，即將推出",
-  "settings.transfer.body":
-    "把兩支手機靠在一起，透過藍牙把所有內容搬過去。不經過任何伺服器，所以沒有網路也能用。",
+  "settings.transfer.intro":
+    "在新手機上開啟 Airhop，選擇「從另一支手機轉移」。兩支手機需要連上同一個 Wi-Fi 或熱點，不需要網際網路。",
+  "settings.transfer.erase_note":
+    "新手機收到所有內容後，這支手機會被抹除。照片和檔案不會轉移。",
+  "settings.transfer.auth_prompt": "確認是你本人，以轉移你的身分",
+  "settings.transfer.scan_title": "掃描新手機上的碼",
+  "settings.transfer.aim": "把相機對準新手機上的碼",
+  "settings.transfer.wrong_code": "這是聯絡人的碼。請掃描新手機上的碼。",
+  "settings.transfer.camera_off_body":
+    "請到設定允許相機存取，才能掃描新手機上的碼。",
+  "settings.transfer.confirm_title": "轉移到這支手機？",
+  "settings.transfer.confirm_body":
+    "這裡的所有內容會轉移到顯示這個碼的手機。轉移完成後，這支手機會被抹除。",
+  "settings.transfer.confirm_cta": "轉移",
+  "settings.transfer.connecting": "正在連線到新手機",
+  "settings.transfer.connecting_hint":
+    "如果這支手機詢問是否允許尋找區域網路上的裝置，請允許。",
+  "settings.transfer.sending": "正在轉移 {percent}%",
+  "settings.transfer.keep_open": "完成之前，請讓兩支手機都保持開啟。",
+  "settings.transfer.finishing": "正在新手機上收尾",
+  "settings.transfer.erasing": "正在抹除這支手機",
+  "settings.transfer.done_title": "已轉移",
+  "settings.transfer.done_body": "你的身分現在在新手機上，這支手機已被抹除。",
+  "settings.transfer.failed_title": "轉移未完成",
+  "settings.transfer.failed_unreachable":
+    "無法連線到新手機。讓兩支手機連上同一個 Wi-Fi，或在一支手機上開啟熱點，再用另一支連上。",
+  "settings.transfer.failed_permission":
+    "Airhop 需要區域網路存取權才能連線到新手機。請到設定允許，然後再試一次。",
+  "settings.transfer.failed_wrong_phone":
+    "回應的手機不是你掃描的那個碼所屬的手機。",
+  "settings.transfer.failed_incompatible":
+    "新手機上的 Airhop 版本較舊。請先更新，然後再試一次。",
+  "settings.transfer.failed_cancelled": "新手機上取消了轉移。",
+  "settings.transfer.failed_storage": "新手機無法儲存全部內容。",
+  "settings.transfer.failed_interrupted": "全部傳送完之前，連線中斷了。",
+  "settings.transfer.unchanged": "什麼都沒有轉移，這支手機照常可用。",
+  "settings.transfer.unconfirmed_title": "轉移完成了嗎？",
+  "settings.transfer.unconfirmed_body":
+    "新手機確認之前，這支手機就和它失去連線了。如果新手機上顯示你的名稱，就抹除這支手機。如果沒有，繼續使用這支手機，然後再試一次。",
+  "settings.transfer.erase_cta": "抹除這支手機",
+  "settings.transfer.keep_cta": "繼續使用這支手機",
   "settings.qr.permission_label": "照片存取權",
   "settings.qr.permission_purpose": "儲存你的 QR 碼",
   "settings.qr.saved": "已儲存",

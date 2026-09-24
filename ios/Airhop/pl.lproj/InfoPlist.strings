@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Aplikacja Airhop używa mikrofonu, aby nagrywać notatki głosowe i przekazywać głos na żywo pobliskim peerom.";
 "NSPhotoLibraryUsageDescription" = "Aplikacja Airhop sięga do twojej galerii zdjęć, aby udostępniać obrazy i filmy przez sieć mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Aplikacja Airhop zapisuje zdjęcia i filmy w twojej galerii, gdy wybierzesz zapis oraz gdy pobierasz swój kod QR.";
+"NSFaceIDUsageDescription" = "Aplikacja Airhop używa Face ID, aby potwierdzić, że to ty, zanim przeniesie twoją tożsamość na nowy telefon.";
 "NSLocationWhenInUseUsageDescription" = "Aplikacja Airhop używa twojej przybliżonej lokalizacji, aby umieścić cię w kanałach okolicy (kwartał, miasto, region). Twoja dokładna pozycja nigdy nie opuszcza urządzenia.";

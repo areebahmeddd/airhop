@@ -352,6 +352,10 @@ export type SendPacketFn = (packet: Packet) => void;
 export class AnnounceManager {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private broadcastFn: (() => void) | null = null;
+  // Stamps of the announces this instance built, oldest first, for telling an
+  // echo of ours from this identity on another phone. Kept for the freshness
+  // window only; ingress refuses anything older.
+  private readonly stamped: number[] = [];
 
   // Build and return a signed ANNOUNCE packet ready to send.
   // neighborIDs (each 8 bytes) fill TLV 0x04; Airhop always passes none, since
@@ -388,7 +392,16 @@ export class AnnounceManager {
     };
 
     packet.signature = signPacket(packet, identity.signingPrivKey);
+    this.stamped.push(packet.timestamp);
+    const horizon = packet.timestamp - ANNOUNCE_MAX_SKEW_MS;
+    while (this.stamped.length > 0 && this.stamped[0] < horizon) {
+      this.stamped.shift();
+    }
     return packet;
+  }
+
+  sentHere(timestampMs: number): boolean {
+    return this.stamped.includes(timestampMs);
   }
 
   // Start broadcasting ANNOUNCE packets.

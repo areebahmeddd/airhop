@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "गोपनीयता नीति खोलें",
   "onboarding.welcome.consent":
     "{cta} दबाकर आप हमारी {terms} और {privacy} से सहमत होते हैं।",
+  "onboarding.welcome.transfer": "दूसरे फ़ोन से लाएँ",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "आपकी पहचान बनाई जा रही है",
@@ -102,6 +103,40 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "सिर्फ़ OS कीचेन",
   "onboarding.username.prop.account": "खाता ज़रूरी",
   "onboarding.username.prop.account_value": "कोई नहीं",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "दूसरे फ़ोन से लाएँ",
+  "onboarding.transfer.preparing": "तैयार हो रहा है",
+  "onboarding.transfer.scan_heading": "यह कोड अपने पुराने फ़ोन से स्कैन करें",
+  "onboarding.transfer.step_open": "अपने पुराने फ़ोन पर Airhop खोलें",
+  "onboarding.transfer.step_go": "{tab} पर जाएँ, फिर {row}",
+  "onboarding.transfer.step_scan": "उसे इस कोड पर रखें",
+  "onboarding.transfer.network_note":
+    "दोनों फ़ोन एक ही Wi-Fi या हॉटस्पॉट पर होने चाहिए। कुछ भी इंटरनेट से नहीं जाता।",
+  "onboarding.transfer.qr_a11y":
+    "ट्रांसफ़र कोड। इसे अपने पुराने फ़ोन पर Airhop से स्कैन करें।",
+  "onboarding.transfer.offline_title": "Wi-Fi से जुड़ें",
+  "onboarding.transfer.offline_body":
+    "दोनों फ़ोन एक ही Wi-Fi पर रखें, या एक पर हॉटस्पॉट चालू करके दूसरे से उससे जुड़ें। इंटरनेट की ज़रूरत नहीं।",
+  "onboarding.transfer.incoming": "{name} को लाया जा रहा है",
+  "onboarding.transfer.receiving": "मिल रहा है {percent}%",
+  "onboarding.transfer.saving": "इस फ़ोन पर सहेजा जा रहा है",
+  "onboarding.transfer.releasing": "आपके पुराने फ़ोन पर पूरा हो रहा है",
+  "onboarding.transfer.keep_open": "यह पूरा होने तक दोनों फ़ोन खुले रखें।",
+  "onboarding.transfer.check_title": "अपना पुराना फ़ोन देखें",
+  "onboarding.transfer.check_body":
+    "सब कुछ इस फ़ोन पर आ गया है। आगे बढ़ने से पहले पक्का करें कि आपका पुराना फ़ोन मिटा दिए जाने की बात दिखा रहा है, या उस पर “यह फ़ोन मिटाएँ” चुनें।",
+  "onboarding.transfer.failed_title": "ट्रांसफ़र पूरा नहीं हुआ",
+  "onboarding.transfer.failed_cancelled":
+    "आपके पुराने फ़ोन पर ट्रांसफ़र रद्द कर दिया गया। यहाँ कुछ नहीं सहेजा गया।",
+  "onboarding.transfer.failed_interrupted":
+    "कनेक्शन टूट गया। यहाँ कुछ नहीं सहेजा गया।",
+  "onboarding.transfer.failed_storage":
+    "यह फ़ोन आया हुआ डेटा सहेज नहीं सका, इसलिए कुछ नहीं रखा गया।",
+  "onboarding.transfer.failed_incompatible":
+    "आपके पुराने फ़ोन पर Airhop का नया वर्शन है। इस फ़ोन को अपडेट करें, फिर दोबारा कोशिश करें।",
+  "onboarding.transfer.failed_unavailable":
+    "यह फ़ोन लोकल नेटवर्क कनेक्शन नहीं खोल सकता।",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop में आपका स्वागत है!",
@@ -828,6 +863,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "बैटरी सेवर · कम बार स्कैन",
   "mesh.banner.wipe_incomplete":
     "मिटाना अधूरा · कुछ डेटा बचा हो सकता है, दोबारा खोलने पर फिर कोशिश होगी",
+  "mesh.banner.identity_elsewhere":
+    "आपकी पहचान किसी दूसरे फ़ोन पर भी है · जिसे आप इस्तेमाल नहीं करते, उसे मिटाएँ",
   "mesh.banner.wifi_off": "Wi-Fi बंद · बड़ी फ़ाइलें धीरे जाएँगी",
   "mesh.banner.clock_skew":
     "इस फ़ोन की घड़ी ग़लत है · तारीख़ और समय अपने आप पर सेट करें",
@@ -2052,13 +2089,58 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "आपकी पीअर ID, उपयोगकर्ता नाम और संपर्क",
   "settings.transfer.chats": "चैट और इतिहास",
   "settings.transfer.chats_desc": "बातचीत, समूह, और वे चैनल जिनसे आप जुड़े हैं",
+  "settings.transfer.chats_without": "आपके रूम और समूह, उनके संदेशों के बिना",
   "settings.transfer.wallet": "वॉलेट बैलेंस",
   "settings.transfer.wallet_desc": "Ecash और लेनदेन का इतिहास",
   "settings.transfer.title": "नए फ़ोन पर ले जाएँ",
   "settings.transfer.desc": "अपनी पहचान, चैट और वॉलेट दूसरे डिवाइस पर ले जाएँ",
-  "settings.transfer.coming_soon_a11y": "नए फ़ोन पर ले जाएँ, जल्द आ रहा है",
-  "settings.transfer.body":
-    "दोनों फ़ोन पास रखें और सब कुछ ब्लूटूथ से पार भेजें। कुछ भी किसी सर्वर से नहीं गुज़रता, इसलिए यह बिना इंटरनेट के भी चलता है।",
+  "settings.transfer.intro":
+    "नए फ़ोन पर Airhop खोलें और “दूसरे फ़ोन से लाएँ” चुनें। दोनों फ़ोन एक ही Wi-Fi या हॉटस्पॉट पर होने चाहिए, इंटरनेट की ज़रूरत नहीं।",
+  "settings.transfer.erase_note":
+    "नए फ़ोन पर सब कुछ पहुँचते ही यह फ़ोन मिटा दिया जाता है। फ़ोटो और फ़ाइलें साथ नहीं जातीं।",
+  "settings.transfer.auth_prompt":
+    "अपनी पहचान ले जाने के लिए पुष्टि करें कि यह आप हैं",
+  "settings.transfer.scan_title": "अपने नए फ़ोन पर दिख रहा कोड स्कैन करें",
+  "settings.transfer.aim": "कैमरा अपने नए फ़ोन पर दिख रहे कोड पर रखें",
+  "settings.transfer.wrong_code":
+    "यह किसी संपर्क का कोड है। अपने नए फ़ोन पर दिख रहा कोड स्कैन करें।",
+  "settings.transfer.camera_off_body":
+    "अपने नए फ़ोन पर दिख रहा कोड स्कैन करने के लिए सेटिंग्स में कैमरा पहुँच चालू करें।",
+  "settings.transfer.confirm_title": "इस फ़ोन पर ले जाएँ?",
+  "settings.transfer.confirm_body":
+    "यहाँ का सब कुछ उस फ़ोन पर चला जाएगा जो यह कोड दिखा रहा है। पहुँचते ही यह फ़ोन मिटा दिया जाएगा।",
+  "settings.transfer.confirm_cta": "ले जाएँ",
+  "settings.transfer.connecting": "आपके नए फ़ोन से जुड़ रहा है",
+  "settings.transfer.connecting_hint":
+    "अगर यह फ़ोन लोकल नेटवर्क पर डिवाइस खोजने की अनुमति माँगे, तो अनुमति दें।",
+  "settings.transfer.sending": "ले जाया जा रहा है {percent}%",
+  "settings.transfer.keep_open": "यह पूरा होने तक दोनों फ़ोन खुले रखें।",
+  "settings.transfer.finishing": "आपके नए फ़ोन पर पूरा हो रहा है",
+  "settings.transfer.erasing": "यह फ़ोन मिटाया जा रहा है",
+  "settings.transfer.done_title": "ट्रांसफ़र हो गया",
+  "settings.transfer.done_body":
+    "आपकी पहचान अब आपके नए फ़ोन पर है, और यह फ़ोन मिटा दिया गया है।",
+  "settings.transfer.failed_title": "ट्रांसफ़र पूरा नहीं हुआ",
+  "settings.transfer.failed_unreachable":
+    "आपके नए फ़ोन तक नहीं पहुँच सके। दोनों फ़ोन एक ही Wi-Fi पर रखें, या एक पर हॉटस्पॉट चालू करके दूसरे से उससे जुड़ें।",
+  "settings.transfer.failed_permission":
+    "आपके नए फ़ोन तक पहुँचने के लिए Airhop को लोकल नेटवर्क की पहुँच चाहिए। सेटिंग्स में अनुमति दें, फिर दोबारा कोशिश करें।",
+  "settings.transfer.failed_wrong_phone":
+    "जिस फ़ोन ने जवाब दिया, वह वह फ़ोन नहीं है जिसका कोड आपने स्कैन किया था।",
+  "settings.transfer.failed_incompatible":
+    "आपके नए फ़ोन पर Airhop का पुराना वर्शन है। उसे अपडेट करें, फिर दोबारा कोशिश करें।",
+  "settings.transfer.failed_cancelled":
+    "आपके नए फ़ोन पर ट्रांसफ़र रद्द कर दिया गया।",
+  "settings.transfer.failed_storage": "आपका नया फ़ोन सब कुछ सहेज नहीं सका।",
+  "settings.transfer.failed_interrupted":
+    "सब कुछ भेजे जाने से पहले कनेक्शन टूट गया।",
+  "settings.transfer.unchanged":
+    "कुछ नहीं गया, और यह फ़ोन पहले की तरह चल रहा है।",
+  "settings.transfer.unconfirmed_title": "क्या ट्रांसफ़र पूरा हुआ?",
+  "settings.transfer.unconfirmed_body":
+    "पुष्टि मिलने से पहले इस फ़ोन का आपके नए फ़ोन से संपर्क टूट गया। अगर आपका नया फ़ोन आपका नाम दिखा रहा है, तो यह फ़ोन मिटाएँ। नहीं तो यही फ़ोन इस्तेमाल करते रहें और दोबारा कोशिश करें।",
+  "settings.transfer.erase_cta": "यह फ़ोन मिटाएँ",
+  "settings.transfer.keep_cta": "यही फ़ोन इस्तेमाल करते रहें",
   "settings.qr.permission_label": "फ़ोटो पहुँच",
   "settings.qr.permission_purpose": "अपना QR कोड सहेजने",
   "settings.qr.saved": "सहेजा गया",

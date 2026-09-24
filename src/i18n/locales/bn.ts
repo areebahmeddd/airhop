@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "গোপনীয়তা নীতি খুলুন",
   "onboarding.welcome.consent":
     "{cta} ট্যাপ করলে আপনি আমাদের {terms} ও {privacy}-তে সম্মত হচ্ছেন।",
+  "onboarding.welcome.transfer": "অন্য ফোন থেকে আনুন",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "আপনার পরিচয় তৈরি হচ্ছে",
@@ -101,6 +102,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "কেবল OS কীচেইন",
   "onboarding.username.prop.account": "অ্যাকাউন্ট লাগে",
   "onboarding.username.prop.account_value": "লাগে না",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "অন্য ফোন থেকে আনুন",
+  "onboarding.transfer.preparing": "প্রস্তুত হচ্ছে",
+  "onboarding.transfer.scan_heading": "পুরোনো ফোন দিয়ে এই কোডটি স্ক্যান করুন",
+  "onboarding.transfer.step_open": "পুরোনো ফোনে Airhop খুলুন",
+  "onboarding.transfer.step_go": "{tab}-এ যান, তারপর {row}",
+  "onboarding.transfer.step_scan": "সেটি এই কোডের দিকে ধরুন",
+  "onboarding.transfer.network_note":
+    "দুটি ফোনই একই Wi-Fi বা হটস্পটে থাকতে হবে। কিছুই ইন্টারনেটের মাধ্যমে যায় না।",
+  "onboarding.transfer.qr_a11y":
+    "সরানোর কোড। পুরোনো ফোনের Airhop দিয়ে এটি স্ক্যান করুন।",
+  "onboarding.transfer.offline_title": "Wi-Fi-তে যুক্ত হন",
+  "onboarding.transfer.offline_body":
+    "দুটি ফোনকে একই Wi-Fi-তে যুক্ত করুন, অথবা একটিতে হটস্পট চালু করে অন্যটি থেকে তাতে যুক্ত হন। ইন্টারনেট লাগবে না।",
+  "onboarding.transfer.incoming": "{name}-কে আনা হচ্ছে",
+  "onboarding.transfer.receiving": "গ্রহণ করা হচ্ছে {percent}%",
+  "onboarding.transfer.saving": "এই ফোনে সংরক্ষণ করা হচ্ছে",
+  "onboarding.transfer.releasing": "পুরোনো ফোনে শেষ করা হচ্ছে",
+  "onboarding.transfer.keep_open":
+    "এটি শেষ না হওয়া পর্যন্ত দুটি ফোনই খোলা রাখুন।",
+  "onboarding.transfer.check_title": "পুরোনো ফোনটি দেখুন",
+  "onboarding.transfer.check_body":
+    "সবকিছু এই ফোনে চলে এসেছে। এগোনোর আগে নিশ্চিত হন যে পুরোনো ফোনে দেখাচ্ছে সেটি মুছে ফেলা হয়েছে, অথবা সেখানে “এই ফোন মুছুন” বেছে নিন।",
+  "onboarding.transfer.failed_title": "সরানো শেষ হয়নি",
+  "onboarding.transfer.failed_cancelled":
+    "পুরোনো ফোনে সরানো বাতিল করা হয়েছে। এখানে কিছুই সংরক্ষিত হয়নি।",
+  "onboarding.transfer.failed_interrupted":
+    "সংযোগ বিচ্ছিন্ন হয়ে গেছে। এখানে কিছুই সংরক্ষিত হয়নি।",
+  "onboarding.transfer.failed_storage":
+    "যা এসেছে তা এই ফোন সংরক্ষণ করতে পারেনি, তাই কিছুই রাখা হয়নি।",
+  "onboarding.transfer.failed_incompatible":
+    "পুরোনো ফোনে Airhop-এর নতুন সংস্করণ চলছে। এই ফোনটি আপডেট করে আবার চেষ্টা করুন।",
+  "onboarding.transfer.failed_unavailable":
+    "এই ফোন স্থানীয় নেটওয়ার্ক সংযোগ খুলতে পারছে না।",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop-এ স্বাগতম!",
@@ -823,6 +859,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ব্যাটারি সাশ্রয় · কম ঘন ঘন খোঁজা হচ্ছে",
   "mesh.banner.wipe_incomplete":
     "মোছা অসম্পূর্ণ · কিছু তথ্য থেকে যেতে পারে, আবার খুললে ফের চেষ্টা হবে",
+  "mesh.banner.identity_elsewhere":
+    "আপনার পরিচয় অন্য একটি ফোনেও আছে · যেটি ব্যবহার করেন না সেটি মুছুন",
   "mesh.banner.wifi_off": "ওয়াই-ফাই বন্ধ · বড় ফাইল ধীরে যায়",
   "mesh.banner.clock_skew":
     "এই ফোনের ঘড়ি ভুল · তারিখ ও সময় স্বয়ংক্রিয় করুন",
@@ -2043,14 +2081,58 @@ export const strings: Strings = {
   "settings.transfer.chats": "চ্যাট ও ইতিহাস",
   "settings.transfer.chats_desc":
     "কথোপকথন, গ্রুপ, আর আপনি যে চ্যানেলে যোগ দিয়েছেন",
+  "settings.transfer.chats_without": "আপনার রুম ও গ্রুপ, তাদের বার্তা ছাড়া",
   "settings.transfer.wallet": "ওয়ালেটের ব্যালেন্স",
   "settings.transfer.wallet_desc": "Ecash ও লেনদেনের ইতিহাস",
   "settings.transfer.title": "নতুন ফোনে সরান",
   "settings.transfer.desc":
     "আপনার পরিচয়, চ্যাট ও ওয়ালেট অন্য একটি ডিভাইসে সরান",
-  "settings.transfer.coming_soon_a11y": "নতুন ফোনে সরান, শিগগিরই আসছে",
-  "settings.transfer.body":
-    "দুটি ফোন একসঙ্গে ধরে ব্লুটুথে সবকিছু পার করে দিন। কিছুই কোনো সার্ভারের ভেতর দিয়ে যায় না, তাই ইন্টারনেট ছাড়াই চলে।",
+  "settings.transfer.intro":
+    "নতুন ফোনে Airhop খুলে “অন্য ফোন থেকে আনুন” বেছে নিন। দুটি ফোনই একই Wi-Fi বা হটস্পটে থাকতে হবে, ইন্টারনেট লাগবে না।",
+  "settings.transfer.erase_note":
+    "নতুন ফোনে সবকিছু পৌঁছালে এই ফোনটি মুছে ফেলা হবে। ছবি ও ফাইল সরানো হয় না।",
+  "settings.transfer.auth_prompt":
+    "আপনার পরিচয় সরাতে নিশ্চিত করুন যে এটি আপনি",
+  "settings.transfer.scan_title": "নতুন ফোনের কোডটি স্ক্যান করুন",
+  "settings.transfer.aim": "নতুন ফোনের কোডের দিকে ক্যামেরা ধরুন",
+  "settings.transfer.wrong_code":
+    "এটি একটি পরিচিতির কোড। নতুন ফোনের কোডটি স্ক্যান করুন।",
+  "settings.transfer.camera_off_body":
+    "নতুন ফোনের কোড স্ক্যান করতে সেটিংসে ক্যামেরার অনুমতি চালু করুন।",
+  "settings.transfer.confirm_title": "এই ফোনে সরাবেন?",
+  "settings.transfer.confirm_body":
+    "এখানকার সবকিছু সেই ফোনে যাবে যেটি এই কোড দেখাচ্ছে। পৌঁছালেই এই ফোনটি মুছে ফেলা হবে।",
+  "settings.transfer.confirm_cta": "সরান",
+  "settings.transfer.connecting": "নতুন ফোনের সঙ্গে সংযোগ করা হচ্ছে",
+  "settings.transfer.connecting_hint":
+    "এই ফোন যদি স্থানীয় নেটওয়ার্কে ডিভাইস খোঁজার অনুমতি চায়, তবে অনুমতি দিন।",
+  "settings.transfer.sending": "সরানো হচ্ছে {percent}%",
+  "settings.transfer.keep_open":
+    "এটি শেষ না হওয়া পর্যন্ত দুটি ফোনই খোলা রাখুন।",
+  "settings.transfer.finishing": "নতুন ফোনে শেষ করা হচ্ছে",
+  "settings.transfer.erasing": "এই ফোন মোছা হচ্ছে",
+  "settings.transfer.done_title": "সরানো হয়েছে",
+  "settings.transfer.done_body":
+    "আপনার পরিচয় এখন নতুন ফোনে, আর এই ফোনটি মুছে ফেলা হয়েছে।",
+  "settings.transfer.failed_title": "সরানো শেষ হয়নি",
+  "settings.transfer.failed_unreachable":
+    "নতুন ফোনে পৌঁছানো গেল না। দুটি ফোনকে একই Wi-Fi-তে যুক্ত করুন, অথবা একটিতে হটস্পট চালু করে অন্যটি থেকে তাতে যুক্ত হন।",
+  "settings.transfer.failed_permission":
+    "নতুন ফোনে পৌঁছাতে Airhop-এর স্থানীয় নেটওয়ার্কের অনুমতি লাগবে। সেটিংসে অনুমতি দিয়ে আবার চেষ্টা করুন।",
+  "settings.transfer.failed_wrong_phone":
+    "যে ফোনটি সাড়া দিয়েছে সেটি সেই ফোন নয়, যার কোড আপনি স্ক্যান করেছেন।",
+  "settings.transfer.failed_incompatible":
+    "নতুন ফোনে Airhop-এর পুরোনো সংস্করণ চলছে। সেটি আপডেট করে আবার চেষ্টা করুন।",
+  "settings.transfer.failed_cancelled": "নতুন ফোনে সরানো বাতিল করা হয়েছে।",
+  "settings.transfer.failed_storage": "নতুন ফোনটি সবকিছু সংরক্ষণ করতে পারেনি।",
+  "settings.transfer.failed_interrupted":
+    "সবকিছু পাঠানোর আগেই সংযোগ বিচ্ছিন্ন হয়ে গেছে।",
+  "settings.transfer.unchanged": "কিছুই সরানো হয়নি, আর এই ফোন আগের মতোই চলছে।",
+  "settings.transfer.unconfirmed_title": "সরানো কি শেষ হয়েছে?",
+  "settings.transfer.unconfirmed_body":
+    "নিশ্চিত হওয়ার আগেই নতুন ফোনের সঙ্গে এই ফোনের যোগাযোগ বিচ্ছিন্ন হয়ে গেছে। নতুন ফোনে আপনার নাম দেখালে এই ফোনটি মুছুন। না দেখালে এই ফোনটিই ব্যবহার করতে থাকুন এবং আবার চেষ্টা করুন।",
+  "settings.transfer.erase_cta": "এই ফোন মুছুন",
+  "settings.transfer.keep_cta": "এই ফোনটিই ব্যবহার করুন",
   "settings.qr.permission_label": "ছবির অনুমতি",
   "settings.qr.permission_purpose": "আপনার QR কোড সংরক্ষণ করতে",
   "settings.qr.saved": "সংরক্ষিত",

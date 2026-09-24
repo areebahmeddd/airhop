@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Otwórz politykę prywatności",
   "onboarding.welcome.consent":
     "Naciskając {cta}, akceptujesz nasz {terms} i naszą {privacy}.",
+  "onboarding.welcome.transfer": "Przenieś z innego telefonu",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Tworzenie tożsamości",
@@ -104,6 +105,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Tylko pęk kluczy systemu",
   "onboarding.username.prop.account": "Wymagane konto",
   "onboarding.username.prop.account_value": "Brak",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Przenieś z innego telefonu",
+  "onboarding.transfer.preparing": "Przygotowywanie",
+  "onboarding.transfer.scan_heading": "Zeskanuj ten kod starym telefonem",
+  "onboarding.transfer.step_open": "Otwórz Airhop na starym telefonie",
+  "onboarding.transfer.step_go": "Otwórz {tab}, a potem {row}",
+  "onboarding.transfer.step_scan": "Skieruj go na ten kod",
+  "onboarding.transfer.network_note":
+    "Oba telefony muszą być w tej samej sieci Wi-Fi lub na hotspocie. Nic nie przechodzi przez internet.",
+  "onboarding.transfer.qr_a11y":
+    "Kod przeniesienia. Zeskanuj go w Airhop na starym telefonie.",
+  "onboarding.transfer.offline_title": "Połącz się z Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Połącz oba telefony z tą samą siecią Wi-Fi albo włącz hotspot na jednym i połącz z nim drugi. Internet nie jest potrzebny.",
+  "onboarding.transfer.incoming": "Przenoszenie: {name}",
+  "onboarding.transfer.receiving": "Odbieranie {percent}%",
+  "onboarding.transfer.saving": "Zapisywanie na tym telefonie",
+  "onboarding.transfer.releasing": "Kończenie na starym telefonie",
+  "onboarding.transfer.keep_open":
+    "Nie zamykaj Airhop na żadnym z telefonów, dopóki to się nie skończy.",
+  "onboarding.transfer.check_title": "Sprawdź stary telefon",
+  "onboarding.transfer.check_body":
+    "Wszystko jest już na tym telefonie. Zanim przejdziesz dalej, upewnij się, że stary telefon pokazuje, że został wyczyszczony, albo wybierz na nim Wyczyść ten telefon.",
+  "onboarding.transfer.failed_title": "Przenoszenie nie zostało ukończone",
+  "onboarding.transfer.failed_cancelled":
+    "Przenoszenie anulowano na starym telefonie. Nic tu nie zapisano.",
+  "onboarding.transfer.failed_interrupted":
+    "Połączenie zostało przerwane. Nic tu nie zapisano.",
+  "onboarding.transfer.failed_storage":
+    "Ten telefon nie zdołał zapisać odebranych danych, więc nic nie zostało zachowane.",
+  "onboarding.transfer.failed_incompatible":
+    "Na starym telefonie działa nowsza wersja Airhop. Zaktualizuj ten telefon i spróbuj ponownie.",
+  "onboarding.transfer.failed_unavailable":
+    "Ten telefon nie może otworzyć połączenia w sieci lokalnej.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Witaj w Airhop!",
@@ -851,6 +887,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Oszczędzanie baterii · rzadsze skanowanie",
   "mesh.banner.wipe_incomplete":
     "Czyszczenie niedokończone · część danych może zostać, ponowna próba po otwarciu",
+  "mesh.banner.identity_elsewhere":
+    "Twoja tożsamość jest też na innym telefonie · wyczyść ten, którego nie używasz",
   "mesh.banner.wifi_off": "Wi-Fi wyłączone · duże pliki idą wolniej",
   "mesh.banner.clock_skew":
     "Zegar tego telefonu jest przestawiony · ustaw datę i godzinę na automatyczne",
@@ -2099,14 +2137,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "Czaty i historia",
   "settings.transfer.chats_desc":
     "Rozmowy, grupy i kanały, do których dołączyłeś",
+  "settings.transfer.chats_without": "Twoje pokoje i grupy, bez wiadomości",
   "settings.transfer.wallet": "Saldo portfela",
   "settings.transfer.wallet_desc": "Ecash i historia transakcji",
   "settings.transfer.title": "Przenieś na nowy telefon",
   "settings.transfer.desc":
     "Przenieś tożsamość, czaty i portfel na inne urządzenie",
-  "settings.transfer.coming_soon_a11y": "Przenieś na nowy telefon, wkrótce",
-  "settings.transfer.body":
-    "Przyłóż telefony do siebie i przenieś wszystko przez Bluetooth. Nic nie przechodzi przez serwer, więc działa bez internetu.",
+  "settings.transfer.intro":
+    "Na nowym telefonie otwórz Airhop i wybierz Przenieś z innego telefonu. Oba telefony muszą być w tej samej sieci Wi-Fi lub na hotspocie, internet nie jest potrzebny.",
+  "settings.transfer.erase_note":
+    "Gdy nowy telefon otrzyma wszystko, ten telefon zostanie wyczyszczony. Zdjęcia i pliki nie są przenoszone.",
+  "settings.transfer.auth_prompt":
+    "Potwierdź, że to ty, aby przenieść swoją tożsamość",
+  "settings.transfer.scan_title": "Zeskanuj kod na nowym telefonie",
+  "settings.transfer.aim": "Skieruj aparat na kod na nowym telefonie",
+  "settings.transfer.wrong_code":
+    "To kod kontaktu. Zeskanuj kod na nowym telefonie.",
+  "settings.transfer.camera_off_body":
+    "Włącz dostęp do aparatu w Ustawieniach, żeby zeskanować kod na nowym telefonie.",
+  "settings.transfer.confirm_title": "Przenieść na ten telefon?",
+  "settings.transfer.confirm_body":
+    "Wszystko stąd trafi na telefon, który pokazuje ten kod. Gdy dotrze, ten telefon zostanie wyczyszczony.",
+  "settings.transfer.confirm_cta": "Przenieś",
+  "settings.transfer.connecting": "Łączenie z nowym telefonem",
+  "settings.transfer.connecting_hint":
+    "Jeśli ten telefon zapyta o wyszukiwanie urządzeń w sieci lokalnej, zezwól na to.",
+  "settings.transfer.sending": "Przenoszenie {percent}%",
+  "settings.transfer.keep_open":
+    "Nie zamykaj Airhop na żadnym z telefonów, dopóki to się nie skończy.",
+  "settings.transfer.finishing": "Kończenie na nowym telefonie",
+  "settings.transfer.erasing": "Czyszczenie tego telefonu",
+  "settings.transfer.done_title": "Przeniesiono",
+  "settings.transfer.done_body":
+    "Twoja tożsamość jest teraz na nowym telefonie, a ten telefon został wyczyszczony.",
+  "settings.transfer.failed_title": "Przenoszenie nie zostało ukończone",
+  "settings.transfer.failed_unreachable":
+    "Nie udało się połączyć z nowym telefonem. Połącz oba telefony z tą samą siecią Wi-Fi albo włącz hotspot na jednym i połącz z nim drugi.",
+  "settings.transfer.failed_permission":
+    "Airhop potrzebuje dostępu do sieci lokalnej, aby połączyć się z nowym telefonem. Zezwól na to w Ustawieniach i spróbuj ponownie.",
+  "settings.transfer.failed_wrong_phone":
+    "Odpowiedział inny telefon niż ten, którego kod zeskanowano.",
+  "settings.transfer.failed_incompatible":
+    "Na nowym telefonie działa starsza wersja Airhop. Zaktualizuj go i spróbuj ponownie.",
+  "settings.transfer.failed_cancelled":
+    "Przenoszenie anulowano na nowym telefonie.",
+  "settings.transfer.failed_storage":
+    "Nowy telefon nie zdołał zapisać wszystkiego.",
+  "settings.transfer.failed_interrupted":
+    "Połączenie zostało przerwane, zanim wszystko zostało wysłane.",
+  "settings.transfer.unchanged":
+    "Nic nie zostało przeniesione, a ten telefon działa jak dotąd.",
+  "settings.transfer.unconfirmed_title": "Czy przenoszenie się zakończyło?",
+  "settings.transfer.unconfirmed_body":
+    "Ten telefon stracił kontakt z nowym, zanim ten potwierdził odbiór. Jeśli nowy telefon pokazuje twoją nazwę, wyczyść ten telefon. Jeśli nie, dalej używaj tego i spróbuj ponownie.",
+  "settings.transfer.erase_cta": "Wyczyść ten telefon",
+  "settings.transfer.keep_cta": "Nadal używaj tego telefonu",
   "settings.qr.permission_label": "Dostęp do zdjęć",
   "settings.qr.permission_purpose": "zapisać twój kod QR",
   "settings.qr.saved": "Zapisano",

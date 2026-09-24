@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop hutumia maikrofoni kurekodi noti za sauti na kupeleka sauti ya moja kwa moja kwa peers walio karibu.";
 "NSPhotoLibraryUsageDescription" = "Airhop hufikia ghala lako la picha ili kushiriki picha na video kupitia mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop huhifadhi picha na video kwenye ghala lako unapochagua kuhifadhi, na unapopakua msimbo wako QR.";
+"NSFaceIDUsageDescription" = "Airhop hutumia Face ID kuthibitisha kuwa ni wewe kabla ya kuhamisha utambulisho wako kwenye simu mpya.";
 "NSLocationWhenInUseUsageDescription" = "Airhop hutumia makadirio ya mahali ulipo ili kukuweka kwenye vituo vya eneo lililo karibu (kitalu cha jiji, jiji, kanda). Nafasi yako kamili haiondoki kamwe kwenye kifaa chako.";

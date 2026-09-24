@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "باز کردن سیاست حریم خصوصی",
   "onboarding.welcome.consent":
     "با زدن {cta}، شما با {terms} و {privacy} ما موافقت می‌کنید.",
+  "onboarding.welcome.transfer": "انتقال از گوشی دیگر",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "در حال ساخت هویت شما",
@@ -101,6 +102,40 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "فقط کلیدان سیستم‌عامل",
   "onboarding.username.prop.account": "نیاز به حساب",
   "onboarding.username.prop.account_value": "ندارد",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "انتقال از گوشی دیگر",
+  "onboarding.transfer.preparing": "در حال آماده‌سازی",
+  "onboarding.transfer.scan_heading": "این کد را با گوشی قدیمی‌تان اسکن کنید",
+  "onboarding.transfer.step_open": "Airhop را روی گوشی قدیمی‌تان باز کنید",
+  "onboarding.transfer.step_go": "به {tab} بروید، سپس {row}",
+  "onboarding.transfer.step_scan": "آن را رو به این کد بگیرید",
+  "onboarding.transfer.network_note":
+    "هر دو گوشی باید روی یک Wi-Fi یا یک هات‌اسپات باشند. چیزی از اینترنت نمی‌گذرد.",
+  "onboarding.transfer.qr_a11y":
+    "کد انتقال. آن را با Airhop روی گوشی قدیمی‌تان اسکن کنید.",
+  "onboarding.transfer.offline_title": "به Wi-Fi وصل شوید",
+  "onboarding.transfer.offline_body":
+    "هر دو گوشی را به یک Wi-Fi وصل کنید، یا هات‌اسپات یکی را روشن کنید و با دیگری به آن بپیوندید. نیازی به اینترنت نیست.",
+  "onboarding.transfer.incoming": "در حال انتقال {name}",
+  "onboarding.transfer.receiving": "در حال دریافت {percent}%",
+  "onboarding.transfer.saving": "در حال ذخیره روی این گوشی",
+  "onboarding.transfer.releasing": "در حال پایان کار روی گوشی قدیمی‌تان",
+  "onboarding.transfer.keep_open": "تا پایان کار، هر دو گوشی را باز نگه دارید.",
+  "onboarding.transfer.check_title": "گوشی قدیمی‌تان را بررسی کنید",
+  "onboarding.transfer.check_body":
+    "همه چیز روی این گوشی است. پیش از ادامه، مطمئن شوید گوشی قدیمی‌تان می‌گوید پاک شده است، یا روی آن «پاک کردن این گوشی» را بزنید.",
+  "onboarding.transfer.failed_title": "انتقال کامل نشد",
+  "onboarding.transfer.failed_cancelled":
+    "انتقال روی گوشی قدیمی‌تان لغو شد. چیزی اینجا ذخیره نشد.",
+  "onboarding.transfer.failed_interrupted":
+    "اتصال قطع شد. چیزی اینجا ذخیره نشد.",
+  "onboarding.transfer.failed_storage":
+    "این گوشی نتوانست آنچه رسید را ذخیره کند، پس چیزی نگه داشته نشد.",
+  "onboarding.transfer.failed_incompatible":
+    "گوشی قدیمی‌تان نسخهٔ تازه‌تری از Airhop دارد. این گوشی را به‌روز کنید و دوباره امتحان کنید.",
+  "onboarding.transfer.failed_unavailable":
+    "این گوشی نمی‌تواند اتصال شبکهٔ محلی برقرار کند.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "به Airhop خوش آمدید!",
@@ -826,6 +861,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ذخیرهٔ باتری · پویش کم‌تر",
   "mesh.banner.wipe_incomplete":
     "پاک‌سازی ناتمام · ممکن است داده‌هایی مانده باشد، با باز کردن دوباره تلاش می‌شود",
+  "mesh.banner.identity_elsewhere":
+    "هویت شما روی گوشی دیگری هم هست · گوشی‌ای را که استفاده نمی‌کنید پاک کنید",
   "mesh.banner.wifi_off": "Wi-Fi خاموش · فایل‌های بزرگ کندتر می‌روند",
   "mesh.banner.clock_skew":
     "ساعت این گوشی نادرست است · تاریخ و ساعت را روی خودکار بگذارید",
@@ -2060,14 +2097,58 @@ export const strings: Strings = {
   "settings.transfer.chats": "گفتگوها و تاریخچه",
   "settings.transfer.chats_desc":
     "گفتگوها، گروه‌ها و کانال‌هایی که به آن‌ها پیوسته‌اید",
+  "settings.transfer.chats_without": "اتاق‌ها و گروه‌هایتان، بدون پیام‌هایشان",
   "settings.transfer.wallet": "موجودی کیف پول",
   "settings.transfer.wallet_desc": "Ecash و تاریخچهٔ تراکنش‌ها",
   "settings.transfer.title": "انتقال به گوشی تازه",
   "settings.transfer.desc":
     "هویت، گفتگوها و کیف پول خود را به دستگاهی دیگر ببرید",
-  "settings.transfer.coming_soon_a11y": "انتقال به گوشی تازه، به‌زودی",
-  "settings.transfer.body":
-    "دو گوشی را کنار هم نگه دارید و همه چیز را از راه بلوتوث منتقل کنید. چیزی از سرور نمی‌گذرد، پس بدون اینترنت هم کار می‌کند.",
+  "settings.transfer.intro":
+    "روی گوشی تازه، Airhop را باز کنید و «انتقال از گوشی دیگر» را بزنید. هر دو گوشی باید روی یک Wi-Fi یا یک هات‌اسپات باشند، نه اینترنت.",
+  "settings.transfer.erase_note":
+    "وقتی همه چیز به گوشی تازه رسید، این گوشی پاک می‌شود. عکس‌ها و فایل‌ها منتقل نمی‌شوند.",
+  "settings.transfer.auth_prompt":
+    "برای انتقال هویت‌تان تأیید کنید که خودتان هستید",
+  "settings.transfer.scan_title": "کد روی گوشی تازه‌تان را اسکن کنید",
+  "settings.transfer.aim": "دوربین را رو به کد روی گوشی تازه‌تان بگیرید",
+  "settings.transfer.wrong_code":
+    "این کد یک مخاطب است. کد روی گوشی تازه‌تان را اسکن کنید.",
+  "settings.transfer.camera_off_body":
+    "برای اسکن کد روی گوشی تازه‌تان، دسترسی دوربین را در تنظیمات روشن کنید.",
+  "settings.transfer.confirm_title": "انتقال به این گوشی؟",
+  "settings.transfer.confirm_body":
+    "همه چیزِ اینجا به گوشی‌ای می‌رود که این کد را نشان می‌دهد. وقتی رسید، این گوشی پاک می‌شود.",
+  "settings.transfer.confirm_cta": "انتقال",
+  "settings.transfer.connecting": "در حال اتصال به گوشی تازه‌تان",
+  "settings.transfer.connecting_hint":
+    "اگر این گوشی برای یافتن دستگاه‌های شبکهٔ محلی اجازه خواست، اجازه دهید.",
+  "settings.transfer.sending": "در حال انتقال {percent}%",
+  "settings.transfer.keep_open": "تا پایان کار، هر دو گوشی را باز نگه دارید.",
+  "settings.transfer.finishing": "در حال پایان کار روی گوشی تازه‌تان",
+  "settings.transfer.erasing": "در حال پاک کردن این گوشی",
+  "settings.transfer.done_title": "منتقل شد",
+  "settings.transfer.done_body":
+    "هویت شما اکنون روی گوشی تازه‌تان است و این گوشی پاک شده است.",
+  "settings.transfer.failed_title": "انتقال کامل نشد",
+  "settings.transfer.failed_unreachable":
+    "به گوشی تازه‌تان دسترسی پیدا نشد. هر دو گوشی را به یک Wi-Fi وصل کنید، یا هات‌اسپات یکی را روشن کنید و با دیگری به آن بپیوندید.",
+  "settings.transfer.failed_permission":
+    "Airhop برای رسیدن به گوشی تازه‌تان به دسترسی شبکهٔ محلی نیاز دارد. آن را در تنظیمات مجاز کنید و دوباره امتحان کنید.",
+  "settings.transfer.failed_wrong_phone":
+    "گوشی‌ای که پاسخ داد همان گوشی‌ای نیست که کدش را اسکن کردید.",
+  "settings.transfer.failed_incompatible":
+    "گوشی تازه‌تان نسخهٔ قدیمی‌تری از Airhop دارد. آن را به‌روز کنید و دوباره امتحان کنید.",
+  "settings.transfer.failed_cancelled": "انتقال روی گوشی تازه‌تان لغو شد.",
+  "settings.transfer.failed_storage":
+    "گوشی تازه‌تان نتوانست همه چیز را ذخیره کند.",
+  "settings.transfer.failed_interrupted": "اتصال پیش از ارسال همه چیز قطع شد.",
+  "settings.transfer.unchanged":
+    "چیزی منتقل نشد و این گوشی مثل قبل کار می‌کند.",
+  "settings.transfer.unconfirmed_title": "انتقال کامل شد؟",
+  "settings.transfer.unconfirmed_body":
+    "ارتباط این گوشی با گوشی تازه‌تان پیش از تأیید قطع شد. اگر گوشی تازه‌تان نام شما را نشان می‌دهد، این گوشی را پاک کنید. اگر نه، با همین گوشی ادامه دهید و دوباره امتحان کنید.",
+  "settings.transfer.erase_cta": "پاک کردن این گوشی",
+  "settings.transfer.keep_cta": "ادامه با همین گوشی",
   "settings.qr.permission_label": "دسترسی عکس",
   "settings.qr.permission_purpose": "ذخیرهٔ کد QR شما",
   "settings.qr.saved": "ذخیره شد",

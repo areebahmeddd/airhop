@@ -582,12 +582,333 @@ private final class LANTransport {
   }
 }
 
+// MARK: - Transfer
+
+private enum MoveEvent {
+  static let connected = "AirhopLAN.moveConnected"
+  static let data = "AirhopLAN.moveData"
+  static let closed = "AirhopLAN.moveClosed"
+}
+
+/// The transfer socket (services/move-link.ts): same framing and liveness as a
+/// mesh link, on its own queue so stopping the mesh never cuts it. No Bonjour:
+/// the new phone's code carries its addresses.
+private final class MoveTransport {
+  private struct Connection {
+    let connection: NWConnection
+    var ready = false
+    var lastReadAt = ProcessInfo.processInfo.systemUptime
+    var closing = false
+  }
+
+  private let emit: (String, [String: Any]) -> Void
+  private let queue = DispatchQueue(label: "org.onemindlabs.airhop.move")
+  private var listener: NWListener?
+  private var liveness: DispatchSourceTimer?
+  private var connections: [String: Connection] = [:]
+  private var seq = 0
+  /// The port is known only once the listener is ready.
+  private var portWaiters: [(UInt16?) -> Void] = []
+
+  init(emit: @escaping (String, [String: Any]) -> Void) {
+    self.emit = emit
+  }
+
+  private func parameters() -> NWParameters {
+    let parameters = NWParameters.tcp
+    if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
+      tcp.noDelay = true
+      tcp.enableKeepalive = true
+      tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+    }
+    return parameters
+  }
+
+  func startListener(completion: @escaping (UInt16?) -> Void) {
+    queue.async {
+      if let listener = self.listener {
+        if let port = listener.port?.rawValue {
+          completion(port)
+        } else {
+          self.portWaiters.append(completion)
+        }
+        return
+      }
+      let listener: NWListener
+      do {
+        listener = try NWListener(using: self.parameters())
+      } catch {
+        completion(nil)
+        return
+      }
+      self.portWaiters.append(completion)
+      listener.newConnectionHandler = { [weak self] connection in
+        self?.queue.async { self?.adopt(connection, direction: "in", onReady: nil) }
+      }
+      // A stopped listener reports late; it must not touch its successor.
+      listener.stateUpdateHandler = { [weak self, weak listener] state in
+        guard let self else { return }
+        self.queue.async {
+          guard let listener, self.listener === listener else { return }
+          switch state {
+          case .ready:
+            self.settlePort(listener.port?.rawValue)
+          case .failed, .cancelled:
+            self.settlePort(nil)
+            self.listener = nil
+          default:
+            break
+          }
+        }
+      }
+      self.listener = listener
+      listener.start(queue: self.queue)
+      self.startLiveness()
+    }
+  }
+
+  private func settlePort(_ port: UInt16?) {
+    let waiters = portWaiters
+    portWaiters.removeAll()
+    for waiter in waiters { waiter(port) }
+  }
+
+  func stop(completion: @escaping () -> Void) {
+    queue.async {
+      self.settlePort(nil)
+      self.listener?.cancel()
+      self.listener = nil
+      self.liveness?.cancel()
+      self.liveness = nil
+      for id in Array(self.connections.keys) { self.close(id) }
+      completion()
+    }
+  }
+
+  func dial(host: String, port: UInt16, completion: @escaping (String?, LANFailure?) -> Void) {
+    queue.async {
+      guard let nwPort = NWEndpoint.Port(rawValue: port) else {
+        completion(nil, .connectFailed("invalid port"))
+        return
+      }
+      let connection = NWConnection(
+        host: NWEndpoint.Host(host),
+        port: nwPort,
+        using: self.parameters()
+      )
+      if self.liveness == nil { self.startLiveness() }
+      self.adopt(connection, direction: "out", onReady: completion)
+    }
+  }
+
+  private func adopt(
+    _ connection: NWConnection,
+    direction: String,
+    onReady: ((String?, LANFailure?) -> Void)?
+  ) {
+    seq += 1
+    let id = "move-\(direction)-\(seq)"
+    connections[id] = Connection(connection: connection)
+    var settled = false
+    connection.stateUpdateHandler = { [weak self] state in
+      guard let self else { return }
+      self.queue.async {
+        switch state {
+        case .ready:
+          if !settled {
+            settled = true
+            onReady?(id, nil)
+          }
+          if var entry = self.connections[id] {
+            entry.ready = true
+            entry.lastReadAt = ProcessInfo.processInfo.systemUptime
+            self.connections[id] = entry
+          }
+          self.emit(MoveEvent.connected, ["connectionID": id])
+          self.readFrame(id: id, connection: connection)
+        case .waiting(let error):
+          // Local network privacy leaves the dial waiting while it prompts;
+          // the retry after Allow connects.
+          if !settled {
+            settled = true
+            if case .dns(let code) = error, code == kDNSServiceErr_PolicyDenied {
+              onReady?(nil, .permissionDenied)
+            } else {
+              onReady?(nil, .connectFailed(String(describing: error)))
+            }
+          }
+          self.close(id)
+        case .failed(let error):
+          if !settled {
+            settled = true
+            onReady?(nil, .connectFailed(String(describing: error)))
+          }
+          self.retire(id)
+        case .cancelled:
+          if !settled {
+            settled = true
+            onReady?(nil, .connectFailed("cancelled"))
+          }
+          self.retire(id)
+        default:
+          break
+        }
+      }
+    }
+    connection.start(queue: queue)
+  }
+
+  private func startLiveness() {
+    liveness?.cancel()
+    let timer = DispatchSource.makeTimerSource(queue: queue)
+    timer.schedule(deadline: .now() + LANLiveness.heartbeat, repeating: LANLiveness.heartbeat)
+    timer.setEventHandler { [weak self] in self?.tick() }
+    timer.resume()
+    liveness = timer
+  }
+
+  private func tick() {
+    let now = ProcessInfo.processInfo.systemUptime
+    for (id, entry) in connections where entry.ready && !entry.closing {
+      if now - entry.lastReadAt > LANLiveness.deadline {
+        close(id)
+        continue
+      }
+      entry.connection.send(
+        content: Framing.encode(Data()),
+        completion: .contentProcessed { [weak self] error in
+          guard error != nil else { return }
+          self?.queue.async { self?.close(id) }
+        }
+      )
+    }
+  }
+
+  private func readFrame(id: String, connection: NWConnection) {
+    connection.receive(
+      minimumIncompleteLength: Framing.prefixBytes,
+      maximumLength: Framing.prefixBytes
+    ) { [weak self] header, _, isComplete, error in
+      guard let self else { return }
+      self.queue.async {
+        guard error == nil, !isComplete, let header,
+          let length = Framing.length(header)
+        else {
+          self.close(id)
+          return
+        }
+        if var entry = self.connections[id] {
+          entry.lastReadAt = ProcessInfo.processInfo.systemUptime
+          self.connections[id] = entry
+        }
+        if length == 0 {
+          self.readFrame(id: id, connection: connection)
+          return
+        }
+        connection.receive(
+          minimumIncompleteLength: length,
+          maximumLength: length
+        ) { payload, _, payloadComplete, payloadError in
+          self.queue.async {
+            guard payloadError == nil, !payloadComplete, let payload,
+              payload.count == length
+            else {
+              self.close(id)
+              return
+            }
+            self.emit(
+              MoveEvent.data,
+              ["connectionID": id, "dataBase64": payload.base64EncodedString()]
+            )
+            self.readFrame(id: id, connection: connection)
+          }
+        }
+      }
+    }
+  }
+
+  func write(id: String, payload: Data, completion: @escaping (LANFailure?) -> Void) {
+    queue.async {
+      guard let entry = self.connections[id], !entry.closing else {
+        completion(.unknownLink(id))
+        return
+      }
+      entry.connection.send(
+        content: Framing.encode(payload),
+        completion: .contentProcessed { [weak self] error in
+          guard let self else { return }
+          self.queue.async {
+            if let error {
+              self.close(id)
+              completion(.writeFailed(String(describing: error)))
+            } else {
+              completion(nil)
+            }
+          }
+        }
+      )
+    }
+  }
+
+  func closeConnection(id: String, completion: @escaping () -> Void) {
+    queue.async {
+      self.close(id)
+      completion()
+    }
+  }
+
+  private func close(_ id: String) {
+    guard var entry = connections[id], !entry.closing else { return }
+    entry.closing = true
+    connections[id] = entry
+    entry.connection.cancel()
+  }
+
+  private func retire(_ id: String) {
+    guard connections.removeValue(forKey: id) != nil else { return }
+    emit(MoveEvent.closed, ["connectionID": id])
+  }
+
+  /// IPv4 on Wi-Fi (en*) and a served hotspot (bridge*). Cellular and tunnels
+  /// carry nobody beside us.
+  static func localHosts() -> [String] {
+    var hosts: [String] = []
+    var head: UnsafeMutablePointer<ifaddrs>?
+    guard getifaddrs(&head) == 0, let first = head else { return hosts }
+    defer { freeifaddrs(head) }
+    var cursor: UnsafeMutablePointer<ifaddrs>? = first
+    while let ifa = cursor {
+      defer { cursor = ifa.pointee.ifa_next }
+      let flags = Int32(ifa.pointee.ifa_flags)
+      guard flags & IFF_UP != 0, flags & IFF_LOOPBACK == 0,
+        let addr = ifa.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET)
+      else { continue }
+      let name = String(cString: ifa.pointee.ifa_name)
+      guard name.hasPrefix("en") || name.hasPrefix("bridge") else { continue }
+      var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+      guard
+        getnameinfo(
+          addr, socklen_t(addr.pointee.sa_len), &buffer, socklen_t(buffer.count),
+          nil, 0, NI_NUMERICHOST) == 0
+      else { continue }
+      let host = String(cString: buffer)
+      if host.hasPrefix("169.254.") || hosts.contains(host) { continue }
+      hosts.append(host)
+    }
+    return hosts
+  }
+}
+
 // MARK: - Bridge
 
 @objc(AirhopLANModule)
 final class AirhopLANModule: RCTEventEmitter {
 
   private lazy var transport = LANTransport { [weak self] name, body in
+    self?.emit(name, body)
+  }
+
+  private lazy var move = MoveTransport { [weak self] name, body in
     self?.emit(name, body)
   }
 
@@ -601,6 +922,9 @@ final class AirhopLANModule: RCTEventEmitter {
       LANEvent.linkDisconnected,
       LANEvent.packetReceived,
       LANEvent.availabilityChanged,
+      MoveEvent.connected,
+      MoveEvent.data,
+      MoveEvent.closed,
     ]
   }
 
@@ -684,12 +1008,91 @@ final class AirhopLANModule: RCTEventEmitter {
     }
   }
 
+  // MARK: Transfer
+
+  @objc(startMoveListener:rejecter:)
+  func startMoveListener(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    move.startListener { port in
+      guard let port else {
+        reject("MOVE_LISTEN_FAILED", "Could not open the move socket", nil)
+        return
+      }
+      resolve(["port": Int(port), "hosts": MoveTransport.localHosts()])
+    }
+  }
+
+  @objc(stopMove:rejecter:)
+  func stopMove(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    move.stop { resolve(nil) }
+  }
+
+  @objc(dialMove:port:resolver:rejecter:)
+  func dialMove(
+    host: String,
+    port: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard port >= 1, port <= 65_535 else {
+      reject("CONNECT_FAILED", "Port out of range", nil)
+      return
+    }
+    move.dial(host: host, port: UInt16(port)) { id, failure in
+      if let id {
+        resolve(id)
+      } else {
+        let failure = failure ?? .connectFailed("unknown")
+        reject(failure.code, failure.message, nil)
+      }
+    }
+  }
+
+  @objc(writeMove:dataBase64:resolver:rejecter:)
+  func writeMove(
+    connectionID: String,
+    dataBase64: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let payload = Data(base64Encoded: dataBase64), !payload.isEmpty else {
+      reject("INVALID_DATA", "Invalid base64 payload", nil)
+      return
+    }
+    guard payload.count <= Framing.maxFrame - Framing.prefixBytes else {
+      reject("FRAME_TOO_LARGE", "Frame of \(payload.count) exceeds the peer's read limit", nil)
+      return
+    }
+    move.write(id: connectionID, payload: payload) { failure in
+      if let failure {
+        reject(failure.code, failure.message, nil)
+      } else {
+        resolve(nil)
+      }
+    }
+  }
+
+  @objc(closeMove:resolver:rejecter:)
+  func closeMove(
+    connectionID: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    move.closeConnection(id: connectionID) { resolve(nil) }
+  }
+
   // MARK: Lifecycle
 
   /// Every link exists to hand bytes to a runtime that is gone, and a listener
   /// nobody hears is a socket left open.
   override func invalidate() {
     transport.stop {}
+    move.stop {}
     super.invalidate()
   }
 }

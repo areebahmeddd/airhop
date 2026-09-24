@@ -72,6 +72,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_terms": "የአገልግሎት ውሎችን ክፈት",
   "onboarding.welcome.open_privacy": "የግላዊነት መመሪያን ክፈት",
   "onboarding.welcome.consent": "{cta} በመንካት {terms} እና {privacy} ን ተቀብለሃል።",
+  "onboarding.welcome.transfer": "ከሌላ ስልክ አስተላልፍ",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "ማንነትህ እየተፈጠረ ነው",
@@ -99,6 +100,38 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "የስርዓቱ ቁልፍ ማከማቻ ብቻ",
   "onboarding.username.prop.account": "መለያ ያስፈልጋል",
   "onboarding.username.prop.account_value": "አያስፈልግም",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "ከሌላ ስልክ አስተላልፍ",
+  "onboarding.transfer.preparing": "በመዘጋጀት ላይ",
+  "onboarding.transfer.scan_heading": "ይህን ኮድ በአሮጌው ስልክህ ቃኝ",
+  "onboarding.transfer.step_open": "በአሮጌው ስልክህ Airhop ን ክፈት",
+  "onboarding.transfer.step_go": "ወደ {tab} ሂድ፣ ከዚያ {row} ን ምረጥ",
+  "onboarding.transfer.step_scan": "ወደዚህ ኮድ አነጣጥረው",
+  "onboarding.transfer.network_note":
+    "ሁለቱም ስልኮች በአንድ Wi-Fi ወይም ሆትስፖት ላይ መሆን አለባቸው። ምንም በኢንተርኔት አያልፍም።",
+  "onboarding.transfer.qr_a11y": "የማስተላለፊያ ኮድ። በአሮጌው ስልክህ ላይ ባለው Airhop ቃኘው።",
+  "onboarding.transfer.offline_title": "ከWi-Fi ጋር ተገናኝ",
+  "onboarding.transfer.offline_body":
+    "ሁለቱንም ስልኮች በአንድ Wi-Fi ላይ አድርግ፣ ወይም በአንዱ ላይ ሆትስፖት አብራና ከሌላው ተቀላቀለው። ኢንተርኔት አያስፈልግም።",
+  "onboarding.transfer.incoming": "{name} በመተላለፍ ላይ",
+  "onboarding.transfer.receiving": "በመቀበል ላይ {percent}%",
+  "onboarding.transfer.saving": "ወደዚህ ስልክ በማስቀመጥ ላይ",
+  "onboarding.transfer.releasing": "በአሮጌው ስልክህ ላይ በማጠናቀቅ ላይ",
+  "onboarding.transfer.keep_open": "ይህ እስኪጠናቀቅ ድረስ ሁለቱንም ስልኮች ክፍት አድርገህ ያዝ።",
+  "onboarding.transfer.check_title": "አሮጌውን ስልክህን ፈትሽ",
+  "onboarding.transfer.check_body":
+    "ሁሉም ነገር በዚህ ስልክ ላይ ነው። ከመቀጠልህ በፊት አሮጌው ስልክህ መጽዳቱን እንደሚያሳይ አረጋግጥ፣ ወይም በእሱ ላይ ይህን ስልክ አጽዳ የሚለውን ምረጥ።",
+  "onboarding.transfer.failed_title": "ማስተላለፉ አልተጠናቀቀም",
+  "onboarding.transfer.failed_cancelled":
+    "ማስተላለፉ በአሮጌው ስልክህ ላይ ተሰርዟል። እዚህ ምንም አልተቀመጠም።",
+  "onboarding.transfer.failed_interrupted": "ግንኙነቱ ተቋርጧል። እዚህ ምንም አልተቀመጠም።",
+  "onboarding.transfer.failed_storage":
+    "ይህ ስልክ የደረሰውን ማስቀመጥ አልቻለም፤ ስለዚህ ምንም አልተያዘም።",
+  "onboarding.transfer.failed_incompatible":
+    "አሮጌው ስልክህ አዲስ የAirhop ስሪት ይጠቀማል። ይህን ስልክ አዘምንና እንደገና ሞክር።",
+  "onboarding.transfer.failed_unavailable":
+    "ይህ ስልክ የአካባቢ አውታረ መረብ ግንኙነት መክፈት አይችልም።",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "እንኳን ወደ Airhop በደህና መጣህ!",
@@ -783,6 +816,7 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "የባትሪ ቆጣቢ · ማሰሱ ቀንሷል",
   "mesh.banner.wipe_incomplete":
     "ማጽዳቱ አልተጠናቀቀም · የተወሰነ መረጃ ሊቀር ይችላል፤ እንደገና ሲከፈት ይሞከራል",
+  "mesh.banner.identity_elsewhere": "ማንነትህ በሌላ ስልክም ላይ አለ · የማትጠቀምበትን አጽዳ",
   "mesh.banner.wifi_off": "Wi-Fi ጠፍቷል · ትላልቅ ፋይሎች ቀስ ብለው ይላካሉ",
   "mesh.banner.clock_skew": "የዚህ ስልክ ሰዓት ትክክል አይደለም · ቀኑንና ሰዓቱን ወደ ራስ-ሰር አድርግ",
   "mesh.banner.internet_off": "ኢንተርኔት ጠፍቷል · ብሉቱዝ ብቻ",
@@ -1942,13 +1976,51 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "የአቻ መለያህ፣ የተጠቃሚ ስምህና እውቂያዎችህ",
   "settings.transfer.chats": "ውይይቶችና ታሪክ",
   "settings.transfer.chats_desc": "ውይይቶች፣ ቡድኖችና የተቀላቀልካቸው ሰርጦች",
+  "settings.transfer.chats_without": "ሰርጦችህና ቡድኖችህ፣ ያለ መልእክቶቻቸው",
   "settings.transfer.wallet": "የቦርሳ ቀሪ ሂሳብ",
   "settings.transfer.wallet_desc": "Ecash እና የግብይት ታሪክ",
   "settings.transfer.title": "ወደ አዲስ ስልክ አስተላልፍ",
   "settings.transfer.desc": "ማንነትህን፣ ውይይቶችህንና ቦርሳህን ወደ ሌላ መሣሪያ አዛውር",
-  "settings.transfer.coming_soon_a11y": "ወደ አዲስ ስልክ ማስተላለፍ፣ በቅርቡ ይመጣል",
-  "settings.transfer.body":
-    "ሁለቱን ስልኮች አጠጋግተህ ያዝና ሁሉንም ነገር በብሉቱዝ አሻግር። ምንም በአገልጋይ አያልፍም፤ ስለዚህ ያለ ኢንተርኔት ይሠራል።",
+  "settings.transfer.intro":
+    "በአዲሱ ስልክ Airhop ን ክፈትና ከሌላ ስልክ አስተላልፍ የሚለውን ምረጥ። ሁለቱም ስልኮች በአንድ Wi-Fi ወይም ሆትስፖት ላይ መሆን አለባቸው፤ ኢንተርኔት አያስፈልግም።",
+  "settings.transfer.erase_note":
+    "አዲሱ ስልክ ሁሉንም ነገር ሲቀበል ይህ ስልክ ይጸዳል። ፎቶዎችና ፋይሎች አይተላለፉም።",
+  "settings.transfer.auth_prompt": "ማንነትህን ለማስተላለፍ አንተ መሆንህን አረጋግጥ",
+  "settings.transfer.scan_title": "በአዲሱ ስልክህ ላይ ያለውን ኮድ ቃኝ",
+  "settings.transfer.aim": "ካሜራውን በአዲሱ ስልክህ ላይ ወዳለው ኮድ አነጣጥር",
+  "settings.transfer.wrong_code": "ያ የእውቂያ ኮድ ነው። በአዲሱ ስልክህ ላይ ያለውን ኮድ ቃኝ።",
+  "settings.transfer.camera_off_body":
+    "በአዲሱ ስልክህ ላይ ያለውን ኮድ ለመቃኘት በቅንብሮች ውስጥ የካሜራ መዳረሻን ፍቀድ።",
+  "settings.transfer.confirm_title": "ወደዚህ ስልክ ይተላለፍ?",
+  "settings.transfer.confirm_body":
+    "እዚህ ያለው ሁሉ ይህን ኮድ ወደሚያሳየው ስልክ ይዛወራል። እንደደረሰ ይህ ስልክ ይጸዳል።",
+  "settings.transfer.confirm_cta": "አስተላልፍ",
+  "settings.transfer.connecting": "ከአዲሱ ስልክህ ጋር በመገናኘት ላይ",
+  "settings.transfer.connecting_hint":
+    "ይህ ስልክ በአካባቢ አውታረ መረብ ላይ መሣሪያዎችን ለማግኘት ፈቃድ ከጠየቀ ፍቀድለት።",
+  "settings.transfer.sending": "በማስተላለፍ ላይ {percent}%",
+  "settings.transfer.keep_open": "ይህ እስኪጠናቀቅ ድረስ ሁለቱንም ስልኮች ክፍት አድርገህ ያዝ።",
+  "settings.transfer.finishing": "በአዲሱ ስልክህ ላይ በማጠናቀቅ ላይ",
+  "settings.transfer.erasing": "ይህ ስልክ እየጸዳ ነው",
+  "settings.transfer.done_title": "ተላልፏል",
+  "settings.transfer.done_body": "ማንነትህ አሁን በአዲሱ ስልክህ ላይ ነው፤ ይህ ስልክም ጸድቷል።",
+  "settings.transfer.failed_title": "ማስተላለፉ አልተጠናቀቀም",
+  "settings.transfer.failed_unreachable":
+    "አዲሱን ስልክህን ማግኘት አልተቻለም። ሁለቱንም ስልኮች በአንድ Wi-Fi ላይ አድርግ፣ ወይም በአንዱ ላይ ሆትስፖት አብራና ከሌላው ተቀላቀለው።",
+  "settings.transfer.failed_permission":
+    "Airhop አዲሱን ስልክህን ለማግኘት የአካባቢ አውታረ መረብ መዳረሻ ያስፈልገዋል። በቅንብሮች ውስጥ ፍቀድና እንደገና ሞክር።",
+  "settings.transfer.failed_wrong_phone": "የመለሰው ስልክ የቃኘኸው ኮድ ባለቤት አይደለም።",
+  "settings.transfer.failed_incompatible":
+    "አዲሱ ስልክህ የቆየ የAirhop ስሪት ይጠቀማል። አዘምነውና እንደገና ሞክር።",
+  "settings.transfer.failed_cancelled": "ማስተላለፉ በአዲሱ ስልክህ ላይ ተሰርዟል።",
+  "settings.transfer.failed_storage": "አዲሱ ስልክህ ሁሉንም ነገር ማስቀመጥ አልቻለም።",
+  "settings.transfer.failed_interrupted": "ሁሉም ነገር ከመላኩ በፊት ግንኙነቱ ተቋርጧል።",
+  "settings.transfer.unchanged": "ምንም አልተዛወረም፤ ይህ ስልክም እንደበፊቱ ይሠራል።",
+  "settings.transfer.unconfirmed_title": "ማስተላለፉ ተጠናቋል?",
+  "settings.transfer.unconfirmed_body":
+    "አዲሱ ስልክህ ከማረጋገጡ በፊት ይህ ስልክ ከእሱ ጋር ያለው ግንኙነት ተቋርጧል። አዲሱ ስልክህ ስምህን ካሳየ ይህን ስልክ አጽዳ። ካላሳየ ይህንኑ መጠቀም ቀጥልና እንደገና ሞክር።",
+  "settings.transfer.erase_cta": "ይህን ስልክ አጽዳ",
+  "settings.transfer.keep_cta": "ይህንኑ ስልክ መጠቀም ቀጥል",
   "settings.qr.permission_label": "የፎቶ መዳረሻ",
   "settings.qr.permission_purpose": "QR ኮድህን ለማስቀመጥ",
   "settings.qr.saved": "ተቀምጧል",

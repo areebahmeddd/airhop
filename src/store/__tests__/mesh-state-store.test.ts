@@ -553,3 +553,37 @@ describe("the incomplete-wipe banner", () => {
     expect(banners[0].key).toBe("wipe-incomplete");
   });
 });
+
+// The same kind of claim as the wipe warning: about who holds the identity
+// rather than about the mesh, so it outranks everything the mesh can say.
+describe("the identity-elsewhere banner", () => {
+  it("is absent by default", () => {
+    expect(computeMeshBanners(HEALTHY)).toEqual([]);
+  });
+
+  it("warns in danger, with no button, since only the person can choose", () => {
+    const banners = computeMeshBanners({ ...HEALTHY, identityElsewhere: true });
+    expect(banners).toEqual([
+      {
+        key: "identity-elsewhere",
+        label:
+          "Your identity is on another phone too · erase the one you don’t use",
+        tone: "danger",
+      },
+    ]);
+  });
+
+  it("ranks under an incomplete wipe and above everything the mesh reports", () => {
+    const banners = computeMeshBanners({
+      ...HEALTHY,
+      identityElsewhere: true,
+      wipeIncomplete: true,
+      bleBlocker: "adapter-off",
+      peerCount: 0,
+    });
+    expect(banners.map((b) => b.key).slice(0, 2)).toEqual([
+      "wipe-incomplete",
+      "identity-elsewhere",
+    ]);
+  });
+});

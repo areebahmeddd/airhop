@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "კონფიდენციალურობის პოლიტიკის გახსნა",
   "onboarding.welcome.consent":
     "{cta}-ზე შეხებით ეთანხმები ჩვენს {terms}-სა და {privacy}-ს.",
+  "onboarding.welcome.transfer": "სხვა ტელეფონიდან გადატანა",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "შენი ვინაობა იქმნება",
@@ -104,6 +105,41 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "მხოლოდ სისტემის საკვანძო",
   "onboarding.username.prop.account": "საჭიროა ანგარიში",
   "onboarding.username.prop.account_value": "არა",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "სხვა ტელეფონიდან გადატანა",
+  "onboarding.transfer.preparing": "მზადება",
+  "onboarding.transfer.scan_heading": "დაასკანერე ეს კოდი ძველი ტელეფონით",
+  "onboarding.transfer.step_open": "გახსენი Airhop ძველ ტელეფონზე",
+  "onboarding.transfer.step_go": "გახსენი {tab}, შემდეგ {row}",
+  "onboarding.transfer.step_scan": "მიმართე ის ამ კოდზე",
+  "onboarding.transfer.network_note":
+    "ორივე ტელეფონი ერთ Wi-Fi-ზე ან ჰოტსპოტზე უნდა იყოს. ინტერნეტით არაფერი იგზავნება.",
+  "onboarding.transfer.qr_a11y":
+    "გადატანის კოდი. დაასკანერე ის Airhop-ით ძველ ტელეფონზე.",
+  "onboarding.transfer.offline_title": "დაუკავშირდი Wi-Fi-ს",
+  "onboarding.transfer.offline_body":
+    "ორივე ტელეფონი ერთ Wi-Fi-ს დაუკავშირე, ან ერთზე ჩართე ჰოტსპოტი და მეორით შეუერთდი. ინტერნეტი საჭირო არ არის.",
+  "onboarding.transfer.incoming": "{name}-ის გადატანა",
+  "onboarding.transfer.receiving": "მიღება {percent}%",
+  "onboarding.transfer.saving": "ინახება ამ ტელეფონზე",
+  "onboarding.transfer.releasing": "სრულდება ძველ ტელეფონზე",
+  "onboarding.transfer.keep_open":
+    "ორივე ტელეფონი გახსნილი დატოვე, სანამ ეს დასრულდება.",
+  "onboarding.transfer.check_title": "შეამოწმე ძველი ტელეფონი",
+  "onboarding.transfer.check_body":
+    "ყველაფერი ამ ტელეფონზეა. სანამ გააგრძელებ, დარწმუნდი, რომ ძველ ტელეფონზე წერია, რომ წაიშალა, ან აირჩიე მასზე ამ ტელეფონის წაშლა.",
+  "onboarding.transfer.failed_title": "გადატანა ვერ დასრულდა",
+  "onboarding.transfer.failed_cancelled":
+    "გადატანა ძველ ტელეფონზე გაუქმდა. აქ არაფერი შენახულა.",
+  "onboarding.transfer.failed_interrupted":
+    "კავშირი გაწყდა. აქ არაფერი შენახულა.",
+  "onboarding.transfer.failed_storage":
+    "ამ ტელეფონმა მიღებულის შენახვა ვერ შეძლო, ამიტომ არაფერი დარჩა.",
+  "onboarding.transfer.failed_incompatible":
+    "ძველ ტელეფონზე Airhop-ის უფრო ახალი ვერსიაა. განაახლე ეს ტელეფონი და ხელახლა სცადე.",
+  "onboarding.transfer.failed_unavailable":
+    "ამ ტელეფონს ლოკალურ ქსელთან კავშირის გახსნა არ შეუძლია.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "კეთილი იყოს შენი მობრძანება Airhop-ში!",
@@ -836,6 +872,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ბატარეის დაზოგვა · სკანირება უფრო იშვიათად",
   "mesh.banner.wipe_incomplete":
     "წაშლა დაუსრულებელია · შესაძლოა მონაცემები დარჩა, ხელახლა გახსნა კვლავ ცდის",
+  "mesh.banner.identity_elsewhere":
+    "შენი ვინაობა სხვა ტელეფონზეც არის · წაშალე ის, რომელსაც არ იყენებ",
   "mesh.banner.wifi_off": "Wi-Fi გამორთულია · დიდი ფაილები უფრო ნელა იგზავნება",
   "mesh.banner.clock_skew":
     "ამ ტელეფონის საათი არასწორია · დააყენე თარიღი და დრო ავტომატურზე",
@@ -2084,14 +2122,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "მიმოწერები და ისტორია",
   "settings.transfer.chats_desc":
     "საუბრები, ჯგუფები და არხები, რომლებსაც შეუერთდი",
+  "settings.transfer.chats_without":
+    "შენი არხები და ჯგუფები, შეტყობინებების გარეშე",
   "settings.transfer.wallet": "საფულის ბალანსი",
   "settings.transfer.wallet_desc": "Ecash და ტრანზაქციების ისტორია",
   "settings.transfer.title": "ახალ ტელეფონზე გადატანა",
   "settings.transfer.desc":
     "გადაიტანე შენი ვინაობა, მიმოწერები და საფულე სხვა მოწყობილობაზე",
-  "settings.transfer.coming_soon_a11y": "ახალ ტელეფონზე გადატანა, მალე",
-  "settings.transfer.body":
-    "მიადე ორი ტელეფონი ერთმანეთს და ყველაფერი ბლუთუზით გადაიტანე. არაფერი გადის სერვერზე, ამიტომ ინტერნეტის გარეშეც მუშაობს.",
+  "settings.transfer.intro":
+    "ახალ ტელეფონზე გახსენი Airhop და აირჩიე სხვა ტელეფონიდან გადატანა. ორივე ტელეფონი ერთ Wi-Fi-ზე ან ჰოტსპოტზე უნდა იყოს, ინტერნეტი საჭირო არ არის.",
+  "settings.transfer.erase_note":
+    "როცა ახალ ტელეფონზე ყველაფერი გადავა, ეს ტელეფონი წაიშლება. ფოტოები და ფაილები არ გადაიტანება.",
+  "settings.transfer.auth_prompt":
+    "დაადასტურე, რომ ეს შენ ხარ, რათა ვინაობა გადაიტანო",
+  "settings.transfer.scan_title": "დაასკანერე კოდი ახალ ტელეფონზე",
+  "settings.transfer.aim": "მიმართე კამერა ახალი ტელეფონის კოდზე",
+  "settings.transfer.wrong_code":
+    "ეს კონტაქტის კოდია. დაასკანერე კოდი ახალ ტელეფონზე.",
+  "settings.transfer.camera_off_body":
+    "დაუშვი კამერასთან წვდომა პარამეტრებში, რომ ახალ ტელეფონზე კოდი დაასკანერო.",
+  "settings.transfer.confirm_title": "გადავიტანოთ ამ ტელეფონზე?",
+  "settings.transfer.confirm_body":
+    "აქ ყველაფერი გადავა ტელეფონზე, რომელიც ამ კოდს აჩვენებს. როგორც კი მივა, ეს ტელეფონი წაიშლება.",
+  "settings.transfer.confirm_cta": "გადატანა",
+  "settings.transfer.connecting": "უკავშირდება ახალ ტელეფონს",
+  "settings.transfer.connecting_hint":
+    "თუ ეს ტელეფონი ლოკალურ ქსელში მოწყობილობების პოვნის ნებართვას მოითხოვს, დაუშვი.",
+  "settings.transfer.sending": "გადატანა {percent}%",
+  "settings.transfer.keep_open":
+    "ორივე ტელეფონი გახსნილი დატოვე, სანამ ეს დასრულდება.",
+  "settings.transfer.finishing": "სრულდება ახალ ტელეფონზე",
+  "settings.transfer.erasing": "ეს ტელეფონი იშლება",
+  "settings.transfer.done_title": "გადატანილია",
+  "settings.transfer.done_body":
+    "შენი ვინაობა ახლა ახალ ტელეფონზეა, ეს ტელეფონი კი წაიშალა.",
+  "settings.transfer.failed_title": "გადატანა ვერ დასრულდა",
+  "settings.transfer.failed_unreachable":
+    "ახალ ტელეფონს ვერ დავუკავშირდით. ორივე ტელეფონი ერთ Wi-Fi-ს დაუკავშირე, ან ერთზე ჩართე ჰოტსპოტი და მეორით შეუერთდი.",
+  "settings.transfer.failed_permission":
+    "ახალ ტელეფონთან დასაკავშირებლად Airhop-ს ლოკალურ ქსელთან წვდომა სჭირდება. დაუშვი პარამეტრებში და ხელახლა სცადე.",
+  "settings.transfer.failed_wrong_phone":
+    "ტელეფონი, რომელმაც უპასუხა, ის არ არის, რომლის კოდიც დაასკანერე.",
+  "settings.transfer.failed_incompatible":
+    "ახალ ტელეფონზე Airhop-ის უფრო ძველი ვერსიაა. განაახლე და ხელახლა სცადე.",
+  "settings.transfer.failed_cancelled": "გადატანა ახალ ტელეფონზე გაუქმდა.",
+  "settings.transfer.failed_storage":
+    "ახალმა ტელეფონმა ყველაფრის შენახვა ვერ შეძლო.",
+  "settings.transfer.failed_interrupted":
+    "კავშირი გაწყდა, სანამ ყველაფერი გაიგზავნებოდა.",
+  "settings.transfer.unchanged":
+    "არაფერი გადატანილა და ეს ტელეფონი ისევე მუშაობს, როგორც ადრე.",
+  "settings.transfer.unconfirmed_title": "დასრულდა გადატანა?",
+  "settings.transfer.unconfirmed_body":
+    "ამ ტელეფონმა ახალთან კავშირი დაკარგა, სანამ ის დაადასტურებდა. თუ ახალ ტელეფონზე შენი სახელი ჩანს, წაშალე ეს ტელეფონი. თუ არა, ისევ ეს გამოიყენე და ხელახლა სცადე.",
+  "settings.transfer.erase_cta": "ამ ტელეფონის წაშლა",
+  "settings.transfer.keep_cta": "ამ ტელეფონით გაგრძელება",
   "settings.qr.permission_label": "ფოტოებთან წვდომა",
   "settings.qr.permission_purpose": "შეინახო შენი QR კოდი",
   "settings.qr.saved": "შენახულია",

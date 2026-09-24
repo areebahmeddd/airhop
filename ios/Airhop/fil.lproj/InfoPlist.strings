@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Gumagamit ang Airhop ng mikropono para mag-record ng voice note at para magdala ng live na boses sa mga kalapit na peer.";
 "NSPhotoLibraryUsageDescription" = "Ina-access ng Airhop ang photo library mo para makapagbahagi ng mga larawan at video sa mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Sine-save ng Airhop ang mga larawan at video sa photo library mo kapag pinili mong mag-save, at kapag dina-download mo ang QR code mo.";
+"NSFaceIDUsageDescription" = "Gumagamit ang Airhop ng Face ID para kumpirmahing ikaw ito bago ilipat ang pagkakakilanlan mo sa bagong telepono.";
 "NSLocationWhenInUseUsageDescription" = "Gumagamit ang Airhop ng tinatayang lokasyon mo para ilagay ka sa mga channel ng lugar sa malapit (bloke, lungsod, rehiyon). Hindi kailanman umaalis sa device mo ang eksaktong posisyon mo.";

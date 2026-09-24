@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "ਨਿੱਜਤਾ ਨੀਤੀ ਖੋਲ੍ਹੋ",
   "onboarding.welcome.consent":
     "{cta} ਦਬਾਉਣ ਨਾਲ ਤੁਸੀਂ ਸਾਡੀਆਂ {terms} ਅਤੇ {privacy} ਮੰਨਦੇ ਹੋ।",
+  "onboarding.welcome.transfer": "ਦੂਜੇ ਫ਼ੋਨ ਤੋਂ ਲਿਆਓ",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "ਤੁਹਾਡੀ ਪਛਾਣ ਬਣਾ ਰਹੇ ਹਾਂ",
@@ -100,6 +101,40 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "ਸਿਰਫ਼ OS ਕੀਚੇਨ",
   "onboarding.username.prop.account": "ਖਾਤਾ ਲੋੜੀਂਦਾ",
   "onboarding.username.prop.account_value": "ਕੋਈ ਨਹੀਂ",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "ਦੂਜੇ ਫ਼ੋਨ ਤੋਂ ਲਿਆਓ",
+  "onboarding.transfer.preparing": "ਤਿਆਰੀ ਹੋ ਰਹੀ ਹੈ",
+  "onboarding.transfer.scan_heading": "ਇਹ ਕੋਡ ਆਪਣੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ਨਾਲ ਸਕੈਨ ਕਰੋ",
+  "onboarding.transfer.step_open": "ਆਪਣੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ Airhop ਖੋਲ੍ਹੋ",
+  "onboarding.transfer.step_go": "{tab} ’ਤੇ ਜਾਓ, ਫਿਰ {row}",
+  "onboarding.transfer.step_scan": "ਉਸ ਨੂੰ ਇਸ ਕੋਡ ਵੱਲ ਸੇਧੋ",
+  "onboarding.transfer.network_note":
+    "ਦੋਵੇਂ ਫ਼ੋਨ ਇੱਕੋ Wi-Fi ਜਾਂ ਹੌਟਸਪੌਟ ’ਤੇ ਹੋਣੇ ਚਾਹੀਦੇ ਹਨ। ਕੁਝ ਵੀ ਇੰਟਰਨੈੱਟ ਰਾਹੀਂ ਨਹੀਂ ਜਾਂਦਾ।",
+  "onboarding.transfer.qr_a11y":
+    "ਤਬਾਦਲਾ ਕੋਡ। ਇਸ ਨੂੰ ਆਪਣੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ Airhop ਨਾਲ ਸਕੈਨ ਕਰੋ।",
+  "onboarding.transfer.offline_title": "Wi-Fi ਨਾਲ ਜੁੜੋ",
+  "onboarding.transfer.offline_body":
+    "ਦੋਵੇਂ ਫ਼ੋਨ ਇੱਕੋ Wi-Fi ’ਤੇ ਰੱਖੋ, ਜਾਂ ਇੱਕ ’ਤੇ ਹੌਟਸਪੌਟ ਚਾਲੂ ਕਰਕੇ ਦੂਜੇ ਤੋਂ ਉਸ ਨਾਲ ਜੁੜੋ। ਇੰਟਰਨੈੱਟ ਦੀ ਲੋੜ ਨਹੀਂ।",
+  "onboarding.transfer.incoming": "{name} ਨੂੰ ਲਿਆਇਆ ਜਾ ਰਿਹਾ ਹੈ",
+  "onboarding.transfer.receiving": "ਪ੍ਰਾਪਤ ਹੋ ਰਿਹਾ ਹੈ {percent}%",
+  "onboarding.transfer.saving": "ਇਸ ਫ਼ੋਨ ’ਤੇ ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ",
+  "onboarding.transfer.releasing": "ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ ਪੂਰਾ ਹੋ ਰਿਹਾ ਹੈ",
+  "onboarding.transfer.keep_open": "ਇਹ ਪੂਰਾ ਹੋਣ ਤੱਕ ਦੋਵੇਂ ਫ਼ੋਨ ਖੁੱਲ੍ਹੇ ਰੱਖੋ।",
+  "onboarding.transfer.check_title": "ਆਪਣਾ ਪੁਰਾਣਾ ਫ਼ੋਨ ਵੇਖੋ",
+  "onboarding.transfer.check_body":
+    "ਸਭ ਕੁਝ ਇਸ ਫ਼ੋਨ ’ਤੇ ਆ ਗਿਆ ਹੈ। ਅੱਗੇ ਵਧਣ ਤੋਂ ਪਹਿਲਾਂ ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਪੁਰਾਣਾ ਫ਼ੋਨ ਦੱਸ ਰਿਹਾ ਹੈ ਕਿ ਉਹ ਸਾਫ਼ ਹੋ ਗਿਆ, ਜਾਂ ਉਸ ’ਤੇ “ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰੋ” ਚੁਣੋ।",
+  "onboarding.transfer.failed_title": "ਤਬਾਦਲਾ ਪੂਰਾ ਨਹੀਂ ਹੋਇਆ",
+  "onboarding.transfer.failed_cancelled":
+    "ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ ਤਬਾਦਲਾ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ। ਇੱਥੇ ਕੁਝ ਵੀ ਨਹੀਂ ਸੰਭਾਲਿਆ ਗਿਆ।",
+  "onboarding.transfer.failed_interrupted":
+    "ਕਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ। ਇੱਥੇ ਕੁਝ ਵੀ ਨਹੀਂ ਸੰਭਾਲਿਆ ਗਿਆ।",
+  "onboarding.transfer.failed_storage":
+    "ਇਹ ਫ਼ੋਨ ਆਇਆ ਹੋਇਆ ਡਾਟਾ ਸੰਭਾਲ ਨਹੀਂ ਸਕਿਆ, ਇਸ ਲਈ ਕੁਝ ਵੀ ਨਹੀਂ ਰੱਖਿਆ ਗਿਆ।",
+  "onboarding.transfer.failed_incompatible":
+    "ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ Airhop ਦਾ ਨਵਾਂ ਸੰਸਕਰਣ ਹੈ। ਇਹ ਫ਼ੋਨ ਅੱਪਡੇਟ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "onboarding.transfer.failed_unavailable":
+    "ਇਹ ਫ਼ੋਨ ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਖੋਲ੍ਹ ਸਕਦਾ।",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ!",
@@ -831,6 +866,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ਬੈਟਰੀ ਬਚਾਊ · ਘੱਟ ਵਾਰ ਖੋਜ ਰਹੇ ਹਾਂ",
   "mesh.banner.wipe_incomplete":
     "ਸਫ਼ਾਈ ਅਧੂਰੀ · ਕੁਝ ਡਾਟਾ ਬਚਿਆ ਹੋ ਸਕਦਾ ਹੈ, ਦੁਬਾਰਾ ਖੋਲ੍ਹਣ ’ਤੇ ਕੋਸ਼ਿਸ਼ ਹੁੰਦੀ ਹੈ",
+  "mesh.banner.identity_elsewhere":
+    "ਤੁਹਾਡੀ ਪਛਾਣ ਕਿਸੇ ਹੋਰ ਫ਼ੋਨ ’ਤੇ ਵੀ ਹੈ · ਜੋ ਫ਼ੋਨ ਤੁਸੀਂ ਨਹੀਂ ਵਰਤਦੇ, ਉਹ ਸਾਫ਼ ਕਰੋ",
   "mesh.banner.wifi_off": "Wi-Fi ਬੰਦ · ਵੱਡੀਆਂ ਫ਼ਾਈਲਾਂ ਹੌਲੀ ਜਾਂਦੀਆਂ ਹਨ",
   "mesh.banner.clock_skew":
     "ਇਸ ਫ਼ੋਨ ਦੀ ਘੜੀ ਗ਼ਲਤ ਹੈ · ਤਾਰੀਖ਼ ਅਤੇ ਸਮਾਂ ਆਪੇ-ਸੈੱਟ ’ਤੇ ਲਾਓ",
@@ -2054,14 +2091,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "ਗੱਲਬਾਤਾਂ ਅਤੇ ਇਤਿਹਾਸ",
   "settings.transfer.chats_desc":
     "ਗੱਲਬਾਤਾਂ, ਗਰੁੱਪ, ਅਤੇ ਉਹ ਚੈਨਲ ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਤੁਸੀਂ ਜੁੜੇ ਹੋ",
+  "settings.transfer.chats_without":
+    "ਤੁਹਾਡੇ ਰੂਮ ਅਤੇ ਗਰੁੱਪ, ਉਹਨਾਂ ਦੇ ਸੁਨੇਹਿਆਂ ਤੋਂ ਬਿਨਾਂ",
   "settings.transfer.wallet": "ਵਾਲਿਟ ਬੈਲੰਸ",
   "settings.transfer.wallet_desc": "ecash ਅਤੇ ਲੈਣ-ਦੇਣ ਦਾ ਇਤਿਹਾਸ",
   "settings.transfer.title": "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਲੈ ਜਾਓ",
   "settings.transfer.desc":
     "ਆਪਣੀ ਪਛਾਣ, ਗੱਲਬਾਤਾਂ ਅਤੇ ਵਾਲਿਟ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ’ਤੇ ਲੈ ਜਾਓ",
-  "settings.transfer.coming_soon_a11y": "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਲੈ ਜਾਓ, ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
-  "settings.transfer.body":
-    "ਦੋਵੇਂ ਫ਼ੋਨ ਨਾਲ-ਨਾਲ ਰੱਖੋ ਅਤੇ ਸਭ ਕੁਝ ਬਲੂਟੁੱਥ ’ਤੇ ਪਾਰ ਲੈ ਜਾਓ। ਕੁਝ ਵੀ ਕਿਸੇ ਸਰਵਰ ਵਿੱਚੋਂ ਨਹੀਂ ਲੰਘਦਾ, ਇਸ ਲਈ ਇਹ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਚੱਲਦਾ ਹੈ।",
+  "settings.transfer.intro":
+    "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ Airhop ਖੋਲ੍ਹੋ ਅਤੇ “ਦੂਜੇ ਫ਼ੋਨ ਤੋਂ ਲਿਆਓ” ਚੁਣੋ। ਦੋਵੇਂ ਫ਼ੋਨ ਇੱਕੋ Wi-Fi ਜਾਂ ਹੌਟਸਪੌਟ ’ਤੇ ਹੋਣੇ ਚਾਹੀਦੇ ਹਨ, ਇੰਟਰਨੈੱਟ ਦੀ ਲੋੜ ਨਹੀਂ।",
+  "settings.transfer.erase_note":
+    "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਸਭ ਕੁਝ ਪਹੁੰਚਦੇ ਹੀ ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ। ਫ਼ੋਟੋਆਂ ਅਤੇ ਫ਼ਾਈਲਾਂ ਨਾਲ ਨਹੀਂ ਜਾਂਦੀਆਂ।",
+  "settings.transfer.auth_prompt":
+    "ਆਪਣੀ ਪਛਾਣ ਲੈ ਜਾਣ ਲਈ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਇਹ ਤੁਸੀਂ ਹੋ",
+  "settings.transfer.scan_title": "ਆਪਣੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਦਿਸਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ",
+  "settings.transfer.aim": "ਕੈਮਰਾ ਆਪਣੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਦਿਸਦੇ ਕੋਡ ਵੱਲ ਸੇਧੋ",
+  "settings.transfer.wrong_code":
+    "ਇਹ ਕਿਸੇ ਸੰਪਰਕ ਦਾ ਕੋਡ ਹੈ। ਆਪਣੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਦਿਸਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
+  "settings.transfer.camera_off_body":
+    "ਆਪਣੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਦਿਸਦਾ ਕੋਡ ਸਕੈਨ ਕਰਨ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚੋਂ ਕੈਮਰੇ ਦੀ ਪਹੁੰਚ ਚਾਲੂ ਕਰੋ।",
+  "settings.transfer.confirm_title": "ਇਸ ਫ਼ੋਨ ’ਤੇ ਲੈ ਜਾਣਾ ਹੈ?",
+  "settings.transfer.confirm_body":
+    "ਇੱਥੋਂ ਦਾ ਸਭ ਕੁਝ ਉਸ ਫ਼ੋਨ ’ਤੇ ਚਲਾ ਜਾਵੇਗਾ ਜੋ ਇਹ ਕੋਡ ਵਿਖਾ ਰਿਹਾ ਹੈ। ਪਹੁੰਚਦੇ ਹੀ ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
+  "settings.transfer.confirm_cta": "ਲੈ ਜਾਓ",
+  "settings.transfer.connecting": "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ਨਾਲ ਜੁੜ ਰਿਹਾ ਹੈ",
+  "settings.transfer.connecting_hint":
+    "ਜੇ ਇਹ ਫ਼ੋਨ ਸਥਾਨਕ ਨੈੱਟਵਰਕ ’ਤੇ ਡੀਵਾਈਸ ਲੱਭਣ ਦੀ ਇਜਾਜ਼ਤ ਮੰਗੇ, ਤਾਂ ਇਜਾਜ਼ਤ ਦਿਓ।",
+  "settings.transfer.sending": "ਲਿਜਾਇਆ ਜਾ ਰਿਹਾ ਹੈ {percent}%",
+  "settings.transfer.keep_open": "ਇਹ ਪੂਰਾ ਹੋਣ ਤੱਕ ਦੋਵੇਂ ਫ਼ੋਨ ਖੁੱਲ੍ਹੇ ਰੱਖੋ।",
+  "settings.transfer.finishing": "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਪੂਰਾ ਹੋ ਰਿਹਾ ਹੈ",
+  "settings.transfer.erasing": "ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ",
+  "settings.transfer.done_title": "ਤਬਾਦਲਾ ਹੋ ਗਿਆ",
+  "settings.transfer.done_body":
+    "ਤੁਹਾਡੀ ਪਛਾਣ ਹੁਣ ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਹੈ, ਅਤੇ ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।",
+  "settings.transfer.failed_title": "ਤਬਾਦਲਾ ਪੂਰਾ ਨਹੀਂ ਹੋਇਆ",
+  "settings.transfer.failed_unreachable":
+    "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚ ਸਕੇ। ਦੋਵੇਂ ਫ਼ੋਨ ਇੱਕੋ Wi-Fi ’ਤੇ ਰੱਖੋ, ਜਾਂ ਇੱਕ ’ਤੇ ਹੌਟਸਪੌਟ ਚਾਲੂ ਕਰਕੇ ਦੂਜੇ ਤੋਂ ਉਸ ਨਾਲ ਜੁੜੋ।",
+  "settings.transfer.failed_permission":
+    "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ਤੱਕ ਪਹੁੰਚਣ ਲਈ Airhop ਨੂੰ ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਦੀ ਪਹੁੰਚ ਚਾਹੀਦੀ ਹੈ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਜਾਜ਼ਤ ਦਿਓ, ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "settings.transfer.failed_wrong_phone":
+    "ਜਿਸ ਫ਼ੋਨ ਨੇ ਜਵਾਬ ਦਿੱਤਾ, ਉਹ ਉਹ ਫ਼ੋਨ ਨਹੀਂ ਜਿਸ ਦਾ ਕੋਡ ਤੁਸੀਂ ਸਕੈਨ ਕੀਤਾ ਸੀ।",
+  "settings.transfer.failed_incompatible":
+    "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ Airhop ਦਾ ਪੁਰਾਣਾ ਸੰਸਕਰਣ ਹੈ। ਉਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "settings.transfer.failed_cancelled":
+    "ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਤਬਾਦਲਾ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ।",
+  "settings.transfer.failed_storage":
+    "ਤੁਹਾਡਾ ਨਵਾਂ ਫ਼ੋਨ ਸਭ ਕੁਝ ਸੰਭਾਲ ਨਹੀਂ ਸਕਿਆ।",
+  "settings.transfer.failed_interrupted":
+    "ਸਭ ਕੁਝ ਭੇਜੇ ਜਾਣ ਤੋਂ ਪਹਿਲਾਂ ਕਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ।",
+  "settings.transfer.unchanged":
+    "ਕੁਝ ਵੀ ਨਹੀਂ ਗਿਆ, ਅਤੇ ਇਹ ਫ਼ੋਨ ਪਹਿਲਾਂ ਵਾਂਗ ਚੱਲ ਰਿਹਾ ਹੈ।",
+  "settings.transfer.unconfirmed_title": "ਕੀ ਤਬਾਦਲਾ ਪੂਰਾ ਹੋਇਆ?",
+  "settings.transfer.unconfirmed_body":
+    "ਪੁਸ਼ਟੀ ਮਿਲਣ ਤੋਂ ਪਹਿਲਾਂ ਇਸ ਫ਼ੋਨ ਦਾ ਤੁਹਾਡੇ ਨਵੇਂ ਫ਼ੋਨ ਨਾਲ ਸੰਪਰਕ ਟੁੱਟ ਗਿਆ। ਜੇ ਤੁਹਾਡਾ ਨਵਾਂ ਫ਼ੋਨ ਤੁਹਾਡਾ ਨਾਂ ਵਿਖਾ ਰਿਹਾ ਹੈ, ਤਾਂ ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰੋ। ਨਹੀਂ ਤਾਂ ਇਹੀ ਫ਼ੋਨ ਵਰਤਦੇ ਰਹੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "settings.transfer.erase_cta": "ਇਹ ਫ਼ੋਨ ਸਾਫ਼ ਕਰੋ",
+  "settings.transfer.keep_cta": "ਇਹੀ ਫ਼ੋਨ ਵਰਤਦੇ ਰਹੋ",
   "settings.qr.permission_label": "ਫ਼ੋਟੋ ਦੀ ਪਹੁੰਚ",
   "settings.qr.permission_purpose": "ਤੁਹਾਡਾ QR ਕੋਡ ਸੰਭਾਲਣ",
   "settings.qr.saved": "ਸੰਭਾਲਿਆ",

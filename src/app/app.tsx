@@ -21,6 +21,8 @@ import { StartNewSheet } from "@features/chat/start-new-sheet";
 import PeerList from "@features/discovery/peer-list";
 import IdentityScreen from "@features/onboarding/identity-screen";
 import PermissionPrimerSheet from "@features/onboarding/permission-primer-sheet";
+import TransferInScreen from "@features/onboarding/transfer-in-screen";
+import TransferRecoveryScreen from "@features/onboarding/transfer-recovery-screen";
 import UsernameScreen from "@features/onboarding/username-screen";
 import WelcomeScreen from "@features/onboarding/welcome-screen";
 import ProfileScreen from "@features/settings/profile-screen";
@@ -64,6 +66,7 @@ import {
   initMeshService,
   type MeshService,
 } from "@services/mesh-service";
+import { clearMoveMarker, readMoveMarker } from "@services/move-marker";
 import { startNotificationPipeline } from "@services/notification-pipeline";
 import {
   configureNotifications,
@@ -189,7 +192,8 @@ initI18n();
 
 // ---- Navigation types ----
 
-type OnboardingStep = "welcome" | "generating" | "reveal";
+// "transfer" replaces "generating" when the identity comes from the old phone.
+type OnboardingStep = "welcome" | "generating" | "transfer" | "reveal";
 type MainTab = "chats" | "mesh" | "wallet" | "profile";
 // A boot-triggered headless launch never mounts AppContent, so this must
 // run at module load rather than wait for it.
@@ -698,14 +702,31 @@ function AppContent(): React.JSX.Element {
   //
   // Seeded in the initialiser rather than an effect, so a launch with a wipe to
   // finish renders the wiping screen on its first frame.
-  const [wipeInProgress, setWipeInProgress] = useState(() =>
-    isPanicWipePending(),
+  //
+  // An unfinished incoming transfer is finished the same way: wiped.
+  const [wipeInProgress, setWipeInProgress] = useState(
+    () => isPanicWipePending() || readMoveMarker() === "receiving",
   );
   // The same answer, where the mount effect can read it. Seeded from the state
   // above so the marker is consulted once per launch rather than from two places
   // that could disagree, and a ref so the effect stays mount-only instead of
   // carrying a dependency it must never re-run on.
   const resumingWipe = useRef(wipeInProgress);
+  // A transfer left unresolved is asked about before anything starts (see
+  // services/move-marker). A resuming wipe clears the marker instead.
+  const [transferRecovery, setTransferRecovery] = useState<
+    "sender" | "receiver" | null
+  >(() => {
+    if (wipeInProgress) return null;
+    const marker = readMoveMarker();
+    if (marker === "sent") return "sender";
+    if (marker === "committed") return "receiver";
+    return null;
+  });
+  // The launch sequence, parked while that question is open.
+  const holdForTransfer = useRef(transferRecovery !== null);
+  const startBootRef = useRef<(() => void) | null>(null);
+  const eraseAndBootRef = useRef<(() => void) | null>(null);
   // Load JetBrains Mono in the background so it is ready the instant a user
   // picks it under Appearance. Startup is NOT gated on it: the app defaults to
   // the system monospace, so there is nothing to wait for and a missing/unlinked
@@ -717,6 +738,9 @@ function AppContent(): React.JSX.Element {
   );
   const [generatedPeerID, setGeneratedPeerID] =
     useState<string>(FALLBACK_PEER_ID);
+  // Held here so backing out of a transfer asks neither again.
+  const [welcomeAgreed, setWelcomeAgreed] = useState(false);
+  const [welcomeGreeted, setWelcomeGreeted] = useState(false);
   const [tab, setTab] = useState<MainTab>("mesh");
   // Bumped whenever the Profile tab is tapped, so tapping "You" while inside a
   // sub-screen (About, Version, ...) pops ProfileScreen back to its root, the
@@ -888,36 +912,46 @@ function AppContent(): React.JSX.Element {
         });
     };
 
+    const eraseAndBoot = (): void => {
+      void (async () => {
+        // Torn down first, as the in-session wipe does. `startBoot` has not
+        // run, but the process can outlive the Activity and still hold a mesh,
+        // and a live one keeps writing into the stores being cleared.
+        destroyMeshService();
+        let keysDestroyed = false;
+        try {
+          ({ keysDestroyed } = await panicWipe());
+        } catch {
+          // The marker is still set, so the next launch tries again. This one
+          // still has to open: an app that will not start is not a safer place
+          // to be stuck than one wiped twice.
+        }
+        // Set AFTER panicWipe, whose own store reset would otherwise clear it.
+        // The banner then stands until a launch shows it is no longer true.
+        if (!keysDestroyed) {
+          useMeshStateStore.getState().setWipeIncomplete(true);
+        }
+        setWipeInProgress(false);
+        startBoot();
+      })();
+    };
+    startBootRef.current = startBoot;
+    eraseAndBootRef.current = eraseAndBoot;
+
     // Finish a wipe the last session did not. See services/wipe-marker.
     //
     // Ahead of everything, including the identity read: nothing may start under
     // an identity this launch is about to destroy, and the mesh must not
     // advertise one.
-    if (!resumingWipe.current) {
-      startBoot();
+    if (resumingWipe.current) {
+      eraseAndBoot();
       return;
     }
-    void (async () => {
-      // Torn down first, as the in-session wipe does. `startBoot` has not run,
-      // but the process can outlive the Activity and still hold a mesh, and a
-      // live one keeps writing into the stores being cleared.
-      destroyMeshService();
-      let keysDestroyed = false;
-      try {
-        ({ keysDestroyed } = await panicWipe());
-      } catch {
-        // The marker is still set, so the next launch tries again. This one
-        // still has to open: an app that will not start is not a safer place to
-        // be stuck than one wiped twice.
-      }
-      // Set AFTER panicWipe, whose own store reset would otherwise clear it.
-      // The banner then stands until a launch shows it is no longer true.
-      if (!keysDestroyed) {
-        useMeshStateStore.getState().setWipeIncomplete(true);
-      }
-      setWipeInProgress(false);
-      startBoot();
-    })();
+    // The recovery screen resumes the launch once answered.
+    if (holdForTransfer.current) return;
+    // A send that died mid-stream moved nothing.
+    if (readMoveMarker() === "sending") clearMoveMarker();
+    startBoot();
   }, []);
 
   // Aggregate unread for the badges, muted conversations excluded (their
@@ -1458,6 +1492,40 @@ function AppContent(): React.JSX.Element {
     );
   }
 
+  // Ahead of the appReady gate, like the wiping screen: the launch waits on it.
+  if (transferRecovery !== null) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          {transferRecovery === "sender" ? (
+            <TransferRecoveryScreen
+              role="sender"
+              onErase={() => {
+                setTransferRecovery(null);
+                setWipeInProgress(true);
+                eraseAndBootRef.current?.();
+              }}
+              onKeep={() => {
+                clearMoveMarker();
+                setTransferRecovery(null);
+                startBootRef.current?.();
+              }}
+            />
+          ) : (
+            <TransferRecoveryScreen
+              role="receiver"
+              onContinue={() => {
+                clearMoveMarker();
+                setTransferRecovery(null);
+                startBootRef.current?.();
+              }}
+            />
+          )}
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  }
+
   // Render nothing until the identity check resolves (and the bundled font is
   // ready). This prevents a flash of the welcome screen for returning users on
   // every app launch, and of system-font mono text before JetBrains Mono loads.
@@ -1499,7 +1567,21 @@ function AppContent(): React.JSX.Element {
             <>
               {onboardingStep === "welcome" && (
                 <WelcomeScreen
+                  agreed={welcomeAgreed}
+                  onAgreedChange={setWelcomeAgreed}
+                  greet={!welcomeGreeted}
+                  onGreeted={() => setWelcomeGreeted(true)}
                   onContinue={() => setOnboardingStep("generating")}
+                  onTransfer={() => setOnboardingStep("transfer")}
+                />
+              )}
+              {onboardingStep === "transfer" && (
+                <TransferInScreen
+                  onCancel={() => setOnboardingStep("welcome")}
+                  onComplete={(peerID) => {
+                    setGeneratedPeerID(peerID);
+                    setOnboardingStep("reveal");
+                  }}
                 />
               )}
               {onboardingStep === "generating" && (
@@ -2054,6 +2136,21 @@ function AppContent(): React.JSX.Element {
                       // Before the first byte is destroyed, so the wiping
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
+                      onResumeMesh={() => {
+                        // Starting the mesh sets Online; keep an earlier Away.
+                        const presence =
+                          useMeshStateStore.getState().presenceStatus;
+                        loadIdentity()
+                          .then(async (id) => {
+                            if (!id) return;
+                            const nickname = peerIDToUsername(id.peerID);
+                            await startMeshWithPermissions(id, nickname);
+                            if (presence !== "online") {
+                              applyPresence(presence, nickname);
+                            }
+                          })
+                          .catch(() => {});
+                      }}
                       onWipe={() => {
                         // The mesh is already down and its keys released: the
                         // wipe does that first, before it clears anything.
@@ -2061,6 +2158,8 @@ function AppContent(): React.JSX.Element {
                         // a first-run state.
                         setWipeInProgress(false);
                         setGeneratedPeerID(FALLBACK_PEER_ID);
+                        setWelcomeAgreed(false);
+                        setWelcomeGreeted(false);
                         // Reset navigation to the fresh-start landing tab.
                         // Panic wipe is triggered from Profile, so without this
                         // the re-onboarded app reopens on the Profile screen

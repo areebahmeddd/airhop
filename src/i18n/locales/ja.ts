@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "プライバシーポリシーを開く",
   "onboarding.welcome.consent":
     "{cta}をタップすると、{terms}と{privacy}に同意したことになります。",
+  "onboarding.welcome.transfer": "別の端末から移行",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "あなたの識別情報を作成中",
@@ -100,6 +101,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "OSのキーチェーンのみ",
   "onboarding.username.prop.account": "アカウント",
   "onboarding.username.prop.account_value": "不要",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "別の端末から移行",
+  "onboarding.transfer.preparing": "準備中",
+  "onboarding.transfer.scan_heading":
+    "古い端末でこのコードを読み取ってください",
+  "onboarding.transfer.step_open": "古い端末でAirhopを開く",
+  "onboarding.transfer.step_go": "{tab}で{row}を開く",
+  "onboarding.transfer.step_scan": "このコードにカメラを向ける",
+  "onboarding.transfer.network_note":
+    "両方の端末を同じWi-Fiかテザリングにつないでください。インターネットは一切通りません。",
+  "onboarding.transfer.qr_a11y":
+    "移行用のコード。古い端末のAirhopで読み取ってください。",
+  "onboarding.transfer.offline_title": "Wi-Fiに接続",
+  "onboarding.transfer.offline_body":
+    "両方の端末を同じWi-Fiにつなぐか、片方でテザリングをオンにしてもう片方からつないでください。インターネットは不要です。",
+  "onboarding.transfer.incoming": "{name}を移行中",
+  "onboarding.transfer.receiving": "受信中 {percent}%",
+  "onboarding.transfer.saving": "この端末に保存中",
+  "onboarding.transfer.releasing": "古い端末で仕上げ中",
+  "onboarding.transfer.keep_open":
+    "完了するまで、両方の端末でアプリを開いたままにしてください。",
+  "onboarding.transfer.check_title": "古い端末を確認してください",
+  "onboarding.transfer.check_body":
+    "すべてこの端末に移りました。続ける前に、古い端末に消去済みと表示されていることを確認するか、古い端末で「この端末を消去」を選んでください。",
+  "onboarding.transfer.failed_title": "移行が完了しませんでした",
+  "onboarding.transfer.failed_cancelled":
+    "古い端末で移行がキャンセルされました。この端末には何も保存されていません。",
+  "onboarding.transfer.failed_interrupted":
+    "接続が切れました。この端末には何も保存されていません。",
+  "onboarding.transfer.failed_storage":
+    "受け取ったデータをこの端末に保存できなかったため、何も残していません。",
+  "onboarding.transfer.failed_incompatible":
+    "古い端末のAirhopのほうが新しいバージョンです。この端末をアップデートしてから、もう一度お試しください。",
+  "onboarding.transfer.failed_unavailable":
+    "この端末ではローカルネットワーク接続を開けません。",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhopへようこそ！",
@@ -835,6 +872,8 @@ export const strings: Strings = {
     "バッテリーセーバー · スキャン間隔を長くしています",
   "mesh.banner.wipe_incomplete":
     "消去が未完了です · データが残っている可能性があり、開き直すと再試行します",
+  "mesh.banner.identity_elsewhere":
+    "識別情報が別の端末にもあります · 使っていない方を消去してください",
   "mesh.banner.wifi_off":
     "Wi-Fiがオフです · 大きなファイルの送信が遅くなります",
   "mesh.banner.clock_skew":
@@ -2067,14 +2106,62 @@ export const strings: Strings = {
   "settings.transfer.identity_desc": "ピアID、ユーザー名、連絡先",
   "settings.transfer.chats": "チャットと履歴",
   "settings.transfer.chats_desc": "会話、グループ、参加しているチャンネル",
+  "settings.transfer.chats_without":
+    "チャンネルとグループ（メッセージは含みません）",
   "settings.transfer.wallet": "ウォレットの残高",
   "settings.transfer.wallet_desc": "ecashと取引履歴",
   "settings.transfer.title": "新しい端末へ移行",
   "settings.transfer.desc":
     "識別情報、チャット、ウォレットを別の端末へ移します",
-  "settings.transfer.coming_soon_a11y": "新しい端末へ移行、近日対応",
-  "settings.transfer.body":
-    "両方の端末を近づけて、Bluetoothですべてを移します。サーバーを一切通らないので、インターネットがなくても使えます。",
+  "settings.transfer.intro":
+    "新しい端末でAirhopを開き、「別の端末から移行」を選んでください。両方の端末が同じWi-Fiかテザリングにつながっていれば、インターネットは不要です。",
+  "settings.transfer.erase_note":
+    "新しい端末にすべて届くと、この端末は消去されます。写真とファイルは移行されません。",
+  "settings.transfer.auth_prompt":
+    "識別情報を移行するため、本人確認をしてください",
+  "settings.transfer.scan_title": "新しい端末のコードを読み取る",
+  "settings.transfer.aim": "新しい端末のコードにカメラを向けてください",
+  "settings.transfer.wrong_code":
+    "これは連絡先のコードです。新しい端末のコードを読み取ってください。",
+  "settings.transfer.camera_off_body":
+    "新しい端末のコードを読み取るには、設定でカメラへのアクセスを許可してください。",
+  "settings.transfer.confirm_title": "この端末へ移行しますか？",
+  "settings.transfer.confirm_body":
+    "ここにあるすべてが、このコードを表示している端末へ移ります。届いた時点で、この端末は消去されます。",
+  "settings.transfer.confirm_cta": "移行",
+  "settings.transfer.connecting": "新しい端末に接続中",
+  "settings.transfer.connecting_hint":
+    "ローカルネットワーク上のデバイスの検出を求められたら、許可してください。",
+  "settings.transfer.sending": "移行中 {percent}%",
+  "settings.transfer.keep_open":
+    "完了するまで、両方の端末でアプリを開いたままにしてください。",
+  "settings.transfer.finishing": "新しい端末で仕上げ中",
+  "settings.transfer.erasing": "この端末を消去中",
+  "settings.transfer.done_title": "移行しました",
+  "settings.transfer.done_body":
+    "識別情報は新しい端末に移り、この端末は消去されました。",
+  "settings.transfer.failed_title": "移行が完了しませんでした",
+  "settings.transfer.failed_unreachable":
+    "新しい端末に接続できませんでした。両方の端末を同じWi-Fiにつなぐか、片方でテザリングをオンにしてもう片方からつないでください。",
+  "settings.transfer.failed_permission":
+    "新しい端末に接続するには、Airhopにローカルネットワークへのアクセスが必要です。設定で許可してから、もう一度お試しください。",
+  "settings.transfer.failed_wrong_phone":
+    "応答した端末は、読み取ったコードの端末ではありません。",
+  "settings.transfer.failed_incompatible":
+    "新しい端末のAirhopが古いバージョンです。アップデートしてから、もう一度お試しください。",
+  "settings.transfer.failed_cancelled":
+    "新しい端末で移行がキャンセルされました。",
+  "settings.transfer.failed_storage":
+    "新しい端末にすべてを保存できませんでした。",
+  "settings.transfer.failed_interrupted":
+    "すべて送り終える前に接続が切れました。",
+  "settings.transfer.unchanged":
+    "何も移っていません。この端末はこれまでどおり使えます。",
+  "settings.transfer.unconfirmed_title": "移行は完了しましたか？",
+  "settings.transfer.unconfirmed_body":
+    "新しい端末からの確認が届く前に接続が切れました。新しい端末にあなたの名前が表示されていれば、この端末を消去してください。表示されていなければ、この端末を使い続けて、もう一度お試しください。",
+  "settings.transfer.erase_cta": "この端末を消去",
+  "settings.transfer.keep_cta": "この端末を使い続ける",
   "settings.qr.permission_label": "写真へのアクセス",
   "settings.qr.permission_purpose": "QRコードを保存する",
   "settings.qr.saved": "保存しました",

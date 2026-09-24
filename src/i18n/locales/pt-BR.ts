@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Abrir a Política de Privacidade",
   "onboarding.welcome.consent":
     "Ao tocar em {cta}, você aceita nossos {terms} e nossa {privacy}.",
+  "onboarding.welcome.transfer": "Trazer de outro celular",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Gerando sua identidade",
@@ -103,6 +104,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Somente o chaveiro do sistema",
   "onboarding.username.prop.account": "Conta necessária",
   "onboarding.username.prop.account_value": "Nenhuma",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Trazer de outro celular",
+  "onboarding.transfer.preparing": "Preparando",
+  "onboarding.transfer.scan_heading":
+    "Escaneie este código com o celular antigo",
+  "onboarding.transfer.step_open": "Abra o Airhop no celular antigo",
+  "onboarding.transfer.step_go": "Vá em {tab} e depois em {row}",
+  "onboarding.transfer.step_scan": "Aponte para este código",
+  "onboarding.transfer.network_note":
+    "Os dois celulares precisam estar no mesmo Wi-Fi ou num ponto de acesso. Nada passa pela internet.",
+  "onboarding.transfer.qr_a11y":
+    "Código de transferência. Escaneie com o Airhop no celular antigo.",
+  "onboarding.transfer.offline_title": "Conecte-se ao Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Coloque os dois celulares no mesmo Wi-Fi, ou ative o ponto de acesso em um deles e conecte o outro. Não precisa de internet.",
+  "onboarding.transfer.incoming": "Transferindo {name}",
+  "onboarding.transfer.receiving": "Recebendo {percent}%",
+  "onboarding.transfer.saving": "Salvando neste celular",
+  "onboarding.transfer.releasing": "Finalizando no celular antigo",
+  "onboarding.transfer.keep_open":
+    "Deixe os dois celulares com o app aberto até terminar.",
+  "onboarding.transfer.check_title": "Confira o celular antigo",
+  "onboarding.transfer.check_body":
+    "Tudo já está neste celular. Antes de continuar, veja se o celular antigo diz que foi apagado, ou escolha Apagar este celular nele.",
+  "onboarding.transfer.failed_title": "A transferência não terminou",
+  "onboarding.transfer.failed_cancelled":
+    "A transferência foi cancelada no celular antigo. Nada foi salvo aqui.",
+  "onboarding.transfer.failed_interrupted":
+    "A conexão caiu. Nada foi salvo aqui.",
+  "onboarding.transfer.failed_storage":
+    "Este celular não conseguiu salvar o que chegou, então nada foi mantido.",
+  "onboarding.transfer.failed_incompatible":
+    "O celular antigo tem um Airhop mais novo. Atualize este celular e tente de novo.",
+  "onboarding.transfer.failed_unavailable":
+    "Este celular não consegue abrir uma conexão de rede local.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Boas-vindas ao Airhop!",
@@ -845,6 +882,8 @@ export const strings: Strings = {
     "Economia de bateria · varredura menos frequente",
   "mesh.banner.wipe_incomplete":
     "Limpeza incompleta · pode ter sobrado algum dado; reabrir tenta de novo",
+  "mesh.banner.identity_elsewhere":
+    "Sua identidade também está em outro celular · apague o que você não usa",
   "mesh.banner.wifi_off":
     "Wi-Fi desligado · arquivos grandes saem mais devagar",
   "mesh.banner.clock_skew":
@@ -2105,14 +2144,61 @@ export const strings: Strings = {
   "settings.transfer.chats": "Conversas e histórico",
   "settings.transfer.chats_desc":
     "Conversas, grupos e os canais em que você entrou",
+  "settings.transfer.chats_without": "Suas salas e grupos, sem as mensagens",
   "settings.transfer.wallet": "Saldo da carteira",
   "settings.transfer.wallet_desc": "Ecash e histórico de transações",
   "settings.transfer.title": "Passar para um celular novo",
   "settings.transfer.desc":
     "Leve sua identidade, suas conversas e sua carteira para outro aparelho",
-  "settings.transfer.coming_soon_a11y": "Passar para um celular novo, em breve",
-  "settings.transfer.body":
-    "Encoste os dois celulares e transfira tudo por Bluetooth. Nada passa por um servidor, então funciona sem internet.",
+  "settings.transfer.intro":
+    "No celular novo, abra o Airhop e escolha Trazer de outro celular. Os dois celulares precisam estar no mesmo Wi-Fi ou num ponto de acesso, não na internet.",
+  "settings.transfer.erase_note":
+    "Quando o celular novo tiver tudo, este celular será apagado. Fotos e arquivos não são transferidos.",
+  "settings.transfer.auth_prompt":
+    "Confirme que é você para transferir sua identidade",
+  "settings.transfer.scan_title": "Escaneie o código no celular novo",
+  "settings.transfer.aim": "Aponte a câmera para o código no celular novo",
+  "settings.transfer.wrong_code":
+    "Esse é o código de um contato. Escaneie o código no celular novo.",
+  "settings.transfer.camera_off_body":
+    "Ligue o acesso à câmera nas configurações para escanear o código no celular novo.",
+  "settings.transfer.confirm_title": "Transferir para este celular?",
+  "settings.transfer.confirm_body":
+    "Tudo o que está aqui vai para o celular que mostra este código. Quando chegar, este celular será apagado.",
+  "settings.transfer.confirm_cta": "Transferir",
+  "settings.transfer.connecting": "Conectando ao celular novo",
+  "settings.transfer.connecting_hint":
+    "Se este celular pedir para encontrar dispositivos na rede local, permita.",
+  "settings.transfer.sending": "Transferindo {percent}%",
+  "settings.transfer.keep_open":
+    "Deixe os dois celulares com o app aberto até terminar.",
+  "settings.transfer.finishing": "Finalizando no celular novo",
+  "settings.transfer.erasing": "Apagando este celular",
+  "settings.transfer.done_title": "Transferido",
+  "settings.transfer.done_body":
+    "Sua identidade agora está no celular novo, e este celular foi apagado.",
+  "settings.transfer.failed_title": "A transferência não terminou",
+  "settings.transfer.failed_unreachable":
+    "Não foi possível alcançar o celular novo. Coloque os dois celulares no mesmo Wi-Fi, ou ative o ponto de acesso em um deles e conecte o outro.",
+  "settings.transfer.failed_permission":
+    "O Airhop precisa de acesso à rede local para alcançar o celular novo. Permita nas configurações e tente de novo.",
+  "settings.transfer.failed_wrong_phone":
+    "O celular que respondeu não é o do código que você escaneou.",
+  "settings.transfer.failed_incompatible":
+    "O celular novo tem um Airhop mais antigo. Atualize o app nele e tente de novo.",
+  "settings.transfer.failed_cancelled":
+    "A transferência foi cancelada no celular novo.",
+  "settings.transfer.failed_storage":
+    "O celular novo não conseguiu salvar tudo.",
+  "settings.transfer.failed_interrupted":
+    "A conexão caiu antes de tudo ser enviado.",
+  "settings.transfer.unchanged":
+    "Nada foi movido, e este celular funciona como antes.",
+  "settings.transfer.unconfirmed_title": "A transferência terminou?",
+  "settings.transfer.unconfirmed_body":
+    "Este celular perdeu contato com o novo antes da confirmação. Se o celular novo mostra o seu nome, apague este celular. Se não, continue usando este e tente de novo.",
+  "settings.transfer.erase_cta": "Apagar este celular",
+  "settings.transfer.keep_cta": "Continuar usando este celular",
   "settings.qr.permission_label": "Acesso às fotos",
   "settings.qr.permission_purpose": "salvar seu código QR",
   "settings.qr.saved": "Salvo",

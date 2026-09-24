@@ -7,4 +7,5 @@
 "NSMicrophoneUsageDescription" = "Airhop, sesli not kaydetmek ve yakındaki eşlere canlı ses taşımak için mikrofonu kullanır.";
 "NSPhotoLibraryUsageDescription" = "Airhop, görselleri ve videoları mesh üzerinden paylaşmak için fotoğraf galerinize erişir.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop, siz kaydetmeyi seçtiğinizde ve QR kodunuzu indirdiğinizde fotoğraf ve videoları galerinize kaydeder.";
+"NSFaceIDUsageDescription" = "Airhop, kimliğinizi yeni bir telefona taşımadan önce siz olduğunuzu doğrulamak için Face ID kullanır.";
 "NSLocationWhenInUseUsageDescription" = "Airhop, sizi yakın alan kanallarına (sokak arası, şehir, bölge) yerleştirmek için yaklaşık konumunuzu kullanır. Tam konumunuz cihazınızdan asla çıkmaz.";

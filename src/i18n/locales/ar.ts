@@ -73,6 +73,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "فتح سياسة الخصوصية",
   "onboarding.welcome.consent":
     "بالضغط على {cta}، فإنك توافق على {terms} و{privacy}.",
+  "onboarding.welcome.transfer": "النقل من هاتف آخر",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "جارٍ إنشاء هويتك",
@@ -101,6 +102,39 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "سلسلة مفاتيح النظام فقط",
   "onboarding.username.prop.account": "حساب مطلوب",
   "onboarding.username.prop.account_value": "لا يوجد",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "النقل من هاتف آخر",
+  "onboarding.transfer.preparing": "جارٍ التجهيز",
+  "onboarding.transfer.scan_heading": "امسح هذا الرمز بهاتفك القديم",
+  "onboarding.transfer.step_open": "افتح Airhop على هاتفك القديم",
+  "onboarding.transfer.step_go": "انتقل إلى {tab}، ثم {row}",
+  "onboarding.transfer.step_scan": "وجّهه نحو هذا الرمز",
+  "onboarding.transfer.network_note":
+    "يجب أن يكون الهاتفان على شبكة Wi-Fi نفسها أو على نقطة اتصال واحدة. لا شيء يمر عبر الإنترنت.",
+  "onboarding.transfer.qr_a11y":
+    "رمز النقل. امسحه باستخدام Airhop على هاتفك القديم.",
+  "onboarding.transfer.offline_title": "اتصل بشبكة Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "صِل الهاتفين بشبكة Wi-Fi نفسها، أو شغّل نقطة الاتصال على أحدهما واتصل بها من الآخر. لا حاجة إلى الإنترنت.",
+  "onboarding.transfer.incoming": "جارٍ نقل {name}",
+  "onboarding.transfer.receiving": "جارٍ الاستلام {percent}%",
+  "onboarding.transfer.saving": "جارٍ الحفظ على هذا الهاتف",
+  "onboarding.transfer.releasing": "جارٍ الإنهاء على هاتفك القديم",
+  "onboarding.transfer.keep_open": "أبقِ الهاتفين مفتوحين حتى ينتهي النقل.",
+  "onboarding.transfer.check_title": "تحقّق من هاتفك القديم",
+  "onboarding.transfer.check_body":
+    "كل شيء صار على هذا الهاتف. قبل المتابعة، تأكّد أن هاتفك القديم يُظهر أنه مُسح، أو اختر «امسح هذا الهاتف» عليه.",
+  "onboarding.transfer.failed_title": "لم يكتمل النقل",
+  "onboarding.transfer.failed_cancelled":
+    "أُلغي النقل على هاتفك القديم. لم يُحفظ شيء هنا.",
+  "onboarding.transfer.failed_interrupted": "انقطع الاتصال. لم يُحفظ شيء هنا.",
+  "onboarding.transfer.failed_storage":
+    "تعذّر على هذا الهاتف حفظ ما وصل، لذا لم يُحتفظ بشيء.",
+  "onboarding.transfer.failed_incompatible":
+    "يعمل هاتفك القديم بإصدار أحدث من Airhop. حدّث هذا الهاتف، ثم أعد المحاولة.",
+  "onboarding.transfer.failed_unavailable":
+    "لا يستطيع هذا الهاتف فتح اتصال بالشبكة المحلية.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "مرحبًا بك في Airhop!",
@@ -810,6 +844,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "موفّر الطاقة · بحث أقل تكرارًا",
   "mesh.banner.wipe_incomplete":
     "المسح غير مكتمل · قد تبقى بعض البيانات، وتُعاد المحاولة عند إعادة الفتح",
+  "mesh.banner.identity_elsewhere":
+    "هويتك موجودة على هاتف آخر أيضًا · امسح الهاتف الذي لا تستخدمه",
   "mesh.banner.wifi_off": "الواي فاي معطّل · الملفات الكبيرة تُرسل أبطأ",
   "mesh.banner.clock_skew":
     "ساعة هذا الهاتف خاطئة · اضبط التاريخ والوقت تلقائيًا",
@@ -2006,13 +2042,54 @@ export const strings: Strings = {
   "settings.transfer.chats": "المحادثات والسجل",
   "settings.transfer.chats_desc":
     "المحادثات والمجموعات والقنوات التي انضممت إليها",
+  "settings.transfer.chats_without": "غرفك ومجموعاتك، دون رسائلها",
   "settings.transfer.wallet": "رصيد المحفظة",
   "settings.transfer.wallet_desc": "النقد الإلكتروني وسجل المعاملات",
   "settings.transfer.title": "النقل إلى هاتف جديد",
   "settings.transfer.desc": "انقل هويتك ومحادثاتك ومحفظتك إلى جهاز آخر",
-  "settings.transfer.coming_soon_a11y": "النقل إلى هاتف جديد، قريبًا",
-  "settings.transfer.body":
-    "قرّب الهاتفين من بعضهما وانقل كل شيء عبر البلوتوث. لا شيء يمر عبر خادم، فهو يعمل دون إنترنت.",
+  "settings.transfer.intro":
+    "على الهاتف الجديد، افتح Airhop واختر «النقل من هاتف آخر». يجب أن يكون الهاتفان على شبكة Wi-Fi نفسها أو على نقطة اتصال، ولا حاجة إلى الإنترنت.",
+  "settings.transfer.erase_note":
+    "بمجرد أن يصل كل شيء إلى الهاتف الجديد، يُمسح هذا الهاتف. الصور والملفات لا تُنقل.",
+  "settings.transfer.auth_prompt": "أكّد أنك أنت لنقل هويتك",
+  "settings.transfer.scan_title": "امسح الرمز على هاتفك الجديد",
+  "settings.transfer.aim": "وجّه الكاميرا نحو الرمز على هاتفك الجديد",
+  "settings.transfer.wrong_code":
+    "هذا رمز جهة اتصال. امسح الرمز على هاتفك الجديد.",
+  "settings.transfer.camera_off_body":
+    "فعّل الوصول إلى الكاميرا من الإعدادات لمسح الرمز على هاتفك الجديد.",
+  "settings.transfer.confirm_title": "النقل إلى هذا الهاتف؟",
+  "settings.transfer.confirm_body":
+    "ينتقل كل ما هنا إلى الهاتف الذي يعرض هذا الرمز. وبمجرد وصوله، يُمسح هذا الهاتف.",
+  "settings.transfer.confirm_cta": "انقل",
+  "settings.transfer.connecting": "جارٍ الاتصال بهاتفك الجديد",
+  "settings.transfer.connecting_hint":
+    "إذا طلب هذا الهاتف إذنًا للعثور على الأجهزة في شبكتك المحلية، فاسمح بذلك.",
+  "settings.transfer.sending": "جارٍ النقل {percent}%",
+  "settings.transfer.keep_open": "أبقِ الهاتفين مفتوحين حتى ينتهي النقل.",
+  "settings.transfer.finishing": "جارٍ الإنهاء على هاتفك الجديد",
+  "settings.transfer.erasing": "جارٍ مسح هذا الهاتف",
+  "settings.transfer.done_title": "اكتمل النقل",
+  "settings.transfer.done_body":
+    "هويتك الآن على هاتفك الجديد، وقد مُسح هذا الهاتف.",
+  "settings.transfer.failed_title": "لم يكتمل النقل",
+  "settings.transfer.failed_unreachable":
+    "تعذّر الوصول إلى هاتفك الجديد. صِل الهاتفين بشبكة Wi-Fi نفسها، أو شغّل نقطة الاتصال على أحدهما واتصل بها من الآخر.",
+  "settings.transfer.failed_permission":
+    "يحتاج Airhop إلى الوصول إلى الشبكة المحلية ليصل إلى هاتفك الجديد. اسمح بذلك من الإعدادات، ثم أعد المحاولة.",
+  "settings.transfer.failed_wrong_phone":
+    "الهاتف الذي ردّ ليس الهاتف الذي مسحت رمزه.",
+  "settings.transfer.failed_incompatible":
+    "يعمل هاتفك الجديد بإصدار أقدم من Airhop. حدّثه، ثم أعد المحاولة.",
+  "settings.transfer.failed_cancelled": "أُلغي النقل على هاتفك الجديد.",
+  "settings.transfer.failed_storage": "تعذّر على هاتفك الجديد حفظ كل شيء.",
+  "settings.transfer.failed_interrupted": "انقطع الاتصال قبل إرسال كل شيء.",
+  "settings.transfer.unchanged": "لم يُنقل شيء، ويعمل هذا الهاتف كما كان.",
+  "settings.transfer.unconfirmed_title": "هل اكتمل النقل؟",
+  "settings.transfer.unconfirmed_body":
+    "فقد هذا الهاتف الاتصال بهاتفك الجديد قبل أن يؤكّد. إذا كان هاتفك الجديد يعرض اسمك، فامسح هذا الهاتف. وإلا، فتابع استخدام هذا الهاتف وأعد المحاولة.",
+  "settings.transfer.erase_cta": "امسح هذا الهاتف",
+  "settings.transfer.keep_cta": "تابع استخدام هذا الهاتف",
   "settings.qr.permission_label": "الوصول إلى الصور",
   "settings.qr.permission_purpose": "حفظ رمز الاستجابة السريعة الخاص بك",
   "settings.qr.saved": "حُفظ",

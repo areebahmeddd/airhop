@@ -75,6 +75,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "Buksan ang Patakaran sa Privacy",
   "onboarding.welcome.consent":
     "Sa pag-tap ng {cta}, sumasang-ayon ka sa aming {terms} at {privacy}.",
+  "onboarding.welcome.transfer": "Maglipat mula sa ibang telepono",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Ginagawa ang iyong pagkakakilanlan",
@@ -105,6 +106,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "Keychain ng OS lamang",
   "onboarding.username.prop.account": "Kailangan ng account",
   "onboarding.username.prop.account_value": "Wala",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "Maglipat mula sa ibang telepono",
+  "onboarding.transfer.preparing": "Naghahanda",
+  "onboarding.transfer.scan_heading":
+    "I-scan ang code na ito gamit ang luma mong telepono",
+  "onboarding.transfer.step_open": "Buksan ang Airhop sa luma mong telepono",
+  "onboarding.transfer.step_go": "Pumunta sa {tab}, tapos sa {row}",
+  "onboarding.transfer.step_scan": "Itutok ito sa code na ito",
+  "onboarding.transfer.network_note":
+    "Kailangang nasa iisang Wi-Fi o hotspot ang dalawang telepono. Walang dumadaan sa internet.",
+  "onboarding.transfer.qr_a11y":
+    "Code para sa paglipat. I-scan ito gamit ang Airhop sa luma mong telepono.",
+  "onboarding.transfer.offline_title": "Kumonekta sa Wi-Fi",
+  "onboarding.transfer.offline_body":
+    "Ilagay ang dalawang telepono sa iisang Wi-Fi, o i-on ang hotspot sa isa at kumonekta rito mula sa isa pa. Hindi kailangan ng internet.",
+  "onboarding.transfer.incoming": "Inililipat si {name}",
+  "onboarding.transfer.receiving": "Tumatanggap {percent}%",
+  "onboarding.transfer.saving": "Sine-save sa teleponong ito",
+  "onboarding.transfer.releasing": "Tinatapos sa luma mong telepono",
+  "onboarding.transfer.keep_open":
+    "Panatilihing bukas ang dalawang telepono hanggang matapos ito.",
+  "onboarding.transfer.check_title": "Tingnan ang luma mong telepono",
+  "onboarding.transfer.check_body":
+    "Nasa teleponong ito na ang lahat. Bago magpatuloy, tiyaking sinasabi ng luma mong telepono na nalinis na ito, o piliin doon ang “Linisin ang teleponong ito”.",
+  "onboarding.transfer.failed_title": "Hindi natapos ang paglipat",
+  "onboarding.transfer.failed_cancelled":
+    "Kinansela ang paglipat sa luma mong telepono. Walang na-save dito.",
+  "onboarding.transfer.failed_interrupted":
+    "Naputol ang koneksyon. Walang na-save dito.",
+  "onboarding.transfer.failed_storage":
+    "Hindi ma-save ng teleponong ito ang dumating, kaya walang itinago.",
+  "onboarding.transfer.failed_incompatible":
+    "Mas bagong Airhop ang nasa luma mong telepono. I-update ang teleponong ito, tapos subukan ulit.",
+  "onboarding.transfer.failed_unavailable":
+    "Hindi makapagbukas ang teleponong ito ng koneksyon sa lokal na network.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Maligayang pagdating sa Airhop!",
@@ -866,6 +903,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "Battery saver · mas madalang mag-scan",
   "mesh.banner.wipe_incomplete":
     "Hindi tapos ang paglilinis · may ilang datos na maaaring naiwan, susubukan ulit sa muling pagbukas",
+  "mesh.banner.identity_elsewhere":
+    "Nasa ibang telepono rin ang pagkakakilanlan mo · linisin ang hindi mo ginagamit",
   "mesh.banner.wifi_off":
     "Naka-off ang Wi-Fi · mas mabagal ipadala ang malalaking file",
   "mesh.banner.clock_skew":
@@ -2140,15 +2179,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "Mga chat at kasaysayan",
   "settings.transfer.chats_desc":
     "Mga usapan, grupo, at channel na sinalihan mo",
+  "settings.transfer.chats_without":
+    "Ang mga channel at grupo mo, nang wala ang mga mensahe nila",
   "settings.transfer.wallet": "Balanse ng wallet",
   "settings.transfer.wallet_desc": "Ecash at kasaysayan ng transaksyon",
   "settings.transfer.title": "Ilipat sa bagong telepono",
   "settings.transfer.desc":
     "Ilipat ang pagkakakilanlan, mga chat at wallet mo sa ibang device",
-  "settings.transfer.coming_soon_a11y":
-    "Ilipat sa bagong telepono, malapit nang dumating",
-  "settings.transfer.body":
-    "Pagtabihin ang dalawang telepono at ilipat ang lahat sa Bluetooth. Walang dumadaan sa server, kaya gumagana ito nang walang internet.",
+  "settings.transfer.intro":
+    "Sa bagong telepono, buksan ang Airhop at piliin ang “Maglipat mula sa ibang telepono”. Kailangang nasa iisang Wi-Fi o hotspot ang dalawang telepono, hindi sa internet.",
+  "settings.transfer.erase_note":
+    "Kapag nasa bagong telepono na ang lahat, lilinisin ang teleponong ito. Hindi kasamang ililipat ang mga larawan at file.",
+  "settings.transfer.auth_prompt":
+    "Kumpirmahing ikaw ito para ilipat ang pagkakakilanlan mo",
+  "settings.transfer.scan_title": "I-scan ang code sa bagong telepono mo",
+  "settings.transfer.aim": "Itutok ang camera sa code sa bagong telepono mo",
+  "settings.transfer.wrong_code":
+    "Code iyan ng isang contact. I-scan ang code sa bagong telepono mo.",
+  "settings.transfer.camera_off_body":
+    "Payagan ang pag-access sa camera sa Mga Setting para ma-scan ang code sa bagong telepono mo.",
+  "settings.transfer.confirm_title": "Ilipat sa teleponong ito?",
+  "settings.transfer.confirm_body":
+    "Ililipat ang lahat ng narito sa teleponong nagpapakita ng code na ito. Pagdating nito roon, lilinisin ang teleponong ito.",
+  "settings.transfer.confirm_cta": "Ilipat",
+  "settings.transfer.connecting": "Kumokonekta sa bagong telepono mo",
+  "settings.transfer.connecting_hint":
+    "Kung magtanong ang teleponong ito tungkol sa paghahanap ng mga device sa lokal na network mo, payagan ito.",
+  "settings.transfer.sending": "Inililipat {percent}%",
+  "settings.transfer.keep_open":
+    "Panatilihing bukas ang dalawang telepono hanggang matapos ito.",
+  "settings.transfer.finishing": "Tinatapos sa bagong telepono mo",
+  "settings.transfer.erasing": "Nililinis ang teleponong ito",
+  "settings.transfer.done_title": "Nailipat na",
+  "settings.transfer.done_body":
+    "Nasa bagong telepono mo na ang pagkakakilanlan mo, at nalinis na ang teleponong ito.",
+  "settings.transfer.failed_title": "Hindi natapos ang paglipat",
+  "settings.transfer.failed_unreachable":
+    "Hindi maabot ang bagong telepono mo. Ilagay ang dalawang telepono sa iisang Wi-Fi, o i-on ang hotspot sa isa at kumonekta rito mula sa isa pa.",
+  "settings.transfer.failed_permission":
+    "Kailangan ng Airhop ng access sa lokal na network para maabot ang bagong telepono mo. Payagan ito sa Mga Setting, tapos subukan ulit.",
+  "settings.transfer.failed_wrong_phone":
+    "Hindi ang teleponong sumagot ang may-ari ng code na na-scan mo.",
+  "settings.transfer.failed_incompatible":
+    "Mas lumang Airhop ang nasa bagong telepono mo. I-update ito, tapos subukan ulit.",
+  "settings.transfer.failed_cancelled":
+    "Kinansela ang paglipat sa bagong telepono mo.",
+  "settings.transfer.failed_storage":
+    "Hindi na-save ng bagong telepono mo ang lahat.",
+  "settings.transfer.failed_interrupted":
+    "Naputol ang koneksyon bago naipadala ang lahat.",
+  "settings.transfer.unchanged":
+    "Walang nailipat, at gumagana ang teleponong ito gaya ng dati.",
+  "settings.transfer.unconfirmed_title": "Natapos ba ang paglipat?",
+  "settings.transfer.unconfirmed_body":
+    "Nawalan ng ugnayan ang teleponong ito sa bago mo bago ito nakumpirma. Kung ipinapakita ng bagong telepono mo ang pangalan mo, linisin ang teleponong ito. Kung hindi, patuloy na gamitin ito at subukan ulit.",
+  "settings.transfer.erase_cta": "Linisin ang teleponong ito",
+  "settings.transfer.keep_cta": "Patuloy na gamitin ang teleponong ito",
   "settings.qr.permission_label": "Pag-access sa larawan",
   "settings.qr.permission_purpose": "i-save ang QR code mo",
   "settings.qr.saved": "Na-save",

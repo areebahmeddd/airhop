@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "தனியுரிமைக் கொள்கையைத் திற",
   "onboarding.welcome.consent":
     "{cta} அழுத்துவதன் மூலம் எங்கள் {terms} மற்றும் {privacy} ஆகியவற்றை ஏற்றுக்கொள்கிறீர்கள்.",
+  "onboarding.welcome.transfer": "வேறொரு தொலைபேசியிலிருந்து மாற்று",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "உங்கள் அடையாளம் உருவாக்கப்படுகிறது",
@@ -104,6 +105,44 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "அமைப்பின் சாவிக்கொத்து மட்டும்",
   "onboarding.username.prop.account": "கணக்கு தேவை",
   "onboarding.username.prop.account_value": "இல்லை",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "வேறொரு தொலைபேசியிலிருந்து மாற்று",
+  "onboarding.transfer.preparing": "தயாராகிறது",
+  "onboarding.transfer.scan_heading":
+    "உங்கள் பழைய தொலைபேசியால் இந்தக் குறியீட்டை ஸ்கேன் செய்யுங்கள்",
+  "onboarding.transfer.step_open":
+    "உங்கள் பழைய தொலைபேசியில் Airhop ஐத் திறங்கள்",
+  "onboarding.transfer.step_go":
+    "{tab} க்குச் சென்று, பின் {row} ஐத் தேர்ந்தெடுங்கள்",
+  "onboarding.transfer.step_scan": "அதை இந்தக் குறியீட்டை நோக்கிக் காட்டுங்கள்",
+  "onboarding.transfer.network_note":
+    "இரு தொலைபேசிகளும் ஒரே Wi-Fi இல் அல்லது ஹாட்ஸ்பாட்டில் இருக்க வேண்டும். எதுவும் இணையம் வழியாகச் செல்வதில்லை.",
+  "onboarding.transfer.qr_a11y":
+    "மாற்றுக் குறியீடு. உங்கள் பழைய தொலைபேசியில் உள்ள Airhop மூலம் இதை ஸ்கேன் செய்யுங்கள்.",
+  "onboarding.transfer.offline_title": "Wi-Fi உடன் இணையுங்கள்",
+  "onboarding.transfer.offline_body":
+    "இரு தொலைபேசிகளையும் ஒரே Wi-Fi இல் இணையுங்கள், அல்லது ஒன்றில் ஹாட்ஸ்பாட்டை இயக்கி மற்றொன்றிலிருந்து அதில் சேருங்கள். இணையம் தேவையில்லை.",
+  "onboarding.transfer.incoming": "{name} மாற்றப்படுகிறது",
+  "onboarding.transfer.receiving": "பெறுகிறது {percent}%",
+  "onboarding.transfer.saving": "இந்தத் தொலைபேசியில் சேமிக்கிறது",
+  "onboarding.transfer.releasing": "உங்கள் பழைய தொலைபேசியில் நிறைவுசெய்கிறது",
+  "onboarding.transfer.keep_open":
+    "இது முடியும் வரை இரு தொலைபேசிகளையும் திறந்தே வைத்திருங்கள்.",
+  "onboarding.transfer.check_title": "உங்கள் பழைய தொலைபேசியைச் சரிபாருங்கள்",
+  "onboarding.transfer.check_body":
+    "எல்லாமே இந்தத் தொலைபேசியில் உள்ளது. தொடரும் முன், உங்கள் பழைய தொலைபேசி அழிக்கப்பட்டதாகக் காட்டுகிறதா என உறுதிசெய்யுங்கள், அல்லது அதில் இந்தத் தொலைபேசியை அழி என்பதைத் தேர்ந்தெடுங்கள்.",
+  "onboarding.transfer.failed_title": "மாற்றம் முடியவில்லை",
+  "onboarding.transfer.failed_cancelled":
+    "உங்கள் பழைய தொலைபேசியில் மாற்றம் ரத்துசெய்யப்பட்டது. இங்கே எதுவும் சேமிக்கப்படவில்லை.",
+  "onboarding.transfer.failed_interrupted":
+    "இணைப்பு துண்டிக்கப்பட்டது. இங்கே எதுவும் சேமிக்கப்படவில்லை.",
+  "onboarding.transfer.failed_storage":
+    "வந்தவற்றை இந்தத் தொலைபேசியால் சேமிக்க முடியவில்லை, எனவே எதுவும் வைக்கப்படவில்லை.",
+  "onboarding.transfer.failed_incompatible":
+    "உங்கள் பழைய தொலைபேசியில் புதிய Airhop இயங்குகிறது. இந்தத் தொலைபேசியைப் புதுப்பித்து, மீண்டும் முயலுங்கள்.",
+  "onboarding.transfer.failed_unavailable":
+    "இந்தத் தொலைபேசியால் உள்ளக நெட்வொர்க் இணைப்பைத் திறக்க முடியாது.",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop க்கு வருக!",
@@ -858,6 +897,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "மின்கல சேமிப்பு · குறைவாகத் தேடுகிறது",
   "mesh.banner.wipe_incomplete":
     "அழிப்பு முழுமையடையவில்லை · சில தரவு மிஞ்சியிருக்கலாம், மீண்டும் திறக்கும்போது முயலப்படும்",
+  "mesh.banner.identity_elsewhere":
+    "உங்கள் அடையாளம் வேறொரு தொலைபேசியிலும் உள்ளது · பயன்படுத்தாததை அழியுங்கள்",
   "mesh.banner.wifi_off": "வைஃபை முடக்கம் · பெரிய கோப்புகள் மெதுவாகச் செல்லும்",
   "mesh.banner.clock_skew":
     "இந்தத் தொலைபேசியின் கடிகாரம் தவறாக உள்ளது · தேதியையும் நேரத்தையும் தானியங்கியாக அமையுங்கள்",
@@ -2147,15 +2188,64 @@ export const strings: Strings = {
   "settings.transfer.chats": "அரட்டைகளும் வரலாறும்",
   "settings.transfer.chats_desc":
     "உரையாடல்கள், குழுக்கள், நீங்கள் சேர்ந்த சேனல்கள்",
+  "settings.transfer.chats_without":
+    "உங்கள் சேனல்களும் குழுக்களும், அவற்றின் செய்திகள் இல்லாமல்",
   "settings.transfer.wallet": "பணப்பை இருப்பு",
   "settings.transfer.wallet_desc": "ecash உம் பரிவர்த்தனை வரலாறும்",
   "settings.transfer.title": "புதிய தொலைபேசிக்கு மாற்று",
   "settings.transfer.desc":
     "உங்கள் அடையாளம், அரட்டைகள், பணப்பையை மற்றொரு சாதனத்துக்கு மாற்றுங்கள்",
-  "settings.transfer.coming_soon_a11y":
-    "புதிய தொலைபேசிக்கு மாற்று, விரைவில் வருகிறது",
-  "settings.transfer.body":
-    "இரு தொலைபேசிகளையும் அருகருகே வைத்து எல்லாவற்றையும் புளூடூத் வழியாக மாற்றுங்கள். எதுவும் சேவையகம் வழியாகச் செல்வதில்லை, எனவே இணையம் இல்லாமலும் இது இயங்கும்.",
+  "settings.transfer.intro":
+    "புதிய தொலைபேசியில் Airhop ஐத் திறந்து, வேறொரு தொலைபேசியிலிருந்து மாற்று என்பதைத் தேர்ந்தெடுங்கள். இரு தொலைபேசிகளும் ஒரே Wi-Fi இல் அல்லது ஹாட்ஸ்பாட்டில் இருக்க வேண்டும், இணையம் தேவையில்லை.",
+  "settings.transfer.erase_note":
+    "புதிய தொலைபேசிக்கு எல்லாம் வந்ததும், இந்தத் தொலைபேசி அழிக்கப்படும். புகைப்படங்களும் கோப்புகளும் மாற்றப்படாது.",
+  "settings.transfer.auth_prompt":
+    "உங்கள் அடையாளத்தை மாற்ற, இது நீங்கள்தான் என உறுதிப்படுத்துங்கள்",
+  "settings.transfer.scan_title":
+    "உங்கள் புதிய தொலைபேசியில் உள்ள குறியீட்டை ஸ்கேன் செய்யுங்கள்",
+  "settings.transfer.aim":
+    "உங்கள் புதிய தொலைபேசியில் உள்ள குறியீட்டை நோக்கிக் கேமராவைக் காட்டுங்கள்",
+  "settings.transfer.wrong_code":
+    "அது ஒரு தொடர்புக் குறியீடு. உங்கள் புதிய தொலைபேசியில் உள்ள குறியீட்டை ஸ்கேன் செய்யுங்கள்.",
+  "settings.transfer.camera_off_body":
+    "உங்கள் புதிய தொலைபேசியில் உள்ள குறியீட்டை ஸ்கேன் செய்ய, அமைப்புகளில் கேமரா அணுகலை அனுமதியுங்கள்.",
+  "settings.transfer.confirm_title": "இந்தத் தொலைபேசிக்கு மாற்றவா?",
+  "settings.transfer.confirm_body":
+    "இங்குள்ள எல்லாமே இந்தக் குறியீட்டைக் காட்டும் தொலைபேசிக்குச் செல்லும். அது சென்றடைந்ததும், இந்தத் தொலைபேசி அழிக்கப்படும்.",
+  "settings.transfer.confirm_cta": "மாற்று",
+  "settings.transfer.connecting": "உங்கள் புதிய தொலைபேசியுடன் இணைக்கிறது",
+  "settings.transfer.connecting_hint":
+    "உள்ளக நெட்வொர்க்கில் சாதனங்களைக் கண்டறிய இந்தத் தொலைபேசி அனுமதி கேட்டால், அனுமதியுங்கள்.",
+  "settings.transfer.sending": "மாற்றுகிறது {percent}%",
+  "settings.transfer.keep_open":
+    "இது முடியும் வரை இரு தொலைபேசிகளையும் திறந்தே வைத்திருங்கள்.",
+  "settings.transfer.finishing": "உங்கள் புதிய தொலைபேசியில் நிறைவுசெய்கிறது",
+  "settings.transfer.erasing": "இந்தத் தொலைபேசியை அழிக்கிறது",
+  "settings.transfer.done_title": "மாற்றப்பட்டது",
+  "settings.transfer.done_body":
+    "உங்கள் அடையாளம் இப்போது உங்கள் புதிய தொலைபேசியில் உள்ளது, இந்தத் தொலைபேசி அழிக்கப்பட்டது.",
+  "settings.transfer.failed_title": "மாற்றம் முடியவில்லை",
+  "settings.transfer.failed_unreachable":
+    "உங்கள் புதிய தொலைபேசியை அடைய முடியவில்லை. இரு தொலைபேசிகளையும் ஒரே Wi-Fi இல் இணையுங்கள், அல்லது ஒன்றில் ஹாட்ஸ்பாட்டை இயக்கி மற்றொன்றிலிருந்து அதில் சேருங்கள்.",
+  "settings.transfer.failed_permission":
+    "உங்கள் புதிய தொலைபேசியை அடைய Airhop க்கு உள்ளக நெட்வொர்க் அணுகல் தேவை. அமைப்புகளில் அனுமதித்து, மீண்டும் முயலுங்கள்.",
+  "settings.transfer.failed_wrong_phone":
+    "பதிலளித்த தொலைபேசி, நீங்கள் ஸ்கேன் செய்த குறியீட்டுக்கு உரியது அல்ல.",
+  "settings.transfer.failed_incompatible":
+    "உங்கள் புதிய தொலைபேசியில் பழைய Airhop இயங்குகிறது. அதைப் புதுப்பித்து, மீண்டும் முயலுங்கள்.",
+  "settings.transfer.failed_cancelled":
+    "உங்கள் புதிய தொலைபேசியில் மாற்றம் ரத்துசெய்யப்பட்டது.",
+  "settings.transfer.failed_storage":
+    "உங்கள் புதிய தொலைபேசியால் எல்லாவற்றையும் சேமிக்க முடியவில்லை.",
+  "settings.transfer.failed_interrupted":
+    "எல்லாம் அனுப்பப்படும் முன் இணைப்பு துண்டிக்கப்பட்டது.",
+  "settings.transfer.unchanged":
+    "எதுவும் மாற்றப்படவில்லை, இந்தத் தொலைபேசி முன்புபோலவே இயங்கும்.",
+  "settings.transfer.unconfirmed_title": "மாற்றம் முடிந்ததா?",
+  "settings.transfer.unconfirmed_body":
+    "உங்கள் புதிய தொலைபேசி உறுதிப்படுத்தும் முன் அதனுடனான தொடர்பை இந்தத் தொலைபேசி இழந்தது. உங்கள் புதிய தொலைபேசியில் உங்கள் பெயர் தெரிந்தால், இந்தத் தொலைபேசியை அழியுங்கள். இல்லையெனில், இதையே தொடர்ந்து பயன்படுத்தி மீண்டும் முயலுங்கள்.",
+  "settings.transfer.erase_cta": "இந்தத் தொலைபேசியை அழி",
+  "settings.transfer.keep_cta": "இந்தத் தொலைபேசியையே பயன்படுத்து",
   "settings.qr.permission_label": "புகைப்பட அணுகல்",
   "settings.qr.permission_purpose": "உங்கள் QR குறியீட்டைச் சேமிக்க",
   "settings.qr.saved": "சேமிக்கப்பட்டது",

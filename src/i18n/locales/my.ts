@@ -74,6 +74,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_privacy": "ကိုယ်ရေးအချက်အလက်မူဝါဒကို ဖွင့်ပါ",
   "onboarding.welcome.consent":
     "{cta} ကို နှိပ်ခြင်းဖြင့် ကျွန်ုပ်တို့၏ {terms} နှင့် {privacy} ကို သင်သဘောတူပါသည်။",
+  "onboarding.welcome.transfer": "အခြားဖုန်းမှ လွှဲပြောင်းပါ",
 
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "သင့်အထောက်အထားကို ဖန်တီးနေသည်",
@@ -102,6 +103,42 @@ export const strings: Strings = {
   "onboarding.username.prop.storage_value": "စနစ်၏သော့သိမ်းတွင်သာ",
   "onboarding.username.prop.account": "အကောင့် လိုအပ်မှု",
   "onboarding.username.prop.account_value": "မလိုပါ",
+
+  // ---- Onboarding: transfer from another phone ----
+  "onboarding.transfer.title": "အခြားဖုန်းမှ လွှဲပြောင်းပါ",
+  "onboarding.transfer.preparing": "ပြင်ဆင်နေသည်",
+  "onboarding.transfer.scan_heading":
+    "ဤကုဒ်ကို သင့်ဖုန်းအဟောင်းဖြင့် စကန်ဖတ်ပါ",
+  "onboarding.transfer.step_open": "သင့်ဖုန်းအဟောင်းတွင် Airhop ကို ဖွင့်ပါ",
+  "onboarding.transfer.step_go": "{tab} သို့သွားပြီး {row} ကို ရွေးပါ",
+  "onboarding.transfer.step_scan": "၎င်းကို ဤကုဒ်ဆီ ချိန်ပါ",
+  "onboarding.transfer.network_note":
+    "ဖုန်းနှစ်လုံးစလုံး တူညီသော Wi-Fi သို့မဟုတ် ဟော့စပေါ့တွင် ရှိရပါမည်။ ဘာမျှ အင်တာနက်မှ မဖြတ်သန်းပါ။",
+  "onboarding.transfer.qr_a11y":
+    "လွှဲပြောင်းကုဒ်။ သင့်ဖုန်းအဟောင်းရှိ Airhop ဖြင့် စကန်ဖတ်ပါ။",
+  "onboarding.transfer.offline_title": "Wi-Fi သို့ ချိတ်ဆက်ပါ",
+  "onboarding.transfer.offline_body":
+    "ဖုန်းနှစ်လုံးကို တူညီသော Wi-Fi တွင် ချိတ်ပါ၊ သို့မဟုတ် တစ်လုံးတွင် ဟော့စပေါ့ဖွင့်ပြီး ကျန်တစ်လုံးမှ ချိတ်ဆက်ပါ။ အင်တာနက် မလိုပါ။",
+  "onboarding.transfer.incoming": "{name} ကို လွှဲပြောင်းနေသည်",
+  "onboarding.transfer.receiving": "လက်ခံနေသည် {percent}%",
+  "onboarding.transfer.saving": "ဤဖုန်းတွင် သိမ်းဆည်းနေသည်",
+  "onboarding.transfer.releasing": "သင့်ဖုန်းအဟောင်းတွင် အပြီးသတ်နေသည်",
+  "onboarding.transfer.keep_open":
+    "ဤလုပ်ငန်း ပြီးဆုံးသည်အထိ ဖုန်းနှစ်လုံးစလုံးကို ဖွင့်ထားပါ။",
+  "onboarding.transfer.check_title": "သင့်ဖုန်းအဟောင်းကို စစ်ဆေးပါ",
+  "onboarding.transfer.check_body":
+    "အားလုံး ဤဖုန်းပေါ်တွင် ရှိပါပြီ။ ဆက်မလုပ်မီ သင့်ဖုန်းအဟောင်းက ဖျက်ပြီးကြောင်း ပြနေသည်ကို သေချာပါစေ၊ သို့မဟုတ် ၎င်းပေါ်တွင် ဤဖုန်းကို ဖျက်ပါ ကို ရွေးပါ။",
+  "onboarding.transfer.failed_title": "လွှဲပြောင်းမှု မပြီးဆုံးခဲ့ပါ",
+  "onboarding.transfer.failed_cancelled":
+    "လွှဲပြောင်းမှုကို သင့်ဖုန်းအဟောင်းတွင် ပယ်ဖျက်ခဲ့သည်။ ဤနေရာတွင် ဘာမျှ မသိမ်းဆည်းခဲ့ပါ။",
+  "onboarding.transfer.failed_interrupted":
+    "ချိတ်ဆက်မှု ပြတ်သွားသည်။ ဤနေရာတွင် ဘာမျှ မသိမ်းဆည်းခဲ့ပါ။",
+  "onboarding.transfer.failed_storage":
+    "ရောက်လာသည်များကို ဤဖုန်းက မသိမ်းဆည်းနိုင်သဖြင့် ဘာမျှ မထားရှိခဲ့ပါ။",
+  "onboarding.transfer.failed_incompatible":
+    "သင့်ဖုန်းအဟောင်းတွင် ပိုသစ်သော Airhop ရှိနေသည်။ ဤဖုန်းကို အပ်ဒိတ်လုပ်ပြီး ထပ်စမ်းကြည့်ပါ။",
+  "onboarding.transfer.failed_unavailable":
+    "ဤဖုန်းသည် ဒေသတွင်းကွန်ရက် ချိတ်ဆက်မှုကို မဖွင့်နိုင်ပါ။",
 
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop မှ ကြိုဆိုပါသည်!",
@@ -854,6 +891,8 @@ export const strings: Strings = {
   "mesh.banner.battery_saver": "ဘက်ထရီချွေတာမှု · ရှာဖွေမှု လျော့နည်းသည်",
   "mesh.banner.wipe_incomplete":
     "ဖျက်ခြင်း မပြီးဆုံးပါ · အချက်အလက်အချို့ ကျန်နိုင်ပြီး ပြန်ဖွင့်လျှင် ထပ်ကြိုးစားပါမည်",
+  "mesh.banner.identity_elsewhere":
+    "သင့်အထောက်အထားသည် အခြားဖုန်းတွင်လည်း ရှိနေသည် · မသုံးသော ဖုန်းကို ဖျက်ပါ",
   "mesh.banner.wifi_off":
     "Wi-Fi ပိတ်ထားသည် · ဖိုင်ကြီးများ ပို့ရာတွင် နှေးပါမည်",
   "mesh.banner.clock_skew":
@@ -2128,15 +2167,62 @@ export const strings: Strings = {
   "settings.transfer.chats": "စကားပြောများနှင့် မှတ်တမ်း",
   "settings.transfer.chats_desc":
     "စကားပြောများ၊ အဖွဲ့များနှင့် သင်ဝင်ရောက်ထားသော ချန်နယ်များ",
+  "settings.transfer.chats_without":
+    "သင့်ချန်နယ်များနှင့် အဖွဲ့များ၊ ၎င်းတို့၏ မက်ဆေ့ဂျ်များ မပါဘဲ",
   "settings.transfer.wallet": "ပိုက်ဆံအိတ် လက်ကျန်",
   "settings.transfer.wallet_desc": "ecash နှင့် ငွေလွှဲမှတ်တမ်း",
   "settings.transfer.title": "ဖုန်းအသစ်သို့ လွှဲပြောင်းပါ",
   "settings.transfer.desc":
     "သင့်အထောက်အထား၊ စကားပြောများနှင့် ပိုက်ဆံအိတ်ကို အခြားစက်သို့ ရွှေ့ပါ",
-  "settings.transfer.coming_soon_a11y":
-    "ဖုန်းအသစ်သို့ လွှဲပြောင်းခြင်း၊ မကြာမီ လာမည်",
-  "settings.transfer.body":
-    "ဖုန်းနှစ်လုံးကို အတူကပ်ထားပြီး ဘလူးတုသ်ဖြင့် အားလုံးကို ရွှေ့ပါ။ ဘာမျှ ဆာဗာမှ မဖြတ်သန်းသဖြင့် အင်တာနက်မလိုဘဲ အလုပ်လုပ်သည်။",
+  "settings.transfer.intro":
+    "ဖုန်းအသစ်တွင် Airhop ကိုဖွင့်ပြီး အခြားဖုန်းမှ လွှဲပြောင်းပါ ကို ရွေးပါ။ ဖုန်းနှစ်လုံးစလုံး တူညီသော Wi-Fi သို့မဟုတ် ဟော့စပေါ့တွင် ရှိရပါမည်၊ အင်တာနက် မလိုပါ။",
+  "settings.transfer.erase_note":
+    "ဖုန်းအသစ်သို့ အားလုံးရောက်ပြီးသည်နှင့် ဤဖုန်းကို ဖျက်ပါမည်။ ဓာတ်ပုံနှင့် ဖိုင်များကို မရွှေ့ပါ။",
+  "settings.transfer.auth_prompt":
+    "သင့်အထောက်အထားကို လွှဲပြောင်းရန် သင်ဖြစ်ကြောင်း အတည်ပြုပါ",
+  "settings.transfer.scan_title": "သင့်ဖုန်းအသစ်ပေါ်ရှိ ကုဒ်ကို စကန်ဖတ်ပါ",
+  "settings.transfer.aim": "ကင်မရာကို သင့်ဖုန်းအသစ်ပေါ်ရှိ ကုဒ်ဆီ ချိန်ပါ",
+  "settings.transfer.wrong_code":
+    "၎င်းသည် အဆက်အသွယ်ကုဒ် ဖြစ်သည်။ သင့်ဖုန်းအသစ်ပေါ်ရှိ ကုဒ်ကို စကန်ဖတ်ပါ။",
+  "settings.transfer.camera_off_body":
+    "သင့်ဖုန်းအသစ်ပေါ်ရှိ ကုဒ်ကို စကန်ဖတ်ရန် ဆက်တင်များတွင် ကင်မရာအသုံးပြုခွင့်ကို ခွင့်ပြုပါ။",
+  "settings.transfer.confirm_title": "ဤဖုန်းသို့ လွှဲပြောင်းမလား?",
+  "settings.transfer.confirm_body":
+    "ဤနေရာရှိ အားလုံးသည် ဤကုဒ်ကိုပြနေသော ဖုန်းသို့ ရွှေ့ပါမည်။ ရောက်ရှိသည်နှင့် ဤဖုန်းကို ဖျက်ပါမည်။",
+  "settings.transfer.confirm_cta": "လွှဲပြောင်းပါ",
+  "settings.transfer.connecting": "သင့်ဖုန်းအသစ်နှင့် ချိတ်ဆက်နေသည်",
+  "settings.transfer.connecting_hint":
+    "ဤဖုန်းက ဒေသတွင်းကွန်ရက်ရှိ စက်များကို ရှာဖွေခွင့် တောင်းလျှင် ခွင့်ပြုပါ။",
+  "settings.transfer.sending": "လွှဲပြောင်းနေသည် {percent}%",
+  "settings.transfer.keep_open":
+    "ဤလုပ်ငန်း ပြီးဆုံးသည်အထိ ဖုန်းနှစ်လုံးစလုံးကို ဖွင့်ထားပါ။",
+  "settings.transfer.finishing": "သင့်ဖုန်းအသစ်တွင် အပြီးသတ်နေသည်",
+  "settings.transfer.erasing": "ဤဖုန်းကို ဖျက်နေသည်",
+  "settings.transfer.done_title": "လွှဲပြောင်းပြီးပါပြီ",
+  "settings.transfer.done_body":
+    "သင့်အထောက်အထားသည် ယခု သင့်ဖုန်းအသစ်ပေါ်တွင် ရှိပြီး ဤဖုန်းကို ဖျက်ပြီးပါပြီ။",
+  "settings.transfer.failed_title": "လွှဲပြောင်းမှု မပြီးဆုံးခဲ့ပါ",
+  "settings.transfer.failed_unreachable":
+    "သင့်ဖုန်းအသစ်ကို ဆက်သွယ်၍ မရပါ။ ဖုန်းနှစ်လုံးကို တူညီသော Wi-Fi တွင် ချိတ်ပါ၊ သို့မဟုတ် တစ်လုံးတွင် ဟော့စပေါ့ဖွင့်ပြီး ကျန်တစ်လုံးမှ ချိတ်ဆက်ပါ။",
+  "settings.transfer.failed_permission":
+    "သင့်ဖုန်းအသစ်ကို ဆက်သွယ်ရန် Airhop သည် ဒေသတွင်းကွန်ရက် အသုံးပြုခွင့် လိုအပ်သည်။ ဆက်တင်များတွင် ခွင့်ပြုပြီး ထပ်စမ်းကြည့်ပါ။",
+  "settings.transfer.failed_wrong_phone":
+    "ပြန်ဖြေသော ဖုန်းသည် သင်စကန်ဖတ်ခဲ့သော ကုဒ်၏ ဖုန်း မဟုတ်ပါ။",
+  "settings.transfer.failed_incompatible":
+    "သင့်ဖုန်းအသစ်တွင် ပိုဟောင်းသော Airhop ရှိနေသည်။ ၎င်းကို အပ်ဒိတ်လုပ်ပြီး ထပ်စမ်းကြည့်ပါ။",
+  "settings.transfer.failed_cancelled":
+    "လွှဲပြောင်းမှုကို သင့်ဖုန်းအသစ်တွင် ပယ်ဖျက်ခဲ့သည်။",
+  "settings.transfer.failed_storage":
+    "သင့်ဖုန်းအသစ်က အားလုံးကို မသိမ်းဆည်းနိုင်ခဲ့ပါ။",
+  "settings.transfer.failed_interrupted":
+    "အားလုံး မပို့ရသေးမီ ချိတ်ဆက်မှု ပြတ်သွားသည်။",
+  "settings.transfer.unchanged":
+    "ဘာမျှ မရွှေ့ခဲ့ပါ၊ ဤဖုန်းသည် ယခင်အတိုင်း အလုပ်လုပ်ပါသည်။",
+  "settings.transfer.unconfirmed_title": "လွှဲပြောင်းမှု ပြီးဆုံးခဲ့ပါသလား?",
+  "settings.transfer.unconfirmed_body":
+    "သင့်ဖုန်းအသစ်က အတည်မပြုမီ ဤဖုန်းနှင့် ဆက်သွယ်မှု ပြတ်သွားခဲ့သည်။ သင့်ဖုန်းအသစ်တွင် သင့်အမည် ပြနေပါက ဤဖုန်းကို ဖျက်ပါ။ မပြပါက ဤဖုန်းကို ဆက်သုံးပြီး ထပ်စမ်းကြည့်ပါ။",
+  "settings.transfer.erase_cta": "ဤဖုန်းကို ဖျက်ပါ",
+  "settings.transfer.keep_cta": "ဤဖုန်းကို ဆက်သုံးပါ",
   "settings.qr.permission_label": "ဓာတ်ပုံ အသုံးပြုခွင့်",
   "settings.qr.permission_purpose": "သင့် QR ကုဒ်ကို သိမ်းရန်",
   "settings.qr.saved": "သိမ်းပြီးပါပြီ",
