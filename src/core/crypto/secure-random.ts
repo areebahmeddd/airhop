@@ -6,5 +6,7 @@
 // platform generator, so it is not for per-packet hot paths.
 export function secureRandom(): number {
   const [value] = crypto.getRandomValues(new Uint32Array(1));
+  // Exact over a 2^32 grid, so a caller rounding to n buckets sees a bias of
+  // at most n / 2^32: far below anything these values protect. Not for keys.
   return value / 0x1_0000_0000;
 }
