@@ -124,16 +124,17 @@ and the sheet keeps showing the name the peer chose beside it.
 
 ### Key storage
 
-| Secret               | Storage                         | Backed by                         |
-| -------------------- | ------------------------------- | --------------------------------- |
-| `noiseStaticPrivKey` | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| `signingPrivKey`     | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Wallet AES-256 key   | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Nutzap P2PK privkey  | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Recovery phrase      | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Cashu proofs         | `react-native-mmkv` (AES-256)   | File encrypted with the key above |
-| Active sessions      | `react-native-mmkv` (encrypted) | RAM-backed, not persisted         |
-| Message history      | `react-native-mmkv`             | Encrypted at rest, panic-wipeable |
+| Secret                 | Storage                       | Backed by                         |
+| ---------------------- | ----------------------------- | --------------------------------- |
+| `noiseStaticPrivKey`   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| `signingPrivKey`       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Wallet AES-256 key     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Nutzap P2PK privkey    | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Recovery phrase        | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Cashu proofs           | `react-native-mmkv` (AES-256) | File encrypted with the key above |
+| Noise and DR sessions  | Memory only                   | Not persisted                     |
+| Group and channel keys | `react-native-mmkv`           | See "Data at rest" below          |
+| Message history        | `react-native-mmkv`           | See "Data at rest" below          |
 
 All five go through `src/core/crypto/keychain.ts`; nothing else calls
 `expo-secure-store` directly. The module exports a union type of the item names,
@@ -182,9 +183,37 @@ read and write awaits that promise. If the keychain refuses, the wallet reports
 itself locked rather than opening unencrypted, and no proof reaches plaintext
 disk.
 
-The panic wipe deletes this partition with `deleteMMKV` rather than `clearAll`,
-since the file cannot be reopened without its key and the same wipe destroys the
-key.
+The panic wipe empties an open partition with `clearAll`, since `deleteMMKV`
+would free the native instance under a write still in flight, and uses
+`deleteMMKV` only when nothing opened it. Either way the same wipe destroys the
+key, so what stays on disk cannot be read.
+
+### Data at rest
+
+Outside the keychain, only the wallet partition carries a key of Airhop's own.
+The rest (the other MMKV stores, Arti's state, and attachments in the cache
+directory) relies on the OS: iOS Data Protection and Android file-based
+encryption, keyed to the device passcode, with the same after-first-unlock
+availability as the keychain items. A second key held in this phone's keychain
+would add nothing against someone who can read the app's files on an unlocked
+phone, since they can use the keychain too, and it would make every store open
+asynchronously, as the wallet does.
+
+What such a key would stop is a copy leaving the phone, and that is closed at
+the source instead. Nothing is backed up or transferred:
+
+- **iOS:** `AppDelegate` marks `Documents/mmkv` and `Application Support/airhop`
+  (Arti's guards and consensus) excluded from iCloud and iTunes backup on every
+  launch, before JS runs. The cache directory is never backed up.
+- **Android:** `allowBackup="false"`, plus `data_extraction_rules.xml` excluding
+  every domain from cloud backup and device-to-device transfer. On Android 12+,
+  `allowBackup` alone leaves device-to-device transfer on for some
+  manufacturers.
+
+Nothing is lost by it. A restored copy would not bring Airhop back, since the
+identity is a this-device-only keychain item, so a backup only ever copied the
+data off the phone. Moving to a new phone belongs to an in-app transfer that
+moves the identity rather than cloning it, which is not built yet.
 
 ## 3. Transport Stack
 
@@ -881,6 +910,7 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Hostile payment source             | Ecash is redeemed only from a mint the user already added, and incoming proofs are DLEQ-verified before anything is stored                                                                                                                                                                                                                                                                                                       |
 | Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly                                                                                                                                                                                                                                                                                                                                              |
 | Physical device seizure            | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (Privacy -> Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                    |
+| Cloud backup or phone transfer     | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                            |
 | Screen surveillance                | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked |
 
 ### Out of scope

@@ -110,7 +110,7 @@
   <!-- Puts Airhop under Settings > Apps > Airhop > Language on Android 13, so
        someone whose system language Airhop does not ship can still pick one it
        does. Reaches only the strings the OS renders. Inert below API 33. -->
-  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:localeConfig="@xml/locales_config" tools:targetApi="33">
+  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:dataExtractionRules="@xml/data_extraction_rules" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:localeConfig="@xml/locales_config" tools:targetApi="33">
     <!-- Android 16 ignores the portrait lock on any display at least 600dp
          wide (a foldable's inner screen, a tablet, a desktop window). The shell
          has no breakpoints and is laid out for a phone in portrait, so
