@@ -36,6 +36,7 @@ export const Colors = {
   textSecondary: "#565656", // supporting text
   textMuted: "#6F6F6F", // timestamps, placeholders, labels
   textInverse: "#FFFFFF", // text on near-black (accent) surfaces
+  onStatus: "#FFFFFF", // glyph on a saturated status fill (online, offline, danger)
   //
   // A dismiss action (Cancel, Close) uses textPrimary, never textMuted: a
   // muted label on a filled pill reads as disabled rather than as the quieter
@@ -117,6 +118,7 @@ export const DarkColors = {
   textSecondary: "#A6A6A6",
   textMuted: "#787878",
   textInverse: "#111111",
+  onStatus: "#FFFFFF",
 
   // ---- Interactive accent ----
   accent: "#F5F5F5",

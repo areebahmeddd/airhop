@@ -3,8 +3,9 @@
 // Shown from two places, and intentionally the SAME component in both so they
 // never drift: tapping the header inside a DM thread, and the "Contact info"
 // action on the DM list's More sheet. Shows identity, how long you have been
-// chatting, reachability, verification, and the encryption guarantee, plus the
-// Remove contact / Block actions.
+// chatting, reachability, verification, and the encryption guarantee, plus
+// rename, verify, pay and ring. Removing or blocking lives on the DM list's
+// More sheet, not here.
 
 import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
 import { Feather } from "@expo/vector-icons";
@@ -56,10 +57,6 @@ interface Props {
   // "dm:<peerID>" of the conversation, or null when closed.
   channel: string | null;
   onClose: () => void;
-  // Called after the conversation is removed or the peer blocked, so a caller
-  // that lives inside the thread can navigate back out of it. The DM list has
-  // nothing to do here: the row simply disappears.
-  onAfterRemove?: () => void;
 }
 
 export default function ContactInfoSheet({

@@ -59,6 +59,63 @@ describe("group store", () => {
     expect(useGroupStore.getState().nameForChannel(channel)).toBe("crew");
   });
 
+  // The fingerprint is a hash of the Noise key; the roster pairs it with a
+  // signing key the state itself supplies, so that key is pinned as well.
+  it("refuses a creator whose signing key changed", () => {
+    const creator = member("me");
+    const groupID = newGroupID();
+    const base: BitchatGroup = {
+      groupID,
+      name: "g",
+      epoch: 1,
+      members: [creator.member],
+      creatorFingerprint: creator.member.fingerprint,
+    };
+    useGroupStore.getState().upsertLocal(base, newGroupKey());
+    const forged = { ...creator.member, signingKey: new Uint8Array(32) };
+    useGroupStore
+      .getState()
+      .upsertLocal({ ...base, epoch: 2, members: [forged] }, newGroupKey());
+    expect(useGroupStore.getState().get(bytesToHexLocal(groupID))!.epoch).toBe(
+      1,
+    );
+  });
+
+  it("keeps one valid entry per group when loading", () => {
+    const creator = member("me");
+    const stored = (epoch: number, withCreator: boolean) => ({
+      groupID: "ab".repeat(16),
+      name: "g",
+      epoch,
+      members: withCreator
+        ? [
+            {
+              fingerprint: creator.member.fingerprint,
+              signingKey: "cd".repeat(32),
+              nickname: "me",
+            },
+          ]
+        : [],
+      creatorFingerprint: creator.member.fingerprint,
+      key: "ef".repeat(32),
+    });
+    // The storage mock is module state, so it is seeded in the same isolated
+    // registry the store loads from.
+    jest.isolateModules(() => {
+      const mmkv =
+        require("react-native-mmkv") as typeof import("react-native-mmkv");
+      mmkv
+        .createMMKV({ id: "group-store" })
+        .set(
+          "groups",
+          JSON.stringify([stored(1, true), stored(3, true), stored(5, false)]),
+        );
+      const { useGroupStore: reloaded } =
+        require("../group-store") as typeof import("../group-store");
+      expect(reloaded.getState().groups.map((g) => g.epoch)).toEqual([3]);
+    });
+  });
+
   it("adopts a newer epoch and ignores an older one", () => {
     const creator = member("me");
     const groupID = newGroupID();

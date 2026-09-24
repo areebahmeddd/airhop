@@ -13,6 +13,7 @@ import { getMeshService } from "@services/mesh-service";
 import { useBoardStore } from "@store/board-store";
 import { useChatStore } from "@store/chat-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
+import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import EmptyState from "@ui/components/empty-state";
 import {
@@ -498,6 +499,10 @@ function MediaResultRow({
   onPress: (channel: string, messageId: string) => void;
 }): React.JSX.Element {
   const T = useT();
+  // The bubble's rule: someone else's photo stays behind a tap while "Show
+  // media automatically" is off, and search must not be the way around it.
+  const autoDownloadMedia = useSettingsStore((s) => s.autoDownloadMedia);
+  const showThumbnail = hit.isMine || autoDownloadMedia;
   const before = hit.snippet.slice(0, hit.matchStart);
   const match = hit.snippet.slice(hit.matchStart, hit.matchEnd);
   const after = hit.snippet.slice(hit.matchEnd);
@@ -514,7 +519,7 @@ function MediaResultRow({
     >
       <View style={styles.mediaThumb}>
         <Feather name={filter.icon} size={16} color={colors.textSecondary} />
-        {hit.thumbnailUri ? (
+        {hit.thumbnailUri && showThumbnail ? (
           <Image
             source={{ uri: hit.thumbnailUri }}
             style={StyleSheet.absoluteFill}

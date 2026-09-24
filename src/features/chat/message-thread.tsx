@@ -90,12 +90,13 @@ import { channelInviteLink } from "@utils/deep-link";
 import { unconfirmedSince } from "@utils/delivery-silence";
 import { emoteLine } from "@utils/emote";
 import {
+  amountParts,
   formatBytes,
   formatClockTime,
   formatDateSeparator,
   formatDuration,
   formatLongDate,
-  formatNumber,
+  formatUnitAmount,
 } from "@utils/format";
 import {
   BRIDGE_CHANNEL,
@@ -140,6 +141,7 @@ import {
   FlatList,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Share,
@@ -164,6 +166,7 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets";
 import SendEcashSheet from "../wallet/send-ecash-sheet";
 import ChannelInfoSheet from "./channel-info-sheet";
+import { clampCaption, forwardTextFits } from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
 import ForwardSheet from "./forward-sheet";
 import MessageActionSheet from "./message-action-sheet";
@@ -203,7 +206,11 @@ const ATTACH_OPTIONS: {
     action: "camera",
     icon: "camera",
     labelKey: "chat.attach.camera",
-    descKey: "chat.attach.camera_desc",
+    // Android's camera shoots stills only; see handleCameraAttach.
+    descKey:
+      Platform.OS === "ios"
+        ? "chat.attach.camera_desc"
+        : "chat.attach.camera_desc_photo",
   },
   {
     action: "library",
@@ -638,11 +645,16 @@ function TransferProgressList({
         const detail =
           t.status === "active"
             ? [
-                formatBytes(t.transferredBytes) +
-                  " / " +
-                  formatBytes(t.totalBytes),
-                speed > 0 ? formatBytes(speed) + "/s" : null,
-                eta !== null && eta > 0 ? formatEta(eta) + " left" : null,
+                T("chat.transfer.progress", {
+                  done: formatBytes(t.transferredBytes),
+                  total: formatBytes(t.totalBytes),
+                }),
+                speed > 0
+                  ? T("chat.transfer.speed", { size: formatBytes(speed) })
+                  : null,
+                eta !== null && eta > 0
+                  ? T("chat.transfer.left", { time: formatDuration(eta) })
+                  : null,
               ]
                 .filter(Boolean)
                 .join(" · ")
@@ -759,15 +771,6 @@ function fileExtension(name?: string, mimeType?: string): string | null {
     if (sub) return sub.toUpperCase().slice(0, 5);
   }
   return null;
-}
-
-// Rounded human ETA: 12s, 3m, 1h 4m.
-function formatEta(sec: number): string {
-  if (sec < 60) return `${Math.round(sec)}s`;
-  const m = Math.floor(sec / 60);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
 }
 
 function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
@@ -1892,6 +1895,10 @@ export default function MessageThread({
   // A DM with a durable mesh identity rather than a per-cell geohash
   // pseudonym. Gates the attach options that need a Noise session to exist.
   const isMeshDM = isDM && dmPeerID !== null && !isNostrId(dmPeerID);
+  // Read at render, which the attach menu does each time it opens. Only a
+  // peer that has proven it reads pins is offered one.
+  const acceptsLocationPin =
+    isMeshDM && getMeshService()?.peerAcceptsLocationPin(dmPeerID) === true;
 
   // How long this conversation has been going out with nothing coming back.
   //
@@ -1924,6 +1931,15 @@ export default function MessageThread({
   // a conversation with a hole in it and nobody is told.
   const selectedCarriesMedia = useMemo(
     () => msgs.some((m) => selectedIds.has(m.id) && m.attachment !== undefined),
+    [msgs, selectedIds],
+  );
+  // Same rule for length: a DM target that cannot hold one of the picked
+  // messages whole is greyed rather than taking a trimmed or partial forward.
+  const selectedTexts = useMemo(
+    () =>
+      msgs
+        .filter((m) => selectedIds.has(m.id) && m.attachment === undefined)
+        .map((m) => m.text),
     [msgs, selectedIds],
   );
 
@@ -2194,7 +2210,7 @@ export default function MessageThread({
         return;
       }
       showAlert(
-        `+${formatNumber(result.amount)} ${result.unit}`,
+        `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"
           ? t("wallet.receive.redeemed_at", { mint: hostOf(result.mintUrl) })
           : t("wallet.receive.stored_pending", {
@@ -2401,7 +2417,7 @@ export default function MessageThread({
       } else if (sent.gateway) {
         setStatus(msgChannel, msg.id, "carried");
         showStatus("gateway");
-      } else if (isGeo) {
+      } else if (isGeoChannel(msgChannel)) {
         // A location cell's audience is everyone in it, reached over the
         // internet. A Bluetooth neighbour arriving later will sync the packet,
         // but the cell itself never sees it, so this is as far as it goes.
@@ -2504,7 +2520,15 @@ export default function MessageThread({
       // A DM has exactly one recipient, so a trailing @name cannot redirect it
       // and is ignored: the target is always "you".
       const target = isDM ? "you" : (emote[2] ?? "").trim().replace(/^@/, "");
-      if (target.length === 0) return; // a channel emote needs a @name
+      // A channel emote needs a @name. The draft stays so it can be finished,
+      // and the toast says what is missing rather than the send going quiet.
+      if (target.length === 0) {
+        setToast({
+          message: t("chat.cmd.emote_needs_target", { command: kind }),
+          icon: "at-sign",
+        });
+        return;
+      }
       const emoji = kind === "hug" ? "🫂" : "🐟";
       const action = kind === "hug" ? "hugs" : "slaps";
       const suffix = kind === "slap" ? " around a bit with a large trout" : "";
@@ -2796,6 +2820,16 @@ export default function MessageThread({
       );
       return true;
     }
+    // The forward sheet greys a DM that cannot hold the text; this is the
+    // backstop for any other caller. Refused rather than cut: see
+    // forwardTextFits.
+    if (!forwardTextFits(targetChannel, source.text)) {
+      showAlert(
+        t("chat.forward.cant_send_here"),
+        t("chat.forward.too_long_for_dm"),
+      );
+      return false;
+    }
     const msg: ChatMessage = {
       id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       channel: targetChannel,
@@ -2805,18 +2839,16 @@ export default function MessageThread({
       timestampMs: Date.now(),
       isMine: true,
       forwarded: true,
+      status: "sending",
     };
     // Forwarding into the thread on screen is a send like any other; forwarding
     // out of it must leave this list exactly where the reader had it.
     if (targetChannel === channel) followOwnMessage();
     addMessage(msg);
-    const service = getMeshService();
-    if (!service) return true;
-    if (targetChannel.startsWith("dm:")) {
-      service.sendDm(targetChannel.slice(3), source.text);
-    } else {
-      service.sendChannelMessage(targetChannel, source.text);
-    }
+    // The typed-send path, so a group forward is sealed under the group key, a
+    // DM carries its message ID for receipts, and the bubble settles on a tick
+    // that says what actually happened.
+    transmit(msg);
     return true;
   }
 
@@ -2964,6 +2996,16 @@ export default function MessageThread({
     return true;
   }
 
+  // Refuse a file with nothing in it, at the moment it is picked. Every type,
+  // a photo included: there is nothing to resize, the transfer would carry no
+  // bytes, and the far side would get a bubble that opens nothing. Same
+  // absent-size rule as rejectIfTooLarge.
+  function rejectIfEmpty(sizeBytes: number | undefined): boolean {
+    if (sizeBytes !== 0) return false;
+    showAlert(t("chat.attach.not_sent"), t("chat.attach.empty_file"));
+    return true;
+  }
+
   // Shared by the camera and library pickers, which differ only in how the
   // asset is obtained.
   function acceptPickedMedia(result: ImagePicker.ImagePickerResult): void {
@@ -2971,6 +3013,7 @@ export default function MessageThread({
     const asset = result.assets[0];
     const type: ChatAttachment["type"] =
       asset.type === "video" ? "video" : "image";
+    if (rejectIfEmpty(asset.fileSize)) return;
     if (rejectIfTooLarge(type, asset.fileSize)) return;
     setCaptionDraft("");
     setPendingAttachment({
@@ -2999,12 +3042,18 @@ export default function MessageThread({
     );
     if (!granted) return;
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images", "videos"],
-      // `quality` applies to stills only. A recording is sent as it comes off
-      // the camera, and the mesh takes 1 MiB, so the length is the only lever
-      // there is: 15 seconds keeps a low-resolution clip in range, and a longer
-      // one would be refused after the user had already shot it.
+      // A recording is sent as it comes off the camera and the mesh takes
+      // 1 MiB, so a clip has to be small when shot. iOS can be told to record
+      // at its lowest preset, which keeps 15 seconds in range. Android hands
+      // capture to whichever camera app is installed and passes no quality at
+      // all, so a clip there is full resolution and overruns the cap in about
+      // a second: offering video would only let the user shoot something that
+      // is refused afterwards. Stills only on Android; a short clip from the
+      // library still works.
+      mediaTypes: Platform.OS === "ios" ? ["images", "videos"] : ["images"],
       videoMaxDuration: MAX_VIDEO_SECONDS,
+      videoQuality: ImagePicker.UIImagePickerControllerQualityType.Low,
+      // Stills only; see videoQuality for a recording.
       quality: UPLOAD_QUALITY_VALUES[useSettingsStore.getState().uploadQuality],
       allowsEditing: false,
     });
@@ -3036,6 +3085,7 @@ export default function MessageThread({
     });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
+    if (rejectIfEmpty(asset.size ?? undefined)) return;
     if (rejectIfTooLarge("document", asset.size ?? undefined)) return;
     setCaptionDraft("");
     setPendingAttachment({
@@ -3334,17 +3384,28 @@ export default function MessageThread({
       return;
     }
     lockAvailableShared.value = false;
-    const live = await service.startVoiceBurst(channel, () => {
-      // Capture died under us (a call took the mic). Close the burst and drop
-      // the live state so the HUD does not claim to still be transmitting.
+    const live = await service.startVoiceBurst(channel, (finished) => {
+      // Capture died under us (a call took the mic). Drop the live state so the
+      // HUD does not claim to still be transmitting, and stop the clock, or its
+      // ceiling fires a "sent at limit" toast for a burst long gone.
       liveHoldRef.current = false;
       setIsTalkingLive(false);
       setIsPTTActive(false);
+      stopRecordingTimer();
       // Not awaited, unlike every other path that closes the microphone: this
       // arrives on a native event listener and returns void. A press landing
       // inside the round trip fails the same way, with the same toast.
       void releaseAudioSession();
       setToast({ message: t("chat.perm.recording_stopped"), icon: "mic-off" });
+      // What was said before the mic went was heard live, so it gets its note
+      // exactly as a release would give it.
+      if (finished) {
+        void sendLiveBurstAsNote(
+          finished.bytes,
+          finished.durationMs,
+          finished.burstIDHex,
+        );
+      }
     });
     if (hold !== holdSeqRef.current) {
       // The hold ended while the mic was opening. Close the burst the way the
@@ -3729,14 +3790,30 @@ export default function MessageThread({
   // voice note, and anyone who was out of range still receives it. Ending the
   // burst without the note left listeners holding audio that existed nowhere
   // else, including in the talker's own thread.
-  //
-  // Only for a live hold. A voice note being recorded was heard by nobody, so
-  // an interruption can discard it; that path is unchanged.
   useEffect(() => {
     if (appActive) return;
     if (!liveHoldRef.current) return;
     void talkRef.current.end();
   }, [appActive]);
+
+  // A voice note being recorded was heard by nobody, so leaving the app
+  // discards it: held, locked or hands-free alike. Sending half a thought the
+  // user never finished is worse than asking them to say it again, and the
+  // toast is waiting when they come back to explain the missing bar.
+  //
+  // On "background" only, not the `appActive` flip above. iOS goes inactive
+  // for Control Center and the notification shade, and a glance at either
+  // must not cost a note the user is still recording. Nothing was sent live,
+  // so there is no far side for a late ending to strand.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (next) => {
+      if (next !== "background") return;
+      if (liveHoldRef.current || !recordingRef.current) return;
+      void talkRef.current.cancel();
+      setToast({ message: t("chat.perm.recording_stopped"), icon: "mic-off" });
+    });
+    return () => sub.remove();
+  }, []);
 
   // Leaving the thread mid-hold. The same ending as backgrounding, for the same
   // reason: the words were already heard, so they get their END and their note.
@@ -3866,13 +3943,28 @@ export default function MessageThread({
       // audio/mp4 is bitchat's name for AAC-in-MP4, which is what the recorder
       // produces. The old "audio/x-m4a" is not on either client's allow-list,
       // so every voice note was refused on arrival while looking sent here.
-      sendAttachmentMessage(
-        "voice",
-        uri,
-        wireMediaName("voice", "m4a"),
-        "audio/mp4",
-        durationMs,
-      );
+      const file = new FileSystem.File(uri);
+      const sizeBytes = file.exists ? file.size : undefined;
+      const send = (): void =>
+        sendAttachmentMessage(
+          "voice",
+          uri,
+          wireMediaName("voice", "m4a"),
+          "audio/mp4",
+          durationMs,
+          { sizeBytes },
+        );
+      // A long note outruns bitchat's reassembly window just as a picked file
+      // does (two minutes is about 469 KiB), so it gets the picker's caution.
+      const caution = bitchatMediaCaution("voice", sizeBytes);
+      if (caution !== null) {
+        showAlert(caution.title, caution.body, [
+          { text: T("common.cancel"), style: "cancel" },
+          { text: T("chat.attach.send_anyway"), onPress: send },
+        ]);
+        return;
+      }
+      send();
     } catch {
       // Same reasoning as the empty-recording branch above: never fail mute.
       setToast({ message: t("chat.voice.not_recorded"), icon: "mic-off" });
@@ -4126,7 +4218,7 @@ export default function MessageThread({
         <View style={styles.paymentCardHeader}>
           <Feather name="zap" size={17} color={Colors.accent} />
           <Text style={styles.paymentCardAmount}>
-            {formatNumber(token.info.amount)} {token.info.unit}
+            {formatUnitAmount(token.info.amount, token.info.unit)}
           </Text>
         </View>
         <Text style={styles.paymentCardMint} numberOfLines={1}>
@@ -4166,8 +4258,7 @@ export default function MessageThread({
               onPress={() => void claimToken(token)}
               accessibilityRole="button"
               accessibilityLabel={t("chat.ecash.claim_amount", {
-                amount: formatNumber(token.info.amount),
-                unit: token.info.unit,
+                ...amountParts(token.info.amount, token.info.unit),
               })}
             >
               <Text style={styles.paymentCardClaimText}>
@@ -5349,7 +5440,10 @@ export default function MessageThread({
       >
         <Text style={styles.attachSheetTitle}>{T("chat.attach.title")}</Text>
         {ATTACH_OPTIONS.filter(
-          (o) => (!o.dmOnly || isDM) && (!o.meshOnly || isMeshDM),
+          (o) =>
+            (!o.dmOnly || isDM) &&
+            (!o.meshOnly || isMeshDM) &&
+            (o.action !== "location" || acceptsLocationPin),
         ).map(({ action, icon, labelKey, descKey }, i) => (
           <React.Fragment key={action}>
             {i > 0 && <View style={styles.attachSeparator} />}
@@ -5428,7 +5522,6 @@ export default function MessageThread({
         <ContactInfoSheet
           channel={showDMInfo ? channel : null}
           onClose={() => setShowDMInfo(false)}
-          onAfterRemove={onBack}
         />
       )}
 
@@ -5477,9 +5570,8 @@ export default function MessageThread({
             placeholder={T("chat.attach.caption")}
             placeholderTextColor={Colors.textMuted}
             value={captionDraft}
-            onChangeText={setCaptionDraft}
+            onChangeText={(next) => setCaptionDraft(clampCaption(next))}
             multiline
-            maxLength={512}
           />
           <Pressable
             style={styles.composerSend}
@@ -5639,6 +5731,11 @@ export default function MessageThread({
         visible={forwardSource !== null}
         excludeChannel={channel}
         carriesMedia={forwardSource?.attachment !== undefined}
+        texts={
+          forwardSource && forwardSource.attachment === undefined
+            ? [forwardSource.text]
+            : undefined
+        }
         onClose={() => setForwardSource(null)}
         onForward={(target) => {
           if (!forwardSource) return false;
@@ -5655,6 +5752,7 @@ export default function MessageThread({
         visible={showBulkForward}
         excludeChannel={channel}
         carriesMedia={selectedCarriesMedia}
+        texts={selectedTexts}
         onClose={() => setShowBulkForward(false)}
         onForward={(target) => {
           if (!forwardSelected(target)) return false;

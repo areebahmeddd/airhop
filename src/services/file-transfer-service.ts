@@ -69,7 +69,7 @@ import * as FileSystem from "expo-file-system";
 // pacing causes packet loss; needs 25-30ms between fragments for reliable
 // delivery."
 const FRAGMENT_SPACING_DIRECTED_MS = 25;
-const FRAGMENT_SPACING_MS = 30;
+export const FRAGMENT_SPACING_MS = 30;
 
 // Spacing when nothing on the path touches the Bluetooth radio.
 //
@@ -188,9 +188,9 @@ export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 // Delete attachments older than MEDIA_MAX_AGE_MS. Returns the bytes freed.
 //
 // Covers outgoing as well as incoming: both are written under the same prefix,
-// and a photo you sent is exactly as sensitive as one you received. Called at
-// launch rather than on a timer, because a device that is never opened is also
-// never accumulating anything new.
+// and a photo you sent is exactly as sensitive as one you received. Scheduled by
+// services/media-retention: at launch, and throttled on each return to the app,
+// since a foreground service can keep the process alive for weeks.
 //
 // A file whose age cannot be read is kept. The alternative is deleting user
 // content on the strength of a missing timestamp, and on Android
@@ -393,6 +393,12 @@ export type UsesBleRadioFn = (
   isDM: boolean,
 ) => boolean;
 
+// Whether a DM recipient still holds a link to us. Asked only after a refusal,
+// to tell a peer that has gone from a radio that is busy. Absent, every
+// refusal is treated as busy. Never asked for a channel file, which any link
+// can carry.
+export type IsReachableFn = (recipientPeerID: string) => boolean;
+
 // NOTE: naming lives in wireFileName(), which owns the extension and bitchat's
 // stable-ID shape together. Nothing here may put localized UI copy on the wire:
 // a display word is not a file name, and one without an extension arrives as a
@@ -449,6 +455,8 @@ export class FileTransferService {
       // Consecutive refusals from the radio for this transfer's fragments.
       // Reset by any accepted write; see REFUSAL_LIMIT.
       refusals: number;
+      // Whether its first fragment has reached the radio. See drainOne.
+      started: boolean;
       onOutcome?: SendOutcome;
     }
   >();
@@ -469,6 +477,7 @@ export class FileTransferService {
 
   private readonly sealFile?: SealFileFn;
   private readonly usesBleRadio?: UsesBleRadioFn;
+  private readonly isReachable?: IsReachableFn;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -480,6 +489,7 @@ export class FileTransferService {
     resolveNickname: (peerID: string) => string,
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
+    isReachable?: IsReachableFn,
   ) {
     this.identity = identity;
     this.broadcast = broadcast;
@@ -487,6 +497,7 @@ export class FileTransferService {
     this.resolveNickname = resolveNickname;
     this.sealFile = sealFile;
     this.usesBleRadio = usesBleRadio;
+    this.isReachable = isReachable;
   }
 
   // Receive a fully reassembled FILE_TRANSFER packet from the fragment layer.
@@ -582,7 +593,12 @@ export class FileTransferService {
       caption:
         meta.caption && meta.caption.length > 0 ? meta.caption : undefined,
     });
-    if (tlv === null) return;
+    // Empty, or past the codec's ceiling: nothing can go out, and the bubble
+    // must not sit on "sending" waiting for a transfer that never began.
+    if (tlv === null) {
+      onOutcome?.(false);
+      return;
+    }
 
     // A private file goes inside the Noise session when the recipient has
     // proven it can read one.
@@ -638,6 +654,7 @@ export class FileTransferService {
       sentBytes: 0,
       lastPushMs: Date.now(),
       refusals: 0,
+      started: false,
       onOutcome,
     });
     useTransferStore.getState().begin({
@@ -649,6 +666,8 @@ export class FileTransferService {
       name: fileName,
       totalBytes: fileBytes.length,
       startedAtMs: Date.now(),
+      // Waits its turn in the FIFO; the stall clock starts when it gets one.
+      queued: true,
     });
 
     for (const item of items) {
@@ -707,6 +726,16 @@ export class FileTransferService {
     const next = this.outQueue.shift();
     if (next === undefined) return;
 
+    // Its turn has come, so its card's stall clock starts now rather than at
+    // the moment it joined the queue behind somebody's minute-long transfer.
+    if (next.transferId !== undefined) {
+      const starting = this.outbound.get(next.transferId);
+      if (starting !== undefined && !starting.started) {
+        starting.started = true;
+        useTransferStore.getState().advance(next.transferId, 0);
+      }
+    }
+
     let accepted = false;
     // Held across the await, and only the await.
     //
@@ -749,7 +778,12 @@ export class FileTransferService {
       // gone, so requeueing would resurrect a transfer the user stopped.
     } else {
       tx.refusals += 1;
-      if (tx.refusals >= REFUSAL_LIMIT) {
+      // A DM whose peer has no link left cannot be taken by any amount of
+      // backing off, and retrying it holds the shared queue for everyone
+      // else's attachments for the full refusal budget.
+      const unreachable =
+        next.isDM && this.isReachable?.(next.recipientPeerID) === false;
+      if (unreachable || tx.refusals >= REFUSAL_LIMIT) {
         this.failTransfer(next.transferId);
       } else {
         this.outQueue.unshift(next);

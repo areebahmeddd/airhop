@@ -10,7 +10,8 @@ import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { rejected, succeeded } from "@platform/haptics";
 import {
-  getCoarseLocation,
+  getPinLocation,
+  locationPermissionState,
   requestLocationPermission,
 } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
@@ -26,6 +27,7 @@ import {
 import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -55,6 +57,8 @@ export default function SendLocationSheet({
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const [phase, setPhase] = useState<Phase>("confirm");
+  // The OS will not ask again, so only Settings can grant it.
+  const [blocked, setBlocked] = useState(false);
   // Bumped on close, so an answer landing after the sheet is dismissed is
   // discarded rather than writing a failure the next open would show for an
   // attempt that was never made.
@@ -69,6 +73,7 @@ export default function SendLocationSheet({
   async function handleSend(): Promise<void> {
     const attempt = attemptRef.current;
     const stale = (): boolean => attemptRef.current !== attempt;
+    setBlocked(false);
     setPhase("sending");
 
     // Asked at the moment it is needed, as the geohash channels do. Someone
@@ -76,23 +81,22 @@ export default function SendLocationSheet({
     const granted = await requestLocationPermission();
     if (stale()) return;
     if (!granted) {
+      const { canAskAgain } = await locationPermissionState();
+      if (stale()) return;
       rejected();
+      setBlocked(!canAskAgain);
       setPhase("failed-fix");
       return;
     }
-    const coords = await getCoarseLocation();
+    const fix = await getPinLocation();
     if (stale()) return;
-    if (coords === null) {
+    if (fix === null) {
       rejected();
       setPhase("failed-fix");
       return;
     }
 
-    const sent = getMeshService()?.sendLocationPin(peerID, {
-      lat: coords.lat,
-      lng: coords.lng,
-      takenAtMs: Date.now(),
-    });
+    const sent = getMeshService()?.sendLocationPin(peerID, fix);
     // Null means no session carried it. A pin is not queued, so this is a real
     // failure with an explanation rather than a pending clock over something
     // that would arrive stale.
@@ -123,13 +127,28 @@ export default function SendLocationSheet({
             <Text style={styles.sub}>
               {T("chat.location.no_location_body")}
             </Text>
-            <Pressable
-              style={styles.primary}
-              onPress={() => setPhase("confirm")}
-              accessibilityRole="button"
-            >
-              <Text style={styles.primaryText}>{T("common.ok")}</Text>
-            </Pressable>
+            {blocked ? (
+              <Pressable
+                style={styles.primary}
+                onPress={() => {
+                  close();
+                  void Linking.openSettings().catch(() => undefined);
+                }}
+                accessibilityRole="button"
+              >
+                <Text style={styles.primaryText}>
+                  {T("permission.open_settings")}
+                </Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={styles.primary}
+                onPress={() => setPhase("confirm")}
+                accessibilityRole="button"
+              >
+                <Text style={styles.primaryText}>{T("common.ok")}</Text>
+              </Pressable>
+            )}
           </>
         ) : phase === "failed-send" ? (
           <>

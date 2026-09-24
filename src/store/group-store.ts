@@ -41,17 +41,23 @@ export interface RuntimeGroup {
 
 interface GroupState {
   groups: StoredGroup[];
+  // Groups the user left. The creator is never told, so its next key rotation
+  // would otherwise bring the group back as "you were added".
+  left: string[];
   upsertLocal: (group: BitchatGroup, key: Uint8Array) => void;
   upsertFromState: (payload: GroupStatePayload) => void;
   get: (groupIDHex: string) => RuntimeGroup | undefined;
   getByID: (groupID: Uint8Array) => RuntimeGroup | undefined;
   nameForChannel: (channel: string) => string | undefined;
   remove: (groupIDHex: string) => void;
+  leave: (groupIDHex: string) => void;
+  hasLeft: (groupIDHex: string) => boolean;
   clearAll: () => void;
 }
 
 const STORAGE_ID = "group-store";
 const STORAGE_KEY = "groups";
+const LEFT_KEY = "left";
 const storage = getStorage(STORAGE_ID);
 
 function toStoredMember(m: GroupMember): StoredMember {
@@ -88,14 +94,40 @@ function toRuntime(g: StoredGroup): RuntimeGroup {
   };
 }
 
-function load(): StoredGroup[] {
-  const raw = storage.getString(STORAGE_KEY);
+function loadLeft(): string[] {
+  const raw = storage.getString(LEFT_KEY);
   if (raw === undefined) return [];
   try {
-    return JSON.parse(raw) as StoredGroup[];
+    return JSON.parse(raw) as string[];
   } catch {
     return [];
   }
+}
+
+function creatorKeyOf(g: StoredGroup): string | undefined {
+  return g.members.find((m) => m.fingerprint === g.creatorFingerprint)
+    ?.signingKey;
+}
+
+// What was written is re-checked on the way back in, since it is the one input
+// put() never saw: one entry per group, the newest epoch, and a creator who is
+// in its own roster.
+function load(): StoredGroup[] {
+  const raw = storage.getString(STORAGE_KEY);
+  if (raw === undefined) return [];
+  let parsed: StoredGroup[];
+  try {
+    parsed = JSON.parse(raw) as StoredGroup[];
+  } catch {
+    return [];
+  }
+  const byID = new Map<string, StoredGroup>();
+  for (const g of parsed) {
+    if (creatorKeyOf(g) === undefined) continue;
+    const kept = byID.get(g.groupID);
+    if (kept === undefined || g.epoch > kept.epoch) byID.set(g.groupID, g);
+  }
+  return [...byID.values()];
 }
 
 export const useGroupStore = create<GroupState>((set, get) => {
@@ -107,7 +139,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
   function put(entry: StoredGroup): void {
     set((state) => {
       const existing = state.groups.find((g) => g.groupID === entry.groupID);
-      // Ignore an older or equal epoch: the newest key/roster wins.
+      // Ignore an older epoch: the newest key/roster wins.
       if (existing !== undefined && entry.epoch < existing.epoch) return state;
       // A group keeps the creator it was created with.
       //
@@ -125,7 +157,8 @@ export const useGroupStore = create<GroupState>((set, get) => {
       // point every path goes through, local and remote alike.
       if (
         existing !== undefined &&
-        entry.creatorFingerprint !== existing.creatorFingerprint
+        (entry.creatorFingerprint !== existing.creatorFingerprint ||
+          creatorKeyOf(entry) !== creatorKeyOf(existing))
       ) {
         return state;
       }
@@ -138,14 +171,28 @@ export const useGroupStore = create<GroupState>((set, get) => {
     });
   }
 
+  function persistLeft(left: string[]): void {
+    if (left.length === 0) storage.remove(LEFT_KEY);
+    else storage.set(LEFT_KEY, JSON.stringify(left));
+  }
+
   return {
     groups: load(),
+    left: loadLeft(),
 
     upsertLocal(group, key) {
       put(toStored(group, key));
     },
 
+    // An accepted state is the creator adding us, including back into a group
+    // we once left.
     upsertFromState(payload) {
+      const groupIDHex = bytesToHex(payload.groupID);
+      if (get().hasLeft(groupIDHex)) {
+        const left = get().left.filter((id) => id !== groupIDHex);
+        persistLeft(left);
+        set({ left });
+      }
       put(
         toStored(
           {
@@ -183,9 +230,22 @@ export const useGroupStore = create<GroupState>((set, get) => {
       });
     },
 
+    leave(groupIDHex) {
+      get().remove(groupIDHex);
+      if (get().hasLeft(groupIDHex)) return;
+      const left = [...get().left, groupIDHex];
+      persistLeft(left);
+      set({ left });
+    },
+
+    hasLeft(groupIDHex) {
+      return get().left.includes(groupIDHex);
+    },
+
     clearAll() {
-      set({ groups: [] });
+      set({ groups: [], left: [] });
       storage.remove(STORAGE_KEY);
+      storage.remove(LEFT_KEY);
     },
   };
 });

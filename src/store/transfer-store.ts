@@ -47,6 +47,11 @@ export interface Transfer {
   // a stall or speed-up the way a real download indicator does.
   speedBps: number;
   status: TransferStatus;
+  // A send still waiting behind another in the shared radio queue. Exempt from
+  // the stall sweep: no bytes can move until its turn, so its silence says
+  // nothing about the peer, and the send queue fails it itself if the radio
+  // refuses it once it starts. Cleared by the first `advance`.
+  queued?: boolean;
 }
 
 interface TransferState {
@@ -148,6 +153,7 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
             updatedAtMs: now,
             speedBps,
             status: "active",
+            queued: false,
           },
         },
       };
@@ -213,6 +219,7 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
       const next = { ...state.transfers };
       for (const [id, t] of Object.entries(next)) {
         if (t.status !== "active" && t.status !== "stalled") continue;
+        if (t.queued === true) continue;
         const idle = now - t.updatedAtMs;
         if (idle >= STALL_FAIL_AFTER_MS) {
           next[id] = { ...t, status: "failed", speedBps: 0 };

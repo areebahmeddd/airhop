@@ -423,3 +423,74 @@ describe("two people talking at once", () => {
     expect(player.activeSessions).toHaveLength(0);
   });
 });
+
+// Live audio has to keep flowing through the ordinary losses of a mesh: one
+// dropped packet, or somebody walking into range mid-sentence.
+describe("live playback through gaps", () => {
+  let played: number[][];
+  let backend: AudioPlaybackBackend;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    played = [];
+    backend = {
+      playFrames: (_burstIDHex, _codec, frames) => {
+        played.push(frames.map((f) => f[0]));
+        return Promise.resolve();
+      },
+      endSession: () => undefined,
+    };
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  it("skips a lost packet after one jitter window instead of stalling", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeStartPacket(1), "peerA");
+    player.handlePacket(makeDataPacket(1, 1), "peerA");
+    player.handlePacket(makeDataPacket(1, 2), "peerA");
+    jest.advanceTimersByTime(400);
+    expect(played.flat()).toEqual([1, 2]);
+
+    // Seq 3 is lost; 4 and 5 arrive and are held for a window, then played.
+    player.handlePacket(makeDataPacket(1, 4), "peerA");
+    player.handlePacket(makeDataPacket(1, 5), "peerA");
+    jest.advanceTimersByTime(100);
+    expect(played.flat()).toEqual([1, 2]);
+    jest.advanceTimersByTime(300);
+    expect(played.flat()).toEqual([1, 2, 4, 5]);
+
+    // The straggler is behind the playhead now, so it is dropped rather than
+    // played out of order.
+    player.handlePacket(makeDataPacket(1, 3), "peerA");
+    jest.advanceTimersByTime(400);
+    expect(played.flat()).toEqual([1, 2, 4, 5]);
+    expect(player.activeSessions).toHaveLength(1);
+  });
+
+  it("plays a burst joined mid-sentence, in order", () => {
+    const player = track(new VoicePlayer(backend));
+    // No START, and the first packet heard is seq 41, with 40 reordered behind.
+    player.handlePacket(makeDataPacket(1, 41), "peerA");
+    player.handlePacket(makeDataPacket(1, 40), "peerA");
+    jest.advanceTimersByTime(400);
+    expect(played.flat()).toEqual([40, 41]);
+
+    player.handlePacket(makeDataPacket(1, 42), "peerA");
+    jest.advanceTimersByTime(10);
+    expect(played.flat()).toEqual([40, 41, 42]);
+  });
+
+  it("orders across the 16-bit sequence wrap", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeDataPacket(1, 0x0000), "peerA");
+    player.handlePacket(makeDataPacket(1, 0xffff), "peerA");
+    jest.advanceTimersByTime(400);
+    expect(played.flat()).toEqual([0xff, 0x00]);
+    player.handlePacket(makeDataPacket(1, 0x0001), "peerA");
+    jest.advanceTimersByTime(10);
+    expect(played.flat()).toEqual([0xff, 0x00, 0x01]);
+  });
+});

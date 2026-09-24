@@ -284,3 +284,32 @@ describe("reconcile (stall watchdog)", () => {
     );
   });
 });
+
+describe("a queued send", () => {
+  it("is exempt from the stall sweep until its first advance", () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    state().begin({
+      id: "q1",
+      direction: "send",
+      channel: "#test",
+      peerLabel: "",
+      type: "image",
+      name: "photo.jpg",
+      totalBytes: 1000,
+      startedAtMs: Date.now(),
+      queued: true,
+    });
+
+    jest.setSystemTime(new Date("2026-01-01T00:01:00Z"));
+    state().reconcile();
+    expect(state().transfers["q1"].status).toBe("active");
+
+    // Its turn: the stall clock runs from here.
+    state().advance("q1", 0);
+    expect(state().transfers["q1"].queued).toBe(false);
+    jest.setSystemTime(new Date("2026-01-01T00:01:20Z"));
+    state().reconcile();
+    expect(state().transfers["q1"].status).toBe("stalled");
+  });
+});

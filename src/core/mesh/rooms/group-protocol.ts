@@ -18,6 +18,7 @@
 // CryptoKit's ChaChaPoly so the two clients interoperate.
 
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
+import { equalBytes } from "@noble/ciphers/utils.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, concatBytes, hexToBytes } from "@noble/hashes/utils.js";
@@ -552,6 +553,9 @@ export interface GroupStateContext {
   // The creator fingerprint of the group we already hold under this ID, or
   // undefined when this is the first time we have seen it.
   heldCreatorFingerprint?: string;
+  // That creator's signing key and the epoch we hold, for the same group.
+  heldCreatorSigningKey?: Uint8Array;
+  heldEpoch?: number;
   // Our own group fingerprint, to find ourselves in the roster.
   myFingerprint: string;
 }
@@ -559,13 +563,15 @@ export interface GroupStateContext {
 // Decide what an inbound state means for us. The order is the security
 // property:
 //
-//   1. Creator first. Everything the caller checked is satisfied by an attacker
-//      who names themselves creator: verifyGroupState looks the signing key up
-//      inside the roster it is verifying, and the sender-is-creator test then
-//      passes because they are the peer they named. Neither says anything about
-//      the group we hold.
-//   2. Then removal. A roster that omits us is the creator dropping us.
-//   3. Then apply.
+//   1. Creator first, by fingerprint and by signing key. Everything the caller
+//      checked is satisfied by an attacker who names themselves creator:
+//      verifyGroupState looks the signing key up inside the roster it is
+//      verifying, and the sender-is-creator test then passes because they are
+//      the peer they named. Neither says anything about the group we hold.
+//   2. Then staleness. An older epoch, even from the real creator, would
+//      otherwise replay a past roster, including one that dropped us.
+//   3. Then removal. A roster that omits us is the creator dropping us.
+//   4. Then apply.
 //
 // Reversing 1 and 2 gives a silent eviction primitive. A group ID rides in the
 // clear on every group message so relays can carry group traffic, so anyone who
@@ -573,13 +579,27 @@ export interface GroupStateContext {
 // omits the victim, and the victim's client would destroy its own key and drop
 // the room. bitchat had the same ordering gap, upstream PR #1587.
 export function groupStateAction(
-  state: Pick<GroupStatePayload, "creatorFingerprint" | "members">,
+  state: Pick<GroupStatePayload, "creatorFingerprint" | "members" | "epoch">,
   ctx: GroupStateContext,
 ): GroupStateAction {
   if (
     ctx.heldCreatorFingerprint !== undefined &&
     ctx.heldCreatorFingerprint !== state.creatorFingerprint
   ) {
+    return "reject";
+  }
+  if (ctx.heldCreatorSigningKey !== undefined) {
+    const creator = state.members.find(
+      (m) => m.fingerprint === state.creatorFingerprint,
+    );
+    if (
+      creator === undefined ||
+      !equalBytes(creator.signingKey, ctx.heldCreatorSigningKey)
+    ) {
+      return "reject";
+    }
+  }
+  if (ctx.heldEpoch !== undefined && state.epoch < ctx.heldEpoch) {
     return "reject";
   }
   if (!state.members.some((m) => m.fingerprint === ctx.myFingerprint)) {

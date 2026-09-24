@@ -142,7 +142,10 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
   updateRssi(peerID: string, rssi: number) {
     set((state) => {
       const existing = state.peers.get(peerID);
-      if (existing === undefined) return state;
+      // The same state back when nothing moved. RSSI is polled every few
+      // seconds per link, and a fresh Map re-renders every peer subscriber for
+      // a reading identical to the last.
+      if (existing === undefined || existing.rssi === rssi) return state;
       const next = new Map(state.peers);
       // Deliberately does NOT refresh lastSeenMs. RSSI is polled every 5s off
       // the GATT link, so treating it as liveness would pin a peer as "just
@@ -177,6 +180,7 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
 
   removePeer(peerID: string) {
     set((state) => {
+      if (!state.peers.has(peerID)) return state;
       const next = new Map(state.peers);
       next.delete(peerID);
       return { peers: next };
@@ -186,11 +190,15 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
   evictStale(ttlMs = REACHABLE_TTL_MS) {
     const cutoff = Date.now() - ttlMs;
     set((state) => {
-      const next = new Map(state.peers);
-      for (const [id, peer] of next) {
-        if (peer.lastSeenMs < cutoff) next.delete(id);
+      // Runs on a timer, and most sweeps find nobody to drop. Copy only when
+      // one does, so an idle sweep does not re-render the radar.
+      let next: Map<string, NearbyPeer> | null = null;
+      for (const [id, peer] of state.peers) {
+        if (peer.lastSeenMs >= cutoff) continue;
+        next ??= new Map(state.peers);
+        next.delete(id);
       }
-      return { peers: next };
+      return next === null ? state : { peers: next };
     });
   },
 

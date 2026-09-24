@@ -207,7 +207,12 @@ function Row({
           <View style={styles.rowTop}>
             <Text style={styles.name} numberOfLines={1}>
               {name}
-              {!entry.isDM && <Text style={styles.channelTag}> in {room}</Text>}
+              {!entry.isDM && (
+                <Text style={styles.channelTag}>
+                  {" "}
+                  {T("chat.notif.in_room", { room })}
+                </Text>
+              )}
             </Text>
             <Text style={styles.time}>{timeLabel}</Text>
           </View>

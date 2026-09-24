@@ -49,6 +49,7 @@ import ReanimatedSwipeable, {
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import ContactInfoSheet from "./contact-info-sheet";
+import { leaveConversation } from "./leave-conversation";
 
 interface Props {
   onSelectDM: (channel: string) => void;
@@ -68,7 +69,6 @@ export default function DmList({
     messages,
     unreadCounts,
     clearChannelMessages,
-    removeChannel,
     pinnedChannels,
     togglePinChannel,
     mutedChannels,
@@ -136,7 +136,12 @@ export default function DmList({
 
   // Remove contact: forget the person (contact + ephemeral peer entry) and the
   // conversation. Not a block: if they are still nearby they reappear on the
-  // Mesh tab and can be messaged again. Mirrors the in-thread Remove contact.
+  // Mesh tab and can be messaged again.
+  //
+  // Deliberately not forgetPeer. That also drops their queued outbox, which is
+  // right for a block and wrong here: a message the user already pressed send
+  // on is sent as far as they know, and tidying a contact list should not
+  // quietly unsend it.
   function handleRemoveContactDM(channel: string): void {
     setMoreOptionsDM(null);
     const peerID = channel.slice(3);
@@ -149,7 +154,7 @@ export default function DmList({
           text: T("common.remove"),
           style: "destructive",
           onPress: () => {
-            removeChannel(channel);
+            leaveConversation(channel);
             removeContact(peerID);
             usePeerStore.getState().removePeer(peerID);
           },
@@ -178,7 +183,7 @@ export default function DmList({
             // UI entry (forgetPeer also drops them from the peer store).
             getMeshService()?.forgetPeer(peerID);
             removeContact(peerID);
-            removeChannel(channel);
+            leaveConversation(channel);
           },
         },
       ],
@@ -193,9 +198,9 @@ export default function DmList({
         text: T("common.delete"),
         style: "destructive",
         // Only the conversation view is removed. The peer stays in contacts
-        // (unlike Remove contact inside the thread), so this is a clean "hide
-        // this chat" rather than "forget this person".
-        onPress: () => removeChannel(channel),
+        // (unlike Remove contact), so this is a clean "hide this chat" rather
+        // than "forget this person".
+        onPress: () => leaveConversation(channel),
       },
     ]);
   }

@@ -38,7 +38,7 @@ import {
   TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
-import { formatNumber, parseWholeNumber } from "@utils/format";
+import { amountParts, formatAgo, parseWholeNumber } from "@utils/format";
 import {
   resolveDisplayName,
   resolvePeerOwnName,
@@ -98,6 +98,18 @@ export default function PeerList({
   const [now, setNow] = useState(() => Date.now());
   const [showQRScan, setShowQRScan] = useState(false);
   const [selectedPeer, setSelectedPeer] = useState<NearbyPeer | null>(null);
+  // The sheet reads the live entry, so a rename, a new direct link or a fresh
+  // announce shows while it is open. The last live entry is the fallback once
+  // the peer ages out of the store, which is what lets the sheet say when they
+  // were last seen instead of vanishing under the user's thumb.
+  const livePeer = selectedPeer ? peers.get(selectedPeer.peerID) : undefined;
+  const shownPeer = livePeer ?? selectedPeer;
+  // Kept current while live, or the fallback would date "last seen" from the
+  // tap rather than from the last announce. Adjusted during render, React's
+  // pattern for state derived from a changing input.
+  if (livePeer !== undefined && livePeer !== selectedPeer) {
+    setSelectedPeer(livePeer);
+  }
   const [sendSatsAmount, setSendSatsAmount] = useState("");
   const [showSendSats, setShowSendSats] = useState(false);
   // Set while a send is in flight. Quoting involves an await, so without this a
@@ -151,14 +163,6 @@ export default function PeerList({
         .sort((a, b) => b.lastSeenMs - a.lastSeenMs),
     [peers, isBlocked],
   );
-
-  function formatLastSeen(ms: number): string {
-    const diffSec = Math.floor((now - ms) / 1000);
-    if (diffSec < 5) return t("mesh.peer.just_now");
-    if (diffSec < 60) return `${diffSec}s`;
-    if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m`;
-    return `${Math.floor(diffSec / 3600)}h`;
-  }
 
   function isOnline(peer: NearbyPeer): boolean {
     return now - peer.lastSeenMs < REACHABLE_TTL_MS;
@@ -219,7 +223,11 @@ export default function PeerList({
     setSendingSats(true);
     let result;
     try {
-      result = await payPerson({ peerID: peer.peerID, amount });
+      result = await payPerson({
+        peerID: peer.peerID,
+        amount,
+        recipientName: peer.nickname,
+      });
     } finally {
       setSendingSats(false);
     }
@@ -235,8 +243,7 @@ export default function PeerList({
     if (result.rail !== "mesh") {
       showAlert(
         t("wallet.pay.sent_title", {
-          amount: formatNumber(result.amount),
-          unit: result.unit,
+          ...amountParts(result.amount, result.unit),
           name: peer.nickname,
         }),
         describePayResult(result),
@@ -273,8 +280,11 @@ export default function PeerList({
         <FlatList
           data={peerList}
           keyExtractor={(item) => item.peerID}
+          // Every row is in range. The store evicts a peer at the same 60 s
+          // cutoff that decides reachability, on the same tick that refreshes
+          // `now`, so an offline row never renders; the detail sheet is where
+          // a peer who has left can still be seen, from its snapshot.
           renderItem={({ item }) => {
-            const online = isOnline(item);
             const username = resolveDisplayName(item.peerID);
 
             return (
@@ -288,10 +298,9 @@ export default function PeerList({
                 // Relay appended rather than substituted: whether the box on the
                 // pole is still answering matters as much as whether a person
                 // is, so it keeps the same online/offline label a peer gets.
-                accessibilityLabel={`${t(
-                  online ? "mesh.peer.view_peer_online" : "mesh.peer.view_peer",
-                  { name: username },
-                )}${
+                accessibilityLabel={`${t("mesh.peer.view_peer_online", {
+                  name: username,
+                })}${
                   item.isInfrastructure === true
                     ? `, ${t("mesh.peer.relay")}`
                     : ""
@@ -308,10 +317,7 @@ export default function PeerList({
                     />
                   )}
                   <View style={styles.rowStatusBadge}>
-                    <StatusDot
-                      status={online ? "online" : "offline"}
-                      size={10}
-                    />
+                    <StatusDot status="online" size={10} />
                   </View>
                 </View>
 
@@ -334,14 +340,7 @@ export default function PeerList({
                 </View>
 
                 <View style={styles.rowRight}>
-                  <Text
-                    style={[
-                      styles.rowLastSeen,
-                      online && { color: Colors.online },
-                    ]}
-                  >
-                    {online ? "now" : formatLastSeen(item.lastSeenMs)}
-                  </Text>
+                  <Text style={styles.rowLastSeen}>{T("format.just_now")}</Text>
                 </View>
               </Pressable>
             );
@@ -364,30 +363,30 @@ export default function PeerList({
         onClose={closeSheet}
         sheetStyle={styles.sheet}
       >
-        {selectedPeer && (
+        {shownPeer && (
           <>
             {/* Identity */}
             <View style={styles.sheetIdentity}>
-              {selectedPeer.isInfrastructure === true ? (
+              {shownPeer.isInfrastructure === true ? (
                 <RelayGlyph size={64} />
               ) : (
                 <Avatar
-                  username={resolveDisplayName(selectedPeer.peerID)}
-                  peerID={selectedPeer.peerID}
+                  username={resolveDisplayName(shownPeer.peerID)}
+                  peerID={shownPeer.peerID}
                   size={64}
                 />
               )}
               <Text style={styles.sheetUsername}>
-                {resolveDisplayName(selectedPeer.peerID)}
+                {resolveDisplayName(shownPeer.peerID)}
               </Text>
               {/* Only when the title is a name the user chose. Unrenamed, the
                   title already IS what they call themselves, and repeating it
                   underneath would be the same word twice. */}
-              {resolveDisplayName(selectedPeer.peerID) !==
-                resolvePeerOwnName(selectedPeer.peerID) && (
+              {resolveDisplayName(shownPeer.peerID) !==
+                resolvePeerOwnName(shownPeer.peerID) && (
                 <Text style={styles.sheetOwnName}>
                   {t("mesh.peer.their_name", {
-                    name: resolvePeerOwnName(selectedPeer.peerID),
+                    name: resolvePeerOwnName(shownPeer.peerID),
                   })}
                 </Text>
               )}
@@ -396,7 +395,7 @@ export default function PeerList({
                   would fight this sheet's pan-to-dismiss gesture. */}
               <Pressable
                 style={styles.sheetPeerIDRow}
-                onPress={() => copy(selectedPeer.peerID)}
+                onPress={() => copy(shownPeer.peerID)}
                 hitSlop={HIT_SLOP}
                 accessibilityRole="button"
                 // The ID itself is 16 characters of hex, which a screen reader
@@ -408,7 +407,7 @@ export default function PeerList({
                     : T("mesh.peer.copy_id")
                 }
               >
-                <Text style={styles.sheetPeerID}>{selectedPeer.peerID}</Text>
+                <Text style={styles.sheetPeerID}>{shownPeer.peerID}</Text>
                 <CopyGlyph
                   copied={copiedPeerID}
                   size={13}
@@ -417,41 +416,36 @@ export default function PeerList({
               </Pressable>
               <View style={styles.sheetStatusRow}>
                 <StatusDot
-                  status={isOnline(selectedPeer) ? "online" : "offline"}
+                  status={isOnline(shownPeer) ? "online" : "offline"}
                   size={8}
                 />
                 <Text style={styles.sheetStatusText}>
-                  {isOnline(selectedPeer)
+                  {isOnline(shownPeer)
                     ? T("mesh.peer.in_range")
-                    : t("mesh.peer.last_seen", {
-                        ago: formatLastSeen(selectedPeer.lastSeenMs),
+                    : t("mesh.peer.last_seen_at", {
+                        ago: formatAgo(shownPeer.lastSeenMs, now),
                       })}
                 </Text>
               </View>
               {/* In range only: a peer nobody has heard from in a minute has
                   nothing to answer a ping with, and a relay is a box on a pole
                   rather than somebody you are trying to find. */}
-              {selectedPeer.isInfrastructure !== true &&
-                isOnline(selectedPeer) && (
-                  <DistanceRow
-                    isDirect={selectedPeer.isDirect === true}
-                    probe={
-                      probe?.peerID === selectedPeer.peerID
-                        ? probe.result
-                        : null
-                    }
-                    onCheck={() =>
-                      void handleCheckDistance(selectedPeer.peerID)
-                    }
-                  />
-                )}
+              {shownPeer.isInfrastructure !== true && isOnline(shownPeer) && (
+                <DistanceRow
+                  isDirect={shownPeer.isDirect === true}
+                  probe={
+                    probe?.peerID === shownPeer.peerID ? probe.result : null
+                  }
+                  onCheck={() => void handleCheckDistance(shownPeer.peerID)}
+                />
+              )}
             </View>
 
             {/* A relay gets an explanation where a person gets actions. Both
                 would be dead controls: nobody reads the messages, and there is
                 no wallet to receive sats. Saying what the thing is answers the
                 question that made the user tap it. */}
-            {selectedPeer.isInfrastructure === true ? (
+            {shownPeer.isInfrastructure === true ? (
               <View style={styles.relayNote}>
                 <Text style={styles.relayNoteTitle}>
                   {T("mesh.peer.relay")}
@@ -466,7 +460,7 @@ export default function PeerList({
               <View style={styles.sheetActions}>
                 <Pressable
                   style={styles.sheetMessageBtn}
-                  onPress={() => handleSendDM(selectedPeer)}
+                  onPress={() => handleSendDM(shownPeer)}
                   accessibilityRole="button"
                   accessibilityLabel={T("mesh.peer.send_dm")}
                 >
@@ -508,7 +502,7 @@ export default function PeerList({
                       returnKeyType="send"
                       autoFocus
                       selectionColor={Colors.selection}
-                      onSubmitEditing={() => void handleSendSats(selectedPeer)}
+                      onSubmitEditing={() => void handleSendSats(shownPeer)}
                     />
                     <Pressable
                       style={[
@@ -516,7 +510,7 @@ export default function PeerList({
                         (parsedSats === null || sendingSats) &&
                           styles.sendSatsConfirmDisabled,
                       ]}
-                      onPress={() => void handleSendSats(selectedPeer)}
+                      onPress={() => void handleSendSats(shownPeer)}
                       disabled={parsedSats === null || sendingSats}
                       accessibilityRole="button"
                       accessibilityLabel={
@@ -770,7 +764,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     rowLastSeen: {
       fontSize: FontSize.xs,
-      color: Colors.textMuted,
+      color: Colors.online,
     },
     rowSeparator: {
       height: StyleSheet.hairlineWidth,

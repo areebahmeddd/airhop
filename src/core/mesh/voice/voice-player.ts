@@ -56,6 +56,13 @@ const MAX_BYTES_PER_SECOND = 6_000;
 // 8 random bytes, so a talker starting a genuinely new one is never affected.
 const MAX_CUTOFF_MEMORY = 32;
 
+// Signed distance from `b` to `a` on the 16-bit sequence ring, so a burst that
+// wraps past 0xffff still orders 0xffff before 0x0000. Valid while the two are
+// within half the ring of each other, which a 64-entry buffer always is.
+function seqDiff(a: number, b: number): number {
+  return ((a - b + 0x8000) & 0xffff) - 0x8000;
+}
+
 // ---- Types ----
 
 // Injected playback backend - the platform satisfies this interface.
@@ -93,8 +100,13 @@ class VoiceSession {
   private readonly canPlay: () => boolean;
 
   private buffer: BufferedFrame[] = [];
-  private nextExpectedSeq = 1; // DATA seq starts at 1 (0 is START)
+  // DATA seq starts at 1 (0 is START). Null for a burst joined mid-sentence:
+  // its first packet is not seq 1, and waiting for seq 1 would keep it silent
+  // until the final flush. Seeded from the lowest seq heard in the jitter
+  // window, so packets reordered inside it still play in order.
+  private nextExpectedSeq: number | null;
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
+  private flushAtMs = 0;
   private timeoutTimer: ReturnType<typeof setTimeout> | null = null;
   private ended = false;
   private endReceived = false;
@@ -109,7 +121,9 @@ class VoiceSession {
     backend: AudioPlaybackBackend,
     onDone: (burstIDHex: string) => void,
     canPlay: () => boolean,
+    openedFromStart: boolean,
   ) {
+    this.nextExpectedSeq = openedFromStart ? 1 : null;
     this.burstIDHex = burstIDHex;
     this.senderPeerID = senderPeerID;
     this.codec = codec;
@@ -141,6 +155,13 @@ class VoiceSession {
       return false;
     }
 
+    this.resetTimeout();
+    // Behind the playhead: its moment has passed, and playing it now would put
+    // audio out of order. A duplicate adds nothing either.
+    const late =
+      this.nextExpectedSeq !== null && seqDiff(seq, this.nextExpectedSeq) < 0;
+    if (late || this.buffer.some((entry) => entry.seq === seq)) return true;
+
     if (this.buffer.length >= MAX_BUFFERED_FRAMES) {
       // Drop oldest entry to make room (buffer overrun protection).
       this.buffer.shift();
@@ -149,10 +170,10 @@ class VoiceSession {
     this.buffer.push({ seq, frames, arrivedMs: Date.now() });
 
     // Sort buffer by sequence number (handles reordering).
-    this.buffer.sort((a, b) => a.seq - b.seq);
+    this.buffer.sort((a, b) => seqDiff(a.seq, b.seq));
 
-    this.resetTimeout();
-    this.scheduleFlush();
+    // The first flush waits out the jitter window from the start of the burst.
+    this.scheduleFlush(JITTER_BUFFER_MS - (Date.now() - this.startMs));
     return true;
   }
 
@@ -179,11 +200,15 @@ class VoiceSession {
 
   // ---- Private ----
 
-  private scheduleFlush(): void {
-    if (this.flushTimer !== null) return;
-    // Flush after jitter buffer window elapses from session start.
-    const elapsed = Date.now() - this.startMs;
-    const delay = Math.max(0, JITTER_BUFFER_MS - elapsed);
+  // Arm the flush `delayMs` from now, unless one is already due sooner.
+  private scheduleFlush(delayMs: number): void {
+    const delay = Math.max(0, delayMs);
+    const atMs = Date.now() + delay;
+    if (this.flushTimer !== null) {
+      if (this.flushAtMs <= atMs) return;
+      clearTimeout(this.flushTimer);
+    }
+    this.flushAtMs = atMs;
     this.flushTimer = setTimeout(() => {
       this.flushTimer = null;
       this.deliverFrames(false);
@@ -200,17 +225,24 @@ class VoiceSession {
       return;
     }
 
-    // Collect all contiguous DATA entries starting from nextExpectedSeq.
+    // A burst joined mid-sentence starts wherever the window found it.
+    this.nextExpectedSeq ??= this.buffer[0].seq;
+
+    // Collect contiguous DATA entries starting from nextExpectedSeq. A gap is
+    // waited on for one jitter window, measured from when the entry behind it
+    // arrived, and then skipped: a lost packet costs its own audio, never the
+    // rest of the burst.
     const toDeliver: BufferedFrame[] = [];
+    const now = Date.now();
     while (this.buffer.length > 0) {
       const next = this.buffer[0];
-      // Accept if this is the expected sequence or we are in final flush mode
-      // (deliver whatever we have, gaps and all).
-      if (isFinal || next.seq === this.nextExpectedSeq) {
+      const gapExpired = now - next.arrivedMs >= JITTER_BUFFER_MS;
+      if (isFinal || next.seq === this.nextExpectedSeq || gapExpired) {
         this.buffer.shift();
         this.nextExpectedSeq = (next.seq + 1) & 0xffff;
         toDeliver.push(next);
       } else {
+        this.scheduleFlush(next.arrivedMs + JITTER_BUFFER_MS - now);
         break;
       }
     }
@@ -330,7 +362,7 @@ export class VoicePlayer {
         // refusing the new one: a talker who just started is more likely to be
         // the one being listened to than one whose buffer has gone stale.
         if (!this.sessions.has(key)) {
-          this.openSession(key, burst.burstID, senderPeerID, burst.codec);
+          this.openSession(key, burst.burstID, senderPeerID, burst.codec, true);
         }
         break;
       }
@@ -352,6 +384,7 @@ export class VoicePlayer {
             burst.burstID,
             senderPeerID,
             VoiceCodec.AAC_LC_16KHZ_MONO,
+            false,
           );
         if (!session.addFrames(burst.seq, burst.frames)) {
           // Cut off: free the slot, and remember the burst so its remaining
@@ -396,6 +429,7 @@ export class VoicePlayer {
     burstID: Uint8Array,
     senderPeerID: string,
     codec: VoiceCodecId,
+    openedFromStart: boolean,
   ): VoiceSession {
     // Only so many bursts can be in flight at once. Every one holds a jitter
     // buffer, and only one of them can be making sound, so past this point a
@@ -426,6 +460,7 @@ export class VoicePlayer {
         this.onSessionsChanged();
       },
       () => this.holdsFloor(key),
+      openedFromStart,
     );
     this.sessions.set(key, session);
     return session;

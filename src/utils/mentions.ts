@@ -36,7 +36,7 @@ export function applyMention(draft: string, nickname: string): string {
 
 // Whether `text` mentions `nickname` as a whole @token (case-insensitive).
 //
-// Drives two things from App.tsx's inbound subscription: a mention is the only
+// Drives two things from services/notification-pipeline: a mention is the only
 // message allowed past a muted conversation, and it gets its own notification
 // copy rather than the room's.
 //

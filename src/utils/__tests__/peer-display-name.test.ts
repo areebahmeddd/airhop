@@ -11,7 +11,11 @@
 // how the same person ends up with two names on two screens.
 import { useContactsStore } from "@store/contacts-store";
 import { usePeerStore } from "@store/peer-store";
-import { resolveDisplayName, resolvePeerOwnName } from "../peer-display-name";
+import {
+  resolveDisplayName,
+  resolvePeerOwnName,
+  unverifiedSenderName,
+} from "../peer-display-name";
 import { peerIDToUsername } from "../username";
 
 const PEER = "0123456789abcdef";
@@ -93,5 +97,19 @@ describe("resolvePeerOwnName", () => {
 
   it("falls back to the generated username like the other path", () => {
     expect(resolvePeerOwnName(PEER)).toBe(peerIDToUsername(PEER));
+  });
+});
+
+// Any member of a private channel can write any peer ID into its Nostr copy.
+describe("unverifiedSenderName", () => {
+  it("never borrows the name a contact is saved under", () => {
+    addContact({ nickname: "card", localNickname: "Mum" });
+    expect(unverifiedSenderName(PEER, "mallory")).toBe("mallory#cdef");
+  });
+
+  it("falls back to the generated name when none is asserted", () => {
+    expect(unverifiedSenderName(PEER, "")).toBe(
+      `${peerIDToUsername(PEER)}#cdef`,
+    );
   });
 });

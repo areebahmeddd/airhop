@@ -57,6 +57,7 @@ import ReanimatedSwipeable, {
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import ChannelInfoSheet from "./channel-info-sheet";
+import { leaveConversation } from "./leave-conversation";
 
 // ---- Constants ----
 
@@ -179,7 +180,6 @@ export default function ChannelList({
     channels,
     channelKeys,
     messages,
-    removeChannel,
     unreadCounts,
     pinnedChannels,
     togglePinChannel,
@@ -390,7 +390,7 @@ export default function ChannelList({
         {
           text: t("chat.channels.leave_confirm"),
           style: "destructive",
-          onPress: () => removeChannel(channel),
+          onPress: () => leaveConversation(channel),
         },
       ],
     );

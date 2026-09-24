@@ -1,0 +1,86 @@
+/**
+ * @jest-environment node
+ */
+// A small photo goes out untouched only when its bytes are what its declared
+// type says: the receiver checks the magic bytes and drops a mismatch.
+
+import { prepareImageForSend } from "../image-compression";
+
+const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]);
+const mockJpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0]);
+
+// uri -> bytes on disk.
+const mockDisk = new Map<string, Uint8Array>();
+
+jest.mock("expo-file-system", () => ({
+  File: class {
+    private readonly uri: string;
+    constructor(uri: string) {
+      this.uri = uri;
+    }
+    get exists(): boolean {
+      return mockDisk.has(this.uri);
+    }
+    get size(): number {
+      return mockDisk.get(this.uri)?.length ?? 0;
+    }
+    bytes(): Promise<Uint8Array> {
+      const b = mockDisk.get(this.uri);
+      return b === undefined
+        ? Promise.reject(new Error("gone"))
+        : Promise.resolve(b);
+    }
+  },
+  Paths: { cache: {} },
+}));
+
+jest.mock("expo-image-manipulator", () => ({
+  SaveFormat: { JPEG: "jpeg" },
+  ImageManipulator: {
+    manipulate: () => ({
+      resize: () => undefined,
+      renderAsync: () =>
+        Promise.resolve({
+          width: 800,
+          height: 600,
+          saveAsync: () => {
+            mockDisk.set("file:///reencoded.jpg", mockJpeg);
+            return Promise.resolve({ uri: "file:///reencoded.jpg" });
+          },
+        }),
+    }),
+  },
+}));
+
+jest.mock("../file-transfer-service", () => ({
+  adoptIntoAttachmentCache: (uri: string) => Promise.resolve(uri),
+}));
+
+beforeEach(() => mockDisk.clear());
+
+describe("prepareImageForSend", () => {
+  it("sends a small JPEG as it is", async () => {
+    mockDisk.set("file:///a.jpg", mockJpeg);
+    const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
+    expect(ready.uri).toBe("file:///a.jpg");
+    expect(ready.mimeType).toBe("image/jpeg");
+  });
+
+  it("re-encodes a PNG that a .jpg name would have labelled JPEG", async () => {
+    mockDisk.set("file:///img_1.jpg", PNG);
+    const ready = await prepareImageForSend("file:///img_1.jpg", "img_1.jpg");
+    expect(ready.uri).toBe("file:///reencoded.jpg");
+    expect(ready.mimeType).toBe("image/jpeg");
+  });
+
+  it("keeps a correctly labelled PNG as a PNG", async () => {
+    mockDisk.set("file:///b.png", PNG);
+    const ready = await prepareImageForSend(
+      "file:///b.png",
+      "b.png",
+      "image/png",
+    );
+    expect(ready.uri).toBe("file:///b.png");
+    expect(ready.mimeType).toBe("image/png");
+  });
+});

@@ -464,6 +464,13 @@ describe("joinPrivateChannel key clashes", () => {
     expect(state().channels).toContain("#team-2");
   });
 
+  // Keying the public room would show its plaintext history under the lock.
+  it("gives a public room of the same name its own label", () => {
+    state().addChannel("#team");
+    expect(state().joinPrivateChannel("#team", KEY_A, false)).toBe("#team-2");
+    expect(state().channelKeys["#team"]).toBeUndefined();
+  });
+
   it("returns the existing room when that key is already held elsewhere", () => {
     state().joinPrivateChannel("#team", KEY_A, false);
     state().joinPrivateChannel("#team", KEY_B, false); // lands in #team-2
@@ -825,5 +832,82 @@ describe("failStaleSending", () => {
     const before = state().messages;
     state().failStaleSending(MINUTE, NOW);
     expect(state().messages).toBe(before);
+  });
+});
+
+// The unread count must keep climbing in a full thread: only a trimmed message
+// that was itself still unread may take one off.
+describe("unread count at the per-thread cap", () => {
+  function fill(count: number, from: number, isMine = false): void {
+    for (let i = 0; i < count; i++) {
+      state().addMessage(
+        makeMessage({
+          id: `m${String(from + i)}`,
+          timestampMs: from + i,
+          isMine,
+        }),
+      );
+    }
+  }
+
+  it("counts a new message in a full thread that was read", () => {
+    fill(200, 0);
+    state().markChannelRead("#test");
+    fill(3, 1000);
+    expect(state().messages["#test"]).toHaveLength(200);
+    expect(state().unreadCounts["#test"]).toBe(3);
+  });
+
+  it("keeps climbing rather than plateauing", () => {
+    fill(200, 0);
+    state().markChannelRead("#test");
+    fill(5, 1000);
+    fill(5, 2000);
+    expect(state().unreadCounts["#test"]).toBe(10);
+  });
+
+  it("stays at the cap when every message kept is unread", () => {
+    fill(205, 0);
+    expect(state().unreadCounts["#test"]).toBe(200);
+  });
+
+  it("does not count trimmed messages of my own", () => {
+    fill(200, 0, true);
+    fill(2, 1000);
+    expect(state().unreadCounts["#test"]).toBe(2);
+  });
+});
+
+// Settings are choices about the person, not the transport, so folding their
+// Nostr thread into the mesh one keeps them.
+describe("mergeChannel carries per-thread settings", () => {
+  const NOSTR = "dm:nostr_" + "ab".repeat(32);
+  const MESH = "dm:aabbccdd00112233";
+
+  it("keeps a mute and a pin from the absorbed thread", () => {
+    state().addChannel(NOSTR);
+    state().toggleMuteChannel(NOSTR);
+    state().togglePinChannel(NOSTR);
+    state().mergeChannel(NOSTR, MESH);
+    expect(state().mutedChannels).toContain(MESH);
+    expect(state().mutedChannels).not.toContain(NOSTR);
+    expect(state().pinnedChannels).toEqual([MESH]);
+  });
+
+  it("does not duplicate a setting both threads had", () => {
+    state().toggleMuteChannel(NOSTR);
+    state().toggleMuteChannel(MESH);
+    state().mergeChannel(NOSTR, MESH);
+    expect(state().mutedChannels.filter((c) => c === MESH)).toHaveLength(1);
+  });
+
+  it("keeps the later clear, so the absorbed thread's replays stay gone", () => {
+    useChatStore.setState({ clearedAt: { [NOSTR]: 2000, [MESH]: 1000 } });
+    state().mergeChannel(NOSTR, MESH);
+    expect(state().clearedAt[MESH]).toBe(2000);
+
+    useChatStore.setState({ clearedAt: { [NOSTR]: 500, [MESH]: 1000 } });
+    state().mergeChannel(NOSTR, MESH);
+    expect(state().clearedAt[MESH]).toBe(1000);
   });
 });

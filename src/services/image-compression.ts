@@ -18,6 +18,7 @@
 
 import {
   MAX_SENT_IMAGE_BYTES,
+  mimeMatchesMagic,
   resolveMimeType,
 } from "@core/mesh/wire/file-packet";
 import * as FileSystem from "expo-file-system";
@@ -74,6 +75,17 @@ function fileSize(uri: string): number {
   }
 }
 
+// Whether the file's own bytes agree with the type about to be declared for
+// it. An unreadable file answers no, which only costs a re-encode attempt.
+async function bytesMatchMime(uri: string, mimeType: string): Promise<boolean> {
+  try {
+    const bytes = await new FileSystem.File(uri).bytes();
+    return mimeMatchesMagic(mimeType, bytes);
+  } catch {
+    return false;
+  }
+}
+
 // Replace the extension, so a resized photo is not still called "IMG_1234.heic"
 // once it is a JPEG. The receiver reads the type off the MIME, but the name is
 // what a person sees in a document row and in a share sheet.
@@ -109,11 +121,18 @@ export async function prepareImageForSend(
   // and what neither Airhop nor bitchat carries. resolveMimeType turns it into
   // octet-stream, so it fails this test and goes through the JPEG pass below
   // and arrives as a photo, rather than landing as an unopenable document.
+  //
+  // The type half is also checked against the bytes. A caller may have renamed
+  // the file (`.jpg` on a PNG, GIF or HEIC) and passed no usable type, so the
+  // type came from the name; the receiver compares the declared type with the
+  // magic bytes and drops a mismatch, so a mislabelled file is re-encoded
+  // into a JPEG that is what it says.
   const carriedAsImage = original.mimeType.startsWith("image/");
   if (
     carriedAsImage &&
     original.sizeBytes > 0 &&
-    original.sizeBytes <= MAX_SENT_IMAGE_BYTES
+    original.sizeBytes <= MAX_SENT_IMAGE_BYTES &&
+    (await bytesMatchMime(uri, original.mimeType))
   ) {
     return original;
   }

@@ -82,6 +82,19 @@ export function channelSenderName(
   return `${base}#${peerID.slice(-4)}`;
 }
 
+// A channel sender whose ID is only claimed: the Nostr copy of a private
+// channel message is signed with a key every member holds, so any member can
+// write any peer ID into it. Only the name they assert is shown, never the name
+// a contact is saved under, which would otherwise be theirs to borrow.
+export function unverifiedSenderName(
+  peerID: string,
+  assertedNickname: string,
+): string {
+  const base =
+    assertedNickname.length > 0 ? assertedNickname : peerIDToUsername(peerID);
+  return `${base}#${peerID.slice(-4)}`;
+}
+
 // Resolve outside React (services, stores, event handlers).
 export function resolveDisplayName(peerID: string): string {
   if (isNostrId(peerID)) return nostrPseudonym(peerID);

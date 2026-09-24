@@ -1,18 +1,19 @@
-// Coarse location for geohash channels.
+// Location for geohash channels and for location pins.
 //
-// Location is used for exactly two things: deciding which geohash cell the
-// user is in (so #block/#city/etc. resolve to a real channel), and picking
-// Nostr relays that are physically near them. Nothing else.
+// Channels use it to decide which geohash cell the user is in and to pick
+// Nostr relays near them; only the truncated geohash is ever published. The
+// one time coordinates leave the device is a pin the user confirms, sealed to
+// one person.
 //
 // Deliberately COARSE accuracy, never Highest: a geohash cell is 150 m across
 // at its finest here, so GPS-grade precision would buy nothing and cost
-// battery and privacy. The raw coordinates never leave the device, only the
-// truncated geohash string is ever published.
+// battery and privacy.
 //
 // Every failure path returns null rather than throwing. Location is optional:
 // the app must stay fully usable over BLE with location denied, so a refusal
 // degrades geohash channels rather than breaking the app.
 
+import { MAX_USEFUL_ACCURACY_M } from "@core/mesh/wire/location-pin";
 import * as Location from "expo-location";
 
 export interface Coords {
@@ -109,6 +110,64 @@ export async function getCoarseLocation(
   } catch {
     // Location services off at the OS level, or no fix available.
     return null;
+  }
+}
+
+// A pin says where someone is now, so an old fix is not good enough.
+const PIN_MAX_AGE_MS = 60_000;
+// A fix that never comes is a sheet that spins forever.
+const PIN_FIX_TIMEOUT_MS = 15_000;
+
+export interface PinFix extends Coords {
+  // Horizontal accuracy in metres, when the OS gives one.
+  accuracyM?: number;
+  // When the fix was taken, which is what the pin reports, not when it is sent.
+  takenAtMs: number;
+}
+
+// Whether a fix is precise enough to pin. An unknown accuracy passes: the card
+// says so, where a coarse one would draw an arrow at the wrong place.
+function pinnable(position: Location.LocationObject | null): boolean {
+  const accuracy = position?.coords.accuracy;
+  return (
+    position !== null &&
+    (accuracy === null ||
+      accuracy === undefined ||
+      accuracy <= MAX_USEFUL_ACCURACY_M)
+  );
+}
+
+// A recent fix for a location pin, or null if denied, off, too slow, or too
+// coarse to point at anything.
+export async function getPinLocation(): Promise<PinFix | null> {
+  if (!(await hasLocationPermission())) return null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const lastKnown = await Location.getLastKnownPositionAsync({
+      maxAge: PIN_MAX_AGE_MS,
+    });
+    // A coarse cached fix (a cell tower's) is worth one live attempt.
+    const position = pinnable(lastKnown)
+      ? lastKnown
+      : await Promise.race([
+          Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          }),
+          new Promise<null>((resolve) => {
+            timer = setTimeout(() => resolve(null), PIN_FIX_TIMEOUT_MS);
+          }),
+        ]);
+    if (position === null || !pinnable(position)) return null;
+    return {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+      accuracyM: position.coords.accuracy ?? undefined,
+      takenAtMs: position.timestamp,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

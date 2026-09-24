@@ -347,35 +347,35 @@ const DEFAULT_MUTED_CHANNELS = ["#city", "#province", "#region"];
 
 // Where a private channel with this key belongs, given the rooms already
 // joined. Normally the name asked for. When that name is already taken by a
-// DIFFERENT key it is a genuine second room that happens to share a label
-// (nothing stops two people naming a channel "#team"), so it gets its own
-// suffixed one rather than overwriting the key of the room already there.
-// Re-joining a room already held, under any label, is a no-op that returns
-// where it already lives, so tapping the same invite twice never duplicates it.
+// DIFFERENT key, or by a public room, it is a genuine second room that happens
+// to share a label (nothing stops two people naming a channel "#team"), so it
+// gets its own suffixed one. Keying a public room instead would show its
+// plaintext history under the encryption lock. Re-joining a room already held,
+// under any label, is a no-op that returns where it already lives, so tapping
+// the same invite twice never duplicates it.
 //
 // The suffix is `-2`, `-3`, ... and never whitespace: this label is what an
 // onward invite link carries, and the link parser rejects names with spaces or
 // past MAX_CHANNEL_NAME. The base is trimmed so the suffixed name still fits.
 export function freeChannelLabel(
+  channels: readonly string[],
   channelKeys: Record<string, string>,
   channel: string,
   keyBase64: string,
 ): string {
-  if (
-    channelKeys[channel] === undefined ||
-    channelKeys[channel] === keyBase64
-  ) {
-    return channel;
-  }
+  if (channelKeys[channel] === keyBase64) return channel;
   // Already joined under some other label: go back to that room.
   for (const [name, key] of Object.entries(channelKeys)) {
     if (key === keyBase64) return name;
   }
+  const taken = (name: string): boolean =>
+    channelKeys[name] !== undefined || channels.includes(name);
+  if (!taken(channel)) return channel;
   for (let n = 2; n < 100; n++) {
     const suffix = `-${String(n)}`;
     const base = channel.slice(0, 1 + MAX_CHANNEL_NAME - suffix.length);
     const candidate = `${base}${suffix}`;
-    if (channelKeys[candidate] === undefined) return candidate;
+    if (!taken(candidate)) return candidate;
   }
   // 98 rooms sharing one name is not a real scenario; fall back to the name as
   // given rather than looping and letting the last one win.
@@ -504,7 +504,13 @@ export const useChatStore = create<ChatState>()(
         keyBase64: string,
         overNostr: boolean,
       ) {
-        const target = freeChannelLabel(get().channelKeys, channel, keyBase64);
+        const { channels, channelKeys } = get();
+        const target = freeChannelLabel(
+          channels,
+          channelKeys,
+          channel,
+          keyBase64,
+        );
         set((state) => ({
           channels: state.channels.includes(target)
             ? state.channels
@@ -521,6 +527,11 @@ export const useChatStore = create<ChatState>()(
       addMessage(msg: ChatMessage) {
         // Capped at now: a clock set back after a clear would otherwise hold a
         // marker in the future and drop every new message in the thread.
+        //
+        // Callers still acknowledge a message dropped here. It reached this
+        // device and the user chose to clear that history; withholding the
+        // receipt would only make the sender retry, and be refused, until its
+        // outbox gives up.
         const clearedAt = get().clearedAt[msg.channel];
         if (
           clearedAt !== undefined &&
@@ -534,6 +545,9 @@ export const useChatStore = create<ChatState>()(
         // (mesh flooding delivers the same message by several paths).
         const priorMessages = get().messages[msg.channel] ?? [];
         const isDuplicate = priorMessages.some((m) => m.id === msg.id);
+        // Whether the message survives the trim. One older than everything the
+        // thread keeps is gone on arrival, so nobody is notified about it.
+        let stored = isDuplicate;
 
         set((state) => {
           const existing = state.messages[msg.channel] ?? [];
@@ -559,14 +573,25 @@ export const useChatStore = create<ChatState>()(
             msg,
             ...existing.slice(insertAt),
           ];
-          // Trim to cap and track how many unread messages were dropped.
+          // Trim to cap, then keep the unread count consistent with what is left.
           const overflow = next.length - MAX_PER_CHANNEL;
           const dropped = overflow > 0 ? next.slice(0, overflow) : [];
           const trimmed = overflow > 0 ? next.slice(overflow) : next;
-          // Keep the unread count consistent: subtract anything lost to trimming.
-          const droppedUnread = dropped.filter((m) => !m.isMine).length;
-          const isUnread = !msg.isMine && msg.channel !== state.activeChannel;
+          const keptNew = !dropped.includes(msg);
+          stored = keptNew;
+          // The unread messages are the newest `prevUnread` from others, so the
+          // oldest `othersBefore - prevUnread` of theirs were read long ago. Only
+          // a trimmed message past that read prefix was still unread; counting
+          // every trimmed one would pin the count at the cap's churn rate.
           const prevUnread = state.unreadCounts[msg.channel] ?? 0;
+          const othersBefore = existing.filter((m) => !m.isMine).length;
+          const readOthers = Math.max(0, othersBefore - prevUnread);
+          const droppedOthers = dropped.filter(
+            (m) => m !== msg && !m.isMine,
+          ).length;
+          const droppedUnread = Math.max(0, droppedOthers - readOthers);
+          const isUnread =
+            keptNew && !msg.isMine && msg.channel !== state.activeChannel;
           const newUnread =
             Math.max(0, prevUnread - droppedUnread) + (isUnread ? 1 : 0);
           return {
@@ -580,7 +605,7 @@ export const useChatStore = create<ChatState>()(
         // its own path (ring-store.notifyInboundRing). Reaching these
         // listeners too would ring twice, and let mute suppress the one
         // thing Ring is meant to get past.
-        if (!isDuplicate && !msg.isMine && !msg.ring) {
+        if (stored && !isDuplicate && !msg.isMine && !msg.ring) {
           for (const fn of inboundListeners) fn(msg);
         }
       },
@@ -924,12 +949,41 @@ export const useChatStore = create<ChatState>()(
           return next;
         }
         useActivityStore.getState().repointChannel(from, to);
+        // A setting on either thread is a choice about the person, so the
+        // merged one keeps it: muting the Nostr thread must not come undone
+        // because they were later met in person.
+        function carryFlag(list: string[]): string[] {
+          if (!list.includes(from)) return list;
+          const rest = list.filter((c) => c !== from);
+          return rest.includes(to) ? rest : [...rest, to];
+        }
         set((state) => {
+          const clearedFrom = state.clearedAt[from];
+          const clearedTo = state.clearedAt[to];
+          // The later clear wins: history either thread's clear removed is a
+          // replay to the merged one too.
+          const clearedAt =
+            clearedFrom !== undefined &&
+            (clearedTo === undefined || clearedFrom > clearedTo)
+              ? { ...state.clearedAt, [to]: clearedFrom }
+              : state.clearedAt;
+          const channelDescriptions = { ...state.channelDescriptions };
+          if (
+            channelDescriptions[from] !== undefined &&
+            channelDescriptions[to] === undefined
+          ) {
+            channelDescriptions[to] = channelDescriptions[from];
+          }
+          delete channelDescriptions[from];
           const followed = {
             channelRedirects: redirectsAfterMerge(state.channelRedirects),
             activeChannel:
               state.activeChannel === from ? to : state.activeChannel,
             lastThread: state.lastThread === from ? to : state.lastThread,
+            mutedChannels: carryFlag(state.mutedChannels),
+            pinnedChannels: carryFlag(state.pinnedChannels),
+            clearedAt,
+            channelDescriptions,
           };
           const source = state.messages[from];
           if (source === undefined || source.length === 0) {

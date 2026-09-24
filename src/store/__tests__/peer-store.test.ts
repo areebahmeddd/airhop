@@ -97,6 +97,53 @@ describe("updateRssi", () => {
   });
 });
 
+describe("no-op writes keep the same state", () => {
+  // Every subscriber compares the peers Map by reference, so a write that
+  // changes nothing but still allocates re-renders the radar for nothing.
+  it("returns the same peers map for an unchanged rssi", () => {
+    state().upsertPeer(makePeer());
+    state().updateRssi("aabbccdd00112233", -57);
+    const before = state().peers;
+    state().updateRssi("aabbccdd00112233", -57);
+    expect(state().peers).toBe(before);
+    state().updateRssi("aabbccdd00112233", -58);
+    expect(state().peers).not.toBe(before);
+  });
+
+  it("returns the same peers map when a sweep evicts nobody", () => {
+    state().upsertPeer(makePeer());
+    const before = state().peers;
+    state().evictStale();
+    expect(state().peers).toBe(before);
+  });
+
+  it("copies the map when a sweep does evict", () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+      state().upsertPeer(makePeer());
+      state().upsertPeer(makePeer({ peerID: "0011223344556677" }));
+      jest.setSystemTime(new Date("2026-01-01T00:00:30Z"));
+      state().upsertPeer(makePeer({ peerID: "0011223344556677" }));
+      const before = state().peers;
+      jest.setSystemTime(new Date("2026-01-01T00:01:10Z"));
+      state().evictStale();
+      expect(state().peers).not.toBe(before);
+      expect(before.size).toBe(2);
+      expect([...state().peers.keys()]).toEqual(["0011223344556677"]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("returns the same peers map when removing an unknown peer", () => {
+    state().upsertPeer(makePeer());
+    const before = state().peers;
+    state().removePeer("ffffffffffffffff");
+    expect(state().peers).toBe(before);
+  });
+});
+
 describe("countReachablePeers", () => {
   it("counts only peers seen inside the reachable window", () => {
     const now = 1_000_000;

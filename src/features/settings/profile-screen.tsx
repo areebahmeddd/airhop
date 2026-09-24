@@ -1195,7 +1195,11 @@ export default function ProfileScreen({
                         { backgroundColor: meta.color },
                       ]}
                     >
-                      <Feather name={meta.icon} size={14} color="#FFFFFF" />
+                      <Feather
+                        name={meta.icon}
+                        size={14}
+                        color={Colors.onStatus}
+                      />
                     </View>
                     <View style={shared.optionText}>
                       <Text style={shared.optionLabel}>{meta.label}</Text>

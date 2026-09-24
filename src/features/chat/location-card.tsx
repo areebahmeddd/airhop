@@ -7,7 +7,8 @@
 //
 // The arrow points against true north marked on the card, not against how the
 // phone is held: a compass heading would need a subscription and would swing
-// while it is read. "Open in Maps" is a handoff the user chooses.
+// while it is read. "Open in Maps" is a handoff the user chooses. Our own pin
+// has no arrow: the distance to where we just were says nothing.
 
 import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
@@ -24,7 +25,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { formatListTimestamp } from "@utils/format";
+import { formatAgo, formatNumber } from "@utils/format";
 import {
   bearingDegrees,
   compassPoint,
@@ -33,9 +34,22 @@ import {
   type Point,
 } from "@utils/geo";
 import React, { useEffect, useMemo, useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type Pin = NonNullable<ChatMessage["locationPin"]>;
+
+// SI symbols read the same in every language; the number follows the locale.
+function formatMeters(meters: number): string {
+  const { value, unit } = roundedDistance(meters);
+  return `${formatNumber(value)} ${unit}`;
+}
 
 // Keyed the way `compassPoint` names them, so this is a lookup rather than a
 // switch that can fall out of step with the eight points.
@@ -69,6 +83,7 @@ export default function LocationCard({
   // dialog, and the card says what is missing instead. `getCoarseLocation`
   // caches for five minutes, so several cards in a thread cost one fix.
   useEffect(() => {
+    if (isMine) return;
     let alive = true;
     void (async () => {
       if (!(await hasLocationPermission())) return;
@@ -78,24 +93,30 @@ export default function LocationCard({
     return () => {
       alive = false;
     };
-  }, []);
+  }, [isMine]);
 
   const relative = useMemo(() => {
     if (here === null) return null;
     const target: Point = { lat: pin.lat, lng: pin.lng };
-    const meters = distanceMeters(here, target);
+    const bearing = bearingDegrees(here, target);
     return {
-      bearing: bearingDegrees(here, target),
-      direction: compassPoint(bearingDegrees(here, target)),
-      ...roundedDistance(meters),
+      bearing,
+      direction: compassPoint(bearing),
+      distance: formatMeters(distanceMeters(here, target)),
     };
   }, [here, pin.lat, pin.lng]);
 
-  // A geo: URI is the one link every maps app on both platforms answers, so it
-  // opens whichever the user has chosen rather than naming one.
+  // A geo: URI opens whichever maps app the user has chosen on Android. iOS
+  // registers no handler for it, so Apple Maps is named there.
   function openInMaps(): void {
-    void Linking.openURL(`geo:${pin.lat},${pin.lng}?q=${pin.lat},${pin.lng}`);
+    const point = `${String(pin.lat)},${String(pin.lng)}`;
+    const url =
+      Platform.OS === "ios"
+        ? `https://maps.apple.com/?ll=${point}&q=${point}`
+        : `geo:${point}?q=${point}`;
+    Linking.openURL(url).catch(() => {});
   }
+  const fg = isMine ? Colors.myBubbleText : Colors.accent;
 
   return (
     <View style={styles.card}>
@@ -115,17 +136,17 @@ export default function LocationCard({
             <Feather
               name={relative !== null ? "arrow-up" : "map-pin"}
               size={18}
-              color={Colors.accent}
+              color={fg}
             />
           </View>
         </View>
 
         <View style={styles.text}>
           <Text style={styles.title}>{T("chat.location.title")}</Text>
-          {relative !== null ? (
+          {isMine ? null : relative !== null ? (
             <Text style={styles.distance}>
               {t("chat.location.away", {
-                distance: `${String(relative.value)} ${relative.unit}`,
+                distance: relative.distance,
                 direction: t(DIRECTION_KEYS[relative.direction]),
               })}
             </Text>
@@ -134,13 +155,15 @@ export default function LocationCard({
             // rather than drawn as an arrow pointing nowhere.
             <Text style={styles.muted}>{T("chat.location.no_fix")}</Text>
           )}
-          {/* The age of the fix, not of the message. A pin that waited in a
-              composer is older than it looks, and a distance to a stale point
-              is the one way this card can mislead. */}
+          {/* The age of the fix, not of the message, and its accuracy when
+              the OS gave one: a stale or approximate point is the one way
+              this card can mislead. */}
           <Text style={styles.muted}>
-            {t("chat.location.taken", {
-              ago: formatListTimestamp(pin.takenAtMs),
-            })}
+            {pin.accuracyM === undefined
+              ? formatAgo(pin.takenAtMs)
+              : `${formatAgo(pin.takenAtMs)} · ${t("chat.location.accuracy", {
+                  distance: formatMeters(pin.accuracyM),
+                })}`}
           </Text>
         </View>
       </View>
@@ -153,7 +176,7 @@ export default function LocationCard({
         accessibilityRole="button"
         accessibilityLabel={T("chat.location.open_maps")}
       >
-        <Feather name="external-link" size={13} color={Colors.accent} />
+        <Feather name="external-link" size={13} color={fg} />
         <Text style={[styles.actionText, isMine ? styles.actionMine : null]}>
           {T("chat.location.open_maps")}
         </Text>
@@ -225,10 +248,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.accent,
     },
-    // On our own bubble the accent is the background, so the link takes the
-    // foreground colour rather than disappearing into it.
     actionMine: {
-      color: Colors.textInverse,
+      color: Colors.myBubbleText,
     },
   });
 }

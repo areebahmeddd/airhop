@@ -18,6 +18,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, useT, type TranslationKey } from "@i18n";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { getMeshService } from "@services/mesh-service";
+import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import {
   matchesBridged,
@@ -34,6 +35,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
+import { formatAgo } from "@utils/format";
 import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
@@ -114,16 +116,6 @@ function mergeNotices(posts: BoardPost[], notes: LocationNote[]): NoticeRow[] {
   });
 }
 
-function ageLabel(ms: number, now: number): string {
-  const s = Math.max(0, Math.floor((now - ms) / 1000));
-  if (s < 60) return t("chat.notices.just_now");
-  const m = Math.floor(s / 60);
-  if (m < 60) return t("format.minutes_ago", { count: m });
-  const h = Math.floor(m / 60);
-  if (h < 24) return t("format.hours_ago", { count: h });
-  return t("format.days_ago", { count: Math.floor(h / 24) });
-}
-
 function fadeLabel(
   expiresAtMs: number | undefined,
   now: number,
@@ -186,6 +178,8 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
 
   const posts = useBoardStore((s) => s.posts);
   const notesByGeohash = useLocationNotesStore((s) => s.notesByGeohash);
+  const blockedPeerIDs = useBlockedStore((s) => s.blockedPeerIDs);
+  const blockedAliases = useBlockedStore((s) => s.blockedAliases);
 
   const scopeGeohash = scope === "here" && geohash !== null ? geohash : "";
   // Derived directly; the React Compiler memoizes it from the reads below.
@@ -194,7 +188,13 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
   );
   const liveNotes = (
     scopeGeohash.length > 0 ? (notesByGeohash[scopeGeohash] ?? []) : []
-  ).filter((n) => n.expiresAtMs === undefined || n.expiresAtMs > now);
+  ).filter(
+    (n) =>
+      (n.expiresAtMs === undefined || n.expiresAtMs > now) &&
+      // A note that landed before its author was blocked goes quiet with them.
+      !blockedPeerIDs.includes(`nostr_${n.pubkey}`) &&
+      blockedAliases[`nostr_${n.pubkey}`] === undefined,
+  );
   const rows = mergeNotices(livePosts, liveNotes);
 
   const draftBytes = new TextEncoder().encode(draft.trim()).length;
@@ -406,7 +406,7 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
                     <Feather name="globe" size={11} color={Colors.textMuted} />
                   )}
                   <Text style={styles.rowTime}>
-                    {ageLabel(row.createdAtMs, now)}
+                    {formatAgo(row.createdAtMs, now)}
                   </Text>
                 </View>
                 <Text style={styles.rowContent}>{row.content}</Text>

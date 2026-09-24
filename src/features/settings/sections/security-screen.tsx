@@ -5,6 +5,7 @@
 // hub itself rather than here, one drill-in away, because they are the switches
 // people come to flip. See connectivity-group.tsx.
 
+import { dismissPreviewNotifications } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -109,9 +110,12 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
               control={
                 <SettingSwitch
                   value={hideNotificationPreviews}
-                  onValueChange={(v) =>
-                    useSettingsStore.getState().setHideNotificationPreviews(v)
-                  }
+                  onValueChange={(v) => {
+                    useSettingsStore.getState().setHideNotificationPreviews(v);
+                    // What is already in the tray was rendered with the
+                    // preview, and stays on the lock screen until cleared.
+                    if (v) void dismissPreviewNotifications();
+                  }}
                 />
               }
             />

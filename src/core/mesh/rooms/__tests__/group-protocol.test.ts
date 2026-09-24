@@ -172,9 +172,14 @@ describe("groupStateAction", () => {
     signingKey: new Uint8Array(32),
   });
 
-  const state = (creatorFingerprint: string, memberFps: string[]) => ({
+  const state = (
+    creatorFingerprint: string,
+    memberFps: string[],
+    epoch = 2,
+  ) => ({
     creatorFingerprint,
     members: memberFps.map(member),
+    epoch,
   });
 
   test("a first-contact invite that includes us is applied", () => {
@@ -230,6 +235,29 @@ describe("groupStateAction", () => {
   test("a roster for a group we do not hold is refused, not removed", () => {
     expect(
       groupStateAction(state(CREATOR, [CREATOR]), { myFingerprint: ME }),
+    ).toBe("reject");
+  });
+
+  // Same fingerprint, different key: the fingerprint is a hash of the Noise
+  // key, but the roster pairs it with a signing key the state itself supplies.
+  test("a state whose creator signs with another key is refused", () => {
+    expect(
+      groupStateAction(state(CREATOR, [CREATOR, ME]), {
+        heldCreatorFingerprint: CREATOR,
+        heldCreatorSigningKey: new Uint8Array(32).fill(9),
+        myFingerprint: ME,
+      }),
+    ).toBe("reject");
+  });
+
+  // An old state from the real creator, replayed, must not re-run a removal.
+  test("a stale epoch is refused before the removal branch", () => {
+    expect(
+      groupStateAction(state(CREATOR, [CREATOR], 1), {
+        heldCreatorFingerprint: CREATOR,
+        heldEpoch: 2,
+        myFingerprint: ME,
+      }),
     ).toBe("reject");
   });
 

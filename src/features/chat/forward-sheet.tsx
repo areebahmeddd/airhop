@@ -28,6 +28,8 @@ import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { forwardTextFits } from "./compose-budget";
+
 interface Props {
   visible: boolean;
   excludeChannel: string;
@@ -45,6 +47,10 @@ interface Props {
   // as the composer's attach button: a target that vanishes leaves people
   // wondering whether they are in the wrong place.
   carriesMedia?: boolean;
+  // The text of every plain text message in the selection. A DM holds far less
+  // than a channel, so a long one greys the DM targets the same way media
+  // greys a room that refuses it.
+  texts?: readonly string[];
 }
 
 type ForwardKind = "channel" | "group" | "location" | "dm";
@@ -74,12 +80,15 @@ const ICON_FOR: Record<
   location: "map-pin",
 };
 
+const NO_TEXTS: readonly string[] = [];
+
 export default function ForwardSheet({
   visible,
   excludeChannel,
   onClose,
   onForward,
   carriesMedia = false,
+  texts = NO_TEXTS,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -110,7 +119,11 @@ export default function ForwardSheet({
 
   // Why this room cannot take the selection, or null when it can.
   function blockedReason(channel: string): string | null {
-    return carriesMedia ? mediaBlockedReason(channel) : null;
+    const media = carriesMedia ? mediaBlockedReason(channel) : null;
+    if (media !== null) return media;
+    return texts.every((text) => forwardTextFits(channel, text))
+      ? null
+      : t("chat.forward.too_long_for_dm");
   }
 
   function handlePick(channel: string): void {

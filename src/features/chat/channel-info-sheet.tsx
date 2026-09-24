@@ -50,6 +50,8 @@ import {
   View,
 } from "react-native";
 
+import { leaveConversation } from "./leave-conversation";
+
 // Protocol-defined default channels. Read-only, cannot be left.
 const DEFAULT_CHANNEL_NAMES = new Set([
   "#bluetooth",
@@ -131,8 +133,7 @@ export default function ChannelInfoSheet({
   const TP = useTPlural();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
-  const { removeChannel, channelKeys, channelReach, addChannel } =
-    useChatStore();
+  const { channelKeys, channelReach, addChannel } = useChatStore();
   const { peers } = usePeerStore();
   const peerList = [...peers.values()];
   // Proven key-holders, for a private channel's roster. A store rather than a
@@ -336,12 +337,7 @@ export default function ChannelInfoSheet({
   }
 
   function handleLeave(): void {
-    // Leaving a group also drops its epoch key from group-store, not just the
-    // chat-store channel row, so no group key material lingers after leaving.
-    if (isGroup) {
-      useGroupStore.getState().remove(channel!.slice("group:".length));
-    }
-    removeChannel(channel!);
+    leaveConversation(channel!);
     onClose();
     onLeave?.();
   }

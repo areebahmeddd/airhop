@@ -499,3 +499,93 @@ describe("an attachment that cannot be read", () => {
     expect(systemLines()).toHaveLength(1);
   });
 });
+
+// A send waiting behind another in the shared queue has moved no bytes because
+// it has not had a turn, not because its peer is gone.
+describe("a send queued behind another", () => {
+  const FILE = (() => {
+    const f = new Uint8Array(4000);
+    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
+    return f;
+  })();
+
+  it("is not declared failed while it waits", () => {
+    const { service } = makeService(false);
+    service.sendBytes(FILE, META, "#test");
+    service.sendBytes(FILE, META, "#test");
+    const ids = Object.keys(useTransferStore.getState().transfers);
+    expect(ids).toHaveLength(2);
+
+    // Long past the stall-fail window with the radio refusing the first send.
+    jest.setSystemTime(Date.now() + 60_000);
+    useTransferStore.getState().reconcile();
+    expect(useTransferStore.getState().transfers[ids[1]].status).toBe("active");
+  });
+
+  it("starts its stall clock when its turn comes", async () => {
+    const { service } = makeService();
+    service.sendBytes(FILE, META, "#test");
+    const [id] = Object.keys(useTransferStore.getState().transfers);
+    expect(useTransferStore.getState().transfers[id].queued).toBe(true);
+    await tick(1);
+    expect(useTransferStore.getState().transfers[id].queued).toBe(false);
+  });
+});
+
+describe("a DM to a peer who has left", () => {
+  const FILE = (() => {
+    const f = new Uint8Array(4000);
+    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
+    return f;
+  })();
+
+  it("fails on the first refusal instead of holding the queue", async () => {
+    const unicast = jest.fn().mockResolvedValue(false);
+    const broadcast = jest.fn().mockResolvedValue(true);
+    const service = new FileTransferService(
+      IDENTITY,
+      broadcast,
+      unicast,
+      (peerID) => peerID,
+      undefined,
+      undefined,
+      () => false,
+    );
+    const gone = jest.fn();
+    const room = jest.fn();
+    service.sendBytes(FILE, META, "dm:1122334455667788", gone);
+    service.sendBytes(FILE, META, "#test", room);
+
+    await tick(1, 60);
+    expect(gone).toHaveBeenCalledWith(false);
+    await tick(service.pendingCount + 2);
+    expect(room).toHaveBeenCalledWith(true);
+  });
+
+  it("keeps backing off for a busy radio when the peer is still linked", async () => {
+    const unicast = jest.fn().mockResolvedValue(false);
+    const service = new FileTransferService(
+      IDENTITY,
+      jest.fn().mockResolvedValue(true),
+      unicast,
+      (peerID) => peerID,
+      undefined,
+      undefined,
+      () => true,
+    );
+    const outcome = jest.fn();
+    service.sendBytes(FILE, META, "dm:1122334455667788", outcome);
+    await tick(5, 60);
+    expect(outcome).not.toHaveBeenCalled();
+  });
+});
+
+describe("a file the codec cannot carry", () => {
+  it("settles the bubble instead of leaving it on sending", () => {
+    const { service } = makeService();
+    const outcome = jest.fn();
+    service.sendBytes(new Uint8Array(0), META, "#test", outcome);
+    expect(outcome).toHaveBeenCalledWith(false);
+    expect(service.pendingCount).toBe(0);
+  });
+});
