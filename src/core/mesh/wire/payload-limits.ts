@@ -1,17 +1,13 @@
 // Receive-side ceilings on a packet's decoded payload, per type. Mirrors
 // bitchat-ios PacketPayloadLimits.
 //
-// A compressed frame declares its original size, and raw DEFLATE lets ~1 KB
-// on air stand for ~1 MB decoded. Every accepted packet is then held at that
-// size by the dedup and gossip stores and re-served by sync, so one ceiling
-// for every type turns airtime into memory on every node. Only the types that
-// carry media keep the framed-file ceiling; the rest are capped at no less than
-// twice the largest payload any Airhop or bitchat encoder produces for them.
-// A new type that needs more than a v1 frame must be added here before it
-// ships, or current receivers drop it at decode.
+// DEFLATE lets ~1 KB on air declare ~1 MB decoded, which dedup and gossip then
+// hold on every node, so only media types get the framed-file ceiling; the rest
+// get twice the largest payload any encoder produces. A new type needing more
+// than a v1 frame must be added here before it ships, or receivers drop it.
 
 import { MAX_FRAMED_FILE_BYTES } from "./file-packet";
-import { PacketType } from "./packet-codec";
+import { PacketType } from "./packet-type";
 
 // DEFLATE's hard expansion bound: a 258-byte match costs at least two bits.
 // A declared size past this multiple of the compressed bytes cannot be real.
