@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} мин назад",
   "format.hours_ago": "{count} ч назад",
   "format.days_ago": "{count} д назад",
+  "format.just_now": "только что",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Чаты",
@@ -345,6 +346,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Команда /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Отправить тёплые объятия",
   "chat.cmd.slap_hint": "Шлёпнуть большой форелью",
+  "chat.cmd.emote_needs_target": "Укажите кого, например /{command} @имя",
   "chat.status.sending": "Отправка…",
   "chat.status.undo_send": "Отменить отправку",
   "chat.status.undo": "Отменить",
@@ -389,6 +391,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Сообщение…",
   "chat.thread.length_full": "Сообщение заполнено",
   "chat.thread.waiting_for": "Ждём возвращения {name} · {percent}%",
+  "chat.transfer.progress": "{done} из {total}",
+  "chat.transfer.speed": "{size}/с",
+  "chat.transfer.left": "осталось {time}",
   "chat.thread.peer": "узел",
   "chat.thread.cancel_transfer": "Отменить {name}",
   "chat.thread.queued_more": "Ещё {count} ждут отправки",
@@ -478,6 +483,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Камера",
   "chat.attach.camera_desc": "Снять фото или видео",
+  "chat.attach.camera_desc_photo": "Сделать фото",
   "chat.attach.library": "Медиатека",
   "chat.attach.library_desc": "Выбрать из медиатеки",
   "chat.attach.document": "Документ",
@@ -495,7 +501,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Поделился геопозицией",
   "chat.location.title": "Геопозиция",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Снято {ago} назад",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Открыть в картах",
   "chat.location.no_forward": "Геопозиция не пересылается",
   "chat.location.no_forward_body":
@@ -558,6 +564,7 @@ export const strings: Strings = {
   "chat.attach.file": "Вложить файл",
   "chat.attach.unavailable": "Вложения здесь недоступны",
   "chat.attach.not_sent": "Вложение не отправлено",
+  "chat.attach.empty_file": "Этот файл пуст, отправлять нечего.",
   "chat.attach.read_failed":
     "Что-то пошло не так при чтении файла. Попробуйте другой.",
   "chat.attach.caption": "Добавить подпись…",
@@ -748,7 +755,6 @@ export const strings: Strings = {
   "chat.notices.post": "Опубликовать объявление",
   "chat.notices.post_short": "Опубликовать",
   "chat.notices.delete": "Удалить объявление",
-  "chat.notices.just_now": "только что",
   "chat.notices.fades_soon": "скоро исчезнет",
   "chat.notices.1_day": "1 день",
   "chat.notices.3_days": "3 дня",
@@ -801,12 +807,15 @@ export const strings: Strings = {
     "Сообщения, упоминания и объявления из ваших каналов и чатов появятся здесь.",
   "chat.notif.new": "Новое",
   "chat.notif.notice_in": "объявление в {channel}",
+  "chat.notif.in_room": "в {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Переслать в…",
   "chat.forward.to": "Переслать: {name}",
   "chat.forward.cant_send_here": "Сюда переслать нельзя",
   "chat.forward.cant_send_to": "Нельзя переслать: {name}",
+  "chat.forward.too_long_for_dm":
+    "Слишком длинное для личного сообщения. Перешлите его в канал или группу.",
   "chat.forward.channels": "Каналы",
   "chat.forward.groups": "Группы",
   "chat.forward.locations": "Места",
@@ -901,7 +910,6 @@ export const strings: Strings = {
     "Открывает действия: написать этому узлу или заплатить",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "только что",
   "mesh.peer.none": "Узлов поблизости нет",
   "mesh.peer.none_desc":
     "Другие устройства Airhop или bitchat в зоне действия Bluetooth появятся здесь.",
@@ -918,9 +926,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Сумма в сатоши",
   "mesh.peer.amount_first": "Отправить ecash, сначала введите сумму",
   "mesh.peer.cancel_send": "Отменить отправку ecash",
-  "mesh.peer.view_peer": "Открыть узел {name}",
   "mesh.peer.view_peer_online": "Открыть узел {name}, в сети",
-  "mesh.peer.last_seen": "Был виден {ago} назад",
+  "mesh.peer.last_seen_at": "Был в сети {ago}",
   "mesh.peer.send_amount": "Отправить {amount} сатоши",
   "mesh.peer.direct": "Прямое соединение",
   "mesh.peer.check_distance": "Измерить расстояние",
@@ -1099,6 +1106,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} теперь лежит в {mint}, после {fees} {unit} комиссии за маршрутизацию Lightning.",
   "wallet.mint.nothing_moved": "Ничего не перенесено",
+  "wallet.mint.move_pending": "В пути",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} ушли с {mint} и уже в пути к {target}. Они поступят, как только депозит будет получен, а кошелёк продолжает попытки.",
   "wallet.mint.destination": "· назначение",
   "wallet.mint.will_move": "· будет перенесено",
   "wallet.mint.issued_by": "Выпущено",
@@ -1166,6 +1176,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "У вас уже есть фраза восстановления. Восстановление другой заменит её. Монеты, уже покрытые старой фразой, останутся доступными на этом устройстве, но перестанут быть восстановимыми, поэтому убедитесь, что старые слова записаны, прежде чем продолжать.",
   "wallet.backup.replace": "Заменить",
+  "wallet.backup.replace_unseen_body":
+    "У этого кошелька уже есть фраза восстановления, созданная для вас при настройке, и ваши монеты созданы с ней. Восстановление другой фразы заменит её навсегда. Монеты останутся доступны на этом устройстве и перейдут под новую фразу при следующем обновлении каждого минта.",
   "wallet.backup.invalid_phrase": "Эта фраза недействительна",
   "wallet.backup.invalid_phrase_body":
     "У фразы есть встроенная контрольная сумма, и эта её не проходит. Проверьте, нет ли опечатки, пропущенного или переставленного слова.",
@@ -1298,7 +1310,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Потраченные доказательства удалены",
   "wallet.activity.refreshed": "Доказательства обновлены",
   "wallet.activity.refreshing": "Обновляем доказательства",
-  "wallet.activity.just_now": "только что",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Сеть отключена",
@@ -1341,6 +1352,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Отправить",
   "wallet.pay.sending": "Отправка…",
   "wallet.pay.action": "Отправить ecash",
+  "wallet.pay.confirm_title": "Отправить {amount} {unit} для {name}?",
+  "wallet.pay.confirm_final":
+    "Он будет привязан к их ключу. После отправки его нельзя вернуть.",
+  "wallet.pay.confirm_reclaimable":
+    "Вы можете вернуть его в разделе «Ожидают», пока получатель его не заберёт.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Доступ к камере",
@@ -1507,6 +1523,12 @@ export const strings: Strings = {
     "Минт выпустил этот депозит, но его монеты не удалось восстановить. Восстановление из фразы восстановления вернёт их.",
   "wallet.svc.swap_unreadable":
     "Этот обмен сохранён в формате, который эта версия не может воспроизвести.",
+  "wallet.svc.lock_in_doubt":
+    "Минт не ответил, поэтому неизвестно, прошёл ли этот платёж.",
+  "wallet.svc.lock_in_doubt_body":
+    "Больше ничего не отправлено. Монеты удерживаются, пока минт не ответит. Если платёж прошёл, заблокированный токен появится в разделе «Ожидают», чтобы вы его передали. Если нет, монеты вернутся.",
+  "wallet.svc.send_spent_by_swap":
+    "Эти монеты были обменяны обратно в ваш кошелёк до того, как токен забрали, поэтому забрать его больше нельзя. Сумма на вашем балансе.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Подтверждён по QR-коду",
@@ -2206,6 +2228,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Голосовое сообщение",
   "notif.preview.video": "🎥 Видео",
   "notif.preview.document": "📄 Документ",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Новое сообщение",
   "notif.hidden.channel": "Новая активность",

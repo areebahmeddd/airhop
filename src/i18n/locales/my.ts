@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "လွန်ခဲ့သော {count} မိနစ်",
   "format.hours_ago": "လွန်ခဲ့သော {count} နာရီ",
   "format.days_ago": "လွန်ခဲ့သော {count} ရက်",
+  "format.just_now": "ယခုလေးတင်",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "စကားပြောများ",
@@ -349,6 +350,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "အမိန့် /{cmd} — {hint}",
   "chat.cmd.hug_hint": "နွေးထွေးသော ဖက်တွယ်မှုတစ်ခု ပို့ပါ",
   "chat.cmd.slap_hint": "ငါးကြီးတစ်ကောင်ဖြင့် ရိုက်ပါ",
+  "chat.cmd.emote_needs_target": "မည်သူ့ကို ဖော်ပြပါ၊ ဥပမာ /{command} @အမည်",
   "chat.status.sending": "ပို့နေသည်…",
   "chat.status.undo_send": "ပို့ခြင်း ပြန်ရုပ်သိမ်းပါ",
   "chat.status.undo": "ပြန်ရုပ်သိမ်းပါ",
@@ -394,6 +396,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "မက်ဆေ့ဂျ်…",
   "chat.thread.length_full": "မက်ဆေ့ဂျ် ပြည့်နေပါပြီ",
   "chat.thread.waiting_for": "{name} ပြန်လာရန် စောင့်နေသည် · {percent}%",
+  "chat.transfer.progress": "{total} အနက် {done}",
+  "chat.transfer.speed": "{size}/စက္ကန့်",
+  "chat.transfer.left": "{time} ကျန်သည်",
   "chat.thread.peer": "လုပ်ဖော်ကိုင်ဖက်",
   "chat.thread.cancel_transfer": "{name} ကို ပယ်ဖျက်ပါ",
   "chat.thread.queued_more": "နောက်ထပ် {count} ခု ပို့ရန် စောင့်နေသည်",
@@ -483,6 +488,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "ကင်မရာ",
   "chat.attach.camera_desc": "ဓာတ်ပုံ သို့မဟုတ် ဗီဒီယို ရိုက်ပါ",
+  "chat.attach.camera_desc_photo": "ဓာတ်ပုံ ရိုက်ပါ",
   "chat.attach.library": "ဓာတ်ပုံပြခန်း",
   "chat.attach.library_desc": "သင့်ပြခန်းမှ ရွေးပါ",
   "chat.attach.document": "စာရွက်စာတမ်း",
@@ -500,7 +506,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "၎င်းတို့၏ တည်နေရာကို မျှဝေခဲ့သည်",
   "chat.location.title": "တည်နေရာ",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "လွန်ခဲ့သော {ago} က ယူထားသည်",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Maps တွင် ဖွင့်ပါ",
   "chat.location.no_forward": "တည်နေရာများကို ထပ်ဆင့်မပို့ပါ",
   "chat.location.no_forward_body":
@@ -568,6 +574,7 @@ export const strings: Strings = {
   "chat.attach.file": "ဖိုင်တစ်ခု ပူးတွဲပါ",
   "chat.attach.unavailable": "ဤနေရာတွင် ပူးတွဲဖိုင်များ မရနိုင်ပါ",
   "chat.attach.not_sent": "ပူးတွဲဖိုင် မပို့ခဲ့ပါ",
+  "chat.attach.empty_file": "ထိုဖိုင်သည် ဗလာဖြစ်နေသဖြင့် ပို့စရာ မရှိပါ။",
   "chat.attach.read_failed":
     "ထိုဖိုင်ကို ဖတ်ရာတွင် တစ်ခုခု မှားယွင်းသွားသည်။ အခြားတစ်ခု စမ်းကြည့်ပါ။",
   "chat.attach.caption": "စာတန်း ထည့်ပါ…",
@@ -762,7 +769,6 @@ export const strings: Strings = {
   "chat.notices.post": "အသိပေးချက် တင်ပါ",
   "chat.notices.post_short": "တင်ပါ",
   "chat.notices.delete": "အသိပေးချက် ဖျက်ပါ",
-  "chat.notices.just_now": "ယခုလေးတင်",
   "chat.notices.fades_soon": "မကြာမီ မှိန်သွားမည်",
   "chat.notices.1_day": "1 ရက်",
   "chat.notices.3_days": "3 ရက်",
@@ -815,12 +821,15 @@ export const strings: Strings = {
     "သင့်ချန်နယ်များနှင့် စကားပြောများမှ မက်ဆေ့ဂျ်များ၊ ဖော်ပြချက်များနှင့် အသိပေးချက်များသည် ဤနေရာတွင် ပေါ်လာပါမည်။",
   "chat.notif.new": "အသစ်",
   "chat.notif.notice_in": "{channel} ရှိ အသိပေးချက်",
+  "chat.notif.in_room": "{room} တွင်",
 
   // ---- Chats: forward ----
   "chat.forward.title": "ထပ်ဆင့်ပို့ရန်…",
   "chat.forward.to": "{name} ထံ ထပ်ဆင့်ပို့ပါ",
   "chat.forward.cant_send_here": "ဤနေရာသို့ ထပ်ဆင့်မပို့နိုင်ပါ",
   "chat.forward.cant_send_to": "{name} ထံ ထပ်ဆင့်မပို့နိုင်ပါ",
+  "chat.forward.too_long_for_dm":
+    "တိုက်ရိုက်မက်ဆေ့ချ်အတွက် ရှည်လွန်းသည်။ ချန်နယ် သို့မဟုတ် အဖွဲ့သို့ ထပ်ဆင့်ပို့ပါ။",
   "chat.forward.channels": "ချန်နယ်များ",
   "chat.forward.groups": "အဖွဲ့များ",
   "chat.forward.locations": "တည်နေရာများ",
@@ -920,7 +929,6 @@ export const strings: Strings = {
     "ဤလုပ်ဖော်ကိုင်ဖက်ကို မက်ဆေ့ဂျ်ပို့ရန် သို့မဟုတ် ငွေပေးရန် ရွေးချယ်စရာများကို ဖွင့်သည်",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "ယခုလေးတင်",
   "mesh.peer.none": "အနီးအနားတွင် လုပ်ဖော်ကိုင်ဖက် မရှိပါ",
   "mesh.peer.none_desc":
     "ဘလူးတုသ်အကွာအဝေးအတွင်းရှိ အခြား Airhop သို့မဟုတ် bitchat စက်များ ဤနေရာတွင် ပေါ်လာပါမည်။",
@@ -937,10 +945,9 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "ပမာဏ sats ဖြင့်",
   "mesh.peer.amount_first": "ecash ပို့ပါ၊ ပမာဏကို အရင်ထည့်ပါ",
   "mesh.peer.cancel_send": "ecash ပို့ခြင်းကို ပယ်ဖျက်ပါ",
-  "mesh.peer.view_peer": "လုပ်ဖော်ကိုင်ဖက် {name} ကို ကြည့်ပါ",
   "mesh.peer.view_peer_online":
     "လုပ်ဖော်ကိုင်ဖက် {name} ကို ကြည့်ပါ၊ အွန်လိုင်း",
-  "mesh.peer.last_seen": "လွန်ခဲ့သော {ago} က တွေ့ခဲ့သည်",
+  "mesh.peer.last_seen_at": "နောက်ဆုံး တွေ့ခဲ့ချိန် {ago}",
   "mesh.peer.send_amount": "{amount} sats ပို့ပါ",
   "mesh.peer.direct": "တိုက်ရိုက်ချိတ်ဆက်မှု",
   "mesh.peer.check_distance": "အကွာအဝေး စစ်ပါ",
@@ -1117,6 +1124,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "Lightning လမ်းကြောင်းအခကြေးငွေ {fees} {unit} ပေးပြီးနောက် ယခု {amount} {unit} သည် {mint} တွင် ရှိပါသည်။",
   "wallet.mint.nothing_moved": "ဘာမျှ မရွှေ့ခဲ့ပါ",
+  "wallet.mint.move_pending": "လမ်းခရီးတွင်ရှိသည်",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} သည် {mint} မှ ထွက်ပြီး {target} သို့ လမ်းခရီးတွင်ရှိသည်။ အပ်ငွေကို ရယူပြီးသည်နှင့် ရောက်လာမည်ဖြစ်ပြီး ပိုက်ဆံအိတ်က ဆက်လက်ကြိုးစားနေသည်။",
   "wallet.mint.destination": "· ဦးတည်ရာ",
   "wallet.mint.will_move": "· ရွှေ့ပါမည်",
   "wallet.mint.issued_by": "ထုတ်ပေးသူ",
@@ -1185,6 +1195,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "သင့်တွင် ပြန်လည်ရယူရေးစကားစု ရှိပြီးသားဖြစ်သည်။ အခြားတစ်ခုကို ပြန်လည်ရယူခြင်းက ၎င်းကို အစားထိုးပါမည်။ စကားစုဟောင်းက လွှမ်းခြုံထားသော အကြွေစေ့များသည် ဤစက်ပေါ်တွင် သုံးနိုင်ဆဲဖြစ်သော်လည်း ပြန်လည်ရယူ၍ မရတော့ပါ။ ထို့ကြောင့် မဆက်လုပ်မီ စကားလုံးဟောင်းများကို ချရေးထားကြောင်း သေချာပါစေ။",
   "wallet.backup.replace": "အစားထိုးပါ",
+  "wallet.backup.replace_unseen_body":
+    "ဤပိုက်ဆံအိတ်တွင် စတင်သတ်မှတ်စဉ် သင့်အတွက် ပြုလုပ်ထားသော ပြန်လည်ရယူရေးစကားစုရှိပြီးဖြစ်ပြီး သင့်ဒင်္ဂါးများကို ၎င်းဖြင့် ဖန်တီးထားသည်။ အခြားစကားစုကို ပြန်ယူပါက ၎င်းကို အပြီးအပိုင် အစားထိုးမည်။ ဒင်္ဂါးများကို ဤစက်ပေါ်တွင် ဆက်သုံးနိုင်ပြီး mint တစ်ခုချင်းကို နောက်တစ်ကြိမ် ပြန်လည်ဆန်းသစ်သည့်အခါ စကားစုအသစ်အောက်သို့ ရွှေ့မည်။",
   "wallet.backup.invalid_phrase": "ထိုစကားစု မမှန်ကန်ပါ",
   "wallet.backup.invalid_phrase_body":
     "စကားစုတွင် အတွင်းစစ်ဆေးရေးတန်ဖိုးပါဝင်ပြီး ဤတစ်ခုက မအောင်မြင်ပါ။ စာလုံးမှား၊ ကျန်ခဲ့သော သို့မဟုတ် နေရာလွဲနေသော စကားလုံးကို ရှာပါ။",
@@ -1319,7 +1331,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "သုံးပြီးသောသက်သေများ ဖယ်ရှားပြီး",
   "wallet.activity.refreshed": "သက်သေများ ပြန်လည်စစ်ဆေးပြီး",
   "wallet.activity.refreshing": "သက်သေများ ပြန်လည်စစ်ဆေးနေသည်",
-  "wallet.activity.just_now": "ယခုလေးတင်",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "မက်ရှ် အော့ဖ်လိုင်း",
@@ -1363,6 +1374,11 @@ export const strings: Strings = {
   "wallet.pay.send": "ပို့ပါ",
   "wallet.pay.sending": "ပို့နေသည်…",
   "wallet.pay.action": "ecash ပို့ပါ",
+  "wallet.pay.confirm_title": "{name} ထံ {amount} {unit} ပို့မလား?",
+  "wallet.pay.confirm_final":
+    "၎င်းကို သူတို့၏သော့ဖြင့် သော့ခတ်ထားသည်။ ပို့ပြီးပါက ပြန်ယူ၍မရပါ။",
+  "wallet.pay.confirm_reclaimable":
+    "သူတို့ မရယူမချင်း ဆိုင်းငံ့ထားမှ ပြန်ယူနိုင်သည်။",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "ကင်မရာ အသုံးပြုခွင့်",
@@ -1531,6 +1547,12 @@ export const strings: Strings = {
     "မင့်သည် ဤအပ်ငွေကို ထုတ်ပေးခဲ့သော်လည်း ၎င်း၏ဒင်္ဂါးများကို ပြန်လည်တည်ဆောက်၍မရပါ။ ပြန်လည်ရယူရေးစကားစုမှ ပြန်ယူခြင်းဖြင့် ပြန်ရနိုင်ပါသည်။",
   "wallet.svc.swap_unreadable":
     "ဤလဲလှယ်မှုကို ဤဗားရှင်း ပြန်မလုပ်ဆောင်နိုင်သော ပုံစံဖြင့် သိမ်းထားခဲ့သည်။",
+  "wallet.svc.lock_in_doubt":
+    "mint က မဖြေကြားသဖြင့် ဤငွေပေးချေမှု ပြီးမြောက်ခဲ့သလား မသေချာပါ။",
+  "wallet.svc.lock_in_doubt_body":
+    "အခြားဘာမှ မပို့ရသေးပါ။ mint ဖြေကြားသည်အထိ ဒင်္ဂါးများကို ထိန်းထားသည်။ ပြီးမြောက်ခဲ့ပါက သော့ခတ်ထားသော တိုကင်သည် လွှဲပေးရန် ဆိုင်းငံ့ထားတွင် ပေါ်လာမည်။ မဟုတ်ပါက ဒင်္ဂါးများ ပြန်ရောက်လာမည်။",
+  "wallet.svc.send_spent_by_swap":
+    "ဤတိုကင်ကို မရယူမီ ဒင်္ဂါးများကို သင့်ပိုက်ဆံအိတ်ထဲသို့ ပြန်လဲထားပြီးဖြစ်သောကြောင့် ၎င်းကို ရယူ၍မရတော့ပါ။ တန်ဖိုးသည် သင့်လက်ကျန်ထဲတွင်ရှိသည်။",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ဖြင့် အတည်ပြုပြီး",
@@ -2241,6 +2263,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 အသံမက်ဆေ့ဂျ်",
   "notif.preview.video": "🎥 ဗီဒီယို",
   "notif.preview.document": "📄 စာရွက်စာတမ်း",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "မက်ဆေ့ဂျ်အသစ်",
   "notif.hidden.channel": "လှုပ်ရှားမှုအသစ်",

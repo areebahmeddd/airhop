@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count}분 전",
   "format.hours_ago": "{count}시간 전",
   "format.days_ago": "{count}일 전",
+  "format.just_now": "방금",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "채팅",
@@ -338,6 +339,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "명령 /{cmd}: {hint}",
   "chat.cmd.hug_hint": "따뜻한 포옹 보내기",
   "chat.cmd.slap_hint": "커다란 송어로 찰싹 때리기",
+  "chat.cmd.emote_needs_target": "대상을 지정하세요 (예: /{command} @이름)",
   "chat.status.sending": "보내는 중…",
   "chat.status.undo_send": "보내기 취소",
   "chat.status.undo": "취소",
@@ -382,6 +384,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "메시지…",
   "chat.thread.length_full": "메시지가 가득 찼습니다",
   "chat.thread.waiting_for": "{name}이(가) 돌아오기를 기다리는 중 · {percent}%",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/초",
+  "chat.transfer.left": "{time} 남음",
   "chat.thread.peer": "피어",
   "chat.thread.cancel_transfer": "{name} 취소",
   "chat.thread.queued_more": "{count}개가 더 전송을 기다리는 중",
@@ -465,6 +470,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "카메라",
   "chat.attach.camera_desc": "사진이나 동영상 촬영",
+  "chat.attach.camera_desc_photo": "사진 찍기",
   "chat.attach.library": "사진 라이브러리",
   "chat.attach.library_desc": "라이브러리에서 선택",
   "chat.attach.document": "문서",
@@ -482,7 +488,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "위치를 공유했습니다",
   "chat.location.title": "위치",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} 전에 측정됨",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Maps에서 열기",
   "chat.location.no_forward": "위치는 전달되지 않습니다",
   "chat.location.no_forward_body":
@@ -547,6 +553,7 @@ export const strings: Strings = {
   "chat.attach.file": "파일 첨부",
   "chat.attach.unavailable": "여기서는 첨부할 수 없습니다",
   "chat.attach.not_sent": "첨부 파일이 전송되지 않음",
+  "chat.attach.empty_file": "파일이 비어 있어 보낼 내용이 없습니다.",
   "chat.attach.read_failed":
     "그 파일을 읽는 중 문제가 생겼습니다. 다른 파일로 시도하세요.",
   "chat.attach.caption": "설명 추가…",
@@ -732,7 +739,6 @@ export const strings: Strings = {
   "chat.notices.post": "공지 올리기",
   "chat.notices.post_short": "올리기",
   "chat.notices.delete": "공지 삭제",
-  "chat.notices.just_now": "방금",
   "chat.notices.fades_soon": "곧 사라짐",
   "chat.notices.1_day": "1일",
   "chat.notices.3_days": "3일",
@@ -784,12 +790,15 @@ export const strings: Strings = {
     "채널과 채팅에서 온 메시지, 언급, 공지가 여기에 표시됩니다.",
   "chat.notif.new": "새 항목",
   "chat.notif.notice_in": "{channel}의 공지",
+  "chat.notif.in_room": "{room}에서",
 
   // ---- Chats: forward ----
   "chat.forward.title": "전달할 대상…",
   "chat.forward.to": "{name}에게 전달",
   "chat.forward.cant_send_here": "여기로는 전달할 수 없음",
   "chat.forward.cant_send_to": "{name}에게는 전달할 수 없음",
+  "chat.forward.too_long_for_dm":
+    "다이렉트 메시지로 보내기에는 너무 깁니다. 대신 채널이나 그룹으로 전달하세요.",
   "chat.forward.channels": "채널",
   "chat.forward.groups": "그룹",
   "chat.forward.locations": "위치",
@@ -877,7 +886,6 @@ export const strings: Strings = {
     "이 피어에게 메시지를 보내거나 결제할 수 있는 옵션을 엽니다",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "방금",
   "mesh.peer.none": "근처에 피어가 없습니다",
   "mesh.peer.none_desc":
     "블루투스 범위 안에 있는 다른 Airhop 또는 bitchat 기기가 여기에 표시됩니다.",
@@ -894,9 +902,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "sats 단위 금액",
   "mesh.peer.amount_first": "ecash 보내기, 먼저 금액을 입력하세요",
   "mesh.peer.cancel_send": "ecash 보내기 취소",
-  "mesh.peer.view_peer": "피어 {name} 보기",
   "mesh.peer.view_peer_online": "피어 {name} 보기, 온라인",
-  "mesh.peer.last_seen": "{ago} 전에 마지막으로 봄",
+  "mesh.peer.last_seen_at": "마지막 확인: {ago}",
   "mesh.peer.send_amount": "{amount} sats 보내기",
   "mesh.peer.direct": "직접 연결",
   "mesh.peer.check_distance": "거리 확인",
@@ -1071,6 +1078,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "Lightning 라우팅 수수료 {fees} {unit}을(를) 제하고 이제 {amount} {unit}이(가) {mint}에 있습니다.",
   "wallet.mint.nothing_moved": "옮겨진 것이 없습니다",
+  "wallet.mint.move_pending": "이동 중",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit}이(가) {mint}에서 나와 {target}(으)로 가는 중입니다. 입금을 받으면 도착하며, 지갑이 계속 재시도합니다.",
   "wallet.mint.destination": "· 대상",
   "wallet.mint.will_move": "· 옮겨질 예정",
   "wallet.mint.issued_by": "발행처",
@@ -1138,6 +1148,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "이미 복구 문구가 있습니다. 다른 문구를 복원하면 기존 것을 대체합니다. 예전 문구가 보장하던 코인은 이 기기에서 계속 쓸 수 있지만 복원 대상에서는 빠지므로, 계속하기 전에 예전 단어들을 적어 두었는지 확인하세요.",
   "wallet.backup.replace": "교체",
+  "wallet.backup.replace_unseen_body":
+    "이 지갑에는 설정할 때 만들어진 복구 문구가 이미 있고, 코인은 그 문구로 만들어졌습니다. 다른 문구를 복원하면 영구히 대체됩니다. 코인은 이 기기에서 계속 쓸 수 있으며, 각 민트를 다음에 새로고침할 때 새 문구로 옮겨집니다.",
   "wallet.backup.invalid_phrase": "유효하지 않은 문구입니다",
   "wallet.backup.invalid_phrase_body":
     "문구에는 자체 검사값이 들어 있는데 이 문구는 통과하지 못했습니다. 잘못 입력했거나 빠졌거나 순서가 바뀐 단어가 없는지 확인하세요.",
@@ -1269,7 +1281,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "사용된 증명 제거됨",
   "wallet.activity.refreshed": "증명을 새로 고침",
   "wallet.activity.refreshing": "증명을 새로 고치는 중",
-  "wallet.activity.just_now": "방금",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "메시 오프라인",
@@ -1312,6 +1323,11 @@ export const strings: Strings = {
   "wallet.pay.send": "보내기",
   "wallet.pay.sending": "보내는 중…",
   "wallet.pay.action": "ecash 보내기",
+  "wallet.pay.confirm_title": "{name}에게 {amount} {unit}을(를) 보낼까요?",
+  "wallet.pay.confirm_final":
+    "상대의 키에 잠깁니다. 보낸 뒤에는 되돌릴 수 없습니다.",
+  "wallet.pay.confirm_reclaimable":
+    "상대가 받기 전까지는 대기 중에서 되찾을 수 있습니다.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "카메라 접근",
@@ -1473,6 +1489,12 @@ export const strings: Strings = {
     "민트가 이 입금을 발행했지만 코인을 다시 만들지 못했습니다. 복구 문구로 복원하면 되찾을 수 있습니다.",
   "wallet.svc.swap_unreadable":
     "이 교환은 이 버전이 다시 처리할 수 없는 형식으로 저장되었습니다.",
+  "wallet.svc.lock_in_doubt":
+    "민트가 응답하지 않아 이 결제가 처리되었는지 알 수 없습니다.",
+  "wallet.svc.lock_in_doubt_body":
+    "다른 것은 보내지지 않았습니다. 민트가 응답할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 대기 중에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
+  "wallet.svc.send_spent_by_swap":
+    "이 토큰을 받기 전에 코인이 스왑되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR로 확인됨",
@@ -2142,6 +2164,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 음성 메시지",
   "notif.preview.video": "🎥 동영상",
   "notif.preview.document": "📄 문서",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "새 메시지",
   "notif.hidden.channel": "새 활동",

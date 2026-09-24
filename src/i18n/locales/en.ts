@@ -63,6 +63,7 @@ export const strings = {
   "format.minutes_ago": "{count}m ago",
   "format.hours_ago": "{count}h ago",
   "format.days_ago": "{count}d ago",
+  "format.just_now": "just now",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Chats",
@@ -371,6 +372,7 @@ export const strings = {
   "chat.cmd.a11y": "Command /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Send a warm hug",
   "chat.cmd.slap_hint": "Slap with a large trout",
+  "chat.cmd.emote_needs_target": "Say who, like /{command} @name",
   "chat.status.sending": "Sending…",
   "chat.status.undo_send": "Undo send",
   "chat.status.undo": "Undo",
@@ -415,6 +417,9 @@ export const strings = {
   "chat.thread.message_placeholder": "Message…",
   "chat.thread.length_full": "Message is full",
   "chat.thread.waiting_for": "Waiting for {name} to return · {percent}%",
+  "chat.transfer.progress": "{done} of {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} left",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Cancel {name}",
   "chat.thread.queued_more": "{count} more waiting to send",
@@ -499,6 +504,7 @@ export const strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Take a photo or video",
+  "chat.attach.camera_desc_photo": "Take a photo",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Choose from your library",
   "chat.attach.document": "Document",
@@ -516,7 +522,7 @@ export const strings = {
   "chat.location.received_summary": "Shared their location",
   "chat.location.title": "Location",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Taken {ago} ago",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Open in Maps",
   "chat.location.no_forward": "Locations are not forwarded",
   "chat.location.no_forward_body":
@@ -563,6 +569,7 @@ export const strings = {
   "chat.attach.file": "Attach a file",
   "chat.attach.unavailable": "Attachments not available here",
   "chat.attach.not_sent": "Attachment not sent",
+  "chat.attach.empty_file": "That file is empty, so there is nothing to send.",
   "chat.attach.read_failed":
     "Something went wrong reading that file. Try another one.",
   "chat.attach.caption": "Add a caption…",
@@ -759,7 +766,6 @@ export const strings = {
   "chat.notices.post": "Post notice",
   "chat.notices.post_short": "Post",
   "chat.notices.delete": "Delete notice",
-  "chat.notices.just_now": "just now",
   "chat.notices.fades_soon": "fades soon",
   "chat.notices.1_day": "1 day",
   "chat.notices.3_days": "3 days",
@@ -810,12 +816,15 @@ export const strings = {
     "Messages, mentions, and notices from your channels and chats show up here.",
   "chat.notif.new": "New",
   "chat.notif.notice_in": "notice in {channel}",
+  "chat.notif.in_room": "in {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Forward to…",
   "chat.forward.to": "Forward to {name}",
   "chat.forward.cant_send_here": "Can’t forward here",
   "chat.forward.cant_send_to": "Can’t forward to {name}",
+  "chat.forward.too_long_for_dm":
+    "Too long for a direct message. Forward it to a channel or group instead.",
   "chat.forward.channels": "Channels",
   "chat.forward.groups": "Groups",
   "chat.forward.locations": "Locations",
@@ -902,7 +911,6 @@ export const strings = {
   "mesh.radar.peer_hint": "Opens options to message or pay this peer",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "just now",
   "mesh.peer.none": "No peers nearby",
   "mesh.peer.none_desc":
     "Other Airhop or bitchat devices within Bluetooth range appear here.",
@@ -919,9 +927,8 @@ export const strings = {
   "mesh.peer.amount_placeholder": "Amount in sats",
   "mesh.peer.amount_first": "Send ecash, enter an amount first",
   "mesh.peer.cancel_send": "Cancel send ecash",
-  "mesh.peer.view_peer": "View peer {name}",
   "mesh.peer.view_peer_online": "View peer {name}, online",
-  "mesh.peer.last_seen": "Last seen {ago} ago",
+  "mesh.peer.last_seen_at": "Last seen {ago}",
   "mesh.peer.send_amount": "Send {amount} sats",
   "mesh.peer.direct": "Direct connection",
   "mesh.peer.check_distance": "Check distance",
@@ -1096,6 +1103,9 @@ export const strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} now sits at {mint}, after {fees} {unit} in Lightning routing fees.",
   "wallet.mint.nothing_moved": "Nothing moved",
+  "wallet.mint.move_pending": "On its way",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} left {mint} and is on its way to {target}. It arrives once the deposit is claimed, which the wallet keeps retrying.",
   "wallet.mint.destination": "· destination",
   "wallet.mint.will_move": "· will be moved",
   "wallet.mint.issued_by": "Issued by",
@@ -1163,6 +1173,8 @@ export const strings = {
   "wallet.backup.replace_body":
     "You already have a recovery phrase. Restoring a different one replaces it. Coins already covered by the old phrase stay spendable on this device, but they stop being restorable, so make sure the old words are written down before you continue.",
   "wallet.backup.replace": "Replace",
+  "wallet.backup.replace_unseen_body":
+    "This wallet already has a recovery phrase, made for you when it was set up, and your coins were created under it. Restoring a different phrase replaces it for good. The coins stay spendable on this device and move under the new phrase the next time each mint is refreshed.",
   "wallet.backup.invalid_phrase": "That phrase is not valid",
   "wallet.backup.invalid_phrase_body":
     "The phrase has a built-in checksum and this one does not pass. Check for a mistyped, missing or swapped word.",
@@ -1295,7 +1307,6 @@ export const strings = {
   "wallet.activity.spent_removed": "Spent proofs removed",
   "wallet.activity.refreshed": "Proofs refreshed",
   "wallet.activity.refreshing": "Refreshing proofs",
-  "wallet.activity.just_now": "just now",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1337,6 +1348,11 @@ export const strings = {
   "wallet.pay.send": "Send",
   "wallet.pay.sending": "Sending…",
   "wallet.pay.action": "Send ecash",
+  "wallet.pay.confirm_title": "Send {amount} {unit} to {name}?",
+  "wallet.pay.confirm_final":
+    "It is locked to their key. Once sent, it cannot be taken back.",
+  "wallet.pay.confirm_reclaimable":
+    "You can reclaim it from Pending until they claim it.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Camera access",
@@ -1496,6 +1512,12 @@ export const strings = {
     "The mint issued this deposit, but its coins could not be rebuilt. Restoring from your recovery phrase recovers them.",
   "wallet.svc.swap_unreadable":
     "This swap was saved in a form this version cannot replay.",
+  "wallet.svc.lock_in_doubt":
+    "The mint did not answer, so this payment may or may not have gone through.",
+  "wallet.svc.lock_in_doubt_body":
+    "Nothing else was sent. The coins are held until the mint answers. If it went through, the locked token appears under Pending for you to hand over. If not, the coins come back.",
+  "wallet.svc.send_spent_by_swap":
+    "These coins were swapped back into your wallet before this token was claimed, so it can no longer be claimed. The value is in your balance.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verified via QR",
@@ -2177,6 +2199,7 @@ export const strings = {
   "notif.preview.voice": "🎤 Voice message",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Document",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "New message",
   "notif.hidden.channel": "New activity",

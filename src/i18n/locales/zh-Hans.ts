@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} 分钟前",
   "format.hours_ago": "{count} 小时前",
   "format.days_ago": "{count} 天前",
+  "format.just_now": "刚刚",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "聊天",
@@ -326,6 +327,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "命令 /{cmd}：{hint}",
   "chat.cmd.hug_hint": "送上一个温暖的拥抱",
   "chat.cmd.slap_hint": "用一条大鳟鱼拍打",
+  "chat.cmd.emote_needs_target": "请指定对象，例如 /{command} @名字",
   "chat.status.sending": "发送中…",
   "chat.status.undo_send": "撤回发送",
   "chat.status.undo": "撤回",
@@ -368,6 +370,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "消息…",
   "chat.thread.length_full": "消息已达上限",
   "chat.thread.waiting_for": "等待 {name} 回来 · {percent}%",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/秒",
+  "chat.transfer.left": "剩余 {time}",
   "chat.thread.peer": "节点",
   "chat.thread.cancel_transfer": "取消 {name}",
   "chat.thread.queued_more": "还有 {count} 条等待发送",
@@ -444,6 +449,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "相机",
   "chat.attach.camera_desc": "拍一张照片或一段视频",
+  "chat.attach.camera_desc_photo": "拍照",
   "chat.attach.library": "照片图库",
   "chat.attach.library_desc": "从你的图库中选择",
   "chat.attach.document": "文档",
@@ -461,7 +467,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "分享了自己的位置",
   "chat.location.title": "位置",
   "chat.location.away": "{direction}{distance}",
-  "chat.location.taken": "{ago}前取得",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "在地图中打开",
   "chat.location.no_forward": "位置不能转发",
   "chat.location.no_forward_body":
@@ -523,6 +529,7 @@ export const strings: Strings = {
   "chat.attach.file": "添加附件",
   "chat.attach.unavailable": "此处不支持附件",
   "chat.attach.not_sent": "附件未发送",
+  "chat.attach.empty_file": "该文件是空的，没有可发送的内容。",
   "chat.attach.read_failed": "读取那个文件时出了问题。换一个试试。",
   "chat.attach.caption": "添加说明…",
   "chat.attach.send": "发送附件",
@@ -701,7 +708,6 @@ export const strings: Strings = {
   "chat.notices.post": "发布公告",
   "chat.notices.post_short": "发布",
   "chat.notices.delete": "删除公告",
-  "chat.notices.just_now": "刚刚",
   "chat.notices.fades_soon": "即将消退",
   "chat.notices.1_day": "1 天",
   "chat.notices.3_days": "3 天",
@@ -751,12 +757,15 @@ export const strings: Strings = {
   "chat.notif.none_desc": "来自你的频道和聊天的消息、提及和公告会显示在这里。",
   "chat.notif.new": "新",
   "chat.notif.notice_in": "{channel} 中的公告",
+  "chat.notif.in_room": "在 {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "转发给…",
   "chat.forward.to": "转发给 {name}",
   "chat.forward.cant_send_here": "这里不能转发",
   "chat.forward.cant_send_to": "不能转发给 {name}",
+  "chat.forward.too_long_for_dm":
+    "太长，无法作为私信发送。请改为转发到频道或群组。",
   "chat.forward.channels": "频道",
   "chat.forward.groups": "群组",
   "chat.forward.locations": "位置",
@@ -833,7 +842,6 @@ export const strings: Strings = {
   "mesh.radar.peer_hint": "打开给这个节点发消息或付款的选项",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "刚刚",
   "mesh.peer.none": "附近没有节点",
   "mesh.peer.none_desc":
     "蓝牙范围内其他的 Airhop 或 bitchat 设备会出现在这里。",
@@ -850,9 +858,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "金额（sat）",
   "mesh.peer.amount_first": "发送 ecash，请先输入金额",
   "mesh.peer.cancel_send": "取消发送 ecash",
-  "mesh.peer.view_peer": "查看节点 {name}",
   "mesh.peer.view_peer_online": "查看节点 {name}，在线",
-  "mesh.peer.last_seen": "上次出现在 {ago}前",
+  "mesh.peer.last_seen_at": "最后出现：{ago}",
   "mesh.peer.send_amount": "发送 {amount} sat",
   "mesh.peer.direct": "直接连接",
   "mesh.peer.check_distance": "测一下距离",
@@ -1021,6 +1028,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "扣除 {fees} {unit} 的 Lightning 路由费后，{amount} {unit} 现在存放在 {mint}。",
   "wallet.mint.nothing_moved": "没有转移任何东西",
+  "wallet.mint.move_pending": "正在转移",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} 已离开 {mint}，正在转往 {target}。存入被领取后即到账，钱包会持续重试。",
   "wallet.mint.destination": "· 目标",
   "wallet.mint.will_move": "· 将被转移",
   "wallet.mint.issued_by": "发行方",
@@ -1088,6 +1098,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "你已经有一组恢复助记词了。恢复另一组会把它替换掉。旧助记词已覆盖的币在这台设备上仍然可以花，但不再可恢复，所以请先确认旧的词已经抄写下来，再继续。",
   "wallet.backup.replace": "替换",
+  "wallet.backup.replace_unseen_body":
+    "此钱包已有一个在设置时为你生成的恢复短语，你的币都是用它创建的。恢复另一个短语会永久替换它。这些币仍可在本设备上花费，并会在每个铸币厂下次刷新时转到新短语之下。",
   "wallet.backup.invalid_phrase": "那组助记词无效",
   "wallet.backup.invalid_phrase_body":
     "助记词自带校验和，而这一组没有通过。请检查是否有拼错、遗漏或顺序颠倒的词。",
@@ -1212,7 +1224,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "已花费的凭证被移除",
   "wallet.activity.refreshed": "凭证已刷新",
   "wallet.activity.refreshing": "正在刷新凭证",
-  "wallet.activity.just_now": "刚刚",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "网状网络已离线",
@@ -1251,6 +1262,9 @@ export const strings: Strings = {
   "wallet.pay.send": "发送",
   "wallet.pay.sending": "发送中…",
   "wallet.pay.action": "发送 ecash",
+  "wallet.pay.confirm_title": "向 {name} 发送 {amount} {unit}？",
+  "wallet.pay.confirm_final": "它会锁定到对方的密钥。一旦发送便无法撤回。",
+  "wallet.pay.confirm_reclaimable": "在对方领取之前，你可以在“待处理”中收回。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "相机访问权限",
@@ -1398,6 +1412,12 @@ export const strings: Strings = {
   "wallet.svc.mint_lost":
     "铸币方已发放这笔存款，但无法重建其代币。从恢复短语恢复即可找回。",
   "wallet.svc.swap_unreadable": "这次换新保存的格式，当前版本无法重放。",
+  "wallet.svc.lock_in_doubt":
+    "铸币厂没有回应，这笔付款可能已完成，也可能没有。",
+  "wallet.svc.lock_in_doubt_body":
+    "没有发送其他任何东西。在铸币厂回应之前，这些币会被保留。若付款已完成，锁定的代币会出现在“待处理”中供你转交；若未完成，币会退回。",
+  "wallet.svc.send_spent_by_swap":
+    "在此代币被领取之前，这些币已被兑换回你的钱包，因此它已无法领取。金额在你的余额中。",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "已通过二维码验证",
@@ -2046,6 +2066,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 语音消息",
   "notif.preview.video": "🎥 视频",
   "notif.preview.document": "📄 文档",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "新消息",
   "notif.hidden.channel": "有新动态",

@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} منٹ پہلے",
   "format.hours_ago": "{count} گھنٹے پہلے",
   "format.days_ago": "{count} دن پہلے",
+  "format.just_now": "ابھی ابھی",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "چیٹس",
@@ -342,6 +343,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "حکم /{cmd}: {hint}",
   "chat.cmd.hug_hint": "گرمجوش گلے مل بھیجیں",
   "chat.cmd.slap_hint": "بڑی مچھلی سے تھپڑ رسید کریں",
+  "chat.cmd.emote_needs_target": "بتائیں کسے، جیسے /{command} @نام",
   "chat.status.sending": "بھیجا جا رہا ہے…",
   "chat.status.undo_send": "بھیجنا واپس لیں",
   "chat.status.undo": "واپس لیں",
@@ -386,6 +388,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "پیغام…",
   "chat.thread.length_full": "پیغام بھر گیا",
   "chat.thread.waiting_for": "{name} کے لوٹنے کا انتظار · {percent}%",
+  "chat.transfer.progress": "{total} میں سے {done}",
+  "chat.transfer.speed": "{size}/سیکنڈ",
+  "chat.transfer.left": "{time} باقی",
   "chat.thread.peer": "پیئر",
   "chat.thread.cancel_transfer": "{name} منسوخ کریں",
   "chat.thread.queued_more": "مزید {count} بھیجے جانے کے منتظر",
@@ -470,6 +475,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "کیمرا",
   "chat.attach.camera_desc": "تصویر یا ویڈیو بنائیں",
+  "chat.attach.camera_desc_photo": "تصویر لیں",
   "chat.attach.library": "تصاویر کی گیلری",
   "chat.attach.library_desc": "اپنی گیلری سے چنیں",
   "chat.attach.document": "دستاویز",
@@ -487,7 +493,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "اپنا مقام شیئر کیا",
   "chat.location.title": "مقام",
   "chat.location.away": "{distance} {direction} کی جانب",
-  "chat.location.taken": "{ago} پہلے لیا گیا",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "نقشوں میں کھولیں",
   "chat.location.no_forward": "مقام آگے نہیں بھیجے جاتے",
   "chat.location.no_forward_body":
@@ -552,6 +558,7 @@ export const strings: Strings = {
   "chat.attach.file": "فائل منسلک کریں",
   "chat.attach.unavailable": "یہاں منسلکات دستیاب نہیں",
   "chat.attach.not_sent": "منسلکہ نہ بھیجا گیا",
+  "chat.attach.empty_file": "وہ فائل خالی ہے، اس لیے بھیجنے کو کچھ نہیں۔",
   "chat.attach.read_failed":
     "وہ فائل پڑھنے میں کچھ غلط ہو گیا۔ کوئی اور آزمائیں۔",
   "chat.attach.caption": "عنوان لکھیں…",
@@ -739,7 +746,6 @@ export const strings: Strings = {
   "chat.notices.post": "اعلان لگائیں",
   "chat.notices.post_short": "لگائیں",
   "chat.notices.delete": "اعلان حذف کریں",
-  "chat.notices.just_now": "ابھی ابھی",
   "chat.notices.fades_soon": "جلد مٹ جائے گا",
   "chat.notices.1_day": "1 دن",
   "chat.notices.3_days": "3 دن",
@@ -792,12 +798,15 @@ export const strings: Strings = {
     "آپ کے چینلوں اور چیٹس کے پیغام، ذکر اور اعلان یہاں نظر آتے ہیں۔",
   "chat.notif.new": "نیا",
   "chat.notif.notice_in": "{channel} میں اعلان",
+  "chat.notif.in_room": "{room} میں",
 
   // ---- Chats: forward ----
   "chat.forward.title": "آگے بھیجیں…",
   "chat.forward.to": "{name} کو آگے بھیجیں",
   "chat.forward.cant_send_here": "یہاں آگے نہیں بھیجا جا سکتا",
   "chat.forward.cant_send_to": "{name} کو آگے نہیں بھیجا جا سکتا",
+  "chat.forward.too_long_for_dm":
+    "براہِ راست پیغام کے لیے بہت لمبا ہے۔ اس کے بجائے اسے کسی چینل یا گروپ میں فارورڈ کریں۔",
   "chat.forward.channels": "چینل",
   "chat.forward.groups": "گروپ",
   "chat.forward.locations": "مقامات",
@@ -887,7 +896,6 @@ export const strings: Strings = {
     "اس پیئر کو پیغام بھیجنے یا ادائیگی کے اختیارات کھولتا ہے",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "ابھی ابھی",
   "mesh.peer.none": "قریب کوئی پیئر نہیں",
   "mesh.peer.none_desc":
     "بلوٹوتھ کی حدود میں موجود Airhop یا bitchat والے دوسرے آلات یہاں نظر آتے ہیں۔",
@@ -904,9 +912,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "sat میں رقم",
   "mesh.peer.amount_first": "ecash بھیجیں، پہلے رقم درج کریں",
   "mesh.peer.cancel_send": "ecash بھیجنا منسوخ کریں",
-  "mesh.peer.view_peer": "پیئر {name} دیکھیں",
   "mesh.peer.view_peer_online": "پیئر {name} دیکھیں، آن لائن",
-  "mesh.peer.last_seen": "آخری بار {ago} پہلے دیکھا گیا",
+  "mesh.peer.last_seen_at": "آخری بار دیکھا گیا {ago}",
   "mesh.peer.send_amount": "{amount} sat بھیجیں",
   "mesh.peer.direct": "براہ راست تعلق",
   "mesh.peer.check_distance": "فاصلہ جانچیں",
@@ -1082,6 +1089,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} Lightning رخ بندی فیس کے بعد {amount} {unit} اب {mint} میں ہیں۔",
   "wallet.mint.nothing_moved": "کچھ منتقل نہیں ہوا",
+  "wallet.mint.move_pending": "راستے میں ہے",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} {mint} سے نکل چکے ہیں اور {target} کی طرف راستے میں ہیں۔ جمع وصول ہوتے ہی پہنچ جائیں گے، اور والیٹ کوشش جاری رکھتا ہے۔",
   "wallet.mint.destination": "· منزل",
   "wallet.mint.will_move": "· منتقل کیا جائے گا",
   "wallet.mint.issued_by": "جاری کردہ",
@@ -1149,6 +1159,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "آپ کے پاس پہلے ہی ایک بحالی فقرہ ہے۔ کوئی دوسرا بحال کرنے سے وہ بدل جائے گا۔ جو سکے پرانا فقرہ پہلے ہی سنبھالے ہوئے تھا وہ اس آلے پر خرچ ہوتے رہیں گے، مگر بحال نہیں ہو سکیں گے، سو آگے بڑھنے سے پہلے یقینی بنائیں کہ پرانے الفاظ لکھے ہوئے ہیں۔",
   "wallet.backup.replace": "بدلیں",
+  "wallet.backup.replace_unseen_body":
+    "اس والیٹ میں پہلے سے ایک ریکوری فریز موجود ہے، جو سیٹ اپ کے وقت آپ کے لیے بنایا گیا تھا، اور آپ کے سکے اسی سے بنے ہیں۔ کوئی اور فریز ریسٹور کرنے سے یہ ہمیشہ کے لیے بدل جائے گا۔ سکے اس ڈیوائس پر خرچ کیے جا سکیں گے اور ہر منٹ کے اگلی بار ریفریش ہونے پر نئے فریز کے تحت آ جائیں گے۔",
   "wallet.backup.invalid_phrase": "وہ فقرہ درست نہیں",
   "wallet.backup.invalid_phrase_body":
     "فقرے میں ایک اندرونی جانچ رقم ہوتی ہے اور یہ اس پر پورا نہیں اترتا۔ کوئی غلط لکھا، چھوٹا ہوا یا آگے پیچھے ہوا لفظ ڈھونڈیں۔",
@@ -1278,7 +1290,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "خرچ شدہ ثبوت ہٹا دیے گئے",
   "wallet.activity.refreshed": "ثبوت تازہ ہو گئے",
   "wallet.activity.refreshing": "ثبوت تازہ کیے جا رہے ہیں",
-  "wallet.activity.just_now": "ابھی ابھی",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "میش آف لائن",
@@ -1321,6 +1332,11 @@ export const strings: Strings = {
   "wallet.pay.send": "بھیجیں",
   "wallet.pay.sending": "بھیجا جا رہا ہے…",
   "wallet.pay.action": "ecash بھیجیں",
+  "wallet.pay.confirm_title": "{name} کو {amount} {unit} بھیجیں؟",
+  "wallet.pay.confirm_final":
+    "یہ ان کی کلید پر لاک ہے۔ ایک بار بھیجنے کے بعد واپس نہیں لیا جا سکتا۔",
+  "wallet.pay.confirm_reclaimable":
+    "جب تک وہ اسے وصول نہ کریں، آپ اسے زیرِ التوا سے واپس لے سکتے ہیں۔",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "کیمرے تک رسائی",
@@ -1482,6 +1498,12 @@ export const strings: Strings = {
     "منٹ نے یہ ڈپازٹ جاری کیا، لیکن اس کے سکے دوبارہ نہیں بن سکے۔ اپنے ریکوری فقرے سے بحال کرنے پر وہ واپس مل جاتے ہیں۔",
   "wallet.svc.swap_unreadable":
     "یہ تبادلہ ایسی شکل میں محفوظ ہوا جسے یہ نسخہ دوبارہ نہیں چلا سکتا۔",
+  "wallet.svc.lock_in_doubt":
+    "منٹ نے جواب نہیں دیا، اس لیے یہ ادائیگی ہوئی یا نہیں، یقینی نہیں۔",
+  "wallet.svc.lock_in_doubt_body":
+    "اور کچھ نہیں بھیجا گیا۔ منٹ کے جواب تک سکے روکے گئے ہیں۔ اگر ادائیگی ہو گئی تو لاک ٹوکن حوالے کرنے کے لیے زیرِ التوا میں دکھائی دے گا۔ ورنہ سکے واپس آ جائیں گے۔",
+  "wallet.svc.send_spent_by_swap":
+    "یہ ٹوکن وصول ہونے سے پہلے ہی یہ سکے سویپ ہو کر آپ کے والیٹ میں واپس آ گئے، اس لیے اب اسے وصول نہیں کیا جا سکتا۔ رقم آپ کے بیلنس میں ہے۔",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR سے تصدیق شدہ",
@@ -2165,6 +2187,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 صوتی پیغام",
   "notif.preview.video": "🎥 ویڈیو",
   "notif.preview.document": "📄 دستاویز",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "نیا پیغام",
   "notif.hidden.channel": "نئی سرگرمی",

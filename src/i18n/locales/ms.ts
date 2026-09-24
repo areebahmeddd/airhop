@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} min lalu",
   "format.hours_ago": "{count} jam lalu",
   "format.days_ago": "{count} hari lalu",
+  "format.just_now": "sebentar tadi",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Sembang",
@@ -344,6 +345,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Perintah /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Hantar pelukan hangat",
   "chat.cmd.slap_hint": "Tampar dengan ikan trout besar",
+  "chat.cmd.emote_needs_target": "Nyatakan siapa, contohnya /{command} @nama",
   "chat.status.sending": "Menghantar…",
   "chat.status.undo_send": "Batalkan hantaran",
   "chat.status.undo": "Batalkan",
@@ -388,6 +390,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Mesej…",
   "chat.thread.length_full": "Mesej sudah penuh",
   "chat.thread.waiting_for": "Menunggu {name} kembali · {percent}%",
+  "chat.transfer.progress": "{done} daripada {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} lagi",
   "chat.thread.peer": "rakan",
   "chat.thread.cancel_transfer": "Batalkan {name}",
   "chat.thread.queued_more": "{count} lagi menunggu untuk dihantar",
@@ -475,6 +480,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Ambil gambar atau video",
+  "chat.attach.camera_desc_photo": "Ambil foto",
   "chat.attach.library": "Galeri gambar",
   "chat.attach.library_desc": "Pilih daripada galeri anda",
   "chat.attach.document": "Dokumen",
@@ -492,7 +498,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Berkongsi lokasinya",
   "chat.location.title": "Lokasi",
   "chat.location.away": "{distance} ke {direction}",
-  "chat.location.taken": "Diambil {ago} lalu",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Buka dalam Peta",
   "chat.location.no_forward": "Lokasi tidak dikirimkan",
   "chat.location.no_forward_body":
@@ -558,6 +564,7 @@ export const strings: Strings = {
   "chat.attach.file": "Lampirkan satu fail",
   "chat.attach.unavailable": "Lampiran tidak tersedia di sini",
   "chat.attach.not_sent": "Lampiran tidak dihantar",
+  "chat.attach.empty_file": "Fail itu kosong, jadi tiada apa untuk dihantar.",
   "chat.attach.read_failed":
     "Ada sesuatu tidak kena semasa membaca fail itu. Cuba yang lain.",
   "chat.attach.caption": "Tambah kapsyen…",
@@ -750,7 +757,6 @@ export const strings: Strings = {
   "chat.notices.post": "Tampal notis",
   "chat.notices.post_short": "Tampal",
   "chat.notices.delete": "Padam notis",
-  "chat.notices.just_now": "sebentar tadi",
   "chat.notices.fades_soon": "akan pudar tidak lama lagi",
   "chat.notices.1_day": "1 hari",
   "chat.notices.3_days": "3 hari",
@@ -803,12 +809,15 @@ export const strings: Strings = {
     "Mesej, sebutan dan notis daripada saluran dan sembang anda muncul di sini.",
   "chat.notif.new": "Baharu",
   "chat.notif.notice_in": "notis dalam {channel}",
+  "chat.notif.in_room": "di {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Kirim kepada…",
   "chat.forward.to": "Kirim kepada {name}",
   "chat.forward.cant_send_here": "Tidak boleh dikirim ke sini",
   "chat.forward.cant_send_to": "Tidak boleh dikirim kepada {name}",
+  "chat.forward.too_long_for_dm":
+    "Terlalu panjang untuk mesej langsung. Majukan ke saluran atau kumpulan sahaja.",
   "chat.forward.channels": "Saluran",
   "chat.forward.groups": "Kumpulan",
   "chat.forward.locations": "Lokasi",
@@ -905,7 +914,6 @@ export const strings: Strings = {
     "Membuka pilihan untuk menghantar mesej atau membayar rakan ini",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "sebentar tadi",
   "mesh.peer.none": "Tiada rakan berdekatan",
   "mesh.peer.none_desc":
     "Peranti Airhop atau bitchat lain dalam jangkauan Bluetooth muncul di sini.",
@@ -922,9 +930,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Jumlah dalam sat",
   "mesh.peer.amount_first": "Hantar ecash, masukkan jumlah dahulu",
   "mesh.peer.cancel_send": "Batalkan penghantaran ecash",
-  "mesh.peer.view_peer": "Lihat rakan {name}",
   "mesh.peer.view_peer_online": "Lihat rakan {name}, dalam talian",
-  "mesh.peer.last_seen": "Kali terakhir dilihat {ago} lalu",
+  "mesh.peer.last_seen_at": "Kali terakhir dilihat {ago}",
   "mesh.peer.send_amount": "Hantar {amount} sat",
   "mesh.peer.direct": "Sambungan terus",
   "mesh.peer.check_distance": "Periksa jarak",
@@ -1100,6 +1107,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} kini berada di {mint}, selepas {fees} {unit} yuran penghalaan Lightning.",
   "wallet.mint.nothing_moved": "Tiada apa-apa dipindahkan",
+  "wallet.mint.move_pending": "Dalam perjalanan",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} telah keluar dari {mint} dan dalam perjalanan ke {target}. Ia tiba sebaik deposit dituntut, dan dompet terus mencuba.",
   "wallet.mint.destination": "· destinasi",
   "wallet.mint.will_move": "· akan dipindahkan",
   "wallet.mint.issued_by": "Dikeluarkan oleh",
@@ -1167,6 +1177,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Anda sudah ada frasa pemulihan. Memulihkan frasa lain akan menggantikannya. Syiling yang sudah dilindungi frasa lama kekal boleh dibelanjakan pada peranti ini, tetapi berhenti boleh dipulihkan, jadi pastikan perkataan lama itu sudah ditulis sebelum anda meneruskan.",
   "wallet.backup.replace": "Gantikan",
+  "wallet.backup.replace_unseen_body":
+    "Dompet ini sudah ada frasa pemulihan yang dibuat untuk anda semasa persediaan, dan syiling anda dicipta dengannya. Memulihkan frasa lain akan menggantikannya selama-lamanya. Syiling kekal boleh dibelanjakan pada peranti ini dan berpindah ke frasa baharu apabila setiap mint dimuat semula seterusnya.",
   "wallet.backup.invalid_phrase": "Frasa itu tidak sah",
   "wallet.backup.invalid_phrase_body":
     "Frasa itu mempunyai jumlah semak terbina dan yang ini tidak lulus. Cari perkataan yang tersalah taip, tertinggal atau tertukar.",
@@ -1302,7 +1314,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Bukti terbelanja dibuang",
   "wallet.activity.refreshed": "Bukti disegar semula",
   "wallet.activity.refreshing": "Menyegar semula bukti",
-  "wallet.activity.just_now": "sebentar tadi",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh luar talian",
@@ -1346,6 +1357,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Hantar",
   "wallet.pay.sending": "Menghantar…",
   "wallet.pay.action": "Hantar ecash",
+  "wallet.pay.confirm_title": "Hantar {amount} {unit} kepada {name}?",
+  "wallet.pay.confirm_final":
+    "Ia dikunci kepada kunci mereka. Setelah dihantar, ia tidak boleh ditarik balik.",
+  "wallet.pay.confirm_reclaimable":
+    "Anda boleh menuntutnya semula dari Belum selesai sehingga mereka menuntutnya.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Capaian kamera",
@@ -1512,6 +1528,12 @@ export const strings: Strings = {
     "Mint telah mengeluarkan deposit ini, tetapi syilingnya tidak dapat dibina semula. Memulihkan daripada frasa pemulihan anda akan mengembalikannya.",
   "wallet.svc.swap_unreadable":
     "Pertukaran ini disimpan dalam bentuk yang tidak boleh dimainkan semula oleh versi ini.",
+  "wallet.svc.lock_in_doubt":
+    "Mint tidak menjawab, jadi pembayaran ini mungkin sudah atau belum berjaya.",
+  "wallet.svc.lock_in_doubt_body":
+    "Tiada apa lagi yang dihantar. Syiling ditahan sehingga mint menjawab. Jika berjaya, token berkunci muncul di Belum selesai untuk anda serahkan. Jika tidak, syiling dikembalikan.",
+  "wallet.svc.send_spent_by_swap":
+    "Syiling ini ditukar kembali ke dompet anda sebelum token ini dituntut, jadi ia tidak boleh dituntut lagi. Nilainya ada dalam baki anda.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Disahkan melalui QR",
@@ -2213,6 +2235,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Mesej suara",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokumen",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Mesej baharu",
   "notif.hidden.channel": "Aktiviti baharu",

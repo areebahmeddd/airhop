@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "قبل {count} د",
   "format.hours_ago": "قبل {count} س",
   "format.days_ago": "قبل {count} ي",
+  "format.just_now": "الآن",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "المحادثات",
@@ -335,6 +336,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "الأمر /{cmd}: {hint}",
   "chat.cmd.hug_hint": "أرسل عناقًا دافئًا",
   "chat.cmd.slap_hint": "اصفع بسمكة كبيرة",
+  "chat.cmd.emote_needs_target": "حدّد الشخص، مثل /{command} @الاسم",
   "chat.status.sending": "جارٍ الإرسال…",
   "chat.status.undo_send": "تراجع عن الإرسال",
   "chat.status.undo": "تراجع",
@@ -379,6 +381,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "رسالة…",
   "chat.thread.length_full": "الرسالة ممتلئة",
   "chat.thread.waiting_for": "بانتظار عودة {name} · {percent}٪",
+  "chat.transfer.progress": "{done} من {total}",
+  "chat.transfer.speed": "{size}/ث",
+  "chat.transfer.left": "متبقٍ {time}",
   "chat.thread.peer": "نظير",
   "chat.thread.cancel_transfer": "إلغاء {name}",
   "chat.thread.queued_more": "{count} أخرى بانتظار الإرسال",
@@ -461,6 +466,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "الكاميرا",
   "chat.attach.camera_desc": "التقط صورة أو فيديو",
+  "chat.attach.camera_desc_photo": "التقط صورة",
   "chat.attach.library": "مكتبة الصور",
   "chat.attach.library_desc": "اختر من مكتبتك",
   "chat.attach.document": "مستند",
@@ -478,7 +484,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "شارك موقعه",
   "chat.location.title": "الموقع",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "التُقط قبل {ago}",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "فتح في الخرائط",
   "chat.location.no_forward": "لا تُعاد المواقع توجيهًا",
   "chat.location.no_forward_body":
@@ -541,6 +547,7 @@ export const strings: Strings = {
   "chat.attach.file": "إرفاق ملف",
   "chat.attach.unavailable": "المرفقات غير متاحة هنا",
   "chat.attach.not_sent": "لم يُرسل المرفق",
+  "chat.attach.empty_file": "هذا الملف فارغ، فلا يوجد ما يُرسل.",
   "chat.attach.read_failed":
     "حدث خطأ ما أثناء قراءة ذلك الملف. جرّب ملفًا آخر.",
   "chat.attach.caption": "أضف تعليقًا…",
@@ -723,7 +730,6 @@ export const strings: Strings = {
   "chat.notices.post": "نشر الإعلان",
   "chat.notices.post_short": "نشر",
   "chat.notices.delete": "حذف الإعلان",
-  "chat.notices.just_now": "الآن",
   "chat.notices.fades_soon": "يختفي قريبًا",
   "chat.notices.1_day": "يوم واحد",
   "chat.notices.3_days": "3 أيام",
@@ -774,12 +780,15 @@ export const strings: Strings = {
     "الرسائل والإشارات والإعلانات من قنواتك ومحادثاتك تظهر هنا.",
   "chat.notif.new": "جديد",
   "chat.notif.notice_in": "إعلان في {channel}",
+  "chat.notif.in_room": "في {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "إعادة التوجيه إلى…",
   "chat.forward.to": "إعادة التوجيه إلى {name}",
   "chat.forward.cant_send_here": "تعذّرت إعادة التوجيه هنا",
   "chat.forward.cant_send_to": "تعذّرت إعادة التوجيه إلى {name}",
+  "chat.forward.too_long_for_dm":
+    "أطول من أن تُرسل كرسالة مباشرة. أعد توجيهها إلى قناة أو مجموعة بدلًا من ذلك.",
   "chat.forward.channels": "القنوات",
   "chat.forward.groups": "المجموعات",
   "chat.forward.locations": "المواقع",
@@ -861,7 +870,6 @@ export const strings: Strings = {
   "mesh.radar.peer_hint": "يفتح خيارات لمراسلة هذا النظير أو الدفع له",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "الآن",
   "mesh.peer.none": "لا نظراء بالجوار",
   "mesh.peer.none_desc":
     "أجهزة Airhop أو bitchat الأخرى ضمن نطاق البلوتوث تظهر هنا.",
@@ -878,9 +886,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "المبلغ بالساتس",
   "mesh.peer.amount_first": "إرسال نقد إلكتروني، أدخل المبلغ أولًا",
   "mesh.peer.cancel_send": "إلغاء إرسال النقد الإلكتروني",
-  "mesh.peer.view_peer": "عرض النظير {name}",
   "mesh.peer.view_peer_online": "عرض النظير {name}، متصل",
-  "mesh.peer.last_seen": "آخر ظهور قبل {ago}",
+  "mesh.peer.last_seen_at": "آخر ظهور {ago}",
   "mesh.peer.send_amount": "إرسال {amount} ساتس",
   "mesh.peer.direct": "اتصال مباشر",
   "mesh.peer.check_distance": "قياس المسافة",
@@ -1053,6 +1060,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} أصبحت الآن في {mint}، بعد {fees} {unit} رسوم توجيه Lightning.",
   "wallet.mint.nothing_moved": "لم يُنقل شيء",
+  "wallet.mint.move_pending": "في الطريق",
+  "wallet.mint.deposit_pending":
+    "غادر {amount} {unit} ‏{mint} وهو في طريقه إلى {target}. يصل بمجرد المطالبة بالإيداع، وتواصل المحفظة المحاولة.",
   "wallet.mint.destination": "· الوجهة",
   "wallet.mint.will_move": "· ستُنقل",
   "wallet.mint.issued_by": "صادرة عن",
@@ -1120,6 +1130,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "لديك عبارة استعادة بالفعل. استعادة عبارة مختلفة تستبدلها. العملات التي تغطيها العبارة القديمة تبقى قابلة للإنفاق على هذا الجهاز، لكنها تتوقف عن كونها قابلة للاستعادة، فتأكد من كتابة الكلمات القديمة قبل المتابعة.",
   "wallet.backup.replace": "استبدال",
+  "wallet.backup.replace_unseen_body":
+    "لهذه المحفظة عبارة استرداد أُنشئت لك عند إعدادها، وقد صُنعت عملاتك بها. استعادة عبارة مختلفة تستبدلها نهائيًا. تبقى العملات قابلة للإنفاق على هذا الجهاز وتنتقل إلى العبارة الجديدة عند تحديث كل دار سك في المرة القادمة.",
   "wallet.backup.invalid_phrase": "هذه العبارة غير صالحة",
   "wallet.backup.invalid_phrase_body":
     "للعبارة مجموع تحقق مدمج وهذه لا تجتازه. تحقق من كلمة مكتوبة خطأ أو ناقصة أو مبدّلة.",
@@ -1247,7 +1259,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "أُزيلت الإثباتات المنفقة",
   "wallet.activity.refreshed": "حُدّثت الإثباتات",
   "wallet.activity.refreshing": "جارٍ تحديث الإثباتات",
-  "wallet.activity.just_now": "الآن",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "الشبكة غير متصلة",
@@ -1289,6 +1300,10 @@ export const strings: Strings = {
   "wallet.pay.send": "إرسال",
   "wallet.pay.sending": "جارٍ الإرسال…",
   "wallet.pay.action": "إرسال نقد إلكتروني",
+  "wallet.pay.confirm_title": "إرسال {amount} {unit} إلى {name}؟",
+  "wallet.pay.confirm_final": "إنه مقفل بمفتاحهم. بعد إرساله لا يمكن استرجاعه.",
+  "wallet.pay.confirm_reclaimable":
+    "يمكنك استرجاعه من «قيد الانتظار» إلى أن يستلمه.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "الوصول إلى الكاميرا",
@@ -1442,6 +1457,12 @@ export const strings: Strings = {
     "أصدر المِنت هذا الإيداع، لكن تعذّر إعادة بناء عملاته. الاستعادة من عبارة الاسترداد تعيدها.",
   "wallet.svc.swap_unreadable":
     "حُفظ هذا التبديل بصيغة لا تستطيع هذه النسخة إعادة تشغيلها.",
+  "wallet.svc.lock_in_doubt":
+    "لم تردّ دار السك، لذا قد يكون هذا الدفع قد تم وقد لا يكون.",
+  "wallet.svc.lock_in_doubt_body":
+    "لم يُرسل أي شيء آخر. العملات محجوزة حتى تردّ دار السك. إن تمّ الدفع، يظهر الرمز المقفل في «قيد الانتظار» لتسلّمه. وإن لم يتم، تعود العملات.",
+  "wallet.svc.send_spent_by_swap":
+    "استُبدلت هذه العملات عائدةً إلى محفظتك قبل المطالبة بهذا الرمز، فلم يعد بالإمكان المطالبة به. القيمة موجودة في رصيدك.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "موثّق عبر رمز الاستجابة السريعة",
@@ -2115,6 +2136,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 رسالة صوتية",
   "notif.preview.video": "🎥 فيديو",
   "notif.preview.document": "📄 مستند",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "رسالة جديدة",
   "notif.hidden.channel": "نشاط جديد",

@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} хв тому",
   "format.hours_ago": "{count} год тому",
   "format.days_ago": "{count} дн тому",
+  "format.just_now": "щойно",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Чати",
@@ -102,7 +103,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Потрібен обліковий запис",
   "onboarding.username.prop.account_value": "Немає",
 
-  // ---- Onboarding: the author's note ----
+  // ---- Onboarding: the author’s note ----
   "onboarding.hello.title": "Ласкаво просимо до Airhop!",
   "onboarding.hello.p1":
     "Airhop побудований поверх bitchat як самостійний побічний проєкт з відкритим кодом. Він не пов’язаний із проєктом bitchat і не схвалений ним, а також не є імітацією жодного наявного застосунку чи сервісу, це просто те, що мені подобається створювати й ділитися зі спільнотою.",
@@ -344,6 +345,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Команда /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Надіслати теплі обійми",
   "chat.cmd.slap_hint": "Ляснути великою фореллю",
+  "chat.cmd.emote_needs_target": "Вкажіть кого, наприклад /{command} @імʼя",
   "chat.status.sending": "Надсилаємо…",
   "chat.status.undo_send": "Скасувати надсилання",
   "chat.status.undo": "Скасувати",
@@ -388,6 +390,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Повідомлення…",
   "chat.thread.length_full": "Повідомлення заповнене",
   "chat.thread.waiting_for": "Чекаємо, поки {name} повернеться · {percent}%",
+  "chat.transfer.progress": "{done} з {total}",
+  "chat.transfer.speed": "{size}/с",
+  "chat.transfer.left": "залишилося {time}",
   "chat.thread.peer": "пір",
   "chat.thread.cancel_transfer": "Скасувати {name}",
   "chat.thread.queued_more": "Ще {count} чекають на надсилання",
@@ -479,6 +484,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Камера",
   "chat.attach.camera_desc": "Зняти фото чи відео",
+  "chat.attach.camera_desc_photo": "Зробити фото",
   "chat.attach.library": "Галерея фото",
   "chat.attach.library_desc": "Виберіть із галереї",
   "chat.attach.document": "Документ",
@@ -496,7 +502,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Поділився своїм місцем",
   "chat.location.title": "Місцезнаходження",
   "chat.location.away": "{distance} на {direction}",
-  "chat.location.taken": "Знято {ago} тому",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Відкрити в Картах",
   "chat.location.no_forward": "Місця не пересилаються",
   "chat.location.no_forward_body":
@@ -560,6 +566,7 @@ export const strings: Strings = {
   "chat.attach.file": "Прикріпити файл",
   "chat.attach.unavailable": "Вкладення тут недоступні",
   "chat.attach.not_sent": "Вкладення не надіслано",
+  "chat.attach.empty_file": "Цей файл порожній, тож надсилати нічого.",
   "chat.attach.read_failed":
     "Щось пішло не так під час читання того файлу. Спробуйте інший.",
   "chat.attach.caption": "Додайте підпис…",
@@ -751,7 +758,6 @@ export const strings: Strings = {
   "chat.notices.post": "Розмістити оголошення",
   "chat.notices.post_short": "Розмістити",
   "chat.notices.delete": "Видалити оголошення",
-  "chat.notices.just_now": "щойно",
   "chat.notices.fades_soon": "скоро зникне",
   "chat.notices.1_day": "1 день",
   "chat.notices.3_days": "3 дні",
@@ -804,12 +810,15 @@ export const strings: Strings = {
     "Повідомлення, згадки та оголошення з ваших каналів і чатів з’являються тут.",
   "chat.notif.new": "Нове",
   "chat.notif.notice_in": "оголошення в {channel}",
+  "chat.notif.in_room": "у {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Переслати…",
   "chat.forward.to": "Переслати {name}",
   "chat.forward.cant_send_here": "Сюди переслати не можна",
   "chat.forward.cant_send_to": "Переслати {name} не можна",
+  "chat.forward.too_long_for_dm":
+    "Задовге для особистого повідомлення. Перешліть його в канал або групу.",
   "chat.forward.channels": "Канали",
   "chat.forward.groups": "Групи",
   "chat.forward.locations": "Місцевості",
@@ -902,7 +911,6 @@ export const strings: Strings = {
   "mesh.radar.peer_hint": "Відкриває варіанти написати чи заплатити цьому піру",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "щойно",
   "mesh.peer.none": "Поблизу немає пірів",
   "mesh.peer.none_desc":
     "Інші пристрої з Airhop або bitchat у радіусі Bluetooth з’являються тут.",
@@ -919,9 +927,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Сума в сатах",
   "mesh.peer.amount_first": "Надіслати ecash, спершу введіть суму",
   "mesh.peer.cancel_send": "Скасувати надсилання ecash",
-  "mesh.peer.view_peer": "Переглянути піра {name}",
   "mesh.peer.view_peer_online": "Переглянути піра {name}, онлайн",
-  "mesh.peer.last_seen": "Востаннє бачили {ago} тому",
+  "mesh.peer.last_seen_at": "Востаннє бачили {ago}",
   "mesh.peer.send_amount": "Надіслати {amount} сатів",
   "mesh.peer.direct": "Пряме з’єднання",
   "mesh.peer.check_distance": "Перевірити відстань",
@@ -1097,6 +1104,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} тепер лежать у {mint}, після {fees} {unit} комісій за маршрутизацію Lightning.",
   "wallet.mint.nothing_moved": "Нічого не перенесено",
+  "wallet.mint.move_pending": "У дорозі",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} залишили {mint} і вже в дорозі до {target}. Вони надійдуть, щойно депозит буде отримано, а гаманець продовжує спроби.",
   "wallet.mint.destination": "· призначення",
   "wallet.mint.will_move": "· буде перенесено",
   "wallet.mint.issued_by": "Випущено",
@@ -1164,6 +1174,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "У вас уже є фраза відновлення. Відновлення іншої замінить її. Монети, які стара фраза вже покривала, лишаться придатними до витрат на цьому пристрої, але перестануть відновлюватися, тож переконайтеся, що старі слова записані, перш ніж продовжувати.",
   "wallet.backup.replace": "Замінити",
+  "wallet.backup.replace_unseen_body":
+    "Цей гаманець уже має фразу відновлення, створену для вас під час налаштування, і ваші монети створено з нею. Відновлення іншої фрази замінить її назавжди. Монети залишаться доступними на цьому пристрої й перейдуть під нову фразу під час наступного оновлення кожного мінта.",
   "wallet.backup.invalid_phrase": "Ця фраза недійсна",
   "wallet.backup.invalid_phrase_body":
     "Фраза має вбудовану контрольну суму, і ця її не проходить. Пошукайте слово з друкарською помилкою, пропущене чи переставлене.",
@@ -1296,7 +1308,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Витрачені докази вилучено",
   "wallet.activity.refreshed": "Докази оновлено",
   "wallet.activity.refreshing": "Оновлюємо докази",
-  "wallet.activity.just_now": "щойно",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh офлайн",
@@ -1339,6 +1350,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Надіслати",
   "wallet.pay.sending": "Надсилаємо…",
   "wallet.pay.action": "Надіслати ecash",
+  "wallet.pay.confirm_title": "Надіслати {amount} {unit} для {name}?",
+  "wallet.pay.confirm_final":
+    "Його буде прив’язано до їхнього ключа. Після надсилання його не можна повернути.",
+  "wallet.pay.confirm_reclaimable":
+    "Ви можете повернути його в розділі «Очікують», доки отримувач його не забере.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Доступ до камери",
@@ -1502,6 +1518,12 @@ export const strings: Strings = {
     "Мінт випустив цей депозит, але його монети не вдалося відновити. Відновлення з фрази відновлення поверне їх.",
   "wallet.svc.swap_unreadable":
     "Цей обмін збережено у вигляді, який ця версія не може відтворити.",
+  "wallet.svc.lock_in_doubt":
+    "Мінт не відповів, тож невідомо, чи пройшов цей платіж.",
+  "wallet.svc.lock_in_doubt_body":
+    "Більше нічого не надіслано. Монети утримуються, доки мінт не відповість. Якщо платіж пройшов, заблокований токен з’явиться в розділі «Очікують», щоб ви його передали. Якщо ні, монети повернуться.",
+  "wallet.svc.send_spent_by_swap":
+    "Ці монети обміняно назад у ваш гаманець до того, як токен забрали, тож забрати його вже не можна. Сума на вашому балансі.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Підтверджено через QR",
@@ -2197,6 +2219,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Голосове повідомлення",
   "notif.preview.video": "🎥 Відео",
   "notif.preview.document": "📄 Документ",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Нове повідомлення",
   "notif.hidden.channel": "Нова активність",

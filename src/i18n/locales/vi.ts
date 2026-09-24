@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} phút trước",
   "format.hours_ago": "{count} giờ trước",
   "format.days_ago": "{count} ngày trước",
+  "format.just_now": "vừa xong",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Trò chuyện",
@@ -341,6 +342,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Lệnh /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Gửi một cái ôm ấm áp",
   "chat.cmd.slap_hint": "Tát bằng một con cá hồi to",
+  "chat.cmd.emote_needs_target": "Hãy nói là ai, ví dụ /{command} @tên",
   "chat.status.sending": "Đang gửi…",
   "chat.status.undo_send": "Hoàn tác gửi",
   "chat.status.undo": "Hoàn tác",
@@ -385,6 +387,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Tin nhắn…",
   "chat.thread.length_full": "Tin nhắn đã đầy",
   "chat.thread.waiting_for": "Đang đợi {name} quay lại · {percent}%",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "còn {time}",
   "chat.thread.peer": "nút mạng",
   "chat.thread.cancel_transfer": "Hủy {name}",
   "chat.thread.queued_more": "Còn {count} nữa đang đợi gửi",
@@ -473,6 +478,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Máy ảnh",
   "chat.attach.camera_desc": "Chụp ảnh hoặc quay video",
+  "chat.attach.camera_desc_photo": "Chụp ảnh",
   "chat.attach.library": "Thư viện ảnh",
   "chat.attach.library_desc": "Chọn từ thư viện của bạn",
   "chat.attach.document": "Tài liệu",
@@ -490,7 +496,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Đã chia sẻ vị trí của họ",
   "chat.location.title": "Vị trí",
   "chat.location.away": "{distance} về phía {direction}",
-  "chat.location.taken": "Lấy {ago} trước",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Mở trong Bản đồ",
   "chat.location.no_forward": "Vị trí không được chuyển tiếp",
   "chat.location.no_forward_body":
@@ -554,6 +560,7 @@ export const strings: Strings = {
   "chat.attach.file": "Đính kèm một tệp",
   "chat.attach.unavailable": "Không đính kèm được ở đây",
   "chat.attach.not_sent": "Tệp đính kèm chưa được gửi",
+  "chat.attach.empty_file": "Tệp đó trống nên không có gì để gửi.",
   "chat.attach.read_failed":
     "Có gì đó trục trặc khi đọc tệp đó. Hãy thử tệp khác.",
   "chat.attach.caption": "Thêm chú thích…",
@@ -743,7 +750,6 @@ export const strings: Strings = {
   "chat.notices.post": "Đăng bản tin",
   "chat.notices.post_short": "Đăng",
   "chat.notices.delete": "Xóa bản tin",
-  "chat.notices.just_now": "vừa xong",
   "chat.notices.fades_soon": "sắp mờ đi",
   "chat.notices.1_day": "1 ngày",
   "chat.notices.3_days": "3 ngày",
@@ -796,12 +802,15 @@ export const strings: Strings = {
     "Tin nhắn, lượt nhắc tên và bản tin từ các kênh và cuộc trò chuyện của bạn sẽ hiện ở đây.",
   "chat.notif.new": "Mới",
   "chat.notif.notice_in": "bản tin trong {channel}",
+  "chat.notif.in_room": "trong {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Chuyển tiếp tới…",
   "chat.forward.to": "Chuyển tiếp tới {name}",
   "chat.forward.cant_send_here": "Không chuyển tiếp được ở đây",
   "chat.forward.cant_send_to": "Không chuyển tiếp được tới {name}",
+  "chat.forward.too_long_for_dm":
+    "Quá dài cho tin nhắn trực tiếp. Hãy chuyển tiếp vào một kênh hoặc nhóm.",
   "chat.forward.channels": "Kênh",
   "chat.forward.groups": "Nhóm",
   "chat.forward.locations": "Vị trí",
@@ -895,7 +904,6 @@ export const strings: Strings = {
     "Mở các tùy chọn để nhắn tin hoặc trả tiền cho nút mạng này",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "vừa xong",
   "mesh.peer.none": "Không có nút mạng nào ở gần",
   "mesh.peer.none_desc":
     "Các thiết bị Airhop hoặc bitchat khác trong tầm Bluetooth sẽ hiện ở đây.",
@@ -912,9 +920,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Số tiền tính bằng sat",
   "mesh.peer.amount_first": "Gửi ecash, hãy nhập số tiền trước",
   "mesh.peer.cancel_send": "Hủy gửi ecash",
-  "mesh.peer.view_peer": "Xem nút mạng {name}",
   "mesh.peer.view_peer_online": "Xem nút mạng {name}, đang trực tuyến",
-  "mesh.peer.last_seen": "Thấy lần cuối {ago} trước",
+  "mesh.peer.last_seen_at": "Thấy lần cuối {ago}",
   "mesh.peer.send_amount": "Gửi {amount} sat",
   "mesh.peer.direct": "Kết nối trực tiếp",
   "mesh.peer.check_distance": "Đo khoảng cách",
@@ -1091,6 +1098,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} giờ nằm ở {mint}, sau khi trả {fees} {unit} phí định tuyến Lightning.",
   "wallet.mint.nothing_moved": "Không dời được gì",
+  "wallet.mint.move_pending": "Đang trên đường",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} đã rời {mint} và đang trên đường đến {target}. Số tiền sẽ đến khi khoản nạp được nhận, và ví tiếp tục thử lại.",
   "wallet.mint.destination": "· đích đến",
   "wallet.mint.will_move": "· sẽ được dời",
   "wallet.mint.issued_by": "Phát hành bởi",
@@ -1158,6 +1168,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Bạn đã có một cụm từ khôi phục rồi. Khôi phục một cụm khác sẽ thay thế nó. Những đồng đã được cụm từ cũ bao phủ vẫn tiêu được trên thiết bị này, nhưng không khôi phục lại được nữa, nên hãy chắc rằng các từ cũ đã được ghi lại trước khi tiếp tục.",
   "wallet.backup.replace": "Thay",
+  "wallet.backup.replace_unseen_body":
+    "Ví này đã có cụm từ khôi phục, được tạo cho bạn khi thiết lập, và các đồng xu của bạn được tạo bằng nó. Khôi phục một cụm từ khác sẽ thay thế nó vĩnh viễn. Các đồng xu vẫn tiêu được trên thiết bị này và chuyển sang cụm từ mới vào lần làm mới tiếp theo của từng mint.",
   "wallet.backup.invalid_phrase": "Cụm từ đó không hợp lệ",
   "wallet.backup.invalid_phrase_body":
     "Cụm từ có sẵn một mã kiểm tra và cụm này không qua được. Hãy tìm xem có từ nào gõ sai, thiếu hay bị đổi chỗ không.",
@@ -1290,7 +1302,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Đã gỡ các chứng từ đã tiêu",
   "wallet.activity.refreshed": "Đã làm mới chứng từ",
   "wallet.activity.refreshing": "Đang làm mới chứng từ",
-  "wallet.activity.just_now": "vừa xong",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mạng lưới ngoại tuyến",
@@ -1333,6 +1344,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Gửi",
   "wallet.pay.sending": "Đang gửi…",
   "wallet.pay.action": "Gửi ecash",
+  "wallet.pay.confirm_title": "Gửi {amount} {unit} cho {name}?",
+  "wallet.pay.confirm_final":
+    "Khoản này được khóa vào khóa của họ. Đã gửi thì không thể lấy lại.",
+  "wallet.pay.confirm_reclaimable":
+    "Bạn có thể lấy lại từ mục Đang chờ cho đến khi họ nhận.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Quyền truy cập máy ảnh",
@@ -1496,6 +1512,12 @@ export const strings: Strings = {
     "Mint đã phát hành khoản nạp này, nhưng không thể dựng lại các đồng xu. Khôi phục từ cụm từ khôi phục sẽ lấy lại chúng.",
   "wallet.svc.swap_unreadable":
     "Lần hoán đổi này được lưu ở dạng mà phiên bản hiện tại không phát lại được.",
+  "wallet.svc.lock_in_doubt":
+    "Mint không phản hồi, nên khoản thanh toán này có thể đã hoặc chưa thực hiện.",
+  "wallet.svc.lock_in_doubt_body":
+    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi mint phản hồi. Nếu thành công, token đã khóa sẽ hiện trong Đang chờ để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
+  "wallet.svc.send_spent_by_swap":
+    "Các đồng xu này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Đã xác minh qua QR",
@@ -2184,6 +2206,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Tin nhắn thoại",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Tài liệu",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Tin nhắn mới",
   "notif.hidden.channel": "Hoạt động mới",

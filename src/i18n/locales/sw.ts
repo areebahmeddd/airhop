@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "dakika {count} zilizopita",
   "format.hours_ago": "saa {count} zilizopita",
   "format.days_ago": "siku {count} zilizopita",
+  "format.just_now": "sasa hivi",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Gumzo",
@@ -349,6 +350,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Amri /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Tuma kumbatio la joto",
   "chat.cmd.slap_hint": "Piga kofi kwa samaki mkubwa",
+  "chat.cmd.emote_needs_target": "Taja nani, kama /{command} @jina",
   "chat.status.sending": "Inatuma…",
   "chat.status.undo_send": "Tendua kutuma",
   "chat.status.undo": "Tendua",
@@ -393,6 +395,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Ujumbe…",
   "chat.thread.length_full": "Ujumbe umejaa",
   "chat.thread.waiting_for": "Inasubiri {name} arudi · {percent}%",
+  "chat.transfer.progress": "{done} kati ya {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "zimebaki {time}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Ghairi {name}",
   "chat.thread.queued_more": "{count} zaidi zinasubiri kutumwa",
@@ -480,6 +485,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Piga picha au video",
+  "chat.attach.camera_desc_photo": "Piga picha",
   "chat.attach.library": "Ghala la picha",
   "chat.attach.library_desc": "Chagua kutoka ghala lako",
   "chat.attach.document": "Hati",
@@ -497,7 +503,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Ameshiriki mahali alipo",
   "chat.location.title": "Mahali",
   "chat.location.away": "{distance} kuelekea {direction}",
-  "chat.location.taken": "Palichukuliwa {ago} zilizopita",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Fungua kwenye Maps",
   "chat.location.no_forward": "Mahali hapasambazwi",
   "chat.location.no_forward_body":
@@ -560,6 +566,7 @@ export const strings: Strings = {
   "chat.attach.file": "Ambatisha faili",
   "chat.attach.unavailable": "Viambatisho havipatikani hapa",
   "chat.attach.not_sent": "Kiambatisho hakikutumwa",
+  "chat.attach.empty_file": "Faili hiyo ni tupu, kwa hiyo hakuna cha kutuma.",
   "chat.attach.read_failed":
     "Kuna kilichoenda vibaya kusoma faili hiyo. Jaribu nyingine.",
   "chat.attach.caption": "Ongeza maelezo…",
@@ -750,7 +757,6 @@ export const strings: Strings = {
   "chat.notices.post": "Bandika tangazo",
   "chat.notices.post_short": "Bandika",
   "chat.notices.delete": "Futa tangazo",
-  "chat.notices.just_now": "sasa hivi",
   "chat.notices.fades_soon": "litafifia hivi karibuni",
   "chat.notices.1_day": "Siku 1",
   "chat.notices.3_days": "Siku 3",
@@ -803,12 +809,15 @@ export const strings: Strings = {
     "Jumbe, kutajwa, na matangazo kutoka vituo na gumzo lako huonekana hapa.",
   "chat.notif.new": "Mpya",
   "chat.notif.notice_in": "tangazo kwenye {channel}",
+  "chat.notif.in_room": "katika {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Sambaza kwa…",
   "chat.forward.to": "Sambaza kwa {name}",
   "chat.forward.cant_send_here": "Haiwezi kusambazwa hapa",
   "chat.forward.cant_send_to": "Haiwezi kusambazwa kwa {name}",
+  "chat.forward.too_long_for_dm":
+    "Ni ndefu mno kwa ujumbe wa moja kwa moja. Isambaze kwa chaneli au kikundi badala yake.",
   "chat.forward.channels": "Vituo",
   "chat.forward.groups": "Vikundi",
   "chat.forward.locations": "Mahali",
@@ -904,7 +913,6 @@ export const strings: Strings = {
     "Hufungua chaguo za kumtumia ujumbe au kumlipa peer huyu",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "sasa hivi",
   "mesh.peer.none": "Hakuna peer karibu",
   "mesh.peer.none_desc":
     "Vifaa vingine vyenye Airhop au bitchat vilivyo ndani ya masafa ya Bluetooth huonekana hapa.",
@@ -921,9 +929,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Kiasi katika sat",
   "mesh.peer.amount_first": "Tuma ecash, weka kiasi kwanza",
   "mesh.peer.cancel_send": "Ghairi kutuma ecash",
-  "mesh.peer.view_peer": "Tazama peer {name}",
   "mesh.peer.view_peer_online": "Tazama peer {name}, yuko mtandaoni",
-  "mesh.peer.last_seen": "Alionekana mwisho {ago} zilizopita",
+  "mesh.peer.last_seen_at": "Alionekana mara ya mwisho {ago}",
   "mesh.peer.send_amount": "Tuma sat {amount}",
   "mesh.peer.direct": "Muunganisho wa moja kwa moja",
   "mesh.peer.check_distance": "Kagua umbali",
@@ -1100,6 +1107,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} sasa zipo kwenye {mint}, baada ya {fees} {unit} za ada za uelekezaji za Lightning.",
   "wallet.mint.nothing_moved": "Hakuna kilichohamishwa",
+  "wallet.mint.move_pending": "Iko njiani",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} zimetoka {mint} na ziko njiani kwenda {target}. Zitafika pindi amana itakapochukuliwa, na pochi inaendelea kujaribu.",
   "wallet.mint.destination": "· lengwa",
   "wallet.mint.will_move": "· itahamishwa",
   "wallet.mint.issued_by": "Imetolewa na",
@@ -1168,6 +1178,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Tayari una kifungu cha urejeshaji. Kurejesha kingine hukibadilisha. Sarafu ambazo kifungu cha zamani kilizishikilia zitaendelea kutumika kwenye kifaa hiki, lakini hazitaweza kurejeshwa, kwa hivyo hakikisha maneno ya zamani yameandikwa kabla ya kuendelea.",
   "wallet.backup.replace": "Badilisha",
+  "wallet.backup.replace_unseen_body":
+    "Pochi hii tayari ina kifungu cha urejeshaji, kilichotengenezwa kwa ajili yako wakati wa kuisanidi, na sarafu zako ziliundwa nacho. Kurejesha kifungu kingine kunakibadilisha kabisa. Sarafu zinabaki kutumika kwenye kifaa hiki na huhamia kifungu kipya mara ijayo kila mint inaposasishwa.",
   "wallet.backup.invalid_phrase": "Kifungu hicho si sahihi",
   "wallet.backup.invalid_phrase_body":
     "Kifungu kina alama ya ukaguzi ndani yake na hiki hakiipiti. Tafuta neno lililoandikwa vibaya, lililokosekana, au lililobadilishwa nafasi.",
@@ -1304,7 +1316,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Thibitisho zilizotumika zimeondolewa",
   "wallet.activity.refreshed": "Thibitisho zimesasishwa",
   "wallet.activity.refreshing": "Inasasisha thibitisho",
-  "wallet.activity.just_now": "sasa hivi",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh haipo mtandaoni",
@@ -1348,6 +1359,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Tuma",
   "wallet.pay.sending": "Inatuma…",
   "wallet.pay.action": "Tuma ecash",
+  "wallet.pay.confirm_title": "Tuma {amount} {unit} kwa {name}?",
+  "wallet.pay.confirm_final":
+    "Imefungwa kwa ufunguo wao. Ikishatumwa, haiwezi kurudishwa.",
+  "wallet.pay.confirm_reclaimable":
+    "Unaweza kuirudisha kutoka Inasubiri hadi waichukue.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Ufikiaji wa kamera",
@@ -1517,6 +1533,12 @@ export const strings: Strings = {
     "Mint ilitoa amana hii, lakini sarafu zake hazikuweza kujengwa upya. Kurejesha kutoka kwa kifungu chako cha urejeshaji kunazirudisha.",
   "wallet.svc.swap_unreadable":
     "Ubadilishaji huu ulihifadhiwa kwa namna ambayo toleo hili haliwezi kuicheza tena.",
+  "wallet.svc.lock_in_doubt":
+    "Mint haikujibu, kwa hivyo malipo haya huenda yamepita au hayajapita.",
+  "wallet.svc.lock_in_doubt_body":
+    "Hakuna kingine kilichotumwa. Sarafu zimeshikiliwa hadi mint ijibu. Ikiwa malipo yalipita, tokeni iliyofungwa itaonekana chini ya Inasubiri ili uikabidhi. Kama sivyo, sarafu zinarudi.",
+  "wallet.svc.send_spent_by_swap":
+    "Sarafu hizi zilibadilishwa kurudi kwenye pochi yako kabla tokeni hii haijachukuliwa, kwa hivyo haiwezi kuchukuliwa tena. Thamani iko kwenye salio lako.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Imethibitishwa kupitia QR",
@@ -2224,6 +2246,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Ujumbe wa sauti",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Hati",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Ujumbe mpya",
   "notif.hidden.channel": "Shughuli mpya",

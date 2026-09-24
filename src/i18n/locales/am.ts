@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "ከ{count} ደቂቃ በፊት",
   "format.hours_ago": "ከ{count} ሰዓት በፊት",
   "format.days_ago": "ከ{count} ቀን በፊት",
+  "format.just_now": "አሁን",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "ውይይቶች",
@@ -322,6 +323,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "ትእዛዝ /{cmd}፦ {hint}",
   "chat.cmd.hug_hint": "ሞቅ ያለ እቅፍ ላክ",
   "chat.cmd.slap_hint": "በትልቅ ዓሣ ምታ",
+  "chat.cmd.emote_needs_target": "ማንን እንደሆነ ይግለጹ፣ ለምሳሌ /{command} @ስም",
   "chat.status.sending": "እየተላከ…",
   "chat.status.undo_send": "መላክን መልስ",
   "chat.status.undo": "መልስ",
@@ -363,6 +365,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "መልእክት…",
   "chat.thread.length_full": "መልእክቱ ሞልቷል",
   "chat.thread.waiting_for": "{name} እስኪመለስ በመጠባበቅ ላይ · {percent}%",
+  "chat.transfer.progress": "{done} ከ{total}",
+  "chat.transfer.speed": "{size}/ሰ",
+  "chat.transfer.left": "{time} ቀርቷል",
   "chat.thread.peer": "አቻ",
   "chat.thread.cancel_transfer": "{name} ን ሰርዝ",
   "chat.thread.queued_more": "{count} ተጨማሪ ለመላክ በመጠባበቅ ላይ",
@@ -442,6 +447,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "ካሜራ",
   "chat.attach.camera_desc": "ፎቶ ወይም ቪዲዮ አንሳ",
+  "chat.attach.camera_desc_photo": "ፎቶ ያንሱ",
   "chat.attach.library": "የፎቶ ቤተ-መጻሕፍት",
   "chat.attach.library_desc": "ከቤተ-መጻሕፍትህ ምረጥ",
   "chat.attach.document": "ሰነድ",
@@ -459,7 +465,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "አካባቢያቸውን አጋርተዋል",
   "chat.location.title": "አካባቢ",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "ከ{ago} በፊት የተወሰደ",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "በMaps ውስጥ ክፈት",
   "chat.location.no_forward": "አካባቢዎች አይተላለፉም",
   "chat.location.no_forward_body":
@@ -520,6 +526,7 @@ export const strings: Strings = {
   "chat.attach.file": "ፋይል አያይዝ",
   "chat.attach.unavailable": "እዚህ አባሪዎች አይገኙም",
   "chat.attach.not_sent": "አባሪው አልተላከም",
+  "chat.attach.empty_file": "ያ ፋይል ባዶ ነው፣ ስለዚህ የሚላክ ነገር የለም።",
   "chat.attach.read_failed": "ያን ፋይል በማንበብ ላይ ችግር ተፈጠረ። ሌላ ሞክር።",
   "chat.attach.caption": "መግለጫ ጨምር…",
   "chat.attach.send": "አባሪ ላክ",
@@ -697,7 +704,6 @@ export const strings: Strings = {
   "chat.notices.post": "ማስታወቂያ ለጥፍ",
   "chat.notices.post_short": "ለጥፍ",
   "chat.notices.delete": "ማስታወቂያውን ሰርዝ",
-  "chat.notices.just_now": "አሁን",
   "chat.notices.fades_soon": "በቅርቡ ይጠፋል",
   "chat.notices.1_day": "1 ቀን",
   "chat.notices.3_days": "3 ቀናት",
@@ -748,12 +754,15 @@ export const strings: Strings = {
     "ከሰርጦችህና ከውይይቶችህ የሚመጡ መልእክቶች፣ ጥቅሶችና ማስታወቂያዎች እዚህ ይታያሉ።",
   "chat.notif.new": "አዲስ",
   "chat.notif.notice_in": "በ{channel} ውስጥ ማስታወቂያ",
+  "chat.notif.in_room": "በ{room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "አስተላልፍ ወደ…",
   "chat.forward.to": "ወደ {name} አስተላልፍ",
   "chat.forward.cant_send_here": "እዚህ ማስተላለፍ አይቻልም",
   "chat.forward.cant_send_to": "ወደ {name} ማስተላለፍ አይቻልም",
+  "chat.forward.too_long_for_dm":
+    "ለቀጥታ መልእክት በጣም ረጅም ነው። በምትኩ ወደ ቻናል ወይም ቡድን ያስተላልፉት።",
   "chat.forward.channels": "ሰርጦች",
   "chat.forward.groups": "ቡድኖች",
   "chat.forward.locations": "አካባቢዎች",
@@ -830,7 +839,6 @@ export const strings: Strings = {
   "mesh.radar.peer_hint": "ለዚህ አቻ መልእክት ለመላክ ወይም ለመክፈል አማራጮችን ይከፍታል",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "አሁን",
   "mesh.peer.none": "በአቅራቢያ አቻ የለም",
   "mesh.peer.none_desc":
     "በብሉቱዝ ክልል ውስጥ ያሉ ሌሎች የAirhop ወይም የbitchat መሣሪያዎች እዚህ ይታያሉ።",
@@ -847,9 +855,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "መጠን በsats",
   "mesh.peer.amount_first": "ecash ላክ፤ መጀመሪያ መጠን አስገባ",
   "mesh.peer.cancel_send": "ecash መላክን ሰርዝ",
-  "mesh.peer.view_peer": "አቻ {name} ን ተመልከት",
   "mesh.peer.view_peer_online": "አቻ {name} ን ተመልከት፣ ኦንላይን",
-  "mesh.peer.last_seen": "ከ{ago} በፊት ታይቷል",
+  "mesh.peer.last_seen_at": "ለመጨረሻ ጊዜ የታየው {ago}",
   "mesh.peer.send_amount": "{amount} sats ላክ",
   "mesh.peer.direct": "ቀጥተኛ ግንኙነት",
   "mesh.peer.check_distance": "ርቀት መርምር",
@@ -1018,6 +1025,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} የLightning መተላለፊያ ክፍያ ከተከፈለ በኋላ አሁን {amount} {unit} በ{mint} ውስጥ ነው።",
   "wallet.mint.nothing_moved": "ምንም አልተዛወረም",
+  "wallet.mint.move_pending": "በመንገድ ላይ ነው",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} ከ{mint} ወጥቶ ወደ {target} በመንገድ ላይ ነው። ተቀማጩ ሲወሰድ ይደርሳል፣ ቦርሳው ደግሞ መሞከሩን ይቀጥላል።",
   "wallet.mint.destination": "· መድረሻ",
   "wallet.mint.will_move": "· ይዛወራል",
   "wallet.mint.issued_by": "አውጪ",
@@ -1085,6 +1095,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "አስቀድሞ የማገገሚያ ሐረግ አለህ። የተለየ ሐረግ መመለስ ያንን ይተካዋል። በአሮጌው ሐረግ የተሸፈኑ ሳንቲሞች በዚህ መሣሪያ ላይ ሊወጡ የሚችሉ ሆነው ይቀጥላሉ፤ ግን ሊመለሱ የሚችሉ መሆናቸው ያበቃል፤ ስለዚህ ከመቀጠልህ በፊት አሮጌዎቹ ቃላት መጻፋቸውን አረጋግጥ።",
   "wallet.backup.replace": "ተካ",
+  "wallet.backup.replace_unseen_body":
+    "ይህ ቦርሳ ሲዘጋጅ ለእርስዎ የተሠራ የመመለሻ ሐረግ አለው፣ ሳንቲሞችዎም በእሱ ስር ተፈጥረዋል። ሌላ ሐረግ መመለስ እስከመጨረሻው ይተካዋል። ሳንቲሞቹ በዚህ መሣሪያ ላይ ሊወጡ ይችላሉ፣ እያንዳንዱ ሚንት በሚታደስበት ቀጣይ ጊዜም ወደ አዲሱ ሐረግ ይዛወራሉ።",
   "wallet.backup.invalid_phrase": "ያ ሐረግ ልክ አይደለም",
   "wallet.backup.invalid_phrase_body":
     "ሐረጉ አብሮ የተሠራ የማረጋገጫ ስሌት አለው፤ ይህኛው ግን አላለፈም። በስህተት የተጻፈ፣ የጎደለ ወይም የተለዋወጠ ቃል ፈልግ።",
@@ -1209,7 +1221,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "የወጡ ማረጋገጫዎች ተወግደዋል",
   "wallet.activity.refreshed": "ማረጋገጫዎች ታድሰዋል",
   "wallet.activity.refreshing": "ማረጋገጫዎች እየታደሱ ነው",
-  "wallet.activity.just_now": "አሁን",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ሜሽ ከመስመር ውጭ",
@@ -1249,6 +1260,9 @@ export const strings: Strings = {
   "wallet.pay.send": "ላክ",
   "wallet.pay.sending": "እየተላከ…",
   "wallet.pay.action": "ecash ላክ",
+  "wallet.pay.confirm_title": "{amount} {unit} ለ{name} ይላክ?",
+  "wallet.pay.confirm_final": "በእነሱ ቁልፍ ተቆልፏል። አንዴ ከተላከ መመለስ አይቻልም።",
+  "wallet.pay.confirm_reclaimable": "እስኪወስዱት ድረስ ከበመጠባበቅ ላይ መልሰው መውሰድ ይችላሉ።",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "የካሜራ መዳረሻ",
@@ -1395,6 +1409,11 @@ export const strings: Strings = {
   "wallet.svc.mint_lost":
     "ሚንቱ ይህን ተቀማጭ አውጥቷል፣ ግን ሳንቲሞቹ ሊገነቡ አልቻሉም። ከመልሶ ማግኛ ሐረግዎ መመለስ ያገኛቸዋል።",
   "wallet.svc.swap_unreadable": "ይህ ልውውጥ ይህ ስሪት እንደገና ሊያሄደው በማይችል መልክ ተቀምጧል።",
+  "wallet.svc.lock_in_doubt": "ሚንቱ አልመለሰም፣ ስለዚህ ይህ ክፍያ ሄዶ ሊሆን ወይም ላይሆን ይችላል።",
+  "wallet.svc.lock_in_doubt_body":
+    "ሌላ ምንም አልተላከም። ሚንቱ እስኪመልስ ሳንቲሞቹ ተይዘዋል። ከሄደ፣ የተቆለፈው ቶከን እንዲያስረክቡት በበመጠባበቅ ላይ ይታያል። ካልሄደ ሳንቲሞቹ ይመለሳሉ።",
+  "wallet.svc.send_spent_by_swap":
+    "ይህ ቶከን ከመወሰዱ በፊት እነዚህ ሳንቲሞች ወደ ቦርሳዎ ተመልሰው ተለውጠዋል፣ ስለዚህ ከአሁን በኋላ ሊወሰድ አይችልም። ዋጋው በቀሪ ሂሳብዎ ውስጥ ነው።",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "በQR ተረጋግጧል",
@@ -2046,6 +2065,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 የድምፅ መልእክት",
   "notif.preview.video": "🎥 ቪዲዮ",
   "notif.preview.document": "📄 ሰነድ",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "አዲስ መልእክት",
   "notif.hidden.channel": "አዲስ እንቅስቃሴ",

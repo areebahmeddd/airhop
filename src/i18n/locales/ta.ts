@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} நிமிடம் முன்பு",
   "format.hours_ago": "{count} மணி முன்பு",
   "format.days_ago": "{count} நாள் முன்பு",
+  "format.just_now": "இப்போதுதான்",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "அரட்டைகள்",
@@ -350,6 +351,8 @@ export const strings: Strings = {
   "chat.cmd.a11y": "கட்டளை /{cmd}: {hint}",
   "chat.cmd.hug_hint": "அன்பான அணைப்பை அனுப்பு",
   "chat.cmd.slap_hint": "பெரிய மீனால் அறை",
+  "chat.cmd.emote_needs_target":
+    "யாரை என்று சொல்லுங்கள், உதாரணமாக /{command} @பெயர்",
   "chat.status.sending": "அனுப்புகிறது…",
   "chat.status.undo_send": "அனுப்பியதைத் திரும்பப்பெறு",
   "chat.status.undo": "திரும்பப்பெறு",
@@ -396,6 +399,9 @@ export const strings: Strings = {
   "chat.thread.length_full": "செய்தி நிரம்பிவிட்டது",
   "chat.thread.waiting_for":
     "{name} திரும்புவதற்குக் காத்திருக்கிறது · {percent}%",
+  "chat.transfer.progress": "{total} இல் {done}",
+  "chat.transfer.speed": "{size}/வி",
+  "chat.transfer.left": "{time} மீதம்",
   "chat.thread.peer": "பியர்",
   "chat.thread.cancel_transfer": "{name} ஐ ரத்துசெய்",
   "chat.thread.queued_more": "மேலும் {count} அனுப்பக் காத்திருக்கின்றன",
@@ -485,6 +491,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "கேமரா",
   "chat.attach.camera_desc": "புகைப்படமோ வீடியோவோ எடு",
+  "chat.attach.camera_desc_photo": "புகைப்படம் எடுக்கவும்",
   "chat.attach.library": "புகைப்படத் தொகுப்பு",
   "chat.attach.library_desc": "உங்கள் தொகுப்பிலிருந்து தேர்ந்தெடுங்கள்",
   "chat.attach.document": "ஆவணம்",
@@ -503,7 +510,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "தன் இடத்தைப் பகிர்ந்தார்",
   "chat.location.title": "இடம்",
   "chat.location.away": "{distance} {direction} நோக்கி",
-  "chat.location.taken": "{ago} முன்பு எடுக்கப்பட்டது",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "வரைபடத்தில் திற",
   "chat.location.no_forward": "இடங்கள் அனுப்பப்படுவதில்லை",
   "chat.location.no_forward_body":
@@ -570,6 +577,8 @@ export const strings: Strings = {
   "chat.attach.file": "ஒரு கோப்பை இணை",
   "chat.attach.unavailable": "இங்கே இணைப்புகள் கிடைக்கவில்லை",
   "chat.attach.not_sent": "இணைப்பு அனுப்பப்படவில்லை",
+  "chat.attach.empty_file":
+    "அந்தக் கோப்பு காலியாக உள்ளது, அதனால் அனுப்ப எதுவும் இல்லை.",
   "chat.attach.read_failed":
     "அந்தக் கோப்பைப் படிப்பதில் ஏதோ தவறாகிவிட்டது. வேறொன்றை முயலுங்கள்.",
   "chat.attach.caption": "விளக்கம் சேருங்கள்…",
@@ -764,7 +773,6 @@ export const strings: Strings = {
   "chat.notices.post": "அறிவிப்பை இடு",
   "chat.notices.post_short": "இடு",
   "chat.notices.delete": "அறிவிப்பை நீக்கு",
-  "chat.notices.just_now": "இப்போதுதான்",
   "chat.notices.fades_soon": "விரைவில் மறையும்",
   "chat.notices.1_day": "1 நாள்",
   "chat.notices.3_days": "3 நாட்கள்",
@@ -817,12 +825,15 @@ export const strings: Strings = {
     "உங்கள் சேனல்கள், அரட்டைகளின் செய்திகள், குறிப்பீடுகள், அறிவிப்புகள் இங்கே தோன்றும்.",
   "chat.notif.new": "புதியது",
   "chat.notif.notice_in": "{channel} இல் அறிவிப்பு",
+  "chat.notif.in_room": "{room} இல்",
 
   // ---- Chats: forward ----
   "chat.forward.title": "இதற்கு அனுப்பு…",
   "chat.forward.to": "{name} க்கு அனுப்பு",
   "chat.forward.cant_send_here": "இங்கே அனுப்ப முடியாது",
   "chat.forward.cant_send_to": "{name} க்கு அனுப்ப முடியாது",
+  "chat.forward.too_long_for_dm":
+    "நேரடிச் செய்திக்கு மிக நீளமானது. அதற்குப் பதிலாக ஒரு சேனல் அல்லது குழுவுக்கு அனுப்புங்கள்.",
   "chat.forward.channels": "சேனல்கள்",
   "chat.forward.groups": "குழுக்கள்",
   "chat.forward.locations": "இடங்கள்",
@@ -920,7 +931,6 @@ export const strings: Strings = {
     "இந்தப் பியருக்குச் செய்தி அனுப்பவோ பணம் அனுப்பவோ தேர்வுகளைத் திறக்கிறது",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "இப்போதுதான்",
   "mesh.peer.none": "அருகில் பியர் இல்லை",
   "mesh.peer.none_desc":
     "புளூடூத் வரம்பில் உள்ள Airhop அல்லது bitchat கொண்ட மற்ற சாதனங்கள் இங்கு தோன்றும்.",
@@ -937,9 +947,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "sat இல் தொகை",
   "mesh.peer.amount_first": "ecash அனுப்பு, முதலில் தொகையை உள்ளிடுங்கள்",
   "mesh.peer.cancel_send": "ecash அனுப்புவதை ரத்துசெய்",
-  "mesh.peer.view_peer": "பியர் {name} ஐப் பார்",
   "mesh.peer.view_peer_online": "பியர் {name} ஐப் பார், ஆன்லைன்",
-  "mesh.peer.last_seen": "கடைசியாக {ago} முன்பு காணப்பட்டார்",
+  "mesh.peer.last_seen_at": "கடைசியாகப் பார்த்தது {ago}",
   "mesh.peer.send_amount": "{amount} sat அனுப்பு",
   "mesh.peer.direct": "நேரடி இணைப்பு",
   "mesh.peer.check_distance": "தூரத்தைச் சரிபார்",
@@ -1118,6 +1127,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} Lightning திசைவழிக் கட்டணத்துக்குப் பிறகு {amount} {unit} இப்போது {mint} இல் உள்ளது.",
   "wallet.mint.nothing_moved": "எதுவும் நகர்த்தப்படவில்லை",
+  "wallet.mint.move_pending": "வழியில் உள்ளது",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} {mint}-இலிருந்து வெளியேறி {target}-க்கு வழியில் உள்ளது. வைப்பு பெறப்பட்டதும் வந்துசேரும், வாலட் தொடர்ந்து முயற்சிக்கிறது.",
   "wallet.mint.destination": "· சேருமிடம்",
   "wallet.mint.will_move": "· நகர்த்தப்படும்",
   "wallet.mint.issued_by": "வழங்கியவர்",
@@ -1186,6 +1198,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "உங்களிடம் ஏற்கெனவே ஒரு மீட்புச் சொற்றொடர் உள்ளது. வேறொன்றை மீட்டால் அது மாற்றப்படும். பழைய சொற்றொடர் ஏற்கெனவே உள்ளடக்கிய நாணயங்கள் இந்தச் சாதனத்தில் செலவழிக்கக்கூடியவையாகவே இருக்கும், ஆனால் மீட்க முடியாதவையாகிவிடும், எனவே தொடர்வதற்கு முன் பழைய சொற்கள் எழுதி வைக்கப்பட்டுள்ளதா என உறுதிசெய்யுங்கள்.",
   "wallet.backup.replace": "மாற்று",
+  "wallet.backup.replace_unseen_body":
+    "இந்த வாலட்டை அமைக்கும்போது உங்களுக்காக உருவாக்கப்பட்ட மீட்பு சொற்றொடர் ஏற்கனவே உள்ளது, உங்கள் நாணயங்கள் அதைக் கொண்டே உருவாக்கப்பட்டன. வேறு சொற்றொடரை மீட்டெடுத்தால் அது நிரந்தரமாக மாற்றப்படும். நாணயங்கள் இந்தச் சாதனத்தில் செலவிடக்கூடியவையாகவே இருக்கும், ஒவ்வொரு மின்டும் அடுத்த முறை புதுப்பிக்கப்படும்போது புதிய சொற்றொடருக்கு மாறும்.",
   "wallet.backup.invalid_phrase": "அந்தச் சொற்றொடர் செல்லாதது",
   "wallet.backup.invalid_phrase_body":
     "சொற்றொடருக்குள்ளேயே ஒரு சரிபார்ப்புத் தொகை உள்ளது, இது அதில் தேறவில்லை. தவறாகத் தட்டச்சு செய்யப்பட்ட, விடுபட்ட, அல்லது இடம் மாறிய சொல்லைத் தேடுங்கள்.",
@@ -1321,7 +1335,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "செலவழிக்கப்பட்ட சான்றுகள் அகற்றப்பட்டன",
   "wallet.activity.refreshed": "சான்றுகள் புதுப்பிக்கப்பட்டன",
   "wallet.activity.refreshing": "சான்றுகள் புதுப்பிக்கப்படுகின்றன",
-  "wallet.activity.just_now": "இப்போதுதான்",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "மெஷ் ஆஃப்லைன்",
@@ -1365,6 +1378,11 @@ export const strings: Strings = {
   "wallet.pay.send": "அனுப்பு",
   "wallet.pay.sending": "அனுப்புகிறது…",
   "wallet.pay.action": "ecash அனுப்பு",
+  "wallet.pay.confirm_title": "{name}-க்கு {amount} {unit} அனுப்பவா?",
+  "wallet.pay.confirm_final":
+    "இது அவர்களின் விசையில் பூட்டப்படும். அனுப்பியபின் திரும்பப் பெற முடியாது.",
+  "wallet.pay.confirm_reclaimable":
+    "அவர்கள் பெறும்வரை நிலுவையில் இருந்து திரும்பப் பெறலாம்.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "கேமரா அணுகல்",
@@ -1540,6 +1558,12 @@ export const strings: Strings = {
     "மின்ட் இந்த வைப்பை வெளியிட்டது, ஆனால் அதன் நாணயங்களை மீண்டும் உருவாக்க முடியவில்லை. உங்கள் மீட்பு சொற்றொடரிலிருந்து மீட்டெடுத்தால் அவை திரும்பக் கிடைக்கும்.",
   "wallet.svc.swap_unreadable":
     "இந்தப் பரிமாற்றம், இந்தப் பதிப்பால் மீண்டும் இயக்க முடியாத வடிவத்தில் சேமிக்கப்பட்டுள்ளது.",
+  "wallet.svc.lock_in_doubt":
+    "மின்ட் பதிலளிக்கவில்லை, எனவே இந்தப் பணம் சென்றதா இல்லையா என்பது உறுதியில்லை.",
+  "wallet.svc.lock_in_doubt_body":
+    "வேறு எதுவும் அனுப்பப்படவில்லை. மின்ட் பதிலளிக்கும்வரை நாணயங்கள் நிறுத்திவைக்கப்படும். பணம் சென்றிருந்தால், பூட்டிய டோக்கன் ஒப்படைப்பதற்காக நிலுவையில் தோன்றும். இல்லையெனில் நாணயங்கள் திரும்பும்.",
+  "wallet.svc.send_spent_by_swap":
+    "இந்த டோக்கன் பெறப்படுவதற்கு முன்பே இந்த நாணயங்கள் உங்கள் வாலட்டுக்கு மாற்றப்பட்டுவிட்டன, எனவே அதை இனி பெற முடியாது. தொகை உங்கள் இருப்பில் உள்ளது.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR வழியாகச் சரிபார்க்கப்பட்டது",
@@ -2260,6 +2284,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 குரல் செய்தி",
   "notif.preview.video": "🎥 வீடியோ",
   "notif.preview.document": "📄 ஆவணம்",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "புதிய செய்தி",
   "notif.hidden.channel": "புதிய செயல்பாடு",

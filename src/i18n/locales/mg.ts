@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} min lasa",
   "format.hours_ago": "{count} ora lasa",
   "format.days_ago": "{count} andro lasa",
+  "format.just_now": "vao izao",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Resaka",
@@ -352,6 +353,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Baiko /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Mandefa famihinana mafana",
   "chat.cmd.slap_hint": "Mamely amin'ny trondro lehibe",
+  "chat.cmd.emote_needs_target": "Lazao hoe iza, ohatra /{command} @anarana",
   "chat.status.sending": "Alefa…",
   "chat.status.undo_send": "Foano ny fandefasana",
   "chat.status.undo": "Foano",
@@ -396,6 +398,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Hafatra…",
   "chat.thread.length_full": "Feno ny hafatra",
   "chat.thread.waiting_for": "Miandry ny hiverenan'i {name} · {percent}%",
+  "chat.transfer.progress": "{done} amin'ny {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} sisa",
   "chat.thread.peer": "teboka",
   "chat.thread.cancel_transfer": "Foano ny {name}",
   "chat.thread.queued_more": "{count} hafa miandry halefa",
@@ -485,6 +490,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Fakan-tsary",
   "chat.attach.camera_desc": "Maka sary na horonan-tsary",
+  "chat.attach.camera_desc_photo": "Maka sary",
   "chat.attach.library": "Tahirin-tsary",
   "chat.attach.library_desc": "Fidio avy amin'ny tahirinao",
   "chat.attach.document": "Antontan-taratasy",
@@ -502,7 +508,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Nizara ny toerany",
   "chat.location.title": "Toerana",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Nalaina {ago} lasa izay",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Sokafy ao amin'ny Sarintany",
   "chat.location.no_forward": "Tsy ampitaina ny toerana",
   "chat.location.no_forward_body":
@@ -567,6 +573,7 @@ export const strings: Strings = {
   "chat.attach.file": "Ampiaraho rakitra",
   "chat.attach.unavailable": "Tsy misy fanampiny eto",
   "chat.attach.not_sent": "Tsy voalefa ny fanampiny",
+  "chat.attach.empty_file": "Foana io rakitra io, ka tsy misy halefa.",
   "chat.attach.read_failed":
     "Nisy tsy nety tamin'ny famakiana io rakitra io. Andramo ny hafa.",
   "chat.attach.caption": "Ampio fanazavana…",
@@ -760,7 +767,6 @@ export const strings: Strings = {
   "chat.notices.post": "Apetraho ny filazana",
   "chat.notices.post_short": "Apetraho",
   "chat.notices.delete": "Fafao ny filazana",
-  "chat.notices.just_now": "vao izao",
   "chat.notices.fades_soon": "ho levona tsy ho ela",
   "chat.notices.1_day": "1 andro",
   "chat.notices.3_days": "3 andro",
@@ -814,12 +820,15 @@ export const strings: Strings = {
     "Hiseho eto ny hafatra, ny fitanisana ary ny filazana avy amin'ny fantsonanao sy ny resakao.",
   "chat.notif.new": "Vaovao",
   "chat.notif.notice_in": "filazana ao amin'ny {channel}",
+  "chat.notif.in_room": "ao amin'ny {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Ampitao amin'ny…",
   "chat.forward.to": "Ampitao amin'i {name}",
   "chat.forward.cant_send_here": "Tsy azo ampitaina eto",
   "chat.forward.cant_send_to": "Tsy azo ampitaina amin'i {name}",
+  "chat.forward.too_long_for_dm":
+    "Lava loatra ho an'ny hafatra mivantana. Alefaso any amin'ny fantsona na vondrona kosa.",
   "chat.forward.channels": "Fantsona",
   "chat.forward.groups": "Vondrona",
   "chat.forward.locations": "Toerana",
@@ -921,7 +930,6 @@ export const strings: Strings = {
     "Manokatra ny safidy hanoratana na handoavam-bola amin'ity teboka ity",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "vao izao",
   "mesh.peer.none": "Tsy misy teboka akaiky",
   "mesh.peer.none_desc":
     "Hiseho eto ny fitaovana Airhop na bitchat hafa ao anatin'ny fetran'ny Bluetooth.",
@@ -938,9 +946,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Sanda amin'ny sat",
   "mesh.peer.amount_first": "Mandefa ecash, soraty aloha ny sanda",
   "mesh.peer.cancel_send": "Foano ny fandefasana ecash",
-  "mesh.peer.view_peer": "Jereo ny teboka {name}",
   "mesh.peer.view_peer_online": "Jereo ny teboka {name}, an-tserasera",
-  "mesh.peer.last_seen": "Hita farany {ago} lasa izay",
+  "mesh.peer.last_seen_at": "Hita farany {ago}",
   "mesh.peer.send_amount": "Alefaso {amount} sat",
   "mesh.peer.direct": "Fifandraisana mivantana",
   "mesh.peer.check_distance": "Jereo ny halavirana",
@@ -1121,6 +1128,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} no ao amin'i {mint} izao, taorian'ny {fees} {unit} saran-dalana Lightning.",
   "wallet.mint.nothing_moved": "Tsy nisy nafindra",
+  "wallet.mint.move_pending": "Eny an-dalana",
+  "wallet.mint.deposit_pending":
+    "Nivoaka tamin'ny {mint} ny {amount} {unit} ary eny an-dalana mankany amin'ny {target}. Tonga izy rehefa voaray ny petra-bola, ary manohy manandrana ny kitapom-bola.",
   "wallet.mint.destination": "· toerana aleha",
   "wallet.mint.will_move": "· hafindra",
   "wallet.mint.issued_by": "Navoakan'i",
@@ -1189,6 +1199,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Efa manana andian-teny famerenana ianao. Ny famerenana iray hafa dia manolo azy. Ny vola madinika efa voarakotry ny andian-teny taloha dia mbola azo lanina eto amin'ity fitaovana ity, fa tsy azo averina intsony, ka hamarino fa voasoratra ny teny taloha alohan'ny hanohizanao.",
   "wallet.backup.replace": "Soloy",
+  "wallet.backup.replace_unseen_body":
+    "Efa manana fehezanteny famerenana ity kitapom-bola ity, noforonina ho anao tamin'ny fametrahana azy, ary tamin'izany no namoronana ny volanao. Ny famerenana fehezanteny hafa dia manolo azy mandrakizay. Mbola azo lanina amin'ity fitaovana ity ny vola ary mifindra amin'ny fehezanteny vaovao amin'ny fanavaozana manaraka ny mint tsirairay.",
   "wallet.backup.invalid_phrase": "Tsy mety io andian-teny io",
   "wallet.backup.invalid_phrase_body":
     "Manana marika fanamarinana ao anatiny ny andian-teny ary tsy lany izy io. Tadiavo raha misy teny diso soratra, tsy ampy, na nifamadika.",
@@ -1324,7 +1336,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Nesorina ny porofo lany",
   "wallet.activity.refreshed": "Nohavaozina ny porofo",
   "wallet.activity.refreshing": "Havaozina ny porofo",
-  "wallet.activity.just_now": "vao izao",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Tsy mandeha ny harato",
@@ -1368,6 +1379,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Alefaso",
   "wallet.pay.sending": "Alefa…",
   "wallet.pay.action": "Mandefa ecash",
+  "wallet.pay.confirm_title": "Handefa {amount} {unit} ho an'i {name}?",
+  "wallet.pay.confirm_final":
+    "Voahidy amin'ny fanalahidin'izy ireo izy. Rehefa lasa, tsy azo averina intsony.",
+  "wallet.pay.confirm_reclaimable":
+    "Azonao averina avy amin'ny Miandry izy mandra-pandraisany azy.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Fidirana amin'ny fakan-tsary",
@@ -1541,6 +1557,12 @@ export const strings: Strings = {
     "Navoakan'ny mint ity fampidiram-bola ity, fa tsy azo naorina indray ny vola madinika. Mamerina azy ny famerenana avy amin'ny fehezanteny famerenana.",
   "wallet.svc.swap_unreadable":
     "Voatahiry tamin'ny endrika tsy azon'ity kinova ity averina ity fifanakalozana ity.",
+  "wallet.svc.lock_in_doubt":
+    "Tsy namaly ny mint, ka mety ho lasa na tsy lasa ity fandoavana ity.",
+  "wallet.svc.lock_in_doubt_body":
+    "Tsy nisy zavatra hafa nalefa. Tazonina ny vola mandra-pamaly ny mint. Raha lasa izy, hiseho ao amin'ny Miandry ny token voahidy mba hatolotrao. Raha tsy lasa, miverina ny vola.",
+  "wallet.svc.send_spent_by_swap":
+    "Natakalo niverina tao amin'ny kitapom-bolanao ireo vola ireo talohan'ny nandraisana ity token ity, ka tsy azo raisina intsony izy. Ao amin'ny fitambaran'ny volanao ny sandany.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Voamarina tamin'ny QR",
@@ -2257,6 +2279,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Hafatra feo",
   "notif.preview.video": "🎥 Horonan-tsary",
   "notif.preview.document": "📄 Antontan-taratasy",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Hafatra vaovao",
   "notif.hidden.channel": "Hetsika vaovao",

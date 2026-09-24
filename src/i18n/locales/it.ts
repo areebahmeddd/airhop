@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} min fa",
   "format.hours_ago": "{count} h fa",
   "format.days_ago": "{count} g fa",
+  "format.just_now": "proprio ora",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Chat",
@@ -105,7 +106,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Account necessario",
   "onboarding.username.prop.account_value": "Nessuno",
 
-  // ---- Onboarding: the author's note ----
+  // ---- Onboarding: the author’s note ----
   "onboarding.hello.title": "Benvenuto in Airhop!",
   "onboarding.hello.p1":
     "Airhop è costruito su bitchat come progetto parallelo indipendente e open source. Non è affiliato né approvato dal progetto bitchat, né è un’imitazione di alcuna app o servizio esistente: è semplicemente qualcosa che mi piace costruire e condividere con la comunità.",
@@ -348,6 +349,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Comando /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Manda un abbraccio",
   "chat.cmd.slap_hint": "Dai uno schiaffo con una grossa trota",
+  "chat.cmd.emote_needs_target": "Indica chi, ad esempio /{command} @nome",
   "chat.status.sending": "Invio…",
   "chat.status.undo_send": "Annulla l’invio",
   "chat.status.undo": "Annulla",
@@ -392,6 +394,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Messaggio…",
   "chat.thread.length_full": "Il messaggio è pieno",
   "chat.thread.waiting_for": "In attesa del ritorno di {name} · {percent}%",
+  "chat.transfer.progress": "{done} di {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} rimanenti",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Annulla {name}",
   "chat.thread.queued_more": "Altri {count} in attesa di partire",
@@ -479,6 +484,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Fotocamera",
   "chat.attach.camera_desc": "Scatta una foto o registra un video",
+  "chat.attach.camera_desc_photo": "Scatta una foto",
   "chat.attach.library": "Galleria foto",
   "chat.attach.library_desc": "Scegli dalla tua galleria",
   "chat.attach.document": "Documento",
@@ -496,7 +502,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Ha condiviso la sua posizione",
   "chat.location.title": "Posizione",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Rilevata {ago} fa",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Apri in Maps",
   "chat.location.no_forward": "Le posizioni non si inoltrano",
   "chat.location.no_forward_body":
@@ -563,6 +569,7 @@ export const strings: Strings = {
   "chat.attach.file": "Allega un file",
   "chat.attach.unavailable": "Qui gli allegati non sono disponibili",
   "chat.attach.not_sent": "Allegato non inviato",
+  "chat.attach.empty_file": "Il file è vuoto, quindi non c’è nulla da inviare.",
   "chat.attach.read_failed":
     "Qualcosa è andato storto nella lettura di quel file. Provane un altro.",
   "chat.attach.caption": "Aggiungi una didascalia…",
@@ -755,7 +762,6 @@ export const strings: Strings = {
   "chat.notices.post": "Pubblica l’avviso",
   "chat.notices.post_short": "Pubblica",
   "chat.notices.delete": "Elimina l’avviso",
-  "chat.notices.just_now": "proprio ora",
   "chat.notices.fades_soon": "svanisce presto",
   "chat.notices.1_day": "1 giorno",
   "chat.notices.3_days": "3 giorni",
@@ -808,12 +814,15 @@ export const strings: Strings = {
     "Qui compaiono i messaggi, le menzioni e gli avvisi dei tuoi canali e delle tue chat.",
   "chat.notif.new": "Nuovo",
   "chat.notif.notice_in": "avviso in {channel}",
+  "chat.notif.in_room": "in {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Inoltra a…",
   "chat.forward.to": "Inoltra a {name}",
   "chat.forward.cant_send_here": "Qui non si può inoltrare",
   "chat.forward.cant_send_to": "Non si può inoltrare a {name}",
+  "chat.forward.too_long_for_dm":
+    "Troppo lungo per un messaggio diretto. Inoltralo invece a un canale o a un gruppo.",
   "chat.forward.channels": "Canali",
   "chat.forward.groups": "Gruppi",
   "chat.forward.locations": "Posizioni",
@@ -910,7 +919,6 @@ export const strings: Strings = {
   "mesh.radar.peer_hint": "Apre le opzioni per scrivere o pagare questo peer",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "proprio ora",
   "mesh.peer.none": "Nessun peer nelle vicinanze",
   "mesh.peer.none_desc":
     "Qui compaiono gli altri dispositivi con Airhop o bitchat che si trovano nel raggio del Bluetooth.",
@@ -927,9 +935,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Importo in sats",
   "mesh.peer.amount_first": "Invia ecash, inserisci prima un importo",
   "mesh.peer.cancel_send": "Annulla l’invio di ecash",
-  "mesh.peer.view_peer": "Vedi il peer {name}",
   "mesh.peer.view_peer_online": "Vedi il peer {name}, online",
-  "mesh.peer.last_seen": "Visto {ago} fa",
+  "mesh.peer.last_seen_at": "Visto l’ultima volta {ago}",
   "mesh.peer.send_amount": "Invia {amount} sats",
   "mesh.peer.direct": "Connessione diretta",
   "mesh.peer.check_distance": "Controlla la distanza",
@@ -1107,6 +1114,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} ora si trovano presso {mint}, dopo {fees} {unit} di commissioni di instradamento Lightning.",
   "wallet.mint.nothing_moved": "Non è stato spostato nulla",
+  "wallet.mint.move_pending": "In arrivo",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} hanno lasciato {mint} e sono in arrivo su {target}. Arrivano appena il deposito viene riscosso, e il wallet continua a riprovare.",
   "wallet.mint.destination": "· destinazione",
   "wallet.mint.will_move": "· verrà spostato",
   "wallet.mint.issued_by": "Emesso da",
@@ -1175,6 +1185,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Hai già una frase di recupero. Ripristinarne un’altra la sostituisce. Le monete già coperte dalla vecchia frase restano spendibili su questo dispositivo, ma smettono di essere ripristinabili, quindi assicurati di aver annotato le vecchie parole prima di continuare.",
   "wallet.backup.replace": "Sostituisci",
+  "wallet.backup.replace_unseen_body":
+    "Questo wallet ha già una frase di recupero, creata per te alla configurazione, e le tue monete sono state create con essa. Ripristinare una frase diversa la sostituisce per sempre. Le monete restano spendibili su questo dispositivo e passano sotto la nuova frase al prossimo aggiornamento di ciascuna mint.",
   "wallet.backup.invalid_phrase": "Quella frase non è valida",
   "wallet.backup.invalid_phrase_body":
     "La frase ha un codice di controllo incorporato e questa non lo supera. Cerca una parola scritta male, mancante o scambiata.",
@@ -1307,7 +1319,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Prove spese rimosse",
   "wallet.activity.refreshed": "Prove aggiornate",
   "wallet.activity.refreshing": "Aggiornamento delle prove",
-  "wallet.activity.just_now": "proprio ora",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1351,6 +1362,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Invia",
   "wallet.pay.sending": "Invio…",
   "wallet.pay.action": "Invia ecash",
+  "wallet.pay.confirm_title": "Inviare {amount} {unit} a {name}?",
+  "wallet.pay.confirm_final":
+    "È bloccato sulla sua chiave. Una volta inviato, non si può riprendere.",
+  "wallet.pay.confirm_reclaimable":
+    "Puoi riprenderlo da In sospeso finché non lo riscuotono.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Accesso alla fotocamera",
@@ -1519,6 +1535,12 @@ export const strings: Strings = {
     "Il mint ha emesso questo deposito, ma le sue monete non sono state ricostruite. Il ripristino dalla frase di recupero le recupera.",
   "wallet.svc.swap_unreadable":
     "Questo scambio è stato salvato in un formato che questa versione non può rieseguire.",
+  "wallet.svc.lock_in_doubt":
+    "La mint non ha risposto, quindi questo pagamento potrebbe essere andato a buon fine oppure no.",
+  "wallet.svc.lock_in_doubt_body":
+    "Non è stato inviato altro. Le monete restano trattenute finché la mint non risponde. Se è andato a buon fine, il token bloccato compare in In sospeso da consegnare. Altrimenti le monete tornano.",
+  "wallet.svc.send_spent_by_swap":
+    "Queste monete sono state scambiate di nuovo nel tuo wallet prima che il token venisse riscosso, quindi non si può più riscuotere. L’importo è nel tuo saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verificato tramite QR",
@@ -2230,6 +2252,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Messaggio vocale",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Documento",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Nuovo messaggio",
   "notif.hidden.channel": "Nuova attività",

@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} دقیقه پیش",
   "format.hours_ago": "{count} ساعت پیش",
   "format.days_ago": "{count} روز پیش",
+  "format.just_now": "همین حالا",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "گفتگوها",
@@ -341,6 +342,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "فرمان /{cmd}: {hint}",
   "chat.cmd.hug_hint": "یک آغوش گرم بفرست",
   "chat.cmd.slap_hint": "با یک ماهی قزل‌آلای بزرگ بزن",
+  "chat.cmd.emote_needs_target": "بگویید چه کسی، مثل /{command} @نام",
   "chat.status.sending": "در حال فرستادن…",
   "chat.status.undo_send": "لغو ارسال",
   "chat.status.undo": "لغو",
@@ -385,6 +387,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "پیام…",
   "chat.thread.length_full": "پیام پر است",
   "chat.thread.waiting_for": "در انتظار بازگشت {name} · {percent}٪",
+  "chat.transfer.progress": "{done} از {total}",
+  "chat.transfer.speed": "{size}/ث",
+  "chat.transfer.left": "{time} مانده",
   "chat.thread.peer": "همتا",
   "chat.thread.cancel_transfer": "لغو {name}",
   "chat.thread.queued_more": "{count} مورد دیگر در انتظار ارسال",
@@ -468,6 +473,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "دوربین",
   "chat.attach.camera_desc": "گرفتن عکس یا ویدیو",
+  "chat.attach.camera_desc_photo": "گرفتن عکس",
   "chat.attach.library": "گالری عکس",
   "chat.attach.library_desc": "انتخاب از گالری شما",
   "chat.attach.document": "سند",
@@ -485,7 +491,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "موقعیت خود را هم‌رسانی کرد",
   "chat.location.title": "موقعیت مکانی",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} پیش گرفته شد",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "باز کردن در Maps",
   "chat.location.no_forward": "موقعیت‌ها هدایت نمی‌شوند",
   "chat.location.no_forward_body":
@@ -549,6 +555,7 @@ export const strings: Strings = {
   "chat.attach.file": "پیوست کردن یک فایل",
   "chat.attach.unavailable": "اینجا پیوست در دسترس نیست",
   "chat.attach.not_sent": "پیوست فرستاده نشد",
+  "chat.attach.empty_file": "این فایل خالی است، پس چیزی برای ارسال وجود ندارد.",
   "chat.attach.read_failed":
     "در خواندن آن فایل مشکلی پیش آمد. یکی دیگر را امتحان کنید.",
   "chat.attach.caption": "افزودن یک زیرنویس…",
@@ -735,7 +742,6 @@ export const strings: Strings = {
   "chat.notices.post": "گذاشتن اعلان",
   "chat.notices.post_short": "بگذار",
   "chat.notices.delete": "حذف اعلان",
-  "chat.notices.just_now": "همین حالا",
   "chat.notices.fades_soon": "به‌زودی محو می‌شود",
   "chat.notices.1_day": "1 روز",
   "chat.notices.3_days": "3 روز",
@@ -788,12 +794,15 @@ export const strings: Strings = {
     "پیام‌ها، نام بردن‌ها و اعلان‌های کانال‌ها و گفتگوهای شما اینجا نمایان می‌شوند.",
   "chat.notif.new": "تازه",
   "chat.notif.notice_in": "اعلان در {channel}",
+  "chat.notif.in_room": "در {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "هدایت به…",
   "chat.forward.to": "هدایت به {name}",
   "chat.forward.cant_send_here": "اینجا هدایت ممکن نیست",
   "chat.forward.cant_send_to": "هدایت به {name} ممکن نیست",
+  "chat.forward.too_long_for_dm":
+    "برای پیام مستقیم بیش از حد طولانی است. به‌جای آن به یک کانال یا گروه بازارسال کنید.",
   "chat.forward.channels": "کانال‌ها",
   "chat.forward.groups": "گروه‌ها",
   "chat.forward.locations": "موقعیت‌ها",
@@ -884,7 +893,6 @@ export const strings: Strings = {
     "گزینه‌های پیام دادن یا پرداخت به این همتا را باز می‌کند",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "همین حالا",
   "mesh.peer.none": "همتایی در نزدیکی نیست",
   "mesh.peer.none_desc":
     "دستگاه‌های دیگر Airhop یا bitchat که در محدودهٔ بلوتوث باشند اینجا نمایان می‌شوند.",
@@ -901,9 +909,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "مبلغ به sats",
   "mesh.peer.amount_first": "فرستادن ecash، اول مبلغی وارد کنید",
   "mesh.peer.cancel_send": "لغو فرستادن ecash",
-  "mesh.peer.view_peer": "دیدن همتا {name}",
   "mesh.peer.view_peer_online": "دیدن همتا {name}، برخط",
-  "mesh.peer.last_seen": "{ago} پیش دیده شد",
+  "mesh.peer.last_seen_at": "آخرین بازدید {ago}",
   "mesh.peer.send_amount": "فرستادن {amount} sats",
   "mesh.peer.direct": "اتصال مستقیم",
   "mesh.peer.check_distance": "بررسی فاصله",
@@ -1081,6 +1088,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "پس از {fees} {unit} کارمزد مسیریابی Lightning، اکنون {amount} {unit} در {mint} است.",
   "wallet.mint.nothing_moved": "چیزی جابه‌جا نشد",
+  "wallet.mint.move_pending": "در راه است",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} از {mint} خارج شد و در راه {target} است. به محض دریافت واریز می‌رسد و کیف پول مدام دوباره تلاش می‌کند.",
   "wallet.mint.destination": "· مقصد",
   "wallet.mint.will_move": "· جابه‌جا خواهد شد",
   "wallet.mint.issued_by": "صادرکننده",
@@ -1149,6 +1159,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "شما از پیش یک عبارت بازیابی دارید. بازگرداندن عبارتی دیگر جای آن را می‌گیرد. سکه‌هایی که عبارت قدیمی پوشش می‌داد روی این دستگاه همچنان قابل خرج می‌مانند، اما دیگر قابل بازگرداندن نیستند، پس پیش از ادامه مطمئن شوید واژه‌های قدیمی را نوشته‌اید.",
   "wallet.backup.replace": "جایگزین کن",
+  "wallet.backup.replace_unseen_body":
+    "این کیف پول از قبل یک عبارت بازیابی دارد که هنگام راه‌اندازی برای شما ساخته شد و سکه‌هایتان با آن ایجاد شده‌اند. بازیابی عبارتی دیگر آن را برای همیشه جایگزین می‌کند. سکه‌ها روی این دستگاه قابل خرج می‌مانند و دفعهٔ بعد که هر ضرابخانه تازه‌سازی شود، زیر عبارت جدید می‌روند.",
   "wallet.backup.invalid_phrase": "آن عبارت معتبر نیست",
   "wallet.backup.invalid_phrase_body":
     "عبارت یک کد وارسی درونی دارد و این یکی از آن رد نمی‌شود. دنبال واژه‌ای بگردید که بد تایپ شده، جا افتاده یا جابه‌جا شده باشد.",
@@ -1281,7 +1293,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "اثبات‌های خرج‌شده برداشته شدند",
   "wallet.activity.refreshed": "اثبات‌ها تازه‌سازی شدند",
   "wallet.activity.refreshing": "در حال تازه‌سازی اثبات‌ها",
-  "wallet.activity.just_now": "همین حالا",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "مش برون‌خط",
@@ -1324,6 +1335,11 @@ export const strings: Strings = {
   "wallet.pay.send": "بفرست",
   "wallet.pay.sending": "در حال فرستادن…",
   "wallet.pay.action": "فرستادن ecash",
+  "wallet.pay.confirm_title": "{amount} {unit} برای {name} فرستاده شود؟",
+  "wallet.pay.confirm_final":
+    "به کلید آن‌ها قفل می‌شود. پس از ارسال، پس‌گرفتنی نیست.",
+  "wallet.pay.confirm_reclaimable":
+    "تا وقتی آن را دریافت نکرده‌اند، می‌توانید از «در انتظار» پسش بگیرید.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "دسترسی دوربین",
@@ -1488,6 +1504,12 @@ export const strings: Strings = {
     "مینت این واریز را صادر کرده، اما سکه‌هایش بازسازی نشدند. بازیابی از عبارت بازیابی آن‌ها را برمی‌گرداند.",
   "wallet.svc.swap_unreadable":
     "این تعویض به شکلی ذخیره شده که این نسخه نمی‌تواند دوباره اجرایش کند.",
+  "wallet.svc.lock_in_doubt":
+    "ضرابخانه پاسخ نداد، پس ممکن است این پرداخت انجام شده باشد یا نه.",
+  "wallet.svc.lock_in_doubt_body":
+    "چیز دیگری فرستاده نشد. سکه‌ها تا پاسخ ضرابخانه نگه داشته می‌شوند. اگر انجام شده باشد، توکن قفل‌شده در «در انتظار» ظاهر می‌شود تا آن را تحویل دهید. اگر نه، سکه‌ها برمی‌گردند.",
+  "wallet.svc.send_spent_by_swap":
+    "این سکه‌ها پیش از دریافت این توکن دوباره به کیف پول شما مبادله شدند، پس دیگر قابل دریافت نیست. مبلغ در موجودی شماست.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "با QR تأیید شد",
@@ -2173,6 +2195,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 پیام صوتی",
   "notif.preview.video": "🎥 ویدیو",
   "notif.preview.document": "📄 سند",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "پیام تازه",
   "notif.hidden.channel": "فعالیت تازه",

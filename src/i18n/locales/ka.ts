@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} წთ წინ",
   "format.hours_ago": "{count} სთ წინ",
   "format.days_ago": "{count} დღის წინ",
+  "format.just_now": "ახლახან",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "მიმოწერები",
@@ -346,6 +347,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "ბრძანება /{cmd}: {hint}",
   "chat.cmd.hug_hint": "გაუგზავნე თბილი ჩახუტება",
   "chat.cmd.slap_hint": "გააწანწკარე დიდი კალმახით",
+  "chat.cmd.emote_needs_target": "მიუთითეთ ვის, მაგალითად /{command} @სახელი",
   "chat.status.sending": "იგზავნება…",
   "chat.status.undo_send": "გაგზავნის გაუქმება",
   "chat.status.undo": "გაუქმება",
@@ -391,6 +393,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "შეტყობინება…",
   "chat.thread.length_full": "შეტყობინება სავსეა",
   "chat.thread.waiting_for": "{name}-ის დაბრუნებას ელოდება · {percent}%",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/წმ",
+  "chat.transfer.left": "დარჩა {time}",
   "chat.thread.peer": "კვანძი",
   "chat.thread.cancel_transfer": "{name}-ის გაუქმება",
   "chat.thread.queued_more": "კიდევ {count} ელოდება გაგზავნას",
@@ -477,6 +482,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "კამერა",
   "chat.attach.camera_desc": "გადაიღე ფოტო ან ვიდეო",
+  "chat.attach.camera_desc_photo": "ფოტოს გადაღება",
   "chat.attach.library": "ფოტოების ბიბლიოთეკა",
   "chat.attach.library_desc": "აირჩიე შენი ბიბლიოთეკიდან",
   "chat.attach.document": "დოკუმენტი",
@@ -494,7 +500,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "გააზიარა თავისი მდებარეობა",
   "chat.location.title": "მდებარეობა",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "აღებულია {ago} წინ",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "რუკებში გახსნა",
   "chat.location.no_forward": "მდებარეობები არ გადაიგზავნება",
   "chat.location.no_forward_body":
@@ -558,6 +564,7 @@ export const strings: Strings = {
   "chat.attach.file": "ფაილის მიმაგრება",
   "chat.attach.unavailable": "აქ დანართები მიუწვდომელია",
   "chat.attach.not_sent": "დანართი არ გაიგზავნა",
+  "chat.attach.empty_file": "ეს ფაილი ცარიელია, ამიტომ გასაგზავნი არაფერია.",
   "chat.attach.read_failed":
     "ამ ფაილის წაკითხვისას რაღაც შეცდომა მოხდა. სცადე სხვა.",
   "chat.attach.caption": "დაამატე წარწერა…",
@@ -745,7 +752,6 @@ export const strings: Strings = {
   "chat.notices.post": "განცხადების გამოქვეყნება",
   "chat.notices.post_short": "გამოქვეყნება",
   "chat.notices.delete": "განცხადების წაშლა",
-  "chat.notices.just_now": "ახლახან",
   "chat.notices.fades_soon": "მალე ქრება",
   "chat.notices.1_day": "1 დღე",
   "chat.notices.3_days": "3 დღე",
@@ -798,12 +804,15 @@ export const strings: Strings = {
     "შენი არხებისა და მიმოწერების შეტყობინებები, ხსენებები და განცხადებები აქ გამოჩნდება.",
   "chat.notif.new": "ახალი",
   "chat.notif.notice_in": "განცხადება {channel}-ში",
+  "chat.notif.in_room": "{room}-ში",
 
   // ---- Chats: forward ----
   "chat.forward.title": "გადაგზავნა…",
   "chat.forward.to": "გადაგზავნა {name}-ს",
   "chat.forward.cant_send_here": "აქ გადაგზავნა შეუძლებელია",
   "chat.forward.cant_send_to": "{name}-ს გადაგზავნა შეუძლებელია",
+  "chat.forward.too_long_for_dm":
+    "პირდაპირი შეტყობინებისთვის ძალიან გრძელია. ამის ნაცვლად გადაუგზავნეთ არხს ან ჯგუფს.",
   "chat.forward.channels": "არხები",
   "chat.forward.groups": "ჯგუფები",
   "chat.forward.locations": "მდებარეობები",
@@ -897,7 +906,6 @@ export const strings: Strings = {
     "ხსნის ამ კვანძისთვის მიწერის ან გადახდის პარამეტრებს",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "ახლახან",
   "mesh.peer.none": "ახლოს კვანძები არ არის",
   "mesh.peer.none_desc":
     "ბლუთუზის რადიუსში მყოფი სხვა Airhop-ის ან bitchat-ის მოწყობილობები აქ გამოჩნდება.",
@@ -914,9 +922,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "თანხა sat-ებში",
   "mesh.peer.amount_first": "ecash-ის გაგზავნა, ჯერ შეიყვანე თანხა",
   "mesh.peer.cancel_send": "ecash-ის გაგზავნის გაუქმება",
-  "mesh.peer.view_peer": "კვანძის {name} ნახვა",
   "mesh.peer.view_peer_online": "კვანძის {name} ნახვა, ონლაინ",
-  "mesh.peer.last_seen": "ბოლოს ნანახი {ago} წინ",
+  "mesh.peer.last_seen_at": "ბოლოს ნანახი {ago}",
   "mesh.peer.send_amount": "{amount} sat-ის გაგზავნა",
   "mesh.peer.direct": "პირდაპირი კავშირი",
   "mesh.peer.check_distance": "მანძილის შემოწმება",
@@ -1094,6 +1101,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} ახლა {mint}-შია, {fees} {unit} Lightning-ის მარშრუტიზაციის საკომისიოს შემდეგ.",
   "wallet.mint.nothing_moved": "არაფერი გადატანილა",
+  "wallet.mint.move_pending": "გზაშია",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} გავიდა {mint}-დან და გზაშია {target}-ისკენ. ჩამოვა, როგორც კი შენატანი მიიღება, საფულე კი ცდას განაგრძობს.",
   "wallet.mint.destination": "· დანიშნულება",
   "wallet.mint.will_move": "· გადატანილი იქნება",
   "wallet.mint.issued_by": "გამომცემი",
@@ -1161,6 +1171,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "შენ უკვე გაქვს აღდგენის ფრაზა. სხვის აღდგენა მას ჩაანაცვლებს. ძველი ფრაზით დაფარული მონეტები ამ მოწყობილობაზე დასახარჯი რჩება, მაგრამ აღდგენადი აღარ იქნება, ამიტომ სანამ გააგრძელებ, დარწმუნდი, რომ ძველი სიტყვები ჩაწერილი გაქვს.",
   "wallet.backup.replace": "ჩანაცვლება",
+  "wallet.backup.replace_unseen_body":
+    "ამ საფულეს უკვე აქვს აღდგენის ფრაზა, შექმნილი თქვენთვის დაყენებისას, და თქვენი მონეტები მასით შეიქმნა. სხვა ფრაზის აღდგენა მას სამუდამოდ ჩაანაცვლებს. მონეტები ამ მოწყობილობაზე ხარჯვადი რჩება და ყოველი ზარაფხანის შემდეგი განახლებისას ახალ ფრაზაზე გადავა.",
   "wallet.backup.invalid_phrase": "ეს ფრაზა არასწორია",
   "wallet.backup.invalid_phrase_body":
     "ფრაზას ჩაშენებული საკონტროლო ჯამი აქვს და ეს მას ვერ გადის. მოძებნე არასწორად აკრეფილი, გამოტოვებული ან ადგილნაცვალი სიტყვა.",
@@ -1294,7 +1306,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "დახარჯული დასტურები წაიშალა",
   "wallet.activity.refreshed": "დასტურები განახლდა",
   "wallet.activity.refreshing": "დასტურები ახლდება",
-  "wallet.activity.just_now": "ახლახან",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "მეში ოფლაინია",
@@ -1337,6 +1348,11 @@ export const strings: Strings = {
   "wallet.pay.send": "გაგზავნა",
   "wallet.pay.sending": "იგზავნება…",
   "wallet.pay.action": "ecash-ის გაგზავნა",
+  "wallet.pay.confirm_title": "გაეგზავნოს {amount} {unit} {name}-ს?",
+  "wallet.pay.confirm_final":
+    "ის მათ გასაღებზეა ჩაკეტილი. გაგზავნის შემდეგ უკან ვეღარ დაიბრუნებთ.",
+  "wallet.pay.confirm_reclaimable":
+    "სანამ მიიღებენ, შეგიძლიათ დაიბრუნოთ მოლოდინში განყოფილებიდან.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "კამერასთან წვდომა",
@@ -1505,6 +1521,12 @@ export const strings: Strings = {
     "მინტმა ეს შენატანი გასცა, მაგრამ მისი მონეტების აღდგენა ვერ მოხერხდა. აღდგენის ფრაზიდან აღდგენა დააბრუნებს მათ.",
   "wallet.svc.swap_unreadable":
     "ეს გაცვლა ისეთი სახით შეინახა, რომელსაც ეს ვერსია ვერ იმეორებს.",
+  "wallet.svc.lock_in_doubt":
+    "ზარაფხანამ არ უპასუხა, ამიტომ ეს გადახდა შესაძლოა შესრულდა, შესაძლოა არა.",
+  "wallet.svc.lock_in_doubt_body":
+    "სხვა არაფერი გაგზავნილა. მონეტები დაკავებულია, სანამ ზარაფხანა უპასუხებს. თუ გადახდა შესრულდა, ჩაკეტილი ტოკენი გამოჩნდება მოლოდინში გადასაცემად. თუ არა, მონეტები დაბრუნდება.",
+  "wallet.svc.send_spent_by_swap":
+    "ეს მონეტები თქვენს საფულეში გადაიცვალა, სანამ ტოკენს მიიღებდნენ, ამიტომ მისი მიღება აღარ შეიძლება. თანხა თქვენს ბალანსშია.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "გადამოწმებულია QR-ით",
@@ -2198,6 +2220,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 ხმოვანი შეტყობინება",
   "notif.preview.video": "🎥 ვიდეო",
   "notif.preview.document": "📄 დოკუმენტი",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "ახალი შეტყობინება",
   "notif.hidden.channel": "ახალი აქტივობა",

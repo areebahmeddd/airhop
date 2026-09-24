@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} min ang nakalipas",
   "format.hours_ago": "{count} oras ang nakalipas",
   "format.days_ago": "{count} araw ang nakalipas",
+  "format.just_now": "kanina lang",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Mga Chat",
@@ -354,6 +355,8 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Utos na /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Magpadala ng mainit na yakap",
   "chat.cmd.slap_hint": "Sampalin ng malaking trout",
+  "chat.cmd.emote_needs_target":
+    "Sabihin kung sino, gaya ng /{command} @pangalan",
   "chat.status.sending": "Ipinapadala…",
   "chat.status.undo_send": "I-undo ang pagpapadala",
   "chat.status.undo": "I-undo",
@@ -398,6 +401,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Mensahe…",
   "chat.thread.length_full": "Puno na ang mensahe",
   "chat.thread.waiting_for": "Hinihintay bumalik si {name} · {percent}%",
+  "chat.transfer.progress": "{done} sa {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} na lang",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Kanselahin ang {name}",
   "chat.thread.queued_more": "{count} pa ang naghihintay maipadala",
@@ -490,6 +496,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Kumuha ng larawan o video",
+  "chat.attach.camera_desc_photo": "Kumuha ng litrato",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Pumili mula sa library mo",
   "chat.attach.document": "Dokumento",
@@ -507,7 +514,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Ibinahagi ang lokasyon niya",
   "chat.location.title": "Lokasyon",
   "chat.location.away": "{distance} pa-{direction}",
-  "chat.location.taken": "Kinuha {ago} ang nakalipas",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Buksan sa Maps",
   "chat.location.no_forward": "Hindi ipinapasa ang mga lokasyon",
   "chat.location.no_forward_body":
@@ -574,6 +581,8 @@ export const strings: Strings = {
   "chat.attach.file": "Maglakip ng file",
   "chat.attach.unavailable": "Walang attachment dito",
   "chat.attach.not_sent": "Hindi naipadala ang attachment",
+  "chat.attach.empty_file":
+    "Walang laman ang file na iyon, kaya walang maipapadala.",
   "chat.attach.read_failed":
     "May mali sa pagbasa ng file na iyon. Sumubok ng iba.",
   "chat.attach.caption": "Magdagdag ng caption…",
@@ -769,7 +778,6 @@ export const strings: Strings = {
   "chat.notices.post": "Ipaskil",
   "chat.notices.post_short": "Ipaskil",
   "chat.notices.delete": "Burahin ang paskil",
-  "chat.notices.just_now": "kanina lang",
   "chat.notices.fades_soon": "malapit nang kumupas",
   "chat.notices.1_day": "1 araw",
   "chat.notices.3_days": "3 araw",
@@ -822,12 +830,15 @@ export const strings: Strings = {
     "Lumilitaw dito ang mga mensahe, pagbanggit, at paskil mula sa mga channel at chat mo.",
   "chat.notif.new": "Bago",
   "chat.notif.notice_in": "paskil sa {channel}",
+  "chat.notif.in_room": "sa {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Ipasa kay…",
   "chat.forward.to": "Ipasa kay {name}",
   "chat.forward.cant_send_here": "Hindi maipapasa rito",
   "chat.forward.cant_send_to": "Hindi maipapasa kay {name}",
+  "chat.forward.too_long_for_dm":
+    "Masyadong mahaba para sa direktang mensahe. I-forward ito sa isang channel o grupo sa halip.",
   "chat.forward.channels": "Mga Channel",
   "chat.forward.groups": "Mga Grupo",
   "chat.forward.locations": "Mga Lokasyon",
@@ -931,7 +942,6 @@ export const strings: Strings = {
     "Binubuksan ang mga opsyon para mag-mensahe o magbayad sa peer na ito",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "kanina lang",
   "mesh.peer.none": "Walang peer sa malapit",
   "mesh.peer.none_desc":
     "Lumilitaw dito ang ibang device na may Airhop o bitchat na nasa saklaw ng Bluetooth.",
@@ -948,9 +958,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Halaga sa sat",
   "mesh.peer.amount_first": "Magpadala ng ecash, maglagay muna ng halaga",
   "mesh.peer.cancel_send": "Kanselahin ang pagpapadala ng ecash",
-  "mesh.peer.view_peer": "Tingnan ang peer na {name}",
   "mesh.peer.view_peer_online": "Tingnan ang peer na {name}, online",
-  "mesh.peer.last_seen": "Huling nakita {ago} ang nakalipas",
+  "mesh.peer.last_seen_at": "Huling nakita {ago}",
   "mesh.peer.send_amount": "Magpadala ng {amount} sat",
   "mesh.peer.direct": "Direktang koneksyon",
   "mesh.peer.check_distance": "Suriin ang distansya",
@@ -1129,6 +1138,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "Nasa {mint} na ngayon ang {amount} {unit}, pagkatapos ng {fees} {unit} na bayarin sa pagruruta ng Lightning.",
   "wallet.mint.nothing_moved": "Walang nailipat",
+  "wallet.mint.move_pending": "Papunta na",
+  "wallet.mint.deposit_pending":
+    "Umalis na ang {amount} {unit} sa {mint} at papunta na sa {target}. Darating ito kapag nakuha na ang deposito, at patuloy na sumusubok ang wallet.",
   "wallet.mint.destination": "· patutunguhan",
   "wallet.mint.will_move": "· ililipat",
   "wallet.mint.issued_by": "Inilabas ng",
@@ -1197,6 +1209,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "May parirala ka na sa pagbawi. Kapag nagbalik ka ng iba, mapapalitan ito. Mananatiling nagagastos sa device na ito ang mga baryang sakop na ng lumang parirala, pero titigil silang maibalik, kaya tiyaking nakasulat na ang lumang mga salita bago ka magpatuloy.",
   "wallet.backup.replace": "Palitan",
+  "wallet.backup.replace_unseen_body":
+    "May recovery phrase na ang wallet na ito, ginawa para sa iyo noong i-set up ito, at doon ginawa ang iyong mga coin. Ang pag-restore ng ibang phrase ay tuluyang papalit dito. Magagastos pa rin ang mga coin sa device na ito at lilipat sa bagong phrase sa susunod na i-refresh ang bawat mint.",
   "wallet.backup.invalid_phrase": "Hindi wasto ang pariralang iyon",
   "wallet.backup.invalid_phrase_body":
     "May nakapaloob na checksum ang parirala at hindi ito pumapasa. Maghanap ng maling pagkakatipa, nawawala o napagpalit na salita.",
@@ -1332,7 +1346,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Inalis ang mga nagastos na patunay",
   "wallet.activity.refreshed": "Na-refresh ang mga patunay",
   "wallet.activity.refreshing": "Nire-refresh ang mga patunay",
-  "wallet.activity.just_now": "kanina lang",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Offline ang mesh",
@@ -1376,6 +1389,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Ipadala",
   "wallet.pay.sending": "Ipinapadala…",
   "wallet.pay.action": "Magpadala ng ecash",
+  "wallet.pay.confirm_title": "Ipadala ang {amount} {unit} kay {name}?",
+  "wallet.pay.confirm_final":
+    "Naka-lock ito sa kanilang key. Kapag naipadala, hindi na ito mababawi.",
+  "wallet.pay.confirm_reclaimable":
+    "Mababawi mo ito mula sa Nakabinbin hangga't hindi pa nila ito kinukuha.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Pag-access sa camera",
@@ -1548,6 +1566,12 @@ export const strings: Strings = {
     "Inisyu ng mint ang deposit na ito, pero hindi na-rebuild ang mga coin nito. Maibabalik ang mga ito sa pag-restore mula sa recovery phrase mo.",
   "wallet.svc.swap_unreadable":
     "Na-save ang palitang ito sa anyong hindi kayang ulitin ng bersyong ito.",
+  "wallet.svc.lock_in_doubt":
+    "Hindi sumagot ang mint, kaya maaaring natuloy o hindi ang bayad na ito.",
+  "wallet.svc.lock_in_doubt_body":
+    "Walang ibang naipadala. Nakahawak ang mga coin hanggang sumagot ang mint. Kung natuloy, lalabas ang naka-lock na token sa Nakabinbin para iabot mo. Kung hindi, babalik ang mga coin.",
+  "wallet.svc.send_spent_by_swap":
+    "Na-swap pabalik sa iyong wallet ang mga coin na ito bago na-claim ang token na ito, kaya hindi na ito ma-claim. Nasa balanse mo ang halaga.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Na-verify sa pamamagitan ng QR",
@@ -2254,6 +2278,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Mensaheng boses",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokumento",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Bagong mensahe",
   "notif.hidden.channel": "Bagong aktibidad",

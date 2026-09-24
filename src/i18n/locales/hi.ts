@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} मि पहले",
   "format.hours_ago": "{count} घं पहले",
   "format.days_ago": "{count} दि पहले",
+  "format.just_now": "अभी-अभी",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "चैट",
@@ -343,6 +344,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "कमांड /{cmd}: {hint}",
   "chat.cmd.hug_hint": "एक गर्मजोशी भरा आलिंगन भेजें",
   "chat.cmd.slap_hint": "एक बड़ी मछली से थप्पड़ मारें",
+  "chat.cmd.emote_needs_target": "बताएँ किसे, जैसे /{command} @नाम",
   "chat.status.sending": "भेजा जा रहा है…",
   "chat.status.undo_send": "भेजना वापस लें",
   "chat.status.undo": "वापस लें",
@@ -387,6 +389,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "संदेश…",
   "chat.thread.length_full": "संदेश भर गया",
   "chat.thread.waiting_for": "{name} के लौटने का इंतज़ार · {percent}%",
+  "chat.transfer.progress": "{total} में से {done}",
+  "chat.transfer.speed": "{size}/से",
+  "chat.transfer.left": "{time} बाकी",
   "chat.thread.peer": "पीअर",
   "chat.thread.cancel_transfer": "{name} रद्द करें",
   "chat.thread.queued_more": "{count} और भेजे जाने के इंतज़ार में",
@@ -471,6 +476,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "कैमरा",
   "chat.attach.camera_desc": "फ़ोटो या वीडियो लें",
+  "chat.attach.camera_desc_photo": "फ़ोटो लें",
   "chat.attach.library": "फ़ोटो लाइब्रेरी",
   "chat.attach.library_desc": "अपनी लाइब्रेरी से चुनें",
   "chat.attach.document": "दस्तावेज़",
@@ -488,7 +494,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "अपना स्थान साझा किया",
   "chat.location.title": "स्थान",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} पहले लिया",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Maps में खोलें",
   "chat.location.no_forward": "स्थान आगे नहीं भेजे जाते",
   "chat.location.no_forward_body":
@@ -553,6 +559,7 @@ export const strings: Strings = {
   "chat.attach.file": "फ़ाइल जोड़ें",
   "chat.attach.unavailable": "यहाँ अटैचमेंट उपलब्ध नहीं",
   "chat.attach.not_sent": "अटैचमेंट नहीं भेजा गया",
+  "chat.attach.empty_file": "वह फ़ाइल खाली है, इसलिए भेजने के लिए कुछ नहीं है।",
   "chat.attach.read_failed":
     "उस फ़ाइल को पढ़ने में कुछ गड़बड़ हुई। कोई दूसरी आज़माएँ।",
   "chat.attach.caption": "कैप्शन जोड़ें…",
@@ -740,7 +747,6 @@ export const strings: Strings = {
   "chat.notices.post": "सूचना डालें",
   "chat.notices.post_short": "डालें",
   "chat.notices.delete": "सूचना मिटाएँ",
-  "chat.notices.just_now": "अभी-अभी",
   "chat.notices.fades_soon": "जल्द मिटेगी",
   "chat.notices.1_day": "1 दिन",
   "chat.notices.3_days": "3 दिन",
@@ -792,12 +798,15 @@ export const strings: Strings = {
     "आपके चैनलों और चैट के संदेश, ज़िक्र और सूचनाएँ यहाँ दिखती हैं।",
   "chat.notif.new": "नई",
   "chat.notif.notice_in": "{channel} में सूचना",
+  "chat.notif.in_room": "{room} में",
 
   // ---- Chats: forward ----
   "chat.forward.title": "आगे भेजें…",
   "chat.forward.to": "{name} को आगे भेजें",
   "chat.forward.cant_send_here": "यहाँ आगे नहीं भेज सकते",
   "chat.forward.cant_send_to": "{name} को आगे नहीं भेज सकते",
+  "chat.forward.too_long_for_dm":
+    "सीधे संदेश के लिए बहुत लंबा है। इसके बजाय इसे किसी चैनल या समूह में फ़ॉरवर्ड करें।",
   "chat.forward.channels": "चैनल",
   "chat.forward.groups": "समूह",
   "chat.forward.locations": "स्थान",
@@ -885,7 +894,6 @@ export const strings: Strings = {
     "इस पीअर को संदेश भेजने या भुगतान करने के विकल्प खोलता है",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "अभी-अभी",
   "mesh.peer.none": "आस-पास कोई पीअर नहीं",
   "mesh.peer.none_desc":
     "ब्लूटूथ की पहुँच में मौजूद दूसरे Airhop या bitchat डिवाइस यहाँ दिखते हैं।",
@@ -902,9 +910,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "sats में राशि",
   "mesh.peer.amount_first": "ecash भेजें, पहले राशि डालें",
   "mesh.peer.cancel_send": "ecash भेजना रद्द करें",
-  "mesh.peer.view_peer": "पीअर {name} देखें",
   "mesh.peer.view_peer_online": "पीअर {name} देखें, ऑनलाइन",
-  "mesh.peer.last_seen": "{ago} पहले दिखे",
+  "mesh.peer.last_seen_at": "आख़िरी बार दिखे {ago}",
   "mesh.peer.send_amount": "{amount} sats भेजें",
   "mesh.peer.direct": "सीधा कनेक्शन",
   "mesh.peer.check_distance": "दूरी जाँचें",
@@ -1079,6 +1086,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} Lightning राउटिंग शुल्क के बाद, {amount} {unit} अब {mint} पर है।",
   "wallet.mint.nothing_moved": "कुछ नहीं ले जाया गया",
+  "wallet.mint.move_pending": "रास्ते में है",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} {mint} से निकल चुके हैं और {target} के रास्ते में हैं। जमा क्लेम होते ही पहुँच जाएँगे, और वॉलेट कोशिश करता रहता है।",
   "wallet.mint.destination": "· गंतव्य",
   "wallet.mint.will_move": "· ले जाया जाएगा",
   "wallet.mint.issued_by": "जारीकर्ता",
@@ -1146,6 +1156,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "आपके पास पहले से एक रिकवरी वाक्यांश है। कोई दूसरा बहाल करने पर वह उसकी जगह ले लेगा। पुराने वाक्यांश से ढके सिक्के इस डिवाइस पर खर्च करने योग्य बने रहते हैं, पर वे बहाल किए जाने योग्य नहीं रहते, इसलिए आगे बढ़ने से पहले पक्का करें कि पुराने शब्द लिखे हुए हैं।",
   "wallet.backup.replace": "बदलें",
+  "wallet.backup.replace_unseen_body":
+    "इस वॉलेट में पहले से एक रिकवरी फ़्रेज़ है, जो सेटअप के समय आपके लिए बनाया गया था, और आपके कॉइन उसी से बने हैं। दूसरा फ़्रेज़ रिस्टोर करने से वह हमेशा के लिए बदल जाएगा। कॉइन इस डिवाइस पर खर्च किए जा सकते रहेंगे और हर मिंट के अगली बार रिफ़्रेश होने पर नए फ़्रेज़ के तहत आ जाएँगे।",
   "wallet.backup.invalid_phrase": "वह वाक्यांश मान्य नहीं है",
   "wallet.backup.invalid_phrase_body":
     "वाक्यांश में एक अंतर्निहित चेकसम होता है और यह उस पर खरा नहीं उतरता। कोई ग़लत टाइप हुआ, छूटा या अदल-बदल हुआ शब्द देखें।",
@@ -1274,7 +1286,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "खर्च हुए प्रूफ़ हटाए गए",
   "wallet.activity.refreshed": "प्रूफ़ रीफ़्रेश हुए",
   "wallet.activity.refreshing": "प्रूफ़ रीफ़्रेश हो रहे हैं",
-  "wallet.activity.just_now": "अभी-अभी",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "मेश ऑफ़लाइन",
@@ -1317,6 +1328,11 @@ export const strings: Strings = {
   "wallet.pay.send": "भेजें",
   "wallet.pay.sending": "भेजा जा रहा है…",
   "wallet.pay.action": "ecash भेजें",
+  "wallet.pay.confirm_title": "{name} को {amount} {unit} भेजें?",
+  "wallet.pay.confirm_final":
+    "यह उनकी कुंजी से लॉक है। एक बार भेजने के बाद वापस नहीं लिया जा सकता।",
+  "wallet.pay.confirm_reclaimable":
+    "जब तक वे इसे क्लेम नहीं करते, आप इसे लंबित से वापस ले सकते हैं।",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "कैमरा पहुँच",
@@ -1481,6 +1497,12 @@ export const strings: Strings = {
     "मिंट ने यह जमा जारी कर दी, लेकिन इसके सिक्के फिर से नहीं बन सके। अपने रिकवरी वाक्यांश से पुनर्स्थापित करने पर वे वापस मिल जाते हैं।",
   "wallet.svc.swap_unreadable":
     "यह अदला-बदली ऐसे रूप में सहेजी गई थी जिसे यह संस्करण दोबारा नहीं चला सकता।",
+  "wallet.svc.lock_in_doubt":
+    "मिंट ने जवाब नहीं दिया, इसलिए यह भुगतान हुआ या नहीं, पक्का नहीं है।",
+  "wallet.svc.lock_in_doubt_body":
+    "और कुछ नहीं भेजा गया। मिंट के जवाब तक कॉइन रोके गए हैं। अगर भुगतान हुआ, तो लॉक टोकन सौंपने के लिए लंबित में दिखेगा। नहीं हुआ, तो कॉइन वापस आ जाएँगे।",
+  "wallet.svc.send_spent_by_swap":
+    "यह टोकन क्लेम होने से पहले ही ये कॉइन स्वैप होकर आपके वॉलेट में लौट आए, इसलिए अब इसे क्लेम नहीं किया जा सकता। राशि आपके बैलेंस में है।",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR से सत्यापित",
@@ -2162,6 +2184,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 वॉइस संदेश",
   "notif.preview.video": "🎥 वीडियो",
   "notif.preview.document": "📄 दस्तावेज़",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "नया संदेश",
   "notif.hidden.channel": "नई गतिविधि",

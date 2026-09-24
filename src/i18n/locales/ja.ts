@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count}分前",
   "format.hours_ago": "{count}時間前",
   "format.days_ago": "{count}日前",
+  "format.just_now": "たった今",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "チャット",
@@ -344,6 +345,8 @@ export const strings: Strings = {
   "chat.cmd.a11y": "コマンド /{cmd}: {hint}",
   "chat.cmd.hug_hint": "温かいハグを送る",
   "chat.cmd.slap_hint": "大きなマスで叩く",
+  "chat.cmd.emote_needs_target":
+    "相手を指定してください（例: /{command} @名前）",
   "chat.status.sending": "送信中…",
   "chat.status.undo_send": "送信を取り消す",
   "chat.status.undo": "取り消す",
@@ -388,6 +391,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "メッセージ…",
   "chat.thread.length_full": "メッセージが上限です",
   "chat.thread.waiting_for": "{name}の復帰を待っています · {percent}%",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/秒",
+  "chat.transfer.left": "残り {time}",
   "chat.thread.peer": "ピア",
   "chat.thread.cancel_transfer": "{name}をキャンセル",
   "chat.thread.queued_more": "他に{count}件が送信待ちです",
@@ -473,6 +479,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "カメラ",
   "chat.attach.camera_desc": "写真または動画を撮る",
+  "chat.attach.camera_desc_photo": "写真を撮る",
   "chat.attach.library": "フォトライブラリ",
   "chat.attach.library_desc": "ライブラリから選ぶ",
   "chat.attach.document": "書類",
@@ -490,7 +497,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "位置情報を共有しました",
   "chat.location.title": "位置情報",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago}前に取得",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "マップで開く",
   "chat.location.no_forward": "位置情報は転送されません",
   "chat.location.no_forward_body":
@@ -554,6 +561,7 @@ export const strings: Strings = {
   "chat.attach.file": "ファイルを添付",
   "chat.attach.unavailable": "ここでは添付を使えません",
   "chat.attach.not_sent": "添付を送信できませんでした",
+  "chat.attach.empty_file": "このファイルは空なので、送るものがありません。",
   "chat.attach.read_failed":
     "そのファイルの読み込みで問題が起きました。別のファイルをお試しください。",
   "chat.attach.caption": "キャプションを追加…",
@@ -740,7 +748,6 @@ export const strings: Strings = {
   "chat.notices.post": "お知らせを掲示",
   "chat.notices.post_short": "掲示",
   "chat.notices.delete": "お知らせを削除",
-  "chat.notices.just_now": "たった今",
   "chat.notices.fades_soon": "まもなく消えます",
   "chat.notices.1_day": "1日",
   "chat.notices.3_days": "3日",
@@ -793,12 +800,15 @@ export const strings: Strings = {
     "チャンネルやチャットからのメッセージ、メンション、お知らせがここに表示されます。",
   "chat.notif.new": "新着",
   "chat.notif.notice_in": "{channel}のお知らせ",
+  "chat.notif.in_room": "{room} にて",
 
   // ---- Chats: forward ----
   "chat.forward.title": "転送先…",
   "chat.forward.to": "{name}に転送",
   "chat.forward.cant_send_here": "ここには転送できません",
   "chat.forward.cant_send_to": "{name}には転送できません",
+  "chat.forward.too_long_for_dm":
+    "ダイレクトメッセージには長すぎます。チャンネルかグループに転送してください。",
   "chat.forward.channels": "チャンネル",
   "chat.forward.groups": "グループ",
   "chat.forward.locations": "場所",
@@ -895,7 +905,6 @@ export const strings: Strings = {
     "このピアにメッセージを送るか支払うための操作を開きます",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "たった今",
   "mesh.peer.none": "近くにピアがいません",
   "mesh.peer.none_desc":
     "Bluetooth圏内にある他のAirhopまたはbitchatの端末がここに表示されます。",
@@ -912,9 +921,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "サトシで金額",
   "mesh.peer.amount_first": "ecashを送るには、先に金額を入力してください",
   "mesh.peer.cancel_send": "ecashの送信をキャンセル",
-  "mesh.peer.view_peer": "ピア{name}を表示",
   "mesh.peer.view_peer_online": "ピア{name}を表示、オンライン",
-  "mesh.peer.last_seen": "{ago}前に確認",
+  "mesh.peer.last_seen_at": "最終確認: {ago}",
   "mesh.peer.send_amount": "{amount}サトシを送る",
   "mesh.peer.direct": "直接接続",
   "mesh.peer.check_distance": "距離を測る",
@@ -1088,6 +1096,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit}のLightning経路手数料のあと、{amount} {unit}が{mint}に入りました。",
   "wallet.mint.nothing_moved": "何も移動しませんでした",
+  "wallet.mint.move_pending": "移動中",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} は {mint} から出て {target} へ移動中です。入金が受け取られると届きます。ウォレットは自動で再試行を続けます。",
   "wallet.mint.destination": "· 移動先",
   "wallet.mint.will_move": "· 移動されます",
   "wallet.mint.issued_by": "発行元",
@@ -1155,6 +1166,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "すでに復元フレーズがあります。別のフレーズを復元すると置き換わります。古いフレーズが対象としていたコインはこの端末では引き続き使えますが、復元はできなくなるので、続ける前に古い単語を書き留めてあることを確かめてください。",
   "wallet.backup.replace": "置き換える",
+  "wallet.backup.replace_unseen_body":
+    "このウォレットには設定時に作成された復元フレーズがすでにあり、コインはそのフレーズで作られています。別のフレーズを復元すると、完全に置き換わります。コインはこの端末で引き続き使え、各ミントを次に更新したときに新しいフレーズへ移ります。",
   "wallet.backup.invalid_phrase": "このフレーズは無効です",
   "wallet.backup.invalid_phrase_body":
     "フレーズにはチェックサムが組み込まれていて、これはそれを通りません。打ち間違い、抜け、入れ替わりがないか確認してください。",
@@ -1286,7 +1299,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "使用済みプルーフを削除",
   "wallet.activity.refreshed": "プルーフを更新しました",
   "wallet.activity.refreshing": "プルーフを更新中",
-  "wallet.activity.just_now": "たった今",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "メッシュがオフラインです",
@@ -1329,6 +1341,11 @@ export const strings: Strings = {
   "wallet.pay.send": "送信",
   "wallet.pay.sending": "送信中…",
   "wallet.pay.action": "ecashを送る",
+  "wallet.pay.confirm_title": "{name} に {amount} {unit} を送りますか?",
+  "wallet.pay.confirm_final":
+    "相手の鍵にロックされます。送信後は取り消せません。",
+  "wallet.pay.confirm_reclaimable":
+    "相手が受け取るまでは、保留中から取り戻せます。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "カメラへのアクセス",
@@ -1493,6 +1510,12 @@ export const strings: Strings = {
     "ミントはこの入金を発行しましたが、コインを再構築できませんでした。リカバリーフレーズから復元すると取り戻せます。",
   "wallet.svc.swap_unreadable":
     "この交換は、このバージョンでは再実行できない形式で保存されています。",
+  "wallet.svc.lock_in_doubt":
+    "ミントから応答がないため、この支払いが完了したかどうかは不明です。",
+  "wallet.svc.lock_in_doubt_body":
+    "ほかには何も送られていません。ミントが応答するまでコインは保留されます。完了していれば、ロックされたトークンが保留中に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
+  "wallet.svc.send_spent_by_swap":
+    "このトークンが受け取られる前に、コインはスワップされてウォレットに戻りました。そのため受け取りはできなくなっています。金額は残高に入っています。",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QRコードで検証済み",
@@ -2174,6 +2197,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 音声メッセージ",
   "notif.preview.video": "🎥 動画",
   "notif.preview.document": "📄 書類",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "新しいメッセージ",
   "notif.hidden.channel": "新しい動き",

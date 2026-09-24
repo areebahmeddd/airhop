@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} min geleden",
   "format.hours_ago": "{count} u geleden",
   "format.days_ago": "{count} d geleden",
+  "format.just_now": "zojuist",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Chats",
@@ -347,6 +348,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Opdracht /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Stuur een warme knuffel",
   "chat.cmd.slap_hint": "Geef een klap met een grote forel",
+  "chat.cmd.emote_needs_target": "Zeg wie, bijvoorbeeld /{command} @naam",
   "chat.status.sending": "Bezig met sturen…",
   "chat.status.undo_send": "Verzenden ongedaan maken",
   "chat.status.undo": "Ongedaan maken",
@@ -391,6 +393,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Bericht…",
   "chat.thread.length_full": "Het bericht is vol",
   "chat.thread.waiting_for": "Wachten tot {name} terug is · {percent}%",
+  "chat.transfer.progress": "{done} van {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "nog {time}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "{name} annuleren",
   "chat.thread.queued_more": "Nog {count} wachten om verstuurd te worden",
@@ -479,6 +484,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Maak een foto of video",
+  "chat.attach.camera_desc_photo": "Foto maken",
   "chat.attach.library": "Fotogalerij",
   "chat.attach.library_desc": "Kies uit je galerij",
   "chat.attach.document": "Document",
@@ -496,7 +502,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Heeft de locatie gedeeld",
   "chat.location.title": "Locatie",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} geleden bepaald",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Openen in Maps",
   "chat.location.no_forward": "Locaties worden niet doorgestuurd",
   "chat.location.no_forward_body":
@@ -561,6 +567,8 @@ export const strings: Strings = {
   "chat.attach.file": "Een bestand bijvoegen",
   "chat.attach.unavailable": "Bijlagen zijn hier niet mogelijk",
   "chat.attach.not_sent": "Bijlage niet verstuurd",
+  "chat.attach.empty_file":
+    "Dat bestand is leeg, er is dus niets om te versturen.",
   "chat.attach.read_failed":
     "Er ging iets mis bij het lezen van dat bestand. Probeer een ander.",
   "chat.attach.caption": "Voeg een bijschrift toe…",
@@ -752,7 +760,6 @@ export const strings: Strings = {
   "chat.notices.post": "Melding plaatsen",
   "chat.notices.post_short": "Plaatsen",
   "chat.notices.delete": "Melding verwijderen",
-  "chat.notices.just_now": "zojuist",
   "chat.notices.fades_soon": "vervaagt binnenkort",
   "chat.notices.1_day": "1 dag",
   "chat.notices.3_days": "3 dagen",
@@ -805,12 +812,15 @@ export const strings: Strings = {
     "Berichten, vermeldingen en meldingen uit je kanalen en chats komen hier te staan.",
   "chat.notif.new": "Nieuw",
   "chat.notif.notice_in": "melding in {channel}",
+  "chat.notif.in_room": "in {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Doorsturen naar…",
   "chat.forward.to": "Doorsturen naar {name}",
   "chat.forward.cant_send_here": "Hier kan niet worden doorgestuurd",
   "chat.forward.cant_send_to": "Kan niet worden doorgestuurd naar {name}",
+  "chat.forward.too_long_for_dm":
+    "Te lang voor een direct bericht. Stuur het in plaats daarvan door naar een kanaal of groep.",
   "chat.forward.channels": "Kanalen",
   "chat.forward.groups": "Groepen",
   "chat.forward.locations": "Locaties",
@@ -905,7 +915,6 @@ export const strings: Strings = {
     "Opent de opties om deze peer te schrijven of te betalen",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "zojuist",
   "mesh.peer.none": "Geen peers in de buurt",
   "mesh.peer.none_desc":
     "Andere toestellen met Airhop of bitchat binnen Bluetooth-bereik verschijnen hier.",
@@ -922,9 +931,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Bedrag in sats",
   "mesh.peer.amount_first": "Ecash sturen, vul eerst een bedrag in",
   "mesh.peer.cancel_send": "Ecash sturen annuleren",
-  "mesh.peer.view_peer": "Peer {name} bekijken",
   "mesh.peer.view_peer_online": "Peer {name} bekijken, online",
-  "mesh.peer.last_seen": "{ago} geleden gezien",
+  "mesh.peer.last_seen_at": "Laatst gezien {ago}",
   "mesh.peer.send_amount": "{amount} sats sturen",
   "mesh.peer.direct": "Directe verbinding",
   "mesh.peer.check_distance": "Afstand nagaan",
@@ -1102,6 +1110,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} staat nu bij {mint}, na {fees} {unit} aan Lightning-routeringskosten.",
   "wallet.mint.nothing_moved": "Er is niets verplaatst",
+  "wallet.mint.move_pending": "Onderweg",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} heeft {mint} verlaten en is onderweg naar {target}. Het komt aan zodra de storting is opgehaald, en de wallet blijft het proberen.",
   "wallet.mint.destination": "· bestemming",
   "wallet.mint.will_move": "· wordt verplaatst",
   "wallet.mint.issued_by": "Uitgegeven door",
@@ -1170,6 +1181,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Je hebt al een herstelzin. Een andere terugzetten vervangt hem. Munten die de oude zin al dekte blijven op dit toestel uit te geven, maar zijn niet meer te herstellen, dus zorg dat de oude woorden opgeschreven zijn voordat je doorgaat.",
   "wallet.backup.replace": "Vervangen",
+  "wallet.backup.replace_unseen_body":
+    "Deze wallet heeft al een herstelzin, voor je aangemaakt bij het instellen, en je munten zijn daarmee gemaakt. Een andere zin herstellen vervangt hem voorgoed. De munten blijven uitgeefbaar op dit apparaat en gaan bij de volgende vernieuwing van elke mint onder de nieuwe zin vallen.",
   "wallet.backup.invalid_phrase": "Die zin is niet geldig",
   "wallet.backup.invalid_phrase_body":
     "De zin heeft een ingebouwde controlesom en deze komt daar niet doorheen. Zoek naar een verkeerd getypt, ontbrekend of verwisseld woord.",
@@ -1299,7 +1312,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Bestede bewijzen weggehaald",
   "wallet.activity.refreshed": "Bewijzen ververst",
   "wallet.activity.refreshing": "Bewijzen worden ververst",
-  "wallet.activity.just_now": "zojuist",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1343,6 +1355,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Sturen",
   "wallet.pay.sending": "Bezig met sturen…",
   "wallet.pay.action": "Ecash sturen",
+  "wallet.pay.confirm_title": "{amount} {unit} naar {name} sturen?",
+  "wallet.pay.confirm_final":
+    "Het wordt aan hun sleutel vergrendeld. Eenmaal verstuurd kun je het niet terugnemen.",
+  "wallet.pay.confirm_reclaimable":
+    "Je kunt het terughalen via In behandeling zolang het niet is opgehaald.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Cameratoegang",
@@ -1512,6 +1529,12 @@ export const strings: Strings = {
     "De mint heeft deze storting uitgegeven, maar de munten konden niet worden hersteld. Herstellen vanuit je herstelzin haalt ze terug.",
   "wallet.svc.swap_unreadable":
     "Deze omruil is opgeslagen in een vorm die deze versie niet opnieuw kan afspelen.",
+  "wallet.svc.lock_in_doubt":
+    "De mint gaf geen antwoord, dus deze betaling is misschien wel of niet gelukt.",
+  "wallet.svc.lock_in_doubt_body":
+    "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint antwoordt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder In behandeling om over te dragen. Zo niet, dan komen de munten terug.",
+  "wallet.svc.send_spent_by_swap":
+    "Deze munten zijn teruggewisseld naar je wallet voordat dit token werd opgehaald, dus het kan niet meer worden opgehaald. Het bedrag staat in je saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Geverifieerd via QR",
@@ -2210,6 +2233,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Spraakbericht",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Document",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Nieuw bericht",
   "notif.hidden.channel": "Nieuwe activiteit",

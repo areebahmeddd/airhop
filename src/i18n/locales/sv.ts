@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "för {count} min sedan",
   "format.hours_ago": "för {count} tim sedan",
   "format.days_ago": "för {count} dgr sedan",
+  "format.just_now": "nyss",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Chattar",
@@ -342,6 +343,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Kommandot /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Skicka en varm kram",
   "chat.cmd.slap_hint": "Daska till med en stor forell",
+  "chat.cmd.emote_needs_target": "Säg vem, till exempel /{command} @namn",
   "chat.status.sending": "Skickar…",
   "chat.status.undo_send": "Ångra sändningen",
   "chat.status.undo": "Ångra",
@@ -387,6 +389,9 @@ export const strings: Strings = {
   "chat.thread.length_full": "Meddelandet är fullt",
   "chat.thread.waiting_for":
     "Väntar på att {name} ska komma tillbaka · {percent} %",
+  "chat.transfer.progress": "{done} av {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} kvar",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Avbryt {name}",
   "chat.thread.queued_more": "{count} till väntar på att skickas",
@@ -473,6 +478,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Ta ett foto eller en video",
+  "chat.attach.camera_desc_photo": "Ta ett foto",
   "chat.attach.library": "Fotobibliotek",
   "chat.attach.library_desc": "Välj ur ditt bibliotek",
   "chat.attach.document": "Dokument",
@@ -490,7 +496,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Delade sin plats",
   "chat.location.title": "Plats",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Tagen för {ago} sedan",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Öppna i Kartor",
   "chat.location.no_forward": "Platser vidarebefordras inte",
   "chat.location.no_forward_body":
@@ -556,6 +562,7 @@ export const strings: Strings = {
   "chat.attach.file": "Bifoga en fil",
   "chat.attach.unavailable": "Bilagor går inte här",
   "chat.attach.not_sent": "Bilagan skickades inte",
+  "chat.attach.empty_file": "Filen är tom, så det finns inget att skicka.",
   "chat.attach.read_failed": "Något gick fel när filen lästes. Prova en annan.",
   "chat.attach.caption": "Lägg till en bildtext…",
   "chat.attach.send": "Skicka bilagan",
@@ -747,7 +754,6 @@ export const strings: Strings = {
   "chat.notices.post": "Sätt upp anslag",
   "chat.notices.post_short": "Sätt upp",
   "chat.notices.delete": "Radera anslaget",
-  "chat.notices.just_now": "nyss",
   "chat.notices.fades_soon": "bleknar snart",
   "chat.notices.1_day": "1 dag",
   "chat.notices.3_days": "3 dagar",
@@ -800,12 +806,15 @@ export const strings: Strings = {
     "Meddelanden, omnämnanden och anslag från dina kanaler och chattar dyker upp här.",
   "chat.notif.new": "Ny",
   "chat.notif.notice_in": "anslag i {channel}",
+  "chat.notif.in_room": "i {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Vidarebefordra till…",
   "chat.forward.to": "Vidarebefordra till {name}",
   "chat.forward.cant_send_here": "Går inte att vidarebefordra hit",
   "chat.forward.cant_send_to": "Går inte att vidarebefordra till {name}",
+  "chat.forward.too_long_for_dm":
+    "För långt för ett direktmeddelande. Vidarebefordra det till en kanal eller grupp i stället.",
   "chat.forward.channels": "Kanaler",
   "chat.forward.groups": "Grupper",
   "chat.forward.locations": "Platser",
@@ -892,7 +901,6 @@ export const strings: Strings = {
     "Öppnar val för att skriva till eller betala den här peern",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "nyss",
   "mesh.peer.none": "Inga peers i närheten",
   "mesh.peer.none_desc":
     "Andra Airhop- eller bitchat-enheter inom Bluetooth-räckhåll dyker upp här.",
@@ -909,9 +917,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Belopp i sats",
   "mesh.peer.amount_first": "Skicka ecash, ange ett belopp först",
   "mesh.peer.cancel_send": "Avbryt att skicka ecash",
-  "mesh.peer.view_peer": "Visa peern {name}",
   "mesh.peer.view_peer_online": "Visa peern {name}, online",
-  "mesh.peer.last_seen": "Sedd för {ago} sedan",
+  "mesh.peer.last_seen_at": "Senast sedd {ago}",
   "mesh.peer.send_amount": "Skicka {amount} sats",
   "mesh.peer.direct": "Direktanslutning",
   "mesh.peer.check_distance": "Kontrollera avstånd",
@@ -1087,6 +1094,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} ligger nu hos {mint}, efter {fees} {unit} i Lightning-routingavgifter.",
   "wallet.mint.nothing_moved": "Inget flyttades",
+  "wallet.mint.move_pending": "På väg",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} har lämnat {mint} och är på väg till {target}. Det kommer fram när insättningen har hämtats, och plånboken fortsätter försöka.",
   "wallet.mint.destination": "· mål",
   "wallet.mint.will_move": "· flyttas",
   "wallet.mint.issued_by": "Utgiven av",
@@ -1154,6 +1164,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Du har redan en återställningsfras. Att återställa en annan ersätter den. Mynt som den gamla frasen redan täckte går att använda på den här enheten, men de går inte längre att återställa, så se till att de gamla orden är nedskrivna innan du fortsätter.",
   "wallet.backup.replace": "Ersätt",
+  "wallet.backup.replace_unseen_body":
+    "Den här plånboken har redan en återställningsfras, skapad åt dig vid konfigurationen, och dina mynt skapades med den. Att återställa en annan fras ersätter den för gott. Mynten går fortfarande att spendera på den här enheten och flyttas till den nya frasen nästa gång varje mint uppdateras.",
   "wallet.backup.invalid_phrase": "Frasen är inte giltig",
   "wallet.backup.invalid_phrase_body":
     "Frasen har en inbyggd kontrollsumma och den här klarar den inte. Leta efter ett felstavat, saknat eller omkastat ord.",
@@ -1286,7 +1298,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Förbrukade bevis borttagna",
   "wallet.activity.refreshed": "Bevis uppdaterade",
   "wallet.activity.refreshing": "Uppdaterar bevis",
-  "wallet.activity.just_now": "nyss",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Meshen är offline",
@@ -1329,6 +1340,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Skicka",
   "wallet.pay.sending": "Skickar…",
   "wallet.pay.action": "Skicka ecash",
+  "wallet.pay.confirm_title": "Skicka {amount} {unit} till {name}?",
+  "wallet.pay.confirm_final":
+    "Det låses till deras nyckel. När det väl är skickat kan det inte tas tillbaka.",
+  "wallet.pay.confirm_reclaimable":
+    "Du kan ta tillbaka det under Väntande tills det har lösts in.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kameraåtkomst",
@@ -1491,6 +1507,12 @@ export const strings: Strings = {
     "Minten har gett ut den här insättningen, men dess mynt kunde inte återskapas. Att återställa från din återställningsfras hämtar tillbaka dem.",
   "wallet.svc.swap_unreadable":
     "Bytet sparades i en form som den här versionen inte kan spela upp igen.",
+  "wallet.svc.lock_in_doubt":
+    "Minten svarade inte, så den här betalningen kan ha gått igenom eller inte.",
+  "wallet.svc.lock_in_doubt_body":
+    "Inget annat skickades. Mynten hålls kvar tills minten svarar. Gick betalningen igenom visas den låsta token under Väntande så att du kan lämna över den. Annars kommer mynten tillbaka.",
+  "wallet.svc.send_spent_by_swap":
+    "De här mynten växlades tillbaka till din plånbok innan token löstes in, så den kan inte längre lösas in. Beloppet finns i ditt saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verifierad via QR",
@@ -2184,6 +2206,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Röstmeddelande",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokument",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Nytt meddelande",
   "notif.hidden.channel": "Ny aktivitet",

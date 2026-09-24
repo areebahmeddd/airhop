@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} মিনিট আগে",
   "format.hours_ago": "{count} ঘণ্টা আগে",
   "format.days_ago": "{count} দিন আগে",
+  "format.just_now": "এইমাত্র",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "চ্যাট",
@@ -343,6 +344,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "কমান্ড /{cmd}: {hint}",
   "chat.cmd.hug_hint": "একটি উষ্ণ আলিঙ্গন পাঠান",
   "chat.cmd.slap_hint": "বড় একটি মাছ দিয়ে চড় মারুন",
+  "chat.cmd.emote_needs_target": "কাকে তা বলুন, যেমন /{command} @নাম",
   "chat.status.sending": "পাঠানো হচ্ছে…",
   "chat.status.undo_send": "পাঠানো ফেরান",
   "chat.status.undo": "ফেরান",
@@ -387,6 +389,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "বার্তা…",
   "chat.thread.length_full": "বার্তা পূর্ণ",
   "chat.thread.waiting_for": "{name} ফেরার অপেক্ষায় · {percent}%",
+  "chat.transfer.progress": "{total}-এর মধ্যে {done}",
+  "chat.transfer.speed": "{size}/সে",
+  "chat.transfer.left": "{time} বাকি",
   "chat.thread.peer": "পিয়ার",
   "chat.thread.cancel_transfer": "{name} বাতিল করুন",
   "chat.thread.queued_more": "আরও {count}টি পাঠানোর অপেক্ষায়",
@@ -470,6 +475,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "ক্যামেরা",
   "chat.attach.camera_desc": "ছবি বা ভিডিও তুলুন",
+  "chat.attach.camera_desc_photo": "ছবি তুলুন",
   "chat.attach.library": "ছবির লাইব্রেরি",
   "chat.attach.library_desc": "আপনার লাইব্রেরি থেকে বাছুন",
   "chat.attach.document": "নথি",
@@ -487,7 +493,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "তাদের অবস্থান ভাগ করেছেন",
   "chat.location.title": "অবস্থান",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} আগে নেওয়া",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "মানচিত্রে খুলুন",
   "chat.location.no_forward": "অবস্থান ফরোয়ার্ড করা যায় না",
   "chat.location.no_forward_body":
@@ -550,6 +556,7 @@ export const strings: Strings = {
   "chat.attach.file": "একটি ফাইল সংযুক্ত করুন",
   "chat.attach.unavailable": "এখানে সংযুক্তি পাওয়া যায় না",
   "chat.attach.not_sent": "সংযুক্তি পাঠানো হয়নি",
+  "chat.attach.empty_file": "ফাইলটি খালি, তাই পাঠানোর মতো কিছু নেই।",
   "chat.attach.read_failed":
     "সেই ফাইলটি পড়তে গিয়ে কিছু একটা গোলমাল হয়েছে। অন্যটি চেষ্টা করুন।",
   "chat.attach.caption": "একটি বিবরণ যোগ করুন…",
@@ -735,7 +742,6 @@ export const strings: Strings = {
   "chat.notices.post": "নোটিশ দিন",
   "chat.notices.post_short": "দিন",
   "chat.notices.delete": "নোটিশ মুছুন",
-  "chat.notices.just_now": "এইমাত্র",
   "chat.notices.fades_soon": "শিগগিরই মিলিয়ে যাবে",
   "chat.notices.1_day": "1 দিন",
   "chat.notices.3_days": "3 দিন",
@@ -787,12 +793,15 @@ export const strings: Strings = {
     "আপনার চ্যানেল ও চ্যাটের বার্তা, উল্লেখ ও নোটিশ এখানে দেখা যাবে।",
   "chat.notif.new": "নতুন",
   "chat.notif.notice_in": "{channel}-এ নোটিশ",
+  "chat.notif.in_room": "{room}-এ",
 
   // ---- Chats: forward ----
   "chat.forward.title": "যাকে ফরোয়ার্ড করবেন…",
   "chat.forward.to": "{name}-কে ফরোয়ার্ড করুন",
   "chat.forward.cant_send_here": "এখানে ফরোয়ার্ড করা যায় না",
   "chat.forward.cant_send_to": "{name}-কে ফরোয়ার্ড করা যায় না",
+  "chat.forward.too_long_for_dm":
+    "সরাসরি বার্তার জন্য খুব দীর্ঘ। এর বদলে কোনো চ্যানেল বা গ্রুপে ফরওয়ার্ড করুন।",
   "chat.forward.channels": "চ্যানেল",
   "chat.forward.groups": "গ্রুপ",
   "chat.forward.locations": "অবস্থান",
@@ -877,7 +886,6 @@ export const strings: Strings = {
     "এই পিয়ারকে বার্তা পাঠানো বা টাকা দেওয়ার বিকল্প খোলে",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "এইমাত্র",
   "mesh.peer.none": "কাছে কোনো পিয়ার নেই",
   "mesh.peer.none_desc":
     "ব্লুটুথের নাগালের অন্য Airhop বা bitchat ডিভাইস এখানে দেখা যাবে।",
@@ -894,9 +902,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "sat-এ পরিমাণ",
   "mesh.peer.amount_first": "ecash পাঠান, আগে একটি পরিমাণ লিখুন",
   "mesh.peer.cancel_send": "ecash পাঠানো বাতিল করুন",
-  "mesh.peer.view_peer": "পিয়ার {name} দেখুন",
   "mesh.peer.view_peer_online": "পিয়ার {name} দেখুন, অনলাইন",
-  "mesh.peer.last_seen": "শেষ দেখা {ago} আগে",
+  "mesh.peer.last_seen_at": "শেষ দেখা {ago}",
   "mesh.peer.send_amount": "{amount} sat পাঠান",
   "mesh.peer.direct": "সরাসরি সংযোগ",
   "mesh.peer.check_distance": "দূরত্ব দেখুন",
@@ -1072,6 +1079,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} Lightning রাউটিং ফি-র পরে {amount} {unit} এখন {mint}-এ আছে।",
   "wallet.mint.nothing_moved": "কিছুই সরানো হয়নি",
+  "wallet.mint.move_pending": "পথে আছে",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} {mint} ছেড়েছে এবং {target}-এর পথে আছে। জমা দাবি করা হলেই এটি পৌঁছাবে, আর ওয়ালেট চেষ্টা চালিয়ে যায়।",
   "wallet.mint.destination": "· গন্তব্য",
   "wallet.mint.will_move": "· সরানো হবে",
   "wallet.mint.issued_by": "ইস্যু করেছে",
@@ -1140,6 +1150,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "আপনার ইতিমধ্যেই একটি পুনরুদ্ধার বাক্য আছে। অন্য একটি ফেরালে সেটি বদলে যাবে। পুরনো বাক্যে ঢাকা মুদ্রা এই ডিভাইসে খরচযোগ্যই থাকে, কিন্তু আর ফেরানো যায় না, তাই এগোনোর আগে পুরনো শব্দগুলো লেখা আছে কিনা নিশ্চিত হন।",
   "wallet.backup.replace": "বদলান",
+  "wallet.backup.replace_unseen_body":
+    "এই ওয়ালেট সেটআপের সময় আপনার জন্য একটি রিকভারি ফ্রেজ তৈরি হয়েছিল, আর আপনার কয়েন সেটির অধীনেই তৈরি। অন্য ফ্রেজ রিস্টোর করলে সেটি চিরতরে বদলে যাবে। কয়েনগুলো এই ডিভাইসে খরচযোগ্য থাকবে এবং প্রতিটি মিন্ট পরের বার রিফ্রেশ হলে নতুন ফ্রেজের অধীনে যাবে।",
   "wallet.backup.invalid_phrase": "সেই বাক্যটি অকেজো",
   "wallet.backup.invalid_phrase_body":
     "বাক্যটিতে নিজস্ব একটি যাচাই সংখ্যা আছে আর এটি সেটি পার করে না। ভুল বানান, বাদ পড়া বা এলোমেলো শব্দ আছে কিনা দেখুন।",
@@ -1268,7 +1280,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "খরচ হওয়া প্রমাণ সরানো হয়েছে",
   "wallet.activity.refreshed": "প্রমাণ সতেজ হয়েছে",
   "wallet.activity.refreshing": "প্রমাণ সতেজ হচ্ছে",
-  "wallet.activity.just_now": "এইমাত্র",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "মেশ অফলাইন",
@@ -1311,6 +1322,11 @@ export const strings: Strings = {
   "wallet.pay.send": "পাঠান",
   "wallet.pay.sending": "পাঠানো হচ্ছে…",
   "wallet.pay.action": "ecash পাঠান",
+  "wallet.pay.confirm_title": "{name}-কে {amount} {unit} পাঠাবেন?",
+  "wallet.pay.confirm_final":
+    "এটি তাদের কী-তে লক করা। একবার পাঠালে আর ফেরত নেওয়া যাবে না।",
+  "wallet.pay.confirm_reclaimable":
+    "তারা দাবি না করা পর্যন্ত আপনি অপেক্ষমাণ থেকে এটি ফেরত নিতে পারবেন।",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "ক্যামেরার অনুমতি",
@@ -1475,6 +1491,12 @@ export const strings: Strings = {
     "মিন্ট এই জমা ইস্যু করেছে, কিন্তু এর কয়েনগুলো পুনর্গঠন করা যায়নি। রিকভারি ফ্রেজ থেকে পুনরুদ্ধার করলে সেগুলো ফিরে আসবে।",
   "wallet.svc.swap_unreadable":
     "এই বদলটি এমন রূপে রাখা হয়েছিল যা এই সংস্করণ আবার চালাতে পারে না।",
+  "wallet.svc.lock_in_doubt":
+    "মিন্ট উত্তর দেয়নি, তাই এই পেমেন্ট গিয়েছে কি না তা নিশ্চিত নয়।",
+  "wallet.svc.lock_in_doubt_body":
+    "আর কিছু পাঠানো হয়নি। মিন্ট উত্তর না দেওয়া পর্যন্ত কয়েনগুলো আটকে রাখা হয়েছে। যদি গিয়ে থাকে, লক করা টোকেনটি হস্তান্তরের জন্য অপেক্ষমাণে দেখাবে। না গেলে কয়েন ফিরে আসবে।",
+  "wallet.svc.send_spent_by_swap":
+    "এই টোকেন দাবি করার আগেই কয়েনগুলো সোয়াপ হয়ে আপনার ওয়ালেটে ফিরে এসেছে, তাই এটি আর দাবি করা যাবে না। মূল্যটি আপনার ব্যালান্সে আছে।",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR দিয়ে যাচাই করা",
@@ -2156,6 +2178,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 ভয়েস বার্তা",
   "notif.preview.video": "🎥 ভিডিও",
   "notif.preview.document": "📄 নথি",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "নতুন বার্তা",
   "notif.hidden.channel": "নতুন কার্যকলাপ",

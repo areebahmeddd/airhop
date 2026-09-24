@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} dk önce",
   "format.hours_ago": "{count} sa önce",
   "format.days_ago": "{count} g önce",
+  "format.just_now": "az önce",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Sohbetler",
@@ -344,6 +345,8 @@ export const strings: Strings = {
   "chat.cmd.a11y": "/{cmd} komutu: {hint}",
   "chat.cmd.hug_hint": "Sıcak bir sarılma gönder",
   "chat.cmd.slap_hint": "Kocaman bir alabalıkla şaplak at",
+  "chat.cmd.emote_needs_target":
+    "Kimi olduğunu belirtin, örneğin /{command} @ad",
   "chat.status.sending": "Gönderiliyor…",
   "chat.status.undo_send": "Göndermeyi geri al",
   "chat.status.undo": "Geri al",
@@ -389,6 +392,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Mesaj…",
   "chat.thread.length_full": "Mesaj doldu",
   "chat.thread.waiting_for": "{name} kişisinin dönmesi bekleniyor · %{percent}",
+  "chat.transfer.progress": "{done} / {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} kaldı",
   "chat.thread.peer": "eş",
   "chat.thread.cancel_transfer": "{name} iptal et",
   "chat.thread.queued_more": "Gönderilmeyi bekleyen {count} tane daha",
@@ -474,6 +480,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Fotoğraf ya da video çek",
+  "chat.attach.camera_desc_photo": "Fotoğraf çek",
   "chat.attach.library": "Fotoğraf galerisi",
   "chat.attach.library_desc": "Galerinden seç",
   "chat.attach.document": "Belge",
@@ -491,7 +498,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Konumunu paylaştı",
   "chat.location.title": "Konum",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "{ago} önce alındı",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Haritalar'da aç",
   "chat.location.no_forward": "Konumlar iletilmez",
   "chat.location.no_forward_body":
@@ -555,6 +562,7 @@ export const strings: Strings = {
   "chat.attach.file": "Bir dosya ekle",
   "chat.attach.unavailable": "Ekler burada kullanılamıyor",
   "chat.attach.not_sent": "Ek gönderilmedi",
+  "chat.attach.empty_file": "Bu dosya boş, gönderilecek bir şey yok.",
   "chat.attach.read_failed":
     "O dosya okunurken bir şeyler ters gitti. Başka bir tane dene.",
   "chat.attach.caption": "Bir açıklama ekle…",
@@ -747,7 +755,6 @@ export const strings: Strings = {
   "chat.notices.post": "Duyuru as",
   "chat.notices.post_short": "As",
   "chat.notices.delete": "Duyuruyu sil",
-  "chat.notices.just_now": "az önce",
   "chat.notices.fades_soon": "yakında solar",
   "chat.notices.1_day": "1 gün",
   "chat.notices.3_days": "3 gün",
@@ -801,12 +808,15 @@ export const strings: Strings = {
     "Kanallarından ve sohbetlerinden gelen mesajlar, sözler ve duyurular burada görünür.",
   "chat.notif.new": "Yeni",
   "chat.notif.notice_in": "{channel} içinde duyuru",
+  "chat.notif.in_room": "{room} içinde",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Şuraya ilet…",
   "chat.forward.to": "{name} kişisine ilet",
   "chat.forward.cant_send_here": "Buraya iletilemiyor",
   "chat.forward.cant_send_to": "{name} kişisine iletilemiyor",
+  "chat.forward.too_long_for_dm":
+    "Doğrudan mesaj için çok uzun. Bunun yerine bir kanala veya gruba iletin.",
   "chat.forward.channels": "Kanallar",
   "chat.forward.groups": "Gruplar",
   "chat.forward.locations": "Konumlar",
@@ -896,7 +906,6 @@ export const strings: Strings = {
     "Bu eşe mesaj yazma ya da ödeme yapma seçeneklerini açar",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "az önce",
   "mesh.peer.none": "Yakında eş yok",
   "mesh.peer.none_desc":
     "Bluetooth menzilindeki diğer Airhop ya da bitchat cihazları burada görünür.",
@@ -913,9 +922,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Sat cinsinden tutar",
   "mesh.peer.amount_first": "Ecash gönder, önce bir tutar gir",
   "mesh.peer.cancel_send": "Ecash göndermeyi iptal et",
-  "mesh.peer.view_peer": "{name} eşini görüntüle",
   "mesh.peer.view_peer_online": "{name} eşini görüntüle, çevrimiçi",
-  "mesh.peer.last_seen": "{ago} önce görüldü",
+  "mesh.peer.last_seen_at": "Son görülme {ago}",
   "mesh.peer.send_amount": "{amount} sat gönder",
   "mesh.peer.direct": "Doğrudan bağlantı",
   "mesh.peer.check_distance": "Uzaklığı ölç",
@@ -1091,6 +1099,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{fees} {unit} Lightning yönlendirme ücretinin ardından {amount} {unit} artık {mint} darphanesinde duruyor.",
   "wallet.mint.nothing_moved": "Hiçbir şey taşınmadı",
+  "wallet.mint.move_pending": "Yolda",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit}, {mint} kaynağından çıktı ve {target} hedefine yolda. Yatırma alındığında ulaşır, cüzdan denemeye devam eder.",
   "wallet.mint.destination": "· hedef",
   "wallet.mint.will_move": "· taşınacak",
   "wallet.mint.issued_by": "Çıkaran",
@@ -1159,6 +1170,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Zaten bir kurtarma ifaden var. Farklı bir tanesini geri yüklemek onun yerini alır. Eski ifadenin zaten kapsadığı jetonlar bu cihazda harcanabilir kalır ama geri yüklenebilir olmaktan çıkar, o yüzden devam etmeden önce eski kelimelerin yazılı olduğundan emin ol.",
   "wallet.backup.replace": "Değiştir",
+  "wallet.backup.replace_unseen_body":
+    "Bu cüzdanın kurulumda senin için oluşturulmuş bir kurtarma ifadesi zaten var ve paraların onunla oluşturuldu. Farklı bir ifadeyi geri yüklemek onu kalıcı olarak değiştirir. Paralar bu cihazda harcanabilir kalır ve her mint bir sonraki yenilendiğinde yeni ifadenin kapsamına geçer.",
   "wallet.backup.invalid_phrase": "O ifade geçerli değil",
   "wallet.backup.invalid_phrase_body":
     "İfadenin yerleşik bir sağlama toplamı vardır ve bu ondan geçmiyor. Yanlış yazılmış, eksik ya da yeri değişmiş bir kelime ara.",
@@ -1290,7 +1303,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Harcanan kanıtlar kaldırıldı",
   "wallet.activity.refreshed": "Kanıtlar yenilendi",
   "wallet.activity.refreshing": "Kanıtlar yenileniyor",
-  "wallet.activity.just_now": "az önce",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh çevrimdışı",
@@ -1333,6 +1345,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Gönder",
   "wallet.pay.sending": "Gönderiliyor…",
   "wallet.pay.action": "Ecash gönder",
+  "wallet.pay.confirm_title": "{name} kişisine {amount} {unit} gönderilsin mi?",
+  "wallet.pay.confirm_final":
+    "Onların anahtarına kilitlenir. Gönderildikten sonra geri alınamaz.",
+  "wallet.pay.confirm_reclaimable":
+    "Onlar alana kadar Bekleyenler'den geri alabilirsin.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kamera erişimi",
@@ -1498,6 +1515,12 @@ export const strings: Strings = {
     "Mint bu yatırmayı verdi, ancak paraları yeniden oluşturulamadı. Kurtarma ifadenizden geri yüklemek onları geri getirir.",
   "wallet.svc.swap_unreadable":
     "Bu takas, bu sürümün yeniden oynatamayacağı bir biçimde kaydedilmiş.",
+  "wallet.svc.lock_in_doubt":
+    "Mint yanıt vermedi, bu yüzden bu ödeme gerçekleşmiş de olabilir, olmamış da.",
+  "wallet.svc.lock_in_doubt_body":
+    "Başka bir şey gönderilmedi. Mint yanıt verene kadar paralar bekletiliyor. Ödeme gerçekleştiyse kilitli token, teslim etmen için Bekleyenler'de görünür. Gerçekleşmediyse paralar geri gelir.",
+  "wallet.svc.send_spent_by_swap":
+    "Bu paralar, token alınmadan önce cüzdanına geri takas edildi, bu yüzden artık alınamaz. Tutar bakiyende.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ile doğrulandı",
@@ -2186,6 +2209,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Sesli mesaj",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Belge",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Yeni mesaj",
   "notif.hidden.channel": "Yeni etkinlik",

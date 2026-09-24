@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "há {count} min",
   "format.hours_ago": "há {count} h",
   "format.days_ago": "há {count} d",
+  "format.just_now": "agora mesmo",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Conversas",
@@ -347,6 +348,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Comando /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Manda um abraço",
   "chat.cmd.slap_hint": "Dá uma bofetada com uma truta grande",
+  "chat.cmd.emote_needs_target": "Indique quem, por exemplo /{command} @nome",
   "chat.status.sending": "A enviar…",
   "chat.status.undo_send": "Anular o envio",
   "chat.status.undo": "Anular",
@@ -391,6 +393,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Mensagem…",
   "chat.thread.length_full": "A mensagem está cheia",
   "chat.thread.waiting_for": "A aguardar que {name} volte · {percent}%",
+  "chat.transfer.progress": "{done} de {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "faltam {time}",
   "chat.thread.peer": "par",
   "chat.thread.cancel_transfer": "Cancelar {name}",
   "chat.thread.queued_more": "Mais {count} a aguardar para sair",
@@ -477,6 +482,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Câmara",
   "chat.attach.camera_desc": "Tira uma fotografia ou grava um vídeo",
+  "chat.attach.camera_desc_photo": "Tirar uma fotografia",
   "chat.attach.library": "Galeria de fotografias",
   "chat.attach.library_desc": "Escolhe da tua galeria",
   "chat.attach.document": "Documento",
@@ -494,7 +500,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Partilhou a localização",
   "chat.location.title": "Localização",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Marcada há {ago}",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Abrir no Mapas",
   "chat.location.no_forward": "As localizações não são reencaminhadas",
   "chat.location.no_forward_body":
@@ -557,6 +563,8 @@ export const strings: Strings = {
   "chat.attach.file": "Anexar um ficheiro",
   "chat.attach.unavailable": "Anexos indisponíveis aqui",
   "chat.attach.not_sent": "Anexo não enviado",
+  "chat.attach.empty_file":
+    "Esse ficheiro está vazio, por isso não há nada para enviar.",
   "chat.attach.read_failed":
     "Algo correu mal ao ler esse ficheiro. Tenta outro.",
   "chat.attach.caption": "Adiciona uma legenda…",
@@ -749,7 +757,6 @@ export const strings: Strings = {
   "chat.notices.post": "Publicar o aviso",
   "chat.notices.post_short": "Publicar",
   "chat.notices.delete": "Eliminar o aviso",
-  "chat.notices.just_now": "agora mesmo",
   "chat.notices.fades_soon": "desaparece em breve",
   "chat.notices.1_day": "1 dia",
   "chat.notices.3_days": "3 dias",
@@ -802,12 +809,15 @@ export const strings: Strings = {
     "Mensagens, menções e avisos dos teus canais e conversas aparecem aqui.",
   "chat.notif.new": "Novo",
   "chat.notif.notice_in": "aviso em {channel}",
+  "chat.notif.in_room": "em {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Reencaminhar para…",
   "chat.forward.to": "Reencaminhar para {name}",
   "chat.forward.cant_send_here": "Não é possível reencaminhar aqui",
   "chat.forward.cant_send_to": "Não é possível reencaminhar para {name}",
+  "chat.forward.too_long_for_dm":
+    "Demasiado longa para uma mensagem direta. Reencaminhe-a para um canal ou grupo.",
   "chat.forward.channels": "Canais",
   "chat.forward.groups": "Grupos",
   "chat.forward.locations": "Localizações",
@@ -904,7 +914,6 @@ export const strings: Strings = {
     "Abre as opções para escrever a este par ou pagar-lhe",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "agora mesmo",
   "mesh.peer.none": "Nenhum par por perto",
   "mesh.peer.none_desc":
     "Outros dispositivos com Airhop ou bitchat dentro do alcance do Bluetooth aparecem aqui.",
@@ -921,9 +930,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Valor em sats",
   "mesh.peer.amount_first": "Enviar ecash, indica antes um valor",
   "mesh.peer.cancel_send": "Cancelar o envio de ecash",
-  "mesh.peer.view_peer": "Ver o par {name}",
   "mesh.peer.view_peer_online": "Ver o par {name}, online",
-  "mesh.peer.last_seen": "Visto há {ago}",
+  "mesh.peer.last_seen_at": "Visto pela última vez {ago}",
   "mesh.peer.send_amount": "Enviar {amount} sats",
   "mesh.peer.direct": "Ligação direta",
   "mesh.peer.check_distance": "Verificar a distância",
@@ -1103,6 +1111,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} estão agora em {mint}, depois de {fees} {unit} em taxas de encaminhamento Lightning.",
   "wallet.mint.nothing_moved": "Nada foi movido",
+  "wallet.mint.move_pending": "A caminho",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} saíram de {mint} e estão a caminho de {target}. Chegam assim que o depósito for resgatado, e a carteira continua a tentar.",
   "wallet.mint.destination": "· destino",
   "wallet.mint.will_move": "· será movido",
   "wallet.mint.issued_by": "Emitido por",
@@ -1171,6 +1182,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Já tens uma frase de recuperação. Restaurar outra substitui a atual. As moedas já cobertas pela frase antiga continuam a poder ser gastas neste dispositivo, mas deixam de ser restauráveis, por isso confirma que as palavras antigas estão anotadas antes de continuares.",
   "wallet.backup.replace": "Substituir",
+  "wallet.backup.replace_unseen_body":
+    "Esta carteira já tem uma frase de recuperação, criada para si na configuração, e as suas moedas foram criadas com ela. Restaurar outra frase substitui-a para sempre. As moedas continuam utilizáveis neste dispositivo e passam para a nova frase na próxima atualização de cada mint.",
   "wallet.backup.invalid_phrase": "Essa frase não é válida",
   "wallet.backup.invalid_phrase_body":
     "A frase tem uma soma de verificação embutida e esta não passa. Procura uma palavra mal escrita, em falta ou trocada de lugar.",
@@ -1306,7 +1319,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Provas gastas removidas",
   "wallet.activity.refreshed": "Provas atualizadas",
   "wallet.activity.refreshing": "A atualizar as provas",
-  "wallet.activity.just_now": "agora mesmo",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malha offline",
@@ -1350,6 +1362,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Enviar",
   "wallet.pay.sending": "A enviar…",
   "wallet.pay.action": "Enviar ecash",
+  "wallet.pay.confirm_title": "Enviar {amount} {unit} para {name}?",
+  "wallet.pay.confirm_final":
+    "Fica bloqueado na chave da pessoa. Depois de enviado, não pode ser recuperado.",
+  "wallet.pay.confirm_reclaimable":
+    "Pode recuperá-lo em Pendentes até que seja resgatado.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Acesso à câmara",
@@ -1519,6 +1536,12 @@ export const strings: Strings = {
     "O mint emitiu este depósito, mas não foi possível reconstruir as suas moedas. Restaurar a partir da frase de recuperação recupera-as.",
   "wallet.svc.swap_unreadable":
     "Esta troca foi guardada num formato que esta versão não consegue repetir.",
+  "wallet.svc.lock_in_doubt":
+    "O mint não respondeu, por isso este pagamento pode ou não ter sido feito.",
+  "wallet.svc.lock_in_doubt_body":
+    "Não foi enviado mais nada. As moedas ficam retidas até o mint responder. Se o pagamento passou, o token bloqueado aparece em Pendentes para o entregar. Se não, as moedas voltam.",
+  "wallet.svc.send_spent_by_swap":
+    "Estas moedas foram trocadas de volta para a sua carteira antes de este token ser resgatado, por isso já não pode ser resgatado. O valor está no seu saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verificado por QR",
@@ -2224,6 +2247,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Mensagem de voz",
   "notif.preview.video": "🎥 Vídeo",
   "notif.preview.document": "📄 Documento",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Mensagem nova",
   "notif.hidden.channel": "Atividade nova",

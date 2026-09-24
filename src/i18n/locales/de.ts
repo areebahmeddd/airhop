@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "vor {count} Min.",
   "format.hours_ago": "vor {count} Std.",
   "format.days_ago": "vor {count} T.",
+  "format.just_now": "gerade eben",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Chats",
@@ -352,6 +353,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Befehl /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Eine herzliche Umarmung senden",
   "chat.cmd.slap_hint": "Mit einer großen Forelle schlagen",
+  "chat.cmd.emote_needs_target": "Sag, wen, etwa /{command} @name",
   "chat.status.sending": "Wird gesendet…",
   "chat.status.undo_send": "Senden rückgängig machen",
   "chat.status.undo": "Rückgängig",
@@ -397,6 +399,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Nachricht…",
   "chat.thread.length_full": "Nachricht ist voll",
   "chat.thread.waiting_for": "Warte auf die Rückkehr von {name} · {percent} %",
+  "chat.transfer.progress": "{done} von {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "noch {time}",
   "chat.thread.peer": "Peer",
   "chat.thread.cancel_transfer": "{name} abbrechen",
   "chat.thread.queued_more": "{count} weitere warten auf den Versand",
@@ -483,6 +488,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Foto oder Video aufnehmen",
+  "chat.attach.camera_desc_photo": "Foto aufnehmen",
   "chat.attach.library": "Fotomediathek",
   "chat.attach.library_desc": "Aus deiner Mediathek wählen",
   "chat.attach.document": "Dokument",
@@ -500,7 +506,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Hat den Standort geteilt",
   "chat.location.title": "Standort",
   "chat.location.away": "{distance} {direction}",
-  "chat.location.taken": "Vor {ago} aufgenommen",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "In Karten öffnen",
   "chat.location.no_forward": "Standorte werden nicht weitergeleitet",
   "chat.location.no_forward_body":
@@ -567,6 +573,8 @@ export const strings: Strings = {
   "chat.attach.file": "Datei anhängen",
   "chat.attach.unavailable": "Anhänge sind hier nicht verfügbar",
   "chat.attach.not_sent": "Anhang nicht gesendet",
+  "chat.attach.empty_file":
+    "Diese Datei ist leer, es gibt also nichts zu senden.",
   "chat.attach.read_failed":
     "Beim Lesen dieser Datei ist etwas schiefgelaufen. Versuche eine andere.",
   "chat.attach.caption": "Bildunterschrift hinzufügen…",
@@ -759,7 +767,6 @@ export const strings: Strings = {
   "chat.notices.post": "Aushang veröffentlichen",
   "chat.notices.post_short": "Posten",
   "chat.notices.delete": "Aushang löschen",
-  "chat.notices.just_now": "gerade eben",
   "chat.notices.fades_soon": "verblasst bald",
   "chat.notices.1_day": "1 Tag",
   "chat.notices.3_days": "3 Tage",
@@ -812,12 +819,15 @@ export const strings: Strings = {
     "Nachrichten, Erwähnungen und Aushänge aus deinen Kanälen und Chats erscheinen hier.",
   "chat.notif.new": "Neu",
   "chat.notif.notice_in": "Aushang in {channel}",
+  "chat.notif.in_room": "in {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Weiterleiten an…",
   "chat.forward.to": "An {name} weiterleiten",
   "chat.forward.cant_send_here": "Weiterleiten hier nicht möglich",
   "chat.forward.cant_send_to": "Weiterleiten an {name} nicht möglich",
+  "chat.forward.too_long_for_dm":
+    "Zu lang für eine Direktnachricht. Leite sie stattdessen an einen Kanal oder eine Gruppe weiter.",
   "chat.forward.channels": "Kanäle",
   "chat.forward.groups": "Gruppen",
   "chat.forward.locations": "Orte",
@@ -910,7 +920,6 @@ export const strings: Strings = {
     "Öffnet Optionen, um diesem Peer zu schreiben oder zu zahlen",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "gerade eben",
   "mesh.peer.none": "Keine Peers in der Nähe",
   "mesh.peer.none_desc":
     "Andere Airhop- oder bitchat-Geräte in Bluetooth-Reichweite erscheinen hier.",
@@ -927,9 +936,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Betrag in Sats",
   "mesh.peer.amount_first": "Ecash senden, gib zuerst einen Betrag ein",
   "mesh.peer.cancel_send": "Ecash-Senden abbrechen",
-  "mesh.peer.view_peer": "Peer {name} ansehen",
   "mesh.peer.view_peer_online": "Peer {name} ansehen, online",
-  "mesh.peer.last_seen": "Zuletzt vor {ago} gesehen",
+  "mesh.peer.last_seen_at": "Zuletzt gesehen {ago}",
   "mesh.peer.send_amount": "{amount} Sats senden",
   "mesh.peer.direct": "Direktverbindung",
   "mesh.peer.check_distance": "Entfernung prüfen",
@@ -1108,6 +1116,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} liegen jetzt bei {mint}, nach {fees} {unit} an Lightning-Routing-Gebühren.",
   "wallet.mint.nothing_moved": "Nichts verschoben",
+  "wallet.mint.move_pending": "Unterwegs",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} haben {mint} verlassen und sind unterwegs zu {target}. Sie kommen an, sobald die Einzahlung abgeholt ist, und die Wallet versucht es weiter.",
   "wallet.mint.destination": "· Ziel",
   "wallet.mint.will_move": "· wird verschoben",
   "wallet.mint.issued_by": "Ausgegeben von",
@@ -1176,6 +1187,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Du hast bereits eine Wiederherstellungsphrase. Eine andere wiederherzustellen ersetzt sie. Münzen, die die alte Phrase bereits abdeckt, bleiben auf diesem Gerät ausgebbar, sind aber nicht mehr wiederherstellbar. Stelle also sicher, dass die alten Wörter notiert sind, bevor du fortfährst.",
   "wallet.backup.replace": "Ersetzen",
+  "wallet.backup.replace_unseen_body":
+    "Diese Wallet hat bereits eine Wiederherstellungsphrase, die beim Einrichten für dich erzeugt wurde, und deine Coins wurden damit erstellt. Eine andere Phrase wiederherzustellen ersetzt sie endgültig. Die Coins bleiben auf diesem Gerät ausgebbar und wechseln beim nächsten Aktualisieren der jeweiligen Mint unter die neue Phrase.",
   "wallet.backup.invalid_phrase": "Diese Phrase ist ungültig",
   "wallet.backup.invalid_phrase_body":
     "Die Phrase hat eine eingebaute Prüfsumme, und diese besteht sie nicht. Prüfe auf ein vertipptes, fehlendes oder vertauschtes Wort.",
@@ -1311,7 +1324,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Ausgegebene Proofs entfernt",
   "wallet.activity.refreshed": "Proofs aktualisiert",
   "wallet.activity.refreshing": "Proofs werden aktualisiert",
-  "wallet.activity.just_now": "gerade eben",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1354,6 +1366,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Senden",
   "wallet.pay.sending": "Wird gesendet…",
   "wallet.pay.action": "Ecash senden",
+  "wallet.pay.confirm_title": "{amount} {unit} an {name} senden?",
+  "wallet.pay.confirm_final":
+    "Es wird an ihren Schlüssel gebunden. Einmal gesendet, lässt es sich nicht zurückholen.",
+  "wallet.pay.confirm_reclaimable":
+    "Du kannst es unter Ausstehend zurückholen, bis es eingelöst wird.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Kamerazugriff",
@@ -1527,6 +1544,12 @@ export const strings: Strings = {
     "Der Mint hat diese Einzahlung ausgegeben, aber ihre Münzen konnten nicht wiederhergestellt werden. Eine Wiederherstellung aus der Wiederherstellungsphrase holt sie zurück.",
   "wallet.svc.swap_unreadable":
     "Dieser Tausch wurde in einer Form gespeichert, die diese Version nicht erneut ausführen kann.",
+  "wallet.svc.lock_in_doubt":
+    "Die Mint hat nicht geantwortet, daher ist unklar, ob diese Zahlung durchgegangen ist.",
+  "wallet.svc.lock_in_doubt_body":
+    "Sonst wurde nichts gesendet. Die Coins bleiben zurückgehalten, bis die Mint antwortet. Ist die Zahlung durch, erscheint das gesperrte Token unter Ausstehend zum Übergeben. Wenn nicht, kommen die Coins zurück.",
+  "wallet.svc.send_spent_by_swap":
+    "Diese Coins wurden in deine Wallet zurückgetauscht, bevor das Token eingelöst wurde, daher lässt es sich nicht mehr einlösen. Der Betrag ist in deinem Guthaben.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Per QR verifiziert",
@@ -2233,6 +2256,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Sprachnachricht",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokument",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Neue Nachricht",
   "notif.hidden.channel": "Neue Aktivität",

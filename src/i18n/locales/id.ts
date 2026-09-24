@@ -31,6 +31,7 @@ export const strings: Strings = {
   "format.minutes_ago": "{count} mnt lalu",
   "format.hours_ago": "{count} jam lalu",
   "format.days_ago": "{count} hr lalu",
+  "format.just_now": "baru saja",
 
   // ---- App shell: tabs, sub-tabs, search ----
   "nav.tab.chats": "Obrolan",
@@ -347,6 +348,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Perintah /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Kirim pelukan hangat",
   "chat.cmd.slap_hint": "Tampar dengan ikan trout besar",
+  "chat.cmd.emote_needs_target": "Sebutkan siapa, misalnya /{command} @nama",
   "chat.status.sending": "Mengirim…",
   "chat.status.undo_send": "Batalkan kirim",
   "chat.status.undo": "Batalkan",
@@ -391,6 +393,9 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Pesan…",
   "chat.thread.length_full": "Pesannya sudah penuh",
   "chat.thread.waiting_for": "Menunggu {name} kembali · {percent}%",
+  "chat.transfer.progress": "{done} dari {total}",
+  "chat.transfer.speed": "{size}/s",
+  "chat.transfer.left": "{time} lagi",
   "chat.thread.peer": "rekan",
   "chat.thread.cancel_transfer": "Batalkan {name}",
   "chat.thread.queued_more": "{count} lagi menunggu untuk dikirim",
@@ -480,6 +485,7 @@ export const strings: Strings = {
   // ---- Chats: attachments and media ----
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Ambil foto atau video",
+  "chat.attach.camera_desc_photo": "Ambil foto",
   "chat.attach.library": "Galeri foto",
   "chat.attach.library_desc": "Pilih dari galerimu",
   "chat.attach.document": "Dokumen",
@@ -497,7 +503,7 @@ export const strings: Strings = {
   "chat.location.received_summary": "Membagikan lokasinya",
   "chat.location.title": "Lokasi",
   "chat.location.away": "{distance} ke {direction}",
-  "chat.location.taken": "Diambil {ago} lalu",
+  "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Buka di Peta",
   "chat.location.no_forward": "Lokasi tidak diteruskan",
   "chat.location.no_forward_body":
@@ -562,6 +568,8 @@ export const strings: Strings = {
   "chat.attach.file": "Lampirkan sebuah berkas",
   "chat.attach.unavailable": "Lampiran tidak tersedia di sini",
   "chat.attach.not_sent": "Lampiran tidak terkirim",
+  "chat.attach.empty_file":
+    "File itu kosong, jadi tidak ada yang bisa dikirim.",
   "chat.attach.read_failed":
     "Ada yang tidak beres saat membaca berkas itu. Coba yang lain.",
   "chat.attach.caption": "Tambahkan keterangan…",
@@ -752,7 +760,6 @@ export const strings: Strings = {
   "chat.notices.post": "Tempel pengumuman",
   "chat.notices.post_short": "Tempel",
   "chat.notices.delete": "Hapus pengumuman",
-  "chat.notices.just_now": "baru saja",
   "chat.notices.fades_soon": "segera memudar",
   "chat.notices.1_day": "1 hari",
   "chat.notices.3_days": "3 hari",
@@ -804,12 +811,15 @@ export const strings: Strings = {
     "Pesan, sebutan, dan pengumuman dari kanal dan obrolanmu muncul di sini.",
   "chat.notif.new": "Baru",
   "chat.notif.notice_in": "pengumuman di {channel}",
+  "chat.notif.in_room": "di {room}",
 
   // ---- Chats: forward ----
   "chat.forward.title": "Teruskan ke…",
   "chat.forward.to": "Teruskan ke {name}",
   "chat.forward.cant_send_here": "Tidak bisa diteruskan ke sini",
   "chat.forward.cant_send_to": "Tidak bisa diteruskan ke {name}",
+  "chat.forward.too_long_for_dm":
+    "Terlalu panjang untuk pesan langsung. Teruskan ke saluran atau grup saja.",
   "chat.forward.channels": "Kanal",
   "chat.forward.groups": "Grup",
   "chat.forward.locations": "Lokasi",
@@ -902,7 +912,6 @@ export const strings: Strings = {
     "Membuka pilihan untuk mengirim pesan atau membayar rekan ini",
 
   // ---- Mesh: peer list ----
-  "mesh.peer.just_now": "baru saja",
   "mesh.peer.none": "Tidak ada rekan di dekat sini",
   "mesh.peer.none_desc":
     "Perangkat Airhop atau bitchat lain dalam jangkauan Bluetooth muncul di sini.",
@@ -919,9 +928,8 @@ export const strings: Strings = {
   "mesh.peer.amount_placeholder": "Jumlah dalam sat",
   "mesh.peer.amount_first": "Kirim ecash, isi jumlahnya dulu",
   "mesh.peer.cancel_send": "Batalkan kirim ecash",
-  "mesh.peer.view_peer": "Lihat rekan {name}",
   "mesh.peer.view_peer_online": "Lihat rekan {name}, daring",
-  "mesh.peer.last_seen": "Terakhir terlihat {ago} lalu",
+  "mesh.peer.last_seen_at": "Terakhir terlihat {ago}",
   "mesh.peer.send_amount": "Kirim {amount} sat",
   "mesh.peer.direct": "Sambungan langsung",
   "mesh.peer.check_distance": "Periksa jarak",
@@ -1098,6 +1106,9 @@ export const strings: Strings = {
   "wallet.mint.moved_body":
     "{amount} {unit} kini berada di {mint}, setelah {fees} {unit} biaya perutean Lightning.",
   "wallet.mint.nothing_moved": "Tidak ada yang dipindahkan",
+  "wallet.mint.move_pending": "Dalam perjalanan",
+  "wallet.mint.deposit_pending":
+    "{amount} {unit} telah keluar dari {mint} dan sedang menuju {target}. Dana tiba setelah deposit diklaim, dan dompet terus mencoba.",
   "wallet.mint.destination": "· tujuan",
   "wallet.mint.will_move": "· akan dipindahkan",
   "wallet.mint.issued_by": "Diterbitkan oleh",
@@ -1166,6 +1177,8 @@ export const strings: Strings = {
   "wallet.backup.replace_body":
     "Kamu sudah punya frasa pemulihan. Memulihkan frasa lain akan menggantikannya. Koin yang sudah dicakup frasa lama tetap bisa dibelanjakan di perangkat ini, tetapi berhenti bisa dipulihkan, jadi pastikan kata-kata lamanya sudah tertulis sebelum kamu lanjut.",
   "wallet.backup.replace": "Ganti",
+  "wallet.backup.replace_unseen_body":
+    "Dompet ini sudah punya frasa pemulihan yang dibuat untukmu saat penyiapan, dan koinmu dibuat dengannya. Memulihkan frasa lain akan menggantinya untuk selamanya. Koin tetap bisa dibelanjakan di perangkat ini dan pindah ke frasa baru saat setiap mint disegarkan berikutnya.",
   "wallet.backup.invalid_phrase": "Frasa itu tidak sah",
   "wallet.backup.invalid_phrase_body":
     "Frasa ini punya jumlah periksa bawaan dan yang satu ini tidak lolos. Cari kata yang salah ketik, hilang, atau tertukar.",
@@ -1298,7 +1311,6 @@ export const strings: Strings = {
   "wallet.activity.spent_removed": "Bukti terpakai disingkirkan",
   "wallet.activity.refreshed": "Bukti tersegarkan",
   "wallet.activity.refreshing": "Menyegarkan bukti",
-  "wallet.activity.just_now": "baru saja",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh luring",
@@ -1342,6 +1354,11 @@ export const strings: Strings = {
   "wallet.pay.send": "Kirim",
   "wallet.pay.sending": "Mengirim…",
   "wallet.pay.action": "Kirim ecash",
+  "wallet.pay.confirm_title": "Kirim {amount} {unit} ke {name}?",
+  "wallet.pay.confirm_final":
+    "Ini dikunci ke kunci mereka. Setelah dikirim, tidak bisa ditarik kembali.",
+  "wallet.pay.confirm_reclaimable":
+    "Kamu bisa menariknya kembali dari Tertunda sampai mereka mengklaimnya.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Akses kamera",
@@ -1506,6 +1523,12 @@ export const strings: Strings = {
     "Mint telah menerbitkan setoran ini, tetapi koinnya tidak dapat dibangun ulang. Memulihkan dari frasa pemulihan Anda akan mengembalikannya.",
   "wallet.svc.swap_unreadable":
     "Penukaran ini tersimpan dalam bentuk yang tidak bisa diputar ulang oleh versi ini.",
+  "wallet.svc.lock_in_doubt":
+    "Mint tidak menjawab, jadi pembayaran ini mungkin sudah atau belum berhasil.",
+  "wallet.svc.lock_in_doubt_body":
+    "Tidak ada lagi yang dikirim. Koin ditahan sampai mint menjawab. Jika berhasil, token terkunci muncul di Tertunda untuk kamu serahkan. Jika tidak, koin kembali.",
+  "wallet.svc.send_spent_by_swap":
+    "Koin ini sudah ditukar kembali ke dompetmu sebelum token ini diklaim, jadi token ini tidak bisa diklaim lagi. Nilainya ada di saldomu.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Terverifikasi lewat QR",
@@ -2204,6 +2227,7 @@ export const strings: Strings = {
   "notif.preview.voice": "🎤 Pesan suara",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokumen",
+  "notif.preview.document_named": "📄 {name}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Pesan baru",
   "notif.hidden.channel": "Aktivitas baru",
