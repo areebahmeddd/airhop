@@ -1275,9 +1275,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Ist angekommen",
   "wallet.reclaim.title": "Diesen Token zurückholen?",
   "wallet.reclaim.body":
-    "Die {amount} {unit} gehen zurück in dein Guthaben. Tu das nur, wenn der Token nie jemanden erreicht hat: falls die andere Seite die Zeichenfolge bereits hat, behält das Geld, wer sie zuerst beim Mint einlöst, und das könnte sie sein.",
+    "Die {amount} {unit} gehen zurück in dein Guthaben, und der Token, den du weitergegeben hast, funktioniert nicht mehr, sobald der Mint erreichbar ist. Löst die andere Seite ihn vorher ein, bleibt das Geld bei ihr.",
   "wallet.reclaim.keep": "Ausstehend lassen",
   "wallet.reclaim.confirm": "Zurückholen",
+  "wallet.reclaim.claimed_title": "Die andere Seite hat ihn schon eingelöst",
+  "wallet.reclaim.claimed_body":
+    "Laut Mint wurde dieser Token bereits eingelöst, die {amount} {unit} sind also angekommen und nichts ist in dein Guthaben zurückgeflossen.",
   "wallet.copied.token_body":
     "Der Token liegt in deiner Zwischenablage. Er bleibt hier reserviert, bis du ihn als zugestellt markierst, du kannst ihn also erneut einfügen, falls der erste Versuch scheitert.",
   "wallet.copied.phrase_body":
@@ -1353,7 +1356,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Gebundene Zahlungen lassen sich nicht zurückholen: nur ihr Schlüssel kann diese Münzen jetzt noch ausgeben.",
   "wallet.pay.reclaimable":
-    "Es bleibt im Wallet-Tab zurückholbar, bis du bestätigst, dass es angekommen ist.",
+    "Es bleibt unter Aktivität zurückholbar, bis du bestätigst, dass es angekommen ist.",
   "wallet.pay.why": "So gesendet, weil {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} an {name}",
   "wallet.pay.thread_receipt":

@@ -1269,9 +1269,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Lo han recibido",
   "wallet.reclaim.title": "¿Recuperar este token?",
   "wallet.reclaim.body":
-    "Los {amount} {unit} vuelven a tu saldo. Hazlo solo si el token nunca llegó a nadie: si ya tienen la cadena, quien lo canjee primero en la casa de cambio se queda el dinero, y podrían ser ellos.",
+    "Los {amount} {unit} vuelven a tu saldo, y el token que entregaste deja de funcionar en cuanto se pueda contactar con la casa de cambio. Si lo canjean antes, se lo quedan.",
   "wallet.reclaim.keep": "Dejar pendiente",
   "wallet.reclaim.confirm": "Recuperar",
+  "wallet.reclaim.claimed_title": "Ya lo canjearon",
+  "wallet.reclaim.claimed_body":
+    "La casa de cambio indica que este token ya se canjeó, así que los {amount} {unit} les llegaron y no volvió nada a tu saldo.",
   "wallet.copied.token_body":
     "El token está en tu portapapeles. Sigue reservado aquí hasta que lo marques como entregado, así que puedes volver a pegarlo si el primer intento falla.",
   "wallet.copied.phrase_body":
@@ -1348,7 +1351,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Los pagos bloqueados no se pueden recuperar: ahora solo su clave puede gastar estas monedas.",
   "wallet.pay.reclaimable":
-    "Se puede recuperar desde la pestaña Cartera hasta que confirmes que llegó.",
+    "Se puede recuperar desde Actividad hasta que confirmes que llegó.",
   "wallet.pay.why": "Se envió así porque {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} para {name}",
   "wallet.pay.thread_receipt":

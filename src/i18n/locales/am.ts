@@ -1177,9 +1177,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "ደርሷቸዋል",
   "wallet.reclaim.title": "ይህ ቶከን መልሶ ይገኝ?",
   "wallet.reclaim.body":
-    "{amount} {unit} ወደ ቀሪ ሂሳብህ ይመለሳል። ይህን የምታደርገው ቶከኑ ወደ ማንም ካልደረሰ ብቻ ነው፦ ሕብረቁምፊው አስቀድሞ እጃቸው ላይ ካለ፣ በሚንቱ መጀመሪያ የመነዘረው ገንዘቡን ይይዛል፤ ያም እነሱ ሊሆኑ ይችላሉ።",
+    "{amount} {unit} ወደ ቀሪ ሂሳብህ ይመለሳል፤ የሰጠኸው ቶከንም ሚንቱ መድረስ እንደተቻለ መሥራት ያቆማል። ከዚያ በፊት ከመነዘሩት ግን የእነሱ ሆኖ ይቀራል።",
   "wallet.reclaim.keep": "በመጠባበቅ ላይ አቆይ",
   "wallet.reclaim.confirm": "መልሰህ አግኝ",
+  "wallet.reclaim.claimed_title": "አስቀድመው መንዝረውታል",
+  "wallet.reclaim.claimed_body":
+    "ሚንቱ ይህ ቶከን አስቀድሞ እንደተመነዘረ ይገልጻል፤ ስለዚህ {amount} {unit} ደርሷቸዋል፣ ወደ ቀሪ ሂሳብህም ምንም አልተመለሰም።",
   "wallet.copied.token_body":
     "ቶከኑ በቅንጥብ ሰሌዳህ ላይ ነው። እንደደረሰ እስክትመዘግብ ድረስ እዚህ ተይዞ ይቆያል፤ ስለዚህ የመጀመሪያው ሙከራ ካልተሳካ እንደገና ልትለጥፈው ትችላለህ።",
   "wallet.copied.phrase_body":
@@ -1249,7 +1252,7 @@ export const strings: Strings = {
     "በቁልፋቸው ተቆልፏል፤ ግን ገና የሚያጓጉዘው ነገር አልተገኘም። በተራ ላይ ነው፤ ቶከኑም በእንቅስቃሴ ስር ነው።",
   "wallet.pay.final":
     "የተቆለፉ ክፍያዎች መልሰው አይገኙም፦ አሁን እነዚህን ሳንቲሞች ማውጣት የሚችለው ቁልፋቸው ብቻ ነው።",
-  "wallet.pay.reclaimable": "መድረሱን እስክታረጋግጥ ድረስ ከቦርሳ ትሩ መልሶ የሚገኝ ሆኖ ይቆያል።",
+  "wallet.pay.reclaimable": "መድረሱን እስክታረጋግጥ ድረስ ከእንቅስቃሴ መልሶ የሚገኝ ሆኖ ይቆያል።",
   "wallet.pay.why": "በዚህ መንገድ የተላከው {reason} ስለሆነ ነው።",
   "wallet.pay.sent_title": "{amount} {unit} ወደ {name}",
   "wallet.pay.thread_receipt": "{amount} {unit} በቁልፋቸው ተቆልፎ ልከሃል።",

@@ -1179,9 +1179,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "对方收到了",
   "wallet.reclaim.title": "收回这个代币？",
   "wallet.reclaim.body":
-    "这 {amount} {unit} 会回到你的余额。只有在代币确实没到任何人手上时才这么做：如果对方已经拿到了那串字符，谁先在铸币厂兑付谁就拿走这笔钱，而那有可能是对方。",
+    "这 {amount} {unit} 会回到你的余额，一旦能连上铸币厂，你发出去的代币就会失效。如果对方在此之前兑付，钱就归对方。",
   "wallet.reclaim.keep": "保持待处理",
   "wallet.reclaim.confirm": "收回",
+  "wallet.reclaim.claimed_title": "对方已经兑付了",
+  "wallet.reclaim.claimed_body":
+    "铸币厂表示这个代币已被兑付，所以这 {amount} {unit} 已经到了对方手上，你的余额没有收回任何东西。",
   "wallet.copied.token_body":
     "代币已在你的剪贴板上。在你标记为已送达之前它一直预留在这里，所以第一次没成的话可以再粘贴一次。",
   "wallet.copied.phrase_body":
@@ -1250,7 +1253,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_undelivered":
     "已锁定到对方的密钥，但还没有东西能把它带过去。它已排队，代币在动态里。",
   "wallet.pay.final": "已锁定的付款无法收回：现在只有对方的密钥能花这些币。",
-  "wallet.pay.reclaimable": "在你确认它已送达之前，都可以从钱包标签页收回。",
+  "wallet.pay.reclaimable": "在你确认它已送达之前，都可以在“动态”中收回。",
   "wallet.pay.why": "之所以走这条路，是因为{reason}。",
   "wallet.pay.sent_title": "{amount} {unit} 给 {name}",
   "wallet.pay.thread_receipt": "你发出了 {amount} {unit}，已锁定到对方的密钥。",

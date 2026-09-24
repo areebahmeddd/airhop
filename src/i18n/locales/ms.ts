@@ -1266,9 +1266,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Mereka menerimanya",
   "wallet.reclaim.title": "Tuntut semula token ini?",
   "wallet.reclaim.body":
-    "{amount} {unit} kembali ke baki anda. Lakukan ini hanya kalau token itu tidak pernah sampai kepada sesiapa: kalau rentetannya sudah ada pada mereka, sesiapa yang menebusnya di mint dahulu akan memegang wangnya, dan itu mungkin mereka.",
+    "{amount} {unit} kembali ke baki anda, dan token yang anda berikan berhenti berfungsi sebaik sahaja mint dapat dihubungi. Kalau mereka menebusnya sebelum itu, ia kekal milik mereka.",
   "wallet.reclaim.keep": "Biarkan tertunda",
   "wallet.reclaim.confirm": "Tuntut semula",
+  "wallet.reclaim.claimed_title": "Mereka sudah menebusnya",
+  "wallet.reclaim.claimed_body":
+    "Mint menyatakan token ini sudah ditebus, jadi {amount} {unit} sudah sampai kepada mereka dan tiada apa-apa yang kembali ke baki anda.",
   "wallet.copied.token_body":
     "Token itu ada pada papan keratan anda. Ia kekal disimpan di sini sehingga anda menandakannya sudah dihantar, jadi anda boleh menampalnya sekali lagi kalau percubaan pertama gagal.",
   "wallet.copied.phrase_body":
@@ -1345,7 +1348,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Bayaran yang dikunci tidak boleh dituntut semula: hanya kunci mereka boleh membelanjakan syiling ini sekarang.",
   "wallet.pay.reclaimable":
-    "Ia kekal boleh dituntut semula daripada tab Dompet sehingga anda mengesahkan ia sampai.",
+    "Ia kekal boleh dituntut semula dari Aktiviti sehingga anda mengesahkan ia sampai.",
   "wallet.pay.why": "Dihantar melalui laluan ini kerana {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} kepada {name}",
   "wallet.pay.thread_receipt":

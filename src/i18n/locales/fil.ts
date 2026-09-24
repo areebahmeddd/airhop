@@ -1297,9 +1297,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Natanggap nila",
   "wallet.reclaim.title": "Bawiin ang token na ito?",
   "wallet.reclaim.body":
-    "Babalik sa balanse mo ang {amount} {unit}. Gawin lang ito kung walang taong naabot ang token: kung nasa kanila na ang string, ang unang tutubos nito sa mint ang makakahawak ng pera, at maaaring sila iyon.",
+    "Babalik sa balanse mo ang {amount} {unit}, at hihinto sa paggana ang token na ibinigay mo sa oras na maabot ang mint. Kung tubusin nila ito bago noon, sa kanila na iyon.",
   "wallet.reclaim.keep": "Iwang nakabinbin",
   "wallet.reclaim.confirm": "Bawiin",
+  "wallet.reclaim.claimed_title": "Natubos na nila ito",
+  "wallet.reclaim.claimed_body":
+    "Sabi ng mint, natubos na ang token na ito, kaya nakarating sa kanila ang {amount} {unit} at walang bumalik sa balanse mo.",
   "wallet.copied.token_body":
     "Nasa clipboard mo ang token. Nananatili itong nakalaan dito hangga't hindi mo ito minamarkahang naihatid, kaya puwede mo itong idikit ulit kung mabigo ang unang subok.",
   "wallet.copied.phrase_body":
@@ -1376,7 +1379,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Hindi mababawi ang mga nakakandadong bayad: susi lang nila ang makakagastos ng mga baryang ito ngayon.",
   "wallet.pay.reclaimable":
-    "Mananatili itong mababawi mula sa tab na Wallet hangga't hindi mo kinukumpirmang dumating ito.",
+    "Mananatili itong mababawi mula sa Aktibidad hangga't hindi mo kinukumpirmang dumating ito.",
   "wallet.pay.why": "Ipinadala sa ganitong paraan dahil {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} kay {name}",
   "wallet.pay.thread_receipt":

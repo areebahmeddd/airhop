@@ -35,8 +35,10 @@ import {
   quoteSend,
   reclaimSend,
   settleNutzap,
+  settleReclaim,
   WalletError,
   type NutzapTarget,
+  type ReclaimOutcome,
 } from "./wallet-service";
 
 // How the DM actually left the device: "they have it" versus "queued, they
@@ -528,6 +530,25 @@ export function reclaimTokenSend(txId: string): boolean {
     useChatStore.getState().setMessageStatus(`dm:${peerID}`, txId, "reclaimed");
   }
   return true;
+}
+
+// The mint's half of a reclaim, after `reclaimTokenSend`. If the recipient had
+// already redeemed the token, the thread says it arrived after all.
+export async function settleReclaimedSend(
+  txId: string,
+): Promise<ReclaimOutcome> {
+  const outcome = await settleReclaim(txId);
+  if (outcome === "claimed") {
+    const peerID = useWalletStore
+      .getState()
+      .history.find((tx) => tx.id === txId)?.counterparty;
+    if (peerID !== undefined && peerID.length > 0) {
+      useChatStore
+        .getState()
+        .setMessageStatus(`dm:${peerID}`, txId, "delivered");
+    }
+  }
+  return outcome;
 }
 
 export function reportWalletError(err: unknown): void {

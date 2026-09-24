@@ -1267,9 +1267,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Wameipata",
   "wallet.reclaim.title": "Urudishe tokeni hii?",
   "wallet.reclaim.body":
-    "{amount} {unit} zitarudi kwenye salio lako. Fanya hivi tu kama tokeni haikumfikia mtu yeyote: kama tayari wana mfuatano huo, yeyote anayeikomboa kwenye mint kwanza ndiye anayeshikilia pesa, na huenda wakawa wao.",
+    "{amount} {unit} zitarudi kwenye salio lako, na tokeni uliyotoa itaacha kufanya kazi mara tu mint itakapofikika. Wakiikomboa kabla ya hapo, pesa zitabaki kuwa zao.",
   "wallet.reclaim.keep": "Acha ikisubiri",
   "wallet.reclaim.confirm": "Rudisha",
+  "wallet.reclaim.claimed_title": "Tayari wameikomboa",
+  "wallet.reclaim.claimed_body":
+    "Mint inasema tokeni hii tayari imekombolewa, kwa hivyo {amount} {unit} ziliwafikia na hakuna kilichorudi kwenye salio lako.",
   "wallet.copied.token_body":
     "Tokeni ipo kwenye ubao wako wa kunakili. Hubaki imetengwa hapa hadi utakapoiweka alama kuwa imefika, kwa hivyo unaweza kuibandika tena kama jaribio la kwanza litashindwa.",
   "wallet.copied.phrase_body":
@@ -1346,7 +1349,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Malipo yaliyofungwa hayawezi kurudishwa: ufunguo wao pekee ndio unaoweza kutumia sarafu hizi sasa.",
   "wallet.pay.reclaimable":
-    "Bado inaweza kurudishwa kutoka kichupo cha Pochi hadi uthibitishe kuwa imefika.",
+    "Bado inaweza kurudishwa kutoka Shughuli hadi uthibitishe kuwa imefika.",
   "wallet.pay.why": "Imetumwa kwa njia hii kwa sababu {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} kwa {name}",
   "wallet.pay.thread_receipt":

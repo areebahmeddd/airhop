@@ -193,6 +193,9 @@ interface WalletState {
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
   markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
+  // For coins someone else may also hold, such as a reclaimed token: the next
+  // refresh swaps them, which is what makes them ours alone.
+  markUnverified: (mintUrl: string, unit: string, secrets: string[]) => void;
   // On phrase replacement: old coins stay spendable but the new phrase cannot
   // rebuild them, so they read as uncovered until a refresh re-issues them.
   clearDerived: () => void;
@@ -299,6 +302,25 @@ export function parseAccountKey(key: string): {
   const idx = key.lastIndexOf(ACCOUNT_SEP);
   if (idx < 0) return { mintUrl: key, unit: "sat" };
   return { mintUrl: key.slice(0, idx), unit: key.slice(idx + 1) };
+}
+
+function setVerified(
+  state: WalletState,
+  mintUrl: string,
+  unit: string,
+  secrets: string[],
+  verified: boolean,
+): Partial<WalletState> {
+  const key = accountKey(mintUrl, unit);
+  const existing = state.proofs[key];
+  if (!existing) return state;
+  const mark = new Set(secrets);
+  return {
+    proofs: {
+      ...state.proofs,
+      [key]: existing.map((p) => (mark.has(p.secret) ? { ...p, verified } : p)),
+    },
+  };
 }
 
 // ---- Encrypted storage bootstrap ----
@@ -720,22 +742,15 @@ export const useWalletStore = create<WalletState>()(
         set((state) => ({ proofs: { ...state.proofs, [key]: proofs } }));
       },
 
+      // Nothing to mark skips the write, which would persist an unchanged store.
       markVerified(mintUrl, unit, secrets) {
         if (secrets.length === 0) return;
-        const key = accountKey(mintUrl, unit);
-        const mark = new Set(secrets);
-        set((state) => {
-          const existing = state.proofs[key];
-          if (!existing) return state;
-          return {
-            proofs: {
-              ...state.proofs,
-              [key]: existing.map((p) =>
-                mark.has(p.secret) ? { ...p, verified: true } : p,
-              ),
-            },
-          };
-        });
+        set((state) => setVerified(state, mintUrl, unit, secrets, true));
+      },
+
+      markUnverified(mintUrl, unit, secrets) {
+        if (secrets.length === 0) return;
+        set((state) => setVerified(state, mintUrl, unit, secrets, false));
       },
 
       clearDerived() {

@@ -1272,9 +1272,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Dostali",
   "wallet.reclaim.title": "Odzyskać ten token?",
   "wallet.reclaim.body":
-    "{amount} {unit} wraca na twoje saldo. Zrób tak tylko wtedy, gdy token nigdy do nikogo nie dotarł: jeśli mają już ten ciąg znaków, pieniądze zatrzyma ten, kto pierwszy zrealizuje go w mennicy, a to mogą być oni.",
+    "{amount} {unit} wraca na twoje saldo, a przekazany przez ciebie token przestaje działać, gdy tylko mennica będzie osiągalna. Jeśli zrealizują go wcześniej, pieniądze zostają u nich.",
   "wallet.reclaim.keep": "Zostaw jako oczekujące",
   "wallet.reclaim.confirm": "Odzyskaj",
+  "wallet.reclaim.claimed_title": "Już go zrealizowali",
+  "wallet.reclaim.claimed_body":
+    "Mennica podaje, że ten token został już zrealizowany, więc {amount} {unit} do nich dotarło i nic nie wróciło na twoje saldo.",
   "wallet.copied.token_body":
     "Token jest w schowku. Zostaje tu zarezerwowany, dopóki nie oznaczysz go jako dostarczonego, więc możesz go wkleić ponownie, jeśli pierwsza próba się nie uda.",
   "wallet.copied.phrase_body":
@@ -1350,7 +1353,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Przypisanych płatności nie da się odzyskać: tylko ich klucz może teraz wydać te monety.",
   "wallet.pay.reclaimable":
-    "Da się to odzyskać w zakładce Portfel, dopóki nie potwierdzisz, że dotarło.",
+    "Da się to odzyskać w sekcji Aktywność, dopóki nie potwierdzisz, że dotarło.",
   "wallet.pay.why": "Wysłane tą drogą, ponieważ {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} do {name}",
   "wallet.pay.thread_receipt":

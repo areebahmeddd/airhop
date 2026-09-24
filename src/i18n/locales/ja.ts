@@ -1253,9 +1253,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "受け取られました",
   "wallet.reclaim.title": "このトークンを回収しますか",
   "wallet.reclaim.body":
-    "{amount} {unit}が残高に戻ります。トークンが誰にも届かなかった場合にのみ行ってください。相手がすでに文字列を持っている場合、先にミントで引き換えた側がそのお金を得ることになり、それが相手である可能性があります。",
+    "{amount} {unit}が残高に戻り、渡したトークンはミントに接続でき次第使えなくなります。それまでに相手が引き換えた場合、そのお金は相手のものになります。",
   "wallet.reclaim.keep": "保留のままにする",
   "wallet.reclaim.confirm": "回収",
+  "wallet.reclaim.claimed_title": "相手がすでに引き換えています",
+  "wallet.reclaim.claimed_body":
+    "ミントによるとこのトークンはすでに引き換えられているため、{amount} {unit}は相手に届いており、残高には何も戻りませんでした。",
   "wallet.copied.token_body":
     "トークンをクリップボードにコピーしました。配信済みにするまでここで確保されたままなので、最初の試みが失敗しても貼り直せます。",
   "wallet.copied.phrase_body":
@@ -1329,8 +1332,7 @@ export const strings: Strings = {
     "相手の鍵に結び付けましたが、まだ運べていません。順番待ちで、トークンは「履歴」にあります。",
   "wallet.pay.final":
     "結び付けた支払いは回収できません。このコインを使えるのは相手の鍵だけです。",
-  "wallet.pay.reclaimable":
-    "届いたと確認するまで、ウォレットタブから回収できます。",
+  "wallet.pay.reclaimable": "届いたと確認するまで、履歴から回収できます。",
   "wallet.pay.why": "{reason}ため、この方法で送りました。",
   "wallet.pay.sent_title": "{amount} {unit}を{name}へ",
   "wallet.pay.thread_receipt":

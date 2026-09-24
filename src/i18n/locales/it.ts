@@ -1270,9 +1270,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "L’hanno ricevuto",
   "wallet.reclaim.title": "Recuperare questo token?",
   "wallet.reclaim.body":
-    "I {amount} {unit} tornano nel tuo saldo. Fallo solo se il token non è mai arrivato a nessuno: se hanno già la stringa, chi la riscuote per primo presso il mint tiene il denaro, e potrebbero essere loro.",
+    "I {amount} {unit} tornano nel tuo saldo, e il token che hai consegnato smette di funzionare non appena il mint è raggiungibile. Se lo riscuotono prima, resta loro.",
   "wallet.reclaim.keep": "Lascia in sospeso",
   "wallet.reclaim.confirm": "Recupera",
+  "wallet.reclaim.claimed_title": "L’hanno già riscosso",
+  "wallet.reclaim.claimed_body":
+    "Il mint dice che questo token è già stato riscosso, quindi i {amount} {unit} sono arrivati a loro e al tuo saldo non è tornato nulla.",
   "wallet.copied.token_body":
     "Il token è nei tuoi appunti. Resta riservato qui finché non lo segni come consegnato, quindi puoi incollarlo di nuovo se il primo tentativo fallisce.",
   "wallet.copied.phrase_body":
@@ -1349,7 +1352,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "I pagamenti vincolati non si possono recuperare: ora solo la loro chiave può spendere queste monete.",
   "wallet.pay.reclaimable":
-    "Resta recuperabile dalla scheda Portafoglio finché non confermi che è arrivato.",
+    "Resta recuperabile da Attività finché non confermi che è arrivato.",
   "wallet.pay.why": "Inviato così perché {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} a {name}",
   "wallet.pay.thread_receipt":

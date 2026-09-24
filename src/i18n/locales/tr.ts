@@ -1254,9 +1254,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Aldılar",
   "wallet.reclaim.title": "Bu jeton geri alınsın mı?",
   "wallet.reclaim.body":
-    "{amount} {unit} bakiyene geri döner. Bunu yalnızca jeton hiç kimseye ulaşmadıysa yap: dizeyi zaten ellerindeyse, darphanede ilk bozduran parayı alır ve bu onlar olabilir.",
+    "{amount} {unit} bakiyene geri döner ve verdiğin jeton, darphaneye ulaşılabildiği anda çalışmayı bırakır. Onlar bundan önce bozdurursa, para onlarda kalır.",
   "wallet.reclaim.keep": "Bekliyor bırak",
   "wallet.reclaim.confirm": "Geri al",
+  "wallet.reclaim.claimed_title": "Onlar zaten bozdurmuş",
+  "wallet.reclaim.claimed_body":
+    "Darphane bu jetonun zaten bozdurulduğunu söylüyor, yani {amount} {unit} onlara ulaştı ve bakiyene hiçbir şey geri dönmedi.",
   "wallet.copied.token_body":
     "Jeton panonda. Teslim edildi olarak işaretleyene kadar burada ayrılmış kalır, bu yüzden ilk deneme başarısız olursa yeniden yapıştırabilirsin.",
   "wallet.copied.phrase_body":
@@ -1331,7 +1334,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Kilitli ödemeler geri alınamaz: bu jetonları artık yalnızca onların anahtarı harcayabilir.",
   "wallet.pay.reclaimable":
-    "Ulaştığını onaylayana kadar Cüzdan sekmesinden geri alınabilir kalır.",
+    "Ulaştığını onaylayana kadar Etkinlik'ten geri alınabilir kalır.",
   "wallet.pay.why": "Bu yolla gönderildi, çünkü {reason}.",
   "wallet.pay.sent_title": "{name} kişisine {amount} {unit}",
   "wallet.pay.thread_receipt":

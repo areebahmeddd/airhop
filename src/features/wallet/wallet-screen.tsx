@@ -38,6 +38,7 @@ import {
   describeRoute,
   payPerson,
   reclaimTokenSend,
+  settleReclaimedSend,
 } from "@services/payment-router";
 import {
   addMint as addMintService,
@@ -683,8 +684,6 @@ export default function WalletScreen({
   }
 
   // Drops the reservation, forfeiting reclaim for good, so it asks first.
-  // Reclaim only returns money to the balance; the confirm belongs on the
-  // door that does not reopen.
   function markDelivered(txId: string): void {
     const tx = pending?.txId === txId ? pending : undefined;
     showAlert(
@@ -709,7 +708,7 @@ export default function WalletScreen({
     );
   }
 
-  // The transfer never landed. Puts the proofs back into the balance.
+  // Instant, even offline; the mint's half follows in settleReclaimedSend.
   function handleReclaim(tx: WalletTx | PreparedSend): void {
     // WalletTx `id` and PreparedSend `txId` are the same value.
     const txId = "txId" in tx ? tx.txId : tx.id;
@@ -724,8 +723,17 @@ export default function WalletScreen({
           text: t("wallet.reclaim.confirm"),
           style: "destructive",
           onPress: () => {
-            reclaimTokenSend(txId);
+            if (!reclaimTokenSend(txId)) return;
             setPending(null);
+            void settleReclaimedSend(txId).then((outcome) => {
+              if (outcome !== "claimed") return;
+              showAlert(
+                t("wallet.reclaim.claimed_title"),
+                t("wallet.reclaim.claimed_body", {
+                  ...amountParts(tx.amount, tx.unit),
+                }),
+              );
+            });
           },
         },
       ],

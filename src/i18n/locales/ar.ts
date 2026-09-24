@@ -1212,9 +1212,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "وصلهم",
   "wallet.reclaim.title": "استرجاع هذا التوكن؟",
   "wallet.reclaim.body":
-    "تعود الـ {amount} {unit} إلى رصيدك. لا تفعل هذا إلا إن لم يصل التوكن أحدًا: فإن كانت السلسلة بحوزتهم بالفعل، يحتفظ بالمال من يصرفها أولًا عند دار السك، وقد يكونون هم.",
+    "تعود الـ {amount} {unit} إلى رصيدك، ويتوقف التوكن الذي سلّمته عن العمل حالما يمكن الوصول إلى دار السك. إن صرفوه قبل ذلك، يبقى لهم.",
   "wallet.reclaim.keep": "أبقها معلّقة",
   "wallet.reclaim.confirm": "استرجاع",
+  "wallet.reclaim.claimed_title": "لقد صرفوه بالفعل",
+  "wallet.reclaim.claimed_body":
+    "تقول دار السك إن هذا التوكن صُرف بالفعل، لذا وصلتهم الـ {amount} {unit} ولم يعد شيء إلى رصيدك.",
   "wallet.copied.token_body":
     "التوكن في حافظتك. ويبقى محجوزًا هنا حتى تضع علامة أنه سُلّم، فيمكنك لصقه مرة أخرى إن فشلت المحاولة الأولى.",
   "wallet.copied.phrase_body":
@@ -1286,8 +1289,7 @@ export const strings: Strings = {
     "مقفلة على مفتاحهم، لكن لم يستطع شيء حملها بعد. إنها في قائمة الانتظار، والتوكن ضمن النشاط.",
   "wallet.pay.final":
     "لا يمكن استرجاع المدفوعات المقفلة: مفتاحهم وحده يستطيع إنفاق هذه العملات الآن.",
-  "wallet.pay.reclaimable":
-    "تبقى قابلة للاسترجاع من تبويب المحفظة حتى تؤكد وصولها.",
+  "wallet.pay.reclaimable": "تبقى قابلة للاسترجاع من «النشاط» حتى تؤكد وصولها.",
   "wallet.pay.why": "أُرسلت بهذه الطريقة لأن {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} إلى {name}",
   "wallet.pay.thread_receipt": "أرسلت {amount} {unit}، مقفلة على مفتاحهم.",

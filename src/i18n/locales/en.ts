@@ -1264,9 +1264,12 @@ export const strings = {
   "wallet.delivered.confirm": "They got it",
   "wallet.reclaim.title": "Reclaim this token?",
   "wallet.reclaim.body":
-    "The {amount} {unit} goes back into your balance. Only do this if the token never reached anyone: if they already have the string, whoever redeems it at the mint first keeps the money, and that could be them.",
+    "The {amount} {unit} goes back into your balance, and the token you handed out stops working once the mint can be reached. If they redeem it before then, it stays theirs.",
   "wallet.reclaim.keep": "Keep pending",
   "wallet.reclaim.confirm": "Reclaim",
+  "wallet.reclaim.claimed_title": "They already claimed it",
+  "wallet.reclaim.claimed_body":
+    "The mint says this token was already redeemed, so the {amount} {unit} reached them and nothing came back to your balance.",
   "wallet.copied.token_body":
     "The token is on your clipboard. It stays reserved here until you mark it delivered, so you can paste it again if the first attempt fails.",
   "wallet.copied.phrase_body":
@@ -1342,7 +1345,7 @@ export const strings = {
   "wallet.pay.final":
     "Locked payments cannot be reclaimed: only their key can spend these coins now.",
   "wallet.pay.reclaimable":
-    "It stays reclaimable from the Wallet tab until you confirm it arrived.",
+    "It stays reclaimable in Activity until you confirm it arrived.",
   "wallet.pay.why": "Sent this way because {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} to {name}",
   "wallet.pay.thread_receipt": "You sent {amount} {unit}, locked to their key.",

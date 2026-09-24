@@ -1262,9 +1262,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Mereka menerimanya",
   "wallet.reclaim.title": "Tarik kembali token ini?",
   "wallet.reclaim.body":
-    "{amount} {unit} kembali ke saldomu. Lakukan ini hanya kalau tokennya tidak pernah sampai ke siapa pun: kalau deretnya sudah ada pada mereka, siapa pun yang lebih dulu menukarkannya di mint akan memegang uangnya, dan itu bisa saja mereka.",
+    "{amount} {unit} kembali ke saldomu, dan token yang kamu berikan berhenti bekerja begitu mint bisa dihubungi. Kalau mereka menukarkannya sebelum itu, uangnya tetap milik mereka.",
   "wallet.reclaim.keep": "Biarkan tertunda",
   "wallet.reclaim.confirm": "Tarik kembali",
+  "wallet.reclaim.claimed_title": "Mereka sudah menukarkannya",
+  "wallet.reclaim.claimed_body":
+    "Menurut mint, token ini sudah ditukarkan, jadi {amount} {unit} sudah sampai ke mereka dan tidak ada yang kembali ke saldomu.",
   "wallet.copied.token_body":
     "Tokennya ada di papan klipmu. Ia tetap dicadangkan di sini sampai kamu menandainya terkirim, jadi kamu bisa menempelnya lagi kalau percobaan pertama gagal.",
   "wallet.copied.phrase_body":
@@ -1341,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Pembayaran yang terkunci tidak bisa ditarik kembali: kini hanya kunci mereka yang bisa membelanjakan koin-koin ini.",
   "wallet.pay.reclaimable":
-    "Ia tetap bisa ditarik kembali dari tab Dompet sampai kamu memastikan bahwa ia sampai.",
+    "Ia tetap bisa ditarik kembali dari Aktivitas sampai kamu memastikan bahwa ia sampai.",
   "wallet.pay.why": "Dikirim lewat jalur ini karena {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} ke {name}",
   "wallet.pay.thread_receipt":

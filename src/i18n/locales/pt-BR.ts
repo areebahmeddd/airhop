@@ -1270,9 +1270,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "A pessoa recebeu",
   "wallet.reclaim.title": "Retomar este token?",
   "wallet.reclaim.body":
-    "Os {amount} {unit} voltam para o seu saldo. Só faça isso se o token nunca chegou a ninguém: se a pessoa já tem a sequência, quem resgatar primeiro na casa de emissão fica com o dinheiro, e pode ser ela.",
+    "Os {amount} {unit} voltam para o seu saldo, e o token que você entregou para de funcionar assim que a casa de emissão estiver acessível. Se a pessoa resgatar antes disso, o dinheiro fica com ela.",
   "wallet.reclaim.keep": "Deixar pendente",
   "wallet.reclaim.confirm": "Retomar",
+  "wallet.reclaim.claimed_title": "A pessoa já resgatou",
+  "wallet.reclaim.claimed_body":
+    "A casa de emissão informa que este token já foi resgatado, então os {amount} {unit} chegaram até a pessoa e nada voltou para o seu saldo.",
   "wallet.copied.token_body":
     "O token está na sua área de transferência. Ele continua reservado aqui até você marcar como entregue, então dá para colar de novo se a primeira tentativa falhar.",
   "wallet.copied.phrase_body":
@@ -1348,7 +1351,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Pagamentos travados não podem ser retomados: agora só a chave da pessoa pode gastar estas moedas.",
   "wallet.pay.reclaimable":
-    "Continua retomável pela aba Carteira até você confirmar que chegou.",
+    "Continua retomável em Atividade até você confirmar que chegou.",
   "wallet.pay.why": "Enviado assim porque {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} para {name}",
   "wallet.pay.thread_receipt":

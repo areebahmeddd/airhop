@@ -1289,9 +1289,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Nandray izy",
   "wallet.reclaim.title": "Haverina ity tapakila ity?",
   "wallet.reclaim.body":
-    "Miverina amin'ny volanao ny {amount} {unit}. Ataovy izany raha tsy tonga tany amin'olona mihitsy ny tapakila: raha efa manana ilay andalan-tsoratra izy, dia izay mividy azy voalohany any amin'ny mpamoaka no mitana ny vola, ary mety ho izy izany.",
+    "Miverina amin'ny volanao ny {amount} {unit}, ary tsy miasa intsony ilay tapakila nomenao raha vao tratra ny mpamoaka. Raha efa novidin'izy ireo talohan'izay izy, dia azy ireo ihany izany.",
   "wallet.reclaim.keep": "Avelao hiandry",
   "wallet.reclaim.confirm": "Avereno",
+  "wallet.reclaim.claimed_title": "Efa novidin'izy ireo izy",
+  "wallet.reclaim.claimed_body":
+    "Milaza ny mpamoaka fa efa novidina ity tapakila ity, ka tonga tany amin'izy ireo ny {amount} {unit} ary tsy nisy niverina tamin'ny volanao.",
   "wallet.copied.token_body":
     "Ao amin'ny takelaka fitehirizanao ny tapakila. Mijanona voatokana eto izy mandra-panamarikanao azy ho voatatitra, ka azonao apetaka indray raha tsy nahomby ny andrana voalohany.",
   "wallet.copied.phrase_body":
@@ -1368,7 +1371,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Tsy azo averina ny fandoavam-bola mihidy: ny lakiley ihany no afaka mandany ireo vola madinika ireo izao.",
   "wallet.pay.reclaimable":
-    "Mbola azo averina avy amin'ny takelaka Kitapom-bola izy mandra-panamafisanao fa tonga izy.",
+    "Mbola azo averina avy amin'ny Hetsika izy mandra-panamafisanao fa tonga izy.",
   "wallet.pay.why": "Nalefa toy izao satria {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} ho an'i {name}",
   "wallet.pay.thread_receipt":

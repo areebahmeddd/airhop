@@ -1249,9 +1249,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "De fick det",
   "wallet.reclaim.title": "Ta tillbaka tokenet?",
   "wallet.reclaim.body":
-    "De {amount} {unit} går tillbaka till ditt saldo. Gör bara det här om tokenet aldrig nådde någon: har de redan strängen behåller den som löser in den först hos minten pengarna, och det kan vara de.",
+    "De {amount} {unit} går tillbaka till ditt saldo, och tokenet du lämnade ut slutar fungera så fort minten går att nå. Löser de in det innan dess behåller de pengarna.",
   "wallet.reclaim.keep": "Låt förbli väntande",
   "wallet.reclaim.confirm": "Ta tillbaka",
+  "wallet.reclaim.claimed_title": "De har redan löst in det",
+  "wallet.reclaim.claimed_body":
+    "Minten säger att tokenet redan är inlöst, så de {amount} {unit} nådde fram till dem och inget kom tillbaka till ditt saldo.",
   "wallet.copied.token_body":
     "Tokenet ligger i urklipp. Det förblir reserverat här tills du markerar det som levererat, så du kan klistra in det igen om första försöket misslyckas.",
   "wallet.copied.phrase_body":
@@ -1326,7 +1329,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Låsta betalningar går inte att ta tillbaka: bara deras nyckel kan använda mynten nu.",
   "wallet.pay.reclaimable":
-    "Det går att ta tillbaka från Plånbok-fliken tills du bekräftar att det kom fram.",
+    "Det går att ta tillbaka under Aktivitet tills du bekräftar att det kom fram.",
   "wallet.pay.why": "Skickat så här eftersom {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} till {name}",
   "wallet.pay.thread_receipt":

@@ -1265,9 +1265,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Ze hebben het",
   "wallet.reclaim.title": "Dit token terugnemen?",
   "wallet.reclaim.body":
-    "De {amount} {unit} gaat terug naar je saldo. Doe dit alleen als het token nooit iemand heeft bereikt: hebben ze de reeks al, dan houdt degene die hem als eerste bij de mint inwisselt het geld, en dat kunnen zij zijn.",
+    "De {amount} {unit} gaat terug naar je saldo, en het token dat je hebt doorgegeven werkt niet meer zodra de mint bereikbaar is. Wisselen ze het eerder in, dan blijft het geld van hen.",
   "wallet.reclaim.keep": "In afwachting laten",
   "wallet.reclaim.confirm": "Terugnemen",
+  "wallet.reclaim.claimed_title": "Ze hebben het al ingewisseld",
+  "wallet.reclaim.claimed_body":
+    "Volgens de mint is dit token al ingewisseld, dus de {amount} {unit} is bij hen aangekomen en er is niets naar je saldo teruggegaan.",
   "wallet.copied.token_body":
     "Het token staat op je klembord. Het blijft hier apart gezet tot je het als afgeleverd markeert, dus je kunt het opnieuw plakken als de eerste poging mislukt.",
   "wallet.copied.phrase_body":
@@ -1341,7 +1344,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Vastgezette betalingen kun je niet terugnemen: alleen hun sleutel kan deze munten nu nog uitgeven.",
   "wallet.pay.reclaimable":
-    "Je kunt het terugnemen vanaf het Portemonnee-tabblad tot je bevestigt dat het is aangekomen.",
+    "Je kunt het terugnemen via Activiteit tot je bevestigt dat het is aangekomen.",
   "wallet.pay.why": "Zo verstuurd omdat {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} naar {name}",
   "wallet.pay.thread_receipt":

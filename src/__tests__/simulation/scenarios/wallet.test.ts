@@ -331,6 +331,84 @@ test("W04 an undelivered send is reclaimable rather than lost", async () => {
   s.assert(true);
 });
 
+test("W23 a reclaim is final at the mint, or says the recipient got there first", async () => {
+  // A reclaim puts the coins back, but the token handed out still exists.
+  // Online, the coins are swapped at once, as cashu.me reclaims by receiving
+  // its own token, so that copy dies. If the recipient redeemed it first, the
+  // money reached them, and the send says so instead of showing a balance
+  // that is not there. Offline, the next refresh does the swap.
+  const s = (scenario = new Scenario({
+    id: "W23",
+    title: "reclaiming a token that may already be in someone's hands",
+    seed: 123,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  for (const d of devices) await d.walletReady();
+  for (const d of devices) await d.addMint(mint.url);
+  // 511 arrives as one coin of each power of two, so every send is exact.
+  await alice.depositSats(511);
+
+  // Reclaimed online, never redeemed: the handed-out token stops working.
+  const kept = await alice.prepareSend(64);
+  s.check("a token was prepared", kept !== null);
+  s.check("it can be reclaimed", alice.reclaimLastSend());
+  const secured = await alice.settleLastReclaim();
+  s.check("the reclaim is settled at the mint", secured === "secured", secured);
+  s.check(
+    "and the copy bob might hold no longer pays",
+    !(await bob.receiveToken(kept ?? "")),
+  );
+  s.check(
+    "the coins are confirmed hers",
+    alice.unverifiedBalance() === 0 && alice.reservedBalance() === 0,
+    alice.walletDebug(),
+  );
+
+  // Redeemed before the reclaim: nothing comes back, and the send completes.
+  const heldBefore = alice.totalHeld();
+  const given = await alice.prepareSend(32);
+  const givenTx = alice.lastSendTxId() ?? "";
+  s.check("bob redeems the second token", await bob.receiveToken(given ?? ""));
+  alice.reclaimLastSend();
+  const claimed = await alice.settleLastReclaim();
+  s.check("the mint says bob got there first", claimed === "claimed", claimed);
+  s.check(
+    "so the send counts as completed, not reclaimed",
+    alice.txStatus(givenTx) === "completed",
+    String(alice.txStatus(givenTx)),
+  );
+  s.check(
+    "and no phantom balance is left behind",
+    alice.totalHeld() === heldBefore - 32 && alice.unverifiedBalance() === 0,
+    `before=${heldBefore} after=${alice.totalHeld()}`,
+  );
+
+  // Reclaimed with no mint: deferred, then made final by the next refresh.
+  const offline = await alice.prepareSend(16);
+  mint.setConditions({ offline: true });
+  alice.reclaimLastSend();
+  const deferred = await alice.settleLastReclaim();
+  s.check("offline, the reclaim waits", deferred === "deferred", deferred);
+  s.check(
+    "with the coins back but unconfirmed",
+    alice.unverifiedBalance() > 0,
+    alice.walletDebug(),
+  );
+  mint.setConditions({ offline: false });
+  await alice.refreshWallet();
+  s.check(
+    "the next refresh swaps them, so that copy dies too",
+    !(await bob.receiveToken(offline ?? "")) && alice.unverifiedBalance() === 0,
+    alice.walletDebug(),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
 test("W05 a mint that dies mid-swap does not destroy the input proofs", async () => {
   const s = (scenario = new Scenario({
     id: "W05",

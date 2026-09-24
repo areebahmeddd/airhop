@@ -1482,10 +1482,11 @@ export default function ArchitecturePage() {
                 shown as unconfirmed on its own line, not folded silently into your balance.
                 <br />
                 <br />
-                <strong className="text-ink">Reclaiming is a race.</strong> An undelivered send can
-                be reclaimed because the coins were reserved, not deleted, but if the recipient
-                already holds the token string, whoever reaches the mint first keeps the money. The
-                app says so before you tap.
+                <strong className="text-ink">Reclaiming settles at the mint.</strong> An undelivered
+                send can be reclaimed because the coins were reserved, not deleted. Online, the
+                coins are swapped at once, so the token you handed out stops working, and if the
+                recipient redeemed it first the app tells you. Offline, they come back unconfirmed
+                until the mint can be asked.
               </Note>
 
               <p>

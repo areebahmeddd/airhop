@@ -1233,9 +1233,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "상대방이 받았습니다",
   "wallet.reclaim.title": "이 토큰을 회수할까요?",
   "wallet.reclaim.body":
-    "{amount} {unit}이(가) 잔액으로 돌아옵니다. 토큰이 아무에게도 닿지 않은 경우에만 하세요. 상대가 이미 그 문자열을 가지고 있다면, 민트에서 먼저 교환하는 쪽이 돈을 갖게 되고 그것이 상대일 수 있습니다.",
+    "{amount} {unit}이(가) 잔액으로 돌아오며, 건넨 토큰은 민트에 연결되는 즉시 작동하지 않게 됩니다. 그 전에 상대가 교환하면 그 돈은 상대의 것으로 남습니다.",
   "wallet.reclaim.keep": "대기 상태로 두기",
   "wallet.reclaim.confirm": "회수",
+  "wallet.reclaim.claimed_title": "상대가 이미 교환했습니다",
+  "wallet.reclaim.claimed_body":
+    "민트에 따르면 이 토큰은 이미 교환되었으므로, {amount} {unit}은(는) 상대에게 도착했고 잔액으로 돌아온 것은 없습니다.",
   "wallet.copied.token_body":
     "토큰이 클립보드에 있습니다. 전달 완료로 표시하기 전까지는 여기 예약된 채로 남으므로, 첫 시도가 실패하면 다시 붙여넣을 수 있습니다.",
   "wallet.copied.phrase_body":
@@ -1311,7 +1314,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "잠긴 결제는 회수할 수 없습니다. 이제 이 코인들은 상대의 키로만 쓸 수 있습니다.",
   "wallet.pay.reclaimable":
-    "도착했음을 확인하기 전까지는 지갑 탭에서 회수할 수 있습니다.",
+    "도착했음을 확인하기 전까지는 활동에서 회수할 수 있습니다.",
   "wallet.pay.why": "{reason} 때문에 이 방법으로 보냈습니다.",
   "wallet.pay.sent_title": "{name}에게 {amount} {unit}",
   "wallet.pay.thread_receipt":

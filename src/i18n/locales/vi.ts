@@ -1252,9 +1252,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Họ đã nhận được",
   "wallet.reclaim.title": "Thu hồi token này?",
   "wallet.reclaim.body":
-    "{amount} {unit} sẽ quay về số dư của bạn. Chỉ làm vậy nếu token chưa từng tới tay ai: nếu họ đã có chuỗi ký tự đó, ai đổi nó ở nhà đúc trước thì người đó giữ số tiền, và người đó có thể chính là họ.",
+    "{amount} {unit} sẽ quay về số dư của bạn, và token bạn đã trao đi sẽ ngừng hoạt động ngay khi kết nối được với nhà đúc. Nếu họ đổi nó trước lúc đó, số tiền vẫn thuộc về họ.",
   "wallet.reclaim.keep": "Giữ đang chờ",
   "wallet.reclaim.confirm": "Thu hồi",
+  "wallet.reclaim.claimed_title": "Họ đã đổi nó rồi",
+  "wallet.reclaim.claimed_body":
+    "Nhà đúc cho biết token này đã được đổi, nên {amount} {unit} đã tới tay họ và không có gì quay về số dư của bạn.",
   "wallet.copied.token_body":
     "Token đang nằm trên bảng nhớ tạm của bạn. Nó vẫn được giữ ở đây cho tới khi bạn đánh dấu là đã chuyển, nên bạn dán lại được nếu lần đầu không thành.",
   "wallet.copied.phrase_body":
@@ -1330,7 +1333,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Các khoản thanh toán đã khóa thì không thu hồi được: giờ chỉ khóa của họ mới tiêu được những đồng này.",
   "wallet.pay.reclaimable":
-    "Nó vẫn thu hồi được từ thẻ Ví cho tới khi bạn xác nhận nó đã tới nơi.",
+    "Nó vẫn thu hồi được từ mục Hoạt động cho tới khi bạn xác nhận nó đã tới nơi.",
   "wallet.pay.why": "Được gửi theo cách này vì {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} cho {name}",
   "wallet.pay.thread_receipt":

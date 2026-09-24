@@ -1281,9 +1281,12 @@ export const strings: Strings = {
   "wallet.delivered.confirm": "Ils l’ont reçu",
   "wallet.reclaim.title": "Récupérer ce jeton ?",
   "wallet.reclaim.body":
-    "Les {amount} {unit} retournent dans ton solde. Ne fais cela que si le jeton n’a jamais atteint personne : s’ils ont déjà la chaîne, celui qui l’encaisse en premier auprès du mint garde l’argent, et ce pourrait être eux.",
+    "Les {amount} {unit} retournent dans ton solde, et le jeton que tu as transmis cesse de fonctionner dès que le mint est joignable. S’ils l’encaissent avant, il leur reste acquis.",
   "wallet.reclaim.keep": "Laisser en attente",
   "wallet.reclaim.confirm": "Récupérer",
+  "wallet.reclaim.claimed_title": "Ils l’ont déjà encaissé",
+  "wallet.reclaim.claimed_body":
+    "Le mint indique que ce jeton a déjà été encaissé, les {amount} {unit} leur sont donc parvenus et rien n’est revenu dans ton solde.",
   "wallet.copied.token_body":
     "Le jeton est dans ton presse-papiers. Il reste réservé ici tant que tu ne l’as pas marqué comme remis, tu peux donc le recoller si la première tentative échoue.",
   "wallet.copied.phrase_body":
@@ -1360,7 +1363,7 @@ export const strings: Strings = {
   "wallet.pay.final":
     "Les paiements verrouillés ne peuvent pas être récupérés : seule leur clé peut désormais dépenser ces pièces.",
   "wallet.pay.reclaimable":
-    "Il reste récupérable depuis l’onglet Portefeuille jusqu’à ce que tu confirmes son arrivée.",
+    "Il reste récupérable depuis Activité jusqu’à ce que tu confirmes son arrivée.",
   "wallet.pay.why": "Envoyé ainsi parce que {reason}.",
   "wallet.pay.sent_title": "{amount} {unit} à {name}",
   "wallet.pay.thread_receipt":

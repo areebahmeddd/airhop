@@ -696,9 +696,12 @@ a banner and disables what would fail.
 | IP linkage over Tor | The mint network gate above                                                                                                                             |
 
 Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
-sender has not spent it. And reclaiming an undelivered send races the recipient:
-if they also hold the token, whoever reaches the mint first keeps it, which the
-UI says before reclaiming.
+sender has not spent it. And a reclaimed send races the recipient until the mint
+is reached. Online, reclaiming swaps the coins at once, as cashu.me does by
+receiving its own token, so the copy handed out stops working; if the recipient
+redeemed it first, the send is marked completed rather than shown as balance.
+Offline, the coins come back unconfirmed until the next refresh swaps them. The
+UI says so before reclaiming.
 
 ### Recovery
 
