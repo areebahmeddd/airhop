@@ -2,7 +2,10 @@
 // Shows messages with sender and timestamp. Text input to compose and PTT button.
 
 import { nicknameKey, normalizeNickname } from "@core/mesh/discovery/nickname";
-import { MAX_BURST_MS } from "@core/mesh/voice/voice-capture";
+import {
+  MAX_BURST_MS,
+  MIN_BURST_KEEP_MS,
+} from "@core/mesh/voice/voice-capture";
 import {
   MAX_BITCHAT_TRANSFER_BYTES,
   MAX_VIDEO_SECONDS,
@@ -1750,6 +1753,9 @@ export default function MessageThread({
   // needs to compare against the ceiling in the same pass that increments, and
   // a state updater is the wrong place to decide anything.
   const elapsedRef = useRef(0);
+  // When the recorder opened, for the note's length. The tick above counts
+  // whole seconds, which puts every note under one second at zero.
+  const recordStartedAtRef = useRef(0);
   // A live burst stops going out at the ceiling while the button is still held,
   // so the HUD has to say so. Derived from the same elapsed count the HUD
   // already shows rather than a second timer, so the two can never disagree.
@@ -3791,6 +3797,7 @@ export default function MessageThread({
         return false;
       }
       audioRecorder.record();
+      recordStartedAtRef.current = Date.now();
       startRecordingTimer();
       // A recording is running, so the hold can be locked. Set here rather than
       // where the path was chosen: a denied permission or a failed prepare
@@ -3812,7 +3819,7 @@ export default function MessageThread({
 
   async function stopRecording(): Promise<void> {
     setHandsFreeRecording(false);
-    const duration = recordingSecs;
+    const durationMs = Date.now() - recordStartedAtRef.current;
     stopRecordingTimer();
     try {
       // Only when a note is actually being recorded. Every other ending -
@@ -3834,6 +3841,12 @@ export default function MessageThread({
       // this handler is the one place that must not be.
       if (!audioRecorder.getStatus().isRecording) return;
       await audioRecorder.stop();
+      // A tap, not a message: the same floor a live burst is retracted under,
+      // so the two paths agree. The hint says what the press was for.
+      if (durationMs < MIN_BURST_KEEP_MS) {
+        setToast({ message: t("chat.voice.hold_record"), icon: "mic" });
+        return;
+      }
       const recorded = audioRecorder.uri;
       if (!recorded) {
         // The recorder produced nothing. Say so: the bar closes either way, and
@@ -3858,7 +3871,7 @@ export default function MessageThread({
         uri,
         wireMediaName("voice", "m4a"),
         "audio/mp4",
-        duration * 1000,
+        durationMs,
       );
     } catch {
       // Same reasoning as the empty-recording branch above: never fail mute.
@@ -4390,7 +4403,10 @@ export default function MessageThread({
           // resolveThreadScroll. This prop only stops content shifting.
           maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
           renderItem={({ item, index }) => {
-            const showAvatar = !item.isMine;
+            // A 1:1 thread names the other person in its header, so a name on
+            // every received bubble only repeats it, and would repeat whatever
+            // name the message was stored under rather than the current one.
+            const showAvatar = !item.isMine && !isDM;
             const isFirstFromSender =
               index === 0 ||
               (msgs[index - 1]?.senderID ?? "") !== item.senderID;

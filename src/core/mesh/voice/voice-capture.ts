@@ -108,13 +108,11 @@ const RETRACT_REPEAT_MS = [110, 330];
 // bitchat makes in PTTLiveVoiceSession.finish(), which sends `.canceled` below
 // its own minimum and deletes the file rather than delivering it.
 //
-// The threshold itself is ours, not bitchat's: theirs is 1 s, shared with their
-// voice-note recorder. Airhop's recorder has no floor at all, so matching 1 s
-// here would mean a 700 ms hold sends a note when nobody is in range and
-// nothing when somebody is - the delivery strategy leaking into whether the
-// message exists. 500 ms is short enough to be a tap and long enough that the
-// two paths agree in every case a user can feel. Nothing on the wire depends on
-// it: receivers enforce no minimum, on either client.
+// The threshold itself is ours, not bitchat's (theirs is 1 s). Airhop's
+// voice-note recorder uses this same floor, so a hold either becomes a message
+// or does not, whichever path carries it: the delivery strategy never decides
+// whether the message exists. 500 ms is short enough to be a tap. Nothing on
+// the wire depends on it: receivers enforce no minimum, on either client.
 export const MIN_BURST_KEEP_MS = 500;
 
 // ---- Types ----
