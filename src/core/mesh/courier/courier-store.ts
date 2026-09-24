@@ -1,6 +1,6 @@
 // Store-and-forward courier system.
 //
-// Compatible with bitchat iOS CourierStore.swift.
+// Compatible with bitchat-ios CourierStore.swift.
 //
 // When no transport can reach a recipient, a message is sealed (Noise X) into
 // a courier envelope and handed to connected peers who may physically encounter
@@ -80,7 +80,7 @@ export function computeRecipientTag(
 
 // ---- Envelope wire format ----
 //
-// TLV encoding matching bitchat iOS CourierEnvelope.encode() / .decode().
+// TLV encoding matching bitchat-ios CourierEnvelope.encode() / .decode().
 // Types:
 //   0x01  recipientTag  (16 bytes)
 //   0x02  expiry        (8 bytes, u64 BE, milliseconds)
@@ -135,7 +135,7 @@ export function encodeEnvelopePayload(env: SealedEnvelope): Uint8Array {
 
   appendTlv(ENV_TLV_CIPHERTEXT, env.ciphertext, bytes);
 
-  // Omit copies TLV when == 1 (carry-only); matches bitchat iOS wire format
+  // Omit copies TLV when == 1 (carry-only); matches bitchat-ios wire format
   if (env.copies > 1) {
     appendTlv(ENV_TLV_COPIES, new Uint8Array([env.copies & 0xff]), bytes);
   }

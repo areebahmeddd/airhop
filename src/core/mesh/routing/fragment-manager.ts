@@ -1,7 +1,7 @@
 // Fragment manager: split a packet too large for one BLE frame into frames that
 // fit, and reassemble them on the far side.
 //
-// Wire-compatible with bitchat iOS BLEFragmentHandler / BLEFragmentAssemblyBuffer.
+// Wire-compatible with bitchat-ios BLEFragmentHandler / BLEFragmentAssemblyBuffer.
 //
 // Fragment payload layout (inside a FILE_CHUNK / 0x05 packet):
 //   [8 bytes: fragment stream ID (u64 BE, random per original packet)]
@@ -14,13 +14,15 @@
 // encoding of the original packet (as returned by encodePacket).
 
 import { hexToBytes } from "@noble/hashes/utils.js";
-import { MAX_FRAMED_FILE_BYTES } from "../wire/file-packet";
 import {
   PacketType,
+  SENDER_ID_SIZE,
+  V2_HEADER_SIZE,
   decodePacket,
   encodePacket,
   type Packet,
 } from "../wire/packet-codec";
+import { maxPayloadBytes } from "../wire/payload-limits";
 
 // The Bluetooth ceiling on a single ATT attribute value, and therefore on every
 // frame we hand the radio.
@@ -70,15 +72,37 @@ const MAX_CONCURRENT = 128;
 // the sender is gone.
 const TIMEOUT_MS = 30_000;
 
-// Hard cap on total reassembled size. Guards against memory exhaustion while
-// admitting the largest file a bitchat peer can send (1 MiB content + TLV +
-// packet envelope), matching bitchat's FileTransferLimits.maxFramedFileBytes.
-const MAX_REASSEMBLED_BYTES = MAX_FRAMED_FILE_BYTES;
+// Everything a frame carries besides its payload: the v2 header, sender and
+// recipient, the widest route (255 hops), the compressed-size field, the
+// signature and the most padding.
+const MAX_FRAME_OVERHEAD_BYTES =
+  V2_HEADER_SIZE + 2 * SENDER_ID_SIZE + 1 + 255 * SENDER_ID_SIZE + 4 + 64 + 255;
+
+// An assembly holds no more than the frame its claimed type could decode to,
+// so a stream labelled as a public message cannot buffer a file's worth of
+// memory. Mirrors bitchat-ios PacketPayloadLimits.maxFrameBytes.
+function maxAssemblyBytes(originalType: number): number {
+  return maxPayloadBytes(originalType as PacketType) + MAX_FRAME_OVERHEAD_BYTES;
+}
 
 // The outer fragment packet type per PROTOCOLS.md.
 const OUTER_TYPE = PacketType.FRAGMENT; // 0x20
 
-export type FragmentCallback = (packet: Packet) => void;
+// What the assembly knows about how its packet arrived, which the packet
+// itself cannot say. A fragment's freshness says nothing about the packet
+// inside it, so the inner packet's own timestamp is what a replay hides behind.
+export interface AssemblyInfo {
+  // When the first fragment landed. An honest inner packet is stamped before
+  // its first fragment leaves, so it dates from no earlier than this less the
+  // clock skew, however long the transfer then takes.
+  startedAt: number;
+  // The one origin every fragment arrived from, or null when they came from
+  // more than one (or the caller named none). Only a stream carried by a
+  // single link can be attributed to the peer on that link.
+  origin: string | null;
+}
+
+export type FragmentCallback = (packet: Packet, info: AssemblyInfo) => void;
 
 // Reports reassembly progress as fragments of a stream arrive, so the UI can
 // show an incoming-file card before the whole file is here.
@@ -218,6 +242,8 @@ interface Assembly {
   fragments: Map<number, Uint8Array>;
   // When the last fragment landed. Drives the idle timeout; see TIMEOUT_MS.
   updatedAt: number;
+  startedAt: number;
+  origin: string | null;
   byteCount: number;
 }
 
@@ -226,12 +252,14 @@ export class FragmentManager {
 
   // Process a received fragment packet. Calls `onComplete` with the
   // reassembled inner Packet when the last fragment arrives.
-  // `fromSenderID` is the 8-byte senderID from the outer fragment packet.
+  // `fromSenderID` is the 8-byte senderID from the outer fragment packet, and
+  // `origin` is an opaque name for where this fragment came from (a link).
   receive(
     fromSenderID: Uint8Array,
     payload: Uint8Array,
     onComplete: FragmentCallback,
     onProgress?: FragmentProgressCallback,
+    origin?: string,
   ): void {
     const header = decodeFragmentPayload(payload);
     if (header === null) return;
@@ -247,7 +275,7 @@ export class FragmentManager {
     // One fragment reaches this size despite the 512-byte frame budget because
     // the outer packet may be DEFLATE-compressed and the decoder inflates up to
     // the sender-declared size: ~25 bytes on the wire, megabytes after.
-    if (header.data.length > MAX_REASSEMBLED_BYTES) return;
+    if (header.data.length > maxAssemblyBytes(header.originalType)) return;
 
     let asm = this.assemblies.get(key);
     if (asm === undefined) {
@@ -256,11 +284,14 @@ export class FragmentManager {
         const oldest = this.assemblies.keys().next().value;
         if (oldest !== undefined) this.assemblies.delete(oldest);
       }
+      const now = Date.now();
       asm = {
         total: header.total,
         originalType: header.originalType,
         fragments: new Map(),
-        updatedAt: Date.now(),
+        updatedAt: now,
+        startedAt: now,
+        origin: origin ?? null,
         byteCount: 0,
       };
       this.assemblies.set(key, asm);
@@ -277,7 +308,10 @@ export class FragmentManager {
 
     if (asm.fragments.has(header.index)) return; // duplicate
 
-    if (asm.byteCount + header.data.length > MAX_REASSEMBLED_BYTES) {
+    if (
+      asm.byteCount + header.data.length >
+      maxAssemblyBytes(asm.originalType)
+    ) {
       // Refuse the fragment, keep the assembly. Deleting the stream here made
       // one cheap packet a remote kill switch for somebody else's transfer:
       // inflate past the ceiling, aim it at any (sender, streamID) observable
@@ -289,6 +323,7 @@ export class FragmentManager {
 
     asm.fragments.set(header.index, header.data);
     asm.byteCount += header.data.length;
+    if (asm.origin !== origin) asm.origin = null;
     // Progress keeps the assembly alive: a transfer that is still arriving is
     // not a stale one, however long it has been running.
     asm.updatedAt = Date.now();
@@ -313,7 +348,11 @@ export class FragmentManager {
       }
       const raw = concatParts(parts);
       const packet = decodePacket(raw);
-      if (packet !== null) onComplete(packet);
+      // The type every fragment claimed is what sized the assembly, so a packet
+      // that turns out to be something else is refused.
+      if (packet !== null && packet.type === asm.originalType) {
+        onComplete(packet, { startedAt: asm.startedAt, origin: asm.origin });
+      }
     }
   }
 

@@ -82,6 +82,19 @@ describe("FloodRouter", () => {
     });
   });
 
+  describe("admit()", () => {
+    it("dedups without relaying, and shares the table with receive()", () => {
+      const sent: Packet[] = [];
+      const packet = makePacket(0x01, 7);
+      expect(router.admit(packet)).toBe(true);
+      expect(router.admit(packet)).toBe(false);
+      // A whole copy arriving after the reassembled one is a duplicate.
+      expect(router.receive(packet, (p) => sent.push(p))).toBe(false);
+      jest.advanceTimersByTime(500);
+      expect(sent).toHaveLength(0);
+    });
+  });
+
   describe("originate()", () => {
     it("marks originating packet as seen to suppress echo relays", () => {
       const packet = makePacket(0x01);

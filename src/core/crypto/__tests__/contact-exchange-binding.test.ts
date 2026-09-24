@@ -8,7 +8,7 @@
 // scan) MUST re-derive and compare, or a forged card can claim someone else's
 // peer ID while supplying attacker-controlled keys, and every DM the user
 // then believes they are sending to that contact would be encrypted to the
-// forger instead. bitchat-iOS enforces the same rule on inbound announces
+// forger instead. bitchat-ios enforces the same rule on inbound announces
 // (`senderMismatch`).
 //
 // These tests pin the derivation and the round-trip so the QR path and the

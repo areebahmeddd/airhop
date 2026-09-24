@@ -127,9 +127,14 @@ export const Capability = {
   // Stable private-media IDs are durably deduplicated by the receiver, so a
   // sender may safely retry. Does not replace bit 8; it only adds retry.
   privateMediaReceipts: 1 << 9,
+  // Bit 10 is bitchat's, reserved for a test-build feature it keeps decodable
+  // so the bit is never reused. bitchat allocates upward from bit 0, so
+  // Airhop-only bits start at 24 and cannot collide, the same reason Airhop's
+  // packet types start at 0x50. bitchat never sets them, which is what hides
+  // these actions toward a bitchat peer.
+
   // This device currently accepts a Ring (NoisePayloadType.RING, 0x51) from
-  // the peer it is talking to. Airhop-only; bitchat never sets it, which is
-  // what hides the action toward a bitchat peer.
+  // the peer it is talking to.
   //
   // Proven, never announced. A ring grant is per contact, so the bit only
   // means something inside a 0x21 addressed to one peer ("I accept a ring
@@ -137,7 +142,11 @@ export const Capability = {
   // action to people who would then be refused. The proof is re-sent whenever
   // that peer's answer changes (mesh-service.reproveRingGrant). Each ring is
   // still checked on arrival (notification-policy.ringVerdict).
-  ring: 1 << 10,
+  ring: 1 << 24,
+  // Reads a location pin (NoisePayloadType.LOCATION_PIN, 0x50). Only the
+  // authenticated bit counts: a pin to a peer without it would be dropped
+  // unread while the sender saw it sent.
+  locationPin: 1 << 25,
 } as const;
 
 // Minimal little-endian encoding with trailing zero bytes dropped, always at

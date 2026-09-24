@@ -1,6 +1,6 @@
 // Noise_XX_25519_ChaChaPoly_SHA256 handshake and transport session.
 //
-// Wire-compatible with bitchat iOS NoiseProtocol.swift.
+// Wire-compatible with bitchat-ios NoiseProtocol.swift.
 //
 // Three-message handshake pattern:
 //   msg1: initiator -> responder  (-> e)              32 bytes

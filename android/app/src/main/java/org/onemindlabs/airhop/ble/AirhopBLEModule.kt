@@ -42,6 +42,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Base64
 import android.util.Log
@@ -192,7 +193,7 @@ private const val MAX_BLE_FRAME = 512
 // points apart.
 private const val BATTERY_REPORT_STEP = 5
 
-// The OS Bluetooth radio state, and now also the battery.
+// Battery level, the charger, or the OS Battery Saver switch moved.
 private const val EVT_POWER_STATE = "AirhopBLE.powerStateChanged"
 
 class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
@@ -508,6 +509,22 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             }
         }
 
+    // The OS Battery Saver switch. Not sticky, unlike the battery broadcast, so
+    // getRadioState reads the live value and this only says it moved.
+    private val powerSaveReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != PowerManager.ACTION_POWER_SAVE_MODE_CHANGED) return
+                emitEvent(
+                    EVT_POWER_STATE,
+                    WritableNativeMap().apply {
+                        putInt("batteryPercent", batteryPercent)
+                        putBoolean("charging", charging)
+                    },
+                )
+            }
+        }
+
     private val adapterStateReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -609,6 +626,12 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 reactContext,
                 batteryReceiver,
                 IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+            ContextCompat.registerReceiver(
+                reactContext,
+                powerSaveReceiver,
+                IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED),
                 ContextCompat.RECEIVER_NOT_EXPORTED,
             )
             receiverRegistered = true
@@ -742,6 +765,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             } catch (e: Exception) {
                 // Already unregistered, or context torn down first.
             }
+            try {
+                reactContext.unregisterReceiver(powerSaveReceiver)
+            } catch (e: Exception) {
+                // Already unregistered, or context torn down first.
+            }
             receiverRegistered = false
         }
         try {
@@ -871,8 +899,13 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         result.putBoolean("locationServicesEnabled", locationServicesEnabled())
         result.putInt("batteryPercent", batteryPercent)
         result.putBoolean("charging", charging)
+        result.putBoolean("powerSaveMode", isPowerSaveMode())
         promise.resolve(result)
     }
+
+    private fun isPowerSaveMode(): Boolean =
+        (reactContext.getSystemService(Context.POWER_SERVICE) as? PowerManager)?.isPowerSaveMode ==
+            true
 
     private fun hasPermission(permission: String): Boolean =
         ContextCompat.checkSelfPermission(reactContext, permission) ==
@@ -1191,8 +1224,21 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             gattServer?.close()
             gattServer = null
             characteristic = null
-            // Closing the server may not run the per-link disconnect callback,
-            // so half-written long writes are dropped here.
+            // Closing the server drops every central connected to it, and may
+            // not run the per-link disconnect callback, so each link is
+            // reported gone here, as releaseRadioState does. Kept, JS would go
+            // on writing to links with no server behind them.
+            for (linkID in peripheralLinks.keys.toList()) {
+                noteLinkClosed(linkID, BluetoothGatt.GATT_SUCCESS)
+                emitEvent(
+                    EVT_LINK_DISCONNECTED,
+                    WritableNativeMap().apply {
+                        putString("linkID", linkID)
+                    },
+                )
+            }
+            peripheralLinks.clear()
+            // Half-written long writes go with their links.
             preparedWrites.clear()
             // Deliberately does NOT touch the foreground service. This is also
             // the path "Invisible" takes, and that state still scans and relays,

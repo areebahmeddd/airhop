@@ -30,8 +30,8 @@ export const LOCATION_PIN_BYTES = 19;
 export const ACCURACY_UNKNOWN = 0xffff;
 
 // Metres. At 5 km the arrow points at a suburb, and a wrong arrow is worse
-// than no pin.
-const MAX_USEFUL_ACCURACY_M = 5000;
+// than no pin, so a coarser fix is refused rather than sent as a tighter one.
+export const MAX_USEFUL_ACCURACY_M = 5000;
 
 const MICRO = 1_000_000;
 
@@ -51,6 +51,11 @@ export function encodeLocationPin(pin: LocationPin): Uint8Array {
   if (!Number.isFinite(pin.lng) || pin.lng < -180 || pin.lng > 180) {
     throw new Error("location-pin: longitude out of range");
   }
+  const accuracyKnown =
+    pin.accuracyM !== undefined && Number.isFinite(pin.accuracyM);
+  if (accuracyKnown && (pin.accuracyM ?? 0) > MAX_USEFUL_ACCURACY_M) {
+    throw new Error("location-pin: fix too coarse to pin");
+  }
   const out = new Uint8Array(LOCATION_PIN_BYTES);
   const view = new DataView(out.buffer);
   out[0] = LOCATION_PIN_VERSION;
@@ -58,9 +63,9 @@ export function encodeLocationPin(pin: LocationPin): Uint8Array {
   view.setInt32(5, Math.round(pin.lng * MICRO), false);
   view.setUint16(
     9,
-    pin.accuracyM === undefined || !Number.isFinite(pin.accuracyM)
-      ? ACCURACY_UNKNOWN
-      : Math.min(Math.max(Math.round(pin.accuracyM), 0), MAX_USEFUL_ACCURACY_M),
+    accuracyKnown
+      ? Math.max(Math.round(pin.accuracyM ?? 0), 0)
+      : ACCURACY_UNKNOWN,
     false,
   );
   view.setBigUint64(11, BigInt(Math.max(0, Math.round(pin.takenAtMs))), false);

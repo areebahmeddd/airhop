@@ -130,6 +130,17 @@ export class FloodRouter {
     return true;
   }
 
+  // Dedup without relaying, for a packet that reached us some way other than
+  // the flood: one reassembled from fragments, whose fragments already
+  // relayed. Returns true if the packet is new. Recording it also means a whole
+  // copy arriving later over another radio is dropped rather than handled twice.
+  admit(packet: Packet): boolean {
+    const pid = computePacketId(packet);
+    if (this.dedup.has(pid)) return false;
+    this.dedup.add(pid);
+    return true;
+  }
+
   // Originate a packet from this node. Records the ID so we do not relay
   // our own broadcasts back to ourselves.
   originate(packet: Packet): void {

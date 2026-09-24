@@ -452,7 +452,7 @@ export function encodeMeshPublicPayload(text: string): Uint8Array {
   return new TextEncoder().encode(text);
 }
 
-// Decoded strictly, the way bitchat-iOS decodes it, so a malformed or non-text
+// Decoded strictly, the way bitchat-ios decodes it, so a malformed or non-text
 // payload is dropped rather than rendered as a row of replacement characters.
 export function decodeMeshPublicPayload(payload: Uint8Array): string | null {
   if (payload.length < 1) return null;

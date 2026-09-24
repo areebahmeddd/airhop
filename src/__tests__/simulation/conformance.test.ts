@@ -608,13 +608,11 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
 
   // The file ceiling, read from bitchat-ios rather than copied.
   //
-  // Three numbers, two of which agree. bitchat-ios refuses a packet whose
-  // declared expanded size passes `maxFramedFileBytes` (~1.13 MiB); Android and
-  // Airhop both bound decompression at 10 MiB. Airhop sits on both sides
-  // deliberately: `MAX_PAYLOAD_BYTES` takes Android's number because bounding
-  // the inflate as it runs is the safer design (#1634 argues the same upstream),
-  // while `MAX_FRAMED_FILE_BYTES` uses the iOS formula verbatim because a file
-  // is the only payload that approaches it.
+  // bitchat-ios refuses a media packet whose declared expanded size passes
+  // `maxFramedFileBytes` (~1.13 MiB), and every other type far sooner. Airhop
+  // mirrors that per type (payload-limits.ts), with `MAX_FRAMED_FILE_BYTES`
+  // taken from the iOS formula verbatim because a file is the only payload
+  // that approaches it.
   //
   // This guards the day someone raises `MAX_FILE_BYTES`. Nothing in the app
   // would complain: sending works, Android receives, and every attachment to an

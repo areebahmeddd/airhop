@@ -847,6 +847,11 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
     30_000,
   );
   s.check("bob has proven he can read sealed media", sealable);
+  // The same proof carries bit 25, without which a pin is not offered.
+  s.check(
+    "and that he reads location pins",
+    alice.mesh?.peerAcceptsLocationPin(bob.peerID) === true,
+  );
 
   // Watch every byte alice puts on the air from here on.
   const onAir: Packet[] = [];
@@ -1013,9 +1018,9 @@ test("M12 a photo Airhop sends is reassembled by a bitchat phone", async () => {
   s.assert(true);
 });
 
-test("M11 a bitchat-Android voice burst reaches an Airhop speaker", async () => {
+test("M11 a bitchat-android voice burst reaches an Airhop speaker", async () => {
   // Broadcast has two encodings on the wire and both mean the same thing.
-  // bitchat-iOS and Airhop leave the recipient field out; bitchat-Android
+  // bitchat-ios and Airhop leave the recipient field out; bitchat-android
   // writes eight 0xFF bytes with HAS_RECIPIENT set. Live voice is refused
   // unless the packet is addressed to everyone, so a receiver that knows only
   // the first encoding drops every Android burst, silently and completely: no

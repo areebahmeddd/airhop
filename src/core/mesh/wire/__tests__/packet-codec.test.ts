@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 // Wire-format tests for the bitchat-compatible binary codec. These lock in
-// byte-level behavior that must match bitchat iOS/Android: v1 + v2 headers,
+// byte-level behavior that must match bitchat-ios and bitchat-android: v1 + v2 headers,
 // PKCS#7 padding, raw-DEFLATE compression, and signing over the padded encoding.
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { deflateRaw } from "pako";
@@ -429,8 +429,8 @@ describe("packet-codec", () => {
       expect(isBroadcast(makePacket())).toBe(true);
     });
 
-    // The two broadcast sentinels in use on the wire. bitchat-iOS omits the
-    // recipient field; bitchat-Android writes eight 0xFF bytes with
+    // The two broadcast sentinels in use on the wire. bitchat-ios omits the
+    // recipient field; bitchat-android writes eight 0xFF bytes with
     // HAS_RECIPIENT set. Both mean "everyone", and both must survive a decode.
     it("isBroadcast accepts a decoded packet with the field omitted", () => {
       const decoded = decodePacket(encodePacket(makePacket()));
@@ -513,7 +513,7 @@ describe("packet-codec", () => {
       // clear. That leaves the read offset sitting precisely at the end of the
       // buffer, and DataView.getUint32 throws RangeError past the end instead of
       // reading garbage. payloadLength must be >= 4 to reach the read, and small
-      // enough to clear the MAX_PAYLOAD_BYTES gate, so it goes in the LOW byte.
+      // enough to clear the payload cap, so it goes in the LOW byte.
       const raw = new Uint8Array(24);
       raw[0] = 2; // version
       raw[1] = PacketType.CHANNEL_MSG;
@@ -537,5 +537,43 @@ describe("packet-codec", () => {
         expect(() => decodePacket(full.slice(0, n))).not.toThrow();
       }
     });
+  });
+});
+
+// Every accepted packet is held at its decoded size, so each type is capped at
+// what its encoders can produce, compressed or not. See payload-limits.ts.
+describe("per-type payload caps", () => {
+  // Incompressible, so the encoder sends it as-is.
+  function noise(size: number): Uint8Array {
+    const out = new Uint8Array(size);
+    for (let i = 0; i < size; i++) out[i] = (i * 167 + 13) & 0xff;
+    return out;
+  }
+
+  it("refuses a message payload past its cap, compressed or not", () => {
+    const tooBig = 128 * 1024 + 1;
+    for (const payload of [noise(tooBig), new Uint8Array(tooBig)]) {
+      const raw = encodePacket(
+        makePacket({ type: PacketType.CHANNEL_MSG, payload }),
+      );
+      expect(decodePacket(raw)).toBeNull();
+    }
+  });
+
+  it("still takes a message at its cap", () => {
+    const raw = encodePacket(
+      makePacket({ type: PacketType.CHANNEL_MSG, payload: noise(128 * 1024) }),
+    );
+    expect(decodePacket(raw)?.payload.length).toBe(128 * 1024);
+  });
+
+  it("still takes a whole file", () => {
+    const raw = encodePacket(
+      makePacket({
+        type: PacketType.FILE_TRANSFER,
+        payload: noise(1024 * 1024),
+      }),
+    );
+    expect(decodePacket(raw)?.payload.length).toBe(1024 * 1024);
   });
 });

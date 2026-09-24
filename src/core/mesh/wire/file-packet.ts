@@ -371,7 +371,7 @@ const TLV_CAPTION = 0x07; // Airhop extension: attachment caption text (bitchat 
 
 // A caption is chat text, not a document: keep it short so a huge string can't
 // bloat the file frame. 512 bytes matches the board-post content cap.
-const MAX_CAPTION_BYTES = 512;
+export const MAX_CAPTION_BYTES = 512;
 
 export interface FilePacket {
   fileName?: string;

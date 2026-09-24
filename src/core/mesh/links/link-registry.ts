@@ -174,6 +174,12 @@ export class LinkRegistry {
     return this.peerByLink.get(linkID);
   }
 
+  // The transport a link rides, or undefined for one we do not hold. How a
+  // packet has to be cut depends on it: only Bluetooth has a frame ceiling.
+  kindOf(linkID: string): TransportKind | undefined {
+    return this.kindByLink.get(linkID);
+  }
+
   // The strict test. A peer reachable only by flooding through a neighbour is
   // not here: a flood is a hope, a link is a route.
   hasPeer(peerID: string): boolean {

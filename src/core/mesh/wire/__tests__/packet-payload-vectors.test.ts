@@ -305,7 +305,7 @@ describe("bitchat vector: public channel message payload", () => {
     }
   });
 
-  // bitchat-iOS drops a payload it cannot read as UTF-8 rather than showing
+  // bitchat-ios drops a payload it cannot read as UTF-8 rather than showing
   // replacement characters. So does Airhop, on the type they share.
   test("undecodable bytes are dropped, not rendered", () => {
     // 0xC3 opens a two-byte sequence that never arrives.

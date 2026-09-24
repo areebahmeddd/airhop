@@ -1,6 +1,6 @@
 // Gossip sync using Golomb-Coded Set (GCS) filters.
 //
-// Wire-compatible with bitchat iOS GossipSyncManager / RequestSyncPacket.
+// Wire-compatible with bitchat-ios GossipSyncManager / RequestSyncPacket.
 //
 // Protocol flow:
 //   1. Every 15 seconds, send a REQUEST_SYNC packet to each connected peer,
@@ -47,6 +47,10 @@ import {
 // Constants per PROTOCOLS.md section 5.
 const SYNC_INTERVAL_MS = 15_000;
 const SEEN_CAPACITY = 1000;
+// The store also holds to a byte budget: a count alone lets a thousand packets
+// at their type's payload cap pin over 100 MiB. bitchat-ios gives its message
+// store the same 8 MiB.
+const SEEN_BUDGET_BYTES = 8 * 1024 * 1024;
 export const GCS_MAX_BYTES = 400;
 export const GCS_TARGET_FPR = 0.01; // 1%
 
@@ -61,11 +65,11 @@ const SYNC_TTL = 0;
 // and expire board posts meant to outlive everyone carrying them.
 
 // Presence that outlives its sender misreports who is in the room. 60s is a
-// consensus rule in bitchat-android's sync.md and matches bitchat-iOS's
+// consensus rule in bitchat-android's sync.md and matches bitchat-ios's
 // stale-peer timeout.
 const MAX_AGE_ANNOUNCE_MS = 60_000;
 // Carrying the room's recent history across a partition is the point of gossip.
-// bitchat-iOS publicMessageMaxAgeSeconds = 900.
+// bitchat-ios publicMessageMaxAgeSeconds = 900.
 const MAX_AGE_MESSAGE_MS = 900_000;
 // Board posts carry their own author-chosen expiry (max 7 days, PROTOCOLS.md
 // section 3) and the board store enforces it on receipt. This is only a
@@ -80,7 +84,7 @@ const MAX_AGE_GROUP_MS = 900_000;
 
 // One REQUEST_SYNC can replay the whole store, so a peer asking in a tight loop
 // is an amplifier pointed at us and at the shared radio. Bounds how often one
-// peer can make us run a diff pass. Matches bitchat-iOS
+// peer can make us run a diff pass. Matches bitchat-ios
 // responseRateLimitMaxResponses / responseRateLimitWindowSeconds.
 const RESPONSE_LIMIT_MAX = 8;
 const RESPONSE_LIMIT_WINDOW_MS = 30_000;
@@ -200,7 +204,7 @@ function decodeTypeFlags(bytes: Uint8Array): number {
 
 // 8-byte value for GCS membership check:
 // h64 = first 8 bytes of SHA-256(packetID) as big-endian u64, sign bit cleared.
-// The sign-bit mask matches bitchat iOS GCSFilter.h64(_:).
+// The sign-bit mask matches bitchat-ios GCSFilter.h64(_:).
 function packetIdToH64(packetId: Uint8Array): bigint {
   const hash = sha256(packetId);
   const view = new DataView(hash.buffer);
@@ -232,7 +236,7 @@ function estimateMaxElements(sizeBytes: number, p: number): number {
 // timestamp. Trimming in hash order would leave an arbitrary subset that no
 // timestamp describes.
 //
-// M formula: M = count * 2^P, matching bitchat iOS GCSFilter.hashRange().
+// M formula: M = count * 2^P, matching bitchat-ios GCSFilter.hashRange().
 // This gives FPR ~= 1/2^P per element regardless of the set size.
 export function buildGcsFilter(
   h64s: bigint[],
@@ -562,6 +566,7 @@ export interface GossipSyncWiring {
 export class GossipSync {
   // Ordered list of (packetIdHex -> packet), newest at end. Capped at SEEN_CAPACITY.
   private readonly seen = new Map<string, Packet>();
+  private seenBytes = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private readonly rateLimiter = new SyncResponseRateLimiter();
 
@@ -610,7 +615,7 @@ export class GossipSync {
   // sync tick rather than a timer of its own.
   prune(now: number = Date.now()): void {
     for (const [id, packet] of this.seen) {
-      if (!isFreshCandidate(packet, now)) this.seen.delete(id);
+      if (!isFreshCandidate(packet, now)) this.forget(id);
     }
   }
 
@@ -620,19 +625,30 @@ export class GossipSync {
     this.rateLimiter.forget(peerID);
   }
 
-  // Track a packet as seen. Call this for every relayed/received ANNOUNCE
-  // or CHANNEL_MSG packet. Caps the store at SEEN_CAPACITY.
+  // Track a packet as seen, newest last, evicting the oldest past
+  // SEEN_CAPACITY or SEEN_BUDGET_BYTES. Ignores types that are never gossiped.
   track(packet: Packet): void {
     if (!isGossipType(packet.type)) return;
     const id = bytesToHex(computePacketId(packet));
-    if (this.seen.has(id)) {
-      this.seen.delete(id); // re-insert to move to newest position
-    } else if (this.seen.size >= SEEN_CAPACITY) {
-      // Evict the oldest entry.
+    this.forget(id);
+    while (
+      this.seen.size > 0 &&
+      (this.seen.size >= SEEN_CAPACITY ||
+        this.seenBytes + packet.payload.length > SEEN_BUDGET_BYTES)
+    ) {
       const oldest = this.seen.keys().next().value;
-      if (oldest !== undefined) this.seen.delete(oldest);
+      if (oldest === undefined) break;
+      this.forget(oldest);
     }
     this.seen.set(id, packet);
+    this.seenBytes += packet.payload.length;
+  }
+
+  private forget(id: string): void {
+    const packet = this.seen.get(id);
+    if (packet === undefined) return;
+    this.seen.delete(id);
+    this.seenBytes -= packet.payload.length;
   }
 
   // Build a REQUEST_SYNC packet. Unicast when `toPeerID` is given, broadcast
@@ -772,6 +788,7 @@ export class GossipSync {
 
   reset(): void {
     this.seen.clear();
+    this.seenBytes = 0;
     this.rateLimiter.reset();
   }
 }

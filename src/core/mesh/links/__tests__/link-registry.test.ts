@@ -54,6 +54,16 @@ describe("LinkRegistry", () => {
       expect(links.size("wifi")).toBe(1);
     });
 
+    it("kindOf() names a held link's radio and nothing for any other", () => {
+      links.open("ble", "c:1");
+      links.open("lan", "lan-in-1");
+
+      expect(links.kindOf("c:1")).toBe("ble");
+      expect(links.kindOf("lan-in-1")).toBe("lan");
+      links.close("c:1");
+      expect(links.kindOf("c:1")).toBeUndefined();
+    });
+
     it("open() is idempotent and keeps an existing binding", () => {
       links.open("ble", "c:1");
       links.bind("c:1", "peer-a");

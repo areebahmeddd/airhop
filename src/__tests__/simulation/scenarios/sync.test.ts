@@ -29,6 +29,11 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
+import {
+  fragmentPacket,
+  MAX_BLE_FRAME,
+} from "@core/mesh/routing/fragment-manager";
 import {
   decodePacket,
   encodePacket,
@@ -131,6 +136,27 @@ function signedPublicMessage(
   };
   packet.signature = signPacket(packet, author.identity.signingPrivKey);
   return encodePacket(packet);
+}
+
+// Text that DEFLATE cannot shrink back under one frame, so a message carrying
+// it has to travel as fragments over Bluetooth.
+function incompressible(world: Scenario["world"], length: number): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let out = "";
+  for (let i = 0; i < length; i++) {
+    out += alphabet[world.rng.int(0, alphabet.length - 1)];
+  }
+  return out;
+}
+
+// Fragments of `inner`, cut the way a Bluetooth sender cuts them, as frames
+// ready to put on the air.
+function asFragments(inner: Uint8Array, cutBy: SimDevice): string[] {
+  const packet = decodePacket(inner);
+  if (packet === null) throw new Error("inner packet does not decode");
+  return fragmentPacket(packet, { peerID: cutBy.peerID }).map((f) =>
+    bytesToBase64(encodePacket(f)),
+  );
 }
 
 function phones(
@@ -480,6 +506,269 @@ test("S04 a route planned by another node is followed, not flooded", async () =>
   s.check(
     "the route survived the hop, so the next relay can follow it too",
     forwarded[0]?.route?.length === 1,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S05 a plaintext message cannot land in a private channel", async () => {
+  // A private channel is sealed, but its name also exists as a public room
+  // type. A correctly signed public message under that name would render
+  // beneath the encryption lock, from anyone in range. Matched pair: the same
+  // author and path into a public room is the control.
+  const s = (scenario = new Scenario({
+    id: "S05",
+    title: "plaintext under a private channel's name",
+    seed: 95,
+  }));
+  const { radio, devices } = phones(s, ["carol", "mallory"]);
+  const [carol, mallory] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(mallory.peerID),
+    45_000,
+  );
+  s.check(
+    "carol holds mallory's key, so the signature is not the question",
+    met,
+  );
+
+  (
+    carol.store("chatStore").getState().joinPrivateChannel as (
+      channel: string,
+      key: string,
+      overNostr: boolean,
+    ) => string
+  )("#crew", generateChannelKey(), false);
+  carol.joinChannel("#den");
+
+  const inject = (channel: string, text: string): void => {
+    const at = s.world.wallClock();
+    radio.injectTo(
+      carol.id,
+      mallory.id,
+      bytesToBase64(
+        signedPublicMessage(mallory, channel, text, at, `${channel}-${at}`),
+      ),
+    );
+  };
+  inject("#crew", "in the clear");
+  await s.world.advance(5_000);
+  s.check(
+    "a plaintext message is refused in the private channel",
+    !carol.texts("#crew").includes("in the clear"),
+  );
+
+  inject("#den", "in public");
+  const arrived = await waitFor(
+    s.world,
+    () => carol.texts("#den").includes("in public"),
+    15_000,
+  );
+  s.check("the same message into a public room is accepted", arrived);
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S06 a plaintext message cannot land in a group or a DM thread", async () => {
+  // Groups and DMs are joined rooms like any channel, so without a check by
+  // name a signed public message naming one would render inside a thread the
+  // UI marks as encrypted. The control is the same message into a public room.
+  const s = (scenario = new Scenario({
+    id: "S06",
+    title: "plaintext under a group's or a DM's name",
+    seed: 96,
+  }));
+  const { radio, devices } = phones(s, ["carol", "mallory"]);
+  const [carol, mallory] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(mallory.peerID),
+    45_000,
+  );
+  s.check(
+    "carol holds mallory's key, so the signature is not the question",
+    met,
+  );
+
+  const group = "group:00112233445566778899aabbccddeeff";
+  const dm = `dm:${mallory.peerID}`;
+  const addChannel = carol.store("chatStore").getState().addChannel as (
+    channel: string,
+  ) => void;
+  addChannel(group);
+  addChannel(dm);
+  carol.joinChannel("#den");
+
+  const inject = (channel: string, text: string): void => {
+    const at = s.world.wallClock();
+    radio.injectTo(
+      carol.id,
+      mallory.id,
+      bytesToBase64(
+        signedPublicMessage(mallory, channel, text, at, `${text}-${at}`),
+      ),
+    );
+  };
+  inject(group, "in the group");
+  inject(dm, "in the dm");
+  await s.world.advance(5_000);
+  s.check(
+    "a plaintext message is refused in the group",
+    !carol.texts(group).includes("in the group"),
+  );
+  s.check(
+    "a plaintext message is refused in the DM thread",
+    !carol.texts(dm).includes("in the dm"),
+  );
+
+  inject("#den", "in public");
+  const arrived = await waitFor(
+    s.world,
+    () => carol.texts("#den").includes("in public"),
+    15_000,
+  );
+  s.check("the same message into a public room is accepted", arrived);
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S07 a fragmented sync reply is let in only when it was asked for", async () => {
+  // A sync reply is old by nature, and one longer than a Bluetooth frame
+  // arrives as fragments, which are stamped when cut and so always look fresh.
+  // The freshness question therefore has to be asked of the packet inside. The
+  // matched pair: two old messages signed by alice, both in fragments over the
+  // one link carol has just asked for a sync. Only the one carrying IS_RSR is
+  // a reply; the other is a replay wrapped to dodge the window.
+  const s = (scenario = new Scenario({
+    id: "S07",
+    title: "old packets inside fresh fragments",
+    seed: 97,
+  }));
+  const { radio, devices } = phones(s, ["alice", "carol", "mallory"]);
+  const [alice, carol, mallory] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const channel = "#den";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(alice.peerID),
+    45_000,
+  );
+  s.check("carol holds alice's key", met);
+
+  radio.setTopology([["carol", "mallory"]]);
+  await waitForCoarse(
+    s.world,
+    () => radio.isLinked("carol", "mallory"),
+    30_000,
+  );
+
+  // Carol's own request to mallory is what opens the window.
+  let asked = false;
+  const stopTap = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== carol.id || linkID !== `link:${mallory.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.type === PacketType.REQUEST_SYNC) asked = true;
+  });
+  const requested = await waitFor(s.world, () => asked, 40_000);
+  stopTap();
+  s.check("carol asked mallory for a sync", requested);
+
+  const staleAt = s.world.wallClock() - 6 * 60_000;
+  const replyText = incompressible(s.world, 900);
+  const reply = signedPublicMessage(
+    alice,
+    channel,
+    replyText,
+    staleAt,
+    "reply",
+    true,
+  );
+  s.check(
+    "the reply needs fragments on Bluetooth",
+    reply.length > MAX_BLE_FRAME,
+    `${String(reply.length)} bytes`,
+  );
+  for (const frame of asFragments(reply, alice)) {
+    radio.injectTo(carol.id, mallory.id, frame);
+  }
+  const accepted = await waitFor(
+    s.world,
+    () => carol.texts(channel).includes(replyText),
+    5_000,
+  );
+  s.check("the solicited reply, reassembled, is accepted", accepted);
+
+  const replayText = incompressible(s.world, 900);
+  const replay = signedPublicMessage(
+    alice,
+    channel,
+    replayText,
+    staleAt - 1_000,
+    "replay",
+  );
+  for (const frame of asFragments(replay, alice)) {
+    radio.injectTo(carol.id, mallory.id, frame);
+  }
+  await s.world.advance(5_000);
+  s.check(
+    "an old packet that is no reply is refused, fragments or not",
+    !carol.texts(channel).includes(replayText),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S08 a message too long for one frame still reaches a latecomer", async () => {
+  // Bob hears alice's message as fragments. He has to remember it for sync,
+  // and his reply to carol has to be cut to fit the link, or the history a
+  // latecomer turns up for silently stops at the frame size.
+  const s = (scenario = new Scenario({
+    id: "S08",
+    title: "long history crosses sync over Bluetooth",
+    seed: 98,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "carol"]);
+  const [alice, bob, carol] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  for (const d of devices) d.launch();
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  const text = incompressible(s.world, 900);
+  alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("bob heard the long message", bobHeard);
+
+  radio.setTopology([
+    ["alice", "bob"],
+    ["bob", "carol"],
+  ]);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    60_000,
+  );
+  s.check("carol caught up on it through bob", caughtUp);
+  s.check(
+    "nothing was written past the Bluetooth frame",
+    radio.framesOversized === 0,
+    `oversized=${String(radio.framesOversized)}`,
   );
 
   s.expectNone("process health", noCrashes(devices));

@@ -62,6 +62,9 @@ export interface Spec extends TurboModule {
     // on iOS, which exposes no scan-rate control for it to inform.
     batteryPercent: number;
     charging: boolean;
+    // Android Battery Saver, read live. Always false on iOS, for the same
+    // reason as batteryPercent.
+    powerSaveMode: boolean;
   }>;
 
   // How hard to run the radios: "performance", "balanced", "power-saver" or
@@ -121,9 +124,10 @@ export interface Spec extends TurboModule {
 // is SCAN_FAILED_SCANNING_TOO_FREQUENTLY and needs a longer stand-down than the
 // usual backoff ladder.
 //
-// powerStateChanged is coalesced to meaningful battery movement and charger
-// changes, not the per-1% stream ACTION_BATTERY_CHANGED delivers. Native applies
-// no policy, only deciding when the number is worth reporting.
+// powerStateChanged is coalesced to meaningful battery movement, charger changes
+// and the Battery Saver switch, not the per-1% stream ACTION_BATTERY_CHANGED
+// delivers. Native applies no policy, only deciding when the number is worth
+// reporting.
 //
 // meshStopRequested is the "Stop mesh" button on the foreground-service
 // notification. Native raises it rather than stopping the radios itself, so the

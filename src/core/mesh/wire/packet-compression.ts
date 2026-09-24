@@ -18,12 +18,9 @@ import { deflateRaw, Inflate } from "pako";
 // Don't compress below this size (bitchat Constants.compressionThresholdBytes).
 export const COMPRESSION_THRESHOLD = 100;
 
-// Largest payload we will accept, either declared on the wire or produced by
-// decompressing. Matches bitchat's AppConstants.Protocol.MAX_PAYLOAD_LENGTH
-// (10 MiB); the decoder imports it so one number bounds both.
-//
-// It lives here rather than in packet-codec because decompress() has to enforce
-// it too, and packet-codec already imports this module.
+// decompress()'s own ceiling, matching bitchat-android's MAX_PAYLOAD_LENGTH.
+// The decoder refuses far smaller sizes per packet type before calling it (see
+// payload-limits.ts); this bounds any other caller.
 export const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024;
 
 // zlib DEFAULT_COMPRESSION, the level Android passes and iOS's COMPRESSION_ZLIB

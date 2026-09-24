@@ -232,9 +232,8 @@ describe("decompress input validation", () => {
 });
 
 describe("payload ceiling", () => {
-  // Matches bitchat's AppConstants.Protocol.MAX_PAYLOAD_LENGTH. One number
-  // bounds the declared wire length in packet-codec and the decompressed output
-  // here, so neither can be raised without the other.
+  // Matches bitchat-android's MAX_PAYLOAD_LENGTH. The decoder caps each packet
+  // type well below it; this is decompress()'s own backstop.
   it("is 10 MiB, matching bitchat", () => {
     expect(MAX_PAYLOAD_BYTES).toBe(10 * 1024 * 1024);
   });

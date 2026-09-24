@@ -505,6 +505,48 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
     expect(reassembled!.payload).toEqual(packet.payload);
   });
 
+  // A stream is sized by the type its fragments claim, so one labelled as an
+  // announce cannot buffer a file's worth of memory.
+  test("a stream cannot buffer past the frame its claimed type allows", () => {
+    const manager = new FragmentManager();
+    const progress = jest.fn();
+    manager.receive(
+      new Uint8Array(8),
+      spoofFragment(
+        new Uint8Array(8),
+        0,
+        2,
+        PacketType.ANNOUNCE,
+        new Uint8Array(8 * 1024),
+      ),
+      () => undefined,
+      progress,
+    );
+    expect(progress).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    [PacketType.CHANNEL_MSG, true],
+    [PacketType.FILE_TRANSFER, false],
+  ])(
+    "a reassembled packet must be the type it was claimed as (%i)",
+    (claimed, delivered) => {
+      const bytes = encodePacket(makeLargePacket(600, makeIdentity()));
+      const half = Math.ceil(bytes.length / 2);
+      const stream = new Uint8Array(8).fill(7);
+      const manager = new FragmentManager();
+      const onComplete = jest.fn();
+      [bytes.slice(0, half), bytes.slice(half)].forEach((data, i) => {
+        manager.receive(
+          new Uint8Array(8),
+          spoofFragment(stream, i, 2, claimed, data),
+          onComplete,
+        );
+      });
+      expect(onComplete).toHaveBeenCalledTimes(delivered ? 1 : 0);
+    },
+  );
+
   test("progress reports the pinned type, not a later fragment's claim", () => {
     // The progress callback drives the incoming-file card. Reading the type off
     // each arriving fragment would let an injected packet relabel a photo as a
@@ -541,5 +583,47 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
     // The mismatched fragment was refused outright, so only the honest two
     // reported progress, both under the pinned type.
     expect(seen).toEqual([PacketType.CHANNEL_MSG, PacketType.CHANNEL_MSG]);
+  });
+
+  test("completion names the one link a stream came over, and when it began", () => {
+    // The receive path decides whether an old packet inside fresh fragments
+    // is a sync reply by asking about the link it arrived on, so a stream
+    // stitched together from two links must name neither.
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(50_000);
+      const identity = makeIdentity();
+      const packet = makeLargePacket(FRAG_DATA_SIZE * 2, identity);
+
+      const single = new FragmentManager();
+      const infos: { startedAt: number; origin: string | null }[] = [];
+      fragmentPacket(packet, identity).forEach((f, i) => {
+        jest.setSystemTime(50_000 + i * 1_000);
+        single.receive(
+          f.senderID,
+          f.payload,
+          (_p, info) => infos.push(info),
+          undefined,
+          "link:a",
+        );
+      });
+      expect(infos).toEqual([{ startedAt: 50_000, origin: "link:a" }]);
+
+      const mixed = new FragmentManager();
+      const mixedInfos: { origin: string | null }[] = [];
+      fragmentPacket(packet, identity).forEach((f, i) => {
+        mixed.receive(
+          f.senderID,
+          f.payload,
+          (_p, info) => mixedInfos.push(info),
+          undefined,
+          i === 0 ? "link:a" : "link:b",
+        );
+      });
+      expect(mixedInfos).toHaveLength(1);
+      expect(mixedInfos[0].origin).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

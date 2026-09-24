@@ -1,7 +1,7 @@
 // Bulletin-board wire format (MessageType.boardPost = 0x23 payloads).
 //
 // Byte-identical to bitchat BoardPackets.swift so a signed Airhop board post or
-// tombstone verifies on bitchat iOS/Android and vice versa. A board post is a
+// tombstone verifies on bitchat-ios and bitchat-android and vice versa. A board post is a
 // signed, persistent notice designed to outlive chat: it lives until its
 // author-chosen expiry (max 7 days). A tombstone is a signed deletion marker
 // only the author's key can produce.

@@ -19,7 +19,13 @@ import { getStorage } from "./mmkv";
 
 interface BlockedState {
   blockedPeerIDs: string[];
+  // Other keys the same person reaches us under (their `nostr_<pubkey>` thread
+  // key), mapped to the blocked peerID they belong to. Kept apart from
+  // blockedPeerIDs so the Blocked list shows one row per person and unblocking
+  // it lifts every alias with it.
+  blockedAliases: Record<string, string>;
   blockPeer: (peerID: string) => void;
+  blockAlias: (alias: string, peerID: string) => void;
   unblockPeer: (peerID: string) => void;
   isBlocked: (peerID: string) => boolean;
 }
@@ -38,6 +44,7 @@ export const useBlockedStore = create<BlockedState>()(
   persist(
     (set, get) => ({
       blockedPeerIDs: [],
+      blockedAliases: {},
 
       blockPeer(peerID: string) {
         set((state) => {
@@ -46,14 +53,32 @@ export const useBlockedStore = create<BlockedState>()(
         });
       },
 
+      blockAlias(alias: string, peerID: string) {
+        set((state) => {
+          if (state.blockedAliases[alias] === peerID) return state;
+          return {
+            blockedAliases: { ...state.blockedAliases, [alias]: peerID },
+          };
+        });
+      },
+
       unblockPeer(peerID: string) {
         set((state) => ({
           blockedPeerIDs: state.blockedPeerIDs.filter((id) => id !== peerID),
+          blockedAliases: Object.fromEntries(
+            Object.entries(state.blockedAliases).filter(
+              ([alias, owner]) => owner !== peerID && alias !== peerID,
+            ),
+          ),
         }));
       },
 
       isBlocked(peerID: string) {
-        return get().blockedPeerIDs.includes(peerID);
+        const { blockedPeerIDs, blockedAliases } = get();
+        return (
+          blockedPeerIDs.includes(peerID) ||
+          blockedAliases[peerID] !== undefined
+        );
       },
     }),
     {

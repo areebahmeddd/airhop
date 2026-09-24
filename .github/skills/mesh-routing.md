@@ -8,7 +8,7 @@ description: >
 
 # Mesh Routing and Deduplication
 
-Implementation: `src/core/mesh/routing/flood-router.ts`, `deduplicator.ts`, `fragment-manager.ts`. Reference: `bitchat/ios/bitchat/Services/BLE/BLEService.swift` and bitchat Android.
+Implementation: `src/core/mesh/routing/flood-router.ts`, `deduplicator.ts`, `fragment-manager.ts`. Reference: `bitchat/ios/bitchat/Services/BLE/BLEService.swift` and bitchat-android.
 
 ## Flood Routing Rules
 
@@ -90,7 +90,7 @@ reassembly.
 | Reassembly timeout        | 30 seconds |
 | Max reassembled size      | 1 MiB      |
 
-These values match bitchat iOS `BLEFragmentHandler` / `BLEFragmentAssemblyBuffer`. Do not change them without checking the reference implementations.
+These values match bitchat-ios `BLEFragmentHandler` / `BLEFragmentAssemblyBuffer`. Do not change them without checking the reference implementations.
 
 Partial assemblies are silently dropped after 30 seconds. The sender must retransmit if fragments are lost.
 

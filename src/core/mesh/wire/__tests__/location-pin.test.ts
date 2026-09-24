@@ -117,3 +117,19 @@ describe("decodeLocationPin refuses", () => {
     expect(decodeLocationPin(bytes)).toBeNull();
   });
 });
+
+// A 12 km fix sent as "within 5 km" draws a confident arrow at the wrong place.
+describe("accuracy past the useful ceiling", () => {
+  it("is refused rather than clamped", () => {
+    expect(() =>
+      encodeLocationPin({ lat: 1, lng: 2, accuracyM: 12_000, takenAtMs: 3 }),
+    ).toThrow();
+  });
+
+  it("carries a fix right at the ceiling as it is", () => {
+    const decoded = decodeLocationPin(
+      encodeLocationPin({ lat: 1, lng: 2, accuracyM: 5000, takenAtMs: 3 }),
+    );
+    expect(decoded?.accuracyM).toBe(5000);
+  });
+});

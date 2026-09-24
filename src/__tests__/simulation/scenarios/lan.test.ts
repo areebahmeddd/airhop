@@ -466,3 +466,58 @@ test("L07 a location pin is the first thing said in a LAN conversation", async (
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("L08 a packet too long for Bluetooth crosses from LAN onto Bluetooth", async () => {
+  // Over LAN a long message travels whole. The phone relaying it onto
+  // Bluetooth has to cut it into frames the radio can carry, or everyone
+  // reachable only by Bluetooth never hears anything said on the network
+  // longer than one frame.
+  const s = (scenario = new Scenario({
+    id: "L08",
+    title: "LAN to Bluetooth relay of a long message",
+    seed: 708,
+  }));
+  const specs = [
+    phone("alice", 81),
+    phone("bob", 82),
+    phone("carol", 83, "android", false),
+  ];
+  const { radio, lan, devices } = room(s, specs);
+  const [alice, bob, carol] = devices;
+  s.track(...devices);
+  lan.join("alice", "conference");
+  lan.join("bob", "conference");
+  radio.setTopology([["bob", "carol"]]);
+  for (const d of devices) d.launch();
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) && bob.peers().includes(carol.peerID),
+    40_000,
+  );
+  s.check("bob sits between the network and the radio", met);
+
+  // Random letters, so compression cannot bring it back under one frame.
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let text = "";
+  for (let i = 0; i < 900; i++) {
+    text += alphabet[s.world.rng.int(0, alphabet.length - 1)];
+  }
+  alice.send(channel, text);
+  const heard = await waitFor(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("carol, on Bluetooth only, heard it", heard);
+  s.check(
+    "nothing was written past the Bluetooth frame",
+    radio.framesOversized === 0,
+    `oversized=${String(radio.framesOversized)}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

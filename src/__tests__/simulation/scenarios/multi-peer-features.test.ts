@@ -547,3 +547,155 @@ test("F06 two mesh islands share one public room across the bridge", async () =>
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("F07 a group you left stays left through the creator's next rotation", async () => {
+  // Leaving is local: the creator is never told, so its next roster change
+  // sends the leaver a key update. That must not bring the group back.
+  const s = (scenario = new Scenario({
+    id: "F07",
+    title: "leave, then a rotation the creator did not know to skip",
+    seed: 607,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const bob = SimDevice.create(s.world, android("bob", 22));
+  const carol = SimDevice.create(s.world, android("carol", 33));
+  const dave = SimDevice.create(s.world, android("dave", 44));
+  const cast = [alice, bob, carol, dave];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 3),
+    30_000,
+  );
+
+  const groupID = alice.createGroup("crew", [bob.peerID, carol.peerID]);
+  if (groupID === null) {
+    s.check("the group was created", false);
+    s.assert();
+    return;
+  }
+  const joined = await waitForCoarse(
+    s.world,
+    () => bob.knowsGroup(groupID) && carol.knowsGroup(groupID),
+    45_000,
+  );
+  s.check("both members joined", joined);
+
+  (bob.store("groupStore").getState().leave as (groupIDHex: string) => void)(
+    groupID,
+  );
+  const added = (
+    alice.mesh as unknown as {
+      addGroupMembers: (id: string, peers: string[]) => boolean;
+    }
+  ).addGroupMembers(groupID, [dave.peerID]);
+  s.check("alice added dave", added);
+
+  const rotated = await waitForCoarse(
+    s.world,
+    () => dave.knowsGroup(groupID),
+    45_000,
+  );
+  // A four-member roster is larger than one Bluetooth frame, so this also
+  // proves the state was split rather than written whole and dropped.
+  s.check("the rotation went out", rotated);
+  s.check(
+    "nothing was written past the Bluetooth frame",
+    radio.framesOversized === 0,
+    `oversized=${String(radio.framesOversized)}`,
+  );
+  await s.world.settle(15_000);
+  s.check(
+    "the member who left did not get the group back",
+    !bob.knowsGroup(groupID),
+  );
+  s.check("a member who stayed is still in it", carol.knowsGroup(groupID));
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F08 an envelope past one frame is carried, not deleted as handed over", async () => {
+  // A long private message seals into an envelope longer than a Bluetooth
+  // frame. Written whole, the carrier's radio refuses it, yet the write was
+  // counted as a handover, so the sender could delete mail nobody held. It
+  // has to go as fragments, and only a complete write is a handover.
+  const s = (scenario = new Scenario({
+    id: "F08",
+    title: "a full-size envelope reaches its carrier over Bluetooth",
+    seed: 608,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const carrier = SimDevice.create(s.world, android("carrier", 22));
+  const bob = SimDevice.create(s.world, android("bob", 33));
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  // Long enough for every announce to land, so alice holds bob's key to seal
+  // to and the carrier's to charge the deposit against.
+  await s.world.advance(10_000);
+
+  radio.setIsolated("bob", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+
+  // Envelope fragments from alice, told apart by the inner type byte (12) of
+  // the fragment header.
+  let envelopeFragments = 0;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== alice.id) return;
+    const bin = globalThis.atob(dataBase64);
+    if (bin.charCodeAt(1) !== 0x20) return;
+    envelopeFragments += bin.includes("\u0004") ? 1 : 0;
+  });
+
+  // The largest message a courier envelope can carry, under a UUID message id
+  // as the composer mints: sealed, about 520 bytes on the air.
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let text = "";
+  for (let i = 0; i < 255; i++) {
+    text += alphabet[s.world.rng.int(0, alphabet.length - 1)];
+  }
+  // Straight to the courier path. A DM sent through the composer floods to
+  // the carrier first and reaches it only once bob has dropped out of alice's
+  // registry, which is a minute of waiting that tests nothing here.
+  const sealed = (
+    alice.mesh as unknown as {
+      sendViaCourier: (peerID: string, text: string, id: string) => boolean;
+    }
+  ).sendViaCourier(bob.peerID, text, "f08a1b2c-0000-4000-8000-00000000c0de");
+  s.check("alice found a courier", sealed);
+
+  const courier = (
+    carrier.mesh as unknown as { courier: { size: number } } | null
+  )?.courier;
+  const carried = await waitForCoarse(
+    s.world,
+    () => (courier?.size ?? 0) > 0,
+    180_000,
+  );
+  stopTap();
+  s.check("the carrier holds the envelope", carried);
+  s.check(
+    "it went as fragments",
+    envelopeFragments > 0,
+    `fragments=${String(envelopeFragments)}`,
+  );
+  s.check(
+    "nothing was written past the Bluetooth frame",
+    radio.framesOversized === 0,
+    `oversized=${String(radio.framesOversized)}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});

@@ -132,7 +132,7 @@ Padding every frame is not a safe default. It buys nothing for a type whose size
 
 Decoders accept both forms (decode as-is, then retry after stripping PKCS#7), so an implementation that pads more than we do stays readable.
 
-**Re-encoding must preserve the payload as received.** Because the signature covers a re-encoding of the packet, verifying re-encodes and therefore re-compresses. DEFLATE output is not canonical: bitchat iOS compresses with Apple's `compression_encode_buffer`, bitchat Android with `java.util.zip.Deflater`, and Airhop with pako. All three inflate each other's streams, but they are not guaranteed to emit identical bytes for identical input, and the "only if smaller" check can even make them disagree on whether to compress at all. A re-encode that compresses again would therefore produce a different signing preimage and reject a valid packet.
+**Re-encoding must preserve the payload as received.** Because the signature covers a re-encoding of the packet, verifying re-encodes and therefore re-compresses. DEFLATE output is not canonical: bitchat-ios compresses with Apple's `compression_encode_buffer`, bitchat-android with `java.util.zip.Deflater`, and Airhop with pako. All three inflate each other's streams, but they are not guaranteed to emit identical bytes for identical input, and the "only if smaller" check can even make them disagree on whether to compress at all. A re-encode that compresses again would therefore produce a different signing preimage and reject a valid packet.
 
 Airhop's decoder keeps the payload exactly as it arrived (compressed bytes and the `isCompressed` decision) and its encoder reuses that form instead of re-compressing. This is required in two places:
 
@@ -247,7 +247,7 @@ refused. Airhop checks before the first fragment goes out.
 > [!IMPORTANT]
 > **These caps cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
 >
-> Airhop is on both sides of the split on purpose, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. The generic decompression bound (`MAX_PAYLOAD_BYTES`, [section 4](#4-routing-constants)) is Android's 10 MiB, because Airhop caps inflation at the declared size while it runs rather than checking afterwards, so a large declared size costs nothing to refuse. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
+> Airhop is on both sides of the split on purpose, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)), as bitchat-ios does; inflation is also bounded as it runs. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
 >
 > `conformance.test.ts` reads `maxPayloadBytes` out of the vendored `FileTransferLimits.swift` and fails if the caps above no longer fit under the ceiling it implies, so this stays enforced rather than remembered.
 
@@ -303,7 +303,7 @@ is, since moving it would break every shipped build for no gain.
 
 **A Nostr key a peer names for itself is a claim, not a proof.** ANNOUNCE TLV `0x07`, a card from a link, and the card inside `0x22` all say "reach this peer at this key", signed by the peer and never by the key. A receiver treats such a claim as a forwarding address only: the first claim for a key stands, a later one cannot move it, and no claim folds the thread already keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may do those, the same act that may re-pin keys.
 
-**`0x51` rings through mute, so the receiver holds every gate.** Offered only to a peer whose proven `0x21` state carries bit 10, set for us specifically. Accepted only from a saved contact granted ring permission, with the master switch on, not snoozed, outside the cooldown, and inside the staleness window. Never couriered.
+**`0x51` rings through mute, so the receiver holds every gate.** Offered only to a peer whose proven `0x21` state carries bit 24, set for us specifically. Accepted only from a saved contact granted ring permission, with the master switch on, not snoozed, outside the cooldown, and inside the staleness window. Never couriered.
 
 - **The sender is always answered.** `0x52` when a person answers (opens the thread, taps Open or Snooze; closing the alert only silences it, like swiping a call banner away). `0x53` when the ring is refused, with a reason: `0x01` not allowed (no grant, or the master switch off; one value, since the sender's next step is the same), `0x02` snoozed, `0x03` inside the cooldown. A stale ring gets neither, so a replay cannot probe whether its sender is still permitted.
 - **The overlay owns the ringing** and goes up whether or not the app is in front; a ring from the thread already on screen is one pulse and the thread's own receipt. Rings from different people queue, one sounding at a time, each inside its own window.
@@ -326,7 +326,11 @@ Capability bits (ANNOUNCE TLV `0x05` and `0x21` TLV `0x01`, minimal little-endia
 | 0–7 | prekeys … bridge     | As bitchat `PeerCapabilities`                                                                                                     |
 | 8   | privateMedia         | Reads Noise `0x20`. Only the **authenticated** bit counts                                                                         |
 | 9   | privateMediaReceipts | Durable dedup of stable media IDs; permits bounded retry                                                                          |
-| 10  | ring                 | Proven only, never announced. In a `0x21` to peer X: "I currently accept a Ring (`0x51`) from X". Re-proven whenever that changes |
+| 10  | (bitchat, reserved)  | Never set or acted on; bitchat keeps it decodable so it is never reused                                                           |
+| 24  | ring                 | Proven only, never announced. In a `0x21` to peer X: "I currently accept a Ring (`0x51`) from X". Re-proven whenever that changes |
+| 25  | locationPin          | Reads a location pin (`0x50`). Only the **authenticated** bit counts; the action is not offered without it                        |
+
+bitchat allocates upward from bit 0, so Airhop-only bits start at 24, as Airhop's packet types start at `0x50`.
 
 ### 3.4 Fragmentation: the budget is the frame
 
@@ -363,6 +367,23 @@ Two rules follow, and both match bitchat:
   classifies a DM's fragments as public: it archives sealed private media in its
   gossip store, re-offers it to third parties, and floods each fragment to every
   neighbour instead of sending it down the directed path.
+
+Any packet, not only a file, is written as fragments once it passes the frame on
+a Bluetooth link, as bitchat's BLE service does: a group roster of four or more
+members, a long message, a full courier envelope, a gossip sync reply. Wi-Fi and
+LAN links carry it whole, so a relay that received one whole re-cuts it for its
+Bluetooth neighbours. Fragments name the inner packet's author as their
+senderID, as bitchat's do, whoever cut them. A write to one link counts only
+once every fragment is taken: a courier handover is not a handover until then.
+
+The inner packet is judged after reassembly as a whole one would be: deduplicated
+against the flood (it may also arrive whole over another radio), tracked for
+gossip sync, and held to the freshness window
+([section 5.1](#51-solicited-responses-and-the-freshness-window)). Fragments are
+stamped when cut, so their own freshness says nothing about the packet inside. Reassembly holds a
+stream to the frame its claimed type could fill and drops a packet that turns
+out to be another type ([section 4](#4-routing-constants) caps each type's
+payload).
 
 bitchat derives 469 data bytes from the same 512-byte budget with a smaller
 header. Being two bytes under it is harmless: the chunk size is a sender-side
@@ -491,7 +512,8 @@ Catch-up is preserved by giving the type its own sync bit
 ### 3.8 Location pin
 
 One place, sent once, to one person. Body of `NoisePayloadType.LOCATION_PIN`
-(`0x50`). Airhop only; bitchat drops the unknown payload type.
+(`0x50`). Airhop only; bitchat drops the unknown payload type, so a pin is
+offered only to a peer that has proven capability bit 25.
 
 ```
 [0]        u8      version = 1
@@ -521,43 +543,43 @@ Two rules the routing layer enforces rather than the format:
 
 ## 4. Routing Constants
 
-| Constant                        | Value          | Source                                                                         |
-| ------------------------------- | -------------- | ------------------------------------------------------------------------------ |
-| Default TTL                     | `7`            | `TransportConfig.swift`                                                        |
-| Origin TTL, authored broadcasts | `5–7`          | Drawn per packet, per burst for voice. Announces and directed traffic stay `7` |
-| Relay jitter range              | `10–220 ms`    | Random delay before re-broadcast                                               |
-| Fragment frame budget           | `512 bytes`    | ATT attribute ceiling: the whole encoded frame, not the payload                |
-| Fragment data per frame         | `467 bytes`    | Frame budget minus header, senderID, recipientID and fragment header           |
-| Max concurrent assemblies       | `128`          | In-flight fragment reassembly slots                                            |
-| Max payload length              | `10 MiB`       | Declared wire length AND decompressed output                                   |
-| Dedup LRU size                  | `1000 entries` | Seen-packetID cache (16-byte IDs)                                              |
-| Dedup expiry window             | `5 minutes`    | PacketID expiry in dedup cache                                                 |
-| Fanout subset size              | `~⌈sqrt(n)⌉`   | Deterministic fanout, excludes ingress peer                                    |
-| Voice relay jitter              | `8–25 ms`      | Live voice and fragments (`TransportConfig`)                                   |
-| Voice relay TTL cap             | `7` / `5`      | Sparse / dense (degree ≥ 6) meshes                                             |
-| Voice jitter buffer             | `350 ms`       | Buffered before live playback starts                                           |
-| Concurrent voice bursts         | `8`            | Inbound assembly cap per device                                                |
+| Constant                        | Value          | Source                                                                                                                                                         |
+| ------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default TTL                     | `7`            | `TransportConfig.swift`                                                                                                                                        |
+| Origin TTL, authored broadcasts | `5–7`          | Drawn per packet, per burst for voice. Announces and directed traffic stay `7`                                                                                 |
+| Relay jitter range              | `10–220 ms`    | Random delay before re-broadcast                                                                                                                               |
+| Fragment frame budget           | `512 bytes`    | ATT attribute ceiling: the whole encoded frame, not the payload                                                                                                |
+| Fragment data per frame         | `467 bytes`    | Frame budget minus header, senderID, recipientID and fragment header                                                                                           |
+| Max concurrent assemblies       | `128`          | In-flight fragment reassembly slots                                                                                                                            |
+| Max payload length              | per type       | Declared and decompressed: 4 KiB control, 8 KiB sync, 64 KiB envelopes, 128 KiB messages, framed-file cap for media (`payload-limits.ts`, mirrors bitchat-ios) |
+| Dedup LRU size                  | `1000 entries` | Seen-packetID cache (16-byte IDs)                                                                                                                              |
+| Dedup expiry window             | `5 minutes`    | PacketID expiry in dedup cache                                                                                                                                 |
+| Fanout subset size              | `~⌈sqrt(n)⌉`   | Deterministic fanout, excludes ingress peer                                                                                                                    |
+| Voice relay jitter              | `8–25 ms`      | Live voice and fragments (`TransportConfig`)                                                                                                                   |
+| Voice relay TTL cap             | `7` / `5`      | Sparse / dense (degree ≥ 6) meshes                                                                                                                             |
+| Voice jitter buffer             | `350 ms`       | Buffered before live playback starts                                                                                                                           |
+| Concurrent voice bursts         | `8`            | Inbound assembly cap per device                                                                                                                                |
 
 ## 5. Gossip Sync Constants
 
 > **iOS vs Android divergence:** bitchat-ios and bitchat-android have different default values for these constants. Airhop uses bitchat-ios values as canonical unless noted.
 
-| Constant                        | Airhop / bitchat-ios                                  | bitchat-android                    | Notes                                          |
-| ------------------------------- | ----------------------------------------------------- | ---------------------------------- | ---------------------------------------------- |
-| Sync interval                   | `15 seconds`                                          | `30 seconds`                       | How often REQUEST_SYNC is broadcast            |
-| Triggered sync delay            | `5 seconds`                                           | `5 seconds`                        | After first announce from new direct peer      |
-| Gossip cache size               | `1000 packets`                                        | `100 packets`                      | Rolling seen-packet set for GCS                |
-| GCS filter false positive rate  | `1%` (`targetFpr = 0.01`)                             | `1%` (configurable 0.1%–5%)        | Same default; P = ceil(log2(1/fpr)) = 7        |
-| GCS hash modulus M              | `count × 2^P`                                         | configurable                       | Gives FPR ≈ 1/2^P per element; u32 on wire     |
-| GCS filter size budget          | `400 bytes`                                           | `128–1024 bytes` (default 256)     | `gcsMaxBytes` in `GossipSyncManager`           |
-| GCS hash function               | `SHA-256(packetID)[0:8]` as u63 BE (sign bit cleared) | `SHA-256(packetID)[0:8]` as u63 BE | Not SipHash; both implementations use SHA-256  |
-| Packet ID for GCS               | `SHA-256(type\|senderID\|timestamp\|payload)[0:16]`   | same                               | 128-bit deterministic ID                       |
-| Sync scope                      | local only (ttl 0)                                    | local only (ttl 0)                 | REQUEST_SYNC **and every response** ride ttl 0 |
-| Response rate limit             | `8 per 30 s per peer`                                 | same                               | `responseRateLimitMaxResponses`                |
-| Candidate max age (ANNOUNCE)    | `60 s`                                                | `60 s`                             | Consensus rule in android `sync.md`            |
-| Candidate max age (CHANNEL_MSG) | `900 s`                                               | n/a                                | `publicMessageMaxAgeSeconds`                   |
-| Candidate max age (BOARD_POST)  | `7 days`                                              | n/a                                | Backstop only; the board store owns expiry     |
-| Candidate max age (GROUP_MSG)   | `900 s`                                               | n/a                                | Same window as public messages                 |
+| Constant                        | Airhop / bitchat-ios                                  | bitchat-android                    | Notes                                             |
+| ------------------------------- | ----------------------------------------------------- | ---------------------------------- | ------------------------------------------------- |
+| Sync interval                   | `15 seconds`                                          | `30 seconds`                       | How often REQUEST_SYNC is broadcast               |
+| Triggered sync delay            | `5 seconds`                                           | `5 seconds`                        | After first announce from new direct peer         |
+| Gossip cache size               | `1000 packets`, `8 MiB`                               | `100 packets`                      | Rolling seen-packet set for GCS; oldest out first |
+| GCS filter false positive rate  | `1%` (`targetFpr = 0.01`)                             | `1%` (configurable 0.1%–5%)        | Same default; P = ceil(log2(1/fpr)) = 7           |
+| GCS hash modulus M              | `count × 2^P`                                         | configurable                       | Gives FPR ≈ 1/2^P per element; u32 on wire        |
+| GCS filter size budget          | `400 bytes`                                           | `128–1024 bytes` (default 256)     | `gcsMaxBytes` in `GossipSyncManager`              |
+| GCS hash function               | `SHA-256(packetID)[0:8]` as u63 BE (sign bit cleared) | `SHA-256(packetID)[0:8]` as u63 BE | Not SipHash; both implementations use SHA-256     |
+| Packet ID for GCS               | `SHA-256(type\|senderID\|timestamp\|payload)[0:16]`   | same                               | 128-bit deterministic ID                          |
+| Sync scope                      | local only (ttl 0)                                    | local only (ttl 0)                 | REQUEST_SYNC **and every response** ride ttl 0    |
+| Response rate limit             | `8 per 30 s per peer`                                 | same                               | `responseRateLimitMaxResponses`                   |
+| Candidate max age (ANNOUNCE)    | `60 s`                                                | `60 s`                             | Consensus rule in android `sync.md`               |
+| Candidate max age (CHANNEL_MSG) | `900 s`                                               | n/a                                | `publicMessageMaxAgeSeconds`                      |
+| Candidate max age (BOARD_POST)  | `7 days`                                              | n/a                                | Backstop only; the board store owns expiry        |
+| Candidate max age (GROUP_MSG)   | `900 s`                                               | n/a                                | Same window as public messages                    |
 
 ### 5.1 Solicited responses and the freshness window
 
@@ -566,6 +588,7 @@ Every packet is held to a **±2 minute** timestamp window at ingress, and is nei
 - A response is sent with **`IS_RSR` set and `ttl = 0`**. Both fields are normalised out of the signing preimage, so retagging a stored packet leaves its original signature intact.
 - A receiver skips the window **only** when the packet claims `IS_RSR` (or is a legacy `ttl = 0` response) **and** arrives from a peer it has an outstanding `REQUEST_SYNC` to, inside a 30 s response window. The flag alone is a sender's claim; the pending request is the receiver's own record.
 - This is why requests are unicast. A broadcast request has no peer to register against, so nothing it draws back can be attributed.
+- A response longer than a Bluetooth frame arrives as fragments, and the window applies to the reassembled packet. It passes when it dates from no earlier than the stream's first fragment less the skew (a slow transfer of a packet stamped as it was cut), or when it passes the rule above with every fragment having arrived over the one link attributed. An old packet wrapped in fresh fragments by anyone else is refused.
 
 **`sinceTimestamp` (TLV `0x05`)** is a coverage disclaimer, not a request boundary. It is sent **only when the filter could not cover everything held** (the store exceeded the cap, or the encoder trimmed the tail to fit 400 bytes), and names the oldest packet the filter reaches. Candidates are ordered newest-first so the covered set is a contiguous newest-prefix and the cursor is exact. Sending it unconditionally would tell every peer to withhold anything older than the requester's oldest packet, which for a device that just joined is precisely the history it turned up to collect.
 
@@ -703,7 +726,7 @@ bitchat reached the same conclusion about its own docs and has relabelled them (
 
 ## 9. bitchat Wire Compatibility Table
 
-| Field                 | Airhop                    | bitchat iOS               | bitchat Android           | Must Match   |
+| Field                 | Airhop                    | bitchat-ios               | bitchat-android           | Must Match   |
 | --------------------- | ------------------------- | ------------------------- | ------------------------- | ------------ |
 | Service UUID          | `F47B5E2D...`             | `F47B5E2D...`             | `F47B5E2D...`             | ✅ Yes       |
 | Characteristic UUID   | `A1B2C3D4...`             | `A1B2C3D4...`             | `A1B2C3D4...`             | ✅ Yes       |

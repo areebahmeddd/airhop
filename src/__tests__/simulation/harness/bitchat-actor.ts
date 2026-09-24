@@ -155,7 +155,7 @@ export interface BitchatObservations {
   refusedCourierEnvelopes: number;
   // Packets whose signature did not verify against the claimed sender.
   rejectedSignatures: number;
-  // Public messages whose payload was not valid UTF-8, which bitchat-iOS drops.
+  // Public messages whose payload was not valid UTF-8, which bitchat-ios drops.
   rejectedPayloads: number;
   // Files it reassembled and decoded successfully, with the bytes that actually
   // arrived so a scenario can compare them against what was sent.
@@ -397,9 +397,9 @@ export class BitchatActor implements RadioNode {
   // because what this exercises is acceptance, not the jitter buffer.
   //
   // Every frame goes out with the all-0xFF recipient sentinel that
-  // bitchat-Android writes with HAS_RECIPIENT set, which is the encoding a
+  // bitchat-android writes with HAS_RECIPIENT set, which is the encoding a
   // receiver has to recognise as broadcast on top of the omitted-field form
-  // that bitchat-iOS and Airhop emit.
+  // that bitchat-ios and Airhop emit.
   sendVoiceBurst(dataPackets = 3): void {
     const burstID = new Uint8Array(8).fill(0xa0 + (dataPackets & 0x0f));
     const frame = new Uint8Array(60).fill(0x5a);
@@ -617,7 +617,7 @@ export class BitchatActor implements RadioNode {
       return;
     }
     // The whole payload is the message, and it belongs to the one public room.
-    // Decoded the way bitchat-iOS decodes it: a payload that is not valid UTF-8
+    // Decoded the way bitchat-ios decodes it: a payload that is not valid UTF-8
     // is dropped rather than shown ("Failed to decode message payload as UTF-8").
     let text: string;
     try {

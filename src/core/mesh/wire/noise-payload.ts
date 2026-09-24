@@ -24,7 +24,7 @@ export const NoisePayloadType = {
   // carries, so one encoder serves both and only the envelope differs.
   //
   // 0x20 is the value already deployed by bitchat-android and required of new
-  // senders. bitchat-iOS also accepts 0x09 from its own prerelease builds and
+  // senders. bitchat-ios also accepts 0x09 from its own prerelease builds and
   // canonicalizes it on receive; it never emits it, and neither do we. We
   // accept it for the same reason iOS does: those builds exist in the wild.
   PRIVATE_FILE: 0x20,

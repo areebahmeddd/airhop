@@ -55,6 +55,7 @@ const P = {
   contactsStore: "@store/contacts-store",
   ringStore: "@store/ring-store",
   walletStore: "@store/wallet-store",
+  alertStore: "@store/alert-store",
   outboxStore: "@store/outbox-store",
   groupStore: "@store/group-store",
   boardStore: "@store/board-store",
@@ -300,6 +301,7 @@ interface MeshLike {
   getNostrPrivKey: () => Uint8Array;
   getChannelGeohash: (channel: string) => string | null;
   canSealPrivateMedia: (peerID: string) => boolean;
+  peerAcceptsLocationPin: (peerID: string) => boolean;
   peerAcceptsRing: (peerID: string) => boolean;
   sendRing: (peerID: string) => string | null;
   applyInternetEnabled: (enabled: boolean) => void;
@@ -1470,6 +1472,26 @@ export class SimDevice {
     amount: number;
     memo?: string;
   }): Promise<{ rail: string; amount: number; final: boolean } | null> {
+    // payPerson asks before it commits. A scenario that calls pay() means it,
+    // so the harness taps the confirm the way the user would: hide, then press.
+    const alerts = this.inner.stores.alertStore as unknown as {
+      getState: () => {
+        visible: boolean;
+        buttons: { style?: string; onPress?: () => void }[];
+        hide: () => void;
+      };
+      subscribe: (listener: () => void) => () => void;
+    };
+    const unsubscribe = alerts.subscribe(() => {
+      const alert = alerts.getState();
+      if (!alert.visible) return;
+      const confirm = alert.buttons.find((b) => b.style === "destructive");
+      if (confirm === undefined) return;
+      queueMicrotask(() => {
+        alert.hide();
+        confirm.onPress?.();
+      });
+    });
     try {
       const result = await this.world.resolve(this.inner.pay.payPerson(params));
       this.log(
@@ -1480,6 +1502,8 @@ export class SimDevice {
     } catch (e) {
       this.log("PAY_FAILED", String(e));
       return null;
+    } finally {
+      unsubscribe();
     }
   }
 
@@ -1700,6 +1724,7 @@ function buildSandbox(
       blockedStore: require(P.blockedStore).useBlockedStore,
       transferStore: require(P.transferStore).useTransferStore,
       walletStore: require(P.walletStore).useWalletStore,
+      alertStore: require(P.alertStore).useAlertStore,
       activityStore: require(P.activityStore).useActivityStore,
       noticesStore: require(P.noticesStore).useLocationNotesStore,
     };

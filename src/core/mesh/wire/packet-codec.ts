@@ -1,7 +1,7 @@
 // Binary encode/decode for the bitchat wire format.
 //
 // Byte-identical to bitchat BinaryProtocol.swift / BinaryProtocol.kt so an
-// Airhop packet is decodable and signature-verifiable by bitchat iOS and Android
+// Airhop packet is decodable and signature-verifiable by bitchat-ios and bitchat-android
 // nodes, and vice versa. Two header versions coexist:
 //
 //   v1 header (14 bytes):  version type ttl timestamp(8) flags payloadLen(u16)
@@ -34,12 +34,8 @@ import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { concatBytes } from "@noble/hashes/utils.js";
 import { optimalBlockSize, pad, unpad } from "./message-padding";
-import {
-  compress,
-  decompress,
-  MAX_PAYLOAD_BYTES,
-  shouldCompress,
-} from "./packet-compression";
+import { compress, decompress, shouldCompress } from "./packet-compression";
+import { MAX_DEFLATE_RATIO, maxPayloadBytes } from "./payload-limits";
 
 // Packet type registry per PROTOCOLS.md section 3.
 //
@@ -64,7 +60,7 @@ export const enum PacketType {
   PING = 0x26, // Directed mesh echo request (nonce + origin TTL)
   PONG = 0x27, // Directed mesh echo reply (echoed nonce + origin TTL)
   NOSTR_CARRIER = 0x28, // Gateway-ferried signed Nostr event
-  VOICE_FRAME = 0x29, // PTT audio burst (matches bitchat-iOS voiceFrame)
+  VOICE_FRAME = 0x29, // PTT audio burst (matches bitchat-ios voiceFrame)
 
   // Airhop extensions, allocated at 0x50 to stay clear of bitchat's frontier.
   // bitchat assigns forward and has reached 0x2C, so anything just past their
@@ -118,7 +114,7 @@ const FLAGS_OFFSET = 11; // u8
 
 // The payload exactly as it arrived, recorded by decodePacket.
 //
-// DEFLATE output is not canonical. bitchat iOS compresses with Apple's
+// DEFLATE output is not canonical. bitchat-ios compresses with Apple's
 // compression_encode_buffer, Android with java.util.zip.Deflater, and Airhop
 // with pako; all three inflate each other's streams, but none reproduces another's
 // bytes, and the size check in compress() can even make them disagree on whether
@@ -377,7 +373,10 @@ function decodeCore(raw: Uint8Array): Packet | null {
   const flags = raw[FLAGS_OFFSET];
   const payloadLen =
     version === 2 ? view.getUint32(12, false) : view.getUint16(12, false);
-  if (payloadLen > MAX_PAYLOAD_BYTES) return null;
+  // Checked before anything is allocated, for compressed and plain payloads
+  // alike. See payload-limits.ts.
+  const maxPayload = maxPayloadBytes(type);
+  if (payloadLen > maxPayload + lengthFieldBytes) return null;
 
   const hasRecipient = (flags & Flags.HAS_RECIPIENT) !== 0;
   const hasSig = (flags & Flags.SIGNED) !== 0;
@@ -426,9 +425,10 @@ function decodeCore(raw: Uint8Array): Packet | null {
     const origSize =
       version === 2 ? view.getUint32(off, false) : view.getUint16(off, false);
     off += lengthFieldBytes;
-    if (origSize > MAX_PAYLOAD_BYTES) return null;
+    if (origSize > maxPayload) return null;
     const compressedSize = payloadLen - lengthFieldBytes;
     if (compressedSize <= 0 || off + compressedSize > raw.length) return null;
+    if (origSize > compressedSize * MAX_DEFLATE_RATIO) return null;
     const compressed = raw.slice(off, off + compressedSize);
     off += compressedSize;
     const decompressed = decompress(compressed, origSize);
@@ -436,7 +436,7 @@ function decodeCore(raw: Uint8Array): Packet | null {
     payload = decompressed;
     wirePayload = { bytes: compressed, compressed: true, forPayload: payload };
   } else {
-    if (off + payloadLen > raw.length) return null;
+    if (payloadLen > maxPayload || off + payloadLen > raw.length) return null;
     payload = raw.slice(off, off + payloadLen);
     off += payloadLen;
     wirePayload = { bytes: payload, compressed: false, forPayload: payload };
@@ -532,10 +532,10 @@ export function isForMe(p: Packet, myPeerIDBytes: Uint8Array): boolean {
 // Check whether the packet is addressed to everyone rather than to one peer.
 //
 // Three encodings mean the same thing on the wire, and all three are accepted:
-//   - HAS_RECIPIENT clear, recipientID field absent. What we and bitchat-iOS
+//   - HAS_RECIPIENT clear, recipientID field absent. What we and bitchat-ios
 //     emit, and what BROADCAST_ID stands in for after decoding.
 //   - recipientID all-zeros, the decoded form of the case above.
-//   - recipientID all-0xFF, the broadcast sentinel bitchat-Android writes with
+//   - recipientID all-0xFF, the broadcast sentinel bitchat-android writes with
 //     HAS_RECIPIENT set. Dropping these would silently lose Android live voice
 //     and public file transfers.
 export function isBroadcast(p: Packet): boolean {

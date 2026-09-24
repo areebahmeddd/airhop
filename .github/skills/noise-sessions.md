@@ -88,7 +88,7 @@ bytes [4-7]  = counter as little-endian u32
 bytes [8-11] = 0x00
 ```
 
-This matches the bitchat iOS nonce construction in `NoiseCipherState`.
+This matches the bitchat-ios nonce construction in `NoiseCipherState`.
 
 ## What Not to Do
 

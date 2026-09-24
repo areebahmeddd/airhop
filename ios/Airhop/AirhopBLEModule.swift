@@ -432,6 +432,7 @@ final class AirhopBLEModule: RCTEventEmitter {
           // JS as undefined rather than as an error anyone would see.
           "batteryPercent": -1,
           "charging": false,
+          "powerSaveMode": false,
         ])
         return
       }
@@ -470,9 +471,13 @@ final class AirhopBLEModule: RCTEventEmitter {
         // Android-only inputs to the power policy. CoreBluetooth
         // exposes no scan-rate control, so a battery reading here would
         // have nothing to drive; -1 tells the policy to leave the mode
-        // alone rather than infer a flat battery.
+        // alone rather than infer a flat battery. Low Power Mode is left
+        // out for the same reason: the OS already throttles BLE under it,
+        // and reporting it would only raise a "scanning less often"
+        // banner for a change this module cannot make.
         "batteryPercent": -1,
         "charging": false,
+        "powerSaveMode": false,
       ])
     }
   }

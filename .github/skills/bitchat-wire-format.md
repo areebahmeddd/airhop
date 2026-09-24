@@ -3,7 +3,7 @@ description: >
   Reference for the bitchat v2 binary wire format. Read this before touching
   src/core/mesh/wire/packet-codec.ts, the BLE native modules, or any code that
   constructs or parses packets. A one-byte mistake silently breaks
-  interoperability with every bitchat iOS and Android node on the mesh.
+  interoperability with every bitchat-ios and bitchat-android node on the mesh.
 ---
 
 # bitchat Wire Format
@@ -54,7 +54,7 @@ To sign or verify a packet:
 1. Encode the full packet with `ttl = 0`, `IS_RSR = false`, `HAS_SIGNATURE = 0` (omit the signature field).
 2. Ed25519-sign or verify the resulting bytes.
 
-Clearing TTL lets relays decrement it without invalidating the signature. This matches `toBinaryDataForSigning()` in bitchat iOS and Android.
+Clearing TTL lets relays decrement it without invalidating the signature. This matches `toBinaryDataForSigning()` in bitchat-ios and bitchat-android.
 
 ## Packet ID (Deduplication Key)
 
