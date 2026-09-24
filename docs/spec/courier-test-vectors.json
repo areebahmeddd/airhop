@@ -19,11 +19,10 @@
     "     rotates daily. Wrong epoch-day arithmetic produces a tag no carrier",
     "     matches, so mail is never delivered.",
     "",
-    "Upstream is drafting an equivalent in permissionlesstech/bitchat#1472. Diff",
-    "the two when it lands rather than merging: agreement is the interop",
-    "property, and a difference is a finding."
+    "bitchat's own set is kept separately, as published, in",
+    "courier-test-vectors-bitchat.json, and the same test checks the code",
+    "against both."
   ],
-
   "recipientTag": {
     "_comment": [
       "HMAC-SHA256(key = recipient's 32-byte public Noise static key,",
@@ -53,7 +52,6 @@
       }
     ]
   },
-
   "envelopeTLV": {
     "_comment": [
       "Type-length-value, u16 big-endian lengths, in this exact order:",
@@ -87,7 +85,6 @@
       }
     ]
   },
-
   "limits": {
     "_comment": [
       "A carrier judges an envelope by its own limits, not the sender's. An",
