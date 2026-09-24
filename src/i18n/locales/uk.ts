@@ -179,6 +179,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "Торкніться двічі й утримуйте, щоб побачити більше варіантів",
   "chat.dm.you_prefix": "Ви:",
+  "chat.draft_prefix": "Чернетка:",
   "chat.dm.none": "Немає прямих повідомлень",
   "chat.dm.none_desc":
     "Перейдіть на вкладку Mesh і торкніться піра, щоб почати зашифроване пряме повідомлення.",

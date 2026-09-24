@@ -181,6 +181,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "Tsindrio indroa ary hazony raha te hahita safidy fanampiny",
   "chat.dm.you_prefix": "Ianao:",
+  "chat.draft_prefix": "Volavola:",
   "chat.dm.none": "Tsy misy hafatra mivantana",
   "chat.dm.none_desc":
     "Mandehana any amin'ny takelaka Harato ary tsindrio teboka iray mba hanomboka hafatra mivantana voafono.",

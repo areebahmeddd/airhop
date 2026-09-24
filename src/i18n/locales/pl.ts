@@ -182,6 +182,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "Naciśnij dwukrotnie i przytrzymaj, żeby zobaczyć więcej opcji",
   "chat.dm.you_prefix": "Ty:",
+  "chat.draft_prefix": "Szkic:",
   "chat.dm.none": "Brak wiadomości bezpośrednich",
   "chat.dm.none_desc":
     "Przejdź do zakładki Mesh i naciśnij peera, żeby zacząć zaszyfrowaną rozmowę bezpośrednią.",

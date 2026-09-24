@@ -180,6 +180,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "შეეხე ორჯერ და დააკავე დამატებითი პარამეტრებისთვის",
   "chat.dm.you_prefix": "შენ:",
+  "chat.draft_prefix": "მონახაზი:",
   "chat.dm.none": "პირადი შეტყობინებები არ არის",
   "chat.dm.none_desc":
     "გადადი მეშის ჩანართზე და შეეხე კვანძს, რომ დაიწყო დაშიფრული პირადი მიმოწერა.",

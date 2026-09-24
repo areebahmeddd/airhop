@@ -181,6 +181,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Doppelt tippen und halten für weitere Optionen",
   "chat.channels.row_hint": "Doppelt tippen und halten für weitere Optionen",
   "chat.dm.you_prefix": "Du:",
+  "chat.draft_prefix": "Entwurf:",
   "chat.dm.none": "Keine Direktnachrichten",
   "chat.dm.none_desc":
     "Gehe zum Mesh-Tab und tippe auf einen Peer, um eine verschlüsselte DM zu starten.",

@@ -178,6 +178,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "Дважды коснитесь и удерживайте для других действий",
   "chat.dm.you_prefix": "Вы:",
+  "chat.draft_prefix": "Черновик:",
   "chat.dm.none": "Личных сообщений нет",
   "chat.dm.none_desc":
     "Перейдите на вкладку «Сеть» и коснитесь узла, чтобы начать зашифрованную переписку.",

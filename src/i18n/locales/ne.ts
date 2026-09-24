@@ -177,6 +177,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "थप विकल्पका लागि दुई पटक थिचेर समाउनुहोस्",
   "chat.channels.row_hint": "थप विकल्पका लागि दुई पटक थिचेर समाउनुहोस्",
   "chat.dm.you_prefix": "तपाईं:",
+  "chat.draft_prefix": "मस्यौदा:",
   "chat.dm.none": "कुनै सिधा सन्देश छैन",
   "chat.dm.none_desc":
     "गुप्तीकृत सिधा सन्देश सुरु गर्न मेश ट्याबमा गएर कुनै पियर थिच्नुहोस्।",

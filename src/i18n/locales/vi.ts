@@ -179,6 +179,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
   "chat.channels.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
   "chat.dm.you_prefix": "Bạn:",
+  "chat.draft_prefix": "Bản nháp:",
   "chat.dm.none": "Không có tin nhắn riêng",
   "chat.dm.none_desc":
     "Vào thẻ Mạng lưới và chạm một nút mạng để bắt đầu tin nhắn riêng được mã hóa.",

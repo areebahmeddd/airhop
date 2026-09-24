@@ -180,6 +180,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "مزید اختیارات کے لیے دو بار چھو کر دبائے رکھیں",
   "chat.channels.row_hint": "مزید اختیارات کے لیے دو بار چھو کر دبائے رکھیں",
   "chat.dm.you_prefix": "آپ:",
+  "chat.draft_prefix": "ڈرافٹ:",
   "chat.dm.none": "کوئی براہ راست پیغام نہیں",
   "chat.dm.none_desc":
     "خفیہ براہ راست پیغام شروع کرنے کے لیے میش ٹیب پر جائیں اور کسی پیئر کو چھوئیں۔",

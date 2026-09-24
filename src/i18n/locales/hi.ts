@@ -177,6 +177,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "और विकल्पों के लिए दो बार टैप करके दबाए रखें",
   "chat.channels.row_hint": "और विकल्पों के लिए दो बार टैप करके दबाए रखें",
   "chat.dm.you_prefix": "आप:",
+  "chat.draft_prefix": "ड्राफ़्ट:",
   "chat.dm.none": "कोई सीधा संदेश नहीं",
   "chat.dm.none_desc":
     "एन्क्रिप्टेड DM शुरू करने के लिए मेश टैब पर जाकर किसी पीअर को टैप करें।",

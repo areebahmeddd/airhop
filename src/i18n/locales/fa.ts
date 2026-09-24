@@ -176,6 +176,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
   "chat.channels.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
   "chat.dm.you_prefix": "شما:",
+  "chat.draft_prefix": "پیش‌نویس:",
   "chat.dm.none": "پیام مستقیمی نیست",
   "chat.dm.none_desc":
     "به زبانهٔ مش بروید و روی یک همتا بزنید تا یک پیام مستقیم رمزگذاری‌شده آغاز شود.",

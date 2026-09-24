@@ -181,6 +181,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
   "chat.channels.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
   "chat.dm.you_prefix": "Wewe:",
+  "chat.draft_prefix": "Rasimu:",
   "chat.dm.none": "Hakuna jumbe za moja kwa moja",
   "chat.dm.none_desc":
     "Nenda kwenye kichupo cha Mesh na uguse peer ili kuanzisha ujumbe wa moja kwa moja uliosimbwa.",

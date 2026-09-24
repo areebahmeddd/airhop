@@ -180,6 +180,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Ketuk dua kali lalu tahan untuk pilihan lain",
   "chat.channels.row_hint": "Ketuk dua kali lalu tahan untuk pilihan lain",
   "chat.dm.you_prefix": "Kamu:",
+  "chat.draft_prefix": "Draf:",
   "chat.dm.none": "Tidak ada pesan langsung",
   "chat.dm.none_desc":
     "Buka tab Mesh lalu ketuk seorang rekan untuk memulai pesan langsung yang terenkripsi.",

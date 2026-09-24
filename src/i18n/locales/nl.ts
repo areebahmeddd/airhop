@@ -181,6 +181,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Tik twee keer en houd vast voor meer opties",
   "chat.channels.row_hint": "Tik twee keer en houd vast voor meer opties",
   "chat.dm.you_prefix": "Jij:",
+  "chat.draft_prefix": "Concept:",
   "chat.dm.none": "Geen directe berichten",
   "chat.dm.none_desc":
     "Ga naar het Mesh-tabblad en tik op een peer om een versleuteld direct bericht te beginnen.",

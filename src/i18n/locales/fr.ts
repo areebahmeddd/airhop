@@ -182,6 +182,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Touche deux fois et maintiens pour plus d’options",
   "chat.channels.row_hint": "Touche deux fois et maintiens pour plus d’options",
   "chat.dm.you_prefix": "Toi :",
+  "chat.draft_prefix": "Brouillon :",
   "chat.dm.none": "Aucun message direct",
   "chat.dm.none_desc":
     "Va dans l’onglet Maillage et touche un pair pour démarrer un message direct chiffré.",

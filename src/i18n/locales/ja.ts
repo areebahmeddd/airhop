@@ -175,6 +175,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "ダブルタップして長押しでその他の操作",
   "chat.channels.row_hint": "ダブルタップして長押しでその他の操作",
   "chat.dm.you_prefix": "あなた:",
+  "chat.draft_prefix": "下書き:",
   "chat.dm.none": "ダイレクトメッセージはありません",
   "chat.dm.none_desc":
     "メッシュタブでピアをタップすると、暗号化されたDMを始められます。",

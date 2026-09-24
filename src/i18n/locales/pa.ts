@@ -174,6 +174,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "ਹੋਰ ਵਿਕਲਪਾਂ ਲਈ ਦੋ ਵਾਰ ਦਬਾ ਕੇ ਰੱਖੋ",
   "chat.channels.row_hint": "ਹੋਰ ਵਿਕਲਪਾਂ ਲਈ ਦੋ ਵਾਰ ਦਬਾ ਕੇ ਰੱਖੋ",
   "chat.dm.you_prefix": "ਤੁਸੀਂ:",
+  "chat.draft_prefix": "ਡਰਾਫਟ:",
   "chat.dm.none": "ਕੋਈ ਸਿੱਧਾ ਸੁਨੇਹਾ ਨਹੀਂ",
   "chat.dm.none_desc":
     "ਇਨਕ੍ਰਿਪਟਡ DM ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਮੈਸ਼ ਟੈਬ ’ਤੇ ਜਾਓ ਅਤੇ ਕਿਸੇ ਪੀਅਰ ’ਤੇ ਦਬਾਓ।",

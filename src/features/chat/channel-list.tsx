@@ -18,6 +18,7 @@ import {
 import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
+import { loadDraft } from "@store/composer-drafts";
 import { useGroupStore } from "@store/group-store";
 import { usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
@@ -386,6 +387,8 @@ export default function ChannelList({
   ): React.JSX.Element {
     const msgs = messages[item] ?? [];
     const last = msgs[msgs.length - 1];
+    // One line, as a preview is: newlines and runs of spaces collapse.
+    const draft = loadDraft(item).replace(/\s+/g, " ").trim();
     const unread = unreadCounts[item] ?? 0;
     // A teleported cell (geohash:<gh>) is a location channel keyed by a fixed
     // geohash. It has no CHANNEL_SCOPE entry, so its scope line is derived from
@@ -448,9 +451,11 @@ export default function ChannelList({
       unread > 0 ? tPlural("chat.a11y.unread", unread) : null,
       isMuted ? t("chat.a11y.muted") : null,
       isPinned ? t("chat.a11y.pinned") : null,
-      last
-        ? `${last.isMine ? t("chat.you") : last.senderNickname}: ${messagePreviewText(last)}`
-        : t("chat.no_messages"),
+      draft.length > 0
+        ? `${t("chat.draft_prefix")} ${draft}`
+        : last
+          ? `${last.isMine ? t("chat.you") : last.senderNickname}: ${messagePreviewText(last)}`
+          : t("chat.no_messages"),
       timeLabel,
     ]
       .filter((part) => part !== null)
@@ -522,7 +527,14 @@ export default function ChannelList({
 
           {/* Foot line: preview + unread badge */}
           <View style={styles.channelRowFoot}>
-            {last ? (
+            {draft.length > 0 ? (
+              <Text style={styles.channelPreview} numberOfLines={1}>
+                <Text style={styles.channelPreviewDraft}>
+                  {T("chat.draft_prefix")}{" "}
+                </Text>
+                {draft}
+              </Text>
+            ) : last ? (
               <Text style={styles.channelPreview} numberOfLines={1}>
                 <Text style={styles.channelPreviewSender}>
                   {last.isMine ? t("chat.you") : last.senderNickname}:{" "}
@@ -973,6 +985,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     channelPreviewSender: {
       color: Colors.textMuted,
+    // Weight, not colour: green and red already mean encrypted and failed.
+    channelPreviewDraft: {
+      color: Colors.textPrimary,
+      fontWeight: FontWeight.semibold,
+    },
     },
     channelPreviewEmpty: {
       fontSize: FontSize.sm,

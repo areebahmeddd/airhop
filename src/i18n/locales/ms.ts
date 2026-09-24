@@ -178,6 +178,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Ketik dua kali dan tahan untuk pilihan lain",
   "chat.channels.row_hint": "Ketik dua kali dan tahan untuk pilihan lain",
   "chat.dm.you_prefix": "Anda:",
+  "chat.draft_prefix": "Draf:",
   "chat.dm.none": "Tiada mesej terus",
   "chat.dm.none_desc":
     "Pergi ke tab Mesh dan ketik seorang rakan untuk memulakan mesej terus yang disulitkan.",

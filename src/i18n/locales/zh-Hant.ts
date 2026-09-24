@@ -172,6 +172,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "點兩下並按住可查看更多選項",
   "chat.channels.row_hint": "點兩下並按住可查看更多選項",
   "chat.dm.you_prefix": "你：",
+  "chat.draft_prefix": "草稿：",
   "chat.dm.none": "沒有私訊",
   "chat.dm.none_desc": "前往網狀網路分頁，點一下某個節點即可開始加密私訊。",
   "chat.dm.contact_info": "聯絡人資訊",

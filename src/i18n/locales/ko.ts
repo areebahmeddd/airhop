@@ -175,6 +175,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
   "chat.channels.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
   "chat.dm.you_prefix": "나:",
+  "chat.draft_prefix": "임시 저장:",
   "chat.dm.none": "다이렉트 메시지가 없습니다",
   "chat.dm.none_desc": "메시 탭에서 피어를 탭해 암호화된 DM을 시작하세요.",
   "chat.dm.contact_info": "연락처 정보",

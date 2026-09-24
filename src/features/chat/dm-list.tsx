@@ -12,6 +12,7 @@ import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
+import { loadDraft } from "@store/composer-drafts";
 import { isVerified, useContactsStore } from "@store/contacts-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
@@ -241,6 +242,8 @@ export default function DmList({
           const username = resolveDisplayName(peerID);
           const msgs = messages[item] ?? [];
           const last = msgs[msgs.length - 1];
+          // One line, as a preview is: newlines and runs of spaces collapse.
+          const draft = loadDraft(item).replace(/\s+/g, " ").trim();
           const peerEntry = peerMap.get(peerID);
           const isOnline =
             peerEntry !== undefined &&
@@ -263,9 +266,11 @@ export default function DmList({
               : null,
             isMuted ? t("chat.a11y.muted") : null,
             isPinned ? t("chat.a11y.pinned") : null,
-            last
-              ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
-              : T("chat.no_messages"),
+            draft.length > 0
+              ? `${T("chat.draft_prefix")} ${draft}`
+              : last
+                ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
+                : T("chat.no_messages"),
             timeLabel,
           ]
             .filter((part) => part !== null)
@@ -339,7 +344,14 @@ export default function DmList({
                   </View>
                 </View>
                 <View style={styles.rowBottom}>
-                  {last ? (
+                  {draft.length > 0 ? (
+                    <Text style={styles.preview} numberOfLines={1}>
+                      <Text style={styles.previewDraft}>
+                        {T("chat.draft_prefix")}{" "}
+                      </Text>
+                      {draft}
+                    </Text>
+                  ) : last ? (
                     <Text style={styles.preview} numberOfLines={1}>
                       {last.isMine ? (
                         <Text style={styles.previewSender}>
@@ -665,6 +677,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     previewSender: {
       color: Colors.textMuted,
+    },
+    previewDraft: {
+      color: Colors.textPrimary,
+      fontWeight: FontWeight.semibold,
     },
     previewEmpty: {
       fontSize: FontSize.sm,

@@ -177,6 +177,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Tryck två gånger och håll kvar för fler val",
   "chat.channels.row_hint": "Tryck två gånger och håll kvar för fler val",
   "chat.dm.you_prefix": "Du:",
+  "chat.draft_prefix": "Utkast:",
   "chat.dm.none": "Inga direktmeddelanden",
   "chat.dm.none_desc":
     "Gå till Mesh-fliken och tryck på en peer för att starta ett krypterat direktmeddelande.",

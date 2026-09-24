@@ -184,6 +184,7 @@ export const strings: Strings = {
   "chat.channels.row_hint":
     "I-tap nang dalawang beses at pindutin nang matagal para sa iba pang opsyon",
   "chat.dm.you_prefix": "Ikaw:",
+  "chat.draft_prefix": "Draft:",
   "chat.dm.none": "Walang direktang mensahe",
   "chat.dm.none_desc":
     "Pumunta sa tab na Mesh at i-tap ang isang peer para magsimula ng naka-encrypt na direktang mensahe.",

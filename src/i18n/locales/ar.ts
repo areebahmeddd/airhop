@@ -176,6 +176,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "اضغط مرتين مع الاستمرار لمزيد من الخيارات",
   "chat.channels.row_hint": "اضغط مرتين مع الاستمرار لمزيد من الخيارات",
   "chat.dm.you_prefix": "أنت:",
+  "chat.draft_prefix": "مسودة:",
   "chat.dm.none": "لا توجد رسائل مباشرة",
   "chat.dm.none_desc":
     "انتقل إلى تبويب الشبكة واضغط على نظير لبدء رسالة مباشرة مشفّرة.",

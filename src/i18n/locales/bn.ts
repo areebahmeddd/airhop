@@ -176,6 +176,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "আরও বিকল্পের জন্য দুবার ট্যাপ করে ধরে রাখুন",
   "chat.channels.row_hint": "আরও বিকল্পের জন্য দুবার ট্যাপ করে ধরে রাখুন",
   "chat.dm.you_prefix": "আপনি:",
+  "chat.draft_prefix": "খসড়া:",
   "chat.dm.none": "কোনো ব্যক্তিগত বার্তা নেই",
   "chat.dm.none_desc":
     "এনক্রিপ্ট করা ব্যক্তিগত বার্তা শুরু করতে মেশ ট্যাবে গিয়ে একটি পিয়ারে ট্যাপ করুন।",

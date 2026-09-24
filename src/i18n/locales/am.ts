@@ -171,6 +171,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "ለተጨማሪ አማራጮች ሁለቴ ንካና ያዝ",
   "chat.channels.row_hint": "ለተጨማሪ አማራጮች ሁለቴ ንካና ያዝ",
   "chat.dm.you_prefix": "አንተ፦",
+  "chat.draft_prefix": "ረቂቅ፦",
   "chat.dm.none": "ቀጥተኛ መልእክቶች የሉም",
   "chat.dm.none_desc": "የተመሰጠረ ቀጥተኛ መልእክት ለመጀመር ወደ ሜሽ ትር ሂድና አንድ አቻ ንካ።",
   "chat.dm.contact_info": "የእውቂያ መረጃ",

@@ -175,6 +175,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "แตะสองครั้งค้างไว้เพื่อดูตัวเลือกเพิ่มเติม",
   "chat.channels.row_hint": "แตะสองครั้งค้างไว้เพื่อดูตัวเลือกเพิ่มเติม",
   "chat.dm.you_prefix": "คุณ:",
+  "chat.draft_prefix": "ฉบับร่าง:",
   "chat.dm.none": "ไม่มีข้อความโดยตรง",
   "chat.dm.none_desc": "ไปที่แท็บเมชแล้วแตะเพียร์เพื่อเริ่ม DM ที่เข้ารหัส",
   "chat.dm.contact_info": "ข้อมูลผู้ติดต่อ",

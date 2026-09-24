@@ -181,6 +181,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Tocca due volte e tieni premuto per altre opzioni",
   "chat.channels.row_hint": "Tocca due volte e tieni premuto per altre opzioni",
   "chat.dm.you_prefix": "Tu:",
+  "chat.draft_prefix": "Bozza:",
   "chat.dm.none": "Nessun messaggio diretto",
   "chat.dm.none_desc":
     "Vai alla scheda Mesh e tocca un peer per avviare un messaggio diretto cifrato.",

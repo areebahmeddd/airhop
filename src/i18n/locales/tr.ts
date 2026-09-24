@@ -182,6 +182,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
   "chat.channels.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
   "chat.dm.you_prefix": "Sen:",
+  "chat.draft_prefix": "Taslak:",
   "chat.dm.none": "Doğrudan mesaj yok",
   "chat.dm.none_desc":
     "Şifreli bir doğrudan mesaj başlatmak için Mesh sekmesine gidip bir eşe dokun.",

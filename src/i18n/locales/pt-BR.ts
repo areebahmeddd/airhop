@@ -179,6 +179,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "Toque duas vezes e segure para mais opções",
   "chat.channels.row_hint": "Toque duas vezes e segure para mais opções",
   "chat.dm.you_prefix": "Você:",
+  "chat.draft_prefix": "Rascunho:",
   "chat.dm.none": "Nenhuma mensagem direta",
   "chat.dm.none_desc":
     "Vá até a aba Malha e toque num par para começar uma mensagem direta criptografada.",
