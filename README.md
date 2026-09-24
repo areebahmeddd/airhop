@@ -248,7 +248,7 @@ cd .. && npm run android
 | [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) | System architecture, design decisions, and stack rationale          |
 | [PROTOCOLS.md](docs/spec/PROTOCOLS.md)       | Wire format, BLE UUIDs, and protocol specifications                 |
 | [REFERENCE.md](docs/dev/REFERENCE.md)        | Bitchat codebase deep dive and implementation reference             |
-| [PROGRESS.md](docs/dev/PROGRESS.md)          | Current build, development milestones, and security analysis       |
+| [PROGRESS.md](docs/dev/PROGRESS.md)          | Current build, development milestones, and security analysis        |
 | [GLOSSARY.md](docs/dev/GLOSSARY.md)          | Definitions of technical terms used throughout the documentation    |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development workflow, coding standards, and pull request guidelines |
 | [SECURITY.md](SECURITY.md)                   | Security policy and vulnerability reporting                         |
