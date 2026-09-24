@@ -54,6 +54,7 @@ import {
   type ChatAttachment,
   type ChatMessage,
 } from "@store/chat-store";
+import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGroupStore } from "@store/group-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
@@ -1603,7 +1604,11 @@ export default function MessageThread({
     geoDmCell !== undefined &&
     liveGeoCells !== null &&
     !liveGeoCells.includes(geoDmCell);
-  const [draft, setDraft] = useState("");
+  // The thread remounts per conversation, so the text is kept outside it.
+  const [draft, setDraft] = useState(() => loadDraft(channel));
+  useEffect(() => {
+    saveDraft(channel, draft);
+  }, [channel, draft]);
   // Focused when something else drafts into the composer, so the text is not
   // left behind a closed keyboard.
   const composerRef = useRef<TextInput>(null);

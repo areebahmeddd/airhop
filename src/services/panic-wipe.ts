@@ -22,6 +22,7 @@ import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { dropPendingChatPersistence, useChatStore } from "@store/chat-store";
+import { clearDrafts } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { clearOwedGroupStates } from "@store/group-invite-outbox-store";
@@ -226,6 +227,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   useActivityStore.getState().clearAll();
   useBoardStore.getState().clearAll();
   resetBoardAlerts();
+  clearDrafts();
   useGroupStore.getState().clearAll();
   clearOwedGroupStates();
   useLocationNotesStore.getState().clearAll();
