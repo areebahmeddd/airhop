@@ -41,7 +41,11 @@ import { prepareImageForSend } from "@services/image-compression";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import { reportWalletError } from "@services/payment-router";
-import { hostOf, receiveToken } from "@services/wallet-service";
+import {
+  fetchKeysetsForTokenText,
+  hostOf,
+  receiveToken,
+} from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
@@ -1891,6 +1895,13 @@ export default function MessageThread({
   }, [audioRecorder]);
 
   const msgs = useMemo(() => messages[channel] ?? [], [messages, channel]);
+  // A token under an uncached keyset shows as text until its mint's keysets
+  // are fetched, which updates `mints` and re-renders it as a card.
+  useEffect(() => {
+    for (const m of msgs) {
+      if (mayContainToken(m.text)) void fetchKeysetsForTokenText(m.text);
+    }
+  }, [msgs]);
   const isDM = channel.startsWith("dm:");
   // A DM with a durable mesh identity rather than a per-cell geohash
   // pseudonym. Gates the attach options that need a Noise session to exist.

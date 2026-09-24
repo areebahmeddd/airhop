@@ -257,6 +257,7 @@ export class MintFabric {
   constructor(
     private readonly world: World,
     url = "https://mint.test",
+    opts: { keysetVersion?: 0 | 1 } = {},
   ) {
     this.url = url;
     const keys = new Map<number, Uint8Array>();
@@ -276,15 +277,20 @@ export class MintFabric {
     // discarded as invalid, which surfaces as "no active keyset for unit sat"
     // rather than as anything about ids. Deriving it with the client's own
     // function makes disagreement impossible by construction.
-    // versionByte 0 is the NUT-02 v1 id: "00" plus 14 hex characters, 16
-    // characters total. cashu-ts will happily derive a v2 ("01"-prefixed,
-    // 33-byte) id by default, but a V4 `cashuB` token encodes the keyset id as
-    // 8 raw bytes, so a v2 id cannot round-trip through one: the token encodes,
-    // and then fails to decode, with nothing more specific than "that is not a
-    // readable Cashu token". Real mints in the wild still issue v1 ids, so this
-    // is also the more representative choice.
+    // v1 ids ("00" plus 14 hex) by default, carried whole in a `cashuB` token.
+    // `keysetVersion: 1` gives a v2 id, carried as 8 bytes that only this
+    // mint's keyset list expands. A v2 id also covers the unit and fee, so it
+    // holds only while `inputFeePpk` stays 0.
+    const id =
+      opts.keysetVersion === 1
+        ? deriveKeysetId(publicKeys, {
+            versionByte: 1,
+            unit: "sat",
+            input_fee_ppk: 0,
+          })
+        : deriveKeysetId(publicKeys, { versionByte: 0 });
     this.keyset = {
-      id: deriveKeysetId(publicKeys, { versionByte: 0 }),
+      id,
       unit: "sat",
       keys,
       publicKeys,

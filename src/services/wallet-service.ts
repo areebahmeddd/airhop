@@ -49,6 +49,7 @@ import {
   buildToken,
   decodeToken,
   feeForProofs,
+  mintsOfUnresolvedTokens,
   selectProofsForAmount,
   toProofLike,
   toStoredProof,
@@ -520,11 +521,14 @@ async function getWallet(
   }
 
   assertMintNetworkAllowed();
+  const epoch = walletEpoch;
   try {
     await wallet.loadMint(opts.forceRefresh === true);
   } catch (err) {
     throw asWalletError(err, "offline");
   }
+  // The snapshot re-adds the mint, so a wipe during the fetch must stop it.
+  if (walletEpoch !== epoch) throw lockedError();
   persistMintSnapshot(url, unit, wallet);
   wallets.set(key, wallet);
   return wallet;
@@ -608,6 +612,7 @@ export function resetWalletService(): void {
   swapsInFlight.clear();
   // Same for melts, for the same reason.
   meltsInFlight.clear();
+  keysetFetchedAtMs.clear();
   walletEpoch += 1;
   // The recovery phrase went with the keychain the wipe just cleared, so the
   // in-memory seed has to go too. Leaving it would keep deriving proofs from a
@@ -1131,6 +1136,71 @@ export interface ReceiveResult {
   dleq: "valid" | "unchecked";
 }
 
+// Per-mint throttle for keyset fetches triggered by chat tokens.
+const keysetFetchedAtMs = new Map<string, number>();
+const KEYSET_FETCH_THROTTLE_MS = 5 * 60 * 1000;
+
+// Held mints whose tokens in `text` need a newer keyset list to decode. A mint
+// the user has not added is left out: nothing may contact it.
+function heldMintsOfUnresolvedTokens(
+  text: string,
+): { mintUrl: string; unit: string }[] {
+  const state = useWalletStore.getState();
+  const held: { mintUrl: string; unit: string }[] = [];
+  for (const mint of mintsOfUnresolvedTokens(text, selectKeysetIds(state))) {
+    try {
+      const url = normalizeMintUrl(mint.mintUrl);
+      if (state.mints[url] !== undefined) held.push({ ...mint, mintUrl: url });
+    } catch {
+      // Not a URL.
+    }
+  }
+  return held;
+}
+
+// Fetch the mint's current keysets and decode again. Throws when the mint is
+// out of reach, since "unreadable" would then be false.
+async function decodeUnderFreshKeysets(
+  raw: string,
+  epoch: number,
+): Promise<TokenInfo | null> {
+  const bare = bareToken(raw);
+  const [mint] = bare === null ? [] : heldMintsOfUnresolvedTokens(bare);
+  if (mint === undefined) return null;
+  try {
+    assertMintNetworkAllowed();
+    await getWallet(mint.mintUrl, mint.unit, { forceRefresh: true });
+  } catch (err) {
+    const walletErr = asWalletError(err, "offline");
+    if (walletErr.code !== "offline") throw walletErr;
+    throw new WalletError(
+      "offline",
+      t("wallet.svc.keyset_unknown"),
+      t("wallet.svc.keyset_unknown_body"),
+    );
+  }
+  assertSameWallet(epoch);
+  return decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+}
+
+// Fetch keysets for chat tokens that show as text; the store update re-renders
+// them as cards. Quiet on failure, throttled per mint.
+export async function fetchKeysetsForTokenText(text: string): Promise<void> {
+  if (!isWalletStorageReady()) return;
+  for (const mint of heldMintsOfUnresolvedTokens(text)) {
+    const key = accountKey(mint.mintUrl, mint.unit);
+    const last = keysetFetchedAtMs.get(key) ?? 0;
+    if (Date.now() - last < KEYSET_FETCH_THROTTLE_MS) continue;
+    keysetFetchedAtMs.set(key, Date.now());
+    try {
+      assertMintNetworkAllowed();
+      await getWallet(mint.mintUrl, mint.unit, { forceRefresh: true });
+    } catch {
+      // Offline or refused: the token stays as text until the next try.
+    }
+  }
+}
+
 // Take a token string into the wallet.
 //
 // The order matters. We decode, then verify what can be verified offline, then
@@ -1145,7 +1215,10 @@ export async function receiveToken(
   assertUnlocked();
   const epoch = walletEpoch;
 
-  const info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+  let info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+  if (!info && opts.preferOffline !== true) {
+    info = await decodeUnderFreshKeysets(raw, epoch);
+  }
   if (!info) {
     // A failed decode has two very different causes and the user can only act
     // on one of them. "Malformed" is a dead end; "from a mint you have not

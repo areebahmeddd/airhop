@@ -1428,6 +1428,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "این یک توکن Cashu خواندنی نیست.",
   "wallet.svc.unreadable_token_body":
     "توکن‌ها با cashuA یا cashuB آغاز می‌شوند. بررسی کنید هنگام کپی چیزی بریده نشده باشد.",
+  "wallet.svc.keyset_unknown":
+    "این توکن از کلیدهای تازهٔ ضراب‌خانهٔ خود استفاده می‌کند.",
+  "wallet.svc.keyset_unknown_body":
+    "اکنون برای دریافت آن‌ها به ضراب‌خانه دسترسی نیست. چیزی از دست نرفته است: وقتی آنلاین شدید دوباره آن را دریافت کنید.",
   "wallet.svc.wrong_mint":
     "این توکن را ضراب‌خانه‌ای که نامش را می‌برد امضا نکرده است.",
   "wallet.svc.already_spent": "این اثبات‌ها از پیش خرج شده‌اند.",

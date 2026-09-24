@@ -1417,6 +1417,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "त्यो पढ्न मिल्ने Cashu टोकन होइन।",
   "wallet.svc.unreadable_token_body":
     "टोकन cashuA वा cashuB बाट सुरु हुन्छन्। प्रतिलिपि गर्दा केही काटिएको त छैन जाँच्नुहोस्।",
+  "wallet.svc.keyset_unknown":
+    "यो टोकनले आफ्नो टकसारका नयाँ कुञ्जीहरू प्रयोग गर्छ।",
+  "wallet.svc.keyset_unknown_body":
+    "तिनीहरू ल्याउन अहिले टकसारमा पुग्न सकिँदैन। केही हराएको छैन: अनलाइन भएपछि फेरि प्राप्त गर्नुहोस्।",
   "wallet.svc.wrong_mint":
     "यो टोकनमा त्यसले नाम लिएको टकसारले हस्ताक्षर गरेको छैन।",
   "wallet.svc.already_spent": "यी प्रमाण पहिल्यै खर्च भइसकेका छन्।",

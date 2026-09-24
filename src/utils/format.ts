@@ -312,6 +312,11 @@ export function formatUnitAmount(amount: number, unit: string): string {
   return `${value} ${label}`;
 }
 
+// A unit as printed beside an amount: "sat", or "USD" for a currency.
+export function unitLabel(unit: string): string {
+  return formatAmount(0, unit, "sat").label;
+}
+
 // The same, as the {amount} and {unit} placeholders of a translated sentence.
 export function amountParts(
   amount: number,

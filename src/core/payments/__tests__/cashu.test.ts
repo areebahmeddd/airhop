@@ -19,6 +19,7 @@ import {
   inputFeeFor,
   isLikelyTestMint,
   mayContainToken,
+  mintsOfUnresolvedTokens,
   satsToBtc,
   selectProofsForAmount,
   TOKEN_QR_MAX_CHARS,
@@ -168,6 +169,34 @@ describe("decodeToken", () => {
   it("strips control characters from an attacker-supplied memo", () => {
     const info = decodeToken(realToken([1], "line\x00one\x1ftwo"));
     expect(info?.memo).toBe("line one two");
+  });
+});
+
+// A v2 keyset id travels as its first 8 bytes and only the mint's keyset list
+// expands it, so a token under a keyset not fetched yet fails the full decode.
+describe("mintsOfUnresolvedTokens", () => {
+  const V2_KEYSET = "01" + "ab".repeat(32);
+  const v2Token = getEncodedToken({
+    mint: MINT,
+    unit: "sat",
+    proofs: proofSet([4]).map((p) => toProofLike({ ...p, id: V2_KEYSET })),
+  } as unknown as Token);
+
+  it("names the mint of a token its keyset list cannot expand", () => {
+    expect(decodeToken(v2Token)).toBeNull();
+    expect(mintsOfUnresolvedTokens(`paid ${v2Token}`)).toEqual([
+      { mintUrl: MINT, unit: "sat" },
+    ]);
+  });
+
+  it("names nothing once the keyset is known, or for a token that decodes", () => {
+    expect(mintsOfUnresolvedTokens(v2Token, [V2_KEYSET])).toEqual([]);
+    expect(decodeToken(v2Token, [V2_KEYSET])?.amount).toBe(4);
+    expect(mintsOfUnresolvedTokens(realToken([2]))).toEqual([]);
+  });
+
+  it("names nothing for text that is not a token", () => {
+    expect(mintsOfUnresolvedTokens("cashuB" + "x".repeat(60))).toEqual([]);
   });
 });
 

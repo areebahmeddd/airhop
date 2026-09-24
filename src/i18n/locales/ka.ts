@@ -1441,6 +1441,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "ეს წაკითხვადი Cashu ტოკენი არ არის.",
   "wallet.svc.unreadable_token_body":
     "ტოკენები იწყება cashuA-ით ან cashuB-ით. შეამოწმე, ხომ არაფერი მოწყდა კოპირებისას.",
+  "wallet.svc.keyset_unknown":
+    "ეს ტოკენი თავისი ზარაფხანის ახალ გასაღებებს იყენებს.",
+  "wallet.svc.keyset_unknown_body":
+    "მათ მისაღებად ზარაფხანასთან დაკავშირება ახლა შეუძლებელია. არაფერი დაკარგულა: ხელახლა მიიღე, როცა ონლაინ იქნები.",
   "wallet.svc.wrong_mint":
     "ამ ტოკენს ხელი არ მოაწერა იმ ზარაფხანამ, რომელსაც ის ასახელებს.",
   "wallet.svc.already_spent": "ეს დასტურები უკვე დახარჯულია.",

@@ -29,6 +29,7 @@
 import {
   getDecodedToken,
   getEncodedToken,
+  getTokenMetadata,
   hasValidDleq,
   KeyChain,
   type KeyChainCache,
@@ -115,38 +116,65 @@ export function mayContainToken(text: string): boolean {
 // and every decode failure drops the candidate rather than throwing.
 //
 // Tokens are deduplicated by their bare string, so `cashu:cashuA...` and the same
-// `cashuA...` written twice in one message yield exactly one card. The previous
-// implementation scanned once per URI prefix and deduplicated on the raw slice
-// including the prefix, which rendered the same bearer token as two cards.
+// `cashuA...` written twice in one message yield exactly one card.
 export function findTokensInText(
   text: string,
   keysetIds: readonly string[] = [],
 ): EmbeddedToken[] {
-  if (!mayContainToken(text)) return [];
+  const results: EmbeddedToken[] = [];
+  for (const { raw, offset } of tokenCandidates(text)) {
+    const info = decodeToken(raw, keysetIds);
+    if (!info) continue;
+    results.push({ info, raw, offset });
+    if (results.length >= MAX_TOKENS_PER_MESSAGE) break;
+  }
+  return results;
+}
+
+// Mints named by tokens in `text` that do not decode against `keysetIds`: a v2
+// short keyset id expands only against the mint's current list, so a token
+// under a keyset not fetched yet (after a rotation) reads only as metadata.
+export function mintsOfUnresolvedTokens(
+  text: string,
+  keysetIds: readonly string[] = [],
+): { mintUrl: string; unit: string }[] {
+  const out: { mintUrl: string; unit: string }[] = [];
+  for (const { raw } of tokenCandidates(text)) {
+    if (decodeToken(raw, keysetIds) !== null) continue;
+    const bare = bareToken(raw);
+    if (bare === null) continue;
+    try {
+      const meta = getTokenMetadata(bare);
+      const unit = sanitizeUnit(meta.unit);
+      if (!out.some((m) => m.mintUrl === meta.mint && m.unit === unit)) {
+        out.push({ mintUrl: meta.mint, unit });
+      }
+    } catch {
+      // Not a token at all.
+    }
+    if (out.length >= MAX_TOKENS_PER_MESSAGE) break;
+  }
+  return out;
+}
+
+// Distinct token-shaped strings in `text`, bounded in scan window and length.
+function* tokenCandidates(
+  text: string,
+): Generator<{ raw: string; offset: number }> {
+  if (!mayContainToken(text)) return;
   const scanned =
     text.length > MAX_SCAN_LENGTH ? text.slice(0, MAX_SCAN_LENGTH) : text;
-
-  const results: EmbeddedToken[] = [];
   const seen = new Set<string>();
-
   // `lastIndex` is mutated by exec on a /g regex, so use a fresh instance
   // rather than the shared literal (which is not re-entrant).
   const pattern = new RegExp(TOKEN_PATTERN.source, "g");
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(scanned)) !== null) {
     const raw = match[0];
-    if (raw.length > MAX_TOKEN_LENGTH) continue;
-    if (seen.has(raw)) continue;
+    if (raw.length > MAX_TOKEN_LENGTH || seen.has(raw)) continue;
     seen.add(raw);
-
-    const info = decodeToken(raw, keysetIds);
-    if (!info) continue;
-
-    results.push({ info, raw, offset: match.index });
-    if (results.length >= MAX_TOKENS_PER_MESSAGE) break;
+    yield { raw, offset: match.index };
   }
-
-  return results;
 }
 
 // Strip a `cashu:` / `cashu://` URI wrapper and percent-encoding to get the

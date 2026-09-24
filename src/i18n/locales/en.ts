@@ -1439,6 +1439,9 @@ export const strings = {
   "wallet.svc.unreadable_token": "That is not a readable Cashu token.",
   "wallet.svc.unreadable_token_body":
     "Tokens start with cashuA or cashuB. Check nothing was cut off when it was copied.",
+  "wallet.svc.keyset_unknown": "This token uses new keys from its mint.",
+  "wallet.svc.keyset_unknown_body":
+    "The mint can’t be reached right now to fetch them. Nothing is lost: receive it again once you’re online.",
   "wallet.svc.wrong_mint": "This token was not signed by the mint it names.",
   "wallet.svc.already_spent": "These proofs have already been spent.",
   "wallet.svc.already_spent_body":

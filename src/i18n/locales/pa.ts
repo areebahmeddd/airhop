@@ -1425,6 +1425,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "ਇਹ ਪੜ੍ਹਨਯੋਗ Cashu ਟੋਕਨ ਨਹੀਂ ਹੈ।",
   "wallet.svc.unreadable_token_body":
     "ਟੋਕਨ cashuA ਜਾਂ cashuB ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ। ਦੇਖੋ ਕਿ ਨਕਲ ਕਰਦਿਆਂ ਕੁਝ ਕੱਟਿਆ ਤਾਂ ਨਹੀਂ ਗਿਆ।",
+  "wallet.svc.keyset_unknown": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਮਿੰਟ ਦੀਆਂ ਨਵੀਆਂ ਕੁੰਜੀਆਂ ਵਰਤਦਾ ਹੈ।",
+  "wallet.svc.keyset_unknown_body":
+    "ਉਹਨਾਂ ਨੂੰ ਲਿਆਉਣ ਲਈ ਇਸ ਵੇਲੇ ਮਿੰਟ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚਿਆ ਜਾ ਸਕਦਾ। ਕੁਝ ਵੀ ਨਹੀਂ ਗੁਆਚਿਆ: ਔਨਲਾਈਨ ਹੋਣ ’ਤੇ ਇਸਨੂੰ ਦੁਬਾਰਾ ਪ੍ਰਾਪਤ ਕਰੋ।",
   "wallet.svc.wrong_mint":
     "ਇਸ ਟੋਕਨ ’ਤੇ ਉਸ ਮਿੰਟ ਦੇ ਦਸਤਖ਼ਤ ਨਹੀਂ ਸਨ ਜਿਸ ਦਾ ਇਹ ਨਾਂ ਲੈਂਦਾ ਹੈ।",
   "wallet.svc.already_spent": "ਇਹ ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਹਨ।",

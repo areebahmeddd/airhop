@@ -1457,6 +1457,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Ese no es un token de Cashu legible.",
   "wallet.svc.unreadable_token_body":
     "Los tokens empiezan por cashuA o cashuB. Comprueba que no se cortara nada al copiarlo.",
+  "wallet.svc.keyset_unknown":
+    "Este token usa claves nuevas de su casa de cambio.",
+  "wallet.svc.keyset_unknown_body":
+    "Ahora no se puede contactar con la casa de cambio para obtenerlas. No se pierde nada: vuelve a recibirlo cuando tengas conexión.",
   "wallet.svc.wrong_mint": "Este token no lo firmó la casa de cambio que dice.",
   "wallet.svc.already_spent": "Estas pruebas ya se han gastado.",
   "wallet.svc.already_spent_body":

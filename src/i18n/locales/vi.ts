@@ -1437,6 +1437,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Đó không phải một token Cashu đọc được.",
   "wallet.svc.unreadable_token_body":
     "Token bắt đầu bằng cashuA hoặc cashuB. Hãy kiểm tra xem có bị cắt mất phần nào khi sao chép không.",
+  "wallet.svc.keyset_unknown": "Token này dùng khóa mới từ nhà đúc của nó.",
+  "wallet.svc.keyset_unknown_body":
+    "Hiện không thể kết nối tới nhà đúc để lấy khóa. Không mất gì cả: hãy nhận lại khi bạn có mạng.",
   "wallet.svc.wrong_mint": "Token này không do nhà đúc mà nó nêu tên ký.",
   "wallet.svc.already_spent": "Những chứng từ này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":

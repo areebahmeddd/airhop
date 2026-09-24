@@ -1413,6 +1413,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "ওটি পড়ার মতো Cashu টোকেন নয়।",
   "wallet.svc.unreadable_token_body":
     "টোকেন cashuA বা cashuB দিয়ে শুরু হয়। কপি করার সময় কিছু কাটা পড়েছে কিনা দেখুন।",
+  "wallet.svc.keyset_unknown": "এই টোকেন তার মিন্টের নতুন কী ব্যবহার করে।",
+  "wallet.svc.keyset_unknown_body":
+    "সেগুলো আনতে এখন মিন্টে পৌঁছানো যাচ্ছে না। কিছুই হারায়নি: অনলাইনে এলে আবার গ্রহণ করুন।",
   "wallet.svc.wrong_mint": "এই টোকেনটি যে মিন্টের নাম বলছে সে সই করেনি।",
   "wallet.svc.already_spent": "এই প্রমাণগুলো আগেই খরচ হয়ে গেছে।",
   "wallet.svc.already_spent_body":

@@ -1476,6 +1476,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Tsy tapakila Cashu voavaky izany.",
   "wallet.svc.unreadable_token_body":
     "Manomboka amin'ny cashuA na cashuB ny tapakila. Jereo raha tsy nisy notapahina teo am-panadikana.",
+  "wallet.svc.keyset_unknown":
+    "Mampiasa lakile vaovao avy amin'ny mpamoaka azy ity token ity.",
+  "wallet.svc.keyset_unknown_body":
+    "Tsy azo tratrarina izao ny mpamoaka mba haka azy ireo. Tsy misy very: raiso indray rehefa mifandray amin'ny aterineto ianao.",
   "wallet.svc.wrong_mint":
     "Tsy nosoniavin'ny mpamoaka notononiny ity tapakila ity.",
   "wallet.svc.already_spent": "Efa lany ireo porofo ireo.",

@@ -1347,6 +1347,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "那不是一个可读的 Cashu 代币。",
   "wallet.svc.unreadable_token_body":
     "代币以 cashuA 或 cashuB 开头。请检查复制时有没有被截断。",
+  "wallet.svc.keyset_unknown": "此代币使用了其铸币厂的新密钥。",
+  "wallet.svc.keyset_unknown_body":
+    "现在无法连接铸币厂获取密钥。没有任何损失：联网后再次接收即可。",
   "wallet.svc.wrong_mint": "这个代币并非由它所指明的铸币厂签发。",
   "wallet.svc.already_spent": "这些凭证已经被花掉了。",
   "wallet.svc.already_spent_body":

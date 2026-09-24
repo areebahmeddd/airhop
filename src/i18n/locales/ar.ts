@@ -1388,6 +1388,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "هذا ليس توكن Cashu مقروءًا.",
   "wallet.svc.unreadable_token_body":
     "تبدأ التوكنات بـ cashuA أو cashuB. تحقق من عدم اقتطاع شيء عند نسخه.",
+  "wallet.svc.keyset_unknown":
+    "يستخدم هذا الرمز مفاتيح جديدة من دار السك الخاصة به.",
+  "wallet.svc.keyset_unknown_body":
+    "تعذّر الوصول إلى دار السك الآن لجلبها. لم يضِع شيء: استلمه مرة أخرى عندما تتصل بالإنترنت.",
   "wallet.svc.wrong_mint": "لم توقّع هذا التوكن دار السك التي يذكرها.",
   "wallet.svc.already_spent": "هذه الإثباتات أُنفقت بالفعل.",
   "wallet.svc.already_spent_body":

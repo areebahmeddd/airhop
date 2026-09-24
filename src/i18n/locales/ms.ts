@@ -1449,6 +1449,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Itu bukan token Cashu yang boleh dibaca.",
   "wallet.svc.unreadable_token_body":
     "Token bermula dengan cashuA atau cashuB. Pastikan tiada apa-apa terpotong semasa ia disalin.",
+  "wallet.svc.keyset_unknown":
+    "Token ini menggunakan kunci baharu daripada mint-nya.",
+  "wallet.svc.keyset_unknown_body":
+    "Mint tidak dapat dihubungi sekarang untuk mendapatkannya. Tiada apa yang hilang: terima semula apabila anda dalam talian.",
   "wallet.svc.wrong_mint":
     "Token ini tidak ditandatangani oleh mint yang dinamakannya.",
   "wallet.svc.already_spent": "Bukti ini sudah dibelanjakan.",

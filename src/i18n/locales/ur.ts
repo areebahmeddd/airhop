@@ -1423,6 +1423,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "یہ قابل مطالعہ Cashu ٹوکن نہیں۔",
   "wallet.svc.unreadable_token_body":
     "ٹوکن cashuA یا cashuB سے شروع ہوتے ہیں۔ جانچیں کہ کاپی کرتے وقت کچھ کٹ تو نہیں گیا۔",
+  "wallet.svc.keyset_unknown":
+    "یہ ٹوکن اپنی ٹکسال کی نئی کلیدیں استعمال کرتا ہے۔",
+  "wallet.svc.keyset_unknown_body":
+    "انہیں حاصل کرنے کے لیے ابھی ٹکسال تک رسائی نہیں ہو سکتی۔ کچھ ضائع نہیں ہوا: آن لائن ہونے پر اسے دوبارہ وصول کریں۔",
   "wallet.svc.wrong_mint":
     "یہ ٹوکن اُس ٹکسال کا دستخط شدہ نہیں جس کا وہ نام لیتا ہے۔",
   "wallet.svc.already_spent": "یہ ثبوت پہلے ہی خرچ ہو چکے ہیں۔",

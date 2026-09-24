@@ -1346,6 +1346,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "ያ ሊነበብ የሚችል የCashu ቶከን አይደለም።",
   "wallet.svc.unreadable_token_body":
     "ቶከኖች በcashuA ወይም በcashuB ይጀምራሉ። ሲቀዳ ምንም አለመቆረጡን አረጋግጥ።",
+  "wallet.svc.keyset_unknown": "ይህ ቶከን ከሚንቱ አዳዲስ ቁልፎችን ይጠቀማል።",
+  "wallet.svc.keyset_unknown_body":
+    "እነሱን ለማምጣት ሚንቱ አሁን ሊደረስበት አይችልም። ምንም አልጠፋም፤ መስመር ላይ ሲሆኑ እንደገና ይቀበሉት።",
   "wallet.svc.wrong_mint": "ይህ ቶከን በጠቀሰው ሚንት አልተፈረመም።",
   "wallet.svc.already_spent": "እነዚህ ማረጋገጫዎች አስቀድመው ወጪ ሆነዋል።",
   "wallet.svc.already_spent_body":

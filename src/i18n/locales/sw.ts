@@ -1455,6 +1455,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Hiyo si tokeni ya Cashu inayosomeka.",
   "wallet.svc.unreadable_token_body":
     "Tokeni huanza na cashuA au cashuB. Hakikisha hakuna kilichokatika ilipokuwa ikinakiliwa.",
+  "wallet.svc.keyset_unknown":
+    "Tokeni hii inatumia funguo mpya kutoka kwa mint yake.",
+  "wallet.svc.keyset_unknown_body":
+    "Mint haipatikani sasa hivi ili kuzileta. Hakuna kilichopotea: ipokee tena ukiwa mtandaoni.",
   "wallet.svc.wrong_mint": "Tokeni hii haikutiwa saini na mint inayoitaja.",
   "wallet.svc.already_spent": "Thibitisho hizi tayari zimetumika.",
   "wallet.svc.already_spent_body":

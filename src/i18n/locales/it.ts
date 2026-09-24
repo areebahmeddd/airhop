@@ -1455,6 +1455,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Non è un token Cashu leggibile.",
   "wallet.svc.unreadable_token_body":
     "I token iniziano con cashuA o cashuB. Controlla che non sia stato troncato durante la copia.",
+  "wallet.svc.keyset_unknown": "Questo token usa nuove chiavi del suo mint.",
+  "wallet.svc.keyset_unknown_body":
+    "Al momento il mint non è raggiungibile per recuperarle. Non si perde nulla: ricevilo di nuovo quando sei online.",
   "wallet.svc.wrong_mint":
     "Questo token non è stato firmato dal mint che dichiara.",
   "wallet.svc.already_spent": "Queste prove sono già state spese.",

@@ -1433,6 +1433,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "読み取れるCashuトークンではありません。",
   "wallet.svc.unreadable_token_body":
     "トークンはcashuAまたはcashuBで始まります。コピー時に切れていないか確認してください。",
+  "wallet.svc.keyset_unknown": "このトークンはミントの新しい鍵を使っています。",
+  "wallet.svc.keyset_unknown_body":
+    "今はミントに接続して鍵を取得できません。何も失われていません。オンラインになったらもう一度受け取ってください。",
   "wallet.svc.wrong_mint":
     "このトークンは、名乗っているミントが署名したものではありません。",
   "wallet.svc.already_spent": "このプルーフはすでに使用されています。",

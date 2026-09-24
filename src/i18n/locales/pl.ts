@@ -1455,6 +1455,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "To nie jest czytelny token Cashu.",
   "wallet.svc.unreadable_token_body":
     "Tokeny zaczynają się od cashuA albo cashuB. Sprawdź, czy przy kopiowaniu nic nie zostało ucięte.",
+  "wallet.svc.keyset_unknown": "Ten token używa nowych kluczy swojej mennicy.",
+  "wallet.svc.keyset_unknown_body":
+    "Nie można teraz połączyć się z mennicą, aby je pobrać. Nic nie przepadło: odbierz go ponownie, gdy będziesz online.",
   "wallet.svc.wrong_mint":
     "Ten token nie został podpisany przez mennicę, którą wskazuje.",
   "wallet.svc.already_spent": "Te dowody zostały już wydane.",

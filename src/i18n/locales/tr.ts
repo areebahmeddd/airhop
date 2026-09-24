@@ -1438,6 +1438,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Bu okunabilir bir Cashu jetonu değil.",
   "wallet.svc.unreadable_token_body":
     "Jetonlar cashuA ya da cashuB ile başlar. Kopyalanırken bir şeyin kesilmediğinden emin ol.",
+  "wallet.svc.keyset_unknown":
+    "Bu token, darphanesinin yeni anahtarlarını kullanıyor.",
+  "wallet.svc.keyset_unknown_body":
+    "Onları almak için darphaneye şu anda ulaşılamıyor. Hiçbir şey kaybolmadı: çevrimiçi olduğunda yeniden al.",
   "wallet.svc.wrong_mint":
     "Bu jeton, belirttiği darphane tarafından imzalanmamış.",
   "wallet.svc.already_spent": "Bu kanıtlar zaten harcanmış.",

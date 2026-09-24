@@ -108,6 +108,7 @@ import {
   formatNumber,
   formatUnitAmount,
   parseWholeNumber,
+  unitLabel,
 } from "@utils/format";
 import { nostrShortLabel, peerIDToUsername } from "@utils/username";
 import * as Clipboard from "expo-clipboard";
@@ -658,16 +659,15 @@ export default function WalletScreen({
         showAlert(
           t("wallet.err.exact_amount"),
           t("wallet.send.inexact_body", {
-            amount: formatNumber(amount),
-            unit: quote.unit,
-            spend: formatNumber(quote.spend),
-            extra: formatNumber(quote.spend - amount),
+            ...amountParts(amount, quote.unit),
+            spend: amountParts(quote.spend, quote.unit).amount,
+            extra: amountParts(quote.spend - amount, quote.unit).amount,
           }),
           [
             { text: T("common.cancel"), style: "cancel" },
             {
               text: t("wallet.send.send_amount", {
-                amount: formatNumber(quote.spend),
+                amount: amountParts(quote.spend, quote.unit).amount,
               }),
               style: "destructive",
               onPress: () => void commit(true),
@@ -777,8 +777,7 @@ export default function WalletScreen({
     setPending(null);
     showAlert(
       t("wallet.send.sent_to", {
-        amount: formatNumber(amount),
-        unit,
+        ...amountParts(amount, unit),
         name: peerIDToUsername(peerID),
       }),
       t("wallet.send.sent_to_body", { route: describeRoute(route) }),
@@ -859,8 +858,7 @@ export default function WalletScreen({
       }
       showAlert(
         t("wallet.pay.sent_title", {
-          amount: formatNumber(result.amount),
-          unit: result.unit,
+          ...amountParts(result.amount, result.unit),
           name: zapRecipientLabel(recipientPubkey),
         }),
         describePayResult(result),
@@ -957,8 +955,7 @@ export default function WalletScreen({
       if (result.swapped > 0) {
         parts.push(
           t("wallet.refresh.swapped", {
-            amount: formatNumber(result.swapped),
-            unit,
+            ...amountParts(result.swapped, unit),
           }),
         );
       }
@@ -970,8 +967,7 @@ export default function WalletScreen({
       if (result.securedForBackup > 0) {
         parts.push(
           t("wallet.refresh.secured", {
-            amount: formatNumber(result.securedForBackup),
-            unit,
+            ...amountParts(result.securedForBackup, unit),
           }),
         );
       }
@@ -990,13 +986,14 @@ export default function WalletScreen({
 
   function handleRemoveMint(account: AccountBalance): void {
     const hasValue = account.balance > 0 || account.reserved > 0;
+    const balanceShown = amountParts(account.balance, account.unit);
     showAlert(
       hasValue ? t("wallet.mint.remove_with_balance") : t("wallet.mint.remove"),
       hasValue
         ? tPlural("wallet.mint.remove_body", account.proofCount, {
             mint: hostOf(account.mintUrl),
-            balance: formatNumber(account.balance),
-            unit: account.unit,
+            balance: balanceShown.amount,
+            unit: balanceShown.unit,
           })
         : t("wallet.mint.remove_plain", { mint: hostOf(account.mintUrl) }),
       [
@@ -1211,8 +1208,7 @@ export default function WalletScreen({
           if (result.depositPending) {
             inTransit.push(
               t("wallet.mint.deposit_pending", {
-                amount: formatNumber(result.spent - result.fee),
-                unit: primary.unit,
+                ...amountParts(result.spent - result.fee, primary.unit),
                 mint: hostOf(source.mintUrl),
                 target: hostOf(target),
               }),
@@ -1237,10 +1233,9 @@ export default function WalletScreen({
         [
           moved > 0
             ? t("wallet.mint.moved_body", {
-                amount: formatNumber(moved),
-                unit: primary.unit,
+                ...amountParts(moved, primary.unit),
                 mint: hostOf(target),
-                fees: formatNumber(fees),
+                fees: amountParts(fees, primary.unit).amount,
               })
             : null,
           inTransit.length > 0 ? inTransit.join("\n") : null,
@@ -1311,10 +1306,9 @@ export default function WalletScreen({
           setDeposit(null);
           setShowDeposit(false);
           showAlert(
-            `+${formatNumber(minted)} ${deposit.unit}`,
+            `+${formatUnitAmount(minted, deposit.unit)}`,
             t("wallet.ln.deposit_credited", {
-              amount: formatNumber(minted),
-              unit: deposit.unit,
+              ...amountParts(minted, deposit.unit),
               mint: hostOf(deposit.mintUrl),
             }),
           );
@@ -1885,7 +1879,7 @@ export default function WalletScreen({
                   />
                   <Text style={styles.backupWarnText}>
                     {T("wallet.backup.not_covered", {
-                      amount: `${formatNumber(unbackedBalance)} ${primary.unit}`,
+                      amount: formatUnitAmount(unbackedBalance, primary.unit),
                     })}
                   </Text>
                 </View>
@@ -2344,9 +2338,13 @@ export default function WalletScreen({
           <Feather name="check-circle" size={28} color={Colors.online} />
           <View style={styles.generatedAmountRow}>
             <Text style={styles.generatedAmount}>
-              {pending === null ? "" : formatNumber(pending.amount)}
+              {pending === null
+                ? ""
+                : amountParts(pending.amount, pending.unit).amount}
             </Text>
-            <Text style={styles.generatedUnit}>{pending?.unit}</Text>
+            <Text style={styles.generatedUnit}>
+              {pending === null ? "" : unitLabel(pending.unit)}
+            </Text>
           </View>
           <Text style={styles.generatedMint} numberOfLines={1}>
             {pending ? hostOf(pending.mintUrl) : ""}
@@ -2354,9 +2352,9 @@ export default function WalletScreen({
           {pending && pending.fee > 0 && (
             <Text style={styles.generatedMint}>
               {T("wallet.send.fee_note", {
-                spend: formatNumber(pending.spend),
-                unit: pending.unit,
-                fee: formatNumber(pending.fee),
+                spend: amountParts(pending.spend, pending.unit).amount,
+                unit: unitLabel(pending.unit),
+                fee: amountParts(pending.fee, pending.unit).amount,
               })}
             </Text>
           )}
@@ -2526,8 +2524,7 @@ export default function WalletScreen({
           <>
             <Text style={styles.modalSubtitle}>
               {T("wallet.ln.pay_invoice_for", {
-                amount: formatNumber(deposit.amount),
-                unit: deposit.unit,
+                ...amountParts(deposit.amount, deposit.unit),
               })}
             </Text>
             {/* bolt11 is bech32, so the all-uppercase form is equivalent and
@@ -2699,8 +2696,7 @@ export default function WalletScreen({
           options={splitAccounts.map((a) => ({
             mintUrl: a.mintUrl,
             sub: t("wallet.mint.available_amount", {
-              amount: formatNumber(a.balance),
-              unit: a.unit,
+              ...amountParts(a.balance, a.unit),
             }),
           }))}
           selected={activeMint}
@@ -2722,16 +2718,14 @@ export default function WalletScreen({
               styles={styles}
               label={T("wallet.ln.routing_reserve")}
               value={T("wallet.ln.up_to", {
-                amount: formatNumber(withdrawQuote.feeReserve),
-                unit: withdrawQuote.unit,
+                ...amountParts(withdrawQuote.feeReserve, withdrawQuote.unit),
               })}
             />
             <QuoteRow
               styles={styles}
               label={T("wallet.ln.reserved")}
               value={T("wallet.ln.amount_unit", {
-                amount: formatNumber(withdrawQuote.total),
-                unit: withdrawQuote.unit,
+                ...amountParts(withdrawQuote.total, withdrawQuote.unit),
               })}
             />
           </View>
@@ -2743,8 +2737,7 @@ export default function WalletScreen({
               ? busy === "withdrawPay"
                 ? T("wallet.ln.paying")
                 : T("wallet.ln.pay_amount", {
-                    amount: formatNumber(withdrawQuote.amount),
-                    unit: withdrawQuote.unit,
+                    ...amountParts(withdrawQuote.amount, withdrawQuote.unit),
                   })
               : busy === "withdrawQuote"
                 ? T("wallet.mint.checking")
@@ -2974,9 +2967,16 @@ export default function WalletScreen({
               />
               <View style={styles.generatedAmountRow}>
                 <Text style={styles.generatedAmount}>
-                  {formatNumber(restoreResult.recovered[primary.unit] ?? 0)}
+                  {
+                    amountParts(
+                      restoreResult.recovered[primary.unit] ?? 0,
+                      primary.unit,
+                    ).amount
+                  }
                 </Text>
-                <Text style={styles.generatedUnit}>{primary.unit}</Text>
+                <Text style={styles.generatedUnit}>
+                  {unitLabel(primary.unit)}
+                </Text>
               </View>
             </View>
             <Text style={styles.modalSubtitle}>

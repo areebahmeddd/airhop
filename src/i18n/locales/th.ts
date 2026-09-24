@@ -1402,6 +1402,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "นั่นไม่ใช่โทเคน Cashu ที่อ่านได้",
   "wallet.svc.unreadable_token_body":
     "โทเคนขึ้นต้นด้วย cashuA หรือ cashuB ตรวจสอบว่าไม่มีส่วนใดขาดหายไปตอนคัดลอก",
+  "wallet.svc.keyset_unknown": "โทเค็นนี้ใช้กุญแจใหม่จากมินต์ของมัน",
+  "wallet.svc.keyset_unknown_body":
+    "ขณะนี้ติดต่อมินต์เพื่อดึงกุญแจไม่ได้ ไม่มีอะไรสูญหาย รับอีกครั้งเมื่อออนไลน์",
   "wallet.svc.wrong_mint": "โทเคนนี้ไม่ได้ลงลายเซ็นโดยมินต์ที่มันระบุชื่อไว้",
   "wallet.svc.already_spent": "พรูฟเหล่านี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":

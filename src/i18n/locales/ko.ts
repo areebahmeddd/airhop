@@ -1414,6 +1414,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "읽을 수 있는 Cashu 토큰이 아닙니다.",
   "wallet.svc.unreadable_token_body":
     "토큰은 cashuA 또는 cashuB로 시작합니다. 복사할 때 잘린 부분이 없는지 확인하세요.",
+  "wallet.svc.keyset_unknown": "이 토큰은 민트의 새 키를 사용합니다.",
+  "wallet.svc.keyset_unknown_body":
+    "지금은 키를 가져오기 위해 민트에 연결할 수 없습니다. 잃은 것은 없습니다. 온라인이 되면 다시 받으세요.",
   "wallet.svc.wrong_mint":
     "이 토큰은 스스로 지목한 민트가 서명한 것이 아닙니다.",
   "wallet.svc.already_spent": "이 증명들은 이미 사용되었습니다.",

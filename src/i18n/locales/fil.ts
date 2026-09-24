@@ -1484,6 +1484,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "Hindi iyon nababasang token ng Cashu.",
   "wallet.svc.unreadable_token_body":
     "Nagsisimula ang mga token sa cashuA o cashuB. Tiyaking walang naputol nang kopyahin ito.",
+  "wallet.svc.keyset_unknown":
+    "Gumagamit ang token na ito ng mga bagong susi mula sa mint nito.",
+  "wallet.svc.keyset_unknown_body":
+    "Hindi maabot ang mint ngayon para kunin ang mga ito. Walang nawala: tanggapin itong muli kapag online ka na.",
   "wallet.svc.wrong_mint":
     "Hindi nilagdaan ng mintong tinutukoy nito ang token na ito.",
   "wallet.svc.already_spent": "Nagastos na ang mga patunay na ito.",

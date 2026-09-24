@@ -616,6 +616,11 @@ cashuBo3Blk4J...
 
 The token flows over BLE like any other message: encrypted in a DM, signed always.
 
+A `cashuB` token names a v2 keyset by its first 8 bytes, which only the mint's
+keyset list expands. A token from a mint the user holds, signed under a keyset
+newer than the cached list, fetches that list once and then reads, both on
+Claim and for the card. A mint the user has not added is never contacted.
+
 ### Nutzaps (NIP-61)
 
 With internet available, a payment can address a Nostr identity instead of a

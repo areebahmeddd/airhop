@@ -1467,6 +1467,10 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "ထိုအရာသည် ဖတ်နိုင်သော Cashu တိုကင် မဟုတ်ပါ။",
   "wallet.svc.unreadable_token_body":
     "တိုကင်များသည် cashuA သို့မဟုတ် cashuB ဖြင့် စတင်သည်။ ကူးယူစဉ် ဘာမျှ ဖြတ်တောက်မခံရကြောင်း စစ်ဆေးပါ။",
+  "wallet.svc.keyset_unknown":
+    "ဤတိုကင်သည် ၎င်း၏ မင့်မှ သော့အသစ်များကို အသုံးပြုသည်။",
+  "wallet.svc.keyset_unknown_body":
+    "၎င်းတို့ကို ရယူရန် ယခု မင့်ကို ဆက်သွယ်၍ မရပါ။ ဘာမှ မဆုံးရှုံးပါ၊ အွန်လိုင်းဖြစ်သည့်အခါ ထပ်မံလက်ခံပါ။",
   "wallet.svc.wrong_mint":
     "ဤတိုကင်ကို ၎င်းညွှန်းထားသောမင့်က လက်မှတ်မထိုးထားပါ။",
   "wallet.svc.already_spent": "ဤသက်သေများကို သုံးပြီးဖြစ်သည်။",
