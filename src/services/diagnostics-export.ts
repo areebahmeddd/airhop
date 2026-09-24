@@ -18,7 +18,7 @@ import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Platform } from "react-native";
-import { getMeshService } from "./mesh-service";
+import { getMeshService, type IngressFault } from "./mesh-service";
 
 export interface DiagnosticsSnapshot {
   generatedAt: string;
@@ -27,10 +27,12 @@ export interface DiagnosticsSnapshot {
   device: string;
   transports: {
     bluetooth: string;
-    wifiAware: string;
     lan: string;
+    wifiAware: string;
     nostr: string;
     links: Record<TransportKind, number>;
+    ingressFaults: number;
+    lastIngressFault: IngressFault | null;
   };
   mesh: {
     reachablePeers: number;
@@ -69,9 +71,10 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     "",
     "Transports",
     `  Bluetooth: ${s.transports.bluetooth} · ${s.transports.links.ble} links`,
-    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${s.transports.links.wifi} links`,
     `  Local network: ${s.transports.lan} · ${s.transports.links.lan} links`,
+    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${s.transports.links.wifi} links`,
     `  Nostr: ${s.transports.nostr}`,
+    `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
     "",
     "Mesh",
     `  Reachable peers: ${s.mesh.reachablePeers}`,
@@ -114,6 +117,17 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
   return lines.join("\n") + "\n";
 }
 
+// A packet type names the handler to look at; none means the frame never
+// decoded.
+function ingressFaultLine(count: number, last: IngressFault | null): string {
+  if (count === 0 || last === null) return String(count);
+  const where =
+    last.packetType === null
+      ? "undecoded"
+      : `packet type 0x${last.packetType.toString(16).padStart(2, "0")}`;
+  return `${String(count)} (last: ${last.error}, ${where})`;
+}
+
 function deviceLabel(): string {
   const c = Platform.constants as Record<string, unknown>;
   if (Platform.OS === "android") {
@@ -142,9 +156,10 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
   const peers = usePeerStore.getState();
   const links = getMeshService()?.getLinkCounts() ?? {
     ble: 0,
-    wifi: 0,
     lan: 0,
+    wifi: 0,
   };
+  const ingress = getMeshService()?.getIngressFaults();
   const tor = !settings.torEnabled
     ? "off"
     : mesh.torActive
@@ -169,10 +184,12 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
     device: deviceLabel(),
     transports: {
       bluetooth: mesh.bleBlocker,
-      wifiAware: mesh.wifiFastPath,
       lan: mesh.lanState,
+      wifiAware: mesh.wifiFastPath,
       nostr: mesh.nostrConnected ? "connected" : "not connected",
       links,
+      ingressFaults: ingress?.count ?? 0,
+      lastIngressFault: ingress?.last ?? null,
     },
     mesh: {
       reachablePeers: peers.reachablePeers().length,

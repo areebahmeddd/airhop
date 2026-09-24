@@ -29,10 +29,12 @@ const SNAPSHOT: DiagnosticsSnapshot = {
   device: "samsung SM-S928B",
   transports: {
     bluetooth: "none",
-    wifiAware: "active",
     lan: "off",
+    wifiAware: "active",
     nostr: "connected",
-    links: { ble: 2, wifi: 1, lan: 0 },
+    links: { ble: 2, lan: 0, wifi: 1 },
+    ingressFaults: 0,
+    lastIngressFault: null,
   },
   mesh: {
     reachablePeers: 1,
@@ -57,8 +59,8 @@ describe("buildDiagnosticsReport", () => {
   it("carries every transport with its link count", () => {
     const report = buildDiagnosticsReport({ ...SNAPSHOT, log: "" });
     expect(report).toContain("Bluetooth: none · 2 links");
-    expect(report).toContain("Wi-Fi Aware: active · 1 links");
     expect(report).toContain("Local network: off · 0 links");
+    expect(report).toContain("Wi-Fi Aware: active · 1 links");
     expect(report).toContain("Nostr: connected");
     expect(report).toContain("Reachable peers: 1");
   });
@@ -93,6 +95,26 @@ describe("buildDiagnosticsReport", () => {
     // Nothing to say on a platform without it.
     expect(buildDiagnosticsReport({ ...SNAPSHOT, log: "" })).not.toContain(
       "Wi-Fi Aware transport",
+    );
+  });
+
+  // A count alone cannot be acted on, so the last fault names where to look.
+  it("names the last ingress fault by error and packet type", () => {
+    expect(buildDiagnosticsReport(SNAPSHOT)).toContain("Ingress faults: 0\n");
+    const withFault = (packetType: number | null): string =>
+      buildDiagnosticsReport({
+        ...SNAPSHOT,
+        transports: {
+          ...SNAPSHOT.transports,
+          ingressFaults: 3,
+          lastIngressFault: { error: "RangeError", packetType },
+        },
+      });
+    expect(withFault(0x04)).toContain(
+      "Ingress faults: 3 (last: RangeError, packet type 0x04)",
+    );
+    expect(withFault(null)).toContain(
+      "Ingress faults: 3 (last: RangeError, undecoded)",
     );
   });
 

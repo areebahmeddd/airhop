@@ -303,6 +303,7 @@ interface MeshLike {
   peerAcceptsRing: (peerID: string) => boolean;
   sendRing: (peerID: string) => string | null;
   applyInternetEnabled: (enabled: boolean) => void;
+  getIngressFaults: () => { count: number };
   [k: string]: unknown;
 }
 

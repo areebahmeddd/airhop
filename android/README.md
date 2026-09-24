@@ -61,13 +61,6 @@ cd android && ./gradlew :app:testDebugUnitTest
 Keep new logic of that kind in a pure object beside its module, so it can be
 tested the same way.
 
-## Logging
-
-Samsung retail builds drop every informational logcat line. The Wi-Fi Aware
-module keeps its own ring buffer and peer table for that reason, read back by
-`dumpState()` into the diagnostics export. Use `AirhopAppModule`'s tag
-allowlist for anything that should reach the export.
-
 ## Formatting
 
 ktfmt, pinned to one version and checked in CI.
@@ -77,3 +70,10 @@ curl -sSfL -o /tmp/ktfmt.jar https://repo1.maven.org/maven2/com/facebook/ktfmt/0
 java -jar /tmp/ktfmt.jar --kotlinlang-style app/src            # format
 java -jar /tmp/ktfmt.jar --kotlinlang-style --dry-run app/src  # what CI checks
 ```
+
+## Logging
+
+Samsung retail builds drop every informational logcat line. The Wi-Fi Aware
+module keeps its own ring buffer and peer table for that reason, read back by
+`dumpState()` into the diagnostics export. Use `AirhopAppModule`'s tag
+allowlist for anything that should reach the export.
