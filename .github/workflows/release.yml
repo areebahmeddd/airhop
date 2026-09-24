@@ -199,6 +199,7 @@ jobs:
           files: |
             dist/airhop.apk
             dist/airhop.apk.intoto.jsonl
+          overwrite_files: false
 
       # Build the Play Store upload bundle.
       - name: Build release AAB (Google Play upload bundle)
@@ -356,6 +357,7 @@ jobs:
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: airhop.spdx.json
+          overwrite_files: false
 
   source-manifest:
     name: Publish Source Manifest
@@ -394,3 +396,4 @@ jobs:
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: airhop-${{ needs.release.outputs.tag }}-sources.sha256
+          overwrite_files: false
