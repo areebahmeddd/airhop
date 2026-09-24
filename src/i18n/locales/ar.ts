@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "إلغاء",
-  "common.done": "تم",
-  "common.ok": "حسنًا",
-  "common.close": "إغلاق",
   "common.back": "رجوع",
-  "common.delete": "حذف",
-  "common.remove": "إزالة",
+  "common.close": "إغلاق",
+  "common.cancel": "إلغاء",
+  "common.ok": "حسنًا",
+  "common.done": "تم",
+  "common.continue": "متابعة",
+  "common.try_again": "حاول مرة أخرى",
   "common.add": "إضافة",
+  "common.remove": "إزالة",
+  "common.delete": "حذف",
   "common.copy": "نسخ",
   "common.copied": "تم النسخ",
   "common.share": "مشاركة",
-  "common.continue": "متابعة",
-  "common.try_again": "حاول مرة أخرى",
   "common.settings": "الإعدادات",
   "common.on": "مفعّل",
   "common.off": "معطّل",
@@ -296,6 +296,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "تعذّرت إزالتهم",
   "chat.group.remove_failed_body":
     "لم يتغير شيء. من أنشأ المجموعة وحده يمكنه تغيير من فيها.",
+  "chat.group.leave_creator_body":
+    "مغادرة {name}؟ أنت من أنشأ هذه المجموعة، ومنشئها وحده يمكنه إضافة الأعضاء أو إزالتهم، لذا لن يتمكن أحد من ذلك بعد مغادرتك. وسيُزال سجلها من هذا الجهاز.",
   "chat.group.e2ee":
     "مشفّرة من طرف إلى طرف. الأعضاء وحدهم يمكنهم قراءة الرسائل.",
   "chat.group.cap":
@@ -509,35 +511,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "جنوب غرب",
   "chat.location.direction.w": "غربًا",
   "chat.location.direction.nw": "شمال غرب",
-  "chat.attach.send_anyway": "أرسل على أي حال",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "رنّ",
   "chat.ring.received_summary": "رنّ لك",
   "chat.ring.alert.title": "{sender} يرنّ لك",
   "chat.ring.alert.body": "تحقق من رسائلك",
   "chat.ring.alert.open": "فتح",
   "chat.ring.alert.snooze": "تأجيل لمدة ساعة واحدة",
-  "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
-  "chat.contact.allow_ring_desc":
-    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
-  "chat.contact.ring_action": "رنّ",
-  "chat.contact.ringing": "يرنّ…",
   "chat.ring.sent_snoozed": "رنّ، مؤجَّل",
   "chat.ring.sent_too_soon": "رنّ، مبكر جدًا",
   "chat.ring.sent_not_allowed": "رنّ، غير مسموح",
-  "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
-  "chat.contact.ring_hint_not_allowed": "لم يسمحوا لك بالرنين لهم",
-  "chat.contact.ring_hint_snoozed": "أجّلوا الرنين في الوقت الحالي",
-  "chat.contact.ring_hint_too_soon": "تم الرنين لهم قبل لحظات",
-  "chat.contact.ring_hint_again_in": "رنّ مجددًا بعد {time}",
-  "settings.security.ring_alerts": "تنبيهات الرنين",
-  "settings.security.ring_alerts_desc":
-    "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
-  "notif.channel.ring": "رنين",
-  "notif.channel.ring_desc":
-    "تنبيهات من جهات الاتصال التي سمحت لها بالرنين لك.",
-  "notif.ring.hidden": "رنين",
-  "notif.ring.title": "{sender} يرنّ لك",
-  "notif.ring.body": "تحقق من رسائلك",
+  "chat.attach.send_anyway": "أرسل على أي حال",
   "chat.attach.bitchat_too_big": "قد لا يصل هذا",
   "chat.attach.bitchat_too_big_body":
     "{name} يستخدم bitchat، وهو يتوقف في منتصف الملف الكبير. ما دون 350 KiB تقريبًا موثوق. أما الإرسال إلى جهة اتصال على Airhop فلا حد له.",
@@ -631,7 +616,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "استلام {amount} {unit}",
   "chat.ecash.already_claimed": "استُلم بالفعل",
   "chat.ecash.already_claimed_body":
-    "كل إثبات في هذا التوكن موجود في محفظتك بالفعل، فلم يُضَف شيء.",
+    "كل ما في هذا التوكن موجود في محفظتك بالفعل، فلم يُضَف شيء.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "سُلّمت إلى الشبكة للتوصيل قدر المستطاع",
@@ -721,6 +706,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "اسمك له",
   "chat.contact.copy_peer_id": "نسخ معرّف النظير",
   "chat.contact.verify": "توثيق جهة الاتصال",
+  "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
+  "chat.contact.allow_ring_desc":
+    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
+  "chat.contact.ring_action": "رنّ",
+  "chat.contact.ringing": "يرنّ…",
+  "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
+  "chat.contact.ring_hint_not_allowed": "لم يسمحوا لك بالرنين لهم",
+  "chat.contact.ring_hint_snoozed": "أجّلوا الرنين في الوقت الحالي",
+  "chat.contact.ring_hint_too_soon": "تم الرنين لهم قبل لحظات",
+  "chat.contact.ring_hint_again_in": "رنّ مجددًا بعد {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "الإعلانات",
@@ -909,30 +904,46 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "يبدّل بين الساتوشي والبيتكوين",
   "wallet.balance.a11y": "الرصيد {value} {unit}",
   "wallet.balance.locked":
-    "تخزين المحفظة مقفل. تُحفظ إثباتات النقد الإلكتروني في ملف مشفّر مفتاحه في سلسلة مفاتيح الجهاز، وتعذّر فتحه. افتح قفل جهازك ثم أعد فتح Airhop.",
+    "تخزين المحفظة مقفل. يُحفظ نقدك الإلكتروني في ملف مشفّر مفتاحه في سلسلة مفاتيح الجهاز، وتعذّر فتحه. افتح قفل جهازك ثم أعد فتح Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor مفعّل، لذا طلبات دار السك محظورة: فهي ستخرج عبر الشبكة المكشوفة وتربط عنوان IP الخاص بك بإثباتاتك. الإرسال والاستقبال عبر الشبكة ما زالا يعملان. اسمح بحركة دار السك من الإعدادات، الأمان.",
+    "Tor مفعّل، لذا طلبات دار السك محظورة: فهي ستخرج عبر الشبكة المكشوفة وتربط عنوان IP الخاص بك بنقدك الإلكتروني. الإرسال والاستقبال عبر الشبكة ما زالا يعملان. للوصول إلى دور السك رغم ذلك، شغّل {setting} من الإعدادات.",
+  "wallet.balance.offline":
+    "أنت غير متصل. ما زال بإمكانك الدفع للأشخاص القريبين وإرسال التوكنات.",
+  "wallet.balance.internet_off":
+    "الإنترنت متوقف، لذا تعمل المحفظة مع القريبين فقط. شغّل {setting} من الإعدادات للوصول إلى دور السك.",
   "wallet.balance.unconfirmed_note": "{amount} لم تُؤكَّد بعد مع دار السك",
   "wallet.balance.reserved_note": "{amount} محجوزة لإرسال قيد التنفيذ",
   "wallet.balance.other_mint_note": "{amount} في حساب دار سك منفصل",
   "wallet.balance.test_mint_note":
     "يشمل نقودًا تجريبية من دار سك اختبارية. ليست بيتكوين ولا يمكن صرفها.",
   "wallet.token": "توكن",
-  "wallet.action.send": "إرسال توكن نقد إلكتروني",
   "wallet.action.send_disabled":
     "إرسال توكن نقد إلكتروني، غير متاح مع رصيد فارغ",
-  "wallet.action.receive": "استقبال توكن نقد إلكتروني",
-  "wallet.action.zap": "إرسال زاب إلى جهة اتصال على Nostr",
-  "wallet.action.zap_disabled":
-    "إرسال زاب إلى جهة اتصال على Nostr، غير متاح مع رصيد فارغ",
-  "wallet.action.add_mint": "إضافة دار سك Cashu",
+  "wallet.action.scan": "مسح",
+  "wallet.action.scan_a11y": "امسح توكنًا أو فاتورة أو npub",
+  "wallet.choose.paste": "الصق توكنًا",
+  "wallet.choose.paste_desc": "يعمل دون اتصال",
+  "wallet.choose.scan": "مسح رمز استجابة سريعة",
+  "wallet.choose.scan_desc": "توكن Cashu من أي محفظة",
+  "wallet.choose.topup": "اشحن عبر Lightning",
+  "wallet.choose.topup_desc": "ادفع فاتورة من أي محفظة Lightning",
+  "wallet.choose.token": "أنشئ توكنًا",
+  "wallet.choose.token_desc": "شاركه أو اعرض رمز استجابة سريعة، حتى دون اتصال",
+  "wallet.choose.zap": "أرسل zap إلى جهة اتصال على Nostr",
+  "wallet.choose.zap_desc": "إلى npub الخاص به، عبر الإنترنت",
+  "wallet.choose.invoice": "ادفع فاتورة Lightning",
+  "wallet.choose.invoice_desc": "اسحب إلى أي محفظة Lightning",
+  "wallet.choose.tor_paused": "متوقف أثناء تشغيل Tor",
+  "wallet.choose.offline": "يحتاج إلى الإنترنت",
+  "wallet.choose.internet_off": "الإنترنت متوقف",
+  "wallet.choose.needs_mint": "أضف دار سك أولًا",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "تعذّر بناء التوكن",
   "wallet.send.title": "إرسال نقد إلكتروني",
   "wallet.send.amount_in": "المبلغ بـ {unit}",
   "wallet.send.body":
-    "بُني دون اتصال من إثباتات تملكها بالفعل. لا شيء يغادر رصيدك نهائيًا حتى تؤكد أن التوكن سُلّم.",
+    "بُني دون اتصال من نقد إلكتروني تملكه بالفعل. لا شيء يغادر رصيدك نهائيًا حتى تؤكد أن التوكن سُلّم.",
   "wallet.send.stale_fee_note":
     "فُحصت الرسوم آخر مرة قبل {days} يوم/أيام. إن رفعت دار السك رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
   "wallet.send.fee_note":
@@ -940,7 +951,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "هذا التوكن مقسّم على عملات أكثر من أن تتسع في رمز استجابة سريعة. شاركه أو انسخه بدلًا من ذلك، أو حدّثه عند دار السك لتجميعه.",
   "wallet.send.bearer_note":
-    "من يحمل هذه السلسلة يملك المال. الإثباتات محجوزة لا منفقة: إن لم تصل أحدًا يمكنك استرجاعها من قسم المعلّقة.",
+    "من يحمل هذه السلسلة يملك المال. العملات محجوزة لا منفقة: إن لم تصل أحدًا يمكنك استرجاعها من قسم النشاط.",
   "wallet.send.qr_too_big_short":
     "هذا التوكن مقسّم على عملات أكثر من أن تتسع في رمز استجابة سريعة. شاركه أو انسخه بدلًا من ذلك.",
   "wallet.send.scan_note":
@@ -954,11 +965,11 @@ export const strings: Strings = {
   "wallet.send.building": "جارٍ البناء…",
   "wallet.send.build": "بناء التوكن",
   "wallet.send.inexact_body":
-    "لا تستطيع إثباتاتك تكوين {amount} {unit} بالضبط دون اتصال. أصغر توكن يمكنك بناؤه هو {spend} {unit}، وبلا اتصال لا يوجد باقٍ: الـ {extra} {unit} الإضافية تذهب إلى المستلم.\n\nتحديث الإثباتات عند دار السك أثناء الاتصال سيقسّمها إلى فئات تجعل هذا المبلغ دقيقًا.",
+    "لا تستطيع عملاتك تكوين {amount} {unit} بالضبط دون اتصال. أصغر توكن يمكنك بناؤه هو {spend} {unit}، وبلا اتصال لا يوجد باقٍ: الـ {extra} {unit} الإضافية تذهب إلى المستلم.\n\nتحديث العملات عند دار السك أثناء الاتصال سيقسّمها إلى فئات تجعل هذا المبلغ دقيقًا.",
   "wallet.send.send_amount": "إرسال {amount}",
   "wallet.send.sent_to": "أُرسلت {amount} {unit} إلى {name}",
   "wallet.send.sent_to_body":
-    "{route} ويبقى قابلًا للاسترجاع من قسم المعلّقة حتى تؤكد استلامهم له، أو حتى تخبرنا دار السك أن الإثباتات صُرفت.",
+    "{route} ويبقى قابلًا للاسترجاع من قسم النشاط حتى تؤكد استلامهم له، أو حتى تخبرنا دار السك أن التوكن صُرف.",
   "wallet.send.copy_token": "نسخ التوكن",
   "wallet.send.share_token": "مشاركة التوكن",
   "wallet.send.open_in_wallet": "فتح هذا التوكن في محفظة أخرى",
@@ -977,12 +988,12 @@ export const strings: Strings = {
     "هذه العملات ما زالت محجوزة لإرسال لم تسوِّه، فلا شيء لاستلامه. استخدم الاسترجاع على تلك الدفعة لإعادتها مباشرة إلى رصيدك.",
   "wallet.receive.already_have": "موجود في محفظتك بالفعل",
   "wallet.receive.already_have_body":
-    "كل إثبات في هذا التوكن مخزّن هنا بالفعل، فلم يُضَف شيء. الأرصدة كما هي.",
+    "كل ما في هذا التوكن مخزّن هنا بالفعل، فلم يُضَف شيء. الأرصدة كما هي.",
   "wallet.receive.stored_unconfirmed":
     "خُزّن من {mint}، لكنه لم يُؤكَّد بعد مع دار السك ({reason}).",
   "wallet.receive.offline": "دون اتصال",
   "wallet.receive.redeemed_here":
-    "صُرف عند {mint}. هذه الإثباتات لك وحدك الآن: نسخة المرسل لم تعد تعمل.",
+    "صُرف عند {mint}. هذا النقد الإلكتروني لك وحدك الآن: نسخة المرسل لم تعد تعمل.",
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
@@ -1033,9 +1044,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "إزالة {mint} من محفظتك؟ ستُزال مفاتيحها المخزّنة معها، فلن يعود بالإمكان التحقق من توكناتها دون اتصال.",
   "wallet.mint.title": "دور السك",
-  "wallet.mint.none": "لا دار سك بعد",
   "wallet.mint.none_desc":
-    "دار السك تصدر نقدك الإلكتروني وتصرفه. أضف واحدة لتودع عبر Lightning، أو استقبل توكنًا فحسب فتُضاف دار سكه نيابة عنك.",
+    "دار السك تُصدر نقدك الإلكتروني وتستردّه. أضف واحدة لتشحن عبر Lightning أو لتقبل التوكنات الصادرة عنها.",
   "wallet.mint.add": "إضافة دار سك",
   "wallet.mint.add_body":
     "دار السك تحتفظ بالبيتكوين الذي يغطي نقدك الإلكتروني، فاختر واحدة تأتمنها على الرصيد الذي تبقيه فيها. يُفحص الرابط قبل حفظه. شغّل دارك الخاصة عبر Nutshell إن كنت تفضّل ألا تأتمن أحدًا.",
@@ -1047,8 +1057,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "إزالة دار السك",
   "wallet.mint.delete_anyway": "احذف على أي حال",
   "wallet.mint.consolidate": "نقل كل الأرصدة إلى دار سك واحدة",
-  "wallet.mint.confirm_with": "تأكيد الإثباتات مع {mint}",
-  "wallet.mint.remove_a11y": "إزالة {mint}",
+  "wallet.mint.confirm_with": "تحقّق من الرصيد مع {mint}",
   "wallet.mint.available_amount": "{amount} {unit} متاحة",
   "wallet.mint.split_across":
     "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
@@ -1075,13 +1084,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "دُفعت الفاتورة وأصدرت {mint} مبلغ {amount} {unit}. هذا الرصيد مؤكد: يمكنك إنفاقه دون اتصال فورًا.",
   "wallet.ln.withdrawn":
-    "دُفعت {paid} ساتس عبر Lightning. واقتطعت دار السك {fee} ساتس رسوم توجيه.",
+    "دُفع {amount} {unit} عبر Lightning. واقتطعت دار السك {fee} {unit} رسوم توجيه.",
   "wallet.ln.withdrawn_with_change":
-    "دُفعت {paid} ساتس عبر Lightning. واقتطعت دار السك {fee} ساتس رسوم توجيه، وأعادت {change} ساتس من الاحتياطي إلى رصيدك.",
+    "دُفع {amount} {unit} عبر Lightning. واقتطعت دار السك {fee} {unit} رسوم توجيه، وأعادت {change} {unit} من الاحتياطي إلى رصيدك.",
   "wallet.ln.payment_failed": "فشلت الدفعة",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "حوّل ساتس Lightning إلى نقد إلكتروني تنفقه دون اتصال، أو اصرف النقد الإلكتروني إلى أي فاتورة Lightning. كلاهما يحتاج إنترنت ودار سك.",
   "wallet.ln.deposit_body":
     "تعطيك دار السك فاتورة. ادفعها من أي محفظة Lightning وتعود الساتس نقدًا إلكترونيًا تنفقه دون اتصال.",
   "wallet.ln.pay_invoice_for":
@@ -1094,10 +1100,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "حتى {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "دفع {amount} {unit}",
-  "wallet.ln.deposit": "إيداع ساتس عبر Lightning",
-  "wallet.ln.deposit_short": "إيداع",
-  "wallet.ln.withdraw": "سحب إلى فاتورة Lightning",
-  "wallet.ln.withdraw_short": "سحب",
   "wallet.ln.deposit_title": "الإيداع عبر Lightning",
   "wallet.ln.amount_placeholder": "المبلغ بالساتس",
   "wallet.ln.requesting": "جارٍ الطلب…",
@@ -1118,7 +1120,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "احصل على عرض",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "النسخ الاحتياطي",
   "wallet.backup.setup_failed": "تعذّر إعداد النسخ الاحتياطي",
   "wallet.backup.on": "النسخ الاحتياطي مفعّل",
   "wallet.backup.on_body":
@@ -1222,13 +1223,12 @@ export const strings: Strings = {
   "wallet.refresh.partly": "تحديث جزئي",
   "wallet.refresh.done": "تم التحديث",
   "wallet.refresh.unreachable": "تعذّر الوصول إلى {mints}. كل ما عداها محدَّث.",
-  "wallet.refresh.swapped": "أُكدت {amount} {unit} وبُدّلت بإثباتات جديدة.",
+  "wallet.refresh.swapped": "أُكدت {amount} {unit} وبُدّلت بنقد إلكتروني جديد.",
   "wallet.refresh.secured":
     "{amount} {unit} أصبحت الآن مغطاة بعبارة الاستعادة الخاصة بك.",
   "wallet.refresh.all_confirmed": "كل ما هنا كان مؤكدًا بالفعل مع دار السك.",
-  "wallet.pending.title": "المعلّقة",
   "wallet.pending.reserved_desc":
-    "بُنيت وحُجزت، والتسليم غير مؤكد. تُحجز الإثباتات خارج رصيدك لئلا تُنفق مرتين.",
+    "بُنيت وحُجزت، والتسليم غير مؤكد. تُحجز العملات خارج رصيدك لئلا تُنفق مرتين.",
   "wallet.pending.locked_desc":
     "مقفلة بالفعل على مفتاح المستلم، فلا يستطيع إنفاقها سواه. لكنها لم تصله بعد. شارك التوكن لإتمامها.",
   "wallet.pending.show_qr": "عرض هذا التوكن كرمز استجابة سريعة",
@@ -1239,8 +1239,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "استرجاع هذا التوكن إلى رصيدك",
   "wallet.activity.title": "النشاط",
   "wallet.activity.none": "لا شيء بعد",
-  "wallet.activity.none_desc":
-    "المدفوعات التي ترسلها وتستلمها تظهر هنا، الأحدث أولًا، مع دار السك والرسوم لكل منها.",
   "wallet.activity.show_fewer": "عرض عدد أقل من المدفوعات",
   "wallet.activity.show_less": "عرض أقل",
   "wallet.activity.received_unconfirmed": "مستلمة، غير مؤكدة",
@@ -1256,14 +1254,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "إيداع Lightning",
   "wallet.activity.ln_withdrawal": "سحب Lightning",
   "wallet.activity.nutzap_received": "وصل نَتزاب",
-  "wallet.activity.spent_removed": "أُزيلت الإثباتات المنفقة",
-  "wallet.activity.refreshed": "حُدّثت الإثباتات",
-  "wallet.activity.refreshing": "جارٍ تحديث الإثباتات",
+  "wallet.activity.spent_removed": "أُزيلت العملات المنفَقة",
+  "wallet.activity.refreshed": "تم التحقق مع دار السك",
+  "wallet.activity.refreshing": "جارٍ التحقق مع دار السك",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "الشبكة غير متصلة",
   "wallet.mesh_offline_body":
-    "خدمة الشبكة لا تعمل، فلا يوجد من يُسلَّم إليه التوكن. ويبقى محجوزًا ضمن المعلّقة.",
+    "خدمة الشبكة لا تعمل، فلا يوجد من يُسلَّم إليه التوكن. ويبقى محجوزًا ضمن النشاط.",
   "wallet.xfer.route_mesh": "سُلّم مباشرة إلى جهازهم عبر الشبكة.",
   "wallet.xfer.route_nostr":
     "كانوا خارج نطاق البلوتوث، فذهب عبر الإنترنت بدلًا من ذلك.",
@@ -1275,7 +1273,7 @@ export const strings: Strings = {
     "خدمة الشبكة لا تعمل، فلا سبيل إلى تسليم التوكن. ولم يُخصم شيء.",
   "wallet.xfer.could_not_send": "تعذّر الإرسال",
   "wallet.xfer.inexact_body":
-    "لا تستطيع إثباتاتك تكوين {amount} {unit} بالضبط دون اتصال. أصغر توكن يمكنك بناؤه هو {spend} {unit}، والـ {extra} {unit} الإضافية تذهب إليهم دون سبيل لاستعادتها.\n\nتحديث الإثباتات عند دار السك أثناء الاتصال يقسّمها إلى فئات تجعل هذا المبلغ دقيقًا.",
+    "لا تستطيع عملاتك تكوين {amount} {unit} بالضبط دون اتصال. أصغر توكن يمكنك بناؤه هو {spend} {unit}، والـ {extra} {unit} الإضافية تذهب إليهم دون سبيل لاستعادتها.\n\nتحديث العملات عند دار السك أثناء الاتصال يقسّمها إلى فئات تجعل هذا المبلغ دقيقًا.",
   "wallet.xfer.send_amount": "إرسال {amount}",
   "wallet.xfer.mesh_offline": "الشبكة غير متصلة",
 
@@ -1285,7 +1283,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "مقفلة على مفتاحهم. لم يقبلها المُرحِّل، فذهبت إليهم كرسالة بدلًا من ذلك.",
   "wallet.pay.rail_nutzap_undelivered":
-    "مقفلة على مفتاحهم، لكن لم يستطع شيء حملها بعد. إنها في قائمة الانتظار، والتوكن ضمن المعلّقة.",
+    "مقفلة على مفتاحهم، لكن لم يستطع شيء حملها بعد. إنها في قائمة الانتظار، والتوكن ضمن النشاط.",
   "wallet.pay.final":
     "لا يمكن استرجاع المدفوعات المقفلة: مفتاحهم وحده يستطيع إنفاق هذه العملات الآن.",
   "wallet.pay.reclaimable":
@@ -1302,8 +1300,7 @@ export const strings: Strings = {
   "wallet.pay.action": "إرسال نقد إلكتروني",
   "wallet.pay.confirm_title": "إرسال {amount} {unit} إلى {name}؟",
   "wallet.pay.confirm_final": "إنه مقفل بمفتاحهم. بعد إرساله لا يمكن استرجاعه.",
-  "wallet.pay.confirm_reclaimable":
-    "يمكنك استرجاعه من «قيد الانتظار» إلى أن يستلمه.",
+  "wallet.pay.confirm_reclaimable": "يمكنك استرجاعه من «النشاط» إلى أن يستلمه.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "الوصول إلى الكاميرا",
@@ -1322,9 +1319,10 @@ export const strings: Strings = {
     "وجّه الكاميرا نحو رمز استجابة سريعة لفاتورة Lightning.",
   "wallet.scan.title_token": "مسح نقد إلكتروني",
   "wallet.scan.title_invoice": "مسح فاتورة",
-  "wallet.scan.desc_token":
-    "اقرأ توكن Cashu من محفظة أخرى. يعمل مع أي محفظة Cashu، لا مع Airhop وحده.",
-  "wallet.scan.desc_invoice": "اقرأ فاتورة Lightning لدفعها من رصيدك.",
+  "wallet.scan.title_any": "مسح رمز استجابة سريعة",
+  "wallet.scan.aim_any":
+    "وجّه الكاميرا نحو رمز استجابة سريعة لتوكن أو فاتورة أو npub.",
+  "wallet.scan.no_any": "لم يُعثر على توكن أو فاتورة أو npub في تلك الصورة.",
   "wallet.scan.use_camera_a11y": "المسح بالكاميرا",
   "wallet.scan.use_camera": "استخدام الكاميرا",
   "wallet.scan.pick_image_a11y": "قراءة رمز استجابة سريعة من صورة محفوظة",
@@ -1336,7 +1334,7 @@ export const strings: Strings = {
     "Cashu نقد إلكتروني للبيتكوين. التوكن سلسلة نصية تساوي مالًا لمن يحملها، موقّعة بشكل أعمى من دار سك فلا تستطيع الدار معرفة من أنفق ماذا. لا حسابات ولا تسجيل دخول.",
   "wallet.explain.send": "إرسال",
   "wallet.explain.send_desc":
-    "يحوّل مبلغًا إلى توكن تسلّمه إلى نظير قريب عبر البلوتوث، أو تشاركه كنص. يعمل دون إنترنت. تبقى الإثباتات محجوزة حتى تؤكد وصوله.",
+    "يحوّل مبلغًا إلى توكن تسلّمه إلى نظير قريب عبر البلوتوث، أو تشاركه كنص. يعمل دون إنترنت. تبقى العملات محجوزة حتى تؤكد وصوله.",
   "wallet.explain.receive": "استقبال",
   "wallet.explain.receive_desc":
     "الصق توكنًا لإضافته. مع الاتصال يُبدَّل عند دار السك فورًا، وهذا ما يجعله لك بشكل مثبت. ودونه يُخزَّن ويوسم كغير مؤكد حتى تحدّثه.",
@@ -1366,7 +1364,10 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "تعذّر الوصول إلى دار السك.",
   "wallet.svc.tor_ios": "طلبات دار السك لا تمر عبر Tor على iOS.",
   "wallet.svc.tor_ios_body":
-    "لا يغلّف Arti سوى مقابس Nostr، فسيصل هذا الطلب إلى دار السك عبر الشبكة المكشوفة ويربط عنوان IP الخاص بك بهذه الإثباتات. اسمح به من الإعدادات > الأمان، أو عطّل Tor أولًا. إرسال النقد الإلكتروني واستقباله عبر الشبكة ما زالا يعملان.",
+    "على iOS لا يغطي Tor سوى Nostr، فسيصل هذا الطلب إلى دار السك عبر الشبكة المكشوفة ويربط عنوان IP الخاص بك بهذا النقد الإلكتروني. شغّل {setting} من الإعدادات، أو عطّل Tor أولًا. إرسال النقد الإلكتروني واستقباله عبر الشبكة ما زالا يعملان.",
+  "wallet.svc.internet_off": "الإنترنت متوقف، لذا لا يمكن الوصول إلى دار السك.",
+  "wallet.svc.internet_off_body":
+    "شغّل {setting} من الإعدادات. ما زال إرسال النقد الإلكتروني واستقباله مع القريبين يعمل.",
   "wallet.svc.keys_uncached": "مفاتيح دار السك هذه غير مخزّنة على هذا الجهاز.",
   "wallet.svc.keys_uncached_body": "افتح المحفظة مرة واحدة وأنت متصل لجلبها.",
   "wallet.svc.phrase_invalid": "عبارة الاستعادة هذه غير صالحة.",
@@ -1378,18 +1379,22 @@ export const strings: Strings = {
   "wallet.svc.restored": "استُعيدت من عبارة الاستعادة",
   "wallet.svc.storage_locked": "تخزين المحفظة مقفل.",
   "wallet.svc.storage_locked_body":
-    "يحفظ Airhop إثباتات النقد الإلكتروني في ملف مشفّر مفتاحه في سلسلة مفاتيح الجهاز. افتح قفل الجهاز وأعد فتح التطبيق.",
+    "يحفظ Airhop نقدك الإلكتروني في ملف مشفّر مفتاحه في سلسلة مفاتيح الجهاز. افتح قفل الجهاز وأعد فتح التطبيق.",
   "wallet.svc.bad_url": "هذا ليس رابطًا صالحًا.",
   "wallet.svc.needs_https": "يجب أن يبدأ رابط دار السك بـ https://.",
   "wallet.svc.refuse_http": "رفض استخدام دار سك عبر http عادي.",
   "wallet.svc.refuse_http_body":
-    "يستطيع أي شخص على مسار الشبكة قراءة إثباتاتك أو تغييرها. استخدم دار سك على https://.",
+    "يستطيع أي شخص على مسار الشبكة قراءة نقدك الإلكتروني أو تغييره. استخدم دار سك على https://.",
   "wallet.svc.mint_not_saved": "تعذّر حفظ دار السك.",
   "wallet.svc.unreadable_token": "هذا ليس توكن Cashu مقروءًا.",
   "wallet.svc.unreadable_token_body":
     "تبدأ التوكنات بـ cashuA أو cashuB. تحقق من عدم اقتطاع شيء عند نسخه.",
+  "wallet.svc.keyset_unknown":
+    "يستخدم هذا الرمز مفاتيح جديدة من دار السك الخاصة به.",
+  "wallet.svc.keyset_unknown_body":
+    "تعذّر الوصول إلى دار السك الآن لجلبها. لم يضِع شيء: استلمه مرة أخرى عندما تتصل بالإنترنت.",
   "wallet.svc.wrong_mint": "لم توقّع هذا التوكن دار السك التي يذكرها.",
-  "wallet.svc.already_spent": "هذه الإثباتات أُنفقت بالفعل.",
+  "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":
     "من أرسل هذا التوكن صرفه أولًا، أو أرسل التوكن نفسه إلى شخص آخر.",
   "wallet.svc.receiving_offline": "الاستقبال دون اتصال",
@@ -1401,7 +1406,8 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "أضف دار سك وأودع عبر Lightning، أو استقبل توكنًا من أحدهم.",
   "wallet.svc.split_across_mints": "رصيدك موزّع على عدة دور سك.",
-  "wallet.svc.mint_says_spent": "أبلغت دار السك أن هذه الإثباتات منفقة بالفعل.",
+  "wallet.svc.mint_says_spent":
+    "أبلغت دار السك أن هذا النقد الإلكتروني منفق بالفعل.",
   "wallet.svc.issue_against_invoice":
     "إصدار نقد إلكتروني مقابل فاتورة Lightning",
   "wallet.svc.pay_invoice": "دفع فاتورة Lightning",
@@ -1428,7 +1434,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "تعذّر تحديد حجم هذا التحويل.",
   "wallet.svc.insufficient_at_mint": "الرصيد لا يكفي في {mint}.",
   "wallet.svc.inexact_title":
-    "لا تستطيع إثباتاتك تكوين {amount} {unit} بالضبط دون اتصال.",
+    "لا تستطيع عملاتك تكوين {amount} {unit} بالضبط دون اتصال.",
   "wallet.svc.inexact_detail":
     "أصغر توكن يمكنك إرساله هو {spend} {unit}. وبلا اتصال لا يوجد باقٍ، فالـ {extra} {unit} الإضافية تذهب إلى المستلم.",
   "wallet.svc.no_single_mint":
@@ -1457,10 +1463,9 @@ export const strings: Strings = {
     "أصدر المِنت هذا الإيداع، لكن تعذّر إعادة بناء عملاته. الاستعادة من عبارة الاسترداد تعيدها.",
   "wallet.svc.swap_unreadable":
     "حُفظ هذا التبديل بصيغة لا تستطيع هذه النسخة إعادة تشغيلها.",
-  "wallet.svc.lock_in_doubt":
-    "لم تردّ دار السك، لذا قد يكون هذا الدفع قد تم وقد لا يكون.",
+  "wallet.svc.lock_in_doubt": "قد يكون هذا الدفع قد تم وقد لا يكون.",
   "wallet.svc.lock_in_doubt_body":
-    "لم يُرسل أي شيء آخر. العملات محجوزة حتى تردّ دار السك. إن تمّ الدفع، يظهر الرمز المقفل في «قيد الانتظار» لتسلّمه. وإن لم يتم، تعود العملات.",
+    "لم يُرسل أي شيء آخر. العملات محجوزة حتى تؤكد دار السك النتيجة. إن تمّ الدفع، يظهر الرمز المقفل في «النشاط» لتسلّمه. وإن لم يتم، تعود العملات.",
   "wallet.svc.send_spent_by_swap":
     "استُبدلت هذه العملات عائدةً إلى محفظتك قبل المطالبة بهذا الرمز، فلم يعد بالإمكان المطالبة به. القيمة موجودة في رصيدك.",
 
@@ -1561,6 +1566,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "نسخ معرّف النظير",
   "settings.peer_id_sheet.note":
     "لا يعمل هذا إلا وأنتما ضمن نطاق البلوتوث. ولتمكين أحدهم من مراسلتك من أي مكان، شارك رمز الاستجابة السريعة الخاص بك بدلًا من ذلك.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ابحث في الإعدادات…",
   "settings.search.a11y": "ابحث في الإعدادات",
   "settings.search.close": "إغلاق البحث",
@@ -1708,6 +1715,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "إخفاء معاينات الإشعارات",
   "settings.security.hide_previews_desc":
     "يبقي المرسل والرسالة بعيدين عن شاشة القفل، التي تعرضهما دون فتح القفل",
+  "settings.security.ring_alerts": "تنبيهات الرنين",
+  "settings.security.ring_alerts_desc":
+    "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
   "settings.security.no_blocked": "لا نظراء محظورون",
   "settings.security.no_blocked_desc":
     "النظراء المحظورون لا يستطيعون مراسلتك ولا يظهرون في تبويب الشبكة",
@@ -1904,7 +1914,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "استهلاك الشبكة",
   "settings.storage.storage_usage": "استهلاك التخزين",
   "settings.storage.storage_usage_desc":
-    "الرسائل وإثباتات المحفظة والمرفقات المخزّنة مؤقتًا",
+    "الرسائل والنقد الإلكتروني والمرفقات المخزّنة مؤقتًا",
   "settings.storage.session_usage":
     "هذه الجلسة · {sent} مرسلة، {received} مستلمة",
   "settings.storage.cache": "التخزين المؤقت",
@@ -1992,7 +2002,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "المحادثات والمجموعات والقنوات التي انضممت إليها",
   "settings.transfer.wallet": "رصيد المحفظة",
-  "settings.transfer.wallet_desc": "إثباتات Cashu وسجل المعاملات",
+  "settings.transfer.wallet_desc": "النقد الإلكتروني وسجل المعاملات",
   "settings.transfer.title": "النقل إلى هاتف جديد",
   "settings.transfer.desc": "انقل هويتك ومحادثاتك ومحفظتك إلى جهاز آخر",
   "settings.transfer.coming_soon_a11y": "النقل إلى هاتف جديد، قريبًا",
@@ -2023,9 +2033,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "اضغط ثلاث مرات للمسح فورًا دون تأكيد",
   "settings.wipe.title": "المسح الطارئ",
   "settings.wipe.now": "امسح الآن",
-  "settings.wipe.desc": "دمّر كل المفاتيح والرسائل والإثباتات فورًا",
+  "settings.wipe.desc": "دمّر كل المفاتيح والرسائل والنقد الإلكتروني فورًا",
   "settings.wipe.body":
-    "سيدمّر هذا فورًا كل مفاتيحك ورسائلك وإثباتات محفظتك. لا يمكن التراجع عن هذا.",
+    "سيدمّر هذا فورًا كل مفاتيحك ورسائلك ونقدك الإلكتروني. لا يمكن التراجع عن هذا.",
   "settings.wipe.in_progress": "جارٍ المسح",
   "settings.wipe.in_progress_body":
     "يجري تدمير مفاتيحك ورسائلك وملفاتك. يستغرق هذا ثوانٍ قليلة، ويكتمل من تلقاء نفسه إن أُغلق التطبيق.",
@@ -2126,6 +2136,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "النظراء القريبون",
   "notif.channel.nearby_desc":
     "تنبيه عرضي عندما تعثر الشبكة على أشخاص ضمن نطاق البلوتوث.",
+  "notif.channel.ring": "رنين",
+  "notif.channel.ring_desc":
+    "تنبيهات من جهات الاتصال التي سمحت لها بالرنين لك.",
   "notif.nearby.body": "ضمن نطاق البلوتوث الآن. اضغط لفتح الشبكة.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "أحدهم",
@@ -2142,6 +2155,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "نشاط جديد",
   "notif.hidden.mention": "أشار إليك أحدهم",
   "notif.mention.title": "أشار إليك {sender}",
+  "notif.ring.hidden": "رنين",
+  "notif.ring.title": "{sender} يرنّ لك",
+  "notif.ring.body": "تحقق من رسائلك",
 };
 
 export const plurals: Plurals = {
@@ -2280,22 +2296,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    zero: "{count} دار سك",
-    one: "دار سك واحدة",
-    two: "دارا سك",
-    few: "{count} دور سك",
-    many: "{count} دار سك",
-    other: "{count} دار سك",
-  },
   "wallet.mint.remove_body": {
-    zero: "تحمل {mint} مبلغ {balance} {unit} في {count} إثبات. إزالتها تحذف تلك الإثباتات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    one: "تحمل {mint} مبلغ {balance} {unit} في إثبات واحد. إزالتها تحذف ذلك الإثبات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    two: "تحمل {mint} مبلغ {balance} {unit} في إثباتين. إزالتها تحذف ذينك الإثباتين من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    few: "تحمل {mint} مبلغ {balance} {unit} في {count} إثباتات. إزالتها تحذف تلك الإثباتات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    many: "تحمل {mint} مبلغ {balance} {unit} في {count} إثباتًا. إزالتها تحذف تلك الإثباتات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    zero: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    one: "تحمل {mint} مبلغ {balance} {unit} في عملة واحدة. إزالتها تحذف تلك العملة من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    two: "تحمل {mint} مبلغ {balance} {unit} في عملتين. إزالتها تحذف هاتين العملتين من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    few: "تحمل {mint} مبلغ {balance} {unit} في {count} عملات. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    many: "تحمل {mint} مبلغ {balance} {unit} في {count} عملةً. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
     other:
-      "تحمل {mint} مبلغ {balance} {unit} في {count} إثبات. إزالتها تحذف تلك الإثباتات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+      "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2311,12 +2319,12 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    zero: "استُعيد {count} إثبات غير منفق من {mints}.",
-    one: "استُعيد إثبات واحد غير منفق من {mints}.",
-    two: "استُعيد إثباتان غير منفقين من {mints}.",
-    few: "استُعيدت {count} إثباتات غير منفقة من {mints}.",
-    many: "استُعيد {count} إثباتًا غير منفق من {mints}.",
-    other: "استُعيد {count} إثبات غير منفق من {mints}.",
+    zero: "استُعيدت {count} عملة غير منفقة من {mints}.",
+    one: "استُعيدت عملة واحدة غير منفقة من {mints}.",
+    two: "استُعيدت عملتان غير منفقتين من {mints}.",
+    few: "استُعيدت {count} عملات غير منفقة من {mints}.",
+    many: "استُعيدت {count} عملةً غير منفقة من {mints}.",
+    other: "استُعيدت {count} عملة غير منفقة من {mints}.",
   },
   "wallet.backup.already_spent": {
     zero: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
@@ -2353,21 +2361,13 @@ export const plurals: Plurals = {
     many: "{count} غير مؤكدة",
     other: "{count} غير مؤكدة",
   },
-  "wallet.proof_count": {
-    zero: "{count} إثبات",
-    one: "إثبات واحد",
-    two: "إثباتان",
-    few: "{count} إثباتات",
-    many: "{count} إثباتًا",
-    other: "{count} إثبات",
-  },
   "wallet.spent_removed_detail": {
-    zero: "{count} إثبات كان منفقًا بالفعل وقد أُزيل.",
-    one: "إثبات واحد كان منفقًا بالفعل وقد أُزيل.",
-    two: "إثباتان كانا منفقين بالفعل وقد أُزيلا.",
-    few: "{count} إثباتات كانت منفقة بالفعل وقد أُزيلت.",
-    many: "{count} إثباتًا كانت منفقة بالفعل وقد أُزيلت.",
-    other: "{count} إثبات كان منفقًا بالفعل وقد أُزيل.",
+    zero: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",
+    one: "عملة واحدة كانت منفقة بالفعل وقد أُزيلت.",
+    two: "عملتان كانتا منفقتين بالفعل وقد أُزيلتا.",
+    few: "{count} عملات كانت منفقة بالفعل وقد أُزيلت.",
+    many: "{count} عملةً كانت منفقة بالفعل وقد أُزيلت.",
+    other: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",
   },
 
   // ---- System notifications ----

@@ -1,25 +1,14 @@
 /**
  * @jest-environment node
  */
-// A swap preview is only worth persisting if it can be replayed EXACTLY.
+// A persisted swap preview must replay byte for byte.
 //
-// The mint keys its NUT-19 response cache on the request payload, so a replay
-// that differs by a single byte is not a replay at all: it is a fresh spend
-// against inputs the mint has already taken, which fails and takes the money
-// with it. Two things make that easy to get wrong and neither shows up as a type
-// error, so both are pinned here.
-//
-//   Key order. `JSON.stringify` walks a JavaScript object in insertion order,
-//   so rebuilding an input field by field as `{id, amount, secret, C}` when
-//   cashu-ts built it as `{id, amount, C, secret}` produces a different body
-//   from the same data. The module stores inputs as an opaque round trip for
-//   exactly this reason, and the second test fails the moment somebody
-//   "tidies" that into an explicit map.
-//
-//   The whole request. Field-level equality is not the property that matters,
-//   so the last test asserts the thing itself: run a real swap against a real
-//   mint, keep the body it sent, rebuild the preview from storage, and require
-//   the second body to be identical.
+// The mint keys its NUT-19 cache on the request body, so a replay that differs
+// by one byte is a fresh spend of inputs already taken, which fails and loses
+// the money. Pinned here: input key order (`JSON.stringify` follows insertion
+// order, so rebuilding an input field by field changes the body; the module
+// keeps inputs as an opaque round trip for this), and the whole request,
+// replayed against a real mint.
 
 import {
   Amount,

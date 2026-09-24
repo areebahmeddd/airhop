@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "रद्द गर्नुहोस्",
-  "common.done": "भयो",
-  "common.ok": "ठीक छ",
-  "common.close": "बन्द गर्नुहोस्",
   "common.back": "पछाडि",
-  "common.delete": "मेटाउनुहोस्",
-  "common.remove": "हटाउनुहोस्",
+  "common.close": "बन्द गर्नुहोस्",
+  "common.cancel": "रद्द गर्नुहोस्",
+  "common.ok": "ठीक छ",
+  "common.done": "भयो",
+  "common.continue": "जारी राख्नुहोस्",
+  "common.try_again": "फेरि प्रयास गर्नुहोस्",
   "common.add": "थप्नुहोस्",
+  "common.remove": "हटाउनुहोस्",
+  "common.delete": "मेटाउनुहोस्",
   "common.copy": "प्रतिलिपि गर्नुहोस्",
   "common.copied": "प्रतिलिपि भयो",
   "common.share": "साझा गर्नुहोस्",
-  "common.continue": "जारी राख्नुहोस्",
-  "common.try_again": "फेरि प्रयास गर्नुहोस्",
   "common.settings": "सेटिङ",
   "common.on": "सक्रिय",
   "common.off": "बन्द",
@@ -303,6 +303,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "उनीहरूलाई हटाउन सकिएन",
   "chat.group.remove_failed_body":
     "केही बदलिएन। समूहमा को हुने भन्ने बनाउनेले मात्र बदल्न सक्छ।",
+  "chat.group.leave_creator_body":
+    "{name} छाड्ने? तपाईंले यो समूह बनाउनुभएको हो, र बनाउनेले मात्र सदस्य थप्न वा हटाउन सक्छ, त्यसैले तपाईंले छाडेपछि कसैले पनि सक्ने छैन। यसको इतिहास यो यन्त्रबाट हट्नेछ।",
   "chat.group.e2ee":
     "छेउदेखि छेउसम्म गुप्तीकृत। सन्देश सदस्यले मात्र पढ्न सक्छन्।",
   "chat.group.cap":
@@ -519,36 +521,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "दक्षिणपश्चिम",
   "chat.location.direction.w": "पश्चिम",
   "chat.location.direction.nw": "उत्तरपश्चिम",
-  "chat.attach.send_anyway": "जे भए पनि पठाउनुहोस्",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "घण्टी बजायो",
   "chat.ring.received_summary": "तपाईंलाई घण्टी बजायो",
   "chat.ring.alert.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
   "chat.ring.alert.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
   "chat.ring.alert.open": "खोल्नुहोस्",
   "chat.ring.alert.snooze": "1 घण्टाका लागि स्थगन गर्नुहोस्",
-  "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
-  "chat.contact.allow_ring_desc":
-    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
-  "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
-  "chat.contact.ringing": "घण्टी बज्दै छ…",
   "chat.ring.sent_snoozed": "घण्टी बज्यो, पछि सारियो",
   "chat.ring.sent_too_soon": "घण्टी बज्यो, धेरै चाँडो",
   "chat.ring.sent_not_allowed": "घण्टी बज्यो, अनुमति छैन",
-  "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",
-  "chat.contact.ring_hint_not_allowed":
-    "उनीहरूले तपाईंलाई घण्टी बजाउन अनुमति दिएका छैनन्",
-  "chat.contact.ring_hint_snoozed": "उनीहरूले अहिलेलाई घण्टी पछि सारेका छन्",
-  "chat.contact.ring_hint_too_soon": "उनीहरूलाई भर्खरै घण्टी बजाइएको थियो",
-  "chat.contact.ring_hint_again_in": "{time} पछि फेरि घण्टी बजाउनुहोस्",
-  "settings.security.ring_alerts": "घण्टी अलर्टहरू",
-  "settings.security.ring_alerts_desc":
-    "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",
-  "notif.channel.ring": "घण्टी",
-  "notif.channel.ring_desc":
-    "तपाईंले घण्टी बजाउन अनुमति दिनुभएका सम्पर्कहरूबाट अलर्टहरू।",
-  "notif.ring.hidden": "घण्टी",
-  "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
-  "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
+  "chat.attach.send_anyway": "जे भए पनि पठाउनुहोस्",
   "chat.attach.bitchat_too_big": "यो नपुग्न सक्छ",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat मा हुनुहुन्छ, जसले ठूलो फाइलमा बीचैमा हार मान्छ। लगभग 350 KiB भन्दा कम भरपर्दो हुन्छ। Airhop को सम्पर्कलाई पठाउँदा त्यस्तो सीमा हुँदैन।",
@@ -642,7 +626,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit} लिनुहोस्",
   "chat.ecash.already_claimed": "पहिल्यै लिइसकियो",
   "chat.ecash.already_claimed_body":
-    "यो टोकनको हरेक प्रमाण पहिल्यै तपाईंको वालेटमा छ, त्यसैले केही थपिएन।",
+    "यो टोकनमा भएको सबै पहिल्यै तपाईंको वालेटमा छ, त्यसैले केही थपिएन।",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "सकेसम्म पुर्‍याउन मेशलाई सुम्पिएको",
@@ -734,6 +718,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "उनीहरूका लागि तपाईंले राखेको नाम",
   "chat.contact.copy_peer_id": "पियर पहिचान प्रतिलिपि गर्नुहोस्",
   "chat.contact.verify": "सम्पर्क प्रमाणित गर्नुहोस्",
+  "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
+  "chat.contact.allow_ring_desc":
+    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
+  "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
+  "chat.contact.ringing": "घण्टी बज्दै छ…",
+  "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",
+  "chat.contact.ring_hint_not_allowed":
+    "उनीहरूले तपाईंलाई घण्टी बजाउन अनुमति दिएका छैनन्",
+  "chat.contact.ring_hint_snoozed": "उनीहरूले अहिलेलाई घण्टी पछि सारेका छन्",
+  "chat.contact.ring_hint_too_soon": "उनीहरूलाई भर्खरै घण्टी बजाइएको थियो",
+  "chat.contact.ring_hint_again_in": "{time} पछि फेरि घण्टी बजाउनुहोस्",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "सूचना",
@@ -926,9 +921,13 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "satoshi र bitcoin बीच फेरबदल गर्छ",
   "wallet.balance.a11y": "ब्यालेन्स {value} {unit}",
   "wallet.balance.locked":
-    "वालेटको भण्डारण बन्द छ। ecash का प्रमाण एउटा गुप्तीकृत फाइलमा राखिन्छन् जसको कुञ्जी यन्त्रको कुञ्जी सङ्ग्रहमा बस्छ, र त्यो फाइल खुलेन। आफ्नो यन्त्र खोलेर Airhop फेरि खोल्नुहोस्।",
+    "वालेटको भण्डारण बन्द छ। तपाईंको ecash एउटा गुप्तीकृत फाइलमा राखिन्छ जसको कुञ्जी यन्त्रको कुञ्जी सङ्ग्रहमा बस्छ, र त्यो फाइल खुलेन। आफ्नो यन्त्र खोलेर Airhop फेरि खोल्नुहोस्।",
   "wallet.balance.tor_blocked":
-    "Tor खुला छ, त्यसैले टकसारका अनुरोध रोकिएका छन्: ती खुला सञ्जालबाट जान्थे र तपाईंको IP तपाईंका प्रमाणसँग जोड्थे। मेशबाट पठाउने र लिने काम भने चलिरहन्छ। सेटिङ, सुरक्षा अन्तर्गत टकसारको ट्राफिकलाई अनुमति दिनुहोस्।",
+    "Tor खुला छ, त्यसैले टकसारका अनुरोध रोकिएका छन्: ती खुला सञ्जालबाट जान्थे र तपाईंको IP तपाईंको ecash सँग जोड्थे। मेशबाट पठाउने र लिने काम भने चलिरहन्छ। तैपनि टकसारसम्म पुग्न सेटिङमा {setting} खोल्नुहोस्।",
+  "wallet.balance.offline":
+    "अफलाइन। तपाईं अझै नजिकका मानिसलाई भुक्तानी गर्न र टोकन पठाउन सक्नुहुन्छ।",
+  "wallet.balance.internet_off":
+    "इन्टरनेट बन्द छ, त्यसैले वालेट नजिकमा मात्र चल्छ। टकसारसम्म पुग्न सेटिङमा {setting} खोल्नुहोस्।",
   "wallet.balance.unconfirmed_note": "{amount} अझै टकसारबाट पुष्टि भएको छैन",
   "wallet.balance.reserved_note":
     "{amount} बाटोमा रहेको पठाइका लागि छुट्याइएको",
@@ -936,21 +935,34 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "यसमा परीक्षण टकसारको खेलौना पैसा छ। यो bitcoin होइन र यसलाई नगदमा बदल्न सकिँदैन।",
   "wallet.token": "टोकन",
-  "wallet.action.send": "ecash टोकन पठाउनुहोस्",
   "wallet.action.send_disabled":
     "ecash टोकन पठाउनुहोस्, खाली ब्यालेन्समा उपलब्ध छैन",
-  "wallet.action.receive": "ecash टोकन लिनुहोस्",
-  "wallet.action.zap": "कुनै Nostr सम्पर्कलाई zap पठाउनुहोस्",
-  "wallet.action.zap_disabled":
-    "कुनै Nostr सम्पर्कलाई zap पठाउनुहोस्, खाली ब्यालेन्समा उपलब्ध छैन",
-  "wallet.action.add_mint": "Cashu टकसार थप्नुहोस्",
+  "wallet.action.scan": "स्क्यान",
+  "wallet.action.scan_a11y": "टोकन, बिल वा npub स्क्यान गर्नुहोस्",
+  "wallet.choose.paste": "टोकन टाँस्नुहोस्",
+  "wallet.choose.paste_desc": "अफलाइनमा पनि चल्छ",
+  "wallet.choose.scan": "QR कोड स्क्यान गर्नुहोस्",
+  "wallet.choose.scan_desc": "कुनै पनि वालेटको Cashu टोकन",
+  "wallet.choose.topup": "Lightning बाट टप अप",
+  "wallet.choose.topup_desc": "कुनै पनि Lightning वालेटबाट बिल तिर्नुहोस्",
+  "wallet.choose.token": "टोकन बनाउनुहोस्",
+  "wallet.choose.token_desc":
+    "साझा गर्नुहोस् वा QR कोड देखाउनुहोस्, अफलाइनमा पनि",
+  "wallet.choose.zap": "Nostr सम्पर्कलाई zap पठाउनुहोस्",
+  "wallet.choose.zap_desc": "उनको npub मा, इन्टरनेटबाट",
+  "wallet.choose.invoice": "Lightning बिल तिर्नुहोस्",
+  "wallet.choose.invoice_desc": "कुनै पनि Lightning वालेटमा निकाल्नुहोस्",
+  "wallet.choose.tor_paused": "Tor खुला रहुन्जेल रोकिएको",
+  "wallet.choose.offline": "इन्टरनेट चाहिन्छ",
+  "wallet.choose.internet_off": "इन्टरनेट बन्द छ",
+  "wallet.choose.needs_mint": "पहिले टकसार थप्नुहोस्",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "टोकन बन्न सकेन",
   "wallet.send.title": "ecash पठाउनुहोस्",
   "wallet.send.amount_in": "{unit} मा रकम",
   "wallet.send.body":
-    "तपाईंसँग पहिल्यै भएका प्रमाणबाट अफलाइन बनाइएको। टोकन पुग्यो भनेर तपाईंले पक्का नगरेसम्म ब्यालेन्सबाट केही पनि सधैँका लागि जाँदैन।",
+    "तपाईंसँग पहिल्यै भएको ecash बाट अफलाइन बनाइएको। टोकन पुग्यो भनेर तपाईंले पक्का नगरेसम्म ब्यालेन्सबाट केही पनि सधैँका लागि जाँदैन।",
   "wallet.send.stale_fee_note":
     "शुल्क अन्तिम पटक {days} दिनअघि जाँचिएको थियो। त्यसयता यो टकसारले शुल्क बढाएको छ भने पठाउँदा अलि बढी लाग्न सक्छ।",
   "wallet.send.fee_note":
@@ -958,7 +970,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "यो टोकन यति धेरै सिक्कामा बाँडिएको छ कि QR कोडमा अट्दैन। बरु यसलाई साझा गर्नुहोस् वा प्रतिलिपि गर्नुहोस्, वा तिनलाई जोड्न टकसारमा ताजा गर्नुहोस्।",
   "wallet.send.bearer_note":
-    "यो सूत्र जससँग हुन्छ, पैसा उसैको हो। प्रमाण छुट्याइएका छन्, खर्च भएका होइनन्: यो कसैसम्म पुगेन भने तपाईं ती बाँकी अन्तर्गत फिर्ता लिन सक्नुहुन्छ।",
+    "यो सूत्र जससँग हुन्छ, पैसा उसैको हो। सिक्का छुट्याइएका छन्, खर्च भएका होइनन्: यो कसैसम्म पुगेन भने तपाईं ती गतिविधि अन्तर्गत फिर्ता लिन सक्नुहुन्छ।",
   "wallet.send.qr_too_big_short":
     "यो टोकन यति धेरै सिक्कामा बाँडिएको छ कि QR कोडमा अट्दैन। बरु यसलाई साझा गर्नुहोस् वा प्रतिलिपि गर्नुहोस्।",
   "wallet.send.scan_note":
@@ -972,11 +984,11 @@ export const strings: Strings = {
   "wallet.send.building": "बन्दै…",
   "wallet.send.build": "टोकन बनाउनुहोस्",
   "wallet.send.inexact_body":
-    "तपाईंका प्रमाणले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्। तपाईंले बनाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो, र अफलाइनमा फिर्ता हुँदैन: थप {extra} {unit} पाउनेलाई नै जान्छ।\n\nअनलाइन हुँदा टकसारमा ताजा गरे तपाईंका प्रमाण ठ्याक्कै मिल्ने अङ्कमा बाँडिन्थे।",
+    "तपाईंका सिक्काले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्। तपाईंले बनाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो, र अफलाइनमा फिर्ता हुँदैन: थप {extra} {unit} पाउनेलाई नै जान्छ।\n\nअनलाइन हुँदा टकसारमा ताजा गरे तपाईंका सिक्का ठ्याक्कै मिल्ने अङ्कमा बाँडिन्थे।",
   "wallet.send.send_amount": "{amount} पठाउनुहोस्",
   "wallet.send.sent_to": "{name} लाई {amount} {unit} पठाइयो",
   "wallet.send.sent_to_body":
-    "{route} उनीहरूले पाए भनेर तपाईंले पक्का नगरेसम्म, वा टकसारले प्रमाण साटिए भनेर हामीलाई नभनेसम्म यो बाँकी अन्तर्गत फिर्ता लिन मिल्छ।",
+    "{route} उनीहरूले पाए भनेर तपाईंले पक्का नगरेसम्म, वा टकसारले टोकन साटियो भनेर हामीलाई नभनेसम्म यो गतिविधि अन्तर्गत फिर्ता लिन मिल्छ।",
   "wallet.send.copy_token": "टोकन प्रतिलिपि गर्नुहोस्",
   "wallet.send.share_token": "टोकन साझा गर्नुहोस्",
   "wallet.send.open_in_wallet": "यो टोकन अर्को वालेटमा खोल्नुहोस्",
@@ -995,12 +1007,12 @@ export const strings: Strings = {
     "यी सिक्का तपाईंले नटुङ्ग्याएको पठाइका लागि अझै छुट्याइएका छन्, त्यसैले दाबी गर्ने केही छैन। तिनलाई सिधै ब्यालेन्समा फर्काउन त्यो भुक्तानीमा फिर्ता लिनुहोस् चलाउनुहोस्।",
   "wallet.receive.already_have": "पहिल्यै तपाईंको वालेटमा",
   "wallet.receive.already_have_body":
-    "यो टोकनको हरेक प्रमाण पहिल्यै यहाँ छ, त्यसैले केही थपिएन। ब्यालेन्स उस्तै छ।",
+    "यो टोकनमा भएको सबै पहिल्यै यहाँ छ, त्यसैले केही थपिएन। ब्यालेन्स उस्तै छ।",
   "wallet.receive.stored_unconfirmed":
     "{mint} बाट राखियो, तर अझै टकसारबाट पुष्टि भएको छैन ({reason})।",
   "wallet.receive.offline": "अफलाइन",
   "wallet.receive.redeemed_here":
-    "{mint} मा साटियो। यी प्रमाण अब तपाईंकै मात्र हुन्: पठाउनेको प्रतिलिपि अब चल्दैन।",
+    "{mint} मा साटियो। यो ecash अब तपाईंको मात्र हो: पठाउनेको प्रतिलिपि अब चल्दैन।",
   "wallet.receive.memo_quoted": "\n\n”{memo}“",
   "wallet.receive.redeemed_at":
     "{mint} मा साटियो। अब यो प्रमाणसहित तपाईंको हो: पठाउनेसँग भएको यो टोकनको प्रतिलिपि अब चल्दैन।",
@@ -1053,9 +1065,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} लाई आफ्नो वालेटबाट हटाउने? यसका राखिएका कुञ्जी पनि जान्छन्, त्यसैले यसका टोकन अब अफलाइन जाँच्न सकिँदैन।",
   "wallet.mint.title": "टकसार",
-  "wallet.mint.none": "अझै कुनै टकसार छैन",
   "wallet.mint.none_desc":
-    "टकसारले तपाईंको ecash जारी गर्छ र साट्छ। Lightning बाट जम्मा गर्न एउटा थप्नुहोस्, वा बस एउटा टोकन लिनुहोस् र यसको टकसार आफैँ थपिन्छ।",
+    "टकसारले तपाईंको ecash जारी गर्छ र साट्छ। Lightning बाट टप अप गर्न वा यसका टोकन लिन एउटा थप्नुहोस्।",
   "wallet.mint.add": "टकसार थप्नुहोस्",
   "wallet.mint.add_body":
     "टकसारले तपाईंको ecash पछाडिको Bitcoin राख्छ, त्यसैले त्यहाँ राख्ने ब्यालेन्स भरोसा गर्न सकिने टकसार छान्नुहोस्। सुरक्षित गर्नुअघि URL जाँचिन्छ। कसैलाई भरोसा गर्न नचाहनुहुन्छ भने Nutshell ले आफ्नै चलाउनुहोस्।",
@@ -1067,8 +1078,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "टकसार हटाउनुहोस्",
   "wallet.mint.delete_anyway": "जे भए पनि मेटाउनुहोस्",
   "wallet.mint.consolidate": "सबै ब्यालेन्स एउटै टकसारमा सार्नुहोस्",
-  "wallet.mint.confirm_with": "{mint} सँग प्रमाण पुष्टि गर्नुहोस्",
-  "wallet.mint.remove_a11y": "{mint} हटाउनुहोस्",
+  "wallet.mint.confirm_with": "{mint} सँग ब्यालेन्स जाँच्नुहोस्",
   "wallet.mint.available_amount": "{amount} {unit} उपलब्ध",
   "wallet.mint.split_across":
     "ब्यालेन्स {count} टकसारमा बाँडिएको छ। यसलाई एउटैमा सार्नुहोस्।",
@@ -1095,13 +1105,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "बिल तिरियो र {mint} ले {amount} {unit} जारी गर्‍यो। यो ब्यालेन्स पुष्ट छ: तपाईं यसलाई तुरुन्तै अफलाइन खर्च गर्न सक्नुहुन्छ।",
   "wallet.ln.withdrawn":
-    "Lightning बाट {paid} sat तिरियो। टकसारले {fee} sat बाटो शुल्क लियो।",
+    "Lightning बाट {amount} {unit} तिरियो। टकसारले {fee} {unit} बाटो शुल्क लियो।",
   "wallet.ln.withdrawn_with_change":
-    "Lightning बाट {paid} sat तिरियो। टकसारले {fee} sat बाटो शुल्क लियो, र सञ्चितिको {change} sat तपाईंको ब्यालेन्समा फर्कायो।",
+    "Lightning बाट {amount} {unit} तिरियो। टकसारले {fee} {unit} बाटो शुल्क लियो, र सञ्चितिको {change} {unit} तपाईंको ब्यालेन्समा फर्कायो।",
   "wallet.ln.payment_failed": "भुक्तानी असफल",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning का sat लाई अफलाइन खर्च गर्न मिल्ने ecash मा बदल्नुहोस्, वा ecash लाई कुनै पनि Lightning बिलमा निकाल्नुहोस्। दुवैलाई इन्टरनेट र एउटा टकसार चाहिन्छ।",
   "wallet.ln.deposit_body":
     "टकसारले तपाईंलाई एउटा बिल दिन्छ। त्यो कुनै पनि Lightning वालेटबाट तिर्नुहोस् र sat अफलाइन खर्च गर्न मिल्ने ecash बनेर फर्कन्छन्।",
   "wallet.ln.pay_invoice_for":
@@ -1115,10 +1122,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} सम्म",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} तिर्नुहोस्",
-  "wallet.ln.deposit": "Lightning बाट sat जम्मा गर्नुहोस्",
-  "wallet.ln.deposit_short": "जम्मा गर्नुहोस्",
-  "wallet.ln.withdraw": "कुनै Lightning बिलमा निकाल्नुहोस्",
-  "wallet.ln.withdraw_short": "निकाल्नुहोस्",
   "wallet.ln.deposit_title": "Lightning बाट जम्मा",
   "wallet.ln.amount_placeholder": "sat मा रकम",
   "wallet.ln.requesting": "अनुरोध गर्दै…",
@@ -1139,7 +1142,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "अनुमान लिनुहोस्",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ब्याकअप",
   "wallet.backup.setup_failed": "ब्याकअप मिलाउन सकिएन",
   "wallet.backup.on": "ब्याकअप खुला",
   "wallet.backup.on_body":
@@ -1247,14 +1249,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "{mints} सम्म पुग्न सकिएन। बाँकी सबै अद्यावधिक छ।",
   "wallet.refresh.swapped":
-    "{amount} {unit} पुष्टि भयो र नयाँ प्रमाणसँग साटियो।",
+    "{amount} {unit} पुष्टि भयो र नयाँ ecash सँग साटियो।",
   "wallet.refresh.secured":
     "{amount} {unit} अब तपाईंको फिर्ताको वाक्यांशले समेट्छ।",
   "wallet.refresh.all_confirmed":
     "यहाँको सबथोक पहिल्यै टकसारबाट पुष्टि भइसकेको थियो।",
-  "wallet.pending.title": "बाँकी",
   "wallet.pending.reserved_desc":
-    "बनेको र छुट्याइएको, पुगेको पुष्टि छैन। दुई पटक खर्च नहोस् भनेर प्रमाण तपाईंको ब्यालेन्सबाहिर राखिन्छन्।",
+    "बनेको र छुट्याइएको, पुगेको पुष्टि छैन। दुई पटक खर्च नहोस् भनेर सिक्का तपाईंको ब्यालेन्सबाहिर राखिन्छन्।",
   "wallet.pending.locked_desc":
     "पहिल्यै लिनेको कुञ्जीमा बाँधिएको, त्यसैले उसैले मात्र खर्च गर्न सक्छ। बस अझै उससम्म पुगेको छैन। सक्न टोकन साझा गर्नुहोस्।",
   "wallet.pending.show_qr": "यो टोकन QR कोडका रूपमा देखाउनुहोस्",
@@ -1265,8 +1266,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "यो टोकन आफ्नो ब्यालेन्समा फिर्ता लिनुहोस्",
   "wallet.activity.title": "गतिविधि",
   "wallet.activity.none": "अझै केही छैन",
-  "wallet.activity.none_desc":
-    "तपाईंले पठाएका र लिएका भुक्तानी यहाँ देखिन्छन्, नयाँ पहिले, हरेकको टकसार र शुल्कसहित।",
   "wallet.activity.show_fewer": "कम भुक्तानी देखाउनुहोस्",
   "wallet.activity.show_less": "कम देखाउनुहोस्",
   "wallet.activity.received_unconfirmed": "लिइयो, पुष्टि छैन",
@@ -1282,14 +1281,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning जम्मा",
   "wallet.activity.ln_withdrawal": "Lightning निकासी",
   "wallet.activity.nutzap_received": "nutzap आयो",
-  "wallet.activity.spent_removed": "खर्च भएका प्रमाण हटाइए",
-  "wallet.activity.refreshed": "प्रमाण ताजा भए",
-  "wallet.activity.refreshing": "प्रमाण ताजा हुँदै",
+  "wallet.activity.spent_removed": "खर्च भएका सिक्का हटाइए",
+  "wallet.activity.refreshed": "टकसारसँग जाँचियो",
+  "wallet.activity.refreshing": "टकसारसँग जाँच हुँदैछ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "मेश अफलाइन",
   "wallet.mesh_offline_body":
-    "मेश सेवा चलिरहेको छैन, त्यसैले टोकन दिने कोही छैन। यो बाँकी अन्तर्गत छुट्याइएकै रहन्छ।",
+    "मेश सेवा चलिरहेको छैन, त्यसैले टोकन दिने कोही छैन। यो गतिविधि अन्तर्गत छुट्याइएकै रहन्छ।",
   "wallet.xfer.route_mesh": "मेशबाट सिधै उनीहरूकै यन्त्रलाई दिइयो।",
   "wallet.xfer.route_nostr":
     "उनीहरू ब्लुटुथ दायराबाहिर थिए, त्यसैले यो इन्टरनेटबाट गयो।",
@@ -1301,7 +1300,7 @@ export const strings: Strings = {
     "मेश सेवा चलिरहेको छैन, त्यसैले टोकन सुम्पने कुनै उपाय छैन। केही पनि कटेको छैन।",
   "wallet.xfer.could_not_send": "पठाउन सकिएन",
   "wallet.xfer.inexact_body":
-    "तपाईंका प्रमाणले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्। तपाईंले बनाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो, र थप {extra} {unit} फिर्ता ल्याउने उपायबिनै उनीहरूकहाँ जान्छ।\n\nअनलाइन हुँदा टकसारमा ताजा गरे तपाईंका प्रमाण ठ्याक्कै मिल्ने अङ्कमा बाँडिन्छन्।",
+    "तपाईंका सिक्काले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्। तपाईंले बनाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो, र थप {extra} {unit} फिर्ता ल्याउने उपायबिनै उनीहरूकहाँ जान्छ।\n\nअनलाइन हुँदा टकसारमा ताजा गरे तपाईंका सिक्का ठ्याक्कै मिल्ने अङ्कमा बाँडिन्छन्।",
   "wallet.xfer.send_amount": "{amount} पठाउनुहोस्",
   "wallet.xfer.mesh_offline": "मेश अफलाइन",
 
@@ -1311,7 +1310,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "उनीहरूकै कुञ्जीमा बाँधिएको। रिलेले लिएन, त्यसैले यो उनीहरूकहाँ सन्देशका रूपमा गयो।",
   "wallet.pay.rail_nutzap_undelivered":
-    "उनीहरूकै कुञ्जीमा बाँधिएको, तर अझै कसैले बोक्न सकेको छैन। यो लाइनमा छ, र टोकन बाँकी अन्तर्गत छ।",
+    "उनीहरूकै कुञ्जीमा बाँधिएको, तर अझै कसैले बोक्न सकेको छैन। यो लाइनमा छ, र टोकन गतिविधि अन्तर्गत छ।",
   "wallet.pay.final":
     "बाँधिएका भुक्तानी फिर्ता लिन सकिँदैन: अब यी सिक्का उनीहरूकै कुञ्जीले मात्र खर्च गर्न सक्छ।",
   "wallet.pay.reclaimable":
@@ -1331,7 +1330,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "यो उनीहरूको कुञ्जीमा लक हुन्छ। एक पटक पठाएपछि फिर्ता लिन सकिँदैन।",
   "wallet.pay.confirm_reclaimable":
-    "उनीहरूले दाबी नगरेसम्म तपाईं यसलाई बाँकीबाट फिर्ता लिन सक्नुहुन्छ।",
+    "उनीहरूले दाबी नगरेसम्म तपाईं यसलाई गतिविधिबाट फिर्ता लिन सक्नुहुन्छ।",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "क्यामेरा पहुँच",
@@ -1349,10 +1348,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning बिलको QR कोडमा तेर्स्याउनुहोस्।",
   "wallet.scan.title_token": "ecash स्क्यान",
   "wallet.scan.title_invoice": "बिल स्क्यान",
-  "wallet.scan.desc_token":
-    "अर्को वालेटबाट Cashu टोकन पढ्नुहोस्। कुनै पनि Cashu वालेटसँग चल्छ, Airhop सँग मात्र होइन।",
-  "wallet.scan.desc_invoice":
-    "आफ्नो ब्यालेन्सबाट तिर्न Lightning बिल पढ्नुहोस्।",
+  "wallet.scan.title_any": "QR कोड स्क्यान गर्नुहोस्",
+  "wallet.scan.aim_any": "टोकन, बिल वा npub को QR कोडमा तेर्स्याउनुहोस्।",
+  "wallet.scan.no_any": "त्यो तस्बिरमा टोकन, बिल वा npub भेटिएन।",
   "wallet.scan.use_camera_a11y": "क्यामेराले स्क्यान गर्नुहोस्",
   "wallet.scan.use_camera": "क्यामेरा चलाउनुहोस्",
   "wallet.scan.pick_image_a11y": "सुरक्षित तस्बिरबाट QR कोड पढ्नुहोस्",
@@ -1364,7 +1362,7 @@ export const strings: Strings = {
     "Cashu, Bitcoin का लागि ecash हो। टोकन भनेको एउटा सूत्र हो जुन बोक्नेका लागि पैसा बराबर हुन्छ, टकसारले आँखा चिम्लेर हस्ताक्षर गरेको ताकि कसले के खर्च गर्‍यो भन्ने टकसारलाई थाहा नहोस्। न खाता, न लगइन।",
   "wallet.explain.send": "पठाउनुहोस्",
   "wallet.explain.send_desc":
-    "रकमलाई त्यस्तो टोकनमा बदल्छ जुन तपाईं ब्लुटुथबाट नजिकको पियरलाई दिन वा पाठका रूपमा साझा गर्न सक्नुहुन्छ। इन्टरनेटबिना चल्छ। पुग्यो भनेर तपाईंले पक्का नगरेसम्म प्रमाण छुट्याइएकै रहन्छन्।",
+    "रकमलाई त्यस्तो टोकनमा बदल्छ जुन तपाईं ब्लुटुथबाट नजिकको पियरलाई दिन वा पाठका रूपमा साझा गर्न सक्नुहुन्छ। इन्टरनेटबिना चल्छ। पुग्यो भनेर तपाईंले पक्का नगरेसम्म सिक्का छुट्याइएकै रहन्छन्।",
   "wallet.explain.receive": "लिनुहोस्",
   "wallet.explain.receive_desc":
     "टोकन थप्न त्यसलाई टाँस्नुहोस्। अनलाइन हुँदा त्यो तुरुन्तै टकसारमा साटिन्छ, जसले त्यसलाई प्रमाणसहित तपाईंको बनाउँछ। अफलाइन हुँदा राखिन्छ र तपाईंले ताजा नगरेसम्म अपुष्ट चिनो लाग्छ।",
@@ -1394,7 +1392,10 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "टकसारसम्म पुग्न सकिएन।",
   "wallet.svc.tor_ios": "iOS मा टकसारका अनुरोध Tor बाट जाँदैनन्।",
   "wallet.svc.tor_ios_body":
-    "Arti ले Nostr का WebSocket मात्र बेर्छ, त्यसैले यो अनुरोध टकसारसम्म खुला सञ्जालबाट पुग्थ्यो र तपाईंको IP यी प्रमाणसँग जोड्थ्यो। सेटिङ > सुरक्षा अन्तर्गत यसलाई अनुमति दिनुहोस्, वा पहिले Tor बन्द गर्नुहोस्। मेशबाट ecash पठाउने र लिने काम भने चलिरहन्छ।",
+    "iOS मा Tor ले Nostr मात्र ढाक्छ, त्यसैले यो अनुरोध टकसारसम्म खुला सञ्जालबाट पुग्थ्यो र तपाईंको IP यो ecash सँग जोड्थ्यो। सेटिङमा {setting} खोल्नुहोस्, वा पहिले Tor बन्द गर्नुहोस्। मेशबाट ecash पठाउने र लिने काम भने चलिरहन्छ।",
+  "wallet.svc.internet_off": "इन्टरनेट बन्द छ, त्यसैले टकसारमा पुग्न सकिँदैन।",
+  "wallet.svc.internet_off_body":
+    "सेटिङमा {setting} खोल्नुहोस्। नजिकमा ecash पठाउने र लिने काम अझै चल्छ।",
   "wallet.svc.keys_uncached": "यो टकसारका कुञ्जी यो यन्त्रमा राखिएका छैनन्।",
   "wallet.svc.keys_uncached_body":
     "ती ल्याउन अनलाइन हुँदा वालेट एक पटक खोल्नुहोस्।",
@@ -1407,19 +1408,23 @@ export const strings: Strings = {
   "wallet.svc.restored": "फिर्ताको वाक्यांशबाट फिर्ता आयो",
   "wallet.svc.storage_locked": "वालेटको भण्डारण बन्द छ।",
   "wallet.svc.storage_locked_body":
-    "Airhop ले ecash का प्रमाण एउटा गुप्तीकृत फाइलमा राख्छ जसको कुञ्जी यन्त्रको कुञ्जी सङ्ग्रहमा बस्छ। यन्त्र खोलेर एप फेरि खोल्नुहोस्।",
+    "Airhop ले तपाईंको ecash एउटा गुप्तीकृत फाइलमा राख्छ जसको कुञ्जी यन्त्रको कुञ्जी सङ्ग्रहमा बस्छ। यन्त्र खोलेर एप फेरि खोल्नुहोस्।",
   "wallet.svc.bad_url": "त्यो मान्य URL होइन।",
   "wallet.svc.needs_https": "टकसारको URL https:// बाट सुरु हुनुपर्छ।",
   "wallet.svc.refuse_http": "सादा http बाट टकसार चलाउन मान्दैनौँ।",
   "wallet.svc.refuse_http_body":
-    "सञ्जालको बाटोमा भएको जोसुकैले तपाईंका प्रमाण पढ्न वा बदल्न सक्थ्यो। https:// भएको टकसार चलाउनुहोस्।",
+    "सञ्जालको बाटोमा भएको जोसुकैले तपाईंको ecash पढ्न वा बदल्न सक्थ्यो। https:// भएको टकसार चलाउनुहोस्।",
   "wallet.svc.mint_not_saved": "टकसार सुरक्षित हुन सकेन।",
   "wallet.svc.unreadable_token": "त्यो पढ्न मिल्ने Cashu टोकन होइन।",
   "wallet.svc.unreadable_token_body":
     "टोकन cashuA वा cashuB बाट सुरु हुन्छन्। प्रतिलिपि गर्दा केही काटिएको त छैन जाँच्नुहोस्।",
+  "wallet.svc.keyset_unknown":
+    "यो टोकनले आफ्नो टकसारका नयाँ कुञ्जीहरू प्रयोग गर्छ।",
+  "wallet.svc.keyset_unknown_body":
+    "तिनीहरू ल्याउन अहिले टकसारमा पुग्न सकिँदैन। केही हराएको छैन: अनलाइन भएपछि फेरि प्राप्त गर्नुहोस्।",
   "wallet.svc.wrong_mint":
     "यो टोकनमा त्यसले नाम लिएको टकसारले हस्ताक्षर गरेको छैन।",
-  "wallet.svc.already_spent": "यी प्रमाण पहिल्यै खर्च भइसकेका छन्।",
+  "wallet.svc.already_spent": "यो ecash पहिल्यै खर्च भइसकेको छ।",
   "wallet.svc.already_spent_body":
     "यो टोकन पठाउनेले पहिले नै साट्यो, वा उही टोकन अरू कसैलाई पनि पठायो।",
   "wallet.svc.receiving_offline": "अफलाइन लिँदै",
@@ -1432,7 +1437,7 @@ export const strings: Strings = {
     "टकसार थपेर Lightning बाट जम्मा गर्नुहोस्, वा कसैबाट टोकन लिनुहोस्।",
   "wallet.svc.split_across_mints": "तपाईंको ब्यालेन्स धेरै टकसारमा बाँडिएको छ।",
   "wallet.svc.mint_says_spent":
-    "टकसारले यी प्रमाण पहिल्यै खर्च भइसकेका भनी जनायो।",
+    "टकसारले यो ecash पहिल्यै खर्च भइसकेको भनी जनायो।",
   "wallet.svc.issue_against_invoice": "Lightning बिलबापत ecash जारी गर्न",
   "wallet.svc.pay_invoice": "Lightning बिल तिर्न",
   "wallet.svc.unknown_deposit": "अज्ञात जम्मा।",
@@ -1460,7 +1465,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "यो सार्ने कामको आकार तय गर्न सकिएन।",
   "wallet.svc.insufficient_at_mint": "{mint} मा ब्यालेन्स पुग्दैन।",
   "wallet.svc.inexact_title":
-    "तपाईंका प्रमाणले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्।",
+    "तपाईंका सिक्काले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्।",
   "wallet.svc.inexact_detail":
     "तपाईंले पठाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो। अफलाइनमा फिर्ता हुँदैन, त्यसैले थप {extra} {unit} पाउनेलाई नै जान्छ।",
   "wallet.svc.no_single_mint":
@@ -1491,10 +1496,9 @@ export const strings: Strings = {
     "मिन्टले यो जम्मा जारी गर्‍यो, तर यसका सिक्काहरू पुनर्निर्माण गर्न सकिएन। आफ्नो रिकभरी वाक्यांशबाट पुनर्स्थापना गर्दा तिनीहरू फिर्ता आउँछन्।",
   "wallet.svc.swap_unreadable":
     "यो साटफेर यस्तो रूपमा राखिएको थियो जुन यो संस्करणले फेरि चलाउन सक्दैन।",
-  "wallet.svc.lock_in_doubt":
-    "मिन्टले जवाफ दिएन, त्यसैले यो भुक्तानी भयो कि भएन निश्चित छैन।",
+  "wallet.svc.lock_in_doubt": "यो भुक्तानी भयो कि भएन निश्चित छैन।",
   "wallet.svc.lock_in_doubt_body":
-    "अरू केही पठाइएको छैन। मिन्टले जवाफ नदिएसम्म सिक्का रोकिएका छन्। भुक्तानी भएको भए, लक गरिएको टोकन हस्तान्तरणका लागि बाँकीमा देखिन्छ। नभए सिक्का फिर्ता आउँछन्।",
+    "अरू केही पठाइएको छैन। टकसारले नतिजा पुष्टि नगरेसम्म सिक्का रोकिएका छन्। भुक्तानी भएको भए, लक गरिएको टोकन हस्तान्तरणका लागि गतिविधिमा देखिन्छ। नभए सिक्का फिर्ता आउँछन्।",
   "wallet.svc.send_spent_by_swap":
     "यो टोकन दाबी हुनुअघि नै यी सिक्का स्वाप भएर तपाईंको वालेटमा फर्किए, त्यसैले अब यो दाबी गर्न सकिँदैन। रकम तपाईंको ब्यालेन्समा छ।",
 
@@ -1595,6 +1599,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "पियर पहिचान प्रतिलिपि गर्नुहोस्",
   "settings.peer_id_sheet.note":
     "यो तपाईं दुवै ब्लुटुथ दायरामा हुँदा मात्र काम गर्छ। कसैले तपाईंलाई जहाँबाट पनि सन्देश पठाउन सकोस् भन्ने चाहनुहुन्छ भने बरु आफ्नो QR कोड साझा गर्नुहोस्।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "सेटिङमा खोज्नुहोस्…",
   "settings.search.a11y": "सेटिङमा खोज्नुहोस्",
   "settings.search.close": "खोज बन्द गर्नुहोस्",
@@ -1746,6 +1752,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "सूचनाको झलक लुकाउनुहोस्",
   "settings.security.hide_previews_desc":
     "पठाउने र सन्देशलाई तपाईंको लक स्क्रिनबाट टाढा राख्छ, जसले ती नखोलिकनै देखाउँछ",
+  "settings.security.ring_alerts": "घण्टी अलर्टहरू",
+  "settings.security.ring_alerts_desc":
+    "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",
   "settings.security.no_blocked": "कुनै पियर रोकिएको छैन",
   "settings.security.no_blocked_desc":
     "रोकिएका पियरले तपाईंलाई सन्देश पठाउन सक्दैनन् न मेश ट्याबमा देखिन्छन्",
@@ -1947,7 +1956,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "सञ्जाल प्रयोग",
   "settings.storage.storage_usage": "भण्डारण प्रयोग",
   "settings.storage.storage_usage_desc":
-    "सन्देश, वालेटका प्रमाण, र क्यासमा रहेका संलग्नक",
+    "सन्देश, ecash, र क्यासमा रहेका संलग्नक",
   "settings.storage.session_usage": "यो सत्र · {sent} पठाइयो, {received} लिइयो",
   "settings.storage.cache": "क्यास",
   "settings.storage.cache_desc": "{size} संलग्नक",
@@ -2035,7 +2044,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "च्याट र इतिहास",
   "settings.transfer.chats_desc": "कुराकानी, समूह, र तपाईं सामेल भएका च्यानल",
   "settings.transfer.wallet": "वालेटको ब्यालेन्स",
-  "settings.transfer.wallet_desc": "Cashu का प्रमाण र कारोबारको इतिहास",
+  "settings.transfer.wallet_desc": "ecash र कारोबारको इतिहास",
   "settings.transfer.title": "नयाँ फोनमा सार्नुहोस्",
   "settings.transfer.desc":
     "आफ्नो पहिचान, च्याट र वालेट अर्को यन्त्रमा सार्नुहोस्",
@@ -2067,9 +2076,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "पुष्टिबिनै तुरुन्तै मेटाउन तीन पटक थिच्नुहोस्",
   "settings.wipe.title": "आपत्कालीन सफाइ",
   "settings.wipe.now": "अहिले नै मेटाउनुहोस्",
-  "settings.wipe.desc": "सबै कुञ्जी, सन्देश र प्रमाण तुरुन्तै नष्ट गर्छ",
+  "settings.wipe.desc": "सबै कुञ्जी, सन्देश र ecash तुरुन्तै नष्ट गर्छ",
   "settings.wipe.body":
-    "यसले तपाईंका सबै कुञ्जी, सन्देश र वालेटका प्रमाण तुरुन्तै नष्ट गर्नेछ। यो फिर्ता गर्न सकिँदैन।",
+    "यसले तपाईंका सबै कुञ्जी, सन्देश र ecash तुरुन्तै नष्ट गर्नेछ। यो फिर्ता गर्न सकिँदैन।",
   "settings.wipe.in_progress": "मेटाउँदै",
   "settings.wipe.in_progress_body":
     "तपाईंका कुञ्जी, सन्देश र फाइल नष्ट गर्दै। यसमा केही सेकेन्ड लाग्छ, र एप बन्द भए पनि आफैँ पूरा हुन्छ।",
@@ -2172,6 +2181,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "नजिकका पियर",
   "notif.channel.nearby_desc":
     "मेशले ब्लुटुथ दायरामा मानिस भेट्दा कहिलेकाहीँ आउने सूचना।",
+  "notif.channel.ring": "घण्टी",
+  "notif.channel.ring_desc":
+    "तपाईंले घण्टी बजाउन अनुमति दिनुभएका सम्पर्कहरूबाट अलर्टहरू।",
   "notif.nearby.body": "अहिले ब्लुटुथ दायरामा। मेश खोल्न थिच्नुहोस्।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "कोही",
@@ -2188,6 +2200,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "नयाँ गतिविधि",
   "notif.hidden.mention": "तपाईंलाई उल्लेख गरियो",
   "notif.mention.title": "{sender} ले तपाईंलाई उल्लेख गरे",
+  "notif.ring.hidden": "घण्टी",
+  "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
+  "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
 };
 
 export const plurals: Plurals = {
@@ -2262,14 +2277,10 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} टकसार",
-    other: "{count} टकसार",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} सँग {count} प्रमाणमा {balance} {unit} छ। हटाउँदा त्यो प्रमाण यो यन्त्रबाट सधैँका लागि मेटिन्छ र यसको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
+    one: "{mint} सँग {count} सिक्कामा {balance} {unit} छ। हटाउँदा त्यो सिक्का यो यन्त्रबाट सधैँका लागि मेटिन्छ र यसको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
     other:
-      "{mint} सँग {count} प्रमाणमा {balance} {unit} छ। हटाउँदा ती प्रमाण यो यन्त्रबाट सधैँका लागि मेटिन्छन् र तिनको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
+      "{mint} सँग {count} सिक्कामा {balance} {unit} छ। हटाउँदा ती सिक्का यो यन्त्रबाट सधैँका लागि मेटिन्छन् र तिनको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
   },
 
   // ---- Wallet: Lightning ----
@@ -2281,8 +2292,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{mints} बाट {count} नखर्चिएको प्रमाण फिर्ता आयो।",
-    other: "{mints} बाट {count} नखर्चिएका प्रमाण फिर्ता आए।",
+    one: "{mints} बाट {count} नखर्चिएको सिक्का फिर्ता आयो।",
+    other: "{mints} बाट {count} नखर्चिएका सिक्का फिर्ता आए।",
   },
   "wallet.backup.already_spent": {
     one: "{count} सिक्का भेटियो तर त्यो पहिले नै खर्च भइसकेको थियो, त्यसैले त्यसबापत केही जम्मा भएन। यो सामान्य हो: तपाईंले कहिल्यै खर्च गरेको हरेक सिक्का टकसारले राख्ने अभिलेखमा रहिरहन्छ।",
@@ -2303,13 +2314,9 @@ export const plurals: Plurals = {
     one: "{count} अपुष्ट",
     other: "{count} अपुष्ट",
   },
-  "wallet.proof_count": {
-    one: "{count} प्रमाण",
-    other: "{count} प्रमाण",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} प्रमाण पहिले नै खर्च भइसकेको थियो र हटाइयो।",
-    other: "{count} प्रमाण पहिले नै खर्च भइसकेका थिए र हटाइए।",
+    one: "{count} सिक्का पहिले नै खर्च भइसकेको थियो र हटाइयो।",
+    other: "{count} सिक्का पहिले नै खर्च भइसकेका थिए र हटाइए।",
   },
 
   // ---- System notifications ----

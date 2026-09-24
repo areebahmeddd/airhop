@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Скасувати",
-  "common.done": "Готово",
-  "common.ok": "Гаразд",
-  "common.close": "Закрити",
   "common.back": "Назад",
-  "common.delete": "Видалити",
-  "common.remove": "Вилучити",
+  "common.close": "Закрити",
+  "common.cancel": "Скасувати",
+  "common.ok": "Гаразд",
+  "common.done": "Готово",
+  "common.continue": "Далі",
+  "common.try_again": "Спробувати ще раз",
   "common.add": "Додати",
+  "common.remove": "Вилучити",
+  "common.delete": "Видалити",
   "common.copy": "Копіювати",
   "common.copied": "Скопійовано",
   "common.share": "Поділитися",
-  "common.continue": "Далі",
-  "common.try_again": "Спробувати ще раз",
   "common.settings": "Налаштування",
   "common.on": "Увімкнено",
   "common.off": "Вимкнено",
@@ -103,7 +103,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Потрібен обліковий запис",
   "onboarding.username.prop.account_value": "Немає",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Ласкаво просимо до Airhop!",
   "onboarding.hello.p1":
     "Airhop побудований поверх bitchat як самостійний побічний проєкт з відкритим кодом. Він не пов’язаний із проєктом bitchat і не схвалений ним, а також не є імітацією жодного наявного застосунку чи сервісу, це просто те, що мені подобається створювати й ділитися зі спільнотою.",
@@ -305,6 +305,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Не вдалося їх вилучити",
   "chat.group.remove_failed_body":
     "Нічого не змінилося. Змінювати склад групи може лише той, хто її створив.",
+  "chat.group.leave_creator_body":
+    "Покинути {name}? Ви створили цю групу, а додавати й вилучати учасників може лише її творець, тож після вашого виходу цього не зможе ніхто. Історію буде вилучено з цього пристрою.",
   "chat.group.e2ee":
     "Наскрізне шифрування. Читати повідомлення можуть лише учасники.",
   "chat.group.cap":
@@ -528,35 +530,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "південний захід",
   "chat.location.direction.w": "захід",
   "chat.location.direction.nw": "північний захід",
-  "chat.attach.send_anyway": "Усе одно надіслати",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Подзвонив",
   "chat.ring.received_summary": "Подзвонив вам",
   "chat.ring.alert.title": "{sender} дзвонить вам",
   "chat.ring.alert.body": "Перевірте свої повідомлення",
   "chat.ring.alert.open": "Відкрити",
   "chat.ring.alert.snooze": "Відкласти на 1 годину",
-  "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
-  "chat.contact.allow_ring_desc":
-    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
-  "chat.contact.ring_action": "Подзвонити",
-  "chat.contact.ringing": "Дзвонить…",
   "chat.ring.sent_snoozed": "Подзвонили, відкладено",
   "chat.ring.sent_too_soon": "Подзвонили, зарано",
   "chat.ring.sent_not_allowed": "Подзвонили, не дозволено",
-  "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
-  "chat.contact.ring_hint_not_allowed": "Вони не дозволили вам їм дзвонити",
-  "chat.contact.ring_hint_snoozed": "Вони поки що відклали дзвінки",
-  "chat.contact.ring_hint_too_soon": "Їм щойно дзвонили",
-  "chat.contact.ring_hint_again_in": "Подзвонити знову через {time}",
-  "settings.security.ring_alerts": "Сповіщення про дзвінок",
-  "settings.security.ring_alerts_desc":
-    "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
-  "notif.channel.ring": "Дзвінок",
-  "notif.channel.ring_desc":
-    "Сповіщення від контактів, яким ви дозволили дзвонити вам.",
-  "notif.ring.hidden": "Дзвінок",
-  "notif.ring.title": "{sender} дзвонить вам",
-  "notif.ring.body": "Перевірте свої повідомлення",
+  "chat.attach.send_anyway": "Усе одно надіслати",
   "chat.attach.bitchat_too_big": "Це може не дійти",
   "chat.attach.bitchat_too_big_body":
     "{name} користується bitchat, який здається на півдорозі, коли файл великий. Приблизно до 350 KiB надійно. Надсилання контакту в Airhop такої межі не має.",
@@ -655,7 +640,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Отримати {amount} {unit}",
   "chat.ecash.already_claimed": "Уже отримано",
   "chat.ecash.already_claimed_body":
-    "Кожен доказ у цьому токені вже у вашому гаманці, тож нічого не додалося.",
+    "Усе в цьому токені вже у вашому гаманці, тож нічого не додалося.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "Передано в mesh для доставлення в міру можливості",
@@ -749,6 +734,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Ваше ім’я для них",
   "chat.contact.copy_peer_id": "Копіювати ідентифікатор піра",
   "chat.contact.verify": "Підтвердити контакт",
+  "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
+  "chat.contact.allow_ring_desc":
+    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
+  "chat.contact.ring_action": "Подзвонити",
+  "chat.contact.ringing": "Дзвонить…",
+  "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
+  "chat.contact.ring_hint_not_allowed": "Вони не дозволили вам їм дзвонити",
+  "chat.contact.ring_hint_snoozed": "Вони поки що відклали дзвінки",
+  "chat.contact.ring_hint_too_soon": "Їм щойно дзвонили",
+  "chat.contact.ring_hint_again_in": "Подзвонити знову через {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Оголошення",
@@ -951,30 +946,47 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Перемикає між сатоші та біткоїном",
   "wallet.balance.a11y": "Баланс {value} {unit}",
   "wallet.balance.locked":
-    "Сховище гаманця заблоковано. Докази ecash зберігаються в зашифрованому файлі, ключ до якого живе у сховищі ключів пристрою, і його не вдалося відкрити. Розблокуйте пристрій і відкрийте Airhop знову.",
+    "Сховище гаманця заблоковано. Ваш ecash зберігається в зашифрованому файлі, ключ до якого живе у сховищі ключів пристрою, і його не вдалося відкрити. Розблокуйте пристрій і відкрийте Airhop знову.",
   "wallet.balance.tor_blocked":
-    "Tor увімкнено, тож запити до мінта заблоковано: вони пішли б відкритою мережею і пов’язали б вашу IP-адресу з вашими доказами. Надсилання й отримання через mesh працює далі. Дозвольте трафік мінта в Налаштуваннях, Безпека.",
+    "Tor увімкнено, тож запити до мінта заблоковано: вони пішли б відкритою мережею і пов’язали б вашу IP-адресу з вашим ecash. Надсилання й отримання через mesh працює далі. Щоб усе ж зв’язатися з мінтами, увімкніть {setting} у Налаштуваннях.",
+  "wallet.balance.offline":
+    "Ви офлайн. Ви все одно можете платити людям поруч і надсилати токени.",
+  "wallet.balance.internet_off":
+    "Інтернет вимкнено, тож гаманець працює лише поруч. Увімкніть {setting} у Налаштуваннях, щоб зв’язатися з мінтами.",
   "wallet.balance.unconfirmed_note": "{amount} ще не підтверджено мінтом",
   "wallet.balance.reserved_note": "{amount} відкладено для надсилання в дорозі",
   "wallet.balance.other_mint_note": "{amount} в іншому мінті",
   "wallet.balance.test_mint_note":
     "Містить іграшкові гроші з тестового мінта. Це не біткоїн, і вивести їх не можна.",
   "wallet.token": "Токен",
-  "wallet.action.send": "Надіслати токен ecash",
   "wallet.action.send_disabled":
     "Надіслати токен ecash, недоступно за порожнього балансу",
-  "wallet.action.receive": "Отримати токен ecash",
-  "wallet.action.zap": "Надіслати zap контакту в Nostr",
-  "wallet.action.zap_disabled":
-    "Надіслати zap контакту в Nostr, недоступно за порожнього балансу",
-  "wallet.action.add_mint": "Додати мінт Cashu",
+  "wallet.action.scan": "Сканувати",
+  "wallet.action.scan_a11y": "Сканувати токен, рахунок або npub",
+  "wallet.choose.paste": "Вставити токен",
+  "wallet.choose.paste_desc": "Працює офлайн",
+  "wallet.choose.scan": "Сканувати QR-код",
+  "wallet.choose.scan_desc": "Токен Cashu з будь-якого гаманця",
+  "wallet.choose.topup": "Поповнити через Lightning",
+  "wallet.choose.topup_desc":
+    "Оплатіть рахунок із будь-якого гаманця Lightning",
+  "wallet.choose.token": "Створити токен",
+  "wallet.choose.token_desc": "Поділіться або покажіть QR-код, навіть офлайн",
+  "wallet.choose.zap": "Надіслати zap контакту в Nostr",
+  "wallet.choose.zap_desc": "На його npub, через інтернет",
+  "wallet.choose.invoice": "Оплатити рахунок Lightning",
+  "wallet.choose.invoice_desc": "Виведіть на будь-який гаманець Lightning",
+  "wallet.choose.tor_paused": "Призупинено, поки Tor увімкнено",
+  "wallet.choose.offline": "Потрібен інтернет",
+  "wallet.choose.internet_off": "Інтернет вимкнено",
+  "wallet.choose.needs_mint": "Спершу додайте мінт",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не вдалося зібрати токен",
   "wallet.send.title": "Надіслати ecash",
   "wallet.send.amount_in": "Сума в {unit}",
   "wallet.send.body":
-    "Зібрано офлайн із доказів, які ви вже маєте. Нічого не покидає ваш баланс остаточно, доки ви не підтвердите, що токен дійшов.",
+    "Зібрано офлайн з ecash, який ви вже маєте. Нічого не покидає ваш баланс остаточно, доки ви не підтвердите, що токен дійшов.",
   "wallet.send.stale_fee_note":
     "Комісії востаннє перевіряли {days} днів тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
   "wallet.send.fee_note":
@@ -982,7 +994,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Цей токен розбито на забагато монет, щоб він умістився в QR-код. Поділіться ним або скопіюйте, чи оновіть у мінті, щоб їх об’єднати.",
   "wallet.send.bearer_note":
-    "Хто тримає цей рядок, той володіє грошима. Докази відкладено, а не витрачено: якщо він нікого не досягне, ви зможете забрати їх у розділі Очікують.",
+    "Хто тримає цей рядок, той володіє грошима. Монети відкладено, а не витрачено: якщо він нікого не досягне, ви зможете забрати їх у розділі Активність.",
   "wallet.send.qr_too_big_short":
     "Цей токен розбито на забагато монет, щоб він умістився в QR-код. Поділіться ним або скопіюйте.",
   "wallet.send.scan_note":
@@ -996,11 +1008,11 @@ export const strings: Strings = {
   "wallet.send.building": "Збираємо…",
   "wallet.send.build": "Зібрати токен",
   "wallet.send.inexact_body":
-    "Ваші докази не складуть офлайн рівно {amount} {unit}. Найменший токен, який ви можете зібрати, це {spend} {unit}, а офлайн решти не буває: додаткові {extra} {unit} дістануться одержувачу.\n\nОновлення в мінті, поки ви онлайн, розбило б ваші докази на номінали, які складаються рівно.",
+    "Ваші монети не складуть офлайн рівно {amount} {unit}. Найменший токен, який ви можете зібрати, це {spend} {unit}, а офлайн решти не буває: додаткові {extra} {unit} дістануться одержувачу.\n\nОновлення в мінті, поки ви онлайн, розбило б ваші монети на номінали, які складаються рівно.",
   "wallet.send.send_amount": "Надіслати {amount}",
   "wallet.send.sent_to": "{amount} {unit} надіслано {name}",
   "wallet.send.sent_to_body":
-    "{route} Забрати назад можна в розділі Очікують, доки ви не підтвердите, що вони це отримали, або доки мінт не скаже нам, що докази викуплено.",
+    "{route} Забрати назад можна в розділі Активність, доки ви не підтвердите, що вони це отримали, або доки мінт не скаже нам, що токен викуплено.",
   "wallet.send.copy_token": "Копіювати токен",
   "wallet.send.share_token": "Поділитися токеном",
   "wallet.send.open_in_wallet": "Відкрити цей токен в іншому гаманці",
@@ -1019,12 +1031,12 @@ export const strings: Strings = {
     "Ці монети досі відкладено для надсилання, яке ви не завершили, тож брати нічого. Скористайтеся кнопкою Забрати на тому платежі, щоб повернути їх просто на баланс.",
   "wallet.receive.already_have": "Уже у вашому гаманці",
   "wallet.receive.already_have_body":
-    "Кожен доказ у цьому токені вже зберігається тут, тож нічого не додалося. Баланси не змінилися.",
+    "Усе в цьому токені вже зберігається тут, тож нічого не додалося. Баланси не змінилися.",
   "wallet.receive.stored_unconfirmed":
     "Збережено з {mint}, але ще не підтверджено мінтом ({reason}).",
   "wallet.receive.offline": "офлайн",
   "wallet.receive.redeemed_here":
-    "Викуплено в {mint}. Ці докази тепер лише ваші: копія відправника більше не працює.",
+    "Викуплено в {mint}. Цей ecash тепер лише ваш: копія відправника більше не працює.",
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "Викуплено в {mint}. Тепер це доказово ваше: копія цього токена у відправника більше не працює.",
@@ -1077,9 +1089,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Вилучити {mint} з вашого гаманця? Збережені ключі підуть разом із ним, тож токени від нього більше не перевірити офлайн.",
   "wallet.mint.title": "Мінти",
-  "wallet.mint.none": "Мінта ще немає",
   "wallet.mint.none_desc":
-    "Мінт випускає та викуповує ваш ecash. Додайте один, щоб поповнити через Lightning, або просто отримайте токен, і його мінт додасться сам.",
+    "Мінт випускає й погашає ваш ecash. Додайте його, щоб поповнювати через Lightning або приймати його токени.",
   "wallet.mint.add": "Додати мінт",
   "wallet.mint.add_body":
     "Мінт тримає біткоїн, що стоїть за вашим ecash, тож виберіть той, якому довірили б баланс, що зберігаєте там. URL перевіряється перед збереженням. Запустіть власний на Nutshell, якщо волієте нікому не довіряти.",
@@ -1091,8 +1102,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Вилучити мінт",
   "wallet.mint.delete_anyway": "Усе одно видалити",
   "wallet.mint.consolidate": "Перенести всі баланси в один мінт",
-  "wallet.mint.confirm_with": "Підтвердити докази в {mint}",
-  "wallet.mint.remove_a11y": "Вилучити {mint}",
+  "wallet.mint.confirm_with": "Перевірити баланс у {mint}",
   "wallet.mint.available_amount": "Доступно {amount} {unit}",
   "wallet.mint.split_across":
     "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
@@ -1119,13 +1129,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Рахунок оплачено, і {mint} випустив {amount} {unit}. Цей баланс підтверджено: ви можете витрачати його офлайн просто зараз.",
   "wallet.ln.withdrawn":
-    "{paid} сатів оплачено через Lightning. Мінт узяв {fee} сатів комісії за маршрутизацію.",
+    "{amount} {unit} оплачено через Lightning. Мінт узяв {fee} {unit} комісії за маршрутизацію.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} сатів оплачено через Lightning. Мінт узяв {fee} сатів комісії за маршрутизацію і повернув {change} сатів резерву на ваш баланс.",
+    "{amount} {unit} оплачено через Lightning. Мінт узяв {fee} {unit} комісії за маршрутизацію і повернув {change} {unit} резерву на ваш баланс.",
   "wallet.ln.payment_failed": "Платіж не вдався",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Оберніть сати Lightning на ecash, який можна витрачати офлайн, або виведіть ecash на будь-який рахунок Lightning. Обидва потребують інтернету та мінта.",
   "wallet.ln.deposit_body":
     "Мінт дає вам рахунок. Оплатіть його з будь-якого гаманця Lightning, і сати повернуться як ecash, який можна витрачати офлайн.",
   "wallet.ln.pay_invoice_for":
@@ -1138,10 +1145,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "до {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Оплатити {amount} {unit}",
-  "wallet.ln.deposit": "Поповнити сатами через Lightning",
-  "wallet.ln.deposit_short": "Поповнити",
-  "wallet.ln.withdraw": "Вивести на рахунок Lightning",
-  "wallet.ln.withdraw_short": "Вивести",
   "wallet.ln.deposit_title": "Поповнення через Lightning",
   "wallet.ln.amount_placeholder": "Сума в сатах",
   "wallet.ln.requesting": "Запитуємо…",
@@ -1162,7 +1165,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Отримати розрахунок",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Резервна копія",
   "wallet.backup.setup_failed": "Не вдалося налаштувати резервну копію",
   "wallet.backup.on": "Резервну копію увімкнено",
   "wallet.backup.on_body":
@@ -1271,13 +1273,12 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Не вдалося дістатися {mints}. Усе інше актуальне.",
   "wallet.refresh.swapped":
-    "{amount} {unit} підтверджено й обміняно на свіжі докази.",
+    "{amount} {unit} підтверджено й обміняно на свіжий ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} тепер покриває ваша фраза відновлення.",
   "wallet.refresh.all_confirmed": "Усе тут уже було підтверджено мінтом.",
-  "wallet.pending.title": "Очікують",
   "wallet.pending.reserved_desc":
-    "Зібрано й відкладено, доставлення не підтверджено. Докази тримають поза вашим балансом, щоб їх не витратили двічі.",
+    "Зібрано й відкладено, доставлення не підтверджено. Монети тримають поза вашим балансом, щоб їх не витратили двічі.",
   "wallet.pending.locked_desc":
     "Уже прив’язано до ключа одержувача, тож витратити це може лише він. Просто воно ще до нього не дійшло. Поділіться токеном, щоб завершити.",
   "wallet.pending.show_qr": "Показати цей токен як QR-код",
@@ -1288,8 +1289,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Забрати цей токен на ваш баланс",
   "wallet.activity.title": "Активність",
   "wallet.activity.none": "Поки нічого",
-  "wallet.activity.none_desc":
-    "Платежі, які ви надсилаєте й отримуєте, з’являються тут, найновіші згори, разом із мінтом і комісією кожного з них.",
   "wallet.activity.show_fewer": "Показати менше платежів",
   "wallet.activity.show_less": "Показати менше",
   "wallet.activity.received_unconfirmed": "Отримано, не підтверджено",
@@ -1305,14 +1304,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Поповнення через Lightning",
   "wallet.activity.ln_withdrawal": "Виведення через Lightning",
   "wallet.activity.nutzap_received": "Nutzap отримано",
-  "wallet.activity.spent_removed": "Витрачені докази вилучено",
-  "wallet.activity.refreshed": "Докази оновлено",
-  "wallet.activity.refreshing": "Оновлюємо докази",
+  "wallet.activity.spent_removed": "Витрачені монети вилучено",
+  "wallet.activity.refreshed": "Перевірено в мінті",
+  "wallet.activity.refreshing": "Перевірка в мінті",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh офлайн",
   "wallet.mesh_offline_body":
-    "Служба mesh не працює, тож немає кому передати токен. Він лишається відкладеним у розділі Очікують.",
+    "Служба mesh не працює, тож немає кому передати токен. Він лишається відкладеним у розділі Активність.",
   "wallet.xfer.route_mesh": "Передано просто на їхній пристрій через mesh.",
   "wallet.xfer.route_nostr":
     "Вони були поза радіусом Bluetooth, тож воно пішло через інтернет.",
@@ -1324,7 +1323,7 @@ export const strings: Strings = {
     "Служба mesh не працює, тож передати токен ніяк. Нічого не списано.",
   "wallet.xfer.could_not_send": "Не вдалося надіслати",
   "wallet.xfer.inexact_body":
-    "Ваші докази не складуть офлайн рівно {amount} {unit}. Найменший токен, який ви можете зібрати, це {spend} {unit}, а додаткові {extra} {unit} дістануться їм без змоги повернути їх назад.\n\nОновлення в мінті, поки ви онлайн, розбиває ваші докази на номінали, які складаються рівно.",
+    "Ваші монети не складуть офлайн рівно {amount} {unit}. Найменший токен, який ви можете зібрати, це {spend} {unit}, а додаткові {extra} {unit} дістануться їм без змоги повернути їх назад.\n\nОновлення в мінті, поки ви онлайн, розбиває ваші монети на номінали, які складаються рівно.",
   "wallet.xfer.send_amount": "Надіслати {amount}",
   "wallet.xfer.mesh_offline": "Mesh офлайн",
 
@@ -1334,7 +1333,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Прив’язано до їхнього ключа. Релей це не прийняв, тож воно пішло до них повідомленням.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Прив’язано до їхнього ключа, але понести це поки ніхто не зміг. Воно в черзі, а токен у розділі Очікують.",
+    "Прив’язано до їхнього ключа, але понести це поки ніхто не зміг. Воно в черзі, а токен у розділі Активність.",
   "wallet.pay.final":
     "Прив’язані платежі забрати не можна: витратити ці монети тепер здатен лише їхній ключ.",
   "wallet.pay.reclaimable":
@@ -1354,7 +1353,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Його буде прив’язано до їхнього ключа. Після надсилання його не можна повернути.",
   "wallet.pay.confirm_reclaimable":
-    "Ви можете повернути його в розділі «Очікують», доки отримувач його не забере.",
+    "Ви можете повернути його в розділі «Активність», доки отримувач його не забере.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Доступ до камери",
@@ -1373,10 +1372,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Наведіть на QR-код рахунку Lightning.",
   "wallet.scan.title_token": "Сканування ecash",
   "wallet.scan.title_invoice": "Сканування рахунку",
-  "wallet.scan.desc_token":
-    "Прочитайте токен Cashu з іншого гаманця. Працює з будь-яким гаманцем Cashu, не лише з Airhop.",
-  "wallet.scan.desc_invoice":
-    "Прочитайте рахунок Lightning, щоб оплатити його зі свого балансу.",
+  "wallet.scan.title_any": "Сканувати QR-код",
+  "wallet.scan.aim_any": "Наведіть на QR-код токена, рахунку або npub.",
+  "wallet.scan.no_any":
+    "На тому зображенні не знайдено токена, рахунку чи npub.",
   "wallet.scan.use_camera_a11y": "Сканувати камерою",
   "wallet.scan.use_camera": "Скористатися камерою",
   "wallet.scan.pick_image_a11y": "Прочитати QR-код зі збереженого зображення",
@@ -1388,7 +1387,7 @@ export const strings: Strings = {
     "Cashu — це ecash для біткоїна. Токен — це рядок, що вартий грошей для того, хто його тримає, підписаний мінтом наосліп, щоб мінт не бачив, хто що витратив. Без облікових записів, без входу.",
   "wallet.explain.send": "Надіслати",
   "wallet.explain.send_desc":
-    "Обертає суму на токен, який ви можете передати піру поблизу через Bluetooth або надіслати текстом. Працює без інтернету. Докази лишаються відкладеними, доки ви не підтвердите, що воно дійшло.",
+    "Обертає суму на токен, який ви можете передати піру поблизу через Bluetooth або надіслати текстом. Працює без інтернету. Монети лишаються відкладеними, доки ви не підтвердите, що воно дійшло.",
   "wallet.explain.receive": "Отримати",
   "wallet.explain.receive_desc":
     "Вставте токен, щоб додати його. Онлайн його одразу обмінюють у мінті, що робить його доказово вашим. Офлайн його зберігають і позначають непідтвердженим, доки ви не оновите.",
@@ -1418,7 +1417,10 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Не вдалося дістатися мінта.",
   "wallet.svc.tor_ios": "На iOS запити до мінта не йдуть через Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti загортає лише вебсокети Nostr, тож цей запит дістався б мінта відкритою мережею і пов’язав би вашу IP-адресу з цими доказами. Дозвольте це в Налаштуваннях > Безпека або спершу вимкніть Tor. Надсилання й отримання ecash через mesh працює далі.",
+    "Tor на iOS охоплює лише Nostr, тож цей запит дістався б мінта відкритою мережею і пов’язав би вашу IP-адресу з цим ecash. Увімкніть {setting} у Налаштуваннях або спершу вимкніть Tor. Надсилання й отримання ecash через mesh працює далі.",
+  "wallet.svc.internet_off": "Інтернет вимкнено, тож мінт недоступний.",
+  "wallet.svc.internet_off_body":
+    "Увімкніть {setting} у Налаштуваннях. Надсилання й отримання ecash поруч і далі працює.",
   "wallet.svc.keys_uncached":
     "Ключі цього мінта не збережено на цьому пристрої.",
   "wallet.svc.keys_uncached_body":
@@ -1432,19 +1434,22 @@ export const strings: Strings = {
   "wallet.svc.restored": "Відновлено з фрази відновлення",
   "wallet.svc.storage_locked": "Сховище гаманця заблоковано.",
   "wallet.svc.storage_locked_body":
-    "Airhop тримає докази ecash у зашифрованому файлі, ключ до якого живе у сховищі ключів пристрою. Розблокуйте пристрій і відкрийте застосунок знову.",
+    "Airhop тримає ваш ecash у зашифрованому файлі, ключ до якого живе у сховищі ключів пристрою. Розблокуйте пристрій і відкрийте застосунок знову.",
   "wallet.svc.bad_url": "Це недійсна URL-адреса.",
   "wallet.svc.needs_https": "URL мінта має починатися з https://.",
   "wallet.svc.refuse_http":
     "Відмовляємося користуватися мінтом через звичайний http.",
   "wallet.svc.refuse_http_body":
-    "Будь-хто на шляху мережі міг би прочитати чи змінити ваші докази. Скористайтеся мінтом із https://.",
+    "Будь-хто на шляху мережі міг би прочитати чи змінити ваш ecash. Скористайтеся мінтом із https://.",
   "wallet.svc.mint_not_saved": "Не вдалося зберегти мінт.",
   "wallet.svc.unreadable_token": "Це не читабельний токен Cashu.",
   "wallet.svc.unreadable_token_body":
     "Токени починаються з cashuA або cashuB. Перевірте, чи нічого не обрізалося під час копіювання.",
+  "wallet.svc.keyset_unknown": "Цей токен використовує нові ключі свого мінта.",
+  "wallet.svc.keyset_unknown_body":
+    "Зараз не вдається зв’язатися з мінтом, щоб отримати їх. Нічого не втрачено: прийміть токен знову, коли будете онлайн.",
   "wallet.svc.wrong_mint": "Цей токен не підписаний мінтом, який він називає.",
-  "wallet.svc.already_spent": "Ці докази вже витрачено.",
+  "wallet.svc.already_spent": "Цей ecash уже витрачено.",
   "wallet.svc.already_spent_body":
     "Той, хто надіслав цей токен, викупив його першим або надіслав той самий токен ще комусь.",
   "wallet.svc.receiving_offline": "отримання офлайн",
@@ -1456,7 +1461,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "Додайте мінт і поповніть через Lightning або отримайте токен від когось.",
   "wallet.svc.split_across_mints": "Ваш баланс розкидано по мінтах.",
-  "wallet.svc.mint_says_spent": "Мінт повідомив, що ці докази вже витрачено.",
+  "wallet.svc.mint_says_spent": "Мінт повідомив, що цей ecash уже витрачено.",
   "wallet.svc.issue_against_invoice": "випустити ecash під рахунок Lightning",
   "wallet.svc.pay_invoice": "оплатити рахунок Lightning",
   "wallet.svc.unknown_deposit": "Невідоме поповнення.",
@@ -1487,7 +1492,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Не вдалося визначити обсяг цього перенесення.",
   "wallet.svc.insufficient_at_mint": "Недостатньо балансу в {mint}.",
   "wallet.svc.inexact_title":
-    "Ваші докази не складуть офлайн рівно {amount} {unit}.",
+    "Ваші монети не складуть офлайн рівно {amount} {unit}.",
   "wallet.svc.inexact_detail":
     "Найменший токен, який ви можете надіслати, це {spend} {unit}. Офлайн решти не буває, тож додаткові {extra} {unit} дістануться одержувачу.",
   "wallet.svc.no_single_mint":
@@ -1518,10 +1523,9 @@ export const strings: Strings = {
     "Мінт випустив цей депозит, але його монети не вдалося відновити. Відновлення з фрази відновлення поверне їх.",
   "wallet.svc.swap_unreadable":
     "Цей обмін збережено у вигляді, який ця версія не може відтворити.",
-  "wallet.svc.lock_in_doubt":
-    "Мінт не відповів, тож невідомо, чи пройшов цей платіж.",
+  "wallet.svc.lock_in_doubt": "Невідомо, чи пройшов цей платіж.",
   "wallet.svc.lock_in_doubt_body":
-    "Більше нічого не надіслано. Монети утримуються, доки мінт не відповість. Якщо платіж пройшов, заблокований токен з’явиться в розділі «Очікують», щоб ви його передали. Якщо ні, монети повернуться.",
+    "Більше нічого не надіслано. Монети утримуються, доки мінт не підтвердить результат. Якщо платіж пройшов, заблокований токен з’явиться в розділі «Активність», щоб ви його передали. Якщо ні, монети повернуться.",
   "wallet.svc.send_spent_by_swap":
     "Ці монети обміняно назад у ваш гаманець до того, як токен забрали, тож забрати його вже не можна. Сума на вашому балансі.",
 
@@ -1623,6 +1627,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Копіювати ідентифікатор піра",
   "settings.peer_id_sheet.note":
     "Це працює, лише коли ви обоє в радіусі Bluetooth. Щоб вам могли написати звідусіль, поділіться натомість своїм QR-кодом.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Пошук у налаштуваннях…",
   "settings.search.a11y": "Пошук у налаштуваннях",
   "settings.search.close": "Закрити пошук",
@@ -1775,6 +1781,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Ховати попередній перегляд у сповіщеннях",
   "settings.security.hide_previews_desc":
     "Тримає відправника й повідомлення подалі від екрана блокування, який показує їх без розблокування",
+  "settings.security.ring_alerts": "Сповіщення про дзвінок",
+  "settings.security.ring_alerts_desc":
+    "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
   "settings.security.no_blocked": "Немає заблокованих пірів",
   "settings.security.no_blocked_desc":
     "Заблоковані піри не можуть вам писати й не з’являються на вкладці Mesh",
@@ -1980,7 +1989,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Використання мережі",
   "settings.storage.storage_usage": "Використання сховища",
   "settings.storage.storage_usage_desc":
-    "Повідомлення, докази гаманця та вкладення в кеші",
+    "Повідомлення, ecash та вкладення в кеші",
   "settings.storage.session_usage":
     "Цей сеанс · надіслано {sent}, отримано {received}",
   "settings.storage.cache": "Кеш",
@@ -2070,7 +2079,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Розмови, групи та канали, до яких ви приєдналися",
   "settings.transfer.wallet": "Баланс гаманця",
-  "settings.transfer.wallet_desc": "Докази Cashu та історія операцій",
+  "settings.transfer.wallet_desc": "Ecash та історія операцій",
   "settings.transfer.title": "Перенести на новий телефон",
   "settings.transfer.desc":
     "Перенесіть свою особистість, чати та гаманець на інший пристрій",
@@ -2103,9 +2112,9 @@ export const strings: Strings = {
     "Торкніться тричі, щоб стерти негайно без підтвердження",
   "settings.wipe.title": "Екстрене стирання",
   "settings.wipe.now": "Стерти зараз",
-  "settings.wipe.desc": "Миттєво знищує всі ключі, повідомлення та докази",
+  "settings.wipe.desc": "Миттєво знищує всі ключі, повідомлення та ecash",
   "settings.wipe.body":
-    "Це миттєво знищить усі ваші ключі, повідомлення та докази гаманця. Скасувати це неможливо.",
+    "Це миттєво знищить усі ваші ключі, повідомлення та ecash. Скасувати це неможливо.",
   "settings.wipe.in_progress": "Стираємо",
   "settings.wipe.in_progress_body":
     "Знищуємо ваші ключі, повідомлення та файли. Це триває кілька секунд і завершується саме, навіть якщо застосунок закрити.",
@@ -2208,6 +2217,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Піри поблизу",
   "notif.channel.nearby_desc":
     "Нечасте сповіщення, коли mesh знаходить людей у радіусі Bluetooth.",
+  "notif.channel.ring": "Дзвінок",
+  "notif.channel.ring_desc":
+    "Сповіщення від контактів, яким ви дозволили дзвонити вам.",
   "notif.nearby.body":
     "Зараз у радіусі Bluetooth. Торкніться, щоб відкрити mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2225,6 +2237,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Нова активність",
   "notif.hidden.mention": "Вас згадали",
   "notif.mention.title": "{sender} згадує вас",
+  "notif.ring.hidden": "Дзвінок",
+  "notif.ring.title": "{sender} дзвонить вам",
+  "notif.ring.body": "Перевірте свої повідомлення",
 };
 
 export const plurals: Plurals = {
@@ -2331,18 +2346,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} мінт",
-    few: "{count} мінти",
-    many: "{count} мінтів",
-    other: "{count} мінта",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} тримає {balance} {unit} в {count} доказі. Видалення назавжди стирає цей доказ із цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    few: "{mint} тримає {balance} {unit} у {count} доказах. Видалення назавжди стирає ці докази з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    many: "{mint} тримає {balance} {unit} у {count} доказах. Видалення назавжди стирає ці докази з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    one: "{mint} тримає {balance} {unit} в {count} монеті. Видалення назавжди стирає цю монету з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    few: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    many: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
     other:
-      "{mint} тримає {balance} {unit} в {count} доказі. Видалення назавжди стирає цей доказ із цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+      "{mint} тримає {balance} {unit} у {count} монети. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2356,10 +2365,10 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Відновлено {count} невитрачений доказ із {mints}.",
-    few: "Відновлено {count} невитрачені докази з {mints}.",
-    many: "Відновлено {count} невитрачених доказів із {mints}.",
-    other: "Відновлено {count} невитраченого доказу з {mints}.",
+    one: "Відновлено {count} невитрачену монету з {mints}.",
+    few: "Відновлено {count} невитрачені монети з {mints}.",
+    many: "Відновлено {count} невитрачених монет із {mints}.",
+    other: "Відновлено {count} невитраченої монети з {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "Знайдено {count} монету, але її вже витрачено, тож за неї нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
@@ -2388,17 +2397,11 @@ export const plurals: Plurals = {
     many: "{count} непідтверджених",
     other: "{count} непідтвердженого",
   },
-  "wallet.proof_count": {
-    one: "{count} доказ",
-    few: "{count} докази",
-    many: "{count} доказів",
-    other: "{count} доказу",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} доказ уже було витрачено, і його вилучено.",
-    few: "{count} докази вже було витрачено, і їх вилучено.",
-    many: "{count} доказів уже було витрачено, і їх вилучено.",
-    other: "{count} доказу вже було витрачено, і його вилучено.",
+    one: "{count} монету вже було витрачено, і її вилучено.",
+    few: "{count} монети вже було витрачено, і їх вилучено.",
+    many: "{count} монет уже було витрачено, і їх вилучено.",
+    other: "{count} монети вже було витрачено, і їх вилучено.",
   },
 
   // ---- System notifications ----

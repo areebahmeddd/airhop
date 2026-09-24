@@ -1,8 +1,7 @@
-// Channel list screen.
-// Two sections: Default channels (bitchat-compatible, cannot be left) and
-// Your channels (user-created channels and private groups, joinable/leaveable).
-// Tap a channel to open its thread. Swipe left for More: channel info, and for
-// Your channels also pin and delete.
+// Channel list screen, in two sections: Default channels (bitchat-compatible,
+// cannot be left) and Your channels (channels you created or joined, and
+// private groups). Tap a row to open its thread; swipe or long-press it for
+// More: info, mute and clear, plus pin and Leave for Your channels.
 //
 // Creating a channel lives in start-new-sheet, not here: the header "+" is on
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
@@ -57,7 +56,7 @@ import ReanimatedSwipeable, {
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import ChannelInfoSheet from "./channel-info-sheet";
-import { leaveConversation } from "./leave-conversation";
+import { confirmLeaveConversation } from "./leave-conversation";
 
 // ---- Constants ----
 
@@ -65,10 +64,6 @@ import { leaveConversation } from "./leave-conversation";
 // Nostr subscription, so a slow poll keeps the list live without a per-event
 // re-render of the whole screen.
 const GEO_COUNT_POLL_MS = 5000;
-
-// There are deliberately no per-channel transport or visibility options here:
-// nothing in the send path reads them. See the note in the create-channel modal
-// below.
 
 // The 6 bitchat-compatible default channels. Always present, cannot be
 // removed: they are part of the mesh protocol.
@@ -91,10 +86,8 @@ let persistedShowAllDefault = false;
 // Same reason as persistedShowAllDefault, for collapsed section headers.
 let persistedCollapsedSections = new Set<string>();
 
-// Single shared left/right inset used by BOTH the section headers and the
-// channel rows, so their leading text ("DEFAULT CHANNELS" / "#bluetooth")
-// starts at the same x position, one constant referenced twice rather than
-// two separate `Spacing.base` reads that could drift apart later.
+// One side inset for both the section headers and the rows, so their leading
+// text ("DEFAULT CHANNELS", "#bluetooth") lines up and cannot drift apart.
 const ROW_INSET = Spacing.base;
 
 // Scope info for built-in bitchat-compatible channels.
@@ -382,18 +375,7 @@ export default function ChannelList({
 
   function handleLeaveChannel(channel: string): void {
     setMoreOptionsChannel(null);
-    showAlert(
-      t("chat.channels.leave"),
-      t("chat.channels.leave_body", { name: channelLabel(channel) }),
-      [
-        { text: T("common.cancel"), style: "cancel" },
-        {
-          text: t("chat.channels.leave_confirm"),
-          style: "destructive",
-          onPress: () => leaveConversation(channel),
-        },
-      ],
-    );
+    confirmLeaveConversation(channel, channelLabel(channel));
   }
 
   // ---- Row rendering ----
@@ -431,18 +413,17 @@ export default function ChannelList({
     const isMuted = mutedChannels.includes(item);
     // Presence count and its label depend on the channel's transport:
     // #bluetooth counts BLE peers in range; a geohash channel counts people
-    // active in its cell over Nostr. Showing the BLE count on a geo channel is
-    // what made #region read "0 nearby" while a city's worth of people were on
-    // it over the internet.
+    // active in its cell over Nostr. The BLE count on a geo channel would read
+    // "0 nearby" while a city's worth of people are on it over the internet.
     const isGeo = isGeoChannel(item);
     const isGroup = item.startsWith("group:");
     const groupName = isGroup
       ? useGroupStore.getState().nameForChannel(item)
       : undefined;
     // Count yourself. A member count answers "who is in this room", and you are
-    // one of them, which is how the member sheet has always counted (it renders
-    // a You row) and how every messenger counts a participant list. Applied to
-    // both kinds so the row, the thread header and the sheet agree.
+    // one of them, as the member sheet counts (it renders a You row) and every
+    // messenger counts a participant list. Applied to both kinds so the row,
+    // the thread header and the sheet agree.
     //
     // Not the same question the Mesh tab answers: "peers in range" is a count
     // of other devices this radio can reach, and it stays exclusive.
@@ -452,15 +433,14 @@ export default function ChannelList({
       presenceCount,
     );
 
-    // Formatted once and used by both the visible timestamp and the label
-    // below. Calling the formatter twice per row meant building three Date
-    // objects per row per render, on the app's longest list.
+    // Formatted once for both the visible timestamp and the label below: each
+    // call builds several Dates, on the app's longest list.
     const timeLabel =
       last === undefined ? null : formatListTimestamp(last.timestampMs);
 
-    // Everything the row shows, as one sentence, in the order the eye takes it.
-    // The label was just "Open channel #city", so the unread count, last
-    // speaker, muted state and time were all on screen and none were spoken.
+    // Everything the row shows, as one sentence in the order the eye takes it,
+    // so a screen reader hears the unread count, last speaker, muted state and
+    // time too.
     const rowLabel = [
       isGroup
         ? t("chat.a11y.group", { name: groupName ?? t("chat.group_badge") })
@@ -719,7 +699,7 @@ export default function ChannelList({
         contentContainerStyle={styles.list}
       />
 
-      {/* Your channels: swipe "More" sheet with info, pin, clear, delete */}
+      {/* The More sheet a row's swipe or long-press opens. */}
       <BottomSheet
         visible={moreOptionsChannel !== null}
         onClose={() => setMoreOptionsChannel(null)}
@@ -827,8 +807,8 @@ export default function ChannelList({
               </Pressable>
             </View>
 
-            {/* Destructive action in its own red box. Default channels are
-                    built-in and can't be left, so they have no red group. */}
+            {/* Leave in a box of its own, so a mis-tap cannot cross into it
+                from Mute. Default channels cannot be left, so they have none. */}
             {!DEFAULT_CHANNEL_NAMES.has(moreOptionsChannel) && (
               <View style={styles.moreRowsGroup}>
                 <Pressable
@@ -876,10 +856,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // (title, optional badge, chevron) space-between would spread space across
     // ALL of them instead of just pushing the chevron to the far edge.
     // sectionHeaderSpacer (flex: 1) does that job instead, so the title always
-    // sits flush at the same left inset (ROW_INSET) as a channel row's "#".
-    // paddingBottom raised from sm to md: the header is tappable (it collapses
-    // the section) and at 8 it measured ~39pt tall. hitSlop is not usable here
-    // because it would reach into the first row beneath it.
+    // sits flush at the same start inset (ROW_INSET) as a channel row's "#".
+    // paddingBottom is md, not sm: the header is tappable (it collapses the
+    // section) and sm leaves it under MIN_TOUCH. hitSlop is no use here, since
+    // it would reach into the first row beneath.
     sectionHeader: {
       flexDirection: "row",
       alignItems: "center",
@@ -1039,16 +1019,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     // Tight, boxed group, not spread out with the sheet's default gap, which
     // reads as loose and disconnected for a same-purpose action list. Rows are
     // transparent; the card owns the background and the rounded corners
-    // (overflow clips the rows to the radius).
-    //
-    // There were four styles here, not two: `moreRowsGroupDanger` was
-    // byte-identical to `moreRowsGroup` and `moreRowDanger` to `moreRow`. The
-    // comment they carried promised "destructive in a solid red card", which
-    // was never true and had drifted away from the code long ago. What actually
-    // separates the destructive group is that it is a SEPARATE box (so a
-    // mis-tap cannot cross from Mute into Leave) with red content inside, and
-    // that reads correctly. So: one box style, one row style, and the red lives
-    // where it belongs, on the icon and the label.
+    // (overflow clips the rows to the radius). Leave uses the same box: what
+    // sets it apart is being a separate box, with the red on its icon and
+    // label rather than the card.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,
@@ -1060,8 +1033,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       paddingVertical: Spacing.md,
       paddingHorizontal: Spacing.base,
-      // At 12pt padding around a 15pt label the row measured 39pt. Every action
-      // in this sheet is a one-tap commitment, several destructive.
+      // Padding alone leaves the row under 44pt, and every action here is one
+      // tap, several of them destructive.
       minHeight: MIN_TOUCH,
     },
     moreDivider: {

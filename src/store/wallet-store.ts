@@ -1,50 +1,23 @@
-// Local Cashu wallet state: proofs, mints, in-flight sends, and history.
+// Local Cashu wallet state: proofs, mints, in-flight sends and history. Proofs
+// are bearer value, so the MMKV file is AES-256 encrypted under a keychain key.
+// No network here; mint calls live in wallet-service.
 //
-// Cashu proofs are bearer instruments. Whoever holds the `secret`/`C` pair owns
-// the value, so this store is the only place in the app that must be encrypted
-// at rest: the backing MMKV file is opened with an AES-256 key that lives in the
-// iOS Keychain / Android Keystore (see `bootstrapWalletStorage`). Nothing here
-// touches the network; every mint call lives in `src/services/wallet-service.ts`.
+// Keyed by account, a (mint URL, unit) pair: one mint can issue sat, usd and
+// eur, and units are never summed. Proofs are in one of three states:
+//   spendable + verified    swapped or minted by us; the mint said unspent.
+//   spendable + unverified  received offline. DLEQ (when we hold the keys)
+//                           proves the mint signed it, never that the sender
+//                           has not spent it elsewhere. Counted in the balance,
+//                           shown apart, and redeemed first.
+//   reserved                serialised into a token for a send not yet
+//                           confirmed. Out of the balance so one coin cannot
+//                           go to two people.
+// Reserving moves, never deletes, and the token string stays on the tx, so a
+// crash mid-send can be re-shared or reclaimed.
 //
-// Shape
-// State is keyed by *account*, meaning a (mint URL, unit) pair. A mint can issue
-// sat, usd and eur from the same host, and those are different currencies: they
-// must never be summed into one balance. `accountKey()` builds the composite key
-// and `parseAccountKey()` splits it back (mint URLs cannot contain `|`).
-//
-// Proof lifecycle
-//   spendable + verified    swapped at the mint, or minted by us. Known good.
-//   spendable + unverified  received offline (BLE/QR/paste). Cryptographically
-//                           well-formed, and DLEQ-checked when we hold the mint
-//                           keys, but the mint has NOT confirmed it is unspent.
-//                           DLEQ proves the mint signed it; it can never prove
-//                           the sender did not already spend it elsewhere. These
-//                           count towards the balance but are surfaced
-//                           separately in the UI and are redeemed first.
-//   reserved                set aside for a send that has been serialised into a
-//                           token but not yet confirmed delivered. Excluded from
-//                           the spendable balance so the same proof cannot be
-//                           handed to two people, and recoverable via
-//                           `reclaimSend` if the transfer never lands.
-//
-// The reserved bucket is what makes a crash mid-send survivable: proofs are
-// moved (never deleted) and the exact token string is kept on the transaction,
-// so the user can re-share or reclaim it after a restart.
-//
-// Backup
-// Proof secrets are derived from a twelve-word phrase (NUT-13) rather than
-// generated randomly, which is what lets a new device rebuild the balance by
-// asking the mint which of those secrets it signed (NUT-09). The phrase is
-// generated with the wallet, so this holds from the first proof onwards, and
-// `backupEnabled` is the separate question of whether the user has seen and
-// accepted the words. `counters` is the per-keyset derivation cursor that makes
-// that ordering reproducible; it must only ever move forward, because reusing a
-// counter recreates a secret the mint has already seen. `StoredProof.derived`
-// records which proofs are actually covered, since anything received from
-// somebody else carries their secrets until it is swapped.
-//
-// The phrase itself is never stored here. It lives in the keychain alongside
-// the identity keys (see `core/payments/wallet-seed.ts`).
+// Secrets derive from the recovery phrase (NUT-13), so a new device can ask the
+// mint which of them it signed (NUT-09). `counters` is the per-keyset cursor
+// that makes that reproducible. The phrase itself lives in the keychain only.
 
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { bytesToBase64 } from "@core/encoding/base64";
@@ -56,14 +29,12 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 export const WALLET_STORAGE_ID = "wallet-store";
 
-// Keychain/Keystore entry holding the MMKV encryption key.
 const ENCRYPTION_KEY_ITEM = KEYCHAIN_ITEMS.walletEncryptionKey;
 
-// MMKV caps AES-256 keys at 32 bytes; 24 random bytes in base64 is exactly 32
-// ASCII characters, so this spends the whole budget on entropy.
+// MMKV caps keys at 32 bytes: 24 random bytes is exactly 32 base64 characters.
 const ENCRYPTION_KEY_BYTES = 24;
 
-// Separator between mint URL and unit in an account key.
+// Mint URLs cannot contain it.
 const ACCOUNT_SEP = "|";
 
 // ---- Types ----
@@ -74,8 +45,7 @@ export interface SerializedDleq {
   r?: string;
 }
 
-// A proof as persisted. `amount` is a plain number (the cashu-ts `Amount` value
-// object does not survive JSON), denominated in the account's unit.
+// `amount` is a plain number in the account's unit (`Amount` is not JSON).
 export interface StoredProof {
   id: string; // Keyset ID
   amount: number;
@@ -83,15 +53,11 @@ export interface StoredProof {
   C: string; // Unblinded signature from the mint
   dleq?: SerializedDleq; // NUT-12 discrete-log-equality witness, when present
   witness?: string; // NUT-11 P2PK / NUT-14 HTLC witness, when present
-  // False for anything received offline: the mint has not told us this proof is
-  // unspent. Set true after a successful swap or NUT-07 state check.
+  // True only after a swap or NUT-07 check: the mint says it is unspent.
   verified?: boolean;
-  // True when this proof's secret was derived from the recovery phrase (NUT-13)
-  // rather than generated randomly, which is what makes it restorable on
-  // another device. Proofs received from someone else carry *their* secrets, so
-  // they are never derived until we swap them at the mint.
+  // Secret derived from the recovery phrase, so restorable. Received proofs
+  // carry the sender's secrets until swapped.
   derived?: boolean;
-  // When this proof entered the wallet, for "oldest unverified" prompts.
   receivedAtMs?: number;
 }
 
@@ -126,74 +92,49 @@ export interface WalletTx {
   memo?: string;
   // Peer ID, npub, or mint host, depending on `kind`.
   counterparty?: string;
-  // Serialised token for a pending send, so it can be re-shared after a
-  // restart, and so `reclaimSend` has something to show if reclaim fails.
+  // A pending send's token, to re-share or reclaim after a restart.
   token?: string;
-  // Mint/melt quote identifier and the bolt11 invoice it relates to.
   quoteId?: string;
   invoice?: string;
-  // Melt only: the blank change outputs (NUT-08), serialised, written before
-  // the melt request goes out.
-  //
-  // A melt sends the invoice amount plus a routing reserve, and whatever
-  // routing does not use comes back as change the mint signs against these
-  // blanks. Unblinding them needs the blinding factors, which otherwise live
-  // only in memory for the duration of the call. If the response never arrives,
-  // the melt may still have succeeded at the mint and that change becomes
-  // unrecoverable. Persisting them first lets `reconcile` rebuild it later.
-  // Cleared once the change has been credited.
+  // The three below hold blinding factors, which otherwise live only in memory
+  // for the call. Written BEFORE the request and cleared once credited, so
+  // `reconcile` can rebuild coins whose response was lost.
+  // Melt: NUT-08 blanks for the unused routing reserve, returned as change.
   meltOutputs?: unknown;
-  // Mint only: the blinded outputs sent to be signed, serialised the same way,
-  // written before the /v1/mint request and cleared once the proofs are in
-  // hand. The mint marks the quote ISSUED on its side of that request, so a
-  // response lost to a kill leaves paid-for coins that only these blinding
-  // factors can rebuild.
+  // Mint: the mint marks the quote ISSUED on its side of /v1/mint, so a lost
+  // response leaves paid-for coins only these can rebuild.
   mintOutputs?: unknown;
-  // Swap only: the prepared swap (inputs plus blinded outputs), serialised by
-  // `core/payments/swap-preview.ts`, written before the /v1/swap request goes
-  // out and cleared once the outputs are in hand.
-  //
-  // A swap is the one mint operation with no quote to ask about afterwards. If
-  // the response is lost the mint has spent the inputs while the outputs exist
-  // nowhere, because the blinding factors that unblind them were only ever in
-  // memory. Persisting the preview first lets `reconcile` send the identical
-  // request again (NUT-19 returns the same signatures) or, failing that, ask
-  // the mint whether it ever signed those blinded messages (NUT-09).
+  // Swap: the one operation with no quote to ask about afterwards; a lost
+  // response spends the inputs while the outputs exist nowhere. The stored
+  // preview (swap-preview.ts) is replayed (NUT-19 returns the same signatures)
+  // or, failing that, restored (NUT-09).
   swapPreview?: unknown;
-  // Nutzap only: the kind 9321 event this transaction settles. Held so a swap
-  // replayed long after the watcher moved on can still mark the zap redeemed,
-  // and so a redemption already in flight is not started a second time.
+  // Nutzap only: lets a late replayed swap mark the zap redeemed, and stops a
+  // second redemption of one already in flight.
   nutzapEventId?: string;
-  // Swap only: this row records proofs the mint reported already spent, which
-  // were dropped from the balance. The one swap whose value really left; every
-  // other swap, finished or failed, reissues or keeps what it was given.
+  // Swap only: proofs the mint reported spent were dropped. The one swap whose
+  // value really left.
   spentRemoved?: boolean;
-  // Populated on `failed`, shown verbatim in the transaction detail sheet.
+  // Shown verbatim on `failed`.
   error?: string;
 }
 
-// A mint the user has chosen to trust, plus everything we cached from it so the
-// wallet stays useful offline (fees, units, and the keys DLEQ verification
-// needs).
+// A trusted mint plus what we cache to stay useful offline.
 export interface StoredMint {
   url: string;
   addedAtMs: number;
   name?: string;
   description?: string;
-  // Units the mint advertises keysets for, e.g. ["sat", "usd"].
   units?: string[];
-  // NUT numbers the mint supports, used to gate Lightning and P2PK features.
   supportedNuts?: number[];
-  // `keyChain.cache` from cashu-ts, verbatim. Holds public keys only, so it is
-  // not secret, but it is what makes offline DLEQ verification possible.
+  // cashu-ts `keyChain.cache`, verbatim. Public keys only, so not secret, but
+  // it is what makes offline DLEQ verification possible.
   keysetCache?: unknown;
   keysetCacheAtMs?: number;
-  // Raw `/v1/info` response, kept verbatim so `wallet.loadMintFromCache` can be
-  // handed exactly what it expects on a cold start with no network.
+  // Raw `/v1/info`, for `loadMintFromCache` on an offline cold start.
   infoResponse?: unknown;
-  // Per-keyset input fee in parts-per-thousand (NUT-02), for offline fee maths.
+  // NUT-02 input fee, parts per thousand, for offline fee maths.
   feePpkByKeysetId?: Record<string, number>;
-  // Last time any mint call succeeded, for the "unreachable" badge.
   lastSeenMs?: number;
 }
 
@@ -201,57 +142,41 @@ export interface AccountBalance {
   key: string;
   mintUrl: string;
   unit: string;
-  // Sum of spendable proofs (verified + unverified).
+  // Spendable, verified and unverified.
   balance: number;
-  // Subset of `balance` the mint has not confirmed as unspent.
   unverified: number;
-  // Subset of `balance` that the recovery phrase could not rebuild, because
-  // those secrets were not derived from it. Zero until the user has accepted
-  // the phrase, because a split saying most of the balance is covered promises
-  // a safety net that only written-down words deliver.
+  // What the phrase cannot rebuild (secrets not derived from it). Zero until
+  // the user has accepted the phrase, since a "mostly covered" split would
+  // promise a safety net that only written-down words deliver.
   unbacked: number;
-  // Sum of proofs held in the reserved bucket, not spendable.
   reserved: number;
   proofCount: number;
 }
 
 interface WalletState {
-  // Spendable proofs, keyed by `accountKey(mintUrl, unit)`.
+  // Spendable, keyed by `accountKey`.
   proofs: Record<string, StoredProof[]>;
-  // Proofs set aside for an in-flight send, keyed by transaction id.
+  // Keyed by txId.
   reserved: Record<string, { account: string; proofs: StoredProof[] }>;
-  // Mints the user trusts, keyed by normalised URL.
   mints: Record<string, StoredMint>;
   // Newest first, capped at MAX_HISTORY.
   history: WalletTx[];
-  // P2PK public key we publish in NIP-61 kind 10019, hex, 33-byte compressed.
-  // The matching private key lives in the Keychain, never here.
+  // 33-byte compressed P2PK key for kind 10019; private half in the keychain.
   nutzapPubkey?: string;
-  // Nostr event ids of nutzaps already redeemed, so a relay replay cannot
-  // double-credit the balance.
+  // So a relay replay cannot double-credit.
   redeemedNutzaps: string[];
-  // First proof secret of every token already taken into the wallet. A secret
-  // is random and unique to its token, so it identifies one without storing the
-  // whole string. This is display state, not a spend guard: `addProofs` already
-  // deduplicates. It exists so a payment card in a chat can read "Claimed"
-  // instead of offering a button that can only produce a confusing error.
+  // First secret of each token taken in, so a chat card reads "Claimed".
+  // Display only: `addProofs` is the spend guard.
   claimedTokens: string[];
 
-  // Whether the user has seen and accepted their recovery phrase, which is not
-  // the same as whether one exists: a phrase is generated with the wallet, so
-  // secrets are derived from the first proof onwards regardless of this flag.
-  // What it gates is the claim made to the user, because words nobody has read
-  // cannot rebuild anything. The phrase lives in the keychain, never here.
+  // The user has seen the phrase. A phrase is generated with the wallet, so
+  // secrets derive regardless; this gates only the claim made to the user.
   backupEnabled: boolean;
-  // Whether the user proved they wrote the phrase down. A phrase that exists
-  // but was never copied out is the worst state to be in, because the wallet
-  // looks protected and is not, so the two are tracked separately and the UI
-  // says which one it is.
+  // The user proved they wrote it down. Tracked apart because a phrase never
+  // copied out is the worst state: the wallet looks protected and is not.
   backupVerified: boolean;
-  // Next NUT-13 derivation counter per keyset id. Deriving the same counter
-  // twice recreates the same secret, which the mint rejects as a duplicate, so
-  // this only ever moves forward and is persisted before the outputs it covers
-  // are sent.
+  // Next NUT-13 counter per keyset. Forward only (a reused counter recreates a
+  // secret the mint has seen), persisted before the outputs it covers are sent.
   counters: Record<string, number>;
 
   // ---- Mints ----
@@ -268,26 +193,22 @@ interface WalletState {
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
   markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
-  // Forget that any held proof came from the recovery phrase. Called when the
-  // phrase is replaced: coins derived from the old one are still spendable but
-  // the new phrase cannot rebuild them, so they must read as uncovered until a
-  // refresh re-issues them.
+  // On phrase replacement: old coins stay spendable but the new phrase cannot
+  // rebuild them, so they read as uncovered until a refresh re-issues them.
   clearDerived: () => void;
 
   // ---- Reservations ----
-  // Move proofs out of the spendable pool and hold them against `txId`.
-  // Returns false and changes nothing when any of the proofs has already been
-  // taken by another send, which is the only thing standing between two
-  // concurrent sends and putting the same coin in two tokens.
+  // False, changing nothing, if any proof is already taken: the only guard
+  // against two concurrent sends putting one coin in two tokens.
   reserveProofs: (
     txId: string,
     mintUrl: string,
     unit: string,
     proofs: StoredProof[],
   ) => boolean;
-  // Put a reservation back into the spendable pool (send never landed).
+  // Send never landed.
   releaseReserved: (txId: string) => StoredProof[] | null;
-  // Drop a reservation for good (recipient confirmed, or mint says spent).
+  // Recipient confirmed, or mint says spent.
   dropReserved: (txId: string) => void;
 
   // ---- History ----
@@ -302,15 +223,13 @@ interface WalletState {
   // ---- Backup / NUT-13 counters ----
   setBackupEnabled: (enabled: boolean) => void;
   setBackupVerified: (verified: boolean) => void;
-  // Claim `n` counters for a keyset and move the cursor past them. Synchronous
-  // read-modify-write with no await in between, so two concurrent callers
-  // cannot be handed the same range.
+  // Synchronous read-modify-write with no await, so concurrent callers never
+  // share a range.
   reserveCounters: (
     keysetId: string,
     n: number,
   ) => { start: number; count: number };
-  // Move the cursor forward to at least `minNext`. Never moves it back: a lower
-  // value would re-issue counters that have already produced live proofs.
+  // Never moves back: a lower value re-issues counters behind live proofs.
   advanceCounter: (keysetId: string, minNext: number) => void;
 
   // ---- Wipe ----
@@ -318,15 +237,13 @@ interface WalletState {
   clearAll: () => void;
 }
 
-// Keep history bounded: MMKV holds the whole blob in memory on read.
+// MMKV holds the whole blob in memory on read.
 const MAX_HISTORY = 500;
 
-// Trim history to MAX_HISTORY, oldest first, without ever dropping a row that
-// something still depends on. A pending transaction is how `reconcile` finds a
-// deposit to claim or a send to settle, a reservation is keyed by its id, and
-// the swap, melt and mint outputs on it are the only way back to coins whose
-// answer went missing. Losing any of those to a busy week of history would lose
-// the money with it, so they stay, and only settled rows make room.
+// Oldest settled rows go first. Pinned, whatever their age: pending rows (how
+// `reconcile` finds a deposit to claim or a send to settle), rows a reservation
+// is keyed by, and rows holding swap, melt or mint outputs (the only way back to
+// coins whose response went missing). Dropping one loses the money with it.
 function capHistory(
   history: WalletTx[],
   reserved: Record<string, unknown>,
@@ -347,19 +264,16 @@ function capHistory(
   });
 }
 
-// Ring buffer of redeemed nutzap ids. Well past any relay's replay window.
+// Well past any relay's replay window.
 const MAX_REDEEMED_NUTZAPS = 1000;
 
-// Ring buffer of claimed-token markers. Purely cosmetic, so an entry falling
-// off simply means a very old payment card offers Claim again, which then
-// reports "already claimed" as it did before.
+// Cosmetic: an evicted marker just lets a very old card offer Claim again.
 const MAX_CLAIMED_TOKENS = 1000;
 
 // ---- Account keys ----
 
-// Normalise a mint URL so `https://m.example.com/` and `https://m.example.com`
-// are one mint. Lowercases the host (case-insensitive per RFC 3986) but leaves
-// the path alone, since mint paths are case-sensitive.
+// So `https://m.example.com/` and `https://m.example.com` are one mint.
+// Lowercases the host (RFC 3986) but not the path, which is case-sensitive.
 export function normalizeMintUrl(raw: string): string {
   const trimmed = raw.trim();
   try {
@@ -389,23 +303,18 @@ export function parseAccountKey(key: string): {
 
 // ---- Encrypted storage bootstrap ----
 
-// MMKV needs its encryption key at construction time, but reading the Keychain
-// is async, so the instance cannot exist at module scope. Every persist call is
-// therefore funnelled through `ready`, a promise that resolves once the key has
-// been fetched (or created) and the instance opened. zustand/persist accepts an
-// async storage adapter, so this is invisible to callers apart from
-// `useWalletStore.persist.hasHydrated()`.
+// MMKV needs its key at construction and the keychain is async, so the instance
+// cannot exist at module scope. Persist goes through an async adapter gated on
+// `ready`, invisible to callers apart from hydration readiness below.
 
 type MMKVLike = ReturnType<typeof createMMKV>;
 
 let instance: MMKVLike | null = null;
 let ready: Promise<MMKVLike> | null = null;
-// Bumped by every reset, so a bootstrap still waiting on the keychain when a
-// wipe lands cannot install its handle into the module afterwards.
+// Bumped on reset, so a bootstrap straddling a wipe cannot install its handle.
 let storageGeneration = 0;
 
 function randomKey(): string {
-  // Base64 of 24 bytes is 32 characters.
   return bytesToBase64(
     crypto.getRandomValues(new Uint8Array(ENCRYPTION_KEY_BYTES)),
   );
@@ -419,8 +328,7 @@ async function loadOrCreateEncryptionKey(): Promise<string> {
   return fresh;
 }
 
-// Open (or reuse) the encrypted wallet store. Safe to call repeatedly; the
-// first call wins and every later one awaits the same promise.
+// Idempotent: later calls await the first.
 export function bootstrapWalletStorage(): Promise<MMKVLike> {
   ready ??= (async () => {
     const generation = storageGeneration;
@@ -428,11 +336,9 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
     try {
       encryptionKey = await loadOrCreateEncryptionKey();
     } catch {
-      // Keychain/Keystore unavailable (locked device, simulator quirk, a build
-      // without the native module). Falling back to an unencrypted store would
-      // silently downgrade the security of bearer tokens, so refuse: the store
-      // stays empty, the UI shows the wallet as locked, and no proof is ever
-      // written to plaintext disk.
+      // Locked device, simulator, missing native module. Never fall back to
+      // plaintext, which would silently downgrade bearer tokens: the store
+      // stays empty and the wallet shows as locked.
       encryptionKey = undefined;
     }
     if (encryptionKey === undefined) {
@@ -452,35 +358,13 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
   return ready;
 }
 
-// Forget the open partition, so the next bootstrap opens a real one.
-//
-// Called by the panic wipe, immediately after `deleteMMKV` unlinks the file.
-// Without it the four module-scope values below and above survive the deletion,
-// and all three consequences are bad: `isWalletStorageReady()` keeps answering
-// true for a partition that no longer exists, so the Wallet tab presents an
-// empty balance as real rather than reporting first-run; a later write goes
-// through the stale native handle and RECREATES the file, still encrypted under
-// the AES key whose keychain copy the wipe just destroyed, leaving ciphertext no
-// future launch can open; and re-onboarding without restarting the process
-// writes the new identity's proofs under that same dead key.
-//
-// Deliberately does not close the handle. The file is already unlinked, the
-// process is about to drop to onboarding, and a close racing an in-flight
-// persist would be a crash where this is merely a forgotten reference.
-// Destroy the wallet partition, through the handle this module owns.
-//
-// `deleteMMKV` destroys the native instance while this module still holds it,
-// and the adapter above is asynchronous, so a write scheduled by the store's
-// own clearAll lands afterwards on freed memory and locks a null mutex. That is
-// a SIGSEGV no JS catch can see.
-//
-// References go first, so no new write can find a handle, and only then is the
-// data cleared through the one already open. Emptying rather than unlinking
-// reaches the same end state: the AES key goes with the rest of the keychain,
-// so what stays on disk is ciphertext under a key that no longer exists.
-//
-// `deleteMMKV` is still right when nothing ever opened the partition: no handle,
-// no race.
+// Panic wipe. Empties an open partition rather than `deleteMMKV`: that frees
+// the native instance while the async adapter may still hold a write (the
+// store's own clearAll schedules one), which then locks a null mutex, a SIGSEGV
+// no JS catch can see. References are dropped first so no new write finds a
+// handle, then the data is cleared through the one already open. The AES key
+// dies with the keychain, so what stays on disk is unreadable. `deleteMMKV` is
+// still right when nothing opened the partition: no handle, no race.
 export function wipeWalletStorage(): void {
   const open = instance;
   resetWalletStorage();
@@ -495,53 +379,45 @@ export function wipeWalletStorage(): void {
   try {
     open.clearAll();
   } catch {
-    // Locked or already emptied. The keychain copy of its key is gone either
-    // way, so what stays on disk is unreadable.
+    // Its key is gone either way, so what stays on disk is unreadable.
   }
 }
 
+// Forget the open partition so the next bootstrap opens a real one. Otherwise
+// readiness keeps answering true (an empty balance shown as real), a later
+// write through the stale handle recreates the file under an AES key whose
+// keychain copy is gone, and re-onboarding in-process writes the new identity's
+// proofs under that dead key. Does not close the handle: a close racing an
+// in-flight persist would crash.
 export function resetWalletStorage(): void {
   storageGeneration += 1;
   instance = null;
   ready = null;
   hydrated = false;
   hydrationSettled = false;
-  // Run the waiters rather than dropping them. Each one clears its own 15s
-  // timer and resolves its promise; emptying the array left those promises
-  // pending forever and the timers armed against a store that no longer exists.
+  // Run the waiters, not drop them, so their promises and timers settle.
   for (const waiter of hydrationWaiters.splice(0)) waiter();
 }
 
-// Whether zustand has finished replacing the initial empty state with what was
-// on disk. Separate from `instance`, and the distinction matters a great deal.
-//
-// Opening the MMKV file is only step one. zustand's persist middleware then
-// reads it asynchronously and *overwrites* the store with the result. Anything
-// written in that window is silently discarded when hydration lands. A nutzap
-// redeemed one tick too early would be credited and then erased, and a balance
-// check would report an empty wallet to somebody who has money.
-//
-// Left false when hydration fails (an unreadable keychain, a corrupt file), so
-// the wallet reports itself locked rather than presenting an empty balance as
-// though it were real.
+// Opening the file is step one; zustand then reads it asynchronously and
+// overwrites the store, discarding any write made before it lands (a nutzap
+// credited one tick early would be erased, a balance check would say empty).
+// So money paths gate on this, not just on `instance`. False on failure (an
+// unreadable keychain, a corrupt file), so the wallet reads as locked, not empty.
 let hydrated = false;
 let hydrationSettled = false;
 const hydrationWaiters: (() => void)[] = [];
-// The storage generation the latest hydration read from. zustand hydrates once,
-// when the store is created, so after a panic wipe resets the partition nothing
-// would ever read the fresh one: re-onboarding in the same process would wait
-// out HYDRATION_TIMEOUT_MS and leave the wallet locked until a relaunch.
+// The generation the latest hydration read. zustand hydrates once, at store
+// creation, so without `rehydrateAfterReset` comparing this, re-onboarding after
+// a wipe would wait out the timeout and stay locked until a relaunch.
 let hydrationGeneration = 0;
 
-// How long startup will wait for hydration before giving up on it. Only reached
-// if the storage promise never settles at all; a normal failure settles fast.
-// Present so a wedged read can never hang app startup behind it.
+// Only for a read that never settles, so it cannot hang startup.
 const HYDRATION_TIMEOUT_MS = 15_000;
 
-// Called exactly once, from `onRehydrateStorage`, on both the success and the
-// failure path. Waiting on zustand's `onFinishHydration` instead would deadlock:
-// when hydration rejects, zustand invokes the rehydrate callback but leaves
-// `hasHydrated` false and never notifies the finish listeners.
+// From `onRehydrateStorage`, on success and failure. `onFinishHydration` never
+// fires on failure (zustand leaves `hasHydrated` false and skips its finish
+// listeners), so waiting on it would deadlock.
 function settleHydration(ok: boolean): void {
   if (hydrationSettled) return;
   hydrated = ok;
@@ -549,34 +425,24 @@ function settleHydration(ok: boolean): void {
   for (const waiter of hydrationWaiters.splice(0)) waiter();
 }
 
-// True once the store is both open and populated from disk. Everything that
-// spends, credits, or reports a balance gates on this.
+// Everything that spends, credits or reports a balance gates on this.
 export function isWalletStorageReady(): boolean {
   return instance !== null && hydrated;
 }
 
-// Read the partition into the store again when it was reset since the last
-// read. A no-op at first launch, where the store's own hydration is already
-// reading the current partition.
+// No-op unless the partition was reset since the last read.
 export function rehydrateAfterReset(): void {
   if (hydrationGeneration === storageGeneration) return;
-  // A waiter that timed out while onboarding may already have settled this
-  // generation as failed; the read below is the one that answers for it.
+  // A timed-out waiter may have settled this generation as failed.
   hydrated = false;
   hydrationSettled = false;
   void useWalletStore.persist.rehydrate();
 }
 
-// Resolves once hydration has settled, successfully or not. Callers must
-// re-check `isWalletStorageReady()` afterwards rather than assuming success.
+// Settles on success or failure: re-check `isWalletStorageReady()` after.
 export function whenWalletHydrated(): Promise<void> {
   if (hydrationSettled) return Promise.resolve();
   return new Promise((resolve) => {
-    // Cleared when hydration lands, which is the normal case. Armed and
-    // forgotten, every caller leaves one running for the full fifteen seconds
-    // after the wallet is already open. Harmless, because settleHydration is
-    // idempotent, but it is fifteen seconds of a timer per
-    // call holding this closure for no reason.
     const timer = setTimeout(() => {
       settleHydration(false);
     }, HYDRATION_TIMEOUT_MS);
@@ -587,16 +453,12 @@ export function whenWalletHydrated(): Promise<void> {
   });
 }
 
-// The handle a write may go through, or null when there is none.
-//
 // Writes never open the partition. Opening mints an AES key when the keychain
-// has none, and after a panic wipe it has none: an operation still in flight
-// (a melt can hold a request open for minutes) would then persist the wallet
-// the user just destroyed into a fresh file under a fresh key. Only the read
-// that hydrates the store, and `initWalletService`, open it.
-//
-// A write that raced a bootstrap waits for it, then checks the handle is still
-// the current one, so a reset that landed in between is honoured too.
+// has none, and after a wipe it has none: an operation still in flight (a melt
+// can hold a request open for minutes) would persist the destroyed wallet into
+// a fresh file under a fresh key. Only hydration and `initWalletService` open
+// it. A write racing a bootstrap waits, then checks the handle is still the
+// current one, honouring a reset in between.
 async function openHandle(): Promise<MMKVLike | null> {
   if (instance !== null) return instance;
   const pending = ready;
@@ -625,9 +487,7 @@ const asyncMMKVStorage = {
   },
 };
 
-// Size of the encrypted wallet file, for the storage meter. Read through the
-// handle this module owns, since a second handle on the partition is what
-// store/mmkv exists to prevent, and zero while the partition is not open.
+// Through the one handle this module owns; zero while not open.
 export function walletStorageByteSize(): number {
   if (instance === null) return 0;
   try {
@@ -639,9 +499,7 @@ export function walletStorageByteSize(): number {
 
 // ---- Selectors ----
 
-// The persisted half of the store. Selectors take this rather than the full
-// `WalletState` so a component can hand them the exact slices it subscribed to,
-// which is both cheaper and what keeps a useMemo's dependency list honest.
+// Selectors take slices of this: exactly what a component subscribed to.
 export type WalletData = Pick<
   WalletState,
   | "proofs"
@@ -659,16 +517,13 @@ function sum(proofs: StoredProof[]): number {
   return proofs.reduce((total, p) => total + p.amount, 0);
 }
 
-// Per (mint, unit) balances, including the reserved, unverified and unbacked
-// splits. `backupEnabled` is optional so callers that only care about balances
-// can skip it; without it, nothing is reported as unbacked, which is correct
-// because with backup off nothing is covered in the first place.
+// Coins derive from the phrase from first launch; `unbacked` is reported only
+// once `backupEnabled` says the user has seen the words.
 export function selectAccounts(
   state: Pick<WalletData, "proofs" | "reserved" | "mints"> &
     Partial<Pick<WalletData, "backupEnabled">>,
 ): AccountBalance[] {
   const keys = new Set(Object.keys(state.proofs));
-  // Surface mints with no proofs too, so a freshly added mint is visible.
   for (const mint of Object.values(state.mints)) {
     for (const unit of mint.units ?? ["sat"])
       keys.add(accountKey(mint.url, unit));
@@ -699,8 +554,7 @@ export function selectAccounts(
     .sort((a, b) => b.balance - a.balance || a.key.localeCompare(b.key));
 }
 
-// Spendable balance for one unit across every mint. Units are never summed
-// together: 100 sat and 100 usd are not 200 of anything.
+// Across every mint, one unit only.
 export function selectBalanceForUnit(
   state: Pick<WalletData, "proofs">,
   unit: string,
@@ -712,7 +566,6 @@ export function selectBalanceForUnit(
   );
 }
 
-// Every unit the wallet currently holds value in, spendable or reserved.
 export function selectUnits(
   state: Pick<WalletData, "proofs" | "reserved">,
 ): string[] {
@@ -726,21 +579,13 @@ export function selectUnits(
   return [...units].sort();
 }
 
-// Every full keyset id this device has cached, across every mint it knows.
-//
-// A V4 token carries SHORT keyset ids. The v2 form (ids beginning "01") cannot
-// be decoded without the full id to map it back to: cashu-ts throws rather than
-// guessing, which is what NUT-00 requires, because an unresolved id means we
-// cannot tell which keyset signed the proof and therefore cannot verify it or
-// price its fee. Decoding happens offline, so the answer has to come from here
-// rather than from the mint.
-//
-// Lives on the store because both the wallet service and the chat renderer need
-// it, and a message can carry a token from any mint. Returned flat: cashu-ts
-// matches by id, so grouping by mint would only be thrown away.
-// Split from the selector so a component can memoise on `mints` alone: the
-// return value is a fresh array, and subscribing to it directly would re-render
-// on every store write.
+// Every cached full keyset id, flat (cashu-ts matches by id). A V4 token carries
+// SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded without the
+// full id: cashu-ts throws rather than guessing, as NUT-00 requires, since an
+// unresolved id means the proof can be neither verified nor fee-priced.
+// Decoding is offline, so the answer comes from here, not the mint. Takes
+// `mints` so a component can memoise on it; the fresh array would re-render on
+// every store write.
 export function keysetIdsOf(mints: Record<string, StoredMint>): string[] {
   const out: string[] = [];
   for (const record of Object.values(mints)) {
@@ -833,13 +678,9 @@ export const useWalletStore = create<WalletState>()(
         let duplicates = 0;
         set((state) => {
           const existing = state.proofs[key] ?? [];
-          // A proof is uniquely identified by its secret. Re-adding one is
-          // either a duplicate paste or a replayed message; either way it must
-          // not inflate the balance.
+          // Dedup by secret, including reserved proofs: a replay or re-paste
+          // must never count the same value twice.
           const seen = new Set(existing.map((p) => p.secret));
-          // Also guard against a proof that is currently reserved for a send:
-          // crediting it back while the token is still out there would let the
-          // balance count the same value twice.
           for (const res of Object.values(state.reserved)) {
             for (const p of res.proofs) seen.add(p.secret);
           }
@@ -920,15 +761,10 @@ export const useWalletStore = create<WalletState>()(
         const want = new Set(proofs.map((p) => p.secret));
         let reserved = false;
 
-        // Validate and move in one synchronous pass, and refuse if any of the
-        // requested proofs is no longer spendable.
-        //
-        // Callers select proofs, then await a mint round trip, then land here.
-        // Two sends started close together therefore both pick from the same
-        // pool and both arrive holding the same coins. Trusting the caller
-        // would put one proof into two different tokens: both recipients see a
-        // balance, only the first to reach the mint actually has it, and our
-        // own accounting reserves the same value twice.
+        // Validate and move in one synchronous pass: callers select, await the
+        // mint, then land here, so two sends can arrive holding the same coins.
+        // Trusting the caller would put one proof in two tokens: both
+        // recipients see a balance, only the first to the mint has it.
         set((state) => {
           if (state.reserved[txId] !== undefined) return state;
           const existing = state.proofs[key] ?? [];
@@ -1004,8 +840,6 @@ export const useWalletStore = create<WalletState>()(
       },
 
       setBackupEnabled(enabled) {
-        // Turning backup off also drops the "written down" claim: there is
-        // nothing left to have written down.
         set(
           enabled
             ? { backupEnabled: true }
@@ -1083,9 +917,8 @@ export const useWalletStore = create<WalletState>()(
           redeemedNutzaps: [],
           claimedTokens: [],
           nutzapPubkey: undefined,
-          // Backup goes with everything else: the panic wipe clears the
-          // keychain too, so the phrase that made these coins restorable is
-          // gone and claiming otherwise would be a lie.
+          // The wipe clears the keychain phrase too, so claiming these coins
+          // are restorable would be a lie.
           backupEnabled: false,
           backupVerified: false,
           counters: {},
@@ -1096,20 +929,15 @@ export const useWalletStore = create<WalletState>()(
       name: "wallet-state",
       storage: createJSONStorage(() => asyncMMKVStorage),
       version: 1,
-      // Fires on both the success and the failure path, which is why readiness
-      // is tracked here rather than through `onFinishHydration`. A failure
-      // means the on-disk state could not be read, so the wallet presents
-      // itself as locked instead of as empty.
+      // Fires on success and failure (see `settleHydration`).
       onRehydrateStorage: () => {
         const generation = storageGeneration;
         hydrationGeneration = generation;
         return (_state, error) => {
-          // A read that straddled a reset describes a file that is gone.
           if (generation !== storageGeneration) return;
           settleHydration(error === undefined);
         };
       },
-      // Actions are recreated by the initializer; only data is persisted.
       partialize: (state) =>
         ({
           proofs: state.proofs,
@@ -1117,12 +945,8 @@ export const useWalletStore = create<WalletState>()(
           mints: state.mints,
           history: state.history,
           redeemedNutzaps: state.redeemedNutzaps,
-          // Persisted because the thing it answers to outlives the process. A
-          // payment chip lives in a chat message, and messages survive a
-          // restart, so a marker that does not leaves the chip offering Claim on
-          // a token already taken in: the tap swaps proofs the wallet holds, or
-          // reaches a mint that says they are spent. Either way the user is
-          // shown an error for doing exactly what the button asked.
+          // Chat messages survive a restart, so the marker must too, or the
+          // chip offers Claim on a token already taken in and the tap errors.
           claimedTokens: state.claimedTokens,
           nutzapPubkey: state.nutzapPubkey,
           backupEnabled: state.backupEnabled,

@@ -16,6 +16,7 @@ import {
   formatTokenSummary,
   formatUnitAmount,
   parseWholeNumber,
+  unitLabel,
 } from "../format";
 
 // A fixed "now" so the calendar-distance branches are deterministic. Midday on
@@ -242,6 +243,11 @@ describe("formatUnitAmount and amountParts", () => {
   it("shows a fiat unit in major units", () => {
     expect(formatUnitAmount(150, "usd")).toBe("1.50 USD");
     expect(amountParts(150, "usd")).toEqual({ amount: "1.50", unit: "USD" });
+  });
+
+  it("labels a unit shown apart from its amount the same way", () => {
+    expect(unitLabel("sat")).toBe("sat");
+    expect(unitLabel("usd")).toBe("USD");
   });
 });
 

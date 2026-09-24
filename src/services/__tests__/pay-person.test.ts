@@ -1,24 +1,16 @@
 /**
  * @jest-environment node
  */
-// Which rail a payment takes, and how many times the money leaves the wallet.
+// Which rail `payPerson` takes, and how many times the money leaves the wallet.
 //
-// `payPerson` picks between the radio, a NIP-61 nutzap and an ordinary token,
-// and the choice is not cosmetic: only the nutzap rail is final, and only the
-// token rails reserve proofs that can be pulled back. Two rules matter more than
-// the rest, because breaking either one costs the user real money:
+// Only the nutzap rail is final, and only the token rails reserve proofs that
+// can be pulled back. Two rules cost real money if broken:
 //
-//   1. Exactly one commitment per payment. The implementation this replaced
-//      reserved a second set of proofs whenever the relay publish timed out,
-//      because the timeout was not a WalletError and fell through to a path that
-//      called prepareSend again. Send 500 with a flaky relay and 1000 left the
-//      balance.
-//   2. Once proofs are locked to the recipient, never fall back to another rail.
-//      Locked proofs are theirs whatever happens next, so a fallback would pay
-//      the same person twice and strand the first payment.
-//
-// The rest of these pin the rail choice itself, since "it went by radio" and
-// "it is locked to their key forever" are the same tap to the user.
+//   1. One commitment per payment. A relay publish that fails after the lock,
+//      including a timeout that is not a WalletError, must not fall through to
+//      `prepareSend` and reserve a second set: send 500 and 1000 would leave.
+//   2. Once proofs are locked to the recipient, no other rail is tried: they
+//      are already theirs, so a fallback would pay twice.
 
 jest.mock("@bridge/NativeAirhopBLE", () => ({
   __esModule: true,
@@ -111,9 +103,8 @@ function useMesh(options: Parameters<typeof fakeMesh>[0]) {
   return mesh;
 }
 
-// Every payment asks first. The person answering it is this: they agree unless
-// a test says otherwise, and every question asked is kept so a test can read
-// what the user was told.
+// The user: agrees unless a test says otherwise, and every question asked is
+// kept so a test can read what they were told.
 let answer: "confirm" | "cancel" = "confirm";
 let asked: { title: string; message?: string }[] = [];
 let stopAnswering: (() => void) | null = null;
@@ -181,8 +172,7 @@ describe("payPerson rail choice", () => {
 
     expect(result?.rail).toBe("mesh");
     expect(result?.final).toBe(false);
-    // The whole point of the direct-link check: someone in front of you should
-    // not wait on a mint round trip for a fancier instrument.
+    // Someone in front of you should not wait on a mint round trip.
     expect(mockedFind).not.toHaveBeenCalled();
     expect(mockedLock).not.toHaveBeenCalled();
   });
@@ -194,8 +184,7 @@ describe("payPerson rail choice", () => {
 
     expect(result?.rail).toBe("nutzap");
     expect(result?.final).toBe(true);
-    // Locked proofs are not reserved proofs. Reserving as well would double the
-    // cost of one payment.
+    // Locked proofs are not reserved as well, which would double the cost.
     expect(mockedPrepare).not.toHaveBeenCalled();
   });
 
@@ -204,10 +193,9 @@ describe("payPerson rail choice", () => {
 
     await payPerson({ peerID: PEER, amount: 500 });
 
-    // NIP-61 sends a nutzap to the relays the recipient listed in their kind
-    // 10019, and they subscribe to exactly that set. Publishing to our own pool
-    // instead is invisible between two Airhop users, who share a default pool,
-    // and silently loses the payment against any other NIP-61 wallet.
+    // NIP-61: the recipient subscribes to the relays in their kind 10019. Our
+    // own pool would work between two Airhop users (a shared default) and lose
+    // the payment against any other NIP-61 wallet.
     expect(mockedPublish).toHaveBeenCalledWith(
       expect.objectContaining({ relays: [THEIR_RELAY] }),
     );
@@ -273,8 +261,8 @@ describe("payPerson commits exactly once", () => {
 
     const result = await payPerson({ peerID: PEER, amount: 500 });
 
-    // The regression this file exists for. The locked proofs are already the
-    // recipient's, so the only remaining job is delivery.
+    // Rule 1: the locked proofs are already the recipient's, so only delivery
+    // remains.
     expect(mockedLock).toHaveBeenCalledTimes(1);
     expect(mockedPrepare).not.toHaveBeenCalled();
     expect(result?.rail).toBe("nutzap-dm");
@@ -291,8 +279,7 @@ describe("payPerson commits exactly once", () => {
 
     const result = await payPerson({ peerID: PEER, amount: 500 });
 
-    // Its own rail, not "nutzap-dm": nothing was delivered to them, so copy
-    // saying a message went out would be a lie about where their money is.
+    // Not "nutzap-dm": nothing reached them, so the copy must not say it did.
     expect(result?.rail).toBe("nutzap-undelivered");
     expect(result?.final).toBe(true);
     expect(result?.token).toBe("cashuBlocked");
@@ -310,8 +297,8 @@ describe("payPerson commits exactly once", () => {
 
     const result = await payPerson({ peerID: PEER, amount: 500 });
 
-    // A failed lock spends nothing, because the mint's swap is atomic, so a
-    // lesser rail is safe here and only here.
+    // A failed lock spends nothing (the mint's swap is atomic), so a lesser
+    // rail is safe here and only here.
     expect(result?.rail).toBe("nostr");
     expect(result?.final).toBe(false);
     expect(mockedPrepare).toHaveBeenCalledTimes(1);
@@ -335,9 +322,8 @@ describe("payPerson identity resolution", () => {
     // The Wallet tab's Zap only ever holds a public key.
     await payPerson({ nostrPubkey: PUBKEY, amount: 500 });
 
-    // Not `nostr_<pubkey>`: paying someone you already have a conversation with
-    // must land in that conversation, not open a second one with the same
-    // person under a different name.
+    // Not `nostr_<pubkey>`: the payment lands in the existing conversation
+    // rather than a second thread with the same person.
     expect(mesh.sendDm).toHaveBeenCalledWith(
       PEER,
       "cashuBtoken",
@@ -389,8 +375,7 @@ describe("payPerson identity resolution", () => {
 
     await payPerson({ peerID: PEER, amount: 500 });
 
-    // Nothing is transmitted by a nutzap, so this is a local notice rather than
-    // a bubble. Without it, paying from a thread left the thread empty.
+    // A nutzap transmits nothing in the thread, so a local notice records it.
     const notes = useChatStore
       .getState()
       .messages[channel].filter((m) => m.isSystem);
@@ -402,8 +387,7 @@ describe("payPerson identity resolution", () => {
 
     await payPerson({ nostrPubkey: PUBKEY, amount: 500 });
 
-    // A one-off zap from the Wallet tab belongs in wallet history, not in a
-    // conversation the user never started.
+    // A zap from the Wallet tab belongs in wallet history, not a new thread.
     expect(
       useChatStore.getState().messages[`dm:nostr_${PUBKEY}`],
     ).toBeUndefined();
@@ -462,8 +446,8 @@ describe("payPerson asks before money moves", () => {
 
 describe("a lock whose answer went missing", () => {
   it("stops the ladder rather than paying again as a token", async () => {
-    // The mint may have locked the coins to them. A token now would be a second
-    // payment for the same tap, and the first is recovered by reconcile.
+    // The mint may have locked the coins to them. A token now would pay twice;
+    // reconcile settles the first.
     useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
     mockedLock.mockRejectedValue(
       Object.assign(new WalletError("offline", "in doubt"), { inDoubt: true }),

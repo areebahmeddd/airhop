@@ -356,6 +356,16 @@ export class FragmentManager {
     }
   }
 
+  // Whether this fragment belongs to a stream already being assembled and not
+  // yet idle past TIMEOUT_MS. Reads only: the receive path uses it to admit a
+  // late fragment of a live transfer, and must not start an assembly doing so.
+  continues(fromSenderID: Uint8Array, payload: Uint8Array): boolean {
+    const header = decodeFragmentPayload(payload);
+    if (header === null) return false;
+    const asm = this.assemblies.get(buildKey(fromSenderID, header.streamU64));
+    return asm !== undefined && asm.updatedAt >= Date.now() - TIMEOUT_MS;
+  }
+
   // Purge assemblies that have received nothing for TIMEOUT_MS.
   evictExpired(): void {
     const cutoff = Date.now() - TIMEOUT_MS;

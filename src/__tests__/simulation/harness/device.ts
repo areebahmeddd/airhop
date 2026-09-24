@@ -1396,9 +1396,9 @@ export class SimDevice {
   // the device in the clear while the user believes everything is routed.
   mintNetworkBlocked(): boolean {
     const wallet = this.inner.wallet as unknown as {
-      isMintNetworkBlocked?: () => boolean;
+      mintNetworkBlock: () => "internet-off" | "tor" | null;
     };
-    return wallet.isMintNetworkBlocked?.() ?? false;
+    return wallet.mintNetworkBlock() !== null;
   }
 
   // Raise or drop Tor, as the Tor service does when Arti reports in.

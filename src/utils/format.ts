@@ -1,34 +1,21 @@
-// Display formatters for timestamps and byte counts.
+// Display formatters for timestamps, counts, byte sizes and money, shared so
+// every row agrees on what "yesterday" looks like.
 //
-// Four byte-for-byte copies of `formatTime` lived in channel-list, dm-list,
-// chat-search-results and notification-center, and two of `formatBytes`. They
-// had already drifted in shape (two wrote the same branch as a ternary, two as
-// an if) which is how they drift in behaviour next. One definition each, so
-// every list row in the app agrees on what "yesterday" looks like.
+// Everything formats in the app's language, not the device's: someone reading
+// Airhop in Spanish on an English phone sees "mar", not "Tue". So never
+// `toLocale*String([])`, whose empty list asks the OS, the value that diverges.
+// The language is read at call time; App.tsx subscribes to the i18n store and
+// re-renders the tree on a change, so no formatter needs to be a hook.
 //
-// Locale
-// Everything here formats in the app's language, not the device's. Those are
-// different once there is a language picker: a user reading Airhop in Spanish
-// on an English phone should see "mar" beside a message, not "Tue". This is the
-// whole reason `toLocale*String([])` is gone. The empty locale list meant "ask
-// the OS", which is exactly the value that diverges.
+// Numerals are pinned to Latin app-wide (`formatCount` in `@i18n` does the same,
+// and `catalog.test.ts` forbids a catalog its own), so the app renders one digit
+// system. Grouping still follows the locale, the half that helps: Hindi and
+// Tamil group by lakh, Georgian by thin space. Month and weekday names come
+// from Intl per locale.
 //
-// Reactivity: the language is read at call time from the i18n store. Every
-// screen that renders a timestamp sits under App.tsx, which subscribes to that
-// store for its own copy, so a language change re-renders the tree and these
-// are re-run. No formatter needs to be a hook.
-//
-// Digits: month and weekday names come from Intl and are correct per locale for
-// free. Numerals are pinned to Latin here and everywhere else: `formatCount` in
-// `@i18n` pins prose counts the same way and `catalog.test.ts` forbids a catalog
-// its own, so the app renders one digit system rather than three sources of two.
-// Grouping still follows the locale, which is the half that helps: Hindi and
-// Tamil group by lakh, Georgian by thin space.
-//
-// Clock width: `hour: "2-digit"` gives "20:02" in a 24-hour locale and
-// "08:02 PM" in a 12-hour one. Both are right for their reader, so a row
-// carrying a timestamp sizes for the wider rather than forcing a format. The
-// pseudolocale exercises it: `qps-ploc` negotiates to a 12-hour English.
+// `hour: "2-digit"` gives "20:02" or "08:02 PM" by locale, both right for their
+// reader, so timestamp rows size for the wider form. `qps-ploc` negotiates to a
+// 12-hour English and exercises it.
 
 import {
   satsToBtc,
@@ -37,22 +24,17 @@ import {
 } from "@core/payments/cashu";
 import { getLanguage, t } from "@i18n";
 
-// Milliseconds in a day, for the calendar-distance arithmetic below.
 const DAY_MS = 86_400_000;
 
-// Clock time only, e.g. "14:32". For a row already grouped under a date.
-// Latin digits are requested through the BCP-47 extension rather than the
-// `numberingSystem` option. Both are standard, but an extension an engine does
-// not implement is ignored during locale negotiation, whereas an option it does
-// not implement can throw. Hermes ships a partial Intl, so the form that
-// degrades quietly is the correct one here. Month and weekday names are words,
+// Latin digits via the BCP-47 extension, not the `numberingSystem` option: an
+// engine ignores an extension it lacks during negotiation but can throw on an
+// option it lacks, and Hermes ships a partial Intl.
 function latinLocale(): string {
   return `${getLanguage()}-u-nu-latn`;
 }
 
-// `Intl.DateTimeFormat` is expensive to construct and these run once per list
-// row, so instances are cached per language and shape. `toLocaleDateString`
-// built a fresh one on every call.
+// Intl formatters are expensive to construct and these run per list row, so
+// they are cached per language and shape.
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function formatter(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
@@ -85,27 +67,17 @@ export function formatClockTime(ms: number): string {
   }).format(ms);
 }
 
-// Whole-day distance between two instants, ignoring the time of day, so
-// 23:59 and 00:01 the next morning are one day apart rather than two minutes.
+// Calendar days, so 23:59 and 00:01 the next morning are one day apart.
 function calendarDaysAgo(then: Date, now: Date): number {
   const a = new Date(then.getFullYear(), then.getMonth(), then.getDate());
   const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.round((b.getTime() - a.getTime()) / DAY_MS);
 }
 
-// The trailing timestamp on a conversation row.
-//
-// Follows the convention every mainstream messenger settled on, because it is
-// the one that answers "how stale is this?" in the fewest glyphs:
-//
-//   today          14:32       (the time is what you want)
-//   yesterday      Yesterday   (a date would make you do the subtraction)
-//   this week      Tue         (ditto)
-//   older          4 Mar
-//   another year   4 Mar 2025  (a bare "4 Mar" reads as this year)
-//
-// Without the middle steps, a clock time jumps straight to "4 Mar" and anything
-// from yesterday looks exactly as old as something from last month.
+// A conversation row's timestamp, the mainstream messenger ladder that says
+// how stale a row is in the fewest glyphs: 14:32 today, Yesterday, Tue this
+// week, 4 Mar, and 4 Mar 2025 in another year (a bare "4 Mar" reads as this
+// year). Without the middle steps, yesterday looks as old as last month.
 export function formatListTimestamp(ms: number): string {
   const then = new Date(ms);
   const now = new Date();
@@ -122,9 +94,7 @@ export function formatListTimestamp(ms: number): string {
   }).format(then);
 }
 
-// How long ago, for a row whose age matters more than its clock time: "just
-// now", "5m ago", "2h ago", "3d ago", then the dated form past a week, where a
-// count of days stops being easier to read than the date.
+// "just now", "5m ago", "2h ago", "3d ago", then the dated form past a week.
 export function formatAgo(ms: number, now: number = Date.now()): string {
   const minutes = Math.floor(Math.max(0, now - ms) / 60_000);
   if (minutes < 1) return t("format.just_now");
@@ -136,9 +106,8 @@ export function formatAgo(ms: number, now: number = Date.now()): string {
   return formatListTimestamp(ms);
 }
 
-// A date separator inside a thread: "Today", "Yesterday", then the full date.
-// Same calendar-day rule as the row timestamps above, so a thread opened just
-// after midnight cannot label the message above it both "Today" and "Tue".
+// A thread's date separator, on the same calendar-day rule as row timestamps,
+// so a thread opened just after midnight cannot say both "Today" and "Tue".
 export function formatDateSeparator(ms: number): string {
   const then = new Date(ms);
   const now = new Date();
@@ -161,8 +130,7 @@ export function formatDateSeparator(ms: number): string {
   }).format(then);
 }
 
-// Day and month with no year, e.g. "4 Mar". For a timestamp that sits beside a
-// clock time, where the year is obvious or not worth the glyphs.
+// "4 Mar", no year.
 export function formatShortDate(ms: number): string {
   return formatter({
     month: "short",
@@ -170,7 +138,7 @@ export function formatShortDate(ms: number): string {
   }).format(ms);
 }
 
-// A full date for a record rather than a list row, e.g. "4 March 2026".
+// "4 March 2026".
 export function formatLongDate(ms: number): string {
   return formatter({
     year: "numeric",
@@ -179,22 +147,16 @@ export function formatLongDate(ms: number): string {
   }).format(ms);
 }
 
-// A count inside a translated sentence, e.g. a wallet balance or a hop count.
-//
-// Grouped with the locale's own separator (1,000 / 1.000 / 1 000), because that
-// is what makes a long number readable, but with Latin digits: these sit beside
-// Latin units and in the monospace face, per the note at the top of this file.
+// Locale grouping (1,000 / 1.000 / 1 000), Latin digits: these sit beside
+// Latin units and in the monospace face.
 export function formatNumber(value: number): string {
   return numberFormatter({}).format(value);
 }
 
-// Byte count for a file row or a storage figure, e.g. "1.4 MiB". Binary
-// units throughout: the divisor is 1024, so the label has to be the IEC one.
+// IEC units: the divisor is 1024.
 export function formatBytes(bytes: number): string {
-  // Grouping is off throughout: the largest value any branch can produce is
-  // 1023 (bytes and kibibytes are promoted past that) and a grouped "1,023 B"
-  // is noise. Latin digits and a locale decimal separator, so German reads
-  // "1,4 MiB" without the digits changing script.
+  // Ungrouped: no branch exceeds 1023 before promotion, and "1,023 B" is
+  // noise. Latin digits with the locale's decimal separator ("1,4 MiB").
   if (bytes < 1024) return `${formatFixed(bytes, 0)} B`;
   if (bytes < 1024 * 1024) return `${formatFixed(bytes / 1024, 0)} KiB`;
   return `${formatFixed(bytes / (1024 * 1024), 1)} MiB`;
@@ -208,16 +170,12 @@ function formatFixed(value: number, fractionDigits: number): string {
   }).format(value);
 }
 
-// A whole number the user typed, whatever digits their keyboard emits.
-//
-// The inverse of `formatNumber`: output is pinned to Latin digits, but a number
-// pad on a Persian, Arabic, Hindi or Bengali keyboard types its own script, and
-// `parseInt` reads those as NaN, which on a payment field is a button that
-// does nothing and says nothing.
-// Every Unicode decimal digit sits in a run of ten that starts at its zero, so
-// the value is the offset into that run. Whitespace is dropped; anything
-// else makes the input invalid, since a separator is a grouping mark in one
-// locale and a decimal point in the next, and amounts here are whole sats.
+// The inverse of `formatNumber`, accepting any script's digits: a Persian,
+// Arabic, Hindi or Bengali number pad types its own, which `parseInt` reads as
+// NaN, a payment button that silently does nothing. Each Unicode digit's value
+// is its offset from the zero of its run of ten. Whitespace is dropped;
+// separators are rejected (grouping in one locale, a decimal point in the next,
+// and amounts are whole sats).
 export function parseWholeNumber(text: string): number | null {
   let digits = "";
   for (const ch of text) {
@@ -236,19 +194,15 @@ export function parseWholeNumber(text: string): number | null {
 }
 
 // ---- Money ----
-//
-// These live here rather than beside the Cashu code they describe because
-// `src/core/` imports no display layer, which is what lets it target the planned
-// Node CLI and web builds. A formatter has to know the app's language, so it
-// cannot live there. The dependency runs the other way: this file reaches into
-// core for `satsToBtc`, which is exact integer arithmetic on money.
+// Here, not in core: `src/core/` imports no display layer (so it can target a
+// Node CLI or web build), and a formatter needs the app's language. The
+// dependency runs the other way, for `satsToBtc`'s exact integer arithmetic.
 
-// Units a mint may issue that are not ISO 4217 currencies, and so have no
-// minor unit to scale by.
+// Units a mint may issue that are not ISO 4217 currencies, so have no minor
+// unit to scale by.
 const NON_FIAT_UNITS = new Set(["sat", "msat", "btc", "auth"]);
 
-// ISO 4217 currencies with no minor unit. Every other three-letter code a mint
-// is likely to issue has two decimal places.
+// ISO 4217 codes with no minor unit; every other code has two.
 const ZERO_DECIMAL_CURRENCIES = new Set([
   "clp",
   "isk",
@@ -261,27 +215,19 @@ const ZERO_DECIMAL_CURRENCIES = new Set([
   "xof",
 ]);
 
-// Decimal places of a fiat unit, or null for a unit that is not a currency.
-//
-// A Cashu amount is an integer in the unit's smallest denomination (NUT-00),
-// so 150 in a usd keyset is a dollar fifty. Shown raw it reads as a hundred and
-// fifty dollars, a hundredfold error on the balance card.
+// Cashu amounts are integers in the unit's smallest denomination (NUT-00):
+// 150 usd is $1.50, and shown raw it is a hundredfold error on the balance
+// card. Null for a unit that is not a currency.
 function fiatMinorDigits(unit: string): number | null {
   const code = unit.toLowerCase();
   if (NON_FIAT_UNITS.has(code) || !/^[a-z]{3}$/.test(code)) return null;
   return ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 2;
 }
 
-// Render an amount in the denomination the user picked.
-//
-// Only `sat` amounts have a bitcoin denomination to switch to. Every other unit
-// is the mint's own (a mint may issue usd or eur directly), and those are
-// already the thing they say they are: reformatting them as bitcoin would
-// invent an exchange rate nobody supplied. A fiat unit is shown in major units
-// with its currency code, grouped in the app's language like any other number.
-//
-// Returns the number and its label separately so the caller can style them
-// apart, which the balance card does.
+// Only `sat` switches to BTC. Other units are the mint's own (usd, eur) and
+// already what they say: showing them as bitcoin would invent an exchange rate
+// nobody supplied. Fiat shows in major units with its code, grouped like any
+// number. Value and label are separate so the balance card can style them.
 export function formatAmount(
   amount: number,
   unit: string,
@@ -300,19 +246,23 @@ export function formatAmount(
   if (unit !== "sat" || display === "sat") {
     return { value: formatNumber(amount), label: unit };
   }
-  // Not grouped: satsToBtc returns a decimal fraction ("0.000215"), and
-  // grouping a value whose digits are almost all after the point adds nothing.
+  // Exact digits from satsToBtc, ungrouped: nearly all of them sit after the
+  // point, where grouping adds nothing.
   return { value: satsToBtc(amount), label: "BTC" };
 }
 
-// An amount in the unit it is held in ("500 sat", "1.50 USD"), for every place
-// that prints a unit beside the number.
+// "500 sat", "1.50 USD".
 export function formatUnitAmount(amount: number, unit: string): string {
   const { value, label } = formatAmount(amount, unit, "sat");
   return `${value} ${label}`;
 }
 
-// The same, as the {amount} and {unit} placeholders of a translated sentence.
+// A unit as printed beside an amount: "sat", or "USD" for a currency.
+export function unitLabel(unit: string): string {
+  return formatAmount(0, unit, "sat").label;
+}
+
+// For a translated sentence's {amount} and {unit} placeholders.
 export function amountParts(
   amount: number,
   unit: string,
@@ -321,14 +271,13 @@ export function amountParts(
   return { amount: value, unit: label };
 }
 
-// "500 sat" / "500 sat - coffee money", for chat search previews and
-// accessibility labels.
+// "500 sat - coffee money", for search previews and accessibility labels.
 export function formatTokenSummary(info: TokenInfo): string {
   const amount = formatUnitAmount(info.amount, info.unit);
   return info.memo ? `${amount} - ${info.memo}` : amount;
 }
 
-// Elapsed or remaining seconds as m:ss, for recordings and transfer ETAs.
+// m:ss.
 export function formatDuration(totalSeconds: number): string {
   const safe = Math.max(0, Math.round(totalSeconds));
   const mins = Math.floor(safe / 60);

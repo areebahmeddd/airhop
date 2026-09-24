@@ -1,22 +1,15 @@
 /**
  * @jest-environment node
  */
-// What happens to the money between "send" and "they got it".
+// The money between "send" and "they got it".
 //
-// A Cashu send is offline: nothing is destroyed at the mint, the proofs are
-// moved into a reservation and serialised into a token string. So the coins
-// exist in exactly one of three places at any moment, and every bug in this
-// file's subject matter is the same bug: they end up in two, or in none.
+// A send moves proofs into a reservation and serialises them into a token, all
+// offline. It resolves by `confirmSend` (drop the reservation), `reclaimSend`
+// (put it back) or neither (pending, re-shareable after a restart). Coins are
+// always in exactly one place. The cases follow real taps, including two sends
+// at once, reclaim tapped twice and reclaim after delivery confirmed.
 //
-// The three resolutions are `confirmSend` (they have it, drop the reservation),
-// `reclaimSend` (it never landed, put it back) and neither (still pending, the
-// token is re-shareable after a restart). These tests are written from the taps
-// a real person makes, including the ones they were not supposed to make: two
-// sends at once, reclaim tapped twice, reclaim tapped after delivery finally
-// confirmed. None of those are hypothetical, they are what a flaky radio and an
-// impatient thumb produce.
-//
-// No mint is involved and none is needed: the offline path is the whole point.
+// No mint is involved: the offline path is the subject.
 
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { getEncodedToken, type Token } from "@cashu/cashu-ts";
@@ -89,8 +82,6 @@ const MINT = "https://mint.example.com";
 const KEYSET = "00ad268c4d1f5826";
 const UNIT = "sat";
 
-// Powers of two, which is what a mint actually hands out, so an exact amount is
-// constructible and the fee-free fallback selector can land on it.
 // A real encodable token from an arbitrary mint, for the cases that turn on
 // which mint a token names.
 function encodedToken(mint: string, amounts: number[]): string {
@@ -101,6 +92,8 @@ function encodedToken(mint: string, amounts: number[]): string {
   } as unknown as Token);
 }
 
+// Seed with powers of two, as a mint issues, so exact amounts are
+// constructible and the fee-free fallback selector can land on them.
 function proofsOf(amounts: number[]): StoredProof[] {
   return amounts.map((amount, i) => ({
     id: KEYSET,
@@ -141,9 +134,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   useWalletStore.getState().clearAll();
-  // The mint is added first, as it always is in a real wallet: you choose a
-  // mint before you hold any of its paper. Receiving refuses a mint the user
-  // never chose, so seeding proofs without this would not resemble the app.
+  // Added first, as in the app: receiving refuses a mint the user never chose.
   useWalletStore.getState().addMint(MINT, { units: [UNIT] });
   useWalletStore
     .getState()
@@ -237,9 +228,7 @@ describe("resolving a send", () => {
   });
 
   it("does not pay the user twice when reclaim is tapped again", async () => {
-    // An impatient thumb, or a retry after a UI hiccup. The second tap must be
-    // a no-op: crediting twice invents coins the mint will refuse later, and
-    // the user only finds out when a spend fails.
+    // Crediting twice would invent coins the mint refuses later.
     const before = spendable();
     const prepared = await prepareSend({ amount: 10 });
 
@@ -280,10 +269,8 @@ describe("resolving a send", () => {
 
 describe("two sends at once", () => {
   it("never puts the same coin into two tokens", async () => {
-    // Both sends are quoted against the same pool before either reserves, so
-    // both arrive holding the same coins. Exactly one may win. The loser is a
-    // retry, not a second spend: the alternative is two recipients each seeing
-    // a balance where only the first to reach the mint actually has it.
+    // Both are quoted against the same pool before either reserves, so both
+    // hold the same coin. Exactly one may win; the loser retries.
     useWalletStore.getState().clearAll();
     useWalletStore.getState().addMint(MINT, { units: [UNIT] });
     useWalletStore.getState().addProofs(MINT, UNIT, proofsOf([8]));
@@ -301,10 +288,8 @@ describe("two sends at once", () => {
   });
 
   it("makes the loser retry even when the balance covers both", async () => {
-    // Two coins, two sends of one coin each, and still only one gets through.
-    // Both were quoted against the same pool before either reserved, so both
-    // asked for the same coin. Serialising them is the safe answer and the
-    // cost is one retry, which is the trade this design makes deliberately.
+    // Two coins, but both sends quoted the same one. Serialising them costs a
+    // retry, which is the deliberate trade.
     useWalletStore.getState().clearAll();
     useWalletStore.getState().addMint(MINT, { units: [UNIT] });
     useWalletStore.getState().addProofs(MINT, UNIT, proofsOf([8, 8]));
@@ -362,11 +347,7 @@ describe("receiving a token", () => {
   });
 
   it("says which mint, rather than 'unreadable', for a mint we do not have", async () => {
-    // The two failures need different words because only one is actionable.
-    // A token from a mint the user has not added is thirty seconds from
-    // working; calling it unreadable sends them looking for a bug instead.
-    // `getTokenMetadata` is what separates them: it reads the mint without
-    // needing keyset data, so it answers even when the full decode cannot.
+    // Only this failure is actionable (add the mint), so it gets its own code.
     const before = spendable();
     const other = "https://mint.someone-else.example";
     const token = encodedToken(other, [8]);
@@ -381,10 +362,9 @@ describe("receiving a token", () => {
   });
 
   it("points a re-scanned own send at reclaim instead of redeeming it", async () => {
-    // The real sequence: a send fails, and the user scans the token still on
-    // their own screen to "get the money back". Redeeming would work but pays
-    // the mint a fee to return money already held, files it as income, and
-    // leaves the send pending. Reclaim does it directly and for free.
+    // The user scans their own failed send to "get the money back". Redeeming
+    // would pay a swap fee, file it as income and leave the send pending;
+    // reclaim does it for free.
     const before = spendable();
     const prepared = await prepareSend({ amount: 10 });
 
@@ -415,11 +395,9 @@ describe("receiving a token", () => {
   });
 });
 
-// A nutzap is the one payment that is final the moment it is made. The proofs
-// are cryptographically locked to the recipient's key, so they are theirs
-// whatever happens to the delivery afterwards. That makes the usual "put it
-// back" path actively wrong here, and the protection is structural rather than
-// a check: locking never creates a reservation, so there is nothing to release.
+// A nutzap is final once locked: the proofs are the recipient's whatever
+// happens to delivery. Locking creates no reservation, so reclaim has nothing
+// to release.
 describe("a nutzap, once locked to their key", () => {
   const NUTZAP_TX = "nutzap-tx-1";
 

@@ -1,25 +1,20 @@
-// Wallet service: the single place that talks to Cashu mints.
+// Wallet service: the single place that talks to Cashu mints, so the rules that
+// protect real money live here rather than in each screen. A screen that
+// open-codes "pick proofs, serialise, delete them" loses the value on any crash
+// between the delete and the delivery.
 //
-// Every screen (Wallet tab, DM thread, peer sheet) goes through here, so the
-// rules that protect real money live in one file instead of being re-derived in
-// three UIs. A screen that open-codes "pick proofs, serialise, delete them from
-// the store" destroys value on any crash between the delete and the delivery.
+// Guarantees:
+//  1. Proofs are never deleted to send. They are reserved against a transaction
+//     id and dropped only once delivery is confirmed (`reclaimSend` recovers).
+//  2. Nothing is credited without a mint swap or a passing DLEQ check; offline
+//     credits are marked unverified and redeemed first when online.
+//  3. No mint call goes over the clear net while Tor is on (iOS: Arti wraps
+//     only WebSockets, not fetch).
+//  4. A (mint, unit) pair is one account; units never mix.
 //
-// Guarantees this module provides
-//  1. Proofs are never deleted to send. They are moved into a reserved bucket
-//     against a transaction id and only dropped once delivery is confirmed, so
-//     an interrupted send is always recoverable (`reclaimSend`).
-//  2. Nothing is credited to the balance without either a mint swap or a
-//     passing DLEQ check; anything credited offline is marked unverified and
-//     redeemed first when connectivity returns.
-//  3. A mint call is never made silently over the clear net while the user has
-//     Tor on (iOS), because Arti only wraps WebSockets, not fetch.
-//  4. Units are never mixed. A (mint, unit) pair is one account.
-//
-// Offline is the normal case, not the error case: `getWallet` builds a fully
-// functional wallet from the cached keysets, so fee maths, proof selection and
-// DLEQ verification all work with the radio off. Only swap, mint and melt
-// actually need the network.
+// Offline is the normal case: `getWallet` builds from cached keysets, so fees,
+// selection and DLEQ work with the radio off. Only swap, mint and melt need the
+// network.
 
 import {
   getTokenMetadata,
@@ -49,6 +44,7 @@ import {
   buildToken,
   decodeToken,
   feeForProofs,
+  mintsOfUnresolvedTokens,
   selectProofsForAmount,
   toProofLike,
   toStoredProof,
@@ -100,40 +96,25 @@ import { Platform } from "react-native";
 
 // ---- Network limits ----
 
-// Every mint request is bounded. cashu-ts only builds an AbortController when a
-// timeout is given, and React Native's fetch has none of its own, so without
-// this a mint that accepts the connection and then never answers hangs the call
-// forever. That is not an abstract worry on mobile: captive portals, a dropped
-// cell handover and an overloaded mint all produce exactly that shape.
-//
-// A hang is worse than a failure here, because the UI is built around promises
-// settling. A stuck request leaves the confirm button spinning, holds the
-// per-mint refresh lock so every other mint is unrefreshable, and stalls the
-// startup chain before the nutzap watcher is ever installed. A timeout turns
-// all of that into an ordinary error the user can retry.
-//
-// 20s is generous for a mint round trip on a slow connection while still being
-// well inside the patience of somebody staring at a spinner.
+// Every mint request is bounded. cashu-ts only aborts when given a timeout and
+// React Native's fetch has none, so a mint that accepts the connection and never
+// answers (captive portal, cell handover, overloaded mint) hangs forever. A hang
+// is worse than an error: the confirm button spins, the per-mint refresh lock
+// blocks every other mint, and startup stalls before the nutzap watcher is
+// installed. 20s is generous for a slow round trip and inside a user's patience.
 const MINT_REQUEST_TIMEOUT_MS = 20_000;
 
-// Paying a bolt11 invoice is the one request that legitimately takes longer.
-// The mint holds the connection open while Lightning routes, which can take
-// minutes over a slow or retried route. Aborting at 20s does not cancel the
-// payment: the mint carries on, and we are left not knowing whether it settled,
-// which is precisely the ambiguous state `reconcile` exists to clean up. So a
-// melt gets its own ceiling, still bounded so a dead socket cannot hang forever.
+// A bolt11 melt legitimately takes longer while Lightning routes. Aborting does
+// not cancel the payment, it only leaves us unsure whether it settled (the state
+// `reconcile` cleans up), so melts get a longer but still bounded ceiling.
 const MELT_REQUEST_TIMEOUT_MS = 180_000;
 
 setGlobalRequestOptions({ requestTimeout: MINT_REQUEST_TIMEOUT_MS });
 
-// Run a melt under the longer ceiling.
-//
-// In cashu-ts v4 `setGlobalRequestOptions` takes precedence over per-call
-// options, so a per-request timeout cannot widen this and the global has to be
-// moved instead. The window is safe because the AbortController is built when
-// the request is issued: restoring the default afterwards cannot shorten a call
-// already in flight, and any concurrent request merely inherits a more generous
-// timeout for the duration, which is harmless.
+// cashu-ts v4 lets the global option override per-call ones, so a per-request
+// timeout cannot widen it and the global is widened for the melt instead. Safe: the AbortController is built at issue time, so
+// restoring cannot shorten a call in flight, and concurrent calls merely get a
+// longer timeout.
 async function withMeltTimeout<T>(run: () => Promise<T>): Promise<T> {
   setGlobalRequestOptions({ requestTimeout: MELT_REQUEST_TIMEOUT_MS });
   try {
@@ -158,9 +139,8 @@ export type WalletErrorCode =
   | "inexact"
   // No mint is configured, or the named mint is unknown.
   | "no-mint"
-  // An incoming payment named a mint this wallet does not hold. Distinct from
-  // "no-mint" because it is a REFUSAL, not a failure: retrying cannot fix it,
-  // and the caller should tell the user rather than quietly try again.
+  // An incoming payment named a mint this wallet does not hold. A refusal, not
+  // a failure: retrying cannot fix it.
   | "untrusted-mint"
   // The mint does not support a NUT this operation needs.
   | "unsupported"
@@ -172,20 +152,16 @@ export type WalletErrorCode =
   | "forged-token"
   // The mint says these proofs are already spent.
   | "already-spent"
-  // A melt whose invoice is PAID and whose NUT-08 change could not be
-  // unblinded yet. Not a failure: the payment stands and the unused routing
-  // reserve is recovered by `reconcile`. It is its own code because every other
-  // way of reporting it is a lie - "the mint refused" is wrong, and reporting
-  // success would claim a balance the transaction has not settled yet.
+  // A melt is PAID but its NUT-08 change is not unblinded yet. Not a failure:
+  // `reconcile` recovers the unused reserve. Neither "refused" nor "success"
+  // would be true, hence its own code.
   | "change-pending";
 
 export class WalletError extends Error {
   readonly code: WalletErrorCode;
   readonly detail?: string;
-  // The request reached the point where the mint may have acted on it and the
-  // answer never said whether it did. The money is committed until `reconcile`
-  // finds out, so a caller must not treat this as "nothing happened" and pay
-  // again another way.
+  // The mint may have acted and never said. The money is committed until
+  // `reconcile` finds out, so a caller must not pay again another way.
   readonly inDoubt: boolean;
 
   constructor(
@@ -202,48 +178,35 @@ export class WalletError extends Error {
   }
 }
 
-// Whether a failure after a swap was staged proves the mint did nothing. Only
-// an answer from the mint refusing the request does, and not every refusal:
-// "already spent" may describe our own first attempt (see
-// `isAlreadySpentError`). Anything else, including an error raised here after
-// the mint's answer arrived, leaves the question open, because the mint may
-// have signed outputs that only the stored preview can recover.
+// Whether a failure after a swap was staged proves the mint did nothing. Only a
+// mint refusal does, and not "already spent" (see `isAlreadySpentError`).
+// Anything else, including an error raised here after the mint's answer
+// arrived, leaves open that the mint signed outputs only the stored preview can
+// recover.
 function isDefiniteRefusal(err: unknown): boolean {
   if (!isMintOperationError(err)) return false;
   return !isAlreadySpentError(asWalletError(err, "mint-error"));
 }
 
-// Whether the mint refused because it has already seen these inputs.
-//
-// Worth naming, because the obvious reading of it is wrong. cashu-ts retries a
-// request the network lost whenever the mint advertises NUT-19, so "already
-// spent" on a swap or a melt is as likely to describe OUR OWN earlier attempt,
-// which succeeded, as it is somebody else getting there first. It therefore
-// means "the mint has taken these inputs", never "the operation failed", and
-// every caller has to resolve which by asking the mint something else.
+// cashu-ts retries lost requests on NUT-19 mints, so "already spent" may be our
+// own earlier attempt succeeding. It means "the mint has taken these inputs",
+// never "the operation failed"; callers must ask the mint which.
 function isAlreadySpentError(err: WalletError): boolean {
   return /spent|already|TOKEN_ALREADY/i.test(err.detail ?? err.message);
 }
 
 // Whether a failure is the radio rather than the mint, read from the whole
-// cause chain and not from the error in hand.
-//
-// cashu-ts nests its failures. An operation that meets a keyset id its snapshot
-// has never seen refreshes first, and a refresh that fails is reported as
-// `UnknownKeysetError: ... mint refresh failed` with the transport error
-// underneath as `cause`. Nothing in that top line says network, so reading the
-// message alone calls a dead zone a mint refusal. The receive path branches on
-// exactly that distinction, and the cost of getting it wrong is a good token
-// refused outright where it should have been stored offline to redeem later.
+// cause chain. An operation meeting an unseen keyset id refreshes first, and a
+// failed refresh surfaces as `UnknownKeysetError: ... mint refresh failed` with
+// the transport error as `cause`; the top line never says network. The receive
+// path branches on this, and misreading a dead zone as a mint refusal refuses a
+// good token that should have been stored offline.
 function isNetworkFailure(err: unknown): boolean {
-  // Bounded because a cycle in `cause` would hang the error path rather than
-  // report it, and nothing needs to look further than this to decide.
+  // Bounded so a cycle in `cause` cannot hang the error path.
   let current: unknown = err;
   for (let depth = 0; current != null && depth < 8; depth += 1) {
-    // The mint answered, so the request got there and back whatever it said.
-    // Its wording is not evidence about the transport either way: a mint is
-    // free to reject a melt with "payment timeout" and mean the Lightning
-    // route, not the socket.
+    // The mint answered, so its wording ("payment timeout") says nothing about
+    // the transport.
     if (isMintOperationError(current)) return false;
     if (current instanceof NetworkError) return true;
     const message =
@@ -255,8 +218,6 @@ function isNetworkFailure(err: unknown): boolean {
   return false;
 }
 
-// Turn anything thrown by cashu-ts or fetch into a WalletError, so callers only
-// ever branch on our own codes.
 function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
   if (err instanceof WalletError) return err;
   if (isMintOperationError(err)) {
@@ -276,102 +237,82 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
 // ---- Network policy ----
 
 // Refuse a mint call that would leak this device's IP while the user believes
-// their traffic is anonymised.
+// they are on Tor. iOS routes only the Nostr WebSocket through Arti, so a plain
+// fetch would go in the clear and tell the mint exactly who is swapping which
+// proofs. Android's OkHttp client carries the proxy, so the request is tunnelled
+// or fails closed, and refusing there would take the wallet away to prevent a
+// leak that cannot happen.
 //
-// On Android there is nothing to refuse. The proxy is installed into the OkHttp
-// client this request is built from, so it is inside the tunnel whenever Tor is
-// on and simply fails when no circuit exists. Refusing would take the wallet
-// away to prevent a leak that cannot happen.
+// Either `torActive` or `torEnabled` refuses. They diverge in one state: iOS
+// revalidation drops the claim after a failed bootstrap while the preference
+// (and the toggle) stay on, so the user still believes they are covered. Gating
+// on `torActive` alone would leak their IP exactly when Tor is struggling.
+// Overshooting costs a call the user can allow; undershooting costs anonymity
+// they think they have. Matches the `torEnabled` gate in `version-screen.tsx`.
 //
-// On iOS, Tor is wired only into the Nostr WebSocket; a plain fetch bypasses it
-// entirely. Silently making the request there would tell the mint exactly who is
-// swapping which proofs, which is the one thing a Tor user is trying to avoid,
-// so it is refused unless they have explicitly allowed it.
-// Gated on the user's PREFERENCE, not on whether a circuit happens to be up
-// right now, and the difference is a real leak rather than a nicety.
-//
-// `torActive` is a claim about this instant. `torEnabled` is what the user
-// asked for and what their toggle still shows. Those two diverge in exactly one
-// state, and it is the worst one: iOS revalidation deliberately stands the claim
-// down while keeping the preference on, because a failed bootstrap is usually
-// transient and the socket must stay Tor-only rather than falling back to the
-// clear net. In that state the Nostr side is still hard-routed through Arti, the
-// switch still reads on, the user still believes they are covered - and reading
-// `torActive` alone opened this gate and put mint HTTP on the clear net with the
-// device's real IP. That is precisely the linkage the gate exists to prevent,
-// and it happened only when Tor was struggling, which is when it matters most.
-//
-// Either flag being set is enough to refuse. Overshooting costs a mint call the
-// user can allow explicitly; undershooting costs them the anonymity they think
-// they have. `version-screen.tsx` already gates its update check on
-// `torEnabled`, so this also stops the two network gates disagreeing.
-//
-// Both are read from stores rather than by calling `isTorRoutingActive()`:
-// tor-routing pulls in the BLE native module at import time, and this module is
-// reachable from the panic wipe, which must stay loadable without a native host.
+// Read from stores, not `isTorRoutingActive()`, which imports the BLE native
+// module; this file is reachable from the panic wipe, which must load without a
+// native host.
 function assertMintNetworkAllowed(): void {
   const settings = useSettingsStore.getState();
+  // Internet off means Bluetooth only. "offline" so a receive stores the token
+  // unconfirmed, as with no signal.
+  if (!settings.internetEnabled) {
+    throw new WalletError(
+      "offline",
+      t("wallet.svc.internet_off"),
+      t("wallet.svc.internet_off_body", {
+        setting: t("settings.network.internet"),
+      }),
+    );
+  }
   const torClaimed =
     useMeshStateStore.getState().torActive || settings.torEnabled;
   if (!torClaimed) return;
 
-  // Android needs no refusal at all. The Tor proxy is installed into the HTTP
-  // client every socket is built from, so this request is already inside the
-  // tunnel or already failing closed, exactly like a relay socket. Refusing it
-  // would decline a call that was never going to leak.
   if (Platform.OS !== "ios") return;
-
-  // The one escape hatch.
+  // The one explicit escape hatch.
   if (settings.allowMintOverClearnet) return;
   throw new WalletError(
     "tor-blocked",
     t("wallet.svc.tor_ios"),
-    t("wallet.svc.tor_ios_body"),
+    t("wallet.svc.tor_ios_body", {
+      setting: t("settings.conn.mint_clearnet"),
+    }),
   );
 }
 
-// Whether a mint call would currently be refused, for disabling buttons ahead
-// of time rather than failing after a tap.
-export function isMintNetworkBlocked(): boolean {
+// Why a mint call would be refused right now, or null when it would go out, so
+// the screen can grey an action out and say why before it is tapped.
+export function mintNetworkBlock(): "internet-off" | "tor" | null {
   try {
     assertMintNetworkAllowed();
-    return false;
-  } catch {
-    return true;
+    return null;
+  } catch (err) {
+    return err instanceof WalletError && err.code === "tor-blocked"
+      ? "tor"
+      : "internet-off";
   }
 }
 
 // ---- Recovery phrase (NUT-13 deterministic secrets) ----
 
-// The seed derived from the user's recovery phrase, held in memory for the
-// process lifetime once loaded. A seed is the steady state, generated with the
-// wallet rather than at opt-in. Null means either that the bootstrap has not
-// run yet, or that the keychain refused to hold a phrase and random secrets
-// are the honest fallback.
-//
-// This is the *only* thing that decides whether new proofs are recoverable, so
-// it is read at wallet construction and every wallet is rebuilt when it flips.
+// Seed from the recovery phrase, created with the wallet rather than at opt-in.
+// Null before bootstrap, or when the keychain refused the phrase (random
+// secrets). It alone decides whether new proofs are recoverable; wallets are
+// rebuilt when it flips.
 let activeSeed: Uint8Array | null = null;
 
-// Whether new proof secrets are derived from the seed rather than random.
-//
-// Not the same question as "has the user set up backup": the seed is created at
-// first run, while `backupEnabled` records that the user has seen the words.
-// Code that decides whether a proof is RECOVERABLE wants this one.
+// Not the same as `backupEnabled`, which records that the user has seen the
+// words. Recoverability checks want this one.
 function isSeedActive(): boolean {
   return activeSeed !== null;
 }
 
-// NUT-13 derives a proof's secret from (seed, keyset id, counter). Reusing a
-// counter recreates a secret the mint has already signed, which it rejects as a
-// duplicate, so the cursor must be persisted and must only ever move forward.
-//
-// The store write is synchronous; persisting it to the encrypted file is not.
-// A crash in that window can lose a counter bump, and the next swap using that
-// counter fails with a duplicate error the user can simply retry. Restore also
-// pushes the cursor past everything the mint has ever signed, which repairs it
-// permanently. Losing money this way is not possible: a rejected swap leaves
-// the input proofs untouched.
+// NUT-13 secrets derive from (seed, keyset id, counter); a reused counter is a
+// duplicate the mint rejects, so the cursor is persisted and only moves forward.
+// A crash before the encrypted write can lose a bump: the next swap fails
+// retryably, restore repairs the cursor, and the inputs are untouched.
 const counterSource: CounterSource = {
   reserve(keysetId: string, n: number) {
     return Promise.resolve(
@@ -389,20 +330,17 @@ const counterSource: CounterSource = {
 
 // ---- Wallet instances ----
 
-// One Wallet per (mint, unit). Building one is cheap from cache but involves a
-// round trip online, so they are reused for the process lifetime. Keysets are
-// re-fetched by `refreshMint`, not by rebuilding.
+// One Wallet per (mint, unit), reused for the process lifetime because building
+// one online costs a round trip. Keysets are re-fetched by a `forceRefresh`
+// rebuild (`refreshAccount`, restore) or by cashu-ts itself on a rotation.
 const wallets = new Map<string, Wallet>();
 
-// Wallets capture the seed at construction, so any change to backup state has
-// to throw the cache away or half the app would keep minting random secrets.
+// Wallets capture the seed at construction, so a seed change must drop them or
+// cached wallets keep minting random secrets outside the phrase.
 function invalidateWallets(): void {
   wallets.clear();
 }
 
-// Options every Wallet is built with. With a seed present, outputs are
-// deterministic and counter-tracked; without one, cashu-ts falls back to random
-// secrets, which is exactly the pre-backup behaviour.
 function walletOptions(unit: string): {
   unit: string;
   bip39seed?: Uint8Array;
@@ -418,50 +356,37 @@ function walletOptions(unit: string): {
   };
 }
 
-// How long a cached keyset is trusted before an online operation refreshes it.
-// Mints rotate keysets rarely; a day keeps fees and keys current without
-// hammering the mint on every send.
+// How long a cached keyset is trusted online. Mints rotate rarely; a day keeps
+// fees and keys current without a round trip per send.
 const KEYSET_TTL_MS = 24 * 60 * 60 * 1000;
 
 function storedMint(mintUrl: string): StoredMint | undefined {
   return useWalletStore.getState().mints[normalizeMintUrl(mintUrl)];
 }
 
-// Build a Wallet whose repairs make it back to disk.
-//
-// An operation that meets evidence of a keyset rotation (a proof naming a
-// keyset the snapshot has never seen, or the mint rejecting one the snapshot
-// still calls active) refreshes the snapshot itself and then throws. So the
-// wallet in the map heals and the copy in the store does not, and left alone
-// the repair lasts exactly as long as the process: the next cold start reloads
-// the pre-rotation cache, finds it inside `KEYSET_TTL_MS`, and buys the same
-// refresh again. Until it does, `verifyTokenOffline` has no key for a proof on
-// the new keyset, so a perfectly good token is stored unverified in a dead
-// zone.
-//
-// `keychainUpdated` is a local emitter rather than a subscription to the mint,
-// so this costs nothing on a wallet that never rotates. It fires only for
-// refreshes the library made on its own: an explicit `loadMint` or
-// `ensureOperableKeysets` persists at its own call site instead.
+// Build a Wallet whose keyset repairs reach disk. On evidence of a rotation (a
+// proof naming an unseen keyset, or the mint rejecting one the snapshot calls
+// active) cashu-ts refreshes its in-memory snapshot and throws. Unpersisted, the
+// next cold start reloads the stale cache, finds it inside `KEYSET_TTL_MS`, and
+// until it refreshes again `verifyTokenOffline` has no key for the new keyset, so
+// a good token is stored unverified in a dead zone. `keychainUpdated` is a local
+// emitter (free on a mint that never rotates) that fires only for refreshes the
+// library makes itself; explicit `loadMint` and `ensureOperableKeysets` calls
+// persist at their call sites.
 function newWallet(url: string, unit: string): Wallet {
   const wallet = new Wallet(new Mint(url), walletOptions(unit));
   const epoch = walletEpoch;
   wallet.on.keychainUpdated(() => {
-    // A panic wipe replaced the identity these keysets belong to, and an
-    // operation still in flight can carry its wallet past the reset. Writing
-    // then would put part of the snapshot the wipe deleted back on disk.
+    // An operation in flight across a panic wipe must not write the deleted
+    // snapshot back.
     if (walletEpoch !== epoch || !isWalletStorageReady()) return;
     persistMintSnapshot(url, unit, wallet);
   });
   return wallet;
 }
 
-// Build a Wallet for this account.
-//
-// `offline: true` never touches the network: it either returns a wallet built
-// from the cached keysets or throws "offline". `offline: false` prefers the
-// cache and refreshes from the mint only when the cache is missing or stale, so
-// a send does not pay for a round trip it does not need.
+// `offline: true` never touches the network (cached keysets or "offline").
+// Otherwise the cache is preferred and refreshed only when missing or stale.
 async function getWallet(
   mintUrl: string,
   unit: string,
@@ -489,14 +414,12 @@ async function getWallet(
       wallets.set(key, wallet);
       return wallet;
     } catch {
-      // Cache written by an older cashu-ts, or corrupted. Fall through and
-      // re-fetch rather than failing the operation.
+      // Older cashu-ts cache or corrupt: re-fetch below.
     }
   }
 
   if (opts.offline === true) {
-    // Last resort offline: a stale cache still verifies DLEQ and prices fees
-    // correctly for keysets that have not rotated, which beats refusing.
+    // A stale cache still verifies DLEQ and prices fees for unrotated keysets.
     if (
       record?.keysetCache !== undefined &&
       record.infoResponse !== undefined
@@ -520,19 +443,21 @@ async function getWallet(
   }
 
   assertMintNetworkAllowed();
+  const epoch = walletEpoch;
   try {
     await wallet.loadMint(opts.forceRefresh === true);
   } catch (err) {
     throw asWalletError(err, "offline");
   }
+  // The snapshot re-adds the mint, so a wipe during the fetch must stop it.
+  if (walletEpoch !== epoch) throw lockedError();
   persistMintSnapshot(url, unit, wallet);
   wallets.set(key, wallet);
   return wallet;
 }
 
-// Persist everything the wallet learned from the mint, so the next cold start
-// is fully functional offline: keys for DLEQ, fees for selection, units and NUT
-// support for feature gating.
+// Persist what the mint told us so a cold start works offline: keys for DLEQ,
+// fees for selection, units and NUTs for feature gating.
 function persistMintSnapshot(
   mintUrl: string,
   unit: string,
@@ -559,8 +484,7 @@ function persistMintSnapshot(
   let description: string | undefined;
   let supportedNuts: number[] | undefined;
   try {
-    // `.cache` is the raw /v1/info response the MintInfo wrapper was built
-    // from, which is exactly what `loadMintFromCache` wants back.
+    // The raw /v1/info response, which `loadMintFromCache` wants back.
     info = wallet.getMintInfo().cache;
     name = typeof info.name === "string" ? info.name.slice(0, 64) : undefined;
     description =
@@ -590,40 +514,32 @@ function persistMintSnapshot(
   });
 }
 
-// Forget every cached Wallet. Called after a panic wipe so a fresh identity
-// never reuses another identity's loaded keysets.
+// Drop all in-memory wallet state after a panic wipe, so a fresh identity
+// inherits nothing: keysets, throttles, in-flight marks (their transactions are
+// gone), the seed and the nutzap key (both from the wiped keychain). Bumping
+// the epoch stops in-flight work from writing back.
+//
+// A reconcile pass on the wire cannot be cancelled, but dropping its handle
+// stops later callers joining it. A kept seed would go on deriving proofs from a
+// phrase the user can no longer see, and a kept P2PK key would put the previous
+// identity's pubkey into the next kind 10019 after re-onboarding.
 export function resetWalletService(): void {
   wallets.clear();
-  // A pass in flight is walking transactions the wipe is about to delete. It
-  // cannot be cancelled mid-round-trip, but clearing the handle stops a later
-  // caller joining it and stops the throttle carrying across the reset.
   reconcileInFlight = null;
   lastReconcileAtMs = 0;
-  // A new wallet must not inherit the old one's "checked recently" marks: the
-  // accounts behind them no longer exist.
   lastStateCheckAtMs.clear();
-  // Same for swaps the wipe just orphaned. A request still on the wire cannot be
-  // recalled, but the transaction it belonged to is gone, so holding its id back
-  // from a later pass protects nothing and only leaks the entry.
   swapsInFlight.clear();
-  // Same for melts, for the same reason.
   meltsInFlight.clear();
+  keysetFetchedAtMs.clear();
   walletEpoch += 1;
-  // The recovery phrase went with the keychain the wipe just cleared, so the
-  // in-memory seed has to go too. Leaving it would keep deriving proofs from a
-  // phrase the user can no longer see or write down.
   activeSeed = null;
-  // Same for the cached P2PK key: it resolved from an item the wipe destroyed.
-  // Re-onboarding in the same process would otherwise publish a kind 10019
-  // naming the previous identity's pubkey.
   nutzapPrivKey = null;
 }
 
 // ---- Store readiness ----
 
-// Open the encrypted proof store. Call once at app start, before the wallet tab
-// can be reached. Resolves false when the Keychain/Keystore is unavailable, in
-// which case the wallet stays locked rather than falling back to plaintext.
+// Open the encrypted proof store once at app start. False when the keystore is
+// unavailable: the wallet stays locked rather than falling back to plaintext.
 export async function initWalletService(): Promise<boolean> {
   try {
     await bootstrapWalletStorage();
@@ -631,52 +547,36 @@ export async function initWalletService(): Promise<boolean> {
     return false;
   }
   rehydrateAfterReset();
-  // Opening the file is not the same as having read it. zustand overwrites the
-  // store with the persisted snapshot when hydration lands, so anything that
-  // credits or spends before that point is discarded. Wait for it, then check:
-  // hydration can fail, and a failed read must not look like an empty wallet.
+  // Hydration overwrites the store when it lands, discarding earlier writes,
+  // and a failed read must not look like an empty wallet.
   await whenWalletHydrated();
   if (!isWalletStorageReady()) return false;
-  // Backup state comes from the keychain, not the store, so it has to be read
-  // before the first mint operation or new proofs would be created with random
-  // secrets and quietly fall outside the user's recovery phrase.
+  // Before the first mint operation, or new proofs get random secrets outside
+  // the recovery phrase.
   try {
     await loadBackupState();
   } catch {
-    // A keychain read failure leaves backup off, which is the safe default:
-    // the wallet still works, it just says nothing is covered.
+    // Backup stays off: the wallet works, it just reports nothing covered.
   }
   return true;
 }
 
 // ---- Backup lifecycle ----
 
-// Load the recovery phrase from the keychain, if the user has set one up, and
-// switch new proof creation over to deterministic secrets. Called once at
-// startup. A missing phrase is the normal case and simply leaves backup off.
+// Load the recovery phrase and switch new proofs to deterministic secrets.
 async function loadBackupState(): Promise<void> {
   let phrase = await loadStoredPhrase();
 
-  // No phrase yet: make one now rather than at opt-in.
-  //
-  // Deterministic secrets (NUT-13) are the substrate every other recovery
-  // mechanism stands on, not a feature. Without a seed, cashu-ts mints RANDOM
-  // secrets, and a random secret can never be re-derived, so NUT-09 restore has
-  // nothing to ask the mint about. Deferring the seed to an opt-in therefore
-  // meant the default user's coins were permanently unrecoverable, and the
-  // window was silent: they only discovered it after losing the phone.
-  //
-  // This deliberately does NOT turn `backupEnabled` on. That flag means the
-  // user has seen and confirmed their phrase, which is a promise about them
-  // rather than about the crypto, and the Wallet screen's shield reads it.
-  // Making the coins recoverable is ours to do; telling the user they are
-  // covered is only true once they hold the words.
+  // No phrase yet: make one now, not at opt-in. Random secrets can never be
+  // re-derived, so NUT-09 restore would have nothing to ask the mint about, and
+  // a default user would only learn that after losing the phone.
+  // `backupEnabled` stays off: it means the user has seen the words, and the
+  // Wallet screen's shield reads it.
   if (phrase === null) {
-    // The keychain is the source of truth. A phrase that has gone missing while
-    // the flag still says backup is on means a keychain reset, or a device
-    // restore that did not carry keychain items. The coins derived from the old
-    // phrase are past saving, but claiming they are covered is worse than
-    // saying so, and the fresh seed below only protects coins minted from here.
+    // The keychain is the source of truth. A missing phrase with backup on
+    // means a keychain reset or a device restore that dropped keychain items;
+    // the old coins are unrecoverable, so stop saying they are covered. The
+    // fresh seed covers only coins minted from here.
     if (useWalletStore.getState().backupEnabled) {
       useWalletStore.getState().setBackupEnabled(false);
     }
@@ -684,13 +584,10 @@ async function loadBackupState(): Promise<void> {
       const fresh = generateRecoveryPhrase();
       await storePhrase(fresh);
       phrase = fresh;
-      // Anything marked as derived came from the phrase that went missing, and
-      // the fresh one cannot rebuild it.
+      // Derived marks belong to the lost phrase.
       useWalletStore.getState().clearDerived();
     } catch {
-      // The keychain is unavailable (locked device, or a platform refusing the
-      // write). Random secrets are the honest fallback: the wallet still works
-      // and simply is not recoverable, which is where it stood before.
+      // Keychain refused the write: random secrets, working but unrecoverable.
       activeSeed = null;
       if (useWalletStore.getState().backupEnabled) {
         useWalletStore.getState().setBackupEnabled(false);
@@ -705,18 +602,13 @@ async function loadBackupState(): Promise<void> {
 
 export interface BackupSetup {
   phrase: string;
-  // True when a phrase already existed, so this returned the old one rather
-  // than generating a new one. Generating a second phrase would orphan every
-  // coin derived from the first.
+  // The existing phrase was returned; a second one would orphan every coin
+  // derived from the first.
   existed: boolean;
 }
 
-// Turn on backup, generating a phrase if there is not already one.
-//
-// This is deliberately one-way. There is no "turn backup off", because once
-// coins are derived from a phrase, deleting the phrase is indistinguishable
-// from deleting the coins. The only thing that removes it is the panic wipe,
-// which is destroying everything anyway.
+// One-way: deleting a phrase coins derive from is deleting the coins. Only the
+// panic wipe removes it.
 export async function enableWalletBackup(): Promise<BackupSetup> {
   assertUnlocked();
   const existing = await loadStoredPhrase();
@@ -731,21 +623,16 @@ export async function enableWalletBackup(): Promise<BackupSetup> {
   await storePhrase(phrase);
   activeSeed = recoveryPhraseToSeed(phrase);
   useWalletStore.getState().setBackupEnabled(true);
-  // Existing proofs stay random until they are swapped, so every wallet has to
-  // be rebuilt with the seed before the next mint operation can start covering
-  // them.
+  // Held proofs stay random until swapped; rebuilt wallets derive from here.
   invalidateWallets();
   return { phrase, existed: false };
 }
 
-// The phrase, for the "view recovery phrase" screen. Null when backup is off.
 export function getRecoveryPhrase(): Promise<string | null> {
   return loadStoredPhrase();
 }
 
-// Record that the user proved they copied the phrase out. Kept in the service
-// rather than written from the UI so the flag can never claim more than
-// `enableWalletBackup` actually set up.
+// Here rather than in the UI so the flag never claims more than a live seed.
 export function markBackupVerified(): void {
   if (activeSeed === null) return;
   useWalletStore.getState().setBackupVerified(true);
@@ -763,33 +650,23 @@ export interface RestoreResult {
   // Recovered, confirmed-unspent value per unit.
   recovered: Record<string, number>;
   proofCount: number;
-  // Proofs the mint had signed but already marked spent. Reported so a user who
-  // recovers "nothing" understands it is because the money was spent, not
-  // because the restore failed.
+  // Signed but spent, so "recovered nothing" reads as spent, not as a failure.
   alreadySpent: number;
   mintsScanned: string[];
   // Mints that could not be reached; their balance may still be out there.
   mintsFailed: { mintUrl: string; reason: string }[];
 }
 
-// How far past the last signature to keep looking before deciding a keyset is
-// exhausted. Counters only ever increase by one per output, so a real gap this
-// wide does not occur in practice; 200 is comfortable headroom.
+// Empty counters to scan past the last signature before a keyset is exhausted.
+// Counters advance one per output, so 200 is ample headroom.
 const RESTORE_GAP_LIMIT = 200;
 const RESTORE_BATCH_SIZE = 100;
 
-// Rebuild the wallet from a recovery phrase (NUT-09).
-//
-// For every keyset at every mint, this re-derives the secrets the phrase would
-// have produced and asks the mint which of them it signed. The mint answers
-// from its own records, so this works on a completely fresh install with an
-// empty proof store.
-//
-// Two things it cannot do, both worth surfacing in the UI:
-//   * It has to know which mint to ask. A mint the user forgets to add is
-//     simply never queried, and its balance stays invisible.
-//   * It only recovers coins whose secrets came from this phrase. Anything
-//     received and never swapped carried the sender's secrets and is gone.
+// NUT-09 restore: re-derive every keyset's secrets and ask the mint which it
+// signed. The mint answers from its own records, so this works on a fresh
+// install. Two limits the UI must surface: a mint not named is never asked, and
+// only coins whose secrets came from this phrase return (a receive never
+// swapped carried the sender's secrets and is lost).
 export async function restoreFromRecoveryPhrase(params: {
   phrase: string;
   mintUrls: string[];
@@ -818,26 +695,20 @@ export async function restoreFromRecoveryPhrase(params: {
   const seed = recoveryPhraseToSeed(phrase);
   const epoch = walletEpoch;
   const previous = await loadStoredPhrase();
-  // A wipe during the read must not be followed by writing a phrase back into
-  // the keychain it just cleared.
+  // Never write a phrase into a keychain a wipe just cleared.
   assertSameWallet(epoch);
 
-  // Switch over before scanning: the restore itself creates no new outputs, but
-  // everything after it must derive from this phrase or the recovered coins and
-  // the new ones would need two different backups.
+  // Switch before scanning so new outputs derive from the restored phrase.
   await storePhrase(phrase);
   assertSameWallet(epoch);
-  // Coins held now came from the phrase being replaced, which is about to stop
-  // existing anywhere. They stay spendable, but reading them as covered would
-  // promise a restore the new words cannot perform, so they are marked
-  // uncovered and the next refresh re-issues them under the new phrase.
+  // Coins held now derive from the replaced phrase: spendable, but uncovered
+  // until a refresh re-issues them.
   if (previous !== null && normalizeRecoveryPhrase(previous) !== phrase) {
     useWalletStore.getState().clearDerived();
   }
   activeSeed = seed;
   useWalletStore.getState().setBackupEnabled(true);
-  // Someone restoring has demonstrably got the phrase in front of them, so
-  // there is nothing left to prove with a write-it-down check.
+  // Restoring proves the user holds the phrase.
   useWalletStore.getState().setBackupVerified(true);
   invalidateWallets();
 
@@ -851,14 +722,10 @@ export async function restoreFromRecoveryPhrase(params: {
   for (const rawUrl of params.mintUrls) {
     const url = normalizeMintUrl(rawUrl);
     try {
-      // Restore has to run once PER UNIT, not once per mint. `getKeysets()` is
-      // scoped to the wallet's unit, so a sat-only pass never asks about a usd
-      // or eur keyset and reports "recovered nothing", which reads to the user
-      // as "the money was spent" rather than "we did not look".
-      //
-      // One refreshed wallet populates the mint record, including every unit it
-      // issues, which is what makes the list available on a fresh install where
-      // nothing is cached yet.
+      // Once per unit: `getKeysets()` is unit-scoped, so a sat-only pass never
+      // sees usd keysets and reports "recovered nothing", which reads as "spent"
+      // rather than "not looked". The forced refresh records every unit the
+      // mint issues, even on a fresh install.
       await getWallet(url, params.unit ?? "sat", { forceRefresh: true });
       const units =
         params.unit !== undefined
@@ -877,10 +744,8 @@ export async function restoreFromRecoveryPhrase(params: {
             total: keysets.length,
           });
 
-          // `batchRestore` takes the keyset id directly, so the main wallet can
-          // scan every keyset. Going through `withKeyset` would look tidier but
-          // it builds the new wallet without a unit, defaulting it to sat, which
-          // then fails to bind any keyset in another currency.
+          // Not `withKeyset`: it builds a wallet defaulting to sat, which cannot
+          // bind a keyset in another unit.
           const { proofs, lastCounterWithSignature } =
             await wallet.batchRestore(
               RESTORE_GAP_LIMIT,
@@ -889,17 +754,13 @@ export async function restoreFromRecoveryPhrase(params: {
               keyset.id,
             );
 
-          // Push the cursor past everything the mint has ever signed for this
-          // keyset. Without this the next swap would re-derive a counter the mint
-          // already knows and be rejected as a duplicate.
+          // Past every signed counter, or the next swap is a duplicate.
           assertSameWallet(epoch);
           if (typeof lastCounterWithSignature === "number") {
             store.advanceCounter(keyset.id, lastCounterWithSignature + 1);
           }
           if (proofs.length === 0) continue;
 
-          // The mint signed these, but plenty will have been spent since. Only
-          // the unspent ones are money.
           const grouped = await wallet.groupProofsByState(proofs);
           assertSameWallet(epoch);
           alreadySpent += grouped.spent.length;
@@ -923,9 +784,7 @@ export async function restoreFromRecoveryPhrase(params: {
     }
   }
 
-  // One row per unit recovered. A single row cannot describe a restore that
-  // brought back both sat and usd, and summing them would invent a number in no
-  // currency at all.
+  // One row per unit: summing sat and usd would be no currency at all.
   for (const [unit, amount] of Object.entries(recovered)) {
     if (amount <= 0) continue;
     recordTx({
@@ -953,11 +812,8 @@ function lockedError(): WalletError {
   );
 }
 
-// Whether the wallet an operation started in is gone. A panic wipe can land
-// while a mint round trip is open, and anything the operation writes afterwards
-// lands in the store the wipe just emptied: the old wallet's proofs and history
-// back in memory, and on disk with the next write. Checked after every await
-// that precedes a write.
+// Whether a panic wipe landed since the operation began. Checked after every
+// await that precedes a write, or the old wallet's proofs and history return.
 function walletReplaced(epoch: number): boolean {
   return walletEpoch !== epoch || !isWalletStorageReady();
 }
@@ -973,9 +829,7 @@ export interface AddMintResult {
   units: string[];
 }
 
-// Add a mint after checking it really is one. An unreachable or non-Cashu URL is
-// rejected up front rather than being saved and failing on first use: a mint
-// row that cannot mint is worse than no row.
+// Unreachable or non-Cashu URLs are rejected up front rather than saved.
 export async function addMint(rawUrl: string): Promise<AddMintResult> {
   assertUnlocked();
   const url = normalizeMintUrl(rawUrl);
@@ -988,8 +842,7 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     throw new WalletError("no-mint", t("wallet.svc.needs_https"));
   }
-  // http is allowed only for loopback (running Nutshell locally). Anywhere else
-  // it would send proofs over an unauthenticated channel.
+  // http only for loopback (a local Nutshell); elsewhere proofs go unauthenticated.
   const isLoopback =
     parsed.hostname === "localhost" ||
     parsed.hostname === "127.0.0.1" ||
@@ -1020,37 +873,11 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
 
 // ---- Recoverable swaps ----
 
-// Prepare a swap so that losing its answer is survivable.
-//
-// `wallet.receive` and `wallet.send` prepare, request and unblind inside one
-// call. That is fine right up until the response goes missing, at which point
-// the mint has spent the inputs and the blinding factors that would unblind the
-// outputs have gone with the call frame. There is no quote to ask about
-// afterwards the way a melt has, so the money is simply gone, and nothing on
-// this device records that it ever existed. Splitting the call is what fixes it,
-// and the order is the entire guarantee:
-//
-//   1. prepare   local. Picks the inputs and builds the blinded outputs.
-//   2. sign      local, and exactly once. A P2PK witness is a BIP-340 signature
-//                over randomised auxiliary data, so signing at replay time
-//                would produce a different request body and miss the mint's
-//                NUT-19 cache, which is the one thing making a replay safe.
-//   3. persist   the caller writes the transaction with `stored` on it.
-//   4. complete  the only step that touches the network.
-//
-// Steps 3 and 4 stay with the caller because only it knows what the transaction
-// means. This returns the live preview and its storable form together so the
-// two cannot drift.
-// Secrets an unfinished swap is already answerable for.
-//
-// They stay spendable, because a token taken in while its swap was in doubt has
-// to work in a dead zone. They are not ordinary balance though: a transaction
-// names them, and only its replay can learn from the mint what became of them.
-//
-// So anything else that asks the mint about the balance leaves them alone.
-// A refresh that dropped them for being spent would take the balance down, file
-// a "spent proofs removed" receipt, and watch the replay put the same value back
-// a moment later: every step correct, the sequence unreadable.
+// Inputs of unfinished swaps. They stay spendable (a dead zone still needs
+// them), but only the swap's replay may ask the mint what became of them, so
+// other balance checks leave them alone. A refresh that dropped them as spent
+// would lower the balance, file a "spent proofs removed" receipt, then watch the
+// replay put the same value back: each step correct, the history unreadable.
 function secretsAwaitingSwapReplay(): Set<string> {
   const secrets = new Set<string>();
   for (const tx of useWalletStore.getState().history) {
@@ -1062,6 +889,19 @@ function secretsAwaitingSwapReplay(): Set<string> {
   return secrets;
 }
 
+// Prepare a swap so losing its answer is survivable. `wallet.receive` and
+// `wallet.send` prepare, request and unblind in one call, so a lost response
+// leaves the inputs spent and the blinding factors gone with the call frame;
+// unlike a melt or deposit there is no quote to ask afterwards, and nothing on
+// the device records the outputs existed. Order is the guarantee:
+//   1. prepare   local: inputs and blinded outputs.
+//   2. sign      local, exactly once. BIP-340 uses random aux data, so signing
+//                at replay changes the body and misses the NUT-19 cache.
+//   3. persist   the caller writes the transaction with `stored`.
+//   4. complete  the only network step.
+// Steps 3 and 4 are the caller's because only it knows what the transaction
+// means. The live preview and its stored form are returned together so they
+// cannot drift.
 async function prepareRecoverableSwap(
   wallet: Wallet,
   prepare: () => Promise<SwapPreview>,
@@ -1078,26 +918,16 @@ async function prepareRecoverableSwap(
   return { preview, stored: serializeSwapPreview(preview) };
 }
 
-// Transactions whose swap request is out on the wire in this process.
-//
-// `reconcile` skips these. A preview on disk means "the mint may have this"
-// forever after; it does not mean the answer is overdue, and a pass that fires
-// while the original request is still in flight spends a round trip asking for
-// something already on its way. The two would not corrupt anything - the mint
-// returns the same signatures and `addProofs` deduplicates by secret - but they
-// would interleave two writers over one transaction for no gain.
-//
-// Deliberately in memory only. A process that dies holding entries here is
-// exactly the case the preview exists for, and the next launch must see those
-// transactions as replayable rather than as in flight.
+// Swaps on the wire in this process, which `reconcile` skips. A stored preview
+// means "the mint may have this" forever, not "the answer is overdue". A replay
+// racing the original would not corrupt anything (same signatures, `addProofs`
+// dedupes by secret) but puts two writers on one transaction. Memory only:
+// after a crash the next launch must see them as replayable.
 const swapsInFlight = new Set<string>();
 
-// Melts with a request on the wire in this process, skipped by `reconcile` for
-// a sharper reason than swaps are. Between the blanks being saved and the mint
-// marking the quote PENDING, the quote still reads UNPAID, and a pass that
-// believed it would release the reservation and fail the transaction a moment
-// before the melt spends those same proofs. In memory only, like the swaps: a
-// process that dies mid-melt leaves exactly what `recoverMeltChange` is for.
+// Melts on the wire, also skipped by `reconcile`: until the mint marks the
+// quote PENDING it reads UNPAID, and a pass would release proofs the melt is
+// about to spend. Memory only; a crash leaves `recoverMeltChange` to finish.
 const meltsInFlight = new Set<string>();
 
 async function completeSwapInFlight(
@@ -1131,13 +961,73 @@ export interface ReceiveResult {
   dleq: "valid" | "unchecked";
 }
 
-// Take a token string into the wallet.
-//
-// The order matters. We decode, then verify what can be verified offline, then
-// try to swap at the mint, and only fall back to storing the raw proofs when
-// the mint is unreachable. A forged token (DLEQ fails) is refused outright and
-// never reaches the store, which is the case the old receive path could not
-// catch at all: it credited the balance from any well-formed string.
+// Per-mint throttle for keyset fetches triggered by chat tokens.
+const keysetFetchedAtMs = new Map<string, number>();
+const KEYSET_FETCH_THROTTLE_MS = 5 * 60 * 1000;
+
+// Held mints whose tokens in `text` need a newer keyset list to decode. A mint
+// the user has not added is left out: nothing may contact it.
+function heldMintsOfUnresolvedTokens(
+  text: string,
+): { mintUrl: string; unit: string }[] {
+  const state = useWalletStore.getState();
+  const held: { mintUrl: string; unit: string }[] = [];
+  for (const mint of mintsOfUnresolvedTokens(text, selectKeysetIds(state))) {
+    try {
+      const url = normalizeMintUrl(mint.mintUrl);
+      if (state.mints[url] !== undefined) held.push({ ...mint, mintUrl: url });
+    } catch {
+      // Not a URL.
+    }
+  }
+  return held;
+}
+
+// Fetch the mint's current keysets and decode again. Throws when the mint is
+// out of reach, since "unreadable" would then be false.
+async function decodeUnderFreshKeysets(
+  raw: string,
+  epoch: number,
+): Promise<TokenInfo | null> {
+  const bare = bareToken(raw);
+  const [mint] = bare === null ? [] : heldMintsOfUnresolvedTokens(bare);
+  if (mint === undefined) return null;
+  try {
+    assertMintNetworkAllowed();
+    await getWallet(mint.mintUrl, mint.unit, { forceRefresh: true });
+  } catch (err) {
+    const walletErr = asWalletError(err, "offline");
+    if (walletErr.code !== "offline") throw walletErr;
+    throw new WalletError(
+      "offline",
+      t("wallet.svc.keyset_unknown"),
+      t("wallet.svc.keyset_unknown_body"),
+    );
+  }
+  assertSameWallet(epoch);
+  return decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+}
+
+// Fetch keysets for chat tokens that show as text; the store update re-renders
+// them as cards. Quiet on failure, throttled per mint.
+export async function fetchKeysetsForTokenText(text: string): Promise<void> {
+  if (!isWalletStorageReady()) return;
+  for (const mint of heldMintsOfUnresolvedTokens(text)) {
+    const key = accountKey(mint.mintUrl, mint.unit);
+    const last = keysetFetchedAtMs.get(key) ?? 0;
+    if (Date.now() - last < KEYSET_FETCH_THROTTLE_MS) continue;
+    keysetFetchedAtMs.set(key, Date.now());
+    try {
+      assertMintNetworkAllowed();
+      await getWallet(mint.mintUrl, mint.unit, { forceRefresh: true });
+    } catch {
+      // Offline or refused: the token stays as text until the next try.
+    }
+  }
+}
+
+// Decode, verify DLEQ offline, swap at the mint, and store the raw proofs only
+// when the mint is unreachable. A failed DLEQ is refused and never stored.
 export async function receiveToken(
   raw: string,
   opts: { preferOffline?: boolean; counterparty?: string } = {},
@@ -1145,15 +1035,13 @@ export async function receiveToken(
   assertUnlocked();
   const epoch = walletEpoch;
 
-  const info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+  let info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+  if (!info && opts.preferOffline !== true) {
+    info = await decodeUnderFreshKeysets(raw, epoch);
+  }
   if (!info) {
-    // A failed decode has two very different causes and the user can only act
-    // on one of them. "Malformed" is a dead end; "from a mint you have not
-    // added" is a thing they can fix in thirty seconds.
-    //
-    // `getTokenMetadata` is what separates them: it reads the mint and unit
-    // without needing any keyset data, so it still answers when an unresolved
-    // short keyset id is exactly what stopped the full decode.
+    // Tell "unknown mint" (fixable) from "malformed". `getTokenMetadata` needs
+    // no keyset data, so it answers when an unresolved short id stopped decode.
     const bare = bareToken(raw);
     if (bare !== null) {
       let mintUrl: string | undefined;
@@ -1184,14 +1072,9 @@ export async function receiveToken(
   const url = normalizeMintUrl(info.mintUrl);
   const record = store.mints[url];
 
-  // The mint has to be one the user chose.
-  //
-  // Crediting a token silently adds its mint, so without this a stranger's
-  // message could enrol a mint nobody vetted and leave this wallet holding its
-  // paper. The nutzap path checks the same way.
-  //
-  // Refusing costs the user nothing: a bearer token is not consumed by being
-  // refused, so they can add the mint and receive again.
+  // Only mints the user chose, or a stranger's token could enrol an unvetted
+  // mint and leave this wallet holding its paper. Refusing consumes nothing:
+  // add the mint and receive again. The nutzap path enforces the same rule.
   if (record === undefined) {
     throw new WalletError(
       "no-mint",
@@ -1200,8 +1083,7 @@ export async function receiveToken(
     );
   }
 
-  // Offline verification first: it costs nothing and it is the only thing
-  // standing between a forged token and the balance when there is no network.
+  // With no network, DLEQ is the only defence against a forged token.
   const dleq = verifyTokenOffline(
     info.token,
     record?.keysetCache as KeyChainCache | undefined,
@@ -1215,7 +1097,6 @@ export async function receiveToken(
     );
   }
 
-  // Everything is already ours: report it instead of showing a phantom credit.
   const existing = new Set(
     (store.proofs[accountKey(url, info.unit)] ?? []).map((p) => p.secret),
   );
@@ -1230,15 +1111,8 @@ export async function receiveToken(
     };
   }
 
-  // Our own send that has not settled yet. Sending moves proofs out of the
-  // spendable pool and into reservation, so the check above cannot see them and
-  // this would otherwise look like a stranger's token.
-  //
-  // Redeeming it would work, but badly: it pays the mint a swap fee to hand
-  // back money we already hold, files it in history as money received, and
-  // leaves the original send pending until `reconcile` happened to notice the
-  // proofs were spent. Reclaim on that transaction does the same job directly
-  // and settles the balance immediately, so point there instead.
+  // Our own unsettled send (reserved proofs). Redeeming would pay a swap fee
+  // and file it as a receipt; reclaiming the send settles it directly.
   const reservedSecrets = new Set<string>();
   for (const entry of Object.values(store.reserved)) {
     for (const proof of entry.proofs) reservedSecrets.add(proof.secret);
@@ -1260,10 +1134,8 @@ export async function receiveToken(
   const dleqLabel =
     dleq.status === "valid" ? ("valid" as const) : ("unchecked" as const);
 
-  // A token already taken in once, whose own proofs have since been swapped for
-  // fresh ones, so the checks above cannot see it. Staging it again would open a
-  // pending "Received" row for a swap the mint is certain to refuse, and that
-  // row would sit there until `reconcile` got round to failing it.
+  // Already received and swapped, so the checks above miss it. Staging again
+  // would open a pending row for a swap the mint must refuse.
   const firstSecret = info.token.proofs[0]?.secret;
   if (firstSecret !== undefined && store.claimedTokens.includes(firstSecret)) {
     return {
@@ -1276,28 +1148,19 @@ export async function receiveToken(
     };
   }
 
-  // Online path: swap the proofs so they are provably unspent and no longer
-  // known to the sender. This is what makes a received token safe to hold.
+  // Swap so the proofs are provably unspent and unknown to the sender.
   if (opts.preferOffline !== true) {
     const txId = newTxId();
-    // Whether the swap request was ever staged, which is the same question as
-    // "could the mint have seen it". Everything before this point is local, so
-    // a failure there needs none of the recovery machinery below.
+    // Whether the mint could have seen the request.
     let staged = false;
     try {
       assertMintNetworkAllowed();
       const wallet = await getWallet(url, info.unit);
-      // `requireDleq` makes cashu-ts reject a proof whose witness does not
-      // verify against the freshly loaded keys, closing the window where our
-      // cached keys were missing and the offline check came back "unchecked".
-      //
-      // `privkey` is our NIP-61 P2PK key, and it is what makes a locked token
-      // claimable at all. Most tokens are ordinary bearer proofs and ignore it,
-      // but a nutzap whose relay publish failed is delivered to the recipient as
-      // a token in a DM, and those proofs are locked to this key: without a
-      // witness the mint refuses the swap, so the money could be neither claimed
-      // by them nor reclaimed by the sender. Passing it costs nothing on every
-      // other path.
+      // `requireDleq` checks DLEQ against freshly loaded keys, covering an
+      // offline "unchecked" from missing cached keys. The NIP-61 key unlocks a
+      // nutzap delivered by DM after its relay publish failed: without the
+      // witness the mint refuses, and the money is neither claimable nor
+      // reclaimable. Bearer tokens ignore it.
       const { preview, stored } = await prepareRecoverableSwap(
         wallet,
         () =>
@@ -1307,8 +1170,7 @@ export async function receiveToken(
         await getNutzapPrivKeyHex(),
       );
       assertSameWallet(epoch);
-      // On disk before the request leaves. From here a process kill costs the
-      // user a delay rather than the money.
+      // On disk before the request leaves, so a kill costs a delay, not money.
       store.addTx({
         id: txId,
         kind: "receive",
@@ -1340,21 +1202,13 @@ export async function receiveToken(
     } catch (err) {
       if (walletReplaced(epoch)) throw lockedError();
       const walletErr = asWalletError(err, "mint-error");
-      // Nothing here clears the preview, whatever the mint said. An error never
-      // settles the only question that matters - did the mint take the inputs -
-      // and `reconcile` is the one thing that can find out, by replaying the
-      // request and, failing that, asking the mint whether it ever signed those
-      // outputs.
-      //
-      // That includes "already spent", which is not the plain refusal it reads
-      // as. cashu-ts retries a request lost to the network when the mint
-      // advertises NUT-19, so this may well be the mint describing our OWN
-      // first attempt, which succeeded. Treating it as "somebody beat us to it"
-      // and dropping the preview would throw away the outputs it just signed.
+      // Never clear the preview here, not even on "already spent" (possibly our
+      // own first attempt). Only `reconcile` can learn whether the mint took
+      // the inputs.
       if (staged) store.updateTx(txId, { error: walletErr.message });
       if (walletErr.code === "mint-error" && isAlreadySpentError(walletErr)) {
-        // Still reported as already spent: nothing has been credited, and this
-        // is what the person waiting on the receipt needs to be told now.
+        // Still reported as spent: nothing is credited yet, and the preview
+        // stays for `reconcile` to settle.
         throw new WalletError(
           "already-spent",
           t("wallet.svc.already_spent"),
@@ -1364,14 +1218,10 @@ export async function receiveToken(
       if (walletErr.code !== "offline" && walletErr.code !== "tor-blocked") {
         throw walletErr;
       }
-      // Offline or Tor-blocked. Two different situations wear the same error
-      // here, and the wallet has to survive both: the request may never have
-      // left the device (the normal dead-zone receive, where the token's proofs
-      // are still good), or it may have reached the mint and only the answer
-      // was lost. So do both things. The proofs are stored unverified, which is
-      // what makes ecash work with the radio off, and the preview stays on the
-      // same transaction. If the swap did happen, the replay drops those proofs
-      // as it credits the real outputs, so the value is never counted twice.
+      // The request may never have left, or only its answer was lost. Store
+      // the proofs unverified and keep the preview on the same transaction; a
+      // replay drops them as it credits the real outputs, so nothing counts
+      // twice.
       return storeOffline(url, info, walletErr.message, dleqLabel, {
         counterparty: opts.counterparty,
         ...(staged ? { txId } : {}),
@@ -1384,14 +1234,9 @@ export async function receiveToken(
   });
 }
 
-// Keep the token's own proofs, unverified. This is the offline mesh case: value
-// really has moved, and refusing it would make the app useless in the situation
-// it exists for. It is recorded as unverified so the UI can be honest that the
-// mint has not confirmed it, and so `refreshAccount` redeems it first.
-// `txId` names a receive transaction the caller has already opened, which is the
-// case where a swap was staged and its answer never came back. Reusing it keeps
-// one receipt per token, and keeps the swap preview attached to the row that
-// records the money it is trying to recover.
+// Keep the token's own proofs unverified: the offline mesh case, redeemed first
+// by `refreshAccount`. `txId` is the receive already opened for a staged swap,
+// so the token keeps one receipt with its preview attached.
 function storeOffline(
   mintUrl: string,
   info: TokenInfo,
@@ -1440,25 +1285,16 @@ function storeOffline(
   };
 }
 
-// Credit proofs the mint has just signed for us.
-//
-// `derived` is not a parameter because it is never a judgement call: a proof is
-// restorable exactly when the wallet that created it had the seed loaded. These
-// proofs always came out of a wallet built by `getWallet`, so `isSeedActive()`
-// at this moment is the truth.
-//
-// `addProofs` deduplicates by secret, so passing a list that also contains
-// proofs we already hold (as `wallet.send` does, since its `keep` array carries
-// untouched originals alongside fresh change) leaves those records exactly as
-// they were rather than relabelling them.
-// Remember that this exact token has been taken in, so a payment card in a chat
-// can show "Claimed" rather than a button whose only outcome is an error. Keyed
-// on the first proof's secret, which is random and unique to the token.
+// Lets a chat payment card show "Claimed". Keyed on the first proof's secret,
+// which is unique to the token.
 function markClaimed(info: TokenInfo): void {
   const first = info.token.proofs[0]?.secret;
   if (first !== undefined) useWalletStore.getState().markTokenClaimed(first);
 }
 
+// Credit proofs the mint just signed. They came from a `getWallet` wallet, so
+// `isSeedActive()` now is whether they are derived. `addProofs` dedupes by
+// secret, leaving already-held originals (as in a `keep` array) untouched.
 function creditProofs(
   mintUrl: string,
   unit: string,
@@ -1486,18 +1322,11 @@ export interface SendQuote {
   spend: number;
   // Mint input fee the recipient would otherwise have paid.
   fee: number;
-  // False when the denominations held cannot make this amount exactly. The
-  // caller must get explicit consent, because offline there is no change: the
-  // difference is a gift to the recipient.
+  // False when held denominations cannot make the amount. Needs explicit
+  // consent: offline there is no change, so the excess is a gift.
   exact: boolean;
-  // How old the mint's fee schedule was when this quote was priced, in ms, or
-  // undefined when it was priced against a live fetch.
-  //
-  // Fees are cached for a day so the wallet can price a send with no signal,
-  // which is the right trade for an offline-first wallet and still a number the
-  // user should be able to see the age of. A mint that has raised its input fee
-  // since the cache was written will take more than the quote says, and the
-  // difference is real money the sender was not shown.
+  // Age of the cached fee schedule this was priced from, so the UI can show
+  // it; a mint that raised fees since will take more. Undefined when live.
   pricedFromCacheAgeMs?: number;
   proofs: StoredProof[];
 }
@@ -1507,16 +1336,7 @@ export interface PreparedSend extends SendQuote {
   token: string;
 }
 
-// Price a send without committing to it, so the UI can show "they receive N,
-// you spend M" before the user taps.
-//
-// Fees are the reason these two numbers differ. Under NUT-02 the mint charges
-// the *recipient* an input fee when they swap, so sending exactly N leaves them
-// with less than N. We select enough to cover the fee, which is what every
-// production Cashu wallet does and what makes "send 100" mean "they get 100".
-// Age of the fee schedule a quote was priced against, or undefined when it was
-// fetched live in this session. `keysetCacheAtMs` is stamped whenever the mint's
-// keysets (and with them `input_fee_ppk`) are refreshed.
+// `keysetCacheAtMs` is stamped whenever keysets (and `input_fee_ppk`) refresh.
 function feeCacheAgeMs(mintUrl: string): number | undefined {
   const at = storedMint(mintUrl)?.keysetCacheAtMs;
   if (at === undefined) return undefined;
@@ -1524,6 +1344,8 @@ function feeCacheAgeMs(mintUrl: string): number | undefined {
   return age > 0 ? age : undefined;
 }
 
+// Price a send without committing. NUT-02 charges the recipient an input fee
+// on swap, so we select enough to cover it: "send 100" means "they get 100".
 export async function quoteSend(params: {
   amount: number;
   mintUrl?: string;
@@ -1539,9 +1361,8 @@ export async function quoteSend(params: {
   const account = pickAccount(amount, unit, params.mintUrl);
   const record = storedMint(account.mintUrl);
 
-  // With the mint's keysets cached, defer to cashu-ts: its RGLI selector and
-  // fee handling are the reference implementation and get the edge cases
-  // (rotated keysets, mixed fee schedules) right.
+  // With keysets cached, defer to cashu-ts's selector and fee handling, which
+  // get rotated keysets and mixed fee schedules right.
   try {
     const wallet = await getWallet(account.mintUrl, unit, { offline: true });
     const proofLikes = account.proofs.map(toProofLike);
@@ -1551,25 +1372,15 @@ export async function quoteSend(params: {
     });
     const selected = matchStored(account.proofs, result.send);
     const spend = selected.reduce((s, p) => s + p.amount, 0);
-    // A selection is only a quote if it actually covers the amount.
-    //
-    // `matchStored` maps cashu-ts's chosen proofs back to ours BY SECRET and
-    // silently drops anything it cannot find. That is the right shape for the
-    // lookup and the wrong shape to trust blindly: if the mapping loses proofs
-    // for any reason, this returned `exact: true` with a short (or empty)
-    // proof list and a NEGATIVE fee, and `prepareSend` went on to reserve
-    // nothing, serialise an empty token, and open a pending send for the full
-    // amount. The user is told the payment went out; the recipient receives a
-    // token worth nothing. Nothing downstream could detect it, because every
-    // field said the send had succeeded.
-    //
-    // Throwing here falls into the catch below, which re-selects with our own
-    // selector and reports honestly - including refusing with "insufficient"
-    // when the balance genuinely cannot cover it. That is the same path a
-    // missing keyset cache already takes, so there is no new failure mode.
+    // `matchStored` silently drops proofs it cannot map. Trusted blindly, that
+    // quotes `exact: true` with a short or empty list and a negative fee, and
+    // `prepareSend` reserves nothing, serialises a worthless token and reports
+    // the payment sent; nothing downstream can tell. Throw into the catch,
+    // which re-selects with our own selector: the same path as a cold cache,
+    // so no new failure mode.
     if (selected.length !== result.send.length || spend < amount) {
       throw new Error(
-        // Not user-facing: this is an invariant breach aimed at a stack trace.
+        // Not user-facing: an invariant breach for the stack trace.
         `offline selection did not map back to stored proofs (matched ${String(selected.length)} of ${String(result.send.length)}, covering ${String(spend)} of ${String(amount)})`,
       );
     }
@@ -1585,8 +1396,7 @@ export async function quoteSend(params: {
     };
   } catch (err) {
     if (err instanceof WalletError && err.code === "locked") throw err;
-    // No exact offline match, or no cached keysets. Fall back to our own
-    // selector, which reports honestly whether it landed on the amount.
+    // No exact match or no cached keysets: our selector reports exactness.
     const selection = selectProofsForAmount(
       account.proofs,
       amount,
@@ -1611,19 +1421,15 @@ export async function quoteSend(params: {
   }
 }
 
-// Commit a quoted send: reserve the proofs, serialise the token, and open a
-// pending transaction. Nothing is destroyed. The proofs stay recoverable until
-// `confirmSend` is called, and the token string is kept on the transaction so
-// it can be re-shared after an app restart.
+// Reserve the proofs, serialise the token and open a pending transaction.
+// Nothing is destroyed until `confirmSend`; the token is kept for re-sharing.
 export async function prepareSend(params: {
   amount: number;
   mintUrl?: string;
   unit?: string;
   memo?: string;
   counterparty?: string;
-  // Set when the user has already been told the amount is not exact and chose
-  // to continue. Without it an inexact quote is refused, so overpaying can
-  // never happen by accident.
+  // The user accepted an inexact amount; otherwise it is refused.
   allowInexact?: boolean;
 }): Promise<PreparedSend> {
   const quote = await quoteSend(params);
@@ -1651,10 +1457,8 @@ export async function prepareSend(params: {
   );
 
   const store = useWalletStore.getState();
-  // The quote was priced before the awaits above, so another send may have
-  // claimed these coins in the meantime. Reserving is the point at which that
-  // is settled, and losing the race is a retry, not an error worth alarming
-  // anybody about.
+  // Another send may have claimed these coins since the quote; reserving
+  // settles the race, and losing it is a retry.
   if (!store.reserveProofs(txId, quote.mintUrl, quote.unit, quote.proofs)) {
     throw new WalletError(
       "insufficient",
@@ -1680,20 +1484,15 @@ export async function prepareSend(params: {
   return { ...quote, txId, token };
 }
 
-// The recipient has it. Drop the reservation for good.
 export function confirmSend(txId: string): void {
   const store = useWalletStore.getState();
   store.dropReserved(txId);
   store.updateTx(txId, { status: "completed" });
 }
 
-// The transfer never landed. Put the proofs back.
-//
-// This is safe precisely because the send was offline: no swap happened, so the
-// proofs are still valid at the mint. The risk is the recipient also kept a
-// copy of the token, which is why the caller should only offer reclaim when
-// delivery demonstrably failed, and why `refreshAccount` re-checks state with
-// the mint afterwards.
+// Put the proofs back; no swap happened, so they are valid at the mint. The
+// recipient may still hold a copy, so offer this only when delivery failed;
+// `refreshAccount` re-checks state afterwards.
 export function reclaimSend(txId: string): boolean {
   const store = useWalletStore.getState();
   const restored = store.releaseReserved(txId);
@@ -1702,16 +1501,13 @@ export function reclaimSend(txId: string): boolean {
   return true;
 }
 
-// Delivery failed in a way we cannot retry. Keeps the reservation (so the token
-// can still be reclaimed or re-shared) and records why.
+// Keeps the reservation so the token can still be reclaimed or re-shared.
 export function failSend(txId: string, reason: string): void {
   useWalletStore.getState().updateTx(txId, { error: reason });
 }
 
-// Choose the account to spend from: the mint the caller named, or the one that
-// can cover the amount on its own. Cashu proofs cannot be combined across
-// mints in a single token, so a balance split over two mints genuinely cannot
-// pay a sum that neither covers; that is a mint-level fact, not a UI shortcut.
+// The named mint, or one covering the amount alone: a token cannot combine
+// proofs from two mints.
 function pickAccount(
   amount: number,
   unit: string,
@@ -1764,8 +1560,8 @@ function pickAccount(
   );
 }
 
-// Map cashu-ts proofs back onto the stored records they came from, so the
-// reservation removes exactly the rows the library chose.
+// By secret, so a reservation removes exactly the rows cashu-ts chose. Drops
+// what it cannot find; callers check the count.
 function matchStored(stored: StoredProof[], chosen: Proof[]): StoredProof[] {
   const bySecret = new Map(stored.map((p) => [p.secret, p]));
   const out: StoredProof[] = [];
@@ -1784,21 +1580,14 @@ export interface RefreshResult {
   // Number of proofs the mint reported as already spent, now removed.
   spentRemoved: number;
   stillUnverified: number;
-  // Of what was swapped, how much was swapped purely to bring it under the
-  // recovery phrase rather than to confirm it. Reported separately so the UI
-  // can say "secured for backup" instead of implying it was suspect.
+  // Swapped only to bring it under the recovery phrase, not because suspect.
   securedForBackup: number;
 }
 
-// Bring an account into a known-good state with the mint.
-//
-// Two jobs, in this order:
-//   1. Ask the mint which proofs are actually unspent (NUT-07). Anything the
-//      mint calls spent is removed: it is not money, and showing it as balance
-//      is the single worst thing an offline-first wallet can do.
-//   2. Swap the surviving unverified proofs for fresh ones. That both confirms
-//      them and cuts the sender's copy loose, so they can no longer be
-//      double-spent by whoever sent them.
+// Bring an account into a known-good state:
+//   1. NUT-07 state check; anything spent is removed, never shown as balance.
+//   2. Swap surviving unverified proofs, confirming them and cutting the
+//      sender's copy loose.
 export async function refreshAccount(
   mintUrl: string,
   unit = "sat",
@@ -1823,9 +1612,7 @@ export async function refreshAccount(
 
   const wallet = await getWallet(url, unit, { forceRefresh: true });
 
-  // Group by state, then map back to our stored rows by secret: a proof's
-  // secret is its identity, so it survives the round trip through cashu-ts
-  // without smuggling extra fields into the library's types.
+  // Map back to stored rows by secret, a proof's identity.
   let unspent: StoredProof[];
   let spent: StoredProof[];
   try {
@@ -1860,17 +1647,10 @@ export async function refreshAccount(
     });
   }
 
-  // Two independent reasons to swap, and a proof can need it for either:
-  //
-  //   not verified  someone else gave us these proofs and still holds a copy of
-  //                 the token. A state check says they are unspent right now,
-  //                 not that they will be in a second. Swapping mints fresh
-  //                 secrets only we know, which is what actually makes them
-  //                 ours.
-  //   not derived   the secret was random, so the recovery phrase cannot
-  //                 rebuild it. Swapping re-issues it deterministically and
-  //                 brings it under the backup. Only relevant once the user has
-  //                 set a phrase up.
+  // Swap when either:
+  //   not verified  the sender still holds a copy; only fresh secrets make it
+  //                 ours, whatever the state check said a moment ago.
+  //   not derived   a random secret the phrase cannot rebuild.
   const seedOn = isSeedActive();
   const needsSwap = (proof: StoredProof): boolean =>
     proof.verified !== true || (seedOn && proof.derived !== true);
@@ -1881,8 +1661,6 @@ export async function refreshAccount(
   );
   const securedForBackup = securedOnly.reduce((sum, p) => sum + p.amount, 0);
 
-  // Everything the mint just confirmed is unspent is verified, whether or not
-  // it also needs re-deriving.
   store.markVerified(
     url,
     unit,
@@ -1898,27 +1676,20 @@ export async function refreshAccount(
     };
   }
 
-  // Swap in one batch so the fee is charged once. A failure here leaves the
-  // proofs untouched (the mint either accepts the whole swap or none of it),
-  // so there is no partial-loss window.
+  // One batch so the fee is charged once; a swap is all or nothing.
   const face = toSwap.reduce((s, p) => s + p.amount, 0);
   const txId = newTxId();
   let staged = false;
   try {
-    // Prepared, persisted, then sent, so a response lost to a process kill can
-    // be replayed instead of taking these proofs with it. See
-    // `prepareRecoverableSwap`. The proofs go in directly rather than through a
-    // token string: they are already ours, so there is no mint or unit claim to
-    // re-validate.
+    // Proofs go in directly, not via a token: there is no mint claim to check.
     const { preview, stored } = await prepareRecoverableSwap(wallet, () =>
       wallet.prepareSwapToReceive(toSwap.map(toProofLike), {
         requireDleq: false,
       }),
     );
     assertSameWallet(epoch);
-    // Out of the spendable pool before the request leaves, so a payment made
-    // while the mint is answering cannot pick the same coins and hand somebody
-    // a token this swap is about to spend.
+    // Reserved before the request leaves so a concurrent send cannot pick the
+    // same coins and hand over a token this swap is about to spend.
     reserveSwapInputs(txId, url, unit, toSwap);
     store.addTx({
       id: txId,
@@ -1944,13 +1715,8 @@ export async function refreshAccount(
       fee: face - received,
       swapPreview: undefined,
     });
-    // Close out the receipts that were left open when those proofs arrived
-    // offline. Without this every mesh-received token would sit in the history
-    // as "Received, unconfirmed" forever, even after it had been confirmed.
-    //
-    // A receipt still holding a swap preview is deliberately left alone: it
-    // records a swap whose answer went missing, and only `reconcile` can find
-    // out from the mint whether that one landed.
+    // Close receipts left open by offline receives, or they read "unconfirmed"
+    // forever. One still holding a swap preview is left for `reconcile`.
     for (const open of useWalletStore.getState().history) {
       if (
         open.kind === "receive" &&
@@ -1969,15 +1735,8 @@ export async function refreshAccount(
       securedForBackup,
     };
   } catch (err) {
-    // The state check already ran and any spent proofs are gone, so the wallet
-    // is in a better state than before even though the swap failed. Surface the
-    // error rather than reporting success, but do not undo step 1.
-    //
-    // The transaction stays pending with its preview and its reservation on
-    // it. Whether the mint took the inputs before the answer went missing is
-    // not knowable from here, and `reconcile` is the only thing that can ask.
-    // A plain refusal is the exception: the mint did nothing, so the coins go
-    // straight back.
+    // Step 1 stands. A staged swap stays pending with its preview and
+    // reservation for `reconcile`, unless the mint refused outright.
     if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
     if (staged && isDefiniteRefusal(err)) {
@@ -1991,9 +1750,8 @@ export async function refreshAccount(
   }
 }
 
-// Hold a swap's inputs against its transaction, or refuse. A swap that spends
-// coins a concurrent payment has just reserved would kill that payment's token,
-// so losing this race is a retry, exactly as it is for a send.
+// Spending coins a concurrent send reserved would kill its token, so losing
+// this race is a retry.
 function reserveSwapInputs(
   txId: string,
   mintUrl: string,
@@ -2009,8 +1767,7 @@ function reserveSwapInputs(
   }
 }
 
-// Undo a staged swap the mint refused outright: the inputs are untouched, so
-// they go back into the balance, and nothing is left for `reconcile` to chase.
+// The mint refused outright, so the inputs are untouched and go back.
 function abandonStagedSwap(txId: string, reason: string): void {
   const store = useWalletStore.getState();
   store.releaseReserved(txId);
@@ -2021,51 +1778,37 @@ function abandonStagedSwap(txId: string, reason: string): void {
   });
 }
 
-// Re-check every pending transaction. Safe to call on app resume and whenever
-// connectivity returns; it never spends and never credits without the mint.
-// One pass at a time. A pass is a serial walk of every pending deposit, melt and
-// reserved send, one mint round trip each, so on a bad network it runs for
-// minutes. Two overlapping passes would ask the same mint the same questions and
-// double every round trip for nothing.
-//
-// Callers join the pass in flight rather than starting a second one, so an
-// explicit refresh during an automatic pass still awaits a real answer.
+// One pass at a time: a pass walks every pending record serially, one round
+// trip each, and can run for minutes, so overlapping passes double every round
+// trip. Callers join the pass in flight, so an explicit refresh during an
+// automatic pass still awaits a real answer.
 let reconcileInFlight: Promise<void> | null = null;
 let lastReconcileAtMs = 0;
 
-// Bumped by resetWalletService. A pass holds mint round trips open for minutes,
-// so a panic wipe can land in the middle of one, and `recoverMeltChange` credits
-// proofs: without this the tail of an orphaned pass could put money back into a
-// wallet the user had just erased. The pass re-checks between steps and stops.
+// Bumped by `resetWalletService`. Long operations re-check it after each await
+// so an orphaned pass cannot credit money back into a wiped wallet.
 let walletEpoch = 0;
 
-// Floor between AUTOMATIC passes only. Foregrounding is a frequent event and a
-// pass is expensive; a user who explicitly pulls to refresh is never throttled.
+// Floor between automatic passes only; an explicit refresh is never throttled.
 const RECONCILE_MIN_INTERVAL_MS = 60_000;
 
-// Settle whatever a previous session or a lost response left hanging: deposits
-// whose invoice was paid while we were away, melts whose result never arrived,
-// and reserved sends the recipient has since redeemed.
-//
-// Never throws: every step is individually best-effort, because one unreachable
-// mint must not stop the others being settled.
+// Settle what a previous session or a lost response left hanging: paid
+// deposits, unanswered melts and swaps, redeemed sends. Safe on resume and on
+// reconnect: never spends, never credits without the mint, and never throws,
+// since each step is best-effort so one dead mint does not block the rest.
 export async function reconcile(): Promise<void> {
   if (reconcileInFlight !== null) return reconcileInFlight;
   const epoch = walletEpoch;
   reconcileInFlight = runReconcilePass().finally(() => {
     reconcileInFlight = null;
-    // Only if a wipe did not happen underneath us. An orphaned pass finishing
-    // after a reset would otherwise re-arm the throttle the reset had just
-    // cleared, delaying the first pass of the new wallet for no reason.
+    // An orphaned pass must not re-arm the throttle a reset cleared.
     if (walletEpoch === epoch) lastReconcileAtMs = Date.now();
   });
   return reconcileInFlight;
 }
 
-// Automatic trigger: fire and forget, throttled, and safe to call from anywhere
-// including an AppState handler. Deliberately synchronous and void-returning so
-// a caller on the foreground path cannot accidentally await minutes of mint
-// round trips.
+// Fire-and-forget and throttled. Synchronous so a foreground handler cannot
+// await minutes of round trips.
 export function reconcileIfDue(): void {
   if (reconcileInFlight !== null) return;
   if (Date.now() - lastReconcileAtMs < RECONCILE_MIN_INTERVAL_MS) return;
@@ -2074,31 +1817,18 @@ export function reconcileIfDue(): void {
   });
 }
 
-// How long an account's proofs are trusted before the mint is asked whether they
-// are still unspent. Long, because this is a safety net rather than a refresh:
-// anything the user actually looks at goes through `refreshAccount`.
+// Long: a safety net, not a refresh (what the user sees uses `refreshAccount`).
 const STATE_CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
-// When each account last had its proofs checked against the mint. Module scope
-// rather than persisted: a fresh process re-checking once is exactly right.
+// Not persisted: a fresh process re-checking once is right.
 const lastStateCheckAtMs = new Map<string, number>();
 
-// Ask the mint whether proofs we still hold have already been spent (NUT-07).
-//
-// Every other reconcile pass follows a pending transaction, so a swap whose
-// response was lost leaves nothing to follow: the inputs are spent at the mint
-// while the balance still counts them. That is worse than a stale number,
-// because the next send picks those proofs and fails.
-//
-// One account per pass, least recently checked, so a wallet with many mints
-// cannot turn a background pass into a burst of round trips.
-// `isWalletStorageReady()` is re-checked before each call because a wipe or a
-// teardown closes storage mid-await.
-//
-// Removal only, so it cannot lose value: a proof reported spent is already
-// worth nothing, and anything the mint calls "pending" is left alone. Proofs a
-// lost swap is still answerable for are left alone too, for the reason
-// `secretsAwaitingSwapReplay` gives.
+// NUT-07 sweep for proofs spent at the mint with no pending record to follow
+// (a swap whose response was lost leaves none), so the next send does not pick
+// them and fail. One account per pass, least recently checked, so many mints
+// cannot turn a background pass into a burst. Removal only, so it cannot lose
+// value; "pending" and replay-claimed proofs are left alone. Storage readiness
+// is re-checked because a wipe closes it mid-await.
 async function dropSpentProofs(wiped: () => boolean): Promise<void> {
   const claimed = secretsAwaitingSwapReplay();
   const accounts = Object.entries(useWalletStore.getState().proofs)
@@ -2142,49 +1872,27 @@ async function dropSpentProofs(wiped: () => boolean): Promise<void> {
       spent.map((p) => p.secret),
     );
   } catch {
-    // Mint unreachable, or it does not implement NUT-07. The balance stays as
-    // it was and the next pass tries again.
+    // Unreachable or no NUT-07: the next pass tries again.
   }
 }
 
-// How many lost swaps one pass will chase. Each costs a mint round trip, and a
-// refused replay costs a second one for the NUT-09 fallback, so this is bounded
-// the same way `dropSpentProofs` is. Nothing is dropped: whatever is left over
-// is the first thing the next pass picks up, and a pass runs at most once a
-// minute.
+// Each replay costs up to two round trips (NUT-19, then NUT-09). Nothing is
+// dropped: leftovers go first next pass, and passes run at most once a minute.
 const MAX_SWAP_REPLAYS_PER_PASS = 4;
 
-// Recover a swap whose answer never arrived.
+// Recover a swap whose answer never arrived. A melt or deposit can ask its
+// quote; a swap cannot, so the preview persisted before the request left (the
+// exact request plus the blinding factors) is the only way back:
+//   NUT-19  resend the byte-identical request. A caching mint returns the same
+//           signatures; one that never saw it processes it fresh, also correct.
+//   NUT-09  on refusal, ask whether it signed these blinded messages; the
+//           stored blinding factors unblind them, deterministic or not.
+// Neither answering means the swap did not happen.
 //
-// This is the one failure ecash has no natural answer to. A melt can ask its
-// quote what happened and a deposit can ask its; a swap has neither, so a lost
-// response leaves the inputs spent at the mint and the outputs nowhere. What
-// makes it recoverable is that the preview was written to disk before the
-// request went out, so both the exact request and the blinding factors survived
-// the process that sent it.
-//
-// Two ways back, in order of cost:
-//
-//   NUT-19  send the byte-identical request again. A mint that caches
-//           successful responses hands back the same signatures. A mint that
-//           never saw the request processes it as new, which is equally correct
-//           because then the inputs were never spent.
-//   NUT-09  if the mint refuses, ask whether it ever signed these exact blinded
-//           messages. A signature coming back proves the swap did complete, and
-//           the outputs can be unblinded here. This works where a seed scan
-//           would not: the blinding factors are on the transaction, so it does
-//           not matter whether the secrets were deterministic.
-//
-// If neither answers, the swap did not happen and the transaction stops
-// claiming to be in flight.
-//
-// The replay is only sent while every input is still ours. A token taken in
-// while its swap was in doubt stays spendable (see `secretsAwaitingSwapReplay`),
-// so it may have been handed on since. A mint that never saw the first request
-// would process the replay as new, spend coins that now belong to somebody
-// else, and kill the token they are holding. Once any input has left, NUT-09 is
-// the only question left to ask: it answers whether the swap happened without
-// making it happen.
+// Replay only while every input is still ours: an in-doubt token stays
+// spendable and may have been handed on, and a mint that never saw the first
+// request would process the replay fresh and kill the new holder's token.
+// Otherwise NUT-09 alone asks whether the swap happened without making it.
 async function replayLostSwap(
   tx: WalletTx,
   wiped: () => boolean,
@@ -2192,11 +1900,8 @@ async function replayLostSwap(
   const store = useWalletStore.getState();
   const preview = rebuildSwapPreview(tx.swapPreview);
   if (preview === null) {
-    // Written by a build that stored a different shape, or corrupted on disk.
-    // Replaying half a preview would send the mint a request it has never seen,
-    // which is a fresh spend rather than a recovery, so there is nothing safe
-    // to do but stop showing this as in flight. Inputs held against it go back;
-    // if the mint did spend them, `dropSpentProofs` finds out.
+    // Unreadable preview: a partial replay would be a fresh spend. Release the
+    // inputs; `dropSpentProofs` catches them if the mint spent them.
     store.releaseReserved(tx.id);
     store.updateTx(tx.id, {
       status: "failed",
@@ -2218,9 +1923,7 @@ async function replayLostSwap(
     return;
   }
 
-  // A nutzap's inputs are the sender's proofs locked to our key. They were
-  // never in this wallet, so there is nothing to have handed on, and nobody but
-  // us can spend them.
+  // A nutzap's inputs are locked to our key, so none can have been handed on.
   const replayable = tx.kind === "nutzap-in" || swapInputsHeld(tx, preview);
   if (replayable) {
     try {
@@ -2229,8 +1932,7 @@ async function replayLostSwap(
       settleReplayedSwap(tx, preview, result.keep, result.send);
       return;
     } catch (err) {
-      // Only a refusal from the mint is final. Anything else is the network,
-      // and the next pass asks again.
+      // Only a mint refusal is final; network errors retry next pass.
       if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
     }
   }
@@ -2241,8 +1943,7 @@ async function replayLostSwap(
     recovered = await restoreSwapOutputs(wallet, preview);
   } catch (err) {
     const walletErr = asWalletError(err, "mint-error");
-    // A mint that refuses the restore does not implement NUT-09, so there is no
-    // further question to ask it. A network failure is transient and retried.
+    // A refusal means no NUT-09; a network failure is retried.
     if (walletErr.code !== "mint-error") throw walletErr;
     recovered = { keep: [], send: [] };
   }
@@ -2253,9 +1954,8 @@ async function replayLostSwap(
     return;
   }
 
-  // A token stored offline and then passed on, whose swap never happened. The
-  // receive stands exactly as any offline receive does: the proofs came in and
-  // went out as they were, so only the claim that a swap is in flight goes.
+  // Stored offline, then passed on, and never swapped: the receive stands, only
+  // the in-flight claim goes.
   if (
     !replayable &&
     tx.kind === "receive" &&
@@ -2265,10 +1965,8 @@ async function replayLostSwap(
     return;
   }
 
-  // The mint never signed these outputs, so the swap did not complete, and any
-  // inputs held against it go back. Whatever became of them is a question
-  // about proofs rather than about this transaction, and `dropSpentProofs`
-  // settles that on its own schedule.
+  // Never signed, so the swap did not complete. Inputs go back; their state is
+  // for `dropSpentProofs`.
   store.releaseReserved(tx.id);
   store.updateTx(tx.id, {
     status: "failed",
@@ -2277,8 +1975,7 @@ async function replayLostSwap(
   });
 }
 
-// Whether every input of a swap is still this wallet's to spend: in the
-// account's spendable pool, or held against the swap itself.
+// Every input is in the spendable pool or reserved to this swap.
 function swapInputsHeld(tx: WalletTx, preview: SwapPreview): boolean {
   const state = useWalletStore.getState();
   const held = new Set(
@@ -2290,19 +1987,14 @@ function swapInputsHeld(tx: WalletTx, preview: SwapPreview): boolean {
   return preview.inputs.every((input) => held.has(input.secret));
 }
 
-// Whether a token with these proofs was ever taken into the wallet, by swap or
-// by storing it offline. `markClaimed` keys on one of its secrets.
+// `markClaimed` keys on one of the token's secrets.
 function tokenWasStored(secrets: string[]): boolean {
   const claimed = new Set(useWalletStore.getState().claimedTokens);
   return secrets.some((secret) => claimed.has(secret));
 }
 
-// Ask the mint whether it ever signed a preview's blinded messages (NUT-09).
-//
-// The library's `batchRestore` walks a seed with a gap limit, which is the right
-// tool for rebuilding a whole wallet and the wrong one here: the exact outputs
-// are already in hand, so this is a single request about a known handful rather
-// than a scan. Everything it returns is money the mint has confirmed it issued.
+// NUT-09 for a preview's exact blinded messages: one request, not the gap-limit
+// seed scan `batchRestore` does.
 async function restoreSwapOutputs(
   wallet: Wallet,
   preview: SwapPreview,
@@ -2313,9 +2005,7 @@ async function restoreSwapOutputs(
     outputs: outputs.map((output) => output.blindedMessage),
   });
 
-  // The mint answers with the subset it recognises, so pair each returned
-  // signature with the output it belongs to by blinded message rather than by
-  // position in the request.
+  // The mint returns only the subset it recognises: pair by blinded message.
   const indexByBlinded = new Map(
     outputs.map((output, index) => [output.blindedMessage.B_, index]),
   );
@@ -2328,21 +2018,17 @@ async function restoreSwapOutputs(
     if (index === undefined || signature === undefined) return;
     const target = outputs[index];
     if (target === undefined) return;
-    // Whether an output was ours to keep is decided by where it sat in the
-    // request, because `swapPreviewOutputs` lays the keeps out first. Crediting
-    // a locked output to our own balance would show money only the recipient
-    // can spend.
+    // `swapPreviewOutputs` lays keeps out first; the rest may be locked to
+    // the recipient and must not be credited.
     if (index < keepCount) keep.push(target.toProof(signature, keyset));
     else send.push(target.toProof(signature, keyset));
   });
   return { keep, send };
 }
 
-// A send whose token carries coins a swap of ours has just spent. The value
-// came back through the swap, so the token is dead: the recipient's claim can
-// only fail. The send is closed as failed rather than left for `reconcile` to
-// read the spent proofs as "they redeemed it", and the rest of its reservation,
-// still good, goes back into the balance.
+// A send whose token holds coins our swap just spent is dead (the value came
+// back through the swap). Fail it rather than let `reconcile` read it as
+// redeemed, and return the rest of its reservation.
 function voidSendsSpentBySwap(spent: Set<string>): void {
   const store = useWalletStore.getState();
   for (const [txId, entry] of Object.entries(store.reserved)) {
@@ -2363,7 +2049,6 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
   }
 }
 
-// Book a recovered swap: the inputs are gone for good and the outputs are ours.
 function settleReplayedSwap(
   tx: WalletTx,
   preview: SwapPreview,
@@ -2371,10 +2056,8 @@ function settleReplayedSwap(
   send: Proof[],
 ): void {
   const store = useWalletStore.getState();
-  // The mint has just handed back what it signed for these inputs, so they are
-  // definitively spent. Anything still holding them - a token stored offline
-  // while the swap was in doubt, or the balance a refresh was swapping - is no
-  // longer money, and leaving it would count the same value twice.
+  // The inputs are definitively spent; any copy still held (offline-stored or
+  // reserved) would count the value twice.
   const spent = preview.inputs.map((p) => p.secret);
   store.removeProofs(tx.mintUrl, tx.unit, spent);
   store.dropReserved(tx.id);
@@ -2385,10 +2068,8 @@ function settleReplayedSwap(
   const received = keep.reduce((sum, p) => sum + p.amount.toNumber(), 0);
 
   if (send.length > 0) {
-    // Outputs locked to somebody else, from a nutzap whose swap was interrupted.
-    // They are not ours to spend and never will be, so the useful thing to
-    // recover is the token: the transaction stays pending holding it, and the
-    // nutzap pass closes it once the recipient redeems.
+    // Outputs locked to a nutzap recipient: keep the token pending until the
+    // nutzap pass sees it redeemed.
     store.updateTx(tx.id, {
       swapPreview: undefined,
       token: buildToken(
@@ -2401,8 +2082,7 @@ function settleReplayedSwap(
     return;
   }
 
-  // An incoming nutzap recovered long after the watcher moved on. Marking it
-  // here is what stops the next subscription redeeming a zap already banked.
+  // Stops the next subscription redeeming a zap already banked.
   if (tx.nutzapEventId !== undefined)
     store.markNutzapRedeemed(tx.nutzapEventId);
   store.updateTx(tx.id, {
@@ -2415,13 +2095,13 @@ function settleReplayedSwap(
 
 async function runReconcilePass(): Promise<void> {
   if (!isWalletStorageReady()) return;
-  if (isMintNetworkBlocked()) return;
+  if (mintNetworkBlock() !== null) return;
 
   const epoch = walletEpoch;
   const wiped = (): boolean => walletEpoch !== epoch;
   const state = useWalletStore.getState();
 
-  // Lightning deposits whose invoice may have been paid while the app was shut.
+  // Deposits paid while the app was shut.
   for (const tx of state.history) {
     if (tx.kind !== "mint" || tx.status !== "pending" || !tx.quoteId) continue;
     if (wiped()) return;
@@ -2432,9 +2112,8 @@ async function runReconcilePass(): Promise<void> {
     }
   }
 
-  // Melts whose response never arrived. The mint may have paid regardless, in
-  // which case the unused routing reserve is sitting there as change signed
-  // against blanks only this device can unblind.
+  // Unanswered melts: if paid, the change is signed against blanks only this
+  // device can unblind.
   for (const tx of state.history) {
     if (tx.kind !== "melt" || tx.status !== "pending") continue;
     if (!tx.quoteId || tx.meltOutputs === undefined) continue;
@@ -2448,10 +2127,8 @@ async function runReconcilePass(): Promise<void> {
     }
   }
 
-  // Swaps whose answer never arrived. Ahead of everything below it because it
-  // is the only pass where the value is not merely mislabelled but genuinely
-  // unaccounted for: the mint may hold outputs nothing on this device can name
-  // until the persisted preview is replayed.
+  // Unanswered swaps, before the send check: until replayed, their value is
+  // unaccounted for, not merely mislabelled.
   let replayed = 0;
   for (const tx of state.history) {
     if (tx.status !== "pending" || tx.swapPreview === undefined) continue;
@@ -2463,25 +2140,16 @@ async function runReconcilePass(): Promise<void> {
     try {
       await replayLostSwap(tx, wiped);
     } catch {
-      // The mint is unreachable or still cannot say. The preview stays on the
-      // transaction and the next pass asks again.
+      // The preview stays; the next pass asks again.
     }
   }
 
-  // Reserved sends whose proofs the recipient has now redeemed: the value is
-  // gone for good, so close them out rather than offering a reclaim that would
-  // fail at the mint.
-  //
-  // Only sends and melts. A swap or a lock holds its inputs against its own
-  // transaction, and those are spent BECAUSE the swap happened: closing them
-  // here would throw away the outputs only the replay above can recover. A
-  // send holding coins an unsettled swap may have spent is left for that
-  // replay too, since "spent" there can mean our own swap took them rather
-  // than the recipient.
-  //
-  // Read fresh rather than from the snapshot the pass started with: the replays
-  // above can already have closed a send, and confirming it on stale state
-  // would overwrite that with "completed".
+  // Sends and melts the recipient has redeemed: close them rather than offer a
+  // reclaim the mint would refuse. Swaps and locks are skipped: their inputs
+  // are spent because the swap happened, and only the replay can recover the
+  // outputs. Likewise a send touching replay-claimed coins, where "spent" may
+  // mean our own swap took them. Read fresh: a replay above may already have
+  // failed a send, and confirming on the stale snapshot would overwrite it.
   const awaitingReplay = secretsAwaitingSwapReplay();
   const current = useWalletStore.getState();
   for (const [txId, entry] of Object.entries(current.reserved)) {
@@ -2505,15 +2173,11 @@ async function runReconcilePass(): Promise<void> {
     }
   }
 
-  // Locked nutzaps that never found a route.
-  //
-  // These have no reservation, so the loop above cannot see them: their proofs
-  // are P2PK-locked to the recipient and left the wallet the moment the mint
-  // swapped them. When the relay refused the kind 9321 AND no transport carried
-  // the token either, the transaction is parked as pending with an explanation
-  // and is deliberately not reclaimable. Something still has to close it, or the
-  // outbox delivers the token days later, the recipient redeems it, and the
-  // sender's Pending list keeps showing a payment that already landed.
+  // Undelivered locked nutzaps (relay refused the kind 9321 and no transport
+  // carried the token) are pending and deliberately not reclaimable. They have
+  // no reservation, so the loop above misses them. Close each once the
+  // recipient redeems (possibly via the outbox days later), or the sender's
+  // Pending list shows a payment that landed.
   for (const tx of state.history) {
     if (tx.kind !== "nutzap-out" || tx.status !== "pending") continue;
     if (tx.token === undefined || state.reserved[tx.id] !== undefined) continue;
@@ -2536,8 +2200,7 @@ async function runReconcilePass(): Promise<void> {
     }
   }
 
-  // Last: the only pass that talks to a mint with no pending record to
-  // follow, so the cheap targeted walks above resolve what they can first.
+  // Last, so the targeted walks above resolve what they can first.
   if (!wiped()) await dropSpentProofs(wiped);
 }
 
@@ -2553,10 +2216,8 @@ export interface LightningDeposit {
   expiresAtMs?: number;
 }
 
-// Ask the mint for a bolt11 invoice. Paying it converts Lightning sats into
-// ecash proofs, which is the only way value enters the wallet without someone
-// handing over a token. Without this the wallet can only ever spend what it was
-// given, which is why the balance stayed at zero for anyone starting fresh.
+// Ask the mint for a bolt11 invoice whose payment mints ecash (NUT-04): the only
+// way value enters without somebody handing over a token.
 export async function createLightningDeposit(params: {
   amount: number;
   mintUrl: string;
@@ -2610,16 +2271,13 @@ export async function createLightningDeposit(params: {
   };
 }
 
-// Poll a deposit quote and mint the proofs once the invoice is paid. Throws
-// while the invoice is still unpaid, so callers can poll on a timer or leave it
-// to `reconcile` on next launch.
-// Quotes with a claim on the wire in this process. The deposit sheet polls
-// and `reconcile` runs on the foreground edge, so two claims for one quote can
-// overlap; the mint would issue against one and refuse the other, and the
-// loser's outputs would overwrite the winner's record. The second caller is
-// told to wait, which reads as "still unpaid" to both.
+// The deposit sheet's poll and `reconcile` can overlap on one quote. The mint
+// issues against one claim and refuses the other, and the loser's outputs would
+// overwrite the winner's record. The second caller gets "still unpaid".
 const claimsInFlight = new Set<string>();
 
+// Mint the proofs once the invoice is paid. Throws while unpaid, so callers
+// poll or leave it to `reconcile`.
 export async function claimLightningDeposit(
   mintUrl: string,
   unit: string,
@@ -2660,10 +2318,8 @@ async function claimLightningDepositOnce(
   }
   assertSameWallet(epoch);
 
-  // NUT-04 states: UNPAID -> PAID -> ISSUED. Only PAID can be minted, and only
-  // once. ISSUED with outputs still on the transaction is a claim whose answer
-  // never arrived; without them it is a duplicate poll or a retry that landed,
-  // so the transaction just closes.
+  // NUT-04: UNPAID -> PAID -> ISSUED; only PAID mints, once. ISSUED with
+  // stored outputs is a lost answer; without them the transaction just closes.
   if (quote.state === "ISSUED") {
     if (tx.mintOutputs !== undefined) {
       return recoverMintOutputs(wallet, tx, quote);
@@ -2684,8 +2340,8 @@ async function claimLightningDepositOnce(
     throw new WalletError("offline", t("wallet.svc.invoice_unpaid"));
   }
 
-  // Split like the melt: the outputs exist on disk before the request does,
-  // so a response lost to a kill is replayed by the ISSUED branch above.
+  // Outputs on disk before the request, so the ISSUED branch can replay a lost
+  // response.
   let preview: MintPreview<MintQuoteBolt11Response>;
   try {
     preview = await wallet.prepareMint("bolt11", tx.amount, quote);
@@ -2718,12 +2374,9 @@ async function claimLightningDepositOnce(
   return minted;
 }
 
-// Rebuild the coins of a deposit the mint says it issued but this device never
-// received. Same two ways back as a lost swap: replay the byte-identical
-// request (NUT-19 returns the cached signatures), else ask the mint which of
-// these blinded messages it signed (NUT-09). If neither answers, the
-// transaction closes with a note, since the mint's answer will not change and
-// a restore from the recovery phrase still reaches deterministic outputs.
+// Rebuild an ISSUED deposit this device never received: NUT-19 replay, then
+// NUT-09. If neither answers it closes with a note; the mint's answer will not
+// change, and a phrase restore still reaches deterministic outputs.
 async function recoverMintOutputs(
   wallet: Wallet,
   tx: WalletTx,
@@ -2762,8 +2415,7 @@ async function recoverMintOutputs(
       quote,
     });
   } catch (err) {
-    // Only a refusal is final. Anything else is the network, and the next
-    // pass asks again.
+    // Only a refusal is final; network errors retry next pass.
     if (asWalletError(err, "mint-error").code !== "mint-error") throw err;
   }
 
@@ -2775,8 +2427,7 @@ async function recoverMintOutputs(
       const byBlinded = new Map(
         outputs.map((output) => [output.blindedMessage.B_, output]),
       );
-      // The keyset may have rotated out of the snapshot since the outputs
-      // were built; the melt recovery makes the same request.
+      // The keyset may have rotated since the outputs were built.
       await wallet.ensureOperableKeysets([keysetId]);
       persistMintSnapshot(tx.mintUrl, tx.unit, wallet);
       const keyset = wallet.getKeyset(keysetId);
@@ -2809,17 +2460,10 @@ async function recoverMintOutputs(
 
 // ---- Lightning: withdraw (melt) ----
 
-// Rebuild the change of a melt whose payment stands but whose blanks cashu-ts
-// could not unblind.
-//
-// The recovery the library documents for `MeltChangeError`: resolve the keysets
-// the change was signed against, then rebuild from the blanks it handed back. A
-// permissive mint may sign change across several keysets, so every id in the
-// signatures is covered rather than just the one the wallet is bound to.
-//
-// Returning empty is a legitimate answer and never an assertion that the melt
-// failed. The caller keeps the transaction pending with its blanks intact so
-// `recoverMeltChange` can try again from the quote once the keys are reachable.
+// cashu-ts's documented `MeltChangeError` recovery: resolve every keyset in the
+// signatures (a mint may sign across several), then rebuild from the blanks.
+// Empty is not a failed melt; the caller keeps the blanks for
+// `recoverMeltChange`.
 async function rebuildMeltChange(
   wallet: Wallet,
   mintUrl: string,
@@ -2831,33 +2475,23 @@ async function rebuildMeltChange(
   try {
     await wallet.ensureOperableKeysets(signatures.map((sig) => sig.id));
   } catch {
-    // Keys that did land are kept even when the call throws, so the rebuild is
-    // still worth attempting; it is the one that decides.
+    // Keys that landed are kept; the rebuild decides.
   }
-  // `ensureOperableKeysets` is an explicit call, so it deliberately emits no
-  // `keychainUpdated` and nothing else will write what it fetched to disk.
+  // Explicit calls emit no `keychainUpdated`, so persist here.
   persistMintSnapshot(mintUrl, unit, wallet);
   try {
     return wallet.createMeltChangeProofs(err.outputData, signatures);
   } catch {
-    // An invalid DLEQ or a signature count the blanks cannot account for. Not
-    // transient, but a NUT-09 restore is the path out of it, not this one.
+    // Bad DLEQ or mismatched count: only a NUT-09 restore can help.
     return [];
   }
 }
 
-// Settle a melt whose response was lost, using the blank outputs saved before
-// the request went out.
-//
-// The mint is the only authority on whether the invoice was actually paid, so
-// this asks rather than guesses:
-//
-//   PAID    the payment went through. Rebuild the change from the signatures
-//           the quote carries and credit it, then close the transaction and
-//           drop the reservation, because those inputs really are spent.
-//   UNPAID  the melt never happened, so the reserved proofs are still good and
-//           go back into the balance.
-//   PENDING the mint is still trying. Leave everything exactly as it is.
+// Settle a melt whose response was lost, from the blanks saved before the
+// request. Only the mint knows whether the invoice was paid, so ask its quote:
+//   PAID    rebuild and credit the change, drop the spent reservation.
+//   UNPAID  never happened; release the reservation.
+//   PENDING still routing; leave it.
 async function recoverMeltChange(tx: WalletTx): Promise<void> {
   if (!tx.quoteId) return;
   const store = useWalletStore.getState();
@@ -2865,7 +2499,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
   const wallet = await getWallet(tx.mintUrl, tx.unit);
   const quote = await wallet.checkMeltQuoteBolt11(tx.quoteId);
   if (walletReplaced(epoch)) return;
-  // The melt was started in this process after the pass read the history.
+  // Started in this process after the pass read the history.
   if (meltsInFlight.has(tx.id)) return;
 
   if (quote.state === "PENDING") return;
@@ -2880,7 +2514,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
     return;
   }
 
-  // PAID. Rebuild the change, if the mint returned any.
+  // PAID.
   let recovered = 0;
   const signatures = quote.change ?? [];
   if (signatures.length > 0 && Array.isArray(tx.meltOutputs)) {
@@ -2888,16 +2522,14 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
       const outputs = (tx.meltOutputs as SerializedOutputData[]).map((entry) =>
         OutputData.deserialize(entry),
       );
-      // The blanks were signed whenever the mint got round to paying, which may
-      // be a rotation later than the snapshot this wallet was built from. Ask
-      // for the keys behind every id in the signatures first, or a recoverable
-      // reserve is written off for want of a key fetch.
+      // The change was signed when the mint paid, possibly under a keyset
+      // newer than the snapshot. Fetch those keys first, or recoverable change
+      // is written off for want of a key fetch.
       try {
         await wallet.ensureOperableKeysets(signatures.map((sig) => sig.id));
         persistMintSnapshot(tx.mintUrl, tx.unit, wallet);
       } catch {
-        // Unresolvable, or the mint is unreachable again. The rebuild below
-        // decides; keys that did land are kept either way.
+        // Keys that landed are kept; the rebuild decides.
       }
       if (walletReplaced(epoch)) return;
       const change = wallet.createMeltChangeProofs(outputs, signatures);
@@ -2906,8 +2538,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
         recovered = change.reduce((sum, p) => sum + p.amount.toNumber(), 0);
       }
     } catch {
-      // Malformed or mismatched blanks. The payment still succeeded, so carry
-      // on and close the transaction rather than leaving it pending forever.
+      // Bad blanks: the payment still succeeded, so close anyway.
     }
   }
 
@@ -2932,16 +2563,14 @@ export interface MeltQuote {
   total: number;
   invoice: string;
   expiresAtMs?: number;
-  // The mint's own quote object, needed verbatim by `meltProofsBolt11`. Not
-  // serialisable (it holds Amount value objects), so a quote does not survive a
-  // restart: the UI must re-quote, which is correct anyway since fee reserves
+  // The mint's quote verbatim for `prepareMelt`. Holds Amount objects, so it
+  // does not survive a restart; re-quoting is right anyway, since fee reserves
   // and invoice expiry both move.
   raw: MeltQuoteBolt11Response;
 }
 
-// Price a Lightning withdrawal without committing. The fee reserve is an upper
-// bound: whatever routing does not consume is returned as change proofs, so the
-// UI should present it as "up to".
+// The fee reserve is an upper bound (unused routing returns as change), so the
+// UI shows it as "up to".
 export async function quoteLightningWithdrawal(params: {
   invoice: string;
   mintUrl: string;
@@ -3000,19 +2629,13 @@ export async function quoteLightningWithdrawal(params: {
 
 interface MeltSelection {
   selected: StoredProof[];
-  // What actually leaves the wallet, which is what the change is measured
-  // against. Both selectors over-select, so this is never simply `quote.total`.
+  // What actually leaves the wallet; selectors over-select, so not `quote.total`.
   total: number;
 }
 
-// Choose the inputs for a melt, with cashu-ts rather than our own selector.
-//
-// Quoting the melt has already loaded the keychain, so the reference selector is
-// available here and our fallback exists only for the cold-cache case its
-// docblock describes. Ours also ranks UNVERIFIED proofs first, which is right on
-// a send and wrong here: the mint checks every input immediately, so leading
-// with a proof it has not confirmed only raises the chance the payment fails
-// outright.
+// cashu-ts's selector first: ours ranks unverified proofs first, right for a
+// send but wrong for a melt, where the mint checks every input at once. Ours is
+// the cold-cache fallback.
 function selectForMelt(
   wallet: Wallet,
   quote: MeltQuote,
@@ -3026,8 +2649,7 @@ function selectForMelt(
       true,
     );
     selected = matchStored(available, result.send);
-    // `matchStored` maps by secret and drops anything it cannot find, so a
-    // short list here would silently under-fund the melt.
+    // `matchStored` drops unmapped proofs, which would under-fund the melt.
     if (
       selected.length !== result.send.length ||
       selected.reduce((s, p) => s + p.amount, 0) < quote.total
@@ -3035,8 +2657,6 @@ function selectForMelt(
       throw new Error("melt selection did not map back to stored proofs");
     }
   } catch {
-    // No cached keysets, or the selection did not map back. Fall back to ours,
-    // which reports honestly when the balance genuinely cannot cover it.
     const fallback = selectProofsForAmount(
       available,
       quote.total,
@@ -3056,34 +2676,23 @@ function selectForMelt(
   };
 }
 
-// How far a selection may overshoot the quote before it is worth breaking up
-// first. Ten percent is roughly where other wallets draw the line. The floor is
-// in the account's own unit and stops a round trip being spent to free an amount
-// too small to hand anybody anyway.
+// Overshoot worth breaking up first. Ten percent is roughly where other wallets
+// draw the line; the floor (in the account's unit) skips amounts too small to
+// matter.
 const MELT_SWAPDOWN_PERCENT = 10;
 const MELT_SWAPDOWN_MIN_OVERAGE = 16;
 
-// Break a badly oversized melt selection into change before the melt takes it.
-//
-// No value is at stake either way: `prepareMelt` sizes the NUT-08 blanks from
-// the actual overage rather than from the quoted reserve, so the excess comes
-// back as change whatever happens here. What is at stake is TIME. Every selected
-// proof sits in the reservation until Lightning routing finishes, which can run
-// to minutes, and on this app "meanwhile" routinely means no signal: somebody
-// paying 100 out of a single 512 and then walking into a dead zone has 412 they
-// cannot hand to anyone, which is the one thing the app exists for.
-//
-// Best effort, and the rules about when to give up are what make it safe to put
-// in front of a payment the user has already confirmed:
-//
-//   nothing sent   the original proofs are untouched, so the melt goes ahead
-//                  exactly as it would have and the user still gets the slow
-//                  success rather than an outright failure.
-//   request sent   whether the mint took these inputs is precisely what an
-//                  error does not say, so spending them again would be a guess
-//                  with the user's money. The payment fails, `reconcile`
-//                  settles the swap against the mint, and a retry picks up
-//                  whatever it decided.
+// Swap an oversized selection down before the melt. No value is at stake:
+// `prepareMelt` sizes the NUT-08 blanks from the actual overage, so the excess
+// returns as change regardless. Time is: the reservation holds every input for
+// minutes of routing, so paying 100 from a single 512 and walking into a dead
+// zone leaves 412 nobody can be handed. Best effort, and the give-up rules are
+// what make it safe in front of a confirmed payment:
+//   nothing sent   melt with the original selection (slow success, not a
+//                  failure).
+//   request sent   the mint may have taken the inputs and spending them again
+//                  would be a guess, so fail and let `reconcile` settle the
+//                  swap; a retry picks up whatever it decided.
 async function swapDownForMelt(
   wallet: Wallet,
   quote: MeltQuote,
@@ -3110,16 +2719,13 @@ async function swapDownForMelt(
       ),
     );
     assertSameWallet(epoch);
-    // Only the proofs the swap actually spends. The rest of the selection is
-    // echoed back untouched and never left the pool.
+    // Only what the swap spends; the rest never leaves the pool.
     const inputs = matchStored(selection.selected, preview.inputs);
     if (inputs.length !== preview.inputs.length) return selection;
     try {
       reserveSwapInputs(txId, quote.mintUrl, quote.unit, inputs);
     } catch {
-      // Taken by another payment since the selection was made. Nothing was
-      // sent, so the melt goes ahead as it would have, and its own reservation
-      // reports the race.
+      // Raced by another payment; nothing sent, the melt's reservation reports it.
       return selection;
     }
     spending = inputs.reduce((sum, p) => sum + p.amount, 0);
@@ -3152,10 +2758,8 @@ async function swapDownForMelt(
     throw walletErr;
   }
 
-  // The reserved inputs are spent. `keep` also echoes the untouched originals,
-  // which never left the pool, so only what is new is credited: crediting an
-  // original would put back a proof that something else may have spent or
-  // reserved in the meantime.
+  // `keep` echoes untouched originals; credit only new proofs, or an original
+  // spent or reserved meanwhile would come back.
   store.dropReserved(txId);
   const fresh = [...result.keep, ...result.send].filter(
     (p) => !offered.has(p.secret),
@@ -3169,10 +2773,7 @@ async function swapDownForMelt(
     swapPreview: undefined,
   });
 
-  // Those inputs are gone, so the melt has to be re-selected from what came
-  // back. Deliberately the same function as the unrefined path, so nothing about
-  // fee arithmetic or proof mapping is special-cased here, and a genuine
-  // shortfall still raises the error it would have raised anyway.
+  // Re-select through the same path, so fees and shortfalls behave identically.
   return selectForMelt(
     wallet,
     quote,
@@ -3181,13 +2782,8 @@ async function swapDownForMelt(
   );
 }
 
-// Execute a quoted withdrawal.
-//
-// The proofs are reserved before the call and only dropped once the mint
-// confirms payment, so a timeout mid-melt leaves them recoverable rather than
-// vanished. On an ambiguous failure the reservation is deliberately kept: the
-// mint may still settle, and `reconcile` will resolve it from the proof state
-// rather than us guessing.
+// Pay a quoted invoice. Proofs are reserved first and dropped only on confirmed
+// payment; an ambiguous failure keeps the reservation for `reconcile`.
 export async function payLightningInvoice(quote: MeltQuote): Promise<{
   paid: number;
   fee: number;
@@ -3234,19 +2830,15 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     counterparty: "lightning",
   });
 
-  // In flight from before the blanks are written until this call settles, so a
-  // reconcile pass cannot read the quote as UNPAID in the moment before the
-  // mint marks it PENDING, release these proofs, and then watch the melt spend
-  // them anyway.
+  // Before the blanks are written, so `reconcile` never sees this quote UNPAID
+  // and releases proofs the melt is about to spend.
   meltsInFlight.add(txId);
   try {
     const wallet = await getWallet(quote.mintUrl, quote.unit);
     assertSameWallet(epoch);
 
-    // Split into prepare and complete so the blank change outputs exist before
-    // the request does. Their blinding factors are the only way to unblind the
-    // change the mint signs, and they would otherwise live purely in memory:
-    // lose the response and the unused routing reserve is gone for good.
+    // Blanks on disk before the request: their blinding factors are the only
+    // way to unblind the change after a lost response.
     const preview = await wallet.prepareMelt(
       "bolt11",
       quote.raw,
@@ -3269,22 +2861,12 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     } catch (err) {
       if (!(err instanceof MeltChangeError)) throw err;
       assertSameWallet(epoch);
-      // The one failure here that is not a failure. NUT-08 blanks are signed
-      // after the mint has already taken the inputs, so a melt that cannot
-      // rebuild its change is a PAID invoice whose refund of the unused routing
-      // reserve is stuck behind keys the wallet cannot resolve, most often a
-      // keyset that rotated between the quote and the settlement.
+      // Not a failure: the invoice is PAID and only the change is stuck,
+      // usually behind a keyset rotated since the quote.
       change = await rebuildMeltChange(wallet, quote.mintUrl, quote.unit, err);
       assertSameWallet(epoch);
-      // Change was signed and is still not in hand. Do not close the
-      // transaction: leaving it pending with its blanks is what lets
-      // `recoverMeltChange` finish the job once the keys are reachable.
-      //
-      // Raised as a wallet code rather than passed on, because the catch below
-      // branches on codes and because this one reaches the user. The library's
-      // message is written for whoever is integrating it, and a `mint-error`
-      // would put it under a "Mint refused" title, telling somebody whose
-      // invoice was just paid that it was not.
+      // Still no change: stay pending with the blanks for `recoverMeltChange`.
+      // Its own code, so the user is not told a paid invoice was refused.
       if (change.length === 0 && (err.quote.change ?? []).length > 0) {
         throw new WalletError(
           "change-pending",
@@ -3292,12 +2874,11 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
           t("wallet.svc.melt_change_pending_body"),
         );
       }
-      // Only the bolt11 response carries a preimage, and this path has the
-      // base quote. The payment stands; the receipt just has no proof to show.
+      // Only the bolt11 response carries a preimage; this path has the base
+      // quote.
       preimage = undefined;
     }
 
-    // Unused routing reserve comes back as change proofs.
     if (change.length > 0) {
       creditProofs(quote.mintUrl, quote.unit, change, { verified: true });
     }
@@ -3308,7 +2889,6 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     store.updateTx(txId, {
       status: "completed",
       fee: spent - quote.amount,
-      // Change is in hand, so the blanks have served their purpose.
       meltOutputs: undefined,
     });
     return {
@@ -3320,22 +2900,11 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
-    // Only put the proofs back when the mint definitively refused. A network
-    // error means the payment may have gone through; restoring the proofs then
-    // would show a balance the mint has already spent.
-    //
-    // "Already spent" is a refusal that means the opposite of one. cashu-ts
-    // retries a lost request against a NUT-19 mint, so the reply to the retry
-    // describes the state the FIRST attempt left behind: the mint holds these
-    // inputs, which is to say it paid. Read as a plain refusal it releases the
-    // reservation, shows a balance the mint has already burned, and clears the
-    // blank outputs so the unused routing reserve can never be recovered. It
-    // belongs with the ambiguous case, where the quote decides.
-    //
-    // `change-pending` is the same trap with a better disguise, because there
-    // the mint refused nothing at all: the invoice is paid and only the NUT-08
-    // change is outstanding. It is not a `mint-error`, so it falls to the same
-    // side as the quote, which is where it belongs.
+    // Release only on a definite refusal: after a network error the payment
+    // may have gone through. "Already spent" may be the NUT-19 retry reporting
+    // our own paid first attempt; releasing on it would show a balance the mint
+    // burned and clear the blanks, losing the change for good. `change-pending`
+    // is a paid invoice. Both stay with the blanks for the quote to decide.
     if (walletErr.code === "mint-error" && !isAlreadySpentError(walletErr)) {
       store.releaseReserved(txId);
       store.updateTx(txId, {
@@ -3344,10 +2913,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
         meltOutputs: undefined,
       });
     } else {
-      // The mint may have paid, so the blanks stay on the transaction and
-      // `reconcile` settles it once the quote's state is known. `change-pending`
-      // is the one case where that is already known, so it says so rather than
-      // telling somebody their paid invoice is in doubt.
+      // `change-pending` already knows it paid, so it is not called in doubt.
       store.updateTx(txId, {
         error:
           walletErr.code === "change-pending"
@@ -3372,35 +2938,22 @@ export interface ConsolidateResult {
   // What arrived at the destination.
   received: number;
   fee: number;
-  // The source paid and the destination has not issued yet. Nothing failed:
-  // the deposit is pending in history and `reconcile` claims it, so `received`
-  // is zero only until then.
+  // Source paid, destination not issued yet; `reconcile` claims the deposit.
   depositPending?: boolean;
 }
 
-// Lightning fee reserves are usually well under 1%, but a first guess has to
-// leave room or every attempt overshoots. The loop below corrects it.
+// Fee reserves are usually under 1%, but the first guess needs room; the loop
+// corrects it.
 const CONSOLIDATE_FEE_GUESS = 0.02;
 const CONSOLIDATE_MIN_BUFFER = 2;
-// Each attempt is a live mint round trip, so this is bounded tightly. Two
-// corrections is enough for any realistic fee schedule.
+// Each attempt is a live round trip; two corrections cover realistic fees.
 const CONSOLIDATE_MAX_ATTEMPTS = 3;
 
-// Move value from one mint to another over Lightning.
-//
-// Ecash from two mints can never be combined into one token, because a token
-// names exactly one mint. That part is Cashu's design and is not fixable. What
-// *is* fixable is being stuck with a split balance: the source mint pays a
-// Lightning invoice that the destination mint issued, and the value lands as
-// spendable ecash at the destination.
-//
-// This is the same pair of operations a user could do by hand with an external
-// Lightning wallet, except the mints pay each other directly, so it costs one
-// routing fee instead of two and needs no third app.
-//
-// Sizing is the awkward part: the melt quote's fee reserve is only known after
-// asking, and asking requires an invoice, which requires an amount. So this
-// quotes, checks whether the total fits, and shrinks the amount if it does not.
+// Move value between mints: the source melts to an invoice the destination
+// issued. A token names one mint, so a split balance cannot be combined; this
+// costs one routing fee rather than the two of doing it through an outside
+// Lightning wallet. The fee reserve is only known once an invoice exists, which
+// needs an amount, so this quotes, checks the fit and shrinks if needed.
 export async function consolidateMints(params: {
   fromMintUrl: string;
   toMintUrl: string;
@@ -3462,8 +3015,6 @@ export async function consolidateMints(params: {
         unit,
       });
     } catch (err) {
-      // The invoice we just asked for cannot be paid from this mint at this
-      // size. Abandon it so it does not linger in history as a live deposit.
       abandonDeposit(deposit.txId, t("wallet.svc.quote_failed_retried"));
       const walletErr = asWalletError(err, "mint-error");
       if (walletErr.code !== "insufficient") throw walletErr;
@@ -3471,8 +3022,7 @@ export async function consolidateMints(params: {
       continue;
     }
 
-    // The melt needs the invoice amount, the routing reserve, and the mint's
-    // own per-proof input fees, all out of the same balance.
+    // Invoice, routing reserve and input fees all come from one balance.
     const inputFee = feeForProofs(
       available,
       storedMint(from)?.feePpkByKeysetId,
@@ -3484,21 +3034,17 @@ export async function consolidateMints(params: {
       continue;
     }
 
-    // Committed from here. The source pays; the destination issues on claim.
     let meltFee: number;
     try {
       meltFee = (await payLightningInvoice(quote)).fee;
     } catch (err) {
-      // Paid, with only the unused routing reserve still to come back. The
-      // move happened, so it is reported as one, at its worst-case fee.
+      // Paid, change outstanding: report the move at its worst-case fee.
       if (!(err instanceof WalletError && err.code === "change-pending")) {
         throw err;
       }
       meltFee = quote.feeReserve;
     }
-    // Once the melt has paid, a failed claim is a delay, not a failure. The
-    // invoice is paid and the deposit stays pending, so reporting "nothing
-    // moved" would hide money that has left the source mint.
+    // After the melt, a failed claim is a delay: the deposit stays pending.
     let received = 0;
     let depositPending = false;
     try {
@@ -3508,13 +3054,7 @@ export async function consolidateMints(params: {
       depositPending = true;
     }
 
-    // Report what the move actually cost, not what it might have.
-    //
-    // `quote.total` is the worst case: the invoice plus the whole routing
-    // reserve. The mint returns the unused part of that reserve as change, so
-    // using the quote here told the user a move cost eight sats when it cost
-    // one, and made the arithmetic on screen disagree with their own balance.
-    // `meltFee` is what the route really charged.
+    // Actual cost, not `quote.total` (which includes the refunded reserve).
     const spent = quote.amount + meltFee;
 
     return {
@@ -3535,8 +3075,7 @@ export async function consolidateMints(params: {
   );
 }
 
-// Close out a deposit quote we asked for and then decided not to use, so the
-// Lightning section does not show phantom "waiting on payment" entries.
+// Close an unused deposit quote so it does not show as awaiting payment.
 function abandonDeposit(txId: string, reason: string): void {
   useWalletStore.getState().updateTx(txId, {
     status: "expired",
@@ -3560,23 +3099,16 @@ function requireNut(mintUrl: string, nut: number, what: string): void {
 
 // ---- P2PK identity (NIP-61) ----
 
-// Nutzaps are received by locking proofs to a public key the recipient
-// publishes. That key must be a real secp256k1 key we hold the private half of,
-// and it must be stable, or previously published kind 10019 events point at a
-// key we can no longer spend from. It lives in the Keychain next to the
-// identity keys, never in the proof store.
+// The P2PK key senders lock nutzaps to. It must be stable, or published kind
+// 10019 events name a key we cannot spend from, and it lives in the keychain,
+// never the proof store.
 const P2PK_KEY_ITEM = KEYCHAIN_ITEMS.walletP2pkKey;
 
-// In-flight or resolved read-or-mint. Cleared by resetWalletService.
 let nutzapPrivKey: Promise<string> | null = null;
 
 async function getNutzapPrivKeyHex(): Promise<string> {
-  // Single-flight. Four call sites reach this; on a fresh install two running
-  // together would both read nothing, both mint a key and both write. The last
-  // write wins, leaving the other caller with a private key the keychain does
-  // not hold - and its public half goes into the kind 10019, so senders would
-  // lock ecash to a pubkey this device cannot spend from. Same pattern as
-  // bootstrapWalletStorage.
+  // Single-flight: two concurrent first reads would each mint a key, and the
+  // loser's pubkey could be published while the keychain holds the other.
   nutzapPrivKey ??= (async () => {
     const existing = await readSecret(P2PK_KEY_ITEM);
     if (typeof existing === "string" && /^[0-9a-f]{64}$/i.test(existing)) {
@@ -3589,15 +3121,13 @@ async function getNutzapPrivKeyHex(): Promise<string> {
   try {
     return await nutzapPrivKey;
   } catch (error) {
-    // Drop the handle so a locked keychain is not cached as the answer for the
-    // rest of the process.
+    // Do not cache a locked keychain as the answer.
     nutzapPrivKey = null;
     throw error;
   }
 }
 
-// 33-byte compressed public key, hex. This is what goes in the kind 10019
-// `pubkey` tag and what senders lock proofs to.
+// 33-byte compressed, hex: the kind 10019 `pubkey` tag.
 async function getNutzapPubKeyHex(): Promise<string> {
   const priv = await getNutzapPrivKeyHex();
   const pub = bytesToHex(secp256k1.getPublicKey(hexToBytes(priv), true));
@@ -3607,10 +3137,9 @@ async function getNutzapPubKeyHex(): Promise<string> {
 
 // ---- Nutzap redemption ----
 
-// Redeem P2PK-locked proofs from an incoming NIP-61 nutzap. The proofs are
-// locked to our key, so they must be signed before the mint will swap them;
-// until that swap they are not spendable by anyone else, which is what makes
-// nutzaps safe to leave sitting on a relay.
+// Redeem an incoming NIP-61 nutzap, signing the proofs locked to our key. Until
+// that swap nobody else can spend them, which is what makes a nutzap safe to
+// leave on a relay.
 async function redeemNutzapProofs(params: {
   proofs: ProofLike[];
   mintUrl: string;
@@ -3622,10 +3151,8 @@ async function redeemNutzapProofs(params: {
   assertUnlocked();
   const store = useWalletStore.getState();
   if (store.redeemedNutzaps.includes(params.eventId)) return 0;
-  // A redemption already staged for this zap is recoverable by `reconcile`, and
-  // starting a second one would present the same locked proofs to the mint
-  // again. The relay replays kind 9321 events freely, so without this a zap
-  // whose swap answer went missing would be re-swapped on every subscription.
+  // Relays replay kind 9321 freely; a staged redemption is `reconcile`'s, and
+  // a second would present the same locked proofs to the mint again.
   if (
     store.history.some(
       (tx) =>
@@ -3638,25 +3165,12 @@ async function redeemNutzapProofs(params: {
   assertMintNetworkAllowed();
   const url = normalizeMintUrl(params.mintUrl);
 
-  // Only redeem from a mint this wallet already trusts.
-  //
-  // The mint URL is read verbatim out of the incoming kind-9321 event, and the
-  // watcher runs unattended from launch against public relays, so this is one
-  // of the very few paths where a stranger's bytes reach the network stack with
-  // no user in the loop at all. NIP-61 says the mint must be one the recipient
-  // listed in their kind 10019, and core/payments/nutzap.ts states that same
-  // invariant in its header; it was simply never enforced on the receive side.
-  //
-  // What it costs to skip: a P2PK witness signs the proof's secret and nothing
-  // else - not the mint it is presented to - so a witness produced for a
-  // hostile mint is equally valid at the real one. Redeeming against an
-  // attacker's server hands them a signature they can replay to the genuine
-  // mint and take the funds, quite apart from confirming the user's IP and
-  // liveness and leaving their server persisted in the mint list.
-  //
-  // The user's own mint set is exactly the right allowlist: it is what
-  // publishOwnNutzapInfo advertises in the kind 10019, so anyone following the
-  // spec already sends to one of these.
+  // Only held mints (what our kind 10019 advertises, per NIP-61, and the
+  // invariant `core/payments/nutzap.ts` states). The URL comes verbatim from a
+  // stranger's kind 9321 on an unattended watcher. A P2PK witness signs only
+  // the secret, not the mint, so one made for a hostile mint could be replayed
+  // at the real one to take the funds; it would also confirm our IP and
+  // liveness and persist the attacker's server in the mint list.
   if (useWalletStore.getState().mints[url] === undefined) {
     throw new WalletError(
       "untrusted-mint",
@@ -3672,9 +3186,6 @@ async function redeemNutzapProofs(params: {
 
   let result: SendResponse;
   try {
-    // Same shape as an ordinary receive, and for the same reason: the inputs
-    // are the sender's locked proofs, so a lost answer spends them while the
-    // outputs exist only here. See `prepareRecoverableSwap`.
     const { preview, stored } = await prepareRecoverableSwap(
       wallet,
       () => wallet.prepareSwapToReceive(params.proofs),
@@ -3715,9 +3226,8 @@ async function redeemNutzapProofs(params: {
   return amount;
 }
 
-// Build P2PK-locked proofs for an outgoing nutzap. This requires the mint, since
-// locking means minting new outputs with a spending condition; there is no
-// offline equivalent.
+// Lock proofs to a nutzap recipient. Always an online swap: the lock lives in
+// the output secret, so held proofs cannot be retro-fitted.
 export async function lockProofsForNutzap(params: {
   amount: number;
   mintUrl: string;
@@ -3734,20 +3244,13 @@ export async function lockProofsForNutzap(params: {
   const wallet = await getWallet(url, params.unit);
   assertSameWallet(epoch);
   const txId = newTxId();
-  // Read after the await, so a payment that reserved coins while the keysets
-  // loaded is not offered its own proofs again. The reservation below is what
-  // settles any race that is left.
+  // Read after the await; the reservation below settles any remaining race.
   const available = useWalletStore.getState().proofs[key] ?? [];
   const offered = new Set(available.map((p) => p.secret));
 
   let result: SendResponse;
   let staged = false;
   try {
-    // Always a swap: a lock lives in the output's secret, so there is nothing
-    // to retro-fit onto proofs already held and the offline exact-match
-    // shortcut cannot apply. Prepared and persisted before the request so a
-    // lost answer leaves the locked outputs recoverable rather than gone. See
-    // `prepareRecoverableSwap`.
     const { preview, stored } = await prepareRecoverableSwap(wallet, () =>
       wallet.prepareSwapToSend(
         params.amount,
@@ -3788,9 +3291,8 @@ export async function lockProofsForNutzap(params: {
       abandonStagedSwap(txId, walletErr.message);
       throw walletErr;
     }
-    // The mint may have locked these coins to the recipient. They stay held
-    // against this transaction until `reconcile` asks, and the caller is told
-    // plainly, because paying again another way could pay twice.
+    // Maybe already locked to the recipient: held for `reconcile`, and flagged
+    // in doubt so the caller does not pay twice.
     store.updateTx(txId, { error: walletErr.message });
     throw new WalletError(
       walletErr.code,
@@ -3800,10 +3302,7 @@ export async function lockProofsForNutzap(params: {
     );
   }
 
-  // The reserved inputs are spent. `keep` is [change, ...proofs it never
-  // selected], and the unselected originals never left the pool, so only the
-  // change is credited: crediting an original would put back a proof that a
-  // concurrent payment may have spent or reserved since.
+  // `keep` echoes unselected originals; credit only the change.
   store.dropReserved(txId);
   creditProofs(
     url,
@@ -3813,9 +3312,7 @@ export async function lockProofsForNutzap(params: {
   );
 
   const sent = result.send.reduce((s, p) => s + p.amount.toNumber(), 0);
-  // The locked outputs are in hand, so the preview has served its purpose. The
-  // transaction stays pending because delivery has not happened yet, which is a
-  // different question and belongs to `payment-router`.
+  // Pending until delivery, which `payment-router` owns.
   store.updateTx(txId, { amount: sent, swapPreview: undefined });
 
   return { locked: result.send, txId };
@@ -3823,37 +3320,26 @@ export async function lockProofsForNutzap(params: {
 
 // ---- Nutzap send ----
 
-// Everything from here down is money, not delivery.
-//
-// Deliberately not one `sendNutzap` that also publishes the DMs. Delivery inside
-// a module with no business knowing what a chat thread is leaves the DM missing
-// from the conversation, unretried when a relay drops it, and on a publish
-// timeout falling through to a path that reserves a SECOND set of proofs for the
-// same payment. Delivery lives in services/payment-router.ts, the one module
-// allowed to import both the mesh and the wallet.
+// Money only, not delivery: DMs, retries and fallbacks live in
+// `payment-router.ts`, the one module that imports both mesh and wallet.
+// Delivery here would leave the DM out of the thread, unretried on a dropped
+// relay, and on a publish timeout could reserve a second set of proofs for the
+// same payment.
 
 export interface NutzapTarget {
   // Where to lock: a mint they listed that we also hold enough value at.
   mintUrl: string;
   // Their 33-byte compressed P2PK key, from the kind 10019.
   p2pkPubkey: string;
-  // The relays they watch for nutzaps, also from the kind 10019. Carried all the
-  // way to `publishNutzap`, because publishing to our own relays instead is the
-  // difference between a payment they receive and one that sits somewhere they
-  // never subscribe to.
+  // Their kind 10019 relays. Publish there, not to ours, or they never see it.
   relays: string[];
 }
 
 export type NutzapLookup =
   { ok: true; target: NutzapTarget } | { ok: false; reason: string };
 
-// Can this person be paid the NIP-61 way, and where?
-//
-// Spends nothing and never throws. Every failure here means "not this rail",
-// which the caller answers with a different one, so a thrown error would only
-// turn a routine fallback into a dead end. The `reason` is user-facing copy,
-// because the person who just paid deserves to know why they got the lesser
-// instrument.
+// Whether and where this person can be nutzapped. Never throws: a failure means
+// "try another rail". `reason` is user-facing copy.
 export async function findNutzapTarget(params: {
   recipientPubkey: string;
   amount: number;
@@ -3868,11 +3354,8 @@ export async function findNutzapTarget(params: {
   }
   if (!info) return { ok: false, reason: t("wallet.svc.no_nutzap_info") };
 
-  // A token names exactly one mint, so the lock has to happen at a mint that is
-  // both on their list and already funded on our side. Reading the store rather
-  // than asserting unlocked is deliberate: a locked wallet reads as zero
-  // balance, so it lands on "no shared mint" and the caller's next rail raises
-  // the real "wallet is locked" error with the wording the user needs.
+  // A mint on their list that we fund. No `assertUnlocked`: a locked wallet
+  // reads as zero here, and the next rail raises the real "locked" error.
   const state = useWalletStore.getState();
   const shared = info.mintUrls
     .map(normalizeMintUrl)
@@ -3896,14 +3379,9 @@ export async function findNutzapTarget(params: {
   };
 }
 
-// Publish proofs that are already locked to the recipient (kind 9321).
-//
-// Returns whether a relay took it, and always returns the token string for
-// those locked proofs. The value is committed either way: the proofs are
-// spendable only by the recipient's key and are not ours to take back, so a
+// Publish locked proofs as kind 9321. The value is committed either way, so a
 // failed publish is a delivery problem, never a reason to pay again. The token
-// is written onto the transaction before this returns so a crash still leaves
-// something the user can hand over by hand.
+// is saved first so a crash still leaves something to hand over.
 export async function publishLockedNutzap(params: {
   locked: Proof[];
   txId: string;
@@ -3938,32 +3416,25 @@ export async function publishLockedNutzap(params: {
     store.updateTx(params.txId, { status: "completed" });
     return { published: true, token };
   } catch {
-    // Relay refused or unreachable. The money is already theirs; only the
-    // notification failed, so the caller delivers the token another way.
+    // The caller delivers the token another way.
     return { published: false, token };
   }
 }
 
-// Mark a locked nutzap as delivered by some route other than the relay.
+// Delivered by a route other than the relay.
 export function settleNutzap(txId: string): void {
   useWalletStore.getState().updateTx(txId, { status: "completed" });
 }
 
-// Record that locked proofs reached nobody. Not reclaimable by design: they are
-// the recipient's, whatever happens next.
+// Not reclaimable: locked proofs are the recipient's whatever happens.
 export function failNutzapDelivery(txId: string, reason: string): void {
   useWalletStore.getState().updateTx(txId, { error: reason });
 }
 
 // ---- Nutzap receive ----
 
-// Watch relays for incoming nutzaps and redeem them as they arrive.
-//
-// Redemption needs the mint, so a zap that lands while offline stays on the
-// relay and is picked up by the next subscription: NIP-61 events are public and
-// replaceable-by-nobody, so nothing is lost by not acting immediately. Already
-// redeemed event ids are remembered in the store, which is what stops a relay
-// replay from crediting the same zap twice.
+// Redeem incoming nutzaps. One missed offline stays on the relay for the next
+// subscription; stored redeemed ids stop a replay crediting twice.
 export function startNutzapWatcher(params: {
   myPubkey: string;
   client: NostrClient;
@@ -3984,15 +3455,8 @@ export function startNutzapWatcher(params: {
         });
         if (amount > 0) params.onRedeemed?.(amount, zap.unit, zap.senderPubkey);
       } catch (err) {
-        // A refusal is not a failure, and the two need opposite handling.
-        //
-        // "untrusted-mint" means the zap named a mint this wallet does not
-        // hold, so we declined to talk to it at all. Retrying cannot change
-        // that, and silently retrying forever would leave the user wondering
-        // why a payment they were told about never arrived. Mark it seen so the
-        // subscription moves on, and write it into the wallet history the same
-        // way every other money event is recorded, so there is somewhere to
-        // look and an obvious next step (add the mint, if they trust it).
+        // An unheld mint is final: mark it seen and record a failed row so the
+        // user can add the mint if they trust it.
         if (err instanceof WalletError && err.code === "untrusted-mint") {
           store.markNutzapRedeemed(zap.eventId);
           recordTx({
@@ -4006,17 +3470,14 @@ export function startNutzapWatcher(params: {
           });
           return;
         }
-        // Everything else is transient - mint unreachable, Tor-blocked, or the
-        // proofs already claimed. Left unmarked so the next subscription
-        // retries.
+        // Anything else (unreachable, Tor-blocked, already claimed) is left
+        // unmarked for the next subscription.
       }
     })();
   });
 }
 
-// Publish (or refresh) our own kind 10019 so other wallets can nutzap us. Safe
-// to call on every launch: it is a replaceable event, and it only publishes
-// when there is something to say (at least one mint).
+// Our kind 10019, replaceable, so safe on every launch. Needs at least one mint.
 export async function publishOwnNutzapInfo(params: {
   client: NostrClient;
   privKey: Uint8Array;

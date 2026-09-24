@@ -47,6 +47,9 @@ export const Colors = {
   // legible on a light canvas and unambiguous.
   accent: "#111111",
   accentGhost: "rgba(17,17,17,0.05)", // subtle pressed/hover bg
+  // A control on an accent fill (the balance card): inverse ink at low alpha.
+  onAccentFill: "rgba(255,255,255,0.14)",
+  onAccentPressed: "rgba(255,255,255,0.26)",
 
   // ---- Selection ----
   // Highlight behind selected text in an input. Never `accent`: that is a solid
@@ -123,6 +126,8 @@ export const DarkColors = {
   // ---- Interactive accent ----
   accent: "#F5F5F5",
   accentGhost: "rgba(245,245,245,0.08)",
+  onAccentFill: "rgba(17,17,17,0.07)",
+  onAccentPressed: "rgba(17,17,17,0.15)",
   // ---- Selection ----
   // Heavier than the light palette's: a pale wash on a near-black canvas reads
   // fainter than the same alpha of black on white.

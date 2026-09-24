@@ -1787,6 +1787,10 @@ export default function ArchitecturePage() {
                   ],
                   ["Device seizure", "Panic wipe, keys in hardware-backed storage"],
                   [
+                    "Cloud backups",
+                    "Nothing is backed up or copied to a new phone by the OS, so an iCloud or Google backup holds no chats, contacts or keys",
+                  ],
+                  [
                     "Double spend",
                     "Mint-enforced, and a received coin is unconfirmed until checked",
                   ],

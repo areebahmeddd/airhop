@@ -124,16 +124,17 @@ and the sheet keeps showing the name the peer chose beside it.
 
 ### Key storage
 
-| Secret               | Storage                         | Backed by                         |
-| -------------------- | ------------------------------- | --------------------------------- |
-| `noiseStaticPrivKey` | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| `signingPrivKey`     | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Wallet AES-256 key   | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Nutzap P2PK privkey  | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Recovery phrase      | `expo-secure-store`             | iOS Keychain / Android Keystore   |
-| Cashu proofs         | `react-native-mmkv` (AES-256)   | File encrypted with the key above |
-| Active sessions      | `react-native-mmkv` (encrypted) | RAM-backed, not persisted         |
-| Message history      | `react-native-mmkv`             | Encrypted at rest, panic-wipeable |
+| Secret                 | Storage                       | Backed by                         |
+| ---------------------- | ----------------------------- | --------------------------------- |
+| `noiseStaticPrivKey`   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| `signingPrivKey`       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Wallet AES-256 key     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Nutzap P2PK privkey    | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Recovery phrase        | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Cashu proofs           | `react-native-mmkv` (AES-256) | File encrypted with the key above |
+| Noise and DR sessions  | Memory only                   | Not persisted                     |
+| Group and channel keys | `react-native-mmkv`           | See "Data at rest" below          |
+| Message history        | `react-native-mmkv`           | See "Data at rest" below          |
 
 All five go through `src/core/crypto/keychain.ts`; nothing else calls
 `expo-secure-store` directly. The module exports a union type of the item names,
@@ -182,9 +183,37 @@ read and write awaits that promise. If the keychain refuses, the wallet reports
 itself locked rather than opening unencrypted, and no proof reaches plaintext
 disk.
 
-The panic wipe deletes this partition with `deleteMMKV` rather than `clearAll`,
-since the file cannot be reopened without its key and the same wipe destroys the
-key.
+The panic wipe empties an open partition with `clearAll`, since `deleteMMKV`
+would free the native instance under a write still in flight, and uses
+`deleteMMKV` only when nothing opened it. Either way the same wipe destroys the
+key, so what stays on disk cannot be read.
+
+### Data at rest
+
+Outside the keychain, only the wallet partition carries a key of Airhop's own.
+The rest (the other MMKV stores, Arti's state, and attachments in the cache
+directory) relies on the OS: iOS Data Protection and Android file-based
+encryption, keyed to the device passcode, with the same after-first-unlock
+availability as the keychain items. A second key held in this phone's keychain
+would add nothing against someone who can read the app's files on an unlocked
+phone, since they can use the keychain too, and it would make every store open
+asynchronously, as the wallet does.
+
+What such a key would stop is a copy leaving the phone, and that is closed at
+the source instead. Nothing is backed up or transferred:
+
+- **iOS:** `AppDelegate` marks `Documents/mmkv` and `Application Support/airhop`
+  (Arti's guards and consensus) excluded from iCloud and iTunes backup on every
+  launch, before JS runs. The cache directory is never backed up.
+- **Android:** `allowBackup="false"`, plus `data_extraction_rules.xml` excluding
+  every domain from cloud backup and device-to-device transfer. On Android 12+,
+  `allowBackup` alone leaves device-to-device transfer on for some
+  manufacturers.
+
+Nothing is lost by it. A restored copy would not bring Airhop back, since the
+identity is a this-device-only keychain item, so a backup only ever copied the
+data off the phone. Moving to a new phone belongs to an in-app transfer that
+moves the identity rather than cloning it, which is not built yet.
 
 ## 3. Transport Stack
 
@@ -592,134 +621,138 @@ sender as teleported rather than nearby.
 
 ### Why Cashu
 
-Cashu is a Chaumian ecash protocol built on blind signatures. Tokens are strings
-that carry value.
+Cashu is Chaumian ecash: a token is a string that carries value, signed blind so
+the mint cannot link issuance to redemption. That fits a mesh app.
 
-- Transfer is fully offline: a token string sent over BLE moves the value immediately
-- The token is a bearer instrument, so whoever holds it owns it
-- Redemption to Lightning or Bitcoin needs internet access to the mint
-- The mint tracks spent proofs, so the recipient should redeem once online
-- Blind signatures stop the mint linking issuance to redemption
-- Tokens split and combine down to 1 sat
+- Transfer is offline. A token sent over BLE moves the value at once, and whoever holds it owns it.
+- Only the mint knows whether a proof is spent, so a received token is confirmed by a swap once the mint is reachable.
+- Redemption to Lightning needs the mint, and so the internet.
 
 ### Token in a message
 
-A payment is a message whose body is a token string. The same channel or DM that
-carries text carries the payment, and the recipient's app renders it as a payment
+A payment is a message whose body is a token string. Whatever carries text
+carries it (encrypted in a DM, always signed), and the recipient sees a payment
 card.
 
-```
-Message body example:
-💸 500 sats - coffee money
-cashuBo3Blk4J...
-```
-
-The token flows over BLE like any other message: encrypted in a DM, signed always.
+A `cashuB` token names a v2 keyset by an 8-byte short id that only the mint's
+keyset list expands. When a token from a held mint names a keyset newer than the
+cached list, the wallet fetches that list (on Claim, and for the card at most
+once per mint and unit every five minutes) and decodes again. A mint the user has not
+added is never contacted, and Claim refuses its token.
 
 ### Nutzaps (NIP-61)
 
-With internet available, a payment can address a Nostr identity instead of a
-conversation.
+Online, a payment can address a Nostr identity instead of a conversation.
 
-1. Fetch the recipient's `kind:10019`, which lists trusted mints and a P2PK pubkey
-2. Mint or swap ecash P2PK-locked to that pubkey
-3. Publish a `kind:9321` nutzap event **to the recipient's relays**, which is where they subscribe
-4. The recipient's client swaps the token into their wallet, refusing outright if the event names a mint they do not already hold
-5. History stays local in `wallet-store`; Airhop publishes no NIP-60 events
+1. Fetch the recipient's `kind:10019`: trusted mints and a P2PK pubkey
+2. Lock proofs at one of those mints to that pubkey
+3. Publish a `kind:9321` to **the recipient's** relays, where they subscribe
+4. The recipient swaps it in, refusing one from a mint they do not hold
 
-### Choosing a rail
+History stays local in `wallet-store`. Airhop publishes no NIP-60 events.
+
+### Paying a person
 
 Every entry point that pays somebody (DM attach menu, contact sheet, Mesh peer
-sheet, Wallet Zap) calls `payPerson` in `services/payment-router.ts`, so the four
-screens cannot disagree about what a payment does.
+sheet, Wallet Zap) calls `payPerson` in `services/payment-router.ts`, which
+walks one ladder:
 
-| Order | Rail   | When                                                                                                            | Reclaimable |
-| ----- | ------ | --------------------------------------------------------------------------------------------------------------- | ----------- |
-| 1     | Radio  | A direct BLE or WiFi link exists (`MeshService.hasDirectLink`)                                                  | Yes         |
-| 2     | Nutzap | No radio link, their Nostr key is known, they published a `kind:10019`, and we hold value at a mint they accept | No          |
-| 3     | Token  | Anything else. `MeshService.sendDm` picks Nostr gift-wrap, a courier, or the outbox                             | Yes         |
-| 4     | Manual | Nothing carried it, so the token string returns for the user to hand over                                       | Yes         |
+| Order | Rail   | When                                                                                       | Reclaimable |
+| ----- | ------ | ------------------------------------------------------------------------------------------ | ----------- |
+| 1     | Radio  | A direct BLE or WiFi link exists (`hasDirectLink`)                                         | Yes         |
+| 2     | Nutzap | No radio link, their Nostr key and `kind:10019` are known, and we hold value at their mint | No          |
+| 3     | Token  | Otherwise. `sendDm` picks Nostr gift-wrap, a courier or the outbox                         | Yes         |
+| 4     | Manual | Nothing carried it, so the token returns for the user to hand over                         | Yes         |
 
-Radio comes first so that someone standing in front of you does not wait on a
-mint round trip, and so the in-person case keeps working with no internet. Rail 2
-is preferred over rail 3 when available, because locked proofs are the
-recipient's whether or not they ever come online, where a bearer token is theirs
-only once claimed.
+Radio leads so a person in front of you does not wait on a mint, and so it
+works with no internet. A nutzap beats a token because locked proofs are the
+recipient's whether or not they come online.
 
-Two rules hold across the ladder:
+- **One confirm.** The user is asked once, after the rail is known, and the question says whether the payment can be undone. A nutzap that fails to lock falls through to a token without asking again. An inexact token amount asks its overpay question in place of the confirm.
+- **One commitment.** Proofs are reserved (rails 1, 3, 4) or P2PK-locked (rail 2), never both. A failure before committing falls through; after committing, only delivery retries. A lock whose request may have reached the mint stops the ladder.
+- **Finality is reported.** `PayResult.final` is true only for nutzaps, and the result names the rail and whether Activity will offer the money back.
 
-- **One commitment per payment.** Proofs are either reserved (rails 1, 3, 4) or P2PK-locked (rail 2), never both. A rail that fails before committing falls through to the next; a rail that fails after committing retries delivery only.
-- **Finality is reported, never inferred.** `PayResult.final` is true for rail 2 alone, and every confirmation names the rail that carried the money and says whether Pending will offer it back.
+### Mint network gate
+
+Every mint call passes `assertMintNetworkAllowed` in `wallet-service.ts`.
+
+- **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token is stored unconfirmed and checked once the switch is back on, and Lightning actions say why they are off.
+- **Tor on, iOS:** refused (`tor-blocked`) unless the user allows mint calls over the clear net. Tor wraps only Nostr WebSockets there, so `fetch` would expose the IP. Android routes every socket through the proxy and needs no refusal.
+
+`mintNetworkBlock()` gives the same answer ahead of time, so the Wallet tab shows
+a banner and disables what would fail.
 
 ### Payment security model
 
-| Attack              | Mitigation                                                                                                                                                                                                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Double-spend        | The mint is the only authority. A proof received offline is stored as unverified and never claimed as confirmed; `refreshAccount` runs a NUT-07 state check and swaps, and anything the mint reports spent is removed from the balance rather than shown as money |
-| Fake token          | NUT-12 DLEQ verification against the mint's cached public keys on every received token. A failing witness is rejected before the store sees it. Missing keys report "unchecked", never "valid"                                                                    |
-| Inflated amount     | Amounts come from the decoded proofs rather than a self-declared field, and every proof is bounded before being summed                                                                                                                                            |
-| Token interception  | DMs encrypt the token in transit. A token posted to a public channel is a bearer instrument anyone reading can redeem, which the UI states before sending                                                                                                         |
-| Interrupted send    | Proofs move to a reserved bucket rather than being deleted, and the serialised token stays on the transaction. An abandoned sheet, a crash, or a DM that never routes leaves the value reclaimable                                                                |
-| Mint failure        | The user chooses which mints to trust. Balances are per (mint, unit) and never pooled, so one mint failing cannot take the rest                                                                                                                                   |
-| Proofs at rest      | The MMKV partition is AES-256 encrypted under a keychain-held key. If that key is unavailable the wallet locks rather than falling back to plaintext                                                                                                              |
-| IP linkage over Tor | On iOS, Tor wraps only Nostr WebSockets, so mint HTTP would bypass it. Mint calls are refused while Tor is on unless the user opts in. Android routes every socket through the proxy, so nothing is left to refuse                                                |
+| Attack              | Mitigation                                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Double-spend        | The mint is the only authority. An offline receipt is stored unverified; `refreshAccount` runs a NUT-07 state check and a swap, and drops what is spent |
+| Fake token          | NUT-12 DLEQ against the mint's cached keys on every receive. A failing witness is rejected; missing keys report "unchecked", never "valid"              |
+| Inflated amount     | Amounts come from the decoded proofs, each bounded before summing, never from a declared field                                                          |
+| Token interception  | DMs encrypt the token. A token posted to a public channel is redeemable by any reader, which the UI says before sending                                 |
+| Interrupted send    | Proofs move to a reserved bucket and the token stays on the transaction, so a crash or an unrouted DM leaves the value reclaimable                      |
+| Mint failure        | The user picks mints. Balances are per (mint, unit) and never pooled, so one failing mint cannot take the rest                                          |
+| Proofs at rest      | The MMKV partition is AES-256 under a keychain-held key. Without the key the wallet locks rather than falling back to plaintext                         |
+| IP linkage over Tor | The mint network gate above                                                                                                                             |
+
+Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
+sender has not spent it. And reclaiming an undelivered send races the recipient:
+if they also hold the token, whoever reaches the mint first keeps it, which the
+UI says before reclaiming.
 
 ### Recovery
 
-The seed exists from the first launch: a 12-word BIP-39 phrase is generated and
-stored in the keychain beside the identity keys before the first mint
-operation, so every proof the wallet creates uses NUT-13 deterministic secrets
-from day one. What is off by default is the backup itself: the shield turns on
-only once the user has viewed the phrase and confirmed they hold it, since
-"covered" is a promise about the person, not the crypto. Recovery (NUT-09)
-re-derives those secrets on any device and asks each mint which of them it
-signed, so the balance is rebuilt from the mint's records rather than from a
-backup file.
+A 12-word BIP-39 phrase is generated at first launch and kept in the keychain
+beside the identity keys, so every proof the wallet creates uses NUT-13
+deterministic secrets. NUT-09 restore re-derives them on any device and asks
+each mint which it signed, so the balance is rebuilt from the mint's records,
+not a backup file. What starts off is the backup, because "covered" is a promise
+about the person, not the crypto: `backupEnabled` records that the user has seen
+the words and `backupVerified` that they proved they wrote them down. The
+recovery phrase row reads safe only with both, since a phrase never copied out
+looks protected and is not.
 
-| Coverage |                                                                                                                                                  |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Covers   | Ecash derived from the phrase, at mints the user re-adds                                                                                         |
-| Excludes | The Airhop identity, chats, contacts and the mint list                                                                                           |
-| Excludes | Coins received and never swapped, which carry the sender's secrets. They come under the phrase once swapped, which is what `refreshAccount` does |
+| Coverage |                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------- |
+| Covers   | Ecash derived from the phrase, at mints the user re-adds                                    |
+| Excludes | The Airhop identity, chats, contacts and the mint list                                      |
+| Excludes | Coins received and not yet swapped, which carry the sender's secrets until `refreshAccount` |
 
-- The keychain is the source of truth. If the flag says backup is on but the phrase is gone, startup clears the flag and seeds a fresh phrase, which covers coins from then on rather than claiming coverage the user does not have. If the keychain refuses the write, the wallet falls back to random secrets and says nothing is covered.
-- `StoredProof.derived` tracks which proofs the phrase can rebuild, and the UI shows the uncovered remainder rather than folding it into a green tick.
-- There is no way to turn backup off, since deleting a phrase that coins derive from is indistinguishable from deleting the coins. Only the panic wipe removes it.
+- The keychain is the source of truth. If the phrase is missing, startup clears `backupEnabled` and every `derived` mark, then seeds a fresh phrase. If the keychain refuses the write, secrets fall back to random and nothing claims coverage.
+- `StoredProof.derived` marks what the phrase can rebuild, and the UI shows the uncovered remainder.
+- Backup cannot be turned off, since deleting a phrase coins derive from deletes the coins. Only the panic wipe removes it.
+- The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed. A reused counter recreates a signed secret, the mint rejects the swap and the inputs are untouched, so the failure is a retry rather than a loss.
 
-Counters are the one place this can go wrong. Re-deriving a counter recreates a
-secret the mint has already signed and the swap is rejected. The cursor is
-persisted per keyset, only moves forward, and restore pushes it past everything
-the mint has on record. A rejected swap leaves the input proofs untouched, so the
-failure mode is a retry rather than a loss.
+### Fiat units
 
-### Moving between mints
+A Cashu amount is an integer in the unit's smallest denomination (NUT-00), so
+150 in a `usd` keyset is 1.50 USD. `formatAmount` scales a three-letter fiat
+unit by its minor digits (two, or none for ISO 4217 zero-decimal currencies such
+as JPY) and labels it with the code. Only `sat` switches to BTC, and no exchange
+rate is ever applied.
 
-A token names exactly one mint, so ecash from two mints can never be combined
-into one token. `consolidateMints` moves the value instead: the destination mint
-issues a Lightning invoice and the source mint pays it, leaving the balance at
-one mint for one routing fee and no external wallet.
+### Wallet tab
 
-Two limits that wallets often blur:
-
-- DLEQ proves origin, not freshness. A valid witness proves the mint signed that proof. It cannot prove the sender has not already spent it. Only the mint knows that, and only over the network.
-- Reclaiming an undelivered send is not free. The proofs are still valid at the mint, so the reclaim works, but if the recipient also holds the token string then whoever reaches the mint first keeps the value. The UI says so before reclaiming.
+- **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
+- **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
+- **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
+- **Recovery phrase row:** the backup's status, opening its sheet.
+- **Activity:** sends still waiting to be claimed lead with their actions, then the latest 3 transactions, expandable.
 
 ### Wallet operations
 
-| Operation   | Behaviour                                                                                                                              |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts broken out rather than folded into the headline                |
-| Deposit     | bolt11 invoice from the mint (NUT-04), polled while the sheet is open and reconciled on next launch if the app closes                  |
-| Withdraw    | Pay any bolt11 invoice from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                   |
-| Send        | Build a token from held proofs and hand it to a peer, share it, or copy it. Fee-aware, so "send 100" means the recipient can claim 100 |
-| Receive     | Paste or claim from a message. Swapped at the mint when online, stored unverified when not                                             |
-| Pay         | The `payPerson` ladder above, from any of the four entry points, always reporting the rail used and whether it can be reclaimed        |
-| Refresh     | NUT-07 state check, a swap of everything unverified, and a swap of anything the recovery phrase does not yet cover                     |
-| Backup      | Opt-in 12-word phrase (NUT-13 and NUT-09), with the uncovered remainder shown                                                          |
-| Consolidate | Move a split balance onto one mint over Lightning                                                                                      |
-| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                 |
-
-The mint is a minimal trust party and holds no custody of the device's proofs.
+| Operation   | Behaviour                                                                                                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                               |
+| Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                         |
+| Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                          |
+| Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                               |
+| Receive     | Paste, scan or claim from a message. Swapped when the mint is reachable, stored unverified when not                                                                                                 |
+| Pay         | The `payPerson` ladder                                                                                                                                                                              |
+| Refresh     | NUT-07 state check, then a swap of everything unverified or outside the recovery phrase                                                                                                             |
+| Backup      | The 12-word phrase (NUT-13, NUT-09), with the uncovered remainder shown                                                                                                                             |
+| Consolidate | A token names one mint, so two mints' ecash never combine. `consolidateMints` moves it instead: the destination mint issues an invoice and the source pays it, for one routing fee and no other app |
+| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                                                                              |
 
 ## 8. Privacy and Tor
 
@@ -877,6 +910,7 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Hostile payment source             | Ecash is redeemed only from a mint the user already added, and incoming proofs are DLEQ-verified before anything is stored                                                                                                                                                                                                                                                                                                       |
 | Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly                                                                                                                                                                                                                                                                                                                                              |
 | Physical device seizure            | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (Privacy -> Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                    |
+| Cloud backup or phone transfer     | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                            |
 | Screen surveillance                | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked |
 
 ### Out of scope

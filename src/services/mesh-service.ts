@@ -374,6 +374,13 @@ const PTT_FRAME_MAX_AGE_MS = 30_000;
 // Not applied to solicited sync responses, which are old by definition.
 const PACKET_MAX_SKEW_MS = 2 * 60 * 1000;
 
+// How long after a Bluetooth link's disconnect a frame on it counts as late
+// rather than as proof the link is up. Android delivers GATT callbacks on
+// binder threads, so a frame and the disconnect after it can reach JS in either
+// order. The race is milliseconds wide; five seconds covers it and keeps the
+// record of closed links short.
+const LATE_FRAME_MS = 5_000;
+
 // How many different peers must look out of time before we blame our own clock.
 // Two separates "that peer is replaying" from "everyone disagrees with us", and
 // is low enough to catch it in a room with only a couple of neighbours.
@@ -539,6 +546,9 @@ export class MeshService {
     lan: (linkID, dataBase64) =>
       NativeAirhopLAN?.writeToLANLink(linkID, dataBase64) ?? Promise.resolve(),
   });
+  // Bluetooth links whose disconnect was just handled, and when. See
+  // LATE_FRAME_MS.
+  private readonly bleClosedAt = new Map<string, number>();
   // In-progress Noise XX handshakes keyed by remote peerID.
   private readonly pendingHandshakes = new Map<string, PendingHandshake>();
 
@@ -1095,6 +1105,7 @@ export class MeshService {
       DeviceEventEmitter.addListener(
         "AirhopBLE.linkConnected",
         ({ linkID }: { linkID: string; role: string; rssi: number }) => {
+          this.bleClosedAt.delete(linkID);
           this.links.open("ble", linkID);
           // Immediately send our ANNOUNCE (with Nostr pubkey) to the newly
           // connected peer, throttling how often a NEW one is minted.
@@ -1143,6 +1154,11 @@ export class MeshService {
       DeviceEventEmitter.addListener(
         "AirhopBLE.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
+          const now = Date.now();
+          for (const [id, at] of this.bleClosedAt) {
+            if (now - at > LATE_FRAME_MS) this.bleClosedAt.delete(id);
+          }
+          this.bleClosedAt.set(linkID, now);
           this.onLinkGone(linkID);
         },
       ),
@@ -1154,7 +1170,15 @@ export class MeshService {
           // because their disconnects go unheard while stopped, but a central
           // link can outlive that natively, and its connect event is long past.
           // Idempotent for a link already held.
-          this.links.open("ble", linkID);
+          //
+          // Except a frame that lost the race with its own disconnect (see
+          // LATE_FRAME_MS). Its bytes are still handled, but reopening the link
+          // would bind the departed peer to it and show them as direct, with
+          // sends to them going down a dead link.
+          const closedAt = this.bleClosedAt.get(linkID);
+          if (closedAt === undefined || Date.now() - closedAt > LATE_FRAME_MS) {
+            this.links.open("ble", linkID);
+          }
           this.handleRaw(linkID, dataBase64);
         },
       ),
@@ -1454,6 +1478,23 @@ export class MeshService {
     return this.requestSync.isValidResponse(linkPeer, true, now);
   }
 
+  // A late fragment of a transfer already under way. bitchat-ios and
+  // bitchat-android stamp every fragment with the time of the packet inside,
+  // so a transfer that outlasts the window (a large file at their pacing, a
+  // retransmit, a relay, a sender clock running slow) would lose every fragment
+  // after that point. A stream whose first fragment passed the ingress checks
+  // is live traffic, not a replay. An unknown stream still has to pass them, so
+  // nothing old starts an assembly or gets relayed, and onReassembled still
+  // dates the packet inside against the transfer's start.
+  //
+  // Checked before isFreshOrSolicited so these fragments do not count toward
+  // the clock-skew warning.
+  private continuesTransfer(packet: Packet): boolean {
+    if (packet.type !== PacketType.FRAGMENT) return false;
+    if (packet.timestamp > Date.now() + PACKET_MAX_SKEW_MS) return false;
+    return this.fragmentManager.continues(packet.senderID, packet.payload);
+  }
+
   // Relay one packet onward, following a source route when the sender planned
   // one through us and flooding when they did not.
   //
@@ -1632,7 +1673,12 @@ export class MeshService {
     const packet = decodePacket(bytes);
     if (!packet) return;
 
-    if (!this.isFreshOrSolicited(packet, linkID)) return;
+    if (
+      !this.continuesTransfer(packet) &&
+      !this.isFreshOrSolicited(packet, linkID)
+    ) {
+      return;
+    }
 
     // FRAGMENT packets are flood-routed (so multi-hop file transfers work),
     // then fed into the assembler. When all fragments arrive the reassembled
@@ -1715,17 +1761,18 @@ export class MeshService {
   // a whole one. Its fragments were already relayed, so it is not relayed
   // again.
   //
-  // Only the fragments were checked for freshness, and a fragment's stamp says
-  // nothing about the packet inside (ours are stamped when cut). That packet may predate
-  // the window in two honest ways. A slow transfer completes minutes after its
-  // inner timestamp, but that timestamp is no older than the stream's first
+  // Only the fragments were checked for freshness (or, late ones, for belonging
+  // to a live stream), and a fragment's stamp says nothing about the packet
+  // inside (ours are stamped when cut). That packet may predate the window in
+  // two honest ways. A slow transfer completes minutes after its inner
+  // timestamp, but that timestamp is no older than the stream's first
   // fragment. A sync reply is as old as the history it replays, and passes
   // only as a whole one would: carrying IS_RSR, from the peer on the one link
   // every fragment arrived over, which we asked. An old signed packet wrapped
   // in fresh fragments by anyone else is neither.
   //
   // `linkID` is the link the last fragment came over, which is what dispatch
-  // attributes the packet to, as it always has.
+  // attributes the packet to.
   private onReassembled(
     inner: Packet,
     info: AssemblyInfo,
@@ -3269,11 +3316,15 @@ export class MeshService {
     // later claim from a different peer ID on that same link is treated as
     // relayed rather than direct. bitchat rejects this case outright, by name:
     // BLEIngressRejection.directSenderMismatch(boundPeerID:claimedSenderID:).
-    // Downgrading rather than dropping is the gentler equivalent - the announce
+    // Downgrading rather than dropping is the gentler equivalent: the announce
     // is still useful topology, it simply does not earn direct standing.
+    //
+    // And only over a link still held: an announce that arrives after its link
+    // closed says nothing about who is in range now.
     const boundPeer = this.links.peerOf(linkID);
     const isDirectAnnounce =
       packet.ttl === ANNOUNCE_TTL &&
+      this.links.kindOf(linkID) !== undefined &&
       (boundPeer === undefined || boundPeer === peerID);
 
     if (isDirectAnnounce) {
@@ -7066,6 +7117,8 @@ export class MeshService {
   // listener re-opens it on its first frame.
   private closeBluetoothLinks(): void {
     this.links.closeAll("ble");
+    // So a surviving central link's first frame after a restart still reopens it.
+    this.bleClosedAt.clear();
   }
 
   dispose(): void {

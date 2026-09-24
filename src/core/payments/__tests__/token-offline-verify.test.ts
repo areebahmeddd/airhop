@@ -1,25 +1,16 @@
 /**
  * @jest-environment node
  */
-// The only thing between a forged token and the balance when there is no mint.
+// `verifyTokenOffline`: the only check between a forged token and the balance
+// when no mint is reachable. A NUT-12 DLEQ witness proves the mint signed a
+// proof, using its public keys alone.
 //
-// Offline, nobody can ask whether a proof is unspent. What CAN be checked is
-// whether the mint ever signed it, because a NUT-12 DLEQ witness is verifiable
-// against the mint's public keys alone. That is what `verifyTokenOffline` does,
-// and its answer decides whether a stranger's token is credited in a dead zone.
+// "invalid" (provably forged) is refused outright. "unchecked" (cannot tell)
+// is stored unverified and redeemed at the first chance. Collapsing unchecked
+// into invalid breaks every offline transfer; into valid, it credits forgeries.
 //
-// The three answers are not interchangeable and the distinction is the whole
-// point. "invalid" means provably forged and the token is refused outright.
-// "unchecked" means we could not tell, so the value is stored as UNVERIFIED and
-// redeemed at the first opportunity. Collapsing the second into the first would
-// break every legitimate offline transfer; collapsing it into "valid" would
-// credit forgeries. Nothing tested this function before.
-//
-// Not covered here: a genuinely valid witness, which needs the mint's private
-// keys. That belongs to the simulation, where a mint issues real ones, and is
-// covered by scenario W14 in src/__tests__/simulation/scenarios/wallet.test.ts.
-// The split is deliberate: refusal is decided by this function alone and is
-// cheap to pin here, while acceptance is only meaningful end to end.
+// A valid witness needs the mint's private keys, so acceptance is covered end
+// to end by scenario W14 in src/__tests__/simulation/scenarios/wallet.test.ts.
 
 import {
   deriveKeysetId,

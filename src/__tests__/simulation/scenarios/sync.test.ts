@@ -729,6 +729,95 @@ test("S07 a fragmented sync reply is let in only when it was asked for", async (
   s.assert(true);
 });
 
+test("S09 a bitchat transfer that outlasts the window still completes", async () => {
+  // bitchat-ios and bitchat-android stamp every fragment with the time of the
+  // packet inside, so a slow transfer's later fragments look minutes old. One
+  // that continues a stream already under way is live traffic; a stream that
+  // opens with old fragments is a replay, and must be neither kept nor relayed.
+  const s = (scenario = new Scenario({
+    id: "S09",
+    title: "a long bitchat transfer against the freshness window",
+    seed: 99,
+  }));
+  const { radio, devices } = phones(s, ["alice", "carol", "dave"]);
+  const [alice, carol, dave] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const channel = "#den";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(alice.peerID),
+    45_000,
+  );
+  s.check("carol holds alice's key", met);
+
+  radio.setTopology([
+    ["alice", "carol"],
+    ["carol", "dave"],
+  ]);
+  await waitForCoarse(s.world, () => radio.isLinked("carol", "dave"), 30_000);
+
+  // Cut as bitchat cuts: every fragment carries the inner packet's stamp.
+  function bitchatFragments(inner: Uint8Array): string[] {
+    const packet = decodePacket(inner);
+    if (packet === null) throw new Error("inner packet does not decode");
+    return fragmentPacket(packet, { peerID: alice.peerID }).map((f) =>
+      bytesToBase64(encodePacket({ ...f, timestamp: packet.timestamp })),
+    );
+  }
+
+  // Under the 30s idle timeout, so only the freshness window is in play.
+  const gapMs = 25_000;
+  const text = incompressible(s.world, 6_000);
+  const frames = bitchatFragments(
+    signedPublicMessage(alice, channel, text, s.world.wallClock(), "slow"),
+  );
+  s.check(
+    "the transfer runs past the two-minute window",
+    (frames.length - 1) * gapMs > 2 * 60_000,
+    `${String(frames.length)} fragments`,
+  );
+  for (const [i, frame] of frames.entries()) {
+    if (i > 0) await s.world.advance(gapMs);
+    radio.injectTo(carol.id, alice.id, frame);
+  }
+  const arrived = await waitFor(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    5_000,
+  );
+  s.check("the slow transfer is reassembled and shown", arrived);
+
+  const air = watchAir(radio, carol.id);
+  const staleAt = s.world.wallClock() - 6 * 60_000;
+  const replayText = incompressible(s.world, 900);
+  for (const frame of bitchatFragments(
+    signedPublicMessage(alice, channel, replayText, staleAt, "replay"),
+  )) {
+    radio.injectTo(carol.id, alice.id, frame);
+  }
+  await s.world.advance(5_000);
+  air.stop();
+  s.check(
+    "a stream that opens with old fragments is refused",
+    !carol.texts(channel).includes(replayText),
+  );
+  s.check(
+    "and none of its fragments is relayed",
+    !air.packets.some(
+      (p) => p.type === PacketType.FRAGMENT && p.timestamp === staleAt,
+    ),
+  );
+  s.check(
+    "dave never sees it either",
+    !dave.texts(channel).includes(replayText),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
 test("S08 a message too long for one frame still reaches a latecomer", async () => {
   // Bob hears alice's message as fragments. He has to remember it for sync,
   // and his reply to carol has to be cut to fit the link, or the history a

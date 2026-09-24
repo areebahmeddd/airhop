@@ -1,13 +1,9 @@
 /**
  * @jest-environment node
  */
-// Recovery phrase tests.
-//
-// This module decides whether a user's money is recoverable, and a phrase that
-// is accepted but wrong is worse than one that is rejected: the user walks away
-// believing they have a backup. So most of these cover *rejection*, and the one
-// property that matters above all is that the same phrase always derives the
-// same seed.
+// Recovery phrase tests. A phrase accepted but wrong is worse than one
+// rejected, since the user believes they have a backup, so most cases cover
+// rejection. Above all, the same phrase must always derive the same seed.
 
 import * as SecureStore from "expo-secure-store";
 import { KEYCHAIN_ITEMS } from "../../crypto/keychain";

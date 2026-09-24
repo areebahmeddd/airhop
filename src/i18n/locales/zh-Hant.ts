@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "取消",
-  "common.done": "完成",
-  "common.ok": "好",
-  "common.close": "關閉",
   "common.back": "返回",
-  "common.delete": "刪除",
-  "common.remove": "移除",
+  "common.close": "關閉",
+  "common.cancel": "取消",
+  "common.ok": "好",
+  "common.done": "完成",
+  "common.continue": "繼續",
+  "common.try_again": "再試一次",
   "common.add": "新增",
+  "common.remove": "移除",
+  "common.delete": "刪除",
   "common.copy": "複製",
   "common.copied": "已複製",
   "common.share": "分享",
-  "common.continue": "繼續",
-  "common.try_again": "再試一次",
   "common.settings": "設定",
   "common.on": "開啟",
   "common.off": "關",
@@ -290,6 +290,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "無法移除對方",
   "chat.group.remove_failed_body":
     "什麼都沒變。只有建立群組的人才能更動群組成員。",
+  "chat.group.leave_creator_body":
+    "離開 {name}？這個群組是你建立的，只有建立者才能加入或移除成員，所以你離開後就沒有人能這麼做了。它的歷史紀錄會從這台裝置上移除。",
   "chat.group.e2ee": "端對端加密。只有成員讀得到訊息。",
   "chat.group.cap":
     "由你挑選，最多 16 人。沒有邀請連結，所以不會有人靠轉來的連結進來。",
@@ -492,34 +494,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "西南",
   "chat.location.direction.w": "正西",
   "chat.location.direction.nw": "西北",
-  "chat.attach.send_anyway": "還是傳送",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "響鈴",
   "chat.ring.received_summary": "響鈴通知你",
   "chat.ring.alert.title": "{sender} 正在響鈴",
   "chat.ring.alert.body": "請查看你的訊息",
   "chat.ring.alert.open": "開啟",
   "chat.ring.alert.snooze": "暫停 1 小時",
-  "chat.contact.allow_ring": "允許響鈴提醒",
-  "chat.contact.allow_ring_desc":
-    "讓對方響鈴提醒你,即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
-  "chat.contact.ring_action": "響鈴",
-  "chat.contact.ringing": "響鈴中…",
   "chat.ring.sent_snoozed": "已響鈴,已延後",
   "chat.ring.sent_too_soon": "已響鈴,過於頻繁",
   "chat.ring.sent_not_allowed": "已響鈴,未獲允許",
-  "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
-  "chat.contact.ring_hint_not_allowed": "對方尚未允許你響鈴",
-  "chat.contact.ring_hint_snoozed": "對方暫時延後了響鈴",
-  "chat.contact.ring_hint_too_soon": "剛剛已向對方響鈴",
-  "chat.contact.ring_hint_again_in": "{time}後可再次響鈴",
-  "settings.security.ring_alerts": "響鈴提醒",
-  "settings.security.ring_alerts_desc":
-    "響鈴的總開關。關閉後將拒絕所有響鈴,無論你允許了哪些聯絡人。",
-  "notif.channel.ring": "響鈴",
-  "notif.channel.ring_desc": "來自你允許響鈴的聯絡人的提醒。",
-  "notif.ring.hidden": "響鈴",
-  "notif.ring.title": "{sender} 正在響鈴通知你",
-  "notif.ring.body": "請查看你的訊息",
+  "chat.attach.send_anyway": "還是傳送",
   "chat.attach.bitchat_too_big": "這可能送不到",
   "chat.attach.bitchat_too_big_body":
     "{name} 用的是 bitchat，它遇到大檔案會傳到一半就放棄。大約 350 KiB 以下比較可靠。傳給 Airhop 聯絡人則沒有這種限制。",
@@ -611,7 +597,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "領取 {amount} {unit}",
   "chat.ecash.already_claimed": "已經領過了",
   "chat.ecash.already_claimed_body":
-    "這個代幣裡的每一份憑證都已經在你的錢包裡了，所以沒有新增任何東西。",
+    "這個代幣裡的所有內容都已經在你的錢包裡了，所以沒有新增任何東西。",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "已交給網狀網路盡力遞送",
@@ -699,6 +685,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "你為對方取的名字",
   "chat.contact.copy_peer_id": "複製節點 ID",
   "chat.contact.verify": "驗證聯絡人",
+  "chat.contact.allow_ring": "允許響鈴提醒",
+  "chat.contact.allow_ring_desc":
+    "讓對方響鈴提醒你,即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
+  "chat.contact.ring_action": "響鈴",
+  "chat.contact.ringing": "響鈴中…",
+  "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
+  "chat.contact.ring_hint_not_allowed": "對方尚未允許你響鈴",
+  "chat.contact.ring_hint_snoozed": "對方暫時延後了響鈴",
+  "chat.contact.ring_hint_too_soon": "剛剛已向對方響鈴",
+  "chat.contact.ring_hint_again_in": "{time}後可再次響鈴",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "公告",
@@ -881,28 +877,44 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "在聰和比特幣之間切換",
   "wallet.balance.a11y": "餘額 {value} {unit}",
   "wallet.balance.locked":
-    "錢包儲存已鎖定。Ecash 憑證存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中，現在打不開。請解鎖裝置並重新開啟 Airhop。",
+    "錢包儲存已鎖定。你的 ecash 存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中，現在打不開。請解鎖裝置並重新開啟 Airhop。",
   "wallet.balance.tor_blocked":
-    "Tor 已開啟，所以鑄幣廠請求被擋下：它們會走明網送出，把你的 IP 和你的憑證連在一起。透過網狀網路收付仍然可用。可在設定的安全裡允許鑄幣廠流量。",
+    "Tor 已開啟，所以鑄幣廠請求被擋下：它們會走明網送出，把你的 IP 和你的 ecash 連在一起。透過網狀網路收付仍然可用。如仍要連線鑄幣廠，請在設定中開啟{setting}。",
+  "wallet.balance.offline": "離線中。你仍可以付款給附近的人，也可以傳送代幣。",
+  "wallet.balance.internet_off":
+    "網路已關閉，錢包只能在附近使用。要連線鑄幣廠，請在設定中開啟{setting}。",
   "wallet.balance.unconfirmed_note": "{amount} 尚未向鑄幣廠確認",
   "wallet.balance.reserved_note": "{amount} 已為一筆在途的傳送保留",
   "wallet.balance.other_mint_note": "{amount} 放在另一個鑄幣廠帳戶裡",
   "wallet.balance.test_mint_note":
     "其中包含測試鑄幣廠發的遊戲幣。它不是比特幣，也無法兌現。",
   "wallet.token": "代幣",
-  "wallet.action.send": "傳送 ecash 代幣",
   "wallet.action.send_disabled": "傳送 ecash 代幣，餘額為零時無法使用",
-  "wallet.action.receive": "接收 ecash 代幣",
-  "wallet.action.zap": "打閃給 Nostr 聯絡人",
-  "wallet.action.zap_disabled": "打閃給 Nostr 聯絡人，餘額為零時無法使用",
-  "wallet.action.add_mint": "新增 Cashu 鑄幣廠",
+  "wallet.action.scan": "掃描",
+  "wallet.action.scan_a11y": "掃描代幣、發票或 npub",
+  "wallet.choose.paste": "貼上代幣",
+  "wallet.choose.paste_desc": "離線也能用",
+  "wallet.choose.scan": "掃描 QR 碼",
+  "wallet.choose.scan_desc": "來自任何錢包的 Cashu 代幣",
+  "wallet.choose.topup": "透過 Lightning 儲值",
+  "wallet.choose.topup_desc": "用任何 Lightning 錢包支付發票",
+  "wallet.choose.token": "建立代幣",
+  "wallet.choose.token_desc": "分享或出示 QR 碼，離線也可以",
+  "wallet.choose.zap": "給 Nostr 聯絡人發 zap",
+  "wallet.choose.zap_desc": "發到對方的 npub，經由網路",
+  "wallet.choose.invoice": "支付 Lightning 發票",
+  "wallet.choose.invoice_desc": "提領到任何 Lightning 錢包",
+  "wallet.choose.tor_paused": "Tor 開啟時暫停",
+  "wallet.choose.offline": "需要連網",
+  "wallet.choose.internet_off": "網路已關閉",
+  "wallet.choose.needs_mint": "請先新增鑄幣廠",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "無法建立這個代幣",
   "wallet.send.title": "傳送 ecash",
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
-    "用你手上已有的憑證離線建立。在你確認代幣已送達之前，餘額不會被永久扣掉。",
+    "用你手上已有的 ecash 離線建立。在你確認代幣已送達之前，餘額不會被永久扣掉。",
   "wallet.send.stale_fee_note":
     "手續費上次核對是在 {days} 天前。如果這個鑄幣廠之後調高了費率，這筆傳送可能會稍微貴一點。",
   "wallet.send.fee_note":
@@ -910,7 +922,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "這個代幣拆成的幣太多，塞不進一個 QR 碼。請改用分享或複製，或者到鑄幣廠重新整理以合併。",
   "wallet.send.bearer_note":
-    "誰拿著這串字，錢就是誰的。這些憑證是被保留而不是花掉：如果它始終沒有送到任何人手上，你可以在待處理裡收回。",
+    "誰拿著這串字，錢就是誰的。這些幣是被保留而不是花掉：如果它始終沒有送到任何人手上，你可以在動態裡收回。",
   "wallet.send.qr_too_big_short":
     "這個代幣拆成的幣太多，塞不進一個 QR 碼。請改用分享或複製。",
   "wallet.send.scan_note":
@@ -924,11 +936,11 @@ export const strings: Strings = {
   "wallet.send.building": "建立中…",
   "wallet.send.build": "建立代幣",
   "wallet.send.inexact_body":
-    "你的憑證在離線狀態下湊不出剛好 {amount} {unit}。能建立的最小代幣是 {spend} {unit}，而離線是沒有找零的：多出的 {extra} {unit} 會歸收款方。\n\n連上網路時到鑄幣廠重新整理一次，可以把你的憑證拆成湊得出這個精確金額的面額。",
+    "你的幣在離線狀態下湊不出剛好 {amount} {unit}。能建立的最小代幣是 {spend} {unit}，而離線是沒有找零的：多出的 {extra} {unit} 會歸收款方。\n\n連上網路時到鑄幣廠重新整理一次，可以把你的幣拆成湊得出這個精確金額的面額。",
   "wallet.send.send_amount": "傳送 {amount}",
   "wallet.send.sent_to": "{amount} {unit} 已傳送給 {name}",
   "wallet.send.sent_to_body":
-    "{route} 在你確認對方收到之前，或者在鑄幣廠告知這些憑證已被兌付之前，它都留在待處理裡可以收回。",
+    "{route} 在你確認對方收到之前，或者在鑄幣廠告知代幣已被兌付之前，它都留在動態裡可以收回。",
   "wallet.send.copy_token": "複製代幣",
   "wallet.send.share_token": "分享代幣",
   "wallet.send.open_in_wallet": "在另一個錢包中開啟這個代幣",
@@ -947,12 +959,12 @@ export const strings: Strings = {
     "這些幣仍為一筆你還沒結清的傳送保留著，所以沒有可領取的東西。對那筆付款使用收回，就能把它們直接放回你的餘額。",
   "wallet.receive.already_have": "已經在你的錢包裡",
   "wallet.receive.already_have_body":
-    "這個代幣裡的每一份憑證都已經存在這裡了，所以沒有新增任何東西。餘額沒有變動。",
+    "這個代幣裡的所有內容都已經存在這裡了，所以沒有新增任何東西。餘額沒有變動。",
   "wallet.receive.stored_unconfirmed":
     "已從 {mint} 存入，但尚未向鑄幣廠確認（{reason}）。",
   "wallet.receive.offline": "離線",
   "wallet.receive.redeemed_here":
-    "已在 {mint} 兌付。這些憑證現在只屬於你：傳送方手上的副本不再有效。",
+    "已在 {mint} 兌付。這筆 ecash 現在只屬於你：傳送方手上的副本不再有效。",
   "wallet.receive.memo_quoted": "\n\n「{memo}」",
   "wallet.receive.redeemed_at":
     "已在 {mint} 兌付。現在它可以被證明屬於你：傳送方手上的這份代幣副本不再有效。",
@@ -1003,9 +1015,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "把 {mint} 從你的錢包移除？它快取的金鑰也會一併刪掉，來自它的代幣將無法再離線核對。",
   "wallet.mint.title": "鑄幣廠",
-  "wallet.mint.none": "還沒有鑄幣廠",
   "wallet.mint.none_desc":
-    "鑄幣廠負責發行和兌付你的 ecash。新增一個就能透過 Lightning 存入，或者乾脆收一個代幣，它的鑄幣廠就會自動幫你加上。",
+    "鑄幣廠發行並兌付你的 ecash。新增一個，就能透過 Lightning 儲值或接收它的代幣。",
   "wallet.mint.add": "新增鑄幣廠",
   "wallet.mint.add_body":
     "鑄幣廠替你的 ecash 保管背後的比特幣，所以請挑一個你願意託付這筆餘額的。URL 在儲存前會先核對。如果你不想信任任何人，可以用 Nutshell 自己架一個。",
@@ -1017,8 +1028,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "移除鑄幣廠",
   "wallet.mint.delete_anyway": "還是刪除",
   "wallet.mint.consolidate": "把所有餘額整合到一個鑄幣廠",
-  "wallet.mint.confirm_with": "向 {mint} 確認憑證",
-  "wallet.mint.remove_a11y": "移除 {mint}",
+  "wallet.mint.confirm_with": "向 {mint} 核對餘額",
   "wallet.mint.available_amount": "可用 {amount} {unit}",
   "wallet.mint.split_across": "餘額分散在 {count} 個鑄幣廠。把它整合到一個。",
   "wallet.mint.move_everything_to": "把全部搬到 {mint}",
@@ -1044,13 +1054,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "發票已付款，{mint} 已發行 {amount} {unit}。這筆餘額已確認：你馬上就能離線花掉它。",
   "wallet.ln.withdrawn":
-    "已透過 Lightning 付出 {paid} sat。鑄幣廠收了 {fee} sat 的路由費。",
+    "已透過 Lightning 付出 {amount} {unit}。鑄幣廠收了 {fee} {unit} 的路由費。",
   "wallet.ln.withdrawn_with_change":
-    "已透過 Lightning 付出 {paid} sat。鑄幣廠收了 {fee} sat 的路由費，並把保留額中剩下的 {change} sat 退回你的餘額。",
+    "已透過 Lightning 付出 {amount} {unit}。鑄幣廠收了 {fee} {unit} 的路由費，並把保留額中剩下的 {change} {unit} 退回你的餘額。",
   "wallet.ln.payment_failed": "付款失敗",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "把 Lightning 上的 sat 變成可以離線花的 ecash，或者把 ecash 兌付到任何一張 Lightning 發票。兩者都需要網路和一個鑄幣廠。",
   "wallet.ln.deposit_body":
     "鑄幣廠給你一張發票。用任何 Lightning 錢包付掉它，這些 sat 就會以 ecash 的形式回來，可以離線花。",
   "wallet.ln.pay_invoice_for":
@@ -1063,10 +1070,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最多 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "付 {amount} {unit}",
-  "wallet.ln.deposit": "透過 Lightning 存入 sat",
-  "wallet.ln.deposit_short": "存入",
-  "wallet.ln.withdraw": "提領到一張 Lightning 發票",
-  "wallet.ln.withdraw_short": "提領",
   "wallet.ln.deposit_title": "透過 Lightning 存入",
   "wallet.ln.amount_placeholder": "金額（sat）",
   "wallet.ln.requesting": "請求中…",
@@ -1087,7 +1090,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "取得報價",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "備份",
   "wallet.backup.setup_failed": "無法設定備份",
   "wallet.backup.on": "備份已開啟",
   "wallet.backup.on_body":
@@ -1189,12 +1191,11 @@ export const strings: Strings = {
   "wallet.refresh.partly": "部分重新整理",
   "wallet.refresh.done": "已重新整理",
   "wallet.refresh.unreachable": "連不上 {mints}。其餘部分都是最新的。",
-  "wallet.refresh.swapped": "{amount} {unit} 已確認並換成了新的憑證。",
+  "wallet.refresh.swapped": "{amount} {unit} 已確認並換成了新的 ecash。",
   "wallet.refresh.secured": "{amount} {unit} 現在已被你的復原助記詞涵蓋。",
   "wallet.refresh.all_confirmed": "這裡的一切都已經向鑄幣廠確認過了。",
-  "wallet.pending.title": "待處理",
   "wallet.pending.reserved_desc":
-    "已建立並保留，送達未確認。這些憑證被從你的餘額扣住，以免被花兩次。",
+    "已建立並保留，送達未確認。這些幣被從你的餘額扣住，以免被花兩次。",
   "wallet.pending.locked_desc":
     "已經鎖到收款方的金鑰上，所以只有對方花得了。只是還沒送到對方手上。分享這個代幣就能完成。",
   "wallet.pending.show_qr": "把這個代幣顯示成 QR 碼",
@@ -1205,8 +1206,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "把這個代幣收回你的餘額",
   "wallet.activity.title": "動態",
   "wallet.activity.none": "還沒有內容",
-  "wallet.activity.none_desc":
-    "你送出和收到的付款會顯示在這裡，最新的在前，並附上各自的鑄幣廠和手續費。",
   "wallet.activity.show_fewer": "少顯示一些付款",
   "wallet.activity.show_less": "收合",
   "wallet.activity.received_unconfirmed": "已收到，未確認",
@@ -1222,14 +1221,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning 存入",
   "wallet.activity.ln_withdrawal": "Lightning 提領",
   "wallet.activity.nutzap_received": "收到 Nutzap",
-  "wallet.activity.spent_removed": "已花用的憑證已移除",
-  "wallet.activity.refreshed": "憑證已重新整理",
-  "wallet.activity.refreshing": "正在重新整理憑證",
+  "wallet.activity.spent_removed": "已移除已花費的幣",
+  "wallet.activity.refreshed": "已向鑄幣廠核對",
+  "wallet.activity.refreshing": "正在向鑄幣廠核對",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "網狀網路已離線",
   "wallet.mesh_offline_body":
-    "網狀網路服務沒有在跑，所以沒有地方可以把代幣交出去。它會留在待處理裡保持保留。",
+    "網狀網路服務沒有在跑，所以沒有地方可以把代幣交出去。它會留在動態裡保持保留。",
   "wallet.xfer.route_mesh": "已透過網狀網路直接交到對方裝置上。",
   "wallet.xfer.route_nostr": "對方不在藍牙範圍內，所以改走了網路。",
   "wallet.xfer.route_courier":
@@ -1240,7 +1239,7 @@ export const strings: Strings = {
     "網狀網路服務沒有在跑，所以沒有辦法把代幣交出去。沒有扣掉任何金額。",
   "wallet.xfer.could_not_send": "無法傳送",
   "wallet.xfer.inexact_body":
-    "你的憑證在離線狀態下湊不出剛好 {amount} {unit}。能建立的最小代幣是 {spend} {unit}，多出的 {extra} {unit} 會歸對方，而且要不回來。\n\n連上網路時到鑄幣廠重新整理一次，會把你的憑證拆成湊得出這個精確金額的面額。",
+    "你的幣在離線狀態下湊不出剛好 {amount} {unit}。能建立的最小代幣是 {spend} {unit}，多出的 {extra} {unit} 會歸對方，而且要不回來。\n\n連上網路時到鑄幣廠重新整理一次，會把你的幣拆成湊得出這個精確金額的面額。",
   "wallet.xfer.send_amount": "傳送 {amount}",
   "wallet.xfer.mesh_offline": "網狀網路已離線",
 
@@ -1250,7 +1249,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "已鎖到對方的金鑰。中繼不肯收，所以它改以訊息的形式送給了對方。",
   "wallet.pay.rail_nutzap_undelivered":
-    "已鎖到對方的金鑰，但還沒有東西能把它帶過去。它已排隊，代幣在待處理裡。",
+    "已鎖到對方的金鑰，但還沒有東西能把它帶過去。它已排隊，代幣在動態裡。",
   "wallet.pay.final": "已鎖定的付款無法收回：現在只有對方的金鑰花得了這些幣。",
   "wallet.pay.reclaimable": "在你確認它已送達之前，都可以從錢包分頁收回。",
   "wallet.pay.why": "之所以走這條路，是因為{reason}。",
@@ -1265,8 +1264,7 @@ export const strings: Strings = {
   "wallet.pay.action": "傳送 ecash",
   "wallet.pay.confirm_title": "向 {name} 傳送 {amount} {unit}？",
   "wallet.pay.confirm_final": "它會鎖定到對方的金鑰。一旦傳送便無法撤回。",
-  "wallet.pay.confirm_reclaimable":
-    "在對方領取之前，你可以在「待處理」中收回。",
+  "wallet.pay.confirm_reclaimable": "在對方領取之前，你可以在「動態」中收回。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "相機存取權",
@@ -1283,9 +1281,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "對準一個 Lightning 發票 QR 碼。",
   "wallet.scan.title_token": "掃描 ecash",
   "wallet.scan.title_invoice": "掃描發票",
-  "wallet.scan.desc_token":
-    "讀取來自另一個錢包的 Cashu 代幣。任何 Cashu 錢包都適用，不限於 Airhop。",
-  "wallet.scan.desc_invoice": "讀取一張 Lightning 發票，用你的餘額付掉它。",
+  "wallet.scan.title_any": "掃描 QR 碼",
+  "wallet.scan.aim_any": "對準代幣、發票或 npub 的 QR 碼。",
+  "wallet.scan.no_any": "那張圖裡沒有找到代幣、發票或 npub。",
   "wallet.scan.use_camera_a11y": "用相機掃描",
   "wallet.scan.use_camera": "使用相機",
   "wallet.scan.pick_image_a11y": "從已儲存的圖片中讀取 QR 碼",
@@ -1297,7 +1295,7 @@ export const strings: Strings = {
     "Cashu 是比特幣的 ecash。代幣是一串字，誰拿著它就等於拿著錢，它由鑄幣廠盲簽，所以鑄幣廠分不出是誰花了哪一筆。沒有帳戶，也不用登入。",
   "wallet.explain.send": "傳送",
   "wallet.explain.send_desc":
-    "把一筆金額變成代幣，可以透過藍牙交給附近的節點，也可以當成文字分享。不需要網路。在你確認它已到手之前，憑證會一直保留著。",
+    "把一筆金額變成代幣，可以透過藍牙交給附近的節點，也可以當成文字分享。不需要網路。在你確認它已到手之前，這些幣會一直保留著。",
   "wallet.explain.receive": "接收",
   "wallet.explain.receive_desc":
     "貼上一個代幣就能加進來。連上網路時它會立刻在鑄幣廠換新，因而可以被證明屬於你。離線時它會被存起來並標為未確認，直到你重新整理。",
@@ -1327,7 +1325,10 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "連不上鑄幣廠。",
   "wallet.svc.tor_ios": "在 iOS 上，鑄幣廠請求不走 Tor。",
   "wallet.svc.tor_ios_body":
-    "Arti 只包住 Nostr 的 WebSocket，所以這個請求會走明網到鑄幣廠，把你的 IP 和這些憑證連在一起。可以在設定 > 安全裡允許它，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
+    "iOS 上的 Tor 只涵蓋 Nostr，所以這個請求會走明網到鑄幣廠，把你的 IP 和這筆 ecash 連在一起。請在設定中開啟{setting}，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
+  "wallet.svc.internet_off": "網路已關閉，無法連線鑄幣廠。",
+  "wallet.svc.internet_off_body":
+    "請在設定中開啟{setting}。在附近收發 ecash 仍然可用。",
   "wallet.svc.keys_uncached": "這個鑄幣廠的金鑰沒有快取在這台裝置上。",
   "wallet.svc.keys_uncached_body": "連上網路時開啟一次錢包就能取回它們。",
   "wallet.svc.phrase_invalid": "那組復原助記詞無效。",
@@ -1339,18 +1340,21 @@ export const strings: Strings = {
   "wallet.svc.restored": "已從復原助記詞還原",
   "wallet.svc.storage_locked": "錢包儲存已鎖定。",
   "wallet.svc.storage_locked_body":
-    "Airhop 把 ecash 憑證存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中。請解鎖裝置並重新開啟 App。",
+    "Airhop 把你的 ecash 存在一個加密檔案裡，它的金鑰放在裝置鑰匙圈中。請解鎖裝置並重新開啟 App。",
   "wallet.svc.bad_url": "那不是有效的 URL。",
   "wallet.svc.needs_https": "鑄幣廠 URL 必須以 https:// 開頭。",
   "wallet.svc.refuse_http": "拒絕透過明文 http 使用鑄幣廠。",
   "wallet.svc.refuse_http_body":
-    "網路路徑上的任何人都讀得到或改得了你的憑證。請使用 https:// 的鑄幣廠。",
+    "網路路徑上的任何人都讀得到或改得了你的 ecash。請使用 https:// 的鑄幣廠。",
   "wallet.svc.mint_not_saved": "鑄幣廠無法儲存。",
   "wallet.svc.unreadable_token": "那不是一個讀得出來的 Cashu 代幣。",
   "wallet.svc.unreadable_token_body":
     "代幣以 cashuA 或 cashuB 開頭。請檢查複製時有沒有被截掉。",
+  "wallet.svc.keyset_unknown": "此代幣使用了其鑄幣廠的新金鑰。",
+  "wallet.svc.keyset_unknown_body":
+    "現在無法連線鑄幣廠取得金鑰。沒有任何損失：連網後再次接收即可。",
   "wallet.svc.wrong_mint": "這個代幣並不是由它指名的鑄幣廠簽發的。",
-  "wallet.svc.already_spent": "這些憑證已經被花掉了。",
+  "wallet.svc.already_spent": "這筆 ecash 已經被花掉了。",
   "wallet.svc.already_spent_body":
     "送這個代幣的人自己先兌付了，或者把同一個代幣也送給了別人。",
   "wallet.svc.receiving_offline": "離線接收",
@@ -1361,7 +1365,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "新增一個鑄幣廠並透過 Lightning 存入，或者從別人那裡收一個代幣。",
   "wallet.svc.split_across_mints": "你的餘額分散在好幾個鑄幣廠。",
-  "wallet.svc.mint_says_spent": "鑄幣廠回報這些憑證已被花用。",
+  "wallet.svc.mint_says_spent": "鑄幣廠回報這筆 ecash 已被花用。",
   "wallet.svc.issue_against_invoice": "憑 Lightning 發票發行 ecash",
   "wallet.svc.pay_invoice": "付掉一張 Lightning 發票",
   "wallet.svc.unknown_deposit": "未知的存入。",
@@ -1385,8 +1389,7 @@ export const strings: Strings = {
   "wallet.svc.amount_unfit_retried": "金額不合適，已重試整合",
   "wallet.svc.cannot_size": "無法決定這筆搬移的額度。",
   "wallet.svc.insufficient_at_mint": "{mint} 的餘額不足。",
-  "wallet.svc.inexact_title":
-    "你的憑證在離線狀態下湊不出剛好 {amount} {unit}。",
+  "wallet.svc.inexact_title": "你的幣在離線狀態下湊不出剛好 {amount} {unit}。",
   "wallet.svc.inexact_detail":
     "你送得出的最小代幣是 {spend} {unit}。離線是沒有找零的，所以多出的 {extra} {unit} 會歸收款方。",
   "wallet.svc.no_single_mint":
@@ -1414,10 +1417,9 @@ export const strings: Strings = {
   "wallet.svc.mint_lost":
     "鑄幣方已發放這筆存款，但無法重建其代幣。從復原詞組復原即可取回。",
   "wallet.svc.swap_unreadable": "這次換新存下來的格式，目前版本無法重放。",
-  "wallet.svc.lock_in_doubt":
-    "鑄幣廠沒有回應，這筆付款可能已完成，也可能沒有。",
+  "wallet.svc.lock_in_doubt": "這筆付款可能已完成，也可能沒有。",
   "wallet.svc.lock_in_doubt_body":
-    "沒有傳送其他任何東西。在鑄幣廠回應之前，這些幣會被保留。若付款已完成，鎖定的代幣會出現在「待處理」中供你轉交；若未完成，幣會退回。",
+    "沒有傳送其他任何東西。在鑄幣廠確認結果之前，這些幣會被保留。若付款已完成，鎖定的代幣會出現在「動態」中供你轉交。若未完成，幣會退回。",
   "wallet.svc.send_spent_by_swap":
     "在此代幣被領取之前，這些幣已被兌換回你的錢包，因此它已無法領取。金額在你的餘額中。",
 
@@ -1517,6 +1519,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "複製節點 ID",
   "settings.peer_id_sheet.note":
     "只有你們雙方都在藍牙範圍內時才有用。想讓別人從任何地方傳訊息給你，請改為分享你的 QR 碼。",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "搜尋設定…",
   "settings.search.a11y": "搜尋設定",
   "settings.search.close": "關閉搜尋",
@@ -1656,6 +1660,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "隱藏通知預覽",
   "settings.security.hide_previews_desc":
     "不讓寄件者和訊息出現在鎖定畫面上，因為鎖定畫面不解鎖就看得到它們",
+  "settings.security.ring_alerts": "響鈴提醒",
+  "settings.security.ring_alerts_desc":
+    "響鈴的總開關。關閉後將拒絕所有響鈴,無論你允許了哪些聯絡人。",
   "settings.security.no_blocked": "沒有被封鎖的節點",
   "settings.security.no_blocked_desc":
     "被封鎖的節點不能傳訊息給你，也不會出現在網狀網路分頁",
@@ -1848,7 +1855,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "網路用量",
   "settings.storage.storage_usage": "儲存用量",
-  "settings.storage.storage_usage_desc": "訊息、錢包憑證和快取的附件",
+  "settings.storage.storage_usage_desc": "訊息、ecash 和快取的附件",
   "settings.storage.session_usage":
     "本次工作階段 · 送出 {sent}，收到 {received}",
   "settings.storage.cache": "快取",
@@ -1934,7 +1941,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "聊天與歷史紀錄",
   "settings.transfer.chats_desc": "對話、群組，以及你加入過的頻道",
   "settings.transfer.wallet": "錢包餘額",
-  "settings.transfer.wallet_desc": "Cashu 憑證與交易紀錄",
+  "settings.transfer.wallet_desc": "Ecash 與交易紀錄",
   "settings.transfer.title": "轉移到新手機",
   "settings.transfer.desc": "把你的身分、聊天和錢包搬到另一台裝置",
   "settings.transfer.coming_soon_a11y": "轉移到新手機，即將推出",
@@ -1963,9 +1970,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "連點三下立刻抹除，不再確認",
   "settings.wipe.title": "緊急抹除",
   "settings.wipe.now": "立刻抹除",
-  "settings.wipe.desc": "立刻銷毀所有金鑰、訊息和憑證",
+  "settings.wipe.desc": "立刻銷毀所有金鑰、訊息和 ecash",
   "settings.wipe.body":
-    "這會立刻銷毀你所有的金鑰、訊息和錢包憑證。此動作無法復原。",
+    "這會立刻銷毀你所有的金鑰、訊息和 ecash。此動作無法復原。",
   "settings.wipe.in_progress": "抹除中",
   "settings.wipe.in_progress_body":
     "正在銷毀你的金鑰、訊息和檔案。這需要幾秒鐘，就算 App 被關掉也會自己完成。",
@@ -2062,6 +2069,8 @@ export const strings: Strings = {
   "notif.channel.messages": "訊息",
   "notif.channel.nearby": "附近的節點",
   "notif.channel.nearby_desc": "網狀網路在藍牙範圍內找到人時，偶爾發一則提示。",
+  "notif.channel.ring": "響鈴",
+  "notif.channel.ring_desc": "來自你允許響鈴的聯絡人的提醒。",
   "notif.nearby.body": "現在就在藍牙範圍內。點一下可開啟網狀網路。",
   "notif.channel_message": "{sender}：{preview}",
   "notif.someone": "某人",
@@ -2078,6 +2087,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "有新動態",
   "notif.hidden.mention": "有人提到了你",
   "notif.mention.title": "{sender} 提到了你",
+  "notif.ring.hidden": "響鈴",
+  "notif.ring.title": "{sender} 正在響鈴通知你",
+  "notif.ring.body": "請查看你的訊息",
 };
 
 export const plurals: Plurals = {
@@ -2136,12 +2148,9 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} 個鑄幣廠",
-  },
   "wallet.mint.remove_body": {
     other:
-      "{mint} 那裡有 {count} 份憑證，共 {balance} {unit}。移除會把這些憑證從這台裝置上永久抹掉，而且它們沒有備份。請先把餘額領走或送出去。",
+      "{mint} 那裡有 {count} 枚幣，共 {balance} {unit}。移除會把這些幣從這台裝置上永久抹掉，而且它們沒有備份。請先把餘額領走或送出去。",
   },
 
   // ---- Wallet: Lightning ----
@@ -2151,7 +2160,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "從 {mints} 復原出 {count} 份未花用的憑證。",
+    other: "從 {mints} 復原出 {count} 枚未花用的幣。",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2168,11 +2177,8 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     other: "{count} 份未確認",
   },
-  "wallet.proof_count": {
-    other: "{count} 份憑證",
-  },
   "wallet.spent_removed_detail": {
-    other: "有 {count} 份憑證早就被花掉了，它們已經被移除。",
+    other: "有 {count} 枚幣早就被花掉了，它們已經被移除。",
   },
 
   // ---- System notifications ----

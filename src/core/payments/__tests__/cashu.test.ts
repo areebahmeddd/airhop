@@ -19,6 +19,7 @@ import {
   inputFeeFor,
   isLikelyTestMint,
   mayContainToken,
+  mintsOfUnresolvedTokens,
   satsToBtc,
   selectProofsForAmount,
   TOKEN_QR_MAX_CHARS,
@@ -91,8 +92,7 @@ describe("findTokensInText", () => {
   });
 
   it("yields one card for a token written in URI form", () => {
-    // The URI wrapper used to be scanned separately from the bare prefix, so a
-    // single bearer token rendered as two payment cards.
+    // The `cashu:` wrapper and the bare token inside it are one match, not two.
     const token = realToken([4]);
     const found = findTokensInText(`cashu:${token}`);
     expect(found).toHaveLength(1);
@@ -171,10 +171,36 @@ describe("decodeToken", () => {
   });
 });
 
-// Every token here encodes cleanly and only fails on a bound, so each case
-// reaches the specific check it names rather than dying earlier in the codec.
-// A token arrives from a stranger over the mesh, and a card that renders it is
-// an invitation to tap. Anything the sender controls therefore needs a ceiling.
+// A v2 keyset id travels as its first 8 bytes and only the mint's keyset list
+// expands it, so a token under a keyset not fetched yet fails the full decode.
+describe("mintsOfUnresolvedTokens", () => {
+  const V2_KEYSET = "01" + "ab".repeat(32);
+  const v2Token = getEncodedToken({
+    mint: MINT,
+    unit: "sat",
+    proofs: proofSet([4]).map((p) => toProofLike({ ...p, id: V2_KEYSET })),
+  } as unknown as Token);
+
+  it("names the mint of a token its keyset list cannot expand", () => {
+    expect(decodeToken(v2Token)).toBeNull();
+    expect(mintsOfUnresolvedTokens(`paid ${v2Token}`)).toEqual([
+      { mintUrl: MINT, unit: "sat" },
+    ]);
+  });
+
+  it("names nothing once the keyset is known, or for a token that decodes", () => {
+    expect(mintsOfUnresolvedTokens(v2Token, [V2_KEYSET])).toEqual([]);
+    expect(decodeToken(v2Token, [V2_KEYSET])?.amount).toBe(4);
+    expect(mintsOfUnresolvedTokens(realToken([2]))).toEqual([]);
+  });
+
+  it("names nothing for text that is not a token", () => {
+    expect(mintsOfUnresolvedTokens("cashuB" + "x".repeat(60))).toEqual([]);
+  });
+});
+
+// A stranger controls every field of a token, so each needs a ceiling. Every
+// token here encodes cleanly, so each case reaches the bound it names.
 describe("decodeToken bounds", () => {
   it("rejects a token carrying no proofs", () => {
     // Encodes fine and reads as a valid token, but is worth nothing. Without
@@ -305,7 +331,7 @@ describe("selectProofsForAmount", () => {
   });
 
   it("does not overshoot when one large proof would cover the amount", () => {
-    // The old largest-first walk spent a whole 64 to send 10.
+    // A largest-first walk would spend the whole 64.
     const result = selectProofsForAmount(proofSet([64, 8, 2]), 10);
     expect(result?.total).toBe(10);
     expect(result?.selected.map((p) => p.amount).sort((a, b) => a - b)).toEqual(
@@ -395,10 +421,8 @@ describe("isLikelyTestMint", () => {
     ).toBe(true);
   });
 
-  // The name/description path in isolation: a hostname that the URL check
-  // cannot flag, so only the word match can pass this. Without it the earlier
-  // case still goes green off its testnut.cashu.space hostname while the word
-  // regex matches nothing at all.
+  // An ordinary hostname, so only the word match can pass these. The first
+  // case would pass on its hostname alone.
   it("flags on the name alone, with an ordinary hostname", () => {
     expect(
       isLikelyTestMint({
@@ -447,11 +471,9 @@ describe("isLikelyTestMint", () => {
   });
 });
 
-// The QR ceiling is a scannability budget, not the format's capacity, so it has
-// to be checked against what a REAL token weighs. The proofs above are toy
-// sized (short secrets, no DLEQ witness); a token from a mint that issues DLEQ
-// carries roughly 210 bytes per proof before base64, which is what pushed a
-// plain 10 sat hand-off past a code that could actually be read.
+// The QR ceiling is a scannability budget, so it is checked against a real
+// token's weight. A proof with a DLEQ witness is roughly 210 bytes before
+// base64, far more than the toy proofs above.
 describe("token QR sizing", () => {
   // Same shape a mint really returns: 64-hex secret, 33-byte C, DLEQ witness.
   function heavyProofs(count: number): StoredProof[] {
@@ -469,9 +491,7 @@ describe("token QR sizing", () => {
   }
 
   it("fits an ordinary hand-off, DLEQ witnesses and all", () => {
-    // One to four proofs covers the great majority of real sends.
-    // A 10 sat send is two proofs (8 + 2) and weighs ~664 characters, which is
-    // exactly the hand-off that was failing to scan.
+    // A 10 sat send is two proofs (8 + 2), about 664 characters.
     for (const count of [1, 2, 3]) {
       expect(canEncodeTokenQr(heavyToken(count))).toBe(true);
     }
@@ -489,13 +509,10 @@ describe("token QR sizing", () => {
   });
 });
 
-// A V4 token names its keyset by a short id, and the v2 form (ids beginning
-// "01") cannot be resolved without the full id to map it back to. NUT-00
-// requires refusing rather than guessing: an unresolved id means the signing
-// keyset is unknown, so the proof can be neither verified nor priced.
-//
-// Decoding with no ids at all therefore returned null for a valid token, which
-// the app showed as an unreadable token and rendered as no payment chip.
+// A V4 token names its keyset by a short id, and a v2 id ("01...") needs the
+// full id list to resolve. NUT-00 requires refusing rather than guessing, since
+// an unknown keyset can be neither verified nor priced, so callers pass the ids
+// they hold.
 describe("short keyset ids", () => {
   function tokenWithKeyset(keysetId: string): string {
     return getEncodedToken({
@@ -527,14 +544,10 @@ describe("short keyset ids", () => {
   });
 
   it("refuses a v2 keyset id it cannot resolve, rather than guessing", () => {
-    // Correct, not a gap: without the full id the proof cannot be verified or
-    // priced. Supplying the ids we hold is the fix, never pretending an
-    // unresolved one is fine.
     expect(decodeToken(tokenWithKeyset(V2_KEYSET))).toBeNull();
   });
 
   it("renders a chat chip for a v2 token once the ids are known", () => {
-    // The user-visible half: without the ids, no chip renders at all.
     const token = tokenWithKeyset(V2_KEYSET);
     expect(findTokensInText(`here you go ${token}`)).toHaveLength(0);
     expect(findTokensInText(`here you go ${token}`, [V2_KEYSET])).toHaveLength(

@@ -13,6 +13,10 @@ class AppDelegate: ExpoAppDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // Before JS runs, so no store is written into a folder a backup would take.
+    Self.excludeFromBackup(.documentDirectory, "mmkv")
+    Self.excludeFromBackup(.applicationSupportDirectory, "airhop")
+
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -46,6 +50,42 @@ class AppDelegate: ExpoAppDelegate {
     #endif
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  // Local state stays on this phone. MMKV (chat history, contacts, group and
+  // channel keys) lives under Documents and Arti's guards and consensus under
+  // Application Support, both of which iOS copies into iCloud and iTunes
+  // backups by default. Restoring one would not bring Airhop back anyway, since
+  // the identity is a this-device-only keychain item, so a backup only copies
+  // the data off the phone. Moving phones belongs to an in-app transfer that
+  // moves the identity rather than cloning it.
+  //
+  // Apple documents the flag per item and lets some file operations reset it,
+  // so it goes on the folder and on everything already inside, every launch.
+  private static func excludeFromBackup(_ base: FileManager.SearchPathDirectory, _ path: String) {
+    let fileManager = FileManager.default
+    guard
+      let parent = try? fileManager.url(
+        for: base,
+        in: .userDomainMask,
+        appropriateFor: nil,
+        create: true
+      )
+    else { return }
+    let root = parent.appendingPathComponent(path, isDirectory: true)
+    try? fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+
+    var values = URLResourceValues()
+    values.isExcludedFromBackup = true
+    var items = [root]
+    if let inside = fileManager.enumerator(at: root, includingPropertiesForKeys: nil) {
+      for case let url as URL in inside {
+        items.append(url)
+      }
+    }
+    for var url in items {
+      try? url.setResourceValues(values)
+    }
   }
 
   // What the app switcher shows in place of the conversation.

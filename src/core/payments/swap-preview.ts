@@ -1,37 +1,21 @@
-// A prepared Cashu swap, in a shape that survives a process kill.
+// A prepared Cashu swap, persisted before the request goes out. A swap is the
+// one mint operation with no quote to ask about afterwards: lose the response
+// (socket drop, OS kill) and the inputs are spent while the outputs exist
+// nowhere, since their blinding factors lived only in memory. cashu-ts splits
+// prepare from `completeSwap`, which builds its request purely from the
+// preview, so a stored preview can be replayed. NUT-19 makes an identical
+// replay return the same signatures rather than "already spent"; NUT-09
+// restore of the stored blinded messages is the backstop.
 //
-// A swap is the one mint operation with no quote to ask about afterwards. The
-// mint takes the inputs, signs the outputs, and answers once. Lose that answer
-// to a dropped socket or an OS kill and the inputs are spent while the outputs
-// exist nowhere: the blinding factors that would unblind them lived only in the
-// memory that just went away. The money is gone silently, which is the worst
-// shape a payment failure can take.
-//
-// cashu-ts splits the operation for exactly this reason. `prepareSwapToReceive`
-// / `prepareSwapToSend` hand back a `SwapPreview`, and `completeSwap` builds its
-// request purely from that preview, so a preview written to disk before the
-// request goes out can be replayed afterwards. NUT-19 makes the replay safe: the
-// mint caches successful responses by request, so an identical request returns
-// the same signatures rather than "already spent". NUT-09 is the backstop when
-// it does not, because the blinded messages are here too and the mint can be
-// asked whether it ever signed them.
-//
-// Two things make a faithful round trip subtle, and both are why this is a
-// module rather than two inline maps:
-//
-//   1. The replay must be BYTE-IDENTICAL, not merely equivalent. The mint keys
-//      its NUT-19 cache on the request payload, and `JSON.stringify` preserves
-//      key insertion order, so rebuilding an input as `{id, amount, secret, C}`
-//      when cashu-ts built it as `{id, amount, C, secret}` produces a different
-//      body and a cache miss. Inputs are therefore stored as an opaque JSON
-//      round trip of what cashu-ts produced, never re-shaped field by field.
-//   2. A P2PK witness is a BIP-340 signature over randomised auxiliary data, so
-//      signing the same input twice yields two different witnesses. Inputs are
-//      signed once, before they are stored, and the replay never re-signs.
-//
-// `amount` and `fees` are carried for the UI's benefit only. `completeSwap`
-// never reads them, which is fortunate: they are `Amount` value objects and do
-// not survive JSON.
+// Two subtleties:
+//   1. The replay must be BYTE-IDENTICAL, since the mint keys its NUT-19 cache
+//      on the payload and `JSON.stringify` keeps insertion order. Inputs are an
+//      opaque JSON round trip of what cashu-ts built, never re-shaped field by
+//      field: `{id, amount, secret, C}` for `{id, amount, C, secret}` misses.
+//   2. A P2PK witness is a BIP-340 signature over random aux data, so signing
+//      twice gives two witnesses. Inputs are signed once, before storage, and
+//      the replay never re-signs.
+// `amount` and `fees` are for the UI only: `completeSwap` never reads them.
 
 import {
   Amount,
@@ -43,15 +27,12 @@ import {
   type SwapPreview,
 } from "@cashu/cashu-ts";
 
-// Bumped if the stored shape ever changes meaning. A record written by an older
-// build is discarded rather than half-read: a swap replayed from a
-// misinterpreted preview would send a request the mint has never seen, which is
-// a fresh spend rather than a recovery.
+// Bump if the stored shape changes meaning. A mismatched record is discarded,
+// not half-read: a misread replay sends a request the mint has never seen,
+// which is a fresh spend, not a recovery.
 const SWAP_PREVIEW_VERSION = 1;
 
-// Sanity ceiling on a stored preview. A swap is a handful of proofs and a
-// handful of blinded messages; anything wildly larger is corruption, and
-// rebuilding it would only waste a mint round trip.
+// A swap is a handful of proofs and outputs; anything this large is corruption.
 const MAX_PREVIEW_ENTRIES = 512;
 
 export interface StoredSwapPreview {
@@ -59,23 +40,21 @@ export interface StoredSwapPreview {
   keysetId: string;
   amount: number;
   fees: number;
-  // Exactly what cashu-ts handed us, JSON round-tripped. Deliberately opaque:
-  // field order is load-bearing (see the header).
+  // Opaque: field order is load-bearing (see the header).
   inputs: ProofLike[];
   keepOutputs: SerializedOutputData[];
   sendOutputs?: SerializedOutputData[];
 }
 
-// Flatten a prepared swap for storage. Call this BEFORE the request goes out,
-// and after any P2PK signing, or the replay will not reproduce the same body.
+// Call BEFORE the request goes out and after any P2PK signing, or the replay
+// will not reproduce the same body.
 export function serializeSwapPreview(preview: SwapPreview): StoredSwapPreview {
   return {
     v: SWAP_PREVIEW_VERSION,
     keysetId: preview.keysetId,
     amount: preview.amount.toNumber(),
     fees: preview.fees.toNumber(),
-    // The round trip is the point: it turns every `Amount` into the number the
-    // wire carries while leaving each object's key order untouched.
+    // Turns each `Amount` into a number while keeping key order.
     inputs: JSON.parse(JSON.stringify(preview.inputs)) as ProofLike[],
     keepOutputs: (preview.keepOutputs ?? []).map((output) =>
       OutputData.serialize(output),
@@ -90,15 +69,10 @@ export function serializeSwapPreview(preview: SwapPreview): StoredSwapPreview {
   };
 }
 
-// Rebuild a preview `completeSwap` will accept, or null when the record cannot
-// be trusted. Null is not an error path to log and move on from: it means the
-// value that swap was carrying has to be recovered some other way, so the caller
-// must decide, not this module.
-//
-// `unselectedProofs` is deliberately not stored or rebuilt. cashu-ts only echoes
-// it back through `completeSwap`, and those proofs never left our store, so
-// replaying without it changes nothing about the request and keeps the record
-// from carrying a second copy of coins we already hold.
+// Null when the record cannot be trusted. Not a log-and-move-on path: the
+// value that swap carried must be recovered another way, and the caller
+// decides how. `unselectedProofs` is not stored: cashu-ts only echoes it back,
+// those proofs never left our store, and storing it would duplicate them.
 export function rebuildSwapPreview(stored: unknown): SwapPreview | null {
   if (!isStoredSwapPreview(stored)) return null;
   try {
@@ -134,18 +108,14 @@ export function rebuildSwapPreview(stored: unknown): SwapPreview | null {
   }
 }
 
-// Every blinded message the preview would have sent, in request order. This is
-// what NUT-09 restore is asked about when a replay is refused: the mint answers
-// from its own records whether it ever signed these, which recovers the outputs
-// even from a mint with no NUT-19 cache and even when the secrets were random.
+// Every blinded message, in request order: what NUT-09 restore asks about when
+// a replay is refused. Works without NUT-19 and with random secrets.
 export function swapPreviewOutputs(preview: SwapPreview): OutputDataLike[] {
   return [...(preview.keepOutputs ?? []), ...(preview.sendOutputs ?? [])];
 }
 
-// How many of a preview's outputs are proofs we keep. The rest are locked or
-// otherwise destined for somebody else, and a recovery has to tell them apart:
-// crediting a P2PK-locked output to our own balance would show money only the
-// recipient can spend.
+// Outputs past this count belong to someone else (for example P2PK-locked);
+// recovery must not credit them to our balance.
 export function swapPreviewKeepCount(preview: SwapPreview): number {
   return preview.keepOutputs?.length ?? 0;
 }

@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Cancelar",
-  "common.done": "Pronto",
-  "common.ok": "OK",
-  "common.close": "Fechar",
   "common.back": "Voltar",
-  "common.delete": "Eliminar",
-  "common.remove": "Remover",
+  "common.close": "Fechar",
+  "common.cancel": "Cancelar",
+  "common.ok": "OK",
+  "common.done": "Pronto",
+  "common.continue": "Continuar",
+  "common.try_again": "Tentar de novo",
   "common.add": "Adicionar",
+  "common.remove": "Remover",
+  "common.delete": "Eliminar",
   "common.copy": "Copiar",
   "common.copied": "Copiado",
   "common.share": "Partilhar",
-  "common.continue": "Continuar",
-  "common.try_again": "Tentar de novo",
   "common.settings": "Definições",
   "common.on": "Ligado",
   "common.off": "Desligado",
@@ -308,6 +308,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Não foi possível remover",
   "chat.group.remove_failed_body":
     "Nada mudou. Só quem criou o grupo pode mudar quem está nele.",
+  "chat.group.leave_creator_body":
+    "Sair de {name}? Criaste este grupo, e só quem o criou pode adicionar ou remover membros, por isso ninguém mais o poderá fazer depois de saíres. O histórico é removido deste dispositivo.",
   "chat.group.e2ee":
     "Encriptado ponta a ponta. Só os membros conseguem ler as mensagens.",
   "chat.group.cap":
@@ -526,34 +528,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "a sudoeste",
   "chat.location.direction.w": "a oeste",
   "chat.location.direction.nw": "a noroeste",
-  "chat.attach.send_anyway": "Enviar mesmo assim",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Tocou",
   "chat.ring.received_summary": "Tocou-te",
   "chat.ring.alert.title": "{sender} está a tocar",
   "chat.ring.alert.body": "Verifica as tuas mensagens",
   "chat.ring.alert.open": "Abrir",
   "chat.ring.alert.snooze": "Adiar 1 hora",
-  "chat.contact.allow_ring": "Permitir alertas de toque",
-  "chat.contact.allow_ring_desc":
-    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
-  "chat.contact.ring_action": "Tocar",
-  "chat.contact.ringing": "A tocar…",
   "chat.ring.sent_snoozed": "Tocou, adiado",
   "chat.ring.sent_too_soon": "Tocou, demasiado cedo",
   "chat.ring.sent_not_allowed": "Tocou, não permitido",
-  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
-  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
-  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
-  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
-  "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
-  "settings.security.ring_alerts": "Alertas de toque",
-  "settings.security.ring_alerts_desc":
-    "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",
-  "notif.channel.ring": "Toque",
-  "notif.channel.ring_desc": "Alertas de contactos a quem permitiste tocar-te.",
-  "notif.ring.hidden": "Toque",
-  "notif.ring.title": "{sender} está a tocar-te",
-  "notif.ring.body": "Verifica as tuas mensagens",
+  "chat.attach.send_anyway": "Enviar mesmo assim",
   "chat.attach.bitchat_too_big": "Isto pode não chegar",
   "chat.attach.bitchat_too_big_body":
     "{name} está no bitchat, que desiste a meio com ficheiros grandes. Abaixo de uns 350 KiB é fiável. Enviar para um contacto do Airhop não tem esse limite.",
@@ -654,7 +640,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Resgatar {amount} {unit}",
   "chat.ecash.already_claimed": "Já resgatado",
   "chat.ecash.already_claimed_body":
-    "Todas as provas deste token já estão na tua carteira, por isso nada foi adicionado.",
+    "Tudo o que há neste token já está na tua carteira, por isso nada foi adicionado.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "Entregue à malha para levar como for possível",
@@ -748,6 +734,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "O nome que lhe deste",
   "chat.contact.copy_peer_id": "Copiar o ID de par",
   "chat.contact.verify": "Verificar o contacto",
+  "chat.contact.allow_ring": "Permitir alertas de toque",
+  "chat.contact.allow_ring_desc":
+    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
+  "chat.contact.ring_action": "Tocar",
+  "chat.contact.ringing": "A tocar…",
+  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
+  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
+  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
+  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
+  "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Avisos",
@@ -954,9 +950,13 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Alterna entre satoshis e bitcoin",
   "wallet.balance.a11y": "Saldo {value} {unit}",
   "wallet.balance.locked":
-    "O armazenamento da carteira está trancado. As provas de ecash ficam num ficheiro encriptado cuja chave vive no porta-chaves do dispositivo, e não foi possível abri-lo. Desbloqueia o dispositivo e abre o Airhop de novo.",
+    "O armazenamento da carteira está trancado. O teu ecash fica num ficheiro encriptado cuja chave vive no porta-chaves do dispositivo, e não foi possível abri-lo. Desbloqueia o dispositivo e abre o Airhop de novo.",
   "wallet.balance.tor_blocked":
-    "O Tor está ligado, por isso os pedidos à casa de emissão estão bloqueados: sairiam pela rede aberta e ligariam o teu IP às tuas provas. Enviar e receber pela malha continua a funcionar. Permite o tráfego com a casa de emissão em Definições, Segurança.",
+    "O Tor está ligado, por isso os pedidos à casa de emissão estão bloqueados: sairiam pela rede aberta e ligariam o teu IP ao teu ecash. Enviar e receber pela malha continua a funcionar. Para chegar às casas de emissão mesmo assim, liga {setting} nas Definições.",
+  "wallet.balance.offline":
+    "Offline. Ainda podes pagar a pessoas por perto e enviar tokens.",
+  "wallet.balance.internet_off":
+    "A internet está desligada, por isso a carteira só funciona por perto. Liga {setting} nas Definições para chegar às casas de emissão.",
   "wallet.balance.unconfirmed_note":
     "{amount} ainda por confirmar com a casa de emissão",
   "wallet.balance.reserved_note":
@@ -966,21 +966,34 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Inclui dinheiro de brincadeira de uma casa de emissão de teste. Não é bitcoin e não é possível levantar.",
   "wallet.token": "Token",
-  "wallet.action.send": "Enviar um token de ecash",
   "wallet.action.send_disabled":
     "Enviar um token de ecash, indisponível com o saldo a zero",
-  "wallet.action.receive": "Receber um token de ecash",
-  "wallet.action.zap": "Mandar um zap a um contacto do Nostr",
-  "wallet.action.zap_disabled":
-    "Mandar um zap a um contacto do Nostr, indisponível com o saldo a zero",
-  "wallet.action.add_mint": "Adicionar uma casa de emissão Cashu",
+  "wallet.action.scan": "Digitalizar",
+  "wallet.action.scan_a11y": "Digitalizar um token, uma fatura ou um npub",
+  "wallet.choose.paste": "Colar um token",
+  "wallet.choose.paste_desc": "Funciona offline",
+  "wallet.choose.scan": "Digitalizar um código QR",
+  "wallet.choose.scan_desc": "Um token Cashu de qualquer carteira",
+  "wallet.choose.topup": "Carregar via Lightning",
+  "wallet.choose.topup_desc":
+    "Paga uma fatura a partir de qualquer carteira Lightning",
+  "wallet.choose.token": "Criar um token",
+  "wallet.choose.token_desc": "Partilha ou mostra um código QR, mesmo offline",
+  "wallet.choose.zap": "Enviar um zap a um contacto no Nostr",
+  "wallet.choose.zap_desc": "Para o npub da pessoa, pela internet",
+  "wallet.choose.invoice": "Pagar uma fatura Lightning",
+  "wallet.choose.invoice_desc": "Levanta para qualquer carteira Lightning",
+  "wallet.choose.tor_paused": "Em pausa enquanto o Tor está ligado",
+  "wallet.choose.offline": "Precisa de internet",
+  "wallet.choose.internet_off": "Internet desligada",
+  "wallet.choose.needs_mint": "Adiciona primeiro uma casa de emissão",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Não foi possível montar o token",
   "wallet.send.title": "Enviar ecash",
   "wallet.send.amount_in": "Valor em {unit}",
   "wallet.send.body":
-    "Montado offline a partir de provas que já tens. Nada sai do teu saldo em definitivo até confirmares que o token chegou.",
+    "Montado offline a partir do ecash que já tens. Nada sai do teu saldo em definitivo até confirmares que o token chegou.",
   "wallet.send.stale_fee_note":
     "As taxas foram verificadas pela última vez há {days} dias. Se esta casa de emissão aumentou a dela desde então, o envio pode custar um pouco mais.",
   "wallet.send.fee_note":
@@ -988,7 +1001,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Este token está dividido em moedas a mais para caber num código QR. Partilha ou copia, ou atualiza na casa de emissão para as juntar.",
   "wallet.send.bearer_note":
-    "Quem tiver esta sequência é dono do dinheiro. As provas estão reservadas, não gastas: se não chegar a ninguém, podes retomá-las em Pendentes.",
+    "Quem tiver esta sequência é dono do dinheiro. As moedas estão reservadas, não gastas: se não chegar a ninguém, podes retomá-las em Atividade.",
   "wallet.send.qr_too_big_short":
     "Este token está dividido em moedas a mais para caber num código QR. Partilha ou copia.",
   "wallet.send.scan_note":
@@ -1002,11 +1015,11 @@ export const strings: Strings = {
   "wallet.send.building": "A montar…",
   "wallet.send.build": "Montar o token",
   "wallet.send.inexact_body":
-    "As tuas provas não formam exatamente {amount} {unit} offline. O menor token que é possível montar é de {spend} {unit}, e offline não existe troco: os {extra} {unit} a mais vão para quem receber.\n\nAtualizar na casa de emissão com Internet dividiria as tuas provas em valores que dão a conta exata.",
+    "As tuas moedas não formam exatamente {amount} {unit} offline. O menor token que é possível montar é de {spend} {unit}, e offline não existe troco: os {extra} {unit} a mais vão para quem receber.\n\nAtualizar na casa de emissão com Internet dividiria as tuas moedas em valores que dão a conta exata.",
   "wallet.send.send_amount": "Enviar {amount}",
   "wallet.send.sent_to": "{amount} {unit} enviados para {name}",
   "wallet.send.sent_to_body":
-    "{route} Continua retomável em Pendentes até confirmares que a pessoa recebeu, ou até a casa de emissão avisar que as provas foram resgatadas.",
+    "{route} Continua retomável em Atividade até confirmares que a pessoa recebeu, ou até a casa de emissão avisar que o token foi resgatado.",
   "wallet.send.copy_token": "Copiar o token",
   "wallet.send.share_token": "Partilhar o token",
   "wallet.send.open_in_wallet": "Abrir este token noutra carteira",
@@ -1025,12 +1038,12 @@ export const strings: Strings = {
     "Estas moedas ainda estão reservadas para um envio que não fechaste, por isso não há o que resgatar. Usa Retomar nesse pagamento para as devolveres diretamente ao teu saldo.",
   "wallet.receive.already_have": "Já está na tua carteira",
   "wallet.receive.already_have_body":
-    "Todas as provas deste token já estão guardadas aqui, por isso nada foi adicionado. Os saldos não mudaram.",
+    "Tudo o que há neste token já está guardado aqui, por isso nada foi adicionado. Os saldos não mudaram.",
   "wallet.receive.stored_unconfirmed":
     "Guardado de {mint}, mas ainda por confirmar com a casa de emissão ({reason}).",
   "wallet.receive.offline": "offline",
   "wallet.receive.redeemed_here":
-    "Resgatado em {mint}. Estas provas agora são só tuas: a cópia de quem enviou já não funciona.",
+    "Resgatado em {mint}. Este ecash agora é só teu: a cópia de quem enviou já não funciona.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Resgatado em {mint}. Agora é teu de forma comprovável: a cópia deste token que quem enviou tem já não funciona.",
@@ -1084,9 +1097,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Remover {mint} da tua carteira? As chaves guardadas vão junto, por isso os tokens dela deixam de poder ser verificados offline.",
   "wallet.mint.title": "Casas de emissão",
-  "wallet.mint.none": "Ainda nenhuma casa de emissão",
   "wallet.mint.none_desc":
-    "Uma casa de emissão emite e resgata o teu ecash. Adiciona uma para depositares por Lightning, ou recebe um token e a dele é adicionada sozinha.",
+    "A casa de emissão emite e resgata o teu ecash. Adiciona uma para carregar via Lightning ou aceitar os tokens dela.",
   "wallet.mint.add": "Adicionar uma casa de emissão",
   "wallet.mint.add_body":
     "Uma casa de emissão guarda o Bitcoin que suporta o teu ecash, por isso escolhe uma a que confiarias o saldo que lá mantiveres. O URL é verificado antes de guardar. Corre a tua com o Nutshell se preferires não confiar em ninguém.",
@@ -1098,8 +1110,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Remover a casa de emissão",
   "wallet.mint.delete_anyway": "Eliminar mesmo assim",
   "wallet.mint.consolidate": "Mover todos os saldos para uma casa de emissão",
-  "wallet.mint.confirm_with": "Confirmar as provas com {mint}",
-  "wallet.mint.remove_a11y": "Remover {mint}",
+  "wallet.mint.confirm_with": "Verificar o saldo com {mint}",
   "wallet.mint.available_amount": "{amount} {unit} disponíveis",
   "wallet.mint.split_across":
     "Saldo espalhado por {count} casas de emissão. Move para uma só.",
@@ -1126,13 +1137,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Fatura paga e {amount} {unit} emitidos por {mint}. Este saldo está confirmado: podes gastá-lo offline de imediato.",
   "wallet.ln.withdrawn":
-    "{paid} sats pagos por Lightning. A casa de emissão cobrou {fee} sats em taxas de encaminhamento.",
+    "{amount} {unit} pagos por Lightning. A casa de emissão cobrou {fee} {unit} em taxas de encaminhamento.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats pagos por Lightning. A casa de emissão cobrou {fee} sats em taxas de encaminhamento e devolveu {change} sats da reserva ao teu saldo.",
+    "{amount} {unit} pagos por Lightning. A casa de emissão cobrou {fee} {unit} em taxas de encaminhamento e devolveu {change} {unit} da reserva ao teu saldo.",
   "wallet.ln.payment_failed": "O pagamento falhou",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Transforma sats da Lightning em ecash que gastas offline, ou levanta ecash para qualquer fatura Lightning. Ambos precisam de Internet e de uma casa de emissão.",
   "wallet.ln.deposit_body":
     "A casa de emissão dá-te uma fatura. Paga-a a partir de qualquer carteira Lightning e os sats voltam como ecash que gastas offline.",
   "wallet.ln.pay_invoice_for":
@@ -1145,10 +1153,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "até {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Pagar {amount} {unit}",
-  "wallet.ln.deposit": "Depositar sats por Lightning",
-  "wallet.ln.deposit_short": "Depositar",
-  "wallet.ln.withdraw": "Levantar para uma fatura Lightning",
-  "wallet.ln.withdraw_short": "Levantar",
   "wallet.ln.deposit_title": "Depositar por Lightning",
   "wallet.ln.amount_placeholder": "Valor em sats",
   "wallet.ln.requesting": "A pedir…",
@@ -1169,7 +1173,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Obter uma cotação",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Cópia de segurança",
   "wallet.backup.setup_failed":
     "Não foi possível configurar a cópia de segurança",
   "wallet.backup.on": "Cópia de segurança ligada",
@@ -1281,14 +1284,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Não foi possível alcançar {mints}. Todo o resto está em dia.",
   "wallet.refresh.swapped":
-    "{amount} {unit} confirmados e trocados por provas novas.",
+    "{amount} {unit} confirmados e trocados por ecash novo.",
   "wallet.refresh.secured":
     "{amount} {unit} estão agora cobertos pela tua frase de recuperação.",
   "wallet.refresh.all_confirmed":
     "Tudo aqui já estava confirmado com a casa de emissão.",
-  "wallet.pending.title": "Pendentes",
   "wallet.pending.reserved_desc":
-    "Montado e reservado, entrega por confirmar. As provas ficam fora do teu saldo para não poderem ser gastas duas vezes.",
+    "Montado e reservado, entrega por confirmar. As moedas ficam fora do teu saldo para não poderem ser gastas duas vezes.",
   "wallet.pending.locked_desc":
     "Já trancado na chave de quem vai receber, por isso só a pessoa o pode gastar. Só que ainda não chegou até ela. Partilha o token para concluir.",
   "wallet.pending.show_qr": "Mostrar este token como código QR",
@@ -1299,8 +1301,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Retomar este token para o teu saldo",
   "wallet.activity.title": "Atividade",
   "wallet.activity.none": "Ainda nada",
-  "wallet.activity.none_desc":
-    "Os pagamentos que envias e recebes aparecem aqui, dos mais recentes aos mais antigos, com a casa de emissão e a taxa de cada um.",
   "wallet.activity.show_fewer": "Mostrar menos pagamentos",
   "wallet.activity.show_less": "Mostrar menos",
   "wallet.activity.received_unconfirmed": "Recebido, por confirmar",
@@ -1316,14 +1316,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Depósito Lightning",
   "wallet.activity.ln_withdrawal": "Levantamento Lightning",
   "wallet.activity.nutzap_received": "Nutzap recebido",
-  "wallet.activity.spent_removed": "Provas gastas removidas",
-  "wallet.activity.refreshed": "Provas atualizadas",
-  "wallet.activity.refreshing": "A atualizar as provas",
+  "wallet.activity.spent_removed": "Moedas gastas removidas",
+  "wallet.activity.refreshed": "Verificado com a casa de emissão",
+  "wallet.activity.refreshing": "A verificar com a casa de emissão",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malha offline",
   "wallet.mesh_offline_body":
-    "O serviço da malha não está a correr, por isso não há a quem entregar o token. Continua reservado em Pendentes.",
+    "O serviço da malha não está a correr, por isso não há a quem entregar o token. Continua reservado em Atividade.",
   "wallet.xfer.route_mesh":
     "Entregue diretamente no dispositivo da pessoa pela malha.",
   "wallet.xfer.route_nostr":
@@ -1336,7 +1336,7 @@ export const strings: Strings = {
     "O serviço da malha não está a correr, por isso não há forma de entregar o token. Nada foi descontado.",
   "wallet.xfer.could_not_send": "Não foi possível enviar",
   "wallet.xfer.inexact_body":
-    "As tuas provas não formam exatamente {amount} {unit} offline. O menor token que é possível montar é de {spend} {unit}, e os {extra} {unit} a mais vão para a pessoa sem forma de os recuperar.\n\nAtualizar na casa de emissão com Internet divide as tuas provas em valores que dão a conta exata.",
+    "As tuas moedas não formam exatamente {amount} {unit} offline. O menor token que é possível montar é de {spend} {unit}, e os {extra} {unit} a mais vão para a pessoa sem forma de os recuperar.\n\nAtualizar na casa de emissão com Internet divide as tuas moedas em valores que dão a conta exata.",
   "wallet.xfer.send_amount": "Enviar {amount}",
   "wallet.xfer.mesh_offline": "Malha offline",
 
@@ -1346,7 +1346,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Trancado na chave da pessoa. O relay não o aceitou, por isso chegou como uma mensagem.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Trancado na chave da pessoa, mas ainda nada o conseguiu levar. Está em fila, e o token está em Pendentes.",
+    "Trancado na chave da pessoa, mas ainda nada o conseguiu levar. Está em fila, e o token está em Atividade.",
   "wallet.pay.final":
     "Pagamentos trancados não podem ser retomados: agora só a chave da pessoa pode gastar estas moedas.",
   "wallet.pay.reclaimable":
@@ -1366,7 +1366,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Fica bloqueado na chave da pessoa. Depois de enviado, não pode ser recuperado.",
   "wallet.pay.confirm_reclaimable":
-    "Pode recuperá-lo em Pendentes até que seja resgatado.",
+    "Pode recuperá-lo em Atividade até que seja resgatado.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Acesso à câmara",
@@ -1385,10 +1385,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Aponta para o código QR de uma fatura Lightning.",
   "wallet.scan.title_token": "Ler ecash",
   "wallet.scan.title_invoice": "Ler fatura",
-  "wallet.scan.desc_token":
-    "Lê um token Cashu de outra carteira. Funciona com qualquer carteira Cashu, não só com o Airhop.",
-  "wallet.scan.desc_invoice":
-    "Lê uma fatura Lightning para a pagares com o teu saldo.",
+  "wallet.scan.title_any": "Digitalizar um código QR",
+  "wallet.scan.aim_any":
+    "Aponta para o código QR de um token, uma fatura ou um npub.",
+  "wallet.scan.no_any": "Nenhum token, fatura ou npub encontrado nessa imagem.",
   "wallet.scan.use_camera_a11y": "Ler com a câmara",
   "wallet.scan.use_camera": "Usar a câmara",
   "wallet.scan.pick_image_a11y":
@@ -1401,7 +1401,7 @@ export const strings: Strings = {
     "O Cashu é ecash para Bitcoin. Um token é uma sequência que vale dinheiro para quem a tiver, assinada às cegas por uma casa de emissão para que ela não consiga saber quem gastou o quê. Sem contas, sem inícios de sessão.",
   "wallet.explain.send": "Enviar",
   "wallet.explain.send_desc":
-    "Transforma um valor num token que entregas a um par por perto via Bluetooth, ou partilhas como texto. Funciona sem Internet. As provas ficam reservadas até confirmares que chegou.",
+    "Transforma um valor num token que entregas a um par por perto via Bluetooth, ou partilhas como texto. Funciona sem Internet. As moedas ficam reservadas até confirmares que chegou.",
   "wallet.explain.receive": "Receber",
   "wallet.explain.receive_desc":
     "Cola um token para o adicionares. Online é trocado na casa de emissão de imediato, o que o torna teu de forma comprovável. Offline fica guardado e marcado como por confirmar até atualizares.",
@@ -1432,7 +1432,11 @@ export const strings: Strings = {
   "wallet.svc.tor_ios":
     "No iOS os pedidos à casa de emissão não passam pelo Tor.",
   "wallet.svc.tor_ios_body":
-    "O Arti envolve só os WebSockets do Nostr, por isso este pedido chegaria à casa de emissão pela rede aberta e ligaria o teu IP a estas provas. Permite-o em Definições > Segurança, ou desliga antes o Tor. Enviar e receber ecash pela malha continua a funcionar.",
+    "No iOS o Tor só cobre o Nostr, por isso este pedido chegaria à casa de emissão pela rede aberta e ligaria o teu IP a este ecash. Liga {setting} nas Definições, ou desliga antes o Tor. Enviar e receber ecash pela malha continua a funcionar.",
+  "wallet.svc.internet_off":
+    "A internet está desligada, por isso não é possível contactar a casa de emissão.",
+  "wallet.svc.internet_off_body":
+    "Liga {setting} nas Definições. Enviar e receber ecash por perto continua a funcionar.",
   "wallet.svc.keys_uncached":
     "As chaves desta casa de emissão não estão guardadas neste dispositivo.",
   "wallet.svc.keys_uncached_body":
@@ -1446,21 +1450,25 @@ export const strings: Strings = {
   "wallet.svc.restored": "Restaurado a partir da frase de recuperação",
   "wallet.svc.storage_locked": "O armazenamento da carteira está trancado.",
   "wallet.svc.storage_locked_body":
-    "O Airhop guarda as provas de ecash num ficheiro encriptado cuja chave vive no porta-chaves do dispositivo. Desbloqueia o dispositivo e abre a aplicação de novo.",
+    "O Airhop guarda o teu ecash num ficheiro encriptado cuja chave vive no porta-chaves do dispositivo. Desbloqueia o dispositivo e abre a aplicação de novo.",
   "wallet.svc.bad_url": "Isso não é um URL válido.",
   "wallet.svc.needs_https":
     "O URL de uma casa de emissão tem de começar por https://.",
   "wallet.svc.refuse_http":
     "Recusamos usar uma casa de emissão em http sem encriptação.",
   "wallet.svc.refuse_http_body":
-    "Qualquer pessoa no caminho da rede poderia ler ou alterar as tuas provas. Usa uma casa de emissão com https://.",
+    "Qualquer pessoa no caminho da rede poderia ler ou alterar o teu ecash. Usa uma casa de emissão com https://.",
   "wallet.svc.mint_not_saved": "Não foi possível guardar a casa de emissão.",
   "wallet.svc.unreadable_token": "Isso não é um token Cashu legível.",
   "wallet.svc.unreadable_token_body":
     "Os tokens começam por cashuA ou cashuB. Verifica se nada foi cortado na cópia.",
+  "wallet.svc.keyset_unknown":
+    "Este token usa chaves novas da sua casa de emissão.",
+  "wallet.svc.keyset_unknown_body":
+    "Não é possível contactar a casa de emissão agora para as obter. Nada se perde: receba-o de novo quando estiver online.",
   "wallet.svc.wrong_mint":
     "Este token não foi assinado pela casa de emissão que cita.",
-  "wallet.svc.already_spent": "Estas provas já foram gastas.",
+  "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":
     "Quem enviou este token resgatou-o primeiro, ou mandou o mesmo token a outra pessoa.",
   "wallet.svc.receiving_offline": "a receber offline",
@@ -1475,7 +1483,7 @@ export const strings: Strings = {
   "wallet.svc.split_across_mints":
     "O teu saldo está espalhado por várias casas de emissão.",
   "wallet.svc.mint_says_spent":
-    "A casa de emissão indicou estas provas como já gastas.",
+    "A casa de emissão indicou este ecash como já gasto.",
   "wallet.svc.issue_against_invoice":
     "emitir ecash contra uma fatura Lightning",
   "wallet.svc.pay_invoice": "pagar uma fatura Lightning",
@@ -1504,7 +1512,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Não foi possível dimensionar esta transferência.",
   "wallet.svc.insufficient_at_mint": "Saldo insuficiente em {mint}.",
   "wallet.svc.inexact_title":
-    "As tuas provas não formam exatamente {amount} {unit} offline.",
+    "As tuas moedas não formam exatamente {amount} {unit} offline.",
   "wallet.svc.inexact_detail":
     "O menor token que podes enviar é de {spend} {unit}. Offline não existe troco, por isso os {extra} {unit} a mais vão para quem receber.",
   "wallet.svc.no_single_mint":
@@ -1536,10 +1544,9 @@ export const strings: Strings = {
     "O mint emitiu este depósito, mas não foi possível reconstruir as suas moedas. Restaurar a partir da frase de recuperação recupera-as.",
   "wallet.svc.swap_unreadable":
     "Esta troca foi guardada num formato que esta versão não consegue repetir.",
-  "wallet.svc.lock_in_doubt":
-    "O mint não respondeu, por isso este pagamento pode ou não ter sido feito.",
+  "wallet.svc.lock_in_doubt": "Este pagamento pode ou não ter sido feito.",
   "wallet.svc.lock_in_doubt_body":
-    "Não foi enviado mais nada. As moedas ficam retidas até o mint responder. Se o pagamento passou, o token bloqueado aparece em Pendentes para o entregar. Se não, as moedas voltam.",
+    "Não foi enviado mais nada. As moedas ficam retidas até a casa de emissão confirmar o resultado. Se o pagamento passou, o token bloqueado aparece em Atividade para o entregar. Se não, as moedas voltam.",
   "wallet.svc.send_spent_by_swap":
     "Estas moedas foram trocadas de volta para a sua carteira antes de este token ser resgatado, por isso já não pode ser resgatado. O valor está no seu saldo.",
 
@@ -1640,6 +1647,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Copiar o ID de par",
   "settings.peer_id_sheet.note":
     "Isto só resulta quando ambos estão dentro do alcance do Bluetooth. Para deixares que te escrevam de qualquer lugar, partilha antes o teu código QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Procurar nas definições…",
   "settings.search.a11y": "Procurar nas definições",
   "settings.search.close": "Fechar a procura",
@@ -1795,6 +1804,9 @@ export const strings: Strings = {
     "Ocultar as pré-visualizações nas notificações",
   "settings.security.hide_previews_desc":
     "Mantém o remetente e a mensagem fora do ecrã bloqueado, que os mostra sem ser preciso desbloquear",
+  "settings.security.ring_alerts": "Alertas de toque",
+  "settings.security.ring_alerts_desc":
+    "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",
   "settings.security.no_blocked": "Nenhum par bloqueado",
   "settings.security.no_blocked_desc":
     "Os pares bloqueados não te podem escrever nem aparecem no separador Malha",
@@ -2004,8 +2016,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "Utilização da rede",
   "settings.storage.storage_usage": "Utilização do armazenamento",
-  "settings.storage.storage_usage_desc":
-    "Mensagens, provas da carteira e anexos em cache",
+  "settings.storage.storage_usage_desc": "Mensagens, ecash e anexos em cache",
   "settings.storage.session_usage":
     "Esta sessão · {sent} enviados, {received} recebidos",
   "settings.storage.cache": "Cache",
@@ -2095,7 +2106,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Conversas, grupos e os canais em que entraste",
   "settings.transfer.wallet": "Saldo da carteira",
-  "settings.transfer.wallet_desc": "Provas Cashu e histórico de transações",
+  "settings.transfer.wallet_desc": "Ecash e histórico de transações",
   "settings.transfer.title": "Transferir para um telemóvel novo",
   "settings.transfer.desc":
     "Move a tua identidade, conversas e carteira para outro dispositivo",
@@ -2130,9 +2141,9 @@ export const strings: Strings = {
   "settings.wipe.title": "Limpeza de emergência",
   "settings.wipe.now": "Limpar agora",
   "settings.wipe.desc":
-    "Destrói de imediato todas as chaves, mensagens e provas",
+    "Destrói de imediato todas as chaves, mensagens e ecash",
   "settings.wipe.body":
-    "Isto vai destruir de imediato todas as tuas chaves, mensagens e provas da carteira. Não é possível anular.",
+    "Isto vai destruir de imediato todas as tuas chaves, mensagens e ecash. Não é possível anular.",
   "settings.wipe.in_progress": "A limpar",
   "settings.wipe.in_progress_body":
     "A destruir as tuas chaves, mensagens e ficheiros. Demora alguns segundos, e termina sozinho mesmo que a aplicação seja fechada.",
@@ -2236,6 +2247,8 @@ export const strings: Strings = {
   "notif.channel.nearby": "Pares por perto",
   "notif.channel.nearby_desc":
     "Um aviso ocasional quando a malha encontra gente dentro do alcance do Bluetooth.",
+  "notif.channel.ring": "Toque",
+  "notif.channel.ring_desc": "Alertas de contactos a quem permitiste tocar-te.",
   "notif.nearby.body":
     "Dentro do alcance do Bluetooth agora. Toca para abrir a malha.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2253,6 +2266,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Atividade nova",
   "notif.hidden.mention": "Foste mencionado",
   "notif.mention.title": "{sender} mencionou-te",
+  "notif.ring.hidden": "Toque",
+  "notif.ring.title": "{sender} está a tocar-te",
+  "notif.ring.body": "Verifica as tuas mensagens",
 };
 
 export const plurals: Plurals = {
@@ -2343,16 +2359,11 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    many: "{count} mints",
-    other: "{count} mints",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} tem {balance} {unit} em {count} prova. Removê-lo apaga essa prova deste dispositivo para sempre, e não há cópia de segurança dela. Levanta ou envia primeiro o saldo.",
-    many: "{mint} tem {balance} {unit} em {count} provas. Removê-lo apaga essas provas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
+    one: "{mint} tem {balance} {unit} em {count} moeda. Removê-lo apaga essa moeda deste dispositivo para sempre, e não há cópia de segurança dela. Levanta ou envia primeiro o saldo.",
+    many: "{mint} tem {balance} {unit} em {count} moedas. Removê-lo apaga essas moedas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
     other:
-      "{mint} tem {balance} {unit} em {count} provas. Removê-lo apaga essas provas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
+      "{mint} tem {balance} {unit} em {count} moedas. Removê-lo apaga essas moedas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2365,9 +2376,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{count} prova por gastar recuperada de {mints}.",
-    many: "{count} provas por gastar recuperadas de {mints}.",
-    other: "{count} provas por gastar recuperadas de {mints}.",
+    one: "{count} moeda por gastar recuperada de {mints}.",
+    many: "{count} moedas por gastar recuperadas de {mints}.",
+    other: "{count} moedas por gastar recuperadas de {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "Foi encontrada {count} moeda, mas já tinha sido gasta, por isso nada foi creditado por ela. É normal: cada moeda que alguma vez gastaste continua nos registos que o mint guarda.",
@@ -2392,15 +2403,10 @@ export const plurals: Plurals = {
     many: "{count} por confirmar",
     other: "{count} por confirmar",
   },
-  "wallet.proof_count": {
-    one: "{count} prova",
-    many: "{count} provas",
-    other: "{count} provas",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} prova já tinha sido gasta, e foi removida.",
-    many: "{count} provas já tinham sido gastas, e foram removidas.",
-    other: "{count} provas já tinham sido gastas, e foram removidas.",
+    one: "{count} moeda já tinha sido gasta, e foi removida.",
+    many: "{count} moedas já tinham sido gastas, e foram removidas.",
+    other: "{count} moedas já tinham sido gastas, e foram removidas.",
   },
 
   // ---- System notifications ----

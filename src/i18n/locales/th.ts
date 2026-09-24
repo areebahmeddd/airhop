@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ยกเลิก",
-  "common.done": "เสร็จสิ้น",
-  "common.ok": "ตกลง",
-  "common.close": "ปิด",
   "common.back": "กลับ",
-  "common.delete": "ลบ",
-  "common.remove": "นำออก",
+  "common.close": "ปิด",
+  "common.cancel": "ยกเลิก",
+  "common.ok": "ตกลง",
+  "common.done": "เสร็จสิ้น",
+  "common.continue": "ดำเนินการต่อ",
+  "common.try_again": "ลองอีกครั้ง",
   "common.add": "เพิ่ม",
+  "common.remove": "นำออก",
+  "common.delete": "ลบ",
   "common.copy": "คัดลอก",
   "common.copied": "คัดลอกแล้ว",
   "common.share": "แชร์",
-  "common.continue": "ดำเนินการต่อ",
-  "common.try_again": "ลองอีกครั้ง",
   "common.settings": "การตั้งค่า",
   "common.on": "เปิด",
   "common.off": "ปิด",
@@ -298,6 +298,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "นำพวกเขาออกไม่สำเร็จ",
   "chat.group.remove_failed_body":
     "ไม่มีอะไรเปลี่ยนแปลง มีเพียงผู้สร้างกลุ่มเท่านั้นที่เปลี่ยนสมาชิกในกลุ่มได้",
+  "chat.group.leave_creator_body":
+    "ออกจาก {name} หรือไม่ คุณเป็นผู้สร้างกลุ่มนี้ และมีเพียงผู้สร้างเท่านั้นที่เพิ่มหรือนำสมาชิกออกได้ ดังนั้นหลังจากคุณออกไปแล้วจะไม่มีใครทำได้อีก ประวัติของกลุ่มจะถูกลบออกจากเครื่องนี้",
   "chat.group.e2ee":
     "เข้ารหัสจากต้นทางถึงปลายทาง มีเพียงสมาชิกเท่านั้นที่อ่านข้อความได้",
   "chat.group.cap":
@@ -512,35 +514,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "ทิศตะวันตกเฉียงใต้",
   "chat.location.direction.w": "ทิศตะวันตก",
   "chat.location.direction.nw": "ทิศตะวันตกเฉียงเหนือ",
-  "chat.attach.send_anyway": "ส่งต่อไป",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "โทรเรียก",
   "chat.ring.received_summary": "โทรเรียกคุณ",
   "chat.ring.alert.title": "{sender} กำลังโทรเรียกคุณ",
   "chat.ring.alert.body": "ตรวจสอบข้อความของคุณ",
   "chat.ring.alert.open": "เปิด",
   "chat.ring.alert.snooze": "เลื่อนออกไป 1 ชั่วโมง",
-  "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
-  "chat.contact.allow_ring_desc":
-    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
-  "chat.contact.ring_action": "โทรเรียก",
-  "chat.contact.ringing": "กำลังโทรเรียก…",
   "chat.ring.sent_snoozed": "โทรเรียกแล้ว เลื่อนไว้",
   "chat.ring.sent_too_soon": "โทรเรียกแล้ว เร็วเกินไป",
   "chat.ring.sent_not_allowed": "โทรเรียกแล้ว ไม่ได้รับอนุญาต",
-  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
-  "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
-  "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
-  "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
-  "chat.contact.ring_hint_again_in": "โทรเรียกอีกครั้งได้ใน {time}",
-  "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
-  "settings.security.ring_alerts_desc":
-    "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
-  "notif.channel.ring": "เสียงเรียก",
-  "notif.channel.ring_desc":
-    "การแจ้งเตือนจากผู้ติดต่อที่คุณอนุญาตให้โทรเรียกคุณ",
-  "notif.ring.hidden": "เสียงเรียก",
-  "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
-  "notif.ring.body": "ตรวจสอบข้อความของคุณ",
+  "chat.attach.send_anyway": "ส่งต่อไป",
   "chat.attach.bitchat_too_big": "สิ่งนี้อาจไปไม่ถึง",
   "chat.attach.bitchat_too_big_body":
     "{name} ใช้ bitchat ซึ่งจะล้มเลิกกลางคันกับไฟล์ขนาดใหญ่ ต่ำกว่าราว 350 KiB จะเชื่อถือได้ การส่งให้ผู้ติดต่อที่ใช้ Airhop ไม่มีขีดจำกัดแบบนี้",
@@ -632,7 +617,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "เคลม {amount} {unit}",
   "chat.ecash.already_claimed": "เคลมไปแล้ว",
   "chat.ecash.already_claimed_body":
-    "พรูฟทุกรายการในโทเคนนี้อยู่ในกระเป๋าเงินของคุณแล้ว จึงไม่มีอะไรถูกเพิ่ม",
+    "ทุกอย่างในโทเคนนี้อยู่ในกระเป๋าเงินของคุณแล้ว จึงไม่มีอะไรถูกเพิ่ม",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "ส่งมอบให้เมชเพื่อพยายามนำส่งอย่างดีที่สุด",
@@ -723,6 +708,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "ชื่อที่คุณตั้งให้พวกเขา",
   "chat.contact.copy_peer_id": "คัดลอก ID ของเพียร์",
   "chat.contact.verify": "ยืนยันผู้ติดต่อ",
+  "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
+  "chat.contact.allow_ring_desc":
+    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
+  "chat.contact.ring_action": "โทรเรียก",
+  "chat.contact.ringing": "กำลังโทรเรียก…",
+  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
+  "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
+  "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
+  "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
+  "chat.contact.ring_hint_again_in": "โทรเรียกอีกครั้งได้ใน {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "ประกาศ",
@@ -917,9 +912,12 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "สลับระหว่างซาโตชิกับบิตคอยน์",
   "wallet.balance.a11y": "ยอดคงเหลือ {value} {unit}",
   "wallet.balance.locked":
-    "ที่จัดเก็บของกระเป๋าเงินถูกล็อกอยู่ พรูฟ ecash ถูกเก็บไว้ในไฟล์ที่เข้ารหัสซึ่งกุญแจอยู่ใน keychain ของเครื่อง และเปิดไฟล์นั้นไม่ได้ ปลดล็อกเครื่องของคุณแล้วเปิด Airhop ใหม่",
+    "ที่จัดเก็บของกระเป๋าเงินถูกล็อกอยู่ ecash ของคุณถูกเก็บไว้ในไฟล์ที่เข้ารหัสซึ่งกุญแจอยู่ใน keychain ของเครื่อง และเปิดไฟล์นั้นไม่ได้ ปลดล็อกเครื่องของคุณแล้วเปิด Airhop ใหม่",
   "wallet.balance.tor_blocked":
-    "Tor เปิดอยู่ คำขอไปยังมินต์จึงถูกบล็อก เพราะจะออกไปทางเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับพรูฟของคุณ การส่งและรับผ่านเมชยังทำงานอยู่ อนุญาตการรับส่งข้อมูลกับมินต์ได้ในการตั้งค่า ความปลอดภัย",
+    "Tor เปิดอยู่ คำขอไปยังมินต์จึงถูกบล็อก เพราะจะออกไปทางเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับ ecash ของคุณ การส่งและรับผ่านเมชยังทำงานอยู่ หากยังต้องการติดต่อมินต์ ให้เปิด {setting} ในการตั้งค่า",
+  "wallet.balance.offline": "ออฟไลน์ คุณยังจ่ายให้คนใกล้ ๆ และส่งโทเคนได้",
+  "wallet.balance.internet_off":
+    "อินเทอร์เน็ตปิดอยู่ กระเป๋าจึงใช้ได้เฉพาะกับคนใกล้ ๆ เปิด {setting} ในการตั้งค่าเพื่อติดต่อมินต์",
   "wallet.balance.unconfirmed_note": "{amount} ยังไม่ได้ยืนยันกับมินต์",
   "wallet.balance.reserved_note":
     "{amount} ถูกกันไว้สำหรับการส่งที่กำลังดำเนินอยู่",
@@ -927,21 +925,33 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "รวมเงินทดลองจากมินต์สำหรับทดสอบ ไม่ใช่บิตคอยน์และถอนออกไม่ได้",
   "wallet.token": "โทเคน",
-  "wallet.action.send": "ส่งโทเคน ecash",
   "wallet.action.send_disabled":
     "ส่งโทเคน ecash ใช้ไม่ได้เมื่อยอดคงเหลือเป็นศูนย์",
-  "wallet.action.receive": "รับโทเคน ecash",
-  "wallet.action.zap": "Zap ผู้ติดต่อบน Nostr",
-  "wallet.action.zap_disabled":
-    "Zap ผู้ติดต่อบน Nostr ใช้ไม่ได้เมื่อยอดคงเหลือเป็นศูนย์",
-  "wallet.action.add_mint": "เพิ่มมินต์ Cashu",
+  "wallet.action.scan": "สแกน",
+  "wallet.action.scan_a11y": "สแกนโทเคน ใบแจ้งหนี้ หรือ npub",
+  "wallet.choose.paste": "วางโทเคน",
+  "wallet.choose.paste_desc": "ใช้ได้แม้ออฟไลน์",
+  "wallet.choose.scan": "สแกนคิวอาร์โค้ด",
+  "wallet.choose.scan_desc": "โทเคน Cashu จากกระเป๋าใดก็ได้",
+  "wallet.choose.topup": "เติมเงินผ่าน Lightning",
+  "wallet.choose.topup_desc": "จ่ายใบแจ้งหนี้จากกระเป๋า Lightning ใดก็ได้",
+  "wallet.choose.token": "สร้างโทเคน",
+  "wallet.choose.token_desc": "แชร์หรือแสดงคิวอาร์โค้ด แม้ออฟไลน์",
+  "wallet.choose.zap": "ส่ง zap ให้ผู้ติดต่อใน Nostr",
+  "wallet.choose.zap_desc": "ไปยัง npub ของเขา ผ่านอินเทอร์เน็ต",
+  "wallet.choose.invoice": "จ่ายใบแจ้งหนี้ Lightning",
+  "wallet.choose.invoice_desc": "ถอนไปยังกระเป๋า Lightning ใดก็ได้",
+  "wallet.choose.tor_paused": "หยุดไว้ขณะเปิด Tor",
+  "wallet.choose.offline": "ต้องใช้อินเทอร์เน็ต",
+  "wallet.choose.internet_off": "อินเทอร์เน็ตปิดอยู่",
+  "wallet.choose.needs_mint": "เพิ่มมินต์ก่อน",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "สร้างโทเคนไม่สำเร็จ",
   "wallet.send.title": "ส่ง ecash",
   "wallet.send.amount_in": "จำนวนเป็น {unit}",
   "wallet.send.body":
-    "สร้างแบบออฟไลน์จากพรูฟที่คุณถืออยู่แล้ว จะไม่มีสิ่งใดออกจากยอดคงเหลือของคุณอย่างถาวรจนกว่าคุณจะยืนยันว่าโทเคนไปถึงแล้ว",
+    "สร้างแบบออฟไลน์จาก ecash ที่คุณถืออยู่แล้ว จะไม่มีสิ่งใดออกจากยอดคงเหลือของคุณอย่างถาวรจนกว่าคุณจะยืนยันว่าโทเคนไปถึงแล้ว",
   "wallet.send.stale_fee_note":
     "ตรวจสอบค่าธรรมเนียมครั้งล่าสุดเมื่อ {days} วันที่แล้ว หากมินต์นี้ขึ้นค่าธรรมเนียมหลังจากนั้น การส่งอาจมีค่าใช้จ่ายสูงขึ้นเล็กน้อย",
   "wallet.send.fee_note":
@@ -949,7 +959,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "โทเคนนี้ถูกแบ่งเป็นเหรียญมากเกินกว่าจะใส่ในคิวอาร์โค้ดได้ ใช้การแชร์หรือคัดลอกแทน หรือรีเฟรชที่มินต์เพื่อรวมเข้าด้วยกัน",
   "wallet.send.bearer_note":
-    "ใครก็ตามที่ถือสตริงนี้คือเจ้าของเงิน พรูฟถูกกันไว้ ไม่ใช่ถูกใช้ไป หากมันไม่ไปถึงใครเลย คุณเรียกคืนได้ในหัวข้อรอดำเนินการ",
+    "ใครก็ตามที่ถือสตริงนี้คือเจ้าของเงิน เหรียญถูกกันไว้ ไม่ใช่ถูกใช้ไป หากมันไม่ไปถึงใครเลย คุณเรียกคืนได้ในหัวข้อกิจกรรม",
   "wallet.send.qr_too_big_short":
     "โทเคนนี้ถูกแบ่งเป็นเหรียญมากเกินกว่าจะใส่ในคิวอาร์โค้ดได้ ใช้การแชร์หรือคัดลอกแทน",
   "wallet.send.scan_note":
@@ -963,11 +973,11 @@ export const strings: Strings = {
   "wallet.send.building": "กำลังสร้าง…",
   "wallet.send.build": "สร้างโทเคน",
   "wallet.send.inexact_body":
-    "พรูฟของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้ โทเคนที่เล็กที่สุดที่สร้างได้คือ {spend} {unit} และเมื่อออฟไลน์จะไม่มีเงินทอน ส่วนเกิน {extra} {unit} จะตกเป็นของผู้รับ\n\nการรีเฟรชที่มินต์ขณะออนไลน์จะแบ่งพรูฟของคุณออกเป็นหน่วยย่อยที่ทำให้ได้ยอดพอดีเป๊ะ",
+    "เหรียญของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้ โทเคนที่เล็กที่สุดที่สร้างได้คือ {spend} {unit} และเมื่อออฟไลน์จะไม่มีเงินทอน ส่วนเกิน {extra} {unit} จะตกเป็นของผู้รับ\n\nการรีเฟรชที่มินต์ขณะออนไลน์จะแบ่งเหรียญของคุณออกเป็นหน่วยย่อยที่ทำให้ได้ยอดพอดีเป๊ะ",
   "wallet.send.send_amount": "ส่ง {amount}",
   "wallet.send.sent_to": "ส่ง {amount} {unit} ถึง {name} แล้ว",
   "wallet.send.sent_to_body":
-    "{route} มันยังเรียกคืนได้ในหัวข้อรอดำเนินการจนกว่าคุณจะยืนยันว่าพวกเขาได้รับ หรือจนกว่ามินต์จะแจ้งว่าพรูฟถูกแลกไปแล้ว",
+    "{route} มันยังเรียกคืนได้ในหัวข้อกิจกรรมจนกว่าคุณจะยืนยันว่าพวกเขาได้รับ หรือจนกว่ามินต์จะแจ้งว่าโทเคนถูกแลกไปแล้ว",
   "wallet.send.copy_token": "คัดลอกโทเคน",
   "wallet.send.share_token": "แชร์โทเคน",
   "wallet.send.open_in_wallet": "เปิดโทเคนนี้ในกระเป๋าเงินอื่น",
@@ -986,12 +996,12 @@ export const strings: Strings = {
     "เหรียญเหล่านี้ยังถูกกันไว้สำหรับการส่งที่คุณยังไม่ได้ปิด จึงไม่มีอะไรให้เคลม ใช้เรียกคืนกับการชำระเงินนั้นเพื่อนำกลับเข้ายอดคงเหลือของคุณโดยตรง",
   "wallet.receive.already_have": "อยู่ในกระเป๋าเงินของคุณแล้ว",
   "wallet.receive.already_have_body":
-    "พรูฟทุกรายการในโทเคนนี้ถูกเก็บไว้ที่นี่แล้ว จึงไม่มีอะไรถูกเพิ่ม ยอดคงเหลือไม่เปลี่ยนแปลง",
+    "ทุกอย่างในโทเคนนี้ถูกเก็บไว้ที่นี่แล้ว จึงไม่มีอะไรถูกเพิ่ม ยอดคงเหลือไม่เปลี่ยนแปลง",
   "wallet.receive.stored_unconfirmed":
     "เก็บไว้จาก {mint} แล้ว แต่ยังไม่ได้ยืนยันกับมินต์ ({reason})",
   "wallet.receive.offline": "ออฟไลน์",
   "wallet.receive.redeemed_here":
-    "แลกที่ {mint} แล้ว พรูฟเหล่านี้เป็นของคุณแต่ผู้เดียว สำเนาของผู้ส่งใช้ไม่ได้อีกต่อไป",
+    "แลกที่ {mint} แล้ว ecash นี้เป็นของคุณแต่ผู้เดียว สำเนาของผู้ส่งใช้ไม่ได้อีกต่อไป",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "แลกที่ {mint} แล้ว ตอนนี้มันเป็นของคุณอย่างพิสูจน์ได้ สำเนาโทเคนนี้ของผู้ส่งใช้ไม่ได้อีกต่อไป",
@@ -1043,9 +1053,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "นำ {mint} ออกจากกระเป๋าเงินของคุณหรือไม่ กุญแจที่แคชไว้จะหายไปด้วย โทเคนจากมินต์นี้จึงตรวจสอบแบบออฟไลน์ไม่ได้อีก",
   "wallet.mint.title": "มินต์",
-  "wallet.mint.none": "ยังไม่มีมินต์",
   "wallet.mint.none_desc":
-    "มินต์เป็นผู้ออกและแลก ecash ของคุณ เพิ่มสักแห่งเพื่อฝากผ่าน Lightning หรือเพียงรับโทเคนมาแล้วมินต์ของมันจะถูกเพิ่มให้คุณเอง",
+    "มินต์ออกและไถ่ถอน ecash ของคุณ เพิ่มสักแห่งเพื่อเติมเงินผ่าน Lightning หรือรับโทเคนของมินต์นั้น",
   "wallet.mint.add": "เพิ่มมินต์",
   "wallet.mint.add_body":
     "มินต์ถือ Bitcoin ที่หนุนหลัง ecash ของคุณ จึงควรเลือกแห่งที่คุณไว้ใจกับยอดเงินที่คุณเก็บไว้ที่นั่น URL จะถูกตรวจสอบก่อนบันทึก หากไม่อยากไว้ใจใครเลย ให้รันมินต์ของคุณเองด้วย Nutshell",
@@ -1057,8 +1066,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "นำมินต์ออก",
   "wallet.mint.delete_anyway": "ลบต่อไป",
   "wallet.mint.consolidate": "ย้ายยอดทั้งหมดไปมินต์เดียว",
-  "wallet.mint.confirm_with": "ยืนยันพรูฟกับ {mint}",
-  "wallet.mint.remove_a11y": "นำ {mint} ออก",
+  "wallet.mint.confirm_with": "ตรวจยอดเงินกับ {mint}",
   "wallet.mint.available_amount": "ใช้ได้ {amount} {unit}",
   "wallet.mint.split_across":
     "ยอดคงเหลือกระจายอยู่ใน {count} มินต์ ย้ายไปรวมที่เดียว",
@@ -1085,13 +1093,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "ชำระใบแจ้งหนี้แล้วและ {mint} ออก {amount} {unit} ให้ ยอดนี้ได้รับการยืนยันแล้ว คุณใช้จ่ายแบบออฟไลน์ได้ทันที",
   "wallet.ln.withdrawn":
-    "จ่าย {paid} sats ผ่าน Lightning แล้ว มินต์เก็บค่าธรรมเนียมกำหนดเส้นทาง {fee} sats",
+    "จ่าย {amount} {unit} ผ่าน Lightning แล้ว มินต์เก็บค่าธรรมเนียมกำหนดเส้นทาง {fee} {unit}",
   "wallet.ln.withdrawn_with_change":
-    "จ่าย {paid} sats ผ่าน Lightning แล้ว มินต์เก็บค่าธรรมเนียมกำหนดเส้นทาง {fee} sats และคืนเงินกันไว้ {change} sats กลับเข้ายอดคงเหลือของคุณ",
+    "จ่าย {amount} {unit} ผ่าน Lightning แล้ว มินต์เก็บค่าธรรมเนียมกำหนดเส้นทาง {fee} {unit} และคืนเงินกันไว้ {change} {unit} กลับเข้ายอดคงเหลือของคุณ",
   "wallet.ln.payment_failed": "การชำระเงินไม่สำเร็จ",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "เปลี่ยน sats บน Lightning ให้เป็น ecash ที่ใช้จ่ายแบบออฟไลน์ได้ หรือถอน ecash ออกไปยังใบแจ้งหนี้ Lightning ใดก็ได้ ทั้งสองอย่างต้องใช้อินเทอร์เน็ตและมินต์",
   "wallet.ln.deposit_body":
     "มินต์จะออกใบแจ้งหนี้ให้คุณ ชำระจากกระเป๋าเงิน Lightning ใดก็ได้ แล้ว sats จะกลับมาเป็น ecash ที่คุณใช้จ่ายแบบออฟไลน์ได้",
   "wallet.ln.pay_invoice_for":
@@ -1104,10 +1109,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "ไม่เกิน {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "จ่าย {amount} {unit}",
-  "wallet.ln.deposit": "ฝาก sats ผ่าน Lightning",
-  "wallet.ln.deposit_short": "ฝาก",
-  "wallet.ln.withdraw": "ถอนไปยังใบแจ้งหนี้ Lightning",
-  "wallet.ln.withdraw_short": "ถอน",
   "wallet.ln.deposit_title": "ฝากผ่าน Lightning",
   "wallet.ln.amount_placeholder": "จำนวนเป็น sats",
   "wallet.ln.requesting": "กำลังขอ…",
@@ -1128,7 +1129,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ขอใบเสนอราคา",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ข้อมูลสำรอง",
   "wallet.backup.setup_failed": "ตั้งค่าข้อมูลสำรองไม่สำเร็จ",
   "wallet.backup.on": "เปิดข้อมูลสำรองแล้ว",
   "wallet.backup.on_body":
@@ -1233,13 +1233,12 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "ติดต่อ {mints} ไม่ได้ ส่วนที่เหลือทั้งหมดเป็นข้อมูลล่าสุดแล้ว",
   "wallet.refresh.swapped":
-    "ยืนยัน {amount} {unit} และสับเปลี่ยนเป็นพรูฟใหม่แล้ว",
+    "ยืนยัน {amount} {unit} และสับเปลี่ยนเป็น ecash ใหม่แล้ว",
   "wallet.refresh.secured":
     "ตอนนี้ {amount} {unit} อยู่ภายใต้วลีกู้คืนของคุณแล้ว",
   "wallet.refresh.all_confirmed": "ทุกอย่างที่นี่ได้รับการยืนยันกับมินต์ไปแล้ว",
-  "wallet.pending.title": "รอดำเนินการ",
   "wallet.pending.reserved_desc":
-    "สร้างและกันไว้แล้ว ยังไม่ยืนยันการส่งถึง พรูฟถูกกันออกจากยอดคงเหลือของคุณเพื่อไม่ให้ถูกใช้ซ้ำ",
+    "สร้างและกันไว้แล้ว ยังไม่ยืนยันการส่งถึง เหรียญถูกกันออกจากยอดคงเหลือของคุณเพื่อไม่ให้ถูกใช้ซ้ำ",
   "wallet.pending.locked_desc":
     "ถูกล็อกไว้กับกุญแจของผู้รับแล้ว มีเพียงพวกเขาเท่านั้นที่ใช้ได้ เพียงแต่มันยังไปไม่ถึงพวกเขา แชร์โทเคนเพื่อทำให้เสร็จ",
   "wallet.pending.show_qr": "แสดงโทเคนนี้เป็นคิวอาร์โค้ด",
@@ -1250,8 +1249,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "เรียกคืนโทเคนนี้เข้ายอดคงเหลือของคุณ",
   "wallet.activity.title": "กิจกรรม",
   "wallet.activity.none": "ยังไม่มีอะไร",
-  "wallet.activity.none_desc":
-    "การชำระเงินที่คุณส่งและรับจะปรากฏที่นี่ ใหม่สุดก่อน พร้อมมินต์และค่าธรรมเนียมของแต่ละรายการ",
   "wallet.activity.show_fewer": "แสดงการชำระเงินน้อยลง",
   "wallet.activity.show_less": "แสดงน้อยลง",
   "wallet.activity.received_unconfirmed": "ได้รับ ยังไม่ยืนยัน",
@@ -1267,14 +1264,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "ฝากผ่าน Lightning",
   "wallet.activity.ln_withdrawal": "ถอนผ่าน Lightning",
   "wallet.activity.nutzap_received": "ได้รับ Nutzap",
-  "wallet.activity.spent_removed": "นำพรูฟที่ถูกใช้แล้วออก",
-  "wallet.activity.refreshed": "รีเฟรชพรูฟแล้ว",
-  "wallet.activity.refreshing": "กำลังรีเฟรชพรูฟ",
+  "wallet.activity.spent_removed": "ลบเหรียญที่ใช้แล้ว",
+  "wallet.activity.refreshed": "ตรวจกับมินต์แล้ว",
+  "wallet.activity.refreshing": "กำลังตรวจกับมินต์",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "เมชออฟไลน์",
   "wallet.mesh_offline_body":
-    "บริการเมชไม่ได้ทำงานอยู่ จึงไม่มีที่ให้ส่งมอบโทเคน มันจะยังถูกกันไว้ในหัวข้อรอดำเนินการ",
+    "บริการเมชไม่ได้ทำงานอยู่ จึงไม่มีที่ให้ส่งมอบโทเคน มันจะยังถูกกันไว้ในหัวข้อกิจกรรม",
   "wallet.xfer.route_mesh": "ส่งมอบตรงถึงเครื่องของพวกเขาผ่านเมชแล้ว",
   "wallet.xfer.route_nostr":
     "พวกเขาอยู่นอกระยะบลูทูธ มันจึงไปทางอินเทอร์เน็ตแทน",
@@ -1286,7 +1283,7 @@ export const strings: Strings = {
     "บริการเมชไม่ได้ทำงานอยู่ จึงไม่มีทางส่งมอบโทเคนได้ ไม่มีการหักยอดใด ๆ",
   "wallet.xfer.could_not_send": "ส่งไม่สำเร็จ",
   "wallet.xfer.inexact_body":
-    "พรูฟของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้ โทเคนที่เล็กที่สุดที่สร้างได้คือ {spend} {unit} และส่วนเกิน {extra} {unit} จะตกเป็นของพวกเขาโดยไม่มีทางเอาคืน\n\nการรีเฟรชที่มินต์ขณะออนไลน์จะแบ่งพรูฟของคุณออกเป็นหน่วยย่อยที่ทำให้ได้ยอดพอดีเป๊ะ",
+    "เหรียญของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้ โทเคนที่เล็กที่สุดที่สร้างได้คือ {spend} {unit} และส่วนเกิน {extra} {unit} จะตกเป็นของพวกเขาโดยไม่มีทางเอาคืน\n\nการรีเฟรชที่มินต์ขณะออนไลน์จะแบ่งเหรียญของคุณออกเป็นหน่วยย่อยที่ทำให้ได้ยอดพอดีเป๊ะ",
   "wallet.xfer.send_amount": "ส่ง {amount}",
   "wallet.xfer.mesh_offline": "เมชออฟไลน์",
 
@@ -1296,7 +1293,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "ล็อกไว้กับกุญแจของพวกเขาแล้ว รีเลย์ไม่ยอมรับมัน มันจึงไปหาพวกเขาในรูปข้อความแทน",
   "wallet.pay.rail_nutzap_undelivered":
-    "ล็อกไว้กับกุญแจของพวกเขาแล้ว แต่ยังไม่มีอะไรขนมันไปได้ มันอยู่ในคิว และโทเคนอยู่ในหัวข้อรอดำเนินการ",
+    "ล็อกไว้กับกุญแจของพวกเขาแล้ว แต่ยังไม่มีอะไรขนมันไปได้ มันอยู่ในคิว และโทเคนอยู่ในหัวข้อกิจกรรม",
   "wallet.pay.final":
     "การชำระเงินที่ล็อกไว้เรียกคืนไม่ได้ ตอนนี้มีเพียงกุญแจของพวกเขาเท่านั้นที่ใช้เหรียญเหล่านี้ได้",
   "wallet.pay.reclaimable":
@@ -1316,7 +1313,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "จะถูกล็อกไว้กับกุญแจของผู้รับ เมื่อส่งแล้วจะเรียกคืนไม่ได้",
   "wallet.pay.confirm_reclaimable":
-    "คุณเรียกคืนได้จากรายการรอดำเนินการจนกว่าผู้รับจะรับไป",
+    "คุณเรียกคืนได้จากรายการกิจกรรมจนกว่าผู้รับจะรับไป",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "การเข้าถึงกล้อง",
@@ -1334,10 +1331,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "หันไปที่คิวอาร์โค้ดใบแจ้งหนี้ Lightning",
   "wallet.scan.title_token": "สแกน ecash",
   "wallet.scan.title_invoice": "สแกนใบแจ้งหนี้",
-  "wallet.scan.desc_token":
-    "อ่านโทเคน Cashu จากกระเป๋าเงินอื่น ใช้ได้กับกระเป๋าเงิน Cashu ทุกแบบ ไม่ใช่แค่ Airhop",
-  "wallet.scan.desc_invoice":
-    "อ่านใบแจ้งหนี้ Lightning เพื่อจ่ายจากยอดคงเหลือของคุณ",
+  "wallet.scan.title_any": "สแกนคิวอาร์โค้ด",
+  "wallet.scan.aim_any": "หันไปที่คิวอาร์โค้ดของโทเคน ใบแจ้งหนี้ หรือ npub",
+  "wallet.scan.no_any": "ไม่พบโทเคน ใบแจ้งหนี้ หรือ npub ในรูปนั้น",
   "wallet.scan.use_camera_a11y": "สแกนด้วยกล้อง",
   "wallet.scan.use_camera": "ใช้กล้อง",
   "wallet.scan.pick_image_a11y": "อ่านคิวอาร์โค้ดจากรูปที่บันทึกไว้",
@@ -1349,7 +1345,7 @@ export const strings: Strings = {
     "Cashu คือ ecash สำหรับ Bitcoin โทเคนคือสตริงที่มีค่าเป็นเงินสำหรับผู้ที่ถือมัน ลงลายเซ็นแบบปิดตาโดยมินต์ เพื่อให้มินต์บอกไม่ได้ว่าใครใช้อะไร ไม่มีบัญชี ไม่มีการเข้าสู่ระบบ",
   "wallet.explain.send": "ส่ง",
   "wallet.explain.send_desc":
-    "เปลี่ยนจำนวนเงินให้เป็นโทเคนที่คุณส่งมอบให้เพียร์ที่อยู่ใกล้ผ่านบลูทูธได้ หรือแชร์เป็นข้อความก็ได้ ใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต พรูฟจะยังถูกกันไว้จนกว่าคุณจะยืนยันว่ามันไปถึงแล้ว",
+    "เปลี่ยนจำนวนเงินให้เป็นโทเคนที่คุณส่งมอบให้เพียร์ที่อยู่ใกล้ผ่านบลูทูธได้ หรือแชร์เป็นข้อความก็ได้ ใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต เหรียญจะยังถูกกันไว้จนกว่าคุณจะยืนยันว่ามันไปถึงแล้ว",
   "wallet.explain.receive": "รับ",
   "wallet.explain.receive_desc":
     "วางโทเคนเพื่อเพิ่มเข้ามา เมื่อออนไลน์มันจะถูกสับเปลี่ยนที่มินต์ทันที ซึ่งทำให้มันเป็นของคุณอย่างพิสูจน์ได้ เมื่อออฟไลน์มันจะถูกเก็บไว้และทำเครื่องหมายว่ายังไม่ยืนยันจนกว่าคุณจะรีเฟรช",
@@ -1379,7 +1375,10 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ติดต่อมินต์ไม่ได้",
   "wallet.svc.tor_ios": "คำขอไปยังมินต์ไม่ได้ผ่าน Tor บน iOS",
   "wallet.svc.tor_ios_body":
-    "Arti ห่อหุ้มเฉพาะ WebSocket ของ Nostr คำขอนี้จึงจะไปถึงมินต์ผ่านเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับพรูฟเหล่านี้ อนุญาตได้ที่การตั้งค่า > ความปลอดภัย หรือปิด Tor ก่อน การส่งและรับ ecash ผ่านเมชยังทำงานอยู่",
+    "Tor บน iOS ครอบคลุมเฉพาะ Nostr คำขอนี้จึงจะไปถึงมินต์ผ่านเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับ ecash นี้ เปิด {setting} ในการตั้งค่า หรือปิด Tor ก่อน การส่งและรับ ecash ผ่านเมชยังทำงานอยู่",
+  "wallet.svc.internet_off": "อินเทอร์เน็ตปิดอยู่ จึงติดต่อมินต์ไม่ได้",
+  "wallet.svc.internet_off_body":
+    "เปิด {setting} ในการตั้งค่า การส่งและรับ ecash กับคนใกล้ ๆ ยังใช้ได้",
   "wallet.svc.keys_uncached": "กุญแจของมินต์นี้ไม่ได้แคชไว้บนเครื่องนี้",
   "wallet.svc.keys_uncached_body":
     "เปิดกระเป๋าเงินสักครั้งขณะออนไลน์เพื่อดึงกุญแจมา",
@@ -1392,18 +1391,21 @@ export const strings: Strings = {
   "wallet.svc.restored": "กู้คืนจากวลีกู้คืนแล้ว",
   "wallet.svc.storage_locked": "ที่จัดเก็บของกระเป๋าเงินถูกล็อกอยู่",
   "wallet.svc.storage_locked_body":
-    "Airhop เก็บพรูฟ ecash ไว้ในไฟล์ที่เข้ารหัสซึ่งกุญแจอยู่ใน keychain ของเครื่อง ปลดล็อกเครื่องแล้วเปิดแอปใหม่",
+    "Airhop เก็บ ecash ของคุณไว้ในไฟล์ที่เข้ารหัสซึ่งกุญแจอยู่ใน keychain ของเครื่อง ปลดล็อกเครื่องแล้วเปิดแอปใหม่",
   "wallet.svc.bad_url": "นั่นไม่ใช่ URL ที่ถูกต้อง",
   "wallet.svc.needs_https": "URL ของมินต์ต้องขึ้นต้นด้วย https://",
   "wallet.svc.refuse_http": "ปฏิเสธการใช้มินต์ผ่าน http ธรรมดา",
   "wallet.svc.refuse_http_body":
-    "ใครก็ตามบนเส้นทางเครือข่ายอ่านหรือแก้ไขพรูฟของคุณได้ ใช้มินต์แบบ https:// แทน",
+    "ใครก็ตามบนเส้นทางเครือข่ายอ่านหรือแก้ไข ecash ของคุณได้ ใช้มินต์แบบ https:// แทน",
   "wallet.svc.mint_not_saved": "บันทึกมินต์ไม่สำเร็จ",
   "wallet.svc.unreadable_token": "นั่นไม่ใช่โทเคน Cashu ที่อ่านได้",
   "wallet.svc.unreadable_token_body":
     "โทเคนขึ้นต้นด้วย cashuA หรือ cashuB ตรวจสอบว่าไม่มีส่วนใดขาดหายไปตอนคัดลอก",
+  "wallet.svc.keyset_unknown": "โทเค็นนี้ใช้กุญแจใหม่จากมินต์ของมัน",
+  "wallet.svc.keyset_unknown_body":
+    "ขณะนี้ติดต่อมินต์เพื่อดึงกุญแจไม่ได้ ไม่มีอะไรสูญหาย รับอีกครั้งเมื่อออนไลน์",
   "wallet.svc.wrong_mint": "โทเคนนี้ไม่ได้ลงลายเซ็นโดยมินต์ที่มันระบุชื่อไว้",
-  "wallet.svc.already_spent": "พรูฟเหล่านี้ถูกใช้ไปแล้ว",
+  "wallet.svc.already_spent": "ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":
     "ผู้ที่ส่งโทเคนนี้แลกมันไปก่อน หรือส่งโทเคนใบเดียวกันให้คนอื่นด้วย",
   "wallet.svc.receiving_offline": "กำลังรับแบบออฟไลน์",
@@ -1415,7 +1417,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "เพิ่มมินต์แล้วฝากผ่าน Lightning หรือรับโทเคนจากใครสักคน",
   "wallet.svc.split_across_mints": "ยอดคงเหลือของคุณกระจายอยู่หลายมินต์",
-  "wallet.svc.mint_says_spent": "มินต์รายงานว่าพรูฟเหล่านี้ถูกใช้ไปแล้ว",
+  "wallet.svc.mint_says_spent": "มินต์รายงานว่า ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.issue_against_invoice": "ออก ecash โดยอิงใบแจ้งหนี้ Lightning",
   "wallet.svc.pay_invoice": "จ่ายใบแจ้งหนี้ Lightning",
   "wallet.svc.unknown_deposit": "รายการฝากที่ไม่รู้จัก",
@@ -1442,7 +1444,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "กำหนดขนาดการโอนนี้ไม่ได้",
   "wallet.svc.insufficient_at_mint": "ยอดคงเหลือที่ {mint} ไม่พอ",
   "wallet.svc.inexact_title":
-    "พรูฟของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้",
+    "เหรียญของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้",
   "wallet.svc.inexact_detail":
     "โทเคนที่เล็กที่สุดที่คุณส่งได้คือ {spend} {unit} เมื่อออฟไลน์จะไม่มีเงินทอน ส่วนเกิน {extra} {unit} จึงตกเป็นของผู้รับ",
   "wallet.svc.no_single_mint":
@@ -1471,10 +1473,9 @@ export const strings: Strings = {
     "มินต์ออกเงินฝากนี้แล้ว แต่สร้างเหรียญขึ้นใหม่ไม่ได้ การกู้คืนจากวลีกู้คืนของคุณจะนำเหรียญกลับมา",
   "wallet.svc.swap_unreadable":
     "การสับเปลี่ยนนี้ถูกบันทึกไว้ในรูปแบบที่เวอร์ชันนี้เล่นซ้ำไม่ได้",
-  "wallet.svc.lock_in_doubt":
-    "มิ้นท์ไม่ตอบกลับ จึงไม่แน่ชัดว่าการชำระเงินนี้สำเร็จหรือไม่",
+  "wallet.svc.lock_in_doubt": "ไม่แน่ชัดว่าการชำระเงินนี้สำเร็จหรือไม่",
   "wallet.svc.lock_in_doubt_body":
-    "ไม่มีการส่งอย่างอื่นเพิ่ม เหรียญถูกกันไว้จนกว่ามิ้นท์จะตอบ หากสำเร็จ โทเค็นที่ล็อกไว้จะแสดงในรายการรอดำเนินการเพื่อให้คุณส่งต่อ หากไม่สำเร็จ เหรียญจะกลับมา",
+    "ไม่มีการส่งอย่างอื่นเพิ่ม เหรียญถูกกันไว้จนกว่ามินต์จะยืนยันผลลัพธ์ หากสำเร็จ โทเคนที่ล็อกไว้จะแสดงในรายการกิจกรรมเพื่อให้คุณส่งต่อ หากไม่สำเร็จ เหรียญจะกลับมา",
   "wallet.svc.send_spent_by_swap":
     "เหรียญเหล่านี้ถูกแลกกลับเข้ากระเป๋าเงินของคุณก่อนที่จะมีการรับโทเค็นนี้ จึงรับโทเค็นนี้ไม่ได้อีกแล้ว มูลค่าอยู่ในยอดคงเหลือของคุณ",
 
@@ -1574,6 +1575,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "คัดลอก ID ของเพียร์",
   "settings.peer_id_sheet.note":
     "วิธีนี้ใช้ได้เมื่อคุณทั้งคู่อยู่ในระยะบลูทูธเท่านั้น หากต้องการให้ใครส่งข้อความถึงคุณจากที่ไหนก็ได้ ให้แชร์คิวอาร์โค้ดของคุณแทน",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ค้นหาการตั้งค่า…",
   "settings.search.a11y": "ค้นหาการตั้งค่า",
   "settings.search.close": "ปิดการค้นหา",
@@ -1722,6 +1725,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "ซ่อนตัวอย่างในการแจ้งเตือน",
   "settings.security.hide_previews_desc":
     "ไม่ให้ชื่อผู้ส่งและข้อความปรากฏบนหน้าจอล็อก ซึ่งแสดงสิ่งเหล่านั้นโดยไม่ต้องปลดล็อก",
+  "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
+  "settings.security.ring_alerts_desc":
+    "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
   "settings.security.no_blocked": "ไม่มีเพียร์ที่ถูกบล็อก",
   "settings.security.no_blocked_desc":
     "เพียร์ที่ถูกบล็อกส่งข้อความถึงคุณไม่ได้และไม่ปรากฏบนแท็บเมช",
@@ -1921,8 +1927,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "การใช้เครือข่าย",
   "settings.storage.storage_usage": "การใช้ที่จัดเก็บ",
-  "settings.storage.storage_usage_desc":
-    "ข้อความ พรูฟในกระเป๋าเงิน และไฟล์แนบที่แคชไว้",
+  "settings.storage.storage_usage_desc": "ข้อความ ecash และไฟล์แนบที่แคชไว้",
   "settings.storage.session_usage": "เซสชันนี้ · ส่ง {sent} รับ {received}",
   "settings.storage.cache": "แคช",
   "settings.storage.cache_desc": "ไฟล์แนบ {size}",
@@ -2009,7 +2014,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "แชทและประวัติ",
   "settings.transfer.chats_desc": "บทสนทนา กลุ่ม และช่องที่คุณเข้าร่วม",
   "settings.transfer.wallet": "ยอดในกระเป๋าเงิน",
-  "settings.transfer.wallet_desc": "พรูฟ Cashu และประวัติธุรกรรม",
+  "settings.transfer.wallet_desc": "ecash และประวัติธุรกรรม",
   "settings.transfer.title": "ย้ายไปยังโทรศัพท์เครื่องใหม่",
   "settings.transfer.desc": "ย้ายตัวตน แชท และกระเป๋าเงินของคุณไปยังอีกเครื่อง",
   "settings.transfer.coming_soon_a11y":
@@ -2040,9 +2045,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "แตะสามครั้งเพื่อล้างทันทีโดยไม่ต้องยืนยัน",
   "settings.wipe.title": "ล้างข้อมูลฉุกเฉิน",
   "settings.wipe.now": "ล้างเดี๋ยวนี้",
-  "settings.wipe.desc": "ทำลายกุญแจ ข้อความ และพรูฟทั้งหมดทันที",
+  "settings.wipe.desc": "ทำลายกุญแจ ข้อความ และ ecash ทั้งหมดทันที",
   "settings.wipe.body":
-    "สิ่งนี้จะทำลายกุญแจ ข้อความ และพรูฟในกระเป๋าเงินทั้งหมดของคุณทันที และย้อนกลับไม่ได้",
+    "สิ่งนี้จะทำลายกุญแจ ข้อความ และ ecash ทั้งหมดของคุณทันที และย้อนกลับไม่ได้",
   "settings.wipe.in_progress": "กำลังล้าง",
   "settings.wipe.in_progress_body":
     "กำลังทำลายกุญแจ ข้อความ และไฟล์ของคุณ ใช้เวลาไม่กี่วินาที และจะทำจนเสร็จเองแม้ปิดแอปไปแล้ว",
@@ -2143,6 +2148,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "เพียร์ใกล้เคียง",
   "notif.channel.nearby_desc":
     "การแจ้งเตือนเป็นครั้งคราวเมื่อเมชพบผู้คนอยู่ในระยะบลูทูธ",
+  "notif.channel.ring": "เสียงเรียก",
+  "notif.channel.ring_desc":
+    "การแจ้งเตือนจากผู้ติดต่อที่คุณอนุญาตให้โทรเรียกคุณ",
   "notif.nearby.body": "อยู่ในระยะบลูทูธแล้ว แตะเพื่อเปิดเมช",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "บางคน",
@@ -2159,6 +2167,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "กิจกรรมใหม่",
   "notif.hidden.mention": "คุณถูกกล่าวถึง",
   "notif.mention.title": "{sender} กล่าวถึงคุณ",
+  "notif.ring.hidden": "เสียงเรียก",
+  "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
+  "notif.ring.body": "ตรวจสอบข้อความของคุณ",
 };
 
 export const plurals: Plurals = {
@@ -2217,12 +2228,9 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    other: "{count} มินต์",
-  },
   "wallet.mint.remove_body": {
     other:
-      "{mint} ถือ {balance} {unit} อยู่ใน {count} พรูฟ การลบออกจะลบพรูฟเหล่านั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
+      "{mint} ถือ {balance} {unit} อยู่ใน {count} เหรียญ การลบออกจะลบเหรียญเหล่านั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
   },
 
   // ---- Wallet: Lightning ----
@@ -2233,7 +2241,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "กู้คืนพรูฟที่ยังไม่ถูกใช้ {count} รายการจาก {mints}",
+    other: "กู้คืนเหรียญที่ยังไม่ถูกใช้ {count} เหรียญจาก {mints}",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2250,11 +2258,8 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     other: "ยังไม่ยืนยัน {count}",
   },
-  "wallet.proof_count": {
-    other: "{count} พรูฟ",
-  },
   "wallet.spent_removed_detail": {
-    other: "พรูฟ {count} รายการถูกใช้ไปแล้วและถูกลบออก",
+    other: "เหรียญ {count} เหรียญถูกใช้ไปแล้วและถูกลบออก",
   },
 
   // ---- System notifications ----

@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Annuleren",
-  "common.done": "Klaar",
-  "common.ok": "Oké",
-  "common.close": "Sluiten",
   "common.back": "Terug",
-  "common.delete": "Verwijderen",
-  "common.remove": "Weghalen",
+  "common.close": "Sluiten",
+  "common.cancel": "Annuleren",
+  "common.ok": "Oké",
+  "common.done": "Klaar",
+  "common.continue": "Doorgaan",
+  "common.try_again": "Opnieuw proberen",
   "common.add": "Toevoegen",
+  "common.remove": "Weghalen",
+  "common.delete": "Verwijderen",
   "common.copy": "Kopiëren",
   "common.copied": "Gekopieerd",
   "common.share": "Delen",
-  "common.continue": "Doorgaan",
-  "common.try_again": "Opnieuw proberen",
   "common.settings": "Instellingen",
   "common.on": "Aan",
   "common.off": "Uit",
@@ -308,6 +308,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Weghalen lukte niet",
   "chat.group.remove_failed_body":
     "Er is niets veranderd. Alleen wie de groep heeft gemaakt kan bepalen wie erin zit.",
+  "chat.group.leave_creator_body":
+    "{name} verlaten? Jij hebt deze groep gemaakt, en alleen de maker kan leden toevoegen of weghalen, dus na je vertrek kan niemand dat meer. De geschiedenis wordt van dit toestel gehaald.",
   "chat.group.e2ee":
     "End-to-end versleuteld. Alleen leden kunnen de berichten lezen.",
   "chat.group.cap":
@@ -527,37 +529,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "zuidwesten",
   "chat.location.direction.w": "westen",
   "chat.location.direction.nw": "noordwesten",
-  "chat.attach.send_anyway": "Toch sturen",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Gebeld",
   "chat.ring.received_summary": "Heeft je gebeld",
   "chat.ring.alert.title": "{sender} belt je",
   "chat.ring.alert.body": "Bekijk je berichten",
   "chat.ring.alert.open": "Openen",
   "chat.ring.alert.snooze": "1 uur uitstellen",
-  "chat.contact.allow_ring": "Belmeldingen toestaan",
-  "chat.contact.allow_ring_desc":
-    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
-  "chat.contact.ring_action": "Bellen",
-  "chat.contact.ringing": "Belt…",
   "chat.ring.sent_snoozed": "Gebeld, uitgesteld",
   "chat.ring.sent_too_soon": "Gebeld, te vroeg",
   "chat.ring.sent_not_allowed": "Gebeld, niet toegestaan",
-  "chat.contact.ring_hint_nearby":
-    "Bellen werkt alleen zolang ze in de buurt zijn",
-  "chat.contact.ring_hint_not_allowed":
-    "Ze hebben je niet toegestaan om ze te bellen",
-  "chat.contact.ring_hint_snoozed": "Ze hebben bellen voorlopig uitgesteld",
-  "chat.contact.ring_hint_too_soon": "Ze zijn zojuist al gebeld",
-  "chat.contact.ring_hint_again_in": "Opnieuw bellen over {time}",
-  "settings.security.ring_alerts": "Belmeldingen",
-  "settings.security.ring_alerts_desc":
-    "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
-  "notif.channel.ring": "Bellen",
-  "notif.channel.ring_desc":
-    "Meldingen van contacten die je hebt toegestaan je te bellen.",
-  "notif.ring.hidden": "Bellen",
-  "notif.ring.title": "{sender} belt je",
-  "notif.ring.body": "Bekijk je berichten",
+  "chat.attach.send_anyway": "Toch sturen",
   "chat.attach.bitchat_too_big": "Dit komt misschien niet aan",
   "chat.attach.bitchat_too_big_body":
     "{name} zit op bitchat, dat halverwege opgeeft bij een groot bestand. Onder ongeveer 350 KiB is betrouwbaar. Naar een Airhop-contact sturen kent die grens niet.",
@@ -656,7 +639,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit} ophalen",
   "chat.ecash.already_claimed": "Al opgehaald",
   "chat.ecash.already_claimed_body":
-    "Elk bewijs in dit token zit al in je portemonnee, dus er is niets bijgekomen.",
+    "Alles in dit token zit al in je portemonnee, dus er is niets bijgekomen.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -751,6 +734,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Jouw naam voor diegene",
   "chat.contact.copy_peer_id": "Peer-ID kopiëren",
   "chat.contact.verify": "Contact verifiëren",
+  "chat.contact.allow_ring": "Belmeldingen toestaan",
+  "chat.contact.allow_ring_desc":
+    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
+  "chat.contact.ring_action": "Bellen",
+  "chat.contact.ringing": "Belt…",
+  "chat.contact.ring_hint_nearby":
+    "Bellen werkt alleen zolang ze in de buurt zijn",
+  "chat.contact.ring_hint_not_allowed":
+    "Ze hebben je niet toegestaan om ze te bellen",
+  "chat.contact.ring_hint_snoozed": "Ze hebben bellen voorlopig uitgesteld",
+  "chat.contact.ring_hint_too_soon": "Ze zijn zojuist al gebeld",
+  "chat.contact.ring_hint_again_in": "Opnieuw bellen over {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Meldingen",
@@ -955,9 +950,13 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Wisselt tussen satoshi en bitcoin",
   "wallet.balance.a11y": "Saldo {value} {unit}",
   "wallet.balance.locked":
-    "De opslag van de portemonnee zit op slot. Ecash-bewijzen staan in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit, en dat bestand ging niet open. Ontgrendel je toestel en open Airhop opnieuw.",
+    "De opslag van de portemonnee zit op slot. Je ecash staat in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit, en dat bestand ging niet open. Ontgrendel je toestel en open Airhop opnieuw.",
   "wallet.balance.tor_blocked":
-    "Tor staat aan, dus mintverzoeken zijn geblokkeerd: ze zouden over het open net gaan en je IP aan je bewijzen koppelen. Sturen en ontvangen over de mesh werkt gewoon. Sta mintverkeer toe onder Instellingen, Beveiliging.",
+    "Tor staat aan, dus mintverzoeken zijn geblokkeerd: ze zouden over het open net gaan en je IP aan je ecash koppelen. Sturen en ontvangen over de mesh werkt gewoon. Wil je toch mints bereiken, zet dan {setting} aan in Instellingen.",
+  "wallet.balance.offline":
+    "Offline. Je kunt nog steeds mensen in de buurt betalen en tokens sturen.",
+  "wallet.balance.internet_off":
+    "Internet staat uit, dus de wallet werkt alleen in de buurt. Zet {setting} aan in Instellingen om mints te bereiken.",
   "wallet.balance.unconfirmed_note": "{amount} nog niet bevestigd bij de mint",
   "wallet.balance.reserved_note":
     "{amount} apart gezet voor een lopende verzending",
@@ -965,21 +964,33 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Bevat speelgeld van een testmint. Dat is geen bitcoin en kan niet worden uitbetaald.",
   "wallet.token": "Token",
-  "wallet.action.send": "Een ecash-token sturen",
   "wallet.action.send_disabled":
     "Een ecash-token sturen, niet mogelijk met een leeg saldo",
-  "wallet.action.receive": "Een ecash-token ontvangen",
-  "wallet.action.zap": "Een Nostr-contact zappen",
-  "wallet.action.zap_disabled":
-    "Een Nostr-contact zappen, niet mogelijk met een leeg saldo",
-  "wallet.action.add_mint": "Een Cashu-mint toevoegen",
+  "wallet.action.scan": "Scannen",
+  "wallet.action.scan_a11y": "Een token, factuur of npub scannen",
+  "wallet.choose.paste": "Token plakken",
+  "wallet.choose.paste_desc": "Werkt offline",
+  "wallet.choose.scan": "QR-code scannen",
+  "wallet.choose.scan_desc": "Een Cashu-token uit elke wallet",
+  "wallet.choose.topup": "Opwaarderen via Lightning",
+  "wallet.choose.topup_desc": "Betaal een factuur vanuit elke Lightning-wallet",
+  "wallet.choose.token": "Token maken",
+  "wallet.choose.token_desc": "Deel het of toon een QR-code, ook offline",
+  "wallet.choose.zap": "Een Nostr-contact zappen",
+  "wallet.choose.zap_desc": "Naar hun npub, via internet",
+  "wallet.choose.invoice": "Lightning-factuur betalen",
+  "wallet.choose.invoice_desc": "Uitbetalen naar elke Lightning-wallet",
+  "wallet.choose.tor_paused": "Gepauzeerd zolang Tor aan staat",
+  "wallet.choose.offline": "Heeft internet nodig",
+  "wallet.choose.internet_off": "Internet staat uit",
+  "wallet.choose.needs_mint": "Voeg eerst een mint toe",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Het token kon niet worden gemaakt",
   "wallet.send.title": "Ecash sturen",
   "wallet.send.amount_in": "Bedrag in {unit}",
   "wallet.send.body":
-    "Offline gemaakt uit bewijzen die je al hebt. Er gaat niets definitief van je saldo af tot je bevestigt dat het token is aangekomen.",
+    "Offline gemaakt uit ecash die je al hebt. Er gaat niets definitief van je saldo af tot je bevestigt dat het token is aangekomen.",
   "wallet.send.stale_fee_note":
     "De kosten zijn voor het laatst {days} dagen geleden gecontroleerd. Als deze mint ze sindsdien heeft verhoogd, kan de verzending iets meer kosten.",
   "wallet.send.fee_note":
@@ -987,7 +998,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Dit token is over te veel munten verdeeld om in een QR-code te passen. Deel of kopieer het, of ververs bij de mint om het samen te voegen.",
   "wallet.send.bearer_note":
-    "Wie deze reeks heeft, is eigenaar van het geld. De bewijzen zijn apart gezet, niet uitgegeven: als hij niemand bereikt, kun je ze terugnemen onder In afwachting.",
+    "Wie deze reeks heeft, is eigenaar van het geld. De munten zijn apart gezet, niet uitgegeven: als hij niemand bereikt, kun je ze terugnemen onder Activiteit.",
   "wallet.send.qr_too_big_short":
     "Dit token is over te veel munten verdeeld om in een QR-code te passen. Deel of kopieer het.",
   "wallet.send.scan_note":
@@ -1001,11 +1012,11 @@ export const strings: Strings = {
   "wallet.send.building": "Bezig met maken…",
   "wallet.send.build": "Token maken",
   "wallet.send.inexact_body":
-    "Je bewijzen kunnen offline niet precies {amount} {unit} maken. Het kleinste token dat je kunt maken is {spend} {unit}, en offline bestaat er geen wisselgeld: de extra {extra} {unit} gaat naar de ontvanger.\n\nVerversen bij de mint terwijl je online bent zou je bewijzen opsplitsen in coupures die precies uitkomen.",
+    "Je munten kunnen offline niet precies {amount} {unit} maken. Het kleinste token dat je kunt maken is {spend} {unit}, en offline bestaat er geen wisselgeld: de extra {extra} {unit} gaat naar de ontvanger.\n\nVerversen bij de mint terwijl je online bent zou je munten opsplitsen in coupures die precies uitkomen.",
   "wallet.send.send_amount": "{amount} sturen",
   "wallet.send.sent_to": "{amount} {unit} naar {name} gestuurd",
   "wallet.send.sent_to_body":
-    "{route} Je kunt het terugnemen onder In afwachting tot je bevestigt dat ze het hebben, of tot de mint ons vertelt dat de bewijzen zijn ingewisseld.",
+    "{route} Je kunt het terugnemen onder Activiteit tot je bevestigt dat ze het hebben, of tot de mint ons vertelt dat het token is ingewisseld.",
   "wallet.send.copy_token": "Token kopiëren",
   "wallet.send.share_token": "Token delen",
   "wallet.send.open_in_wallet": "Dit token in een andere portemonnee openen",
@@ -1024,12 +1035,12 @@ export const strings: Strings = {
     "Deze munten staan nog apart voor een verzending die je niet hebt afgerond, dus er valt niets op te eisen. Gebruik Terugnemen bij die betaling om ze meteen terug in je saldo te zetten.",
   "wallet.receive.already_have": "Zit al in je portemonnee",
   "wallet.receive.already_have_body":
-    "Elk bewijs in dit token staat hier al, dus er is niets bijgekomen. De saldo’s zijn onveranderd.",
+    "Alles in dit token staat hier al, dus er is niets bijgekomen. De saldo’s zijn onveranderd.",
   "wallet.receive.stored_unconfirmed":
     "Opgeslagen van {mint}, maar nog niet bevestigd bij de mint ({reason}).",
   "wallet.receive.offline": "offline",
   "wallet.receive.redeemed_here":
-    "Ingewisseld bij {mint}. Deze bewijzen zijn nu alleen van jou: de kopie van de afzender werkt niet meer.",
+    "Ingewisseld bij {mint}. Deze ecash is nu alleen van jou: de kopie van de afzender werkt niet meer.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Ingewisseld bij {mint}. Het is nu aantoonbaar van jou: de kopie van dit token bij de afzender werkt niet meer.",
@@ -1083,9 +1094,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} uit je portemonnee halen? De opgeslagen sleutels gaan mee, dus tokens ervan zijn dan offline niet meer te controleren.",
   "wallet.mint.title": "Mints",
-  "wallet.mint.none": "Nog geen mint",
   "wallet.mint.none_desc":
-    "Een mint geeft je ecash uit en wisselt het in. Voeg er een toe om via Lightning te storten, of ontvang gewoon een token en de bijbehorende mint komt er vanzelf bij.",
+    "Een mint geeft je ecash uit en wisselt het in. Voeg er een toe om via Lightning op te waarderen of tokens ervan te accepteren.",
   "wallet.mint.add": "Een mint toevoegen",
   "wallet.mint.add_body":
     "Een mint houdt de Bitcoin die achter je ecash zit, dus kies er een die je het saldo toevertrouwt dat je daar bewaart. De URL wordt gecontroleerd voordat hij wordt opgeslagen. Draai je eigen mint met Nutshell als je liever niemand vertrouwt.",
@@ -1097,8 +1107,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Mint weghalen",
   "wallet.mint.delete_anyway": "Toch verwijderen",
   "wallet.mint.consolidate": "Alle saldo’s naar één mint verplaatsen",
-  "wallet.mint.confirm_with": "Bewijzen bevestigen bij {mint}",
-  "wallet.mint.remove_a11y": "{mint} weghalen",
+  "wallet.mint.confirm_with": "Saldo controleren bij {mint}",
   "wallet.mint.available_amount": "{amount} {unit} beschikbaar",
   "wallet.mint.split_across":
     "Saldo verdeeld over {count} mints. Verplaats het naar één.",
@@ -1125,13 +1134,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Factuur betaald en {amount} {unit} uitgegeven door {mint}. Dit saldo is bevestigd: je kunt het meteen offline uitgeven.",
   "wallet.ln.withdrawn":
-    "{paid} sats betaald via Lightning. De mint rekende {fee} sats aan routeringskosten.",
+    "{amount} {unit} betaald via Lightning. De mint rekende {fee} {unit} aan routeringskosten.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats betaald via Lightning. De mint rekende {fee} sats aan routeringskosten en gaf {change} sats van de reserve terug aan je saldo.",
+    "{amount} {unit} betaald via Lightning. De mint rekende {fee} {unit} aan routeringskosten en gaf {change} {unit} van de reserve terug aan je saldo.",
   "wallet.ln.payment_failed": "Betaling mislukt",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Verander Lightning-sats in ecash dat je offline kunt uitgeven, of betaal ecash uit naar een willekeurige Lightning-factuur. Voor allebei heb je internet en een mint nodig.",
   "wallet.ln.deposit_body":
     "De mint geeft je een factuur. Betaal hem vanuit een willekeurige Lightning-portemonnee en de sats komen terug als ecash dat je offline kunt uitgeven.",
   "wallet.ln.pay_invoice_for":
@@ -1145,10 +1151,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "tot {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} betalen",
-  "wallet.ln.deposit": "Sats storten via Lightning",
-  "wallet.ln.deposit_short": "Storten",
-  "wallet.ln.withdraw": "Uitbetalen naar een Lightning-factuur",
-  "wallet.ln.withdraw_short": "Uitbetalen",
   "wallet.ln.deposit_title": "Storten via Lightning",
   "wallet.ln.amount_placeholder": "Bedrag in sats",
   "wallet.ln.requesting": "Bezig met aanvragen…",
@@ -1169,7 +1171,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Offerte ophalen",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Back-up",
   "wallet.backup.setup_failed": "De back-up kon niet worden ingesteld",
   "wallet.backup.on": "Back-up aan",
   "wallet.backup.on_body":
@@ -1276,12 +1277,11 @@ export const strings: Strings = {
   "wallet.refresh.done": "Ververst",
   "wallet.refresh.unreachable": "{mints} niet bereikt. Al het andere is bij.",
   "wallet.refresh.swapped":
-    "{amount} {unit} bevestigd en omgeruild voor nieuwe bewijzen.",
+    "{amount} {unit} bevestigd en omgeruild voor nieuwe ecash.",
   "wallet.refresh.secured": "{amount} {unit} valt nu onder je herstelzin.",
   "wallet.refresh.all_confirmed": "Alles hier was al bij de mint bevestigd.",
-  "wallet.pending.title": "In afwachting",
   "wallet.pending.reserved_desc":
-    "Gemaakt en apart gezet, aflevering niet bevestigd. De bewijzen blijven buiten je saldo zodat ze niet twee keer uitgegeven kunnen worden.",
+    "Gemaakt en apart gezet, aflevering niet bevestigd. De munten blijven buiten je saldo zodat ze niet twee keer uitgegeven kunnen worden.",
   "wallet.pending.locked_desc":
     "Al vastgezet aan de sleutel van de ontvanger, dus alleen die kan het uitgeven. Het is alleen nog niet bij ze aangekomen. Deel het token om af te ronden.",
   "wallet.pending.show_qr": "Dit token als QR-code tonen",
@@ -1292,8 +1292,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "Dit token terugnemen in je saldo",
   "wallet.activity.title": "Activiteit",
   "wallet.activity.none": "Nog niets",
-  "wallet.activity.none_desc":
-    "Betalingen die je stuurt en ontvangt komen hier te staan, de nieuwste bovenaan, met de mint en de kosten van elk.",
   "wallet.activity.show_fewer": "Minder betalingen tonen",
   "wallet.activity.show_less": "Minder tonen",
   "wallet.activity.received_unconfirmed": "Ontvangen, niet bevestigd",
@@ -1309,14 +1307,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-storting",
   "wallet.activity.ln_withdrawal": "Lightning-uitbetaling",
   "wallet.activity.nutzap_received": "Nutzap ontvangen",
-  "wallet.activity.spent_removed": "Bestede bewijzen weggehaald",
-  "wallet.activity.refreshed": "Bewijzen ververst",
-  "wallet.activity.refreshing": "Bewijzen worden ververst",
+  "wallet.activity.spent_removed": "Uitgegeven munten verwijderd",
+  "wallet.activity.refreshed": "Gecontroleerd bij de mint",
+  "wallet.activity.refreshing": "Controleren bij de mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
   "wallet.mesh_offline_body":
-    "De meshdienst draait niet, dus er is niemand om het token aan te geven. Het blijft apart gezet onder In afwachting.",
+    "De meshdienst draait niet, dus er is niemand om het token aan te geven. Het blijft apart gezet onder Activiteit.",
   "wallet.xfer.route_mesh":
     "Rechtstreeks aan hun toestel gegeven over de mesh.",
   "wallet.xfer.route_nostr":
@@ -1329,7 +1327,7 @@ export const strings: Strings = {
     "De meshdienst draait niet, dus er is geen manier om het token af te geven. Er is niets afgeschreven.",
   "wallet.xfer.could_not_send": "Sturen lukte niet",
   "wallet.xfer.inexact_body":
-    "Je bewijzen kunnen offline niet precies {amount} {unit} maken. Het kleinste token dat je kunt maken is {spend} {unit}, en de extra {extra} {unit} gaat naar hen zonder dat je het terug kunt halen.\n\nVerversen bij de mint terwijl je online bent splitst je bewijzen op in coupures die precies uitkomen.",
+    "Je munten kunnen offline niet precies {amount} {unit} maken. Het kleinste token dat je kunt maken is {spend} {unit}, en de extra {extra} {unit} gaat naar hen zonder dat je het terug kunt halen.\n\nVerversen bij de mint terwijl je online bent splitst je munten op in coupures die precies uitkomen.",
   "wallet.xfer.send_amount": "{amount} sturen",
   "wallet.xfer.mesh_offline": "Mesh offline",
 
@@ -1339,7 +1337,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Vastgezet aan hun sleutel. De relay nam het niet aan, dus het ging als bericht naar ze toe.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Vastgezet aan hun sleutel, maar er kon nog niets het meedragen. Het staat in de wachtrij, en het token staat onder In afwachting.",
+    "Vastgezet aan hun sleutel, maar er kon nog niets het meedragen. Het staat in de wachtrij, en het token staat onder Activiteit.",
   "wallet.pay.final":
     "Vastgezette betalingen kun je niet terugnemen: alleen hun sleutel kan deze munten nu nog uitgeven.",
   "wallet.pay.reclaimable":
@@ -1359,7 +1357,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Het wordt aan hun sleutel vergrendeld. Eenmaal verstuurd kun je het niet terugnemen.",
   "wallet.pay.confirm_reclaimable":
-    "Je kunt het terughalen via In behandeling zolang het niet is opgehaald.",
+    "Je kunt het terughalen via Activiteit zolang het niet is opgehaald.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Cameratoegang",
@@ -1379,10 +1377,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Richt op de QR-code van een Lightning-factuur.",
   "wallet.scan.title_token": "Ecash scannen",
   "wallet.scan.title_invoice": "Factuur scannen",
-  "wallet.scan.desc_token":
-    "Lees een Cashu-token uit een andere portemonnee. Werkt met elke Cashu-portemonnee, niet alleen met Airhop.",
-  "wallet.scan.desc_invoice":
-    "Lees een Lightning-factuur om hem met je saldo te betalen.",
+  "wallet.scan.title_any": "QR-code scannen",
+  "wallet.scan.aim_any": "Richt op de QR-code van een token, factuur of npub.",
+  "wallet.scan.no_any":
+    "Geen token, factuur of npub gevonden in die afbeelding.",
   "wallet.scan.use_camera_a11y": "Scannen met de camera",
   "wallet.scan.use_camera": "Camera gebruiken",
   "wallet.scan.pick_image_a11y":
@@ -1395,7 +1393,7 @@ export const strings: Strings = {
     "Cashu is ecash voor Bitcoin. Een token is een reeks die geld waard is voor wie hem heeft, blind ondertekend door een mint zodat de mint niet kan zien wie wat heeft uitgegeven. Geen accounts, geen inloggen.",
   "wallet.explain.send": "Sturen",
   "wallet.explain.send_desc":
-    "Zet een bedrag om in een token dat je via Bluetooth aan een peer in de buurt kunt geven, of als tekst kunt delen. Werkt zonder internet. De bewijzen blijven apart gezet tot je bevestigt dat het is aangekomen.",
+    "Zet een bedrag om in een token dat je via Bluetooth aan een peer in de buurt kunt geven, of als tekst kunt delen. Werkt zonder internet. De munten blijven apart gezet tot je bevestigt dat het is aangekomen.",
   "wallet.explain.receive": "Ontvangen",
   "wallet.explain.receive_desc":
     "Plak een token om het toe te voegen. Online wordt het meteen bij de mint omgeruild, waardoor het aantoonbaar van jou is. Offline wordt het opgeslagen en als onbevestigd gemarkeerd tot je ververst.",
@@ -1425,7 +1423,11 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "De mint kon niet worden bereikt.",
   "wallet.svc.tor_ios": "Op iOS gaan mintverzoeken niet via Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti omhult alleen Nostr-WebSockets, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze bewijzen koppelen. Sta het toe onder Instellingen > Beveiliging, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
+    "Tor op iOS dekt alleen Nostr, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze ecash koppelen. Zet {setting} aan in Instellingen, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
+  "wallet.svc.internet_off":
+    "Internet staat uit, dus de mint is niet bereikbaar.",
+  "wallet.svc.internet_off_body":
+    "Zet {setting} aan in Instellingen. Ecash in de buurt sturen en ontvangen werkt nog steeds.",
   "wallet.svc.keys_uncached":
     "De sleutels van deze mint staan niet op dit toestel.",
   "wallet.svc.keys_uncached_body":
@@ -1439,20 +1441,24 @@ export const strings: Strings = {
   "wallet.svc.restored": "Teruggezet met de herstelzin",
   "wallet.svc.storage_locked": "De opslag van de portemonnee zit op slot.",
   "wallet.svc.storage_locked_body":
-    "Airhop bewaart ecash-bewijzen in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit. Ontgrendel het toestel en open de app opnieuw.",
+    "Airhop bewaart je ecash in een versleuteld bestand waarvan de sleutel in de sleutelhanger van het toestel zit. Ontgrendel het toestel en open de app opnieuw.",
   "wallet.svc.bad_url": "Dat is geen geldige URL.",
   "wallet.svc.needs_https": "De URL van een mint moet met https:// beginnen.",
   "wallet.svc.refuse_http":
     "We weigeren een mint over onversleuteld http te gebruiken.",
   "wallet.svc.refuse_http_body":
-    "Iedereen op het netwerkpad zou je bewijzen kunnen lezen of veranderen. Gebruik een mint met https://.",
+    "Iedereen op het netwerkpad zou je ecash kunnen lezen of veranderen. Gebruik een mint met https://.",
   "wallet.svc.mint_not_saved": "De mint kon niet worden opgeslagen.",
   "wallet.svc.unreadable_token": "Dat is geen leesbaar Cashu-token.",
   "wallet.svc.unreadable_token_body":
     "Tokens beginnen met cashuA of cashuB. Controleer of er bij het kopiëren niets is afgeknipt.",
+  "wallet.svc.keyset_unknown":
+    "Deze token gebruikt nieuwe sleutels van zijn mint.",
+  "wallet.svc.keyset_unknown_body":
+    "De mint is nu niet bereikbaar om ze op te halen. Er gaat niets verloren: ontvang hem opnieuw zodra je online bent.",
   "wallet.svc.wrong_mint":
     "Dit token is niet ondertekend door de mint die het noemt.",
-  "wallet.svc.already_spent": "Deze bewijzen zijn al besteed.",
+  "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":
     "Wie dit token stuurde heeft het eerder ingewisseld, of hetzelfde token ook naar iemand anders gestuurd.",
   "wallet.svc.receiving_offline": "offline aan het ontvangen",
@@ -1465,7 +1471,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "Voeg een mint toe en stort via Lightning, of ontvang een token van iemand.",
   "wallet.svc.split_across_mints": "Je saldo is over meerdere mints verdeeld.",
-  "wallet.svc.mint_says_spent": "De mint meldde deze bewijzen als al besteed.",
+  "wallet.svc.mint_says_spent": "De mint meldde deze ecash als al besteed.",
   "wallet.svc.issue_against_invoice":
     "ecash uitgeven tegen een Lightning-factuur",
   "wallet.svc.pay_invoice": "een Lightning-factuur betalen",
@@ -1498,7 +1504,7 @@ export const strings: Strings = {
     "De omvang van deze overboeking kon niet worden bepaald.",
   "wallet.svc.insufficient_at_mint": "Niet genoeg saldo bij {mint}.",
   "wallet.svc.inexact_title":
-    "Je bewijzen kunnen offline niet precies {amount} {unit} maken.",
+    "Je munten kunnen offline niet precies {amount} {unit} maken.",
   "wallet.svc.inexact_detail":
     "Het kleinste token dat je kunt sturen is {spend} {unit}. Offline bestaat er geen wisselgeld, dus de extra {extra} {unit} gaat naar de ontvanger.",
   "wallet.svc.no_single_mint":
@@ -1529,10 +1535,9 @@ export const strings: Strings = {
     "De mint heeft deze storting uitgegeven, maar de munten konden niet worden hersteld. Herstellen vanuit je herstelzin haalt ze terug.",
   "wallet.svc.swap_unreadable":
     "Deze omruil is opgeslagen in een vorm die deze versie niet opnieuw kan afspelen.",
-  "wallet.svc.lock_in_doubt":
-    "De mint gaf geen antwoord, dus deze betaling is misschien wel of niet gelukt.",
+  "wallet.svc.lock_in_doubt": "Deze betaling is misschien wel of niet gelukt.",
   "wallet.svc.lock_in_doubt_body":
-    "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint antwoordt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder In behandeling om over te dragen. Zo niet, dan komen de munten terug.",
+    "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint de uitkomst bevestigt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder Activiteit om over te dragen. Zo niet, dan komen de munten terug.",
   "wallet.svc.send_spent_by_swap":
     "Deze munten zijn teruggewisseld naar je wallet voordat dit token werd opgehaald, dus het kan niet meer worden opgehaald. Het bedrag staat in je saldo.",
 
@@ -1635,6 +1640,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Peer-ID kopiëren",
   "settings.peer_id_sheet.note":
     "Dit werkt alleen als jullie allebei binnen Bluetooth-bereik zijn. Wil je dat iemand je van overal kan schrijven, deel dan je QR-code.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Instellingen doorzoeken…",
   "settings.search.a11y": "Instellingen doorzoeken",
   "settings.search.close": "Zoeken sluiten",
@@ -1788,6 +1795,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Voorbeelden in meldingen verbergen",
   "settings.security.hide_previews_desc":
     "Houdt afzender en bericht van je vergrendelscherm af, want dat laat ze zien zonder ontgrendelen",
+  "settings.security.ring_alerts": "Belmeldingen",
+  "settings.security.ring_alerts_desc":
+    "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
   "settings.security.no_blocked": "Geen geblokkeerde peers",
   "settings.security.no_blocked_desc":
     "Geblokkeerde peers kunnen je niet schrijven en verschijnen niet op het Mesh-tabblad",
@@ -1991,7 +2001,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Netwerkgebruik",
   "settings.storage.storage_usage": "Opslaggebruik",
   "settings.storage.storage_usage_desc":
-    "Berichten, portemonneebewijzen en bijlagen in de cache",
+    "Berichten, ecash en bijlagen in de cache",
   "settings.storage.session_usage":
     "Deze sessie · {sent} verstuurd, {received} ontvangen",
   "settings.storage.cache": "Cache",
@@ -2081,7 +2091,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Gesprekken, groepen en de kanalen waar je in zit",
   "settings.transfer.wallet": "Portemonneesaldo",
-  "settings.transfer.wallet_desc": "Cashu-bewijzen en transactiegeschiedenis",
+  "settings.transfer.wallet_desc": "Ecash en transactiegeschiedenis",
   "settings.transfer.title": "Overzetten naar een nieuwe telefoon",
   "settings.transfer.desc":
     "Verhuis je identiteit, chats en portemonnee naar een ander toestel",
@@ -2115,10 +2125,9 @@ export const strings: Strings = {
     "Tik drie keer om meteen te wissen zonder te bevestigen",
   "settings.wipe.title": "Noodwissen",
   "settings.wipe.now": "Nu wissen",
-  "settings.wipe.desc":
-    "Vernietigt op slag alle sleutels, berichten en bewijzen",
+  "settings.wipe.desc": "Vernietigt op slag alle sleutels, berichten en ecash",
   "settings.wipe.body":
-    "Hiermee worden op slag al je sleutels, berichten en portemonneebewijzen vernietigd. Dit kan niet ongedaan worden gemaakt.",
+    "Hiermee worden op slag al je sleutels, berichten en ecash vernietigd. Dit kan niet ongedaan worden gemaakt.",
   "settings.wipe.in_progress": "Bezig met wissen",
   "settings.wipe.in_progress_body":
     "Je sleutels, berichten en bestanden worden vernietigd. Dat duurt een paar seconden en maakt zichzelf af, ook als de app dichtgaat.",
@@ -2223,6 +2232,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peers in de buurt",
   "notif.channel.nearby_desc":
     "Af en toe een melding als de mesh mensen binnen Bluetooth-bereik vindt.",
+  "notif.channel.ring": "Bellen",
+  "notif.channel.ring_desc":
+    "Meldingen van contacten die je hebt toegestaan je te bellen.",
   "notif.nearby.body": "Nu binnen Bluetooth-bereik. Tik om de mesh te openen.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "Iemand",
@@ -2239,6 +2251,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Nieuwe activiteit",
   "notif.hidden.mention": "Je bent genoemd",
   "notif.mention.title": "{sender} heeft je genoemd",
+  "notif.ring.hidden": "Bellen",
+  "notif.ring.title": "{sender} belt je",
+  "notif.ring.body": "Bekijk je berichten",
 };
 
 export const plurals: Plurals = {
@@ -2313,14 +2328,10 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    other: "{count} mints",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} houdt {balance} {unit} in {count} bewijs. Verwijderen wist dat bewijs definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
+    one: "{mint} houdt {balance} {unit} in {count} munt. Verwijderen wist die munt definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
     other:
-      "{mint} houdt {balance} {unit} in {count} bewijzen. Verwijderen wist die bewijzen definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
+      "{mint} houdt {balance} {unit} in {count} munten. Verwijderen wist die munten definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2332,8 +2343,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{count} onbesteed bewijs hersteld van {mints}.",
-    other: "{count} onbestede bewijzen hersteld van {mints}.",
+    one: "{count} onbestede munt hersteld van {mints}.",
+    other: "{count} onbestede munten hersteld van {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "{count} munt gevonden, maar die was al besteed, dus er is niets bijgeschreven. Dat is normaal: elke munt die je ooit hebt uitgegeven blijft staan in de administratie die de mint bijhoudt.",
@@ -2354,13 +2365,9 @@ export const plurals: Plurals = {
     one: "{count} onbevestigd",
     other: "{count} onbevestigd",
   },
-  "wallet.proof_count": {
-    one: "{count} bewijs",
-    other: "{count} bewijzen",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} bewijs was al besteed en is verwijderd.",
-    other: "{count} bewijzen waren al besteed en zijn verwijderd.",
+    one: "{count} munt was al besteed en is verwijderd.",
+    other: "{count} munten waren al besteed en zijn verwijderd.",
   },
 
   // ---- System notifications ----

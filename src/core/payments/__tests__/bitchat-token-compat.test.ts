@@ -3,31 +3,17 @@
  */
 // A token Airhop sends must render as money inside bitchat.
 //
-// The two apps agree on payments by accident of shared design rather than by a
-// negotiated protocol, so it is worth stating exactly what the contract is:
+// bitchat has no wallet (it never contacts a mint) and no NIP-61, so
+// `findNutzapTarget` falls through to the token rail for its users. Its
+// `/pay <token>` sends the bare token as the message body, exactly as
+// `deliverTokenToPeer` does, and bitchat decodes it only far enough to draw a
+// chip (amount, unit, mint host, memo). So the contract is the token encoding. bitchat's own strict CBOR reader (definite
+// lengths, bounded depth, `/pay` needs a positive amount) must be able to walk
+// whatever cashu-ts emits, or payments become silent blobs there.
 //
-//   * bitchat has NO wallet. `CashuTokenDecoder.swift` says it plainly: "The app
-//     never contacts a mint - tokens are bearer strings and redemption is
-//     delegated to an external wallet." It decodes a token only far enough to
-//     draw a chip: amount, unit, mint host, memo.
-//   * `/pay <token>` in bitchat sends the bare token string AS the message body.
-//     `deliverTokenToPeer` in Airhop does the identical thing. That is the whole
-//     wire format for payments between the two apps: a message whose text is a
-//     Cashu token.
-//   * bitchat implements NO NIP-61. It has no kind 10019 and no kind 9321, so a
-//     bitchat user can never be nutzapped, and `findNutzapTarget` correctly
-//     falls through to the token rail for them.
-//
-// So the one thing that can break is the token encoding. bitchat ships its own
-// minimal CBOR reader rather than a Cashu library, and it is deliberately strict:
-// definite lengths only, bounded depth, and for `/pay` it refuses anything that
-// does not resolve to a positive amount. If cashu-ts ever emits a shape that
-// reader cannot walk, Airhop payments silently become unreadable blobs in
-// bitchat with no error on either side.
-//
-// `decodeLikeBitchat` below is a faithful port of `CashuTokenDecoder.decodeV4`
-// and its `CBORReader`, kept deliberately literal so it can be diffed against
-// the Swift. If this test fails, Airhop and bitchat have diverged on payments.
+// `decodeLikeBitchat` is a literal port of `CashuTokenDecoder.decodeV4` and its
+// `CBORReader`, kept diffable against the Swift. A failure here means Airhop
+// and bitchat have diverged on payments, with no error on either side.
 
 import type { StoredProof } from "@store/wallet-store";
 import { buildToken } from "../cashu";
@@ -234,23 +220,13 @@ describe("a token Airhop sends renders as money in bitchat", () => {
     expect(decodeLikeBitchat(raw)?.memo).toBe("coffee money");
   });
 
-  it("passes bitchat's strict /pay check, which needs a positive amount", () => {
-    // `/pay` refuses to relay anything that does not resolve to an amount, so a
-    // shape their CBOR walk cannot follow is not merely an ugly chip: it is a
-    // payment bitchat will not forward at all.
-    const chip = decodeLikeBitchat(buildToken(MINT, [proof(1, 1)]));
-    expect(chip?.amount).toBeGreaterThan(0);
-  });
-
   it("survives the single-proof and many-proof shapes", () => {
+    // `/pay` refuses to relay a token that does not resolve to a positive
+    // amount, so an unwalkable shape is a payment bitchat will not forward.
     const one = decodeLikeBitchat(buildToken(MINT, [proof(1, 1)]));
     expect(one?.amount).toBe(1);
 
     const many = Array.from({ length: 24 }, (_, n) => proof(2, n));
     expect(decodeLikeBitchat(buildToken(MINT, many))?.amount).toBe(48);
-  });
-
-  it("is a cashuB token, which is what bitchat's V4 path expects", () => {
-    expect(buildToken(MINT, [proof(2, 1)]).startsWith("cashuB")).toBe(true);
   });
 });

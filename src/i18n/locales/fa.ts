@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "لغو",
-  "common.done": "انجام شد",
-  "common.ok": "باشه",
-  "common.close": "بستن",
   "common.back": "بازگشت",
-  "common.delete": "حذف",
-  "common.remove": "برداشتن",
+  "common.close": "بستن",
+  "common.cancel": "لغو",
+  "common.ok": "باشه",
+  "common.done": "انجام شد",
+  "common.continue": "ادامه",
+  "common.try_again": "دوباره تلاش کنید",
   "common.add": "افزودن",
+  "common.remove": "برداشتن",
+  "common.delete": "حذف",
   "common.copy": "کپی",
   "common.copied": "کپی شد",
   "common.share": "هم‌رسانی",
-  "common.continue": "ادامه",
-  "common.try_again": "دوباره تلاش کنید",
   "common.settings": "تنظیمات",
   "common.on": "روشن",
   "common.off": "خاموش",
@@ -302,6 +302,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "برداشتنشان ممکن نشد",
   "chat.group.remove_failed_body":
     "چیزی تغییر نکرد. تنها کسی که گروه را ساخته می‌تواند اعضایش را عوض کند.",
+  "chat.group.leave_creator_body":
+    "{name} را ترک می‌کنید؟ شما این گروه را ساخته‌اید، و تنها سازنده‌اش می‌تواند اعضا را بیفزاید یا بردارد، بنابراین پس از رفتن شما دیگر کسی نمی‌تواند چنین کند. تاریخچه‌اش از این دستگاه برداشته می‌شود.",
   "chat.group.e2ee":
     "سرتاسر رمزگذاری‌شده. تنها اعضا می‌توانند پیام‌ها را بخوانند.",
   "chat.group.cap":
@@ -516,36 +518,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "جنوب غرب",
   "chat.location.direction.w": "غرب",
   "chat.location.direction.nw": "شمال غرب",
-  "chat.attach.send_anyway": "به هر حال بفرست",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "زنگ زد",
   "chat.ring.received_summary": "برایتان زنگ زد",
   "chat.ring.alert.title": "{sender} برای شما زنگ می‌زند",
   "chat.ring.alert.body": "پیام‌هایتان را بررسی کنید",
   "chat.ring.alert.open": "باز کردن",
   "chat.ring.alert.snooze": "به تعویق انداختن 1 ساعت",
-  "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
-  "chat.contact.allow_ring_desc":
-    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
-  "chat.contact.ring_action": "زنگ زدن",
-  "chat.contact.ringing": "در حال زنگ زدن…",
   "chat.ring.sent_snoozed": "زنگ زده شد، به تعویق افتاد",
   "chat.ring.sent_too_soon": "زنگ زده شد، خیلی زود",
   "chat.ring.sent_not_allowed": "زنگ زده شد، مجاز نیست",
-  "chat.contact.ring_hint_nearby":
-    "زنگ زدن فقط وقتی کار می‌کند که آن‌ها نزدیک باشند",
-  "chat.contact.ring_hint_not_allowed": "به شما اجازه زنگ زدن نداده‌اند",
-  "chat.contact.ring_hint_snoozed": "فعلاً زنگ‌ها را به تعویق انداخته‌اند",
-  "chat.contact.ring_hint_too_soon": "لحظاتی پیش به آن‌ها زنگ زده شد",
-  "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
-  "settings.security.ring_alerts": "هشدارهای زنگ",
-  "settings.security.ring_alerts_desc":
-    "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
-  "notif.channel.ring": "زنگ",
-  "notif.channel.ring_desc":
-    "هشدار از مخاطبانی که اجازهٔ زنگ زدن به آن‌ها داده‌اید.",
-  "notif.ring.hidden": "زنگ",
-  "notif.ring.title": "{sender} برای شما زنگ می‌زند",
-  "notif.ring.body": "پیام‌هایتان را بررسی کنید",
+  "chat.attach.send_anyway": "به هر حال بفرست",
   "chat.attach.bitchat_too_big": "شاید نرسد",
   "chat.attach.bitchat_too_big_body":
     "{name} روی bitchat است، که فایل بزرگ را در میانهٔ راه رها می‌کند. کمتر از حدود 350 KiB مطمئن است. فرستادن به یک مخاطب Airhop چنین محدودیتی ندارد.",
@@ -639,7 +623,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "دریافت {amount} {unit}",
   "chat.ecash.already_claimed": "از پیش دریافت شده",
   "chat.ecash.already_claimed_body":
-    "هر اثبات در این توکن از پیش در کیف پول شماست، پس چیزی اضافه نشد.",
+    "همهٔ محتوای این توکن از پیش در کیف پول شماست، پس چیزی اضافه نشد.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "برای تحویل با بیشترین تلاش به مش سپرده شد",
@@ -733,6 +717,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "نامی که شما گذاشته‌اید",
   "chat.contact.copy_peer_id": "کپی شناسهٔ همتا",
   "chat.contact.verify": "تأیید مخاطب",
+  "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
+  "chat.contact.allow_ring_desc":
+    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
+  "chat.contact.ring_action": "زنگ زدن",
+  "chat.contact.ringing": "در حال زنگ زدن…",
+  "chat.contact.ring_hint_nearby":
+    "زنگ زدن فقط وقتی کار می‌کند که آن‌ها نزدیک باشند",
+  "chat.contact.ring_hint_not_allowed": "به شما اجازه زنگ زدن نداده‌اند",
+  "chat.contact.ring_hint_snoozed": "فعلاً زنگ‌ها را به تعویق انداخته‌اند",
+  "chat.contact.ring_hint_too_soon": "لحظاتی پیش به آن‌ها زنگ زده شد",
+  "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "اعلان‌ها",
@@ -933,9 +928,13 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "میان ساتوشی و بیت‌کوین جابه‌جا می‌شود",
   "wallet.balance.a11y": "موجودی {value} {unit}",
   "wallet.balance.locked":
-    "حافظهٔ کیف پول قفل است. اثبات‌های ecash در فایلی رمزگذاری‌شده نگه‌داری می‌شوند که کلیدش در کلیدان دستگاه است، و آن فایل باز نشد. قفل دستگاه را باز کنید و Airhop را دوباره باز کنید.",
+    "حافظهٔ کیف پول قفل است. ecash شما در فایلی رمزگذاری‌شده نگه‌داری می‌شود که کلیدش در کلیدان دستگاه است، و آن فایل باز نشد. قفل دستگاه را باز کنید و Airhop را دوباره باز کنید.",
   "wallet.balance.tor_blocked":
-    "Tor روشن است، پس درخواست‌های ضراب‌خانه مسدودند: آن‌ها از شبکهٔ باز بیرون می‌روند و نشانی IP شما را به اثبات‌هایتان گره می‌زنند. فرستادن و گرفتن روی مش همچنان کار می‌کند. ترافیک ضراب‌خانه را زیر تنظیمات، امنیت مجاز کنید.",
+    "Tor روشن است، پس درخواست‌های ضراب‌خانه مسدودند: آن‌ها از شبکهٔ باز بیرون می‌روند و نشانی IP شما را به ecash شما گره می‌زنند. فرستادن و گرفتن روی مش همچنان کار می‌کند. اگر باز هم می‌خواهید به ضراب‌خانه‌ها برسید، {setting} را در تنظیمات روشن کنید.",
+  "wallet.balance.offline":
+    "آفلاین هستید. هنوز می‌توانید به افراد نزدیک پرداخت کنید و توکن بفرستید.",
+  "wallet.balance.internet_off":
+    "اینترنت خاموش است، پس کیف پول فقط در نزدیکی کار می‌کند. برای رسیدن به ضراب‌خانه‌ها، {setting} را در تنظیمات روشن کنید.",
   "wallet.balance.unconfirmed_note": "{amount} هنوز با ضراب‌خانه تأیید نشده",
   "wallet.balance.reserved_note":
     "{amount} برای ارسالی در جریان کنار گذاشته شده",
@@ -943,21 +942,33 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "شامل پول آزمایشی از یک ضراب‌خانهٔ تستی است. بیت‌کوین نیست و نمی‌توان نقدش کرد.",
   "wallet.token": "توکن",
-  "wallet.action.send": "فرستادن توکن ecash",
   "wallet.action.send_disabled":
     "فرستادن توکن ecash، با موجودی خالی در دسترس نیست",
-  "wallet.action.receive": "گرفتن توکن ecash",
-  "wallet.action.zap": "زپ به یک مخاطب Nostr",
-  "wallet.action.zap_disabled":
-    "زپ به یک مخاطب Nostr، با موجودی خالی در دسترس نیست",
-  "wallet.action.add_mint": "افزودن یک ضراب‌خانهٔ Cashu",
+  "wallet.action.scan": "اسکن",
+  "wallet.action.scan_a11y": "اسکن توکن، صورتحساب یا npub",
+  "wallet.choose.paste": "چسباندن توکن",
+  "wallet.choose.paste_desc": "آفلاین هم کار می‌کند",
+  "wallet.choose.scan": "اسکن کد QR",
+  "wallet.choose.scan_desc": "توکن Cashu از هر کیف پولی",
+  "wallet.choose.topup": "شارژ با Lightning",
+  "wallet.choose.topup_desc": "صورتحساب را از هر کیف پول Lightning بپردازید",
+  "wallet.choose.token": "ساخت توکن",
+  "wallet.choose.token_desc": "هم‌رسانی کنید یا کد QR نشان دهید، حتی آفلاین",
+  "wallet.choose.zap": "zap به یک مخاطب Nostr",
+  "wallet.choose.zap_desc": "به npub او، از راه اینترنت",
+  "wallet.choose.invoice": "پرداخت صورتحساب Lightning",
+  "wallet.choose.invoice_desc": "برداشت به هر کیف پول Lightning",
+  "wallet.choose.tor_paused": "تا وقتی Tor روشن است متوقف است",
+  "wallet.choose.offline": "به اینترنت نیاز دارد",
+  "wallet.choose.internet_off": "اینترنت خاموش است",
+  "wallet.choose.needs_mint": "اول یک ضراب‌خانه اضافه کنید",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "توکن ساخته نشد",
   "wallet.send.title": "فرستادن ecash",
   "wallet.send.amount_in": "مبلغ به {unit}",
   "wallet.send.body":
-    "به شکل برون‌خط از اثبات‌هایی که همین حالا دارید ساخته می‌شود. تا وقتی تأیید نکنید توکن رسیده است، چیزی برای همیشه از موجودی شما بیرون نمی‌رود.",
+    "به شکل برون‌خط از ecash موجودتان ساخته می‌شود. تا وقتی تأیید نکنید توکن رسیده است، چیزی برای همیشه از موجودی شما بیرون نمی‌رود.",
   "wallet.send.stale_fee_note":
     "کارمزدها آخرین بار {days} روز پیش بررسی شدند. اگر این ضراب‌خانه از آن زمان کارمزدش را بالا برده باشد، این ارسال کمی بیشتر هزینه می‌برد.",
   "wallet.send.fee_note":
@@ -965,7 +976,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "این توکن میان سکه‌های بیش از حد زیادی پخش شده و در یک کد QR جا نمی‌شود. به جایش هم‌رسانی یا کپی کنید، یا برای یکپارچه‌سازی در ضراب‌خانه تازه‌سازی کنید.",
   "wallet.send.bearer_note":
-    "هر کس این رشته را داشته باشد صاحب پول است. اثبات‌ها کنار گذاشته شده‌اند، نه خرج‌شده: اگر هرگز به کسی نرسد می‌توانید زیر بخش در انتظار پسشان بگیرید.",
+    "هر کس این رشته را داشته باشد صاحب پول است. سکه‌ها کنار گذاشته شده‌اند، نه خرج‌شده: اگر هرگز به کسی نرسد می‌توانید زیر بخش فعالیت پسشان بگیرید.",
   "wallet.send.qr_too_big_short":
     "این توکن میان سکه‌های بیش از حد زیادی پخش شده و در یک کد QR جا نمی‌شود. به جایش هم‌رسانی یا کپی کنید.",
   "wallet.send.scan_note":
@@ -979,11 +990,11 @@ export const strings: Strings = {
   "wallet.send.building": "در حال ساخت…",
   "wallet.send.build": "ساخت توکن",
   "wallet.send.inexact_body":
-    "اثبات‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند. کوچک‌ترین توکنی که می‌توانید بسازید {spend} {unit} است، و برون‌خط باقیمانده‌ای در کار نیست: {extra} {unit} اضافی به گیرنده می‌رسد.\n\nتازه‌سازی در ضراب‌خانه هنگام برخط بودن، اثبات‌های شما را به واحدهایی می‌شکند که این مبلغ را دقیق می‌کنند.",
+    "سکه‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند. کوچک‌ترین توکنی که می‌توانید بسازید {spend} {unit} است، و برون‌خط باقیمانده‌ای در کار نیست: {extra} {unit} اضافی به گیرنده می‌رسد.\n\nتازه‌سازی در ضراب‌خانه هنگام برخط بودن، سکه‌های شما را به واحدهایی می‌شکند که این مبلغ را دقیق می‌کنند.",
   "wallet.send.send_amount": "فرستادن {amount}",
   "wallet.send.sent_to": "{amount} {unit} به {name} فرستاده شد",
   "wallet.send.sent_to_body":
-    "{route} تا وقتی تأیید کنید که گرفته‌اند، یا تا وقتی ضراب‌خانه به ما بگوید اثبات‌ها بازخرید شده‌اند، زیر بخش در انتظار پس‌گرفتنی می‌ماند.",
+    "{route} تا وقتی تأیید کنید که گرفته‌اند، یا تا وقتی ضراب‌خانه به ما بگوید توکن بازخرید شده است، زیر بخش فعالیت پس‌گرفتنی می‌ماند.",
   "wallet.send.copy_token": "کپی توکن",
   "wallet.send.share_token": "هم‌رسانی توکن",
   "wallet.send.open_in_wallet": "باز کردن این توکن در کیف پولی دیگر",
@@ -1002,12 +1013,12 @@ export const strings: Strings = {
     "این سکه‌ها هنوز برای ارسالی که تسویه‌اش نکرده‌اید کنار گذاشته شده‌اند، پس چیزی برای دریافت نیست. روی همان پرداخت از پس‌گرفتن استفاده کنید تا یک‌راست به موجودی‌تان بازگردند.",
   "wallet.receive.already_have": "از پیش در کیف پول شماست",
   "wallet.receive.already_have_body":
-    "هر اثبات در این توکن همین حالا اینجا ذخیره است، پس چیزی اضافه نشد. موجودی‌ها تغییری نکردند.",
+    "همهٔ محتوای این توکن همین حالا اینجا ذخیره است، پس چیزی اضافه نشد. موجودی‌ها تغییری نکردند.",
   "wallet.receive.stored_unconfirmed":
     "از {mint} ذخیره شد، اما هنوز با ضراب‌خانه تأیید نشده ({reason}).",
   "wallet.receive.offline": "برون‌خط",
   "wallet.receive.redeemed_here":
-    "در {mint} بازخرید شد. این اثبات‌ها اکنون تنها از آن شمایند: نسخهٔ فرستنده دیگر کار نمی‌کند.",
+    "در {mint} بازخرید شد. این ecash اکنون تنها از آن شماست: نسخهٔ فرستنده دیگر کار نمی‌کند.",
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
@@ -1061,9 +1072,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} از کیف پول شما برداشته شود؟ کلیدهای ذخیره‌شده‌اش هم می‌روند، پس توکن‌های آن دیگر به شکل برون‌خط راستی‌آزمایی نمی‌شوند.",
   "wallet.mint.title": "ضراب‌خانه‌ها",
-  "wallet.mint.none": "هنوز ضراب‌خانه‌ای نیست",
   "wallet.mint.none_desc":
-    "ضراب‌خانه ecash شما را صادر و بازخرید می‌کند. برای واریز از راه Lightning یکی اضافه کنید، یا فقط یک توکن بگیرید تا ضراب‌خانه‌اش برایتان افزوده شود.",
+    "ضراب‌خانه ecash شما را صادر و بازخرید می‌کند. یکی اضافه کنید تا با Lightning شارژ کنید یا توکن‌هایش را بپذیرید.",
   "wallet.mint.add": "افزودن یک ضراب‌خانه",
   "wallet.mint.add_body":
     "ضراب‌خانه همان Bitcoin پشتوانهٔ ecash شما را نگه می‌دارد، پس یکی را برگزینید که به اندازهٔ موجودی‌تان به آن اعتماد دارید. نشانی پیش از ذخیره بررسی می‌شود. اگر ترجیح می‌دهید به کسی اعتماد نکنید، با Nutshell یکی از خودتان راه بیندازید.",
@@ -1075,8 +1085,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "برداشتن ضراب‌خانه",
   "wallet.mint.delete_anyway": "به هر حال حذف کن",
   "wallet.mint.consolidate": "بردن همهٔ موجودی‌ها به یک ضراب‌خانه",
-  "wallet.mint.confirm_with": "تأیید اثبات‌ها با {mint}",
-  "wallet.mint.remove_a11y": "برداشتن {mint}",
+  "wallet.mint.confirm_with": "بررسی موجودی با {mint}",
   "wallet.mint.available_amount": "{amount} {unit} در دسترس",
   "wallet.mint.split_across":
     "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
@@ -1103,13 +1112,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "صورتحساب پرداخت شد و {mint} مبلغ {amount} {unit} صادر کرد. این موجودی تأییدشده است: می‌توانید بی‌درنگ به شکل برون‌خط خرجش کنید.",
   "wallet.ln.withdrawn":
-    "{paid} sats از راه Lightning پرداخت شد. ضراب‌خانه {fee} sats کارمزد مسیریابی گرفت.",
+    "{amount} {unit} از راه Lightning پرداخت شد. ضراب‌خانه {fee} {unit} کارمزد مسیریابی گرفت.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats از راه Lightning پرداخت شد. ضراب‌خانه {fee} sats کارمزد مسیریابی گرفت و {change} sats از مبلغ کنارگذاشته را به موجودی شما بازگرداند.",
+    "{amount} {unit} از راه Lightning پرداخت شد. ضراب‌خانه {fee} {unit} کارمزد مسیریابی گرفت و {change} {unit} از مبلغ کنارگذاشته را به موجودی شما بازگرداند.",
   "wallet.ln.payment_failed": "پرداخت ناموفق بود",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "sats روی Lightning را به ecash‌ای بدل کنید که برون‌خط خرج می‌شود، یا ecash را به هر صورتحساب Lightning نقد کنید. هر دو به اینترنت و یک ضراب‌خانه نیاز دارند.",
   "wallet.ln.deposit_body":
     "ضراب‌خانه به شما یک صورتحساب می‌دهد. از هر کیف پول Lightning پرداختش کنید تا sats به شکل ecash‌ای که برون‌خط خرج می‌شود بازگردد.",
   "wallet.ln.pay_invoice_for":
@@ -1123,10 +1129,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "تا {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "پرداخت {amount} {unit}",
-  "wallet.ln.deposit": "واریز sats از راه Lightning",
-  "wallet.ln.deposit_short": "واریز",
-  "wallet.ln.withdraw": "برداشت به یک صورتحساب Lightning",
-  "wallet.ln.withdraw_short": "برداشت",
   "wallet.ln.deposit_title": "واریز از راه Lightning",
   "wallet.ln.amount_placeholder": "مبلغ به sats",
   "wallet.ln.requesting": "در حال درخواست…",
@@ -1147,7 +1149,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "گرفتن برآورد",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "پشتیبان‌گیری",
   "wallet.backup.setup_failed": "پشتیبان‌گیری راه‌اندازی نشد",
   "wallet.backup.on": "پشتیبان‌گیری روشن",
   "wallet.backup.on_body":
@@ -1254,15 +1255,13 @@ export const strings: Strings = {
   "wallet.refresh.done": "تازه‌سازی شد",
   "wallet.refresh.unreachable":
     "دسترسی به {mints} ممکن نشد. باقی همه به‌روز است.",
-  "wallet.refresh.swapped":
-    "{amount} {unit} تأیید و با اثبات‌های تازه تعویض شد.",
+  "wallet.refresh.swapped": "{amount} {unit} تأیید و با ecash تازه تعویض شد.",
   "wallet.refresh.secured":
     "اکنون {amount} {unit} زیر پوشش عبارت بازیابی شماست.",
   "wallet.refresh.all_confirmed":
     "هر چه اینجا بود از پیش با ضراب‌خانه تأیید شده بود.",
-  "wallet.pending.title": "در انتظار",
   "wallet.pending.reserved_desc":
-    "ساخته و کنارگذاشته شده، رسیدنش تأیید نشده. اثبات‌ها بیرون از موجودی شما نگه داشته می‌شوند تا دو بار خرج نشوند.",
+    "ساخته و کنارگذاشته شده، رسیدنش تأیید نشده. سکه‌ها بیرون از موجودی شما نگه داشته می‌شوند تا دو بار خرج نشوند.",
   "wallet.pending.locked_desc":
     "از پیش به کلید گیرنده قفل شده، پس تنها خودشان می‌توانند خرجش کنند. فقط هنوز به دستشان نرسیده. برای پایان کار توکن را هم‌رسانی کنید.",
   "wallet.pending.show_qr": "نمایش این توکن به شکل یک کد QR",
@@ -1273,8 +1272,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "پس گرفتن این توکن به موجودی شما",
   "wallet.activity.title": "فعالیت",
   "wallet.activity.none": "هنوز چیزی نیست",
-  "wallet.activity.none_desc":
-    "پرداخت‌هایی که می‌فرستید و می‌گیرید اینجا نمایان می‌شوند، تازه‌ترین در بالا، همراه ضراب‌خانه و کارمزد هر کدام.",
   "wallet.activity.show_fewer": "نمایش پرداخت‌های کمتر",
   "wallet.activity.show_less": "کمتر نشان بده",
   "wallet.activity.received_unconfirmed": "دریافت‌شده، تأییدنشده",
@@ -1290,14 +1287,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "واریز Lightning",
   "wallet.activity.ln_withdrawal": "برداشت Lightning",
   "wallet.activity.nutzap_received": "Nutzap دریافت شد",
-  "wallet.activity.spent_removed": "اثبات‌های خرج‌شده برداشته شدند",
-  "wallet.activity.refreshed": "اثبات‌ها تازه‌سازی شدند",
-  "wallet.activity.refreshing": "در حال تازه‌سازی اثبات‌ها",
+  "wallet.activity.spent_removed": "سکه‌های خرج‌شده حذف شدند",
+  "wallet.activity.refreshed": "با ضراب‌خانه بررسی شد",
+  "wallet.activity.refreshing": "در حال بررسی با ضراب‌خانه",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "مش برون‌خط",
   "wallet.mesh_offline_body":
-    "سرویس مش در حال اجرا نیست، پس چیزی نیست که توکن را به آن بسپاریم. زیر بخش در انتظار کنارگذاشته می‌ماند.",
+    "سرویس مش در حال اجرا نیست، پس چیزی نیست که توکن را به آن بسپاریم. زیر بخش فعالیت کنارگذاشته می‌ماند.",
   "wallet.xfer.route_mesh": "یک‌راست از راه مش به دستگاهشان سپرده شد.",
   "wallet.xfer.route_nostr":
     "بیرون از محدودهٔ بلوتوث بودند، پس به جایش از راه اینترنت رفت.",
@@ -1309,7 +1306,7 @@ export const strings: Strings = {
     "سرویس مش در حال اجرا نیست، پس راهی برای سپردن توکن نیست. چیزی کسر نشده است.",
   "wallet.xfer.could_not_send": "فرستاده نشد",
   "wallet.xfer.inexact_body":
-    "اثبات‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند. کوچک‌ترین توکنی که می‌توانید بسازید {spend} {unit} است، و {extra} {unit} اضافی بی‌آنکه راهی برای پس گرفتنش باشد به آن‌ها می‌رسد.\n\nتازه‌سازی در ضراب‌خانه هنگام برخط بودن، اثبات‌های شما را به واحدهایی می‌شکند که این مبلغ را دقیق می‌کنند.",
+    "سکه‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند. کوچک‌ترین توکنی که می‌توانید بسازید {spend} {unit} است، و {extra} {unit} اضافی بی‌آنکه راهی برای پس گرفتنش باشد به آن‌ها می‌رسد.\n\nتازه‌سازی در ضراب‌خانه هنگام برخط بودن، سکه‌های شما را به واحدهایی می‌شکند که این مبلغ را دقیق می‌کنند.",
   "wallet.xfer.send_amount": "فرستادن {amount}",
   "wallet.xfer.mesh_offline": "مش برون‌خط",
 
@@ -1319,7 +1316,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "به کلیدشان قفل شد. رله آن را نپذیرفت، پس به جایش به شکل یک پیام به آن‌ها رفت.",
   "wallet.pay.rail_nutzap_undelivered":
-    "به کلیدشان قفل شد، اما هنوز چیزی نتوانست آن را ببرد. در صف است، و توکن زیر بخش در انتظار قرار دارد.",
+    "به کلیدشان قفل شد، اما هنوز چیزی نتوانست آن را ببرد. در صف است، و توکن زیر بخش فعالیت قرار دارد.",
   "wallet.pay.final":
     "پرداخت‌های قفل‌شده پس گرفته نمی‌شوند: اکنون تنها کلید خودشان می‌تواند این سکه‌ها را خرج کند.",
   "wallet.pay.reclaimable":
@@ -1339,7 +1336,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "به کلید آن‌ها قفل می‌شود. پس از ارسال، پس‌گرفتنی نیست.",
   "wallet.pay.confirm_reclaimable":
-    "تا وقتی آن را دریافت نکرده‌اند، می‌توانید از «در انتظار» پسش بگیرید.",
+    "تا وقتی آن را دریافت نکرده‌اند، می‌توانید از «فعالیت» پسش بگیرید.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "دسترسی دوربین",
@@ -1358,10 +1355,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "روی کد QR یک صورتحساب Lightning بگیرید.",
   "wallet.scan.title_token": "پویش ecash",
   "wallet.scan.title_invoice": "پویش صورتحساب",
-  "wallet.scan.desc_token":
-    "یک توکن Cashu از کیف پولی دیگر بخوانید. با هر کیف پول Cashu کار می‌کند، نه فقط Airhop.",
-  "wallet.scan.desc_invoice":
-    "یک صورتحساب Lightning بخوانید تا از موجودی خود بپردازیدش.",
+  "wallet.scan.title_any": "اسکن کد QR",
+  "wallet.scan.aim_any": "روی کد QR یک توکن، صورتحساب یا npub بگیرید.",
+  "wallet.scan.no_any": "در آن تصویر توکن، صورتحساب یا npub پیدا نشد.",
   "wallet.scan.use_camera_a11y": "پویش با دوربین",
   "wallet.scan.use_camera": "استفاده از دوربین",
   "wallet.scan.pick_image_a11y": "خواندن یک کد QR از تصویری ذخیره‌شده",
@@ -1373,7 +1369,7 @@ export const strings: Strings = {
     "Cashu همان ecash برای Bitcoin است. توکن رشته‌ای است که برای هر کس آن را در دست دارد ارزش پول دارد، و ضراب‌خانه آن را کورکورانه امضا می‌کند تا نتواند بگوید چه کسی چه چیزی خرج کرده است. نه حسابی، نه ورودی.",
   "wallet.explain.send": "فرستادن",
   "wallet.explain.send_desc":
-    "مبلغی را به توکنی بدل می‌کند که می‌توانید از راه بلوتوث به همتایی نزدیک بسپارید، یا به شکل متن هم‌رسانی کنید. بدون اینترنت کار می‌کند. اثبات‌ها تا وقتی رسیدنش را تأیید نکنید کنارگذاشته می‌مانند.",
+    "مبلغی را به توکنی بدل می‌کند که می‌توانید از راه بلوتوث به همتایی نزدیک بسپارید، یا به شکل متن هم‌رسانی کنید. بدون اینترنت کار می‌کند. سکه‌ها تا وقتی رسیدنش را تأیید نکنید کنارگذاشته می‌مانند.",
   "wallet.explain.receive": "گرفتن",
   "wallet.explain.receive_desc":
     "برای افزودن یک توکن، آن را بچسبانید. برخط که باشید بی‌درنگ در ضراب‌خانه تعویض می‌شود، که آن را به شکل اثبات‌پذیر از آن شما می‌کند. برون‌خط ذخیره می‌شود و تا تازه‌سازی نکنید تأییدنشده می‌ماند.",
@@ -1403,7 +1399,11 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "دسترسی به ضراب‌خانه ممکن نشد.",
   "wallet.svc.tor_ios": "روی iOS درخواست‌های ضراب‌خانه از Tor نمی‌گذرند.",
   "wallet.svc.tor_ios_body":
-    "Arti تنها WebSocket‌های Nostr را می‌پوشاند، پس این درخواست از شبکهٔ باز به ضراب‌خانه می‌رسد و نشانی IP شما را به این اثبات‌ها گره می‌زند. زیر تنظیمات > امنیت مجازش کنید، یا اول Tor را خاموش کنید. فرستادن و گرفتن ecash روی مش همچنان کار می‌کند.",
+    "Tor روی iOS تنها Nostr را پوشش می‌دهد، پس این درخواست از شبکهٔ باز به ضراب‌خانه می‌رسد و نشانی IP شما را به این ecash گره می‌زند. {setting} را در تنظیمات روشن کنید، یا اول Tor را خاموش کنید. فرستادن و گرفتن ecash روی مش همچنان کار می‌کند.",
+  "wallet.svc.internet_off":
+    "اینترنت خاموش است، پس دسترسی به ضراب‌خانه ممکن نیست.",
+  "wallet.svc.internet_off_body":
+    "{setting} را در تنظیمات روشن کنید. فرستادن و گرفتن ecash در نزدیکی همچنان کار می‌کند.",
   "wallet.svc.keys_uncached":
     "کلیدهای این ضراب‌خانه روی این دستگاه ذخیره نشده‌اند.",
   "wallet.svc.keys_uncached_body":
@@ -1417,20 +1417,24 @@ export const strings: Strings = {
   "wallet.svc.restored": "از روی عبارت بازیابی بازگردانده شد",
   "wallet.svc.storage_locked": "حافظهٔ کیف پول قفل است.",
   "wallet.svc.storage_locked_body":
-    "Airhop اثبات‌های ecash را در فایلی رمزگذاری‌شده نگه می‌دارد که کلیدش در کلیدان دستگاه است. قفل دستگاه را باز کنید و برنامه را دوباره باز کنید.",
+    "Airhop ecash شما را در فایلی رمزگذاری‌شده نگه می‌دارد که کلیدش در کلیدان دستگاه است. قفل دستگاه را باز کنید و برنامه را دوباره باز کنید.",
   "wallet.svc.bad_url": "این یک نشانی معتبر نیست.",
   "wallet.svc.needs_https": "نشانی ضراب‌خانه باید با https:// آغاز شود.",
   "wallet.svc.refuse_http":
     "از به کار بردن ضراب‌خانه روی http ساده خودداری می‌شود.",
   "wallet.svc.refuse_http_body":
-    "هر کسی سر راه شبکه می‌تواند اثبات‌های شما را بخواند یا دستکاری کند. از ضراب‌خانه‌ای با https:// استفاده کنید.",
+    "هر کسی سر راه شبکه می‌تواند ecash شما را بخواند یا دستکاری کند. از ضراب‌خانه‌ای با https:// استفاده کنید.",
   "wallet.svc.mint_not_saved": "ضراب‌خانه ذخیره نشد.",
   "wallet.svc.unreadable_token": "این یک توکن Cashu خواندنی نیست.",
   "wallet.svc.unreadable_token_body":
     "توکن‌ها با cashuA یا cashuB آغاز می‌شوند. بررسی کنید هنگام کپی چیزی بریده نشده باشد.",
+  "wallet.svc.keyset_unknown":
+    "این توکن از کلیدهای تازهٔ ضراب‌خانهٔ خود استفاده می‌کند.",
+  "wallet.svc.keyset_unknown_body":
+    "اکنون برای دریافت آن‌ها به ضراب‌خانه دسترسی نیست. چیزی از دست نرفته است: وقتی آنلاین شدید دوباره آن را دریافت کنید.",
   "wallet.svc.wrong_mint":
     "این توکن را ضراب‌خانه‌ای که نامش را می‌برد امضا نکرده است.",
-  "wallet.svc.already_spent": "این اثبات‌ها از پیش خرج شده‌اند.",
+  "wallet.svc.already_spent": "این ecash از پیش خرج شده است.",
   "wallet.svc.already_spent_body":
     "هر کس این توکن را فرستاده زودتر بازخریدش کرده، یا همان توکن را به کس دیگری هم داده است.",
   "wallet.svc.receiving_offline": "دریافت به شکل برون‌خط",
@@ -1443,7 +1447,7 @@ export const strings: Strings = {
     "یک ضراب‌خانه اضافه کنید و از راه Lightning واریز کنید، یا از کسی توکنی بگیرید.",
   "wallet.svc.split_across_mints": "موجودی شما میان چند ضراب‌خانه پخش است.",
   "wallet.svc.mint_says_spent":
-    "ضراب‌خانه این اثبات‌ها را از پیش خرج‌شده گزارش کرد.",
+    "ضراب‌خانه این ecash را از پیش خرج‌شده گزارش کرد.",
   "wallet.svc.issue_against_invoice":
     "صدور ecash در برابر یک صورتحساب Lightning",
   "wallet.svc.pay_invoice": "پرداخت یک صورتحساب Lightning",
@@ -1473,7 +1477,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "اندازهٔ این انتقال تعیین نشد.",
   "wallet.svc.insufficient_at_mint": "موجودی در {mint} کافی نیست.",
   "wallet.svc.inexact_title":
-    "اثبات‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند.",
+    "سکه‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند.",
   "wallet.svc.inexact_detail":
     "کوچک‌ترین توکنی که می‌توانید بفرستید {spend} {unit} است. برون‌خط باقیمانده‌ای در کار نیست، پس {extra} {unit} اضافی به گیرنده می‌رسد.",
   "wallet.svc.no_single_mint":
@@ -1504,10 +1508,9 @@ export const strings: Strings = {
     "مینت این واریز را صادر کرده، اما سکه‌هایش بازسازی نشدند. بازیابی از عبارت بازیابی آن‌ها را برمی‌گرداند.",
   "wallet.svc.swap_unreadable":
     "این تعویض به شکلی ذخیره شده که این نسخه نمی‌تواند دوباره اجرایش کند.",
-  "wallet.svc.lock_in_doubt":
-    "ضرابخانه پاسخ نداد، پس ممکن است این پرداخت انجام شده باشد یا نه.",
+  "wallet.svc.lock_in_doubt": "ممکن است این پرداخت انجام شده باشد یا نه.",
   "wallet.svc.lock_in_doubt_body":
-    "چیز دیگری فرستاده نشد. سکه‌ها تا پاسخ ضرابخانه نگه داشته می‌شوند. اگر انجام شده باشد، توکن قفل‌شده در «در انتظار» ظاهر می‌شود تا آن را تحویل دهید. اگر نه، سکه‌ها برمی‌گردند.",
+    "چیز دیگری فرستاده نشد. سکه‌ها تا وقتی ضراب‌خانه نتیجه را تأیید کند نگه داشته می‌شوند. اگر انجام شده باشد، توکن قفل‌شده در «فعالیت» ظاهر می‌شود تا آن را تحویل دهید. اگر نه، سکه‌ها برمی‌گردند.",
   "wallet.svc.send_spent_by_swap":
     "این سکه‌ها پیش از دریافت این توکن دوباره به کیف پول شما مبادله شدند، پس دیگر قابل دریافت نیست. مبلغ در موجودی شماست.",
 
@@ -1608,6 +1611,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "کپی شناسهٔ همتا",
   "settings.peer_id_sheet.note":
     "این تنها زمانی کار می‌کند که هر دوی شما در محدودهٔ بلوتوث باشید. برای اینکه کسی از هر جایی به شما پیام بدهد، به جایش کد QR خود را هم‌رسانی کنید.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "جستجوی تنظیمات…",
   "settings.search.a11y": "جستجوی تنظیمات",
   "settings.search.close": "بستن جستجو",
@@ -1759,6 +1764,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "پنهان کردن پیش‌نمایش اعلان‌ها",
   "settings.security.hide_previews_desc":
     "فرستنده و پیام را از صفحهٔ قفل دور نگه می‌دارد، چون آن صفحه بدون باز کردن قفل نشانشان می‌دهد",
+  "settings.security.ring_alerts": "هشدارهای زنگ",
+  "settings.security.ring_alerts_desc":
+    "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
   "settings.security.no_blocked": "همتای مسدودی نیست",
   "settings.security.no_blocked_desc":
     "همتاهای مسدود نمی‌توانند به شما پیام بدهند و در زبانهٔ مش نمایان نمی‌شوند",
@@ -1958,8 +1966,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "مصرف شبکه",
   "settings.storage.storage_usage": "مصرف حافظه",
-  "settings.storage.storage_usage_desc":
-    "پیام‌ها، اثبات‌های کیف پول و پیوست‌های ذخیره‌شده",
+  "settings.storage.storage_usage_desc": "پیام‌ها، ecash و پیوست‌های ذخیره‌شده",
   "settings.storage.session_usage":
     "این نشست · {sent} ارسال، {received} دریافت",
   "settings.storage.cache": "حافظهٔ نهان",
@@ -2048,7 +2055,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "گفتگوها، گروه‌ها و کانال‌هایی که به آن‌ها پیوسته‌اید",
   "settings.transfer.wallet": "موجودی کیف پول",
-  "settings.transfer.wallet_desc": "اثبات‌های Cashu و تاریخچهٔ تراکنش‌ها",
+  "settings.transfer.wallet_desc": "Ecash و تاریخچهٔ تراکنش‌ها",
   "settings.transfer.title": "انتقال به گوشی تازه",
   "settings.transfer.desc":
     "هویت، گفتگوها و کیف پول خود را به دستگاهی دیگر ببرید",
@@ -2080,10 +2087,9 @@ export const strings: Strings = {
     "برای پاک کردن بی‌درنگ و بدون تأیید، سه بار بزنید",
   "settings.wipe.title": "پاک‌سازی اضطراری",
   "settings.wipe.now": "همین حالا پاک کن",
-  "settings.wipe.desc":
-    "بی‌درنگ همهٔ کلیدها، پیام‌ها و اثبات‌ها را نابود می‌کند",
+  "settings.wipe.desc": "بی‌درنگ همهٔ کلیدها، پیام‌ها و ecash را نابود می‌کند",
   "settings.wipe.body":
-    "این کار بی‌درنگ همهٔ کلیدها، پیام‌ها و اثبات‌های کیف پول شما را نابود می‌کند. این کار برگشت‌پذیر نیست.",
+    "این کار بی‌درنگ همهٔ کلیدها، پیام‌ها و ecash شما را نابود می‌کند. این کار برگشت‌پذیر نیست.",
   "settings.wipe.in_progress": "در حال پاک کردن",
   "settings.wipe.in_progress_body":
     "کلیدها، پیام‌ها و فایل‌های شما نابود می‌شوند. چند ثانیه طول می‌کشد، و اگر برنامه بسته شود خودش تا پایان می‌رود.",
@@ -2185,6 +2191,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "همتاهای نزدیک",
   "notif.channel.nearby_desc":
     "هر از گاهی وقتی مش کسانی را در محدودهٔ بلوتوث پیدا می‌کند خبر می‌دهد.",
+  "notif.channel.ring": "زنگ",
+  "notif.channel.ring_desc":
+    "هشدار از مخاطبانی که اجازهٔ زنگ زدن به آن‌ها داده‌اید.",
   "notif.nearby.body": "همین حالا در محدودهٔ بلوتوث. برای باز کردن مش بزنید.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "کسی",
@@ -2201,6 +2210,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "فعالیت تازه",
   "notif.hidden.mention": "از شما نام برده شد",
   "notif.mention.title": "{sender} از شما نام برد",
+  "notif.ring.hidden": "زنگ",
+  "notif.ring.title": "{sender} برای شما زنگ می‌زند",
+  "notif.ring.body": "پیام‌هایتان را بررسی کنید",
 };
 
 export const plurals: Plurals = {
@@ -2275,14 +2287,10 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ضراب‌خانه",
-    other: "{count} ضراب‌خانه",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} مبلغ {balance} {unit} را در {count} اثبات نگه داشته است. با حذف آن، آن اثبات برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
+    one: "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، آن سکه برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
     other:
-      "{mint} مبلغ {balance} {unit} را در {count} اثبات نگه داشته است. با حذف آن، آن اثبات‌ها برای همیشه از این دستگاه پاک می‌شوند و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
+      "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، آن سکه‌ها برای همیشه از این دستگاه پاک می‌شوند و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2294,8 +2302,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{count} اثبات خرج‌نشده از {mints} بازیابی شد.",
-    other: "{count} اثبات خرج‌نشده از {mints} بازیابی شد.",
+    one: "{count} سکهٔ خرج‌نشده از {mints} بازیابی شد.",
+    other: "{count} سکهٔ خرج‌نشده از {mints} بازیابی شد.",
   },
   "wallet.backup.already_spent": {
     one: "{count} سکه پیدا شد اما قبلاً خرج شده بود، بنابراین چیزی به موجودی اضافه نشد. این طبیعی است: هر سکه‌ای که تا به حال خرج کرده‌اید همچنان در سوابق ضراب‌خانه می‌ماند.",
@@ -2316,13 +2324,9 @@ export const plurals: Plurals = {
     one: "{count} تأییدنشده",
     other: "{count} تأییدنشده",
   },
-  "wallet.proof_count": {
-    one: "{count} اثبات",
-    other: "{count} اثبات",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} اثبات قبلاً خرج شده بود و حذف شد.",
-    other: "{count} اثبات قبلاً خرج شده بودند و حذف شدند.",
+    one: "{count} سکه قبلاً خرج شده بود و حذف شد.",
+    other: "{count} سکه قبلاً خرج شده بودند و حذف شدند.",
   },
 
   // ---- System notifications ----

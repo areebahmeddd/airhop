@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ਰੱਦ ਕਰੋ",
-  "common.done": "ਹੋ ਗਿਆ",
-  "common.ok": "ਠੀਕ ਹੈ",
-  "common.close": "ਬੰਦ ਕਰੋ",
   "common.back": "ਵਾਪਸ",
-  "common.delete": "ਮਿਟਾਓ",
-  "common.remove": "ਹਟਾਓ",
+  "common.close": "ਬੰਦ ਕਰੋ",
+  "common.cancel": "ਰੱਦ ਕਰੋ",
+  "common.ok": "ਠੀਕ ਹੈ",
+  "common.done": "ਹੋ ਗਿਆ",
+  "common.continue": "ਜਾਰੀ ਰੱਖੋ",
+  "common.try_again": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
   "common.add": "ਜੋੜੋ",
+  "common.remove": "ਹਟਾਓ",
+  "common.delete": "ਮਿਟਾਓ",
   "common.copy": "ਨਕਲ ਕਰੋ",
   "common.copied": "ਨਕਲ ਹੋ ਗਿਆ",
   "common.share": "ਸਾਂਝਾ ਕਰੋ",
-  "common.continue": "ਜਾਰੀ ਰੱਖੋ",
-  "common.try_again": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
   "common.settings": "ਸੈਟਿੰਗਾਂ",
   "common.on": "ਚਾਲੂ",
   "common.off": "ਬੰਦ",
@@ -101,7 +101,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "ਖਾਤਾ ਲੋੜੀਂਦਾ",
   "onboarding.username.prop.account_value": "ਕੋਈ ਨਹੀਂ",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ!",
   "onboarding.hello.p1":
     "Airhop bitchat ਦੇ ਉੱਤੇ ਇੱਕ ਵੱਖਰੇ, ਖੁੱਲ੍ਹੇ ਸਰੋਤ ਵਾਲੇ ਪਾਸੇ ਦੇ ਪ੍ਰੋਜੈਕਟ ਵਜੋਂ ਬਣਾਇਆ ਗਿਆ ਹੈ। ਇਹ ਨਾ bitchat ਪ੍ਰੋਜੈਕਟ ਨਾਲ ਜੁੜਿਆ ਹੋਇਆ ਹੈ ਨਾ ਉਸ ਵੱਲੋਂ ਪਰਵਾਨ, ਅਤੇ ਨਾ ਹੀ ਇਹ ਕਿਸੇ ਮੌਜੂਦਾ ਐਪ ਜਾਂ ਸੇਵਾ ਦੀ ਨਕਲ ਹੈ, ਬੱਸ ਕੁਝ ਅਜਿਹਾ ਹੈ ਜੋ ਬਣਾਉਣਾ ਅਤੇ ਭਾਈਚਾਰੇ ਨਾਲ ਸਾਂਝਾ ਕਰਨਾ ਮੈਨੂੰ ਚੰਗਾ ਲੱਗਦਾ ਹੈ।",
@@ -304,6 +304,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "ਉਹਨਾਂ ਨੂੰ ਹਟਾਇਆ ਨਹੀਂ ਜਾ ਸਕਿਆ",
   "chat.group.remove_failed_body":
     "ਕੁਝ ਨਹੀਂ ਬਦਲਿਆ। ਗਰੁੱਪ ਵਿੱਚ ਕੌਣ ਹੈ, ਇਹ ਸਿਰਫ਼ ਗਰੁੱਪ ਬਣਾਉਣ ਵਾਲਾ ਹੀ ਬਦਲ ਸਕਦਾ ਹੈ।",
+  "chat.group.leave_creator_body":
+    "{name} ਛੱਡਣਾ ਹੈ? ਇਹ ਗਰੁੱਪ ਤੁਸੀਂ ਬਣਾਇਆ ਹੈ, ਅਤੇ ਸਿਰਫ਼ ਬਣਾਉਣ ਵਾਲਾ ਹੀ ਮੈਂਬਰ ਜੋੜ ਜਾਂ ਹਟਾ ਸਕਦਾ ਹੈ, ਇਸ ਲਈ ਤੁਹਾਡੇ ਛੱਡਣ ਤੋਂ ਬਾਅਦ ਕੋਈ ਵੀ ਅਜਿਹਾ ਨਹੀਂ ਕਰ ਸਕੇਗਾ। ਇਸ ਦਾ ਇਤਿਹਾਸ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
   "chat.group.e2ee":
     "ਸਿਰੇ ਤੋਂ ਸਿਰੇ ਤੱਕ ਇਨਕ੍ਰਿਪਟਡ। ਸੁਨੇਹੇ ਸਿਰਫ਼ ਮੈਂਬਰ ਹੀ ਪੜ੍ਹ ਸਕਦੇ ਹਨ।",
   "chat.group.cap":
@@ -520,37 +522,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "ਦੱਖਣ-ਪੱਛਮ",
   "chat.location.direction.w": "ਪੱਛਮ",
   "chat.location.direction.nw": "ਉੱਤਰ-ਪੱਛਮ",
-  "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "ਘੰਟੀ ਵਜਾਈ",
   "chat.ring.received_summary": "ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਈ",
   "chat.ring.alert.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
   "chat.ring.alert.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
   "chat.ring.alert.open": "ਖੋਲ੍ਹੋ",
   "chat.ring.alert.snooze": "1 ਘੰਟੇ ਲਈ ਰੋਕੋ",
-  "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
-  "chat.contact.allow_ring_desc":
-    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
-  "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
-  "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
   "chat.ring.sent_snoozed": "ਘੰਟੀ ਵਜਾਈ, ਟਾਲੀ ਗਈ",
   "chat.ring.sent_too_soon": "ਘੰਟੀ ਵਜਾਈ, ਬਹੁਤ ਜਲਦੀ",
   "chat.ring.sent_not_allowed": "ਘੰਟੀ ਵਜਾਈ, ਇਜਾਜ਼ਤ ਨਹੀਂ",
-  "chat.contact.ring_hint_nearby":
-    "ਘੰਟੀ ਸਿਰਫ਼ ਉਦੋਂ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ",
-  "chat.contact.ring_hint_not_allowed":
-    "ਉਹਨਾਂ ਨੇ ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ",
-  "chat.contact.ring_hint_snoozed": "ਉਹਨਾਂ ਨੇ ਫ਼ਿਲਹਾਲ ਘੰਟੀਆਂ ਟਾਲ ਦਿੱਤੀਆਂ ਹਨ",
-  "chat.contact.ring_hint_too_soon": "ਉਹਨਾਂ ਨੂੰ ਹੁਣੇ ਹੀ ਘੰਟੀ ਵਜਾਈ ਗਈ ਸੀ",
-  "chat.contact.ring_hint_again_in": "{time} ਵਿੱਚ ਦੁਬਾਰਾ ਘੰਟੀ ਵਜਾਓ",
-  "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
-  "settings.security.ring_alerts_desc":
-    "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",
-  "notif.channel.ring": "ਘੰਟੀ",
-  "notif.channel.ring_desc":
-    "ਉਹਨਾਂ ਸੰਪਰਕਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਜਿਨ੍ਹਾਂ ਨੂੰ ਤੁਸੀਂ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ।",
-  "notif.ring.hidden": "ਘੰਟੀ",
-  "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
-  "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
+  "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
   "chat.attach.bitchat_too_big": "ਸ਼ਾਇਦ ਇਹ ਨਾ ਪਹੁੰਚੇ",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat ’ਤੇ ਹਨ, ਜੋ ਵੱਡੀ ਫ਼ਾਈਲ ਵਿਚਕਾਰੋਂ ਹੀ ਛੱਡ ਦਿੰਦਾ ਹੈ। ਲਗਭਗ 350 KiB ਤੋਂ ਘੱਟ ਭਰੋਸੇਯੋਗ ਹੈ। ਕਿਸੇ Airhop ਸੰਪਰਕ ਨੂੰ ਭੇਜਣ ’ਤੇ ਅਜਿਹੀ ਕੋਈ ਹੱਦ ਨਹੀਂ ਹੁੰਦੀ।",
@@ -646,7 +629,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit} ਪ੍ਰਾਪਤ ਕਰੋ",
   "chat.ecash.already_claimed": "ਪਹਿਲਾਂ ਹੀ ਪ੍ਰਾਪਤ ਕੀਤਾ",
   "chat.ecash.already_claimed_body":
-    "ਇਸ ਟੋਕਨ ਦਾ ਹਰ ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ ਹੈ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ।",
+    "ਇਸ ਟੋਕਨ ਵਿੱਚ ਜੋ ਕੁਝ ਹੈ ਉਹ ਸਭ ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ ਹੈ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ।",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -741,6 +724,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਿੱਤਾ ਨਾਂ",
   "chat.contact.copy_peer_id": "ਪੀਅਰ ID ਨਕਲ ਕਰੋ",
   "chat.contact.verify": "ਸੰਪਰਕ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+  "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
+  "chat.contact.allow_ring_desc":
+    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
+  "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
+  "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
+  "chat.contact.ring_hint_nearby":
+    "ਘੰਟੀ ਸਿਰਫ਼ ਉਦੋਂ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ",
+  "chat.contact.ring_hint_not_allowed":
+    "ਉਹਨਾਂ ਨੇ ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ",
+  "chat.contact.ring_hint_snoozed": "ਉਹਨਾਂ ਨੇ ਫ਼ਿਲਹਾਲ ਘੰਟੀਆਂ ਟਾਲ ਦਿੱਤੀਆਂ ਹਨ",
+  "chat.contact.ring_hint_too_soon": "ਉਹਨਾਂ ਨੂੰ ਹੁਣੇ ਹੀ ਘੰਟੀ ਵਜਾਈ ਗਈ ਸੀ",
+  "chat.contact.ring_hint_again_in": "{time} ਵਿੱਚ ਦੁਬਾਰਾ ਘੰਟੀ ਵਜਾਓ",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "ਨੋਟਿਸ",
@@ -937,29 +932,46 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "ਸਾਤੋਸ਼ੀ ਅਤੇ ਬਿਟਕੌਇਨ ਵਿਚਕਾਰ ਬਦਲਦਾ ਹੈ",
   "wallet.balance.a11y": "ਬੈਲੰਸ {value} {unit}",
   "wallet.balance.locked":
-    "ਵਾਲਿਟ ਦਾ ਭੰਡਾਰ ਲਾਕ ਹੈ। ecash ਪਰੂਫ਼ ਇੱਕ ਇਨਕ੍ਰਿਪਟਡ ਫ਼ਾਈਲ ਵਿੱਚ ਰੱਖੇ ਜਾਂਦੇ ਹਨ ਜਿਸ ਦੀ ਕੁੰਜੀ ਡੀਵਾਈਸ ਦੀ ਕੀਚੇਨ ਵਿੱਚ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਇਹ ਖੁੱਲ੍ਹ ਨਹੀਂ ਸਕੀ। ਆਪਣਾ ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ Airhop ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
+    "ਵਾਲਿਟ ਦਾ ਭੰਡਾਰ ਲਾਕ ਹੈ। ਤੁਹਾਡਾ ecash ਇੱਕ ਇਨਕ੍ਰਿਪਟਡ ਫ਼ਾਈਲ ਵਿੱਚ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ ਜਿਸ ਦੀ ਕੁੰਜੀ ਡੀਵਾਈਸ ਦੀ ਕੀਚੇਨ ਵਿੱਚ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਇਹ ਖੁੱਲ੍ਹ ਨਹੀਂ ਸਕੀ। ਆਪਣਾ ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ Airhop ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
   "wallet.balance.tor_blocked":
-    "Tor ਚਾਲੂ ਹੈ, ਇਸ ਲਈ ਮਿੰਟ ਦੀਆਂ ਬੇਨਤੀਆਂ ਰੋਕ ਦਿੱਤੀਆਂ ਗਈਆਂ ਹਨ: ਇਹ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਜਾਣਗੀਆਂ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਤੁਹਾਡੇ ਪਰੂਫ਼ਾਂ ਨਾਲ ਜੋੜ ਦੇਣਗੀਆਂ। ਮੈਸ਼ ’ਤੇ ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ। ਸੈਟਿੰਗਾਂ, ਸੁਰੱਖਿਆ ਵਿੱਚੋਂ ਮਿੰਟ ਦੀ ਆਵਾਜਾਈ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।",
+    "Tor ਚਾਲੂ ਹੈ, ਇਸ ਲਈ ਮਿੰਟ ਦੀਆਂ ਬੇਨਤੀਆਂ ਰੋਕ ਦਿੱਤੀਆਂ ਗਈਆਂ ਹਨ: ਇਹ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਜਾਣਗੀਆਂ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਤੁਹਾਡੇ ecash ਨਾਲ ਜੋੜ ਦੇਣਗੀਆਂ। ਮੈਸ਼ ’ਤੇ ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ। ਇਸ ਦੇ ਬਾਵਜੂਦ ਮਿੰਟ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ।",
+  "wallet.balance.offline":
+    "ਔਫਲਾਈਨ। ਤੁਸੀਂ ਹਾਲੇ ਵੀ ਨੇੜਲੇ ਲੋਕਾਂ ਨੂੰ ਭੁਗਤਾਨ ਕਰ ਸਕਦੇ ਹੋ ਅਤੇ ਟੋਕਨ ਭੇਜ ਸਕਦੇ ਹੋ।",
+  "wallet.balance.internet_off":
+    "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ, ਇਸ ਲਈ ਵਾਲਿਟ ਸਿਰਫ਼ ਨੇੜੇ ਕੰਮ ਕਰਦਾ ਹੈ। ਮਿੰਟ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ।",
   "wallet.balance.unconfirmed_note": "{amount} ਹਾਲੇ ਮਿੰਟ ਨਾਲ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਇਆ",
   "wallet.balance.reserved_note": "{amount} ਰਾਹ ਵਿੱਚ ਪਏ ਭੇਜਣ ਲਈ ਰਾਖਵਾਂ",
   "wallet.balance.other_mint_note": "{amount} ਇੱਕ ਵੱਖਰੇ ਮਿੰਟ ਖਾਤੇ ’ਤੇ",
   "wallet.balance.test_mint_note":
     "ਇਸ ਵਿੱਚ ਟੈਸਟ ਮਿੰਟ ਦਾ ਖੇਡ ਵਾਲਾ ਪੈਸਾ ਸ਼ਾਮਲ ਹੈ। ਇਹ ਬਿਟਕੌਇਨ ਨਹੀਂ ਹੈ ਅਤੇ ਕਢਵਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।",
   "wallet.token": "ਟੋਕਨ",
-  "wallet.action.send": "ecash ਟੋਕਨ ਭੇਜੋ",
   "wallet.action.send_disabled": "ecash ਟੋਕਨ ਭੇਜੋ, ਖ਼ਾਲੀ ਬੈਲੰਸ ਨਾਲ ਉਪਲਬਧ ਨਹੀਂ",
-  "wallet.action.receive": "ecash ਟੋਕਨ ਲਵੋ",
-  "wallet.action.zap": "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਕਰੋ",
-  "wallet.action.zap_disabled":
-    "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਕਰੋ, ਖ਼ਾਲੀ ਬੈਲੰਸ ਨਾਲ ਉਪਲਬਧ ਨਹੀਂ",
-  "wallet.action.add_mint": "Cashu ਮਿੰਟ ਜੋੜੋ",
+  "wallet.action.scan": "ਸਕੈਨ",
+  "wallet.action.scan_a11y": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਸਕੈਨ ਕਰੋ",
+  "wallet.choose.paste": "ਟੋਕਨ ਪੇਸਟ ਕਰੋ",
+  "wallet.choose.paste_desc": "ਔਫਲਾਈਨ ਵੀ ਚੱਲਦਾ ਹੈ",
+  "wallet.choose.scan": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
+  "wallet.choose.scan_desc": "ਕਿਸੇ ਵੀ ਵਾਲਿਟ ਦਾ Cashu ਟੋਕਨ",
+  "wallet.choose.topup": "Lightning ਨਾਲ ਟੌਪ ਅੱਪ",
+  "wallet.choose.topup_desc":
+    "ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਤੋਂ ਇਨਵੌਇਸ ਦਾ ਭੁਗਤਾਨ ਕਰੋ",
+  "wallet.choose.token": "ਟੋਕਨ ਬਣਾਓ",
+  "wallet.choose.token_desc": "ਸਾਂਝਾ ਕਰੋ ਜਾਂ QR ਕੋਡ ਦਿਖਾਓ, ਔਫਲਾਈਨ ਵੀ",
+  "wallet.choose.zap": "ਕਿਸੇ Nostr ਸੰਪਰਕ ਨੂੰ zap ਭੇਜੋ",
+  "wallet.choose.zap_desc": "ਉਹਨਾਂ ਦੇ npub ਨੂੰ, ਇੰਟਰਨੈੱਟ ਰਾਹੀਂ",
+  "wallet.choose.invoice": "Lightning ਇਨਵੌਇਸ ਦਾ ਭੁਗਤਾਨ ਕਰੋ",
+  "wallet.choose.invoice_desc": "ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਵਿੱਚ ਕਢਵਾਓ",
+  "wallet.choose.tor_paused": "Tor ਚਾਲੂ ਹੋਣ ਤੱਕ ਰੁਕਿਆ ਹੋਇਆ",
+  "wallet.choose.offline": "ਇੰਟਰਨੈੱਟ ਚਾਹੀਦਾ ਹੈ",
+  "wallet.choose.internet_off": "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ",
+  "wallet.choose.needs_mint": "ਪਹਿਲਾਂ ਇੱਕ ਮਿੰਟ ਜੋੜੋ",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ਟੋਕਨ ਨਹੀਂ ਬਣ ਸਕਿਆ",
   "wallet.send.title": "ecash ਭੇਜੋ",
   "wallet.send.amount_in": "{unit} ਵਿੱਚ ਰਕਮ",
   "wallet.send.body":
-    "ਤੁਹਾਡੇ ਕੋਲ ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਪਰੂਫ਼ਾਂ ਤੋਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਣਾਇਆ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਟੋਕਨ ਦੇ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚੋਂ ਕੁਝ ਵੀ ਪੱਕੇ ਤੌਰ ’ਤੇ ਨਹੀਂ ਜਾਂਦਾ।",
+    "ਤੁਹਾਡੇ ਕੋਲ ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ecash ਤੋਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਣਾਇਆ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਟੋਕਨ ਦੇ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚੋਂ ਕੁਝ ਵੀ ਪੱਕੇ ਤੌਰ ’ਤੇ ਨਹੀਂ ਜਾਂਦਾ।",
   "wallet.send.stale_fee_note":
     "ਫ਼ੀਸਾਂ ਆਖ਼ਰੀ ਵਾਰ {days} ਦਿਨ ਪਹਿਲਾਂ ਦੇਖੀਆਂ ਗਈਆਂ ਸਨ। ਜੇ ਇਸ ਮਿੰਟ ਨੇ ਉਦੋਂ ਤੋਂ ਆਪਣੀ ਫ਼ੀਸ ਵਧਾ ਦਿੱਤੀ ਹੈ ਤਾਂ ਭੇਜਣਾ ਥੋੜ੍ਹਾ ਮਹਿੰਗਾ ਪੈ ਸਕਦਾ ਹੈ।",
   "wallet.send.fee_note":
@@ -967,7 +979,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "ਇਹ ਟੋਕਨ ਇੰਨੇ ਸਿੱਕਿਆਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ ਕਿ QR ਕੋਡ ਵਿੱਚ ਨਹੀਂ ਸਮਾਉਂਦਾ। ਇਸ ਦੀ ਥਾਂ ਇਸ ਨੂੰ ਸਾਂਝਾ ਜਾਂ ਨਕਲ ਕਰੋ, ਜਾਂ ਇਕੱਠਾ ਕਰਨ ਲਈ ਮਿੰਟ ’ਤੇ ਤਾਜ਼ਾ ਕਰੋ।",
   "wallet.send.bearer_note":
-    "ਜਿਸ ਕੋਲ ਵੀ ਇਹ ਲਕੀਰ ਹੈ, ਪੈਸਾ ਉਸ ਦਾ ਹੈ। ਪਰੂਫ਼ ਰਾਖਵੇਂ ਹਨ, ਖ਼ਰਚੇ ਨਹੀਂ ਗਏ: ਜੇ ਇਹ ਕਿਸੇ ਤੱਕ ਨਾ ਪਹੁੰਚਿਆ ਤਾਂ ਤੁਸੀਂ ਇਹਨਾਂ ਨੂੰ ਬਕਾਇਆ ਹੇਠੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
+    "ਜਿਸ ਕੋਲ ਵੀ ਇਹ ਲਕੀਰ ਹੈ, ਪੈਸਾ ਉਸ ਦਾ ਹੈ। ਸਿੱਕੇ ਰਾਖਵੇਂ ਹਨ, ਖ਼ਰਚੇ ਨਹੀਂ ਗਏ: ਜੇ ਇਹ ਕਿਸੇ ਤੱਕ ਨਾ ਪਹੁੰਚਿਆ ਤਾਂ ਤੁਸੀਂ ਇਹਨਾਂ ਨੂੰ ਸਰਗਰਮੀ ਹੇਠੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
   "wallet.send.qr_too_big_short":
     "ਇਹ ਟੋਕਨ ਇੰਨੇ ਸਿੱਕਿਆਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ ਕਿ QR ਕੋਡ ਵਿੱਚ ਨਹੀਂ ਸਮਾਉਂਦਾ। ਇਸ ਦੀ ਥਾਂ ਇਸ ਨੂੰ ਸਾਂਝਾ ਜਾਂ ਨਕਲ ਕਰੋ।",
   "wallet.send.scan_note":
@@ -981,11 +993,11 @@ export const strings: Strings = {
   "wallet.send.building": "ਬਣਾ ਰਹੇ ਹਾਂ…",
   "wallet.send.build": "ਟੋਕਨ ਬਣਾਓ",
   "wallet.send.inexact_body":
-    "ਤੁਹਾਡੇ ਪਰੂਫ਼ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ। ਸਭ ਤੋਂ ਛੋਟਾ ਟੋਕਨ ਜੋ ਤੁਸੀਂ ਬਣਾ ਸਕਦੇ ਹੋ ਉਹ {spend} {unit} ਹੈ, ਅਤੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਕੋਈ ਬਾਕੀ ਨਹੀਂ ਮੁੜਦਾ: ਵਾਧੂ {extra} {unit} ਲੈਣ ਵਾਲੇ ਨੂੰ ਚਲੇ ਜਾਂਦੇ ਹਨ।\n\nਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਮਿੰਟ ’ਤੇ ਤਾਜ਼ਾ ਕਰਨ ਨਾਲ ਤੁਹਾਡੇ ਪਰੂਫ਼ ਅਜਿਹੇ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡ ਜਾਣਗੇ ਜੋ ਇਹ ਰਕਮ ਠੀਕ ਬਣਾ ਦੇਣ।",
+    "ਤੁਹਾਡੇ ਸਿੱਕੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ। ਸਭ ਤੋਂ ਛੋਟਾ ਟੋਕਨ ਜੋ ਤੁਸੀਂ ਬਣਾ ਸਕਦੇ ਹੋ ਉਹ {spend} {unit} ਹੈ, ਅਤੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਕੋਈ ਬਾਕੀ ਨਹੀਂ ਮੁੜਦਾ: ਵਾਧੂ {extra} {unit} ਲੈਣ ਵਾਲੇ ਨੂੰ ਚਲੇ ਜਾਂਦੇ ਹਨ।\n\nਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਮਿੰਟ ’ਤੇ ਤਾਜ਼ਾ ਕਰਨ ਨਾਲ ਤੁਹਾਡੇ ਸਿੱਕੇ ਅਜਿਹੇ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡ ਜਾਣਗੇ ਜੋ ਇਹ ਰਕਮ ਠੀਕ ਬਣਾ ਦੇਣ।",
   "wallet.send.send_amount": "{amount} ਭੇਜੋ",
   "wallet.send.sent_to": "{amount} {unit} {name} ਨੂੰ ਭੇਜੇ",
   "wallet.send.sent_to_body":
-    "{route} ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ ਕਿ ਉਹਨਾਂ ਨੂੰ ਮਿਲ ਗਿਆ, ਜਾਂ ਮਿੰਟ ਸਾਨੂੰ ਇਹ ਨਹੀਂ ਦੱਸਦਾ ਕਿ ਪਰੂਫ਼ ਭੁਨਾ ਲਏ ਗਏ, ਇਹ ਬਕਾਇਆ ਹੇਠ ਵਾਪਸ ਲੈਣਯੋਗ ਰਹਿੰਦਾ ਹੈ।",
+    "{route} ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ ਕਿ ਉਹਨਾਂ ਨੂੰ ਮਿਲ ਗਿਆ, ਜਾਂ ਮਿੰਟ ਸਾਨੂੰ ਇਹ ਨਹੀਂ ਦੱਸਦਾ ਕਿ ਟੋਕਨ ਭੁਨਾ ਲਿਆ ਗਿਆ, ਇਹ ਸਰਗਰਮੀ ਹੇਠ ਵਾਪਸ ਲੈਣਯੋਗ ਰਹਿੰਦਾ ਹੈ।",
   "wallet.send.copy_token": "ਟੋਕਨ ਨਕਲ ਕਰੋ",
   "wallet.send.share_token": "ਟੋਕਨ ਸਾਂਝਾ ਕਰੋ",
   "wallet.send.open_in_wallet": "ਇਹ ਟੋਕਨ ਕਿਸੇ ਹੋਰ ਵਾਲਿਟ ਵਿੱਚ ਖੋਲ੍ਹੋ",
@@ -1004,12 +1016,12 @@ export const strings: Strings = {
     "ਇਹ ਸਿੱਕੇ ਹਾਲੇ ਵੀ ਉਸ ਭੇਜਣ ਲਈ ਰਾਖਵੇਂ ਹਨ ਜੋ ਤੁਸੀਂ ਨਿਬੇੜਿਆ ਨਹੀਂ, ਇਸ ਲਈ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਕੁਝ ਨਹੀਂ ਹੈ। ਇਹਨਾਂ ਨੂੰ ਸਿੱਧਾ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਪਾਉਣ ਲਈ ਉਸ ਭੁਗਤਾਨ ’ਤੇ ਵਾਪਸ ਲਵੋ ਵਰਤੋ।",
   "wallet.receive.already_have": "ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ",
   "wallet.receive.already_have_body":
-    "ਇਸ ਟੋਕਨ ਦਾ ਹਰ ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਇੱਥੇ ਸੰਭਾਲਿਆ ਹੋਇਆ ਹੈ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਬੈਲੰਸ ਉਵੇਂ ਦਾ ਉਵੇਂ ਹੈ।",
+    "ਇਸ ਟੋਕਨ ਵਿੱਚ ਜੋ ਕੁਝ ਹੈ ਉਹ ਸਭ ਪਹਿਲਾਂ ਹੀ ਇੱਥੇ ਸੰਭਾਲਿਆ ਹੋਇਆ ਹੈ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਬੈਲੰਸ ਉਵੇਂ ਦਾ ਉਵੇਂ ਹੈ।",
   "wallet.receive.stored_unconfirmed":
     "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਹਾਲੇ ਮਿੰਟ ਨਾਲ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ ({reason})।",
   "wallet.receive.offline": "ਆਫ਼ਲਾਈਨ",
   "wallet.receive.redeemed_here":
-    "{mint} ’ਤੇ ਭੁਨਾ ਲਿਆ। ਇਹ ਪਰੂਫ਼ ਹੁਣ ਸਿਰਫ਼ ਤੁਹਾਡੇ ਹਨ: ਭੇਜਣ ਵਾਲੇ ਦੀ ਕਾਪੀ ਹੁਣ ਕੰਮ ਨਹੀਂ ਕਰਦੀ।",
+    "{mint} ’ਤੇ ਭੁਨਾ ਲਿਆ। ਇਹ ecash ਹੁਣ ਸਿਰਫ਼ ਤੁਹਾਡਾ ਹੈ: ਭੇਜਣ ਵਾਲੇ ਦੀ ਕਾਪੀ ਹੁਣ ਕੰਮ ਨਹੀਂ ਕਰਦੀ।",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "{mint} ’ਤੇ ਭੁਨਾ ਲਿਆ। ਹੁਣ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਹੈ: ਭੇਜਣ ਵਾਲੇ ਕੋਲ ਇਸ ਟੋਕਨ ਦੀ ਕਾਪੀ ਹੁਣ ਕੰਮ ਨਹੀਂ ਕਰਦੀ।",
@@ -1062,9 +1074,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "{mint} ਨੂੰ ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ ਹਟਾਉਣਾ ਹੈ? ਇਸ ਦੀਆਂ ਕੈਸ਼ ਕੀਤੀਆਂ ਕੁੰਜੀਆਂ ਵੀ ਚਲੀਆਂ ਜਾਣਗੀਆਂ, ਇਸ ਲਈ ਇਸ ਦੇ ਟੋਕਨਾਂ ਦੀ ਪੁਸ਼ਟੀ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਨਹੀਂ ਹੋ ਸਕੇਗੀ।",
   "wallet.mint.title": "ਮਿੰਟ",
-  "wallet.mint.none": "ਹਾਲੇ ਕੋਈ ਮਿੰਟ ਨਹੀਂ",
   "wallet.mint.none_desc":
-    "ਮਿੰਟ ਤੁਹਾਡਾ ecash ਜਾਰੀ ਕਰਦਾ ਅਤੇ ਭੁਨਾਉਂਦਾ ਹੈ। Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰਨ ਲਈ ਇੱਕ ਜੋੜੋ, ਜਾਂ ਬੱਸ ਕੋਈ ਟੋਕਨ ਲਵੋ ਅਤੇ ਇਸ ਦਾ ਮਿੰਟ ਤੁਹਾਡੇ ਲਈ ਆਪੇ ਜੁੜ ਜਾਂਦਾ ਹੈ।",
+    "ਮਿੰਟ ਤੁਹਾਡਾ ecash ਜਾਰੀ ਕਰਦਾ ਅਤੇ ਭੁਨਾਉਂਦਾ ਹੈ। Lightning ਨਾਲ ਟੌਪ ਅੱਪ ਕਰਨ ਜਾਂ ਉਸਦੇ ਟੋਕਨ ਲੈਣ ਲਈ ਇੱਕ ਜੋੜੋ।",
   "wallet.mint.add": "ਮਿੰਟ ਜੋੜੋ",
   "wallet.mint.add_body":
     "ਮਿੰਟ ਤੁਹਾਡੇ ecash ਦੇ ਪਿੱਛੇ ਦਾ ਬਿਟਕੌਇਨ ਰੱਖਦਾ ਹੈ, ਇਸ ਲਈ ਉਹੀ ਚੁਣੋ ਜਿਸ ’ਤੇ ਤੁਸੀਂ ਉੱਥੇ ਰੱਖੇ ਬੈਲੰਸ ਦਾ ਭਰੋਸਾ ਕਰ ਸਕੋ। ਸੰਭਾਲਣ ਤੋਂ ਪਹਿਲਾਂ URL ਜਾਂਚਿਆ ਜਾਂਦਾ ਹੈ। ਜੇ ਤੁਸੀਂ ਕਿਸੇ ’ਤੇ ਭਰੋਸਾ ਨਹੀਂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਤਾਂ Nutshell ਨਾਲ ਆਪਣਾ ਚਲਾਓ।",
@@ -1076,8 +1087,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "ਮਿੰਟ ਹਟਾਓ",
   "wallet.mint.delete_anyway": "ਫਿਰ ਵੀ ਮਿਟਾਓ",
   "wallet.mint.consolidate": "ਸਾਰੇ ਬੈਲੰਸ ਇੱਕ ਮਿੰਟ ’ਤੇ ਲੈ ਜਾਓ",
-  "wallet.mint.confirm_with": "{mint} ਨਾਲ ਪਰੂਫ਼ਾਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
-  "wallet.mint.remove_a11y": "{mint} ਹਟਾਓ",
+  "wallet.mint.confirm_with": "{mint} ਨਾਲ ਬਕਾਇਆ ਜਾਂਚੋ",
   "wallet.mint.available_amount": "{amount} {unit} ਉਪਲਬਧ",
   "wallet.mint.split_across":
     "ਬੈਲੰਸ {count} ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ। ਇਸ ਨੂੰ ਇੱਕ ’ਤੇ ਲੈ ਜਾਓ।",
@@ -1104,13 +1114,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "ਇਨਵੌਇਸ ਭਰ ਦਿੱਤਾ ਗਿਆ ਅਤੇ {mint} ਨੇ {amount} {unit} ਜਾਰੀ ਕੀਤੇ। ਇਹ ਬੈਲੰਸ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਹੈ: ਤੁਸੀਂ ਇਸ ਨੂੰ ਹੁਣੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਖ਼ਰਚ ਸਕਦੇ ਹੋ।",
   "wallet.ln.withdrawn":
-    "{paid} sats Lightning ’ਤੇ ਭੇਜੇ ਗਏ। ਮਿੰਟ ਨੇ {fee} sats ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਲਈ।",
+    "{amount} {unit} Lightning ’ਤੇ ਭੇਜੇ ਗਏ। ਮਿੰਟ ਨੇ {fee} {unit} ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਲਈ।",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats Lightning ’ਤੇ ਭੇਜੇ ਗਏ। ਮਿੰਟ ਨੇ {fee} sats ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਲਈ, ਅਤੇ ਰਾਖਵੇਂ ਵਿੱਚੋਂ {change} sats ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਪਾ ਦਿੱਤੇ।",
+    "{amount} {unit} Lightning ’ਤੇ ਭੇਜੇ ਗਏ। ਮਿੰਟ ਨੇ {fee} {unit} ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਲਈ, ਅਤੇ ਰਾਖਵੇਂ ਵਿੱਚੋਂ {change} {unit} ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਪਾ ਦਿੱਤੇ।",
   "wallet.ln.payment_failed": "ਭੁਗਤਾਨ ਅਸਫਲ",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Lightning sats ਨੂੰ ਅਜਿਹੇ ecash ਵਿੱਚ ਬਦਲੋ ਜੋ ਤੁਸੀਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਖ਼ਰਚ ਸਕੋ, ਜਾਂ ecash ਨੂੰ ਕਿਸੇ ਵੀ Lightning ਇਨਵੌਇਸ ’ਤੇ ਵਾਪਸ ਕਢਵਾਓ। ਦੋਵਾਂ ਲਈ ਇੰਟਰਨੈੱਟ ਅਤੇ ਇੱਕ ਮਿੰਟ ਚਾਹੀਦਾ ਹੈ।",
   "wallet.ln.deposit_body":
     "ਮਿੰਟ ਤੁਹਾਨੂੰ ਇਨਵੌਇਸ ਦਿੰਦਾ ਹੈ। ਇਸ ਨੂੰ ਕਿਸੇ ਵੀ Lightning ਵਾਲਿਟ ਤੋਂ ਭਰੋ ਅਤੇ sats ਅਜਿਹੇ ecash ਵਜੋਂ ਵਾਪਸ ਆ ਜਾਂਦੇ ਹਨ ਜੋ ਤੁਸੀਂ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਖ਼ਰਚ ਸਕਦੇ ਹੋ।",
   "wallet.ln.pay_invoice_for":
@@ -1123,10 +1130,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} ਤੱਕ",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ਭਰੋ",
-  "wallet.ln.deposit": "Lightning ’ਤੇ sats ਜਮ੍ਹਾਂ ਕਰੋ",
-  "wallet.ln.deposit_short": "ਜਮ੍ਹਾਂ ਕਰੋ",
-  "wallet.ln.withdraw": "Lightning ਇਨਵੌਇਸ ’ਤੇ ਕਢਵਾਓ",
-  "wallet.ln.withdraw_short": "ਕਢਵਾਓ",
   "wallet.ln.deposit_title": "Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰੋ",
   "wallet.ln.amount_placeholder": "sats ਵਿੱਚ ਰਕਮ",
   "wallet.ln.requesting": "ਬੇਨਤੀ ਕਰ ਰਹੇ ਹਾਂ…",
@@ -1147,7 +1150,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "ਹਵਾਲਾ ਲਵੋ",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "ਬੈਕਅੱਪ",
   "wallet.backup.setup_failed": "ਬੈਕਅੱਪ ਸੈੱਟ ਨਹੀਂ ਹੋ ਸਕਿਆ",
   "wallet.backup.on": "ਬੈਕਅੱਪ ਚਾਲੂ",
   "wallet.backup.on_body":
@@ -1253,14 +1255,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "{mints} ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ ਹੋ ਸਕੀ। ਬਾਕੀ ਸਭ ਕੁਝ ਤਾਜ਼ਾ ਹੈ।",
   "wallet.refresh.swapped":
-    "{amount} {unit} ਦੀ ਪੁਸ਼ਟੀ ਹੋਈ ਅਤੇ ਨਵੇਂ ਪਰੂਫ਼ਾਂ ਨਾਲ ਅਦਲਾ-ਬਦਲੀ ਹੋ ਗਈ।",
+    "{amount} {unit} ਦੀ ਪੁਸ਼ਟੀ ਹੋਈ ਅਤੇ ਨਵੇਂ ecash ਨਾਲ ਅਦਲਾ-ਬਦਲੀ ਹੋ ਗਈ।",
   "wallet.refresh.secured":
     "{amount} {unit} ਹੁਣ ਤੁਹਾਡੇ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਦੇ ਘੇਰੇ ਵਿੱਚ ਹਨ।",
   "wallet.refresh.all_confirmed":
     "ਇੱਥੇ ਸਭ ਕੁਝ ਪਹਿਲਾਂ ਹੀ ਮਿੰਟ ਨਾਲ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਸੀ।",
-  "wallet.pending.title": "ਬਕਾਇਆ",
   "wallet.pending.reserved_desc":
-    "ਬਣਾਇਆ ਅਤੇ ਰਾਖਵਾਂ ਕੀਤਾ, ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ। ਪਰੂਫ਼ ਤੁਹਾਡੇ ਬੈਲੰਸ ਤੋਂ ਬਾਹਰ ਰੱਖੇ ਗਏ ਹਨ ਤਾਂ ਜੋ ਇਹ ਦੋ ਵਾਰ ਖ਼ਰਚ ਨਾ ਹੋ ਸਕਣ।",
+    "ਬਣਾਇਆ ਅਤੇ ਰਾਖਵਾਂ ਕੀਤਾ, ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ। ਸਿੱਕੇ ਤੁਹਾਡੇ ਬੈਲੰਸ ਤੋਂ ਬਾਹਰ ਰੱਖੇ ਗਏ ਹਨ ਤਾਂ ਜੋ ਇਹ ਦੋ ਵਾਰ ਖ਼ਰਚ ਨਾ ਹੋ ਸਕਣ।",
   "wallet.pending.locked_desc":
     "ਪਹਿਲਾਂ ਹੀ ਲੈਣ ਵਾਲੇ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ, ਇਸ ਲਈ ਇਸ ਨੂੰ ਸਿਰਫ਼ ਉਹੀ ਖ਼ਰਚ ਸਕਦੇ ਹਨ। ਬੱਸ ਇਹ ਹਾਲੇ ਉਹਨਾਂ ਤੱਕ ਪਹੁੰਚਿਆ ਨਹੀਂ। ਮੁਕਾਉਣ ਲਈ ਟੋਕਨ ਸਾਂਝਾ ਕਰੋ।",
   "wallet.pending.show_qr": "ਇਹ ਟੋਕਨ QR ਕੋਡ ਵਜੋਂ ਦਿਖਾਓ",
@@ -1271,8 +1272,6 @@ export const strings: Strings = {
   "wallet.pending.reclaim_into": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਲਵੋ",
   "wallet.activity.title": "ਸਰਗਰਮੀ",
   "wallet.activity.none": "ਹਾਲੇ ਕੁਝ ਨਹੀਂ",
-  "wallet.activity.none_desc":
-    "ਤੁਹਾਡੇ ਭੇਜੇ ਅਤੇ ਲਏ ਭੁਗਤਾਨ ਇੱਥੇ ਦਿਸਦੇ ਹਨ, ਸਭ ਤੋਂ ਨਵੇਂ ਪਹਿਲਾਂ, ਹਰ ਇੱਕ ਦੇ ਮਿੰਟ ਅਤੇ ਫ਼ੀਸ ਸਮੇਤ।",
   "wallet.activity.show_fewer": "ਘੱਟ ਭੁਗਤਾਨ ਦਿਖਾਓ",
   "wallet.activity.show_less": "ਘੱਟ ਦਿਖਾਓ",
   "wallet.activity.received_unconfirmed": "ਮਿਲਿਆ, ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ",
@@ -1288,14 +1287,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning ਜਮ੍ਹਾਂ",
   "wallet.activity.ln_withdrawal": "Lightning ਨਿਕਾਸੀ",
   "wallet.activity.nutzap_received": "Nutzap ਮਿਲਿਆ",
-  "wallet.activity.spent_removed": "ਖ਼ਰਚੇ ਪਰੂਫ਼ ਹਟਾਏ",
-  "wallet.activity.refreshed": "ਪਰੂਫ਼ ਤਾਜ਼ਾ ਹੋਏ",
-  "wallet.activity.refreshing": "ਪਰੂਫ਼ ਤਾਜ਼ਾ ਕਰ ਰਹੇ ਹਾਂ",
+  "wallet.activity.spent_removed": "ਖਰਚੇ ਗਏ ਸਿੱਕੇ ਹਟਾਏ ਗਏ",
+  "wallet.activity.refreshed": "ਮਿੰਟ ਨਾਲ ਜਾਂਚਿਆ ਗਿਆ",
+  "wallet.activity.refreshing": "ਮਿੰਟ ਨਾਲ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ਮੈਸ਼ ਆਫ਼ਲਾਈਨ",
   "wallet.mesh_offline_body":
-    "ਮੈਸ਼ ਸੇਵਾ ਨਹੀਂ ਚੱਲ ਰਹੀ, ਇਸ ਲਈ ਟੋਕਨ ਸੌਂਪਣ ਲਈ ਕੁਝ ਨਹੀਂ ਹੈ। ਇਹ ਬਕਾਇਆ ਹੇਠ ਰਾਖਵਾਂ ਰਹਿੰਦਾ ਹੈ।",
+    "ਮੈਸ਼ ਸੇਵਾ ਨਹੀਂ ਚੱਲ ਰਹੀ, ਇਸ ਲਈ ਟੋਕਨ ਸੌਂਪਣ ਲਈ ਕੁਝ ਨਹੀਂ ਹੈ। ਇਹ ਸਰਗਰਮੀ ਹੇਠ ਰਾਖਵਾਂ ਰਹਿੰਦਾ ਹੈ।",
   "wallet.xfer.route_mesh": "ਮੈਸ਼ ’ਤੇ ਸਿੱਧਾ ਉਹਨਾਂ ਦੇ ਡੀਵਾਈਸ ਨੂੰ ਸੌਂਪਿਆ।",
   "wallet.xfer.route_nostr":
     "ਉਹ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਤੋਂ ਬਾਹਰ ਸਨ, ਇਸ ਲਈ ਇਹ ਇੰਟਰਨੈੱਟ ਰਾਹੀਂ ਗਿਆ।",
@@ -1307,7 +1306,7 @@ export const strings: Strings = {
     "ਮੈਸ਼ ਸੇਵਾ ਨਹੀਂ ਚੱਲ ਰਹੀ, ਇਸ ਲਈ ਟੋਕਨ ਸੌਂਪਣ ਦਾ ਕੋਈ ਰਾਹ ਨਹੀਂ ਹੈ। ਕੁਝ ਵੀ ਨਹੀਂ ਕੱਟਿਆ ਗਿਆ।",
   "wallet.xfer.could_not_send": "ਭੇਜਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ",
   "wallet.xfer.inexact_body":
-    "ਤੁਹਾਡੇ ਪਰੂਫ਼ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ। ਸਭ ਤੋਂ ਛੋਟਾ ਟੋਕਨ ਜੋ ਤੁਸੀਂ ਬਣਾ ਸਕਦੇ ਹੋ ਉਹ {spend} {unit} ਹੈ, ਅਤੇ ਵਾਧੂ {extra} {unit} ਉਹਨਾਂ ਨੂੰ ਚਲੇ ਜਾਂਦੇ ਹਨ, ਵਾਪਸ ਲੈਣ ਦਾ ਕੋਈ ਰਾਹ ਨਹੀਂ।\n\nਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਮਿੰਟ ’ਤੇ ਤਾਜ਼ਾ ਕਰਨ ਨਾਲ ਤੁਹਾਡੇ ਪਰੂਫ਼ ਅਜਿਹੇ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡ ਜਾਂਦੇ ਹਨ ਜੋ ਇਹ ਰਕਮ ਠੀਕ ਬਣਾ ਦੇਣ।",
+    "ਤੁਹਾਡੇ ਸਿੱਕੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ। ਸਭ ਤੋਂ ਛੋਟਾ ਟੋਕਨ ਜੋ ਤੁਸੀਂ ਬਣਾ ਸਕਦੇ ਹੋ ਉਹ {spend} {unit} ਹੈ, ਅਤੇ ਵਾਧੂ {extra} {unit} ਉਹਨਾਂ ਨੂੰ ਚਲੇ ਜਾਂਦੇ ਹਨ, ਵਾਪਸ ਲੈਣ ਦਾ ਕੋਈ ਰਾਹ ਨਹੀਂ।\n\nਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਮਿੰਟ ’ਤੇ ਤਾਜ਼ਾ ਕਰਨ ਨਾਲ ਤੁਹਾਡੇ ਸਿੱਕੇ ਅਜਿਹੇ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡ ਜਾਂਦੇ ਹਨ ਜੋ ਇਹ ਰਕਮ ਠੀਕ ਬਣਾ ਦੇਣ।",
   "wallet.xfer.send_amount": "{amount} ਭੇਜੋ",
   "wallet.xfer.mesh_offline": "ਮੈਸ਼ ਆਫ਼ਲਾਈਨ",
 
@@ -1317,7 +1316,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ। ਰਿਲੇ ਨੇ ਇਹ ਨਹੀਂ ਲਿਆ, ਇਸ ਲਈ ਇਹ ਉਹਨਾਂ ਕੋਲ ਸੁਨੇਹੇ ਵਜੋਂ ਗਿਆ।",
   "wallet.pay.rail_nutzap_undelivered":
-    "ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ, ਪਰ ਇਸ ਨੂੰ ਹਾਲੇ ਕੋਈ ਲੈ ਕੇ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਇਹ ਕਤਾਰ ਵਿੱਚ ਹੈ, ਅਤੇ ਟੋਕਨ ਬਕਾਇਆ ਹੇਠ ਹੈ।",
+    "ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ, ਪਰ ਇਸ ਨੂੰ ਹਾਲੇ ਕੋਈ ਲੈ ਕੇ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਇਹ ਕਤਾਰ ਵਿੱਚ ਹੈ, ਅਤੇ ਟੋਕਨ ਸਰਗਰਮੀ ਹੇਠ ਹੈ।",
   "wallet.pay.final":
     "ਲਾਕ ਕੀਤੇ ਭੁਗਤਾਨ ਵਾਪਸ ਨਹੀਂ ਲਏ ਜਾ ਸਕਦੇ: ਇਹ ਸਿੱਕੇ ਹੁਣ ਸਿਰਫ਼ ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਹੀ ਖ਼ਰਚ ਸਕਦੀ ਹੈ।",
   "wallet.pay.reclaimable":
@@ -1337,7 +1336,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "ਇਹ ਉਨ੍ਹਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲੌਕ ਹੈ। ਇੱਕ ਵਾਰ ਭੇਜਣ ਤੋਂ ਬਾਅਦ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
   "wallet.pay.confirm_reclaimable":
-    "ਜਦ ਤੱਕ ਉਹ ਇਸਨੂੰ ਕਲੇਮ ਨਹੀਂ ਕਰਦੇ, ਤੁਸੀਂ ਇਸਨੂੰ ਬਕਾਇਆ ਤੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
+    "ਜਦ ਤੱਕ ਉਹ ਇਸਨੂੰ ਕਲੇਮ ਨਹੀਂ ਕਰਦੇ, ਤੁਸੀਂ ਇਸਨੂੰ ਸਰਗਰਮੀ ਤੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "ਕੈਮਰੇ ਦੀ ਪਹੁੰਚ",
@@ -1356,10 +1355,9 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Lightning ਇਨਵੌਇਸ ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
   "wallet.scan.title_token": "ecash ਸਕੈਨ ਕਰੋ",
   "wallet.scan.title_invoice": "ਇਨਵੌਇਸ ਸਕੈਨ ਕਰੋ",
-  "wallet.scan.desc_token":
-    "ਕਿਸੇ ਹੋਰ ਵਾਲਿਟ ਵਿੱਚੋਂ Cashu ਟੋਕਨ ਪੜ੍ਹੋ। ਕਿਸੇ ਵੀ Cashu ਵਾਲਿਟ ਨਾਲ ਚੱਲਦਾ ਹੈ, ਸਿਰਫ਼ Airhop ਨਾਲ ਨਹੀਂ।",
-  "wallet.scan.desc_invoice":
-    "Lightning ਇਨਵੌਇਸ ਪੜ੍ਹੋ ਤਾਂ ਜੋ ਇਸ ਨੂੰ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚੋਂ ਭਰ ਸਕੋ।",
+  "wallet.scan.title_any": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
+  "wallet.scan.aim_any": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
+  "wallet.scan.no_any": "ਉਸ ਤਸਵੀਰ ਵਿੱਚ ਕੋਈ ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਨਹੀਂ ਮਿਲਿਆ।",
   "wallet.scan.use_camera_a11y": "ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.use_camera": "ਕੈਮਰਾ ਵਰਤੋ",
   "wallet.scan.pick_image_a11y": "ਸੰਭਾਲੀ ਤਸਵੀਰ ਵਿੱਚੋਂ QR ਕੋਡ ਪੜ੍ਹੋ",
@@ -1371,7 +1369,7 @@ export const strings: Strings = {
     "Cashu ਬਿਟਕੌਇਨ ਲਈ ecash ਹੈ। ਟੋਕਨ ਇੱਕ ਅਜਿਹੀ ਲਕੀਰ ਹੈ ਜਿਸ ਦੀ ਕੀਮਤ ਉਸ ਦੇ ਹੱਥ ਵਿੱਚ ਹੁੰਦੀ ਹੈ ਜਿਸ ਕੋਲ ਇਹ ਹੈ, ਅਤੇ ਮਿੰਟ ਨੇ ਇਸ ’ਤੇ ਅੱਖਾਂ ਬੰਦ ਕਰ ਕੇ ਦਸਤਖ਼ਤ ਕੀਤੇ ਹੁੰਦੇ ਹਨ ਤਾਂ ਜੋ ਮਿੰਟ ਨੂੰ ਪਤਾ ਨਾ ਲੱਗੇ ਕਿ ਕਿਸ ਨੇ ਕੀ ਖ਼ਰਚਿਆ। ਨਾ ਕੋਈ ਖਾਤਾ, ਨਾ ਕੋਈ ਲਾਗਇਨ।",
   "wallet.explain.send": "ਭੇਜੋ",
   "wallet.explain.send_desc":
-    "ਰਕਮ ਨੂੰ ਅਜਿਹੇ ਟੋਕਨ ਵਿੱਚ ਬਦਲਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਬਲੂਟੁੱਥ ’ਤੇ ਕਿਸੇ ਨੇੜਲੇ ਪੀਅਰ ਨੂੰ ਸੌਂਪ ਸਕਦੇ ਹੋ, ਜਾਂ ਲਿਖਤ ਵਜੋਂ ਸਾਂਝਾ ਕਰ ਸਕਦੇ ਹੋ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਚੱਲਦਾ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਪਰੂਫ਼ ਰਾਖਵੇਂ ਰਹਿੰਦੇ ਹਨ।",
+    "ਰਕਮ ਨੂੰ ਅਜਿਹੇ ਟੋਕਨ ਵਿੱਚ ਬਦਲਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਬਲੂਟੁੱਥ ’ਤੇ ਕਿਸੇ ਨੇੜਲੇ ਪੀਅਰ ਨੂੰ ਸੌਂਪ ਸਕਦੇ ਹੋ, ਜਾਂ ਲਿਖਤ ਵਜੋਂ ਸਾਂਝਾ ਕਰ ਸਕਦੇ ਹੋ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਚੱਲਦਾ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਸਿੱਕੇ ਰਾਖਵੇਂ ਰਹਿੰਦੇ ਹਨ।",
   "wallet.explain.receive": "ਲਵੋ",
   "wallet.explain.receive_desc":
     "ਟੋਕਨ ਜੋੜਨ ਲਈ ਉਸ ਨੂੰ ਚਿਪਕਾਓ। ਆਨਲਾਈਨ ਇਹ ਤੁਰੰਤ ਮਿੰਟ ’ਤੇ ਅਦਲਾ-ਬਦਲੀ ਹੋ ਜਾਂਦਾ ਹੈ, ਜਿਸ ਨਾਲ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਬਣ ਜਾਂਦਾ ਹੈ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਇਹ ਸੰਭਾਲ ਲਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਤਾਜ਼ਾ ਕਰਨ ਤੱਕ ਅਪੁਸ਼ਟ ਨਿਸ਼ਾਨਬੱਧ ਰਹਿੰਦਾ ਹੈ।",
@@ -1401,7 +1399,11 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ਮਿੰਟ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ ਹੋ ਸਕੀ।",
   "wallet.svc.tor_ios": "iOS ’ਤੇ ਮਿੰਟ ਦੀਆਂ ਬੇਨਤੀਆਂ Tor ਰਾਹੀਂ ਨਹੀਂ ਜਾਂਦੀਆਂ।",
   "wallet.svc.tor_ios_body":
-    "Arti ਸਿਰਫ਼ Nostr WebSockets ਨੂੰ ਲਪੇਟਦਾ ਹੈ, ਇਸ ਲਈ ਇਹ ਬੇਨਤੀ ਮਿੰਟ ਤੱਕ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਪਹੁੰਚੇਗੀ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਇਹਨਾਂ ਪਰੂਫ਼ਾਂ ਨਾਲ ਜੋੜ ਦੇਵੇਗੀ। ਸੈਟਿੰਗਾਂ > ਸੁਰੱਖਿਆ ਹੇਠੋਂ ਇਸ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਾਂ ਪਹਿਲਾਂ Tor ਬੰਦ ਕਰੋ। ਮੈਸ਼ ’ਤੇ ecash ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ।",
+    "iOS ’ਤੇ Tor ਸਿਰਫ਼ Nostr ਨੂੰ ਢਕਦਾ ਹੈ, ਇਸ ਲਈ ਇਹ ਬੇਨਤੀ ਮਿੰਟ ਤੱਕ ਖੁੱਲ੍ਹੇ ਨੈੱਟ ’ਤੇ ਪਹੁੰਚੇਗੀ ਅਤੇ ਤੁਹਾਡੇ IP ਨੂੰ ਇਸ ecash ਨਾਲ ਜੋੜ ਦੇਵੇਗੀ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ, ਜਾਂ ਪਹਿਲਾਂ Tor ਬੰਦ ਕਰੋ। ਮੈਸ਼ ’ਤੇ ecash ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਫਿਰ ਵੀ ਚੱਲਦਾ ਹੈ।",
+  "wallet.svc.internet_off":
+    "ਇੰਟਰਨੈੱਟ ਬੰਦ ਹੈ, ਇਸ ਲਈ ਮਿੰਟ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚਿਆ ਜਾ ਸਕਦਾ।",
+  "wallet.svc.internet_off_body":
+    "ਸੈਟਿੰਗਾਂ ਵਿੱਚ {setting} ਚਾਲੂ ਕਰੋ। ਨੇੜੇ ecash ਭੇਜਣਾ ਅਤੇ ਲੈਣਾ ਹਾਲੇ ਵੀ ਚੱਲਦਾ ਹੈ।",
   "wallet.svc.keys_uncached":
     "ਇਸ ਮਿੰਟ ਦੀਆਂ ਕੁੰਜੀਆਂ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਕੈਸ਼ ਨਹੀਂ ਹਨ।",
   "wallet.svc.keys_uncached_body":
@@ -1415,19 +1417,22 @@ export const strings: Strings = {
   "wallet.svc.restored": "ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਤੋਂ ਬਹਾਲ ਕੀਤਾ",
   "wallet.svc.storage_locked": "ਵਾਲਿਟ ਦਾ ਭੰਡਾਰ ਲਾਕ ਹੈ।",
   "wallet.svc.storage_locked_body":
-    "Airhop ecash ਪਰੂਫ਼ ਇੱਕ ਇਨਕ੍ਰਿਪਟਡ ਫ਼ਾਈਲ ਵਿੱਚ ਰੱਖਦਾ ਹੈ ਜਿਸ ਦੀ ਕੁੰਜੀ ਡੀਵਾਈਸ ਦੀ ਕੀਚੇਨ ਵਿੱਚ ਹੁੰਦੀ ਹੈ। ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ ਐਪ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
+    "Airhop ਤੁਹਾਡਾ ecash ਇੱਕ ਇਨਕ੍ਰਿਪਟਡ ਫ਼ਾਈਲ ਵਿੱਚ ਰੱਖਦਾ ਹੈ ਜਿਸ ਦੀ ਕੁੰਜੀ ਡੀਵਾਈਸ ਦੀ ਕੀਚੇਨ ਵਿੱਚ ਹੁੰਦੀ ਹੈ। ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ ਐਪ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
   "wallet.svc.bad_url": "ਇਹ ਸਹੀ URL ਨਹੀਂ ਹੈ।",
   "wallet.svc.needs_https": "ਮਿੰਟ ਦਾ URL https:// ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।",
   "wallet.svc.refuse_http": "ਸਾਦੇ http ’ਤੇ ਮਿੰਟ ਵਰਤਣ ਤੋਂ ਨਾਂਹ।",
   "wallet.svc.refuse_http_body":
-    "ਨੈੱਟਵਰਕ ਦੇ ਰਾਹ ਵਿੱਚ ਪਿਆ ਕੋਈ ਵੀ ਤੁਹਾਡੇ ਪਰੂਫ਼ ਪੜ੍ਹ ਜਾਂ ਬਦਲ ਸਕਦਾ ਹੈ। https:// ਵਾਲਾ ਮਿੰਟ ਵਰਤੋ।",
+    "ਨੈੱਟਵਰਕ ਦੇ ਰਾਹ ਵਿੱਚ ਪਿਆ ਕੋਈ ਵੀ ਤੁਹਾਡਾ ecash ਪੜ੍ਹ ਜਾਂ ਬਦਲ ਸਕਦਾ ਹੈ। https:// ਵਾਲਾ ਮਿੰਟ ਵਰਤੋ।",
   "wallet.svc.mint_not_saved": "ਮਿੰਟ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ।",
   "wallet.svc.unreadable_token": "ਇਹ ਪੜ੍ਹਨਯੋਗ Cashu ਟੋਕਨ ਨਹੀਂ ਹੈ।",
   "wallet.svc.unreadable_token_body":
     "ਟੋਕਨ cashuA ਜਾਂ cashuB ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ। ਦੇਖੋ ਕਿ ਨਕਲ ਕਰਦਿਆਂ ਕੁਝ ਕੱਟਿਆ ਤਾਂ ਨਹੀਂ ਗਿਆ।",
+  "wallet.svc.keyset_unknown": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਮਿੰਟ ਦੀਆਂ ਨਵੀਆਂ ਕੁੰਜੀਆਂ ਵਰਤਦਾ ਹੈ।",
+  "wallet.svc.keyset_unknown_body":
+    "ਉਹਨਾਂ ਨੂੰ ਲਿਆਉਣ ਲਈ ਇਸ ਵੇਲੇ ਮਿੰਟ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚਿਆ ਜਾ ਸਕਦਾ। ਕੁਝ ਵੀ ਨਹੀਂ ਗੁਆਚਿਆ: ਔਨਲਾਈਨ ਹੋਣ ’ਤੇ ਇਸਨੂੰ ਦੁਬਾਰਾ ਪ੍ਰਾਪਤ ਕਰੋ।",
   "wallet.svc.wrong_mint":
     "ਇਸ ਟੋਕਨ ’ਤੇ ਉਸ ਮਿੰਟ ਦੇ ਦਸਤਖ਼ਤ ਨਹੀਂ ਸਨ ਜਿਸ ਦਾ ਇਹ ਨਾਂ ਲੈਂਦਾ ਹੈ।",
-  "wallet.svc.already_spent": "ਇਹ ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਹਨ।",
+  "wallet.svc.already_spent": "ਇਹ ecash ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਹੈ।",
   "wallet.svc.already_spent_body":
     "ਜਿਸ ਨੇ ਇਹ ਟੋਕਨ ਭੇਜਿਆ, ਉਸ ਨੇ ਇਹ ਪਹਿਲਾਂ ਭੁਨਾ ਲਿਆ, ਜਾਂ ਉਹੀ ਟੋਕਨ ਕਿਸੇ ਹੋਰ ਨੂੰ ਵੀ ਭੇਜ ਦਿੱਤਾ।",
   "wallet.svc.receiving_offline": "ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਲੈ ਰਹੇ ਹਾਂ",
@@ -1439,7 +1444,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "ਮਿੰਟ ਜੋੜੋ ਅਤੇ Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰੋ, ਜਾਂ ਕਿਸੇ ਤੋਂ ਟੋਕਨ ਲਵੋ।",
   "wallet.svc.split_across_mints": "ਤੁਹਾਡਾ ਬੈਲੰਸ ਕਈ ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ।",
-  "wallet.svc.mint_says_spent": "ਮਿੰਟ ਨੇ ਇਹ ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਹੋਏ ਦੱਸੇ।",
+  "wallet.svc.mint_says_spent": "ਮਿੰਟ ਨੇ ਇਹ ecash ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਹੋਇਆ ਦੱਸਿਆ।",
   "wallet.svc.issue_against_invoice":
     "Lightning ਇਨਵੌਇਸ ਦੇ ਬਦਲੇ ecash ਜਾਰੀ ਕਰਨਾ",
   "wallet.svc.pay_invoice": "Lightning ਇਨਵੌਇਸ ਭਰਨਾ",
@@ -1470,7 +1475,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "ਇਸ ਤਬਾਦਲੇ ਦਾ ਆਕਾਰ ਤੈਅ ਨਹੀਂ ਹੋ ਸਕਿਆ।",
   "wallet.svc.insufficient_at_mint": "{mint} ’ਤੇ ਬੈਲੰਸ ਕਾਫ਼ੀ ਨਹੀਂ।",
   "wallet.svc.inexact_title":
-    "ਤੁਹਾਡੇ ਪਰੂਫ਼ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ।",
+    "ਤੁਹਾਡੇ ਸਿੱਕੇ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਬਿਲਕੁਲ {amount} {unit} ਨਹੀਂ ਬਣਾ ਸਕਦੇ।",
   "wallet.svc.inexact_detail":
     "ਸਭ ਤੋਂ ਛੋਟਾ ਟੋਕਨ ਜੋ ਤੁਸੀਂ ਭੇਜ ਸਕਦੇ ਹੋ ਉਹ {spend} {unit} ਹੈ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਕੋਈ ਬਾਕੀ ਨਹੀਂ ਮੁੜਦਾ, ਇਸ ਲਈ ਵਾਧੂ {extra} {unit} ਲੈਣ ਵਾਲੇ ਨੂੰ ਚਲੇ ਜਾਂਦੇ ਹਨ।",
   "wallet.svc.no_single_mint":
@@ -1501,10 +1506,9 @@ export const strings: Strings = {
     "ਮਿੰਟ ਨੇ ਇਹ ਜਮ੍ਹਾਂ ਜਾਰੀ ਕੀਤੀ, ਪਰ ਇਸਦੇ ਸਿੱਕੇ ਦੁਬਾਰਾ ਨਹੀਂ ਬਣ ਸਕੇ। ਆਪਣੇ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਤੋਂ ਬਹਾਲ ਕਰਨ ਨਾਲ ਉਹ ਵਾਪਸ ਮਿਲ ਜਾਂਦੇ ਹਨ।",
   "wallet.svc.swap_unreadable":
     "ਇਹ ਅਦਲਾ-ਬਦਲੀ ਅਜਿਹੇ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲੀ ਗਈ ਸੀ ਜੋ ਇਹ ਸੰਸਕਰਣ ਦੁਬਾਰਾ ਨਹੀਂ ਚਲਾ ਸਕਦਾ।",
-  "wallet.svc.lock_in_doubt":
-    "ਮਿੰਟ ਨੇ ਜਵਾਬ ਨਹੀਂ ਦਿੱਤਾ, ਇਸ ਲਈ ਇਹ ਭੁਗਤਾਨ ਹੋਇਆ ਜਾਂ ਨਹੀਂ, ਪੱਕਾ ਨਹੀਂ।",
+  "wallet.svc.lock_in_doubt": "ਇਹ ਭੁਗਤਾਨ ਹੋਇਆ ਜਾਂ ਨਹੀਂ, ਪੱਕਾ ਨਹੀਂ।",
   "wallet.svc.lock_in_doubt_body":
-    "ਹੋਰ ਕੁਝ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ। ਮਿੰਟ ਦੇ ਜਵਾਬ ਤੱਕ ਸਿੱਕੇ ਰੋਕੇ ਗਏ ਹਨ। ਜੇ ਭੁਗਤਾਨ ਹੋ ਗਿਆ, ਤਾਂ ਲੌਕ ਟੋਕਨ ਸੌਂਪਣ ਲਈ ਬਕਾਇਆ ਵਿੱਚ ਦਿਖੇਗਾ। ਜੇ ਨਹੀਂ, ਤਾਂ ਸਿੱਕੇ ਵਾਪਸ ਆ ਜਾਣਗੇ।",
+    "ਹੋਰ ਕੁਝ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ। ਜਦੋਂ ਤੱਕ ਮਿੰਟ ਨਤੀਜੇ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦਾ, ਸਿੱਕੇ ਰੋਕੇ ਗਏ ਹਨ। ਜੇ ਭੁਗਤਾਨ ਹੋ ਗਿਆ, ਤਾਂ ਲੌਕ ਟੋਕਨ ਸੌਂਪਣ ਲਈ ਸਰਗਰਮੀ ਵਿੱਚ ਦਿਖੇਗਾ। ਜੇ ਨਹੀਂ, ਤਾਂ ਸਿੱਕੇ ਵਾਪਸ ਆ ਜਾਣਗੇ।",
   "wallet.svc.send_spent_by_swap":
     "ਇਹ ਟੋਕਨ ਕਲੇਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਇਹ ਸਿੱਕੇ ਸਵੈਪ ਹੋ ਕੇ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ ਵਾਪਸ ਆ ਗਏ, ਇਸ ਲਈ ਹੁਣ ਇਸਨੂੰ ਕਲੇਮ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਰਕਮ ਤੁਹਾਡੇ ਬੈਲੇਂਸ ਵਿੱਚ ਹੈ।",
 
@@ -1605,6 +1609,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "ਪੀਅਰ ID ਨਕਲ ਕਰੋ",
   "settings.peer_id_sheet.note":
     "ਇਹ ਉਦੋਂ ਹੀ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਤੁਸੀਂ ਦੋਵੇਂ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਹੋਵੋ। ਕਿਸੇ ਨੂੰ ਕਿਤੋਂ ਵੀ ਸੁਨੇਹਾ ਭੇਜਣ ਦੇਣ ਲਈ ਇਸ ਦੀ ਥਾਂ ਆਪਣਾ QR ਕੋਡ ਸਾਂਝਾ ਕਰੋ।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ਸੈਟਿੰਗਾਂ ਖੋਜੋ…",
   "settings.search.a11y": "ਸੈਟਿੰਗਾਂ ਖੋਜੋ",
   "settings.search.close": "ਖੋਜ ਬੰਦ ਕਰੋ",
@@ -1756,6 +1762,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "ਸੂਚਨਾ ਦੀਆਂ ਝਲਕਾਂ ਲੁਕਾਓ",
   "settings.security.hide_previews_desc":
     "ਭੇਜਣ ਵਾਲੇ ਅਤੇ ਸੁਨੇਹੇ ਨੂੰ ਤੁਹਾਡੀ ਲਾਕ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਰੱਖਦਾ ਹੈ, ਜੋ ਇਹ ਬਿਨਾਂ ਅਨਲਾਕ ਕੀਤੇ ਦਿਖਾ ਦਿੰਦੀ ਹੈ",
+  "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
+  "settings.security.ring_alerts_desc":
+    "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",
   "settings.security.no_blocked": "ਕੋਈ ਬਲਾਕ ਕੀਤਾ ਪੀਅਰ ਨਹੀਂ",
   "settings.security.no_blocked_desc":
     "ਬਲਾਕ ਕੀਤੇ ਪੀਅਰ ਤੁਹਾਨੂੰ ਸੁਨੇਹਾ ਨਹੀਂ ਭੇਜ ਸਕਦੇ ਅਤੇ ਨਾ ਹੀ ਮੈਸ਼ ਟੈਬ ’ਤੇ ਦਿਸਦੇ ਹਨ",
@@ -1953,7 +1962,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "ਨੈੱਟਵਰਕ ਵਰਤੋਂ",
   "settings.storage.storage_usage": "ਭੰਡਾਰ ਵਰਤੋਂ",
   "settings.storage.storage_usage_desc":
-    "ਸੁਨੇਹੇ, ਵਾਲਿਟ ਦੇ ਪਰੂਫ਼, ਅਤੇ ਕੈਸ਼ ਕੀਤੀਆਂ ਅਟੈਚਮੈਂਟਾਂ",
+    "ਸੁਨੇਹੇ, ecash, ਅਤੇ ਕੈਸ਼ ਕੀਤੀਆਂ ਅਟੈਚਮੈਂਟਾਂ",
   "settings.storage.session_usage": "ਇਹ ਸੈਸ਼ਨ · {sent} ਭੇਜੇ, {received} ਮਿਲੇ",
   "settings.storage.cache": "ਕੈਸ਼",
   "settings.storage.cache_desc": "{size} ਅਟੈਚਮੈਂਟਾਂ ਦੀਆਂ",
@@ -2040,7 +2049,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "ਗੱਲਬਾਤਾਂ, ਗਰੁੱਪ, ਅਤੇ ਉਹ ਚੈਨਲ ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਤੁਸੀਂ ਜੁੜੇ ਹੋ",
   "settings.transfer.wallet": "ਵਾਲਿਟ ਬੈਲੰਸ",
-  "settings.transfer.wallet_desc": "Cashu ਪਰੂਫ਼ ਅਤੇ ਲੈਣ-ਦੇਣ ਦਾ ਇਤਿਹਾਸ",
+  "settings.transfer.wallet_desc": "ecash ਅਤੇ ਲੈਣ-ਦੇਣ ਦਾ ਇਤਿਹਾਸ",
   "settings.transfer.title": "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਲੈ ਜਾਓ",
   "settings.transfer.desc":
     "ਆਪਣੀ ਪਛਾਣ, ਗੱਲਬਾਤਾਂ ਅਤੇ ਵਾਲਿਟ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ’ਤੇ ਲੈ ਜਾਓ",
@@ -2073,9 +2082,9 @@ export const strings: Strings = {
     "ਬਿਨਾਂ ਪੁਸ਼ਟੀ ਦੇ ਤੁਰੰਤ ਸਾਫ਼ ਕਰਨ ਲਈ ਤਿੰਨ ਵਾਰ ਦਬਾਓ",
   "settings.wipe.title": "ਸੰਕਟ ਸਫ਼ਾਈ",
   "settings.wipe.now": "ਹੁਣੇ ਸਾਫ਼ ਕਰੋ",
-  "settings.wipe.desc": "ਸਾਰੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ਪਰੂਫ਼ ਤੁਰੰਤ ਤਬਾਹ ਕਰੋ",
+  "settings.wipe.desc": "ਸਾਰੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ecash ਤੁਰੰਤ ਤਬਾਹ ਕਰੋ",
   "settings.wipe.body":
-    "ਇਹ ਤੁਹਾਡੀਆਂ ਸਾਰੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ਵਾਲਿਟ ਦੇ ਪਰੂਫ਼ ਤੁਰੰਤ ਤਬਾਹ ਕਰ ਦੇਵੇਗਾ। ਇਹ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
+    "ਇਹ ਤੁਹਾਡੀਆਂ ਸਾਰੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ecash ਤੁਰੰਤ ਤਬਾਹ ਕਰ ਦੇਵੇਗਾ। ਇਹ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
   "settings.wipe.in_progress": "ਸਾਫ਼ ਕਰ ਰਹੇ ਹਾਂ",
   "settings.wipe.in_progress_body":
     "ਤੁਹਾਡੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ਫ਼ਾਈਲਾਂ ਤਬਾਹ ਕਰ ਰਹੇ ਹਾਂ। ਇਸ ਨੂੰ ਕੁਝ ਸਕਿੰਟ ਲੱਗਦੇ ਹਨ, ਅਤੇ ਜੇ ਐਪ ਬੰਦ ਹੋ ਜਾਵੇ ਤਾਂ ਇਹ ਆਪੇ ਪੂਰਾ ਹੋ ਜਾਂਦਾ ਹੈ।",
@@ -2178,6 +2187,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "ਨੇੜਲੇ ਪੀਅਰ",
   "notif.channel.nearby_desc":
     "ਜਦੋਂ ਮੈਸ਼ ਨੂੰ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਲੋਕ ਮਿਲਦੇ ਹਨ ਤਾਂ ਕਦੇ-ਕਦਾਈਂ ਇੱਕ ਸੂਚਨਾ।",
+  "notif.channel.ring": "ਘੰਟੀ",
+  "notif.channel.ring_desc":
+    "ਉਹਨਾਂ ਸੰਪਰਕਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਜਿਨ੍ਹਾਂ ਨੂੰ ਤੁਸੀਂ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ।",
   "notif.nearby.body": "ਹੁਣ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ। ਮੈਸ਼ ਖੋਲ੍ਹਣ ਲਈ ਦਬਾਓ।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "ਕੋਈ",
@@ -2194,6 +2206,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "ਨਵੀਂ ਸਰਗਰਮੀ",
   "notif.hidden.mention": "ਤੁਹਾਡਾ ਜ਼ਿਕਰ ਹੋਇਆ",
   "notif.mention.title": "{sender} ਨੇ ਤੁਹਾਡਾ ਜ਼ਿਕਰ ਕੀਤਾ",
+  "notif.ring.hidden": "ਘੰਟੀ",
+  "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
+  "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
 };
 
 export const plurals: Plurals = {
@@ -2268,14 +2283,10 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} ਮਿੰਟ",
-    other: "{count} ਮਿੰਟ",
-  },
   "wallet.mint.remove_body": {
-    one: "{mint} ਕੋਲ {count} ਪਰੂਫ਼ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਪਰੂਫ਼ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
+    one: "{mint} ਕੋਲ {count} ਸਿੱਕੇ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਸਿੱਕਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
     other:
-      "{mint} ਕੋਲ {count} ਪਰੂਫ਼ਾਂ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਪਰੂਫ਼ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹਨ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
+      "{mint} ਕੋਲ {count} ਸਿੱਕਿਆਂ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਸਿੱਕੇ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹਨ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
   },
 
   // ---- Wallet: Lightning ----
@@ -2287,8 +2298,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{mints} ਵਿੱਚੋਂ {count} ਅਣਖ਼ਰਚਿਆ ਪਰੂਫ਼ ਵਾਪਸ ਮਿਲਿਆ।",
-    other: "{mints} ਵਿੱਚੋਂ {count} ਅਣਖ਼ਰਚੇ ਪਰੂਫ਼ ਵਾਪਸ ਮਿਲੇ।",
+    one: "{mints} ਵਿੱਚੋਂ {count} ਅਣਖ਼ਰਚਿਆ ਸਿੱਕਾ ਵਾਪਸ ਮਿਲਿਆ।",
+    other: "{mints} ਵਿੱਚੋਂ {count} ਅਣਖ਼ਰਚੇ ਸਿੱਕੇ ਵਾਪਸ ਮਿਲੇ।",
   },
   "wallet.backup.already_spent": {
     one: "{count} ਸਿੱਕਾ ਮਿਲਿਆ, ਪਰ ਉਹ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਉਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਇਹ ਆਮ ਗੱਲ ਹੈ: ਤੁਹਾਡਾ ਖ਼ਰਚਿਆ ਹਰ ਸਿੱਕਾ ਮਿੰਟ ਦੇ ਰੱਖੇ ਰਿਕਾਰਡ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
@@ -2309,13 +2320,9 @@ export const plurals: Plurals = {
     one: "{count} ਅਪੁਸ਼ਟ",
     other: "{count} ਅਪੁਸ਼ਟ",
   },
-  "wallet.proof_count": {
-    one: "{count} ਪਰੂਫ਼",
-    other: "{count} ਪਰੂਫ਼",
-  },
   "wallet.spent_removed_detail": {
-    one: "{count} ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤਾ ਗਿਆ।",
-    other: "{count} ਪਰੂਫ਼ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਸਨ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤੇ ਗਏ।",
+    one: "{count} ਸਿੱਕਾ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤਾ ਗਿਆ।",
+    other: "{count} ਸਿੱਕੇ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਸਨ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤੇ ਗਏ।",
   },
 
   // ---- System notifications ----

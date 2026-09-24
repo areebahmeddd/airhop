@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Kanselahin",
-  "common.done": "Tapos na",
-  "common.ok": "OK",
-  "common.close": "Isara",
   "common.back": "Bumalik",
-  "common.delete": "Burahin",
-  "common.remove": "Alisin",
+  "common.close": "Isara",
+  "common.cancel": "Kanselahin",
+  "common.ok": "OK",
+  "common.done": "Tapos na",
+  "common.continue": "Magpatuloy",
+  "common.try_again": "Subukan ulit",
   "common.add": "Idagdag",
+  "common.remove": "Alisin",
+  "common.delete": "Burahin",
   "common.copy": "Kopyahin",
   "common.copied": "Nakopya",
   "common.share": "Ibahagi",
-  "common.continue": "Magpatuloy",
-  "common.try_again": "Subukan ulit",
   "common.settings": "Mga Setting",
   "common.on": "Naka-on",
   "common.off": "Naka-off",
@@ -315,6 +315,8 @@ export const strings: Strings = {
   "chat.group.remove_failed": "Hindi sila naalis",
   "chat.group.remove_failed_body":
     "Walang nagbago. Ang gumawa lang ng grupo ang makakapagpalit kung sino ang nandoon.",
+  "chat.group.leave_creator_body":
+    "Umalis sa {name}? Ikaw ang gumawa ng grupong ito, at ang gumawa lang ang makakapagdagdag o makakapagtanggal ng mga miyembro, kaya wala nang makakagawa nito pag-alis mo. Aalisin sa device na ito ang kasaysayan nito.",
   "chat.group.e2ee":
     "Naka-encrypt nang dulo-sa-dulo. Mga miyembro lang ang makakabasa ng mga mensahe.",
   "chat.group.cap":
@@ -540,38 +542,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "timog-kanluran",
   "chat.location.direction.w": "kanluran",
   "chat.location.direction.nw": "hilagang-kanluran",
-  "chat.attach.send_anyway": "Ipadala pa rin",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Tumawag",
   "chat.ring.received_summary": "Tumawag sa iyo",
   "chat.ring.alert.title": "Tumatawag si {sender}",
   "chat.ring.alert.body": "Suriin ang iyong mga mensahe",
   "chat.ring.alert.open": "Buksan",
   "chat.ring.alert.snooze": "I-snooze ng 1 oras",
-  "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
-  "chat.contact.allow_ring_desc":
-    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
-  "chat.contact.ring_action": "Tumawag",
-  "chat.contact.ringing": "Tumatawag…",
   "chat.ring.sent_snoozed": "Tumawag, ipinagpaliban",
   "chat.ring.sent_too_soon": "Tumawag, masyadong maaga",
   "chat.ring.sent_not_allowed": "Tumawag, hindi pinapayagan",
-  "chat.contact.ring_hint_nearby":
-    "Gumagana lang ang pagtawag habang malapit sila",
-  "chat.contact.ring_hint_not_allowed":
-    "Hindi ka nila pinayagang tumawag sa kanila",
-  "chat.contact.ring_hint_snoozed":
-    "Ipinagpaliban nila ang mga tawag sa ngayon",
-  "chat.contact.ring_hint_too_soon": "Katatawag lang sa kanila",
-  "chat.contact.ring_hint_again_in": "Tumawag muli sa loob ng {time}",
-  "settings.security.ring_alerts": "Mga alerto ng tawag",
-  "settings.security.ring_alerts_desc":
-    "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
-  "notif.channel.ring": "Tawag",
-  "notif.channel.ring_desc":
-    "Mga alerto mula sa mga kontaktong pinayagan mong tumawag sa iyo.",
-  "notif.ring.hidden": "Tawag",
-  "notif.ring.title": "Tinatawagan ka ni {sender}",
-  "notif.ring.body": "Suriin ang iyong mga mensahe",
+  "chat.attach.send_anyway": "Ipadala pa rin",
   "chat.attach.bitchat_too_big": "Maaaring hindi ito dumating",
   "chat.attach.bitchat_too_big_body":
     "Nasa bitchat si {name}, na sumusuko sa gitna kapag malaki ang file. Maaasahan ang mas mababa sa mga 350 KiB. Walang ganoong limitasyon kapag ipinadala ito sa isang contact sa Airhop.",
@@ -673,7 +655,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Angkinin ang {amount} {unit}",
   "chat.ecash.already_claimed": "Naangkin na",
   "chat.ecash.already_claimed_body":
-    "Nasa wallet mo na ang bawat patunay sa token na ito, kaya walang naidagdag.",
+    "Nasa wallet mo na ang lahat ng laman ng token na ito, kaya walang naidagdag.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -769,6 +751,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Pangalan mo para sa kanila",
   "chat.contact.copy_peer_id": "Kopyahin ang peer ID",
   "chat.contact.verify": "I-verify ang contact",
+  "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
+  "chat.contact.allow_ring_desc":
+    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
+  "chat.contact.ring_action": "Tumawag",
+  "chat.contact.ringing": "Tumatawag…",
+  "chat.contact.ring_hint_nearby":
+    "Gumagana lang ang pagtawag habang malapit sila",
+  "chat.contact.ring_hint_not_allowed":
+    "Hindi ka nila pinayagang tumawag sa kanila",
+  "chat.contact.ring_hint_snoozed":
+    "Ipinagpaliban nila ang mga tawag sa ngayon",
+  "chat.contact.ring_hint_too_soon": "Katatawag lang sa kanila",
+  "chat.contact.ring_hint_again_in": "Tumawag muli sa loob ng {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Mga Paskil",
@@ -982,9 +977,13 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Nagpapalit sa pagitan ng satoshi at bitcoin",
   "wallet.balance.a11y": "Balanse {value} {unit}",
   "wallet.balance.locked":
-    "Naka-lock ang imbakan ng wallet. Nasa naka-encrypt na file ang mga patunay ng ecash at nasa keychain ng device ang susi nito, at hindi ito nabuksan. I-unlock ang device mo at buksang muli ang Airhop.",
+    "Naka-lock ang imbakan ng wallet. Nasa naka-encrypt na file ang ecash mo at nasa keychain ng device ang susi nito, at hindi ito nabuksan. I-unlock ang device mo at buksang muli ang Airhop.",
   "wallet.balance.tor_blocked":
-    "Naka-on ang Tor, kaya naka-block ang mga hiling sa mint: dadaan sana ang mga ito sa bukas na net at maiuugnay ang IP mo sa mga patunay mo. Gumagana pa rin ang pagpapadala at pagtanggap sa mesh. Payagan ang trapiko ng mint sa ilalim ng Mga Setting, Seguridad.",
+    "Naka-on ang Tor, kaya naka-block ang mga hiling sa mint: dadaan sana ang mga ito sa bukas na net at maiuugnay ang IP mo sa ecash mo. Gumagana pa rin ang pagpapadala at pagtanggap sa mesh. Para maabot ang mga mint kahit ganoon, i-on ang {setting} sa Settings.",
+  "wallet.balance.offline":
+    "Offline. Makakapagbayad ka pa rin sa mga tao sa malapit at makakapagpadala ng token.",
+  "wallet.balance.internet_off":
+    "Naka-off ang internet, kaya sa malapit lang gumagana ang wallet. I-on ang {setting} sa Settings para maabot ang mga mint.",
   "wallet.balance.unconfirmed_note":
     "{amount} ang hindi pa nakukumpirma sa mint",
   "wallet.balance.reserved_note":
@@ -993,21 +992,34 @@ export const strings: Strings = {
   "wallet.balance.test_mint_note":
     "Kasama ang pera-perahan mula sa isang test mint. Hindi ito bitcoin at hindi ito maipapalit sa pera.",
   "wallet.token": "Token",
-  "wallet.action.send": "Magpadala ng token ng ecash",
   "wallet.action.send_disabled":
     "Magpadala ng token ng ecash, hindi available sa walang lamang balanse",
-  "wallet.action.receive": "Tumanggap ng token ng ecash",
-  "wallet.action.zap": "Mag-zap ng contact sa Nostr",
-  "wallet.action.zap_disabled":
-    "Mag-zap ng contact sa Nostr, hindi available sa walang lamang balanse",
-  "wallet.action.add_mint": "Magdagdag ng mint ng Cashu",
+  "wallet.action.scan": "I-scan",
+  "wallet.action.scan_a11y": "I-scan ang token, invoice o npub",
+  "wallet.choose.paste": "Mag-paste ng token",
+  "wallet.choose.paste_desc": "Gumagana kahit offline",
+  "wallet.choose.scan": "Mag-scan ng QR code",
+  "wallet.choose.scan_desc": "Cashu token mula sa kahit anong wallet",
+  "wallet.choose.topup": "Mag-top up gamit ang Lightning",
+  "wallet.choose.topup_desc":
+    "Magbayad ng invoice mula sa kahit anong Lightning wallet",
+  "wallet.choose.token": "Gumawa ng token",
+  "wallet.choose.token_desc": "Ibahagi o ipakita bilang QR code, kahit offline",
+  "wallet.choose.zap": "Mag-zap sa isang contact sa Nostr",
+  "wallet.choose.zap_desc": "Sa kanilang npub, sa internet",
+  "wallet.choose.invoice": "Magbayad ng invoice ng Lightning",
+  "wallet.choose.invoice_desc": "I-withdraw sa kahit anong Lightning wallet",
+  "wallet.choose.tor_paused": "Naka-pause habang naka-on ang Tor",
+  "wallet.choose.offline": "Kailangan ng internet",
+  "wallet.choose.internet_off": "Naka-off ang internet",
+  "wallet.choose.needs_mint": "Magdagdag muna ng mint",
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Hindi nabuo ang token",
   "wallet.send.title": "Magpadala ng ecash",
   "wallet.send.amount_in": "Halaga sa {unit}",
   "wallet.send.body":
-    "Binuo nang offline mula sa mga patunay na hawak mo na. Walang tuluyang umaalis sa balanse mo hangga't hindi mo kinukumpirmang naihatid ang token.",
+    "Binuo nang offline mula sa ecash na hawak mo na. Walang tuluyang umaalis sa balanse mo hangga't hindi mo kinukumpirmang naihatid ang token.",
   "wallet.send.stale_fee_note":
     "Huling sinuri ang mga bayarin {days} araw ang nakalipas. Kung itinaas ng mint na ito ang bayarin nito mula noon, maaaring bahagyang mas mahal ang padala.",
   "wallet.send.fee_note":
@@ -1015,7 +1027,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Nahahati ang token na ito sa napakaraming barya kaya hindi ito kasya sa QR code. Ibahagi o kopyahin na lang ito, o mag-refresh sa mint para pagsamahin ang mga ito.",
   "wallet.send.bearer_note":
-    "Kung sino ang may hawak ng string na ito ang nagmamay-ari ng pera. Nakalaan ang mga patunay, hindi nagastos: kung wala itong maabot na tao, mababawi mo ang mga ito sa ilalim ng Nakabinbin.",
+    "Kung sino ang may hawak ng string na ito ang nagmamay-ari ng pera. Nakalaan ang mga barya, hindi nagastos: kung wala itong maabot na tao, mababawi mo ang mga ito sa ilalim ng Aktibidad.",
   "wallet.send.qr_too_big_short":
     "Nahahati ang token na ito sa napakaraming barya kaya hindi ito kasya sa QR code. Ibahagi o kopyahin na lang ito.",
   "wallet.send.scan_note":
@@ -1029,11 +1041,11 @@ export const strings: Strings = {
   "wallet.send.building": "Binubuo…",
   "wallet.send.build": "Bumuo ng token",
   "wallet.send.inexact_body":
-    "Hindi kayang gawing eksaktong {amount} {unit} ng mga patunay mo nang offline. Ang pinakamaliit na token na kaya mong buuin ay {spend} {unit}, at walang sukli kapag offline: mapupunta sa tatanggap ang dagdag na {extra} {unit}.\n\nKapag nag-refresh sa mint habang online, mahahati ang mga patunay mo sa mga denominasyong eksaktong bagay dito.",
+    "Hindi kayang gawing eksaktong {amount} {unit} ng mga barya mo nang offline. Ang pinakamaliit na token na kaya mong buuin ay {spend} {unit}, at walang sukli kapag offline: mapupunta sa tatanggap ang dagdag na {extra} {unit}.\n\nKapag nag-refresh sa mint habang online, mahahati ang mga barya mo sa mga denominasyong eksaktong bagay dito.",
   "wallet.send.send_amount": "Magpadala ng {amount}",
   "wallet.send.sent_to": "{amount} {unit} ang naipadala kay {name}",
   "wallet.send.sent_to_body":
-    "{route} Mananatili itong mababawi sa ilalim ng Nakabinbin hangga't hindi mo kinukumpirmang natanggap nila ito, o hangga't hindi sinasabi ng mint na natubos na ang mga patunay.",
+    "{route} Mananatili itong mababawi sa ilalim ng Aktibidad hangga't hindi mo kinukumpirmang natanggap nila ito, o hangga't hindi sinasabi ng mint na natubos na ang token.",
   "wallet.send.copy_token": "Kopyahin ang token",
   "wallet.send.share_token": "Ibahagi ang token",
   "wallet.send.open_in_wallet": "Buksan ang token na ito sa ibang wallet",
@@ -1052,12 +1064,12 @@ export const strings: Strings = {
     "Nakalaan pa rin ang mga baryang ito para sa padalang hindi mo pa naaayos, kaya walang maaangkin. Gamitin ang Bawiin sa bayad na iyon para maibalik ang mga ito nang tuwiran sa balanse mo.",
   "wallet.receive.already_have": "Nasa wallet mo na",
   "wallet.receive.already_have_body":
-    "Nakaimbak na rito ang bawat patunay sa token na ito, kaya walang naidagdag. Hindi nagbago ang mga balanse.",
+    "Nakaimbak na rito ang lahat ng laman ng token na ito, kaya walang naidagdag. Hindi nagbago ang mga balanse.",
   "wallet.receive.stored_unconfirmed":
     "Nakaimbak mula sa {mint}, pero hindi pa nakukumpirma sa mint ({reason}).",
   "wallet.receive.offline": "offline",
   "wallet.receive.redeemed_here":
-    "Natubos sa {mint}. Sa iyo na lang ang mga patunay na ito: hindi na gumagana ang kopya ng nagpadala.",
+    "Natubos sa {mint}. Sa iyo na lang ang ecash na ito: hindi na gumagana ang kopya ng nagpadala.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Natubos sa {mint}. Napatutunayang sa iyo na ito ngayon: hindi na gumagana ang kopya ng token na ito sa nagpadala.",
@@ -1111,9 +1123,8 @@ export const strings: Strings = {
   "wallet.mint.remove_plain":
     "Alisin ang {mint} sa wallet mo? Kasama ring mawawala ang mga naka-imbak nitong susi, kaya hindi na masusuri nang offline ang mga token mula rito.",
   "wallet.mint.title": "Mga Mint",
-  "wallet.mint.none": "Wala pang mint",
   "wallet.mint.none_desc":
-    "Naglalabas at tumutubos ng ecash mo ang isang mint. Magdagdag ng isa para magdeposito sa Lightning, o tumanggap na lang ng token at maidaragdag na ang mint nito para sa iyo.",
+    "Ang mint ang naglalabas at tumutubos ng iyong ecash. Magdagdag ng isa para mag-top up gamit ang Lightning o tumanggap ng mga token nito.",
   "wallet.mint.add": "Magdagdag ng mint",
   "wallet.mint.add_body":
     "Hawak ng mint ang Bitcoin na sumusuporta sa ecash mo, kaya pumili ng isang pagkakatiwalaan mo sa balanseng itinatago mo roon. Sinusuri ang URL bago ito i-save. Magpatakbo ng sarili mo gamit ang Nutshell kung mas gusto mong huwag magtiwala kaninuman.",
@@ -1125,8 +1136,7 @@ export const strings: Strings = {
   "wallet.mint.remove": "Alisin ang mint",
   "wallet.mint.delete_anyway": "Burahin pa rin",
   "wallet.mint.consolidate": "Ilipat ang lahat ng balanse sa isang mint",
-  "wallet.mint.confirm_with": "Kumpirmahin ang mga patunay sa {mint}",
-  "wallet.mint.remove_a11y": "Alisin ang {mint}",
+  "wallet.mint.confirm_with": "Suriin ang balanse sa {mint}",
   "wallet.mint.available_amount": "{amount} {unit} ang available",
   "wallet.mint.split_across":
     "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
@@ -1153,13 +1163,10 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Nabayaran ang invoice at naglabas ang {mint} ng {amount} {unit}. Kumpirmado ang balanseng ito: puwede mo na itong gastusin agad nang offline.",
   "wallet.ln.withdrawn":
-    "{paid} sat ang nabayaran sa Lightning. Naningil ang mint ng {fee} sat na bayarin sa pagruruta.",
+    "{amount} {unit} ang nabayaran sa Lightning. Naningil ang mint ng {fee} {unit} na bayarin sa pagruruta.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sat ang nabayaran sa Lightning. Naningil ang mint ng {fee} sat na bayarin sa pagruruta, at ibinalik ang {change} sat ng reserba sa balanse mo.",
+    "{amount} {unit} ang nabayaran sa Lightning. Naningil ang mint ng {fee} {unit} na bayarin sa pagruruta, at ibinalik ang {change} {unit} ng reserba sa balanse mo.",
   "wallet.ln.payment_failed": "Nabigo ang bayad",
-  "wallet.ln.title": "Lightning",
-  "wallet.ln.body":
-    "Gawing ecash ang mga sat ng Lightning na kaya mong gastusin nang offline, o ipalit ang ecash pabalik sa kahit anong invoice ng Lightning. Kailangan ng pareho ang internet at isang mint.",
   "wallet.ln.deposit_body":
     "Bibigyan ka ng mint ng invoice. Bayaran ito mula sa kahit anong wallet ng Lightning at babalik ang mga sat bilang ecash na kaya mong gastusin nang offline.",
   "wallet.ln.pay_invoice_for":
@@ -1173,10 +1180,6 @@ export const strings: Strings = {
   "wallet.ln.up_to": "hanggang {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Magbayad ng {amount} {unit}",
-  "wallet.ln.deposit": "Magdeposito ng sat sa Lightning",
-  "wallet.ln.deposit_short": "Magdeposito",
-  "wallet.ln.withdraw": "Mag-withdraw sa isang invoice ng Lightning",
-  "wallet.ln.withdraw_short": "Mag-withdraw",
   "wallet.ln.deposit_title": "Magdeposito sa Lightning",
   "wallet.ln.amount_placeholder": "Halaga sa sat",
   "wallet.ln.requesting": "Humihiling…",
@@ -1197,7 +1200,6 @@ export const strings: Strings = {
   "wallet.ln.get_quote": "Kumuha ng quote",
 
   // ---- Wallet: recovery phrase ----
-  "wallet.backup.title": "Backup",
   "wallet.backup.setup_failed": "Hindi naitakda ang backup",
   "wallet.backup.on": "Naka-on ang backup",
   "wallet.backup.on_body":
@@ -1308,13 +1310,12 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Hindi naabot ang {mints}. Napapanahon na ang lahat ng iba pa.",
   "wallet.refresh.swapped":
-    "Nakumpirma ang {amount} {unit} at naipagpalit sa mga sariwang patunay.",
+    "Nakumpirma ang {amount} {unit} at naipagpalit sa sariwang ecash.",
   "wallet.refresh.secured":
     "Sakop na ngayon ng parirala mo sa pagbawi ang {amount} {unit}.",
   "wallet.refresh.all_confirmed": "Nakumpirma na sa mint ang lahat ng narito.",
-  "wallet.pending.title": "Nakabinbin",
   "wallet.pending.reserved_desc":
-    "Nabuo at nakalaan, hindi pa nakukumpirma ang paghahatid. Hawak ang mga patunay sa labas ng balanse mo para hindi ito magastos nang dalawang beses.",
+    "Nabuo at nakalaan, hindi pa nakukumpirma ang paghahatid. Hawak ang mga barya sa labas ng balanse mo para hindi ito magastos nang dalawang beses.",
   "wallet.pending.locked_desc":
     "Nakakandado na sa susi ng tatanggap, kaya sila lang ang makakagastos nito. Hindi pa lang ito nakakarating sa kanila. Ibahagi ang token para tapusin ito.",
   "wallet.pending.show_qr": "Ipakita ang token na ito bilang QR code",
@@ -1326,8 +1327,6 @@ export const strings: Strings = {
     "Bawiin ang token na ito pabalik sa balanse mo",
   "wallet.activity.title": "Aktibidad",
   "wallet.activity.none": "Wala pa",
-  "wallet.activity.none_desc":
-    "Lumilitaw dito ang mga bayad na ipinapadala at natatanggap mo, pinakabago muna, kasama ang mint at bayarin ng bawat isa.",
   "wallet.activity.show_fewer": "Magpakita ng mas kaunting bayad",
   "wallet.activity.show_less": "Magpakita ng mas kaunti",
   "wallet.activity.received_unconfirmed": "Natanggap, hindi pa nakumpirma",
@@ -1343,14 +1342,14 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Deposito sa Lightning",
   "wallet.activity.ln_withdrawal": "Withdrawal sa Lightning",
   "wallet.activity.nutzap_received": "Natanggap na nutzap",
-  "wallet.activity.spent_removed": "Inalis ang mga nagastos na patunay",
-  "wallet.activity.refreshed": "Na-refresh ang mga patunay",
-  "wallet.activity.refreshing": "Nire-refresh ang mga patunay",
+  "wallet.activity.spent_removed": "Inalis ang mga nagastos na coin",
+  "wallet.activity.refreshed": "Nasuri sa mint",
+  "wallet.activity.refreshing": "Sinusuri sa mint",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Offline ang mesh",
   "wallet.mesh_offline_body":
-    "Hindi tumatakbo ang serbisyo ng mesh, kaya walang mapagbibigyan ng token. Mananatili itong nakalaan sa ilalim ng Nakabinbin.",
+    "Hindi tumatakbo ang serbisyo ng mesh, kaya walang mapagbibigyan ng token. Mananatili itong nakalaan sa ilalim ng Aktibidad.",
   "wallet.xfer.route_mesh":
     "Direktang ibinigay sa device nila sa pamamagitan ng mesh.",
   "wallet.xfer.route_nostr":
@@ -1363,7 +1362,7 @@ export const strings: Strings = {
     "Hindi tumatakbo ang serbisyo ng mesh, kaya walang paraan para ipasa ang token. Walang naibawas.",
   "wallet.xfer.could_not_send": "Hindi naipadala",
   "wallet.xfer.inexact_body":
-    "Hindi kayang gawing eksaktong {amount} {unit} ng mga patunay mo nang offline. Ang pinakamaliit na token na kaya mong buuin ay {spend} {unit}, at mapupunta sa kanila ang dagdag na {extra} {unit} nang walang paraan para mabawi ito.\n\nKapag nag-refresh sa mint habang online, nahahati ang mga patunay mo sa mga denominasyong eksaktong bagay dito.",
+    "Hindi kayang gawing eksaktong {amount} {unit} ng mga barya mo nang offline. Ang pinakamaliit na token na kaya mong buuin ay {spend} {unit}, at mapupunta sa kanila ang dagdag na {extra} {unit} nang walang paraan para mabawi ito.\n\nKapag nag-refresh sa mint habang online, nahahati ang mga barya mo sa mga denominasyong eksaktong bagay dito.",
   "wallet.xfer.send_amount": "Magpadala ng {amount}",
   "wallet.xfer.mesh_offline": "Offline ang mesh",
 
@@ -1373,7 +1372,7 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_dm":
     "Nakakandado sa susi nila. Ayaw itong tanggapin ng relay, kaya napunta ito sa kanila bilang mensahe.",
   "wallet.pay.rail_nutzap_undelivered":
-    "Nakakandado sa susi nila, pero wala pang nakakapagdala nito. Nakapila ito, at nasa ilalim ng Nakabinbin ang token.",
+    "Nakakandado sa susi nila, pero wala pang nakakapagdala nito. Nakapila ito, at nasa ilalim ng Aktibidad ang token.",
   "wallet.pay.final":
     "Hindi mababawi ang mga nakakandadong bayad: susi lang nila ang makakagastos ng mga baryang ito ngayon.",
   "wallet.pay.reclaimable":
@@ -1393,7 +1392,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Naka-lock ito sa kanilang key. Kapag naipadala, hindi na ito mababawi.",
   "wallet.pay.confirm_reclaimable":
-    "Mababawi mo ito mula sa Nakabinbin hangga't hindi pa nila ito kinukuha.",
+    "Mababawi mo ito mula sa Aktibidad hangga't hindi pa nila ito kinukuha.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Pag-access sa camera",
@@ -1413,10 +1412,10 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Itutok sa isang QR code ng invoice ng Lightning.",
   "wallet.scan.title_token": "Mag-scan ng ecash",
   "wallet.scan.title_invoice": "Mag-scan ng invoice",
-  "wallet.scan.desc_token":
-    "Magbasa ng token ng Cashu mula sa ibang wallet. Gumagana sa kahit anong wallet ng Cashu, hindi lang sa Airhop.",
-  "wallet.scan.desc_invoice":
-    "Magbasa ng invoice ng Lightning para bayaran ito mula sa balanse mo.",
+  "wallet.scan.title_any": "Mag-scan ng QR code",
+  "wallet.scan.aim_any": "Itutok sa QR code ng token, invoice o npub.",
+  "wallet.scan.no_any":
+    "Walang natagpuang token, invoice o npub sa imaheng iyon.",
   "wallet.scan.use_camera_a11y": "Mag-scan gamit ang camera",
   "wallet.scan.use_camera": "Gamitin ang camera",
   "wallet.scan.pick_image_a11y":
@@ -1429,7 +1428,7 @@ export const strings: Strings = {
     "Ang Cashu ay ecash para sa Bitcoin. Ang isang token ay isang string na may halagang pera para sa sinumang may hawak nito, bulag na nilagdaan ng isang mint kaya hindi masasabi ng mint kung sino ang gumastos ng ano. Walang account, walang login.",
   "wallet.explain.send": "Ipadala",
   "wallet.explain.send_desc":
-    "Ginagawang token ang isang halaga na kaya mong ibigay sa peer sa malapit sa Bluetooth, o ibahagi bilang teksto. Gumagana nang walang internet. Nananatiling nakalaan ang mga patunay hangga't hindi mo kinukumpirmang dumating ito.",
+    "Ginagawang token ang isang halaga na kaya mong ibigay sa peer sa malapit sa Bluetooth, o ibahagi bilang teksto. Gumagana nang walang internet. Nananatiling nakalaan ang mga barya hangga't hindi mo kinukumpirmang dumating ito.",
   "wallet.explain.receive": "Tumanggap",
   "wallet.explain.receive_desc":
     "Idikit ang isang token para maidagdag ito. Kapag online, agad itong ipinagpapalit sa mint, na nagpapatunay na sa iyo ito. Kapag offline, iniimbak ito at minamarkahang hindi pa nakumpirma hangga't hindi ka nagre-refresh.",
@@ -1459,7 +1458,11 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Hindi naabot ang mint.",
   "wallet.svc.tor_ios": "Hindi dumadaan sa Tor ang mga hiling sa mint sa iOS.",
   "wallet.svc.tor_ios_body":
-    "Mga WebSocket lang ng Nostr ang binabalot ng Arti, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa mga patunay na ito. Payagan ito sa ilalim ng Mga Setting > Seguridad, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
+    "Nostr lang ang sakop ng Tor sa iOS, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa ecash na ito. I-on ang {setting} sa Settings, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
+  "wallet.svc.internet_off":
+    "Naka-off ang internet, kaya hindi maabot ang mint.",
+  "wallet.svc.internet_off_body":
+    "I-on ang {setting} sa Settings. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa malapit.",
   "wallet.svc.keys_uncached":
     "Hindi nakaimbak sa device na ito ang mga susi ng mint na ito.",
   "wallet.svc.keys_uncached_body":
@@ -1473,20 +1476,24 @@ export const strings: Strings = {
   "wallet.svc.restored": "Naibalik mula sa parirala sa pagbawi",
   "wallet.svc.storage_locked": "Naka-lock ang imbakan ng wallet.",
   "wallet.svc.storage_locked_body":
-    "Itinatago ng Airhop ang mga patunay ng ecash sa naka-encrypt na file at nasa keychain ng device ang susi nito. I-unlock ang device at buksang muli ang app.",
+    "Itinatago ng Airhop ang ecash mo sa naka-encrypt na file at nasa keychain ng device ang susi nito. I-unlock ang device at buksang muli ang app.",
   "wallet.svc.bad_url": "Hindi iyon wastong URL.",
   "wallet.svc.needs_https":
     "Kailangang magsimula sa https:// ang URL ng isang mint.",
   "wallet.svc.refuse_http": "Tumatangging gumamit ng mint sa payak na http.",
   "wallet.svc.refuse_http_body":
-    "Kayang basahin o baguhin ng sinumang nasa daanan ng network ang mga patunay mo. Gumamit ng mint na may https://.",
+    "Kayang basahin o baguhin ng sinumang nasa daanan ng network ang ecash mo. Gumamit ng mint na may https://.",
   "wallet.svc.mint_not_saved": "Hindi na-save ang mint.",
   "wallet.svc.unreadable_token": "Hindi iyon nababasang token ng Cashu.",
   "wallet.svc.unreadable_token_body":
     "Nagsisimula ang mga token sa cashuA o cashuB. Tiyaking walang naputol nang kopyahin ito.",
+  "wallet.svc.keyset_unknown":
+    "Gumagamit ang token na ito ng mga bagong susi mula sa mint nito.",
+  "wallet.svc.keyset_unknown_body":
+    "Hindi maabot ang mint ngayon para kunin ang mga ito. Walang nawala: tanggapin itong muli kapag online ka na.",
   "wallet.svc.wrong_mint":
     "Hindi nilagdaan ng mintong tinutukoy nito ang token na ito.",
-  "wallet.svc.already_spent": "Nagastos na ang mga patunay na ito.",
+  "wallet.svc.already_spent": "Nagastos na ang ecash na ito.",
   "wallet.svc.already_spent_body":
     "Ang nagpadala ng token na ito ang unang tumubos nito, o ipinadala rin ang parehong token sa iba.",
   "wallet.svc.receiving_offline": "tumatanggap nang offline",
@@ -1501,7 +1508,7 @@ export const strings: Strings = {
   "wallet.svc.split_across_mints":
     "Nahahati sa iba't ibang mint ang balanse mo.",
   "wallet.svc.mint_says_spent":
-    "Iniulat ng mint na nagastos na ang mga patunay na ito.",
+    "Iniulat ng mint na nagastos na ang ecash na ito.",
   "wallet.svc.issue_against_invoice":
     "maglabas ng ecash laban sa isang invoice ng Lightning",
   "wallet.svc.pay_invoice": "magbayad ng isang invoice ng Lightning",
@@ -1534,7 +1541,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Hindi natukoy ang laki ng paglilipat na ito.",
   "wallet.svc.insufficient_at_mint": "Kulang ang balanse sa {mint}.",
   "wallet.svc.inexact_title":
-    "Hindi kayang gawing eksaktong {amount} {unit} ng mga patunay mo nang offline.",
+    "Hindi kayang gawing eksaktong {amount} {unit} ng mga barya mo nang offline.",
   "wallet.svc.inexact_detail":
     "Ang pinakamaliit na token na kaya mong ipadala ay {spend} {unit}. Walang sukli kapag offline, kaya mapupunta sa tatanggap ang dagdag na {extra} {unit}.",
   "wallet.svc.no_single_mint":
@@ -1566,10 +1573,9 @@ export const strings: Strings = {
     "Inisyu ng mint ang deposit na ito, pero hindi na-rebuild ang mga coin nito. Maibabalik ang mga ito sa pag-restore mula sa recovery phrase mo.",
   "wallet.svc.swap_unreadable":
     "Na-save ang palitang ito sa anyong hindi kayang ulitin ng bersyong ito.",
-  "wallet.svc.lock_in_doubt":
-    "Hindi sumagot ang mint, kaya maaaring natuloy o hindi ang bayad na ito.",
+  "wallet.svc.lock_in_doubt": "Maaaring natuloy o hindi ang bayad na ito.",
   "wallet.svc.lock_in_doubt_body":
-    "Walang ibang naipadala. Nakahawak ang mga coin hanggang sumagot ang mint. Kung natuloy, lalabas ang naka-lock na token sa Nakabinbin para iabot mo. Kung hindi, babalik ang mga coin.",
+    "Walang ibang naipadala. Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan. Kung natuloy, lalabas ang naka-lock na token sa Aktibidad para iabot mo. Kung hindi, babalik ang mga barya.",
   "wallet.svc.send_spent_by_swap":
     "Na-swap pabalik sa iyong wallet ang mga coin na ito bago na-claim ang token na ito, kaya hindi na ito ma-claim. Nasa balanse mo ang halaga.",
 
@@ -1671,6 +1677,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Kopyahin ang peer ID",
   "settings.peer_id_sheet.note":
     "Gumagana lang ito kapag pareho kayong nasa saklaw ng Bluetooth. Para makapag-mensahe sa iyo ang isang tao mula saanman, ibahagi na lang ang QR code mo.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Maghanap sa mga setting…",
   "settings.search.a11y": "Maghanap sa mga setting",
   "settings.search.close": "Isara ang paghahanap",
@@ -1827,6 +1835,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Itago ang preview sa abiso",
   "settings.security.hide_previews_desc":
     "Inilalayo ang nagpadala at ang mensahe sa lock screen mo, na nagpapakita ng mga ito nang hindi ina-unlock",
+  "settings.security.ring_alerts": "Mga alerto ng tawag",
+  "settings.security.ring_alerts_desc":
+    "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
   "settings.security.no_blocked": "Walang naka-block na peer",
   "settings.security.no_blocked_desc":
     "Hindi ka mame-mensahe ng mga naka-block na peer at hindi sila lilitaw sa tab na Mesh",
@@ -2034,7 +2045,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Paggamit ng network",
   "settings.storage.storage_usage": "Paggamit ng imbakan",
   "settings.storage.storage_usage_desc":
-    "Mga mensahe, patunay sa wallet, at naka-cache na attachment",
+    "Mga mensahe, ecash, at naka-cache na attachment",
   "settings.storage.session_usage":
     "Session na ito · {sent} ang naipadala, {received} ang natanggap",
   "settings.storage.cache": "Cache",
@@ -2124,8 +2135,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Mga usapan, grupo, at channel na sinalihan mo",
   "settings.transfer.wallet": "Balanse ng wallet",
-  "settings.transfer.wallet_desc":
-    "Mga patunay ng Cashu at kasaysayan ng transaksyon",
+  "settings.transfer.wallet_desc": "Ecash at kasaysayan ng transaksyon",
   "settings.transfer.title": "Ilipat sa bagong telepono",
   "settings.transfer.desc":
     "Ilipat ang pagkakakilanlan, mga chat at wallet mo sa ibang device",
@@ -2158,10 +2168,9 @@ export const strings: Strings = {
     "Mag-tap nang tatlong beses para agad maglinis nang walang kumpirmasyon",
   "settings.wipe.title": "Panic wipe",
   "settings.wipe.now": "Maglinis na",
-  "settings.wipe.desc":
-    "Agad na winawasak ang lahat ng susi, mensahe at patunay",
+  "settings.wipe.desc": "Agad na winawasak ang lahat ng susi, mensahe at ecash",
   "settings.wipe.body":
-    "Agad nitong wawasakin ang lahat ng susi, mensahe at patunay sa wallet mo. Hindi ito maibabalik.",
+    "Agad nitong wawasakin ang lahat ng susi, mensahe at ecash mo. Hindi ito maibabalik.",
   "settings.wipe.in_progress": "Naglilinis",
   "settings.wipe.in_progress_body":
     "Winawasak ang mga susi, mensahe at file mo. Ilang segundo lang ito at natatapos nang mag-isa kahit isara ang app.",
@@ -2267,6 +2276,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Mga peer sa malapit",
   "notif.channel.nearby_desc":
     "Paminsan-minsang paalala kapag may natagpuang tao ang mesh sa saklaw ng Bluetooth.",
+  "notif.channel.ring": "Tawag",
+  "notif.channel.ring_desc":
+    "Mga alerto mula sa mga kontaktong pinayagan mong tumawag sa iyo.",
   "notif.nearby.body":
     "Nasa saklaw ng Bluetooth ngayon. I-tap para buksan ang mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2284,6 +2296,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Bagong aktibidad",
   "notif.hidden.mention": "Binanggit ka",
   "notif.mention.title": "Binanggit ka ni {sender}",
+  "notif.ring.hidden": "Tawag",
+  "notif.ring.title": "Tinatawagan ka ni {sender}",
+  "notif.ring.body": "Suriin ang iyong mga mensahe",
 };
 
 export const plurals: Plurals = {
@@ -2358,14 +2373,10 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint_count": {
-    one: "{count} mint",
-    other: "{count} na mint",
-  },
   "wallet.mint.remove_body": {
-    one: "May hawak ang {mint} na {balance} {unit} sa {count} patunay. Kapag inalis ito, permanenteng mabubura ang patunay na iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
+    one: "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang baryang iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
     other:
-      "May hawak ang {mint} na {balance} {unit} sa {count} na patunay. Kapag inalis ito, permanenteng mabubura ang mga patunay na iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
+      "May hawak ang {mint} na {balance} {unit} sa {count} na barya. Kapag inalis ito, permanenteng mabubura ang mga baryang iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2377,9 +2388,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Nabawi ang {count} hindi pa nagagastos na patunay mula sa {mints}.",
+    one: "Nabawi ang {count} hindi pa nagagastos na barya mula sa {mints}.",
     other:
-      "Nabawi ang {count} na hindi pa nagagastos na patunay mula sa {mints}.",
+      "Nabawi ang {count} na hindi pa nagagastos na barya mula sa {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "May natagpuang {count} barya pero nagastos na ito, kaya walang na-kredito para rito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",
@@ -2400,13 +2411,9 @@ export const plurals: Plurals = {
     one: "{count} hindi pa nakumpirma",
     other: "{count} na hindi pa nakumpirma",
   },
-  "wallet.proof_count": {
-    one: "{count} patunay",
-    other: "{count} na patunay",
-  },
   "wallet.spent_removed_detail": {
-    one: "Nagastos na ang {count} patunay at inalis na ito.",
-    other: "Nagastos na ang {count} na patunay at inalis na ang mga ito.",
+    one: "Nagastos na ang {count} barya at inalis na ito.",
+    other: "Nagastos na ang {count} na barya at inalis na ang mga ito.",
   },
 
   // ---- System notifications ----

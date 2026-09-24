@@ -1,27 +1,18 @@
-// Paying a person, in one place.
-//
-// Four screens can pay someone: the DM thread's attach menu, the contact info
-// sheet, the Mesh tab's peer sheet, and the Wallet tab's Zap. All four go through
-// `payPerson`, which owns the whole ladder, so they cannot disagree about what a
-// payment does, which rail carried it, or whether it can be reclaimed:
-//
-//   1. Radio, when a direct link exists. Instant, local, needs no internet, and
-//      reclaimable. Someone standing in front of you should not wait on a mint.
-//   2. Nutzap (NIP-61), when there is no radio link but we know their Nostr key,
-//      they have published a kind 10019, and we hold value at a mint they
-//      accept. The proofs are locked to their key, so this is the only rail
-//      where the money is definitively theirs whether or not they ever come
-//      online. It is also the only rail that cannot be taken back.
-//   3. An ordinary token, delivered by `MeshService.sendDm`, which picks its own
-//      best transport (Nostr gift-wrap, courier, or the outbox). Reclaimable.
-//   4. A token string the user hands over themselves. Reclaimable.
-//
-// Rails 3 and 4 keep the guarantee the wallet service was built around: proofs
-// are reserved, not spent, and a send that never lands can be pulled back.
-//
-// Every rail reports which one it was and whether it can be undone. That is not
-// decoration: "locked to them forever" and "queued, take it back whenever" are
-// the same gesture to the user and completely different facts about their money.
+// Paying a person. Every screen that pays (DM attach menu, contact sheet, Mesh
+// peer sheet, Wallet Zap) goes through `payPerson`, which owns the rail ladder,
+// so none can disagree about what a payment does or whether it is reclaimable:
+//   1. Radio, when a direct link exists. Someone in front of you should not
+//      wait on a mint, and it works with no internet at all. Reclaimable.
+//   2. Nutzap (NIP-61), when we know their Nostr key, they publish a kind
+//      10019, and we hold value at a mint they accept. Locked to their key, so
+//      the money is theirs whether or not they ever come online, and the only
+//      rail that cannot be taken back.
+//   3. A token over `sendDm` (gift-wrap, courier or outbox). Reclaimable.
+//   4. A token the user hands over themselves. Reclaimable.
+// Rails 3 and 4 reserve proofs rather than spending them, so a send that never
+// lands can be pulled back. Every result says which rail carried it and whether
+// it can be undone: "locked to them forever" and "queued, take it back" are one
+// gesture to the user and very different facts about their money.
 
 import { t } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
@@ -48,65 +39,51 @@ import {
   type NutzapTarget,
 } from "./wallet-service";
 
-// How the DM actually left the device. `sendDm` already works this out; before
-// this was surfaced, every screen said "sent over the mesh" even when there was
-// no route and the token had merely been queued, which is the difference
-// between "they have it" and "they might get it tomorrow".
+// How the DM actually left the device: "they have it" versus "queued, they
+// might get it tomorrow", which the confirmation must not blur.
 export type DeliveryRoute = ReturnType<MeshService["sendDm"]>;
 
-// Which rail carried the payment. Ordered best to worst in the header above.
 export type PayRail =
   | "mesh"
   | "nutzap"
   // Locked proofs the relay would not take, delivered as a message instead.
   | "nutzap-dm"
-  // Locked proofs that nothing could carry at all. The money is committed to the
-  // recipient and the token comes back with the result as the only way to it.
+  // Locked proofs nothing could carry: the returned token is the only copy.
   | "nutzap-undelivered"
   | "nostr"
   | "courier"
-  // Nothing carried it. The token comes back with the result for the user to
-  // hand over however they like, and stays reserved until they say it landed.
+  // Nothing carried it: the user hands over the returned token, still reserved.
   | "queued";
 
 export interface PayResult {
   rail: PayRail;
   amount: number;
   unit: string;
-  // The mint the coins came from. A token names exactly one, and the Wallet tab
-  // shows it beside a token the user has to deliver by hand.
   mintUrl: string;
   txId: string;
-  // Only set when nothing could carry it and the user must deliver by hand.
+  // Only when the user must deliver by hand.
   token?: string;
-  // True when the money is committed and Pending will not offer it back. Only
-  // the nutzap rails are final: their proofs are locked to the recipient's key
-  // and are not ours to reclaim.
+  // Only the nutzap rails: locked proofs are not ours to reclaim.
   final: boolean;
-  // Why a better rail was not used, when one was not. User-facing.
+  // Why a better rail was not used. User-facing.
   fallbackReason?: string;
 }
 
 export interface PayPersonParams {
-  // Mesh peer ID, or a `nostr_<pubkey>` id for a Nostr-only correspondent.
-  // Either this or nostrPubkey is required; both is better.
+  // Mesh peer ID or `nostr_<pubkey>`. This or nostrPubkey is required.
   peerID?: string;
-  // Hex x-only Nostr pubkey. The Zap sheet has only this.
+  // Hex x-only.
   nostrPubkey?: string;
   amount: number;
   memo?: string;
   unit?: string;
-  // Sender display name for the local echo. The DM thread has the user's real
-  // nickname; the peer sheet and wallet picker only need "You".
+  // For the local echo; defaults to "You".
   senderNickname?: string;
-  // Who the confirmation names. Callers that show a name on screen pass it so
-  // the two agree; anything else is resolved the way the rest of the app
-  // names a peer.
+  // Pass the name already on screen so the confirmation agrees with it.
   recipientName?: string;
 }
 
-// Pay someone. Returns null when the user cancelled or the wallet refused;
-// errors are reported here so call sites do not each repeat the message mapping.
+// Null when the user cancelled or the wallet refused; errors are alerted here.
 export async function payPerson(
   params: PayPersonParams,
 ): Promise<PayResult | null> {
@@ -116,8 +93,7 @@ export async function payPerson(
 
   const service = getMeshService();
   if (!service) {
-    // Without the service there is no transport and no Nostr client, so there
-    // is no rail at all. Nothing has been deducted.
+    // No rail at all. Nothing has been deducted.
     showAlert(
       t("wallet.xfer.mesh_offline"),
       t("wallet.xfer.mesh_offline_body"),
@@ -130,17 +106,16 @@ export async function payPerson(
   const name = params.recipientName ?? resolveDisplayName(payee.peerID);
 
   try {
-    // Rail 1. A direct radio link means they are right here: hand it over now
-    // rather than spending a mint round trip to build a fancier instrument.
-    // This also keeps the in-person case working with no internet at all, which
-    // is the case the whole app exists for.
+    // Rail 1 beats a nutzap. They are right here: hand it over now rather than
+    // spend a mint round trip on a fancier instrument, and keep the in-person
+    // case working with no internet, the case the app exists for.
     const nearby = service.hasDirectLink(payee.peerID);
 
     if (!nearby && payee.nostrPubkey !== undefined) {
       const client = service.getNostrClient();
       const privKey = service.getNostrPrivKey();
       if (client) {
-        // Rail 2. Never throws for "not this rail" reasons, so a miss here just
+        // Rail 2. The lookup never throws for "not this rail", so a miss
         // falls through to the token rails with nothing spent.
         const lookup = await findNutzapTarget({
           recipientPubkey: payee.nostrPubkey,
@@ -149,8 +124,8 @@ export async function payPerson(
           client,
         });
         if (lookup.ok) {
-          // Asked here, once the rail is known, because only this rail cannot
-          // be undone and the question has to say so before anything is locked.
+          // Asked once the rail is known, since only this rail is final and
+          // the question must say so before anything is locked.
           const confirmed = await confirmPayment(amount, unit, name, true);
           if (!confirmed) return null;
           const paid = await payAsNutzap({
@@ -165,8 +140,7 @@ export async function payPerson(
             privKey,
           });
           if (paid !== null) return paid;
-          // The lock refused before committing anything. The user has already
-          // agreed to pay, so the lesser rail goes ahead without asking twice.
+          // The lock committed nothing; already confirmed, so do not ask twice.
           return await payAsToken({
             peerID: payee.peerID,
             amount,
@@ -178,9 +152,7 @@ export async function payPerson(
             confirmed: true,
           });
         } else {
-          // Remember why, so the confirmation can say "sent as a token
-          // because they have not published nutzap info" rather than leaving
-          // the user to wonder why this payment differed from the last.
+          // Shown in the confirmation as why this went as a token.
           payee.fallbackReason = lookup.reason;
         }
       } else {
@@ -206,27 +178,23 @@ export async function payPerson(
 }
 
 interface ResolvedPayee {
-  // Always present: the id both the chat thread and `sendDm` are keyed by.
+  // What the chat thread and `sendDm` are keyed by.
   peerID: string;
   nostrPubkey?: string;
   fallbackReason?: string;
 }
 
-// Work out who is being paid, from whichever half the caller happens to hold.
-//
-// Both halves matter. The peer ID names the conversation the receipt belongs in
-// and is what `sendDm` routes on; the Nostr key is what makes rail 2 possible.
-// Filling in the missing half is what stops a payment started from the Wallet
-// tab landing in a second, parallel thread with the same person.
+// Fills in whichever half the caller lacks. The peer ID names the thread the
+// receipt belongs in and is what `sendDm` routes on; the Nostr key makes rail 2
+// possible. Without both, a Wallet-tab payment lands in a parallel thread.
 function resolvePayee(
   params: PayPersonParams,
   service: MeshService,
 ): ResolvedPayee | null {
   if (params.peerID !== undefined && params.peerID.length > 0) {
     const peerID = params.peerID;
-    // A `nostr_` id carries its own key. Otherwise ask the live registry (their
-    // last ANNOUNCE) and then the durable contact record, which is the one that
-    // survives them walking out of Bluetooth range.
+    // A `nostr_` id carries its key; else their last ANNOUNCE, then the
+    // contact record, which survives them leaving Bluetooth range.
     const nostrPubkey = isNostrId(peerID)
       ? peerID.slice(NOSTR_ID_PREFIX.length)
       : (params.nostrPubkey ??
@@ -243,9 +211,7 @@ function resolvePayee(
   const nostrPubkey = params.nostrPubkey;
   if (nostrPubkey === undefined || nostrPubkey.length === 0) return null;
 
-  // Only a key. If it belongs to someone already in contacts, pay them under
-  // the peer ID we know them by, so the receipt lands in the thread the user
-  // already has with them and the radio rail stays available.
+  // A known contact is paid under their peer ID, keeping the radio rail open.
   const known = Object.values(useContactsStore.getState().contacts).find(
     (c) => c.nostrPubkeyHex === nostrPubkey,
   );
@@ -255,12 +221,10 @@ function resolvePayee(
   };
 }
 
-// Rail 2. Lock proofs to their key and publish the kind 9321.
-//
-// Returns null when nothing was spent and the caller should try a lesser rail.
-// Once proofs are locked it never returns null, because the value has left the
-// wallet for good: from that point every branch is about delivery, and falling
-// through would pay the same person twice and strand the first payment.
+// Rail 2: lock proofs to their key and publish the kind 9321. Null only when
+// nothing was spent. Once proofs are locked the value has left for good, so it
+// never returns null: every later branch is about delivery, and falling through
+// would pay the same person twice and strand the first payment.
 async function payAsNutzap(params: {
   target: NutzapTarget;
   recipientPubkey: string;
@@ -272,9 +236,8 @@ async function payAsNutzap(params: {
   client: NonNullable<ReturnType<MeshService["getNostrClient"]>>;
   privKey: Uint8Array;
 }): Promise<PayResult | null> {
-  // Locking and publishing fail very differently, so they cannot share a catch.
-  // A failed lock spends nothing, because the mint's swap is atomic. A failed
-  // publish means the value is already committed.
+  // Separate catches: a failed lock spends nothing (the swap is atomic), a
+  // failed publish means the value is already committed.
   let locked;
   try {
     locked = await lockProofsForNutzap({
@@ -284,14 +247,12 @@ async function payAsNutzap(params: {
       recipientPubkey: params.target.p2pkPubkey,
     });
   } catch (err) {
-    // A request that may have reached the mint is a payment that may have been
-    // made. Its coins are held against the lock until `reconcile` learns which,
-    // and a token sent now would pay the same person a second time, so the
-    // ladder stops here and the error says what is going on.
+    // In doubt: the request may have reached the mint. Its coins stay held
+    // against the lock until `reconcile` learns which, and a token now could
+    // pay twice, so the ladder stops and the error says so.
     if (err instanceof WalletError && err.inDoubt) throw err;
-    // Mint unreachable before the request left, Tor blocking, a refusal,
-    // denominations short: nothing left the wallet, so the token rails below
-    // are the right next move.
+    // Unreachable before the request left, Tor blocking, a refusal, short
+    // denominations: nothing left the wallet, so the token rails are next.
     return null;
   }
 
@@ -304,7 +265,7 @@ async function payAsNutzap(params: {
     senderPrivKey: params.privKey,
     client: params.client,
     comment: params.comment,
-    // Their relays, not ours. See NutzapTarget in wallet-service.
+    // Their relays (kind 10019), not ours: see NutzapTarget.
     relays: params.target.relays,
   });
 
@@ -320,10 +281,8 @@ async function payAsNutzap(params: {
     return { rail: "nutzap", ...base };
   }
 
-  // The relay would not take it. The token is worthless to anyone but the
-  // recipient, so it can travel over any channel without the bearer risk an
-  // ordinary token carries: hand it to the DM ladder, which will retry it from
-  // the outbox if the internet is what failed.
+  // Relay refused. Locked proofs are worthless to anyone but the recipient, so
+  // any DM route will do, and the outbox retries if the internet failed.
   const route = deliverTokenToPeer({
     peerID: params.peerID,
     prepared: { txId: locked.txId, token },
@@ -332,31 +291,21 @@ async function payAsNutzap(params: {
   });
   if (route === "sent" || route === "sent-nostr") {
     settleNutzap(locked.txId);
-    // No `fallbackReason`: the rail sentence for this case already says the
-    // relay refused it and that a message went instead. Repeating it under
-    // "sent this way because..." says the same thing twice.
+    // No `fallbackReason`: the rail sentence already says the relay refused.
     return { rail: "nutzap-dm", ...base };
   }
 
-  // Queued or handed to a courier. Still theirs, still not reclaimable, so the
-  // transaction records why it is sitting there instead of looking abandoned,
-  // and `reconcile` closes it out if the outbox delivers it later.
+  // Queued or couriered: still theirs, still not reclaimable. The tx records
+  // why it waits rather than looking abandoned; `reconcile` closes it on
+  // delivery.
   failNutzapDelivery(locked.txId, t("wallet.svc.locked_undelivered"));
   return { rail: "nutzap-undelivered", ...base, token };
 }
 
-// Leave a note in the conversation when a nutzap went out of it.
-//
-// A nutzap is not a message: nothing is sent to the peer over any transport we
-// control, so there is no bubble to render and no delivery status to track. But
-// paying someone from inside their thread and having the thread show absolutely
-// nothing reads as a payment that vanished, which is the last thing money should
-// do. A system notice is the honest shape for this: local-only, centered, never
-// transmitted, exactly like the screenshot notice.
-//
-// Only for a conversation that already exists. Zapping a stranger's npub from
-// the Wallet tab should not manufacture a DM thread with them; that belongs in
-// the wallet's own history, which already has it.
+// A local-only system notice, never transmitted. A nutzap is not a message, so
+// there is no bubble or delivery status, but a thread showing nothing reads as
+// money that vanished. Only in an existing thread: zapping a stranger's npub
+// must not create one; the wallet history already records it.
 function noteNutzapInThread(
   peerID: string,
   txId: string,
@@ -367,19 +316,15 @@ function noteNutzapInThread(
   const channel = `dm:${peerID}`;
   if (chat.messages[channel] === undefined) return;
   chat.addMessage({
-    // Keyed by the transaction, not the clock. Two nutzaps inside the same
-    // millisecond would otherwise collide on id and the store would keep one.
+    // Keyed by transaction: two in one millisecond would collide on the clock.
     id: `nutzap-note-${txId}`,
     channel,
     senderID: getMeshService()?.getPeerID() ?? "",
     senderNickname: "",
-    // The amount is stored already grouped rather than as a raw number,
-    // because interpolation stringifies a number plainly and would drop the
-    // separator. So switching language re-translates the sentence but leaves
-    // the separator as it was written: "21,500" stays "21,500" in a language
-    // that would have written "21.500". The digits are Latin either way, and a
-    // stale separator is a far smaller thing than a receipt stuck in a
-    // language its reader does not have.
+    // Stored pre-grouped, since interpolating a number drops the separator.
+    // A language switch re-translates the sentence but keeps the original
+    // separator ("21,500" where "21.500" was due). Digits stay Latin either
+    // way, and that is far smaller than a receipt frozen in one language.
     ...systemRow("wallet.pay.thread_receipt", {
       ...amountParts(amount, unit),
     }),
@@ -389,7 +334,7 @@ function noteNutzapInThread(
   });
 }
 
-// Rails 3 and 4. Build an ordinary reserved token and let `sendDm` route it.
+// Rails 3 and 4: an ordinary reserved token, routed by `sendDm`.
 async function payAsToken(params: {
   peerID: string;
   amount: number;
@@ -398,8 +343,7 @@ async function payAsToken(params: {
   senderNickname?: string;
   fallbackReason?: string;
   name: string;
-  // Whether the user has already agreed to this payment. The inexact warning
-  // is asked regardless, since overpaying is a separate question.
+  // The inexact warning is asked regardless: overpaying is a separate question.
   confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
@@ -413,8 +357,7 @@ async function payAsToken(params: {
     if (!confirmed) return null;
   }
   if (!quote.exact) {
-    // Ask before reserving anything. An inexact offline send overpays and
-    // cannot be undone once the recipient redeems.
+    // Before reserving: an inexact send overpays irreversibly once redeemed.
     const confirmed = await confirm(
       t("wallet.err.exact_amount"),
       t("wallet.xfer.inexact_body", {
@@ -434,8 +377,8 @@ async function payAsToken(params: {
     unit: params.unit,
     memo: params.memo,
     counterparty: params.peerID,
-    // Only what the user was shown. The pool can change while a dialog is
-    // open, and an exact quote gone inexact would otherwise overpay unasked.
+    // Only what the user was shown: the pool can change while a dialog is
+    // open, and an exact quote gone inexact would overpay unasked.
     allowInexact: !quote.exact,
   });
 
@@ -451,7 +394,6 @@ async function payAsToken(params: {
     unit: prepared.unit,
     mintUrl: prepared.mintUrl,
     txId: prepared.txId,
-    // The user only needs the string in their hands when nothing carried it.
     ...(route === "queued" ? { token: prepared.token } : {}),
     final: false,
     ...(params.fallbackReason !== undefined
@@ -473,18 +415,10 @@ function railForRoute(route: DeliveryRoute): PayRail {
   }
 }
 
-// One sentence describing where the token went, for the confirmation the user
-// sees. Deliberately honest about the queued cases: the money is reserved and
-// reclaimable either way, but "on its way" and "waiting for a route" are very
-// different things to the person who just paid.
 export function describeRoute(route: DeliveryRoute): string {
   return describeRail(railForRoute(route));
 }
 
-// The same sentence, for a rail. Paired with `describeFinality`: between them
-// they answer the only two questions the user actually has, which are where the
-// money went and whether they can still stop it. Both are assembled by
-// `describePayResult`, which is what the screens call.
 function describeRail(rail: PayRail): string {
   switch (rail) {
     case "mesh":
@@ -508,9 +442,9 @@ function describeFinality(final: boolean): string {
   return final ? t("wallet.pay.final") : t("wallet.pay.reclaimable");
 }
 
-// The whole confirmation body: rail, then why it was that rail, then whether it
-// can be undone. Built here so all four doors say the same thing in the same
-// order rather than each assembling their own version.
+// Rail, why that rail, then whether it can be undone: where the money went and
+// whether the user can still stop it, in one order for every screen. The queued
+// sentences stay honest: "on its way" and "waiting for a route" differ.
 export function describePayResult(result: PayResult): string {
   const why =
     result.fallbackReason !== undefined && result.fallbackReason.length > 0
@@ -519,26 +453,19 @@ export function describePayResult(result: PayResult): string {
   return `${describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
 }
 
-// A token that is ready to be handed to someone. `PreparedSend` satisfies this,
-// and so does a locked nutzap that the relay refused, which is the reason this
-// is structural rather than just taking a `PreparedSend`.
+// Structural so a relay-refused locked nutzap fits as well as a `PreparedSend`.
 export interface DeliverableToken {
   txId: string;
   token: string;
 }
 
-// Post a token into a DM thread and hand it to the mesh.
-//
-// Split out from the rails above because the Wallet tab's peer picker acts on a
-// token that was built earlier (the user chose Share, changed their mind, and
-// picked a peer instead). Preparing a second one there would reserve a second
-// set of proofs for the same payment.
+// Exported for the Wallet tab's peer picker, which delivers a token built
+// earlier; preparing another would reserve a second set of proofs.
 export function deliverTokenToPeer(params: {
   peerID: string;
   prepared: DeliverableToken;
   senderNickname?: string;
-  // Locked nutzap proofs, which are not ours to take back. Only changes how a
-  // failed delivery is recorded; the message and routing are identical.
+  // Locked nutzap proofs: changes only how a failed delivery is recorded.
   final?: boolean;
 }): DeliveryRoute {
   const service = getMeshService();
@@ -548,9 +475,7 @@ export function deliverTokenToPeer(params: {
   const chat = useChatStore.getState();
   chat.addChannel(channel);
 
-  // The transaction id doubles as the message id, so the DM's delivery status
-  // and the wallet's pending send refer to the same thing and a later
-  // "delivered" receipt can settle the transaction.
+  // The txId is the message id, so a delivery receipt settles the transaction.
   const message: ChatMessage = {
     id: params.prepared.txId,
     channel,
@@ -568,9 +493,7 @@ export function deliverTokenToPeer(params: {
     params.prepared.txId,
   );
 
-  // Report the route on the bubble, the same mapping a text DM uses. Without
-  // this the token card sat on "sending" forever: a send that found no route has
-  // nothing to acknowledge it, so no receipt was ever coming.
+  // A routeless send gets no receipt, so set the status from the route now.
   chat.setMessageStatus(
     channel,
     params.prepared.txId,
@@ -581,32 +504,21 @@ export function deliverTokenToPeer(params: {
         : "sent",
   );
 
-  // Record the awkward routes on the transaction itself, so the Pending card in
-  // the Wallet tab explains why a send is still sitting there instead of just
-  // showing an unexplained pending entry days later. A locked nutzap is recorded
-  // by the caller, which knows it must not be offered back.
+  // So Pending explains why it is waiting. A locked nutzap is recorded by the
+  // caller, which knows it must not be offered back.
   if ((route === "queued" || route === "needs-courier") && !params.final) {
     failSend(params.prepared.txId, describeRoute(route));
   }
   return route;
 }
 
-// Reclaim a pending ecash send, cancelling every copy of it.
-//
-// `reclaimSend` on its own only moves proofs. A token send is also a message in
-// a DM thread and, when it found no route, an entry in the outbox. The outbox is
-// a promise to deliver: leaving the entry there put the proofs back in the
-// spendable balance while the mesh still held a copy to hand over, so the next
-// route to appear delivered a token the sender had already taken back.
-//
-// A locked nutzap has no reservation, so `reclaimSend` returns false and this
-// stops before touching the thread or the outbox. That is the correct answer:
-// those proofs are the recipient's, and the queued copy is the only way they
-// will ever see them.
+// Reclaims a pending send and cancels every copy. `reclaimSend` alone only
+// moves proofs; the outbox entry would still deliver a token the sender took
+// back once a route appears. A locked nutzap has no reservation, so this stops
+// before the thread or outbox: those proofs are the recipient's, and the queued
+// copy is their only way to them.
 export function reclaimTokenSend(txId: string): boolean {
-  // Read the counterparty before reclaiming, since it names the DM thread. A
-  // token built by hand and never addressed to anyone has none, and no bubble to
-  // update.
+  // Read before reclaiming. A hand-built token has none.
   const peerID = useWalletStore
     .getState()
     .history.find((tx) => tx.id === txId)?.counterparty;
@@ -618,11 +530,8 @@ export function reclaimTokenSend(txId: string): boolean {
   return true;
 }
 
-// Map a WalletError onto the alert the user sees. Kept here rather than in each
-// screen so the wording for "not enough balance" is identical everywhere.
 export function reportWalletError(err: unknown): void {
-  // Titled by its own message: under a code's title ("Mint refused") it would
-  // contradict a body saying nobody knows yet.
+  // A code's title ("Mint refused") would contradict "nobody knows yet".
   if (err instanceof WalletError && err.inDoubt) {
     showAlert(err.message, err.detail ?? "");
     return;
@@ -651,9 +560,7 @@ export function reportWalletError(err: unknown): void {
   showAlert(t("wallet.xfer.could_not_send"), String(err));
 }
 
-// The one question every payment asks before money moves: how much, to whom,
-// and whether it can be taken back. Every door reaches it through `payPerson`,
-// so none of them can skip it.
+// Every payment asks this before money moves: amount, recipient, finality.
 function confirmPayment(
   amount: number,
   unit: string,
@@ -670,13 +577,9 @@ function confirmPayment(
   );
 }
 
-// The app's alert store is callback-based; this wraps it so the send flow above
-// reads as a straight line rather than a nest of continuations.
-//
-// Tapping the backdrop closes the alert without invoking any button's onPress,
-// so a button-only promise would never settle and the send would hang holding
-// no proofs but also never returning. Watching `visible` catches that: any
-// dismissal that was not an explicit confirm resolves false.
+// Promise over the alert store. A backdrop tap fires no onPress, so a
+// button-only promise would never settle and the send would hang. Watching
+// `visible` resolves any dismissal that was not a confirm as false.
 function confirm(
   title: string,
   message: string,
@@ -690,10 +593,8 @@ function confirm(
       unsubscribe();
       resolve(value);
     };
-    // custom-alert calls `hide()` and *then* the button's onPress, both
-    // synchronously, so this listener fires on a confirm too. Deferring by a
-    // tick lets the onPress that follows settle the promise first; if none
-    // does, the dismissal was a backdrop tap and cancel is the right answer.
+    // custom-alert hides before calling onPress, so this fires on a confirm
+    // too. Deferring a tick lets that onPress settle first.
     const unsubscribe = useAlertStore.subscribe((state) => {
       if (state.visible) return;
       setTimeout(() => finish(false), 0);
