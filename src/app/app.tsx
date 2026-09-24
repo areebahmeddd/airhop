@@ -2303,13 +2303,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
       letterSpacing: -0.2,
-      // The Wallet header packs four action pills beside this title, so a long
-      // translation overflows the row on a narrow device.
-      //
-      // Grow, because under `space-between` free space lands between the title
-      // and the controls, and an intrinsically-sized title would ellipsize with
-      // a gap beside it. Shrink 2 against the controls' 1, so an overflow costs
-      // the title more than the segment labels.
+      // The Chats header puts the Channels/Direct control and two pills beside
+      // this title. Grow, so space-between leaves no gap beside a short title;
+      // shrink 2 against the controls' 1, so a long translation costs the title.
       flexGrow: 1,
       flexShrink: 2,
       marginEnd: Spacing.sm,
@@ -2317,10 +2313,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     searchRow: {
       flexDirection: "row",
       alignItems: "center",
-      // Spacing.md, not sm. Each pill is 32pt with 6pt of slop per side, so an
-      // 8pt gap puts centres 40pt apart and overlaps adjacent 44pt touch boxes
-      // by 4, resolved by view order rather than by which is nearer the finger.
-      // On the wallet header that would put Send next to Receive.
+      // md, not sm: 32pt controls with 6pt of slop need 12pt between them, or
+      // their 44pt touch areas overlap.
       gap: Spacing.md,
       paddingHorizontal: Spacing.base,
       paddingTop: Spacing.sm,
@@ -2358,7 +2352,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: "transparent",
     },
-
     segIconText: {
       flexDirection: "row",
       alignItems: "center",
@@ -2400,7 +2393,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     chromePressed: {
       opacity: PRESSED_OPACITY,
     },
-
     headerIconBtn: {
       width: HEADER_ICON_SIZE,
       height: HEADER_ICON_SIZE,
@@ -2518,11 +2510,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontVariant: ["tabular-nums"],
       ...BADGE_DIGIT,
     },
-    // Unread badge on the Channels/Direct segmented control, the same visual
-    // language as tabBadge, just anchored to a smaller pill instead of a tab icon.
-    // 16pt, matching the tab and bell badges: all three sit on chrome, so they
-    // are the same object at the same size. It was 15, which read as a third
-    // badge size for no reason anyone could name.
+    // The unread badge on the Channels/Direct control: 16pt, like the tab and
+    // bell badges, since all three sit on chrome.
     segBadge: {
       position: "absolute",
       top: -5,

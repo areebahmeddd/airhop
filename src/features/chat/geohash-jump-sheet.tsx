@@ -416,9 +416,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.danger,
     },
     // ---- Saved places (bookmarks) ----
-    // flexShrink so the saved-places list yields height when the sheet is
-    // squeezed (keyboard up on a short screen) rather than pushing the Back/Go
-    // row past the sheet's maxHeight, where it would be clipped and unreachable.
+    // flexShrink, so with the keyboard up the list yields height rather than
+    // pushing Back and Go out of the clipped sheet.
     saved: {
       gap: Spacing.sm,
       flexShrink: 1,

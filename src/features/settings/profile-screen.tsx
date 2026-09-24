@@ -1602,10 +1602,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: "100%",
       marginBottom: Spacing.lg,
     },
-    // Small group header inside the Appearance sheet (theme / font / language).
     // Capped so the language list scrolls inside the sheet instead of pushing
-    // the sheet past the top of the screen, where it would clip rather than
-    // scroll (a sheet body is a plain View).
+    // it past the top of the screen, where it would clip.
     appearanceSheet: {
       maxHeight: "85%",
     },

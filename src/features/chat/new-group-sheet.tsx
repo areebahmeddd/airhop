@@ -271,11 +271,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
     },
-    // flexShrink so the member list gives up height when the sheet is squeezed
-    // (keyboard up on a short screen) instead of pushing the Back/Create row off
-    // the bottom of a maxHeight-clipped sheet. RN defaults flexShrink to 0, so
-    // without this the list keeps its full height and the actions - the only way
-    // to finish or leave - are what gets cut.
+    // flexShrink, since RN defaults it to 0: with the keyboard up the list
+    // would otherwise push Back and Create out of the clipped sheet.
     section: { gap: Spacing.sm, flexShrink: 1 },
     sectionLabel: {
       fontSize: FontSize.xs,

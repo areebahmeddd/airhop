@@ -573,10 +573,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     bubbleMine: { backgroundColor: Colors.myBubble },
     bubbleTheirs: { backgroundColor: Colors.theirBubble },
-    // The squared-off corner that points a bubble at its sender. bubbleWrapper
-    // places bubbles by alignItems, which Yoga resolves against the writing
-    // direction, so the tail has to be logical too or it points away from the
-    // sender in Arabic.
+    // The squared-off corner pointing at the sender. Logical, because bubbles
+    // align by writing direction, or the tail points away in Arabic.
     bubbleTailTheirs: { borderBottomStartRadius: Radius.sm },
     bubbleTailMine: { borderBottomEndRadius: Radius.sm },
     bubbleHighlighted: {

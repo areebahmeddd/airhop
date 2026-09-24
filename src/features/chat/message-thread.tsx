@@ -5811,10 +5811,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // Same badge as the tab bar and the Channels/Direct segments: accent fill,
-    // inverse text, hairline ring in the surface behind it so it reads as a
-    // cutout rather than a sticker. Sits on the chevron so "what is behind this
-    // button" is answered by the button itself.
+    // Same badge as the tab bar and the segments, ringed in the surface colour
+    // so it reads as a cutout. On the back chevron, so the button itself says
+    // what is waiting behind it.
     backBadge: {
       position: "absolute",
       top: 0,
@@ -6364,11 +6363,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       flexShrink: 0,
     },
-    // Attachment bubbles (rendered inside the chat bubble)
-    // Height comes from the photo's own aspect at render time; see
-    // mediaHeightForAspect. A percentage width was what made these render as
-    // slivers: the bubble's width is decided by its caption, so "100%" of a
-    // two-character caption is a two-character-wide photo.
+    // Attachment bubbles. A fixed width, not a percentage: a bubble is as wide
+    // as its caption, so 100% of a short caption is a sliver. Height comes
+    // from the photo's aspect (mediaHeightForAspect).
     attachImage: {
       width: MEDIA_BUBBLE_WIDTH,
       borderRadius: Radius.md,

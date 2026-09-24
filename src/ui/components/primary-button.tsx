@@ -83,22 +83,16 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",
-      // A transparent hairline in the enabled state, so switching to `disabled`
-      // below only changes the border's COLOUR and never the button's geometry.
-      // Adding a border only when disabled would shift the label by a pixel and
-      // make the gate feel like a glitch.
+      // A transparent border when enabled, so disabling changes only its colour,
+      // never the button's geometry.
       borderWidth: 1,
       borderColor: "transparent",
     },
     pressed: {
       opacity: PRESSED_OPACITY,
     },
-    // A disabled CTA still has to read as a button, just plainly not yours yet.
-    // `surfaceRaised` (#F0F0F0) on the onboarding background (#F8F8F8) is a
-    // 1.03:1 difference, so on its own the pill had no visible edge and the
-    // gated "Get started" looked like a stray line of grey text rather than a
-    // control waiting on the checkbox below it. The border is what keeps the
-    // shape; the muted fill and label are what say it is inactive.
+    // Disabled keeps a visible border: the raised fill barely differs from the
+    // onboarding background, so without it the pill reads as stray grey text.
     disabled: {
       backgroundColor: Colors.surfaceRaised,
       borderColor: Colors.border,

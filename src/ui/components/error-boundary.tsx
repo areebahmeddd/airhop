@@ -174,10 +174,8 @@ function createStyles(C: ThemeColors) {
       textAlign: "center",
       lineHeight: FontSize.sm * 1.6,
     },
-    // The PrimaryButton pill, restated rather than imported: that component
-    // themes through useThemeColors, which is exactly the store read this screen
-    // cannot make. Geometry and type are kept identical to it, so the retry looks
-    // like every other CTA in the app.
+    // PrimaryButton's pill, restated: that component themes through the store
+    // this screen cannot read. Same geometry and type as every other CTA.
     button: {
       marginTop: Spacing.md,
       paddingHorizontal: Spacing.xl,

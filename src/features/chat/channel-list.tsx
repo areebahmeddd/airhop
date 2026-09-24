@@ -862,15 +862,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
-
-    // No justifyContent: "space-between". With a variable number of children
-    // (title, optional badge, chevron) space-between would spread space across
-    // ALL of them instead of just pushing the chevron to the far edge.
-    // sectionHeaderSpacer (flex: 1) does that job instead, so the title always
-    // sits flush at the same start inset (ROW_INSET) as a channel row's "#".
-    // paddingBottom is md, not sm: the header is tappable (it collapses the
-    // section) and sm leaves it under MIN_TOUCH. hitSlop is no use here, since
-    // it would reach into the first row beneath.
+    // A spacer, not space-between, pushes the chevron to the end, so the title
+    // stays at ROW_INSET beside an optional badge. Bottom padding is md so the
+    // tappable header reaches MIN_TOUCH; hitSlop would reach into the first row.
     sectionHeader: {
       flexDirection: "row",
       alignItems: "center",
@@ -910,13 +904,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-
-    // Same ROW_INSET as sectionHeader (above), applied directly on this
-    // full-bleed Pressable so its background spans edge to edge while its
-    // content still starts flush with the section title above it.
-    // No per-row background, just flat rows directly on the screen background,
-    // divided only by the hairline separator below. Matches the WhatsApp
-    // chat-list look rather than a "card per row" treatment.
+    // Full-bleed, so the pressed background spans the width while the content
+    // lines up with the section title. Flat rows split by hairlines, not cards.
     channelRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -924,12 +913,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing.md + 2,
       minHeight: 72,
     },
-    // The one press treatment for a row, shared by this list's channel rows
-    // and its action sheet. See PRESSED_OPACITY in ui/theme.
+    // Shared by the rows and the More sheet, so both press the same way.
     rowPressed: {
       backgroundColor: Colors.surfacePressed,
     },
-    // Single child of channelRow, so no `gap` here: it would be a no-op.
     channelRowBody: {
       flex: 1,
       gap: Spacing.xs + 2,
@@ -985,7 +972,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     channelPreviewSender: {
       color: Colors.textMuted,
     },
-    // Weight, not colour: green and red already mean encrypted and failed.
     channelPreviewDraft: {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
@@ -1014,7 +1000,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: StyleSheet.hairlineWidth,
       backgroundColor: Colors.border,
     },
-
     swipeActions: {
       flexDirection: "row",
       height: "100%",
@@ -1031,13 +1016,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textSecondary,
       fontWeight: FontWeight.medium,
     },
-
-    // Tight, boxed group, not spread out with the sheet's default gap, which
-    // reads as loose and disconnected for a same-purpose action list. Rows are
-    // transparent; the card owns the background and the rounded corners
-    // (overflow clips the rows to the radius). Leave uses the same box: what
-    // sets it apart is being a separate box, with the red on its icon and
-    // label rather than the card.
+    // One tight box per group of actions; overflow clips the rows to its
+    // corners. Leave gets a box of its own, red on its icon and label only.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,
@@ -1049,8 +1029,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       paddingVertical: Spacing.md,
       paddingHorizontal: Spacing.base,
-      // Padding alone leaves the row under 44pt, and every action here is one
-      // tap, several of them destructive.
+      // Padding alone leaves the row under 44pt.
       minHeight: MIN_TOUCH,
     },
     moreDivider: {
@@ -1066,7 +1045,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     moreRowTextDanger: {
       color: Colors.danger,
     },
-
     showMoreBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -1081,7 +1059,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.medium,
       color: Colors.textMuted,
     },
-
     ownEmptyHint: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,
@@ -1091,7 +1068,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.accent,
       fontWeight: FontWeight.semibold,
     },
-
     modalSheet: {
       paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.xl,

@@ -497,12 +497,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textMuted,
       lineHeight: FontSize.xs * 1.5,
     },
-    // The trailing value on a settings row, in the prose face by default.
-    //
-    // Most of what sits here is words rather than data ("Grant", "High",
-    // "7 days"), and JetBrains Mono covers three of the thirteen scripts Airhop
-    // ships. Prose by default means a value added later cannot land in a face
-    // with no glyphs for it unless somebody chooses to put it there.
+    // The prose face, not mono: most values are words, and the mono font
+    // covers only three of the scripts Airhop ships.
     settingValue: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,

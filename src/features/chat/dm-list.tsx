@@ -741,16 +741,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
     },
-    // Two grouped boxes: neutral actions in one card, destructive in another, so
-    // a mis-tap cannot cross from Mute into Block. Rows are transparent; the card
-    // owns the background and the rounded corners (overflow clips the rows to the
-    // radius).
-    //
-    // The "-Danger" halves of all three of these were byte-identical copies of
-    // their neutral counterparts, kept alive by a comment promising "a solid red
-    // card" that the code never delivered. What separates the destructive group
-    // is being a separate box with red content in it, and that is what these
-    // three styles plus moreRowTextDanger now say, once each.
+    // Two boxes, neutral actions and destructive ones, so a mis-tap cannot
+    // cross from Mute into Block. Overflow clips the rows to the corners.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,
