@@ -2116,18 +2116,15 @@ export default function WalletScreen({
             />
           )}
 
+          {/* The sheet's one action: filled, above the way out, as in SheetActions. */}
           <Pressable
-            style={({ pressed }) => [
-              styles.modalCancel,
-              styles.pillWithIcon,
-              pressed && styles.listRowPressed,
-            ]}
+            style={[styles.modalConfirm, styles.pillWithIcon]}
             onPress={() => switchSheet(() => setShowAddMint(true))}
             accessibilityRole="button"
             accessibilityLabel={T("wallet.mint.add")}
           >
-            <Feather name="plus" size={16} color={Colors.textPrimary} />
-            <Text style={styles.modalCancelText}>{T("wallet.mint.add")}</Text>
+            <Feather name="plus" size={16} color={Colors.textInverse} />
+            <Text style={styles.modalConfirmText}>{T("wallet.mint.add")}</Text>
           </Pressable>
           <Pressable
             style={styles.modalCancel}
@@ -2629,76 +2626,82 @@ export default function WalletScreen({
           </>
         ) : (
           <>
-            <Text style={styles.modalSubtitle}>
-              {T("wallet.ln.pay_invoice_for", {
-                ...amountParts(deposit.amount, deposit.unit),
-              })}
-            </Text>
-            {/* bech32 uppercases losslessly into QR alphanumeric mode, a
+            {/* An expired invoice cannot be paid, so none of it is offered:
+                no QR to scan, no text to copy, only a new invoice. */}
+            {!depositExpired && (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  {T("wallet.ln.pay_invoice_for", {
+                    ...amountParts(deposit.amount, deposit.unit),
+                  })}
+                </Text>
+                {/* bech32 uppercases losslessly into QR alphanumeric mode, a
                 denser code. Length checked so a long invoice falls back to
                 text instead of throwing. */}
-            {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
-              <View style={styles.qrFrame}>
-                <QRCode
-                  value={deposit.invoice.toUpperCase()}
-                  size={qrSize}
-                  ecl={TOKEN_QR_ERROR_CORRECTION}
-                  backgroundColor="#FFFFFF"
-                  color="#000000"
-                />
-              </View>
-            )}
-            {/* Head first: the `lnbc` prefix and amount are all a person can
+                {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
+                  <View style={styles.qrFrame}>
+                    <QRCode
+                      value={deposit.invoice.toUpperCase()}
+                      size={qrSize}
+                      ecl={TOKEN_QR_ERROR_CORRECTION}
+                      backgroundColor="#FFFFFF"
+                      color="#000000"
+                    />
+                  </View>
+                )}
+                {/* Head first: the `lnbc` prefix and amount are all a person can
                 check by eye. */}
-            <View style={styles.readonlyValueBox}>
-              <Text
-                style={styles.readonlyValue}
-                selectable
-                numberOfLines={4}
-                ellipsizeMode="tail"
-              >
-                {deposit.invoice}
-              </Text>
-            </View>
-            {/* Weighted, not equal: Open finishes the job on this phone and
+                <View style={styles.readonlyValueBox}>
+                  <Text
+                    style={styles.readonlyValue}
+                    selectable
+                    numberOfLines={4}
+                    ellipsizeMode="tail"
+                  >
+                    {deposit.invoice}
+                  </Text>
+                </View>
+                {/* Weighted, not equal: Open finishes the job on this phone and
                 leads, Copy serves other routes, Close walks away. */}
-            <View style={styles.generatedActions}>
-              <Pressable
-                style={styles.generatedPrimaryBtn}
-                onPress={() => void openInvoiceInWallet(deposit.invoice)}
-                accessibilityRole="button"
-                accessibilityLabel={T("wallet.ln.open_wallet")}
-              >
-                <Feather
-                  name="external-link"
-                  size={18}
-                  color={Colors.textInverse}
-                />
-                <Text style={styles.generatedPrimaryText}>
-                  {T("wallet.ln.open_wallet_short")}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.generatedActionBtn,
-                  pressed && styles.generatedActionBtnPressed,
-                ]}
-                onPress={() => copyInvoice(deposit.invoice)}
-                accessibilityRole="button"
-                accessibilityLabel={T("wallet.ln.copy_invoice")}
-              >
-                <CopyGlyph
-                  copied={invoiceCopied}
-                  size={18}
-                  color={Colors.accent}
-                />
-                <Text style={styles.generatedActionText}>
-                  {invoiceCopied
-                    ? T("common.copied")
-                    : T("wallet.ln.copy_invoice")}
-                </Text>
-              </Pressable>
-            </View>
+                <View style={styles.generatedActions}>
+                  <Pressable
+                    style={styles.generatedPrimaryBtn}
+                    onPress={() => void openInvoiceInWallet(deposit.invoice)}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("wallet.ln.open_wallet")}
+                  >
+                    <Feather
+                      name="external-link"
+                      size={18}
+                      color={Colors.textInverse}
+                    />
+                    <Text style={styles.generatedPrimaryText}>
+                      {T("wallet.ln.open_wallet_short")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.generatedActionBtn,
+                      pressed && styles.generatedActionBtnPressed,
+                    ]}
+                    onPress={() => copyInvoice(deposit.invoice)}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("wallet.ln.copy_invoice")}
+                  >
+                    <CopyGlyph
+                      copied={invoiceCopied}
+                      size={18}
+                      color={Colors.accent}
+                    />
+                    <Text style={styles.generatedActionText}>
+                      {invoiceCopied
+                        ? T("common.copied")
+                        : T("wallet.ln.copy_invoice")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            )}
             {depositExpired ? (
               <View style={styles.waitingRow}>
                 <Feather name="clock" size={16} color={Colors.textMuted} />
@@ -2721,15 +2724,6 @@ export default function WalletScreen({
               </View>
             )}
             <View style={styles.modalActions}>
-              {/* Borderless, so it does not read as a peer of the two above. */}
-              <Pressable
-                style={styles.modalDismiss}
-                onPress={() => setShowDeposit(false)}
-                accessibilityRole="button"
-                accessibilityLabel={T("common.close")}
-              >
-                <Text style={styles.modalDismissText}>{T("common.close")}</Text>
-              </Pressable>
               {depositExpired && (
                 <Pressable
                   style={styles.modalConfirm}
@@ -2746,6 +2740,15 @@ export default function WalletScreen({
                   </Text>
                 </Pressable>
               )}
+              {/* Borderless, so it does not read as a peer of the actions above. */}
+              <Pressable
+                style={styles.modalDismiss}
+                onPress={() => setShowDeposit(false)}
+                accessibilityRole="button"
+                accessibilityLabel={T("common.close")}
+              >
+                <Text style={styles.modalDismissText}>{T("common.close")}</Text>
+              </Pressable>
             </View>
           </>
         )}
