@@ -816,3 +816,67 @@ to everything upstream of the roster, and the `0xB1` handling is covered in
 Airhop's Bitle interoperability is covered by the announce, relay, and mixed-peer
 simulation suites. A Bitle node is treated as a normal protocol peer for routing,
 gossip, and courier delivery, including across its LoRa link.
+
+## 11. Device Transfer
+
+Moving an identity to a new phone (see [ARCHITECTURE.md, Moving to a new phone](ARCHITECTURE.md#moving-to-a-new-phone)).
+Not part of the mesh: it runs over one TCP connection between two phones on the
+same local network, never touches a BLE link, and no bitchat node ever sees it.
+Airhop-only, so it is versioned on its own and changes nothing in sections 1 to 10.
+
+### 11.1 The code
+
+The new phone's QR code. Its own scheme rather than a path under `airhop:`, so a
+system camera has nothing to open. `src/core/move/move-invite.ts`.
+
+```
+airhop-move:v1/<base64url>
+
+[0]      u8     version (1)
+[1-2]    u16 BE TCP port
+[3-34]   bytes  X25519 public key, one-time, generated for this screen
+[35-50]  bytes  token, 16 random bytes
+[51]     u8     address count, 1 to 4
+[52..]   bytes  IPv4 addresses, 4 bytes each
+```
+
+Addresses rather than an mDNS name: nothing about a transfer is advertised on the
+network, and a hotspot host that answers no multicast still works.
+
+### 11.2 Framing and handshake
+
+TCP frames are the LAN transport's: a 4-byte big-endian length, then the bytes,
+an empty frame as the heartbeat (section 1.2). On its own listener, apart from the
+mesh's, with the service type never published.
+
+`Noise_XX_25519_ChaChaPoly_SHA256`, the old phone initiating with its identity's
+Noise static key, the new phone responding with the key in the code. The prologue
+is `"airhop-move-v1" || token`, so a party that did not read the code fails at
+message 2. The old phone refuses a session whose remote static key is not the one
+it scanned. The new phone takes the remote static key as the identity arriving,
+and refuses a bundle whose Noise private key does not derive it.
+
+### 11.3 Messages
+
+Inside the session, each transport message is `[type: u8][body]`.
+`src/core/move/move-wire.ts`.
+
+| Type   | Name     | Direction | Body                                                              |
+| ------ | -------- | --------- | ----------------------------------------------------------------- |
+| `0x01` | OFFER    | old → new | UTF-8 JSON: `format` (1), `appVersion`, `history`, `sections`     |
+| `0x02` | CHUNK    | old → new | Up to 32 KiB of the section stream                                |
+| `0x03` | END      | old → new | Empty                                                             |
+| `0x04` | COMMIT   | new → old | SHA-256 of the OFFER body, 32 bytes                               |
+| `0x05` | RELEASED | old → new | `[keysDestroyed: u8]`                                             |
+| `0x06` | ABORT    | either    | `[reason: u8]`: 1 cancelled, 2 incompatible, 3 storage, 4 invalid |
+
+Each offered section is `{ name, size, sha256 }`, and the stream is the sections
+concatenated in offer order. At most 32 sections and 256 MiB. Names are
+`mmkv:<partition>` (a JSON object of that partition's keys and string values),
+`wallet` (the wallet's persisted state, decrypted) and `secret:<item>` (a keychain
+item's value). A receiver refuses a name it does not know, and an offer from a
+newer app version than its own.
+
+The receiver writes nothing before END, commits only after reading everything
+back, and the sender erases itself only on a COMMIT whose digest matches what it
+offered. An ABORT is honoured only before the commit.

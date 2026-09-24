@@ -68,6 +68,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | QR contacts               | Add a contact by scanning their QR code; carries their public keys, not just an ID                                                           |
 |                   | End-to-end encryption     | Secure sessions using the Noise XX protocol                                                                                                  |
 |                   | Forward secrecy           | Double Ratchet protects past messages even if keys are later compromised                                                                     |
+|                   | Transfer to a new phone   | Scan a code on the new phone and your identity, chats and wallet move across the local network; the old phone erases itself                  |
 |                   | Panic wipe                | Triple-tap instantly erases keys and local messages (nuke your account)                                                                      |
 | 🕸️ **Networking** | Bluetooth mesh            | Communicate with nearby devices without internet                                                                                             |
 |                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |

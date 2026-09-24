@@ -67,7 +67,7 @@ The modules:
 | ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------- |
 | `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | BLE peripheral and central I/O                                                              |
 | `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | WiFi Aware fast path I/O                                                                    |
-| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links                                                                |
+| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | mDNS discovery and TCP links, and the device-transfer socket                                |
 | `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS Wi-Fi Aware pairing sheet                                                               |
 | `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | AAC-LC capture and playback                                                                 |
 | `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Tor lifecycle (embedded Arti)                                                               |

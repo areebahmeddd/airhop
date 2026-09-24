@@ -37,6 +37,8 @@ You must read these four documents before making any code suggestions:
 | Private-channel and private-group crypto                      | `src/core/mesh/rooms/`                |
 | Store-and-forward envelopes and one-time prekeys              | `src/core/mesh/courier/`              |
 | Live push-to-talk capture and playback                        | `src/core/mesh/voice/`                |
+| Device transfer: the code, handshake and bundle (pure)        | `src/core/move/`                      |
+| Device transfer: what moves, and both phones' sides           | `src/services/move-*.ts`              |
 | Nostr (client, gift-wrap, geo-relay, presence, courier-relay) | `src/core/nostr/`                     |
 | Payments: tokens, DLEQ, NIP-61, seed (pure)                   | `src/core/payments/`                  |
 | Payments: anything touching a mint                            | `src/services/`                       |

@@ -19,7 +19,7 @@ Airhop's security guarantees (from `docs/design/VISION.md`):
 
 1. All messages are end-to-end encrypted (Noise XX for real-time, Double Ratchet for stored)
 2. Every packet is Ed25519-signed and verified
-3. No private key material ever leaves the device's secure enclave (iOS Keychain / Android Keystore)
+3. No private key material ever leaves the device's secure enclave (iOS Keychain / Android Keystore), with one exception: a device transfer (section 8a) moves the identity to the owner's new phone, and the old phone erases itself
 4. No plaintext message content ever touches disk
 5. Network anonymity via Tor (Arti, embedded on both platforms)
 
@@ -113,6 +113,19 @@ Check for:
 - Double-spend prevention: token not marked spent before attempting redemption: **WARN**
 - Redemption result not verified (mint signature check): **FAIL**
 - NIP-60 wallet state not encrypted before Nostr publication: **FAIL**
+
+### 8a. Device Transfer (`src/core/move/`, `src/services/move-*.ts`)
+
+The one sanctioned path for identity keys to leave the phone. Check for:
+
+- Any key material read before `confirmDeviceOwner` (unless the OS reports no lock at all): **FAIL**
+- A handshake that accepts a responder static key other than the one in the scanned code, or a prologue without the code's token: **FAIL**
+- The bundle, or any secret in it, written to disk, a file, the share sheet, the clipboard or a log on either phone: **FAIL**
+- One-time prekey private halves, the wallet's MMKV key, or Noise/ratchet session state in the bundle: **FAIL**
+- The receiver writing anything before the whole bundle is in and hash-checked, or writing the identity before the other secrets: **FAIL**
+- The receiver accepting an identity whose Noise public key differs from the handshake's authenticated static key: **FAIL**
+- The sender erasing itself on anything but a COMMIT whose digest matches its offer, or rejoining the mesh on its own after the stream ended unconfirmed: **FAIL**
+- A new persisted partition or keychain item absent from the transfer policy table in `move-snapshot.ts` (it should not compile): **FAIL**
 
 ### 9. OWASP Mobile Top 10 Spot Check
 
