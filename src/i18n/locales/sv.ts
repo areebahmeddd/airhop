@@ -630,7 +630,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Hämta {amount} {unit}",
   "chat.ecash.already_claimed": "Redan hämtat",
   "chat.ecash.already_claimed_body":
-    "Varje bevis i tokenet finns redan i din plånbok, så inget lades till.",
+    "Allt i tokenet finns redan i din plånbok, så inget lades till.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -934,9 +934,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Växlar mellan satoshi och bitcoin",
   "wallet.balance.a11y": "Saldo {value} {unit}",
   "wallet.balance.locked":
-    "Plånbokens lagring är låst. Ecash-bevis ligger i en krypterad fil vars nyckel finns i enhetens nyckelring, och den gick inte att öppna. Lås upp enheten och öppna Airhop igen.",
+    "Plånbokens lagring är låst. Din ecash ligger i en krypterad fil vars nyckel finns i enhetens nyckelring, och den gick inte att öppna. Lås upp enheten och öppna Airhop igen.",
   "wallet.balance.tor_blocked":
-    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till dina bevis. Att skicka och ta emot över meshen fungerar ändå. Tillåt mint-trafik under Inställningar, Säkerhet.",
+    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till din ecash. Att skicka och ta emot över meshen fungerar ändå. Tillåt mint-trafik under Inställningar, Säkerhet.",
   "wallet.balance.offline":
     "Offline. Du kan fortfarande betala folk i närheten och skicka token.",
   "wallet.balance.internet_off":
@@ -975,7 +975,7 @@ export const strings: Strings = {
   "wallet.send.title": "Skicka ecash",
   "wallet.send.amount_in": "Belopp i {unit}",
   "wallet.send.body":
-    "Byggt offline av bevis du redan har. Inget lämnar saldot för gott förrän du bekräftar att tokenet kom fram.",
+    "Byggt offline av ecash du redan har. Inget lämnar saldot för gott förrän du bekräftar att tokenet kom fram.",
   "wallet.send.stale_fee_note":
     "Avgifterna kontrollerades senast för {days} dygn sedan. Om minten har höjt sin avgift sedan dess kan sändningen kosta lite mer.",
   "wallet.send.fee_note":
@@ -983,7 +983,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Tokenet är uppdelat på för många mynt för att rymmas i en QR-kod. Dela eller kopiera det i stället, eller uppdatera hos minten för att slå ihop dem.",
   "wallet.send.bearer_note":
-    "Den som har den här strängen äger pengarna. Bevisen är reserverade, inte förbrukade: om den aldrig når någon kan du ta tillbaka dem under Väntande.",
+    "Den som har den här strängen äger pengarna. Mynten är reserverade, inte förbrukade: om den aldrig når någon kan du ta tillbaka dem under Väntande.",
   "wallet.send.qr_too_big_short":
     "Tokenet är uppdelat på för många mynt för att rymmas i en QR-kod. Dela eller kopiera det i stället.",
   "wallet.send.scan_note":
@@ -997,11 +997,11 @@ export const strings: Strings = {
   "wallet.send.building": "Bygger…",
   "wallet.send.build": "Bygg token",
   "wallet.send.inexact_body":
-    "Dina bevis kan inte bilda exakt {amount} {unit} offline. Det minsta tokenet du kan bygga är {spend} {unit}, och offline finns ingen växel: de extra {extra} {unit} går till mottagaren.\n\nAtt uppdatera hos minten medan du är online skulle dela dina bevis i valörer som går jämnt upp.",
+    "Dina mynt kan inte bilda exakt {amount} {unit} offline. Det minsta tokenet du kan bygga är {spend} {unit}, och offline finns ingen växel: de extra {extra} {unit} går till mottagaren.\n\nAtt uppdatera hos minten medan du är online skulle dela dina mynt i valörer som går jämnt upp.",
   "wallet.send.send_amount": "Skicka {amount}",
   "wallet.send.sent_to": "{amount} {unit} skickat till {name}",
   "wallet.send.sent_to_body":
-    "{route} Det går att ta tillbaka under Väntande tills du bekräftar att de fick det, eller tills minten säger att bevisen har lösts in.",
+    "{route} Det går att ta tillbaka under Väntande tills du bekräftar att de fick det, eller tills minten säger att tokenet har lösts in.",
   "wallet.send.copy_token": "Kopiera token",
   "wallet.send.share_token": "Dela token",
   "wallet.send.open_in_wallet": "Öppna tokenet i en annan plånbok",
@@ -1020,12 +1020,12 @@ export const strings: Strings = {
     "Mynten är fortfarande reserverade för en sändning du inte har avslutat, så det finns inget att hämta. Använd Ta tillbaka på den betalningen för att lägga dem rakt tillbaka i saldot.",
   "wallet.receive.already_have": "Finns redan i din plånbok",
   "wallet.receive.already_have_body":
-    "Varje bevis i tokenet ligger redan här, så inget lades till. Saldona är oförändrade.",
+    "Allt i tokenet ligger redan här, så inget lades till. Saldona är oförändrade.",
   "wallet.receive.stored_unconfirmed":
     "Sparat från {mint}, men ännu inte bekräftat hos minten ({reason}).",
   "wallet.receive.offline": "offline",
   "wallet.receive.redeemed_here":
-    "Inlöst hos {mint}. Bevisen är nu bara dina: avsändarens kopia fungerar inte längre.",
+    "Inlöst hos {mint}. Den här ecashen är nu bara din: avsändarens kopia fungerar inte längre.",
   "wallet.receive.memo_quoted": "\n\n”{memo}”",
   "wallet.receive.redeemed_at":
     "Inlöst hos {mint}. Det är bevisligen ditt nu: avsändarens kopia av tokenet fungerar inte längre.",
@@ -1116,9 +1116,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Fakturan är betald och {amount} {unit} utgivet av {mint}. Saldot är bekräftat: du kan använda det offline direkt.",
   "wallet.ln.withdrawn":
-    "{paid} sats betalt över Lightning. Minten tog {fee} sats i routingavgift.",
+    "{amount} {unit} betalt över Lightning. Minten tog {fee} {unit} i routingavgift.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats betalt över Lightning. Minten tog {fee} sats i routingavgift och lämnade tillbaka {change} sats av reserven till ditt saldo.",
+    "{amount} {unit} betalt över Lightning. Minten tog {fee} {unit} i routingavgift och lämnade tillbaka {change} {unit} av reserven till ditt saldo.",
   "wallet.ln.payment_failed": "Betalningen misslyckades",
   "wallet.ln.deposit_body":
     "Minten ger dig en faktura. Betala den från vilken Lightning-plånbok som helst så kommer satsen tillbaka som ecash du kan använda offline.",
@@ -1260,12 +1260,12 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Kunde inte nå {mints}. Allt annat är aktuellt.",
   "wallet.refresh.swapped":
-    "{amount} {unit} bekräftat och bytt mot färska bevis.",
+    "{amount} {unit} bekräftat och bytt mot färsk ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} täcks nu av din återställningsfras.",
   "wallet.refresh.all_confirmed": "Allt här var redan bekräftat hos minten.",
   "wallet.pending.reserved_desc":
-    "Byggt och reserverat, leveransen obekräftad. Bevisen hålls utanför saldot så att de inte kan användas två gånger.",
+    "Byggt och reserverat, leveransen obekräftad. Mynten hålls utanför saldot så att de inte kan användas två gånger.",
   "wallet.pending.locked_desc":
     "Redan låst till mottagarens nyckel, så bara de kan använda det. Det har bara inte nått fram än. Dela tokenet för att avsluta.",
   "wallet.pending.show_qr": "Visa tokenet som en QR-kod",
@@ -1310,7 +1310,7 @@ export const strings: Strings = {
     "Meshtjänsten är inte igång, så det finns inget sätt att lämna över tokenet. Inget har dragits.",
   "wallet.xfer.could_not_send": "Kunde inte skicka",
   "wallet.xfer.inexact_body":
-    "Dina bevis kan inte bilda exakt {amount} {unit} offline. Det minsta tokenet du kan bygga är {spend} {unit}, och de extra {extra} {unit} går till dem utan något sätt att få tillbaka dem.\n\nAtt uppdatera hos minten medan du är online delar dina bevis i valörer som går jämnt upp.",
+    "Dina mynt kan inte bilda exakt {amount} {unit} offline. Det minsta tokenet du kan bygga är {spend} {unit}, och de extra {extra} {unit} går till dem utan något sätt att få tillbaka dem.\n\nAtt uppdatera hos minten medan du är online delar dina mynt i valörer som går jämnt upp.",
   "wallet.xfer.send_amount": "Skicka {amount}",
   "wallet.xfer.mesh_offline": "Meshen är offline",
 
@@ -1373,7 +1373,7 @@ export const strings: Strings = {
     "Cashu är ecash för Bitcoin. Ett token är en sträng som är värd pengar för den som har den, blint signerad av en mint så att minten inte kan se vem som gjorde av med vad. Inga konton, inga inloggningar.",
   "wallet.explain.send": "Skicka",
   "wallet.explain.send_desc":
-    "Gör om ett belopp till ett token du kan lämna över till en peer i närheten via Bluetooth, eller dela som text. Fungerar utan internet. Bevisen förblir reserverade tills du bekräftar att det kom fram.",
+    "Gör om ett belopp till ett token du kan lämna över till en peer i närheten via Bluetooth, eller dela som text. Fungerar utan internet. Mynten förblir reserverade tills du bekräftar att det kom fram.",
   "wallet.explain.receive": "Ta emot",
   "wallet.explain.receive_desc":
     "Klistra in ett token för att lägga till det. Online byts det hos minten direkt, vilket gör det bevisligen ditt. Offline sparas det och märks som obekräftat tills du uppdaterar.",
@@ -1403,7 +1403,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Minten kunde inte nås.",
   "wallet.svc.tor_ios": "Mint-förfrågningar går inte genom Tor på iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti omsluter bara Nostr-WebSockets, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till de här bevisen. Tillåt det under Inställningar > Säkerhet, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
+    "Arti omsluter bara Nostr-WebSockets, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till den här ecashen. Tillåt det under Inställningar > Säkerhet, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
   "wallet.svc.internet_off": "Internet är avstängt, så minten går inte att nå.",
   "wallet.svc.internet_off_body":
     "Slå på {setting} i Inställningar. Att skicka och ta emot ecash i närheten fungerar fortfarande.",
@@ -1419,12 +1419,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "Återställd från återställningsfrasen",
   "wallet.svc.storage_locked": "Plånbokens lagring är låst.",
   "wallet.svc.storage_locked_body":
-    "Airhop håller ecash-bevis i en krypterad fil vars nyckel finns i enhetens nyckelring. Lås upp enheten och öppna appen igen.",
+    "Airhop håller din ecash i en krypterad fil vars nyckel finns i enhetens nyckelring. Lås upp enheten och öppna appen igen.",
   "wallet.svc.bad_url": "Det är ingen giltig URL.",
   "wallet.svc.needs_https": "En mint-URL måste börja med https://.",
   "wallet.svc.refuse_http": "Vägrar använda en mint över okrypterad http.",
   "wallet.svc.refuse_http_body":
-    "Vem som helst längs nätverksvägen kunde läsa eller ändra dina bevis. Använd en mint med https://.",
+    "Vem som helst längs nätverksvägen kunde läsa eller ändra din ecash. Använd en mint med https://.",
   "wallet.svc.mint_not_saved": "Minten kunde inte sparas.",
   "wallet.svc.unreadable_token": "Det är inget läsbart Cashu-token.",
   "wallet.svc.unreadable_token_body":
@@ -1434,7 +1434,7 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Minten går inte att nå just nu för att hämta dem. Inget går förlorat: ta emot den igen när du är online.",
   "wallet.svc.wrong_mint": "Tokenet är inte signerat av den mint det uppger.",
-  "wallet.svc.already_spent": "De här bevisen är redan förbrukade.",
+  "wallet.svc.already_spent": "Den här ecashen är redan förbrukad.",
   "wallet.svc.already_spent_body":
     "Den som skickade tokenet löste in det först, eller skickade samma token till någon annan också.",
   "wallet.svc.receiving_offline": "tar emot offline",
@@ -1447,7 +1447,7 @@ export const strings: Strings = {
     "Lägg till en mint och sätt in över Lightning, eller ta emot ett token från någon.",
   "wallet.svc.split_across_mints": "Ditt saldo är uppdelat på flera mintar.",
   "wallet.svc.mint_says_spent":
-    "Minten rapporterade bevisen som redan förbrukade.",
+    "Minten rapporterade ecashen som redan förbrukad.",
   "wallet.svc.issue_against_invoice": "ge ut ecash mot en Lightning-faktura",
   "wallet.svc.pay_invoice": "betala en Lightning-faktura",
   "wallet.svc.unknown_deposit": "Okänd insättning.",
@@ -1479,7 +1479,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Överföringens storlek kunde inte bestämmas.",
   "wallet.svc.insufficient_at_mint": "Otillräckligt saldo hos {mint}.",
   "wallet.svc.inexact_title":
-    "Dina bevis kan inte bilda exakt {amount} {unit} offline.",
+    "Dina mynt kan inte bilda exakt {amount} {unit} offline.",
   "wallet.svc.inexact_detail":
     "Det minsta tokenet du kan skicka är {spend} {unit}. Offline finns ingen växel, så de extra {extra} {unit} går till mottagaren.",
   "wallet.svc.no_single_mint":
@@ -1510,9 +1510,9 @@ export const strings: Strings = {
   "wallet.svc.swap_unreadable":
     "Bytet sparades i en form som den här versionen inte kan spela upp igen.",
   "wallet.svc.lock_in_doubt":
-    "Minten svarade inte, så den här betalningen kan ha gått igenom eller inte.",
+    "Den här betalningen kan ha gått igenom eller inte.",
   "wallet.svc.lock_in_doubt_body":
-    "Inget annat skickades. Mynten hålls kvar tills minten svarar. Gick betalningen igenom visas den låsta token under Väntande så att du kan lämna över den. Annars kommer mynten tillbaka.",
+    "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas den låsta token under Väntande så att du kan lämna över den. Annars kommer mynten tillbaka.",
   "wallet.svc.send_spent_by_swap":
     "De här mynten växlades tillbaka till din plånbok innan token löstes in, så den kan inte längre lösas in. Beloppet finns i ditt saldo.",
 
@@ -1973,7 +1973,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Nätverksanvändning",
   "settings.storage.storage_usage": "Lagringsanvändning",
   "settings.storage.storage_usage_desc":
-    "Meddelanden, plånbokens bevis och cachade bilagor",
+    "Meddelanden, ecash och cachade bilagor",
   "settings.storage.session_usage":
     "Den här sessionen · {sent} skickat, {received} mottaget",
   "settings.storage.cache": "Cache",
@@ -2062,7 +2062,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Konversationer, grupper och kanalerna du har gått med i",
   "settings.transfer.wallet": "Plånbokssaldo",
-  "settings.transfer.wallet_desc": "Cashu-bevis och transaktionshistorik",
+  "settings.transfer.wallet_desc": "Ecash och transaktionshistorik",
   "settings.transfer.title": "Flytta till en ny telefon",
   "settings.transfer.desc":
     "Flytta din identitet, dina chattar och din plånbok till en annan enhet",
@@ -2096,9 +2096,9 @@ export const strings: Strings = {
   "settings.wipe.title": "Panikrensning",
   "settings.wipe.now": "Rensa nu",
   "settings.wipe.desc":
-    "Förstör omedelbart alla nycklar, meddelanden och bevis",
+    "Förstör omedelbart alla nycklar, meddelanden och all ecash",
   "settings.wipe.body":
-    "Detta förstör omedelbart alla dina nycklar, meddelanden och plånboksbevis. Det går inte att ångra.",
+    "Detta förstör omedelbart alla dina nycklar, meddelanden och all din ecash. Det går inte att ångra.",
   "settings.wipe.in_progress": "Rensar",
   "settings.wipe.in_progress_body":
     "Förstör dina nycklar, meddelanden och filer. Det tar några sekunder och slutförs av sig självt även om appen stängs.",
@@ -2300,9 +2300,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} håller {balance} {unit} i {count} bevis. Att ta bort den raderar det beviset från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
+    one: "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det myntet från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
     other:
-      "{mint} håller {balance} {unit} i {count} bevis. Att ta bort den raderar de bevisen från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
+      "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar de mynten från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2314,8 +2314,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Återställde {count} obrukat bevis från {mints}.",
-    other: "Återställde {count} obrukade bevis från {mints}.",
+    one: "Återställde {count} obrukat mynt från {mints}.",
+    other: "Återställde {count} obrukade mynt från {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "{count} mynt hittades men var redan förbrukat, så inget krediterades för det. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",
@@ -2337,8 +2337,8 @@ export const plurals: Plurals = {
     other: "{count} obekräftade",
   },
   "wallet.spent_removed_detail": {
-    one: "{count} bevis var redan förbrukat och har tagits bort.",
-    other: "{count} bevis var redan förbrukade och har tagits bort.",
+    one: "{count} mynt var redan förbrukat och har tagits bort.",
+    other: "{count} mynt var redan förbrukade och har tagits bort.",
   },
 
   // ---- System notifications ----

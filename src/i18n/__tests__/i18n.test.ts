@@ -258,7 +258,7 @@ describe("plurals", () => {
       stripIsolates(
         tPlural("wallet.backup.recovered", 2, { mints: "2 mints" }),
       ),
-    ).toBe("Recovered 2 unspent proofs from 2 mints.");
+    ).toBe("Recovered 2 unspent coins from 2 mints.");
   });
 
   it("groups the count in the reading language, not the device's", () => {

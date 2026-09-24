@@ -645,7 +645,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Raiso ny {amount} {unit}",
   "chat.ecash.already_claimed": "Efa voaray",
   "chat.ecash.already_claimed_body":
-    "Efa ao amin'ny kitapom-bolanao avokoa ny porofo rehetra amin'ity tapakila ity, ka tsy nisy nampiana.",
+    "Efa ao amin'ny kitapom-bolanao avokoa ny zava-drehetra ao amin'ity tapakila ity, ka tsy nisy nampiana.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -963,9 +963,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Mifamadika eo amin'ny satoshi sy ny bitcoin",
   "wallet.balance.a11y": "Vola {value} {unit}",
   "wallet.balance.locked":
-    "Mihidy ny fitehirizan'ny kitapom-bola. Tehirizina ao anaty rakitra voafono ny porofo ecash, ary ao amin'ny fitehirizan-dakilen'ny fitaovana ny lakilen'io rakitra io, ka tsy voasokatra izy. Vahao ny fitaovanao ary sokafy indray ny Airhop.",
+    "Mihidy ny fitehirizan'ny kitapom-bola. Tehirizina ao anaty rakitra voafono ny ecash-nao, ary ao amin'ny fitehirizan-dakilen'ny fitaovana ny lakilen'io rakitra io, ka tsy voasokatra izy. Vahao ny fitaovanao ary sokafy indray ny Airhop.",
   "wallet.balance.tor_blocked":
-    "Mandeha ny Tor, ka voasakana ny fangatahana any amin'ny mpamoaka: hivoaka amin'ny tambajotra misokatra izy ireo ary hampifandray ny IP-nao amin'ny porofonao. Mbola mandeha ny fandefasana sy fandraisana amin'ny harato. Avelao ny fifamoivoizan'ny mpamoaka ao amin'ny Fandrindrana, Fiarovana.",
+    "Mandeha ny Tor, ka voasakana ny fangatahana any amin'ny mpamoaka: hivoaka amin'ny tambajotra misokatra izy ireo ary hampifandray ny IP-nao amin'ny ecash-nao. Mbola mandeha ny fandefasana sy fandraisana amin'ny harato. Avelao ny fifamoivoizan'ny mpamoaka ao amin'ny Fandrindrana, Fiarovana.",
   "wallet.balance.offline":
     "Tsy mifandray ianao. Mbola afaka mandoa amin'ny olona akaiky sy mandefa tapakila ianao.",
   "wallet.balance.internet_off":
@@ -1007,7 +1007,7 @@ export const strings: Strings = {
   "wallet.send.title": "Mandefa ecash",
   "wallet.send.amount_in": "Sanda amin'ny {unit}",
   "wallet.send.body":
-    "Naorina tsy misy Internet avy amin'ny porofo efa anananao. Tsy misy mivoaka ny volanao raha tsy efa nohamarininao fa tonga ny tapakila.",
+    "Naorina tsy misy Internet avy amin'ny ecash efa anananao. Tsy misy mivoaka ny volanao raha tsy efa nohamarininao fa tonga ny tapakila.",
   "wallet.send.stale_fee_note":
     "{days} andro lasa izay no nijerena farany ny saram-pandoavana. Raha nampiakatra ny azy ity mpamoaka ity taorian'izay, dia mety ho lafo kely kokoa ny fandefasana.",
   "wallet.send.fee_note":
@@ -1015,7 +1015,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Zaraina amin'ny vola madinika be loatra ity tapakila ity ka tsy mifanentana amin'ny kaody QR. Zarao na adikao, na havaozy any amin'ny mpamoaka mba hampiraisana azy.",
   "wallet.send.bearer_note":
-    "Izay mitana ity andalan-tsoratra ity no tompon'ny vola. Voatokana fa tsy lany ny porofo: raha tsy tonga tany amin'olona izy, dia azonao averina ao amin'ny Miandry.",
+    "Izay mitana ity andalan-tsoratra ity no tompon'ny vola. Voatokana fa tsy lany ny vola madinika: raha tsy tonga tany amin'olona izy, dia azonao averina ao amin'ny Miandry.",
   "wallet.send.qr_too_big_short":
     "Zaraina amin'ny vola madinika be loatra ity tapakila ity ka tsy mifanentana amin'ny kaody QR. Zarao na adikao.",
   "wallet.send.scan_note":
@@ -1030,11 +1030,11 @@ export const strings: Strings = {
   "wallet.send.building": "Amboarina…",
   "wallet.send.build": "Amboary ny tapakila",
   "wallet.send.inexact_body":
-    "Tsy mahavita {amount} {unit} tsy misy Internet ny porofonao. Ny tapakila kely indrindra azonao amboarina dia {spend} {unit}, ary tsy misy fanoloran-tsisa raha tsy misy Internet: ny {extra} {unit} fanampiny dia lasan'ny mpandray.\n\nNy fanavaozana any amin'ny mpamoaka rehefa misy Internet dia hizara ny porofonao ho sanda mahalasa ny marina.",
+    "Tsy mahavita {amount} {unit} tsy misy Internet ny vola madinikao. Ny tapakila kely indrindra azonao amboarina dia {spend} {unit}, ary tsy misy fanoloran-tsisa raha tsy misy Internet: ny {extra} {unit} fanampiny dia lasan'ny mpandray.\n\nNy fanavaozana any amin'ny mpamoaka rehefa misy Internet dia hizara ny vola madinikao ho sanda mahalasa ny marina.",
   "wallet.send.send_amount": "Alefaso {amount}",
   "wallet.send.sent_to": "{amount} {unit} nalefa tany amin'i {name}",
   "wallet.send.sent_to_body":
-    "{route} Mbola azo averina ao amin'ny Miandry izy mandra-panamafisanao fa nandray izy, na mandra-pilazan'ny mpamoaka fa novidina ny porofo.",
+    "{route} Mbola azo averina ao amin'ny Miandry izy mandra-panamafisanao fa nandray izy, na mandra-pilazan'ny mpamoaka fa novidina ny tapakila.",
   "wallet.send.copy_token": "Adikao ny tapakila",
   "wallet.send.share_token": "Zarao ny tapakila",
   "wallet.send.open_in_wallet":
@@ -1054,12 +1054,12 @@ export const strings: Strings = {
     "Mbola voatokana ho an'ny fandefasana tsy mbola vitanao ireto vola madinika ireto, ka tsy misy azo raisina. Ampiasao ny Avereno amin'io fandoavam-bola io mba hamerenana azy mivantana amin'ny volanao.",
   "wallet.receive.already_have": "Efa ao amin'ny kitapom-bolanao",
   "wallet.receive.already_have_body":
-    "Efa voatahiry eto avokoa ny porofo rehetra amin'ity tapakila ity, ka tsy nisy nampiana. Tsy niova ny vola.",
+    "Efa voatahiry eto avokoa ny zava-drehetra ao amin'ity tapakila ity, ka tsy nisy nampiana. Tsy niova ny vola.",
   "wallet.receive.stored_unconfirmed":
     "Voatahiry avy amin'i {mint}, saingy tsy mbola voamarina amin'ny mpamoaka ({reason}).",
   "wallet.receive.offline": "tsy misy Internet",
   "wallet.receive.redeemed_here":
-    "Novidina tao amin'i {mint}. Anao irery izao ireo porofo ireo: tsy miasa intsony ny dikan'ny mpandefa.",
+    "Novidina tao amin'i {mint}. Anao irery izao ity ecash ity: tsy miasa intsony ny dikan'ny mpandefa.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Novidina tao amin'i {mint}. Azo porofoina fa anao izy izao: tsy miasa intsony ny dikan'ity tapakila ity teo an-tanan'ny mpandefa.",
@@ -1153,9 +1153,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Voaloa ny faktiora ary namoaka {amount} {unit} i {mint}. Voamarina ity vola ity: azonao lanina tsy misy Internet avy hatrany.",
   "wallet.ln.withdrawn":
-    "{paid} sat voaloa tamin'ny Lightning. Naka {fee} sat saran-dalana ny mpamoaka.",
+    "{amount} {unit} voaloa tamin'ny Lightning. Naka {fee} {unit} saran-dalana ny mpamoaka.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sat voaloa tamin'ny Lightning. Naka {fee} sat saran-dalana ny mpamoaka, ary namerina {change} sat tamin'ny voatokana tao amin'ny volanao.",
+    "{amount} {unit} voaloa tamin'ny Lightning. Naka {fee} {unit} saran-dalana ny mpamoaka, ary namerina {change} {unit} tamin'ny voatokana tao amin'ny volanao.",
   "wallet.ln.payment_failed": "Tsy nahomby ny fandoavam-bola",
   "wallet.ln.deposit_body":
     "Manome faktiora anao ny mpamoaka. Aloavy amin'ny kitapom-bola Lightning rehetra izy ary hiverina ho ecash azonao lanina tsy misy Internet ny sat.",
@@ -1300,13 +1300,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Tsy tratra i {mints}. Efa vaovao daholo ny ambiny.",
   "wallet.refresh.swapped":
-    "{amount} {unit} voamarina ary natakalo porofo vaovao.",
+    "{amount} {unit} voamarina ary natakalo ecash vaovao.",
   "wallet.refresh.secured":
     "{amount} {unit} no voarakotry ny andian-teny famerenanao izao.",
   "wallet.refresh.all_confirmed":
     "Efa voamarina tamin'ny mpamoaka avokoa ny zavatra rehetra eto.",
   "wallet.pending.reserved_desc":
-    "Voaforona sy voatokana, tsy voamarina ny fanaterana. Esorina amin'ny volanao ny porofo mba tsy ho lany indroa.",
+    "Voaforona sy voatokana, tsy voamarina ny fanaterana. Esorina amin'ny volanao ny vola madinika mba tsy ho lany indroa.",
   "wallet.pending.locked_desc":
     "Efa mihidy amin'ny lakilen'ny mpandray, ka izy irery no afaka mandany azy. Tsy mbola tonga taminy fotsiny izy. Zarao ny tapakila mba hamitana.",
   "wallet.pending.show_qr": "Asehoy ho kaody QR ity tapakila ity",
@@ -1352,7 +1352,7 @@ export const strings: Strings = {
     "Tsy mandeha ny serivisin'ny harato, ka tsy misy fomba hanolorana ny tapakila. Tsy nisy nesorina.",
   "wallet.xfer.could_not_send": "Tsy voalefa",
   "wallet.xfer.inexact_body":
-    "Tsy mahavita {amount} {unit} tsy misy Internet ny porofonao. Ny tapakila kely indrindra azonao amboarina dia {spend} {unit}, ary lasany ny {extra} {unit} fanampiny tsy misy fomba hamerenana azy.\n\nNy fanavaozana any amin'ny mpamoaka rehefa misy Internet dia mizara ny porofonao ho sanda mahalasa ny marina.",
+    "Tsy mahavita {amount} {unit} tsy misy Internet ny vola madinikao. Ny tapakila kely indrindra azonao amboarina dia {spend} {unit}, ary lasany ny {extra} {unit} fanampiny tsy misy fomba hamerenana azy.\n\nNy fanavaozana any amin'ny mpamoaka rehefa misy Internet dia mizara ny vola madinikao ho sanda mahalasa ny marina.",
   "wallet.xfer.send_amount": "Alefaso {amount}",
   "wallet.xfer.mesh_offline": "Tsy mandeha ny harato",
 
@@ -1418,7 +1418,7 @@ export const strings: Strings = {
     "Ecash ho an'ny Bitcoin ny Cashu. Ny tapakila dia andalan-tsoratra mitentina vola ho an'izay mitana azy, nosoniavin'ny mpamoaka tsy nahitany, ka tsy fantany hoe iza no nandany inona. Tsy misy kaonty, tsy misy fidirana.",
   "wallet.explain.send": "Mandefa",
   "wallet.explain.send_desc":
-    "Manova sanda ho tapakila azonao atolotra amin'ny teboka akaiky amin'ny Bluetooth, na zaraina ho lahatsoratra. Miasa tsy misy Internet. Mijanona voatokana ny porofo mandra-panamafisanao fa tonga izy.",
+    "Manova sanda ho tapakila azonao atolotra amin'ny teboka akaiky amin'ny Bluetooth, na zaraina ho lahatsoratra. Miasa tsy misy Internet. Mijanona voatokana ny vola madinika mandra-panamafisanao fa tonga izy.",
   "wallet.explain.receive": "Mandray",
   "wallet.explain.receive_desc":
     "Apetaho ny tapakila mba hampidirana azy. Rehefa an-tserasera dia takalozana any amin'ny mpamoaka avy hatrany izy, ka azo porofoina fa anao. Raha tsy misy Internet dia tehirizina ary marihina ho tsy voamarina mandra-panavaozanao.",
@@ -1449,7 +1449,7 @@ export const strings: Strings = {
   "wallet.svc.tor_ios":
     "Amin'ny iOS dia tsy mandalo amin'ny Tor ny fangatahana any amin'ny mpamoaka.",
   "wallet.svc.tor_ios_body":
-    "Ny WebSocket-n'ny Nostr ihany no fonosin'ny Arti, ka hahatratra ny mpamoaka amin'ny tambajotra misokatra ity fangatahana ity ary hampifandray ny IP-nao amin'ireo porofo ireo. Avelao ao amin'ny Fandrindrana > Fiarovana, na vonoy aloha ny Tor. Mbola mandeha ny fandefasana sy fandraisana ecash amin'ny harato.",
+    "Ny WebSocket-n'ny Nostr ihany no fonosin'ny Arti, ka hahatratra ny mpamoaka amin'ny tambajotra misokatra ity fangatahana ity ary hampifandray ny IP-nao amin'ity ecash ity. Avelao ao amin'ny Fandrindrana > Fiarovana, na vonoy aloha ny Tor. Mbola mandeha ny fandefasana sy fandraisana ecash amin'ny harato.",
   "wallet.svc.internet_off":
     "Maty ny aterineto, ka tsy azo tratrarina ny mpamoaka.",
   "wallet.svc.internet_off_body":
@@ -1467,14 +1467,14 @@ export const strings: Strings = {
   "wallet.svc.restored": "Naverina avy amin'ny andian-teny famerenana",
   "wallet.svc.storage_locked": "Mihidy ny fitehirizan'ny kitapom-bola.",
   "wallet.svc.storage_locked_body":
-    "Tehirizin'ny Airhop ao anaty rakitra voafono ny porofo ecash, ary ao amin'ny fitehirizan-dakilen'ny fitaovana ny lakilen'io rakitra io. Vahao ny fitaovana ary sokafy indray ny rindranasa.",
+    "Tehirizin'ny Airhop ao anaty rakitra voafono ny ecash-nao, ary ao amin'ny fitehirizan-dakilen'ny fitaovana ny lakilen'io rakitra io. Vahao ny fitaovana ary sokafy indray ny rindranasa.",
   "wallet.svc.bad_url": "Tsy URL mety izany.",
   "wallet.svc.needs_https":
     "Tsy maintsy manomboka amin'ny https:// ny URL-n'ny mpamoaka.",
   "wallet.svc.refuse_http":
     "Mandà ny hampiasa mpamoaka amin'ny http tsy voaaro izahay.",
   "wallet.svc.refuse_http_body":
-    "Izay rehetra eo amin'ny lalan'ny tambajotra dia afaka mamaky na manova ny porofonao. Ampiasao ny mpamoaka https://.",
+    "Izay rehetra eo amin'ny lalan'ny tambajotra dia afaka mamaky na manova ny ecash-nao. Ampiasao ny mpamoaka https://.",
   "wallet.svc.mint_not_saved": "Tsy voatahiry ny mpamoaka.",
   "wallet.svc.unreadable_token": "Tsy tapakila Cashu voavaky izany.",
   "wallet.svc.unreadable_token_body":
@@ -1485,7 +1485,7 @@ export const strings: Strings = {
     "Tsy azo tratrarina izao ny mpamoaka mba haka azy ireo. Tsy misy very: raiso indray rehefa mifandray amin'ny aterineto ianao.",
   "wallet.svc.wrong_mint":
     "Tsy nosoniavin'ny mpamoaka notononiny ity tapakila ity.",
-  "wallet.svc.already_spent": "Efa lany ireo porofo ireo.",
+  "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",
   "wallet.svc.receiving_offline": "mandray tsy misy Internet",
@@ -1500,7 +1500,7 @@ export const strings: Strings = {
   "wallet.svc.split_across_mints":
     "Miparitaka amin'ny mpamoaka maromaro ny volanao.",
   "wallet.svc.mint_says_spent":
-    "Nolazain'ny mpamoaka fa efa lany ireo porofo ireo.",
+    "Nolazain'ny mpamoaka fa efa lany ity ecash ity.",
   "wallet.svc.issue_against_invoice":
     "mamoaka ecash mifanandrify amin'ny faktiora Lightning",
   "wallet.svc.pay_invoice": "mandoa faktiora Lightning",
@@ -1533,7 +1533,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Tsy voafaritra ny halehiben'ity famindrana ity.",
   "wallet.svc.insufficient_at_mint": "Tsy ampy ny vola ao amin'i {mint}.",
   "wallet.svc.inexact_title":
-    "Tsy mahavita {amount} {unit} tsy misy Internet ny porofonao.",
+    "Tsy mahavita {amount} {unit} tsy misy Internet ny vola madinikao.",
   "wallet.svc.inexact_detail":
     "Ny tapakila kely indrindra azonao alefa dia {spend} {unit}. Tsy misy fanoloran-tsisa raha tsy misy Internet, ka lasan'ny mpandray ny {extra} {unit} fanampiny.",
   "wallet.svc.no_single_mint":
@@ -1564,10 +1564,9 @@ export const strings: Strings = {
     "Navoakan'ny mint ity fampidiram-bola ity, fa tsy azo naorina indray ny vola madinika. Mamerina azy ny famerenana avy amin'ny fehezanteny famerenana.",
   "wallet.svc.swap_unreadable":
     "Voatahiry tamin'ny endrika tsy azon'ity kinova ity averina ity fifanakalozana ity.",
-  "wallet.svc.lock_in_doubt":
-    "Tsy namaly ny mint, ka mety ho lasa na tsy lasa ity fandoavana ity.",
+  "wallet.svc.lock_in_doubt": "Mety ho lasa na tsy lasa ity fandoavana ity.",
   "wallet.svc.lock_in_doubt_body":
-    "Tsy nisy zavatra hafa nalefa. Tazonina ny vola mandra-pamaly ny mint. Raha lasa izy, hiseho ao amin'ny Miandry ny token voahidy mba hatolotrao. Raha tsy lasa, miverina ny vola.",
+    "Tsy nisy zavatra hafa nalefa. Tazonina ny vola mandra-panamarin'ny mpamoaka ny vokany. Raha lasa izy, hiseho ao amin'ny Miandry ny token voahidy mba hatolotrao. Raha tsy lasa, miverina ny vola.",
   "wallet.svc.send_spent_by_swap":
     "Natakalo niverina tao amin'ny kitapom-bolanao ireo vola ireo talohan'ny nandraisana ity token ity, ka tsy azo raisina intsony izy. Ao amin'ny fitambaran'ny volanao ny sandany.",
 
@@ -2047,7 +2046,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Fampiasana tambajotra",
   "settings.storage.storage_usage": "Fampiasana fitahirizana",
   "settings.storage.storage_usage_desc":
-    "Hafatra, porofon'ny kitapom-bola ary fanampiny voatahiry vonjimaika",
+    "Hafatra, ecash ary fanampiny voatahiry vonjimaika",
   "settings.storage.session_usage":
     "Ity fivoriana ity · {sent} nalefa, {received} voaray",
   "settings.storage.cache": "Tahiry vonjimaika",
@@ -2136,7 +2135,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "Resaka sy tantara",
   "settings.transfer.chats_desc": "Resaka, vondrona ary ny fantsona nidiranao",
   "settings.transfer.wallet": "Volan'ny kitapom-bola",
-  "settings.transfer.wallet_desc": "Porofo Cashu sy tantaran'ny fifanakalozana",
+  "settings.transfer.wallet_desc": "Ecash sy tantaran'ny fifanakalozana",
   "settings.transfer.title": "Mamindra amin'ny findy vaovao",
   "settings.transfer.desc":
     "Afindrao amin'ny fitaovana hafa ny maha-ianao anao, ny resakao ary ny kitapom-bolanao",
@@ -2171,9 +2170,9 @@ export const strings: Strings = {
   "settings.wipe.title": "Famafana maika",
   "settings.wipe.now": "Fafao izao",
   "settings.wipe.desc":
-    "Mandrava avy hatrany ny lakile, ny hafatra ary ny porofo rehetra",
+    "Mandrava avy hatrany ny lakile, ny hafatra ary ny ecash rehetra",
   "settings.wipe.body":
-    "Handrava avy hatrany ny lakilenao, ny hafatrao ary ny porofon'ny kitapom-bolanao rehetra izany. Tsy azo averina izany.",
+    "Handrava avy hatrany ny lakilenao, ny hafatrao ary ny ecash-nao rehetra izany. Tsy azo averina izany.",
   "settings.wipe.in_progress": "Fafana",
   "settings.wipe.in_progress_body":
     "Ravana ny lakilenao, ny hafatrao ary ny rakitrao. Maharitra segondra vitsivitsy izany, ary vita ho azy na dia mihidy aza ny rindranasa.",
@@ -2378,9 +2377,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "Manana {balance} {unit} ao anatin'ny porofo {count} i {mint}. Ny fanesorana azy dia mamafa io porofo io tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
+    one: "Manana {balance} {unit} ao anatin'ny vola madinika {count} i {mint}. Ny fanesorana azy dia mamafa io vola madinika io tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
     other:
-      "Manana {balance} {unit} ao anatin'ny porofo {count} i {mint}. Ny fanesorana azy dia mamafa ireo porofo ireo tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
+      "Manana {balance} {unit} ao anatin'ny vola madinika {count} i {mint}. Ny fanesorana azy dia mamafa ireo vola madinika ireo tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2392,8 +2391,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Porofo {count} tsy mbola lany no voaverina avy amin'i {mints}.",
-    other: "Porofo {count} tsy mbola lany no voaverina avy amin'i {mints}.",
+    one: "Vola madinika {count} tsy mbola lany no voaverina avy amin'i {mints}.",
+    other:
+      "Vola madinika {count} tsy mbola lany no voaverina avy amin'i {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "Hita ny vola madinika {count}, saingy efa lany izy io, ka tsy nisy natsofoka ho azy. Ara-dalàna izany: ny vola madinika rehetra nolanianao dia mijanona ao amin'ny firaketana tehirizin'ny mpamoaka.",
@@ -2415,8 +2415,8 @@ export const plurals: Plurals = {
     other: "{count} tsy voamarina",
   },
   "wallet.spent_removed_detail": {
-    one: "Efa lany ny porofo {count}, ka nesorina izy io.",
-    other: "Efa lany ny porofo {count}, ka nesorina izy ireo.",
+    one: "Efa lany ny vola madinika {count}, ka nesorina izy io.",
+    other: "Efa lany ny vola madinika {count}, ka nesorina izy ireo.",
   },
 
   // ---- System notifications ----

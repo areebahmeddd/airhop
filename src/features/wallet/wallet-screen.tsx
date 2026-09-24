@@ -1328,6 +1328,7 @@ export default function WalletScreen({
 
   async function handlePayWithdraw(): Promise<void> {
     if (!withdrawQuote) return;
+    const { unit } = withdrawQuote;
     setBusy("withdrawPay");
     try {
       const result = await payLightningInvoice(withdrawQuote);
@@ -1341,9 +1342,9 @@ export default function WalletScreen({
             ? "wallet.ln.withdrawn_with_change"
             : "wallet.ln.withdrawn",
           {
-            paid: formatNumber(result.paid),
-            fee: formatNumber(result.fee),
-            change: formatNumber(result.changeReturned),
+            ...amountParts(result.paid, unit),
+            fee: amountParts(result.fee, unit).amount,
+            change: amountParts(result.changeReturned, unit).amount,
           },
         ),
       );

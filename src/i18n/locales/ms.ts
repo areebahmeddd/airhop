@@ -633,7 +633,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Tuntut {amount} {unit}",
   "chat.ecash.already_claimed": "Sudah dituntut",
   "chat.ecash.already_claimed_body":
-    "Setiap bukti dalam token ini sudah ada dalam dompet anda, jadi tiada apa-apa ditambah.",
+    "Semua isi token ini sudah ada dalam dompet anda, jadi tiada apa-apa ditambah.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -947,9 +947,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Bertukar antara satoshi dan bitcoin",
   "wallet.balance.a11y": "Baki {value} {unit}",
   "wallet.balance.locked":
-    "Storan dompet dikunci. Bukti ecash disimpan dalam fail tersulit yang kuncinya berada dalam rantai kunci peranti, dan fail itu tidak dapat dibuka. Buka kunci peranti anda dan buka Airhop semula.",
+    "Storan dompet dikunci. Ecash anda disimpan dalam fail tersulit yang kuncinya berada dalam rantai kunci peranti, dan fail itu tidak dapat dibuka. Buka kunci peranti anda dan buka Airhop semula.",
   "wallet.balance.tor_blocked":
-    "Tor dihidupkan, jadi permintaan mint disekat: ia akan keluar melalui rangkaian terbuka dan mengaitkan IP anda dengan bukti anda. Menghantar dan menerima melalui mesh tetap berfungsi. Benarkan trafik mint di bawah Tetapan, Keselamatan.",
+    "Tor dihidupkan, jadi permintaan mint disekat: ia akan keluar melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash anda. Menghantar dan menerima melalui mesh tetap berfungsi. Benarkan trafik mint di bawah Tetapan, Keselamatan.",
   "wallet.balance.offline":
     "Luar talian. Anda masih boleh membayar orang berdekatan dan menghantar token.",
   "wallet.balance.internet_off":
@@ -989,7 +989,7 @@ export const strings: Strings = {
   "wallet.send.title": "Hantar ecash",
   "wallet.send.amount_in": "Jumlah dalam {unit}",
   "wallet.send.body":
-    "Dibina luar talian daripada bukti yang sudah anda pegang. Tiada apa-apa meninggalkan baki anda buat selamanya sehingga anda mengesahkan token itu sampai.",
+    "Dibina luar talian daripada ecash yang sudah anda pegang. Tiada apa-apa meninggalkan baki anda buat selamanya sehingga anda mengesahkan token itu sampai.",
   "wallet.send.stale_fee_note":
     "Yuran kali terakhir disemak {days} hari lalu. Kalau mint ini sudah menaikkannya sejak itu, hantaran mungkin sedikit lebih mahal.",
   "wallet.send.fee_note":
@@ -997,7 +997,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Token ini terbelah kepada terlalu banyak syiling untuk muat dalam kod QR. Kongsi atau salin sahaja, atau segar semula di mint untuk menyatukannya.",
   "wallet.send.bearer_note":
-    "Sesiapa yang memegang rentetan ini memiliki wangnya. Buktinya disimpan, bukan dibelanjakan: kalau ia tidak sampai kepada sesiapa, anda boleh menuntutnya semula di bawah Tertunda.",
+    "Sesiapa yang memegang rentetan ini memiliki wangnya. Syilingnya disimpan, bukan dibelanjakan: kalau ia tidak sampai kepada sesiapa, anda boleh menuntutnya semula di bawah Tertunda.",
   "wallet.send.qr_too_big_short":
     "Token ini terbelah kepada terlalu banyak syiling untuk muat dalam kod QR. Kongsi atau salin sahaja.",
   "wallet.send.scan_note":
@@ -1011,11 +1011,11 @@ export const strings: Strings = {
   "wallet.send.building": "Membina…",
   "wallet.send.build": "Bina token",
   "wallet.send.inexact_body":
-    "Bukti anda tidak boleh membentuk tepat {amount} {unit} secara luar talian. Token terkecil yang boleh anda bina ialah {spend} {unit}, dan secara luar talian tiada baki tukaran: tambahan {extra} {unit} jatuh kepada penerima.\n\nMenyegar semula di mint semasa dalam talian akan memecahkan bukti anda kepada denominasi yang menepatinya.",
+    "Syiling anda tidak boleh membentuk tepat {amount} {unit} secara luar talian. Token terkecil yang boleh anda bina ialah {spend} {unit}, dan secara luar talian tiada baki tukaran: tambahan {extra} {unit} jatuh kepada penerima.\n\nMenyegar semula di mint semasa dalam talian akan memecahkan syiling anda kepada denominasi yang menepatinya.",
   "wallet.send.send_amount": "Hantar {amount}",
   "wallet.send.sent_to": "{amount} {unit} dihantar kepada {name}",
   "wallet.send.sent_to_body":
-    "{route} Ia kekal boleh dituntut semula di bawah Tertunda sehingga anda mengesahkan mereka menerimanya, atau sehingga mint memberitahu kami buktinya sudah ditebus.",
+    "{route} Ia kekal boleh dituntut semula di bawah Tertunda sehingga anda mengesahkan mereka menerimanya, atau sehingga mint memberitahu kami token itu sudah ditebus.",
   "wallet.send.copy_token": "Salin token",
   "wallet.send.share_token": "Kongsi token",
   "wallet.send.open_in_wallet": "Buka token ini dalam dompet lain",
@@ -1034,12 +1034,12 @@ export const strings: Strings = {
     "Syiling ini masih disimpan untuk hantaran yang belum anda selesaikan, jadi tiada apa-apa untuk dituntut. Guna Tuntut semula pada bayaran itu untuk mengembalikannya terus ke baki anda.",
   "wallet.receive.already_have": "Sudah ada dalam dompet anda",
   "wallet.receive.already_have_body":
-    "Setiap bukti dalam token ini sudah tersimpan di sini, jadi tiada apa-apa ditambah. Baki tidak berubah.",
+    "Semua isi token ini sudah tersimpan di sini, jadi tiada apa-apa ditambah. Baki tidak berubah.",
   "wallet.receive.stored_unconfirmed":
     "Disimpan daripada {mint}, tetapi belum disahkan dengan mint ({reason}).",
   "wallet.receive.offline": "luar talian",
   "wallet.receive.redeemed_here":
-    "Ditebus di {mint}. Bukti ini kini milik anda seorang: salinan pengirim tidak lagi berfungsi.",
+    "Ditebus di {mint}. Ecash ini kini milik anda seorang: salinan pengirim tidak lagi berfungsi.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Ditebus di {mint}. Ia kini terbukti milik anda: salinan token ini pada pengirim tidak lagi berfungsi.",
@@ -1131,9 +1131,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Invois dibayar dan {amount} {unit} dikeluarkan oleh {mint}. Baki ini sudah disahkan: anda boleh membelanjakannya secara luar talian serta-merta.",
   "wallet.ln.withdrawn":
-    "{paid} sat dibayar melalui Lightning. Mint mengenakan {fee} sat sebagai yuran penghalaan.",
+    "{amount} {unit} dibayar melalui Lightning. Mint mengenakan {fee} {unit} sebagai yuran penghalaan.",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sat dibayar melalui Lightning. Mint mengenakan {fee} sat sebagai yuran penghalaan, dan memulangkan {change} sat daripada rizab ke baki anda.",
+    "{amount} {unit} dibayar melalui Lightning. Mint mengenakan {fee} {unit} sebagai yuran penghalaan, dan memulangkan {change} {unit} daripada rizab ke baki anda.",
   "wallet.ln.payment_failed": "Bayaran gagal",
   "wallet.ln.deposit_body":
     "Mint memberi anda satu invois. Bayarnya daripada mana-mana dompet Lightning dan satnya kembali sebagai ecash yang boleh anda belanjakan secara luar talian.",
@@ -1277,13 +1277,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Tidak dapat mencapai {mints}. Selebihnya sudah terkini.",
   "wallet.refresh.swapped":
-    "{amount} {unit} disahkan dan ditukar dengan bukti baharu.",
+    "{amount} {unit} disahkan dan ditukar dengan ecash baharu.",
   "wallet.refresh.secured":
     "{amount} {unit} kini dilindungi oleh frasa pemulihan anda.",
   "wallet.refresh.all_confirmed":
     "Semua yang ada di sini sudah disahkan dengan mint.",
   "wallet.pending.reserved_desc":
-    "Dibina dan disimpan, penghantarannya belum disahkan. Buktinya ditahan di luar baki anda supaya ia tidak boleh dibelanjakan dua kali.",
+    "Dibina dan disimpan, penghantarannya belum disahkan. Syilingnya ditahan di luar baki anda supaya ia tidak boleh dibelanjakan dua kali.",
   "wallet.pending.locked_desc":
     "Sudah dikunci kepada kunci penerima, jadi hanya mereka boleh membelanjakannya. Cuma ia belum sampai kepada mereka. Kongsikan tokennya untuk menyelesaikannya.",
   "wallet.pending.show_qr": "Tunjuk token ini sebagai kod QR",
@@ -1329,7 +1329,7 @@ export const strings: Strings = {
     "Perkhidmatan mesh tidak berjalan, jadi tiada cara untuk menyerahkan tokennya. Tiada apa-apa ditolak.",
   "wallet.xfer.could_not_send": "Tidak dapat menghantar",
   "wallet.xfer.inexact_body":
-    "Bukti anda tidak boleh membentuk tepat {amount} {unit} secara luar talian. Token terkecil yang boleh anda bina ialah {spend} {unit}, dan tambahan {extra} {unit} jatuh kepada mereka tanpa cara untuk mendapatkannya semula.\n\nMenyegar semula di mint semasa dalam talian akan memecahkan bukti anda kepada denominasi yang menepatinya.",
+    "Syiling anda tidak boleh membentuk tepat {amount} {unit} secara luar talian. Token terkecil yang boleh anda bina ialah {spend} {unit}, dan tambahan {extra} {unit} jatuh kepada mereka tanpa cara untuk mendapatkannya semula.\n\nMenyegar semula di mint semasa dalam talian akan memecahkan syiling anda kepada denominasi yang menepatinya.",
   "wallet.xfer.send_amount": "Hantar {amount}",
   "wallet.xfer.mesh_offline": "Mesh luar talian",
 
@@ -1392,7 +1392,7 @@ export const strings: Strings = {
     "Cashu ialah ecash untuk Bitcoin. Satu token ialah rentetan yang bernilai wang bagi sesiapa yang memegangnya, ditandatangani secara buta oleh sebuah mint supaya mint itu tidak dapat mengetahui siapa membelanjakan apa. Tiada akaun, tiada log masuk.",
   "wallet.explain.send": "Hantar",
   "wallet.explain.send_desc":
-    "Menukarkan satu jumlah menjadi token yang boleh anda serahkan kepada rakan berdekatan melalui Bluetooth, atau kongsikan sebagai teks. Berfungsi tanpa internet. Buktinya kekal disimpan sehingga anda mengesahkan ia sampai.",
+    "Menukarkan satu jumlah menjadi token yang boleh anda serahkan kepada rakan berdekatan melalui Bluetooth, atau kongsikan sebagai teks. Berfungsi tanpa internet. Syilingnya kekal disimpan sehingga anda mengesahkan ia sampai.",
   "wallet.explain.receive": "Terima",
   "wallet.explain.receive_desc":
     "Tampal satu token untuk menambahnya. Dalam talian ia ditukar di mint serta-merta, yang menjadikannya terbukti milik anda. Luar talian ia disimpan dan ditandakan belum disahkan sehingga anda menyegar semula.",
@@ -1422,7 +1422,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Mint tidak dapat dicapai.",
   "wallet.svc.tor_ios": "Permintaan mint tidak melalui Tor pada iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti hanya membalut WebSocket Nostr, jadi permintaan ini akan sampai kepada mint melalui rangkaian terbuka dan mengaitkan IP anda dengan bukti ini. Benarkannya di bawah Tetapan > Keselamatan, atau matikan Tor dahulu. Menghantar dan menerima ecash melalui mesh tetap berfungsi.",
+    "Arti hanya membalut WebSocket Nostr, jadi permintaan ini akan sampai kepada mint melalui rangkaian terbuka dan mengaitkan IP anda dengan ecash ini. Benarkannya di bawah Tetapan > Keselamatan, atau matikan Tor dahulu. Menghantar dan menerima ecash melalui mesh tetap berfungsi.",
   "wallet.svc.internet_off":
     "Internet dimatikan, jadi mint tidak dapat dihubungi.",
   "wallet.svc.internet_off_body":
@@ -1440,12 +1440,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "Dipulihkan daripada frasa pemulihan",
   "wallet.svc.storage_locked": "Storan dompet dikunci.",
   "wallet.svc.storage_locked_body":
-    "Airhop menyimpan bukti ecash dalam fail tersulit yang kuncinya berada dalam rantai kunci peranti. Buka kunci peranti dan buka aplikasi semula.",
+    "Airhop menyimpan ecash anda dalam fail tersulit yang kuncinya berada dalam rantai kunci peranti. Buka kunci peranti dan buka aplikasi semula.",
   "wallet.svc.bad_url": "Itu bukan URL yang sah.",
   "wallet.svc.needs_https": "URL sebuah mint mesti bermula dengan https://.",
   "wallet.svc.refuse_http": "Enggan menggunakan mint melalui http biasa.",
   "wallet.svc.refuse_http_body":
-    "Sesiapa pada laluan rangkaian boleh membaca atau mengubah bukti anda. Guna mint dengan https://.",
+    "Sesiapa pada laluan rangkaian boleh membaca atau mengubah ecash anda. Guna mint dengan https://.",
   "wallet.svc.mint_not_saved": "Mint tidak dapat disimpan.",
   "wallet.svc.unreadable_token": "Itu bukan token Cashu yang boleh dibaca.",
   "wallet.svc.unreadable_token_body":
@@ -1456,7 +1456,7 @@ export const strings: Strings = {
     "Mint tidak dapat dihubungi sekarang untuk mendapatkannya. Tiada apa yang hilang: terima semula apabila anda dalam talian.",
   "wallet.svc.wrong_mint":
     "Token ini tidak ditandatangani oleh mint yang dinamakannya.",
-  "wallet.svc.already_spent": "Bukti ini sudah dibelanjakan.",
+  "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":
     "Sesiapa yang menghantar token ini menebusnya dahulu, atau menghantar token yang sama kepada orang lain juga.",
   "wallet.svc.receiving_offline": "menerima secara luar talian",
@@ -1471,7 +1471,7 @@ export const strings: Strings = {
     "Tambah sebuah mint dan deposit melalui Lightning, atau terima token daripada seseorang.",
   "wallet.svc.split_across_mints":
     "Baki anda terbelah merentasi beberapa mint.",
-  "wallet.svc.mint_says_spent": "Mint melaporkan bukti ini sudah dibelanjakan.",
+  "wallet.svc.mint_says_spent": "Mint melaporkan ecash ini sudah dibelanjakan.",
   "wallet.svc.issue_against_invoice":
     "mengeluarkan ecash terhadap satu invois Lightning",
   "wallet.svc.pay_invoice": "membayar satu invois Lightning",
@@ -1502,7 +1502,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Saiz pemindahan ini tidak dapat ditentukan.",
   "wallet.svc.insufficient_at_mint": "Baki tidak mencukupi di {mint}.",
   "wallet.svc.inexact_title":
-    "Bukti anda tidak boleh membentuk tepat {amount} {unit} secara luar talian.",
+    "Syiling anda tidak boleh membentuk tepat {amount} {unit} secara luar talian.",
   "wallet.svc.inexact_detail":
     "Token terkecil yang boleh anda hantar ialah {spend} {unit}. Secara luar talian tiada baki tukaran, jadi tambahan {extra} {unit} jatuh kepada penerima.",
   "wallet.svc.no_single_mint":
@@ -1534,9 +1534,9 @@ export const strings: Strings = {
   "wallet.svc.swap_unreadable":
     "Pertukaran ini disimpan dalam bentuk yang tidak boleh dimainkan semula oleh versi ini.",
   "wallet.svc.lock_in_doubt":
-    "Mint tidak menjawab, jadi pembayaran ini mungkin sudah atau belum berjaya.",
+    "Pembayaran ini mungkin sudah atau belum berjaya.",
   "wallet.svc.lock_in_doubt_body":
-    "Tiada apa lagi yang dihantar. Syiling ditahan sehingga mint menjawab. Jika berjaya, token berkunci muncul di Belum selesai untuk anda serahkan. Jika tidak, syiling dikembalikan.",
+    "Tiada apa lagi yang dihantar. Syiling ditahan sehingga mint mengesahkan hasilnya. Jika berjaya, token berkunci muncul di Tertunda untuk anda serahkan. Jika tidak, syiling dikembalikan.",
   "wallet.svc.send_spent_by_swap":
     "Syiling ini ditukar kembali ke dompet anda sebelum token ini dituntut, jadi ia tidak boleh dituntut lagi. Nilainya ada dalam baki anda.",
 
@@ -2007,7 +2007,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Penggunaan rangkaian",
   "settings.storage.storage_usage": "Penggunaan storan",
   "settings.storage.storage_usage_desc":
-    "Mesej, bukti dompet dan lampiran dalam cache",
+    "Mesej, ecash dan lampiran dalam cache",
   "settings.storage.session_usage":
     "Sesi ini · {sent} dihantar, {received} diterima",
   "settings.storage.cache": "Cache",
@@ -2096,7 +2096,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Perbualan, kumpulan dan saluran yang anda sertai",
   "settings.transfer.wallet": "Baki dompet",
-  "settings.transfer.wallet_desc": "Bukti Cashu dan sejarah urus niaga",
+  "settings.transfer.wallet_desc": "Ecash dan sejarah urus niaga",
   "settings.transfer.title": "Pindahkan ke telefon baharu",
   "settings.transfer.desc":
     "Pindahkan identiti, sembang dan dompet anda ke peranti lain",
@@ -2129,9 +2129,9 @@ export const strings: Strings = {
     "Ketik tiga kali untuk membersihkan serta-merta tanpa pengesahan",
   "settings.wipe.title": "Pembersihan panik",
   "settings.wipe.now": "Bersihkan sekarang",
-  "settings.wipe.desc": "Memusnahkan serta-merta semua kunci, mesej dan bukti",
+  "settings.wipe.desc": "Memusnahkan serta-merta semua kunci, mesej dan ecash",
   "settings.wipe.body":
-    "Ini akan memusnahkan serta-merta semua kunci, mesej dan bukti dompet anda. Ia tidak boleh dibatalkan.",
+    "Ini akan memusnahkan serta-merta semua kunci, mesej dan ecash anda. Ia tidak boleh dibatalkan.",
   "settings.wipe.in_progress": "Membersihkan",
   "settings.wipe.in_progress_body":
     "Memusnahkan kunci, mesej dan fail anda. Ia mengambil beberapa saat dan selesai dengan sendirinya walaupun aplikasi ditutup.",
@@ -2317,7 +2317,7 @@ export const plurals: Plurals = {
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} memegang {balance} {unit} dalam {count} bukti. Membuangnya memadam bukti itu daripada peranti ini secara kekal dan tiada sandarannya. Keluarkan atau hantar bakinya dahulu.",
+      "{mint} memegang {balance} {unit} dalam {count} syiling. Membuangnya memadam syiling itu daripada peranti ini secara kekal dan tiada sandarannya. Keluarkan atau hantar bakinya dahulu.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2328,7 +2328,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "Memulihkan {count} bukti yang belum dibelanjakan daripada {mints}.",
+    other:
+      "Memulihkan {count} syiling yang belum dibelanjakan daripada {mints}.",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2346,7 +2347,7 @@ export const plurals: Plurals = {
     other: "{count} belum disahkan",
   },
   "wallet.spent_removed_detail": {
-    other: "{count} bukti sudah dibelanjakan dan telah dibuang.",
+    other: "{count} syiling sudah dibelanjakan dan telah dibuang.",
   },
 
   // ---- System notifications ----

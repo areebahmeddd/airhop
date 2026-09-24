@@ -641,7 +641,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Odbierz {amount} {unit}",
   "chat.ecash.already_claimed": "Już odebrane",
   "chat.ecash.already_claimed_body":
-    "Każdy dowód z tego tokena już jest w twoim portfelu, więc nic nie przybyło.",
+    "Wszystko z tego tokena już jest w twoim portfelu, więc nic nie przybyło.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -955,9 +955,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Przełącza między satoshi a bitcoinem",
   "wallet.balance.a11y": "Saldo {value} {unit}",
   "wallet.balance.locked":
-    "Pamięć portfela jest zablokowana. Dowody ecash leżą w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia, i nie dało się go otworzyć. Odblokuj urządzenie i otwórz Airhop ponownie.",
+    "Pamięć portfela jest zablokowana. Twój ecash leży w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia, i nie dało się go otworzyć. Odblokuj urządzenie i otwórz Airhop ponownie.",
   "wallet.balance.tor_blocked":
-    "Tor jest włączony, więc zapytania do mennicy są blokowane: poszłyby otwartą siecią i powiązały twoje IP z twoimi dowodami. Wysyłanie i odbieranie przez sieć mesh działa dalej. Zezwól na ruch do mennicy w Ustawieniach, w sekcji Bezpieczeństwo.",
+    "Tor jest włączony, więc zapytania do mennicy są blokowane: poszłyby otwartą siecią i powiązały twoje IP z twoim ecash. Wysyłanie i odbieranie przez sieć mesh działa dalej. Zezwól na ruch do mennicy w Ustawieniach, w sekcji Bezpieczeństwo.",
   "wallet.balance.offline":
     "Offline. Nadal możesz płacić osobom w pobliżu i wysyłać tokeny.",
   "wallet.balance.internet_off":
@@ -995,7 +995,7 @@ export const strings: Strings = {
   "wallet.send.title": "Wyślij ecash",
   "wallet.send.amount_in": "Kwota w {unit}",
   "wallet.send.body":
-    "Zbudowany offline z dowodów, które już masz. Nic nie znika z salda na dobre, dopóki nie potwierdzisz, że token dotarł.",
+    "Zbudowany offline z ecash, który już masz. Nic nie znika z salda na dobre, dopóki nie potwierdzisz, że token dotarł.",
   "wallet.send.stale_fee_note":
     "Opłaty sprawdzano ostatnio {days} dni temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
   "wallet.send.fee_note":
@@ -1003,7 +1003,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Ten token jest rozbity na zbyt wiele monet, żeby zmieścił się w kodzie QR. Udostępnij go albo skopiuj, albo odśwież w mennicy, żeby go scalić.",
   "wallet.send.bearer_note":
-    "Kto ma ten ciąg znaków, ten ma pieniądze. Dowody są zarezerwowane, nie wydane: jeśli token nigdy do nikogo nie dotrze, możesz je odzyskać w sekcji Oczekujące.",
+    "Kto ma ten ciąg znaków, ten ma pieniądze. Monety są zarezerwowane, nie wydane: jeśli token nigdy do nikogo nie dotrze, możesz je odzyskać w sekcji Oczekujące.",
   "wallet.send.qr_too_big_short":
     "Ten token jest rozbity na zbyt wiele monet, żeby zmieścił się w kodzie QR. Udostępnij go albo skopiuj.",
   "wallet.send.scan_note":
@@ -1017,11 +1017,11 @@ export const strings: Strings = {
   "wallet.send.building": "Budowanie…",
   "wallet.send.build": "Zbuduj token",
   "wallet.send.inexact_body":
-    "Twoje dowody nie złożą offline dokładnie {amount} {unit}. Najmniejszy token, jaki możesz zbudować, to {spend} {unit}, a offline nie ma reszty: dodatkowe {extra} {unit} trafia do odbiorcy.\n\nOdświeżenie w mennicy przy internecie rozbiłoby twoje dowody na nominały, które zejdą się co do jednostki.",
+    "Twoje monety nie złożą offline dokładnie {amount} {unit}. Najmniejszy token, jaki możesz zbudować, to {spend} {unit}, a offline nie ma reszty: dodatkowe {extra} {unit} trafia do odbiorcy.\n\nOdświeżenie w mennicy przy internecie rozbiłoby twoje monety na nominały, które zejdą się co do jednostki.",
   "wallet.send.send_amount": "Wyślij {amount}",
   "wallet.send.sent_to": "Wysłano {amount} {unit} do {name}",
   "wallet.send.sent_to_body":
-    "{route} Da się to odzyskać w sekcji Oczekujące, dopóki nie potwierdzisz, że dostali, albo dopóki mennica nie powie nam, że dowody zostały zrealizowane.",
+    "{route} Da się to odzyskać w sekcji Oczekujące, dopóki nie potwierdzisz, że dostali, albo dopóki mennica nie powie nam, że token został zrealizowany.",
   "wallet.send.copy_token": "Kopiuj token",
   "wallet.send.share_token": "Udostępnij token",
   "wallet.send.open_in_wallet": "Otwórz ten token w innym portfelu",
@@ -1040,12 +1040,12 @@ export const strings: Strings = {
     "Te monety wciąż są zarezerwowane na wysyłkę, której nie rozliczyłeś, więc nie ma czego odbierać. Użyj Odzyskaj przy tej płatności, żeby wrzucić je prosto z powrotem na saldo.",
   "wallet.receive.already_have": "Już jest w twoim portfelu",
   "wallet.receive.already_have_body":
-    "Każdy dowód z tego tokena już tu leży, więc nic nie przybyło. Salda bez zmian.",
+    "Wszystko z tego tokena już tu leży, więc nic nie przybyło. Salda bez zmian.",
   "wallet.receive.stored_unconfirmed":
     "Zapisane z {mint}, ale jeszcze niepotwierdzone przez mennicę ({reason}).",
   "wallet.receive.offline": "offline",
   "wallet.receive.redeemed_here":
-    "Zrealizowane w {mint}. Te dowody należą teraz wyłącznie do ciebie: kopia nadawcy już nie działa.",
+    "Zrealizowane w {mint}. Ten ecash należy teraz wyłącznie do ciebie: kopia nadawcy już nie działa.",
   "wallet.receive.memo_quoted": "\n\n„{memo}”",
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
@@ -1139,9 +1139,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Faktura opłacona, a {mint} wydała {amount} {unit}. To saldo jest potwierdzone: możesz je wydać offline od razu.",
   "wallet.ln.withdrawn":
-    "Zapłacono {paid} satów przez Lightning. Mennica pobrała {fee} satów opłat za trasowanie.",
+    "Zapłacono {amount} {unit} przez Lightning. Mennica pobrała {fee} {unit} opłat za trasowanie.",
   "wallet.ln.withdrawn_with_change":
-    "Zapłacono {paid} satów przez Lightning. Mennica pobrała {fee} satów opłat za trasowanie i zwróciła {change} satów rezerwy na twoje saldo.",
+    "Zapłacono {amount} {unit} przez Lightning. Mennica pobrała {fee} {unit} opłat za trasowanie i zwróciła {change} {unit} rezerwy na twoje saldo.",
   "wallet.ln.payment_failed": "Płatność się nie powiodła",
   "wallet.ln.deposit_body":
     "Mennica daje ci fakturę. Opłać ją z dowolnego portfela Lightning, a saty wrócą jako ecash, który wydasz offline.",
@@ -1283,13 +1283,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Nie udało się połączyć z {mints}. Cała reszta jest aktualna.",
   "wallet.refresh.swapped":
-    "{amount} {unit} potwierdzone i wymienione na świeże dowody.",
+    "{amount} {unit} potwierdzone i wymienione na świeży ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} jest teraz objęte twoją frazą odzyskiwania.",
   "wallet.refresh.all_confirmed":
     "Wszystko tutaj było już potwierdzone przez mennicę.",
   "wallet.pending.reserved_desc":
-    "Zbudowane i zarezerwowane, dostawa niepotwierdzona. Dowody są trzymane poza saldem, żeby nie dało się ich wydać dwa razy.",
+    "Zbudowane i zarezerwowane, dostawa niepotwierdzona. Monety są trzymane poza saldem, żeby nie dało się ich wydać dwa razy.",
   "wallet.pending.locked_desc":
     "Już przypisane do klucza odbiorcy, więc tylko on może to wydać. Po prostu jeszcze do niego nie dotarło. Udostępnij token, żeby zakończyć.",
   "wallet.pending.show_qr": "Pokaż ten token jako kod QR",
@@ -1334,7 +1334,7 @@ export const strings: Strings = {
     "Usługa sieci mesh nie działa, więc nie ma jak przekazać tokena. Nic nie zostało pobrane.",
   "wallet.xfer.could_not_send": "Nie udało się wysłać",
   "wallet.xfer.inexact_body":
-    "Twoje dowody nie złożą offline dokładnie {amount} {unit}. Najmniejszy token, jaki możesz zbudować, to {spend} {unit}, a dodatkowe {extra} {unit} trafia do nich bez możliwości odzyskania.\n\nOdświeżenie w mennicy przy internecie rozbija twoje dowody na nominały, które zejdą się co do jednostki.",
+    "Twoje monety nie złożą offline dokładnie {amount} {unit}. Najmniejszy token, jaki możesz zbudować, to {spend} {unit}, a dodatkowe {extra} {unit} trafia do nich bez możliwości odzyskania.\n\nOdświeżenie w mennicy przy internecie rozbija twoje monety na nominały, które zejdą się co do jednostki.",
   "wallet.xfer.send_amount": "Wyślij {amount}",
   "wallet.xfer.mesh_offline": "Sieć mesh offline",
 
@@ -1398,7 +1398,7 @@ export const strings: Strings = {
     "Cashu to ecash dla Bitcoina. Token to ciąg znaków wart pieniądze dla tego, kto go ma, podpisany na ślepo przez mennicę, żeby mennica nie widziała, kto co wydał. Bez kont, bez logowania.",
   "wallet.explain.send": "Wyślij",
   "wallet.explain.send_desc":
-    "Zamienia kwotę w token, który wręczysz peerowi w pobliżu przez Bluetooth albo udostępnisz jako tekst. Działa bez internetu. Dowody zostają zarezerwowane, dopóki nie potwierdzisz, że dotarło.",
+    "Zamienia kwotę w token, który wręczysz peerowi w pobliżu przez Bluetooth albo udostępnisz jako tekst. Działa bez internetu. Monety zostają zarezerwowane, dopóki nie potwierdzisz, że dotarło.",
   "wallet.explain.receive": "Odbierz",
   "wallet.explain.receive_desc":
     "Wklej token, żeby go dodać. Przy internecie wymienia się w mennicy od razu, co czyni go sprawdzalnie twoim. Offline zostaje zapisany i oznaczony jako niepotwierdzony, dopóki nie odświeżysz.",
@@ -1428,7 +1428,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Nie udało się połączyć z mennicą.",
   "wallet.svc.tor_ios": "Zapytania do mennicy nie idą przez Tor na iOS.",
   "wallet.svc.tor_ios_body":
-    "Arti otacza tylko WebSockety Nostr, więc to zapytanie dotarłoby do mennicy otwartą siecią i powiązało twoje IP z tymi dowodami. Zezwól na to w Ustawieniach > Bezpieczeństwo albo najpierw wyłącz Tor. Wysyłanie i odbieranie ecash przez sieć mesh działa dalej.",
+    "Arti otacza tylko WebSockety Nostr, więc to zapytanie dotarłoby do mennicy otwartą siecią i powiązało twoje IP z tym ecash. Zezwól na to w Ustawieniach > Bezpieczeństwo albo najpierw wyłącz Tor. Wysyłanie i odbieranie ecash przez sieć mesh działa dalej.",
   "wallet.svc.internet_off":
     "Internet jest wyłączony, więc nie można połączyć się z mennicą.",
   "wallet.svc.internet_off_body":
@@ -1445,12 +1445,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "Przywrócono z frazy odzyskiwania",
   "wallet.svc.storage_locked": "Pamięć portfela jest zablokowana.",
   "wallet.svc.storage_locked_body":
-    "Airhop trzyma dowody ecash w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia. Odblokuj urządzenie i otwórz aplikację ponownie.",
+    "Airhop trzyma twój ecash w zaszyfrowanym pliku, którego klucz mieszka w pęku kluczy urządzenia. Odblokuj urządzenie i otwórz aplikację ponownie.",
   "wallet.svc.bad_url": "To nie jest prawidłowy adres URL.",
   "wallet.svc.needs_https": "Adres mennicy musi zaczynać się od https://.",
   "wallet.svc.refuse_http": "Odmawiamy korzystania z mennicy po zwykłym http.",
   "wallet.svc.refuse_http_body":
-    "Każdy po drodze w sieci mógłby odczytać albo zmienić twoje dowody. Użyj mennicy z https://.",
+    "Każdy po drodze w sieci mógłby odczytać albo zmienić twój ecash. Użyj mennicy z https://.",
   "wallet.svc.mint_not_saved": "Nie udało się zapisać mennicy.",
   "wallet.svc.unreadable_token": "To nie jest czytelny token Cashu.",
   "wallet.svc.unreadable_token_body":
@@ -1460,7 +1460,7 @@ export const strings: Strings = {
     "Nie można teraz połączyć się z mennicą, aby je pobrać. Nic nie przepadło: odbierz go ponownie, gdy będziesz online.",
   "wallet.svc.wrong_mint":
     "Ten token nie został podpisany przez mennicę, którą wskazuje.",
-  "wallet.svc.already_spent": "Te dowody zostały już wydane.",
+  "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
     "Ten, kto wysłał ten token, zrealizował go pierwszy albo wysłał ten sam token jeszcze komuś innemu.",
   "wallet.svc.receiving_offline": "odbieranie offline",
@@ -1472,7 +1472,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "Dodaj mennicę i wpłać przez Lightning albo odbierz od kogoś token.",
   "wallet.svc.split_across_mints": "Twoje saldo jest rozbite na kilka mennic.",
-  "wallet.svc.mint_says_spent": "Mennica zgłosiła te dowody jako już wydane.",
+  "wallet.svc.mint_says_spent": "Mennica zgłosiła ten ecash jako już wydany.",
   "wallet.svc.issue_against_invoice": "wydać ecash pod fakturę Lightning",
   "wallet.svc.pay_invoice": "opłacić faktury Lightning",
   "wallet.svc.unknown_deposit": "Nieznana wpłata.",
@@ -1502,7 +1502,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Nie udało się ustalić wielkości tego przelewu.",
   "wallet.svc.insufficient_at_mint": "Za małe saldo w {mint}.",
   "wallet.svc.inexact_title":
-    "Twoje dowody nie złożą offline dokładnie {amount} {unit}.",
+    "Twoje monety nie złożą offline dokładnie {amount} {unit}.",
   "wallet.svc.inexact_detail":
     "Najmniejszy token, jaki możesz wysłać, to {spend} {unit}. Offline nie ma reszty, więc dodatkowe {extra} {unit} trafia do odbiorcy.",
   "wallet.svc.no_single_mint":
@@ -1533,10 +1533,9 @@ export const strings: Strings = {
     "Mint wydał tę wpłatę, ale nie udało się odtworzyć jej monet. Przywrócenie z frazy odzyskiwania je odzyska.",
   "wallet.svc.swap_unreadable":
     "Ta wymiana została zapisana w postaci, której ta wersja nie odtworzy.",
-  "wallet.svc.lock_in_doubt":
-    "Mennica nie odpowiedziała, więc ta płatność mogła przejść albo nie.",
+  "wallet.svc.lock_in_doubt": "Ta płatność mogła przejść albo nie.",
   "wallet.svc.lock_in_doubt_body":
-    "Nic więcej nie wysłano. Monety są wstrzymane, dopóki mennica nie odpowie. Jeśli płatność przeszła, zablokowany token pojawi się w Oczekujących do przekazania. Jeśli nie, monety wrócą.",
+    "Nic więcej nie wysłano. Monety są wstrzymane, dopóki mennica nie potwierdzi wyniku. Jeśli płatność przeszła, zablokowany token pojawi się w Oczekujących do przekazania. Jeśli nie, monety wrócą.",
   "wallet.svc.send_spent_by_swap":
     "Te monety zostały wymienione z powrotem do twojego portfela, zanim token odebrano, więc nie da się go już odebrać. Kwota jest na twoim saldzie.",
 
@@ -2002,7 +2001,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Zużycie sieci",
   "settings.storage.storage_usage": "Zużycie pamięci",
   "settings.storage.storage_usage_desc":
-    "Wiadomości, dowody portfela i załączniki w pamięci podręcznej",
+    "Wiadomości, ecash i załączniki w pamięci podręcznej",
   "settings.storage.session_usage":
     "Ta sesja · wysłano {sent}, odebrano {received}",
   "settings.storage.cache": "Pamięć podręczna",
@@ -2093,7 +2092,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Rozmowy, grupy i kanały, do których dołączyłeś",
   "settings.transfer.wallet": "Saldo portfela",
-  "settings.transfer.wallet_desc": "Dowody Cashu i historia transakcji",
+  "settings.transfer.wallet_desc": "Ecash i historia transakcji",
   "settings.transfer.title": "Przenieś na nowy telefon",
   "settings.transfer.desc":
     "Przenieś tożsamość, czaty i portfel na inne urządzenie",
@@ -2127,9 +2126,9 @@ export const strings: Strings = {
   "settings.wipe.title": "Awaryjne czyszczenie",
   "settings.wipe.now": "Wyczyść teraz",
   "settings.wipe.desc":
-    "Natychmiast niszczy wszystkie klucze, wiadomości i dowody",
+    "Natychmiast niszczy wszystkie klucze, wiadomości i ecash",
   "settings.wipe.body":
-    "To natychmiast zniszczy wszystkie twoje klucze, wiadomości i dowody portfela. Nie da się tego cofnąć.",
+    "To natychmiast zniszczy wszystkie twoje klucze, wiadomości i ecash. Nie da się tego cofnąć.",
   "settings.wipe.in_progress": "Czyszczenie",
   "settings.wipe.in_progress_body":
     "Niszczenie kluczy, wiadomości i plików. Trwa to kilka sekund i kończy się samo, nawet gdy aplikacja zostanie zamknięta.",
@@ -2364,11 +2363,11 @@ export const plurals: Plurals = {
 
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} przechowuje {balance} {unit} w {count} dowodzie. Usunięcie kasuje ten dowód z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
-    few: "{mint} przechowuje {balance} {unit} w {count} dowodach. Usunięcie kasuje te dowody z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
-    many: "{mint} przechowuje {balance} {unit} w {count} dowodach. Usunięcie kasuje te dowody z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+    one: "{mint} przechowuje {balance} {unit} w {count} monecie. Usunięcie kasuje tę monetę z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+    few: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+    many: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
     other:
-      "{mint} przechowuje {balance} {unit} w {count} dowodu. Usunięcie kasuje ten dowód z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+      "{mint} przechowuje {balance} {unit} w {count} monety. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2382,10 +2381,10 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Odzyskano {count} niewydany dowód z {mints}.",
-    few: "Odzyskano {count} niewydane dowody z {mints}.",
-    many: "Odzyskano {count} niewydanych dowodów z {mints}.",
-    other: "Odzyskano {count} niewydanego dowodu z {mints}.",
+    one: "Odzyskano {count} niewydaną monetę z {mints}.",
+    few: "Odzyskano {count} niewydane monety z {mints}.",
+    many: "Odzyskano {count} niewydanych monet z {mints}.",
+    other: "Odzyskano {count} niewydanej monety z {mints}.",
   },
   "wallet.backup.already_spent": {
     one: "Znaleziono {count} monetę, ale była już wydana, więc nic za nią nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
@@ -2415,10 +2414,10 @@ export const plurals: Plurals = {
     other: "{count} niepotwierdzonego",
   },
   "wallet.spent_removed_detail": {
-    one: "{count} dowód był już wydany i został usunięty.",
-    few: "{count} dowody były już wydane i zostały usunięte.",
-    many: "{count} dowodów było już wydanych i zostało usuniętych.",
-    other: "{count} dowodu było już wydane i zostało usunięte.",
+    one: "{count} moneta była już wydana i została usunięta.",
+    few: "{count} monety były już wydane i zostały usunięte.",
+    many: "{count} monet było już wydanych i zostało usuniętych.",
+    other: "{count} monety było już wydane i zostało usunięte.",
   },
 
   // ---- System notifications ----

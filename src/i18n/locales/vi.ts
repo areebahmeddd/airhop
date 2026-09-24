@@ -628,7 +628,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "Nhận {amount} {unit}",
   "chat.ecash.already_claimed": "Đã nhận rồi",
   "chat.ecash.already_claimed_body":
-    "Mọi chứng từ trong token này đã có sẵn trong ví của bạn, nên không có gì được thêm vào.",
+    "Mọi thứ trong token này đã có sẵn trong ví của bạn, nên không có gì được thêm vào.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc":
@@ -937,9 +937,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "Chuyển qua lại giữa satoshi và bitcoin",
   "wallet.balance.a11y": "Số dư {value} {unit}",
   "wallet.balance.locked":
-    "Kho ví đang bị khóa. Chứng từ ecash được giữ trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị, và tệp đó không mở được. Hãy mở khóa thiết bị rồi mở lại Airhop.",
+    "Kho ví đang bị khóa. Ecash của bạn được giữ trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị, và tệp đó không mở được. Hãy mở khóa thiết bị rồi mở lại Airhop.",
   "wallet.balance.tor_blocked":
-    "Tor đang bật, nên các yêu cầu tới nhà đúc bị chặn: chúng sẽ đi ra qua mạng trần và gắn IP của bạn với chứng từ của bạn. Gửi và nhận qua mạng lưới vẫn chạy. Hãy cho phép lưu lượng nhà đúc trong Cài đặt, Bảo mật.",
+    "Tor đang bật, nên các yêu cầu tới nhà đúc bị chặn: chúng sẽ đi ra qua mạng trần và gắn IP của bạn với ecash của bạn. Gửi và nhận qua mạng lưới vẫn chạy. Hãy cho phép lưu lượng nhà đúc trong Cài đặt, Bảo mật.",
   "wallet.balance.offline":
     "Ngoại tuyến. Bạn vẫn có thể trả cho người ở gần và gửi token.",
   "wallet.balance.internet_off":
@@ -977,7 +977,7 @@ export const strings: Strings = {
   "wallet.send.title": "Gửi ecash",
   "wallet.send.amount_in": "Số tiền tính bằng {unit}",
   "wallet.send.body":
-    "Được dựng ngoại tuyến từ những chứng từ bạn đã có. Không có gì rời số dư của bạn vĩnh viễn cho tới khi bạn xác nhận token đã tới nơi.",
+    "Được dựng ngoại tuyến từ ecash bạn đã có. Không có gì rời số dư của bạn vĩnh viễn cho tới khi bạn xác nhận token đã tới nơi.",
   "wallet.send.stale_fee_note":
     "Phí được kiểm tra lần cuối cách đây {days} ngày. Nếu nhà đúc này đã tăng phí kể từ đó, lần gửi này có thể tốn hơn một chút.",
   "wallet.send.fee_note":
@@ -985,7 +985,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "Token này bị chia thành quá nhiều đồng để vừa một mã QR. Hãy chia sẻ hoặc sao chép nó, hoặc làm mới ở nhà đúc để gộp lại.",
   "wallet.send.bearer_note":
-    "Ai giữ chuỗi ký tự này thì người đó sở hữu số tiền. Các chứng từ đang được giữ chứ chưa tiêu: nếu nó không bao giờ tới tay ai, bạn có thể thu hồi trong mục Đang chờ.",
+    "Ai giữ chuỗi ký tự này thì người đó sở hữu số tiền. Các đồng đang được giữ chứ chưa tiêu: nếu nó không bao giờ tới tay ai, bạn có thể thu hồi chúng trong mục Đang chờ.",
   "wallet.send.qr_too_big_short":
     "Token này bị chia thành quá nhiều đồng để vừa một mã QR. Hãy chia sẻ hoặc sao chép nó.",
   "wallet.send.scan_note":
@@ -999,11 +999,11 @@ export const strings: Strings = {
   "wallet.send.building": "Đang dựng…",
   "wallet.send.build": "Dựng token",
   "wallet.send.inexact_body":
-    "Chứng từ của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến. Token nhỏ nhất bạn dựng được là {spend} {unit}, mà ngoại tuyến thì không có tiền thối: phần dư {extra} {unit} sẽ thuộc về người nhận.\n\nLàm mới ở nhà đúc khi có mạng sẽ chia chứng từ của bạn thành các mệnh giá tạo ra đúng số này.",
+    "Các đồng của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến. Token nhỏ nhất bạn dựng được là {spend} {unit}, mà ngoại tuyến thì không có tiền thối: phần dư {extra} {unit} sẽ thuộc về người nhận.\n\nLàm mới ở nhà đúc khi có mạng sẽ chia các đồng của bạn thành các mệnh giá tạo ra đúng số này.",
   "wallet.send.send_amount": "Gửi {amount}",
   "wallet.send.sent_to": "Đã gửi {amount} {unit} cho {name}",
   "wallet.send.sent_to_body":
-    "{route} Nó vẫn thu hồi được trong mục Đang chờ cho tới khi bạn xác nhận họ đã nhận, hoặc cho tới khi nhà đúc báo rằng các chứng từ đã được đổi.",
+    "{route} Nó vẫn thu hồi được trong mục Đang chờ cho tới khi bạn xác nhận họ đã nhận, hoặc cho tới khi nhà đúc báo rằng token đã được đổi.",
   "wallet.send.copy_token": "Sao chép token",
   "wallet.send.share_token": "Chia sẻ token",
   "wallet.send.open_in_wallet": "Mở token này trong một ví khác",
@@ -1022,12 +1022,12 @@ export const strings: Strings = {
     "Những đồng này vẫn đang được giữ cho một lần gửi bạn chưa tất toán, nên không có gì để nhận. Hãy dùng Thu hồi trên khoản thanh toán đó để đưa chúng thẳng về số dư.",
   "wallet.receive.already_have": "Đã có trong ví của bạn",
   "wallet.receive.already_have_body":
-    "Mọi chứng từ trong token này đã được lưu ở đây, nên không có gì được thêm vào. Số dư không đổi.",
+    "Mọi thứ trong token này đã được lưu ở đây, nên không có gì được thêm vào. Số dư không đổi.",
   "wallet.receive.stored_unconfirmed":
     "Đã lưu từ {mint}, nhưng chưa được nhà đúc xác nhận ({reason}).",
   "wallet.receive.offline": "ngoại tuyến",
   "wallet.receive.redeemed_here":
-    "Đã đổi tại {mint}. Các chứng từ này giờ chỉ thuộc về mình bạn: bản sao của người gửi không còn dùng được.",
+    "Đã đổi tại {mint}. Khoản ecash này giờ chỉ thuộc về mình bạn: bản sao của người gửi không còn dùng được.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
@@ -1120,9 +1120,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "Hóa đơn đã trả và {mint} đã phát hành {amount} {unit}. Số dư này đã được xác nhận: bạn tiêu được ngoại tuyến ngay lập tức.",
   "wallet.ln.withdrawn":
-    "Đã trả {paid} sat qua Lightning. Nhà đúc thu {fee} sat phí định tuyến.",
+    "Đã trả {amount} {unit} qua Lightning. Nhà đúc thu {fee} {unit} phí định tuyến.",
   "wallet.ln.withdrawn_with_change":
-    "Đã trả {paid} sat qua Lightning. Nhà đúc thu {fee} sat phí định tuyến, và trả lại {change} sat trong phần dự phòng về số dư của bạn.",
+    "Đã trả {amount} {unit} qua Lightning. Nhà đúc thu {fee} {unit} phí định tuyến, và trả lại {change} {unit} trong phần dự phòng về số dư của bạn.",
   "wallet.ln.payment_failed": "Thanh toán thất bại",
   "wallet.ln.deposit_body":
     "Nhà đúc đưa bạn một hóa đơn. Hãy trả nó từ bất kỳ ví Lightning nào và số sat sẽ quay về dưới dạng ecash tiêu được khi ngoại tuyến.",
@@ -1263,13 +1263,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "Không kết nối được {mints}. Mọi thứ khác đều đã cập nhật.",
   "wallet.refresh.swapped":
-    "{amount} {unit} đã được xác nhận và hoán đổi lấy chứng từ mới.",
+    "{amount} {unit} đã được xác nhận và hoán đổi lấy ecash mới.",
   "wallet.refresh.secured":
     "{amount} {unit} giờ đã được cụm từ khôi phục của bạn bao phủ.",
   "wallet.refresh.all_confirmed":
     "Mọi thứ ở đây đều đã được nhà đúc xác nhận từ trước.",
   "wallet.pending.reserved_desc":
-    "Đã dựng và đang giữ, chưa xác nhận chuyển thành công. Các chứng từ được tách khỏi số dư của bạn để không bị tiêu hai lần.",
+    "Đã dựng và đang giữ, chưa xác nhận chuyển thành công. Các đồng được tách khỏi số dư của bạn để không bị tiêu hai lần.",
   "wallet.pending.locked_desc":
     "Đã khóa vào khóa của người nhận, nên chỉ họ tiêu được. Chỉ là nó chưa tới tay họ thôi. Hãy chia sẻ token để hoàn tất.",
   "wallet.pending.show_qr": "Hiện token này dưới dạng mã QR",
@@ -1314,7 +1314,7 @@ export const strings: Strings = {
     "Dịch vụ mạng lưới không chạy, nên không có cách nào giao token đi. Chưa có khoản nào bị trừ.",
   "wallet.xfer.could_not_send": "Không gửi được",
   "wallet.xfer.inexact_body":
-    "Chứng từ của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến. Token nhỏ nhất bạn dựng được là {spend} {unit}, và phần dư {extra} {unit} sẽ về tay họ mà không có cách nào lấy lại.\n\nLàm mới ở nhà đúc khi có mạng sẽ chia chứng từ của bạn thành các mệnh giá tạo ra đúng số này.",
+    "Các đồng của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến. Token nhỏ nhất bạn dựng được là {spend} {unit}, và phần dư {extra} {unit} sẽ về tay họ mà không có cách nào lấy lại.\n\nLàm mới ở nhà đúc khi có mạng sẽ chia các đồng của bạn thành các mệnh giá tạo ra đúng số này.",
   "wallet.xfer.send_amount": "Gửi {amount}",
   "wallet.xfer.mesh_offline": "Mạng lưới ngoại tuyến",
 
@@ -1379,7 +1379,7 @@ export const strings: Strings = {
     "Cashu là ecash cho Bitcoin. Một token là chuỗi ký tự đáng giá tiền với bất cứ ai giữ nó, được nhà đúc ký mù nên nhà đúc không biết ai đã tiêu khoản nào. Không tài khoản, không đăng nhập.",
   "wallet.explain.send": "Gửi",
   "wallet.explain.send_desc":
-    "Biến một khoản tiền thành token bạn có thể trao cho một nút mạng ở gần qua Bluetooth, hoặc chia sẻ dưới dạng văn bản. Chạy được khi không có Internet. Chứng từ vẫn được giữ cho tới khi bạn xác nhận nó đã tới nơi.",
+    "Biến một khoản tiền thành token bạn có thể trao cho một nút mạng ở gần qua Bluetooth, hoặc chia sẻ dưới dạng văn bản. Chạy được khi không có Internet. Các đồng vẫn được giữ cho tới khi bạn xác nhận nó đã tới nơi.",
   "wallet.explain.receive": "Nhận",
   "wallet.explain.receive_desc":
     "Dán một token để thêm nó vào. Khi có mạng, nó được hoán đổi ngay tại nhà đúc, nhờ vậy chứng minh được là của bạn. Khi ngoại tuyến, nó được lưu lại và đánh dấu chưa xác nhận cho tới khi bạn làm mới.",
@@ -1409,7 +1409,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "Không kết nối được tới nhà đúc.",
   "wallet.svc.tor_ios": "Trên iOS, các yêu cầu tới nhà đúc không đi qua Tor.",
   "wallet.svc.tor_ios_body":
-    "Arti chỉ bọc WebSocket của Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với những chứng từ này. Hãy cho phép nó trong Cài đặt > Bảo mật, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
+    "Arti chỉ bọc WebSocket của Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với khoản ecash này. Hãy cho phép nó trong Cài đặt > Bảo mật, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
   "wallet.svc.internet_off": "Internet đang tắt nên không thể kết nối nhà đúc.",
   "wallet.svc.internet_off_body":
     "Bật {setting} trong Cài đặt. Gửi và nhận ecash ở gần vẫn hoạt động.",
@@ -1426,12 +1426,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "Đã khôi phục từ cụm từ khôi phục",
   "wallet.svc.storage_locked": "Kho ví đang bị khóa.",
   "wallet.svc.storage_locked_body":
-    "Airhop giữ chứng từ ecash trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị. Hãy mở khóa thiết bị rồi mở lại ứng dụng.",
+    "Airhop giữ ecash của bạn trong một tệp mã hóa có khóa nằm trong chuỗi khóa của thiết bị. Hãy mở khóa thiết bị rồi mở lại ứng dụng.",
   "wallet.svc.bad_url": "Đó không phải một URL hợp lệ.",
   "wallet.svc.needs_https": "URL của nhà đúc phải bắt đầu bằng https://.",
   "wallet.svc.refuse_http": "Từ chối dùng một nhà đúc qua http trần.",
   "wallet.svc.refuse_http_body":
-    "Bất cứ ai trên đường mạng đều đọc hay sửa được chứng từ của bạn. Hãy dùng một nhà đúc https://.",
+    "Bất cứ ai trên đường mạng đều đọc hay sửa được ecash của bạn. Hãy dùng một nhà đúc https://.",
   "wallet.svc.mint_not_saved": "Không lưu được nhà đúc.",
   "wallet.svc.unreadable_token": "Đó không phải một token Cashu đọc được.",
   "wallet.svc.unreadable_token_body":
@@ -1440,7 +1440,7 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Hiện không thể kết nối tới nhà đúc để lấy khóa. Không mất gì cả: hãy nhận lại khi bạn có mạng.",
   "wallet.svc.wrong_mint": "Token này không do nhà đúc mà nó nêu tên ký.",
-  "wallet.svc.already_spent": "Những chứng từ này đã bị tiêu rồi.",
+  "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",
   "wallet.svc.receiving_offline": "nhận khi ngoại tuyến",
@@ -1453,8 +1453,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "Hãy thêm một nhà đúc và nạp qua Lightning, hoặc nhận một token từ ai đó.",
   "wallet.svc.split_across_mints": "Số dư của bạn trải khắp nhiều nhà đúc.",
-  "wallet.svc.mint_says_spent":
-    "Nhà đúc báo rằng những chứng từ này đã bị tiêu.",
+  "wallet.svc.mint_says_spent": "Nhà đúc báo rằng khoản ecash này đã bị tiêu.",
   "wallet.svc.issue_against_invoice":
     "phát hành ecash dựa trên một hóa đơn Lightning",
   "wallet.svc.pay_invoice": "trả một hóa đơn Lightning",
@@ -1483,7 +1482,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "Không xác định được quy mô cho lần chuyển này.",
   "wallet.svc.insufficient_at_mint": "Số dư ở {mint} không đủ.",
   "wallet.svc.inexact_title":
-    "Chứng từ của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến.",
+    "Các đồng của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến.",
   "wallet.svc.inexact_detail":
     "Token nhỏ nhất bạn gửi được là {spend} {unit}. Ngoại tuyến thì không có tiền thối, nên phần dư {extra} {unit} sẽ thuộc về người nhận.",
   "wallet.svc.no_single_mint":
@@ -1515,9 +1514,9 @@ export const strings: Strings = {
   "wallet.svc.swap_unreadable":
     "Lần hoán đổi này được lưu ở dạng mà phiên bản hiện tại không phát lại được.",
   "wallet.svc.lock_in_doubt":
-    "Mint không phản hồi, nên khoản thanh toán này có thể đã hoặc chưa thực hiện.",
+    "Khoản thanh toán này có thể đã hoặc chưa thực hiện.",
   "wallet.svc.lock_in_doubt_body":
-    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi mint phản hồi. Nếu thành công, token đã khóa sẽ hiện trong Đang chờ để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
+    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Đang chờ để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
   "wallet.svc.send_spent_by_swap":
     "Các đồng xu này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
 
@@ -1977,7 +1976,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "Mức dùng mạng",
   "settings.storage.storage_usage": "Mức dùng bộ nhớ",
   "settings.storage.storage_usage_desc":
-    "Tin nhắn, chứng từ ví và tệp đính kèm lưu đệm",
+    "Tin nhắn, ecash và tệp đính kèm lưu đệm",
   "settings.storage.session_usage": "Phiên này · gửi {sent}, nhận {received}",
   "settings.storage.cache": "Bộ nhớ đệm",
   "settings.storage.cache_desc": "{size} tệp đính kèm",
@@ -2066,7 +2065,7 @@ export const strings: Strings = {
   "settings.transfer.chats_desc":
     "Các cuộc trò chuyện, nhóm và những kênh bạn đã tham gia",
   "settings.transfer.wallet": "Số dư ví",
-  "settings.transfer.wallet_desc": "Chứng từ Cashu và lịch sử giao dịch",
+  "settings.transfer.wallet_desc": "Ecash và lịch sử giao dịch",
   "settings.transfer.title": "Chuyển sang điện thoại mới",
   "settings.transfer.desc":
     "Dời danh tính, cuộc trò chuyện và ví của bạn sang một thiết bị khác",
@@ -2097,9 +2096,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "Chạm ba lần để xóa ngay mà không hỏi lại",
   "settings.wipe.title": "Xóa khẩn cấp",
   "settings.wipe.now": "Xóa ngay",
-  "settings.wipe.desc": "Hủy ngay mọi khóa, tin nhắn và chứng từ",
+  "settings.wipe.desc": "Hủy ngay mọi khóa, tin nhắn và ecash",
   "settings.wipe.body":
-    "Việc này sẽ hủy ngay mọi khóa, tin nhắn và chứng từ ví của bạn. Không thể hoàn tác.",
+    "Việc này sẽ hủy ngay mọi khóa, tin nhắn và ecash của bạn. Không thể hoàn tác.",
   "settings.wipe.in_progress": "Đang xóa",
   "settings.wipe.in_progress_body":
     "Đang hủy khóa, tin nhắn và tệp của bạn. Việc này mất vài giây, và tự hoàn tất kể cả khi ứng dụng bị đóng.",
@@ -2285,7 +2284,7 @@ export const plurals: Plurals = {
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} giữ {balance} {unit} trong {count} chứng từ. Gỡ nó đi sẽ hủy vĩnh viễn những chứng từ đó khỏi thiết bị này, và chúng không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
+      "{mint} giữ {balance} {unit} trong {count} đồng. Gỡ nó đi sẽ hủy vĩnh viễn những đồng đó khỏi thiết bị này, và chúng không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2296,7 +2295,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "Đã khôi phục {count} chứng từ chưa tiêu từ {mints}.",
+    other: "Đã khôi phục {count} đồng chưa tiêu từ {mints}.",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2314,7 +2313,7 @@ export const plurals: Plurals = {
     other: "{count} chưa xác nhận",
   },
   "wallet.spent_removed_detail": {
-    other: "{count} chứng từ đã bị tiêu từ trước, và chúng đã được gỡ đi.",
+    other: "{count} đồng đã bị tiêu từ trước, và chúng đã được gỡ đi.",
   },
 
   // ---- System notifications ----

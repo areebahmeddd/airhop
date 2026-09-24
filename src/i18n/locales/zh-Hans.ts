@@ -595,7 +595,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "领取 {amount} {unit}",
   "chat.ecash.already_claimed": "已经领取过了",
   "chat.ecash.already_claimed_body":
-    "这个代币里的每一份凭证都已经在你的钱包里了，所以没有新增任何东西。",
+    "这个代币里的所有内容都已经在你的钱包里了，所以没有新增任何东西。",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "已交给网状网络尽力送达",
@@ -875,9 +875,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "在聪和比特币之间切换",
   "wallet.balance.a11y": "余额 {value} {unit}",
   "wallet.balance.locked":
-    "钱包存储已锁定。Ecash 凭证保存在一个加密文件中，它的密钥存放在设备钥匙串里，现在无法打开。请解锁设备并重新打开 Airhop。",
+    "钱包存储已锁定。你的 ecash 保存在一个加密文件中，它的密钥存放在设备钥匙串里，现在无法打开。请解锁设备并重新打开 Airhop。",
   "wallet.balance.tor_blocked":
-    "Tor 已开启，因此铸币厂请求被拦截：它们会走明网发出，把你的 IP 和你的凭证关联起来。通过网状网络收发仍然可用。可在设置的安全里允许铸币厂流量。",
+    "Tor 已开启，因此铸币厂请求被拦截：它们会走明网发出，把你的 IP 和你的 ecash 关联起来。通过网状网络收发仍然可用。可在设置的安全里允许铸币厂流量。",
   "wallet.balance.offline": "离线中。你仍可以付款给附近的人，也可以发送代币。",
   "wallet.balance.internet_off":
     "互联网已关闭，钱包只能在附近使用。要连接铸币厂，请在设置中打开{setting}。",
@@ -912,7 +912,7 @@ export const strings: Strings = {
   "wallet.send.title": "发送 ecash",
   "wallet.send.amount_in": "金额（{unit}）",
   "wallet.send.body":
-    "用你已经持有的凭证离线构建。在你确认代币已送达之前，余额不会被永久扣除。",
+    "用你已经持有的 ecash 离线构建。在你确认代币已送达之前，余额不会被永久扣除。",
   "wallet.send.stale_fee_note":
     "手续费上次核对是在 {days} 天前。如果这个铸币厂之后调高了费率，这笔发送可能会略贵一些。",
   "wallet.send.fee_note":
@@ -920,7 +920,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "这个代币拆成的币太多，装不进一个二维码。请改用分享或复制，或者在铸币厂刷新以合并。",
   "wallet.send.bearer_note":
-    "谁拿着这串字符，钱就是谁的。这些凭证是被预留而不是已花掉：如果它始终没有送到任何人手上，你可以在待处理里收回。",
+    "谁拿着这串字符，钱就是谁的。这些币是被预留而不是已花掉：如果它始终没有送到任何人手上，你可以在待处理里收回。",
   "wallet.send.qr_too_big_short":
     "这个代币拆成的币太多，装不进一个二维码。请改用分享或复制。",
   "wallet.send.scan_note":
@@ -933,11 +933,11 @@ export const strings: Strings = {
   "wallet.send.building": "构建中…",
   "wallet.send.build": "构建代币",
   "wallet.send.inexact_body":
-    "你的凭证在离线状态下凑不出正好 {amount} {unit}。能构建的最小代币是 {spend} {unit}，而离线是没有找零的：多出的 {extra} {unit} 会归接收方。\n\n联网时在铸币厂刷新一次，可以把你的凭证拆成能凑出这个精确金额的面额。",
+    "你的币在离线状态下凑不出正好 {amount} {unit}。能构建的最小代币是 {spend} {unit}，而离线是没有找零的：多出的 {extra} {unit} 会归接收方。\n\n联网时在铸币厂刷新一次，可以把你的币拆成能凑出这个精确金额的面额。",
   "wallet.send.send_amount": "发送 {amount}",
   "wallet.send.sent_to": "{amount} {unit} 已发送给 {name}",
   "wallet.send.sent_to_body":
-    "{route} 在你确认对方收到之前，或者在铸币厂告知这些凭证已被兑付之前，它都留在待处理里可以收回。",
+    "{route} 在你确认对方收到之前，或者在铸币厂告知代币已被兑付之前，它都留在待处理里可以收回。",
   "wallet.send.copy_token": "复制代币",
   "wallet.send.share_token": "分享代币",
   "wallet.send.open_in_wallet": "在另一个钱包中打开这个代币",
@@ -956,12 +956,12 @@ export const strings: Strings = {
     "这些币仍在为一笔你尚未结清的发送预留着，所以没有可领取的东西。对那笔付款使用收回，就能把它们直接放回你的余额。",
   "wallet.receive.already_have": "已经在你的钱包里",
   "wallet.receive.already_have_body":
-    "这个代币里的每一份凭证都已经存在这里了，所以没有新增任何东西。余额没有变化。",
+    "这个代币里的所有内容都已经存在这里了，所以没有新增任何东西。余额没有变化。",
   "wallet.receive.stored_unconfirmed":
     "已从 {mint} 存入，但尚未与铸币厂确认（{reason}）。",
   "wallet.receive.offline": "离线",
   "wallet.receive.redeemed_here":
-    "已在 {mint} 兑付。这些凭证现在只属于你：发送方手里的副本不再有效。",
+    "已在 {mint} 兑付。这笔 ecash 现在只属于你：发送方手里的副本不再有效。",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "已在 {mint} 兑付。现在它可被证明属于你：发送方手里的这份代币副本不再有效。",
@@ -1051,9 +1051,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "发票已支付，{mint} 已发行 {amount} {unit}。这笔余额已确认：你马上就能离线花掉它。",
   "wallet.ln.withdrawn":
-    "已通过 Lightning 支付 {paid} sat。铸币厂收取了 {fee} sat 的路由费。",
+    "已通过 Lightning 支付 {amount} {unit}。铸币厂收取了 {fee} {unit} 的路由费。",
   "wallet.ln.withdrawn_with_change":
-    "已通过 Lightning 支付 {paid} sat。铸币厂收取了 {fee} sat 的路由费，并把预留中剩下的 {change} sat 退回你的余额。",
+    "已通过 Lightning 支付 {amount} {unit}。铸币厂收取了 {fee} {unit} 的路由费，并把预留中剩下的 {change} {unit} 退回你的余额。",
   "wallet.ln.payment_failed": "支付失败",
   "wallet.ln.deposit_body":
     "铸币厂给你一张发票。用任意 Lightning 钱包付掉它，这些 sat 就会以 ecash 的形式回来，可以离线花。",
@@ -1188,11 +1188,11 @@ export const strings: Strings = {
   "wallet.refresh.partly": "部分刷新",
   "wallet.refresh.done": "已刷新",
   "wallet.refresh.unreachable": "无法连接 {mints}。其余部分都是最新的。",
-  "wallet.refresh.swapped": "{amount} {unit} 已确认并换成了新的凭证。",
+  "wallet.refresh.swapped": "{amount} {unit} 已确认并换成了新的 ecash。",
   "wallet.refresh.secured": "{amount} {unit} 现在已被你的恢复助记词覆盖。",
   "wallet.refresh.all_confirmed": "这里的一切都已经与铸币厂确认过了。",
   "wallet.pending.reserved_desc":
-    "已构建并预留，送达未确认。这些凭证被从你的余额中扣住，以免被花两次。",
+    "已构建并预留，送达未确认。这些币被从你的余额中扣住，以免被花两次。",
   "wallet.pending.locked_desc":
     "已经锁定到接收方的密钥上，所以只有对方能花。只是还没送到对方手上。分享这个代币即可完成。",
   "wallet.pending.show_qr": "把这个代币显示为二维码",
@@ -1236,7 +1236,7 @@ export const strings: Strings = {
     "网状网络服务没有在运行，所以没有办法把代币交出去。没有扣除任何金额。",
   "wallet.xfer.could_not_send": "无法发送",
   "wallet.xfer.inexact_body":
-    "你的凭证在离线状态下凑不出正好 {amount} {unit}。能构建的最小代币是 {spend} {unit}，多出的 {extra} {unit} 会归对方，并且要不回来。\n\n联网时在铸币厂刷新一次，会把你的凭证拆成能凑出这个精确金额的面额。",
+    "你的币在离线状态下凑不出正好 {amount} {unit}。能构建的最小代币是 {spend} {unit}，多出的 {extra} {unit} 会归对方，并且要不回来。\n\n联网时在铸币厂刷新一次，会把你的币拆成能凑出这个精确金额的面额。",
   "wallet.xfer.send_amount": "发送 {amount}",
   "wallet.xfer.mesh_offline": "网状网络已离线",
 
@@ -1292,7 +1292,7 @@ export const strings: Strings = {
     "Cashu 是比特币的 ecash。代币是一串字符，谁拿着它就等于拿着钱，它由铸币厂盲签，因此铸币厂分不出是谁花了哪一笔。没有账户，也不用登录。",
   "wallet.explain.send": "发送",
   "wallet.explain.send_desc":
-    "把一笔金额变成代币，可以通过蓝牙交给附近的节点，也可以当作文本分享。无需互联网。在你确认它已到手之前，凭证一直保持预留。",
+    "把一笔金额变成代币，可以通过蓝牙交给附近的节点，也可以当作文本分享。无需互联网。在你确认它已到手之前，这些币一直保持预留。",
   "wallet.explain.receive": "接收",
   "wallet.explain.receive_desc":
     "粘贴一个代币即可入账。联网时它会立刻在铸币厂换新，从而可被证明属于你。离线时它会被存下并标为未确认，直到你刷新。",
@@ -1322,7 +1322,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "无法连接到铸币厂。",
   "wallet.svc.tor_ios": "在 iOS 上，铸币厂请求不走 Tor。",
   "wallet.svc.tor_ios_body":
-    "Arti 只包裹 Nostr 的 WebSocket，所以这个请求会走明网到达铸币厂，把你的 IP 和这些凭证关联起来。可以在设置 > 安全里允许它，或者先关掉 Tor。通过网状网络收发 ecash 仍然可用。",
+    "Arti 只包裹 Nostr 的 WebSocket，所以这个请求会走明网到达铸币厂，把你的 IP 和这笔 ecash 关联起来。可以在设置 > 安全里允许它，或者先关掉 Tor。通过网状网络收发 ecash 仍然可用。",
   "wallet.svc.internet_off": "互联网已关闭，无法连接铸币厂。",
   "wallet.svc.internet_off_body":
     "请在设置中打开{setting}。在附近收发 ecash 仍然可用。",
@@ -1337,12 +1337,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "已从恢复助记词还原",
   "wallet.svc.storage_locked": "钱包存储已锁定。",
   "wallet.svc.storage_locked_body":
-    "Airhop 把 ecash 凭证保存在一个加密文件中，它的密钥存放在设备钥匙串里。请解锁设备并重新打开应用。",
+    "Airhop 把你的 ecash 保存在一个加密文件中，它的密钥存放在设备钥匙串里。请解锁设备并重新打开应用。",
   "wallet.svc.bad_url": "那不是一个有效的 URL。",
   "wallet.svc.needs_https": "铸币厂 URL 必须以 https:// 开头。",
   "wallet.svc.refuse_http": "拒绝通过明文 http 使用铸币厂。",
   "wallet.svc.refuse_http_body":
-    "网络路径上的任何人都能读取或篡改你的凭证。请使用 https:// 的铸币厂。",
+    "网络路径上的任何人都能读取或篡改你的 ecash。请使用 https:// 的铸币厂。",
   "wallet.svc.mint_not_saved": "铸币厂无法保存。",
   "wallet.svc.unreadable_token": "那不是一个可读的 Cashu 代币。",
   "wallet.svc.unreadable_token_body":
@@ -1351,7 +1351,7 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "现在无法连接铸币厂获取密钥。没有任何损失：联网后再次接收即可。",
   "wallet.svc.wrong_mint": "这个代币并非由它所指明的铸币厂签发。",
-  "wallet.svc.already_spent": "这些凭证已经被花掉了。",
+  "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":
     "发这个代币的人自己先兑付了，或者把同一个代币也发给了别人。",
   "wallet.svc.receiving_offline": "离线接收",
@@ -1362,7 +1362,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "添加一个铸币厂并通过 Lightning 存入，或者从别人那里收一个代币。",
   "wallet.svc.split_across_mints": "你的余额分散在多个铸币厂。",
-  "wallet.svc.mint_says_spent": "铸币厂报告这些凭证已被花费。",
+  "wallet.svc.mint_says_spent": "铸币厂报告这笔 ecash 已被花费。",
   "wallet.svc.issue_against_invoice": "凭 Lightning 发票发行 ecash",
   "wallet.svc.pay_invoice": "支付 Lightning 发票",
   "wallet.svc.unknown_deposit": "未知的存入。",
@@ -1386,8 +1386,7 @@ export const strings: Strings = {
   "wallet.svc.amount_unfit_retried": "金额不合适，已重试归拢",
   "wallet.svc.cannot_size": "无法确定这笔转移的额度。",
   "wallet.svc.insufficient_at_mint": "{mint} 的余额不足。",
-  "wallet.svc.inexact_title":
-    "你的凭证在离线状态下凑不出正好 {amount} {unit}。",
+  "wallet.svc.inexact_title": "你的币在离线状态下凑不出正好 {amount} {unit}。",
   "wallet.svc.inexact_detail":
     "你能发出的最小代币是 {spend} {unit}。离线是没有找零的，所以多出的 {extra} {unit} 会归接收方。",
   "wallet.svc.no_single_mint":
@@ -1415,10 +1414,9 @@ export const strings: Strings = {
   "wallet.svc.mint_lost":
     "铸币方已发放这笔存款，但无法重建其代币。从恢复短语恢复即可找回。",
   "wallet.svc.swap_unreadable": "这次换新保存的格式，当前版本无法重放。",
-  "wallet.svc.lock_in_doubt":
-    "铸币厂没有回应，这笔付款可能已完成，也可能没有。",
+  "wallet.svc.lock_in_doubt": "这笔付款可能已完成，也可能没有。",
   "wallet.svc.lock_in_doubt_body":
-    "没有发送其他任何东西。在铸币厂回应之前，这些币会被保留。若付款已完成，锁定的代币会出现在“待处理”中供你转交；若未完成，币会退回。",
+    "没有发送其他任何东西。在铸币厂确认结果之前，这些币会被保留。若付款已完成，锁定的代币会出现在“待处理”中供你转交。若未完成，币会退回。",
   "wallet.svc.send_spent_by_swap":
     "在此代币被领取之前，这些币已被兑换回你的钱包，因此它已无法领取。金额在你的余额中。",
 
@@ -1852,7 +1850,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "网络用量",
   "settings.storage.storage_usage": "存储用量",
-  "settings.storage.storage_usage_desc": "消息、钱包凭证和缓存的附件",
+  "settings.storage.storage_usage_desc": "消息、ecash 和缓存的附件",
   "settings.storage.session_usage": "本次会话 · 发送 {sent}，接收 {received}",
   "settings.storage.cache": "缓存",
   "settings.storage.cache_desc": "{size} 的附件",
@@ -1937,7 +1935,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "聊天与历史记录",
   "settings.transfer.chats_desc": "对话、群组，以及你加入过的频道",
   "settings.transfer.wallet": "钱包余额",
-  "settings.transfer.wallet_desc": "Cashu 凭证与交易记录",
+  "settings.transfer.wallet_desc": "Ecash 与交易记录",
   "settings.transfer.title": "转移到新手机",
   "settings.transfer.desc": "把你的身份、聊天和钱包搬到另一台设备",
   "settings.transfer.coming_soon_a11y": "转移到新手机，即将推出",
@@ -1966,9 +1964,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "连点三下立即抹除，不再确认",
   "settings.wipe.title": "紧急抹除",
   "settings.wipe.now": "立即抹除",
-  "settings.wipe.desc": "立刻销毁所有密钥、消息和凭证",
+  "settings.wipe.desc": "立刻销毁所有密钥、消息和 ecash",
   "settings.wipe.body":
-    "这会立刻销毁你所有的密钥、消息和钱包凭证。此操作无法撤销。",
+    "这会立刻销毁你所有的密钥、消息和 ecash。此操作无法撤销。",
   "settings.wipe.in_progress": "抹除中",
   "settings.wipe.in_progress_body":
     "正在销毁你的密钥、消息和文件。这需要几秒钟，即使应用被关掉也会自己完成。",
@@ -2145,7 +2143,7 @@ export const plurals: Plurals = {
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} 处有 {count} 份凭证，共 {balance} {unit}。移除会把这些凭证从这台设备上永久抹掉，而且它们没有备份。请先把余额取走或发出去。",
+      "{mint} 处有 {count} 枚币，共 {balance} {unit}。移除会把这些币从这台设备上永久抹掉，而且它们没有备份。请先把余额取走或发出去。",
   },
 
   // ---- Wallet: Lightning ----
@@ -2155,7 +2153,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "从 {mints} 恢复出 {count} 份未花费的凭证。",
+    other: "从 {mints} 恢复出 {count} 枚未花费的币。",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2173,7 +2171,7 @@ export const plurals: Plurals = {
     other: "{count} 份未确认",
   },
   "wallet.spent_removed_detail": {
-    other: "有 {count} 份凭证早已被花掉，它们已被移除。",
+    other: "有 {count} 枚币早已被花掉，它们已被移除。",
   },
 
   // ---- System notifications ----

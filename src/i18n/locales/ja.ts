@@ -630,7 +630,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit}を受け取る",
   "chat.ecash.already_claimed": "受け取り済みです",
   "chat.ecash.already_claimed_body":
-    "このトークンのプルーフはすべてすでにウォレットにあるため、何も追加されませんでした。",
+    "このトークンの中身はすべてすでにウォレットにあるため、何も追加されませんでした。",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "できる限り届けるようメッシュに委ねました",
@@ -939,9 +939,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "サトシとビットコインを切り替えます",
   "wallet.balance.a11y": "残高 {value} {unit}",
   "wallet.balance.locked":
-    "ウォレットの保存領域がロックされています。ecashのプルーフは暗号化ファイルに入っていて、その鍵は端末のキーチェーンにありますが、開けませんでした。端末のロックを解除してAirhopを開き直してください。",
+    "ウォレットの保存領域がロックされています。ecashは暗号化ファイルに入っていて、その鍵は端末のキーチェーンにありますが、開けませんでした。端末のロックを解除してAirhopを開き直してください。",
   "wallet.balance.tor_blocked":
-    "Torがオンのため、ミントへのリクエストはブロックされています。素のネットワークを通ってしまい、あなたのIPとプルーフが結び付くからです。メッシュ経由の送受信は引き続き使えます。ミントへの通信は設定のセキュリティから許可できます。",
+    "Torがオンのため、ミントへのリクエストはブロックされています。素のネットワークを通ってしまい、あなたのIPとecashが結び付くからです。メッシュ経由の送受信は引き続き使えます。ミントへの通信は設定のセキュリティから許可できます。",
   "wallet.balance.offline":
     "オフラインです。近くの人への支払いとトークンの送信はそのまま使えます。",
   "wallet.balance.internet_off":
@@ -980,7 +980,7 @@ export const strings: Strings = {
   "wallet.send.title": "ecashを送る",
   "wallet.send.amount_in": "{unit}で金額",
   "wallet.send.body":
-    "すでに持っているプルーフからオフラインで作られます。届いたと確認するまで、残高から完全に出ていくことはありません。",
+    "すでに持っているecashからオフラインで作られます。届いたと確認するまで、残高から完全に出ていくことはありません。",
   "wallet.send.stale_fee_note":
     "手数料を最後に確認したのは{days}日前です。それ以降にこのミントが手数料を上げていた場合、送信費用が少し高くなることがあります。",
   "wallet.send.fee_note":
@@ -988,7 +988,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "このトークンはコインに細かく分かれすぎていて、QRコードに収まりません。共有かコピーを使うか、ミントで更新してまとめてください。",
   "wallet.send.bearer_note":
-    "この文字列を持っている人がそのお金の持ち主です。プルーフは使用済みではなく確保された状態なので、誰にも届かなかった場合は「保留中」から回収できます。",
+    "この文字列を持っている人がそのお金の持ち主です。コインは使用済みではなく確保された状態なので、誰にも届かなかった場合は「保留中」から回収できます。",
   "wallet.send.qr_too_big_short":
     "このトークンはコインに細かく分かれすぎていて、QRコードに収まりません。共有かコピーを使ってください。",
   "wallet.send.scan_note":
@@ -1002,11 +1002,11 @@ export const strings: Strings = {
   "wallet.send.building": "作成中…",
   "wallet.send.build": "トークンを作成",
   "wallet.send.inexact_body":
-    "お持ちのプルーフでは、オフラインでちょうど{amount} {unit}を作れません。作れる最小のトークンは{spend} {unit}で、オフラインではお釣りがないため、余分な{extra} {unit}は受取人のものになります。\n\nオンラインのうちにミントで更新すると、ちょうどの額を作れる単位に分割されます。",
+    "お持ちのコインでは、オフラインでちょうど{amount} {unit}を作れません。作れる最小のトークンは{spend} {unit}で、オフラインではお釣りがないため、余分な{extra} {unit}は受取人のものになります。\n\nオンラインのうちにミントで更新すると、ちょうどの額を作れる単位に分割されます。",
   "wallet.send.send_amount": "{amount}を送る",
   "wallet.send.sent_to": "{amount} {unit}を{name}に送りました",
   "wallet.send.sent_to_body":
-    "{route} 相手が受け取ったと確認するか、ミントからプルーフが引き換え済みと知らされるまで、「保留中」から回収できます。",
+    "{route} 相手が受け取ったと確認するか、ミントからトークンが引き換え済みと知らされるまで、「保留中」から回収できます。",
   "wallet.send.copy_token": "トークンをコピー",
   "wallet.send.share_token": "トークンを共有",
   "wallet.send.open_in_wallet": "このトークンを別のウォレットで開く",
@@ -1025,12 +1025,12 @@ export const strings: Strings = {
     "このコインはまだ精算していない送信のために確保されているので、受け取るものはありません。その支払いで「回収」を使うと、そのまま残高に戻せます。",
   "wallet.receive.already_have": "すでにウォレットにあります",
   "wallet.receive.already_have_body":
-    "このトークンのプルーフはすべてここに保存済みのため、何も追加されませんでした。残高は変わりません。",
+    "このトークンの中身はすべてここに保存済みのため、何も追加されませんでした。残高は変わりません。",
   "wallet.receive.stored_unconfirmed":
     "{mint}から保存しましたが、ミントではまだ確認されていません（{reason}）。",
   "wallet.receive.offline": "オフライン",
   "wallet.receive.redeemed_here":
-    "{mint}で引き換えました。このプルーフはあなただけのものになり、送信者の控えはもう使えません。",
+    "{mint}で引き換えました。このecashはあなただけのものになり、送信者の控えはもう使えません。",
   "wallet.receive.memo_quoted": "\n\n「{memo}」",
   "wallet.receive.redeemed_at":
     "{mint}で引き換えました。これで証明可能にあなたのものとなり、送信者側のこのトークンの控えはもう使えません。",
@@ -1121,9 +1121,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "請求書が支払われ、{mint}が{amount} {unit}を発行しました。この残高は確認済みなので、すぐにオフラインで使えます。",
   "wallet.ln.withdrawn":
-    "Lightningで{paid}サトシを支払いました。ミントは経路手数料として{fee}サトシを差し引きました。",
+    "Lightningで{amount} {unit}を支払いました。ミントは経路手数料として{fee} {unit}を差し引きました。",
   "wallet.ln.withdrawn_with_change":
-    "Lightningで{paid}サトシを支払いました。ミントは経路手数料として{fee}サトシを差し引き、準備金のうち{change}サトシを残高に戻しました。",
+    "Lightningで{amount} {unit}を支払いました。ミントは経路手数料として{fee} {unit}を差し引き、準備金のうち{change} {unit}を残高に戻しました。",
   "wallet.ln.payment_failed": "支払いに失敗しました",
   "wallet.ln.deposit_body":
     "ミントが請求書を発行します。任意のLightningウォレットで支払うと、サトシがオフラインで使えるecashとして戻ってきます。",
@@ -1264,12 +1264,12 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "{mints}に接続できませんでした。それ以外はすべて最新です。",
   "wallet.refresh.swapped":
-    "{amount} {unit}を確認し、新しいプルーフと交換しました。",
+    "{amount} {unit}を確認し、新しいecashと交換しました。",
   "wallet.refresh.secured": "{amount} {unit}が復元フレーズの対象になりました。",
   "wallet.refresh.all_confirmed":
     "ここにあるものはすべて、すでにミントで確認済みでした。",
   "wallet.pending.reserved_desc":
-    "作成して確保済み、配信は未確認です。二重に使えないよう、プルーフは残高から外して保持されています。",
+    "作成して確保済み、配信は未確認です。二重に使えないよう、コインは残高から外して保持されています。",
   "wallet.pending.locked_desc":
     "すでに受取人の鍵に結び付けられているので、使えるのは相手だけです。ただ、まだ届いていません。トークンを共有して完了してください。",
   "wallet.pending.show_qr": "このトークンをQRコードで表示",
@@ -1314,7 +1314,7 @@ export const strings: Strings = {
     "メッシュのサービスが動いていないため、トークンを渡す手段がありません。何も引かれていません。",
   "wallet.xfer.could_not_send": "送信できませんでした",
   "wallet.xfer.inexact_body":
-    "お持ちのプルーフでは、オフラインでちょうど{amount} {unit}を作れません。作れる最小のトークンは{spend} {unit}で、余分な{extra} {unit}は取り戻す手立てなく相手のものになります。\n\nオンラインのうちにミントで更新すると、ちょうどの額を作れる単位に分割されます。",
+    "お持ちのコインでは、オフラインでちょうど{amount} {unit}を作れません。作れる最小のトークンは{spend} {unit}で、余分な{extra} {unit}は取り戻す手立てなく相手のものになります。\n\nオンラインのうちにミントで更新すると、ちょうどの額を作れる単位に分割されます。",
   "wallet.xfer.send_amount": "{amount}を送る",
   "wallet.xfer.mesh_offline": "メッシュがオフラインです",
 
@@ -1380,7 +1380,7 @@ export const strings: Strings = {
     "Cashuはビットコインのためのecashです。トークンは、持っている人にとって価値のある文字列で、ミントがブラインド署名するため、ミントは誰が何に使ったかを知りません。アカウントもログインも要りません。",
   "wallet.explain.send": "送信",
   "wallet.explain.send_desc":
-    "金額をトークンに変え、Bluetoothで近くのピアに手渡すか、テキストとして共有できます。インターネットは不要です。届いたと確認するまで、プルーフは確保されたままです。",
+    "金額をトークンに変え、Bluetoothで近くのピアに手渡すか、テキストとして共有できます。インターネットは不要です。届いたと確認するまで、コインは確保されたままです。",
   "wallet.explain.receive": "受け取り",
   "wallet.explain.receive_desc":
     "トークンを貼り付けて追加します。オンラインならすぐミントで交換され、証明可能にあなたのものになります。オフラインなら保存され、更新するまで未確認として扱われます。",
@@ -1410,7 +1410,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ミントに接続できませんでした。",
   "wallet.svc.tor_ios": "iOSではミントへのリクエストはTorを通りません。",
   "wallet.svc.tor_ios_body":
-    "ArtiがくるむのはNostrのWebSocketだけなので、このリクエストは素のネットワークでミントに届き、あなたのIPとこのプルーフを結び付けてしまいます。設定＞セキュリティで許可するか、先にTorをオフにしてください。メッシュ経由のecashの送受信は引き続き使えます。",
+    "ArtiがくるむのはNostrのWebSocketだけなので、このリクエストは素のネットワークでミントに届き、あなたのIPとこのecashを結び付けてしまいます。設定＞セキュリティで許可するか、先にTorをオフにしてください。メッシュ経由のecashの送受信は引き続き使えます。",
   "wallet.svc.internet_off":
     "インターネットがオフのため、ミントに接続できません。",
   "wallet.svc.internet_off_body":
@@ -1427,12 +1427,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "復元フレーズから復元しました",
   "wallet.svc.storage_locked": "ウォレットの保存領域がロックされています。",
   "wallet.svc.storage_locked_body":
-    "Airhopはecashのプルーフを暗号化ファイルに保存し、その鍵は端末のキーチェーンにあります。端末のロックを解除してアプリを開き直してください。",
+    "Airhopはecashを暗号化ファイルに保存し、その鍵は端末のキーチェーンにあります。端末のロックを解除してアプリを開き直してください。",
   "wallet.svc.bad_url": "有効なURLではありません。",
   "wallet.svc.needs_https": "ミントのURLはhttps://で始まる必要があります。",
   "wallet.svc.refuse_http": "素のhttpでのミント利用は拒否します。",
   "wallet.svc.refuse_http_body":
-    "経路上の誰でもあなたのプルーフを読んだり書き換えたりできてしまいます。https://のミントを使ってください。",
+    "経路上の誰でもあなたのecashを読んだり書き換えたりできてしまいます。https://のミントを使ってください。",
   "wallet.svc.mint_not_saved": "ミントを保存できませんでした。",
   "wallet.svc.unreadable_token": "読み取れるCashuトークンではありません。",
   "wallet.svc.unreadable_token_body":
@@ -1442,7 +1442,7 @@ export const strings: Strings = {
     "今はミントに接続して鍵を取得できません。何も失われていません。オンラインになったらもう一度受け取ってください。",
   "wallet.svc.wrong_mint":
     "このトークンは、名乗っているミントが署名したものではありません。",
-  "wallet.svc.already_spent": "このプルーフはすでに使用されています。",
+  "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":
     "このトークンを送った人が先に引き換えたか、同じトークンを別の人にも送ったかのどちらかです。",
   "wallet.svc.receiving_offline": "オフラインで受け取り中",
@@ -1454,8 +1454,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash_body":
     "ミントを追加してLightningで入金するか、誰かからトークンを受け取ってください。",
   "wallet.svc.split_across_mints": "残高が複数のミントに分かれています。",
-  "wallet.svc.mint_says_spent":
-    "ミントはこのプルーフを使用済みだと報告しました。",
+  "wallet.svc.mint_says_spent": "ミントはこのecashを使用済みだと報告しました。",
   "wallet.svc.issue_against_invoice":
     "Lightningの請求書に対してecashを発行する",
   "wallet.svc.pay_invoice": "Lightningの請求書を支払う",
@@ -1486,7 +1485,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "この移動の金額を決められませんでした。",
   "wallet.svc.insufficient_at_mint": "{mint}の残高が足りません。",
   "wallet.svc.inexact_title":
-    "お持ちのプルーフでは、オフラインでちょうど{amount} {unit}を作れません。",
+    "お持ちのコインでは、オフラインでちょうど{amount} {unit}を作れません。",
   "wallet.svc.inexact_detail":
     "送れる最小のトークンは{spend} {unit}です。オフラインではお釣りがないため、余分な{extra} {unit}は受取人のものになります。",
   "wallet.svc.no_single_mint":
@@ -1517,10 +1516,9 @@ export const strings: Strings = {
     "ミントはこの入金を発行しましたが、コインを再構築できませんでした。リカバリーフレーズから復元すると取り戻せます。",
   "wallet.svc.swap_unreadable":
     "この交換は、このバージョンでは再実行できない形式で保存されています。",
-  "wallet.svc.lock_in_doubt":
-    "ミントから応答がないため、この支払いが完了したかどうかは不明です。",
+  "wallet.svc.lock_in_doubt": "この支払いが完了したかどうかは不明です。",
   "wallet.svc.lock_in_doubt_body":
-    "ほかには何も送られていません。ミントが応答するまでコインは保留されます。完了していれば、ロックされたトークンが保留中に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
+    "ほかには何も送られていません。ミントが結果を確認するまでコインは保留されます。完了していれば、ロックされたトークンが保留中に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
   "wallet.svc.send_spent_by_swap":
     "このトークンが受け取られる前に、コインはスワップされてウォレットに戻りました。そのため受け取りはできなくなっています。金額は残高に入っています。",
 
@@ -1976,7 +1974,7 @@ export const strings: Strings = {
   "settings.storage.network_usage": "通信量",
   "settings.storage.storage_usage": "ストレージ使用量",
   "settings.storage.storage_usage_desc":
-    "メッセージ、ウォレットのプルーフ、キャッシュした添付",
+    "メッセージ、ecash、キャッシュした添付",
   "settings.storage.session_usage": "今回の起動 · 送信{sent}、受信{received}",
   "settings.storage.cache": "キャッシュ",
   "settings.storage.cache_desc": "添付{size}",
@@ -2063,7 +2061,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "チャットと履歴",
   "settings.transfer.chats_desc": "会話、グループ、参加しているチャンネル",
   "settings.transfer.wallet": "ウォレットの残高",
-  "settings.transfer.wallet_desc": "Cashuのプルーフと取引履歴",
+  "settings.transfer.wallet_desc": "ecashと取引履歴",
   "settings.transfer.title": "新しい端末へ移行",
   "settings.transfer.desc":
     "識別情報、チャット、ウォレットを別の端末へ移します",
@@ -2095,9 +2093,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "3回タップで、確認なしにただちに消去します",
   "settings.wipe.title": "緊急消去",
   "settings.wipe.now": "今すぐ消去",
-  "settings.wipe.desc": "すべての鍵、メッセージ、プルーフをただちに破棄します",
+  "settings.wipe.desc": "すべての鍵、メッセージ、ecashをただちに破棄します",
   "settings.wipe.body":
-    "すべての鍵、メッセージ、ウォレットのプルーフをただちに破棄します。元に戻せません。",
+    "すべての鍵、メッセージ、ecashをただちに破棄します。元に戻せません。",
   "settings.wipe.in_progress": "消去中",
   "settings.wipe.in_progress_body":
     "鍵、メッセージ、ファイルを破棄しています。数秒かかりますが、アプリを閉じても最後まで実行されます。",
@@ -2280,7 +2278,7 @@ export const plurals: Plurals = {
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint}は{count}個のプルーフに{balance} {unit}を保持しています。削除するとそのプルーフはこの端末から永久に消え、バックアップもありません。先に残高を出金するか送ってください。",
+      "{mint}は{count}枚のコインに{balance} {unit}を保持しています。削除するとそのコインはこの端末から永久に消え、バックアップもありません。先に残高を出金するか送ってください。",
   },
 
   // ---- Wallet: Lightning ----
@@ -2290,7 +2288,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "{mints}から未使用のプルーフを{count}個復元しました。",
+    other: "{mints}から未使用のコインを{count}枚復元しました。",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2308,7 +2306,7 @@ export const plurals: Plurals = {
     other: "{count}件が未確認",
   },
   "wallet.spent_removed_detail": {
-    other: "{count}個のプルーフはすでに使用済みだったため削除しました。",
+    other: "{count}枚のコインはすでに使用済みだったため削除しました。",
   },
 
   // ---- System notifications ----

@@ -619,7 +619,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit} 받기",
   "chat.ecash.already_claimed": "이미 받았습니다",
   "chat.ecash.already_claimed_body":
-    "이 토큰의 모든 증명이 이미 지갑에 있어 추가된 것이 없습니다.",
+    "이 토큰의 내용이 모두 이미 지갑에 있어 추가된 것이 없습니다.",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "최선 전달을 위해 메시에 넘겨짐",
@@ -920,9 +920,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "사토시와 비트코인 사이를 전환합니다",
   "wallet.balance.a11y": "잔액 {value} {unit}",
   "wallet.balance.locked":
-    "지갑 저장소가 잠겨 있습니다. ecash 증명은 기기 키체인에 키가 있는 암호화된 파일에 보관되는데, 그 파일을 열지 못했습니다. 기기 잠금을 풀고 Airhop을 다시 여세요.",
+    "지갑 저장소가 잠겨 있습니다. ecash는 기기 키체인에 키가 있는 암호화된 파일에 보관되는데, 그 파일을 열지 못했습니다. 기기 잠금을 풀고 Airhop을 다시 여세요.",
   "wallet.balance.tor_blocked":
-    "Tor가 켜져 있어 민트 요청이 차단되었습니다. 요청이 일반 네트워크로 나가 IP와 증명이 연결되기 때문입니다. 메시를 통한 송수신은 계속 작동합니다. 설정, 보안에서 민트 트래픽을 허용하세요.",
+    "Tor가 켜져 있어 민트 요청이 차단되었습니다. 요청이 일반 네트워크로 나가 IP와 ecash가 연결되기 때문입니다. 메시를 통한 송수신은 계속 작동합니다. 설정, 보안에서 민트 트래픽을 허용하세요.",
   "wallet.balance.offline":
     "오프라인입니다. 근처 사람에게 결제하고 토큰을 보내는 것은 여전히 됩니다.",
   "wallet.balance.internet_off":
@@ -961,7 +961,7 @@ export const strings: Strings = {
   "wallet.send.title": "ecash 보내기",
   "wallet.send.amount_in": "{unit} 단위 금액",
   "wallet.send.body":
-    "이미 보유한 증명으로 오프라인에서 만들어집니다. 토큰이 전달되었음을 확인하기 전까지는 잔액에서 영구히 빠져나가는 것이 없습니다.",
+    "이미 보유한 ecash로 오프라인에서 만들어집니다. 토큰이 전달되었음을 확인하기 전까지는 잔액에서 영구히 빠져나가는 것이 없습니다.",
   "wallet.send.stale_fee_note":
     "수수료를 마지막으로 확인한 것은 {days}일 전입니다. 그 이후 이 민트가 수수료를 올렸다면 전송 비용이 조금 더 들 수 있습니다.",
   "wallet.send.fee_note":
@@ -969,7 +969,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "이 토큰은 너무 많은 코인으로 나뉘어 QR 코드에 담기지 않습니다. 대신 공유하거나 복사하세요. 또는 민트에서 새로 고쳐 하나로 합치세요.",
   "wallet.send.bearer_note":
-    "이 문자열을 가진 사람이 곧 돈의 주인입니다. 증명은 사용된 것이 아니라 예약된 상태이므로, 아무에게도 닿지 않았다면 대기 중 항목에서 회수할 수 있습니다.",
+    "이 문자열을 가진 사람이 곧 돈의 주인입니다. 코인은 사용된 것이 아니라 예약된 상태이므로, 아무에게도 닿지 않았다면 대기 중 항목에서 회수할 수 있습니다.",
   "wallet.send.qr_too_big_short":
     "이 토큰은 너무 많은 코인으로 나뉘어 QR 코드에 담기지 않습니다. 대신 공유하거나 복사하세요.",
   "wallet.send.scan_note":
@@ -983,11 +983,11 @@ export const strings: Strings = {
   "wallet.send.building": "만드는 중…",
   "wallet.send.build": "토큰 만들기",
   "wallet.send.inexact_body":
-    "보유한 증명으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다. 만들 수 있는 가장 작은 토큰은 {spend} {unit}이며, 오프라인에서는 거스름돈이 없어 초과분 {extra} {unit}은(는) 받는 사람에게 갑니다.\n\n온라인 상태에서 민트에서 새로 고치면 증명이 이 금액에 딱 맞는 단위로 나뉩니다.",
+    "보유한 코인으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다. 만들 수 있는 가장 작은 토큰은 {spend} {unit}이며, 오프라인에서는 거스름돈이 없어 초과분 {extra} {unit}은(는) 받는 사람에게 갑니다.\n\n온라인 상태에서 민트에서 새로 고치면 코인이 이 금액에 딱 맞는 단위로 나뉩니다.",
   "wallet.send.send_amount": "{amount} 보내기",
   "wallet.send.sent_to": "{amount} {unit}을(를) {name}에게 보냈습니다",
   "wallet.send.sent_to_body":
-    "{route} 상대방이 받았음을 확인하거나 민트가 증명이 사용되었다고 알려줄 때까지, 대기 중 항목에서 회수할 수 있습니다.",
+    "{route} 상대방이 받았음을 확인하거나 민트가 토큰이 사용되었다고 알려줄 때까지, 대기 중 항목에서 회수할 수 있습니다.",
   "wallet.send.copy_token": "토큰 복사",
   "wallet.send.share_token": "토큰 공유",
   "wallet.send.open_in_wallet": "이 토큰을 다른 지갑에서 열기",
@@ -1006,12 +1006,12 @@ export const strings: Strings = {
     "이 코인들은 아직 정산하지 않은 전송을 위해 예약된 상태라 받을 것이 없습니다. 해당 결제에서 회수를 사용하면 곧바로 잔액으로 되돌릴 수 있습니다.",
   "wallet.receive.already_have": "이미 지갑에 있습니다",
   "wallet.receive.already_have_body":
-    "이 토큰의 모든 증명이 이미 여기 저장되어 있어 추가된 것이 없습니다. 잔액은 그대로입니다.",
+    "이 토큰의 내용이 모두 이미 여기 저장되어 있어 추가된 것이 없습니다. 잔액은 그대로입니다.",
   "wallet.receive.stored_unconfirmed":
     "{mint}에서 받아 저장했지만 아직 민트에서 확인되지 않았습니다 ({reason}).",
   "wallet.receive.offline": "오프라인",
   "wallet.receive.redeemed_here":
-    "{mint}에서 교환했습니다. 이 증명들은 이제 온전히 내 것이며, 보낸 사람의 사본은 더 이상 작동하지 않습니다.",
+    "{mint}에서 교환했습니다. 이 ecash는 이제 온전히 내 것이며, 보낸 사람의 사본은 더 이상 작동하지 않습니다.",
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "{mint}에서 교환했습니다. 이제 증명 가능하게 내 것이며, 보낸 사람이 가진 이 토큰의 사본은 더 이상 작동하지 않습니다.",
@@ -1102,9 +1102,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "인보이스가 결제되어 {mint}이(가) {amount} {unit}을(를) 발행했습니다. 이 잔액은 확인된 상태이므로 바로 오프라인에서 쓸 수 있습니다.",
   "wallet.ln.withdrawn":
-    "Lightning으로 {paid} sats을 지급했습니다. 민트가 라우팅 수수료로 {fee} sats을 받았습니다.",
+    "Lightning으로 {amount} {unit}을(를) 지급했습니다. 민트가 라우팅 수수료로 {fee} {unit}을(를) 받았습니다.",
   "wallet.ln.withdrawn_with_change":
-    "Lightning으로 {paid} sats을 지급했습니다. 민트가 라우팅 수수료로 {fee} sats을 받고, 예약분 중 {change} sats을 잔액으로 돌려주었습니다.",
+    "Lightning으로 {amount} {unit}을(를) 지급했습니다. 민트가 라우팅 수수료로 {fee} {unit}을(를) 받고, 예약분 중 {change} {unit}을(를) 잔액으로 돌려주었습니다.",
   "wallet.ln.payment_failed": "결제 실패",
   "wallet.ln.deposit_body":
     "민트가 인보이스를 발행합니다. 아무 Lightning 지갑으로 결제하면 sats이 오프라인에서 쓸 수 있는 ecash로 돌아옵니다.",
@@ -1244,13 +1244,13 @@ export const strings: Strings = {
   "wallet.refresh.unreachable":
     "{mints}에 연결하지 못했습니다. 나머지는 모두 최신 상태입니다.",
   "wallet.refresh.swapped":
-    "{amount} {unit}을(를) 확인하고 새 증명으로 교환했습니다.",
+    "{amount} {unit}을(를) 확인하고 새 ecash로 교환했습니다.",
   "wallet.refresh.secured":
     "이제 {amount} {unit}이(가) 복구 문구로 보장됩니다.",
   "wallet.refresh.all_confirmed":
     "여기 있는 것은 모두 이미 민트에서 확인된 상태였습니다.",
   "wallet.pending.reserved_desc":
-    "생성해 예약했으며 전달은 확인되지 않았습니다. 이중 지출을 막기 위해 증명을 잔액에서 빼두었습니다.",
+    "생성해 예약했으며 전달은 확인되지 않았습니다. 이중 지출을 막기 위해 코인을 잔액에서 빼두었습니다.",
   "wallet.pending.locked_desc":
     "이미 받는 사람의 키에 잠겨 그들만 쓸 수 있습니다. 아직 그들에게 닿지 않았을 뿐입니다. 토큰을 공유해 마무리하세요.",
   "wallet.pending.show_qr": "이 토큰을 QR 코드로 표시",
@@ -1295,7 +1295,7 @@ export const strings: Strings = {
     "메시 서비스가 실행 중이 아니라 토큰을 건넬 방법이 없습니다. 차감된 것은 없습니다.",
   "wallet.xfer.could_not_send": "보내지 못했습니다",
   "wallet.xfer.inexact_body":
-    "보유한 증명으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다. 만들 수 있는 가장 작은 토큰은 {spend} {unit}이며, 초과분 {extra} {unit}은(는) 되찾을 방법 없이 상대에게 갑니다.\n\n온라인 상태에서 민트에서 새로 고치면 증명이 이 금액에 딱 맞는 단위로 나뉩니다.",
+    "보유한 코인으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다. 만들 수 있는 가장 작은 토큰은 {spend} {unit}이며, 초과분 {extra} {unit}은(는) 되찾을 방법 없이 상대에게 갑니다.\n\n온라인 상태에서 민트에서 새로 고치면 코인이 이 금액에 딱 맞는 단위로 나뉩니다.",
   "wallet.xfer.send_amount": "{amount} 보내기",
   "wallet.xfer.mesh_offline": "메시 오프라인",
 
@@ -1358,7 +1358,7 @@ export const strings: Strings = {
     "Cashu는 Bitcoin을 위한 ecash입니다. 토큰은 가진 사람에게 돈이 되는 문자열이며, 민트가 눈을 가린 채 서명하므로 누가 무엇을 썼는지 민트도 알 수 없습니다. 계정도 로그인도 없습니다.",
   "wallet.explain.send": "보내기",
   "wallet.explain.send_desc":
-    "금액을 토큰으로 바꿔 블루투스로 근처 피어에게 건네거나 텍스트로 공유할 수 있게 합니다. 인터넷 없이 작동합니다. 도착을 확인하기 전까지 증명은 예약된 채로 남습니다.",
+    "금액을 토큰으로 바꿔 블루투스로 근처 피어에게 건네거나 텍스트로 공유할 수 있게 합니다. 인터넷 없이 작동합니다. 도착을 확인하기 전까지 코인은 예약된 채로 남습니다.",
   "wallet.explain.receive": "받기",
   "wallet.explain.receive_desc":
     "토큰을 붙여넣어 추가합니다. 온라인이면 민트에서 즉시 교환되어 증명 가능하게 내 것이 됩니다. 오프라인이면 저장되고 새로 고칠 때까지 미확인으로 표시됩니다.",
@@ -1388,7 +1388,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "민트에 연결하지 못했습니다.",
   "wallet.svc.tor_ios": "iOS에서는 민트 요청이 Tor를 거치지 않습니다.",
   "wallet.svc.tor_ios_body":
-    "Arti는 Nostr WebSocket만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 증명들을 연결하게 됩니다. 설정 > 보안에서 허용하거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
+    "Arti는 Nostr WebSocket만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 ecash를 연결하게 됩니다. 설정 > 보안에서 허용하거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
   "wallet.svc.internet_off": "인터넷이 꺼져 있어 민트에 연결할 수 없습니다.",
   "wallet.svc.internet_off_body":
     "설정에서 {setting}을(를) 켜세요. 근처에서 ecash를 보내고 받는 것은 계속 됩니다.",
@@ -1405,12 +1405,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "복구 문구로 복원했습니다",
   "wallet.svc.storage_locked": "지갑 저장소가 잠겨 있습니다.",
   "wallet.svc.storage_locked_body":
-    "Airhop은 ecash 증명을 기기 키체인에 키가 있는 암호화된 파일에 보관합니다. 기기 잠금을 풀고 앱을 다시 여세요.",
+    "Airhop은 ecash를 기기 키체인에 키가 있는 암호화된 파일에 보관합니다. 기기 잠금을 풀고 앱을 다시 여세요.",
   "wallet.svc.bad_url": "유효한 URL이 아닙니다.",
   "wallet.svc.needs_https": "민트 URL은 https://로 시작해야 합니다.",
   "wallet.svc.refuse_http": "일반 http로 민트를 사용하는 것을 거부합니다.",
   "wallet.svc.refuse_http_body":
-    "네트워크 경로에 있는 누구든 증명을 읽거나 바꿀 수 있습니다. https:// 민트를 사용하세요.",
+    "네트워크 경로에 있는 누구든 ecash를 읽거나 바꿀 수 있습니다. https:// 민트를 사용하세요.",
   "wallet.svc.mint_not_saved": "민트를 저장하지 못했습니다.",
   "wallet.svc.unreadable_token": "읽을 수 있는 Cashu 토큰이 아닙니다.",
   "wallet.svc.unreadable_token_body":
@@ -1420,7 +1420,7 @@ export const strings: Strings = {
     "지금은 키를 가져오기 위해 민트에 연결할 수 없습니다. 잃은 것은 없습니다. 온라인이 되면 다시 받으세요.",
   "wallet.svc.wrong_mint":
     "이 토큰은 스스로 지목한 민트가 서명한 것이 아닙니다.",
-  "wallet.svc.already_spent": "이 증명들은 이미 사용되었습니다.",
+  "wallet.svc.already_spent": "이 ecash는 이미 사용되었습니다.",
   "wallet.svc.already_spent_body":
     "이 토큰을 보낸 사람이 먼저 교환했거나, 같은 토큰을 다른 사람에게도 보냈습니다.",
   "wallet.svc.receiving_offline": "오프라인으로 받는 중",
@@ -1433,7 +1433,7 @@ export const strings: Strings = {
     "민트를 추가하고 Lightning으로 입금하거나, 누군가에게 토큰을 받으세요.",
   "wallet.svc.split_across_mints": "잔액이 여러 민트에 나뉘어 있습니다.",
   "wallet.svc.mint_says_spent":
-    "민트가 이 증명들을 이미 사용된 것으로 보고했습니다.",
+    "민트가 이 ecash를 이미 사용된 것으로 보고했습니다.",
   "wallet.svc.issue_against_invoice": "Lightning 인보이스를 근거로 ecash 발행",
   "wallet.svc.pay_invoice": "Lightning 인보이스 결제",
   "wallet.svc.unknown_deposit": "알 수 없는 입금입니다.",
@@ -1463,7 +1463,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "이 이체 금액을 산정하지 못했습니다.",
   "wallet.svc.insufficient_at_mint": "{mint}의 잔액이 부족합니다.",
   "wallet.svc.inexact_title":
-    "보유한 증명으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다.",
+    "보유한 코인으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다.",
   "wallet.svc.inexact_detail":
     "보낼 수 있는 가장 작은 토큰은 {spend} {unit}입니다. 오프라인에서는 거스름돈이 없으므로 초과분 {extra} {unit}은(는) 받는 사람에게 갑니다.",
   "wallet.svc.no_single_mint":
@@ -1493,10 +1493,9 @@ export const strings: Strings = {
     "민트가 이 입금을 발행했지만 코인을 다시 만들지 못했습니다. 복구 문구로 복원하면 되찾을 수 있습니다.",
   "wallet.svc.swap_unreadable":
     "이 교환은 이 버전이 다시 처리할 수 없는 형식으로 저장되었습니다.",
-  "wallet.svc.lock_in_doubt":
-    "민트가 응답하지 않아 이 결제가 처리되었는지 알 수 없습니다.",
+  "wallet.svc.lock_in_doubt": "이 결제가 처리되었는지 알 수 없습니다.",
   "wallet.svc.lock_in_doubt_body":
-    "다른 것은 보내지지 않았습니다. 민트가 응답할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 대기 중에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
+    "다른 것은 보내지지 않았습니다. 민트가 결과를 확인할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 대기 중에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
   "wallet.svc.send_spent_by_swap":
     "이 토큰을 받기 전에 코인이 스왑되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
 
@@ -1944,7 +1943,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "네트워크 사용량",
   "settings.storage.storage_usage": "저장 공간 사용량",
-  "settings.storage.storage_usage_desc": "메시지, 지갑 증명, 캐시된 첨부 파일",
+  "settings.storage.storage_usage_desc": "메시지, ecash, 캐시된 첨부 파일",
   "settings.storage.session_usage": "이번 세션 · 보냄 {sent}, 받음 {received}",
   "settings.storage.cache": "캐시",
   "settings.storage.cache_desc": "첨부 파일 {size}",
@@ -2029,7 +2028,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "채팅과 기록",
   "settings.transfer.chats_desc": "대화, 그룹, 참여한 채널",
   "settings.transfer.wallet": "지갑 잔액",
-  "settings.transfer.wallet_desc": "Cashu 증명과 거래 내역",
+  "settings.transfer.wallet_desc": "ecash와 거래 내역",
   "settings.transfer.title": "새 휴대폰으로 옮기기",
   "settings.transfer.desc": "신원, 채팅, 지갑을 다른 기기로 옮깁니다",
   "settings.transfer.coming_soon_a11y": "새 휴대폰으로 옮기기, 곧 제공",
@@ -2060,9 +2059,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "확인 없이 즉시 삭제하려면 세 번 탭하세요",
   "settings.wipe.title": "긴급 삭제",
   "settings.wipe.now": "지금 삭제",
-  "settings.wipe.desc": "모든 키와 메시지, 증명을 즉시 파기합니다",
+  "settings.wipe.desc": "모든 키와 메시지, ecash를 즉시 파기합니다",
   "settings.wipe.body":
-    "모든 키와 메시지, 지갑 증명이 즉시 파기됩니다. 되돌릴 수 없습니다.",
+    "모든 키와 메시지, ecash가 즉시 파기됩니다. 되돌릴 수 없습니다.",
   "settings.wipe.in_progress": "삭제하는 중",
   "settings.wipe.in_progress_body":
     "키와 메시지, 파일을 파기하고 있습니다. 몇 초 걸리며, 앱을 닫아도 알아서 끝까지 진행됩니다.",
@@ -2244,7 +2243,7 @@ export const plurals: Plurals = {
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint}이(가) 증명 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 해당 증명이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
+      "{mint}이(가) 코인 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 해당 코인이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2255,7 +2254,7 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    other: "{mints}에서 사용하지 않은 증명 {count}개를 복구했습니다.",
+    other: "{mints}에서 사용하지 않은 코인 {count}개를 복구했습니다.",
   },
   "wallet.backup.already_spent": {
     other:
@@ -2273,7 +2272,7 @@ export const plurals: Plurals = {
     other: "미확인 {count}개",
   },
   "wallet.spent_removed_detail": {
-    other: "증명 {count}개가 이미 사용되어 제거되었습니다.",
+    other: "코인 {count}개가 이미 사용되어 제거되었습니다.",
   },
 
   // ---- System notifications ----

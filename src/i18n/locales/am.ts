@@ -592,7 +592,7 @@ export const strings: Strings = {
   "chat.ecash.claim_amount": "{amount} {unit} ውሰድ",
   "chat.ecash.already_claimed": "አስቀድሞ ተወስዷል",
   "chat.ecash.already_claimed_body":
-    "በዚህ ቶከን ውስጥ ያለ እያንዳንዱ ማረጋገጫ አስቀድሞ በቦርሳህ ውስጥ ነው፤ ስለዚህ ምንም አልተጨመረም።",
+    "በዚህ ቶከን ውስጥ ያለው ሁሉ አስቀድሞ በቦርሳህ ውስጥ ነው፤ ስለዚህ ምንም አልተጨመረም።",
 
   // ---- Chats: channel info ----
   "chat.info.courier_desc": "በተቻለ መጠን እንዲደርስ ለሜሹ ተሰጥቷል",
@@ -872,9 +872,9 @@ export const strings: Strings = {
   "wallet.balance.unit_hint": "በሳቶሺና በቢትኮይን መካከል ይቀያየራል",
   "wallet.balance.a11y": "ቀሪ ሂሳብ {value} {unit}",
   "wallet.balance.locked":
-    "የቦርሳው ማከማቻ ተቆልፏል። የecash ማረጋገጫዎች ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ይቀመጣሉ፤ ያ ፋይል ሊከፈት አልቻለም። መሣሪያህን ክፈትና Airhop ን እንደገና ክፈት።",
+    "የቦርሳው ማከማቻ ተቆልፏል። ecash ህ ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ይቀመጣል፤ ያ ፋይል ሊከፈት አልቻለም። መሣሪያህን ክፈትና Airhop ን እንደገና ክፈት።",
   "wallet.balance.tor_blocked":
-    "Tor በርቷል፤ ስለዚህ የሚንት ጥያቄዎች ታግደዋል፦ በክፍት አውታረ መረብ ላይ ወጥተው የIP አድራሻህን ከማረጋገጫዎችህ ጋር ያገናኙታል። በሜሽ ላይ መላክና መቀበል አሁንም ይሠራል። በቅንብሮች፣ ደህንነት ስር የሚንት ትራፊክን ፍቀድ።",
+    "Tor በርቷል፤ ስለዚህ የሚንት ጥያቄዎች ታግደዋል፦ በክፍት አውታረ መረብ ላይ ወጥተው የIP አድራሻህን ከecash ህ ጋር ያገናኙታል። በሜሽ ላይ መላክና መቀበል አሁንም ይሠራል። በቅንብሮች፣ ደህንነት ስር የሚንት ትራፊክን ፍቀድ።",
   "wallet.balance.offline":
     "ከመስመር ውጭ ነዎት። አሁንም በአቅራቢያ ላሉ ሰዎች መክፈልና ቶከን መላክ ይችላሉ።",
   "wallet.balance.internet_off":
@@ -910,7 +910,7 @@ export const strings: Strings = {
   "wallet.send.title": "ecash ላክ",
   "wallet.send.amount_in": "መጠን በ{unit}",
   "wallet.send.body":
-    "አስቀድሞ ካሉህ ማረጋገጫዎች ከመስመር ውጭ ተገንብቷል። ቶከኑ መድረሱን እስክታረጋግጥ ድረስ ከቀሪ ሂሳብህ ለዘለቄታው የሚወጣ ምንም ነገር የለም።",
+    "አስቀድሞ ካለህ ecash ከመስመር ውጭ ተገንብቷል። ቶከኑ መድረሱን እስክታረጋግጥ ድረስ ከቀሪ ሂሳብህ ለዘለቄታው የሚወጣ ምንም ነገር የለም።",
   "wallet.send.stale_fee_note":
     "ክፍያዎቹ መጨረሻ የተመረመሩት ከ{days} ቀን በፊት ነው። ይህ ሚንት ከዚያ ወዲህ ክፍያውን ጨምሮ ከሆነ መላኩ ትንሽ ተጨማሪ ሊያስከፍል ይችላል።",
   "wallet.send.fee_note":
@@ -918,7 +918,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "ይህ ቶከን በጣም በብዙ ሳንቲሞች ተከፋፍሎ በQR ኮድ ውስጥ አይገባም። በምትኩ አጋራው ወይም ቅዳው፤ ወይም አንድ ላይ ለማድረግ በሚንቱ ላይ አድስ።",
   "wallet.send.bearer_note":
-    "ይህን ሕብረቁምፊ የያዘ ማንኛውም ሰው የገንዘቡ ባለቤት ነው። ማረጋገጫዎቹ ተይዘዋል እንጂ አልወጡም፦ ወደ ማንም ካልደረሰ በመጠባበቅ ላይ ስር መልሰህ ልታገኛቸው ትችላለህ።",
+    "ይህን ሕብረቁምፊ የያዘ ማንኛውም ሰው የገንዘቡ ባለቤት ነው። ሳንቲሞቹ ተይዘዋል እንጂ አልወጡም፦ ወደ ማንም ካልደረሰ በመጠባበቅ ላይ ስር መልሰህ ልታገኛቸው ትችላለህ።",
   "wallet.send.qr_too_big_short":
     "ይህ ቶከን በጣም በብዙ ሳንቲሞች ተከፋፍሎ በQR ኮድ ውስጥ አይገባም። በምትኩ አጋራው ወይም ቅዳው።",
   "wallet.send.scan_note":
@@ -932,11 +932,11 @@ export const strings: Strings = {
   "wallet.send.building": "እየተገነባ…",
   "wallet.send.build": "ቶከን ገንባ",
   "wallet.send.inexact_body":
-    "ማረጋገጫዎችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም። ልትገነባው የምትችለው ትንሹ ቶከን {spend} {unit} ነው፤ ከመስመር ውጭ ደግሞ መልስ የለም፦ ተጨማሪው {extra} {unit} ወደ ተቀባዩ ይሄዳል።\n\nበመስመር ላይ ሆነህ በሚንቱ ማደስ ማረጋገጫዎችህን ይህን ትክክለኛ የሚያደርጉ ክፍልፋዮች ይከፋፍላቸዋል።",
+    "ሳንቲሞችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም። ልትገነባው የምትችለው ትንሹ ቶከን {spend} {unit} ነው፤ ከመስመር ውጭ ደግሞ መልስ የለም፦ ተጨማሪው {extra} {unit} ወደ ተቀባዩ ይሄዳል።\n\nበመስመር ላይ ሆነህ በሚንቱ ማደስ ሳንቲሞችህን ይህን ትክክለኛ የሚያደርጉ ክፍልፋዮች ይከፋፍላቸዋል።",
   "wallet.send.send_amount": "{amount} ላክ",
   "wallet.send.sent_to": "{amount} {unit} ወደ {name} ተልኳል",
   "wallet.send.sent_to_body":
-    "{route} እነሱ መቀበላቸውን እስክታረጋግጥ ድረስ፣ ወይም ሚንቱ ማረጋገጫዎቹ መመንዘራቸውን እስኪነግረን ድረስ፣ በመጠባበቅ ላይ ስር መልሶ የሚገኝ ሆኖ ይቆያል።",
+    "{route} እነሱ መቀበላቸውን እስክታረጋግጥ ድረስ፣ ወይም ሚንቱ ቶከኑ መመንዘሩን እስኪነግረን ድረስ፣ በመጠባበቅ ላይ ስር መልሶ የሚገኝ ሆኖ ይቆያል።",
   "wallet.send.copy_token": "ቶከኑን ቅዳ",
   "wallet.send.share_token": "ቶከኑን አጋራ",
   "wallet.send.open_in_wallet": "ይህን ቶከን በሌላ ቦርሳ ውስጥ ክፈት",
@@ -955,12 +955,12 @@ export const strings: Strings = {
     "እነዚህ ሳንቲሞች ገና ላልጨረስከው ክፍያ ተይዘው ስለሆነ የሚጠየቅ ነገር የለም። በቀጥታ ወደ ቀሪ ሂሳብህ ለመመለስ በዚያ ክፍያ ላይ መልሶ ማግኘትን ተጠቀም።",
   "wallet.receive.already_have": "አስቀድሞ በቦርሳህ ውስጥ ነው",
   "wallet.receive.already_have_body":
-    "በዚህ ቶከን ውስጥ ያለ እያንዳንዱ ማረጋገጫ አስቀድሞ እዚህ ተከማችቷል፤ ስለዚህ ምንም አልተጨመረም። ቀሪ ሂሳቦች አልተቀየሩም።",
+    "በዚህ ቶከን ውስጥ ያለው ሁሉ አስቀድሞ እዚህ ተከማችቷል፤ ስለዚህ ምንም አልተጨመረም። ቀሪ ሂሳቦች አልተቀየሩም።",
   "wallet.receive.stored_unconfirmed":
     "ከ{mint} ተከማችቷል፤ ግን ገና ከሚንቱ ጋር አልተረጋገጠም ({reason})።",
   "wallet.receive.offline": "ከመስመር ውጭ",
   "wallet.receive.redeemed_here":
-    "በ{mint} ተመንዝሯል። እነዚህ ማረጋገጫዎች አሁን የአንተ ብቻ ናቸው፦ የላኪው ቅጂ ከእንግዲህ አይሠራም።",
+    "በ{mint} ተመንዝሯል። ይህ ecash አሁን የአንተ ብቻ ነው፦ የላኪው ቅጂ ከእንግዲህ አይሠራም።",
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "በ{mint} ተመንዝሯል። አሁን በማስረጃ የአንተ ነው፦ የላኪው የዚህ ቶከን ቅጂ ከእንግዲህ አይሠራም።",
@@ -1049,9 +1049,9 @@ export const strings: Strings = {
   "wallet.ln.deposit_credited":
     "ደረሰኙ ተከፍሎ {mint} {amount} {unit} አውጥቷል። ይህ ቀሪ ሂሳብ ተረጋግጧል፦ ወዲያውኑ ከመስመር ውጭ ልታወጣው ትችላለህ።",
   "wallet.ln.withdrawn":
-    "{paid} sats በLightning ተከፍሏል። ሚንቱ {fee} sats የመተላለፊያ ክፍያ አስከፍሏል።",
+    "{amount} {unit} በLightning ተከፍሏል። ሚንቱ {fee} {unit} የመተላለፊያ ክፍያ አስከፍሏል።",
   "wallet.ln.withdrawn_with_change":
-    "{paid} sats በLightning ተከፍሏል። ሚንቱ {fee} sats የመተላለፊያ ክፍያ አስከፍሎ ከተያዘው ውስጥ {change} sats ወደ ቀሪ ሂሳብህ መልሷል።",
+    "{amount} {unit} በLightning ተከፍሏል። ሚንቱ {fee} {unit} የመተላለፊያ ክፍያ አስከፍሎ ከተያዘው ውስጥ {change} {unit} ወደ ቀሪ ሂሳብህ መልሷል።",
   "wallet.ln.payment_failed": "ክፍያው አልተሳካም",
   "wallet.ln.deposit_body":
     "ሚንቱ ደረሰኝ ይሰጥሃል። ከማንኛውም የLightning ቦርሳ ክፈለውና sats ከመስመር ውጭ ልታወጣው በምትችለው ecash መልክ ይመለሳል።",
@@ -1186,11 +1186,11 @@ export const strings: Strings = {
   "wallet.refresh.partly": "በከፊል ታድሷል",
   "wallet.refresh.done": "ታድሷል",
   "wallet.refresh.unreachable": "{mints} ሊደረስባቸው አልተቻለም። ሌላው ሁሉ ወቅታዊ ነው።",
-  "wallet.refresh.swapped": "{amount} {unit} ተረጋግጦ በአዲስ ማረጋገጫዎች ተለውጧል።",
+  "wallet.refresh.swapped": "{amount} {unit} ተረጋግጦ በአዲስ ecash ተለውጧል።",
   "wallet.refresh.secured": "አሁን {amount} {unit} በማገገሚያ ሐረግህ ተሸፍኗል።",
   "wallet.refresh.all_confirmed": "እዚህ ያለው ሁሉ አስቀድሞ ከሚንቱ ጋር ተረጋግጦ ነበር።",
   "wallet.pending.reserved_desc":
-    "ተገንብቶ ተይዟል፤ መድረሱ አልተረጋገጠም። ማረጋገጫዎቹ ሁለት ጊዜ እንዳይወጡ ከቀሪ ሂሳብህ ውጭ ተይዘዋል።",
+    "ተገንብቶ ተይዟል፤ መድረሱ አልተረጋገጠም። ሳንቲሞቹ ሁለት ጊዜ እንዳይወጡ ከቀሪ ሂሳብህ ውጭ ተይዘዋል።",
   "wallet.pending.locked_desc":
     "አስቀድሞ በተቀባዩ ቁልፍ ተቆልፏል፤ ስለዚህ እነሱ ብቻ ናቸው ሊያወጡት የሚችሉት። ገና አልደረሳቸውም ብቻ። ለመጨረስ ቶከኑን አጋራ።",
   "wallet.pending.show_qr": "ይህን ቶከን እንደ QR ኮድ አሳይ",
@@ -1234,7 +1234,7 @@ export const strings: Strings = {
     "የሜሽ አገልግሎቱ እየሠራ አይደለም፤ ስለዚህ ቶከኑን የሚያስተላልፍበት መንገድ የለም። ምንም አልተቀነሰም።",
   "wallet.xfer.could_not_send": "መላክ አልተቻለም",
   "wallet.xfer.inexact_body":
-    "ማረጋገጫዎችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም። ልትገነባው የምትችለው ትንሹ ቶከን {spend} {unit} ነው፤ ተጨማሪው {extra} {unit} ደግሞ መልሶ የማይገኝ ሆኖ ወደ እነሱ ይሄዳል።\n\nበመስመር ላይ ሆነህ በሚንቱ ማደስ ማረጋገጫዎችህን ይህን ትክክለኛ የሚያደርጉ ክፍልፋዮች ይከፋፍላቸዋል።",
+    "ሳንቲሞችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም። ልትገነባው የምትችለው ትንሹ ቶከን {spend} {unit} ነው፤ ተጨማሪው {extra} {unit} ደግሞ መልሶ የማይገኝ ሆኖ ወደ እነሱ ይሄዳል።\n\nበመስመር ላይ ሆነህ በሚንቱ ማደስ ሳንቲሞችህን ይህን ትክክለኛ የሚያደርጉ ክፍልፋዮች ይከፋፍላቸዋል።",
   "wallet.xfer.send_amount": "{amount} ላክ",
   "wallet.xfer.mesh_offline": "ሜሽ ከመስመር ውጭ",
 
@@ -1292,7 +1292,7 @@ export const strings: Strings = {
     "Cashu ለBitcoin የተዘጋጀ ecash ነው። ቶከን ለያዘው ሰው ገንዘብ የሚያወጣ ሕብረቁምፊ ነው፤ ሚንቱ ማን ምን እንዳወጣ እንዳያውቅ በዓይነ ስውር ፊርማ ይፈረማል። መለያም መግቢያም የለም።",
   "wallet.explain.send": "ላክ",
   "wallet.explain.send_desc":
-    "አንድን መጠን በብሉቱዝ በኩል በአቅራቢያ ላለ አቻ ልታስተላልፈው ወይም እንደ ጽሑፍ ልታጋራው ወደምትችለው ቶከን ይቀይረዋል። ያለ ኢንተርኔት ይሠራል። መድረሱን እስክታረጋግጥ ድረስ ማረጋገጫዎቹ ተይዘው ይቆያሉ።",
+    "አንድን መጠን በብሉቱዝ በኩል በአቅራቢያ ላለ አቻ ልታስተላልፈው ወይም እንደ ጽሑፍ ልታጋራው ወደምትችለው ቶከን ይቀይረዋል። ያለ ኢንተርኔት ይሠራል። መድረሱን እስክታረጋግጥ ድረስ ሳንቲሞቹ ተይዘው ይቆያሉ።",
   "wallet.explain.receive": "ተቀበል",
   "wallet.explain.receive_desc":
     "ለመጨመር ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይለወጣል፤ ይህም በማስረጃ የአንተ ያደርገዋል። ከመስመር ውጭ ሲሆን ተከማችቶ እስክታድስ ድረስ ያልተረጋገጠ ሆኖ ይመዘገባል።",
@@ -1322,7 +1322,7 @@ export const strings: Strings = {
   "wallet.svc.mint_unreachable": "ሚንቱ ሊደረስበት አልቻለም።",
   "wallet.svc.tor_ios": "በiOS ላይ የሚንት ጥያቄዎች በTor አያልፉም።",
   "wallet.svc.tor_ios_body":
-    "Arti የሚሸፍነው የNostr WebSocket ን ብቻ ነው፤ ስለዚህ ይህ ጥያቄ በክፍት አውታረ መረብ ሚንቱ ላይ ደርሶ የIP አድራሻህን ከእነዚህ ማረጋገጫዎች ጋር ያገናኘዋል። በቅንብሮች > ደህንነት ስር ፍቀደው፣ ወይም መጀመሪያ Tor ን አጥፋ። በሜሽ ላይ ecash መላክና መቀበል አሁንም ይሠራል።",
+    "Arti የሚሸፍነው የNostr WebSocket ን ብቻ ነው፤ ስለዚህ ይህ ጥያቄ በክፍት አውታረ መረብ ሚንቱ ላይ ደርሶ የIP አድራሻህን ከዚህ ecash ጋር ያገናኘዋል። በቅንብሮች > ደህንነት ስር ፍቀደው፣ ወይም መጀመሪያ Tor ን አጥፋ። በሜሽ ላይ ecash መላክና መቀበል አሁንም ይሠራል።",
   "wallet.svc.internet_off": "ኢንተርኔት ጠፍቷል፣ ስለዚህ ሚንቱን መድረስ አይቻልም።",
   "wallet.svc.internet_off_body":
     "በቅንብሮች ውስጥ {setting}ን ያብሩ። በአቅራቢያ ecash መላክና መቀበል አሁንም ይሰራል።",
@@ -1337,12 +1337,12 @@ export const strings: Strings = {
   "wallet.svc.restored": "ከማገገሚያ ሐረግ ተመልሷል",
   "wallet.svc.storage_locked": "የቦርሳው ማከማቻ ተቆልፏል።",
   "wallet.svc.storage_locked_body":
-    "Airhop የecash ማረጋገጫዎችን ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ያስቀምጣል። መሣሪያውን ክፈትና መተግበሪያውን እንደገና ክፈት።",
+    "Airhop ecash ህን ቁልፉ በመሣሪያው ቁልፍ ማከማቻ ውስጥ ባለ የተመሰጠረ ፋይል ውስጥ ያስቀምጣል። መሣሪያውን ክፈትና መተግበሪያውን እንደገና ክፈት።",
   "wallet.svc.bad_url": "ያ ልክ የሆነ አድራሻ አይደለም።",
   "wallet.svc.needs_https": "የሚንት አድራሻ በhttps:// መጀመር አለበት።",
   "wallet.svc.refuse_http": "ሚንትን በተራ http መጠቀም አይፈቀድም።",
   "wallet.svc.refuse_http_body":
-    "በአውታረ መረቡ መንገድ ላይ ያለ ማንኛውም ሰው ማረጋገጫዎችህን ሊያነብ ወይም ሊቀይር ይችላል። የhttps:// ሚንት ተጠቀም።",
+    "በአውታረ መረቡ መንገድ ላይ ያለ ማንኛውም ሰው ecash ህን ሊያነብ ወይም ሊቀይር ይችላል። የhttps:// ሚንት ተጠቀም።",
   "wallet.svc.mint_not_saved": "ሚንቱ ሊቀመጥ አልቻለም።",
   "wallet.svc.unreadable_token": "ያ ሊነበብ የሚችል የCashu ቶከን አይደለም።",
   "wallet.svc.unreadable_token_body":
@@ -1351,7 +1351,7 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "እነሱን ለማምጣት ሚንቱ አሁን ሊደረስበት አይችልም። ምንም አልጠፋም፤ መስመር ላይ ሲሆኑ እንደገና ይቀበሉት።",
   "wallet.svc.wrong_mint": "ይህ ቶከን በጠቀሰው ሚንት አልተፈረመም።",
-  "wallet.svc.already_spent": "እነዚህ ማረጋገጫዎች አስቀድመው ወጪ ሆነዋል።",
+  "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",
   "wallet.svc.receiving_offline": "ከመስመር ውጭ እየተቀበለ",
@@ -1362,7 +1362,7 @@ export const strings: Strings = {
   "wallet.svc.no_ecash": "ገና ecash የለም።",
   "wallet.svc.no_ecash_body": "ሚንት ጨምርና በLightning አስገባ፣ ወይም ከአንድ ሰው ቶከን ተቀበል።",
   "wallet.svc.split_across_mints": "ቀሪ ሂሳብህ በበርካታ ሚንቶች ተከፋፍሏል።",
-  "wallet.svc.mint_says_spent": "ሚንቱ እነዚህ ማረጋገጫዎች አስቀድመው ወጪ እንደሆኑ ሪፖርት አድርጓል።",
+  "wallet.svc.mint_says_spent": "ሚንቱ ይህ ecash አስቀድሞ ወጪ እንደሆነ ሪፖርት አድርጓል።",
   "wallet.svc.issue_against_invoice": "በLightning ደረሰኝ ላይ ተመስርቶ ecash ማውጣት",
   "wallet.svc.pay_invoice": "የLightning ደረሰኝ መክፈል",
   "wallet.svc.unknown_deposit": "ያልታወቀ ተቀማጭ።",
@@ -1386,7 +1386,7 @@ export const strings: Strings = {
   "wallet.svc.cannot_size": "የዚህ ዝውውር መጠን ሊወሰን አልቻለም።",
   "wallet.svc.insufficient_at_mint": "በ{mint} ውስጥ በቂ ቀሪ ሂሳብ የለም።",
   "wallet.svc.inexact_title":
-    "ማረጋገጫዎችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም።",
+    "ሳንቲሞችህ ከመስመር ውጭ በትክክል {amount} {unit} ሊሠሩ አይችሉም።",
   "wallet.svc.inexact_detail":
     "ልትልከው የምትችለው ትንሹ ቶከን {spend} {unit} ነው። ከመስመር ውጭ መልስ ስለሌለ ተጨማሪው {extra} {unit} ወደ ተቀባዩ ይሄዳል።",
   "wallet.svc.no_single_mint":
@@ -1413,9 +1413,9 @@ export const strings: Strings = {
   "wallet.svc.mint_lost":
     "ሚንቱ ይህን ተቀማጭ አውጥቷል፣ ግን ሳንቲሞቹ ሊገነቡ አልቻሉም። ከመልሶ ማግኛ ሐረግዎ መመለስ ያገኛቸዋል።",
   "wallet.svc.swap_unreadable": "ይህ ልውውጥ ይህ ስሪት እንደገና ሊያሄደው በማይችል መልክ ተቀምጧል።",
-  "wallet.svc.lock_in_doubt": "ሚንቱ አልመለሰም፣ ስለዚህ ይህ ክፍያ ሄዶ ሊሆን ወይም ላይሆን ይችላል።",
+  "wallet.svc.lock_in_doubt": "ይህ ክፍያ ሄዶ ሊሆን ወይም ላይሆን ይችላል።",
   "wallet.svc.lock_in_doubt_body":
-    "ሌላ ምንም አልተላከም። ሚንቱ እስኪመልስ ሳንቲሞቹ ተይዘዋል። ከሄደ፣ የተቆለፈው ቶከን እንዲያስረክቡት በበመጠባበቅ ላይ ይታያል። ካልሄደ ሳንቲሞቹ ይመለሳሉ።",
+    "ሌላ ምንም አልተላከም። ሚንቱ ውጤቱን እስኪያረጋግጥ ድረስ ሳንቲሞቹ ተይዘዋል። ከሄደ፣ የተቆለፈው ቶከን እንድታስረክበው በመጠባበቅ ላይ ስር ይታያል። ካልሄደ ሳንቲሞቹ ይመለሳሉ።",
   "wallet.svc.send_spent_by_swap":
     "ይህ ቶከን ከመወሰዱ በፊት እነዚህ ሳንቲሞች ወደ ቦርሳዎ ተመልሰው ተለውጠዋል፣ ስለዚህ ከአሁን በኋላ ሊወሰድ አይችልም። ዋጋው በቀሪ ሂሳብዎ ውስጥ ነው።",
 
@@ -1850,7 +1850,7 @@ export const strings: Strings = {
   // ---- Settings: storage and data ----
   "settings.storage.network_usage": "የአውታረ መረብ አጠቃቀም",
   "settings.storage.storage_usage": "የማከማቻ አጠቃቀም",
-  "settings.storage.storage_usage_desc": "መልእክቶች፣ የቦርሳ ማረጋገጫዎችና የተቀመጡ አባሪዎች",
+  "settings.storage.storage_usage_desc": "መልእክቶች፣ ecash እና የተቀመጡ አባሪዎች",
   "settings.storage.session_usage": "ይህ ክፍለ ጊዜ · {sent} ተልኳል፣ {received} ደርሷል",
   "settings.storage.cache": "ጊዜያዊ ማከማቻ",
   "settings.storage.cache_desc": "{size} አባሪዎች",
@@ -1935,7 +1935,7 @@ export const strings: Strings = {
   "settings.transfer.chats": "ውይይቶችና ታሪክ",
   "settings.transfer.chats_desc": "ውይይቶች፣ ቡድኖችና የተቀላቀልካቸው ሰርጦች",
   "settings.transfer.wallet": "የቦርሳ ቀሪ ሂሳብ",
-  "settings.transfer.wallet_desc": "የCashu ማረጋገጫዎችና የግብይት ታሪክ",
+  "settings.transfer.wallet_desc": "Ecash እና የግብይት ታሪክ",
   "settings.transfer.title": "ወደ አዲስ ስልክ አስተላልፍ",
   "settings.transfer.desc": "ማንነትህን፣ ውይይቶችህንና ቦርሳህን ወደ ሌላ መሣሪያ አዛውር",
   "settings.transfer.coming_soon_a11y": "ወደ አዲስ ስልክ ማስተላለፍ፣ በቅርቡ ይመጣል",
@@ -1965,9 +1965,9 @@ export const strings: Strings = {
   "settings.wipe.trigger_desc": "ሳታረጋግጥ ወዲያውኑ ለማጽዳት ሦስት ጊዜ ንካ",
   "settings.wipe.title": "አስቸኳይ ማጽዳት",
   "settings.wipe.now": "አሁን አጽዳ",
-  "settings.wipe.desc": "ሁሉንም ቁልፎች፣ መልእክቶችና ማረጋገጫዎች ወዲያውኑ አጥፋ",
+  "settings.wipe.desc": "ሁሉንም ቁልፎች፣ መልእክቶችና ecash ወዲያውኑ አጥፋ",
   "settings.wipe.body":
-    "ይህ ሁሉንም ቁልፎችህን፣ መልእክቶችህንና የቦርሳ ማረጋገጫዎችህን ወዲያውኑ ያጠፋል። ይህ ሊመለስ አይችልም።",
+    "ይህ ሁሉንም ቁልፎችህን፣ መልእክቶችህንና ecash ህን ወዲያውኑ ያጠፋል። ይህ ሊመለስ አይችልም።",
   "settings.wipe.in_progress": "እየጸዳ ነው",
   "settings.wipe.in_progress_body":
     "ቁልፎችህ፣ መልእክቶችህና ፋይሎችህ እየጠፉ ናቸው። ጥቂት ሰከንዶች ይወስዳል፤ መተግበሪያው ቢዘጋም በራሱ ይጠናቀቃል።",
@@ -2160,9 +2160,9 @@ export const plurals: Plurals = {
 
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} {balance} {unit} በ{count} ማረጋገጫ ውስጥ ይዟል። ማስወገዱ ያንን ማረጋገጫ ከዚህ መሣሪያ ለዘለቄታው ይሰርዘዋል፤ ምትኬም የለም። መጀመሪያ ቀሪ ሂሳቡን አውጣ ወይም ላክ።",
+    one: "{mint} {balance} {unit} በ{count} ሳንቲም ውስጥ ይዟል። ማስወገዱ ያንን ሳንቲም ከዚህ መሣሪያ ለዘለቄታው ይሰርዘዋል፤ ምትኬም የለም። መጀመሪያ ቀሪ ሂሳቡን አውጣ ወይም ላክ።",
     other:
-      "{mint} {balance} {unit} በ{count} ማረጋገጫዎች ውስጥ ይዟል። ማስወገዱ እነዚያን ማረጋገጫዎች ከዚህ መሣሪያ ለዘለቄታው ይሰርዛቸዋል፤ ምትኬም የለም። መጀመሪያ ቀሪ ሂሳቡን አውጣ ወይም ላክ።",
+      "{mint} {balance} {unit} በ{count} ሳንቲሞች ውስጥ ይዟል። ማስወገዱ እነዚያን ሳንቲሞች ከዚህ መሣሪያ ለዘለቄታው ይሰርዛቸዋል፤ ምትኬም የለም። መጀመሪያ ቀሪ ሂሳቡን አውጣ ወይም ላክ።",
   },
 
   // ---- Wallet: Lightning ----
@@ -2173,8 +2173,8 @@ export const plurals: Plurals = {
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "{count} ያልወጣ ማረጋገጫ ከ{mints} ተመልሷል።",
-    other: "{count} ያልወጡ ማረጋገጫዎች ከ{mints} ተመልሰዋል።",
+    one: "{count} ያልወጣ ሳንቲም ከ{mints} ተመልሷል።",
+    other: "{count} ያልወጡ ሳንቲሞች ከ{mints} ተመልሰዋል።",
   },
   "wallet.backup.already_spent": {
     one: "{count} ሳንቲም ተገኘ ግን አስቀድሞ ወጪ ሆኗል፤ ስለዚህ ምንም አልተጨመረም። ይህ የተለመደ ነው፦ እስካሁን ያወጣኸው እያንዳንዱ ሳንቲም ሚንቱ በሚይዘው መዝገብ ውስጥ ይቀራል።",
@@ -2196,8 +2196,8 @@ export const plurals: Plurals = {
     other: "{count} ያልተረጋገጡ",
   },
   "wallet.spent_removed_detail": {
-    one: "{count} ማረጋገጫ አስቀድሞ ወጪ ሆኖ ስለነበር ተወግዷል።",
-    other: "{count} ማረጋገጫዎች አስቀድመው ወጪ ሆነው ስለነበር ተወግደዋል።",
+    one: "{count} ሳንቲም አስቀድሞ ወጪ ሆኖ ስለነበር ተወግዷል።",
+    other: "{count} ሳንቲሞች አስቀድመው ወጪ ሆነው ስለነበር ተወግደዋል።",
   },
 
   // ---- System notifications ----
