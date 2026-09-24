@@ -25,8 +25,20 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import {
+  ANNOUNCE_TTL,
+  encodeAnnouncePayload,
+} from "@core/mesh/discovery/announce-manager";
+import {
+  encodePacket,
+  Flags,
+  PacketType,
+  signPacket,
+  type Packet,
+} from "@core/mesh/wire/packet-codec";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice, type DeviceSpec } from "./harness/device";
+import { eventRouter } from "./harness/event-router";
 import {
   badgeMatchesThreads,
   convergence,
@@ -666,5 +678,71 @@ test("B09 an internet DM shows the contact's name and is acknowledged once", asy
   );
 
   s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("B10 a frame that lands after its link closed does not bring the peer back", async () => {
+  // Android delivers GATT callbacks on binder threads, so a frame and the
+  // disconnect after it can reach JS in either order. Reopening the link for
+  // that frame would leave a departed peer bound to a dead link and shown as
+  // direct, with sends to them written into nothing.
+  const s = (scenario = new Scenario({
+    id: "B10",
+    title: "a late frame after a Bluetooth disconnect",
+    seed: 10,
+  }));
+  const { radio, devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.isDirectPeer(bob.peerID));
+  const heldLinks = alice.bleLinkIDs();
+  s.check("alice holds a link to bob", heldLinks.length > 0);
+
+  radio.setIsolated(bob.id, true);
+  const gone = await waitFor(
+    s.world,
+    () => alice.bleLinkCount() === 0 && !alice.isDirectPeer(bob.peerID),
+    10_000,
+  );
+  s.check("bob's departure is noticed", gone);
+
+  // Bob's own announce, freshly stamped so no deduplicator hides it, arriving
+  // on the link that just closed, as the losing side of the race would.
+  const announce: Packet = {
+    type: PacketType.ANNOUNCE,
+    ttl: ANNOUNCE_TTL,
+    flags: Flags.SIGNED,
+    senderID: hexToBytes(bob.peerID),
+    recipientID: new Uint8Array(8),
+    timestamp: s.world.wallClock(),
+    signature: new Uint8Array(64),
+    payload: encodeAnnouncePayload(bob.identity, "bob", []),
+  };
+  announce.signature = signPacket(announce, bob.identity.signingPrivKey);
+  let bin = "";
+  for (const b of encodePacket(announce)) bin += String.fromCharCode(b);
+  const emitter = alice.eventEmitter as {
+    emit: (event: string, body: unknown) => void;
+  };
+  // Inside alice's frame: the router delivers only to the running device.
+  eventRouter().runAs(alice.id, () => {
+    emitter.emit("AirhopBLE.packetReceived", {
+      linkID: heldLinks[0],
+      dataBase64: globalThis.btoa(bin),
+    });
+  });
+  await s.world.advance(1_000);
+
+  s.check(
+    "the closed link stays closed",
+    alice.bleLinkCount() === 0,
+    `links=[${alice.bleLinkIDs().join(",")}]`,
+  );
+  s.check(
+    "bob is not shown as directly connected",
+    !alice.isDirectPeer(bob.peerID),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
   s.assert();
 });
