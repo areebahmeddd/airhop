@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Annuler",
-  "common.done": "Terminé",
-  "common.ok": "OK",
-  "common.close": "Fermer",
   "common.back": "Retour",
-  "common.delete": "Supprimer",
-  "common.remove": "Retirer",
+  "common.close": "Fermer",
+  "common.cancel": "Annuler",
+  "common.ok": "OK",
+  "common.done": "Terminé",
+  "common.continue": "Continuer",
+  "common.try_again": "Réessayer",
   "common.add": "Ajouter",
+  "common.remove": "Retirer",
+  "common.delete": "Supprimer",
   "common.copy": "Copier",
   "common.copied": "Copié",
   "common.share": "Partager",
-  "common.continue": "Continuer",
-  "common.try_again": "Réessayer",
   "common.settings": "Réglages",
   "common.on": "Activé",
   "common.off": "Désactivé",
@@ -106,7 +106,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Compte nécessaire",
   "onboarding.username.prop.account_value": "Aucun",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Bienvenue dans Airhop !",
   "onboarding.hello.p1":
     "Airhop est construit au-dessus de bitchat comme un projet parallèle indépendant et open source. Il n’est ni affilié ni approuvé par le projet bitchat, et ce n’est l’imitation d’aucune application ou d’aucun service existant : c’est simplement quelque chose que j’aime construire et partager avec la communauté.",
@@ -530,38 +530,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "au sud-ouest",
   "chat.location.direction.w": "à l’ouest",
   "chat.location.direction.nw": "au nord-ouest",
-  "chat.attach.send_anyway": "Envoyer quand même",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "A sonné",
   "chat.ring.received_summary": "T’a sonné",
   "chat.ring.alert.title": "{sender} vous appelle",
   "chat.ring.alert.body": "Consultez vos messages",
   "chat.ring.alert.open": "Ouvrir",
   "chat.ring.alert.snooze": "Suspendre 1 heure",
-  "chat.contact.allow_ring": "Autoriser les alertes de sonnerie",
-  "chat.contact.allow_ring_desc":
-    "Autorisez-les à faire sonner votre téléphone pour attirer votre attention, même si cette conversation est en sourdine. Le mode silencieux et Ne pas déranger s’appliquent toujours.",
-  "chat.contact.ring_action": "Sonner",
-  "chat.contact.ringing": "Sonnerie en cours…",
   "chat.ring.sent_snoozed": "Sonné, reporté",
   "chat.ring.sent_too_soon": "Sonné, trop tôt",
   "chat.ring.sent_not_allowed": "Sonné, non autorisé",
-  "chat.contact.ring_hint_nearby":
-    "La sonnerie ne fonctionne que lorsqu’ils sont à proximité",
-  "chat.contact.ring_hint_not_allowed":
-    "Ils ne vous ont pas autorisé à les faire sonner",
-  "chat.contact.ring_hint_snoozed":
-    "Ils ont reporté les sonneries pour le moment",
-  "chat.contact.ring_hint_too_soon": "Ils ont été sonnés il y a un instant",
-  "chat.contact.ring_hint_again_in": "Sonner à nouveau dans {time}",
-  "settings.security.ring_alerts": "Alertes de sonnerie",
-  "settings.security.ring_alerts_desc":
-    "Interrupteur principal pour la sonnerie. Le désactiver refuse instantanément toute sonnerie, quelle que soit l’autorisation accordée à chaque contact.",
-  "notif.channel.ring": "Sonnerie",
-  "notif.channel.ring_desc":
-    "Alertes des contacts que vous avez autorisés à vous appeler.",
-  "notif.ring.hidden": "Sonnerie",
-  "notif.ring.title": "{sender} vous appelle",
-  "notif.ring.body": "Consultez vos messages",
+  "chat.attach.send_anyway": "Envoyer quand même",
   "chat.attach.bitchat_too_big": "Cela pourrait ne pas arriver",
   "chat.attach.bitchat_too_big_body":
     "{name} est sur bitchat, qui abandonne en cours de route sur un gros fichier. En dessous de 350 KiB environ, c’est fiable. L’envoyer à un contact Airhop n’a pas cette limite.",
@@ -756,6 +736,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Le nom que tu lui as donné",
   "chat.contact.copy_peer_id": "Copier l’identifiant de pair",
   "chat.contact.verify": "Vérifier le contact",
+  "chat.contact.allow_ring": "Autoriser les alertes de sonnerie",
+  "chat.contact.allow_ring_desc":
+    "Autorisez-les à faire sonner votre téléphone pour attirer votre attention, même si cette conversation est en sourdine. Le mode silencieux et Ne pas déranger s’appliquent toujours.",
+  "chat.contact.ring_action": "Sonner",
+  "chat.contact.ringing": "Sonnerie en cours…",
+  "chat.contact.ring_hint_nearby":
+    "La sonnerie ne fonctionne que lorsqu’ils sont à proximité",
+  "chat.contact.ring_hint_not_allowed":
+    "Ils ne vous ont pas autorisé à les faire sonner",
+  "chat.contact.ring_hint_snoozed":
+    "Ils ont reporté les sonneries pour le moment",
+  "chat.contact.ring_hint_too_soon": "Ils ont été sonnés il y a un instant",
+  "chat.contact.ring_hint_again_in": "Sonner à nouveau dans {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Avis",
@@ -1666,6 +1659,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Copier l’identifiant de pair",
   "settings.peer_id_sheet.note":
     "Cela ne fonctionne que si vous êtes tous les deux à portée du Bluetooth. Pour qu’on puisse t’écrire de n’importe où, partage plutôt ton code QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Rechercher dans les réglages…",
   "settings.search.a11y": "Rechercher dans les réglages",
   "settings.search.close": "Fermer la recherche",
@@ -1821,6 +1816,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Masquer les aperçus des notifications",
   "settings.security.hide_previews_desc":
     "Garde l’expéditeur et le message hors de l’écran de verrouillage, qui les affiche sans déverrouiller",
+  "settings.security.ring_alerts": "Alertes de sonnerie",
+  "settings.security.ring_alerts_desc":
+    "Interrupteur principal pour la sonnerie. Le désactiver refuse instantanément toute sonnerie, quelle que soit l’autorisation accordée à chaque contact.",
   "settings.security.no_blocked": "Aucun pair bloqué",
   "settings.security.no_blocked_desc":
     "Les pairs bloqués ne peuvent pas t’écrire et n’apparaissent pas dans l’onglet Maillage",
@@ -2266,6 +2264,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Pairs à proximité",
   "notif.channel.nearby_desc":
     "Un avis occasionnel quand le maillage trouve des gens à portée du Bluetooth.",
+  "notif.channel.ring": "Sonnerie",
+  "notif.channel.ring_desc":
+    "Alertes des contacts que vous avez autorisés à vous appeler.",
   "notif.nearby.body":
     "À portée du Bluetooth maintenant. Touche pour ouvrir le maillage.",
   "notif.channel_message": "{sender} : {preview}",
@@ -2283,6 +2284,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Nouvelle activité",
   "notif.hidden.mention": "Tu as été mentionné",
   "notif.mention.title": "{sender} t’a mentionné",
+  "notif.ring.hidden": "Sonnerie",
+  "notif.ring.title": "{sender} vous appelle",
+  "notif.ring.body": "Consultez vos messages",
 };
 
 export const plurals: Plurals = {

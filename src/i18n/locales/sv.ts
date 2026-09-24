@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Avbryt",
-  "common.done": "Klar",
-  "common.ok": "OK",
-  "common.close": "Stäng",
   "common.back": "Tillbaka",
-  "common.delete": "Radera",
-  "common.remove": "Ta bort",
+  "common.close": "Stäng",
+  "common.cancel": "Avbryt",
+  "common.ok": "OK",
+  "common.done": "Klar",
+  "common.continue": "Fortsätt",
+  "common.try_again": "Försök igen",
   "common.add": "Lägg till",
+  "common.remove": "Ta bort",
+  "common.delete": "Radera",
   "common.copy": "Kopiera",
   "common.copied": "Kopierat",
   "common.share": "Dela",
-  "common.continue": "Fortsätt",
-  "common.try_again": "Försök igen",
   "common.settings": "Inställningar",
   "common.on": "På",
   "common.off": "Av",
@@ -521,38 +521,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "sydväst",
   "chat.location.direction.w": "väster",
   "chat.location.direction.nw": "nordväst",
-  "chat.attach.send_anyway": "Skicka ändå",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Ringde",
   "chat.ring.received_summary": "Ringde dig",
   "chat.ring.alert.title": "{sender} ringer dig",
   "chat.ring.alert.body": "Kolla dina meddelanden",
   "chat.ring.alert.open": "Öppna",
   "chat.ring.alert.snooze": "Snooza i 1 timme",
-  "chat.contact.allow_ring": "Tillåt ringsignaler",
-  "chat.contact.allow_ring_desc":
-    "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
-  "chat.contact.ring_action": "Ring",
-  "chat.contact.ringing": "Ringer…",
   "chat.ring.sent_snoozed": "Ringde, uppskjutet",
   "chat.ring.sent_too_soon": "Ringde, för tidigt",
   "chat.ring.sent_not_allowed": "Ringde, inte tillåtet",
-  "chat.contact.ring_hint_nearby":
-    "Ringning fungerar bara medan de är i närheten",
-  "chat.contact.ring_hint_not_allowed":
-    "De har inte tillåtit dig att ringa dem",
-  "chat.contact.ring_hint_snoozed":
-    "De har skjutit upp ringningar för tillfället",
-  "chat.contact.ring_hint_too_soon": "De blev uppringda alldeles nyss",
-  "chat.contact.ring_hint_again_in": "Ring igen om {time}",
-  "settings.security.ring_alerts": "Ringsignaler",
-  "settings.security.ring_alerts_desc":
-    "Huvudbrytare för Ring. Avstängd avvisar alla ringningar direkt, oavsett vad du har beviljat enskilda kontakter.",
-  "notif.channel.ring": "Ring",
-  "notif.channel.ring_desc":
-    "Aviseringar från kontakter du har tillåtit att ringa dig.",
-  "notif.ring.hidden": "Ring",
-  "notif.ring.title": "{sender} ringer dig",
-  "notif.ring.body": "Kolla dina meddelanden",
+  "chat.attach.send_anyway": "Skicka ändå",
   "chat.attach.bitchat_too_big": "Det här kanske inte kommer fram",
   "chat.attach.bitchat_too_big_body":
     "{name} använder bitchat, som ger upp halvvägs vid en stor fil. Under ungefär 350 KiB är tillförlitligt. Att skicka den till en Airhop-kontakt har ingen sådan gräns.",
@@ -745,6 +725,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Ditt namn på hen",
   "chat.contact.copy_peer_id": "Kopiera peer-ID",
   "chat.contact.verify": "Verifiera kontakt",
+  "chat.contact.allow_ring": "Tillåt ringsignaler",
+  "chat.contact.allow_ring_desc":
+    "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
+  "chat.contact.ring_action": "Ring",
+  "chat.contact.ringing": "Ringer…",
+  "chat.contact.ring_hint_nearby":
+    "Ringning fungerar bara medan de är i närheten",
+  "chat.contact.ring_hint_not_allowed":
+    "De har inte tillåtit dig att ringa dem",
+  "chat.contact.ring_hint_snoozed":
+    "De har skjutit upp ringningar för tillfället",
+  "chat.contact.ring_hint_too_soon": "De blev uppringda alldeles nyss",
+  "chat.contact.ring_hint_again_in": "Ring igen om {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Anslag",
@@ -1620,6 +1613,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Kopiera peer-ID",
   "settings.peer_id_sheet.note":
     "Det här fungerar bara när ni båda är inom Bluetooth-räckhåll. Dela din QR-kod i stället om du vill kunna nås var som helst ifrån.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Sök i inställningar…",
   "settings.search.a11y": "Sök i inställningar",
   "settings.search.close": "Stäng sökningen",
@@ -1772,6 +1767,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Dölj förhandsvisning i aviseringar",
   "settings.security.hide_previews_desc":
     "Håller avsändaren och meddelandet borta från låsskärmen, som annars visar dem utan upplåsning",
+  "settings.security.ring_alerts": "Ringsignaler",
+  "settings.security.ring_alerts_desc":
+    "Huvudbrytare för Ring. Avstängd avvisar alla ringningar direkt, oavsett vad du har beviljat enskilda kontakter.",
   "settings.security.no_blocked": "Inga blockerade peers",
   "settings.security.no_blocked_desc":
     "Blockerade peers kan inte skriva till dig och syns inte under Mesh",
@@ -2204,6 +2202,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peers i närheten",
   "notif.channel.nearby_desc":
     "En notering då och då när meshen hittar folk inom Bluetooth-räckhåll.",
+  "notif.channel.ring": "Ring",
+  "notif.channel.ring_desc":
+    "Aviseringar från kontakter du har tillåtit att ringa dig.",
   "notif.nearby.body":
     "Inom Bluetooth-räckhåll nu. Tryck för att öppna meshen.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2221,6 +2222,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Ny aktivitet",
   "notif.hidden.mention": "Du blev omnämnd",
   "notif.mention.title": "{sender} nämnde dig",
+  "notif.ring.hidden": "Ring",
+  "notif.ring.title": "{sender} ringer dig",
+  "notif.ring.body": "Kolla dina meddelanden",
 };
 
 export const plurals: Plurals = {

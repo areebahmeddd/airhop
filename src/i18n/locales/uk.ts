@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Скасувати",
-  "common.done": "Готово",
-  "common.ok": "Гаразд",
-  "common.close": "Закрити",
   "common.back": "Назад",
-  "common.delete": "Видалити",
-  "common.remove": "Вилучити",
+  "common.close": "Закрити",
+  "common.cancel": "Скасувати",
+  "common.ok": "Гаразд",
+  "common.done": "Готово",
+  "common.continue": "Далі",
+  "common.try_again": "Спробувати ще раз",
   "common.add": "Додати",
+  "common.remove": "Вилучити",
+  "common.delete": "Видалити",
   "common.copy": "Копіювати",
   "common.copied": "Скопійовано",
   "common.share": "Поділитися",
-  "common.continue": "Далі",
-  "common.try_again": "Спробувати ще раз",
   "common.settings": "Налаштування",
   "common.on": "Увімкнено",
   "common.off": "Вимкнено",
@@ -103,7 +103,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Потрібен обліковий запис",
   "onboarding.username.prop.account_value": "Немає",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Ласкаво просимо до Airhop!",
   "onboarding.hello.p1":
     "Airhop побудований поверх bitchat як самостійний побічний проєкт з відкритим кодом. Він не пов’язаний із проєктом bitchat і не схвалений ним, а також не є імітацією жодного наявного застосунку чи сервісу, це просто те, що мені подобається створювати й ділитися зі спільнотою.",
@@ -528,35 +528,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "південний захід",
   "chat.location.direction.w": "захід",
   "chat.location.direction.nw": "північний захід",
-  "chat.attach.send_anyway": "Усе одно надіслати",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Подзвонив",
   "chat.ring.received_summary": "Подзвонив вам",
   "chat.ring.alert.title": "{sender} дзвонить вам",
   "chat.ring.alert.body": "Перевірте свої повідомлення",
   "chat.ring.alert.open": "Відкрити",
   "chat.ring.alert.snooze": "Відкласти на 1 годину",
-  "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
-  "chat.contact.allow_ring_desc":
-    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
-  "chat.contact.ring_action": "Подзвонити",
-  "chat.contact.ringing": "Дзвонить…",
   "chat.ring.sent_snoozed": "Подзвонили, відкладено",
   "chat.ring.sent_too_soon": "Подзвонили, зарано",
   "chat.ring.sent_not_allowed": "Подзвонили, не дозволено",
-  "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
-  "chat.contact.ring_hint_not_allowed": "Вони не дозволили вам їм дзвонити",
-  "chat.contact.ring_hint_snoozed": "Вони поки що відклали дзвінки",
-  "chat.contact.ring_hint_too_soon": "Їм щойно дзвонили",
-  "chat.contact.ring_hint_again_in": "Подзвонити знову через {time}",
-  "settings.security.ring_alerts": "Сповіщення про дзвінок",
-  "settings.security.ring_alerts_desc":
-    "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
-  "notif.channel.ring": "Дзвінок",
-  "notif.channel.ring_desc":
-    "Сповіщення від контактів, яким ви дозволили дзвонити вам.",
-  "notif.ring.hidden": "Дзвінок",
-  "notif.ring.title": "{sender} дзвонить вам",
-  "notif.ring.body": "Перевірте свої повідомлення",
+  "chat.attach.send_anyway": "Усе одно надіслати",
   "chat.attach.bitchat_too_big": "Це може не дійти",
   "chat.attach.bitchat_too_big_body":
     "{name} користується bitchat, який здається на півдорозі, коли файл великий. Приблизно до 350 KiB надійно. Надсилання контакту в Airhop такої межі не має.",
@@ -749,6 +732,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Ваше ім’я для них",
   "chat.contact.copy_peer_id": "Копіювати ідентифікатор піра",
   "chat.contact.verify": "Підтвердити контакт",
+  "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
+  "chat.contact.allow_ring_desc":
+    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
+  "chat.contact.ring_action": "Подзвонити",
+  "chat.contact.ringing": "Дзвонить…",
+  "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
+  "chat.contact.ring_hint_not_allowed": "Вони не дозволили вам їм дзвонити",
+  "chat.contact.ring_hint_snoozed": "Вони поки що відклали дзвінки",
+  "chat.contact.ring_hint_too_soon": "Їм щойно дзвонили",
+  "chat.contact.ring_hint_again_in": "Подзвонити знову через {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Оголошення",
@@ -1633,6 +1626,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Копіювати ідентифікатор піра",
   "settings.peer_id_sheet.note":
     "Це працює, лише коли ви обоє в радіусі Bluetooth. Щоб вам могли написати звідусіль, поділіться натомість своїм QR-кодом.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Пошук у налаштуваннях…",
   "settings.search.a11y": "Пошук у налаштуваннях",
   "settings.search.close": "Закрити пошук",
@@ -1785,6 +1780,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Ховати попередній перегляд у сповіщеннях",
   "settings.security.hide_previews_desc":
     "Тримає відправника й повідомлення подалі від екрана блокування, який показує їх без розблокування",
+  "settings.security.ring_alerts": "Сповіщення про дзвінок",
+  "settings.security.ring_alerts_desc":
+    "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
   "settings.security.no_blocked": "Немає заблокованих пірів",
   "settings.security.no_blocked_desc":
     "Заблоковані піри не можуть вам писати й не з’являються на вкладці Mesh",
@@ -2218,6 +2216,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Піри поблизу",
   "notif.channel.nearby_desc":
     "Нечасте сповіщення, коли mesh знаходить людей у радіусі Bluetooth.",
+  "notif.channel.ring": "Дзвінок",
+  "notif.channel.ring_desc":
+    "Сповіщення від контактів, яким ви дозволили дзвонити вам.",
   "notif.nearby.body":
     "Зараз у радіусі Bluetooth. Торкніться, щоб відкрити mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2235,6 +2236,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Нова активність",
   "notif.hidden.mention": "Вас згадали",
   "notif.mention.title": "{sender} згадує вас",
+  "notif.ring.hidden": "Дзвінок",
+  "notif.ring.title": "{sender} дзвонить вам",
+  "notif.ring.body": "Перевірте свої повідомлення",
 };
 
 export const plurals: Plurals = {

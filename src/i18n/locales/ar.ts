@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "إلغاء",
-  "common.done": "تم",
-  "common.ok": "حسنًا",
-  "common.close": "إغلاق",
   "common.back": "رجوع",
-  "common.delete": "حذف",
-  "common.remove": "إزالة",
+  "common.close": "إغلاق",
+  "common.cancel": "إلغاء",
+  "common.ok": "حسنًا",
+  "common.done": "تم",
+  "common.continue": "متابعة",
+  "common.try_again": "حاول مرة أخرى",
   "common.add": "إضافة",
+  "common.remove": "إزالة",
+  "common.delete": "حذف",
   "common.copy": "نسخ",
   "common.copied": "تم النسخ",
   "common.share": "مشاركة",
-  "common.continue": "متابعة",
-  "common.try_again": "حاول مرة أخرى",
   "common.settings": "الإعدادات",
   "common.on": "مفعّل",
   "common.off": "معطّل",
@@ -509,35 +509,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "جنوب غرب",
   "chat.location.direction.w": "غربًا",
   "chat.location.direction.nw": "شمال غرب",
-  "chat.attach.send_anyway": "أرسل على أي حال",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "رنّ",
   "chat.ring.received_summary": "رنّ لك",
   "chat.ring.alert.title": "{sender} يرنّ لك",
   "chat.ring.alert.body": "تحقق من رسائلك",
   "chat.ring.alert.open": "فتح",
   "chat.ring.alert.snooze": "تأجيل لمدة ساعة واحدة",
-  "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
-  "chat.contact.allow_ring_desc":
-    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
-  "chat.contact.ring_action": "رنّ",
-  "chat.contact.ringing": "يرنّ…",
   "chat.ring.sent_snoozed": "رنّ، مؤجَّل",
   "chat.ring.sent_too_soon": "رنّ، مبكر جدًا",
   "chat.ring.sent_not_allowed": "رنّ، غير مسموح",
-  "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
-  "chat.contact.ring_hint_not_allowed": "لم يسمحوا لك بالرنين لهم",
-  "chat.contact.ring_hint_snoozed": "أجّلوا الرنين في الوقت الحالي",
-  "chat.contact.ring_hint_too_soon": "تم الرنين لهم قبل لحظات",
-  "chat.contact.ring_hint_again_in": "رنّ مجددًا بعد {time}",
-  "settings.security.ring_alerts": "تنبيهات الرنين",
-  "settings.security.ring_alerts_desc":
-    "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
-  "notif.channel.ring": "رنين",
-  "notif.channel.ring_desc":
-    "تنبيهات من جهات الاتصال التي سمحت لها بالرنين لك.",
-  "notif.ring.hidden": "رنين",
-  "notif.ring.title": "{sender} يرنّ لك",
-  "notif.ring.body": "تحقق من رسائلك",
+  "chat.attach.send_anyway": "أرسل على أي حال",
   "chat.attach.bitchat_too_big": "قد لا يصل هذا",
   "chat.attach.bitchat_too_big_body":
     "{name} يستخدم bitchat، وهو يتوقف في منتصف الملف الكبير. ما دون 350 KiB تقريبًا موثوق. أما الإرسال إلى جهة اتصال على Airhop فلا حد له.",
@@ -721,6 +704,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "اسمك له",
   "chat.contact.copy_peer_id": "نسخ معرّف النظير",
   "chat.contact.verify": "توثيق جهة الاتصال",
+  "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
+  "chat.contact.allow_ring_desc":
+    "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
+  "chat.contact.ring_action": "رنّ",
+  "chat.contact.ringing": "يرنّ…",
+  "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
+  "chat.contact.ring_hint_not_allowed": "لم يسمحوا لك بالرنين لهم",
+  "chat.contact.ring_hint_snoozed": "أجّلوا الرنين في الوقت الحالي",
+  "chat.contact.ring_hint_too_soon": "تم الرنين لهم قبل لحظات",
+  "chat.contact.ring_hint_again_in": "رنّ مجددًا بعد {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "الإعلانات",
@@ -1572,6 +1565,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "نسخ معرّف النظير",
   "settings.peer_id_sheet.note":
     "لا يعمل هذا إلا وأنتما ضمن نطاق البلوتوث. ولتمكين أحدهم من مراسلتك من أي مكان، شارك رمز الاستجابة السريعة الخاص بك بدلًا من ذلك.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ابحث في الإعدادات…",
   "settings.search.a11y": "ابحث في الإعدادات",
   "settings.search.close": "إغلاق البحث",
@@ -1719,6 +1714,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "إخفاء معاينات الإشعارات",
   "settings.security.hide_previews_desc":
     "يبقي المرسل والرسالة بعيدين عن شاشة القفل، التي تعرضهما دون فتح القفل",
+  "settings.security.ring_alerts": "تنبيهات الرنين",
+  "settings.security.ring_alerts_desc":
+    "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
   "settings.security.no_blocked": "لا نظراء محظورون",
   "settings.security.no_blocked_desc":
     "النظراء المحظورون لا يستطيعون مراسلتك ولا يظهرون في تبويب الشبكة",
@@ -2137,6 +2135,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "النظراء القريبون",
   "notif.channel.nearby_desc":
     "تنبيه عرضي عندما تعثر الشبكة على أشخاص ضمن نطاق البلوتوث.",
+  "notif.channel.ring": "رنين",
+  "notif.channel.ring_desc":
+    "تنبيهات من جهات الاتصال التي سمحت لها بالرنين لك.",
   "notif.nearby.body": "ضمن نطاق البلوتوث الآن. اضغط لفتح الشبكة.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "أحدهم",
@@ -2153,6 +2154,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "نشاط جديد",
   "notif.hidden.mention": "أشار إليك أحدهم",
   "notif.mention.title": "أشار إليك {sender}",
+  "notif.ring.hidden": "رنين",
+  "notif.ring.title": "{sender} يرنّ لك",
+  "notif.ring.body": "تحقق من رسائلك",
 };
 
 export const plurals: Plurals = {

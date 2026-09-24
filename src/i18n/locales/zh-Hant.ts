@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "取消",
-  "common.done": "完成",
-  "common.ok": "好",
-  "common.close": "關閉",
   "common.back": "返回",
-  "common.delete": "刪除",
-  "common.remove": "移除",
+  "common.close": "關閉",
+  "common.cancel": "取消",
+  "common.ok": "好",
+  "common.done": "完成",
+  "common.continue": "繼續",
+  "common.try_again": "再試一次",
   "common.add": "新增",
+  "common.remove": "移除",
+  "common.delete": "刪除",
   "common.copy": "複製",
   "common.copied": "已複製",
   "common.share": "分享",
-  "common.continue": "繼續",
-  "common.try_again": "再試一次",
   "common.settings": "設定",
   "common.on": "開啟",
   "common.off": "關",
@@ -492,34 +492,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "西南",
   "chat.location.direction.w": "正西",
   "chat.location.direction.nw": "西北",
-  "chat.attach.send_anyway": "還是傳送",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "響鈴",
   "chat.ring.received_summary": "響鈴通知你",
   "chat.ring.alert.title": "{sender} 正在響鈴",
   "chat.ring.alert.body": "請查看你的訊息",
   "chat.ring.alert.open": "開啟",
   "chat.ring.alert.snooze": "暫停 1 小時",
-  "chat.contact.allow_ring": "允許響鈴提醒",
-  "chat.contact.allow_ring_desc":
-    "讓對方響鈴提醒你,即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
-  "chat.contact.ring_action": "響鈴",
-  "chat.contact.ringing": "響鈴中…",
   "chat.ring.sent_snoozed": "已響鈴,已延後",
   "chat.ring.sent_too_soon": "已響鈴,過於頻繁",
   "chat.ring.sent_not_allowed": "已響鈴,未獲允許",
-  "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
-  "chat.contact.ring_hint_not_allowed": "對方尚未允許你響鈴",
-  "chat.contact.ring_hint_snoozed": "對方暫時延後了響鈴",
-  "chat.contact.ring_hint_too_soon": "剛剛已向對方響鈴",
-  "chat.contact.ring_hint_again_in": "{time}後可再次響鈴",
-  "settings.security.ring_alerts": "響鈴提醒",
-  "settings.security.ring_alerts_desc":
-    "響鈴的總開關。關閉後將拒絕所有響鈴,無論你允許了哪些聯絡人。",
-  "notif.channel.ring": "響鈴",
-  "notif.channel.ring_desc": "來自你允許響鈴的聯絡人的提醒。",
-  "notif.ring.hidden": "響鈴",
-  "notif.ring.title": "{sender} 正在響鈴通知你",
-  "notif.ring.body": "請查看你的訊息",
+  "chat.attach.send_anyway": "還是傳送",
   "chat.attach.bitchat_too_big": "這可能送不到",
   "chat.attach.bitchat_too_big_body":
     "{name} 用的是 bitchat，它遇到大檔案會傳到一半就放棄。大約 350 KiB 以下比較可靠。傳給 Airhop 聯絡人則沒有這種限制。",
@@ -699,6 +683,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "你為對方取的名字",
   "chat.contact.copy_peer_id": "複製節點 ID",
   "chat.contact.verify": "驗證聯絡人",
+  "chat.contact.allow_ring": "允許響鈴提醒",
+  "chat.contact.allow_ring_desc":
+    "讓對方響鈴提醒你,即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
+  "chat.contact.ring_action": "響鈴",
+  "chat.contact.ringing": "響鈴中…",
+  "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
+  "chat.contact.ring_hint_not_allowed": "對方尚未允許你響鈴",
+  "chat.contact.ring_hint_snoozed": "對方暫時延後了響鈴",
+  "chat.contact.ring_hint_too_soon": "剛剛已向對方響鈴",
+  "chat.contact.ring_hint_again_in": "{time}後可再次響鈴",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "公告",
@@ -1526,6 +1520,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "複製節點 ID",
   "settings.peer_id_sheet.note":
     "只有你們雙方都在藍牙範圍內時才有用。想讓別人從任何地方傳訊息給你，請改為分享你的 QR 碼。",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "搜尋設定…",
   "settings.search.a11y": "搜尋設定",
   "settings.search.close": "關閉搜尋",
@@ -1665,6 +1661,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "隱藏通知預覽",
   "settings.security.hide_previews_desc":
     "不讓寄件者和訊息出現在鎖定畫面上，因為鎖定畫面不解鎖就看得到它們",
+  "settings.security.ring_alerts": "響鈴提醒",
+  "settings.security.ring_alerts_desc":
+    "響鈴的總開關。關閉後將拒絕所有響鈴,無論你允許了哪些聯絡人。",
   "settings.security.no_blocked": "沒有被封鎖的節點",
   "settings.security.no_blocked_desc":
     "被封鎖的節點不能傳訊息給你，也不會出現在網狀網路分頁",
@@ -2071,6 +2070,8 @@ export const strings: Strings = {
   "notif.channel.messages": "訊息",
   "notif.channel.nearby": "附近的節點",
   "notif.channel.nearby_desc": "網狀網路在藍牙範圍內找到人時，偶爾發一則提示。",
+  "notif.channel.ring": "響鈴",
+  "notif.channel.ring_desc": "來自你允許響鈴的聯絡人的提醒。",
   "notif.nearby.body": "現在就在藍牙範圍內。點一下可開啟網狀網路。",
   "notif.channel_message": "{sender}：{preview}",
   "notif.someone": "某人",
@@ -2087,6 +2088,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "有新動態",
   "notif.hidden.mention": "有人提到了你",
   "notif.mention.title": "{sender} 提到了你",
+  "notif.ring.hidden": "響鈴",
+  "notif.ring.title": "{sender} 正在響鈴通知你",
+  "notif.ring.body": "請查看你的訊息",
 };
 
 export const plurals: Plurals = {

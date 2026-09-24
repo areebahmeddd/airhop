@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "বাতিল",
-  "common.done": "হয়ে গেছে",
-  "common.ok": "ঠিক আছে",
-  "common.close": "বন্ধ করুন",
   "common.back": "ফিরুন",
-  "common.delete": "মুছুন",
-  "common.remove": "সরান",
+  "common.close": "বন্ধ করুন",
+  "common.cancel": "বাতিল",
+  "common.ok": "ঠিক আছে",
+  "common.done": "হয়ে গেছে",
+  "common.continue": "চালিয়ে যান",
+  "common.try_again": "আবার চেষ্টা করুন",
   "common.add": "যোগ করুন",
+  "common.remove": "সরান",
+  "common.delete": "মুছুন",
   "common.copy": "কপি করুন",
   "common.copied": "কপি হয়েছে",
   "common.share": "ভাগ করুন",
-  "common.continue": "চালিয়ে যান",
-  "common.try_again": "আবার চেষ্টা করুন",
   "common.settings": "সেটিংস",
   "common.on": "চালু",
   "common.off": "বন্ধ",
@@ -518,35 +518,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "দক্ষিণ-পশ্চিম",
   "chat.location.direction.w": "পশ্চিম",
   "chat.location.direction.nw": "উত্তর-পশ্চিম",
-  "chat.attach.send_anyway": "তবুও পাঠান",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "রিং করেছেন",
   "chat.ring.received_summary": "আপনাকে রিং করেছেন",
   "chat.ring.alert.title": "{sender} আপনাকে রিং করছেন",
   "chat.ring.alert.body": "আপনার বার্তা দেখুন",
   "chat.ring.alert.open": "খুলুন",
   "chat.ring.alert.snooze": "1 ঘণ্টার জন্য স্নুজ করুন",
-  "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
-  "chat.contact.allow_ring_desc":
-    "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন। নীরব মোড ও বিরক্ত করবেন না তবুও প্রযোজ্য।",
-  "chat.contact.ring_action": "রিং করুন",
-  "chat.contact.ringing": "রিং হচ্ছে…",
   "chat.ring.sent_snoozed": "রিং হয়েছে, স্থগিত",
   "chat.ring.sent_too_soon": "রিং হয়েছে, খুব তাড়াতাড়ি",
   "chat.ring.sent_not_allowed": "রিং হয়েছে, অনুমতি নেই",
-  "chat.contact.ring_hint_nearby": "রিং কেবল তারা কাছে থাকলেই কাজ করে",
-  "chat.contact.ring_hint_not_allowed": "তারা আপনাকে রিং করার অনুমতি দেননি",
-  "chat.contact.ring_hint_snoozed": "তারা আপাতত রিং স্থগিত রেখেছেন",
-  "chat.contact.ring_hint_too_soon": "একটু আগেই তাদের রিং করা হয়েছে",
-  "chat.contact.ring_hint_again_in": "{time} পরে আবার রিং করুন",
-  "settings.security.ring_alerts": "রিং সতর্কতা",
-  "settings.security.ring_alerts_desc":
-    "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",
-  "notif.channel.ring": "রিং",
-  "notif.channel.ring_desc":
-    "আপনি যাদের রিং করার অনুমতি দিয়েছেন তাদের কাছ থেকে সতর্কতা।",
-  "notif.ring.hidden": "রিং",
-  "notif.ring.title": "{sender} আপনাকে রিং করছেন",
-  "notif.ring.body": "আপনার বার্তা দেখুন",
+  "chat.attach.send_anyway": "তবুও পাঠান",
   "chat.attach.bitchat_too_big": "এটি না-ও পৌঁছাতে পারে",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat ব্যবহার করছেন, যা বড় ফাইলে মাঝপথে হাল ছেড়ে দেয়। প্রায় 350 KiB-এর নিচে নির্ভরযোগ্য। Airhop-এর পরিচিতিকে পাঠালে এমন কোনো সীমা নেই।",
@@ -733,6 +716,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "আপনার দেওয়া নাম",
   "chat.contact.copy_peer_id": "পিয়ার আইডি কপি করুন",
   "chat.contact.verify": "পরিচিতি যাচাই করুন",
+  "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
+  "chat.contact.allow_ring_desc":
+    "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন। নীরব মোড ও বিরক্ত করবেন না তবুও প্রযোজ্য।",
+  "chat.contact.ring_action": "রিং করুন",
+  "chat.contact.ringing": "রিং হচ্ছে…",
+  "chat.contact.ring_hint_nearby": "রিং কেবল তারা কাছে থাকলেই কাজ করে",
+  "chat.contact.ring_hint_not_allowed": "তারা আপনাকে রিং করার অনুমতি দেননি",
+  "chat.contact.ring_hint_snoozed": "তারা আপাতত রিং স্থগিত রেখেছেন",
+  "chat.contact.ring_hint_too_soon": "একটু আগেই তাদের রিং করা হয়েছে",
+  "chat.contact.ring_hint_again_in": "{time} পরে আবার রিং করুন",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "নোটিশ",
@@ -1604,6 +1597,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "পিয়ার আইডি কপি করুন",
   "settings.peer_id_sheet.note":
     "এটি কেবল তখনই কাজ করে যখন আপনারা দুজনেই ব্লুটুথের নাগালে। কেউ যেকোনো জায়গা থেকে আপনাকে বার্তা পাঠাক চাইলে বরং আপনার QR কোড ভাগ করুন।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "সেটিংসে খুঁজুন…",
   "settings.search.a11y": "সেটিংসে খুঁজুন",
   "settings.search.close": "খোঁজা বন্ধ করুন",
@@ -1754,6 +1749,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "বিজ্ঞপ্তির ঝলক লুকান",
   "settings.security.hide_previews_desc":
     "প্রেরক ও বার্তা লক স্ক্রিন থেকে দূরে রাখে, কারণ সেটি তালা না খুলেই সেগুলো দেখায়",
+  "settings.security.ring_alerts": "রিং সতর্কতা",
+  "settings.security.ring_alerts_desc":
+    "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",
   "settings.security.no_blocked": "কোনো পিয়ার ব্লক করা নেই",
   "settings.security.no_blocked_desc":
     "ব্লক করা পিয়ার আপনাকে বার্তা পাঠাতে পারে না বা মেশ ট্যাবে দেখা যায় না",
@@ -2177,6 +2175,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "কাছের পিয়ার",
   "notif.channel.nearby_desc":
     "মেশ ব্লুটুথের নাগালে লোক পেলে মাঝেমধ্যে একটি খবর।",
+  "notif.channel.ring": "রিং",
+  "notif.channel.ring_desc":
+    "আপনি যাদের রিং করার অনুমতি দিয়েছেন তাদের কাছ থেকে সতর্কতা।",
   "notif.nearby.body": "এখন ব্লুটুথের নাগালে। মেশ খুলতে ট্যাপ করুন।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "কেউ একজন",
@@ -2193,6 +2194,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "নতুন কার্যকলাপ",
   "notif.hidden.mention": "আপনাকে উল্লেখ করা হয়েছে",
   "notif.mention.title": "{sender} আপনাকে উল্লেখ করেছেন",
+  "notif.ring.hidden": "রিং",
+  "notif.ring.title": "{sender} আপনাকে রিং করছেন",
+  "notif.ring.body": "আপনার বার্তা দেখুন",
 };
 
 export const plurals: Plurals = {

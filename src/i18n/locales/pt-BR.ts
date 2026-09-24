@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Cancelar",
-  "common.done": "Pronto",
-  "common.ok": "OK",
-  "common.close": "Fechar",
   "common.back": "Voltar",
-  "common.delete": "Excluir",
-  "common.remove": "Remover",
+  "common.close": "Fechar",
+  "common.cancel": "Cancelar",
+  "common.ok": "OK",
+  "common.done": "Pronto",
+  "common.continue": "Continuar",
+  "common.try_again": "Tentar de novo",
   "common.add": "Adicionar",
+  "common.remove": "Remover",
+  "common.delete": "Excluir",
   "common.copy": "Copiar",
   "common.copied": "Copiado",
   "common.share": "Compartilhar",
-  "common.continue": "Continuar",
-  "common.try_again": "Tentar de novo",
   "common.settings": "Configurações",
   "common.on": "Ligado",
   "common.off": "Desligado",
@@ -527,36 +527,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "a sudoeste",
   "chat.location.direction.w": "a oeste",
   "chat.location.direction.nw": "a noroeste",
-  "chat.attach.send_anyway": "Enviar mesmo assim",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Chamou",
   "chat.ring.received_summary": "Chamou você",
   "chat.ring.alert.title": "{sender} está chamando você",
   "chat.ring.alert.body": "Confira suas mensagens",
   "chat.ring.alert.open": "Abrir",
   "chat.ring.alert.snooze": "Adiar por 1 hora",
-  "chat.contact.allow_ring": "Permitir alertas de chamada",
-  "chat.contact.allow_ring_desc":
-    "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não perturbe continuam valendo.",
-  "chat.contact.ring_action": "Chamar",
-  "chat.contact.ringing": "Chamando…",
   "chat.ring.sent_snoozed": "Chamou, adiado",
   "chat.ring.sent_too_soon": "Chamou, cedo demais",
   "chat.ring.sent_not_allowed": "Chamou, não permitido",
-  "chat.contact.ring_hint_nearby":
-    "Chamar só funciona enquanto estão por perto",
-  "chat.contact.ring_hint_not_allowed": "Eles não permitiram que você os chame",
-  "chat.contact.ring_hint_snoozed": "Eles adiaram as chamadas por enquanto",
-  "chat.contact.ring_hint_too_soon": "Eles foram chamados há pouco",
-  "chat.contact.ring_hint_again_in": "Chamar de novo em {time}",
-  "settings.security.ring_alerts": "Alertas de chamada",
-  "settings.security.ring_alerts_desc":
-    "Interruptor principal da Chamada. Desativar recusa toda chamada instantaneamente, independentemente do que você concedeu a contatos individuais.",
-  "notif.channel.ring": "Chamada",
-  "notif.channel.ring_desc":
-    "Alertas de contatos que você permitiu chamar você.",
-  "notif.ring.hidden": "Chamada",
-  "notif.ring.title": "{sender} está chamando você",
-  "notif.ring.body": "Confira suas mensagens",
+  "chat.attach.send_anyway": "Enviar mesmo assim",
   "chat.attach.bitchat_too_big": "Isto pode não chegar",
   "chat.attach.bitchat_too_big_body":
     "{name} está no bitchat, que desiste no meio do caminho com arquivos grandes. Abaixo de uns 350 KiB é confiável. Enviar para um contato do Airhop não tem esse limite.",
@@ -750,6 +732,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "O nome que você deu",
   "chat.contact.copy_peer_id": "Copiar o ID de par",
   "chat.contact.verify": "Verificar o contato",
+  "chat.contact.allow_ring": "Permitir alertas de chamada",
+  "chat.contact.allow_ring_desc":
+    "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não perturbe continuam valendo.",
+  "chat.contact.ring_action": "Chamar",
+  "chat.contact.ringing": "Chamando…",
+  "chat.contact.ring_hint_nearby":
+    "Chamar só funciona enquanto estão por perto",
+  "chat.contact.ring_hint_not_allowed": "Eles não permitiram que você os chame",
+  "chat.contact.ring_hint_snoozed": "Eles adiaram as chamadas por enquanto",
+  "chat.contact.ring_hint_too_soon": "Eles foram chamados há pouco",
+  "chat.contact.ring_hint_again_in": "Chamar de novo em {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Avisos",
@@ -1650,6 +1643,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Copiar o ID de par",
   "settings.peer_id_sheet.note":
     "Isto só funciona quando vocês dois estão dentro do alcance do Bluetooth. Para alguém escrever de qualquer lugar, compartilhe seu código QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Buscar nas configurações…",
   "settings.search.a11y": "Buscar nas configurações",
   "settings.search.close": "Fechar a busca",
@@ -1804,6 +1799,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Esconder as prévias das notificações",
   "settings.security.hide_previews_desc":
     "Mantém o remetente e a mensagem fora da tela de bloqueio, que os mostra sem desbloquear",
+  "settings.security.ring_alerts": "Alertas de chamada",
+  "settings.security.ring_alerts_desc":
+    "Interruptor principal da Chamada. Desativar recusa toda chamada instantaneamente, independentemente do que você concedeu a contatos individuais.",
   "settings.security.no_blocked": "Nenhum par bloqueado",
   "settings.security.no_blocked_desc":
     "Pares bloqueados não conseguem escrever para você nem aparecem na aba Malha",
@@ -2241,6 +2239,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Pares por perto",
   "notif.channel.nearby_desc":
     "Um aviso ocasional quando a malha encontra gente dentro do alcance do Bluetooth.",
+  "notif.channel.ring": "Chamada",
+  "notif.channel.ring_desc":
+    "Alertas de contatos que você permitiu chamar você.",
   "notif.nearby.body":
     "Dentro do alcance do Bluetooth agora. Toque para abrir a malha.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2258,6 +2259,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Atividade nova",
   "notif.hidden.mention": "Você foi mencionado",
   "notif.mention.title": "{sender} mencionou você",
+  "notif.ring.hidden": "Chamada",
+  "notif.ring.title": "{sender} está chamando você",
+  "notif.ring.body": "Confira suas mensagens",
 };
 
 export const plurals: Plurals = {

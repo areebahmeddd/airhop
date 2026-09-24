@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "İptal",
-  "common.done": "Bitti",
-  "common.ok": "Tamam",
-  "common.close": "Kapat",
   "common.back": "Geri",
-  "common.delete": "Sil",
-  "common.remove": "Kaldır",
+  "common.close": "Kapat",
+  "common.cancel": "İptal",
+  "common.ok": "Tamam",
+  "common.done": "Bitti",
+  "common.continue": "Devam",
+  "common.try_again": "Yeniden dene",
   "common.add": "Ekle",
+  "common.remove": "Kaldır",
+  "common.delete": "Sil",
   "common.copy": "Kopyala",
   "common.copied": "Kopyalandı",
   "common.share": "Paylaş",
-  "common.continue": "Devam",
-  "common.try_again": "Yeniden dene",
   "common.settings": "Ayarlar",
   "common.on": "Açık",
   "common.off": "Kapalı",
@@ -524,35 +524,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "güneybatı",
   "chat.location.direction.w": "batı",
   "chat.location.direction.nw": "kuzeybatı",
-  "chat.attach.send_anyway": "Yine de gönder",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Çaldı",
   "chat.ring.received_summary": "Seni aradı",
   "chat.ring.alert.title": "{sender} seni arıyor",
   "chat.ring.alert.body": "Mesajlarını kontrol et",
   "chat.ring.alert.open": "Aç",
   "chat.ring.alert.snooze": "1 saat ertele",
-  "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
-  "chat.contact.allow_ring_desc":
-    "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
-  "chat.contact.ring_action": "Çağır",
-  "chat.contact.ringing": "Çalıyor…",
   "chat.ring.sent_snoozed": "Çaldırıldı, ertelendi",
   "chat.ring.sent_too_soon": "Çaldırıldı, çok erken",
   "chat.ring.sent_not_allowed": "Çaldırıldı, izin verilmedi",
-  "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",
-  "chat.contact.ring_hint_not_allowed": "Onları çaldırmana izin vermediler",
-  "chat.contact.ring_hint_snoozed": "Şimdilik çaldırmaları ertelediler",
-  "chat.contact.ring_hint_too_soon": "Az önce çaldırıldılar",
-  "chat.contact.ring_hint_again_in": "{time} sonra yeniden çaldır",
-  "settings.security.ring_alerts": "Çağrı uyarıları",
-  "settings.security.ring_alerts_desc":
-    "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",
-  "notif.channel.ring": "Çağrı",
-  "notif.channel.ring_desc":
-    "Seni aramasına izin verdiğin kişilerden gelen uyarılar.",
-  "notif.ring.hidden": "Çağrı",
-  "notif.ring.title": "{sender} seni arıyor",
-  "notif.ring.body": "Mesajlarını kontrol et",
+  "chat.attach.send_anyway": "Yine de gönder",
   "chat.attach.bitchat_too_big": "Bu ulaşmayabilir",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat kullanıyor ve büyük bir dosyada yarı yolda pes ediyor. Yaklaşık 350 KiB altı güvenilirdir. Bir Airhop kişisine göndermenin böyle bir sınırı yoktur.",
@@ -746,6 +729,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Onlar için verdiğin ad",
   "chat.contact.copy_peer_id": "Eş kimliğini kopyala",
   "chat.contact.verify": "Kişiyi doğrula",
+  "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
+  "chat.contact.allow_ring_desc":
+    "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
+  "chat.contact.ring_action": "Çağır",
+  "chat.contact.ringing": "Çalıyor…",
+  "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",
+  "chat.contact.ring_hint_not_allowed": "Onları çaldırmana izin vermediler",
+  "chat.contact.ring_hint_snoozed": "Şimdilik çaldırmaları ertelediler",
+  "chat.contact.ring_hint_too_soon": "Az önce çaldırıldılar",
+  "chat.contact.ring_hint_again_in": "{time} sonra yeniden çaldır",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Duyurular",
@@ -1629,6 +1622,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Eş kimliğini kopyala",
   "settings.peer_id_sheet.note":
     "Bu yalnızca ikiniz de Bluetooth menzilindeyken işe yarar. Birinin sana her yerden yazabilmesi için onun yerine QR kodunu paylaş.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Ayarlarda ara…",
   "settings.search.a11y": "Ayarlarda ara",
   "settings.search.close": "Aramayı kapat",
@@ -1778,6 +1773,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Bildirim önizlemelerini gizle",
   "settings.security.hide_previews_desc":
     "Göndereni ve mesajı, kilidi açmadan gösteren kilit ekranından uzak tutar",
+  "settings.security.ring_alerts": "Çağrı uyarıları",
+  "settings.security.ring_alerts_desc":
+    "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",
   "settings.security.no_blocked": "Engellenen eş yok",
   "settings.security.no_blocked_desc":
     "Engellenen eşler sana yazamaz ve Mesh sekmesinde görünemez",
@@ -2209,6 +2207,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Yakındaki eşler",
   "notif.channel.nearby_desc":
     "Mesh, Bluetooth menzilinde insan bulduğunda ara sıra gelen bir bildirim.",
+  "notif.channel.ring": "Çağrı",
+  "notif.channel.ring_desc":
+    "Seni aramasına izin verdiğin kişilerden gelen uyarılar.",
   "notif.nearby.body": "Şu anda Bluetooth menzilinde. Mesh'i açmak için dokun.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "Biri",
@@ -2225,6 +2226,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Yeni etkinlik",
   "notif.hidden.mention": "Senden söz edildi",
   "notif.mention.title": "{sender} senden söz etti",
+  "notif.ring.hidden": "Çağrı",
+  "notif.ring.title": "{sender} seni arıyor",
+  "notif.ring.body": "Mesajlarını kontrol et",
 };
 
 export const plurals: Plurals = {

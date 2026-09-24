@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Kanselahin",
-  "common.done": "Tapos na",
-  "common.ok": "OK",
-  "common.close": "Isara",
   "common.back": "Bumalik",
-  "common.delete": "Burahin",
-  "common.remove": "Alisin",
+  "common.close": "Isara",
+  "common.cancel": "Kanselahin",
+  "common.ok": "OK",
+  "common.done": "Tapos na",
+  "common.continue": "Magpatuloy",
+  "common.try_again": "Subukan ulit",
   "common.add": "Idagdag",
+  "common.remove": "Alisin",
+  "common.delete": "Burahin",
   "common.copy": "Kopyahin",
   "common.copied": "Nakopya",
   "common.share": "Ibahagi",
-  "common.continue": "Magpatuloy",
-  "common.try_again": "Subukan ulit",
   "common.settings": "Mga Setting",
   "common.on": "Naka-on",
   "common.off": "Naka-off",
@@ -540,38 +540,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "timog-kanluran",
   "chat.location.direction.w": "kanluran",
   "chat.location.direction.nw": "hilagang-kanluran",
-  "chat.attach.send_anyway": "Ipadala pa rin",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Tumawag",
   "chat.ring.received_summary": "Tumawag sa iyo",
   "chat.ring.alert.title": "Tumatawag si {sender}",
   "chat.ring.alert.body": "Suriin ang iyong mga mensahe",
   "chat.ring.alert.open": "Buksan",
   "chat.ring.alert.snooze": "I-snooze ng 1 oras",
-  "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
-  "chat.contact.allow_ring_desc":
-    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
-  "chat.contact.ring_action": "Tumawag",
-  "chat.contact.ringing": "Tumatawag…",
   "chat.ring.sent_snoozed": "Tumawag, ipinagpaliban",
   "chat.ring.sent_too_soon": "Tumawag, masyadong maaga",
   "chat.ring.sent_not_allowed": "Tumawag, hindi pinapayagan",
-  "chat.contact.ring_hint_nearby":
-    "Gumagana lang ang pagtawag habang malapit sila",
-  "chat.contact.ring_hint_not_allowed":
-    "Hindi ka nila pinayagang tumawag sa kanila",
-  "chat.contact.ring_hint_snoozed":
-    "Ipinagpaliban nila ang mga tawag sa ngayon",
-  "chat.contact.ring_hint_too_soon": "Katatawag lang sa kanila",
-  "chat.contact.ring_hint_again_in": "Tumawag muli sa loob ng {time}",
-  "settings.security.ring_alerts": "Mga alerto ng tawag",
-  "settings.security.ring_alerts_desc":
-    "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
-  "notif.channel.ring": "Tawag",
-  "notif.channel.ring_desc":
-    "Mga alerto mula sa mga kontaktong pinayagan mong tumawag sa iyo.",
-  "notif.ring.hidden": "Tawag",
-  "notif.ring.title": "Tinatawagan ka ni {sender}",
-  "notif.ring.body": "Suriin ang iyong mga mensahe",
+  "chat.attach.send_anyway": "Ipadala pa rin",
   "chat.attach.bitchat_too_big": "Maaaring hindi ito dumating",
   "chat.attach.bitchat_too_big_body":
     "Nasa bitchat si {name}, na sumusuko sa gitna kapag malaki ang file. Maaasahan ang mas mababa sa mga 350 KiB. Walang ganoong limitasyon kapag ipinadala ito sa isang contact sa Airhop.",
@@ -769,6 +749,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Pangalan mo para sa kanila",
   "chat.contact.copy_peer_id": "Kopyahin ang peer ID",
   "chat.contact.verify": "I-verify ang contact",
+  "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
+  "chat.contact.allow_ring_desc":
+    "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
+  "chat.contact.ring_action": "Tumawag",
+  "chat.contact.ringing": "Tumatawag…",
+  "chat.contact.ring_hint_nearby":
+    "Gumagana lang ang pagtawag habang malapit sila",
+  "chat.contact.ring_hint_not_allowed":
+    "Hindi ka nila pinayagang tumawag sa kanila",
+  "chat.contact.ring_hint_snoozed":
+    "Ipinagpaliban nila ang mga tawag sa ngayon",
+  "chat.contact.ring_hint_too_soon": "Katatawag lang sa kanila",
+  "chat.contact.ring_hint_again_in": "Tumawag muli sa loob ng {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Mga Paskil",
@@ -1683,6 +1676,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Kopyahin ang peer ID",
   "settings.peer_id_sheet.note":
     "Gumagana lang ito kapag pareho kayong nasa saklaw ng Bluetooth. Para makapag-mensahe sa iyo ang isang tao mula saanman, ibahagi na lang ang QR code mo.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Maghanap sa mga setting…",
   "settings.search.a11y": "Maghanap sa mga setting",
   "settings.search.close": "Isara ang paghahanap",
@@ -1839,6 +1834,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Itago ang preview sa abiso",
   "settings.security.hide_previews_desc":
     "Inilalayo ang nagpadala at ang mensahe sa lock screen mo, na nagpapakita ng mga ito nang hindi ina-unlock",
+  "settings.security.ring_alerts": "Mga alerto ng tawag",
+  "settings.security.ring_alerts_desc":
+    "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
   "settings.security.no_blocked": "Walang naka-block na peer",
   "settings.security.no_blocked_desc":
     "Hindi ka mame-mensahe ng mga naka-block na peer at hindi sila lilitaw sa tab na Mesh",
@@ -2279,6 +2277,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Mga peer sa malapit",
   "notif.channel.nearby_desc":
     "Paminsan-minsang paalala kapag may natagpuang tao ang mesh sa saklaw ng Bluetooth.",
+  "notif.channel.ring": "Tawag",
+  "notif.channel.ring_desc":
+    "Mga alerto mula sa mga kontaktong pinayagan mong tumawag sa iyo.",
   "notif.nearby.body":
     "Nasa saklaw ng Bluetooth ngayon. I-tap para buksan ang mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2296,6 +2297,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Bagong aktibidad",
   "notif.hidden.mention": "Binanggit ka",
   "notif.mention.title": "Binanggit ka ni {sender}",
+  "notif.ring.hidden": "Tawag",
+  "notif.ring.title": "Tinatawagan ka ni {sender}",
+  "notif.ring.body": "Suriin ang iyong mga mensahe",
 };
 
 export const plurals: Plurals = {

@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Отмена",
-  "common.done": "Готово",
-  "common.ok": "ОК",
-  "common.close": "Закрыть",
   "common.back": "Назад",
-  "common.delete": "Удалить",
-  "common.remove": "Убрать",
+  "common.close": "Закрыть",
+  "common.cancel": "Отмена",
+  "common.ok": "ОК",
+  "common.done": "Готово",
+  "common.continue": "Продолжить",
+  "common.try_again": "Попробовать снова",
   "common.add": "Добавить",
+  "common.remove": "Убрать",
+  "common.delete": "Удалить",
   "common.copy": "Копировать",
   "common.copied": "Скопировано",
   "common.share": "Поделиться",
-  "common.continue": "Продолжить",
-  "common.try_again": "Попробовать снова",
   "common.settings": "Настройки",
   "common.on": "Включено",
   "common.off": "Выкл.",
@@ -526,35 +526,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "к юго-западу",
   "chat.location.direction.w": "к западу",
   "chat.location.direction.nw": "к северо-западу",
-  "chat.attach.send_anyway": "Всё равно отправить",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Позвонил",
   "chat.ring.received_summary": "Позвонил вам",
   "chat.ring.alert.title": "{sender} звонит вам",
   "chat.ring.alert.body": "Проверьте свои сообщения",
   "chat.ring.alert.open": "Открыть",
   "chat.ring.alert.snooze": "Отложить на 1 час",
-  "chat.contact.allow_ring": "Разрешить уведомления о звонке",
-  "chat.contact.allow_ring_desc":
-    "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён. Беззвучный режим и «Не беспокоить» по-прежнему действуют.",
-  "chat.contact.ring_action": "Позвонить",
-  "chat.contact.ringing": "Звонит…",
   "chat.ring.sent_snoozed": "Позвонили, отложено",
   "chat.ring.sent_too_soon": "Позвонили, слишком рано",
   "chat.ring.sent_not_allowed": "Позвонили, не разрешено",
-  "chat.contact.ring_hint_nearby": "Звонок работает, только пока они рядом",
-  "chat.contact.ring_hint_not_allowed": "Они не разрешили вам им звонить",
-  "chat.contact.ring_hint_snoozed": "Они пока отложили звонки",
-  "chat.contact.ring_hint_too_soon": "Им звонили только что",
-  "chat.contact.ring_hint_again_in": "Позвонить снова через {time}",
-  "settings.security.ring_alerts": "Уведомления о звонке",
-  "settings.security.ring_alerts_desc":
-    "Главный переключатель звонка. Выключение мгновенно отклоняет любой звонок, независимо от того, что вы разрешили отдельным контактам.",
-  "notif.channel.ring": "Звонок",
-  "notif.channel.ring_desc":
-    "Уведомления от контактов, которым вы разрешили звонить вам.",
-  "notif.ring.hidden": "Звонок",
-  "notif.ring.title": "{sender} звонит вам",
-  "notif.ring.body": "Проверьте свои сообщения",
+  "chat.attach.send_anyway": "Всё равно отправить",
   "chat.attach.bitchat_too_big": "Это может не дойти",
   "chat.attach.bitchat_too_big_body":
     "{name} пользуется bitchat, а он бросает большой файл на полпути. Примерно до 350 KiB надёжно. При отправке контакту в Airhop такого ограничения нет.",
@@ -746,6 +729,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Ваше имя для него",
   "chat.contact.copy_peer_id": "Копировать идентификатор узла",
   "chat.contact.verify": "Подтвердить контакт",
+  "chat.contact.allow_ring": "Разрешить уведомления о звонке",
+  "chat.contact.allow_ring_desc":
+    "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён. Беззвучный режим и «Не беспокоить» по-прежнему действуют.",
+  "chat.contact.ring_action": "Позвонить",
+  "chat.contact.ringing": "Звонит…",
+  "chat.contact.ring_hint_nearby": "Звонок работает, только пока они рядом",
+  "chat.contact.ring_hint_not_allowed": "Они не разрешили вам им звонить",
+  "chat.contact.ring_hint_snoozed": "Они пока отложили звонки",
+  "chat.contact.ring_hint_too_soon": "Им звонили только что",
+  "chat.contact.ring_hint_again_in": "Позвонить снова через {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Объявления",
@@ -1638,6 +1631,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Копировать идентификатор узла",
   "settings.peer_id_sheet.note":
     "Это работает, только когда вы оба в зоне действия Bluetooth. Чтобы вам могли писать откуда угодно, поделитесь своим QR-кодом.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Поиск по настройкам…",
   "settings.search.a11y": "Поиск по настройкам",
   "settings.search.close": "Закрыть поиск",
@@ -1792,6 +1787,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Скрывать содержимое в уведомлениях",
   "settings.security.hide_previews_desc":
     "Убирает отправителя и текст с экрана блокировки, который показывает их без разблокировки",
+  "settings.security.ring_alerts": "Уведомления о звонке",
+  "settings.security.ring_alerts_desc":
+    "Главный переключатель звонка. Выключение мгновенно отклоняет любой звонок, независимо от того, что вы разрешили отдельным контактам.",
   "settings.security.no_blocked": "Заблокированных узлов нет",
   "settings.security.no_blocked_desc":
     "Заблокированные узлы не могут вам писать и не появляются на вкладке «Сеть»",
@@ -2227,6 +2225,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Узлы поблизости",
   "notif.channel.nearby_desc":
     "Редкое уведомление, когда сеть находит людей в зоне действия Bluetooth.",
+  "notif.channel.ring": "Звонок",
+  "notif.channel.ring_desc":
+    "Уведомления от контактов, которым вы разрешили звонить вам.",
   "notif.nearby.body":
     "Сейчас в зоне действия Bluetooth. Нажмите, чтобы открыть сеть.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2244,6 +2245,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Новая активность",
   "notif.hidden.mention": "Вас упомянули",
   "notif.mention.title": "{sender} упомянул вас",
+  "notif.ring.hidden": "Звонок",
+  "notif.ring.title": "{sender} звонит вам",
+  "notif.ring.body": "Проверьте свои сообщения",
 };
 
 export const plurals: Plurals = {

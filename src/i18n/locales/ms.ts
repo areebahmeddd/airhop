@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Batal",
-  "common.done": "Selesai",
-  "common.ok": "OK",
-  "common.close": "Tutup",
   "common.back": "Kembali",
-  "common.delete": "Padam",
-  "common.remove": "Buang",
+  "common.close": "Tutup",
+  "common.cancel": "Batal",
+  "common.ok": "OK",
+  "common.done": "Selesai",
+  "common.continue": "Teruskan",
+  "common.try_again": "Cuba lagi",
   "common.add": "Tambah",
+  "common.remove": "Buang",
+  "common.delete": "Padam",
   "common.copy": "Salin",
   "common.copied": "Disalin",
   "common.share": "Kongsi",
-  "common.continue": "Teruskan",
-  "common.try_again": "Cuba lagi",
   "common.settings": "Tetapan",
   "common.on": "Hidup",
   "common.off": "Mati",
@@ -523,38 +523,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "barat daya",
   "chat.location.direction.w": "barat",
   "chat.location.direction.nw": "barat laut",
-  "chat.attach.send_anyway": "Hantar juga",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Berdering",
   "chat.ring.received_summary": "Berdering kepada anda",
   "chat.ring.alert.title": "{sender} sedang berdering",
   "chat.ring.alert.body": "Semak mesej anda",
   "chat.ring.alert.open": "Buka",
   "chat.ring.alert.snooze": "Tunda 1 jam",
-  "chat.contact.allow_ring": "Benarkan makluman dering",
-  "chat.contact.allow_ring_desc":
-    "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan. Mod senyap dan Jangan Ganggu masih terpakai.",
-  "chat.contact.ring_action": "Dering",
-  "chat.contact.ringing": "Sedang berdering…",
   "chat.ring.sent_snoozed": "Berdering, ditangguhkan",
   "chat.ring.sent_too_soon": "Berdering, terlalu awal",
   "chat.ring.sent_not_allowed": "Berdering, tidak dibenarkan",
-  "chat.contact.ring_hint_nearby":
-    "Deringan hanya berfungsi semasa mereka berdekatan",
-  "chat.contact.ring_hint_not_allowed":
-    "Mereka belum membenarkan anda mendering mereka",
-  "chat.contact.ring_hint_snoozed":
-    "Mereka menangguhkan deringan buat masa ini",
-  "chat.contact.ring_hint_too_soon": "Mereka baru sahaja didering",
-  "chat.contact.ring_hint_again_in": "Dering semula dalam {time}",
-  "settings.security.ring_alerts": "Makluman dering",
-  "settings.security.ring_alerts_desc":
-    "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",
-  "notif.channel.ring": "Dering",
-  "notif.channel.ring_desc":
-    "Makluman daripada kenalan yang anda benarkan untuk berdering kepada anda.",
-  "notif.ring.hidden": "Dering",
-  "notif.ring.title": "{sender} sedang berdering kepada anda",
-  "notif.ring.body": "Semak mesej anda",
+  "chat.attach.send_anyway": "Hantar juga",
   "chat.attach.bitchat_too_big": "Ini mungkin tidak sampai",
   "chat.attach.bitchat_too_big_body":
     "{name} menggunakan bitchat, yang mengalah di pertengahan jalan bagi fail besar. Di bawah kira-kira 350 KiB adalah boleh diharap. Menghantarnya kepada kenalan Airhop tidak mempunyai had sebegitu.",
@@ -748,6 +728,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Nama anda untuk mereka",
   "chat.contact.copy_peer_id": "Salin ID rakan",
   "chat.contact.verify": "Sahkan kenalan",
+  "chat.contact.allow_ring": "Benarkan makluman dering",
+  "chat.contact.allow_ring_desc":
+    "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan. Mod senyap dan Jangan Ganggu masih terpakai.",
+  "chat.contact.ring_action": "Dering",
+  "chat.contact.ringing": "Sedang berdering…",
+  "chat.contact.ring_hint_nearby":
+    "Deringan hanya berfungsi semasa mereka berdekatan",
+  "chat.contact.ring_hint_not_allowed":
+    "Mereka belum membenarkan anda mendering mereka",
+  "chat.contact.ring_hint_snoozed":
+    "Mereka menangguhkan deringan buat masa ini",
+  "chat.contact.ring_hint_too_soon": "Mereka baru sahaja didering",
+  "chat.contact.ring_hint_again_in": "Dering semula dalam {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Notis",
@@ -1645,6 +1638,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Salin ID rakan",
   "settings.peer_id_sheet.note":
     "Ini hanya berfungsi apabila anda berdua berada dalam jangkauan Bluetooth. Untuk membolehkan seseorang menghantar mesej kepada anda dari mana-mana, kongsikan kod QR anda sebaliknya.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Cari dalam tetapan…",
   "settings.search.a11y": "Cari dalam tetapan",
   "settings.search.close": "Tutup carian",
@@ -1801,6 +1796,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Sembunyikan pratonton pemberitahuan",
   "settings.security.hide_previews_desc":
     "Menjauhkan pengirim dan isi mesej daripada skrin kunci, yang memaparkannya tanpa perlu dibuka kunci",
+  "settings.security.ring_alerts": "Makluman dering",
+  "settings.security.ring_alerts_desc":
+    "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",
   "settings.security.no_blocked": "Tiada rakan disekat",
   "settings.security.no_blocked_desc":
     "Rakan yang disekat tidak boleh menghantar mesej kepada anda atau muncul dalam tab Mesh",
@@ -2236,6 +2234,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Rakan berdekatan",
   "notif.channel.nearby_desc":
     "Nota sekali-sekala apabila mesh menemui orang dalam jangkauan Bluetooth.",
+  "notif.channel.ring": "Dering",
+  "notif.channel.ring_desc":
+    "Makluman daripada kenalan yang anda benarkan untuk berdering kepada anda.",
   "notif.nearby.body":
     "Dalam jangkauan Bluetooth sekarang. Ketik untuk membuka mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2253,6 +2254,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Aktiviti baharu",
   "notif.hidden.mention": "Anda disebut",
   "notif.mention.title": "{sender} menyebut anda",
+  "notif.ring.hidden": "Dering",
+  "notif.ring.title": "{sender} sedang berdering kepada anda",
+  "notif.ring.body": "Semak mesej anda",
 };
 
 export const plurals: Plurals = {

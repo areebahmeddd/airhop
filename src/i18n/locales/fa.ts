@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "لغو",
-  "common.done": "انجام شد",
-  "common.ok": "باشه",
-  "common.close": "بستن",
   "common.back": "بازگشت",
-  "common.delete": "حذف",
-  "common.remove": "برداشتن",
+  "common.close": "بستن",
+  "common.cancel": "لغو",
+  "common.ok": "باشه",
+  "common.done": "انجام شد",
+  "common.continue": "ادامه",
+  "common.try_again": "دوباره تلاش کنید",
   "common.add": "افزودن",
+  "common.remove": "برداشتن",
+  "common.delete": "حذف",
   "common.copy": "کپی",
   "common.copied": "کپی شد",
   "common.share": "هم‌رسانی",
-  "common.continue": "ادامه",
-  "common.try_again": "دوباره تلاش کنید",
   "common.settings": "تنظیمات",
   "common.on": "روشن",
   "common.off": "خاموش",
@@ -516,36 +516,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "جنوب غرب",
   "chat.location.direction.w": "غرب",
   "chat.location.direction.nw": "شمال غرب",
-  "chat.attach.send_anyway": "به هر حال بفرست",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "زنگ زد",
   "chat.ring.received_summary": "برایتان زنگ زد",
   "chat.ring.alert.title": "{sender} برای شما زنگ می‌زند",
   "chat.ring.alert.body": "پیام‌هایتان را بررسی کنید",
   "chat.ring.alert.open": "باز کردن",
   "chat.ring.alert.snooze": "به تعویق انداختن 1 ساعت",
-  "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
-  "chat.contact.allow_ring_desc":
-    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
-  "chat.contact.ring_action": "زنگ زدن",
-  "chat.contact.ringing": "در حال زنگ زدن…",
   "chat.ring.sent_snoozed": "زنگ زده شد، به تعویق افتاد",
   "chat.ring.sent_too_soon": "زنگ زده شد، خیلی زود",
   "chat.ring.sent_not_allowed": "زنگ زده شد، مجاز نیست",
-  "chat.contact.ring_hint_nearby":
-    "زنگ زدن فقط وقتی کار می‌کند که آن‌ها نزدیک باشند",
-  "chat.contact.ring_hint_not_allowed": "به شما اجازه زنگ زدن نداده‌اند",
-  "chat.contact.ring_hint_snoozed": "فعلاً زنگ‌ها را به تعویق انداخته‌اند",
-  "chat.contact.ring_hint_too_soon": "لحظاتی پیش به آن‌ها زنگ زده شد",
-  "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
-  "settings.security.ring_alerts": "هشدارهای زنگ",
-  "settings.security.ring_alerts_desc":
-    "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
-  "notif.channel.ring": "زنگ",
-  "notif.channel.ring_desc":
-    "هشدار از مخاطبانی که اجازهٔ زنگ زدن به آن‌ها داده‌اید.",
-  "notif.ring.hidden": "زنگ",
-  "notif.ring.title": "{sender} برای شما زنگ می‌زند",
-  "notif.ring.body": "پیام‌هایتان را بررسی کنید",
+  "chat.attach.send_anyway": "به هر حال بفرست",
   "chat.attach.bitchat_too_big": "شاید نرسد",
   "chat.attach.bitchat_too_big_body":
     "{name} روی bitchat است، که فایل بزرگ را در میانهٔ راه رها می‌کند. کمتر از حدود 350 KiB مطمئن است. فرستادن به یک مخاطب Airhop چنین محدودیتی ندارد.",
@@ -733,6 +715,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "نامی که شما گذاشته‌اید",
   "chat.contact.copy_peer_id": "کپی شناسهٔ همتا",
   "chat.contact.verify": "تأیید مخاطب",
+  "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
+  "chat.contact.allow_ring_desc":
+    "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
+  "chat.contact.ring_action": "زنگ زدن",
+  "chat.contact.ringing": "در حال زنگ زدن…",
+  "chat.contact.ring_hint_nearby":
+    "زنگ زدن فقط وقتی کار می‌کند که آن‌ها نزدیک باشند",
+  "chat.contact.ring_hint_not_allowed": "به شما اجازه زنگ زدن نداده‌اند",
+  "chat.contact.ring_hint_snoozed": "فعلاً زنگ‌ها را به تعویق انداخته‌اند",
+  "chat.contact.ring_hint_too_soon": "لحظاتی پیش به آن‌ها زنگ زده شد",
+  "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "اعلان‌ها",
@@ -1618,6 +1611,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "کپی شناسهٔ همتا",
   "settings.peer_id_sheet.note":
     "این تنها زمانی کار می‌کند که هر دوی شما در محدودهٔ بلوتوث باشید. برای اینکه کسی از هر جایی به شما پیام بدهد، به جایش کد QR خود را هم‌رسانی کنید.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "جستجوی تنظیمات…",
   "settings.search.a11y": "جستجوی تنظیمات",
   "settings.search.close": "بستن جستجو",
@@ -1769,6 +1764,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "پنهان کردن پیش‌نمایش اعلان‌ها",
   "settings.security.hide_previews_desc":
     "فرستنده و پیام را از صفحهٔ قفل دور نگه می‌دارد، چون آن صفحه بدون باز کردن قفل نشانشان می‌دهد",
+  "settings.security.ring_alerts": "هشدارهای زنگ",
+  "settings.security.ring_alerts_desc":
+    "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
   "settings.security.no_blocked": "همتای مسدودی نیست",
   "settings.security.no_blocked_desc":
     "همتاهای مسدود نمی‌توانند به شما پیام بدهند و در زبانهٔ مش نمایان نمی‌شوند",
@@ -2195,6 +2193,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "همتاهای نزدیک",
   "notif.channel.nearby_desc":
     "هر از گاهی وقتی مش کسانی را در محدودهٔ بلوتوث پیدا می‌کند خبر می‌دهد.",
+  "notif.channel.ring": "زنگ",
+  "notif.channel.ring_desc":
+    "هشدار از مخاطبانی که اجازهٔ زنگ زدن به آن‌ها داده‌اید.",
   "notif.nearby.body": "همین حالا در محدودهٔ بلوتوث. برای باز کردن مش بزنید.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "کسی",
@@ -2211,6 +2212,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "فعالیت تازه",
   "notif.hidden.mention": "از شما نام برده شد",
   "notif.mention.title": "{sender} از شما نام برد",
+  "notif.ring.hidden": "زنگ",
+  "notif.ring.title": "{sender} برای شما زنگ می‌زند",
+  "notif.ring.body": "پیام‌هایتان را بررسی کنید",
 };
 
 export const plurals: Plurals = {

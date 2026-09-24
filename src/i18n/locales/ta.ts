@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ரத்துசெய்",
-  "common.done": "முடிந்தது",
-  "common.ok": "சரி",
-  "common.close": "மூடு",
   "common.back": "பின்",
-  "common.delete": "நீக்கு",
-  "common.remove": "அகற்று",
+  "common.close": "மூடு",
+  "common.cancel": "ரத்துசெய்",
+  "common.ok": "சரி",
+  "common.done": "முடிந்தது",
+  "common.continue": "தொடர்",
+  "common.try_again": "மீண்டும் முயலுங்கள்",
   "common.add": "சேர்",
+  "common.remove": "அகற்று",
+  "common.delete": "நீக்கு",
   "common.copy": "நகலெடு",
   "common.copied": "நகலெடுக்கப்பட்டது",
   "common.share": "பகிர்",
-  "common.continue": "தொடர்",
-  "common.try_again": "மீண்டும் முயலுங்கள்",
   "common.settings": "அமைப்புகள்",
   "common.on": "இயக்கத்தில்",
   "common.off": "முடக்கம்",
@@ -536,38 +536,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "தென்மேற்கு",
   "chat.location.direction.w": "மேற்கு",
   "chat.location.direction.nw": "வடமேற்கு",
-  "chat.attach.send_anyway": "எப்படியும் அனுப்பு",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "அழைத்தார்",
   "chat.ring.received_summary": "உங்களை அழைத்தார்",
   "chat.ring.alert.title": "{sender} உங்களை அழைக்கிறார்",
   "chat.ring.alert.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
   "chat.ring.alert.open": "திற",
   "chat.ring.alert.snooze": "1 மணிநேரம் ஒத்திவை",
-  "chat.contact.allow_ring": "அழைப்பு எச்சரிக்கைகளை அனுமதி",
-  "chat.contact.allow_ring_desc":
-    "இந்த உரையாடல் ஒலியடக்கப்பட்டிருந்தாலும், உங்கள் கவனத்தை ஈர்க்க அவர்கள் உங்கள் தொலைபேசியை அழைக்க அனுமதிக்கவும். அமைதி பயன்முறையும் தொந்தரவு செய்ய வேண்டாம் அமைப்பும் தொடர்ந்து பொருந்தும்.",
-  "chat.contact.ring_action": "அழை",
-  "chat.contact.ringing": "அழைக்கிறது…",
   "chat.ring.sent_snoozed": "அழைத்தது, ஒத்திவைக்கப்பட்டது",
   "chat.ring.sent_too_soon": "அழைத்தது, மிக விரைவில்",
   "chat.ring.sent_not_allowed": "அழைத்தது, அனுமதி இல்லை",
-  "chat.contact.ring_hint_nearby":
-    "அவர்கள் அருகில் இருக்கும்போது மட்டுமே அழைப்பு செயல்படும்",
-  "chat.contact.ring_hint_not_allowed":
-    "அவர்களை அழைக்க உங்களுக்கு அனுமதி வழங்கவில்லை",
-  "chat.contact.ring_hint_snoozed":
-    "அவர்கள் இப்போதைக்கு அழைப்புகளை ஒத்திவைத்துள்ளனர்",
-  "chat.contact.ring_hint_too_soon": "அவர்கள் சற்று முன்புதான் அழைக்கப்பட்டனர்",
-  "chat.contact.ring_hint_again_in": "{time} கழித்து மீண்டும் அழைக்கவும்",
-  "settings.security.ring_alerts": "அழைப்பு எச்சரிக்கைகள்",
-  "settings.security.ring_alerts_desc":
-    "அழைப்புக்கான முதன்மை நிலைமாற்றி. அணைத்தால், தனிப்பட்ட தொடர்புகளுக்கு நீங்கள் வழங்கியதைப் பொருட்படுத்தாமல் ஒவ்வொரு அழைப்பையும் உடனடியாக நிராகரிக்கும்.",
-  "notif.channel.ring": "அழைப்பு",
-  "notif.channel.ring_desc":
-    "உங்களை அழைக்க நீங்கள் அனுமதித்த தொடர்புகளிடமிருந்து எச்சரிக்கைகள்.",
-  "notif.ring.hidden": "அழைப்பு",
-  "notif.ring.title": "{sender} உங்களை அழைக்கிறார்",
-  "notif.ring.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
+  "chat.attach.send_anyway": "எப்படியும் அனுப்பு",
   "chat.attach.bitchat_too_big": "இது சென்றடையாமல் போகலாம்",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat இல் இருக்கிறார், அது பெரிய கோப்பில் பாதியிலேயே விட்டுவிடும். சுமார் 350 KiB க்குக் கீழ் நம்பகமானது. Airhop தொடர்புக்கு அனுப்பினால் அப்படி எந்த வரம்பும் இல்லை.",
@@ -764,6 +744,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "அவர்களுக்கு நீங்கள் வைத்த பெயர்",
   "chat.contact.copy_peer_id": "பியர் அடையாளத்தை நகலெடு",
   "chat.contact.verify": "தொடர்பைச் சரிபார்",
+  "chat.contact.allow_ring": "அழைப்பு எச்சரிக்கைகளை அனுமதி",
+  "chat.contact.allow_ring_desc":
+    "இந்த உரையாடல் ஒலியடக்கப்பட்டிருந்தாலும், உங்கள் கவனத்தை ஈர்க்க அவர்கள் உங்கள் தொலைபேசியை அழைக்க அனுமதிக்கவும். அமைதி பயன்முறையும் தொந்தரவு செய்ய வேண்டாம் அமைப்பும் தொடர்ந்து பொருந்தும்.",
+  "chat.contact.ring_action": "அழை",
+  "chat.contact.ringing": "அழைக்கிறது…",
+  "chat.contact.ring_hint_nearby":
+    "அவர்கள் அருகில் இருக்கும்போது மட்டுமே அழைப்பு செயல்படும்",
+  "chat.contact.ring_hint_not_allowed":
+    "அவர்களை அழைக்க உங்களுக்கு அனுமதி வழங்கவில்லை",
+  "chat.contact.ring_hint_snoozed":
+    "அவர்கள் இப்போதைக்கு அழைப்புகளை ஒத்திவைத்துள்ளனர்",
+  "chat.contact.ring_hint_too_soon": "அவர்கள் சற்று முன்புதான் அழைக்கப்பட்டனர்",
+  "chat.contact.ring_hint_again_in": "{time} கழித்து மீண்டும் அழைக்கவும்",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "அறிவிப்புகள்",
@@ -1681,6 +1674,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "பியர் அடையாளத்தை நகலெடு",
   "settings.peer_id_sheet.note":
     "நீங்கள் இருவரும் புளூடூத் வரம்பில் இருக்கும்போது மட்டுமே இது வேலை செய்யும். எங்கிருந்தும் உங்களுக்குச் செய்தி அனுப்ப ஒருவரால் முடிய வேண்டுமெனில், அதற்குப் பதிலாக உங்கள் QR குறியீட்டைப் பகிருங்கள்.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "அமைப்புகளில் தேடு…",
   "settings.search.a11y": "அமைப்புகளில் தேடு",
   "settings.search.close": "தேடலை மூடு",
@@ -1836,6 +1831,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "அறிவிப்பு முன்னோட்டங்களை மறை",
   "settings.security.hide_previews_desc":
     "அனுப்புநரையும் செய்தியையும் உங்கள் பூட்டுத் திரையிலிருந்து விலக்கி வைக்கிறது, அது திறக்காமலேயே அவற்றைக் காட்டிவிடும்",
+  "settings.security.ring_alerts": "அழைப்பு எச்சரிக்கைகள்",
+  "settings.security.ring_alerts_desc":
+    "அழைப்புக்கான முதன்மை நிலைமாற்றி. அணைத்தால், தனிப்பட்ட தொடர்புகளுக்கு நீங்கள் வழங்கியதைப் பொருட்படுத்தாமல் ஒவ்வொரு அழைப்பையும் உடனடியாக நிராகரிக்கும்.",
   "settings.security.no_blocked": "தடுக்கப்பட்ட பியர்கள் இல்லை",
   "settings.security.no_blocked_desc":
     "தடுக்கப்பட்ட பியர்கள் உங்களுக்குச் செய்தி அனுப்பவோ மெஷ் தாவலில் தோன்றவோ முடியாது",
@@ -2288,6 +2286,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "அருகிலுள்ள பியர்கள்",
   "notif.channel.nearby_desc":
     "புளூடூத் வரம்பில் மெஷ் ஆட்களைக் கண்டறியும்போது எப்போதாவது வரும் அறிவிப்பு.",
+  "notif.channel.ring": "அழைப்பு",
+  "notif.channel.ring_desc":
+    "உங்களை அழைக்க நீங்கள் அனுமதித்த தொடர்புகளிடமிருந்து எச்சரிக்கைகள்.",
   "notif.nearby.body": "இப்போது புளூடூத் வரம்பில். மெஷைத் திறக்கத் தட்டுங்கள்.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "யாரோ",
@@ -2304,6 +2305,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "புதிய செயல்பாடு",
   "notif.hidden.mention": "உங்களைக் குறிப்பிட்டுள்ளார்கள்",
   "notif.mention.title": "{sender} உங்களைக் குறிப்பிட்டுள்ளார்",
+  "notif.ring.hidden": "அழைப்பு",
+  "notif.ring.title": "{sender} உங்களை அழைக்கிறார்",
+  "notif.ring.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
 };
 
 export const plurals: Plurals = {

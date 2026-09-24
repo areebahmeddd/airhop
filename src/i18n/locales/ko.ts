@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "취소",
-  "common.done": "완료",
-  "common.ok": "확인",
-  "common.close": "닫기",
   "common.back": "뒤로",
-  "common.delete": "삭제",
-  "common.remove": "제거",
+  "common.close": "닫기",
+  "common.cancel": "취소",
+  "common.ok": "확인",
+  "common.done": "완료",
+  "common.continue": "계속",
+  "common.try_again": "다시 시도",
   "common.add": "추가",
+  "common.remove": "제거",
+  "common.delete": "삭제",
   "common.copy": "복사",
   "common.copied": "복사됨",
   "common.share": "공유",
-  "common.continue": "계속",
-  "common.try_again": "다시 시도",
   "common.settings": "설정",
   "common.on": "켜짐",
   "common.off": "끔",
@@ -513,37 +513,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "남서쪽",
   "chat.location.direction.w": "서쪽",
   "chat.location.direction.nw": "북서쪽",
-  "chat.attach.send_anyway": "그래도 보내기",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "벨을 울렸습니다",
   "chat.ring.received_summary": "벨이 울렸습니다",
   "chat.ring.alert.title": "{sender}님이 벨을 울리고 있습니다",
   "chat.ring.alert.body": "메시지를 확인하세요",
   "chat.ring.alert.open": "열기",
   "chat.ring.alert.snooze": "1시간 동안 끄기",
-  "chat.contact.allow_ring": "벨 알림 허용",
-  "chat.contact.allow_ring_desc":
-    "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
-  "chat.contact.ring_action": "벨 울리기",
-  "chat.contact.ringing": "벨을 울리는 중…",
   "chat.ring.sent_snoozed": "벨 울림, 미룸",
   "chat.ring.sent_too_soon": "벨 울림, 너무 이름",
   "chat.ring.sent_not_allowed": "벨 울림, 허용되지 않음",
-  "chat.contact.ring_hint_nearby":
-    "벨 울리기는 상대방이 근처에 있을 때만 작동합니다",
-  "chat.contact.ring_hint_not_allowed":
-    "상대방이 벨 울리기를 허용하지 않았습니다",
-  "chat.contact.ring_hint_snoozed":
-    "상대방이 지금은 벨 울리기를 미뤄 두었습니다",
-  "chat.contact.ring_hint_too_soon": "상대방에게 방금 벨을 울렸습니다",
-  "chat.contact.ring_hint_again_in": "{time} 후에 다시 울릴 수 있습니다",
-  "settings.security.ring_alerts": "벨 알림",
-  "settings.security.ring_alerts_desc":
-    "벨 알림의 마스터 스위치입니다. 끄면 개별 연락처에 부여한 권한과 관계없이 모든 벨 알림을 거부합니다.",
-  "notif.channel.ring": "벨 알림",
-  "notif.channel.ring_desc": "벨 울리기를 허용한 연락처의 알림입니다.",
-  "notif.ring.hidden": "벨 알림",
-  "notif.ring.title": "{sender}님이 벨을 울리고 있습니다",
-  "notif.ring.body": "메시지를 확인하세요",
+  "chat.attach.send_anyway": "그래도 보내기",
   "chat.attach.bitchat_too_big": "도착하지 않을 수 있습니다",
   "chat.attach.bitchat_too_big_body":
     "{name}은(는) bitchat을 쓰는데, 큰 파일은 중간에 포기합니다. 약 350 KiB 이하가 안정적입니다. Airhop 연락처에게 보낼 때는 이런 제한이 없습니다.",
@@ -730,6 +711,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "내가 붙인 이름",
   "chat.contact.copy_peer_id": "피어 ID 복사",
   "chat.contact.verify": "연락처 확인",
+  "chat.contact.allow_ring": "벨 알림 허용",
+  "chat.contact.allow_ring_desc":
+    "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
+  "chat.contact.ring_action": "벨 울리기",
+  "chat.contact.ringing": "벨을 울리는 중…",
+  "chat.contact.ring_hint_nearby":
+    "벨 울리기는 상대방이 근처에 있을 때만 작동합니다",
+  "chat.contact.ring_hint_not_allowed":
+    "상대방이 벨 울리기를 허용하지 않았습니다",
+  "chat.contact.ring_hint_snoozed":
+    "상대방이 지금은 벨 울리기를 미뤄 두었습니다",
+  "chat.contact.ring_hint_too_soon": "상대방에게 방금 벨을 울렸습니다",
+  "chat.contact.ring_hint_again_in": "{time} 후에 다시 울릴 수 있습니다",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "공지",
@@ -1603,6 +1597,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "피어 ID 복사",
   "settings.peer_id_sheet.note":
     "이 방법은 두 사람이 모두 블루투스 범위 안에 있을 때만 작동합니다. 어디서든 메시지를 받으려면 QR 코드를 공유하세요.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "설정 검색…",
   "settings.search.a11y": "설정 검색",
   "settings.search.close": "검색 닫기",
@@ -1746,6 +1742,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "알림 미리보기 숨기기",
   "settings.security.hide_previews_desc":
     "잠금 화면은 잠금을 풀지 않아도 내용을 보여주므로, 보낸 사람과 메시지를 거기에 띄우지 않습니다",
+  "settings.security.ring_alerts": "벨 알림",
+  "settings.security.ring_alerts_desc":
+    "벨 알림의 마스터 스위치입니다. 끄면 개별 연락처에 부여한 권한과 관계없이 모든 벨 알림을 거부합니다.",
   "settings.security.no_blocked": "차단된 피어 없음",
   "settings.security.no_blocked_desc":
     "차단된 피어는 메시지를 보낼 수 없고 메시 탭에도 나타나지 않습니다",
@@ -2163,6 +2162,8 @@ export const strings: Strings = {
   "notif.channel.nearby": "근처 피어",
   "notif.channel.nearby_desc":
     "메시가 블루투스 범위 안에서 사람을 찾았을 때 가끔 보내는 알림입니다.",
+  "notif.channel.ring": "벨 알림",
+  "notif.channel.ring_desc": "벨 울리기를 허용한 연락처의 알림입니다.",
   "notif.nearby.body":
     "지금 블루투스 범위 안에 있습니다. 탭하여 메시를 여세요.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2180,6 +2181,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "새 활동",
   "notif.hidden.mention": "누군가 나를 언급했습니다",
   "notif.mention.title": "{sender}이(가) 나를 언급했습니다",
+  "notif.ring.hidden": "벨 알림",
+  "notif.ring.title": "{sender}님이 벨을 울리고 있습니다",
+  "notif.ring.body": "메시지를 확인하세요",
 };
 
 export const plurals: Plurals = {

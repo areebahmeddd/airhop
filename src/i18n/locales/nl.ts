@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Annuleren",
-  "common.done": "Klaar",
-  "common.ok": "Oké",
-  "common.close": "Sluiten",
   "common.back": "Terug",
-  "common.delete": "Verwijderen",
-  "common.remove": "Weghalen",
+  "common.close": "Sluiten",
+  "common.cancel": "Annuleren",
+  "common.ok": "Oké",
+  "common.done": "Klaar",
+  "common.continue": "Doorgaan",
+  "common.try_again": "Opnieuw proberen",
   "common.add": "Toevoegen",
+  "common.remove": "Weghalen",
+  "common.delete": "Verwijderen",
   "common.copy": "Kopiëren",
   "common.copied": "Gekopieerd",
   "common.share": "Delen",
-  "common.continue": "Doorgaan",
-  "common.try_again": "Opnieuw proberen",
   "common.settings": "Instellingen",
   "common.on": "Aan",
   "common.off": "Uit",
@@ -527,37 +527,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "zuidwesten",
   "chat.location.direction.w": "westen",
   "chat.location.direction.nw": "noordwesten",
-  "chat.attach.send_anyway": "Toch sturen",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Gebeld",
   "chat.ring.received_summary": "Heeft je gebeld",
   "chat.ring.alert.title": "{sender} belt je",
   "chat.ring.alert.body": "Bekijk je berichten",
   "chat.ring.alert.open": "Openen",
   "chat.ring.alert.snooze": "1 uur uitstellen",
-  "chat.contact.allow_ring": "Belmeldingen toestaan",
-  "chat.contact.allow_ring_desc":
-    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
-  "chat.contact.ring_action": "Bellen",
-  "chat.contact.ringing": "Belt…",
   "chat.ring.sent_snoozed": "Gebeld, uitgesteld",
   "chat.ring.sent_too_soon": "Gebeld, te vroeg",
   "chat.ring.sent_not_allowed": "Gebeld, niet toegestaan",
-  "chat.contact.ring_hint_nearby":
-    "Bellen werkt alleen zolang ze in de buurt zijn",
-  "chat.contact.ring_hint_not_allowed":
-    "Ze hebben je niet toegestaan om ze te bellen",
-  "chat.contact.ring_hint_snoozed": "Ze hebben bellen voorlopig uitgesteld",
-  "chat.contact.ring_hint_too_soon": "Ze zijn zojuist al gebeld",
-  "chat.contact.ring_hint_again_in": "Opnieuw bellen over {time}",
-  "settings.security.ring_alerts": "Belmeldingen",
-  "settings.security.ring_alerts_desc":
-    "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
-  "notif.channel.ring": "Bellen",
-  "notif.channel.ring_desc":
-    "Meldingen van contacten die je hebt toegestaan je te bellen.",
-  "notif.ring.hidden": "Bellen",
-  "notif.ring.title": "{sender} belt je",
-  "notif.ring.body": "Bekijk je berichten",
+  "chat.attach.send_anyway": "Toch sturen",
   "chat.attach.bitchat_too_big": "Dit komt misschien niet aan",
   "chat.attach.bitchat_too_big_body":
     "{name} zit op bitchat, dat halverwege opgeeft bij een groot bestand. Onder ongeveer 350 KiB is betrouwbaar. Naar een Airhop-contact sturen kent die grens niet.",
@@ -751,6 +732,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Jouw naam voor diegene",
   "chat.contact.copy_peer_id": "Peer-ID kopiëren",
   "chat.contact.verify": "Contact verifiëren",
+  "chat.contact.allow_ring": "Belmeldingen toestaan",
+  "chat.contact.allow_ring_desc":
+    "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
+  "chat.contact.ring_action": "Bellen",
+  "chat.contact.ringing": "Belt…",
+  "chat.contact.ring_hint_nearby":
+    "Bellen werkt alleen zolang ze in de buurt zijn",
+  "chat.contact.ring_hint_not_allowed":
+    "Ze hebben je niet toegestaan om ze te bellen",
+  "chat.contact.ring_hint_snoozed": "Ze hebben bellen voorlopig uitgesteld",
+  "chat.contact.ring_hint_too_soon": "Ze zijn zojuist al gebeld",
+  "chat.contact.ring_hint_again_in": "Opnieuw bellen over {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Meldingen",
@@ -1646,6 +1639,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Peer-ID kopiëren",
   "settings.peer_id_sheet.note":
     "Dit werkt alleen als jullie allebei binnen Bluetooth-bereik zijn. Wil je dat iemand je van overal kan schrijven, deel dan je QR-code.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Instellingen doorzoeken…",
   "settings.search.a11y": "Instellingen doorzoeken",
   "settings.search.close": "Zoeken sluiten",
@@ -1799,6 +1794,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Voorbeelden in meldingen verbergen",
   "settings.security.hide_previews_desc":
     "Houdt afzender en bericht van je vergrendelscherm af, want dat laat ze zien zonder ontgrendelen",
+  "settings.security.ring_alerts": "Belmeldingen",
+  "settings.security.ring_alerts_desc":
+    "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
   "settings.security.no_blocked": "Geen geblokkeerde peers",
   "settings.security.no_blocked_desc":
     "Geblokkeerde peers kunnen je niet schrijven en verschijnen niet op het Mesh-tabblad",
@@ -2234,6 +2232,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peers in de buurt",
   "notif.channel.nearby_desc":
     "Af en toe een melding als de mesh mensen binnen Bluetooth-bereik vindt.",
+  "notif.channel.ring": "Bellen",
+  "notif.channel.ring_desc":
+    "Meldingen van contacten die je hebt toegestaan je te bellen.",
   "notif.nearby.body": "Nu binnen Bluetooth-bereik. Tik om de mesh te openen.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "Iemand",
@@ -2250,6 +2251,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Nieuwe activiteit",
   "notif.hidden.mention": "Je bent genoemd",
   "notif.mention.title": "{sender} heeft je genoemd",
+  "notif.ring.hidden": "Bellen",
+  "notif.ring.title": "{sender} belt je",
+  "notif.ring.body": "Bekijk je berichten",
 };
 
 export const plurals: Plurals = {

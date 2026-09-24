@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ਰੱਦ ਕਰੋ",
-  "common.done": "ਹੋ ਗਿਆ",
-  "common.ok": "ਠੀਕ ਹੈ",
-  "common.close": "ਬੰਦ ਕਰੋ",
   "common.back": "ਵਾਪਸ",
-  "common.delete": "ਮਿਟਾਓ",
-  "common.remove": "ਹਟਾਓ",
+  "common.close": "ਬੰਦ ਕਰੋ",
+  "common.cancel": "ਰੱਦ ਕਰੋ",
+  "common.ok": "ਠੀਕ ਹੈ",
+  "common.done": "ਹੋ ਗਿਆ",
+  "common.continue": "ਜਾਰੀ ਰੱਖੋ",
+  "common.try_again": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
   "common.add": "ਜੋੜੋ",
+  "common.remove": "ਹਟਾਓ",
+  "common.delete": "ਮਿਟਾਓ",
   "common.copy": "ਨਕਲ ਕਰੋ",
   "common.copied": "ਨਕਲ ਹੋ ਗਿਆ",
   "common.share": "ਸਾਂਝਾ ਕਰੋ",
-  "common.continue": "ਜਾਰੀ ਰੱਖੋ",
-  "common.try_again": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
   "common.settings": "ਸੈਟਿੰਗਾਂ",
   "common.on": "ਚਾਲੂ",
   "common.off": "ਬੰਦ",
@@ -101,7 +101,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "ਖਾਤਾ ਲੋੜੀਂਦਾ",
   "onboarding.username.prop.account_value": "ਕੋਈ ਨਹੀਂ",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Airhop ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ!",
   "onboarding.hello.p1":
     "Airhop bitchat ਦੇ ਉੱਤੇ ਇੱਕ ਵੱਖਰੇ, ਖੁੱਲ੍ਹੇ ਸਰੋਤ ਵਾਲੇ ਪਾਸੇ ਦੇ ਪ੍ਰੋਜੈਕਟ ਵਜੋਂ ਬਣਾਇਆ ਗਿਆ ਹੈ। ਇਹ ਨਾ bitchat ਪ੍ਰੋਜੈਕਟ ਨਾਲ ਜੁੜਿਆ ਹੋਇਆ ਹੈ ਨਾ ਉਸ ਵੱਲੋਂ ਪਰਵਾਨ, ਅਤੇ ਨਾ ਹੀ ਇਹ ਕਿਸੇ ਮੌਜੂਦਾ ਐਪ ਜਾਂ ਸੇਵਾ ਦੀ ਨਕਲ ਹੈ, ਬੱਸ ਕੁਝ ਅਜਿਹਾ ਹੈ ਜੋ ਬਣਾਉਣਾ ਅਤੇ ਭਾਈਚਾਰੇ ਨਾਲ ਸਾਂਝਾ ਕਰਨਾ ਮੈਨੂੰ ਚੰਗਾ ਲੱਗਦਾ ਹੈ।",
@@ -520,37 +520,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "ਦੱਖਣ-ਪੱਛਮ",
   "chat.location.direction.w": "ਪੱਛਮ",
   "chat.location.direction.nw": "ਉੱਤਰ-ਪੱਛਮ",
-  "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "ਘੰਟੀ ਵਜਾਈ",
   "chat.ring.received_summary": "ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਈ",
   "chat.ring.alert.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
   "chat.ring.alert.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
   "chat.ring.alert.open": "ਖੋਲ੍ਹੋ",
   "chat.ring.alert.snooze": "1 ਘੰਟੇ ਲਈ ਰੋਕੋ",
-  "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
-  "chat.contact.allow_ring_desc":
-    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
-  "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
-  "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
   "chat.ring.sent_snoozed": "ਘੰਟੀ ਵਜਾਈ, ਟਾਲੀ ਗਈ",
   "chat.ring.sent_too_soon": "ਘੰਟੀ ਵਜਾਈ, ਬਹੁਤ ਜਲਦੀ",
   "chat.ring.sent_not_allowed": "ਘੰਟੀ ਵਜਾਈ, ਇਜਾਜ਼ਤ ਨਹੀਂ",
-  "chat.contact.ring_hint_nearby":
-    "ਘੰਟੀ ਸਿਰਫ਼ ਉਦੋਂ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ",
-  "chat.contact.ring_hint_not_allowed":
-    "ਉਹਨਾਂ ਨੇ ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ",
-  "chat.contact.ring_hint_snoozed": "ਉਹਨਾਂ ਨੇ ਫ਼ਿਲਹਾਲ ਘੰਟੀਆਂ ਟਾਲ ਦਿੱਤੀਆਂ ਹਨ",
-  "chat.contact.ring_hint_too_soon": "ਉਹਨਾਂ ਨੂੰ ਹੁਣੇ ਹੀ ਘੰਟੀ ਵਜਾਈ ਗਈ ਸੀ",
-  "chat.contact.ring_hint_again_in": "{time} ਵਿੱਚ ਦੁਬਾਰਾ ਘੰਟੀ ਵਜਾਓ",
-  "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
-  "settings.security.ring_alerts_desc":
-    "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",
-  "notif.channel.ring": "ਘੰਟੀ",
-  "notif.channel.ring_desc":
-    "ਉਹਨਾਂ ਸੰਪਰਕਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਜਿਨ੍ਹਾਂ ਨੂੰ ਤੁਸੀਂ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ।",
-  "notif.ring.hidden": "ਘੰਟੀ",
-  "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
-  "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
+  "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
   "chat.attach.bitchat_too_big": "ਸ਼ਾਇਦ ਇਹ ਨਾ ਪਹੁੰਚੇ",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat ’ਤੇ ਹਨ, ਜੋ ਵੱਡੀ ਫ਼ਾਈਲ ਵਿਚਕਾਰੋਂ ਹੀ ਛੱਡ ਦਿੰਦਾ ਹੈ। ਲਗਭਗ 350 KiB ਤੋਂ ਘੱਟ ਭਰੋਸੇਯੋਗ ਹੈ। ਕਿਸੇ Airhop ਸੰਪਰਕ ਨੂੰ ਭੇਜਣ ’ਤੇ ਅਜਿਹੀ ਕੋਈ ਹੱਦ ਨਹੀਂ ਹੁੰਦੀ।",
@@ -741,6 +722,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਿੱਤਾ ਨਾਂ",
   "chat.contact.copy_peer_id": "ਪੀਅਰ ID ਨਕਲ ਕਰੋ",
   "chat.contact.verify": "ਸੰਪਰਕ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+  "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
+  "chat.contact.allow_ring_desc":
+    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
+  "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
+  "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
+  "chat.contact.ring_hint_nearby":
+    "ਘੰਟੀ ਸਿਰਫ਼ ਉਦੋਂ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ",
+  "chat.contact.ring_hint_not_allowed":
+    "ਉਹਨਾਂ ਨੇ ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ",
+  "chat.contact.ring_hint_snoozed": "ਉਹਨਾਂ ਨੇ ਫ਼ਿਲਹਾਲ ਘੰਟੀਆਂ ਟਾਲ ਦਿੱਤੀਆਂ ਹਨ",
+  "chat.contact.ring_hint_too_soon": "ਉਹਨਾਂ ਨੂੰ ਹੁਣੇ ਹੀ ਘੰਟੀ ਵਜਾਈ ਗਈ ਸੀ",
+  "chat.contact.ring_hint_again_in": "{time} ਵਿੱਚ ਦੁਬਾਰਾ ਘੰਟੀ ਵਜਾਓ",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "ਨੋਟਿਸ",
@@ -1615,6 +1608,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "ਪੀਅਰ ID ਨਕਲ ਕਰੋ",
   "settings.peer_id_sheet.note":
     "ਇਹ ਉਦੋਂ ਹੀ ਕੰਮ ਕਰਦੀ ਹੈ ਜਦੋਂ ਤੁਸੀਂ ਦੋਵੇਂ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਹੋਵੋ। ਕਿਸੇ ਨੂੰ ਕਿਤੋਂ ਵੀ ਸੁਨੇਹਾ ਭੇਜਣ ਦੇਣ ਲਈ ਇਸ ਦੀ ਥਾਂ ਆਪਣਾ QR ਕੋਡ ਸਾਂਝਾ ਕਰੋ।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ਸੈਟਿੰਗਾਂ ਖੋਜੋ…",
   "settings.search.a11y": "ਸੈਟਿੰਗਾਂ ਖੋਜੋ",
   "settings.search.close": "ਖੋਜ ਬੰਦ ਕਰੋ",
@@ -1766,6 +1761,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "ਸੂਚਨਾ ਦੀਆਂ ਝਲਕਾਂ ਲੁਕਾਓ",
   "settings.security.hide_previews_desc":
     "ਭੇਜਣ ਵਾਲੇ ਅਤੇ ਸੁਨੇਹੇ ਨੂੰ ਤੁਹਾਡੀ ਲਾਕ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਰੱਖਦਾ ਹੈ, ਜੋ ਇਹ ਬਿਨਾਂ ਅਨਲਾਕ ਕੀਤੇ ਦਿਖਾ ਦਿੰਦੀ ਹੈ",
+  "settings.security.ring_alerts": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ",
+  "settings.security.ring_alerts_desc":
+    "ਘੰਟੀ ਲਈ ਮੁੱਖ ਸਵਿੱਚ। ਬੰਦ ਕਰਨ ਨਾਲ ਹਰ ਘੰਟੀ ਤੁਰੰਤ ਅਸਵੀਕਾਰ ਹੋ ਜਾਂਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਵਿਅਕਤੀਗਤ ਸੰਪਰਕਾਂ ਨੂੰ ਕੋਈ ਵੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ।",
   "settings.security.no_blocked": "ਕੋਈ ਬਲਾਕ ਕੀਤਾ ਪੀਅਰ ਨਹੀਂ",
   "settings.security.no_blocked_desc":
     "ਬਲਾਕ ਕੀਤੇ ਪੀਅਰ ਤੁਹਾਨੂੰ ਸੁਨੇਹਾ ਨਹੀਂ ਭੇਜ ਸਕਦੇ ਅਤੇ ਨਾ ਹੀ ਮੈਸ਼ ਟੈਬ ’ਤੇ ਦਿਸਦੇ ਹਨ",
@@ -2188,6 +2186,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "ਨੇੜਲੇ ਪੀਅਰ",
   "notif.channel.nearby_desc":
     "ਜਦੋਂ ਮੈਸ਼ ਨੂੰ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਲੋਕ ਮਿਲਦੇ ਹਨ ਤਾਂ ਕਦੇ-ਕਦਾਈਂ ਇੱਕ ਸੂਚਨਾ।",
+  "notif.channel.ring": "ਘੰਟੀ",
+  "notif.channel.ring_desc":
+    "ਉਹਨਾਂ ਸੰਪਰਕਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਜਿਨ੍ਹਾਂ ਨੂੰ ਤੁਸੀਂ ਘੰਟੀ ਵਜਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ।",
   "notif.nearby.body": "ਹੁਣ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿੱਚ। ਮੈਸ਼ ਖੋਲ੍ਹਣ ਲਈ ਦਬਾਓ।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "ਕੋਈ",
@@ -2204,6 +2205,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "ਨਵੀਂ ਸਰਗਰਮੀ",
   "notif.hidden.mention": "ਤੁਹਾਡਾ ਜ਼ਿਕਰ ਹੋਇਆ",
   "notif.mention.title": "{sender} ਨੇ ਤੁਹਾਡਾ ਜ਼ਿਕਰ ਕੀਤਾ",
+  "notif.ring.hidden": "ਘੰਟੀ",
+  "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
+  "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
 };
 
 export const plurals: Plurals = {

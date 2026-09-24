@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Anuluj",
-  "common.done": "Gotowe",
-  "common.ok": "OK",
-  "common.close": "Zamknij",
   "common.back": "Wstecz",
-  "common.delete": "Usuń",
-  "common.remove": "Usuń",
+  "common.close": "Zamknij",
+  "common.cancel": "Anuluj",
+  "common.ok": "OK",
+  "common.done": "Gotowe",
+  "common.continue": "Dalej",
+  "common.try_again": "Spróbuj ponownie",
   "common.add": "Dodaj",
+  "common.remove": "Usuń",
+  "common.delete": "Usuń",
   "common.copy": "Kopiuj",
   "common.copied": "Skopiowano",
   "common.share": "Udostępnij",
-  "common.continue": "Dalej",
-  "common.try_again": "Spróbuj ponownie",
   "common.settings": "Ustawienia",
   "common.on": "Włączone",
   "common.off": "Wył.",
@@ -531,36 +531,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "południowy zachód",
   "chat.location.direction.w": "zachód",
   "chat.location.direction.nw": "północny zachód",
-  "chat.attach.send_anyway": "Wyślij mimo to",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Zadzwonił",
   "chat.ring.received_summary": "Zadzwonił do ciebie",
   "chat.ring.alert.title": "{sender} dzwoni do ciebie",
   "chat.ring.alert.body": "Sprawdź swoje wiadomości",
   "chat.ring.alert.open": "Otwórz",
   "chat.ring.alert.snooze": "Odłóż na 1 godzinę",
-  "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
-  "chat.contact.allow_ring_desc":
-    "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
-  "chat.contact.ring_action": "Zadzwoń",
-  "chat.contact.ringing": "Dzwoni…",
   "chat.ring.sent_snoozed": "Zadzwoniono, odłożone",
   "chat.ring.sent_too_soon": "Zadzwoniono, za wcześnie",
   "chat.ring.sent_not_allowed": "Zadzwoniono, niedozwolone",
-  "chat.contact.ring_hint_nearby":
-    "Dzwonienie działa tylko wtedy, gdy są w pobliżu",
-  "chat.contact.ring_hint_not_allowed": "Nie pozwolili ci do siebie dzwonić",
-  "chat.contact.ring_hint_snoozed": "Na razie odłożyli dzwonienie",
-  "chat.contact.ring_hint_too_soon": "Dzwoniono do nich przed chwilą",
-  "chat.contact.ring_hint_again_in": "Zadzwoń ponownie za {time}",
-  "settings.security.ring_alerts": "Alerty dzwonienia",
-  "settings.security.ring_alerts_desc":
-    "Główny przełącznik dzwonienia. Wyłączenie odrzuca natychmiast każde dzwonienie, niezależnie od tego, na co zezwoliłeś poszczególnym kontaktom.",
-  "notif.channel.ring": "Dzwonienie",
-  "notif.channel.ring_desc":
-    "Alerty od kontaktów, którym zezwoliłeś na dzwonienie do ciebie.",
-  "notif.ring.hidden": "Dzwonienie",
-  "notif.ring.title": "{sender} dzwoni do ciebie",
-  "notif.ring.body": "Sprawdź swoje wiadomości",
+  "chat.attach.send_anyway": "Wyślij mimo to",
   "chat.attach.bitchat_too_big": "To może nie dotrzeć",
   "chat.attach.bitchat_too_big_body":
     "{name} używa aplikacji bitchat, która poddaje się w połowie przy dużym pliku. Poniżej mniej więcej 350 KiB jest niezawodnie. Wysyłka do kontaktu z Airhop nie ma takiego limitu.",
@@ -755,6 +737,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Twoja nazwa dla tej osoby",
   "chat.contact.copy_peer_id": "Kopiuj identyfikator peera",
   "chat.contact.verify": "Zweryfikuj kontakt",
+  "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
+  "chat.contact.allow_ring_desc":
+    "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
+  "chat.contact.ring_action": "Zadzwoń",
+  "chat.contact.ringing": "Dzwoni…",
+  "chat.contact.ring_hint_nearby":
+    "Dzwonienie działa tylko wtedy, gdy są w pobliżu",
+  "chat.contact.ring_hint_not_allowed": "Nie pozwolili ci do siebie dzwonić",
+  "chat.contact.ring_hint_snoozed": "Na razie odłożyli dzwonienie",
+  "chat.contact.ring_hint_too_soon": "Dzwoniono do nich przed chwilą",
+  "chat.contact.ring_hint_again_in": "Zadzwoń ponownie za {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Ogłoszenia",
@@ -1645,6 +1638,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Kopiuj identyfikator peera",
   "settings.peer_id_sheet.note":
     "Działa tylko wtedy, gdy oboje jesteście w zasięgu Bluetooth. Żeby ktoś mógł napisać do ciebie skądkolwiek, udostępnij zamiast tego swój kod QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Szukaj w ustawieniach…",
   "settings.search.a11y": "Szukaj w ustawieniach",
   "settings.search.close": "Zamknij wyszukiwanie",
@@ -1798,6 +1793,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Ukryj podgląd w powiadomieniach",
   "settings.security.hide_previews_desc":
     "Trzyma nadawcę i treść z dala od ekranu blokady, który pokazuje je bez odblokowania",
+  "settings.security.ring_alerts": "Alerty dzwonienia",
+  "settings.security.ring_alerts_desc":
+    "Główny przełącznik dzwonienia. Wyłączenie odrzuca natychmiast każde dzwonienie, niezależnie od tego, na co zezwoliłeś poszczególnym kontaktom.",
   "settings.security.no_blocked": "Brak zablokowanych peerów",
   "settings.security.no_blocked_desc":
     "Zablokowani peerzy nie mogą do ciebie pisać ani pojawiać się w zakładce Mesh",
@@ -2236,6 +2234,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peerzy w pobliżu",
   "notif.channel.nearby_desc":
     "Sporadyczna informacja, gdy sieć mesh znajdzie ludzi w zasięgu Bluetooth.",
+  "notif.channel.ring": "Dzwonienie",
+  "notif.channel.ring_desc":
+    "Alerty od kontaktów, którym zezwoliłeś na dzwonienie do ciebie.",
   "notif.nearby.body":
     "W zasięgu Bluetooth. Naciśnij, żeby otworzyć sieć mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2253,6 +2254,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Nowa aktywność",
   "notif.hidden.mention": "Ktoś cię wspomniał",
   "notif.mention.title": "{sender} cię wspomniał",
+  "notif.ring.hidden": "Dzwonienie",
+  "notif.ring.title": "{sender} dzwoni do ciebie",
+  "notif.ring.body": "Sprawdź swoje wiadomości",
 };
 
 export const plurals: Plurals = {

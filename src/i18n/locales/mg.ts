@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Foano",
-  "common.done": "Vita",
-  "common.ok": "Eny",
-  "common.close": "Akatony",
   "common.back": "Miverina",
-  "common.delete": "Fafao",
-  "common.remove": "Esory",
+  "common.close": "Akatony",
+  "common.cancel": "Foano",
+  "common.ok": "Eny",
+  "common.done": "Vita",
+  "common.continue": "Tohizo",
+  "common.try_again": "Andramo indray",
   "common.add": "Ampio",
+  "common.remove": "Esory",
+  "common.delete": "Fafao",
   "common.copy": "Adikao",
   "common.copied": "Voadika",
   "common.share": "Zarao",
-  "common.continue": "Tohizo",
-  "common.try_again": "Andramo indray",
   "common.settings": "Fandrindrana",
   "common.on": "Mandeha",
   "common.off": "Vonoina",
@@ -534,36 +534,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "atsimo-andrefana",
   "chat.location.direction.w": "andrefana",
   "chat.location.direction.nw": "avaratra-andrefana",
-  "chat.attach.send_anyway": "Alefaso ihany",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Niantso",
   "chat.ring.received_summary": "Niantso anao",
   "chat.ring.alert.title": "Miantso i {sender}",
   "chat.ring.alert.body": "Jereo ny hafatrao",
   "chat.ring.alert.open": "Sokafy",
   "chat.ring.alert.snooze": "Ahemoro 1 ora",
-  "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
-  "chat.contact.allow_ring_desc":
-    "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
-  "chat.contact.ring_action": "Antsoy",
-  "chat.contact.ringing": "Miantso…",
   "chat.ring.sent_snoozed": "Niantso, nahemotra",
   "chat.ring.sent_too_soon": "Niantso, aloha loatra",
   "chat.ring.sent_not_allowed": "Niantso, tsy azo atao",
-  "chat.contact.ring_hint_nearby":
-    "Tsy mandeha ny fiantsoana raha tsy eo akaiky izy",
-  "chat.contact.ring_hint_not_allowed": "Tsy navelany hiantso azy ianao",
-  "chat.contact.ring_hint_snoozed": "Nahemony aloha ny fiantsoana amin'izao",
-  "chat.contact.ring_hint_too_soon": "Vao nantsoina izy",
-  "chat.contact.ring_hint_again_in": "Antsoy indray afaka {time}",
-  "settings.security.ring_alerts": "Fampandrenesana antso",
-  "settings.security.ring_alerts_desc":
-    "Brotantsivana lehibe ho an'ny Antso. Ny fanafenana dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",
-  "notif.channel.ring": "Antso",
-  "notif.channel.ring_desc":
-    "Fampandrenesana avy amin'ireo olona nomenao alalana hiantso anao.",
-  "notif.ring.hidden": "Antso",
-  "notif.ring.title": "Miantso anao i {sender}",
-  "notif.ring.body": "Jereo ny hafatrao",
+  "chat.attach.send_anyway": "Alefaso ihany",
   "chat.attach.bitchat_too_big": "Mety tsy ho tonga ity",
   "chat.attach.bitchat_too_big_body":
     "Ao amin'ny bitchat i {name}, izay mandao antsasa-dalana ny rakitra lehibe. Azo antoka ny latsaky ny 350 KiB eo ho eo. Tsy misy fetra toy izany ny fandefasana amin'ny fifandraisana Airhop.",
@@ -758,6 +740,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Ny anarana nomenao azy",
   "chat.contact.copy_peer_id": "Adikao ny ID-n'ny teboka",
   "chat.contact.verify": "Hamarino ny fifandraisana",
+  "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
+  "chat.contact.allow_ring_desc":
+    "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
+  "chat.contact.ring_action": "Antsoy",
+  "chat.contact.ringing": "Miantso…",
+  "chat.contact.ring_hint_nearby":
+    "Tsy mandeha ny fiantsoana raha tsy eo akaiky izy",
+  "chat.contact.ring_hint_not_allowed": "Tsy navelany hiantso azy ianao",
+  "chat.contact.ring_hint_snoozed": "Nahemony aloha ny fiantsoana amin'izao",
+  "chat.contact.ring_hint_too_soon": "Vao nantsoina izy",
+  "chat.contact.ring_hint_again_in": "Antsoy indray afaka {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Filazana",
@@ -1675,6 +1668,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Adikao ny ID-n'ny teboka",
   "settings.peer_id_sheet.note":
     "Miasa ihany izy raha samy ao anatin'ny fetran'ny Bluetooth ianareo roa. Mba hahafahan'ny olona manoratra aminao avy any amin'ny toerana rehetra, zarao ny kaody QR-nao.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Karohy ao amin'ny fandrindrana…",
   "settings.search.a11y": "Karohy ao amin'ny fandrindrana",
   "settings.search.close": "Akatony ny fikarohana",
@@ -1834,6 +1829,9 @@ export const strings: Strings = {
     "Afeno ny topi-maso amin'ny fampandrenesana",
   "settings.security.hide_previews_desc":
     "Manala ny mpandefa sy ny hafatra amin'ny efijery mihidy, izay mampiseho azy ireo tsy mila manokatra",
+  "settings.security.ring_alerts": "Fampandrenesana antso",
+  "settings.security.ring_alerts_desc":
+    "Brotantsivana lehibe ho an'ny Antso. Ny fanafenana dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",
   "settings.security.no_blocked": "Tsy misy teboka voasakana",
   "settings.security.no_blocked_desc":
     "Tsy afaka manoratra aminao ny teboka voasakana ary tsy miseho amin'ny takelaka Harato",
@@ -2282,6 +2280,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Teboka akaiky",
   "notif.channel.nearby_desc":
     "Fampandrenesana indraindray rehefa mahita olona ao anatin'ny fetran'ny Bluetooth ny harato.",
+  "notif.channel.ring": "Antso",
+  "notif.channel.ring_desc":
+    "Fampandrenesana avy amin'ireo olona nomenao alalana hiantso anao.",
   "notif.nearby.body":
     "Ao anatin'ny fetran'ny Bluetooth izao. Tsindrio hanokatra ny harato.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2299,6 +2300,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Hetsika vaovao",
   "notif.hidden.mention": "Notanisaina ianao",
   "notif.mention.title": "Nanonona anao i {sender}",
+  "notif.ring.hidden": "Antso",
+  "notif.ring.title": "Miantso anao i {sender}",
+  "notif.ring.body": "Jereo ny hafatrao",
 };
 
 export const plurals: Plurals = {

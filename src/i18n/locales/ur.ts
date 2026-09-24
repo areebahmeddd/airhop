@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "منسوخ کریں",
-  "common.done": "ہو گیا",
-  "common.ok": "ٹھیک ہے",
-  "common.close": "بند کریں",
   "common.back": "واپس",
-  "common.delete": "حذف کریں",
-  "common.remove": "ہٹائیں",
+  "common.close": "بند کریں",
+  "common.cancel": "منسوخ کریں",
+  "common.ok": "ٹھیک ہے",
+  "common.done": "ہو گیا",
+  "common.continue": "جاری رکھیں",
+  "common.try_again": "دوبارہ کوشش کریں",
   "common.add": "شامل کریں",
+  "common.remove": "ہٹائیں",
+  "common.delete": "حذف کریں",
   "common.copy": "کاپی کریں",
   "common.copied": "کاپی ہو گیا",
   "common.share": "شیئر کریں",
-  "common.continue": "جاری رکھیں",
-  "common.try_again": "دوبارہ کوشش کریں",
   "common.settings": "ترتیبات",
   "common.on": "آن",
   "common.off": "بند",
@@ -518,37 +518,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "جنوب مغرب",
   "chat.location.direction.w": "مغرب",
   "chat.location.direction.nw": "شمال مغرب",
-  "chat.attach.send_anyway": "پھر بھی بھیجیں",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "گھنٹی بجائی",
   "chat.ring.received_summary": "آپ کو گھنٹی بجائی",
   "chat.ring.alert.title": "{sender} آپ کو گھنٹی بجا رہے ہیں",
   "chat.ring.alert.body": "اپنے پیغامات دیکھیں",
   "chat.ring.alert.open": "کھولیں",
   "chat.ring.alert.snooze": "1 گھنٹے کے لیے ملتوی کریں",
-  "chat.contact.allow_ring": "گھنٹی الرٹس کی اجازت دیں",
-  "chat.contact.allow_ring_desc":
-    "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو۔ خاموش موڈ اور ڈسٹرب نہ کریں پھر بھی لاگو رہتے ہیں۔",
-  "chat.contact.ring_action": "گھنٹی بجائیں",
-  "chat.contact.ringing": "گھنٹی بج رہی ہے…",
   "chat.ring.sent_snoozed": "گھنٹی بجائی، مؤخر",
   "chat.ring.sent_too_soon": "گھنٹی بجائی، بہت جلدی",
   "chat.ring.sent_not_allowed": "گھنٹی بجائی، اجازت نہیں",
-  "chat.contact.ring_hint_nearby":
-    "گھنٹی صرف اس وقت کام کرتی ہے جب وہ قریب ہوں",
-  "chat.contact.ring_hint_not_allowed":
-    "انہوں نے آپ کو گھنٹی بجانے کی اجازت نہیں دی",
-  "chat.contact.ring_hint_snoozed": "انہوں نے فی الحال گھنٹیاں مؤخر کر دی ہیں",
-  "chat.contact.ring_hint_too_soon": "انہیں ابھی ابھی گھنٹی بجائی گئی تھی",
-  "chat.contact.ring_hint_again_in": "{time} میں دوبارہ گھنٹی بجائیں",
-  "settings.security.ring_alerts": "گھنٹی الرٹس",
-  "settings.security.ring_alerts_desc":
-    "گھنٹی کے لیے مرکزی سوئچ۔ بند کرنے سے ہر گھنٹی فوراً مسترد ہو جاتی ہے، چاہے آپ نے انفرادی رابطوں کو جو بھی اجازت دی ہو۔",
-  "notif.channel.ring": "گھنٹی",
-  "notif.channel.ring_desc":
-    "ان رابطوں کی جانب سے الرٹس جنہیں آپ نے گھنٹی بجانے کی اجازت دی ہے۔",
-  "notif.ring.hidden": "گھنٹی",
-  "notif.ring.title": "{sender} آپ کو گھنٹی بجا رہے ہیں",
-  "notif.ring.body": "اپنے پیغامات دیکھیں",
+  "chat.attach.send_anyway": "پھر بھی بھیجیں",
   "chat.attach.bitchat_too_big": "شاید یہ نہ پہنچے",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat پر ہیں، جو بڑی فائل پر آدھے راستے ہار مان جاتا ہے۔ تقریباً 350 KiB سے کم قابل بھروسا ہے۔ Airhop کے رابطے کو بھیجنے پر ایسی کوئی حد نہیں۔",
@@ -737,6 +718,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "ان کے لیے آپ کا رکھا نام",
   "chat.contact.copy_peer_id": "پیئر شناخت کاپی کریں",
   "chat.contact.verify": "رابطے کی تصدیق کریں",
+  "chat.contact.allow_ring": "گھنٹی الرٹس کی اجازت دیں",
+  "chat.contact.allow_ring_desc":
+    "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو۔ خاموش موڈ اور ڈسٹرب نہ کریں پھر بھی لاگو رہتے ہیں۔",
+  "chat.contact.ring_action": "گھنٹی بجائیں",
+  "chat.contact.ringing": "گھنٹی بج رہی ہے…",
+  "chat.contact.ring_hint_nearby":
+    "گھنٹی صرف اس وقت کام کرتی ہے جب وہ قریب ہوں",
+  "chat.contact.ring_hint_not_allowed":
+    "انہوں نے آپ کو گھنٹی بجانے کی اجازت نہیں دی",
+  "chat.contact.ring_hint_snoozed": "انہوں نے فی الحال گھنٹیاں مؤخر کر دی ہیں",
+  "chat.contact.ring_hint_too_soon": "انہیں ابھی ابھی گھنٹی بجائی گئی تھی",
+  "chat.contact.ring_hint_again_in": "{time} میں دوبارہ گھنٹی بجائیں",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "اعلانات",
@@ -1612,6 +1605,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "پیئر شناخت کاپی کریں",
   "settings.peer_id_sheet.note":
     "یہ صرف تب کام کرتا ہے جب آپ دونوں بلوٹوتھ کی حدود میں ہوں۔ کسی کو کہیں سے بھی پیغام بھیجنے کے قابل بنانے کے لیے اس کے بجائے اپنا QR کوڈ شیئر کریں۔",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ترتیبات میں تلاش کریں…",
   "settings.search.a11y": "ترتیبات میں تلاش کریں",
   "settings.search.close": "تلاش بند کریں",
@@ -1762,6 +1757,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "اطلاعات کی جھلک چھپائیں",
   "settings.security.hide_previews_desc":
     "بھیجنے والے اور پیغام کو آپ کی لاک اسکرین سے دور رکھتا ہے، جو انہیں کھولے بغیر دکھا دیتی ہے",
+  "settings.security.ring_alerts": "گھنٹی الرٹس",
+  "settings.security.ring_alerts_desc":
+    "گھنٹی کے لیے مرکزی سوئچ۔ بند کرنے سے ہر گھنٹی فوراً مسترد ہو جاتی ہے، چاہے آپ نے انفرادی رابطوں کو جو بھی اجازت دی ہو۔",
   "settings.security.no_blocked": "کوئی مسدود پیئر نہیں",
   "settings.security.no_blocked_desc":
     "مسدود پیئرز آپ کو پیغام نہیں بھیج سکتے اور نہ ہی میش ٹیب میں نظر آتے ہیں",
@@ -2187,6 +2185,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "قریبی پیئرز",
   "notif.channel.nearby_desc":
     "کبھی کبھار کی اطلاع جب میش کو بلوٹوتھ کی حدود میں لوگ ملیں۔",
+  "notif.channel.ring": "گھنٹی",
+  "notif.channel.ring_desc":
+    "ان رابطوں کی جانب سے الرٹس جنہیں آپ نے گھنٹی بجانے کی اجازت دی ہے۔",
   "notif.nearby.body": "اس وقت بلوٹوتھ کی حدود میں۔ میش کھولنے کے لیے چھوئیں۔",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "کوئی",
@@ -2203,6 +2204,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "نئی سرگرمی",
   "notif.hidden.mention": "آپ کا ذکر ہوا",
   "notif.mention.title": "{sender} نے آپ کا ذکر کیا",
+  "notif.ring.hidden": "گھنٹی",
+  "notif.ring.title": "{sender} آپ کو گھنٹی بجا رہے ہیں",
+  "notif.ring.body": "اپنے پیغامات دیکھیں",
 };
 
 export const plurals: Plurals = {

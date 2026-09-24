@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "रद्द करें",
-  "common.done": "हो गया",
-  "common.ok": "ठीक है",
-  "common.close": "बंद करें",
   "common.back": "पीछे",
-  "common.delete": "हटाएँ",
-  "common.remove": "निकालें",
+  "common.close": "बंद करें",
+  "common.cancel": "रद्द करें",
+  "common.ok": "ठीक है",
+  "common.done": "हो गया",
+  "common.continue": "आगे बढ़ें",
+  "common.try_again": "फिर कोशिश करें",
   "common.add": "जोड़ें",
+  "common.remove": "निकालें",
+  "common.delete": "हटाएँ",
   "common.copy": "कॉपी करें",
   "common.copied": "कॉपी हो गया",
   "common.share": "साझा करें",
-  "common.continue": "आगे बढ़ें",
-  "common.try_again": "फिर कोशिश करें",
   "common.settings": "सेटिंग्स",
   "common.on": "चालू",
   "common.off": "बंद",
@@ -520,36 +520,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "दक्षिण-पश्चिम",
   "chat.location.direction.w": "पश्चिम",
   "chat.location.direction.nw": "उत्तर-पश्चिम",
-  "chat.attach.send_anyway": "फिर भी भेजें",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "घंटी बजाई",
   "chat.ring.received_summary": "आपको घंटी बजाई",
   "chat.ring.alert.title": "{sender} आपको घंटी बजा रहे हैं",
   "chat.ring.alert.body": "अपने संदेश जाँचें",
   "chat.ring.alert.open": "खोलें",
   "chat.ring.alert.snooze": "1 घंटे के लिए स्नूज़ करें",
-  "chat.contact.allow_ring": "घंटी अलर्ट की अनुमति दें",
-  "chat.contact.allow_ring_desc":
-    "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो। साइलेंट मोड और परेशान न करें फिर भी लागू रहते हैं।",
-  "chat.contact.ring_action": "घंटी बजाएँ",
-  "chat.contact.ringing": "घंटी बज रही है…",
   "chat.ring.sent_snoozed": "घंटी बजाई, टाल दी गई",
   "chat.ring.sent_too_soon": "घंटी बजाई, बहुत जल्दी",
   "chat.ring.sent_not_allowed": "घंटी बजाई, अनुमति नहीं",
-  "chat.contact.ring_hint_nearby": "घंटी तभी काम करती है जब वे पास हों",
-  "chat.contact.ring_hint_not_allowed":
-    "उन्होंने आपको घंटी बजाने की अनुमति नहीं दी है",
-  "chat.contact.ring_hint_snoozed": "उन्होंने फ़िलहाल घंटियाँ टाल दी हैं",
-  "chat.contact.ring_hint_too_soon": "उन्हें अभी-अभी घंटी बजाई गई है",
-  "chat.contact.ring_hint_again_in": "{time} में फिर से घंटी बजाएँ",
-  "settings.security.ring_alerts": "घंटी अलर्ट",
-  "settings.security.ring_alerts_desc":
-    "घंटी सुविधा के लिए मुख्य स्विच। बंद करने पर हर घंटी तुरंत अस्वीकार हो जाती है, चाहे आपने व्यक्तिगत संपर्कों को जो भी अनुमति दी हो।",
-  "notif.channel.ring": "घंटी",
-  "notif.channel.ring_desc":
-    "उन संपर्कों से अलर्ट जिन्हें आपने घंटी बजाने की अनुमति दी है।",
-  "notif.ring.hidden": "घंटी",
-  "notif.ring.title": "{sender} आपको घंटी बजा रहे हैं",
-  "notif.ring.body": "अपने संदेश जाँचें",
+  "chat.attach.send_anyway": "फिर भी भेजें",
   "chat.attach.bitchat_too_big": "यह शायद न पहुँचे",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat पर हैं, जो बड़ी फ़ाइल बीच में ही छोड़ देता है। लगभग 350 KiB से कम भरोसेमंद है। किसी Airhop संपर्क को भेजने पर ऐसी कोई सीमा नहीं।",
@@ -738,6 +720,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "आपका दिया नाम",
   "chat.contact.copy_peer_id": "पीअर ID कॉपी करें",
   "chat.contact.verify": "संपर्क सत्यापित करें",
+  "chat.contact.allow_ring": "घंटी अलर्ट की अनुमति दें",
+  "chat.contact.allow_ring_desc":
+    "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो। साइलेंट मोड और परेशान न करें फिर भी लागू रहते हैं।",
+  "chat.contact.ring_action": "घंटी बजाएँ",
+  "chat.contact.ringing": "घंटी बज रही है…",
+  "chat.contact.ring_hint_nearby": "घंटी तभी काम करती है जब वे पास हों",
+  "chat.contact.ring_hint_not_allowed":
+    "उन्होंने आपको घंटी बजाने की अनुमति नहीं दी है",
+  "chat.contact.ring_hint_snoozed": "उन्होंने फ़िलहाल घंटियाँ टाल दी हैं",
+  "chat.contact.ring_hint_too_soon": "उन्हें अभी-अभी घंटी बजाई गई है",
+  "chat.contact.ring_hint_again_in": "{time} में फिर से घंटी बजाएँ",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "सूचनाएँ",
@@ -1611,6 +1604,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "पीअर ID कॉपी करें",
   "settings.peer_id_sheet.note":
     "यह तभी काम करता है जब आप दोनों ब्लूटूथ की पहुँच में हों। किसी को कहीं से भी संदेश भेजने देने के लिए अपना QR कोड साझा करें।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "सेटिंग्स खोजें…",
   "settings.search.a11y": "सेटिंग्स खोजें",
   "settings.search.close": "खोज बंद करें",
@@ -1760,6 +1755,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "सूचना की झलक छिपाएँ",
   "settings.security.hide_previews_desc":
     "भेजने वाले और संदेश को आपकी लॉक स्क्रीन से दूर रखता है, जो उन्हें बिना अनलॉक किए दिखा देती है",
+  "settings.security.ring_alerts": "घंटी अलर्ट",
+  "settings.security.ring_alerts_desc":
+    "घंटी सुविधा के लिए मुख्य स्विच। बंद करने पर हर घंटी तुरंत अस्वीकार हो जाती है, चाहे आपने व्यक्तिगत संपर्कों को जो भी अनुमति दी हो।",
   "settings.security.no_blocked": "कोई अवरुद्ध पीअर नहीं",
   "settings.security.no_blocked_desc":
     "अवरुद्ध पीअर आपको संदेश नहीं भेज सकते और मेश टैब पर नहीं दिखते",
@@ -2184,6 +2182,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "आस-पास के पीअर",
   "notif.channel.nearby_desc":
     "जब मेश को ब्लूटूथ की पहुँच में लोग मिलते हैं तो कभी-कभार एक सूचना।",
+  "notif.channel.ring": "घंटी",
+  "notif.channel.ring_desc":
+    "उन संपर्कों से अलर्ट जिन्हें आपने घंटी बजाने की अनुमति दी है।",
   "notif.nearby.body": "अभी ब्लूटूथ की पहुँच में। मेश खोलने के लिए टैप करें।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "कोई",
@@ -2200,6 +2201,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "नई गतिविधि",
   "notif.hidden.mention": "आपका ज़िक्र हुआ",
   "notif.mention.title": "{sender} ने आपका ज़िक्र किया",
+  "notif.ring.hidden": "घंटी",
+  "notif.ring.title": "{sender} आपको घंटी बजा रहे हैं",
+  "notif.ring.body": "अपने संदेश जाँचें",
 };
 
 export const plurals: Plurals = {

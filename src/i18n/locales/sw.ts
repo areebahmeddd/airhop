@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Ghairi",
-  "common.done": "Imekamilika",
-  "common.ok": "Sawa",
-  "common.close": "Funga",
   "common.back": "Rudi",
-  "common.delete": "Futa",
-  "common.remove": "Ondoa",
+  "common.close": "Funga",
+  "common.cancel": "Ghairi",
+  "common.ok": "Sawa",
+  "common.done": "Imekamilika",
+  "common.continue": "Endelea",
+  "common.try_again": "Jaribu tena",
   "common.add": "Ongeza",
+  "common.remove": "Ondoa",
+  "common.delete": "Futa",
   "common.copy": "Nakili",
   "common.copied": "Imenakiliwa",
   "common.share": "Shiriki",
-  "common.continue": "Endelea",
-  "common.try_again": "Jaribu tena",
   "common.settings": "Mipangilio",
   "common.on": "Imewashwa",
   "common.off": "Imezimwa",
@@ -528,35 +528,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "kusini-magharibi",
   "chat.location.direction.w": "magharibi",
   "chat.location.direction.nw": "kaskazini-magharibi",
-  "chat.attach.send_anyway": "Tuma hata hivyo",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Alipiga kengele",
   "chat.ring.received_summary": "Alikupigia kengele",
   "chat.ring.alert.title": "{sender} anakupigia kengele",
   "chat.ring.alert.body": "Angalia ujumbe wako",
   "chat.ring.alert.open": "Fungua",
   "chat.ring.alert.snooze": "Ahirisha kwa saa 1",
-  "chat.contact.allow_ring": "Ruhusu arifa za kengele",
-  "chat.contact.allow_ring_desc":
-    "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
-  "chat.contact.ring_action": "Piga kengele",
-  "chat.contact.ringing": "Inapiga kengele…",
   "chat.ring.sent_snoozed": "Imepigwa kengele, imeahirishwa",
   "chat.ring.sent_too_soon": "Imepigwa kengele, mapema mno",
   "chat.ring.sent_not_allowed": "Imepigwa kengele, hairuhusiwi",
-  "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",
-  "chat.contact.ring_hint_not_allowed": "Hawajakuruhusu kuwapigia kengele",
-  "chat.contact.ring_hint_snoozed": "Wameahirisha kengele kwa sasa",
-  "chat.contact.ring_hint_too_soon": "Walipigiwa kengele muda mfupi uliopita",
-  "chat.contact.ring_hint_again_in": "Piga kengele tena baada ya {time}",
-  "settings.security.ring_alerts": "Arifa za kengele",
-  "settings.security.ring_alerts_desc":
-    "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",
-  "notif.channel.ring": "Kengele",
-  "notif.channel.ring_desc":
-    "Arifa kutoka kwa watu uliowaruhusu kukupigia kengele.",
-  "notif.ring.hidden": "Kengele",
-  "notif.ring.title": "{sender} anakupigia kengele",
-  "notif.ring.body": "Angalia ujumbe wako",
+  "chat.attach.send_anyway": "Tuma hata hivyo",
   "chat.attach.bitchat_too_big": "Hii huenda isifike",
   "chat.attach.bitchat_too_big_body":
     "{name} yupo kwenye bitchat, ambayo hukata tamaa katikati ya faili kubwa. Chini ya takribani 350 KiB hutegemewa. Kuituma kwa anwani ya Airhop hakuna kikomo cha aina hiyo.",
@@ -748,6 +731,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Jina lako kwa ajili yake",
   "chat.contact.copy_peer_id": "Nakili kitambulisho cha peer",
   "chat.contact.verify": "Thibitisha anwani",
+  "chat.contact.allow_ring": "Ruhusu arifa za kengele",
+  "chat.contact.allow_ring_desc":
+    "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
+  "chat.contact.ring_action": "Piga kengele",
+  "chat.contact.ringing": "Inapiga kengele…",
+  "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",
+  "chat.contact.ring_hint_not_allowed": "Hawajakuruhusu kuwapigia kengele",
+  "chat.contact.ring_hint_snoozed": "Wameahirisha kengele kwa sasa",
+  "chat.contact.ring_hint_too_soon": "Walipigiwa kengele muda mfupi uliopita",
+  "chat.contact.ring_hint_again_in": "Piga kengele tena baada ya {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Matangazo",
@@ -1651,6 +1644,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Nakili kitambulisho cha peer",
   "settings.peer_id_sheet.note":
     "Hii hufanya kazi tu mkiwa nyote ndani ya masafa ya Bluetooth. Ili mtu akutumie ujumbe kutoka popote, shiriki msimbo wako wa QR badala yake.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Tafuta kwenye mipangilio…",
   "settings.search.a11y": "Tafuta kwenye mipangilio",
   "settings.search.close": "Funga utafutaji",
@@ -1807,6 +1802,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Ficha muhtasari kwenye arifa",
   "settings.security.hide_previews_desc":
     "Huweka mtumaji na ujumbe mbali na skrini yako ya kufunga, ambayo huvionyesha bila kufungua",
+  "settings.security.ring_alerts": "Arifa za kengele",
+  "settings.security.ring_alerts_desc":
+    "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",
   "settings.security.no_blocked": "Hakuna peer aliyezuiwa",
   "settings.security.no_blocked_desc":
     "Peer waliozuiwa hawawezi kukutumia ujumbe wala kuonekana kwenye kichupo cha Mesh",
@@ -2247,6 +2245,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peer walio karibu",
   "notif.channel.nearby_desc":
     "Taarifa ya mara kwa mara pale mesh inapopata watu ndani ya masafa ya Bluetooth.",
+  "notif.channel.ring": "Kengele",
+  "notif.channel.ring_desc":
+    "Arifa kutoka kwa watu uliowaruhusu kukupigia kengele.",
   "notif.nearby.body":
     "Yuko ndani ya masafa ya Bluetooth sasa. Gusa ili kufungua mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2264,6 +2265,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Shughuli mpya",
   "notif.hidden.mention": "Umetajwa",
   "notif.mention.title": "{sender} amekutaja",
+  "notif.ring.hidden": "Kengele",
+  "notif.ring.title": "{sender} anakupigia kengele",
+  "notif.ring.body": "Angalia ujumbe wako",
 };
 
 export const plurals: Plurals = {

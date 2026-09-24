@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Abbrechen",
-  "common.done": "Fertig",
-  "common.ok": "OK",
-  "common.close": "Schließen",
   "common.back": "Zurück",
-  "common.delete": "Löschen",
-  "common.remove": "Entfernen",
+  "common.close": "Schließen",
+  "common.cancel": "Abbrechen",
+  "common.ok": "OK",
+  "common.done": "Fertig",
+  "common.continue": "Weiter",
+  "common.try_again": "Erneut versuchen",
   "common.add": "Hinzufügen",
+  "common.remove": "Entfernen",
+  "common.delete": "Löschen",
   "common.copy": "Kopieren",
   "common.copied": "Kopiert",
   "common.share": "Teilen",
-  "common.continue": "Weiter",
-  "common.try_again": "Erneut versuchen",
   "common.settings": "Einstellungen",
   "common.on": "An",
   "common.off": "Aus",
@@ -532,37 +532,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "südwestlich",
   "chat.location.direction.w": "westlich",
   "chat.location.direction.nw": "nordwestlich",
-  "chat.attach.send_anyway": "Trotzdem senden",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Geklingelt",
   "chat.ring.received_summary": "Hat dich angeklingelt",
   "chat.ring.alert.title": "{sender} klingelt",
   "chat.ring.alert.body": "Sieh nach deinen Nachrichten",
   "chat.ring.alert.open": "Öffnen",
   "chat.ring.alert.snooze": "1 Stunde stummschalten",
-  "chat.contact.allow_ring": "Klingelbenachrichtigungen erlauben",
-  "chat.contact.allow_ring_desc":
-    "Erlaube ihnen, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
-  "chat.contact.ring_action": "Klingeln",
-  "chat.contact.ringing": "Klingelt…",
   "chat.ring.sent_snoozed": "Geklingelt, zurückgestellt",
   "chat.ring.sent_too_soon": "Geklingelt, zu früh",
   "chat.ring.sent_not_allowed": "Geklingelt, nicht erlaubt",
-  "chat.contact.ring_hint_nearby":
-    "Klingeln funktioniert nur, solange sie in der Nähe sind",
-  "chat.contact.ring_hint_not_allowed":
-    "Sie haben dir das Klingeln nicht erlaubt",
-  "chat.contact.ring_hint_snoozed": "Sie haben Klingeln vorerst zurückgestellt",
-  "chat.contact.ring_hint_too_soon": "Bei ihnen wurde gerade erst geklingelt",
-  "chat.contact.ring_hint_again_in": "Erneut klingeln in {time}",
-  "settings.security.ring_alerts": "Klingelbenachrichtigungen",
-  "settings.security.ring_alerts_desc":
-    "Hauptschalter für Klingeln. Aus lehnt jedes Klingeln sofort ab, unabhängig davon, was du einzelnen Kontakten erlaubt hast.",
-  "notif.channel.ring": "Klingeln",
-  "notif.channel.ring_desc":
-    "Benachrichtigungen von Kontakten, denen du erlaubt hast, dich anzuklingeln.",
-  "notif.ring.hidden": "Klingeln",
-  "notif.ring.title": "{sender} klingelt bei dir",
-  "notif.ring.body": "Sieh nach deinen Nachrichten",
+  "chat.attach.send_anyway": "Trotzdem senden",
   "chat.attach.bitchat_too_big": "Das kommt vielleicht nicht an",
   "chat.attach.bitchat_too_big_body":
     "{name} nutzt bitchat, und das bricht bei einer großen Datei mittendrin ab. Unter etwa 350 KiB ist zuverlässig. An einen Airhop-Kontakt gesendet gibt es diese Grenze nicht.",
@@ -758,6 +739,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Dein Name für sie",
   "chat.contact.copy_peer_id": "Peer-ID kopieren",
   "chat.contact.verify": "Kontakt verifizieren",
+  "chat.contact.allow_ring": "Klingelbenachrichtigungen erlauben",
+  "chat.contact.allow_ring_desc":
+    "Erlaube ihnen, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
+  "chat.contact.ring_action": "Klingeln",
+  "chat.contact.ringing": "Klingelt…",
+  "chat.contact.ring_hint_nearby":
+    "Klingeln funktioniert nur, solange sie in der Nähe sind",
+  "chat.contact.ring_hint_not_allowed":
+    "Sie haben dir das Klingeln nicht erlaubt",
+  "chat.contact.ring_hint_snoozed": "Sie haben Klingeln vorerst zurückgestellt",
+  "chat.contact.ring_hint_too_soon": "Bei ihnen wurde gerade erst geklingelt",
+  "chat.contact.ring_hint_again_in": "Erneut klingeln in {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Aushänge",
@@ -1665,6 +1658,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Peer-ID kopieren",
   "settings.peer_id_sheet.note":
     "Das funktioniert nur, wenn ihr beide in Bluetooth-Reichweite seid. Damit dir jemand von überall schreiben kann, teile stattdessen deinen QR-Code.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Einstellungen durchsuchen…",
   "settings.search.a11y": "Einstellungen durchsuchen",
   "settings.search.close": "Suche schließen",
@@ -1818,6 +1813,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Vorschauen in Mitteilungen ausblenden",
   "settings.security.hide_previews_desc":
     "Hält Absender und Nachricht von deinem Sperrbildschirm fern, der sie ohne Entsperren zeigt",
+  "settings.security.ring_alerts": "Klingelbenachrichtigungen",
+  "settings.security.ring_alerts_desc":
+    "Hauptschalter für Klingeln. Aus lehnt jedes Klingeln sofort ab, unabhängig davon, was du einzelnen Kontakten erlaubt hast.",
   "settings.security.no_blocked": "Keine blockierten Peers",
   "settings.security.no_blocked_desc":
     "Blockierte Peers können dir nicht schreiben und erscheinen nicht im Mesh-Tab",
@@ -2258,6 +2256,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peers in der Nähe",
   "notif.channel.nearby_desc":
     "Ein gelegentlicher Hinweis, wenn das Mesh Menschen in Bluetooth-Reichweite findet.",
+  "notif.channel.ring": "Klingeln",
+  "notif.channel.ring_desc":
+    "Benachrichtigungen von Kontakten, denen du erlaubt hast, dich anzuklingeln.",
   "notif.nearby.body":
     "Jetzt in Bluetooth-Reichweite. Tippen, um das Mesh zu öffnen.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2275,6 +2276,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Neue Aktivität",
   "notif.hidden.mention": "Du wurdest erwähnt",
   "notif.mention.title": "{sender} hat dich erwähnt",
+  "notif.ring.hidden": "Klingeln",
+  "notif.ring.title": "{sender} klingelt bei dir",
+  "notif.ring.body": "Sieh nach deinen Nachrichten",
 };
 
 export const plurals: Plurals = {

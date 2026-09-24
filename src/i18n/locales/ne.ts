@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "रद्द गर्नुहोस्",
-  "common.done": "भयो",
-  "common.ok": "ठीक छ",
-  "common.close": "बन्द गर्नुहोस्",
   "common.back": "पछाडि",
-  "common.delete": "मेटाउनुहोस्",
-  "common.remove": "हटाउनुहोस्",
+  "common.close": "बन्द गर्नुहोस्",
+  "common.cancel": "रद्द गर्नुहोस्",
+  "common.ok": "ठीक छ",
+  "common.done": "भयो",
+  "common.continue": "जारी राख्नुहोस्",
+  "common.try_again": "फेरि प्रयास गर्नुहोस्",
   "common.add": "थप्नुहोस्",
+  "common.remove": "हटाउनुहोस्",
+  "common.delete": "मेटाउनुहोस्",
   "common.copy": "प्रतिलिपि गर्नुहोस्",
   "common.copied": "प्रतिलिपि भयो",
   "common.share": "साझा गर्नुहोस्",
-  "common.continue": "जारी राख्नुहोस्",
-  "common.try_again": "फेरि प्रयास गर्नुहोस्",
   "common.settings": "सेटिङ",
   "common.on": "सक्रिय",
   "common.off": "बन्द",
@@ -519,36 +519,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "दक्षिणपश्चिम",
   "chat.location.direction.w": "पश्चिम",
   "chat.location.direction.nw": "उत्तरपश्चिम",
-  "chat.attach.send_anyway": "जे भए पनि पठाउनुहोस्",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "घण्टी बजायो",
   "chat.ring.received_summary": "तपाईंलाई घण्टी बजायो",
   "chat.ring.alert.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
   "chat.ring.alert.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
   "chat.ring.alert.open": "खोल्नुहोस्",
   "chat.ring.alert.snooze": "1 घण्टाका लागि स्थगन गर्नुहोस्",
-  "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
-  "chat.contact.allow_ring_desc":
-    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
-  "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
-  "chat.contact.ringing": "घण्टी बज्दै छ…",
   "chat.ring.sent_snoozed": "घण्टी बज्यो, पछि सारियो",
   "chat.ring.sent_too_soon": "घण्टी बज्यो, धेरै चाँडो",
   "chat.ring.sent_not_allowed": "घण्टी बज्यो, अनुमति छैन",
-  "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",
-  "chat.contact.ring_hint_not_allowed":
-    "उनीहरूले तपाईंलाई घण्टी बजाउन अनुमति दिएका छैनन्",
-  "chat.contact.ring_hint_snoozed": "उनीहरूले अहिलेलाई घण्टी पछि सारेका छन्",
-  "chat.contact.ring_hint_too_soon": "उनीहरूलाई भर्खरै घण्टी बजाइएको थियो",
-  "chat.contact.ring_hint_again_in": "{time} पछि फेरि घण्टी बजाउनुहोस्",
-  "settings.security.ring_alerts": "घण्टी अलर्टहरू",
-  "settings.security.ring_alerts_desc":
-    "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",
-  "notif.channel.ring": "घण्टी",
-  "notif.channel.ring_desc":
-    "तपाईंले घण्टी बजाउन अनुमति दिनुभएका सम्पर्कहरूबाट अलर्टहरू।",
-  "notif.ring.hidden": "घण्टी",
-  "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
-  "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
+  "chat.attach.send_anyway": "जे भए पनि पठाउनुहोस्",
   "chat.attach.bitchat_too_big": "यो नपुग्न सक्छ",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat मा हुनुहुन्छ, जसले ठूलो फाइलमा बीचैमा हार मान्छ। लगभग 350 KiB भन्दा कम भरपर्दो हुन्छ। Airhop को सम्पर्कलाई पठाउँदा त्यस्तो सीमा हुँदैन।",
@@ -734,6 +716,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "उनीहरूका लागि तपाईंले राखेको नाम",
   "chat.contact.copy_peer_id": "पियर पहिचान प्रतिलिपि गर्नुहोस्",
   "chat.contact.verify": "सम्पर्क प्रमाणित गर्नुहोस्",
+  "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
+  "chat.contact.allow_ring_desc":
+    "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
+  "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
+  "chat.contact.ringing": "घण्टी बज्दै छ…",
+  "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",
+  "chat.contact.ring_hint_not_allowed":
+    "उनीहरूले तपाईंलाई घण्टी बजाउन अनुमति दिएका छैनन्",
+  "chat.contact.ring_hint_snoozed": "उनीहरूले अहिलेलाई घण्टी पछि सारेका छन्",
+  "chat.contact.ring_hint_too_soon": "उनीहरूलाई भर्खरै घण्टी बजाइएको थियो",
+  "chat.contact.ring_hint_again_in": "{time} पछि फेरि घण्टी बजाउनुहोस्",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "सूचना",
@@ -1605,6 +1598,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "पियर पहिचान प्रतिलिपि गर्नुहोस्",
   "settings.peer_id_sheet.note":
     "यो तपाईं दुवै ब्लुटुथ दायरामा हुँदा मात्र काम गर्छ। कसैले तपाईंलाई जहाँबाट पनि सन्देश पठाउन सकोस् भन्ने चाहनुहुन्छ भने बरु आफ्नो QR कोड साझा गर्नुहोस्।",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "सेटिङमा खोज्नुहोस्…",
   "settings.search.a11y": "सेटिङमा खोज्नुहोस्",
   "settings.search.close": "खोज बन्द गर्नुहोस्",
@@ -1756,6 +1751,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "सूचनाको झलक लुकाउनुहोस्",
   "settings.security.hide_previews_desc":
     "पठाउने र सन्देशलाई तपाईंको लक स्क्रिनबाट टाढा राख्छ, जसले ती नखोलिकनै देखाउँछ",
+  "settings.security.ring_alerts": "घण्टी अलर्टहरू",
+  "settings.security.ring_alerts_desc":
+    "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",
   "settings.security.no_blocked": "कुनै पियर रोकिएको छैन",
   "settings.security.no_blocked_desc":
     "रोकिएका पियरले तपाईंलाई सन्देश पठाउन सक्दैनन् न मेश ट्याबमा देखिन्छन्",
@@ -2182,6 +2180,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "नजिकका पियर",
   "notif.channel.nearby_desc":
     "मेशले ब्लुटुथ दायरामा मानिस भेट्दा कहिलेकाहीँ आउने सूचना।",
+  "notif.channel.ring": "घण्टी",
+  "notif.channel.ring_desc":
+    "तपाईंले घण्टी बजाउन अनुमति दिनुभएका सम्पर्कहरूबाट अलर्टहरू।",
   "notif.nearby.body": "अहिले ब्लुटुथ दायरामा। मेश खोल्न थिच्नुहोस्।",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "कोही",
@@ -2198,6 +2199,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "नयाँ गतिविधि",
   "notif.hidden.mention": "तपाईंलाई उल्लेख गरियो",
   "notif.mention.title": "{sender} ले तपाईंलाई उल्लेख गरे",
+  "notif.ring.hidden": "घण्टी",
+  "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
+  "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
 };
 
 export const plurals: Plurals = {

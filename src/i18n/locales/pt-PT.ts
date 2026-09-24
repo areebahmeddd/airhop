@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Cancelar",
-  "common.done": "Pronto",
-  "common.ok": "OK",
-  "common.close": "Fechar",
   "common.back": "Voltar",
-  "common.delete": "Eliminar",
-  "common.remove": "Remover",
+  "common.close": "Fechar",
+  "common.cancel": "Cancelar",
+  "common.ok": "OK",
+  "common.done": "Pronto",
+  "common.continue": "Continuar",
+  "common.try_again": "Tentar de novo",
   "common.add": "Adicionar",
+  "common.remove": "Remover",
+  "common.delete": "Eliminar",
   "common.copy": "Copiar",
   "common.copied": "Copiado",
   "common.share": "Partilhar",
-  "common.continue": "Continuar",
-  "common.try_again": "Tentar de novo",
   "common.settings": "Definições",
   "common.on": "Ligado",
   "common.off": "Desligado",
@@ -526,34 +526,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "a sudoeste",
   "chat.location.direction.w": "a oeste",
   "chat.location.direction.nw": "a noroeste",
-  "chat.attach.send_anyway": "Enviar mesmo assim",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Tocou",
   "chat.ring.received_summary": "Tocou-te",
   "chat.ring.alert.title": "{sender} está a tocar",
   "chat.ring.alert.body": "Verifica as tuas mensagens",
   "chat.ring.alert.open": "Abrir",
   "chat.ring.alert.snooze": "Adiar 1 hora",
-  "chat.contact.allow_ring": "Permitir alertas de toque",
-  "chat.contact.allow_ring_desc":
-    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
-  "chat.contact.ring_action": "Tocar",
-  "chat.contact.ringing": "A tocar…",
   "chat.ring.sent_snoozed": "Tocou, adiado",
   "chat.ring.sent_too_soon": "Tocou, demasiado cedo",
   "chat.ring.sent_not_allowed": "Tocou, não permitido",
-  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
-  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
-  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
-  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
-  "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
-  "settings.security.ring_alerts": "Alertas de toque",
-  "settings.security.ring_alerts_desc":
-    "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",
-  "notif.channel.ring": "Toque",
-  "notif.channel.ring_desc": "Alertas de contactos a quem permitiste tocar-te.",
-  "notif.ring.hidden": "Toque",
-  "notif.ring.title": "{sender} está a tocar-te",
-  "notif.ring.body": "Verifica as tuas mensagens",
+  "chat.attach.send_anyway": "Enviar mesmo assim",
   "chat.attach.bitchat_too_big": "Isto pode não chegar",
   "chat.attach.bitchat_too_big_body":
     "{name} está no bitchat, que desiste a meio com ficheiros grandes. Abaixo de uns 350 KiB é fiável. Enviar para um contacto do Airhop não tem esse limite.",
@@ -748,6 +732,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "O nome que lhe deste",
   "chat.contact.copy_peer_id": "Copiar o ID de par",
   "chat.contact.verify": "Verificar o contacto",
+  "chat.contact.allow_ring": "Permitir alertas de toque",
+  "chat.contact.allow_ring_desc":
+    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
+  "chat.contact.ring_action": "Tocar",
+  "chat.contact.ringing": "A tocar…",
+  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
+  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
+  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
+  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
+  "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Avisos",
@@ -1652,6 +1646,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Copiar o ID de par",
   "settings.peer_id_sheet.note":
     "Isto só resulta quando ambos estão dentro do alcance do Bluetooth. Para deixares que te escrevam de qualquer lugar, partilha antes o teu código QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Procurar nas definições…",
   "settings.search.a11y": "Procurar nas definições",
   "settings.search.close": "Fechar a procura",
@@ -1807,6 +1803,9 @@ export const strings: Strings = {
     "Ocultar as pré-visualizações nas notificações",
   "settings.security.hide_previews_desc":
     "Mantém o remetente e a mensagem fora do ecrã bloqueado, que os mostra sem ser preciso desbloquear",
+  "settings.security.ring_alerts": "Alertas de toque",
+  "settings.security.ring_alerts_desc":
+    "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",
   "settings.security.no_blocked": "Nenhum par bloqueado",
   "settings.security.no_blocked_desc":
     "Os pares bloqueados não te podem escrever nem aparecem no separador Malha",
@@ -2248,6 +2247,8 @@ export const strings: Strings = {
   "notif.channel.nearby": "Pares por perto",
   "notif.channel.nearby_desc":
     "Um aviso ocasional quando a malha encontra gente dentro do alcance do Bluetooth.",
+  "notif.channel.ring": "Toque",
+  "notif.channel.ring_desc": "Alertas de contactos a quem permitiste tocar-te.",
   "notif.nearby.body":
     "Dentro do alcance do Bluetooth agora. Toca para abrir a malha.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2265,6 +2266,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Atividade nova",
   "notif.hidden.mention": "Foste mencionado",
   "notif.mention.title": "{sender} mencionou-te",
+  "notif.ring.hidden": "Toque",
+  "notif.ring.title": "{sender} está a tocar-te",
+  "notif.ring.body": "Verifica as tuas mensagens",
 };
 
 export const plurals: Plurals = {

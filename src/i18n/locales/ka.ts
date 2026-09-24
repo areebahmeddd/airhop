@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "გაუქმება",
-  "common.done": "მზადაა",
-  "common.ok": "კარგი",
-  "common.close": "დახურვა",
   "common.back": "უკან",
-  "common.delete": "წაშლა",
-  "common.remove": "მოცილება",
+  "common.close": "დახურვა",
+  "common.cancel": "გაუქმება",
+  "common.ok": "კარგი",
+  "common.done": "მზადაა",
+  "common.continue": "გაგრძელება",
+  "common.try_again": "ხელახლა ცდა",
   "common.add": "დამატება",
+  "common.remove": "მოცილება",
+  "common.delete": "წაშლა",
   "common.copy": "კოპირება",
   "common.copied": "დაკოპირდა",
   "common.share": "გაზიარება",
-  "common.continue": "გაგრძელება",
-  "common.try_again": "ხელახლა ცდა",
   "common.settings": "პარამეტრები",
   "common.on": "ჩართული",
   "common.off": "გამორთული",
@@ -525,36 +525,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "სამხრეთ-დასავლეთით",
   "chat.location.direction.w": "დასავლეთით",
   "chat.location.direction.nw": "ჩრდილო-დასავლეთით",
-  "chat.attach.send_anyway": "მაინც გაგზავნა",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "დარეკა",
   "chat.ring.received_summary": "შენ დაგირეკა",
   "chat.ring.alert.title": "{sender} გირეკავს",
   "chat.ring.alert.body": "შეამოწმე შენი შეტყობინებები",
   "chat.ring.alert.open": "გახსნა",
   "chat.ring.alert.snooze": "1 საათით გადადება",
-  "chat.contact.allow_ring": "ზარის შეტყობინებების დაშვება",
-  "chat.contact.allow_ring_desc":
-    "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია. უხმო რეჟიმი და „არ შემაწუხო“ მაინც მოქმედებს.",
-  "chat.contact.ring_action": "დარეკვა",
-  "chat.contact.ringing": "რეკავს…",
   "chat.ring.sent_snoozed": "დარეკა, გადაიდო",
   "chat.ring.sent_too_soon": "დარეკა, ძალიან ადრე",
   "chat.ring.sent_not_allowed": "დარეკა, არ არის დაშვებული",
-  "chat.contact.ring_hint_nearby":
-    "დარეკვა მუშაობს მხოლოდ მაშინ, როცა ისინი ახლოს არიან",
-  "chat.contact.ring_hint_not_allowed": "მათ არ დაგრთეს დარეკვის უფლება",
-  "chat.contact.ring_hint_snoozed": "მათ ჯერჯერობით გადადეს დარეკვები",
-  "chat.contact.ring_hint_too_soon": "მათთან სულ ახლახან დარეკეს",
-  "chat.contact.ring_hint_again_in": "ხელახლა დარეკვა {time}-ში",
-  "settings.security.ring_alerts": "ზარის შეტყობინებები",
-  "settings.security.ring_alerts_desc":
-    "ზარის მთავარი გადამრთველი. გამორთვა მაშინვე უარყოფს ყველა ზარს, მიუხედავად იმისა, რაც შენ დართე ცალკეულ კონტაქტებს.",
-  "notif.channel.ring": "ზარი",
-  "notif.channel.ring_desc":
-    "შეტყობინებები კონტაქტებისგან, ვისაც დაუშვი დარეკვა.",
-  "notif.ring.hidden": "ზარი",
-  "notif.ring.title": "{sender} გირეკავს",
-  "notif.ring.body": "შეამოწმე შენი შეტყობინებები",
+  "chat.attach.send_anyway": "მაინც გაგზავნა",
   "chat.attach.bitchat_too_big": "ეს შეიძლება ვერ მივიდეს",
   "chat.attach.bitchat_too_big_body":
     "{name} bitchat-ზეა, რომელიც დიდ ფაილს შუა გზაზე ანებებს თავს. დაახლოებით 350 KiB-ზე ნაკლები საიმედოა. Airhop-ის კონტაქტისთვის გაგზავნას ასეთი ზღვარი არ აქვს.",
@@ -743,6 +725,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "სახელი, რომელიც შენ დაარქვი",
   "chat.contact.copy_peer_id": "კვანძის ID-ის კოპირება",
   "chat.contact.verify": "კონტაქტის გადამოწმება",
+  "chat.contact.allow_ring": "ზარის შეტყობინებების დაშვება",
+  "chat.contact.allow_ring_desc":
+    "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია. უხმო რეჟიმი და „არ შემაწუხო“ მაინც მოქმედებს.",
+  "chat.contact.ring_action": "დარეკვა",
+  "chat.contact.ringing": "რეკავს…",
+  "chat.contact.ring_hint_nearby":
+    "დარეკვა მუშაობს მხოლოდ მაშინ, როცა ისინი ახლოს არიან",
+  "chat.contact.ring_hint_not_allowed": "მათ არ დაგრთეს დარეკვის უფლება",
+  "chat.contact.ring_hint_snoozed": "მათ ჯერჯერობით გადადეს დარეკვები",
+  "chat.contact.ring_hint_too_soon": "მათთან სულ ახლახან დარეკეს",
+  "chat.contact.ring_hint_again_in": "ხელახლა დარეკვა {time}-ში",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "განცხადებები",
@@ -1636,6 +1629,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "კვანძის ID-ის კოპირება",
   "settings.peer_id_sheet.note":
     "ეს მხოლოდ მაშინ მუშაობს, როცა ორივე ბლუთუზის რადიუსში ხართ. იმისთვის, რომ ვინმემ ნებისმიერი ადგილიდან მოგწეროს, სანაცვლოდ შენი QR კოდი გააზიარე.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "პარამეტრების ძებნა…",
   "settings.search.a11y": "პარამეტრების ძებნა",
   "settings.search.close": "ძებნის დახურვა",
@@ -1790,6 +1785,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "შეტყობინებების წინასწარი ხედის დამალვა",
   "settings.security.hide_previews_desc":
     "გამგზავნსა და შეტყობინებას ჩაკეტილი ეკრანიდან შორს ინახავს, რომელიც მათ განბლოკვის გარეშე აჩვენებს",
+  "settings.security.ring_alerts": "ზარის შეტყობინებები",
+  "settings.security.ring_alerts_desc":
+    "ზარის მთავარი გადამრთველი. გამორთვა მაშინვე უარყოფს ყველა ზარს, მიუხედავად იმისა, რაც შენ დართე ცალკეულ კონტაქტებს.",
   "settings.security.no_blocked": "დაბლოკილი კვანძები არ არის",
   "settings.security.no_blocked_desc":
     "დაბლოკილ კვანძებს არ შეუძლიათ მოგწერონ და მეშის ჩანართზეც არ ჩანან",
@@ -2221,6 +2219,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "ახლომდებარე კვანძები",
   "notif.channel.nearby_desc":
     "დროდადრო შეტყობინება, როცა მეში ბლუთუზის რადიუსში ადამიანებს პოულობს.",
+  "notif.channel.ring": "ზარი",
+  "notif.channel.ring_desc":
+    "შეტყობინებები კონტაქტებისგან, ვისაც დაუშვი დარეკვა.",
   "notif.nearby.body": "ახლა ბლუთუზის რადიუსშია. შეეხე მეშის გასახსნელად.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "ვიღაც",
@@ -2237,6 +2238,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "ახალი აქტივობა",
   "notif.hidden.mention": "შენ მოგიხსენიეს",
   "notif.mention.title": "{sender}-მა შენ მოგიხსენია",
+  "notif.ring.hidden": "ზარი",
+  "notif.ring.title": "{sender} გირეკავს",
+  "notif.ring.body": "შეამოწმე შენი შეტყობინებები",
 };
 
 export const plurals: Plurals = {

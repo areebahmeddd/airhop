@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ሰርዝ",
-  "common.done": "ተጠናቋል",
-  "common.ok": "እሺ",
-  "common.close": "ዝጋ",
   "common.back": "ተመለስ",
-  "common.delete": "አጥፋ",
-  "common.remove": "አስወግድ",
+  "common.close": "ዝጋ",
+  "common.cancel": "ሰርዝ",
+  "common.ok": "እሺ",
+  "common.done": "ተጠናቋል",
+  "common.continue": "ቀጥል",
+  "common.try_again": "እንደገና ሞክር",
   "common.add": "ጨምር",
+  "common.remove": "አስወግድ",
+  "common.delete": "አጥፋ",
   "common.copy": "ቅዳ",
   "common.copied": "ተቀድቷል",
   "common.share": "አጋራ",
-  "common.continue": "ቀጥል",
-  "common.try_again": "እንደገና ሞክር",
   "common.settings": "ቅንብሮች",
   "common.on": "በርቷል",
   "common.off": "ጠፍቷል",
@@ -489,34 +489,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "ደቡብ ምዕራብ",
   "chat.location.direction.w": "ምዕራብ",
   "chat.location.direction.nw": "ሰሜን ምዕራብ",
-  "chat.attach.send_anyway": "ለማንኛውም ላክ",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "ደውለሃል",
   "chat.ring.received_summary": "ደውለውልሃል",
   "chat.ring.alert.title": "{sender} እየደወለልህ ነው",
   "chat.ring.alert.body": "መልእክቶችህን አረጋግጥ",
   "chat.ring.alert.open": "ክፈት",
   "chat.ring.alert.snooze": "ለ1 ሰዓት አዘግይ",
-  "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
-  "chat.contact.allow_ring_desc":
-    "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
-  "chat.contact.ring_action": "ደውል",
-  "chat.contact.ringing": "እየደወለ ነው…",
   "chat.ring.sent_snoozed": "ደውሏል፣ ተላልፏል",
   "chat.ring.sent_too_soon": "ደውሏል፣ በጣም ቶሎ",
   "chat.ring.sent_not_allowed": "ደውሏል፣ አልተፈቀደም",
-  "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",
-  "chat.contact.ring_hint_not_allowed": "እንድትደውልላቸው አልፈቀዱልህም",
-  "chat.contact.ring_hint_snoozed": "ደወሎችን ለአሁኑ አዘግይተዋል",
-  "chat.contact.ring_hint_too_soon": "ከትንሽ ጊዜ በፊት ተደውሎላቸዋል",
-  "chat.contact.ring_hint_again_in": "በ{time} ውስጥ እንደገና ደውል",
-  "settings.security.ring_alerts": "የደወል ማንቂያዎች",
-  "settings.security.ring_alerts_desc":
-    "ለደወል ዋና መቀየሪያ። ማጥፋት ለእያንዳንዱ እውቂያ የፈቀድከውን ሳይለይ ሁሉንም ጥሪ በአንድ ጊዜ ውድቅ ያደርጋል።",
-  "notif.channel.ring": "ደወል",
-  "notif.channel.ring_desc": "እንዲደውሉልህ ከፈቀድካቸው እውቂያዎች የሚመጡ ማንቂያዎች።",
-  "notif.ring.hidden": "ደወል",
-  "notif.ring.title": "{sender} እየደወለልህ ነው",
-  "notif.ring.body": "መልእክቶችህን አረጋግጥ",
+  "chat.attach.send_anyway": "ለማንኛውም ላክ",
   "chat.attach.bitchat_too_big": "ይህ ላይደርስ ይችላል",
   "chat.attach.bitchat_too_big_body":
     "{name} በbitchat ላይ ነው፤ እሱ ደግሞ ትልቅ ፋይልን በመሃል ላይ ይተወዋል። ከ350 KiB በታች አስተማማኝ ነው። ለAirhop እውቂያ መላክ እንዲህ ያለ ገደብ የለውም።",
@@ -695,6 +679,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "አንተ የሰጠሃቸው ስም",
   "chat.contact.copy_peer_id": "የአቻ መለያን ቅዳ",
   "chat.contact.verify": "እውቂያን አረጋግጥ",
+  "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
+  "chat.contact.allow_ring_desc":
+    "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
+  "chat.contact.ring_action": "ደውል",
+  "chat.contact.ringing": "እየደወለ ነው…",
+  "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",
+  "chat.contact.ring_hint_not_allowed": "እንድትደውልላቸው አልፈቀዱልህም",
+  "chat.contact.ring_hint_snoozed": "ደወሎችን ለአሁኑ አዘግይተዋል",
+  "chat.contact.ring_hint_too_soon": "ከትንሽ ጊዜ በፊት ተደውሎላቸዋል",
+  "chat.contact.ring_hint_again_in": "በ{time} ውስጥ እንደገና ደውል",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "ማስታወቂያዎች",
@@ -1518,6 +1512,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "የአቻ መለያን ቅዳ",
   "settings.peer_id_sheet.note":
     "ይህ የሚሠራው ሁለታችሁም በብሉቱዝ ክልል ውስጥ ስትሆኑ ብቻ ነው። አንድ ሰው ከየትም ሆኖ መልእክት እንዲልክልህ ከፈለግህ በምትኩ QR ኮድህን አጋራ።",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ቅንብሮችን ፈልግ…",
   "settings.search.a11y": "ቅንብሮችን ፈልግ",
   "settings.search.close": "ፍለጋን ዝጋ",
@@ -1660,6 +1656,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "የማሳወቂያ ቅድመ-እይታዎችን ደብቅ",
   "settings.security.hide_previews_desc":
     "የመቆለፊያ ማያህ ሳይከፈት ስለሚያሳያቸው ላኪውንና መልእክቱን ከዚያ ያርቃል",
+  "settings.security.ring_alerts": "የደወል ማንቂያዎች",
+  "settings.security.ring_alerts_desc":
+    "ለደወል ዋና መቀየሪያ። ማጥፋት ለእያንዳንዱ እውቂያ የፈቀድከውን ሳይለይ ሁሉንም ጥሪ በአንድ ጊዜ ውድቅ ያደርጋል።",
   "settings.security.no_blocked": "የታገደ አቻ የለም",
   "settings.security.no_blocked_desc":
     "የታገዱ አቻዎች መልእክት ሊልኩልህ አይችሉም፤ በሜሽ ትር ላይም አይታዩም",
@@ -2065,6 +2064,8 @@ export const strings: Strings = {
   "notif.channel.nearby": "በአቅራቢያ ያሉ አቻዎች",
   "notif.channel.nearby_desc":
     "ሜሹ በብሉቱዝ ክልል ውስጥ ሰዎችን ሲያገኝ አልፎ አልፎ የሚላክ ማስታወቂያ።",
+  "notif.channel.ring": "ደወል",
+  "notif.channel.ring_desc": "እንዲደውሉልህ ከፈቀድካቸው እውቂያዎች የሚመጡ ማንቂያዎች።",
   "notif.nearby.body": "አሁን በብሉቱዝ ክልል ውስጥ። ሜሹን ለመክፈት ንካ።",
   "notif.channel_message": "{sender}፦ {preview}",
   "notif.someone": "አንድ ሰው",
@@ -2081,6 +2082,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "አዲስ እንቅስቃሴ",
   "notif.hidden.mention": "ተጠቅሰሃል",
   "notif.mention.title": "{sender} ጠቅሶሃል",
+  "notif.ring.hidden": "ደወል",
+  "notif.ring.title": "{sender} እየደወለልህ ነው",
+  "notif.ring.body": "መልእክቶችህን አረጋግጥ",
 };
 
 export const plurals: Plurals = {

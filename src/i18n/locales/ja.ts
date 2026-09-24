@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "キャンセル",
-  "common.done": "完了",
-  "common.ok": "OK",
-  "common.close": "閉じる",
   "common.back": "戻る",
-  "common.delete": "削除",
-  "common.remove": "取り除く",
+  "common.close": "閉じる",
+  "common.cancel": "キャンセル",
+  "common.ok": "OK",
+  "common.done": "完了",
+  "common.continue": "続ける",
+  "common.try_again": "もう一度試す",
   "common.add": "追加",
+  "common.remove": "取り除く",
+  "common.delete": "削除",
   "common.copy": "コピー",
   "common.copied": "コピーしました",
   "common.share": "共有",
-  "common.continue": "続ける",
-  "common.try_again": "もう一度試す",
   "common.settings": "設定",
   "common.on": "オン",
   "common.off": "オフ",
@@ -522,36 +522,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "南西",
   "chat.location.direction.w": "西",
   "chat.location.direction.nw": "北西",
-  "chat.attach.send_anyway": "それでも送信",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "呼び出しました",
   "chat.ring.received_summary": "呼び出しを受けました",
   "chat.ring.alert.title": "{sender}が呼び出しています",
   "chat.ring.alert.body": "メッセージを確認してください",
   "chat.ring.alert.open": "開く",
   "chat.ring.alert.snooze": "1時間スヌーズ",
-  "chat.contact.allow_ring": "呼び出しを許可",
-  "chat.contact.allow_ring_desc":
-    "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
-  "chat.contact.ring_action": "呼び出す",
-  "chat.contact.ringing": "呼び出し中…",
   "chat.ring.sent_snoozed": "呼び出し済み、スヌーズ中",
   "chat.ring.sent_too_soon": "呼び出し済み、早すぎます",
   "chat.ring.sent_not_allowed": "呼び出し済み、許可なし",
-  "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",
-  "chat.contact.ring_hint_not_allowed":
-    "相手はあなたからの呼び出しを許可していません",
-  "chat.contact.ring_hint_snoozed":
-    "相手は今のところ呼び出しをスヌーズしています",
-  "chat.contact.ring_hint_too_soon": "相手はつい先ほど呼び出されました",
-  "chat.contact.ring_hint_again_in": "{time}後に再度呼び出せます",
-  "settings.security.ring_alerts": "呼び出しアラート",
-  "settings.security.ring_alerts_desc":
-    "呼び出し機能のマスタースイッチです。オフにすると、個々の連絡先への許可に関わらずすべての呼び出しを拒否します。",
-  "notif.channel.ring": "呼び出し",
-  "notif.channel.ring_desc": "呼び出しを許可した連絡先からのアラートです。",
-  "notif.ring.hidden": "呼び出し",
-  "notif.ring.title": "{sender}があなたを呼び出しています",
-  "notif.ring.body": "メッセージを確認してください",
+  "chat.attach.send_anyway": "それでも送信",
   "chat.attach.bitchat_too_big": "これは届かないかもしれません",
   "chat.attach.bitchat_too_big_body":
     "{name}はbitchatを使っていて、大きなファイルは途中であきらめてしまいます。およそ350KiB以下なら確実です。Airhopの連絡先に送る場合はこの制限はありません。",
@@ -739,6 +721,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "あなたが付けた名前",
   "chat.contact.copy_peer_id": "ピアIDをコピー",
   "chat.contact.verify": "連絡先を検証",
+  "chat.contact.allow_ring": "呼び出しを許可",
+  "chat.contact.allow_ring_desc":
+    "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
+  "chat.contact.ring_action": "呼び出す",
+  "chat.contact.ringing": "呼び出し中…",
+  "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",
+  "chat.contact.ring_hint_not_allowed":
+    "相手はあなたからの呼び出しを許可していません",
+  "chat.contact.ring_hint_snoozed":
+    "相手は今のところ呼び出しをスヌーズしています",
+  "chat.contact.ring_hint_too_soon": "相手はつい先ほど呼び出されました",
+  "chat.contact.ring_hint_again_in": "{time}後に再度呼び出せます",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "お知らせ",
@@ -1627,6 +1621,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "ピアIDをコピー",
   "settings.peer_id_sheet.note":
     "これはお互いがBluetooth圏内にいるときだけ使えます。どこからでもメッセージを受け取れるようにするには、QRコードを共有してください。",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "設定を検索…",
   "settings.search.a11y": "設定を検索",
   "settings.search.close": "検索を閉じる",
@@ -1775,6 +1771,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "通知のプレビューを隠す",
   "settings.security.hide_previews_desc":
     "ロック解除なしで表示されるロック画面から、送信者と本文を隠します",
+  "settings.security.ring_alerts": "呼び出しアラート",
+  "settings.security.ring_alerts_desc":
+    "呼び出し機能のマスタースイッチです。オフにすると、個々の連絡先への許可に関わらずすべての呼び出しを拒否します。",
   "settings.security.no_blocked": "ブロックしたピアはいません",
   "settings.security.no_blocked_desc":
     "ブロックしたピアはメッセージを送れず、メッシュタブにも表示されません",
@@ -2200,6 +2199,8 @@ export const strings: Strings = {
   "notif.channel.nearby": "近くのピア",
   "notif.channel.nearby_desc":
     "Bluetooth圏内に人を見つけたときに、ときどきお知らせします。",
+  "notif.channel.ring": "呼び出し",
+  "notif.channel.ring_desc": "呼び出しを許可した連絡先からのアラートです。",
   "notif.nearby.body": "今Bluetooth圏内にいます。タップでメッシュを開きます。",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "誰か",
@@ -2216,6 +2217,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "新しい動き",
   "notif.hidden.mention": "メンションされました",
   "notif.mention.title": "{sender}があなたをメンションしました",
+  "notif.ring.hidden": "呼び出し",
+  "notif.ring.title": "{sender}があなたを呼び出しています",
+  "notif.ring.body": "メッセージを確認してください",
 };
 
 export const plurals: Plurals = {

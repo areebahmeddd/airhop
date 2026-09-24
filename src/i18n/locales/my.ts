@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "မလုပ်တော့",
-  "common.done": "ပြီးပါပြီ",
-  "common.ok": "ကောင်းပြီ",
-  "common.close": "ပိတ်ပါ",
   "common.back": "နောက်သို့",
-  "common.delete": "ဖျက်ပါ",
-  "common.remove": "ဖယ်ရှားပါ",
+  "common.close": "ပိတ်ပါ",
+  "common.cancel": "မလုပ်တော့",
+  "common.ok": "ကောင်းပြီ",
+  "common.done": "ပြီးပါပြီ",
+  "common.continue": "ဆက်လုပ်ပါ",
+  "common.try_again": "ထပ်စမ်းကြည့်ပါ",
   "common.add": "ထည့်ပါ",
+  "common.remove": "ဖယ်ရှားပါ",
+  "common.delete": "ဖျက်ပါ",
   "common.copy": "ကူးပါ",
   "common.copied": "ကူးပြီးပါပြီ",
   "common.share": "မျှဝေပါ",
-  "common.continue": "ဆက်လုပ်ပါ",
-  "common.try_again": "ထပ်စမ်းကြည့်ပါ",
   "common.settings": "ဆက်တင်များ",
   "common.on": "ဖွင့်",
   "common.off": "ပိတ်",
@@ -532,38 +532,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "အနောက်တောင်",
   "chat.location.direction.w": "အနောက်",
   "chat.location.direction.nw": "အနောက်မြောက်",
-  "chat.attach.send_anyway": "မည်သို့ပင်ဖြစ်စေ ပို့ပါ",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "ခေါ်ဆိုခဲ့သည်",
   "chat.ring.received_summary": "သင့်ကို ခေါ်ဆိုခဲ့သည်",
   "chat.ring.alert.title": "{sender} က သင့်ကို ခေါ်ဆိုနေသည်",
   "chat.ring.alert.body": "သင့်စာများကို စစ်ဆေးပါ",
   "chat.ring.alert.open": "ဖွင့်ရန်",
   "chat.ring.alert.snooze": "1 နာရီ ဆိုင်းငံ့ရန်",
-  "chat.contact.allow_ring": "ဖုန်းမြည်သံ သတိပေးချက်များကို ခွင့်ပြုပါ",
-  "chat.contact.allow_ring_desc":
-    "ဤစကားပြောကို အသံပိတ်ထားသော်လည်း၊ သင့်အာရုံစိုက်မှုရရှိရန် သူတို့ကို သင့်ဖုန်းမြည်စေခွင့်ပြုပါ။ အသံတိတ်မုဒ်နှင့် မနှောင့်ယှက်ရ မုဒ်တို့ကို ဆက်လက်အသုံးပြုသည်။",
-  "chat.contact.ring_action": "ဖုန်းမြည်စေမည်",
-  "chat.contact.ringing": "ဖုန်းမြည်နေသည်…",
   "chat.ring.sent_snoozed": "ဖုန်းမြည်ပြီး၊ ရွှေ့ဆိုင်းထား",
   "chat.ring.sent_too_soon": "ဖုန်းမြည်ပြီး၊ အလွန်စောသည်",
   "chat.ring.sent_not_allowed": "ဖုန်းမြည်ပြီး၊ ခွင့်မပြု",
-  "chat.contact.ring_hint_nearby":
-    "သူတို့ အနီးအနားရှိမှသာ ဖုန်းမြည်ခြင်း အလုပ်လုပ်သည်",
-  "chat.contact.ring_hint_not_allowed":
-    "သူတို့က သင့်ကို ဖုန်းမြည်ခွင့် မပြုသေးပါ",
-  "chat.contact.ring_hint_snoozed":
-    "သူတို့က ယခုအတွက် ဖုန်းမြည်ခြင်းကို ရွှေ့ဆိုင်းထားသည်",
-  "chat.contact.ring_hint_too_soon": "သူတို့ကို ခုနကမှ ဖုန်းမြည်ထားသည်",
-  "chat.contact.ring_hint_again_in": "{time} အတွင်း ထပ်မံ ဖုန်းမြည်နိုင်သည်",
-  "settings.security.ring_alerts": "ဖုန်းမြည်သံ သတိပေးချက်များ",
-  "settings.security.ring_alerts_desc":
-    "ဖုန်းမြည်ခြင်းအတွက် အဓိက ခလုတ်။ ပိတ်ထားခြင်းသည် တစ်ဦးချင်း လုပ်ဖော်ကိုင်ဖက်များအား ခွင့်ပြုထားသည်ဖြစ်စေ ဖုန်းမြည်သံအားလုံးကို ချက်ချင်း ငြင်းပယ်သည်။",
-  "notif.channel.ring": "ဖုန်းမြည်သံ",
-  "notif.channel.ring_desc":
-    "သင့်ကို ဖုန်းခေါ်ခွင့်ပြုထားသော လုပ်ဖော်ကိုင်ဖက်များထံမှ သတိပေးချက်များ။",
-  "notif.ring.hidden": "ဖုန်းမြည်သံ",
-  "notif.ring.title": "{sender} က သင့်ကို ခေါ်ဆိုနေသည်",
-  "notif.ring.body": "သင့်စာများကို စစ်ဆေးပါ",
+  "chat.attach.send_anyway": "မည်သို့ပင်ဖြစ်စေ ပို့ပါ",
   "chat.attach.bitchat_too_big": "ဤအရာ မရောက်နိုင်ပါ",
   "chat.attach.bitchat_too_big_body":
     "{name} သည် bitchat ပေါ်တွင် ရှိပြီး ၎င်းက ဖိုင်ကြီးကို လမ်းတစ်ဝက်တွင် စွန့်ပစ်တတ်သည်။ 350 KiB ခန့်အောက်သည် စိတ်ချရသည်။ Airhop အဆက်အသွယ်ထံ ပို့လျှင် ထိုကန့်သတ်ချက် မရှိပါ။",
@@ -760,6 +740,19 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "သင်ပေးထားသော အမည်",
   "chat.contact.copy_peer_id": "လုပ်ဖော်ကိုင်ဖက် ID ကူးပါ",
   "chat.contact.verify": "အဆက်အသွယ် အတည်ပြုပါ",
+  "chat.contact.allow_ring": "ဖုန်းမြည်သံ သတိပေးချက်များကို ခွင့်ပြုပါ",
+  "chat.contact.allow_ring_desc":
+    "ဤစကားပြောကို အသံပိတ်ထားသော်လည်း၊ သင့်အာရုံစိုက်မှုရရှိရန် သူတို့ကို သင့်ဖုန်းမြည်စေခွင့်ပြုပါ။ အသံတိတ်မုဒ်နှင့် မနှောင့်ယှက်ရ မုဒ်တို့ကို ဆက်လက်အသုံးပြုသည်။",
+  "chat.contact.ring_action": "ဖုန်းမြည်စေမည်",
+  "chat.contact.ringing": "ဖုန်းမြည်နေသည်…",
+  "chat.contact.ring_hint_nearby":
+    "သူတို့ အနီးအနားရှိမှသာ ဖုန်းမြည်ခြင်း အလုပ်လုပ်သည်",
+  "chat.contact.ring_hint_not_allowed":
+    "သူတို့က သင့်ကို ဖုန်းမြည်ခွင့် မပြုသေးပါ",
+  "chat.contact.ring_hint_snoozed":
+    "သူတို့က ယခုအတွက် ဖုန်းမြည်ခြင်းကို ရွှေ့ဆိုင်းထားသည်",
+  "chat.contact.ring_hint_too_soon": "သူတို့ကို ခုနကမှ ဖုန်းမြည်ထားသည်",
+  "chat.contact.ring_hint_again_in": "{time} အတွင်း ထပ်မံ ဖုန်းမြည်နိုင်သည်",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "အသိပေးချက်များ",
@@ -1666,6 +1659,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "လုပ်ဖော်ကိုင်ဖက် ID ကူးပါ",
   "settings.peer_id_sheet.note":
     "ဤနည်းသည် နှစ်ဦးစလုံး ဘလူးတုသ်အကွာအဝေးအတွင်း ရှိမှသာ အလုပ်လုပ်သည်။ တစ်စုံတစ်ဦးက မည်သည့်နေရာမှမဆို မက်ဆေ့ဂျ်ပို့နိုင်စေရန် သင့် QR ကုဒ်ကို မျှဝေပါ။",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ဆက်တင်များ ရှာပါ…",
   "settings.search.a11y": "ဆက်တင်များ ရှာပါ",
   "settings.search.close": "ရှာဖွေမှု ပိတ်ပါ",
@@ -1823,6 +1818,9 @@ export const strings: Strings = {
     "အသိပေးချက် အကြိုကြည့်ရှုမှုများကို ဖျောက်ပါ",
   "settings.security.hide_previews_desc":
     "လော့ခ်စခရင်သည် သော့မဖွင့်ဘဲ ပြသတတ်သဖြင့် ပေးပို့သူနှင့် မက်ဆေ့ဂျ်ကို ထိုနေရာမှ ဖယ်ထားသည်",
+  "settings.security.ring_alerts": "ဖုန်းမြည်သံ သတိပေးချက်များ",
+  "settings.security.ring_alerts_desc":
+    "ဖုန်းမြည်ခြင်းအတွက် အဓိက ခလုတ်။ ပိတ်ထားခြင်းသည် တစ်ဦးချင်း လုပ်ဖော်ကိုင်ဖက်များအား ခွင့်ပြုထားသည်ဖြစ်စေ ဖုန်းမြည်သံအားလုံးကို ချက်ချင်း ငြင်းပယ်သည်။",
   "settings.security.no_blocked": "ပိတ်ဆို့ထားသော လုပ်ဖော်ကိုင်ဖက် မရှိပါ",
   "settings.security.no_blocked_desc":
     "ပိတ်ဆို့ထားသော လုပ်ဖော်ကိုင်ဖက်များသည် သင့်ကို မက်ဆေ့ဂျ်မပို့နိုင်သလို မက်ရှ်တဘ်တွင်လည်း မပေါ်ပါ",
@@ -2267,6 +2265,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "အနီးအနားရှိ လုပ်ဖော်ကိုင်ဖက်များ",
   "notif.channel.nearby_desc":
     "မက်ရှ်က ဘလူးတုသ်အကွာအဝေးအတွင်း လူများကို တွေ့သည့်အခါ ရံဖန်ရံခါ အသိပေးသည်။",
+  "notif.channel.ring": "ဖုန်းမြည်သံ",
+  "notif.channel.ring_desc":
+    "သင့်ကို ဖုန်းခေါ်ခွင့်ပြုထားသော လုပ်ဖော်ကိုင်ဖက်များထံမှ သတိပေးချက်များ။",
   "notif.nearby.body":
     "ယခု ဘလူးတုသ်အကွာအဝေးအတွင်း ရှိနေသည်။ မက်ရှ်ဖွင့်ရန် နှိပ်ပါ။",
   "notif.channel_message": "{sender} — {preview}",
@@ -2284,6 +2285,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "လှုပ်ရှားမှုအသစ်",
   "notif.hidden.mention": "သင့်ကို ဖော်ပြခဲ့သည်",
   "notif.mention.title": "{sender} က သင့်ကို ဖော်ပြခဲ့သည်",
+  "notif.ring.hidden": "ဖုန်းမြည်သံ",
+  "notif.ring.title": "{sender} က သင့်ကို ခေါ်ဆိုနေသည်",
+  "notif.ring.body": "သင့်စာများကို စစ်ဆေးပါ",
 };
 
 export const plurals: Plurals = {

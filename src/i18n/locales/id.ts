@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Batal",
-  "common.done": "Selesai",
-  "common.ok": "Oke",
-  "common.close": "Tutup",
   "common.back": "Kembali",
-  "common.delete": "Hapus",
-  "common.remove": "Singkirkan",
+  "common.close": "Tutup",
+  "common.cancel": "Batal",
+  "common.ok": "Oke",
+  "common.done": "Selesai",
+  "common.continue": "Lanjut",
+  "common.try_again": "Coba lagi",
   "common.add": "Tambah",
+  "common.remove": "Singkirkan",
+  "common.delete": "Hapus",
   "common.copy": "Salin",
   "common.copied": "Tersalin",
   "common.share": "Bagikan",
-  "common.continue": "Lanjut",
-  "common.try_again": "Coba lagi",
   "common.settings": "Pengaturan",
   "common.on": "Aktif",
   "common.off": "Mati",
@@ -528,37 +528,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "barat daya",
   "chat.location.direction.w": "barat",
   "chat.location.direction.nw": "barat laut",
-  "chat.attach.send_anyway": "Kirim saja",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Membunyikan bel",
   "chat.ring.received_summary": "Membunyikan bel untuk Anda",
   "chat.ring.alert.title": "{sender} membunyikan bel",
   "chat.ring.alert.body": "Periksa pesan Anda",
   "chat.ring.alert.open": "Buka",
   "chat.ring.alert.snooze": "Tunda 1 jam",
-  "chat.contact.allow_ring": "Izinkan peringatan bel",
-  "chat.contact.allow_ring_desc":
-    "Izinkan mereka membunyikan bel ponsel Anda untuk menarik perhatian, meskipun percakapan ini dibisukan. Mode senyap dan Jangan Ganggu tetap berlaku.",
-  "chat.contact.ring_action": "Bunyikan bel",
-  "chat.contact.ringing": "Membunyikan bel…",
   "chat.ring.sent_snoozed": "Bel dibunyikan, ditunda",
   "chat.ring.sent_too_soon": "Bel dibunyikan, terlalu cepat",
   "chat.ring.sent_not_allowed": "Bel dibunyikan, tidak diizinkan",
-  "chat.contact.ring_hint_nearby":
-    "Bel hanya berfungsi saat mereka berada di dekat Anda",
-  "chat.contact.ring_hint_not_allowed":
-    "Mereka belum mengizinkan Anda membunyikan bel",
-  "chat.contact.ring_hint_snoozed": "Mereka menunda bel untuk saat ini",
-  "chat.contact.ring_hint_too_soon": "Bel mereka baru saja dibunyikan",
-  "chat.contact.ring_hint_again_in": "Bunyikan bel lagi dalam {time}",
-  "settings.security.ring_alerts": "Peringatan bel",
-  "settings.security.ring_alerts_desc":
-    "Saklar utama untuk fitur Bel. Nonaktifkan untuk menolak semua bel sekaligus, apa pun izin yang telah Anda berikan ke masing-masing kontak.",
-  "notif.channel.ring": "Bel",
-  "notif.channel.ring_desc":
-    "Peringatan dari kontak yang Anda izinkan membunyikan bel.",
-  "notif.ring.hidden": "Bel",
-  "notif.ring.title": "{sender} membunyikan bel untuk Anda",
-  "notif.ring.body": "Periksa pesan Anda",
+  "chat.attach.send_anyway": "Kirim saja",
   "chat.attach.bitchat_too_big": "Ini mungkin tidak sampai",
   "chat.attach.bitchat_too_big_body":
     "{name} memakai bitchat, yang menyerah di tengah jalan pada berkas besar. Di bawah kira-kira 350 KiB terbilang andal. Mengirimkannya ke kontak Airhop tidak punya batas seperti itu.",
@@ -751,6 +732,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Namamu untuk mereka",
   "chat.contact.copy_peer_id": "Salin ID rekan",
   "chat.contact.verify": "Verifikasi kontak",
+  "chat.contact.allow_ring": "Izinkan peringatan bel",
+  "chat.contact.allow_ring_desc":
+    "Izinkan mereka membunyikan bel ponsel Anda untuk menarik perhatian, meskipun percakapan ini dibisukan. Mode senyap dan Jangan Ganggu tetap berlaku.",
+  "chat.contact.ring_action": "Bunyikan bel",
+  "chat.contact.ringing": "Membunyikan bel…",
+  "chat.contact.ring_hint_nearby":
+    "Bel hanya berfungsi saat mereka berada di dekat Anda",
+  "chat.contact.ring_hint_not_allowed":
+    "Mereka belum mengizinkan Anda membunyikan bel",
+  "chat.contact.ring_hint_snoozed": "Mereka menunda bel untuk saat ini",
+  "chat.contact.ring_hint_too_soon": "Bel mereka baru saja dibunyikan",
+  "chat.contact.ring_hint_again_in": "Bunyikan bel lagi dalam {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Pengumuman",
@@ -1637,6 +1630,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Salin ID rekan",
   "settings.peer_id_sheet.note":
     "Ini hanya bekerja saat kalian berdua dalam jangkauan Bluetooth. Agar orang bisa mengirimimu pesan dari mana saja, bagikan kode QR-mu.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Cari di pengaturan…",
   "settings.search.a11y": "Cari di pengaturan",
   "settings.search.close": "Tutup pencarian",
@@ -1792,6 +1787,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Sembunyikan pratinjau notifikasi",
   "settings.security.hide_previews_desc":
     "Menjauhkan pengirim dan isi pesan dari layar kunci, yang menampilkannya tanpa perlu membuka kunci",
+  "settings.security.ring_alerts": "Peringatan bel",
+  "settings.security.ring_alerts_desc":
+    "Saklar utama untuk fitur Bel. Nonaktifkan untuk menolak semua bel sekaligus, apa pun izin yang telah Anda berikan ke masing-masing kontak.",
   "settings.security.no_blocked": "Tidak ada rekan yang diblokir",
   "settings.security.no_blocked_desc":
     "Rekan yang diblokir tidak bisa mengirimimu pesan atau muncul di tab Mesh",
@@ -2225,6 +2223,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Rekan di dekat sini",
   "notif.channel.nearby_desc":
     "Pemberitahuan sesekali saat mesh menemukan orang dalam jangkauan Bluetooth.",
+  "notif.channel.ring": "Bel",
+  "notif.channel.ring_desc":
+    "Peringatan dari kontak yang Anda izinkan membunyikan bel.",
   "notif.nearby.body":
     "Sedang dalam jangkauan Bluetooth. Ketuk untuk membuka mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2242,6 +2243,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Aktivitas baru",
   "notif.hidden.mention": "Kamu disebut",
   "notif.mention.title": "{sender} menyebutmu",
+  "notif.ring.hidden": "Bel",
+  "notif.ring.title": "{sender} membunyikan bel untuk Anda",
+  "notif.ring.body": "Periksa pesan Anda",
 };
 
 export const plurals: Plurals = {

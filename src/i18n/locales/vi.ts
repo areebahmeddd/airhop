@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Hủy",
-  "common.done": "Xong",
-  "common.ok": "OK",
-  "common.close": "Đóng",
   "common.back": "Quay lại",
-  "common.delete": "Xóa",
-  "common.remove": "Gỡ",
+  "common.close": "Đóng",
+  "common.cancel": "Hủy",
+  "common.ok": "OK",
+  "common.done": "Xong",
+  "common.continue": "Tiếp tục",
+  "common.try_again": "Thử lại",
   "common.add": "Thêm",
+  "common.remove": "Gỡ",
+  "common.delete": "Xóa",
   "common.copy": "Sao chép",
   "common.copied": "Đã sao chép",
   "common.share": "Chia sẻ",
-  "common.continue": "Tiếp tục",
-  "common.try_again": "Thử lại",
   "common.settings": "Cài đặt",
   "common.on": "Bật",
   "common.off": "Tắt",
@@ -521,36 +521,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "tây nam",
   "chat.location.direction.w": "tây",
   "chat.location.direction.nw": "tây bắc",
-  "chat.attach.send_anyway": "Vẫn gửi",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Đã gọi chuông",
   "chat.ring.received_summary": "Đã gọi chuông cho bạn",
   "chat.ring.alert.title": "{sender} đang gọi chuông",
   "chat.ring.alert.body": "Hãy kiểm tra tin nhắn của bạn",
   "chat.ring.alert.open": "Mở",
   "chat.ring.alert.snooze": "Tạm hoãn 1 giờ",
-  "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
-  "chat.contact.allow_ring_desc":
-    "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
-  "chat.contact.ring_action": "Gọi chuông",
-  "chat.contact.ringing": "Đang gọi chuông…",
   "chat.ring.sent_snoozed": "Đã gọi chuông, tạm hoãn",
   "chat.ring.sent_too_soon": "Đã gọi chuông, quá sớm",
   "chat.ring.sent_not_allowed": "Đã gọi chuông, không được phép",
-  "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",
-  "chat.contact.ring_hint_not_allowed": "Họ chưa cho phép bạn gọi chuông",
-  "chat.contact.ring_hint_snoozed": "Họ đang tạm hoãn chuông lúc này",
-  "chat.contact.ring_hint_too_soon":
-    "Họ vừa được gọi chuông cách đây không lâu",
-  "chat.contact.ring_hint_again_in": "Gọi chuông lại sau {time}",
-  "settings.security.ring_alerts": "Cảnh báo chuông",
-  "settings.security.ring_alerts_desc":
-    "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",
-  "notif.channel.ring": "Chuông",
-  "notif.channel.ring_desc":
-    "Cảnh báo từ những liên hệ bạn đã cho phép gọi chuông cho bạn.",
-  "notif.ring.hidden": "Chuông",
-  "notif.ring.title": "{sender} đang gọi chuông cho bạn",
-  "notif.ring.body": "Hãy kiểm tra tin nhắn của bạn",
+  "chat.attach.send_anyway": "Vẫn gửi",
   "chat.attach.bitchat_too_big": "Tệp này có thể không tới nơi",
   "chat.attach.bitchat_too_big_body":
     "{name} đang dùng bitchat, ứng dụng này bỏ dở giữa chừng với tệp lớn. Dưới khoảng 350 KiB thì đáng tin cậy. Gửi cho một liên hệ Airhop thì không có giới hạn như vậy.",
@@ -741,6 +723,17 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Tên bạn đặt cho họ",
   "chat.contact.copy_peer_id": "Sao chép ID nút mạng",
   "chat.contact.verify": "Xác minh liên hệ",
+  "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
+  "chat.contact.allow_ring_desc":
+    "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
+  "chat.contact.ring_action": "Gọi chuông",
+  "chat.contact.ringing": "Đang gọi chuông…",
+  "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",
+  "chat.contact.ring_hint_not_allowed": "Họ chưa cho phép bạn gọi chuông",
+  "chat.contact.ring_hint_snoozed": "Họ đang tạm hoãn chuông lúc này",
+  "chat.contact.ring_hint_too_soon":
+    "Họ vừa được gọi chuông cách đây không lâu",
+  "chat.contact.ring_hint_again_in": "Gọi chuông lại sau {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Bản tin",
@@ -1625,6 +1618,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Sao chép ID nút mạng",
   "settings.peer_id_sheet.note":
     "Cách này chỉ chạy khi cả hai bạn cùng ở trong tầm Bluetooth. Để ai đó nhắn tin cho bạn từ bất cứ đâu, hãy chia sẻ mã QR của bạn.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Tìm trong cài đặt…",
   "settings.search.a11y": "Tìm trong cài đặt",
   "settings.search.close": "Đóng tìm kiếm",
@@ -1776,6 +1771,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Ẩn xem trước trong thông báo",
   "settings.security.hide_previews_desc":
     "Giữ tên người gửi và nội dung tin nhắn khỏi màn hình khóa, vốn hiện chúng ra mà không cần mở khóa",
+  "settings.security.ring_alerts": "Cảnh báo chuông",
+  "settings.security.ring_alerts_desc":
+    "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",
   "settings.security.no_blocked": "Không có nút mạng nào bị chặn",
   "settings.security.no_blocked_desc":
     "Nút mạng bị chặn không nhắn tin cho bạn được và không hiện trên thẻ Mạng lưới",
@@ -2205,6 +2203,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Nút mạng ở gần",
   "notif.channel.nearby_desc":
     "Thỉnh thoảng báo một lần khi mạng lưới tìm thấy người trong tầm Bluetooth.",
+  "notif.channel.ring": "Chuông",
+  "notif.channel.ring_desc":
+    "Cảnh báo từ những liên hệ bạn đã cho phép gọi chuông cho bạn.",
   "notif.nearby.body": "Đang trong tầm Bluetooth. Chạm để mở mạng lưới.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "Ai đó",
@@ -2221,6 +2222,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Hoạt động mới",
   "notif.hidden.mention": "Bạn được nhắc tới",
   "notif.mention.title": "{sender} đã nhắc tới bạn",
+  "notif.ring.hidden": "Chuông",
+  "notif.ring.title": "{sender} đang gọi chuông cho bạn",
+  "notif.ring.body": "Hãy kiểm tra tin nhắn của bạn",
 };
 
 export const plurals: Plurals = {

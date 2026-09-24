@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "ยกเลิก",
-  "common.done": "เสร็จสิ้น",
-  "common.ok": "ตกลง",
-  "common.close": "ปิด",
   "common.back": "กลับ",
-  "common.delete": "ลบ",
-  "common.remove": "นำออก",
+  "common.close": "ปิด",
+  "common.cancel": "ยกเลิก",
+  "common.ok": "ตกลง",
+  "common.done": "เสร็จสิ้น",
+  "common.continue": "ดำเนินการต่อ",
+  "common.try_again": "ลองอีกครั้ง",
   "common.add": "เพิ่ม",
+  "common.remove": "นำออก",
+  "common.delete": "ลบ",
   "common.copy": "คัดลอก",
   "common.copied": "คัดลอกแล้ว",
   "common.share": "แชร์",
-  "common.continue": "ดำเนินการต่อ",
-  "common.try_again": "ลองอีกครั้ง",
   "common.settings": "การตั้งค่า",
   "common.on": "เปิด",
   "common.off": "ปิด",
@@ -512,35 +512,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "ทิศตะวันตกเฉียงใต้",
   "chat.location.direction.w": "ทิศตะวันตก",
   "chat.location.direction.nw": "ทิศตะวันตกเฉียงเหนือ",
-  "chat.attach.send_anyway": "ส่งต่อไป",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "โทรเรียก",
   "chat.ring.received_summary": "โทรเรียกคุณ",
   "chat.ring.alert.title": "{sender} กำลังโทรเรียกคุณ",
   "chat.ring.alert.body": "ตรวจสอบข้อความของคุณ",
   "chat.ring.alert.open": "เปิด",
   "chat.ring.alert.snooze": "เลื่อนออกไป 1 ชั่วโมง",
-  "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
-  "chat.contact.allow_ring_desc":
-    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
-  "chat.contact.ring_action": "โทรเรียก",
-  "chat.contact.ringing": "กำลังโทรเรียก…",
   "chat.ring.sent_snoozed": "โทรเรียกแล้ว เลื่อนไว้",
   "chat.ring.sent_too_soon": "โทรเรียกแล้ว เร็วเกินไป",
   "chat.ring.sent_not_allowed": "โทรเรียกแล้ว ไม่ได้รับอนุญาต",
-  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
-  "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
-  "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
-  "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
-  "chat.contact.ring_hint_again_in": "โทรเรียกอีกครั้งได้ใน {time}",
-  "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
-  "settings.security.ring_alerts_desc":
-    "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
-  "notif.channel.ring": "เสียงเรียก",
-  "notif.channel.ring_desc":
-    "การแจ้งเตือนจากผู้ติดต่อที่คุณอนุญาตให้โทรเรียกคุณ",
-  "notif.ring.hidden": "เสียงเรียก",
-  "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
-  "notif.ring.body": "ตรวจสอบข้อความของคุณ",
+  "chat.attach.send_anyway": "ส่งต่อไป",
   "chat.attach.bitchat_too_big": "สิ่งนี้อาจไปไม่ถึง",
   "chat.attach.bitchat_too_big_body":
     "{name} ใช้ bitchat ซึ่งจะล้มเลิกกลางคันกับไฟล์ขนาดใหญ่ ต่ำกว่าราว 350 KiB จะเชื่อถือได้ การส่งให้ผู้ติดต่อที่ใช้ Airhop ไม่มีขีดจำกัดแบบนี้",
@@ -723,6 +706,16 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "ชื่อที่คุณตั้งให้พวกเขา",
   "chat.contact.copy_peer_id": "คัดลอก ID ของเพียร์",
   "chat.contact.verify": "ยืนยันผู้ติดต่อ",
+  "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
+  "chat.contact.allow_ring_desc":
+    "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
+  "chat.contact.ring_action": "โทรเรียก",
+  "chat.contact.ringing": "กำลังโทรเรียก…",
+  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
+  "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
+  "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
+  "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
+  "chat.contact.ring_hint_again_in": "โทรเรียกอีกครั้งได้ใน {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "ประกาศ",
@@ -1581,6 +1574,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "คัดลอก ID ของเพียร์",
   "settings.peer_id_sheet.note":
     "วิธีนี้ใช้ได้เมื่อคุณทั้งคู่อยู่ในระยะบลูทูธเท่านั้น หากต้องการให้ใครส่งข้อความถึงคุณจากที่ไหนก็ได้ ให้แชร์คิวอาร์โค้ดของคุณแทน",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "ค้นหาการตั้งค่า…",
   "settings.search.a11y": "ค้นหาการตั้งค่า",
   "settings.search.close": "ปิดการค้นหา",
@@ -1729,6 +1724,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "ซ่อนตัวอย่างในการแจ้งเตือน",
   "settings.security.hide_previews_desc":
     "ไม่ให้ชื่อผู้ส่งและข้อความปรากฏบนหน้าจอล็อก ซึ่งแสดงสิ่งเหล่านั้นโดยไม่ต้องปลดล็อก",
+  "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
+  "settings.security.ring_alerts_desc":
+    "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
   "settings.security.no_blocked": "ไม่มีเพียร์ที่ถูกบล็อก",
   "settings.security.no_blocked_desc":
     "เพียร์ที่ถูกบล็อกส่งข้อความถึงคุณไม่ได้และไม่ปรากฏบนแท็บเมช",
@@ -2150,6 +2148,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "เพียร์ใกล้เคียง",
   "notif.channel.nearby_desc":
     "การแจ้งเตือนเป็นครั้งคราวเมื่อเมชพบผู้คนอยู่ในระยะบลูทูธ",
+  "notif.channel.ring": "เสียงเรียก",
+  "notif.channel.ring_desc":
+    "การแจ้งเตือนจากผู้ติดต่อที่คุณอนุญาตให้โทรเรียกคุณ",
   "notif.nearby.body": "อยู่ในระยะบลูทูธแล้ว แตะเพื่อเปิดเมช",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "บางคน",
@@ -2166,6 +2167,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "กิจกรรมใหม่",
   "notif.hidden.mention": "คุณถูกกล่าวถึง",
   "notif.mention.title": "{sender} กล่าวถึงคุณ",
+  "notif.ring.hidden": "เสียงเรียก",
+  "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
+  "notif.ring.body": "ตรวจสอบข้อความของคุณ",
 };
 
 export const plurals: Plurals = {

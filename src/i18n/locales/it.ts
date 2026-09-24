@@ -8,19 +8,19 @@ import type { Plurals, Strings } from "./types";
 
 export const strings: Strings = {
   // ---- Common vocabulary ----
-  "common.cancel": "Annulla",
-  "common.done": "Fatto",
-  "common.ok": "OK",
-  "common.close": "Chiudi",
   "common.back": "Indietro",
-  "common.delete": "Elimina",
-  "common.remove": "Rimuovi",
+  "common.close": "Chiudi",
+  "common.cancel": "Annulla",
+  "common.ok": "OK",
+  "common.done": "Fatto",
+  "common.continue": "Continua",
+  "common.try_again": "Riprova",
   "common.add": "Aggiungi",
+  "common.remove": "Rimuovi",
+  "common.delete": "Elimina",
   "common.copy": "Copia",
   "common.copied": "Copiato",
   "common.share": "Condividi",
-  "common.continue": "Continua",
-  "common.try_again": "Riprova",
   "common.settings": "Impostazioni",
   "common.on": "Attivo",
   "common.off": "Disattivo",
@@ -106,7 +106,7 @@ export const strings: Strings = {
   "onboarding.username.prop.account": "Account necessario",
   "onboarding.username.prop.account_value": "Nessuno",
 
-  // ---- Onboarding: the author’s note ----
+  // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Benvenuto in Airhop!",
   "onboarding.hello.p1":
     "Airhop è costruito su bitchat come progetto parallelo indipendente e open source. Non è affiliato né approvato dal progetto bitchat, né è un’imitazione di alcuna app o servizio esistente: è semplicemente qualcosa che mi piace costruire e condividere con la comunità.",
@@ -529,37 +529,18 @@ export const strings: Strings = {
   "chat.location.direction.sw": "a sud-ovest",
   "chat.location.direction.w": "a ovest",
   "chat.location.direction.nw": "a nord-ovest",
-  "chat.attach.send_anyway": "Invia comunque",
+
+  // ---- Chat: ring ----
   "chat.ring.sent_summary": "Ha suonato",
   "chat.ring.received_summary": "Ti ha suonato",
   "chat.ring.alert.title": "{sender} ti sta chiamando",
   "chat.ring.alert.body": "Controlla i tuoi messaggi",
   "chat.ring.alert.open": "Apri",
   "chat.ring.alert.snooze": "Posticipa di 1 ora",
-  "chat.contact.allow_ring": "Consenti avvisi di chiamata",
-  "chat.contact.allow_ring_desc":
-    "Consenti loro di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
-  "chat.contact.ring_action": "Chiama",
-  "chat.contact.ringing": "In chiamata…",
   "chat.ring.sent_snoozed": "Squillo inviato, rimandato",
   "chat.ring.sent_too_soon": "Squillo inviato, troppo presto",
   "chat.ring.sent_not_allowed": "Squillo inviato, non consentito",
-  "chat.contact.ring_hint_nearby":
-    "Lo squillo funziona solo mentre sono nelle vicinanze",
-  "chat.contact.ring_hint_not_allowed":
-    "Non ti hanno consentito di farli squillare",
-  "chat.contact.ring_hint_snoozed": "Hanno rimandato gli squilli per ora",
-  "chat.contact.ring_hint_too_soon": "Hanno ricevuto uno squillo un attimo fa",
-  "chat.contact.ring_hint_again_in": "Squilla di nuovo tra {time}",
-  "settings.security.ring_alerts": "Avvisi di chiamata",
-  "settings.security.ring_alerts_desc":
-    "Interruttore principale per Chiamata. Disattivarlo rifiuta ogni chiamata all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",
-  "notif.channel.ring": "Chiamata",
-  "notif.channel.ring_desc":
-    "Avvisi dai contatti a cui hai consentito di chiamarti.",
-  "notif.ring.hidden": "Chiamata",
-  "notif.ring.title": "{sender} ti sta chiamando",
-  "notif.ring.body": "Controlla i tuoi messaggi",
+  "chat.attach.send_anyway": "Invia comunque",
   "chat.attach.bitchat_too_big": "Potrebbe non arrivare",
   "chat.attach.bitchat_too_big_body":
     "{name} usa bitchat, che si arrende a metà strada con i file grandi. Sotto i 350 KiB circa è affidabile. Inviarlo a un contatto Airhop non ha questo limite.",
@@ -753,6 +734,18 @@ export const strings: Strings = {
   "chat.contact.renamed_by_you": "Il nome che gli hai dato",
   "chat.contact.copy_peer_id": "Copia l’ID peer",
   "chat.contact.verify": "Verifica il contatto",
+  "chat.contact.allow_ring": "Consenti avvisi di chiamata",
+  "chat.contact.allow_ring_desc":
+    "Consenti loro di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
+  "chat.contact.ring_action": "Chiama",
+  "chat.contact.ringing": "In chiamata…",
+  "chat.contact.ring_hint_nearby":
+    "Lo squillo funziona solo mentre sono nelle vicinanze",
+  "chat.contact.ring_hint_not_allowed":
+    "Non ti hanno consentito di farli squillare",
+  "chat.contact.ring_hint_snoozed": "Hanno rimandato gli squilli per ora",
+  "chat.contact.ring_hint_too_soon": "Hanno ricevuto uno squillo un attimo fa",
+  "chat.contact.ring_hint_again_in": "Squilla di nuovo tra {time}",
 
   // ---- Chats: bulletin board notices ----
   "chat.notices.title": "Avvisi",
@@ -1655,6 +1648,8 @@ export const strings: Strings = {
   "settings.peer_id_sheet.copy": "Copia l’ID peer",
   "settings.peer_id_sheet.note":
     "Funziona solo quando siete entrambi nel raggio del Bluetooth. Per farti scrivere da ovunque, condividi invece il tuo codice QR.",
+
+  // ---- Settings: search ----
   "settings.search.placeholder": "Cerca nelle impostazioni…",
   "settings.search.a11y": "Cerca nelle impostazioni",
   "settings.search.close": "Chiudi la ricerca",
@@ -1812,6 +1807,9 @@ export const strings: Strings = {
   "settings.security.hide_previews": "Nascondi le anteprime delle notifiche",
   "settings.security.hide_previews_desc":
     "Tiene mittente e messaggio fuori dalla schermata di blocco, che li mostra senza sbloccare",
+  "settings.security.ring_alerts": "Avvisi di chiamata",
+  "settings.security.ring_alerts_desc":
+    "Interruttore principale per Chiamata. Disattivarlo rifiuta ogni chiamata all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",
   "settings.security.no_blocked": "Nessun peer bloccato",
   "settings.security.no_blocked_desc":
     "I peer bloccati non possono scriverti e non compaiono nella scheda Mesh",
@@ -2253,6 +2251,9 @@ export const strings: Strings = {
   "notif.channel.nearby": "Peer nelle vicinanze",
   "notif.channel.nearby_desc":
     "Un avviso occasionale quando la mesh trova persone nel raggio del Bluetooth.",
+  "notif.channel.ring": "Chiamata",
+  "notif.channel.ring_desc":
+    "Avvisi dai contatti a cui hai consentito di chiamarti.",
   "notif.nearby.body":
     "Ora nel raggio del Bluetooth. Tocca per aprire la mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2270,6 +2271,9 @@ export const strings: Strings = {
   "notif.hidden.channel": "Nuova attività",
   "notif.hidden.mention": "Sei stato menzionato",
   "notif.mention.title": "{sender} ti ha menzionato",
+  "notif.ring.hidden": "Chiamata",
+  "notif.ring.title": "{sender} ti sta chiamando",
+  "notif.ring.body": "Controlla i tuoi messaggi",
 };
 
 export const plurals: Plurals = {
