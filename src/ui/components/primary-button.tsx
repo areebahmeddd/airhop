@@ -1,7 +1,8 @@
 // PrimaryButton component.
 // The single filled CTA surface for a screen's primary action (onboarding,
 // confirmations). Near-black fill + inverse text, matching the same
-// iMessage-style inversion used for outgoing message bubbles.
+// iMessage-style inversion used for outgoing message bubbles. The outline
+// variant is the bordered pill of a second action beside it, as in the sheets.
 
 import React, { useMemo } from "react";
 import {
@@ -34,6 +35,7 @@ interface Props {
   // press feedback, and taps do nothing. Used for gated CTAs (e.g. an
   // agreement checkbox must be ticked first).
   disabled?: boolean;
+  variant?: "filled" | "outline";
 }
 
 export default function PrimaryButton({
@@ -43,6 +45,7 @@ export default function PrimaryButton({
   accessibilityHint,
   style,
   disabled = false,
+  variant = "filled",
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
@@ -53,9 +56,12 @@ export default function PrimaryButton({
       // row cannot afford.
       style={({ pressed }) => [
         styles.button,
+        variant === "outline" && styles.outline,
         style,
         disabled && styles.disabled,
-        !disabled && pressed && styles.pressed,
+        !disabled &&
+          pressed &&
+          (variant === "outline" ? styles.outlinePressed : styles.pressed),
       ]}
       onPress={onPress}
       disabled={disabled}
@@ -65,7 +71,11 @@ export default function PrimaryButton({
       accessibilityState={{ disabled }}
     >
       <Text
-        style={[styles.label, disabled && styles.labelDisabled]}
+        style={[
+          styles.label,
+          variant === "outline" && styles.labelOutline,
+          disabled && styles.labelDisabled,
+        ]}
         numberOfLines={1}
       >
         {label}
@@ -91,6 +101,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     pressed: {
       opacity: PRESSED_OPACITY,
     },
+    outline: {
+      backgroundColor: Colors.surfaceRaised,
+      borderColor: Colors.borderStrong,
+    },
+    // A neutral fill darkens rather than dims.
+    outlinePressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
     // Disabled keeps a visible border: the raised fill barely differs from the
     // onboarding background, so without it the pill reads as stray grey text.
     disabled: {
@@ -102,6 +120,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textInverse,
       letterSpacing: 0.1,
+    },
+    labelOutline: {
+      color: Colors.textPrimary,
     },
     labelDisabled: {
       color: Colors.textMuted,

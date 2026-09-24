@@ -22,7 +22,7 @@ import {
   useThemeColors,
 } from "@ui/theme";
 import { peerIDToUsername } from "@utils/username";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -39,6 +39,15 @@ export default function TransferRecoveryScreen(
   const T = useT();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const sender = props.role === "sender";
+  // One answer per launch, however fast the taps: each starts a wipe or a boot.
+  const acted = useRef(false);
+  const once =
+    (action: () => void): (() => void) =>
+    () => {
+      if (acted.current) return;
+      acted.current = true;
+      action();
+    };
   const [peerID, setPeerID] = useState<string | null>(null);
 
   useEffect(() => {
@@ -100,7 +109,7 @@ export default function TransferRecoveryScreen(
                 styles.dangerBtn,
                 pressed && styles.dangerPressed,
               ]}
-              onPress={props.onErase}
+              onPress={once(props.onErase)}
               accessibilityRole="button"
             >
               <Text style={styles.dangerLabel}>
@@ -109,13 +118,13 @@ export default function TransferRecoveryScreen(
             </Pressable>
             <TextButton
               label={T("settings.transfer.keep_cta")}
-              onPress={props.onKeep}
+              onPress={once(props.onKeep)}
             />
           </>
         ) : (
           <PrimaryButton
             label={T("common.continue")}
-            onPress={props.onContinue}
+            onPress={once(props.onContinue)}
           />
         )}
       </View>
@@ -128,11 +137,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     root: {
       flex: 1,
       backgroundColor: Colors.bg,
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.base,
     },
     body: {
       flex: 1,
+      paddingHorizontal: Spacing.xl,
       alignItems: "center",
       justifyContent: "center",
       gap: Spacing.md,
@@ -171,13 +179,17 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       lineHeight: LineHeight.sm,
     },
     actions: {
+      paddingHorizontal: Spacing.base,
+      paddingBottom: Spacing.md,
       gap: Spacing.sm,
     },
     dangerBtn: {
       minHeight: BUTTON_HEIGHT,
       borderRadius: Radius.full,
-      // The panic wipe's shape: destructive reads in the label, not the fill.
+      // The outlined pill of a second action; destructive reads in the label.
       backgroundColor: Colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: Colors.borderStrong,
       alignItems: "center",
       justifyContent: "center",
     },

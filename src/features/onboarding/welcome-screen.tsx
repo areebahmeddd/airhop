@@ -1,16 +1,13 @@
 // Onboarding step 1: Welcome.
-// The cover of the book. Bold wordmark, one sentence, one action. Nothing
-// else. The design communicates confidence through restraint.
-//
-// Transfer from another phone sits under it as quieter text: most people have
-// nothing to bring.
+// The cover of the book. Bold wordmark, one sentence, one action, and a quieter
+// way in for someone bringing an identity from another phone. The design
+// communicates confidence through restraint.
 
 import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged } from "@platform/haptics";
 import PrimaryButton from "@ui/components/primary-button";
-import TextButton from "@ui/components/text-button";
 import {
   FontSize,
   FontWeight,
@@ -156,17 +153,16 @@ export default function WelcomeScreen({
             />
             {/* Gated by the same agreement: the terms cover an identity
                 brought from another phone as much as a new one. */}
-            <View style={styles.transfer}>
-              <TextButton
-                label={T("onboarding.welcome.transfer")}
-                onPress={onTransfer}
-                tone="primary"
-                disabled={!agreed}
-                accessibilityHint={
-                  agreed ? undefined : T("onboarding.welcome.cta_hint")
-                }
-              />
-            </View>
+            <PrimaryButton
+              label={T("onboarding.welcome.transfer")}
+              onPress={onTransfer}
+              variant="outline"
+              style={styles.transfer}
+              disabled={!agreed}
+              accessibilityHint={
+                agreed ? undefined : T("onboarding.welcome.cta_hint")
+              }
+            />
             <Pressable
               style={styles.agreement}
               onPress={toggleAgreed}
@@ -291,7 +287,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     actions: {
       gap: Spacing.base,
     },
-    // Pulled up to pair with the primary; the consent row governs both.
     transfer: {
       marginTop: -Spacing.sm,
     },

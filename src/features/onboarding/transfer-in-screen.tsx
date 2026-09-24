@@ -72,7 +72,7 @@ export default function TransferInScreen({
   useEffect(() => {
     const next = new MoveReceiver((s) => {
       if (s.phase === "failed") rejected();
-      else if (s.phase === "done") succeeded();
+      else if (s.phase === "done" && s.released) succeeded();
       setState(s);
     });
     receiver.current = next;

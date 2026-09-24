@@ -106,6 +106,8 @@ export default function TransferOutFlow({
   const senderRef = useRef<MoveSender | null>(null);
   const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const authInFlight = useRef(false);
+  // One answer to "Did the transfer finish?", however fast the taps.
+  const resolved = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -129,6 +131,8 @@ export default function TransferOutFlow({
 
   function resetScan(): void {
     scannedRef.current = false;
+    senderRef.current = null;
+    resolved.current = false;
     setWrongCode(false);
     setStage({ kind: "scan" });
   }
@@ -178,6 +182,8 @@ export default function TransferOutFlow({
   }
 
   function handleTransfer(invite: MoveInvite): void {
+    // A second tap before the re-render must not start a second transfer.
+    if (senderRef.current !== null) return;
     const sender = new MoveSender(invite, history, {
       onChange: (state) => {
         if (senderRef.current !== sender) return;
@@ -201,6 +207,8 @@ export default function TransferOutFlow({
   }
 
   async function handleEraseUnconfirmed(): Promise<void> {
+    if (resolved.current) return;
+    resolved.current = true;
     setStage({ kind: "erasing" });
     let keysDestroyed = false;
     try {
@@ -212,7 +220,16 @@ export default function TransferOutFlow({
     onErased(keysDestroyed);
   }
 
+  function finishErased(keysDestroyed: boolean): void {
+    if (resolved.current) return;
+    resolved.current = true;
+    closeModal();
+    onErased(keysDestroyed);
+  }
+
   function handleKeepUnconfirmed(): void {
+    if (resolved.current) return;
+    resolved.current = true;
     clearMoveMarker();
     onResumeMesh();
     closeModal();
@@ -229,8 +246,7 @@ export default function TransferOutFlow({
     if (state.phase === "failed") {
       closeModal();
     } else if (state.phase === "done") {
-      closeModal();
-      onErased(state.keysDestroyed);
+      finishErased(state.keysDestroyed);
     }
   }
 
@@ -253,6 +269,7 @@ export default function TransferOutFlow({
             icon="key"
             label={T("settings.transfer.identity")}
             description={T("settings.transfer.identity_desc")}
+            control={<LockedOn label={T("settings.transfer.identity")} />}
           />
           <GroupDivider />
           <SettingRow
@@ -276,6 +293,7 @@ export default function TransferOutFlow({
             icon="credit-card"
             label={T("settings.transfer.wallet")}
             description={T("settings.transfer.wallet_desc")}
+            control={<LockedOn label={T("settings.transfer.wallet")} />}
           />
         </View>
         <View style={styles.note}>
@@ -434,8 +452,7 @@ export default function TransferOutFlow({
             <PrimaryButton
               label={T("common.done")}
               onPress={() => {
-                closeModal();
-                onErased(state.keysDestroyed);
+                finishErased(state.keysDestroyed);
               }}
             />
           ),
@@ -613,6 +630,12 @@ export default function TransferOutFlow({
   );
 }
 
+// The rows that always move wear the same switch, on and dimmed, so the list
+// reads as one set of choices with two already made.
+function LockedOn({ label }: { label: string }): React.JSX.Element {
+  return <SettingSwitch value disabled accessibilityLabel={label} />;
+}
+
 // Over a live camera image, whatever the theme. The contact scanners' values.
 const SCAN_CHROME = "#FFFFFF";
 const SCAN_SCRIM = "rgba(0,0,0,0.4)";
@@ -651,11 +674,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     panelRoot: {
       flex: 1,
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.base,
     },
+    // Text at the onboarding inset, buttons at its footer's: the new phone's
+    // screens and these read as one flow.
     panelBody: {
       flexGrow: 1,
+      paddingHorizontal: Spacing.xl,
       alignItems: "center",
       justifyContent: "center",
       gap: Spacing.md,
@@ -692,6 +716,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       lineHeight: LineHeight.xs,
     },
     panelActions: {
+      paddingHorizontal: Spacing.base,
+      paddingBottom: Spacing.md,
       gap: Spacing.sm,
     },
     progressTrack: {
@@ -709,8 +735,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     dangerBtn: {
       minHeight: BUTTON_HEIGHT,
       borderRadius: Radius.full,
-      // The panic wipe's shape: destructive reads in the label, not the fill.
+      // The outlined pill of a second action; destructive reads in the label.
       backgroundColor: Colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: Colors.borderStrong,
       alignItems: "center",
       justifyContent: "center",
     },
