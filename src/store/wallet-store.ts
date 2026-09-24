@@ -28,6 +28,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 // ---- Constants ----
 
 export const WALLET_STORAGE_ID = "wallet-store";
+// Predates the naming convention (ARCHITECTURE.md) and stays as it is.
+const WALLET_PERSIST_NAME = "wallet-state";
 
 const ENCRYPTION_KEY_ITEM = KEYCHAIN_ITEMS.walletEncryptionKey;
 
@@ -333,6 +335,9 @@ type MMKVLike = ReturnType<typeof createMMKV>;
 
 let instance: MMKVLike | null = null;
 let ready: Promise<MMKVLike> | null = null;
+// Never reset. MMKV hands every later open the instance it first created, with
+// the key it was first opened under; a reopen after a wipe must re-key it.
+let openedThisProcess = false;
 // Bumped on reset, so a bootstrap straddling a wipe cannot install its handle.
 let storageGeneration = 0;
 
@@ -374,6 +379,9 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
       encryptionKey,
       encryptionType: "AES-256",
     });
+    // A no-op when the keys already agree.
+    if (openedThisProcess) mmkv.encrypt(encryptionKey, "AES-256");
+    openedThisProcess = true;
     instance = mmkv;
     return mmkv;
   })();
@@ -508,6 +516,28 @@ const asyncMMKVStorage = {
     mmkv?.remove(name);
   },
 };
+
+// The persisted wallet, decrypted, for a transfer. Throws when locked rather
+// than carry an empty wallet. Read after a macrotask, so the async adapter's
+// last write has landed.
+export async function exportWalletState(): Promise<string | null> {
+  const mmkv = await bootstrapWalletStorage();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return mmkv.getString(WALLET_PERSIST_NAME) ?? null;
+}
+
+// Installs a transferred wallet under this phone's own file key, read back, then
+// rehydrated so the store's launch-time empty state is not written back.
+export async function importWalletState(raw: string): Promise<void> {
+  const mmkv = await bootstrapWalletStorage();
+  mmkv.set(WALLET_PERSIST_NAME, raw);
+  if (mmkv.getString(WALLET_PERSIST_NAME) !== raw) {
+    throw new Error("wallet-import-readback");
+  }
+  hydrated = false;
+  hydrationSettled = false;
+  await useWalletStore.persist.rehydrate();
+}
 
 // Through the one handle this module owns; zero while not open.
 export function walletStorageByteSize(): number {
@@ -941,7 +971,7 @@ export const useWalletStore = create<WalletState>()(
       },
     }),
     {
-      name: "wallet-state",
+      name: WALLET_PERSIST_NAME,
       storage: createJSONStorage(() => asyncMMKVStorage),
       version: 1,
       // Fires on success and failure (see `settleHydration`).

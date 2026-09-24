@@ -80,6 +80,8 @@ jest.mock("react-native-mmkv", () => {
     remove(key: string): void {
       this._store.delete(key);
     }
+    // Nothing is encrypted in the mock.
+    encrypt(): void {}
     clearAll(): void {
       this._store.clear();
       clearAll(this.id);

@@ -93,13 +93,20 @@ export async function wipeAllSecrets(): Promise<void> {
 // delete, and in the one case where there might be (a read that failed while the
 // item survived) a keychain refusing reads refuses deletes too.
 //
+// Nor is the wallet's file key: the wallet partition opens under it at launch
+// on every install, identity or not, and deleting it leaves that partition
+// writing under a key the next launch cannot find. It guards nothing a wipe has
+// not already cleared.
+//
 // Returns true ONLY when a leftover is positively confirmed: the delete was
 // refused AND a read afterwards still hands back a value. A keychain that
 // refuses both is unreadable rather than dirty, and claiming otherwise would put
 // an alarm about data at rest in front of someone whose device is merely locked.
 export async function sweepOrphanedSecrets(): Promise<boolean> {
   const orphanable = Object.values(KEYCHAIN_ITEMS).filter(
-    (item) => item !== KEYCHAIN_ITEMS.identity,
+    (item) =>
+      item !== KEYCHAIN_ITEMS.identity &&
+      item !== KEYCHAIN_ITEMS.walletEncryptionKey,
   );
   const deletes = await Promise.allSettled(orphanable.map(deleteSecret));
   if (deletes.every((r) => r.status === "fulfilled")) return false;
