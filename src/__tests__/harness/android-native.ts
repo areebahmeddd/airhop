@@ -67,6 +67,7 @@ export interface RadioStateReport {
   // -1 when the platform has nothing to say. Drives the power policy.
   batteryPercent: number;
   charging: boolean;
+  powerSaveMode: boolean;
 }
 
 export interface BleNativeModule {
@@ -198,12 +199,24 @@ export class AndroidBleModule implements BleNativeModule {
       locationServicesEnabled: this.os.locationServicesEnabled,
       batteryPercent: this.batteryPercent,
       charging: this.charging,
+      powerSaveMode: this.powerSaveMode,
     };
   }
 
   // Scenario knobs: what the battery receiver would be reporting.
   batteryPercent = 80;
   charging = false;
+  powerSaveMode = false;
+
+  // The user flipping Battery Saver. Kotlin reads the switch live in
+  // getRadioState, and its receiver only raises powerStateChanged.
+  setPowerSaveMode(on: boolean): void {
+    this.powerSaveMode = on;
+    this.emitEvent("AirhopBLE.powerStateChanged", {
+      batteryPercent: this.batteryPercent,
+      charging: this.charging,
+    });
+  }
 
   // The effort level native is currently applying. Observable so a scenario can
   // assert that a pocketed phone actually stopped scanning flat out - the

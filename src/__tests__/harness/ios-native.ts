@@ -238,6 +238,7 @@ export class IosBleModule implements BleNativeModule {
       // have nothing to drive.
       batteryPercent: -1,
       charging: false,
+      powerSaveMode: false,
     };
   }
 

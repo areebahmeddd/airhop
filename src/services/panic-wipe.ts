@@ -46,6 +46,7 @@ import { resetBoardAlerts } from "./board-alerts";
 import { syncAutoStartOnBoot } from "./boot-sync";
 import { wipeCacheDirectory } from "./file-transfer-service";
 import { clearLocationCache } from "./location-service";
+import { stopNotificationPipeline } from "./notification-pipeline";
 import { dismissAllNotifications } from "./notification-service";
 import { setNutzapRebinder, stopNutzapWatcher } from "./nutzap-watcher-handle";
 import { resetWalletService } from "./wallet-service";
@@ -160,7 +161,12 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // subscription under keys that no longer exist.
   setNutzapRebinder(null);
 
-  // 0c. Cancel any chat write still inside its throttle window, before
+  // 0c. Stop turning arrivals into notifications. A packet still in flight
+  //     would otherwise write a bell entry, a tray card and a badge for the
+  //     identity being destroyed, in between the steps that clear them.
+  stopNotificationPipeline();
+
+  // 0d. Cancel any chat write still inside its throttle window, before
   //     anything is cleared. A pending write holds a plaintext snapshot of
   //     every thread and is armed to put it back on disk. Cancelled rather than
   //     flushed: these bytes must not reach disk again.
@@ -231,7 +237,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // Lives outside every store this wipe clears (AirhopBootReceiver reads it
   // with no JS up), so a wiped identity would still auto-start into nothing.
   syncAutoStartOnBoot(false);
-  useBlockedStore.setState({ blockedPeerIDs: [] });
+  useBlockedStore.setState({ blockedPeerIDs: [], blockedAliases: {} });
   // Transport health is live device state, not user data, but a wipe is meant
   // to leave a clean first-run state and the mesh is gone by this point. Left
   // as-is, the Mesh tab would keep showing the last identity's presence.
@@ -313,7 +319,6 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // Time-boxed: both remaining steps are best-effort and run after every byte
   // is already gone, but the caller holds the confirm sheet until this resolves,
   // and wipeTorState polls for Arti to exit before deleting its directory.
-  setTimeout(() => {}, 1000);
   await settleOr(dismissAllNotifications(), BEST_EFFORT_TIMEOUT_MS, undefined);
 
   // Stop Arti and destroy its data directory, on both platforms.

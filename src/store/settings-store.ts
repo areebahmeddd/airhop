@@ -27,7 +27,7 @@ export const UPLOAD_QUALITY_VALUES: Record<UploadQuality, number> = {
   high: 0.85,
 };
 
-// How long an attachment stays on disk before the launch sweep removes it.
+// How long an attachment stays on disk before the retention sweep removes it.
 //
 // A choice rather than a constant because the ends of the range are different
 // situations the app cannot tell apart. A week suits a phone carried through a
@@ -64,7 +64,7 @@ interface SettingsState {
   undoSendSeconds: number;
   autoDownloadMedia: boolean;
   uploadQuality: UploadQuality;
-  // Days an attachment stays on disk before the launch sweep removes it.
+  // Days an attachment stays on disk before the retention sweep removes it.
   mediaRetentionDays: MediaRetentionDays;
   // Whether holding the mic streams live or records a voice note.
   liveVoiceEnabled: boolean;

@@ -16,6 +16,11 @@ import { useSettingsStore } from "@store/settings-store";
 import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
 
+import { sweepMediaIfDue } from "./media-retention";
+import { startNotificationPipeline } from "./notification-pipeline";
+import { startReachabilityWatch } from "./reachability";
+import { isPanicWipePending } from "./wipe-marker";
+
 export { syncAutoStartOnBoot } from "./boot-sync";
 
 // Time for the radio controller to start scanning and hand off to
@@ -30,6 +35,11 @@ async function bootStartMesh(): Promise<void> {
   // AirhopForegroundService up; without it, a stale autoStartOnBoot would
   // wake the JS runtime just for Android to kill it again moments later.
   if (!settings.backgroundMeshEnabled) return;
+  // A wipe the last session did not finish. Its keys may be gone and its
+  // messages not, and only the app finishes it (see ./wipe-marker), so booting
+  // would advertise an identity the user asked to destroy. Checked before the
+  // keychain read for the same reason.
+  if (isPanicWipePending()) return;
 
   const identity = await loadIdentity();
   if (identity === null) return; // no onboarded identity to start as
@@ -41,8 +51,14 @@ async function bootStartMesh(): Promise<void> {
   } catch {
     // Tor is a preference, not a prerequisite.
   }
-  initMeshService(identity, peerIDToUsername(identity.peerID));
+  const nickname = peerIDToUsername(identity.peerID);
+  initMeshService(identity, nickname);
   getMeshService()?.retryRadios();
+  // The dependents that need no screen. The rest (wallet, permission prompts)
+  // wait for the app to be opened, which runs them for this same mesh.
+  startNotificationPipeline(() => nickname);
+  startReachabilityWatch();
+  sweepMediaIfDue();
 
   await new Promise<void>((resolve) => setTimeout(resolve, MESH_SETTLE_MS));
 }

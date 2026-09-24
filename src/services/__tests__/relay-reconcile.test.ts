@@ -71,7 +71,6 @@ function newService(opened: OpenedSubscription[]): GeohashChannelService {
     mockClient(opened),
     ed25519.utils.randomSecretKey(),
     "alice",
-    "aabbccdd00112233",
   );
 }
 

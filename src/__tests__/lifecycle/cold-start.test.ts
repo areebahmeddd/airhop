@@ -572,6 +572,46 @@ describe("cold start and permissions", () => {
     v.assert();
   });
 
+  test("S14 a mesh started at boot still gets what rides on it once the app opens", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    os.setPermission("android.permission.BLUETOOTH_SCAN", "granted");
+    os.setPermission("android.permission.BLUETOOTH_ADVERTISE", "granted");
+    os.setPermission("android.permission.BLUETOOTH_CONNECT", "granted");
+    const v = new Verdict("S14", "boot start, then the user opens the app", os);
+    const native = androidDevice(os);
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+
+    // The reboot: a headless task, no Activity, nothing to prompt on.
+    app.bootStart();
+    await os.advance(1000);
+    v.check("the boot task brought the radios up", native.scanning);
+    v.check(
+      "nothing that needs the app ran with no app",
+      app.dependentsRuns === 0,
+    );
+
+    // Hours later the user taps the icon. The mesh is theirs already, so it is
+    // left alone, but the reachability watch, the wallet, the prompts and the
+    // geo channels are still owed.
+    await app.mount();
+    await os.advance(1000);
+    v.check(
+      "opening the app runs the dependents for the boot mesh",
+      app.dependentsRuns === 1,
+      `runs=${app.dependentsRuns}`,
+    );
+    v.check("the boot mesh was kept, not rebuilt", native.scanning);
+
+    await app.mount();
+    v.check(
+      "a second mount does not run them again",
+      app.dependentsRuns === 1,
+      `runs=${app.dependentsRuns}`,
+    );
+    v.assert();
+  });
+
   // iOS variants of the launch path.
 
   test("S07i iOS cold launch with a perfectly healthy radio", async () => {

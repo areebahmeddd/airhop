@@ -529,4 +529,50 @@ describe("teardown, replacement and races", () => {
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
     v.assert();
   });
+
+  test("S32 Battery Saver turns the radios down on a healthy battery", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    const v = new Verdict("S32", "the OS power switch is honoured", os);
+    const native = androidDevice(os);
+
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    await app.startMeshWithPermissions();
+    await os.advance(500);
+    v.check(
+      "on screen at 80% the radios run balanced",
+      native.powerMode === "balanced",
+      `mode=${native.powerMode}`,
+    );
+
+    // The user turns Battery Saver on for a long day out. Nothing else moves:
+    // the battery is healthy and the app stays on screen.
+    native.setPowerSaveMode(true);
+    await os.advance(1000);
+    v.check(
+      "Battery Saver drops the radios to power-saver",
+      native.powerMode === "power-saver",
+      `mode=${native.powerMode}`,
+    );
+    v.check(
+      "and the slower discovery is explained",
+      useMeshStateStore.getState().powerSaving,
+    );
+    v.check(
+      "still scanning and advertising, only quieter",
+      native.scanning && native.advertising,
+    );
+
+    native.setPowerSaveMode(false);
+    await os.advance(1000);
+    v.check(
+      "turning it off restores balanced",
+      native.powerMode === "balanced",
+      `mode=${native.powerMode}`,
+    );
+    v.check("and clears the note", !useMeshStateStore.getState().powerSaving);
+
+    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
+    v.assert();
+  });
 });

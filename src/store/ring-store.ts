@@ -167,8 +167,8 @@ export const useRingStore = create<RingState>()(
 
 // Inbound-ring side channel, same shape as chat-store's
 // subscribeInboundMessages: mesh-service raises an accepted ring without
-// knowing about notifications or the overlay, and app.tsx decides what
-// happens next.
+// knowing about notifications or the overlay, and
+// services/notification-pipeline decides what happens next.
 export interface InboundRing {
   peerID: string;
   ringID: string;

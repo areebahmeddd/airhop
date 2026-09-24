@@ -46,35 +46,33 @@ import {
   hasBlePermissions,
   type BlePermissionResult,
 } from "@platform/ble-permissions";
-import { ringPulse } from "@platform/haptics";
 import { showBlockedAlert } from "@platform/permissions";
 import { setAudioForPlayback } from "@services/audio-session";
 import {
   registerBootStartTask,
   syncAutoStartOnBoot,
 } from "@services/boot-start";
-import { sweepExpiredAttachments } from "@services/file-transfer-service";
 import { applyAirhopLink } from "@services/link-router";
 import {
   hasLocationPermission,
   requestLocationPermission,
 } from "@services/location-service";
-import { getMeshService, initMeshService } from "@services/mesh-service";
+import { sweepMediaIfDue } from "@services/media-retention";
+import {
+  destroyMeshService,
+  getMeshService,
+  initMeshService,
+  type MeshService,
+} from "@services/mesh-service";
+import { startNotificationPipeline } from "@services/notification-pipeline";
 import {
   configureNotifications,
   dismissNearbyNotification,
   dismissNotificationsFor,
-  handleInboundMessage,
-  handleNearbyPeers,
-  isAppActive,
-  isReadingChannel,
-  raiseRingNotification,
   requestNotificationPermission,
-  setAppBadgeCount,
   setMeshNavigator,
   setNotificationNavigator,
   setNotificationsActiveChannel,
-  setNotificationsAppActive,
 } from "@services/notification-service";
 import {
   rebindNutzapWatcher,
@@ -103,28 +101,18 @@ import {
 import { isPanicWipePending } from "@services/wipe-marker";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
-import {
-  flushChatPersistence,
-  subscribeInboundMessages,
-  useChatStore,
-} from "@store/chat-store";
-import { useIncomingRingStore } from "@store/incoming-ring-store";
+import { flushChatPersistence, useChatStore } from "@store/chat-store";
 import {
   useMeshBanners,
   useMeshStateStore,
   type BannerAction,
 } from "@store/mesh-state-store";
-import {
-  countReachablePeers,
-  hasUnseenPeers,
-  usePeerStore,
-} from "@store/peer-store";
+import { hasUnseenPeers, usePeerStore } from "@store/peer-store";
 import {
   acknowledgePermissionPrimer,
   showPermissionPrimer,
   usePermissionPrimerStore,
 } from "@store/permission-primer-store";
-import { subscribeInboundRings } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
 import { useWalletStore } from "@store/wallet-store";
@@ -159,9 +147,6 @@ import {
 } from "@utils/chat-filter";
 import { parseAirhopLink } from "@utils/deep-link";
 import { formatNumber } from "@utils/format";
-import { mentionsNickname } from "@utils/mentions";
-import { messagePreviewEntry } from "@utils/message-preview";
-import { systemPreview } from "@utils/message-text";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
 import { settleOr, withTimeout } from "@utils/with-timeout";
@@ -210,6 +195,22 @@ type MainTab = "chats" | "mesh" | "wallet" | "profile";
 // A boot-triggered headless launch never mounts AppContent, so this must
 // run at module load rather than wait for it.
 registerBootStartTask();
+
+// "Stop mesh" on the Android background notification. The native service
+// hands it here rather than tearing things down itself, so stopping from the
+// notification and stopping from the Status picker are the same action: the
+// radios come down, the gateway switches off, and presence lands on Away - so
+// reopening the app shows "Mesh paused · You're away" with a way back, not a
+// dead mesh wearing a green dot.
+//
+// At module load for the same reason as the task above: the notification
+// outlives the UI. After a swipe from recents, or a boot start, no component
+// is mounted to hear it, and native only stops the radios itself when there is
+// no JS at all.
+DeviceEventEmitter.addListener("AirhopBLE.meshStopRequested", () => {
+  const mesh = getMeshService();
+  applyPresence("away", mesh === null ? "" : peerIDToUsername(mesh.peerID));
+});
 
 type ChatSubTab = "channels" | "dms";
 type ChatView =
@@ -337,6 +338,9 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
+  // A fresh mesh starts Online (advertising and scanning), so keep the chosen
+  // presence in step, in case this process last ran one set to Away.
+  useMeshStateStore.getState().setPresenceStatus("online");
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
   syncAutoStartOnBoot(useSettingsStore.getState().autoStartOnBoot);
@@ -393,12 +397,30 @@ function applyBlePermissionResult(perm: BlePermissionResult): void {
   // modal on top of that is two things to dismiss for one problem.
 }
 
-// Everything that rides on a started mesh: the wallet, the presence reset, and
-// the permission prompts that are not the mesh's own.
+// The mesh startMeshDependents last ran for. See below.
+let dependentsStartedFor: MeshService | null = null;
+
+// Everything that rides on a started mesh: notifications, the wallet, and the
+// permission prompts that are not the mesh's own.
 //
 // Separated from the mesh start so it is unmistakable that nothing here can
 // prevent the mesh existing. Every branch is fire-and-forget by design.
+//
+// Once per mesh, whoever started it. A launch that finds a mesh already
+// running (a boot start, or an Activity recreated under the foreground
+// service) leaves the mesh alone but still owes it these, and a second call
+// for the same mesh must not stack watchers or prompt twice. A new mesh, after
+// a wipe re-onboards, gets its own run.
 function startMeshDependents(): void {
+  const mesh = getMeshService();
+  if (mesh === null || mesh === dependentsStartedFor) return;
+  dependentsStartedFor = mesh;
+
+  // Arrivals become notifications, bell entries and the badge. Idempotent:
+  // a boot start may already have started it for this mesh.
+  const nickname = peerIDToUsername(mesh.peerID);
+  startNotificationPipeline(() => nickname);
+
   // A network coming back nudges relays, Tor, queued mail and the wallet.
   startReachabilityWatch();
 
@@ -477,9 +499,6 @@ function startMeshDependents(): void {
     if (!isCurrentWipeGeneration(generation)) return;
     rebindNutzapWatcher();
   })();
-  // The mesh always starts Online (advertising + scanning), so keep the chosen
-  // presence in step, in case a prior session left it Away/Invisible.
-  useMeshStateStore.getState().setPresenceStatus("online");
 
   // Remaining permission prompts, sequenced one after another so the OS never
   // shows two at once (concurrent prompts raced on a fresh install: the
@@ -815,12 +834,17 @@ function AppContent(): React.JSX.Element {
             // stopped, because the only things that stop it are the user choosing
             // Away and the notification's "Stop mesh". Restarting it here would
             // undo a decision they just made, from an event they didn't trigger.
+            //
+            // What rides on it is another matter: a boot start ran none of the
+            // parts that need the app, so they run now, once for this mesh.
             const existingMesh = getMeshService();
             if (existingMesh?.peerID !== existing.peerID) {
               void startMeshWithPermissions(
                 existing,
                 peerIDToUsername(existing.peerID),
               );
+            } else {
+              startMeshDependents();
             }
             // Restore the last open thread after an OS-kill-and-reopen. The
             // channel name is persisted by setLastThread and cleared by closeThread.
@@ -874,13 +898,16 @@ function AppContent(): React.JSX.Element {
     //
     // Ahead of everything, including the identity read: nothing may start under
     // an identity this launch is about to destroy, and the mesh must not
-    // advertise one. No teardown first, unlike the in-session wipe, because
-    // `startBoot` is what builds the mesh and has not run yet.
+    // advertise one.
     if (!resumingWipe.current) {
       startBoot();
       return;
     }
     void (async () => {
+      // Torn down first, as the in-session wipe does. `startBoot` has not run,
+      // but the process can outlive the Activity and still hold a mesh, and a
+      // live one keeps writing into the stores being cleared.
+      destroyMeshService();
       let keysDestroyed = false;
       try {
         ({ keysDestroyed } = await panicWipe());
@@ -963,26 +990,14 @@ function AppContent(): React.JSX.Element {
     return () => sub.remove();
   }, [isInThread, isSearching]);
 
-  // Retire attachments past their retention window, once per launch.
+  // Retire attachments past their retention window: at launch here, and on
+  // each return to the app once due (see services/media-retention).
   //
   // Runs unconditionally, before any identity check: expired media belongs to
   // nobody, and a launch that ends at the onboarding screen is exactly the
-  // launch after a wipe, where leftover files matter most. Deliberately not on
-  // a timer, since nothing accumulates while the app is closed.
-  //
-  // Wrapped because the cache directory may be unreadable on a device with no
-  // storage left, and a failed sweep must not stop the app from opening.
-  //
-  // Read once at launch rather than subscribed to: shortening the window takes
-  // effect on the next start, which is when the sweep runs anyway. Lengthening
-  // it cannot bring anything back, since the files are already gone.
+  // launch after a wipe, where leftover files matter most.
   useEffect(() => {
-    try {
-      const days = useSettingsStore.getState().mediaRetentionDays;
-      sweepExpiredAttachments(Date.now(), days * 24 * 60 * 60 * 1000);
-    } catch {
-      // Unreadable cache directory. Retried next launch.
-    }
+    sweepMediaIfDue();
   }, []);
 
   // Settle messages the last process left mid-send, once per launch.
@@ -1039,12 +1054,12 @@ function AppContent(): React.JSX.Element {
     AppState.currentState === "active",
   );
 
-  // Foreground/background tracking, so a banner is only raised when the user is
-  // not already looking at the app.
+  // Foreground/background tracking for the screen. Whether a banner is owed is
+  // tracked by the notification pipeline itself, since it runs with no screen.
   useEffect(() => {
     // No setAppActive here: the useState initialiser above already read
     // AppState, and the listener below carries every change after it.
-    setNotificationsAppActive(AppState.currentState === "active");
+    //
     // Re-read the permissions whenever we come to the foreground: the user may
     // have changed either in system Settings while we were backgrounded, and
     // coming back is the only signal we get. Bluetooth adapter changes already
@@ -1085,7 +1100,6 @@ function AppContent(): React.JSX.Element {
     getMeshService()?.setAppForeground(AppState.currentState === "active");
     const sub = AppState.addEventListener("change", (next) => {
       setAppActive(next === "active");
-      setNotificationsAppActive(next === "active");
       // "inactive" is NOT backgrounded, and this is the one consumer that has to
       // know the difference.
       //
@@ -1136,121 +1150,38 @@ function AppContent(): React.JSX.Element {
         // awaited on the foreground path. Also settles a melt whose response was
         // lost and a reserved send the recipient has since redeemed.
         reconcileIfDue();
+        // The foreground service can keep this process alive for weeks, so a
+        // launch alone does not keep media inside its window.
+        sweepMediaIfDue();
       }
     });
     return () => sub.remove();
   }, []);
 
-  // "Stop mesh" on the Android background notification. The native service
-  // hands it here rather than tearing things down itself, so stopping from the
-  // notification and stopping from the Status picker are the same action: the
-  // radios come down, the gateway switches off, and presence lands on Away - so
-  // reopening the app shows "Mesh paused · You're away" with a way back, not a
-  // dead mesh wearing a green dot.
-  useEffect(() => {
-    const sub = DeviceEventEmitter.addListener(
-      "AirhopBLE.meshStopRequested",
-      () => applyPresence("away", username),
-    );
-    return () => sub.remove();
-  }, [username]);
-
-  // One-time setup, deferred until past onboarding so the OS permission prompt
-  // lands on the mesh screen in context (alongside the Bluetooth/Location
-  // prompt) rather than on the welcome screen. Wires the inbound observer
-  // (raise a notification) and the tap handler (open the conversation).
+  // Where a tapped notification lands. The listeners that raise notifications
+  // live in services/notification-pipeline, started with the mesh, since they
+  // must keep running with no screen; only the routing needs this tree.
   //
-  // The appReady guard matters: onboardingStep starts as null (unknown) before
-  // loadIdentity resolves, so without it a brand-new install would run this
-  // during that initial window and fire the notification prompt at launch,
-  // before onboarding even appears.
+  // Deferred until past onboarding, so a tap cannot open a thread under the
+  // welcome screen. The appReady guard matters: onboardingStep starts as null
+  // (unknown) before loadIdentity resolves.
+  //
+  // Unregistered on unmount. Android destroys the Activity under a running
+  // mesh, and a tap then has to wait for the next tree (the one it launches)
+  // rather than call setters on this one.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     setNotificationNavigator((channel) => openChannelRef.current(channel));
-    const unsubscribe = subscribeInboundMessages((msg) => {
-      const chat = useChatStore.getState();
-      const isMuted = chat.mutedChannels.includes(msg.channel);
-      // Being @-mentioned overrides mute, the way every major chat app treats a
-      // mention: even a muted channel pings and logs a bell entry when it is you
-      // being addressed by name.
-      const mentionsMe = !msg.isSystem && mentionsNickname(msg.text, username);
-      // A muted conversation otherwise stays silent: no system notification, no
-      // haptic, and no bell entry. Its unread still shows on its own row.
-      if (!isMuted || mentionsMe) {
-        void handleInboundMessage(
-          msg,
-          sumUnread(chat.unreadCounts, chat.mutedChannels),
-          mentionsMe,
-        );
-        // Bell history logs real notifications only: skip the conversation you
-        // are actively reading (that is not a notification), same activeChannel
-        // rule the unread count uses.
-        if (!msg.isSystem && msg.channel !== chat.activeChannel) {
-          useActivityStore.getState().record({
-            id: msg.id,
-            channel: msg.channel,
-            isDM: msg.channel.startsWith("dm:"),
-            senderID: msg.senderID,
-            senderNickname: msg.senderNickname,
-            // Spread, so an attachment with no caption logs its key too and the
-            // bell reads in the current language rather than the arrival one.
-            ...messagePreviewEntry(msg),
-            timestampMs: msg.timestampMs,
-          });
-        }
-      }
-    });
-    // Nearby peers, while nobody is looking. The mesh keeps scanning with the
-    // app in the background (Android's foreground service), so this is a real
-    // event the user would otherwise never learn about. Counted by the store's
-    // own reachability rule rather than by map size, because a peer who left
-    // without a LEAVE lingers in the map: measure both sides of the change with
-    // one clock so the comparison is honest. Everything about when it is worth
-    // a notification is in shouldNotifyNearby.
     setMeshNavigator(() => navigateToTabRef.current("mesh"));
-    const unsubscribePeers = usePeerStore.subscribe((state, prev) => {
-      const nowMs = Date.now();
-      void handleNearbyPeers(
-        countReachablePeers(state.peers, nowMs),
-        countReachablePeers(prev.peers, nowMs),
-      );
-    });
-    // mesh-service.onRing already decided this ring should alert; only where
-    // is decided here. Looking at the sender's own thread gets one pulse: the
-    // bell row has just landed in front of them and the thread's read-receipt
-    // effect acknowledges it. Otherwise the overlay goes up, foreground or
-    // not, the way a call screen does; the tray is told as well when the
-    // overlay cannot be seen, and always on iOS, where the tray's pulses are
-    // the only sound a ring has.
-    const unsubscribeRings = subscribeInboundRings((ring) => {
-      const channel = `dm:${ring.peerID}`;
-      if (isReadingChannel(channel)) {
-        ringPulse();
-        return;
-      }
-      // Logged like any other notification, so a ring missed while the phone
-      // was in a bag is found under the bell.
-      useActivityStore.getState().record({
-        id: ring.ringID,
-        channel,
-        isDM: true,
-        senderID: ring.peerID,
-        senderNickname: ring.senderName,
-        ...systemPreview("chat.ring.received_summary"),
-        timestampMs: ring.receivedAtMs,
-      });
-      useIncomingRingStore.getState().show(ring);
-      if (!isAppActive() || Platform.OS === "ios") {
-        void raiseRingNotification(ring.peerID, ring.senderName);
-      }
-    });
+    // Here too, not only with the pipeline, so a cold start from a tapped
+    // notification routes it without waiting on the permission conversation
+    // that comes before the mesh.
     void configureNotifications();
     return () => {
-      unsubscribe();
-      unsubscribePeers();
-      unsubscribeRings();
+      setNotificationNavigator(null);
+      setMeshNavigator(null);
     };
-  }, [appReady, onboardingStep, username]);
+  }, [appReady, onboardingStep]);
 
   // The single answer to "which conversation is the user reading right now".
   //
@@ -1289,11 +1220,6 @@ function AppContent(): React.JSX.Element {
     usePeerStore.getState().markPeersSeen();
   }, [tab, appActive, onboardingStep, meshHasNewPeers]);
 
-  // Keep the app icon badge in step with total unread across channels and DMs.
-  useEffect(() => {
-    void setAppBadgeCount(chatsUnread);
-  }, [chatsUnread]);
-
   // Airhop deep links: airhop://channel/<name> and airhop://peer/<id>. Tapping a
   // shared invite opens the app here. Joining is user-initiated (you tapped the
   // link), so adding the channel / opening the DM is legitimate consent, not the
@@ -1308,7 +1234,17 @@ function AppContent(): React.JSX.Element {
       // What the link does lives in services/link-router, shared with the Join
       // sheet's paste field, so a tapped link and a pasted one behave the same.
       const channel = applyAirhopLink(link);
-      if (channel !== null) openChannelRef.current(channel);
+      if (channel !== null) {
+        openChannelRef.current(channel);
+        return;
+      }
+      // Refused, so say why rather than leave a tap that did nothing. The same
+      // words the Join sheet uses for each case.
+      if (link.kind === "card") {
+        showAlert(t("chat.join.unverified"), t("chat.join.unverified_body"));
+      } else {
+        showAlert(t("chat.join.not_airhop"));
+      }
     };
     void Linking.getInitialURL().then(handle);
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));

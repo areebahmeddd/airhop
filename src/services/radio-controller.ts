@@ -65,6 +65,8 @@ export interface RadioFacts {
   // broadcast). Drives how hard the radios run - see power-policy.ts.
   batteryPercent: number | null;
   charging: boolean;
+  // Android Battery Saver. Always false on iOS.
+  powerSaveMode: boolean;
 }
 
 // Retry schedule for a radio that could not start. Grows so a genuinely blocked
@@ -422,6 +424,7 @@ export class RadioController {
       batteryPercent: facts.batteryPercent,
       charging: facts.charging,
       appForeground: this.appForeground,
+      powerSaveMode: facts.powerSaveMode,
     });
     // Publish whether the user would NOTICE the reduction, which is not the same
     // as whether there is one. Backgrounded, every mode is reduced and nobody is
@@ -456,7 +459,8 @@ export class RadioController {
     void this.reconcile();
   }
 
-  // Native saw the battery move enough to possibly matter.
+  // Native saw the battery, the charger or Battery Saver move enough to
+  // possibly matter.
   onPowerStateChanged(): void {
     void this.reconcile();
   }
@@ -496,6 +500,9 @@ export class RadioController {
         // has one "unknown" to reason about instead of a magic number.
         batteryPercent: state.batteryPercent < 0 ? null : state.batteryPercent,
         charging: state.charging,
+        // Compared rather than read, so a native build without the field
+        // reads as off instead of as undefined.
+        powerSaveMode: state.powerSaveMode === true,
       };
     } catch {
       // Unreadable this instant. "unknown" reads as "starting", which retries,
@@ -508,6 +515,7 @@ export class RadioController {
         locationServicesEnabled: true,
         batteryPercent: null,
         charging: false,
+        powerSaveMode: false,
       };
     }
   }

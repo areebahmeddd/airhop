@@ -45,6 +45,8 @@ export interface PowerInputs {
   batteryPercent: number | null;
   charging: boolean;
   appForeground: boolean;
+  // The OS power-saving switch (Android Battery Saver).
+  powerSaveMode: boolean;
 }
 
 // Which band a level falls in, given the band we are already in.
@@ -78,6 +80,10 @@ export function bandFor(
 //   * Background dominates everything. Off screen, nobody is waiting on
 //     discovery latency, so there is no reason to pay for it - and this is where
 //     a phone spends almost all of its day.
+//   * The OS power-saving switch beats charging and a healthy battery. It is
+//     the user saying outright to spend less, where charging and the battery
+//     level are only inferences about what they can afford. Android turns it
+//     off on the charger by default, so the two rarely meet.
 //   * Charging beats battery level. Plugged in, the cost is somebody else's.
 //   * Otherwise the battery band decides.
 //
@@ -92,6 +98,12 @@ export function modeFor(
   const band = bandFor(inputs.batteryPercent, previousBand);
 
   if (!inputs.appForeground) {
+    return {
+      mode: band === "critical" ? "ultra-low-power" : "power-saver",
+      band,
+    };
+  }
+  if (inputs.powerSaveMode) {
     return {
       mode: band === "critical" ? "ultra-low-power" : "power-saver",
       band,

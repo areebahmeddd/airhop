@@ -420,6 +420,25 @@ describe("startup priming on Android", () => {
     expect(mockStartTor).not.toHaveBeenCalled();
   });
 
+  // Same rule as the foreground re-check: with the internet switched off there
+  // is no relay pool for Arti to carry, so a launch must not bootstrap it.
+  test("does nothing with the internet switched off, and starts once it is on", () => {
+    mockTorEnabled = true;
+    mockInternetEnabled = false;
+
+    primeTorRoutingOnStartup();
+
+    expect(mockStartTor).not.toHaveBeenCalled();
+    expect(mockNostrBlocked).toBe(false);
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("starting");
+
+    // The switch calls through before its own preference is written.
+    applyInternetAvailability(true);
+
+    expect(mockStartTor).toHaveBeenCalledTimes(1);
+    expect(mockTorEnabled).toBe(true);
+  });
+
   test("starts the client but does not claim routing yet", () => {
     mockTorEnabled = true;
 

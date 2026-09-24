@@ -22,7 +22,10 @@ const FOREGROUND: PowerInputs = {
   batteryPercent: 80,
   charging: false,
   appForeground: true,
+  powerSaveMode: false,
 };
+
+const BACKGROUND: PowerInputs = { ...FOREGROUND, appForeground: false };
 
 describe("battery bands", () => {
   test("maps levels to bands at the bitchat thresholds", () => {
@@ -80,15 +83,24 @@ describe("mode selection", () => {
   test("background never runs flat out, whatever the battery", () => {
     for (const batteryPercent of [100, 50, 21, 20, 11]) {
       expect(
-        modeFor({ batteryPercent, charging: false, appForeground: false }).mode,
+        modeFor({
+          batteryPercent,
+          charging: false,
+          appForeground: false,
+          powerSaveMode: false,
+        }).mode,
       ).toBe("power-saver");
     }
   });
 
   test("background on a critical battery drops further still", () => {
     expect(
-      modeFor({ batteryPercent: 5, charging: false, appForeground: false })
-        .mode,
+      modeFor({
+        batteryPercent: 5,
+        charging: false,
+        appForeground: false,
+        powerSaveMode: false,
+      }).mode,
     ).toBe("ultra-low-power");
   });
 
@@ -96,8 +108,12 @@ describe("mode selection", () => {
     // Plugged in but pocketed: nobody is waiting on discovery, so there is
     // nothing to spend the power on.
     expect(
-      modeFor({ batteryPercent: 90, charging: true, appForeground: false })
-        .mode,
+      modeFor({
+        batteryPercent: 90,
+        charging: true,
+        appForeground: false,
+        powerSaveMode: false,
+      }).mode,
     ).toBe("power-saver");
   });
 
@@ -119,6 +135,25 @@ describe("mode selection", () => {
     );
     expect(modeFor({ ...FOREGROUND, batteryPercent: 5 }).mode).toBe(
       "ultra-low-power",
+    );
+  });
+
+  test("the OS power-saving switch turns a healthy foreground down", () => {
+    expect(modeFor({ ...FOREGROUND, powerSaveMode: true }).mode).toBe(
+      "power-saver",
+    );
+    // Said outright, where the charger only implies what the user can afford.
+    expect(
+      modeFor({ ...FOREGROUND, powerSaveMode: true, charging: true }).mode,
+    ).toBe("power-saver");
+    expect(
+      modeFor({ ...FOREGROUND, powerSaveMode: true, batteryPercent: 5 }).mode,
+    ).toBe("ultra-low-power");
+  });
+
+  test("the OS power-saving switch changes nothing in the background", () => {
+    expect(modeFor({ ...BACKGROUND, powerSaveMode: true }).mode).toBe(
+      "power-saver",
     );
   });
 
@@ -168,11 +203,7 @@ describe("PowerPolicy", () => {
     const policy = new PowerPolicy();
     const applied: string[] = [];
     for (let pct = 100; pct >= 2; pct--) {
-      const next = policy.next({
-        batteryPercent: pct,
-        charging: false,
-        appForeground: false,
-      });
+      const next = policy.next({ ...BACKGROUND, batteryPercent: pct });
       if (next !== null) applied.push(next);
     }
     expect(applied).toEqual(["power-saver", "ultra-low-power"]);

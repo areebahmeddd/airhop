@@ -365,7 +365,19 @@ async function disableTorRouting(restarting = false): Promise<void> {
 // Apply the persisted Tor preference at app startup, BEFORE the mesh service is
 // initialized, so the very first relay pool is built on the right socket path.
 // There is no mesh rebuild here: the mesh has not started yet.
+//
+// Gated on the internet switch as well, for the reason applyInternetAvailability
+// gives: with no internet half, Arti would bootstrap for nobody. Switching the
+// internet on later starts it from there.
 export function primeTorRoutingOnStartup(): void {
+  if (!useSettingsStore.getState().internetEnabled) return;
+  startTorFromPreference();
+}
+
+// The start itself, shared with the internet switch. That caller runs before
+// the switch's own preference is written, so it cannot go through the gate
+// above.
+function startTorFromPreference(): void {
   const settings = useSettingsStore.getState();
 
   // A start that never answered, from a process that is gone. Trying again is
@@ -421,7 +433,7 @@ export function applyInternetAvailability(enabled: boolean): void {
   if (enabled) {
     // Safe to call again: the status subscription, the socket swap and the
     // native start are each idempotent.
-    primeTorRoutingOnStartup();
+    startTorFromPreference();
     return;
   }
   stopWatchingTorBootstrap();

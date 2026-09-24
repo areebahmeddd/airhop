@@ -460,6 +460,13 @@ describe("mid-session radio chaos and lifecycle", () => {
       "no duplicate foreground service churn",
       os.foregroundServiceRunning,
     );
+    // Notifications, the wallet watcher and the prompts belong to the mesh,
+    // not to the mount, so a recreated Activity must not stack a second set.
+    v.check(
+      "what rides on the mesh is not started twice",
+      app.dependentsRuns === 1,
+      `runs=${app.dependentsRuns}`,
+    );
     v.assert();
   });
 

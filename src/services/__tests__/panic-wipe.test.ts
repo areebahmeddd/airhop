@@ -12,6 +12,7 @@ import {
   WALLET_STORAGE_ID,
 } from "@store/wallet-store";
 import { wipeCacheDirectory } from "../file-transfer-service";
+import { stopNotificationPipeline } from "../notification-pipeline";
 import { dismissAllNotifications } from "../notification-service";
 import { setNutzapWatcher } from "../nutzap-watcher-handle";
 import { MMKV_STORE_IDS, panicWipe } from "../panic-wipe";
@@ -41,6 +42,12 @@ jest.mock("../file-transfer-service", () => ({
 // depend on a notifications runtime.
 jest.mock("../notification-service", () => ({
   dismissAllNotifications: jest.fn().mockResolvedValue(undefined),
+}));
+
+// The pipeline's listeners reach haptics and the notifications runtime; only
+// whether the wipe stops it matters here.
+jest.mock("../notification-pipeline", () => ({
+  stopNotificationPipeline: jest.fn(),
 }));
 
 // Provide a full in-memory MMKV implementation so Zustand's persist middleware
@@ -136,6 +143,8 @@ describe("panicWipe", () => {
   });
 
   test("clears every persisted partition, by name", async () => {
+    // Open, so the wallet takes the clear-through-its-handle path this asserts.
+    await bootstrapWalletStorage();
     await panicWipe();
     // Asserted by id rather than by count. Derived from the constant, so adding
     // a persisted store extends this automatically rather than failing and
@@ -285,6 +294,20 @@ describe("panicWipe", () => {
     // rather than in any store, and survive the process.
     await panicWipe();
     expect(dismissAllNotifications).toHaveBeenCalled();
+  });
+
+  test("stops turning arrivals into notifications before clearing anything", async () => {
+    const stop = stopNotificationPipeline as jest.Mock;
+    stop.mockClear();
+    let stoppedBeforeClear = false;
+    mockClearAll.mockImplementationOnce(() => {
+      stoppedBeforeClear = stop.mock.calls.length > 0;
+    });
+
+    await panicWipe();
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(stoppedBeforeClear).toBe(true);
   });
 
   test("wipes every sensitive persisted store, including the activity feed", () => {

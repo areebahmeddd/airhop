@@ -209,8 +209,18 @@ describe("attachment previews", () => {
     );
     expect(attachmentSummary({ type: "video", uri: "x" })).toBe("🎥 Video");
     expect(
-      attachmentSummary({ type: "document", uri: "x", name: "spec.pdf" }),
+      stripIsolates(
+        attachmentSummary({ type: "document", uri: "x", name: "spec.pdf" }),
+      ),
     ).toBe("📄 spec.pdf");
+  });
+
+  // A filename is text Airhop did not write and cannot predict the direction
+  // of, so it goes through a placeholder like any nickname.
+  it("isolates a document's filename", () => {
+    expect(
+      attachmentSummary({ type: "document", uri: "x", name: "تقرير.pdf" }),
+    ).toContain("\u2068تقرير.pdf\u2069");
   });
 
   it("prefers an attachment summary over empty text", () => {

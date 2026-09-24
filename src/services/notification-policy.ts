@@ -38,7 +38,7 @@ export function attachmentSummary(attachment: ChatAttachment): string {
       return t("notif.preview.video");
     case "document":
       return attachment.name
-        ? `📄 ${attachment.name}`
+        ? t("notif.preview.document_named", { name: attachment.name })
         : t("notif.preview.document");
   }
 }

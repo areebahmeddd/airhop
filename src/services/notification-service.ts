@@ -72,6 +72,11 @@ let appActive = true;
 let activeChannel = "";
 let navigate: ((channel: string) => void) | null = null;
 let openMesh: (() => void) | null = null;
+// A tap that arrived with no screen to route it to: the mesh (and this module)
+// can outlive the UI on Android, and a boot start runs with none at all. Held
+// until a navigator registers, which is the Activity the tap launched.
+let pendingChannel: string | null = null;
+let pendingMesh = false;
 let configured = false;
 let responseSub: Notifications.EventSubscription | null = null;
 // When the last nearby notice went out, for the cooldown. Module state, not
@@ -104,8 +109,8 @@ export function setNotificationsAppActive(active: boolean): void {
 }
 
 // For a caller outside this module that needs the same foreground check:
-// app.tsx's subscribeInboundRings wiring, choosing between the live overlay
-// and raiseRingNotification below.
+// notification-pipeline's ring wiring, choosing between the live overlay and
+// raiseRingNotification below.
 export function isAppActive(): boolean {
   return appActive;
 }
@@ -120,8 +125,17 @@ export function isReadingChannel(channel: string): boolean {
   return appActive && activeChannel === channel;
 }
 
-export function setNotificationNavigator(fn: (channel: string) => void): void {
+// Null when the screen that registered it goes away, so a later tap waits for
+// the next one rather than calling into an unmounted tree.
+export function setNotificationNavigator(
+  fn: ((channel: string) => void) | null,
+): void {
   navigate = fn;
+  if (fn !== null && pendingChannel !== null) {
+    const channel = pendingChannel;
+    pendingChannel = null;
+    fn(channel);
+  }
 }
 
 // Opens a conversation from somewhere other than a tapped notification, e.g.
@@ -133,8 +147,12 @@ export function openConversation(channel: string): void {
 
 // Where a nearby-peers notice goes when tapped. Separate from the conversation
 // navigator above because it lands on a tab, not in a chat.
-export function setMeshNavigator(fn: () => void): void {
+export function setMeshNavigator(fn: (() => void) | null): void {
   openMesh = fn;
+  if (fn !== null && pendingMesh) {
+    pendingMesh = false;
+    fn();
+  }
 }
 
 // Ask for notification permission. Kept separate from configureNotifications so
@@ -257,12 +275,14 @@ function routeFromResponse(response: Notifications.NotificationResponse): void {
   const data = response.notification.request.content.data;
   const channel = data?.channel;
   if (typeof channel === "string") {
-    navigate?.(channel);
+    if (navigate !== null) navigate(channel);
+    else pendingChannel = channel;
     void dismissNotificationsFor(channel);
     return;
   }
   if (data?.screen === "mesh") {
-    openMesh?.();
+    if (openMesh !== null) openMesh();
+    else pendingMesh = true;
     void dismissNearbyNotification();
   }
 }
@@ -328,8 +348,8 @@ export async function handleInboundMessage(
   }
 }
 
-// Called whenever the set of nearby peers changes (see App's peer-store
-// observer), with the reachable count before and after. Almost every call is a
+// Called whenever the set of nearby peers changes (see notification-pipeline),
+// with the reachable count before and after. Almost every call is a
 // no-op: shouldNotifyNearby only lets through an empty mesh coming alive while
 // the app is in the background, and then only once per cooldown.
 //
@@ -459,7 +479,7 @@ export async function raiseRingNotification(
     data: { channel },
     sound: "default",
     interruptionLevel: "timeSensitive",
-    // No badge field: app.tsx already syncs the badge to total unread.
+    // No badge field: notification-pipeline keeps the badge at total unread.
   };
   if (Platform.OS === "android") {
     try {
@@ -494,6 +514,59 @@ export async function raiseRingNotification(
   }
 }
 
+// Take the delivered message and ring cards out of the shade, for the moment
+// "Hide previews" is switched on. They were rendered with the sender and the
+// text, and the lock screen keeps showing them whatever the setting now says.
+// Only those two kinds: the nearby notice names nobody.
+export async function dismissPreviewNotifications(): Promise<void> {
+  let presented: Notifications.Notification[];
+  try {
+    presented = await Notifications.getPresentedNotificationsAsync();
+  } catch {
+    // No tray on this platform.
+    return;
+  }
+  for (const n of presented) {
+    const id = n.request.identifier;
+    if (!id.startsWith("msg_") && !isRingNotification(n)) continue;
+    try {
+      await Notifications.dismissNotificationAsync(id);
+    } catch {
+      // Already gone.
+    }
+  }
+}
+
+// For turning Ring alerts off: the overlay and native loop are stopped by the
+// mesh, but on iOS a ring is a series of pulses already scheduled with the OS,
+// which would keep sounding after the user said no more rings.
+export async function endAllRingAlerts(): Promise<void> {
+  let scheduled: Notifications.NotificationRequest[] = [];
+  let presented: Notifications.Notification[] = [];
+  try {
+    scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    presented = await Notifications.getPresentedNotificationsAsync();
+  } catch {
+    // No scheduler or tray on this platform.
+  }
+  for (const request of scheduled) {
+    if (!request.identifier.startsWith("ring_")) continue;
+    try {
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    } catch {
+      // Already fired.
+    }
+  }
+  for (const n of presented) {
+    if (!isRingNotification(n)) continue;
+    try {
+      await Notifications.dismissNotificationAsync(n.request.identifier);
+    } catch {
+      // Already gone.
+    }
+  }
+}
+
 // Take every delivered notification out of the shade, and clear the badge.
 //
 // For the panic wipe. A delivered notification carries a sender nickname and a
@@ -502,6 +575,9 @@ export async function raiseRingNotification(
 // phone whose database has just been destroyed. Nothing else should call this:
 // clearing someone's whole tray is the wipe's business and nobody else's.
 export async function dismissAllNotifications(): Promise<void> {
+  // A held tap names a conversation the wipe has just destroyed.
+  pendingChannel = null;
+  pendingMesh = false;
   try {
     await Notifications.dismissAllNotificationsAsync();
   } catch {

@@ -625,12 +625,11 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
-  // Not a fault, and not something to act on: the phone is low and the app has
-  // turned the scan down to bursts rather than draining what is left. Worth
-  // saying only because the visible symptom - peers taking half a minute to
-  // appear - is otherwise indistinguishable from the mesh being broken. Muted
-  // rather than amber, because nothing is wrong. No button, because there is
-  // nothing to tap: charging the phone is the fix, and it clears itself.
+  // Not a fault: the phone is low or in Battery Saver, and the app has turned
+  // the scan down to bursts. Worth saying only because the visible symptom,
+  // peers taking half a minute to appear, is otherwise indistinguishable from a
+  // broken mesh. Muted rather than amber, because nothing is wrong. No button:
+  // charging or leaving Battery Saver clears it.
   if (inputs.powerSaving === true) {
     banners.push({
       key: "power-saving",

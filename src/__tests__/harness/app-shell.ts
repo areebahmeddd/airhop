@@ -7,7 +7,9 @@
 //
 //   startMeshWithPermissions  request, record, start, then chain the location
 //                             and notification prompts
-//   mount                     reuse an existing mesh for the same identity
+//   mount                     reuse an existing mesh for the same identity,
+//                             still running its dependents once
+//   bootStart                 the headless boot task: checks only, no prompts
 //   AppState "active"         re-check permissions, retry the radios
 //   meshStopRequested         applyPresence("away")
 //
@@ -29,6 +31,7 @@ import {
   destroyMeshService,
   getMeshService,
   initMeshService,
+  type MeshService,
 } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
 import type { AndroidPermission, DeviceOS } from "./os";
@@ -138,11 +141,17 @@ export interface ShownAlert {
   kind: "blocked" | "denied";
 }
 
+// Module scope, as in the app: it outlives any one mount.
+let dependentsStartedFor: MeshService | null = null;
+
 export class AppShell {
   readonly os: DeviceOS;
   readonly identity: Identity;
   readonly nickname: string;
   readonly alerts: ShownAlert[] = [];
+  // How many times startMeshDependents did its work, which is also how many
+  // times the location and notification prompts were chained.
+  dependentsRuns = 0;
   private readonly answer: (
     p: AndroidPermission,
   ) => "granted" | "denied" | "blocked";
@@ -191,17 +200,39 @@ export class AppShell {
     this.os.log("js", "initMeshService");
     initMeshService(this.identity, this.nickname);
     useMeshStateStore.getState().setPresenceStatus("online");
+    this.startMeshDependents();
     await Promise.resolve();
   }
 
-  // A remount reuses an existing mesh for the same identity.
+  // Once per mesh, whoever started it.
+  startMeshDependents(): void {
+    const mesh = getMeshService();
+    if (mesh === null || mesh === dependentsStartedFor) return;
+    dependentsStartedFor = mesh;
+    this.dependentsRuns++;
+    this.os.log("js", "MESH_DEPENDENTS");
+  }
+
+  // A remount reuses an existing mesh for the same identity, and still owes
+  // it the dependents a boot start could not run.
   async mount(): Promise<void> {
     const existing = getMeshService();
     if (existing?.peerID !== this.identity.peerID) {
       await this.startMeshWithPermissions();
     } else {
       this.os.log("js", "MOUNT_REUSED_EXISTING_MESH");
+      this.startMeshDependents();
     }
+  }
+
+  // The headless task after a reboot. Every step is a check: it has no screen
+  // to prompt on, so it starts only with the grant already held and leaves the
+  // dependents that need the app for when it is opened.
+  bootStart(): void {
+    if (!hasBlePermissions(this.os)) return;
+    if (getMeshService()?.peerID === this.identity.peerID) return;
+    this.os.log("js", "BOOT_START_MESH");
+    initMeshService(this.identity, this.nickname);
   }
 
   async setAppState(next: "active" | "background"): Promise<void> {
