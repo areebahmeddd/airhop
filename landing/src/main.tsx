@@ -8,6 +8,8 @@ import "./index.css";
 const language = resolveLanguage(window.location.pathname);
 const spec = LANGUAGES[language];
 
+const basename = `${basenameFor(language)}/`.replace(/\/+$/, "/");
+
 const root = document.documentElement;
 root.lang = language;
 root.dir = spec.direction;
@@ -16,7 +18,7 @@ root.dataset.script = spec.script;
 void loadCatalog(language).then(() => {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <BrowserRouter basename={basenameFor(language)}>
+      <BrowserRouter basename={basename}>
         <LanguageContext value={language}>
           <App />
         </LanguageContext>

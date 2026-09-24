@@ -42,6 +42,7 @@ const mockSetNostrBlockedByTor = jest.fn((next: boolean) => {
   mockNostrBlocked = next;
 });
 let mockTorEnabled = false;
+let mockInternetEnabled = true;
 let mockBridgeMode = "off";
 let mockBridgeLines = "";
 const mockSetTorBridgeMode = jest.fn((next: string) => {
@@ -139,6 +140,9 @@ jest.mock("@store/settings-store", () => ({
       get torEnabled() {
         return mockTorEnabled;
       },
+      get internetEnabled() {
+        return mockInternetEnabled;
+      },
       setTorEnabled: mockSetTorEnabled,
       get torBridgeMode() {
         return mockBridgeMode;
@@ -182,6 +186,7 @@ beforeEach(async () => {
   mockBridgeLines = "";
   mockNostrBlocked = false;
   mockTorStartPending = false;
+  mockInternetEnabled = true;
   mockStartTor.mockResolvedValue(undefined);
   mockStopTor.mockResolvedValue(undefined);
   mockGetTorStatus.mockResolvedValue(status({ isReady: true }));

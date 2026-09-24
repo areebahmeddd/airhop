@@ -34,12 +34,13 @@ import {
   type Event,
   type UnsignedEvent,
 } from "nostr-tools";
+import { secureRandom } from "../crypto/secure-random";
 import { bitchatNip44Decrypt, bitchatNip44Encrypt } from "./bitchat-nip44";
 
 // Event kinds per PROTOCOLS.md section 8.
 const KIND_DM_RUMOR = 14;
 const KIND_SEAL = 13;
-const KIND_GIFT_WRAP = 1059;
+export const KIND_GIFT_WRAP = 1059;
 
 // bitchat randomizes seal + gift-wrap timestamps by +/-15 minutes (NostrProtocol
 // randomizedTimestamp). Matching this keeps our events indistinguishable from
@@ -119,7 +120,9 @@ export function wrapDm(
 // bitchat randomizes the seal and gift-wrap timestamps by +/-15 minutes to blur
 // send timing without moving them so far that relays reject them.
 function randomizedTimestamp(): number {
-  const jitter = Math.floor((Math.random() * 2 - 1) * TIMESTAMP_JITTER_SECONDS);
+  const jitter = Math.floor(
+    (secureRandom() * 2 - 1) * TIMESTAMP_JITTER_SECONDS,
+  );
   return Math.floor(Date.now() / 1000) + jitter;
 }
 

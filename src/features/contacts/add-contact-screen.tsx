@@ -87,7 +87,7 @@ function parsePeerID(raw: string): string | null {
 }
 
 // Result of reading a scanned payload. A full contact card carries the peer's
-// public keys; a bare peer ID (older builds, manual entry, shared deep-link)
+// public keys; a bare peer ID (manual entry, a shared deep link)
 // identifies them but proves nothing and cannot seed an encrypted session.
 interface ScanResult {
   peerID: string;

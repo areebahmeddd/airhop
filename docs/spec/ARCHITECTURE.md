@@ -384,6 +384,8 @@ half each person is playing.
 - NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte-for-byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - Kinds 20000 and 20001 for geohash channels and presence heartbeats
 - `SimplePool` connects to 3 to 5 relays at once and takes the first ACK, so no single relay is load-bearing
+- nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
+- A network coming back is one debounced event (`src/services/reachability.ts`), not a wait on a timer: it rebuilds the pool when the network it was built on has gone or no relay is live, re-checks Tor, retries queued mail and settles wallet leftovers. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
 - Tor off by default on both platforms, behind one toggle
 
 ### Radio power policy (Android)
@@ -1050,6 +1052,59 @@ hand from Xcode.
 
 Neither platform uses EAS, and likely never will: its main draws are prebuild
 and managed credentials, and this project does not run prebuild.
+
+### Toolchain versions
+
+Language and build-tool versions, separate from the npm dependencies in
+`package.json`. Some are ours to pick; the rest arrive with React Native or
+Expo and move only when those do.
+
+Android:
+
+| Tool                  | Version         | Pinned in                           | Ours to bump                 |
+| --------------------- | --------------- | ----------------------------------- | ---------------------------- |
+| JDK (Temurin)         | `21`            | `setup-android/action.yml`          | Yes, within what AGP accepts |
+| Gradle                | `9.3.1`         | `android/gradle/wrapper/`           | Yes                          |
+| Kotlin                | `2.1.20`        | React Native's `libs.versions.toml` | No                           |
+| Android Gradle plugin | `8.12.0`        | React Native's catalog              | No                           |
+| NDK                   | `27.1.12297006` | `setup-android/action.yml`          | No, matches React Native     |
+| `minSdk`              | `26`            | `android/gradle.properties`         | Yes                          |
+| `compileSdk`          | Expo's          | the `expo-root-project` plugin      | No, bump Expo                |
+
+Apple:
+
+| Tool                | Version  | Pinned in                            | Ours to bump                      |
+| ------------------- | -------- | ------------------------------------ | --------------------------------- |
+| Swift language mode | `5.0`    | `SWIFT_VERSION` in `project.pbxproj` | Yes, but mode 6 is a migration    |
+| swift-tools-version | `5.9`    | `ios/Package.swift`                  | Yes, in step with the mode        |
+| Deployment target   | `16.4`   | `project.pbxproj`                    | Yes                               |
+| CocoaPods           | `1.17.0` | `ios/Podfile.lock`                   | No, the lockfile workflow owns it |
+
+The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
+
+| Tool        | Version                | Note                                                             |
+| ----------- | ---------------------- | ---------------------------------------------------------------- |
+| Rust        | `1.98.0`               |                                                                  |
+| Arti client | `0.46.0`               |                                                                  |
+| cbindgen    | `0.29.4`               | Generates `arti.h`                                               |
+| Go          | `1.26.8`               |                                                                  |
+| IPtProxy    | `5.5.1`                | Release and commit, so a tag cannot move under us                |
+| gomobile    | pinned commit          | Upstream would otherwise resolve `@latest`                       |
+| NDK         | `28.2.13676358` (r28c) | Ahead of the app's: r28 gives the 16 KiB alignment Play requires |
+
+One value, several files. Each carries a comment saying so, and a mismatch fails
+a build rather than drifting quietly:
+
+- **Deployment target**: `project.pbxproj`, `ios/Podfile`, `ios/Arti.podspec`,
+  `ios/IPtProxy.podspec`, `IOS_MIN_VERSION`.
+- **`minSdk`**: `android/gradle.properties`, `ANDROID_MIN_SDK`.
+- **Rust**: `TOOLCHAIN.env`, `native/arti/rust-toolchain.toml`.
+- **Arti client**: `TOOLCHAIN.env`, `native/arti/Cargo.toml`.
+- **NDK (app)**: `setup-android/action.yml`, React Native's `ndkVersion`.
+
+Changing anything under `native/` means rebuilding the committed binaries and
+re-recording their hashes in the same commit (`node scripts/verify-vendored.js
+--write`); see `native/README.md`.
 
 ## 12. Native Modules
 

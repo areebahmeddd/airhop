@@ -39,6 +39,7 @@ const mockSetNostrBlockedByTor = jest.fn((next: boolean) => {
 const mockRestartNostr = jest.fn();
 const mockUseWebSocketImplementation = jest.fn();
 let mockTorEnabled = false;
+let mockInternetEnabled = true;
 let mockBridgeMode = "off";
 let mockBridgeLines = "";
 const mockSetTorBridgeMode = jest.fn((next: string) => {
@@ -134,6 +135,9 @@ jest.mock("@store/settings-store", () => ({
       get torEnabled() {
         return mockTorEnabled;
       },
+      get internetEnabled() {
+        return mockInternetEnabled;
+      },
       setTorEnabled: mockSetTorEnabled,
       get torBridgeMode() {
         return mockBridgeMode;
@@ -179,6 +183,7 @@ beforeEach(async () => {
   mockBridgeLines = "";
   mockNostrBlocked = false;
   mockTorStartPending = false;
+  mockInternetEnabled = true;
   mockStartTor.mockResolvedValue(undefined);
   mockStopTor.mockResolvedValue(undefined);
   mockAwaitTorReady.mockResolvedValue(true);
@@ -271,6 +276,34 @@ describe("enabling Tor on Android", () => {
 
     expect(result).toEqual({ ok: false, reason: "error" });
     expect(isTorRoutingActive()).toBe(false);
+  });
+
+  // A relay dialled before the circuit fails its first connect and is never
+  // retried, so the pool is held down for the bootstrap and rebuilt after it.
+  test("holds the relay pool until the circuit is ready", async () => {
+    let blockedWhileBootstrapping = false;
+    mockAwaitTorReady.mockImplementation(async () => {
+      blockedWhileBootstrapping = mockNostrBlocked;
+      return true;
+    });
+
+    await setTorRouting(true);
+
+    expect(blockedWhileBootstrapping).toBe(true);
+    expect(mockNostrBlocked).toBe(false);
+    expect(mockRestartNostr).toHaveBeenCalledTimes(2);
+  });
+
+  test("a client ready before the gate went up still opens it", async () => {
+    // Warm state: Arti reports ready during the start, before the gate rises,
+    // and has nothing further to report.
+    mockStartTor.mockImplementation(async () => {
+      emitStatus({ isReady: true });
+    });
+
+    await setTorRouting(true);
+
+    expect(mockNostrBlocked).toBe(false);
   });
 });
 
@@ -425,6 +458,17 @@ describe("startup priming on Android", () => {
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(isTorRoutingActive()).toBe(false);
   });
+
+  test("holds the relay pool until Arti reports it is ready", () => {
+    mockTorEnabled = true;
+
+    primeTorRoutingOnStartup();
+    expect(mockNostrBlocked).toBe(true);
+
+    emitStatus({ isReady: true });
+    expect(mockNostrBlocked).toBe(false);
+    expect(mockRestartNostr).toHaveBeenCalled();
+  });
 });
 
 describe("bootstrap reporting on Android", () => {
@@ -482,6 +526,15 @@ describe("revalidating on Android", () => {
     mockTorEnabled = false;
     await revalidateTorRouting();
     expect(mockGetTorStatus).not.toHaveBeenCalled();
+  });
+
+  // Arti is stopped on purpose with the internet off, which is not a blockage.
+  test("does nothing while the internet is off", async () => {
+    mockTorEnabled = true;
+    mockInternetEnabled = false;
+    await revalidateTorRouting();
+    expect(mockGetTorStatus).not.toHaveBeenCalled();
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
   });
 
   test("a client that is still ready keeps the claim", async () => {
@@ -549,6 +602,19 @@ describe("the master internet switch", () => {
     expect(isTorRoutingActive()).toBe(false);
     // Untouched: the user turned the internet off, not Tor.
     expect(mockSetTorEnabled).not.toHaveBeenCalled();
+  });
+
+  // Anything built on the direct socket while Tor was down must not outlive
+  // the switch back to it.
+  test("coming back tears down a pool built before the gate", () => {
+    mockTorEnabled = true;
+    applyInternetAvailability(false);
+    jest.clearAllMocks();
+
+    applyInternetAvailability(true);
+
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockRestartNostr).toHaveBeenCalledTimes(1);
   });
 
   test("starts Tor again when the internet comes back", () => {
@@ -663,6 +729,22 @@ describe("bridge modes", () => {
       expect.stringContaining("snowflake "),
     );
     expect(mockSetTorBridgeMode).toHaveBeenCalledWith("snowflake");
+  });
+
+  // Between the old client and the new one there is no Tor, and a pool rebuilt
+  // then would dial relays on the device's own address.
+  test("changing mode never rebuilds the pool off Tor", async () => {
+    await setTorRouting(true);
+    const rebuiltWhileOff: boolean[] = [];
+    mockRestartNostr.mockImplementation(() => {
+      rebuiltWhileOff.push(!mockTorEnabled && !mockNostrBlocked);
+    });
+
+    await setTorBridgeMode("snowflake");
+
+    expect(rebuiltWhileOff.length).toBeGreaterThan(0);
+    expect(rebuiltWhileOff).not.toContain(true);
+    mockRestartNostr.mockReset();
   });
 
   test("changing mode while Tor is off persists without starting anything", async () => {

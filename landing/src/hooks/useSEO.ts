@@ -1,5 +1,5 @@
 import { LANGUAGES, useLanguage, useT } from "@/i18n";
-import { alternates, canonicalUrl, type PageSeo } from "@/lib/seo";
+import { alternates, canonicalUrl, isIndexable, type PageSeo } from "@/lib/seo";
 import { useEffect } from "react";
 
 function setMeta(attr: "name" | "property", key: string, content: string) {
@@ -22,9 +22,9 @@ function setLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-function setAlternates(path: string, noIndex: boolean) {
+function setAlternates(path: string, enabled: boolean) {
   document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
-  if (noIndex) return;
+  if (!enabled) return;
   for (const link of alternates(path)) {
     const el = document.createElement("link");
     el.setAttribute("rel", "alternate");
@@ -34,12 +34,13 @@ function setAlternates(path: string, noIndex: boolean) {
   }
 }
 
-function setOgLocales(active: string) {
+function setOgLocales(active: string, withAlternates: boolean) {
   document.head.querySelectorAll('meta[property="og:locale"]').forEach((el) => el.remove());
   document.head
     .querySelectorAll('meta[property="og:locale:alternate"]')
     .forEach((el) => el.remove());
   setMeta("property", "og:locale", active);
+  if (!withAlternates) return;
   for (const spec of Object.values(LANGUAGES)) {
     if (spec.ogLocale === active) continue;
     const el = document.createElement("meta");
@@ -54,13 +55,18 @@ export function useSEO(page: PageSeo) {
   const language = useLanguage();
   const title = T(page.titleKey);
   const description = T(page.descriptionKey);
-  const { path, type, noIndex } = page;
+  const { path, type, noIndex, translated } = page;
 
   useEffect(() => {
     const url = canonicalUrl(language, path);
+    const indexable = isIndexable(page, language);
     document.title = title;
     setMeta("name", "description", description);
-    setMeta("name", "robots", noIndex ? "noindex, nofollow" : "index, follow");
+    setMeta(
+      "name",
+      "robots",
+      noIndex ? "noindex, nofollow" : indexable ? "index, follow" : "noindex, follow",
+    );
     if (!noIndex) setLink("canonical", url);
     setMeta("property", "og:type", type);
     setMeta("property", "og:title", title);
@@ -68,7 +74,7 @@ export function useSEO(page: PageSeo) {
     setMeta("property", "og:url", url);
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", description);
-    setOgLocales(LANGUAGES[language].ogLocale);
-    setAlternates(path, noIndex === true);
-  }, [title, description, path, type, noIndex, language]);
+    setOgLocales(LANGUAGES[language].ogLocale, translated === true);
+    setAlternates(path, translated === true && noIndex !== true);
+  }, [page, title, description, path, type, noIndex, translated, language]);
 }

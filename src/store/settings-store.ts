@@ -340,17 +340,6 @@ export const useSettingsStore = create<SettingsState>()(
         if (merged.customRelays.length === 0) merged.geoRelayDiscovery = true;
         return merged;
       },
-      // v1 dropped Fira Code. A persisted "firacode" would miss the MONO_FONTS
-      // table entirely, and FontFamily.mono reads that table on every style
-      // build, so the stale value has to be retired on load rather than guarded
-      // against at each read.
-      migrate: (persisted, version) => {
-        const state = persisted as Partial<SettingsState> | undefined;
-        if (state && version < 1 && (state.monoFont as string) === "firacode") {
-          return { ...state, monoFont: "system" } as SettingsState;
-        }
-        return persisted as SettingsState;
-      },
     },
   ),
 );

@@ -25,12 +25,14 @@
 // attributable. Removing the signal needs relays that sometimes decline to
 // decrement, which is a coordinated protocol change.
 
+import { secureRandom } from "../../crypto/secure-random";
+
 const ORIGIN_TTL_MIN = 5;
 const ORIGIN_TTL_MAX = 7;
 
 export function originTtl(): number {
   return (
     ORIGIN_TTL_MIN +
-    Math.floor(Math.random() * (ORIGIN_TTL_MAX - ORIGIN_TTL_MIN + 1))
+    Math.floor(secureRandom() * (ORIGIN_TTL_MAX - ORIGIN_TTL_MIN + 1))
   );
 }

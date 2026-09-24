@@ -8,6 +8,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { useActivityStore } from "./activity-store";
 import { useChannelMembersStore } from "./channel-members-store";
 import { getStorage } from "./mmkv";
+import { OUTBOX_TTL_MS } from "./outbox-store";
 
 export type AttachmentType = "image" | "voice" | "document" | "video";
 
@@ -105,7 +106,7 @@ export interface ChatMessage {
   // its full lifecycle: "sent" until acknowledged, "read" once it is.
   ring?: true;
   // Delivery status (own outgoing messages only). Undefined on received
-  // messages and legacy rows. See MessageStatus.
+  // messages and system rows. See MessageStatus.
   status?: MessageStatus;
   // When the recipient confirmed delivery / read, for the Message info sheet.
   deliveredAtMs?: number;
@@ -197,6 +198,10 @@ interface ChatState {
   // heal. Waiting until both have been exchanged means both people cross over at
   // the same moment, and neither ever sees the conversation fork.
   geoCardExchange: Record<string, { theirPeerID?: string; sentMine?: boolean }>;
+  // When each conversation was last cleared or deleted, in ms. Relays and sync
+  // replay history on every reconnect, so a message older than this is a replay
+  // of something the user removed, not news.
+  clearedAt: Record<string, number>;
 
   addChannel: (channel: string) => void;
   // Follow a merged-away channel to the thread it now lives in. Identity for
@@ -304,6 +309,24 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
 
 // Max messages kept in memory per channel. Oldest are trimmed.
 const MAX_PER_CHANNEL = 200;
+
+// A message stamped this far before a conversation was cleared is still let
+// through: the clock skew the mesh tolerates on a packet (PACKET_MAX_SKEW_MS),
+// so a peer whose clock runs behind is not dropped for writing just after.
+const CLEARED_CLOCK_SKEW_MS = 2 * 60 * 1000;
+
+// Record a clear, dropping markers older than the longest replay (the DM
+// inbox's lookback, which is the outbox lifetime), since those guard nothing.
+function markCleared(
+  clearedAt: Record<string, number>,
+  channel: string,
+): Record<string, number> {
+  const now = Date.now();
+  const kept = Object.fromEntries(
+    Object.entries(clearedAt).filter(([, at]) => now - at < OUTBOX_TTL_MS),
+  );
+  return { ...kept, [channel]: now };
+}
 
 // Default channels shown on first launch, mirroring bitchat's channel hierarchy.
 // Mesh: BLE-only broadcast channel. Location channels: Nostr, sorted by coverage.
@@ -463,6 +486,7 @@ export const useChatStore = create<ChatState>()(
       geoDmCells: {},
       geoDmNames: {},
       geoCardExchange: {},
+      clearedAt: {},
 
       addChannel(channel: string) {
         set((state) => {
@@ -495,6 +519,16 @@ export const useChatStore = create<ChatState>()(
       },
 
       addMessage(msg: ChatMessage) {
+        // Capped at now: a clock set back after a clear would otherwise hold a
+        // marker in the future and drop every new message in the thread.
+        const clearedAt = get().clearedAt[msg.channel];
+        if (
+          clearedAt !== undefined &&
+          msg.timestampMs <
+            Math.min(clearedAt, Date.now()) - CLEARED_CLOCK_SKEW_MS
+        ) {
+          return;
+        }
         // Decide this before the set() runs: was it already present? Observers
         // must fire exactly once for a new message and never for a duplicate
         // (mesh flooding delivers the same message by several paths).
@@ -708,6 +742,7 @@ export const useChatStore = create<ChatState>()(
             geoDmNames,
             geoCardExchange,
             activeChannel,
+            clearedAt: markCleared(state.clearedAt, channel),
           };
         });
       },
@@ -812,6 +847,7 @@ export const useChatStore = create<ChatState>()(
           return {
             messages,
             unreadCounts: { ...state.unreadCounts, [channel]: 0 },
+            clearedAt: markCleared(state.clearedAt, channel),
           };
         });
       },
@@ -980,6 +1016,7 @@ export const useChatStore = create<ChatState>()(
           geoDmCells: {},
           geoDmNames: {},
           geoCardExchange: {},
+          clearedAt: {},
         });
       },
     }),
@@ -1011,6 +1048,7 @@ export const useChatStore = create<ChatState>()(
         // relaunch, or tapping Keep and reopening the app would offer it again
         // and merge nothing.
         geoCardExchange: state.geoCardExchange,
+        clearedAt: state.clearedAt,
       }),
     },
   ),

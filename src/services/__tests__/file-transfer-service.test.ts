@@ -46,7 +46,7 @@ function makeService(accepted = true, usesBleRadio?: () => boolean) {
     IDENTITY,
     broadcast,
     unicast,
-    undefined,
+    (peerID) => peerID,
     undefined,
     usesBleRadio,
   );
@@ -107,7 +107,12 @@ describe("outbound pacing", () => {
         }),
     );
     const broadcast = jest.fn().mockResolvedValue(true);
-    const service = new FileTransferService(IDENTITY, broadcast, unicast);
+    const service = new FileTransferService(
+      IDENTITY,
+      broadcast,
+      unicast,
+      (peerID) => peerID,
+    );
 
     service.sendBytes(FILE, META, "dm:1111222233334444");
     await tick();

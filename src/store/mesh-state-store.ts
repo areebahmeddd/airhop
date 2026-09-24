@@ -244,10 +244,11 @@ interface MeshStateStore {
   //
   // Not a safety gate. Both platforms embed Arti, which has no clearnet path, so
   // a relay dialled during a dead bootstrap fails rather than falling back and
-  // nothing leaks whether this is set or not. What it prevents is futility: a
-  // phone on a network that blocks Tor would otherwise spend the whole session
-  // reconnecting a relay pool through a proxy that will never answer, which on a
-  // censored network is exactly where battery is worth saving.
+  // nothing leaks whether this is set or not. It is raised from the start of
+  // every bootstrap, because a relay that fails its first connect is never
+  // retried: a pool built before the circuit is dead for good. On a network
+  // that blocks Tor it also saves a session of reconnecting through a proxy
+  // that will never answer.
   //
   // services/tor-routing.ts is the only writer.
   nostrBlockedByTor: boolean;

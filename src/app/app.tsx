@@ -83,6 +83,7 @@ import {
 } from "@services/nutzap-watcher-handle";
 import { panicWipe } from "@services/panic-wipe";
 import { applyPresence } from "@services/presence-service";
+import { startReachabilityWatch } from "@services/reachability";
 import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
@@ -398,6 +399,9 @@ function applyBlePermissionResult(perm: BlePermissionResult): void {
 // Separated from the mesh start so it is unmistakable that nothing here can
 // prevent the mesh existing. Every branch is fire-and-forget by design.
 function startMeshDependents(): void {
+  // A network coming back nudges relays, Tor, queued mail and the wallet.
+  startReachabilityWatch();
+
   // Open the encrypted ecash store and settle anything left in flight. Proofs
   // live in an AES-256 MMKV file whose key is in the Keychain/Keystore, so this
   // is async and must happen before the Wallet tab can spend. Failure leaves

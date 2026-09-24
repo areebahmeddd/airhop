@@ -85,6 +85,42 @@ describe("addMessage ordering", () => {
   });
 });
 
+// Relays and sync replay history on every reconnect. What the user cleared or
+// deleted must stay gone, without dropping a peer whose clock runs behind.
+describe("a cleared conversation", () => {
+  const now = Date.now();
+
+  it.each(["removeChannel", "clearChannelMessages"] as const)(
+    "does not refill from a replay after %s",
+    (clear) => {
+      state().addMessage(makeMessage({ id: "old", timestampMs: now - 60_000 }));
+      state()[clear]("#test");
+
+      state().addMessage(
+        makeMessage({ id: "replayed", timestampMs: now - 10 * 60_000 }),
+      );
+      expect(state().messages["#test"] ?? []).toEqual([]);
+    },
+  );
+
+  // A marker ahead of the clock is what a clock set back after a clear leaves.
+  it("keeps working after the clock is set back", () => {
+    useChatStore.setState({
+      clearedAt: { "#test": Date.now() + 24 * 60 * 60_000 },
+    });
+    state().addMessage(makeMessage({ id: "new", timestampMs: Date.now() }));
+    expect(state().messages["#test"].map((m) => m.id)).toEqual(["new"]);
+  });
+
+  it("still takes a new message from a peer whose clock is behind", () => {
+    state().clearChannelMessages("#test");
+    state().addMessage(
+      makeMessage({ id: "skewed", timestampMs: now - 30_000 }),
+    );
+    expect(state().messages["#test"].map((m) => m.id)).toEqual(["skewed"]);
+  });
+});
+
 // The inbound observer is how notifications learn a message arrived without the
 // store depending on them. It must fire once per genuinely-new message from
 // someone else, and never for my own messages or mesh-flood duplicates.
