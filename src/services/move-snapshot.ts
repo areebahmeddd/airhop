@@ -145,6 +145,8 @@ const SECRETS: Record<SecretName, "move" | "regenerate"> = {
   // Nutzaps already locked to it, and kind 10019 still names it.
   walletP2pkKey: "move",
   walletRecoveryPhrase: "move",
+  // One-time keys never leave their phone; the new one mints its own batch.
+  localPrekeys: "regenerate",
 };
 
 const PARTITION_PREFIX = "mmkv:";
