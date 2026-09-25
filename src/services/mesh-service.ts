@@ -91,7 +91,7 @@ import {
 import { HandshakeRateLimiter } from "@core/mesh/routing/handshake-rate-limiter";
 import { originTtl } from "@core/mesh/routing/origin-ttl";
 import { nextHopFor } from "@core/mesh/routing/source-route";
-import { GossipSync } from "@core/mesh/sync/gossip-sync";
+import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
 import { VoiceCaptureSession } from "@core/mesh/voice/voice-capture";
 import { VoicePlayer } from "@core/mesh/voice/voice-player";
@@ -1468,41 +1468,37 @@ export class MeshService {
   // nor acted on. Relaying one costs everyone downstream airtime and re-seeds
   // an attacker's recording into a mesh that had already forgotten it.
   //
-  // A packet may be older than the window only when it carries IS_RSR and comes
-  // from a peer we asked for a sync, inside the 30s response window. Both halves
-  // are needed: the flag alone is a claim anyone can make.
-  //
-  // The ttl-0 clause covers clients from before IS_RSR existed, which answered a
-  // sync with link-local packets and no flag; bitchat keeps the same allowance.
-  // It still requires a pending request to that peer, so it grants nothing to a
-  // peer we never asked.
+  // IS_RSR is judged on its own, fresh or not, as bitchat-ios does
+  // (BLEIngressPacketGuard): a sync reply stays on the link it was asked on
+  // (ttl 0), comes from the peer on the far end of that link while our request
+  // to it is open, and is a type we asked for within the age we would serve it
+  // for. The flag alone is a claim anyone can make. Everything else is held to
+  // the window, ttl 0 or not.
   private isFreshOrSolicited(packet: Packet, linkID: string): boolean {
     const now = Date.now();
-    if (Math.abs(now - packet.timestamp) <= PACKET_MAX_SKEW_MS) {
-      this.noteFresh();
-      return true;
-    }
-
-    // Sync replays history, so a solicited packet may be old but never dated
-    // ahead of the skew: it would sort after every real message and stay there.
+    // Sync replays history, so a reply may be old but never dated ahead of the
+    // skew: it would sort after every real message and stay there.
     if (packet.timestamp > now + PACKET_MAX_SKEW_MS) {
       this.noteStale(this.links.peerOf(linkID));
       return false;
     }
-    const claimsSolicited = packet.isRSR === true || packet.ttl === 0;
-    if (!claimsSolicited) {
-      this.noteStale(this.links.peerOf(linkID));
-      return false;
+    if (packet.isRSR === true) {
+      // The link's bound peer, not the plaintext senderID: a reply to our
+      // question can only come from whoever we asked it of.
+      const linkPeer = this.links.peerOf(linkID);
+      return (
+        packet.ttl === 0 &&
+        linkPeer !== undefined &&
+        isSyncReplyInWindow(packet, now) &&
+        this.requestSync.isValidResponse(linkPeer, true, now)
+      );
     }
-
-    // Attribute against the peer bound to the link it arrived on rather than
-    // the packet's senderID header, which is plaintext and forgeable. A
-    // solicited response can only come from the peer we asked, and that peer is
-    // the one on the far end of this link.
-    const linkPeer = this.links.peerOf(linkID);
-    if (linkPeer === undefined) return false;
-
-    return this.requestSync.isValidResponse(linkPeer, true, now);
+    if (now - packet.timestamp <= PACKET_MAX_SKEW_MS) {
+      this.noteFresh();
+      return true;
+    }
+    this.noteStale(this.links.peerOf(linkID));
+    return false;
   }
 
   // A late fragment of a transfer already under way. bitchat-ios and
@@ -1588,9 +1584,6 @@ export class MeshService {
   // scoped to the link session goes with it. A peer we still hold another
   // link to has not left.
   private onLinkGone(linkID: string): void {
-    // A REQUEST_SYNC that arrived before the link bound to a peer was budgeted
-    // under the link ID, which nothing else would ever clear.
-    this.gossip.forgetPeer(linkID);
     const peerID = this.links.close(linkID);
     if (peerID === undefined) return;
     this.registry.markIndirect(peerID);
@@ -3479,32 +3472,25 @@ export class MeshService {
   // replay the requester turns out to already hold (GCS filters allow false
   // positives, never false negatives, so we may over-send slightly, never
   // under-send).
+  //
+  // The answer can replay the whole store, so only a request that is plainly
+  // the link peer's own is answered, as bitchat-ios answers
+  // (BLEService.handleRequestSync, BLEIngressLinkRegistry): link-local (ttl 0;
+  // one with headroom was crafted or relayed), from the peer this link is bound
+  // to, and signed by it. The budget is then that peer's alone. Neither
+  // implementation sends a request before verifying the far side's announce,
+  // which is what binds the link, so this refuses nothing either sends.
   private onRequestSync(packet: Packet, linkID: string): void {
+    if (packet.ttl !== 0) return;
     const senderID = bytesToHex(packet.senderID);
-
-    // Verify when we can, never require. A REQUEST_SYNC carries no content and
-    // every packet it draws back is independently verified by the requester, so
-    // a forged request cannot inject anything. The risk is amplification, which
-    // the rate limiter below bounds.
-    //
-    // Requiring a signature would break first contact, where a peer's sync
-    // round arrives before its ANNOUNCE and we hold no key to check it with.
-    // bitchat does not gate on it either. A signature that is present and wrong
-    // is a different matter, and is refused.
-    const signingKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingKey !== undefined && (packet.flags & Flags.SIGNED) !== 0) {
-      if (!verifyPacket(packet, signingKey)) return;
-    }
-
-    // Attribute the request to the link's bound peer, not the claimed senderID:
-    // the budget must be per physical neighbour, or one peer minting sender IDs
-    // gets an unbounded number of budgets over a single link.
-    const linkPeer = this.links.peerOf(linkID) ?? linkID;
+    const linkPeer = this.links.peerOf(linkID);
+    if (linkPeer !== senderID) return;
+    if (!this.senderIsAuthentic(packet, senderID)) return;
 
     // Packets come back ttl 0 and IS_RSR-tagged (set by handleFilter), so they
     // stop at the requester instead of being re-flooded mesh-wide, and so the
     // requester can tell they are the answer to its own question.
-    const missing = this.gossip.handleFilter(packet, linkPeer);
+    const missing = this.gossip.handleFilter(packet, senderID);
     if (missing.length === 0) return;
 
     // A replayed board post or group message can outgrow a Bluetooth frame,
@@ -4027,7 +4013,7 @@ export class MeshService {
   // separate, since a node forwards bytes it cannot yet check.
   //
   // The pinned key rather than registry.get(), whose 60s reachability TTL is far
-  // shorter than the 15 min gossip sync replays messages for.
+  // shorter than the 6 h gossip sync replays messages for.
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
     const pinned = this.registry.pinnedSigningKey(senderID);

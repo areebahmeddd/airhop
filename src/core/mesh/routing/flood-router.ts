@@ -77,6 +77,10 @@ function isTimeCritical(type: number): boolean {
 // stream would crowd out everything else; a sparse mesh keeps full depth so
 // voice reaches as far as text does.
 function relayTtl(packet: Packet, degree: number): number {
+  // A sync request asks the node on the far end of one link what it lacks,
+  // and each node it reached would answer with its store. bitchat-ios never
+  // relays one, whatever TTL it was crafted with (RelayController).
+  if (packet.type === PacketType.REQUEST_SYNC) return 0;
   const ttl = Math.min(packet.ttl, DEFAULT_TTL);
   if (!isTimeCritical(packet.type)) return ttl;
   const cap =

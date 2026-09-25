@@ -70,18 +70,21 @@ const SYNC_TTL = 0;
 // stale-peer timeout.
 const MAX_AGE_ANNOUNCE_MS = 60_000;
 // Carrying the room's recent history across a partition is the point of gossip.
-// bitchat-ios publicMessageMaxAgeSeconds = 900.
-const MAX_AGE_MESSAGE_MS = 900_000;
+// bitchat-ios serves and accepts six hours of it (syncPublicMessageMaxAgeSeconds
+// in TransportConfig, which BLEService passes over GossipSyncManager's 900 s
+// default). A shorter window here would refuse the backfill it sends.
+const MAX_AGE_MESSAGE_MS = 6 * 60 * 60 * 1000;
 // Board posts carry their own author-chosen expiry (max 7 days, PROTOCOLS.md
 // section 3) and the board store enforces it on receipt. This is only a
 // backstop against an entry sitting in the LRU forever.
 const MAX_AGE_BOARD_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Group messages, same window public messages get. A group is a conversation, not
-// a noticeboard, and a member who was away for a quarter of an hour is the case
-// backfill exists for. Longer would be pointless: a roster change rotates the
-// epoch key, and a message sealed under the old one can no longer be read.
-const MAX_AGE_GROUP_MS = 900_000;
+// Group messages, same window public messages get, as in bitchat-ios
+// (GossipSyncManager.isPacketFresh). A group is a conversation, and a member who
+// was away for a while is the case backfill exists for. A roster change rotates
+// the epoch key, so a message sealed under the old one stops being readable
+// whatever its age.
+const MAX_AGE_GROUP_MS = MAX_AGE_MESSAGE_MS;
 
 // One REQUEST_SYNC can replay the whole store, so a peer asking in a tight loop
 // is an amplifier pointed at us and at the shared radio. Bounds how often one
@@ -166,6 +169,20 @@ function maxAgeForType(type: PacketType): number | null {
     default:
       return null;
   }
+}
+
+// Whether an old packet may be taken as an answer to our own sync request: only
+// a type we ask for, inside the window we would serve it for ourselves. A
+// FRAGMENT gets the longest (board) window because bitchat stamps a reply's
+// fragments with the time of the packet inside, and that packet is held to its
+// own type's window again once reassembled. Everything else in a reply is
+// either fresh or a replay dressed as one.
+export function isSyncReplyInWindow(packet: Packet, now: number): boolean {
+  const maxAge =
+    packet.type === PacketType.FRAGMENT
+      ? MAX_AGE_BOARD_MS
+      : maxAgeForType(packet.type);
+  return maxAge !== null && now - packet.timestamp <= maxAge;
 }
 
 // Whether a tracked packet is still worth advertising or offering.
@@ -549,10 +566,10 @@ export class GossipSync {
 
   // Start the 15-second sync round.
   //
-  // Unicast per connected peer is the normal path; broadcast is a discovery
-  // fallback for the window before any peer is attributed, as in bitchat's
-  // GossipSyncManager. A broadcast round still reconciles content, but its
-  // answers cannot be exempted from the requester's freshness window.
+  // Unicast per connected peer is the normal path; broadcast is a fallback for
+  // the window before any peer is attributed, as in bitchat's
+  // GossipSyncManager. It reconciles nothing here, since a reply to a request
+  // registered against no peer is refused.
   start(identity: GossipSyncIdentity, wiring: GossipSyncWiring | SendFn): void {
     if (this.timer !== null) this.stop();
     const w: GossipSyncWiring =

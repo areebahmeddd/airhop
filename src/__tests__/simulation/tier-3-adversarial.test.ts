@@ -696,6 +696,107 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
   s.assert(true);
 });
 
+test("C09b a genuine old LEAVE dressed as a sync reply is refused", async () => {
+  // The freshness window stops a replayed LEAVE, except through the one path
+  // allowed to carry old packets: a reply to our own sync request. Every
+  // neighbour is asked every round, so a neighbour holding a recording of
+  // alice's goodbye could tag it IS_RSR and end her session with us. Only the
+  // types sync serves pass as replies, and LEAVE is not one.
+  const s = (scenario = new Scenario({
+    id: "C09b",
+    title: "replayed departure through the sync exemption",
+    seed: 75,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+  ]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  const channel = "#bluetooth";
+  for (const d of cast) d.joinChannel(channel);
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    30_000,
+  );
+  let asked = false;
+  const stop = radio.tapWrites((who, linkID, data) => {
+    if (who !== bob.id || linkID !== `link:${mallory.id}`) return;
+    if (decodeWrite(data)?.type === PacketType.REQUEST_SYNC) asked = true;
+  });
+  s.check(
+    "bob asked mallory for a sync",
+    await waitFor(s.world, () => asked, 40_000),
+  );
+  stop();
+
+  // A recording of alice's real, signed departure from ten minutes ago, and
+  // an equally old message of hers, both re-tagged as replies. Neither ttl nor
+  // IS_RSR is signed, so both signatures still verify.
+  const at = s.world.wallClock() - 10 * 60_000;
+  const recorded = (type: PacketType, payload: Uint8Array): string => {
+    const packet: Packet = {
+      type,
+      ttl: 0,
+      flags: Flags.SIGNED,
+      senderID: peerIdToBytes(alice.peerID),
+      recipientID: new Uint8Array(8),
+      timestamp: at,
+      signature: new Uint8Array(64),
+      payload,
+    };
+    packet.signature = signPacket(packet, alice.identity.signingPrivKey);
+    return toBase64(encodePacket({ ...packet, isRSR: true }));
+  };
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    recorded(PacketType.LEAVE, new Uint8Array(0)),
+  );
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    recorded(
+      PacketType.CHANNEL_MSG,
+      encodeMeshPublicPayload("still here, earlier"),
+    ),
+  );
+  await s.world.advance(3_000);
+
+  s.check(
+    "bob did not drop alice on a recorded goodbye",
+    bob.peers().includes(alice.peerID),
+    `bob sees [${bob.peers().join(",")}]`,
+  );
+  s.check(
+    "while the same reply of a type sync serves is backfilled",
+    bob.texts(channel).includes("still here, earlier"),
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
 // A NOISE_HANDSHAKE packet as a hostile phone would write it: any claimed
 // sender, addressed to the victim.
 function forgeHandshake(opts: {

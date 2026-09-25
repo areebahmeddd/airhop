@@ -23,6 +23,7 @@ import {
   decodeGossipFilterPayload,
   encodeGossipFilterPayload,
   GossipSync,
+  isSyncReplyInWindow,
 } from "../gossip-sync";
 
 function hexToBytes(hex: string): Uint8Array {
@@ -278,16 +279,18 @@ describe("GossipSync: candidate age bounds", () => {
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
 
-  test("a public message stays a candidate for 15 minutes", () => {
+  // bitchat-ios serves and accepts six hours of public history
+  // (TransportConfig.syncPublicMessageMaxAgeSeconds).
+  test("a public message stays a candidate for 6 hours", () => {
     const gs = new GossipSync();
     gs.track(
-      makePacket(PacketType.CHANNEL_MSG, 14 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.CHANNEL_MSG, 359 * 60_000, new Uint8Array([1])),
     );
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
 
     const stale = new GossipSync();
     stale.track(
-      makePacket(PacketType.CHANNEL_MSG, 16 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.CHANNEL_MSG, 361 * 60_000, new Uint8Array([1])),
     );
     expect(stale.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
@@ -331,7 +334,7 @@ describe("GossipSync: candidate age bounds", () => {
   test("a group message ages out on the message window", () => {
     const stale = new GossipSync();
     stale.track(
-      makePacket(PacketType.GROUP_MESSAGE, 16 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.GROUP_MESSAGE, 361 * 60_000, new Uint8Array([1])),
     );
     expect(stale.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
@@ -353,6 +356,55 @@ describe("GossipSync: candidate age bounds", () => {
     expect(gs.seenCount).toBe(2);
     gs.prune();
     expect(gs.seenCount).toBe(1);
+  });
+});
+
+// What an old packet tagged IS_RSR may be: only a type we ask for, inside the
+// window we would serve it for ourselves.
+describe("isSyncReplyInWindow", () => {
+  const now = Date.now();
+  const at = (type: PacketType, ageMs: number): boolean =>
+    isSyncReplyInWindow(
+      { ...makePacket(type, 0, new Uint8Array([1])), timestamp: now - ageMs },
+      now,
+    );
+  const hour = 60 * 60_000;
+  const day = 24 * hour;
+
+  test("public and group messages: six hours", () => {
+    for (const type of [
+      PacketType.CHANNEL_MSG,
+      PacketType.CHANNEL_MSG_AIRHOP,
+      PacketType.GROUP_MESSAGE,
+    ]) {
+      expect(at(type, 6 * hour)).toBe(true);
+      expect(at(type, 6 * hour + 1)).toBe(false);
+    }
+  });
+
+  test("announces: one minute", () => {
+    expect(at(PacketType.ANNOUNCE, 60_000)).toBe(true);
+    expect(at(PacketType.ANNOUNCE, 60_001)).toBe(false);
+  });
+
+  test("board posts and fragments: seven days", () => {
+    for (const type of [PacketType.BOARD_POST, PacketType.FRAGMENT]) {
+      expect(at(type, 7 * day)).toBe(true);
+      expect(at(type, 7 * day + 1)).toBe(false);
+    }
+  });
+
+  test("a type sync never serves is no reply at any age", () => {
+    for (const type of [
+      PacketType.LEAVE,
+      PacketType.DR_ENCRYPTED,
+      PacketType.PREKEY_BUNDLE,
+      PacketType.COURIER_ENV,
+      PacketType.FILE_TRANSFER,
+    ]) {
+      expect(at(type, 0)).toBe(false);
+      expect(at(type, 10 * 60_000)).toBe(false);
+    }
   });
 });
 

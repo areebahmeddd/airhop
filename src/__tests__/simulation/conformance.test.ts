@@ -52,7 +52,7 @@ import {
   MAX_SENT_IMAGE_BYTES,
   MAX_VOICE_BYTES,
 } from "@core/mesh/wire/file-packet";
-import { PacketType } from "@core/mesh/wire/packet-codec";
+import { decodePacket, PacketType } from "@core/mesh/wire/packet-codec";
 import {
   CELL_PRECISION as BRIDGE_CELL_PRECISION,
   DOWNLINK_EVENTS_PER_MINUTE as BRIDGE_DOWNLINK_PER_MINUTE,
@@ -383,6 +383,110 @@ test("X02 Airhop's private extensions cost a bitchat node nothing", async () => 
     `relayed ${bitchat.seen.relayed} packets`,
   );
   s.expectNone("process health", noCrashes([a, b]));
+  s.assert(true);
+});
+
+test("X04 gossip sync crosses both ways with bitchat right after first contact", async () => {
+  // Both sides only answer a signed, link-local request from the peer bound
+  // to that link, and only take a reply to a request of their own. bitchat
+  // serves six hours of public history and a board post for its whole life,
+  // cutting a long one into fragments that carry its original timestamp and
+  // IS_RSR. Each of those has to arrive, from the first round.
+  const s = (scenario = new Scenario({
+    id: "X04",
+    title: "sync with bitchat in both directions",
+    seed: 403,
+  }));
+  const radio = new RadioFabric(s.world);
+  const airhop = SimDevice.create(s.world, {
+    id: "airhop",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bitchat = new BitchatActor(s.world, {
+    id: "bitchat",
+    platform: "ios",
+    seedByte: 230,
+  });
+  radio.add(airhop);
+  radio.add(bitchat);
+  s.track(airhop);
+  airhop.launch();
+  const channel = "#bluetooth";
+  airhop.joinChannel(channel);
+
+  // Airhop speaks while nobody is in range, and bitchat carries history of
+  // its own: a message from three hours ago and a board post from yesterday.
+  airhop.send(channel, "said before bitchat arrived");
+  await s.world.advance(10 * 60_000);
+  const hourMs = 60 * 60_000;
+  bitchat.rememberPublicMessage(
+    "three hours old, from bitchat",
+    s.world.wallClock() - 3 * hourMs,
+  );
+  const alphabet =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+  let notice = "";
+  for (let i = 0; i < 480; i++) notice += alphabet[s.world.rng.int(0, 63)];
+  const postedAt = s.world.wallClock() - 24 * hourMs;
+  bitchat.rememberBoardPost(notice, postedAt);
+
+  let replyFragments = 0;
+  radio.tapWrites((who, _link, data) => {
+    if (who !== bitchat.id) return;
+    const p = decodePacket(Uint8Array.from(atob(data), (c) => c.charCodeAt(0)));
+    if (
+      p?.type === PacketType.FRAGMENT &&
+      p.isRSR === true &&
+      p.ttl === 0 &&
+      p.timestamp === postedAt
+    ) {
+      replyFragments++;
+    }
+  });
+  bitchat.launch();
+
+  const bitchatCaughtUp = await waitFor(
+    s.world,
+    () =>
+      bitchat.seen.publicMessages.some(
+        (m) => m.text === "said before bitchat arrived",
+      ),
+    10_000,
+  );
+  s.check(
+    "bitchat's first sync round drew Airhop's history as a reply",
+    bitchatCaughtUp && bitchat.seen.syncReplies > 0,
+    `replies=${String(bitchat.seen.syncReplies)}`,
+  );
+  s.check(
+    "bitchat refused none of Airhop's replies",
+    bitchat.seen.refusedSyncReplies === 0,
+  );
+
+  const airhopCaughtUp = await waitFor(
+    s.world,
+    () => airhop.texts(channel).includes("three hours old, from bitchat"),
+    40_000,
+  );
+  s.check(
+    "bitchat answered Airhop's request, which passed its ttl and key checks",
+    bitchat.seen.syncRequestsAnswered > 0,
+  );
+  s.check(
+    "Airhop took bitchat's three-hour-old message as a reply",
+    airhopCaughtUp,
+    `airhop thread = [${airhop.texts(channel).join(" | ")}]`,
+  );
+  const posts = airhop.store("boardStore").getState().posts as {
+    content: string;
+  }[];
+  s.check(
+    "and bitchat's day-old board post, cut into fragments",
+    replyFragments > 1 && posts.some((p) => p.content === notice),
+    `fragments=${String(replyFragments)} posts=${String(posts.length)}`,
+  );
+  s.expectNone("process health", noCrashes([airhop]));
   s.assert(true);
 });
 

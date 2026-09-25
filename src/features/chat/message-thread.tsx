@@ -2431,7 +2431,7 @@ export default function MessageThread({
         setStatus(msgChannel, msg.id, "sent");
       } else {
         // Sealed but nobody in range. NOT a failure: the packet is now a gossip
-        // candidate for fifteen minutes, so the first member to come into range
+        // candidate for six hours, so the first member to come into range
         // and ask for a sync gets it. "queued" is exactly that, and it is the
         // common case for a group, whose members are specific people who are
         // usually not all nearby. Marking it failed would paint most group
@@ -2458,7 +2458,7 @@ export default function MessageThread({
         showNoReachStatus();
       } else {
         // A mesh channel's audience IS whoever is in range, and the packet stays
-        // a gossip candidate for fifteen minutes, so the next neighbour to turn
+        // a gossip candidate for six hours, so the next neighbour to turn
         // up gets it. Same reasoning as the group branch above: this is waiting,
         // not broken, and painting it red would be the harsher of two lies.
         setStatus(msgChannel, msg.id, "queued");

@@ -89,6 +89,16 @@ describe("FloodRouter", () => {
       jest.advanceTimersByTime(300);
       expect(sent.length).toBe(0);
     });
+
+    // Relayed, one request would make every node it reached answer with its
+    // whole store. It is still handled locally, so receive() reports it new.
+    it("never relays a REQUEST_SYNC, whatever TTL it claims", () => {
+      const sent: Packet[] = [];
+      const request = { ...makePacket(0x01, 7), type: PacketType.REQUEST_SYNC };
+      expect(router.receive(request, (p) => sent.push(p))).toBe(true);
+      jest.advanceTimersByTime(300);
+      expect(sent.length).toBe(0);
+    });
   });
 
   describe("admit()", () => {
