@@ -1000,26 +1000,41 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     _ peripheral: CBPeripheralManager,
     didReceiveWrite requests: [CBATTRequest]
   ) {
+    // respond() must be called on the FIRST request only, and only when
+    // there is one, since indexing [0] on an empty array would crash.
+    guard let first = requests.first else { return }
+
+    // A frame longer than MTU-3 arrives as a long write, in chunks; joined
+    // here, or each chunk reaches JS as a packet that fails to decode.
+    let ours = requests.filter { $0.characteristic.uuid == BLEConst.characteristicUUID }
+    let frames: [LongWrite.Frame<UUID>]
+    switch LongWrite.join(
+      ours.map { (key: $0.central.identifier, offset: $0.offset, data: $0.value ?? Data()) })
+    {
+    case .frames(let joined): frames = joined
+    case .gap:
+      peripheral.respond(to: first, withResult: .invalidOffset)
+      return
+    case .oversized:
+      peripheral.respond(to: first, withResult: .invalidAttributeValueLength)
+      return
+    }
+    var centrals: [UUID: CBCentral] = [:]
+    for request in ours { centrals[request.central.identifier] = request.central }
+
     // A remote central that writes before subscribing still needs a link
     // entry, otherwise its packets arrive under a linkID JS has never seen.
-    for request in requests {
-      guard request.characteristic.uuid == BLEConst.characteristicUUID,
-        let data = request.value
-      else { continue }
-
-      let linkID = peripheralLinkID(for: request.central)
+    for frame in frames {
+      guard let central = centrals[frame.key] else { continue }
+      let linkID = peripheralLinkID(for: central)
       if peripheralLinks[linkID] == nil {
-        peripheralLinks[linkID] = request.central
+        peripheralLinks[linkID] = central
       }
       sendEvent(
         withName: BLEEvent.packetReceived,
-        body: ["linkID": linkID, "dataBase64": data.base64EncodedString()])
+        body: ["linkID": linkID, "dataBase64": frame.data.base64EncodedString()])
     }
-    // respond() must be called on the FIRST request only, and only when
-    // there is one, since indexing [0] on an empty array would crash.
-    if let first = requests.first {
-      peripheral.respond(to: first, withResult: .success)
-    }
+    peripheral.respond(to: first, withResult: .success)
   }
 
   // CoreBluetooth drained its transmit queue: replay anything updateValue()
