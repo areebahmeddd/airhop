@@ -1329,6 +1329,8 @@ export const strings = {
     "The mint says this token was already redeemed, so the {amount} {unit} reached them and nothing came back to your balance.",
   "wallet.copied.token_body":
     "The token is on your clipboard. It stays reserved here until you mark it delivered, so you can paste it again if the first attempt fails.",
+  "wallet.copied.refused_token_body":
+    "The token is on your clipboard. This wallet no longer counts it, so you can give it back to whoever sent it.",
   "wallet.copied.phrase_body":
     "Paste it into a password manager, then clear your clipboard. Other apps can read the clipboard, and on some setups it syncs to your other devices.",
   "wallet.refresh.failed": "Refresh failed",
@@ -1340,6 +1342,10 @@ export const strings = {
     "{amount} {unit} confirmed and swapped for fresh ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} is now covered by your recovery phrase.",
+  "wallet.refresh.refused":
+    "{amount} {unit} was refused by the mint and removed from your balance. Activity keeps the token.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} is still waiting on the mint and will be confirmed later.",
   "wallet.refresh.all_confirmed":
     "Everything here was already confirmed with the mint.",
   "wallet.pending.reserved_desc":
@@ -1374,6 +1380,7 @@ export const strings = {
   "wallet.activity.spent_removed": "Spent coins removed",
   "wallet.activity.refreshed": "Checked with mint",
   "wallet.activity.refreshing": "Checking with mint",
+  "wallet.activity.copy_refused": "Copy the refused token",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1525,6 +1532,10 @@ export const strings = {
   "wallet.svc.locked_other": "These coins are locked to someone else’s wallet.",
   "wallet.svc.locked_other_body":
     "Only the person they were locked to can claim them. Nothing was added.",
+  "wallet.svc.coins_refused":
+    "The mint refused these coins, so they are no longer counted. The token is kept here if you want to send it back.",
+  "wallet.svc.coins_unredeemable":
+    "These coins cannot be redeemed at this mint, so they are no longer counted. The token is kept here if you want to send it back.",
   "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",

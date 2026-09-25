@@ -1592,6 +1592,19 @@ export class SimDevice {
     ).length;
   }
 
+  // Receipts the mint refused: out of the balance, the coins kept as a token on
+  // the failed row so they can be handed back.
+  refusedReceipts(): { amount: number; token: string }[] {
+    const history = this.inner.stores.walletStore.getState().history as
+      | { kind: string; status: string; amount: number; token?: string }[]
+      | undefined;
+    return (history ?? []).flatMap((tx) =>
+      tx.kind === "receive" && tx.status === "failed" && tx.token
+        ? [{ amount: tx.amount, token: tx.token }]
+        : [],
+    );
+  }
+
   // Rewrite a transaction. For putting the wallet into a state a scenario needs
   // to START from, where building up to it honestly would mean driving a relay
   // failure the fabric cannot stage.

@@ -736,6 +736,13 @@ export default function WalletScreen({
             if (!reclaimTokenSend(txId)) return;
             setPending(null);
             void settleReclaimedSend(txId).then((outcome) => {
+              if (outcome === "refused") {
+                showAlert(
+                  t("wallet.err.mint_refused"),
+                  t("wallet.svc.coins_refused"),
+                );
+                return;
+              }
               if (outcome !== "claimed") return;
               showAlert(
                 t("wallet.reclaim.claimed_title"),
@@ -758,6 +765,12 @@ export default function WalletScreen({
     await Clipboard.setStringAsync(token);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.token_body"));
+  }
+
+  async function handleCopyRefusedToken(token: string): Promise<void> {
+    await Clipboard.setStringAsync(token);
+    acknowledged();
+    showAlert(T("common.copied"), t("wallet.copied.refused_token_body"));
   }
 
   // Clipboards leak to other apps and sync, but refusing pushes people to a
@@ -951,6 +964,21 @@ export default function WalletScreen({
       }
       if (result.spentRemoved > 0) {
         parts.push(tPlural("wallet.spent_removed_detail", result.spentRemoved));
+      }
+      if (result.refused > 0) {
+        parts.push(
+          t("wallet.refresh.refused", {
+            ...amountParts(result.refused, unit),
+          }),
+        );
+      }
+      // Too small to swap alone, in doubt, or past this refresh's share.
+      if (result.stillUnverified > 0) {
+        parts.push(
+          t("wallet.refresh.still_unconfirmed", {
+            ...amountParts(result.stillUnverified, unit),
+          }),
+        );
       }
       // Never in doubt, only outside the recovery phrase until this swap.
       if (result.securedForBackup > 0) {
@@ -1851,6 +1879,24 @@ export default function WalletScreen({
                         answer whose payment may have gone through. */}
                     {tx.error !== undefined && tx.error.length > 0 ? (
                       <Text style={styles.historyError}>{tx.error}</Text>
+                    ) : null}
+                    {/* Coins the mint refused: no longer counted, but still
+                        the sender's to take back, so the token is offered. */}
+                    {tx.kind === "receive" &&
+                    tx.status === "failed" &&
+                    tx.token !== undefined ? (
+                      <Pressable
+                        style={[styles.pendingBtn, styles.historyTokenBtn]}
+                        onPress={() =>
+                          void handleCopyRefusedToken(tx.token ?? "")
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel={t("wallet.activity.copy_refused")}
+                      >
+                        <Text style={styles.pendingBtnText}>
+                          {T("common.copy")}
+                        </Text>
+                      </Pressable>
                     ) : null}
                   </View>
                   <Text
@@ -4089,6 +4135,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     historySub: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
+    },
+    historyTokenBtn: {
+      alignSelf: "flex-start",
+      marginTop: Spacing.xs,
     },
     historyError: {
       fontSize: FontSize.xs,

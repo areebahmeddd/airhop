@@ -4,11 +4,12 @@
 //
 // Keyed by account, a (mint URL, unit) pair: one mint can issue sat, usd and
 // eur, and units are never summed. Proofs are in one of three states:
-//   spendable + verified    swapped or minted by us; the mint said unspent.
-//   spendable + unverified  received offline. DLEQ (when we hold the keys)
-//                           proves the mint signed it, never that the sender
-//                           has not spent it elsewhere. Counted in the balance,
-//                           shown apart, and redeemed first.
+//   spendable + verified    swapped or minted by us; nobody else holds them.
+//   spendable + unverified  received offline, or a reclaimed send. DLEQ (when
+//                           we hold the keys) proves the mint signed it, never
+//                           that the sender has not spent it elsewhere.
+//                           Counted in the balance, shown apart, and redeemed
+//                           first, one receipt at a time.
 //   reserved                serialised into a token for a send not yet
 //                           confirmed. Out of the balance so one coin cannot
 //                           go to two people.
@@ -55,12 +56,18 @@ export interface StoredProof {
   C: string; // Unblinded signature from the mint
   dleq?: SerializedDleq; // NUT-12 discrete-log-equality witness, when present
   witness?: string; // NUT-11 P2PK / NUT-14 HTLC witness, when present
-  // True only after a swap or NUT-07 check: the mint says it is unspent.
+  // True only for outputs the mint signed for us (a swap, mint or melt): the
+  // sender holds no copy. A state check is not enough; NUT-07 calls a coin it
+  // has never seen unspent.
   verified?: boolean;
   // Secret derived from the recovery phrase, so restorable. Received proofs
   // carry the sender's secrets until swapped.
   derived?: boolean;
   receivedAtMs?: number;
+  // Unverified only: the transaction that brought the coin in (an offline
+  // receive, or a reclaimed send). A refresh swaps each receipt on its own,
+  // so a mint refusing one token's coins cannot block the others.
+  receiptTxId?: string;
 }
 
 export type TxKind =
@@ -194,10 +201,14 @@ interface WalletState {
   ) => { added: number; duplicates: number };
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
-  markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
   // For coins someone else may also hold, such as a reclaimed token: the next
-  // refresh swaps them, which is what makes them ours alone.
-  markUnverified: (mintUrl: string, unit: string, secrets: string[]) => void;
+  // refresh swaps them, as receipt `receiptTxId`, which makes them ours alone.
+  markUnverified: (
+    mintUrl: string,
+    unit: string,
+    secrets: string[],
+    receiptTxId: string,
+  ) => void;
   // On phrase replacement: old coins stay spendable but the new phrase cannot
   // rebuild them, so they read as uncovered until a refresh re-issues them.
   clearDerived: () => void;
@@ -306,12 +317,12 @@ export function parseAccountKey(key: string): {
   return { mintUrl: key.slice(0, idx), unit: key.slice(idx + 1) };
 }
 
-function setVerified(
+function setUnverified(
   state: WalletState,
   mintUrl: string,
   unit: string,
   secrets: string[],
-  verified: boolean,
+  receiptTxId: string,
 ): Partial<WalletState> {
   const key = accountKey(mintUrl, unit);
   const existing = state.proofs[key];
@@ -320,7 +331,9 @@ function setVerified(
   return {
     proofs: {
       ...state.proofs,
-      [key]: existing.map((p) => (mark.has(p.secret) ? { ...p, verified } : p)),
+      [key]: existing.map((p) =>
+        mark.has(p.secret) ? { ...p, verified: false, receiptTxId } : p,
+      ),
     },
   };
 }
@@ -780,14 +793,11 @@ export const useWalletStore = create<WalletState>()(
       },
 
       // Nothing to mark skips the write, which would persist an unchanged store.
-      markVerified(mintUrl, unit, secrets) {
+      markUnverified(mintUrl, unit, secrets, receiptTxId) {
         if (secrets.length === 0) return;
-        set((state) => setVerified(state, mintUrl, unit, secrets, true));
-      },
-
-      markUnverified(mintUrl, unit, secrets) {
-        if (secrets.length === 0) return;
-        set((state) => setVerified(state, mintUrl, unit, secrets, false));
+        set((state) =>
+          setUnverified(state, mintUrl, unit, secrets, receiptTxId),
+        );
       },
 
       clearDerived() {

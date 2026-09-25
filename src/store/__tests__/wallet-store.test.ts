@@ -137,7 +137,7 @@ describe("addProofs", () => {
 // ---- Verification state ----
 
 describe("verification", () => {
-  it("reports offline-received proofs as unverified until marked", () => {
+  it("reports offline-received proofs as unverified", () => {
     state().addProofs(MINT, "sat", [
       makeProof(10, "a"),
       { ...makeProof(20, "b"), verified: true },
@@ -146,9 +146,17 @@ describe("verification", () => {
     const account = selectAccounts(state())[0];
     expect(account.balance).toBe(30);
     expect(account.unverified).toBe(10);
+  });
 
-    state().markVerified(MINT, "sat", ["a"]);
-    expect(selectAccounts(state())[0].unverified).toBe(0);
+  it("files reclaimed coins as unverified under the send that held them", () => {
+    state().addProofs(MINT, "sat", [{ ...makeProof(20, "b"), verified: true }]);
+
+    state().markUnverified(MINT, "sat", ["b"], "send-1");
+
+    expect(selectAccounts(state())[0].unverified).toBe(20);
+    expect(state().proofs[accountKey(MINT, "sat")]?.[0]?.receiptTxId).toBe(
+      "send-1",
+    );
   });
 });
 

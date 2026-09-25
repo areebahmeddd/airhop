@@ -28,6 +28,8 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
 });
 
 import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { MintFabric, simInvoice } from "../harness/mint-fabric";
@@ -80,6 +82,31 @@ function tamperToken(raw: string): string {
     mint: decoded.mint,
     unit: decoded.unit,
     proofs,
+  } as unknown as Token);
+}
+
+// Append coins nobody signed to a genuine token, carrying no witness: real
+// denominations under the mint's real keyset, so offline they look like any
+// coin whose sender stripped its witness to shorten a QR code.
+function padWithForgeries(
+  raw: string,
+  amounts: number[],
+  opts: { keepGenuine: boolean } = { keepGenuine: true },
+): string {
+  const decoded = getDecodedToken(raw, []);
+  const keysetId = decoded.proofs[0]?.id ?? "";
+  const forged = amounts.map((amount) => ({
+    id: keysetId,
+    amount,
+    secret: bytesToHex(crypto.getRandomValues(new Uint8Array(32))),
+    C: bytesToHex(
+      secp256k1.getPublicKey(crypto.getRandomValues(new Uint8Array(32)), true),
+    ),
+  }));
+  return getEncodedToken({
+    mint: decoded.mint,
+    unit: decoded.unit,
+    proofs: [...(opts.keepGenuine ? decoded.proofs : []), ...forged],
   } as unknown as Token);
 }
 
@@ -1125,6 +1152,143 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
     `held ${bob.totalHeld()}, was ${before}`,
   );
 
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W24 a real coin cannot vouch for forged ones in a dead zone", async () => {
+  // One genuine 4 sat coin, witness and all, and a pile of made-up coins with
+  // none. Offline the phone can check only the one, so the token must read as
+  // unconfirmed, never "genuine": someone selling for ecash in a dead zone acts
+  // on that word.
+  const s = (scenario = new Scenario({
+    id: "W24",
+    title: "a partly witnessed token reads unconfirmed and never pays",
+    seed: 124,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await alice.walletReady();
+  await bob.walletReady();
+  await alice.addMint(mint.url);
+  await bob.addMint(mint.url);
+  await alice.depositSats(500);
+
+  const genuine = await alice.prepareSend(4);
+  alice.confirmLastSend();
+  s.check("alice handed over one real 4 sat coin", genuine !== null);
+  if (genuine === null) {
+    s.assert(false);
+    return;
+  }
+  const padded = padWithForgeries(genuine, [256, 128]);
+
+  mint.setConditions({ offline: true });
+  const stored = await bob.receiveTokenResult(padded);
+  s.check(
+    "in the dead zone it is stored, but not called genuine",
+    stored?.outcome === "stored" && stored.dleq === "unchecked",
+    stored === null
+      ? "refused"
+      : `outcome=${stored.outcome} dleq=${stored.dleq ?? "none"}`,
+  );
+  s.check(
+    "and it counts only as unconfirmed",
+    bob.balance() === 388 && bob.unverifiedBalance() === 388,
+    `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+  );
+
+  // Back online, as a pull-to-refresh runs it.
+  mint.setConditions({ offline: false });
+  await bob.reconcile();
+  await bob.refreshWallet();
+  s.check(
+    "the mint refuses the token, and none of it stays in the balance",
+    bob.totalHeld() === 0,
+    bob.walletDebug(),
+  );
+  const refused = bob.refusedReceipts();
+  s.check(
+    "its receipt keeps the token to hand back",
+    refused.length === 1 && refused[0]?.amount === 388,
+    JSON.stringify(refused.map((r) => r.amount)),
+  );
+  s.check(
+    "and the mint issued nothing for the forgeries",
+    mint.totalIssued === 500 && alice.totalHeld() === 496,
+    `issued=${mint.totalIssued} alice=${alice.totalHeld()}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W26 one forged receipt cannot freeze a wallet", async () => {
+  // Offline receipts pool in one account until a refresh. Swapped as one
+  // batch, a single refused coin failed the whole swap on every refresh, and
+  // the honest receipts beside it stayed in their senders' hands.
+  const s = (scenario = new Scenario({
+    id: "W26",
+    title: "each receipt is swapped on its own",
+    seed: 126,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await alice.walletReady();
+  await bob.walletReady();
+  await alice.addMint(mint.url);
+  await bob.addMint(mint.url);
+  await alice.depositSats(500);
+
+  const first = await alice.prepareSend(64);
+  alice.confirmLastSend();
+  const second = await alice.prepareSend(32);
+  alice.confirmLastSend();
+  s.check("alice built two tokens", first !== null && second !== null);
+  if (first === null || second === null) {
+    s.assert(false);
+    return;
+  }
+  const forged = padWithForgeries(first, [128], { keepGenuine: false });
+
+  // Taken in with the internet off: three receipts, none of them swapped.
+  bob.setSetting("internetEnabled", false);
+  for (const token of [first, forged, second]) {
+    await bob.receiveTokenResult(token);
+  }
+  bob.setSetting("internetEnabled", true);
+  s.check(
+    "bob holds all three, unconfirmed",
+    bob.unverifiedBalance() === 224,
+    `unverified=${bob.unverifiedBalance()}`,
+  );
+
+  await bob.refreshWallet();
+  s.check(
+    "one refresh swaps the honest receipts and refuses the forged one",
+    bob.balance() === 96 && bob.unverifiedBalance() === 0,
+    `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+  );
+  s.check(
+    "the forged receipt keeps its token and leaves the balance",
+    bob.refusedReceipts().length === 1,
+    JSON.stringify(bob.refusedReceipts().map((r) => r.amount)),
+  );
+
+  await bob.refreshWallet();
+  s.check(
+    "and the next refresh has nothing left to fail on",
+    bob.balance() === 96 && bob.refusedReceipts().length === 1,
+    `balance=${bob.balance()}`,
+  );
+  s.check(
+    "no sat was created or destroyed",
+    alice.totalHeld() + bob.totalHeld() === 500,
+    `alice=${alice.totalHeld()} bob=${bob.totalHeld()}`,
+  );
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
