@@ -52,8 +52,8 @@ const PUBLISH_TIMEOUT_MS = 8_000;
 // three-hop Tor circuit, or a congested cellular link. nostr-tools allows 3 s.
 const CONNECT_TIMEOUT_MS = 10_000;
 
-// Ceiling on a one-shot read (querySync / get). Without it these resolve only
-// once every relay has sent EOSE, which never happens on a connection that went
+// Ceiling on a one-shot read (querySync). Without it a query resolves only
+// once its relay has sent EOSE, which never happens on a connection that went
 // away without closing - the case where you walk out of Wi-Fi range mid-request.
 // The promise would then never settle, and any UI awaiting it stays in its
 // loading state for the rest of the session with no way back. Returning
@@ -173,6 +173,18 @@ export class NostrClient {
   // same geographically-selected relays for a cell. Omit it for DM / gift-wrap
   // traffic, which uses the default pool.
   // Returns a closer function; call it to cancel the subscription.
+  //
+  // One pool subscription per relay and filter, never one across relays.
+  // nostr-tools (2.25.2) records an event ID as seen before it verifies the
+  // event, in a set shared by every relay in the call, so one relay sending a
+  // bad-signature copy under a genuine ID would hide the real event from every
+  // honest relay. Split per relay, that set only ever hides the relay that
+  // poisoned it. Dedup across relays is ours instead, in bitchat-ios's order:
+  // look up, verify, then record. An ID is recorded only once nostr-tools has
+  // verified the event and the pump has taken it. Each call also gets its own
+  // filter object, because a reconnect writes `since` into it, and a relay that
+  // sent a far-future event must move only its own. Collapse back to one call
+  // per filter once a nostr-tools release carries nbd-wtf/nostr-tools#560.
   subscribe(
     filters: Filter[],
     onEvent: EventHandler,
@@ -180,29 +192,39 @@ export class NostrClient {
     relays?: string[],
   ): SubCloser {
     const targets = this.resolveRelays(relays);
+    const delivered = new Set<string>();
     // Every handler goes through the pump, so no subscription can hold the JS
-    // thread for longer than one time slice however much a relay sends.
-    const deliver = (event: Event): void => this.enqueue(onEvent, event);
-    // EOSE queues behind the events it terminates rather than jumping them.
-    // Nothing passes an onEose today, but "the backfill is complete" arriving
-    // before the backfill would be a genuinely confusing thing to leave lying
-    // around for whoever wires the first one up.
-    const deliverEose =
+    // thread for longer than one time slice however much a relay sends. The
+    // `has` check repeats the lookup below because nostr-tools skips that
+    // lookup for a frame whose prefix it cannot read.
+    const deliver = (event: Event): void => {
+      if (delivered.has(event.id)) return;
+      if (this.enqueue(onEvent, event)) rememberDelivered(delivered, event.id);
+    };
+    // Lookup only. nostr-tools runs it on the raw frame before parsing, so a
+    // copy another relay already delivered costs neither JSON.parse nor Schnorr.
+    const alreadyHaveEvent = (id: string): boolean => delivered.has(id);
+    // EOSE queues behind the events it terminates rather than jumping them, and
+    // fires once every relay has finished its backfill (a relay that fails to
+    // connect counts as finished). Nothing passes an onEose today, but "the
+    // backfill is complete" arriving before the backfill would be a genuinely
+    // confusing thing to leave lying around for whoever wires the first one up.
+    let backfilling = targets.length * filters.length;
+    const oneose =
       onEose === undefined
         ? undefined
-        : (): void => this.enqueue(() => onEose(), EOSE_MARKER);
-    // SimplePool.subscribeMany takes a single merged filter. Merge all filters
-    // into one using OR semantics via the ids/kinds/authors fields approach:
-    // for multiple filters we subscribe each separately and merge the closers.
-    const pinned = filters.map(pinGiftWrapSince);
-    if (pinned.length === 1) {
-      return this.pool.subscribeMany(targets, pinned[0], {
-        onevent: deliver,
-        oneose: deliverEose,
-      });
-    }
-    const closers = pinned.map((f) =>
-      this.pool.subscribeMany(targets, f, { onevent: deliver }),
+        : (): void => {
+            backfilling -= 1;
+            if (backfilling === 0) this.enqueue(() => onEose(), EOSE_MARKER);
+          };
+    const closers = targets.flatMap((url) =>
+      filters.map((filter) =>
+        this.pool.subscribeMany([url], pinGiftWrapSince({ ...filter }), {
+          onevent: deliver,
+          oneose,
+          alreadyHaveEvent,
+        }),
+      ),
     );
     return {
       close: (reason?: string) => closers.forEach((c) => c.close(reason)),
@@ -228,14 +250,18 @@ export class NostrClient {
   // signature inside its own socket handler, before ours is reached. That cost
   // is bounded by asking for less (see the filters in geohash-channel-service),
   // not from here.
-  private enqueue(handler: EventHandler, event: Event): void {
+  //
+  // Returns whether the event was queued, so a subscription treats as delivered
+  // only what its handler will actually see.
+  private enqueue(handler: EventHandler, event: Event): boolean {
     // Back-pressure rather than unbounded growth. A queue this deep means we are
     // thousands of events behind, at which point the newest are the ones we can
     // most afford to drop: every subscription in the app backfills, so anything
     // missed comes back on the next one.
-    if (this.pending.length >= MAX_PENDING_EVENTS) return;
+    if (this.pending.length >= MAX_PENDING_EVENTS) return false;
     this.pending.push([handler, event]);
     this.scheduleDrain();
+    return true;
   }
 
   private scheduleDrain(): void {
@@ -311,20 +337,19 @@ export class NostrClient {
     });
   }
 
-  // Fetch a single event by its ID (queries all relays, returns first found).
-  async fetchEvent(id: string): Promise<Event | null> {
-    return this.pool.get(
-      this.relays,
-      { ids: [id] },
-      { maxWait: QUERY_MAX_WAIT_MS },
-    );
-  }
-
-  // Query relays and collect all matching events up to eose.
+  // Query relays and collect all matching events up to EOSE. One query per
+  // relay for the same reason subscribe splits (a poisoned relay must not hide
+  // another relay's copy), merged by ID. Every copy returned is verified.
   async queryEvents(filter: Filter): Promise<Event[]> {
-    return this.pool.querySync(this.relays, filter, {
-      maxWait: QUERY_MAX_WAIT_MS,
-    });
+    const params = { maxWait: QUERY_MAX_WAIT_MS };
+    const perRelay = await Promise.all(
+      this.relays.map((url) =>
+        this.pool.querySync([url], { ...filter }, params),
+      ),
+    );
+    const byID = new Map<string, Event>();
+    for (const event of perRelay.flat()) byID.set(event.id, event);
+    return [...byID.values()];
   }
 
   // Close all relay connections. ALL of them, not just the default set.
@@ -370,6 +395,17 @@ function pinGiftWrapSince(filter: Filter): Filter {
     get: () => since,
     set: () => {},
   });
+}
+
+// Same shape as OpenedGiftWraps. Evicting the oldest ID costs at most a late
+// copy of a long-gone event reaching its handler again, which the handler's own
+// dedup absorbs. Sets iterate in insertion order.
+function rememberDelivered(ids: Set<string>, id: string): void {
+  if (ids.size >= MAX_PENDING_EVENTS) {
+    const oldest = ids.values().next().value;
+    if (oldest !== undefined) ids.delete(oldest);
+  }
+  ids.add(id);
 }
 
 // Ensure a relay URL starts with wss:// or ws://, and strip a trailing slash.

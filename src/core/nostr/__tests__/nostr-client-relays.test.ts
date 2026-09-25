@@ -80,8 +80,9 @@ describe("NostrClient relay targeting", () => {
     const client = new NostrClient({ relays: [] });
     client.subscribe([{ kinds: [20000] }], () => undefined, undefined, geoSet);
 
-    expect(mockSubscribeTargets).toHaveLength(1);
-    const targets = mockSubscribeTargets[0];
+    // One pool subscription per relay (see NostrClient.subscribe).
+    for (const call of mockSubscribeTargets) expect(call).toHaveLength(1);
+    const targets = mockSubscribeTargets.flat();
     expect(targets).toContain(CUSTOM[0]);
     for (const relay of NEAREST) expect(targets).toContain(relay);
   });

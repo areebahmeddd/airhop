@@ -29,7 +29,6 @@ function makeClient(overrides?: Partial<NostrClient>): NostrClient {
       .mockResolvedValue({ relay: "wss://mock", accepted: true }),
     subscribe: jest.fn().mockReturnValue({ close: jest.fn() }),
     queryEvents: jest.fn().mockResolvedValue([]),
-    fetchEvent: jest.fn().mockResolvedValue(null),
     close: jest.fn(),
     ...overrides,
   } as unknown as NostrClient;
