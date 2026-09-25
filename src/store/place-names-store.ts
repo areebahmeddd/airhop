@@ -81,6 +81,10 @@ interface PlaceNamesState {
 // de-dupe guard for the current process.
 const inFlight = new Set<string>();
 
+// Bumped by clearAll, so a geocode still in flight across a panic wipe drops
+// its answer instead of writing a visited place back to disk.
+let generation = 0;
+
 // Pick the address component that matches the cell's coverage. A 2-char cell is
 // a whole region, a 5-char cell a city, a 7-char cell a block, so the useful
 // label differs by length. Mirrors bitchat's per-level naming.
@@ -119,6 +123,7 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
         const key = placeNameKey(geohash);
         if (get().names[key] !== undefined || inFlight.has(key)) return;
         inFlight.add(key);
+        const started = generation;
         void (async () => {
           try {
             const { lat, lng } = decodeGeohash(geohash);
@@ -128,19 +133,20 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
             });
             const first = results[0];
             const name = first ? pickName(geohash, first) : null;
-            if (name !== null) {
+            if (name !== null && started === generation) {
               set((state) => ({ names: { ...state.names, [key]: name } }));
             }
           } catch {
             // Geocoder or network unavailable: leave it unresolved so a later
             // session can try again. The UI just omits the name meanwhile.
           } finally {
-            inFlight.delete(key);
+            if (started === generation) inFlight.delete(key);
           }
         })();
       },
 
       clearAll() {
+        generation++;
         inFlight.clear();
         set({ names: {} });
       },

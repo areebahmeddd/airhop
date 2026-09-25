@@ -100,4 +100,22 @@ describe("offline and failure handling", () => {
     expect(cached("td")).toBe("Karnataka");
     expect(cached("tdr1k")).toBe("Bengaluru");
   });
+
+  it("drops an answer that lands after a panic wipe", async () => {
+    // The wipe clears the cache, but a lookup already on its way back must not
+    // write a visited place to disk again once it arrives.
+    let answer: (value: unknown) => void = () => undefined;
+    reverseGeocodeAsync.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    usePlaceNamesStore.getState().resolve("tdr1k");
+    usePlaceNamesStore.getState().clearAll();
+
+    answer([{ city: "Bengaluru" }]);
+    await settle();
+
+    expect(cached("tdr1k")).toBeUndefined();
+  });
 });
