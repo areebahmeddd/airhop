@@ -17,7 +17,7 @@ You are the Security Review agent for the Airhop project. Your job is to audit c
 
 Airhop's security guarantees (from `docs/design/VISION.md`):
 
-1. All messages are end-to-end encrypted (Noise XX for real-time, Double Ratchet for stored)
+1. All messages are end-to-end encrypted (Noise XX for live sessions, with a Double Ratchet inside between Airhop peers; Noise X to a one-time prekey for courier mail)
 2. Every packet is Ed25519-signed and verified
 3. No private key material ever leaves the device's secure enclave (iOS Keychain / Android Keystore), with one exception: a device transfer (section 8a) moves the identity to the owner's new phone, and the old phone erases itself
 4. No plaintext message content ever touches disk
@@ -74,7 +74,9 @@ Check for:
 - No length check on incoming BLE bytes (must be ≥ 96 bytes for a valid signed packet): **FAIL**
 - No version byte check (must be `2`): **FAIL**
 - No TTL range check (must be `1–7`): **WARN**
-- Timestamp outside ±15-minute window not rejected (replay attack vector): **FAIL**
+- Timestamp outside the ±2 minute ingress window (±15 minutes for announces) not rejected (replay attack vector): **FAIL**
+- A packet let past that window on its `IS_RSR` flag without TTL 0, an open request to the bound link peer, and the type's sync age: **FAIL**
+- Sender's signing key resolved through anything but the durable order (session-proven, then saved contact, then announce pin), or an announce contradicting a held key accepted: **FAIL**
 - No validation of senderID format (must be 8 bytes of valid hex): **WARN**
 - Large payload not size-checked before zlib decompression (zip-bomb vector): **FAIL**
 
@@ -86,6 +88,9 @@ Check for:
 - Static key reuse across sessions (static keys are long-term; ephemeral keys are per-handshake): **FAIL** if ephemeral keys are cached
 - MixHash/MixKey called out of order versus the Noise XX pattern: **FAIL**
 - Prologue data not included in hash if used: **FAIL**
+- A courier seal or open without bitchat-ios's prologue for its version (`sealPrologue`): **FAIL**
+- Replay window aging recorded nonces the wrong way (a new highest nonce must shift the LSB-first bitmap left; see `noise-sessions.md`): **FAIL**
+- Inbound handshakes not rate-limited, or a failed msg2/msg3 discarding the pending handshake instead of being read on a clone: **FAIL**
 - Session keys not cleared from memory after session end: **WARN**
 
 ### 6. Double Ratchet
@@ -93,6 +98,9 @@ Check for:
 Check for:
 
 - Ratchet key reuse (each ratchet step must derive a fresh chain key): **FAIL**
+- `DR_ENCRYPTED` handled before its packet signature is checked: **FAIL**
+- Ratchet state (keys, counters, the skipped-key cache) changed before the message authenticates: **FAIL** (a forgery must leave it byte-identical)
+- A ratchet used under a Noise session other than the one it was seeded from: **FAIL**
 - Missing out-of-order message key caching: **WARN**
 
 ### 7. One-time Prekeys (`0x24`)
@@ -100,8 +108,8 @@ Check for:
 Prekey bundles carry only **public** prekeys and are broadcast in the clear, signed, exactly as bitchat does. Do not flag an unencrypted bundle: publishing the public halves is the design. Check instead for:
 
 - Bundle not Ed25519-signed by the owner's identity key: **FAIL**
-- Bundle accepted without verifying that signature against the owner's announce-bound signing key: **FAIL**
-- A **private** prekey leaving the device in any form: **FAIL**
+- Bundle accepted without verifying that signature against the key held for the owner, or from a packet whose sender is not the owner: **FAIL**
+- A **private** prekey leaving the device in any form, or stored anywhere but the keychain item `airhop.prekeys.local.v1`: **FAIL**
 - A consumed one-time prekey being reused to open a second envelope: **FAIL** (defeats the forward secrecy the prekey exists for)
 - Consumed private prekeys retained beyond the grace window without being dropped: **WARN**
 
@@ -112,6 +120,9 @@ Check for:
 - Cashu token proofs logged: **FAIL**
 - Double-spend prevention: token not marked spent before attempting redemption: **WARN**
 - Redemption result not verified (mint signature check): **FAIL**
+- An offline token reported genuine unless every coin carries a DLEQ witness that verifies: **FAIL**
+- A token's declared unit trusted without checking it against its keysets, or coins locked to another key stored as balance: **FAIL**
+- A coin marked verified by anything but a swap the mint signed: **FAIL**
 - NIP-60 wallet state not encrypted before Nostr publication: **FAIL**
 
 ### 8a. Device Transfer (`src/core/move/`, `src/services/move-*.ts`)
@@ -120,6 +131,8 @@ The one sanctioned path for identity keys to leave the phone. Check for:
 
 - Any key material read before `confirmDeviceOwner` (unless the OS reports no lock at all): **FAIL**
 - A handshake that accepts a responder static key other than the one in the scanned code, or a prologue without the code's token: **FAIL**
+- A dial to an address the code names without `isOnLocalSubnet` passing first: **FAIL**
+- The old phone freezing or streaming, or the new phone accepting an OFFER, before the person confirms matching words on the new phone (`CONFIRM`) and taps Transfer on the old one: **FAIL**
 - The bundle, or any secret in it, written to disk, a file, the share sheet, the clipboard or a log on either phone: **FAIL**
 - One-time prekey private halves, the wallet's MMKV key, or Noise/ratchet session state in the bundle: **FAIL**
 - The receiver writing anything before the whole bundle is in and hash-checked, or writing the identity before the other secrets: **FAIL**

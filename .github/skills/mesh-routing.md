@@ -96,7 +96,20 @@ Partial assemblies are silently dropped after 30 seconds. The sender must retran
 
 ## Gossip Sync
 
-`REQUEST_SYNC` packets (type `0x21`) carry TTL=0 and are never relayed. Gossip reconciliation is a question about the far end of one link, so it stays on that link.
+`REQUEST_SYNC` packets (type `0x21`) carry TTL=0 and are never relayed, whatever TTL one arrives with (`relayTtl` returns 0 for the type, as bitchat-ios's `RelayController` does). Gossip reconciliation is a question about the far end of one link, so it stays on that link.
+
+A request is answered only when it is plainly the link peer's own, as bitchat-ios answers (`BLEService.handleRequestSync`): TTL 0, a `senderID` equal to the peer bound to the link it arrived on, and a signature verifying against the key held for that peer. The response budget (8 per 30 s) is then that peer's, and every reply goes back down that link only, at TTL 0 with `IS_RSR` set.
+
+A packet tagged `IS_RSR` is judged on the sync rules alone, fresh or not (bitchat-ios `BLEIngressPacketGuard`): TTL 0, arriving on the link bound to a peer we sent a request to in the last 30 s, and a type sync serves within the age it serves it for, from `isSyncReplyInWindow` in `gossip-sync.ts`. Everything else is held to the ±2 minute ingress window, TTL 0 or not.
+
+| Type                                                 | Served and accepted for                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------- |
+| `ANNOUNCE`                                           | 60 s                                                            |
+| `CHANNEL_MSG`, `CHANNEL_MSG_AIRHOP`, `GROUP_MESSAGE` | 6 h                                                             |
+| `BOARD_POST`                                         | 7 days                                                          |
+| `FRAGMENT` (reply fragments)                         | 7 days; the reassembled packet is held to its own type's window |
+
+The 6 h window is bitchat-ios's `syncPublicMessageMaxAgeSeconds`, which `BLEService` passes over `GossipSyncManager`'s 900 s default. Copy constants from where they are applied, not from a config default: a 15 minute window here refuses backfill bitchat-ios sends.
 
 Gossip uses a Golomb-Coded Set (GCS) filter, not a bloom filter. The false positive rate formula is different. See `src/core/mesh/sync/gossip-sync.ts` and the reference `bitchat/ios/bitchat/Sync/GossipSyncManager.swift`.
 

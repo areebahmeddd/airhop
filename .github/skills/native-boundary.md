@@ -29,6 +29,7 @@ Every feature is implemented in `src/core/`. Native code is a thin I/O driver.
 - Make routing decisions
 - Know what a peer ID is
 - Perform encryption or decryption
+- Decide which addresses may be dialled. `AirhopLANModule.localSubnets` reports each local interface's IPv4 address and prefix length and judges nothing; `isOnLocalSubnet` in `src/core/move/local-subnet.ts` decides whether a transfer code's address is on one
 
 ## TurboModule Contract
 
