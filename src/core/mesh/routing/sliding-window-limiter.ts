@@ -13,7 +13,7 @@ export class SlidingWindowLimiter {
   // Whether one more hit would be admitted now. Records nothing, so two
   // limiters can both be asked before either spends its budget.
   allows(key: string, now: number): boolean {
-    this.sweep(now);
+    this.prune(now);
     const recent = this.recent(key, now);
     if (recent.length === 0) this.hits.delete(key);
     else this.hits.set(key, recent);
@@ -49,8 +49,11 @@ export class SlidingWindowLimiter {
     return (this.hits.get(key) ?? []).filter((t) => t > cutoff);
   }
 
-  // At most once a window, so the cost stays linear in the keys a window saw.
-  private sweep(now: number): void {
+  // Drop keys with no hit left in the window. Also called on every check, so
+  // it runs at most once a window and its cost stays linear in the keys a
+  // window saw; a caller with a tick of its own calls it too, so keys stop
+  // accumulating when nobody asks.
+  prune(now: number): void {
     if (now - this.lastSweep < this.windowMs) return;
     this.lastSweep = now;
     const cutoff = now - this.windowMs;

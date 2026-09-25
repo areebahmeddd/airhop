@@ -45,6 +45,7 @@ import {
 } from "@core/mesh/wire/packet-codec";
 import {
   channelPacketType,
+  decodeMeshPublicPayload,
   encodeAirhopChannelPayload,
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
@@ -1211,6 +1212,104 @@ test("S10 catching up on someone who has since gone quiet", async () => {
     "carol caught up on alice's message",
     caughtUp,
     `carol thread = [${carol.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S15 a flood of forged messages neither crowds out real history nor rides along with it", async () => {
+  // A relay keeps what it will offer latecomers only once it has verified it.
+  // Kept before verifying, a thousand forgeries under alice's name fill the
+  // store, push her real messages out, and are then served to everyone who
+  // asks.
+  const s = (scenario = new Scenario({
+    id: "S15",
+    title: "forged-message flood versus backfill",
+    seed: 115,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "mallory", "dave"]);
+  const [alice, bob, mallory, dave] = devices;
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+  ]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    45_000,
+  );
+  s.check("bob knows alice and mallory", met);
+
+  const real = ["water at the school", "road north is clear", "meet at noon"];
+  for (const text of real) alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => real.every((t) => bob.texts(channel).includes(t)),
+    20_000,
+  );
+  s.check("bob heard alice's messages", bobHeard);
+
+  // Past the thousand slots public history gets, all under alice's ID and
+  // signed by mallory.
+  for (let i = 0; i < 1100; i++) {
+    const packet: Packet = {
+      type: PacketType.CHANNEL_MSG,
+      ttl: 7,
+      flags: Flags.SIGNED,
+      senderID: new Uint8Array(
+        alice.peerID.match(/../g)!.map((b) => parseInt(b, 16)),
+      ),
+      recipientID: new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload: encodeMeshPublicPayload(`forged ${i}`),
+    };
+    packet.signature = signPacket(packet, mallory.identity.signingPrivKey);
+    radio.injectTo(bob.id, mallory.id, bytesToBase64(encodePacket(packet)));
+    if (i % 100 === 99) await s.world.advance(500);
+  }
+  await s.world.advance(5_000);
+
+  let forgedServed = 0;
+  radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== bob.id || linkID !== `link:${dave.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.isRSR !== true || p.type !== PacketType.CHANNEL_MSG) return;
+    if (decodeMeshPublicPayload(p.payload)?.startsWith("forged") === true) {
+      forgedServed++;
+    }
+  });
+
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+    ["dave", "bob"],
+  ]);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => real.every((t) => dave.texts(channel).includes(t)),
+    90_000,
+  );
+  s.check(
+    "dave's backfill from bob carries alice's real messages",
+    caughtUp,
+    `dave thread = [${dave.texts(channel).slice(0, 5).join(" | ")}]`,
+  );
+  s.check(
+    "bob served dave none of the forgeries",
+    forgedServed === 0,
+    `${forgedServed} served`,
+  );
+  s.check(
+    "and dave shows none",
+    !dave.texts(channel).some((t) => t.startsWith("forged")),
   );
 
   s.expectNone("process health", noCrashes(devices));

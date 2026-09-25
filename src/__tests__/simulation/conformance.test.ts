@@ -45,6 +45,10 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
 
 import { MAX_BLE_FRAME } from "@core/mesh/routing/fragment-manager";
 import {
+  decodeGossipFilterPayload,
+  SYNC_ROUNDS,
+} from "@core/mesh/sync/gossip-sync";
+import {
   MAX_BITCHAT_TRANSFER_BYTES,
   MAX_FILE_BYTES,
   MAX_FRAMED_FILE_BYTES,
@@ -432,9 +436,14 @@ test("X04 gossip sync crosses both ways with bitchat right after first contact",
   bitchat.rememberBoardPost(notice, postedAt);
 
   let replyFragments = 0;
+  const requestedTypes = new Set<number>();
   radio.tapWrites((who, _link, data) => {
-    if (who !== bitchat.id) return;
     const p = decodePacket(Uint8Array.from(atob(data), (c) => c.charCodeAt(0)));
+    if (who === airhop.id && p?.type === PacketType.REQUEST_SYNC) {
+      const types = decodeGossipFilterPayload(p.payload)?.types;
+      if (types !== undefined) requestedTypes.add(types);
+    }
+    if (who !== bitchat.id) return;
     if (
       p?.type === PacketType.FRAGMENT &&
       p.isRSR === true &&
@@ -485,6 +494,14 @@ test("X04 gossip sync crosses both ways with bitchat right after first contact",
     "and bitchat's day-old board post, cut into fragments",
     replyFragments > 1 && posts.some((p) => p.content === notice),
     `fragments=${String(replyFragments)} posts=${String(posts.length)}`,
+  );
+  // One request per round, as bitchat-ios sends one per schedule: board
+  // posts alone, and everything else together.
+  s.check(
+    "Airhop asked in bitchat-ios's rounds",
+    SYNC_ROUNDS.every((round) => requestedTypes.has(round.types)) &&
+      requestedTypes.size === SYNC_ROUNDS.length,
+    `types asked = [${[...requestedTypes].join(", ")}]`,
   );
   s.expectNone("process health", noCrashes([airhop]));
   s.assert(true);

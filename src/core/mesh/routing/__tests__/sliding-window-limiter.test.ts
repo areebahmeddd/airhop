@@ -34,6 +34,16 @@ describe("SlidingWindowLimiter", () => {
     expect(l.size).toBe(1);
   });
 
+  test("prune empties keys idle past the window without another check", () => {
+    const l = new SlidingWindowLimiter(1, 1000);
+    l.tryAcquire("a", 0);
+    l.tryAcquire("b", 900);
+    l.prune(1500);
+    expect(l.size).toBe(1);
+    l.prune(3000);
+    expect(l.size).toBe(0);
+  });
+
   test("forget and reset clear a budget", () => {
     const l = new SlidingWindowLimiter(1, 1000);
     l.tryAcquire("a", 0);

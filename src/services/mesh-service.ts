@@ -1021,16 +1021,13 @@ export class MeshService {
     // Unicast per connected peer rather than broadcast. That is what lets the
     // receive path tell a solicited replay apart from a stranger replaying
     // recorded traffic: every request is registered against the peer it went
-    // to, and only that peer's IS_RSR packets skip the freshness window. A
-    // broadcast round has no peer to register against, so it is kept only as
-    // the discovery-phase fallback inside GossipSync.
+    // to, and only that peer's IS_RSR packets skip the freshness window.
     this.gossip.start(
       {
         peerID: this.identity.peerID,
         signingPrivKey: this.identity.signingPrivKey,
       },
       {
-        send: sendFn,
         sendToPeer: (peerID, packet) => {
           this.unicastFn(peerID, packet);
         },
@@ -1040,6 +1037,9 @@ export class MeshService {
         getPeers: () => [...this.links.directPeers()],
         onRequest: (peerID) => {
           this.requestSync.registerRequest(peerID);
+        },
+        onTick: (now) => {
+          this.requestSync.prune(now);
         },
       },
     );
@@ -1780,12 +1780,6 @@ export class MeshService {
     });
     if (!isNew) return;
 
-    // Remember gossipable packets so we can replay them to a peer that missed
-    // them. An announce waits for onAnnounce to verify it: it is the one type
-    // anyone can check, and an invalid one would only take a slot from a real
-    // one. track() ignores types that are never gossiped.
-    if (packet.type !== PacketType.ANNOUNCE) this.gossip.track(packet);
-
     this.routePacket(packet, linkID);
   }
 
@@ -1860,8 +1854,6 @@ export class MeshService {
     // The same packet may also arrive whole over another radio, or as a second
     // fragment stream from another relay.
     if (!this.floodRouter.admit(inner)) return;
-    // As handleFrame: an announce is tracked once onAnnounce verifies it.
-    if (inner.type !== PacketType.ANNOUNCE) this.gossip.track(inner);
     this.routePacket(inner, linkID);
   }
 
@@ -4294,6 +4286,11 @@ export class MeshService {
     // Drop our own messages echoed back (shouldn't happen, but guard anyway).
     if (senderID === this.identity.peerID) return;
     if (!this.senderIsAuthentic(packet, senderID)) return;
+    // Carried for sync once verified, and before the joined-room check, so a
+    // room this user never joined still backfills for those who did. As
+    // bitchat-ios BLEPublicMessageHandler, which tracks after its signature
+    // guard.
+    this.gossip.track(packet);
 
     // Only accept traffic for channels the user has actually joined.
     //
@@ -4714,6 +4711,9 @@ export class MeshService {
     const wire = this.validBoardWire(packet);
     if (wire === null) return;
     const result = useBoardStore.getState().ingest(wire);
+    // What the board still holds, or already held, is worth offering; what it
+    // refused is not (a tombstoned post, a delete by someone else).
+    if (result !== "rejected") this.gossip.track(packet);
     // Surface a genuinely new post from someone else on the notification bell
     // (and, via the bell, the room's board-icon badge). "accepted" means it was
     // not a duplicate or a rejected/expired post, so this fires once per notice.
@@ -5432,6 +5432,11 @@ export class MeshService {
   // Decrypt and render an incoming group message, if we hold the group and the
   // author is in its roster.
   private onGroupMessage(packet: Packet): void {
+    // Carried whether or not we are a member, and so before any decrypt, as
+    // bitchat-ios handleGroupMessage does: sealed under the group's key, it is
+    // opaque to a relay and cannot be checked, so it gets a store of its own
+    // that it cannot overflow into public history.
+    if (packet.payload.length > 0) this.gossip.track(packet);
     const env = decodeGroupEnvelope(packet.payload);
     if (env === null) return;
     const group = useGroupStore.getState().getByID(env.groupID);
