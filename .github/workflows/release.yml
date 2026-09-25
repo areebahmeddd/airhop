@@ -1,21 +1,25 @@
 name: Release and Changelog
 
+# A manual run is "Run workflow" with "Use workflow from" set to the tag. Any
+# other ref is refused, so provenance always names refs/tags/<tag>.
 on:
   push:
     tags:
       - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "Existing tag to publish, e.g. v1.0.0"
-        required: true
-        type: string
 
 permissions:
   contents: read
 
+env:
+  # SHA-256 of the release signing certificate. Committed so that a change to it
+  # is a reviewed diff, and checked against every signed APK and AAB below.
+  # Rotating the key means changing this in the same commit, and README.md and
+  # SECURITY.md with it.
+  ANDROID_SIGNING_CERT_SHA256: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
+
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.tag || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -28,37 +32,41 @@ jobs:
       contents: write
     outputs:
       tag: ${{ steps.resolve.outputs.tag }}
+      version: ${{ steps.resolve.outputs.version }}
+      sha: ${{ steps.resolve.outputs.sha }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
+          persist-credentials: false
 
+      # Every later job checks out this commit rather than the tag's name:
+      # checkout prefers a branch over a tag of the same name, and working
+      # branches here are named like release tags.
       - name: Resolve and validate tag
         id: resolve
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            TAG="${{ inputs.tag }}"
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG="${{ github.ref_name }}"
-          else
-            echo "::error::This workflow must run on a tag. For a manual run, supply the 'tag' input."
-            exit 1
-          fi
-          if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
-            echo "::error::Tag '${TAG}' does not exist in this repository."
+          set -euo pipefail
+          if [ "$REF_TYPE" != "tag" ]; then
+            echo "::error::Run this on a tag (Use workflow from: v1.2.3)."
             exit 1
           fi
           # The version written into app.json is the tag without its leading v,
           # so the tag has to be a plain three-part version and nothing else.
-          if ! printf '%s' "${TAG}" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::error::Tag '${TAG}' must look like v1.2.3."
+          if ! printf '%s' "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Tag '$TAG' must look like v1.2.3."
             exit 1
           fi
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=$TAG"
+            echo "version=${TAG#v}"
+            echo "sha=$(git rev-parse "refs/tags/${TAG}^{commit}")"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate release notes
         uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
@@ -78,10 +86,19 @@ jobs:
           <details>
           <summary><strong>Verify this download</strong></summary>
 
-          The APK is signed with the Airhop release key and carries SLSA build provenance from this repository.
+          The APK is signed with the Airhop release key (package \`org.onemindlabs.airhop\`). This workflow refuses to publish an APK signed by anything else, so the check below should print exactly one signer with this digest:
 
           \`\`\`
-          gh attestation verify airhop.apk --repo ${GITHUB_REPOSITORY}
+          apksigner verify --print-certs airhop.apk
+          Signer #1 certificate SHA-256 digest: ${ANDROID_SIGNING_CERT_SHA256}
+          \`\`\`
+
+          It also carries SLSA build provenance. This checks it was built by this repository's release workflow from tag ${TAG}, on a GitHub-hosted runner:
+
+          \`\`\`
+          gh attestation verify airhop.apk --repo ${GITHUB_REPOSITORY} \\
+            --signer-workflow ${GITHUB_REPOSITORY}/.github/workflows/release.yml \\
+            --source-ref refs/tags/${TAG} --deny-self-hosted-runners
           \`\`\`
 
           The same provenance is attached as \`airhop.apk.intoto.jsonl\` for offline checks.
@@ -125,59 +142,176 @@ jobs:
           name: ${{ steps.title.outputs.name }}
           body_path: RELEASE_NOTES.md
 
-  android-release:
-    name: Release Android APK
+  # Runs npm and Gradle, and so thousands of packages' code, which is why it
+  # gets no secret and no write token. The key lives only in android-sign.
+  android-build:
+    name: Build Android release (unsigned)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: release
-    # Build, attest, and publish the Android release artifacts.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+          persist-credentials: false
+
+      - name: Confirm the checkout is the tag
+        env:
+          TAG_SHA: ${{ needs.release.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$TAG_SHA"
+
+      - name: Set up JavaScript toolchain
+        uses: ./.github/actions/setup-js
+
+      - name: Verify vendored binaries
+        run: npm run verify:vendored
+
+      - name: Set up Android toolchain
+        uses: ./.github/actions/setup-android
+
+      - name: Build release APK and AAB
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          # abiFilters are merged, so build types can't narrow them.
+          # gradle.properties keeps x86_64 for emulators; shipped builds include only the two ARM ABIs.
+          ./gradlew assembleRelease bundleRelease --no-daemon \
+            -PreactNativeArchitectures=arm64-v8a,armeabi-v7a \
+            -Pairhop.unsignedRelease=true
+
+      # versionName is stamped from app.json, which only the release commit
+      # sets, so a mismatch means this is not the tagged code.
+      - name: Check the version and stage
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          BUILD_TOOLS="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -1)"
+          mkdir -p unsigned
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk unsigned/airhop.apk
+          mv android/app/build/outputs/bundle/release/app-release.aab unsigned/airhop.aab
+
+          badging="$("${BUILD_TOOLS}/aapt2" dump badging unsigned/airhop.apk)"
+          if ! grep -q "^package: name='org.onemindlabs.airhop' .*versionName='${VERSION}'" <<<"$badging"; then
+            echo "::error::The APK is not org.onemindlabs.airhop ${VERSION}."
+            grep '^package:' <<<"$badging" || true
+            exit 1
+          fi
+
+      - name: Upload the unsigned build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-unsigned
+          path: |
+            unsigned/airhop.apk
+            unsigned/airhop.aab
+          if-no-files-found: error
+          retention-days: 1
+
+  # The only job that sees the signing key. It checks out nothing and runs only
+  # the runner's preinstalled SDK build tools and JDK, so no project or package
+  # code runs beside the key.
+  android-sign:
+    name: Sign and publish Android release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: [release, android-build]
     permissions:
       contents: write
       id-token: write
       attestations: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download the unsigned build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          ref: ${{ needs.release.outputs.tag }}
-
-      - name: Set up JavaScript toolchain
-        uses: ./.github/actions/setup-js
-
-      - name: Set up Android toolchain
-        uses: ./.github/actions/setup-android
+          name: android-unsigned
+          path: unsigned
 
       - name: Decode release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/airhop-release.keystore"
-            echo "ANDROID_KEYSTORE_FILE=${RUNNER_TEMP}/airhop-release.keystore" >> "$GITHUB_ENV"
-            echo "Release keystore decoded; the build will be signed with the release key."
-          else
-            echo "::warning::ANDROID_KEYSTORE_BASE64 is not set. Falling back to the debug key. Add the four signing secrets to ship a properly signed release."
-          fi
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::${name} is not set. A release is signed with the release key or not at all."
+              exit 1
+            fi
+          done
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/airhop-release.keystore"
 
-      - name: Build release APK
-        working-directory: android
+      - name: Sign APK and AAB
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          chmod +x gradlew
-          # abiFilters are merged, so build types can't narrow them.
-          # gradle.properties keeps x86_64 for emulators; shipped builds include only the two ARM ABIs.
-          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+          set -euo pipefail
+          BUILD_TOOLS="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -1)"
+          KEYSTORE="${RUNNER_TEMP}/airhop-release.keystore"
+          mkdir -p dist
 
-      - name: Stage APK
+          # apksigner keeps the alignment it is given, and AGP aligns an
+          # unsigned build already, 16 KiB pages for native libraries included.
+          # This asserts it rather than realigning.
+          "${BUILD_TOOLS}/zipalign" -c -P 16 4 unsigned/airhop.apk
+
+          # APK Signature Scheme v2 only, as every earlier release: minSdk 26
+          # needs no v1, and v3 matters only for rotating the key.
+          "${BUILD_TOOLS}/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --key-pass env:ANDROID_KEY_PASSWORD \
+            --v1-signing-enabled false \
+            --v2-signing-enabled true \
+            --v3-signing-enabled false \
+            --v4-signing-enabled false \
+            --out dist/airhop.apk \
+            unsigned/airhop.apk
+
+          # An app bundle takes a JAR signature, which is what AGP applies too.
+          "${JAVA_HOME}/bin/jarsigner" \
+            -keystore "$KEYSTORE" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD \
+            -keypass:env ANDROID_KEY_PASSWORD \
+            -signedjar dist/airhop.aab \
+            unsigned/airhop.aab \
+            "$ANDROID_KEY_ALIAS"
+
+          rm -f "$KEYSTORE"
+
+      - name: Check the signer
         run: |
           set -euo pipefail
-          mkdir -p dist
-          mv android/app/build/outputs/apk/release/app-release.apk dist/airhop.apk
+          BUILD_TOOLS="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -1)"
+
+          # apksigner prints several "Signer #N" lines per signer, so count the
+          # distinct signers rather than the lines.
+          apk="$("${BUILD_TOOLS}/apksigner" verify --print-certs dist/airhop.apk)"
+          signers="$(grep -oE '^Signer #[0-9]+ ' <<<"$apk" | sort -u | wc -l)"
+          if [ "$signers" -ne 1 ] || ! grep -Fxq "Signer #1 certificate SHA-256 digest: ${ANDROID_SIGNING_CERT_SHA256}" <<<"$apk"; then
+            echo "::error::The APK is not signed by the release certificate alone."
+            printf '%s\n' "$apk"
+            exit 1
+          fi
+
+          "${JAVA_HOME}/bin/jarsigner" -verify dist/airhop.aab > /dev/null
+          aab="$("${JAVA_HOME}/bin/keytool" -printcert -jarfile dist/airhop.aab)"
+          digests="$(sed -n 's/^[[:space:]]*SHA256: //p' <<<"$aab" | tr -d ':' | tr 'A-F' 'a-f')"
+          if [ "$digests" != "$ANDROID_SIGNING_CERT_SHA256" ]; then
+            echo "::error::The AAB is not signed by the release certificate alone."
+            printf '%s\n' "$aab"
+            exit 1
+          fi
 
       - name: Attest APK build provenance
         id: attest-apk
@@ -200,21 +334,6 @@ jobs:
             dist/airhop.apk
             dist/airhop.apk.intoto.jsonl
           overwrite_files: false
-
-      # Build the Play Store upload bundle.
-      - name: Build release AAB (Google Play upload bundle)
-        working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
-
-      - name: Stage AAB
-        run: |
-          set -euo pipefail
-          mv android/app/build/outputs/bundle/release/app-release.aab dist/airhop.aab
 
       # Attest the uploaded AAB before Play re-signs it.
       - name: Attest AAB build provenance
@@ -246,37 +365,52 @@ jobs:
     timeout-minutes: 60
     needs: release
     # Sign, upload to TestFlight, push the listing. Review submission is manual.
+    # Signing happens in the same job as the build here (fastlane gym), so it
+    # restores no cache a poisoned run could have written.
     permissions:
       contents: read
       id-token: write
       attestations: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout the tagged commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release.outputs.tag }}
+          ref: ${{ needs.release.outputs.sha }}
+          persist-credentials: false
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
+        with:
+          cache: ""
 
-      - name: Set up Ruby and fastlane
+      - name: Verify vendored binaries
+        run: npm run verify:vendored
+
+      - name: Set up Ruby
         uses: ruby/setup-ruby@762794c140bbeda0f1224786aa33b4b46783a6c1 # v1.326.0
         with:
           ruby-version: "3.4"
-          bundler-cache: true
+          bundler-cache: false
+
+      # Frozen: installs exactly Gemfile.lock, checksums included, and fails
+      # rather than resolve anything new.
+      - name: Install fastlane and CocoaPods
+        env:
+          BUNDLE_FROZEN: "true"
+        run: bundle install
 
       - name: Install CocoaPods dependencies
         working-directory: ios
         run: |
           set -euo pipefail
-          pod_version="$(awk '/^COCOAPODS: /{ print $2 }' Podfile.lock)"
-          if [[ -z "$pod_version" ]]; then
-            echo "::error::No COCOAPODS version recorded in ios/Podfile.lock"
+          locked="$(awk '/^COCOAPODS: /{ print $2 }' Podfile.lock)"
+          pinned="$(bundle exec pod --version)"
+          if [ "$locked" != "$pinned" ]; then
+            echo "::error::ios/Podfile.lock was written by CocoaPods ${locked:-unknown}, Gemfile.lock pins ${pinned}."
             exit 1
           fi
-          sudo gem install cocoapods --version "$pod_version" --no-document
-          pod "_${pod_version}_" install
+          bundle exec pod install
 
       # Distribution certificate and App Store profile, like the Android keystore.
       - name: Decode signing certificate and profile
@@ -340,10 +474,11 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout the tagged commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release.outputs.tag }}
+          ref: ${{ needs.release.outputs.sha }}
+          persist-credentials: false
 
       - name: Generate SBOM
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
@@ -372,10 +507,11 @@ jobs:
       attestations: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout the tagged commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release.outputs.tag }}
+          ref: ${{ needs.release.outputs.sha }}
+          persist-credentials: false
 
       - name: Generate source manifest
         env:

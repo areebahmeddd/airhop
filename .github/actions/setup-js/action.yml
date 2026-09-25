@@ -6,6 +6,12 @@ inputs:
     description: Node.js version to install.
     required: false
     default: "22"
+  cache:
+    description: >-
+      Package manager whose cache setup-node restores and saves. Empty turns
+      caching off, for a job that holds a secret a poisoned cache could reach.
+    required: false
+    default: "npm"
 
 runs:
   using: composite
@@ -14,7 +20,10 @@ runs:
       uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: ${{ inputs.node-version }}
-        cache: "npm"
+        cache: ${{ inputs.cache }}
+        # package.json names no packageManager, so nothing caches unasked;
+        # stated anyway so adding one cannot turn caching back on.
+        package-manager-cache: ${{ inputs.cache != '' }}
 
     - name: Install dependencies
       shell: bash
