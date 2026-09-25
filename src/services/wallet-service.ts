@@ -776,6 +776,9 @@ export async function restoreFromRecoveryPhrase(params: {
         const keysets = wallet.keyChain.getKeysets();
 
         for (const [index, keyset] of keysets.entries()) {
+          // Per keyset, not once: a restore runs long enough for Tor to be
+          // switched on part way through.
+          assertMintNetworkAllowed();
           params.onProgress?.({
             mintUrl: url,
             keysetId: keyset.id,
@@ -1952,6 +1955,17 @@ export function reconcileIfDue(): void {
   });
 }
 
+// What a reconcile pass re-checks between its steps. `wiped` guards a write
+// after an await: a panic wipe since the pass began. `halted` guards the next
+// request too, re-reading the mint network gate each time: a pass can run for
+// minutes, and Tor switched on meanwhile must stop its remaining requests
+// going out in the clear on iOS. A request already on the wire cannot be
+// recalled; its answer is still written.
+interface PassGuard {
+  wiped: () => boolean;
+  halted: () => boolean;
+}
+
 // Long: a safety net, not a refresh (what the user sees uses `refreshAccount`).
 const STATE_CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
@@ -1964,7 +1978,7 @@ const lastStateCheckAtMs = new Map<string, number>();
 // cannot turn a background pass into a burst. Removal only, so it cannot lose
 // value; "pending" and replay-claimed proofs are left alone. Storage readiness
 // is re-checked because a wipe closes it mid-await.
-async function dropSpentProofs(wiped: () => boolean): Promise<void> {
+async function dropSpentProofs(pass: PassGuard): Promise<void> {
   const claimed = secretsAwaitingSwapReplay();
   const accounts = Object.entries(useWalletStore.getState().proofs)
     .map(
@@ -1991,12 +2005,12 @@ async function dropSpentProofs(wiped: () => boolean): Promise<void> {
   lastStateCheckAtMs.set(key, now);
   const { mintUrl, unit } = parseAccountKey(key);
   try {
-    if (wiped() || !isWalletStorageReady()) return;
+    if (pass.halted()) return;
     const wallet = await getWallet(mintUrl, unit);
-    if (wiped() || !isWalletStorageReady()) return;
+    if (pass.halted()) return;
     const bySecret = new Map(held.map((p) => [p.secret, p]));
     const grouped = await wallet.groupProofsByState(held.map(toProofLike));
-    if (wiped() || !isWalletStorageReady()) return;
+    if (pass.wiped()) return;
     const spent = grouped.spent
       .map((p) => bySecret.get(p.secret))
       .filter((p): p is StoredProof => p !== undefined);
@@ -2028,10 +2042,7 @@ const MAX_SWAP_REPLAYS_PER_PASS = 4;
 // spendable and may have been handed on, and a mint that never saw the first
 // request would process the replay fresh and kill the new holder's token.
 // Otherwise NUT-09 alone asks whether the swap happened without making it.
-async function replayLostSwap(
-  tx: WalletTx,
-  wiped: () => boolean,
-): Promise<void> {
+async function replayLostSwap(tx: WalletTx, pass: PassGuard): Promise<void> {
   const store = useWalletStore.getState();
   const preview = rebuildSwapPreview(tx.swapPreview);
   if (preview === null) {
@@ -2047,7 +2058,7 @@ async function replayLostSwap(
   }
 
   const wallet = await getWallet(tx.mintUrl, tx.unit);
-  if (wiped() || !isWalletStorageReady()) return;
+  if (pass.halted()) return;
   // Settled, or started again in this process, since the pass read history.
   const live = useWalletStore.getState().history.find((t) => t.id === tx.id);
   if (
@@ -2063,7 +2074,7 @@ async function replayLostSwap(
   if (replayable) {
     try {
       const result = await wallet.completeSwap(preview);
-      if (wiped() || !isWalletStorageReady()) return;
+      if (pass.wiped()) return;
       settleReplayedSwap(tx, preview, result.keep, result.send);
       return;
     } catch (err) {
@@ -2072,7 +2083,7 @@ async function replayLostSwap(
     }
   }
 
-  if (wiped() || !isWalletStorageReady()) return;
+  if (pass.halted()) return;
   let recovered: SendResponse;
   try {
     recovered = await restoreSwapOutputs(wallet, preview);
@@ -2082,7 +2093,7 @@ async function replayLostSwap(
     if (walletErr.code !== "mint-error") throw walletErr;
     recovered = { keep: [], send: [] };
   }
-  if (wiped() || !isWalletStorageReady()) return;
+  if (pass.wiped()) return;
 
   if (recovered.keep.length > 0 || recovered.send.length > 0) {
     settleReplayedSwap(tx, preview, recovered.keep, recovered.send);
@@ -2233,13 +2244,17 @@ async function runReconcilePass(): Promise<void> {
   if (mintNetworkBlock() !== null) return;
 
   const epoch = walletEpoch;
-  const wiped = (): boolean => walletEpoch !== epoch;
+  const wiped = (): boolean => walletEpoch !== epoch || !isWalletStorageReady();
+  const pass: PassGuard = {
+    wiped,
+    halted: () => wiped() || mintNetworkBlock() !== null,
+  };
   const state = useWalletStore.getState();
 
   // Deposits paid while the app was shut.
   for (const tx of state.history) {
     if (tx.kind !== "mint" || tx.status !== "pending" || !tx.quoteId) continue;
-    if (wiped()) return;
+    if (pass.halted()) return;
     try {
       await claimLightningDeposit(tx.mintUrl, tx.unit, tx.quoteId);
     } catch {
@@ -2254,7 +2269,7 @@ async function runReconcilePass(): Promise<void> {
     if (!tx.quoteId || tx.meltOutputs === undefined) continue;
     // Its answer is not late, it is still on its way.
     if (meltsInFlight.has(tx.id)) continue;
-    if (wiped()) return;
+    if (pass.halted()) return;
     try {
       await recoverMeltChange(tx);
     } catch {
@@ -2270,10 +2285,10 @@ async function runReconcilePass(): Promise<void> {
     // Its answer is not late, it is still on its way.
     if (swapsInFlight.has(tx.id)) continue;
     if (replayed >= MAX_SWAP_REPLAYS_PER_PASS) break;
-    if (wiped() || !isWalletStorageReady()) return;
+    if (pass.halted()) return;
     replayed += 1;
     try {
-      await replayLostSwap(tx, wiped);
+      await replayLostSwap(tx, pass);
     } catch {
       // The preview stays; the next pass asks again.
     }
@@ -2293,13 +2308,13 @@ async function runReconcilePass(): Promise<void> {
     if (tx.kind === "swap" || tx.kind === "nutzap-out") continue;
     if (tx.swapPreview !== undefined || meltsInFlight.has(txId)) continue;
     if (entry.proofs.some((p) => awaitingReplay.has(p.secret))) continue;
-    if (wiped()) return;
+    if (pass.halted()) return;
     try {
       const wallet = await getWallet(tx.mintUrl, tx.unit);
       const grouped = await wallet.groupProofsByState(
         entry.proofs.map(toProofLike),
       );
-      if (wiped()) return;
+      if (pass.wiped()) return;
       // Reclaimed or settled while the mint was answering.
       if (useWalletStore.getState().reserved[txId] === undefined) continue;
       if (grouped.spent.length === entry.proofs.length) confirmSend(txId);
@@ -2316,7 +2331,7 @@ async function runReconcilePass(): Promise<void> {
   for (const tx of state.history) {
     if (tx.kind !== "nutzap-out" || tx.status !== "pending") continue;
     if (tx.token === undefined || state.reserved[tx.id] !== undefined) continue;
-    if (wiped()) return;
+    if (pass.halted()) return;
     try {
       const info = decodeToken(
         tx.token,
@@ -2336,7 +2351,7 @@ async function runReconcilePass(): Promise<void> {
   }
 
   // Last, so the targeted walks above resolve what they can first.
-  if (!wiped()) await dropSpentProofs(wiped);
+  if (!pass.halted()) await dropSpentProofs(pass);
 }
 
 // ---- Lightning: deposit (mint) ----
