@@ -220,6 +220,24 @@ describe("activeCount", () => {
     state().finish("b");
     expect(state().activeCount()).toBe(1);
   });
+
+  it("counts one direction when asked", () => {
+    jest.useFakeTimers();
+    begin("out", 100);
+    state().begin({
+      id: "in",
+      direction: "receive",
+      channel: "#test",
+      peerLabel: "",
+      type: "document",
+      name: "file",
+      totalBytes: 100,
+      startedAtMs: Date.now(),
+    });
+    expect(state().activeCount("receive")).toBe(1);
+    expect(state().activeCount("send")).toBe(1);
+    expect(state().activeCount()).toBe(2);
+  });
 });
 
 describe("reconcile (stall watchdog)", () => {

@@ -408,6 +408,11 @@ const IDENTITY_ELSEWHERE_QUIET_MS = 5 * 60 * 1000;
 // 3 KiB sealed; a file shorter than this completes before a card could be read.
 const SEALED_FILE_CARD_MIN_BYTES = 8 * 1024;
 
+// Incoming-file cards shown at once. A card costs its forger one unsigned
+// fragment and holds for about 50 s, so without a cap a stream of them fills
+// a thread. Three is as many senders as scenario M02 has sending together.
+const MAX_INBOUND_CARDS = 3;
+
 interface BoundRatchet {
   session: NoiseSession;
   // Our side of the handshake that made `session`. Only the responder may seed
@@ -4185,6 +4190,12 @@ export class MeshService {
     return key !== undefined && verifyPacket(packet, key);
   }
 
+  // Whether anything this peer signs could pass senderIsAuthentic, for a
+  // decision taken before there is a signature to check.
+  private hasSigningKeyFor(peerID: string): boolean {
+    return this.knownSigningKey(peerID) !== undefined;
+  }
+
   // Which signing key speaks for a peer, strongest source first: one it proved
   // inside a Noise session, then a saved contact's (whether or not a human
   // verified it), then whatever the first announce pinned. Never TTL-bound:
@@ -5487,6 +5498,13 @@ export class MeshService {
   // sealed DM file rides NOISE_ENCRYPTED, which also carries rosters and other
   // small payloads, so it gets a card only once it is too long to be one.
   //
+  // Fragments carry no signature, so a card is a claim nobody has checked yet.
+  // It is kept to what a genuine file could become: a sender whose file could
+  // pass senderIsAuthentic, at most MAX_INBOUND_CARDS at once (a stream past
+  // that still lands when whole, with no card), and in the mesh room no name,
+  // since nothing proves who is sending until the file verifies. A DM card is
+  // in the sender's own thread, which names them anyway.
+  //
   // `fragment` is the one that made this progress. Its recipient is the
   // parent's, which is how a stream is told apart before it is whole.
   private onFragmentProgress(p: FragmentProgress, fragment: Packet): void {
@@ -5494,6 +5512,7 @@ export class MeshService {
     const store = useTransferStore.getState();
     if (store.transfers[id] === undefined) {
       if (p.received !== 1) return;
+      if (store.activeCount("receive") >= MAX_INBOUND_CARDS) return;
       const channel = this.incomingFileChannel(p, fragment);
       if (channel === null) return;
       const senderHex = p.key.split("_")[0];
@@ -5501,7 +5520,9 @@ export class MeshService {
         id,
         direction: "receive",
         channel,
-        peerLabel: resolveDisplayName(senderHex),
+        peerLabel: channel.startsWith("dm:")
+          ? resolveDisplayName(senderHex)
+          : "",
         // Real type/name are unknown until the file's TLV decodes on completion.
         type: "document",
         name: t("notif.incoming_file"),
@@ -5521,6 +5542,7 @@ export class MeshService {
     const senderHex = bytesToHex(fragment.senderID);
     if (senderHex === this.identity.peerID) return null;
     if (useBlockedStore.getState().isBlocked(senderHex)) return null;
+    if (!this.hasSigningKeyFor(senderHex)) return null;
     const broadcast = isBroadcast(fragment);
     const toUs =
       !broadcast && isForMe(fragment, hexToBytes(this.identity.peerID));
@@ -5530,10 +5552,12 @@ export class MeshService {
       const joined = useChatStore.getState().channels.includes(BRIDGE_CHANNEL);
       return joined ? BRIDGE_CHANNEL : null;
     }
+    // Sealed in a session: without one, it can never be opened.
     if (
       p.originalType === PacketType.NOISE_ENCRYPTED &&
       toUs &&
-      p.total * FRAG_DATA_SIZE > SEALED_FILE_CARD_MIN_BYTES
+      p.total * FRAG_DATA_SIZE > SEALED_FILE_CARD_MIN_BYTES &&
+      this.registry.sessionFor(senderHex) !== undefined
     ) {
       return `dm:${senderHex}`;
     }

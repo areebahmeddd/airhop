@@ -1291,3 +1291,142 @@ test("M13 past 100 MiB of received media, the oldest file goes and the newest pl
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("M14 a receiving card appears only for a file that could be real, and never more than three", async () => {
+  // Fragments carry no signature, so the first one of a stream is a claim
+  // anybody can make, one forged frame per card. A card is kept to senders
+  // whose file could verify, to a sealed file there is a session to open, and
+  // to three at once.
+  const s = (scenario = new Scenario({
+    id: "M14",
+    title: "incoming progress cards under forged fragments",
+    seed: 57,
+  }));
+  const { radio, devices } = room(s, [
+    android("alice", 11),
+    android("bob", 22),
+    android("mallory", 77),
+  ]);
+  const [alice, bob, mallory] = devices;
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    20_000,
+  );
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+
+  const cards = (where?: string): { channel: string; peerLabel: string }[] =>
+    Object.values(
+      bob.store("transferStore").getState().transfers as Record<
+        string,
+        { direction: string; channel: string; peerLabel: string }
+      >,
+    ).filter(
+      (t) =>
+        t.direction === "receive" &&
+        (where === undefined || t.channel === where),
+    );
+
+  // The control: alice's real photo shows its card while it crosses.
+  alice.sendAttachment(channel, media.jpeg(20_000), {
+    type: "image",
+    name: "real.jpg",
+    mimeType: "image/jpeg",
+  });
+  const carded = await waitFor(
+    s.world,
+    () => cards(channel).length > 0,
+    10_000,
+  );
+  s.check("a genuine photo shows a card", carded);
+  s.check(
+    "which names nobody, since fragments cannot say who sends",
+    cards(channel).every((c) => c.peerLabel === ""),
+  );
+  await waitFor(s.world, () => bob.attachments(channel).length > 0, 60_000);
+  await waitFor(s.world, () => cards().length === 0, 10_000);
+
+  // The first fragment of a stream, which is all a card needs.
+  const firstFragment = (opts: {
+    type: PacketType;
+    claimed: string;
+    to?: string;
+    bytes: number;
+  }): string => {
+    const inner: Packet = {
+      type: opts.type,
+      ttl: 7,
+      flags: opts.to !== undefined ? Flags.HAS_RECIPIENT : 0,
+      senderID: peerIdToBytes(opts.claimed),
+      recipientID:
+        opts.to !== undefined ? peerIdToBytes(opts.to) : new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload: randomBytes(opts.bytes),
+    };
+    const [first] = fragmentPacket(inner, { peerID: opts.claimed });
+    return toBase64(encodePacket(first));
+  };
+
+  // A file from an ID bob holds no key for could never verify.
+  const stranger = "5a5a5a5a5a5a5a5a";
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    firstFragment({
+      type: PacketType.FILE_TRANSFER,
+      claimed: stranger,
+      to: bob.peerID,
+      bytes: 2_000,
+    }),
+  );
+  // A sealed file under alice's name, with no session between them to open it.
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    firstFragment({
+      type: PacketType.NOISE_ENCRYPTED,
+      claimed: alice.peerID,
+      to: bob.peerID,
+      bytes: 12_000,
+    }),
+  );
+  await s.world.advance(1_000);
+  s.check(
+    "neither forged stream put a card in a DM thread",
+    cards(`dm:${stranger}`).length === 0 &&
+      cards(`dm:${alice.peerID}`).length === 0,
+    cards()
+      .map((c) => c.channel)
+      .join(" "),
+  );
+
+  // Twenty public streams from a sender bob knows.
+  for (let i = 0; i < 20; i++) {
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      firstFragment({
+        type: PacketType.FILE_TRANSFER,
+        claimed: mallory.peerID,
+        bytes: 2_000,
+      }),
+    );
+  }
+  await s.world.advance(1_000);
+  s.check(
+    "at most three cards at once",
+    cards().length <= 3,
+    `${String(cards().length)} cards`,
+  );
+  s.check(
+    "none of them under mallory's name",
+    cards(channel).every((c) => c.peerLabel === ""),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
