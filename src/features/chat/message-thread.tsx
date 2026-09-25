@@ -18,6 +18,7 @@ import {
   mayContainToken,
   type EmbeddedToken,
 } from "@core/payments/cashu";
+import { newMessageId } from "@core/router/message-router";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { stripIsolates, t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
@@ -2322,7 +2323,7 @@ export default function MessageThread({
           service.sendGroupMessage(
             channel.slice("group:".length),
             text,
-            `${localPeerID}-${Date.now()}`,
+            newMessageId(),
           );
         } else {
           // Private channel: sealed under the channel key, so this reaches
@@ -2336,7 +2337,7 @@ export default function MessageThread({
         ? "chat.screenshot.you_took"
         : "chat.screenshot.you_took_private";
       addMessage({
-        id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        id: newMessageId(),
         channel,
         senderID: localPeerID,
         senderNickname: localNickname,
@@ -2576,7 +2577,7 @@ export default function MessageThread({
     commitHeld();
 
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -2701,7 +2702,7 @@ export default function MessageThread({
     if (!canSendMedia(targetChannel)) return;
     const caption = options?.caption?.trim() ?? "";
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel: targetChannel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -2864,7 +2865,7 @@ export default function MessageThread({
       return false;
     }
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel: targetChannel,
       senderID: localPeerID,
       senderNickname: localNickname,
