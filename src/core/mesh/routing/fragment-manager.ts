@@ -60,6 +60,14 @@ export const FRAG_DATA_SIZE = MAX_BLE_FRAME - FRAME_OVERHEAD; // 467 bytes
 // Max simultaneous reassembly slots. Matches bitchat.
 const MAX_CONCURRENT = 128;
 
+// The least data a fragment other than the last may carry. No sender cuts one
+// smaller: bitchat-ios never goes under its BLEOutboundFragmentPlanner
+// minimumChunkSize, 64, and Airhop's are FRAG_DATA_SIZE. Refusing smaller
+// bounds a slot's entries by its byte budget over 64, where empty or tiny
+// fragments would pack up to 10,000 map entries into almost no bytes, across
+// every slot.
+const MIN_NONFINAL_FRAGMENT_BYTES = 64;
+
 // How long a partial assembly may sit SILENT before it is dropped. Measured
 // from the last fragment that arrived, not from the first.
 //
@@ -215,6 +223,11 @@ export function decodeFragmentPayload(
   const total = view.getUint16(10, false);
 
   if (total === 0 || total > 10_000 || index >= total) return null;
+  const dataLength = payload.length - FRAG_HEADER_LEN;
+  if (dataLength === 0) return null;
+  if (index < total - 1 && dataLength < MIN_NONFINAL_FRAGMENT_BYTES) {
+    return null;
+  }
 
   return {
     streamU64,
