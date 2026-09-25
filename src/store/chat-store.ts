@@ -308,7 +308,7 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
 }
 
 // Max messages kept in memory per channel. Oldest are trimmed.
-const MAX_PER_CHANNEL = 200;
+export const MAX_PER_CHANNEL = 200;
 
 // A message stamped this far before a conversation was cleared is still let
 // through: the clock skew the mesh tolerates on a packet (PACKET_MAX_SKEW_MS),

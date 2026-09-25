@@ -210,7 +210,7 @@ import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { isLivePost, useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
-import { useChatStore } from "@store/chat-store";
+import { MAX_PER_CHANNEL, useChatStore } from "@store/chat-store";
 import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import {
   evictExpiredOwedGroupStates,
@@ -261,6 +261,7 @@ import { ringVerdict } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
 import { RadioController } from "./radio-controller";
+import { ReadAckQueue } from "./read-ack-queue";
 import {
   isLiveVoiceAvailable,
   NativeAudioCapture,
@@ -598,13 +599,13 @@ export class MeshService {
   // Owed group states live in group-invite-outbox, persisted: in memory only, an
   // app restart lost every invite and rotation a member had not collected yet.
 
-  // Wire message ids received from a peer over the DR path that still owe a read
+  // Wire message ids received from a peer over the mesh that still owe a read
   // receipt, sent when the user opens that conversation. Ephemeral: read
   // receipts are best-effort and need not survive a restart.
-  private readonly pendingReadAcks = new Map<string, Set<string>>();
+  private readonly pendingReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
   // Read receipts owed over Nostr, keyed by the sender's Nostr pubkey hex.
   // Flushed when the user opens that conversation.
-  private readonly pendingNostrReadAcks = new Map<string, Set<string>>();
+  private readonly pendingNostrReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 
   // Fragment reassembly: collects FRAGMENT packets into full packets.
   private readonly fragmentManager = new FragmentManager();
@@ -1062,6 +1063,9 @@ export class MeshService {
       this.buildNostrTransport();
     }
     this.chatUnsub = useChatStore.subscribe((state, prev) => {
+      if (state.channels !== prev.channels) {
+        this.dropReadAcksOfClosedThreads(state.channels);
+      }
       if (
         state.channels !== prev.channels ||
         state.channelReach !== prev.channelReach
@@ -1624,6 +1628,9 @@ export class MeshService {
   // scoped to the link session goes with it. A peer we still hold another
   // link to has not left.
   private onLinkGone(linkID: string): void {
+    // Pongs are limited per link, so the entry goes with it; otherwise one
+    // stays for every link ever pinged over.
+    this.lastPongAtByLink.delete(linkID);
     const peerID = this.links.close(linkID);
     if (peerID === undefined) return;
     this.registry.markIndirect(peerID);
@@ -3232,9 +3239,7 @@ export class MeshService {
     // Acknowledge delivery now; queue the read receipt until the user opens the
     // conversation. Both ride back over the same Noise session.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, pm.messageID);
-    const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
-    pending.add(pm.messageID);
-    this.pendingReadAcks.set(senderID, pending);
+    this.pendingReadAcks.add(senderID, pm.messageID);
   }
 
   // Decrypt an incoming DR_ENCRYPTED DM (Airhop-to-Airhop only).
@@ -3315,9 +3320,7 @@ export class MeshService {
     // Tell the sender it arrived, and remember to send a read receipt when the
     // user opens this conversation. Both are best-effort over the same DR link.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
-    const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
-    pending.add(payload.messageId);
-    this.pendingReadAcks.set(senderID, pending);
+    this.pendingReadAcks.add(senderID, payload.messageId);
   }
 
   // A signed DR packet that will not decrypt. Decrypt leaves the ratchet
@@ -3368,12 +3371,8 @@ export class MeshService {
   // Covers both the BLE (Double Ratchet / Noise) queue and the Nostr queue, so a
   // DM that arrived over the internet is acknowledged over the internet.
   sendReadReceipts(peerID: string): void {
-    const pending = this.pendingReadAcks.get(peerID);
-    if (pending !== undefined && pending.size > 0) {
-      for (const messageId of pending) {
-        this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
-      }
-      pending.clear();
+    for (const messageId of this.pendingReadAcks.take(peerID)) {
+      this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
     }
 
     // Nostr read acks: the conversation is keyed either by the sender's Nostr
@@ -3386,18 +3385,30 @@ export class MeshService {
       // main Nostr identity. The two ack queues are disjoint, so flushing both
       // is safe.
       this.geoChannels?.sendGeoReadReceipts(nostrPubkey);
-      const nostrPending = this.pendingNostrReadAcks.get(nostrPubkey);
-      if (nostrPending !== undefined && nostrPending.size > 0) {
-        for (const messageId of nostrPending) {
-          this.publishNostrAck(
-            nostrPubkey,
-            NoisePayloadType.READ_RECEIPT,
-            messageId,
-          );
-        }
-        nostrPending.clear();
+      for (const messageId of this.pendingNostrReadAcks.take(nostrPubkey)) {
+        this.publishNostrAck(
+          nostrPubkey,
+          NoisePayloadType.READ_RECEIPT,
+          messageId,
+        );
       }
     }
+  }
+
+  // A deleted or blocked thread owes no receipts. Kept, its IDs would go out
+  // for bubbles that no longer exist the moment a new thread opened under the
+  // same peer. A Nostr sender's thread is keyed by their mapped peer ID, or by
+  // `nostr_` and their pubkey (see the gift-wrap inbox).
+  private dropReadAcksOfClosedThreads(channels: readonly string[]): void {
+    const open = new Set(channels);
+    this.pendingReadAcks.retain((peerID) => open.has(`dm:${peerID}`));
+    this.pendingNostrReadAcks.retain((pubkey) => {
+      const peerID = this.nostrPubkeyToPeerID.get(pubkey);
+      return (
+        open.has(`dm:nostr_${pubkey}`) ||
+        (peerID !== undefined && open.has(`dm:${peerID}`))
+      );
+    });
   }
 
   // Build a NOISE_HANDSHAKE unicast packet from our identity.
@@ -7059,10 +7070,7 @@ export class MeshService {
             NoisePayloadType.DELIVERED,
             env.messageID,
           );
-          const pending =
-            this.pendingNostrReadAcks.get(dm.senderPubkey) ?? new Set<string>();
-          pending.add(env.messageID);
-          this.pendingNostrReadAcks.set(dm.senderPubkey, pending);
+          this.pendingNostrReadAcks.add(dm.senderPubkey, env.messageID);
         } catch {
           // Invalid or misdirected gift wrap: drop silently.
         }
