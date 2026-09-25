@@ -5520,19 +5520,26 @@ export class MeshService {
   //   toGateway (directed to us): a mesh-only peer asks us to publish its event
   //     to Nostr. Only honored when this device is a gateway.
   // Either way the event is verified against its own Schnorr signature first,
-  // so a relay or gateway cannot forge or alter it. The BRIDGE variants belong to
-  // bitchat's mesh-island bridge subsystem (BridgeService), which Airhop does not
-  // implement; they are ignored below so a bridge's fromBridge broadcast is never
-  // mis-rendered as geohash chat and a toBridge deposit is never published.
+  // so a relay or gateway cannot forge or alter it. The BRIDGE variants go to
+  // BridgeService, the mesh-island bridge.
   private onNostrCarrier(packet: Packet): void {
     const carrier = decodeNostrCarrier(packet.payload);
     if (carrier === null) return;
-    // Bridge carriers (toBridge/fromBridge) belong to the BridgeService, which
-    // does its own event verification, dedup, and rate limiting.
-    if (
-      carrier.direction === CarrierDirection.TO_BRIDGE ||
-      carrier.direction === CarrierDirection.FROM_BRIDGE
-    ) {
+    // Bridge carriers belong to the BridgeService, which does its own event
+    // verification, dedup and per-depositor rate limiting. A deposit asks this
+    // phone to publish from its own connection and is budgeted by who made
+    // it, so it has to be addressed to us and signed by the peer it names, as
+    // bitchat-ios requires of every directed carrier; otherwise a rotating
+    // forged sender ID gets a fresh budget each time. fromBridge broadcasts
+    // are unsigned by design and stay accepted as they are.
+    if (carrier.direction === CarrierDirection.TO_BRIDGE) {
+      const senderID = bytesToHex(packet.senderID);
+      if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
+      if (!this.senderIsAuthentic(packet, senderID)) return;
+      this.bridgeService?.handleMeshCarrier(carrier, senderID, true);
+      return;
+    }
+    if (carrier.direction === CarrierDirection.FROM_BRIDGE) {
       this.bridgeService?.handleMeshCarrier(
         carrier,
         bytesToHex(packet.senderID),
@@ -5608,10 +5615,8 @@ export class MeshService {
     // Authenticate the depositor: the carrier packet is signed by the mesh peer
     // that deposited it (bitchat requires this too, BLEService.handleNostrCarrier),
     // so the rate limit below keys to a real identity rather than a spoofable ID.
-    // Drop if we cannot verify (no announced signing key yet, or bad signature).
-    const depositorKey = this.registry.get(depositor)?.signingPubKey;
-    if (depositorKey === undefined || !verifyPacket(packet, depositorKey))
-      return;
+    // Drop if we cannot verify (no signing key held for them, or bad signature).
+    if (!this.senderIsAuthentic(packet, depositor)) return;
 
     // Absorb a repeat of something already handled, before the rate limit
     // spends a token on it. bitchat guards the same cases in

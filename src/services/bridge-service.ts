@@ -390,8 +390,11 @@ export class BridgeService {
     } catch {
       return;
     }
-    if (typeof event.id !== "string" || !verifyEvent(event)) return;
+    if (typeof event.id !== "string") return;
 
+    // The Schnorr check is the expensive part, so each direction runs its
+    // cheap gates first, in bitchat-ios's order (BridgeService
+    // handleUplinkDeposit, handleDownlinkBroadcast).
     if (carrier.direction === CarrierDirection.TO_BRIDGE) {
       if (!directedToUs) return; // a broadcast toBridge is malformed
       this.handleUplinkDeposit(carrier, event, fromPeerID);
@@ -413,6 +416,7 @@ export class BridgeService {
     if (!this.isFresh(event)) return;
     if (this.publishedEventIDs.has(event.id)) return;
     if (!this.allowUplinkDeposit(depositor)) return;
+    if (!verifyEvent(event)) return;
     this.remember(this.publishedEventIDs, event.id);
     void this.client
       .publish(event, this.relaysForCell(carrier.geohash))
@@ -426,6 +430,8 @@ export class BridgeService {
     if (parsed.cell !== carrier.geohash) return;
     if (!this.isFresh(event)) return;
     if (this.receivedEventIDs.has(event.id)) return;
+    // Recorded only once verified, so a forged copy cannot poison the cache.
+    if (!verifyEvent(event)) return;
     this.remember(this.receivedEventIDs, event.id);
     const isLocalRadioCopy =
       parsed.radioMessageIDHint !== undefined &&

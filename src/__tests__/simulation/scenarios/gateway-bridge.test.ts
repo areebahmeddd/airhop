@@ -40,6 +40,19 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import {
+  CarrierDirection,
+  encodeNostrCarrier,
+} from "@core/mesh/wire/nostr-carrier";
+import {
+  encodePacket,
+  Flags,
+  PacketType,
+  signPacket,
+  type Packet,
+} from "@core/mesh/wire/packet-codec";
+import { createBridgeMeshEvent } from "@core/nostr/bridge-event";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { finalizeEvent, generateSecretKey } from "nostr-tools";
 import { BitchatActor } from "../harness/bitchat-actor";
 import { SimDevice, type DeviceSpec } from "../harness/device";
@@ -1306,5 +1319,127 @@ test("N14 an Airhop gateway will not publish a deposit aimed at another cell", a
     `published=${relay.publishCount} before=${before}`,
   );
   s.expectNone("process health", noCrashes([gateway]));
+  s.assert(true);
+});
+
+// A toBridge deposit, directed at `bridgePeerID`, claiming `claimedPeerID`.
+function bridgeDeposit(opts: {
+  claimedPeerID: string;
+  bridgePeerID: string;
+  content: string;
+  signWith?: Uint8Array;
+}): string {
+  const cell = "tdr1v9";
+  const event = createBridgeMeshEvent({
+    content: opts.content,
+    cell,
+    privKey: generateSecretKey(),
+  });
+  const packet: Packet = {
+    type: PacketType.NOSTR_CARRIER,
+    ttl: 7,
+    flags:
+      Flags.HAS_RECIPIENT | (opts.signWith !== undefined ? Flags.SIGNED : 0),
+    senderID: hexToBytes(opts.claimedPeerID),
+    recipientID: hexToBytes(opts.bridgePeerID),
+    timestamp: Date.now(),
+    signature: new Uint8Array(64),
+    payload: encodeNostrCarrier({
+      direction: CarrierDirection.TO_BRIDGE,
+      geohash: cell,
+      eventJSON: new TextEncoder().encode(JSON.stringify(event)),
+    })!,
+  };
+  if (opts.signWith !== undefined) {
+    packet.signature = signPacket(packet, opts.signWith);
+  }
+  let binary = "";
+  for (const b of encodePacket(packet)) binary += String.fromCharCode(b);
+  return globalThis.btoa(binary);
+}
+
+test("N15 a bridge ignores deposits whose sender it cannot verify", async () => {
+  // A deposit asks the bridging phone to publish from its own connection, and
+  // its budget is kept per depositor. Under a new forged sender ID each time,
+  // a stranger in range would get a fresh budget for every packet.
+  const s = (scenario = new Scenario({
+    id: "N15",
+    title: "forged toBridge deposits under rotating sender IDs",
+    seed: 715,
+  }));
+  const relay = new RelayFabric(s.world);
+  const radio = new RadioFabric(s.world);
+  const bridge = SimDevice.create(
+    s.world,
+    { ...android("bridge", 11), bridgeEnabled: true },
+    relay,
+  );
+  const local = SimDevice.create(
+    s.world,
+    { ...android("local", 22), bridgeEnabled: true },
+    relay,
+  );
+  const mallory = SimDevice.create(s.world, android("mallory", 77), relay);
+  const cast = [bridge, local, mallory];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("local", true);
+  relay.setOffline("mallory", true);
+  for (const d of cast) d.launch();
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, cast, CELL_CHANNEL);
+  const bridgeUp = await waitForCoarse(
+    s.world,
+    () => local.seesBridge() && bridge.peers().includes(mallory.peerID),
+    90_000,
+  );
+  s.check("the bridge is up and has heard mallory", bridgeUp);
+
+  const published = (text: string): number =>
+    relay.eventsOfKind(20000).filter((e) => e.content.startsWith(text)).length;
+  for (let i = 0; i < 20; i++) {
+    const forgedID = bytesToHex(
+      Uint8Array.from({ length: 8 }, (_, j) => (i * 13 + j * 7 + 1) & 0xff),
+    );
+    radio.injectTo(
+      bridge.id,
+      mallory.id,
+      bridgeDeposit({
+        claimedPeerID: forgedID,
+        bridgePeerID: bridge.peerID,
+        content: `forged deposit ${String(i)}`,
+        // Half unsigned, half signed with a key that is not the claimed peer's.
+        signWith: i % 2 === 0 ? undefined : mallory.identity.signingPrivKey,
+      }),
+    );
+  }
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "none of the forged deposits was published",
+    published("forged deposit") === 0,
+    `published=${String(published("forged deposit"))}`,
+  );
+
+  // The control: the same deposit under mallory's own, signed identity.
+  radio.injectTo(
+    bridge.id,
+    mallory.id,
+    bridgeDeposit({
+      claimedPeerID: mallory.peerID,
+      bridgePeerID: bridge.peerID,
+      content: "mallory, as herself",
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  const own = await waitForCoarse(
+    s.world,
+    () => published("mallory, as herself") > 0,
+    30_000,
+  );
+  s.check("a deposit signed by its real sender is published", own);
+  s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
