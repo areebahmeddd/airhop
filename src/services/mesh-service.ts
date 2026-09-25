@@ -1586,6 +1586,9 @@ export class MeshService {
   // scoped to the link session goes with it. A peer we still hold another
   // link to has not left.
   private onLinkGone(linkID: string): void {
+    // A REQUEST_SYNC that arrived before the link bound to a peer was budgeted
+    // under the link ID, which nothing else would ever clear.
+    this.gossip.forgetPeer(linkID);
     const peerID = this.links.close(linkID);
     if (peerID === undefined) return;
     this.registry.markIndirect(peerID);
