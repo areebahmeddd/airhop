@@ -242,7 +242,13 @@ export interface GatewayHooks {
   // record, the routing registry - because it already does all three for a
   // scanned QR and a card must not get an easier path for arriving over a wire.
   // Returns the peer ID once accepted, or null if the card does not hold up.
-  onContactCard(card: Uint8Array, senderPubkey: string): string | null;
+  // `recipientPubkey` is our own cell key in that conversation, which the
+  // card's proof is bound to (geo-card-proof.ts).
+  onContactCard(
+    body: Uint8Array,
+    senderPubkey: string,
+    recipientPubkey: string,
+  ): string | null;
 }
 
 export interface GeoParticipant {
@@ -873,6 +879,11 @@ export class GeohashChannelService {
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
 
+  // Our per-cell Nostr key in `geohash`, which a contact card's proof binds.
+  cellPubkeyFor(geohash: string): string {
+    return this.identityFor(geohash).pubKeyHex;
+  }
+
   // Flush queued read receipts for a geo-DM conversation when its thread opens.
   sendGeoReadReceipts(pubkey: string): void {
     const geohash = this.geohashForGeoDmPeer(pubkey);
@@ -968,7 +979,11 @@ export class GeohashChannelService {
     // binding check would be worse than silence.
     if (env.type === NoisePayloadType.CONTACT_CARD) {
       if (env.body !== undefined) {
-        this.gateway?.onContactCard(env.body, dm.senderPubkey);
+        this.gateway?.onContactCard(
+          env.body,
+          dm.senderPubkey,
+          this.identityFor(geohash).pubKeyHex,
+        );
       }
       return;
     }

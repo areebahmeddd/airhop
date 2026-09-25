@@ -181,6 +181,11 @@ import {
   // the sort of thing that reads correct and is not.
   subscribeCourierDrops as subscribeCourierDropEvents,
 } from "@core/nostr/courier-relay";
+import {
+  geoCardOf,
+  geoCardProven,
+  sealGeoCard,
+} from "@core/nostr/geo-card-proof";
 import { deriveNostrPrivKey, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
@@ -4497,7 +4502,12 @@ export class MeshService {
     this.geoChannels.sendContactCard(
       geohash,
       pubkey,
-      encodeContactCard(this.getContactCard()),
+      sealGeoCard(
+        encodeContactCard(this.getContactCard()),
+        this.geoChannels.cellPubkeyFor(geohash),
+        pubkey,
+        this.identity.signingPrivKey,
+      ),
     );
     useChatStore.getState().noteGeoCardExchange(pubkey, { sentMine: true });
     this.mergeGeoThreadIfMutual(pubkey);
@@ -4555,14 +4565,29 @@ export class MeshService {
   // channel. So this may introduce someone new, and may never RE-PIN keys
   // already bound to a peer ID - otherwise anyone who could open a geohash DM
   // could overwrite a contact the user verified in person.
+  //
+  // And the card must carry a proof, by the signing key it names, over this
+  // pair of cell keys (geo-card-proof.ts): every field of a card is public, so
+  // a stranger could forward a friend's and have their pseudonym folded into
+  // the friend's thread. A card naming a key other than the one we hold for
+  // that peer proves nothing even when its proof checks out, and
+  // addVerifiedContact refuses it. Nothing is written for a card that fails.
   private acceptGeoContactCard(
-    card: Uint8Array,
+    body: Uint8Array,
     senderPubkey: string,
+    recipientPubkey: string,
   ): string | null {
+    const card = geoCardOf(body);
+    if (card === null) return null;
     let decoded;
     try {
       decoded = decodeContactCard(card);
     } catch {
+      return null;
+    }
+    if (
+      !geoCardProven(body, senderPubkey, recipientPubkey, decoded.signingPubKey)
+    ) {
       return null;
     }
     if (!this.addVerifiedContact(decoded, { inPerson: false })) return null;
@@ -6797,8 +6822,8 @@ export class MeshService {
         uplink: (event, geohash) => this.uplinkGeohashEvent(event, geohash),
         onRelayEvent: (event, geohash) =>
           this.rebroadcastRelayEvent(event, geohash),
-        onContactCard: (card, senderPubkey) =>
-          this.acceptGeoContactCard(card, senderPubkey),
+        onContactCard: (body, senderPubkey, recipientPubkey) =>
+          this.acceptGeoContactCard(body, senderPubkey, recipientPubkey),
       },
     );
     void this.geoChannels.refresh();

@@ -25,6 +25,10 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import {
+  encodeContactCard,
+  type ContactCard,
+} from "@core/crypto/contact-exchange";
 import type { Identity } from "@core/crypto/identity";
 import { NoiseHandshake } from "@core/crypto/noise-xx";
 import { base64ToBytes } from "@core/encoding/base64";
@@ -49,6 +53,7 @@ import {
   encodePrekeyBundle,
   signPrekeyBundle,
 } from "@core/mesh/wire/prekey-bundle";
+import { sealGeoCard } from "@core/nostr/geo-card-proof";
 import {
   channelPacketType,
   decodeAirhopChannelPayload,
@@ -1714,6 +1719,109 @@ test("C16 a copied message ID cannot displace a room message", async () => {
     rows.some(
       (m) => m.text === "the gate is closed" && m.senderID === mallory.peerID,
     ),
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
+});
+
+test("C15 a stranger in a location DM cannot hand over a friend's card", async () => {
+  // Every field of alice's card is public. A stranger, known to bob only by a
+  // per-cell pseudonym, forwards it; bob has already shared his own, so an
+  // accepted card would fold the stranger's thread into alice's and every
+  // later word from the pseudonym would read as hers. The card must carry
+  // alice's own proof over this very conversation.
+  const { s, alice, bob, mallory } = await threeInRange(
+    612,
+    "C15",
+    "forwarded contact card in a location DM",
+  );
+  const aliceCard = (
+    alice.mesh as unknown as { getContactCard: () => ContactCard }
+  ).getContactCard();
+  (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+    }
+  ).addVerifiedContact(aliceCard, { inPerson: true });
+  (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: alice.peerID,
+    noisePubKeyHex: bytesToHex(aliceCard.noisePubKey),
+    signingPubKeyHex: bytesToHex(aliceCard.signingPubKey),
+    nickname: "alice",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+  });
+
+  const bobCell = "b0".repeat(32);
+  const strangerCell = "5a".repeat(32);
+  const aliceCell = "a1".repeat(32);
+  const chat = bob.store("chatStore");
+  const noteExchange = chat.getState().noteGeoCardExchange as (
+    pubkey: string,
+    half: { sentMine: boolean },
+  ) => void;
+  noteExchange(strangerCell, { sentMine: true });
+  noteExchange(aliceCell, { sentMine: true });
+  const accept = (body: Uint8Array, from: string): string | null =>
+    (
+      bob.mesh as unknown as {
+        acceptGeoContactCard: (
+          body: Uint8Array,
+          sender: string,
+          recipient: string,
+        ) => string | null;
+      }
+    ).acceptGeoContactCard(body, from, bobCell);
+  const redirects = (): Record<string, string> =>
+    chat.getState().channelRedirects as Record<string, string>;
+
+  const plain = encodeContactCard(aliceCard);
+  const substituted = encodeContactCard({
+    ...aliceCard,
+    signingPubKey: mallory.identity.signingPubKey,
+  });
+  const attempts = [
+    // Alice's card as she publishes it, with no proof at all.
+    plain,
+    // Alice's card with a proof mallory can make: by her own key.
+    sealGeoCard(plain, strangerCell, bobCell, mallory.identity.signingPrivKey),
+    // Mallory's key written into alice's card, proven by that key.
+    sealGeoCard(
+      substituted,
+      strangerCell,
+      bobCell,
+      mallory.identity.signingPrivKey,
+    ),
+  ];
+  const accepted = attempts.map((body) => accept(body, strangerCell));
+  s.check(
+    "every forwarded card is refused",
+    accepted.every((r) => r === null),
+    `accepted=${JSON.stringify(accepted)}`,
+  );
+  s.check(
+    "the stranger's thread was not folded into alice's",
+    redirects()[`dm:nostr_${strangerCell}`] === undefined,
+  );
+  s.check(
+    "alice's saved key is untouched",
+    contactOf(bob, alice.peerID)?.signingPubKeyHex ===
+      bytesToHex(aliceCard.signingPubKey),
+  );
+  s.check(
+    "and nothing was written in the stranger's thread",
+    bob.messages(`dm:nostr_${strangerCell}`).length === 0,
+  );
+
+  // The control: alice's own card, proven by her from her own pseudonym.
+  const genuine = accept(
+    sealGeoCard(plain, aliceCell, bobCell, alice.identity.signingPrivKey),
+    aliceCell,
+  );
+  s.check(
+    "alice's own proven card completes the exchange",
+    genuine === alice.peerID &&
+      redirects()[`dm:nostr_${aliceCell}`] === `dm:${alice.peerID}`,
   );
   s.expectNone("process health", noCrashes([alice, bob, mallory]));
   s.assert();
