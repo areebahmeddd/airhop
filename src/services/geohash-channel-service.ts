@@ -629,7 +629,7 @@ export class GeohashChannelService {
       // The timer may have been cancelled while we were spacing the round out.
       if (this.heartbeatTimer === null) return;
       await this.presenceFor(unique[i])
-        .publishHeartbeat(unique[i])
+        .publishHeartbeat(unique[i], this.relaysForGeohash(unique[i]))
         .catch(() => {
           // Best-effort. Presence is a hint, and a relay that refuses one
           // heartbeat must not stop the next cell in the round.
