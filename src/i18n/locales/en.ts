@@ -1047,8 +1047,6 @@ export const strings = {
   "wallet.send.amount_in": "Amount in {unit}",
   "wallet.send.body":
     "Built offline from ecash you already hold. Nothing leaves your balance for good until you confirm the token was delivered.",
-  "wallet.send.stale_fee_note":
-    "Fees were last checked {days} day(s) ago. If this mint has raised its fee since, the send may cost a little more.",
   "wallet.send.fee_note":
     "{spend} {unit} leaves your balance; the extra {fee} covers the mint fee they would otherwise pay",
   "wallet.send.qr_too_big":
@@ -2475,6 +2473,11 @@ export const plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} unconfirmed",
     other: "{count} unconfirmed",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Fees were last checked {count} day ago. If this mint has raised its fee since, the send may cost a little more.",
+    other:
+      "Fees were last checked {count} days ago. If this mint has raised its fee since, the send may cost a little more.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} coin was already spent and has been removed.",

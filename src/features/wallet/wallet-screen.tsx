@@ -60,6 +60,7 @@ import {
   reconcile,
   refreshAccount,
   restoreFromRecoveryPhrase,
+  staleFeeDays,
   WalletError,
   type LightningDeposit,
   type MeltQuote,
@@ -161,10 +162,6 @@ const DEPOSIT_POLL_MS = 3000;
 
 // Three rows answer "did that go through"; the rest waits for a tap.
 const ACTIVITY_COLLAPSED_COUNT = 3;
-
-// A day, which is also how long wallet-service trusts a cached fee schedule, so
-// "at least this old" and "possibly out of date" are the same threshold.
-const FEE_CACHE_STALE_MS = 24 * 60 * 60 * 1000;
 
 interface Props {
   action?: WalletAction | null;
@@ -297,6 +294,7 @@ export default function WalletScreen({
 
   // The latest send's token, still reserved and reclaimable.
   const [pending, setPending] = useState<PreparedSend | null>(null);
+  const pendingStaleDays = staleFeeDays(pending?.pricedFromCacheAgeMs);
   const [deposit, setDeposit] = useState<LightningDeposit | null>(null);
   // Copy invoice is wide enough to confirm in words, not only a glyph swap.
   const { copied: invoiceCopied, copy: copyInvoice } = useCopy();
@@ -2531,17 +2529,11 @@ export default function WalletScreen({
           {/* Fees are cached so a send prices offline, but a mint that has
               raised its input fee since takes more than the quote said.
               Shown only once the cache is stale, so the usual case is quiet. */}
-          {pending !== null &&
-            pending.pricedFromCacheAgeMs !== undefined &&
-            pending.pricedFromCacheAgeMs >= FEE_CACHE_STALE_MS && (
-              <Text style={styles.generatedMint}>
-                {T("wallet.send.stale_fee_note", {
-                  days: Math.floor(
-                    pending.pricedFromCacheAgeMs / FEE_CACHE_STALE_MS,
-                  ),
-                })}
-              </Text>
-            )}
+          {pendingStaleDays !== null && (
+            <Text style={styles.generatedMint}>
+              {TP("wallet.send.stale_fee_note", pendingStaleDays)}
+            </Text>
+          )}
         </View>
         {/* A QR rather than 400 characters of base64, and every Cashu
             wallet scans one. Text fallback for a token too large to encode (an unusually

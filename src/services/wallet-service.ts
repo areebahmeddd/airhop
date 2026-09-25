@@ -114,10 +114,11 @@ const MELT_REQUEST_TIMEOUT_MS = 180_000;
 
 setGlobalRequestOptions({ requestTimeout: MINT_REQUEST_TIMEOUT_MS });
 
-// cashu-ts v4 lets the global option override per-call ones, so a per-request
-// timeout cannot widen it and the global is widened for the melt instead. Safe: the AbortController is built at issue time, so
-// restoring cannot shorten a call in flight, and concurrent calls merely get a
-// longer timeout.
+// A per-call timeout would take precedence over the global, but `completeMelt`
+// accepts none (`Mint.melt` takes only a custom request function), so the
+// global is widened for the melt instead. Safe: the AbortController is built
+// at issue time, so restoring cannot shorten a call in flight, and concurrent
+// calls merely get a longer timeout.
 async function withMeltTimeout<T>(run: () => Promise<T>): Promise<T> {
   setGlobalRequestOptions({ requestTimeout: MELT_REQUEST_TIMEOUT_MS });
   try {
@@ -415,7 +416,7 @@ async function getWallet(
         record.infoResponse as GetInfoResponse,
         record.keysetCache as KeyChainCache,
       );
-      wallets.set(key, wallet);
+      cacheWallet(key, wallet);
       return wallet;
     } catch {
       // Older cashu-ts cache or corrupt: re-fetch below.
@@ -433,7 +434,7 @@ async function getWallet(
           record.infoResponse as GetInfoResponse,
           record.keysetCache as KeyChainCache,
         );
-        wallets.set(key, wallet);
+        cacheWallet(key, wallet);
         return wallet;
       } catch {
         // fall through to the throw below
@@ -456,8 +457,19 @@ async function getWallet(
   // The snapshot re-adds the mint, so a wipe during the fetch must stop it.
   if (walletEpoch !== epoch) throw lockedError();
   persistMintSnapshot(url, unit, wallet);
-  wallets.set(key, wallet);
+  cacheWallet(key, wallet);
   return wallet;
+}
+
+// Kept for the process only when the mint issues this unit. cashu-ts builds a
+// wallet for any unit, warning only, and a token's label (a stranger's
+// choice) must not leave one cached per label it cares to invent.
+function cacheWallet(key: string, wallet: Wallet): void {
+  try {
+    if (wallet.keyChain.getKeysets().length > 0) wallets.set(key, wallet);
+  } catch {
+    // No keyset in this unit.
+  }
 }
 
 // Persist what the mint told us so a cold start works offline: keys for DLEQ,
@@ -907,7 +919,7 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
     throw asWalletError(err, "no-mint");
   }
   persistMintSnapshot(url, "sat", wallet);
-  wallets.set(accountKey(url, "sat"), wallet);
+  cacheWallet(accountKey(url, "sat"), wallet);
 
   const record = storedMint(url);
   if (!record) throw new WalletError("no-mint", t("wallet.svc.mint_not_saved"));
@@ -1018,24 +1030,27 @@ function dleqVerdict(result: DleqResult): DleqVerdict {
   return { dleq: "unchecked", dleqGap: byWitness ? "witness" : "keys" };
 }
 
-// Per-mint throttle for keyset fetches triggered by chat tokens.
+// Throttle for keyset fetches triggered by chat tokens, keyed by mint alone:
+// the unit label is the sender's to vary, and one fetch refreshes every unit.
 const keysetFetchedAtMs = new Map<string, number>();
 const KEYSET_FETCH_THROTTLE_MS = 5 * 60 * 1000;
 
-// Held mints whose tokens in `text` need a newer keyset list to decode. A mint
-// the user has not added is left out: nothing may contact it.
+// Held mints whose tokens in `text` need a newer keyset list to decode, once
+// each. A mint the user has not added is left out: nothing may contact it.
+// The unit binds only the wallet built for the fetch, so it is one the mint
+// issues, never a stranger's label.
 function heldMintsOfUnresolvedTokens(
   text: string,
 ): { mintUrl: string; unit: string }[] {
   const state = useWalletStore.getState();
   const held: { mintUrl: string; unit: string }[] = [];
   for (const mint of mintsOfUnresolvedTokens(text, selectKeysetRefs(state))) {
-    try {
-      const url = normalizeMintUrl(mint.mintUrl);
-      if (state.mints[url] !== undefined) held.push({ ...mint, mintUrl: url });
-    } catch {
-      // Not a URL.
-    }
+    const url = normalizeMintUrl(mint.mintUrl);
+    const record = state.mints[url];
+    if (record === undefined || held.some((m) => m.mintUrl === url)) continue;
+    const units = record.units ?? [];
+    const unit = units.includes(mint.unit) ? mint.unit : (units[0] ?? "sat");
+    held.push({ mintUrl: url, unit });
   }
   return held;
 }
@@ -1070,10 +1085,9 @@ async function readUnderFreshKeysets(
 export async function fetchKeysetsForTokenText(text: string): Promise<void> {
   if (!isWalletStorageReady()) return;
   for (const mint of heldMintsOfUnresolvedTokens(text)) {
-    const key = accountKey(mint.mintUrl, mint.unit);
-    const last = keysetFetchedAtMs.get(key) ?? 0;
+    const last = keysetFetchedAtMs.get(mint.mintUrl) ?? 0;
     if (Date.now() - last < KEYSET_FETCH_THROTTLE_MS) continue;
-    keysetFetchedAtMs.set(key, Date.now());
+    keysetFetchedAtMs.set(mint.mintUrl, Date.now());
     try {
       assertMintNetworkAllowed();
       await getWallet(mint.mintUrl, mint.unit, { forceRefresh: true });
@@ -1434,6 +1448,18 @@ export interface SendQuote {
 export interface PreparedSend extends SendQuote {
   txId: string;
   token: string;
+}
+
+// Whole days a send was priced from a fee schedule past `KEYSET_TTL_MS`, the
+// age at which it is no longer trusted online, or null while fresh. Every
+// screen that confirms a send says so: a mint that raised its input fee since
+// takes more than the quote said.
+export function staleFeeDays(
+  pricedFromCacheAgeMs: number | undefined,
+): number | null {
+  if (pricedFromCacheAgeMs === undefined) return null;
+  if (pricedFromCacheAgeMs < KEYSET_TTL_MS) return null;
+  return Math.floor(pricedFromCacheAgeMs / KEYSET_TTL_MS);
 }
 
 // `keysetCacheAtMs` is stamped whenever keysets (and `input_fee_ppk`) refresh.
@@ -3945,6 +3971,7 @@ export async function publishLockedNutzap(params: {
     await publishNutzap({
       proofs: params.locked,
       mintUrl: params.mintUrl,
+      unit: params.unit,
       recipientPubkey: params.recipientPubkey,
       senderPrivKey: params.senderPrivKey,
       client: params.client,

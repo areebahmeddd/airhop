@@ -39,6 +39,11 @@ jest.mock("../wallet-service", () => ({
   failNutzapDelivery: jest.fn(),
   failSend: jest.fn(),
   reclaimSend: jest.fn(),
+  // The real rule: whole days past a day old.
+  staleFeeDays: (ageMs?: number) =>
+    ageMs !== undefined && ageMs >= 86_400_000
+      ? Math.floor(ageMs / 86_400_000)
+      : null,
 }));
 
 jest.mock("../mesh-service", () => ({
@@ -46,6 +51,7 @@ jest.mock("../mesh-service", () => ({
   getMeshService: jest.fn(),
 }));
 
+import { stripIsolates } from "@i18n";
 import { useAlertStore } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
@@ -420,6 +426,55 @@ describe("payPerson asks before money moves", () => {
 
     expect(asked).toHaveLength(1);
     expect(asked[0]?.message).toMatch(/reclaim/);
+  });
+
+  it("says when the fee was priced from a schedule days old", async () => {
+    useMesh({ directLink: true, route: "sent" });
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      pricedFromCacheAgeMs: 2 * 86_400_000 + 5_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(stripIsolates(asked[0]?.message ?? "")).toMatch(
+      /last checked 2 days ago/,
+    );
+  });
+
+  it("says nothing about fees priced from a fresh schedule", async () => {
+    useMesh({ directLink: true, route: "sent" });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked[0]?.message).not.toMatch(/last checked/);
+  });
+
+  it("puts the stale fee note in the overpay question when that is the one asked", async () => {
+    useMesh({ directLink: true, route: "sent" });
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 512,
+      fee: 0,
+      exact: false,
+      proofs: [],
+      pricedFromCacheAgeMs: 86_400_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked).toHaveLength(1);
+    expect(stripIsolates(asked[0]?.message ?? "")).toMatch(
+      /last checked 1 day ago/,
+    );
   });
 
   it("spends nothing when the user says no", async () => {

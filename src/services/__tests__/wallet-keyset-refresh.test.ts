@@ -180,6 +180,35 @@ describe("a token under a keyset the wallet has not fetched", () => {
     expect(useWalletStore.getState().mints).toEqual({});
   });
 
+  it("fetches once per mint however many unit labels its tokens carry", async () => {
+    // The label is the sender's to choose: a new one per token must not buy
+    // a fresh fetch from every phone that renders the channel.
+    const sender = new Wallet(new Mint(held.url), { unit: UNIT });
+    await sender.loadMint();
+    const quote = await sender.createMintQuoteBolt11(3);
+    const proofs = await sender.mintProofsBolt11(3, quote);
+    const text = ["sat", "usd", "eur"]
+      .map((unit, i) =>
+        getEncodedToken({
+          mint: held.url,
+          unit,
+          proofs: [proofs[i % proofs.length]!],
+        } as unknown as Token),
+      )
+      .join(" ");
+    forgetCachedKeysets(held.url);
+    const fetch = jest.spyOn(globalThis, "fetch");
+
+    await fetchKeysetsForTokenText(text);
+    await fetchKeysetsForTokenText(text);
+
+    const keysetFetches = fetch.mock.calls.filter(([input]) =>
+      String(input).startsWith(`${held.url}/v1/keysets`),
+    ).length;
+    fetch.mockRestore();
+    expect(keysetFetches).toBe(1);
+  });
+
   it("never contacts a mint the user has not added", async () => {
     const token = await tokenFrom(stranger, 4);
     const fetch = jest.spyOn(globalThis, "fetch");

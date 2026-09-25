@@ -14,7 +14,7 @@
 // it can be undone: "locked to them forever" and "queued, take it back" are one
 // gesture to the user and very different facts about their money.
 
-import { t } from "@i18n";
+import { t, tPlural } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
@@ -36,6 +36,7 @@ import {
   reclaimSend,
   settleNutzap,
   settleReclaim,
+  staleFeeDays,
   WalletError,
   type NutzapTarget,
   type ReclaimOutcome,
@@ -349,12 +350,19 @@ async function payAsToken(params: {
   confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
+  // In whichever question is actually asked about this quote.
+  const staleDays = staleFeeDays(quote.pricedFromCacheAgeMs);
+  const staleNote =
+    staleDays === null
+      ? ""
+      : `\n\n${tPlural("wallet.send.stale_fee_note", staleDays)}`;
   if (quote.exact && !params.confirmed) {
     const confirmed = await confirmPayment(
       params.amount,
       params.unit,
       params.name,
       false,
+      staleNote,
     );
     if (!confirmed) return null;
   }
@@ -366,7 +374,7 @@ async function payAsToken(params: {
         ...amountParts(params.amount, params.unit),
         spend: amountParts(quote.spend, params.unit).amount,
         extra: amountParts(quote.spend - params.amount, params.unit).amount,
-      }),
+      }) + staleNote,
       t("wallet.xfer.send_amount", {
         amount: amountParts(quote.spend, params.unit).amount,
       }),
@@ -582,18 +590,22 @@ export function reportWalletError(err: unknown): void {
 }
 
 // Every payment asks this before money moves: amount, recipient, finality.
+// `note` is appended as given (a stale fee schedule, say).
 function confirmPayment(
   amount: number,
   unit: string,
   name: string,
   final: boolean,
+  note = "",
 ): Promise<boolean> {
   return confirm(
     t("wallet.pay.confirm_title", {
       ...amountParts(amount, unit),
       name,
     }),
-    final ? t("wallet.pay.confirm_final") : t("wallet.pay.confirm_reclaimable"),
+    (final
+      ? t("wallet.pay.confirm_final")
+      : t("wallet.pay.confirm_reclaimable")) + note,
     t("wallet.xfer.send_amount", { amount: amountParts(amount, unit).amount }),
   );
 }

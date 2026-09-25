@@ -10,6 +10,7 @@
 //   kind 9321   the nutzap, published by the sender; content is the comment
 //               ["proof", <proof JSON>]     one tag per locked proof
 //               ["u", <mint url>]           the issuing mint
+//               ["unit", <unit>]            optional, defaults to sat
 //               ["p", <recipient pubkey>]   who it is for
 //               ["e", <event id>, <relay>]  optional, what is being zapped
 //
@@ -105,6 +106,11 @@ export async function publishNutzapInfo(params: {
 }
 
 // Null (no kind 10019, the common case) means fall back to a token in a DM.
+// Each relay answers with its own copy, fastest first, and a lagging or
+// hostile one can serve an older, validly signed event: the newest wins, by
+// NIP-01's replaceable order (latest `created_at`, then lowest id). An
+// unparseable newest event is null, not an older one: publishing it is how a
+// recipient opts out.
 export async function fetchNutzapInfo(
   recipientPubkey: string,
   client: NostrClient,
@@ -114,9 +120,18 @@ export async function fetchNutzapInfo(
     authors: [recipientPubkey],
     limit: 1,
   });
-  const event = events[0];
-  if (!event) return null;
-  return parseNutzapInfo(event);
+  const newest = events
+    .filter((event) => event.pubkey === recipientPubkey)
+    .reduce<Event | undefined>(
+      (best, event) =>
+        best === undefined ||
+        event.created_at > best.created_at ||
+        (event.created_at === best.created_at && event.id < best.id)
+          ? event
+          : best,
+      undefined,
+    );
+  return newest === undefined ? null : parseNutzapInfo(newest);
 }
 
 export function parseNutzapInfo(event: Event): NutzapInfo | null {
@@ -152,6 +167,7 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
 export async function publishNutzap(params: {
   proofs: Proof[];
   mintUrl: string;
+  unit: string;
   recipientPubkey: string;
   senderPrivKey: Uint8Array;
   client: NostrClient;
@@ -175,6 +191,9 @@ export async function publishNutzap(params: {
       tags: [
         // One tag per proof is the NIP-61 wire format. An array in `content`
         // is an event no other Nostr wallet can read.
+        // The DLEQ witness with its blinding factor `r`: without `r` it
+        // convinces nobody but the mint's own client, and NIP-61 asks
+        // observers to verify it (NUT-12).
         ...params.proofs.map((proof) => [
           "proof",
           JSON.stringify({
@@ -183,11 +202,21 @@ export async function publishNutzap(params: {
             secret: proof.secret,
             C: proof.C,
             ...(proof.witness !== undefined ? { witness: proof.witness } : {}),
+            ...(proof.dleq !== undefined
+              ? {
+                  dleq: {
+                    e: proof.dleq.e,
+                    s: proof.dleq.s,
+                    ...(proof.dleq.r !== undefined ? { r: proof.dleq.r } : {}),
+                  },
+                }
+              : {}),
           }),
         ]),
-        // Exactly one "u", the mint URL: readers take a second "u" (say, a
-        // unit) as a second mint.
+        // Exactly one "u", the mint URL: readers take a second "u" as a
+        // second mint. The unit has its own tag.
         ["u", params.mintUrl],
+        ["unit", params.unit],
         ["p", params.recipientPubkey],
         ...(params.targetEventId ? [["e", params.targetEventId]] : []),
       ],

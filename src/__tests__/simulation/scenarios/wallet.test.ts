@@ -642,6 +642,20 @@ test("W07 a nutzap crosses the internet, locked to a key only the recipient hold
     bob.unverifiedBalance() === 0,
     `unverified=${bob.unverifiedBalance()}`,
   );
+  // NIP-61 observers verify the witness; bob's redemption checked it too,
+  // since a witness present must verify.
+  const zap = relay.eventsOfKind(KIND_NUTZAP)[0];
+  const proofTags = (zap?.tags ?? []).filter((tag) => tag[0] === "proof");
+  s.check(
+    "the published proofs carry their DLEQ witness, blinding factor included",
+    proofTags.length > 0 &&
+      proofTags.every(
+        (tag) =>
+          (JSON.parse(tag[1] ?? "{}") as { dleq?: { r?: string } }).dleq?.r !==
+          undefined,
+      ),
+    JSON.stringify(proofTags.map((tag) => tag[1]?.slice(0, 40))),
+  );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert(true);
 });
