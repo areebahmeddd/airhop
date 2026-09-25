@@ -1,6 +1,9 @@
 // Local Cashu wallet state: proofs, mints, in-flight sends and history. Proofs
-// are bearer value, so the MMKV file is AES-256 encrypted under a keychain key.
-// No network here; mint calls live in wallet-service.
+// are bearer value, so the MMKV file is encrypted under a keychain key: AES-256
+// in CFB mode, MMKV's own, for confidentiality only. Its CRC detects
+// corruption, not tampering, which is accepted: writing the app's files takes
+// the same access that reads the keychain. No network here; mint calls live
+// in wallet-service.
 //
 // Keyed by account, a (mint URL, unit) pair: one mint can issue sat, usd and
 // eur, and units are never summed. Proofs are in one of three states:
