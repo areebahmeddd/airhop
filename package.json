@@ -35,7 +35,7 @@
     "i18n:native": "node scripts/i18n-check-native.js",
     "verify:vendored": "node scripts/verify-vendored.js",
     "verify:invisibles": "node scripts/check-invisibles.js",
-    "deadcode": "npx --yes knip@6 --no-progress",
+    "deadcode": "knip --no-progress",
     "benchmark": "jest --runInBand --testMatch \"**/__benchmarks__/**/*.bench.ts\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
@@ -100,6 +100,7 @@
     "globals": "^17.12.0",
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
+    "knip": "^6.38.0",
     "prettier": "^3.9.9",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "~6.0.3"
