@@ -9,6 +9,10 @@
 // It accepts every Airhop link rather than only channel invites: rejecting a
 // valid peer or contact link because the sheet is named "join" would be a
 // dead end for no reason. What the link will do is stated before you commit.
+//
+// A link the OS hands over (a tap in another app) opens this sheet filled in,
+// rather than taking effect: an app or a redirecting page can fire one, and
+// only the Join tap says the person wanted it.
 
 import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
 import { Feather } from "@expo/vector-icons";
@@ -37,9 +41,12 @@ interface Props {
   visible: boolean;
   // Dismiss entirely: backdrop tap or system back.
   onClose: () => void;
-  // Step back to whatever opened this sheet, for the Back button.
-  onBack: () => void;
+  // Step back to whatever opened this sheet, for the Back button. Without one,
+  // nothing opened it (a link from the OS) and the button is Cancel.
+  onBack?: () => void;
   onJoined: (channel: string) => void;
+  // Filled in each time the sheet opens, for a link the OS handed over.
+  initialInput?: string;
 }
 
 export function JoinLinkSheet({
@@ -47,12 +54,20 @@ export function JoinLinkSheet({
   onClose,
   onBack,
   onJoined,
+  initialInput,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
 
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput ?? "");
+  // A new link from the OS replaces whatever the sheet held, during render
+  // rather than in an effect, so the stale text never paints.
+  const [seededWith, setSeededWith] = useState(initialInput);
+  if (initialInput !== seededWith) {
+    setSeededWith(initialInput);
+    if (initialInput !== undefined) setInput(initialInput);
+  }
 
   // Parsed live, so the sheet can say what the link is before it is used. A
   // private invite whose key is malformed is treated as unusable rather than
@@ -150,7 +165,7 @@ export function JoinLinkSheet({
 
   function handleBack(): void {
     reset();
-    onBack();
+    (onBack ?? onClose)();
   }
 
   return (
@@ -230,9 +245,11 @@ export function JoinLinkSheet({
           style={styles.cancel}
           onPress={handleBack}
           accessibilityRole="button"
-          accessibilityLabel={T("common.back")}
+          accessibilityLabel={T(onBack ? "common.back" : "common.cancel")}
         >
-          <Text style={styles.cancelText}>{T("common.back")}</Text>
+          <Text style={styles.cancelText}>
+            {T(onBack ? "common.back" : "common.cancel")}
+          </Text>
         </Pressable>
         <Pressable
           style={[styles.confirm, link === null && styles.confirmDisabled]}

@@ -15,6 +15,7 @@ import ChannelList from "@features/chat/channel-list";
 import ChatFilterSheet from "@features/chat/chat-filter-sheet";
 import ChatSearchResults from "@features/chat/chat-search-results";
 import DmList from "@features/chat/dm-list";
+import { JoinLinkSheet } from "@features/chat/join-link-sheet";
 import MessageThread from "@features/chat/message-thread";
 import NotificationCenter from "@features/chat/notification-center";
 import { StartNewSheet } from "@features/chat/start-new-sheet";
@@ -57,7 +58,7 @@ import {
   syncAutoStartOnBoot,
 } from "@services/boot-start";
 import { readLaunchIdentity } from "@services/launch-identity";
-import { applyAirhopLink } from "@services/link-router";
+import { joinSheetPrefill } from "@services/link-router";
 import {
   hasLocationPermission,
   requestLocationPermission,
@@ -150,7 +151,6 @@ import {
   type ChannelFilter,
   type DmFilter,
 } from "@utils/chat-filter";
-import { parseAirhopLink } from "@utils/deep-link";
 import { formatNumber } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
@@ -779,6 +779,8 @@ function AppContent(): React.JSX.Element {
   );
   // Counter-based trigger: incrementing opens the "start something new" chooser.
   const [startNewTrigger, setStartNewTrigger] = useState(0);
+  // A link the OS handed over, shown in the Join sheet until joined or closed.
+  const [pendingJoinLink, setPendingJoinLink] = useState<string | null>(null);
   const [meshViewMode, setMeshViewMode] = useState<"list" | "radar">("radar");
   // Counter-based trigger: incrementing tells PeerList to open the add-contact scanner.
   const [meshAddCounter, setMeshAddCounter] = useState(0);
@@ -1278,31 +1280,16 @@ function AppContent(): React.JSX.Element {
     usePeerStore.getState().markPeersSeen();
   }, [tab, appActive, onboardingStep, meshHasNewPeers]);
 
-  // Airhop deep links: airhop://channel/<name> and airhop://peer/<id>. Tapping a
-  // shared invite opens the app here. Joining is user-initiated (you tapped the
-  // link), so adding the channel / opening the DM is legitimate consent, not the
-  // stranger-injection the mesh guards against. Deferred until past onboarding,
+  // Airhop deep links: airhop://channel/<name>, airhop://peer/<id> and contact
+  // cards. The OS delivers them from any app, including one that fires a link
+  // on its own, so a link only opens the Join sheet filled in: it says what the
+  // link does, and nothing happens until Join. Deferred until past onboarding,
   // so a cold-start link waits for the identity to load.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
-      if (url === null) return;
-      const link = parseAirhopLink(url);
-      if (link === null) return;
-      // What the link does lives in services/link-router, shared with the Join
-      // sheet's paste field, so a tapped link and a pasted one behave the same.
-      const channel = applyAirhopLink(link);
-      if (channel !== null) {
-        openChannelRef.current(channel);
-        return;
-      }
-      // Refused, so say why rather than leave a tap that did nothing. The same
-      // words the Join sheet uses for each case.
-      if (link.kind === "card") {
-        showAlert(t("chat.join.unverified"), t("chat.join.unverified_body"));
-      } else {
-        showAlert(t("chat.join.not_airhop"));
-      }
+      const prefill = joinSheetPrefill(url);
+      if (prefill !== null) setPendingJoinLink(prefill);
     };
     void Linking.getInitialURL().then(handle);
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));
@@ -2242,6 +2229,17 @@ function AppContent(): React.JSX.Element {
                   onOpenChannel={openChannel}
                 />
               )}
+
+              {/* On any tab: a link can arrive wherever the person is. */}
+              <JoinLinkSheet
+                visible={pendingJoinLink !== null}
+                initialInput={pendingJoinLink ?? undefined}
+                onClose={() => setPendingJoinLink(null)}
+                onJoined={(channel) => {
+                  setPendingJoinLink(null);
+                  openChannel(channel);
+                }}
+              />
 
               {/* Floating bottom stack: the ongoing-transfer pill and the tab
                   bar, both hovering over the content that scrolls beneath.
