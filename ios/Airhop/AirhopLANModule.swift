@@ -58,6 +58,13 @@ private enum LANLiveness {
   static let heartbeat: TimeInterval = 8
   static let deadline: TimeInterval = 30
   static let connectTimeoutSeconds = 5
+  /// A send the peer has not taken for this long ends the link: the same 30 s
+  /// the read side allows, and the Kotlin side's write-stall close.
+  static let persistTimeoutSeconds = 30
+  /// Inbound caps, matching the Kotlin side: twice MAX_LAN_LINKS in
+  /// lan-dial-policy.ts for the mesh, MAX_MOVE_HOSTS for a transfer.
+  static let maxInboundLinks = 16
+  static let maxInboundMoves = 4
 }
 
 private enum LANEvent {
@@ -241,18 +248,25 @@ private final class LANTransport {
     }
   }
 
-  /// Shared by the listener and every dial. `noDelay` because frames are small
-  /// and latency matters more than packing; peer-to-peer so a link-local
-  /// address is reachable as well as a routed one; the connect timeout is the
-  /// only thing that ends a dial a network is silently dropping.
+  /// Shared by the listener, the browser and every dial. `noDelay` because
+  /// frames are small and latency matters more than packing; the connect
+  /// timeout is the only thing that ends a dial a network is silently
+  /// dropping; the persist timeout ends a link whose peer stopped reading,
+  /// which otherwise holds every queued send in memory.
+  ///
+  /// No peer-to-peer (AWDL): the transport is "everyone on this network", and
+  /// Android cannot see AWDL services. A link-local address on the joined
+  /// network is reachable without it. Cellular is refused because nobody else
+  /// is on it, loopback because that is another app on this phone.
   private func tcpParameters() -> NWParameters {
     let parameters = NWParameters.tcp
     if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
       tcp.noDelay = true
       tcp.enableKeepalive = true
       tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+      tcp.persistTimeout = LANLiveness.persistTimeoutSeconds
     }
-    parameters.includePeerToPeer = true
+    parameters.prohibitedInterfaceTypes = [.cellular, .loopback]
     return parameters
   }
 
@@ -419,6 +433,15 @@ private final class LANTransport {
     serviceName: String? = nil,
     onReady: ((LANFailure?) -> Void)? = nil
   ) {
+    // Over the cap an inbound connection is refused at once rather than
+    // queued. Accepted links are the ones with no service name.
+    if direction == "in",
+      links.values.filter({ $0.serviceName == nil }).count >= LANLiveness.maxInboundLinks
+    {
+      AirhopLog.lan.notice("Refused inbound LAN link, past the cap")
+      connection.cancel()
+      return
+    }
     linkSeq += 1
     let linkID = "lan-\(direction)-\(linkSeq)"
     links[linkID] = Link(connection: connection, serviceName: serviceName)
@@ -596,6 +619,8 @@ private enum MoveEvent {
 private final class MoveTransport {
   private struct Connection {
     let connection: NWConnection
+    /// Accepted rather than dialled, for the inbound cap.
+    let inbound: Bool
     var ready = false
     var lastReadAt = ProcessInfo.processInfo.systemUptime
     var closing = false
@@ -614,13 +639,18 @@ private final class MoveTransport {
     self.emit = emit
   }
 
+  /// As LANTransport.tcpParameters. Cellular and loopback are refused here
+  /// too: a code names addresses on the local network, and nothing else may
+  /// connect in.
   private func parameters() -> NWParameters {
     let parameters = NWParameters.tcp
     if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
       tcp.noDelay = true
       tcp.enableKeepalive = true
       tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+      tcp.persistTimeout = LANLiveness.persistTimeoutSeconds
     }
+    parameters.prohibitedInterfaceTypes = [.cellular, .loopback]
     return parameters
   }
 
@@ -706,9 +736,15 @@ private final class MoveTransport {
     direction: String,
     onReady: ((String?, LANFailure?) -> Void)?
   ) {
+    let inbound = direction == "in"
+    if inbound, connections.values.filter({ $0.inbound }).count >= LANLiveness.maxInboundMoves {
+      AirhopLog.lan.notice("Refused inbound transfer connection, past the cap")
+      connection.cancel()
+      return
+    }
     seq += 1
     let id = "move-\(direction)-\(seq)"
-    connections[id] = Connection(connection: connection)
+    connections[id] = Connection(connection: connection, inbound: inbound)
     var settled = false
     connection.stateUpdateHandler = { [weak self] state in
       guard let self else { return }
