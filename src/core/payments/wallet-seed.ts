@@ -73,17 +73,23 @@ export function recoveryPhraseToSeed(raw: string): Uint8Array {
   return mnemonicToSeedSync(phrase);
 }
 
-export async function loadStoredPhrase(): Promise<string | null> {
-  try {
-    const stored = await readSecret(PHRASE_ITEM);
-    if (typeof stored !== "string" || stored.length === 0) return null;
-    return isValidRecoveryPhrase(stored)
-      ? normalizeRecoveryPhrase(stored)
-      : null;
-  } catch {
-    // Keychain unavailable: fall back to random secrets rather than fail.
-    return null;
-  }
+// Three answers a caller must keep apart, because only "absent" may lead to a
+// new phrase being written. A read that failed, or a stored value that no
+// longer validates, still stands for words the user may have written down and
+// coins derived from them: overwriting either destroys that backup silently.
+export type StoredPhrase =
+  | { state: "absent" }
+  | { state: "valid"; phrase: string }
+  | { state: "invalid" };
+
+// Throws when the keychain cannot be read (locked, or a transient Keystore
+// failure), which is not the same as nothing stored.
+export async function loadStoredPhrase(): Promise<StoredPhrase> {
+  const stored = await readSecret(PHRASE_ITEM);
+  if (stored === null || stored.length === 0) return { state: "absent" };
+  return isValidRecoveryPhrase(stored)
+    ? { state: "valid", phrase: normalizeRecoveryPhrase(stored) }
+    : { state: "invalid" };
 }
 
 export async function storePhrase(raw: string): Promise<void> {

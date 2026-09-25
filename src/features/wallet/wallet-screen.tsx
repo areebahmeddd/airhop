@@ -1075,6 +1075,8 @@ export default function WalletScreen({
         setVerifyError(false);
         setBackupStep("show");
       }
+    } catch (err) {
+      reportError(err, t("wallet.backup.no_phrase"));
     } finally {
       setBusy(null);
     }
@@ -1142,9 +1144,11 @@ export default function WalletScreen({
     // Coins from the old phrase stay spendable but stop being restorable.
     // Asked whenever value is held, not only with backup on: the phrase exists
     // from wallet creation.
-    const current = await getRecoveryPhrase().catch(() => null);
+    // An unreadable phrase counts as a different one: replacing words the
+    // phone could not show is exactly the case to ask about.
+    const current = await getRecoveryPhrase().catch(() => undefined);
     const samePhrase =
-      current !== null &&
+      typeof current === "string" &&
       normalizeRecoveryPhrase(current) === normalizeRecoveryPhrase(input);
     const holdsValue = accounts.some((a) => a.balance > 0 || a.reserved > 0);
     if (current !== null && !samePhrase && (backupEnabled || holdsValue)) {

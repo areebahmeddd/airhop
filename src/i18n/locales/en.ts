@@ -1489,6 +1489,10 @@ export const strings = {
   "wallet.svc.phrase_invalid": "That recovery phrase is not valid.",
   "wallet.svc.phrase_invalid_body":
     "Check for a mistyped or missing word. The phrase has a built-in checksum, so a single wrong word makes the whole thing invalid.",
+  "wallet.svc.phrase_unreadable":
+    "Your recovery phrase could not be read on this phone.",
+  "wallet.svc.phrase_unreadable_body":
+    "Nothing was changed and no new phrase was made. Try again once the phone is unlocked. Your ecash still works meanwhile.",
   "wallet.svc.need_mint": "Add at least one mint first.",
   "wallet.svc.need_mint_body":
     "Recovery works by asking a mint which coins it signed for you, so it needs to know which mint to ask.",

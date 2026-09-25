@@ -16,7 +16,8 @@ export const KEYCHAIN_ITEMS = {
   walletEncryptionKey: "airhop.wallet.mmkvKey.v1",
   // secp256k1 private key, hex. Nutzaps lock to its public half.
   walletP2pkKey: "airhop.wallet.p2pk.v1",
-  // 12-word BIP-39 phrase, present only if the user enabled backup.
+  // 12-word BIP-39 phrase, generated with the wallet whether or not the user
+  // has seen it yet.
   walletRecoveryPhrase: "airhop.wallet.recovery.v1",
 } as const;
 

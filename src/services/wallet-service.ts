@@ -553,19 +553,31 @@ export async function initWalletService(): Promise<boolean> {
   if (!isWalletStorageReady()) return false;
   // Before the first mint operation, or new proofs get random secrets outside
   // the recovery phrase.
-  try {
-    await loadBackupState();
-  } catch {
-    // Backup stays off: the wallet works, it just reports nothing covered.
-  }
+  await loadBackupState();
   return true;
 }
 
 // ---- Backup lifecycle ----
 
 // Load the recovery phrase and switch new proofs to deterministic secrets.
+// Never throws: a phrase that cannot be used this session means random
+// secrets, which the next refresh re-issues under the phrase (`needsSwap`).
 async function loadBackupState(): Promise<void> {
-  let phrase = await loadStoredPhrase();
+  let stored;
+  try {
+    stored = await loadStoredPhrase();
+  } catch {
+    stored = null;
+  }
+  // Unreadable or no longer valid: the phrase and the flags describing it are
+  // left exactly as they are. Only a confirmed absence may start a new one.
+  if (stored === null || stored.state === "invalid") {
+    activeSeed = null;
+    invalidateWallets();
+    return;
+  }
+
+  let phrase = stored.state === "valid" ? stored.phrase : null;
 
   // No phrase yet: make one now, not at opt-in. Random secrets can never be
   // re-derived, so NUT-09 restore would have nothing to ask the mint about, and
@@ -611,7 +623,7 @@ export interface BackupSetup {
 // panic wipe removes it.
 export async function enableWalletBackup(): Promise<BackupSetup> {
   assertUnlocked();
-  const existing = await loadStoredPhrase();
+  const existing = await readUsablePhrase();
   if (existing !== null) {
     activeSeed = recoveryPhraseToSeed(existing);
     useWalletStore.getState().setBackupEnabled(true);
@@ -628,8 +640,27 @@ export async function enableWalletBackup(): Promise<BackupSetup> {
   return { phrase, existed: false };
 }
 
+// Null only when no phrase is stored.
 export function getRecoveryPhrase(): Promise<string | null> {
-  return loadStoredPhrase();
+  return readUsablePhrase();
+}
+
+// The stored phrase, null when there is none, and a throw for one that exists
+// but cannot be used, so no caller mistakes it for "none" and writes a new one.
+async function readUsablePhrase(): Promise<string | null> {
+  let stored;
+  try {
+    stored = await loadStoredPhrase();
+  } catch {
+    stored = null;
+  }
+  if (stored?.state === "absent") return null;
+  if (stored?.state === "valid") return stored.phrase;
+  throw new WalletError(
+    "locked",
+    t("wallet.svc.phrase_unreadable"),
+    t("wallet.svc.phrase_unreadable_body"),
+  );
 }
 
 // Here rather than in the UI so the flag never claims more than a live seed.
@@ -694,7 +725,8 @@ export async function restoreFromRecoveryPhrase(params: {
 
   const seed = recoveryPhraseToSeed(phrase);
   const epoch = walletEpoch;
-  const previous = await loadStoredPhrase();
+  // Unreadable counts as different: the marks may belong to any phrase.
+  const previous = await loadStoredPhrase().catch(() => null);
   // Never write a phrase into a keychain a wipe just cleared.
   assertSameWallet(epoch);
 
@@ -703,9 +735,10 @@ export async function restoreFromRecoveryPhrase(params: {
   assertSameWallet(epoch);
   // Coins held now derive from the replaced phrase: spendable, but uncovered
   // until a refresh re-issues them.
-  if (previous !== null && normalizeRecoveryPhrase(previous) !== phrase) {
-    useWalletStore.getState().clearDerived();
-  }
+  const keepDerived =
+    previous?.state === "absent" ||
+    (previous?.state === "valid" && previous.phrase === phrase);
+  if (!keepDerived) useWalletStore.getState().clearDerived();
   activeSeed = seed;
   useWalletStore.getState().setBackupEnabled(true);
   // Restoring proves the user holds the phrase.
