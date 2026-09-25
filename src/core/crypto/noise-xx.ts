@@ -116,6 +116,10 @@ function chachaDecrypt(
 
 // ---- Sliding-window replay guard (1024-nonce window) ----
 
+// Bit `o` records nonce `highest - o`, stored LSB-first: byte `o >> 3`, mask
+// `1 << (o & 7)`. A new highest nonce ages every recorded offset by `shift`,
+// which on this layout is a left shift carrying from the byte below. bitchat
+// shifts right instead, which forgets recent nonces and lets them replay.
 class ReplayWindow {
   private highest = 0;
   private readonly bits = new Uint8Array(REPLAY_BYTES);
@@ -139,9 +143,9 @@ class ReplayWindow {
           const src = i - byteShift;
           let b = 0;
           if (src >= 0) {
-            b = this.bits[src] >> bitShift;
+            b = (this.bits[src] << bitShift) & 0xff;
             if (bitShift !== 0 && src > 0) {
-              b |= (this.bits[src - 1] << (8 - bitShift)) & 0xff;
+              b |= this.bits[src - 1] >> (8 - bitShift);
             }
           }
           this.bits[i] = b & 0xff;

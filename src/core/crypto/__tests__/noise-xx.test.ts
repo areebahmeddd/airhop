@@ -144,6 +144,74 @@ describe("Noise XX handshake", () => {
   });
 });
 
+// The window has to age every recorded nonce when a higher one arrives. Shifted
+// the wrong way it forgets the most recent ones, which then decrypt a second
+// time (bitchat ships that bug; after 0..100 in order it accepts 93..99 again).
+describe("replay window", () => {
+  function sessionPair() {
+    const i = NoiseHandshake.createInitiator(makeKeypair().priv);
+    const r = NoiseHandshake.createResponder(makeKeypair().priv);
+    r.readMsg1(i.writeMsg1());
+    i.readMsg2(r.writeMsg2());
+    r.readMsg3(i.writeMsg3());
+    return { sender: i.split(), receiver: r.split() };
+  }
+
+  function sealed(count: number) {
+    const { sender, receiver } = sessionPair();
+    const cts = Array.from({ length: count }, (_, n) =>
+      sender.encrypt(Uint8Array.of(n & 0xff)),
+    );
+    const opens = (n: number): boolean => {
+      try {
+        receiver.decrypt(cts[n]);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    return { opens };
+  }
+
+  test("after 0..100 in order, every one of them is refused", () => {
+    const { opens } = sealed(101);
+    for (let n = 0; n <= 100; n++) expect(opens(n)).toBe(true);
+    const replayed = [];
+    for (let n = 0; n <= 100; n++) if (opens(n)) replayed.push(n);
+    expect(replayed).toEqual([]);
+  });
+
+  test("out of order: exactly the unseen nonces inside the window open", () => {
+    const { opens } = sealed(11);
+    for (const n of [0, 1, 2, 3, 5, 9, 10]) expect(opens(n)).toBe(true);
+    const accepted = [];
+    for (let n = 0; n <= 10; n++) if (opens(n)) accepted.push(n);
+    expect(accepted).toEqual([4, 6, 7, 8]);
+  });
+
+  test.each([8, 1023])(
+    "a jump of %i keeps the older nonce recorded",
+    (jump) => {
+      const { opens } = sealed(jump + 1);
+      expect(opens(0)).toBe(true);
+      expect(opens(jump)).toBe(true);
+      expect(opens(0)).toBe(false);
+      expect(opens(jump)).toBe(false);
+      if (jump > 1) expect(opens(1)).toBe(true);
+    },
+  );
+
+  test("a jump of 1024 pushes the older nonce out of the window", () => {
+    const { opens } = sealed(1025);
+    expect(opens(0)).toBe(true);
+    expect(opens(1024)).toBe(true);
+    // Too old to track, so refused whether seen or not.
+    expect(opens(0)).toBe(false);
+    expect(opens(1)).toBe(true);
+    expect(opens(1024)).toBe(false);
+  });
+});
+
 // The seam between Noise and the Double Ratchet.
 //
 // tryInitDR seeds the ratchet's root key from `exporterSecret`. Three properties
