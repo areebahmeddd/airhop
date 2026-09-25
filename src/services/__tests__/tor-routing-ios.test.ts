@@ -71,6 +71,7 @@ const mockRestartNostr = jest.fn();
 let torStatusListener: ((s: unknown) => void) | null = null;
 const mockRemoveListener = jest.fn();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
+const mockHoldRoute = jest.fn<Promise<void>, []>(() => Promise.resolve());
 
 jest.mock("react-native", () => ({
   Platform: { OS: "ios" },
@@ -98,6 +99,7 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
     getTorStatus: () => mockGetTorStatus(),
     awaitTorReady: (s: number) => mockAwaitTorReady(s),
     setAppForeground: (f: boolean) => mockSetAppForeground(f),
+    holdRoute: () => mockHoldRoute(),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   },
@@ -332,27 +334,28 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockTorStartPending).toBe(false);
   });
 
-  test("a marker left by the previous process turns Tor off instead of retrying", () => {
+  test("a marker left by the previous process keeps Tor on without retrying", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
     expect(mockStartTor).not.toHaveBeenCalled();
-    expect(mockTorEnabled).toBe(false);
-    // Kept, because it is what tells the Tor screen to explain itself. Reverting
-    // a privacy choice silently is the one outcome this must not produce.
+    expect(mockTorEnabled).toBe(true);
+    // Kept, because it is what the Tor screen's Try again answers.
     expect(mockTorStartPending).toBe(true);
   });
 
-  test("recovering leaves the internet half working rather than gated", () => {
+  test("recovering fails closed: relays held and reported blocked", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
-    expect(mockSetTorBootstrap).toHaveBeenCalledWith("idle");
-    expect(mockSetNostrBlockedByTor).not.toHaveBeenCalledWith(true);
+    // The Nostr socket is the only thing iOS proxies, and it is held here.
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalledTimes(1);
+    expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(isTorRoutingActive()).toBe(false);
   });
 

@@ -26,6 +26,7 @@ import TransferRecoveryScreen from "@features/onboarding/transfer-recovery-scree
 import UsernameScreen from "@features/onboarding/username-screen";
 import WelcomeScreen from "@features/onboarding/welcome-screen";
 import ProfileScreen from "@features/settings/profile-screen";
+import type { SettingsView } from "@features/settings/settings-index";
 import WalletScreen, {
   type WalletAction,
 } from "@features/wallet/wallet-screen";
@@ -533,8 +534,11 @@ function startMeshDependents(): void {
 // worked: the user may cancel the Bluetooth dialog, or wander out of Settings
 // without changing anything, and a banner that clears itself optimistically is
 // how you end up with a green UI over a dead radio.
+//
+// Not the Tor screen: that is in-app navigation, handled where the tab state
+// lives.
 async function handleBannerAction(
-  kind: BannerAction,
+  kind: Exclude<BannerAction, "open-tor-settings">,
   nickname: string,
 ): Promise<void> {
   switch (kind) {
@@ -751,6 +755,10 @@ function AppContent(): React.JSX.Element {
   // bumping a counter. See ProfileScreen onCanGoBackChange / popSignal.
   const [profileCanGoBack, setProfileCanGoBack] = useState(false);
   const [profilePopSignal, setProfilePopSignal] = useState(0);
+  // The sub-screen the Profile tab opens on. Root, except when a Mesh banner
+  // sends the user straight to the screen that resolves it.
+  const [profileEntryView, setProfileEntryView] =
+    useState<SettingsView>("root");
   const [chatSubTab, setChatSubTab] = useState<ChatSubTab>("channels");
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>("all");
   const [dmFilter, setDmFilter] = useState<DmFilter>("all");
@@ -1376,6 +1384,7 @@ function AppContent(): React.JSX.Element {
       }
       // Tapping the Profile tab always returns to its root sub-screen.
       if (nextTab === "profile") {
+        setProfileEntryView("root");
         setProfileResetSignal((n) => n + 1);
       }
     },
@@ -2056,7 +2065,14 @@ function AppContent(): React.JSX.Element {
               {!isInThread && tab === "mesh" && (
                 <MeshStatusBar
                   banners={meshBanners}
-                  onAction={(kind) => void handleBannerAction(kind, username)}
+                  onAction={(kind) => {
+                    if (kind === "open-tor-settings") {
+                      navigateToTab("profile");
+                      setProfileEntryView("tor");
+                      return;
+                    }
+                    void handleBannerAction(kind, username);
+                  }}
                   onDismiss={(key) => {
                     if (key === "background-limits") {
                       useSettingsStore
@@ -2129,6 +2145,7 @@ function AppContent(): React.JSX.Element {
                   ) : (
                     <ProfileScreen
                       key={`profile-${profileResetSignal}`}
+                      initialView={profileEntryView}
                       peerID={generatedPeerID}
                       username={username}
                       onCanGoBackChange={setProfileCanGoBack}

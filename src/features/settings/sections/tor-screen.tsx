@@ -13,6 +13,7 @@
 import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import {
+  isTorStartRecovered,
   setTorBridgeMode,
   setTorRouting,
   type TorRoutingResult,
@@ -21,8 +22,15 @@ import { showAlert } from "@store/alert-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore, type TorBridgeMode } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
-import { FontFamily, HIT_SLOP, MIN_TOUCH, useThemeColors } from "@ui/theme";
-import React, { useEffect, useRef, useState } from "react";
+import PrimaryButton from "@ui/components/primary-button";
+import {
+  FontFamily,
+  HIT_SLOP,
+  MIN_TOUCH,
+  Spacing,
+  useThemeColors,
+} from "@ui/theme";
+import React, { useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import {
   GroupDivider,
@@ -87,22 +95,11 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   const internetEnabled = useSettingsStore((s) => s.internetEnabled);
   const torBootstrap = useMeshStateStore((s) => s.torBootstrap);
   const torActive = useMeshStateStore((s) => s.torActive);
-  // A start marker still set with Tor off is one that never answered: startup
-  // turned Tor off and left this for the screen to explain.
+  // A start that never answered: startup kept Tor on and held the internet half
+  // rather than start it again or go direct. It stays until the user chooses
+  // Try again or Tor off, so it is a state rather than a notice to dismiss.
   const startPending = useSettingsStore((s) => s.torStartPending);
-  const recovered = startPending && !torEnabled;
-
-  // Cleared on the way out, not on the way in, so the notice survives being read
-  // once and does not greet every later visit. Read fresh rather than captured:
-  // leaving mid-start would otherwise clear a marker that is still doing its job.
-  useEffect(() => {
-    return () => {
-      const settings = useSettingsStore.getState();
-      if (settings.torStartPending && !settings.torEnabled) {
-        settings.setTorStartPending(false);
-      }
-    };
-  }, []);
+  const recovered = isTorStartRecovered(torEnabled, startPending, torBootstrap);
 
   // Local until applied, so a half-typed bridge line never reaches the client.
   const [draftLines, setDraftLines] = useState(storedLines);
@@ -117,7 +114,7 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   // may claim traffic is onion routed, so nothing else here implies it.
   function statusText(): string {
     // Ahead of the ordinary states: this one the user did not choose, and a
-    // bare "Off" would leave them to work that out for themselves.
+    // bare "blocked" would not say what happened or what to do.
     if (recovered) return T("settings.tor.recovered");
     if (!torEnabled) return T("common.off");
     // Chosen but not yet usable. setTorBridgeMode leaves the running client
@@ -217,6 +214,16 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
               description={statusText()}
             />
           </View>
+          {/* The other way out is the switch above, whose sheet already
+              explains turning Tor off. */}
+          {recovered && (
+            <PrimaryButton
+              label={T("settings.tor.retry")}
+              onPress={() => void run(() => setTorRouting(true))}
+              disabled={busy}
+              style={{ marginTop: Spacing.md }}
+            />
+          )}
         </View>
 
         {/* Only once Tor is on: a connection choice with nothing to connect is

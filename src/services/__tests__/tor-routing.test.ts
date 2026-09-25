@@ -27,6 +27,7 @@ const mockStartTor = jest.fn<Promise<void>, [string]>();
 const mockStopTor = jest.fn<Promise<void>, []>();
 const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
+const mockHoldRoute = jest.fn<Promise<void>, []>();
 const mockSetTorActive = jest.fn();
 const mockSetTorBootstrap = jest.fn();
 // Tracks the value, so the real "skip when nothing moves" guard in
@@ -94,6 +95,7 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
     getTorStatus: () => mockGetTorStatus(),
     awaitTorReady: (s: number) => mockAwaitTorReady(s),
     setAppForeground: (f: boolean) => mockSetAppForeground(f),
+    holdRoute: () => mockHoldRoute(),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   },
@@ -158,6 +160,7 @@ jest.mock("@store/settings-store", () => ({
 import {
   applyInternetAvailability,
   isTorRoutingActive,
+  isTorStartRecovered,
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
   revalidateTorRouting,
@@ -191,6 +194,7 @@ beforeEach(async () => {
   // Promise always hands JS a promise back. A mock that returns undefined would
   // make the caller's `.catch` look unsafe when it is not.
   mockSetAppForeground.mockResolvedValue(undefined);
+  mockHoldRoute.mockResolvedValue(undefined);
   mockGetTorStatus.mockResolvedValue(status({ isReady: true }));
   // Land every test on a known-off baseline.
   await setTorRouting(false);
@@ -367,28 +371,65 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockTorStartPending).toBe(false);
   });
 
-  test("a marker left by the previous process turns Tor off instead of retrying", () => {
+  test("a marker left by the previous process keeps Tor on without retrying", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
     expect(mockStartTor).not.toHaveBeenCalled();
-    expect(mockTorEnabled).toBe(false);
-    // Kept, because it is what tells the Tor screen to explain itself. Reverting
-    // a privacy choice silently is the one outcome this must not produce.
+    // The user asked for Tor. Turning it off here would put them on the clear
+    // net without asking, which is the leak Tor exists to prevent.
+    expect(mockTorEnabled).toBe(true);
+    // Kept, because it is what the Tor screen's Try again answers.
     expect(mockTorStartPending).toBe(true);
   });
 
-  test("recovering leaves the internet half working rather than gated", () => {
+  test("recovering fails closed: relays held, fetch held, reported blocked", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
-    expect(mockSetTorBootstrap).toHaveBeenCalledWith("idle");
-    expect(mockSetNostrBlockedByTor).not.toHaveBeenCalledWith(true);
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalledTimes(1);
+    expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(isTorRoutingActive()).toBe(false);
+    expect(isTorStartRecovered(true, true, "blocked")).toBe(true);
+  });
+
+  test("an internet switch turned on while held does not start Tor either", () => {
+    mockTorEnabled = true;
+    mockTorStartPending = true;
+    mockInternetEnabled = false;
+    primeTorRoutingOnStartup();
+
+    applyInternetAvailability(true);
+
+    expect(mockStartTor).not.toHaveBeenCalled();
+    expect(mockNostrBlocked).toBe(true);
+  });
+
+  test("the held state is not what a start in flight looks like", () => {
+    expect(isTorStartRecovered(true, true, "starting")).toBe(false);
+    expect(isTorStartRecovered(false, true, "blocked")).toBe(false);
+    expect(isTorStartRecovered(true, false, "blocked")).toBe(false);
+  });
+
+  test("turning Tor off from the held state brings the internet half back", async () => {
+    mockTorEnabled = true;
+    mockTorStartPending = true;
+    primeTorRoutingOnStartup();
+    jest.clearAllMocks();
+
+    await setTorRouting(false);
+
+    expect(mockTorEnabled).toBe(false);
+    expect(mockTorStartPending).toBe(false);
+    expect(mockNostrBlocked).toBe(false);
+    // stopTor is what puts the Android HTTP stack back on a direct route.
+    expect(mockStopTor).toHaveBeenCalled();
+    expect(mockRestartNostr).toHaveBeenCalled();
   });
 
   test("turning Tor on again really tries again", async () => {

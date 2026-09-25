@@ -21,7 +21,30 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   },
 }));
 
+const mockStartTor = jest.fn(() => Promise.resolve());
+const mockHoldRoute = jest.fn(() => Promise.resolve());
+jest.mock("@bridge/NativeAirhopTor", () => ({
+  __esModule: true,
+  default: {
+    startTor: () => mockStartTor(),
+    holdRoute: () => mockHoldRoute(),
+    stopTor: () => Promise.resolve(),
+    setAppForeground: () => Promise.resolve(),
+    getTorStatus: () =>
+      Promise.resolve({
+        isReady: false,
+        isStarting: false,
+        port: 0,
+        progress: 0,
+        bootstrapSummary: "",
+      }),
+    awaitTorReady: () => Promise.resolve(false),
+  },
+  subscribeTorStatus: () => null,
+}));
+
 import { applyPresence } from "@services/presence-service";
+import { primeTorRoutingOnStartup } from "@services/tor-routing";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -613,6 +636,71 @@ describe("cold start and permissions", () => {
   });
 
   // iOS variants of the launch path.
+
+  // A Tor start that took the process down leaves its marker. The next launch
+  // must neither start Tor again (the crash would replay on every launch) nor
+  // quietly go direct (the leak the user turned Tor on to avoid).
+  test("S16 a Tor start that died with the process: held, not retried, mesh unaffected", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    const v = new Verdict(
+      "S16",
+      "relaunch with Tor on and a start marker left behind",
+      os,
+    );
+    const native = androidDevice(os);
+    useSettingsStore.setState({
+      torEnabled: true,
+      torStartPending: true,
+      internetEnabled: true,
+    });
+    mockStartTor.mockClear();
+    mockHoldRoute.mockClear();
+
+    try {
+      app = new AppShell({ os });
+      app.bootJsRuntime();
+      // In the app's order: before the mesh builds its first relay pool.
+      primeTorRoutingOnStartup();
+      await app.startMeshWithPermissions();
+      await os.advance(5000);
+
+      const mesh = useMeshStateStore.getState();
+      const torBanner = computeMeshBanners({
+        presenceStatus: mesh.presenceStatus,
+        bleBlocker: mesh.bleBlocker,
+        locationGranted: mesh.locationGranted,
+        nostrConnected: mesh.nostrConnected,
+        torActive: mesh.torActive,
+        torBootstrap: mesh.torBootstrap,
+        gatewayEnabled: false,
+        bridgeActive: false,
+        bridgePeopleAcross: 0,
+        internetEnabled: true,
+        peerCount: 0,
+      }).find((b) => b.key === "tor-blocked");
+
+      v.check("process survived", os.crashed === null, os.crashed ?? undefined);
+      v.check("scanning is running", native.scanning);
+      v.check("advertising is running", native.advertising);
+      v.check(
+        "native Tor was not started again",
+        mockStartTor.mock.calls.length === 0,
+      );
+      v.check("the HTTP route is held", mockHoldRoute.mock.calls.length === 1);
+      v.check("Tor stays on", useSettingsStore.getState().torEnabled);
+      v.check("the relay pool is held", mesh.nostrBlockedByTor);
+      v.check(
+        "the Mesh banner leads to the Tor screen",
+        torBanner?.action?.kind === "open-tor-settings",
+        `banner: ${JSON.stringify(torBanner)}`,
+      );
+      v.assert();
+    } finally {
+      useSettingsStore.setState({ torEnabled: false, torStartPending: false });
+      useMeshStateStore.getState().setNostrBlockedByTor(false);
+      useMeshStateStore.getState().setTorBootstrap("idle");
+    }
+  });
 
   test("S07i iOS cold launch with a perfectly healthy radio", async () => {
     const os = new DeviceOS({ platform: "ios" });

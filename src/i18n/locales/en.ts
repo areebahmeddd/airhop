@@ -914,6 +914,7 @@ export const strings = {
     "Opens Airhop’s permissions in system settings",
   "mesh.banner.hint.battery_settings":
     "Opens this phone’s background activity settings",
+  "mesh.banner.hint.tor_settings": "Opens Airhop’s Tor settings",
   "mesh.banner.dismiss": "Dismiss: {label}",
   "mesh.banner.hint.dismiss": "Hides this note for good",
 
@@ -1957,7 +1958,8 @@ export const strings = {
   "settings.tor.custom_apply_hint": "Tap outside the box to connect.",
   "settings.tor.custom_empty": "Add at least one bridge line first.",
   "settings.tor.recovered":
-    "Tor was turned off because it did not finish starting last time. Turn it back on to try again.",
+    "Tor did not finish starting last time, so internet traffic is paused. Try again, or turn Tor off to go online without it.",
+  "settings.tor.retry": "Try again",
   "settings.conn.mint_clearnet": "Allow mint traffic over clear net",
   "settings.conn.mint_clearnet_desc":
     "Tor on iOS only covers Nostr. Leave off to block mint requests; ecash over the mesh keeps working either way.",
