@@ -12,6 +12,7 @@ import {
   computeRecipientTag,
   decodeEnvelopePayload,
   encodeEnvelopePayload,
+  prekeyPrologue,
 } from "../courier-store";
 import { LocalPrekeyStore, PeerPrekeyStore } from "../prekey-store";
 
@@ -145,6 +146,7 @@ describe("forward-secret courier seal/open via prekey", () => {
         sender.priv,
         prekey.publicKey,
         new TextEncoder().encode("secret handshake"),
+        prekeyPrologue(prekey.id),
       ),
       prekeyID: prekey.id,
     });
@@ -157,6 +159,7 @@ describe("forward-secret courier seal/open via prekey", () => {
     const { plaintext, senderStaticPubKey } = noiseXOpen(
       openKey,
       env.ciphertext,
+      prekeyPrologue(env.prekeyID!),
     );
     expect(new TextDecoder().decode(plaintext)).toBe("secret handshake");
     expect([...senderStaticPubKey]).toEqual([...sender.pub]);
@@ -164,6 +167,8 @@ describe("forward-secret courier seal/open via prekey", () => {
     // A different one-time key cannot open it (forward secrecy boundary).
     const otherId = bundle.prekeys.find((p) => p.id !== env.prekeyID)!.id;
     const wrongKey = recipLocal.privForId(otherId)!;
-    expect(() => noiseXOpen(wrongKey, env.ciphertext)).toThrow();
+    expect(() =>
+      noiseXOpen(wrongKey, env.ciphertext, prekeyPrologue(otherId)),
+    ).toThrow();
   });
 });

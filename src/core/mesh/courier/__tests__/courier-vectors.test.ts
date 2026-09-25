@@ -18,8 +18,10 @@
 
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "@noble/hashes/utils.js";
+import seals from "../../../../../docs/spec/courier-seal-vectors.json";
 import upstream from "../../../../../docs/spec/courier-test-vectors-bitchat.json";
 import vectors from "../../../../../docs/spec/courier-test-vectors.json";
+import { noiseXOpen } from "../../../crypto/noise-x";
 import {
   decodePacket,
   encodePacket,
@@ -31,9 +33,11 @@ import {
 } from "../../wire/packet-codec";
 import {
   computeRecipientTag,
+  COURIER_PROLOGUE,
   decodeEnvelopePayload,
   encodeEnvelopePayload,
   ENVELOPE_TTL_MS,
+  prekeyPrologue,
 } from "../courier-store";
 
 const hex = (bytes: Uint8Array): string =>
@@ -213,5 +217,36 @@ describe("bitchat's published vectors", () => {
       false,
     );
     expect(hex(unsigned)).toBe(upstream.packetSigning.unsignedUnpadded);
+  });
+});
+
+// Seals made by an independent Noise implementation with bitchat-ios's
+// prologues. Opening them is what shows our transcript, prologue included,
+// is the one the spec and bitchat-ios run; the vectors carry no ciphertext of
+// ours, so they cannot agree with us by construction.
+describe("courier seals from a reference Noise implementation", () => {
+  const recipientPriv = hexToBytes(seals.recipientStaticPriv);
+
+  it.each(seals.vectors)("opens the $name", (v) => {
+    const prologue =
+      "prekeyID" in v && typeof v.prekeyID === "number"
+        ? prekeyPrologue(v.prekeyID)
+        : COURIER_PROLOGUE;
+    expect(hex(prologue)).toBe(v.prologue);
+    const opened = noiseXOpen(
+      recipientPriv,
+      hexToBytes(v.ciphertext),
+      prologue,
+    );
+    expect(new TextDecoder().decode(opened.plaintext)).toBe(v.payloadUTF8);
+    expect(hex(opened.senderStaticPubKey)).toBe(seals.senderStaticPub);
+  });
+
+  it("refuses each seal without its prologue", () => {
+    for (const v of seals.vectors) {
+      expect(() =>
+        noiseXOpen(recipientPriv, hexToBytes(v.ciphertext), new Uint8Array(0)),
+      ).toThrow();
+    }
   });
 });

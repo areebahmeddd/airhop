@@ -40,6 +40,7 @@ import {
   decodeEnvelopePayload,
   encodeEnvelopePayload,
   ENVELOPE_TTL_MS,
+  sealPrologue,
   type SealedEnvelope,
 } from "@core/mesh/courier/courier-store";
 import {
@@ -3753,6 +3754,7 @@ export class MeshService {
         this.identity.noiseStaticPrivKey,
         prekey?.publicKey ?? noisePub,
         inner,
+        sealPrologue(prekey?.id),
       );
       const envelope: SealedEnvelope = {
         // Tag is derived from the recipient's STATIC key + today's epoch day, so
@@ -3970,6 +3972,7 @@ export class MeshService {
       const { plaintext, senderStaticPubKey } = noiseXOpen(
         openKey,
         env.ciphertext,
+        sealPrologue(env.prekeyID),
       );
       // Identify the sender from the key the envelope authenticates, not from
       // the packet header, which names whoever relayed it to us.

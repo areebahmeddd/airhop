@@ -55,6 +55,31 @@ export const COURIER_INITIAL_COPIES = 4;
 // amplifier for whoever claims 255.
 const MAX_COPIES = 8;
 
+// ---- Seal prologues ----
+
+// The Noise X prologue bitchat-ios seals with (NoiseEncryptionService
+// courierPrologue and prekeyPrologue). A static seal (v1) and a one-time-prekey
+// seal (v2) differ, and the v2 one binds the prekey ID, so a ciphertext cannot
+// be opened against another prekey.
+export const COURIER_PROLOGUE = new TextEncoder().encode("bitchat-courier-v1");
+const PREKEY_PROLOGUE_PREFIX = new TextEncoder().encode("bitchat-prekey-v1");
+
+export function prekeyPrologue(prekeyID: number): Uint8Array {
+  const out = new Uint8Array(PREKEY_PROLOGUE_PREFIX.length + 4);
+  out.set(PREKEY_PROLOGUE_PREFIX, 0);
+  new DataView(out.buffer).setUint32(
+    PREKEY_PROLOGUE_PREFIX.length,
+    prekeyID >>> 0,
+    false,
+  );
+  return out;
+}
+
+// The prologue an envelope was sealed under, from its prekey ID TLV.
+export function sealPrologue(prekeyID: number | undefined): Uint8Array {
+  return prekeyID === undefined ? COURIER_PROLOGUE : prekeyPrologue(prekeyID);
+}
+
 // ---- Recipient tag ----
 
 // Matches CourierEnvelope.recipientTag(noiseStaticKey:epochDay:) in BitFoundation.
