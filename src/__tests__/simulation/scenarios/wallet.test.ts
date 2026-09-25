@@ -1293,6 +1293,72 @@ test("W26 one forged receipt cannot freeze a wallet", async () => {
   s.assert(true);
 });
 
+test("W29 a token taken in a dead zone is secured on reconnect without a tap", async () => {
+  // Until an offline receipt is swapped, anyone holding the token (the
+  // sender, or everyone who read it in a public channel) can redeem it first.
+  // The reconcile pass that runs when the network returns now swaps it, so
+  // the window closes without the recipient thinking to refresh.
+  const s = (scenario = new Scenario({
+    id: "W29",
+    title: "reconcile redeems offline receipts on its own",
+    seed: 129,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [
+    android("alice", 11),
+    android("bob", 22),
+    android("carol", 33),
+  ]);
+  const [alice, bob, carol] = devices;
+  for (const d of devices) {
+    await d.walletReady();
+    await d.addMint(mint.url);
+  }
+  await alice.depositSats(500);
+
+  const token = await alice.prepareSend(64);
+  alice.confirmLastSend();
+  s.check("alice posted a token", token !== null);
+  if (token === null) {
+    s.assert(false);
+    return;
+  }
+
+  // Bluetooth only: nothing is even attempted at the mint, so no swap is
+  // staged for a replay to finish.
+  bob.setSetting("internetEnabled", false);
+  const stored = await bob.receiveTokenResult(token);
+  s.check(
+    "bob takes it with the internet off, unconfirmed",
+    stored?.outcome === "stored" && bob.unverifiedBalance() === 64,
+    `outcome=${stored?.outcome ?? "refused"} unverified=${bob.unverifiedBalance()}`,
+  );
+
+  // The internet returns: the pass it triggers, and nothing else from bob.
+  bob.setSetting("internetEnabled", true);
+  await bob.reconcile();
+  s.check(
+    "the receipt is confirmed with no refresh from bob",
+    bob.balance() === 64 && bob.unverifiedBalance() === 0,
+    `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+  );
+
+  const raced = await carol.receiveTokenResult(token);
+  s.check(
+    "someone else who read the token is too late",
+    raced === null && carol.totalHeld() === 0,
+    raced === null ? "refused" : `outcome=${raced.outcome}`,
+  );
+  s.check(
+    "no sat was created or destroyed",
+    alice.totalHeld() + bob.totalHeld() + carol.totalHeld() === 500,
+    `alice=${alice.totalHeld()} bob=${bob.totalHeld()} carol=${carol.totalHeld()}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
 test("W25 a token cannot relabel sats as dollars", async () => {
   // The unit label is the sender's to write. Believed, 150 sats would show as
   // $1.50 and be filed in a dollar account no swap could ever settle. The

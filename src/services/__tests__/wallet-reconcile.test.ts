@@ -9,6 +9,7 @@
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { useSettingsStore } from "@store/settings-store";
 import {
+  accountKey,
   bootstrapWalletStorage,
   useWalletStore,
   whenWalletHydrated,
@@ -21,6 +22,7 @@ import {
   initWalletService,
   receiveToken,
   reconcile,
+  refreshAccount,
   resetWalletService,
 } from "../wallet-service";
 
@@ -71,14 +73,19 @@ const UNIT = "sat";
 
 let world: World;
 let fabric: MintFabric;
+// Two more mints, for a pass with several accounts to redeem.
+let others: MintFabric[];
 
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
+async function strangersToken(
+  sats: number,
+  at: MintFabric = fabric,
+): Promise<string> {
+  const sender = new Wallet(new Mint(at.url), { unit: UNIT });
   await sender.loadMint();
   const quote = await sender.createMintQuoteBolt11(sats);
   const proofs = await sender.mintProofsBolt11(sats, quote);
   return getEncodedToken({
-    mint: fabric.url,
+    mint: at.url,
     unit: UNIT,
     proofs,
   } as unknown as Token);
@@ -121,6 +128,12 @@ beforeAll(async () => {
   world = new World({ seed: 31, name: "wallet-reconcile" });
   fabric = new MintFabric(world, "https://reconcile.test");
   fabric.install();
+  others = ["https://second.test", "https://third.test"].map((url) => {
+    const other = new MintFabric(world, url);
+    other.setConditions({ latencyMs: 0 });
+    other.install();
+    return other;
+  });
 });
 
 afterAll(() => {
@@ -176,5 +189,77 @@ describe("Tor switched on while a pass is running (iOS)", () => {
     expect(gateClosedAt).toBeGreaterThan(0);
     expect(watch.paths.length).toBe(gateClosedAt);
     expect(pendingPreviews()).toBe(1);
+  });
+});
+
+// Received with the internet off: a receipt of its own, no swap staged.
+async function receiveOffline(token: string): Promise<void> {
+  useSettingsStore.setState({ internetEnabled: false });
+  try {
+    expect((await receiveToken(token)).outcome).toBe("stored");
+  } finally {
+    useSettingsStore.setState({ internetEnabled: true });
+  }
+}
+
+function unverifiedAt(url: string): number {
+  return (useWalletStore.getState().proofs[accountKey(url, UNIT)] ?? [])
+    .filter((p) => p.verified !== true)
+    .reduce((s, p) => s + p.amount, 0);
+}
+
+describe("offline receipts once the network is back", () => {
+  it("are redeemed by reconcile, with no refresh from the user", async () => {
+    await receiveOffline(await strangersToken(8));
+    await receiveOffline(await strangersToken(16));
+    expect(unverifiedAt(fabric.url)).toBe(24);
+
+    await reconcile();
+
+    expect(unverifiedAt(fabric.url)).toBe(0);
+    expect(
+      useWalletStore
+        .getState()
+        .history.filter((t) => t.kind === "receive")
+        .every((t) => t.status === "completed"),
+    ).toBe(true);
+  });
+
+  it("are redeemed two accounts per pass, oldest first", async () => {
+    for (const other of others) await addMint(other.url);
+    await receiveOffline(await strangersToken(8));
+    await receiveOffline(await strangersToken(8, others[0]));
+    await receiveOffline(await strangersToken(8, others[1]));
+
+    await reconcile();
+
+    expect(unverifiedAt(fabric.url)).toBe(0);
+    expect(unverifiedAt(others[0]!.url)).toBe(0);
+    expect(unverifiedAt(others[1]!.url)).toBe(8);
+  });
+
+  it("let a pull-to-refresh join the automatic one instead of racing it", async () => {
+    await receiveOffline(await strangersToken(8));
+    fabric.setConditions({ latencyMs: 30 });
+    let swaps = 0;
+    const watch = watchRequests((path) => {
+      if (path.startsWith("/v1/swap")) swaps += 1;
+    });
+    try {
+      const pass = reconcile();
+      // Until the automatic refresh has reserved the coins it is swapping.
+      const deadline = Date.now() + 5_000;
+      while (Object.keys(useWalletStore.getState().reserved).length === 0) {
+        if (Date.now() > deadline) throw new Error("no automatic refresh");
+        await new Promise((resolve) => setTimeout(resolve, 2));
+      }
+      const pulled = await refreshAccount(fabric.url, UNIT);
+      await pass;
+      expect(pulled.swapped).toBe(8);
+    } finally {
+      watch.stop();
+    }
+    expect(swaps).toBe(1);
+    expect(unverifiedAt(fabric.url)).toBe(0);
   });
 });

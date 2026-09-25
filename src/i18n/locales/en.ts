@@ -1101,7 +1101,7 @@ export const strings = {
   "wallet.receive.redeemed_at":
     "Redeemed at {mint}. It is provably yours now: the sender’s copy of this token no longer works.",
   "wallet.receive.stored_pending":
-    "Stored from {mint}, but the mint has not confirmed it is unspent yet{dleq}. Refresh from the Wallet tab once you are online.",
+    "Stored from {mint}, but the mint has not confirmed it is unspent yet{dleq}. It is confirmed with the mint automatically once you are online.",
   "wallet.receive.dleq_inline":
     " (its signature does check out, so the token is genuine)",
   "wallet.receive.dleq_ok":
@@ -1111,11 +1111,11 @@ export const strings = {
   "wallet.receive.dleq_missing":
     "Not every coin in it carries the mint’s signature proof, so it could not be checked offline.",
   "wallet.receive.dleq_warning":
-    "Until you refresh online, the sender could in principle have spent it elsewhere.",
+    "Until it is confirmed online, the sender could in principle have spent it elsewhere.",
   "wallet.receive.failed": "Could not receive",
   "wallet.receive.title": "Receive ecash",
   "wallet.receive.body":
-    "Paste a Cashu token. Online it is redeemed at the mint straight away; offline it is stored and confirmed the next time you refresh.",
+    "Paste a Cashu token. Online it is redeemed at the mint straight away; offline it is stored and confirmed with the mint automatically once you are back online.",
   "wallet.receive.scan": "Scan an ecash QR code",
   "wallet.receive.scan_short": "Scan QR",
   "wallet.receive.receiving": "Receiving…",

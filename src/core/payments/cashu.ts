@@ -10,7 +10,8 @@
 //
 // Offline DLEQ (NUT-12) proves the mint signed a proof, so it catches forged and
 // tampered tokens, never that it is unspent: only the mint knows that. Offline
-// proofs are stored unverified and redeemed at the first opportunity.
+// proofs are stored unverified until a swap redeems them, which the wallet's
+// reconcile pass attempts on its own once the mint is reachable again.
 
 import {
   getDecodedToken,

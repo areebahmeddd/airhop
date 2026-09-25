@@ -533,6 +533,7 @@ export function resetWalletService(): void {
   lastReconcileAtMs = 0;
   lastStateCheckAtMs.clear();
   swapsInFlight.clear();
+  refreshesInFlight.clear();
   meltsInFlight.clear();
   keysetFetchedAtMs.clear();
   walletEpoch += 1;
@@ -1771,11 +1772,51 @@ const MAX_RECEIPT_SWAPS_PER_REFRESH = 8;
 //      of refusal, as it is in CDK and Nutshell: one bad token cannot block
 //      the others or the next refresh.
 // `receipt` is always among those tried, so a caller settling one reclaim
-// learns what happened to exactly its coins.
+// learns what happened to exactly its coins. `cachedKeys` skips the forced
+// keyset fetch, for the unattended refresh `reconcile` runs.
+//
+// One refresh per account at a time: a second caller (a pull-to-refresh
+// during the automatic one) joins it rather than losing the race for the same
+// coins, and runs its own afterwards only if the one it joined never tried
+// its receipt.
 export async function refreshAccount(
   mintUrl: string,
   unit = "sat",
-  opts: { receipt?: string } = {},
+  opts: RefreshOptions = {},
+): Promise<RefreshResult> {
+  const key = accountKey(normalizeMintUrl(mintUrl), unit);
+  for (;;) {
+    const running = refreshesInFlight.get(key);
+    if (running === undefined) break;
+    const joined = await running;
+    const tried =
+      opts.receipt === undefined ? undefined : joined.receipts[opts.receipt];
+    if (
+      opts.receipt === undefined ||
+      (tried !== undefined && tried !== "skipped")
+    ) {
+      return joined;
+    }
+  }
+  const run = refreshAccountOnce(mintUrl, unit, opts).finally(() => {
+    if (refreshesInFlight.get(key) === run) refreshesInFlight.delete(key);
+  });
+  refreshesInFlight.set(key, run);
+  return run;
+}
+
+interface RefreshOptions {
+  receipt?: string;
+  cachedKeys?: boolean;
+}
+
+// Keyed by account. Memory only, like the other in-flight marks.
+const refreshesInFlight = new Map<string, Promise<RefreshResult>>();
+
+async function refreshAccountOnce(
+  mintUrl: string,
+  unit: string,
+  opts: RefreshOptions,
 ): Promise<RefreshResult> {
   assertUnlocked();
   assertMintNetworkAllowed();
@@ -1796,7 +1837,9 @@ export async function refreshAccount(
   };
   if (held.length === 0) return result;
 
-  const wallet = await getWallet(url, unit, { forceRefresh: true });
+  const wallet = await getWallet(url, unit, {
+    forceRefresh: opts.cachedKeys !== true,
+  });
 
   // Map back to stored rows by secret, a proof's identity.
   let unspent: StoredProof[];
@@ -1853,13 +1896,9 @@ export async function refreshAccount(
   }
 
   // Oldest first, and the one the caller is settling ahead of all of them.
-  const byReceipt = new Map<string, StoredProof[]>();
-  for (const proof of unspent) {
-    if (proof.verified === true) continue;
-    const receipt = proof.receiptTxId ?? "";
-    byReceipt.set(receipt, [...(byReceipt.get(receipt) ?? []), proof]);
-  }
-  const groups = [...byReceipt].sort(
+  const groups = [
+    ...groupByReceipt(unspent.filter((p) => p.verified !== true)),
+  ].sort(
     ([a, coinsA], [b, coinsB]) =>
       Number(b === opts.receipt) - Number(a === opts.receipt) ||
       oldestOf(coinsA) - oldestOf(coinsB),
@@ -1910,6 +1949,16 @@ export async function refreshAccount(
     0,
   );
   return result;
+}
+
+// Coins with no receipt (none are stored that way now) form one group.
+function groupByReceipt(coins: StoredProof[]): Map<string, StoredProof[]> {
+  const groups = new Map<string, StoredProof[]>();
+  for (const coin of coins) {
+    const receipt = coin.receiptTxId ?? "";
+    groups.set(receipt, [...(groups.get(receipt) ?? []), coin]);
+  }
+  return groups;
 }
 
 function oldestOf(coins: StoredProof[]): number {
@@ -2129,10 +2178,11 @@ let walletEpoch = 0;
 // Floor between automatic passes only; an explicit refresh is never throttled.
 const RECONCILE_MIN_INTERVAL_MS = 60_000;
 
-// Settle what a previous session or a lost response left hanging: paid
-// deposits, unanswered melts and swaps, redeemed sends. Safe on resume and on
-// reconnect: never spends, never credits without the mint, and never throws,
-// since each step is best-effort so one dead mint does not block the rest.
+// Settle what a previous session, a lost response or a dead zone left hanging:
+// paid deposits, unanswered melts and swaps, offline receipts, redeemed sends.
+// Safe on resume and on reconnect: spends only by swapping our own coins for
+// fresh ones, never credits without the mint, and never throws, since each
+// step is best-effort so one dead mint does not block the rest.
 export async function reconcile(): Promise<void> {
   if (reconcileInFlight !== null) return reconcileInFlight;
   const epoch = walletEpoch;
@@ -2442,6 +2492,40 @@ function settleReplayedSwap(
   });
 }
 
+// A pass already runs on every network return and at most once a minute, and
+// two accounts clear a normal user's one or two mints in one pass while
+// keeping a pass short.
+const MAX_AUTO_REDEEM_ACCOUNTS_PER_PASS = 2;
+
+// Accounts holding a receipt a refresh would swap, oldest receipt first. Not
+// coins a replay has claimed, and not receipts worth no more than their fee,
+// which would earn a state check every pass and never a swap.
+function accountsToRedeem(): string[] {
+  const state = useWalletStore.getState();
+  const claimed = secretsAwaitingSwapReplay();
+  const due: { account: string; oldest: number }[] = [];
+  for (const [account, proofs] of Object.entries(state.proofs)) {
+    const fees =
+      state.mints[parseAccountKey(account).mintUrl]?.feePpkByKeysetId;
+    const receipts = groupByReceipt(
+      proofs.filter((p) => p.verified !== true && !claimed.has(p.secret)),
+    );
+    const swappable = [...receipts.values()].filter(
+      (coins) =>
+        coins.reduce((s, p) => s + p.amount, 0) > feeForProofs(coins, fees),
+    );
+    if (swappable.length === 0) continue;
+    due.push({
+      account,
+      oldest: Math.min(...swappable.map(oldestOf)),
+    });
+  }
+  return due
+    .sort((a, b) => a.oldest - b.oldest)
+    .slice(0, MAX_AUTO_REDEEM_ACCOUNTS_PER_PASS)
+    .map((d) => d.account);
+}
+
 async function runReconcilePass(): Promise<void> {
   if (!isWalletStorageReady()) return;
   if (mintNetworkBlock() !== null) return;
@@ -2494,6 +2578,19 @@ async function runReconcilePass(): Promise<void> {
       await replayLostSwap(tx, pass);
     } catch {
       // The preview stays; the next pass asks again.
+    }
+  }
+
+  // Offline receipts, redeemed without waiting for the user: until swapped,
+  // the sender (or anyone who read the token in a public channel) can still
+  // spend them first. After the replays, which settle staged receipts.
+  for (const account of accountsToRedeem()) {
+    if (pass.halted()) return;
+    const { mintUrl, unit } = parseAccountKey(account);
+    try {
+      await refreshAccount(mintUrl, unit, { cachedKeys: true });
+    } catch {
+      // Unreachable, or the gate closed: the next pass tries again.
     }
   }
 
