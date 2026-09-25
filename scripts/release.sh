@@ -41,15 +41,6 @@ if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
   exit 1
 fi
 
-# Working branches here are named like release tags. The release workflow
-# checks out the tag's commit, but a same-named branch still makes every bare
-# `${TAG}` ambiguous to git, so it goes first.
-if git ls-remote --exit-code --heads origin "refs/heads/${TAG}" >/dev/null; then
-  echo "Branch ${TAG} exists on origin. Delete it first:" >&2
-  echo "  git push origin --delete refs/heads/${TAG}" >&2
-  exit 1
-fi
-
 sed -i -E "s/(\"version\": \")[^\"]*(\")/\1${VERSION}\2/" app.json
 grep -q "\"version\": \"${VERSION}\"" app.json
 
