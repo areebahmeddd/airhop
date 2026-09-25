@@ -1868,7 +1868,9 @@ export class MeshService {
     // topology so blocking someone doesn't degrade the mesh for everyone
     // routing through us. onAnnounce keeps them out of the peer store itself.
     // Relaying already happened in handleRaw before this point, so a blocked
-    // peer's traffic still forwards for third parties. We never surface it.
+    // peer's traffic still forwards for third parties. We never surface it,
+    // and since handlers keep for sync only what they accept, never carry it
+    // for gossip either.
     if (packet.type !== PacketType.ANNOUNCE) {
       const senderID = bytesToHex(packet.senderID);
       if (useBlockedStore.getState().isBlocked(senderID)) return;
