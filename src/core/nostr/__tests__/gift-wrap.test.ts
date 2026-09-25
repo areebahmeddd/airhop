@@ -5,7 +5,10 @@
 // No network: pure crypto using @noble and nostr-tools.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { generateSecretKey, getPublicKey } from "nostr-tools";
+import { hexToBytes } from "@noble/hashes/utils.js";
+import type { Event } from "nostr-tools";
+import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
+import { bitchatNip44Encrypt } from "../bitchat-nip44";
 import { deriveNostrPrivKey, unwrapDm, wrapDm } from "../gift-wrap";
 
 function makePair(): { priv: Uint8Array; pub: string } {
@@ -175,6 +178,85 @@ describe("rumor timestamp window", () => {
     expect(() =>
       unwrapWithClockOffset(30 * 24 * 3600, Number.POSITIVE_INFINITY),
     ).not.toThrow();
+  });
+});
+
+// The rumor is unsigned, so its shape is checked by nothing but unwrapDm. A
+// missing or string created_at passed the window check (every comparison with
+// it is false) and filed the message at a NaN time.
+describe("rumor shape", () => {
+  // Seals and wraps arbitrary rumor JSON the way wrapDm would, so the sender
+  // can be the one who shaped it.
+  function wrapRumor(
+    rumor: Record<string, unknown>,
+    sender: { priv: Uint8Array; pub: string },
+    recipientPub: string,
+  ): Event {
+    const now = Math.floor(Date.now() / 1000);
+    const recipientX = hexToBytes(recipientPub);
+    const seal = finalizeEvent(
+      {
+        kind: 13,
+        created_at: now,
+        tags: [],
+        content: bitchatNip44Encrypt(
+          JSON.stringify(rumor),
+          recipientX,
+          sender.priv,
+        ),
+      },
+      sender.priv,
+    );
+    const ephemeral = generateSecretKey();
+    return finalizeEvent(
+      {
+        kind: 1059,
+        created_at: now,
+        tags: [["p", recipientPub]],
+        content: bitchatNip44Encrypt(
+          JSON.stringify(seal),
+          recipientX,
+          ephemeral,
+        ),
+      },
+      ephemeral,
+    );
+  }
+
+  function unwrapRumor(overrides: Record<string, unknown>): string {
+    const sender = makePair();
+    const recipient = makePair();
+    const rumor = {
+      kind: 14,
+      pubkey: sender.pub,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [],
+      content: "hi",
+      ...overrides,
+    };
+    const wrap = wrapRumor(rumor, sender, recipient.pub);
+    return unwrapDm(wrap, recipient.priv, 3600).content;
+  }
+
+  it("accepts a well-formed kind 14 rumor", () => {
+    expect(unwrapRumor({})).toBe("hi");
+  });
+
+  it("rejects a rumor with no created_at", () => {
+    expect(() => unwrapRumor({ created_at: undefined })).toThrow();
+  });
+
+  it("rejects a rumor whose created_at is a string", () => {
+    const now = String(Math.floor(Date.now() / 1000));
+    expect(() => unwrapRumor({ created_at: now })).toThrow();
+  });
+
+  it("rejects a rumor whose content is not a string", () => {
+    expect(() => unwrapRumor({ content: { text: "hi" } })).toThrow();
+  });
+
+  it("rejects a rumor of any kind but 14", () => {
+    expect(() => unwrapRumor({ kind: 1 })).toThrow();
   });
 });
 

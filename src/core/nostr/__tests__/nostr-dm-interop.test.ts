@@ -6,13 +6,14 @@
 // on the other side. This is the whole M2 path in one test.
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { finalizeEvent } from "nostr-tools";
 import { NoisePayloadType } from "../../mesh/wire/noise-payload";
 import {
   decodeBitchatEnvelope,
   encodeBitchatAckEnvelope,
   encodeBitchatDmEnvelope,
 } from "../bitchat-envelope";
-import { xOnlyPublicKey } from "../bitchat-nip44";
+import { bitchatNip44Encrypt, xOnlyPublicKey } from "../bitchat-nip44";
 import { unwrapDm, wrapDm } from "../gift-wrap";
 
 const SENDER_PEER = "aabbccdd00112233";
@@ -58,6 +59,45 @@ describe("Nostr DM interop round-trip", () => {
     )!;
     expect(decoded.type).toBe(NoisePayloadType.READ_RECEIPT);
     expect(decoded.messageID).toBe("msg-42");
+  });
+
+  it("accepts a rumor exactly as bitchat-ios builds it", () => {
+    // bitchat-ios encodes its NostrEvent struct with JSONEncoder: an empty
+    // `id` (set only on signing), no `sig` (nil is omitted), empty tags, and
+    // fields in declaration order (NostrProtocol.swift, createPrivateMessage).
+    const senderPriv = secp256k1.utils.randomSecretKey();
+    const recipPriv = secp256k1.utils.randomSecretKey();
+    const senderPubHex = bytesToHex(xOnlyPublicKey(senderPriv));
+    const recipX = xOnlyPublicKey(recipPriv);
+    const env = encodeBitchatDmEnvelope(SENDER_PEER, null, "m-ios", "hi")!;
+    const now = Math.floor(Date.now() / 1000);
+    const rumorJson =
+      `{"id":"","pubkey":"${senderPubHex}","created_at":${now},` +
+      `"kind":14,"tags":[],"content":${JSON.stringify(env)}}`;
+
+    const seal = finalizeEvent(
+      {
+        kind: 13,
+        created_at: now,
+        tags: [],
+        content: bitchatNip44Encrypt(rumorJson, recipX, senderPriv),
+      },
+      senderPriv,
+    );
+    const ephemeral = secp256k1.utils.randomSecretKey();
+    const wrap = finalizeEvent(
+      {
+        kind: 1059,
+        created_at: now,
+        tags: [["p", bytesToHex(recipX)]],
+        content: bitchatNip44Encrypt(JSON.stringify(seal), recipX, ephemeral),
+      },
+      ephemeral,
+    );
+
+    const dm = unwrapDm(wrap, recipPriv, Number.POSITIVE_INFINITY);
+    expect(decodeBitchatEnvelope(dm.content)?.content).toBe("hi");
+    expect(dm.timestamp).toBe(now);
   });
 
   it("a third party cannot unwrap the DM", () => {
