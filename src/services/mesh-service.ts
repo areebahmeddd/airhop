@@ -88,6 +88,7 @@ import {
   type AssemblyInfo,
   type FragmentProgress,
 } from "@core/mesh/routing/fragment-manager";
+import { HandshakeRateLimiter } from "@core/mesh/routing/handshake-rate-limiter";
 import { originTtl } from "@core/mesh/routing/origin-ttl";
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync } from "@core/mesh/sync/gossip-sync";
@@ -555,6 +556,7 @@ export class MeshService {
   private readonly bleClosedAt = new Map<string, number>();
   // In-progress Noise XX handshakes keyed by remote peerID.
   private readonly pendingHandshakes = new Map<string, PendingHandshake>();
+  private readonly handshakeLimiter = new HandshakeRateLimiter();
 
   // Double Ratchet states keyed by peerID. Only set for Airhop-to-Airhop
   // sessions (peers who announced a Nostr pubkey). bitchat peers continue
@@ -2254,6 +2256,18 @@ export class MeshService {
     return p;
   }
 
+  // File a handshake attempt, first dropping every attempt past its timeout.
+  // Responder entries are never looked up on the send path, so without this a
+  // msg1 whose sender never answers would stay here for good. With the
+  // inbound-msg1 budget it bounds the map to about a timeout's worth.
+  private storePendingHandshake(peerID: string, entry: PendingHandshake): void {
+    const cutoff = entry.startedAt - HANDSHAKE_TIMEOUT_MS;
+    for (const [id, p] of this.pendingHandshakes) {
+      if (p.startedAt < cutoff) this.pendingHandshakes.delete(id);
+    }
+    this.pendingHandshakes.set(peerID, entry);
+  }
+
   // Whether a completed Noise session's authenticated remote static key derives
   // to the peerID it claims to be. peerID = first 16 hex of SHA-256(staticPub),
   // the same derivation used everywhere else (identity.ts, prekey ownership). An
@@ -2294,11 +2308,22 @@ export class MeshService {
       // of both sides flipping to responder and deadlocking. Otherwise fall
       // through and (re)start as responder (peer restart, a stale attempt of ours,
       // or we are the higher-sorting ID and must yield).
+      //
+      // The claimed sender is unauthenticated, so a forged msg1 under a peer's
+      // ID replaces a live responder attempt, or our initiator attempt when we
+      // sort higher, and that peer's genuine reply then finds a handshake it
+      // does not belong to. bitchat-ios yields the same way. The rate limit
+      // bounds it, and the next attempt, or the outbox, recovers.
       if (
         prior?.role === "initiator" &&
         Date.now() - prior.startedAt <= HANDSHAKE_TIMEOUT_MS &&
         this.identity.peerID < senderID
       ) {
+        return;
+      }
+      // Before any key work: every msg1 costs two DH operations, a stored
+      // attempt and a reply flooded at TTL 7.
+      if (!this.handshakeLimiter.allowInboundInitiation(senderID, Date.now())) {
         return;
       }
       const carriedText = prior?.pendingText ?? [];
@@ -2308,7 +2333,7 @@ export class MeshService {
         );
         hs.readMsg1(packet.payload);
         const msg2 = hs.writeMsg2(); // 96 bytes
-        this.pendingHandshakes.set(senderID, {
+        this.storePendingHandshake(senderID, {
           handshake: hs,
           role: "responder",
           pendingText: carriedText,
@@ -2328,92 +2353,92 @@ export class MeshService {
     // A 96/64-byte payload is a msg2/msg3 continuation; it is only meaningful
     // against a handshake we already have in flight. (No staleness check here:
     // a late-but-valid reply over several hops should still complete.)
+    //
+    // Each one is read on a clone. Anyone who saw our msg1 can answer it with a
+    // valid msg2 under their own static key, and a garbled one fails only after
+    // the transcript was mixed, so reading into the pending handshake would let
+    // either kill it before the genuine reply lands. A failure keeps the
+    // original for that reply; only a bound session replaces it.
     const pending = this.pendingHandshakes.get(senderID);
     if (!pending) return;
+    const expected = pending.role === "initiator" ? 96 : 64;
+    if (packet.payload.length !== expected) return;
+    if (!this.handshakeLimiter.allow(senderID, Date.now())) return;
+    const hs = pending.handshake.clone();
 
     if (pending.role === "initiator") {
       // Initiator path: this is msg2 (96 bytes) from the responder.
-      if (packet.payload.length !== 96) return;
+      let msg3: Uint8Array;
+      let session: NoiseSession;
       try {
-        pending.handshake.readMsg2(packet.payload);
-        const msg3 = pending.handshake.writeMsg3(); // 64 bytes
-        const session = pending.handshake.split();
-        // Identity binding (bitchat NoiseSessionManager, #1432): the completed
-        // session's static key MUST derive to the claimed senderID. Otherwise a
-        // peer that answered under someone else's ID could bind a session to an
-        // identity it does not own. Abort without sending msg3 or touching state.
-        if (!this.sessionBindsTo(session, senderID)) {
-          this.pendingHandshakes.delete(senderID);
-          return;
-        }
-        this.registry.setSession(senderID, session);
-
-        // msg3 FIRST. Nothing encrypted under this session may go out before
-        // it, because until msg3 lands the far side has no session to decrypt
-        // with and will silently drop whatever arrives.
-        //
-        // We complete on msg2, one message earlier than the responder does, so
-        // there is a window where we believe the session is live and they do
-        // not. Anything sent into that window is lost without a trace: no
-        // error, no receipt, nothing to retry against. The queued-text flush
-        // below was already ordered correctly for this reason; what was not was
-        // tryInitDR (which flushes the OUTBOX) and flushPendingGroupInvites,
-        // both of which ran before msg3 was even written to the radio. That is
-        // why a first-contact DM to someone who had walked away never arrived
-        // when they came back, and why a group invite needed an existing
-        // conversation to land reliably.
-        const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
-        this.unicastFn(senderID, msg3Pkt);
-
-        // Now that the far side can decrypt, prove who we are before anything
-        // else rides the session. Order matters: the proof is what binds our
-        // signing key to this peer ID for the far side, so sending content
-        // first would have it arrive attributed only by trust-on-first-use.
-        this.sendPeerState(senderID);
-
-        // Then seed the ratchet and release everything that was waiting.
-        this.tryInitDR(senderID, "initiator", session.exporterSecret);
-        this.flushPendingGroupInvites(senderID);
-        // Flush queued messages. Use this.sendDm so they go through DR if ready.
-        const queued = pending.pendingText.slice();
-        this.pendingHandshakes.delete(senderID);
-        for (const q of queued) this.sendDm(senderID, q.text, q.messageID);
+        hs.readMsg2(packet.payload);
+        msg3 = hs.writeMsg3(); // 64 bytes
+        session = hs.split();
       } catch {
-        this.pendingHandshakes.delete(senderID);
+        return;
+      }
+      // Identity binding (bitchat NoiseSessionManager, #1432): the completed
+      // session's static key MUST derive to the claimed senderID. Otherwise a
+      // peer that answered under someone else's ID could bind a session to an
+      // identity it does not own. Abort without sending msg3 or touching state.
+      if (!this.sessionBindsTo(session, senderID)) return;
+      this.pendingHandshakes.delete(senderID);
+      this.registry.setSession(senderID, session);
+
+      // msg3 FIRST. Nothing encrypted under this session may go out before
+      // it, because until msg3 lands the far side has no session to decrypt
+      // with and will silently drop whatever arrives.
+      //
+      // We complete on msg2, one message earlier than the responder does, so
+      // there is a window where we believe the session is live and they do
+      // not. Anything sent into that window is lost without a trace: no
+      // error, no receipt, nothing to retry against. That covers tryInitDR
+      // (which flushes the OUTBOX) and flushPendingGroupInvites as much as the
+      // queued text.
+      const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
+      this.unicastFn(senderID, msg3Pkt);
+
+      // Now that the far side can decrypt, prove who we are before anything
+      // else rides the session. Order matters: the proof is what binds our
+      // signing key to this peer ID for the far side, so sending content
+      // first would have it arrive attributed only by trust-on-first-use.
+      this.sendPeerState(senderID);
+
+      // Then seed the ratchet and release everything that was waiting.
+      this.tryInitDR(senderID, "initiator", session.exporterSecret);
+      this.flushPendingGroupInvites(senderID);
+      // Flush queued messages. Use this.sendDm so they go through DR if ready.
+      for (const q of pending.pendingText) {
+        this.sendDm(senderID, q.text, q.messageID);
       }
       return;
     }
 
-    if (pending.role === "responder") {
-      // Responder path: this is msg3 (64 bytes) from the initiator.
-      if (packet.payload.length !== 64) return;
-      try {
-        pending.handshake.readMsg3(packet.payload);
-        const session = pending.handshake.split();
-        // Identity binding (bitchat #1432): reject a completed handshake whose
-        // static key does not derive to the claimed senderID, so a forged msg1
-        // claiming a victim's peerID cannot complete with the attacker's own key
-        // and evict/hijack the victim's real session. Drop without touching the
-        // existing session.
-        if (!this.sessionBindsTo(session, senderID)) {
-          this.pendingHandshakes.delete(senderID);
-          return;
-        }
-        this.registry.setSession(senderID, session);
-        // Prove our identity first, for the same reason as the initiator path.
-        this.sendPeerState(senderID);
-        // Seed the Double Ratchet for Airhop-to-Airhop sessions.
-        this.tryInitDR(senderID, "responder", session.exporterSecret);
-        this.flushPendingGroupInvites(senderID);
-        // Flush any DMs carried over from an initiator->responder reset. Normal
-        // responders have none; only a simultaneous-initiation flip queues them.
-        const queued = pending.pendingText.slice();
-        this.pendingHandshakes.delete(senderID);
-        for (const q of queued) this.sendDm(senderID, q.text, q.messageID);
-        return;
-      } catch {
-        this.pendingHandshakes.delete(senderID);
-      }
+    // Responder path: this is msg3 (64 bytes) from the initiator.
+    let session: NoiseSession;
+    try {
+      hs.readMsg3(packet.payload);
+      session = hs.split();
+    } catch {
+      return;
+    }
+    // Identity binding (bitchat #1432): reject a completed handshake whose
+    // static key does not derive to the claimed senderID, so a forged msg1
+    // claiming a victim's peerID cannot complete with the attacker's own key
+    // and evict/hijack the victim's real session. Drop without touching the
+    // existing session.
+    if (!this.sessionBindsTo(session, senderID)) return;
+    this.pendingHandshakes.delete(senderID);
+    this.registry.setSession(senderID, session);
+    // Prove our identity first, for the same reason as the initiator path.
+    this.sendPeerState(senderID);
+    // Seed the Double Ratchet for Airhop-to-Airhop sessions.
+    this.tryInitDR(senderID, "responder", session.exporterSecret);
+    this.flushPendingGroupInvites(senderID);
+    // Flush any DMs carried over from an initiator->responder reset. Normal
+    // responders have none; only a simultaneous-initiation flip queues them.
+    for (const q of pending.pendingText) {
+      this.sendDm(senderID, q.text, q.messageID);
     }
   }
 
@@ -2441,12 +2466,13 @@ export class MeshService {
     // can send at all (a location pin, an owed group state) have no other way
     // to open one.
     if (this.links.size() === 0) return;
+    if (!this.handshakeLimiter.allow(peerID, Date.now())) return;
     try {
       const hs = NoiseHandshake.createInitiator(
         this.identity.noiseStaticPrivKey,
       );
       const msg1 = hs.writeMsg1();
-      this.pendingHandshakes.set(peerID, {
+      this.storePendingHandshake(peerID, {
         handshake: hs,
         role: "initiator",
         pendingText: [],
@@ -5826,12 +5852,12 @@ export class MeshService {
       const existing = this.activeHandshake(recipientPeerID);
       if (existing) {
         existing.pendingText.push({ messageID: msgID, text });
-      } else {
+      } else if (this.handshakeLimiter.allow(recipientPeerID, Date.now())) {
         const hs = NoiseHandshake.createInitiator(
           this.identity.noiseStaticPrivKey,
         );
         const msg1 = hs.writeMsg1();
-        this.pendingHandshakes.set(recipientPeerID, {
+        this.storePendingHandshake(recipientPeerID, {
           handshake: hs,
           role: "initiator",
           pendingText: [{ messageID: msgID, text }],
@@ -5841,7 +5867,8 @@ export class MeshService {
         this.unicastFn(recipientPeerID, pkt);
       }
       // NOT "sent". Nothing carrying the user's words has left the device: a
-      // handshake has been started and the text is being held against it.
+      // handshake has been started and the text is being held against it, or
+      // the handshake budget refused one and the outbox retries later.
       //
       // Reporting "sent" here was how a first-contact DM went missing. The text
       // lived only in `pendingHandshakes[peer].pendingText`, which is in-memory

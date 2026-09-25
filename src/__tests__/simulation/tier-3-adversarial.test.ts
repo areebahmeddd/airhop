@@ -26,11 +26,14 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
 });
 
 import type { Identity } from "@core/crypto/identity";
+import { NoiseHandshake } from "@core/crypto/noise-xx";
+import { base64ToBytes } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
 } from "@core/mesh/discovery/announce-manager";
 import {
+  decodePacket,
   encodePacket,
   Flags,
   PacketType,
@@ -44,7 +47,8 @@ import {
   MESH_PUBLIC_CHANNEL,
 } from "@core/router/message-router";
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { RadioFabric } from "./harness/radio-fabric";
@@ -690,4 +694,303 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
   s.expectNone("no forged senders", noForgedSenders([bob, carol]));
   s.expectNone("process health", noCrashes([bob, carol]));
   s.assert(true);
+});
+
+// A NOISE_HANDSHAKE packet as a hostile phone would write it: any claimed
+// sender, addressed to the victim.
+function forgeHandshake(opts: {
+  claimedPeerID: string;
+  toPeerID: string;
+  payload: Uint8Array;
+  timestamp: number;
+}): string {
+  return toBase64(
+    encodePacket({
+      type: PacketType.NOISE_HANDSHAKE,
+      ttl: 7,
+      flags: Flags.HAS_RECIPIENT,
+      senderID: peerIdToBytes(opts.claimedPeerID),
+      recipientID: peerIdToBytes(opts.toPeerID),
+      timestamp: opts.timestamp,
+      signature: new Uint8Array(64),
+      payload: opts.payload,
+    }),
+  );
+}
+
+function decodeWrite(dataBase64: string): Packet | null {
+  return decodePacket(base64ToBytes(dataBase64));
+}
+
+function pendingHandshakes(device: SimDevice): Map<string, unknown> {
+  return (device.mesh as unknown as { pendingHandshakes: Map<string, unknown> })
+    .pendingHandshakes;
+}
+
+test("C12 a msg1 flood under random IDs stays bounded and first contact still completes", async () => {
+  // Every msg1 costs the victim two DH operations, a stored handshake and a
+  // reply flooded at TTL 7, and the claimed sender is free to choose. 500 of
+  // them under 500 made-up IDs must not become 500 of each.
+  const s = (scenario = new Scenario({
+    id: "C12",
+    title: "handshake initiation flood",
+    seed: 72,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const carol = SimDevice.create(s.world, {
+    id: "carol",
+    platform: "android",
+    seedByte: 33,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, carol, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) && bob.peers().includes(carol.peerID),
+    20_000,
+  );
+
+  const msg2Targets = new Set<string>();
+  radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 96)
+      return;
+    msg2Targets.add(bytesToHex(p.recipientID));
+  });
+
+  const floodStart = s.world.now;
+  for (let i = 0; i < 500; i++) {
+    const id = bytesToHex(sha256(Uint8Array.of(i >> 8, i & 0xff))).slice(0, 16);
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      forgeHandshake({
+        claimedPeerID: id,
+        toPeerID: bob.peerID,
+        payload: NoiseHandshake.createInitiator(
+          ed25519.utils.randomSecretKey(),
+        ).writeMsg1(),
+        timestamp: s.world.wallClock(),
+      }),
+    );
+    if (i % 50 === 49) await s.world.advance(1000);
+  }
+
+  s.check(
+    "bob answered at most 30 forged openings in the minute",
+    msg2Targets.size <= 30,
+    `msg2 sent to ${String(msg2Targets.size)} peers`,
+  );
+  s.check(
+    "and holds no more handshakes than he answered",
+    pendingHandshakes(bob).size <= 30,
+    `pending = ${String(pendingHandshakes(bob).size)}`,
+  );
+
+  // Our own initiations never meet the msg1 budget, so bob reaching out to
+  // someone new works in the middle of the flood.
+  bob.send(`dm:${alice.peerID}`, "bob, during the flood");
+  const outbound = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("bob, during the flood"),
+    10_000,
+  );
+  s.check("bob's own first-contact DM completes during the flood", outbound);
+
+  // An inbound first contact waits out the minute, then completes from the
+  // outbox without anyone doing anything.
+  carol.send(`dm:${bob.peerID}`, "carol, first contact");
+  const inbound = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${carol.peerID}`).includes("carol, first contact"),
+    180_000,
+  );
+  s.check(
+    "an inbound first-contact DM still lands once the window slides",
+    inbound,
+    `landed after ${String(s.world.now - floodStart)} ms`,
+  );
+  s.check(
+    "expired handshakes do not accumulate",
+    pendingHandshakes(bob).size <= 31,
+    `pending = ${String(pendingHandshakes(bob).size)}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C13 a forged msg2 does not cost the genuine handshake", async () => {
+  // Bob's msg1 floods, so anyone can answer it with a valid msg2 under their
+  // own static key and the peer ID bob addressed. It fails the identity
+  // binding, but only after it was read into the handshake. Read into the real
+  // one, it spent it and the genuine msg2 found nothing to complete.
+  const s = (scenario = new Scenario({
+    id: "C13",
+    title: "forged handshake reply",
+    seed: 73,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  let forged = 0;
+  radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 32)
+      return;
+    // Mallory is one hop from bob, as alice is, so her answer lands first.
+    const responder = NoiseHandshake.createResponder(
+      mallory.identity.noiseStaticPrivKey,
+    );
+    responder.readMsg1(p.payload);
+    const msg2 = responder.writeMsg2();
+    const garbled = msg2.slice();
+    garbled[60] ^= 0xff;
+    forged++;
+    setTimeout(() => {
+      for (const payload of [msg2, garbled]) {
+        radio.injectTo(
+          bob.id,
+          mallory.id,
+          forgeHandshake({
+            claimedPeerID: alice.peerID,
+            toPeerID: bob.peerID,
+            payload,
+            timestamp: s.world.wallClock(),
+          }),
+        );
+      }
+    }, 1);
+  });
+
+  const sentAt = s.world.now;
+  bob.send(`dm:${alice.peerID}`, "first words");
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("first words"),
+    10_000,
+  );
+  s.check("mallory answered bob's msg1 first", forged > 0);
+  s.check(
+    "the genuine msg2 still completes, well inside any outbox retry",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C13b a forged msg1 under a peer's ID displaces its live attempt, and the DM recovers", async () => {
+  // The case a clone cannot cover. A msg1 is how a peer that restarted opens a
+  // new handshake, so a fresh one replaces a responder attempt in flight, and
+  // its claimed sender is unauthenticated. bitchat-ios yields the same way. The
+  // accepted cost is one handshake round: the message is delayed, not lost.
+  const s = (scenario = new Scenario({
+    id: "C13b",
+    title: "handshake displaced by a forged opening",
+    seed: 74,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  let displaced = false;
+  const stop = radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id || displaced) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 96)
+      return;
+    // Bob has just answered alice's msg1. Before her msg3 lands, a fresh
+    // opening in her name replaces the attempt it belongs to.
+    displaced = true;
+    setTimeout(() => {
+      radio.injectTo(
+        bob.id,
+        mallory.id,
+        forgeHandshake({
+          claimedPeerID: alice.peerID,
+          toPeerID: bob.peerID,
+          payload: NoiseHandshake.createInitiator(
+            mallory.identity.noiseStaticPrivKey,
+          ).writeMsg1(),
+          timestamp: s.world.wallClock(),
+        }),
+      );
+    }, 1);
+  });
+
+  alice.send(`dm:${bob.peerID}`, "delayed, not lost");
+  await s.world.advance(3_000);
+  stop();
+  s.check("the forged opening displaced bob's responder attempt", displaced);
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("delayed, not lost"),
+    180_000,
+  );
+  s.check("the DM still arrives once a later handshake completes", landed);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "delayed, not lost")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
 });

@@ -128,6 +128,33 @@ describe("Noise XX handshake", () => {
     expect(() => sR.decrypt(ct)).toThrow();
   });
 
+  test("a clone spends a bad or foreign msg2 and the original still completes", () => {
+    const initiator = NoiseHandshake.createInitiator(makeKeypair().priv);
+    const responder = NoiseHandshake.createResponder(makeKeypair().priv);
+    const msg1 = initiator.writeMsg1();
+    responder.readMsg1(msg1);
+    const genuine = responder.writeMsg2();
+
+    // Anyone who saw msg1 can answer it validly under their own static key.
+    const forger = NoiseHandshake.createResponder(makeKeypair().priv);
+    forger.readMsg1(msg1);
+    const foreign = initiator.clone();
+    foreign.readMsg2(forger.writeMsg2());
+    foreign.writeMsg3();
+    foreign.split();
+
+    const garbled = genuine.slice();
+    garbled[50] ^= 0xff;
+    expect(() => initiator.clone().readMsg2(garbled)).toThrow();
+
+    initiator.readMsg2(genuine);
+    responder.readMsg3(initiator.writeMsg3());
+    const sI = initiator.split();
+    const sR = responder.split();
+    const ct = sI.encrypt(new TextEncoder().encode("still ours"));
+    expect(new TextDecoder().decode(sR.decrypt(ct))).toBe("still ours");
+  });
+
   test("wrong responder key causes handshake failure", () => {
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();

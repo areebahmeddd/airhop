@@ -35,6 +35,7 @@
 
 import { sha256 } from "@noble/hashes/sha2.js";
 import { concatBytes, hexToBytes } from "@noble/hashes/utils.js";
+import { SlidingWindowLimiter } from "../routing/sliding-window-limiter";
 import {
   computePacketId,
   Flags,
@@ -508,36 +509,6 @@ export function decodeGossipFilterPayload(
   return { p, m, data, types, since };
 }
 
-// ---- Response rate limiting ----
-
-// Sliding window of answers per peer. Not a deduplicator: a peer asks every 15s
-// and gets an answer. This only caps the case where it asks far faster, since
-// each answer costs a store scan and a burst of writes on a shared radio.
-class SyncResponseRateLimiter {
-  private readonly hits = new Map<string, number[]>();
-
-  shouldRespond(peerID: string, now: number): boolean {
-    const cutoff = now - RESPONSE_LIMIT_WINDOW_MS;
-    const recent = (this.hits.get(peerID) ?? []).filter((t) => t > cutoff);
-    if (recent.length >= RESPONSE_LIMIT_MAX) {
-      // Keep the trimmed list so the window still slides while blocked.
-      this.hits.set(peerID, recent);
-      return false;
-    }
-    recent.push(now);
-    this.hits.set(peerID, recent);
-    return true;
-  }
-
-  forget(peerID: string): void {
-    this.hits.delete(peerID);
-  }
-
-  reset(): void {
-    this.hits.clear();
-  }
-}
-
 // ---- GossipSync class ----
 
 export type SendToPeerFn = (peerID: string, packet: Packet) => void;
@@ -568,7 +539,13 @@ export class GossipSync {
   private readonly seen = new Map<string, Packet>();
   private seenBytes = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
-  private readonly rateLimiter = new SyncResponseRateLimiter();
+  // Not a deduplicator: a peer asks every 15s and gets an answer. This only
+  // caps one asking far faster, since each answer costs a store scan and a
+  // burst of writes on a shared radio.
+  private readonly rateLimiter = new SlidingWindowLimiter(
+    RESPONSE_LIMIT_MAX,
+    RESPONSE_LIMIT_WINDOW_MS,
+  );
 
   // Start the 15-second sync round.
   //
@@ -736,7 +713,7 @@ export class GossipSync {
     // peer that asks in a loop should not be able to make us pay for it.
     if (
       fromPeerID !== undefined &&
-      !this.rateLimiter.shouldRespond(fromPeerID, now)
+      !this.rateLimiter.tryAcquire(fromPeerID, now)
     ) {
       return [];
     }

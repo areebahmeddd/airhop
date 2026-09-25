@@ -281,6 +281,27 @@ export class NoiseHandshake {
     return new NoiseHandshake(localStaticPrivKey, "responder", prologue);
   }
 
+  // An independent deep copy. Reading msg2 or msg3 mixes `h` and `ck` before
+  // its AEAD check and split() zeroes the keys, so a message that turns out
+  // bad or unbound would spend the handshake it was tried on. Trying it on a
+  // clone keeps the original for the genuine reply.
+  clone(): NoiseHandshake {
+    const copy = new NoiseHandshake(
+      this.localStaticPriv,
+      this.role,
+      new Uint8Array(0),
+    );
+    copy.h = this.h.slice();
+    copy.ck = this.ck.slice();
+    copy.k = this.k?.slice() ?? null;
+    copy.n = this.n;
+    copy.localEphemeralPriv = this.localEphemeralPriv?.slice() ?? null;
+    copy.localEphemeralPub = this.localEphemeralPub?.slice() ?? null;
+    copy.remoteEphemeralPub = this.remoteEphemeralPub?.slice() ?? null;
+    copy.remoteStaticPub = this.remoteStaticPub?.slice() ?? null;
+    return copy;
+  }
+
   // msg1: initiator -> responder (-> e)
   // Returns 32-byte ephemeral public key (no encryption yet, no payload).
   writeMsg1(): Uint8Array {
