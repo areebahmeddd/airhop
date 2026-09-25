@@ -582,6 +582,7 @@ export class FileTransferService {
   private readonly sealFile?: SealFileFn;
   private readonly usesBleRadio?: UsesBleRadioFn;
   private readonly isReachable?: IsReachableFn;
+  private readonly getDegree: () => number;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -594,6 +595,9 @@ export class FileTransferService {
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
     isReachable?: IsReachableFn,
+    // Our neighbour count, which a public file's TTL follows (see
+    // origin-ttl.ts). 0 (sparse) when not given.
+    getDegree: () => number = () => 0,
   ) {
     this.identity = identity;
     this.broadcast = broadcast;
@@ -602,6 +606,7 @@ export class FileTransferService {
     this.sealFile = sealFile;
     this.usesBleRadio = usesBleRadio;
     this.isReachable = isReachable;
+    this.getDegree = getDegree;
   }
 
   // Receive a fully reassembled FILE_TRANSFER packet from the fragment layer.
@@ -726,7 +731,9 @@ export class FileTransferService {
       (() => {
         const raw: Packet = {
           type: PacketType.FILE_TRANSFER,
-          ttl: isDM ? 7 : originTtl(),
+          // A public file crosses Bluetooth as fragments, which inherit this
+          // TTL and are relayed as fragments are, so it takes their ceiling.
+          ttl: isDM ? 7 : originTtl(PacketType.FRAGMENT, this.getDegree()),
           flags: isDM ? Flags.HAS_RECIPIENT | Flags.SIGNED : Flags.SIGNED,
           senderID: hexToBytes(this.identity.peerID),
           recipientID: isDM

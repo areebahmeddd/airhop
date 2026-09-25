@@ -35,6 +35,7 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: mod };
 });
 
+import { ANNOUNCE_TTL } from "@core/mesh/discovery/announce-manager";
 import {
   encodeBoardWire,
   newPostID,
@@ -600,5 +601,108 @@ test("R08 a forged board post, file or voice frame is relayed by no one", async 
 
   s.expectNone("no forged senders", noForgedSenders([alice, bob, carol]));
   s.expectNone("process health", noCrashes([alice, bob, carol, mallory]));
+  s.assert();
+});
+
+test("R09 a message addressed to a phone is not forwarded by that phone", async () => {
+  // It has arrived. Forwarding it onward would spend six more hops of airtime
+  // carrying one person's DM to everyone else, and a file addressed to us
+  // would be echoed out whole.
+  const s = (scenario = new Scenario({
+    id: "R09",
+    title: "the addressee is the end of the line",
+    seed: 509,
+  }));
+  const radio = new RadioFabric(s.world);
+  const [alice, bob, carol] = phones(s, ["alice", "bob", "carol"]);
+  for (const n of [alice, bob, carol]) radio.add(n);
+  s.track(alice, bob, carol);
+  radio.setChain(["alice", "bob", "carol"]);
+  for (const d of [alice, bob, carol]) d.launch();
+
+  const known = await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) && carol.peers().includes(bob.peerID),
+    60_000,
+  );
+  s.check("the chain is up", known);
+
+  const air = watchAir(radio, bob.id);
+  alice.sendDm(bob.peerID, "for bob only");
+  const arrived = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("for bob only"),
+    60_000,
+  );
+  s.check("bob has alice's message", arrived);
+  await advanceFor(s.world, 5_000);
+
+  const echoed = air.filter((p) => bytesToHex(p.recipientID) === bob.peerID);
+  s.check(
+    "bob forwarded nothing addressed to him",
+    echoed.length === 0,
+    echoed.map((p) => `0x${p.type.toString(16)}`).join(" "),
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob, carol]));
+  s.assert();
+});
+
+test("R10 a packet under a phone's own ID is not relayed by it, and still warns it", async () => {
+  // Two phones on one identity: each hears the other's announces under its
+  // own peer ID. Forwarding one would carry that identity's packets onward as
+  // if we had sent them; handling it is what raises "in use on another phone".
+  const s = (scenario = new Scenario({
+    id: "R10",
+    title: "our own ID is ours to send, not to forward",
+    seed: 510,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 91,
+  });
+  const twin = SimDevice.create(s.world, {
+    id: "twin",
+    platform: "android",
+    seedByte: 91,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 92,
+  });
+  for (const n of [alice, twin, bob]) radio.add(n);
+  s.track(alice, twin, bob);
+  s.check("the twins share a peer ID", alice.peerID === twin.peerID);
+  // Bob hears alice only, so any announce under her ID that reaches him with
+  // a hop taken off came through her.
+  radio.setChain(["twin", "alice", "bob"]);
+  for (const d of [alice, twin, bob]) d.launch();
+
+  const air = watchAir(radio, alice.id);
+  const warned = await waitFor(
+    s.world,
+    () => alice.meshState().identityElsewhere === true,
+    90_000,
+  );
+  s.check("alice is warned her identity is on another phone", warned);
+  await advanceFor(s.world, 30_000);
+
+  const relayed = air.filter(
+    (p) =>
+      p.type === PacketType.ANNOUNCE &&
+      sentBy(p, alice) &&
+      p.ttl < ANNOUNCE_TTL,
+  );
+  s.check(
+    "alice relayed none of the twin's announces",
+    relayed.length === 0,
+    `${relayed.length} relayed`,
+  );
+
+  s.expectNone("process health", noCrashes([alice, twin, bob]));
   s.assert();
 });

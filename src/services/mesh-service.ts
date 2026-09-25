@@ -474,10 +474,10 @@ export class MeshService {
   // A remote peer's Nostr pubkey hex to their peerID, filled as ANNOUNCEs arrive.
   private readonly nostrPubkeyToPeerID = new Map<string, string>();
 
-  // Relay jitter and the time-critical TTL cap adapt to how crowded the
-  // Bluetooth mesh is. See LinkRegistry.degree for why that is peers rather
-  // than links, and Bluetooth rather than every transport.
-  private readonly floodRouter = new FloodRouter(() => this.links.degree());
+  // Relay jitter and TTL adapt to how crowded the Bluetooth mesh is. See
+  // LinkRegistry.degree for why that is peers rather than links, and
+  // Bluetooth rather than every transport.
+  private readonly floodRouter: FloodRouter;
   private readonly registry = new PeerRegistry();
   private readonly announceManager = new AnnounceManager();
   private readonly router: MessageRouter;
@@ -734,6 +734,9 @@ export class MeshService {
 
   constructor(identity: Identity) {
     this.identity = identity;
+    this.floodRouter = new FloodRouter(hexToBytes(identity.peerID), () =>
+      this.links.degree(),
+    );
     this.nostrPrivKey = deriveNostrPrivKey(identity.signingPrivKey);
     this.nostrPubKeyHex = getPublicKey(this.nostrPrivKey);
     this.radio = new RadioController(identity.peerID);
@@ -846,6 +849,7 @@ export class MeshService {
       // A DM rides only a link held to its recipient (it is never flooded), so
       // without one a refused fragment has nowhere to go.
       (recipientPeerID) => this.links.linkFor(recipientPeerID) !== undefined,
+      () => this.links.degree(),
     );
 
     const nostrSendFn: NostrSendFn = async (
@@ -864,6 +868,7 @@ export class MeshService {
       broadcastFn,
       unicastFn,
       nostrSendFn,
+      () => this.links.degree(),
     );
   }
 
@@ -1737,29 +1742,11 @@ export class MeshService {
     // then fed into the assembler. When all fragments arrive the reassembled
     // inner packet is routed through routePacket without another flood cycle.
     if (packet.type === PacketType.FRAGMENT) {
-      // A fragment addressed to us has nowhere further to go, so relaying it is
-      // pure cost, and for a file that cost is the whole file.
-      //
-      // Fragments carry their parent's recipientID, so a DM attachment is
-      // directed at exactly one device. Relaying anyway meant the RECEIVER
-      // re-fragmented every byte it had just been handed and pushed it back out
-      // over its other links: a photo takes the WiFi link one way and is then
-      // echoed over Bluetooth at ~18 KiB/s, spending seconds of radio time and
-      // both devices' battery on a copy for the sender. Scenario W-F09 measures
-      // each radio rather than assuming the faster one was chosen.
-      //
-      // Narrow on purpose: only the addressee stops, so middle nodes still relay
-      // and multi-hop is untouched; broadcasts still flood; only FRAGMENT is
-      // affected. Nothing on the wire changes.
-      const addressedToUs =
-        !isBroadcast(packet) &&
-        isForMe(packet, hexToBytes(this.identity.peerID));
-
-      // Fragments inherit the parent packet's version and route, so a routed
-      // file crosses the mesh on the same path its parent planned rather than
-      // falling back to flooding the moment it is split.
+      // Fragments inherit the parent packet's version, route and recipient, so
+      // a routed file crosses the mesh on the path its parent planned, and one
+      // addressed to us stops here (relayDecision) rather than being echoed
+      // back out over every other link.
       this.floodRouter.receive(packet, (relay) => {
-        if (addressedToUs) return;
         this.relayPacket(relay, linkID);
       });
       this.fragmentManager.receive(
@@ -2155,6 +2142,7 @@ export class MeshService {
       {
         senderPeerID: this.identity.peerID,
         signingPrivKey: this.identity.signingPrivKey,
+        getDegree: () => this.links.degree(),
         onPacket: (packet) => {
           // broadcastPacket marks the packet as originated here, so our own
           // burst is never relayed back to us. It is deliberately not gossiped:
@@ -4891,7 +4879,11 @@ export class MeshService {
   private broadcastBoardWire(wire: BoardWire): void {
     const packet: Packet = {
       type: PacketType.BOARD_POST,
-      ttl: originTtl(),
+      ttl: originTtl(
+        PacketType.BOARD_POST,
+        this.links.degree(),
+        wire.kind === "post" && isUrgent(wire.post),
+      ),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),
@@ -5402,7 +5394,7 @@ export class MeshService {
 
     const packet: Packet = {
       type: PacketType.GROUP_MESSAGE,
-      ttl: originTtl(),
+      ttl: originTtl(PacketType.GROUP_MESSAGE, this.links.degree()),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),

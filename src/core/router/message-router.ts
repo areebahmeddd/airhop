@@ -541,6 +541,9 @@ export class MessageRouter {
     // Nostr gift-wrap DM. Optional. When absent, DMs fall through to courier
     // if no direct session is available.
     private readonly nostrSend?: NostrSendFn,
+    // Our neighbour count, which the TTL of what we author follows (see
+    // origin-ttl.ts). 0 (sparse) when not given, for tests with no mesh.
+    private readonly getDegree: () => number = () => 0,
   ) {}
 
   // Send a message to a public channel. Always broadcast over mesh.
@@ -564,7 +567,7 @@ export class MessageRouter {
 
     const packet: Packet = {
       type,
-      ttl: originTtl(),
+      ttl: originTtl(type, this.getDegree()),
       flags: Flags.SIGNED,
       senderID: senderIDBytes,
       recipientID: new Uint8Array(8), // broadcast
@@ -582,7 +585,7 @@ export class MessageRouter {
   sendChannelEnc(sealedPayload: Uint8Array): void {
     const packet: Packet = {
       type: PacketType.CHANNEL_ENC,
-      ttl: originTtl(),
+      ttl: originTtl(PacketType.CHANNEL_ENC, this.getDegree()),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(8), // broadcast

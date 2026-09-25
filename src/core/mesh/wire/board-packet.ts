@@ -90,6 +90,25 @@ export function isUrgent(post: BoardPost): boolean {
 
 export const URGENT: number = URGENT_FLAG;
 
+// Whether a board payload is an urgent post, from its flags TLV alone. The
+// relay decision asks it of every board packet it forwards, before (or
+// without) a full decode, so it reads no further than that one field. Same
+// walk as bitchat-ios BoardWire.urgentFlag(in:).
+export function boardUrgentFlag(payload: Uint8Array): boolean {
+  let off = 0;
+  while (off + 3 <= payload.length) {
+    const type = payload[off];
+    const len = (payload[off + 1] << 8) | payload[off + 2];
+    off += 3;
+    if (off + len > payload.length) return false;
+    if (type === TLV.FLAGS && len === 1) {
+      return (payload[off] & URGENT_FLAG) !== 0;
+    }
+    off += len;
+  }
+  return false;
+}
+
 const enc = new TextEncoder();
 const dec = new TextDecoder("utf-8", { fatal: false });
 
