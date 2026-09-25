@@ -91,6 +91,32 @@ describe("PeerPrekeyStore", () => {
     peers.ingest(older); // ignored (not newer)
     expect(peers.has(noise.pub)).toBe(true);
   });
+
+  // "Newer" is judged by the bundle's own date, and bundles are persisted, so
+  // one dated years ahead would shut out every genuine bundle after it.
+  it("refuses a bundle dated past the announce skew", () => {
+    const peers = new PeerPrekeyStore(freshId("peers"));
+    const local = new LocalPrekeyStore(freshId("local"));
+    const noise = x25519Keypair();
+    const b = local.buildBundle(noise.pub, ed25519.utils.randomSecretKey())!;
+    const now = Date.now();
+    peers.ingest({ ...b, generatedAt: now + 16 * 60_000 }, now);
+    expect(peers.has(noise.pub)).toBe(false);
+    peers.ingest({ ...b, generatedAt: now + 14 * 60_000 }, now);
+    expect(peers.has(noise.pub)).toBe(true);
+  });
+
+  it("forgets one peer's bundle", () => {
+    const peers = new PeerPrekeyStore(freshId("peers"));
+    const local = new LocalPrekeyStore(freshId("local"));
+    const noise = x25519Keypair();
+    peers.ingest(
+      local.buildBundle(noise.pub, ed25519.utils.randomSecretKey())!,
+    );
+    peers.forget(noise.pub);
+    expect(peers.has(noise.pub)).toBe(false);
+    expect(peers.assign(noise.pub)).toBeNull();
+  });
 });
 
 describe("forward-secret courier seal/open via prekey", () => {

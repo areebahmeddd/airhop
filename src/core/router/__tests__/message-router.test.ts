@@ -974,6 +974,21 @@ describe("PeerRegistry: authenticated peer state", () => {
     );
     expect(r.get("ffffffffffffffff")).toBeUndefined();
   });
+
+  // Signature checks rank a proof above everything, so the answer must not
+  // include a key an announce merely pinned, and must outlive reachability.
+  test("provenSigningKey answers only for a proof, and past the TTL", () => {
+    jest.useFakeTimers();
+    const r = withAnnouncedPeer();
+    expect(r.provenSigningKey(PEER)).toBeUndefined();
+    r.setAuthenticatedState(PEER, PROVEN_KEY, 0);
+    jest.advanceTimersByTime(10 * 60_000);
+    expect(r.get(PEER)).toBeUndefined();
+    expect(Array.from(r.provenSigningKey(PEER)!)).toEqual(
+      Array.from(PROVEN_KEY),
+    );
+    jest.useRealTimers();
+  });
 });
 
 // The rule the add-contact screen leans on: a card read off the other phone may

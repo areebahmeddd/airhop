@@ -193,6 +193,7 @@ import {
 } from "@core/router/message-router";
 import { t } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
+import { equalBytes } from "@noble/curves/utils.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
@@ -202,7 +203,7 @@ import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
-import { hasKeys, useContactsStore } from "@store/contacts-store";
+import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import {
   evictExpiredOwedGroupStates,
   queueOwedGroupState,
@@ -355,6 +356,9 @@ const MESH_PONG_MIN_INTERVAL_MS = 100;
 // announce); an age check is the equivalent safety net here. Generous enough to
 // cover a multi-hop round trip.
 const HANDSHAKE_TIMEOUT_MS = 30_000;
+
+// A 32-byte key as stored hex.
+const HEX_32 = /^[0-9a-f]{64}$/;
 
 // How stale a live-voice frame may be before it is treated as a straggler or a
 // replay rather than something anyone should start hearing. Matches bitchat's
@@ -1057,8 +1061,17 @@ export class MeshService {
       for (const peerID of Object.keys(state.contacts)) {
         const c = state.contacts[peerID];
         if (c.nostrPubkeyHex === undefined || c.nostrPubkeyHex.length === 0) {
-          const known = this.registry.get(peerID)?.nostrPubkey;
-          if (known) useContactsStore.getState().setNostrPubkey(peerID, known);
+          // Only an npub from an announce whose key is vouched for, the rule
+          // onAnnounce applies.
+          const e = this.registry.get(peerID);
+          const vouched = this.vouchedSigningKey(peerID);
+          if (
+            e?.nostrPubkey !== undefined &&
+            vouched !== undefined &&
+            equalBytes(vouched, e.signingPubKey)
+          ) {
+            useContactsStore.getState().setNostrPubkey(peerID, e.nostrPubkey);
+          }
         } else {
           this.bindNostrPubkey(c.nostrPubkeyHex, peerID, false);
         }
@@ -2376,7 +2389,7 @@ export class MeshService {
       // identity it does not own. Abort without sending msg3 or touching state.
       if (!this.sessionBindsTo(session, senderID)) return;
       this.pendingHandshakes.delete(senderID);
-      this.registry.setSession(senderID, session);
+      this.adoptSession(senderID, session);
 
       // msg3 FIRST. Nothing encrypted under this session may go out before
       // it, because until msg3 lands the far side has no session to decrypt
@@ -2422,7 +2435,7 @@ export class MeshService {
     // existing session.
     if (!this.sessionBindsTo(session, senderID)) return;
     this.pendingHandshakes.delete(senderID);
-    this.registry.setSession(senderID, session);
+    this.adoptSession(senderID, session);
     // Prove our identity first, for the same reason as the initiator path.
     this.sendPeerState(senderID);
     // Seed the Double Ratchet for Airhop-to-Airhop sessions.
@@ -2433,6 +2446,30 @@ export class MeshService {
     for (const q of pending.pendingText) {
       this.sendDm(senderID, q.text, q.messageID);
     }
+  }
+
+  // File a completed, bound session. A session needs a registry entry, and a
+  // contact whose announces onAnnounce refuses (their key contradicts the
+  // stored one) has none. The session itself proves the Noise key, so the
+  // entry is seeded from the contact and the handshake still settles which
+  // key is theirs: the 0x21 that follows replaces the seeded one if it is
+  // wrong. Anyone else without an entry has never announced, as before.
+  private adoptSession(peerID: string, session: NoiseSession): void {
+    const contact = useContactsStore.getState().getContact(peerID);
+    const contactKey = this.contactSigningKey(peerID);
+    if (
+      this.registry.pinnedSigningKey(peerID) === undefined &&
+      contact !== undefined &&
+      contactKey !== undefined
+    ) {
+      this.registry.update({
+        peerID,
+        noisePubKey: session.remoteStaticPubKey,
+        signingPubKey: contactKey,
+        nickname: contact.nickname,
+      });
+    }
+    this.registry.setSession(peerID, session);
   }
 
   // Sealed traffic arrived from a peer we hold no session with. They still
@@ -2965,6 +3002,18 @@ export class MeshService {
     // A half-understood identity proof is worth less than none.
     if (state === null) return;
 
+    // A key a human verified is re-pinned only by another in-person scan, not
+    // by a session, however well it proves possession of the Noise key.
+    const contactKey = this.contactSigningKey(peerID);
+    if (
+      contactKey !== undefined &&
+      !equalBytes(contactKey, state.signingPubKey) &&
+      isVerified(useContactsStore.getState().getContact(peerID))
+    ) {
+      return;
+    }
+
+    const pinned = this.registry.pinnedSigningKey(peerID);
     const accepted = this.registry.setAuthenticatedState(
       peerID,
       state.signingPubKey,
@@ -2973,6 +3022,17 @@ export class MeshService {
     // Two different proven keys for one peer ID cannot both be real. The first
     // stands; this session is talking to something that is not who it was.
     if (!accepted) return;
+
+    const session = this.registry.sessionFor(peerID);
+    // The key we were checking this peer against was not theirs, so any
+    // prekey bundle accepted under it may be someone else's, sealing our
+    // courier mail to them. The next genuine bundle replaces it.
+    const corrected = [pinned, contactKey].some(
+      (k) => k !== undefined && !equalBytes(k, state.signingPubKey),
+    );
+    if (corrected && session !== undefined) {
+      this.peerPrekeys.forget(session.remoteStaticPubKey);
+    }
 
     // Mirrored so the contact sheet re-renders the moment the proof lands.
     usePeerStore
@@ -2988,13 +3048,14 @@ export class MeshService {
     // The Noise key travels with it because a contact saved while the peer was
     // unheard holds neither and a safety number needs both. One fact proves the
     // pair: this packet arrived inside a session bound to the peer ID.
-    const proven = this.registry.get(peerID);
-    if (proven !== undefined) {
+    //
+    // And onto one whose unverified keys this proof contradicts, correcting it.
+    if (session !== undefined) {
       useContactsStore
         .getState()
         .setProvenKeys(
           peerID,
-          bytesToHex(proven.noisePubKey),
+          bytesToHex(session.remoteStaticPubKey),
           bytesToHex(state.signingPubKey),
         );
     }
@@ -3329,7 +3390,6 @@ export class MeshService {
     // signature". bitchat treats these as two distinct rejections
     // (.missingSignature / .invalidSignature) and refuses both.
     if (!verifyPacket(packet, info.signingPubKey)) return;
-    this.gossip.track(packet);
 
     // A blocked peer's announces still resolve transport-level routing
     // (below) so a Block doesn't itself break the mesh for other peers
@@ -3377,6 +3437,33 @@ export class MeshService {
       this.links.kindOf(linkID) !== undefined &&
       (boundPeer === undefined || boundPeer === peerID);
 
+    // The pin is decided here, before anything is written: an announce whose
+    // signing key contradicts the one we already hold for this peer is refused
+    // whole, as bitchat-ios refuses it (BLEAnnounceHandler falls back to the
+    // persisted identity when the registry has no pin). Consulting the saved
+    // contact is what makes a restart safe: the registry starts empty, and
+    // without it whoever announced a contact's ID first was pinned as them.
+    //
+    // Refused whole, nickname and Nostr key included, since they come from the
+    // same unverified source. What cannot be settled from here is which of two
+    // keys is right when nobody has proven or verified the one we hold: an
+    // announce pinned first, or a contact's key from a link card, may be the
+    // forgery. A session settles it, so a direct announce opens one: only the
+    // holder of the Noise private key completes it, and its 0x21 proof then
+    // replaces the wrong key (onAuthenticatedPeerState).
+    const held = this.knownSigningKey(peerID);
+    if (held !== undefined && !equalBytes(held, info.signingPubKey)) {
+      if (
+        isDirectAnnounce &&
+        this.registry.provenSigningKey(peerID) === undefined &&
+        !isVerified(useContactsStore.getState().getContact(peerID))
+      ) {
+        this.ensureNoiseSession(peerID);
+      }
+      return;
+    }
+    this.gossip.track(packet);
+
     if (isDirectAnnounce) {
       // The binding is what lets a send prefer the higher-throughput radio for
       // attachments and DR messages.
@@ -3393,13 +3480,23 @@ export class MeshService {
     const nostrPubkeyHex = info.nostrPubKey
       ? bytesToHex(info.nostrPubKey)
       : undefined;
+    // Persist the npub onto their contact so it survives this peer leaving
+    // Bluetooth range (the registry entry expires 60s after their radio goes
+    // quiet), and map it for inbound Nostr DMs. For a contact, only from an
+    // announce signed by a key a session or the contact itself stands behind:
+    // a contact keeps the first npub it is given, and one planted by whoever
+    // announced first would send our Nostr DMs to them and file theirs in the
+    // contact's thread. A stranger has nothing but announces, so their npub
+    // maps as their key pins, first come.
     if (nostrPubkeyHex) {
-      // Persist the npub onto their contact (if we have one) so it survives this
-      // peer leaving Bluetooth range: the registry entry above expires 60s after
-      // their radio goes quiet, but a durable contact keeps the key so a later
-      // DM can still fall back to Nostr. No-op for strangers we haven't saved.
-      useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
-      this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
+      const vouched = this.vouchedSigningKey(peerID) !== undefined;
+      const contact = useContactsStore.getState().getContact(peerID);
+      if (vouched) {
+        useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
+      }
+      if (vouched || contact === undefined) {
+        this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
+      }
     }
     this.registry.update({
       peerID,
@@ -4007,27 +4104,59 @@ export class MeshService {
 
   // Whether a broadcast really came from the peer it names. `senderID` is a
   // plaintext header anyone in range can set, so only an Ed25519 signature
-  // against a key already bound to that peer counts: the one pinned by a
-  // verified ANNOUNCE, or a saved contact's while a restart has the registry
-  // empty. No signature or no known key fails, as in bitchat-ios; relaying is
-  // separate, since a node forwards bytes it cannot yet check.
-  //
-  // The pinned key rather than registry.get(), whose 60s reachability TTL is far
-  // shorter than the 6 h gossip sync replays messages for.
+  // against the key knownSigningKey holds for that peer counts. No signature or
+  // no known key fails, as in bitchat-ios; relaying is separate, since a node
+  // forwards bytes it cannot yet check.
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
-    const pinned = this.registry.pinnedSigningKey(senderID);
-    if (pinned !== undefined) return verifyPacket(packet, pinned);
+    const key = this.knownSigningKey(senderID);
+    return key !== undefined && verifyPacket(packet, key);
+  }
 
-    const saved =
-      useContactsStore.getState().contacts[senderID]?.signingPubKeyHex;
-    if (saved === undefined || saved.length !== 64) return false;
-    try {
-      return verifyPacket(packet, hexToBytes(saved));
-    } catch {
-      // A stored key that is not valid hex. Treat as no key rather than throw.
-      return false;
+  // Which signing key speaks for a peer, strongest source first: one it proved
+  // inside a Noise session, then a saved contact's (whether or not a human
+  // verified it), then whatever the first announce pinned. Never TTL-bound:
+  // reachability says nothing about identity, and gossip replays a message
+  // for 6 h after its author's last announce.
+  //
+  // A contact's key outranks the announce pin because onAnnounce never pins
+  // one that contradicts it, which is what keeps someone announcing first
+  // after a restart from speaking for a contact. A proof outranks a contact's
+  // key because an unverified one may have come from a forged link card; a
+  // proof contradicting a verified one is refused before it gets here
+  // (onAuthenticatedPeerState).
+  //
+  // Strangers get no durable tier: a record of everyone met is what the
+  // design avoids, so their pins go with a restart or an eviction.
+  private knownSigningKey(peerID: string): Uint8Array | undefined {
+    return (
+      this.vouchedSigningKey(peerID) ?? this.registry.pinnedSigningKey(peerID)
+    );
+  }
+
+  // The same, less the announce pin: a key something other than an announce
+  // stands behind.
+  private vouchedSigningKey(peerID: string): Uint8Array | undefined {
+    return (
+      this.registry.provenSigningKey(peerID) ?? this.contactSigningKey(peerID)
+    );
+  }
+
+  // A saved contact's signing key, when the record is whole enough to trust:
+  // 64 hex characters, and a Noise key (if stored) that derives to the ID.
+  private contactSigningKey(peerID: string): Uint8Array | undefined {
+    const contact = useContactsStore.getState().getContact(peerID);
+    if (contact === undefined) return undefined;
+    const noise = contact.noisePubKeyHex;
+    if (
+      noise.length > 0 &&
+      (!HEX_32.test(noise) ||
+        bytesToHex(sha256(hexToBytes(noise))).slice(0, 16) !== peerID)
+    ) {
+      return undefined;
     }
+    const signing = contact.signingPubKeyHex;
+    return HEX_32.test(signing) ? hexToBytes(signing) : undefined;
   }
 
   // A message in the public mesh room (0x02). The payload is the text; the room
@@ -4758,10 +4887,12 @@ export class MeshService {
     this.broadcastPacket(packet);
   }
 
-  // Store a peer's prekey bundle after verifying it against their
-  // announce-bound signing key. Bundles from peers we have not heard announce
-  // (no signing key) cannot be verified and are ignored (still relayed by the
-  // flood layer for third parties).
+  // Store a peer's prekey bundle once it is plainly the owner's, as
+  // bitchat-ios requires (BLEService.handlePrekeyBundle): the packet names the
+  // owner as its sender, and both the packet and the bundle verify against the
+  // key knownSigningKey holds for them. A bundle is what our courier mail to
+  // them is sealed to, so accepting one signed by anyone else hands them that
+  // mail. Unverifiable bundles are ignored here and still relayed for others.
   private onPrekeyBundle(packet: Packet): void {
     const bundle = decodePrekeyBundle(packet.payload);
     if (bundle === null) return;
@@ -4769,9 +4900,13 @@ export class MeshService {
       0,
       16,
     );
-    const signingPub = this.registry.get(ownerPeerID)?.signingPubKey;
-    if (signingPub === undefined) return;
-    if (!verifyPrekeyBundle(bundle, signingPub)) return;
+    if (ownerPeerID === this.identity.peerID) return;
+    if (bytesToHex(packet.senderID) !== ownerPeerID) return;
+    if (!this.senderIsAuthentic(packet, ownerPeerID)) return;
+    const signingPub = this.knownSigningKey(ownerPeerID);
+    if (signingPub === undefined || !verifyPrekeyBundle(bundle, signingPub)) {
+      return;
+    }
     this.peerPrekeys.ingest(bundle);
   }
 
@@ -5889,15 +6024,20 @@ export class MeshService {
     }
 
     // Priority 4: Nostr gift-wrap DM over the internet, for a peer no radio
-    // reaches. Use the registry npub if the peer is still fresh, else the
-    // DURABLE contact npub, which is the whole point: reach someone the
+    // reaches. The DURABLE contact npub first: it came from a card or from an
+    // announce whose key was vouched for, where the registry's is whatever the
+    // last announce claimed. It is also the whole point: reach someone the
     // registry has already forgotten (they left Bluetooth range, or we met them
     // only by QR and never over BLE at all). Doing this here, in the service
     // layer, is what makes both a first send and an outbox flush use the
     // internet fallback, since the router only ever sees the ephemeral registry.
+    const contactNpub = useContactsStore
+      .getState()
+      .getContact(recipientPeerID)?.nostrPubkeyHex;
     const nostrPubkey =
-      this.registry.get(recipientPeerID)?.nostrPubkey ??
-      useContactsStore.getState().getContact(recipientPeerID)?.nostrPubkeyHex;
+      contactNpub !== undefined && contactNpub.length > 0
+        ? contactNpub
+        : this.registry.get(recipientPeerID)?.nostrPubkey;
     if (
       nostrPubkey !== undefined &&
       nostrPubkey.length > 0 &&
@@ -6110,6 +6250,16 @@ export class MeshService {
   ): boolean {
     const derived = bytesToHex(sha256(card.noisePubKey)).slice(0, 16);
     if (derived !== card.peerID.toLowerCase()) return false;
+    // A card that did not come off the other phone may not contradict the key
+    // we already hold for them. Accepted, it would pin a registry that starts
+    // empty after a restart, and the real peer's next announce would be
+    // refused against it.
+    if (opts.inPerson !== true) {
+      const held = this.knownSigningKey(card.peerID);
+      if (held !== undefined && !equalBytes(held, card.signingPubKey)) {
+        return false;
+      }
+    }
 
     const nostrPubkeyHex = card.nostrPubKey
       ? bytesToHex(card.nostrPubKey)

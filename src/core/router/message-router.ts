@@ -305,6 +305,12 @@ export class PeerRegistry {
     return this.peers.get(peerID)?.signingPubKey;
   }
 
+  // The pinned key only when a 0x21 proved it, ignoring reachability.
+  provenSigningKey(peerID: string): Uint8Array | undefined {
+    const e = this.peers.get(peerID);
+    return e?.signingKeyAuthenticated === true ? e.signingPubKey : undefined;
+  }
+
   // The Noise session held with this peer, ignoring reachability.
   //
   // Same split as `pinnedSigningKey` above: a session exists on both sides or it

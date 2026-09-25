@@ -403,6 +403,23 @@ describe("setProvenKeys", () => {
     expect(c?.signingPubKeyHex).toBe("bb".repeat(32));
   });
 
+  it("never re-pins keys a safety number confirmed", () => {
+    state().addContact(makeContact({ source: "link" }));
+    state().markVerified(ID);
+    state().setProvenKeys(ID, "11".repeat(32), "22".repeat(32));
+    expect(state().getContact(ID)?.signingPubKeyHex).toBe("bb".repeat(32));
+  });
+
+  // A link card proves nothing about who made it; a session proves who holds
+  // the Noise key. The session wins on a contact nobody has checked.
+  it("corrects an unverified contact's keys a session contradicts", () => {
+    state().addContact(makeContact({ source: "link" }));
+    state().setProvenKeys(ID, "aa".repeat(32), "22".repeat(32));
+    const c = state().getContact(ID);
+    expect(c?.signingPubKeyHex).toBe("22".repeat(32));
+    expect(isVerified(c)).toBe(false);
+  });
+
   it("is a no-op when no contact exists (never invents a stranger)", () => {
     state().setProvenKeys(ID, "aa".repeat(32), "bb".repeat(32));
     expect(state().getContact(ID)).toBeUndefined();

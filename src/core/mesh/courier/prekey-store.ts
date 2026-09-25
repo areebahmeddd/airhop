@@ -20,6 +20,7 @@
 import { x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { getStorage } from "@store/mmkv";
+import { ANNOUNCE_MAX_SKEW_MS } from "../discovery/announce-manager";
 import {
   PREKEY_MAX_PREKEYS,
   signPrekeyBundle,
@@ -187,7 +188,12 @@ export class PeerPrekeyStore {
 
   // Store a (caller-verified) bundle, replacing an older one for the same noise
   // key. A newer bundle resets the used-id set: its prekeys are fresh.
-  ingest(bundle: PrekeyBundle): void {
+  //
+  // One dated past the announce skew is refused, since "newer" is judged by
+  // that date: a bundle stamped years ahead would shut out every genuine one
+  // after it, and it is persisted. bitchat-ios has no future bound here.
+  ingest(bundle: PrekeyBundle, now: number = Date.now()): void {
+    if (bundle.generatedAt > now + ANNOUNCE_MAX_SKEW_MS) return;
     const noiseHex = bytesToHex(bundle.noiseStaticPublicKey);
     const existing = this.peers[noiseHex];
     if (existing !== undefined && bundle.generatedAt <= existing.generatedAt) {
@@ -224,6 +230,15 @@ export class PeerPrekeyStore {
 
   has(noiseStaticPubKey: Uint8Array): boolean {
     return this.peers[bytesToHex(noiseStaticPubKey)] !== undefined;
+  }
+
+  // Drop what we hold for one peer, when it was checked against a signing key
+  // that turned out not to be theirs.
+  forget(noiseStaticPubKey: Uint8Array): void {
+    const noiseHex = bytesToHex(noiseStaticPubKey);
+    if (this.peers[noiseHex] === undefined) return;
+    delete this.peers[noiseHex];
+    this.persist();
   }
 
   private enforceCap(): void {
