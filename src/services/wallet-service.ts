@@ -2361,6 +2361,17 @@ async function replayLostSwap(tx: WalletTx, pass: PassGuard): Promise<void> {
     return;
   }
 
+  // A nutzap the mint never signed for: nothing moved, so no row, and the
+  // event is not tried again.
+  if (tx.kind === "nutzap-in" && tx.nutzapEventId !== undefined) {
+    store.removeTx(tx.id);
+    store.markNutzapSettled(
+      tx.nutzapEventId,
+      Math.floor(tx.createdAtMs / 1000),
+    );
+    return;
+  }
+
   // Never signed, so the swap did not complete. Inputs go back; their state is
   // for `dropSpentProofs`.
   store.releaseReserved(tx.id);
@@ -2482,8 +2493,12 @@ function settleReplayedSwap(
   }
 
   // Stops the next subscription redeeming a zap already banked.
-  if (tx.nutzapEventId !== undefined)
-    store.markNutzapRedeemed(tx.nutzapEventId);
+  if (tx.nutzapEventId !== undefined) {
+    store.markNutzapSettled(
+      tx.nutzapEventId,
+      Math.floor(tx.createdAtMs / 1000),
+    );
+  }
   store.updateTx(tx.id, {
     status: "completed",
     swapPreview: undefined,
@@ -3626,12 +3641,20 @@ async function redeemNutzapProofs(params: {
   mintUrl: string;
   unit: string;
   eventId: string;
+  // The event's `created_at`, seconds: how long its settled mark is kept.
+  createdAt: number;
   senderPubkey: string;
   comment?: string;
 }): Promise<number> {
   assertUnlocked();
   const store = useWalletStore.getState();
-  if (store.redeemedNutzaps.includes(params.eventId)) return 0;
+  if (isNutzapSettled(params.eventId)) return 0;
+  // Settled for good: a relay replaying it costs a set lookup from now on,
+  // never another mint request.
+  const settle = (): void =>
+    useWalletStore
+      .getState()
+      .markNutzapSettled(params.eventId, params.createdAt);
   // Relays replay kind 9321 freely; a staged redemption is `reconcile`'s, and
   // a second would present the same locked proofs to the mint again.
   if (
@@ -3652,7 +3675,10 @@ async function redeemNutzapProofs(params: {
   // the secret, not the mint, so one made for a hostile mint could be replayed
   // at the real one to take the funds; it would also confirm our IP and
   // liveness and persist the attacker's server in the mint list.
+  // No row: a stranger can publish any number of these, and a row per event
+  // would push genuine history out and nudge the user to add their mint.
   if (useWalletStore.getState().mints[url] === undefined) {
+    settle();
     throw new WalletError(
       "untrusted-mint",
       t("wallet.svc.unknown_mint"),
@@ -3661,18 +3687,34 @@ async function redeemNutzapProofs(params: {
   }
 
   const epoch = walletEpoch;
-  const wallet = await getWallet(url, params.unit);
   const privkey = await getNutzapPrivKeyHex();
+  // NIP-61: every proof locked to the key our kind 10019 names. Anything else
+  // is not a payment to us. Checked locally, before any row or request.
+  if (
+    !params.proofs.every(
+      (p) => coinLock(p as unknown as Proof, privkey) === "ours",
+    )
+  ) {
+    settle();
+    throw new WalletError("forged-token", t("wallet.svc.locked_other"));
+  }
+  const wallet = await getWallet(url, params.unit);
   const txId = newTxId();
 
+  let staged = false;
   let result: SendResponse;
   try {
+    // Checks keysets, the unit and any DLEQ witness present, all locally and
+    // before the row exists. Not `requireDleq`: NDK-based senders strip the
+    // witness (cashu-ts's send drops it unless asked), so requiring one would
+    // refuse their zaps.
     const { preview, stored } = await prepareRecoverableSwap(
       wallet,
       () => wallet.prepareSwapToReceive(params.proofs),
       privkey,
     );
     assertSameWallet(epoch);
+    staged = true;
     store.addTx({
       id: txId,
       kind: "nutzap-in",
@@ -3692,13 +3734,28 @@ async function redeemNutzapProofs(params: {
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
+    const unreachable =
+      walletErr.code === "offline" || walletErr.code === "tor-blocked";
+    if (!staged) {
+      // A keyset, unit or witness the mint's keys disprove.
+      if (!unreachable) settle();
+      throw walletErr;
+    }
+    if (isDefiniteRefusal(err)) {
+      // Nothing moved, so nothing to show.
+      store.removeTx(txId);
+      settle();
+      throw walletErr;
+    }
+    // In doubt: the preview stays for `reconcile`, and the row says the
+    // claim is still under way.
     store.updateTx(txId, { error: walletErr.message });
     throw walletErr;
   }
 
   creditProofs(url, params.unit, result.keep, { verified: true });
   const amount = result.keep.reduce((s, p) => s + p.amount.toNumber(), 0);
-  store.markNutzapRedeemed(params.eventId);
+  settle();
   store.updateTx(txId, {
     status: "completed",
     amount,
@@ -3914,47 +3971,47 @@ export function failNutzapDelivery(txId: string, reason: string): void {
 
 // ---- Nutzap receive ----
 
-// Redeem incoming nutzaps. One missed offline stays on the relay for the next
-// subscription; stored redeemed ids stop a replay crediting twice.
+function isNutzapSettled(eventId: string): boolean {
+  return useWalletStore
+    .getState()
+    .settledNutzaps.some((entry) => entry.id === eventId);
+}
+
+// Redeem incoming nutzaps, one at a time. Anything not settled (unreachable,
+// Tor-blocked, an answer in doubt) is tried again by the next subscription;
+// settled events never are. Serial, so a burst of N events is N requests in a
+// row rather than N at once, and a relay's duplicate of one in flight is
+// dropped. No mints held means nothing to redeem, and no subscription.
 export function startNutzapWatcher(params: {
   myPubkey: string;
   client: NostrClient;
   onRedeemed?: (amount: number, unit: string, from: string) => void;
 }): () => void {
-  return subscribeNutzaps(params.myPubkey, params.client, (zap) => {
-    void (async () => {
-      const store = useWalletStore.getState();
-      if (store.redeemedNutzaps.includes(zap.eventId)) return;
+  const mintUrls = Object.keys(useWalletStore.getState().mints);
+  if (mintUrls.length === 0) return () => {};
+  const inFlight = new Set<string>();
+  let queue: Promise<void> = Promise.resolve();
+  return subscribeNutzaps(params.myPubkey, mintUrls, params.client, (zap) => {
+    if (inFlight.has(zap.eventId) || isNutzapSettled(zap.eventId)) return;
+    inFlight.add(zap.eventId);
+    queue = queue.then(async () => {
       try {
         const amount = await redeemNutzapProofs({
           proofs: zap.proofs,
           mintUrl: zap.mintUrl,
           unit: zap.unit,
           eventId: zap.eventId,
+          createdAt: zap.createdAt,
           senderPubkey: zap.senderPubkey,
           comment: zap.comment,
         });
         if (amount > 0) params.onRedeemed?.(amount, zap.unit, zap.senderPubkey);
-      } catch (err) {
-        // An unheld mint is final: mark it seen and record a failed row so the
-        // user can add the mint if they trust it.
-        if (err instanceof WalletError && err.code === "untrusted-mint") {
-          store.markNutzapRedeemed(zap.eventId);
-          recordTx({
-            kind: "nutzap-in",
-            status: "failed",
-            amount: zap.proofs.reduce((s, p) => s + Number(p.amount), 0),
-            unit: zap.unit,
-            mintUrl: zap.mintUrl,
-            counterparty: zap.senderPubkey,
-            error: err.message,
-          });
-          return;
-        }
-        // Anything else (unreachable, Tor-blocked, already claimed) is left
-        // unmarked for the next subscription.
+      } catch {
+        // Refusals are settled inside; the rest waits for a resubscribe.
+      } finally {
+        inFlight.delete(zap.eventId);
       }
-    })();
+    });
   });
 }
 

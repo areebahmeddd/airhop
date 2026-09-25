@@ -370,6 +370,17 @@ export class RelayFabric {
     for (const url of this.relays.keys()) this.setRelayConditions(url, partial);
   }
 
+  // A signed event published to every relay by a client that is not a phone:
+  // anyone on Nostr, posting whatever it likes. Stored and fanned out as a
+  // real relay would.
+  inject(event: NostrEventLike): void {
+    for (const relay of this.relays.values()) {
+      if (relay.events.some((e) => e.id === event.id)) continue;
+      relay.events.push(event);
+      this.fanout(relay, event);
+    }
+  }
+
   // ---- introspection ----
 
   relayUrls(): string[] {

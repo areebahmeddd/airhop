@@ -27,9 +27,16 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
-import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
+import {
+  createP2PKsecret,
+  getDecodedToken,
+  getEncodedToken,
+  type Token,
+} from "@cashu/cashu-ts";
+import { KIND_NUTZAP, KIND_NUTZAP_INFO } from "@core/payments/nutzap";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { finalizeEvent, generateSecretKey } from "nostr-tools";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { MintFabric, simInvoice } from "../harness/mint-fabric";
@@ -634,6 +641,114 @@ test("W07 a nutzap crosses the internet, locked to a key only the recipient hold
     "bob swapped the locked proofs, so only he can spend them now",
     bob.unverifiedBalance() === 0,
     `unverified=${bob.unverifiedBalance()}`,
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert(true);
+});
+
+test("W27 nutzap spam leaves no trace", async () => {
+  // Anyone can publish a kind 9321 naming bob. Fifty of them, carrying coins
+  // locked to bob's real key that no mint ever signed: each may cost one mint
+  // request, then never another, and none shows as money coming in.
+  const s = (scenario = new Scenario({
+    id: "W27",
+    title: "forged nutzaps are refused once and forgotten",
+    seed: 127,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const relay = new RelayFabric(s.world);
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11), relay);
+  const bob = SimDevice.create(s.world, android("bob", 22), relay);
+  radio.add(alice);
+  s.track(alice, bob);
+  alice.launch();
+  bob.launch();
+  await waitFor(s.world, () => relay.connectionCount("alice") > 0, 20_000);
+  await waitFor(s.world, () => relay.connectionCount("bob") > 0, 20_000);
+  await alice.walletReady();
+  await bob.walletReady();
+  await alice.addMint(mint.url);
+  await bob.addMint(mint.url);
+  await alice.depositSats(500);
+  s.check("bob is watching", await bob.startNutzapReceiving());
+
+  // Everything the attacker needs is public: bob's lock key from his kind
+  // 10019, and a real keyset id from any token.
+  const info = relay
+    .eventsOfKind(KIND_NUTZAP_INFO)
+    .find((e) => e.pubkey === bob.nostrPubkey);
+  const lockKey = info?.tags.find((t) => t[0] === "pubkey")?.[1] ?? "";
+  const sample = await alice.prepareSend(1);
+  alice.reclaimLastSend();
+  const keysetId = getDecodedToken(sample ?? "", []).proofs[0]?.id ?? "";
+  const attacker = generateSecretKey();
+  const before = mint.swapCount;
+  for (let i = 0; i < 50; i++) {
+    relay.inject(
+      finalizeEvent(
+        {
+          kind: KIND_NUTZAP,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            [
+              "proof",
+              JSON.stringify({
+                id: keysetId,
+                amount: 64,
+                secret: createP2PKsecret(lockKey),
+                C: bytesToHex(
+                  secp256k1.getPublicKey(
+                    crypto.getRandomValues(new Uint8Array(32)),
+                    true,
+                  ),
+                ),
+              }),
+            ],
+            ["u", mint.url],
+            ["p", bob.nostrPubkey],
+          ],
+          content: "",
+        },
+        attacker,
+      ),
+    );
+  }
+  // Until the last refusal has been answered and settled.
+  await waitFor(
+    s.world,
+    () => mint.swapCount - before >= 50 && bob.txCount("nutzap-in") === 0,
+    60_000,
+  );
+  s.check(
+    "each forgery cost at most one mint request",
+    mint.swapCount - before === 50,
+    `swaps=${mint.swapCount - before}`,
+  );
+  s.check(
+    "and none is shown as a nutzap, pending or otherwise",
+    bob.txCount("nutzap-in") === 0 && bob.totalHeld() === 0,
+    `rows=${bob.txCount("nutzap-in")} held=${bob.totalHeld()}`,
+  );
+
+  // A transport rebuild resubscribes, and the relay replays all fifty.
+  const afterSpam = mint.swapCount;
+  await bob.startNutzapReceiving();
+  await waitFor(s.world, () => false, 5_000);
+  s.check(
+    "a replay of the spam asks the mint nothing",
+    mint.swapCount === afterSpam,
+    `swaps=${mint.swapCount - afterSpam}`,
+  );
+
+  // A real payment still gets through.
+  await alice.pay({ nostrPubkey: bob.nostrPubkey, amount: 128 });
+  await waitFor(s.world, () => bob.balance() > 0, 30_000);
+  s.check(
+    "a genuine nutzap is redeemed as ever",
+    bob.balance() === 128 && bob.txCount("nutzap-in") === 1,
+    `bob=${bob.balance()} rows=${bob.txCount("nutzap-in")}`,
   );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert(true);

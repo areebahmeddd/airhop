@@ -22,6 +22,7 @@
 
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { bytesToBase64 } from "@core/encoding/base64";
+import { NUTZAP_LOOKBACK_S } from "@core/payments/nutzap";
 import { createMMKV, deleteMMKV } from "react-native-mmkv";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -172,8 +173,11 @@ interface WalletState {
   history: WalletTx[];
   // 33-byte compressed P2PK key for kind 10019; private half in the keychain.
   nutzapPubkey?: string;
-  // So a relay replay cannot double-credit.
-  redeemedNutzaps: string[];
+  // Kind 9321 events already dealt with (redeemed, or refused for good), so a
+  // relay replay neither credits twice nor costs another mint request.
+  // `createdAt` (event seconds, never later than when it was seen) is how long
+  // one is kept: past the subscription's lookback no relay is asked for it.
+  settledNutzaps: { id: string; createdAt: number }[];
   // First secret of each token taken in, so a chat card reads "Claimed".
   // Display only: `addProofs` is the spend guard.
   claimedTokens: string[];
@@ -233,7 +237,10 @@ interface WalletState {
 
   // ---- Nutzap ----
   setNutzapPubkey: (pubkey: string) => void;
-  markNutzapRedeemed: (eventId: string) => void;
+  markNutzapSettled: (eventId: string, createdAt: number) => void;
+  // A nutzap row the mint refused outright: nothing moved, and spam must not
+  // fill Activity or push real history out.
+  removeTx: (id: string) => void;
   markTokenClaimed: (firstSecret: string) => void;
 
   // ---- Backup / NUT-13 counters ----
@@ -279,9 +286,6 @@ function capHistory(
     return true;
   });
 }
-
-// Well past any relay's replay window.
-const MAX_REDEEMED_NUTZAPS = 1000;
 
 // Cosmetic: an evicted marker just lets a very old card offer Claim again.
 const MAX_CLAIMED_TOKENS = 1000;
@@ -571,7 +575,7 @@ export type WalletData = Pick<
   | "reserved"
   | "mints"
   | "history"
-  | "redeemedNutzaps"
+  | "settledNutzaps"
   | "claimedTokens"
   | "backupEnabled"
   | "backupVerified"
@@ -691,7 +695,7 @@ export const useWalletStore = create<WalletState>()(
       reserved: {},
       mints: {},
       history: [],
-      redeemedNutzaps: [],
+      settledNutzaps: [],
       claimedTokens: [],
       backupEnabled: false,
       backupVerified: false,
@@ -946,17 +950,31 @@ export const useWalletStore = create<WalletState>()(
         );
       },
 
-      markNutzapRedeemed(eventId) {
-        set((state) =>
-          state.redeemedNutzaps.includes(eventId)
-            ? state
-            : {
-                redeemedNutzaps: [eventId, ...state.redeemedNutzaps].slice(
-                  0,
-                  MAX_REDEEMED_NUTZAPS,
-                ),
-              },
-        );
+      // Pruned by age, not count: a count cap lets a burst of spam evict the
+      // markers of genuine zaps, which a later replay would then stage again.
+      // A sender picks `created_at`, so a future one is clamped to now.
+      markNutzapSettled(eventId, createdAt) {
+        const nowS = Math.floor(Date.now() / 1000);
+        const cutoff = nowS - NUTZAP_LOOKBACK_S;
+        set((state) => {
+          if (state.settledNutzaps.some((entry) => entry.id === eventId)) {
+            return state;
+          }
+          return {
+            settledNutzaps: [
+              { id: eventId, createdAt: Math.min(createdAt, nowS) },
+              ...state.settledNutzaps.filter(
+                (entry) => entry.createdAt >= cutoff,
+              ),
+            ],
+          };
+        });
+      },
+
+      removeTx(id) {
+        set((state) => ({
+          history: state.history.filter((tx) => tx.id !== id),
+        }));
       },
 
       // ---- Wipe ----
@@ -976,7 +994,7 @@ export const useWalletStore = create<WalletState>()(
           reserved: {},
           mints: {},
           history: [],
-          redeemedNutzaps: [],
+          settledNutzaps: [],
           claimedTokens: [],
           nutzapPubkey: undefined,
           // The wipe clears the keychain phrase too, so claiming these coins
@@ -1006,7 +1024,7 @@ export const useWalletStore = create<WalletState>()(
           reserved: state.reserved,
           mints: state.mints,
           history: state.history,
-          redeemedNutzaps: state.redeemedNutzaps,
+          settledNutzaps: state.settledNutzaps,
           // Chat messages survive a restart, so the marker must too, or the
           // chip offers Claim on a token already taken in and the tap errors.
           claimedTokens: state.claimedTokens,

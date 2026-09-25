@@ -1546,6 +1546,8 @@ export class SimDevice {
         relays: (client as { activeRelays: string[] }).activeRelays,
       }),
     );
+    // A second call is a resubscribe, as a transport rebuild does.
+    this.stopNutzapWatcher?.();
     this.stopNutzapWatcher = wallet.startNutzapWatcher({
       myPubkey: pubKey,
       client,
@@ -1590,6 +1592,13 @@ export class SimDevice {
     return (history ?? []).filter(
       (tx) => tx.status === "pending" && tx.swapPreview !== undefined,
     ).length;
+  }
+
+  // Activity rows of one kind, whatever their status.
+  txCount(kind: string): number {
+    const history = this.inner.stores.walletStore.getState().history as
+      { kind: string }[] | undefined;
+    return (history ?? []).filter((tx) => tx.kind === kind).length;
   }
 
   // Receipts the mint refused: out of the balance, the coins kept as a token on

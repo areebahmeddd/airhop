@@ -1377,6 +1377,7 @@ export const strings = {
   "wallet.activity.ln_deposit": "Lightning deposit",
   "wallet.activity.ln_withdrawal": "Lightning withdrawal",
   "wallet.activity.nutzap_received": "Nutzap received",
+  "wallet.activity.nutzap_claiming": "Nutzap, claiming",
   "wallet.activity.spent_removed": "Spent coins removed",
   "wallet.activity.refreshed": "Checked with mint",
   "wallet.activity.refreshing": "Checking with mint",

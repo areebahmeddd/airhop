@@ -3579,7 +3579,10 @@ function txTitle(tx: WalletTx): string {
     case "melt":
       return t("wallet.activity.ln_withdrawal");
     case "nutzap-in":
-      return t("wallet.activity.nutzap_received");
+      // Written before the swap that pays it, so pending is not money yet.
+      return tx.status === "pending"
+        ? t("wallet.activity.nutzap_claiming")
+        : t("wallet.activity.nutzap_received");
     case "nutzap-out":
       return t("wallet.zap.sent");
     case "swap":

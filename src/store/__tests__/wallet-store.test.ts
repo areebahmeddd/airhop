@@ -370,11 +370,30 @@ describe("history", () => {
 
 // ---- Nutzap replay guard ----
 
-describe("redeemed nutzaps", () => {
+describe("settled nutzaps", () => {
+  const nowS = (): number => Math.floor(Date.now() / 1000);
+
   it("records an event id once so a relay replay cannot re-credit it", () => {
-    state().markNutzapRedeemed("event-1");
-    state().markNutzapRedeemed("event-1");
-    expect(state().redeemedNutzaps).toEqual(["event-1"]);
+    state().markNutzapSettled("event-1", nowS());
+    state().markNutzapSettled("event-1", nowS());
+    expect(state().settledNutzaps.map((e) => e.id)).toEqual(["event-1"]);
+  });
+
+  it("forgets markers by age, never by count, so spam cannot evict them", () => {
+    const old = nowS() - 31 * 24 * 60 * 60;
+    state().markNutzapSettled("genuine", nowS() - 60);
+    state().markNutzapSettled("ancient", old);
+    for (let i = 0; i < 1500; i++)
+      state().markNutzapSettled(`spam-${i}`, nowS());
+    const ids = state().settledNutzaps.map((e) => e.id);
+    expect(ids).toContain("genuine");
+    expect(ids).not.toContain("ancient");
+  });
+
+  it("clamps a future created_at, which a sender chooses", () => {
+    state().markNutzapSettled("future", nowS() + 10 ** 9);
+    const entry = state().settledNutzaps.find((e) => e.id === "future");
+    expect(entry?.createdAt).toBeLessThanOrEqual(nowS());
   });
 });
 
@@ -401,7 +420,7 @@ describe("persistence", () => {
         "mints",
         "nutzapPubkey",
         "proofs",
-        "redeemedNutzaps",
+        "settledNutzaps",
         "reserved",
       ].sort(),
     );

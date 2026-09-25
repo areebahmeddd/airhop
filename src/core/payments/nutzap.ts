@@ -34,8 +34,10 @@ const MAX_COMMENT_LENGTH = 280;
 const MAX_MINTS = 16;
 const MAX_RELAYS = 16;
 
-// How far back to look for nutzaps we might have missed while offline.
-const LOOKBACK_S = 60 * 60 * 24 * 30;
+// How far back to look for nutzaps we might have missed while offline. Also
+// how long a settled event is remembered: past this no subscription asks for
+// it again.
+export const NUTZAP_LOOKBACK_S = 60 * 60 * 24 * 30;
 
 export interface NutzapInfo {
   // Nostr pubkey of the person being paid (hex, x-only).
@@ -199,9 +201,12 @@ export async function publishNutzap(params: {
 }
 
 // Fires once per event. Relays replay, so the caller dedupes (wallet-store
-// tracks redeemed ids).
+// tracks settled ids). `mintUrls` are the exact strings our kind 10019 lists:
+// NIP-61's `#u` filter, so relays never hand over nutzaps from mints we have
+// not signalled, and a compliant sender's `u` tag matches byte for byte.
 export function subscribeNutzaps(
   myPubkey: string,
+  mintUrls: string[],
   client: NostrClient,
   onNutzap: (zap: ReceivedNutzap) => void,
 ): () => void {
@@ -210,7 +215,8 @@ export function subscribeNutzaps(
       {
         kinds: [KIND_NUTZAP],
         "#p": [myPubkey],
-        since: Math.floor(Date.now() / 1000) - LOOKBACK_S,
+        "#u": mintUrls,
+        since: Math.floor(Date.now() / 1000) - NUTZAP_LOOKBACK_S,
       },
     ],
     (event: Event) => {
@@ -226,6 +232,7 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
 
   const proofs: ProofLike[] = [];
   let mintUrl: string | undefined;
+  let unit: string | undefined;
   let targetEventId: string | undefined;
 
   for (const tag of event.tags) {
@@ -238,6 +245,9 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
       if (proof) proofs.push(proof);
     } else if (name === "u" && mintUrl === undefined) {
       if (isHttpUrl(value)) mintUrl = value;
+    } else if (name === "unit" && unit === undefined) {
+      // A currency code shown beside an amount: alphanumerics only.
+      if (/^[a-z0-9]{1,12}$/i.test(value)) unit = value.toLowerCase();
     } else if (name === "e" && targetEventId === undefined) {
       if (/^[0-9a-f]{64}$/i.test(value)) targetEventId = value.toLowerCase();
     }
@@ -255,9 +265,9 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
     senderPubkey: event.pubkey,
     createdAt: event.created_at,
     mintUrl,
-    // NIP-61 carries no unit tag; sat is the NUT-00 default and the only unit
-    // our kind 10019 advertises.
-    unit: "sat",
+    // NIP-61's `unit` tag, defaulting to sat. Redemption checks the coins
+    // really are in it.
+    unit: unit ?? "sat",
     proofs,
     amount,
     ...(comment.length > 0 ? { comment } : {}),
