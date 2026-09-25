@@ -56,6 +56,22 @@ describe("validateRelayUrl", () => {
     expect(validateRelayUrl("relay")).toBeNull();
   });
 
+  // A WHATWG URL parser reads any host whose last label ends in a number as
+  // IPv4, so these are all loopback or a bare address in another spelling.
+  test("rejects hex and octal IPv4 spellings", () => {
+    expect(validateRelayUrl("0x7f.1")).toBeNull();
+    expect(validateRelayUrl("wss://0x7f.0.0.1")).toBeNull();
+    expect(validateRelayUrl("0177.0.0.1")).toBeNull();
+    expect(validateRelayUrl("example.0x1")).toBeNull();
+    expect(validateRelayUrl("example.0x")).toBeNull();
+    expect(validateRelayUrl("example.1")).toBeNull();
+  });
+
+  test("still accepts a hostname with a hex-looking label before the TLD", () => {
+    expect(validateRelayUrl("relay.0xchat.com")).toBe("wss://relay.0xchat.com");
+    expect(validateRelayUrl("0x7f.example.com")).toBe("wss://0x7f.example.com");
+  });
+
   test("rejects credentials, query, fragment, spaces, and junk", () => {
     expect(validateRelayUrl("wss://user:pass@relay.example.com")).toBeNull();
     expect(validateRelayUrl("relay.example.com?x=1")).toBeNull();

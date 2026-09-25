@@ -38,6 +38,14 @@ const EDGE_CASES: string[] = [
   "127.0.0.1",
   "192.168.1.1",
   "10.0.0.1:443",
+  // IPv4 in the spellings a WHATWG parser also accepts. Both copies refuse
+  // these, deliberately stricter than bitchat-ios, whose rule catches only the
+  // all-decimal form. No real TLD is numeric, so the directory is unaffected.
+  "0x7f.1",
+  "0x7f.0.0.1",
+  "0177.0.0.1",
+  "example.0x1",
+  "relay.0xchat.com",
   "singlelabel",
   "relay.example.com.",
   "-bad.example.com",
@@ -58,6 +66,13 @@ describe("relay URL canonicalization parity", () => {
         input,
         validateRelayUrl(input),
       ]);
+    }
+  });
+
+  // Where both copies part from bitchat-ios on purpose (see EDGE_CASES).
+  test("refuses the IPv4 spellings bitchat-ios lets through", () => {
+    for (const input of ["0x7f.1", "0x7f.0.0.1", "example.0x1"]) {
+      expect([input, canonicalRelayUrl(input)]).toEqual([input, null]);
     }
   });
 
