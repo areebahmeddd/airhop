@@ -121,6 +121,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Połącz oba telefony z tą samą siecią Wi-Fi albo włącz hotspot na jednym i połącz z nim drugi. Internet nie jest potrzebny.",
   "onboarding.transfer.incoming": "Przenoszenie: {name}",
+  "onboarding.transfer.confirm_title": "Sprawdź stary telefon",
+  "onboarding.transfer.confirm_body":
+    "Stary telefon powinien pokazywać te same słowa. Jeśli pokazuje inne słowa albo żadnych, anuluj.",
+  "onboarding.transfer.confirm_cta": "Zgadzają się",
   "onboarding.transfer.receiving": "Odbieranie {percent}%",
   "onboarding.transfer.saving": "Zapisywanie na tym telefonie",
   "onboarding.transfer.releasing": "Kończenie na starym telefonie",
@@ -179,6 +183,15 @@ export const strings: Strings = {
   "error.boundary.title": "Coś poszło nie tak",
   "error.boundary.body":
     "Airhop natrafił na nieoczekiwany problem i musiał przerwać to, co pokazywał.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Nie można otworzyć twoich kluczy",
+  "launch.keys_unreadable_body":
+    "Telefon nie odblokował kluczy Airhop. Odblokuj go, a potem spróbuj ponownie.",
+  "launch.start_over": "Wyczyść i zacznij od nowa",
+  "launch.start_over_confirm_title": "Wyczyścić ten telefon?",
+  "launch.start_over_confirm_body":
+    "Twoja tożsamość, wiadomości, kontakty i portfel na tym telefonie zostaną zniszczone, a ty zaczniesz od nowa jako ktoś nowy. Nie da się tego cofnąć.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Kanały domyślne",
@@ -604,8 +617,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Filmu nie ma na tym urządzeniu",
   "chat.media.gone_voice": "Notatki głosowej nie ma na tym urządzeniu",
   "chat.media.gone_file": "Pliku nie ma na tym urządzeniu",
-  "chat.media.gone_note":
-    "Usunięte po 7 dniach albo przy czyszczeniu pamięci podręcznej",
+  "chat.media.gone_note": "Nie jest już przechowywane na tym urządzeniu",
   "chat.media.ask_resend": "Poproś ponownie",
   "chat.media.resend_draft": "Możesz wysłać {kind} jeszcze raz?",
   "chat.media.kind_photo": "tamto zdjęcie",
@@ -677,6 +689,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Odebrane",
   "chat.ecash.reclaimed": "Odzyskane",
+  "chat.ecash.locked": "Zablokowane dla kogoś innego",
   "chat.ecash.claiming": "Odbieranie…",
   "chat.ecash.claim": "Odbierz",
   "chat.ecash.claim_amount": "Odbierz {amount} {unit}",
@@ -917,6 +930,7 @@ export const strings: Strings = {
     "Otwiera uprawnienia aplikacji Airhop w ustawieniach systemu",
   "mesh.banner.hint.battery_settings":
     "Otwiera ustawienia aktywności w tle tego telefonu",
+  "mesh.banner.hint.tor_settings": "Otwiera ustawienia Tor w Airhop",
   "mesh.banner.dismiss": "Odrzuć: {label}",
   "mesh.banner.hint.dismiss": "Ukrywa tę informację na dobre",
 
@@ -1039,8 +1053,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Kwota w {unit}",
   "wallet.send.body":
     "Zbudowany offline z ecash, który już masz. Nic nie znika z salda na dobre, dopóki nie potwierdzisz, że token dotarł.",
-  "wallet.send.stale_fee_note":
-    "Opłaty sprawdzano ostatnio {days} dni temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
   "wallet.send.fee_note":
     "{spend} {unit} znika z twojego salda; dodatkowe {fee} pokrywa opłatę mennicy, którą inaczej zapłaciliby oni",
   "wallet.send.qr_too_big":
@@ -1093,19 +1105,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
   "wallet.receive.stored_pending":
-    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane{dleq}. Odśwież w zakładce Portfel, gdy będziesz mieć internet.",
+    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane{dleq}. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
   "wallet.receive.dleq_inline":
     " (podpis się zgadza, więc token jest prawdziwy)",
   "wallet.receive.dleq_ok":
     "Podpis mennicy się zgadza, więc token jest prawdziwy.",
   "wallet.receive.dleq_uncached":
     "Kluczy tej mennicy tu nie ma, więc podpisu nie dało się sprawdzić offline.",
+  "wallet.receive.dleq_missing":
+    "Nie każda moneta w nim ma dowód podpisu mennicy, więc nie dało się go sprawdzić offline.",
   "wallet.receive.dleq_warning":
-    "Dopóki nie odświeżysz przy internecie, nadawca mógł w zasadzie wydać to gdzie indziej.",
+    "Dopóki nie zostanie potwierdzone online, nadawca mógł w zasadzie wydać to gdzie indziej.",
   "wallet.receive.failed": "Nie udało się odebrać",
   "wallet.receive.title": "Odbierz ecash",
   "wallet.receive.body":
-    "Wklej token Cashu. Przy internecie realizuje się w mennicy od razu; offline zostaje zapisany i potwierdzony przy następnym odświeżeniu.",
+    "Wklej token Cashu. Przy internecie realizuje się w mennicy od razu; offline zostaje zapisany i automatycznie potwierdzony w mennicy, gdy znów będziesz online.",
   "wallet.receive.scan": "Zeskanuj kod QR z ecash",
   "wallet.receive.scan_short": "Skanuj QR",
   "wallet.receive.receiving": "Odbieranie…",
@@ -1321,6 +1335,8 @@ export const strings: Strings = {
     "Mennica podaje, że ten token został już zrealizowany, więc {amount} {unit} do nich dotarło i nic nie wróciło na twoje saldo.",
   "wallet.copied.token_body":
     "Token jest w schowku. Zostaje tu zarezerwowany, dopóki nie oznaczysz go jako dostarczonego, więc możesz go wkleić ponownie, jeśli pierwsza próba się nie uda.",
+  "wallet.copied.refused_token_body":
+    "Token jest w schowku. Ten portfel już go nie liczy, więc możesz go oddać osobie, która go wysłała.",
   "wallet.copied.phrase_body":
     "Wklej ją do menedżera haseł, a potem wyczyść schowek. Inne aplikacje potrafią czytać schowek, a przy niektórych ustawieniach synchronizuje się on z twoimi innymi urządzeniami.",
   "wallet.refresh.failed": "Odświeżanie się nie powiodło",
@@ -1332,6 +1348,10 @@ export const strings: Strings = {
     "{amount} {unit} potwierdzone i wymienione na świeży ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} jest teraz objęte twoją frazą odzyskiwania.",
+  "wallet.refresh.refused":
+    "{amount} {unit} odrzucone przez mennicę i usunięte z twojego salda. Token zostaje w Aktywności.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} wciąż czeka na mennicę i zostanie potwierdzone później.",
   "wallet.refresh.all_confirmed":
     "Wszystko tutaj było już potwierdzone przez mennicę.",
   "wallet.pending.reserved_desc":
@@ -1363,9 +1383,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Wpłata przez Lightning",
   "wallet.activity.ln_withdrawal": "Wypłata przez Lightning",
   "wallet.activity.nutzap_received": "Odebrano nutzapa",
+  "wallet.activity.nutzap_claiming": "Nutzap, trwa odbieranie",
   "wallet.activity.spent_removed": "Usunięto wydane monety",
   "wallet.activity.refreshed": "Sprawdzono w mennicy",
   "wallet.activity.refreshing": "Sprawdzanie w mennicy",
+  "wallet.activity.copy_refused": "Skopiuj odrzucony token",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Sieć mesh offline",
@@ -1487,6 +1509,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Ta fraza odzyskiwania jest nieprawidłowa.",
   "wallet.svc.phrase_invalid_body":
     "Poszukaj źle wpisanego albo brakującego słowa. Fraza ma wbudowaną sumę kontrolną, więc jedno złe słowo unieważnia całość.",
+  "wallet.svc.phrase_unreadable":
+    "Nie udało się odczytać twojej frazy odzyskiwania na tym telefonie.",
+  "wallet.svc.phrase_unreadable_body":
+    "Nic nie zostało zmienione i nie utworzono nowej frazy. Spróbuj ponownie, gdy telefon będzie odblokowany. Twój ecash w międzyczasie nadal działa.",
   "wallet.svc.need_mint": "Najpierw dodaj przynajmniej jedną mennicę.",
   "wallet.svc.need_mint_body":
     "Odzyskiwanie polega na pytaniu mennicy, które monety dla ciebie podpisała, więc musi wiedzieć, którą mennicę zapytać.",
@@ -1508,10 +1534,27 @@ export const strings: Strings = {
     "Nie można teraz połączyć się z mennicą, aby je pobrać. Nic nie przepadło: odbierz go ponownie, gdy będziesz online.",
   "wallet.svc.wrong_mint":
     "Ten token nie został podpisany przez mennicę, którą wskazuje.",
+  "wallet.svc.wrong_mint_body":
+    "Podpis co najmniej jednej monety nie pasuje do kluczy mennicy. Nic nie dodano.",
+  "wallet.svc.unit_mismatch":
+    "Monety tego tokena nie są w walucie, którą on podaje.",
+  "wallet.svc.unit_mismatch_body":
+    "Jest oznaczony jako {label}, ale część jego monet wydano w {actual}. Poproś nadawcę o nowy token. Nic nie dodano.",
+  "wallet.svc.locked_other":
+    "Te monety są zablokowane dla portfela kogoś innego.",
+  "wallet.svc.locked_other_body":
+    "Odebrać je może tylko osoba, dla której je zablokowano. Nic nie dodano.",
+  "wallet.svc.coins_refused":
+    "Mennica odrzuciła te monety, więc nie są już liczone. Token zostaje tutaj, jeśli chcesz go odesłać.",
+  "wallet.svc.coins_unredeemable":
+    "Tych monet nie da się zrealizować w tej mennicy, więc nie są już liczone. Token zostaje tutaj, jeśli chcesz go odesłać.",
+  "wallet.svc.locked_ours_offline":
+    "Ta płatność jest zablokowana dla twojego portfela.",
+  "wallet.svc.locked_ours_offline_body":
+    "Odbierz ją, gdy będziesz online. Nikt inny nie może jej w międzyczasie zabrać.",
   "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
     "Ten, kto wysłał ten token, zrealizował go pierwszy albo wysłał ten sam token jeszcze komuś innemu.",
-  "wallet.svc.receiving_offline": "odbieranie offline",
   "wallet.svc.amount_positive": "Podaj kwotę większą od zera.",
   "wallet.svc.coins_raced": "Tych monet przed chwilą użyła inna płatność.",
   "wallet.svc.coins_raced_body":
@@ -1988,7 +2031,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Dotknij poza polem, aby połączyć.",
   "settings.tor.custom_empty": "Najpierw dodaj co najmniej jedną linię mostka.",
   "settings.tor.recovered":
-    "Tor został wyłączony, bo poprzednim razem nie zakończył uruchamiania. Włącz go ponownie, aby spróbować jeszcze raz.",
+    "Tor poprzednim razem nie zakończył uruchamiania, więc ruch internetowy jest wstrzymany. Spróbuj ponownie albo wyłącz Tor, żeby połączyć się bez niego.",
+  "settings.tor.retry": "Spróbuj ponownie",
   "settings.conn.mint_clearnet": "Zezwól na ruch do mennicy przez otwartą sieć",
   "settings.conn.mint_clearnet_desc":
     "Tor na iOS obejmuje tylko Nostr. Zostaw wyłączone, żeby blokować zapytania do mennicy; ecash przez sieć mesh działa tak czy inaczej.",
@@ -2158,9 +2202,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Włącz dostęp do aparatu w Ustawieniach, żeby zeskanować kod na nowym telefonie.",
   "settings.transfer.confirm_title": "Przenieść na ten telefon?",
-  "settings.transfer.confirm_body":
-    "Wszystko stąd trafi na telefon, który pokazuje ten kod. Gdy dotrze, ten telefon zostanie wyczyszczony.",
+  "settings.transfer.verify_body":
+    "Nowy telefon powinien pokazywać te same słowa. Wszystko stąd trafi na niego, a potem ten telefon zostanie wyczyszczony.",
   "settings.transfer.confirm_cta": "Przenieś",
+  "settings.transfer.waiting_confirm": "Potwierdź na nowym telefonie",
   "settings.transfer.connecting": "Łączenie z nowym telefonem",
   "settings.transfer.connecting_hint":
     "Jeśli ten telefon zapyta o wyszukiwanie urządzeń w sieci lokalnej, zezwól na to.",
@@ -2223,7 +2268,7 @@ export const strings: Strings = {
   "settings.wipe.desc":
     "Natychmiast niszczy wszystkie klucze, wiadomości i ecash",
   "settings.wipe.body":
-    "To natychmiast zniszczy wszystkie twoje klucze, wiadomości i ecash. Nie da się tego cofnąć.",
+    "To natychmiast zniszczy wszystkie twoje klucze, wiadomości i ecash. Nie da się tego cofnąć. Zdjęcia zapisane w galerii zostaną tam.",
   "settings.wipe.in_progress": "Czyszczenie",
   "settings.wipe.in_progress_body":
     "Niszczenie kluczy, wiadomości i plików. Trwa to kilka sekund i kończy się samo, nawet gdy aplikacja zostanie zamknięta.",
@@ -2288,6 +2333,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Pokaż informacje o wydaniu wersji {version}",
   "settings.version.tor_paused":
     "Sprawdzanie aktualizacji jest wstrzymane, gdy Tor jest włączony, żeby nie ujawniło twojego IP. Zajrzyj na stronę wydań w przeglądarce.",
+  "settings.version.internet_off":
+    "Aktualizacje są wstrzymane, gdy internet jest wyłączony. Włącz {setting} w Ustawieniach.",
   "settings.version.check_failed":
     "Nie udało się sprawdzić aktualizacji. Sprawdź połączenie i spróbuj ponownie.",
   "settings.version.downloading": "Pobieranie {percent}%",
@@ -2513,6 +2560,13 @@ export const plurals: Plurals = {
     few: "{count} niepotwierdzone",
     many: "{count} niepotwierdzonych",
     other: "{count} niepotwierdzonego",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Opłaty sprawdzano ostatnio {count} dzień temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
+    few: "Opłaty sprawdzano ostatnio {count} dni temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
+    many: "Opłaty sprawdzano ostatnio {count} dni temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
+    other:
+      "Opłaty sprawdzano ostatnio {count} dnia temu. Jeśli ta mennica od tego czasu je podniosła, wysyłka może kosztować odrobinę więcej.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} moneta była już wydana i została usunięta.",

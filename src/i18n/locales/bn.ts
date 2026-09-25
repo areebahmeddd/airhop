@@ -118,6 +118,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "দুটি ফোনকে একই Wi-Fi-তে যুক্ত করুন, অথবা একটিতে হটস্পট চালু করে অন্যটি থেকে তাতে যুক্ত হন। ইন্টারনেট লাগবে না।",
   "onboarding.transfer.incoming": "{name}-কে আনা হচ্ছে",
+  "onboarding.transfer.confirm_title": "পুরোনো ফোনটি দেখুন",
+  "onboarding.transfer.confirm_body":
+    "পুরোনো ফোনে ঠিক এই শব্দগুলোই দেখানোর কথা। অন্য শব্দ দেখালে, বা কিছুই না দেখালে, বাতিল করুন।",
+  "onboarding.transfer.confirm_cta": "মিলে গেছে",
   "onboarding.transfer.receiving": "গ্রহণ করা হচ্ছে {percent}%",
   "onboarding.transfer.saving": "এই ফোনে সংরক্ষণ করা হচ্ছে",
   "onboarding.transfer.releasing": "পুরোনো ফোনে শেষ করা হচ্ছে",
@@ -175,6 +179,15 @@ export const strings: Strings = {
   "error.boundary.title": "কিছু একটা ভুল হয়েছে",
   "error.boundary.body":
     "Airhop অপ্রত্যাশিত একটি সমস্যায় পড়ে যা দেখাচ্ছিল তা থামাতে বাধ্য হয়েছে।",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "আপনার কী খোলা যাচ্ছে না",
+  "launch.keys_unreadable_body":
+    "আপনার ফোন Airhop-এর কী খোলেনি। ফোনের তালা খুলে আবার চেষ্টা করুন।",
+  "launch.start_over": "মুছে নতুন করে শুরু করুন",
+  "launch.start_over_confirm_title": "এই ফোন মুছবেন?",
+  "launch.start_over_confirm_body":
+    "এই ফোনে আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট ধ্বংস হয়ে যাবে, আর আপনি নতুন কেউ হিসেবে আবার শুরু করবেন। এটি আর ফেরানো যাবে না।",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "ডিফল্ট চ্যানেল",
@@ -591,7 +604,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ভিডিওটি এই ডিভাইসে নেই",
   "chat.media.gone_voice": "ভয়েস নোটটি এই ডিভাইসে নেই",
   "chat.media.gone_file": "ফাইলটি এই ডিভাইসে নেই",
-  "chat.media.gone_note": "7 দিন পরে বা ক্যাশ খালি করার সময় সরানো হয়েছে",
+  "chat.media.gone_note": "এই ডিভাইসে আর রাখা নেই",
   "chat.media.ask_resend": "আবার জিজ্ঞেস করুন",
   "chat.media.resend_draft": "সেই {kind}টি কি আবার পাঠাতে পারবেন?",
   "chat.media.kind_photo": "ছবি",
@@ -660,6 +673,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "নেওয়া হয়েছে",
   "chat.ecash.reclaimed": "ফিরিয়ে নেওয়া হয়েছে",
+  "chat.ecash.locked": "অন্য কারও জন্য তালাবদ্ধ",
   "chat.ecash.claiming": "নেওয়া হচ্ছে…",
   "chat.ecash.claim": "নিন",
   "chat.ecash.claim_amount": "{amount} {unit} নিন",
@@ -884,6 +898,7 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "সিস্টেম সেটিংসে Airhop-এর অনুমতিগুলো খোলে",
   "mesh.banner.hint.battery_settings":
     "এই ফোনের পটভূমি কার্যকলাপের সেটিংস খোলে",
+  "mesh.banner.hint.tor_settings": "Airhop-এর Tor সেটিংস খোলে",
   "mesh.banner.dismiss": "সরান: {label}",
   "mesh.banner.hint.dismiss": "এই নোটটি স্থায়ীভাবে লুকায়",
 
@@ -1005,8 +1020,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "{unit}-এ পরিমাণ",
   "wallet.send.body":
     "আপনার কাছে থাকা ecash থেকে অফলাইনে বানানো। টোকেনটি পৌঁছেছে বলে নিশ্চিত না করা পর্যন্ত ব্যালেন্স থেকে কিছুই স্থায়ীভাবে যায় না।",
-  "wallet.send.stale_fee_note":
-    "ফি শেষবার দেখা হয়েছে {days} দিন আগে। এই মিন্ট তারপর ফি বাড়িয়ে থাকলে এই পাঠানোয় একটু বেশি লাগতে পারে।",
   "wallet.send.fee_note":
     "{spend} {unit} আপনার ব্যালেন্স থেকে যায়; বাড়তি {fee} তাদের যে মিন্ট ফি দিতে হতো তা মিটিয়ে দেয়",
   "wallet.send.qr_too_big":
@@ -1059,17 +1072,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}-এ ভাঙানো হয়েছে। এটি এখন প্রমাণসহ আপনার: প্রেরকের কাছে থাকা এই টোকেনের অনুলিপি আর কাজ করে না।",
   "wallet.receive.stored_pending":
-    "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি{dleq}। অনলাইনে এলে ওয়ালেট ট্যাব থেকে সতেজ করুন।",
+    "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি{dleq}। অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়ে যায়।",
   "wallet.receive.dleq_inline": " (এর সই সত্যিই মিলে যায়, তাই টোকেনটি আসল)",
   "wallet.receive.dleq_ok": "মিন্টের সই মিলে যায়, তাই টোকেনটি আসল।",
   "wallet.receive.dleq_uncached":
     "এই মিন্টের কী এখানে জমা নেই, তাই অফলাইনে সই মিলিয়ে দেখা গেল না।",
+  "wallet.receive.dleq_missing":
+    "এর সব মুদ্রায় মিন্টের সইয়ের প্রমাণ নেই, তাই অফলাইনে মিলিয়ে দেখা গেল না।",
   "wallet.receive.dleq_warning":
-    "আপনি অনলাইনে সতেজ না করা পর্যন্ত প্রেরক নীতিগতভাবে এটি অন্যত্র খরচ করে থাকতে পারেন।",
+    "অনলাইনে নিশ্চিত না হওয়া পর্যন্ত প্রেরক নীতিগতভাবে এটি অন্যত্র খরচ করে থাকতে পারেন।",
   "wallet.receive.failed": "নেওয়া গেল না",
   "wallet.receive.title": "ecash নিন",
   "wallet.receive.body":
-    "একটি Cashu টোকেন পেস্ট করুন। অনলাইনে থাকলে এটি সঙ্গে সঙ্গে মিন্টে ভাঙানো হয়; অফলাইনে রাখা হয় আর পরের বার সতেজ করলে নিশ্চিত হয়।",
+    "একটি Cashu টোকেন পেস্ট করুন। অনলাইনে থাকলে এটি সঙ্গে সঙ্গে মিন্টে ভাঙানো হয়; অফলাইনে রাখা হয় আর আবার অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়।",
   "wallet.receive.scan": "একটি ecash QR কোড স্ক্যান করুন",
   "wallet.receive.scan_short": "QR স্ক্যান করুন",
   "wallet.receive.receiving": "নেওয়া হচ্ছে…",
@@ -1280,6 +1295,8 @@ export const strings: Strings = {
     "মিন্ট বলছে এই টোকেনটি আগেই ভাঙানো হয়েছে, তাই {amount} {unit} তাদের কাছে পৌঁছেছে এবং আপনার ব্যালেন্সে কিছুই ফেরেনি।",
   "wallet.copied.token_body":
     "টোকেনটি আপনার ক্লিপবোর্ডে আছে। পৌঁছেছে বলে চিহ্নিত না করা পর্যন্ত এটি এখানে সরিয়ে রাখা থাকে, তাই প্রথমবার না হলে আবার পেস্ট করতে পারবেন।",
+  "wallet.copied.refused_token_body":
+    "টোকেনটি আপনার ক্লিপবোর্ডে আছে। এই ওয়ালেট আর এটি গোনে না, তাই যিনি পাঠিয়েছেন তাঁকে ফেরত দিতে পারেন।",
   "wallet.copied.phrase_body":
     "এটি একটি পাসওয়ার্ড ম্যানেজারে পেস্ট করে ক্লিপবোর্ড খালি করুন। অন্য অ্যাপ ক্লিপবোর্ড পড়তে পারে, আর কিছু সাজানোয় সেটি আপনার অন্য ডিভাইসেও যায়।",
   "wallet.refresh.failed": "সতেজ করা যায়নি",
@@ -1291,6 +1308,10 @@ export const strings: Strings = {
     "{amount} {unit} নিশ্চিত হয়ে নতুন ecash-এ বদলানো হয়েছে।",
   "wallet.refresh.secured":
     "{amount} {unit} এখন আপনার পুনরুদ্ধার বাক্যের আওতায়।",
+  "wallet.refresh.refused":
+    "মিন্ট {amount} {unit} প্রত্যাখ্যান করেছে, তাই তা আপনার ব্যালেন্স থেকে সরানো হয়েছে। টোকেনটি কার্যকলাপে থেকে যায়।",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} এখনো মিন্টের অপেক্ষায়, পরে নিশ্চিত হবে।",
   "wallet.refresh.all_confirmed":
     "এখানকার সবকিছুই মিন্টের সঙ্গে আগেই নিশ্চিত ছিল।",
   "wallet.pending.reserved_desc":
@@ -1322,9 +1343,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning জমা",
   "wallet.activity.ln_withdrawal": "Lightning থেকে তোলা",
   "wallet.activity.nutzap_received": "Nutzap পাওয়া গেছে",
+  "wallet.activity.nutzap_claiming": "Nutzap, নেওয়া হচ্ছে",
   "wallet.activity.spent_removed": "খরচ হওয়া কয়েন সরানো হয়েছে",
   "wallet.activity.refreshed": "মিন্টের সঙ্গে যাচাই হয়েছে",
   "wallet.activity.refreshing": "মিন্টের সঙ্গে যাচাই হচ্ছে",
+  "wallet.activity.copy_refused": "প্রত্যাখ্যাত টোকেনটি কপি করুন",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "মেশ অফলাইন",
@@ -1444,6 +1467,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "সেই পুনরুদ্ধার বাক্যটি অকেজো।",
   "wallet.svc.phrase_invalid_body":
     "ভুল বানান বা বাদ পড়া শব্দ আছে কিনা দেখুন। বাক্যটিতে নিজস্ব একটি যাচাই সংখ্যা আছে, তাই একটি শব্দ ভুল হলেই পুরোটা অকেজো।",
+  "wallet.svc.phrase_unreadable": "এই ফোনে আপনার পুনরুদ্ধার বাক্য পড়া গেল না।",
+  "wallet.svc.phrase_unreadable_body":
+    "কিছুই বদলায়নি, নতুন কোনো বাক্যও তৈরি হয়নি। ফোনের তালা খোলা হলে আবার চেষ্টা করুন। এর মধ্যে আপনার ecash কাজ করতেই থাকবে।",
   "wallet.svc.need_mint": "আগে অন্তত একটি মিন্ট যোগ করুন।",
   "wallet.svc.need_mint_body":
     "পুনরুদ্ধার কাজ করে মিন্টকে জিজ্ঞেস করে যে সে আপনার জন্য কোন মুদ্রায় সই করেছে, তাই কোন মিন্টকে জিজ্ঞেস করবে তা তার জানা দরকার।",
@@ -1464,10 +1490,25 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "সেগুলো আনতে এখন মিন্টে পৌঁছানো যাচ্ছে না। কিছুই হারায়নি: অনলাইনে এলে আবার গ্রহণ করুন।",
   "wallet.svc.wrong_mint": "এই টোকেনটি যে মিন্টের নাম বলছে সে সই করেনি।",
+  "wallet.svc.wrong_mint_body":
+    "অন্তত একটি মুদ্রার সই মিন্টের কী-এর সঙ্গে মেলে না। কিছুই যোগ হয়নি।",
+  "wallet.svc.unit_mismatch":
+    "এই টোকেনের মুদ্রাগুলো সেই কারেন্সিতে নয় যার নাম এতে লেখা।",
+  "wallet.svc.unit_mismatch_body":
+    "এতে {label} লেখা আছে, কিন্তু এর কিছু মুদ্রা {actual}-এ ইস্যু করা। প্রেরকের কাছে নতুন টোকেন চান। কিছুই যোগ হয়নি।",
+  "wallet.svc.locked_other": "এই মুদ্রাগুলো অন্য কারও ওয়ালেটে তালাবদ্ধ।",
+  "wallet.svc.locked_other_body":
+    "যাঁর জন্য তালাবদ্ধ, কেবল তিনিই এগুলো নিতে পারবেন। কিছুই যোগ হয়নি।",
+  "wallet.svc.coins_refused":
+    "মিন্ট এই মুদ্রাগুলো প্রত্যাখ্যান করেছে, তাই এগুলো আর গোনা হয় না। ফেরত পাঠাতে চাইলে টোকেনটি এখানে রাখা আছে।",
+  "wallet.svc.coins_unredeemable":
+    "এই মুদ্রাগুলো এই মিন্টে ভাঙানো যায় না, তাই এগুলো আর গোনা হয় না। ফেরত পাঠাতে চাইলে টোকেনটি এখানে রাখা আছে।",
+  "wallet.svc.locked_ours_offline": "এই পেমেন্ট আপনার ওয়ালেটে তালাবদ্ধ।",
+  "wallet.svc.locked_ours_offline_body":
+    "অনলাইনে এলে এটি নিন। এর মধ্যে অন্য কেউ এটি নিতে পারবে না।",
   "wallet.svc.already_spent": "এই ecash আগেই খরচ হয়ে গেছে।",
   "wallet.svc.already_spent_body":
     "যিনি এই টোকেনটি পাঠিয়েছেন তিনি আগেই এটি ভাঙিয়েছেন, বা একই টোকেন অন্য কাউকেও পাঠিয়েছেন।",
-  "wallet.svc.receiving_offline": "অফলাইনে নেওয়া",
   "wallet.svc.amount_positive": "শূন্যের চেয়ে বড় একটি অঙ্ক লিখুন।",
   "wallet.svc.coins_raced":
     "সেই মুদ্রাগুলো এইমাত্র অন্য একটি পেমেন্টে ব্যবহার হয়ে গেছে।",
@@ -1938,7 +1979,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "সংযোগ করতে বাক্সের বাইরে ট্যাপ করুন।",
   "settings.tor.custom_empty": "প্রথমে অন্তত একটি ব্রিজ লাইন যোগ করুন।",
   "settings.tor.recovered":
-    "Tor গতবার চালু হওয়া শেষ করতে পারেনি, তাই এটি বন্ধ করা হয়েছে। আবার চেষ্টা করতে এটি পুনরায় চালু করুন।",
+    "Tor গতবার চালু হওয়া শেষ করতে পারেনি, তাই ইন্টারনেট ট্রাফিক থামানো আছে। আবার চেষ্টা করুন, বা Tor ছাড়া অনলাইনে যেতে Tor বন্ধ করুন।",
+  "settings.tor.retry": "আবার চেষ্টা করুন",
   "settings.conn.mint_clearnet": "খোলা নেটে মিন্টের যাতায়াতের অনুমতি দিন",
   "settings.conn.mint_clearnet_desc":
     "iOS-এ Tor কেবল Nostr ঢাকে। মিন্টের অনুরোধ আটকাতে বন্ধ রাখুন; যেভাবেই হোক মেশে ecash চলতেই থাকে।",
@@ -2102,9 +2144,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "নতুন ফোনের কোড স্ক্যান করতে সেটিংসে ক্যামেরার অনুমতি চালু করুন।",
   "settings.transfer.confirm_title": "এই ফোনে সরাবেন?",
-  "settings.transfer.confirm_body":
-    "এখানকার সবকিছু সেই ফোনে যাবে যেটি এই কোড দেখাচ্ছে। পৌঁছালেই এই ফোনটি মুছে ফেলা হবে।",
+  "settings.transfer.verify_body":
+    "নতুন ফোনে ঠিক এই শব্দগুলোই দেখানোর কথা। এখানকার সবকিছু সেখানে যাবে, তারপর এই ফোন মুছে ফেলা হবে।",
   "settings.transfer.confirm_cta": "সরান",
+  "settings.transfer.waiting_confirm": "নতুন ফোনে নিশ্চিত করুন",
   "settings.transfer.connecting": "নতুন ফোনের সঙ্গে সংযোগ করা হচ্ছে",
   "settings.transfer.connecting_hint":
     "এই ফোন যদি স্থানীয় নেটওয়ার্কে ডিভাইস খোঁজার অনুমতি চায়, তবে অনুমতি দিন।",
@@ -2163,7 +2206,7 @@ export const strings: Strings = {
   "settings.wipe.now": "এখনই মুছুন",
   "settings.wipe.desc": "সব কী, বার্তা ও ecash সঙ্গে সঙ্গে ধ্বংস করে",
   "settings.wipe.body":
-    "এটি আপনার সব কী, বার্তা ও ecash সঙ্গে সঙ্গে ধ্বংস করবে। এটি আর ফেরানো যাবে না।",
+    "এটি আপনার সব কী, বার্তা ও ecash সঙ্গে সঙ্গে ধ্বংস করবে। এটি আর ফেরানো যাবে না। গ্যালারিতে সংরক্ষণ করা ছবিগুলো সেখানেই থাকবে।",
   "settings.wipe.in_progress": "মোছা হচ্ছে",
   "settings.wipe.in_progress_body":
     "আপনার কী, বার্তা ও ফাইল ধ্বংস করা হচ্ছে। এতে কয়েক সেকেন্ড লাগে, আর অ্যাপ বন্ধ হয়ে গেলেও নিজে থেকেই শেষ হয়।",
@@ -2224,6 +2267,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "সংস্করণ {version}-এর প্রকাশের নোট দেখুন",
   "settings.version.tor_paused":
     "Tor চালু থাকলে হালনাগাদ খোঁজা থামানো থাকে, যাতে আপনার IP ফাঁস না হয়। ব্রাউজারে প্রকাশের পাতাটি দেখুন।",
+  "settings.version.internet_off":
+    "ইন্টারনেট বন্ধ থাকায় হালনাগাদ থেমে আছে। সেটিংসে {setting} চালু করুন।",
   "settings.version.check_failed":
     "হালনাগাদ খোঁজা গেল না। আপনার সংযোগ দেখে আবার চেষ্টা করুন।",
   "settings.version.downloading": "ডাউনলোড হচ্ছে {percent}%",
@@ -2400,6 +2445,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count}টি অনিশ্চিত",
     other: "{count}টি অনিশ্চিত",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "ফি শেষবার দেখা হয়েছে {count} দিন আগে। এই মিন্ট তারপর ফি বাড়িয়ে থাকলে এই পাঠানোয় একটু বেশি লাগতে পারে।",
+    other:
+      "ফি শেষবার দেখা হয়েছে {count} দিন আগে। এই মিন্ট তারপর ফি বাড়িয়ে থাকলে এই পাঠানোয় একটু বেশি লাগতে পারে।",
   },
   "wallet.spent_removed_detail": {
     one: "{count}টি মুদ্রা আগেই খরচ হয়ে গিয়েছিল, আর সেটি সরিয়ে দেওয়া হয়েছে।",

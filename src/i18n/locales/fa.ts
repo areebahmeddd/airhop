@@ -118,6 +118,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "هر دو گوشی را به یک Wi-Fi وصل کنید، یا هات‌اسپات یکی را روشن کنید و با دیگری به آن بپیوندید. نیازی به اینترنت نیست.",
   "onboarding.transfer.incoming": "در حال انتقال {name}",
+  "onboarding.transfer.confirm_title": "گوشی قدیمی‌تان را بررسی کنید",
+  "onboarding.transfer.confirm_body":
+    "گوشی قدیمی‌تان باید همین واژه‌ها را نشان دهد. اگر واژه‌های دیگری نشان می‌دهد، یا هیچ واژه‌ای، لغو کنید.",
+  "onboarding.transfer.confirm_cta": "یکی هستند",
   "onboarding.transfer.receiving": "در حال دریافت {percent}%",
   "onboarding.transfer.saving": "در حال ذخیره روی این گوشی",
   "onboarding.transfer.releasing": "در حال پایان کار روی گوشی قدیمی‌تان",
@@ -175,6 +179,15 @@ export const strings: Strings = {
   "error.boundary.title": "مشکلی پیش آمد",
   "error.boundary.body":
     "Airhop به مشکلی غیرمنتظره برخورد و ناچار شد آنچه را نشان می‌داد متوقف کند.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "کلیدهایتان باز نمی‌شوند",
+  "launch.keys_unreadable_body":
+    "گوشی‌تان قفل کلیدهای Airhop را باز نکرد. قفل گوشی را باز کنید، سپس دوباره تلاش کنید.",
+  "launch.start_over": "پاک کردن و شروع از نو",
+  "launch.start_over_confirm_title": "این گوشی پاک شود؟",
+  "launch.start_over_confirm_body":
+    "هویت، پیام‌ها، مخاطبان و کیف پول شما روی این گوشی نابود می‌شوند و از نو، به‌عنوان کسی تازه، شروع می‌کنید. این کار برگشت‌پذیر نیست.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "کانال‌های پیش‌فرض",
@@ -588,7 +601,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ویدیو روی این دستگاه نیست",
   "chat.media.gone_voice": "پیام صوتی روی این دستگاه نیست",
   "chat.media.gone_file": "فایل روی این دستگاه نیست",
-  "chat.media.gone_note": "پس از 7 روز یا هنگام پاک شدن حافظهٔ نهان برداشته شد",
+  "chat.media.gone_note": "دیگر روی این دستگاه ذخیره نیست",
   "chat.media.ask_resend": "دوباره بپرس",
   "chat.media.resend_draft": "می‌شود آن {kind} را دوباره بفرستید؟",
   "chat.media.kind_photo": "عکس",
@@ -656,6 +669,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "دریافت شد",
   "chat.ecash.reclaimed": "پس گرفته شد",
+  "chat.ecash.locked": "قفل‌شده برای کس دیگر",
   "chat.ecash.claiming": "در حال دریافت…",
   "chat.ecash.claim": "دریافت",
   "chat.ecash.claim_amount": "دریافت {amount} {unit}",
@@ -888,6 +902,7 @@ export const strings: Strings = {
     "دسترسی‌های Airhop را در تنظیمات سیستم باز می‌کند",
   "mesh.banner.hint.battery_settings":
     "تنظیمات فعالیت پس‌زمینهٔ این گوشی را باز می‌کند",
+  "mesh.banner.hint.tor_settings": "تنظیمات Tor در Airhop را باز می‌کند",
   "mesh.banner.dismiss": "بستن: {label}",
   "mesh.banner.hint.dismiss": "این یادداشت را برای همیشه پنهان می‌کند",
 
@@ -1009,8 +1024,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "مبلغ به {unit}",
   "wallet.send.body":
     "به شکل برون‌خط از ecash موجودتان ساخته می‌شود. تا وقتی تأیید نکنید توکن رسیده است، چیزی برای همیشه از موجودی شما بیرون نمی‌رود.",
-  "wallet.send.stale_fee_note":
-    "کارمزدها آخرین بار {days} روز پیش بررسی شدند. اگر این ضراب‌خانه از آن زمان کارمزدش را بالا برده باشد، این ارسال کمی بیشتر هزینه می‌برد.",
   "wallet.send.fee_note":
     "{spend} {unit} از موجودی شما بیرون می‌رود؛ {fee} اضافی همان کارمزد ضراب‌خانه‌ای را می‌پوشاند که وگرنه خودشان می‌پرداختند",
   "wallet.send.qr_too_big":
@@ -1063,19 +1076,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
   "wallet.receive.stored_pending":
-    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است{dleq}. همین که برخط شدید از زبانهٔ کیف پول تازه‌سازی کنید.",
+    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است{dleq}. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.dleq_inline":
     " (امضایش که درست از آب درمی‌آید، پس توکن اصل است)",
   "wallet.receive.dleq_ok":
     "امضای ضراب‌خانه درست از آب درمی‌آید، پس توکن اصل است.",
   "wallet.receive.dleq_uncached":
     "کلیدهای ضراب‌خانه اینجا ذخیره نیستند، پس امضا به شکل برون‌خط بررسی نشد.",
+  "wallet.receive.dleq_missing":
+    "همهٔ سکه‌های آن گواه امضای ضراب‌خانه را ندارند، پس نشد آن را برون‌خط بررسی کرد.",
   "wallet.receive.dleq_warning":
-    "تا وقتی برخط تازه‌سازی نکنید، در اصل ممکن است فرستنده آن را جای دیگری خرج کرده باشد.",
+    "تا وقتی برخط تأیید نشده، در اصل ممکن است فرستنده آن را جای دیگری خرج کرده باشد.",
   "wallet.receive.failed": "دریافت نشد",
   "wallet.receive.title": "گرفتن ecash",
   "wallet.receive.body":
-    "یک توکن Cashu بچسبانید. برخط که باشید بی‌درنگ در ضراب‌خانه بازخرید می‌شود؛ برون‌خط ذخیره می‌شود و دفعهٔ بعد که تازه‌سازی کنید تأیید می‌شود.",
+    "یک توکن Cashu بچسبانید. برخط که باشید بی‌درنگ در ضراب‌خانه بازخرید می‌شود؛ برون‌خط ذخیره می‌شود و همین که دوباره برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.scan": "پویش یک کد QR مربوط به ecash",
   "wallet.receive.scan_short": "پویش QR",
   "wallet.receive.receiving": "در حال دریافت…",
@@ -1291,6 +1306,8 @@ export const strings: Strings = {
     "ضراب‌خانه می‌گوید این توکن از پیش بازخرید شده است، پس {amount} {unit} به دستشان رسید و چیزی به موجودی شما بازنگشت.",
   "wallet.copied.token_body":
     "توکن در بریده‌دان شماست. تا وقتی رسیده علامتش نزنید اینجا کنارگذاشته می‌ماند، پس اگر تلاش نخست شکست خورد می‌توانید دوباره بچسبانیدش.",
+  "wallet.copied.refused_token_body":
+    "توکن در بریده‌دان شماست. این کیف پول دیگر آن را به حساب نمی‌آورد، پس می‌توانید آن را به فرستنده‌اش برگردانید.",
   "wallet.copied.phrase_body":
     "آن را در یک مدیر گذرواژه بچسبانید، سپس بریده‌دان خود را پاک کنید. برنامه‌های دیگر می‌توانند بریده‌دان را بخوانند، و در برخی پیکربندی‌ها با دستگاه‌های دیگر شما همگام می‌شود.",
   "wallet.refresh.failed": "تازه‌سازی ناموفق بود",
@@ -1301,6 +1318,10 @@ export const strings: Strings = {
   "wallet.refresh.swapped": "{amount} {unit} تأیید و با ecash تازه تعویض شد.",
   "wallet.refresh.secured":
     "اکنون {amount} {unit} زیر پوشش عبارت بازیابی شماست.",
+  "wallet.refresh.refused":
+    "ضراب‌خانه {amount} {unit} را رد کرد و از موجودی شما برداشته شد. توکن در «فعالیت» می‌ماند.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} هنوز در انتظار ضراب‌خانه است و بعداً تأیید می‌شود.",
   "wallet.refresh.all_confirmed":
     "هر چه اینجا بود از پیش با ضراب‌خانه تأیید شده بود.",
   "wallet.pending.reserved_desc":
@@ -1332,9 +1353,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "واریز Lightning",
   "wallet.activity.ln_withdrawal": "برداشت Lightning",
   "wallet.activity.nutzap_received": "Nutzap دریافت شد",
+  "wallet.activity.nutzap_claiming": "Nutzap، در حال دریافت",
   "wallet.activity.spent_removed": "سکه‌های خرج‌شده حذف شدند",
   "wallet.activity.refreshed": "با ضراب‌خانه بررسی شد",
   "wallet.activity.refreshing": "در حال بررسی با ضراب‌خانه",
+  "wallet.activity.copy_refused": "کپی توکن ردشده",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "مش برون‌خط",
@@ -1456,6 +1479,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "آن عبارت بازیابی معتبر نیست.",
   "wallet.svc.phrase_invalid_body":
     "دنبال واژه‌ای بگردید که بد تایپ شده یا جا افتاده. عبارت یک کد وارسی درونی دارد، پس یک واژهٔ نادرست کل آن را بی‌اعتبار می‌کند.",
+  "wallet.svc.phrase_unreadable": "عبارت بازیابی شما روی این گوشی خوانده نشد.",
+  "wallet.svc.phrase_unreadable_body":
+    "چیزی تغییر نکرد و عبارت تازه‌ای ساخته نشد. وقتی قفل گوشی باز شد دوباره تلاش کنید. در این میان ecash شما همچنان کار می‌کند.",
   "wallet.svc.need_mint": "اول دست‌کم یک ضراب‌خانه اضافه کنید.",
   "wallet.svc.need_mint_body":
     "بازیابی با پرسیدن از یک ضراب‌خانه کار می‌کند که کدام سکه‌ها را برای شما امضا کرده، پس باید بداند از کدام ضراب‌خانه بپرسد.",
@@ -1479,10 +1505,24 @@ export const strings: Strings = {
     "اکنون برای دریافت آن‌ها به ضراب‌خانه دسترسی نیست. چیزی از دست نرفته است: وقتی آنلاین شدید دوباره آن را دریافت کنید.",
   "wallet.svc.wrong_mint":
     "این توکن را ضراب‌خانه‌ای که نامش را می‌برد امضا نکرده است.",
+  "wallet.svc.wrong_mint_body":
+    "امضای دست‌کم یک سکه با کلیدهای ضراب‌خانه جور درنمی‌آید. چیزی اضافه نشد.",
+  "wallet.svc.unit_mismatch": "سکه‌های این توکن به ارزی که نام می‌برد نیستند.",
+  "wallet.svc.unit_mismatch_body":
+    "برچسبش {label} است، اما برخی از سکه‌هایش به {actual} صادر شده‌اند. از فرستنده یک توکن تازه بخواهید. چیزی اضافه نشد.",
+  "wallet.svc.locked_other": "این سکه‌ها به کیف پول کس دیگری قفل شده‌اند.",
+  "wallet.svc.locked_other_body":
+    "تنها کسی که به او قفل شده‌اند می‌تواند آن‌ها را دریافت کند. چیزی اضافه نشد.",
+  "wallet.svc.coins_refused":
+    "ضراب‌خانه این سکه‌ها را رد کرد، پس دیگر به حساب نمی‌آیند. اگر بخواهید پسش بفرستید، توکن اینجا نگه داشته می‌شود.",
+  "wallet.svc.coins_unredeemable":
+    "این سکه‌ها در این ضراب‌خانه بازخریدپذیر نیستند، پس دیگر به حساب نمی‌آیند. اگر بخواهید پسش بفرستید، توکن اینجا نگه داشته می‌شود.",
+  "wallet.svc.locked_ours_offline": "این پرداخت به کیف پول شما قفل شده است.",
+  "wallet.svc.locked_ours_offline_body":
+    "وقتی برخط شدید آن را دریافت کنید. در این میان هیچ‌کس دیگری نمی‌تواند آن را بردارد.",
   "wallet.svc.already_spent": "این ecash از پیش خرج شده است.",
   "wallet.svc.already_spent_body":
     "هر کس این توکن را فرستاده زودتر بازخریدش کرده، یا همان توکن را به کس دیگری هم داده است.",
-  "wallet.svc.receiving_offline": "دریافت به شکل برون‌خط",
   "wallet.svc.amount_positive": "مبلغی بزرگ‌تر از صفر وارد کنید.",
   "wallet.svc.coins_raced": "آن سکه‌ها همین حالا در پرداختی دیگر به کار رفتند.",
   "wallet.svc.coins_raced_body":
@@ -1951,7 +1991,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "برای اتصال، بیرون کادر را لمس کنید.",
   "settings.tor.custom_empty": "ابتدا دست‌کم یک خط پل اضافه کنید.",
   "settings.tor.recovered":
-    "Tor خاموش شد، چون بار قبل راه‌اندازی آن کامل نشد. برای تلاش دوباره آن را روشن کنید.",
+    "Tor بار قبل راه‌اندازی‌اش را کامل نکرد، پس ترافیک اینترنت متوقف است. دوباره تلاش کنید، یا Tor را خاموش کنید تا بدون آن برخط شوید.",
+  "settings.tor.retry": "دوباره تلاش کنید",
   "settings.conn.mint_clearnet": "اجازه به ترافیک ضراب‌خانه روی شبکهٔ باز",
   "settings.conn.mint_clearnet_desc":
     "Tor روی iOS تنها Nostr را پوشش می‌دهد. برای مسدود کردن درخواست‌های ضراب‌خانه خاموش بگذارید؛ در هر حال ecash روی مش کار می‌کند.",
@@ -2118,9 +2159,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "برای اسکن کد روی گوشی تازه‌تان، دسترسی دوربین را در تنظیمات روشن کنید.",
   "settings.transfer.confirm_title": "انتقال به این گوشی؟",
-  "settings.transfer.confirm_body":
-    "همه چیزِ اینجا به گوشی‌ای می‌رود که این کد را نشان می‌دهد. وقتی رسید، این گوشی پاک می‌شود.",
+  "settings.transfer.verify_body":
+    "گوشی تازه‌تان باید همین واژه‌ها را نشان دهد. همه چیز اینجا به آن منتقل می‌شود، سپس این گوشی پاک می‌شود.",
   "settings.transfer.confirm_cta": "انتقال",
+  "settings.transfer.waiting_confirm": "روی گوشی تازه‌تان تأیید کنید",
   "settings.transfer.connecting": "در حال اتصال به گوشی تازه‌تان",
   "settings.transfer.connecting_hint":
     "اگر این گوشی برای یافتن دستگاه‌های شبکهٔ محلی اجازه خواست، اجازه دهید.",
@@ -2178,7 +2220,7 @@ export const strings: Strings = {
   "settings.wipe.now": "همین حالا پاک کن",
   "settings.wipe.desc": "بی‌درنگ همهٔ کلیدها، پیام‌ها و ecash را نابود می‌کند",
   "settings.wipe.body":
-    "این کار بی‌درنگ همهٔ کلیدها، پیام‌ها و ecash شما را نابود می‌کند. این کار برگشت‌پذیر نیست.",
+    "این کار بی‌درنگ همهٔ کلیدها، پیام‌ها و ecash شما را نابود می‌کند. این کار برگشت‌پذیر نیست. عکس‌هایی که در گالری ذخیره کرده‌اید همان‌جا می‌مانند.",
   "settings.wipe.in_progress": "در حال پاک کردن",
   "settings.wipe.in_progress_body":
     "کلیدها، پیام‌ها و فایل‌های شما نابود می‌شوند. چند ثانیه طول می‌کشد، و اگر برنامه بسته شود خودش تا پایان می‌رود.",
@@ -2240,6 +2282,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "دیدن یادداشت‌های انتشار نسخهٔ {version}",
   "settings.version.tor_paused":
     "تا وقتی Tor روشن است بررسی به‌روزرسانی متوقف می‌ماند، تا نشانی IP شما درز نکند. صفحهٔ انتشارها را در مرورگر ببینید.",
+  "settings.version.internet_off":
+    "تا وقتی اینترنت خاموش است، به‌روزرسانی‌ها متوقف‌اند. {setting} را در تنظیمات روشن کنید.",
   "settings.version.check_failed":
     "به‌روزرسانی بررسی نشد. اتصال خود را وارسی کنید و دوباره تلاش کنید.",
   "settings.version.downloading": "در حال دانلود {percent}%",
@@ -2416,6 +2460,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} تأییدنشده",
     other: "{count} تأییدنشده",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "کارمزدها آخرین بار {count} روز پیش بررسی شدند. اگر این ضراب‌خانه از آن زمان کارمزدش را بالا برده باشد، این ارسال کمی بیشتر هزینه می‌برد.",
+    other:
+      "کارمزدها آخرین بار {count} روز پیش بررسی شدند. اگر این ضراب‌خانه از آن زمان کارمزدش را بالا برده باشد، این ارسال کمی بیشتر هزینه می‌برد.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} سکه قبلاً خرج شده بود و حذف شد.",

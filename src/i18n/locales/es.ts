@@ -122,6 +122,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Pon los dos teléfonos en la misma red Wi-Fi, o activa el punto de acceso en uno y conecta el otro a él. No hace falta internet.",
   "onboarding.transfer.incoming": "Transfiriendo a {name}",
+  "onboarding.transfer.confirm_title": "Revisa tu teléfono antiguo",
+  "onboarding.transfer.confirm_body":
+    "Tu teléfono antiguo debería mostrar estas mismas palabras. Si muestra otras palabras, o ninguna, cancela.",
+  "onboarding.transfer.confirm_cta": "Coinciden",
   "onboarding.transfer.receiving": "Recibiendo {percent}%",
   "onboarding.transfer.saving": "Guardando en este teléfono",
   "onboarding.transfer.releasing": "Terminando en tu teléfono antiguo",
@@ -180,6 +184,15 @@ export const strings: Strings = {
   "error.boundary.title": "Algo ha salido mal",
   "error.boundary.body":
     "Airhop encontró un problema inesperado y tuvo que detener lo que estaba mostrando.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "No se pueden abrir tus claves",
+  "launch.keys_unreadable_body":
+    "Tu teléfono no desbloqueó las claves de Airhop. Desbloquéalo y vuelve a intentarlo.",
+  "launch.start_over": "Borrar y empezar de cero",
+  "launch.start_over_confirm_title": "¿Borrar este teléfono?",
+  "launch.start_over_confirm_body":
+    "Tu identidad, tus mensajes, contactos y cartera de este teléfono se destruyen, y empiezas de nuevo como otra persona. No se puede deshacer.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Canales predeterminados",
@@ -601,7 +614,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "El vídeo no está en este dispositivo",
   "chat.media.gone_voice": "La nota de voz no está en este dispositivo",
   "chat.media.gone_file": "El archivo no está en este dispositivo",
-  "chat.media.gone_note": "Eliminado a los 7 días o al vaciar la caché",
+  "chat.media.gone_note": "Ya no está guardado en este dispositivo",
   "chat.media.ask_resend": "Volver a pedirlo",
   "chat.media.resend_draft": "¿Puedes enviarme otra vez {kind}?",
   "chat.media.kind_photo": "esa foto",
@@ -673,6 +686,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Reclamado",
   "chat.ecash.reclaimed": "Recuperado",
+  "chat.ecash.locked": "Bloqueado para otra persona",
   "chat.ecash.claiming": "Reclamando…",
   "chat.ecash.claim": "Reclamar",
   "chat.ecash.claim_amount": "Reclamar {amount} {unit}",
@@ -912,6 +926,7 @@ export const strings: Strings = {
     "Abre los permisos de Airhop en los ajustes del sistema",
   "mesh.banner.hint.battery_settings":
     "Abre los ajustes de actividad en segundo plano de este teléfono",
+  "mesh.banner.hint.tor_settings": "Abre los ajustes de Tor de Airhop",
   "mesh.banner.dismiss": "Descartar: {label}",
   "mesh.banner.hint.dismiss": "Oculta este aviso para siempre",
 
@@ -1036,8 +1051,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Cantidad en {unit}",
   "wallet.send.body":
     "Construido sin conexión a partir del ecash que ya tienes. Nada sale de tu saldo de forma definitiva hasta que confirmes que el token llegó.",
-  "wallet.send.stale_fee_note":
-    "Las comisiones se comprobaron por última vez hace {days} días. Si esta casa de cambio ha subido la suya desde entonces, el envío puede costar un poco más.",
   "wallet.send.fee_note":
     "{spend} {unit} salen de tu saldo; los {fee} adicionales cubren la comisión de la casa de cambio que si no pagarían ellos",
   "wallet.send.qr_too_big":
@@ -1090,19 +1103,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Canjeado en {mint}. Ahora es tuyo de forma demostrable: la copia de este token que tiene el remitente ya no funciona.",
   "wallet.receive.stored_pending":
-    "Guardado de {mint}, pero la casa de cambio aún no ha confirmado que esté sin gastar{dleq}. Actualiza desde la pestaña Cartera cuando tengas conexión.",
+    "Guardado de {mint}, pero la casa de cambio aún no ha confirmado que esté sin gastar{dleq}. Se confirma con la casa de cambio automáticamente cuando tengas conexión.",
   "wallet.receive.dleq_inline":
     " (su firma sí cuadra, así que el token es auténtico)",
   "wallet.receive.dleq_ok":
     "La firma de la casa de cambio cuadra, así que el token es auténtico.",
   "wallet.receive.dleq_uncached":
     "Las claves de la casa de cambio no están guardadas aquí, así que la firma no se pudo comprobar sin conexión.",
+  "wallet.receive.dleq_missing":
+    "No todas sus monedas llevan la prueba de firma de la casa de cambio, así que no se pudo comprobar sin conexión.",
   "wallet.receive.dleq_warning":
-    "Hasta que actualices con conexión, el remitente podría en principio haberlo gastado en otro sitio.",
+    "Hasta que se confirme con conexión, el remitente podría en principio haberlo gastado en otro sitio.",
   "wallet.receive.failed": "No se pudo recibir",
   "wallet.receive.title": "Recibir ecash",
   "wallet.receive.body":
-    "Pega un token de Cashu. Con conexión se canjea en la casa de cambio al momento; sin conexión se guarda y se confirma la próxima vez que actualices.",
+    "Pega un token de Cashu. Con conexión se canjea en la casa de cambio al momento; sin conexión se guarda y se confirma con la casa de cambio automáticamente cuando vuelvas a tener conexión.",
   "wallet.receive.scan": "Escanear un código QR de ecash",
   "wallet.receive.scan_short": "Escanear QR",
   "wallet.receive.receiving": "Recibiendo…",
@@ -1319,6 +1334,8 @@ export const strings: Strings = {
     "La casa de cambio indica que este token ya se canjeó, así que los {amount} {unit} les llegaron y no volvió nada a tu saldo.",
   "wallet.copied.token_body":
     "El token está en tu portapapeles. Sigue reservado aquí hasta que lo marques como entregado, así que puedes volver a pegarlo si el primer intento falla.",
+  "wallet.copied.refused_token_body":
+    "El token está en tu portapapeles. Esta cartera ya no lo cuenta, así que puedes devolvérselo a quien te lo envió.",
   "wallet.copied.phrase_body":
     "Pégala en un gestor de contraseñas y luego vacía el portapapeles. Otras apps pueden leerlo, y en algunas configuraciones se sincroniza con tus demás dispositivos.",
   "wallet.refresh.failed": "La actualización ha fallado",
@@ -1330,6 +1347,10 @@ export const strings: Strings = {
     "{amount} {unit} confirmados e intercambiados por ecash nuevo.",
   "wallet.refresh.secured":
     "{amount} {unit} ya están cubiertos por tu frase de recuperación.",
+  "wallet.refresh.refused":
+    "La casa de cambio rechazó {amount} {unit}, que se han retirado de tu saldo. El token se conserva en Actividad.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} siguen pendientes de la casa de cambio y se confirmarán más tarde.",
   "wallet.refresh.all_confirmed":
     "Todo lo de aquí ya estaba confirmado con la casa de cambio.",
   "wallet.pending.reserved_desc":
@@ -1361,9 +1382,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Ingreso por Lightning",
   "wallet.activity.ln_withdrawal": "Retirada por Lightning",
   "wallet.activity.nutzap_received": "Nutzap recibido",
+  "wallet.activity.nutzap_claiming": "Nutzap, reclamando",
   "wallet.activity.spent_removed": "Monedas gastadas eliminadas",
   "wallet.activity.refreshed": "Comprobado con la casa de cambio",
   "wallet.activity.refreshing": "Comprobando con la casa de cambio",
+  "wallet.activity.copy_refused": "Copiar el token rechazado",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Malla sin conexión",
@@ -1490,6 +1513,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Esa frase de recuperación no es válida.",
   "wallet.svc.phrase_invalid_body":
     "Busca una palabra mal escrita o ausente. La frase lleva una suma de verificación incorporada, así que una sola palabra incorrecta invalida el conjunto.",
+  "wallet.svc.phrase_unreadable":
+    "No se pudo leer tu frase de recuperación en este teléfono.",
+  "wallet.svc.phrase_unreadable_body":
+    "No se cambió nada ni se creó una frase nueva. Vuelve a intentarlo cuando el teléfono esté desbloqueado. Mientras tanto, tu ecash sigue funcionando.",
   "wallet.svc.need_mint": "Añade antes al menos una casa de cambio.",
   "wallet.svc.need_mint_body":
     "La recuperación funciona preguntando a una casa de cambio qué monedas firmó para ti, así que necesita saber a cuál preguntar.",
@@ -1514,10 +1541,26 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Ahora no se puede contactar con la casa de cambio para obtenerlas. No se pierde nada: vuelve a recibirlo cuando tengas conexión.",
   "wallet.svc.wrong_mint": "Este token no lo firmó la casa de cambio que dice.",
+  "wallet.svc.wrong_mint_body":
+    "La firma de al menos una moneda no coincide con las claves de la casa de cambio. No se añadió nada.",
+  "wallet.svc.unit_mismatch":
+    "Las monedas de este token no están en la divisa que indica.",
+  "wallet.svc.unit_mismatch_body":
+    "Está etiquetado como {label}, pero algunas de sus monedas se emitieron en {actual}. Pide al remitente un token nuevo. No se añadió nada.",
+  "wallet.svc.locked_other":
+    "Estas monedas están bloqueadas para la cartera de otra persona.",
+  "wallet.svc.locked_other_body":
+    "Solo la persona para la que se bloquearon puede reclamarlas. No se añadió nada.",
+  "wallet.svc.coins_refused":
+    "La casa de cambio rechazó estas monedas, así que ya no se cuentan. El token se guarda aquí por si quieres devolverlo.",
+  "wallet.svc.coins_unredeemable":
+    "Estas monedas no se pueden canjear en esta casa de cambio, así que ya no se cuentan. El token se guarda aquí por si quieres devolverlo.",
+  "wallet.svc.locked_ours_offline": "Este pago está bloqueado para tu cartera.",
+  "wallet.svc.locked_ours_offline_body":
+    "Reclámalo cuando tengas conexión. Mientras tanto, nadie más puede quedárselo.",
   "wallet.svc.already_spent": "Este ecash ya se ha gastado.",
   "wallet.svc.already_spent_body":
     "Quien envió este token lo canjeó antes, o envió el mismo token a otra persona.",
-  "wallet.svc.receiving_offline": "recibiendo sin conexión",
   "wallet.svc.amount_positive": "Introduce una cantidad mayor que cero.",
   "wallet.svc.coins_raced": "Otro pago acaba de usar esas monedas.",
   "wallet.svc.coins_raced_body":
@@ -1999,7 +2042,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Toca fuera del cuadro para conectar.",
   "settings.tor.custom_empty": "Añade al menos una línea de puente primero.",
   "settings.tor.recovered":
-    "Tor se desactivó porque no terminó de iniciarse la última vez. Vuelve a activarlo para intentarlo de nuevo.",
+    "Tor no terminó de iniciarse la última vez, así que el tráfico de internet está en pausa. Inténtalo de nuevo, o desactiva Tor para conectarte sin él.",
+  "settings.tor.retry": "Inténtalo de nuevo",
   "settings.conn.mint_clearnet":
     "Permitir el tráfico con la casa de cambio por la red abierta",
   "settings.conn.mint_clearnet_desc":
@@ -2170,9 +2214,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Activa el acceso a la cámara en los ajustes para escanear el código de tu teléfono nuevo.",
   "settings.transfer.confirm_title": "¿Pasar a este teléfono?",
-  "settings.transfer.confirm_body":
-    "Todo lo que hay aquí pasa al teléfono que muestra este código. Cuando llegue, este teléfono se borra.",
+  "settings.transfer.verify_body":
+    "Tu teléfono nuevo debería mostrar estas mismas palabras. Todo lo que hay aquí pasa a él y luego este teléfono se borra.",
   "settings.transfer.confirm_cta": "Pasar",
+  "settings.transfer.waiting_confirm": "Confirma en tu teléfono nuevo",
   "settings.transfer.connecting": "Conectando con tu teléfono nuevo",
   "settings.transfer.connecting_hint":
     "Si este teléfono pide buscar dispositivos en tu red local, permítelo.",
@@ -2235,7 +2280,7 @@ export const strings: Strings = {
   "settings.wipe.desc":
     "Destruye al instante todas las claves, los mensajes y el ecash",
   "settings.wipe.body":
-    "Esto destruirá al instante todas tus claves, tus mensajes y tu ecash. No se puede deshacer.",
+    "Esto destruirá al instante todas tus claves, tus mensajes y tu ecash. No se puede deshacer. Las fotos que guardaste en tu galería se quedan allí.",
   "settings.wipe.in_progress": "Borrando",
   "settings.wipe.in_progress_body":
     "Destruyendo tus claves, mensajes y archivos. Tarda unos segundos y termina por su cuenta aunque se cierre la app.",
@@ -2298,6 +2343,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Ver las notas de la versión {version}",
   "settings.version.tor_paused":
     "La búsqueda de actualizaciones se pausa con Tor activado para no filtrar tu IP. Consulta la página de versiones en un navegador.",
+  "settings.version.internet_off":
+    "Las actualizaciones están en pausa mientras internet está desactivado. Activa {setting} en Ajustes.",
   "settings.version.check_failed":
     "No se pudieron buscar actualizaciones. Comprueba tu conexión e inténtalo de nuevo.",
   "settings.version.downloading": "Descargando {percent}%",
@@ -2501,6 +2548,12 @@ export const plurals: Plurals = {
     one: "{count} sin confirmar",
     many: "{count} sin confirmar",
     other: "{count} sin confirmar",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Las comisiones se comprobaron por última vez hace {count} día. Si esta casa de cambio ha subido la suya desde entonces, el envío puede costar un poco más.",
+    many: "Las comisiones se comprobaron por última vez hace {count} días. Si esta casa de cambio ha subido la suya desde entonces, el envío puede costar un poco más.",
+    other:
+      "Las comisiones se comprobaron por última vez hace {count} días. Si esta casa de cambio ha subido la suya desde entonces, el envío puede costar un poco más.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} moneda ya estaba gastada y se ha eliminado.",

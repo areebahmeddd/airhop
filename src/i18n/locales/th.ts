@@ -118,6 +118,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "ให้โทรศัพท์ทั้งสองเครื่องใช้ Wi-Fi เดียวกัน หรือเปิดฮอตสปอตบนเครื่องหนึ่งแล้วเชื่อมต่อจากอีกเครื่อง ไม่ต้องใช้อินเทอร์เน็ต",
   "onboarding.transfer.incoming": "กำลังย้าย {name}",
+  "onboarding.transfer.confirm_title": "ตรวจสอบโทรศัพท์เครื่องเก่า",
+  "onboarding.transfer.confirm_body":
+    "โทรศัพท์เครื่องเก่าควรแสดงคำชุดเดียวกันนี้ หากแสดงคำที่ต่างออกไปหรือไม่แสดงอะไรเลย ให้ยกเลิก",
+  "onboarding.transfer.confirm_cta": "ตรงกัน",
   "onboarding.transfer.receiving": "กำลังรับ {percent}%",
   "onboarding.transfer.saving": "กำลังบันทึกลงโทรศัพท์เครื่องนี้",
   "onboarding.transfer.releasing": "กำลังเสร็จสิ้นบนโทรศัพท์เครื่องเก่า",
@@ -174,6 +178,15 @@ export const strings: Strings = {
   "error.boundary.title": "มีบางอย่างผิดพลาด",
   "error.boundary.body":
     "Airhop พบปัญหาที่ไม่คาดคิดและต้องหยุดสิ่งที่กำลังแสดงอยู่",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "เปิดกุญแจของคุณไม่ได้",
+  "launch.keys_unreadable_body":
+    "โทรศัพท์ของคุณไม่ได้ปลดล็อกกุญแจของ Airhop ปลดล็อกโทรศัพท์แล้วลองอีกครั้ง",
+  "launch.start_over": "ล้างและเริ่มใหม่",
+  "launch.start_over_confirm_title": "ล้างโทรศัพท์เครื่องนี้ไหม",
+  "launch.start_over_confirm_body":
+    "ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินบนโทรศัพท์เครื่องนี้จะถูกทำลาย และคุณจะเริ่มใหม่ในฐานะคนใหม่ ย้อนกลับไม่ได้",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "ช่องเริ่มต้น",
@@ -583,7 +596,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "วิดีโอไม่ได้อยู่บนเครื่องนี้",
   "chat.media.gone_voice": "ข้อความเสียงไม่ได้อยู่บนเครื่องนี้",
   "chat.media.gone_file": "ไฟล์ไม่ได้อยู่บนเครื่องนี้",
-  "chat.media.gone_note": "ถูกลบหลัง 7 วันหรือเมื่อล้างแคช",
+  "chat.media.gone_note": "ไม่ได้เก็บไว้บนเครื่องนี้แล้ว",
   "chat.media.ask_resend": "ขออีกครั้ง",
   "chat.media.resend_draft": "ช่วยส่ง{kind}นั้นมาอีกครั้งได้ไหม",
   "chat.media.kind_photo": "รูปภาพ",
@@ -650,6 +663,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "เคลมแล้ว",
   "chat.ecash.reclaimed": "เรียกคืนแล้ว",
+  "chat.ecash.locked": "ล็อกไว้ให้คนอื่น",
   "chat.ecash.claiming": "กำลังเคลม…",
   "chat.ecash.claim": "เคลม",
   "chat.ecash.claim_amount": "เคลม {amount} {unit}",
@@ -876,6 +890,7 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "เปิดสิทธิ์ของ Airhop ในการตั้งค่าระบบ",
   "mesh.banner.hint.battery_settings":
     "เปิดการตั้งค่ากิจกรรมเบื้องหลังของโทรศัพท์เครื่องนี้",
+  "mesh.banner.hint.tor_settings": "เปิดการตั้งค่า Tor ของ Airhop",
   "mesh.banner.dismiss": "ปิด: {label}",
   "mesh.banner.hint.dismiss": "ซ่อนข้อความนี้อย่างถาวร",
 
@@ -992,8 +1007,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "จำนวนเป็น {unit}",
   "wallet.send.body":
     "สร้างแบบออฟไลน์จาก ecash ที่คุณถืออยู่แล้ว จะไม่มีสิ่งใดออกจากยอดคงเหลือของคุณอย่างถาวรจนกว่าคุณจะยืนยันว่าโทเคนไปถึงแล้ว",
-  "wallet.send.stale_fee_note":
-    "ตรวจสอบค่าธรรมเนียมครั้งล่าสุดเมื่อ {days} วันที่แล้ว หากมินต์นี้ขึ้นค่าธรรมเนียมหลังจากนั้น การส่งอาจมีค่าใช้จ่ายสูงขึ้นเล็กน้อย",
   "wallet.send.fee_note":
     "{spend} {unit} จะออกจากยอดคงเหลือของคุณ ส่วน {fee} ที่เพิ่มมาครอบคลุมค่าธรรมเนียมมินต์ที่พวกเขาต้องจ่ายเอง",
   "wallet.send.qr_too_big":
@@ -1046,18 +1059,20 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "แลกที่ {mint} แล้ว ตอนนี้มันเป็นของคุณอย่างพิสูจน์ได้ สำเนาโทเคนนี้ของผู้ส่งใช้ไม่ได้อีกต่อไป",
   "wallet.receive.stored_pending":
-    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้{dleq} รีเฟรชจากแท็บกระเป๋าเงินเมื่อคุณออนไลน์",
+    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้{dleq} ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
   "wallet.receive.dleq_inline":
     " (ลายเซ็นของมันตรวจสอบผ่าน โทเคนจึงเป็นของแท้)",
   "wallet.receive.dleq_ok": "ลายเซ็นของมินต์ตรวจสอบผ่าน โทเคนจึงเป็นของแท้",
   "wallet.receive.dleq_uncached":
     "กุญแจของมินต์ไม่ได้แคชไว้ที่นี่ จึงตรวจสอบลายเซ็นแบบออฟไลน์ไม่ได้",
+  "wallet.receive.dleq_missing":
+    "เหรียญบางส่วนในนั้นไม่มีหลักฐานลายเซ็นของมินต์ จึงตรวจสอบแบบออฟไลน์ไม่ได้",
   "wallet.receive.dleq_warning":
-    "จนกว่าคุณจะรีเฟรชขณะออนไลน์ ผู้ส่งอาจใช้มันไปที่อื่นแล้วก็เป็นได้",
+    "จนกว่าจะได้รับการยืนยันขณะออนไลน์ ผู้ส่งอาจใช้มันไปที่อื่นแล้วก็เป็นได้",
   "wallet.receive.failed": "รับไม่สำเร็จ",
   "wallet.receive.title": "รับ ecash",
   "wallet.receive.body":
-    "วางโทเคน Cashu เมื่อออนไลน์มันจะถูกแลกที่มินต์ทันที เมื่อออฟไลน์มันจะถูกเก็บไว้และยืนยันในครั้งถัดไปที่คุณรีเฟรช",
+    "วางโทเคน Cashu เมื่อออนไลน์มันจะถูกแลกที่มินต์ทันที เมื่อออฟไลน์มันจะถูกเก็บไว้และยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณกลับมาออนไลน์",
   "wallet.receive.scan": "สแกนคิวอาร์โค้ด ecash",
   "wallet.receive.scan_short": "สแกน QR",
   "wallet.receive.receiving": "กำลังรับ…",
@@ -1268,6 +1283,8 @@ export const strings: Strings = {
     "มินต์แจ้งว่าโทเคนนี้ถูกแลกไปแล้ว {amount} {unit} จึงไปถึงพวกเขาและไม่มีอะไรกลับเข้ายอดคงเหลือของคุณ",
   "wallet.copied.token_body":
     "โทเคนอยู่บนคลิปบอร์ดของคุณแล้ว มันยังถูกกันไว้ที่นี่จนกว่าคุณจะทำเครื่องหมายว่าส่งถึงแล้ว คุณจึงวางซ้ำได้หากครั้งแรกไม่สำเร็จ",
+  "wallet.copied.refused_token_body":
+    "โทเคนอยู่บนคลิปบอร์ดของคุณแล้ว กระเป๋าเงินนี้ไม่นับรวมมันอีกต่อไป คุณจึงคืนให้ผู้ที่ส่งมาได้",
   "wallet.copied.phrase_body":
     "วางลงในโปรแกรมจัดการรหัสผ่าน แล้วล้างคลิปบอร์ดของคุณ แอปอื่นอ่านคลิปบอร์ดได้ และในบางการตั้งค่ามันจะซิงค์ไปยังอุปกรณ์อื่นของคุณ",
   "wallet.refresh.failed": "รีเฟรชไม่สำเร็จ",
@@ -1279,6 +1296,10 @@ export const strings: Strings = {
     "ยืนยัน {amount} {unit} และสับเปลี่ยนเป็น ecash ใหม่แล้ว",
   "wallet.refresh.secured":
     "ตอนนี้ {amount} {unit} อยู่ภายใต้วลีกู้คืนของคุณแล้ว",
+  "wallet.refresh.refused":
+    "{amount} {unit} ถูกมินต์ปฏิเสธและถูกนำออกจากยอดเงินของคุณแล้ว โทเคนยังเก็บไว้ในกิจกรรม",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} ยังรอมินต์อยู่ และจะได้รับการยืนยันภายหลัง",
   "wallet.refresh.all_confirmed": "ทุกอย่างที่นี่ได้รับการยืนยันกับมินต์ไปแล้ว",
   "wallet.pending.reserved_desc":
     "สร้างและกันไว้แล้ว ยังไม่ยืนยันการส่งถึง เหรียญถูกกันออกจากยอดคงเหลือของคุณเพื่อไม่ให้ถูกใช้ซ้ำ",
@@ -1309,9 +1330,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "ฝากผ่าน Lightning",
   "wallet.activity.ln_withdrawal": "ถอนผ่าน Lightning",
   "wallet.activity.nutzap_received": "ได้รับ Nutzap",
+  "wallet.activity.nutzap_claiming": "กำลังเคลม Nutzap",
   "wallet.activity.spent_removed": "ลบเหรียญที่ใช้แล้ว",
   "wallet.activity.refreshed": "ตรวจกับมินต์แล้ว",
   "wallet.activity.refreshing": "กำลังตรวจกับมินต์",
+  "wallet.activity.copy_refused": "คัดลอกโทเคนที่ถูกปฏิเสธ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "เมชออฟไลน์",
@@ -1430,6 +1453,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "วลีกู้คืนนั้นไม่ถูกต้อง",
   "wallet.svc.phrase_invalid_body":
     "ตรวจหาคำที่พิมพ์ผิดหรือตกหล่น วลีมีค่าตรวจสอบในตัว คำผิดเพียงคำเดียวก็ทำให้ทั้งวลีใช้ไม่ได้",
+  "wallet.svc.phrase_unreadable":
+    "อ่านวลีกู้คืนของคุณบนโทรศัพท์เครื่องนี้ไม่ได้",
+  "wallet.svc.phrase_unreadable_body":
+    "ไม่มีอะไรถูกเปลี่ยนแปลงและไม่ได้สร้างวลีใหม่ ลองอีกครั้งเมื่อปลดล็อกโทรศัพท์แล้ว ระหว่างนี้ ecash ของคุณยังใช้ได้ตามปกติ",
   "wallet.svc.need_mint": "เพิ่มมินต์อย่างน้อยหนึ่งแห่งก่อน",
   "wallet.svc.need_mint_body":
     "การกู้คืนทำงานด้วยการถามมินต์ว่าลงลายเซ็นเหรียญใดให้คุณบ้าง จึงต้องรู้ว่าจะถามมินต์ไหน",
@@ -1450,10 +1477,26 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "ขณะนี้ติดต่อมินต์เพื่อดึงกุญแจไม่ได้ ไม่มีอะไรสูญหาย รับอีกครั้งเมื่อออนไลน์",
   "wallet.svc.wrong_mint": "โทเคนนี้ไม่ได้ลงลายเซ็นโดยมินต์ที่มันระบุชื่อไว้",
+  "wallet.svc.wrong_mint_body":
+    "ลายเซ็นของเหรียญอย่างน้อยหนึ่งเหรียญไม่ตรงกับกุญแจของมินต์ ไม่มีอะไรถูกเพิ่ม",
+  "wallet.svc.unit_mismatch":
+    "เหรียญในโทเคนนี้ไม่ได้เป็นสกุลเงินที่โทเคนระบุไว้",
+  "wallet.svc.unit_mismatch_body":
+    "โทเคนนี้ระบุว่าเป็น {label} แต่เหรียญบางส่วนออกเป็น {actual} ขอโทเคนใหม่จากผู้ส่ง ไม่มีอะไรถูกเพิ่ม",
+  "wallet.svc.locked_other": "เหรียญเหล่านี้ถูกล็อกไว้กับกระเป๋าเงินของคนอื่น",
+  "wallet.svc.locked_other_body":
+    "มีเพียงคนที่เหรียญถูกล็อกไว้ให้เท่านั้นที่เคลมได้ ไม่มีอะไรถูกเพิ่ม",
+  "wallet.svc.coins_refused":
+    "มินต์ปฏิเสธเหรียญเหล่านี้ จึงไม่นับรวมอีกต่อไป โทเคนยังเก็บไว้ที่นี่หากคุณต้องการส่งคืน",
+  "wallet.svc.coins_unredeemable":
+    "เหรียญเหล่านี้แลกที่มินต์นี้ไม่ได้ จึงไม่นับรวมอีกต่อไป โทเคนยังเก็บไว้ที่นี่หากคุณต้องการส่งคืน",
+  "wallet.svc.locked_ours_offline":
+    "การชำระเงินนี้ถูกล็อกไว้กับกระเป๋าเงินของคุณ",
+  "wallet.svc.locked_ours_offline_body":
+    "เคลมได้เมื่อคุณออนไลน์ ระหว่างนี้ไม่มีใครเอาไปได้",
   "wallet.svc.already_spent": "ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":
     "ผู้ที่ส่งโทเคนนี้แลกมันไปก่อน หรือส่งโทเคนใบเดียวกันให้คนอื่นด้วย",
-  "wallet.svc.receiving_offline": "กำลังรับแบบออฟไลน์",
   "wallet.svc.amount_positive": "ใส่จำนวนที่มากกว่าศูนย์",
   "wallet.svc.coins_raced": "เหรียญเหล่านั้นเพิ่งถูกใช้โดยการชำระเงินอีกรายการ",
   "wallet.svc.coins_raced_body":
@@ -1911,7 +1954,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "แตะนอกกล่องเพื่อเชื่อมต่อ",
   "settings.tor.custom_empty": "เพิ่มบรรทัดบริดจ์อย่างน้อยหนึ่งบรรทัดก่อน",
   "settings.tor.recovered":
-    "ปิด Tor แล้ว เพราะครั้งก่อนเริ่มทำงานไม่สำเร็จ เปิดอีกครั้งเพื่อลองใหม่",
+    "ครั้งก่อน Tor เริ่มทำงานไม่สำเร็จ การรับส่งข้อมูลอินเทอร์เน็ตจึงหยุดไว้ ลองอีกครั้ง หรือปิด Tor เพื่อออนไลน์โดยไม่ใช้ Tor",
+  "settings.tor.retry": "ลองอีกครั้ง",
   "settings.conn.mint_clearnet":
     "อนุญาตการรับส่งข้อมูลกับมินต์ผ่านเครือข่ายเปิด",
   "settings.conn.mint_clearnet_desc":
@@ -2075,9 +2119,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "อนุญาตการเข้าถึงกล้องในการตั้งค่าเพื่อสแกนโค้ดบนโทรศัพท์เครื่องใหม่",
   "settings.transfer.confirm_title": "ย้ายไปยังโทรศัพท์เครื่องนี้ไหม",
-  "settings.transfer.confirm_body":
-    "ทุกอย่างที่นี่จะย้ายไปยังโทรศัพท์ที่แสดงโค้ดนี้ เมื่อย้ายถึงแล้ว โทรศัพท์เครื่องนี้จะถูกล้าง",
+  "settings.transfer.verify_body":
+    "โทรศัพท์เครื่องใหม่ควรแสดงคำชุดเดียวกันนี้ ทุกอย่างที่นี่จะย้ายไปยังเครื่องนั้น จากนั้นโทรศัพท์เครื่องนี้จะถูกล้าง",
   "settings.transfer.confirm_cta": "ย้าย",
+  "settings.transfer.waiting_confirm": "ยืนยันบนโทรศัพท์เครื่องใหม่",
   "settings.transfer.connecting": "กำลังเชื่อมต่อกับโทรศัพท์เครื่องใหม่",
   "settings.transfer.connecting_hint":
     "หากเครื่องนี้ขอค้นหาอุปกรณ์ในเครือข่ายภายใน ให้กดอนุญาต",
@@ -2134,7 +2179,7 @@ export const strings: Strings = {
   "settings.wipe.now": "ล้างเดี๋ยวนี้",
   "settings.wipe.desc": "ทำลายกุญแจ ข้อความ และ ecash ทั้งหมดทันที",
   "settings.wipe.body":
-    "สิ่งนี้จะทำลายกุญแจ ข้อความ และ ecash ทั้งหมดของคุณทันที และย้อนกลับไม่ได้",
+    "สิ่งนี้จะทำลายกุญแจ ข้อความ และ ecash ทั้งหมดของคุณทันที และย้อนกลับไม่ได้ รูปภาพที่คุณบันทึกไว้ในแกลเลอรีจะยังอยู่ที่เดิม",
   "settings.wipe.in_progress": "กำลังล้าง",
   "settings.wipe.in_progress_body":
     "กำลังทำลายกุญแจ ข้อความ และไฟล์ของคุณ ใช้เวลาไม่กี่วินาที และจะทำจนเสร็จเองแม้ปิดแอปไปแล้ว",
@@ -2196,6 +2241,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "ดูบันทึกประจำรุ่นสำหรับเวอร์ชัน {version}",
   "settings.version.tor_paused":
     "การตรวจหาการอัปเดตหยุดไว้ขณะที่ Tor เปิดอยู่ เพื่อไม่ให้ IP ของคุณรั่วไหล ดูหน้ารุ่นเผยแพร่ในเบราว์เซอร์แทน",
+  "settings.version.internet_off":
+    "การอัปเดตหยุดไว้ขณะที่อินเทอร์เน็ตปิดอยู่ เปิด {setting} ในการตั้งค่า",
   "settings.version.check_failed":
     "ตรวจหาการอัปเดตไม่สำเร็จ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
   "settings.version.downloading": "กำลังดาวน์โหลด {percent}%",
@@ -2347,6 +2394,10 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "ยังไม่ยืนยัน {count}",
+  },
+  "wallet.send.stale_fee_note": {
+    other:
+      "ตรวจสอบค่าธรรมเนียมครั้งล่าสุดเมื่อ {count} วันที่แล้ว หากมินต์นี้ขึ้นค่าธรรมเนียมหลังจากนั้น การส่งอาจมีค่าใช้จ่ายสูงขึ้นเล็กน้อย",
   },
   "wallet.spent_removed_detail": {
     other: "เหรียญ {count} เหรียญถูกใช้ไปแล้วและถูกลบออก",

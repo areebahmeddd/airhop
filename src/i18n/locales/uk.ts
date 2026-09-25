@@ -119,6 +119,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Підключіть обидва телефони до однієї мережі Wi-Fi або ввімкніть точку доступу на одному й підключіться до неї з іншого. Інтернет не потрібен.",
   "onboarding.transfer.incoming": "Переносимо {name}",
+  "onboarding.transfer.confirm_title": "Перевірте старий телефон",
+  "onboarding.transfer.confirm_body":
+    "Старий телефон має показувати ті самі слова. Якщо там інші слова або їх немає, скасуйте.",
+  "onboarding.transfer.confirm_cta": "Збігаються",
   "onboarding.transfer.receiving": "Отримання {percent}%",
   "onboarding.transfer.saving": "Зберігаємо на цей телефон",
   "onboarding.transfer.releasing": "Завершуємо на старому телефоні",
@@ -176,6 +180,15 @@ export const strings: Strings = {
   "error.boundary.title": "Щось пішло не так",
   "error.boundary.body":
     "Airhop натрапив на несподівану проблему й мусив зупинити те, що показував.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Не вдається відкрити ключі",
+  "launch.keys_unreadable_body":
+    "Телефон не відкрив доступ до ключів Airhop. Розблокуйте його і спробуйте ще раз.",
+  "launch.start_over": "Стерти й почати заново",
+  "launch.start_over_confirm_title": "Стерти цей телефон?",
+  "launch.start_over_confirm_body":
+    "Вашу особистість, повідомлення, контакти та гаманець на цьому телефоні буде знищено, і ви почнете заново з новою особистістю. Скасувати це неможливо.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Типові канали",
@@ -601,7 +614,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Відео немає на цьому пристрої",
   "chat.media.gone_voice": "Голосової нотатки немає на цьому пристрої",
   "chat.media.gone_file": "Файлу немає на цьому пристрої",
-  "chat.media.gone_note": "Вилучено через 7 днів або коли кеш очистили",
+  "chat.media.gone_note": "Більше не зберігається на цьому пристрої",
   "chat.media.ask_resend": "Попросити ще раз",
   "chat.media.resend_draft": "Можеш надіслати {kind} ще раз?",
   "chat.media.kind_photo": "те фото",
@@ -674,6 +687,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Отримано",
   "chat.ecash.reclaimed": "Забрано",
+  "chat.ecash.locked": "Прив’язано до іншої людини",
   "chat.ecash.claiming": "Отримуємо…",
   "chat.ecash.claim": "Отримати",
   "chat.ecash.claim_amount": "Отримати {amount} {unit}",
@@ -908,6 +922,7 @@ export const strings: Strings = {
     "Відкриває дозволи Airhop у системних налаштуваннях",
   "mesh.banner.hint.battery_settings":
     "Відкриває налаштування фонової активності цього телефона",
+  "mesh.banner.hint.tor_settings": "Відкриває налаштування Tor в Airhop",
   "mesh.banner.dismiss": "Приховати: {label}",
   "mesh.banner.hint.dismiss": "Ховає цю примітку назавжди",
 
@@ -1028,8 +1043,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Сума в {unit}",
   "wallet.send.body":
     "Зібрано офлайн з ecash, який ви вже маєте. Нічого не покидає ваш баланс остаточно, доки ви не підтвердите, що токен дійшов.",
-  "wallet.send.stale_fee_note":
-    "Комісії востаннє перевіряли {days} днів тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
   "wallet.send.fee_note":
     "{spend} {unit} піде з вашого балансу; додаткові {fee} покривають комісію мінта, яку інакше платили б вони",
   "wallet.send.qr_too_big":
@@ -1082,18 +1095,20 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Викуплено в {mint}. Тепер це доказово ваше: копія цього токена у відправника більше не працює.",
   "wallet.receive.stored_pending":
-    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене{dleq}. Оновіть із вкладки Гаманець, щойно будете онлайн.",
+    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене{dleq}. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
   "wallet.receive.dleq_inline":
     " (підпис таки збігається, тож токен справжній)",
   "wallet.receive.dleq_ok": "Підпис мінта збігається, тож токен справжній.",
   "wallet.receive.dleq_uncached":
     "Ключів мінта тут немає, тож підпис не вдалося перевірити офлайн.",
+  "wallet.receive.dleq_missing":
+    "Не кожна монета в ньому має доказ підпису мінта, тож перевірити його офлайн не вдалося.",
   "wallet.receive.dleq_warning":
-    "Доки ви не оновите онлайн, відправник у принципі міг витратити це деінде.",
+    "Доки це не підтверджено онлайн, відправник у принципі міг витратити це деінде.",
   "wallet.receive.failed": "Не вдалося отримати",
   "wallet.receive.title": "Отримати ecash",
   "wallet.receive.body":
-    "Вставте токен Cashu. Онлайн його одразу викуповують у мінті; офлайн його зберігають і підтверджують під час наступного оновлення.",
+    "Вставте токен Cashu. Онлайн його одразу викуповують у мінті; офлайн його зберігають і автоматично підтверджують у мінті, щойно ви знову будете онлайн.",
   "wallet.receive.scan": "Сканувати QR-код ecash",
   "wallet.receive.scan_short": "Сканувати QR",
   "wallet.receive.receiving": "Отримуємо…",
@@ -1309,6 +1324,8 @@ export const strings: Strings = {
     "Мінт повідомляє, що цей токен уже викуплено, тож {amount} {unit} дійшли до них, і на ваш баланс нічого не повернулося.",
   "wallet.copied.token_body":
     "Токен у вашому буфері обміну. Він лишається відкладеним тут, доки ви не позначите його доставленим, тож ви зможете вставити його знову, якщо перша спроба не вдасться.",
+  "wallet.copied.refused_token_body":
+    "Токен у вашому буфері обміну. Цей гаманець його більше не враховує, тож ви можете повернути його відправникові.",
   "wallet.copied.phrase_body":
     "Вставте її в менеджер паролів, а тоді очистіть буфер обміну. Інші застосунки можуть читати буфер, а за деяких налаштувань він синхронізується з вашими іншими пристроями.",
   "wallet.refresh.failed": "Оновлення не вдалося",
@@ -1320,6 +1337,10 @@ export const strings: Strings = {
     "{amount} {unit} підтверджено й обміняно на свіжий ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} тепер покриває ваша фраза відновлення.",
+  "wallet.refresh.refused":
+    "{amount} {unit} відхилено мінтом і прибрано з балансу. Токен збережено в розділі «Активність».",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} досі чекає на мінт і буде підтверджено пізніше.",
   "wallet.refresh.all_confirmed": "Усе тут уже було підтверджено мінтом.",
   "wallet.pending.reserved_desc":
     "Зібрано й відкладено, доставлення не підтверджено. Монети тримають поза вашим балансом, щоб їх не витратили двічі.",
@@ -1350,9 +1371,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Поповнення через Lightning",
   "wallet.activity.ln_withdrawal": "Виведення через Lightning",
   "wallet.activity.nutzap_received": "Nutzap отримано",
+  "wallet.activity.nutzap_claiming": "Nutzap, отримання",
   "wallet.activity.spent_removed": "Витрачені монети вилучено",
   "wallet.activity.refreshed": "Перевірено в мінті",
   "wallet.activity.refreshing": "Перевірка в мінті",
+  "wallet.activity.copy_refused": "Копіювати відхилений токен",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh офлайн",
@@ -1474,6 +1497,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Ця фраза відновлення недійсна.",
   "wallet.svc.phrase_invalid_body":
     "Пошукайте слово з друкарською помилкою або пропущене. Фраза має вбудовану контрольну суму, тож одне хибне слово робить недійсною всю.",
+  "wallet.svc.phrase_unreadable":
+    "Не вдалося прочитати фразу відновлення на цьому телефоні.",
+  "wallet.svc.phrase_unreadable_body":
+    "Нічого не змінено, нову фразу не створено. Спробуйте ще раз, коли телефон буде розблоковано. Ваш ecash тим часом працює.",
   "wallet.svc.need_mint": "Спершу додайте принаймні один мінт.",
   "wallet.svc.need_mint_body":
     "Відновлення працює так: воно питає мінт, які монети той підписав для вас, тож йому треба знати, який мінт питати.",
@@ -1495,10 +1522,25 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Зараз не вдається зв’язатися з мінтом, щоб отримати їх. Нічого не втрачено: прийміть токен знову, коли будете онлайн.",
   "wallet.svc.wrong_mint": "Цей токен не підписаний мінтом, який він називає.",
+  "wallet.svc.wrong_mint_body":
+    "Підпис щонайменше однієї монети не збігається з ключами мінта. Нічого не додано.",
+  "wallet.svc.unit_mismatch":
+    "Монети цього токена не в тій валюті, яку він називає.",
+  "wallet.svc.unit_mismatch_body":
+    "Він позначений як {label}, але частину його монет випущено в {actual}. Попросіть у відправника новий токен. Нічого не додано.",
+  "wallet.svc.locked_other": "Ці монети прив’язано до чужого гаманця.",
+  "wallet.svc.locked_other_body":
+    "Забрати їх може лише той, до кого їх прив’язано. Нічого не додано.",
+  "wallet.svc.coins_refused":
+    "Мінт відхилив ці монети, тож вони більше не враховуються. Токен збережено тут, якщо захочете його повернути.",
+  "wallet.svc.coins_unredeemable":
+    "Ці монети не можна викупити в цьому мінті, тож вони більше не враховуються. Токен збережено тут, якщо захочете його повернути.",
+  "wallet.svc.locked_ours_offline": "Цей платіж прив’язано до вашого гаманця.",
+  "wallet.svc.locked_ours_offline_body":
+    "Отримайте його, коли будете онлайн. Тим часом ніхто інший не зможе його забрати.",
   "wallet.svc.already_spent": "Цей ecash уже витрачено.",
   "wallet.svc.already_spent_body":
     "Той, хто надіслав цей токен, викупив його першим або надіслав той самий токен ще комусь.",
-  "wallet.svc.receiving_offline": "отримання офлайн",
   "wallet.svc.amount_positive": "Введіть суму, більшу за нуль.",
   "wallet.svc.coins_raced": "Ті монети щойно використав інший платіж.",
   "wallet.svc.coins_raced_body":
@@ -1974,7 +2016,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Торкніться поза полем, щоб підключитися.",
   "settings.tor.custom_empty": "Спершу додайте хоча б один рядок моста.",
   "settings.tor.recovered":
-    "Tor вимкнено: минулого разу запуск не завершився. Увімкніть знову, щоб спробувати ще раз.",
+    "Минулого разу Tor не завершив запуск, тож інтернет-трафік призупинено. Спробуйте ще раз або вимкніть Tor, щоб вийти в інтернет без нього.",
+  "settings.tor.retry": "Спробувати ще раз",
   "settings.conn.mint_clearnet": "Дозволити трафік мінта через відкриту мережу",
   "settings.conn.mint_clearnet_desc":
     "Tor на iOS охоплює лише Nostr. Лишіть вимкненим, щоб блокувати запити до мінта; ecash через mesh працює в будь-якому разі.",
@@ -2144,9 +2187,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Увімкніть доступ до камери в Налаштуваннях, щоб відсканувати код на новому телефоні.",
   "settings.transfer.confirm_title": "Перенести на цей телефон?",
-  "settings.transfer.confirm_body":
-    "Усе звідси перейде на телефон, що показує цей код. Щойно перенесення завершиться, цей телефон буде стерто.",
+  "settings.transfer.verify_body":
+    "Новий телефон має показувати ті самі слова. Усе звідси перейде на нього, а потім цей телефон буде стерто.",
   "settings.transfer.confirm_cta": "Перенести",
+  "settings.transfer.waiting_confirm": "Підтвердьте на новому телефоні",
   "settings.transfer.connecting": "Під’єднуємося до нового телефона",
   "settings.transfer.connecting_hint":
     "Якщо телефон попросить дозвіл на пошук пристроїв у локальній мережі, дозвольте.",
@@ -2207,7 +2251,7 @@ export const strings: Strings = {
   "settings.wipe.now": "Стерти зараз",
   "settings.wipe.desc": "Миттєво знищує всі ключі, повідомлення та ecash",
   "settings.wipe.body":
-    "Це миттєво знищить усі ваші ключі, повідомлення та ecash. Скасувати це неможливо.",
+    "Це миттєво знищить усі ваші ключі, повідомлення та ecash. Скасувати це неможливо. Фото, збережені в галереї, там і залишаться.",
   "settings.wipe.in_progress": "Стираємо",
   "settings.wipe.in_progress_body":
     "Знищуємо ваші ключі, повідомлення та файли. Це триває кілька секунд і завершується саме, навіть якщо застосунок закрити.",
@@ -2270,6 +2314,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Переглянути нотатки випуску версії {version}",
   "settings.version.tor_paused":
     "Перевірку оновлень призупинено, поки Tor увімкнено, щоб вона не розкрила вашу IP-адресу. Загляньте на сторінку випусків у браузері.",
+  "settings.version.internet_off":
+    "Оновлення призупинено, поки інтернет вимкнено. Увімкніть {setting} у Налаштуваннях.",
   "settings.version.check_failed":
     "Не вдалося перевірити оновлення. Перевірте з’єднання та спробуйте ще раз.",
   "settings.version.downloading": "Завантаження {percent}%",
@@ -2495,6 +2541,13 @@ export const plurals: Plurals = {
     few: "{count} непідтверджені",
     many: "{count} непідтверджених",
     other: "{count} непідтвердженого",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Комісії востаннє перевіряли {count} день тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
+    few: "Комісії востаннє перевіряли {count} дні тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
+    many: "Комісії востаннє перевіряли {count} днів тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
+    other:
+      "Комісії востаннє перевіряли {count} дня тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} монету вже було витрачено, і її вилучено.",

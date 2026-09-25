@@ -116,6 +116,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "让两台手机连接同一个 Wi-Fi，或者在一台手机上打开热点，再用另一台连上。不需要互联网。",
   "onboarding.transfer.incoming": "正在转移 {name}",
+  "onboarding.transfer.confirm_title": "检查你的旧手机",
+  "onboarding.transfer.confirm_body":
+    "你的旧手机应该显示这组相同的词。如果显示的词不同，或者什么都没显示，请取消。",
+  "onboarding.transfer.confirm_cta": "一致",
   "onboarding.transfer.receiving": "正在接收 {percent}%",
   "onboarding.transfer.saving": "正在保存到这台手机",
   "onboarding.transfer.releasing": "正在旧手机上收尾",
@@ -171,6 +175,15 @@ export const strings: Strings = {
   "error.boundary.title": "出了点问题",
   "error.boundary.body":
     "Airhop 遇到了一个意外问题，不得不停下正在显示的内容。",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "无法打开你的密钥",
+  "launch.keys_unreadable_body":
+    "你的手机没有解锁 Airhop 的密钥。请解锁手机，然后再试一次。",
+  "launch.start_over": "抹除并重新开始",
+  "launch.start_over_confirm_title": "抹除这台手机？",
+  "launch.start_over_confirm_body":
+    "这台手机上的身份、消息、联系人和钱包都会被销毁，你将以一个新身份重新开始。此操作无法撤销。",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "默认频道",
@@ -561,7 +574,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "这台设备上没有该视频",
   "chat.media.gone_voice": "这台设备上没有该语音留言",
   "chat.media.gone_file": "这台设备上没有该文件",
-  "chat.media.gone_note": "已在 7 天后或缓存被清空时移除",
+  "chat.media.gone_note": "已不再保存在这台设备上",
   "chat.media.ask_resend": "再问一次",
   "chat.media.resend_draft": "能再发一次那{kind}吗？",
   "chat.media.kind_photo": "张照片",
@@ -628,6 +641,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "已领取",
   "chat.ecash.reclaimed": "已收回",
+  "chat.ecash.locked": "已锁定给他人",
   "chat.ecash.claiming": "领取中…",
   "chat.ecash.claim": "领取",
   "chat.ecash.claim_amount": "领取 {amount} {unit}",
@@ -841,6 +855,7 @@ export const strings: Strings = {
   "mesh.banner.hint.location_settings": "打开系统定位设置",
   "mesh.banner.hint.app_settings": "在系统设置中打开 Airhop 的权限",
   "mesh.banner.hint.battery_settings": "打开这台手机的后台活动设置",
+  "mesh.banner.hint.tor_settings": "打开 Airhop 的 Tor 设置",
   "mesh.banner.dismiss": "忽略：{label}",
   "mesh.banner.hint.dismiss": "永久隐藏这条提示",
 
@@ -953,8 +968,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "金额（{unit}）",
   "wallet.send.body":
     "用你已经持有的 ecash 离线构建。在你确认代币已送达之前，余额不会被永久扣除。",
-  "wallet.send.stale_fee_note":
-    "手续费上次核对是在 {days} 天前。如果这个铸币厂之后调高了费率，这笔发送可能会略贵一些。",
   "wallet.send.fee_note":
     "{spend} {unit} 从你的余额中扣除；多出的 {fee} 用于抵消对方本来要付的铸币厂手续费",
   "wallet.send.qr_too_big":
@@ -1006,17 +1019,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "已在 {mint} 兑付。现在它可被证明属于你：发送方手里的这份代币副本不再有效。",
   "wallet.receive.stored_pending":
-    "已从 {mint} 存入，但铸币厂尚未确认它未被花费{dleq}。联网后请在钱包标签页刷新。",
+    "已从 {mint} 存入，但铸币厂尚未确认它未被花费{dleq}。联网后会自动与铸币厂确认。",
   "wallet.receive.dleq_inline": "（它的签名确实对得上，所以这个代币是真的）",
   "wallet.receive.dleq_ok": "铸币厂的签名对得上，所以这个代币是真的。",
   "wallet.receive.dleq_uncached":
     "这个铸币厂的密钥没有缓存在这里，所以无法离线核验签名。",
+  "wallet.receive.dleq_missing":
+    "其中并非每个币都带有铸币厂的签名证明，所以无法离线核验。",
   "wallet.receive.dleq_warning":
-    "在你联网刷新之前，发送方理论上有可能已经把它花在别处。",
+    "在联网确认之前，发送方理论上有可能已经把它花在别处。",
   "wallet.receive.failed": "无法接收",
   "wallet.receive.title": "接收 ecash",
   "wallet.receive.body":
-    "粘贴一个 Cashu 代币。联网时它会立刻在铸币厂兑付；离线时它会被存下来，等你下次刷新时再确认。",
+    "粘贴一个 Cashu 代币。联网时它会立刻在铸币厂兑付；离线时它会被存下来，等你重新联网后自动与铸币厂确认。",
   "wallet.receive.scan": "扫描 ecash 二维码",
   "wallet.receive.scan_short": "扫描二维码",
   "wallet.receive.receiving": "接收中…",
@@ -1225,6 +1240,8 @@ export const strings: Strings = {
     "铸币厂表示这个代币已被兑付，所以这 {amount} {unit} 已经到了对方手上，你的余额没有收回任何东西。",
   "wallet.copied.token_body":
     "代币已在你的剪贴板上。在你标记为已送达之前它一直预留在这里，所以第一次没成的话可以再粘贴一次。",
+  "wallet.copied.refused_token_body":
+    "代币已在你的剪贴板上。这个钱包不再计入它，所以你可以把它还给发送它的人。",
   "wallet.copied.phrase_body":
     "把它粘进密码管理器，然后清空剪贴板。其他应用能读取剪贴板，而且在有些设置下它还会同步到你的其他设备。",
   "wallet.refresh.failed": "刷新失败",
@@ -1233,6 +1250,10 @@ export const strings: Strings = {
   "wallet.refresh.unreachable": "无法连接 {mints}。其余部分都是最新的。",
   "wallet.refresh.swapped": "{amount} {unit} 已确认并换成了新的 ecash。",
   "wallet.refresh.secured": "{amount} {unit} 现在已被你的恢复助记词覆盖。",
+  "wallet.refresh.refused":
+    "{amount} {unit} 被铸币厂拒绝，已从你的余额中移除。动态中保留了该代币。",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} 仍在等待铸币厂确认，稍后会完成确认。",
   "wallet.refresh.all_confirmed": "这里的一切都已经与铸币厂确认过了。",
   "wallet.pending.reserved_desc":
     "已构建并预留，送达未确认。这些币被从你的余额中扣住，以免被花两次。",
@@ -1263,9 +1284,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning 存入",
   "wallet.activity.ln_withdrawal": "Lightning 提现",
   "wallet.activity.nutzap_received": "收到 Nutzap",
+  "wallet.activity.nutzap_claiming": "Nutzap 领取中",
   "wallet.activity.spent_removed": "已移除已花费的币",
   "wallet.activity.refreshed": "已向铸币厂核对",
   "wallet.activity.refreshing": "正在向铸币厂核对",
+  "wallet.activity.copy_refused": "复制被拒绝的代币",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "网状网络已离线",
@@ -1376,6 +1399,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "那组恢复助记词无效。",
   "wallet.svc.phrase_invalid_body":
     "请检查是否有拼错或遗漏的词。助记词自带校验和，所以只要错一个词，整组就无效。",
+  "wallet.svc.phrase_unreadable": "无法在这台手机上读取你的恢复助记词。",
+  "wallet.svc.phrase_unreadable_body":
+    "没有做任何更改，也没有生成新的助记词。请在手机解锁后再试一次。在此期间，你的 ecash 仍可正常使用。",
   "wallet.svc.need_mint": "请先添加至少一个铸币厂。",
   "wallet.svc.need_mint_body":
     "恢复的原理是去问铸币厂它为你签过哪些币，所以它得知道该问哪个铸币厂。",
@@ -1396,10 +1422,24 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "现在无法连接铸币厂获取密钥。没有任何损失：联网后再次接收即可。",
   "wallet.svc.wrong_mint": "这个代币并非由它所指明的铸币厂签发。",
+  "wallet.svc.wrong_mint_body":
+    "至少有一个币的签名与铸币厂的密钥不符。没有新增任何东西。",
+  "wallet.svc.unit_mismatch": "这个代币里的币并不是它所标明的货币。",
+  "wallet.svc.unit_mismatch_body":
+    "它标明为 {label}，但其中一些币是以 {actual} 发行的。请让发送方给你一个新代币。没有新增任何东西。",
+  "wallet.svc.locked_other": "这些币已锁定到别人的钱包。",
+  "wallet.svc.locked_other_body":
+    "只有它们被锁定给的那个人才能领取。没有新增任何东西。",
+  "wallet.svc.coins_refused":
+    "铸币厂拒绝了这些币，所以它们不再计入。代币保留在这里，方便你退回。",
+  "wallet.svc.coins_unredeemable":
+    "这些币无法在这个铸币厂兑付，所以它们不再计入。代币保留在这里，方便你退回。",
+  "wallet.svc.locked_ours_offline": "这笔付款已锁定到你的钱包。",
+  "wallet.svc.locked_ours_offline_body":
+    "联网后再领取即可。在此期间，别人无法拿走它。",
   "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":
     "发这个代币的人自己先兑付了，或者把同一个代币也发给了别人。",
-  "wallet.svc.receiving_offline": "离线接收",
   "wallet.svc.amount_positive": "请输入大于零的金额。",
   "wallet.svc.coins_raced": "那些币刚刚被另一笔付款用掉了。",
   "wallet.svc.coins_raced_body": "没有扣除任何金额。再试一次，钱包会挑另一组。",
@@ -1836,7 +1876,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "点按框外即可连接。",
   "settings.tor.custom_empty": "请先添加至少一条网桥。",
   "settings.tor.recovered":
-    "Tor 已关闭，因为上次未能完成启动。重新打开可再试一次。",
+    "Tor 上次未能完成启动，所以互联网流量已暂停。请再试一次，或关闭 Tor，不经 Tor 联网。",
+  "settings.tor.retry": "再试一次",
   "settings.conn.mint_clearnet": "允许铸币厂流量走明网",
   "settings.conn.mint_clearnet_desc":
     "iOS 上的 Tor 只覆盖 Nostr。保持关闭即可拦截铸币厂请求；无论如何，通过网状网络收发 ecash 都照常可用。",
@@ -1995,9 +2036,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "请在设置中允许相机访问，才能扫描新手机上的码。",
   "settings.transfer.confirm_title": "转移到这台手机？",
-  "settings.transfer.confirm_body":
-    "这里的所有内容会转移到显示这个码的手机上。转移完成后，这台手机会被抹除。",
+  "settings.transfer.verify_body":
+    "你的新手机应该显示这组相同的词。这里的所有内容会转移过去，然后这台手机会被抹除。",
   "settings.transfer.confirm_cta": "转移",
+  "settings.transfer.waiting_confirm": "请在新手机上确认",
   "settings.transfer.connecting": "正在连接新手机",
   "settings.transfer.connecting_hint":
     "如果这台手机询问是否允许查找局域网中的设备，请允许。",
@@ -2050,7 +2092,7 @@ export const strings: Strings = {
   "settings.wipe.now": "立即抹除",
   "settings.wipe.desc": "立刻销毁所有密钥、消息和 ecash",
   "settings.wipe.body":
-    "这会立刻销毁你所有的密钥、消息和 ecash。此操作无法撤销。",
+    "这会立刻销毁你所有的密钥、消息和 ecash。此操作无法撤销。你保存到相册的照片会保留在那里。",
   "settings.wipe.in_progress": "抹除中",
   "settings.wipe.in_progress_body":
     "正在销毁你的密钥、消息和文件。这需要几秒钟，即使应用被关掉也会自己完成。",
@@ -2110,6 +2152,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "查看 {version} 版的发行说明",
   "settings.version.tor_paused":
     "Tor 开启期间会暂停检查更新，以免泄露你的 IP。请在浏览器里查看发行页面。",
+  "settings.version.internet_off":
+    "互联网关闭期间会暂停更新。请在设置中打开{setting}。",
   "settings.version.check_failed": "无法检查更新。请检查你的网络连接后重试。",
   "settings.version.downloading": "正在下载 {percent}%",
   "settings.version.install": "安装",
@@ -2256,6 +2300,10 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} 份未确认",
+  },
+  "wallet.send.stale_fee_note": {
+    other:
+      "手续费上次核对是在 {count} 天前。如果这个铸币厂之后调高了费率，这笔发送可能会略贵一些。",
   },
   "wallet.spent_removed_detail": {
     other: "有 {count} 枚币早已被花掉，它们已被移除。",

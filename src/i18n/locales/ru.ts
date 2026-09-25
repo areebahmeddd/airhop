@@ -118,6 +118,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Подключите оба телефона к одной сети Wi-Fi или включите точку доступа на одном и подключитесь к ней с другого. Интернет не нужен.",
   "onboarding.transfer.incoming": "Переносим {name}",
+  "onboarding.transfer.confirm_title": "Проверьте старый телефон",
+  "onboarding.transfer.confirm_body":
+    "На старом телефоне должны быть те же слова. Если там другие слова или их нет, отмените.",
+  "onboarding.transfer.confirm_cta": "Совпадают",
   "onboarding.transfer.receiving": "Получение {percent}%",
   "onboarding.transfer.saving": "Сохраняем на этот телефон",
   "onboarding.transfer.releasing": "Завершаем на старом телефоне",
@@ -176,6 +180,15 @@ export const strings: Strings = {
   "error.boundary.title": "Что-то пошло не так",
   "error.boundary.body":
     "Airhop столкнулся с неожиданной проблемой и был вынужден прервать отображение.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Не удаётся открыть ключи",
+  "launch.keys_unreadable_body":
+    "Телефон не открыл доступ к ключам Airhop. Разблокируйте его и попробуйте снова.",
+  "launch.start_over": "Стереть и начать заново",
+  "launch.start_over_confirm_title": "Стереть этот телефон?",
+  "launch.start_over_confirm_body":
+    "Ваша личность, сообщения, контакты и кошелёк на этом телефоне будут уничтожены, и вы начнёте заново с новой личностью. Отменить это нельзя.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Стандартные каналы",
@@ -599,7 +612,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Видео нет на этом устройстве",
   "chat.media.gone_voice": "Голосовой заметки нет на этом устройстве",
   "chat.media.gone_file": "Файла нет на этом устройстве",
-  "chat.media.gone_note": "Удалено через 7 дней или при очистке кэша",
+  "chat.media.gone_note": "Больше не хранится на этом устройстве",
   "chat.media.ask_resend": "Попросить снова",
   "chat.media.resend_draft": "Можешь ещё раз прислать {kind}?",
   "chat.media.kind_photo": "фото",
@@ -670,6 +683,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Получено",
   "chat.ecash.reclaimed": "Возвращено",
+  "chat.ecash.locked": "Привязано к другому человеку",
   "chat.ecash.claiming": "Получаем…",
   "chat.ecash.claim": "Получить",
   "chat.ecash.claim_amount": "Получить {amount} {unit}",
@@ -905,6 +919,7 @@ export const strings: Strings = {
     "Открывает разрешения Airhop в системных настройках",
   "mesh.banner.hint.battery_settings":
     "Открывает настройки фоновой активности этого телефона",
+  "mesh.banner.hint.tor_settings": "Открывает настройки Tor в Airhop",
   "mesh.banner.dismiss": "Скрыть: {label}",
   "mesh.banner.hint.dismiss": "Скрывает это уведомление насовсем",
 
@@ -1028,8 +1043,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Сумма в {unit}",
   "wallet.send.body":
     "Собран офлайн из ecash, который у вас уже есть. Ничего не уходит с баланса окончательно, пока вы не подтвердите доставку токена.",
-  "wallet.send.stale_fee_note":
-    "Комиссии проверялись {days} дн. назад. Если этот монетный двор с тех пор поднял комиссию, отправка может стоить чуть дороже.",
   "wallet.send.fee_note":
     "{spend} {unit} уходит с баланса; дополнительные {fee} покрывают комиссию монетного двора, которую иначе заплатил бы получатель",
   "wallet.send.qr_too_big":
@@ -1082,19 +1095,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Погашено в {mint}. Теперь это доказуемо ваше: копия этого токена у отправителя больше не работает.",
   "wallet.receive.stored_pending":
-    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено{dleq}. Обновите на вкладке «Кошелёк», как только выйдете в сеть.",
+    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено{dleq}. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
   "wallet.receive.dleq_inline":
     " (подпись при этом сходится, так что токен подлинный)",
   "wallet.receive.dleq_ok":
     "Подпись монетного двора сходится, значит токен подлинный.",
   "wallet.receive.dleq_uncached":
     "Ключи монетного двора здесь не сохранены, поэтому подпись нельзя было проверить офлайн.",
+  "wallet.receive.dleq_missing":
+    "Не все монеты в нём несут подтверждение подписи монетного двора, поэтому проверить его офлайн не удалось.",
   "wallet.receive.dleq_warning":
-    "Пока вы не обновите данные в сети, отправитель в принципе мог потратить их где-то ещё.",
+    "Пока это не подтверждено в сети, отправитель в принципе мог потратить их где-то ещё.",
   "wallet.receive.failed": "Не удалось получить",
   "wallet.receive.title": "Получить ecash",
   "wallet.receive.body":
-    "Вставьте токен Cashu. В сети он сразу гасится у монетного двора; офлайн сохраняется и подтверждается при следующем обновлении.",
+    "Вставьте токен Cashu. В сети он сразу гасится у монетного двора; офлайн сохраняется и автоматически подтверждается у монетного двора, как только вы снова выйдете в сеть.",
   "wallet.receive.scan": "Отсканировать QR-код ecash",
   "wallet.receive.scan_short": "Сканировать QR",
   "wallet.receive.receiving": "Получаем…",
@@ -1309,6 +1324,8 @@ export const strings: Strings = {
     "Монетный двор сообщает, что этот токен уже погашен, так что {amount} {unit} дошли до них и на ваш баланс ничего не вернулось.",
   "wallet.copied.token_body":
     "Токен в буфере обмена. Он остаётся зарезервированным здесь, пока вы не отметите доставку, так что при неудачной первой попытке его можно вставить снова.",
+  "wallet.copied.refused_token_body":
+    "Токен в буфере обмена. Этот кошелёк его больше не учитывает, так что вы можете вернуть его отправителю.",
   "wallet.copied.phrase_body":
     "Вставьте её в менеджер паролей, затем очистите буфер обмена. Другие приложения могут читать буфер, а в некоторых конфигурациях он синхронизируется с вашими другими устройствами.",
   "wallet.refresh.failed": "Обновление не удалось",
@@ -1320,6 +1337,10 @@ export const strings: Strings = {
     "{amount} {unit} подтверждено и обменяно на свежий ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} теперь покрыто вашей фразой восстановления.",
+  "wallet.refresh.refused":
+    "{amount} {unit} отклонено монетным двором и убрано с баланса. Токен сохранён в разделе «Активность».",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} всё ещё ждёт ответа монетного двора и будет подтверждено позже.",
   "wallet.refresh.all_confirmed":
     "Здесь всё уже было подтверждено монетным двором.",
   "wallet.pending.reserved_desc":
@@ -1351,9 +1372,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Пополнение Lightning",
   "wallet.activity.ln_withdrawal": "Вывод через Lightning",
   "wallet.activity.nutzap_received": "Nutzap получен",
+  "wallet.activity.nutzap_claiming": "Nutzap, получение",
   "wallet.activity.spent_removed": "Потраченные монеты удалены",
   "wallet.activity.refreshed": "Проверено у монетного двора",
   "wallet.activity.refreshing": "Проверка у монетного двора",
+  "wallet.activity.copy_refused": "Копировать отклонённый токен",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Сеть отключена",
@@ -1475,6 +1498,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Эта фраза восстановления недействительна.",
   "wallet.svc.phrase_invalid_body":
     "Проверьте, нет ли опечатки или пропущенного слова. У фразы есть встроенная контрольная сумма, поэтому одно неверное слово делает недействительной всю фразу.",
+  "wallet.svc.phrase_unreadable":
+    "Не удалось прочитать фразу восстановления на этом телефоне.",
+  "wallet.svc.phrase_unreadable_body":
+    "Ничего не изменено, новая фраза не создана. Попробуйте снова, когда телефон будет разблокирован. Ваш ecash пока продолжает работать.",
   "wallet.svc.need_mint": "Сначала добавьте хотя бы один монетный двор.",
   "wallet.svc.need_mint_body":
     "Восстановление работает так: у монетного двора спрашивают, какие монеты он вам подписал, поэтому нужно знать, у какого именно спрашивать.",
@@ -1499,10 +1526,25 @@ export const strings: Strings = {
     "Сейчас не удаётся связаться с монетным двором, чтобы получить их. Ничего не потеряно: примите токен снова, когда будете в сети.",
   "wallet.svc.wrong_mint":
     "Этот токен подписан не тем монетным двором, который в нём указан.",
+  "wallet.svc.wrong_mint_body":
+    "Подпись как минимум одной монеты не совпадает с ключами монетного двора. Ничего не добавлено.",
+  "wallet.svc.unit_mismatch":
+    "Монеты этого токена не в той валюте, которая в нём указана.",
+  "wallet.svc.unit_mismatch_body":
+    "Он помечен как {label}, но часть его монет выпущена в {actual}. Попросите у отправителя новый токен. Ничего не добавлено.",
+  "wallet.svc.locked_other": "Эти монеты привязаны к чужому кошельку.",
+  "wallet.svc.locked_other_body":
+    "Забрать их может только тот, к кому они привязаны. Ничего не добавлено.",
+  "wallet.svc.coins_refused":
+    "Монетный двор отклонил эти монеты, поэтому они больше не учитываются. Токен сохранён здесь, если захотите вернуть его.",
+  "wallet.svc.coins_unredeemable":
+    "Эти монеты нельзя погасить у этого монетного двора, поэтому они больше не учитываются. Токен сохранён здесь, если захотите вернуть его.",
+  "wallet.svc.locked_ours_offline": "Этот платёж привязан к вашему кошельку.",
+  "wallet.svc.locked_ours_offline_body":
+    "Получите его, когда будете в сети. Пока никто другой не сможет его забрать.",
   "wallet.svc.already_spent": "Этот ecash уже потрачен.",
   "wallet.svc.already_spent_body":
     "Отправитель погасил токен первым или отправил тот же токен кому-то ещё.",
-  "wallet.svc.receiving_offline": "приём офлайн",
   "wallet.svc.amount_positive": "Введите сумму больше нуля.",
   "wallet.svc.coins_raced": "Эти монеты только что использовал другой платёж.",
   "wallet.svc.coins_raced_body":
@@ -1983,7 +2025,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Нажмите вне поля, чтобы подключиться.",
   "settings.tor.custom_empty": "Сначала добавьте хотя бы одну строку моста.",
   "settings.tor.recovered":
-    "Tor отключён: в прошлый раз запуск не завершился. Включите снова, чтобы повторить попытку.",
+    "В прошлый раз запуск Tor не завершился, поэтому интернет-трафик приостановлен. Попробуйте снова или выключите Tor, чтобы выйти в сеть без него.",
+  "settings.tor.retry": "Попробовать снова",
   "settings.conn.mint_clearnet":
     "Разрешить трафик к монетному двору по открытой сети",
   "settings.conn.mint_clearnet_desc":
@@ -2152,9 +2195,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Включите доступ к камере в настройках, чтобы отсканировать код на новом телефоне.",
   "settings.transfer.confirm_title": "Перенести на этот телефон?",
-  "settings.transfer.confirm_body":
-    "Всё отсюда перейдёт на телефон, показывающий этот код. Когда перенос завершится, этот телефон будет стёрт.",
+  "settings.transfer.verify_body":
+    "На новом телефоне должны быть те же слова. Всё отсюда перейдёт на него, после чего этот телефон будет стёрт.",
   "settings.transfer.confirm_cta": "Перенести",
+  "settings.transfer.waiting_confirm": "Подтвердите на новом телефоне",
   "settings.transfer.connecting": "Подключаемся к новому телефону",
   "settings.transfer.connecting_hint":
     "Если телефон попросит разрешение на поиск устройств в локальной сети, разрешите.",
@@ -2213,7 +2257,7 @@ export const strings: Strings = {
   "settings.wipe.now": "Стереть сейчас",
   "settings.wipe.desc": "Немедленно уничтожить все ключи, сообщения и ecash",
   "settings.wipe.body":
-    "Это немедленно уничтожит все ваши ключи, сообщения и ecash. Отменить это нельзя.",
+    "Это немедленно уничтожит все ваши ключи, сообщения и ecash. Отменить это нельзя. Фото, сохранённые в галерею, останутся там.",
   "settings.wipe.in_progress": "Стираем",
   "settings.wipe.in_progress_body":
     "Уничтожаем ваши ключи, сообщения и файлы. Это займёт несколько секунд и завершится само, даже если приложение закрыть.",
@@ -2276,6 +2320,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Посмотреть, что нового в версии {version}",
   "settings.version.tor_paused":
     "Проверка обновлений приостановлена, пока включён Tor, чтобы не раскрыть ваш IP. Загляните на страницу выпусков в браузере.",
+  "settings.version.internet_off":
+    "Обновления приостановлены, пока интернет выключен. Включите {setting} в Настройках.",
   "settings.version.check_failed":
     "Не удалось проверить обновления. Проверьте соединение и попробуйте снова.",
   "settings.version.downloading": "Загрузка {percent}%",
@@ -2501,6 +2547,13 @@ export const plurals: Plurals = {
     few: "{count} не подтверждено",
     many: "{count} не подтверждено",
     other: "{count} не подтверждено",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Комиссии проверялись {count} день назад. Если этот монетный двор с тех пор поднял комиссию, отправка может стоить чуть дороже.",
+    few: "Комиссии проверялись {count} дня назад. Если этот монетный двор с тех пор поднял комиссию, отправка может стоить чуть дороже.",
+    many: "Комиссии проверялись {count} дней назад. Если этот монетный двор с тех пор поднял комиссию, отправка может стоить чуть дороже.",
+    other:
+      "Комиссии проверялись {count} дня назад. Если этот монетный двор с тех пор поднял комиссию, отправка может стоить чуть дороже.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} монета была уже потрачена и удалена.",

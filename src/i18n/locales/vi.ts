@@ -120,6 +120,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Hãy cho hai điện thoại vào cùng một mạng Wi-Fi, hoặc bật điểm phát sóng trên một máy rồi kết nối từ máy kia. Không cần Internet.",
   "onboarding.transfer.incoming": "Đang chuyển {name}",
+  "onboarding.transfer.confirm_title": "Kiểm tra điện thoại cũ",
+  "onboarding.transfer.confirm_body":
+    "Điện thoại cũ của bạn sẽ hiện đúng những từ này. Nếu nó hiện từ khác, hoặc không hiện gì, hãy hủy.",
+  "onboarding.transfer.confirm_cta": "Khớp nhau",
   "onboarding.transfer.receiving": "Đang nhận {percent}%",
   "onboarding.transfer.saving": "Đang lưu vào điện thoại này",
   "onboarding.transfer.releasing": "Đang hoàn tất trên điện thoại cũ",
@@ -178,6 +182,15 @@ export const strings: Strings = {
   "error.boundary.title": "Có gì đó trục trặc",
   "error.boundary.body":
     "Airhop gặp một sự cố ngoài dự tính và phải dừng thứ đang hiển thị.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Không mở được khóa của bạn",
+  "launch.keys_unreadable_body":
+    "Điện thoại của bạn chưa mở các khóa của Airhop. Hãy mở khóa điện thoại rồi thử lại.",
+  "launch.start_over": "Xóa và bắt đầu lại",
+  "launch.start_over_confirm_title": "Xóa điện thoại này?",
+  "launch.start_over_confirm_body":
+    "Danh tính, tin nhắn, liên hệ và ví của bạn trên điện thoại này sẽ bị hủy, và bạn bắt đầu lại như một người mới. Không thể hoàn tác.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Kênh mặc định",
@@ -594,7 +607,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video không còn trên thiết bị này",
   "chat.media.gone_voice": "Tin nhắn thoại không còn trên thiết bị này",
   "chat.media.gone_file": "Tệp không còn trên thiết bị này",
-  "chat.media.gone_note": "Đã gỡ sau 7 ngày hoặc khi bộ nhớ đệm bị xóa",
+  "chat.media.gone_note": "Không còn được lưu trên thiết bị này",
   "chat.media.ask_resend": "Hỏi lại",
   "chat.media.resend_draft": "Bạn gửi lại {kind} đó được không?",
   "chat.media.kind_photo": "tấm ảnh",
@@ -664,6 +677,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Đã nhận",
   "chat.ecash.reclaimed": "Đã thu hồi",
+  "chat.ecash.locked": "Đã khóa cho người khác",
   "chat.ecash.claiming": "Đang nhận…",
   "chat.ecash.claim": "Nhận",
   "chat.ecash.claim_amount": "Nhận {amount} {unit}",
@@ -899,6 +913,7 @@ export const strings: Strings = {
     "Mở phần quyền của Airhop trong cài đặt hệ thống",
   "mesh.banner.hint.battery_settings":
     "Mở cài đặt hoạt động nền của điện thoại này",
+  "mesh.banner.hint.tor_settings": "Mở cài đặt Tor của Airhop",
   "mesh.banner.dismiss": "Bỏ qua: {label}",
   "mesh.banner.hint.dismiss": "Ẩn hẳn ghi chú này",
 
@@ -1021,8 +1036,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Số tiền tính bằng {unit}",
   "wallet.send.body":
     "Được dựng ngoại tuyến từ ecash bạn đã có. Không có gì rời số dư của bạn vĩnh viễn cho tới khi bạn xác nhận token đã tới nơi.",
-  "wallet.send.stale_fee_note":
-    "Phí được kiểm tra lần cuối cách đây {days} ngày. Nếu nhà đúc này đã tăng phí kể từ đó, lần gửi này có thể tốn hơn một chút.",
   "wallet.send.fee_note":
     "{spend} {unit} rời số dư của bạn; phần {fee} thêm vào bù cho khoản phí nhà đúc mà họ lẽ ra phải trả",
   "wallet.send.qr_too_big":
@@ -1075,18 +1088,20 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
   "wallet.receive.stored_pending":
-    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu{dleq}. Hãy làm mới từ thẻ Ví khi bạn có mạng.",
+    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu{dleq}. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
   "wallet.receive.dleq_inline":
     " (chữ ký của nó đúng là hợp lệ, nên token là thật)",
   "wallet.receive.dleq_ok": "Chữ ký của nhà đúc hợp lệ, nên token là thật.",
   "wallet.receive.dleq_uncached":
     "Khóa của nhà đúc không được lưu sẵn ở đây, nên không kiểm tra được chữ ký khi ngoại tuyến.",
+  "wallet.receive.dleq_missing":
+    "Không phải đồng nào trong đó cũng mang bằng chứng chữ ký của nhà đúc, nên không kiểm tra được khi ngoại tuyến.",
   "wallet.receive.dleq_warning":
-    "Cho tới khi bạn làm mới lúc có mạng, về lý thuyết người gửi có thể đã tiêu nó ở nơi khác.",
+    "Cho tới khi nó được xác nhận lúc có mạng, về lý thuyết người gửi có thể đã tiêu nó ở nơi khác.",
   "wallet.receive.failed": "Không nhận được",
   "wallet.receive.title": "Nhận ecash",
   "wallet.receive.body":
-    "Dán một token Cashu. Khi có mạng, nó được đổi ngay tại nhà đúc; khi ngoại tuyến, nó được lưu lại và xác nhận vào lần làm mới kế tiếp.",
+    "Dán một token Cashu. Khi có mạng, nó được đổi ngay tại nhà đúc; khi ngoại tuyến, nó được lưu lại và tự động xác nhận với nhà đúc khi bạn có mạng trở lại.",
   "wallet.receive.scan": "Quét một mã QR ecash",
   "wallet.receive.scan_short": "Quét QR",
   "wallet.receive.receiving": "Đang nhận…",
@@ -1301,6 +1316,8 @@ export const strings: Strings = {
     "Nhà đúc cho biết token này đã được đổi, nên {amount} {unit} đã tới tay họ và không có gì quay về số dư của bạn.",
   "wallet.copied.token_body":
     "Token đang nằm trên bảng nhớ tạm của bạn. Nó vẫn được giữ ở đây cho tới khi bạn đánh dấu là đã chuyển, nên bạn dán lại được nếu lần đầu không thành.",
+  "wallet.copied.refused_token_body":
+    "Token đang nằm trên bảng nhớ tạm của bạn. Ví này không còn tính nó nữa, nên bạn có thể trả lại cho người đã gửi.",
   "wallet.copied.phrase_body":
     "Hãy dán nó vào một trình quản lý mật khẩu, rồi xóa bảng nhớ tạm. Các ứng dụng khác đọc được bảng nhớ tạm, và trên một số thiết lập nó còn đồng bộ sang các thiết bị khác của bạn.",
   "wallet.refresh.failed": "Làm mới thất bại",
@@ -1312,6 +1329,10 @@ export const strings: Strings = {
     "{amount} {unit} đã được xác nhận và hoán đổi lấy ecash mới.",
   "wallet.refresh.secured":
     "{amount} {unit} giờ đã được cụm từ khôi phục của bạn bao phủ.",
+  "wallet.refresh.refused":
+    "{amount} {unit} đã bị nhà đúc từ chối và được gỡ khỏi số dư của bạn. Token vẫn được giữ trong Hoạt động.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} vẫn đang chờ nhà đúc và sẽ được xác nhận sau.",
   "wallet.refresh.all_confirmed":
     "Mọi thứ ở đây đều đã được nhà đúc xác nhận từ trước.",
   "wallet.pending.reserved_desc":
@@ -1343,9 +1364,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Nạp qua Lightning",
   "wallet.activity.ln_withdrawal": "Rút qua Lightning",
   "wallet.activity.nutzap_received": "Đã nhận Nutzap",
+  "wallet.activity.nutzap_claiming": "Đang nhận Nutzap",
   "wallet.activity.spent_removed": "Đã xóa các đồng đã tiêu",
   "wallet.activity.refreshed": "Đã kiểm tra với nhà đúc",
   "wallet.activity.refreshing": "Đang kiểm tra với nhà đúc",
+  "wallet.activity.copy_refused": "Sao chép token bị từ chối",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mạng lưới ngoại tuyến",
@@ -1468,6 +1491,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Cụm từ khôi phục đó không hợp lệ.",
   "wallet.svc.phrase_invalid_body":
     "Hãy tìm xem có từ nào gõ sai hay thiếu không. Cụm từ có sẵn một mã kiểm tra, nên chỉ một từ sai là cả cụm hỏng.",
+  "wallet.svc.phrase_unreadable":
+    "Không đọc được cụm từ khôi phục của bạn trên điện thoại này.",
+  "wallet.svc.phrase_unreadable_body":
+    "Chưa có gì thay đổi và không có cụm từ mới nào được tạo. Hãy thử lại khi điện thoại đã mở khóa. Trong lúc đó ecash của bạn vẫn dùng được.",
   "wallet.svc.need_mint": "Hãy thêm ít nhất một nhà đúc trước.",
   "wallet.svc.need_mint_body":
     "Việc khôi phục hoạt động bằng cách hỏi nhà đúc xem nó đã ký những đồng nào cho bạn, nên nó cần biết phải hỏi nhà đúc nào.",
@@ -1488,10 +1515,26 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Hiện không thể kết nối tới nhà đúc để lấy khóa. Không mất gì cả: hãy nhận lại khi bạn có mạng.",
   "wallet.svc.wrong_mint": "Token này không do nhà đúc mà nó nêu tên ký.",
+  "wallet.svc.wrong_mint_body":
+    "Chữ ký của ít nhất một đồng không khớp với khóa của nhà đúc. Không có gì được thêm vào.",
+  "wallet.svc.unit_mismatch":
+    "Các đồng trong token này không thuộc loại tiền mà nó ghi.",
+  "wallet.svc.unit_mismatch_body":
+    "Nó được ghi là {label}, nhưng một số đồng của nó được phát hành bằng {actual}. Hãy xin người gửi một token mới. Không có gì được thêm vào.",
+  "wallet.svc.locked_other": "Các đồng này đã bị khóa vào ví của người khác.",
+  "wallet.svc.locked_other_body":
+    "Chỉ người được khóa cho mới nhận được chúng. Không có gì được thêm vào.",
+  "wallet.svc.coins_refused":
+    "Nhà đúc đã từ chối các đồng này, nên chúng không còn được tính. Token vẫn được giữ ở đây nếu bạn muốn gửi trả lại.",
+  "wallet.svc.coins_unredeemable":
+    "Các đồng này không thể đổi tại nhà đúc này, nên chúng không còn được tính. Token vẫn được giữ ở đây nếu bạn muốn gửi trả lại.",
+  "wallet.svc.locked_ours_offline":
+    "Khoản thanh toán này đã được khóa vào ví của bạn.",
+  "wallet.svc.locked_ours_offline_body":
+    "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",
-  "wallet.svc.receiving_offline": "nhận khi ngoại tuyến",
   "wallet.svc.amount_positive": "Hãy nhập một số tiền lớn hơn không.",
   "wallet.svc.coins_raced":
     "Những đồng đó vừa bị một khoản thanh toán khác dùng mất.",
@@ -1964,7 +2007,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Chạm bên ngoài ô để kết nối.",
   "settings.tor.custom_empty": "Hãy thêm ít nhất một dòng cầu nối trước.",
   "settings.tor.recovered":
-    "Đã tắt Tor vì lần trước nó không khởi động xong. Bật lại để thử lần nữa.",
+    "Lần trước Tor không khởi động xong, nên lưu lượng Internet đang tạm dừng. Hãy thử lại, hoặc tắt Tor để lên mạng mà không dùng Tor.",
+  "settings.tor.retry": "Thử lại",
   "settings.conn.mint_clearnet": "Cho phép lưu lượng nhà đúc qua mạng trần",
   "settings.conn.mint_clearnet_desc":
     "Tor trên iOS chỉ bao được Nostr. Hãy để tắt để chặn các yêu cầu tới nhà đúc; dù thế nào ecash qua mạng lưới vẫn chạy.",
@@ -2131,9 +2175,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Hãy cho phép truy cập máy ảnh trong Cài đặt để quét mã trên điện thoại mới.",
   "settings.transfer.confirm_title": "Chuyển sang điện thoại này?",
-  "settings.transfer.confirm_body":
-    "Mọi thứ ở đây sẽ chuyển sang điện thoại đang hiện mã này. Khi chuyển xong, điện thoại này sẽ bị xóa.",
+  "settings.transfer.verify_body":
+    "Điện thoại mới của bạn sẽ hiện đúng những từ này. Mọi thứ ở đây sẽ chuyển sang đó, rồi điện thoại này sẽ bị xóa.",
   "settings.transfer.confirm_cta": "Chuyển",
+  "settings.transfer.waiting_confirm": "Xác nhận trên điện thoại mới",
   "settings.transfer.connecting": "Đang kết nối với điện thoại mới",
   "settings.transfer.connecting_hint":
     "Nếu điện thoại này hỏi quyền tìm thiết bị trong mạng nội bộ, hãy cho phép.",
@@ -2192,7 +2237,7 @@ export const strings: Strings = {
   "settings.wipe.now": "Xóa ngay",
   "settings.wipe.desc": "Hủy ngay mọi khóa, tin nhắn và ecash",
   "settings.wipe.body":
-    "Việc này sẽ hủy ngay mọi khóa, tin nhắn và ecash của bạn. Không thể hoàn tác.",
+    "Việc này sẽ hủy ngay mọi khóa, tin nhắn và ecash của bạn. Không thể hoàn tác. Ảnh bạn đã lưu vào thư viện vẫn còn ở đó.",
   "settings.wipe.in_progress": "Đang xóa",
   "settings.wipe.in_progress_body":
     "Đang hủy khóa, tin nhắn và tệp của bạn. Việc này mất vài giây, và tự hoàn tất kể cả khi ứng dụng bị đóng.",
@@ -2256,6 +2301,8 @@ export const strings: Strings = {
     "Xem ghi chú phát hành cho phiên bản {version}",
   "settings.version.tor_paused":
     "Việc kiểm tra cập nhật tạm dừng khi Tor đang bật, để nó không lộ IP của bạn. Hãy xem trang phát hành trong trình duyệt.",
+  "settings.version.internet_off":
+    "Cập nhật tạm dừng khi Internet đang tắt. Bật {setting} trong Cài đặt.",
   "settings.version.check_failed":
     "Không kiểm tra được bản cập nhật. Hãy kiểm tra kết nối của bạn rồi thử lại.",
   "settings.version.downloading": "Đang tải xuống {percent}%",
@@ -2408,6 +2455,10 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} chưa xác nhận",
+  },
+  "wallet.send.stale_fee_note": {
+    other:
+      "Phí được kiểm tra lần cuối cách đây {count} ngày. Nếu nhà đúc này đã tăng phí kể từ đó, lần gửi này có thể tốn hơn một chút.",
   },
   "wallet.spent_removed_detail": {
     other: "{count} đồng đã bị tiêu từ trước, và chúng đã được gỡ đi.",

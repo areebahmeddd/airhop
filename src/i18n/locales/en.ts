@@ -1527,7 +1527,7 @@ export const strings = {
   "wallet.svc.unit_mismatch":
     "This token’s coins are not in the currency it names.",
   "wallet.svc.unit_mismatch_body":
-    "It is labelled {label}, but some of its coins were issued in {actual}. Ask the sender for a new token. Nothing was added.",
+    "It is labeled {label}, but some of its coins were issued in {actual}. Ask the sender for a new token. Nothing was added.",
   "wallet.svc.locked_other": "These coins are locked to someone else’s wallet.",
   "wallet.svc.locked_other_body":
     "Only the person they were locked to can claim them. Nothing was added.",

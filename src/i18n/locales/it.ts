@@ -123,6 +123,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Metti entrambi i telefoni sulla stessa rete Wi-Fi, oppure attiva l’hotspot su uno e collega l’altro. Non serve internet.",
   "onboarding.transfer.incoming": "Trasferimento di {name}",
+  "onboarding.transfer.confirm_title": "Controlla il vecchio telefono",
+  "onboarding.transfer.confirm_body":
+    "Il vecchio telefono dovrebbe mostrare queste stesse parole. Se mostra parole diverse, o nessuna, annulla.",
+  "onboarding.transfer.confirm_cta": "Corrispondono",
   "onboarding.transfer.receiving": "Ricezione in corso {percent}%",
   "onboarding.transfer.saving": "Salvataggio su questo telefono",
   "onboarding.transfer.releasing": "Completamento sul vecchio telefono",
@@ -181,6 +185,15 @@ export const strings: Strings = {
   "error.boundary.title": "Qualcosa è andato storto",
   "error.boundary.body":
     "Airhop ha incontrato un problema imprevisto e ha dovuto interrompere ciò che stava mostrando.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Impossibile aprire le tue chiavi",
+  "launch.keys_unreadable_body":
+    "Il telefono non ha sbloccato le chiavi di Airhop. Sbloccalo, poi riprova.",
+  "launch.start_over": "Cancella e ricomincia",
+  "launch.start_over_confirm_title": "Cancellare questo telefono?",
+  "launch.start_over_confirm_body":
+    "La tua identità, i messaggi, i contatti e il portafoglio su questo telefono vengono distrutti, e ricominci come una persona nuova. Non si può annullare.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Canali predefiniti",
@@ -603,8 +616,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Il video non è su questo dispositivo",
   "chat.media.gone_voice": "La nota vocale non è su questo dispositivo",
   "chat.media.gone_file": "Il file non è su questo dispositivo",
-  "chat.media.gone_note":
-    "Rimosso dopo 7 giorni o allo svuotamento della cache",
+  "chat.media.gone_note": "Non più conservato su questo dispositivo",
   "chat.media.ask_resend": "Chiedi di nuovo",
   "chat.media.resend_draft": "Puoi rimandarmi {kind}?",
   "chat.media.kind_photo": "quella foto",
@@ -676,6 +688,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Riscosso",
   "chat.ecash.reclaimed": "Recuperato",
+  "chat.ecash.locked": "Vincolato a qualcun altro",
   "chat.ecash.claiming": "Riscossione…",
   "chat.ecash.claim": "Riscuoti",
   "chat.ecash.claim_amount": "Riscuoti {amount} {unit}",
@@ -916,6 +929,7 @@ export const strings: Strings = {
     "Apre i permessi di Airhop nelle impostazioni di sistema",
   "mesh.banner.hint.battery_settings":
     "Apre le impostazioni di attività in background di questo telefono",
+  "mesh.banner.hint.tor_settings": "Apre le impostazioni Tor di Airhop",
   "mesh.banner.dismiss": "Ignora: {label}",
   "mesh.banner.hint.dismiss": "Nasconde questo avviso per sempre",
 
@@ -1038,8 +1052,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Importo in {unit}",
   "wallet.send.body":
     "Costruito offline dall’ecash che possiedi già. Nulla lascia il tuo saldo in via definitiva finché non confermi che il token è arrivato.",
-  "wallet.send.stale_fee_note":
-    "Le commissioni sono state controllate {days} giorni fa. Se da allora questo mint ha alzato la sua, l’invio potrebbe costare un po’ di più.",
   "wallet.send.fee_note":
     "{spend} {unit} lasciano il tuo saldo; i {fee} in più coprono la commissione del mint che altrimenti pagherebbero loro",
   "wallet.send.qr_too_big":
@@ -1092,19 +1104,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Riscosso presso {mint}. Ora è tuo in modo dimostrabile: la copia di questo token che ha il mittente non funziona più.",
   "wallet.receive.stored_pending":
-    "Conservato da {mint}, ma il mint non ha ancora confermato che non sia stato speso{dleq}. Aggiorna dalla scheda Portafoglio appena sei online.",
+    "Conservato da {mint}, ma il mint non ha ancora confermato che non sia stato speso{dleq}. Viene confermato automaticamente con il mint appena sei online.",
   "wallet.receive.dleq_inline":
     " (la sua firma però risulta valida, quindi il token è autentico)",
   "wallet.receive.dleq_ok":
     "La firma del mint risulta valida, quindi il token è autentico.",
   "wallet.receive.dleq_uncached":
     "Le chiavi del mint non sono conservate qui, quindi non è stato possibile verificare la firma offline.",
+  "wallet.receive.dleq_missing":
+    "Non tutte le sue monete hanno la prova di firma del mint, quindi non è stato possibile verificarlo offline.",
   "wallet.receive.dleq_warning":
-    "Finché non aggiorni online, il mittente potrebbe in linea di principio averlo speso altrove.",
+    "Finché non viene confermato online, il mittente potrebbe in linea di principio averlo speso altrove.",
   "wallet.receive.failed": "Non è stato possibile ricevere",
   "wallet.receive.title": "Ricevi ecash",
   "wallet.receive.body":
-    "Incolla un token Cashu. Online viene riscosso subito presso il mint; offline viene conservato e confermato al prossimo aggiornamento.",
+    "Incolla un token Cashu. Online viene riscosso subito presso il mint; offline viene conservato e confermato automaticamente con il mint appena torni online.",
   "wallet.receive.scan": "Scansiona un codice QR ecash",
   "wallet.receive.scan_short": "Scansiona QR",
   "wallet.receive.receiving": "Ricezione…",
@@ -1320,6 +1334,8 @@ export const strings: Strings = {
     "Il mint dice che questo token è già stato riscosso, quindi i {amount} {unit} sono arrivati a loro e al tuo saldo non è tornato nulla.",
   "wallet.copied.token_body":
     "Il token è nei tuoi appunti. Resta riservato qui finché non lo segni come consegnato, quindi puoi incollarlo di nuovo se il primo tentativo fallisce.",
+  "wallet.copied.refused_token_body":
+    "Il token è nei tuoi appunti. Questo portafoglio non lo conta più, quindi puoi restituirlo a chi te l’ha inviato.",
   "wallet.copied.phrase_body":
     "Incollala in un gestore di password, poi svuota gli appunti. Altre app possono leggerli, e in alcune configurazioni si sincronizzano con i tuoi altri dispositivi.",
   "wallet.refresh.failed": "Aggiornamento non riuscito",
@@ -1331,6 +1347,10 @@ export const strings: Strings = {
     "{amount} {unit} confermati e scambiati con ecash nuovo.",
   "wallet.refresh.secured":
     "{amount} {unit} ora sono coperti dalla tua frase di recupero.",
+  "wallet.refresh.refused":
+    "{amount} {unit} sono stati rifiutati dal mint e tolti dal tuo saldo. Il token resta in Attività.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} sono ancora in attesa del mint e verranno confermati più tardi.",
   "wallet.refresh.all_confirmed":
     "Tutto quello che c’è qui era già confermato con il mint.",
   "wallet.pending.reserved_desc":
@@ -1362,9 +1382,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Deposito Lightning",
   "wallet.activity.ln_withdrawal": "Prelievo Lightning",
   "wallet.activity.nutzap_received": "Nutzap ricevuto",
+  "wallet.activity.nutzap_claiming": "Nutzap, riscossione in corso",
   "wallet.activity.spent_removed": "Monete spese rimosse",
   "wallet.activity.refreshed": "Verificato con il mint",
   "wallet.activity.refreshing": "Verifica con il mint in corso",
+  "wallet.activity.copy_refused": "Copia il token rifiutato",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1490,6 +1512,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Quella frase di recupero non è valida.",
   "wallet.svc.phrase_invalid_body":
     "Cerca una parola scritta male o mancante. La frase ha un codice di controllo incorporato, quindi una sola parola sbagliata invalida tutto.",
+  "wallet.svc.phrase_unreadable":
+    "Non è stato possibile leggere la tua frase di recupero su questo telefono.",
+  "wallet.svc.phrase_unreadable_body":
+    "Non è stato cambiato nulla e non è stata creata una nuova frase. Riprova quando il telefono è sbloccato. Nel frattempo il tuo ecash funziona comunque.",
   "wallet.svc.need_mint": "Aggiungi prima almeno un mint.",
   "wallet.svc.need_mint_body":
     "Il ripristino funziona chiedendo a un mint quali monete ha firmato per te, quindi deve sapere a quale rivolgersi.",
@@ -1511,10 +1537,27 @@ export const strings: Strings = {
     "Al momento il mint non è raggiungibile per recuperarle. Non si perde nulla: ricevilo di nuovo quando sei online.",
   "wallet.svc.wrong_mint":
     "Questo token non è stato firmato dal mint che dichiara.",
+  "wallet.svc.wrong_mint_body":
+    "La firma di almeno una moneta non corrisponde alle chiavi del mint. Non è stato aggiunto nulla.",
+  "wallet.svc.unit_mismatch":
+    "Le monete di questo token non sono nella valuta che dichiara.",
+  "wallet.svc.unit_mismatch_body":
+    "È etichettato come {label}, ma alcune sue monete sono state emesse in {actual}. Chiedi al mittente un nuovo token. Non è stato aggiunto nulla.",
+  "wallet.svc.locked_other":
+    "Queste monete sono vincolate al portafoglio di qualcun altro.",
+  "wallet.svc.locked_other_body":
+    "Solo la persona a cui sono vincolate può riscuoterle. Non è stato aggiunto nulla.",
+  "wallet.svc.coins_refused":
+    "Il mint ha rifiutato queste monete, quindi non vengono più conteggiate. Il token resta qui se vuoi rimandarlo indietro.",
+  "wallet.svc.coins_unredeemable":
+    "Queste monete non si possono riscuotere presso questo mint, quindi non vengono più conteggiate. Il token resta qui se vuoi rimandarlo indietro.",
+  "wallet.svc.locked_ours_offline":
+    "Questo pagamento è vincolato al tuo portafoglio.",
+  "wallet.svc.locked_ours_offline_body":
+    "Riscuotilo quando sei online. Nel frattempo nessun altro può prenderlo.",
   "wallet.svc.already_spent": "Questo ecash è già stato speso.",
   "wallet.svc.already_spent_body":
     "Chi ha inviato questo token l’ha riscosso prima, oppure ha mandato lo stesso token a qualcun altro.",
-  "wallet.svc.receiving_offline": "ricezione offline",
   "wallet.svc.amount_positive": "Inserisci un importo maggiore di zero.",
   "wallet.svc.coins_raced":
     "Quelle monete sono appena state usate da un altro pagamento.",
@@ -2005,7 +2048,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Tocca fuori dal riquadro per connetterti.",
   "settings.tor.custom_empty": "Aggiungi prima almeno una riga bridge.",
   "settings.tor.recovered":
-    "Tor è stato disattivato perché l’ultima volta non ha completato l’avvio. Riattivalo per riprovare.",
+    "L’ultima volta Tor non ha completato l’avvio, quindi il traffico internet è sospeso. Riprova, oppure disattiva Tor per andare online senza.",
+  "settings.tor.retry": "Riprova",
   "settings.conn.mint_clearnet":
     "Consenti il traffico verso il mint sulla rete in chiaro",
   "settings.conn.mint_clearnet_desc":
@@ -2177,9 +2221,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Attiva l’accesso alla fotocamera nelle impostazioni per scansionare il codice sul telefono nuovo.",
   "settings.transfer.confirm_title": "Trasferire su questo telefono?",
-  "settings.transfer.confirm_body":
-    "Tutto ciò che c’è qui passa al telefono che mostra questo codice. Appena arriva, questo telefono viene cancellato.",
+  "settings.transfer.verify_body":
+    "Il telefono nuovo dovrebbe mostrare queste stesse parole. Tutto ciò che c’è qui passa lì, poi questo telefono viene cancellato.",
   "settings.transfer.confirm_cta": "Trasferisci",
+  "settings.transfer.waiting_confirm": "Conferma sul telefono nuovo",
   "settings.transfer.connecting": "Connessione al telefono nuovo",
   "settings.transfer.connecting_hint":
     "Se questo telefono chiede di trovare dispositivi sulla rete locale, consentilo.",
@@ -2242,7 +2287,7 @@ export const strings: Strings = {
   "settings.wipe.desc":
     "Distrugge all’istante tutte le chiavi, i messaggi e l’ecash",
   "settings.wipe.body":
-    "Questo distruggerà all’istante tutte le tue chiavi, i messaggi e l’ecash. Non si può annullare.",
+    "Questo distruggerà all’istante tutte le tue chiavi, i messaggi e l’ecash. Non si può annullare. Le foto salvate nella tua galleria restano lì.",
   "settings.wipe.in_progress": "Cancellazione in corso",
   "settings.wipe.in_progress_body":
     "Distruzione di chiavi, messaggi e file. Richiede qualche secondo e si completa da sola anche se l’app viene chiusa.",
@@ -2307,6 +2352,8 @@ export const strings: Strings = {
     "Vedi le note di rilascio della versione {version}",
   "settings.version.tor_paused":
     "Il controllo degli aggiornamenti è sospeso mentre Tor è attivo, per non esporre il tuo IP. Consulta la pagina delle versioni in un browser.",
+  "settings.version.internet_off":
+    "Gli aggiornamenti sono sospesi mentre internet è disattivato. Attiva {setting} nelle Impostazioni.",
   "settings.version.check_failed":
     "Non è stato possibile cercare aggiornamenti. Controlla la connessione e riprova.",
   "settings.version.downloading": "Download in corso {percent}%",
@@ -2509,6 +2556,12 @@ export const plurals: Plurals = {
     one: "{count} non confermata",
     many: "{count} non confermate",
     other: "{count} non confermate",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Le commissioni sono state controllate {count} giorno fa. Se da allora questo mint ha alzato la sua, l’invio potrebbe costare un po’ di più.",
+    many: "Le commissioni sono state controllate {count} giorni fa. Se da allora questo mint ha alzato la sua, l’invio potrebbe costare un po’ di più.",
+    other:
+      "Le commissioni sono state controllate {count} giorni fa. Se da allora questo mint ha alzato la sua, l’invio potrebbe costare un po’ di più.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} moneta era già spesa ed è stata rimossa.",
