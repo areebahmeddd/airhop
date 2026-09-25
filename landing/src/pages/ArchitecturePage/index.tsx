@@ -627,16 +627,19 @@ export default function ArchitecturePage() {
                 local nickname for their conversations. It changes only the local display label,
                 never the cryptographic identity.
               </p>
+              <h3 className="text-ink pt-2 text-base font-bold">Moving to a new phone</h3>
               <p>
-                <strong className="text-ink">A new phone gets the keys, not a copy.</strong> The new
-                phone shows a QR code, the old one scans it after Face ID or its passcode, and
-                everything crosses one encrypted connection over the same Wi-Fi or a hotspot. The{" "}
-                <TextLink href="https://noiseprotocol.org/noise.html">Noise XX</TextLink> handshake
-                is pinned to the key in the code, so no other device on the network can stand in.
-                The keys are identical, so the peer ID, name and safety numbers are too, and
-                contacts stay verified without doing anything. Once the new phone confirms it has
-                everything, the old one erases itself, and if both ever run at once, each warns that
-                the identity is on another phone.
+                Airhop keeps your identity and app data on the phone. There is no cloud backup. To
+                move to a new phone, the new phone shows a QR code and the old phone scans it after
+                Face ID or its passcode. The phones then connect over the same Wi-Fi or a hotspot,
+                with no internet or server involved.
+              </p>
+              <p>
+                An encrypted Noise XX handshake is tied to the QR code, so no other device on the
+                network can join. The identity keys, contacts, groups, rooms, chat history, outbox
+                and wallet move to the new phone. The keys stay the same, so the peer ID, name and
+                safety numbers do too. Media files and live session state do not move. Once the new
+                phone confirms the transfer, the old phone erases its keys and local data.
               </p>
             </Section>
 

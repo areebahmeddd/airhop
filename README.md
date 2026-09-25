@@ -71,8 +71,8 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | Transfer to a new phone   | Scan a code on the new phone and your identity, chats and wallet move across the local network; the old phone erases itself                  |
 |                   | Panic wipe                | Triple-tap instantly erases keys and local messages (nuke your account)                                                                      |
 | 🕸️ **Networking** | Bluetooth mesh            | Communicate with nearby devices without internet                                                                                             |
-|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
 |                   | Mesh bridge               | Link this area's public #bluetooth chat with another out-of-range Bluetooth crowd over the internet                                          |
+|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
 |                   | WiFi Aware                | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                      |
 |                   | Multi-hop routing         | Messages automatically relay across nearby devices (up to 7 hops)                                                                            |
 |                   | Relay nodes               | Third-party [Bitle](https://bitle.org) hardware extends the mesh where nobody stands. Requires an ESP32 board, plus LoRa to link nodes       |
