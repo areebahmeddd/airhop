@@ -74,6 +74,14 @@ const GROUPS: FeatureGroup[] = [
       },
       { nameKey: "home.features.identity.qr.name", lineKey: "home.features.identity.qr.line" },
       {
+        nameKey: "home.features.identity.forward.name",
+        lineKey: "home.features.identity.forward.line",
+      },
+      {
+        nameKey: "home.features.identity.move.name",
+        lineKey: "home.features.identity.move.line",
+      },
+      {
         nameKey: "home.features.identity.panic.name",
         lineKey: "home.features.identity.panic.line",
       },
@@ -89,6 +97,14 @@ const GROUPS: FeatureGroup[] = [
       {
         nameKey: "home.features.networking.mesh.name",
         lineKey: "home.features.networking.mesh.line",
+      },
+      {
+        nameKey: "home.features.networking.lan.name",
+        lineKey: "home.features.networking.lan.line",
+      },
+      {
+        nameKey: "home.features.networking.hops.name",
+        lineKey: "home.features.networking.hops.line",
       },
       {
         nameKey: "home.features.networking.bridge.name",

@@ -195,6 +195,11 @@ const strings: Strings = {
   "home.features.identity.qr.name": "Fifandraisana amin'ny QR",
   "home.features.identity.qr.line":
     "Fakana sary iray dia mitondra ny lakiley, fa tsy ny anarany fotsiny.",
+  "home.features.identity.forward.name": "Tsiambaratelo mialoha",
+  "home.features.identity.forward.line": "Tsy mahasokatra hafatra taloha ny lakiley tafaparitaka.",
+  "home.features.identity.move.name": "Mifindra amin'ny findy vaovao",
+  "home.features.identity.move.line":
+    "Mifindra ny resaka sy ny kitapom-bola, avy eo mamafa ny tenany ny findy taloha.",
   "home.features.identity.panic.name": "Famafana maika",
   "home.features.identity.panic.line":
     "Ravana latsaky ny segondra iray ny lakile sy ny hafatra rehetra.",
@@ -204,6 +209,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Harato Bluetooth",
   "home.features.networking.mesh.line":
     "Tsy misy Internet, tsy misy router, amin'ny findy efa ananan'ny olona.",
+  "home.features.networking.lan.name": "Tambajotra eo an-toerana",
+  "home.features.networking.lan.line": "WiFi iombonana na hotspot, iPhone sy Android miaraka.",
+  "home.features.networking.hops.name": "Fampitana an-dingana maro",
+  "home.features.networking.hops.line":
+    "Mampita ny hafatra ny findy tsirairay, hatramin'ny dingana fito.",
   "home.features.networking.bridge.name": "Tetezan'ny harato",
   "home.features.networking.bridge.line":
     "Mampifandray ny resakao ho an'ny daholobe amin'ny vondrona akaiky lavitra ny fetra.",

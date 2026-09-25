@@ -191,6 +191,10 @@ const strings: Strings = {
     "Wyprowadzone z twojego klucza, więc nikt nie zabierze ci twojej.",
   "home.features.identity.qr.name": "Kontakty przez QR",
   "home.features.identity.qr.line": "Jedno skanowanie przenosi ich klucze, nie tylko nazwę.",
+  "home.features.identity.forward.name": "Utajnianie przekazywania",
+  "home.features.identity.forward.line": "Wyciek klucza nie otwiera dawnych wiadomości.",
+  "home.features.identity.move.name": "Przeniesienie na nowy telefon",
+  "home.features.identity.move.line": "Czaty i portfel przechodzą, a stary telefon sam się czyści.",
   "home.features.identity.panic.name": "Awaryjne czyszczenie",
   "home.features.identity.panic.line":
     "Każdy klucz i każda wiadomość zniszczone w niecałą sekundę.",
@@ -200,6 +204,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Sieć mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Bez internetu, bez routera, na telefonach, które ludzie już mają.",
+  "home.features.networking.lan.name": "Sieć lokalna",
+  "home.features.networking.lan.line": "Wspólne WiFi lub hotspot, iPhone i Android razem.",
+  "home.features.networking.hops.name": "Przekazywanie wieloskokowe",
+  "home.features.networking.hops.line": "Każdy telefon podaje wiadomości dalej, do siedmiu skoków.",
   "home.features.networking.bridge.name": "Most mesh",
   "home.features.networking.bridge.line":
     "Łączy twoją publiczną rozmowę z pobliskim tłumem poza zasięgiem.",

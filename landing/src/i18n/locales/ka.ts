@@ -191,6 +191,10 @@ const strings: Strings = {
     "თქვენი გასაღებიდან მიღებული, ამიტომ თქვენსას ვერავინ წაგართმევთ.",
   "home.features.identity.qr.name": "QR-კონტაქტები",
   "home.features.identity.qr.line": "ერთი სკანირება მათ გასაღებებს ატარებს, და არა მხოლოდ სახელს.",
+  "home.features.identity.forward.name": "წინმსწრები საიდუმლოება",
+  "home.features.identity.forward.line": "გაჟონილი გასაღები წარსულ შეტყობინებებს ვერ ხსნის.",
+  "home.features.identity.move.name": "ახალ ტელეფონზე გადატანა",
+  "home.features.identity.move.line": "ჩატები და საფულე გადადის, შემდეგ ძველი ტელეფონი თავს შლის.",
   "home.features.identity.panic.name": "საგანგებო წაშლა",
   "home.features.identity.panic.line": "ყველა გასაღები და შეტყობინება წამზე ნაკლებში ნადგურდება.",
 
@@ -199,6 +203,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "ბლუთუზ-მეში",
   "home.features.networking.mesh.line":
     "არც ინტერნეტი, არც როუტერი, იმ ტელეფონებზე, რომლებიც ხალხს უკვე აქვს.",
+  "home.features.networking.lan.name": "ლოკალური ქსელი",
+  "home.features.networking.lan.line": "საერთო WiFi ან ჰოტსპოტი, iPhone და Android ერთად.",
+  "home.features.networking.hops.name": "მრავალსაფეხურიანი რელე",
+  "home.features.networking.hops.line":
+    "ყოველი ტელეფონი შეტყობინებებს გადასცემს, შვიდ საფეხურამდე.",
   "home.features.networking.bridge.name": "მეშ-ხიდი",
   "home.features.networking.bridge.line":
     "აკავშირებს თქვენს საჯარო მიმოწერას ახლომდებარე, მიწვდომის მიღმა მყოფ ჯგუფთან.",

@@ -188,6 +188,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "आपकी कुंजी से बने, इसलिए आपका नाम कोई ले नहीं सकता।",
   "home.features.identity.qr.name": "QR संपर्क",
   "home.features.identity.qr.line": "एक स्कैन उनकी कुंजियाँ लाता है, सिर्फ़ नाम नहीं।",
+  "home.features.identity.forward.name": "फ़ॉरवर्ड सीक्रेसी",
+  "home.features.identity.forward.line": "लीक हुई कुंजी पुराने संदेश नहीं खोल सकती।",
+  "home.features.identity.move.name": "नए फ़ोन पर ले जाएँ",
+  "home.features.identity.move.line":
+    "चैट और वॉलेट साथ जाते हैं, फिर पुराना फ़ोन ख़ुद को मिटा देता है।",
   "home.features.identity.panic.name": "पैनिक वाइप",
   "home.features.identity.panic.line": "हर कुंजी और संदेश एक सेकंड से भी कम में नष्ट।",
 
@@ -196,6 +201,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth मेश",
   "home.features.networking.mesh.line":
     "न इंटरनेट, न राउटर, उन्हीं फ़ोनों पर जो लोगों के पास पहले से हैं।",
+  "home.features.networking.lan.name": "लोकल नेटवर्क",
+  "home.features.networking.lan.line": "साझा WiFi या हॉटस्पॉट, iPhone और Android साथ-साथ।",
+  "home.features.networking.hops.name": "मल्टी-हॉप रिले",
+  "home.features.networking.hops.line": "हर फ़ोन संदेश आगे बढ़ाता है, सात हॉप तक।",
   "home.features.networking.bridge.name": "मेश पुल",
   "home.features.networking.bridge.line":
     "आपकी सार्वजनिक चैट को सीमा से बाहर मौजूद पास की भीड़ से जोड़ता है।",

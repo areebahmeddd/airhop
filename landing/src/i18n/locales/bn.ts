@@ -189,6 +189,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "আপনার কী থেকে তৈরি, তাই আপনারটি কেউ নিতে পারে না।",
   "home.features.identity.qr.name": "QR পরিচিতি",
   "home.features.identity.qr.line": "একবার স্ক্যানেই তাদের কী আসে, শুধু নাম নয়।",
+  "home.features.identity.forward.name": "ফরওয়ার্ড সিক্রেসি",
+  "home.features.identity.forward.line": "ফাঁস হওয়া কী দিয়ে পুরোনো বার্তা খোলা যায় না।",
+  "home.features.identity.move.name": "নতুন ফোনে স্থানান্তর",
+  "home.features.identity.move.line":
+    "চ্যাট আর ওয়ালেট সরে যায়, তারপর পুরোনো ফোন নিজেকে মুছে ফেলে।",
   "home.features.identity.panic.name": "প্যানিক ওয়াইপ",
   "home.features.identity.panic.line": "সব কী আর বার্তা এক সেকেন্ডের কমে ধ্বংস।",
 
@@ -196,6 +201,10 @@ const strings: Strings = {
   "home.features.networking.summary": "ফোনগুলোই নেটওয়ার্ক।",
   "home.features.networking.mesh.name": "ব্লুটুথ মেশ",
   "home.features.networking.mesh.line": "ইন্টারনেট নেই, রাউটার নেই, মানুষের হাতে থাকা ফোনেই।",
+  "home.features.networking.lan.name": "লোকাল নেটওয়ার্ক",
+  "home.features.networking.lan.line": "শেয়ার করা WiFi বা হটস্পট, iPhone আর Android একসাথে।",
+  "home.features.networking.hops.name": "মাল্টি-হপ রিলে",
+  "home.features.networking.hops.line": "প্রতিটি ফোন বার্তা এগিয়ে দেয়, সাত হপ পর্যন্ত।",
   "home.features.networking.bridge.name": "মেশ সেতু",
   "home.features.networking.bridge.line":
     "আপনার প্রকাশ্য আড্ডাকে নাগালের বাইরে থাকা কাছের একটি দলের সাথে জোড়ে।",

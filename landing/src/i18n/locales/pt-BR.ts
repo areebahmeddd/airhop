@@ -190,6 +190,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "Derivados da sua chave, então ninguém pode tomar o seu.",
   "home.features.identity.qr.name": "Contatos por QR",
   "home.features.identity.qr.line": "Uma leitura carrega as chaves, não só o nome.",
+  "home.features.identity.forward.name": "Sigilo futuro",
+  "home.features.identity.forward.line": "Uma chave vazada não abre mensagens antigas.",
+  "home.features.identity.move.name": "Troca de celular",
+  "home.features.identity.move.line":
+    "Conversas e carteira vão junto, e o celular antigo se apaga.",
   "home.features.identity.panic.name": "Limpeza de pânico",
   "home.features.identity.panic.line":
     "Todas as chaves e mensagens destruídas em menos de um segundo.",
@@ -199,6 +204,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Rede mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Sem internet, sem roteador, em celulares que as pessoas já têm.",
+  "home.features.networking.lan.name": "Rede local",
+  "home.features.networking.lan.line": "WiFi compartilhado ou um hotspot, iPhone e Android juntos.",
+  "home.features.networking.hops.name": "Retransmissão em vários saltos",
+  "home.features.networking.hops.line": "Cada celular repassa as mensagens, até sete saltos.",
   "home.features.networking.bridge.name": "Ponte mesh",
   "home.features.networking.bridge.line":
     "Liga sua conversa pública a um grupo próximo fora de alcance.",

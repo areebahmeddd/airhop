@@ -192,6 +192,11 @@ const strings: Strings = {
     "Diturunkan dari kunci Anda, jadi tidak ada yang bisa mengambilnya.",
   "home.features.identity.qr.name": "Kontak lewat QR",
   "home.features.identity.qr.line": "Sekali pindai membawa kunci mereka, bukan cuma namanya.",
+  "home.features.identity.forward.name": "Kerahasiaan maju",
+  "home.features.identity.forward.line": "Kunci yang bocor tak bisa membuka pesan lama.",
+  "home.features.identity.move.name": "Pindah ke ponsel baru",
+  "home.features.identity.move.line":
+    "Obrolan dan dompet ikut pindah, lalu ponsel lama menghapus dirinya.",
   "home.features.identity.panic.name": "Hapus darurat",
   "home.features.identity.panic.line":
     "Semua kunci dan pesan dimusnahkan dalam waktu kurang dari satu detik.",
@@ -201,6 +206,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Tanpa internet, tanpa router, di ponsel yang sudah dimiliki orang.",
+  "home.features.networking.lan.name": "Jaringan lokal",
+  "home.features.networking.lan.line": "WiFi bersama atau hotspot, iPhone dan Android bersama.",
+  "home.features.networking.hops.name": "Relai multi-hop",
+  "home.features.networking.hops.line": "Setiap ponsel meneruskan pesan, hingga tujuh hop.",
   "home.features.networking.bridge.name": "Jembatan mesh",
   "home.features.networking.bridge.line":
     "Menghubungkan obrolan publik Anda dengan kerumunan di dekatnya yang di luar jangkauan.",

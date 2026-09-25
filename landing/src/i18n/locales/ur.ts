@@ -186,6 +186,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "آپ کی کلید سے اخذ شدہ، اس لیے آپ کا نام کوئی نہیں لے سکتا۔",
   "home.features.identity.qr.name": "QR رابطے",
   "home.features.identity.qr.line": "ایک اسکین ان کی کلیدیں لاتا ہے، صرف نام نہیں۔",
+  "home.features.identity.forward.name": "فارورڈ سیکریسی",
+  "home.features.identity.forward.line": "لیک ہوئی کلید پرانے پیغامات نہیں کھول سکتی۔",
+  "home.features.identity.move.name": "نئے فون پر منتقلی",
+  "home.features.identity.move.line":
+    "چیٹس اور والیٹ ساتھ جاتے ہیں، پھر پرانا فون خود کو مٹا دیتا ہے۔",
   "home.features.identity.panic.name": "ہنگامی صفائی",
   "home.features.identity.panic.line": "ہر کلید اور ہر پیغام ایک سیکنڈ سے کم میں تباہ۔",
 
@@ -194,6 +199,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth میش",
   "home.features.networking.mesh.line":
     "نہ انٹرنیٹ، نہ راؤٹر، انہی فونوں پر جو لوگوں کے پاس پہلے سے ہیں۔",
+  "home.features.networking.lan.name": "مقامی نیٹ ورک",
+  "home.features.networking.lan.line": "مشترکہ WiFi یا ہاٹ اسپاٹ، iPhone اور Android ساتھ ساتھ۔",
+  "home.features.networking.hops.name": "ملٹی ہاپ ریلے",
+  "home.features.networking.hops.line": "ہر فون پیغامات آگے بڑھاتا ہے، سات ہاپ تک۔",
   "home.features.networking.bridge.name": "میش پل",
   "home.features.networking.bridge.line":
     "آپ کی عوامی گفتگو کو حد سے باہر موجود قریبی ہجوم سے جوڑتا ہے۔",

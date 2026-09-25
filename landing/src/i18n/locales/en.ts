@@ -184,6 +184,11 @@ export const strings = {
   "home.features.identity.names.line": "Derived from your key, so nobody can take yours.",
   "home.features.identity.qr.name": "QR contacts",
   "home.features.identity.qr.line": "One scan carries their keys, not just their name.",
+  "home.features.identity.forward.name": "Forward secrecy",
+  "home.features.identity.forward.line": "A leaked key cannot unlock past messages.",
+  "home.features.identity.move.name": "Transfer to a new phone",
+  "home.features.identity.move.line":
+    "Chats and wallet move over, then the old phone erases itself.",
   "home.features.identity.panic.name": "Panic wipe",
   "home.features.identity.panic.line": "Every key and message destroyed in under a second.",
 
@@ -191,6 +196,10 @@ export const strings = {
   "home.features.networking.summary": "The phones are the network.",
   "home.features.networking.mesh.name": "Bluetooth mesh",
   "home.features.networking.mesh.line": "No internet, no router, on phones people already own.",
+  "home.features.networking.lan.name": "Local network",
+  "home.features.networking.lan.line": "Shared WiFi or a hotspot, iPhone and Android together.",
+  "home.features.networking.hops.name": "Multi-hop relay",
+  "home.features.networking.hops.line": "Every phone passes messages on, up to seven hops.",
   "home.features.networking.bridge.name": "Mesh bridge",
   "home.features.networking.bridge.line":
     "Links your public chat with a nearby crowd out of range.",
