@@ -211,6 +211,15 @@ export const strings = {
   "error.boundary.body":
     "Airhop hit an unexpected problem and had to stop what it was showing.",
 
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Can’t open your keys",
+  "launch.keys_unreadable_body":
+    "Your phone didn’t unlock Airhop’s keys. Unlock it, then try again.",
+  "launch.start_over": "Erase and start over",
+  "launch.start_over_confirm_title": "Erase this phone?",
+  "launch.start_over_confirm_body":
+    "Your identity, messages, contacts and wallet on this phone are destroyed, and you start again as someone new. This cannot be undone.",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Default channels",
   "chat.channels.yours": "Your channels",

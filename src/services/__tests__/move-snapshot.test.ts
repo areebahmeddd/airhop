@@ -15,6 +15,7 @@ import {
   snapshotForMove,
 } from "../move-snapshot";
 import { MMKV_STORE_IDS } from "../panic-wipe";
+import { condemnIdentity, isIdentityCondemned } from "../wipe-marker";
 
 // The same three the panic wipe test replaces: each reaches a native runtime
 // at import, and none of them is what a move does.
@@ -166,6 +167,19 @@ describe("transfer apply", () => {
       "contacts",
     );
     expect(getStorage("prekey-store").getString("local")).toBeUndefined();
+  });
+
+  it("clears a condemned identity's flag once the moved one is written over it", async () => {
+    const identity = await oldPhone();
+    const sections = asMap(await snapshotForMove(true));
+    freshPhone();
+    // An earlier wipe on this phone could not delete its identity.
+    condemnIdentity();
+
+    await applyMove(sections, identity.noiseStaticPubKey);
+
+    // Otherwise the next launch would delete the identity that just arrived.
+    expect(isIdentityCondemned()).toBe(false);
   });
 
   it("refuses an identity that is not the one the handshake proved", async () => {

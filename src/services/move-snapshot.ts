@@ -39,6 +39,7 @@ import { DEVICE_SETTINGS, useSettingsStore } from "@store/settings-store";
 import { exportWalletState, importWalletState } from "@store/wallet-store";
 import { setMoveMarker } from "./move-marker";
 import { MMKV_STORE_IDS } from "./panic-wipe";
+import { clearCondemnedIdentity } from "./wipe-marker";
 
 type StoreId = (typeof MMKV_STORE_IDS)[number];
 type SecretName = keyof typeof KEYCHAIN_ITEMS;
@@ -340,6 +341,8 @@ export async function applyMove(
   if (identity === null || !sameBytes(identity.noiseStaticPubKey, noiseKey)) {
     throw new MoveApplyError("storage");
   }
+  // A condemned identity from an earlier refused wipe is overwritten now.
+  clearCondemnedIdentity();
   setMoveMarker("committed");
   for (const [, policy] of movedPartitions()) policy.reload();
   return identity.peerID;

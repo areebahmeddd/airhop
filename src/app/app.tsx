@@ -20,6 +20,7 @@ import NotificationCenter from "@features/chat/notification-center";
 import { StartNewSheet } from "@features/chat/start-new-sheet";
 import PeerList from "@features/discovery/peer-list";
 import IdentityScreen from "@features/onboarding/identity-screen";
+import KeysUnreadableScreen from "@features/onboarding/keys-unreadable-screen";
 import PermissionPrimerSheet from "@features/onboarding/permission-primer-sheet";
 import TransferInScreen from "@features/onboarding/transfer-in-screen";
 import TransferRecoveryScreen from "@features/onboarding/transfer-recovery-screen";
@@ -55,6 +56,7 @@ import {
   registerBootStartTask,
   syncAutoStartOnBoot,
 } from "@services/boot-start";
+import { readLaunchIdentity } from "@services/launch-identity";
 import { applyAirhopLink } from "@services/link-router";
 import {
   hasLocationPermission,
@@ -152,7 +154,7 @@ import { parseAirhopLink } from "@utils/deep-link";
 import { formatNumber } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
-import { settleOr, withTimeout } from "@utils/with-timeout";
+import { settleOr } from "@utils/with-timeout";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import React, {
@@ -232,14 +234,11 @@ interface MessageTarget {
 // Placeholder peer ID shown before identity is loaded from secure storage.
 const FALLBACK_PEER_ID = "0000000000000000";
 
-// The timeouts below are in launch order: load the identity, show the primer,
-// prompt for permissions, check the grant, then sweep stranded sends. Every one
-// of them is a backstop against a step that can hang rather than fail, since
-// none of these is a state the app can detect from the inside.
-
-// A healthy keychain read is single-digit milliseconds, so this is the point
-// past which "slow" has become "never" and the user is owed a screen either way.
-const IDENTITY_LOAD_TIMEOUT_MS = 8_000;
+// The timeouts below are in launch order: show the primer, prompt for
+// permissions, check the grant, then sweep stranded sends (the identity read's
+// is in services/launch-identity). Every one of them is a backstop against a
+// step that can hang rather than fail, since none of these is a state the app
+// can detect from the inside.
 
 // The primer is a sheet the user dismisses, so this is deliberately long enough
 // to read it twice. It guards against the sheet never appearing at all, and is
@@ -730,6 +729,13 @@ function AppContent(): React.JSX.Element {
   // The launch sequence, parked while that question is open.
   const holdForTransfer = useRef(transferRecovery !== null);
   const startBootRef = useRef<(() => void) | null>(null);
+  // The keychain did not answer, so the launch waits on the person rather
+  // than onboarding over an identity it may still hold.
+  const [keysUnreadable, setKeysUnreadable] = useState(false);
+  const [checkingKeys, setCheckingKeys] = useState(false);
+  // Only the latest identity read may act: a retry supersedes one still in
+  // flight, and a wipe supersedes both.
+  const bootGeneration = useRef(0);
   const eraseAndBootRef = useRef<(() => void) | null>(null);
   // Load JetBrains Mono in the background so it is ready the instant a user
   // picks it under Appearance. Startup is NOT gated on it: the app defaults to
@@ -826,62 +832,71 @@ function AppContent(): React.JSX.Element {
   // On mount: check for an existing persisted identity. If found, skip
   // onboarding and start the BLE mesh service immediately.
   useEffect(() => {
-    // Wrapped so the launch can be held behind an unfinished wipe below. The
-    // body is unchanged; only who calls it, and when, is new.
-    const startBoot = (): void => {
-      // Time-boxed, because this one promise decides whether the app renders at
-      // all. `readSecret` reaches the Keystore, and a Keystore that
-      // stalls never rejects - it simply does not answer. The `.catch` below
-      // covers a refusal; nothing covered silence, so the app sat on the blank
-      // background-coloured view above forever, which reads as a hung splash.
-      //
-      // Timing out yields `null`, which is the same answer a first install gives,
-      // so the user lands on onboarding rather than on nothing. That is the right
-      // failure: a device whose keychain is unreachable cannot load an identity
-      // this launch either way, and IdentityScreen surfaces the write failure
-      // where it can be read. IDENTITY_LOAD_TIMEOUT_MS is far longer than a
-      // healthy read (single-digit milliseconds) so a slow-but-working device is
-      // never sent to onboarding by mistake.
-      withTimeout(loadIdentity(), IDENTITY_LOAD_TIMEOUT_MS, null)
-        .then((existing) => {
-          if (existing) {
-            setGeneratedPeerID(existing.peerID);
-            setOnboardingStep(null);
-            // Android can destroy the Activity while the foreground service keeps
-            // the process (and the JS runtime, and the mesh) alive. Reopening then
-            // remounts this component with everything already set up, and tearing
-            // that down just to rebuild it is what made a reopen feel like a hang:
-            // a full stop() says goodbye to every peer, drops the relay pool, and
-            // bounces the foreground service, all to arrive back where we started.
-            //
-            // So a cold start is exactly: no mesh at all, or one belonging to a
-            // different identity (a wipe re-onboarded as someone else). An
-            // existing mesh is left alone whatever state it is in - including
-            // stopped, because the only things that stop it are the user choosing
-            // Away and the notification's "Stop mesh". Restarting it here would
-            // undo a decision they just made, from an event they didn't trigger.
-            //
-            // What rides on it is another matter: a boot start ran none of the
-            // parts that need the app, so they run now, once for this mesh.
-            const existingMesh = getMeshService();
-            if (existingMesh?.peerID !== existing.peerID) {
-              void startMeshWithPermissions(
-                existing,
-                peerIDToUsername(existing.peerID),
-              );
-            } else {
-              startMeshDependents();
-            }
-            // Restore the last open thread after an OS-kill-and-reopen. The
-            // channel name is persisted by setLastThread and cleared by closeThread.
-            const { lastThread } = useChatStore.getState();
-            if (lastThread) {
-              if (lastThread.startsWith("dm:")) setChatSubTab("dms");
-              setChatView({ kind: "thread", channel: lastThread });
-            }
+    // Wrapped so the launch can be held behind an unfinished wipe below.
+    //
+    // `justWiped`: entered from eraseAndBoot. The person asked for an erased
+    // phone, and a retry could reload an identity the wipe failed to delete,
+    // so an unreadable keychain then goes to welcome rather than asking.
+    const startBoot = (justWiped = false): void => {
+      const generation = ++bootGeneration.current;
+      setCheckingKeys(true);
+      // Never rejects, and time-boxed: this one answer decides what renders.
+      void readLaunchIdentity().then((found) => {
+        if (generation !== bootGeneration.current) return;
+        setCheckingKeys(false);
+        if (found.kind === "unreadable" && !justWiped) {
+          setKeysUnreadable(true);
+          return;
+        }
+        setKeysUnreadable(false);
+        if (found.kind === "present") {
+          const existing = found.identity;
+          setGeneratedPeerID(existing.peerID);
+          setOnboardingStep(null);
+          // Android can destroy the Activity while the foreground service keeps
+          // the process (and the JS runtime, and the mesh) alive. Reopening then
+          // remounts this component with everything already set up, and tearing
+          // that down just to rebuild it is what made a reopen feel like a hang:
+          // a full stop() says goodbye to every peer, drops the relay pool, and
+          // bounces the foreground service, all to arrive back where we started.
+          //
+          // So a cold start is exactly: no mesh at all, or one belonging to a
+          // different identity (a wipe re-onboarded as someone else). An
+          // existing mesh is left alone whatever state it is in - including
+          // stopped, because the only things that stop it are the user choosing
+          // Away and the notification's "Stop mesh". Restarting it here would
+          // undo a decision they just made, from an event they didn't trigger.
+          //
+          // What rides on it is another matter: a boot start ran none of the
+          // parts that need the app, so they run now, once for this mesh.
+          const existingMesh = getMeshService();
+          if (existingMesh?.peerID !== existing.peerID) {
+            void startMeshWithPermissions(
+              existing,
+              peerIDToUsername(existing.peerID),
+            );
           } else {
-            // First launch: show the welcome/onboarding flow.
-            setOnboardingStep("welcome");
+            startMeshDependents();
+          }
+          // Restore the last open thread after an OS-kill-and-reopen. The
+          // channel name is persisted by setLastThread and cleared by closeThread.
+          const { lastThread } = useChatStore.getState();
+          if (lastThread) {
+            if (lastThread.startsWith("dm:")) setChatSubTab("dms");
+            setChatView({ kind: "thread", channel: lastThread });
+          }
+        } else {
+          // No identity: show the welcome/onboarding flow.
+          setOnboardingStep("welcome");
+          // A condemned identity the keychain would not delete again. Set after
+          // any wipe in this session has reset the store, and onboarding's
+          // write is what finally destroys it.
+          if (found.kind === "absent" && found.keysRemain) {
+            useMeshStateStore.getState().setWipeIncomplete(true);
+          }
+          // Only on a confirmed absence: a keychain that did not answer said
+          // nothing about what it holds.
+          if (found.kind === "absent") {
             // No identity means nothing on this device owns a wallet secret, so
             // anything still in the keychain is a leftover - in practice, a panic
             // wipe the Keystore refused while the phone was locked. Sweeping here
@@ -910,14 +925,9 @@ function AppContent(): React.JSX.Element {
                 // neither do we.
               });
           }
-          setAppReady(true);
-        })
-        .catch(() => {
-          // Keychain unavailable (e.g. simulator without secure enclave).
-          // Fall through to onboarding so identity can be generated and stored later.
-          setOnboardingStep("welcome");
-          setAppReady(true);
-        });
+        }
+        setAppReady(true);
+      });
     };
 
     const eraseAndBoot = (): void => {
@@ -926,6 +936,8 @@ function AppContent(): React.JSX.Element {
         // run, but the process can outlive the Activity and still hold a mesh,
         // and a live one keeps writing into the stores being cleared.
         destroyMeshService();
+        // A read that started before the wipe must not boot what it found.
+        bootGeneration.current += 1;
         let keysDestroyed = false;
         try {
           ({ keysDestroyed } = await panicWipe());
@@ -940,7 +952,7 @@ function AppContent(): React.JSX.Element {
           useMeshStateStore.getState().setWipeIncomplete(true);
         }
         setWipeInProgress(false);
-        startBoot();
+        startBoot(true);
       })();
     };
     startBootRef.current = startBoot;
@@ -961,6 +973,16 @@ function AppContent(): React.JSX.Element {
     if (readMoveMarker() === "sending") clearMoveMarker();
     startBoot();
   }, []);
+
+  // iOS answers a relaunch before first unlock as unreadable, and the unlock
+  // that brings the app forward is when the keychain can answer again.
+  useEffect(() => {
+    if (!keysUnreadable) return;
+    const sub = AppState.addEventListener("change", (next) => {
+      if (next === "active") startBootRef.current?.();
+    });
+    return () => sub.remove();
+  }, [keysUnreadable]);
 
   // Aggregate unread for the badges, muted conversations excluded (their
   // per-row count still shows; they just do not shout at the app level). Split
@@ -1530,6 +1552,27 @@ function AppContent(): React.JSX.Element {
               }}
             />
           )}
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  }
+
+  // Ahead of the appReady gate, which stays shut: nothing past it may run
+  // without an identity, and none is loaded.
+  if (keysUnreadable) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <AlertModal />
+          <KeysUnreadableScreen
+            checking={checkingKeys}
+            onRetry={() => startBootRef.current?.()}
+            onStartOver={() => {
+              setKeysUnreadable(false);
+              setWipeInProgress(true);
+              eraseAndBootRef.current?.();
+            }}
+          />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     );
