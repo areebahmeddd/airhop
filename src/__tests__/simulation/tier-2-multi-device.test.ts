@@ -574,6 +574,73 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
   s.assert();
 });
 
+test("B08b a rehandshake with a peer whose last announce is past the TTL ends on one ratchet", async () => {
+  // The ratchet is seeded when a handshake completes, from what we know of the
+  // peer then. Looked up through the 60s reachability window, a peer whose
+  // last announce had aged out got no fresh ratchet, and the previous
+  // session's stayed in place: alice sealed to her new chain, bob opened with
+  // his old one, and every DM between them failed silently.
+  const s = (scenario = new Scenario({
+    id: "B08b",
+    title: "rehandshake against an aged-out announce",
+    seed: 81,
+  }));
+  const { radio, devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+
+  bob.send(`dm:${alice.peerID}`, "before the reboot");
+  await waitFor(s.world, () => alice.texts(`dm:${bob.peerID}`).length > 0);
+
+  alice.relaunch();
+  // The moment bob answers alice's new handshake, her entry in his registry
+  // reads as last heard over a minute ago.
+  let aged = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== bob.id || aged) return;
+    const bin = globalThis.atob(data);
+    const raw = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    if (raw[1] !== PacketType.NOISE_HANDSHAKE) return;
+    const registry = (
+      bob.mesh as unknown as {
+        registry: { peers: Map<string, { lastSeenMs: number }> };
+      }
+    ).registry;
+    const entry = registry.peers.get(alice.peerID);
+    if (entry === undefined) return;
+    entry.lastSeenMs -= 2 * 60_000;
+    aged = true;
+  });
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+  alice.send(`dm:${bob.peerID}`, "after the reboot");
+
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the reboot"),
+    60_000,
+  );
+  stop();
+  s.check("bob's entry for alice was past its TTL at the handshake", aged);
+  s.check("the DM reaches bob", landed);
+  const delivered = await waitFor(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .find((m) => m.text === "after the reboot")?.status === "delivered",
+    60_000,
+  );
+  s.check("and alice sees it delivered", delivered);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "after the reboot")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});
+
 test("B09 an internet DM shows the contact's name and is acknowledged once", async () => {
   // Alice scanned bob's card and filed him under a name of her own. His DMs
   // reach her over the relays, never the radio, and must still carry it. A

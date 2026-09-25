@@ -400,6 +400,14 @@ const IDENTITY_ELSEWHERE_QUIET_MS = 5 * 60 * 1000;
 // 3 KiB sealed; a file shorter than this completes before a card could be read.
 const SEALED_FILE_CARD_MIN_BYTES = 8 * 1024;
 
+interface BoundRatchet {
+  session: NoiseSession;
+  // Our side of the handshake that made `session`. Only the responder may seed
+  // a ratchet lazily, since only its ratchet is the receiving one.
+  role: "initiator" | "responder";
+  ratchet: RatchetState | null;
+}
+
 interface PendingHandshake {
   handshake: NoiseHandshake;
   role: "initiator" | "responder";
@@ -562,10 +570,11 @@ export class MeshService {
   private readonly pendingHandshakes = new Map<string, PendingHandshake>();
   private readonly handshakeLimiter = new HandshakeRateLimiter();
 
-  // Double Ratchet states keyed by peerID. Only set for Airhop-to-Airhop
-  // sessions (peers who announced a Nostr pubkey). bitchat peers continue
-  // using plain NOISE_ENCRYPTED transport.
-  private readonly drStates = new Map<string, RatchetState>();
+  // Double Ratchet states keyed by peerID, each bound to the Noise session it
+  // was seeded from and ignored under any other (see ratchetFor). The ratchet
+  // is null for a peer that has not shown itself to be Airhop: bitchat peers
+  // keep the plain NOISE_ENCRYPTED transport.
+  private readonly drStates = new Map<string, BoundRatchet>();
 
   // Creator-signed group states owed to a member we could not reach yet, keyed
   // by peerID. A group invite travels inside a Noise session, but you can pick
@@ -2411,7 +2420,7 @@ export class MeshService {
       this.sendPeerState(senderID);
 
       // Then seed the ratchet and release everything that was waiting.
-      this.tryInitDR(senderID, "initiator", session.exporterSecret);
+      this.tryInitDR(senderID, "initiator", session);
       this.flushPendingGroupInvites(senderID);
       // Flush queued messages. Use this.sendDm so they go through DR if ready.
       for (const q of pending.pendingText) {
@@ -2439,7 +2448,7 @@ export class MeshService {
     // Prove our identity first, for the same reason as the initiator path.
     this.sendPeerState(senderID);
     // Seed the Double Ratchet for Airhop-to-Airhop sessions.
-    this.tryInitDR(senderID, "responder", session.exporterSecret);
+    this.tryInitDR(senderID, "responder", session);
     this.flushPendingGroupInvites(senderID);
     // Flush any DMs carried over from an initiator->responder reset. Normal
     // responders have none; only a simultaneous-initiation flip queues them.
@@ -2531,56 +2540,79 @@ export class MeshService {
     }
   }
 
-  // Initialize a Double Ratchet state from the Noise XX handshake that just
-  // completed. Only activated for Airhop peers (those that announced a Nostr
-  // pubkey); bitchat nodes don't understand DR_ENCRYPTED and must keep using
-  // NOISE_ENCRYPTED.
+  // Bind a Double Ratchet to the Noise XX session that just completed,
+  // replacing whatever the previous session left. Seeded only for Airhop peers
+  // (those that announced a Nostr pubkey); bitchat nodes don't understand
+  // DR_ENCRYPTED and must keep using NOISE_ENCRYPTED.
   private tryInitDR(
     peerID: string,
     role: "initiator" | "responder",
-    exporterSecret: Uint8Array,
+    session: NoiseSession,
   ): void {
-    const peer = this.registry.get(peerID);
     // The nostrPubkey field is only populated from ANNOUNCE TLV 0x07, which
-    // bitchat-ios and bitchat-android never send (0x05 and 0x06 are their capabilities
-    // and bridge-cell tags, which we decode and ignore). It is a reliable
-    // Airhop indicator.
+    // bitchat-ios and bitchat-android never send (0x05 and 0x06 are their
+    // capabilities and bridge-cell tags, which we decode and ignore). It is a
+    // reliable Airhop indicator. Read past the reachability TTL: a peer whose
+    // last announce is a minute old still completed this handshake.
     // A peer without it keeps the plain Noise transport, still a valid route,
     // hence the flush below runs either way.
-    if (peer?.nostrPubkey && peer.noisePubKey) {
-      // The root key comes from the handshake's EXPORTER SECRET: a value that
-      // descends from the Noise chaining key, so it depends on the ephemeral DH
-      // outputs and no observer can reconstruct it.
-      //
-      // It must not come from the transcript hash. The tempting reasoning is
-      // wrong in a specific way worth recording: Noise XX does mix both
-      // parties' ephemeral keys into the
-      // handshake, but it mixes the ephemeral PUBLIC keys into the hash `h` via
-      // mixHash, while the secret DH outputs go into the chaining key `ck` via
-      // mixKey. Every input to `h` is a byte that was transmitted in the clear,
-      // so anyone who captured the three handshake packets - which flood the
-      // mesh at TTL 7, so that is anyone in the room, not just the two peers -
-      // could recompute the root key exactly, derive the receiving chain, and
-      // forge or read DR messages. `ck` is the half that is actually secret.
-      //
-      // The original goal still holds and is still met: a static-static seed
-      // would have been recoverable forever from long-term keys alone, and the
-      // exporter secret is not, because the ephemeral private keys that shaped
-      // `ck` are destroyed when the handshake splits.
-      const rootKey = hkdf(sha256, exporterSecret, undefined, DR_SEED_INFO, 32);
-
-      this.drStates.set(
-        peerID,
-        role === "initiator"
-          ? initSender(rootKey, peer.noisePubKey)
-          : initReceiver(rootKey, this.identity.noiseStaticPrivKey),
-      );
-    }
+    const airhop = this.registry.nostrPubkeyFor(peerID) !== undefined;
+    this.drStates.set(peerID, {
+      session,
+      role,
+      ratchet: airhop ? this.seedRatchet(role, session) : null,
+    });
 
     // The handshake just completed, so an encrypted route now exists where
     // there wasn't one, so deliver anything queued for this peer immediately
     // rather than waiting up to 30s for their next ANNOUNCE.
     this.flushOutbox(peerID);
+  }
+
+  private seedRatchet(
+    role: "initiator" | "responder",
+    session: NoiseSession,
+  ): RatchetState {
+    // The root key comes from the handshake's EXPORTER SECRET: a value that
+    // descends from the Noise chaining key, so it depends on the ephemeral DH
+    // outputs and no observer can reconstruct it.
+    //
+    // It must not come from the transcript hash. The tempting reasoning is
+    // wrong in a specific way worth recording: Noise XX does mix both
+    // parties' ephemeral keys into the
+    // handshake, but it mixes the ephemeral PUBLIC keys into the hash `h` via
+    // mixHash, while the secret DH outputs go into the chaining key `ck` via
+    // mixKey. Every input to `h` is a byte that was transmitted in the clear,
+    // so anyone who captured the three handshake packets - which flood the
+    // mesh at TTL 7, so that is anyone in the room, not just the two peers -
+    // could recompute the root key exactly, derive the receiving chain, and
+    // forge or read DR messages. `ck` is the half that is actually secret.
+    //
+    // The original goal still holds and is still met: a static-static seed
+    // would have been recoverable forever from long-term keys alone, and the
+    // exporter secret is not, because the ephemeral private keys that shaped
+    // `ck` are destroyed when the handshake splits.
+    const rootKey = hkdf(
+      sha256,
+      session.exporterSecret,
+      undefined,
+      DR_SEED_INFO,
+      32,
+    );
+    return role === "initiator"
+      ? initSender(rootKey, session.remoteStaticPubKey)
+      : initReceiver(rootKey, this.identity.noiseStaticPrivKey);
+  }
+
+  // The ratchet for a peer, only while the session it was seeded from is the
+  // one we hold. A ratchet from an earlier session would seal to a chain the
+  // peer no longer has, so it counts as none.
+  private ratchetFor(peerID: string): RatchetState | undefined {
+    const bound = this.drStates.get(peerID);
+    if (bound?.ratchet == null) return undefined;
+    return bound.session === this.registry.sessionFor(peerID)
+      ? bound.ratchet
+      : undefined;
   }
 
   // Decrypt an incoming NOISE_ENCRYPTED DM. This is the path a bitchat peer's
@@ -3201,19 +3233,31 @@ export class MeshService {
     // Blocked: drop silently, before spending a ratchet step on it. A
     // block means "stop hearing from this peer," not just "hide them."
     if (useBlockedStore.getState().isBlocked(senderID)) return;
+    // The ratchet header is cleartext. DR packets are sent signed, and a
+    // forgery must be refused before it gets anywhere near ratchet state.
+    if (!this.senderIsAuthentic(packet, senderID)) return;
 
-    const state = this.drStates.get(senderID);
-    if (!state) {
+    const session = this.registry.sessionFor(senderID);
+    if (session === undefined) {
       this.recoverSession(senderID);
       return;
+    }
+    const bound = this.drStates.get(senderID);
+    if (bound === undefined || bound.session !== session) return;
+    // A signed DR packet under a session we seeded no ratchet for: the peer
+    // knew we were Airhop when we did not yet know it was. A receiver ratchet
+    // cannot send first, so the sender is this session's initiator, and only
+    // as its responder can we seed the matching receiving side.
+    if (bound.ratchet === null) {
+      if (bound.role !== "responder") return;
+      bound.ratchet = this.seedRatchet("responder", session);
     }
 
     let plaintext: Uint8Array;
     try {
-      plaintext = ratchetDecrypt(state, packet.payload);
+      plaintext = ratchetDecrypt(bound.ratchet, packet.payload);
     } catch {
-      // Decryption failure: wrong session key, replayed message, or out-of-order
-      // beyond the skipped-message window. Drop silently.
+      this.healRatchet(senderID, bound.ratchet);
       return;
     }
 
@@ -3261,6 +3305,22 @@ export class MeshService {
     this.pendingReadAcks.set(senderID, pending);
   }
 
+  // A signed DR packet that will not decrypt. Decrypt leaves the ratchet
+  // untouched on failure, forgeries fail the signature, and replays stop at
+  // dedup and the freshness window, so what is left is two ratchets out of
+  // step, which only a new session repairs. Taken only on a key the peer
+  // proved in a session: an announce pin is forgeable, and would let whoever
+  // won it tear our sessions down. And not before this ratchet has received
+  // anything, since a message sealed under the previous session can still be
+  // in flight. The new handshake runs under the handshake rate limit.
+  private healRatchet(peerID: string, ratchet: RatchetState): void {
+    if (ratchet.CKr === null) return;
+    if (this.registry.provenSigningKey(peerID) === undefined) return;
+    this.registry.clearSession(peerID);
+    this.drStates.delete(peerID);
+    this.ensureNoiseSession(peerID);
+  }
+
   // Send a delivery/read receipt back to a message's sender over the Double
   // Ratchet link. Silently no-ops without a session or a message id, so it is
   // safe to call optimistically.
@@ -3274,7 +3334,7 @@ export class MeshService {
     // secrecy. bitchat (and any Noise-only peer) has no ratchet, so fall back to
     // a receipt over the plain Noise session in bitchat's format. The type-byte
     // values are shared (0x02 read, 0x03 delivered), so no remapping is needed.
-    const state = this.drStates.get(peerID);
+    const state = this.ratchetFor(peerID);
     // canEncrypt, not merely "a ratchet exists". The side that ANSWERED the
     // Noise handshake is initialised as a receiver and has no sending chain
     // until the initiator's first ratchet message arrives, so encrypting would
@@ -5937,7 +5997,7 @@ export class MeshService {
     // path carries the message id and supports delivery/read receipts: DR via
     // its own envelope, Noise via the bitchat PrivateMessagePacket, and Nostr
     // via the bitchat1 envelope. DR is preferred purely for the extra secrecy.
-    const drState = this.drStates.get(recipientPeerID);
+    const drState = this.ratchetFor(recipientPeerID);
     const hasDirectLink = this.links.hasPeer(recipientPeerID);
     // A directed encrypted packet reaches the peer over the mesh either by a
     // direct link (unicast) or, lacking one, by flooding through a neighbour who

@@ -1426,3 +1426,108 @@ test("C14b a contact key from a forged link card gives way to a session proof", 
   s.expectNone("process health", noCrashes(cast));
   s.assert();
 });
+
+test("C11 one forged ratchet packet does not break a conversation", async () => {
+  // A DR_ENCRYPTED header is cleartext, and a packet only has to be addressed
+  // to bob and claim alice. Decrypted before it was authenticated, one such
+  // packet stepped bob's ratchet onto a chain alice never had, and every DM
+  // between them failed from then on without a word.
+  const s = (scenario = new Scenario({
+    id: "C11",
+    title: "forged Double Ratchet packet",
+    seed: 71,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  alice.send(`dm:${bob.peerID}`, "one");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("one"),
+    20_000,
+  );
+  bob.send(`dm:${alice.peerID}`, "two");
+  await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("two"),
+    20_000,
+  );
+
+  // A fresh ratchet key in the header, as a forger would pick, once unsigned
+  // and once signed with mallory's own key.
+  const forged = new Uint8Array(40 + 48).fill(0x5a);
+  forged.set(ed25519.utils.randomSecretKey(), 0);
+  forged.fill(0, 32, 40);
+  const unsigned: Packet = {
+    type: PacketType.DR_ENCRYPTED,
+    ttl: 7,
+    flags: Flags.HAS_RECIPIENT,
+    senderID: peerIdToBytes(alice.peerID),
+    recipientID: peerIdToBytes(bob.peerID),
+    timestamp: s.world.wallClock(),
+    signature: new Uint8Array(64),
+    payload: forged,
+  };
+  radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(unsigned)));
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    forgeSigned({
+      type: PacketType.DR_ENCRYPTED,
+      claimedPeerID: alice.peerID,
+      recipientPeerID: bob.peerID,
+      payload: forged,
+      timestamp: s.world.wallClock() + 1,
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(1_000);
+
+  const sentAt = s.world.now;
+  alice.send(`dm:${bob.peerID}`, "after the forgery");
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the forgery"),
+    10_000,
+  );
+  s.check(
+    "the next DM still arrives, without waiting for a retry",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  const delivered = await waitFor(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .find((m) => m.text === "after the forgery")?.status === "delivered",
+    10_000,
+  );
+  s.check("and alice sees it delivered", delivered);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "after the forgery")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});

@@ -305,6 +305,11 @@ export class PeerRegistry {
     return this.peers.get(peerID)?.signingPubKey;
   }
 
+  // The Nostr key the peer announced, ignoring reachability.
+  nostrPubkeyFor(peerID: string): string | undefined {
+    return this.peers.get(peerID)?.nostrPubkey;
+  }
+
   // The pinned key only when a 0x21 proved it, ignoring reachability.
   provenSigningKey(peerID: string): Uint8Array | undefined {
     const e = this.peers.get(peerID);
