@@ -17,6 +17,7 @@ import {
   getEncodedToken,
   getSecretKind,
   getTokenMetadata,
+  hasCorrespondingKey,
   hasValidDleq,
   isP2PKSpendAuthorised,
   KeyChain,
@@ -69,13 +70,30 @@ export interface EmbeddedToken {
   offset: number;
 }
 
+// Codes, never copy: the caller picks the sentence.
 export type DleqResult =
-  // The mint signed every proof. Says nothing about whether it is spent.
-  | { status: "valid"; checked: number }
+  // Every proof carries a witness and every witness verifies: the mint signed
+  // all of it. Says nothing about whether it is spent.
+  | { status: "valid" }
   // Forged or corrupted: refuse it.
-  | { status: "invalid"; reason: string }
-  // Nothing to check against. No offline assurance, not a failure.
-  | { status: "unchecked"; reason: string };
+  //   bad-witness            a witness that does not verify
+  //   no-such-denomination   an amount the keyset has no key for
+  //   wrong-unit             a keyset outside the token's unit
+  | {
+      status: "invalid";
+      code: "bad-witness" | "no-such-denomination" | "wrong-unit";
+    }
+  // Not every proof could be checked. No offline assurance, not a failure.
+  //   no-witness       no proof carries one
+  //   partial-witness  some do, so the rest could be anything
+  //   keys-missing     the keyset is known but its keys are not cached (a
+  //                    rotated keyset, or no cache at all)
+  //   keyset-unknown   the keyset is not in the cache
+  | {
+      status: "unchecked";
+      code:
+        "no-witness" | "partial-witness" | "keys-missing" | "keyset-unknown";
+    };
 
 // ---- Detection ----
 
@@ -311,76 +329,77 @@ function sanitizeMemo(memo: string | undefined): string | undefined {
 // ---- Offline DLEQ verification ----
 
 // NUT-12 against the mint's cached public keys (`keyChain.cache`, public only,
-// so safe unencrypted and offline). Missing keys or witnesses report
-// "unchecked", never a pass: a check that says yes when it has nothing to check,
-// or when it throws, can only ever say yes.
+// so safe unencrypted and offline). "valid" means what CDK's
+// `verify_token_dleq` means: every proof verified. One real coin cannot vouch
+// for the others, or a single witnessed sat makes any forgery beside it read
+// as genuine.
+//
+// One pass over every proof. Anything provably wrong refuses the token at
+// once, whatever else is missing. What could not be checked is tallied, and
+// the witness codes win over the key codes, since they are what the sender
+// chose.
 export function verifyTokenOffline(
   token: Token,
   keysetCache: KeyChainCache | undefined,
   unit: string,
 ): DleqResult {
-  const withDleq = token.proofs.filter((p) => p.dleq !== undefined);
-  if (withDleq.length === 0) {
-    return { status: "unchecked", reason: "token carries no DLEQ witness" };
-  }
-  if (!keysetCache) {
-    return {
-      status: "unchecked",
-      reason: "mint keys not cached on this device",
-    };
-  }
-
-  let keyChain: KeyChain;
-  try {
-    keyChain = KeyChain.fromCache(token.mint, unit, keysetCache);
-  } catch {
-    return { status: "unchecked", reason: "cached mint keys are unreadable" };
-  }
-
-  let checked = 0;
-  for (const proof of token.proofs) {
-    let keyset;
+  let keyChain: KeyChain | null = null;
+  if (keysetCache !== undefined) {
     try {
-      keyset = keyChain.getKeyset(proof.id);
+      keyChain = KeyChain.fromCache(token.mint, unit, keysetCache);
     } catch {
-      // Unknown keyset (rotated, or an unresolved short id).
+      // Unreadable cache: nothing to check against.
+    }
+  }
+
+  let witnessed = 0;
+  let verified = 0;
+  let keysMissing = false;
+  for (const proof of token.proofs) {
+    if (proof.dleq !== undefined) witnessed += 1;
+    if (keyChain === null) {
+      keysMissing = true;
       continue;
     }
-    try {
-      // NUT-12 "MUST verify if present": `require: false` passes a proof with
-      // no witness (a mint predating DLEQ is not issuing bad proofs), and any
-      // witness present must verify. Same as the `verifyDleqIfPresent` that
-      // cashu-ts v5 removes.
-      if (!hasValidDleq(proof, keyset, { require: false })) {
-        return {
-          status: "invalid",
-          reason: `proof ${proof.secret.slice(0, 8)}… failed DLEQ verification`,
-        };
-      }
-      if (proof.dleq !== undefined) checked += 1;
-    } catch (err) {
-      // The amount matches no key in the keyset: a denomination the mint does
-      // not issue, so a forgery, not an inconclusive check.
-      return {
-        status: "invalid",
-        reason: `proof ${proof.secret.slice(0, 8)}… has no matching mint key (${String(err)})`,
-      };
+    // Rotated away, or an unresolved short id.
+    if (!keyChain.hasKeyset(proof.id)) continue;
+    if (!keyChain.isUnitKeyset(proof.id)) {
+      return { status: "invalid", code: "wrong-unit" };
     }
+    const keyset = keyChain.getKeyset(proof.id);
+    // An inactive keyset is listed without keys (NUT-01 serves only active
+    // ones); the mint still honours it, so this is no evidence of forgery.
+    if (!keyset.hasKeys) {
+      keysMissing = true;
+      continue;
+    }
+    // A throw on hostile input is a refusal: a check that passes whatever
+    // it cannot evaluate can only ever say yes.
+    try {
+      if (!hasCorrespondingKey(proof.amount, keyset.keys)) {
+        return { status: "invalid", code: "no-such-denomination" };
+      }
+      if (proof.dleq === undefined) continue;
+      if (!hasValidDleq(proof, keyset)) {
+        return { status: "invalid", code: "bad-witness" };
+      }
+    } catch {
+      return { status: "invalid", code: "bad-witness" };
+    }
+    verified += 1;
   }
 
-  if (checked === 0) {
-    return {
-      status: "unchecked",
-      reason: "no keys cached for this token's keyset",
-    };
+  if (token.proofs.length > 0 && verified === token.proofs.length) {
+    return { status: "valid" };
   }
-  if (checked < withDleq.length) {
-    return {
-      status: "unchecked",
-      reason: `verified ${String(checked)} of ${String(withDleq.length)} witnesses`,
-    };
+  if (witnessed === 0) return { status: "unchecked", code: "no-witness" };
+  if (witnessed < token.proofs.length) {
+    return { status: "unchecked", code: "partial-witness" };
   }
-  return { status: "valid", checked };
+  return {
+    status: "unchecked",
+    code: keysMissing ? "keys-missing" : "keyset-unknown",
+  };
 }
 
 // ---- Spending conditions (NUT-10, NUT-11) ----

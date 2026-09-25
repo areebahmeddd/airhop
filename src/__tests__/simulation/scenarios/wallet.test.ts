@@ -1189,6 +1189,74 @@ test("W25 a token cannot relabel sats as dollars", async () => {
   s.assert(true);
 });
 
+test("W28 a token from before a key rotation still pays", async () => {
+  // Mints rotate keys and keep honouring the old ones as inputs. NUT-01 serves
+  // keys for active keysets only, so after a refresh the old keyset is listed
+  // with no keys cached. That is a gap in what this phone knows, not evidence
+  // of forgery.
+  const s = (scenario = new Scenario({
+    id: "W28",
+    title: "an old-keyset token is stored offline and redeemed online",
+    seed: 128,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await alice.walletReady();
+  await bob.walletReady();
+  await alice.addMint(mint.url);
+  await alice.depositSats(500);
+
+  const older = await alice.prepareSend(64);
+  alice.confirmLastSend();
+  const old = await alice.prepareSend(32);
+  alice.confirmLastSend();
+  s.check("alice built two tokens", older !== null && old !== null);
+  if (older === null || old === null) {
+    s.assert(false);
+    return;
+  }
+
+  // Bob meets the mint after its rotation: the old keyset is listed, its keys
+  // are not.
+  mint.rotateKeyset();
+  await bob.addMint(mint.url);
+
+  mint.setConditions({ offline: true });
+  const stored = await bob.receiveTokenResult(older);
+  s.check(
+    "in a dead zone it is stored, not refused as forged",
+    stored?.outcome === "stored" && stored.dleq === "unchecked",
+    stored === null
+      ? "refused"
+      : `outcome=${stored.outcome} dleq=${stored.dleq ?? "none"}`,
+  );
+
+  mint.setConditions({ offline: false });
+  const redeemed = await bob.receiveTokenResult(old);
+  s.check(
+    "online it redeems, fetching the old keyset's keys by id",
+    redeemed?.outcome === "swapped",
+    redeemed === null ? "refused" : `outcome=${redeemed.outcome}`,
+  );
+
+  await bob.reconcile();
+  await bob.refreshWallet();
+  s.check(
+    "and the stored one is confirmed once the mint is reachable",
+    bob.balance() === 96 && bob.unverifiedBalance() === 0,
+    `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+  );
+  s.check(
+    "no value was created or destroyed",
+    alice.totalHeld() + bob.totalHeld() === 500,
+    `alice=${alice.totalHeld()} bob=${bob.totalHeld()}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
 test("W15 an unpaid invoice mints nothing, however hard the user taps", async () => {
   // Tapping "I've paid" before the payment settles, or after it failed. The
   // mint has had no money, so the only correct outcome is a refusal. Minting

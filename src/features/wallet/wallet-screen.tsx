@@ -558,9 +558,14 @@ export default function WalletScreen({
             }),
             result.dleq === "valid"
               ? t("wallet.receive.dleq_ok")
-              : t("wallet.receive.dleq_uncached"),
+              : result.dleqGap === "witness"
+                ? t("wallet.receive.dleq_missing")
+                : t("wallet.receive.dleq_uncached"),
             t("wallet.receive.dleq_warning"),
-          ].join(" ") + (result.memo ? `\n\n"${result.memo}"` : ""),
+          ].join(" ") +
+            (result.memo
+              ? t("wallet.receive.memo_quoted", { memo: result.memo })
+              : ""),
         );
       }
     } catch (err) {

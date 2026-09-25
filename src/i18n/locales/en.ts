@@ -1108,6 +1108,8 @@ export const strings = {
     "The mint’s signature checks out, so the token is genuine.",
   "wallet.receive.dleq_uncached":
     "The mint’s keys are not cached here, so the signature could not be checked offline.",
+  "wallet.receive.dleq_missing":
+    "Not every coin in it carries the mint’s signature proof, so it could not be checked offline.",
   "wallet.receive.dleq_warning":
     "Until you refresh online, the sender could in principle have spent it elsewhere.",
   "wallet.receive.failed": "Could not receive",
@@ -1514,6 +1516,8 @@ export const strings = {
   "wallet.svc.keyset_unknown_body":
     "The mint can’t be reached right now to fetch them. Nothing is lost: receive it again once you’re online.",
   "wallet.svc.wrong_mint": "This token was not signed by the mint it names.",
+  "wallet.svc.wrong_mint_body":
+    "At least one coin’s signature does not match the mint’s keys. Nothing was added.",
   "wallet.svc.unit_mismatch":
     "This token’s coins are not in the currency it names.",
   "wallet.svc.unit_mismatch_body":

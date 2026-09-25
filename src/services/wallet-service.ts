@@ -50,6 +50,7 @@ import {
   toProofLike,
   toStoredProof,
   verifyTokenOffline,
+  type DleqResult,
   type TokenInfo,
   type TokenRead,
 } from "@core/payments/cashu";
@@ -989,14 +990,28 @@ export interface ReceiveResult {
   mintUrl: string;
   memo?: string;
   // "swapped"     redeemed at the mint; the value is now provably ours
-  // "stored"      kept offline; DLEQ passed but the mint has not confirmed it
-  //               is unspent, so it counts as unverified balance
+  // "stored"      kept offline, unverified: the mint has not confirmed it is
+  //               unspent, and `dleq` says whether it is even genuine
   // "duplicate"   every proof was already in the wallet; nothing was credited
   outcome: "swapped" | "stored" | "duplicate" | "own-pending";
   // Why we did not swap, when outcome is "stored".
   offlineReason?: string;
-  // Result of the offline DLEQ check, for the receipt UI.
+  // The offline DLEQ check, for the receipt UI. "valid" only when every coin
+  // carries a witness that verifies.
   dleq: "valid" | "unchecked";
+  // Why "unchecked": the sender left witnesses out, or this phone lacks the
+  // mint's keys.
+  dleqGap?: "witness" | "keys";
+}
+
+type DleqVerdict = Pick<ReceiveResult, "dleq" | "dleqGap">;
+
+function dleqVerdict(result: DleqResult): DleqVerdict {
+  if (result.status === "valid") return { dleq: "valid" };
+  const byWitness =
+    result.status === "unchecked" &&
+    (result.code === "no-witness" || result.code === "partial-witness");
+  return { dleq: "unchecked", dleqGap: byWitness ? "witness" : "keys" };
 }
 
 // Per-mint throttle for keyset fetches triggered by chat tokens.
@@ -1168,12 +1183,15 @@ export async function receiveToken(
     info.unit,
   );
   if (dleq.status === "invalid") {
-    throw new WalletError(
-      "forged-token",
-      t("wallet.svc.wrong_mint"),
-      dleq.reason,
-    );
+    throw dleq.code === "wrong-unit"
+      ? new WalletError("forged-token", t("wallet.svc.unit_mismatch"))
+      : new WalletError(
+          "forged-token",
+          t("wallet.svc.wrong_mint"),
+          t("wallet.svc.wrong_mint_body"),
+        );
   }
+  const verdict = dleqVerdict(dleq);
 
   const existing = new Set(
     (store.proofs[accountKey(url, info.unit)] ?? []).map((p) => p.secret),
@@ -1185,7 +1203,7 @@ export async function receiveToken(
       mintUrl: url,
       memo: info.memo,
       outcome: "duplicate",
-      dleq: dleq.status === "valid" ? "valid" : "unchecked",
+      ...verdict,
     };
   }
 
@@ -1205,12 +1223,9 @@ export async function receiveToken(
       mintUrl: url,
       memo: info.memo,
       outcome: "own-pending",
-      dleq: dleq.status === "valid" ? "valid" : "unchecked",
+      ...verdict,
     };
   }
-
-  const dleqLabel =
-    dleq.status === "valid" ? ("valid" as const) : ("unchecked" as const);
 
   // Already received and swapped, so the checks above miss it. Staging again
   // would open a pending row for a swap the mint must refuse.
@@ -1222,7 +1237,7 @@ export async function receiveToken(
       mintUrl: url,
       memo: info.memo,
       outcome: "duplicate",
-      dleq: dleqLabel,
+      ...verdict,
     };
   }
 
@@ -1271,7 +1286,7 @@ export async function receiveToken(
       mintUrl: url,
       memo: info.memo,
       outcome: "swapped",
-      dleq: dleqLabel,
+      ...verdict,
     };
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
@@ -1301,7 +1316,7 @@ export async function receiveToken(
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
     // twice.
-    return storeOffline(url, info, walletErr.message, dleqLabel, {
+    return storeOffline(url, info, walletErr.message, verdict, {
       counterparty: opts.counterparty,
       ...(staged ? { txId } : {}),
     });
@@ -1315,7 +1330,7 @@ function storeOffline(
   mintUrl: string,
   info: TokenInfo,
   reason: string,
-  dleq: "valid" | "unchecked",
+  verdict: DleqVerdict,
   opts: { counterparty?: string; txId?: string } = {},
 ): ReceiveResult {
   const store = useWalletStore.getState();
@@ -1331,7 +1346,7 @@ function storeOffline(
       mintUrl,
       memo: info.memo,
       outcome: "duplicate",
-      dleq,
+      ...verdict,
     };
   }
   if (opts.txId !== undefined) {
@@ -1354,7 +1369,7 @@ function storeOffline(
     memo: info.memo,
     outcome: "stored",
     offlineReason: reason,
-    dleq,
+    ...verdict,
   };
 }
 
