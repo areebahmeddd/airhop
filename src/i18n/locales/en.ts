@@ -2202,7 +2202,7 @@ export const strings = {
   "settings.wipe.now": "Wipe now",
   "settings.wipe.desc": "Instantly destroy all keys, messages, and ecash",
   "settings.wipe.body":
-    "This will instantly destroy all your keys, messages, and ecash. This cannot be undone.",
+    "This will instantly destroy all your keys, messages, and ecash. This cannot be undone. Photos you saved to your gallery stay there.",
   "settings.wipe.in_progress": "Wiping",
   "settings.wipe.in_progress_body":
     "Destroying your keys, messages and files. This takes a few seconds, and finishes on its own if the app is closed.",
