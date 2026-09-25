@@ -4,12 +4,18 @@
 // (bitchat's FileTransferLimits, mirrored in bitchat-file-packet), and at
 // Bluetooth's ~18 KiB/s even a file that fits takes half a minute, so sending
 // the original is not something anyone wants even where it would be allowed.
-// Every messenger resizes before sending for exactly this reason; this is that
-// step, and nothing more.
+// Every messenger resizes before sending for exactly this reason.
 //
 // It changes nothing on the wire. The result is an ordinary JPEG in an ordinary
 // FILE_TRANSFER packet, so a bitchat peer sees a photo it already knew how to
 // read. The only difference is that it now arrives.
+//
+// It is also what strips a photo's metadata. A JPEG or WebP is always
+// re-encoded, however small: the Android picker copies the camera's EXIF, GPS
+// included, into its output, and the encoder here writes pixels only
+// (Bitmap.compress on Android, UIImage.jpegData on iOS). GIF and PNG that fit
+// go as they are, since re-encoding would flatten an animation or blur a
+// screenshot, and neither carries camera location in practice.
 //
 // Deliberately never throws: a photo that cannot be resized is still worth
 // trying to send at its original size, where the size check in
@@ -94,9 +100,12 @@ function jpegName(name: string | undefined): string {
   return `${base || "photo"}.jpg`;
 }
 
+// The formats sent untouched when they fit. Everything else is re-encoded.
+const SENT_AS_IS = new Set(["image/gif", "image/png"]);
+
 // Resize and re-encode until the file fits the image budget. Returns the
-// original untouched when it already fits and is a format the mesh carries, or
-// when the image cannot be read.
+// original untouched when it is a GIF or PNG that already fits, or when the
+// image cannot be read.
 export async function prepareImageForSend(
   uri: string,
   name?: string,
@@ -114,22 +123,17 @@ export async function prepareImageForSend(
     name: name ?? "photo.jpg",
     sizeBytes: fileSize(uri),
   };
-  // Small enough, and in a format the far side renders as a picture: sending it
-  // as it is beats re-encoding, which only costs quality.
+  // A GIF or PNG small enough goes as it is. HEIC, which an iPhone camera
+  // produces and neither Airhop nor bitchat carries, resolves to octet-stream,
+  // so it goes through the JPEG pass below and arrives as a photo.
   //
-  // The format half matters for HEIC, which is what an iPhone camera produces
-  // and what neither Airhop nor bitchat carries. resolveMimeType turns it into
-  // octet-stream, so it fails this test and goes through the JPEG pass below
-  // and arrives as a photo, rather than landing as an unopenable document.
-  //
-  // The type half is also checked against the bytes. A caller may have renamed
-  // the file (`.jpg` on a PNG, GIF or HEIC) and passed no usable type, so the
-  // type came from the name; the receiver compares the declared type with the
-  // magic bytes and drops a mismatch, so a mislabelled file is re-encoded
-  // into a JPEG that is what it says.
-  const carriedAsImage = original.mimeType.startsWith("image/");
+  // The type is also checked against the bytes. A caller may have renamed the
+  // file (`.png` on a JPEG) and passed no usable type, so the type came from
+  // the name; the receiver compares the declared type with the magic bytes and
+  // drops a mismatch, so a mislabelled file is re-encoded into a JPEG that is
+  // what it says.
   if (
-    carriedAsImage &&
+    SENT_AS_IS.has(original.mimeType) &&
     original.sizeBytes > 0 &&
     original.sizeBytes <= MAX_SENT_IMAGE_BYTES &&
     (await bytesMatchMime(uri, original.mimeType))
