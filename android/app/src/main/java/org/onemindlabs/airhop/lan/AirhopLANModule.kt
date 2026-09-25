@@ -34,6 +34,7 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.SystemClock
 import android.util.Base64
 import android.util.Log
 import com.facebook.react.bridge.Arguments
@@ -55,7 +56,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import org.onemindlabs.airhop.transport.FrameReader
 import org.onemindlabs.airhop.transport.Framing
+import org.onemindlabs.airhop.transport.LocalInterface
 
 private const val TAG = "AirhopLANModule"
 
@@ -85,17 +88,44 @@ private const val EVT_MOVE_DATA = "AirhopLAN.moveData"
 private const val EVT_MOVE_CLOSED = "AirhopLAN.moveClosed"
 
 // Liveness, the same numbers as the WiFi module: a zero-length heartbeat every
-// 8 s against a 10 s read deadline, three misses allowed, so a peer that walked
-// off the network without a FIN is closed in about thirty seconds. LAN outranks
-// Bluetooth for a peer held on both, so a dead one would take every DM until noticed.
+// 8 s against FrameReader's read deadline, so a peer that walked off the network
+// without a FIN is closed in about thirty seconds. LAN outranks Bluetooth for a
+// peer held on both, so a dead one would take every DM until noticed.
 private const val HEARTBEAT_MS = 8_000L
-private const val READ_TIMEOUT_MS = 10_000
-private const val IDLE_LIMIT = 3
+
+// A write blocked this long means the peer stopped reading. The same thirty
+// seconds the read side allows a frame.
+private const val WRITE_STALL_MS = FrameReader.FRAME_DEADLINE_MS
+
+// Inbound caps, counted on open links. Over a cap the socket is closed at once
+// rather than queued: every accepted socket is a thread.
+//
+// Mesh: twice MAX_LAN_LINKS in lan-dial-policy.ts. The ring sends a node at
+// most eight dials, and the headroom lets a replacement land while its dead
+// predecessor waits out the read deadline.
+private const val MAX_INBOUND_LAN = 16
+// Transfer: MAX_MOVE_HOSTS, the most addresses one code names. A transfer
+// needs one.
+private const val MAX_INBOUND_MOVE = 4
+
+// mDNS names held or queued for a resolve. Eight times the ring's link count,
+// so a room bigger than this still gets full ring coverage from the first 64.
+private const val MAX_DISCOVERED = 64
+
+// A failed accept that is not a close (EMFILE, most often) usually persists,
+// so the loop waits before asking again rather than spinning.
+private const val ACCEPT_RETRY_MS = 1_000L
 
 // How long to wait for a dial before giving up. Client isolation, which most
 // guest networks enable, shows up here as a connect that never completes rather
 // than as a refusal, so an unbounded connect would hold a thread forever.
 private const val CONNECT_TIMEOUT_MS = 5_000
+
+// Whether an interface can carry local peers, by the LOCAL_IFACE_PREFIXES rule.
+// An accepted socket on anything else is refused: loopback is another app on
+// this phone, cellular is a stranger on the carrier's network.
+internal fun isLocalInterface(name: String?): Boolean =
+    name != null && LOCAL_IFACE_PREFIXES.any { name.startsWith(it) }
 
 class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -136,9 +166,13 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         val output: OutputStream,
         // A transfer connection rather than a mesh link.
         val move: Boolean,
+        // Accepted rather than dialled, for the inbound caps.
+        val inbound: Boolean,
         val writeLock: Any = Any(),
     ) {
         @Volatile var heartbeat: ScheduledFuture<*>? = null
+        // When the write in progress began, 0 while none is.
+        @Volatile var writingSinceMs = 0L
     }
 
     private val links = ConcurrentHashMap<String, LinkState>()
@@ -189,6 +223,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     // is lower than that.
     private val resolveQueue = ArrayDeque<NsdServiceInfo>()
     private var resolving = false
+    // The name in flight, so a repeat sighting of it is not queued behind itself.
+    private var resolvingName: String? = null
     private val resolveLock = Any()
 
     // ---- Lifecycle -----------------------------------------------------------
@@ -280,6 +316,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         synchronized(resolveLock) {
             resolveQueue.clear()
             resolving = false
+            resolvingName = null
         }
     }
 
@@ -463,8 +500,14 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         nsd.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
     }
 
+    // A name already resolved, queued or in flight is skipped: mDNS repeats
+    // itself, and every repeat would otherwise cost a resolve.
     private fun enqueueResolve(info: NsdServiceInfo) {
+        val name = info.serviceName
+        if (discovered.containsKey(name) || discovered.size >= MAX_DISCOVERED) return
         synchronized(resolveLock) {
+            if (name == resolvingName || resolveQueue.any { it.serviceName == name }) return
+            if (resolveQueue.size >= MAX_DISCOVERED) return
             resolveQueue.addLast(info)
             if (resolving) return
             resolving = true
@@ -477,12 +520,16 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             synchronized(resolveLock) {
                 val head = resolveQueue.removeFirstOrNull()
                 if (head == null) resolving = false
+                resolvingName = head?.serviceName
                 head
             } ?: return
 
         val nsd = nsdManager()
         if (nsd == null) {
-            synchronized(resolveLock) { resolving = false }
+            synchronized(resolveLock) {
+                resolving = false
+                resolvingName = null
+            }
             return
         }
 
@@ -497,7 +544,9 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
                 override fun onServiceResolved(info: NsdServiceInfo) {
                     val host = info.host
-                    if (host != null && info.serviceName != instanceName) {
+                    val room =
+                        discovered.containsKey(info.serviceName) || discovered.size < MAX_DISCOVERED
+                    if (host != null && info.serviceName != instanceName && room) {
                         discovered[info.serviceName] = Resolved(host, info.port)
                         // The name only. The address stays here, in
                         // `discovered`, because it is this module's business to
@@ -573,32 +622,74 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     }
 
     private fun acceptLoop(socket: ServerSocket) {
-        while (!socket.isClosed) {
-            val client =
-                try {
-                    socket.accept()
-                } catch (e: Exception) {
-                    Log.i(TAG, "Accept loop ended: ${e.message}")
-                    return
-                }
-            registerLink("lan-in-${linkCounter.incrementAndGet()}", client)
+        acceptEach(socket, "Accept") { client ->
+            if (admitInbound(client, move = false, cap = MAX_INBOUND_LAN)) {
+                registerLink("lan-in-${linkCounter.incrementAndGet()}", client, inbound = true)
+            }
         }
+    }
+
+    // Runs until the server socket is closed. Any other failure, an Error
+    // included, is logged and retried after a pause: returning would leave a
+    // bound port nobody reads while the module still reports itself running.
+    private fun acceptEach(socket: ServerSocket, label: String, handle: (Socket) -> Unit) {
+        while (!socket.isClosed) {
+            try {
+                handle(socket.accept())
+            } catch (e: Throwable) {
+                if (socket.isClosed) break
+                Log.w(TAG, "$label failed, retrying: ${e.message}")
+                try {
+                    Thread.sleep(ACCEPT_RETRY_MS)
+                } catch (_: InterruptedException) {
+                    break
+                }
+            }
+        }
+        Log.i(TAG, "$label loop ended")
+    }
+
+    // Whether an accepted socket may become a link: it arrived on a local
+    // interface and its kind is under its cap. Closes it otherwise.
+    //
+    // An interface the platform will not name is let through with a log line.
+    // Refusing it is the one path here that could break LAN on a device that
+    // names interfaces differently, and every peer still has to announce.
+    private fun admitInbound(client: Socket, move: Boolean, cap: Int): Boolean {
+        val iface = LocalInterface.nameOf(client)
+        if (iface == null) Log.i(TAG, "Inbound interface unknown, accepting")
+        val refusal =
+            when {
+                iface != null && !isLocalInterface(iface) -> "on $iface"
+                links.values.count { it.inbound && it.move == move } >= cap ->
+                    "past the cap of $cap"
+                else -> null
+            }
+        if (refusal == null) return true
+        Log.w(TAG, "Refused inbound ${if (move) "transfer" else "link"} $refusal")
+        runCatching { client.close() }
+        return false
     }
 
     // `serviceName` is known only for a dial we made. An accepted connection is
     // anonymous until its peer announces, and nothing here needs to know: the
     // name is used solely to answer "already connected" for an outbound dial.
+    //
+    // Catches Throwable: on the accept thread an Error (a thread that could not
+    // be created) would otherwise end the process.
     private fun registerLink(
         id: String,
         socket: Socket,
         serviceName: String? = null,
         move: Boolean = false,
+        inbound: Boolean = false,
     ): Boolean {
+        var reported = false
         try {
             socket.tcpNoDelay = true
             socket.keepAlive = true
-            socket.soTimeout = READ_TIMEOUT_MS
-            val link = LinkState(id, socket, socket.getOutputStream(), move)
+            socket.soTimeout = FrameReader.READ_TIMEOUT_MS
+            val link = LinkState(id, socket, socket.getOutputStream(), move, inbound)
             links[id] = link
             if (serviceName != null) {
                 linkByName[serviceName] = id
@@ -606,15 +697,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             }
             link.heartbeat =
                 heartbeatExecutor.scheduleWithFixedDelay(
-                    {
-                        ioExecutor.execute {
-                            try {
-                                writeFrame(link, ByteArray(0))
-                            } catch (e: Exception) {
-                                handleLinkClose(id)
-                            }
-                        }
-                    },
+                    { heartbeat(link) },
                     HEARTBEAT_MS,
                     HEARTBEAT_MS,
                     TimeUnit.MILLISECONDS,
@@ -627,14 +710,42 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             } else {
                 emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
             }
+            reported = true
             Log.i(TAG, "LAN link connected: $id")
             startReadLoop(id, socket.getInputStream(), move)
             return true
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Could not register link $id: ${e.message}")
-            links.remove(id)?.heartbeat?.cancel(false)
-            runCatching { socket.close() }
+            // Once JS has heard of the link it has to hear it go.
+            if (reported) {
+                handleLinkClose(id)
+            } else {
+                links.remove(id)?.heartbeat?.cancel(false)
+                runCatching { socket.close() }
+            }
             return false
+        }
+    }
+
+    // Heartbeat thread. Skipped while a write is in progress, so a peer that
+    // stops reading parks one writer rather than one more every beat. Once that
+    // write has been blocked for WRITE_STALL_MS the link is closed, which makes
+    // it throw and fails every write queued behind it.
+    private fun heartbeat(link: LinkState) {
+        val since = link.writingSinceMs
+        if (since != 0L) {
+            if (SystemClock.elapsedRealtime() - since > WRITE_STALL_MS) {
+                Log.i(TAG, "Link ${link.id} stopped reading, closing")
+                handleLinkClose(link.id)
+            }
+            return
+        }
+        ioExecutor.execute {
+            try {
+                writeFrame(link, ByteArray(0))
+            } catch (e: Exception) {
+                handleLinkClose(link.id)
+            }
         }
     }
 
@@ -642,8 +753,13 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private fun writeFrame(link: LinkState, data: ByteArray) {
         val frame = Framing.encode(data)
         synchronized(link.writeLock) {
-            link.output.write(frame)
-            link.output.flush()
+            link.writingSinceMs = SystemClock.elapsedRealtime()
+            try {
+                link.output.write(frame)
+                link.output.flush()
+            } finally {
+                link.writingSinceMs = 0L
+            }
         }
     }
 
@@ -695,57 +811,25 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         val dataEvent = if (move) EVT_MOVE_DATA else EVT_PACKET_RECEIVED
         val idKey = if (move) "connectionID" else "linkID"
         ioExecutor.execute {
-            val lenBuf = ByteArray(4)
-            var idleTimeouts = 0
-            // A deadline that lands with part of a frame in hand cannot be
-            // waited out: the next read would take the rest of it for a prefix.
-            var inFrame = 0
+            val reader = FrameReader(input, SystemClock::elapsedRealtime)
             while (true) {
-                try {
-                    inFrame = 0
-                    while (inFrame < 4) {
-                        val n = input.read(lenBuf, inFrame, 4 - inFrame)
-                        if (n < 0) throw java.io.EOFException("EOF in length prefix")
-                        inFrame += n
-                    }
-                    val len =
-                        Framing.length(lenBuf)
-                            ?: throw Exception("LAN link $linkID: invalid frame length")
-                    idleTimeouts = 0
-                    // A heartbeat carries nothing.
-                    if (len == 0) continue
-                    val payload = ByteArray(len)
-                    var got = 0
-                    while (got < len) {
-                        val n = input.read(payload, got, len - got)
-                        if (n < 0) throw java.io.EOFException("EOF in payload")
-                        got += n
-                        inFrame += n
-                    }
-                    emitEvent(
-                        dataEvent,
-                        WritableNativeMap().apply {
-                            putString(idKey, linkID)
-                            putString("dataBase64", Base64.encodeToString(payload, Base64.NO_WRAP))
-                        },
-                    )
-                } catch (e: java.net.SocketTimeoutException) {
-                    if (inFrame > 0) {
-                        Log.i(TAG, "Link $linkID stalled mid-frame, closing")
+                val payload =
+                    try {
+                        reader.next()
+                    } catch (e: Exception) {
+                        Log.i(TAG, "Read loop ended for $linkID: ${e.message}")
                         handleLinkClose(linkID)
                         return@execute
                     }
-                    idleTimeouts++
-                    if (idleTimeouts >= IDLE_LIMIT) {
-                        Log.i(TAG, "Link $linkID idle past the deadline, closing")
-                        handleLinkClose(linkID)
-                        return@execute
-                    }
-                } catch (e: Exception) {
-                    Log.i(TAG, "Read loop ended for $linkID: ${e.message}")
-                    handleLinkClose(linkID)
-                    return@execute
-                }
+                // A heartbeat carries nothing.
+                if (payload.isEmpty()) continue
+                emitEvent(
+                    dataEvent,
+                    WritableNativeMap().apply {
+                        putString(idKey, linkID)
+                        putString("dataBase64", Base64.encodeToString(payload, Base64.NO_WRAP))
+                    },
+                )
             }
         }
     }
@@ -824,15 +908,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     }
 
     private fun moveAcceptLoop(socket: ServerSocket) {
-        while (!socket.isClosed) {
-            val client =
-                try {
-                    socket.accept()
-                } catch (e: Exception) {
-                    Log.i(TAG, "Move accept loop ended: ${e.message}")
-                    return
-                }
-            registerLink("move-in-${linkCounter.incrementAndGet()}", client, move = true)
+        acceptEach(socket, "Move accept") { client ->
+            if (admitInbound(client, move = true, cap = MAX_INBOUND_MOVE)) {
+                registerLink(
+                    "move-in-${linkCounter.incrementAndGet()}",
+                    client,
+                    move = true,
+                    inbound = true,
+                )
+            }
         }
     }
 

@@ -126,6 +126,31 @@ class AwareDialTest {
         assertTrue(AwareDial.prefersInitiator(mine, mine.copyOf()))
     }
 
+    // ---- Inbound gates ----
+
+    @Test
+    fun onlyAwareDataInterfacesAreAware() {
+        assertTrue(AwareDial.isAwareInterface("aware_data0"))
+        assertTrue(AwareDial.isAwareInterface("aware_data12"))
+        assertFalse(AwareDial.isAwareInterface("wlan0"))
+        assertFalse(AwareDial.isAwareInterface("lo"))
+        assertFalse(AwareDial.isAwareInterface("rmnet_data0"))
+        assertFalse(AwareDial.isAwareInterface("p2p-wlan0-0"))
+        assertFalse(AwareDial.isAwareInterface(""))
+        assertFalse(AwareDial.isAwareInterface(null))
+    }
+
+    // Only a responder with a path pending or up has asked for an inbound socket.
+    @Test
+    fun inboundHelloNeedsAResponderWithAPath() {
+        for (state in DialState.values()) {
+            val expected = state == DialState.PATH_PENDING || state == DialState.CONNECTED
+            assertEquals(state.name, expected, AwareDial.acceptsInboundHello(Role.RESPONDER, state))
+            assertFalse(state.name, AwareDial.acceptsInboundHello(Role.INITIATOR, state))
+            assertFalse(state.name, AwareDial.acceptsInboundHello(null, state))
+        }
+    }
+
     // ---- Backoff ----
 
     @Test
