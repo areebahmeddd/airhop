@@ -33,7 +33,10 @@ import {
   SaveFormat,
   type SaveOptions,
 } from "expo-image-manipulator";
-import { adoptIntoAttachmentCache } from "./file-transfer-service";
+import {
+  adoptIntoAttachmentCache,
+  discardPickerCopy,
+} from "./file-transfer-service";
 
 // Longest edge of a sent photo. 1600 is still worth looking at full screen on a
 // phone, and is where WhatsApp and Signal settle; past it the extra pixels cost
@@ -104,14 +107,29 @@ function jpegName(name: string | undefined): string {
 const SENT_AS_IS = new Set(["image/gif", "image/png"]);
 
 // Resize and re-encode until the file fits the image budget. Returns the
-// original untouched when it is a GIF or PNG that already fits, or when the
-// image cannot be read.
+// original, moved under the attachment prefix, when it is a GIF or PNG that
+// already fits or when the image cannot be read. Either way the picker's copy
+// does not outlive the call, so retention and Clear account for what is sent.
 export async function prepareImageForSend(
   uri: string,
   name?: string,
   mimeType?: string,
   // The user's Upload quality setting, 0-1. Sets where the ladder starts.
   quality = 0.7,
+): Promise<PreparedImage> {
+  const ready = await fitToBudget(uri, name, mimeType, quality);
+  if (ready.uri !== uri) {
+    discardPickerCopy(uri);
+    return ready;
+  }
+  return { ...ready, uri: await adoptIntoAttachmentCache(uri, ready.name) };
+}
+
+async function fitToBudget(
+  uri: string,
+  name: string | undefined,
+  mimeType: string | undefined,
+  quality: number,
 ): Promise<PreparedImage> {
   const original: PreparedImage = {
     uri,

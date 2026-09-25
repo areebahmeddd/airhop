@@ -50,6 +50,7 @@ import {
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
 import { systemRow } from "@utils/message-text";
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 
 // ---- Types ----
 
@@ -120,21 +121,21 @@ export interface AttachmentMeta {
 //
 // The prefix bounds the ROUTINE sweeps - sweepExpiredAttachments,
 // getAttachmentCacheBytes and clearAttachmentCache - and deliberately not the
-// panic wipe, which empties the directory outright. Three classes of file sit
-// outside it and always will: documents and videos the pickers copy into their
-// own subdirectories under the user's own filenames, images small enough to send
-// without a resize, and the saved QR card. Storage therefore under-reports those
-// and Clear cannot free them. That is the right trade for a "free up space"
-// button, which must not reach into directories the OS manages, and the wrong
-// one for a wipe, which must. See wipeCacheDirectory.
+// panic wipe, which empties the directory outright. Everything sent is adopted
+// under it before it goes (see adoptIntoAttachmentCache), so what sits outside
+// is a picker copy of something never sent, left by a crash, and the saved QR
+// card. That is the right trade for a "free up space" button, which must not
+// reach into directories the OS manages, and the wrong one for a wipe, which
+// must. See wipeCacheDirectory.
 export const CACHE_FILE_PREFIX = "airhop_";
 
 // Distinguishes two files adopted inside the same millisecond.
 let adoptSeq = 0;
 
 // Move a locally produced file into the attachment cache under the prefix, and
-// return where it landed. Used by the image resizer and the voice recorder,
-// both of which write elsewhere by default.
+// return where it landed. Used for everything sent: the image resizer, the voice
+// recorder, and the pickers' copies of a document, a video or a photo sent as
+// it is, all of which land elsewhere by default.
 //
 // The prefix is what `sweepExpiredAttachments`, `getAttachmentCacheBytes` and
 // `clearAttachmentCache` match on, so a file outside it outlives the retention
@@ -156,6 +157,35 @@ export async function adoptIntoAttachmentCache(
     return destination.uri;
   } catch {
     return uri;
+  }
+}
+
+// Delete a picker's copy that will not be sent, or that was re-encoded. Only a
+// file under the cache directory: a URI anywhere else is not ours to remove.
+export function discardPickerCopy(uri: string): void {
+  try {
+    if (!uri.startsWith(FileSystem.Paths.cache.uri)) return;
+    const file = new FileSystem.File(uri);
+    if (file.exists) file.delete();
+  } catch {
+    // Already gone. The wipe takes whatever a failure leaves.
+  }
+}
+
+// iOS keeps two copies the cache never sees, both under tmp: the system hands
+// a picked document over as a copy in `tmp/<bundle id>-Inbox` before the picker
+// copies it again, and a recorded video stays in tmp after the picker copies it
+// out. Android has neither.
+function temporaryDirectory(): FileSystem.Directory | null {
+  if (Platform.OS !== "ios") return null;
+  try {
+    const tmp = new FileSystem.Directory(
+      FileSystem.Paths.document.parentDirectory,
+      "tmp",
+    );
+    return tmp.exists ? tmp : null;
+  } catch {
+    return null;
   }
 }
 
@@ -206,6 +236,28 @@ export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 // being created behind them.
 const MAX_SWEEP_DELETIONS = 200;
 
+// Bytes freed by deleting `entry` if it is older than the window, or null when
+// it stays.
+function deleteIfExpired(
+  entry: FileSystem.File,
+  now: number,
+  maxAgeMs: number,
+): number | null {
+  const writtenAt = entry.lastModified ?? entry.creationTime;
+  if (writtenAt === null || writtenAt === undefined) return null;
+  // A timestamp in the future is a clock that moved, not a fresh file. Left
+  // alone: deleting on a bad clock is the worse failure of the two.
+  if (now - writtenAt <= maxAgeMs) return null;
+  const size = entry.size;
+  try {
+    entry.delete();
+    return size;
+  } catch {
+    // Mid-write, locked, or already gone. It will be caught next launch.
+    return null;
+  }
+}
+
 export function sweepExpiredAttachments(
   now: number = Date.now(),
   maxAgeMs: number = MEDIA_MAX_AGE_MS,
@@ -214,26 +266,34 @@ export function sweepExpiredAttachments(
   if (!dir.exists) return 0;
   let freed = 0;
   let deleted = 0;
-  for (const entry of dir.list()) {
-    if (deleted >= MAX_SWEEP_DELETIONS) break;
-    if (
-      !(entry instanceof FileSystem.File) ||
-      !entry.name.startsWith(CACHE_FILE_PREFIX)
-    ) {
-      continue;
-    }
-    const writtenAt = entry.lastModified ?? entry.creationTime;
-    if (writtenAt === null || writtenAt === undefined) continue;
-    // A timestamp in the future is a clock that moved, not a fresh file. Left
-    // alone: deleting on a bad clock is the worse failure of the two.
-    if (now - writtenAt <= maxAgeMs) continue;
-    const size = entry.size;
-    try {
-      entry.delete();
+  const sweep = (
+    entries: (FileSystem.Directory | FileSystem.File)[],
+    keep: (file: FileSystem.File) => boolean = () => true,
+  ): void => {
+    for (const entry of entries) {
+      if (deleted >= MAX_SWEEP_DELETIONS) return;
+      if (!(entry instanceof FileSystem.File) || !keep(entry)) continue;
+      const size = deleteIfExpired(entry, now, maxAgeMs);
+      if (size === null) continue;
       freed += size;
       deleted++;
-    } catch {
-      // Mid-write, locked, or already gone. It will be caught next launch.
+    }
+  };
+  sweep(dir.list(), (file) => file.name.startsWith(CACHE_FILE_PREFIX));
+  // Aged files only, never the whole directory: other libraries keep work in
+  // flight there. The top level (a recorded video's original) and the system's
+  // document Inbox, nothing deeper.
+  const tmp = temporaryDirectory();
+  if (tmp !== null) {
+    const entries = tmp.list();
+    sweep(entries);
+    for (const entry of entries) {
+      if (
+        entry instanceof FileSystem.Directory &&
+        entry.name.endsWith("-Inbox")
+      ) {
+        sweep(entry.list());
+      }
     }
   }
   return freed;
@@ -263,15 +323,10 @@ export function clearAttachmentCache(): number {
 //
 // clearAttachmentCache above deletes only top-level files carrying our own
 // prefix, which is right for the periodic sweep and wrong for a wipe, because
-// three classes of file the user would absolutely expect to be destroyed do not
-// match it:
+// files the user would absolutely expect to be destroyed do not match it:
 //
-//   * documents and videos the user SENT. The pickers copy the original into
-//     their own cache subdirectory under its real filename, and that URI is what
-//     gets attached, so it carries neither our prefix nor our directory.
-//   * images small enough to send unmodified. Only the resize path adopts a file
-//     into the attachment cache and gives it the prefix; an in-budget JPEG stays
-//     wherever the picker left it.
+//   * the pickers' copies of anything picked and never sent, which sit in
+//     their own subdirectories under the user's own filenames.
 //   * the saved QR card, written as `airhop-qr-<peerID>.png`. A hyphen, not the
 //     underscore the prefix uses, so it was swept by nothing - a PNG of the
 //     wiped identity's full contact card, under a filename containing its peer
@@ -289,7 +344,12 @@ export async function wipeCacheDirectory(): Promise<void> {
   // The root is emptied, not removed. It is where the next attachment lands,
   // and a wipe that deletes it outright leaves the first write after
   // re-onboarding to fail on a directory nothing recreated.
-  await emptyDirectory(dir, { deleted: 0 }, 0);
+  const progress = { deleted: 0 };
+  await emptyDirectory(dir, progress, 0);
+  // iOS tmp holds the pickers' other copies (see temporaryDirectory). A wipe
+  // takes all of it; nothing of the app's own is mid-write while one runs.
+  const tmp = temporaryDirectory();
+  if (tmp !== null) await emptyDirectory(tmp, progress, 0);
 }
 
 // How many entries to remove before handing the thread back.

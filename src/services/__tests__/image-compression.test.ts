@@ -56,10 +56,20 @@ jest.mock("expo-image-manipulator", () => ({
 }));
 
 jest.mock("../file-transfer-service", () => ({
-  adoptIntoAttachmentCache: (uri: string) => Promise.resolve(uri),
+  adoptIntoAttachmentCache: jest.fn((uri: string) => Promise.resolve(uri)),
+  discardPickerCopy: jest.fn(),
 }));
 
-beforeEach(() => mockDisk.clear());
+const fileTransfer = jest.requireMock<{
+  adoptIntoAttachmentCache: jest.Mock;
+  discardPickerCopy: jest.Mock;
+}>("../file-transfer-service");
+
+beforeEach(() => {
+  mockDisk.clear();
+  fileTransfer.adoptIntoAttachmentCache.mockClear();
+  fileTransfer.discardPickerCopy.mockClear();
+});
 
 describe("prepareImageForSend", () => {
   // The picker's JPEG can carry the camera's GPS; only an encode drops it.
@@ -68,6 +78,10 @@ describe("prepareImageForSend", () => {
     const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
     expect(ready.uri).toBe("file:///reencoded.jpg");
     expect(ready.mimeType).toBe("image/jpeg");
+    // The picker's copy, EXIF and all, does not stay behind either.
+    expect(fileTransfer.discardPickerCopy).toHaveBeenCalledWith(
+      "file:///a.jpg",
+    );
   });
 
   it("re-encodes a small WebP too", async () => {
@@ -90,6 +104,12 @@ describe("prepareImageForSend", () => {
     );
     expect(ready.uri).toBe("file:///g.gif");
     expect(ready.mimeType).toBe("image/gif");
+    // Moved under the attachment prefix, so retention and Clear see it.
+    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledWith(
+      "file:///g.gif",
+      "g.gif",
+    );
+    expect(fileTransfer.discardPickerCopy).not.toHaveBeenCalled();
   });
 
   it("re-encodes a PNG that a .jpg name would have labelled JPEG", async () => {

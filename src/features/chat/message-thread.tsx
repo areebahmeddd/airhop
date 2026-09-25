@@ -31,6 +31,7 @@ import {
   adoptIntoAttachmentCache,
   AttachmentTooLargeError,
   CACHE_FILE_PREFIX,
+  discardPickerCopy,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
@@ -3209,6 +3210,16 @@ export default function MessageThread({
     setCaptionDraft("");
 
     if (p.type !== "image") {
+      // Out of the picker's folder and under the attachment prefix before it
+      // is read, so retention, Storage and Clear all see what was sent.
+      const send = (): void => {
+        void adoptIntoAttachmentCache(p.uri, p.name ?? p.type).then((uri) => {
+          sendAttachmentMessage(p.type, uri, p.name, p.mimeType, undefined, {
+            sizeBytes: p.sizeBytes,
+            caption,
+          });
+        });
+      };
       // A bitchat recipient handles a video or a document very differently from
       // an Airhop one, and neither difference is visible from this screen, so say
       // it before the send rather than leaving the user with a sent tick and a
@@ -3217,27 +3228,16 @@ export default function MessageThread({
       const caution = bitchatMediaCaution(p.type, p.sizeBytes);
       if (caution !== null) {
         showAlert(caution.title, caution.body, [
-          { text: T("common.cancel"), style: "cancel" },
           {
-            text: T("chat.attach.send_anyway"),
-            onPress: () => {
-              sendAttachmentMessage(
-                p.type,
-                p.uri,
-                p.name,
-                p.mimeType,
-                undefined,
-                { sizeBytes: p.sizeBytes, caption },
-              );
-            },
+            text: T("common.cancel"),
+            style: "cancel",
+            onPress: () => discardPickerCopy(p.uri),
           },
+          { text: T("chat.attach.send_anyway"), onPress: send },
         ]);
         return;
       }
-      sendAttachmentMessage(p.type, p.uri, p.name, p.mimeType, undefined, {
-        sizeBytes: p.sizeBytes,
-        caption,
-      });
+      send();
       return;
     }
     void (async () => {
@@ -3258,7 +3258,9 @@ export default function MessageThread({
     })();
   }
 
+  // The picker's copy goes with the sheet: nothing else will ever read it.
   function cancelPendingAttachment(): void {
+    if (pendingAttachment !== null) discardPickerCopy(pendingAttachment.uri);
     setPendingAttachment(null);
     setCaptionDraft("");
   }

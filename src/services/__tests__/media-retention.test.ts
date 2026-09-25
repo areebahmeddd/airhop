@@ -21,35 +21,67 @@ interface FakeFile {
 declare global {
   var __disk: FakeFile[];
   var __dirExists: boolean;
+  // iOS tmp, which the pickers also write to.
+  var __tmp: FakeFile[];
+  // Files opened by URI rather than listed.
+  var __byUri: Set<string>;
 }
 globalThis.__disk = [];
 globalThis.__dirExists = true;
+globalThis.__tmp = [];
+globalThis.__byUri = new Set();
 
 jest.mock("expo-file-system", () => {
   // `instanceof FileSystem.File` is how the sweep tells a file from a
   // directory, so the fakes must be real instances of the mocked class.
-  class MockFile {}
-  class MockDirectory {
+  class MockFile {
+    private readonly uri: string;
+    constructor(uri: string) {
+      this.uri = uri;
+    }
     get exists(): boolean {
-      return globalThis.__dirExists;
+      return globalThis.__byUri.has(this.uri);
+    }
+    delete(): void {
+      globalThis.__byUri.delete(this.uri);
+    }
+  }
+  class MockDirectory {
+    private readonly tmp: boolean;
+    constructor(...path: unknown[]) {
+      this.tmp = path[path.length - 1] === "tmp";
+    }
+    get exists(): boolean {
+      return this.tmp || globalThis.__dirExists;
     }
     list(): unknown[] {
-      return globalThis.__disk.filter((f) => !f.deleted);
+      return (this.tmp ? globalThis.__tmp : globalThis.__disk).filter(
+        (f) => !f.deleted,
+      );
     }
   }
   return {
     File: MockFile,
     Directory: MockDirectory,
-    Paths: { cache: "/cache" },
+    Paths: {
+      cache: { uri: "file:///app/Library/Caches/" },
+      document: { parentDirectory: "/app" },
+    },
   };
 });
 
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 import {
+  discardPickerCopy,
   MEDIA_MAX_AGE_MS,
   sweepExpiredAttachments,
   wipeCacheDirectory,
 } from "../file-transfer-service";
+
+function setPlatform(os: "ios" | "android"): void {
+  Object.defineProperty(Platform, "OS", { value: os, configurable: true });
+}
 
 const NOW = 1_800_000_000_000;
 const DAY = 24 * 60 * 60 * 1000;
@@ -96,9 +128,18 @@ function putDir(name: string, children: FakeFile[]): FakeFile {
   return dir;
 }
 
+// Moves a file made by put() or putDir() from the cache root into iOS tmp.
+function inTmp<T extends FakeFile>(entry: T): T {
+  globalThis.__disk = globalThis.__disk.filter((f) => f !== entry);
+  globalThis.__tmp.push(entry);
+  return entry;
+}
+
 beforeEach(() => {
   globalThis.__disk = [];
   globalThis.__dirExists = true;
+  globalThis.__tmp = [];
+  setPlatform("ios");
 });
 
 describe("sweepExpiredAttachments", () => {
@@ -205,9 +246,82 @@ describe("sweepExpiredAttachments", () => {
     sweepExpiredAttachments(NOW);
     expect(globalThis.__disk.every((f) => f.deleted)).toBe(true);
   });
+
+  // iOS leaves a recorded video's original and the system's copy of a picked
+  // document under tmp, where no prefix applies.
+  it("on iOS, ages out the pickers' leftovers in tmp and its Inbox", () => {
+    const capture = inTmp(put({ name: "capture.MOV", ageMs: 10 * DAY }));
+    const fresh = inTmp(put({ name: "recent.MOV", ageMs: 1 * DAY }));
+    const document = put({ name: "report.pdf", ageMs: 10 * DAY });
+    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
+    inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
+
+    sweepExpiredAttachments(NOW);
+
+    expect(capture.deleted).toBe(true);
+    expect(document.deleted).toBe(true);
+    expect(fresh.deleted).toBe(false);
+  });
+
+  // Other libraries keep work in flight under tmp; only the top level and the
+  // Inbox are the pickers'.
+  it("on iOS, never walks any other directory in tmp", () => {
+    const busy = put({ name: "upload.part", ageMs: 10 * DAY });
+    globalThis.__disk = globalThis.__disk.filter((f) => f !== busy);
+    const other = inTmp(putDir("com.somelib.uploads", [busy]));
+    sweepExpiredAttachments(NOW);
+    expect(busy.deleted).toBe(false);
+    expect(other.deleted).toBe(false);
+  });
+
+  it("leaves tmp alone on Android", () => {
+    setPlatform("android");
+    const stray = inTmp(put({ name: "capture.mp4", ageMs: 10 * DAY }));
+    sweepExpiredAttachments(NOW);
+    expect(stray.deleted).toBe(false);
+  });
+});
+
+describe("discardPickerCopy", () => {
+  it("deletes a picker's copy under the cache", () => {
+    const uri = "file:///app/Library/Caches/DocumentPicker/report.pdf";
+    globalThis.__byUri.add(uri);
+    discardPickerCopy(uri);
+    expect(globalThis.__byUri.has(uri)).toBe(false);
+  });
+
+  it("never deletes a file outside the cache", () => {
+    const uri = "file:///app/Documents/keep.pdf";
+    globalThis.__byUri.add(uri);
+    discardPickerCopy(uri);
+    expect(globalThis.__byUri.has(uri)).toBe(true);
+  });
 });
 
 describe("wipeCacheDirectory", () => {
+  // "Nothing survives" includes the copies iOS keeps outside the cache.
+  it("on iOS, empties tmp as well, fresh files included", async () => {
+    const capture = inTmp(put({ name: "capture.MOV" }));
+    const document = put({ name: "report.pdf" });
+    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
+    const inbox = inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
+
+    await wipeCacheDirectory();
+
+    expect([capture.deleted, document.deleted, inbox.deleted]).toEqual([
+      true,
+      true,
+      true,
+    ]);
+  });
+
+  it("leaves tmp alone on Android, where the pickers never use it", async () => {
+    setPlatform("android");
+    const stray = inTmp(put({ name: "other.bin" }));
+    await wipeCacheDirectory();
+    expect(stray.deleted).toBe(false);
+  });
+
   it("empties the whole directory, whatever a file is called", () => {
     // A wipe takes everything under the cache, prefixed or not: sent documents,
     // in-budget images and the saved QR card carry no prefix.
