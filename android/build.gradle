@@ -11,10 +11,12 @@ buildscript {
 }
 
 allprojects {
+  // Nothing resolves from JitPack, which builds artifacts from any GitHub
+  // repository on demand, so it is not searched. A future dependency that
+  // needs it gets a content filter naming its group, not the whole repository.
   repositories {
     google()
     mavenCentral()
-    maven { url 'https://www.jitpack.io' }
   }
 
   // Pin every resolved dependency, transitive ones included, to the
