@@ -40,6 +40,12 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: mod };
 });
 
+import { fragmentPacket } from "@core/mesh/routing/fragment-manager";
+import {
+  encodeBurstData,
+  encodeBurstStart,
+  VoiceCodec,
+} from "@core/mesh/voice/voice-capture";
 import {
   encodeFilePacket,
   MAX_SENT_IMAGE_BYTES,
@@ -52,6 +58,8 @@ import {
   signPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import { BitchatActor } from "../harness/bitchat-actor";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import {
@@ -80,6 +88,13 @@ function toBase64(bytes: Uint8Array): string {
     out += b2 === undefined ? "=" : B64[b2 & 0x3f];
   }
   return out;
+}
+
+function fromBase64(dataBase64: string): Uint8Array {
+  const bin = globalThis.atob(dataBase64);
+  const raw = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
+  return raw;
 }
 
 function peerIdToBytes(hex: string): Uint8Array {
@@ -482,6 +497,20 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   const captions = (): string[] =>
     [...bob.texts(channel), ...bob.texts(`dm:${alice.peerID}`)].filter(Boolean);
 
+  // What bob forwards under alice's name while alice herself sends nothing.
+  let relayedAsAlice = 0;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== bob.id) return;
+    const p = decodePacket(fromBase64(dataBase64));
+    if (
+      p !== null &&
+      (p.type === PacketType.FILE_TRANSFER || p.type === PacketType.FRAGMENT) &&
+      bytesToHex(p.senderID) === alice.peerID
+    ) {
+      relayedAsAlice++;
+    }
+  });
+
   // 1. Unsigned, claiming alice. This is the one that used to work: nothing on
   //    the attachment path looked at the signature at all.
   radio.injectTo(
@@ -571,6 +600,32 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
     `bob's rooms = [${bob.channels().join(", ")}]`,
   );
 
+  // 5. A public photo under alice's ID, signed by mallory, arriving whole as it
+  //    would over Wi-Fi or LAN. Relaying it would cut it into Bluetooth
+  //    fragments for every other neighbour.
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    forgeAttachment({
+      claimedPeerID: alice.peerID,
+      content: media.jpeg(2_000),
+      caption: "public, claiming alice",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(5_000);
+  stopTap();
+  s.check(
+    "no forged file under alice's name left bob, whole or in fragments",
+    relayedAsAlice === 0,
+    `${relayedAsAlice} written`,
+  );
+  s.check(
+    "nor was it rendered",
+    !captions().includes("public, claiming alice"),
+  );
+
   // The control: a real attachment from alice still arrives. A rule that
   // dropped everything would pass all four checks above and be worthless.
   alice.sendAttachment(`dm:${bob.peerID}`, media.jpeg(3_000), {
@@ -613,14 +668,19 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
     android("alice", 11),
     android("bob", 22),
     android("carol", 33),
+    android("dave", 44),
   ]);
-  const [alice, bob, carol] = devices;
+  const [alice, bob, carol, dave] = devices;
+  // Out of range while alice speaks, so nothing of her burst sits in his
+  // deduplicator when it is replayed at him.
+  radio.setIsolated(dave.id, true);
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
   await waitFor(s.world, () => carol.peers().includes(alice.peerID), 20_000);
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
   bob.listenTo(channel);
   carol.listenTo(channel);
+  dave.listenTo(channel);
 
   // Capture everything Alice puts on the air, exactly as an attacker with a
   // radio would. No keys, no session, no cooperation from anyone.
@@ -644,6 +704,33 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
   );
   s.check("frames were captured off the air", captured.length > 0);
 
+  // 45 s on: inside the two-minute ingress window every packet gets, past the
+  // 30 s a burst lives. Stale audio is not worth anyone's airtime either, so
+  // dave neither plays nor forwards it.
+  const spokenAt = s.world.wallClock();
+  radio.setIsolated(dave.id, false);
+  const daveHeard = await waitFor(
+    s.world,
+    () => dave.peers().includes(alice.peerID),
+    30_000,
+  );
+  s.check("dave came into range", daveHeard);
+  await s.world.advance(Math.max(0, spokenAt + 45_000 - s.world.wallClock()));
+  let daveRelayed = 0;
+  const unwatch = radio.tapWrites((fromID, _linkID, dataBase64) => {
+    if (fromID !== dave.id) return;
+    const p = decodePacket(fromBase64(dataBase64));
+    if (p?.type === PacketType.VOICE_FRAME) daveRelayed++;
+  });
+  for (const frame of captured) radio.injectTo(dave.id, alice.id, frame);
+  await s.world.advance(3_000);
+  unwatch();
+  s.check(
+    "a 45 s old burst is neither played nor relayed",
+    (dave.voice?.framesPlayed.length ?? 0) === 0 && daveRelayed === 0,
+    `played=${String(dave.voice?.framesPlayed.length)} relayed=${daveRelayed}`,
+  );
+
   // Well past the 30s window. Also past the deduplicator's five minutes, so
   // dedup cannot be what refuses the replay.
   await s.world.advance(10 * 60 * 1000);
@@ -654,6 +741,46 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
 
   s.check(
     "replaying alice's recorded burst plays nothing",
+    (bob.voice?.framesPlayed.length ?? 0) === bobBefore,
+    `before=${String(bobBefore)} after=${String(bob.voice?.framesPlayed.length)}`,
+  );
+
+  // A fresh burst under alice's ID signed by a stranger's key, padded past one
+  // frame so it arrives as fragments. Nobody fragments a real burst, and a
+  // reassembled packet is never relayed, so this is a way round the relay
+  // gate; it must meet the same check there.
+  const strangerKey = ed25519.utils.randomSecretKey();
+  const forgedBurst = randomBytes(8);
+  const forgeFrame = (payload: Uint8Array): void => {
+    const packet: Packet = {
+      type: PacketType.VOICE_FRAME,
+      ttl: 7,
+      flags: Flags.SIGNED,
+      senderID: peerIdToBytes(alice.peerID),
+      recipientID: new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload,
+    };
+    packet.signature = signPacket(packet, strangerKey);
+    for (const f of fragmentPacket(packet, { peerID: alice.peerID })) {
+      radio.injectTo(bob.id, carol.id, toBase64(encodePacket(f)));
+    }
+  };
+  const padded = randomBytes(600);
+  padded.set(encodeBurstStart(forgedBurst, VoiceCodec.AAC_LC_16KHZ_MONO));
+  forgeFrame(padded);
+  forgeFrame(
+    encodeBurstData(forgedBurst, 1, [
+      randomBytes(150),
+      randomBytes(150),
+      randomBytes(150),
+      randomBytes(150),
+    ]),
+  );
+  await s.world.advance(3_000);
+  s.check(
+    "a forged burst sent as fragments plays nothing",
     (bob.voice?.framesPlayed.length ?? 0) === bobBefore,
     `before=${String(bobBefore)} after=${String(bob.voice?.framesPlayed.length)}`,
   );
@@ -857,10 +984,7 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   const onAir: Packet[] = [];
   const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== alice.id) return;
-    const bin = globalThis.atob(dataBase64);
-    const raw = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
-    const p = decodePacket(raw);
+    const p = decodePacket(fromBase64(dataBase64));
     if (p !== null) onAir.push(p);
   });
 

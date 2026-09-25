@@ -208,7 +208,7 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { stopRingAlert } from "@platform/ring-alert";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { useBoardStore } from "@store/board-store";
+import { isLivePost, useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
 import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
@@ -1772,29 +1772,8 @@ export class MeshService {
       return;
     }
 
-    // LEAVE is verified BEFORE the relay, unlike every other type.
-    //
-    // Relaying first and checking later is the right default: a relay carries
-    // traffic for peers whose signing keys it has never seen, and demanding a
-    // key before forwarding would break multi-hop delivery for exactly the
-    // strangers the mesh exists to reach. LEAVE is the one exception. It is an
-    // eviction instruction rather than content, it costs nothing to forge for
-    // any peer ID in earshot, and forwarding one we have already decided to
-    // refuse spends the room's airtime and carries the attack onward to any
-    // node that checks less strictly than we do.
-    //
-    // Dropping the relay costs a legitimate LEAVE that reaches us from a peer
-    // we cannot verify. That is bounded: LEAVE rides ttl 3 while announces
-    // flood at ttl 7 every 15-30s once connected (4s while isolated) and on
-    // every link-up, so a peer close enough for their LEAVE to arrive is a peer
-    // whose announce almost certainly already did. Worst case their row lingers
-    // until it ages out, which is what happens for an ungraceful departure
-    // anyway.
-    if (packet.type === PacketType.LEAVE && !this.leaveIsAuthentic(packet)) {
-      return;
-    }
+    if (!this.mayRelay(packet)) return;
 
-    // All other packet types go through flood routing first.
     // Returns false if already seen: drop silently to prevent loops.
     const isNew = this.floodRouter.receive(packet, (relay) => {
       this.relayPacket(relay, linkID);
@@ -1808,6 +1787,41 @@ export class MeshService {
     if (packet.type !== PacketType.ANNOUNCE) this.gossip.track(packet);
 
     this.routePacket(packet, linkID);
+  }
+
+  // The checks a packet must pass before it is relayed, and so before dedup.
+  //
+  // Relaying first and checking in the handler is the default: a relay carries
+  // traffic for peers whose keys it has never seen, and demanding one before
+  // forwarding would break multi-hop delivery for exactly the strangers the
+  // mesh exists to reach. bitchat-ios makes four exceptions, handling these
+  // before it schedules a relay and relaying only what its handler accepted
+  // (BLEService.handleReceivedPacket): a file, a board post, a voice frame and
+  // a LEAVE. Each costs nothing to forge under any sender ID in earshot, and a
+  // forged one relayed spends the room's airtime carrying it to nodes that may
+  // check less; a whole file arriving over Wi-Fi or LAN would be cut into
+  // thousands of Bluetooth fragments. Checking before dedup also stops a forged
+  // copy arriving first from taking the packet ID, which leaves the signature
+  // out, and shadowing the genuine one.
+  //
+  // A packet failing here is dropped whole, since each check is also a
+  // precondition of its handler. The cost is a genuine one whose author's
+  // announce never reached us: it stops here, as at a bitchat-ios relay.
+  // Announces flood at ttl 7 every 15-30 s, so that author is rarely unknown
+  // for long.
+  private mayRelay(packet: Packet): boolean {
+    switch (packet.type) {
+      case PacketType.LEAVE:
+        return this.leaveIsAuthentic(packet);
+      case PacketType.FILE_TRANSFER:
+        return this.senderIsAuthentic(packet, bytesToHex(packet.senderID));
+      case PacketType.VOICE_FRAME:
+        return this.voiceFrameIsAuthentic(packet);
+      case PacketType.BOARD_POST:
+        return this.validBoardWire(packet) !== null;
+      default:
+        return true;
+    }
   }
 
   // A packet rebuilt from fragments, held to the rules handleFrame applies to
@@ -1840,6 +1854,9 @@ export class MeshService {
     ) {
       return;
     }
+    // Not relayed, but held to the same gate: each check in it is also a
+    // precondition of its handler, and onVoiceFrame relies on that.
+    if (!this.mayRelay(inner)) return;
     // The same packet may also arrive whole over another radio, or as a second
     // fragment stream from another relay.
     if (!this.floodRouter.admit(inner)) return;
@@ -1943,17 +1960,14 @@ export class MeshService {
 
   // ---- Live push-to-talk ----
 
-  // A burst packet from a nearby talker. Signed like any public message, so an
-  // unsigned or forged frame is dropped before a decoder ever sees it: the
-  // audio path is the last place to be lenient about who sent something.
+  // A burst packet from a nearby talker. Authenticated and dated before it
+  // got here (mayRelay, on both the whole and the reassembled path), so only
+  // this user's own gates remain. Those must not decide the relay: carrying a
+  // burst for others does not depend on what this user is looking at.
   //
   // Blocked senders never reach here (filtered in the dispatch above), and a
-  // device with no audio module simply never builds a player, so a burst it
-  // cannot play costs it one signature check and nothing else.
+  // device with no audio module simply never builds a player.
   private onVoiceFrame(packet: Packet): void {
-    const senderID = bytesToHex(packet.senderID);
-    if (senderID === this.identity.peerID) return;
-
     // Off means off in both directions: no live sending, and nothing plays
     // unprompted either. Someone who turned live voice off should not have a
     // stranger's audio come out of their phone.
@@ -1965,30 +1979,38 @@ export class MeshService {
     // note, which is what carries it to anyone who was not watching.
     if (this.audibleChannel !== BRIDGE_CHANNEL) return;
 
-    // Live means live. A signature proves who spoke, never when: the signing
-    // preimage normalises ttl and isRSR, so a burst captured off the air
-    // replays byte-for-byte and verifies perfectly. The deduplicator is not a
-    // defence here - its window is five minutes and its state is per device, so
-    // it does nothing at all for a phone that never heard the original. Without
-    // this, someone could record Alice in one room and play her voice out of
-    // strangers' phones days later, attributed to her and presented as live.
-    //
-    // 30s matches bitchat's TransportConfig.pttPublicFrameMaxAgeSeconds, and
-    // the broadcast requirement matches BLEPacketFreshnessPolicy
-    // .isBroadcastRecipient; BLEService.handleVoiceFrame applies both before it
-    // even checks the signature. Generous next to the couple of seconds a frame
-    // needs to cross the mesh, and tight enough that a burst cannot outlive the
-    // moment it was spoken.
-    if (!isBroadcast(packet)) return;
-    if (Math.abs(Date.now() - packet.timestamp) > PTT_FRAME_MAX_AGE_MS) return;
-
-    const signingKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingKey === undefined || !verifyPacket(packet, signingKey)) return;
-
     const player = this.ensurePttPlayer();
     if (player === null) return;
-    player.handlePacket(packet, senderID);
+    player.handlePacket(packet, bytesToHex(packet.senderID));
     this.reportPttActivity();
+  }
+
+  // Whether a burst packet is live and really from the talker it names. Signed
+  // like any public message, so an unsigned or forged frame never reaches a
+  // decoder: the audio path is the last place to be lenient about who sent
+  // something.
+  //
+  // Live means live. A signature proves who spoke, never when: the signing
+  // preimage normalises ttl and isRSR, so a burst captured off the air replays
+  // byte-for-byte and verifies perfectly. The deduplicator is no defence: its
+  // window is five minutes and its state is per device, so it does nothing for
+  // a phone that never heard the original. Without this, someone could record
+  // Alice in one room and play her voice out of strangers' phones days later,
+  // attributed to her and presented as live.
+  //
+  // 30 s is bitchat-ios TransportConfig.pttPublicFrameMaxAgeSeconds, and the
+  // broadcast and not-self rules are its BLEService.handleVoiceFrame's, all
+  // applied before the signature. Generous next to the couple of seconds a
+  // frame needs to cross the mesh, and tight enough that a burst cannot
+  // outlive the moment it was spoken.
+  private voiceFrameIsAuthentic(packet: Packet): boolean {
+    const senderID = bytesToHex(packet.senderID);
+    if (senderID === this.identity.peerID) return false;
+    if (!isBroadcast(packet)) return false;
+    if (Math.abs(Date.now() - packet.timestamp) > PTT_FRAME_MAX_AGE_MS) {
+      return false;
+    }
+    return this.senderIsAuthentic(packet, senderID);
   }
 
   private ensurePttPlayer(): VoicePlayer | null {
@@ -4686,13 +4708,11 @@ export class MeshService {
     return this.identity.signingPubKey;
   }
 
-  // Ingest an incoming board post or tombstone. Flood relay already happened in
-  // handleRaw, so here we verify the wire signature (the real author check,
-  // since a relayed post's author is not a known peer) and hand it to the store,
-  // which owns quota, expiry and de-duplication.
+  // Ingest an incoming board post or tombstone. The store owns quota, expiry
+  // and de-duplication.
   private onBoardPost(packet: Packet): void {
-    const wire = decodeBoardWire(packet.payload);
-    if (wire === null || !verifyBoardWire(wire)) return;
+    const wire = this.validBoardWire(packet);
+    if (wire === null) return;
     const result = useBoardStore.getState().ingest(wire);
     // Surface a genuinely new post from someone else on the notification bell
     // (and, via the bell, the room's board-icon badge). "accepted" means it was
@@ -4700,6 +4720,17 @@ export class MeshService {
     if (wire.kind === "post" && result === "accepted") {
       this.recordNoticeActivity(wire.post);
     }
+  }
+
+  // A board payload worth carrying: it decodes, its embedded author signature
+  // verifies (the real author check, since a post outlives its author's
+  // announces), and a post is still live. bitchat-ios relays nothing its board
+  // store rejects.
+  private validBoardWire(packet: Packet): BoardWire | null {
+    const wire = decodeBoardWire(packet.payload);
+    if (wire === null || !verifyBoardWire(wire)) return null;
+    if (wire.kind === "post" && !isLivePost(wire.post, Date.now())) return null;
+    return wire;
   }
 
   // The channel a notice belongs to, for a tap on its bell row. The mesh board
