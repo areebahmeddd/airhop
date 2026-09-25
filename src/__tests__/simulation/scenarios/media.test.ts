@@ -1083,3 +1083,87 @@ test("M11 a bitchat-android voice burst reaches an Airhop speaker", async () => 
   s.expectNone("process health", noCrashes([bob]));
   s.assert(true);
 });
+
+test("M13 past 100 MiB of received media, the oldest file goes and the newest plays", async () => {
+  // bitchat-ios keeps received media under a 100 MiB quota, oldest first. The
+  // disk is filled directly rather than over a radio: it is the eviction that
+  // is under test, not a hundred megabytes of Bluetooth.
+  const s = (scenario = new Scenario({
+    id: "M13",
+    title: "received media is capped, and the oldest is what makes room",
+    seed: 1313,
+  }));
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID), 20_000);
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+
+  const first = media.jpeg(40_000);
+  alice.sendAttachment(channel, first, {
+    type: "image",
+    name: "first.jpg",
+    mimeType: "image/jpeg",
+  });
+  await waitFor(s.world, () => bob.attachments(channel).length === 1, 60_000);
+
+  // Everything received since, up to 20 KB short of room for the next photo.
+  // One buffer shared by every entry, so the test holds a megabyte, not a
+  // hundred.
+  const MiB = 1024 * 1024;
+  const second = media.jpeg(40_000);
+  const filler = new Uint8Array(MiB);
+  const room100 = 100 * MiB - first.length - second.length + 20_000;
+  const whole = Math.floor(room100 / MiB);
+  for (let i = 0; i < whole; i++) {
+    bob.seedCacheFile(`airhop_in_${String(i)}_filler.jpg`, filler);
+  }
+  bob.seedCacheFile(
+    "airhop_in_rest_filler.jpg",
+    new Uint8Array(room100 - whole * MiB),
+  );
+
+  alice.sendAttachment(channel, second, {
+    type: "image",
+    name: "second.jpg",
+    mimeType: "image/jpeg",
+  });
+  const arrived = await waitFor(
+    s.world,
+    () => bob.attachments(channel).length === 2,
+    60_000,
+  );
+  s.check("the newest photo arrived", arrived);
+
+  const [oldest, newest] = bob.attachments(channel);
+  const oldBytes = oldest?.attachment?.uri
+    ? bob.readAttachment(oldest.attachment.uri)
+    : null;
+  const newBytes = newest?.attachment?.uri
+    ? bob.readAttachment(newest.attachment.uri)
+    : null;
+  s.check(
+    "the oldest received file made room, so its bubble reads as not on this device",
+    oldBytes === null,
+    `oldest still holds ${String(oldBytes?.length)} bytes`,
+  );
+  s.check(
+    "the newest plays, byte for byte",
+    newBytes !== null && sameBytes(newBytes, second),
+  );
+  const received = bob
+    .files()
+    .filter((f) => f.uri.startsWith("file:///cache/airhop_in_"))
+    .reduce((sum, f) => sum + f.bytes.length, 0);
+  s.check(
+    "what bob keeps of others' media fits the quota",
+    received <= 100 * MiB,
+    `${String(received)} bytes kept`,
+  );
+  s.check(
+    "only as much as needed was evicted",
+    bob.files().some((f) => f.uri.endsWith("airhop_in_0_filler.jpg")),
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

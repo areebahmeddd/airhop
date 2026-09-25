@@ -633,7 +633,7 @@ export const strings = {
   "chat.media.gone_video": "Video not on this device",
   "chat.media.gone_voice": "Voice note not on this device",
   "chat.media.gone_file": "File not on this device",
-  "chat.media.gone_note": "Removed after 7 days or when the cache was cleared",
+  "chat.media.gone_note": "No longer stored on this device",
   "chat.media.ask_resend": "Ask again",
   "chat.media.resend_draft": "Could you send that {kind} again?",
   "chat.media.kind_photo": "photo",

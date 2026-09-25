@@ -1027,6 +1027,12 @@ export class SimDevice {
     return this.inner.fs?.__disk.get(uri)?.bytes ?? null;
   }
 
+  // Put a file straight into this phone's cache, as if it arrived earlier, so
+  // a scenario can fill the disk without sending every byte over a radio.
+  seedCacheFile(name: string, bytes: Uint8Array): void {
+    this.inner.fs?.__disk.set(`file:///cache/${name}`, { bytes });
+  }
+
   attachments(channel: string): SeenMessage[] {
     return this.messages(channel).filter((m) => m.attachment !== undefined);
   }

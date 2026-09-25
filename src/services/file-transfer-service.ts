@@ -129,6 +129,49 @@ export interface AttachmentMeta {
 // must. See wipeCacheDirectory.
 export const CACHE_FILE_PREFIX = "airhop_";
 
+// Received files, apart from sent ones, so the quota below counts only what
+// others put on this phone. Under CACHE_FILE_PREFIX, so the sweeps, Storage and
+// Clear treat them like any other attachment.
+export const INCOMING_FILE_PREFIX = `${CACHE_FILE_PREFIX}in_`;
+
+// The most received media kept on disk, bitchat-ios's defaultQuotaBytes
+// (BLEIncomingFileStore). Retention is the age bound and this the size bound;
+// whichever is reached first wins. Without it anyone who announces once could
+// fill the phone's storage, a 1 MiB file at a time.
+export const INCOMING_QUOTA_BYTES = 100 * 1024 * 1024;
+
+// Make room for a received file of `reservingBytes` by deleting the oldest
+// received files first, as bitchat-ios does before every save. Sent files are
+// never touched: the person chose to keep those. A file that is evicted shows
+// as no longer on this device, the same as one retention removed.
+export function enforceIncomingQuota(reservingBytes: number): void {
+  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
+  if (!dir.exists) return;
+  const received = dir
+    .list()
+    .filter(
+      (entry): entry is FileSystem.File =>
+        entry instanceof FileSystem.File &&
+        entry.name.startsWith(INCOMING_FILE_PREFIX),
+    );
+  let used = received.reduce((sum, file) => sum + file.size, 0);
+  if (used + reservingBytes <= INCOMING_QUOTA_BYTES) return;
+  // An unreadable age sorts first: it can only be older than one we can read.
+  const writtenAt = (file: FileSystem.File): number =>
+    file.lastModified ?? file.creationTime ?? 0;
+  received.sort((a, b) => writtenAt(a) - writtenAt(b));
+  for (const file of received) {
+    if (used + reservingBytes <= INCOMING_QUOTA_BYTES) return;
+    const size = file.size;
+    try {
+      file.delete();
+      used -= size;
+    } catch {
+      // Open elsewhere, or already gone. The next one goes instead.
+    }
+  }
+}
+
 // Distinguishes two files adopted inside the same millisecond.
 let adoptSeq = 0;
 
@@ -1018,6 +1061,11 @@ export class FileTransferService {
     const channel =
       fp.channel ??
       (isBroadcast(packet) ? BRIDGE_CHANNEL : `dm:${senderPeerID}`);
+    const isDM = channel.startsWith("dm:");
+    // An untagged broadcast lands in the public room, and someone who left it
+    // stays out: a stranger's photo must not put it back in their list.
+    // Silent, as for text: it is not the sender's failure.
+    if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
     const type = typeFromMime(fp.mimeType);
 
     // Repair the extension from the MIME before writing: the photo library and
@@ -1029,12 +1077,19 @@ export class FileTransferService {
     );
     const file = new FileSystem.File(
       FileSystem.Paths.cache,
-      `${CACHE_FILE_PREFIX}${String(Date.now())}_${safeName}`,
+      `${INCOMING_FILE_PREFIX}${String(Date.now())}_${safeName}`,
     );
     try {
+      enforceIncomingQuota(fp.content.length);
       file.create({ overwrite: true, intermediates: true });
       file.write(fp.content);
     } catch {
+      // Half a file would count toward Storage until the age sweep.
+      try {
+        file.delete();
+      } catch {
+        // Never created.
+      }
       // Decoded and validated, then the disk refused it. Worth saying out loud:
       // unlike the checks above, this one is the receiver's problem to fix
       // (free space, permissions) rather than the sender's to resend around.
@@ -1042,7 +1097,9 @@ export class FileTransferService {
       return;
     }
 
-    useChatStore.getState().addChannel(channel);
+    // A first attachment from someone opens the conversation, as a first DM
+    // does. A room is never created here: only joined ones get this far.
+    if (isDM) useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       id: `ft-${senderPeerID}-${Date.now()}`,
       channel,
