@@ -91,6 +91,17 @@ final class AirhopTorModule: RCTEventEmitter {
     }
   }
 
+  /// A no-op here. Android holds its HTTP stack on a dead proxy; on iOS only
+  /// the Nostr WebSocket is proxied, and it is held in JS, while the wallet and
+  /// the update check already refuse while Tor is on.
+  @objc
+  func holdRoute(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(nil)
+  }
+
   /// iOS suspends the process in the background, so circuits and guard
   /// connections do not survive a long spell there. Both edges are needed: the
   /// background one sleeps Arti, the foreground one wakes it. No-ops when Tor

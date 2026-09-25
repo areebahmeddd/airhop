@@ -89,15 +89,18 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
     // Resolves once startup has been initiated, not once Tor is usable; use
     // awaitTorReady for that.
     //
-    // The proxy is pointed at Tor before the client is built. A request made in
-    // that window fails because nothing is listening yet, which is the point:
+    // Traffic is held before the client is built and routed to the port only
+    // once Arti has bound it. A request in between fails, which is the point:
     // the alternative is traffic going out in the clear after the user asked
-    // for Tor.
+    // for Tor. Routing before the bind would hand that window, or a whole
+    // session after a failed start, to whatever else holds the port.
     @ReactMethod
     fun startTor(bridgeLines: String, promise: Promise) {
-        AirhopTorProxy.route(SOCKS_PORT)
+        AirhopTorProxy.hold()
         val epoch = attemptEpoch.incrementAndGet()
         worker.execute {
+            // Again, in case a stop queued ahead of this routed direct.
+            AirhopTorProxy.hold()
             val dir = dataDir()
             dir.mkdirs()
 
@@ -132,11 +135,15 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                 // library is missing for this ABI, or the state directory is
                 // unwritable. Resolving would send JS into its 60-second
                 // readiness wait to learn what this line already knows, and the
-                // user would watch a spinner for a minute. The error path
-                // instead unwinds and puts traffic back on a direct route.
+                // user would watch a spinner for a minute.
+                //
+                // Traffic stays held: a toggle unwinds through stopTor, and a
+                // start at launch stays failed closed, even when another app
+                // holds the port.
                 promise.reject("tor_start_failed", "arti start failed (rc=$rc)")
                 return@execute
             }
+            AirhopTorProxy.route(SOCKS_PORT)
             startPolling(epoch)
             promise.resolve(null)
         }
@@ -148,10 +155,12 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         attemptEpoch.incrementAndGet()
         stopPolling()
         worker.execute {
+            // Held while the client winds down, then direct: never routed to a
+            // port nobody owns, and never direct while something might still
+            // believe it is covered.
+            AirhopTorProxy.hold()
             ArtiNative.stop()
             AirhopIPtProxy.stop()
-            // Ordered after the stop, so there is no instant in which the proxy
-            // is gone while something might still believe it is covered.
             AirhopTorProxy.route(null)
             emitStatus()
             promise.resolve(null)
@@ -169,6 +178,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         attemptEpoch.incrementAndGet()
         stopPolling()
         worker.execute {
+            AirhopTorProxy.hold()
             ArtiNative.stop()
             AirhopIPtProxy.wipeState(reactContext)
             AirhopTorProxy.route(null)
@@ -178,6 +188,16 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
             emitStatus()
             promise.resolve(null)
         }
+    }
+
+    // Hold traffic without starting anything: for a launch after a start that
+    // never answered, where starting again could replay the crash and going
+    // direct would put a Tor user on the clear net. A later start or stop
+    // moves it on.
+    @ReactMethod
+    fun holdRoute(promise: Promise) {
+        AirhopTorProxy.hold()
+        promise.resolve(null)
     }
 
     // Dormancy, not a stop. The foreground service keeps the process
