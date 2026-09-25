@@ -2249,6 +2249,8 @@ export const strings = {
   "settings.version.notes_a11y": "View release notes for version {version}",
   "settings.version.tor_paused":
     "Update check is paused while Tor is on, so it cannot leak your IP. Check the releases page in a browser.",
+  "settings.version.internet_off":
+    "Updates are paused while the internet is off. Turn on {setting} in Settings.",
   "settings.version.check_failed":
     "Could not check for updates. Check your connection and try again.",
   "settings.version.downloading": "Downloading {percent}%",

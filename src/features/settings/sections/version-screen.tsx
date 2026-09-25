@@ -25,7 +25,7 @@ import { birdForVersion } from "@data/releases";
 import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
-import { useSettingsStore } from "@store/settings-store";
+import { internetOff, torClaimed } from "@services/network-gate";
 import PrimaryButton from "@ui/components/primary-button";
 import {
   FontSize,
@@ -83,6 +83,7 @@ type CheckState =
   | { status: "latest" }
   | { status: "update"; version: string; url: string; apkUrl: string | null }
   | { status: "tor-blocked" }
+  | { status: "internet-off" }
   | { status: "error" };
 
 // Where the downloaded APK is in its life. Separate from CheckState because a
@@ -92,7 +93,22 @@ type DownloadState =
   | { status: "idle" }
   | { status: "downloading"; percent: number }
   | { status: "ready"; uri: string }
+  | { status: "internet-off" }
   | { status: "failed" };
+
+// Why the check or the download may not go out right now, or null when it may.
+//
+// Internet off is "Bluetooth only" on both platforms, and a request to GitHub
+// would break that promise. Tor refuses on iOS only: there Tor carries the
+// Nostr socket and nothing else, so the request would carry the device's IP
+// whether or not a circuit is up. Android installs the proxy under every HTTP
+// client, so the check and the download are inside the tunnel or failing
+// closed, exactly like a relay socket.
+export function updateNetworkBlock(): "internet-off" | "tor" | null {
+  if (internetOff()) return "internet-off";
+  if (Platform.OS === "ios" && torClaimed()) return "tor";
+  return null;
+}
 
 // Compares two dotted version strings numerically. Returns a positive number
 // if a is newer than b, negative if older, zero if equal. Missing or
@@ -127,6 +143,13 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   // Progress is read from the transfer, never eased, because a bar moving on
   // its own over a download this size lies the moment the connection stalls.
   async function downloadAndInstall(apkUrl: string): Promise<void> {
+    // The check that found the update may have run before the internet went
+    // off. The update is kept, so the same button fetches it once it is back.
+    // Android only, so the Tor half of the gate does not apply.
+    if (internetOff()) {
+      setDownload({ status: "internet-off" });
+      return;
+    }
     setDownload({ status: "downloading", percent: 0 });
     try {
       const target = new File(Paths.cache, APK_ASSET_NAME);
@@ -276,20 +299,11 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   }
 
   async function checkForUpdates() {
-    // A plain fetch that Tor is not carrying reveals the real IP while the
-    // switch reads on, so it is skipped rather than leaked - the same
-    // fail-closed choice, and predicate, as the wallet mint gate. (The relay
-    // directory is vendored and avoids the question.)
-    //
-    // iOS only, because only there is a fetch outside the tunnel: Tor covers
-    // nostr-tools WebSockets and nothing else, so this request would carry the
-    // device's IP to GitHub whether or not a circuit is up.
-    //
-    // Android needs no refusal. The proxy is installed into the HTTP client
-    // this fetch is built from, so the check is either inside the tunnel or
-    // failing closed, exactly like a relay socket.
-    if (Platform.OS === "ios" && useSettingsStore.getState().torEnabled) {
-      setCheck({ status: "tor-blocked" });
+    // Skipped rather than leaked: the same fail-closed choice as the wallet's
+    // mint gate. (The relay directory is vendored and avoids the question.)
+    const block = updateNetworkBlock();
+    if (block !== null) {
+      setCheck({ status: block === "tor" ? "tor-blocked" : "internet-off" });
       return;
     }
     setCheck({ status: "checking" });
@@ -444,11 +458,16 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
               />
             </View>
           ) : null}
-          {download.status === "failed" ? (
+          {download.status === "failed" ||
+          download.status === "internet-off" ? (
             <View style={styles.result}>
               <Feather name="wifi-off" size={16} color={Colors.textMuted} />
               <Text style={styles.resultText}>
-                {T("settings.version.download_failed")}
+                {download.status === "failed"
+                  ? T("settings.version.download_failed")
+                  : T("settings.version.internet_off", {
+                      setting: T("settings.network.internet"),
+                    })}
               </Text>
             </View>
           ) : (
@@ -541,6 +560,19 @@ function UpdateResult({
         <Feather name="shield" size={16} color={Colors.textMuted} />
         <Text style={styles.resultText}>
           {t("settings.version.tor_paused")}
+        </Text>
+      </View>
+    );
+  }
+
+  if (check.status === "internet-off") {
+    return (
+      <View style={styles.result}>
+        <Feather name="wifi-off" size={16} color={Colors.textMuted} />
+        <Text style={styles.resultText}>
+          {t("settings.version.internet_off", {
+            setting: t("settings.network.internet"),
+          })}
         </Text>
       </View>
     );

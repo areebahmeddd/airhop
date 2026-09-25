@@ -10,9 +10,11 @@
 // the UI simply omits it. A successful lookup is cached (a geohash cell maps to
 // the same place forever), so we never geocode the same cell twice. Raw
 // coordinates never leave the device: only the cell's centre is geocoded, and it
-// is derived from the geohash the app already knows.
+// is derived from the geohash the app already knows. Even that is not asked for
+// while the internet is off or Tor is on (see resolve).
 
 import { decodeGeohash } from "@core/nostr/geohash-presence";
+import { internetOff, torClaimed } from "@services/network-gate";
 import * as Location from "expo-location";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -122,6 +124,11 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
         if (geohash.length === 0) return;
         const key = placeNameKey(geohash);
         if (get().names[key] !== undefined || inFlight.has(key)) return;
+        // The geocoder is a system service (Play services, Apple's daemons), so
+        // neither the internet switch nor the Tor proxy reaches it: the cell's
+        // centre would go out from this device's own address. Nothing is
+        // marked in flight, so a later call looks the cell up once allowed.
+        if (internetOff() || torClaimed()) return;
         inFlight.add(key);
         const started = generation;
         void (async () => {
