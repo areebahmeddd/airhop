@@ -10,6 +10,7 @@
 // `locales/types.ts`.
 
 import { useSettingsStore } from "@store/settings-store";
+import { stripInvisibles } from "@utils/strip-invisibles";
 import { useSyncExternalStore } from "react";
 import { I18nManager } from "react-native";
 import {
@@ -299,12 +300,15 @@ export function stripIsolates(text: string): string {
   return text.replace(/[\u2068\u2069]/g, "");
 }
 
+// A value's own bidi controls are stripped first: an isolate or override inside
+// it can only fight the isolate around it, and a pop would close it early and
+// let an override reorder the rest of the sentence.
 function interpolate(template: string, vars?: TranslationVars): string {
   if (vars === undefined) return template;
   return template.replace(PLACEHOLDER, (match, name: string) => {
     const value = vars[name];
     if (value === undefined) return match;
-    return `${ISOLATE_FIRST}${String(value)}${ISOLATE_POP}`;
+    return `${ISOLATE_FIRST}${stripInvisibles(String(value))}${ISOLATE_POP}`;
   });
 }
 

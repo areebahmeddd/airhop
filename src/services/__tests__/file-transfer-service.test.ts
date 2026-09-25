@@ -713,6 +713,23 @@ describe("receiving a file", () => {
     expect(useChatStore.getState().messages["#bluetooth"]).toHaveLength(1);
   });
 
+  // The shown name is the sender's word; nothing in it may disguise what it is.
+  it("stores a received name without its bidi controls, under the validated type", async () => {
+    const tlv = encodeFilePacket({
+      fileName: "invoice\u202Efdp.exe",
+      mimeType: "IMAGE/JPEG",
+      content: JPEG,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(tlv));
+    await settle();
+    const [message] = useChatStore.getState().messages["#bluetooth"] ?? [];
+    expect(message?.attachment?.name).toBe("invoicefdp.exe");
+    expect(message?.attachment?.mimeType).toBe("image/jpeg");
+    // On disk it is what its bytes are, whatever the sender called it.
+    expect([...globalThis.__cache.keys()][0]?.endsWith(".jpg")).toBe(true);
+  });
   it("does not put back a public room the person left, nor keep the file", async () => {
     useChatStore.getState().removeChannel("#bluetooth");
     expect(useChatStore.getState().channels).not.toContain("#bluetooth");

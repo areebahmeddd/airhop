@@ -20,10 +20,10 @@ import { originTtl } from "@core/mesh/routing/origin-ttl";
 import {
   decodeFilePacket,
   encodeFilePacket,
-  ensureFileExtension,
   isAllowedMime,
   maxBytesForType,
   mimeMatchesMagic,
+  receivedFileName,
   resolveMimeType,
   typeFromMime,
   wireFileName,
@@ -49,6 +49,7 @@ import {
 } from "@utils/attachment-failure";
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
 import { systemRow } from "@utils/message-text";
+import { stripInvisibles } from "@utils/strip-invisibles";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
 
@@ -1068,12 +1069,15 @@ export class FileTransferService {
     if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
     const type = typeFromMime(fp.mimeType);
 
-    // Repair the extension from the MIME before writing: the photo library and
-    // the audio player read the type off it and ignore the MIME. Truncate
-    // first, so a long name loses its middle rather than its extension.
-    const safeName = ensureFileExtension(
+    // Validated above, so this is what the share sheet and the player are told.
+    const mimeType = fp.mimeType?.trim().toLowerCase();
+    // The extension follows the validated MIME before writing: the photo
+    // library and the audio player read the type off it and ignore the MIME.
+    // Truncate first, so a long name loses its middle rather than its
+    // extension.
+    const safeName = receivedFileName(
       (fp.fileName || "file").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 64),
-      fp.mimeType ?? "",
+      mimeType ?? "",
     );
     const file = new FileSystem.File(
       FileSystem.Paths.cache,
@@ -1113,8 +1117,13 @@ export class FileTransferService {
       attachment: {
         type,
         uri: file.uri,
-        name: fp.fileName ?? undefined,
-        mimeType: fp.mimeType ?? undefined,
+        // Shown in the bubble, the notification and the share sheet's title,
+        // where an override could disguise the extension.
+        name:
+          fp.fileName !== undefined
+            ? stripInvisibles(fp.fileName, { singleLine: true })
+            : undefined,
+        mimeType,
         durationMs: fp.durationMs ?? undefined,
         sizeBytes: fp.content.length,
       },
