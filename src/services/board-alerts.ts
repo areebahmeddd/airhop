@@ -23,12 +23,23 @@ export interface UrgentNotice {
 const COLLAPSE_MS = 4_000;
 const CONTENT_MAX_CHARS = 120;
 
+// The post IDs are relay and mesh data, so the set is bounded, at the same size
+// as bridge-service's ID sets. Evicting the oldest re-announces a post only if
+// it is replayed after 2,000 newer ones and is still inside the ingest recency
+// window, and then the cost is one repeated line.
+const MAX_HANDLED = 2_000;
+
 const handled = new Set<string>();
 const pending = new Map<string, UrgentNotice[]>();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function noteUrgentNotice(notice: UrgentNotice): void {
   if (handled.has(notice.postID)) return;
+  if (handled.size >= MAX_HANDLED) {
+    // Sets iterate in insertion order.
+    const oldest = handled.values().next().value;
+    if (oldest !== undefined) handled.delete(oldest);
+  }
   handled.add(notice.postID);
   const list = pending.get(notice.channel) ?? [];
   list.push(notice);
