@@ -48,6 +48,7 @@ import {
 } from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
+import { useBlockedStore } from "@store/blocked-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import {
   useChatStore,
@@ -1625,14 +1626,18 @@ export default function MessageThread({
 
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
-  // A DM has only one other person, so mentions there add nothing.
+  // A DM has only one other person, so mentions there add nothing. Nearby peers
+  // and participants already exclude blocked people; a roster does not.
   const mentionCandidates = useMemo<{ id: string; nickname: string }[]>(() => {
     if (channel.startsWith("dm:")) return [];
     if (channel.startsWith("group:")) {
       const members =
         useGroupStore.getState().get(channel.slice("group:".length))?.members ??
         [];
-      return members.map((m) => ({ id: m.fingerprint, nickname: m.nickname }));
+      const blocked = useBlockedStore.getState();
+      return members
+        .filter((m) => !blocked.isBlocked(m.fingerprint.slice(0, 16)))
+        .map((m) => ({ id: m.fingerprint, nickname: m.nickname }));
     }
     if (isGeo) {
       return geoMembers.map((m) => ({ id: m.pubkey, nickname: m.nickname }));
