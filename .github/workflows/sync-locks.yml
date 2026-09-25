@@ -1,7 +1,10 @@
 name: Sync Native Lockfiles
 
 on:
+  # Not main, which takes lockfiles only through a pull request whose CI fails
+  # on a stale one. Naming branches alone also keeps tag pushes out.
   push:
+    branches-ignore: [main]
     paths:
       - package.json
       - package-lock.json
@@ -96,6 +99,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs: [gradle, pods]
+    # A manual run on main still regenerates, leaving the lockfiles as this
+    # run's artifacts, but never pushes there.
+    if: github.ref != 'refs/heads/main'
     permissions:
       contents: write
       actions: write

@@ -11,10 +11,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The commit job pushes to the branch this runs on. main takes rebuilt
+  # binaries only through a pull request, and a tag cannot take a commit.
+  branch:
+    name: Check the target branch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Refuse main and tags
+        if: github.ref_type != 'branch' || github.ref == 'refs/heads/main'
+        run: |
+          echo "::error::Run this on a feature branch. It commits the rebuilt libraries to the branch it runs on."
+          exit 1
+
   android:
     name: Build Android libraries
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    needs: branch
 
     steps:
       - name: Checkout repository
@@ -48,6 +63,7 @@ jobs:
     name: Build Apple libraries
     runs-on: macos-26
     timeout-minutes: 120
+    needs: branch
 
     steps:
       - name: Checkout repository
@@ -124,6 +140,7 @@ jobs:
     needs: [android, apple]
     permissions:
       contents: write
+      actions: write
 
     steps:
       - name: Checkout repository
@@ -202,8 +219,12 @@ jobs:
           git config http.postBuffer 524288000
           git push origin "HEAD:$TARGET_REF"
 
+          # A token push starts no CI, so the branch's checks would predate the
+          # binaries it now carries. A dispatch is exempt.
+          gh workflow run ci.yml --ref "$TARGET_REF"
+
           {
-            echo "### Committed to \`$TARGET_REF\`"
+            echo "### Committed to \`$TARGET_REF\` and dispatched CI"
             echo
             echo '```'
             find android/app/src/main/jniLibs -name '*.so' -exec ls -lh {} \; | awk '{ print $5, $9 }'
