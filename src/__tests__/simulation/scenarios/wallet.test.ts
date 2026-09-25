@@ -190,9 +190,7 @@ test("W02 ecash moves device to device with the radio off", async () => {
   // the wallet had to reserve to cover 120. Asserting on 120 would be asserting
   // that change exists offline, which is the one thing Cashu cannot do.
   const handedOver = alice.reservedBalance();
-  const received = await bob.receiveToken(prepared ?? "", {
-    preferOffline: true,
-  });
+  const received = await bob.receiveToken(prepared ?? "");
   s.check("bob could claim the token with no internet", received);
   s.check(
     "and it is held as UNVERIFIED, not presented as confirmed money",
@@ -205,6 +203,9 @@ test("W02 ecash moves device to device with the radio off", async () => {
   // still hers.
   mint.setConditions({ offline: false });
   alice.confirmLastSend();
+  // As a pull-to-refresh does: the receive staged a swap before the dead zone
+  // cut it off, and only its replay may settle those coins.
+  await bob.reconcile();
   await bob.refreshWallet();
   s.check(
     "once online the mint confirms it and it becomes spendable",
@@ -1084,9 +1085,7 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
   // The dead zone. Everything from here is decided on this phone alone.
   mint.setConditions({ offline: true });
 
-  const accepted = await bob.receiveTokenResult(genuine, {
-    preferOffline: true,
-  });
+  const accepted = await bob.receiveTokenResult(genuine);
   s.check(
     "a genuinely signed token is accepted with no mint reachable",
     accepted !== null && accepted.outcome === "stored",
@@ -1114,7 +1113,7 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
   s.check("the forgery still looks like a token", forged !== second);
 
   const before = bob.totalHeld();
-  const refused = await bob.receiveTokenResult(forged, { preferOffline: true });
+  const refused = await bob.receiveTokenResult(forged);
   s.check(
     "a tampered token is refused rather than credited",
     refused === null,
@@ -1126,6 +1125,66 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
     `held ${bob.totalHeld()}, was ${before}`,
   );
 
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W25 a token cannot relabel sats as dollars", async () => {
+  // The unit label is the sender's to write. Believed, 150 sats would show as
+  // $1.50 and be filed in a dollar account no swap could ever settle. The
+  // mint's keysets say which currency the coins are, offline, from the cache.
+  const s = (scenario = new Scenario({
+    id: "W25",
+    title: "a token whose label contradicts its keysets is refused",
+    seed: 125,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await alice.walletReady();
+  await bob.walletReady();
+  await alice.addMint(mint.url);
+  await bob.addMint(mint.url);
+  await alice.depositSats(500);
+
+  const genuine = await alice.prepareSend(128);
+  s.check("alice built a token", genuine !== null);
+  if (genuine === null) {
+    s.assert(false);
+    return;
+  }
+  const decoded = getDecodedToken(genuine, []);
+  const relabelled = getEncodedToken({ ...decoded, unit: "usd" });
+
+  for (const online of [false, true]) {
+    mint.setConditions({ offline: !online });
+    const refused = await bob.receiveTokenResult(relabelled);
+    s.check(
+      `the relabelled token is refused ${online ? "online" : "in a dead zone"}`,
+      refused === null,
+      refused === null ? "refused" : `outcome=${refused.outcome}`,
+    );
+  }
+  s.check(
+    "and bob holds nothing, in any currency",
+    bob.totalHeld() === 0,
+    bob.walletDebug(),
+  );
+
+  // The same coins under their true label are an ordinary payment.
+  const accepted = await bob.receiveTokenResult(genuine);
+  s.check(
+    "the genuine token still pays",
+    accepted?.outcome === "swapped" && bob.balance() === 128,
+    `outcome=${accepted?.outcome ?? "refused"} balance=${bob.balance()}`,
+  );
+  alice.confirmLastSend();
+  s.check(
+    "no value was created or destroyed",
+    alice.totalHeld() + bob.totalHeld() === 500,
+    `alice=${alice.totalHeld()} bob=${bob.totalHeld()}`,
+  );
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });

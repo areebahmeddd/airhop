@@ -13,6 +13,7 @@
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { generateRecoveryPhrase } from "@core/payments/wallet-seed";
+import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
   bootstrapWalletStorage,
@@ -227,7 +228,10 @@ describe("replaying a lost swap", () => {
 describe("swaps hold their inputs", () => {
   it("keeps a refresh's coins out of reach of a send while the mint answers", async () => {
     const token = await strangersToken(8);
-    const stored = await receiveToken(token, { preferOffline: true });
+    // Internet off: stored with no swap staged, so only a refresh swaps it.
+    useSettingsStore.setState({ internetEnabled: false });
+    const stored = await receiveToken(token);
+    useSettingsStore.setState({ internetEnabled: true });
     expect(stored.outcome).toBe("stored");
 
     fabric.setConditions({ latencyMs: 40 });

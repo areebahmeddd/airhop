@@ -703,6 +703,7 @@ export const strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Claimed",
   "chat.ecash.reclaimed": "Reclaimed",
+  "chat.ecash.locked": "Locked to someone else",
   "chat.ecash.claiming": "Claiming…",
   "chat.ecash.claim": "Claim",
   "chat.ecash.claim_amount": "Claim {amount} {unit}",
@@ -1513,10 +1514,19 @@ export const strings = {
   "wallet.svc.keyset_unknown_body":
     "The mint can’t be reached right now to fetch them. Nothing is lost: receive it again once you’re online.",
   "wallet.svc.wrong_mint": "This token was not signed by the mint it names.",
+  "wallet.svc.unit_mismatch":
+    "This token’s coins are not in the currency it names.",
+  "wallet.svc.unit_mismatch_body":
+    "It is labelled {label}, but some of its coins were issued in {actual}. Ask the sender for a new token. Nothing was added.",
+  "wallet.svc.locked_other": "These coins are locked to someone else’s wallet.",
+  "wallet.svc.locked_other_body":
+    "Only the person they were locked to can claim them. Nothing was added.",
+  "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
+  "wallet.svc.locked_ours_offline_body":
+    "Claim it once you are online. Nobody else can take it meanwhile.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",
-  "wallet.svc.receiving_offline": "receiving offline",
   "wallet.svc.amount_positive": "Enter an amount greater than zero.",
   "wallet.svc.coins_raced": "Those coins were just used by another payment.",
   "wallet.svc.coins_raced_body":

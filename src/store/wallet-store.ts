@@ -631,28 +631,35 @@ export function selectUnits(
   return [...units].sort();
 }
 
-// Every cached full keyset id, flat (cashu-ts matches by id). A V4 token carries
-// SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded without the
-// full id: cashu-ts throws rather than guessing, as NUT-00 requires, since an
-// unresolved id means the proof can be neither verified nor fee-priced.
+// Every cached keyset with its unit, flat (cashu-ts matches by id). A V4 token
+// carries SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded
+// without the full id: cashu-ts throws rather than guessing, as NUT-00
+// requires, since an unresolved id means the proof can be neither verified nor
+// fee-priced. The unit is what a token's own label is checked against.
 // Decoding is offline, so the answer comes from here, not the mint. Takes
 // `mints` so a component can memoise on it; the fresh array would re-render on
 // every store write.
-export function keysetIdsOf(mints: Record<string, StoredMint>): string[] {
-  const out: string[] = [];
+export function keysetRefsOf(
+  mints: Record<string, StoredMint>,
+): { id: string; unit: string }[] {
+  const out: { id: string; unit: string }[] = [];
   for (const record of Object.values(mints)) {
     const cache = record.keysetCache as
-      { keysets?: { id?: unknown }[] } | undefined;
+      { keysets?: { id?: unknown; unit?: unknown }[] } | undefined;
     if (cache?.keysets === undefined) continue;
     for (const keyset of cache.keysets) {
-      if (typeof keyset.id === "string") out.push(keyset.id);
+      if (typeof keyset.id === "string" && typeof keyset.unit === "string") {
+        out.push({ id: keyset.id, unit: keyset.unit });
+      }
     }
   }
   return out;
 }
 
-export function selectKeysetIds(state: WalletState): string[] {
-  return keysetIdsOf(state.mints);
+export function selectKeysetRefs(
+  state: WalletState,
+): { id: string; unit: string }[] {
+  return keysetRefsOf(state.mints);
 }
 
 export function selectSecrets(

@@ -14,7 +14,7 @@ import { decodeToken } from "@core/payments/cashu";
 import { t } from "@i18n";
 import {
   bootstrapWalletStorage,
-  selectKeysetIds,
+  selectKeysetRefs,
   useWalletStore,
   whenWalletHydrated,
 } from "@store/wallet-store";
@@ -104,7 +104,7 @@ function forgetCachedKeysets(url: string): void {
 
 function readable(token: string): boolean {
   return (
-    decodeToken(token, selectKeysetIds(useWalletStore.getState())) !== null
+    decodeToken(token, selectKeysetRefs(useWalletStore.getState())) !== null
   );
 }
 

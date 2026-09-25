@@ -46,6 +46,7 @@ import {
   fetchKeysetsForTokenText,
   hostOf,
   receiveToken,
+  tokenLockedToOthers,
 } from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
@@ -68,7 +69,7 @@ import {
   transferSpeedBps,
   useTransferStore,
 } from "@store/transfer-store";
-import { keysetIdsOf, useWalletStore } from "@store/wallet-store";
+import { keysetRefsOf, useWalletStore } from "@store/wallet-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -1826,7 +1827,7 @@ export default function MessageThread({
   // decoded without the full id to map it back to. Memoised on `mints` because
   // the list is rebuilt each call and every message render reads it.
   const mints = useWalletStore((s) => s.mints);
-  const keysetIds = useMemo(() => keysetIdsOf(mints), [mints]);
+  const keysetRefs = useMemo(() => keysetRefsOf(mints), [mints]);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showDMInfo, setShowDMInfo] = useState(false);
   // Channel-message sender profile sheet: tap a message's avatar/name to
@@ -4281,6 +4282,14 @@ export default function MessageThread({
                 {t("chat.ecash.claimed")}
               </Text>
             </View>
+          ) : tokenLockedToOthers(token.info) ? (
+            // Only its owner's key can spend it, so a Claim would only fail.
+            <View style={styles.paymentCardVoid}>
+              <Feather name="lock" size={13} color={Colors.textMuted} />
+              <Text style={styles.paymentCardVoidText}>
+                {t("chat.ecash.locked")}
+              </Text>
+            </View>
           ) : (
             <Pressable
               style={[
@@ -4608,7 +4617,7 @@ export default function MessageThread({
             // Compute the token list once and suppress raw text when the
             // entire message is a Cashu token (no extra prose).
             const tokens = mayContainToken(item.text)
-              ? findTokensInText(item.text, keysetIds)
+              ? findTokensInText(item.text, keysetRefs)
               : [];
             const isPureToken =
               tokens.length > 0 && tokens[0]!.raw.trim() === item.text.trim();

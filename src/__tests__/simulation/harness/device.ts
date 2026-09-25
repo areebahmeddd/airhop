@@ -200,7 +200,6 @@ interface WalletServiceLike {
   settleReclaim: (txId: string) => Promise<string>;
   receiveToken: (
     raw: string,
-    opts?: { preferOffline?: boolean },
   ) => Promise<{ amount: number; outcome: string; dleq?: string }>;
   refreshAccount: (...args: unknown[]) => Promise<unknown>;
   [k: string]: unknown;
@@ -1176,11 +1175,8 @@ export class SimDevice {
     if (this.lastTxId !== null) this.inner.wallet.confirmSend(this.lastTxId);
   }
 
-  async receiveToken(
-    raw: string,
-    opts: { preferOffline?: boolean } = {},
-  ): Promise<boolean> {
-    const result = await this.receiveTokenResult(raw, opts);
+  async receiveToken(raw: string): Promise<boolean> {
+    const result = await this.receiveTokenResult(raw);
     if (result === null) return false;
     return result.outcome === "swapped" || result.outcome === "stored";
   }
@@ -1191,12 +1187,11 @@ export class SimDevice {
   // Null means the receive was refused outright.
   async receiveTokenResult(
     raw: string,
-    opts: { preferOffline?: boolean } = {},
   ): Promise<{ amount: number; outcome: string; dleq?: string } | null> {
     if (raw.length === 0) return null;
     try {
       const result = await this.world.resolve(
-        this.inner.wallet.receiveToken(raw, opts),
+        this.inner.wallet.receiveToken(raw),
       );
       this.log(
         "RECEIVE_TOKEN",

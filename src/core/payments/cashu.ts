@@ -15,9 +15,12 @@
 import {
   getDecodedToken,
   getEncodedToken,
+  getSecretKind,
   getTokenMetadata,
   hasValidDleq,
+  isP2PKSpendAuthorised,
   KeyChain,
+  signP2PKProofs,
   type KeyChainCache,
   type Proof,
   type ProofLike,
@@ -87,11 +90,11 @@ export function mayContainToken(text: string): boolean {
 // yields one card.
 export function findTokensInText(
   text: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): EmbeddedToken[] {
   const results: EmbeddedToken[] = [];
   for (const { raw, offset } of tokenCandidates(text)) {
-    const info = decodeToken(raw, keysetIds);
+    const info = decodeToken(raw, keysets);
     if (!info) continue;
     results.push({ info, raw, offset });
     if (results.length >= MAX_TOKENS_PER_MESSAGE) break;
@@ -99,26 +102,20 @@ export function findTokensInText(
   return results;
 }
 
-// Mints named by tokens in `text` that do not decode against `keysetIds`: a v2
-// short keyset id expands only against the mint's current list, so a token
-// under a keyset not fetched yet (after a rotation) reads only as metadata.
+// Mints named by tokens in `text` whose keyset ids `keysets` cannot expand: a
+// v2 short id expands only against the mint's current list, so a token under a
+// keyset not fetched yet (after a rotation) reads only as metadata.
 export function mintsOfUnresolvedTokens(
   text: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): { mintUrl: string; unit: string }[] {
   const out: { mintUrl: string; unit: string }[] = [];
   for (const { raw } of tokenCandidates(text)) {
-    if (decodeToken(raw, keysetIds) !== null) continue;
-    const bare = bareToken(raw);
-    if (bare === null) continue;
-    try {
-      const meta = getTokenMetadata(bare);
-      const unit = sanitizeUnit(meta.unit);
-      if (!out.some((m) => m.mintUrl === meta.mint && m.unit === unit)) {
-        out.push({ mintUrl: meta.mint, unit });
-      }
-    } catch {
-      // Not a token at all.
+    const read = readToken(raw, keysets);
+    if (read.ok || read.reason !== "unresolved") continue;
+    const { mintUrl, label: unit } = read;
+    if (!out.some((m) => m.mintUrl === mintUrl && m.unit === unit)) {
+      out.push({ mintUrl, unit });
     }
     if (out.length >= MAX_TOKENS_PER_MESSAGE) break;
   }
@@ -169,52 +166,120 @@ export function bareToken(raw: string): string | null {
 
 // ---- Decode ----
 
+// A cached keyset, with the unit the mint issued it in.
+export interface KeysetRef {
+  id: string;
+  unit: string;
+}
+
+export type TokenRead =
+  | { ok: true; info: TokenInfo }
+  | { ok: false; reason: "malformed" }
+  // A v2 short keyset id that none of `keysets` expands: a rotation not
+  // fetched yet, or a mint this wallet does not hold. Only metadata reads.
+  | { ok: false; reason: "unresolved"; mintUrl: string; label: string }
+  // NUT-00: the unit names the currency of the token's keysets and is for
+  // display only. A label its own keysets contradict is malformed; trusting it
+  // would show and file sats as dollars.
+  | {
+      ok: false;
+      reason: "unit-mismatch";
+      mintUrl: string;
+      label: string;
+      actual: string;
+    };
+
+const MALFORMED: TokenRead = { ok: false, reason: "malformed" };
+
 // Null unless it cleanly parses with a positive amount. No permissive mode
 // (bitchat shows a generic chip for V4 it cannot walk): a full CBOR decoder
 // failing means the token is malformed; an unpriced card is worse than text.
 export function decodeToken(
   raw: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): TokenInfo | null {
-  const tokenStr = bareToken(raw);
-  if (!tokenStr) return null;
+  const read = readToken(raw, keysets);
+  return read.ok ? read.info : null;
+}
 
+// `decodeToken`, saying why a token is refused, so a receive can tell the
+// user what a chat card shows only as plain text.
+export function readToken(
+  raw: string,
+  keysets: readonly KeysetRef[] = [],
+): TokenRead {
+  const tokenStr = bareToken(raw);
+  if (!tokenStr) return MALFORMED;
+
+  let token: Token;
   try {
-    // `keysetIds` resolves a V4 token's short ids. Passing none is not neutral:
+    // `keysets` resolves a V4 token's short ids. Passing none is not neutral:
     // `mapShortKeysetIds` throws on any v2 short id ("01..."), so a good token
     // reads as unreadable. NUT-00 requires the throw (an unresolved id can be
     // neither verified nor fee-priced), so never swallow it: callers pass the
     // keysets of every mint the wallet knows.
-    const token = getDecodedToken(tokenStr, keysetIds);
-    if (!Array.isArray(token.proofs) || token.proofs.length === 0) return null;
-
-    let amount = 0;
-    for (const proof of token.proofs) {
-      const value = proof.amount.toNumber();
-      if (!Number.isFinite(value) || value <= 0 || value > MAX_AMOUNT)
-        return null;
-      amount += value;
-      if (amount > MAX_AMOUNT) return null;
+    token = getDecodedToken(
+      tokenStr,
+      keysets.map((k) => k.id),
+    );
+  } catch {
+    // Metadata needs no keyset data, so it answers exactly when an
+    // unresolved short id stopped the decode.
+    try {
+      const meta = getTokenMetadata(tokenStr);
+      return {
+        ok: false,
+        reason: "unresolved",
+        mintUrl: meta.mint,
+        label: sanitizeUnit(meta.unit),
+      };
+    } catch {
+      return MALFORMED;
     }
-    if (amount <= 0) return null;
+  }
 
-    const mintUrl = typeof token.mint === "string" ? token.mint : "";
-    if (mintUrl.length === 0 || mintUrl.length > 512) return null;
+  if (!Array.isArray(token.proofs) || token.proofs.length === 0) {
+    return MALFORMED;
+  }
+  let amount = 0;
+  for (const proof of token.proofs) {
+    const value = proof.amount.toNumber();
+    if (!Number.isFinite(value) || value <= 0 || value > MAX_AMOUNT) {
+      return MALFORMED;
+    }
+    amount += value;
+    if (amount > MAX_AMOUNT) return MALFORMED;
+  }
 
-    return {
+  const mintUrl = typeof token.mint === "string" ? token.mint : "";
+  if (mintUrl.length === 0 || mintUrl.length > 512) return MALFORMED;
+
+  // Every proof whose keyset is known, so mixed units are caught too. An
+  // unknown keyset (a v1 id from a rotation not fetched) leaves the label
+  // standing: the mint refuses a wrong one at swap time.
+  const label = sanitizeUnit(token.unit);
+  const unitOf = new Map(keysets.map((k) => [k.id, k.unit.toLowerCase()]));
+  for (const proof of token.proofs) {
+    const actual = unitOf.get(proof.id);
+    if (actual !== undefined && actual !== label) {
+      return { ok: false, reason: "unit-mismatch", mintUrl, label, actual };
+    }
+  }
+
+  return {
+    ok: true,
+    info: {
       version: tokenStr.startsWith("cashuA") ? "A" : "B",
       amount,
-      unit: sanitizeUnit(token.unit),
+      unit: label,
       mintUrl,
       mintHost: mintHostOf(mintUrl),
       memo: sanitizeMemo(token.memo),
       proofCount: token.proofs.length,
       hasDleq: token.proofs.every((p) => p.dleq !== undefined),
       token,
-    };
-  } catch {
-    return null;
-  }
+    },
+  };
 }
 
 // Attacker-controlled, so capped and lowercased; a non-URL mint falls back to
@@ -316,6 +381,41 @@ export function verifyTokenOffline(
     };
   }
   return { status: "valid", checked };
+}
+
+// ---- Spending conditions (NUT-10, NUT-11) ----
+
+// Who can spend a coin now:
+//   "none"   a bearer coin: a plain secret, or a lock that no longer binds
+//            (expired with no refund keys, or already carrying its signature).
+//   "ours"   locked, and our key's signature is what unlocks it.
+//   "other"  locked to anyone else, or to a condition we cannot meet (HTLC,
+//            SIG_ALL, a malformed lock). Never money to this wallet.
+export type CoinLock = "none" | "ours" | "other";
+
+// Decided by cashu-ts itself, the same NUT-11 logic that signs our inputs, so
+// its rules hold here unchanged: a NUT-28 blinded lock (`p2pk_e`) names a
+// derived key a pubkey comparison would never match, and only signing tells.
+// A secret that is not NUT-10 JSON is a plain secret to the mint too.
+export function coinLock(proof: Proof, privkey?: string): CoinLock {
+  let kind: string;
+  try {
+    kind = getSecretKind(proof.secret);
+  } catch {
+    return "none";
+  }
+  // HTLC needs a preimage this wallet never holds.
+  if (kind !== "P2PK") return "other";
+  try {
+    if (isP2PKSpendAuthorised(proof)) return "none";
+    if (privkey === undefined) return "other";
+    const [signed] = signP2PKProofs([proof], privkey);
+    return signed !== undefined && isP2PKSpendAuthorised(signed)
+      ? "ours"
+      : "other";
+  } catch {
+    return "other";
+  }
 }
 
 // ---- Proof conversion ----

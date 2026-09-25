@@ -17,7 +17,6 @@
 // network.
 
 import {
-  getTokenMetadata,
   isMintOperationError,
   MeltChangeError,
   Mint,
@@ -42,14 +41,17 @@ import type { NostrClient } from "@core/nostr/nostr-client";
 import {
   bareToken,
   buildToken,
+  coinLock,
   decodeToken,
   feeForProofs,
   mintsOfUnresolvedTokens,
+  readToken,
   selectProofsForAmount,
   toProofLike,
   toStoredProof,
   verifyTokenOffline,
   type TokenInfo,
+  type TokenRead,
 } from "@core/payments/cashu";
 import {
   fetchNutzapInfo,
@@ -85,7 +87,7 @@ import {
   normalizeMintUrl,
   parseAccountKey,
   rehydrateAfterReset,
-  selectKeysetIds,
+  selectKeysetRefs,
   useWalletStore,
   whenWalletHydrated,
   type StoredMint,
@@ -148,7 +150,8 @@ export type WalletErrorCode =
   | "mint-error"
   // The token string did not decode.
   | "invalid-token"
-  // A DLEQ witness failed: the mint did not sign this. Do not credit it.
+  // The token is not what it claims: a DLEQ witness that fails, a unit its
+  // coins do not have, coins locked to someone else. Do not credit it.
   | "forged-token"
   // The mint says these proofs are already spent.
   | "already-spent"
@@ -534,6 +537,7 @@ export function resetWalletService(): void {
   walletEpoch += 1;
   activeSeed = null;
   nutzapPrivKey = null;
+  nutzapKeySeen = undefined;
 }
 
 // ---- Store readiness ----
@@ -554,6 +558,7 @@ export async function initWalletService(): Promise<boolean> {
   // Before the first mint operation, or new proofs get random secrets outside
   // the recovery phrase.
   await loadBackupState();
+  void peekNutzapKey();
   return true;
 }
 
@@ -1005,7 +1010,7 @@ function heldMintsOfUnresolvedTokens(
 ): { mintUrl: string; unit: string }[] {
   const state = useWalletStore.getState();
   const held: { mintUrl: string; unit: string }[] = [];
-  for (const mint of mintsOfUnresolvedTokens(text, selectKeysetIds(state))) {
+  for (const mint of mintsOfUnresolvedTokens(text, selectKeysetRefs(state))) {
     try {
       const url = normalizeMintUrl(mint.mintUrl);
       if (state.mints[url] !== undefined) held.push({ ...mint, mintUrl: url });
@@ -1018,10 +1023,10 @@ function heldMintsOfUnresolvedTokens(
 
 // Fetch the mint's current keysets and decode again. Throws when the mint is
 // out of reach, since "unreadable" would then be false.
-async function decodeUnderFreshKeysets(
+async function readUnderFreshKeysets(
   raw: string,
   epoch: number,
-): Promise<TokenInfo | null> {
+): Promise<TokenRead | null> {
   const bare = bareToken(raw);
   const [mint] = bare === null ? [] : heldMintsOfUnresolvedTokens(bare);
   if (mint === undefined) return null;
@@ -1038,7 +1043,7 @@ async function decodeUnderFreshKeysets(
     );
   }
   assertSameWallet(epoch);
-  return decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
+  return readToken(raw, selectKeysetRefs(useWalletStore.getState()));
 }
 
 // Fetch keysets for chat tokens that show as text; the store update re-renders
@@ -1059,47 +1064,85 @@ export async function fetchKeysetsForTokenText(text: string): Promise<void> {
   }
 }
 
+// Why a token that did not decode is refused. Only an unknown mint is
+// fixable (add it), so it gets its own code.
+function refusalFor(read: Exclude<TokenRead, { ok: true }>): WalletError {
+  if (read.reason === "unit-mismatch") {
+    return new WalletError(
+      "forged-token",
+      t("wallet.svc.unit_mismatch"),
+      t("wallet.svc.unit_mismatch_body", {
+        label: read.label,
+        actual: read.actual,
+      }),
+    );
+  }
+  if (
+    read.reason === "unresolved" &&
+    useWalletStore.getState().mints[normalizeMintUrl(read.mintUrl)] ===
+      undefined
+  ) {
+    return new WalletError(
+      "no-mint",
+      t("wallet.svc.unknown_mint"),
+      t("wallet.svc.unknown_mint_body"),
+    );
+  }
+  return new WalletError(
+    "invalid-token",
+    t("wallet.svc.unreadable_token"),
+    t("wallet.svc.unreadable_token_body"),
+  );
+}
+
+// Refuse coins this wallet cannot spend before anything is stored or sent.
+// A coin locked to someone else is worth nothing here, and one locked to us
+// (a nutzap delivered by DM after its relay publish failed) is spendable only
+// by a swap that signs it, which needs the mint now. `signingKey` is set only
+// then, and the key is read only when a coin is locked at all.
+async function screenLocks(info: TokenInfo): Promise<{ signingKey?: string }> {
+  const proofs = info.token.proofs;
+  if (proofs.every((p) => coinLock(p) === "none")) return {};
+  let privkey: string;
+  try {
+    privkey = await getNutzapPrivKeyHex();
+  } catch {
+    throw lockedError();
+  }
+  const locks = proofs.map((p) => coinLock(p, privkey));
+  if (locks.includes("other")) {
+    throw new WalletError(
+      "forged-token",
+      t("wallet.svc.locked_other"),
+      t("wallet.svc.locked_other_body"),
+    );
+  }
+  return locks.includes("ours") ? { signingKey: privkey } : {};
+}
+
+function lockedToUsOffline(): WalletError {
+  return new WalletError(
+    "offline",
+    t("wallet.svc.locked_ours_offline"),
+    t("wallet.svc.locked_ours_offline_body"),
+  );
+}
+
 // Decode, verify DLEQ offline, swap at the mint, and store the raw proofs only
 // when the mint is unreachable. A failed DLEQ is refused and never stored.
 export async function receiveToken(
   raw: string,
-  opts: { preferOffline?: boolean; counterparty?: string } = {},
+  opts: { counterparty?: string } = {},
 ): Promise<ReceiveResult> {
   assertUnlocked();
   const epoch = walletEpoch;
 
-  let info = decodeToken(raw, selectKeysetIds(useWalletStore.getState()));
-  if (!info && opts.preferOffline !== true) {
-    info = await decodeUnderFreshKeysets(raw, epoch);
+  let read = readToken(raw, selectKeysetRefs(useWalletStore.getState()));
+  if (!read.ok && read.reason === "unresolved") {
+    read = (await readUnderFreshKeysets(raw, epoch)) ?? read;
   }
-  if (!info) {
-    // Tell "unknown mint" (fixable) from "malformed". `getTokenMetadata` needs
-    // no keyset data, so it answers when an unresolved short id stopped decode.
-    const bare = bareToken(raw);
-    if (bare !== null) {
-      let mintUrl: string | undefined;
-      try {
-        mintUrl = normalizeMintUrl(getTokenMetadata(bare).mint);
-      } catch {
-        // Not even metadata: genuinely malformed, so fall through.
-      }
-      if (
-        mintUrl !== undefined &&
-        useWalletStore.getState().mints[mintUrl] === undefined
-      ) {
-        throw new WalletError(
-          "no-mint",
-          t("wallet.svc.unknown_mint"),
-          t("wallet.svc.unknown_mint_body"),
-        );
-      }
-    }
-    throw new WalletError(
-      "invalid-token",
-      t("wallet.svc.unreadable_token"),
-      t("wallet.svc.unreadable_token_body"),
-    );
-  }
+  if (!read.ok) throw refusalFor(read);
+  const info = read.info;
 
   const store = useWalletStore.getState();
   const url = normalizeMintUrl(info.mintUrl);
@@ -1115,6 +1158,8 @@ export async function receiveToken(
       t("wallet.svc.unknown_mint_body"),
     );
   }
+
+  const { signingKey } = await screenLocks(info);
 
   // With no network, DLEQ is the only defence against a forged token.
   const dleq = verifyTokenOffline(
@@ -1182,89 +1227,85 @@ export async function receiveToken(
   }
 
   // Swap so the proofs are provably unspent and unknown to the sender.
-  if (opts.preferOffline !== true) {
-    const txId = newTxId();
-    // Whether the mint could have seen the request.
-    let staged = false;
-    try {
-      assertMintNetworkAllowed();
-      const wallet = await getWallet(url, info.unit);
-      // `requireDleq` checks DLEQ against freshly loaded keys, covering an
-      // offline "unchecked" from missing cached keys. The NIP-61 key unlocks a
-      // nutzap delivered by DM after its relay publish failed: without the
-      // witness the mint refuses, and the money is neither claimable nor
-      // reclaimable. Bearer tokens ignore it.
-      const { preview, stored } = await prepareRecoverableSwap(
-        wallet,
-        () =>
-          wallet.prepareSwapToReceive(info.token, {
-            requireDleq: info.hasDleq,
-          }),
-        await getNutzapPrivKeyHex(),
+  const txId = newTxId();
+  // Whether the mint could have seen the request.
+  let staged = false;
+  try {
+    assertMintNetworkAllowed();
+    const wallet = await getWallet(url, info.unit);
+    // `requireDleq` checks DLEQ against freshly loaded keys, covering an
+    // offline "unchecked" from missing cached keys.
+    const { preview, stored } = await prepareRecoverableSwap(
+      wallet,
+      () =>
+        wallet.prepareSwapToReceive(info.token, {
+          requireDleq: info.hasDleq,
+        }),
+      signingKey,
+    );
+    assertSameWallet(epoch);
+    // On disk before the request leaves, so a kill costs a delay, not money.
+    store.addTx({
+      id: txId,
+      kind: "receive",
+      status: "pending",
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      createdAtMs: Date.now(),
+      updatedAtMs: Date.now(),
+      memo: info.memo,
+      counterparty: opts.counterparty,
+      swapPreview: stored,
+    });
+    staged = true;
+
+    const result = await completeSwapInFlight(wallet, txId, preview);
+    assertSameWallet(epoch);
+    creditProofs(url, info.unit, result.keep, { verified: true });
+    markClaimed(info);
+    store.updateTx(txId, { status: "completed", swapPreview: undefined });
+    return {
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      memo: info.memo,
+      outcome: "swapped",
+      dleq: dleqLabel,
+    };
+  } catch (err) {
+    if (walletReplaced(epoch)) throw lockedError();
+    const walletErr = asWalletError(err, "mint-error");
+    // Never clear the preview here, not even on "already spent" (possibly our
+    // own first attempt). Only `reconcile` can learn whether the mint took
+    // the inputs.
+    if (staged) store.updateTx(txId, { error: walletErr.message });
+    if (walletErr.code === "mint-error" && isAlreadySpentError(walletErr)) {
+      // Still reported as spent: nothing is credited yet, and the preview
+      // stays for `reconcile` to settle.
+      throw new WalletError(
+        "already-spent",
+        t("wallet.svc.already_spent"),
+        t("wallet.svc.already_spent_body"),
       );
-      assertSameWallet(epoch);
-      // On disk before the request leaves, so a kill costs a delay, not money.
-      store.addTx({
-        id: txId,
-        kind: "receive",
-        status: "pending",
-        amount: info.amount,
-        unit: info.unit,
-        mintUrl: url,
-        createdAtMs: Date.now(),
-        updatedAtMs: Date.now(),
-        memo: info.memo,
-        counterparty: opts.counterparty,
-        swapPreview: stored,
-      });
-      staged = true;
-
-      const result = await completeSwapInFlight(wallet, txId, preview);
-      assertSameWallet(epoch);
-      creditProofs(url, info.unit, result.keep, { verified: true });
-      markClaimed(info);
-      store.updateTx(txId, { status: "completed", swapPreview: undefined });
-      return {
-        amount: info.amount,
-        unit: info.unit,
-        mintUrl: url,
-        memo: info.memo,
-        outcome: "swapped",
-        dleq: dleqLabel,
-      };
-    } catch (err) {
-      if (walletReplaced(epoch)) throw lockedError();
-      const walletErr = asWalletError(err, "mint-error");
-      // Never clear the preview here, not even on "already spent" (possibly our
-      // own first attempt). Only `reconcile` can learn whether the mint took
-      // the inputs.
-      if (staged) store.updateTx(txId, { error: walletErr.message });
-      if (walletErr.code === "mint-error" && isAlreadySpentError(walletErr)) {
-        // Still reported as spent: nothing is credited yet, and the preview
-        // stays for `reconcile` to settle.
-        throw new WalletError(
-          "already-spent",
-          t("wallet.svc.already_spent"),
-          t("wallet.svc.already_spent_body"),
-        );
-      }
-      if (walletErr.code !== "offline" && walletErr.code !== "tor-blocked") {
-        throw walletErr;
-      }
-      // The request may never have left, or only its answer was lost. Store
-      // the proofs unverified and keep the preview on the same transaction; a
-      // replay drops them as it credits the real outputs, so nothing counts
-      // twice.
-      return storeOffline(url, info, walletErr.message, dleqLabel, {
-        counterparty: opts.counterparty,
-        ...(staged ? { txId } : {}),
-      });
     }
+    if (walletErr.code !== "offline" && walletErr.code !== "tor-blocked") {
+      throw walletErr;
+    }
+    // Locked to us, the coins are safe where they are: nobody else can spend
+    // them, and stored they could not be spent by us either, since only a
+    // signing swap unlocks them. A staged request keeps its preview for
+    // `reconcile`; otherwise the chat card still offers Claim.
+    if (signingKey !== undefined) throw lockedToUsOffline();
+    // The request may never have left, or only its answer was lost. Store
+    // the proofs unverified and keep the preview on the same transaction; a
+    // replay drops them as it credits the real outputs, so nothing counts
+    // twice.
+    return storeOffline(url, info, walletErr.message, dleqLabel, {
+      counterparty: opts.counterparty,
+      ...(staged ? { txId } : {}),
+    });
   }
-
-  return storeOffline(url, info, t("wallet.svc.receiving_offline"), dleqLabel, {
-    counterparty: opts.counterparty,
-  });
 }
 
 // Keep the token's own proofs unverified: the offline mesh case, redeemed first
@@ -1278,7 +1319,6 @@ function storeOffline(
   opts: { counterparty?: string; txId?: string } = {},
 ): ReceiveResult {
   const store = useWalletStore.getState();
-  store.addMint(mintUrl, { units: [info.unit] });
   const stored = info.token.proofs.map((p) =>
     toStoredProof(p, { verified: false }),
   );
@@ -1328,6 +1368,8 @@ function markClaimed(info: TokenInfo): void {
 // Credit proofs the mint just signed. They came from a `getWallet` wallet, so
 // `isSeedActive()` now is whether they are derived. `addProofs` dedupes by
 // secret, leaving already-held originals (as in a `keep` array) untouched.
+// The mint record is not touched: every caller holds one, and its unit list
+// is `persistMintSnapshot`'s, from the mint's own keysets.
 function creditProofs(
   mintUrl: string,
   unit: string,
@@ -1336,7 +1378,6 @@ function creditProofs(
 ): void {
   const store = useWalletStore.getState();
   const derived = isSeedActive();
-  store.addMint(mintUrl, { units: [unit] });
   store.addProofs(
     mintUrl,
     unit,
@@ -2264,7 +2305,7 @@ async function runReconcilePass(): Promise<void> {
     try {
       const info = decodeToken(
         tx.token,
-        selectKeysetIds(useWalletStore.getState()),
+        selectKeysetRefs(useWalletStore.getState()),
       );
       if (!info) continue;
       const wallet = await getWallet(tx.mintUrl, tx.unit);
@@ -3185,25 +3226,56 @@ const P2PK_KEY_ITEM = KEYCHAIN_ITEMS.walletP2pkKey;
 
 let nutzapPrivKey: Promise<string> | null = null;
 
+// The key as last read, for the synchronous check a chat card makes: null
+// when none exists yet (so nothing can be locked to us), undefined until read.
+let nutzapKeySeen: string | null | undefined;
+
+function asNutzapKey(stored: string | null): string | null {
+  return stored !== null && /^[0-9a-f]{64}$/i.test(stored)
+    ? stored.toLowerCase()
+    : null;
+}
+
 async function getNutzapPrivKeyHex(): Promise<string> {
+  const epoch = walletEpoch;
   // Single-flight: two concurrent first reads would each mint a key, and the
   // loser's pubkey could be published while the keychain holds the other.
   nutzapPrivKey ??= (async () => {
-    const existing = await readSecret(P2PK_KEY_ITEM);
-    if (typeof existing === "string" && /^[0-9a-f]{64}$/i.test(existing)) {
-      return existing.toLowerCase();
-    }
+    const existing = asNutzapKey(await readSecret(P2PK_KEY_ITEM));
+    if (existing !== null) return existing;
     const fresh = bytesToHex(secp256k1.utils.randomSecretKey());
     await writeSecret(P2PK_KEY_ITEM, fresh);
     return fresh;
   })();
   try {
-    return await nutzapPrivKey;
+    const key = await nutzapPrivKey;
+    if (walletEpoch === epoch) nutzapKeySeen = key;
+    return key;
   } catch (error) {
     // Do not cache a locked keychain as the answer.
     nutzapPrivKey = null;
     throw error;
   }
+}
+
+// Read, never create: with no key stored, no coin can be locked to us.
+async function peekNutzapKey(): Promise<void> {
+  const epoch = walletEpoch;
+  try {
+    const stored = asNutzapKey(await readSecret(P2PK_KEY_ITEM));
+    if (walletEpoch === epoch) nutzapKeySeen ??= stored;
+  } catch {
+    // Left unknown: cards offer Claim, and a claim decides.
+  }
+}
+
+// Whether a chat card says "Locked" rather than offering Claim. Display only:
+// a Claim tap runs the full check in `receiveToken`, so an unknown key errs
+// towards Claim.
+export function tokenLockedToOthers(info: TokenInfo): boolean {
+  if (nutzapKeySeen === undefined) return false;
+  const key = nutzapKeySeen ?? undefined;
+  return info.token.proofs.some((p) => coinLock(p, key) === "other");
 }
 
 // 33-byte compressed, hex: the kind 10019 `pubkey` tag.
