@@ -16,7 +16,7 @@
 
 **[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for building authenticated key exchange protocols. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` for one-way courier envelope sealing.
 
-**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: A key agreement algorithm that provides per-message forward secrecy. The same algorithm used by Signal and WhatsApp. Airhop applies it to all stored DMs so that compromise of one message key does not expose others.
+**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: A key agreement algorithm that provides per-message forward secrecy. The same algorithm used by Signal and WhatsApp. Airhop applies it to live DMs between two Airhop phones, seeded from and bound to their Noise session, so that compromise of one message key does not expose others. Courier mail gets its forward secrecy from one-time prekeys instead.
 
 **[X3DH](https://signal.org/docs/specifications/x3dh/)**: Extended Triple Diffie-Hellman. A key agreement protocol that lets a sender initiate a Double Ratchet session with a recipient who is offline, using prekey bundles the recipient publishes in advance. Airhop does not use X3DH: the Noise handshake already seeds the ratchet, and one-time prekeys are gossiped over the mesh as `0x24`, never published to Nostr.
 
