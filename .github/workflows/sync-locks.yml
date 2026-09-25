@@ -15,6 +15,7 @@ on:
       - android/app/build.gradle
       - android/settings.gradle
       - android/gradle.properties
+      - Gemfile.lock
   workflow_dispatch:
 
 permissions:
@@ -73,19 +74,20 @@ jobs:
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
 
+      # CocoaPods and its gems come from Gemfile.lock, so a CocoaPods bump there
+      # lands in Podfile.lock's COCOAPODS line here.
+      - name: Set up Ruby and CocoaPods
+        uses: ruby/setup-ruby@762794c140bbeda0f1224786aa33b4b46783a6c1 # v1.326.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
       - name: Regenerate Podfile.lock
         working-directory: ios
         run: |
           set -euo pipefail
-          pod_version="$(awk '/^COCOAPODS: /{ print $2 }' Podfile.lock)"
-          if [[ -z "$pod_version" ]]; then
-            echo "::error::No COCOAPODS version recorded in ios/Podfile.lock"
-            exit 1
-          fi
-          echo "Pinning CocoaPods to $pod_version"
-          sudo gem install cocoapods --version "$pod_version" --no-document
           rm Podfile.lock
-          pod "_${pod_version}_" install --repo-update
+          bundle exec pod install --repo-update
 
       - name: Upload Podfile.lock
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

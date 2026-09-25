@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Verify the committed Gradle wrapper matches the official release.
       - name: Validate Gradle wrapper
@@ -82,6 +84,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -107,6 +111,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -200,6 +206,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -219,21 +227,21 @@ jobs:
       - name: Run Swift unit tests
         run: swift test --package-path ios
 
+      # CocoaPods and its gems come from Gemfile.lock.
+      - name: Set up Ruby and CocoaPods
+        uses: ruby/setup-ruby@762794c140bbeda0f1224786aa33b4b46783a6c1 # v1.326.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
       - name: Install CocoaPods dependencies
         working-directory: ios
-        run: |
-          set -euo pipefail
-          pod_version="$(awk '/^COCOAPODS: /{ print $2 }' Podfile.lock)"
-          if [[ -z "$pod_version" ]]; then
-            echo "::error::No COCOAPODS version recorded in ios/Podfile.lock"
-            exit 1
-          fi
-          echo "Pinning CocoaPods to $pod_version"
-          sudo gem install cocoapods --version "$pod_version" --no-document
-          pod "_${pod_version}_" install
+        run: bundle exec pod install
 
       # Pod versions come from node_modules, and pod install rewrites the lock
-      # in place, so a stale lock never fails a build on its own.
+      # in place, so a stale lock never fails a build on its own. That includes
+      # its COCOAPODS line, so this also fails when Gemfile.lock pins another
+      # CocoaPods than the one that wrote Podfile.lock.
       - name: Verify Podfile.lock is in sync
         run: |
           set -euo pipefail
