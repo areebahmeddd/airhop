@@ -3930,48 +3930,17 @@ export class MeshService {
     }
   }
 
-  // A peer announced it is leaving the mesh (app closing, panic wipe, radio
-  // off). Drop it from the UI immediately instead of waiting out the 60s
-  // reachability TTL. Otherwise someone who has clearly gone still shows as
-  // "in range" for a full minute.
-  //
-  // Authenticate the leave first: bitchat now requires a verified signature on
-  // LEAVE, and without one a third party could forge a leave carrying a victim's
-  // senderID and force-drop them from everyone's Mesh tab. We can only verify
-  // once the peer has announced (so we hold its signing key); an unverifiable
-  // leave is ignored, which is safe because a peer we never saw announce is not
-  // in our UI to drop. Still presence-only: a verified leave updates routing/UI
-  // but never tears down crypto, so a stale-but-authenticated leave cannot strand
-  // an active session.
-  // Whether a LEAVE really came from the peer it names.
-  //
-  // Checked against the announce-pinned signing key first, then against a saved
-  // contact's key. The second source matters after a restart: the live registry
-  // is empty until the next announce arrives, and without the fallback a
-  // departure from someone already in the address book would be unverifiable
-  // for that window.
+  // Whether a LEAVE came from the peer it names. Unverified, anyone could forge
+  // one with a victim's senderID and drop them from every Mesh tab; bitchat
+  // requires a signature too.
   private leaveIsAuthentic(packet: Packet): boolean {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return false;
-    if ((packet.flags & Flags.SIGNED) === 0) return false;
-
-    // Deliberately the pinned key rather than registry.get(), which applies a
-    // reachability TTL. A LEAVE arrives exactly when a peer has stopped
-    // announcing, so resolving it through that window refuses the genuine ones.
-    const pinned = this.registry.pinnedSigningKey(senderID);
-    if (pinned !== undefined) return verifyPacket(packet, pinned);
-
-    const saved =
-      useContactsStore.getState().contacts[senderID]?.signingPubKeyHex;
-    if (saved === undefined || saved.length !== 64) return false;
-    try {
-      return verifyPacket(packet, hexToBytes(saved));
-    } catch {
-      // A stored key that is not valid hex. Treat as no key rather than throw.
-      return false;
-    }
+    return this.senderIsAuthentic(packet, senderID);
   }
 
+  // A peer is leaving (app closed, panic wipe, radio off): drop it now rather
+  // than after the 60s reachability TTL.
   private onLeave(packet: Packet): void {
     // Checked here as well as before the relay in handleRaw. The two guards
     // answer different questions ("may this be forwarded" and "may this evict
@@ -4024,48 +3993,29 @@ export class MeshService {
     void this.links.broadcast(bytesToBase64(encodePacket(packet)));
   }
 
-  // Is this broadcast packet genuinely from the peer it claims to be from?
+  // Whether a broadcast really came from the peer it names. `senderID` is a
+  // plaintext header anyone in range can set, so only an Ed25519 signature
+  // against a key already bound to that peer counts: the one pinned by a
+  // verified ANNOUNCE, or a saved contact's while a restart has the registry
+  // empty. No signature or no known key fails, as in bitchat-ios; relaying is
+  // separate, since a node forwards bytes it cannot yet check.
   //
-  // `senderID` is attacker-controlled: it is a plaintext header field on an
-  // unauthenticated broadcast, and anyone in radio range can put any value in
-  // it. The ONLY thing that binds a packet to an identity is an Ed25519
-  // signature that verifies against a signing key already bound to that peer ID
-  // by an earlier, signature-checked ANNOUNCE.
-  //
-  // This is stricter than what was here before, and deliberately so. The
-  // previous form was:
-  //
-  //     if (SIGNED && peer?.signingPubKey !== undefined) {
-  //       if (!verifyPacket(...)) return;
-  //     }
-  //
-  // which skipped verification entirely in two cases that both matter. An
-  // UNSIGNED packet was accepted, so anyone could impersonate a peer already in
-  // your registry - a contact you trust - simply by not setting the signature
-  // flag. And a packet from a peer NOT in the registry was accepted with no
-  // check at all. Random single-byte corruption of a senderID in flight was
-  // enough to make four devices render a message attributed to a peer that does
-  // not exist, which is how this was found.
-  //
-  // bitchat-ios does not have either hole: BLEPublicMessageHandler.swift
-  // computes `verifiedViaRegistry` as `key.map { verify } ?? false` - an absent
-  // key is a FAILED check, not a skipped one - and drops anything that neither
-  // verifies against the registry nor against a persisted identity, logging
-  // "Dropping public message with missing/invalid signature for claimed sender".
-  // ARCHITECTURE.md section 2 (Identity) says the same thing: "Receivers verify
-  // signatures before displaying or acting on a message" and "unsigned and
-  // invalid-signature packets are dropped before display". Relaying is the
-  // separate case: a node forwards bytes it may not yet be able to check.
-  //
-  // The cost is that a public message can arrive before its author's ANNOUNCE
-  // and be dropped. That is bitchat's tradeoff too, it is bounded (announces
-  // flood on every link-up, and gossip sync re-serves the message), and losing a
-  // message is a far smaller failure than rendering a forged one.
+  // The pinned key rather than registry.get(), whose 60s reachability TTL is far
+  // shorter than the 15 min gossip sync replays messages for.
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
-    const signingPubKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingPubKey === undefined) return false;
-    return verifyPacket(packet, signingPubKey);
+    const pinned = this.registry.pinnedSigningKey(senderID);
+    if (pinned !== undefined) return verifyPacket(packet, pinned);
+
+    const saved =
+      useContactsStore.getState().contacts[senderID]?.signingPubKeyHex;
+    if (saved === undefined || saved.length !== 64) return false;
+    try {
+      return verifyPacket(packet, hexToBytes(saved));
+    } catch {
+      // A stored key that is not valid hex. Treat as no key rather than throw.
+      return false;
+    }
   }
 
   // A message in the public mesh room (0x02). The payload is the text; the room

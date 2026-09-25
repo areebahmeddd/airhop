@@ -863,3 +863,58 @@ test("S08 a message too long for one frame still reaches a latecomer", async () 
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("S10 catching up on someone who has since gone quiet", async () => {
+  // Sync re-serves a message for fifteen minutes but its author's announce for
+  // only one, so history often comes from someone no longer announcing. Carol
+  // met alice earlier, and the key she pinned then must still verify it.
+  const s = (scenario = new Scenario({
+    id: "S10",
+    title: "history from a quiet author still verifies",
+    seed: 100,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "carol"]);
+  const [alice, bob, carol] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(alice.peerID),
+    45_000,
+  );
+  s.check("carol learned alice's identity first", met);
+
+  s.world.say("TOPOLOGY_CHANGE", "carol walks away");
+  radio.setTopology([["alice", "bob"]]);
+  const text = "the pharmacy on fifth is open";
+  alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("bob heard alice while carol was away", bobHeard);
+
+  // Past the 60s a peer stays reachable, well inside the sync window.
+  s.world.say("TOPOLOGY_CHANGE", "alice leaves; bob is alone");
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  s.world.say("TOPOLOGY_CHANGE", "carol returns to bob");
+  radio.setTopology([["bob", "carol"]]);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    60_000,
+  );
+  s.check(
+    "carol caught up on alice's message",
+    caughtUp,
+    `carol thread = [${carol.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

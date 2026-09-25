@@ -297,17 +297,10 @@ export class PeerRegistry {
     return this.get(peerID) !== undefined;
   }
 
-  // The signing key pinned to this peer, ignoring reachability.
-  //
-  // `get()` hides an entry once it is past its TTL, which is the right answer
-  // to "can I route to them" and the wrong one to "do I know who they are".
-  // Identity pinning has no expiry by design: the first key seen for a peer
-  // stands for as long as they are remembered, so a packet that arrives after
-  // their presence has aged out is still checkable against it.
-  //
-  // Used for LEAVE, where the two questions come apart completely. A departure
-  // is precisely the packet that arrives when a peer has gone quiet, so
-  // resolving its key through the reachability window drops the genuine ones.
+  // The signing key pinned to this peer, ignoring reachability. `get()` hides a
+  // peer past its TTL, the right answer to "can I route to them" and the wrong
+  // one to "do I know who they are". A pin has no expiry, so a message synced
+  // long after its author's last ANNOUNCE, or a LEAVE, is still checkable.
   pinnedSigningKey(peerID: string): Uint8Array | undefined {
     return this.peers.get(peerID)?.signingPubKey;
   }
