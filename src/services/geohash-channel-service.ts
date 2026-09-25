@@ -56,6 +56,7 @@ import {
 import { unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import { sharedRowID } from "@core/nostr/shared-row-id";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
@@ -767,7 +768,7 @@ export class GeohashChannelService {
     useChatStore.getState().addMessage({
       id:
         sharedId !== undefined && sharedId.length > 0
-          ? `ch-${sharedId}`
+          ? sharedRowID(sharedId, event.content)
           : `geo-${event.id}`,
       channel,
       senderID: `nostr_${event.pubkey}`,
@@ -1040,8 +1041,9 @@ export class GeohashChannelService {
         // list only and must never render as an empty chat bubble.
         if (event.kind === KIND_PRESENCE || event.content.length === 0) return;
 
-        // Prefer the sender-assigned cross-transport ID so the BLE copy of this
-        // same message collapses into one bubble. In a location channel both
+        // Prefer the sender-assigned cross-transport ID, bound to the text
+        // (sharedRowID), so the BLE copy of this same message collapses into
+        // one bubble. In a location channel both
         // copies arrive, and the Nostr one is signed with a per-geohash key,
         // so without this the reader sees the message twice, apparently from
         // two different people. Falls back to the Nostr event id, which still
@@ -1051,7 +1053,7 @@ export class GeohashChannelService {
         useChatStore.getState().addMessage({
           id:
             sharedId !== undefined && sharedId.length > 0
-              ? `ch-${sharedId}`
+              ? sharedRowID(sharedId, event.content)
               : `geo-${event.id}`,
           channel,
           senderID: `nostr_${event.pubkey}`,

@@ -32,6 +32,10 @@ import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
 } from "@core/mesh/discovery/announce-manager";
+import {
+  openChannelMessage,
+  sealChannelMessage,
+} from "@core/mesh/rooms/channel-crypto";
 import { encodeFilePacket } from "@core/mesh/wire/file-packet";
 import {
   decodePacket,
@@ -47,6 +51,7 @@ import {
 } from "@core/mesh/wire/prekey-bundle";
 import {
   channelPacketType,
+  decodeAirhopChannelPayload,
   encodeAirhopChannelPayload,
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
@@ -1529,5 +1534,187 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
       .length === 1,
   );
   s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+// Three phones in radio range of each other, the first two about to be
+// attacked by the third, with every link up and every announce heard.
+async function threeInRange(
+  seed: number,
+  id: string,
+  title: string,
+): Promise<{
+  s: Scenario;
+  radio: RadioFabric;
+  alice: SimDevice;
+  bob: SimDevice;
+  mallory: SimDevice;
+}> {
+  const s = (scenario = new Scenario({ id, title, seed }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  for (const d of [alice, bob, mallory]) radio.add(d);
+  s.track(alice, bob, mallory);
+  for (const d of [alice, bob, mallory]) d.launch();
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    20_000,
+  );
+  return { s, radio, alice, bob, mallory };
+}
+
+test("F10 a private-room member cannot write in another member's name", async () => {
+  // Holding the room key makes mallory a member, able to seal anything. On
+  // Bluetooth the outer signature says who sent it, so a sealed author that
+  // differs is a claim to be someone else. And re-using alice's message ID
+  // under her own name must not swallow alice's message.
+  const { s, radio, alice, bob, mallory } = await threeInRange(
+    610,
+    "F10",
+    "forged author in a private room",
+  );
+  const channel = "#crew";
+  const key = new Uint8Array(32).fill(7);
+  for (const d of [alice, bob, mallory]) d.joinPrivateChannel(channel, key);
+  const keyB64 = (
+    bob.store("chatStore").getState().channelKeys as Record<string, string>
+  )[channel];
+
+  const sealed = (senderID: string, msgId: string, text: string): string =>
+    forgeSigned({
+      type: PacketType.CHANNEL_ENC,
+      claimedPeerID: mallory.peerID,
+      payload: sealChannelMessage(keyB64, {
+        msgId,
+        senderID,
+        senderNickname: "someone",
+        text,
+      }),
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    });
+
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    sealed(alice.peerID, "f10", "alice: pay me"),
+  );
+
+  // When alice speaks, mallory reads her message ID off the air and gets a
+  // copy of her own under it to bob first.
+  let copied = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== alice.id || copied) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.CHANNEL_ENC) return;
+    const opened = openChannelMessage(keyB64, p.payload);
+    if (opened === null) return;
+    copied = true;
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      sealed(mallory.peerID, opened.msgId, "mallory's version"),
+    );
+  });
+  alice.send(channel, "alice's own words");
+  await s.world.advance(3_000);
+  stop();
+
+  const rows = bob.messages(channel);
+  s.check(
+    "a message sealed in alice's name but signed by mallory is dropped",
+    !rows.some((m) => m.text === "alice: pay me"),
+  );
+  s.check("mallory copied alice's message ID", copied);
+  s.check(
+    "alice's message still shows, as hers",
+    rows.some(
+      (m) => m.text === "alice's own words" && m.senderID === alice.peerID,
+    ),
+    `rows=${JSON.stringify(rows.map((m) => [m.senderID.slice(0, 4), m.text]))}`,
+  );
+  s.check(
+    "and mallory's copy stands apart, as hers",
+    rows.some(
+      (m) => m.text === "mallory's version" && m.senderID === mallory.peerID,
+    ),
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
+});
+
+test("C16 a copied message ID cannot displace a room message", async () => {
+  // A room message and its internet copy share a message ID so they collapse
+  // into one bubble. Mallory reads alice's off the air and gets her own text
+  // to bob first under the same ID. Bob must see both, each as its author's.
+  const { s, radio, alice, bob, mallory } = await threeInRange(
+    611,
+    "C16",
+    "copied room message ID",
+  );
+  const channel = "#den";
+  for (const d of [alice, bob, mallory]) d.joinChannel(channel);
+
+  let copied = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== alice.id || copied) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.CHANNEL_MSG_AIRHOP) return;
+    const decoded = decodeAirhopChannelPayload(p.payload);
+    if (decoded === null) return;
+    copied = true;
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      forgeSigned({
+        type: PacketType.CHANNEL_MSG_AIRHOP,
+        claimedPeerID: mallory.peerID,
+        payload: encodeAirhopChannelPayload(
+          channel,
+          "the gate is closed",
+          decoded.msgId,
+        ),
+        timestamp: s.world.wallClock(),
+        signWith: mallory.identity.signingPrivKey,
+      }),
+    );
+  });
+  alice.send(channel, "the gate is open");
+  await s.world.advance(3_000);
+  stop();
+
+  const rows = bob.messages(channel);
+  s.check("mallory copied alice's message ID", copied);
+  s.check(
+    "alice's message still shows, as hers",
+    rows.some(
+      (m) => m.text === "the gate is open" && m.senderID === alice.peerID,
+    ),
+    `rows=${JSON.stringify(rows.map((m) => [m.senderID.slice(0, 4), m.text]))}`,
+  );
+  s.check(
+    "and mallory's stands apart, as hers",
+    rows.some(
+      (m) => m.text === "the gate is closed" && m.senderID === mallory.peerID,
+    ),
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
   s.assert();
 });

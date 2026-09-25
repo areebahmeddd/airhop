@@ -60,6 +60,7 @@ import {
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import {
+  channelRowID,
   openChannelMessage,
   sealChannelMessage,
 } from "@core/mesh/rooms/channel-crypto";
@@ -183,6 +184,7 @@ import {
 import { deriveNostrPrivKey, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import { sharedRowID } from "@core/nostr/shared-row-id";
 import {
   decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
@@ -4247,7 +4249,7 @@ export class MeshService {
     if (channel === BRIDGE_CHANNEL) return;
     this.acceptPublicMessage(packet, channel, text, (senderID) =>
       msgId.length > 0
-        ? `ch-${msgId}`
+        ? sharedRowID(msgId, text)
         : `${senderID}-${String(packet.timestamp)}-${channel}`,
     );
   }
@@ -4322,6 +4324,10 @@ export class MeshService {
     for (const [channel, keyB64] of Object.entries(channelKeys)) {
       const opened = openChannelMessage(keyB64, packet.payload);
       if (opened === null) continue;
+      // The signature names the author on Bluetooth; the sealed sender is
+      // only what a member wrote inside. One claiming someone else is a
+      // member speaking in another's name, and is dropped.
+      if (opened.senderID !== senderID) return;
       const nickname = channelSenderName(senderID, peer?.nickname);
       // The decrypt succeeding IS the membership proof, and this is the only
       // place it exists: a private channel has no roster on the wire, so who is
@@ -4330,7 +4336,7 @@ export class MeshService {
       useChatStore.getState().addMessage({
         id:
           opened.msgId.length > 0
-            ? `ch-${opened.msgId}`
+            ? channelRowID(senderID, opened.msgId)
             : `${senderID}-${String(packet.timestamp)}-${channel}`,
         channel,
         senderID,
