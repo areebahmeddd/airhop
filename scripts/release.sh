@@ -41,6 +41,15 @@ if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
   exit 1
 fi
 
+# Working branches here are named like release tags. The release workflow
+# checks out the tag's commit, but a same-named branch still makes every bare
+# `${TAG}` ambiguous to git, so it goes first.
+if git ls-remote --exit-code --heads origin "refs/heads/${TAG}" >/dev/null; then
+  echo "Branch ${TAG} exists on origin. Delete it first:" >&2
+  echo "  git push origin --delete refs/heads/${TAG}" >&2
+  exit 1
+fi
+
 sed -i -E "s/(\"version\": \")[^\"]*(\")/\1${VERSION}\2/" app.json
 grep -q "\"version\": \"${VERSION}\"" app.json
 
@@ -56,10 +65,13 @@ grep -q "CURRENT_PROJECT_VERSION = ${IOS_BUILD};" ios/Airhop.xcodeproj/project.p
 git-cliff --config cliff.toml --tag "${TAG}" --output docs/dev/CHANGELOG.md
 
 git add app.json ios/Airhop.xcodeproj/project.pbxproj docs/dev/CHANGELOG.md
-git commit -m "chore(release): set version and changelog for ${TAG} [skip ci]"
+# No [skip ci]: GitHub applies it to a tag push of this commit too, and the tag
+# push is what starts the release workflow.
+git commit -m "chore(release): set version and changelog for ${TAG}"
 git tag -a "${TAG}" -m "${TAG}"
 
 echo
 echo "Tagged ${TAG} at $(git rev-parse --short HEAD). Review the commit, then:"
 echo "  git push origin main"
-echo "  git push origin ${TAG}"
+# Qualified, because git refuses a bare name that matches a local branch too.
+echo "  git push origin refs/tags/${TAG}"
