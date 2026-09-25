@@ -393,8 +393,8 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: false
 
-      # Frozen: installs exactly Gemfile.lock, checksums included, and fails
-      # rather than resolve anything new.
+      # Frozen: installs exactly what Gemfile.lock names, verified against its
+      # CHECKSUMS, and fails rather than resolve anything new.
       - name: Install fastlane and CocoaPods
         env:
           BUNDLE_FROZEN: "true"
