@@ -72,10 +72,11 @@ private const val TAG = "AirhopLANModule"
 private const val SERVICE_TYPE = "_airhop-lan-v1._tcp"
 
 // Interface names that can carry local peers: WiFi joined or served, ethernet,
-// USB tethering. Cellular (rmnet, ccmni) is absent because nobody else is on it.
-// Android identifies its own access point the same way, by name
-// (config_tether_wifi_regexs).
-private val LOCAL_IFACE_PREFIXES = arrayOf("wlan", "softap", "ap", "swlan", "eth", "rndis", "usb")
+// USB tethering (rndis, usb, and ncm from Android 11). Cellular (rmnet, ccmni)
+// is absent because nobody else is on it. Android identifies its own access
+// point the same way, by name (config_tether_wifi_regexs).
+private val LOCAL_IFACE_PREFIXES =
+    arrayOf("wlan", "softap", "ap", "swlan", "eth", "rndis", "usb", "ncm")
 
 private const val EVT_PEER_DISCOVERED = "AirhopLAN.peerDiscovered"
 private const val EVT_PEER_LOST = "AirhopLAN.peerLost"
@@ -857,9 +858,11 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
     // ---- Transfer ------------------------------------------------------------
 
-    // IPv4 addresses on the interfaces hasLocalNetwork counts: a served hotspot
-    // included, cellular not.
-    private fun localHosts(): List<String> =
+    // IPv4 address and prefix length on the interfaces hasLocalNetwork counts:
+    // a served hotspot included, cellular not. The prefix is reported, not
+    // judged: whether to dial an address is a routing decision, made in
+    // TypeScript.
+    private fun readLocalSubnets(): List<Pair<String, Int>> =
         try {
             NetworkInterface.getNetworkInterfaces()
                 .asSequence()
@@ -868,15 +871,33 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                         !iface.isLoopback &&
                         LOCAL_IFACE_PREFIXES.any { iface.name.startsWith(it) }
                 }
-                .flatMap { it.inetAddresses.asSequence() }
-                .filterIsInstance<Inet4Address>()
-                .filter { !it.isLinkLocalAddress && !it.isLoopbackAddress }
-                .mapNotNull { it.hostAddress }
+                .flatMap { it.interfaceAddresses.asSequence() }
+                .mapNotNull { entry ->
+                    val address = entry.address as? Inet4Address ?: return@mapNotNull null
+                    if (address.isLinkLocalAddress || address.isLoopbackAddress) {
+                        return@mapNotNull null
+                    }
+                    address.hostAddress?.let { it to entry.networkPrefixLength.toInt() }
+                }
                 .distinct()
                 .toList()
         } catch (_: Exception) {
             emptyList()
         }
+
+    @ReactMethod
+    fun localSubnets(promise: Promise) {
+        val subnets = Arguments.createArray()
+        for ((address, prefixLength) in readLocalSubnets()) {
+            subnets.pushMap(
+                WritableNativeMap().apply {
+                    putString("address", address)
+                    putInt("prefixLength", prefixLength)
+                }
+            )
+        }
+        promise.resolve(subnets)
+    }
 
     @ReactMethod
     fun startMoveListener(promise: Promise) {
@@ -898,7 +919,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             return
         }
         val hosts = Arguments.createArray()
-        for (host in localHosts()) hosts.pushString(host)
+        for (host in readLocalSubnets().map { it.first }.distinct()) hosts.pushString(host)
         promise.resolve(
             WritableNativeMap().apply {
                 putInt("port", port)

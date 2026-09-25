@@ -905,19 +905,21 @@ private final class MoveTransport {
     emit(MoveEvent.closed, ["connectionID": id])
   }
 
-  /// IPv4 on Wi-Fi (en*) and a served hotspot (bridge*). Cellular and tunnels
-  /// carry nobody beside us.
-  static func localHosts() -> [String] {
-    var hosts: [String] = []
+  /// IPv4 address and prefix length on Wi-Fi (en*) and a served hotspot
+  /// (bridge*). Cellular and tunnels carry nobody beside us. The prefix is
+  /// reported, not judged: whether to dial an address is decided in TypeScript.
+  static func localSubnets() -> [(address: String, prefixLength: Int)] {
+    var subnets: [(address: String, prefixLength: Int)] = []
     var head: UnsafeMutablePointer<ifaddrs>?
-    guard getifaddrs(&head) == 0, let first = head else { return hosts }
+    guard getifaddrs(&head) == 0, let first = head else { return subnets }
     defer { freeifaddrs(head) }
     var cursor: UnsafeMutablePointer<ifaddrs>? = first
     while let ifa = cursor {
       defer { cursor = ifa.pointee.ifa_next }
       let flags = Int32(ifa.pointee.ifa_flags)
       guard flags & IFF_UP != 0, flags & IFF_LOOPBACK == 0,
-        let addr = ifa.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET)
+        let addr = ifa.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET),
+        let mask = ifa.pointee.ifa_netmask
       else { continue }
       let name = String(cString: ifa.pointee.ifa_name)
       guard name.hasPrefix("en") || name.hasPrefix("bridge") else { continue }
@@ -928,10 +930,27 @@ private final class MoveTransport {
           nil, 0, NI_NUMERICHOST) == 0
       else { continue }
       let host = String(cString: buffer)
-      if host.hasPrefix("169.254.") || hosts.contains(host) { continue }
-      hosts.append(host)
+      if host.hasPrefix("169.254.") || subnets.contains(where: { $0.address == host }) {
+        continue
+      }
+      subnets.append((address: host, prefixLength: prefixLength(of: mask)))
     }
-    return hosts
+    return subnets
+  }
+
+  /// The kernel trims a mask's trailing zero bytes and shortens sa_len to
+  /// match, so only the bytes sa_len covers are read; the rest are zero.
+  private static func prefixLength(of mask: UnsafeMutablePointer<sockaddr>) -> Int {
+    let addressOffset = MemoryLayout.offset(of: \sockaddr_in.sin_addr) ?? 4
+    let end = min(Int(mask.pointee.sa_len), addressOffset + 4)
+    let bytes = UnsafeRawPointer(mask)
+    var bits = 0
+    var offset = addressOffset
+    while offset < end {
+      bits += bytes.load(fromByteOffset: offset, as: UInt8.self).nonzeroBitCount
+      offset += 1
+    }
+    return bits
   }
 }
 
@@ -1056,8 +1075,19 @@ final class AirhopLANModule: RCTEventEmitter {
         reject("MOVE_LISTEN_FAILED", "Could not open the move socket", nil)
         return
       }
-      resolve(["port": Int(port), "hosts": MoveTransport.localHosts()])
+      resolve(["port": Int(port), "hosts": MoveTransport.localSubnets().map(\.address)])
     }
+  }
+
+  @objc(localSubnets:rejecter:)
+  func localSubnets(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(
+      MoveTransport.localSubnets().map {
+        ["address": $0.address, "prefixLength": $0.prefixLength]
+      })
   }
 
   @objc(stopMove:rejecter:)

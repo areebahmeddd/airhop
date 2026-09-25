@@ -24,9 +24,9 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
+import SafetyWords from "@ui/components/safety-words";
 import {
   BUTTON_HEIGHT,
-  FontFamily,
   FontSize,
   FontWeight,
   HIT_SLOP,
@@ -296,16 +296,7 @@ export default function VerifyContactScreen({
               <Text style={styles.resultBody}>
                 {T("contacts.verify.compare_body", { name })}
               </Text>
-              {/* Two rows of three. One line wraps unpredictably across font
-                  scales, and a reader needs the same shape on both phones to
-                  keep their place. */}
-              <View style={styles.wordGrid}>
-                {words.map((word, index) => (
-                  <Text key={`${index}-${word}`} style={styles.word}>
-                    {word}
-                  </Text>
-                ))}
-              </View>
+              <SafetyWords words={words} color="#FFFFFF" />
               <Pressable
                 style={styles.primaryBtn}
                 onPress={handleCodesMatch}
@@ -640,24 +631,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     methodSub: {
       fontSize: FontSize.xs,
       color: "rgba(255,255,255,0.6)",
-    },
-    // Three to a row rather than left to wrap: a wrap that differs by font
-    // scale gives the two readers different shapes to follow.
-    wordGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      rowGap: Spacing.sm,
-      columnGap: Spacing.md,
-      marginVertical: Spacing.sm,
-    },
-    word: {
-      width: "30%",
-      textAlign: "center",
-      fontFamily: FontFamily.mono,
-      fontSize: FontSize.lg,
-      color: "#FFFFFF",
-      letterSpacing: 0.5,
     },
   });
 }

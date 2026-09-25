@@ -150,6 +150,10 @@ export const strings = {
   "onboarding.transfer.offline_body":
     "Put both phones on the same Wi-Fi, or turn on the hotspot on one and join it from the other. No internet needed.",
   "onboarding.transfer.incoming": "Transferring {name}",
+  "onboarding.transfer.confirm_title": "Check your old phone",
+  "onboarding.transfer.confirm_body":
+    "Your old phone should show these same words. If it shows different words, or none, cancel.",
+  "onboarding.transfer.confirm_cta": "They match",
   "onboarding.transfer.receiving": "Receiving {percent}%",
   "onboarding.transfer.saving": "Saving to this phone",
   "onboarding.transfer.releasing": "Finishing on your old phone",
@@ -2126,9 +2130,10 @@ export const strings = {
   "settings.transfer.camera_off_body":
     "Allow camera access in Settings to scan the code on your new phone.",
   "settings.transfer.confirm_title": "Transfer to this phone?",
-  "settings.transfer.confirm_body":
-    "Everything here moves to the phone showing this code. Once it arrives, this phone is erased.",
+  "settings.transfer.verify_body":
+    "Your new phone should show these same words. Everything here moves to it, then this phone is erased.",
   "settings.transfer.confirm_cta": "Transfer",
+  "settings.transfer.waiting_confirm": "Confirm on your new phone",
   "settings.transfer.connecting": "Connecting to your new phone",
   "settings.transfer.connecting_hint":
     "If this phone asks to find devices on your local network, allow it.",
