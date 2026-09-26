@@ -116,9 +116,9 @@ export interface AttachmentMeta {
 
 // Only the attachment cache files Airhop writes carry this prefix, so a
 // directory sweep never touches anything else in the shared cache dir. Exported
-// because anything else that generates an attachment file (see image-compress)
-// has to land under the same prefix, or the Storage screen would report a size
-// that its Clear button cannot free.
+// because anything else that generates an attachment file (see
+// image-compression) has to land under the same prefix, or the Storage screen
+// would report a size that its Clear button cannot free.
 //
 // The prefix bounds the ROUTINE sweeps - sweepExpiredAttachments,
 // getAttachmentCacheBytes and clearAttachmentCache - and deliberately not the
@@ -204,8 +204,9 @@ export async function adoptIntoAttachmentCache(
   }
 }
 
-// Delete a picker's or the resizer's copy that will not be sent. Only a file
-// under the cache directory: a URI anywhere else is not ours to remove.
+// Delete a file that will not be sent: the picker's, the resizer's or the
+// recorder's, adopted or not. Only a file under the cache directory: a URI
+// anywhere else is not ours to remove.
 export function discardPickerCopy(uri: string): void {
   try {
     if (!uri.startsWith(FileSystem.Paths.cache.uri)) return;

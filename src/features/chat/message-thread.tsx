@@ -3213,33 +3213,34 @@ export default function MessageThread({
 
     if (p.type !== "image") {
       // Out of the picker's folder and under the attachment prefix before it
-      // is read, so retention, Storage and Clear all see what was sent.
-      const send = (): void => {
-        void adoptIntoAttachmentCache(p.uri, p.name ?? p.type).then((uri) => {
+      // is read, so retention, Storage and Clear all see what was sent. Before
+      // the caution too: a sheet dismissed without an answer then leaves a
+      // file those can reach, not one in the picker's folder.
+      void adoptIntoAttachmentCache(p.uri, p.name ?? p.type).then((uri) => {
+        const send = (): void =>
           sendAttachmentMessage(p.type, uri, p.name, p.mimeType, undefined, {
             sizeBytes: p.sizeBytes,
             caption,
           });
-        });
-      };
-      // A bitchat recipient handles a video or a document very differently from
-      // an Airhop one, and neither difference is visible from this screen, so say
-      // it before the send rather than leaving the user with a sent tick and a
-      // confused friend. Images never get here: they are always resized under the
-      // send budget, and bitchat renders them.
-      const caution = bitchatMediaCaution(p.type, p.sizeBytes);
-      if (caution !== null) {
-        showAlert(caution.title, caution.body, [
-          {
-            text: T("common.cancel"),
-            style: "cancel",
-            onPress: () => discardPickerCopy(p.uri),
-          },
-          { text: T("chat.attach.send_anyway"), onPress: send },
-        ]);
-        return;
-      }
-      send();
+        // A bitchat recipient handles a video or a document very differently
+        // from an Airhop one, and neither difference is visible from this
+        // screen, so say it before the send rather than leaving the user with a
+        // sent tick and a confused friend. Images never get here: they are
+        // always resized under the send budget, and bitchat renders them.
+        const caution = bitchatMediaCaution(p.type, p.sizeBytes);
+        if (caution !== null) {
+          showAlert(caution.title, caution.body, [
+            {
+              text: T("common.cancel"),
+              style: "cancel",
+              onPress: () => discardPickerCopy(uri),
+            },
+            { text: T("chat.attach.send_anyway"), onPress: send },
+          ]);
+          return;
+        }
+        send();
+      });
       return;
     }
     void (async () => {
@@ -3998,7 +3999,11 @@ export default function MessageThread({
       const caution = bitchatMediaCaution("voice", sizeBytes);
       if (caution !== null) {
         showAlert(caution.title, caution.body, [
-          { text: T("common.cancel"), style: "cancel" },
+          {
+            text: T("common.cancel"),
+            style: "cancel",
+            onPress: () => discardPickerCopy(uri),
+          },
           { text: T("chat.attach.send_anyway"), onPress: send },
         ]);
         return;
@@ -4017,7 +4022,15 @@ export default function MessageThread({
   async function cancelRecording(): Promise<void> {
     setHandsFreeRecording(false);
     stopRecordingTimer();
+    // Only a recorder that is running owns the file at `uri`. Otherwise it
+    // still names the last note, which may be one sent from where it was
+    // recorded (see stopRecording).
+    const discarded = audioRecorder.getStatus().isRecording
+      ? audioRecorder.uri
+      : null;
     await audioRecorder.stop().catch(() => {});
+    // Outside the attachment prefix, so nothing but the wipe would reach it.
+    if (discarded) discardPickerCopy(discarded);
     await releaseAudioSession();
   }
 
