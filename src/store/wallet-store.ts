@@ -389,6 +389,10 @@ export function bootstrapWalletStorage(): Promise<MMKVLike> {
       encryptionKey = undefined;
     }
     if (encryptionKey === undefined) {
+      // Not cached: a keychain that is merely locked (an iOS relaunch before
+      // first unlock) answers later in the same process, and the next
+      // initWalletService must open and rehydrate rather than rethrow this.
+      if (generation === storageGeneration) resetWalletStorage();
       throw new Error("wallet-keystore-unavailable");
     }
     if (generation !== storageGeneration) {
