@@ -21,7 +21,13 @@
 //   * Failure is injectable at the transport, so "the mint went away mid-swap"
 //     is the same event the app would see in a tunnel.
 
-import { createDLEQProof, deriveKeysetId } from "@cashu/cashu-ts";
+import {
+  createDLEQProof,
+  deriveKeysetId,
+  getSecretKind,
+  isP2PKSpendAuthorised,
+  type Proof,
+} from "@cashu/cashu-ts";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
@@ -567,11 +573,17 @@ export class MintFabric {
   // BDHKE's check on an input: C == k * hash_to_curve(secret), for the key of
   // its keyset and amount. A mint that skipped it would redeem any coin a
   // forger typed out, and every forged-token scenario would pass at the mint.
+  //
+  // Then NUT-11: a coin whose secret is a P2PK lock is spent only with a
+  // witness that key signed. Without it a coin locked to someone else redeems
+  // here, and every path that signs a locked coin passes with the signing
+  // dropped.
   private refusesInput(input: {
     id: string;
     amount: number;
     secret: string;
     C: string;
+    witness?: unknown;
   }): boolean {
     const priv = this.keysets
       .find((k) => k.id === input.id)
@@ -581,10 +593,27 @@ export class MintFabric {
       const expected = hashToCurve(
         new TextEncoder().encode(input.secret),
       ).multiply(BigInt(`0x${bytesToHex(priv)}`));
-      return !expected.equals(secp256k1.Point.fromHex(input.C));
+      if (!expected.equals(secp256k1.Point.fromHex(input.C))) return true;
+      return (
+        isP2PKLocked(input.secret) &&
+        !isP2PKSpendAuthorised(input as unknown as Proof)
+      );
     } catch {
       return true;
     }
+  }
+
+  // NUT-02: a mint signs only under its active keyset. 12002 is what makes a
+  // wallet with a stale snapshot repair it, so signing under an old keyset
+  // here would let a rotation scenario pass that a real mint would refuse.
+  private refusesOutputs(outputs: { id: string }[]): Response | null {
+    for (const output of outputs) {
+      if (output.id === this.keyset.id) continue;
+      return this.keysets.some((k) => k.id === output.id)
+        ? this.json({ detail: "Keyset is inactive.", code: 12002 }, 400)
+        : this.json({ detail: "Keyset is not known.", code: 12001 }, 400);
+    }
+    return null;
   }
 
   // NUT-07: which of these proofs has the mint already seen spent?
@@ -640,6 +669,9 @@ export class MintFabric {
         return this.json({ detail: "Token already spent.", code: 11001 }, 400);
       }
     }
+
+    const outputRefusal = this.refusesOutputs(outputs);
+    if (outputRefusal !== null) return outputRefusal;
 
     // NUT-02: sum(inputs) - fees == sum(outputs). Enforced as an inequality
     // because a wallet is free to ask for less than it is owed, and refused as
@@ -711,12 +743,14 @@ export class MintFabric {
     if (quote.issued) {
       return this.json({ detail: "Quote already issued.", code: 20002 }, 400);
     }
-    quote.issued = true;
     const outputs = (body.outputs ?? []) as {
       amount: number;
       B_: string;
       id: string;
     }[];
+    const outputRefusal = this.refusesOutputs(outputs);
+    if (outputRefusal !== null) return outputRefusal;
+    quote.issued = true;
     return this.json({ signatures: outputs.map((o) => this.blindSign(o)) });
   }
 
@@ -814,6 +848,11 @@ export class MintFabric {
         return this.json({ detail: "Token already spent.", code: 11001 }, 400);
       }
     }
+
+    const outputRefusal = this.refusesOutputs(
+      (body.outputs ?? []) as { id: string }[],
+    );
+    if (outputRefusal !== null) return outputRefusal;
 
     const quoteId = typeof body.quote === "string" ? body.quote : "";
     const quote = this.quotes.get(quoteId);
@@ -949,7 +988,8 @@ export class MintFabric {
     C_: string;
     dleq: { e: string; s: string };
   } {
-    const keyset = this.keysets.find((k) => k.id === output.id) ?? this.keyset;
+    // Every caller has refused outputs under any other keyset.
+    const keyset = this.keyset;
     const priv = keyset.keys.get(output.amount);
     if (priv === undefined) {
       throw new Error(`no key for denomination ${output.amount}`);
@@ -976,6 +1016,15 @@ export class MintFabric {
 
   isSpent(secret: string): boolean {
     return this.spentYs.has(this.yFor(secret));
+  }
+}
+
+// A secret that does not parse as NUT-10 is a plain random one.
+function isP2PKLocked(secret: string): boolean {
+  try {
+    return getSecretKind(secret) === "P2PK";
+  } catch {
+    return false;
   }
 }
 

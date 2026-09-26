@@ -19,7 +19,14 @@
 // cannot drift the way a hand-copied vector can. The NUT-00 vector is kept as
 // well, so a bug in BOTH implementations still has something to fail against.
 
-import { hashToCurve as cashuHashToCurve, Mint, Wallet } from "@cashu/cashu-ts";
+import {
+  hashToCurve as cashuHashToCurve,
+  Mint,
+  Wallet,
+  type Proof,
+} from "@cashu/cashu-ts";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { hashToCurve, hexToBytes, MintFabric, simInvoice } from "./mint-fabric";
 import { World } from "./world";
 
@@ -141,6 +148,105 @@ describe("NUT-02 input fees", () => {
       const kept = await wallet.receive(proofs);
       expect(fabric.feesCollected).toBe(1);
       expect(kept.reduce((sum, p) => sum + p.amount.toNumber(), 0)).toBe(1022);
+    } finally {
+      world.close();
+    }
+  });
+});
+
+// A mint that took any well-signed coin would redeem one locked to a stranger,
+// so every path that signs a locked coin would pass with the signing removed.
+describe("NUT-11 P2PK locks", () => {
+  async function lockedCoins(fabric: MintFabric, pubkey: string) {
+    const wallet = new Wallet(new Mint(fabric.url), { unit: "sat" });
+    await wallet.loadMint(true);
+    const quote = await wallet.createMintQuoteBolt11(8);
+    const proofs = await wallet.mintProofsBolt11(8, quote);
+    const { send } = await wallet.send(8, proofs, undefined, {
+      send: { type: "p2pk", options: { pubkey } },
+    });
+    return { wallet, locked: send as Proof[] };
+  }
+
+  it("refuses a locked coin spent without its key's witness", async () => {
+    const world = new World({ seed: 4 });
+    const fabric = new MintFabric(world, "https://p2pk-refuse.test");
+    fabric.setConditions({ latencyMs: 0 });
+    fabric.install();
+    try {
+      const owner = secp256k1.utils.randomSecretKey();
+      const { wallet, locked } = await lockedCoins(
+        fabric,
+        bytesToHex(secp256k1.getPublicKey(owner, true)),
+      );
+      await expect(wallet.receive(locked)).rejects.toThrow();
+      const stranger = bytesToHex(secp256k1.utils.randomSecretKey());
+      await expect(
+        wallet.receive(locked, { privkey: stranger }),
+      ).rejects.toThrow();
+      expect(fabric.isSpent(locked[0]?.secret ?? "")).toBe(false);
+    } finally {
+      world.close();
+    }
+  });
+
+  it("redeems a locked coin its key signed", async () => {
+    const world = new World({ seed: 5 });
+    const fabric = new MintFabric(world, "https://p2pk-accept.test");
+    fabric.setConditions({ latencyMs: 0 });
+    fabric.install();
+    try {
+      const owner = secp256k1.utils.randomSecretKey();
+      const { wallet, locked } = await lockedCoins(
+        fabric,
+        bytesToHex(secp256k1.getPublicKey(owner, true)),
+      );
+      const kept = await wallet.receive(locked, { privkey: bytesToHex(owner) });
+      expect(kept.reduce((sum, p) => sum + p.amount.toNumber(), 0)).toBe(8);
+    } finally {
+      world.close();
+    }
+  });
+});
+
+// A real mint signs only under its active keyset (NUT-02 error 12002), which
+// is what drives a wallet with a stale snapshot to repair it.
+describe("output keysets", () => {
+  it("refuses outputs under a keyset rotated out, before spending the inputs", async () => {
+    const world = new World({ seed: 6 });
+    const fabric = new MintFabric(world, "https://keyset-inactive.test");
+    fabric.setConditions({ latencyMs: 0 });
+    fabric.install();
+    try {
+      const wallet = new Wallet(new Mint(fabric.url), { unit: "sat" });
+      await wallet.loadMint(true);
+      const quote = await wallet.createMintQuoteBolt11(8);
+      const proofs = await wallet.mintProofsBolt11(8, quote);
+      const stale = proofs[0]?.id ?? "";
+      fabric.rotateKeyset();
+      const response = await fetch(`${fabric.url}/v1/swap`, {
+        method: "POST",
+        body: JSON.stringify({
+          inputs: proofs.map((p) => ({
+            id: p.id,
+            amount: p.amount.toNumber(),
+            secret: p.secret,
+            C: p.C,
+          })),
+          outputs: [
+            {
+              id: stale,
+              amount: 8,
+              B_: bytesToHex(
+                secp256k1.getPublicKey(secp256k1.utils.randomSecretKey(), true),
+              ),
+            },
+          ],
+        }),
+      });
+      expect(response.status).toBe(400);
+      expect(((await response.json()) as { code: number }).code).toBe(12002);
+      expect(fabric.isSpent(proofs[0]?.secret ?? "")).toBe(false);
     } finally {
       world.close();
     }
