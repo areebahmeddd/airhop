@@ -125,6 +125,7 @@ Check for:
 - An offline token reported genuine unless every coin carries a DLEQ witness that verifies: **FAIL**
 - A token's declared unit trusted without checking it against its keysets, or coins locked to another key stored as balance: **FAIL**
 - A coin marked verified by anything but a swap the mint signed: **FAIL**
+- The recovery phrase shown or read for display before `confirmDeviceOwner` passes (unless the OS reports no lock at all): **FAIL**
 - NIP-60 wallet state not encrypted before Nostr publication: **FAIL**
 
 ### 8a. Device Transfer (`src/core/move/`, `src/services/move-*.ts`)

@@ -881,6 +881,7 @@ looks protected and is not.
 - The keychain is the source of truth. If the phrase is confirmed missing, startup clears `backupEnabled` and every `derived` mark, then seeds a fresh phrase. If the keychain refuses the write, secrets fall back to random and nothing claims coverage. A phrase the keychain would not read, or one that no longer parses, is never replaced: the phrase and its flags stay as they are, new coins use random secrets for the session, and the next refresh re-issues them under the phrase.
 - `StoredProof.derived` marks what the phrase can rebuild, and the UI shows the uncovered remainder.
 - Backup cannot be turned off, since deleting a phrase coins derive from deletes the coins. Only the panic wipe removes it.
+- The words are shown only after the OS confirms the owner (Face ID, fingerprint or passcode), the check a transfer asks for, since they move every coin to any phone without a trace. A phone with no screen lock has no owner to ask and shows them.
 - The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed. A reused counter recreates a signed secret, the mint rejects the swap and the inputs are untouched, so the failure is a retry rather than a loss.
 
 ### Fiat units
