@@ -79,7 +79,6 @@ import {
 import { t } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
-import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
@@ -96,6 +95,8 @@ import {
   type WalletTx,
 } from "@store/wallet-store";
 import { Platform } from "react-native";
+
+import { internetOff, torClaimed } from "./network-gate";
 
 // ---- Network limits ----
 
@@ -248,21 +249,14 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
 // or fails closed, and refusing there would take the wallet away to prevent a
 // leak that cannot happen.
 //
-// Either `torActive` or `torEnabled` refuses. They diverge in one state: iOS
-// revalidation drops the claim after a failed bootstrap while the preference
-// (and the toggle) stay on, so the user still believes they are covered. Gating
-// on `torActive` alone would leak their IP exactly when Tor is struggling.
-// Overshooting costs a call the user can allow; undershooting costs anonymity
-// they think they have. Matches the `torEnabled` gate in `version-screen.tsx`.
-//
-// Read from stores, not `isTorRoutingActive()`, which imports the BLE native
-// module; this file is reachable from the panic wipe, which must load without a
-// native host.
+// The same gate as `network-gate.ts`, which counts Tor as claimed while it is
+// wanted as well as while it runs: overshooting costs a call the user can
+// allow, undershooting costs anonymity they think they have.
 function assertMintNetworkAllowed(): void {
-  const settings = useSettingsStore.getState();
+  const block = mintNetworkBlock();
   // Internet off means Bluetooth only. "offline" so a receive stores the token
   // unconfirmed, as with no signal.
-  if (!settings.internetEnabled) {
+  if (block === "internet-off") {
     throw new WalletError(
       "offline",
       t("wallet.svc.internet_off"),
@@ -271,33 +265,24 @@ function assertMintNetworkAllowed(): void {
       }),
     );
   }
-  const torClaimed =
-    useMeshStateStore.getState().torActive || settings.torEnabled;
-  if (!torClaimed) return;
-
-  if (Platform.OS !== "ios") return;
-  // The one explicit escape hatch.
-  if (settings.allowMintOverClearnet) return;
-  throw new WalletError(
-    "tor-blocked",
-    t("wallet.svc.tor_ios"),
-    t("wallet.svc.tor_ios_body", {
-      setting: t("settings.conn.mint_clearnet"),
-    }),
-  );
+  if (block === "tor") {
+    throw new WalletError(
+      "tor-blocked",
+      t("wallet.svc.tor_ios"),
+      t("wallet.svc.tor_ios_body", {
+        setting: t("settings.conn.mint_clearnet"),
+      }),
+    );
+  }
 }
 
 // Why a mint call would be refused right now, or null when it would go out, so
 // the screen can grey an action out and say why before it is tapped.
 export function mintNetworkBlock(): "internet-off" | "tor" | null {
-  try {
-    assertMintNetworkAllowed();
-    return null;
-  } catch (err) {
-    return err instanceof WalletError && err.code === "tor-blocked"
-      ? "tor"
-      : "internet-off";
-  }
+  if (internetOff()) return "internet-off";
+  if (Platform.OS !== "ios" || !torClaimed()) return null;
+  // The one explicit escape hatch.
+  return useSettingsStore.getState().allowMintOverClearnet ? null : "tor";
 }
 
 // ---- Recovery phrase (NUT-13 deterministic secrets) ----
@@ -1866,6 +1851,10 @@ async function refreshAccountOnce(
   const wallet = await getWallet(url, unit, {
     forceRefresh: opts.cachedKeys !== true,
   });
+  // Read again before each request: a refresh can run for minutes, and Tor
+  // switched on meanwhile must stop the rest going out in the clear on iOS.
+  // The throw ends the refresh, as an unreachable mint does.
+  assertMintNetworkAllowed();
 
   // Map back to stored rows by secret, a proof's identity.
   let unspent: StoredProof[];
@@ -2009,6 +1998,8 @@ async function swapIntoFreshProofs(
   const face = inputs.reduce((s, p) => s + p.amount, 0);
   const txId = newTxId();
   let staged = false;
+  // Before the keys a prepare may fetch, and again before the swap.
+  assertMintNetworkAllowed();
   try {
     // Proofs go in directly, not via a token: there is no mint claim to check.
     // Any witness present is still checked (cashu-ts's default).
@@ -2016,6 +2007,7 @@ async function swapIntoFreshProofs(
       wallet.prepareSwapToReceive(inputs.map(toProofLike)),
     );
     assertSameWallet(epoch);
+    assertMintNetworkAllowed();
     // Reserved before the request leaves so a concurrent send cannot pick the
     // same coins and hand over a token this swap is about to spend.
     if (!store.reserveProofs(txId, url, unit, inputs)) {

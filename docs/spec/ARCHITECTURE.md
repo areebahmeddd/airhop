@@ -834,9 +834,9 @@ Every mint call passes `assertMintNetworkAllowed` in `wallet-service.ts`.
 - **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token is stored unconfirmed and checked once the switch is back on, and Lightning actions say why they are off.
 - **Tor on, iOS:** refused (`tor-blocked`) unless the user allows mint calls over the clear net. Tor wraps only Nostr WebSockets there, so `fetch` would expose the IP. Android routes every web request through the proxy and needs no refusal.
 
-The reconcile pass reads the gate again before every request it makes, so
-turning Tor on mid-pass stops the next one; a request already on the wire
-cannot be recalled.
+The reconcile pass and every refresh, including the one the pass runs to redeem
+receipts, read the gate again before each request, so turning Tor on mid-pass
+stops the next one; a request already on the wire cannot be recalled.
 
 `mintNetworkBlock()` gives the same answer ahead of time, so the Wallet tab shows
 a banner and disables what would fail.

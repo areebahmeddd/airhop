@@ -190,6 +190,31 @@ describe("Tor switched on while a pass is running (iOS)", () => {
     expect(watch.paths.length).toBe(gateClosedAt);
     expect(pendingPreviews()).toBe(1);
   });
+
+  it("stops the automatic redemption between one receipt and the next", async () => {
+    expect(Platform.OS).toBe("ios");
+    for (const sats of [8, 16, 32]) {
+      await receiveOffline(await strangersToken(sats));
+    }
+
+    let gateClosedAt = -1;
+    const watch = watchRequests((path) => {
+      if (gateClosedAt < 0 && path.startsWith("/v1/swap")) {
+        useSettingsStore.setState({ torEnabled: true });
+        gateClosedAt = watch.paths.length;
+      }
+    });
+    try {
+      await reconcile();
+    } finally {
+      watch.stop();
+    }
+
+    // The oldest receipt's swap was already on the wire; the other two wait.
+    expect(gateClosedAt).toBeGreaterThan(0);
+    expect(watch.paths.length).toBe(gateClosedAt);
+    expect(unverifiedAt(fabric.url)).toBe(48);
+  });
 });
 
 // Received with the internet off: a receipt of its own, no swap staged.
