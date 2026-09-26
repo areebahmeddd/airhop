@@ -638,7 +638,8 @@ export const strings = {
   "chat.media.gone_video": "Video not on this device",
   "chat.media.gone_voice": "Voice note not on this device",
   "chat.media.gone_file": "File not on this device",
-  "chat.media.gone_note": "No longer stored on this device",
+  "chat.media.gone_note":
+    "Removed after the retention period, to free space, or when the cache was cleared",
   "chat.media.ask_resend": "Ask again",
   "chat.media.resend_draft": "Could you send that {kind} again?",
   "chat.media.kind_photo": "photo",
@@ -1843,7 +1844,7 @@ export const strings = {
   "settings.general.reset": "Reset settings",
   "settings.general.media_retention": "Keep media for",
   "settings.general.media_retention_desc":
-    "Photos, videos and voice notes are deleted after the selected time",
+    "Photos, videos, voice notes and files are deleted after the selected time",
   "settings.general.media_retention_sheet":
     "Choose how long media stays on this device. Deleted media can’t be recovered.",
   "settings.general.retention_7_desc":

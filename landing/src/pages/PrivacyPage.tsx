@@ -77,11 +77,11 @@ export default function PrivacyPage() {
                 messages.
               </li>
               <li>
-                <strong>Media attachments.</strong> Photos, videos, and voice notes you send or
-                receive are written to the app's cache so they stay viewable. They are deleted
-                automatically once they pass the retention window set in Privacy (seven days by
-                default), and also by panic wipe, by clearing the cache in settings, or by removing
-                the app.
+                <strong>Media attachments.</strong> Photos, videos, voice notes, and files you
+                send or receive are written to the app's cache so they stay viewable. They are
+                deleted automatically once they pass the retention window set in General (seven
+                days by default), and also by panic wipe, by clearing the cache in settings, or by
+                removing the app.
               </li>
               <li>
                 <strong>Queued outgoing messages.</strong> A private message that has not yet been
@@ -413,7 +413,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Media attachments:</strong> deleted automatically after the window you
-                choose in Privacy (7 days by default, or 14 or 30). There is no keep-forever option.
+                choose in General (7 days by default, or 14 or 30). There is no keep-forever option.
                 Also removed by clearing the cache, a panic wipe, or removing the app.
               </li>
               <li>

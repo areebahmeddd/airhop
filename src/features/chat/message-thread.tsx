@@ -880,8 +880,8 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
 
 // Whether an attachment's bytes are still on this device.
 //
-// They go for two ordinary reasons: the seven-day retention sweep, or the user
-// clearing the cache. The message row survives either way, and nothing on the
+// They go for ordinary reasons: the retention window, the received-media
+// quota, or Clear. The message row survives each, and nothing on the
 // wire brings the file back, since neither Airhop nor bitchat has a resend
 // request. So the bubble says so and offers to ask the sender in words.
 //
@@ -1094,11 +1094,11 @@ function ImageAttachment({
         if (alive && h > 0) setAspect(w / h);
       },
       () => {
-        // The file is not readable. Overwhelmingly this means the retention
-        // sweep removed it: attachments are deleted after seven days, so every
-        // thread eventually scrolls back into this state. Rendering the frame
-        // anyway left a blank grey box with nothing to explain it, which reads
-        // as the app being broken rather than as the photo having expired.
+        // The file is not readable. Overwhelmingly this means retention, the
+        // received-media quota or Clear removed it, so every thread eventually
+        // scrolls back into this state. Rendering the frame anyway would leave
+        // a blank grey box with nothing to explain it, which reads as the app
+        // being broken rather than as the photo having expired.
         if (alive) setFailedUri(uri);
       },
     );
@@ -2857,10 +2857,10 @@ export default function MessageThread({
       return false;
     }
     if (source.attachment) {
-      // Attachments live in a cache that is swept after a week and can be
-      // cleared by hand. The bubble already reads "no longer available"; say
-      // the same thing here rather than starting a send whose only outcome is
-      // a red mark in a room the reader was not in a moment ago.
+      // Attachments live in a cache that retention, the received-media quota
+      // and Clear all empty. The bubble already says the file is gone; say the
+      // same thing here rather than starting a send whose only outcome is a
+      // red mark in a room the reader was not in a moment ago.
       if (!attachmentPresent(source.attachment.uri)) {
         // The same sentence the bubble is already showing, so the answer to
         // "why not" is one the reader has seen before.

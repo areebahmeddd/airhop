@@ -284,11 +284,12 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               }
             />
             <GroupDivider />
-            {/* Moved here from Privacy & security. It reads as a privacy
-                control (a seized phone holds less), but every neighbour of it
-                there was about what leaves this device, and this is about what
-                stays on it. Beside quality and show-media it completes one
-                subject: how media behaves, sending through keeping. */}
+            {/* Here rather than in Privacy & security. It reads as a
+                privacy control (a seized phone holds less), but every
+                neighbour there is about what leaves this device, and this is
+                about what stays on it. Beside quality and show-media it
+                completes one subject: how media behaves, sending through
+                keeping. */}
             <SettingLinkRow
               id="media-retention"
               icon="clock"
