@@ -204,8 +204,8 @@ export async function adoptIntoAttachmentCache(
   }
 }
 
-// Delete a picker's copy that will not be sent, or that was re-encoded. Only a
-// file under the cache directory: a URI anywhere else is not ours to remove.
+// Delete a picker's or the resizer's copy that will not be sent. Only a file
+// under the cache directory: a URI anywhere else is not ours to remove.
 export function discardPickerCopy(uri: string): void {
   try {
     if (!uri.startsWith(FileSystem.Paths.cache.uri)) return;

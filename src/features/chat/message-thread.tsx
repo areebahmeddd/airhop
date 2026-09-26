@@ -3198,12 +3198,12 @@ export default function MessageThread({
     service.sendDm(peerID, caption);
   }
 
-  // A photo is resized first. A camera file is measured in megabytes and the
-  // mesh takes 512 KiB, so without this step the common case (open camera, take
-  // a picture, send it) could not work at all. The sheet closes straight away
-  // and the bubble appears when the resize lands, which is the ordering every
-  // messenger uses; the resize never throws, so a photo it cannot read simply
-  // goes on as it was.
+  // A photo is resized first. A camera file is measured in megabytes and a sent
+  // photo is fitted to 256 KiB, so without this step the common case (open
+  // camera, take a picture, send it) could not work at all. The sheet closes
+  // straight away and the bubble appears when the resize lands, which is the
+  // ordering every messenger uses. A photo the encoder cannot open is refused
+  // before any bubble, rather than sent with its metadata.
   function confirmPendingAttachment(): void {
     const p = pendingAttachment;
     if (p === null) return;
@@ -3249,6 +3249,10 @@ export default function MessageThread({
         p.mimeType,
         UPLOAD_QUALITY_VALUES[useSettingsStore.getState().uploadQuality],
       );
+      if (ready === null) {
+        showAlert(t("chat.attach.not_sent"), t("chat.attach.read_failed"));
+        return;
+      }
       sendAttachmentMessage(
         "image",
         ready.uri,

@@ -37,20 +37,41 @@ jest.mock("expo-file-system", () => ({
   Paths: { cache: {} },
 }));
 
+// Each render the manipulator is asked for, in order: the probe first, then one
+// per rung. `failFrom` makes it refuse from that render on, as it does for a
+// file it cannot decode; `rungSizes` is what each saved rung weighs.
+const mockManipulator = {
+  renders: 0,
+  saves: 0,
+  failFrom: Infinity,
+  rungSizes: [] as number[],
+};
+
 jest.mock("expo-image-manipulator", () => ({
   SaveFormat: { JPEG: "jpeg" },
   ImageManipulator: {
     manipulate: () => ({
       resize: () => undefined,
-      renderAsync: () =>
-        Promise.resolve({
+      renderAsync: () => {
+        mockManipulator.renders += 1;
+        if (mockManipulator.renders >= mockManipulator.failFrom) {
+          return Promise.reject(new Error("cannot decode"));
+        }
+        return Promise.resolve({
           width: 800,
           height: 600,
           saveAsync: () => {
-            mockDisk.set("file:///reencoded.jpg", mockJpeg);
-            return Promise.resolve({ uri: "file:///reencoded.jpg" });
+            const n = mockManipulator.saves++;
+            const uri = `file:///rung${String(n)}.jpg`;
+            const size = mockManipulator.rungSizes[n];
+            mockDisk.set(
+              uri,
+              size === undefined ? mockJpeg : new Uint8Array(size),
+            );
+            return Promise.resolve({ uri });
           },
-        }),
+        });
+      },
     }),
   },
 }));
@@ -67,6 +88,10 @@ const fileTransfer = jest.requireMock<{
 
 beforeEach(() => {
   mockDisk.clear();
+  mockManipulator.renders = 0;
+  mockManipulator.saves = 0;
+  mockManipulator.failFrom = Infinity;
+  mockManipulator.rungSizes = [];
   fileTransfer.adoptIntoAttachmentCache.mockClear();
   fileTransfer.discardPickerCopy.mockClear();
 });
@@ -76,8 +101,8 @@ describe("prepareImageForSend", () => {
   it("re-encodes a JPEG however small, so its metadata never leaves", async () => {
     mockDisk.set("file:///a.jpg", mockJpeg);
     const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
-    expect(ready.uri).toBe("file:///reencoded.jpg");
-    expect(ready.mimeType).toBe("image/jpeg");
+    expect(ready?.uri).toBe("file:///rung0.jpg");
+    expect(ready?.mimeType).toBe("image/jpeg");
     // The picker's copy, EXIF and all, does not stay behind either.
     expect(fileTransfer.discardPickerCopy).toHaveBeenCalledWith(
       "file:///a.jpg",
@@ -91,8 +116,8 @@ describe("prepareImageForSend", () => {
       "w.webp",
       "image/webp",
     );
-    expect(ready.uri).toBe("file:///reencoded.jpg");
-    expect(ready.name).toBe("w.jpg");
+    expect(ready?.uri).toBe("file:///rung0.jpg");
+    expect(ready?.name).toBe("w.jpg");
   });
 
   it("sends a small GIF as it is, so it stays animated", async () => {
@@ -102,8 +127,8 @@ describe("prepareImageForSend", () => {
       "g.gif",
       "image/gif",
     );
-    expect(ready.uri).toBe("file:///g.gif");
-    expect(ready.mimeType).toBe("image/gif");
+    expect(ready?.uri).toBe("file:///g.gif");
+    expect(ready?.mimeType).toBe("image/gif");
     // Moved under the attachment prefix, so retention and Clear see it.
     expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledWith(
       "file:///g.gif",
@@ -115,8 +140,8 @@ describe("prepareImageForSend", () => {
   it("re-encodes a PNG that a .jpg name would have labelled JPEG", async () => {
     mockDisk.set("file:///img_1.jpg", PNG);
     const ready = await prepareImageForSend("file:///img_1.jpg", "img_1.jpg");
-    expect(ready.uri).toBe("file:///reencoded.jpg");
-    expect(ready.mimeType).toBe("image/jpeg");
+    expect(ready?.uri).toBe("file:///rung0.jpg");
+    expect(ready?.mimeType).toBe("image/jpeg");
   });
 
   it("keeps a correctly labelled PNG as a PNG", async () => {
@@ -126,7 +151,53 @@ describe("prepareImageForSend", () => {
       "b.png",
       "image/png",
     );
-    expect(ready.uri).toBe("file:///b.png");
-    expect(ready.mimeType).toBe("image/png");
+    expect(ready?.uri).toBe("file:///b.png");
+    expect(ready?.mimeType).toBe("image/png");
+  });
+
+  // The encode is what strips the camera's GPS, so a file it cannot open is
+  // refused rather than sent with its metadata.
+  it("refuses a JPEG the encoder cannot open, and keeps nothing of it", async () => {
+    mockDisk.set("file:///a.jpg", mockJpeg);
+    mockManipulator.failFrom = 1;
+    const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
+    expect(ready).toBeNull();
+    expect(fileTransfer.adoptIntoAttachmentCache).not.toHaveBeenCalled();
+    expect(fileTransfer.discardPickerCopy).toHaveBeenCalledWith(
+      "file:///a.jpg",
+    );
+  });
+
+  it("refuses a WebP whose first encode fails after the probe", async () => {
+    mockDisk.set("file:///w.webp", WEBP);
+    mockManipulator.failFrom = 2;
+    const ready = await prepareImageForSend(
+      "file:///w.webp",
+      "w.webp",
+      "image/webp",
+    );
+    expect(ready).toBeNull();
+    expect(fileTransfer.adoptIntoAttachmentCache).not.toHaveBeenCalled();
+  });
+
+  // Only the version that is sent is adopted; every other rung is deleted, or
+  // it would count toward Storage with no message pointing at it.
+  it("keeps only the rung it sends", async () => {
+    mockDisk.set("file:///a.jpg", mockJpeg);
+    mockManipulator.rungSizes = [400 * 1024, 300 * 1024, 100 * 1024];
+    const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
+    expect(ready?.uri).toBe("file:///rung2.jpg");
+    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledTimes(1);
+    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledWith(
+      "file:///rung2.jpg",
+      "a.jpg",
+    );
+    const discarded = fileTransfer.discardPickerCopy.mock.calls.map(
+      (call: unknown[]) => call[0],
+    );
+    expect(discarded).toEqual(
+      expect.arrayContaining(["file:///rung0.jpg", "file:///rung1.jpg"]),
+    );
+    expect(discarded).not.toContain("file:///rung2.jpg");
   });
 });

@@ -1,10 +1,10 @@
-// Fit a photo inside the mesh's 512 KiB image budget before it is sent.
+// Fit a photo inside the 256 KiB send budget (MAX_SENT_IMAGE_BYTES) before it
+// is sent.
 //
-// A phone camera produces several megabytes. The wire limit is 512 KiB
-// (bitchat's FileTransferLimits, mirrored in bitchat-file-packet), and at
-// Bluetooth's ~18 KiB/s even a file that fits takes half a minute, so sending
-// the original is not something anyone wants even where it would be allowed.
-// Every messenger resizes before sending for exactly this reason.
+// A phone camera produces several megabytes, and at Bluetooth's ~18 KiB/s even
+// a file at the 512 KiB photo cap takes most of bitchat's 30-second assembly
+// window (see MAX_SENT_IMAGE_BYTES). Every messenger resizes before sending for
+// the same reason.
 //
 // It changes nothing on the wire. The result is an ordinary JPEG in an ordinary
 // FILE_TRANSFER packet, so a bitchat peer sees a photo it already knew how to
@@ -17,10 +17,10 @@
 // go as they are, since re-encoding would flatten an animation or blur a
 // screenshot, and neither carries camera location in practice.
 //
-// Deliberately never throws: a photo that cannot be resized is still worth
-// trying to send at its original size, where the size check in
-// FileTransferService gives the sender a reason about their photo rather than a
-// failure from inside an image library.
+// Never throws. A GIF or PNG that cannot be resized still goes at its original
+// size, where the size check in FileTransferService gives the sender a reason
+// about their photo. Anything else that cannot be re-encoded is refused (null)
+// rather than sent with the metadata the encode exists to strip.
 
 import {
   MAX_SENT_IMAGE_BYTES,
@@ -107,22 +107,24 @@ function jpegName(name: string | undefined): string {
 const SENT_AS_IS = new Set(["image/gif", "image/png"]);
 
 // Resize and re-encode until the file fits the image budget. Returns the
-// original, moved under the attachment prefix, when it is a GIF or PNG that
-// already fits or when the image cannot be read. Either way the picker's copy
-// does not outlive the call, so retention and Clear account for what is sent.
+// original when it is a GIF or PNG that fits, or one that cannot be read, and
+// null for any other image that cannot be re-encoded. Whatever is returned is
+// moved under the attachment prefix and nothing else outlives the call, so
+// retention and Clear account for what is sent.
 export async function prepareImageForSend(
   uri: string,
   name?: string,
   mimeType?: string,
   // The user's Upload quality setting, 0-1. Sets where the ladder starts.
   quality = 0.7,
-): Promise<PreparedImage> {
+): Promise<PreparedImage | null> {
   const ready = await fitToBudget(uri, name, mimeType, quality);
-  if (ready.uri !== uri) {
-    discardPickerCopy(uri);
-    return ready;
-  }
-  return { ...ready, uri: await adoptIntoAttachmentCache(uri, ready.name) };
+  if (ready?.uri !== uri) discardPickerCopy(uri);
+  if (ready === null) return null;
+  return {
+    ...ready,
+    uri: await adoptIntoAttachmentCache(ready.uri, ready.name),
+  };
 }
 
 async function fitToBudget(
@@ -130,7 +132,7 @@ async function fitToBudget(
   name: string | undefined,
   mimeType: string | undefined,
   quality: number,
-): Promise<PreparedImage> {
+): Promise<PreparedImage | null> {
   const original: PreparedImage = {
     uri,
     // Resolved, never assumed. Defaulting an unlabelled file to image/jpeg
@@ -158,6 +160,9 @@ async function fitToBudget(
   ) {
     return original;
   }
+  // What goes out when no encode succeeds. Only the formats that may go as
+  // they are: a JPEG or WebP carries the camera's EXIF, GPS included.
+  const unencoded = SENT_AS_IS.has(original.mimeType) ? original : null;
 
   // Source dimensions, read once, so each attempt below is a single render.
   let sourceWidth: number;
@@ -167,10 +172,10 @@ async function fitToBudget(
     sourceWidth = probe.width;
     sourceHeight = probe.height;
   } catch {
-    return original;
+    return unencoded;
   }
   const longestEdge = Math.max(sourceWidth, sourceHeight);
-  if (longestEdge <= 0) return original;
+  if (longestEdge <= 0) return unencoded;
 
   let best: PreparedImage | null = null;
   for (const attempt of attemptsFor(quality)) {
@@ -190,19 +195,21 @@ async function fitToBudget(
       const rendered = await context.renderAsync();
       const saved = await rendered.saveAsync(options);
       const sizeBytes = fileSize(saved.uri);
-      if (sizeBytes <= 0) continue;
-
-      const outputName = jpegName(name);
-      const candidate: PreparedImage = {
-        uri: await adoptIntoAttachmentCache(saved.uri, outputName),
+      // Only the smallest render is kept, so if a harsher rung fails outright
+      // there is still something better than the original. Every other one is
+      // deleted, or it would count toward Storage with nothing pointing at it.
+      if (sizeBytes <= 0 || (best !== null && sizeBytes >= best.sizeBytes)) {
+        discardPickerCopy(saved.uri);
+        continue;
+      }
+      if (best !== null) discardPickerCopy(best.uri);
+      best = {
+        uri: saved.uri,
         mimeType: "image/jpeg",
-        name: outputName,
+        name: jpegName(name),
         sizeBytes,
       };
-      if (sizeBytes <= MAX_SENT_IMAGE_BYTES) return candidate;
-      // Keep the smallest seen, so if a harsher rung fails outright we still
-      // have something better than the original to fall back on.
-      if (best === null || sizeBytes < best.sizeBytes) best = candidate;
+      if (sizeBytes <= MAX_SENT_IMAGE_BYTES) return best;
     } catch {
       // Unreadable, unsupported, or out of memory. A harsher rung would fail
       // the same way, so stop here.
@@ -212,5 +219,5 @@ async function fitToBudget(
 
   // Nothing fit. Send the smallest version we managed and let the size check in
   // FileTransferService be the one to refuse it.
-  return best ?? original;
+  return best ?? unencoded;
 }
