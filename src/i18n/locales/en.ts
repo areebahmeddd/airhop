@@ -484,7 +484,7 @@ export const strings = {
   "chat.thread.across_bridge": "{count} across bridge",
   "chat.thread.bridged": "bridged",
   "chat.thread.invite_body":
-    "Join me in {channel} on Airhop — offline-first, private mesh messaging.",
+    "Join me in {channel} on Airhop: offline-first, private mesh messaging.",
   "chat.thread.go_back_unread": "Go back, {count} unread",
   "chat.thread.view_info": "View info for {name}",
   "chat.thread.notices_new": "Notices for this channel, {count} new",
@@ -2223,7 +2223,7 @@ export const strings = {
   "settings.qr.save_failed_body": "The QR code could not be saved. Try again.",
   "settings.qr.share_message": "Add me on Airhop",
   "settings.qr.share_body":
-    "Add me on Airhop — offline-first, private mesh messaging.",
+    "Add me on Airhop: offline-first, private mesh messaging.",
   "settings.qr.show_short": "Show QR",
   "settings.qr.title": "Your QR code",
   "settings.qr.note":
