@@ -2491,15 +2491,22 @@ export default function MessageThread({
       } else if (sent.gateway) {
         setStatus(msgChannel, msg.id, "carried");
         showStatus("gateway");
-      } else if (isGeoChannel(msgChannel)) {
+      } else if (
+        isGeoChannel(msgChannel) ||
+        useChatStore.getState().channelKeys[msgChannel] !== undefined
+      ) {
         // A location cell's audience is everyone in it, reached over the
         // internet. A Bluetooth neighbour arriving later will sync the packet,
         // but the cell itself never sees it, so this is as far as it goes.
+        //
+        // A private channel's sealed packet is never kept for sync and its
+        // relay publish is one-shot, so nothing sends it later either. Failed
+        // is what offers Retry.
         setStatus(msgChannel, msg.id, "failed");
         showNoReachStatus();
       } else {
-        // A mesh channel's audience IS whoever is in range, and the packet stays
-        // a gossip candidate for six hours, so the next neighbour to turn
+        // A public mesh room's audience IS whoever is in range, and the packet
+        // stays a gossip candidate for six hours, so the next neighbour to turn
         // up gets it. Same reasoning as the group branch above: this is waiting,
         // not broken, and painting it red would be the harsher of two lies.
         setStatus(msgChannel, msg.id, "queued");
