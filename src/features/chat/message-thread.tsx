@@ -675,6 +675,24 @@ function TransferProgressList({
                 })
               : formatBytes(t.totalBytes);
 
+        // A receive has no name until the file is whole, so its title is the
+        // status and, in a DM, who it is from.
+        const title =
+          t.direction === "send"
+            ? t.peerLabel
+              ? T("chat.transfer.title_peer", {
+                  status: verb,
+                  name: t.name,
+                  peer: t.peerLabel,
+                })
+              : T("chat.transfer.title", { status: verb, name: t.name })
+            : t.peerLabel
+              ? T("chat.transfer.title_from", {
+                  status: verb,
+                  peer: t.peerLabel,
+                })
+              : verb;
+
         return (
           <View key={t.id} style={styles.card}>
             <Feather
@@ -701,19 +719,33 @@ function TransferProgressList({
             <View style={styles.body}>
               <View style={styles.topRow}>
                 <Text style={styles.name} numberOfLines={1}>
-                  {verb} {t.name}
-                  {t.peerLabel ? ` · ${t.peerLabel}` : ""}
+                  {title}
                 </Text>
                 {t.status === "active" || t.status === "stalled" ? (
                   <View style={styles.transferRight}>
                     <Text style={styles.pct}>{pct}%</Text>
+                    {/* A send can be stopped. A receive cannot, since the
+                        sender keeps sending, so X only hides its card and the
+                        file still lands when whole. A hidden card is not put
+                        back: only a stream's first fragment opens one. */}
                     <Pressable
-                      onPress={() => getMeshService()?.cancelTransfer(t.id)}
+                      onPress={() =>
+                        t.direction === "send"
+                          ? getMeshService()?.cancelTransfer(t.id)
+                          : useTransferStore.getState().dismiss(t.id)
+                      }
                       hitSlop={HIT_SLOP}
                       accessibilityRole="button"
-                      accessibilityLabel={T("chat.thread.cancel_transfer", {
-                        name: t.name,
-                      })}
+                      accessibilityLabel={
+                        t.direction === "send"
+                          ? T("chat.thread.cancel_transfer", { name: t.name })
+                          : T("chat.thread.hide_transfer")
+                      }
+                      accessibilityHint={
+                        t.direction === "send"
+                          ? undefined
+                          : T("chat.thread.hide_transfer_hint")
+                      }
                     >
                       <Feather name="x" size={16} color={Colors.textMuted} />
                     </Pressable>
