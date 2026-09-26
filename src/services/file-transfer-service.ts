@@ -1015,52 +1015,32 @@ export class FileTransferService {
       return;
     }
 
-    // A directed attachment is for its addressee, not for whoever relays it.
-    //
-    // FILE_TRANSFER floods like everything else, so a DM attachment travelling
-    // from A to B is forwarded by B onto all of B's other links, and by every
-    // node after that, out to TTL 7. Without this check each of those nodes fell
-    // into the `dm:<sender>` branch below, wrote the file to its own cache and
-    // rendered it in its own thread with A. A private photo sent to one person
-    // was therefore readable by every device within seven hops of either end,
-    // with no key, no session and no signature needed - only proximity.
-    //
-    // Every other directed handler in mesh-service already scopes itself this
-    // way (onNoiseHandshake, onNoiseEncrypted, onDREncrypted, onPing, onPong);
-    // this path was the exception. bitchat scopes it in
-    // BLEFileTransferPolicy.deliveryPlan, which returns "relay only, do not
-    // deliver" when recipientID is not the local peer.
-    //
-    // Relaying is unaffected: that already happened in handleRaw before this
-    // point, so forwarding for other people still works. Only the decision to
-    // DELIVER is narrowed.
+    // A directed attachment is for its addressee alone. A relay forwards it
+    // (handleRaw already has) but must not deliver it: otherwise every node on
+    // the path writes a private file to its own cache and renders it in its own
+    // thread with the sender. bitchat scopes it the same way in
+    // BLEFileTransferPolicy.deliveryPlan ("relay only, do not deliver").
     if (!sealed && !isBroadcast(packet) && !directedToMe) {
       return;
     }
 
-    // The channel tag is attacker-controlled: it is an arbitrary UTF-8 string
-    // read straight off the wire, so it must never decide unchecked which room
-    // the attachment lands in. Two rules bring it in line with the rest of the
-    // app, both mirroring what already exists elsewhere:
+    // The channel tag is attacker-controlled, an arbitrary string read off the
+    // wire, so it never decides unchecked where the file lands:
     //
-    //   - It must name a room the user actually joined. onChannelMsg makes the
-    //     same check with the same reasoning ("any peer in radio range could
-    //     inject arbitrary channels into someone's list"), and this path is the
-    //     one that was still calling addChannel() on an unvalidated name.
-    //   - Media may only travel where canSendMedia() allows. The send side has
-    //     always refused to put an attachment into a private #channel or a
-    //     group: an attachment is signed but NOT encrypted, so one landing in an
-    //     encrypted room breaks exactly the promise that room makes. Enforcing
-    //     it only when sending meant an outsider who knew the room's name could
-    //     do what a member is forbidden from doing.
+    //   - It may name only where media may travel. An attachment is signed but
+    //     not encrypted, so one landing in a private #channel or a group breaks
+    //     the promise that room makes.
+    //   - It may never name a DM. A DM is addressed by recipient ID and never
+    //     tagged (bitchat routes DM attachments the same way), so a tag naming
+    //     one is a forgery that would put the file in that contact's thread,
+    //     which shows no sender. acceptPublicMessage refuses the same for text.
+    //   - It must name a room the user joined, as onChannelMsg requires, or any
+    //     peer in range could add rooms to someone's list.
     //
-    // Only the tag is validated. The derived fallbacks below are computed here
-    // from the packet's own routing, so they are not attacker-chosen: a DM is
-    // addressed by recipient ID and carries no tag at all (bitchat routes DM
-    // attachments the same way), which is why this is not simply a blanket
-    // membership check that would drop a first attachment from a new contact.
+    // The untagged fallbacks below come from the packet's own routing, not from
+    // the sender's choice of string.
     if (fp.channel !== undefined) {
-      if (!canSendMedia(fp.channel)) return;
+      if (fp.channel.startsWith("dm:") || !canSendMedia(fp.channel)) return;
       if (!useChatStore.getState().channels.includes(fp.channel)) return;
     }
 

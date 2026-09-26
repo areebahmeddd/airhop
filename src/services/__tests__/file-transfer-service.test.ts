@@ -739,6 +739,26 @@ describe("receiving a file", () => {
     expect(globalThis.__cache.size).toBe(0);
   });
 
+  // A DM is addressed by recipient ID and never tagged, so a tag naming one is
+  // a forgery: it would put the file in that contact's thread, unlabelled.
+  it("refuses a public file tagged with a direct message thread", async () => {
+    const contact = "dm:99aa99aa99aa99aa";
+    useChatStore.getState().addChannel(contact);
+    const tlv = encodeFilePacket({
+      fileName: "photo.jpg",
+      mimeType: "image/jpeg",
+      content: JPEG,
+      channel: contact,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    const { service } = makeService();
+    service.onFileTransfer(broadcast(tlv));
+    service.onSealedFile("1122334455667788", tlv);
+    await settle();
+    expect(useChatStore.getState().messages[contact] ?? []).toEqual([]);
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
   it("leaves no half-written file when the disk refuses it", async () => {
     useChatStore.getState().addChannel("#bluetooth");
     globalThis.__writeFails = true;
