@@ -671,6 +671,63 @@ describe("GossipSync: stores", () => {
   });
 });
 
+// A reply this node was handed and refused, typically history from an author
+// it cannot verify: advertised so the peer stops offering it, never served.
+describe("GossipSync: replies not kept", () => {
+  const identity = makeIdentity();
+
+  test("are advertised as held, and never served", () => {
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    const history = makePacket(
+      PacketType.CHANNEL_MSG,
+      60_000,
+      new Uint8Array([1]),
+    );
+    responder.track(history);
+    expect(
+      responder.handleFilter(
+        requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND),
+      ),
+    ).toHaveLength(1);
+
+    requester.noteReply({ ...history, ttl: 0, isRSR: true });
+    expect(requester.seenCount).toBe(0);
+    expect(requester.handleFilter(emptyFilterPacket())).toHaveLength(0);
+    expect(
+      responder.handleFilter(
+        requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND),
+      ),
+    ).toHaveLength(0);
+  });
+
+  test("one accepted later is kept and served like any other", () => {
+    const gs = new GossipSync();
+    const msg = makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1]));
+    gs.noteReply(msg);
+    gs.track(msg);
+    expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
+  });
+
+  test("age out on their type's window", () => {
+    const gs = new GossipSync();
+    const announce = makePacket(
+      PacketType.ANNOUNCE,
+      30_000,
+      new Uint8Array([1]),
+    );
+    gs.noteReply(announce);
+    const advertised = (now: number): number =>
+      decodeGossipFilterPayload(
+        gs.buildFilterPacket(identity, PEER, MESSAGE_ROUND, now).payload,
+      )!.data.length;
+    expect(advertised(Date.now())).toBeGreaterThan(0);
+    const later = Date.now() + 31_000;
+    gs.prune(later);
+    expect(advertised(later)).toBe(0);
+  });
+});
+
 // bitchat-ios sends one request per due schedule. In one union filter a busy
 // room's messages push an older board post behind the since-cursor, and it is
 // never offered again.

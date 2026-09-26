@@ -70,6 +70,9 @@ const BOARD_CAPACITY = 200;
 // (latestAnnouncementByPeer). It sets no count; this one is Airhop's, since a
 // verified announce costs nothing more than a freshly minted identity.
 const ANNOUNCE_CAPACITY = 1000;
+// Sync replies remembered without being kept (see GossipSync.noteReply), as
+// many as the message store holds.
+const DECLINED_CAPACITY = MESSAGE_CAPACITY;
 
 // REQUEST_SYNC and every packet sent in answer to one travel exactly one hop.
 // bitchat sets ttl 0 in both directions (GossipSyncManager.sendRequestSync and
@@ -241,7 +244,10 @@ export function isSyncReplyInWindow(packet: Packet, now: number): boolean {
 // past the local clock is either a badly skewed device or a sender trying to
 // pin an entry at the head of everyone's candidate set forever, and neither is
 // something to carry on someone else's behalf.
-function isFreshCandidate(packet: Packet, now: number): boolean {
+function isFreshCandidate(
+  packet: Pick<Packet, "type" | "timestamp">,
+  now: number,
+): boolean {
   const maxAge = maxAgeForType(packet.type);
   if (maxAge === null) return false;
   const age = now - packet.timestamp;
@@ -619,6 +625,8 @@ export class GossipSync {
     this.groups,
     this.boards,
   ];
+  // Sync replies we were handed and did not keep, by packet ID. See noteReply.
+  private readonly declined = new Map<string, FilterEntry>();
   private timer: ReturnType<typeof setInterval> | null = null;
   // Not a deduplicator: a peer asks every 15s and gets an answer. This only
   // caps one asking far faster, since each answer costs a store scan and a
@@ -673,6 +681,9 @@ export class GossipSync {
     for (const store of this.stores) {
       store.removeWhere((packet) => !isFreshCandidate(packet, now));
     }
+    for (const [key, entry] of this.declined) {
+      if (!isFreshCandidate(entry, now)) this.declined.delete(key);
+    }
     this.rateLimiter.prune(now);
   }
 
@@ -688,7 +699,9 @@ export class GossipSync {
   // only, and never a type that is not gossiped. An announce replaces its
   // sender's older one.
   track(packet: Packet): void {
-    if (!isBroadcast(packet)) return;
+    if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
+    const key = bytesToHex(computePacketId(packet));
+    this.declined.delete(key);
     switch (packet.type) {
       case PacketType.ANNOUNCE: {
         const sender = bytesToHex(packet.senderID);
@@ -699,16 +712,40 @@ export class GossipSync {
       }
       case PacketType.CHANNEL_MSG:
       case PacketType.CHANNEL_MSG_AIRHOP:
-        this.messages.insert(packetKey(packet), packet);
+        this.messages.insert(key, packet);
         return;
       case PacketType.GROUP_MESSAGE:
-        this.groups.insert(packetKey(packet), packet);
+        this.groups.insert(key, packet);
         return;
       case PacketType.BOARD_POST:
-        this.boards.insert(packetKey(packet), packet);
+        this.boards.insert(key, packet);
         return;
       default:
         return;
+    }
+  }
+
+  // A packet that arrived as a reply to one of our requests, before any
+  // handler has judged it. One a handler goes on to accept is tracked, which
+  // takes it off this list. One it refuses stays, most often history from an
+  // author whose announce this node never heard and so cannot verify: nothing
+  // here is ever served, but the ID goes into our own filters, or every peer
+  // we ask would offer it again every round for as long as it stays servable.
+  // Only replies are remembered, so only a neighbour we asked could plant an
+  // ID here, and it could as easily withhold the packet.
+  noteReply(packet: Packet): void {
+    if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
+    const id = computePacketId(packet);
+    const key = bytesToHex(id);
+    this.declined.delete(key);
+    this.declined.set(key, {
+      type: packet.type,
+      timestamp: packet.timestamp,
+      id,
+    });
+    for (const oldest of this.declined.keys()) {
+      if (this.declined.size <= DECLINED_CAPACITY) break;
+      this.declined.delete(oldest);
     }
   }
 
@@ -730,11 +767,16 @@ export class GossipSync {
     // Newest first: the filter builder trims from the tail when it overflows
     // its byte budget, so this ordering is what makes the covered set a
     // contiguous newest-prefix and the cursor below exact.
-    const candidates = [...this.packets()]
-      .filter((p) => inTypes(p.type, types) && isFreshCandidate(p, now))
+    const held: FilterEntry[] = [...this.packets()].map((p) => ({
+      type: p.type,
+      timestamp: p.timestamp,
+      id: computePacketId(p),
+    }));
+    const candidates = [...held, ...this.declined.values()]
+      .filter((e) => inTypes(e.type, types) && isFreshCandidate(e, now))
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    const h64s = candidates.map((p) => packetIdToH64(computePacketId(p)));
+    const h64s = candidates.map((e) => packetIdToH64(e.id));
     const { p, m, data, includedCount } = buildGcsFilter(
       h64s,
       GCS_MAX_BYTES,
@@ -839,15 +881,19 @@ export class GossipSync {
 
   reset(): void {
     for (const store of this.stores) store.clear();
+    this.declined.clear();
     this.rateLimiter.reset();
   }
 }
 
-// ---- Helpers ----
-
-function packetKey(packet: Packet): string {
-  return bytesToHex(computePacketId(packet));
+// What a filter needs of a packet: enough to date it, type it and hash it.
+interface FilterEntry {
+  type: PacketType;
+  timestamp: number;
+  id: Uint8Array;
 }
+
+// ---- Helpers ----
 
 function bytesToHex(bytes: Uint8Array): string {
   let s = "";

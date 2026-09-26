@@ -1779,6 +1779,9 @@ export class MeshService {
     });
     if (!isNew) return;
 
+    // A sync reply is advertised as held whatever the handler makes of it, so
+    // the peer does not offer one we refuse again every round.
+    if (packet.isRSR === true) this.gossip.noteReply(packet);
     this.routePacket(packet, linkID);
   }
 
@@ -1853,6 +1856,7 @@ export class MeshService {
     // The same packet may also arrive whole over another radio, or as a second
     // fragment stream from another relay.
     if (!this.floodRouter.admit(inner)) return;
+    if (inner.isRSR === true) this.gossip.noteReply(inner);
     this.routePacket(inner, linkID);
   }
 

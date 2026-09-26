@@ -1315,3 +1315,64 @@ test("S15 a flood of forged messages neither crowds out real history nor rides a
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("S16 history a newcomer cannot verify is offered once, not every round", async () => {
+  // A newcomer keeps only what it verified, and it cannot verify someone who
+  // stopped announcing before it arrived. If what it could not keep were not
+  // remembered, every neighbour would offer it again every round, for as long
+  // as the history stays servable.
+  const s = (scenario = new Scenario({
+    id: "S16",
+    title: "unverifiable backfill is not a loop",
+    seed: 116,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "dave"]);
+  const [alice, bob, dave] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    45_000,
+  );
+
+  const said = ["one", "two", "three", "four", "five"];
+  for (const text of said) alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => said.every((t) => bob.texts(channel).includes(t)),
+    20_000,
+  );
+  s.check("bob heard alice", bobHeard);
+
+  // Alice leaves; her last announce ages out of what bob will serve.
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  let offered = 0;
+  radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== bob.id || linkID !== `link:${dave.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.isRSR === true && p.type === PacketType.CHANNEL_MSG) offered++;
+  });
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([["bob", "dave"]]);
+  await waitForCoarse(s.world, () => bob.peers().includes(dave.peerID), 45_000);
+  // Several rounds, each answered.
+  await s.world.advance(90_000);
+
+  s.check(
+    "dave, who never met alice, shows none of it",
+    !said.some((t) => dave.texts(channel).includes(t)),
+  );
+  s.check(
+    "bob offered alice's messages about once, not once a round",
+    offered > 0 && offered <= said.length * 2,
+    `${String(offered)} offered`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
