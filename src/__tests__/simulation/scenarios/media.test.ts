@@ -40,6 +40,12 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: mod };
 });
 
+import { fragmentPacket } from "@core/mesh/routing/fragment-manager";
+import {
+  encodeBurstData,
+  encodeBurstStart,
+  VoiceCodec,
+} from "@core/mesh/voice/voice-capture";
 import {
   encodeFilePacket,
   MAX_SENT_IMAGE_BYTES,
@@ -52,6 +58,8 @@ import {
   signPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import { BitchatActor } from "../harness/bitchat-actor";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import {
@@ -80,6 +88,13 @@ function toBase64(bytes: Uint8Array): string {
     out += b2 === undefined ? "=" : B64[b2 & 0x3f];
   }
   return out;
+}
+
+function fromBase64(dataBase64: string): Uint8Array {
+  const bin = globalThis.atob(dataBase64);
+  const raw = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
+  return raw;
 }
 
 function peerIdToBytes(hex: string): Uint8Array {
@@ -482,6 +497,20 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   const captions = (): string[] =>
     [...bob.texts(channel), ...bob.texts(`dm:${alice.peerID}`)].filter(Boolean);
 
+  // What bob forwards under alice's name while alice herself sends nothing.
+  let relayedAsAlice = 0;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== bob.id) return;
+    const p = decodePacket(fromBase64(dataBase64));
+    if (
+      p !== null &&
+      (p.type === PacketType.FILE_TRANSFER || p.type === PacketType.FRAGMENT) &&
+      bytesToHex(p.senderID) === alice.peerID
+    ) {
+      relayedAsAlice++;
+    }
+  });
+
   // 1. Unsigned, claiming alice. This is the one that used to work: nothing on
   //    the attachment path looked at the signature at all.
   radio.injectTo(
@@ -571,6 +600,32 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
     `bob's rooms = [${bob.channels().join(", ")}]`,
   );
 
+  // 5. A public photo under alice's ID, signed by mallory, arriving whole as it
+  //    would over Wi-Fi or LAN. Relaying it would cut it into Bluetooth
+  //    fragments for every other neighbour.
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    forgeAttachment({
+      claimedPeerID: alice.peerID,
+      content: media.jpeg(2_000),
+      caption: "public, claiming alice",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(5_000);
+  stopTap();
+  s.check(
+    "no forged file under alice's name left bob, whole or in fragments",
+    relayedAsAlice === 0,
+    `${relayedAsAlice} written`,
+  );
+  s.check(
+    "nor was it rendered",
+    !captions().includes("public, claiming alice"),
+  );
+
   // The control: a real attachment from alice still arrives. A rule that
   // dropped everything would pass all four checks above and be worthless.
   alice.sendAttachment(`dm:${bob.peerID}`, media.jpeg(3_000), {
@@ -613,14 +668,19 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
     android("alice", 11),
     android("bob", 22),
     android("carol", 33),
+    android("dave", 44),
   ]);
-  const [alice, bob, carol] = devices;
+  const [alice, bob, carol, dave] = devices;
+  // Out of range while alice speaks, so nothing of her burst sits in his
+  // deduplicator when it is replayed at him.
+  radio.setIsolated(dave.id, true);
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
   await waitFor(s.world, () => carol.peers().includes(alice.peerID), 20_000);
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
   bob.listenTo(channel);
   carol.listenTo(channel);
+  dave.listenTo(channel);
 
   // Capture everything Alice puts on the air, exactly as an attacker with a
   // radio would. No keys, no session, no cooperation from anyone.
@@ -644,6 +704,33 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
   );
   s.check("frames were captured off the air", captured.length > 0);
 
+  // 45 s on: inside the two-minute ingress window every packet gets, past the
+  // 30 s a burst lives. Stale audio is not worth anyone's airtime either, so
+  // dave neither plays nor forwards it.
+  const spokenAt = s.world.wallClock();
+  radio.setIsolated(dave.id, false);
+  const daveHeard = await waitFor(
+    s.world,
+    () => dave.peers().includes(alice.peerID),
+    30_000,
+  );
+  s.check("dave came into range", daveHeard);
+  await s.world.advance(Math.max(0, spokenAt + 45_000 - s.world.wallClock()));
+  let daveRelayed = 0;
+  const unwatch = radio.tapWrites((fromID, _linkID, dataBase64) => {
+    if (fromID !== dave.id) return;
+    const p = decodePacket(fromBase64(dataBase64));
+    if (p?.type === PacketType.VOICE_FRAME) daveRelayed++;
+  });
+  for (const frame of captured) radio.injectTo(dave.id, alice.id, frame);
+  await s.world.advance(3_000);
+  unwatch();
+  s.check(
+    "a 45 s old burst is neither played nor relayed",
+    (dave.voice?.framesPlayed.length ?? 0) === 0 && daveRelayed === 0,
+    `played=${String(dave.voice?.framesPlayed.length)} relayed=${daveRelayed}`,
+  );
+
   // Well past the 30s window. Also past the deduplicator's five minutes, so
   // dedup cannot be what refuses the replay.
   await s.world.advance(10 * 60 * 1000);
@@ -654,6 +741,46 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
 
   s.check(
     "replaying alice's recorded burst plays nothing",
+    (bob.voice?.framesPlayed.length ?? 0) === bobBefore,
+    `before=${String(bobBefore)} after=${String(bob.voice?.framesPlayed.length)}`,
+  );
+
+  // A fresh burst under alice's ID signed by a stranger's key, padded past one
+  // frame so it arrives as fragments. Nobody fragments a real burst, and a
+  // reassembled packet is never relayed, so this is a way round the relay
+  // gate; it must meet the same check there.
+  const strangerKey = ed25519.utils.randomSecretKey();
+  const forgedBurst = randomBytes(8);
+  const forgeFrame = (payload: Uint8Array): void => {
+    const packet: Packet = {
+      type: PacketType.VOICE_FRAME,
+      ttl: 7,
+      flags: Flags.SIGNED,
+      senderID: peerIdToBytes(alice.peerID),
+      recipientID: new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload,
+    };
+    packet.signature = signPacket(packet, strangerKey);
+    for (const f of fragmentPacket(packet, { peerID: alice.peerID })) {
+      radio.injectTo(bob.id, carol.id, toBase64(encodePacket(f)));
+    }
+  };
+  const padded = randomBytes(600);
+  padded.set(encodeBurstStart(forgedBurst, VoiceCodec.AAC_LC_16KHZ_MONO));
+  forgeFrame(padded);
+  forgeFrame(
+    encodeBurstData(forgedBurst, 1, [
+      randomBytes(150),
+      randomBytes(150),
+      randomBytes(150),
+      randomBytes(150),
+    ]),
+  );
+  await s.world.advance(3_000);
+  s.check(
+    "a forged burst sent as fragments plays nothing",
     (bob.voice?.framesPlayed.length ?? 0) === bobBefore,
     `before=${String(bobBefore)} after=${String(bob.voice?.framesPlayed.length)}`,
   );
@@ -857,10 +984,7 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   const onAir: Packet[] = [];
   const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== alice.id) return;
-    const bin = globalThis.atob(dataBase64);
-    const raw = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
-    const p = decodePacket(raw);
+    const p = decodePacket(fromBase64(dataBase64));
     if (p !== null) onAir.push(p);
   });
 
@@ -1081,5 +1205,228 @@ test("M11 a bitchat-android voice burst reaches an Airhop speaker", async () => 
   );
   s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));
   s.expectNone("process health", noCrashes([bob]));
+  s.assert(true);
+});
+
+test("M13 past 100 MiB of received media, the oldest file goes and the newest plays", async () => {
+  // bitchat-ios keeps received media under a 100 MiB quota, oldest first. The
+  // disk is filled directly rather than over a radio: it is the eviction that
+  // is under test, not a hundred megabytes of Bluetooth.
+  const s = (scenario = new Scenario({
+    id: "M13",
+    title: "received media is capped, and the oldest is what makes room",
+    seed: 1313,
+  }));
+  const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+  const [alice, bob] = devices;
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID), 20_000);
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+
+  const first = media.jpeg(40_000);
+  alice.sendAttachment(channel, first, {
+    type: "image",
+    name: "first.jpg",
+    mimeType: "image/jpeg",
+  });
+  await waitFor(s.world, () => bob.attachments(channel).length === 1, 60_000);
+
+  // Everything received since, up to 20 KB short of room for the next photo.
+  // One buffer shared by every entry, so the test holds a megabyte, not a
+  // hundred.
+  const MiB = 1024 * 1024;
+  const second = media.jpeg(40_000);
+  const filler = new Uint8Array(MiB);
+  const room100 = 100 * MiB - first.length - second.length + 20_000;
+  const whole = Math.floor(room100 / MiB);
+  for (let i = 0; i < whole; i++) {
+    bob.seedCacheFile(`airhop_in_${String(i)}_filler.jpg`, filler);
+  }
+  bob.seedCacheFile(
+    "airhop_in_rest_filler.jpg",
+    new Uint8Array(room100 - whole * MiB),
+  );
+
+  alice.sendAttachment(channel, second, {
+    type: "image",
+    name: "second.jpg",
+    mimeType: "image/jpeg",
+  });
+  const arrived = await waitFor(
+    s.world,
+    () => bob.attachments(channel).length === 2,
+    60_000,
+  );
+  s.check("the newest photo arrived", arrived);
+
+  const [oldest, newest] = bob.attachments(channel);
+  const oldBytes = oldest?.attachment?.uri
+    ? bob.readAttachment(oldest.attachment.uri)
+    : null;
+  const newBytes = newest?.attachment?.uri
+    ? bob.readAttachment(newest.attachment.uri)
+    : null;
+  s.check(
+    "the oldest received file made room, so its bubble reads as not on this device",
+    oldBytes === null,
+    `oldest still holds ${String(oldBytes?.length)} bytes`,
+  );
+  s.check(
+    "the newest plays, byte for byte",
+    newBytes !== null && sameBytes(newBytes, second),
+  );
+  const received = bob
+    .files()
+    .filter((f) => f.uri.startsWith("file:///cache/airhop_in_"))
+    .reduce((sum, f) => sum + f.bytes.length, 0);
+  s.check(
+    "what bob keeps of others' media fits the quota",
+    received <= 100 * MiB,
+    `${String(received)} bytes kept`,
+  );
+  s.check(
+    "only as much as needed was evicted",
+    bob.files().some((f) => f.uri.endsWith("airhop_in_0_filler.jpg")),
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("M14 a receiving card appears only for a file that could be real, and never more than three", async () => {
+  // Fragments carry no signature, so the first one of a stream is a claim
+  // anybody can make, one forged frame per card. A card is kept to senders
+  // whose file could verify, to a sealed file there is a session to open, and
+  // to three at once.
+  const s = (scenario = new Scenario({
+    id: "M14",
+    title: "incoming progress cards under forged fragments",
+    seed: 57,
+  }));
+  const { radio, devices } = room(s, [
+    android("alice", 11),
+    android("bob", 22),
+    android("mallory", 77),
+  ]);
+  const [alice, bob, mallory] = devices;
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    20_000,
+  );
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+
+  const cards = (where?: string): { channel: string; peerLabel: string }[] =>
+    Object.values(
+      bob.store("transferStore").getState().transfers as Record<
+        string,
+        { direction: string; channel: string; peerLabel: string }
+      >,
+    ).filter(
+      (t) =>
+        t.direction === "receive" &&
+        (where === undefined || t.channel === where),
+    );
+
+  // The control: alice's real photo shows its card while it crosses.
+  alice.sendAttachment(channel, media.jpeg(20_000), {
+    type: "image",
+    name: "real.jpg",
+    mimeType: "image/jpeg",
+  });
+  const carded = await waitFor(
+    s.world,
+    () => cards(channel).length > 0,
+    10_000,
+  );
+  s.check("a genuine photo shows a card", carded);
+  s.check(
+    "which names nobody, since fragments cannot say who sends",
+    cards(channel).every((c) => c.peerLabel === ""),
+  );
+  await waitFor(s.world, () => bob.attachments(channel).length > 0, 60_000);
+  await waitFor(s.world, () => cards().length === 0, 10_000);
+
+  // The first fragment of a stream, which is all a card needs.
+  const firstFragment = (opts: {
+    type: PacketType;
+    claimed: string;
+    to?: string;
+    bytes: number;
+  }): string => {
+    const inner: Packet = {
+      type: opts.type,
+      ttl: 7,
+      flags: opts.to !== undefined ? Flags.HAS_RECIPIENT : 0,
+      senderID: peerIdToBytes(opts.claimed),
+      recipientID:
+        opts.to !== undefined ? peerIdToBytes(opts.to) : new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload: randomBytes(opts.bytes),
+    };
+    const [first] = fragmentPacket(inner, { peerID: opts.claimed });
+    return toBase64(encodePacket(first));
+  };
+
+  // A file from an ID bob holds no key for could never verify.
+  const stranger = "5a5a5a5a5a5a5a5a";
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    firstFragment({
+      type: PacketType.FILE_TRANSFER,
+      claimed: stranger,
+      to: bob.peerID,
+      bytes: 2_000,
+    }),
+  );
+  // A sealed file under alice's name, with no session between them to open it.
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    firstFragment({
+      type: PacketType.NOISE_ENCRYPTED,
+      claimed: alice.peerID,
+      to: bob.peerID,
+      bytes: 12_000,
+    }),
+  );
+  await s.world.advance(1_000);
+  s.check(
+    "neither forged stream put a card in a DM thread",
+    cards(`dm:${stranger}`).length === 0 &&
+      cards(`dm:${alice.peerID}`).length === 0,
+    cards()
+      .map((c) => c.channel)
+      .join(" "),
+  );
+
+  // Twenty public streams from a sender bob knows.
+  for (let i = 0; i < 20; i++) {
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      firstFragment({
+        type: PacketType.FILE_TRANSFER,
+        claimed: mallory.peerID,
+        bytes: 2_000,
+      }),
+    );
+  }
+  await s.world.advance(1_000);
+  s.check(
+    "at most three cards at once",
+    cards().length <= 3,
+    `${String(cards().length)} cards`,
+  );
+  s.check(
+    "none of them under mallory's name",
+    cards(channel).every((c) => c.peerLabel === ""),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });

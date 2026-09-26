@@ -60,6 +60,7 @@ import {
   reconcile,
   refreshAccount,
   restoreFromRecoveryPhrase,
+  staleFeeDays,
   WalletError,
   type LightningDeposit,
   type MeltQuote,
@@ -83,6 +84,8 @@ import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
+import PixelBird, { BIRD_ROWS } from "@ui/components/pixel-bird";
+import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import { useCopy } from "@ui/hooks/use-copy";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
 import {
@@ -91,6 +94,7 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
+  hitSlopFor,
   LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
@@ -121,6 +125,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Linking,
   Pressable,
   RefreshControl,
@@ -142,6 +147,15 @@ export type WalletAction = "help";
 // white at this opacity on #111111, and #111111 on #F5F5F5, both clear 4.5:1.
 const SECONDARY_ON_ACCENT = 0.72;
 
+// The balance card's issuer mark: 2pt cells draw the bird 22 x 12, about the
+// label's height. Its touch area grows to a thumb but stops short of the
+// balance row below, which has a tap of its own.
+const CARD_MARK_CELL = 2;
+const CARD_MARK_SLOP = {
+  ...hitSlopFor(BIRD_ROWS * CARD_MARK_CELL),
+  bottom: Spacing.xs,
+};
+
 // The action circles in the balance card. The column around a circle is the
 // MIN_TOUCH target.
 const ACTION_CIRCLE = 48;
@@ -161,10 +175,6 @@ const DEPOSIT_POLL_MS = 3000;
 
 // Three rows answer "did that go through"; the rest waits for a tap.
 const ACTIVITY_COLLAPSED_COUNT = 3;
-
-// A day, which is also how long wallet-service trusts a cached fee schedule, so
-// "at least this old" and "possibly out of date" are the same threshold.
-const FEE_CACHE_STALE_MS = 24 * 60 * 60 * 1000;
 
 interface Props {
   action?: WalletAction | null;
@@ -297,6 +307,7 @@ export default function WalletScreen({
 
   // The latest send's token, still reserved and reclaimable.
   const [pending, setPending] = useState<PreparedSend | null>(null);
+  const pendingStaleDays = staleFeeDays(pending?.pricedFromCacheAgeMs);
   const [deposit, setDeposit] = useState<LightningDeposit | null>(null);
   // Copy invoice is wide enough to confirm in words, not only a glyph swap.
   const { copied: invoiceCopied, copy: copyInvoice } = useCopy();
@@ -457,6 +468,8 @@ export default function WalletScreen({
     [primary.balance, primary.unit, bitcoinUnit],
   );
 
+  const cardMark = useBirdFlap(Spacing["xs-sm"]);
+
   // Only sat balances have a bitcoin denomination to switch to.
   function toggleBitcoinUnit(): void {
     if (primary.unit !== "sat") return;
@@ -558,9 +571,14 @@ export default function WalletScreen({
             }),
             result.dleq === "valid"
               ? t("wallet.receive.dleq_ok")
-              : t("wallet.receive.dleq_uncached"),
+              : result.dleqGap === "witness"
+                ? t("wallet.receive.dleq_missing")
+                : t("wallet.receive.dleq_uncached"),
             t("wallet.receive.dleq_warning"),
-          ].join(" ") + (result.memo ? `\n\n"${result.memo}"` : ""),
+          ].join(" ") +
+            (result.memo
+              ? t("wallet.receive.memo_quoted", { memo: result.memo })
+              : ""),
         );
       }
     } catch (err) {
@@ -731,6 +749,13 @@ export default function WalletScreen({
             if (!reclaimTokenSend(txId)) return;
             setPending(null);
             void settleReclaimedSend(txId).then((outcome) => {
+              if (outcome === "refused") {
+                showAlert(
+                  t("wallet.err.mint_refused"),
+                  t("wallet.svc.coins_refused"),
+                );
+                return;
+              }
               if (outcome !== "claimed") return;
               showAlert(
                 t("wallet.reclaim.claimed_title"),
@@ -753,6 +778,12 @@ export default function WalletScreen({
     await Clipboard.setStringAsync(token);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.token_body"));
+  }
+
+  async function handleCopyRefusedToken(token: string): Promise<void> {
+    await Clipboard.setStringAsync(token);
+    acknowledged();
+    showAlert(T("common.copied"), t("wallet.copied.refused_token_body"));
   }
 
   // Clipboards leak to other apps and sync, but refusing pushes people to a
@@ -947,6 +978,21 @@ export default function WalletScreen({
       if (result.spentRemoved > 0) {
         parts.push(tPlural("wallet.spent_removed_detail", result.spentRemoved));
       }
+      if (result.refused > 0) {
+        parts.push(
+          t("wallet.refresh.refused", {
+            ...amountParts(result.refused, unit),
+          }),
+        );
+      }
+      // Too small to swap alone, in doubt, or past this refresh's share.
+      if (result.stillUnverified > 0) {
+        parts.push(
+          t("wallet.refresh.still_unconfirmed", {
+            ...amountParts(result.stillUnverified, unit),
+          }),
+        );
+      }
       // Never in doubt, only outside the recovery phrase until this swap.
       if (result.securedForBackup > 0) {
         parts.push(
@@ -1075,6 +1121,8 @@ export default function WalletScreen({
         setVerifyError(false);
         setBackupStep("show");
       }
+    } catch (err) {
+      reportError(err, t("wallet.backup.no_phrase"));
     } finally {
       setBusy(null);
     }
@@ -1142,9 +1190,11 @@ export default function WalletScreen({
     // Coins from the old phrase stay spendable but stop being restorable.
     // Asked whenever value is held, not only with backup on: the phrase exists
     // from wallet creation.
-    const current = await getRecoveryPhrase().catch(() => null);
+    // An unreadable phrase counts as a different one: replacing words the
+    // phone could not show is exactly the case to ask about.
+    const current = await getRecoveryPhrase().catch(() => undefined);
     const samePhrase =
-      current !== null &&
+      typeof current === "string" &&
       normalizeRecoveryPhrase(current) === normalizeRecoveryPhrase(input);
     const holdsValue = accounts.some((a) => a.balance > 0 || a.reserved > 0);
     if (current !== null && !samePhrase && (backupEnabled || holdsValue)) {
@@ -1595,6 +1645,21 @@ export default function WalletScreen({
 
       {/* Accent-filled, like the user's own chat bubbles. */}
       <View style={styles.balanceCard}>
+        {/* Hidden from screen readers: a triple-tap is all it answers. */}
+        <Pressable
+          style={styles.cardMark}
+          onPress={cardMark.onTap}
+          hitSlop={CARD_MARK_SLOP}
+          accessible={false}
+        >
+          <Animated.View style={{ transform: [{ translateY: cardMark.hop }] }}>
+            <PixelBird
+              color={Colors.textInverse}
+              cell={CARD_MARK_CELL}
+              frame={cardMark.frame}
+            />
+          </Animated.View>
+        </Pressable>
         <Text style={styles.balanceLabel}>{T("wallet.balance.spendable")}</Text>
         {/* Tap toggles sats and bitcoin. No animation: a balance that morphs
             is one people stop trusting. */}
@@ -1842,6 +1907,24 @@ export default function WalletScreen({
                         answer whose payment may have gone through. */}
                     {tx.error !== undefined && tx.error.length > 0 ? (
                       <Text style={styles.historyError}>{tx.error}</Text>
+                    ) : null}
+                    {/* Coins the mint refused: no longer counted, but still
+                        the sender's to take back, so the token is offered. */}
+                    {tx.kind === "receive" &&
+                    tx.status === "failed" &&
+                    tx.token !== undefined ? (
+                      <Pressable
+                        style={[styles.pendingBtn, styles.historyTokenBtn]}
+                        onPress={() =>
+                          void handleCopyRefusedToken(tx.token ?? "")
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel={t("wallet.activity.copy_refused")}
+                      >
+                        <Text style={styles.pendingBtnText}>
+                          {T("common.copy")}
+                        </Text>
+                      </Pressable>
                     ) : null}
                   </View>
                   <Text
@@ -2476,17 +2559,11 @@ export default function WalletScreen({
           {/* Fees are cached so a send prices offline, but a mint that has
               raised its input fee since takes more than the quote said.
               Shown only once the cache is stale, so the usual case is quiet. */}
-          {pending !== null &&
-            pending.pricedFromCacheAgeMs !== undefined &&
-            pending.pricedFromCacheAgeMs >= FEE_CACHE_STALE_MS && (
-              <Text style={styles.generatedMint}>
-                {T("wallet.send.stale_fee_note", {
-                  days: Math.floor(
-                    pending.pricedFromCacheAgeMs / FEE_CACHE_STALE_MS,
-                  ),
-                })}
-              </Text>
-            )}
+          {pendingStaleDays !== null && (
+            <Text style={styles.generatedMint}>
+              {TP("wallet.send.stale_fee_note", pendingStaleDays)}
+            </Text>
+          )}
         </View>
         {/* A QR rather than 400 characters of base64, and every Cashu
             wallet scans one. Text fallback for a token too large to encode (an unusually
@@ -3524,7 +3601,10 @@ function txTitle(tx: WalletTx): string {
     case "melt":
       return t("wallet.activity.ln_withdrawal");
     case "nutzap-in":
-      return t("wallet.activity.nutzap_received");
+      // Written before the swap that pays it, so pending is not money yet.
+      return tx.status === "pending"
+        ? t("wallet.activity.nutzap_claiming")
+        : t("wallet.activity.nutzap_received");
     case "nutzap-out":
       return t("wallet.zap.sent");
     case "swap":
@@ -3622,6 +3702,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       padding: Spacing.lg,
       gap: Spacing.sm,
       alignItems: "center",
+    },
+    cardMark: {
+      position: "absolute",
+      top: Spacing.lg,
+      end: Spacing.lg,
+      opacity: SECONDARY_ON_ACCENT,
     },
     balanceLabel: {
       fontSize: FontSize.xs,
@@ -4080,6 +4166,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     historySub: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
+    },
+    historyTokenBtn: {
+      alignSelf: "flex-start",
+      marginTop: Spacing.xs,
     },
     historyError: {
       fontSize: FontSize.xs,

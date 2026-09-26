@@ -187,6 +187,11 @@ const strings: Strings = {
     "از کلید شما مشتق می‌شوند، پس کسی نمی‌تواند نام شما را بردارد.",
   "home.features.identity.qr.name": "مخاطبان با QR",
   "home.features.identity.qr.line": "یک بار اسکن، کلیدهایشان را می‌آورد، نه فقط نامشان را.",
+  "home.features.identity.forward.name": "محرمانگی پیشرو",
+  "home.features.identity.forward.line": "کلید لورفته پیام‌های گذشته را باز نمی‌کند.",
+  "home.features.identity.move.name": "انتقال به گوشی تازه",
+  "home.features.identity.move.line":
+    "گفتگوها و کیف پول منتقل می‌شوند، سپس گوشی قدیمی خودش را پاک می‌کند.",
   "home.features.identity.panic.name": "پاک‌سازی اضطراری",
   "home.features.identity.panic.line": "همهٔ کلیدها و پیام‌ها در کمتر از یک ثانیه از بین می‌روند.",
 
@@ -195,6 +200,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "مش Bluetooth",
   "home.features.networking.mesh.line":
     "بدون اینترنت، بدون روتر، روی گوشی‌هایی که مردم همین حالا دارند.",
+  "home.features.networking.lan.name": "شبکهٔ محلی",
+  "home.features.networking.lan.line": "WiFi مشترک یا هات‌اسپات، iPhone و Android با هم.",
+  "home.features.networking.hops.name": "رلهٔ چندپرشی",
+  "home.features.networking.hops.line": "هر گوشی پیام‌ها را جلو می‌برد، تا هفت پرش.",
   "home.features.networking.bridge.name": "پل مش",
   "home.features.networking.bridge.line":
     "گفت‌وگوی عمومی شما را به جمعی نزدیک اما بیرون از برد وصل می‌کند.",

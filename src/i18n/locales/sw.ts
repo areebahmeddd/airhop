@@ -123,6 +123,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Weka simu zote mbili kwenye Wi-Fi moja, au washa hotspot kwenye moja na ujiunge nayo kutoka nyingine. Intaneti haihitajiki.",
   "onboarding.transfer.incoming": "Inahamisha {name}",
+  "onboarding.transfer.confirm_title": "Angalia simu yako ya zamani",
+  "onboarding.transfer.confirm_body":
+    "Simu yako ya zamani inapaswa kuonyesha maneno haya haya. Ikionyesha maneno tofauti, au isionyeshe yoyote, ghairi.",
+  "onboarding.transfer.confirm_cta": "Yanalingana",
   "onboarding.transfer.receiving": "Inapokea {percent}%",
   "onboarding.transfer.saving": "Inahifadhi kwenye simu hii",
   "onboarding.transfer.releasing": "Inakamilisha kwenye simu yako ya zamani",
@@ -181,6 +185,15 @@ export const strings: Strings = {
   "error.boundary.title": "Kuna kilichoenda vibaya",
   "error.boundary.body":
     "Airhop imekumbana na tatizo lisilotarajiwa na imelazimika kusitisha kile ilichokuwa ikionyesha.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Imeshindwa kufungua funguo zako",
+  "launch.keys_unreadable_body":
+    "Simu yako haikufungua funguo za Airhop. Ifungue simu, kisha ujaribu tena.",
+  "launch.start_over": "Futa na uanze upya",
+  "launch.start_over_confirm_title": "Futa simu hii?",
+  "launch.start_over_confirm_body":
+    "Utambulisho, jumbe, anwani na pochi yako kwenye simu hii vinaharibiwa, na unaanza upya kama mtu mpya. Hili haliwezi kutenduliwa.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Vituo vya kawaida",
@@ -602,7 +615,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video haipo kwenye kifaa hiki",
   "chat.media.gone_voice": "Noti ya sauti haipo kwenye kifaa hiki",
   "chat.media.gone_file": "Faili haipo kwenye kifaa hiki",
-  "chat.media.gone_note": "Iliondolewa baada ya siku 7 au akiba ilipofutwa",
+  "chat.media.gone_note": "Haijahifadhiwa tena kwenye kifaa hiki",
   "chat.media.ask_resend": "Omba tena",
   "chat.media.resend_draft": "Unaweza kutuma {kind} hiyo tena?",
   "chat.media.kind_photo": "picha",
@@ -673,6 +686,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Imedaiwa",
   "chat.ecash.reclaimed": "Imerudishwa",
+  "chat.ecash.locked": "Imefungwa kwa mtu mwingine",
   "chat.ecash.claiming": "Inadai…",
   "chat.ecash.claim": "Dai",
   "chat.ecash.claim_amount": "Dai {amount} {unit}",
@@ -910,6 +924,7 @@ export const strings: Strings = {
     "Hufungua ruhusa za Airhop kwenye mipangilio ya mfumo",
   "mesh.banner.hint.battery_settings":
     "Hufungua mipangilio ya shughuli za chinichini za simu hii",
+  "mesh.banner.hint.tor_settings": "Hufungua mipangilio ya Tor ya Airhop",
   "mesh.banner.dismiss": "Ondoa: {label}",
   "mesh.banner.hint.dismiss": "Huficha noti hii kabisa",
 
@@ -944,8 +959,11 @@ export const strings: Strings = {
     "Nafasi kwenye pete inaonyesha nguvu ya ishara, si umbali",
   "mesh.radar.set_online":
     "Weka hali yako kuwa Mtandaoni kwenye kichupo cha Wewe ili kugundua peer",
-  "mesh.radar.in_range": "ndani ya masafa",
-  "mesh.radar.recently_seen": "walioonekana hivi karibuni",
+  "mesh.radar.peer_in_range": "{name}, ndani ya masafa",
+  "mesh.radar.peer_recent": "{name}, walioonekana hivi karibuni",
+  "mesh.radar.relay_in_range": "{name}, nodi ya relay, ndani ya masafa",
+  "mesh.radar.relay_recent":
+    "{name}, nodi ya relay, walioonekana hivi karibuni",
   "mesh.radar.peer_hint":
     "Hufungua chaguo za kumtumia ujumbe au kumlipa peer huyu",
 
@@ -967,6 +985,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Tuma ecash, weka kiasi kwanza",
   "mesh.peer.cancel_send": "Ghairi kutuma ecash",
   "mesh.peer.view_peer_online": "Tazama peer {name}, yuko mtandaoni",
+  "mesh.peer.view_relay_online":
+    "Tazama peer {name}, yuko mtandaoni, nodi ya relay",
   "mesh.peer.last_seen_at": "Alionekana mara ya mwisho {ago}",
   "mesh.peer.send_amount": "Tuma sat {amount}",
   "mesh.peer.direct": "Muunganisho wa moja kwa moja",
@@ -1031,8 +1051,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Kiasi katika {unit}",
   "wallet.send.body":
     "Imetengenezwa nje ya mtandao kutoka ecash uliyo nayo tayari. Hakuna kinachoondoka kwenye salio lako kabisa hadi uthibitishe kuwa tokeni imefika.",
-  "wallet.send.stale_fee_note":
-    "Ada zilikaguliwa mwisho siku {days} zilizopita. Kama mint hii imeziongeza tangu wakati huo, utumaji unaweza kugharimu kidogo zaidi.",
   "wallet.send.fee_note":
     "{spend} {unit} zitaondoka kwenye salio lako; {fee} za ziada hulipia ada ya mint ambayo wangeilipa wao",
   "wallet.send.qr_too_big":
@@ -1085,19 +1103,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Imekombolewa kwenye {mint}. Sasa ni yako kwa uthibitisho: nakala ya tokeni hii aliyo nayo mtumaji haifanyi kazi tena.",
   "wallet.receive.stored_pending":
-    "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika{dleq}. Sasisha kutoka kichupo cha Pochi utakapokuwa mtandaoni.",
+    "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika{dleq}. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
   "wallet.receive.dleq_inline":
     " (saini yake inalingana, kwa hivyo tokeni ni halisi)",
   "wallet.receive.dleq_ok":
     "Saini ya mint inalingana, kwa hivyo tokeni ni halisi.",
   "wallet.receive.dleq_uncached":
     "Funguo za mint hazipo hapa, kwa hivyo saini haikuweza kukaguliwa nje ya mtandao.",
+  "wallet.receive.dleq_missing":
+    "Si kila sarafu ndani yake ina uthibitisho wa saini ya mint, kwa hivyo haikuweza kukaguliwa nje ya mtandao.",
   "wallet.receive.dleq_warning":
-    "Hadi utakaposasisha ukiwa mtandaoni, kimsingi mtumaji anaweza kuwa ameitumia mahali pengine.",
+    "Hadi itakapothibitishwa mtandaoni, kimsingi mtumaji anaweza kuwa ameitumia mahali pengine.",
   "wallet.receive.failed": "Haikuweza kupokelewa",
   "wallet.receive.title": "Pokea ecash",
   "wallet.receive.body":
-    "Bandika tokeni ya Cashu. Ukiwa mtandaoni hukombolewa kwenye mint papo hapo; nje ya mtandao huhifadhiwa na kuthibitishwa utakaposasisha tena.",
+    "Bandika tokeni ya Cashu. Ukiwa mtandaoni hukombolewa kwenye mint papo hapo; nje ya mtandao huhifadhiwa na kuthibitishwa na mint kiotomatiki utakaporudi mtandaoni.",
   "wallet.receive.scan": "Changanua msimbo wa QR wa ecash",
   "wallet.receive.scan_short": "Changanua QR",
   "wallet.receive.receiving": "Inapokea…",
@@ -1317,6 +1337,8 @@ export const strings: Strings = {
     "Mint inasema tokeni hii tayari imekombolewa, kwa hivyo {amount} {unit} ziliwafikia na hakuna kilichorudi kwenye salio lako.",
   "wallet.copied.token_body":
     "Tokeni ipo kwenye ubao wako wa kunakili. Hubaki imetengwa hapa hadi utakapoiweka alama kuwa imefika, kwa hivyo unaweza kuibandika tena kama jaribio la kwanza litashindwa.",
+  "wallet.copied.refused_token_body":
+    "Tokeni ipo kwenye ubao wako wa kunakili. Pochi hii haiihesabu tena, kwa hivyo unaweza kumrudishia aliyeituma.",
   "wallet.copied.phrase_body":
     "Kibandike kwenye kidhibiti cha nenosiri, kisha futa ubao wako wa kunakili. Programu nyingine zinaweza kusoma ubao wa kunakili, na kwenye baadhi ya mipangilio husawazishwa na vifaa vyako vingine.",
   "wallet.refresh.failed": "Kusasisha kumeshindwa",
@@ -1328,6 +1350,10 @@ export const strings: Strings = {
     "{amount} {unit} zimethibitishwa na kubadilishwa kwa ecash mpya.",
   "wallet.refresh.secured":
     "{amount} {unit} sasa zinashikiliwa na kifungu chako cha urejeshaji.",
+  "wallet.refresh.refused":
+    "{amount} {unit} zimekataliwa na mint na kuondolewa kwenye salio lako. Tokeni bado ipo kwenye Shughuli.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} bado zinasubiri mint na zitathibitishwa baadaye.",
   "wallet.refresh.all_confirmed":
     "Kila kilichopo hapa tayari kilikuwa kimethibitishwa na mint.",
   "wallet.pending.reserved_desc":
@@ -1359,9 +1385,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Amana ya Lightning",
   "wallet.activity.ln_withdrawal": "Utoaji wa Lightning",
   "wallet.activity.nutzap_received": "Nutzap imepokelewa",
+  "wallet.activity.nutzap_claiming": "Nutzap, inadaiwa",
   "wallet.activity.spent_removed": "Sarafu zilizotumika zimeondolewa",
   "wallet.activity.refreshed": "Imekaguliwa na mint",
   "wallet.activity.refreshing": "Inakagua na mint",
+  "wallet.activity.copy_refused": "Nakili tokeni iliyokataliwa",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh haipo mtandaoni",
@@ -1445,7 +1473,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu ni nini?",
   "wallet.explain.intro":
-    "Cashu ni ecash ya Bitcoin. Tokeni ni mfuatano wenye thamani ya pesa kwa yeyote anayeushikilia, uliotiwa saini kwa upofu na mint ili mint isijue nani alitumia nini. Hakuna akaunti, hakuna kuingia.",
+    "Cashu ni ecash ya Bitcoin. Tokeni ni mfuatano wenye thamani ya pesa kwa yeyote anayeushikilia, uliotiwa saini kwa upofu na mint ili mint isijue nani alitumia nini. Hakuna akaunti, hakuna kuingia. Airhop haishikilii pesa zako kamwe: sarafu zako ziko kwenye simu hii, na hutolewa na mint unazochagua.",
   "wallet.explain.send": "Tuma",
   "wallet.explain.send_desc":
     "Hugeuza kiasi kuwa tokeni unayoweza kumkabidhi peer aliye karibu kupitia Bluetooth, au kuishiriki kama maandishi. Hufanya kazi bila intaneti. Sarafu hubaki zimetengwa hadi uthibitishe kuwa imefika.",
@@ -1489,6 +1517,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Kifungu hicho cha urejeshaji si sahihi.",
   "wallet.svc.phrase_invalid_body":
     "Tafuta neno lililoandikwa vibaya au lililokosekana. Kifungu kina alama ya ukaguzi ndani yake, kwa hivyo neno moja baya hukifanya kizima kisiwe sahihi.",
+  "wallet.svc.phrase_unreadable":
+    "Kifungu chako cha urejeshaji hakikuweza kusomwa kwenye simu hii.",
+  "wallet.svc.phrase_unreadable_body":
+    "Hakuna kilichobadilishwa na hakuna kifungu kipya kilichoundwa. Jaribu tena simu ikiwa imefunguliwa. Kwa sasa ecash yako bado inafanya kazi.",
   "wallet.svc.need_mint": "Ongeza angalau mint moja kwanza.",
   "wallet.svc.need_mint_body":
     "Urejeshaji hufanya kazi kwa kuuliza mint ni sarafu zipi ilizokutia saini, kwa hivyo unahitaji kujua ni mint gani ya kuuliza.",
@@ -1510,10 +1542,26 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "Mint haipatikani sasa hivi ili kuzileta. Hakuna kilichopotea: ipokee tena ukiwa mtandaoni.",
   "wallet.svc.wrong_mint": "Tokeni hii haikutiwa saini na mint inayoitaja.",
+  "wallet.svc.wrong_mint_body":
+    "Saini ya angalau sarafu moja hailingani na funguo za mint. Hakuna kilichoongezwa.",
+  "wallet.svc.unit_mismatch":
+    "Sarafu za tokeni hii haziko katika aina ya fedha inayoitaja.",
+  "wallet.svc.unit_mismatch_body":
+    "Imeandikwa {label}, lakini baadhi ya sarafu zake zilitolewa kwa {actual}. Mwombe mtumaji tokeni mpya. Hakuna kilichoongezwa.",
+  "wallet.svc.locked_other":
+    "Sarafu hizi zimefungwa kwenye pochi ya mtu mwingine.",
+  "wallet.svc.locked_other_body":
+    "Ni mtu zilizofungiwa pekee anayeweza kuzidai. Hakuna kilichoongezwa.",
+  "wallet.svc.coins_refused":
+    "Mint imekataa sarafu hizi, kwa hivyo hazihesabiwi tena. Tokeni imehifadhiwa hapa ukitaka kuirudisha.",
+  "wallet.svc.coins_unredeemable":
+    "Sarafu hizi haziwezi kukombolewa kwenye mint hii, kwa hivyo hazihesabiwi tena. Tokeni imehifadhiwa hapa ukitaka kuirudisha.",
+  "wallet.svc.locked_ours_offline": "Malipo haya yamefungwa kwenye pochi yako.",
+  "wallet.svc.locked_ours_offline_body":
+    "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":
     "Yeyote aliyetuma tokeni hii aliikomboa kwanza, au alituma tokeni ileile kwa mtu mwingine pia.",
-  "wallet.svc.receiving_offline": "inapokea nje ya mtandao",
   "wallet.svc.amount_positive": "Weka kiasi kikubwa kuliko sifuri.",
   "wallet.svc.coins_raced":
     "Sarafu hizo zimetumiwa punde tu na malipo mengine.",
@@ -1998,7 +2046,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Gusa nje ya kisanduku ili kuunganisha.",
   "settings.tor.custom_empty": "Ongeza angalau mstari mmoja wa daraja kwanza.",
   "settings.tor.recovered":
-    "Tor imezimwa kwa sababu haikukamilisha kuanza mara ya mwisho. Iwashe tena ili ujaribu upya.",
+    "Tor haikukamilisha kuanza mara ya mwisho, kwa hivyo trafiki ya intaneti imesitishwa. Jaribu tena, au zima Tor ili uingie mtandaoni bila hiyo.",
+  "settings.tor.retry": "Jaribu tena",
   "settings.conn.mint_clearnet": "Ruhusu trafiki ya mint kupitia mtandao wazi",
   "settings.conn.mint_clearnet_desc":
     "Tor kwenye iOS hufunika Nostr pekee. Iache imezimwa ili kuzuia maombi ya mint; ecash kupitia mesh huendelea kufanya kazi vyovyote vile.",
@@ -2170,9 +2219,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Ruhusu ufikiaji wa kamera kwenye Mipangilio ili kuchanganua msimbo kwenye simu yako mpya.",
   "settings.transfer.confirm_title": "Hamishia kwenye simu hii?",
-  "settings.transfer.confirm_body":
-    "Kila kitu hapa kitahamia kwenye simu inayoonyesha msimbo huu. Kikishafika, simu hii itafutwa.",
+  "settings.transfer.verify_body":
+    "Simu yako mpya inapaswa kuonyesha maneno haya haya. Kila kitu hapa kitahamia huko, kisha simu hii itafutwa.",
   "settings.transfer.confirm_cta": "Hamisha",
+  "settings.transfer.waiting_confirm": "Thibitisha kwenye simu yako mpya",
   "settings.transfer.connecting": "Inaunganisha na simu yako mpya",
   "settings.transfer.connecting_hint":
     "Simu hii ikiomba kutafuta vifaa kwenye mtandao wa ndani, iruhusu.",
@@ -2235,7 +2285,7 @@ export const strings: Strings = {
   "settings.wipe.now": "Futa sasa",
   "settings.wipe.desc": "Huharibu papo hapo funguo, jumbe na ecash zote",
   "settings.wipe.body":
-    "Hii itaharibu papo hapo funguo, jumbe na ecash zako zote. Haiwezi kutenduliwa.",
+    "Hii itaharibu papo hapo funguo, jumbe na ecash zako zote. Haiwezi kutenduliwa. Picha ulizohifadhi kwenye matunzio yako zinabaki huko.",
   "settings.wipe.in_progress": "Inafuta",
   "settings.wipe.in_progress_body":
     "Inaharibu funguo, jumbe na faili zako. Huchukua sekunde chache, na hukamilika yenyewe hata programu ikifungwa.",
@@ -2300,6 +2350,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Tazama maelezo ya toleo {version}",
   "settings.version.tor_paused":
     "Ukaguzi wa masasisho umesitishwa Tor ikiwa imewashwa, ili usivujishe IP yako. Angalia ukurasa wa matoleo kwenye kivinjari.",
+  "settings.version.internet_off":
+    "Masasisho yamesitishwa wakati intaneti imezimwa. Washa {setting} kwenye Mipangilio.",
   "settings.version.check_failed":
     "Haikuweza kuangalia masasisho. Kagua muunganisho wako kisha ujaribu tena.",
   "settings.version.downloading": "Inapakua {percent}%",
@@ -2477,6 +2529,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} haijathibitishwa",
     other: "{count} hazijathibitishwa",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Ada zilikaguliwa mwisho siku {count} iliyopita. Kama mint hii imeziongeza tangu wakati huo, utumaji unaweza kugharimu kidogo zaidi.",
+    other:
+      "Ada zilikaguliwa mwisho siku {count} zilizopita. Kama mint hii imeziongeza tangu wakati huo, utumaji unaweza kugharimu kidogo zaidi.",
   },
   "wallet.spent_removed_detail": {
     one: "Sarafu {count} ilikuwa imeshatumika na imeondolewa.",

@@ -3,8 +3,9 @@
 // Wire-compatible with bitchat-ios GossipSyncManager / RequestSyncPacket.
 //
 // Protocol flow:
-//   1. Every 15 seconds, send a REQUEST_SYNC packet to each connected peer,
-//      containing a GCS filter of the packet IDs we have seen recently.
+//   1. Every 15 seconds, send each connected peer one REQUEST_SYNC per round
+//      that is due (see SYNC_ROUNDS), each a GCS filter of the packet IDs we
+//      hold of that round's types.
 //   2. On receiving a REQUEST_SYNC from a peer, decode the filter and send
 //      back any packets we have that the peer appears to be missing.
 //
@@ -35,24 +36,43 @@
 
 import { sha256 } from "@noble/hashes/sha2.js";
 import { concatBytes, hexToBytes } from "@noble/hashes/utils.js";
+import { SlidingWindowLimiter } from "../routing/sliding-window-limiter";
 import {
   computePacketId,
   Flags,
+  isBroadcast,
   PacketType,
   signPacket,
   type Packet,
-  type SendFn,
 } from "../wire/packet-codec";
+import { PacketStore } from "./packet-store";
 
 // Constants per PROTOCOLS.md section 5.
 const SYNC_INTERVAL_MS = 15_000;
-const SEEN_CAPACITY = 1000;
-// The store also holds to a byte budget: a count alone lets a thousand packets
-// at their type's payload cap pin over 100 MiB. bitchat-ios gives its message
-// store the same 8 MiB.
-const SEEN_BUDGET_BYTES = 8 * 1024 * 1024;
 export const GCS_MAX_BYTES = 400;
 export const GCS_TARGET_FPR = 0.01; // 1%
+// The largest Golomb-Rice parameter a request may carry, bitchat-ios
+// GCSFilter.maxP. RequestSyncPacket.decode refuses anything outside 1..32.
+const GCS_MAX_P = 32;
+
+// One store per kind of packet, sized as bitchat-ios GossipSyncManager.Config
+// sizes its own, so one kind flooding cannot evict another's history. Public
+// messages: seenCapacity and messageByteBudget. Group messages, opaque to
+// anyone outside the group and so carried unverified: groupMessageCapacity
+// and groupMessageByteBudget. Board posts: boardCapacity, the board store's
+// own cap; a post is a control frame, so 200 need no byte budget.
+const MESSAGE_CAPACITY = 1000;
+const MESSAGE_BUDGET_BYTES = 8 * 1024 * 1024;
+const GROUP_CAPACITY = 200;
+const GROUP_BUDGET_BYTES = 4 * 1024 * 1024;
+const BOARD_CAPACITY = 200;
+// Announces are kept one per peer, the latest, as bitchat-ios keeps them
+// (latestAnnouncementByPeer). It sets no count; this one is Airhop's, since a
+// verified announce costs nothing more than a freshly minted identity.
+const ANNOUNCE_CAPACITY = 1000;
+// Sync replies remembered without being kept (see GossipSync.noteReply), as
+// many as the message store holds.
+const DECLINED_CAPACITY = MESSAGE_CAPACITY;
 
 // REQUEST_SYNC and every packet sent in answer to one travel exactly one hop.
 // bitchat sets ttl 0 in both directions (GossipSyncManager.sendRequestSync and
@@ -69,18 +89,21 @@ const SYNC_TTL = 0;
 // stale-peer timeout.
 const MAX_AGE_ANNOUNCE_MS = 60_000;
 // Carrying the room's recent history across a partition is the point of gossip.
-// bitchat-ios publicMessageMaxAgeSeconds = 900.
-const MAX_AGE_MESSAGE_MS = 900_000;
+// bitchat-ios serves and accepts six hours of it (syncPublicMessageMaxAgeSeconds
+// in TransportConfig, which BLEService passes over GossipSyncManager's 900 s
+// default). A shorter window here would refuse the backfill it sends.
+const MAX_AGE_MESSAGE_MS = 6 * 60 * 60 * 1000;
 // Board posts carry their own author-chosen expiry (max 7 days, PROTOCOLS.md
 // section 3) and the board store enforces it on receipt. This is only a
 // backstop against an entry sitting in the LRU forever.
 const MAX_AGE_BOARD_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Group messages, same window public messages get. A group is a conversation, not
-// a noticeboard, and a member who was away for a quarter of an hour is the case
-// backfill exists for. Longer would be pointless: a roster change rotates the
-// epoch key, and a message sealed under the old one can no longer be read.
-const MAX_AGE_GROUP_MS = 900_000;
+// Group messages, same window public messages get, as in bitchat-ios
+// (GossipSyncManager.isPacketFresh). A group is a conversation, and a member who
+// was away for a while is the case backfill exists for. A roster change rotates
+// the epoch key, so a message sealed under the old one stops being readable
+// whatever its age.
+const MAX_AGE_GROUP_MS = MAX_AGE_MESSAGE_MS;
 
 // One REQUEST_SYNC can replay the whole store, so a peer asking in a tight loop
 // is an amplifier pointed at us and at the shared radio. Bounds how often one
@@ -149,6 +172,40 @@ function syncBitForType(type: PacketType): number | null {
   }
 }
 
+function inTypes(type: PacketType, types: number): boolean {
+  const bit = syncBitForType(type);
+  return bit !== null && (types & (1 << bit)) !== 0;
+}
+
+export interface SyncRound {
+  types: number; // SyncTypeFlags bitmask
+  everyTicks: number; // of the 15 s sync tick
+}
+
+// One request per round rather than one filter over everything, as bitchat-ios
+// sends one per due schedule (GossipSyncManager.performPeriodicMaintenance).
+// Each round gets the whole 400-byte filter and its own since-cursor. In one
+// filter a busy room's messages push board posts behind the cursor, where
+// nobody offers them again, and with six hours of messages held that takes
+// minutes rather than days.
+//
+// The rounds are bitchat-ios's: announces, public and group messages together
+// (its message schedule, 15 s), and board posts alone every 60 s
+// (boardSyncIntervalSeconds). Airhop's named channels ride the message round.
+// That is at most three requests per peer in any 30 s, well inside the
+// eight a responder answers.
+export const SYNC_ROUNDS: readonly SyncRound[] = [
+  {
+    types:
+      (1 << TYPE_BIT_ANNOUNCE) |
+      (1 << TYPE_BIT_MESSAGE) |
+      (1 << TYPE_BIT_GROUP) |
+      (1 << TYPE_BIT_AIRHOP_CHANNEL),
+    everyTicks: 1,
+  },
+  { types: 1 << TYPE_BIT_BOARD, everyTicks: 4 },
+];
+
 // How long a packet of this type stays a sync candidate. Null for types that
 // are never gossiped, which syncBitForType already rejects.
 function maxAgeForType(type: PacketType): number | null {
@@ -167,13 +224,30 @@ function maxAgeForType(type: PacketType): number | null {
   }
 }
 
+// Whether an old packet may be taken as an answer to our own sync request: only
+// a type we ask for, inside the window we would serve it for ourselves. A
+// FRAGMENT gets the longest (board) window because bitchat stamps a reply's
+// fragments with the time of the packet inside, and that packet is held to its
+// own type's window again once reassembled. Everything else in a reply is
+// either fresh or a replay dressed as one.
+export function isSyncReplyInWindow(packet: Packet, now: number): boolean {
+  const maxAge =
+    packet.type === PacketType.FRAGMENT
+      ? MAX_AGE_BOARD_MS
+      : maxAgeForType(packet.type);
+  return maxAge !== null && now - packet.timestamp <= maxAge;
+}
+
 // Whether a tracked packet is still worth advertising or offering.
 //
 // A future timestamp is treated as expired rather than fresh: a packet stamped
 // past the local clock is either a badly skewed device or a sender trying to
 // pin an entry at the head of everyone's candidate set forever, and neither is
 // something to carry on someone else's behalf.
-function isFreshCandidate(packet: Packet, now: number): boolean {
+function isFreshCandidate(
+  packet: Pick<Packet, "type" | "timestamp">,
+  now: number,
+): boolean {
   const maxAge = maxAgeForType(packet.type);
   if (maxAge === null) return false;
   const age = now - packet.timestamp;
@@ -505,37 +579,11 @@ export function decodeGossipFilterPayload(
   }
 
   if (p === undefined || m === undefined || data === undefined) return null;
+  // As bitchat-ios RequestSyncPacket.decode: m 0 would make every membership
+  // test a division by zero, and a p outside 1..32 is no filter anyone built.
+  // m 1 stays valid; it is the empty filter meaning "I hold nothing".
+  if (p < 1 || p > GCS_MAX_P || m === 0) return null;
   return { p, m, data, types, since };
-}
-
-// ---- Response rate limiting ----
-
-// Sliding window of answers per peer. Not a deduplicator: a peer asks every 15s
-// and gets an answer. This only caps the case where it asks far faster, since
-// each answer costs a store scan and a burst of writes on a shared radio.
-class SyncResponseRateLimiter {
-  private readonly hits = new Map<string, number[]>();
-
-  shouldRespond(peerID: string, now: number): boolean {
-    const cutoff = now - RESPONSE_LIMIT_WINDOW_MS;
-    const recent = (this.hits.get(peerID) ?? []).filter((t) => t > cutoff);
-    if (recent.length >= RESPONSE_LIMIT_MAX) {
-      // Keep the trimmed list so the window still slides while blocked.
-      this.hits.set(peerID, recent);
-      return false;
-    }
-    recent.push(now);
-    this.hits.set(peerID, recent);
-    return true;
-  }
-
-  forget(peerID: string): void {
-    this.hits.delete(peerID);
-  }
-
-  reset(): void {
-    this.hits.clear();
-  }
 }
 
 // ---- GossipSync class ----
@@ -548,59 +596,74 @@ export interface GossipSyncIdentity {
 }
 
 export interface GossipSyncWiring {
-  // Broadcast fallback, used only while we have no attributed peers yet.
-  send: SendFn;
-  // Preferred path: one request per connected peer, so responses can be
-  // attributed. Omitted only in tests that do not exercise attribution.
-  sendToPeer?: SendToPeerFn;
+  // One request per connected peer, so responses can be attributed.
+  sendToPeer: SendToPeerFn;
   // Peers we currently hold a link to, by peerID.
-  getPeers?: () => readonly string[];
+  getPeers: () => readonly string[];
   // Told about every request we send, so the receive path can recognise a
   // solicited response. See request-sync-manager.ts.
-  onRequest?: (peerID: string) => void;
+  onRequest: (peerID: string) => void;
+  // Once a tick, before any request, for state that ages on the same clock.
+  onTick?: (now: number) => void;
 }
 
 // Holds the recent packets seen for gossip reconciliation.
-// Only ANNOUNCE, CHANNEL_MSG, BOARD_POST and GROUP_MESSAGE are gossiped;
-// syncBitForType is the single place that decides.
+// Only ANNOUNCE, CHANNEL_MSG, CHANNEL_MSG_AIRHOP, BOARD_POST and GROUP_MESSAGE
+// are gossiped; syncBitForType is the single place that decides.
 export class GossipSync {
-  // Ordered list of (packetIdHex -> packet), newest at end. Capped at SEEN_CAPACITY.
-  private readonly seen = new Map<string, Packet>();
-  private seenBytes = 0;
+  private readonly messages = new PacketStore(
+    MESSAGE_CAPACITY,
+    MESSAGE_BUDGET_BYTES,
+  );
+  private readonly groups = new PacketStore(GROUP_CAPACITY, GROUP_BUDGET_BYTES);
+  private readonly boards = new PacketStore(BOARD_CAPACITY);
+  // Keyed by sender rather than packet ID: one per peer.
+  private readonly announces = new PacketStore(ANNOUNCE_CAPACITY);
+  private readonly stores = [
+    this.announces,
+    this.messages,
+    this.groups,
+    this.boards,
+  ];
+  // Sync replies we were handed and did not keep, by packet ID. See noteReply.
+  private readonly declined = new Map<string, FilterEntry>();
   private timer: ReturnType<typeof setInterval> | null = null;
-  private readonly rateLimiter = new SyncResponseRateLimiter();
+  // Not a deduplicator: a peer asks every 15s and gets an answer. This only
+  // caps one asking far faster, since each answer costs a store scan and a
+  // burst of writes on a shared radio.
+  private readonly rateLimiter = new SlidingWindowLimiter(
+    RESPONSE_LIMIT_MAX,
+    RESPONSE_LIMIT_WINDOW_MS,
+  );
 
-  // Start the 15-second sync round.
-  //
-  // Unicast per connected peer is the normal path; broadcast is a discovery
-  // fallback for the window before any peer is attributed, as in bitchat's
-  // GossipSyncManager. A broadcast round still reconciles content, but its
-  // answers cannot be exempted from the requester's freshness window.
-  start(identity: GossipSyncIdentity, wiring: GossipSyncWiring | SendFn): void {
+  // Start the 15-second sync tick. Every request is unicast to a peer we hold
+  // a link to: a broadcast one has no peer to register against, so nothing it
+  // drew back would be taken as a reply.
+  start(identity: GossipSyncIdentity, wiring: GossipSyncWiring): void {
     if (this.timer !== null) this.stop();
-    const w: GossipSyncWiring =
-      typeof wiring === "function" ? { send: wiring } : wiring;
-
+    let tick = 0;
     this.timer = setInterval(() => {
       const now = Date.now();
       this.prune(now);
-
-      const peers = w.getPeers?.() ?? [];
-      if (w.sendToPeer !== undefined && peers.length > 0) {
+      wiring.onTick?.(now);
+      const peers = wiring.getPeers();
+      for (const round of SYNC_ROUNDS) {
+        if (tick % round.everyTicks !== 0) continue;
         for (const peerID of peers) {
-          const pkt = this.buildFilterPacket(identity, peerID, now);
-          if (pkt === null) return; // nothing to sync; same for every peer
+          const pkt = this.buildFilterPacket(
+            identity,
+            peerID,
+            round.types,
+            now,
+          );
           // Registered BEFORE the send: on a fast link the response can
           // outrun our own continuation, and a response that lands before its
           // registration looks exactly like an unsolicited one.
-          w.onRequest?.(peerID);
-          w.sendToPeer(peerID, pkt);
+          wiring.onRequest(peerID);
+          wiring.sendToPeer(peerID, pkt);
         }
-        return;
       }
-
-      const filterPacket = this.buildFilterPacket(identity, undefined, now);
-      if (filterPacket !== null) w.send(filterPacket);
+      tick++;
     }, SYNC_INTERVAL_MS);
   }
 
@@ -611,12 +674,17 @@ export class GossipSync {
     }
   }
 
-  // Drop candidates past their per-type window. Idempotent; driven from the
-  // sync tick rather than a timer of its own.
+  // Drop candidates past their per-type window, and response budgets nobody
+  // has spent inside theirs. Idempotent; driven from the sync tick rather than
+  // a timer of its own.
   prune(now: number = Date.now()): void {
-    for (const [id, packet] of this.seen) {
-      if (!isFreshCandidate(packet, now)) this.forget(id);
+    for (const store of this.stores) {
+      store.removeWhere((packet) => !isFreshCandidate(packet, now));
     }
+    for (const [key, entry] of this.declined) {
+      if (!isFreshCandidate(entry, now)) this.declined.delete(key);
+    }
+    this.rateLimiter.prune(now);
   }
 
   // A link went down. Clears that peer's response budget so a genuine
@@ -625,63 +693,104 @@ export class GossipSync {
     this.rateLimiter.forget(peerID);
   }
 
-  // Track a packet as seen, newest last, evicting the oldest past
-  // SEEN_CAPACITY or SEEN_BUDGET_BYTES. Ignores types that are never gossiped.
+  // The user blocked this peer: stop carrying their public messages for
+  // others, as bitchat-ios does (removePublicMessages(from:)). Their messages
+  // are no longer accepted, so nothing re-adds them.
+  forgetMessagesFrom(peerID: string): void {
+    this.messages.removeWhere(
+      (packet) => bytesToHex(packet.senderID) === peerID,
+    );
+  }
+
+  // Keep a packet to offer peers who missed it. Called only once the packet
+  // was accepted: a store fed before verification fills with forgeries that
+  // evict real history and are then served to everyone who asks. Broadcasts
+  // only, and never a type that is not gossiped. An announce replaces its
+  // sender's older one.
   track(packet: Packet): void {
-    if (!isGossipType(packet.type)) return;
-    const id = bytesToHex(computePacketId(packet));
-    this.forget(id);
-    while (
-      this.seen.size > 0 &&
-      (this.seen.size >= SEEN_CAPACITY ||
-        this.seenBytes + packet.payload.length > SEEN_BUDGET_BYTES)
-    ) {
-      const oldest = this.seen.keys().next().value;
-      if (oldest === undefined) break;
-      this.forget(oldest);
+    if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
+    const key = bytesToHex(computePacketId(packet));
+    this.declined.delete(key);
+    switch (packet.type) {
+      case PacketType.ANNOUNCE: {
+        const sender = bytesToHex(packet.senderID);
+        const held = this.announces.get(sender);
+        if (held !== undefined && held.timestamp >= packet.timestamp) return;
+        this.announces.insert(sender, packet);
+        return;
+      }
+      case PacketType.CHANNEL_MSG:
+      case PacketType.CHANNEL_MSG_AIRHOP:
+        this.messages.insert(key, packet);
+        return;
+      case PacketType.GROUP_MESSAGE:
+        this.groups.insert(key, packet);
+        return;
+      case PacketType.BOARD_POST:
+        this.boards.insert(key, packet);
+        return;
+      default:
+        return;
     }
-    this.seen.set(id, packet);
-    this.seenBytes += packet.payload.length;
   }
 
-  private forget(id: string): void {
-    const packet = this.seen.get(id);
-    if (packet === undefined) return;
-    this.seen.delete(id);
-    this.seenBytes -= packet.payload.length;
+  // A packet that arrived as a reply to one of our requests, before any
+  // handler has judged it. One a handler goes on to accept is tracked, which
+  // takes it off this list. One it refuses stays, most often history from an
+  // author whose announce this node never heard and so cannot verify: nothing
+  // here is ever served, but the ID goes into our own filters, or every peer
+  // we ask would offer it again every round for as long as it stays servable.
+  // Only replies are remembered, so only a neighbour we asked could plant an
+  // ID here, and it could as easily withhold the packet.
+  noteReply(packet: Packet): void {
+    if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
+    const id = computePacketId(packet);
+    const key = bytesToHex(id);
+    this.declined.delete(key);
+    this.declined.set(key, {
+      type: packet.type,
+      timestamp: packet.timestamp,
+      id,
+    });
+    for (const oldest of this.declined.keys()) {
+      if (this.declined.size <= DECLINED_CAPACITY) break;
+      this.declined.delete(oldest);
+    }
   }
 
-  // Build a REQUEST_SYNC packet. Unicast when `toPeerID` is given, broadcast
-  // otherwise. Either way ttl 0: this is a question for the far end of one
-  // link, and relaying it asks a node that was never being addressed.
+  private *packets(): Generator<Packet> {
+    for (const store of this.stores) yield* store.values();
+  }
+
+  // Build a REQUEST_SYNC for `toPeerID` covering the packet types in `types`.
+  // ttl 0: this is a question for the far end of one link, and relaying it
+  // asks a node that was never being addressed. Built even when we hold none
+  // of those types: the empty filter asks for everything, which is how a
+  // newcomer collects the board.
   buildFilterPacket(
     identity: GossipSyncIdentity,
-    toPeerID?: string,
+    toPeerID: string,
+    types: number,
     now: number = Date.now(),
-  ): Packet | null {
+  ): Packet {
     // Newest first: the filter builder trims from the tail when it overflows
     // its byte budget, so this ordering is what makes the covered set a
     // contiguous newest-prefix and the cursor below exact.
-    const candidates = [...this.seen.values()]
-      .filter((p) => isFreshCandidate(p, now))
+    const held: FilterEntry[] = [...this.packets()].map((p) => ({
+      type: p.type,
+      timestamp: p.timestamp,
+      id: computePacketId(p),
+    }));
+    const candidates = [...held, ...this.declined.values()]
+      .filter((e) => inTypes(e.type, types) && isFreshCandidate(e, now))
       .sort((a, b) => b.timestamp - a.timestamp);
-    if (candidates.length === 0) return null;
 
-    const h64s = candidates.map((p) => packetIdToH64(computePacketId(p)));
+    const h64s = candidates.map((e) => packetIdToH64(e.id));
     const { p, m, data, includedCount } = buildGcsFilter(
       h64s,
       GCS_MAX_BYTES,
       GCS_TARGET_FPR,
     );
-
-    // Advertise every type we track so a peer answers with any it holds and we
-    // lack: announces, public messages, and signed board posts.
-    const typeFlags =
-      (1 << TYPE_BIT_ANNOUNCE) |
-      (1 << TYPE_BIT_MESSAGE) |
-      (1 << TYPE_BIT_BOARD) |
-      (1 << TYPE_BIT_GROUP) |
-      (1 << TYPE_BIT_AIRHOP_CHANNEL);
 
     // The cursor goes out only when the filter could not cover everything we
     // hold. It means "my filter was truncated and reaches back this far", not
@@ -694,21 +803,14 @@ export class GossipSync {
         ? candidates[includedCount - 1].timestamp
         : undefined;
 
-    const payload = encodeGossipFilterPayload({
-      p,
-      m,
-      data,
-      types: typeFlags,
-      since,
-    });
+    const payload = encodeGossipFilterPayload({ p, m, data, types, since });
 
-    const directed = toPeerID !== undefined;
     const packet: Packet = {
       type: PacketType.REQUEST_SYNC,
       ttl: SYNC_TTL,
-      flags: directed ? Flags.SIGNED | Flags.HAS_RECIPIENT : Flags.SIGNED,
+      flags: Flags.SIGNED | Flags.HAS_RECIPIENT,
       senderID: hexToBytes(identity.peerID),
-      recipientID: directed ? hexToBytes(toPeerID) : new Uint8Array(8),
+      recipientID: hexToBytes(toPeerID),
       timestamp: now,
       signature: new Uint8Array(64),
       payload,
@@ -732,17 +834,18 @@ export class GossipSync {
     fromPeerID?: string,
     now: number = Date.now(),
   ): Packet[] {
-    // Rate limit before decoding: the diff pass is the expensive part, and a
-    // peer that asks in a loop should not be able to make us pay for it.
+    // Decoded first, which costs a few TLVs, so a malformed request spends
+    // none of its peer's budget. The limit then comes before the diff pass,
+    // the expensive part, which a peer asking in a loop must not make us pay
+    // for. bitchat-ios limits first; either order answers it the same.
+    const params = decodeGossipFilterPayload(filterPacket.payload);
+    if (params === null) return [];
     if (
       fromPeerID !== undefined &&
-      !this.rateLimiter.shouldRespond(fromPeerID, now)
+      !this.rateLimiter.tryAcquire(fromPeerID, now)
     ) {
       return [];
     }
-
-    const params = decodeGossipFilterPayload(filterPacket.payload);
-    if (params === null) return [];
 
     const decodedFilter = decodeGcsFilter(params.p, params.m, params.data);
     const missing: Packet[] = [];
@@ -752,7 +855,7 @@ export class GossipSync {
     const requestedTypes =
       params.types ?? (1 << TYPE_BIT_ANNOUNCE) | (1 << TYPE_BIT_MESSAGE);
 
-    for (const packet of this.seen.values()) {
+    for (const packet of this.packets()) {
       // Never offer something we would not advertise ourselves. Otherwise a
       // peer whose own window has closed keeps being handed packets it will
       // drop, every round, forever.
@@ -760,8 +863,7 @@ export class GossipSync {
 
       // Only offer a packet whose type the requester actually asked for, so a
       // board round never draws announces and vice versa.
-      const bit = syncBitForType(packet.type);
-      if (bit === null || (requestedTypes & (1 << bit)) === 0) continue;
+      if (!inTypes(packet.type, requestedTypes)) continue;
 
       // Outside the requester's filter coverage: not missing, just older than
       // what it asked about.
@@ -783,21 +885,24 @@ export class GossipSync {
   }
 
   get seenCount(): number {
-    return this.seen.size;
+    return this.stores.reduce((sum, store) => sum + store.size, 0);
   }
 
   reset(): void {
-    this.seen.clear();
-    this.seenBytes = 0;
+    for (const store of this.stores) store.clear();
+    this.declined.clear();
     this.rateLimiter.reset();
   }
 }
 
-// ---- Helpers ----
-
-function isGossipType(type: PacketType): boolean {
-  return syncBitForType(type) !== null;
+// What a filter needs of a packet: enough to date it, type it and hash it.
+interface FilterEntry {
+  type: PacketType;
+  timestamp: number;
+  id: Uint8Array;
 }
+
+// ---- Helpers ----
 
 function bytesToHex(bytes: Uint8Array): string {
   let s = "";

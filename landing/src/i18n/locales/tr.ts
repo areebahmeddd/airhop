@@ -188,6 +188,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "Anahtarınızdan türetilir, böylece kimse sizinkini alamaz.",
   "home.features.identity.qr.name": "QR ile kişiler",
   "home.features.identity.qr.line": "Tek tarama yalnızca adlarını değil, anahtarlarını da taşır.",
+  "home.features.identity.forward.name": "İleriye dönük gizlilik",
+  "home.features.identity.forward.line": "Sızan bir anahtar eski mesajları açamaz.",
+  "home.features.identity.move.name": "Yeni telefona taşıma",
+  "home.features.identity.move.line":
+    "Sohbetler ve cüzdan taşınır, ardından eski telefon kendini siler.",
   "home.features.identity.panic.name": "Acil silme",
   "home.features.identity.panic.line":
     "Her anahtar ve her mesaj bir saniyeden kısa sürede yok edilir.",
@@ -197,6 +202,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth mesh",
   "home.features.networking.mesh.line":
     "İnternet yok, yönlendirici yok; insanların zaten sahip olduğu telefonlarda.",
+  "home.features.networking.lan.name": "Yerel ağ",
+  "home.features.networking.lan.line": "Ortak WiFi ya da hotspot, iPhone ve Android birlikte.",
+  "home.features.networking.hops.name": "Çok atlamalı aktarma",
+  "home.features.networking.hops.line": "Her telefon mesajları iletir, en fazla yedi atlama.",
   "home.features.networking.bridge.name": "Mesh köprüsü",
   "home.features.networking.bridge.line":
     "Açık sohbetinizi menzil dışındaki yakın bir kalabalıkla birleştirir.",

@@ -9,7 +9,7 @@
 import { findTokensInText, mayContainToken } from "@core/payments/cashu";
 import { getLanguage, stripIsolates, t } from "@i18n";
 import type { AttachmentType, ChatMessage } from "@store/chat-store";
-import { selectKeysetIds, useWalletStore } from "@store/wallet-store";
+import { selectKeysetRefs, useWalletStore } from "@store/wallet-store";
 import { conversationDisplayName } from "./conversation-display-name";
 import { formatTokenSummary } from "./format";
 import { messagePreviewText } from "./message-preview";
@@ -183,7 +183,7 @@ export function searchableMessageText(message: ChatMessage): string {
   if (message.text && mayContainToken(message.text)) {
     const tokens = findTokensInText(
       message.text,
-      selectKeysetIds(useWalletStore.getState()),
+      selectKeysetRefs(useWalletStore.getState()),
     );
     if (tokens.length > 0) {
       return tokens.map((t) => formatTokenSummary(t.info)).join(" ");

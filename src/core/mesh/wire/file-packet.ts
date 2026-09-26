@@ -149,6 +149,18 @@ export function extensionForMime(mimeType: string): string {
   return EXTENSION_BY_MIME[mimeType.trim().toLowerCase()] ?? "bin";
 }
 
+// The name a received file is stored under. A known type takes the extension
+// its validated MIME implies, since the OS opens a file by its extension and
+// the sender chose this one. Anything else keeps the sender's, as bitchat-ios
+// does, or a .docx sent as octet-stream would open in nothing.
+export function receivedFileName(name: string, mimeType: string): string {
+  const extension = EXTENSION_BY_MIME[mimeType.trim().toLowerCase()];
+  if (extension === undefined) return ensureFileExtension(name, mimeType);
+  const leaf = name.slice(name.lastIndexOf("/") + 1);
+  const dot = leaf.lastIndexOf(".");
+  return `${dot > 0 ? leaf.slice(0, dot) : leaf}.${extension}`;
+}
+
 // RFC 4122 version 4, from the platform CSPRNG. `Math.random` is banned in this
 // codebase and would be wrong here anyway: two photos naming the same id would
 // collide in bitchat's dedup and the second would be discarded as a duplicate.
@@ -191,15 +203,36 @@ const BITCHAT_ALLOWED_MIME = new Set([
   "application/octet-stream",
 ]);
 
+// The video Airhop sends (EXTENSION_BY_MIME); bitchat-ios sends none. Anything
+// else labelled video/* would go to the OS player unchecked.
+const AIRHOP_VIDEO_MIME = new Set(["video/mp4", "video/quicktime"]);
+
 export function isAllowedMime(mime: string | undefined): boolean {
   if (mime === undefined) return true; // treated as octet-stream
   const m = mime.toLowerCase();
-  return BITCHAT_ALLOWED_MIME.has(m) || m.startsWith("video/");
+  return BITCHAT_ALLOWED_MIME.has(m) || AIRHOP_VIDEO_MIME.has(m);
+}
+
+// MP4 and QuickTime are ISO base media files: a box size, then its type. Every
+// iPhone and Android recording opens with `ftyp`; older QuickTime files may
+// open with one of the others.
+const ISO_BMFF_FIRST_BOXES = new Set([
+  "ftyp",
+  "moov",
+  "wide",
+  "mdat",
+  "free",
+  "skip",
+]);
+
+function startsWithIsoBox(data: Uint8Array): boolean {
+  if (data.length < 8) return false;
+  return ISO_BMFF_FIRST_BOXES.has(String.fromCharCode(...data.subarray(4, 8)));
 }
 
 // Validate a file's leading bytes against its declared MIME type (bitchat
-// MimeType.matches). octet-stream, video, and unknown types skip validation
-// (bitchat is lenient for m4a too). Guards against a peer mislabeling content.
+// MimeType.matches). octet-stream and unknown types skip validation (bitchat is
+// lenient for m4a too). Guards against a peer mislabeling content.
 export function mimeMatchesMagic(
   mime: string | undefined,
   data: Uint8Array,
@@ -292,10 +325,12 @@ export function mimeMatchesMagic(
         at(2) === 0x44 &&
         at(3) === 0x46
       );
+    case "video/mp4":
+    case "video/quicktime":
+      return startsWithIsoBox(data);
     case "application/octet-stream":
       return true;
     default:
-      // Video and anything else: no signature check (Airhop extension).
       return true;
   }
 }

@@ -94,6 +94,10 @@ export interface Spec extends TurboModule {
   // or served, ethernet, USB tethering), read afresh on every call so a caller
   // can poll while the person joins a network. Rejects with MOVE_LISTEN_FAILED.
   startMoveListener(): Promise<{ port: number; hosts: string[] }>;
+  // The IPv4 address and prefix length of every interface startMoveListener
+  // would list, read afresh on each call. The old phone dials a code's address
+  // only when one of these subnets holds it; that rule lives in TypeScript.
+  localSubnets(): Promise<{ address: string; prefixLength: number }[]>;
   // Close the listener and every move connection.
   stopMove(): Promise<void>;
   // Resolves with the connection ID once connected. Rejects with

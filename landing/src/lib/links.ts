@@ -41,7 +41,7 @@ export const REPO_LINKS = {
   issues: `${REPO}/issues`,
   discussions: `${REPO}/discussions`,
   releases: `${REPO}/releases/latest`,
-  releasesApi: `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
   apk: `${REPO}/releases/latest/download/airhop.apk`,
+  verifyApk: `${REPO}#verifying-an-apk`,
   pressAssets: `${REPO}/tree/main/press/out`,
 } as const;

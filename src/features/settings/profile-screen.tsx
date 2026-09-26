@@ -240,6 +240,9 @@ interface Props {
   // Bumped by the shell to pop one level. A counter rather than a boolean, so
   // repeated pops each register.
   popSignal?: number;
+  // The section to open on, read once at mount. The shell remounts this screen
+  // (a new key) whenever it changes where the tab lands.
+  initialView?: SettingsView;
 }
 
 export default function ProfileScreen({
@@ -250,13 +253,14 @@ export default function ProfileScreen({
   onResumeMesh,
   onCanGoBackChange,
   popSignal = 0,
+  initialView = "root",
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const T = useT();
   const shared = useSharedStyles();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const STATUS_META = useMemo(() => getStatusMeta(Colors, T), [Colors, T]);
-  const [view, setView] = useState<SettingsView>("root");
+  const [view, setView] = useState<SettingsView>(initialView);
   // The row a search result named. The provider clears it on its own timer.
   const [highlightId, setHighlightId] = useState<SettingId | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);

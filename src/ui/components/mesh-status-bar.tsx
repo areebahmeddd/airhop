@@ -97,6 +97,8 @@ function actionHint(kind: BannerAction): string {
       return t("mesh.banner.hint.app_settings");
     case "open-background-limits":
       return t("mesh.banner.hint.battery_settings");
+    case "open-tor-settings":
+      return t("mesh.banner.hint.tor_settings");
   }
 }
 

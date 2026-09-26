@@ -56,10 +56,13 @@ grep -q "CURRENT_PROJECT_VERSION = ${IOS_BUILD};" ios/Airhop.xcodeproj/project.p
 git-cliff --config cliff.toml --tag "${TAG}" --output docs/dev/CHANGELOG.md
 
 git add app.json ios/Airhop.xcodeproj/project.pbxproj docs/dev/CHANGELOG.md
-git commit -m "chore(release): set version and changelog for ${TAG} [skip ci]"
+# No [skip ci]: GitHub applies it to a tag push of this commit too, and the tag
+# push is what starts the release workflow.
+git commit -m "chore(release): set version and changelog for ${TAG}"
 git tag -a "${TAG}" -m "${TAG}"
 
 echo
 echo "Tagged ${TAG} at $(git rev-parse --short HEAD). Review the commit, then:"
 echo "  git push origin main"
-echo "  git push origin ${TAG}"
+# Qualified, because git refuses a bare name that matches a local branch too.
+echo "  git push origin refs/tags/${TAG}"

@@ -12,9 +12,9 @@
 // Returns "wss://host[:port]" or null. Mirrors bitchat's
 // GeoRelayDirectory.validatedDirectoryAddress: ASCII only, wss/https scheme,
 // no credentials/query/fragment/path, a real DNS hostname (>= 2 labels, each
-// 1-63 chars of [a-z0-9-] with no leading/trailing dash), not a bare IP, not a
-// loopback or private name. An explicit :443 is dropped as the wss default;
-// any other port is kept, being a different endpoint.
+// 1-63 chars of [a-z0-9-] with no leading/trailing dash), not an IPv4 address,
+// not a loopback or private name. An explicit :443 is dropped as the wss
+// default; any other port is kept, being a different endpoint.
 function canonicalRelayUrl(raw) {
   const value = String(raw).trim();
   // Printable ASCII only (no spaces, no control characters).
@@ -64,8 +64,11 @@ function canonicalRelayUrl(raw) {
   }
 
   const labels = host.split(".");
-  // At least two labels, and not a bare IPv4 (all-numeric labels).
-  if (labels.length < 2 || labels.every((l) => /^[0-9]+$/.test(l))) return null;
+  // At least two labels, and not an IPv4 address in any spelling: a last label
+  // that ends in a number per WHATWG (decimal, 0x hex, leading-zero octal).
+  // Stricter than bitchat's all-decimal rule, as validateRelayUrl is.
+  const last = labels[labels.length - 1];
+  if (labels.length < 2 || /^(0x[0-9a-f]*|[0-9]+)$/.test(last)) return null;
   const labelOk = (l) =>
     l.length >= 1 &&
     l.length <= 63 &&

@@ -58,9 +58,8 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        // The release key comes from four environment variables: the release
-        // workflow exports them from a secret, a developer can export the same
-        // four to sign locally. Unset, this stays empty and the release
+        // The release key comes from four environment variables a developer
+        // can export to sign locally. Unset, this stays empty and the release
         // buildType falls back to the debug key, so a local or PR build still
         // installs. The keystore file is never committed.
         release {
@@ -78,7 +77,15 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig System.getenv("ANDROID_KEYSTORE_FILE") ? signingConfigs.release : signingConfigs.debug
+            // The release workflow passes -Pairhop.unsignedRelease=true and
+            // signs in a separate job, so no Gradle or npm code runs beside
+            // the key. Left unset, a release build is unsigned.
+            def unsignedRelease = (findProperty('airhop.unsignedRelease') ?: 'false').toBoolean()
+            if (System.getenv("ANDROID_KEYSTORE_FILE")) {
+                signingConfig signingConfigs.release
+            } else if (!unsignedRelease) {
+                signingConfig signingConfigs.debug
+            }
             // No `ndk { abiFilters }` here, on purpose. The React Native plugin
             // puts `reactNativeArchitectures` into defaultConfig's filters and
             // AGP merges those with a buildType's rather than letting the

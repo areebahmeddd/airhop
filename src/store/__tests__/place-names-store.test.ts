@@ -8,7 +8,9 @@
 // cache a wrong answer that would stick around after connectivity returns.
 
 import * as Location from "expo-location";
+import { useMeshStateStore } from "../mesh-state-store";
 import { placeNameKey, usePlaceNamesStore } from "../place-names-store";
+import { useSettingsStore } from "../settings-store";
 
 jest.mock("expo-location", () => ({ reverseGeocodeAsync: jest.fn() }));
 
@@ -31,6 +33,47 @@ async function settle(): Promise<void> {
 beforeEach(() => {
   usePlaceNamesStore.getState().clearAll();
   reverseGeocodeAsync.mockReset();
+  useSettingsStore.setState({ internetEnabled: true, torEnabled: false });
+  useMeshStateStore.setState({ torActive: false });
+});
+
+// The geocoder is a system service outside every switch the app has: it sends
+// the cell's centre from the device's own address, Tor or not.
+describe("the clear-net gate", () => {
+  it.each([
+    [
+      "the internet is off",
+      () => useSettingsStore.setState({ internetEnabled: false }),
+    ],
+    ["Tor is on", () => useSettingsStore.setState({ torEnabled: true })],
+    [
+      "Tor is carrying traffic",
+      () => useMeshStateStore.setState({ torActive: true }),
+    ],
+  ])("asks the geocoder nothing while %s", async (_, close) => {
+    reverseGeocodeAsync.mockResolvedValue([{ city: "Bengaluru" }]);
+    close();
+
+    usePlaceNamesStore.getState().resolve("tdr1k");
+    await settle();
+
+    expect(reverseGeocodeAsync).not.toHaveBeenCalled();
+    expect(cached("tdr1k")).toBeUndefined();
+  });
+
+  it("looks the cell up once the gate opens", async () => {
+    reverseGeocodeAsync.mockResolvedValue([{ city: "Bengaluru" }]);
+    useSettingsStore.setState({ torEnabled: true });
+    usePlaceNamesStore.getState().resolve("tdr1k");
+    await settle();
+
+    useSettingsStore.setState({ torEnabled: false });
+    usePlaceNamesStore.getState().resolve("tdr1k");
+    await settle();
+
+    expect(reverseGeocodeAsync).toHaveBeenCalledTimes(1);
+    expect(cached("tdr1k")).toBe("Bengaluru");
+  });
 });
 
 describe("offline and failure handling", () => {
@@ -99,5 +142,23 @@ describe("offline and failure handling", () => {
 
     expect(cached("td")).toBe("Karnataka");
     expect(cached("tdr1k")).toBe("Bengaluru");
+  });
+
+  it("drops an answer that lands after a panic wipe", async () => {
+    // The wipe clears the cache, but a lookup already on its way back must not
+    // write a visited place to disk again once it arrives.
+    let answer: (value: unknown) => void = () => undefined;
+    reverseGeocodeAsync.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    usePlaceNamesStore.getState().resolve("tdr1k");
+    usePlaceNamesStore.getState().clearAll();
+
+    answer([{ city: "Bengaluru" }]);
+    await settle();
+
+    expect(cached("tdr1k")).toBeUndefined();
   });
 });

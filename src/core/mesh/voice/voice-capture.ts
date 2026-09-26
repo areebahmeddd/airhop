@@ -131,6 +131,9 @@ export interface VoiceCaptureConfig {
   // Best-effort, like the broadcast path: a frame that cannot go out right now
   // is simply not sent. See emit().
   onDmPayload?: (payload: Uint8Array) => void;
+  // Our neighbour count, which a public burst's TTL follows (see
+  // origin-ttl.ts). 0 (sparse) when not given.
+  getDegree?: () => number;
 }
 
 export interface AudioCaptureBackend {
@@ -162,9 +165,9 @@ export class VoiceCaptureSession {
   // to retract, and no bubble anywhere to clean up. See sendStartIfNeeded.
   private startSent = false;
   private burstID = new Uint8Array(BURST_ID_SIZE);
-  // One draw per burst. Per frame, at ~15 a second, an observer would see the
-  // top of the range within a fraction of a second.
-  private burstTtl = originTtl();
+  // One draw per burst, in startPtt. Per frame, at ~15 a second, an observer
+  // would see the top of the range within a fraction of a second.
+  private burstTtl = 0;
   private seq = 0; // next seq to emit (0 = START, 1+ = DATA)
   private dataPacketCount = 0;
   private burstStartMs = 0;
@@ -207,7 +210,10 @@ export class VoiceCaptureSession {
     this.startSent = false;
     this.clearRetractTimers();
     this.burstID = randomBytes(BURST_ID_SIZE);
-    this.burstTtl = originTtl();
+    this.burstTtl = originTtl(
+      PacketType.VOICE_FRAME,
+      this.config.getDegree?.() ?? 0,
+    );
     // seq 0 belongs to START, which is emitted with the first frame; DATA
     // packets number from 1 whether or not that has happened yet.
     this.seq = 1;

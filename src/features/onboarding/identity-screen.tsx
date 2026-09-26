@@ -5,6 +5,7 @@
 
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { useT, type TranslationKey } from "@i18n";
+import { clearCondemnedIdentity } from "@services/wipe-marker";
 import PrimaryButton from "@ui/components/primary-button";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
@@ -122,6 +123,9 @@ export default function IdentityScreen({
     Promise.all([
       generateIdentity().then(async (id) => {
         await saveIdentity(id);
+        // Written over whatever an earlier refused wipe left, so launch no
+        // longer has an old identity to delete.
+        clearCondemnedIdentity();
         return id.peerID;
       }),
       delay(MIN_DISPLAY_MS),

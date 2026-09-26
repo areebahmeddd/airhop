@@ -71,8 +71,8 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | Transfer to a new phone   | Scan a code on the new phone and your identity, chats and wallet move across the local network; the old phone erases itself                  |
 |                   | Panic wipe                | Triple-tap instantly erases keys and local messages (nuke your account)                                                                      |
 | 🕸️ **Networking** | Bluetooth mesh            | Communicate with nearby devices without internet                                                                                             |
-|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
 |                   | Mesh bridge               | Link this area's public #bluetooth chat with another out-of-range Bluetooth crowd over the internet                                          |
+|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
 |                   | WiFi Aware                | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                      |
 |                   | Multi-hop routing         | Messages automatically relay across nearby devices (up to 7 hops)                                                                            |
 |                   | Relay nodes               | Third-party [Bitle](https://bitle.org) hardware extends the mesh where nobody stands. Requires an ESP32 board, plus LoRa to link nodes       |
@@ -172,6 +172,39 @@ Airhop belongs to the third category and extends it with a Nostr-based internet 
 
 Signal and Threema are here as the benchmark rather than as alternatives. Both are excellent at what they do, and neither is trying to work without a network: Signal ties an account to a phone number and Threema to a Threema ID, and both stop entirely when the network does. Airhop is aimed at the moment after that, when there is no network to be excellent on.
 
+## Verifying an APK
+
+Every release APK is signed with one key. An APK a friend sends you, or one shared from another phone over Quick Share, should match it before you install it the first time. After that, Android refuses any update signed by a different key.
+
+| Field            | Value                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Package          | `org.onemindlabs.airhop`                                                                          |
+| Signing SHA-256  | `60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49` |
+
+With the Android SDK build tools, this must print exactly one signer, with that digest:
+
+```bash
+apksigner verify --print-certs airhop.apk
+# Signer #1 certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
+```
+
+An APK downloaded from a release also carries build provenance. This checks it was built by this repository's release workflow, on a GitHub-hosted runner, from the tag of the release you downloaded (put it in place of `vX.Y.Z`):
+
+```bash
+gh attestation verify airhop.apk --repo areebahmeddd/airhop \
+  --signer-workflow areebahmeddd/airhop/.github/workflows/release.yml \
+  --source-ref refs/tags/vX.Y.Z --deny-self-hosted-runners
+```
+
+Each release's notes carry the same commands with its tag filled in.
+
+On a phone with no computer to hand, an app verifier such as [AppVerifier](https://github.com/soupslurpr/AppVerifier) takes the package name and digest in this form:
+
+```text
+org.onemindlabs.airhop
+60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49
+```
+
 ## Getting Started
 
 ```bash
@@ -190,20 +223,20 @@ npm install
 2. Open Xcode at least once and let it install any additional required components when prompted
 3. Go to **Xcode** then **Settings** then **Locations**, and select the most recent version in the **Command Line Tools** dropdown
 4. Go to **Xcode** then **Settings** then **Platforms**, click the **+** icon, and add an **iOS** runtime if one is not already installed
-5. Install [CocoaPods](https://cocoapods.org) if it is not already present, then run `npx pod-install` from the project root to install the iOS native dependencies.
+5. Run `bundle install` from the project root, which installs the CocoaPods version `Gemfile.lock` pins (CI refuses a `Podfile.lock` written by any other), then `bundle exec pod install --project-directory=ios` to install the iOS native dependencies.
 6. Launch a simulator from the device dropdown, then run `npm run ios`
 
 > The first `npm run ios` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
 > Requires a physical iPhone for BLE mesh testing (the iOS Simulator does not support Bluetooth) and supports iOS 16.0 or later.
 
-> Changing a native dependency also changes `ios/Podfile.lock`, which pins exact pod versions. Regenerate it with `npx pod-install` in the same commit.
+> Changing a native dependency also changes `ios/Podfile.lock`, which pins exact pod versions. Regenerate it with `bundle exec pod install --project-directory=ios` in the same commit.
 
 If a build fails after changing dependencies, clear the Xcode and CocoaPods caches before trying again:
 
 ```bash
 rm -rf ios/Pods ios/build ~/Library/Developer/Xcode/DerivedData/Airhop-*
-npx pod-install
+bundle exec pod install --project-directory=ios
 npm run ios
 ```
 

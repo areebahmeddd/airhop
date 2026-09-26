@@ -192,6 +192,11 @@ const strings: Strings = {
     "Derivati dalla tua chiave, così nessuno può prendersi il tuo.",
   "home.features.identity.qr.name": "Contatti via QR",
   "home.features.identity.qr.line": "Una scansione porta le loro chiavi, non solo il nome.",
+  "home.features.identity.forward.name": "Segretezza in avanti",
+  "home.features.identity.forward.line": "Una chiave trapelata non apre i messaggi passati.",
+  "home.features.identity.move.name": "Passaggio a un nuovo telefono",
+  "home.features.identity.move.line":
+    "Chat e portafoglio si spostano, poi il vecchio telefono si cancella.",
   "home.features.identity.panic.name": "Cancellazione d'emergenza",
   "home.features.identity.panic.line":
     "Ogni chiave e ogni messaggio distrutti in meno di un secondo.",
@@ -201,6 +206,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Rete mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Senza internet, senza router, su telefoni che la gente ha già.",
+  "home.features.networking.lan.name": "Rete locale",
+  "home.features.networking.lan.line": "WiFi condiviso o hotspot, iPhone e Android insieme.",
+  "home.features.networking.hops.name": "Inoltro multi-hop",
+  "home.features.networking.hops.line": "Ogni telefono passa i messaggi, fino a sette salti.",
   "home.features.networking.bridge.name": "Ponte mesh",
   "home.features.networking.bridge.line":
     "Collega la tua chat pubblica a un gruppo vicino fuori portata.",

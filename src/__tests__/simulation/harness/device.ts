@@ -200,7 +200,6 @@ interface WalletServiceLike {
   settleReclaim: (txId: string) => Promise<string>;
   receiveToken: (
     raw: string,
-    opts?: { preferOffline?: boolean },
   ) => Promise<{ amount: number; outcome: string; dleq?: string }>;
   refreshAccount: (...args: unknown[]) => Promise<unknown>;
   [k: string]: unknown;
@@ -1027,6 +1026,12 @@ export class SimDevice {
     return this.inner.fs?.__disk.get(uri)?.bytes ?? null;
   }
 
+  // Put a file straight into this phone's cache, as if it arrived earlier, so
+  // a scenario can fill the disk without sending every byte over a radio.
+  seedCacheFile(name: string, bytes: Uint8Array): void {
+    this.inner.fs?.__disk.set(`file:///cache/${name}`, { bytes });
+  }
+
   attachments(channel: string): SeenMessage[] {
     return this.messages(channel).filter((m) => m.attachment !== undefined);
   }
@@ -1170,11 +1175,8 @@ export class SimDevice {
     if (this.lastTxId !== null) this.inner.wallet.confirmSend(this.lastTxId);
   }
 
-  async receiveToken(
-    raw: string,
-    opts: { preferOffline?: boolean } = {},
-  ): Promise<boolean> {
-    const result = await this.receiveTokenResult(raw, opts);
+  async receiveToken(raw: string): Promise<boolean> {
+    const result = await this.receiveTokenResult(raw);
     if (result === null) return false;
     return result.outcome === "swapped" || result.outcome === "stored";
   }
@@ -1185,12 +1187,11 @@ export class SimDevice {
   // Null means the receive was refused outright.
   async receiveTokenResult(
     raw: string,
-    opts: { preferOffline?: boolean } = {},
   ): Promise<{ amount: number; outcome: string; dleq?: string } | null> {
     if (raw.length === 0) return null;
     try {
       const result = await this.world.resolve(
-        this.inner.wallet.receiveToken(raw, opts),
+        this.inner.wallet.receiveToken(raw),
       );
       this.log(
         "RECEIVE_TOKEN",
@@ -1545,6 +1546,8 @@ export class SimDevice {
         relays: (client as { activeRelays: string[] }).activeRelays,
       }),
     );
+    // A second call is a resubscribe, as a transport rebuild does.
+    this.stopNutzapWatcher?.();
     this.stopNutzapWatcher = wallet.startNutzapWatcher({
       myPubkey: pubKey,
       client,
@@ -1589,6 +1592,26 @@ export class SimDevice {
     return (history ?? []).filter(
       (tx) => tx.status === "pending" && tx.swapPreview !== undefined,
     ).length;
+  }
+
+  // Activity rows of one kind, whatever their status.
+  txCount(kind: string): number {
+    const history = this.inner.stores.walletStore.getState().history as
+      { kind: string }[] | undefined;
+    return (history ?? []).filter((tx) => tx.kind === kind).length;
+  }
+
+  // Receipts the mint refused: out of the balance, the coins kept as a token on
+  // the failed row so they can be handed back.
+  refusedReceipts(): { amount: number; token: string }[] {
+    const history = this.inner.stores.walletStore.getState().history as
+      | { kind: string; status: string; amount: number; token?: string }[]
+      | undefined;
+    return (history ?? []).flatMap((tx) =>
+      tx.kind === "receive" && tx.status === "failed" && tx.token
+        ? [{ amount: tx.amount, token: tx.token }]
+        : [],
+    );
   }
 
   // Rewrite a transaction. For putting the wallet into a state a scenario needs

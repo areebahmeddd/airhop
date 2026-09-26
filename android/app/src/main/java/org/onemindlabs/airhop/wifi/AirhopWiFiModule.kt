@@ -46,7 +46,8 @@
 //
 // On the socket, frames are [4-byte BE length][data]. Two are the module's own
 // and never reach TypeScript: a hello, first on every socket in both directions,
-// naming the sender so an accepted socket is attributed to a peer; and a
+// naming the sender so an accepted socket is attributed to a peer, and only
+// once it arrives is the link reported as connected; and a
 // zero-length heartbeat, so a socket whose far side vanished without a FIN is
 // closed in seconds.
 package org.onemindlabs.airhop.wifi
@@ -85,14 +86,13 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import java.io.EOFException
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet6Address
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.SocketTimeoutException
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.ArrayDeque
@@ -103,7 +103,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import org.onemindlabs.airhop.transport.FrameReader
 import org.onemindlabs.airhop.transport.Framing
+import org.onemindlabs.airhop.transport.LocalInterface
 import org.onemindlabs.airhop.wifi.AwareDial.toHex
 
 private const val TAG = "AirhopWiFiModule"
@@ -156,13 +158,23 @@ private const val PATH_REFUSED_FAST_MS = 2_000L
 
 private const val MAINTENANCE_MS = 15_000L
 
-// A heartbeat every 8 s against a 10 s read deadline, three misses allowed:
-// a dead link closes in about thirty seconds. A socket that has not sent its
-// hello by then is not a link at all.
+// A heartbeat every 8 s against FrameReader's read deadline: a dead link
+// closes in about thirty seconds. A socket that has not sent its hello within
+// HELLO_TIMEOUT_MS is not a link at all.
 private const val HEARTBEAT_MS = 8_000L
-private const val READ_TIMEOUT_MS = 10_000
-private const val IDLE_LIMIT = 3
 private const val HELLO_TIMEOUT_MS = 5_000L
+
+// A write blocked this long means the peer stopped reading. The same thirty
+// seconds the read side allows a frame.
+private const val WRITE_STALL_MS = FrameReader.FRAME_DEADLINE_MS
+
+// Accepted sockets still waiting for their hello. A real one sends it within a
+// round trip of connecting, so more than a few at once is not data paths.
+private const val MAX_PENDING_HELLO = 4
+
+// A failed accept that is not a close (EMFILE, most often) usually persists,
+// so the loop waits before asking again rather than spinning.
+private const val ACCEPT_RETRY_MS = 1_000L
 
 // A publish/subscribe pair can go quiet under the framework with no callback
 // saying so. Reopening them is what a WiFi toggle does, and a data path
@@ -198,21 +210,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
 
     // ---- State model ---------------------------------------------------------
 
-    private enum class Role {
-        INITIATOR,
-        RESPONDER,
-    }
-
-    //   IDLE          known, nothing in flight; the tick decides when to dial
-    //   REQUESTED     REQUEST sent, waiting for READY
-    //   PATH_PENDING  a requestNetwork() is outstanding, in either role
-    //   CONNECTED     a socket is open and registered
-    private enum class DialState {
-        IDLE,
-        REQUESTED,
-        PATH_PENDING,
-        CONNECTED,
-    }
+    // Role and DialState are in AwareDial.kt, beside the rules that read them.
 
     // Handles are session-scoped: cleared on every discovery restart, refilled
     // by the next match or message.
@@ -247,6 +245,8 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         @Volatile var peerInstance: String? = null
         @Volatile var hasHello = false
         @Volatile var lastReadAtMs = SystemClock.elapsedRealtime()
+        // When the write in progress began, 0 while none is.
+        @Volatile var writingSinceMs = 0L
         var heartbeat: ScheduledFuture<*>? = null
     }
 
@@ -647,8 +647,13 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     private fun writeFrame(link: LinkState, data: ByteArray) {
         val frame = Framing.encode(data)
         synchronized(link.writeLock) {
-            link.output.write(frame)
-            link.output.flush()
+            link.writingSinceMs = now()
+            try {
+                link.output.write(frame)
+                link.output.flush()
+            } finally {
+                link.writingSinceMs = 0L
+            }
         }
     }
 
@@ -1352,34 +1357,75 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     }
 
     // IO thread. An accepted socket is attributed by the hello it sends.
+    //
+    // Runs until the server socket is closed. Any other failure, an Error
+    // included, is logged and retried after a pause: returning would leave the
+    // port setPort() names bound with nobody reading it.
     private fun acceptLoop(socket: ServerSocket) {
         while (!socket.isClosed) {
-            val client =
-                try {
-                    socket.accept()
-                } catch (e: Exception) {
+            try {
+                val client = socket.accept()
+                if (!onAwareInterface(client)) {
+                    runCatching { client.close() }
+                    continue
+                }
+                if (!onState { admitInbound(socket, client) }) runCatching { client.close() }
+            } catch (e: Throwable) {
+                if (socket.isClosed) {
                     logI("Accept loop ended: ${e.message}")
                     return
                 }
-            onState {
-                if (serverSocket !== socket) {
-                    runCatching { client.close() }
-                    return@onState
+                logW("Accept failed, retrying: ${e.message}")
+                try {
+                    Thread.sleep(ACCEPT_RETRY_MS)
+                } catch (_: InterruptedException) {
+                    return
                 }
-                registerLink("wifi-in-${linkCounter.incrementAndGet()}", client, null)
             }
         }
     }
 
-    // State thread. Sends the hello before JS can write, so it is the first
-    // frame on the wire.
+    // The server socket listens on every interface for the whole attach, so
+    // without this anyone on the same Wi-Fi network, or another app through
+    // loopback, reaches it. An interface the platform will not name is let
+    // through with a log line: refusing it could break Aware on a build that
+    // reports names differently, and the hello check still applies to it.
+    private fun onAwareInterface(client: Socket): Boolean {
+        val name = LocalInterface.nameOf(client)
+        if (name == null) {
+            logI("Inbound interface unknown, accepting")
+            return true
+        }
+        if (AwareDial.isAwareInterface(name)) return true
+        logW("Refused inbound on $name")
+        return false
+    }
+
+    // State thread.
+    private fun admitInbound(server: ServerSocket, client: Socket) {
+        if (serverSocket !== server) {
+            runCatching { client.close() }
+            return
+        }
+        val waiting = links.values.count { it.peerInstance == null }
+        if (waiting >= MAX_PENDING_HELLO) {
+            logW("Refused inbound, $waiting already waiting for a hello")
+            runCatching { client.close() }
+            return
+        }
+        registerLink("wifi-in-${linkCounter.incrementAndGet()}", client, null)
+    }
+
+    // State thread. Sends the hello before anything else can write, so it is
+    // the first frame on the wire. JS hears of the link only once the peer's
+    // hello has come back (onHello).
     private fun registerLink(id: String, socket: Socket, peer: Peer?) {
         lastActivityAtMs = now()
         val link: LinkState
         try {
             socket.tcpNoDelay = true
             socket.keepAlive = true
-            socket.soTimeout = READ_TIMEOUT_MS
+            socket.soTimeout = FrameReader.READ_TIMEOUT_MS
             link = LinkState(id, socket, socket.getOutputStream())
             writeFrame(link, AwareDial.hello(instanceId))
         } catch (e: Exception) {
@@ -1390,8 +1436,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
         links[id] = link
         if (peer != null) attachLink(link, peer)
-        emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
-        logI("WiFi Aware link connected: $id${peer?.let { " to ${it.instance.take(8)}" } ?: ""}")
+        logI("WiFi Aware socket open: $id${peer?.let { " to ${it.instance.take(8)}" } ?: ""}")
         state.schedule(
             {
                 if (links[id] === link && !link.hasHello) closeLink(id, "no hello")
@@ -1420,10 +1465,18 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         peer.nextAttemptAtMs = 0
     }
 
+    // An inbound socket's hello must name a peer we are responding to (see
+    // AwareDial.acceptsInboundHello); any other instance is a socket no data
+    // path of ours asked for, and it neither creates a peer nor displaces a link.
     private fun onHello(link: LinkState, instance: String) {
         if (links[link.id] !== link) return
         if (link.peerInstance == null) {
-            attachLink(link, peerFor(instance))
+            val peer = peers[instance]
+            if (peer == null || !AwareDial.acceptsInboundHello(peer.role, peer.state)) {
+                closeLink(link.id, "unsolicited hello from ${instance.take(8)}")
+                return
+            }
+            attachLink(link, peer)
         } else if (link.peerInstance != instance) {
             logW(
                 "Link ${link.id} hello names ${instance.take(8)}, expected ${link.peerInstance?.take(8)}"
@@ -1433,57 +1486,52 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
         if (link.hasHello) return
         link.hasHello = true
+        emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", link.id) })
+        logI("WiFi Aware link connected: ${link.id} to ${instance.take(8)}")
         link.heartbeat =
             state.scheduleWithFixedDelay(
-                {
-                    onIo {
-                        try {
-                            writeFrame(link, ByteArray(0))
-                        } catch (e: Exception) {
-                            onState { closeLink(link.id, "heartbeat failed") }
-                        }
-                    }
-                },
+                { heartbeat(link) },
                 HEARTBEAT_MS,
                 HEARTBEAT_MS,
                 TimeUnit.MILLISECONDS,
             )
     }
 
+    // State thread. Skipped while a write is in progress, so a peer that stops
+    // reading parks one writer rather than one more every beat. Once that write
+    // has been blocked for WRITE_STALL_MS the link is closed, which makes it
+    // throw and fails every write queued behind it.
+    private fun heartbeat(link: LinkState) {
+        val since = link.writingSinceMs
+        if (since != 0L) {
+            if (now() - since > WRITE_STALL_MS) closeLink(link.id, "peer stopped reading")
+            return
+        }
+        onIo {
+            try {
+                writeFrame(link, ByteArray(0))
+            } catch (e: Exception) {
+                onState { closeLink(link.id, "heartbeat failed") }
+            }
+        }
+    }
+
     // IO thread.
     private fun readLoop(link: LinkState, input: InputStream) {
-        val lenBuf = ByteArray(4)
-        var idleTimeouts = 0
-        // A deadline that lands with part of a frame in hand cannot be waited
-        // out: the next read would take the rest of it for a length prefix.
-        var inFrame = 0
+        val reader = FrameReader(input, ::now)
         while (true) {
             try {
-                inFrame = 0
-                while (inFrame < 4) {
-                    val n = input.read(lenBuf, inFrame, 4 - inFrame)
-                    if (n < 0) throw EOFException("EOF in length prefix")
-                    inFrame += n
-                }
-                val len = Framing.length(lenBuf) ?: throw Exception("invalid frame length")
-                idleTimeouts = 0
+                val data = reader.next()
                 link.lastReadAtMs = now()
-                if (len == 0) continue
-
-                val data = ByteArray(len)
-                var received = 0
-                while (received < len) {
-                    val n = input.read(data, received, len - received)
-                    if (n < 0) throw EOFException("EOF in frame body")
-                    received += n
-                    inFrame += n
-                }
+                if (data.isEmpty()) continue
                 val hello = AwareDial.helloInstance(data)
                 if (hello != null) {
-                    onState { onHello(link, hello) }
+                    // Waited for, so the frames behind the hello meet its
+                    // verdict rather than racing it to hasHello.
+                    state.submit { onHello(link, hello) }.get()
                     continue
                 }
-                if (!link.hasHello) throw Exception("traffic before hello")
+                if (!link.hasHello) throw IOException("traffic before hello")
                 emitEvent(
                     EVT_PACKET_RECEIVED,
                     WritableNativeMap().apply {
@@ -1491,15 +1539,6 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                         putString("dataBase64", Base64.encodeToString(data, Base64.NO_WRAP))
                     },
                 )
-            } catch (e: SocketTimeoutException) {
-                if (inFrame > 0) {
-                    onState { closeLink(link.id, "stalled mid-frame") }
-                    return
-                }
-                idleTimeouts += 1
-                if (idleTimeouts < IDLE_LIMIT) continue
-                onState { closeLink(link.id, "idle past deadline") }
-                return
             } catch (e: Exception) {
                 val reason = e.message ?: e.javaClass.simpleName
                 onState { closeLink(link.id, reason) }
@@ -1523,7 +1562,13 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             peer.idleSinceMs = now()
             peer.nextAttemptAtMs = peer.idleSinceMs + REDIAL_DELAY_MS
         }
-        emitEvent(EVT_LINK_DISCONNECTED, WritableNativeMap().apply { putString("linkID", linkID) })
+        // JS heard of the link at its hello, and of nothing before it.
+        if (link.hasHello) {
+            emitEvent(
+                EVT_LINK_DISCONNECTED,
+                WritableNativeMap().apply { putString("linkID", linkID) },
+            )
+        }
     }
 
     // ---- Helpers -------------------------------------------------------------

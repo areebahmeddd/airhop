@@ -13,12 +13,15 @@
 //   1. Unwrap the gift wrap (decrypt with recipient private key).
 //   2. Verify the seal's signature (rejects forged DMs).
 //   3. Open the seal (decrypt rumor with recipient key).
-//   4. Verify that the seal signer matches the rumor's claimed sender.
+//   4. Check the rumor is a well-formed kind 14 whose claimed sender is the
+//      seal's signer.
 //
 // Security notes:
-//   - Relay operators see: kind 1059, recipient pubkey, and a random
-//     timestamp +/-2 days (per NIP-59). They cannot read the content or
-//     the sender identity.
+//   - Relay operators see: kind 1059, recipient pubkey, and a timestamp
+//     randomized +/-15 minutes (bitchat's window, not NIP-59's two days).
+//     They cannot read the content or the sender identity.
+//   - No recipient tag is checked on the rumor: the seal is NIP-44 encrypted
+//     to the recipient's key, so only a rumor meant for us can open at all.
 //   - The seal (kind 13) is signed by the REAL sender key, providing
 //     deniability only at the gift-wrap layer while still authenticating
 //     the sender to the recipient.
@@ -30,6 +33,7 @@ import {
   finalizeEvent,
   generateSecretKey,
   getPublicKey,
+  validateEvent,
   verifyEvent,
   type Event,
   type UnsignedEvent,
@@ -175,9 +179,16 @@ export function unwrapDm(
     recipientPrivKey,
   );
   if (rumorJson === null) throw new Error("Seal decrypt failed");
-  const rumor = JSON.parse(rumorJson) as UnsignedEvent;
+  const rumor: unknown = JSON.parse(rumorJson);
 
-  // Step 4: Ensure the seal's signer is who the rumor claims to be.
+  // Step 4: The rumor is unsigned, so nothing else has checked its shape. A
+  // missing or non-numeric created_at would slip past the window below, since
+  // every comparison with it is false, and file the message at NaN.
+  if (!validateEvent(rumor) || rumor.kind !== KIND_DM_RUMOR) {
+    throw new Error("Rumor is not a well-formed DM");
+  }
+
+  // Ensure the seal's signer is who the rumor claims to be.
   if (seal.pubkey !== rumor.pubkey) {
     throw new Error("Rumor pubkey does not match seal signer");
   }

@@ -1,5 +1,22 @@
 package org.onemindlabs.airhop.wifi
 
+// Which side of a data path this device is for a peer.
+internal enum class Role {
+    INITIATOR,
+    RESPONDER,
+}
+
+//   IDLE          known, nothing in flight; the tick decides when to dial
+//   REQUESTED     REQUEST sent, waiting for READY
+//   PATH_PENDING  a requestNetwork() is outstanding, in either role
+//   CONNECTED     a socket is open and registered
+internal enum class DialState {
+    IDLE,
+    REQUESTED,
+    PATH_PENDING,
+    CONNECTED,
+}
+
 // The byte layouts and the rules that get a pair of Aware peers onto one
 // socket on this platform: the follow-up messages, the hello frame, who dials,
 // and how long a failed attempt waits. Pure, and shared with the tests, so the
@@ -67,6 +84,21 @@ internal object AwareDial {
         }
         return true
     }
+
+    // Aware data interfaces are aware_data0..N-1: the prefix is
+    // AWARE_INTERFACE_PREFIX in AOSP's WifiAwareDataPathStateManager, and
+    // Samsung's builds use it too (the #37 logs show %aware_data0). The server
+    // socket listens on every interface, so this is what keeps it to data paths.
+    fun isAwareInterface(name: String?): Boolean = name?.startsWith("aware_data") == true
+
+    // Whether a hello on an accepted socket may claim a link for its peer. Only
+    // a responder receives inbound sockets, and its state is set when the
+    // connect request arrives, before the data path exists, so a genuine hello
+    // always finds it. This ties an inbound socket to a path we opened; it does
+    // not tell a real peer's socket from another one naming that peer while it
+    // is ours, which the interface check and radio range bound instead.
+    fun acceptsInboundHello(role: Role?, state: DialState): Boolean =
+        role == Role.RESPONDER && (state == DialState.PATH_PENDING || state == DialState.CONNECTED)
 
     // The wait after the given number of failed attempts, before jitter.
     fun backoffMs(attempts: Int): Long =

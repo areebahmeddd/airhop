@@ -133,24 +133,33 @@ describe("recoveryPhraseToSeed", () => {
 describe("phrase storage", () => {
   it("round-trips through the keychain", async () => {
     await storePhrase(KNOWN);
-    expect(await loadStoredPhrase()).toBe(KNOWN);
+    expect(await loadStoredPhrase()).toEqual({ state: "valid", phrase: KNOWN });
   });
 
-  it("returns null when nothing is stored", async () => {
-    expect(await loadStoredPhrase()).toBeNull();
+  it("reports absent when nothing is stored", async () => {
+    expect(await loadStoredPhrase()).toEqual({ state: "absent" });
   });
 
   it("refuses to store an invalid phrase", async () => {
     await expect(storePhrase("nonsense words here")).rejects.toThrow();
-    expect(await loadStoredPhrase()).toBeNull();
+    expect(await loadStoredPhrase()).toEqual({ state: "absent" });
   });
 
-  it("treats a corrupted stored value as absent rather than deriving from it", async () => {
+  it("reports a corrupted stored value as invalid, never as absent", async () => {
+    // Absent is the only answer that lets a caller write a new phrase, and a
+    // value that is there but no longer validates is not absent.
     await SecureStore.setItemAsync(
       KEYCHAIN_ITEMS.walletRecoveryPhrase,
       "corrupted",
     );
-    expect(await loadStoredPhrase()).toBeNull();
+    expect(await loadStoredPhrase()).toEqual({ state: "invalid" });
+  });
+
+  it("throws when the keychain cannot be read, rather than saying none", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockRejectedValueOnce(
+      new Error("errSecInteractionNotAllowed"),
+    );
+    await expect(loadStoredPhrase()).rejects.toThrow();
   });
 });
 

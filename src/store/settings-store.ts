@@ -95,7 +95,8 @@ interface SettingsState {
   torBridgeMode: TorBridgeMode;
   torBridgeLines: string;
   // Set before native Tor startup and cleared on its response. If it survives a
-  // relaunch, the previous bootstrap failed and the preference is reverted.
+  // relaunch, the previous start never answered: Tor stays on, nothing native
+  // starts, and the internet half is held until Try again or Tor off.
   torStartPending: boolean;
   // iOS mint requests use plain fetch, so Tor cannot cover them. This opt-in
   // allows that clear-net request; Android's proxied client does not need it.

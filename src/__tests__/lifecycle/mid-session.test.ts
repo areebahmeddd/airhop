@@ -18,11 +18,15 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   },
 }));
 
+import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
+import { applyAirhopLink, joinSheetPrefill } from "@services/link-router";
 import { getMeshService } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
+import { useChatStore } from "@store/chat-store";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
+import { channelInviteLink, parseAirhopLink } from "@utils/deep-link";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -537,5 +541,37 @@ describe("mid-session radio chaos and lifecycle", () => {
       `${native.peripheralManagersCreated} created in 10s, each reusing the same CBPeripheralManagerOptionRestoreIdentifierKey`,
     );
     v.assert();
+  });
+});
+
+// Any installed app, or a page that redirects, can hand Airhop a link. What the
+// app does with one when it arrives is joinSheetPrefill (app.tsx); what the
+// Join tap does is applyAirhopLink. Only the second may change anything.
+describe("a link from another app", () => {
+  beforeEach(() => {
+    useChatStore.getState().clearAll();
+  });
+
+  test("S33 a private invite changes no store until Join", () => {
+    const key = generateChannelKey();
+    const url = channelInviteLink("#crew", key, true);
+    const before = JSON.stringify(useChatStore.getState().channels);
+
+    const prefill = joinSheetPrefill(url);
+
+    expect(prefill).toBe(url);
+    expect(JSON.stringify(useChatStore.getState().channels)).toBe(before);
+    expect(useChatStore.getState().channelKeys["#crew"]).toBeUndefined();
+
+    // The Join tap.
+    const link = parseAirhopLink(prefill ?? "");
+    const joined = link === null ? null : applyAirhopLink(link);
+    expect(joined).not.toBeNull();
+    expect(useChatStore.getState().channelKeys[joined ?? ""]).toBe(key);
+  });
+
+  test("S33b anything that is not an Airhop link opens nothing", () => {
+    expect(joinSheetPrefill("https://example.com/")).toBeNull();
+    expect(joinSheetPrefill(null)).toBeNull();
   });
 });

@@ -8,7 +8,8 @@
 // The real sender and receiver run against each other over an in-memory link
 // that behaves like the native one: ordered frames, a connected event on both
 // ends, a closed event on both ends. Chaos is injected at the link, which is
-// where a real transfer meets it.
+// where a real transfer meets it. A third phone, "evil", can dial the same code
+// to race the real old phone.
 
 import type * as IdentityModule from "@core/crypto/identity";
 import type * as KeychainModule from "@core/crypto/keychain";
@@ -20,12 +21,18 @@ import type * as MarkerModule from "../move-marker";
 import type * as ReceiverModule from "../move-receiver";
 import type * as SenderModule from "../move-sender";
 
-type Side = "old" | "new";
+type Side = "old" | "new" | "evil";
+type Dialer = Exclude<Side, "new">;
 
-// ---- The link between the two phones ----
+// ---- The link between the phones ----
+
+// The new phone's listening address, and the subnet every dialer is on.
+const NEW_PHONE_HOST = "192.168.1.20";
+const LOCAL_SUBNET = { address: "192.168.1.30", prefixLength: 24 };
 
 interface Connection {
-  id: Record<Side, string>;
+  dialer: Dialer;
+  id: { dialer: string; new: string };
   open: boolean;
 }
 
@@ -33,10 +40,12 @@ class LinkBus {
   private readonly listeners: Record<Side, ((e: MoveLinkEvent) => void)[]> = {
     old: [],
     new: [],
+    evil: [],
   };
   private listening = false;
   private readonly connections: Connection[] = [];
   private seq = 0;
+  dials = 0;
   // Chaos: called with every frame the named side writes. "drop-link" cuts the
   // connection instead of delivering it; "hold" parks the frame, and every
   // frame after it, until release().
@@ -50,27 +59,32 @@ class LinkBus {
     this.holding = false;
     for (const deliver of this.held.splice(0)) deliver();
   }
-  private written: Record<Side, number> = { old: 0, new: 0 };
+  private written: Record<Side, number> = { old: 0, new: 0, evil: 0 };
 
   private emit(side: Side, event: MoveLinkEvent): void {
     for (const l of [...this.listeners[side]]) l(event);
   }
 
   private find(side: Side, id: string): Connection | undefined {
-    return this.connections.find((c) => c.id[side] === id);
+    return this.connections.find((c) =>
+      side === "new"
+        ? c.id.new === id
+        : c.dialer === side && c.id.dialer === id,
+    );
   }
 
   private close(c: Connection): void {
     if (!c.open) return;
     c.open = false;
     setImmediate(() => {
-      this.emit("old", { kind: "closed", connectionID: c.id.old });
+      this.emit(c.dialer, { kind: "closed", connectionID: c.id.dialer });
       this.emit("new", { kind: "closed", connectionID: c.id.new });
     });
   }
 
   linkFor(side: Side) {
-    const other: Side = side === "old" ? "new" : "old";
+    const { MoveDialError } =
+      jest.requireActual<typeof import("../move-link")>("../move-link");
     return {
       isMoveLinkAvailable: () => true,
       subscribeMoveLink: (l: (e: MoveLinkEvent) => void) => {
@@ -81,28 +95,36 @@ class LinkBus {
       },
       startMoveListener: async () => {
         this.listening = true;
-        return { port: 45000, hosts: ["192.168.1.20"] };
+        return { port: 45000, hosts: [NEW_PHONE_HOST] };
       },
+      localSubnets: async () => [LOCAL_SUBNET],
       stopMoveLink: async () => {
         if (side === "new") this.listening = false;
-        for (const c of this.connections) this.close(c);
+        for (const c of this.connections) {
+          if (side === "new" || c.dialer === side) this.close(c);
+        }
       },
       dialMove: async (host: string, port: number) => {
-        if (!this.listening || host !== "192.168.1.20" || port !== 45000) {
-          const { MoveDialError } =
-            jest.requireActual<typeof import("../move-link")>("../move-link");
+        this.dials += 1;
+        if (
+          side === "new" ||
+          !this.listening ||
+          host !== NEW_PHONE_HOST ||
+          port !== 45000
+        ) {
           throw new MoveDialError("unreachable");
         }
         this.seq += 1;
         const c: Connection = {
-          id: { old: `out-${this.seq}`, new: `in-${this.seq}` },
+          dialer: side,
+          id: { dialer: `out-${this.seq}`, new: `in-${this.seq}` },
           open: true,
         };
         this.connections.push(c);
         setImmediate(() =>
           this.emit("new", { kind: "connected", connectionID: c.id.new }),
         );
-        return c.id.old;
+        return c.id.dialer;
       },
       writeMove: async (connectionID: string, bytes: Uint8Array) => {
         const c = this.find(side, connectionID);
@@ -113,13 +135,14 @@ class LinkBus {
           this.close(c);
           throw new Error("closed");
         }
+        const to: Side = side === "new" ? c.dialer : "new";
         const copy = bytes.slice();
         // Like TCP: bytes written before a close still arrive, ahead of it.
         const deliver = () =>
           setImmediate(() =>
-            this.emit(other, {
+            this.emit(to, {
               kind: "data",
-              connectionID: c.id[other],
+              connectionID: to === "new" ? c.id.new : c.id.dialer,
               bytes: copy,
             }),
           );
@@ -142,9 +165,7 @@ class LinkBus {
         const c = this.find(side, connectionID);
         if (c !== undefined) this.close(c);
       },
-      MoveDialError:
-        jest.requireActual<typeof import("../move-link")>("../move-link")
-          .MoveDialError,
+      MoveDialError,
     };
   }
 }
@@ -160,6 +181,7 @@ interface Phone {
   sender: typeof SenderModule;
   receiver: typeof ReceiverModule;
   secureStore: { setItemAsync: jest.Mock };
+  mesh: { destroyMeshService: jest.Mock };
 }
 
 const g = globalThis as unknown as {
@@ -170,7 +192,7 @@ const g = globalThis as unknown as {
 
 // Factories run once per phone, inside that phone's registry, so each captures
 // the side being built. They reach the shared rig through globalThis, the one
-// thing both registries have in common.
+// thing every registry has in common.
 jest.mock("../move-link", () => {
   const rigState = globalThis as unknown as {
     __moveBus: { linkFor: (side: string) => unknown };
@@ -219,6 +241,7 @@ function phone(side: Side): Phone {
       sender: require("../move-sender"),
       receiver: require("../move-receiver"),
       secureStore: require("expo-secure-store"),
+      mesh: require("../mesh-service"),
     };
   });
   if (loaded === null) throw new Error("phone did not load");
@@ -237,7 +260,7 @@ async function until(predicate: () => boolean, ms = 10_000): Promise<boolean> {
   if (!ok && lastRig !== null) {
     console.log(
       JSON.stringify({
-        sender: lastRig.senderStates,
+        sender: lastRig.senderStates.map((x) => x.phase),
         receiver: lastRig.receiverStates.map((x) => x.phase),
       }),
     );
@@ -245,9 +268,24 @@ async function until(predicate: () => boolean, ms = 10_000): Promise<boolean> {
   return ok;
 }
 
+// Lets every frame in flight land, for asserting that nothing more happens.
+async function settle(ms = 200): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+interface SendOptions {
+  invite?: MoveInvite;
+  history?: boolean;
+  // Taps Transfer as soon as the words show.
+  autoProceed?: boolean;
+  from?: Dialer;
+  states?: SenderModule.SenderState[];
+}
+
 interface Rig {
   oldPhone: Phone;
   newPhone: Phone;
+  evilPhone: Phone;
   bus: LinkBus;
   peerID: string;
   senderStates: SenderModule.SenderState[];
@@ -255,15 +293,20 @@ interface Rig {
   resumed: jest.Mock;
   receiver: ReceiverModule.MoveReceiver;
   invite: MoveInvite;
-  send: (invite?: MoveInvite, history?: boolean) => SenderModule.MoveSender;
+  send: (options?: SendOptions) => SenderModule.MoveSender;
 }
 
-async function rig(versions = { old: "1.0.8", new: "1.0.8" }): Promise<Rig> {
+async function rig(
+  versions = { old: "1.0.8", new: "1.0.8", evil: "1.0.8" },
+  // Taps They match as soon as the words show.
+  autoConfirm = true,
+): Promise<Rig> {
   const bus = new LinkBus();
   g.__moveBus = bus;
   g.__moveVersion = versions;
   const oldPhone = phone("old");
   const newPhone = phone("new");
+  const evilPhone = phone("evil");
 
   g.__moveSide = "old";
   const id = await oldPhone.identity.generateIdentity();
@@ -288,11 +331,18 @@ async function rig(versions = { old: "1.0.8", new: "1.0.8" }): Promise<Rig> {
       "contacts-store",
       JSON.stringify({ state: { contacts: { a: { nickname: "sam" } } } }),
     );
+  await evilPhone.identity.saveIdentity(
+    await evilPhone.identity.generateIdentity(),
+  );
 
   const receiverStates: ReceiverModule.ReceiverState[] = [];
-  const receiver = new newPhone.receiver.MoveReceiver((s) =>
-    receiverStates.push(s),
-  );
+  const receiver: ReceiverModule.MoveReceiver =
+    new newPhone.receiver.MoveReceiver((s) => {
+      receiverStates.push(s);
+      if (autoConfirm && s.phase === "confirm") {
+        setImmediate(() => receiver.confirm());
+      }
+    });
   await receiver.start();
   const waiting = receiverStates.find((s) => s.phase === "waiting");
   if (waiting?.phase !== "waiting") throw new Error("no code shown");
@@ -301,17 +351,34 @@ async function rig(versions = { old: "1.0.8", new: "1.0.8" }): Promise<Rig> {
 
   const senderStates: SenderModule.SenderState[] = [];
   const resumed = jest.fn();
-  const send = (target: MoveInvite = invite, history = true) => {
-    const sender = new oldPhone.sender.MoveSender(target, history, {
-      onChange: (s) => senderStates.push(s),
-      onResume: resumed,
-    });
-    void sender.start();
+  const send = ({
+    invite: target = invite,
+    history = true,
+    autoProceed = true,
+    from = "old",
+    states = senderStates,
+  }: SendOptions = {}) => {
+    const sending = from === "old" ? oldPhone : evilPhone;
+    const sender: SenderModule.MoveSender = new sending.sender.MoveSender(
+      target,
+      history,
+      {
+        onChange: (s) => {
+          states.push(s);
+          if (autoProceed && s.phase === "verify") {
+            setImmediate(() => sender.proceed());
+          }
+        },
+        onResume: resumed,
+      },
+    );
+    void sender.connect();
     return sender;
   };
-  lastRig = {
+  const built: Rig = {
     oldPhone,
     newPhone,
+    evilPhone,
     bus,
     peerID: id.peerID,
     senderStates,
@@ -321,18 +388,8 @@ async function rig(versions = { old: "1.0.8", new: "1.0.8" }): Promise<Rig> {
     invite,
     send,
   };
-  return {
-    oldPhone,
-    newPhone,
-    bus,
-    peerID: id.peerID,
-    senderStates,
-    receiverStates,
-    resumed,
-    receiver,
-    invite,
-    send,
-  };
+  lastRig = built;
+  return built;
 }
 
 const lastPhase = <T extends { phase: string }>(states: T[]): string =>
@@ -376,7 +433,7 @@ describe("device transfer, end to end", () => {
   it("refuses a phone other than the one scanned, and never stops the mesh", async () => {
     const r = await rig();
     const impostor = { ...r.invite, publicKey: new Uint8Array(32).fill(1) };
-    r.send(impostor);
+    r.send({ invite: impostor });
     expect(await until(() => lastPhase(r.senderStates) === "failed")).toBe(
       true,
     );
@@ -412,7 +469,7 @@ describe("device transfer, end to end", () => {
   });
 
   it("a newer old phone is refused by an older new one, and nothing moves", async () => {
-    const r = await rig({ old: "1.1.0", new: "1.0.8" });
+    const r = await rig({ old: "1.1.0", new: "1.0.8", evil: "1.0.8" });
     r.send();
     expect(
       await until(
@@ -497,8 +554,8 @@ describe("device transfer, end to end", () => {
     r.bus.intercept = (from) => {
       if (from !== "new") return "deliver";
       newWrites += 1;
-      // Its handshake reply is the first write; the commit is the second.
-      return newWrites === 2 ? "drop-link" : "deliver";
+      // Its handshake reply, then the confirm, then the commit.
+      return newWrites === 3 ? "drop-link" : "deliver";
     };
     r.send();
     expect(
@@ -550,7 +607,7 @@ describe("device transfer, end to end", () => {
 
   it("without chat history the rooms and their keys move, the messages do not", async () => {
     const r = await rig();
-    r.send(r.invite, false);
+    r.send({ history: false });
     expect(await until(() => lastPhase(r.receiverStates) === "done")).toBe(
       true,
     );
@@ -558,6 +615,202 @@ describe("device transfer, end to end", () => {
       r.newPhone.mmkv.getStorage("chat-store").getString("airhop-chat") ?? "";
     expect(chat).toContain("a2V5");
     expect(chat).not.toContain("hello");
+    r.receiver.dispose();
+  });
+});
+
+describe("device transfer, the words both phones show", () => {
+  const wordsOf = <T extends { phase: string }>(states: T[]): unknown =>
+    (
+      states.find((s) => s.phase === "verify" || s.phase === "confirm") as
+        { words?: string[] } | undefined
+    )?.words;
+
+  it("installs nothing and freezes nothing until the new phone's person matches the words", async () => {
+    const r = await rig(undefined, false);
+    r.send();
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "awaiting" &&
+          lastPhase(r.receiverStates) === "confirm",
+      ),
+    ).toBe(true);
+    await settle();
+    // Six untranslated words, the same on both screens.
+    const words = wordsOf(r.senderStates);
+    expect(words).toHaveLength(6);
+    expect(wordsOf(r.receiverStates)).toEqual(words);
+    // A kill here leaves both phones as they were: no marker, mesh running.
+    expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
+    expect(r.newPhone.marker.readMoveMarker()).toBeNull();
+    expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
+    expect(await identityOf(r.newPhone)).toBeNull();
+
+    r.receiver.confirm();
+    expect(await until(() => lastPhase(r.receiverStates) === "done")).toBe(
+      true,
+    );
+    expect(await identityOf(r.newPhone)).toBe(r.peerID);
+    r.receiver.dispose();
+  });
+
+  it("holds a confirm that lands before the Transfer tap, and freezes only on the tap", async () => {
+    const r = await rig();
+    const sender = r.send({ autoProceed: false });
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "verify" &&
+          lastPhase(r.receiverStates) === "receiving",
+      ),
+    ).toBe(true);
+    await settle();
+    expect(lastPhase(r.senderStates)).toBe("verify");
+    expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
+    expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
+
+    sender.proceed();
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "done" &&
+          lastPhase(r.receiverStates) === "done",
+      ),
+    ).toBe(true);
+    // Straight from the tap to the stream: the held confirm was enough.
+    expect(r.senderStates.map((s) => s.phase)).not.toContain("awaiting");
+    expect(await identityOf(r.newPhone)).toBe(r.peerID);
+    r.receiver.dispose();
+  });
+
+  it("cancel on the new phone at the words: the old phone was never frozen, and a fresh code replaces the one read", async () => {
+    const r = await rig(undefined, false);
+    r.send();
+    expect(await until(() => lastPhase(r.receiverStates) === "confirm")).toBe(
+      true,
+    );
+    r.receiver.decline();
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "failed" &&
+          lastPhase(r.receiverStates) === "waiting",
+      ),
+    ).toBe(true);
+    expect(r.senderStates[r.senderStates.length - 1]).toEqual({
+      phase: "failed",
+      reason: "cancelled",
+    });
+    const first = r.receiverStates.find((s) => s.phase === "waiting");
+    const next = r.receiverStates[r.receiverStates.length - 1];
+    expect(next).not.toEqual(first);
+    expect(r.resumed).not.toHaveBeenCalled();
+    expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
+    expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
+    expect(await identityOf(r.oldPhone)).toBe(r.peerID);
+    expect(await identityOf(r.newPhone)).toBeNull();
+    r.receiver.dispose();
+  });
+
+  it("cancel on the old phone at the words: nothing was frozen, the new phone says so", async () => {
+    const r = await rig(undefined, false);
+    const sender = r.send({ autoProceed: false });
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "verify" &&
+          lastPhase(r.receiverStates) === "confirm",
+      ),
+    ).toBe(true);
+    sender.cancel();
+    expect(await until(() => lastPhase(r.receiverStates) === "failed")).toBe(
+      true,
+    );
+    expect(r.receiverStates[r.receiverStates.length - 1]).toEqual({
+      phase: "failed",
+      reason: "cancelled",
+    });
+    expect(r.resumed).not.toHaveBeenCalled();
+    expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
+    expect(await identityOf(r.newPhone)).toBeNull();
+  });
+
+  it("never dials a code whose address is on no network this phone is on", async () => {
+    const r = await rig();
+    r.send({ invite: { ...r.invite, hosts: ["203.0.113.7"] } });
+    expect(await until(() => lastPhase(r.senderStates) === "failed")).toBe(
+      true,
+    );
+    expect(r.senderStates[r.senderStates.length - 1]).toEqual({
+      phase: "failed",
+      reason: "unreachable",
+    });
+    expect(r.bus.dials).toBe(0);
+    expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
+    r.receiver.dispose();
+  });
+
+  it("I04 someone who read the code races the real old phone: the new phone installs nothing unless its person confirms", async () => {
+    const r = await rig(undefined, false);
+    const evilStates: SenderModule.SenderState[] = [];
+    r.send({ from: "evil", states: evilStates });
+    expect(await until(() => lastPhase(r.receiverStates) === "confirm")).toBe(
+      true,
+    );
+    // The real old phone arrives second and is turned away before any words.
+    r.send();
+    expect(await until(() => lastPhase(r.senderStates) === "failed")).toBe(
+      true,
+    );
+    expect(r.senderStates.map((s) => s.phase)).not.toContain("verify");
+    expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
+    expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
+
+    // The new phone shows the intruder's words, which the old phone never shows.
+    await settle();
+    expect(lastPhase(r.receiverStates)).toBe("confirm");
+    expect(await identityOf(r.newPhone)).toBeNull();
+    const confirm = r.receiverStates[r.receiverStates.length - 1];
+    expect(confirm.phase === "confirm" && confirm.peerID).not.toBe(r.peerID);
+
+    r.receiver.decline();
+    expect(await until(() => lastPhase(evilStates) === "failed")).toBe(true);
+    expect(await until(() => lastPhase(r.receiverStates) === "waiting")).toBe(
+      true,
+    );
+    expect(await identityOf(r.newPhone)).toBeNull();
+
+    // The code that was read no longer opens anything.
+    const retried: SenderModule.SenderState[] = [];
+    r.send({ from: "evil", states: retried });
+    expect(await until(() => lastPhase(retried) === "failed")).toBe(true);
+    expect(retried[retried.length - 1]).toEqual({
+      phase: "failed",
+      reason: "wrong-phone",
+    });
+
+    // The person scans the fresh code with the real old phone and confirms.
+    const fresh = r.receiverStates[r.receiverStates.length - 1];
+    const invite =
+      fresh.phase === "waiting"
+        ? r.newPhone.invite.decodeMoveInvite(fresh.code)
+        : null;
+    if (invite === null) throw new Error("no fresh code");
+    const states: SenderModule.SenderState[] = [];
+    r.send({ invite, states });
+    expect(await until(() => lastPhase(r.receiverStates) === "confirm")).toBe(
+      true,
+    );
+    r.receiver.confirm();
+    expect(
+      await until(
+        () =>
+          lastPhase(states) === "done" &&
+          lastPhase(r.receiverStates) === "done",
+      ),
+    ).toBe(true);
+    expect(await identityOf(r.newPhone)).toBe(r.peerID);
     r.receiver.dispose();
   });
 });

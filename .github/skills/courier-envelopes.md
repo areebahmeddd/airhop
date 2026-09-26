@@ -34,10 +34,15 @@ Signature covers, in order: 1-byte-length-prefixed context `"bitchat-prekey-bund
 ## Rules
 
 - Bundles are **public and unencrypted by design**. They carry only public halves. Do not "fix" this by sealing them; bitchat gossips them in the clear and sealing breaks interop.
-- Verify every inbound bundle against the owner's **announce-bound Ed25519 signing key** before storing. The bundle itself carries only the noise key, so resolve the owner via `peerID = hex(SHA-256(noiseStaticPublicKey))[0:16]` and look up their signing key. No signing key means no verification, so ignore it (the flood layer still relays it for others).
-- Private prekeys never leave the device.
+- Verify every inbound bundle before storing. The bundle itself carries only the noise key, so resolve the owner via `peerID = hex(SHA-256(noiseStaticPublicKey))[0:16]`. The packet must come from that owner (`senderID` equal to it), its outer packet signature must verify, and the inner bundle signature must verify against `knownSigningKey(owner)` in `mesh-service.ts` (session-proven, then saved contact, then announce pin). No signing key means no verification, so ignore it (the flood layer still relays it for others). Our own bundle coming back is ignored.
+- A bundle dated more than 15 minutes ahead (`generatedAt`) is refused, so a forged future date cannot pin itself as the newest. bitchat-ios has no such bound.
+- When a session proof (`0x21`) corrects a peer's signing key, bundles taken under the wrong key are dropped (`PeerPrekeyStore.forget`).
+- Private prekeys never leave the device. They live in one keychain item, `airhop.prekeys.local.v1` (`KEYCHAIN_ITEMS.localPrekeys`), as one base64 blob, as bitchat-ios keeps them in one Keychain blob. Never in MMKV: it appends, so a consumed key deleted there lingers in the file until a rewrite. Peer bundles are public and stay in MMKV.
+- The keychain is read synchronously. A read that throws leaves no state: nothing is minted, nothing written, no bundle built, and the next use retries (an iOS relaunch before first unlock lands here). A write that throws keeps the state in memory and retries on the next change. The launch sweep leaves the item alone; the panic wipe deletes it.
 - A prekey is **single use**. On opening an envelope, consume it and publish a fresh bundle so senders stop using the spent key.
-- Consumed private keys are kept for a grace window (48h) so a second in-flight envelope sealed to the same key still opens, then dropped. Do not keep them forever; the grace window is the forward-secrecy boundary.
+- Consumed private keys are kept for a grace window (48h) so a second in-flight envelope sealed to the same key still opens, then dropped, and a consumed key past its grace no longer opens anything. Do not keep them forever; the grace window is the forward-secrecy boundary.
+- **At most 8 consumed keys are kept**, whatever their age. This is an Airhop-only deviation: bitchat-ios keeps every consumed key for the whole grace window. Anyone holding our public bundle can spend prekeys at will, and every one kept grows a keychain value some platforms cap near 2 KiB.
+- Prekeys never move to a new phone; the new one publishes its own batch.
 
 ## Courier envelope: v1 vs v2
 
@@ -54,7 +59,14 @@ The tag is omitted for v1 so the bytes stay identical to the pre-prekey format. 
 
 ## Seal and open
 
-Sealing to a prekey reuses the same one-way Noise X primitive with the prekey pair substituted for the static pair:
+Sealing to a prekey reuses the same one-way Noise X primitive with the prekey pair substituted for the static pair. The prologue differs by seal target, as in bitchat-ios (`NoiseEncryptionService` `courierPrologue` and `prekeyPrologue`), and is mixed in before the recipient's key:
+
+| Seal       | Prologue (`courier-store.ts`)                                      |
+| ---------- | ------------------------------------------------------------------ |
+| v1, static | `COURIER_PROLOGUE` = `"bitchat-courier-v1"`                        |
+| v2, prekey | `prekeyPrologue(id)` = `"bitchat-prekey-v1"` \|\| u32 BE prekey ID |
+
+`sealPrologue(prekeyID)` picks one from the envelope's `0x05` TLV on both sides. The v2 prologue binds the ID, so a v2 ciphertext does not open against another prekey. There is no trial-open without a prologue. `docs/spec/courier-seal-vectors.json` holds reference seals from Python `noiseprotocol`, which `courier-vectors.test.ts` opens.
 
 ```typescript
 // Sender: prefer a prekey when we hold a bundle for them.
@@ -63,6 +75,7 @@ const ciphertext = noiseXSeal(
   senderStaticPriv,
   prekey?.publicKey ?? recipientNoisePub, // prekey when available
   plaintext,
+  sealPrologue(prekey?.id),
 );
 // tag still from the STATIC key
 recipientTag: computeRecipientTag(recipientNoisePub),
@@ -73,10 +86,14 @@ prekeyID: prekey?.id,
 // Recipient: pick the opening key from the envelope, then burn it.
 const openKey =
   env.prekeyID !== undefined
-    ? localPrekeys.privForId(env.prekeyID) // may be null if expired
+    ? localPrekeys.privForId(env.prekeyID) // null if unknown or past its grace
     : identity.noiseStaticPrivKey;
 if (openKey === null) return; // cannot open, drop
-const { plaintext, senderStaticPubKey } = noiseXOpen(openKey, env.ciphertext);
+const { plaintext, senderStaticPubKey } = noiseXOpen(
+  openKey,
+  env.ciphertext,
+  sealPrologue(env.prekeyID),
+);
 if (env.prekeyID !== undefined) {
   localPrekeys.consume(env.prekeyID);
   emitPrekeyBundle(); // republish so senders stop using the spent key
@@ -87,8 +104,9 @@ The sender's identity is authenticated **inside** the ciphertext. Identify the s
 
 ## Review checklist
 
-- Bundle signed by the identity key, and verified on receipt: **required**
-- Private prekey never serialised off-device: **required**
+- Bundle signed by the identity key, and verified on receipt against the owner's held key, from the owner itself: **required**
+- Private prekey never serialised off-device, and held only in its keychain item: **required**
+- Seal and open with bitchat-ios's prologue for the envelope's version: **required**
 - Consumed prekey never reused to open a second envelope: **required**
 - Routing tag derived from the static key even on v2: **required**
 - Sender identified from the sealed static key, not the packet header: **required**

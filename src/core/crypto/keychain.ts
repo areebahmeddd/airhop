@@ -16,8 +16,11 @@ export const KEYCHAIN_ITEMS = {
   walletEncryptionKey: "airhop.wallet.mmkvKey.v1",
   // secp256k1 private key, hex. Nutzaps lock to its public half.
   walletP2pkKey: "airhop.wallet.p2pk.v1",
-  // 12-word BIP-39 phrase, present only if the user enabled backup.
+  // 12-word BIP-39 phrase, generated with the wallet whether or not the user
+  // has seen it yet.
   walletRecoveryPhrase: "airhop.wallet.recovery.v1",
+  // Base64 blob: our one-time prekey private keys (courier/prekey-store.ts).
+  localPrekeys: "airhop.prekeys.local.v1",
 } as const;
 
 export type KeychainItem = (typeof KEYCHAIN_ITEMS)[keyof typeof KEYCHAIN_ITEMS];
@@ -48,6 +51,17 @@ export async function writeSecret(
   value: string,
 ): Promise<void> {
   await SecureStore.setItemAsync(item, value, OPTIONS);
+}
+
+// Synchronous, for the one caller that is: the prekey store answers inside
+// packet handling and must not leave a write in flight across a teardown.
+// Same null-or-throw contract as readSecret.
+export function readSecretSync(item: KeychainItem): string | null {
+  return SecureStore.getItem(item, OPTIONS);
+}
+
+export function writeSecretSync(item: KeychainItem, value: string): void {
+  SecureStore.setItem(item, value, OPTIONS);
 }
 
 export async function deleteSecret(item: KeychainItem): Promise<void> {
@@ -98,6 +112,10 @@ export async function wipeAllSecrets(): Promise<void> {
 // writing under a key the next launch cannot find. It guards nothing a wipe has
 // not already cleared.
 //
+// Nor are the local prekeys, for the identity's reason: the mesh can mint and
+// publish a batch right after onboarding, and a delete landing late would drop
+// keys peers are already sealing to. The panic wipe still deletes them.
+//
 // Returns true ONLY when a leftover is positively confirmed: the delete was
 // refused AND a read afterwards still hands back a value. A keychain that
 // refuses both is unreadable rather than dirty, and claiming otherwise would put
@@ -106,7 +124,8 @@ export async function sweepOrphanedSecrets(): Promise<boolean> {
   const orphanable = Object.values(KEYCHAIN_ITEMS).filter(
     (item) =>
       item !== KEYCHAIN_ITEMS.identity &&
-      item !== KEYCHAIN_ITEMS.walletEncryptionKey,
+      item !== KEYCHAIN_ITEMS.walletEncryptionKey &&
+      item !== KEYCHAIN_ITEMS.localPrekeys,
   );
   const deletes = await Promise.allSettled(orphanable.map(deleteSecret));
   if (deletes.every((r) => r.status === "fulfilled")) return false;

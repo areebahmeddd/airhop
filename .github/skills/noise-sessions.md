@@ -33,7 +33,17 @@ After msg3 both sides call `split()` to derive two independent transport keys.
 
 The node that **sends msg1** is the initiator. The node that **receives msg1** is the responder. This is determined by which side opens the connection, not by comparing peer IDs.
 
-If both sides try to initiate simultaneously (race condition), the side that receives a 32-byte msg1 while its own handshake is still in progress drops its own attempt and switches to responder. Bitchat iOS implements this in `NoiseSessionManager.handleIncomingHandshake()`. A 32-byte incoming message when already handshaking resets and starts fresh as responder.
+If both sides try to initiate simultaneously (race condition), the side that receives a 32-byte msg1 while its own handshake is still in progress drops its own attempt and switches to responder. Bitchat iOS implements this in `NoiseSessionManager.handleIncomingHandshake()`. A 32-byte incoming message when already handshaking resets and starts fresh as responder. That means a forged msg1 under a peer's ID can displace a live attempt, as it can in bitchat-ios; the DM recovers on the next exchange (simulation C13b), and this is accepted rather than guarded.
+
+### Handshake Limits
+
+`src/core/mesh/routing/handshake-rate-limiter.ts`, with bitchat-ios's numbers (`NoiseSecurityConstants`):
+
+- **10 per minute per claimed peer**, for inbound msg1, inbound msg2/msg3, and our own initiations.
+- **30 per minute in total, for inbound msg1 only.** bitchat-ios counts every handshake message globally, so a flood of forged msg1 also starves its own initiations. Here the global bucket covers only the one unauthenticated message that creates state and floods a reply. A per-peer refusal spends no global budget.
+- The msg1 gate runs before any DH. A refused initiation of ours leaves the DM in the outbox ("handshaking") rather than failing it.
+- Pending handshakes expire after 30 s, swept on every insert, so memory stays bounded under a flood.
+- msg2 and msg3 are read on a `clone()` of the pending handshake. The pending entry is replaced only by a bound session; a failure keeps it, so one forged or garbled reply cannot end a genuine handshake.
 
 ### Session State
 
@@ -52,6 +62,14 @@ The nonce is prepended as a big-endian u32 so the receiver can decrypt out-of-or
 ### Replay Protection
 
 A sliding window of 1024 nonces is maintained per session. Messages with a nonce more than 1024 positions behind the highest seen nonce are rejected. `decrypt()` throws on replay.
+
+Bit `o` of the window records nonce `highest - o`, stored LSB-first: byte `o >> 3`, mask `1 << (o & 7)`. A new highest nonce ages every recorded offset by `shift`, which on this layout is a **left** shift within each byte, carrying from the byte below:
+
+```
+new[i] = (old[i - bs] << bt) | (old[i - bs - 1] >> (8 - bt))   // bs = shift >> 3, bt = shift & 7
+```
+
+bitchat-ios and bitchat-android shift right, which forgets recent nonces: after nonces 0..100 in order, 93..99 decrypt a second time. `NOISE_ENCRYPTED` packets are unsigned and their dedup ID covers a timestamp anyone can restamp, so this window is the only replay guard for session payloads. Do not copy their `markNonceAsSeen`. Tests pin 0..100 in order, the gaps left by {0,1,2,3,5,9,10}, and jumps of 8, 1023 and 1024.
 
 ### Key Assignment After Split
 
@@ -73,6 +91,8 @@ Wire format:
 ```
 
 The sender's static key (`s`) is transmitted inside the ciphertext, so the recipient can authenticate who sealed the envelope. There is no response message.
+
+The prologue is a required argument to `noiseXSeal` and `noiseXOpen`, mixed into the transcript before the recipient's static key. Courier seals use bitchat-ios's two prologues (see `courier-envelopes.md`); an empty one never opened on bitchat-ios, and fails silently.
 
 ## Sessions Are Per Peer ID, Not Per Transport
 

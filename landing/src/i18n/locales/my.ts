@@ -193,6 +193,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "သင့်သော့မှ ဆင်းသက်လာသဖြင့် သင့်အမည်ကို မည်သူမျှ ယူ၍မရပါ။",
   "home.features.identity.qr.name": "QR အဆက်အသွယ်များ",
   "home.features.identity.qr.line": "တစ်ကြိမ်စကင်ဖတ်ရုံဖြင့် အမည်သာမက ၎င်းတို့၏သော့များပါ ပါလာသည်။",
+  "home.features.identity.forward.name": "ရှေ့သို့လျှို့ဝှက်မှု",
+  "home.features.identity.forward.line": "ပေါက်ကြားသွားသော သော့ဖြင့် ယခင်စာများကို မဖွင့်နိုင်ပါ။",
+  "home.features.identity.move.name": "ဖုန်းအသစ်သို့ ပြောင်းရွှေ့ခြင်း",
+  "home.features.identity.move.line":
+    "ချက်တင်များနှင့် ပိုက်ဆံအိတ် ပြောင်းရွှေ့ပြီး ဖုန်းဟောင်းက သူ့ကိုယ်သူ ဖျက်သည်။",
   "home.features.identity.panic.name": "အရေးပေါ်ဖျက်ခြင်း",
   "home.features.identity.panic.line": "သော့တိုင်းနှင့် စာတိုင်းကို တစ်စက္ကန့်အတွင်း ဖျက်ဆီးသည်။",
 
@@ -201,6 +206,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth mesh",
   "home.features.networking.mesh.line":
     "အင်တာနက်မလို၊ ရောက်တာမလို၊ လူများလက်ထဲမှာ ရှိပြီးသားဖုန်းများပေါ်တွင်။",
+  "home.features.networking.lan.name": "ဒေသတွင်းကွန်ရက်",
+  "home.features.networking.lan.line":
+    "မျှဝေ WiFi သို့မဟုတ် hotspot ဖြင့် iPhone နှင့် Android အတူတကွ။",
+  "home.features.networking.hops.name": "အဆင့်များစွာ ထပ်ဆင့်ပို့ခြင်း",
+  "home.features.networking.hops.line": "ဖုန်းတိုင်းက စာများကို ဆက်ပို့ပေးပြီး ခုနစ်ဆင့်အထိ။",
   "home.features.networking.bridge.name": "Mesh တံတား",
   "home.features.networking.bridge.line":
     "သင့်အများပြည်သူစကားပြောခန်းကို အကွာအဝေးပြင်ပရှိ အနီးအနားလူစုနှင့် ချိတ်ဆက်ပေးသည်။",

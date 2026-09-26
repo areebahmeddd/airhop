@@ -89,15 +89,11 @@ async fn handle(mut stream: TcpStream, client: Arc<TorClient<PreferredRuntime>>)
         Err(_) => return Ok(()),
     };
 
-    // Credentials identify the caller when they are given, which is Tor's own
-    // convention for asking a proxy to isolate. Airhop's own sockets send none,
-    // so the destination stands in, giving every relay its own circuit.
-    let isolation_key = match &request.credentials {
-        Some((user, pass)) => format!("u\u{0}{user}\u{0}{pass}"),
-        None => format!("h\u{0}{}\u{0}{}", request.host, request.port),
-    };
     let mut prefs = StreamPrefs::new();
-    prefs.set_isolation(crate::isolation_for(&isolation_key));
+    prefs.set_isolation(crate::isolation_for(&isolation_key(
+        &request.host,
+        request.port,
+    )));
 
     let tor_stream = match client
         .connect_with_prefs((request.host.as_str(), request.port), &prefs)
@@ -123,11 +119,18 @@ async fn handle(mut stream: TcpStream, client: Arc<TorClient<PreferredRuntime>>)
     Ok(())
 }
 
+/// The circuit grouping for a stream: where it goes, never who asked. SOCKS
+/// credentials are Tor's usual isolation label, but Android's SOCKS client offers
+/// the same `user.name` on every socket, so keying on them would put every
+/// relay and mint on one circuit.
+fn isolation_key(host: &str, port: u16) -> String {
+    format!("h\u{0}{host}\u{0}{port}")
+}
+
 /// What the client asked for, once the handshake is done.
 struct Request {
     host: String,
     port: u16,
-    credentials: Option<(String, String)>,
 }
 
 async fn negotiate(stream: &mut TcpStream) -> io::Result<Request> {
@@ -140,23 +143,21 @@ async fn negotiate(stream: &mut TcpStream) -> io::Result<Request> {
     let mut methods = vec![0u8; head[1] as usize];
     stream.read_exact(&mut methods).await?;
 
-    // Prefer username/password when it is offered, because it is the only way a
-    // caller can ask for a specific isolation, and fall back to no auth. There
-    // is nothing to authenticate against: the listener is on loopback and any
-    // credentials are read as an isolation label, never checked.
-    let credentials = if methods.contains(&AUTH_USERPASS) {
-        stream.write_all(&[VERSION_5, AUTH_USERPASS]).await?;
-        Some(read_credentials(stream).await?)
-    } else if methods.contains(&AUTH_NONE) {
+    // No auth whenever it is offered. Username/password is still accepted from
+    // a client that offers nothing else, but its fields are read and dropped:
+    // nothing on loopback is authenticated, and isolation never follows them.
+    if methods.contains(&AUTH_NONE) {
         stream.write_all(&[VERSION_5, AUTH_NONE]).await?;
-        None
+    } else if methods.contains(&AUTH_USERPASS) {
+        stream.write_all(&[VERSION_5, AUTH_USERPASS]).await?;
+        skip_credentials(stream).await?;
     } else {
         stream.write_all(&[VERSION_5, AUTH_UNACCEPTABLE]).await?;
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "no acceptable SOCKS auth method",
         ));
-    };
+    }
 
     // Request: VER, CMD, RSV, ATYP
     let mut head = [0u8; 4];
@@ -208,12 +209,12 @@ async fn negotiate(stream: &mut TcpStream) -> io::Result<Request> {
     Ok(Request {
         host,
         port: u16::from_be_bytes(port),
-        credentials,
     })
 }
 
-/// RFC 1929 username/password subnegotiation.
-async fn read_credentials(stream: &mut TcpStream) -> io::Result<(String, String)> {
+/// RFC 1929 username/password subnegotiation, answered with success whatever
+/// the fields hold.
+async fn skip_credentials(stream: &mut TcpStream) -> io::Result<()> {
     let mut version = [0u8; 1];
     stream.read_exact(&mut version).await?;
     if version[0] != 0x01 {
@@ -226,23 +227,15 @@ async fn read_credentials(stream: &mut TcpStream) -> io::Result<(String, String)
         ));
     }
 
-    let mut len = [0u8; 1];
-    stream.read_exact(&mut len).await?;
-    let mut user = vec![0u8; len[0] as usize];
-    stream.read_exact(&mut user).await?;
+    // Username, then password, each a length byte and that many bytes.
+    let mut field = [0u8; 255];
+    for _ in 0..2 {
+        let mut len = [0u8; 1];
+        stream.read_exact(&mut len).await?;
+        stream.read_exact(&mut field[..len[0] as usize]).await?;
+    }
 
-    stream.read_exact(&mut len).await?;
-    let mut pass = vec![0u8; len[0] as usize];
-    stream.read_exact(&mut pass).await?;
-
-    stream.write_all(&[0x01, 0x00]).await?;
-
-    // Credentials are an opaque isolation label, so bytes that are not UTF-8 are
-    // still a perfectly good label. Lossy, not an error.
-    Ok((
-        String::from_utf8_lossy(&user).into_owned(),
-        String::from_utf8_lossy(&pass).into_owned(),
-    ))
+    stream.write_all(&[0x01, 0x00]).await
 }
 
 /// Write a reply with an all-zero bound address.
@@ -331,17 +324,56 @@ mod test {
         reply
     }
 
-    /// Credentials are the only way a caller can ask for a specific circuit.
+    /// Android offers both methods on every socket.
     #[test]
-    fn credentials_are_preferred_over_no_auth() {
+    fn no_auth_is_chosen_when_credentials_are_also_offered() {
         with_client(|stream| {
             stream
                 .write_all(&[0x05, 0x02, 0x00, 0x02])
                 .expect("greeting");
             let mut chosen = [0u8; 2];
             stream.read_exact(&mut chosen).expect("method reply");
-            assert_eq!(chosen, [0x05, 0x02]);
+            assert_eq!(chosen, [0x05, 0x00]);
         });
+    }
+
+    #[test]
+    fn credentials_alone_are_accepted_and_ignored() {
+        with_client(|stream| {
+            stream.write_all(&[0x05, 0x01, 0x02]).expect("greeting");
+            let mut chosen = [0u8; 2];
+            stream.read_exact(&mut chosen).expect("method reply");
+            assert_eq!(chosen, [0x05, 0x02]);
+
+            stream
+                .write_all(&[0x01, 0x04, b'u', b's', b'e', b'r', 0x00])
+                .expect("credentials");
+            let mut status = [0u8; 2];
+            stream.read_exact(&mut status).expect("auth status");
+            assert_eq!(status, [0x01, 0x00]);
+
+            // The conversation carries on to the request stage.
+            stream
+                .write_all(&[0x05, 0x02, 0x00, 0x01])
+                .expect("bind request");
+            assert_eq!(read_reply(stream)[1], super::REPLY_CMD_UNSUPPORTED);
+        });
+    }
+
+    /// Two sockets naming the same caller but different relays must not share
+    /// a circuit, and the key has no input a caller controls besides the
+    /// destination.
+    #[test]
+    fn isolation_follows_the_destination_only() {
+        let _serial = crate::test_lock();
+        let relay = super::isolation_key("relay.example", 443);
+        assert_eq!(relay, super::isolation_key("relay.example", 443));
+        assert_ne!(relay, super::isolation_key("other.example", 443));
+        assert_ne!(relay, super::isolation_key("relay.example", 80));
+        assert_ne!(
+            crate::isolation_for(&relay),
+            crate::isolation_for(&super::isolation_key("other.example", 443))
+        );
     }
 
     #[test]

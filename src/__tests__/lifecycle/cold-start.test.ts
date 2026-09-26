@@ -21,10 +21,50 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   },
 }));
 
+const mockStartTor = jest.fn(() => Promise.resolve());
+const mockHoldRoute = jest.fn(() => Promise.resolve());
+jest.mock("@bridge/NativeAirhopTor", () => ({
+  __esModule: true,
+  default: {
+    startTor: () => mockStartTor(),
+    holdRoute: () => mockHoldRoute(),
+    stopTor: () => Promise.resolve(),
+    setAppForeground: () => Promise.resolve(),
+    getTorStatus: () =>
+      Promise.resolve({
+        isReady: false,
+        isStarting: false,
+        port: 0,
+        progress: 0,
+        bootstrapSummary: "",
+      }),
+    awaitTorReady: () => Promise.resolve(false),
+  },
+  subscribeTorStatus: () => null,
+}));
+
+import {
+  generateIdentity,
+  type Identity,
+  loadIdentity,
+  saveIdentity,
+} from "@core/crypto/identity";
+import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
+import {
+  IDENTITY_LOAD_TIMEOUT_MS,
+  readLaunchIdentity,
+} from "@services/launch-identity";
+import { panicWipe } from "@services/panic-wipe";
 import { applyPresence } from "@services/presence-service";
+import { primeTorRoutingOnStartup } from "@services/tor-routing";
+import {
+  clearCondemnedIdentity,
+  isIdentityCondemned,
+} from "@services/wipe-marker";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
+import * as SecureStore from "expo-secure-store";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -614,6 +654,71 @@ describe("cold start and permissions", () => {
 
   // iOS variants of the launch path.
 
+  // A Tor start that took the process down leaves its marker. The next launch
+  // must neither start Tor again (the crash would replay on every launch) nor
+  // quietly go direct (the leak the user turned Tor on to avoid).
+  test("S16 a Tor start that died with the process: held, not retried, mesh unaffected", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    const v = new Verdict(
+      "S16",
+      "relaunch with Tor on and a start marker left behind",
+      os,
+    );
+    const native = androidDevice(os);
+    useSettingsStore.setState({
+      torEnabled: true,
+      torStartPending: true,
+      internetEnabled: true,
+    });
+    mockStartTor.mockClear();
+    mockHoldRoute.mockClear();
+
+    try {
+      app = new AppShell({ os });
+      app.bootJsRuntime();
+      // In the app's order: before the mesh builds its first relay pool.
+      primeTorRoutingOnStartup();
+      await app.startMeshWithPermissions();
+      await os.advance(5000);
+
+      const mesh = useMeshStateStore.getState();
+      const torBanner = computeMeshBanners({
+        presenceStatus: mesh.presenceStatus,
+        bleBlocker: mesh.bleBlocker,
+        locationGranted: mesh.locationGranted,
+        nostrConnected: mesh.nostrConnected,
+        torActive: mesh.torActive,
+        torBootstrap: mesh.torBootstrap,
+        gatewayEnabled: false,
+        bridgeActive: false,
+        bridgePeopleAcross: 0,
+        internetEnabled: true,
+        peerCount: 0,
+      }).find((b) => b.key === "tor-blocked");
+
+      v.check("process survived", os.crashed === null, os.crashed ?? undefined);
+      v.check("scanning is running", native.scanning);
+      v.check("advertising is running", native.advertising);
+      v.check(
+        "native Tor was not started again",
+        mockStartTor.mock.calls.length === 0,
+      );
+      v.check("the HTTP route is held", mockHoldRoute.mock.calls.length === 1);
+      v.check("Tor stays on", useSettingsStore.getState().torEnabled);
+      v.check("the relay pool is held", mesh.nostrBlockedByTor);
+      v.check(
+        "the Mesh banner leads to the Tor screen",
+        torBanner?.action?.kind === "open-tor-settings",
+        `banner: ${JSON.stringify(torBanner)}`,
+      );
+      v.assert();
+    } finally {
+      useSettingsStore.setState({ torEnabled: false, torStartPending: false });
+      useMeshStateStore.getState().setNostrBlockedByTor(false);
+      useMeshStateStore.getState().setTorBootstrap("idle");
+    }
+  });
+
   test("S07i iOS cold launch with a perfectly healthy radio", async () => {
     const os = new DeviceOS({ platform: "ios" });
     const v = new Verdict("S07i", "iOS cold launch, Bluetooth healthy", os);
@@ -711,4 +816,130 @@ describe("cold start and permissions", () => {
     );
     v.assert();
   });
+});
+
+// What launch reads from the keychain, and what it refuses to boot. The shell
+// above models the transport lifecycle; these drive the real identity read,
+// the real panic wipe and the in-memory keychain behind expo-secure-store.
+describe("launch identity: absent, unreadable, condemned", () => {
+  // The in-memory mock (src/__mocks__), mapped in by jest's config.
+  const secureStore = SecureStore as unknown as {
+    getItemAsync: jest.Mock;
+    deleteItemAsync: jest.Mock;
+    __reset: () => void;
+  };
+
+  beforeEach(() => {
+    secureStore.__reset();
+    clearCondemnedIdentity();
+  });
+
+  async function storedIdentity(): Promise<Identity> {
+    const id = await generateIdentity();
+    await saveIdentity(id);
+    return id;
+  }
+
+  // The keychain refuses to delete the identity, as a locked iPhone does.
+  function refuseIdentityDelete(): void {
+    secureStore.deleteItemAsync.mockImplementation(async (key: string) => {
+      if (key === KEYCHAIN_ITEMS.identity) throw new Error("locked");
+    });
+  }
+
+  test("K01 a first install reads as absent and onboards", async () => {
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "absent",
+      keysRemain: false,
+    });
+  });
+
+  test("K02 a stored identity boots", async () => {
+    const id = await storedIdentity();
+    const found = await readLaunchIdentity();
+    expect(found.kind === "present" && found.identity.peerID).toBe(id.peerID);
+  });
+
+  test("K03 a keychain that refuses the read is unreadable, not absent", async () => {
+    await storedIdentity();
+    secureStore.getItemAsync.mockRejectedValue(new Error("interaction"));
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "unreadable",
+    });
+  });
+
+  test("K04 a keychain that never answers is unreadable once the deadline passes", async () => {
+    jest.useFakeTimers();
+    try {
+      secureStore.getItemAsync.mockReturnValue(new Promise(() => undefined));
+      const found = readLaunchIdentity();
+      await jest.advanceTimersByTimeAsync(IDENTITY_LOAD_TIMEOUT_MS);
+      await expect(found).resolves.toEqual({ kind: "unreadable" });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test("K05 a stored item that will not parse is unreadable, and nothing is swept", async () => {
+    await writeSecret(KEYCHAIN_ITEMS.identity, JSON.stringify({ x: 1 }));
+    await writeSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase, "twelve words");
+    await expect(loadIdentity()).rejects.toThrow(/malformed/);
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "unreadable",
+    });
+    expect(secureStore.deleteItemAsync).not.toHaveBeenCalled();
+    await expect(readSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase)).resolves.toBe(
+      "twelve words",
+    );
+  });
+
+  test("K06 once the keychain answers again, the same identity boots", async () => {
+    const id = await storedIdentity();
+    secureStore.getItemAsync.mockRejectedValueOnce(new Error("locked"));
+    expect((await readLaunchIdentity()).kind).toBe("unreadable");
+    const found = await readLaunchIdentity();
+    expect(found.kind === "present" && found.identity.peerID).toBe(id.peerID);
+  });
+
+  test("C06b a wipe the keychain refused, then a kill before onboarding: the old identity never boots", async () => {
+    await storedIdentity();
+    refuseIdentityDelete();
+    const { keysDestroyed } = await panicWipe();
+    expect(keysDestroyed).toBe(false);
+    expect(isIdentityCondemned()).toBe(true);
+    // Still refused at the next launch: welcome, with the banner.
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "absent",
+      keysRemain: true,
+    });
+    await expect(loadIdentity()).resolves.not.toBeNull();
+    // A later launch, past the unlock: the delete goes through.
+    secureStore.deleteItemAsync.mockImplementation(async () => undefined);
+    secureStore.deleteItemAsync.mockClear();
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "absent",
+      keysRemain: false,
+    });
+    expect(secureStore.deleteItemAsync).toHaveBeenCalledWith(
+      KEYCHAIN_ITEMS.identity,
+      expect.anything(),
+    );
+    expect(isIdentityCondemned()).toBe(false);
+  }, 20_000);
+
+  test("C06c a new identity written after a refused wipe boots, and is never deleted", async () => {
+    await storedIdentity();
+    refuseIdentityDelete();
+    await panicWipe();
+    secureStore.deleteItemAsync.mockImplementation(async () => undefined);
+    secureStore.deleteItemAsync.mockClear();
+    // Onboarding's write: the new identity, then the flag goes.
+    const fresh = await storedIdentity();
+    clearCondemnedIdentity();
+    const found = await readLaunchIdentity();
+    expect(found.kind === "present" && found.identity.peerID).toBe(
+      fresh.peerID,
+    );
+    expect(secureStore.deleteItemAsync).not.toHaveBeenCalled();
+  }, 20_000);
 });

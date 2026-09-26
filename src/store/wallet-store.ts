@@ -1,14 +1,18 @@
 // Local Cashu wallet state: proofs, mints, in-flight sends and history. Proofs
-// are bearer value, so the MMKV file is AES-256 encrypted under a keychain key.
-// No network here; mint calls live in wallet-service.
+// are bearer value, so the MMKV file is encrypted under a keychain key: AES-256
+// in CFB mode, MMKV's own, for confidentiality only. Its CRC detects
+// corruption, not tampering, which is accepted: writing the app's files takes
+// the same access that reads the keychain. No network here; mint calls live
+// in wallet-service.
 //
 // Keyed by account, a (mint URL, unit) pair: one mint can issue sat, usd and
 // eur, and units are never summed. Proofs are in one of three states:
-//   spendable + verified    swapped or minted by us; the mint said unspent.
-//   spendable + unverified  received offline. DLEQ (when we hold the keys)
-//                           proves the mint signed it, never that the sender
-//                           has not spent it elsewhere. Counted in the balance,
-//                           shown apart, and redeemed first.
+//   spendable + verified    swapped or minted by us; nobody else holds them.
+//   spendable + unverified  received offline, or a reclaimed send. DLEQ (when
+//                           we hold the keys) proves the mint signed it, never
+//                           that the sender has not spent it elsewhere.
+//                           Counted in the balance, shown apart, and redeemed
+//                           first, one receipt at a time.
 //   reserved                serialised into a token for a send not yet
 //                           confirmed. Out of the balance so one coin cannot
 //                           go to two people.
@@ -21,6 +25,7 @@
 
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { bytesToBase64 } from "@core/encoding/base64";
+import { NUTZAP_LOOKBACK_S } from "@core/payments/nutzap";
 import { createMMKV, deleteMMKV } from "react-native-mmkv";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -55,12 +60,18 @@ export interface StoredProof {
   C: string; // Unblinded signature from the mint
   dleq?: SerializedDleq; // NUT-12 discrete-log-equality witness, when present
   witness?: string; // NUT-11 P2PK / NUT-14 HTLC witness, when present
-  // True only after a swap or NUT-07 check: the mint says it is unspent.
+  // True only for outputs the mint signed for us (a swap, mint or melt): the
+  // sender holds no copy. A state check is not enough; NUT-07 calls a coin it
+  // has never seen unspent.
   verified?: boolean;
   // Secret derived from the recovery phrase, so restorable. Received proofs
   // carry the sender's secrets until swapped.
   derived?: boolean;
   receivedAtMs?: number;
+  // Unverified only: the transaction that brought the coin in (an offline
+  // receive, or a reclaimed send). A refresh swaps each receipt on its own,
+  // so a mint refusing one token's coins cannot block the others.
+  receiptTxId?: string;
 }
 
 export type TxKind =
@@ -165,8 +176,11 @@ interface WalletState {
   history: WalletTx[];
   // 33-byte compressed P2PK key for kind 10019; private half in the keychain.
   nutzapPubkey?: string;
-  // So a relay replay cannot double-credit.
-  redeemedNutzaps: string[];
+  // Kind 9321 events already dealt with (redeemed, or refused for good), so a
+  // relay replay neither credits twice nor costs another mint request.
+  // `createdAt` (event seconds, never later than when it was seen) is how long
+  // one is kept: past the subscription's lookback no relay is asked for it.
+  settledNutzaps: { id: string; createdAt: number }[];
   // First secret of each token taken in, so a chat card reads "Claimed".
   // Display only: `addProofs` is the spend guard.
   claimedTokens: string[];
@@ -194,10 +208,14 @@ interface WalletState {
   ) => { added: number; duplicates: number };
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
-  markVerified: (mintUrl: string, unit: string, secrets: string[]) => void;
   // For coins someone else may also hold, such as a reclaimed token: the next
-  // refresh swaps them, which is what makes them ours alone.
-  markUnverified: (mintUrl: string, unit: string, secrets: string[]) => void;
+  // refresh swaps them, as receipt `receiptTxId`, which makes them ours alone.
+  markUnverified: (
+    mintUrl: string,
+    unit: string,
+    secrets: string[],
+    receiptTxId: string,
+  ) => void;
   // On phrase replacement: old coins stay spendable but the new phrase cannot
   // rebuild them, so they read as uncovered until a refresh re-issues them.
   clearDerived: () => void;
@@ -222,7 +240,10 @@ interface WalletState {
 
   // ---- Nutzap ----
   setNutzapPubkey: (pubkey: string) => void;
-  markNutzapRedeemed: (eventId: string) => void;
+  markNutzapSettled: (eventId: string, createdAt: number) => void;
+  // A nutzap row the mint refused outright: nothing moved, and spam must not
+  // fill Activity or push real history out.
+  removeTx: (id: string) => void;
   markTokenClaimed: (firstSecret: string) => void;
 
   // ---- Backup / NUT-13 counters ----
@@ -269,9 +290,6 @@ function capHistory(
   });
 }
 
-// Well past any relay's replay window.
-const MAX_REDEEMED_NUTZAPS = 1000;
-
 // Cosmetic: an evicted marker just lets a very old card offer Claim again.
 const MAX_CLAIMED_TOKENS = 1000;
 
@@ -306,12 +324,12 @@ export function parseAccountKey(key: string): {
   return { mintUrl: key.slice(0, idx), unit: key.slice(idx + 1) };
 }
 
-function setVerified(
+function setUnverified(
   state: WalletState,
   mintUrl: string,
   unit: string,
   secrets: string[],
-  verified: boolean,
+  receiptTxId: string,
 ): Partial<WalletState> {
   const key = accountKey(mintUrl, unit);
   const existing = state.proofs[key];
@@ -320,7 +338,9 @@ function setVerified(
   return {
     proofs: {
       ...state.proofs,
-      [key]: existing.map((p) => (mark.has(p.secret) ? { ...p, verified } : p)),
+      [key]: existing.map((p) =>
+        mark.has(p.secret) ? { ...p, verified: false, receiptTxId } : p,
+      ),
     },
   };
 }
@@ -558,7 +578,7 @@ export type WalletData = Pick<
   | "reserved"
   | "mints"
   | "history"
-  | "redeemedNutzaps"
+  | "settledNutzaps"
   | "claimedTokens"
   | "backupEnabled"
   | "backupVerified"
@@ -631,28 +651,35 @@ export function selectUnits(
   return [...units].sort();
 }
 
-// Every cached full keyset id, flat (cashu-ts matches by id). A V4 token carries
-// SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded without the
-// full id: cashu-ts throws rather than guessing, as NUT-00 requires, since an
-// unresolved id means the proof can be neither verified nor fee-priced.
+// Every cached keyset with its unit, flat (cashu-ts matches by id). A V4 token
+// carries SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded
+// without the full id: cashu-ts throws rather than guessing, as NUT-00
+// requires, since an unresolved id means the proof can be neither verified nor
+// fee-priced. The unit is what a token's own label is checked against.
 // Decoding is offline, so the answer comes from here, not the mint. Takes
 // `mints` so a component can memoise on it; the fresh array would re-render on
 // every store write.
-export function keysetIdsOf(mints: Record<string, StoredMint>): string[] {
-  const out: string[] = [];
+export function keysetRefsOf(
+  mints: Record<string, StoredMint>,
+): { id: string; unit: string }[] {
+  const out: { id: string; unit: string }[] = [];
   for (const record of Object.values(mints)) {
     const cache = record.keysetCache as
-      { keysets?: { id?: unknown }[] } | undefined;
+      { keysets?: { id?: unknown; unit?: unknown }[] } | undefined;
     if (cache?.keysets === undefined) continue;
     for (const keyset of cache.keysets) {
-      if (typeof keyset.id === "string") out.push(keyset.id);
+      if (typeof keyset.id === "string" && typeof keyset.unit === "string") {
+        out.push({ id: keyset.id, unit: keyset.unit });
+      }
     }
   }
   return out;
 }
 
-export function selectKeysetIds(state: WalletState): string[] {
-  return keysetIdsOf(state.mints);
+export function selectKeysetRefs(
+  state: WalletState,
+): { id: string; unit: string }[] {
+  return keysetRefsOf(state.mints);
 }
 
 export function selectSecrets(
@@ -671,7 +698,7 @@ export const useWalletStore = create<WalletState>()(
       reserved: {},
       mints: {},
       history: [],
-      redeemedNutzaps: [],
+      settledNutzaps: [],
       claimedTokens: [],
       backupEnabled: false,
       backupVerified: false,
@@ -773,14 +800,11 @@ export const useWalletStore = create<WalletState>()(
       },
 
       // Nothing to mark skips the write, which would persist an unchanged store.
-      markVerified(mintUrl, unit, secrets) {
+      markUnverified(mintUrl, unit, secrets, receiptTxId) {
         if (secrets.length === 0) return;
-        set((state) => setVerified(state, mintUrl, unit, secrets, true));
-      },
-
-      markUnverified(mintUrl, unit, secrets) {
-        if (secrets.length === 0) return;
-        set((state) => setVerified(state, mintUrl, unit, secrets, false));
+        set((state) =>
+          setUnverified(state, mintUrl, unit, secrets, receiptTxId),
+        );
       },
 
       clearDerived() {
@@ -929,17 +953,31 @@ export const useWalletStore = create<WalletState>()(
         );
       },
 
-      markNutzapRedeemed(eventId) {
-        set((state) =>
-          state.redeemedNutzaps.includes(eventId)
-            ? state
-            : {
-                redeemedNutzaps: [eventId, ...state.redeemedNutzaps].slice(
-                  0,
-                  MAX_REDEEMED_NUTZAPS,
-                ),
-              },
-        );
+      // Pruned by age, not count: a count cap lets a burst of spam evict the
+      // markers of genuine zaps, which a later replay would then stage again.
+      // A sender picks `created_at`, so a future one is clamped to now.
+      markNutzapSettled(eventId, createdAt) {
+        const nowS = Math.floor(Date.now() / 1000);
+        const cutoff = nowS - NUTZAP_LOOKBACK_S;
+        set((state) => {
+          if (state.settledNutzaps.some((entry) => entry.id === eventId)) {
+            return state;
+          }
+          return {
+            settledNutzaps: [
+              { id: eventId, createdAt: Math.min(createdAt, nowS) },
+              ...state.settledNutzaps.filter(
+                (entry) => entry.createdAt >= cutoff,
+              ),
+            ],
+          };
+        });
+      },
+
+      removeTx(id) {
+        set((state) => ({
+          history: state.history.filter((tx) => tx.id !== id),
+        }));
       },
 
       // ---- Wipe ----
@@ -959,7 +997,7 @@ export const useWalletStore = create<WalletState>()(
           reserved: {},
           mints: {},
           history: [],
-          redeemedNutzaps: [],
+          settledNutzaps: [],
           claimedTokens: [],
           nutzapPubkey: undefined,
           // The wipe clears the keychain phrase too, so claiming these coins
@@ -989,7 +1027,7 @@ export const useWalletStore = create<WalletState>()(
           reserved: state.reserved,
           mints: state.mints,
           history: state.history,
-          redeemedNutzaps: state.redeemedNutzaps,
+          settledNutzaps: state.settledNutzaps,
           // Chat messages survive a restart, so the marker must too, or the
           // chip offers Claim on a token already taken in and the tap errors.
           claimedTokens: state.claimedTokens,

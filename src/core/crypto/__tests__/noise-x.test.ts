@@ -9,7 +9,13 @@
 // attributed would let a relay put words in someone's mouth.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import {
+  COURIER_PROLOGUE,
+  prekeyPrologue,
+} from "../../mesh/courier/courier-store";
 import { noiseXOpen, noiseXSeal } from "../noise-x";
+
+const P = COURIER_PROLOGUE;
 
 function makeKeypair() {
   const priv = ed25519.utils.randomSecretKey();
@@ -23,10 +29,11 @@ describe("Noise X seal/open", () => {
     const recipient = makeKeypair();
     const plaintext = new TextEncoder().encode("courier message");
 
-    const envelope = noiseXSeal(sender.priv, recipient.pub, plaintext);
+    const envelope = noiseXSeal(sender.priv, recipient.pub, plaintext, P);
     const { plaintext: recovered, senderStaticPubKey } = noiseXOpen(
       recipient.priv,
       envelope,
+      P,
     );
 
     expect(new TextDecoder().decode(recovered)).toBe("courier message");
@@ -40,7 +47,7 @@ describe("Noise X seal/open", () => {
     const recipient = makeKeypair();
     const plaintext = new Uint8Array(10);
 
-    const envelope = noiseXSeal(sender.priv, recipient.pub, plaintext);
+    const envelope = noiseXSeal(sender.priv, recipient.pub, plaintext, P);
     // 32 (e_pub) + 48 (enc_static + tag) + 10 (payload) + 16 (payload tag)
     expect(envelope.length).toBe(32 + 48 + 10 + 16);
   });
@@ -52,25 +59,36 @@ describe("Noise X seal/open", () => {
       sender.priv,
       recipient.pub,
       new TextEncoder().encode("secret"),
+      P,
     );
     const tampered = new Uint8Array(envelope);
     tampered[envelope.length - 1] ^= 0xff;
-    expect(() => noiseXOpen(recipient.priv, tampered)).toThrow();
+    expect(() => noiseXOpen(recipient.priv, tampered, P)).toThrow();
   });
 
   test("wrong recipient key causes open to throw", () => {
     const sender = makeKeypair();
     const recipient = makeKeypair();
     const wrong = makeKeypair();
-    const envelope = noiseXSeal(sender.priv, recipient.pub, new Uint8Array(8));
-    expect(() => noiseXOpen(wrong.priv, envelope)).toThrow();
+    const envelope = noiseXSeal(
+      sender.priv,
+      recipient.pub,
+      new Uint8Array(8),
+      P,
+    );
+    expect(() => noiseXOpen(wrong.priv, envelope, P)).toThrow();
   });
 
   test("empty plaintext round-trip", () => {
     const sender = makeKeypair();
     const recipient = makeKeypair();
-    const envelope = noiseXSeal(sender.priv, recipient.pub, new Uint8Array(0));
-    const { plaintext } = noiseXOpen(recipient.priv, envelope);
+    const envelope = noiseXSeal(
+      sender.priv,
+      recipient.pub,
+      new Uint8Array(0),
+      P,
+    );
+    const { plaintext } = noiseXOpen(recipient.priv, envelope, P);
     expect(plaintext.length).toBe(0);
   });
 
@@ -78,9 +96,28 @@ describe("Noise X seal/open", () => {
     const sender = makeKeypair();
     const recipient = makeKeypair();
     const pt = new TextEncoder().encode("same");
-    const e1 = noiseXSeal(sender.priv, recipient.pub, pt);
-    const e2 = noiseXSeal(sender.priv, recipient.pub, pt);
+    const e1 = noiseXSeal(sender.priv, recipient.pub, pt, P);
+    const e2 = noiseXSeal(sender.priv, recipient.pub, pt, P);
     // Envelopes differ due to random ephemeral key
     expect(bytesToHex(e1)).not.toBe(bytesToHex(e2));
+  });
+
+  // The prologue is bound into the transcript: a seal under one never opens
+  // under another, and a v2 prologue binds the prekey ID.
+  test("a seal opens only under the prologue it was made with", () => {
+    const sender = makeKeypair();
+    const recipient = makeKeypair();
+    const pt = new TextEncoder().encode("bound");
+    const v1 = noiseXSeal(sender.priv, recipient.pub, pt, P);
+    expect(() => noiseXOpen(recipient.priv, v1, new Uint8Array(0))).toThrow();
+    expect(() => noiseXOpen(recipient.priv, v1, prekeyPrologue(7))).toThrow();
+
+    const v2 = noiseXSeal(sender.priv, recipient.pub, pt, prekeyPrologue(7));
+    expect(() => noiseXOpen(recipient.priv, v2, prekeyPrologue(8))).toThrow();
+    expect(
+      new TextDecoder().decode(
+        noiseXOpen(recipient.priv, v2, prekeyPrologue(7)).plaintext,
+      ),
+    ).toBe("bound");
   });
 });

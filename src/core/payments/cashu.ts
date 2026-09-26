@@ -10,14 +10,19 @@
 //
 // Offline DLEQ (NUT-12) proves the mint signed a proof, so it catches forged and
 // tampered tokens, never that it is unspent: only the mint knows that. Offline
-// proofs are stored unverified and redeemed at the first opportunity.
+// proofs are stored unverified until a swap redeems them, which the wallet's
+// reconcile pass attempts on its own once the mint is reachable again.
 
 import {
   getDecodedToken,
   getEncodedToken,
+  getSecretKind,
   getTokenMetadata,
+  hasCorrespondingKey,
   hasValidDleq,
+  isP2PKSpendAuthorised,
   KeyChain,
+  signP2PKProofs,
   type KeyChainCache,
   type Proof,
   type ProofLike,
@@ -66,13 +71,30 @@ export interface EmbeddedToken {
   offset: number;
 }
 
+// Codes, never copy: the caller picks the sentence.
 export type DleqResult =
-  // The mint signed every proof. Says nothing about whether it is spent.
-  | { status: "valid"; checked: number }
+  // Every proof carries a witness and every witness verifies: the mint signed
+  // all of it. Says nothing about whether it is spent.
+  | { status: "valid" }
   // Forged or corrupted: refuse it.
-  | { status: "invalid"; reason: string }
-  // Nothing to check against. No offline assurance, not a failure.
-  | { status: "unchecked"; reason: string };
+  //   bad-witness            a witness that does not verify
+  //   no-such-denomination   an amount the keyset has no key for
+  //   wrong-unit             a keyset outside the token's unit
+  | {
+      status: "invalid";
+      code: "bad-witness" | "no-such-denomination" | "wrong-unit";
+    }
+  // Not every proof could be checked. No offline assurance, not a failure.
+  //   no-witness       no proof carries one
+  //   partial-witness  some do, so the rest could be anything
+  //   keys-missing     the keyset is known but its keys are not cached (a
+  //                    rotated keyset, or no cache at all)
+  //   keyset-unknown   the keyset is not in the cache
+  | {
+      status: "unchecked";
+      code:
+        "no-witness" | "partial-witness" | "keys-missing" | "keyset-unknown";
+    };
 
 // ---- Detection ----
 
@@ -87,11 +109,11 @@ export function mayContainToken(text: string): boolean {
 // yields one card.
 export function findTokensInText(
   text: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): EmbeddedToken[] {
   const results: EmbeddedToken[] = [];
   for (const { raw, offset } of tokenCandidates(text)) {
-    const info = decodeToken(raw, keysetIds);
+    const info = decodeToken(raw, keysets);
     if (!info) continue;
     results.push({ info, raw, offset });
     if (results.length >= MAX_TOKENS_PER_MESSAGE) break;
@@ -99,26 +121,20 @@ export function findTokensInText(
   return results;
 }
 
-// Mints named by tokens in `text` that do not decode against `keysetIds`: a v2
-// short keyset id expands only against the mint's current list, so a token
-// under a keyset not fetched yet (after a rotation) reads only as metadata.
+// Mints named by tokens in `text` whose keyset ids `keysets` cannot expand: a
+// v2 short id expands only against the mint's current list, so a token under a
+// keyset not fetched yet (after a rotation) reads only as metadata.
 export function mintsOfUnresolvedTokens(
   text: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): { mintUrl: string; unit: string }[] {
   const out: { mintUrl: string; unit: string }[] = [];
   for (const { raw } of tokenCandidates(text)) {
-    if (decodeToken(raw, keysetIds) !== null) continue;
-    const bare = bareToken(raw);
-    if (bare === null) continue;
-    try {
-      const meta = getTokenMetadata(bare);
-      const unit = sanitizeUnit(meta.unit);
-      if (!out.some((m) => m.mintUrl === meta.mint && m.unit === unit)) {
-        out.push({ mintUrl: meta.mint, unit });
-      }
-    } catch {
-      // Not a token at all.
+    const read = readToken(raw, keysets);
+    if (read.ok || read.reason !== "unresolved") continue;
+    const { mintUrl, label: unit } = read;
+    if (!out.some((m) => m.mintUrl === mintUrl && m.unit === unit)) {
+      out.push({ mintUrl, unit });
     }
     if (out.length >= MAX_TOKENS_PER_MESSAGE) break;
   }
@@ -169,52 +185,120 @@ export function bareToken(raw: string): string | null {
 
 // ---- Decode ----
 
+// A cached keyset, with the unit the mint issued it in.
+export interface KeysetRef {
+  id: string;
+  unit: string;
+}
+
+export type TokenRead =
+  | { ok: true; info: TokenInfo }
+  | { ok: false; reason: "malformed" }
+  // A v2 short keyset id that none of `keysets` expands: a rotation not
+  // fetched yet, or a mint this wallet does not hold. Only metadata reads.
+  | { ok: false; reason: "unresolved"; mintUrl: string; label: string }
+  // NUT-00: the unit names the currency of the token's keysets and is for
+  // display only. A label its own keysets contradict is malformed; trusting it
+  // would show and file sats as dollars.
+  | {
+      ok: false;
+      reason: "unit-mismatch";
+      mintUrl: string;
+      label: string;
+      actual: string;
+    };
+
+const MALFORMED: TokenRead = { ok: false, reason: "malformed" };
+
 // Null unless it cleanly parses with a positive amount. No permissive mode
 // (bitchat shows a generic chip for V4 it cannot walk): a full CBOR decoder
 // failing means the token is malformed; an unpriced card is worse than text.
 export function decodeToken(
   raw: string,
-  keysetIds: readonly string[] = [],
+  keysets: readonly KeysetRef[] = [],
 ): TokenInfo | null {
-  const tokenStr = bareToken(raw);
-  if (!tokenStr) return null;
+  const read = readToken(raw, keysets);
+  return read.ok ? read.info : null;
+}
 
+// `decodeToken`, saying why a token is refused, so a receive can tell the
+// user what a chat card shows only as plain text.
+export function readToken(
+  raw: string,
+  keysets: readonly KeysetRef[] = [],
+): TokenRead {
+  const tokenStr = bareToken(raw);
+  if (!tokenStr) return MALFORMED;
+
+  let token: Token;
   try {
-    // `keysetIds` resolves a V4 token's short ids. Passing none is not neutral:
+    // `keysets` resolves a V4 token's short ids. Passing none is not neutral:
     // `mapShortKeysetIds` throws on any v2 short id ("01..."), so a good token
     // reads as unreadable. NUT-00 requires the throw (an unresolved id can be
     // neither verified nor fee-priced), so never swallow it: callers pass the
     // keysets of every mint the wallet knows.
-    const token = getDecodedToken(tokenStr, keysetIds);
-    if (!Array.isArray(token.proofs) || token.proofs.length === 0) return null;
-
-    let amount = 0;
-    for (const proof of token.proofs) {
-      const value = proof.amount.toNumber();
-      if (!Number.isFinite(value) || value <= 0 || value > MAX_AMOUNT)
-        return null;
-      amount += value;
-      if (amount > MAX_AMOUNT) return null;
+    token = getDecodedToken(
+      tokenStr,
+      keysets.map((k) => k.id),
+    );
+  } catch {
+    // Metadata needs no keyset data, so it answers exactly when an
+    // unresolved short id stopped the decode.
+    try {
+      const meta = getTokenMetadata(tokenStr);
+      return {
+        ok: false,
+        reason: "unresolved",
+        mintUrl: meta.mint,
+        label: sanitizeUnit(meta.unit),
+      };
+    } catch {
+      return MALFORMED;
     }
-    if (amount <= 0) return null;
+  }
 
-    const mintUrl = typeof token.mint === "string" ? token.mint : "";
-    if (mintUrl.length === 0 || mintUrl.length > 512) return null;
+  if (!Array.isArray(token.proofs) || token.proofs.length === 0) {
+    return MALFORMED;
+  }
+  let amount = 0;
+  for (const proof of token.proofs) {
+    const value = proof.amount.toNumber();
+    if (!Number.isFinite(value) || value <= 0 || value > MAX_AMOUNT) {
+      return MALFORMED;
+    }
+    amount += value;
+    if (amount > MAX_AMOUNT) return MALFORMED;
+  }
 
-    return {
+  const mintUrl = typeof token.mint === "string" ? token.mint : "";
+  if (mintUrl.length === 0 || mintUrl.length > 512) return MALFORMED;
+
+  // Every proof whose keyset is known, so mixed units are caught too. An
+  // unknown keyset (a v1 id from a rotation not fetched) leaves the label
+  // standing: the mint refuses a wrong one at swap time.
+  const label = sanitizeUnit(token.unit);
+  const unitOf = new Map(keysets.map((k) => [k.id, k.unit.toLowerCase()]));
+  for (const proof of token.proofs) {
+    const actual = unitOf.get(proof.id);
+    if (actual !== undefined && actual !== label) {
+      return { ok: false, reason: "unit-mismatch", mintUrl, label, actual };
+    }
+  }
+
+  return {
+    ok: true,
+    info: {
       version: tokenStr.startsWith("cashuA") ? "A" : "B",
       amount,
-      unit: sanitizeUnit(token.unit),
+      unit: label,
       mintUrl,
       mintHost: mintHostOf(mintUrl),
       memo: sanitizeMemo(token.memo),
       proofCount: token.proofs.length,
       hasDleq: token.proofs.every((p) => p.dleq !== undefined),
       token,
-    };
-  } catch {
-    return null;
-  }
+    },
+  };
 }
 
 // Attacker-controlled, so capped and lowercased; a non-URL mint falls back to
@@ -246,76 +330,112 @@ function sanitizeMemo(memo: string | undefined): string | undefined {
 // ---- Offline DLEQ verification ----
 
 // NUT-12 against the mint's cached public keys (`keyChain.cache`, public only,
-// so safe unencrypted and offline). Missing keys or witnesses report
-// "unchecked", never a pass: a check that says yes when it has nothing to check,
-// or when it throws, can only ever say yes.
+// so safe unencrypted and offline). "valid" means what CDK's
+// `verify_token_dleq` means: every proof verified. One real coin cannot vouch
+// for the others, or a single witnessed sat makes any forgery beside it read
+// as genuine.
+//
+// One pass over every proof. Anything provably wrong refuses the token at
+// once, whatever else is missing. What could not be checked is tallied, and
+// the witness codes win over the key codes, since they are what the sender
+// chose.
 export function verifyTokenOffline(
   token: Token,
   keysetCache: KeyChainCache | undefined,
   unit: string,
 ): DleqResult {
-  const withDleq = token.proofs.filter((p) => p.dleq !== undefined);
-  if (withDleq.length === 0) {
-    return { status: "unchecked", reason: "token carries no DLEQ witness" };
-  }
-  if (!keysetCache) {
-    return {
-      status: "unchecked",
-      reason: "mint keys not cached on this device",
-    };
-  }
-
-  let keyChain: KeyChain;
-  try {
-    keyChain = KeyChain.fromCache(token.mint, unit, keysetCache);
-  } catch {
-    return { status: "unchecked", reason: "cached mint keys are unreadable" };
-  }
-
-  let checked = 0;
-  for (const proof of token.proofs) {
-    let keyset;
+  let keyChain: KeyChain | null = null;
+  if (keysetCache !== undefined) {
     try {
-      keyset = keyChain.getKeyset(proof.id);
+      keyChain = KeyChain.fromCache(token.mint, unit, keysetCache);
     } catch {
-      // Unknown keyset (rotated, or an unresolved short id).
+      // Unreadable cache: nothing to check against.
+    }
+  }
+
+  let witnessed = 0;
+  let verified = 0;
+  let keysMissing = false;
+  for (const proof of token.proofs) {
+    if (proof.dleq !== undefined) witnessed += 1;
+    if (keyChain === null) {
+      keysMissing = true;
       continue;
     }
-    try {
-      // NUT-12 "MUST verify if present": `require: false` passes a proof with
-      // no witness (a mint predating DLEQ is not issuing bad proofs), and any
-      // witness present must verify. Same as the `verifyDleqIfPresent` that
-      // cashu-ts v5 removes.
-      if (!hasValidDleq(proof, keyset, { require: false })) {
-        return {
-          status: "invalid",
-          reason: `proof ${proof.secret.slice(0, 8)}… failed DLEQ verification`,
-        };
-      }
-      if (proof.dleq !== undefined) checked += 1;
-    } catch (err) {
-      // The amount matches no key in the keyset: a denomination the mint does
-      // not issue, so a forgery, not an inconclusive check.
-      return {
-        status: "invalid",
-        reason: `proof ${proof.secret.slice(0, 8)}… has no matching mint key (${String(err)})`,
-      };
+    // Rotated away, or an unresolved short id.
+    if (!keyChain.hasKeyset(proof.id)) continue;
+    if (!keyChain.isUnitKeyset(proof.id)) {
+      return { status: "invalid", code: "wrong-unit" };
     }
+    const keyset = keyChain.getKeyset(proof.id);
+    // An inactive keyset is listed without keys (NUT-01 serves only active
+    // ones); the mint still honours it, so this is no evidence of forgery.
+    if (!keyset.hasKeys) {
+      keysMissing = true;
+      continue;
+    }
+    // A throw on hostile input is a refusal: a check that passes whatever
+    // it cannot evaluate can only ever say yes.
+    try {
+      if (!hasCorrespondingKey(proof.amount, keyset.keys)) {
+        return { status: "invalid", code: "no-such-denomination" };
+      }
+      if (proof.dleq === undefined) continue;
+      if (!hasValidDleq(proof, keyset)) {
+        return { status: "invalid", code: "bad-witness" };
+      }
+    } catch {
+      return { status: "invalid", code: "bad-witness" };
+    }
+    verified += 1;
   }
 
-  if (checked === 0) {
-    return {
-      status: "unchecked",
-      reason: "no keys cached for this token's keyset",
-    };
+  if (token.proofs.length > 0 && verified === token.proofs.length) {
+    return { status: "valid" };
   }
-  if (checked < withDleq.length) {
-    return {
-      status: "unchecked",
-      reason: `verified ${String(checked)} of ${String(withDleq.length)} witnesses`,
-    };
+  if (witnessed === 0) return { status: "unchecked", code: "no-witness" };
+  if (witnessed < token.proofs.length) {
+    return { status: "unchecked", code: "partial-witness" };
   }
-  return { status: "valid", checked };
+  return {
+    status: "unchecked",
+    code: keysMissing ? "keys-missing" : "keyset-unknown",
+  };
+}
+
+// ---- Spending conditions (NUT-10, NUT-11) ----
+
+// Who can spend a coin now:
+//   "none"   a bearer coin: a plain secret, or a lock that no longer binds
+//            (expired with no refund keys, or already carrying its signature).
+//   "ours"   locked, and our key's signature is what unlocks it.
+//   "other"  locked to anyone else, or to a condition we cannot meet (HTLC,
+//            SIG_ALL, a malformed lock). Never money to this wallet.
+export type CoinLock = "none" | "ours" | "other";
+
+// Decided by cashu-ts itself, the same NUT-11 logic that signs our inputs, so
+// its rules hold here unchanged: a NUT-28 blinded lock (`p2pk_e`) names a
+// derived key a pubkey comparison would never match, and only signing tells.
+// A secret that is not NUT-10 JSON is a plain secret to the mint too.
+export function coinLock(proof: Proof, privkey?: string): CoinLock {
+  let kind: string;
+  try {
+    kind = getSecretKind(proof.secret);
+  } catch {
+    return "none";
+  }
+  // HTLC needs a preimage this wallet never holds.
+  if (kind !== "P2PK") return "other";
+  try {
+    if (isP2PKSpendAuthorised(proof)) return "none";
+    if (privkey === undefined) return "other";
+    const [signed] = signP2PKProofs([proof], privkey);
+    return signed !== undefined && isP2PKSpendAuthorised(signed)
+      ? "ours"
+      : "other";
+  } catch {
+    return "other";
+  }
 }
 
 // ---- Proof conversion ----

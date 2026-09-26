@@ -24,11 +24,20 @@
 // the thing both projects have agreed on.
 
 import {
+  decodeGossipFilterPayload,
+  encodeGossipFilterPayload,
+} from "@core/mesh/sync/gossip-sync";
+import {
   encodeBurstData,
   encodeBurstEnd,
   encodeBurstStart,
   VoiceCodec,
 } from "@core/mesh/voice/voice-capture";
+import {
+  encodeBoardWire,
+  newPostID,
+  signBoardPost,
+} from "@core/mesh/wire/board-packet";
 import { decodeFilePacket } from "@core/mesh/wire/file-packet";
 import {
   CarrierDirection,
@@ -102,6 +111,15 @@ const COURIER_EXPIRY_SLACK_MS = 60 * 60 * 1000;
 
 const DEDUP_LIMIT = 1000;
 
+// Gossip sync. RequestSyncManager.responseWindow; the SyncTypeFlags bits for
+// public messages and board posts; TransportConfig.bleDefaultFragmentSize,
+// which bitchat cuts non-routed packets into as version 1 fragments.
+const SYNC_RESPONSE_WINDOW_MS = 30_000;
+const SYNC_BIT_MESSAGE = 1;
+const SYNC_BIT_BOARD = 8;
+const FRAGMENT_CHUNK_BYTES = 469;
+const MAX_BLE_FRAME = 512;
+
 // bitchat's mesh has one public room and no channel field to name a second.
 // Airhop calls that room `#bluetooth`.
 const BITCHAT_MESH_ROOM = "#bluetooth";
@@ -174,6 +192,12 @@ export interface BitchatObservations {
   // Airhop gateway, decoded and verified the way bitchat's GatewayService does
   // before handing the event to its geohash timeline.
   gatewayDownlinks: { geohash: string; eventID: string }[];
+  // IS_RSR packets it took as answers to its own sync requests, and ones it
+  // refused because it had not asked the peer on that link.
+  syncReplies: number;
+  refusedSyncReplies: number;
+  // Sync requests it answered.
+  syncRequestsAnswered: number;
 }
 
 export interface BitchatActorOptions {
@@ -209,6 +233,9 @@ export class BitchatActor implements RadioNode {
     expiredAssemblies: 0,
     relayed: 0,
     gatewayDownlinks: [],
+    syncReplies: 0,
+    refusedSyncReplies: 0,
+    syncRequestsAnswered: 0,
   };
 
   private readonly channels: Set<string>;
@@ -233,6 +260,13 @@ export class BitchatActor implements RadioNode {
     }
   >();
   private announceTimer: ReturnType<typeof setInterval> | null = null;
+  // The peer each link is bound to, learned from a verified announce that
+  // arrived first-hand (BLEIngressLinkRegistry).
+  private readonly linkPeers = new Map<string, string>();
+  // What this node offers when asked for a sync, and when it last asked whom.
+  private readonly history: Packet[] = [];
+  private readonly askedAt = new Map<string, number>();
+  private fragmentStreams = 0;
 
   constructor(
     private readonly world: World,
@@ -271,6 +305,7 @@ export class BitchatActor implements RadioNode {
     },
     fabricLinkDown: (linkID: string): void => {
       this.links.delete(linkID);
+      this.linkPeers.delete(linkID);
     },
     fabricDeliver: (linkID: string, dataBase64: string): void => {
       this.onPacket(linkID, dataBase64);
@@ -357,6 +392,149 @@ export class BitchatActor implements RadioNode {
     });
     if (linkID !== undefined) this.write(linkID, packet);
     else this.broadcast(packet);
+  }
+
+  // A public message this node heard earlier, stamped `timestamp`, held only for
+  // sync. Nothing goes on the air until a peer asks.
+  rememberPublicMessage(text: string, timestamp: number): void {
+    this.history.push(
+      this.sign({
+        type: PacketType.CHANNEL_MSG,
+        ttl: 7,
+        flags: Flags.SIGNED,
+        senderID: this.peerIDBytes(),
+        recipientID: new Uint8Array(8),
+        timestamp,
+        signature: new Uint8Array(64),
+        payload: new TextEncoder().encode(text),
+      }),
+    );
+  }
+
+  // A board post written at `createdAt`, held for sync the same way.
+  rememberBoardPost(content: string, createdAt: number): void {
+    const post = signBoardPost(
+      {
+        postID: newPostID(),
+        geohash: "",
+        content,
+        authorSigningKey: this.signingPubKey,
+        authorNickname: this.nickname,
+        createdAt,
+        expiresAt: createdAt + 7 * 24 * 60 * 60 * 1000,
+        flags: 0,
+      },
+      this.signingPrivKey,
+    );
+    this.history.push(
+      this.sign({
+        type: PacketType.BOARD_POST,
+        ttl: 7,
+        flags: Flags.SIGNED,
+        senderID: this.peerIDBytes(),
+        recipientID: new Uint8Array(8),
+        timestamp: createdAt,
+        signature: new Uint8Array(64),
+        payload: encodeBoardWire({ kind: "post", post }),
+      }),
+    );
+  }
+
+  // Ask the peer on this link what it holds, as scheduleInitialSyncToPeer does
+  // once that peer's announce verified: signed, link-local, addressed to it. An
+  // empty filter says this node holds nothing yet.
+  private requestSync(linkID: string, peerID: string): void {
+    if (!this.links.has(linkID)) return;
+    this.askedAt.set(peerID, Date.now());
+    this.write(
+      linkID,
+      this.sign({
+        type: PacketType.REQUEST_SYNC,
+        ttl: 0,
+        flags: Flags.SIGNED | Flags.HAS_RECIPIENT,
+        senderID: this.peerIDBytes(),
+        recipientID: peerIDToBytes(peerID),
+        timestamp: Date.now(),
+        signature: new Uint8Array(64),
+        payload: encodeGossipFilterPayload({
+          p: 7,
+          m: 1,
+          data: new Uint8Array(0),
+          types: (1 << SYNC_BIT_MESSAGE) | (1 << SYNC_BIT_BOARD),
+        }),
+      }),
+    );
+  }
+
+  // BLEService.handleRequestSync: ttl 0, the bound peer's own request, and a
+  // signature against its announced key. Replies are ttl 0 and IS_RSR.
+  private onRequestSync(
+    packet: Packet,
+    senderID: string,
+    linkID: string,
+  ): void {
+    if (packet.ttl !== 0) return;
+    const bound = this.linkPeers.get(linkID);
+    if (bound !== undefined && bound !== senderID) return;
+    const key = this.peerKeys.get(senderID);
+    if (key === undefined || !verifyPacket(packet, key)) return;
+    const request = decodeGossipFilterPayload(packet.payload);
+    if (request === null) return;
+    const types = request.types ?? 1 << SYNC_BIT_MESSAGE;
+    const bitFor = (type: number): number | null =>
+      type === PacketType.CHANNEL_MSG
+        ? SYNC_BIT_MESSAGE
+        : type === PacketType.BOARD_POST
+          ? SYNC_BIT_BOARD
+          : null;
+    this.seen.syncRequestsAnswered++;
+    for (const stored of this.history) {
+      const bit = bitFor(stored.type);
+      if (bit === null || (types & (1 << bit)) === 0) continue;
+      this.writeWhole(linkID, { ...stored, ttl: 0, isRSR: true });
+    }
+  }
+
+  // One packet down one link, cut the way BLEOutboundFragmentPlanner cuts it
+  // when it does not fit a frame: every fragment carries the packet's author,
+  // ttl, IS_RSR and ORIGINAL timestamp, so a reply's fragments are as old as
+  // what they carry.
+  private writeWhole(linkID: string, packet: Packet): void {
+    const data = encodePacket(packet);
+    if (data.length <= MAX_BLE_FRAME) {
+      this.write(linkID, packet);
+      return;
+    }
+    const streamID = sha256(
+      new TextEncoder().encode(`${this.id}:${String(this.fragmentStreams++)}`),
+    ).subarray(0, 8);
+    const total = Math.ceil(data.length / FRAGMENT_CHUNK_BYTES);
+    for (let i = 0; i < total; i++) {
+      const chunk = data.subarray(
+        i * FRAGMENT_CHUNK_BYTES,
+        (i + 1) * FRAGMENT_CHUNK_BYTES,
+      );
+      const payload = new Uint8Array(FRAG_HEADER_LEN + chunk.length);
+      payload.set(streamID, 0);
+      payload[8] = i >> 8;
+      payload[9] = i & 0xff;
+      payload[10] = total >> 8;
+      payload[11] = total & 0xff;
+      payload[12] = packet.type;
+      payload.set(chunk, FRAG_HEADER_LEN);
+      this.write(linkID, {
+        type: PacketType.FRAGMENT,
+        version: 1,
+        ttl: packet.ttl,
+        flags: 0,
+        senderID: packet.senderID,
+        recipientID: packet.recipientID,
+        timestamp: packet.timestamp,
+        signature: new Uint8Array(64),
+        payload,
+        isRSR: packet.isRSR,
+      });
+    }
   }
 
   // Say something in the public room, the way a bitchat user does.
@@ -468,11 +646,26 @@ export class BitchatActor implements RadioNode {
       );
     }
 
+    // BLEIngressPacketGuard: IS_RSR is valid only from the peer on this link
+    // while this node's request to it is open, fresh or not.
+    if (packet.isRSR === true) {
+      const peer = this.linkPeers.get(linkID);
+      const at = peer === undefined ? undefined : this.askedAt.get(peer);
+      if (at === undefined || Date.now() - at > SYNC_RESPONSE_WINDOW_MS) {
+        this.seen.refusedSyncReplies++;
+        return;
+      }
+      this.seen.syncReplies++;
+    }
+
     const senderID = bytesToHex(packet.senderID);
     if (!unknownType && senderID !== this.peerID) {
       switch (packet.type) {
         case PacketType.ANNOUNCE:
-          this.onAnnounce(packet, senderID);
+          this.onAnnounce(packet, senderID, linkID);
+          break;
+        case PacketType.REQUEST_SYNC:
+          this.onRequestSync(packet, senderID, linkID);
           break;
         case PacketType.CHANNEL_MSG:
           this.onChannelMsg(packet, senderID);
@@ -571,7 +764,7 @@ export class BitchatActor implements RadioNode {
     // no gateway, so it does nothing beyond the relay every node performs.
   }
 
-  private onAnnounce(packet: Packet, senderID: string): void {
+  private onAnnounce(packet: Packet, senderID: string, linkID: string): void {
     // TLV walk for the signing key (0x03), then verify the packet against it.
     // bitchat pins the key on first sight and refuses to replace it later
     // (BLEAnnounceTrustPolicy.signingKeyMismatch); this models the first half.
@@ -603,6 +796,12 @@ export class BitchatActor implements RadioNode {
     }
     this.peerKeys.set(senderID, signingKey);
     this.seen.knownPeers.add(senderID);
+    // First-hand (undecremented TTL) binds the link, and the first binding
+    // schedules the initial sync a second later, as BLEService does.
+    if (packet.ttl === 7 && !this.linkPeers.has(linkID)) {
+      this.linkPeers.set(linkID, senderID);
+      setTimeout(() => this.requestSync(linkID, senderID), 1_000);
+    }
   }
 
   private onChannelMsg(packet: Packet, senderID: string): void {

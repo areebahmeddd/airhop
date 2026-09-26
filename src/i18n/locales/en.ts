@@ -150,6 +150,10 @@ export const strings = {
   "onboarding.transfer.offline_body":
     "Put both phones on the same Wi-Fi, or turn on the hotspot on one and join it from the other. No internet needed.",
   "onboarding.transfer.incoming": "Transferring {name}",
+  "onboarding.transfer.confirm_title": "Check your old phone",
+  "onboarding.transfer.confirm_body":
+    "Your old phone should show these same words. If it shows different words, or none, cancel.",
+  "onboarding.transfer.confirm_cta": "They match",
   "onboarding.transfer.receiving": "Receiving {percent}%",
   "onboarding.transfer.saving": "Saving to this phone",
   "onboarding.transfer.releasing": "Finishing on your old phone",
@@ -206,6 +210,15 @@ export const strings = {
   "error.boundary.title": "Something went wrong",
   "error.boundary.body":
     "Airhop hit an unexpected problem and had to stop what it was showing.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Can’t open your keys",
+  "launch.keys_unreadable_body":
+    "Your phone didn’t unlock Airhop’s keys. Unlock it, then try again.",
+  "launch.start_over": "Erase and start over",
+  "launch.start_over_confirm_title": "Erase this phone?",
+  "launch.start_over_confirm_body":
+    "Your identity, messages, contacts and wallet on this phone are destroyed, and you start again as someone new. This cannot be undone.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Default channels",
@@ -620,7 +633,7 @@ export const strings = {
   "chat.media.gone_video": "Video not on this device",
   "chat.media.gone_voice": "Voice note not on this device",
   "chat.media.gone_file": "File not on this device",
-  "chat.media.gone_note": "Removed after 7 days or when the cache was cleared",
+  "chat.media.gone_note": "No longer stored on this device",
   "chat.media.ask_resend": "Ask again",
   "chat.media.resend_draft": "Could you send that {kind} again?",
   "chat.media.kind_photo": "photo",
@@ -690,6 +703,7 @@ export const strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Claimed",
   "chat.ecash.reclaimed": "Reclaimed",
+  "chat.ecash.locked": "Locked to someone else",
   "chat.ecash.claiming": "Claiming…",
   "chat.ecash.claim": "Claim",
   "chat.ecash.claim_amount": "Claim {amount} {unit}",
@@ -914,6 +928,7 @@ export const strings = {
     "Opens Airhop’s permissions in system settings",
   "mesh.banner.hint.battery_settings":
     "Opens this phone’s background activity settings",
+  "mesh.banner.hint.tor_settings": "Opens Airhop’s Tor settings",
   "mesh.banner.dismiss": "Dismiss: {label}",
   "mesh.banner.hint.dismiss": "Hides this note for good",
 
@@ -948,8 +963,10 @@ export const strings = {
     "Ring position reflects signal strength, not distance",
   "mesh.radar.set_online":
     "Set your status to Online in Profile to discover peers",
-  "mesh.radar.in_range": "in range",
-  "mesh.radar.recently_seen": "recently seen",
+  "mesh.radar.peer_in_range": "{name}, in range",
+  "mesh.radar.peer_recent": "{name}, recently seen",
+  "mesh.radar.relay_in_range": "{name}, relay node, in range",
+  "mesh.radar.relay_recent": "{name}, relay node, recently seen",
   "mesh.radar.peer_hint": "Opens options to message or pay this peer",
 
   // ---- Mesh: peer list ----
@@ -970,6 +987,7 @@ export const strings = {
   "mesh.peer.amount_first": "Send ecash, enter an amount first",
   "mesh.peer.cancel_send": "Cancel send ecash",
   "mesh.peer.view_peer_online": "View peer {name}, online",
+  "mesh.peer.view_relay_online": "View peer {name}, online, relay node",
   "mesh.peer.last_seen_at": "Last seen {ago}",
   "mesh.peer.send_amount": "Send {amount} sats",
   "mesh.peer.direct": "Direct connection",
@@ -1032,8 +1050,6 @@ export const strings = {
   "wallet.send.amount_in": "Amount in {unit}",
   "wallet.send.body":
     "Built offline from ecash you already hold. Nothing leaves your balance for good until you confirm the token was delivered.",
-  "wallet.send.stale_fee_note":
-    "Fees were last checked {days} day(s) ago. If this mint has raised its fee since, the send may cost a little more.",
   "wallet.send.fee_note":
     "{spend} {unit} leaves your balance; the extra {fee} covers the mint fee they would otherwise pay",
   "wallet.send.qr_too_big":
@@ -1086,19 +1102,21 @@ export const strings = {
   "wallet.receive.redeemed_at":
     "Redeemed at {mint}. It is provably yours now: the sender’s copy of this token no longer works.",
   "wallet.receive.stored_pending":
-    "Stored from {mint}, but the mint has not confirmed it is unspent yet{dleq}. Refresh from the Wallet tab once you are online.",
+    "Stored from {mint}, but the mint has not confirmed it is unspent yet{dleq}. It is confirmed with the mint automatically once you are online.",
   "wallet.receive.dleq_inline":
     " (its signature does check out, so the token is genuine)",
   "wallet.receive.dleq_ok":
     "The mint’s signature checks out, so the token is genuine.",
   "wallet.receive.dleq_uncached":
     "The mint’s keys are not cached here, so the signature could not be checked offline.",
+  "wallet.receive.dleq_missing":
+    "Not every coin in it carries the mint’s signature proof, so it could not be checked offline.",
   "wallet.receive.dleq_warning":
-    "Until you refresh online, the sender could in principle have spent it elsewhere.",
+    "Until it is confirmed online, the sender could in principle have spent it elsewhere.",
   "wallet.receive.failed": "Could not receive",
   "wallet.receive.title": "Receive ecash",
   "wallet.receive.body":
-    "Paste a Cashu token. Online it is redeemed at the mint straight away; offline it is stored and confirmed the next time you refresh.",
+    "Paste a Cashu token. Online it is redeemed at the mint straight away; offline it is stored and confirmed with the mint automatically once you are back online.",
   "wallet.receive.scan": "Scan an ecash QR code",
   "wallet.receive.scan_short": "Scan QR",
   "wallet.receive.receiving": "Receiving…",
@@ -1312,6 +1330,8 @@ export const strings = {
     "The mint says this token was already redeemed, so the {amount} {unit} reached them and nothing came back to your balance.",
   "wallet.copied.token_body":
     "The token is on your clipboard. It stays reserved here until you mark it delivered, so you can paste it again if the first attempt fails.",
+  "wallet.copied.refused_token_body":
+    "The token is on your clipboard. This wallet no longer counts it, so you can give it back to whoever sent it.",
   "wallet.copied.phrase_body":
     "Paste it into a password manager, then clear your clipboard. Other apps can read the clipboard, and on some setups it syncs to your other devices.",
   "wallet.refresh.failed": "Refresh failed",
@@ -1323,6 +1343,10 @@ export const strings = {
     "{amount} {unit} confirmed and swapped for fresh ecash.",
   "wallet.refresh.secured":
     "{amount} {unit} is now covered by your recovery phrase.",
+  "wallet.refresh.refused":
+    "{amount} {unit} was refused by the mint and removed from your balance. Activity keeps the token.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} is still waiting on the mint and will be confirmed later.",
   "wallet.refresh.all_confirmed":
     "Everything here was already confirmed with the mint.",
   "wallet.pending.reserved_desc":
@@ -1354,9 +1378,11 @@ export const strings = {
   "wallet.activity.ln_deposit": "Lightning deposit",
   "wallet.activity.ln_withdrawal": "Lightning withdrawal",
   "wallet.activity.nutzap_received": "Nutzap received",
+  "wallet.activity.nutzap_claiming": "Nutzap, claiming",
   "wallet.activity.spent_removed": "Spent coins removed",
   "wallet.activity.refreshed": "Checked with mint",
   "wallet.activity.refreshing": "Checking with mint",
+  "wallet.activity.copy_refused": "Copy the refused token",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh offline",
@@ -1432,7 +1458,7 @@ export const strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "What is Cashu?",
   "wallet.explain.intro":
-    "Cashu is ecash for Bitcoin. A token is a string that is worth money to whoever holds it, signed blindly by a mint so the mint cannot tell who spent what. No accounts, no logins.",
+    "Cashu is ecash for Bitcoin. A token is a string that is worth money to whoever holds it, signed blindly by a mint so the mint cannot tell who spent what. No accounts, no logins. Airhop never holds your money: your coins live on this phone, and the mints you choose issue them.",
   "wallet.explain.send": "Send",
   "wallet.explain.send_desc":
     "Turns an amount into a token you can hand to a nearby peer over Bluetooth, or share as text. Works with no internet. The coins stay reserved until you confirm it landed.",
@@ -1475,6 +1501,10 @@ export const strings = {
   "wallet.svc.phrase_invalid": "That recovery phrase is not valid.",
   "wallet.svc.phrase_invalid_body":
     "Check for a mistyped or missing word. The phrase has a built-in checksum, so a single wrong word makes the whole thing invalid.",
+  "wallet.svc.phrase_unreadable":
+    "Your recovery phrase could not be read on this phone.",
+  "wallet.svc.phrase_unreadable_body":
+    "Nothing was changed and no new phrase was made. Try again once the phone is unlocked. Your ecash still works meanwhile.",
   "wallet.svc.need_mint": "Add at least one mint first.",
   "wallet.svc.need_mint_body":
     "Recovery works by asking a mint which coins it signed for you, so it needs to know which mint to ask.",
@@ -1495,10 +1525,25 @@ export const strings = {
   "wallet.svc.keyset_unknown_body":
     "The mint can’t be reached right now to fetch them. Nothing is lost: receive it again once you’re online.",
   "wallet.svc.wrong_mint": "This token was not signed by the mint it names.",
+  "wallet.svc.wrong_mint_body":
+    "At least one coin’s signature does not match the mint’s keys. Nothing was added.",
+  "wallet.svc.unit_mismatch":
+    "This token’s coins are not in the currency it names.",
+  "wallet.svc.unit_mismatch_body":
+    "It is labeled {label}, but some of its coins were issued in {actual}. Ask the sender for a new token. Nothing was added.",
+  "wallet.svc.locked_other": "These coins are locked to someone else’s wallet.",
+  "wallet.svc.locked_other_body":
+    "Only the person they were locked to can claim them. Nothing was added.",
+  "wallet.svc.coins_refused":
+    "The mint refused these coins, so they are no longer counted. The token is kept here if you want to send it back.",
+  "wallet.svc.coins_unredeemable":
+    "These coins cannot be redeemed at this mint, so they are no longer counted. The token is kept here if you want to send it back.",
+  "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
+  "wallet.svc.locked_ours_offline_body":
+    "Claim it once you are online. Nobody else can take it meanwhile.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",
-  "wallet.svc.receiving_offline": "receiving offline",
   "wallet.svc.amount_positive": "Enter an amount greater than zero.",
   "wallet.svc.coins_raced": "Those coins were just used by another payment.",
   "wallet.svc.coins_raced_body":
@@ -1957,7 +2002,8 @@ export const strings = {
   "settings.tor.custom_apply_hint": "Tap outside the box to connect.",
   "settings.tor.custom_empty": "Add at least one bridge line first.",
   "settings.tor.recovered":
-    "Tor was turned off because it did not finish starting last time. Turn it back on to try again.",
+    "Tor did not finish starting last time, so internet traffic is paused. Try again, or turn Tor off to go online without it.",
+  "settings.tor.retry": "Try again",
   "settings.conn.mint_clearnet": "Allow mint traffic over clear net",
   "settings.conn.mint_clearnet_desc":
     "Tor on iOS only covers Nostr. Leave off to block mint requests; ecash over the mesh keeps working either way.",
@@ -2124,9 +2170,10 @@ export const strings = {
   "settings.transfer.camera_off_body":
     "Allow camera access in Settings to scan the code on your new phone.",
   "settings.transfer.confirm_title": "Transfer to this phone?",
-  "settings.transfer.confirm_body":
-    "Everything here moves to the phone showing this code. Once it arrives, this phone is erased.",
+  "settings.transfer.verify_body":
+    "Your new phone should show these same words. Everything here moves to it, then this phone is erased.",
   "settings.transfer.confirm_cta": "Transfer",
+  "settings.transfer.waiting_confirm": "Confirm on your new phone",
   "settings.transfer.connecting": "Connecting to your new phone",
   "settings.transfer.connecting_hint":
     "If this phone asks to find devices on your local network, allow it.",
@@ -2186,7 +2233,7 @@ export const strings = {
   "settings.wipe.now": "Wipe now",
   "settings.wipe.desc": "Instantly destroy all keys, messages, and ecash",
   "settings.wipe.body":
-    "This will instantly destroy all your keys, messages, and ecash. This cannot be undone.",
+    "This will instantly destroy all your keys, messages, and ecash. This cannot be undone. Photos you saved to your gallery stay there.",
   "settings.wipe.in_progress": "Wiping",
   "settings.wipe.in_progress_body":
     "Destroying your keys, messages and files. This takes a few seconds, and finishes on its own if the app is closed.",
@@ -2247,6 +2294,8 @@ export const strings = {
   "settings.version.notes_a11y": "View release notes for version {version}",
   "settings.version.tor_paused":
     "Update check is paused while Tor is on, so it cannot leak your IP. Check the releases page in a browser.",
+  "settings.version.internet_off":
+    "Updates are paused while the internet is off. Turn on {setting} in Settings.",
   "settings.version.check_failed":
     "Could not check for updates. Check your connection and try again.",
   "settings.version.downloading": "Downloading {percent}%",
@@ -2427,6 +2476,11 @@ export const plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} unconfirmed",
     other: "{count} unconfirmed",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Fees were last checked {count} day ago. If this mint has raised its fee since, the send may cost a little more.",
+    other:
+      "Fees were last checked {count} days ago. If this mint has raised its fee since, the send may cost a little more.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} coin was already spent and has been removed.",

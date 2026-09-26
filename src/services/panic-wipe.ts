@@ -52,7 +52,7 @@ import { dismissAllNotifications } from "./notification-service";
 import { setNutzapRebinder, stopNutzapWatcher } from "./nutzap-watcher-handle";
 import { resetWalletService } from "./wallet-service";
 import { bumpWipeGeneration } from "./wipe-generation";
-import { beginPanicWipe, endPanicWipe } from "./wipe-marker";
+import { beginPanicWipe, condemnIdentity, endPanicWipe } from "./wipe-marker";
 
 // Ceiling on the two best-effort steps that run after the data is destroyed.
 // Long enough for a normal native round trip, short enough that the confirm
@@ -208,6 +208,10 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   } catch {
     keysDestroyed = false;
   }
+  // Recorded outside every partition cleared below, so a relaunch before the
+  // user re-onboards cannot boot the identity that survived. Set whichever
+  // item refused: both paths that write a new identity clear it.
+  if (!keysDestroyed) condemnIdentity();
 
   // 2. Clear every MMKV partition, through the one handle each is persisted
   //    through. See store/mmkv for why a second handle is fatal.

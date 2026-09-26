@@ -29,7 +29,6 @@ function makeClient(overrides?: Partial<NostrClient>): NostrClient {
       .mockResolvedValue({ relay: "wss://mock", accepted: true }),
     subscribe: jest.fn().mockReturnValue({ close: jest.fn() }),
     queryEvents: jest.fn().mockResolvedValue([]),
-    fetchEvent: jest.fn().mockResolvedValue(null),
     close: jest.fn(),
     ...overrides,
   } as unknown as NostrClient;
@@ -143,6 +142,17 @@ describe("subscribeCourierDrops", () => {
     ];
     const filter = (filters as { kinds: number[] }[])[0];
     expect(filter.kinds).toContain(1401);
+  });
+
+  // bitchat-ios's courierDrops limit. At 20, anyone who can compute the daily
+  // tag could park 20 junk drops and push real offline mail out of backfill.
+  it("asks each relay for up to 100 parked drops", () => {
+    const client = makeClient();
+    subscribeCourierDrops([new Uint8Array(16)], client, () => {});
+    const [filters] = (client.subscribe as jest.Mock).mock.calls[0] as [
+      { limit: number }[],
+    ];
+    expect(filters[0].limit).toBe(100);
   });
 
   it("returns a no-op closer for an empty tag list", () => {

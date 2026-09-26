@@ -192,6 +192,10 @@ const strings: Strings = {
     "Yametokana na ufunguo wako, hivyo hakuna anayeweza kuchukua lako.",
   "home.features.identity.qr.name": "Anwani kwa QR",
   "home.features.identity.qr.line": "Kuchanganua mara moja hubeba funguo zao, si jina tu.",
+  "home.features.identity.forward.name": "Usiri wa mbele",
+  "home.features.identity.forward.line": "Ufunguo uliovuja hauwezi kufungua jumbe za zamani.",
+  "home.features.identity.move.name": "Hamia simu mpya",
+  "home.features.identity.move.line": "Mazungumzo na pochi huhamia, kisha simu ya zamani hujifuta.",
   "home.features.identity.panic.name": "Ufutaji wa dharura",
   "home.features.identity.panic.line":
     "Kila ufunguo na kila ujumbe huharibiwa kwa chini ya sekunde moja.",
@@ -201,6 +205,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Mesh ya Bluetooth",
   "home.features.networking.mesh.line":
     "Bila intaneti, bila rauta, kwenye simu ambazo watu tayari wanazo.",
+  "home.features.networking.lan.name": "Mtandao wa karibu",
+  "home.features.networking.lan.line": "WiFi ya pamoja au hotspot, iPhone na Android pamoja.",
+  "home.features.networking.hops.name": "Upeanaji wa hatua nyingi",
+  "home.features.networking.hops.line": "Kila simu hupitisha jumbe, hadi hatua saba.",
   "home.features.networking.bridge.name": "Daraja la mesh",
   "home.features.networking.bridge.line":
     "Huunganisha mazungumzo yako ya wazi na kundi lililo karibu nje ya masafa.",

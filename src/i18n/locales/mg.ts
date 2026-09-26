@@ -121,6 +121,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Ampidiro ao amin'ny Wi-Fi iray ihany ny findy roa, na alefaso ny hotspot amin'ny iray ary midira ao aminy avy amin'ny iray hafa. Tsy ilaina ny Internet.",
   "onboarding.transfer.incoming": "Mamindra an'i {name}",
+  "onboarding.transfer.confirm_title": "Jereo ny findinao taloha",
+  "onboarding.transfer.confirm_body":
+    "Tokony hampiseho ireo teny ireo ihany koa ny findinao taloha. Raha teny hafa no asehony, na tsy misy mihitsy, dia foano.",
+  "onboarding.transfer.confirm_cta": "Mitovy izy ireo",
   "onboarding.transfer.receiving": "Mandray {percent}%",
   "onboarding.transfer.saving": "Mitahiry eto amin'ity findy ity",
   "onboarding.transfer.releasing": "Mamarana amin'ny findinao taloha",
@@ -179,6 +183,15 @@ export const strings: Strings = {
   "error.boundary.title": "Nisy tsy nety",
   "error.boundary.body":
     "Nahita olana tsy nampoizina ny Airhop ka voatery nampijanona izay nasehony.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Tsy voasokatra ny lakilenao",
+  "launch.keys_unreadable_body":
+    "Tsy novahan'ny findinao ny lakilen'ny Airhop. Vahao ny findy, ary andramo indray.",
+  "launch.start_over": "Fafao ary manomboka indray",
+  "launch.start_over_confirm_title": "Hofafana ity findy ity?",
+  "launch.start_over_confirm_body":
+    "Ho rava ny maha-izy anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao amin'ity findy ity, ary hanomboka indray ho olona vaovao ianao. Tsy azo averina izany.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Fantsona mahazatra",
@@ -608,8 +621,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Tsy eto amin'ity fitaovana ity ny horonan-tsary",
   "chat.media.gone_voice": "Tsy eto amin'ity fitaovana ity ny naoty feo",
   "chat.media.gone_file": "Tsy eto amin'ity fitaovana ity ny rakitra",
-  "chat.media.gone_note":
-    "Nesorina taorian'ny 7 andro na rehefa nofafana ny tahiry vonjimaika",
+  "chat.media.gone_note": "Tsy voatahiry eto amin'ity fitaovana ity intsony",
   "chat.media.ask_resend": "Angataho indray",
   "chat.media.resend_draft": "Afaka alefanao indray ve io {kind} io?",
   "chat.media.kind_photo": "sary",
@@ -682,6 +694,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Voaray",
   "chat.ecash.reclaimed": "Naverina",
+  "chat.ecash.locked": "Mihidy ho an'olon-kafa",
   "chat.ecash.claiming": "Raisina…",
   "chat.ecash.claim": "Raiso",
   "chat.ecash.claim_amount": "Raiso ny {amount} {unit}",
@@ -926,6 +939,8 @@ export const strings: Strings = {
     "Manokatra ny alalan'ny Airhop ao amin'ny fandrindran'ny rafitra",
   "mesh.banner.hint.battery_settings":
     "Manokatra ny fandrindrana asa any aorian'ity findy ity",
+  "mesh.banner.hint.tor_settings":
+    "Manokatra ny fandrindrana Tor ao amin'ny Airhop",
   "mesh.banner.dismiss": "Esory: {label}",
   "mesh.banner.hint.dismiss": "Manafina ity fanamarihana ity mandrakizay",
 
@@ -961,8 +976,11 @@ export const strings: Strings = {
     "Ny toerana eo amin'ny faribolana dia maneho ny herin'ny famantarana, fa tsy ny halavirana",
   "mesh.radar.set_online":
     "Ataovy An-tserasera ny toe-javatrao ao amin'ny mombamomba mba hahitana teboka",
-  "mesh.radar.in_range": "ao anatin'ny fetra",
-  "mesh.radar.recently_seen": "hita vao haingana",
+  "mesh.radar.peer_in_range": "{name}, ao anatin'ny fetra",
+  "mesh.radar.peer_recent": "{name}, hita vao haingana",
+  "mesh.radar.relay_in_range":
+    "{name}, teboka mpanelanelana, ao anatin'ny fetra",
+  "mesh.radar.relay_recent": "{name}, teboka mpanelanelana, hita vao haingana",
   "mesh.radar.peer_hint":
     "Manokatra ny safidy hanoratana na handoavam-bola amin'ity teboka ity",
 
@@ -984,6 +1002,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Mandefa ecash, soraty aloha ny sanda",
   "mesh.peer.cancel_send": "Foano ny fandefasana ecash",
   "mesh.peer.view_peer_online": "Jereo ny teboka {name}, an-tserasera",
+  "mesh.peer.view_relay_online":
+    "Jereo ny teboka {name}, an-tserasera, teboka mpanelanelana",
   "mesh.peer.last_seen_at": "Hita farany {ago}",
   "mesh.peer.send_amount": "Alefaso {amount} sat",
   "mesh.peer.direct": "Fifandraisana mivantana",
@@ -1052,8 +1072,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Sanda amin'ny {unit}",
   "wallet.send.body":
     "Naorina tsy misy Internet avy amin'ny ecash efa anananao. Tsy misy mivoaka ny volanao raha tsy efa nohamarininao fa tonga ny tapakila.",
-  "wallet.send.stale_fee_note":
-    "{days} andro lasa izay no nijerena farany ny saram-pandoavana. Raha nampiakatra ny azy ity mpamoaka ity taorian'izay, dia mety ho lafo kely kokoa ny fandefasana.",
   "wallet.send.fee_note":
     "{spend} {unit} no mivoaka amin'ny volanao; ny {fee} fanampiny dia manefa ny saran'ny mpamoaka izay tokony haloany",
   "wallet.send.qr_too_big":
@@ -1108,19 +1126,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Novidina tao amin'i {mint}. Azo porofoina fa anao izy izao: tsy miasa intsony ny dikan'ity tapakila ity teo an-tanan'ny mpandefa.",
   "wallet.receive.stored_pending":
-    "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy{dleq}. Havaozy avy amin'ny takelaka Kitapom-bola rehefa an-tserasera ianao.",
+    "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy{dleq}. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
   "wallet.receive.dleq_inline":
     " (mifanaraka tokoa ny soniany, ka tena izy ny tapakila)",
   "wallet.receive.dleq_ok":
     "Mifanaraka ny sonian'ny mpamoaka, ka tena izy ny tapakila.",
   "wallet.receive.dleq_uncached":
     "Tsy voatahiry eto ny lakilen'ny mpamoaka, ka tsy voamarina tsy misy Internet ny sonia.",
+  "wallet.receive.dleq_missing":
+    "Tsy ny vola madinika rehetra ao anatiny no mitondra ny porofon'ny sonian'ny mpamoaka, ka tsy voamarina tsy misy Internet izy.",
   "wallet.receive.dleq_warning":
-    "Mandra-panavaozanao an-tserasera, dia mety efa nolanian'ny mpandefa tany an-toeran-kafa izy.",
+    "Mandra-pahamarina azy an-tserasera, dia mety efa nolanian'ny mpandefa tany an-toeran-kafa izy.",
   "wallet.receive.failed": "Tsy voaray",
   "wallet.receive.title": "Mandray ecash",
   "wallet.receive.body":
-    "Apetaho ny tapakila Cashu. Rehefa an-tserasera dia vidina avy hatrany any amin'ny mpamoaka izy; raha tsy misy Internet dia tehirizina ary hamarinina amin'ny fanavaozana manaraka.",
+    "Apetaho ny tapakila Cashu. Rehefa an-tserasera dia vidina avy hatrany any amin'ny mpamoaka izy; raha tsy misy Internet dia tehirizina ary hamarinina ho azy amin'ny mpamoaka raha vao miverina an-tserasera ianao.",
   "wallet.receive.scan": "Alaivo sary ny kaody QR ecash",
   "wallet.receive.scan_short": "Alaivo sary ny QR",
   "wallet.receive.receiving": "Raisina…",
@@ -1339,6 +1359,8 @@ export const strings: Strings = {
     "Milaza ny mpamoaka fa efa novidina ity tapakila ity, ka tonga tany amin'izy ireo ny {amount} {unit} ary tsy nisy niverina tamin'ny volanao.",
   "wallet.copied.token_body":
     "Ao amin'ny takelaka fitehirizanao ny tapakila. Mijanona voatokana eto izy mandra-panamarikanao azy ho voatatitra, ka azonao apetaka indray raha tsy nahomby ny andrana voalohany.",
+  "wallet.copied.refused_token_body":
+    "Ao amin'ny takelaka fitehirizanao ny tapakila. Tsy isain'ity kitapom-bola ity intsony izy, ka azonao averina amin'izay nandefa azy.",
   "wallet.copied.phrase_body":
     "Apetaho ao amin'ny mpitantana teny miafina izy, avy eo fafao ny takelaka fitehirizana. Vakin'ny rindranasa hafa izy, ary amin'ny fandrindrana sasany dia mifanaraka amin'ny fitaovanao hafa.",
   "wallet.refresh.failed": "Tsy nahomby ny fanavaozana",
@@ -1350,6 +1372,10 @@ export const strings: Strings = {
     "{amount} {unit} voamarina ary natakalo ecash vaovao.",
   "wallet.refresh.secured":
     "{amount} {unit} no voarakotry ny andian-teny famerenanao izao.",
+  "wallet.refresh.refused":
+    "{amount} {unit} nolavin'ny mpamoaka ary nesorina tamin'ny volanao. Mbola ao amin'ny Hetsika ny tapakila.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} mbola miandry ny mpamoaka ary hohamarinina any aoriana.",
   "wallet.refresh.all_confirmed":
     "Efa voamarina tamin'ny mpamoaka avokoa ny zavatra rehetra eto.",
   "wallet.pending.reserved_desc":
@@ -1381,9 +1407,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Fametrahana Lightning",
   "wallet.activity.ln_withdrawal": "Fanesorana Lightning",
   "wallet.activity.nutzap_received": "Nutzap voaray",
+  "wallet.activity.nutzap_claiming": "Nutzap, eo am-pandraisana",
   "wallet.activity.spent_removed": "Nesorina ireo vola lany",
   "wallet.activity.refreshed": "Voamarina tamin'ny mpamoaka",
   "wallet.activity.refreshing": "Manamarina amin'ny mpamoaka",
+  "wallet.activity.copy_refused": "Adikao ny tapakila nolavina",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Tsy mandeha ny harato",
@@ -1464,7 +1492,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Inona ny Cashu?",
   "wallet.explain.intro":
-    "Ecash ho an'ny Bitcoin ny Cashu. Ny tapakila dia andalan-tsoratra mitentina vola ho an'izay mitana azy, nosoniavin'ny mpamoaka tsy nahitany, ka tsy fantany hoe iza no nandany inona. Tsy misy kaonty, tsy misy fidirana.",
+    "Ecash ho an'ny Bitcoin ny Cashu. Ny tapakila dia andalan-tsoratra mitentina vola ho an'izay mitana azy, nosoniavin'ny mpamoaka tsy nahitany, ka tsy fantany hoe iza no nandany inona. Tsy misy kaonty, tsy misy fidirana. Tsy mitazona ny volanao mihitsy ny Airhop: ato amin'ity finday ity ny volanao, ary ireo mpamoaka nofidinao no mamoaka azy.",
   "wallet.explain.send": "Mandefa",
   "wallet.explain.send_desc":
     "Manova sanda ho tapakila azonao atolotra amin'ny teboka akaiky amin'ny Bluetooth, na zaraina ho lahatsoratra. Miasa tsy misy Internet. Mijanona voatokana ny vola madinika mandra-panamafisanao fa tonga izy.",
@@ -1510,6 +1538,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Tsy mety io andian-teny famerenana io.",
   "wallet.svc.phrase_invalid_body":
     "Tadiavo raha misy teny diso soratra na tsy ampy. Manana marika fanamarinana ao anatiny ny andian-teny, ka teny iray diso dia manimba ny rehetra.",
+  "wallet.svc.phrase_unreadable":
+    "Tsy voavaky teto amin'ity findy ity ny andian-teny famerenanao.",
+  "wallet.svc.phrase_unreadable_body":
+    "Tsy nisy niova ary tsy nisy andian-teny vaovao natao. Andramo indray rehefa voavaha ny findy. Mbola mandeha ny ecash-nao mandritra izany.",
   "wallet.svc.need_mint": "Manampia mpamoaka iray farafahakeliny aloha.",
   "wallet.svc.need_mint_body":
     "Miasa amin'ny fanontaniana ny mpamoaka hoe vola madinika inona no nosoniaviny ho anao ny famerenana, ka mila mahafantatra izay hanontaniana izy.",
@@ -1534,10 +1566,27 @@ export const strings: Strings = {
     "Tsy azo tratrarina izao ny mpamoaka mba haka azy ireo. Tsy misy very: raiso indray rehefa mifandray amin'ny aterineto ianao.",
   "wallet.svc.wrong_mint":
     "Tsy nosoniavin'ny mpamoaka notononiny ity tapakila ity.",
+  "wallet.svc.wrong_mint_body":
+    "Farafaharatsiny vola madinika iray no tsy mifanaraka amin'ny lakilen'ny mpamoaka ny soniany. Tsy nisy nampiana.",
+  "wallet.svc.unit_mismatch":
+    "Tsy amin'ny vola notononin'ity tapakila ity ny vola madinika ao anatiny.",
+  "wallet.svc.unit_mismatch_body":
+    "Voamarika ho {label} izy, saingy navoaka tamin'ny {actual} ny sasany amin'ny vola madinika ao aminy. Angataho tapakila vaovao ny mpandefa. Tsy nisy nampiana.",
+  "wallet.svc.locked_other":
+    "Mihidy amin'ny kitapom-bolan'olon-kafa ireto vola madinika ireto.",
+  "wallet.svc.locked_other_body":
+    "Izay nihidiana azy ihany no afaka mandray azy. Tsy nisy nampiana.",
+  "wallet.svc.coins_refused":
+    "Nolavin'ny mpamoaka ireto vola madinika ireto, ka tsy isaina intsony. Tehirizina eto ny tapakila raha te hamerina azy ianao.",
+  "wallet.svc.coins_unredeemable":
+    "Tsy azo vidina amin'ity mpamoaka ity ireto vola madinika ireto, ka tsy isaina intsony. Tehirizina eto ny tapakila raha te hamerina azy ianao.",
+  "wallet.svc.locked_ours_offline":
+    "Mihidy amin'ny kitapom-bolanao ity fandoavam-bola ity.",
+  "wallet.svc.locked_ours_offline_body":
+    "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",
-  "wallet.svc.receiving_offline": "mandray tsy misy Internet",
   "wallet.svc.amount_positive": "Soraty sanda mihoatra ny aotra.",
   "wallet.svc.coins_raced":
     "Vao nampiasain'ny fandoavam-bola hafa ireo vola madinika ireo.",
@@ -2033,7 +2082,8 @@ export const strings: Strings = {
   "settings.tor.custom_empty":
     "Ampio tsipika tetezana iray farafahakeliny aloha.",
   "settings.tor.recovered":
-    "Nakatona ny Tor satria tsy vita ny fanombohana tamin'ny farany. Alefaso indray raha te hanandrana.",
+    "Tsy vita ny fanombohan'ny Tor tamin'ny farany, ka miato ny fifamoivoizana amin'ny aterineto. Andramo indray, na vonoy ny Tor mba hiditra an-tserasera tsy misy azy.",
+  "settings.tor.retry": "Andramo indray",
   "settings.conn.mint_clearnet":
     "Avelao ny fifamoivoizan'ny mpamoaka amin'ny tambajotra misokatra",
   "settings.conn.mint_clearnet_desc":
@@ -2205,9 +2255,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Omeo alalana hiditra amin'ny fakan-tsary ao amin'ny Fandrindrana mba haka sary ny kaody eo amin'ny findinao vaovao.",
   "settings.transfer.confirm_title": "Hamindra amin'ity findy ity?",
-  "settings.transfer.confirm_body":
-    "Hifindra any amin'ny findy mampiseho ity kaody ity ny zava-drehetra eto. Raha vao tonga izany, dia fafana ity findy ity.",
+  "settings.transfer.verify_body":
+    "Tokony hampiseho ireo teny ireo ihany koa ny findinao vaovao. Hifindra any aminy ny zava-drehetra eto, avy eo hofafana ity findy ity.",
   "settings.transfer.confirm_cta": "Afindrao",
+  "settings.transfer.waiting_confirm": "Hamafiso ao amin'ny findinao vaovao",
   "settings.transfer.connecting": "Mifandray amin'ny findinao vaovao",
   "settings.transfer.connecting_hint":
     "Raha mangataka hitady fitaovana ao amin'ny tambajotra eo an-toerana ity findy ity, dia avelao.",
@@ -2270,7 +2321,7 @@ export const strings: Strings = {
   "settings.wipe.desc":
     "Mandrava avy hatrany ny lakile, ny hafatra ary ny ecash rehetra",
   "settings.wipe.body":
-    "Handrava avy hatrany ny lakilenao, ny hafatrao ary ny ecash-nao rehetra izany. Tsy azo averina izany.",
+    "Handrava avy hatrany ny lakilenao, ny hafatrao ary ny ecash-nao rehetra izany. Tsy azo averina izany. Mijanona ao amin'ny galerianao ny sary notehirizinao tao.",
   "settings.wipe.in_progress": "Fafana",
   "settings.wipe.in_progress_body":
     "Ravana ny lakilenao, ny hafatrao ary ny rakitrao. Maharitra segondra vitsivitsy izany, ary vita ho azy na dia mihidy aza ny rindranasa.",
@@ -2337,6 +2388,8 @@ export const strings: Strings = {
     "Jereo ny fanamarihana famoahana ho an'ny kinova {version}",
   "settings.version.tor_paused":
     "Miato ny fitadiavana fanavaozana raha mandeha ny Tor, mba tsy hitsoahan'ny IP-nao. Jereo ao amin'ny mpitety ny pejin'ny famoahana.",
+  "settings.version.internet_off":
+    "Miato ny fanavaozana raha maty ny aterineto. Alefaso ny {setting} ao amin'ny Fikirana.",
   "settings.version.check_failed":
     "Tsy voatady ny fanavaozana. Jereo ny fifandraisanao ary andramo indray.",
   "settings.version.downloading": "Misintona {percent}%",
@@ -2515,6 +2568,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} tsy voamarina",
     other: "{count} tsy voamarina",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "{count} andro lasa izay no nijerena farany ny saram-pandoavana. Raha nampiakatra ny azy ity mpamoaka ity taorian'izay, dia mety ho lafo kely kokoa ny fandefasana.",
+    other:
+      "{count} andro lasa izay no nijerena farany ny saram-pandoavana. Raha nampiakatra ny azy ity mpamoaka ity taorian'izay, dia mety ho lafo kely kokoa ny fandefasana.",
   },
   "wallet.spent_removed_detail": {
     one: "Efa lany ny vola madinika {count}, ka nesorina izy io.",

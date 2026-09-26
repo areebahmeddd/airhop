@@ -58,6 +58,13 @@ private enum LANLiveness {
   static let heartbeat: TimeInterval = 8
   static let deadline: TimeInterval = 30
   static let connectTimeoutSeconds = 5
+  /// A send the peer has not taken for this long ends the link: the same 30 s
+  /// the read side allows, and the Kotlin side's write-stall close.
+  static let persistTimeoutSeconds = 30
+  /// Inbound caps, matching the Kotlin side: twice MAX_LAN_LINKS in
+  /// lan-dial-policy.ts for the mesh, MAX_MOVE_HOSTS for a transfer.
+  static let maxInboundLinks = 16
+  static let maxInboundMoves = 4
 }
 
 private enum LANEvent {
@@ -241,18 +248,25 @@ private final class LANTransport {
     }
   }
 
-  /// Shared by the listener and every dial. `noDelay` because frames are small
-  /// and latency matters more than packing; peer-to-peer so a link-local
-  /// address is reachable as well as a routed one; the connect timeout is the
-  /// only thing that ends a dial a network is silently dropping.
+  /// Shared by the listener, the browser and every dial. `noDelay` because
+  /// frames are small and latency matters more than packing; the connect
+  /// timeout is the only thing that ends a dial a network is silently
+  /// dropping; the persist timeout ends a link whose peer stopped reading,
+  /// which otherwise holds every queued send in memory.
+  ///
+  /// No peer-to-peer (AWDL): the transport is "everyone on this network", and
+  /// Android cannot see AWDL services. A link-local address on the joined
+  /// network is reachable without it. Cellular is refused because nobody else
+  /// is on it, loopback because that is another app on this phone.
   private func tcpParameters() -> NWParameters {
     let parameters = NWParameters.tcp
     if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
       tcp.noDelay = true
       tcp.enableKeepalive = true
       tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+      tcp.persistTimeout = LANLiveness.persistTimeoutSeconds
     }
-    parameters.includePeerToPeer = true
+    parameters.prohibitedInterfaceTypes = [.cellular, .loopback]
     return parameters
   }
 
@@ -419,6 +433,15 @@ private final class LANTransport {
     serviceName: String? = nil,
     onReady: ((LANFailure?) -> Void)? = nil
   ) {
+    // Over the cap an inbound connection is refused at once rather than
+    // queued. Accepted links are the ones with no service name.
+    if direction == "in",
+      links.values.filter({ $0.serviceName == nil }).count >= LANLiveness.maxInboundLinks
+    {
+      AirhopLog.lan.notice("Refused inbound LAN link, past the cap")
+      connection.cancel()
+      return
+    }
     linkSeq += 1
     let linkID = "lan-\(direction)-\(linkSeq)"
     links[linkID] = Link(connection: connection, serviceName: serviceName)
@@ -596,6 +619,8 @@ private enum MoveEvent {
 private final class MoveTransport {
   private struct Connection {
     let connection: NWConnection
+    /// Accepted rather than dialled, for the inbound cap.
+    let inbound: Bool
     var ready = false
     var lastReadAt = ProcessInfo.processInfo.systemUptime
     var closing = false
@@ -614,13 +639,18 @@ private final class MoveTransport {
     self.emit = emit
   }
 
+  /// As LANTransport.tcpParameters. Cellular and loopback are refused here
+  /// too: a code names addresses on the local network, and nothing else may
+  /// connect in.
   private func parameters() -> NWParameters {
     let parameters = NWParameters.tcp
     if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
       tcp.noDelay = true
       tcp.enableKeepalive = true
       tcp.connectionTimeout = LANLiveness.connectTimeoutSeconds
+      tcp.persistTimeout = LANLiveness.persistTimeoutSeconds
     }
+    parameters.prohibitedInterfaceTypes = [.cellular, .loopback]
     return parameters
   }
 
@@ -706,9 +736,15 @@ private final class MoveTransport {
     direction: String,
     onReady: ((String?, LANFailure?) -> Void)?
   ) {
+    let inbound = direction == "in"
+    if inbound, connections.values.filter({ $0.inbound }).count >= LANLiveness.maxInboundMoves {
+      AirhopLog.lan.notice("Refused inbound transfer connection, past the cap")
+      connection.cancel()
+      return
+    }
     seq += 1
     let id = "move-\(direction)-\(seq)"
-    connections[id] = Connection(connection: connection)
+    connections[id] = Connection(connection: connection, inbound: inbound)
     var settled = false
     connection.stateUpdateHandler = { [weak self] state in
       guard let self else { return }
@@ -869,19 +905,21 @@ private final class MoveTransport {
     emit(MoveEvent.closed, ["connectionID": id])
   }
 
-  /// IPv4 on Wi-Fi (en*) and a served hotspot (bridge*). Cellular and tunnels
-  /// carry nobody beside us.
-  static func localHosts() -> [String] {
-    var hosts: [String] = []
+  /// IPv4 address and prefix length on Wi-Fi (en*) and a served hotspot
+  /// (bridge*). Cellular and tunnels carry nobody beside us. The prefix is
+  /// reported, not judged: whether to dial an address is decided in TypeScript.
+  static func localSubnets() -> [(address: String, prefixLength: Int)] {
+    var subnets: [(address: String, prefixLength: Int)] = []
     var head: UnsafeMutablePointer<ifaddrs>?
-    guard getifaddrs(&head) == 0, let first = head else { return hosts }
+    guard getifaddrs(&head) == 0, let first = head else { return subnets }
     defer { freeifaddrs(head) }
     var cursor: UnsafeMutablePointer<ifaddrs>? = first
     while let ifa = cursor {
       defer { cursor = ifa.pointee.ifa_next }
       let flags = Int32(ifa.pointee.ifa_flags)
       guard flags & IFF_UP != 0, flags & IFF_LOOPBACK == 0,
-        let addr = ifa.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET)
+        let addr = ifa.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_INET),
+        let mask = ifa.pointee.ifa_netmask
       else { continue }
       let name = String(cString: ifa.pointee.ifa_name)
       guard name.hasPrefix("en") || name.hasPrefix("bridge") else { continue }
@@ -892,10 +930,27 @@ private final class MoveTransport {
           nil, 0, NI_NUMERICHOST) == 0
       else { continue }
       let host = String(cString: buffer)
-      if host.hasPrefix("169.254.") || hosts.contains(host) { continue }
-      hosts.append(host)
+      if host.hasPrefix("169.254.") || subnets.contains(where: { $0.address == host }) {
+        continue
+      }
+      subnets.append((address: host, prefixLength: prefixLength(of: mask)))
     }
-    return hosts
+    return subnets
+  }
+
+  /// The kernel trims a mask's trailing zero bytes and shortens sa_len to
+  /// match, so only the bytes sa_len covers are read; the rest are zero.
+  private static func prefixLength(of mask: UnsafeMutablePointer<sockaddr>) -> Int {
+    let addressOffset = MemoryLayout.offset(of: \sockaddr_in.sin_addr) ?? 4
+    let end = min(Int(mask.pointee.sa_len), addressOffset + 4)
+    let bytes = UnsafeRawPointer(mask)
+    var bits = 0
+    var offset = addressOffset
+    while offset < end {
+      bits += bytes.load(fromByteOffset: offset, as: UInt8.self).nonzeroBitCount
+      offset += 1
+    }
+    return bits
   }
 }
 
@@ -1020,8 +1075,19 @@ final class AirhopLANModule: RCTEventEmitter {
         reject("MOVE_LISTEN_FAILED", "Could not open the move socket", nil)
         return
       }
-      resolve(["port": Int(port), "hosts": MoveTransport.localHosts()])
+      resolve(["port": Int(port), "hosts": MoveTransport.localSubnets().map(\.address)])
     }
+  }
+
+  @objc(localSubnets:rejecter:)
+  func localSubnets(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(
+      MoveTransport.localSubnets().map {
+        ["address": $0.address, "prefixLength": $0.prefixLength]
+      })
   }
 
   @objc(stopMove:rejecter:)

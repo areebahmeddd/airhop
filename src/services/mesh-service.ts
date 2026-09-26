@@ -40,6 +40,7 @@ import {
   decodeEnvelopePayload,
   encodeEnvelopePayload,
   ENVELOPE_TTL_MS,
+  sealPrologue,
   type SealedEnvelope,
 } from "@core/mesh/courier/courier-store";
 import {
@@ -59,6 +60,7 @@ import {
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import {
+  channelRowID,
   openChannelMessage,
   sealChannelMessage,
 } from "@core/mesh/rooms/channel-crypto";
@@ -88,9 +90,10 @@ import {
   type AssemblyInfo,
   type FragmentProgress,
 } from "@core/mesh/routing/fragment-manager";
+import { HandshakeRateLimiter } from "@core/mesh/routing/handshake-rate-limiter";
 import { originTtl } from "@core/mesh/routing/origin-ttl";
 import { nextHopFor } from "@core/mesh/routing/source-route";
-import { GossipSync } from "@core/mesh/sync/gossip-sync";
+import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
 import { VoiceCaptureSession } from "@core/mesh/voice/voice-capture";
 import { VoicePlayer } from "@core/mesh/voice/voice-player";
@@ -178,9 +181,15 @@ import {
   // the sort of thing that reads correct and is not.
   subscribeCourierDrops as subscribeCourierDropEvents,
 } from "@core/nostr/courier-relay";
+import {
+  geoCardOf,
+  geoCardProven,
+  sealGeoCard,
+} from "@core/nostr/geo-card-proof";
 import { deriveNostrPrivKey, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import { sharedRowID } from "@core/nostr/shared-row-id";
 import {
   decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
@@ -192,16 +201,17 @@ import {
 } from "@core/router/message-router";
 import { t } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
+import { equalBytes } from "@noble/curves/utils.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { stopRingAlert } from "@platform/ring-alert";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { useBoardStore } from "@store/board-store";
+import { isLivePost, useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
-import { useChatStore } from "@store/chat-store";
-import { hasKeys, useContactsStore } from "@store/contacts-store";
+import { MAX_PER_CHANNEL, useChatStore } from "@store/chat-store";
+import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import {
   evictExpiredOwedGroupStates,
   queueOwedGroupState,
@@ -251,6 +261,7 @@ import { ringVerdict } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
 import { RadioController } from "./radio-controller";
+import { ReadAckQueue } from "./read-ack-queue";
 import {
   isLiveVoiceAvailable,
   NativeAudioCapture,
@@ -355,6 +366,9 @@ const MESH_PONG_MIN_INTERVAL_MS = 100;
 // cover a multi-hop round trip.
 const HANDSHAKE_TIMEOUT_MS = 30_000;
 
+// A 32-byte key as stored hex.
+const HEX_32 = /^[0-9a-f]{64}$/;
+
 // How stale a live-voice frame may be before it is treated as a straggler or a
 // replay rather than something anyone should start hearing. Matches bitchat's
 // TransportConfig.pttPublicFrameMaxAgeSeconds (30s).
@@ -394,6 +408,19 @@ const IDENTITY_ELSEWHERE_QUIET_MS = 5 * 60 * 1000;
 // largest non-file Noise payload is a group roster at its 16-member cap, under
 // 3 KiB sealed; a file shorter than this completes before a card could be read.
 const SEALED_FILE_CARD_MIN_BYTES = 8 * 1024;
+
+// Incoming-file cards shown at once. A card costs its forger one unsigned
+// fragment and holds for about 50 s, so without a cap a stream of them fills
+// a thread. Three is as many senders as scenario M02 has sending together.
+const MAX_INBOUND_CARDS = 3;
+
+interface BoundRatchet {
+  session: NoiseSession;
+  // Our side of the handshake that made `session`. Only the responder may seed
+  // a ratchet lazily, since only its ratchet is the receiving one.
+  role: "initiator" | "responder";
+  ratchet: RatchetState | null;
+}
 
 interface PendingHandshake {
   handshake: NoiseHandshake;
@@ -453,10 +480,10 @@ export class MeshService {
   // A remote peer's Nostr pubkey hex to their peerID, filled as ANNOUNCEs arrive.
   private readonly nostrPubkeyToPeerID = new Map<string, string>();
 
-  // Relay jitter and the time-critical TTL cap adapt to how crowded the
-  // Bluetooth mesh is. See LinkRegistry.degree for why that is peers rather
-  // than links, and Bluetooth rather than every transport.
-  private readonly floodRouter = new FloodRouter(() => this.links.degree());
+  // Relay jitter and TTL adapt to how crowded the Bluetooth mesh is. See
+  // LinkRegistry.degree for why that is peers rather than links, and
+  // Bluetooth rather than every transport.
+  private readonly floodRouter: FloodRouter;
   private readonly registry = new PeerRegistry();
   private readonly announceManager = new AnnounceManager();
   private readonly router: MessageRouter;
@@ -555,11 +582,13 @@ export class MeshService {
   private readonly bleClosedAt = new Map<string, number>();
   // In-progress Noise XX handshakes keyed by remote peerID.
   private readonly pendingHandshakes = new Map<string, PendingHandshake>();
+  private readonly handshakeLimiter = new HandshakeRateLimiter();
 
-  // Double Ratchet states keyed by peerID. Only set for Airhop-to-Airhop
-  // sessions (peers who announced a Nostr pubkey). bitchat peers continue
-  // using plain NOISE_ENCRYPTED transport.
-  private readonly drStates = new Map<string, RatchetState>();
+  // Double Ratchet states keyed by peerID, each bound to the Noise session it
+  // was seeded from and ignored under any other (see ratchetFor). The ratchet
+  // is null for a peer that has not shown itself to be Airhop: bitchat peers
+  // keep the plain NOISE_ENCRYPTED transport.
+  private readonly drStates = new Map<string, BoundRatchet>();
 
   // Creator-signed group states owed to a member we could not reach yet, keyed
   // by peerID. A group invite travels inside a Noise session, but you can pick
@@ -570,13 +599,13 @@ export class MeshService {
   // Owed group states live in group-invite-outbox, persisted: in memory only, an
   // app restart lost every invite and rotation a member had not collected yet.
 
-  // Wire message ids received from a peer over the DR path that still owe a read
+  // Wire message ids received from a peer over the mesh that still owe a read
   // receipt, sent when the user opens that conversation. Ephemeral: read
   // receipts are best-effort and need not survive a restart.
-  private readonly pendingReadAcks = new Map<string, Set<string>>();
+  private readonly pendingReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
   // Read receipts owed over Nostr, keyed by the sender's Nostr pubkey hex.
   // Flushed when the user opens that conversation.
-  private readonly pendingNostrReadAcks = new Map<string, Set<string>>();
+  private readonly pendingNostrReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 
   // Fragment reassembly: collects FRAGMENT packets into full packets.
   private readonly fragmentManager = new FragmentManager();
@@ -711,6 +740,9 @@ export class MeshService {
 
   constructor(identity: Identity) {
     this.identity = identity;
+    this.floodRouter = new FloodRouter(hexToBytes(identity.peerID), () =>
+      this.links.degree(),
+    );
     this.nostrPrivKey = deriveNostrPrivKey(identity.signingPrivKey);
     this.nostrPubKeyHex = getPublicKey(this.nostrPrivKey);
     this.radio = new RadioController(identity.peerID);
@@ -823,6 +855,7 @@ export class MeshService {
       // A DM rides only a link held to its recipient (it is never flooded), so
       // without one a refused fragment has nowhere to go.
       (recipientPeerID) => this.links.linkFor(recipientPeerID) !== undefined,
+      () => this.links.degree(),
     );
 
     const nostrSendFn: NostrSendFn = async (
@@ -841,6 +874,7 @@ export class MeshService {
       broadcastFn,
       unicastFn,
       nostrSendFn,
+      () => this.links.degree(),
     );
   }
 
@@ -998,16 +1032,13 @@ export class MeshService {
     // Unicast per connected peer rather than broadcast. That is what lets the
     // receive path tell a solicited replay apart from a stranger replaying
     // recorded traffic: every request is registered against the peer it went
-    // to, and only that peer's IS_RSR packets skip the freshness window. A
-    // broadcast round has no peer to register against, so it is kept only as
-    // the discovery-phase fallback inside GossipSync.
+    // to, and only that peer's IS_RSR packets skip the freshness window.
     this.gossip.start(
       {
         peerID: this.identity.peerID,
         signingPrivKey: this.identity.signingPrivKey,
       },
       {
-        send: sendFn,
         sendToPeer: (peerID, packet) => {
           this.unicastFn(peerID, packet);
         },
@@ -1017,6 +1048,9 @@ export class MeshService {
         getPeers: () => [...this.links.directPeers()],
         onRequest: (peerID) => {
           this.requestSync.registerRequest(peerID);
+        },
+        onTick: (now) => {
+          this.requestSync.prune(now);
         },
       },
     );
@@ -1029,6 +1063,9 @@ export class MeshService {
       this.buildNostrTransport();
     }
     this.chatUnsub = useChatStore.subscribe((state, prev) => {
+      if (state.channels !== prev.channels) {
+        this.dropReadAcksOfClosedThreads(state.channels);
+      }
       if (
         state.channels !== prev.channels ||
         state.channelReach !== prev.channelReach
@@ -1055,8 +1092,17 @@ export class MeshService {
       for (const peerID of Object.keys(state.contacts)) {
         const c = state.contacts[peerID];
         if (c.nostrPubkeyHex === undefined || c.nostrPubkeyHex.length === 0) {
-          const known = this.registry.get(peerID)?.nostrPubkey;
-          if (known) useContactsStore.getState().setNostrPubkey(peerID, known);
+          // Only an npub from an announce whose key is vouched for, the rule
+          // onAnnounce applies.
+          const e = this.registry.get(peerID);
+          const vouched = this.vouchedSigningKey(peerID);
+          if (
+            e?.nostrPubkey !== undefined &&
+            vouched !== undefined &&
+            equalBytes(vouched, e.signingPubKey)
+          ) {
+            useContactsStore.getState().setNostrPubkey(peerID, e.nostrPubkey);
+          }
         } else {
           this.bindNostrPubkey(c.nostrPubkeyHex, peerID, false);
         }
@@ -1466,41 +1512,37 @@ export class MeshService {
   // nor acted on. Relaying one costs everyone downstream airtime and re-seeds
   // an attacker's recording into a mesh that had already forgotten it.
   //
-  // A packet may be older than the window only when it carries IS_RSR and comes
-  // from a peer we asked for a sync, inside the 30s response window. Both halves
-  // are needed: the flag alone is a claim anyone can make.
-  //
-  // The ttl-0 clause covers clients from before IS_RSR existed, which answered a
-  // sync with link-local packets and no flag; bitchat keeps the same allowance.
-  // It still requires a pending request to that peer, so it grants nothing to a
-  // peer we never asked.
+  // IS_RSR is judged on its own, fresh or not, as bitchat-ios does
+  // (BLEIngressPacketGuard): a sync reply stays on the link it was asked on
+  // (ttl 0), comes from the peer on the far end of that link while our request
+  // to it is open, and is a type we asked for within the age we would serve it
+  // for. The flag alone is a claim anyone can make. Everything else is held to
+  // the window, ttl 0 or not.
   private isFreshOrSolicited(packet: Packet, linkID: string): boolean {
     const now = Date.now();
-    if (Math.abs(now - packet.timestamp) <= PACKET_MAX_SKEW_MS) {
-      this.noteFresh();
-      return true;
-    }
-
-    // Sync replays history, so a solicited packet may be old but never dated
-    // ahead of the skew: it would sort after every real message and stay there.
+    // Sync replays history, so a reply may be old but never dated ahead of the
+    // skew: it would sort after every real message and stay there.
     if (packet.timestamp > now + PACKET_MAX_SKEW_MS) {
       this.noteStale(this.links.peerOf(linkID));
       return false;
     }
-    const claimsSolicited = packet.isRSR === true || packet.ttl === 0;
-    if (!claimsSolicited) {
-      this.noteStale(this.links.peerOf(linkID));
-      return false;
+    if (packet.isRSR === true) {
+      // The link's bound peer, not the plaintext senderID: a reply to our
+      // question can only come from whoever we asked it of.
+      const linkPeer = this.links.peerOf(linkID);
+      return (
+        packet.ttl === 0 &&
+        linkPeer !== undefined &&
+        isSyncReplyInWindow(packet, now) &&
+        this.requestSync.isValidResponse(linkPeer, true, now)
+      );
     }
-
-    // Attribute against the peer bound to the link it arrived on rather than
-    // the packet's senderID header, which is plaintext and forgeable. A
-    // solicited response can only come from the peer we asked, and that peer is
-    // the one on the far end of this link.
-    const linkPeer = this.links.peerOf(linkID);
-    if (linkPeer === undefined) return false;
-
-    return this.requestSync.isValidResponse(linkPeer, true, now);
+    if (now - packet.timestamp <= PACKET_MAX_SKEW_MS) {
+      this.noteFresh();
+      return true;
+    }
+    this.noteStale(this.links.peerOf(linkID));
+    return false;
   }
 
   // A late fragment of a transfer already under way. bitchat-ios and
@@ -1586,6 +1628,9 @@ export class MeshService {
   // scoped to the link session goes with it. A peer we still hold another
   // link to has not left.
   private onLinkGone(linkID: string): void {
+    // Pongs are limited per link, so the entry goes with it; otherwise one
+    // stays for every link ever pinged over.
+    this.lastPongAtByLink.delete(linkID);
     const peerID = this.links.close(linkID);
     if (peerID === undefined) return;
     this.registry.markIndirect(peerID);
@@ -1709,29 +1754,11 @@ export class MeshService {
     // then fed into the assembler. When all fragments arrive the reassembled
     // inner packet is routed through routePacket without another flood cycle.
     if (packet.type === PacketType.FRAGMENT) {
-      // A fragment addressed to us has nowhere further to go, so relaying it is
-      // pure cost, and for a file that cost is the whole file.
-      //
-      // Fragments carry their parent's recipientID, so a DM attachment is
-      // directed at exactly one device. Relaying anyway meant the RECEIVER
-      // re-fragmented every byte it had just been handed and pushed it back out
-      // over its other links: a photo takes the WiFi link one way and is then
-      // echoed over Bluetooth at ~18 KiB/s, spending seconds of radio time and
-      // both devices' battery on a copy for the sender. Scenario W-F09 measures
-      // each radio rather than assuming the faster one was chosen.
-      //
-      // Narrow on purpose: only the addressee stops, so middle nodes still relay
-      // and multi-hop is untouched; broadcasts still flood; only FRAGMENT is
-      // affected. Nothing on the wire changes.
-      const addressedToUs =
-        !isBroadcast(packet) &&
-        isForMe(packet, hexToBytes(this.identity.peerID));
-
-      // Fragments inherit the parent packet's version and route, so a routed
-      // file crosses the mesh on the same path its parent planned rather than
-      // falling back to flooding the moment it is split.
+      // Fragments inherit the parent packet's version, route and recipient, so
+      // a routed file crosses the mesh on the path its parent planned, and one
+      // addressed to us stops here (relayDecision) rather than being echoed
+      // back out over every other link.
       this.floodRouter.receive(packet, (relay) => {
-        if (addressedToUs) return;
         this.relayPacket(relay, linkID);
       });
       this.fragmentManager.receive(
@@ -1744,42 +1771,53 @@ export class MeshService {
       return;
     }
 
-    // LEAVE is verified BEFORE the relay, unlike every other type.
-    //
-    // Relaying first and checking later is the right default: a relay carries
-    // traffic for peers whose signing keys it has never seen, and demanding a
-    // key before forwarding would break multi-hop delivery for exactly the
-    // strangers the mesh exists to reach. LEAVE is the one exception. It is an
-    // eviction instruction rather than content, it costs nothing to forge for
-    // any peer ID in earshot, and forwarding one we have already decided to
-    // refuse spends the room's airtime and carries the attack onward to any
-    // node that checks less strictly than we do.
-    //
-    // Dropping the relay costs a legitimate LEAVE that reaches us from a peer
-    // we cannot verify. That is bounded: LEAVE rides ttl 3 while announces
-    // flood at ttl 7 every 15-30s once connected (4s while isolated) and on
-    // every link-up, so a peer close enough for their LEAVE to arrive is a peer
-    // whose announce almost certainly already did. Worst case their row lingers
-    // until it ages out, which is what happens for an ungraceful departure
-    // anyway.
-    if (packet.type === PacketType.LEAVE && !this.leaveIsAuthentic(packet)) {
-      return;
-    }
+    if (!this.mayRelay(packet)) return;
 
-    // All other packet types go through flood routing first.
     // Returns false if already seen: drop silently to prevent loops.
     const isNew = this.floodRouter.receive(packet, (relay) => {
       this.relayPacket(relay, linkID);
     });
     if (!isNew) return;
 
-    // Remember gossipable packets so we can replay them to a peer that missed
-    // them. An announce waits for onAnnounce to verify it: it is the one type
-    // anyone can check, and an invalid one would only take a slot from a real
-    // one. track() ignores types that are never gossiped.
-    if (packet.type !== PacketType.ANNOUNCE) this.gossip.track(packet);
-
+    // A sync reply is advertised as held whatever the handler makes of it, so
+    // the peer does not offer one we refuse again every round.
+    if (packet.isRSR === true) this.gossip.noteReply(packet);
     this.routePacket(packet, linkID);
+  }
+
+  // The checks a packet must pass before it is relayed, and so before dedup.
+  //
+  // Relaying first and checking in the handler is the default: a relay carries
+  // traffic for peers whose keys it has never seen, and demanding one before
+  // forwarding would break multi-hop delivery for exactly the strangers the
+  // mesh exists to reach. bitchat-ios makes four exceptions, handling these
+  // before it schedules a relay and relaying only what its handler accepted
+  // (BLEService.handleReceivedPacket): a file, a board post, a voice frame and
+  // a LEAVE. Each costs nothing to forge under any sender ID in earshot, and a
+  // forged one relayed spends the room's airtime carrying it to nodes that may
+  // check less; a whole file arriving over Wi-Fi or LAN would be cut into
+  // thousands of Bluetooth fragments. Checking before dedup also stops a forged
+  // copy arriving first from taking the packet ID, which leaves the signature
+  // out, and shadowing the genuine one.
+  //
+  // A packet failing here is dropped whole, since each check is also a
+  // precondition of its handler. The cost is a genuine one whose author's
+  // announce never reached us: it stops here, as at a bitchat-ios relay.
+  // Announces flood at ttl 7 every 15-30 s, so that author is rarely unknown
+  // for long.
+  private mayRelay(packet: Packet): boolean {
+    switch (packet.type) {
+      case PacketType.LEAVE:
+        return this.leaveIsAuthentic(packet);
+      case PacketType.FILE_TRANSFER:
+        return this.senderIsAuthentic(packet, bytesToHex(packet.senderID));
+      case PacketType.VOICE_FRAME:
+        return this.voiceFrameIsAuthentic(packet);
+      case PacketType.BOARD_POST:
+        return this.validBoardWire(packet) !== null;
+      default:
+        return true;
+    }
   }
 
   // A packet rebuilt from fragments, held to the rules handleFrame applies to
@@ -1812,11 +1850,13 @@ export class MeshService {
     ) {
       return;
     }
+    // Not relayed, but held to the same gate: each check in it is also a
+    // precondition of its handler, and onVoiceFrame relies on that.
+    if (!this.mayRelay(inner)) return;
     // The same packet may also arrive whole over another radio, or as a second
     // fragment stream from another relay.
     if (!this.floodRouter.admit(inner)) return;
-    // As handleFrame: an announce is tracked once onAnnounce verifies it.
-    if (inner.type !== PacketType.ANNOUNCE) this.gossip.track(inner);
+    if (inner.isRSR === true) this.gossip.noteReply(inner);
     this.routePacket(inner, linkID);
   }
 
@@ -1832,7 +1872,9 @@ export class MeshService {
     // topology so blocking someone doesn't degrade the mesh for everyone
     // routing through us. onAnnounce keeps them out of the peer store itself.
     // Relaying already happened in handleRaw before this point, so a blocked
-    // peer's traffic still forwards for third parties. We never surface it.
+    // peer's traffic still forwards for third parties. We never surface it,
+    // and since handlers keep for sync only what they accept, never carry it
+    // for gossip either.
     if (packet.type !== PacketType.ANNOUNCE) {
       const senderID = bytesToHex(packet.senderID);
       if (useBlockedStore.getState().isBlocked(senderID)) return;
@@ -1915,17 +1957,14 @@ export class MeshService {
 
   // ---- Live push-to-talk ----
 
-  // A burst packet from a nearby talker. Signed like any public message, so an
-  // unsigned or forged frame is dropped before a decoder ever sees it: the
-  // audio path is the last place to be lenient about who sent something.
+  // A burst packet from a nearby talker. Authenticated and dated before it
+  // got here (mayRelay, on both the whole and the reassembled path), so only
+  // this user's own gates remain. Those must not decide the relay: carrying a
+  // burst for others does not depend on what this user is looking at.
   //
   // Blocked senders never reach here (filtered in the dispatch above), and a
-  // device with no audio module simply never builds a player, so a burst it
-  // cannot play costs it one signature check and nothing else.
+  // device with no audio module simply never builds a player.
   private onVoiceFrame(packet: Packet): void {
-    const senderID = bytesToHex(packet.senderID);
-    if (senderID === this.identity.peerID) return;
-
     // Off means off in both directions: no live sending, and nothing plays
     // unprompted either. Someone who turned live voice off should not have a
     // stranger's audio come out of their phone.
@@ -1937,30 +1976,38 @@ export class MeshService {
     // note, which is what carries it to anyone who was not watching.
     if (this.audibleChannel !== BRIDGE_CHANNEL) return;
 
-    // Live means live. A signature proves who spoke, never when: the signing
-    // preimage normalises ttl and isRSR, so a burst captured off the air
-    // replays byte-for-byte and verifies perfectly. The deduplicator is not a
-    // defence here - its window is five minutes and its state is per device, so
-    // it does nothing at all for a phone that never heard the original. Without
-    // this, someone could record Alice in one room and play her voice out of
-    // strangers' phones days later, attributed to her and presented as live.
-    //
-    // 30s matches bitchat's TransportConfig.pttPublicFrameMaxAgeSeconds, and
-    // the broadcast requirement matches BLEPacketFreshnessPolicy
-    // .isBroadcastRecipient; BLEService.handleVoiceFrame applies both before it
-    // even checks the signature. Generous next to the couple of seconds a frame
-    // needs to cross the mesh, and tight enough that a burst cannot outlive the
-    // moment it was spoken.
-    if (!isBroadcast(packet)) return;
-    if (Math.abs(Date.now() - packet.timestamp) > PTT_FRAME_MAX_AGE_MS) return;
-
-    const signingKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingKey === undefined || !verifyPacket(packet, signingKey)) return;
-
     const player = this.ensurePttPlayer();
     if (player === null) return;
-    player.handlePacket(packet, senderID);
+    player.handlePacket(packet, bytesToHex(packet.senderID));
     this.reportPttActivity();
+  }
+
+  // Whether a burst packet is live and really from the talker it names. Signed
+  // like any public message, so an unsigned or forged frame never reaches a
+  // decoder: the audio path is the last place to be lenient about who sent
+  // something.
+  //
+  // Live means live. A signature proves who spoke, never when: the signing
+  // preimage normalises ttl and isRSR, so a burst captured off the air replays
+  // byte-for-byte and verifies perfectly. The deduplicator is no defence: its
+  // window is five minutes and its state is per device, so it does nothing for
+  // a phone that never heard the original. Without this, someone could record
+  // Alice in one room and play her voice out of strangers' phones days later,
+  // attributed to her and presented as live.
+  //
+  // 30 s is bitchat-ios TransportConfig.pttPublicFrameMaxAgeSeconds, and the
+  // broadcast and not-self rules are its BLEService.handleVoiceFrame's, all
+  // applied before the signature. Generous next to the couple of seconds a
+  // frame needs to cross the mesh, and tight enough that a burst cannot
+  // outlive the moment it was spoken.
+  private voiceFrameIsAuthentic(packet: Packet): boolean {
+    const senderID = bytesToHex(packet.senderID);
+    if (senderID === this.identity.peerID) return false;
+    if (!isBroadcast(packet)) return false;
+    if (Math.abs(Date.now() - packet.timestamp) > PTT_FRAME_MAX_AGE_MS) {
+      return false;
+    }
+    return this.senderIsAuthentic(packet, senderID);
   }
 
   private ensurePttPlayer(): VoicePlayer | null {
@@ -2113,6 +2160,7 @@ export class MeshService {
       {
         senderPeerID: this.identity.peerID,
         signingPrivKey: this.identity.signingPrivKey,
+        getDegree: () => this.links.degree(),
         onPacket: (packet) => {
           // broadcastPacket marks the packet as originated here, so our own
           // burst is never relayed back to us. It is deliberately not gossiped:
@@ -2251,6 +2299,18 @@ export class MeshService {
     return p;
   }
 
+  // File a handshake attempt, first dropping every attempt past its timeout.
+  // Responder entries are never looked up on the send path, so without this a
+  // msg1 whose sender never answers would stay here for good. With the
+  // inbound-msg1 budget it bounds the map to about a timeout's worth.
+  private storePendingHandshake(peerID: string, entry: PendingHandshake): void {
+    const cutoff = entry.startedAt - HANDSHAKE_TIMEOUT_MS;
+    for (const [id, p] of this.pendingHandshakes) {
+      if (p.startedAt < cutoff) this.pendingHandshakes.delete(id);
+    }
+    this.pendingHandshakes.set(peerID, entry);
+  }
+
   // Whether a completed Noise session's authenticated remote static key derives
   // to the peerID it claims to be. peerID = first 16 hex of SHA-256(staticPub),
   // the same derivation used everywhere else (identity.ts, prekey ownership). An
@@ -2291,11 +2351,22 @@ export class MeshService {
       // of both sides flipping to responder and deadlocking. Otherwise fall
       // through and (re)start as responder (peer restart, a stale attempt of ours,
       // or we are the higher-sorting ID and must yield).
+      //
+      // The claimed sender is unauthenticated, so a forged msg1 under a peer's
+      // ID replaces a live responder attempt, or our initiator attempt when we
+      // sort higher, and that peer's genuine reply then finds a handshake it
+      // does not belong to. bitchat-ios yields the same way. The rate limit
+      // bounds it, and the next attempt, or the outbox, recovers.
       if (
         prior?.role === "initiator" &&
         Date.now() - prior.startedAt <= HANDSHAKE_TIMEOUT_MS &&
         this.identity.peerID < senderID
       ) {
+        return;
+      }
+      // Before any key work: every msg1 costs two DH operations, a stored
+      // attempt and a reply flooded at TTL 7.
+      if (!this.handshakeLimiter.allowInboundInitiation(senderID, Date.now())) {
         return;
       }
       const carriedText = prior?.pendingText ?? [];
@@ -2305,7 +2376,7 @@ export class MeshService {
         );
         hs.readMsg1(packet.payload);
         const msg2 = hs.writeMsg2(); // 96 bytes
-        this.pendingHandshakes.set(senderID, {
+        this.storePendingHandshake(senderID, {
           handshake: hs,
           role: "responder",
           pendingText: carriedText,
@@ -2325,93 +2396,117 @@ export class MeshService {
     // A 96/64-byte payload is a msg2/msg3 continuation; it is only meaningful
     // against a handshake we already have in flight. (No staleness check here:
     // a late-but-valid reply over several hops should still complete.)
+    //
+    // Each one is read on a clone. Anyone who saw our msg1 can answer it with a
+    // valid msg2 under their own static key, and a garbled one fails only after
+    // the transcript was mixed, so reading into the pending handshake would let
+    // either kill it before the genuine reply lands. A failure keeps the
+    // original for that reply; only a bound session replaces it.
     const pending = this.pendingHandshakes.get(senderID);
     if (!pending) return;
+    const expected = pending.role === "initiator" ? 96 : 64;
+    if (packet.payload.length !== expected) return;
+    if (!this.handshakeLimiter.allow(senderID, Date.now())) return;
+    const hs = pending.handshake.clone();
 
     if (pending.role === "initiator") {
       // Initiator path: this is msg2 (96 bytes) from the responder.
-      if (packet.payload.length !== 96) return;
+      let msg3: Uint8Array;
+      let session: NoiseSession;
       try {
-        pending.handshake.readMsg2(packet.payload);
-        const msg3 = pending.handshake.writeMsg3(); // 64 bytes
-        const session = pending.handshake.split();
-        // Identity binding (bitchat NoiseSessionManager, #1432): the completed
-        // session's static key MUST derive to the claimed senderID. Otherwise a
-        // peer that answered under someone else's ID could bind a session to an
-        // identity it does not own. Abort without sending msg3 or touching state.
-        if (!this.sessionBindsTo(session, senderID)) {
-          this.pendingHandshakes.delete(senderID);
-          return;
-        }
-        this.registry.setSession(senderID, session);
-
-        // msg3 FIRST. Nothing encrypted under this session may go out before
-        // it, because until msg3 lands the far side has no session to decrypt
-        // with and will silently drop whatever arrives.
-        //
-        // We complete on msg2, one message earlier than the responder does, so
-        // there is a window where we believe the session is live and they do
-        // not. Anything sent into that window is lost without a trace: no
-        // error, no receipt, nothing to retry against. The queued-text flush
-        // below was already ordered correctly for this reason; what was not was
-        // tryInitDR (which flushes the OUTBOX) and flushPendingGroupInvites,
-        // both of which ran before msg3 was even written to the radio. That is
-        // why a first-contact DM to someone who had walked away never arrived
-        // when they came back, and why a group invite needed an existing
-        // conversation to land reliably.
-        const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
-        this.unicastFn(senderID, msg3Pkt);
-
-        // Now that the far side can decrypt, prove who we are before anything
-        // else rides the session. Order matters: the proof is what binds our
-        // signing key to this peer ID for the far side, so sending content
-        // first would have it arrive attributed only by trust-on-first-use.
-        this.sendPeerState(senderID);
-
-        // Then seed the ratchet and release everything that was waiting.
-        this.tryInitDR(senderID, "initiator", session.exporterSecret);
-        this.flushPendingGroupInvites(senderID);
-        // Flush queued messages. Use this.sendDm so they go through DR if ready.
-        const queued = pending.pendingText.slice();
-        this.pendingHandshakes.delete(senderID);
-        for (const q of queued) this.sendDm(senderID, q.text, q.messageID);
+        hs.readMsg2(packet.payload);
+        msg3 = hs.writeMsg3(); // 64 bytes
+        session = hs.split();
       } catch {
-        this.pendingHandshakes.delete(senderID);
+        return;
+      }
+      // Identity binding (bitchat NoiseSessionManager, #1432): the completed
+      // session's static key MUST derive to the claimed senderID. Otherwise a
+      // peer that answered under someone else's ID could bind a session to an
+      // identity it does not own. Abort without sending msg3 or touching state.
+      if (!this.sessionBindsTo(session, senderID)) return;
+      this.pendingHandshakes.delete(senderID);
+      this.adoptSession(senderID, session);
+
+      // msg3 FIRST. Nothing encrypted under this session may go out before
+      // it, because until msg3 lands the far side has no session to decrypt
+      // with and will silently drop whatever arrives.
+      //
+      // We complete on msg2, one message earlier than the responder does, so
+      // there is a window where we believe the session is live and they do
+      // not. Anything sent into that window is lost without a trace: no
+      // error, no receipt, nothing to retry against. That covers tryInitDR
+      // (which flushes the OUTBOX) and flushPendingGroupInvites as much as the
+      // queued text.
+      const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
+      this.unicastFn(senderID, msg3Pkt);
+
+      // Now that the far side can decrypt, prove who we are before anything
+      // else rides the session. Order matters: the proof is what binds our
+      // signing key to this peer ID for the far side, so sending content
+      // first would have it arrive attributed only by trust-on-first-use.
+      this.sendPeerState(senderID);
+
+      // Then seed the ratchet and release everything that was waiting.
+      this.tryInitDR(senderID, "initiator", session);
+      this.flushPendingGroupInvites(senderID);
+      // Flush queued messages. Use this.sendDm so they go through DR if ready.
+      for (const q of pending.pendingText) {
+        this.sendDm(senderID, q.text, q.messageID);
       }
       return;
     }
 
-    if (pending.role === "responder") {
-      // Responder path: this is msg3 (64 bytes) from the initiator.
-      if (packet.payload.length !== 64) return;
-      try {
-        pending.handshake.readMsg3(packet.payload);
-        const session = pending.handshake.split();
-        // Identity binding (bitchat #1432): reject a completed handshake whose
-        // static key does not derive to the claimed senderID, so a forged msg1
-        // claiming a victim's peerID cannot complete with the attacker's own key
-        // and evict/hijack the victim's real session. Drop without touching the
-        // existing session.
-        if (!this.sessionBindsTo(session, senderID)) {
-          this.pendingHandshakes.delete(senderID);
-          return;
-        }
-        this.registry.setSession(senderID, session);
-        // Prove our identity first, for the same reason as the initiator path.
-        this.sendPeerState(senderID);
-        // Seed the Double Ratchet for Airhop-to-Airhop sessions.
-        this.tryInitDR(senderID, "responder", session.exporterSecret);
-        this.flushPendingGroupInvites(senderID);
-        // Flush any DMs carried over from an initiator->responder reset. Normal
-        // responders have none; only a simultaneous-initiation flip queues them.
-        const queued = pending.pendingText.slice();
-        this.pendingHandshakes.delete(senderID);
-        for (const q of queued) this.sendDm(senderID, q.text, q.messageID);
-        return;
-      } catch {
-        this.pendingHandshakes.delete(senderID);
-      }
+    // Responder path: this is msg3 (64 bytes) from the initiator.
+    let session: NoiseSession;
+    try {
+      hs.readMsg3(packet.payload);
+      session = hs.split();
+    } catch {
+      return;
     }
+    // Identity binding (bitchat #1432): reject a completed handshake whose
+    // static key does not derive to the claimed senderID, so a forged msg1
+    // claiming a victim's peerID cannot complete with the attacker's own key
+    // and evict/hijack the victim's real session. Drop without touching the
+    // existing session.
+    if (!this.sessionBindsTo(session, senderID)) return;
+    this.pendingHandshakes.delete(senderID);
+    this.adoptSession(senderID, session);
+    // Prove our identity first, for the same reason as the initiator path.
+    this.sendPeerState(senderID);
+    // Seed the Double Ratchet for Airhop-to-Airhop sessions.
+    this.tryInitDR(senderID, "responder", session);
+    this.flushPendingGroupInvites(senderID);
+    // Flush any DMs carried over from an initiator->responder reset. Normal
+    // responders have none; only a simultaneous-initiation flip queues them.
+    for (const q of pending.pendingText) {
+      this.sendDm(senderID, q.text, q.messageID);
+    }
+  }
+
+  // File a completed, bound session. A session needs a registry entry, and a
+  // contact whose announces onAnnounce refuses (their key contradicts the
+  // stored one) has none. The session itself proves the Noise key, so the
+  // entry is seeded from the contact and the handshake still settles which
+  // key is theirs: the 0x21 that follows replaces the seeded one if it is
+  // wrong. Anyone else without an entry has never announced, as before.
+  private adoptSession(peerID: string, session: NoiseSession): void {
+    const contact = useContactsStore.getState().getContact(peerID);
+    const contactKey = this.contactSigningKey(peerID);
+    if (
+      this.registry.pinnedSigningKey(peerID) === undefined &&
+      contact !== undefined &&
+      contactKey !== undefined
+    ) {
+      this.registry.update({
+        peerID,
+        noisePubKey: session.remoteStaticPubKey,
+        signingPubKey: contactKey,
+        nickname: contact.nickname,
+      });
+    }
+    this.registry.setSession(peerID, session);
   }
 
   // Sealed traffic arrived from a peer we hold no session with. They still
@@ -2438,12 +2533,13 @@ export class MeshService {
     // can send at all (a location pin, an owed group state) have no other way
     // to open one.
     if (this.links.size() === 0) return;
+    if (!this.handshakeLimiter.allow(peerID, Date.now())) return;
     try {
       const hs = NoiseHandshake.createInitiator(
         this.identity.noiseStaticPrivKey,
       );
       const msg1 = hs.writeMsg1();
-      this.pendingHandshakes.set(peerID, {
+      this.storePendingHandshake(peerID, {
         handshake: hs,
         role: "initiator",
         pendingText: [],
@@ -2472,56 +2568,79 @@ export class MeshService {
     }
   }
 
-  // Initialize a Double Ratchet state from the Noise XX handshake that just
-  // completed. Only activated for Airhop peers (those that announced a Nostr
-  // pubkey); bitchat nodes don't understand DR_ENCRYPTED and must keep using
-  // NOISE_ENCRYPTED.
+  // Bind a Double Ratchet to the Noise XX session that just completed,
+  // replacing whatever the previous session left. Seeded only for Airhop peers
+  // (those that announced a Nostr pubkey); bitchat nodes don't understand
+  // DR_ENCRYPTED and must keep using NOISE_ENCRYPTED.
   private tryInitDR(
     peerID: string,
     role: "initiator" | "responder",
-    exporterSecret: Uint8Array,
+    session: NoiseSession,
   ): void {
-    const peer = this.registry.get(peerID);
     // The nostrPubkey field is only populated from ANNOUNCE TLV 0x07, which
-    // bitchat-ios and bitchat-android never send (0x05 and 0x06 are their capabilities
-    // and bridge-cell tags, which we decode and ignore). It is a reliable
-    // Airhop indicator.
+    // bitchat-ios and bitchat-android never send (0x05 and 0x06 are their
+    // capabilities and bridge-cell tags, which we decode and ignore). It is a
+    // reliable Airhop indicator. Read past the reachability TTL: a peer whose
+    // last announce is a minute old still completed this handshake.
     // A peer without it keeps the plain Noise transport, still a valid route,
     // hence the flush below runs either way.
-    if (peer?.nostrPubkey && peer.noisePubKey) {
-      // The root key comes from the handshake's EXPORTER SECRET: a value that
-      // descends from the Noise chaining key, so it depends on the ephemeral DH
-      // outputs and no observer can reconstruct it.
-      //
-      // It must not come from the transcript hash. The tempting reasoning is
-      // wrong in a specific way worth recording: Noise XX does mix both
-      // parties' ephemeral keys into the
-      // handshake, but it mixes the ephemeral PUBLIC keys into the hash `h` via
-      // mixHash, while the secret DH outputs go into the chaining key `ck` via
-      // mixKey. Every input to `h` is a byte that was transmitted in the clear,
-      // so anyone who captured the three handshake packets - which flood the
-      // mesh at TTL 7, so that is anyone in the room, not just the two peers -
-      // could recompute the root key exactly, derive the receiving chain, and
-      // forge or read DR messages. `ck` is the half that is actually secret.
-      //
-      // The original goal still holds and is still met: a static-static seed
-      // would have been recoverable forever from long-term keys alone, and the
-      // exporter secret is not, because the ephemeral private keys that shaped
-      // `ck` are destroyed when the handshake splits.
-      const rootKey = hkdf(sha256, exporterSecret, undefined, DR_SEED_INFO, 32);
-
-      this.drStates.set(
-        peerID,
-        role === "initiator"
-          ? initSender(rootKey, peer.noisePubKey)
-          : initReceiver(rootKey, this.identity.noiseStaticPrivKey),
-      );
-    }
+    const airhop = this.registry.nostrPubkeyFor(peerID) !== undefined;
+    this.drStates.set(peerID, {
+      session,
+      role,
+      ratchet: airhop ? this.seedRatchet(role, session) : null,
+    });
 
     // The handshake just completed, so an encrypted route now exists where
     // there wasn't one, so deliver anything queued for this peer immediately
     // rather than waiting up to 30s for their next ANNOUNCE.
     this.flushOutbox(peerID);
+  }
+
+  private seedRatchet(
+    role: "initiator" | "responder",
+    session: NoiseSession,
+  ): RatchetState {
+    // The root key comes from the handshake's EXPORTER SECRET: a value that
+    // descends from the Noise chaining key, so it depends on the ephemeral DH
+    // outputs and no observer can reconstruct it.
+    //
+    // It must not come from the transcript hash. The tempting reasoning is
+    // wrong in a specific way worth recording: Noise XX does mix both
+    // parties' ephemeral keys into the
+    // handshake, but it mixes the ephemeral PUBLIC keys into the hash `h` via
+    // mixHash, while the secret DH outputs go into the chaining key `ck` via
+    // mixKey. Every input to `h` is a byte that was transmitted in the clear,
+    // so anyone who captured the three handshake packets - which flood the
+    // mesh at TTL 7, so that is anyone in the room, not just the two peers -
+    // could recompute the root key exactly, derive the receiving chain, and
+    // forge or read DR messages. `ck` is the half that is actually secret.
+    //
+    // The original goal still holds and is still met: a static-static seed
+    // would have been recoverable forever from long-term keys alone, and the
+    // exporter secret is not, because the ephemeral private keys that shaped
+    // `ck` are destroyed when the handshake splits.
+    const rootKey = hkdf(
+      sha256,
+      session.exporterSecret,
+      undefined,
+      DR_SEED_INFO,
+      32,
+    );
+    return role === "initiator"
+      ? initSender(rootKey, session.remoteStaticPubKey)
+      : initReceiver(rootKey, this.identity.noiseStaticPrivKey);
+  }
+
+  // The ratchet for a peer, only while the session it was seeded from is the
+  // one we hold. A ratchet from an earlier session would seal to a chain the
+  // peer no longer has, so it counts as none.
+  private ratchetFor(peerID: string): RatchetState | undefined {
+    const bound = this.drStates.get(peerID);
+    if (bound?.ratchet == null) return undefined;
+    return bound.session === this.registry.sessionFor(peerID)
+      ? bound.ratchet
+      : undefined;
   }
 
   // Decrypt an incoming NOISE_ENCRYPTED DM. This is the path a bitchat peer's
@@ -2943,6 +3062,18 @@ export class MeshService {
     // A half-understood identity proof is worth less than none.
     if (state === null) return;
 
+    // A key a human verified is re-pinned only by another in-person scan, not
+    // by a session, however well it proves possession of the Noise key.
+    const contactKey = this.contactSigningKey(peerID);
+    if (
+      contactKey !== undefined &&
+      !equalBytes(contactKey, state.signingPubKey) &&
+      isVerified(useContactsStore.getState().getContact(peerID))
+    ) {
+      return;
+    }
+
+    const pinned = this.registry.pinnedSigningKey(peerID);
     const accepted = this.registry.setAuthenticatedState(
       peerID,
       state.signingPubKey,
@@ -2951,6 +3082,17 @@ export class MeshService {
     // Two different proven keys for one peer ID cannot both be real. The first
     // stands; this session is talking to something that is not who it was.
     if (!accepted) return;
+
+    const session = this.registry.sessionFor(peerID);
+    // The key we were checking this peer against was not theirs, so any
+    // prekey bundle accepted under it may be someone else's, sealing our
+    // courier mail to them. The next genuine bundle replaces it.
+    const corrected = [pinned, contactKey].some(
+      (k) => k !== undefined && !equalBytes(k, state.signingPubKey),
+    );
+    if (corrected && session !== undefined) {
+      this.peerPrekeys.forget(session.remoteStaticPubKey);
+    }
 
     // Mirrored so the contact sheet re-renders the moment the proof lands.
     usePeerStore
@@ -2966,13 +3108,14 @@ export class MeshService {
     // The Noise key travels with it because a contact saved while the peer was
     // unheard holds neither and a safety number needs both. One fact proves the
     // pair: this packet arrived inside a session bound to the peer ID.
-    const proven = this.registry.get(peerID);
-    if (proven !== undefined) {
+    //
+    // And onto one whose unverified keys this proof contradicts, correcting it.
+    if (session !== undefined) {
       useContactsStore
         .getState()
         .setProvenKeys(
           peerID,
-          bytesToHex(proven.noisePubKey),
+          bytesToHex(session.remoteStaticPubKey),
           bytesToHex(state.signingPubKey),
         );
     }
@@ -3102,9 +3245,7 @@ export class MeshService {
     // Acknowledge delivery now; queue the read receipt until the user opens the
     // conversation. Both ride back over the same Noise session.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, pm.messageID);
-    const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
-    pending.add(pm.messageID);
-    this.pendingReadAcks.set(senderID, pending);
+    this.pendingReadAcks.add(senderID, pm.messageID);
   }
 
   // Decrypt an incoming DR_ENCRYPTED DM (Airhop-to-Airhop only).
@@ -3118,19 +3259,31 @@ export class MeshService {
     // Blocked: drop silently, before spending a ratchet step on it. A
     // block means "stop hearing from this peer," not just "hide them."
     if (useBlockedStore.getState().isBlocked(senderID)) return;
+    // The ratchet header is cleartext. DR packets are sent signed, and a
+    // forgery must be refused before it gets anywhere near ratchet state.
+    if (!this.senderIsAuthentic(packet, senderID)) return;
 
-    const state = this.drStates.get(senderID);
-    if (!state) {
+    const session = this.registry.sessionFor(senderID);
+    if (session === undefined) {
       this.recoverSession(senderID);
       return;
+    }
+    const bound = this.drStates.get(senderID);
+    if (bound === undefined || bound.session !== session) return;
+    // A signed DR packet under a session we seeded no ratchet for: the peer
+    // knew we were Airhop when we did not yet know it was. A receiver ratchet
+    // cannot send first, so the sender is this session's initiator, and only
+    // as its responder can we seed the matching receiving side.
+    if (bound.ratchet === null) {
+      if (bound.role !== "responder") return;
+      bound.ratchet = this.seedRatchet("responder", session);
     }
 
     let plaintext: Uint8Array;
     try {
-      plaintext = ratchetDecrypt(state, packet.payload);
+      plaintext = ratchetDecrypt(bound.ratchet, packet.payload);
     } catch {
-      // Decryption failure: wrong session key, replayed message, or out-of-order
-      // beyond the skipped-message window. Drop silently.
+      this.healRatchet(senderID, bound.ratchet);
       return;
     }
 
@@ -3173,9 +3326,23 @@ export class MeshService {
     // Tell the sender it arrived, and remember to send a read receipt when the
     // user opens this conversation. Both are best-effort over the same DR link.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
-    const pending = this.pendingReadAcks.get(senderID) ?? new Set<string>();
-    pending.add(payload.messageId);
-    this.pendingReadAcks.set(senderID, pending);
+    this.pendingReadAcks.add(senderID, payload.messageId);
+  }
+
+  // A signed DR packet that will not decrypt. Decrypt leaves the ratchet
+  // untouched on failure, forgeries fail the signature, and replays stop at
+  // dedup and the freshness window, so what is left is two ratchets out of
+  // step, which only a new session repairs. Taken only on a key the peer
+  // proved in a session: an announce pin is forgeable, and would let whoever
+  // won it tear our sessions down. And not before this ratchet has received
+  // anything, since a message sealed under the previous session can still be
+  // in flight. The new handshake runs under the handshake rate limit.
+  private healRatchet(peerID: string, ratchet: RatchetState): void {
+    if (ratchet.CKr === null) return;
+    if (this.registry.provenSigningKey(peerID) === undefined) return;
+    this.registry.clearSession(peerID);
+    this.drStates.delete(peerID);
+    this.ensureNoiseSession(peerID);
   }
 
   // Send a delivery/read receipt back to a message's sender over the Double
@@ -3191,7 +3358,7 @@ export class MeshService {
     // secrecy. bitchat (and any Noise-only peer) has no ratchet, so fall back to
     // a receipt over the plain Noise session in bitchat's format. The type-byte
     // values are shared (0x02 read, 0x03 delivered), so no remapping is needed.
-    const state = this.drStates.get(peerID);
+    const state = this.ratchetFor(peerID);
     // canEncrypt, not merely "a ratchet exists". The side that ANSWERED the
     // Noise handshake is initialised as a receiver and has no sending chain
     // until the initiator's first ratchet message arrives, so encrypting would
@@ -3210,12 +3377,8 @@ export class MeshService {
   // Covers both the BLE (Double Ratchet / Noise) queue and the Nostr queue, so a
   // DM that arrived over the internet is acknowledged over the internet.
   sendReadReceipts(peerID: string): void {
-    const pending = this.pendingReadAcks.get(peerID);
-    if (pending !== undefined && pending.size > 0) {
-      for (const messageId of pending) {
-        this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
-      }
-      pending.clear();
+    for (const messageId of this.pendingReadAcks.take(peerID)) {
+      this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
     }
 
     // Nostr read acks: the conversation is keyed either by the sender's Nostr
@@ -3228,18 +3391,30 @@ export class MeshService {
       // main Nostr identity. The two ack queues are disjoint, so flushing both
       // is safe.
       this.geoChannels?.sendGeoReadReceipts(nostrPubkey);
-      const nostrPending = this.pendingNostrReadAcks.get(nostrPubkey);
-      if (nostrPending !== undefined && nostrPending.size > 0) {
-        for (const messageId of nostrPending) {
-          this.publishNostrAck(
-            nostrPubkey,
-            NoisePayloadType.READ_RECEIPT,
-            messageId,
-          );
-        }
-        nostrPending.clear();
+      for (const messageId of this.pendingNostrReadAcks.take(nostrPubkey)) {
+        this.publishNostrAck(
+          nostrPubkey,
+          NoisePayloadType.READ_RECEIPT,
+          messageId,
+        );
       }
     }
+  }
+
+  // A deleted or blocked thread owes no receipts. Kept, its IDs would go out
+  // for bubbles that no longer exist the moment a new thread opened under the
+  // same peer. A Nostr sender's thread is keyed by their mapped peer ID, or by
+  // `nostr_` and their pubkey (see the gift-wrap inbox).
+  private dropReadAcksOfClosedThreads(channels: readonly string[]): void {
+    const open = new Set(channels);
+    this.pendingReadAcks.retain((peerID) => open.has(`dm:${peerID}`));
+    this.pendingNostrReadAcks.retain((pubkey) => {
+      const peerID = this.nostrPubkeyToPeerID.get(pubkey);
+      return (
+        open.has(`dm:nostr_${pubkey}`) ||
+        (peerID !== undefined && open.has(`dm:${peerID}`))
+      );
+    });
   }
 
   // Build a NOISE_HANDSHAKE unicast packet from our identity.
@@ -3307,7 +3482,6 @@ export class MeshService {
     // signature". bitchat treats these as two distinct rejections
     // (.missingSignature / .invalidSignature) and refuses both.
     if (!verifyPacket(packet, info.signingPubKey)) return;
-    this.gossip.track(packet);
 
     // A blocked peer's announces still resolve transport-level routing
     // (below) so a Block doesn't itself break the mesh for other peers
@@ -3355,6 +3529,33 @@ export class MeshService {
       this.links.kindOf(linkID) !== undefined &&
       (boundPeer === undefined || boundPeer === peerID);
 
+    // The pin is decided here, before anything is written: an announce whose
+    // signing key contradicts the one we already hold for this peer is refused
+    // whole, as bitchat-ios refuses it (BLEAnnounceHandler falls back to the
+    // persisted identity when the registry has no pin). Consulting the saved
+    // contact is what makes a restart safe: the registry starts empty, and
+    // without it whoever announced a contact's ID first was pinned as them.
+    //
+    // Refused whole, nickname and Nostr key included, since they come from the
+    // same unverified source. What cannot be settled from here is which of two
+    // keys is right when nobody has proven or verified the one we hold: an
+    // announce pinned first, or a contact's key from a link card, may be the
+    // forgery. A session settles it, so a direct announce opens one: only the
+    // holder of the Noise private key completes it, and its 0x21 proof then
+    // replaces the wrong key (onAuthenticatedPeerState).
+    const held = this.knownSigningKey(peerID);
+    if (held !== undefined && !equalBytes(held, info.signingPubKey)) {
+      if (
+        isDirectAnnounce &&
+        this.registry.provenSigningKey(peerID) === undefined &&
+        !isVerified(useContactsStore.getState().getContact(peerID))
+      ) {
+        this.ensureNoiseSession(peerID);
+      }
+      return;
+    }
+    this.gossip.track(packet);
+
     if (isDirectAnnounce) {
       // The binding is what lets a send prefer the higher-throughput radio for
       // attachments and DR messages.
@@ -3371,13 +3572,23 @@ export class MeshService {
     const nostrPubkeyHex = info.nostrPubKey
       ? bytesToHex(info.nostrPubKey)
       : undefined;
+    // Persist the npub onto their contact so it survives this peer leaving
+    // Bluetooth range (the registry entry expires 60s after their radio goes
+    // quiet), and map it for inbound Nostr DMs. For a contact, only from an
+    // announce signed by a key a session or the contact itself stands behind:
+    // a contact keeps the first npub it is given, and one planted by whoever
+    // announced first would send our Nostr DMs to them and file theirs in the
+    // contact's thread. A stranger has nothing but announces, so their npub
+    // maps as their key pins, first come.
     if (nostrPubkeyHex) {
-      // Persist the npub onto their contact (if we have one) so it survives this
-      // peer leaving Bluetooth range: the registry entry above expires 60s after
-      // their radio goes quiet, but a durable contact keeps the key so a later
-      // DM can still fall back to Nostr. No-op for strangers we haven't saved.
-      useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
-      this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
+      const vouched = this.vouchedSigningKey(peerID) !== undefined;
+      const contact = useContactsStore.getState().getContact(peerID);
+      if (vouched) {
+        useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
+      }
+      if (vouched || contact === undefined) {
+        this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
+      }
     }
     this.registry.update({
       peerID,
@@ -3450,32 +3661,25 @@ export class MeshService {
   // replay the requester turns out to already hold (GCS filters allow false
   // positives, never false negatives, so we may over-send slightly, never
   // under-send).
+  //
+  // The answer can replay the whole store, so only a request that is plainly
+  // the link peer's own is answered, as bitchat-ios answers
+  // (BLEService.handleRequestSync, BLEIngressLinkRegistry): link-local (ttl 0;
+  // one with headroom was crafted or relayed), from the peer this link is bound
+  // to, and signed by it. The budget is then that peer's alone. Neither
+  // implementation sends a request before verifying the far side's announce,
+  // which is what binds the link, so this refuses nothing either sends.
   private onRequestSync(packet: Packet, linkID: string): void {
+    if (packet.ttl !== 0) return;
     const senderID = bytesToHex(packet.senderID);
-
-    // Verify when we can, never require. A REQUEST_SYNC carries no content and
-    // every packet it draws back is independently verified by the requester, so
-    // a forged request cannot inject anything. The risk is amplification, which
-    // the rate limiter below bounds.
-    //
-    // Requiring a signature would break first contact, where a peer's sync
-    // round arrives before its ANNOUNCE and we hold no key to check it with.
-    // bitchat does not gate on it either. A signature that is present and wrong
-    // is a different matter, and is refused.
-    const signingKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingKey !== undefined && (packet.flags & Flags.SIGNED) !== 0) {
-      if (!verifyPacket(packet, signingKey)) return;
-    }
-
-    // Attribute the request to the link's bound peer, not the claimed senderID:
-    // the budget must be per physical neighbour, or one peer minting sender IDs
-    // gets an unbounded number of budgets over a single link.
-    const linkPeer = this.links.peerOf(linkID) ?? linkID;
+    const linkPeer = this.links.peerOf(linkID);
+    if (linkPeer !== senderID) return;
+    if (!this.senderIsAuthentic(packet, senderID)) return;
 
     // Packets come back ttl 0 and IS_RSR-tagged (set by handleFilter), so they
     // stop at the requester instead of being re-flooded mesh-wide, and so the
     // requester can tell they are the answer to its own question.
-    const missing = this.gossip.handleFilter(packet, linkPeer);
+    const missing = this.gossip.handleFilter(packet, senderID);
     if (missing.length === 0) return;
 
     // A replayed board post or group message can outgrow a Bluetooth frame,
@@ -3581,6 +3785,7 @@ export class MeshService {
         this.identity.noiseStaticPrivKey,
         prekey?.publicKey ?? noisePub,
         inner,
+        sealPrologue(prekey?.id),
       );
       const envelope: SealedEnvelope = {
         // Tag is derived from the recipient's STATIC key + today's epoch day, so
@@ -3798,6 +4003,7 @@ export class MeshService {
       const { plaintext, senderStaticPubKey } = noiseXOpen(
         openKey,
         env.ciphertext,
+        sealPrologue(env.prekeyID),
       );
       // Identify the sender from the key the envelope authenticates, not from
       // the packet header, which names whoever relayed it to us.
@@ -3927,48 +4133,17 @@ export class MeshService {
     }
   }
 
-  // A peer announced it is leaving the mesh (app closing, panic wipe, radio
-  // off). Drop it from the UI immediately instead of waiting out the 60s
-  // reachability TTL. Otherwise someone who has clearly gone still shows as
-  // "in range" for a full minute.
-  //
-  // Authenticate the leave first: bitchat now requires a verified signature on
-  // LEAVE, and without one a third party could forge a leave carrying a victim's
-  // senderID and force-drop them from everyone's Mesh tab. We can only verify
-  // once the peer has announced (so we hold its signing key); an unverifiable
-  // leave is ignored, which is safe because a peer we never saw announce is not
-  // in our UI to drop. Still presence-only: a verified leave updates routing/UI
-  // but never tears down crypto, so a stale-but-authenticated leave cannot strand
-  // an active session.
-  // Whether a LEAVE really came from the peer it names.
-  //
-  // Checked against the announce-pinned signing key first, then against a saved
-  // contact's key. The second source matters after a restart: the live registry
-  // is empty until the next announce arrives, and without the fallback a
-  // departure from someone already in the address book would be unverifiable
-  // for that window.
+  // Whether a LEAVE came from the peer it names. Unverified, anyone could forge
+  // one with a victim's senderID and drop them from every Mesh tab; bitchat
+  // requires a signature too.
   private leaveIsAuthentic(packet: Packet): boolean {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return false;
-    if ((packet.flags & Flags.SIGNED) === 0) return false;
-
-    // Deliberately the pinned key rather than registry.get(), which applies a
-    // reachability TTL. A LEAVE arrives exactly when a peer has stopped
-    // announcing, so resolving it through that window refuses the genuine ones.
-    const pinned = this.registry.pinnedSigningKey(senderID);
-    if (pinned !== undefined) return verifyPacket(packet, pinned);
-
-    const saved =
-      useContactsStore.getState().contacts[senderID]?.signingPubKeyHex;
-    if (saved === undefined || saved.length !== 64) return false;
-    try {
-      return verifyPacket(packet, hexToBytes(saved));
-    } catch {
-      // A stored key that is not valid hex. Treat as no key rather than throw.
-      return false;
-    }
+    return this.senderIsAuthentic(packet, senderID);
   }
 
+  // A peer is leaving (app closed, panic wipe, radio off): drop it now rather
+  // than after the 60s reachability TTL.
   private onLeave(packet: Packet): void {
     // Checked here as well as before the relay in handleRaw. The two guards
     // answer different questions ("may this be forwarded" and "may this evict
@@ -4021,48 +4196,67 @@ export class MeshService {
     void this.links.broadcast(bytesToBase64(encodePacket(packet)));
   }
 
-  // Is this broadcast packet genuinely from the peer it claims to be from?
-  //
-  // `senderID` is attacker-controlled: it is a plaintext header field on an
-  // unauthenticated broadcast, and anyone in radio range can put any value in
-  // it. The ONLY thing that binds a packet to an identity is an Ed25519
-  // signature that verifies against a signing key already bound to that peer ID
-  // by an earlier, signature-checked ANNOUNCE.
-  //
-  // This is stricter than what was here before, and deliberately so. The
-  // previous form was:
-  //
-  //     if (SIGNED && peer?.signingPubKey !== undefined) {
-  //       if (!verifyPacket(...)) return;
-  //     }
-  //
-  // which skipped verification entirely in two cases that both matter. An
-  // UNSIGNED packet was accepted, so anyone could impersonate a peer already in
-  // your registry - a contact you trust - simply by not setting the signature
-  // flag. And a packet from a peer NOT in the registry was accepted with no
-  // check at all. Random single-byte corruption of a senderID in flight was
-  // enough to make four devices render a message attributed to a peer that does
-  // not exist, which is how this was found.
-  //
-  // bitchat-ios does not have either hole: BLEPublicMessageHandler.swift
-  // computes `verifiedViaRegistry` as `key.map { verify } ?? false` - an absent
-  // key is a FAILED check, not a skipped one - and drops anything that neither
-  // verifies against the registry nor against a persisted identity, logging
-  // "Dropping public message with missing/invalid signature for claimed sender".
-  // ARCHITECTURE.md section 2 (Identity) says the same thing: "Receivers verify
-  // signatures before displaying or acting on a message" and "unsigned and
-  // invalid-signature packets are dropped before display". Relaying is the
-  // separate case: a node forwards bytes it may not yet be able to check.
-  //
-  // The cost is that a public message can arrive before its author's ANNOUNCE
-  // and be dropped. That is bitchat's tradeoff too, it is bounded (announces
-  // flood on every link-up, and gossip sync re-serves the message), and losing a
-  // message is a far smaller failure than rendering a forged one.
+  // Whether a broadcast really came from the peer it names. `senderID` is a
+  // plaintext header anyone in range can set, so only an Ed25519 signature
+  // against the key knownSigningKey holds for that peer counts. No signature or
+  // no known key fails, as in bitchat-ios; relaying is separate, since a node
+  // forwards bytes it cannot yet check.
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
-    const signingPubKey = this.registry.get(senderID)?.signingPubKey;
-    if (signingPubKey === undefined) return false;
-    return verifyPacket(packet, signingPubKey);
+    const key = this.knownSigningKey(senderID);
+    return key !== undefined && verifyPacket(packet, key);
+  }
+
+  // Whether anything this peer signs could pass senderIsAuthentic, for a
+  // decision taken before there is a signature to check.
+  private hasSigningKeyFor(peerID: string): boolean {
+    return this.knownSigningKey(peerID) !== undefined;
+  }
+
+  // Which signing key speaks for a peer, strongest source first: one it proved
+  // inside a Noise session, then a saved contact's (whether or not a human
+  // verified it), then whatever the first announce pinned. Never TTL-bound:
+  // reachability says nothing about identity, and gossip replays a message
+  // for 6 h after its author's last announce.
+  //
+  // A contact's key outranks the announce pin because onAnnounce never pins
+  // one that contradicts it, which is what keeps someone announcing first
+  // after a restart from speaking for a contact. A proof outranks a contact's
+  // key because an unverified one may have come from a forged link card; a
+  // proof contradicting a verified one is refused before it gets here
+  // (onAuthenticatedPeerState).
+  //
+  // Strangers get no durable tier: a record of everyone met is what the
+  // design avoids, so their pins go with a restart or an eviction.
+  private knownSigningKey(peerID: string): Uint8Array | undefined {
+    return (
+      this.vouchedSigningKey(peerID) ?? this.registry.pinnedSigningKey(peerID)
+    );
+  }
+
+  // The same, less the announce pin: a key something other than an announce
+  // stands behind.
+  private vouchedSigningKey(peerID: string): Uint8Array | undefined {
+    return (
+      this.registry.provenSigningKey(peerID) ?? this.contactSigningKey(peerID)
+    );
+  }
+
+  // A saved contact's signing key, when the record is whole enough to trust:
+  // 64 hex characters, and a Noise key (if stored) that derives to the ID.
+  private contactSigningKey(peerID: string): Uint8Array | undefined {
+    const contact = useContactsStore.getState().getContact(peerID);
+    if (contact === undefined) return undefined;
+    const noise = contact.noisePubKeyHex;
+    if (
+      noise.length > 0 &&
+      (!HEX_32.test(noise) ||
+        bytesToHex(sha256(hexToBytes(noise))).slice(0, 16) !== peerID)
+    ) {
+      return undefined;
+    }
+    const signing = contact.signingPubKeyHex;
+    return HEX_32.test(signing) ? hexToBytes(signing) : undefined;
   }
 
   // A message in the public mesh room (0x02). The payload is the text; the room
@@ -4090,7 +4284,7 @@ export class MeshService {
     if (channel === BRIDGE_CHANNEL) return;
     this.acceptPublicMessage(packet, channel, text, (senderID) =>
       msgId.length > 0
-        ? `ch-${msgId}`
+        ? sharedRowID(msgId, text)
         : `${senderID}-${String(packet.timestamp)}-${channel}`,
     );
   }
@@ -4108,6 +4302,11 @@ export class MeshService {
     // Drop our own messages echoed back (shouldn't happen, but guard anyway).
     if (senderID === this.identity.peerID) return;
     if (!this.senderIsAuthentic(packet, senderID)) return;
+    // Carried for sync once verified, and before the joined-room check, so a
+    // room this user never joined still backfills for those who did. As
+    // bitchat-ios BLEPublicMessageHandler, which tracks after its signature
+    // guard.
+    this.gossip.track(packet);
 
     // Only accept traffic for channels the user has actually joined.
     //
@@ -4165,6 +4364,10 @@ export class MeshService {
     for (const [channel, keyB64] of Object.entries(channelKeys)) {
       const opened = openChannelMessage(keyB64, packet.payload);
       if (opened === null) continue;
+      // The signature names the author on Bluetooth; the sealed sender is
+      // only what a member wrote inside. One claiming someone else is a
+      // member speaking in another's name, and is dropped.
+      if (opened.senderID !== senderID) return;
       const nickname = channelSenderName(senderID, peer?.nickname);
       // The decrypt succeeding IS the membership proof, and this is the only
       // place it exists: a private channel has no roster on the wire, so who is
@@ -4173,7 +4376,7 @@ export class MeshService {
       useChatStore.getState().addMessage({
         id:
           opened.msgId.length > 0
-            ? `ch-${opened.msgId}`
+            ? channelRowID(senderID, opened.msgId)
             : `${senderID}-${String(packet.timestamp)}-${channel}`,
         channel,
         senderID,
@@ -4334,7 +4537,12 @@ export class MeshService {
     this.geoChannels.sendContactCard(
       geohash,
       pubkey,
-      encodeContactCard(this.getContactCard()),
+      sealGeoCard(
+        encodeContactCard(this.getContactCard()),
+        this.geoChannels.cellPubkeyFor(geohash),
+        pubkey,
+        this.identity.signingPrivKey,
+      ),
     );
     useChatStore.getState().noteGeoCardExchange(pubkey, { sentMine: true });
     this.mergeGeoThreadIfMutual(pubkey);
@@ -4392,14 +4600,29 @@ export class MeshService {
   // channel. So this may introduce someone new, and may never RE-PIN keys
   // already bound to a peer ID - otherwise anyone who could open a geohash DM
   // could overwrite a contact the user verified in person.
+  //
+  // And the card must carry a proof, by the signing key it names, over this
+  // pair of cell keys (geo-card-proof.ts): every field of a card is public, so
+  // a stranger could forward a friend's and have their pseudonym folded into
+  // the friend's thread. A card naming a key other than the one we hold for
+  // that peer proves nothing even when its proof checks out, and
+  // addVerifiedContact refuses it. Nothing is written for a card that fails.
   private acceptGeoContactCard(
-    card: Uint8Array,
+    body: Uint8Array,
     senderPubkey: string,
+    recipientPubkey: string,
   ): string | null {
+    const card = geoCardOf(body);
+    if (card === null) return null;
     let decoded;
     try {
       decoded = decodeContactCard(card);
     } catch {
+      return null;
+    }
+    if (
+      !geoCardProven(body, senderPubkey, recipientPubkey, decoded.signingPubKey)
+    ) {
       return null;
     }
     if (!this.addVerifiedContact(decoded, { inPerson: false })) return null;
@@ -4498,20 +4721,32 @@ export class MeshService {
     return this.identity.signingPubKey;
   }
 
-  // Ingest an incoming board post or tombstone. Flood relay already happened in
-  // handleRaw, so here we verify the wire signature (the real author check,
-  // since a relayed post's author is not a known peer) and hand it to the store,
-  // which owns quota, expiry and de-duplication.
+  // Ingest an incoming board post or tombstone. The store owns quota, expiry
+  // and de-duplication.
   private onBoardPost(packet: Packet): void {
-    const wire = decodeBoardWire(packet.payload);
-    if (wire === null || !verifyBoardWire(wire)) return;
+    const wire = this.validBoardWire(packet);
+    if (wire === null) return;
     const result = useBoardStore.getState().ingest(wire);
+    // What the board still holds, or already held, is worth offering; what it
+    // refused is not (a tombstoned post, a delete by someone else).
+    if (result !== "rejected") this.gossip.track(packet);
     // Surface a genuinely new post from someone else on the notification bell
     // (and, via the bell, the room's board-icon badge). "accepted" means it was
     // not a duplicate or a rejected/expired post, so this fires once per notice.
     if (wire.kind === "post" && result === "accepted") {
       this.recordNoticeActivity(wire.post);
     }
+  }
+
+  // A board payload worth carrying: it decodes, its embedded author signature
+  // verifies (the real author check, since a post outlives its author's
+  // announces), and a post is still live. bitchat-ios relays nothing its board
+  // store rejects.
+  private validBoardWire(packet: Packet): BoardWire | null {
+    const wire = decodeBoardWire(packet.payload);
+    if (wire === null || !verifyBoardWire(wire)) return null;
+    if (wire.kind === "post" && !isLivePost(wire.post, Date.now())) return null;
+    return wire;
   }
 
   // The channel a notice belongs to, for a tap on its bell row. The mesh board
@@ -4672,7 +4907,11 @@ export class MeshService {
   private broadcastBoardWire(wire: BoardWire): void {
     const packet: Packet = {
       type: PacketType.BOARD_POST,
-      ttl: originTtl(),
+      ttl: originTtl(
+        PacketType.BOARD_POST,
+        this.links.degree(),
+        wire.kind === "post" && isUrgent(wire.post),
+      ),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),
@@ -4793,10 +5032,12 @@ export class MeshService {
     this.broadcastPacket(packet);
   }
 
-  // Store a peer's prekey bundle after verifying it against their
-  // announce-bound signing key. Bundles from peers we have not heard announce
-  // (no signing key) cannot be verified and are ignored (still relayed by the
-  // flood layer for third parties).
+  // Store a peer's prekey bundle once it is plainly the owner's, as
+  // bitchat-ios requires (BLEService.handlePrekeyBundle): the packet names the
+  // owner as its sender, and both the packet and the bundle verify against the
+  // key knownSigningKey holds for them. A bundle is what our courier mail to
+  // them is sealed to, so accepting one signed by anyone else hands them that
+  // mail. Unverifiable bundles are ignored here and still relayed for others.
   private onPrekeyBundle(packet: Packet): void {
     const bundle = decodePrekeyBundle(packet.payload);
     if (bundle === null) return;
@@ -4804,9 +5045,13 @@ export class MeshService {
       0,
       16,
     );
-    const signingPub = this.registry.get(ownerPeerID)?.signingPubKey;
-    if (signingPub === undefined) return;
-    if (!verifyPrekeyBundle(bundle, signingPub)) return;
+    if (ownerPeerID === this.identity.peerID) return;
+    if (bytesToHex(packet.senderID) !== ownerPeerID) return;
+    if (!this.senderIsAuthentic(packet, ownerPeerID)) return;
+    const signingPub = this.knownSigningKey(ownerPeerID);
+    if (signingPub === undefined || !verifyPrekeyBundle(bundle, signingPub)) {
+      return;
+    }
     this.peerPrekeys.ingest(bundle);
   }
 
@@ -5177,7 +5422,7 @@ export class MeshService {
 
     const packet: Packet = {
       type: PacketType.GROUP_MESSAGE,
-      ttl: originTtl(),
+      ttl: originTtl(PacketType.GROUP_MESSAGE, this.links.degree()),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(BROADCAST_ID),
@@ -5207,6 +5452,11 @@ export class MeshService {
   // Decrypt and render an incoming group message, if we hold the group and the
   // author is in its roster.
   private onGroupMessage(packet: Packet): void {
+    // Carried whether or not we are a member, and so before any decrypt, as
+    // bitchat-ios handleGroupMessage does: sealed under the group's key, it is
+    // opaque to a relay and cannot be checked, so it gets a store of its own
+    // that it cannot overflow into public history.
+    if (packet.payload.length > 0) this.gossip.track(packet);
     const env = decodeGroupEnvelope(packet.payload);
     if (env === null) return;
     const group = useGroupStore.getState().getByID(env.groupID);
@@ -5265,6 +5515,13 @@ export class MeshService {
   // sealed DM file rides NOISE_ENCRYPTED, which also carries rosters and other
   // small payloads, so it gets a card only once it is too long to be one.
   //
+  // Fragments carry no signature, so a card is a claim nobody has checked yet.
+  // It is kept to what a genuine file could become: a sender whose file could
+  // pass senderIsAuthentic, at most MAX_INBOUND_CARDS at once (a stream past
+  // that still lands when whole, with no card), and in the mesh room no name,
+  // since nothing proves who is sending until the file verifies. A DM card is
+  // in the sender's own thread, which names them anyway.
+  //
   // `fragment` is the one that made this progress. Its recipient is the
   // parent's, which is how a stream is told apart before it is whole.
   private onFragmentProgress(p: FragmentProgress, fragment: Packet): void {
@@ -5272,6 +5529,7 @@ export class MeshService {
     const store = useTransferStore.getState();
     if (store.transfers[id] === undefined) {
       if (p.received !== 1) return;
+      if (store.activeCount("receive") >= MAX_INBOUND_CARDS) return;
       const channel = this.incomingFileChannel(p, fragment);
       if (channel === null) return;
       const senderHex = p.key.split("_")[0];
@@ -5279,7 +5537,9 @@ export class MeshService {
         id,
         direction: "receive",
         channel,
-        peerLabel: resolveDisplayName(senderHex),
+        peerLabel: channel.startsWith("dm:")
+          ? resolveDisplayName(senderHex)
+          : "",
         // Real type/name are unknown until the file's TLV decodes on completion.
         type: "document",
         name: t("notif.incoming_file"),
@@ -5299,6 +5559,7 @@ export class MeshService {
     const senderHex = bytesToHex(fragment.senderID);
     if (senderHex === this.identity.peerID) return null;
     if (useBlockedStore.getState().isBlocked(senderHex)) return null;
+    if (!this.hasSigningKeyFor(senderHex)) return null;
     const broadcast = isBroadcast(fragment);
     const toUs =
       !broadcast && isForMe(fragment, hexToBytes(this.identity.peerID));
@@ -5308,10 +5569,12 @@ export class MeshService {
       const joined = useChatStore.getState().channels.includes(BRIDGE_CHANNEL);
       return joined ? BRIDGE_CHANNEL : null;
     }
+    // Sealed in a session: without one, it can never be opened.
     if (
       p.originalType === PacketType.NOISE_ENCRYPTED &&
       toUs &&
-      p.total * FRAG_DATA_SIZE > SEALED_FILE_CARD_MIN_BYTES
+      p.total * FRAG_DATA_SIZE > SEALED_FILE_CARD_MIN_BYTES &&
+      this.registry.sessionFor(senderHex) !== undefined
     ) {
       return `dm:${senderHex}`;
     }
@@ -5326,19 +5589,26 @@ export class MeshService {
   //   toGateway (directed to us): a mesh-only peer asks us to publish its event
   //     to Nostr. Only honored when this device is a gateway.
   // Either way the event is verified against its own Schnorr signature first,
-  // so a relay or gateway cannot forge or alter it. The BRIDGE variants belong to
-  // bitchat's mesh-island bridge subsystem (BridgeService), which Airhop does not
-  // implement; they are ignored below so a bridge's fromBridge broadcast is never
-  // mis-rendered as geohash chat and a toBridge deposit is never published.
+  // so a relay or gateway cannot forge or alter it. The BRIDGE variants go to
+  // BridgeService, the mesh-island bridge.
   private onNostrCarrier(packet: Packet): void {
     const carrier = decodeNostrCarrier(packet.payload);
     if (carrier === null) return;
-    // Bridge carriers (toBridge/fromBridge) belong to the BridgeService, which
-    // does its own event verification, dedup, and rate limiting.
-    if (
-      carrier.direction === CarrierDirection.TO_BRIDGE ||
-      carrier.direction === CarrierDirection.FROM_BRIDGE
-    ) {
+    // Bridge carriers belong to the BridgeService, which does its own event
+    // verification, dedup and per-depositor rate limiting. A deposit asks this
+    // phone to publish from its own connection and is budgeted by who made
+    // it, so it has to be addressed to us and signed by the peer it names, as
+    // bitchat-ios requires of every directed carrier; otherwise a rotating
+    // forged sender ID gets a fresh budget each time. fromBridge broadcasts
+    // are unsigned by design and stay accepted as they are.
+    if (carrier.direction === CarrierDirection.TO_BRIDGE) {
+      const senderID = bytesToHex(packet.senderID);
+      if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
+      if (!this.senderIsAuthentic(packet, senderID)) return;
+      this.bridgeService?.handleMeshCarrier(carrier, senderID, true);
+      return;
+    }
+    if (carrier.direction === CarrierDirection.FROM_BRIDGE) {
       this.bridgeService?.handleMeshCarrier(
         carrier,
         bytesToHex(packet.senderID),
@@ -5414,10 +5684,8 @@ export class MeshService {
     // Authenticate the depositor: the carrier packet is signed by the mesh peer
     // that deposited it (bitchat requires this too, BLEService.handleNostrCarrier),
     // so the rate limit below keys to a real identity rather than a spoofable ID.
-    // Drop if we cannot verify (no announced signing key yet, or bad signature).
-    const depositorKey = this.registry.get(depositor)?.signingPubKey;
-    if (depositorKey === undefined || !verifyPacket(packet, depositorKey))
-      return;
+    // Drop if we cannot verify (no signing key held for them, or bad signature).
+    if (!this.senderIsAuthentic(packet, depositor)) return;
 
     // Absorb a repeat of something already handled, before the rate limit
     // spends a token on it. bitchat guards the same cases in
@@ -5837,7 +6105,7 @@ export class MeshService {
     // path carries the message id and supports delivery/read receipts: DR via
     // its own envelope, Noise via the bitchat PrivateMessagePacket, and Nostr
     // via the bitchat1 envelope. DR is preferred purely for the extra secrecy.
-    const drState = this.drStates.get(recipientPeerID);
+    const drState = this.ratchetFor(recipientPeerID);
     const hasDirectLink = this.links.hasPeer(recipientPeerID);
     // A directed encrypted packet reaches the peer over the mesh either by a
     // direct link (unicast) or, lacking one, by flooding through a neighbour who
@@ -5873,12 +6141,12 @@ export class MeshService {
       const existing = this.activeHandshake(recipientPeerID);
       if (existing) {
         existing.pendingText.push({ messageID: msgID, text });
-      } else {
+      } else if (this.handshakeLimiter.allow(recipientPeerID, Date.now())) {
         const hs = NoiseHandshake.createInitiator(
           this.identity.noiseStaticPrivKey,
         );
         const msg1 = hs.writeMsg1();
-        this.pendingHandshakes.set(recipientPeerID, {
+        this.storePendingHandshake(recipientPeerID, {
           handshake: hs,
           role: "initiator",
           pendingText: [{ messageID: msgID, text }],
@@ -5888,7 +6156,8 @@ export class MeshService {
         this.unicastFn(recipientPeerID, pkt);
       }
       // NOT "sent". Nothing carrying the user's words has left the device: a
-      // handshake has been started and the text is being held against it.
+      // handshake has been started and the text is being held against it, or
+      // the handshake budget refused one and the outbox retries later.
       //
       // Reporting "sent" here was how a first-contact DM went missing. The text
       // lived only in `pendingHandshakes[peer].pendingText`, which is in-memory
@@ -5923,15 +6192,20 @@ export class MeshService {
     }
 
     // Priority 4: Nostr gift-wrap DM over the internet, for a peer no radio
-    // reaches. Use the registry npub if the peer is still fresh, else the
-    // DURABLE contact npub, which is the whole point: reach someone the
+    // reaches. The DURABLE contact npub first: it came from a card or from an
+    // announce whose key was vouched for, where the registry's is whatever the
+    // last announce claimed. It is also the whole point: reach someone the
     // registry has already forgotten (they left Bluetooth range, or we met them
     // only by QR and never over BLE at all). Doing this here, in the service
     // layer, is what makes both a first send and an outbox flush use the
     // internet fallback, since the router only ever sees the ephemeral registry.
+    const contactNpub = useContactsStore
+      .getState()
+      .getContact(recipientPeerID)?.nostrPubkeyHex;
     const nostrPubkey =
-      this.registry.get(recipientPeerID)?.nostrPubkey ??
-      useContactsStore.getState().getContact(recipientPeerID)?.nostrPubkeyHex;
+      contactNpub !== undefined && contactNpub.length > 0
+        ? contactNpub
+        : this.registry.get(recipientPeerID)?.nostrPubkey;
     if (
       nostrPubkey !== undefined &&
       nostrPubkey.length > 0 &&
@@ -6144,6 +6418,16 @@ export class MeshService {
   ): boolean {
     const derived = bytesToHex(sha256(card.noisePubKey)).slice(0, 16);
     if (derived !== card.peerID.toLowerCase()) return false;
+    // A card that did not come off the other phone may not contradict the key
+    // we already hold for them. Accepted, it would pin a registry that starts
+    // empty after a restart, and the real peer's next announce would be
+    // refused against it.
+    if (opts.inPerson !== true) {
+      const held = this.knownSigningKey(card.peerID);
+      if (held !== undefined && !equalBytes(held, card.signingPubKey)) {
+        return false;
+      }
+    }
 
     const nostrPubkeyHex = card.nostrPubKey
       ? bytesToHex(card.nostrPubKey)
@@ -6445,6 +6729,7 @@ export class MeshService {
       for (const nostrPub of nostrPubs) {
         blocked.blockAlias(`nostr_${nostrPub}`, peerID);
       }
+      this.gossip.forgetMessagesFrom(peerID);
     }
     // Drop anything still queued for them: blocking someone must not leave
     // messages that get delivered the moment they come back into range.
@@ -6612,8 +6897,8 @@ export class MeshService {
         uplink: (event, geohash) => this.uplinkGeohashEvent(event, geohash),
         onRelayEvent: (event, geohash) =>
           this.rebroadcastRelayEvent(event, geohash),
-        onContactCard: (card, senderPubkey) =>
-          this.acceptGeoContactCard(card, senderPubkey),
+        onContactCard: (body, senderPubkey, recipientPubkey) =>
+          this.acceptGeoContactCard(body, senderPubkey, recipientPubkey),
       },
     );
     void this.geoChannels.refresh();
@@ -6792,10 +7077,7 @@ export class MeshService {
             NoisePayloadType.DELIVERED,
             env.messageID,
           );
-          const pending =
-            this.pendingNostrReadAcks.get(dm.senderPubkey) ?? new Set<string>();
-          pending.add(env.messageID);
-          this.pendingNostrReadAcks.set(dm.senderPubkey, pending);
+          this.pendingNostrReadAcks.add(dm.senderPubkey, env.messageID);
         } catch {
           // Invalid or misdirected gift wrap: drop silently.
         }

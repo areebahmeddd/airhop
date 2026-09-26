@@ -20,6 +20,7 @@
 
 import { bytesToBase64, tryBase64ToBytes } from "@core/encoding/base64";
 import {
+  channelRowID,
   deriveChannelNostrIdentity,
   openChannelMessage,
   type ChannelNostrIdentity,
@@ -161,8 +162,9 @@ export class PrivateChannelService {
         .noteMember(channel, opened.senderID, senderNickname);
 
       useChatStore.getState().addMessage({
-        // Shared id with the BLE copy so both transports collapse to one bubble.
-        id: `ch-${opened.msgId}`,
+        // Shared with the BLE copy from the same author, so both transports
+        // collapse to one bubble and a copy claiming another author cannot.
+        id: channelRowID(opened.senderID, opened.msgId),
         channel,
         senderID: opened.senderID,
         senderNickname,

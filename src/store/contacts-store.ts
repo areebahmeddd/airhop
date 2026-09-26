@@ -150,9 +150,11 @@ interface ContactsState {
   //   noise/signing    filled when absent, replaced only by an in-person scan
   //
   // The last is the security-relevant one. `signingPubKeyHex` is not a display
-  // field: `leaveIsAuthentic` falls back to it to check a LEAVE when the live
-  // registry holds no pin, which is every restart. The registry already refuses
-  // an over-the-air re-pin, and this holds the durable copy to the same rule.
+  // field: mesh-service checks every signature against it ahead of any key an
+  // announce pinned, and refuses an announce that contradicts it, which is what
+  // stops someone announcing first after a restart. The registry already
+  // refuses an over-the-air re-pin, and this holds the durable copy to the
+  // same rule.
   addContact: (contact: Contact) => void;
   // Save a peer as an unverified contact if not already saved. The one entry
   // point for the Signal-style "people you message are kept" behaviour, so
@@ -180,9 +182,12 @@ interface ContactsState {
   // inside a completed Noise session, and a session completes only when the
   // remote static key hashes to the claimed peer ID.
   //
-  // Fills empty slots and nothing else, so it can never re-pin what a scan
-  // established, and grants no verification: holding somebody's keys is not
-  // having checked them.
+  // Fills empty slots, and on a contact nobody has verified also replaces keys
+  // the session contradicts: those came from a link card that proves nothing
+  // about who made it, and the session does. A verified contact's keys are
+  // never touched, so it can never re-pin what a scan or a safety number
+  // established. Grants no verification: holding somebody's keys is not having
+  // checked them.
   setProvenKeys: (
     peerID: string,
     noisePubKeyHex: string,
@@ -362,14 +367,11 @@ export const useContactsStore = create<ContactsState>()(
           // Never manufacture a contact, matching setNostrPubkey: completing a
           // session with somebody is not the user choosing to keep them.
           if (!existing) return state;
-          const noise =
-            existing.noisePubKeyHex.length === 0
-              ? noisePubKeyHex
-              : existing.noisePubKeyHex;
-          const signing =
-            existing.signingPubKeyHex.length === 0
-              ? signingPubKeyHex
-              : existing.signingPubKeyHex;
+          const correctable = !isVerified(existing);
+          const pick = (held: string, proven: string): string =>
+            held.length === 0 || correctable ? proven : held;
+          const noise = pick(existing.noisePubKeyHex, noisePubKeyHex);
+          const signing = pick(existing.signingPubKeyHex, signingPubKeyHex);
           // Same object when neither slot moved, so a peer re-proving itself on
           // every reconnect does not re-render every screen watching this store.
           if (

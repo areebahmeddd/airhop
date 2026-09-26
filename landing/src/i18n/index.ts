@@ -125,21 +125,6 @@ export function formatDate(language: LanguageCode, iso: string): string {
   return format.format(date);
 }
 
-const SHORT_DATE_FORMATS = new Map<LanguageCode, Intl.DateTimeFormat>();
-
-export function formatShortDate(language: LanguageCode, date: Date): string {
-  let format = SHORT_DATE_FORMATS.get(language);
-  if (!format) {
-    format = new Intl.DateTimeFormat(LANGUAGES[language].intlLocale, {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    });
-    SHORT_DATE_FORMATS.set(language, format);
-  }
-  return format.format(date);
-}
-
 const TRANSLATORS = new Map<LanguageCode, Translator>();
 
 export function getT(language: LanguageCode): Translator {

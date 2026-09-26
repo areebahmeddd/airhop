@@ -187,6 +187,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "ਤੁਹਾਡੀ ਕੁੰਜੀ ਤੋਂ ਕੱਢੇ, ਇਸ ਲਈ ਤੁਹਾਡਾ ਕੋਈ ਖੋਹ ਨਹੀਂ ਸਕਦਾ।",
   "home.features.identity.qr.name": "QR ਸੰਪਰਕ",
   "home.features.identity.qr.line": "ਇੱਕ ਸਕੈਨ ਉਹਨਾਂ ਦੀਆਂ ਕੁੰਜੀਆਂ ਲੈ ਆਉਂਦਾ ਹੈ, ਸਿਰਫ਼ ਨਾਂ ਨਹੀਂ।",
+  "home.features.identity.forward.name": "ਫਾਰਵਰਡ ਸੀਕ੍ਰੇਸੀ",
+  "home.features.identity.forward.line": "ਲੀਕ ਹੋਈ ਕੁੰਜੀ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਨਹੀਂ ਖੋਲ੍ਹ ਸਕਦੀ।",
+  "home.features.identity.move.name": "ਨਵੇਂ ਫ਼ੋਨ ’ਤੇ ਤਬਦੀਲੀ",
+  "home.features.identity.move.line":
+    "ਚੈਟਾਂ ਅਤੇ ਵਾਲੇਟ ਨਾਲ ਜਾਂਦੇ ਹਨ, ਫਿਰ ਪੁਰਾਣਾ ਫ਼ੋਨ ਆਪਣੇ ਆਪ ਨੂੰ ਮਿਟਾ ਦਿੰਦਾ ਹੈ।",
   "home.features.identity.panic.name": "ਸੰਕਟ ਸਫ਼ਾਈ",
   "home.features.identity.panic.line": "ਹਰ ਕੁੰਜੀ ਅਤੇ ਸੁਨੇਹਾ ਇੱਕ ਸਕਿੰਟ ਤੋਂ ਘੱਟ ਵਿੱਚ ਤਬਾਹ।",
 
@@ -195,6 +200,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "ਬਲੂਟੁੱਥ ਮੈਸ਼",
   "home.features.networking.mesh.line":
     "ਨਾ ਇੰਟਰਨੈੱਟ, ਨਾ ਰਾਊਟਰ, ਉਹਨਾਂ ਫ਼ੋਨਾਂ ’ਤੇ ਜੋ ਲੋਕਾਂ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਹਨ।",
+  "home.features.networking.lan.name": "ਲੋਕਲ ਨੈੱਟਵਰਕ",
+  "home.features.networking.lan.line": "ਸਾਂਝਾ WiFi ਜਾਂ ਹੌਟਸਪੌਟ, iPhone ਅਤੇ Android ਇਕੱਠੇ।",
+  "home.features.networking.hops.name": "ਮਲਟੀ-ਹੌਪ ਰੀਲੇ",
+  "home.features.networking.hops.line": "ਹਰ ਫ਼ੋਨ ਸੁਨੇਹੇ ਅੱਗੇ ਤੋਰਦਾ ਹੈ, ਸੱਤ ਹੌਪ ਤੱਕ।",
   "home.features.networking.bridge.name": "ਮੈਸ਼ ਪੁਲ",
   "home.features.networking.bridge.line":
     "ਤੁਹਾਡੀ ਜਨਤਕ ਗੱਲਬਾਤ ਨੂੰ ਪਹੁੰਚ ਤੋਂ ਬਾਹਰ ਕਿਸੇ ਨੇੜਲੀ ਭੀੜ ਨਾਲ ਜੋੜਦਾ ਹੈ।",

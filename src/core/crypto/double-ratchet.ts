@@ -243,7 +243,14 @@ export function ratchetEncrypt(
 // Decrypt a message produced by ratchetEncrypt. Returns the plaintext.
 // Throws on auth failure or if the message key cannot be found.
 //
-// State is mutated in place.
+// State is mutated only when the message authenticates. Every step below runs
+// on a copy that replaces `state` after the AEAD check passes, as the spec
+// requires ("changes to the state object are discarded"): the header is
+// cleartext, so a forged or replayed one would otherwise step the ratchet, or
+// spend a skipped key, before failing, and leave both sides out of step for
+// good. A shallow copy suffices because each step assigns fresh arrays and
+// objects rather than writing into the ones it holds; MKSKIPPED is the one
+// container, so it is copied too.
 export function ratchetDecrypt(
   state: RatchetState,
   message: Uint8Array,
@@ -251,6 +258,13 @@ export function ratchetDecrypt(
   if (message.length < HEADER_LEN) {
     throw new Error("DR: message too short");
   }
+  const next: RatchetState = { ...state, MKSKIPPED: new Map(state.MKSKIPPED) };
+  const plaintext = decryptInto(next, message);
+  Object.assign(state, next);
+  return plaintext;
+}
+
+function decryptInto(state: RatchetState, message: Uint8Array): Uint8Array {
   const headerBytes = message.slice(0, HEADER_LEN);
   const ciphertext = message.slice(HEADER_LEN);
   const header = decodeHeader(headerBytes);

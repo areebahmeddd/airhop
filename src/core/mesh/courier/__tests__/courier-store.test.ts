@@ -12,6 +12,7 @@ import { getStorage } from "@store/mmkv";
 import { noiseXOpen, noiseXSeal } from "../../../crypto/noise-x";
 import {
   computeRecipientTag,
+  COURIER_PROLOGUE,
   CourierStore,
   decodeEnvelopePayload,
   encodeEnvelopePayload,
@@ -622,7 +623,12 @@ describe("envelope round trip", () => {
       recipientTag: computeRecipientTag(recipient.pub),
       expiryMs: Date.now() + 60_000,
       copies: 4,
-      ciphertext: noiseXSeal(sender.priv, recipient.pub, plaintext),
+      ciphertext: noiseXSeal(
+        sender.priv,
+        recipient.pub,
+        plaintext,
+        COURIER_PROLOGUE,
+      ),
     });
 
     const env = decodeEnvelopePayload(payload);
@@ -631,6 +637,7 @@ describe("envelope round trip", () => {
     const { plaintext: recovered, senderStaticPubKey } = noiseXOpen(
       recipient.priv,
       env!.ciphertext,
+      COURIER_PROLOGUE,
     );
     expect(new TextDecoder().decode(recovered)).toBe("hello courier");
     // The envelope authenticates its sender internally, which is what lets the

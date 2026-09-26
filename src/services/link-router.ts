@@ -1,10 +1,11 @@
 // What an Airhop link does once it has been parsed.
 //
-// There are two ways one arrives: the OS hands it to us because the user tapped
-// it somewhere else (App.tsx), or the user pastes it into the Join sheet. Both
-// are the same act of consent and must have the same effect, so the effect
-// lives here rather than in either caller. Everything is a pure consequence of
-// the link plus the stores; the caller only decides where to navigate.
+// There are two ways one arrives: the OS hands it over (app.tsx), or the user
+// pastes it into the Join sheet. Only the second is consent. Any installed app,
+// or a page that redirects, can fire an OS link, so that one only fills in the
+// Join sheet, and both take effect the same way: on Join, here. Everything is a
+// pure consequence of the link plus the stores; the caller only decides where
+// to navigate.
 //
 // Parsing stays in utils/deep-link (pure, no crypto). This module owns the side
 // effects, which is why it lives with the services.
@@ -14,8 +15,17 @@ import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
-import type { DeepLink } from "@utils/deep-link";
+import { parseAirhopLink, type DeepLink } from "@utils/deep-link";
 import { getMeshService } from "./mesh-service";
+
+// What an OS-delivered link puts in the Join sheet, or null when it is not an
+// Airhop link. Changes nothing: the person still reads what it does and taps
+// Join.
+export function joinSheetPrefill(url: string | null): string | null {
+  if (url === null) return null;
+  const text = url.trim();
+  return parseAirhopLink(text) === null ? null : text;
+}
 
 // Apply a link and return the conversation to open, or null when the link
 // carried something we could not accept: a forged contact card, or an invite

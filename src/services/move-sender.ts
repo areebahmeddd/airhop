@@ -1,17 +1,21 @@
 // The old phone's side of a transfer: dial the scanned code, prove it is that
-// phone, stop the mesh, send everything, and erase only on the new phone's
-// commit.
+// phone, show the words both screens share, and only once the person here has
+// tapped Transfer and the one there has matched the words, stop the mesh, send
+// everything, and erase on the new phone's commit.
 //
-// The mesh stops before the snapshot so nothing lands in a store already
-// copied, and its goodbye retires remotes' sessions with this identity. Once
-// the stream has ended with no commit, neither answer is safe to guess, so the
-// phone stays frozen and asks.
+// Nothing is frozen or marked while either person decides, so walking away
+// from the words leaves this phone exactly as it was. The mesh stops before the
+// snapshot so nothing lands in a store already copied, and its goodbye retires
+// remotes' sessions with this identity. Once the stream has ended with no
+// commit, neither answer is safe to guess, so the phone stays frozen and asks.
 
 import { loadIdentity } from "@core/crypto/identity";
 import type { NoiseSession } from "@core/crypto/noise-xx";
+import { isOnLocalSubnet } from "@core/move/local-subnet";
 import { buildOffer, chunksOf } from "@core/move/move-bundle";
 import { MoveHandshake, type HandshakeStep } from "@core/move/move-handshake";
 import type { MoveInvite } from "@core/move/move-invite";
+import { moveSas } from "@core/move/move-sas";
 import {
   decodeMoveMessage,
   encodeAbort,
@@ -25,11 +29,13 @@ import {
 } from "@core/move/move-wire";
 import { APP_VERSION } from "@data/app-info";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { safetyNumberWords } from "@utils/username";
 import { settleOr } from "@utils/with-timeout";
 import { destroyMeshService } from "./mesh-service";
 import {
   closeMove,
   dialMove,
+  localSubnets,
   MoveDialError,
   stopMoveLink,
   subscribeMoveLink,
@@ -43,7 +49,8 @@ import { panicWipe } from "./panic-wipe";
 import { resetWalletService } from "./wallet-service";
 
 export type SenderFailure =
-  // Another network, or one that isolates clients.
+  // Another network, one that isolates clients, or a code whose address is on
+  // no network this phone is on.
   | "unreachable"
   // iOS refused local network access.
   | "permission"
@@ -55,6 +62,10 @@ export type SenderFailure =
 
 export type SenderState =
   | { phase: "connecting" }
+  // Connected, nothing frozen: the person compares these with the new phone's.
+  | { phase: "verify"; words: string[] }
+  // Transfer tapped; the new phone has not said its words match yet.
+  | { phase: "awaiting" }
   | { phase: "sending"; progress: number }
   // Everything sent; the new phone is installing it.
   | { phase: "finishing" }
@@ -92,6 +103,10 @@ export class MoveSender {
   private session: NoiseSession | null = null;
   private digest: Uint8Array | null = null;
   private frozen = false;
+  // Both are needed before anything freezes, in either order: the new phone's
+  // CONFIRM may land before the tap here, and is held until it.
+  private proceeding = false;
+  private peerConfirmed = false;
   private ended = false;
   private settled = false;
   private cancelled = false;
@@ -108,16 +123,24 @@ export class MoveSender {
     private readonly hooks: SenderHooks,
   ) {}
 
-  async start(): Promise<void> {
+  async connect(): Promise<void> {
     this.set({ phase: "connecting" });
     const identity = await loadIdentity().catch(() => null);
     if (identity === null) {
       this.fail("interrupted");
       return;
     }
+    // Before any dial: a code naming a public or VPN-routed address never gets
+    // a packet from this phone.
+    const subnets = await localSubnets();
+    const hosts = this.invite.hosts.filter((h) => isOnLocalSubnet(h, subnets));
+    if (hosts.length === 0) {
+      this.fail("unreachable");
+      return;
+    }
     this.unsubscribe = subscribeMoveLink((event) => this.onLinkEvent(event));
 
-    const connectionID = await this.dial();
+    const connectionID = await this.dial(hosts);
     if (connectionID === null) return;
     if (this.cancelled) {
       closeMove(connectionID);
@@ -150,8 +173,24 @@ export class MoveSender {
       this.fail("unreachable");
       return;
     }
-    if (this.cancelled) return;
+    if (this.cancelled || this.settled || this.session === null) return;
+    this.set({
+      phase: "verify",
+      words: safetyNumberWords(moveSas(this.session.handshakeHash)),
+    });
+    // Anything that beat message 3's write resolving, a quick CONFIRM included.
+    for (const frame of this.earlyFrames.splice(0)) void this.onMessage(frame);
+  }
 
+  // The Transfer tap. Streams at once if the new phone has already confirmed.
+  proceed(): void {
+    if (this.proceeding || this.settled || this.session === null) return;
+    this.proceeding = true;
+    if (this.peerConfirmed) void this.stream();
+    else this.set({ phase: "awaiting" });
+  }
+
+  private async stream(): Promise<void> {
     this.freeze();
     try {
       const sections = await snapshotForMove(this.history);
@@ -220,11 +259,11 @@ export class MoveSender {
     this.hooks.onChange(state);
   }
 
-  private async dial(): Promise<string | null> {
+  private async dial(hosts: string[]): Promise<string | null> {
     const deadline = Date.now() + DIAL_WINDOW_MS;
     let failure: SenderFailure = "unreachable";
     while (!this.cancelled && Date.now() < deadline) {
-      for (const host of this.invite.hosts) {
+      for (const host of hosts) {
         try {
           return await dialMove(host, this.invite.port);
         } catch (error) {
@@ -317,7 +356,7 @@ export class MoveSender {
       if (this.ended) {
         this.unconfirmed();
       } else {
-        this.fail(this.frozen ? "interrupted" : "unreachable");
+        this.fail(this.session === null ? "unreachable" : "interrupted");
       }
       return;
     }
@@ -352,6 +391,12 @@ export class MoveSender {
               ? "cancelled"
               : "interrupted",
       );
+      return;
+    }
+    if (message.type === "confirm") {
+      if (this.peerConfirmed) return;
+      this.peerConfirmed = true;
+      if (this.proceeding) void this.stream();
       return;
     }
     if (message.type !== "commit" || !this.ended) return;

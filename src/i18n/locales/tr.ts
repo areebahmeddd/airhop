@@ -123,6 +123,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "İki telefonu aynı Wi-Fi ağına bağla ya da birinde erişim noktasını açıp diğerini ona bağla. İnternet gerekmez.",
   "onboarding.transfer.incoming": "{name} taşınıyor",
+  "onboarding.transfer.confirm_title": "Eski telefonunu kontrol et",
+  "onboarding.transfer.confirm_body":
+    "Eski telefonun da bu kelimelerin aynısını göstermeli. Farklı kelimeler gösteriyorsa ya da hiç göstermiyorsa iptal et.",
+  "onboarding.transfer.confirm_cta": "Eşleşiyor",
   "onboarding.transfer.receiving": "Alınıyor {percent}%",
   "onboarding.transfer.saving": "Bu telefona kaydediliyor",
   "onboarding.transfer.releasing": "Eski telefonda tamamlanıyor",
@@ -181,6 +185,15 @@ export const strings: Strings = {
   "error.boundary.title": "Bir şeyler ters gitti",
   "error.boundary.body":
     "Airhop beklenmedik bir sorunla karşılaştı ve gösterdiği şeyi durdurmak zorunda kaldı.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Anahtarların açılamıyor",
+  "launch.keys_unreadable_body":
+    "Telefonun Airhop'un anahtarlarının kilidini açmadı. Telefonun kilidini aç ve yeniden dene.",
+  "launch.start_over": "Sil ve baştan başla",
+  "launch.start_over_confirm_title": "Bu telefon temizlensin mi?",
+  "launch.start_over_confirm_body":
+    "Bu telefondaki kimliğin, mesajların, kişilerin ve cüzdanın yok edilir ve yeni biri olarak baştan başlarsın. Geri alınamaz.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Varsayılan kanallar",
@@ -597,8 +610,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video bu cihazda yok",
   "chat.media.gone_voice": "Sesli not bu cihazda yok",
   "chat.media.gone_file": "Dosya bu cihazda yok",
-  "chat.media.gone_note":
-    "7 günün ardından ya da önbellek temizlendiğinde kaldırıldı",
+  "chat.media.gone_note": "Artık bu cihazda saklanmıyor",
   "chat.media.ask_resend": "Yeniden iste",
   "chat.media.resend_draft": "{kind} yeniden gönderebilir misin?",
   "chat.media.kind_photo": "o fotoğrafı",
@@ -670,6 +682,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Alındı",
   "chat.ecash.reclaimed": "Geri alındı",
+  "chat.ecash.locked": "Başkasına kilitli",
   "chat.ecash.claiming": "Alınıyor…",
   "chat.ecash.claim": "Al",
   "chat.ecash.claim_amount": "{amount} {unit} al",
@@ -901,6 +914,7 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "Airhop izinlerini sistem ayarlarında açar",
   "mesh.banner.hint.battery_settings":
     "Bu telefonun arka plan etkinliği ayarlarını açar",
+  "mesh.banner.hint.tor_settings": "Airhop'un Tor ayarlarını açar",
   "mesh.banner.dismiss": "Kapat: {label}",
   "mesh.banner.hint.dismiss": "Bu notu kalıcı olarak gizler",
 
@@ -936,8 +950,10 @@ export const strings: Strings = {
     "Halkadaki konum uzaklığı değil, sinyal gücünü yansıtır",
   "mesh.radar.set_online":
     "Eşleri keşfetmek için Sen sekmesinden durumunu Çevrimiçi yap",
-  "mesh.radar.in_range": "menzilde",
-  "mesh.radar.recently_seen": "yakınlarda görüldü",
+  "mesh.radar.peer_in_range": "{name}, menzilde",
+  "mesh.radar.peer_recent": "{name}, yakınlarda görüldü",
+  "mesh.radar.relay_in_range": "{name}, aktarma düğümü, menzilde",
+  "mesh.radar.relay_recent": "{name}, aktarma düğümü, yakınlarda görüldü",
   "mesh.radar.peer_hint":
     "Bu eşe mesaj yazma ya da ödeme yapma seçeneklerini açar",
 
@@ -959,6 +975,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Ecash gönder, önce bir tutar gir",
   "mesh.peer.cancel_send": "Ecash göndermeyi iptal et",
   "mesh.peer.view_peer_online": "{name} eşini görüntüle, çevrimiçi",
+  "mesh.peer.view_relay_online":
+    "{name} eşini görüntüle, çevrimiçi, aktarma düğümü",
   "mesh.peer.last_seen_at": "Son görülme {ago}",
   "mesh.peer.send_amount": "{amount} sat gönder",
   "mesh.peer.direct": "Doğrudan bağlantı",
@@ -1022,8 +1040,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "{unit} cinsinden tutar",
   "wallet.send.body":
     "Halihazırda elindeki ecash'ten çevrimdışı oluşturuldu. Jetonun ulaştığını onaylayana kadar bakiyenden kalıcı olarak hiçbir şey çıkmaz.",
-  "wallet.send.stale_fee_note":
-    "Ücretler en son {days} gün önce denetlendi. Bu darphane o zamandan beri ücretini artırdıysa gönderim biraz daha fazlaya mal olabilir.",
   "wallet.send.fee_note":
     "Bakiyenden {spend} {unit} çıkar; fazladan {fee}, aksi hâlde onların ödeyeceği darphane ücretini karşılar",
   "wallet.send.qr_too_big":
@@ -1076,17 +1092,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} darphanesinde bozduruldu. Artık kanıtlanabilir biçimde senin: gönderendeki kopyası artık çalışmıyor.",
   "wallet.receive.stored_pending":
-    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı{dleq}. Çevrimiçi olur olmaz Cüzdan sekmesinden yenile.",
+    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı{dleq}. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.dleq_inline": " (imzası tutuyor, yani jeton gerçek)",
   "wallet.receive.dleq_ok": "Darphanenin imzası tutuyor, yani jeton gerçek.",
   "wallet.receive.dleq_uncached":
     "Darphanenin anahtarları burada yok, bu yüzden imza çevrimdışı denetlenemedi.",
+  "wallet.receive.dleq_missing":
+    "İçindeki paraların hepsi darphanenin imza kanıtını taşımıyor, bu yüzden çevrimdışı denetlenemedi.",
   "wallet.receive.dleq_warning":
-    "Çevrimiçi yenileyene kadar gönderen ilkece onu başka bir yerde harcamış olabilir.",
+    "Çevrimiçi onaylanana kadar gönderen ilkece onu başka bir yerde harcamış olabilir.",
   "wallet.receive.failed": "Alınamadı",
   "wallet.receive.title": "Ecash al",
   "wallet.receive.body":
-    "Bir Cashu jetonu yapıştır. Çevrimiçiyken darphanede hemen bozdurulur; çevrimdışıyken kaydedilir ve bir sonraki yenilemede onaylanır.",
+    "Bir Cashu jetonu yapıştır. Çevrimiçiyken darphanede hemen bozdurulur; çevrimdışıyken kaydedilir ve yeniden çevrimiçi olduğunda darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.scan": "Bir ecash QR kodu tara",
   "wallet.receive.scan_short": "QR tara",
   "wallet.receive.receiving": "Alınıyor…",
@@ -1303,6 +1321,8 @@ export const strings: Strings = {
     "Darphane bu jetonun zaten bozdurulduğunu söylüyor, yani {amount} {unit} onlara ulaştı ve bakiyene hiçbir şey geri dönmedi.",
   "wallet.copied.token_body":
     "Jeton panonda. Teslim edildi olarak işaretleyene kadar burada ayrılmış kalır, bu yüzden ilk deneme başarısız olursa yeniden yapıştırabilirsin.",
+  "wallet.copied.refused_token_body":
+    "Jeton panonda. Bu cüzdan onu artık saymıyor, yani gönderen kişiye geri verebilirsin.",
   "wallet.copied.phrase_body":
     "Bir parola yöneticisine yapıştır, sonra panonu temizle. Diğer uygulamalar panoyu okuyabilir ve bazı kurulumlarda pano diğer cihazlarınla eşitlenir.",
   "wallet.refresh.failed": "Yenileme başarısız",
@@ -1313,6 +1333,10 @@ export const strings: Strings = {
     "{amount} {unit} onaylandı ve taze ecash ile takas edildi.",
   "wallet.refresh.secured":
     "{amount} {unit} artık kurtarma ifadenin kapsamında.",
+  "wallet.refresh.refused":
+    "{amount} {unit} darphane tarafından reddedildi ve bakiyenden çıkarıldı. Jeton Etkinlik'te duruyor.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} hâlâ darphaneyi bekliyor ve daha sonra onaylanacak.",
   "wallet.refresh.all_confirmed":
     "Buradaki her şey darphanede zaten onaylanmıştı.",
   "wallet.pending.reserved_desc":
@@ -1344,9 +1368,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning yatırma",
   "wallet.activity.ln_withdrawal": "Lightning çekme",
   "wallet.activity.nutzap_received": "Nutzap alındı",
+  "wallet.activity.nutzap_claiming": "Nutzap, alınıyor",
   "wallet.activity.spent_removed": "Harcanmış paralar kaldırıldı",
   "wallet.activity.refreshed": "Darphaneyle kontrol edildi",
   "wallet.activity.refreshing": "Darphaneyle kontrol ediliyor",
+  "wallet.activity.copy_refused": "Reddedilen jetonu kopyala",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh çevrimdışı",
@@ -1423,7 +1449,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu nedir?",
   "wallet.explain.intro":
-    "Cashu, Bitcoin için ecash'tir. Bir jeton, elinde tutan için para değeri taşıyan bir dizedir; darphane kimin ne harcadığını göremesin diye körlemesine imzalanır. Hesap yok, oturum açma yok.",
+    "Cashu, Bitcoin için ecash'tir. Bir jeton, elinde tutan için para değeri taşıyan bir dizedir; darphane kimin ne harcadığını göremesin diye körlemesine imzalanır. Hesap yok, oturum açma yok. Airhop paranı asla tutmaz: jetonların bu telefonda durur ve onları seçtiğin darphaneler çıkarır.",
   "wallet.explain.send": "Gönder",
   "wallet.explain.send_desc":
     "Bir tutarı, Bluetooth üzerinden yakındaki bir eşe verebileceğin ya da metin olarak paylaşabileceğin bir jetona dönüştürür. İnternetsiz çalışır. Ulaştığını onaylayana kadar jetonlar ayrılmış kalır.",
@@ -1468,6 +1494,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "O kurtarma ifadesi geçerli değil.",
   "wallet.svc.phrase_invalid_body":
     "Yanlış yazılmış ya da eksik bir kelime ara. İfadenin yerleşik bir sağlama toplamı vardır, bu yüzden tek bir yanlış kelime tümünü geçersiz kılar.",
+  "wallet.svc.phrase_unreadable": "Kurtarma ifaden bu telefonda okunamadı.",
+  "wallet.svc.phrase_unreadable_body":
+    "Hiçbir şey değişmedi ve yeni ifade oluşturulmadı. Telefonun kilidi açıldığında yeniden dene. Bu arada ecash'in çalışmaya devam ediyor.",
   "wallet.svc.need_mint": "Önce en az bir darphane ekle.",
   "wallet.svc.need_mint_body":
     "Kurtarma, bir darphaneye senin için hangi jetonları imzaladığını sorarak çalışır, bu yüzden hangi darphaneye soracağını bilmesi gerekir.",
@@ -1491,10 +1520,25 @@ export const strings: Strings = {
     "Onları almak için darphaneye şu anda ulaşılamıyor. Hiçbir şey kaybolmadı: çevrimiçi olduğunda yeniden al.",
   "wallet.svc.wrong_mint":
     "Bu jeton, belirttiği darphane tarafından imzalanmamış.",
+  "wallet.svc.wrong_mint_body":
+    "En az bir paranın imzası darphanenin anahtarlarıyla eşleşmiyor. Hiçbir şey eklenmedi.",
+  "wallet.svc.unit_mismatch":
+    "Bu jetondaki paralar belirttiği para biriminde değil.",
+  "wallet.svc.unit_mismatch_body":
+    "{label} olarak etiketlenmiş ama paralarının bir kısmı {actual} cinsinden çıkarılmış. Gönderenden yeni bir jeton iste. Hiçbir şey eklenmedi.",
+  "wallet.svc.locked_other": "Bu paralar başka birinin cüzdanına kilitli.",
+  "wallet.svc.locked_other_body":
+    "Onları yalnızca kilitlendikleri kişi alabilir. Hiçbir şey eklenmedi.",
+  "wallet.svc.coins_refused":
+    "Darphane bu paraları reddetti, bu yüzden artık sayılmıyorlar. Geri göndermek istersen jeton burada saklanıyor.",
+  "wallet.svc.coins_unredeemable":
+    "Bu paralar bu darphanede bozdurulamaz, bu yüzden artık sayılmıyorlar. Geri göndermek istersen jeton burada saklanıyor.",
+  "wallet.svc.locked_ours_offline": "Bu ödeme senin cüzdanına kilitli.",
+  "wallet.svc.locked_ours_offline_body":
+    "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":
     "Bu jetonu gönderen onu önce kendisi bozdurmuş ya da aynı jetonu başka birine de göndermiş.",
-  "wallet.svc.receiving_offline": "çevrimdışı alınıyor",
   "wallet.svc.amount_positive": "Sıfırdan büyük bir tutar gir.",
   "wallet.svc.coins_raced":
     "O jetonlar az önce başka bir ödeme tarafından kullanıldı.",
@@ -1965,7 +2009,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokunun.",
   "settings.tor.custom_empty": "Önce en az bir köprü satırı ekleyin.",
   "settings.tor.recovered":
-    "Tor kapatıldı, çünkü geçen sefer başlatma tamamlanmadı. Yeniden denemek için tekrar açın.",
+    "Tor geçen sefer başlatmayı tamamlamadı, bu yüzden internet trafiği duraklatıldı. Yeniden dene ya da Tor olmadan çevrimiçi olmak için Tor'u kapat.",
+  "settings.tor.retry": "Yeniden dene",
   "settings.conn.mint_clearnet":
     "Darphane trafiğine açık ağ üzerinden izin ver",
   "settings.conn.mint_clearnet_desc":
@@ -2132,9 +2177,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Yeni telefonundaki kodu taramak için Ayarlar'dan kamera erişimini aç.",
   "settings.transfer.confirm_title": "Bu telefona taşınsın mı?",
-  "settings.transfer.confirm_body":
-    "Buradaki her şey bu kodu gösteren telefona taşınır. Aktarım bitince bu telefon temizlenir.",
+  "settings.transfer.verify_body":
+    "Yeni telefonun da bu kelimelerin aynısını göstermeli. Buradaki her şey ona taşınır, sonra bu telefon temizlenir.",
   "settings.transfer.confirm_cta": "Taşı",
+  "settings.transfer.waiting_confirm": "Yeni telefonunda onayla",
   "settings.transfer.connecting": "Yeni telefonuna bağlanılıyor",
   "settings.transfer.connecting_hint":
     "Bu telefon yerel ağdaki cihazları bulmak için izin isterse izin ver.",
@@ -2193,7 +2239,7 @@ export const strings: Strings = {
   "settings.wipe.now": "Şimdi temizle",
   "settings.wipe.desc": "Tüm anahtarları, mesajları ve ecash'i anında yok eder",
   "settings.wipe.body":
-    "Bu, tüm anahtarlarını, mesajlarını ve ecash'ini anında yok eder. Geri alınamaz.",
+    "Bu, tüm anahtarlarını, mesajlarını ve ecash'ini anında yok eder. Geri alınamaz. Galerine kaydettiğin fotoğraflar orada kalır.",
   "settings.wipe.in_progress": "Temizleniyor",
   "settings.wipe.in_progress_body":
     "Anahtarların, mesajların ve dosyaların yok ediliyor. Bu birkaç saniye sürer ve uygulama kapansa bile kendiliğinden tamamlanır.",
@@ -2257,6 +2303,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "{version} sürümünün notlarını gör",
   "settings.version.tor_paused":
     "IP adresini sızdırmasın diye, Tor açıkken güncelleme denetimi duraklatılır. Yayınlar sayfasına bir tarayıcıdan bak.",
+  "settings.version.internet_off":
+    "İnternet kapalıyken güncellemeler duraklatılır. Ayarlar'da {setting} seçeneğini aç.",
   "settings.version.check_failed":
     "Güncellemeler denetlenemedi. Bağlantını denetleyip yeniden dene.",
   "settings.version.downloading": "İndiriliyor {percent}%",
@@ -2433,6 +2481,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} onaylanmamış",
     other: "{count} onaylanmamış",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "Ücretler en son {count} gün önce denetlendi. Bu darphane o zamandan beri ücretini artırdıysa gönderim biraz daha fazlaya mal olabilir.",
+    other:
+      "Ücretler en son {count} gün önce denetlendi. Bu darphane o zamandan beri ücretini artırdıysa gönderim biraz daha fazlaya mal olabilir.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} jeton zaten harcanmıştı ve kaldırıldı.",

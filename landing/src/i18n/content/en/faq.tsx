@@ -1,6 +1,8 @@
 import TextLink from "@/components/ui/TextLink";
 import { REPO_LINKS, REPO_URL } from "@/lib/links";
 
+const CODE = "bg-inner text-ink rounded-[6px] px-1 py-0.5 text-[0.85em]";
+
 export interface FaqSection {
   heading: string;
   questions: { q: string; a: React.ReactNode }[];
@@ -1176,6 +1178,34 @@ export const FAQ_SECTIONS: FaqSection[] = [
             Yes. The full source code is on <TextLink href={REPO_URL}>GitHub</TextLink> under the{" "}
             <TextLink href={REPO_LINKS.license}>MIT license</TextLink>. Protocol specifications are
             in the docs/ directory.
+          </>
+        ),
+      },
+      {
+        q: "How do I check the APK is genuine?",
+        a: (
+          <>
+            Every Airhop release APK is signed with one key. Before installing a copy someone sent
+            you, check that it is the package{" "}
+            <code dir="ltr" className={CODE}>
+              org.onemindlabs.airhop
+            </code>{" "}
+            and that its signing certificate&apos;s SHA-256 is:
+            <code
+              dir="ltr"
+              className="bg-inner text-ink my-2 block rounded-[6px] px-2 py-1.5 text-[0.85em] break-all"
+            >
+              60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49
+            </code>
+            On a computer,{" "}
+            <code dir="ltr" className={CODE}>
+              apksigner verify --print-certs airhop.apk
+            </code>{" "}
+            prints it. On a phone, an app verifier such as{" "}
+            <TextLink href="https://github.com/soupslurpr/AppVerifier">AppVerifier</TextLink> checks
+            it. The <TextLink href={REPO_LINKS.verifyApk}>README</TextLink> has the full commands,
+            including one that proves a download was built from its release tag by this repository.
+            After the first install, Android refuses any update signed by a different key.
           </>
         ),
       },

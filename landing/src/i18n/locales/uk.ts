@@ -187,6 +187,10 @@ const strings: Strings = {
   "home.features.identity.names.line": "Виводяться з вашого ключа, тож ваше ім’я ніхто не забере.",
   "home.features.identity.qr.name": "Контакти через QR",
   "home.features.identity.qr.line": "Одне сканування передає їхні ключі, а не лише ім’я.",
+  "home.features.identity.forward.name": "Пряма секретність",
+  "home.features.identity.forward.line": "Ключ, що витік, не відкриє минулих повідомлень.",
+  "home.features.identity.move.name": "Перехід на новий телефон",
+  "home.features.identity.move.line": "Чати й гаманець переїжджають, а старий телефон стирає себе.",
   "home.features.identity.panic.name": "Екстрене стирання",
   "home.features.identity.panic.line":
     "Кожен ключ і кожне повідомлення знищуються менш ніж за секунду.",
@@ -196,6 +200,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth-mesh",
   "home.features.networking.mesh.line":
     "Без інтернету, без роутера, на телефонах, які в людей уже є.",
+  "home.features.networking.lan.name": "Локальна мережа",
+  "home.features.networking.lan.line": "Спільний WiFi або точка доступу, iPhone і Android разом.",
+  "home.features.networking.hops.name": "Ретрансляція ланцюжком",
+  "home.features.networking.hops.line":
+    "Кожен телефон передає повідомлення далі, до семи переходів.",
   "home.features.networking.bridge.name": "Міст між mesh",
   "home.features.networking.bridge.line":
     "Зв’язує ваш публічний чат із групою поблизу поза межами досяжності.",

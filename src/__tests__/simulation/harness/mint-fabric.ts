@@ -203,7 +203,10 @@ interface Keyset {
 
 export class MintFabric {
   readonly url: string;
-  private readonly keyset: Keyset;
+  // Oldest first; the last is the active one. Earlier keysets are listed as
+  // inactive after a rotation and still honoured as inputs, as NUT-02 says.
+  private readonly keysets: Keyset[] = [];
+  private readonly keysetVersion: 0 | 1;
   // Every proof secret the mint has signed, and whether it has been spent.
   private conditions: MintConditions = { ...DEFAULT_CONDITIONS };
   private readonly quotes = new Map<
@@ -260,12 +263,21 @@ export class MintFabric {
     opts: { keysetVersion?: 0 | 1 } = {},
   ) {
     this.url = url;
+    this.keysetVersion = opts.keysetVersion ?? 0;
+    this.keysets.push(this.buildKeyset("airhop-sim-mint"));
+  }
+
+  private get keyset(): Keyset {
+    return this.keysets[this.keysets.length - 1]!;
+  }
+
+  private buildKeyset(label: string): Keyset {
     const keys = new Map<number, Uint8Array>();
     const publicKeys: Record<string, string> = {};
     for (const amount of DENOMINATIONS) {
       // Deterministic per denomination, so a scenario replays identically.
       const priv = sha256(
-        new TextEncoder().encode(`airhop-sim-mint-${String(amount)}`),
+        new TextEncoder().encode(`${label}-${String(amount)}`),
       );
       keys.set(amount, priv);
       publicKeys[String(amount)] = bytesToHex(
@@ -282,19 +294,24 @@ export class MintFabric {
     // mint's keyset list expands. A v2 id also covers the unit and fee, so it
     // holds only while `inputFeePpk` stays 0.
     const id =
-      opts.keysetVersion === 1
+      this.keysetVersion === 1
         ? deriveKeysetId(publicKeys, {
             versionByte: 1,
             unit: "sat",
             input_fee_ppk: 0,
           })
         : deriveKeysetId(publicKeys, { versionByte: 0 });
-    this.keyset = {
-      id,
-      unit: "sat",
-      keys,
-      publicKeys,
-    };
+    return { id, unit: "sat", keys, publicKeys };
+  }
+
+  // A key rotation: a new active keyset signs from now on, and the old one is
+  // listed inactive with no keys in `/v1/keys` (NUT-01 serves active keysets
+  // only), fetchable by id and still honoured as an input.
+  rotateKeyset(): void {
+    this.keysets.push(
+      this.buildKeyset(`airhop-sim-mint-r${String(this.keysets.length)}`),
+    );
+    this.world.say("MINT_KEYSET_ROTATED", this.keyset.id);
   }
 
   // ---- lifecycle ----
@@ -417,8 +434,8 @@ export class MintFabric {
 
   private dispatch(path: string, body: Record<string, unknown>): Response {
     if (path.startsWith("/v1/info")) return this.info();
-    if (path.startsWith("/v1/keysets")) return this.keysets();
-    if (path.startsWith("/v1/keys")) return this.keys();
+    if (path.startsWith("/v1/keysets")) return this.listKeysets();
+    if (path.startsWith("/v1/keys")) return this.keys(path);
     if (path.startsWith("/v1/checkstate")) return this.checkState(body);
     if (path.startsWith("/v1/restore")) return this.restore(body);
     if (path.startsWith("/v1/swap")) return this.swap(body);
@@ -523,29 +540,51 @@ export class MintFabric {
     });
   }
 
-  private keysets(): Response {
+  private listKeysets(): Response {
     return this.json({
-      keysets: [
-        {
-          id: this.keyset.id,
-          unit: this.keyset.unit,
-          active: true,
-          input_fee_ppk: this.conditions.inputFeePpk,
-        },
-      ],
+      keysets: this.keysets.map((keyset) => ({
+        id: keyset.id,
+        unit: keyset.unit,
+        active: keyset === this.keyset,
+        input_fee_ppk: this.conditions.inputFeePpk,
+      })),
     });
   }
 
-  private keys(): Response {
+  // `/v1/keys` serves the active keyset; `/v1/keys/{id}` any listed one.
+  private keys(path: string): Response {
+    const id = path.slice("/v1/keys/".length);
+    const keyset =
+      id.length > 0 ? this.keysets.find((k) => k.id === id) : this.keyset;
+    if (keyset === undefined) {
+      return this.json({ detail: "keyset not found", code: 12001 }, 400);
+    }
     return this.json({
-      keysets: [
-        {
-          id: this.keyset.id,
-          unit: this.keyset.unit,
-          keys: this.keyset.publicKeys,
-        },
-      ],
+      keysets: [{ id: keyset.id, unit: keyset.unit, keys: keyset.publicKeys }],
     });
+  }
+
+  // BDHKE's check on an input: C == k * hash_to_curve(secret), for the key of
+  // its keyset and amount. A mint that skipped it would redeem any coin a
+  // forger typed out, and every forged-token scenario would pass at the mint.
+  private refusesInput(input: {
+    id: string;
+    amount: number;
+    secret: string;
+    C: string;
+  }): boolean {
+    const priv = this.keysets
+      .find((k) => k.id === input.id)
+      ?.keys.get(input.amount);
+    if (priv === undefined) return true;
+    try {
+      const expected = hashToCurve(
+        new TextEncoder().encode(input.secret),
+      ).multiply(BigInt(`0x${bytesToHex(priv)}`));
+      return !expected.equals(secp256k1.Point.fromHex(input.C));
+    } catch {
+      return true;
+    }
   }
 
   // NUT-07: which of these proofs has the mint already seen spent?
@@ -578,7 +617,17 @@ export class MintFabric {
       id: string;
     }[];
 
-    // Double-spend check FIRST, before anything is marked. Whoever gets here
+    // Nutshell's order: every input must be the mint's own signature before
+    // its spent state is even consulted.
+    if (inputs.some((input) => this.refusesInput(input))) {
+      this.world.say("MINT_INPUT_UNVERIFIED", "a proof the mint never signed");
+      return this.json(
+        { detail: "Token could not be verified.", code: 10003 },
+        400,
+      );
+    }
+
+    // Double-spend check next, before anything is marked. Whoever gets here
     // second is refused, which is the entire security model of ecash.
     for (const input of inputs) {
       const y = this.yFor(input.secret);
@@ -746,7 +795,18 @@ export class MintFabric {
   }
 
   private melt(body: Record<string, unknown>): Response {
-    const inputs = (body.inputs ?? []) as { secret: string; amount: number }[];
+    const inputs = (body.inputs ?? []) as {
+      id: string;
+      secret: string;
+      amount: number;
+      C: string;
+    }[];
+    if (inputs.some((input) => this.refusesInput(input))) {
+      return this.json(
+        { detail: "Token could not be verified.", code: 10003 },
+        400,
+      );
+    }
     for (const input of inputs) {
       const y = this.yFor(input.secret);
       if (this.spentYs.has(y)) {
@@ -889,7 +949,8 @@ export class MintFabric {
     C_: string;
     dleq: { e: string; s: string };
   } {
-    const priv = this.keyset.keys.get(output.amount);
+    const keyset = this.keysets.find((k) => k.id === output.id) ?? this.keyset;
+    const priv = keyset.keys.get(output.amount);
     if (priv === undefined) {
       throw new Error(`no key for denomination ${output.amount}`);
     }
@@ -898,7 +959,7 @@ export class MintFabric {
     this.totalIssued += output.amount;
     const dleq = createDLEQProof(B, priv);
     const signature = {
-      id: this.keyset.id,
+      id: keyset.id,
       amount: output.amount,
       C_: C.toHex(true),
       dleq: { e: bytesToHex(dleq.e), s: bytesToHex(dleq.s) },

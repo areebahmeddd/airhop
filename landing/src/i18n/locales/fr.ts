@@ -195,6 +195,11 @@ const strings: Strings = {
     "Dérivés de votre clé, donc personne ne peut prendre le vôtre.",
   "home.features.identity.qr.name": "Contacts par QR",
   "home.features.identity.qr.line": "Un scan transmet leurs clés, pas seulement leur nom.",
+  "home.features.identity.forward.name": "Confidentialité persistante",
+  "home.features.identity.forward.line": "Une clé divulguée n'ouvre pas les anciens messages.",
+  "home.features.identity.move.name": "Passer à un nouveau téléphone",
+  "home.features.identity.move.line":
+    "Discussions et portefeuille suivent, puis l'ancien téléphone s'efface.",
   "home.features.identity.panic.name": "Effacement d'urgence",
   "home.features.identity.panic.line":
     "Chaque clé et chaque message détruits en moins d'une seconde.",
@@ -204,6 +209,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Sans internet, sans routeur, sur des téléphones que les gens ont déjà.",
+  "home.features.networking.lan.name": "Réseau local",
+  "home.features.networking.lan.line": "WiFi partagé ou point d'accès, iPhone et Android ensemble.",
+  "home.features.networking.hops.name": "Relais multi-sauts",
+  "home.features.networking.hops.line": "Chaque téléphone relaie les messages, jusqu'à sept sauts.",
   "home.features.networking.bridge.name": "Pont mesh",
   "home.features.networking.bridge.line":
     "Relie votre discussion publique à un groupe proche hors de portée.",

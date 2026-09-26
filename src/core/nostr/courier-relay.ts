@@ -26,10 +26,14 @@ import type { NostrClient } from "./nostr-client";
 // Event kind per PROTOCOLS.md section 8 / bitchat NostrProtocol.swift.
 const KIND_COURIER_DROP = 1401;
 
-// Ceiling on the backfill a relay may replay when the subscription opens.
-// Nobody accumulates more than a handful of parked messages inside one envelope
-// lifetime, so past this is a noisy relay rather than missed mail.
-const MAX_FETCH_PER_POLL = 20;
+// Ceiling on the backfill a relay may replay when the subscription opens,
+// bitchat-ios's courierDrops limit. It bounds a flood, not honest volume: the
+// daily tag is computable by anyone who heard our announce, and a relay returns
+// the newest drops first, so junk parked after real mail pushes it out of the
+// window. 100 raises that cost. There is deliberately no paging with `until`,
+// as in bitchat-ios: a flood can outrun any page budget, every junk page costs
+// Schnorr checks, and this path is only a fallback to the mesh and the outbox.
+const MAX_FETCH_PER_POLL = 100;
 
 // Publish a sealed courier envelope to Nostr as a kind 1401 event.
 // The envelope's expiryMs is used as the NIP-40 expiration tag.

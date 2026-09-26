@@ -8,8 +8,9 @@
 // surface, so nothing above here branches on platform for Tor's lifecycle.
 //
 // One difference survives, and it is about coverage rather than lifecycle. On
-// Android the proxy is installed into React Native's shared OkHttp client, so
-// every socket the app opens is covered, `fetch` included. On iOS only the Nostr
+// Android the proxy is installed into React Native's OkHttp clients and as the
+// process's default selector, so every web request the Java stack makes is
+// covered, `fetch` and downloads included. On iOS only the Nostr
 // WebSocket goes through Tor, which is why a mint request there has to be
 // refused rather than routed. See services/tor-routing.ts.
 import type { EventSubscription, TurboModule } from "react-native";
@@ -51,6 +52,12 @@ export interface Spec extends TurboModule {
   // guard nodes and directory state, which together are evidence on disk that
   // this device used Tor and roughly when.
   wipeTorState(): Promise<void>;
+
+  // Fail closed without starting anything, for a launch after a start that
+  // never answered. Android points its HTTP stack at a proxy nothing can
+  // listen on, until a later start or stop; iOS proxies nothing but the
+  // Nostr socket, which JS holds itself, so it resolves as a no-op.
+  holdRoute(): Promise<void>;
 
   // Tell Arti which side of the screen the app is on, so it can sleep.
   //

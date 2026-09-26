@@ -50,7 +50,7 @@ You must read these four documents before making any code suggestions:
 | Native module specs (hand-maintained, interop layer)          | `src/bridge/`                         |
 | Root component and tab state machine                          | `src/app/`                            |
 | Whole-app lifecycle and simulation suites                     | `src/__tests__/`                      |
-| Native unit tests (framing, Aware dial rules)                 | `android/app/src/test/`, `ios/Tests/` |
+| Native unit tests (framing, Aware dial rules, long writes)    | `android/app/src/test/`, `ios/Tests/` |
 | iOS native                                                    | `ios/`                                |
 | Android native                                                | `android/`                            |
 | Embedded Tor client (Rust, both platforms)                    | `native/arti/`                        |

@@ -18,6 +18,7 @@ import {
   mayContainToken,
   type EmbeddedToken,
 } from "@core/payments/cashu";
+import { newMessageId } from "@core/router/message-router";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { stripIsolates, t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
@@ -31,6 +32,7 @@ import {
   adoptIntoAttachmentCache,
   AttachmentTooLargeError,
   CACHE_FILE_PREFIX,
+  discardPickerCopy,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
@@ -45,9 +47,11 @@ import {
   fetchKeysetsForTokenText,
   hostOf,
   receiveToken,
+  tokenLockedToOthers,
 } from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
+import { useBlockedStore } from "@store/blocked-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import {
   useChatStore,
@@ -66,7 +70,7 @@ import {
   transferSpeedBps,
   useTransferStore,
 } from "@store/transfer-store";
-import { keysetIdsOf, useWalletStore } from "@store/wallet-store";
+import { keysetRefsOf, useWalletStore } from "@store/wallet-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -1625,14 +1629,18 @@ export default function MessageThread({
 
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
-  // A DM has only one other person, so mentions there add nothing.
+  // A DM has only one other person, so mentions there add nothing. Nearby peers
+  // and participants already exclude blocked people; a roster does not.
   const mentionCandidates = useMemo<{ id: string; nickname: string }[]>(() => {
     if (channel.startsWith("dm:")) return [];
     if (channel.startsWith("group:")) {
       const members =
         useGroupStore.getState().get(channel.slice("group:".length))?.members ??
         [];
-      return members.map((m) => ({ id: m.fingerprint, nickname: m.nickname }));
+      const blocked = useBlockedStore.getState();
+      return members
+        .filter((m) => !blocked.isBlocked(m.fingerprint.slice(0, 16)))
+        .map((m) => ({ id: m.fingerprint, nickname: m.nickname }));
     }
     if (isGeo) {
       return geoMembers.map((m) => ({ id: m.pubkey, nickname: m.nickname }));
@@ -1816,11 +1824,13 @@ export default function MessageThread({
   const [claimingToken, setClaimingToken] = useState<string | null>(null);
   // Tokens already taken into the wallet, so their cards read "Claimed".
   const claimedTokens = useWalletStore((s) => s.claimedTokens);
+  // The sender's side of the same: a send the wallet has settled as redeemed.
+  const walletHistory = useWalletStore((s) => s.history);
   // A V4 token names its keyset by a short id, and the v2 form cannot be
   // decoded without the full id to map it back to. Memoised on `mints` because
   // the list is rebuilt each call and every message render reads it.
   const mints = useWalletStore((s) => s.mints);
-  const keysetIds = useMemo(() => keysetIdsOf(mints), [mints]);
+  const keysetRefs = useMemo(() => keysetRefsOf(mints), [mints]);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showDMInfo, setShowDMInfo] = useState(false);
   // Channel-message sender profile sheet: tap a message's avatar/name to
@@ -2315,7 +2325,7 @@ export default function MessageThread({
           service.sendGroupMessage(
             channel.slice("group:".length),
             text,
-            `${localPeerID}-${Date.now()}`,
+            newMessageId(),
           );
         } else {
           // Private channel: sealed under the channel key, so this reaches
@@ -2329,7 +2339,7 @@ export default function MessageThread({
         ? "chat.screenshot.you_took"
         : "chat.screenshot.you_took_private";
       addMessage({
-        id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        id: newMessageId(),
         channel,
         senderID: localPeerID,
         senderNickname: localNickname,
@@ -2424,7 +2434,7 @@ export default function MessageThread({
         setStatus(msgChannel, msg.id, "sent");
       } else {
         // Sealed but nobody in range. NOT a failure: the packet is now a gossip
-        // candidate for fifteen minutes, so the first member to come into range
+        // candidate for six hours, so the first member to come into range
         // and ask for a sync gets it. "queued" is exactly that, and it is the
         // common case for a group, whose members are specific people who are
         // usually not all nearby. Marking it failed would paint most group
@@ -2451,7 +2461,7 @@ export default function MessageThread({
         showNoReachStatus();
       } else {
         // A mesh channel's audience IS whoever is in range, and the packet stays
-        // a gossip candidate for fifteen minutes, so the next neighbour to turn
+        // a gossip candidate for six hours, so the next neighbour to turn
         // up gets it. Same reasoning as the group branch above: this is waiting,
         // not broken, and painting it red would be the harsher of two lies.
         setStatus(msgChannel, msg.id, "queued");
@@ -2569,7 +2579,7 @@ export default function MessageThread({
     commitHeld();
 
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -2694,7 +2704,7 @@ export default function MessageThread({
     if (!canSendMedia(targetChannel)) return;
     const caption = options?.caption?.trim() ?? "";
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel: targetChannel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -2736,10 +2746,8 @@ export default function MessageThread({
     // Read the file bytes and push them through the file-transfer pipeline.
     void (async () => {
       try {
-        // expo-file-system 57 removed the legacy readAsStringAsync (it now
-        // throws at runtime). The File API reads raw bytes directly, which also
-        // drops the base64 -> binary-string -> Uint8Array round-trip this used
-        // to do, and that was ~2.4x peak memory for every attachment.
+        // Raw bytes through the File API: a base64 read would cost ~2.4x peak
+        // memory per attachment.
         const bytes = await new FileSystem.File(uri).bytes();
         const reached = service.sendAttachment(
           targetChannel,
@@ -2857,7 +2865,7 @@ export default function MessageThread({
       return false;
     }
     const msg: ChatMessage = {
-      id: `${localPeerID}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: newMessageId(),
       channel: targetChannel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -3204,6 +3212,16 @@ export default function MessageThread({
     setCaptionDraft("");
 
     if (p.type !== "image") {
+      // Out of the picker's folder and under the attachment prefix before it
+      // is read, so retention, Storage and Clear all see what was sent.
+      const send = (): void => {
+        void adoptIntoAttachmentCache(p.uri, p.name ?? p.type).then((uri) => {
+          sendAttachmentMessage(p.type, uri, p.name, p.mimeType, undefined, {
+            sizeBytes: p.sizeBytes,
+            caption,
+          });
+        });
+      };
       // A bitchat recipient handles a video or a document very differently from
       // an Airhop one, and neither difference is visible from this screen, so say
       // it before the send rather than leaving the user with a sent tick and a
@@ -3212,27 +3230,16 @@ export default function MessageThread({
       const caution = bitchatMediaCaution(p.type, p.sizeBytes);
       if (caution !== null) {
         showAlert(caution.title, caution.body, [
-          { text: T("common.cancel"), style: "cancel" },
           {
-            text: T("chat.attach.send_anyway"),
-            onPress: () => {
-              sendAttachmentMessage(
-                p.type,
-                p.uri,
-                p.name,
-                p.mimeType,
-                undefined,
-                { sizeBytes: p.sizeBytes, caption },
-              );
-            },
+            text: T("common.cancel"),
+            style: "cancel",
+            onPress: () => discardPickerCopy(p.uri),
           },
+          { text: T("chat.attach.send_anyway"), onPress: send },
         ]);
         return;
       }
-      sendAttachmentMessage(p.type, p.uri, p.name, p.mimeType, undefined, {
-        sizeBytes: p.sizeBytes,
-        caption,
-      });
+      send();
       return;
     }
     void (async () => {
@@ -3253,7 +3260,9 @@ export default function MessageThread({
     })();
   }
 
+  // The picker's copy goes with the sheet: nothing else will ever read it.
   function cancelPendingAttachment(): void {
+    if (pendingAttachment !== null) discardPickerCopy(pendingAttachment.uri);
     setPendingAttachment(null);
     setCaptionDraft("");
   }
@@ -4236,9 +4245,11 @@ export default function MessageThread({
 
   function renderTokenCard(
     token: EmbeddedToken,
-    isMine: boolean,
-    reclaimed: boolean,
+    item: ChatMessage,
   ): React.JSX.Element {
+    const isMine = item.isMine;
+    const paid = isMine && isSendPaid(item.id);
+    const reclaimed = isMine && !paid && item.status === "reclaimed";
     return (
       <View style={styles.paymentCard}>
         <View style={styles.paymentCardHeader}>
@@ -4256,11 +4267,19 @@ export default function MessageThread({
         {/* A send the user pulled back. On the card, not just in the message
             info: the amount is printed right above, so without this the card
             still reads as money the recipient can take. */}
-        {isMine && reclaimed && (
+        {reclaimed && (
           <View style={styles.paymentCardVoid}>
             <Feather name="rotate-ccw" size={13} color={Colors.textMuted} />
             <Text style={styles.paymentCardVoidText}>
               {T("chat.ecash.reclaimed")}
+            </Text>
+          </View>
+        )}
+        {paid && (
+          <View style={styles.paymentCardClaimed}>
+            <Feather name="check" size={13} color={Colors.online} />
+            <Text style={styles.paymentCardClaimedText}>
+              {t("chat.ecash.claimed")}
             </Text>
           </View>
         )}
@@ -4272,6 +4291,14 @@ export default function MessageThread({
               <Feather name="check" size={13} color={Colors.online} />
               <Text style={styles.paymentCardClaimedText}>
                 {t("chat.ecash.claimed")}
+              </Text>
+            </View>
+          ) : tokenLockedToOthers(token.info) ? (
+            // Only its owner's key can spend it, so a Claim would only fail.
+            <View style={styles.paymentCardVoid}>
+              <Feather name="lock" size={13} color={Colors.textMuted} />
+              <Text style={styles.paymentCardVoidText}>
+                {t("chat.ecash.locked")}
               </Text>
             </View>
           ) : (
@@ -4305,6 +4332,15 @@ export default function MessageThread({
   function isTokenClaimed(token: EmbeddedToken): boolean {
     const first = token.info.token.proofs[0]?.secret;
     return first !== undefined && claimedTokens.includes(first);
+  }
+
+  // A token message you sent carries its send's transaction ID, and the wallet
+  // completes that send once the mint reports the coins spent (or you confirm
+  // it landed). A token pasted in by hand has no send, so it never reads paid.
+  function isSendPaid(messageId: string): boolean {
+    return walletHistory.some(
+      (tx) => tx.id === messageId && tx.status === "completed",
+    );
   }
 
   // Show a date separator when consecutive messages are from different days.
@@ -4601,7 +4637,7 @@ export default function MessageThread({
             // Compute the token list once and suppress raw text when the
             // entire message is a Cashu token (no extra prose).
             const tokens = mayContainToken(item.text)
-              ? findTokensInText(item.text, keysetIds)
+              ? findTokensInText(item.text, keysetRefs)
               : [];
             const isPureToken =
               tokens.length > 0 && tokens[0]!.raw.trim() === item.text.trim();
@@ -4616,7 +4652,11 @@ export default function MessageThread({
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
-                : `${claimingToken ?? ""}#${tokens.filter(isTokenClaimed).length}`,
+                : item.isMine
+                  ? isSendPaid(item.id)
+                    ? "paid"
+                    : ""
+                  : `${claimingToken ?? ""}#${tokens.filter(isTokenClaimed).length}`,
             ].join("|");
 
             return (
@@ -4636,13 +4676,7 @@ export default function MessageThread({
                   isFirstFromSender={isFirstFromSender}
                   tokens={tokens}
                   isPureToken={isPureToken}
-                  renderToken={(token) =>
-                    renderTokenCard(
-                      token,
-                      item.isMine,
-                      item.status === "reclaimed",
-                    )
-                  }
+                  renderToken={(token) => renderTokenCard(token, item)}
                   renderAttachment={(attachment) =>
                     renderAttachmentBubble(attachment, item.id, item.isMine)
                   }

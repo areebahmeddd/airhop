@@ -34,6 +34,7 @@ import {
   fragmentPacket,
   MAX_BLE_FRAME,
 } from "@core/mesh/routing/fragment-manager";
+import { encodeGossipFilterPayload } from "@core/mesh/sync/gossip-sync";
 import {
   decodePacket,
   encodePacket,
@@ -44,6 +45,7 @@ import {
 } from "@core/mesh/wire/packet-codec";
 import {
   channelPacketType,
+  decodeMeshPublicPayload,
   encodeAirhopChannelPayload,
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
@@ -122,7 +124,8 @@ function signedPublicMessage(
   }
   const packet: Packet = {
     type: channelPacketType(channel),
-    ttl: 7,
+    // A sync reply is link-local, so one tagged IS_RSR travels at ttl 0.
+    ttl: isRSR ? 0 : 7,
     flags: Flags.SIGNED,
     senderID,
     recipientID: new Uint8Array(8),
@@ -858,6 +861,516 @@ test("S08 a message too long for one frame still reaches a latecomer", async () 
     "nothing was written past the Bluetooth frame",
     radio.framesOversized === 0,
     `oversized=${String(radio.framesOversized)}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+// The same packet re-tagged as a sync reply: ttl and IS_RSR sit outside the
+// signed bytes, so the author's signature still verifies.
+function asReply(bytes: Uint8Array, ttl = 0): string {
+  const packet = decodePacket(bytes);
+  if (packet === null) throw new Error("packet does not decode");
+  return bytesToBase64(encodePacket({ ...packet, ttl, isRSR: true }));
+}
+
+function stripped(bytes: Uint8Array, ttl: number): string {
+  const packet = decodePacket(bytes);
+  if (packet === null) throw new Error("packet does not decode");
+  return bytesToBase64(encodePacket({ ...packet, ttl, isRSR: false }));
+}
+
+function syncRequest(opts: {
+  claimed: SimDevice;
+  to: SimDevice;
+  ttl: number;
+  signWith?: SimDevice;
+  at: number;
+}): string {
+  const senderID = new Uint8Array(8);
+  const recipientID = new Uint8Array(8);
+  for (let i = 0; i < 8; i++) {
+    senderID[i] = parseInt(opts.claimed.peerID.slice(i * 2, i * 2 + 2), 16);
+    recipientID[i] = parseInt(opts.to.peerID.slice(i * 2, i * 2 + 2), 16);
+  }
+  const packet: Packet = {
+    type: PacketType.REQUEST_SYNC,
+    ttl: opts.ttl,
+    flags:
+      Flags.HAS_RECIPIENT | (opts.signWith !== undefined ? Flags.SIGNED : 0),
+    senderID,
+    recipientID,
+    timestamp: opts.at,
+    signature: new Uint8Array(64),
+    // An empty filter: "I hold nothing", so any answer is the whole store.
+    payload: encodeGossipFilterPayload({
+      p: 7,
+      m: 1,
+      data: new Uint8Array(0),
+      types: 1 << 1,
+    }),
+  };
+  if (opts.signWith !== undefined) {
+    packet.signature = signPacket(
+      packet,
+      opts.signWith.identity.signingPrivKey,
+    );
+  }
+  return bytesToBase64(encodePacket(packet));
+}
+
+// Mallory's own periodic sync requests would draw answers indistinguishable
+// from the ones under test, so her gossip round is stopped.
+function silenceSync(device: SimDevice): void {
+  (device.mesh as unknown as { gossip: { stop: () => void } }).gossip.stop();
+}
+
+test("S11 a sync request is answered only when it is the link peer's own", async () => {
+  // One request can draw a node's whole store down a link, so it is answered
+  // only when it is what bitchat-ios would answer: link-local, from the peer
+  // bound to the link it came in on, and signed by that peer. A relayed one
+  // asks every node it reaches.
+  const s = (scenario = new Scenario({
+    id: "S11",
+    title: "unsigned, relayed and misattributed sync requests",
+    seed: 111,
+  }));
+  const { radio, devices } = phones(s, ["alice", "carol", "mallory"]);
+  const [alice, carol, mallory] = devices;
+  radio.setChain(["mallory", "carol", "alice"]);
+  for (const d of devices) d.launch();
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+  await waitForCoarse(
+    s.world,
+    () =>
+      carol.peers().includes(alice.peerID) &&
+      carol.peers().includes(mallory.peerID),
+    45_000,
+  );
+  silenceSync(mallory);
+  carol.send(channel, "something carol holds");
+  await s.world.advance(20_000);
+
+  let answers = 0;
+  let relayed = 0;
+  const stop = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== carol.id) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p === null) return;
+    if (linkID === `link:${mallory.id}` && p.isRSR === true) answers++;
+    if (
+      p.type === PacketType.REQUEST_SYNC &&
+      hex(p.senderID) !== carol.peerID
+    ) {
+      relayed++;
+    }
+  });
+  const tryRequest = async (frame: string): Promise<number> => {
+    const before = answers;
+    radio.injectTo(carol.id, mallory.id, frame);
+    await s.world.advance(2_000);
+    return answers - before;
+  };
+
+  const crafted = await tryRequest(
+    syncRequest({
+      claimed: mallory,
+      to: carol,
+      ttl: 7,
+      signWith: mallory,
+      at: s.world.wallClock(),
+    }),
+  );
+  s.check("a request with TTL headroom is not answered", crafted === 0);
+  s.check("nor relayed onward", relayed === 0, `relayed=${String(relayed)}`);
+
+  const unsigned = await tryRequest(
+    syncRequest({
+      claimed: mallory,
+      to: carol,
+      ttl: 0,
+      at: s.world.wallClock(),
+    }),
+  );
+  s.check("an unsigned request is not answered", unsigned === 0);
+
+  const misattributed = await tryRequest(
+    syncRequest({
+      claimed: alice,
+      to: carol,
+      ttl: 0,
+      signWith: alice,
+      at: s.world.wallClock(),
+    }),
+  );
+  s.check(
+    "a request naming someone other than the link's peer is not answered",
+    misattributed === 0,
+  );
+
+  const genuine = await tryRequest(
+    syncRequest({
+      claimed: mallory,
+      to: carol,
+      ttl: 0,
+      signWith: mallory,
+      at: s.world.wallClock(),
+    }),
+  );
+  s.check(
+    "the link peer's own signed request is answered",
+    genuine > 0,
+    `answers=${String(genuine)}`,
+  );
+  stop();
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+// Carol, having met alice, now alone with mallory, who she asks for a sync on
+// every round: the neighbour whose replies are exempt from the window.
+async function askedNeighbour(s: Scenario): Promise<{
+  radio: RadioFabric;
+  alice: SimDevice;
+  carol: SimDevice;
+  mallory: SimDevice;
+  channel: string;
+}> {
+  const { radio, devices } = phones(s, ["alice", "carol", "mallory"]);
+  const [alice, carol, mallory] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const channel = "#den";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(alice.peerID),
+    45_000,
+  );
+  s.check("carol holds alice's key", met);
+  radio.setTopology([["carol", "mallory"]]);
+  await waitForCoarse(
+    s.world,
+    () => radio.isLinked("carol", "mallory"),
+    30_000,
+  );
+  let asked = false;
+  const stopTap = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== carol.id || linkID !== `link:${mallory.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.type === PacketType.REQUEST_SYNC) asked = true;
+  });
+  const requested = await waitFor(s.world, () => asked, 40_000);
+  stopTap();
+  s.check("carol asked mallory for a sync", requested);
+  return { radio, alice, carol, mallory, channel };
+}
+
+test("S12 a sync reply is taken only inside the window it would be served for", async () => {
+  // bitchat-ios serves six hours of public history, so a reply that old is
+  // backfill. One from two days ago is a recording wearing the flag.
+  const s = (scenario = new Scenario({
+    id: "S12",
+    title: "old IS_RSR replays against the message window",
+    seed: 112,
+  }));
+  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const now = s.world.wallClock();
+  const reply = (text: string, ageMs: number): void => {
+    radio.injectTo(
+      carol.id,
+      mallory.id,
+      asReply(signedPublicMessage(alice, channel, text, now - ageMs, text)),
+    );
+  };
+
+  reply("from two days ago", 2 * 24 * 60 * 60_000);
+  reply("from ten minutes ago", 10 * 60_000);
+  reply("from five hours ago", 5 * 60 * 60_000);
+  await s.world.advance(3_000);
+  s.check(
+    "a two-day-old reply is refused",
+    !carol.texts(channel).includes("from two days ago"),
+  );
+  s.check(
+    "a ten-minute-old reply is backfilled",
+    carol.texts(channel).includes("from ten minutes ago"),
+  );
+  s.check(
+    "and one from five hours ago, inside bitchat-ios's six",
+    carol.texts(channel).includes("from five hours ago"),
+    `carol thread = [${carol.texts(channel).join(" | ")}]`,
+  );
+  s.assert(true);
+});
+
+test("S13 a sync reply carrying TTL is refused", async () => {
+  // A reply is link-local by construction. One with hops left would be relayed
+  // with its exemption intact, and the next node, which also asked us, would
+  // take it too.
+  const s = (scenario = new Scenario({
+    id: "S13",
+    title: "IS_RSR with TTL headroom",
+    seed: 113,
+  }));
+  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const at = s.world.wallClock() - 10 * 60_000;
+  radio.injectTo(
+    carol.id,
+    mallory.id,
+    asReply(signedPublicMessage(alice, channel, "hops left", at, "ttl7"), 7),
+  );
+  radio.injectTo(
+    carol.id,
+    mallory.id,
+    asReply(signedPublicMessage(alice, channel, "link-local", at, "ttl0")),
+  );
+  await s.world.advance(3_000);
+  s.check(
+    "the reply with TTL 7 is refused",
+    !carol.texts(channel).includes("hops left"),
+  );
+  s.check(
+    "the same reply at TTL 0 is taken",
+    carol.texts(channel).includes("link-local"),
+  );
+  s.assert(true);
+});
+
+test("S14 a stale packet at TTL 0 without IS_RSR is refused", async () => {
+  // bitchat-android answers a sync with TTL 0 and no flag. bitchat-ios refuses
+  // those once they are stale, and so does Airhop: TTL 0 alone claims nothing.
+  const s = (scenario = new Scenario({
+    id: "S14",
+    title: "TTL 0 is not a sync reply",
+    seed: 114,
+  }));
+  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const at = s.world.wallClock() - 10 * 60_000;
+  radio.injectTo(
+    carol.id,
+    mallory.id,
+    stripped(signedPublicMessage(alice, channel, "no flag", at, "noflag"), 0),
+  );
+  await s.world.advance(3_000);
+  s.check(
+    "a ten-minute-old packet at TTL 0 without IS_RSR is refused",
+    !carol.texts(channel).includes("no flag"),
+  );
+  s.assert(true);
+});
+
+test("S10 catching up on someone who has since gone quiet", async () => {
+  // Sync re-serves a message for six hours but its author's announce for
+  // only one, so history often comes from someone no longer announcing. Carol
+  // met alice earlier, and the key she pinned then must still verify it.
+  const s = (scenario = new Scenario({
+    id: "S10",
+    title: "history from a quiet author still verifies",
+    seed: 100,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "carol"]);
+  const [alice, bob, carol] = devices;
+  radio.setFullMesh();
+  for (const d of devices) d.launch();
+  const channel = "#bluetooth";
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () => carol.peers().includes(alice.peerID),
+    45_000,
+  );
+  s.check("carol learned alice's identity first", met);
+
+  s.world.say("TOPOLOGY_CHANGE", "carol walks away");
+  radio.setTopology([["alice", "bob"]]);
+  const text = "the pharmacy on fifth is open";
+  alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("bob heard alice while carol was away", bobHeard);
+
+  // Past the 60s a peer stays reachable, well inside the sync window.
+  s.world.say("TOPOLOGY_CHANGE", "alice leaves; bob is alone");
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  s.world.say("TOPOLOGY_CHANGE", "carol returns to bob");
+  radio.setTopology([["bob", "carol"]]);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    60_000,
+  );
+  s.check(
+    "carol caught up on alice's message",
+    caughtUp,
+    `carol thread = [${carol.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S15 a flood of forged messages neither crowds out real history nor rides along with it", async () => {
+  // A relay keeps what it will offer latecomers only once it has verified it.
+  // Kept before verifying, a thousand forgeries under alice's name fill the
+  // store, push her real messages out, and are then served to everyone who
+  // asks.
+  const s = (scenario = new Scenario({
+    id: "S15",
+    title: "forged-message flood versus backfill",
+    seed: 115,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "mallory", "dave"]);
+  const [alice, bob, mallory, dave] = devices;
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+  ]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  const met = await waitForCoarse(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    45_000,
+  );
+  s.check("bob knows alice and mallory", met);
+
+  const real = ["water at the school", "road north is clear", "meet at noon"];
+  for (const text of real) alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => real.every((t) => bob.texts(channel).includes(t)),
+    20_000,
+  );
+  s.check("bob heard alice's messages", bobHeard);
+
+  // Past the thousand slots public history gets, all under alice's ID and
+  // signed by mallory.
+  for (let i = 0; i < 1100; i++) {
+    const packet: Packet = {
+      type: PacketType.CHANNEL_MSG,
+      ttl: 7,
+      flags: Flags.SIGNED,
+      senderID: new Uint8Array(
+        alice.peerID.match(/../g)!.map((b) => parseInt(b, 16)),
+      ),
+      recipientID: new Uint8Array(8),
+      timestamp: s.world.wallClock(),
+      signature: new Uint8Array(64),
+      payload: encodeMeshPublicPayload(`forged ${i}`),
+    };
+    packet.signature = signPacket(packet, mallory.identity.signingPrivKey);
+    radio.injectTo(bob.id, mallory.id, bytesToBase64(encodePacket(packet)));
+    if (i % 100 === 99) await s.world.advance(500);
+  }
+  await s.world.advance(5_000);
+
+  let forgedServed = 0;
+  radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== bob.id || linkID !== `link:${dave.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.isRSR !== true || p.type !== PacketType.CHANNEL_MSG) return;
+    if (decodeMeshPublicPayload(p.payload)?.startsWith("forged") === true) {
+      forgedServed++;
+    }
+  });
+
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+    ["dave", "bob"],
+  ]);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => real.every((t) => dave.texts(channel).includes(t)),
+    90_000,
+  );
+  s.check(
+    "dave's backfill from bob carries alice's real messages",
+    caughtUp,
+    `dave thread = [${dave.texts(channel).slice(0, 5).join(" | ")}]`,
+  );
+  s.check(
+    "bob served dave none of the forgeries",
+    forgedServed === 0,
+    `${forgedServed} served`,
+  );
+  s.check(
+    "and dave shows none",
+    !dave.texts(channel).some((t) => t.startsWith("forged")),
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S16 history a newcomer cannot verify is offered once, not every round", async () => {
+  // A newcomer keeps only what it verified, and it cannot verify someone who
+  // stopped announcing before it arrived. If what it could not keep were not
+  // remembered, every neighbour would offer it again every round, for as long
+  // as the history stays servable.
+  const s = (scenario = new Scenario({
+    id: "S16",
+    title: "unverifiable backfill is not a loop",
+    seed: 116,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "dave"]);
+  const [alice, bob, dave] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    45_000,
+  );
+
+  const said = ["one", "two", "three", "four", "five"];
+  for (const text of said) alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => said.every((t) => bob.texts(channel).includes(t)),
+    20_000,
+  );
+  s.check("bob heard alice", bobHeard);
+
+  // Alice leaves; her last announce ages out of what bob will serve.
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  let offered = 0;
+  radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== bob.id || linkID !== `link:${dave.id}`) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.isRSR === true && p.type === PacketType.CHANNEL_MSG) offered++;
+  });
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([["bob", "dave"]]);
+  await waitForCoarse(s.world, () => bob.peers().includes(dave.peerID), 45_000);
+  // Several rounds, each answered.
+  await s.world.advance(90_000);
+
+  s.check(
+    "dave, who never met alice, shows none of it",
+    !said.some((t) => dave.texts(channel).includes(t)),
+  );
+  s.check(
+    "bob offered alice's messages about once, not once a round",
+    offered > 0 && offered <= said.length * 2,
+    `${String(offered)} offered`,
   );
 
   s.expectNone("process health", noCrashes(devices));

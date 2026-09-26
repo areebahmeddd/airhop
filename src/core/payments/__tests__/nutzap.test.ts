@@ -9,12 +9,17 @@
 // worse than one that does not parse at all, because the UI would show it as
 // incoming value.
 
+import { Amount, type Proof } from "@cashu/cashu-ts";
 import { generateSecretKey, getPublicKey, type Event } from "nostr-tools";
+import type { NostrClient } from "../../nostr/nostr-client";
 import {
   KIND_NUTZAP,
   KIND_NUTZAP_INFO,
+  fetchNutzapInfo,
   parseNutzap,
   parseNutzapInfo,
+  publishNutzap,
+  subscribeNutzaps,
 } from "../nutzap";
 
 const MINT = "https://mint.example.com";
@@ -128,6 +133,16 @@ describe("parseNutzap", () => {
     expect(zap?.comment).toBe("thanks!");
   });
 
+  it("reads NIP-61's unit tag, lowercased, and refuses a label that is not a code", () => {
+    const base = [proofTag(2), ["u", MINT]];
+    expect(parseNutzap(event({ tags: [...base, ["unit", "USD"]] }))?.unit).toBe(
+      "usd",
+    );
+    expect(
+      parseNutzap(event({ tags: [...base, ["unit", "1 BTC\n+"]] }))?.unit,
+    ).toBe("sat");
+  });
+
   it("returns null without a mint, since the proofs could not be redeemed", () => {
     expect(parseNutzap(event({ tags: [proofTag(1)] }))).toBeNull();
   });
@@ -187,6 +202,109 @@ describe("parseNutzap", () => {
       event({ tags: [proofTag(1), ["u", MINT]], content: "x".repeat(1000) }),
     );
     expect(zap?.comment?.length).toBe(280);
+  });
+});
+
+describe("fetchNutzapInfo", () => {
+  function info10019(created_at: number, id: string, p2pk = P2PK): Event {
+    return event({
+      kind: KIND_NUTZAP_INFO,
+      created_at,
+      id,
+      tags: [
+        ["mint", MINT, "sat"],
+        ["pubkey", p2pk],
+      ],
+    });
+  }
+
+  function clientAnswering(events: Event[]): NostrClient {
+    return {
+      queryEvents: jest.fn(() => Promise.resolve(events)),
+    } as unknown as NostrClient;
+  }
+
+  it("takes the newest copy, not the fastest relay's", async () => {
+    const newer = "02" + "ee".repeat(32);
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([
+        info10019(100, "a".repeat(64)),
+        info10019(200, "b".repeat(64), newer),
+      ]),
+    );
+    expect(info?.p2pkPubkey).toBe(newer);
+  });
+
+  it("breaks a tie on the lowest id, as NIP-01 says", async () => {
+    const lower = "02" + "11".repeat(32);
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([
+        info10019(100, "b".repeat(64)),
+        info10019(100, "a".repeat(64), lower),
+      ]),
+    );
+    expect(info?.p2pkPubkey).toBe(lower);
+  });
+
+  it("honours a newer event that opts out, rather than an older valid one", async () => {
+    const optOut = event({
+      kind: KIND_NUTZAP_INFO,
+      created_at: 300,
+      id: "c".repeat(64),
+      tags: [],
+    });
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([info10019(100, "a".repeat(64)), optOut]),
+    );
+    expect(info).toBeNull();
+  });
+});
+
+describe("publishNutzap", () => {
+  it("carries each proof's DLEQ witness with r, and the unit", async () => {
+    const publish = jest.fn(() => Promise.resolve());
+    const dleq = { e: "01".repeat(32), s: "02".repeat(32), r: "03".repeat(32) };
+    const published = await publishNutzap({
+      proofs: [
+        {
+          id: "00ad268c4d1f5826",
+          amount: Amount.from(8),
+          secret: "s1",
+          C: "02" + "cd".repeat(32),
+          dleq,
+        } as unknown as Proof,
+      ],
+      mintUrl: MINT,
+      unit: "sat",
+      recipientPubkey: NOSTR_PUB,
+      senderPrivKey: generateSecretKey(),
+      client: { publish } as unknown as NostrClient,
+    });
+
+    const proofTagJson = published.tags.find((t) => t[0] === "proof")?.[1];
+    expect(JSON.parse(proofTagJson ?? "{}").dleq).toEqual(dleq);
+    expect(published.tags).toContainEqual(["unit", "sat"]);
+    // And our own parser reads it back, witness included.
+    expect(parseNutzap(published)?.proofs[0]?.dleq).toEqual(dleq);
+  });
+});
+
+describe("subscribeNutzaps", () => {
+  it("asks relays only for nutzaps from the mints we list (NIP-61 #u)", () => {
+    const subscribe = jest.fn(() => ({ close: jest.fn() }));
+    const client = { subscribe } as unknown as NostrClient;
+    subscribeNutzaps(NOSTR_PUB, [MINT], client, () => {});
+    const [filters] = subscribe.mock.calls[0] as unknown as [
+      Record<string, unknown>[],
+    ];
+    expect(filters[0]).toMatchObject({
+      kinds: [KIND_NUTZAP],
+      "#p": [NOSTR_PUB],
+      "#u": [MINT],
+    });
   });
 });
 

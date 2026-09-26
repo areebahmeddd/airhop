@@ -154,3 +154,71 @@ describe("Double Ratchet", () => {
     expect(bytesToHex(x25519.getPublicKey(kp.priv))).toBe(bytesToHex(kp.pub));
   });
 });
+
+// The header is cleartext and forgeable. A message that fails to authenticate
+// must leave the ratchet exactly as it was, or one forged packet desyncs the
+// pair for good.
+describe("Double Ratchet: a failed decrypt changes nothing", () => {
+  function snapshot(s: RatchetState): string {
+    return JSON.stringify({
+      DHs: [bytesToHex(s.DHs.priv), bytesToHex(s.DHs.pub)],
+      DHr: s.DHr === null ? null : bytesToHex(s.DHr),
+      RK: bytesToHex(s.RK),
+      CKs: s.CKs === null ? null : bytesToHex(s.CKs),
+      CKr: s.CKr === null ? null : bytesToHex(s.CKr),
+      Ns: s.Ns,
+      Nr: s.Nr,
+      PN: s.PN,
+      skipped: [...s.MKSKIPPED].map(([k, v]) => [k, bytesToHex(v)]),
+    });
+  }
+
+  function forgedWithHeader(
+    dhPub: Uint8Array,
+    pn: number,
+    n: number,
+  ): Uint8Array {
+    const msg = new Uint8Array(40 + 32).fill(0x5a);
+    msg.set(dhPub, 0);
+    const dv = new DataView(msg.buffer);
+    dv.setUint32(32, pn, false);
+    dv.setUint32(36, n, false);
+    return msg;
+  }
+
+  test("a forged message under a fresh ratchet key", () => {
+    const { alice, bob } = makeAliceBob();
+    ratchetDecrypt(bob, ratchetEncrypt(alice, encode("first")));
+    const before = snapshot(bob);
+    const forged = forgedWithHeader(generateRatchetKeyPair().pub, 1, 0);
+    expect(() => ratchetDecrypt(bob, forged)).toThrow();
+    expect(snapshot(bob)).toBe(before);
+    expect(
+      decode(ratchetDecrypt(bob, ratchetEncrypt(alice, encode("next")))),
+    ).toBe("next");
+  });
+
+  test("a replayed old message under the current key", () => {
+    const { alice, bob } = makeAliceBob();
+    const old = ratchetEncrypt(alice, encode("old"));
+    ratchetDecrypt(bob, old);
+    ratchetDecrypt(bob, ratchetEncrypt(alice, encode("newer")));
+    const before = snapshot(bob);
+    expect(() => ratchetDecrypt(bob, old)).toThrow();
+    expect(snapshot(bob)).toBe(before);
+    expect(
+      decode(ratchetDecrypt(bob, ratchetEncrypt(alice, encode("next")))),
+    ).toBe("next");
+  });
+
+  test("a forgery that hits a skipped key leaves the key for the real one", () => {
+    const { alice, bob } = makeAliceBob();
+    const late = ratchetEncrypt(alice, encode("late"));
+    ratchetDecrypt(bob, ratchetEncrypt(alice, encode("early")));
+    // Message 0 is now a skipped key; a forgery with its header spends nothing.
+    const forged = late.slice();
+    forged[forged.length - 1] ^= 0xff;
+    expect(() => ratchetDecrypt(bob, forged)).toThrow();
+    expect(decode(ratchetDecrypt(bob, late))).toBe("late");
+  });
+});

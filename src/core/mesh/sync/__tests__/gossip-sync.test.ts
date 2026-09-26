@@ -23,7 +23,19 @@ import {
   decodeGossipFilterPayload,
   encodeGossipFilterPayload,
   GossipSync,
+  isSyncReplyInWindow,
+  SYNC_ROUNDS,
 } from "../gossip-sync";
+
+const MESSAGE_ROUND = SYNC_ROUNDS[0].types;
+const BOARD_ROUND = SYNC_ROUNDS[1].types;
+const PEER = "00112233445566aa";
+
+// The message round's request to one peer, which is what most properties here
+// are about.
+function request(gs: GossipSync, identity: ReturnType<typeof makeIdentity>) {
+  return gs.buildFilterPacket(identity, PEER, MESSAGE_ROUND);
+}
 
 function hexToBytes(hex: string): Uint8Array {
   const out = new Uint8Array(hex.length >> 1);
@@ -49,12 +61,13 @@ function makePacket(
   type: PacketType,
   ageMs: number,
   payload: Uint8Array,
+  senderByte = 1,
 ): Packet {
   return {
     type,
     ttl: 7,
     flags: Flags.SIGNED,
-    senderID: new Uint8Array(8).fill(1),
+    senderID: new Uint8Array(8).fill(senderByte),
     recipientID: new Uint8Array(8),
     timestamp: Date.now() - ageMs,
     signature: new Uint8Array(64),
@@ -161,28 +174,49 @@ describe("GossipSync class", () => {
     expect(gs.seenCount).toBe(2);
   });
 
-  test("buildFilterPacket returns null when nothing tracked", () => {
+  // The empty filter reads "I hold nothing", so the answer is everything: how
+  // a newcomer collects what it missed, as bitchat-ios asks too.
+  test("an empty store still asks, with the empty filter", () => {
     const gs = new GossipSync();
-    expect(gs.buildFilterPacket(identity)).toBeNull();
+    const decoded = decodeGossipFilterPayload(request(gs, identity).payload)!;
+    expect(decoded.m).toBe(1);
+    expect(decoded.data).toHaveLength(0);
+    expect(decoded.types).toBe(MESSAGE_ROUND);
   });
 
   test("buildFilterPacket returns a signed REQUEST_SYNC packet", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array(4)));
-    const pkt = gs.buildFilterPacket(identity);
-    expect(pkt).not.toBeNull();
-    expect(pkt!.type).toBe(PacketType.REQUEST_SYNC);
-    expect(pkt!.flags & Flags.SIGNED).toBeTruthy();
+    const pkt = request(gs, identity);
+    expect(pkt.type).toBe(PacketType.REQUEST_SYNC);
+    expect(pkt.flags & Flags.SIGNED).toBeTruthy();
   });
 
   test("handleFilter returns packets the peer is missing", () => {
     const gs = new GossipSync();
-    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([1])));
-    gs.track(makePacket(PacketType.ANNOUNCE, 1, new Uint8Array([2])));
+    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([1]), 1));
+    gs.track(makePacket(PacketType.ANNOUNCE, 1, new Uint8Array([2]), 2));
 
     const missing = gs.handleFilter(emptyFilterPacket());
     // The peer has nothing, so we offer both.
     expect(missing.length).toBe(2);
+  });
+
+  test("a blocked peer's public messages stop being carried, and nothing else", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1]), 1));
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 1, new Uint8Array([2]), 2));
+    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([3]), 1));
+
+    gs.forgetMessagesFrom("0101010101010101");
+
+    const offered = gs.handleFilter(emptyFilterPacket());
+    expect(offered.map((p) => [p.type, p.senderID[0]]).sort()).toEqual(
+      [
+        [PacketType.ANNOUNCE, 1],
+        [PacketType.CHANNEL_MSG, 2],
+      ].sort(),
+    );
   });
 
   test("reset clears tracked packets", () => {
@@ -202,27 +236,19 @@ describe("GossipSync: link-local contract", () => {
   test("REQUEST_SYNC is sent at ttl 0 so no relay forwards it", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array(4)));
-    expect(gs.buildFilterPacket(identity)!.ttl).toBe(0);
+    expect(request(gs, identity).ttl).toBe(0);
   });
 
-  test("a unicast request is addressed to the peer it asks", () => {
+  test("a request is addressed to the peer it asks", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array(4)));
-    const to = "00112233445566aa";
-    const pkt = gs.buildFilterPacket(identity, to)!;
+    const pkt = request(gs, identity);
     expect(pkt.flags & Flags.HAS_RECIPIENT).toBeTruthy();
     expect(
       Array.from(pkt.recipientID)
         .map((b) => b.toString(16).padStart(2, "0"))
         .join(""),
-    ).toBe(to);
-  });
-
-  test("a broadcast request carries no recipient", () => {
-    const gs = new GossipSync();
-    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array(4)));
-    const pkt = gs.buildFilterPacket(identity)!;
-    expect(pkt.flags & Flags.HAS_RECIPIENT).toBeFalsy();
+    ).toBe(PEER);
   });
 
   // The bug this pins: responses used to go back carrying their ORIGINAL ttl
@@ -274,20 +300,23 @@ describe("GossipSync: candidate age bounds", () => {
   test("an announce older than 60s is neither advertised nor offered", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 61_000, new Uint8Array([1])));
-    expect(gs.buildFilterPacket(identity)).toBeNull();
+    const advertised = decodeGossipFilterPayload(request(gs, identity).payload);
+    expect(advertised!.data).toHaveLength(0);
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
 
-  test("a public message stays a candidate for 15 minutes", () => {
+  // bitchat-ios serves and accepts six hours of public history
+  // (TransportConfig.syncPublicMessageMaxAgeSeconds).
+  test("a public message stays a candidate for 6 hours", () => {
     const gs = new GossipSync();
     gs.track(
-      makePacket(PacketType.CHANNEL_MSG, 14 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.CHANNEL_MSG, 359 * 60_000, new Uint8Array([1])),
     );
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
 
     const stale = new GossipSync();
     stale.track(
-      makePacket(PacketType.CHANNEL_MSG, 16 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.CHANNEL_MSG, 361 * 60_000, new Uint8Array([1])),
     );
     expect(stale.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
@@ -331,7 +360,7 @@ describe("GossipSync: candidate age bounds", () => {
   test("a group message ages out on the message window", () => {
     const stale = new GossipSync();
     stale.track(
-      makePacket(PacketType.GROUP_MESSAGE, 16 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.GROUP_MESSAGE, 361 * 60_000, new Uint8Array([1])),
     );
     expect(stale.handleFilter(emptyFilterPacket())).toHaveLength(0);
   });
@@ -348,11 +377,60 @@ describe("GossipSync: candidate age bounds", () => {
 
   test("prune drops expired candidates", () => {
     const gs = new GossipSync();
-    gs.track(makePacket(PacketType.ANNOUNCE, 61_000, new Uint8Array([1])));
-    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([2])));
+    gs.track(makePacket(PacketType.ANNOUNCE, 61_000, new Uint8Array([1]), 1));
+    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([2]), 2));
     expect(gs.seenCount).toBe(2);
     gs.prune();
     expect(gs.seenCount).toBe(1);
+  });
+});
+
+// What an old packet tagged IS_RSR may be: only a type we ask for, inside the
+// window we would serve it for ourselves.
+describe("isSyncReplyInWindow", () => {
+  const now = Date.now();
+  const at = (type: PacketType, ageMs: number): boolean =>
+    isSyncReplyInWindow(
+      { ...makePacket(type, 0, new Uint8Array([1])), timestamp: now - ageMs },
+      now,
+    );
+  const hour = 60 * 60_000;
+  const day = 24 * hour;
+
+  test("public and group messages: six hours", () => {
+    for (const type of [
+      PacketType.CHANNEL_MSG,
+      PacketType.CHANNEL_MSG_AIRHOP,
+      PacketType.GROUP_MESSAGE,
+    ]) {
+      expect(at(type, 6 * hour)).toBe(true);
+      expect(at(type, 6 * hour + 1)).toBe(false);
+    }
+  });
+
+  test("announces: one minute", () => {
+    expect(at(PacketType.ANNOUNCE, 60_000)).toBe(true);
+    expect(at(PacketType.ANNOUNCE, 60_001)).toBe(false);
+  });
+
+  test("board posts and fragments: seven days", () => {
+    for (const type of [PacketType.BOARD_POST, PacketType.FRAGMENT]) {
+      expect(at(type, 7 * day)).toBe(true);
+      expect(at(type, 7 * day + 1)).toBe(false);
+    }
+  });
+
+  test("a type sync never serves is no reply at any age", () => {
+    for (const type of [
+      PacketType.LEAVE,
+      PacketType.DR_ENCRYPTED,
+      PacketType.PREKEY_BUNDLE,
+      PacketType.COURIER_ENV,
+      PacketType.FILE_TRANSFER,
+    ]) {
+      expect(at(type, 0)).toBe(false);
+      expect(at(type, 10 * 60_000)).toBe(false);
+    }
   });
 });
 
@@ -370,9 +448,7 @@ describe("GossipSync: sinceTimestamp cursor", () => {
     );
     gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([2])));
 
-    const decoded = decodeGossipFilterPayload(
-      gs.buildFilterPacket(identity)!.payload,
-    );
+    const decoded = decodeGossipFilterPayload(request(gs, identity).payload);
     expect(decoded!.since).toBeUndefined();
   });
 
@@ -391,9 +467,7 @@ describe("GossipSync: sinceTimestamp cursor", () => {
       );
     }
 
-    const decoded = decodeGossipFilterPayload(
-      gs.buildFilterPacket(identity)!.payload,
-    )!;
+    const decoded = decodeGossipFilterPayload(request(gs, identity).payload)!;
     expect(decoded.since).toBeDefined();
     // It covers the newest end, so the cursor is recent rather than the
     // oldest thing we hold.
@@ -414,7 +488,7 @@ describe("GossipSync: sinceTimestamp cursor", () => {
         ),
       );
     }
-    const pkt = gs.buildFilterPacket(makeIdentity())!;
+    const pkt = request(gs, makeIdentity());
     const decoded = decodeGossipFilterPayload(pkt.payload)!;
     expect(decoded.data.length).toBeGreaterThan(0);
     expect(decoded.data.length).toBeLessThanOrEqual(400);
@@ -429,7 +503,7 @@ describe("GossipSync: sinceTimestamp cursor", () => {
     );
     gs.track(shared);
     peer.track(shared);
-    const refreshed = gs.buildFilterPacket(makeIdentity())!;
+    const refreshed = request(gs, makeIdentity());
     expect(peer.handleFilter(refreshed)).toHaveLength(0);
   });
 
@@ -493,5 +567,273 @@ describe("GossipSync: response rate limiting", () => {
     expect(gs.handleFilter(emptyFilterPacket(), "peer-a")).toHaveLength(0);
     gs.forgetPeer("peer-a");
     expect(gs.handleFilter(emptyFilterPacket(), "peer-a")).toHaveLength(1);
+  });
+
+  // bitchat-ios RequestSyncPacket.decode refuses the same values, and a
+  // request that cannot be read should not cost its sender a slot either.
+  test("a malformed request spends none of the budget", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1])));
+    const malformed: Packet = {
+      ...emptyFilterPacket(),
+      payload: encodeGossipFilterPayload({
+        p: 7,
+        m: 0,
+        data: new Uint8Array(0),
+      }),
+    };
+    for (let i = 0; i < 20; i++) gs.handleFilter(malformed, "peer-a");
+    expect(gs.handleFilter(emptyFilterPacket(), "peer-a")).toHaveLength(1);
+  });
+});
+
+describe("GossipSync: request decode bounds", () => {
+  const withParams = (
+    p: number,
+    m: number,
+    data = new Uint8Array(0),
+  ): Packet => ({
+    ...emptyFilterPacket(),
+    payload: encodeGossipFilterPayload({ p, m, data, types: 1 << 1 }),
+  });
+
+  test("m 0 and p outside 1..32 decode to nothing and draw no reply", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1])));
+    for (const [p, m] of [
+      [7, 0],
+      [0, 256],
+      [33, 256],
+    ]) {
+      const req = withParams(p, m, new Uint8Array([0xff]));
+      expect(decodeGossipFilterPayload(req.payload)).toBeNull();
+      expect(() => gs.handleFilter(req)).not.toThrow();
+      expect(gs.handleFilter(req)).toHaveLength(0);
+    }
+  });
+
+  test("m 1 with no data is the empty filter and draws a full reply", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1])));
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 1, new Uint8Array([2])));
+    expect(gs.handleFilter(withParams(1, 1))).toHaveLength(2);
+    expect(gs.handleFilter(withParams(32, 1))).toHaveLength(2);
+  });
+});
+
+// One store per kind, sized as bitchat-ios sizes its own, so one kind cannot
+// evict another's history, and only what was accepted is kept.
+describe("GossipSync: stores", () => {
+  const offered = (gs: GossipSync, type: PacketType): number =>
+    gs.handleFilter(emptyFilterPacket()).filter((p) => p.type === type).length;
+
+  test("a group flood does not evict public messages", () => {
+    const gs = new GossipSync();
+    for (let i = 0; i < 5; i++) {
+      gs.track(makePacket(PacketType.CHANNEL_MSG, i, new Uint8Array([i])));
+    }
+    for (let i = 0; i < 300; i++) {
+      gs.track(
+        makePacket(
+          PacketType.GROUP_MESSAGE,
+          i,
+          new Uint8Array([i & 0xff, i >> 8]),
+        ),
+      );
+    }
+    expect(offered(gs, PacketType.CHANNEL_MSG)).toBe(5);
+    // Group messages keep bitchat-ios's 200, newest first out of the door.
+    expect(offered(gs, PacketType.GROUP_MESSAGE)).toBe(200);
+  });
+
+  test("a message flood does not evict board posts", () => {
+    const gs = new GossipSync();
+    gs.track(
+      makePacket(PacketType.BOARD_POST, 60 * 60_000, new Uint8Array([9])),
+    );
+    for (let i = 0; i < 1500; i++) {
+      gs.track(
+        makePacket(
+          PacketType.CHANNEL_MSG,
+          i,
+          new Uint8Array([i & 0xff, i >> 8]),
+        ),
+      );
+    }
+    expect(offered(gs, PacketType.BOARD_POST)).toBe(1);
+    expect(offered(gs, PacketType.CHANNEL_MSG)).toBe(1000);
+  });
+
+  test("a peer's newer announce replaces its older one, never the reverse", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.ANNOUNCE, 5_000, new Uint8Array([1])));
+    gs.track(makePacket(PacketType.ANNOUNCE, 1_000, new Uint8Array([2])));
+    gs.track(makePacket(PacketType.ANNOUNCE, 9_000, new Uint8Array([3])));
+    const announces = gs
+      .handleFilter(emptyFilterPacket())
+      .filter((p) => p.type === PacketType.ANNOUNCE);
+    expect(announces).toHaveLength(1);
+    expect(announces[0].payload).toEqual(new Uint8Array([2]));
+    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([4]), 2));
+    expect(offered(gs, PacketType.ANNOUNCE)).toBe(2);
+  });
+
+  test("a directed packet is not carried", () => {
+    const gs = new GossipSync();
+    const directed = makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1]));
+    directed.flags |= Flags.HAS_RECIPIENT;
+    directed.recipientID = new Uint8Array(8).fill(7);
+    gs.track(directed);
+    expect(gs.seenCount).toBe(0);
+  });
+});
+
+// A reply this node was handed and refused, typically history from an author
+// it cannot verify: advertised so the peer stops offering it, never served.
+describe("GossipSync: replies not kept", () => {
+  const identity = makeIdentity();
+
+  test("are advertised as held, and never served", () => {
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    const history = makePacket(
+      PacketType.CHANNEL_MSG,
+      60_000,
+      new Uint8Array([1]),
+    );
+    responder.track(history);
+    expect(
+      responder.handleFilter(
+        requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND),
+      ),
+    ).toHaveLength(1);
+
+    requester.noteReply({ ...history, ttl: 0, isRSR: true });
+    expect(requester.seenCount).toBe(0);
+    expect(requester.handleFilter(emptyFilterPacket())).toHaveLength(0);
+    expect(
+      responder.handleFilter(
+        requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND),
+      ),
+    ).toHaveLength(0);
+  });
+
+  test("one accepted later is kept and served like any other", () => {
+    const gs = new GossipSync();
+    const msg = makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1]));
+    gs.noteReply(msg);
+    gs.track(msg);
+    expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
+  });
+
+  test("age out on their type's window", () => {
+    const gs = new GossipSync();
+    const announce = makePacket(
+      PacketType.ANNOUNCE,
+      30_000,
+      new Uint8Array([1]),
+    );
+    gs.noteReply(announce);
+    const advertised = (now: number): number =>
+      decodeGossipFilterPayload(
+        gs.buildFilterPacket(identity, PEER, MESSAGE_ROUND, now).payload,
+      )!.data.length;
+    expect(advertised(Date.now())).toBeGreaterThan(0);
+    const later = Date.now() + 31_000;
+    gs.prune(later);
+    expect(advertised(later)).toBe(0);
+  });
+});
+
+// bitchat-ios sends one request per due schedule. In one union filter a busy
+// room's messages push an older board post behind the since-cursor, and it is
+// never offered again.
+describe("GossipSync: one request per round", () => {
+  const identity = makeIdentity();
+
+  function busyRoom(): { requester: GossipSync; responder: GossipSync } {
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    // One base, so no two messages share a millisecond: a tie at the cursor
+    // is offered again by design, which is not what this is about.
+    const base = Date.now();
+    for (let i = 0; i < 1000; i++) {
+      const msg = {
+        ...makePacket(
+          PacketType.CHANNEL_MSG,
+          0,
+          new Uint8Array([i & 0xff, i >> 8]),
+        ),
+        timestamp: base - i,
+      };
+      requester.track(msg);
+      responder.track(msg);
+    }
+    responder.track(
+      makePacket(PacketType.BOARD_POST, 60 * 60_000, new Uint8Array([9])),
+    );
+    return { requester, responder };
+  }
+
+  test("the board round draws a post a busy message round would miss", () => {
+    const { requester, responder } = busyRoom();
+    const board = requester.buildFilterPacket(identity, PEER, BOARD_ROUND);
+    const reply = responder.handleFilter(board);
+    expect(reply.map((p) => p.type)).toEqual([PacketType.BOARD_POST]);
+
+    // The message round, which carries a since-cursor here, draws nothing:
+    // both hold the same messages, and the post is not its type.
+    const messages = requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND);
+    expect(decodeGossipFilterPayload(messages.payload)!.since).toBeDefined();
+    expect(responder.handleFilter(messages)).toHaveLength(0);
+  });
+
+  test("the same post was lost behind the cursor of one filter over both", () => {
+    const { requester, responder } = busyRoom();
+    const union = requester.buildFilterPacket(
+      identity,
+      PEER,
+      MESSAGE_ROUND | BOARD_ROUND,
+    );
+    expect(responder.handleFilter(union)).toHaveLength(0);
+  });
+
+  test("the message round every tick, the board round every fourth", () => {
+    jest.useFakeTimers();
+    try {
+      const gs = new GossipSync();
+      const sent: number[] = [];
+      const order: string[] = [];
+      gs.start(identity, {
+        getPeers: () => ["00000000000000a1", "00000000000000b2"],
+        onRequest: (peerID) => order.push(`register ${peerID}`),
+        sendToPeer: (peerID, pkt) => {
+          order.push(`send ${peerID}`);
+          sent.push(decodeGossipFilterPayload(pkt.payload)!.types!);
+        },
+        onTick: () => order.push("tick"),
+      });
+      jest.advanceTimersByTime(15_000);
+      expect(sent).toEqual([
+        MESSAGE_ROUND,
+        MESSAGE_ROUND,
+        BOARD_ROUND,
+        BOARD_ROUND,
+      ]);
+      // Registered before each send, so a fast reply is never unsolicited.
+      expect(order.slice(0, 3)).toEqual([
+        "tick",
+        "register 00000000000000a1",
+        "send 00000000000000a1",
+      ]);
+      sent.length = 0;
+      jest.advanceTimersByTime(45_000);
+      expect(sent.filter((t) => t === BOARD_ROUND)).toHaveLength(0);
+      jest.advanceTimersByTime(15_000);
+      expect(sent.filter((t) => t === BOARD_ROUND)).toHaveLength(2);
+      gs.stop();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

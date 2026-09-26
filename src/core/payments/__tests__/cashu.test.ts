@@ -20,6 +20,7 @@ import {
   isLikelyTestMint,
   mayContainToken,
   mintsOfUnresolvedTokens,
+  readToken,
   satsToBtc,
   selectProofsForAmount,
   TOKEN_QR_MAX_CHARS,
@@ -171,6 +172,65 @@ describe("decodeToken", () => {
   });
 });
 
+// NUT-00: the unit label only names the currency of the token's keysets. A
+// sender picks the label freely, so where the keyset is known it decides.
+describe("a token's unit against its keysets", () => {
+  const SAT_KEYSET = { id: KEYSET, unit: "sat" };
+
+  it("refuses sat coins labelled as dollars", () => {
+    const token = realToken([150], undefined, "usd");
+    expect(decodeToken(token, [SAT_KEYSET])).toBeNull();
+    expect(readToken(token, [SAT_KEYSET])).toEqual({
+      ok: false,
+      reason: "unit-mismatch",
+      mintUrl: MINT,
+      label: "usd",
+      actual: "sat",
+    });
+  });
+
+  it("refuses a token whose coins come from two units", () => {
+    const usdKeyset = "00" + "cd".repeat(7);
+    const token = getEncodedToken({
+      mint: MINT,
+      unit: "sat",
+      proofs: [
+        ...proofSet([2]),
+        { ...proofSet([4])[0]!, id: usdKeyset, secret: "usd-secret" },
+      ].map(toProofLike),
+    } as unknown as Token);
+    const read = readToken(token, [SAT_KEYSET, { id: usdKeyset, unit: "usd" }]);
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe("unit-mismatch");
+  });
+
+  it("accepts a label its keysets agree with, in any case", () => {
+    const token = realToken([4], undefined, "SAT");
+    expect(decodeToken(token, [{ id: KEYSET, unit: "SAT" }])?.unit).toBe("sat");
+  });
+
+  it("keeps the label when no keyset of the token is known", () => {
+    // A rotation not fetched yet: nothing to check against, and the mint
+    // refuses a wrong label at swap time.
+    expect(decodeToken(realToken([3], undefined, "usd"))?.unit).toBe("usd");
+  });
+
+  it("reports an unresolved short id apart from a malformed string", () => {
+    const v2 = "01" + "ef".repeat(32);
+    const token = getEncodedToken({
+      mint: MINT,
+      unit: "sat",
+      proofs: proofSet([4]).map((p) => toProofLike({ ...p, id: v2 })),
+    } as unknown as Token);
+    expect(readToken(token)).toMatchObject({
+      ok: false,
+      reason: "unresolved",
+      mintUrl: MINT,
+    });
+    expect(readToken("hello")).toEqual({ ok: false, reason: "malformed" });
+  });
+});
+
 // A v2 keyset id travels as its first 8 bytes and only the mint's keyset list
 // expands it, so a token under a keyset not fetched yet fails the full decode.
 describe("mintsOfUnresolvedTokens", () => {
@@ -189,8 +249,12 @@ describe("mintsOfUnresolvedTokens", () => {
   });
 
   it("names nothing once the keyset is known, or for a token that decodes", () => {
-    expect(mintsOfUnresolvedTokens(v2Token, [V2_KEYSET])).toEqual([]);
-    expect(decodeToken(v2Token, [V2_KEYSET])?.amount).toBe(4);
+    expect(
+      mintsOfUnresolvedTokens(v2Token, [{ id: V2_KEYSET, unit: "sat" }]),
+    ).toEqual([]);
+    expect(decodeToken(v2Token, [{ id: V2_KEYSET, unit: "sat" }])?.amount).toBe(
+      4,
+    );
     expect(mintsOfUnresolvedTokens(realToken([2]))).toEqual([]);
   });
 
@@ -537,7 +601,9 @@ describe("short keyset ids", () => {
   });
 
   it("decodes a v2 keyset id when the mint's ids are cached", () => {
-    const info = decodeToken(tokenWithKeyset(V2_KEYSET), [V2_KEYSET]);
+    const info = decodeToken(tokenWithKeyset(V2_KEYSET), [
+      { id: V2_KEYSET, unit: "sat" },
+    ]);
     expect(info).not.toBeNull();
     expect(info?.amount).toBe(8);
     expect(info?.mintUrl).toBe(MINT);
@@ -550,8 +616,10 @@ describe("short keyset ids", () => {
   it("renders a chat chip for a v2 token once the ids are known", () => {
     const token = tokenWithKeyset(V2_KEYSET);
     expect(findTokensInText(`here you go ${token}`)).toHaveLength(0);
-    expect(findTokensInText(`here you go ${token}`, [V2_KEYSET])).toHaveLength(
-      1,
-    );
+    expect(
+      findTokensInText(`here you go ${token}`, [
+        { id: V2_KEYSET, unit: "sat" },
+      ]),
+    ).toHaveLength(1);
   });
 });

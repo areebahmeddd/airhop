@@ -14,7 +14,7 @@ import {
 } from "@services/geohash-channel-service";
 import { getMeshService } from "@services/mesh-service";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
-import { usePlaceNamesStore } from "@store/place-names-store";
+import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import {
   BUTTON_HEIGHT,
@@ -113,7 +113,7 @@ export function GeohashJumpSheet({
   const level = valid ? geohashLevelName(input) : null;
   // Undefined until the lookup lands, or forever if it cannot: the hint reads
   // fine either way.
-  const typedName = valid ? placeNames[input] : undefined;
+  const typedName = valid ? placeNames[placeNameKey(input)] : undefined;
   // If the entered cell is one the user is already standing in, "Go" opens that
   // existing channel rather than a duplicate teleported room. Read live from the
   // mesh service; it only changes when the user physically moves.
@@ -261,7 +261,7 @@ export function GeohashJumpSheet({
               >
                 <Text style={styles.nearbyDir}>{n.direction}</Text>
                 <Text style={styles.nearbyHash} numberOfLines={1}>
-                  {placeNames[n.geohash] ?? `#${n.geohash}`}
+                  {placeNames[placeNameKey(n.geohash)] ?? `#${n.geohash}`}
                 </Text>
               </Pressable>
             ))}
@@ -278,7 +278,7 @@ export function GeohashJumpSheet({
             keyboardShouldPersistTaps="handled"
           >
             {bookmarks.map((gh) => {
-              const name = placeNames[gh];
+              const name = placeNames[placeNameKey(gh)];
               return (
                 <Pressable
                   key={gh}

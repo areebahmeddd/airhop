@@ -165,6 +165,29 @@ describe("parseFragmentPayload", () => {
     // total=0
     expect(decodeFragmentPayload(buf)).toBeNull();
   });
+
+  // No sender cuts a non-final fragment under 64 bytes (bitchat-ios
+  // minimumChunkSize), so tiny ones only pad out a slot's entry count.
+  function header(index: number, total: number, dataBytes: number) {
+    const buf = new Uint8Array(13 + dataBytes);
+    const view = new DataView(buf.buffer);
+    view.setUint16(8, index, false);
+    view.setUint16(10, total, false);
+    return buf;
+  }
+
+  test("refuses an empty fragment, final or not", () => {
+    expect(decodeFragmentPayload(header(0, 3, 0))).toBeNull();
+    expect(decodeFragmentPayload(header(2, 3, 0))).toBeNull();
+  });
+
+  test("refuses a non-final fragment under 64 bytes, not a final one", () => {
+    expect(decodeFragmentPayload(header(0, 3, 10))).toBeNull();
+    expect(decodeFragmentPayload(header(1, 3, 63))).toBeNull();
+    expect(decodeFragmentPayload(header(1, 3, 64))).not.toBeNull();
+    expect(decodeFragmentPayload(header(2, 3, 10))).not.toBeNull();
+    expect(decodeFragmentPayload(header(0, 1, 1))).not.toBeNull();
+  });
 });
 
 describe("FragmentManager", () => {
@@ -503,7 +526,7 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
       other[1] = (i >> 8) & 0xff;
       deliver(
         other,
-        spoofFragment(other, 0, 4, PacketType.CHANNEL_MSG, new Uint8Array(4)),
+        spoofFragment(other, 0, 4, PacketType.CHANNEL_MSG, new Uint8Array(64)),
       );
     }
     expect(manager.size).toBe(128);

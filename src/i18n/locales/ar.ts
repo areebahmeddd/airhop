@@ -118,6 +118,10 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "صِل الهاتفين بشبكة Wi-Fi نفسها، أو شغّل نقطة الاتصال على أحدهما واتصل بها من الآخر. لا حاجة إلى الإنترنت.",
   "onboarding.transfer.incoming": "جارٍ نقل {name}",
+  "onboarding.transfer.confirm_title": "تحقّق من هاتفك القديم",
+  "onboarding.transfer.confirm_body":
+    "يجب أن يُظهر هاتفك القديم الكلمات نفسها. إن أظهر كلمات مختلفة، أو لم يُظهر شيئًا، فألغِ.",
+  "onboarding.transfer.confirm_cta": "متطابقة",
   "onboarding.transfer.receiving": "جارٍ الاستلام {percent}%",
   "onboarding.transfer.saving": "جارٍ الحفظ على هذا الهاتف",
   "onboarding.transfer.releasing": "جارٍ الإنهاء على هاتفك القديم",
@@ -173,6 +177,15 @@ export const strings: Strings = {
   "error.boundary.title": "حدث خطأ ما",
   "error.boundary.body":
     "واجه Airhop مشكلة غير متوقعة واضطر إلى إيقاف ما كان يعرضه.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "تعذّر فتح مفاتيحك",
+  "launch.keys_unreadable_body":
+    "لم يفتح هاتفك مفاتيح Airhop. افتح قفل الهاتف، ثم حاول مرة أخرى.",
+  "launch.start_over": "امسح وابدأ من جديد",
+  "launch.start_over_confirm_title": "مسح هذا الهاتف؟",
+  "launch.start_over_confirm_body":
+    "ستُدمَّر هويتك ورسائلك وجهات اتصالك ومحفظتك على هذا الهاتف، وتبدأ من الصفر بهوية جديدة. لا يمكن التراجع عن هذا.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "القنوات الافتراضية",
@@ -580,7 +593,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "الفيديو ليس على هذا الجهاز",
   "chat.media.gone_voice": "الملاحظة الصوتية ليست على هذا الجهاز",
   "chat.media.gone_file": "الملف ليس على هذا الجهاز",
-  "chat.media.gone_note": "أُزيل بعد 7 أيام أو عند مسح ذاكرة التخزين المؤقت",
+  "chat.media.gone_note": "لم يعد مخزّنًا على هذا الجهاز",
   "chat.media.ask_resend": "اسأل مرة أخرى",
   "chat.media.resend_draft": "هل يمكنك إرسال {kind} مرة أخرى؟",
   "chat.media.kind_photo": "الصورة",
@@ -648,6 +661,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "تم الاستلام",
   "chat.ecash.reclaimed": "تم الاسترجاع",
+  "chat.ecash.locked": "مقفلة على شخص آخر",
   "chat.ecash.claiming": "جارٍ الاستلام…",
   "chat.ecash.claim": "استلام",
   "chat.ecash.claim_amount": "استلام {amount} {unit}",
@@ -867,6 +881,7 @@ export const strings: Strings = {
   "mesh.banner.hint.location_settings": "يفتح إعدادات الموقع في النظام",
   "mesh.banner.hint.app_settings": "يفتح أذونات Airhop في إعدادات النظام",
   "mesh.banner.hint.battery_settings": "يفتح إعدادات نشاط الخلفية لهذا الهاتف",
+  "mesh.banner.hint.tor_settings": "يفتح إعدادات Tor في Airhop",
   "mesh.banner.dismiss": "إخفاء: {label}",
   "mesh.banner.hint.dismiss": "يخفي هذه الملاحظة نهائيًا",
 
@@ -899,8 +914,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "موضع الحلقة يعكس قوة الإشارة، لا المسافة",
   "mesh.radar.set_online":
     "اضبط حالتك على متصل في الملف الشخصي لاكتشاف النظراء",
-  "mesh.radar.in_range": "ضمن النطاق",
-  "mesh.radar.recently_seen": "شوهد مؤخرًا",
+  "mesh.radar.peer_in_range": "{name}، ضمن النطاق",
+  "mesh.radar.peer_recent": "{name}، شوهد مؤخرًا",
+  "mesh.radar.relay_in_range": "{name}، عقدة تمرير، ضمن النطاق",
+  "mesh.radar.relay_recent": "{name}، عقدة تمرير، شوهد مؤخرًا",
   "mesh.radar.peer_hint": "يفتح خيارات لمراسلة هذا النظير أو الدفع له",
 
   // ---- Mesh: peer list ----
@@ -921,6 +938,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "إرسال نقد إلكتروني، أدخل المبلغ أولًا",
   "mesh.peer.cancel_send": "إلغاء إرسال النقد الإلكتروني",
   "mesh.peer.view_peer_online": "عرض النظير {name}، متصل",
+  "mesh.peer.view_relay_online": "عرض النظير {name}، متصل، عقدة تمرير",
   "mesh.peer.last_seen_at": "آخر ظهور {ago}",
   "mesh.peer.send_amount": "إرسال {amount} ساتس",
   "mesh.peer.direct": "اتصال مباشر",
@@ -983,8 +1001,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "المبلغ بـ {unit}",
   "wallet.send.body":
     "بُني دون اتصال من نقد إلكتروني تملكه بالفعل. لا شيء يغادر رصيدك نهائيًا حتى تؤكد أن التوكن سُلّم.",
-  "wallet.send.stale_fee_note":
-    "فُحصت الرسوم آخر مرة قبل {days} يوم/أيام. إن رفعت دار السك رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
   "wallet.send.fee_note":
     "{spend} {unit} تغادر رصيدك؛ والـ {fee} الإضافية تغطي رسوم دار السك التي كانوا سيدفعونها",
   "wallet.send.qr_too_big":
@@ -1037,17 +1053,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
   "wallet.receive.stored_pending":
-    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق{dleq}. حدّثه من تبويب المحفظة بمجرد اتصالك.",
+    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق{dleq}. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
   "wallet.receive.dleq_inline": " (توقيعه صحيح فعلًا، فالتوكن أصلي)",
   "wallet.receive.dleq_ok": "توقيع دار السك صحيح، فالتوكن أصلي.",
   "wallet.receive.dleq_uncached":
     "مفاتيح دار السك غير مخزّنة هنا، لذا تعذّر فحص التوقيع دون اتصال.",
+  "wallet.receive.dleq_missing":
+    "ليست كل عملة فيه تحمل إثبات توقيع دار السك، لذا تعذّر فحصه دون اتصال.",
   "wallet.receive.dleq_warning":
-    "حتى تحدّثه وأنت متصل، يمكن للمرسل نظريًا أن يكون قد أنفقه في مكان آخر.",
+    "إلى أن يُؤكَّد عبر الإنترنت، يمكن للمرسل نظريًا أن يكون قد أنفقه في مكان آخر.",
   "wallet.receive.failed": "تعذّر الاستقبال",
   "wallet.receive.title": "استقبال نقد إلكتروني",
   "wallet.receive.body":
-    "الصق توكن Cashu. مع الاتصال يُصرف عند دار السك فورًا؛ ودونه يُخزَّن ويُؤكَّد في المرة القادمة التي تحدّث فيها.",
+    "الصق توكن Cashu. مع الاتصال يُصرف عند دار السك فورًا؛ ودونه يُخزَّن ويُؤكَّد مع دار السك تلقائيًا عند عودتك إلى الاتصال.",
   "wallet.receive.scan": "مسح رمز استجابة سريعة لنقد إلكتروني",
   "wallet.receive.scan_short": "مسح الرمز",
   "wallet.receive.receiving": "جارٍ الاستقبال…",
@@ -1259,6 +1277,8 @@ export const strings: Strings = {
     "تقول دار السك إن هذا التوكن صُرف بالفعل، لذا وصلتهم الـ {amount} {unit} ولم يعد شيء إلى رصيدك.",
   "wallet.copied.token_body":
     "التوكن في حافظتك. ويبقى محجوزًا هنا حتى تضع علامة أنه سُلّم، فيمكنك لصقه مرة أخرى إن فشلت المحاولة الأولى.",
+  "wallet.copied.refused_token_body":
+    "التوكن في حافظتك. لم تعد هذه المحفظة تحسبه، فيمكنك إعادته إلى من أرسله.",
   "wallet.copied.phrase_body":
     "الصقها في مدير كلمات مرور، ثم امسح حافظتك. تستطيع تطبيقات أخرى قراءة الحافظة، وفي بعض الإعدادات تُزامَن مع أجهزتك الأخرى.",
   "wallet.refresh.failed": "فشل التحديث",
@@ -1268,6 +1288,10 @@ export const strings: Strings = {
   "wallet.refresh.swapped": "أُكدت {amount} {unit} وبُدّلت بنقد إلكتروني جديد.",
   "wallet.refresh.secured":
     "{amount} {unit} أصبحت الآن مغطاة بعبارة الاستعادة الخاصة بك.",
+  "wallet.refresh.refused":
+    "رفضت دار السك {amount} {unit} فأُزيلت من رصيدك. يبقى التوكن في «النشاط».",
+  "wallet.refresh.still_unconfirmed":
+    "ما زالت {amount} {unit} بانتظار دار السك، وستُؤكَّد لاحقًا.",
   "wallet.refresh.all_confirmed": "كل ما هنا كان مؤكدًا بالفعل مع دار السك.",
   "wallet.pending.reserved_desc":
     "بُنيت وحُجزت، والتسليم غير مؤكد. تُحجز العملات خارج رصيدك لئلا تُنفق مرتين.",
@@ -1298,9 +1322,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "إيداع Lightning",
   "wallet.activity.ln_withdrawal": "سحب Lightning",
   "wallet.activity.nutzap_received": "وصل نَتزاب",
+  "wallet.activity.nutzap_claiming": "Nutzap، جارٍ الاستلام",
   "wallet.activity.spent_removed": "أُزيلت العملات المنفَقة",
   "wallet.activity.refreshed": "تم التحقق مع دار السك",
   "wallet.activity.refreshing": "جارٍ التحقق مع دار السك",
+  "wallet.activity.copy_refused": "نسخ التوكن المرفوض",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "الشبكة غير متصلة",
@@ -1374,7 +1400,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "ما هو Cashu؟",
   "wallet.explain.intro":
-    "Cashu نقد إلكتروني للبيتكوين. التوكن سلسلة نصية تساوي مالًا لمن يحملها، موقّعة بشكل أعمى من دار سك فلا تستطيع الدار معرفة من أنفق ماذا. لا حسابات ولا تسجيل دخول.",
+    "Cashu نقد إلكتروني للبيتكوين. التوكن سلسلة نصية تساوي مالًا لمن يحملها، موقّعة بشكل أعمى من دار سك فلا تستطيع الدار معرفة من أنفق ماذا. لا حسابات ولا تسجيل دخول. لا يحتفظ Airhop بأموالك أبدًا: عملاتك موجودة على هذا الهاتف، وتصدرها دور السك التي تختارها.",
   "wallet.explain.send": "إرسال",
   "wallet.explain.send_desc":
     "يحوّل مبلغًا إلى توكن تسلّمه إلى نظير قريب عبر البلوتوث، أو تشاركه كنص. يعمل دون إنترنت. تبقى العملات محجوزة حتى تؤكد وصوله.",
@@ -1416,6 +1442,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "عبارة الاستعادة هذه غير صالحة.",
   "wallet.svc.phrase_invalid_body":
     "تحقق من كلمة مكتوبة خطأ أو ناقصة. للعبارة مجموع تحقق مدمج، فكلمة خاطئة واحدة تبطل العبارة كلها.",
+  "wallet.svc.phrase_unreadable":
+    "تعذّرت قراءة عبارة الاستعادة على هذا الهاتف.",
+  "wallet.svc.phrase_unreadable_body":
+    "لم يتغيّر شيء ولم تُنشأ عبارة جديدة. حاول مرة أخرى بعد فتح قفل الهاتف. نقدك الإلكتروني ما زال يعمل في الأثناء.",
   "wallet.svc.need_mint": "أضف دار سك واحدة على الأقل أولًا.",
   "wallet.svc.need_mint_body":
     "تعمل الاستعادة بسؤال دار السك عن العملات التي وقّعتها لك، فهي تحتاج أن تعرف أي دار تسأل.",
@@ -1437,10 +1467,25 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown_body":
     "تعذّر الوصول إلى دار السك الآن لجلبها. لم يضِع شيء: استلمه مرة أخرى عندما تتصل بالإنترنت.",
   "wallet.svc.wrong_mint": "لم توقّع هذا التوكن دار السك التي يذكرها.",
+  "wallet.svc.wrong_mint_body":
+    "توقيع عملة واحدة على الأقل لا يطابق مفاتيح دار السك. لم يُضَف شيء.",
+  "wallet.svc.unit_mismatch":
+    "عملات هذا التوكن ليست بالوحدة النقدية التي يذكرها.",
+  "wallet.svc.unit_mismatch_body":
+    "يحمل وسم {label}، لكن بعض عملاته صدرت بوحدة {actual}. اطلب من المرسل توكنًا جديدًا. لم يُضَف شيء.",
+  "wallet.svc.locked_other": "هذه العملات مقفلة على محفظة شخص آخر.",
+  "wallet.svc.locked_other_body":
+    "لا يستطيع استلامها إلا الشخص الذي قُفلت عليه. لم يُضَف شيء.",
+  "wallet.svc.coins_refused":
+    "رفضت دار السك هذه العملات، فلم تعد تُحسب. يبقى التوكن هنا إن أردت إعادته.",
+  "wallet.svc.coins_unredeemable":
+    "لا يمكن صرف هذه العملات عند دار السك هذه، فلم تعد تُحسب. يبقى التوكن هنا إن أردت إعادته.",
+  "wallet.svc.locked_ours_offline": "هذه الدفعة مقفلة على محفظتك.",
+  "wallet.svc.locked_ours_offline_body":
+    "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
   "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":
     "من أرسل هذا التوكن صرفه أولًا، أو أرسل التوكن نفسه إلى شخص آخر.",
-  "wallet.svc.receiving_offline": "الاستقبال دون اتصال",
   "wallet.svc.amount_positive": "أدخل مبلغًا أكبر من صفر.",
   "wallet.svc.coins_raced": "استُخدمت تلك العملات للتو في دفعة أخرى.",
   "wallet.svc.coins_raced_body":
@@ -1897,7 +1942,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "انقر خارج المربع للاتصال.",
   "settings.tor.custom_empty": "أضف سطر جسر واحدًا على الأقل أولًا.",
   "settings.tor.recovered":
-    "تم إيقاف Tor لأنّه لم يُكمل التشغيل في المرة السابقة. أعد تشغيله للمحاولة مرة أخرى.",
+    "لم يُكمل Tor التشغيل في المرة السابقة، لذا توقفت حركة الإنترنت مؤقتًا. حاول مرة أخرى، أو أوقف Tor لتتصل بالإنترنت دونه.",
+  "settings.tor.retry": "حاول مرة أخرى",
   "settings.conn.mint_clearnet": "السماح بحركة دار السك عبر الشبكة المكشوفة",
   "settings.conn.mint_clearnet_desc":
     "لا يغطي Tor على iOS سوى Nostr. اتركه معطّلًا لحجب طلبات دار السك؛ والنقد الإلكتروني عبر الشبكة يعمل في الحالتين.",
@@ -2061,9 +2107,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "فعّل الوصول إلى الكاميرا من الإعدادات لمسح الرمز على هاتفك الجديد.",
   "settings.transfer.confirm_title": "النقل إلى هذا الهاتف؟",
-  "settings.transfer.confirm_body":
-    "ينتقل كل ما هنا إلى الهاتف الذي يعرض هذا الرمز. وبمجرد وصوله، يُمسح هذا الهاتف.",
+  "settings.transfer.verify_body":
+    "يجب أن يُظهر هاتفك الجديد الكلمات نفسها. سينتقل كل ما هنا إليه، ثم يُمسح هذا الهاتف.",
   "settings.transfer.confirm_cta": "انقل",
+  "settings.transfer.waiting_confirm": "أكّد على هاتفك الجديد",
   "settings.transfer.connecting": "جارٍ الاتصال بهاتفك الجديد",
   "settings.transfer.connecting_hint":
     "إذا طلب هذا الهاتف إذنًا للعثور على الأجهزة في شبكتك المحلية، فاسمح بذلك.",
@@ -2119,7 +2166,7 @@ export const strings: Strings = {
   "settings.wipe.now": "امسح الآن",
   "settings.wipe.desc": "دمّر كل المفاتيح والرسائل والنقد الإلكتروني فورًا",
   "settings.wipe.body":
-    "سيدمّر هذا فورًا كل مفاتيحك ورسائلك ونقدك الإلكتروني. لا يمكن التراجع عن هذا.",
+    "سيدمّر هذا فورًا كل مفاتيحك ورسائلك ونقدك الإلكتروني. لا يمكن التراجع عن هذا. الصور التي حفظتها في المعرض تبقى هناك.",
   "settings.wipe.in_progress": "جارٍ المسح",
   "settings.wipe.in_progress_body":
     "يجري تدمير مفاتيحك ورسائلك وملفاتك. يستغرق هذا ثوانٍ قليلة، ويكتمل من تلقاء نفسه إن أُغلق التطبيق.",
@@ -2181,6 +2228,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "عرض ملاحظات الإصدار {version}",
   "settings.version.tor_paused":
     "فحص التحديثات متوقف بينما Tor مفعّل، لئلا يكشف عنوان IP الخاص بك. راجع صفحة الإصدارات في متصفح.",
+  "settings.version.internet_off":
+    "التحديثات متوقفة ما دام الإنترنت معطّلًا. شغّل {setting} من الإعدادات.",
   "settings.version.check_failed":
     "تعذّر البحث عن تحديثات. تحقق من اتصالك وحاول مرة أخرى.",
   "settings.version.downloading": "جارٍ التنزيل {percent}%",
@@ -2452,6 +2501,15 @@ export const plurals: Plurals = {
     few: "{count} غير مؤكدة",
     many: "{count} غير مؤكدة",
     other: "{count} غير مؤكدة",
+  },
+  "wallet.send.stale_fee_note": {
+    zero: "فُحصت الرسوم آخر مرة قبل {count} يوم. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    one: "فُحصت الرسوم آخر مرة قبل يوم واحد. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    two: "فُحصت الرسوم آخر مرة قبل يومين. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    few: "فُحصت الرسوم آخر مرة قبل {count} أيام. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    many: "فُحصت الرسوم آخر مرة قبل {count} يومًا. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    other:
+      "فُحصت الرسوم آخر مرة قبل {count} يوم. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
   },
   "wallet.spent_removed_detail": {
     zero: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",

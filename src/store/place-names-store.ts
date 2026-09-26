@@ -10,9 +10,11 @@
 // the UI simply omits it. A successful lookup is cached (a geohash cell maps to
 // the same place forever), so we never geocode the same cell twice. Raw
 // coordinates never leave the device: only the cell's centre is geocoded, and it
-// is derived from the geohash the app already knows.
+// is derived from the geohash the app already knows. Even that is not asked for
+// while the internet is off or Tor is on (see resolve).
 
 import { decodeGeohash } from "@core/nostr/geohash-presence";
+import { internetOff, torClaimed } from "@services/network-gate";
 import * as Location from "expo-location";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -81,6 +83,10 @@ interface PlaceNamesState {
 // de-dupe guard for the current process.
 const inFlight = new Set<string>();
 
+// Bumped by clearAll, so a geocode still in flight across a panic wipe drops
+// its answer instead of writing a visited place back to disk.
+let generation = 0;
+
 // Pick the address component that matches the cell's coverage. A 2-char cell is
 // a whole region, a 5-char cell a city, a 7-char cell a block, so the useful
 // label differs by length. Mirrors bitchat's per-level naming.
@@ -118,7 +124,13 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
         if (geohash.length === 0) return;
         const key = placeNameKey(geohash);
         if (get().names[key] !== undefined || inFlight.has(key)) return;
+        // The geocoder is a system service (Play services, Apple's daemons), so
+        // neither the internet switch nor the Tor proxy reaches it: the cell's
+        // centre would go out from this device's own address. Nothing is
+        // marked in flight, so a later call looks the cell up once allowed.
+        if (internetOff() || torClaimed()) return;
         inFlight.add(key);
+        const started = generation;
         void (async () => {
           try {
             const { lat, lng } = decodeGeohash(geohash);
@@ -128,19 +140,20 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
             });
             const first = results[0];
             const name = first ? pickName(geohash, first) : null;
-            if (name !== null) {
+            if (name !== null && started === generation) {
               set((state) => ({ names: { ...state.names, [key]: name } }));
             }
           } catch {
             // Geocoder or network unavailable: leave it unresolved so a later
             // session can try again. The UI just omits the name meanwhile.
           } finally {
-            inFlight.delete(key);
+            if (started === generation) inFlight.delete(key);
           }
         })();
       },
 
       clearAll() {
+        generation++;
         inFlight.clear();
         set({ names: {} });
       },

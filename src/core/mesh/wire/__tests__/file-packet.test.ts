@@ -11,6 +11,7 @@ import {
   MAX_VOICE_BYTES,
   maxBytesForType,
   mimeMatchesMagic,
+  receivedFileName,
   resolveMimeType,
   typeFromMime,
 } from "../file-packet";
@@ -143,12 +144,36 @@ describe("bitchat-file-packet", () => {
       ).toBe(true);
     });
 
-    it("is lenient for octet-stream and video", () => {
+    it("is lenient for octet-stream", () => {
       expect(
         mimeMatchesMagic("application/octet-stream", new Uint8Array([1])),
       ).toBe(true);
+    });
+
+    // A video goes to the OS player, so its label is checked like an image's.
+    it("accepts only MP4 and QuickTime video, and only with a box header", () => {
+      const box = (type: string): Uint8Array =>
+        new Uint8Array([0, 0, 0, 0x20, ...new TextEncoder().encode(type), 0]);
+      expect(isAllowedMime("video/webm")).toBe(false);
+      expect(isAllowedMime("video/x-anything")).toBe(false);
+      expect(isAllowedMime("video/quicktime")).toBe(true);
+      expect(mimeMatchesMagic("video/mp4", box("ftyp"))).toBe(true);
+      expect(mimeMatchesMagic("video/quicktime", box("moov"))).toBe(true);
+      expect(mimeMatchesMagic("video/mp4", box("xxxx"))).toBe(false);
       expect(mimeMatchesMagic("video/mp4", new Uint8Array([1, 2, 3]))).toBe(
-        true,
+        false,
+      );
+    });
+
+    it("names a received file by its validated type, not the sender's word", () => {
+      expect(receivedFileName("photo.exe", "image/jpeg")).toBe("photo.jpg");
+      expect(receivedFileName("clip", "video/quicktime")).toBe("clip.mov");
+      // Octet-stream keeps the sender's, or a .docx would open in nothing.
+      expect(receivedFileName("notes.docx", "application/octet-stream")).toBe(
+        "notes.docx",
+      );
+      expect(receivedFileName("notes", "application/octet-stream")).toBe(
+        "notes.bin",
       );
     });
 

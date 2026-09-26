@@ -56,6 +56,9 @@ export async function saveIdentity(id: Identity): Promise<void> {
   );
 }
 
+// Null only when there is no item. A present item that will not parse throws:
+// it is unreadable, not absent, and "absent" sends the launch to onboarding,
+// which would write over it.
 export async function loadIdentity(): Promise<Identity | null> {
   const raw = await readSecret(STORAGE_KEY);
   if (!raw) return null;
@@ -69,7 +72,7 @@ export async function loadIdentity(): Promise<Identity | null> {
     typeof (parsed as Record<string, unknown>).noisePrivHex !== "string" ||
     typeof (parsed as Record<string, unknown>).signingPrivHex !== "string"
   ) {
-    return null;
+    throw new Error("identity: stored item is malformed");
   }
 
   const noisePriv = hexToBytes((parsed as Record<string, string>).noisePrivHex);

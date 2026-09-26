@@ -195,6 +195,11 @@ const strings: Strings = {
     "Aus deinem Schlüssel abgeleitet, damit dir niemand deinen wegnehmen kann.",
   "home.features.identity.qr.name": "Kontakte per QR",
   "home.features.identity.qr.line": "Ein Scan überträgt die Schlüssel, nicht nur den Namen.",
+  "home.features.identity.forward.name": "Forward Secrecy",
+  "home.features.identity.forward.line": "Ein geleakter Schlüssel öffnet keine alten Nachrichten.",
+  "home.features.identity.move.name": "Umzug aufs neue Handy",
+  "home.features.identity.move.line":
+    "Chats und Wallet ziehen mit, dann löscht sich das alte Handy.",
   "home.features.identity.panic.name": "Notlöschung",
   "home.features.identity.panic.line":
     "Alle Schlüssel und Nachrichten in unter einer Sekunde vernichtet.",
@@ -204,6 +209,12 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth-Mesh",
   "home.features.networking.mesh.line":
     "Kein Internet, kein Router, auf Handys, die die Leute schon haben.",
+  "home.features.networking.lan.name": "Lokales Netzwerk",
+  "home.features.networking.lan.line":
+    "Geteiltes WiFi oder ein Hotspot, iPhone und Android gemeinsam.",
+  "home.features.networking.hops.name": "Multi-Hop-Weiterleitung",
+  "home.features.networking.hops.line":
+    "Jedes Handy reicht Nachrichten weiter, bis zu sieben Hops.",
   "home.features.networking.bridge.name": "Mesh-Brücke",
   "home.features.networking.bridge.line":
     "Verbindet deinen öffentlichen Chat mit einer Gruppe in der Nähe außerhalb der Reichweite.",

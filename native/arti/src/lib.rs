@@ -506,16 +506,21 @@ pub fn set_dormant(dormant: bool) -> i32 {
 
 /// Per-destination circuit isolation, shared with the SOCKS server.
 ///
-/// Keyed by whatever identifies the caller: the SOCKS credentials when they are
-/// given, which is Tor's own convention, and otherwise the destination. Airhop's
-/// relay sockets carry no credentials, so the destination key is what puts each
-/// Nostr relay on its own circuit. Without it, one guard sees this client
-/// talking to five named relays at once, which is a correlatable shape even
-/// though every byte is opaque.
+/// Keyed by destination, which is what puts each Nostr relay and each mint on
+/// its own circuit. Without it, one exit sees this client talking to five named
+/// relays at once, which is a correlatable shape even though every byte is
+/// opaque.
 fn isolation_map() -> &'static Mutex<HashMap<String, IsolationToken>> {
     static MAP: OnceLock<Mutex<HashMap<String, IsolationToken>>> = OnceLock::new();
     MAP.get_or_init(|| Mutex::new(HashMap::new()))
 }
+
+/// Destinations remembered before the map starts over. Any local process can
+/// reach the listener and name a new host per connection, so the map is
+/// bounded. The app itself dials a few dozen hosts at most, so this is far
+/// above real use, and a clear only over-isolates: a destination seen again
+/// gets a fresh circuit.
+const MAX_ISOLATION_KEYS: usize = 4096;
 
 pub(crate) fn isolation_for(key: &str) -> IsolationToken {
     let mut map = match isolation_map().lock() {
@@ -524,6 +529,9 @@ pub(crate) fn isolation_for(key: &str) -> IsolationToken {
         // map yields a fresh token, which over-isolates rather than under.
         Err(_) => return IsolationToken::new(),
     };
+    if map.len() >= MAX_ISOLATION_KEYS && !map.contains_key(key) {
+        map.clear();
+    }
     *map.entry(key.to_owned())
         .or_insert_with(IsolationToken::new)
 }
@@ -657,6 +665,35 @@ mod test {
         let first = isolation_for("relay.example");
         assert_eq!(first, isolation_for("relay.example"));
         assert_ne!(first, isolation_for("other.example"));
+    }
+
+    /// Anything on the device can name a new host per connection, so the map
+    /// must not grow with it.
+    #[test]
+    fn isolation_map_starts_over_at_its_cap() {
+        let _serial = test_lock();
+        isolation_map().lock().expect("map").clear();
+
+        let first = isolation_for("cap-0");
+        for i in 1..MAX_ISOLATION_KEYS {
+            isolation_for(&format!("cap-{i}"));
+        }
+        assert_eq!(
+            isolation_map().lock().expect("map").len(),
+            MAX_ISOLATION_KEYS
+        );
+        // A known key at the cap is served from the map, not a reason to clear.
+        assert_eq!(first, isolation_for("cap-0"));
+
+        isolation_for("one-more");
+        assert_eq!(isolation_map().lock().expect("map").len(), 1);
+        assert_ne!(
+            first,
+            isolation_for("cap-0"),
+            "a cleared key gets a new circuit"
+        );
+
+        isolation_map().lock().expect("map").clear();
     }
 
     /// A panic returns the fallback rather than unwinding into a C or JNI frame.

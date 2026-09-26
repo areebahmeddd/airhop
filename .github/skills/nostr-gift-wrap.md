@@ -52,7 +52,7 @@ An `UnsignedEvent`. Never signed, per NIP-17 a rumor must not have a signature.
   kind: 14,
   pubkey: senderPubkey,      // sender's real secp256k1 pubkey
   created_at: now,
-  tags: [["p", recipientPubkeyHex]],
+  tags: [],                  // as bitchat: the gift wrap's `p` tag targets the recipient
   content: plaintextMessage,
 }
 ```
@@ -81,7 +81,7 @@ const wrapConvKey = nip44.getConversationKey(
   recipientPubkeyHex,
 );
 content = nip44.encrypt(JSON.stringify(sealEvent), wrapConvKey);
-// Timestamp is randomized +-2 days per NIP-59 to prevent timing analysis
+// Seal and wrap timestamps are randomized +/-15 minutes (bitchat's window, not NIP-59's two days)
 ```
 
 ### Receive flow
@@ -90,11 +90,13 @@ content = nip44.encrypt(JSON.stringify(sealEvent), wrapConvKey);
 1. Decrypt gift wrap using recipient key + gift wrap pubkey field
 2. Verify seal signature (rejects forged DMs)
 3. Decrypt seal using recipient key + seal pubkey field
-4. Verify seal.pubkey === rumor.pubkey (prevents identity substitution)
-5. Verify recipient tag in rumor matches our pubkey
+4. Check the rumor is a well-formed kind 14 (nostr-tools validateEvent) and that seal.pubkey === rumor.pubkey (prevents identity substitution)
+5. Check the rumor's created_at is inside the subscription's lookback and at most 15 minutes ahead (15 minutes of skew either side)
 ```
 
 Step 2 is security-critical. Skipping it means anyone who knows the recipient's pubkey can forge DMs.
+
+There is no recipient-tag check on the rumor. The recipient binding comes from the seal encryption: the seal is NIP-44 encrypted to the recipient's key, so a rumor meant for anyone else cannot be opened. The rumor is unsigned, so nothing else checks its shape: a missing or non-numeric `created_at` would slip past every time comparison, which is why step 4 runs `validateEvent` first.
 
 ## Courier Relay (kind 1401)
 
@@ -110,6 +112,8 @@ content: base64(encodeEnvelopePayload(envelope))
 
 The `x` tag is a 16-byte HMAC-derived daily recipient tag (see `computeRecipientTag` in `courier-store.ts`). It rotates daily. This is not unlinkability: anyone holding the peer's static key can compute its tag for any day.
 
+The event is signed by a throwaway key minted per publish, never the device identity: the envelope authenticates its sender inside the Noise X seal, and a stable publisher key would make every drop attributable to one npub. bitchat mints per publish too.
+
 NIP-40 compliant relays auto-expire the event at the `expiration` timestamp. Non-compliant relays keep it; the recipient ignores stale envelopes.
 
 ### Subscription Filter
@@ -117,17 +121,23 @@ NIP-40 compliant relays auto-expire the event at the `expiration` timestamp. Non
 Subscribers query by `#x` tag with their current and previous day's tags:
 
 ```typescript
-{ kinds: [1401], "#x": [todayTagHex, ...], since: now - 86400, limit: 20 }
+{ kinds: [1401], "#x": [todayTagHex, ...], since: now - 86400, limit: 100 }
 ```
+
+The limit is bitchat-ios's (`courierDrops`, limit 100). It bounds a flood rather than honest volume, since anyone who heard an announce can compute the daily tag and park junk after real mail. There is no paging with `until`, as in bitchat-ios: a flood can outrun any page budget, and every junk page costs Schnorr checks.
+
+## Subscribing Across Relays
+
+`NostrClient.subscribe` opens one `subscribeMany([url], ...)` per relay and per filter, each with its own filter copy, and `queryEvents` runs one `querySync` per relay and merges by event ID. nostr-tools records an event ID as seen before verifying its signature, in a set shared across the relays of one call, so a hostile relay's forged copy with the genuine ID would suppress every honest relay's copy; and a rejected far-future event from one relay would move the shared `since` another relay reconnects with. Airhop keeps its own set of delivered IDs per `subscribe()` call, recorded only after verification and only when the event was actually queued, and hands it to nostr-tools as a lookup-only `alreadyHaveEvent`. Collapse back to one call when a nostr-tools release carries PR #560.
 
 ## Event Kind Summary
 
-| Kind | Name         | Signed by          |
-| ---- | ------------ | ------------------ |
-| 14   | Rumor        | Nobody (unsigned)  |
-| 13   | Seal         | Real sender key    |
-| 1059 | Gift wrap    | Ephemeral key      |
-| 1401 | Courier drop | Sender's Nostr key |
+| Kind | Name         | Signed by         |
+| ---- | ------------ | ----------------- |
+| 14   | Rumor        | Nobody (unsigned) |
+| 13   | Seal         | Real sender key   |
+| 1059 | Gift wrap    | Ephemeral key     |
+| 1401 | Courier drop | Throwaway key     |
 
 ## What Not to Do
 

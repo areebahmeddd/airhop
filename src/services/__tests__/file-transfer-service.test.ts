@@ -10,19 +10,83 @@
 // never reassembles. The assertions below are therefore about WHEN packets are
 // handed to the transport, not just that they are.
 
-import { decodeFilePacket } from "@core/mesh/wire/file-packet";
+import {
+  decodeFilePacket,
+  encodeFilePacket,
+} from "@core/mesh/wire/file-packet";
 import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
-import { FileTransferService } from "../file-transfer-service";
+import {
+  CACHE_FILE_PREFIX,
+  enforceIncomingQuota,
+  FileTransferService,
+  INCOMING_FILE_PREFIX,
+  INCOMING_QUOTA_BYTES,
+} from "../file-transfer-service";
 
-// The service only touches expo-file-system on the RECEIVE path; a shallow
-// mock keeps the module import from pulling in native code.
-jest.mock("expo-file-system", () => ({
-  File: class {},
-  Directory: class {},
-  Paths: { cache: {} },
-}));
+// The service only touches expo-file-system on the RECEIVE path: one flat
+// in-memory cache directory, named files, and a switch to make writes fail.
+// On globalThis because jest.mock factories are hoisted above module bindings.
+interface DiskEntry {
+  bytes: Uint8Array;
+  lastModified: number | null;
+}
+declare global {
+  var __cache: Map<string, DiskEntry>;
+  var __writeFails: boolean;
+}
+globalThis.__cache = new Map();
+globalThis.__writeFails = false;
+
+jest.mock("expo-file-system", () => {
+  class File {
+    readonly name: string;
+    constructor(_dir: unknown, name: string) {
+      this.name = name;
+    }
+    get uri(): string {
+      return `file:///cache/${this.name}`;
+    }
+    get exists(): boolean {
+      return globalThis.__cache.has(this.name);
+    }
+    get size(): number {
+      return globalThis.__cache.get(this.name)?.bytes.length ?? 0;
+    }
+    get lastModified(): number | null {
+      return globalThis.__cache.get(this.name)?.lastModified ?? null;
+    }
+    get creationTime(): number | null {
+      return null;
+    }
+    create(): void {
+      globalThis.__cache.set(this.name, {
+        bytes: new Uint8Array(0),
+        lastModified: Date.now(),
+      });
+    }
+    write(bytes: Uint8Array): void {
+      if (globalThis.__writeFails) throw new Error("ENOSPC");
+      globalThis.__cache.set(this.name, {
+        bytes,
+        lastModified: Date.now(),
+      });
+    }
+    delete(): void {
+      if (!globalThis.__cache.delete(this.name)) throw new Error("ENOENT");
+    }
+  }
+  class Directory {
+    get exists(): boolean {
+      return true;
+    }
+    list(): File[] {
+      return [...globalThis.__cache.keys()].map((n) => new File(null, n));
+    }
+  }
+  return { File, Directory, Paths: { cache: {} } };
+});
 
 const IDENTITY = {
   peerID: "aabbccdd00112233",
@@ -587,5 +651,151 @@ describe("a file the codec cannot carry", () => {
     service.sendBytes(new Uint8Array(0), META, "#test", outcome);
     expect(outcome).toHaveBeenCalledWith(false);
     expect(service.pendingCount).toBe(0);
+  });
+});
+
+// What a received file may leave on disk, and where it may land.
+describe("receiving a file", () => {
+  const SENDER_BYTES = new Uint8Array([
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+  ]);
+  const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6]);
+
+  function broadcast(payload: Uint8Array): Packet {
+    return {
+      type: PacketType.FILE_TRANSFER,
+      ttl: 7,
+      flags: 0,
+      senderID: SENDER_BYTES,
+      recipientID: new Uint8Array(8),
+      timestamp: Date.now(),
+      signature: new Uint8Array(64),
+      payload,
+    };
+  }
+
+  function photo(): Uint8Array {
+    const tlv = encodeFilePacket({
+      fileName: "photo.jpg",
+      mimeType: "image/jpeg",
+      content: JPEG,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    return tlv;
+  }
+
+  // The receive path is async inside a void call.
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  }
+
+  function put(name: string, bytes: number, lastModified: number | null): void {
+    globalThis.__cache.set(name, {
+      bytes: new Uint8Array(bytes),
+      lastModified,
+    });
+  }
+
+  beforeEach(() => {
+    jest.useRealTimers();
+    globalThis.__cache.clear();
+    globalThis.__writeFails = false;
+    useChatStore.getState().clearAll();
+  });
+
+  it("stores a received file under the incoming prefix", async () => {
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    const names = [...globalThis.__cache.keys()];
+    expect(names).toHaveLength(1);
+    expect(names[0].startsWith(INCOMING_FILE_PREFIX)).toBe(true);
+    expect(useChatStore.getState().messages["#bluetooth"]).toHaveLength(1);
+  });
+
+  // The shown name is the sender's word; nothing in it may disguise what it is.
+  it("stores a received name without its bidi controls, under the validated type", async () => {
+    const tlv = encodeFilePacket({
+      fileName: "invoice\u202Efdp.exe",
+      mimeType: "IMAGE/JPEG",
+      content: JPEG,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(tlv));
+    await settle();
+    const [message] = useChatStore.getState().messages["#bluetooth"] ?? [];
+    expect(message?.attachment?.name).toBe("invoicefdp.exe");
+    expect(message?.attachment?.mimeType).toBe("image/jpeg");
+    // On disk it is what its bytes are, whatever the sender called it.
+    expect([...globalThis.__cache.keys()][0]?.endsWith(".jpg")).toBe(true);
+  });
+  it("does not put back a public room the person left, nor keep the file", async () => {
+    useChatStore.getState().removeChannel("#bluetooth");
+    expect(useChatStore.getState().channels).not.toContain("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(useChatStore.getState().channels).not.toContain("#bluetooth");
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
+  it("leaves no half-written file when the disk refuses it", async () => {
+    useChatStore.getState().addChannel("#bluetooth");
+    globalThis.__writeFails = true;
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
+  describe("the 100 MiB quota on received media", () => {
+    const MiB = 1024 * 1024;
+
+    it("evicts the oldest received files first, just enough to fit", () => {
+      put(`${INCOMING_FILE_PREFIX}1_old.jpg`, 40 * MiB, 1_000);
+      put(`${INCOMING_FILE_PREFIX}2_mid.jpg`, 40 * MiB, 2_000);
+      put(`${INCOMING_FILE_PREFIX}3_new.jpg`, 19 * MiB, 3_000);
+      enforceIncomingQuota(2 * MiB);
+      const left = [...globalThis.__cache.keys()];
+      expect(left).not.toContain(`${INCOMING_FILE_PREFIX}1_old.jpg`);
+      expect(left).toContain(`${INCOMING_FILE_PREFIX}2_mid.jpg`);
+      expect(left).toContain(`${INCOMING_FILE_PREFIX}3_new.jpg`);
+    });
+
+    it("never touches a file this phone sent, however large", () => {
+      put(`${CACHE_FILE_PREFIX}sent.mp4`, 200 * MiB, 1);
+      put(`${INCOMING_FILE_PREFIX}1_in.jpg`, 1 * MiB, 5);
+      enforceIncomingQuota(1 * MiB);
+      expect(globalThis.__cache.has(`${CACHE_FILE_PREFIX}sent.mp4`)).toBe(true);
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_in.jpg`)).toBe(
+        true,
+      );
+    });
+
+    it("counts a file with no readable age as the oldest", () => {
+      put(`${INCOMING_FILE_PREFIX}1_dated.jpg`, 60 * MiB, 1_000);
+      put(`${INCOMING_FILE_PREFIX}2_undated.jpg`, 40 * MiB, null);
+      enforceIncomingQuota(1 * MiB);
+      expect(
+        globalThis.__cache.has(`${INCOMING_FILE_PREFIX}2_undated.jpg`),
+      ).toBe(false);
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_dated.jpg`)).toBe(
+        true,
+      );
+    });
+
+    it("is enforced before a received file is written", async () => {
+      useChatStore.getState().addChannel("#bluetooth");
+      put(
+        `${INCOMING_FILE_PREFIX}1_old.jpg`,
+        INCOMING_QUOTA_BYTES - JPEG.length + 1,
+        1,
+      );
+      makeService().service.onFileTransfer(broadcast(photo()));
+      await settle();
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_old.jpg`)).toBe(
+        false,
+      );
+      expect(globalThis.__cache.size).toBe(1);
+    });
   });
 });

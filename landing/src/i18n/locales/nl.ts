@@ -192,6 +192,11 @@ const strings: Strings = {
     "Afgeleid van je sleutel, zodat niemand de jouwe kan afpakken.",
   "home.features.identity.qr.name": "Contacten via QR",
   "home.features.identity.qr.line": "Eén scan draagt hun sleutels over, niet alleen hun naam.",
+  "home.features.identity.forward.name": "Voorwaartse geheimhouding",
+  "home.features.identity.forward.line": "Een gelekte sleutel opent geen oude berichten.",
+  "home.features.identity.move.name": "Overstappen naar een nieuwe telefoon",
+  "home.features.identity.move.line":
+    "Chats en wallet verhuizen mee, dan wist de oude telefoon zichzelf.",
   "home.features.identity.panic.name": "Noodwissen",
   "home.features.identity.panic.line":
     "Elke sleutel en elk bericht vernietigd in minder dan een seconde.",
@@ -201,6 +206,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth-mesh",
   "home.features.networking.mesh.line":
     "Geen internet, geen router, op telefoons die mensen al hebben.",
+  "home.features.networking.lan.name": "Lokaal netwerk",
+  "home.features.networking.lan.line": "Gedeelde WiFi of een hotspot, iPhone en Android samen.",
+  "home.features.networking.hops.name": "Multi-hop doorgifte",
+  "home.features.networking.hops.line": "Elke telefoon geeft berichten door, tot zeven hops.",
   "home.features.networking.bridge.name": "Mesh-brug",
   "home.features.networking.bridge.line":
     "Verbindt je openbare chat met een groep in de buurt buiten bereik.",

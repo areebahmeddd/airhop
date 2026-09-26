@@ -64,30 +64,46 @@ function settingsBytes(line) {
   return Math.max(0, total - 1);
 }
 
+// Throws rather than exits, so a test can see which line was refused.
 function validate(transport, lines) {
+  const refuse = (message) => {
+    throw new Error(message);
+  };
+
   const limit = LIMITS[transport];
   if (lines.length < limit.min || lines.length > limit.max) {
-    fail(
+    refuse(
       `${transport}: upstream returned ${lines.length} bridges, expected ${limit.min} to ${limit.max}`,
     );
   }
 
   for (const line of lines) {
+    // Printable ASCII words separated by single spaces, the pt-spec grammar.
+    // The file joins its entries with newlines, so one carrying a newline
+    // would become two bridge lines of which only the first was checked.
+    if (
+      typeof line !== "string" ||
+      !/^[\x21-\x7e]+(?: [\x21-\x7e]+)*$/.test(line)
+    ) {
+      refuse(
+        `${transport}: a line is not printable ASCII on one line: ${JSON.stringify(line)}`,
+      );
+    }
     if (!line.startsWith(`${transport} `)) {
-      fail(`${transport}: a line does not name its own transport: ${line}`);
+      refuse(`${transport}: a line does not name its own transport: ${line}`);
     }
     // Address and identity, then the settings. Arti refuses a line missing
     // either, and finding that out at start is worse than finding it here.
-    const [, address, fingerprint] = line.split(/\s+/);
+    const [, address, fingerprint] = line.split(" ");
     if (!/^[\d.]+:\d+$|^\[[\da-f:]+\]:\d+$/i.test(address ?? "")) {
-      fail(`${transport}: no address:port in: ${line}`);
+      refuse(`${transport}: no address:port in: ${line}`);
     }
     if (!/^[0-9A-F]{40}$/i.test(fingerprint ?? "")) {
-      fail(`${transport}: no relay fingerprint in: ${line}`);
+      refuse(`${transport}: no relay fingerprint in: ${line}`);
     }
     const bytes = settingsBytes(line);
     if (bytes > MAX_PT_SETTINGS_BYTES) {
-      fail(
+      refuse(
         `${transport}: settings are ${bytes} bytes, over the ${MAX_PT_SETTINGS_BYTES} a SOCKS5 handshake can carry: ${line}`,
       );
     }
@@ -99,7 +115,7 @@ function validate(transport, lines) {
       // which defeats the point of using it.
       for (const setting of ["url=", "fronts=", "ice=", "utls-imitate="]) {
         if (!line.includes(setting)) {
-          fail(`snowflake: line is missing ${setting}: ${line}`);
+          refuse(`snowflake: line is missing ${setting}: ${line}`);
         }
       }
     }
@@ -145,8 +161,15 @@ function main() {
     }
     // Sorted so an unchanged set produces an unchanged file whatever order
     // upstream answered in, and a diff only appears when the set really moved.
-    bridges[transport] = [...lines].map((l) => l.trim()).sort();
-    validate(transport, bridges[transport]);
+    // A non-string is left for validate to refuse by name.
+    bridges[transport] = lines
+      .map((l) => (typeof l === "string" ? l.trim() : l))
+      .sort();
+    try {
+      validate(transport, bridges[transport]);
+    } catch (error) {
+      fail(error.message);
+    }
   }
 
   const rendered = render(bridges);
@@ -170,4 +193,5 @@ function main() {
   );
 }
 
-main();
+if (require.main === module) main();
+else module.exports = { validate };

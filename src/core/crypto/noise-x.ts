@@ -10,6 +10,12 @@
 // Unlike XX, there is no response from the recipient. This means:
 // - No forward secrecy: compromise of the recipient's static key exposes mail.
 // - The sender's identity is authenticated inside the ciphertext.
+//
+// The prologue is mixed into the transcript before the recipient's static key,
+// as Noise always does, and must match on both sides or nothing opens. It is
+// a required argument because bitchat-ios seals with one and the empty default
+// silently never interoperated: callers pass the courier layer's wire
+// constants (COURIER_PROLOGUE, prekeyPrologue).
 
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { x25519 } from "@noble/curves/ed25519.js";
@@ -56,10 +62,12 @@ type SymState = {
   n: number;
 };
 
-function initSymState(): SymState {
+function initSymState(prologue: Uint8Array): SymState {
   const h = new Uint8Array(32);
   h.set(PROTOCOL_NAME_BYTES);
-  return { h, ck: h.slice(), k: null, n: 0 };
+  const ss: SymState = { h, ck: h.slice(), k: null, n: 0 };
+  mixHash(ss, prologue);
+  return ss;
 }
 
 function mixHash(ss: SymState, data: Uint8Array): void {
@@ -107,8 +115,9 @@ export function noiseXSeal(
   senderStaticPrivKey: Uint8Array,
   recipientStaticPubKey: Uint8Array,
   plaintext: Uint8Array,
+  prologue: Uint8Array,
 ): Uint8Array {
-  const ss = initSymState();
+  const ss = initSymState(prologue);
 
   // Pre-message: mix recipient's static pub (known upfront)
   mixHash(ss, recipientStaticPubKey);
@@ -153,12 +162,13 @@ export function noiseXSeal(
 export function noiseXOpen(
   recipientStaticPrivKey: Uint8Array,
   envelope: Uint8Array,
+  prologue: Uint8Array,
 ): { plaintext: Uint8Array; senderStaticPubKey: Uint8Array } {
   const recipientStaticPub = x25519.getPublicKey(recipientStaticPrivKey);
   const minLen = 32 + 48 + TAG_LEN; // e_pub + enc_s+tag + enc_empty+tag
   if (envelope.length < minLen) throw new Error("NoiseX: envelope too short");
 
-  const ss = initSymState();
+  const ss = initSymState(prologue);
 
   // Pre-message: mix our static pub
   mixHash(ss, recipientStaticPub);

@@ -238,6 +238,14 @@ describe("interpolation", () => {
     // placeholders is byte-identical to its catalog entry.
     expect(t("common.cancel")).toBe("Cancel");
   });
+
+  // A value's own pop would close the isolate early, and an override after it
+  // would then reorder the rest of the sentence.
+  it("keeps a value's own bidi controls from escaping its isolate", () => {
+    const hostile = "x\u2069\u202Eevil";
+    const rendered = t("settings.opens_externally", { label: hostile });
+    expect(rendered).toBe("\u2068xevil\u2069, opens outside the app");
+  });
 });
 
 describe("plurals", () => {

@@ -1,5 +1,6 @@
 // The messages of a transfer, inside its Noise session: `[type: u8][body]`.
 //
+// New phone: CONFIRM once the person has matched the words on both screens.
 // Old phone: OFFER naming every section, the sections as one chunked stream,
 // END. New phone: COMMIT once everything is stored and read back. Old phone:
 // RELEASED once erased. Either side may ABORT before the commit. Airhop-only,
@@ -12,6 +13,7 @@ export const MoveMessageType = {
   COMMIT: 0x04,
   RELEASED: 0x05,
   ABORT: 0x06,
+  CONFIRM: 0x07,
 } as const;
 
 export const MoveAbortReason = {
@@ -46,7 +48,8 @@ export type MoveMessage =
   | { type: "end" }
   | { type: "commit"; digest: Uint8Array }
   | { type: "released"; keysDestroyed: boolean }
-  | { type: "abort"; reason: MoveAbortReasonValue };
+  | { type: "abort"; reason: MoveAbortReasonValue }
+  | { type: "confirm" };
 
 export const MOVE_FORMAT = 1;
 // Well under the 64 KiB TCP frame once the type byte and Noise overhead are on.
@@ -96,6 +99,10 @@ export function encodeReleased(keysDestroyed: boolean): Uint8Array {
 
 export function encodeAbort(reason: MoveAbortReasonValue): Uint8Array {
   return Uint8Array.of(MoveMessageType.ABORT, reason);
+}
+
+export function encodeConfirm(): Uint8Array {
+  return Uint8Array.of(MoveMessageType.CONFIRM);
 }
 
 function parseOffer(body: Uint8Array): MoveOffer | null {
@@ -177,6 +184,8 @@ export function decodeMoveMessage(frame: Uint8Array): MoveMessage | null {
       return body.length === 1 && isAbortReason(body[0])
         ? { type: "abort", reason: body[0] }
         : null;
+    case MoveMessageType.CONFIRM:
+      return body.length === 0 ? { type: "confirm" } : null;
     default:
       return null;
   }

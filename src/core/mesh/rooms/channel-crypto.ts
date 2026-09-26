@@ -42,6 +42,14 @@ export interface ChannelPlaintext {
   text: string;
 }
 
+// The chat row a private-channel message is filed under, on Bluetooth and on
+// Nostr alike. The author is part of it: a member who re-seals someone else's
+// message ID under another author's name gets a row of their own rather than
+// the genuine one, while the same author's two copies still collapse.
+export function channelRowID(senderID: string, msgId: string): string {
+  return `ch-${senderID}-${msgId}`;
+}
+
 // A fresh channel key, base64url-encoded for storage and links.
 export function generateChannelKey(): string {
   return bytesToBase64Url(randomBytes(KEY_LEN));

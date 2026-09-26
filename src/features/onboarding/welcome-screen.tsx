@@ -7,6 +7,7 @@ import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged } from "@platform/haptics";
+import PixelBird, { BIRD_COLUMNS, BIRD_ROWS } from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";
 import {
   FontSize,
@@ -62,7 +63,7 @@ export default function WelcomeScreen({
   // the pixel edges crisp.
   const birdCell = Math.max(
     2,
-    Math.round(Math.min(width * 0.5, 240) / BIRD_PIXELS[0].length),
+    Math.round(Math.min(width * 0.5, 240) / BIRD_COLUMNS),
   );
 
   // The consent line is one translated sentence with the two document names
@@ -113,16 +114,13 @@ export default function WelcomeScreen({
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Centered brand mark filling the space above the footer. Uses the
-            primary text color, so it is a black bird on a light background and a
-            white bird in dark mode. */}
-        {/* minHeight keeps the mark whole once the content is taller than the
-            viewport: with only `flex: 1` the leftover space is zero on a short
-            screen and the bird collapses to nothing. */}
+        {/* The brand mark fills the space above the footer. minHeight keeps
+            it whole on a short screen, where `flex: 1` alone leaves it no
+            space at all. */}
         <View
           style={[
             styles.hero,
-            { minHeight: BIRD_PIXELS.length * birdCell + Spacing["3xl"] },
+            { minHeight: BIRD_ROWS * birdCell + Spacing["3xl"] },
           ]}
         >
           <PixelBird color={Colors.textPrimary} cell={birdCell} />
@@ -204,47 +202,6 @@ export default function WelcomeScreen({
 
       <HelloSheet visible={greet} onClose={onGreeted} />
     </SafeAreaView>
-  );
-}
-
-// The Airhop brand mark: a monochrome pixel bird, the same soaring-seabird
-// glide frame that crowns the Version screen and every app icon (a nod to the
-// release codenames, birds, alphabetical; 1.x is Albatross). Drawn as a grid
-// of square cells so it stays crisp at any size; filled cells take the passed
-// color, so it reads in both light and dark themes.
-const BIRD_PIXELS = [
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0],
-  [0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0],
-  [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-  [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-];
-
-function PixelBird({
-  color,
-  cell,
-}: {
-  color: string;
-  cell: number;
-}): React.JSX.Element {
-  return (
-    <View style={{ width: BIRD_PIXELS[0].length * cell }}>
-      {BIRD_PIXELS.map((row, y) => (
-        <View key={y} style={{ flexDirection: "row" }}>
-          {row.map((filled, x) => (
-            <View
-              key={x}
-              style={{
-                width: cell,
-                height: cell,
-                backgroundColor: filled ? color : "transparent",
-              }}
-            />
-          ))}
-        </View>
-      ))}
-    </View>
   );
 }
 

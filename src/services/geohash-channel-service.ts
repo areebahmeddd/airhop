@@ -56,6 +56,7 @@ import {
 import { unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import { sharedRowID } from "@core/nostr/shared-row-id";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
@@ -241,7 +242,13 @@ export interface GatewayHooks {
   // record, the routing registry - because it already does all three for a
   // scanned QR and a card must not get an easier path for arriving over a wire.
   // Returns the peer ID once accepted, or null if the card does not hold up.
-  onContactCard(card: Uint8Array, senderPubkey: string): string | null;
+  // `recipientPubkey` is our own cell key in that conversation, which the
+  // card's proof is bound to (geo-card-proof.ts).
+  onContactCard(
+    body: Uint8Array,
+    senderPubkey: string,
+    recipientPubkey: string,
+  ): string | null;
 }
 
 export interface GeoParticipant {
@@ -629,7 +636,7 @@ export class GeohashChannelService {
       // The timer may have been cancelled while we were spacing the round out.
       if (this.heartbeatTimer === null) return;
       await this.presenceFor(unique[i])
-        .publishHeartbeat(unique[i])
+        .publishHeartbeat(unique[i], this.relaysForGeohash(unique[i]))
         .catch(() => {
           // Best-effort. Presence is a hint, and a relay that refuses one
           // heartbeat must not stop the next cell in the round.
@@ -767,7 +774,7 @@ export class GeohashChannelService {
     useChatStore.getState().addMessage({
       id:
         sharedId !== undefined && sharedId.length > 0
-          ? `ch-${sharedId}`
+          ? sharedRowID(sharedId, event.content)
           : `geo-${event.id}`,
       channel,
       senderID: `nostr_${event.pubkey}`,
@@ -872,6 +879,11 @@ export class GeohashChannelService {
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
 
+  // Our per-cell Nostr key in `geohash`, which a contact card's proof binds.
+  cellPubkeyFor(geohash: string): string {
+    return this.identityFor(geohash).pubKeyHex;
+  }
+
   // Flush queued read receipts for a geo-DM conversation when its thread opens.
   sendGeoReadReceipts(pubkey: string): void {
     const geohash = this.geohashForGeoDmPeer(pubkey);
@@ -967,7 +979,11 @@ export class GeohashChannelService {
     // binding check would be worse than silence.
     if (env.type === NoisePayloadType.CONTACT_CARD) {
       if (env.body !== undefined) {
-        this.gateway?.onContactCard(env.body, dm.senderPubkey);
+        this.gateway?.onContactCard(
+          env.body,
+          dm.senderPubkey,
+          this.identityFor(geohash).pubKeyHex,
+        );
       }
       return;
     }
@@ -1040,8 +1056,9 @@ export class GeohashChannelService {
         // list only and must never render as an empty chat bubble.
         if (event.kind === KIND_PRESENCE || event.content.length === 0) return;
 
-        // Prefer the sender-assigned cross-transport ID so the BLE copy of this
-        // same message collapses into one bubble. In a location channel both
+        // Prefer the sender-assigned cross-transport ID, bound to the text
+        // (sharedRowID), so the BLE copy of this same message collapses into
+        // one bubble. In a location channel both
         // copies arrive, and the Nostr one is signed with a per-geohash key,
         // so without this the reader sees the message twice, apparently from
         // two different people. Falls back to the Nostr event id, which still
@@ -1051,7 +1068,7 @@ export class GeohashChannelService {
         useChatStore.getState().addMessage({
           id:
             sharedId !== undefined && sharedId.length > 0
-              ? `ch-${sharedId}`
+              ? sharedRowID(sharedId, event.content)
               : `geo-${event.id}`,
           channel,
           senderID: `nostr_${event.pubkey}`,

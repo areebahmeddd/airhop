@@ -297,19 +297,23 @@ export class PeerRegistry {
     return this.get(peerID) !== undefined;
   }
 
-  // The signing key pinned to this peer, ignoring reachability.
-  //
-  // `get()` hides an entry once it is past its TTL, which is the right answer
-  // to "can I route to them" and the wrong one to "do I know who they are".
-  // Identity pinning has no expiry by design: the first key seen for a peer
-  // stands for as long as they are remembered, so a packet that arrives after
-  // their presence has aged out is still checkable against it.
-  //
-  // Used for LEAVE, where the two questions come apart completely. A departure
-  // is precisely the packet that arrives when a peer has gone quiet, so
-  // resolving its key through the reachability window drops the genuine ones.
+  // The signing key pinned to this peer, ignoring reachability. `get()` hides a
+  // peer past its TTL, the right answer to "can I route to them" and the wrong
+  // one to "do I know who they are". A pin has no expiry, so a message synced
+  // long after its author's last ANNOUNCE, or a LEAVE, is still checkable.
   pinnedSigningKey(peerID: string): Uint8Array | undefined {
     return this.peers.get(peerID)?.signingPubKey;
+  }
+
+  // The Nostr key the peer announced, ignoring reachability.
+  nostrPubkeyFor(peerID: string): string | undefined {
+    return this.peers.get(peerID)?.nostrPubkey;
+  }
+
+  // The pinned key only when a 0x21 proved it, ignoring reachability.
+  provenSigningKey(peerID: string): Uint8Array | undefined {
+    const e = this.peers.get(peerID);
+    return e?.signingKeyAuthenticated === true ? e.signingPubKey : undefined;
   }
 
   // The Noise session held with this peer, ignoring reachability.
@@ -537,6 +541,9 @@ export class MessageRouter {
     // Nostr gift-wrap DM. Optional. When absent, DMs fall through to courier
     // if no direct session is available.
     private readonly nostrSend?: NostrSendFn,
+    // Our neighbour count, which the TTL of what we author follows (see
+    // origin-ttl.ts). 0 (sparse) when not given, for tests with no mesh.
+    private readonly getDegree: () => number = () => 0,
   ) {}
 
   // Send a message to a public channel. Always broadcast over mesh.
@@ -560,7 +567,7 @@ export class MessageRouter {
 
     const packet: Packet = {
       type,
-      ttl: originTtl(),
+      ttl: originTtl(type, this.getDegree()),
       flags: Flags.SIGNED,
       senderID: senderIDBytes,
       recipientID: new Uint8Array(8), // broadcast
@@ -578,7 +585,7 @@ export class MessageRouter {
   sendChannelEnc(sealedPayload: Uint8Array): void {
     const packet: Packet = {
       type: PacketType.CHANNEL_ENC,
-      ttl: originTtl(),
+      ttl: originTtl(PacketType.CHANNEL_ENC, this.getDegree()),
       flags: Flags.SIGNED,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: new Uint8Array(8), // broadcast

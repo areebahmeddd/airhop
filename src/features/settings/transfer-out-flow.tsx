@@ -1,15 +1,14 @@
 // Transfer to a new phone, from the old phone: a sheet saying what moves, the
-// owner check, a full-screen scanner, one confirmation, then the transfer.
+// owner check, a full-screen scanner, the connection, then one confirmation
+// showing the words both phones share, then the transfer.
 //
-// Once the mesh has stopped the modal cannot be backed out of. Cancel lasts
-// until the last byte is sent; after that only move-sender's answers remain.
+// The confirmation comes after the connection so it can show something tied to
+// the phone that answered. Once the mesh has stopped the modal cannot be backed
+// out of. Cancel lasts until the last byte is sent; after that only
+// move-sender's answers remain.
 
 import { decodeQRContent } from "@core/crypto/contact-exchange";
-import {
-  decodeMoveInvite,
-  isMoveInvite,
-  type MoveInvite,
-} from "@core/move/move-invite";
+import { decodeMoveInvite, isMoveInvite } from "@core/move/move-invite";
 import Feather from "@expo/vector-icons/Feather";
 import { useT, type TranslationKey } from "@i18n";
 import { confirmDeviceOwner } from "@platform/device-auth";
@@ -23,6 +22,7 @@ import {
 import { panicWipe } from "@services/panic-wipe";
 import BottomSheet from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
+import SafetyWords from "@ui/components/safety-words";
 import TextButton from "@ui/components/text-button";
 import {
   BUTTON_HEIGHT,
@@ -74,10 +74,7 @@ const FAILURE_BODY: Record<SenderFailure, TranslationKey> = {
 };
 
 type Stage =
-  | { kind: "scan" }
-  | { kind: "confirm"; invite: MoveInvite }
-  | { kind: "run"; state: SenderState }
-  | { kind: "erasing" };
+  { kind: "scan" } | { kind: "run"; state: SenderState } | { kind: "erasing" };
 
 interface Props {
   visible: boolean;
@@ -178,12 +175,6 @@ export default function TransferOutFlow({
     }
     scannedRef.current = true;
     succeeded();
-    setStage({ kind: "confirm", invite });
-  }
-
-  function handleTransfer(invite: MoveInvite): void {
-    // A second tap before the re-render must not start a second transfer.
-    if (senderRef.current !== null) return;
     const sender = new MoveSender(invite, history, {
       onChange: (state) => {
         if (senderRef.current !== sender) return;
@@ -198,7 +189,7 @@ export default function TransferOutFlow({
     });
     senderRef.current = sender;
     setStage({ kind: "run", state: { phase: "connecting" } });
-    void sender.start();
+    void sender.connect();
   }
 
   function handleCancelTransfer(): void {
@@ -237,7 +228,7 @@ export default function TransferOutFlow({
 
   // Android back never leaves a transfer in flight; it has its own Cancel.
   function handleRequestClose(): void {
-    if (stage.kind === "scan" || stage.kind === "confirm") {
+    if (stage.kind === "scan") {
       closeModal();
       return;
     }
@@ -245,6 +236,9 @@ export default function TransferOutFlow({
     const { state } = stage;
     if (state.phase === "failed") {
       closeModal();
+    } else if (state.phase === "verify") {
+      // Nothing is frozen yet, so leaving is the Cancel under the words.
+      handleCancelTransfer();
     } else if (state.phase === "done") {
       finishErased(state.keysDestroyed);
     }
@@ -336,6 +330,7 @@ export default function TransferOutFlow({
     danger?: boolean;
     busy?: boolean;
     title: string;
+    words?: string[];
     body?: string;
     footnote?: string;
     progress?: number;
@@ -369,6 +364,7 @@ export default function TransferOutFlow({
           <Text style={styles.panelTitle} accessibilityRole="header">
             {params.title}
           </Text>
+          {params.words ? <SafetyWords words={params.words} /> : null}
           {params.progress !== undefined ? (
             <View
               style={styles.progressTrack}
@@ -410,6 +406,36 @@ export default function TransferOutFlow({
           body: showPermissionHint
             ? T("settings.transfer.connecting_hint")
             : undefined,
+          actions: (
+            <TextButton
+              label={T("common.cancel")}
+              onPress={handleCancelTransfer}
+            />
+          ),
+        });
+      case "verify":
+        return renderPanel({
+          icon: "smartphone",
+          title: T("settings.transfer.confirm_title"),
+          words: state.words,
+          body: T("settings.transfer.verify_body"),
+          actions: (
+            <>
+              <PrimaryButton
+                label={T("settings.transfer.confirm_cta")}
+                onPress={() => senderRef.current?.proceed()}
+              />
+              <TextButton
+                label={T("common.cancel")}
+                onPress={handleCancelTransfer}
+              />
+            </>
+          ),
+        });
+      case "awaiting":
+        return renderPanel({
+          busy: true,
+          title: T("settings.transfer.waiting_confirm"),
           actions: (
             <TextButton
               label={T("common.cancel")}
@@ -525,23 +551,6 @@ export default function TransferOutFlow({
       return renderPanel({ busy: true, title: T("settings.transfer.erasing") });
     }
     if (stage.kind === "run") return renderRun(stage.state);
-    if (stage.kind === "confirm") {
-      const { invite } = stage;
-      return renderPanel({
-        icon: "smartphone",
-        title: T("settings.transfer.confirm_title"),
-        body: T("settings.transfer.confirm_body"),
-        actions: (
-          <>
-            <PrimaryButton
-              label={T("settings.transfer.confirm_cta")}
-              onPress={() => handleTransfer(invite)}
-            />
-            <TextButton label={T("common.cancel")} onPress={closeModal} />
-          </>
-        ),
-      });
-    }
     if (cameraDenied) {
       return renderPanel({
         icon: "camera-off",

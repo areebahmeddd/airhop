@@ -11,7 +11,7 @@ import {
 } from "@core/mesh/wire/board-packet";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { createMMKV } from "react-native-mmkv";
-import { useBoardStore } from "../board-store";
+import { isLivePost, useBoardStore } from "../board-store";
 
 function author(): { priv: Uint8Array; pub: Uint8Array } {
   const priv = ed25519.utils.randomSecretKey();
@@ -135,5 +135,40 @@ describe("board store", () => {
     expect(
       createMMKV({ id: "board-store" }).getString("entries"),
     ).toBeUndefined();
+  });
+});
+
+// The time rules ingest applies, without a store: what a relay consults before
+// forwarding a post, so it never carries one every board would refuse.
+describe("isLivePost", () => {
+  const now = Date.now();
+  const a = author();
+
+  it("admits a post inside its lifetime", () => {
+    expect(isLivePost(makePost(a, { createdAt: now - 1000 }), now)).toBe(true);
+  });
+
+  it("refuses a post at or past its expiry", () => {
+    const p = makePost(a, { createdAt: now - 2 * DAY, lifetimeMs: DAY });
+    expect(isLivePost(p, now)).toBe(false);
+    expect(isLivePost(p, p.expiresAt)).toBe(false);
+    expect(isLivePost(p, p.expiresAt - 1)).toBe(true);
+  });
+
+  it("refuses a post dated further ahead than clock skew explains", () => {
+    const early = makePost(a, { createdAt: now + 2 * 60 * 60 * 1000 });
+    const skewed = makePost(a, { createdAt: now + 60_000 });
+    expect(isLivePost(early, now)).toBe(false);
+    expect(isLivePost(skewed, now)).toBe(true);
+  });
+
+  it("agrees with ingest", () => {
+    useBoardStore.setState({ posts: [], tombstones: [] });
+    const stale = makePost(a, { createdAt: now - 2 * DAY, lifetimeMs: DAY });
+    const live = makePost(a, { createdAt: now - 1000 });
+    expect(isLivePost(stale, now)).toBe(false);
+    expect(useBoardStore.getState().ingest(post(stale), now)).toBe("rejected");
+    expect(isLivePost(live, now)).toBe(true);
+    expect(useBoardStore.getState().ingest(post(live), now)).toBe("accepted");
   });
 });

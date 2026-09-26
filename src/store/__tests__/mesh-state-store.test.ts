@@ -182,6 +182,17 @@ describe("computeMeshBanners", () => {
     expect(banners.map((b) => b.key)).toEqual(["tor"]);
   });
 
+  // A held or blocked Tor pauses the internet half until the user acts, and
+  // the way out is on the Tor screen, not in system settings.
+  it("a blocked Tor leads to the Tor screen", () => {
+    const [banner] = computeMeshBanners({
+      ...HEALTHY,
+      torBootstrap: "blocked",
+    });
+    expect(banner.key).toBe("tor-blocked");
+    expect(banner.action?.kind).toBe("open-tor-settings");
+  });
+
   it("shows the gateway note whenever the gateway is enabled", () => {
     const banners = computeMeshBanners({ ...HEALTHY, gatewayEnabled: true });
     expect(banners.map((b) => b.key)).toEqual(["gateway"]);

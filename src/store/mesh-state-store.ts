@@ -145,7 +145,9 @@ export type BannerAction =
   | "open-app-settings"
   // Open the OEM's own background/autostart screen. Android only, and only on
   // the brands that actually need it - see utils/battery-optimization.ts.
-  | "open-background-limits";
+  | "open-background-limits"
+  // Airhop's own Tor screen, where a blocked or held Tor is resolved.
+  | "open-tor-settings";
 
 export interface MeshBanner {
   // Stable identity for React keys and de-duplication.
@@ -723,11 +725,14 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
   } else if (inputs.torBootstrap === "blocked") {
     // The terminal state on a network that filters Tor. Naming the mesh keeps
     // it from reading as "the app is broken": everything local still works, and
-    // only the internet half is paused.
+    // only the internet half is paused. The way out (another bridge, Try again
+    // after a start that never answered, or Tor off) is on the Tor screen, and
+    // a user who never opens Settings would otherwise stay offline.
     banners.push({
       key: "tor-blocked",
       label: t("mesh.banner.tor_blocked"),
       tone: "caution",
+      action: { label: t("common.settings"), kind: "open-tor-settings" },
     });
   }
 
