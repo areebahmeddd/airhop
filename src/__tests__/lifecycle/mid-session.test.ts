@@ -566,8 +566,8 @@ describe("a link from another app", () => {
     // The Join tap.
     const link = parseAirhopLink(prefill ?? "");
     const joined = link === null ? null : applyAirhopLink(link);
-    expect(joined).not.toBeNull();
-    expect(useChatStore.getState().channelKeys[joined ?? ""]).toBe(key);
+    if (joined === null || !("channel" in joined)) throw new Error("refused");
+    expect(useChatStore.getState().channelKeys[joined.channel]).toBe(key);
   });
 
   test("S33b anything that is not an Airhop link opens nothing", () => {

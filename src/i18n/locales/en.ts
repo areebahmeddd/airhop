@@ -343,7 +343,7 @@ export const strings = {
   "chat.join.name_clash_body":
     "You are already in a different {name}. Channel names are just labels, so this invite opened its own channel and the one you were in is untouched. Rename either from its channel info.",
   "chat.join.paste_hint":
-    "Paste an invite that starts with airhop://. Tapping one works too; this is for a link you cannot tap.",
+    "An Airhop link starts with airhop://. Paste one here, or check the one a tapped link filled in.",
   "chat.join.key_note":
     "A private channel invite carries the key, so joining is instant and nothing is asked of anyone else.",
   "chat.join.offline_note":
@@ -1668,6 +1668,8 @@ export const strings = {
     "That bitchat code has expired. Ask them to open their QR again.",
   "contacts.scan.tampered":
     "This QR code is invalid: its peer ID doesn’t match its keys. It may have been tampered with.",
+  "contacts.scan.key_conflict":
+    "You already hold a different key for them, so nothing changed. Scan their code in person to replace it.",
   "contacts.scan.already_added": "Already in your contacts",
 
   // ---- Contacts: verifying by QR ----

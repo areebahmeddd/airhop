@@ -320,6 +320,13 @@ export interface GroupSendResult {
   meshLinks: number;
 }
 
+// What addVerifiedContact made of a contact card. The two refusals need
+// different words: "unbound" is a card whose peer ID is not the fingerprint of
+// its own Noise key, and so was tampered with; "conflict" is a consistent card
+// naming a different signing key from the one already held for that peer, which
+// only an in-person scan may replace.
+export type ContactCardResult = "added" | "unbound" | "conflict";
+
 // Round-trip result of a mesh ping: latency and the number of links crossed.
 export interface MeshPingResult {
   rttMs: number;
@@ -4628,7 +4635,9 @@ export class MeshService {
     ) {
       return null;
     }
-    if (!this.addVerifiedContact(decoded, { inPerson: false })) return null;
+    if (this.addVerifiedContact(decoded, { inPerson: false }) !== "added") {
+      return null;
+    }
 
     // A geo card is always one of ours, so this is present; the guard follows
     // the type rather than the path.
@@ -6372,7 +6381,7 @@ export class MeshService {
   // Register an identity learned out-of-band (QR) so a DM route can be
   // set up without waiting to hear the peer's ANNOUNCE.
   //
-  // Returns false if the card is self-inconsistent. The peerID MUST equal
+  // Refuses ("unbound") a card that is self-inconsistent. The peerID MUST equal
   // SHA-256(noisePubKey)[0:8]. That binding is the whole reason a peer ID is
   // trustworthy, and bitchat-ios rejects announces on exactly this check
   // (`senderMismatch`). Without it a forged QR could claim someone else's peer
@@ -6399,17 +6408,17 @@ export class MeshService {
       nostrPubKey?: Uint8Array;
     },
     opts: { inPerson?: boolean } = {},
-  ): boolean {
+  ): ContactCardResult {
     const derived = bytesToHex(sha256(card.noisePubKey)).slice(0, 16);
-    if (derived !== card.peerID.toLowerCase()) return false;
+    if (derived !== card.peerID.toLowerCase()) return "unbound";
     // A card that did not come off the other phone may not contradict the key
-    // we already hold for them. Accepted, it would pin a registry that starts
-    // empty after a restart, and the real peer's next announce would be
-    // refused against it.
+    // we already hold for them ("conflict"). Accepted, it would pin a registry
+    // that starts empty after a restart, and the real peer's next announce
+    // would be refused against it.
     if (opts.inPerson !== true) {
       const held = this.knownSigningKey(card.peerID);
       if (held !== undefined && !equalBytes(held, card.signingPubKey)) {
-        return false;
+        return "conflict";
       }
     }
 
@@ -6443,7 +6452,7 @@ export class MeshService {
 
     // They may already be in range, and if so anything queued goes now.
     this.flushOutbox(card.peerID);
-    return true;
+    return "added";
   }
 
   // Tie a Nostr pubkey to a peer ID.

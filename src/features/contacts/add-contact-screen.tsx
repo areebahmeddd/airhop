@@ -327,14 +327,19 @@ export default function AddContactScreen({
       // Reject a card whose peer ID isn't the fingerprint of its own Noise key.
       // Such a QR is claiming an identity it cannot prove. Accepting it would
       // mean every DM "to that contact" gets encrypted to whoever forged it.
-      const accepted =
-        getMeshService()?.addVerifiedContact(card, {
-          inPerson: foundInPerson,
-        }) ?? false;
-      if (!accepted) {
+      // One not read by the camera is also refused when it names a different
+      // key from the one held for them, which only the camera may replace.
+      const result = getMeshService()?.addVerifiedContact(card, {
+        inPerson: foundInPerson,
+      });
+      if (result !== "added") {
         // A security refusal rather than a typo, so it is felt as well as read.
         rejected();
-        setError(t("contacts.scan.tampered"));
+        setError(
+          result === "conflict"
+            ? t("contacts.scan.key_conflict")
+            : t("contacts.scan.tampered"),
+        );
         setStage("entry");
         return;
       }

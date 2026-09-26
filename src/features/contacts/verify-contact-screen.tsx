@@ -153,17 +153,19 @@ export default function VerifyContactScreen({
       return;
     }
     // Guard 2: the peer ID must be the fingerprint of the card's own key.
-    // addVerifiedContact returns false if it isn't (a forged or tampered card).
-    const accepted =
-      getMeshService()?.addVerifiedContact(card, { inPerson: true }) ?? false;
-    if (!accepted) {
+    // addVerifiedContact refuses it if it isn't (a forged or tampered card).
+    const result = getMeshService()?.addVerifiedContact(card, {
+      inPerson: true,
+    });
+    if (result !== "added") {
       rejected();
       setOutcome("tampered");
       return;
     }
     // Upgrade the record to verified. Nothing already saved needs defending
     // here: addContact merges, keeps the earliest added date, and never lets a
-    // write drop a chosen nickname or a learned Nostr key.
+    // write drop a chosen nickname. The scan replaces a learned Nostr key with
+    // the card's, as it replaces the mesh keys.
     //
     // `verifiedAtMs` is the one thing this screen has to say, because it is the
     // only screen that witnesses the moment. It drives the "Verified since"

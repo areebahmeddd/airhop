@@ -27,11 +27,15 @@ export function joinSheetPrefill(url: string | null): string | null {
   return parseAirhopLink(text) === null ? null : text;
 }
 
-// Apply a link and return the conversation to open, or null when the link
-// carried something we could not accept: a forged contact card, or an invite
-// whose key is malformed. The caller navigates; nothing here touches
-// navigation state.
-export function applyAirhopLink(link: DeepLink): string | null {
+// What a link did: the conversation to open, or why it opened none. "conflict"
+// is a contact card naming a different key from the one already held for that
+// peer, which needs other words than a card that was tampered with or an
+// invite whose key is malformed ("invalid").
+export type LinkOutcome =
+  { channel: string } | { refused: "invalid" | "conflict" };
+
+// Apply a link. The caller navigates; nothing here touches navigation state.
+export function applyAirhopLink(link: DeepLink): LinkOutcome {
   if (link.kind === "channel") {
     // A private channel invite carries its E2E key; a public one does not.
     // joinPrivateChannel answers with the room it actually landed in, which
@@ -40,24 +44,26 @@ export function applyAirhopLink(link: DeepLink): string | null {
     if (link.key !== undefined) {
       // Refused, never joined as the public room of that name: the user would
       // believe it private and talk in the clear.
-      if (!isValidChannelKey(link.key)) return null;
-      return useChatStore
-        .getState()
-        .joinPrivateChannel(link.channel, link.key, link.overNostr);
+      if (!isValidChannelKey(link.key)) return { refused: "invalid" };
+      return {
+        channel: useChatStore
+          .getState()
+          .joinPrivateChannel(link.channel, link.key, link.overNostr),
+      };
     }
     useChatStore.getState().addChannel(link.channel);
-    return link.channel;
+    return { channel: link.channel };
   }
 
   if (link.kind === "peer") {
     const channel = `dm:${link.peerID}`;
     useChatStore.getState().addChannel(channel);
-    return channel;
+    return { channel };
   }
 
   // A contact card: verify and import the keys, then open the DM.
   const card = decodeQRContent(link.card);
-  if (card === null) return null;
+  if (card === null) return { refused: "invalid" };
   // Reject a card whose peer ID isn't the fingerprint of its Noise key;
   // accepting it would encrypt every DM to whoever forged the card. Seeds the
   // routing registry and inbound Nostr map as a side effect.
@@ -67,8 +73,10 @@ export function applyAirhopLink(link: DeepLink): string | null {
   // about who produced it. So the card may not re-pin keys already bound to
   // that peer (see addVerifiedContact), and the contact it writes is not
   // verified.
-  const accepted = getMeshService()?.addVerifiedContact(card) ?? false;
-  if (!accepted) return null;
+  const result = getMeshService()?.addVerifiedContact(card);
+  if (result !== "added") {
+    return { refused: result === "conflict" ? "conflict" : "invalid" };
+  }
   useContactsStore.getState().addContact({
     peerID: card.peerID,
     noisePubKeyHex: bytesToHex(card.noisePubKey),
@@ -92,5 +100,5 @@ export function applyAirhopLink(link: DeepLink): string | null {
   });
   const channel = `dm:${card.peerID}`;
   useChatStore.getState().addChannel(channel);
-  return channel;
+  return { channel };
 }

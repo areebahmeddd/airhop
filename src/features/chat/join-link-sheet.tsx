@@ -1,18 +1,14 @@
-// Join with a link: paste an Airhop invite instead of tapping one.
+// Join with a link: the one place an Airhop link takes effect.
 //
-// Tapping a link only works when the link is somewhere tappable. An invite read
-// off another phone, copied out of a message that arrived over the mesh, or
-// written down, had nowhere to go. This is that door, and it goes through the
-// same parseAirhopLink + applyAirhopLink pair the OS deep link uses, so a
-// pasted invite and a tapped one land in exactly the same place.
+// An invite read off another phone, copied out of a message that arrived over
+// the mesh, or written down, is pasted here. A link the OS hands over (a tap in
+// another app) only fills this sheet in, rather than taking effect: an app or a
+// redirecting page can fire one, and only the Join tap says the person wanted
+// it. So a pasted invite and a tapped one land in exactly the same place.
 //
 // It accepts every Airhop link rather than only channel invites: rejecting a
 // valid peer or contact link because the sheet is named "join" would be a
 // dead end for no reason. What the link will do is stated before you commit.
-//
-// A link the OS hands over (a tap in another app) opens this sheet filled in,
-// rather than taking effect: an app or a redirecting page can fire one, and
-// only the Join tap says the person wanted it.
 
 import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
 import { Feather } from "@expo/vector-icons";
@@ -137,13 +133,20 @@ export function JoinLinkSheet({
 
   function handleJoin(): void {
     if (link === null) return;
-    const channel = applyAirhopLink(link);
-    if (channel === null) {
-      // Only a contact card can be refused, and only because its peer ID is not
-      // the fingerprint of its own key, which means it was tampered with.
-      showAlert(t("chat.join.unverified"), t("chat.join.unverified_body"));
+    const outcome = applyAirhopLink(link);
+    if ("refused" in outcome) {
+      // Only a contact card gets this far and is refused: either its peer ID is
+      // not the fingerprint of its own key, or it names a different key from
+      // the one already held for them, which a fresh card cannot fix.
+      showAlert(
+        t("chat.join.unverified"),
+        outcome.refused === "conflict"
+          ? t("contacts.scan.key_conflict")
+          : t("chat.join.unverified_body"),
+      );
       return;
     }
+    const { channel } = outcome;
     // A private channel is identified by its key, not its name, so this invite
     // may be a different channel that happens to share a name with one already
     // joined. It lands in its own channel; say so, because the name in the list
