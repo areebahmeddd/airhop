@@ -121,8 +121,8 @@ export function relayDecision(
 ): RelayDecision | null {
   const ttlCap = Math.min(packet.ttl, DEFAULT_TTL);
 
-  // Link-local: relayed, one crafted with TTL headroom would turn every node
-  // it reached into a responder replaying its store.
+  // Link-local, never relayed: one crafted with TTL headroom would otherwise
+  // turn every node it reached into a responder replaying its store.
   if (packet.type === PacketType.REQUEST_SYNC) return null;
 
   // Our own packet is ours to send, not to forward, and one addressed to us
