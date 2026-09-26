@@ -6686,6 +6686,9 @@ export class MeshService {
   // The radio link itself is left alone, as it may still relay traffic for
   // other peers, but nothing addressed to us from this peer stays decryptable.
   forgetPeer(peerID: string): void {
+    // The session goes with the ratchet. Kept, it has no ratchet bound to it,
+    // and onDREncrypted drops their next DR packet without renegotiating.
+    this.registry.clearSession(peerID);
     this.drStates.delete(peerID);
     this.pendingHandshakes.delete(peerID);
     this.links.unbind(peerID);

@@ -192,3 +192,59 @@ test("B02 a blocked Nostr-only thread stays blocked", async () => {
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("B03 unblocking a peer on the mesh hears them again", async () => {
+  // The block drops the ratchet, so the Noise session has to go with it. Kept,
+  // it is a session with no ratchet bound to it, where every DM and receipt
+  // from them is dropped without a word until one side restarts.
+  const s = (scenario = new Scenario({
+    id: "B03",
+    title: "block, unblock, and talk again over Bluetooth",
+    seed: 813,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(bob.peerID) && bob.peers().includes(alice.peerID),
+    30_000,
+  );
+
+  bob.sendDm(alice.peerID, "before the block");
+  const control = await waitForCoarse(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("before the block"),
+    30_000,
+  );
+  s.check("the control message arrives", control);
+
+  block(alice, bob.peerID);
+  (alice.store("blockedStore").getState().unblockPeer as (p: string) => void)(
+    bob.peerID,
+  );
+
+  bob.sendDm(alice.peerID, "after the unblock");
+  const heard = await waitForCoarse(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("after the unblock"),
+    60_000,
+  );
+  s.check("their next message arrives", heard);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
