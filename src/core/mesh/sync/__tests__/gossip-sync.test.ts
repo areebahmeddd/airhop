@@ -202,6 +202,23 @@ describe("GossipSync class", () => {
     expect(missing.length).toBe(2);
   });
 
+  test("a blocked peer's public messages stop being carried, and nothing else", () => {
+    const gs = new GossipSync();
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 0, new Uint8Array([1]), 1));
+    gs.track(makePacket(PacketType.CHANNEL_MSG, 1, new Uint8Array([2]), 2));
+    gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([3]), 1));
+
+    gs.forgetMessagesFrom("0101010101010101");
+
+    const offered = gs.handleFilter(emptyFilterPacket());
+    expect(offered.map((p) => [p.type, p.senderID[0]]).sort()).toEqual(
+      [
+        [PacketType.ANNOUNCE, 1],
+        [PacketType.CHANNEL_MSG, 2],
+      ].sort(),
+    );
+  });
+
   test("reset clears tracked packets", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array(4)));

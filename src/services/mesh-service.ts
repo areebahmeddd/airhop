@@ -6729,6 +6729,7 @@ export class MeshService {
       for (const nostrPub of nostrPubs) {
         blocked.blockAlias(`nostr_${nostrPub}`, peerID);
       }
+      this.gossip.forgetMessagesFrom(peerID);
     }
     // Drop anything still queued for them: blocking someone must not leave
     // messages that get delivered the moment they come back into range.

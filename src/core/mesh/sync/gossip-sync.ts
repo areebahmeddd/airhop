@@ -693,6 +693,15 @@ export class GossipSync {
     this.rateLimiter.forget(peerID);
   }
 
+  // The user blocked this peer: stop carrying their public messages for
+  // others, as bitchat-ios does (removePublicMessages(from:)). Their messages
+  // are no longer accepted, so nothing re-adds them.
+  forgetMessagesFrom(peerID: string): void {
+    this.messages.removeWhere(
+      (packet) => bytesToHex(packet.senderID) === peerID,
+    );
+  }
+
   // Keep a packet to offer peers who missed it. Called only once the packet
   // was accepted: a store fed before verification fills with forgeries that
   // evict real history and are then served to everyone who asks. Broadcasts
