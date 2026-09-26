@@ -1929,7 +1929,6 @@ async function refreshAccountOnce(
       Number(b === opts.receipt) - Number(a === opts.receipt) ||
       oldestOf(coinsA) - oldestOf(coinsB),
   );
-  let nutzapKey: string | undefined;
   let attempted = 0;
   for (const [receipt, coins] of groups) {
     const face = coins.reduce((s, p) => s + p.amount, 0);
@@ -1943,23 +1942,7 @@ async function refreshAccountOnce(
       continue;
     }
     attempted += 1;
-    // Receive refuses locked coins now, but one stored before it did is
-    // settled here: locked to us, the swap signs it; locked elsewhere, no
-    // mint will ever take it.
-    let signingKey: string | undefined;
-    if (coins.some((p) => coinLock(toProofLike(p) as Proof) !== "none")) {
-      nutzapKey ??= await getNutzapPrivKeyHex();
-      assertSameWallet(epoch);
-      signingKey = nutzapKey;
-    }
-    const outcome = coins.some(
-      (p) => coinLock(toProofLike(p) as Proof, signingKey) === "other",
-    )
-      ? ({
-          status: "refused",
-          reason: t("wallet.svc.coins_unredeemable"),
-        } as const)
-      : await swapIntoFreshProofs(wallet, url, unit, coins, signingKey);
+    const outcome = await swapIntoFreshProofs(wallet, url, unit, coins);
     if (outcome.status === "swapped") {
       result.swapped += outcome.received;
       closeReceipts(new Set([receipt]));
@@ -1977,7 +1960,7 @@ async function refreshAccountOnce(
   return result;
 }
 
-// Coins with no receipt (none are stored that way now) form one group.
+// Coins with no receipt form one group.
 function groupByReceipt(coins: StoredProof[]): Map<string, StoredProof[]> {
   const groups = new Map<string, StoredProof[]>();
   for (const coin of coins) {
@@ -2020,7 +2003,6 @@ async function swapIntoFreshProofs(
   url: string,
   unit: string,
   inputs: StoredProof[],
-  signingKey?: string,
 ): Promise<SwapOutcome> {
   const store = useWalletStore.getState();
   const epoch = walletEpoch;
@@ -2030,10 +2012,8 @@ async function swapIntoFreshProofs(
   try {
     // Proofs go in directly, not via a token: there is no mint claim to check.
     // Any witness present is still checked (cashu-ts's default).
-    const { preview, stored } = await prepareRecoverableSwap(
-      wallet,
-      () => wallet.prepareSwapToReceive(inputs.map(toProofLike)),
-      signingKey,
+    const { preview, stored } = await prepareRecoverableSwap(wallet, () =>
+      wallet.prepareSwapToReceive(inputs.map(toProofLike)),
     );
     assertSameWallet(epoch);
     // Reserved before the request leaves so a concurrent send cannot pick the
