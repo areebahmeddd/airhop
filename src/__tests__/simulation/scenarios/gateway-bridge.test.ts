@@ -39,6 +39,19 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   };
   return { __esModule: true, default: shim.wifiBridge };
 });
+// The real check, observed: which events a phone spent a Schnorr check on.
+const mockVerifiedEventIDs: string[] = [];
+jest.mock("nostr-tools", () => {
+  const actual =
+    jest.requireActual<typeof import("nostr-tools")>("nostr-tools");
+  return {
+    ...actual,
+    verifyEvent: (event: Parameters<typeof actual.verifyEvent>[0]) => {
+      mockVerifiedEventIDs.push(event.id);
+      return actual.verifyEvent(event);
+    },
+  };
+});
 
 import {
   CarrierDirection,
@@ -1319,6 +1332,80 @@ test("N14 an Airhop gateway will not publish a deposit aimed at another cell", a
     `published=${relay.publishCount} before=${before}`,
   );
   s.expectNone("process health", noCrashes([gateway]));
+  s.assert(true);
+});
+
+test("N16 a phone with the gateway off spends no signature check on a deposit", async () => {
+  // The Schnorr check is the expensive gate, so anyone in range could make a
+  // phone run it at will if it came first. bitchat-ios runs it last.
+  const s = (scenario = new Scenario({
+    id: "N16",
+    title: "the cheap gateway gates run before the signature check",
+    seed: 716,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+
+  const neighbour = SimDevice.create(
+    s.world,
+    { ...android("neighbour", 11), gatewayEnabled: false },
+    relay,
+  );
+  radio.add(neighbour);
+  locations().place(neighbour.id, PLACES.bengaluru);
+  const phone = new BitchatActor(s.world, {
+    id: "phone",
+    platform: "ios",
+    seedByte: 216,
+  });
+  radio.add(phone);
+  s.track(neighbour);
+  neighbour.launch();
+  phone.launch();
+  neighbour.joinChannel(CELL_CHANNEL);
+  s.check(
+    "the neighbour resolved its cell",
+    await waitForCoarse(
+      s.world,
+      () => neighbour.channelGeohash(CELL_CHANNEL) !== null,
+      60_000,
+    ),
+  );
+  const cell = neighbour.channelGeohash(CELL_CHANNEL) ?? "";
+  await waitForCoarse(
+    s.world,
+    () => neighbour.peers().includes(phone.peerID),
+    30_000,
+  );
+
+  const refused = signedGeohashNote(cell, "carried by nobody");
+  phone.depositWithGateway(neighbour.peerID, cell, refused);
+  await advanceFor(s.world, 5_000);
+  const refusedID = (JSON.parse(refused) as { id: string }).id;
+  s.check(
+    "the deposit was dropped before its signature was checked",
+    !mockVerifiedEventIDs.includes(refusedID),
+  );
+
+  // The control: the same path with the gateway on reaches the check and
+  // publishes, so the silence above is the gate and not a lost packet.
+  neighbour.setSetting("gatewayEnabled", true);
+  const carried = signedGeohashNote(cell, "carried by the neighbour");
+  phone.depositWithGateway(neighbour.peerID, cell, carried);
+  const published = await waitForCoarse(
+    s.world,
+    () =>
+      relay
+        .eventsOfKind(KIND_GEOHASH_MESSAGE)
+        .some((e) => e.content === "carried by the neighbour"),
+    30_000,
+  );
+  s.check("with the gateway on, the deposit was published", published);
+  s.check(
+    "and its signature was checked on the way",
+    mockVerifiedEventIDs.includes((JSON.parse(carried) as { id: string }).id),
+  );
+  s.expectNone("process health", noCrashes([neighbour]));
   s.assert(true);
 });
 

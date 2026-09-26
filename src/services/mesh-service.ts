@@ -806,7 +806,7 @@ export class MeshService {
       // No direct link: flood the recipient-addressed, TTL-bounded packet over
       // the mesh so an intermediate node relays it to the recipient. This is
       // bitchat's multi-hop delivery for directed packets: the recipientID and
-      // TTL are already on the packet, every node relays it (handleRaw), and
+      // TTL are already on the packet, every node relays it (handleFrame), and
       // only the addressee's handler claims it. File transfers are excluded:
       // they are far too large to flood and stay a direct-link feature. No-op
       // when we have no neighbour to relay through.
@@ -1186,12 +1186,11 @@ export class MeshService {
           // timestamped packet on every link-up is quadratic in a crowded room
           // and, because each copy carries a distinct packet ID, no deduplicator
           // can suppress it: every emission flood-fills the mesh at TTL 7. Twelve
-          // phones walking
-          // into range of each other put 6,597 PREKEY_BUNDLE packets on the air
-          // in 400ms against 669 ANNOUNCE - 90% of all airtime, before anyone
-          // had said a word. The bundle still reaches the wider mesh, because
-          // the new peer relays it and gossip sync reconciles it; what stops is
-          // re-originating it N times per peer.
+          // phones walking into range of each other put 6,597 PREKEY_BUNDLE
+          // packets on the air in 400ms against 669 ANNOUNCE - 90% of all
+          // airtime, before anyone had said a word. The bundle still reaches the
+          // wider mesh, because the new peer relays it (gossip sync never
+          // carries one); what stops is re-originating it N times per peer.
           const bundle = this.currentPrekeyBundlePacket();
           if (bundle !== null) {
             this.links
@@ -1871,7 +1870,7 @@ export class MeshService {
     // ANNOUNCE is deliberately exempt: it is still needed to maintain relay
     // topology so blocking someone doesn't degrade the mesh for everyone
     // routing through us. onAnnounce keeps them out of the peer store itself.
-    // Relaying already happened in handleRaw before this point, so a blocked
+    // Relaying already happened in handleFrame before this point, so a blocked
     // peer's traffic still forwards for third parties. We never surface it,
     // and since handlers keep for sync only what they accept, never carry it
     // for gossip either.
@@ -4145,7 +4144,7 @@ export class MeshService {
   // A peer is leaving (app closed, panic wipe, radio off): drop it now rather
   // than after the 60s reachability TTL.
   private onLeave(packet: Packet): void {
-    // Checked here as well as before the relay in handleRaw. The two guards
+    // Checked here as well as before the relay in handleFrame. The two guards
     // answer different questions ("may this be forwarded" and "may this evict
     // someone") and a signature check on a packet sent once per departure is
     // free, so neither has to trust the other's discipline to stay correct.
@@ -5588,8 +5587,9 @@ export class MeshService {
   //     event; surface it so mesh-only users see the channel.
   //   toGateway (directed to us): a mesh-only peer asks us to publish its event
   //     to Nostr. Only honored when this device is a gateway.
-  // Either way the event is verified against its own Schnorr signature first,
-  // so a relay or gateway cannot forge or alter it. The BRIDGE variants go to
+  // Either way the event is verified against its own Schnorr signature before
+  // it is acted on, so a relay or gateway cannot forge or alter it. The BRIDGE
+  // variants go to
   // BridgeService, the mesh-island bridge.
   private onNostrCarrier(packet: Packet): void {
     const carrier = decodeNostrCarrier(packet.payload);
@@ -5632,15 +5632,15 @@ export class MeshService {
     } catch {
       return;
     }
-    if (typeof event.id !== "string" || !verifyEvent(event)) return;
+    if (typeof event.id !== "string") return;
 
-    // Loop / duplicate break: a carried event is only acted on once.
+    // Loop / duplicate break: a carried event is only acted on once. Recorded
+    // only once verified, below, so a forged copy cannot poison the set.
+    //
+    // The Schnorr check is the expensive part, so each direction runs its cheap
+    // gates first, in bitchat-ios's order (GatewayService handleUplinkDeposit),
+    // as BridgeService does for its carriers.
     if (this.seenCarrierEventIDs.has(event.id)) return;
-    this.seenCarrierEventIDs.add(event.id);
-    if (this.seenCarrierEventIDs.size > 2000) {
-      const oldest = this.seenCarrierEventIDs.values().next().value;
-      if (oldest !== undefined) this.seenCarrierEventIDs.delete(oldest);
-    }
 
     if (carrier.direction === CarrierDirection.FROM_GATEWAY) {
       // Downlink: render the ferried geohash chat into its channel.
@@ -5660,6 +5660,8 @@ export class MeshService {
         (t) => t.length >= 2 && t[0] === "g" && t[1] === carrier.geohash,
       );
       if (!inCell) return;
+      if (!verifyEvent(event)) return;
+      this.rememberEventID(this.seenCarrierEventIDs, event.id);
       this.geoChannels?.ingestCarriedEvent(event);
       return;
     }
@@ -5691,13 +5693,6 @@ export class MeshService {
     // spends a token on it. bitchat guards the same cases in
     // GatewayService.handleUplinkDeposit: already published by us, or already
     // waiting in the bag.
-    //
-    // Deliberately NOT `seenCarrierEventIDs`. That set is bitchat's
-    // `meshBroadcastEventIDs` only in spirit: theirs holds events learned from a
-    // `fromGateway` BROADCAST, ours is added to at ingress for every carried
-    // event in either direction, including the deposit being handled right now.
-    // Checking it here rejected every uplink as a duplicate of itself and took
-    // the whole gateway offline, silently, for anyone relying on it.
     if (
       this.publishedEventIDs.has(event.id) ||
       this.queuedUplinks.some((q) => q.event.id === event.id)
@@ -5707,6 +5702,9 @@ export class MeshService {
 
     // Per-depositor rate limit so one peer cannot make us flood relays.
     if (!this.allowUplinkDeposit(depositor)) return;
+
+    if (!verifyEvent(event)) return;
+    this.rememberEventID(this.seenCarrierEventIDs, event.id);
 
     // No connection right now: hold it rather than dropping it. The deposit was
     // directed at us, so nobody else is carrying a copy.
@@ -5920,7 +5918,7 @@ export class MeshService {
   }
 
   // Answer a ping addressed to us with a pong echoing its nonce. Pings addressed
-  // elsewhere are already flood-relayed toward their target in handleRaw.
+  // elsewhere are already flood-relayed toward their target in handleFrame.
   private onPing(packet: Packet, linkID: string): void {
     if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
     const ping = decodeMeshPing(packet.payload);
