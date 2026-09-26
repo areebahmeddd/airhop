@@ -44,6 +44,11 @@ enum LANConst {
   // network, this is mDNS over an ordinary one.
   static let serviceType = "_airhop-lan-v1._tcp"
   static let domain = "local."
+  // mDNS names held, matching `MAX_DISCOVERED` in AirhopLANModule.kt: eight
+  // times the ring's link count, so a bigger room still gets full ring
+  // coverage from the first 64, and one host publishing many names cannot
+  // flood JS with discoveries.
+  static let maxDiscovered = 64
 }
 
 /// Liveness, the same numbers as the Kotlin side: a zero-length heartbeat every
@@ -380,7 +385,8 @@ private final class LANTransport {
 
   /// Bonjour hands back the whole current set on every change rather than a
   /// delta, so this diffs against what we hold: anything new is announced,
-  /// anything gone is retired.
+  /// anything gone is retired. Retired first, so a name that left makes room
+  /// under the cap for one that arrived in the same update.
   private func applyBrowseResults(_ results: Set<NWBrowser.Result>) {
     var seen: [String: NWEndpoint] = [:]
     for result in results {
@@ -390,13 +396,14 @@ private final class LANTransport {
       seen[name] = result.endpoint
     }
 
-    for (name, endpoint) in seen where discovered[name] == nil {
-      discovered[name] = endpoint
-      emit(LANEvent.peerDiscovered, ["serviceName": name])
-    }
     for name in discovered.keys where seen[name] == nil {
       discovered.removeValue(forKey: name)
       emit(LANEvent.peerLost, ["serviceName": name])
+    }
+    for (name, endpoint) in seen where discovered[name] == nil {
+      if discovered.count >= LANConst.maxDiscovered { break }
+      discovered[name] = endpoint
+      emit(LANEvent.peerDiscovered, ["serviceName": name])
     }
   }
 
