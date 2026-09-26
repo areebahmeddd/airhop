@@ -234,43 +234,56 @@ function temporaryDirectory(): FileSystem.Directory | null {
   }
 }
 
-export function getAttachmentCacheBytes(): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
-  return dir
-    .list()
-    .filter(
-      (entry): entry is FileSystem.File =>
-        entry instanceof FileSystem.File &&
-        entry.name.startsWith(CACHE_FILE_PREFIX),
-    )
-    .reduce((sum, file) => sum + file.size, 0);
+// Those two copies: tmp's top-level files and the system's document Inbox,
+// nothing deeper, since other libraries keep work in flight in tmp's other
+// directories. Empty on Android.
+function temporaryLeftovers(): FileSystem.File[] {
+  const tmp = temporaryDirectory();
+  if (tmp === null) return [];
+  const files: FileSystem.File[] = [];
+  for (const entry of tmp.list()) {
+    if (entry instanceof FileSystem.File) {
+      files.push(entry);
+    } else if (entry.name.endsWith("-Inbox")) {
+      for (const inner of entry.list()) {
+        if (inner instanceof FileSystem.File) files.push(inner);
+      }
+    }
+  }
+  return files;
 }
 
-// How long a received or sent attachment stays on disk.
-//
-// Seven days, matching bitchat's media retention sweep. The panic wipe was the
-// only thing that ever removed an attachment, so a photo from a protest months
-// ago was still on the device: the one piece of user content that outlived the
-// conversation it belonged to. Files sit in the OS cache directory, which the
-// system may reclaim under storage pressure, but that is an optimisation the OS
-// makes for its own reasons and not a retention guarantee anyone should rely on.
+// What the Storage screen reports and Clear removes: every attachment under
+// the prefix, and on iOS the copies above.
+function attachmentFiles(): FileSystem.File[] {
+  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
+  const cached = dir.exists
+    ? dir
+        .list()
+        .filter(
+          (entry): entry is FileSystem.File =>
+            entry instanceof FileSystem.File &&
+            entry.name.startsWith(CACHE_FILE_PREFIX),
+        )
+    : [];
+  return [...cached, ...temporaryLeftovers()];
+}
+
+export function getAttachmentCacheBytes(): number {
+  return attachmentFiles().reduce((sum, file) => sum + file.size, 0);
+}
+
+// How long a received or sent attachment stays on disk by default: seven days,
+// matching bitchat's media retention sweep. The person can choose 14 or 30 in
+// General (settings-store's mediaRetentionDays), and the received-media quota
+// above can remove a file sooner. Files sit in the OS cache directory, which
+// the system may reclaim under storage pressure, but that is not a retention
+// guarantee anyone should rely on.
 //
 // Seven days is long enough that a thread stays browsable across a week away
 // from signal, and short enough that a seized phone is not an archive.
 export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Delete attachments older than MEDIA_MAX_AGE_MS. Returns the bytes freed.
-//
-// Covers outgoing as well as incoming: both are written under the same prefix,
-// and a photo you sent is exactly as sensitive as one you received. Scheduled by
-// services/media-retention: at launch, and throttled on each return to the app,
-// since a foreground service can keep the process alive for weeks.
-//
-// A file whose age cannot be read is kept. The alternative is deleting user
-// content on the strength of a missing timestamp, and on Android
-// `creationTime` is genuinely absent below API 26, so an unreadable age is an
-// expected state rather than a corrupt one.
 // Most files removed in one pass.
 //
 // Each delete is a synchronous native call, and this runs at launch, so an
@@ -281,6 +294,19 @@ export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 // being created behind them.
 const MAX_SWEEP_DELETIONS = 200;
 
+// The time a sent file was put under the prefix, which adoptIntoAttachmentCache
+// (and a live burst's note) writes into its name.
+const ADOPTED_AT = new RegExp(`^${CACHE_FILE_PREFIX}(\\d+)_`);
+
+// When a file reached this device. An adopted file is moved, and a move keeps
+// the source's modification time, so a document picked on iOS would otherwise
+// carry the date it was written and expire the moment it was sent.
+function writtenAtMs(entry: FileSystem.File): number | null {
+  const adopted = ADOPTED_AT.exec(entry.name);
+  if (adopted !== null) return Number(adopted[1]);
+  return entry.lastModified ?? entry.creationTime ?? null;
+}
+
 // Bytes freed by deleting `entry` if it is older than the window, or null when
 // it stays.
 function deleteIfExpired(
@@ -288,8 +314,8 @@ function deleteIfExpired(
   now: number,
   maxAgeMs: number,
 ): number | null {
-  const writtenAt = entry.lastModified ?? entry.creationTime;
-  if (writtenAt === null || writtenAt === undefined) return null;
+  const writtenAt = writtenAtMs(entry);
+  if (writtenAt === null) return null;
   // A timestamp in the future is a clock that moved, not a fresh file. Left
   // alone: deleting on a bad clock is the worse failure of the two.
   if (now - writtenAt <= maxAgeMs) return null;
@@ -303,62 +329,42 @@ function deleteIfExpired(
   }
 }
 
+// Delete attachments older than the window. Returns the bytes freed.
+//
+// Covers outgoing as well as incoming: both are written under the same prefix,
+// and a photo you sent is exactly as sensitive as one you received. Scheduled by
+// services/media-retention: at launch, and throttled on each return to the app,
+// since a foreground service can keep the process alive for weeks.
+//
+// A file whose age cannot be read is kept. The alternative is deleting user
+// content on the strength of a missing timestamp, and on Android
+// `creationTime` is genuinely absent below API 26, so an unreadable age is an
+// expected state rather than a corrupt one.
 export function sweepExpiredAttachments(
   now: number = Date.now(),
   maxAgeMs: number = MEDIA_MAX_AGE_MS,
 ): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
   let freed = 0;
   let deleted = 0;
-  const sweep = (
-    entries: (FileSystem.Directory | FileSystem.File)[],
-    keep: (file: FileSystem.File) => boolean = () => true,
-  ): void => {
-    for (const entry of entries) {
-      if (deleted >= MAX_SWEEP_DELETIONS) return;
-      if (!(entry instanceof FileSystem.File) || !keep(entry)) continue;
-      const size = deleteIfExpired(entry, now, maxAgeMs);
-      if (size === null) continue;
-      freed += size;
-      deleted++;
-    }
-  };
-  sweep(dir.list(), (file) => file.name.startsWith(CACHE_FILE_PREFIX));
-  // Aged files only, never the whole directory: other libraries keep work in
-  // flight there. The top level (a recorded video's original) and the system's
-  // document Inbox, nothing deeper.
-  const tmp = temporaryDirectory();
-  if (tmp !== null) {
-    const entries = tmp.list();
-    sweep(entries);
-    for (const entry of entries) {
-      if (
-        entry instanceof FileSystem.Directory &&
-        entry.name.endsWith("-Inbox")
-      ) {
-        sweep(entry.list());
-      }
-    }
+  for (const file of attachmentFiles()) {
+    if (deleted >= MAX_SWEEP_DELETIONS) break;
+    const size = deleteIfExpired(file, now, maxAgeMs);
+    if (size === null) continue;
+    freed += size;
+    deleted++;
   }
   return freed;
 }
 
 export function clearAttachmentCache(): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
   let freed = 0;
-  for (const entry of dir.list()) {
-    if (
-      entry instanceof FileSystem.File &&
-      entry.name.startsWith(CACHE_FILE_PREFIX)
-    ) {
-      freed += entry.size;
-      try {
-        entry.delete();
-      } catch {
-        // Best-effort: skip files that are mid-write or already gone.
-      }
+  for (const file of attachmentFiles()) {
+    const size = file.size;
+    try {
+      file.delete();
+      freed += size;
+    } catch {
+      // Best-effort: skip files that are mid-write or already gone.
     }
   }
   return freed;
@@ -366,16 +372,16 @@ export function clearAttachmentCache(): number {
 
 // Empty the whole cache directory, for the panic wipe alone.
 //
-// clearAttachmentCache above deletes only top-level files carrying our own
-// prefix, which is right for the periodic sweep and wrong for a wipe, because
-// files the user would absolutely expect to be destroyed do not match it:
+// clearAttachmentCache above deletes only files carrying our own prefix (and
+// the iOS tmp copies), which is right for a "free up space" button and wrong
+// for a wipe, because files the user would expect to be destroyed do not
+// match it:
 //
 //   * the pickers' copies of anything picked and never sent, which sit in
 //     their own subdirectories under the user's own filenames.
-//   * the saved QR card, written as `airhop-qr-<peerID>.png`. A hyphen, not the
-//     underscore the prefix uses, so it was swept by nothing - a PNG of the
-//     wiped identity's full contact card, under a filename containing its peer
-//     ID.
+//   * the saved QR card, `airhop-qr-<peerID>.png`: a hyphen, not the prefix's
+//     underscore, and a PNG of the identity's full contact card named after
+//     its peer ID.
 //
 // Everything under the cache directory belongs to this app and is by definition
 // regenerable, so a wipe should take all of it rather than chase prefixes that

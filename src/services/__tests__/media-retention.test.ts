@@ -73,7 +73,9 @@ jest.mock("expo-file-system", () => {
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
 import {
+  clearAttachmentCache,
   discardPickerCopy,
+  getAttachmentCacheBytes,
   MEDIA_MAX_AGE_MS,
   sweepExpiredAttachments,
   wipeCacheDirectory,
@@ -278,6 +280,56 @@ describe("sweepExpiredAttachments", () => {
     setPlatform("android");
     const stray = inTmp(put({ name: "capture.mp4", ageMs: 10 * DAY }));
     sweepExpiredAttachments(NOW);
+    expect(stray.deleted).toBe(false);
+  });
+
+  // A move keeps the source's modification time, so a document picked on iOS
+  // arrives in the cache carrying the date it was written, not the date it was
+  // sent. Its adoption time is in its name.
+  it("ages an adopted file from when it was adopted, not its source's date", () => {
+    const sent = put({
+      name: `airhop_${String(NOW - 1 * DAY)}_1_report.pdf`,
+      lastModified: NOW - 400 * DAY,
+    });
+    const stale = put({
+      name: `airhop_${String(NOW - 10 * DAY)}_2_old.pdf`,
+      lastModified: NOW,
+    });
+    sweepExpiredAttachments(NOW);
+    expect(sent.deleted).toBe(false);
+    expect(stale.deleted).toBe(true);
+  });
+});
+
+// Clear promises media "removed from this device, sent and received alike",
+// so it takes the iOS copies retention and the wipe take, and Storage counts
+// them.
+describe("clearAttachmentCache", () => {
+  it("on iOS, counts and removes the pickers' leftovers in tmp and its Inbox", () => {
+    const ours = put({ name: "airhop_photo.jpg", size: 100 });
+    const capture = inTmp(put({ name: "capture.MOV", size: 20 }));
+    const document = put({ name: "report.pdf", size: 3 });
+    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
+    inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
+    const busy = put({ name: "upload.part", size: 5 });
+    globalThis.__disk = globalThis.__disk.filter((f) => f !== busy);
+    inTmp(putDir("com.somelib.uploads", [busy]));
+
+    expect(getAttachmentCacheBytes()).toBe(123);
+    expect(clearAttachmentCache()).toBe(123);
+    expect([ours.deleted, capture.deleted, document.deleted]).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    expect(busy.deleted).toBe(false);
+  });
+
+  it("leaves tmp alone on Android", () => {
+    setPlatform("android");
+    const stray = inTmp(put({ name: "capture.mp4", size: 20 }));
+    expect(getAttachmentCacheBytes()).toBe(0);
+    clearAttachmentCache();
     expect(stray.deleted).toBe(false);
   });
 });
