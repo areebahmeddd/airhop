@@ -54,13 +54,15 @@ Check for:
 
 ### 3. Packet Signing & Verification
 
-**Rule:** Every outgoing packet must be signed. Every incoming packet must be verified before relay or display. Unsigned/invalid packets are silently dropped.
+**Rule:** Every outgoing packet must be signed, except the types bitchat leaves unsigned (Noise handshakes and transport, fragments, ping, pong and carrier broadcasts). Every incoming packet must be verified before display or action. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`). Unsigned/invalid packets are silently dropped.
 
 Check for:
 
 - Any packet encoding path in `packet-codec.ts` that produces a packet without an Ed25519 signature: **FAIL**
 - Any packet decoding path that returns a packet without verifying the signature: **FAIL**
-- Any relay path (`flood-router.ts`, `gossip-sync.ts`, `courier-store.ts`) that relays without prior signature verification: **FAIL**
+- A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME` or `BOARD_POST` relayed, or deduplicated, before `mayRelay` passes it: **FAIL**
+- Anything tracked in `gossip-sync.ts` for serving before its handler accepted it, or served from a store another kind can evict: **FAIL**
+- A relay of a packet addressed to this node or sent under its own ID, or a relay TTL above what `relayDecision` allows: **FAIL**
 - Any UI render path (`src/features/`) that displays a message before signature verification: **FAIL**
 - TTL excluded from signature (this is intentional; relays decrement TTL): ✅ by design
 - Nonce reuse detection missing from `deduplicator.ts`: **FAIL**
