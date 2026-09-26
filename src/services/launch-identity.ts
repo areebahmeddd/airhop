@@ -7,8 +7,8 @@
 // So "unreadable" is its own outcome, and the launch waits for the person.
 //
 // An identity a panic wipe could not delete never boots (see ./wipe-marker):
-// it is deleted again here, and if the keychain still refuses, launch treats
-// it as absent with the keys reported as surviving.
+// it is deleted again here, with its prekeys, and if the keychain still
+// refuses, launch treats it as absent with the keys reported as surviving.
 
 import { type Identity, loadIdentity } from "@core/crypto/identity";
 import { deleteSecret, KEYCHAIN_ITEMS } from "@core/crypto/keychain";
@@ -37,11 +37,20 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
     return { kind: "unreadable" };
   }
   if (identity === undefined) return { kind: "unreadable" };
-  if (identity === null) return { kind: "absent", keysRemain: false };
-  if (!isIdentityCondemned()) return { kind: "present", identity };
+  if (!isIdentityCondemned()) {
+    return identity === null
+      ? { kind: "absent", keysRemain: false }
+      : { kind: "present", identity };
+  }
 
+  // The one-time prekeys go with it, here and not in the launch sweep: this
+  // runs before any mesh can mint a batch, and a new identity must not publish
+  // the old one's prekeys, which would link the two.
   const deleted = await withTimeout(
-    deleteSecret(KEYCHAIN_ITEMS.identity).then(() => true),
+    Promise.all([
+      deleteSecret(KEYCHAIN_ITEMS.identity),
+      deleteSecret(KEYCHAIN_ITEMS.localPrekeys),
+    ]).then(() => true),
     IDENTITY_LOAD_TIMEOUT_MS,
     false,
   ).catch(() => false);

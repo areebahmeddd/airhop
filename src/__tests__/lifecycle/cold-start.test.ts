@@ -840,10 +840,13 @@ describe("launch identity: absent, unreadable, condemned", () => {
     return id;
   }
 
-  // The keychain refuses to delete the identity, as a locked iPhone does.
-  function refuseIdentityDelete(): void {
+  // The keychain refuses to delete the identity, as a locked iPhone does, and
+  // any other item named.
+  function refuseIdentityDelete(...others: string[]): void {
     secureStore.deleteItemAsync.mockImplementation(async (key: string) => {
-      if (key === KEYCHAIN_ITEMS.identity) throw new Error("locked");
+      if (key === KEYCHAIN_ITEMS.identity || others.includes(key)) {
+        throw new Error("locked");
+      }
     });
   }
 
@@ -903,7 +906,10 @@ describe("launch identity: absent, unreadable, condemned", () => {
 
   test("C06b a wipe the keychain refused, then a kill before onboarding: the old identity never boots", async () => {
     await storedIdentity();
-    refuseIdentityDelete();
+    // The old identity's one-time prekeys, which a new identity must never
+    // go on to publish.
+    await writeSecret(KEYCHAIN_ITEMS.localPrekeys, "old-prekeys");
+    refuseIdentityDelete(KEYCHAIN_ITEMS.localPrekeys);
     const { keysDestroyed } = await panicWipe();
     expect(keysDestroyed).toBe(false);
     expect(isIdentityCondemned()).toBe(true);
@@ -922,6 +928,10 @@ describe("launch identity: absent, unreadable, condemned", () => {
     });
     expect(secureStore.deleteItemAsync).toHaveBeenCalledWith(
       KEYCHAIN_ITEMS.identity,
+      expect.anything(),
+    );
+    expect(secureStore.deleteItemAsync).toHaveBeenCalledWith(
+      KEYCHAIN_ITEMS.localPrekeys,
       expect.anything(),
     );
     expect(isIdentityCondemned()).toBe(false);
