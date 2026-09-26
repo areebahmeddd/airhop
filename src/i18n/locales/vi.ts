@@ -949,8 +949,10 @@ export const strings: Strings = {
     "Vị trí trên vòng phản ánh cường độ tín hiệu, không phải khoảng cách",
   "mesh.radar.set_online":
     "Hãy đặt trạng thái của bạn thành Trực tuyến trong phần Hồ sơ để tìm ra nút mạng",
-  "mesh.radar.in_range": "trong tầm",
-  "mesh.radar.recently_seen": "vừa thấy gần đây",
+  "mesh.radar.peer_in_range": "{name}, trong tầm",
+  "mesh.radar.peer_recent": "{name}, vừa thấy gần đây",
+  "mesh.radar.relay_in_range": "{name}, nút chuyển tiếp, trong tầm",
+  "mesh.radar.relay_recent": "{name}, nút chuyển tiếp, vừa thấy gần đây",
   "mesh.radar.peer_hint":
     "Mở các tùy chọn để nhắn tin hoặc trả tiền cho nút mạng này",
 
@@ -972,6 +974,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Gửi ecash, hãy nhập số tiền trước",
   "mesh.peer.cancel_send": "Hủy gửi ecash",
   "mesh.peer.view_peer_online": "Xem nút mạng {name}, đang trực tuyến",
+  "mesh.peer.view_relay_online":
+    "Xem nút mạng {name}, đang trực tuyến, nút chuyển tiếp",
   "mesh.peer.last_seen_at": "Thấy lần cuối {ago}",
   "mesh.peer.send_amount": "Gửi {amount} sat",
   "mesh.peer.direct": "Kết nối trực tiếp",
@@ -1447,7 +1451,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu là gì?",
   "wallet.explain.intro":
-    "Cashu là ecash cho Bitcoin. Một token là chuỗi ký tự đáng giá tiền với bất cứ ai giữ nó, được nhà đúc ký mù nên nhà đúc không biết ai đã tiêu khoản nào. Không tài khoản, không đăng nhập.",
+    "Cashu là ecash cho Bitcoin. Một token là chuỗi ký tự đáng giá tiền với bất cứ ai giữ nó, được nhà đúc ký mù nên nhà đúc không biết ai đã tiêu khoản nào. Không tài khoản, không đăng nhập. Airhop không bao giờ giữ tiền của bạn: các đồng của bạn nằm trên điện thoại này, do các nhà đúc bạn chọn phát hành.",
   "wallet.explain.send": "Gửi",
   "wallet.explain.send_desc":
     "Biến một khoản tiền thành token bạn có thể trao cho một nút mạng ở gần qua Bluetooth, hoặc chia sẻ dưới dạng văn bản. Chạy được khi không có Internet. Các đồng vẫn được giữ cho tới khi bạn xác nhận nó đã tới nơi.",

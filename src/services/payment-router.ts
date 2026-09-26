@@ -551,9 +551,7 @@ export async function settleReclaimedSend(
       .getState()
       .history.find((tx) => tx.id === txId)?.counterparty;
     if (peerID !== undefined && peerID.length > 0) {
-      useChatStore
-        .getState()
-        .setMessageStatus(`dm:${peerID}`, txId, "delivered");
+      useChatStore.getState().markReclaimedPaid(`dm:${peerID}`, txId);
     }
   }
   return outcome;

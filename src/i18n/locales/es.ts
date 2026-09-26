@@ -962,8 +962,10 @@ export const strings: Strings = {
     "La posición del anillo refleja la intensidad de la señal, no la distancia",
   "mesh.radar.set_online":
     "Pon tu estado en Conectado en el perfil para descubrir pares",
-  "mesh.radar.in_range": "al alcance",
-  "mesh.radar.recently_seen": "vistos hace poco",
+  "mesh.radar.peer_in_range": "{name}, al alcance",
+  "mesh.radar.peer_recent": "{name}, vistos hace poco",
+  "mesh.radar.relay_in_range": "{name}, nodo repetidor, al alcance",
+  "mesh.radar.relay_recent": "{name}, nodo repetidor, vistos hace poco",
   "mesh.radar.peer_hint": "Abre las opciones para escribir o pagar a este par",
 
   // ---- Mesh: peer list ----
@@ -984,6 +986,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Enviar ecash, introduce antes una cantidad",
   "mesh.peer.cancel_send": "Cancelar el envío de ecash",
   "mesh.peer.view_peer_online": "Ver el par {name}, conectado",
+  "mesh.peer.view_relay_online": "Ver el par {name}, conectado, nodo repetidor",
   "mesh.peer.last_seen_at": "Visto por última vez {ago}",
   "mesh.peer.send_amount": "Enviar {amount} sats",
   "mesh.peer.direct": "Conexión directa",
@@ -1467,7 +1470,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "¿Qué es Cashu?",
   "wallet.explain.intro":
-    "Cashu es ecash para Bitcoin. Un token es una cadena que vale dinero para quien la tenga, firmada a ciegas por una casa de cambio para que esta no pueda saber quién gastó qué. Sin cuentas ni inicios de sesión.",
+    "Cashu es ecash para Bitcoin. Un token es una cadena que vale dinero para quien la tenga, firmada a ciegas por una casa de cambio para que esta no pueda saber quién gastó qué. Sin cuentas ni inicios de sesión. Airhop nunca guarda tu dinero: tus monedas viven en este teléfono y las emiten las casas de cambio que elijas.",
   "wallet.explain.send": "Enviar",
   "wallet.explain.send_desc":
     "Convierte una cantidad en un token que puedes entregar a un par cercano por Bluetooth o compartir como texto. Funciona sin internet. Las monedas siguen reservadas hasta que confirmes que llegó.",

@@ -940,8 +940,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "حلقے پر جگہ سگنل کی قوت ظاہر کرتی ہے، فاصلہ نہیں",
   "mesh.radar.set_online":
     "پیئرز دریافت کرنے کے لیے آپ ٹیب میں اپنی حالت آن لائن کریں",
-  "mesh.radar.in_range": "حدود میں",
-  "mesh.radar.recently_seen": "حال ہی میں دیکھے گئے",
+  "mesh.radar.peer_in_range": "{name}، حدود میں",
+  "mesh.radar.peer_recent": "{name}، حال ہی میں دیکھے گئے",
+  "mesh.radar.relay_in_range": "{name}، ریلے نوڈ، حدود میں",
+  "mesh.radar.relay_recent": "{name}، ریلے نوڈ، حال ہی میں دیکھے گئے",
   "mesh.radar.peer_hint":
     "اس پیئر کو پیغام بھیجنے یا ادائیگی کے اختیارات کھولتا ہے",
 
@@ -963,6 +965,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash بھیجیں، پہلے رقم درج کریں",
   "mesh.peer.cancel_send": "ecash بھیجنا منسوخ کریں",
   "mesh.peer.view_peer_online": "پیئر {name} دیکھیں، آن لائن",
+  "mesh.peer.view_relay_online": "پیئر {name} دیکھیں، آن لائن، ریلے نوڈ",
   "mesh.peer.last_seen_at": "آخری بار دیکھا گیا {ago}",
   "mesh.peer.send_amount": "{amount} sat بھیجیں",
   "mesh.peer.direct": "براہ راست تعلق",
@@ -1432,7 +1435,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu کیا ہے؟",
   "wallet.explain.intro":
-    "Cashu، Bitcoin کے لیے ecash ہے۔ ٹوکن ایک ایسی لڑی ہے جو اس کے حامل کے لیے پیسوں کے برابر ہے، ٹکسال کی طرف سے اندھا دستخط شدہ تاکہ ٹکسال جان نہ سکے کہ کس نے کیا خرچ کیا۔ نہ اکاؤنٹ، نہ لاگ اِن۔",
+    "Cashu، Bitcoin کے لیے ecash ہے۔ ٹوکن ایک ایسی لڑی ہے جو اس کے حامل کے لیے پیسوں کے برابر ہے، ٹکسال کی طرف سے اندھا دستخط شدہ تاکہ ٹکسال جان نہ سکے کہ کس نے کیا خرچ کیا۔ نہ اکاؤنٹ، نہ لاگ اِن۔ Airhop کبھی آپ کا پیسہ اپنے پاس نہیں رکھتا: آپ کے سکے اسی فون پر رہتے ہیں، اور انہیں آپ کے چنے ہوئے ٹکسال جاری کرتے ہیں۔",
   "wallet.explain.send": "بھیجیں",
   "wallet.explain.send_desc":
     "رقم کو ایسے ٹوکن میں بدلتا ہے جو آپ بلوٹوتھ پر کسی قریبی پیئر کو دے سکیں، یا متن کے طور پر شیئر کر سکیں۔ انٹرنیٹ کے بغیر کام کرتا ہے۔ جب تک آپ تصدیق نہ کریں کہ یہ پہنچ گیا، سکے مختص رہتے ہیں۔",

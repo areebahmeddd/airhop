@@ -1,10 +1,9 @@
-// Proximity map for the Mesh tab.
-// Peers are placed on distance-calibrated rings based on BLE signal recency.
-// Distance is estimated from packet age; once the BLE service exposes RSSI
-// that value will replace the recency proxy.
-// Compass N is decorative: BLE gives proximity only, not bearing.
+// Proximity map for the Mesh tab. Peers sit on three rings by signal strength
+// (RSSI), or by how recently they were heard when there is none. The compass is
+// decorative: BLE gives proximity, never bearing.
 
 import { Feather } from "@expo/vector-icons";
+import { t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { acknowledged } from "@platform/haptics";
 import { useMeshStateStore, type BleBlocker } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
@@ -20,6 +19,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
+import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -31,15 +31,11 @@ import {
 } from "react-native";
 import RelayGlyph from "./relay-glyph";
 
-import { t, useT, useTPlural, type TranslationKey } from "@i18n";
-import { resolveDisplayName } from "@utils/peer-display-name";
-
 // What the dial says when there are no peers, per reason.
 //
 // The banner above the radar carries the button that fixes each of these; this
 // is the same fact restated where the user is actually looking. It must never
-// say "Scanning..." over a radio that is not scanning, which is what happened for
-// every blocker, including those a two-boolean version cannot represent.
+// say "Scanning..." over a radio that is not scanning.
 function blockerHeadline(blocker: BleBlocker): string {
   switch (blocker) {
     case "none":
@@ -134,33 +130,22 @@ const COMPASS: {
 const AVATAR_SIZE = 34;
 const SELF_SIZE = 42;
 
-// Smallest dial worth drawing. The canvas is normally sized to the shorter axis
-// of the space it is given, but in landscape (or a split view) that axis can
-// fall to almost nothing, and the `canvasSize > 0` guard below then rendered a
-// completely blank Mesh tab. Flooring it means the dial stays legible and the
-// screen keeps saying something.
+// Smallest dial worth drawing. The canvas is sized to the shorter axis of the
+// space it is given, which in landscape or a split view can fall to almost
+// nothing and leave a blank Mesh tab.
 const MIN_CANVAS = 180;
 
-// And a ceiling, for the opposite failure. Android 16 stopped honouring an
-// orientation lock above 600dp and Android 17 removed the opt-out, so a
-// foldable inner screen hands this view ~850dp. Sized to the shorter axis the
-// dial grew to ~640dp and pushed the caption behind the tab bar. A phone gives
-// ~390dp, so the cap is inert there. Caught on a Pixel 10 Pro Fold; large
-// screens want a real adaptive layout, and this is the floor until then.
+// And a ceiling. Android 16 stopped honouring an orientation lock above 600dp
+// and Android 17 removed the opt-out, so a foldable's inner screen hands this
+// view ~850dp and an uncapped dial pushes the caption behind the tab bar. A
+// phone gives ~390dp, so the cap is inert there.
 const MAX_CANVAS = 420;
-
-// Consecutive taps within this window count toward the easter egg.
-const TAP_WINDOW_MS = 2500;
-const EGG_TAPS = 5;
 
 // ---- Component ----
 
-// Memoised, because its props are now stable.
-//
-// The radar re-buckets every peer into rings and re-lays out every dot on each
-// render. peer-list passes a memoised `peers` array and a `now` that ticks once
-// a second, so without this the radar redid all of that whenever anything else
-// on the screen changed.
+// Memoised: every render re-buckets every peer and re-lays out every dot, and
+// peer-list passes a memoised `peers` and a `now` that ticks once a second, so
+// nothing else on the screen should trigger that.
 function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const T = useT();
   const TP = useTPlural();
@@ -171,8 +156,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // "Invisible" still scans (it only stops advertising), so it reads as normal.
   const away = useMeshStateStore((s) => s.presenceStatus === "away");
   // One value, so the dial and its caption can never disagree about whether a
-  // scan is running - which they could when this was two booleans and the
-  // reasons the radios might be down numbered more than two.
+  // scan is running.
   const blocker = useMeshStateStore((s) => s.bleBlocker);
   // An endlessly expanding ring is the textbook vestibular trigger, and it
   // carries nothing the status line below the dial does not already say in
@@ -187,16 +171,10 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const [ring1] = useState(() => new Animated.Value(0));
   const [ring2] = useState(() => new Animated.Value(0));
   const [ring3] = useState(() => new Animated.Value(0));
-  // A one-shot wave fired when the user taps the center to rescan.
+  // A one-shot wave fired when the user taps the center.
   const [manualWave] = useState(() => new Animated.Value(0));
   // Center dot press feedback: a small dip, no overshoot.
   const [selfScale] = useState(() => new Animated.Value(1));
-  // Bumped by the easter egg to restart the ambient sonar loop from scratch.
-  const [waveEpoch, setWaveEpoch] = useState(0);
-
-  // Consecutive rapid center taps, for the easter egg. Reset after a pause.
-  const tapCountRef = useRef(0);
-  const tapResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Handles for the tap animations, so a fast second tap cancels the first
   // rather than leaving two timings fighting over the same Animated.Value.
   const waveAnimRef = useRef<Animated.CompositeAnimation | null>(null);
@@ -207,7 +185,6 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // Tap the center device for a single sonar wave. Deliberately cosmetic: BLE
   // scanning runs continuously once started and peers arrive on announce
   // events, so a manual rescan would find nothing a moment's wait would not.
-  // Five taps in quick succession regenerate the ambient waves.
   function handleCenterPress(): void {
     if (reducedMotion) {
       // The wave is the whole feedback for this tap, so with motion off the
@@ -243,25 +220,10 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
       }),
     ]);
     dotAnimRef.current.start();
-
-    tapCountRef.current += 1;
-    if (tapResetRef.current !== null) clearTimeout(tapResetRef.current);
-    tapResetRef.current = setTimeout(() => {
-      tapCountRef.current = 0;
-    }, TAP_WINDOW_MS);
-    if (tapCountRef.current >= EGG_TAPS) {
-      tapCountRef.current = 0;
-      // Easter egg: no pop, no flurry. The three ambient waves simply start
-      // over from the center, so the radar quietly re-blooms. Restarting the
-      // loop by epoch keeps a single owner of the ring values, which is what
-      // stops a second egg mid-flight from running two loops at once.
-      setWaveEpoch((n) => n + 1);
-    }
   }
 
   // Staggered sonar pulse: three expanding rings at the outer boundary.
-  // Re-runs when waveEpoch changes, tearing the old loop down first.
-  // Nothing is scanning, so nothing sweeps. The rings are collapsed to zero
+  // When nothing is scanning, nothing sweeps. The rings are collapsed to zero
   // rather than left frozen mid-bloom: a stalled half-drawn ring reads as the
   // app having hung, an empty dial reads as switched off, which is the truth.
   // The line under the radar says which of the three reasons it is, and the
@@ -301,14 +263,12 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     ]);
     anim.start();
     return () => anim.stop();
-  }, [ring1, ring2, ring3, waveEpoch, scanning, reducedMotion]);
+  }, [ring1, ring2, ring3, scanning, reducedMotion]);
 
-  // Unmounting mid-tap must not leave a timer or an animation callback holding
-  // a handle to this component.
+  // Unmounting mid-tap must not leave an animation callback holding a handle to
+  // this component.
   useEffect(() => {
     return () => {
-      if (tapResetRef.current !== null) clearTimeout(tapResetRef.current);
-      tapResetRef.current = null;
       waveAnimRef.current?.stop();
       dotAnimRef.current?.stop();
     };
@@ -332,10 +292,9 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // Stable angle derived from the peer ID.
   //
   // Not `indexInRing / countInRing`, which makes a peer's position a function of
-  // how many OTHER peers share its ring: anyone joining or leaving sends every
-  // existing dot to a new angle, and the list re-sorts on every announce. Hashing
-  // the ID instead keeps each peer
-  // parked in one spot for as long as it's visible.
+  // how many OTHER peers share its ring: anyone joining or leaving would send
+  // every dot to a new angle. Hashing the ID keeps each peer parked in one spot
+  // for as long as it's visible.
   function peerAngle(peerID: string): number {
     let hash = 0;
     for (let i = 0; i < peerID.length; i++) {
@@ -356,23 +315,30 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     };
   }
 
-  const pulseStyle = (val: Animated.Value) => ({
+  // Outer ring absolute radius in px (for the waves and compass placement).
+  const outerR = C * RING_FR[2];
+
+  // Every wave is a circle the size of the outer ring, scaled up from the
+  // centre as it fades. The tap wave peaks a little brighter than the ambient
+  // ones so a touch reads over the sweep.
+  const waveBox = {
+    width: outerR * 2,
+    height: outerR * 2,
+    borderRadius: outerR,
+    top: C - outerR,
+    left: C - outerR,
+  };
+  const waveStyle = (val: Animated.Value, peak: number, from: number) => ({
     opacity: val.interpolate({
       inputRange: [0, 0.15, 1],
-      outputRange: [0, 0.28, 0],
+      outputRange: [0, peak, 0],
     }),
     transform: [
       {
-        scale: val.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.05, 1],
-        }),
+        scale: val.interpolate({ inputRange: [0, 1], outputRange: [from, 1] }),
       },
     ],
   });
-
-  // Outer ring absolute radius in px (for pulse ring and compass placement).
-  const outerR = C * RING_FR[2];
 
   return (
     <View
@@ -406,56 +372,20 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               The radar is a polar plot of physical space, so it must never
               mirror. Pinning the direction here says that once, in the one place
               the geometry is decided, rather than asking every `left` inside to
-              remember. Found by running the app in Arabic. */}
+              remember. */}
           <View
             style={{ width: canvasSize, height: canvasSize, direction: "ltr" }}
           >
-            {/* Pulse rings: expand from center to outer ring boundary */}
-            {([ring1, ring2, ring3] as Animated.Value[]).map((val, i) => {
-              const d = outerR * 2;
-              return (
-                <Animated.View
-                  key={i}
-                  style={[
-                    styles.pulseRing,
-                    {
-                      width: d,
-                      height: d,
-                      borderRadius: outerR,
-                      top: C - outerR,
-                      left: C - outerR,
-                    },
-                    pulseStyle(val),
-                  ]}
-                />
-              );
-            })}
-
-            {/* Manual sonar wave: one calm ring on center tap, no overshoot. */}
+            {[ring1, ring2, ring3].map((val, i) => (
+              <Animated.View
+                key={i}
+                pointerEvents="none"
+                style={[styles.wave, waveBox, waveStyle(val, 0.28, 0.05)]}
+              />
+            ))}
             <Animated.View
               pointerEvents="none"
-              style={[
-                styles.manualWave,
-                {
-                  width: outerR * 2,
-                  height: outerR * 2,
-                  borderRadius: outerR,
-                  top: C - outerR,
-                  left: C - outerR,
-                  opacity: manualWave.interpolate({
-                    inputRange: [0, 0.15, 1],
-                    outputRange: [0, 0.34, 0],
-                  }),
-                  transform: [
-                    {
-                      scale: manualWave.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.06, 1],
-                      }),
-                    },
-                  ],
-                },
-              ]}
+              style={[styles.wave, waveBox, waveStyle(manualWave, 0.34, 0.06)]}
             />
 
             {/* Static distance guide rings with labels, and the cardinal
@@ -514,7 +444,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               ))}
             </View>
 
-            {/* Center dot: local device. Tap to rescan (with a sonar burst). */}
+            {/* Center dot: this device. A tap sends one sonar wave. */}
             <Pressable
               style={[
                 styles.selfButton,
@@ -523,11 +453,8 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               onPress={handleCenterPress}
               accessibilityRole="button"
               accessibilityLabel={T("mesh.radar.you_center")}
-              // The label must not promise a rescan. There is none: BLE scanning
-              // runs continuously and peers arrive on announce events, as the
-              // comment on handleCenterPress says. Naming it "rescan" tells a
-              // screen reader user the one control on this
-              // screen would fetch peers, and it never did.
+              // The hint must not promise a rescan: scanning is continuous (see
+              // handleCenterPress).
               accessibilityHint={T("mesh.radar.sonar_hint")}
               hitSlop={hitSlopFor(SELF_SIZE)}
             >
@@ -559,9 +486,8 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
           {/* ---- Status --------------------------------------------------
               One live region around both lines, so switching Bluetooth off or
               being denied the permission is announced when it happens rather
-              than only if the user happens to swipe back down here. Two
-              separate Texts were also two separate stops reading one sentence
-              in halves. */}
+              than only if the user happens to swipe back down here, and the
+              two lines read as one stop. */}
           <View style={styles.status} accessibilityLiveRegion="polite">
             <Text style={styles.statusText}>
               {peers.length > 0
@@ -597,11 +523,8 @@ interface PeerNodeProps {
   onPress: () => void;
 }
 
-// Presence comes from peer-store's REACHABLE_TTL_MS so the same peer cannot read
-// "online" here and "offline" in the peer list. This dot had its own 30s
-// literal, half the store's window, so a peer heard from 45s ago went grey on
-// the dial while the list still showed green.
-
+// Presence comes from peer-store's REACHABLE_TTL_MS, so the same peer cannot
+// read "online" here and "offline" in the peer list.
 function PeerNode({
   peer,
   top,
@@ -624,7 +547,16 @@ function PeerNode({
       accessibilityRole="button"
       // The glyph is what tells a sighted user this is equipment, so the label
       // has to say it too or the dial reads as one more person.
-      accessibilityLabel={`${username}${peer.isInfrastructure === true ? `, ${T("mesh.peer.relay")}` : ""}, ${isOnline ? T("mesh.radar.in_range") : T("mesh.radar.recently_seen")}`}
+      accessibilityLabel={T(
+        peer.isInfrastructure === true
+          ? isOnline
+            ? "mesh.radar.relay_in_range"
+            : "mesh.radar.relay_recent"
+          : isOnline
+            ? "mesh.radar.peer_in_range"
+            : "mesh.radar.peer_recent",
+        { name: username },
+      )}
       accessibilityHint={T("mesh.radar.peer_hint")}
     >
       {peer.isInfrastructure === true ? (
@@ -660,12 +592,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.sm,
       paddingBottom: Spacing.xl,
     },
-    pulseRing: {
-      position: "absolute",
-      borderWidth: 1.5,
-      borderColor: Colors.accent,
-    },
-    manualWave: {
+    wave: {
       position: "absolute",
       borderWidth: 1.5,
       borderColor: Colors.accent,

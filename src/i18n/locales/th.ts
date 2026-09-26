@@ -922,8 +922,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "ตำแหน่งของวงแหวนสะท้อนความแรงสัญญาณ ไม่ใช่ระยะทาง",
   "mesh.radar.set_online":
     "ตั้งสถานะของคุณเป็นออนไลน์ในโปรไฟล์เพื่อค้นหาเพียร์",
-  "mesh.radar.in_range": "อยู่ในระยะ",
-  "mesh.radar.recently_seen": "เพิ่งเห็นล่าสุด",
+  "mesh.radar.peer_in_range": "{name} อยู่ในระยะ",
+  "mesh.radar.peer_recent": "{name} เพิ่งเห็นล่าสุด",
+  "mesh.radar.relay_in_range": "{name} โหนดรีเลย์ อยู่ในระยะ",
+  "mesh.radar.relay_recent": "{name} โหนดรีเลย์ เพิ่งเห็นล่าสุด",
   "mesh.radar.peer_hint": "เปิดตัวเลือกเพื่อส่งข้อความหรือจ่ายเงินให้เพียร์นี้",
 
   // ---- Mesh: peer list ----
@@ -944,6 +946,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ส่ง ecash โปรดใส่จำนวนก่อน",
   "mesh.peer.cancel_send": "ยกเลิกการส่ง ecash",
   "mesh.peer.view_peer_online": "ดูเพียร์ {name}, ออนไลน์",
+  "mesh.peer.view_relay_online": "ดูเพียร์ {name}, ออนไลน์ โหนดรีเลย์",
   "mesh.peer.last_seen_at": "เห็นล่าสุด {ago}",
   "mesh.peer.send_amount": "ส่ง {amount} sats",
   "mesh.peer.direct": "การเชื่อมต่อโดยตรง",
@@ -1410,7 +1413,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu คืออะไร",
   "wallet.explain.intro":
-    "Cashu คือ ecash สำหรับ Bitcoin โทเคนคือสตริงที่มีค่าเป็นเงินสำหรับผู้ที่ถือมัน ลงลายเซ็นแบบปิดตาโดยมินต์ เพื่อให้มินต์บอกไม่ได้ว่าใครใช้อะไร ไม่มีบัญชี ไม่มีการเข้าสู่ระบบ",
+    "Cashu คือ ecash สำหรับ Bitcoin โทเคนคือสตริงที่มีค่าเป็นเงินสำหรับผู้ที่ถือมัน ลงลายเซ็นแบบปิดตาโดยมินต์ เพื่อให้มินต์บอกไม่ได้ว่าใครใช้อะไร ไม่มีบัญชี ไม่มีการเข้าสู่ระบบ Airhop ไม่เคยถือเงินของคุณ เหรียญของคุณอยู่บนโทรศัพท์เครื่องนี้ และออกโดยมินต์ที่คุณเลือกเอง",
   "wallet.explain.send": "ส่ง",
   "wallet.explain.send_desc":
     "เปลี่ยนจำนวนเงินให้เป็นโทเคนที่คุณส่งมอบให้เพียร์ที่อยู่ใกล้ผ่านบลูทูธได้ หรือแชร์เป็นข้อความก็ได้ ใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต เหรียญจะยังถูกกันไว้จนกว่าคุณจะยืนยันว่ามันไปถึงแล้ว",

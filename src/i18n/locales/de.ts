@@ -967,8 +967,10 @@ export const strings: Strings = {
     "Die Ringposition spiegelt die Signalstärke wider, nicht die Entfernung",
   "mesh.radar.set_online":
     "Setze deinen Status im Profil auf Online, um Peers zu finden",
-  "mesh.radar.in_range": "in Reichweite",
-  "mesh.radar.recently_seen": "kürzlich gesehen",
+  "mesh.radar.peer_in_range": "{name}, in Reichweite",
+  "mesh.radar.peer_recent": "{name}, kürzlich gesehen",
+  "mesh.radar.relay_in_range": "{name}, Relay-Knoten, in Reichweite",
+  "mesh.radar.relay_recent": "{name}, Relay-Knoten, kürzlich gesehen",
   "mesh.radar.peer_hint":
     "Öffnet Optionen, um diesem Peer zu schreiben oder zu zahlen",
 
@@ -990,6 +992,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Ecash senden, gib zuerst einen Betrag ein",
   "mesh.peer.cancel_send": "Ecash-Senden abbrechen",
   "mesh.peer.view_peer_online": "Peer {name} ansehen, online",
+  "mesh.peer.view_relay_online": "Peer {name} ansehen, online, Relay-Knoten",
   "mesh.peer.last_seen_at": "Zuletzt gesehen {ago}",
   "mesh.peer.send_amount": "{amount} Sats senden",
   "mesh.peer.direct": "Direktverbindung",
@@ -1475,7 +1478,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Was ist Cashu?",
   "wallet.explain.intro":
-    "Cashu ist Ecash für Bitcoin. Ein Token ist eine Zeichenfolge, die für ihren Inhaber Geld wert ist, blind von einem Mint signiert, sodass der Mint nicht erkennen kann, wer was ausgegeben hat. Keine Konten, keine Anmeldungen.",
+    "Cashu ist Ecash für Bitcoin. Ein Token ist eine Zeichenfolge, die für ihren Inhaber Geld wert ist, blind von einem Mint signiert, sodass der Mint nicht erkennen kann, wer was ausgegeben hat. Keine Konten, keine Anmeldungen. Airhop verwahrt nie dein Geld: Deine Münzen liegen auf diesem Handy, ausgegeben von den Mints, die du wählst.",
   "wallet.explain.send": "Senden",
   "wallet.explain.send_desc":
     "Macht aus einem Betrag einen Token, den du einem Peer in der Nähe über Bluetooth übergeben oder als Text teilen kannst. Funktioniert ohne Internet. Die Münzen bleiben reserviert, bis du bestätigst, dass er angekommen ist.",

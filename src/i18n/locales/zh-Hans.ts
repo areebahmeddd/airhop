@@ -886,8 +886,10 @@ export const strings: Strings = {
   "mesh.radar.paused": "网状网络已暂停 · 你处于离开状态",
   "mesh.radar.ring_hint": "圆环位置反映的是信号强度，不是距离",
   "mesh.radar.set_online": "在个人页把状态设为在线即可发现节点",
-  "mesh.radar.in_range": "在范围内",
-  "mesh.radar.recently_seen": "最近见过",
+  "mesh.radar.peer_in_range": "{name}，在范围内",
+  "mesh.radar.peer_recent": "{name}，最近见过",
+  "mesh.radar.relay_in_range": "{name}，中继节点，在范围内",
+  "mesh.radar.relay_recent": "{name}，中继节点，最近见过",
   "mesh.radar.peer_hint": "打开给这个节点发消息或付款的选项",
 
   // ---- Mesh: peer list ----
@@ -908,6 +910,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "发送 ecash，请先输入金额",
   "mesh.peer.cancel_send": "取消发送 ecash",
   "mesh.peer.view_peer_online": "查看节点 {name}，在线",
+  "mesh.peer.view_relay_online": "查看节点 {name}，在线，中继节点",
   "mesh.peer.last_seen_at": "最后出现：{ago}",
   "mesh.peer.send_amount": "发送 {amount} sat",
   "mesh.peer.direct": "直接连接",
@@ -1357,7 +1360,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu 是什么？",
   "wallet.explain.intro":
-    "Cashu 是比特币的 ecash。代币是一串字符，谁拿着它就等于拿着钱，它由铸币厂盲签，因此铸币厂分不出是谁花了哪一笔。没有账户，也不用登录。",
+    "Cashu 是比特币的 ecash。代币是一串字符，谁拿着它就等于拿着钱，它由铸币厂盲签，因此铸币厂分不出是谁花了哪一笔。没有账户，也不用登录。Airhop 从不保管你的钱：你的币存在这部手机上，由你选择的铸币厂发行。",
   "wallet.explain.send": "发送",
   "wallet.explain.send_desc":
     "把一笔金额变成代币，可以通过蓝牙交给附近的节点，也可以当作文本分享。无需互联网。在你确认它已到手之前，这些币一直保持预留。",

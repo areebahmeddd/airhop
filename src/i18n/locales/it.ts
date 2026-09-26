@@ -965,8 +965,10 @@ export const strings: Strings = {
     "La posizione dell’anello riflette la potenza del segnale, non la distanza",
   "mesh.radar.set_online":
     "Imposta il tuo stato su Online nel profilo per trovare i peer",
-  "mesh.radar.in_range": "nel raggio",
-  "mesh.radar.recently_seen": "visti di recente",
+  "mesh.radar.peer_in_range": "{name}, nel raggio",
+  "mesh.radar.peer_recent": "{name}, visti di recente",
+  "mesh.radar.relay_in_range": "{name}, nodo relay, nel raggio",
+  "mesh.radar.relay_recent": "{name}, nodo relay, visti di recente",
   "mesh.radar.peer_hint": "Apre le opzioni per scrivere o pagare questo peer",
 
   // ---- Mesh: peer list ----
@@ -987,6 +989,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Invia ecash, inserisci prima un importo",
   "mesh.peer.cancel_send": "Annulla l’invio di ecash",
   "mesh.peer.view_peer_online": "Vedi il peer {name}, online",
+  "mesh.peer.view_relay_online": "Vedi il peer {name}, online, nodo relay",
   "mesh.peer.last_seen_at": "Visto l’ultima volta {ago}",
   "mesh.peer.send_amount": "Invia {amount} sats",
   "mesh.peer.direct": "Connessione diretta",
@@ -1467,7 +1470,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Che cos’è Cashu?",
   "wallet.explain.intro":
-    "Cashu è ecash per Bitcoin. Un token è una stringa che vale denaro per chi la possiede, firmata alla cieca da un mint così che il mint non possa sapere chi ha speso cosa. Nessun account, nessun accesso.",
+    "Cashu è ecash per Bitcoin. Un token è una stringa che vale denaro per chi la possiede, firmata alla cieca da un mint così che il mint non possa sapere chi ha speso cosa. Nessun account, nessun accesso. Airhop non custodisce mai il tuo denaro: le tue monete stanno su questo telefono e le emettono i mint che scegli.",
   "wallet.explain.send": "Invia",
   "wallet.explain.send_desc":
     "Trasforma un importo in un token che puoi consegnare a un peer vicino via Bluetooth, o condividere come testo. Funziona senza internet. Le monete restano riservate finché non confermi che è arrivato.",

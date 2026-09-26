@@ -1824,6 +1824,8 @@ export default function MessageThread({
   const [claimingToken, setClaimingToken] = useState<string | null>(null);
   // Tokens already taken into the wallet, so their cards read "Claimed".
   const claimedTokens = useWalletStore((s) => s.claimedTokens);
+  // The sender's side of the same: a send the wallet has settled as redeemed.
+  const walletHistory = useWalletStore((s) => s.history);
   // A V4 token names its keyset by a short id, and the v2 form cannot be
   // decoded without the full id to map it back to. Memoised on `mints` because
   // the list is rebuilt each call and every message render reads it.
@@ -2744,10 +2746,8 @@ export default function MessageThread({
     // Read the file bytes and push them through the file-transfer pipeline.
     void (async () => {
       try {
-        // expo-file-system 57 removed the legacy readAsStringAsync (it now
-        // throws at runtime). The File API reads raw bytes directly, which also
-        // drops the base64 -> binary-string -> Uint8Array round-trip this used
-        // to do, and that was ~2.4x peak memory for every attachment.
+        // Raw bytes through the File API: a base64 read would cost ~2.4x peak
+        // memory per attachment.
         const bytes = await new FileSystem.File(uri).bytes();
         const reached = service.sendAttachment(
           targetChannel,
@@ -4245,9 +4245,11 @@ export default function MessageThread({
 
   function renderTokenCard(
     token: EmbeddedToken,
-    isMine: boolean,
-    reclaimed: boolean,
+    item: ChatMessage,
   ): React.JSX.Element {
+    const isMine = item.isMine;
+    const paid = isMine && isSendPaid(item.id);
+    const reclaimed = isMine && !paid && item.status === "reclaimed";
     return (
       <View style={styles.paymentCard}>
         <View style={styles.paymentCardHeader}>
@@ -4265,11 +4267,19 @@ export default function MessageThread({
         {/* A send the user pulled back. On the card, not just in the message
             info: the amount is printed right above, so without this the card
             still reads as money the recipient can take. */}
-        {isMine && reclaimed && (
+        {reclaimed && (
           <View style={styles.paymentCardVoid}>
             <Feather name="rotate-ccw" size={13} color={Colors.textMuted} />
             <Text style={styles.paymentCardVoidText}>
               {T("chat.ecash.reclaimed")}
+            </Text>
+          </View>
+        )}
+        {paid && (
+          <View style={styles.paymentCardClaimed}>
+            <Feather name="check" size={13} color={Colors.online} />
+            <Text style={styles.paymentCardClaimedText}>
+              {t("chat.ecash.claimed")}
             </Text>
           </View>
         )}
@@ -4322,6 +4332,15 @@ export default function MessageThread({
   function isTokenClaimed(token: EmbeddedToken): boolean {
     const first = token.info.token.proofs[0]?.secret;
     return first !== undefined && claimedTokens.includes(first);
+  }
+
+  // A token message you sent carries its send's transaction ID, and the wallet
+  // completes that send once the mint reports the coins spent (or you confirm
+  // it landed). A token pasted in by hand has no send, so it never reads paid.
+  function isSendPaid(messageId: string): boolean {
+    return walletHistory.some(
+      (tx) => tx.id === messageId && tx.status === "completed",
+    );
   }
 
   // Show a date separator when consecutive messages are from different days.
@@ -4633,7 +4652,11 @@ export default function MessageThread({
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
-                : `${claimingToken ?? ""}#${tokens.filter(isTokenClaimed).length}`,
+                : item.isMine
+                  ? isSendPaid(item.id)
+                    ? "paid"
+                    : ""
+                  : `${claimingToken ?? ""}#${tokens.filter(isTokenClaimed).length}`,
             ].join("|");
 
             return (
@@ -4653,13 +4676,7 @@ export default function MessageThread({
                   isFirstFromSender={isFirstFromSender}
                   tokens={tokens}
                   isPureToken={isPureToken}
-                  renderToken={(token) =>
-                    renderTokenCard(
-                      token,
-                      item.isMine,
-                      item.status === "reclaimed",
-                    )
-                  }
+                  renderToken={(token) => renderTokenCard(token, item)}
                   renderAttachment={(attachment) =>
                     renderAttachmentBubble(attachment, item.id, item.isMine)
                   }

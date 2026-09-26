@@ -973,8 +973,10 @@ export const strings: Strings = {
     "La position de l’anneau reflète la force du signal, pas la distance",
   "mesh.radar.set_online":
     "Mets ton statut sur En ligne dans le profil pour découvrir des pairs",
-  "mesh.radar.in_range": "à portée",
-  "mesh.radar.recently_seen": "vus récemment",
+  "mesh.radar.peer_in_range": "{name}, à portée",
+  "mesh.radar.peer_recent": "{name}, vus récemment",
+  "mesh.radar.relay_in_range": "{name}, nœud relais, à portée",
+  "mesh.radar.relay_recent": "{name}, nœud relais, vus récemment",
   "mesh.radar.peer_hint": "Ouvre les options pour écrire ou payer ce pair",
 
   // ---- Mesh: peer list ----
@@ -995,6 +997,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Envoyer des ecash, saisis d’abord un montant",
   "mesh.peer.cancel_send": "Annuler l’envoi d’ecash",
   "mesh.peer.view_peer_online": "Voir le pair {name}, en ligne",
+  "mesh.peer.view_relay_online": "Voir le pair {name}, en ligne, nœud relais",
   "mesh.peer.last_seen_at": "Vu pour la dernière fois {ago}",
   "mesh.peer.send_amount": "Envoyer {amount} sats",
   "mesh.peer.direct": "Connexion directe",
@@ -1479,7 +1482,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Qu’est-ce que Cashu ?",
   "wallet.explain.intro":
-    "Cashu, c’est de l’ecash pour Bitcoin. Un jeton est une chaîne qui vaut de l’argent pour celui qui la détient, signée à l’aveugle par un mint pour que le mint ne puisse pas savoir qui a dépensé quoi. Ni comptes, ni connexions.",
+    "Cashu, c’est de l’ecash pour Bitcoin. Un jeton est une chaîne qui vaut de l’argent pour celui qui la détient, signée à l’aveugle par un mint pour que le mint ne puisse pas savoir qui a dépensé quoi. Ni comptes, ni connexions. Airhop ne détient jamais ton argent : tes pièces sont sur ce téléphone, émises par les mints que tu choisis.",
   "wallet.explain.send": "Envoyer",
   "wallet.explain.send_desc":
     "Transforme un montant en un jeton que tu peux remettre à un pair proche par Bluetooth, ou partager sous forme de texte. Fonctionne sans internet. Les pièces restent réservées jusqu’à ce que tu confirmes son arrivée.",

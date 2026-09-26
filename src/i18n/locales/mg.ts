@@ -976,8 +976,11 @@ export const strings: Strings = {
     "Ny toerana eo amin'ny faribolana dia maneho ny herin'ny famantarana, fa tsy ny halavirana",
   "mesh.radar.set_online":
     "Ataovy An-tserasera ny toe-javatrao ao amin'ny mombamomba mba hahitana teboka",
-  "mesh.radar.in_range": "ao anatin'ny fetra",
-  "mesh.radar.recently_seen": "hita vao haingana",
+  "mesh.radar.peer_in_range": "{name}, ao anatin'ny fetra",
+  "mesh.radar.peer_recent": "{name}, hita vao haingana",
+  "mesh.radar.relay_in_range":
+    "{name}, teboka mpanelanelana, ao anatin'ny fetra",
+  "mesh.radar.relay_recent": "{name}, teboka mpanelanelana, hita vao haingana",
   "mesh.radar.peer_hint":
     "Manokatra ny safidy hanoratana na handoavam-bola amin'ity teboka ity",
 
@@ -999,6 +1002,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Mandefa ecash, soraty aloha ny sanda",
   "mesh.peer.cancel_send": "Foano ny fandefasana ecash",
   "mesh.peer.view_peer_online": "Jereo ny teboka {name}, an-tserasera",
+  "mesh.peer.view_relay_online":
+    "Jereo ny teboka {name}, an-tserasera, teboka mpanelanelana",
   "mesh.peer.last_seen_at": "Hita farany {ago}",
   "mesh.peer.send_amount": "Alefaso {amount} sat",
   "mesh.peer.direct": "Fifandraisana mivantana",
@@ -1487,7 +1492,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Inona ny Cashu?",
   "wallet.explain.intro":
-    "Ecash ho an'ny Bitcoin ny Cashu. Ny tapakila dia andalan-tsoratra mitentina vola ho an'izay mitana azy, nosoniavin'ny mpamoaka tsy nahitany, ka tsy fantany hoe iza no nandany inona. Tsy misy kaonty, tsy misy fidirana.",
+    "Ecash ho an'ny Bitcoin ny Cashu. Ny tapakila dia andalan-tsoratra mitentina vola ho an'izay mitana azy, nosoniavin'ny mpamoaka tsy nahitany, ka tsy fantany hoe iza no nandany inona. Tsy misy kaonty, tsy misy fidirana. Tsy mitazona ny volanao mihitsy ny Airhop: ato amin'ity finday ity ny volanao, ary ireo mpamoaka nofidinao no mamoaka azy.",
   "wallet.explain.send": "Mandefa",
   "wallet.explain.send_desc":
     "Manova sanda ho tapakila azonao atolotra amin'ny teboka akaiky amin'ny Bluetooth, na zaraina ho lahatsoratra. Miasa tsy misy Internet. Mijanona voatokana ny vola madinika mandra-panamafisanao fa tonga izy.",

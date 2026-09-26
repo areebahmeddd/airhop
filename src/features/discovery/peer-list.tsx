@@ -296,16 +296,14 @@ export default function PeerList({
                 ]}
                 onPress={() => setSelectedPeer(item)}
                 accessibilityRole="button"
-                // Relay appended rather than substituted: whether the box on the
-                // pole is still answering matters as much as whether a person
-                // is, so it keeps the same online/offline label a peer gets.
-                accessibilityLabel={`${t("mesh.peer.view_peer_online", {
-                  name: username,
-                })}${
+                // A relay keeps the online label a person gets: whether the box
+                // on the pole is still answering matters just as much.
+                accessibilityLabel={t(
                   item.isInfrastructure === true
-                    ? `, ${t("mesh.peer.relay")}`
-                    : ""
-                }`}
+                    ? "mesh.peer.view_relay_online"
+                    : "mesh.peer.view_peer_online",
+                  { name: username },
+                )}
               >
                 <View style={styles.avatarWrapper}>
                   {item.isInfrastructure === true ? (

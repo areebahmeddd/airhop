@@ -937,8 +937,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "جای حلقه بازتاب قدرت سیگنال است، نه فاصله",
   "mesh.radar.set_online":
     "برای یافتن همتاها وضعیت خود را در نمایه روی برخط بگذارید",
-  "mesh.radar.in_range": "در محدوده",
-  "mesh.radar.recently_seen": "به‌تازگی دیده شده",
+  "mesh.radar.peer_in_range": "{name}، در محدوده",
+  "mesh.radar.peer_recent": "{name}، به‌تازگی دیده شده",
+  "mesh.radar.relay_in_range": "{name}، گرهٔ بازپخش، در محدوده",
+  "mesh.radar.relay_recent": "{name}، گرهٔ بازپخش، به‌تازگی دیده شده",
   "mesh.radar.peer_hint":
     "گزینه‌های پیام دادن یا پرداخت به این همتا را باز می‌کند",
 
@@ -960,6 +962,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "فرستادن ecash، اول مبلغی وارد کنید",
   "mesh.peer.cancel_send": "لغو فرستادن ecash",
   "mesh.peer.view_peer_online": "دیدن همتا {name}، برخط",
+  "mesh.peer.view_relay_online": "دیدن همتا {name}، برخط، گرهٔ بازپخش",
   "mesh.peer.last_seen_at": "آخرین بازدید {ago}",
   "mesh.peer.send_amount": "فرستادن {amount} sats",
   "mesh.peer.direct": "اتصال مستقیم",
@@ -1434,7 +1437,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu چیست؟",
   "wallet.explain.intro":
-    "Cashu همان ecash برای Bitcoin است. توکن رشته‌ای است که برای هر کس آن را در دست دارد ارزش پول دارد، و ضراب‌خانه آن را کورکورانه امضا می‌کند تا نتواند بگوید چه کسی چه چیزی خرج کرده است. نه حسابی، نه ورودی.",
+    "Cashu همان ecash برای Bitcoin است. توکن رشته‌ای است که برای هر کس آن را در دست دارد ارزش پول دارد، و ضراب‌خانه آن را کورکورانه امضا می‌کند تا نتواند بگوید چه کسی چه چیزی خرج کرده است. نه حسابی، نه ورودی. Airhop هرگز پول شما را نگه نمی‌دارد: سکه‌های شما روی همین گوشی است و ضراب‌خانه‌هایی که انتخاب می‌کنید آن‌ها را صادر می‌کنند.",
   "wallet.explain.send": "فرستادن",
   "wallet.explain.send_desc":
     "مبلغی را به توکنی بدل می‌کند که می‌توانید از راه بلوتوث به همتایی نزدیک بسپارید، یا به شکل متن هم‌رسانی کنید. بدون اینترنت کار می‌کند. سکه‌ها تا وقتی رسیدنش را تأیید نکنید کنارگذاشته می‌مانند.",

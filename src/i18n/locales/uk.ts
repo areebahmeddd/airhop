@@ -957,8 +957,10 @@ export const strings: Strings = {
     "Положення на кільці відображає силу сигналу, а не відстань",
   "mesh.radar.set_online":
     "Установіть статус Онлайн на вкладці Ви, щоб знаходити пірів",
-  "mesh.radar.in_range": "у радіусі",
-  "mesh.radar.recently_seen": "нещодавно бачили",
+  "mesh.radar.peer_in_range": "{name}, у радіусі",
+  "mesh.radar.peer_recent": "{name}, нещодавно бачили",
+  "mesh.radar.relay_in_range": "{name}, вузол-релей, у радіусі",
+  "mesh.radar.relay_recent": "{name}, вузол-релей, нещодавно бачили",
   "mesh.radar.peer_hint": "Відкриває варіанти написати чи заплатити цьому піру",
 
   // ---- Mesh: peer list ----
@@ -979,6 +981,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Надіслати ecash, спершу введіть суму",
   "mesh.peer.cancel_send": "Скасувати надсилання ecash",
   "mesh.peer.view_peer_online": "Переглянути піра {name}, онлайн",
+  "mesh.peer.view_relay_online": "Переглянути піра {name}, онлайн, вузол-релей",
   "mesh.peer.last_seen_at": "Востаннє бачили {ago}",
   "mesh.peer.send_amount": "Надіслати {amount} сатів",
   "mesh.peer.direct": "Пряме з’єднання",
@@ -1453,7 +1456,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Що таке Cashu?",
   "wallet.explain.intro":
-    "Cashu — це ecash для біткоїна. Токен — це рядок, що вартий грошей для того, хто його тримає, підписаний мінтом наосліп, щоб мінт не бачив, хто що витратив. Без облікових записів, без входу.",
+    "Cashu — це ecash для біткоїна. Токен — це рядок, що вартий грошей для того, хто його тримає, підписаний мінтом наосліп, щоб мінт не бачив, хто що витратив. Без облікових записів, без входу. Airhop ніколи не тримає ваших грошей: ваші монети зберігаються на цьому телефоні, а випускають їх мінти, які ви обираєте.",
   "wallet.explain.send": "Надіслати",
   "wallet.explain.send_desc":
     "Обертає суму на токен, який ви можете передати піру поблизу через Bluetooth або надіслати текстом. Працює без інтернету. Монети лишаються відкладеними, доки ви не підтвердите, що воно дійшло.",

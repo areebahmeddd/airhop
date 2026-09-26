@@ -959,8 +959,11 @@ export const strings: Strings = {
     "Nafasi kwenye pete inaonyesha nguvu ya ishara, si umbali",
   "mesh.radar.set_online":
     "Weka hali yako kuwa Mtandaoni kwenye kichupo cha Wewe ili kugundua peer",
-  "mesh.radar.in_range": "ndani ya masafa",
-  "mesh.radar.recently_seen": "walioonekana hivi karibuni",
+  "mesh.radar.peer_in_range": "{name}, ndani ya masafa",
+  "mesh.radar.peer_recent": "{name}, walioonekana hivi karibuni",
+  "mesh.radar.relay_in_range": "{name}, nodi ya relay, ndani ya masafa",
+  "mesh.radar.relay_recent":
+    "{name}, nodi ya relay, walioonekana hivi karibuni",
   "mesh.radar.peer_hint":
     "Hufungua chaguo za kumtumia ujumbe au kumlipa peer huyu",
 
@@ -982,6 +985,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Tuma ecash, weka kiasi kwanza",
   "mesh.peer.cancel_send": "Ghairi kutuma ecash",
   "mesh.peer.view_peer_online": "Tazama peer {name}, yuko mtandaoni",
+  "mesh.peer.view_relay_online":
+    "Tazama peer {name}, yuko mtandaoni, nodi ya relay",
   "mesh.peer.last_seen_at": "Alionekana mara ya mwisho {ago}",
   "mesh.peer.send_amount": "Tuma sat {amount}",
   "mesh.peer.direct": "Muunganisho wa moja kwa moja",
@@ -1468,7 +1473,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu ni nini?",
   "wallet.explain.intro":
-    "Cashu ni ecash ya Bitcoin. Tokeni ni mfuatano wenye thamani ya pesa kwa yeyote anayeushikilia, uliotiwa saini kwa upofu na mint ili mint isijue nani alitumia nini. Hakuna akaunti, hakuna kuingia.",
+    "Cashu ni ecash ya Bitcoin. Tokeni ni mfuatano wenye thamani ya pesa kwa yeyote anayeushikilia, uliotiwa saini kwa upofu na mint ili mint isijue nani alitumia nini. Hakuna akaunti, hakuna kuingia. Airhop haishikilii pesa zako kamwe: sarafu zako ziko kwenye simu hii, na hutolewa na mint unazochagua.",
   "wallet.explain.send": "Tuma",
   "wallet.explain.send_desc":
     "Hugeuza kiasi kuwa tokeni unayoweza kumkabidhi peer aliye karibu kupitia Bluetooth, au kuishiriki kama maandishi. Hufanya kazi bila intaneti. Sarafu hubaki zimetengwa hadi uthibitishe kuwa imefika.",

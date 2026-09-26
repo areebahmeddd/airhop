@@ -932,8 +932,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "원의 위치는 거리가 아니라 신호 세기를 반영합니다",
   "mesh.radar.set_online":
     "피어를 찾으려면 프로필에서 상태를 온라인으로 설정하세요",
-  "mesh.radar.in_range": "범위 내",
-  "mesh.radar.recently_seen": "최근에 본 사람",
+  "mesh.radar.peer_in_range": "{name}, 범위 내",
+  "mesh.radar.peer_recent": "{name}, 최근에 본 사람",
+  "mesh.radar.relay_in_range": "{name}, 릴레이 노드, 범위 내",
+  "mesh.radar.relay_recent": "{name}, 릴레이 노드, 최근에 본 사람",
   "mesh.radar.peer_hint":
     "이 피어에게 메시지를 보내거나 결제할 수 있는 옵션을 엽니다",
 
@@ -955,6 +957,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash 보내기, 먼저 금액을 입력하세요",
   "mesh.peer.cancel_send": "ecash 보내기 취소",
   "mesh.peer.view_peer_online": "피어 {name} 보기, 온라인",
+  "mesh.peer.view_relay_online": "피어 {name} 보기, 온라인, 릴레이 노드",
   "mesh.peer.last_seen_at": "마지막 확인: {ago}",
   "mesh.peer.send_amount": "{amount} sats 보내기",
   "mesh.peer.direct": "직접 연결",
@@ -1426,7 +1429,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu란?",
   "wallet.explain.intro":
-    "Cashu는 Bitcoin을 위한 ecash입니다. 토큰은 가진 사람에게 돈이 되는 문자열이며, 민트가 눈을 가린 채 서명하므로 누가 무엇을 썼는지 민트도 알 수 없습니다. 계정도 로그인도 없습니다.",
+    "Cashu는 Bitcoin을 위한 ecash입니다. 토큰은 가진 사람에게 돈이 되는 문자열이며, 민트가 눈을 가린 채 서명하므로 누가 무엇을 썼는지 민트도 알 수 없습니다. 계정도 로그인도 없습니다. Airhop은 절대 돈을 보관하지 않습니다. 코인은 이 휴대폰에 있고, 발행은 직접 고른 민트가 합니다.",
   "wallet.explain.send": "보내기",
   "wallet.explain.send_desc":
     "금액을 토큰으로 바꿔 블루투스로 근처 피어에게 건네거나 텍스트로 공유할 수 있게 합니다. 인터넷 없이 작동합니다. 도착을 확인하기 전까지 코인은 예약된 채로 남습니다.",

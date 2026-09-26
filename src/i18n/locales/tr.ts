@@ -950,8 +950,10 @@ export const strings: Strings = {
     "Halkadaki konum uzaklığı değil, sinyal gücünü yansıtır",
   "mesh.radar.set_online":
     "Eşleri keşfetmek için Sen sekmesinden durumunu Çevrimiçi yap",
-  "mesh.radar.in_range": "menzilde",
-  "mesh.radar.recently_seen": "yakınlarda görüldü",
+  "mesh.radar.peer_in_range": "{name}, menzilde",
+  "mesh.radar.peer_recent": "{name}, yakınlarda görüldü",
+  "mesh.radar.relay_in_range": "{name}, aktarma düğümü, menzilde",
+  "mesh.radar.relay_recent": "{name}, aktarma düğümü, yakınlarda görüldü",
   "mesh.radar.peer_hint":
     "Bu eşe mesaj yazma ya da ödeme yapma seçeneklerini açar",
 
@@ -973,6 +975,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Ecash gönder, önce bir tutar gir",
   "mesh.peer.cancel_send": "Ecash göndermeyi iptal et",
   "mesh.peer.view_peer_online": "{name} eşini görüntüle, çevrimiçi",
+  "mesh.peer.view_relay_online":
+    "{name} eşini görüntüle, çevrimiçi, aktarma düğümü",
   "mesh.peer.last_seen_at": "Son görülme {ago}",
   "mesh.peer.send_amount": "{amount} sat gönder",
   "mesh.peer.direct": "Doğrudan bağlantı",
@@ -1445,7 +1449,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu nedir?",
   "wallet.explain.intro":
-    "Cashu, Bitcoin için ecash'tir. Bir jeton, elinde tutan için para değeri taşıyan bir dizedir; darphane kimin ne harcadığını göremesin diye körlemesine imzalanır. Hesap yok, oturum açma yok.",
+    "Cashu, Bitcoin için ecash'tir. Bir jeton, elinde tutan için para değeri taşıyan bir dizedir; darphane kimin ne harcadığını göremesin diye körlemesine imzalanır. Hesap yok, oturum açma yok. Airhop paranı asla tutmaz: jetonların bu telefonda durur ve onları seçtiğin darphaneler çıkarır.",
   "wallet.explain.send": "Gönder",
   "wallet.explain.send_desc":
     "Bir tutarı, Bluetooth üzerinden yakındaki bir eşe verebileceğin ya da metin olarak paylaşabileceğin bir jetona dönüştürür. İnternetsiz çalışır. Ulaştığını onaylayana kadar jetonlar ayrılmış kalır.",

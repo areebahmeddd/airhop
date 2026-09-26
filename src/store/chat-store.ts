@@ -147,20 +147,16 @@ interface ChatState {
   // Threads folded into another one, `from` to `to`. A DM is keyed
   // `dm:nostr_<pubkey>` until an in-person scan or a mutual card exchange ties
   // the key to a peer, then `dm:<peerID>`; mergeChannel folds the first into
-  // the second. Anything still
-  // holding the old name resolves through here: the open thread, the
-  // last-thread restore, a tapped notification, a bell row.
+  // the second. Anything still holding the old name resolves through here: the
+  // open thread, the last-thread restore, a tapped notification, a bell row.
   channelRedirects: Record<string, string>;
   // The geohash cell a `dm:nostr_<pubkey>` conversation belongs to.
   //
   // A location-channel DM is written from our per-cell identity, which is
-  // derived from (seed, geohash) - so replying to one needs to know WHICH cell
-  // it happened in. Held only in memory that binding is gone after a relaunch,
-  // and opening such a thread from the Direct list falls through to the MAIN
-  // Nostr identity instead. The recipient then gets a message from a key they
-  // have never seen, which opens a second thread
-  // rather than continuing theirs - and it handed a person we had only ever met
-  // pseudonymously in a location channel our permanent identity, which is the
+  // derived from (seed, geohash), so replying to one needs to know WHICH cell
+  // it happened in. Without it a reply after a relaunch would go out from the
+  // main Nostr identity: a key the recipient has never seen, opening a second
+  // thread and handing someone met pseudonymously our permanent identity, the
   // exact link per-cell identities exist to prevent.
   //
   // Persisted here rather than in a store of its own so it is written, cleared
@@ -260,6 +256,9 @@ interface ChatState {
     status: MessageStatus,
     atMs?: number,
   ) => void;
+  // The one way out of "reclaimed": the mint says the recipient redeemed the
+  // token before the sender took it back, so the payment did arrive.
+  markReclaimedPaid: (channel: string, id: string) => void;
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
@@ -659,6 +658,21 @@ export const useChatStore = create<ChatState>()(
                 ? { readAtMs: atMs }
                 : {}),
             };
+          });
+          if (!changed) return state;
+          return { messages: { ...state.messages, [channel]: next } };
+        });
+      },
+
+      markReclaimedPaid(channel, id) {
+        set((state) => {
+          const existing = state.messages[channel];
+          if (existing === undefined) return state;
+          let changed = false;
+          const next = existing.map((m) => {
+            if (m.id !== id || m.status !== "reclaimed") return m;
+            changed = true;
+            return { ...m, status: "delivered" as const };
           });
           if (!changed) return state;
           return { messages: { ...state.messages, [channel]: next } };

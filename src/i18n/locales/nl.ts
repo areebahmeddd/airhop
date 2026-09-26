@@ -960,8 +960,10 @@ export const strings: Strings = {
     "De plek van de ring weerspiegelt de signaalsterkte, niet de afstand",
   "mesh.radar.set_online":
     "Zet je status in je profiel op Online om peers te vinden",
-  "mesh.radar.in_range": "binnen bereik",
-  "mesh.radar.recently_seen": "onlangs gezien",
+  "mesh.radar.peer_in_range": "{name}, binnen bereik",
+  "mesh.radar.peer_recent": "{name}, onlangs gezien",
+  "mesh.radar.relay_in_range": "{name}, relayknooppunt, binnen bereik",
+  "mesh.radar.relay_recent": "{name}, relayknooppunt, onlangs gezien",
   "mesh.radar.peer_hint":
     "Opent de opties om deze peer te schrijven of te betalen",
 
@@ -983,6 +985,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Ecash sturen, vul eerst een bedrag in",
   "mesh.peer.cancel_send": "Ecash sturen annuleren",
   "mesh.peer.view_peer_online": "Peer {name} bekijken, online",
+  "mesh.peer.view_relay_online": "Peer {name} bekijken, online, relayknooppunt",
   "mesh.peer.last_seen_at": "Laatst gezien {ago}",
   "mesh.peer.send_amount": "{amount} sats sturen",
   "mesh.peer.direct": "Directe verbinding",
@@ -1459,7 +1462,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Wat is Cashu?",
   "wallet.explain.intro":
-    "Cashu is ecash voor Bitcoin. Een token is een reeks die geld waard is voor wie hem heeft, blind ondertekend door een mint zodat de mint niet kan zien wie wat heeft uitgegeven. Geen accounts, geen inloggen.",
+    "Cashu is ecash voor Bitcoin. Een token is een reeks die geld waard is voor wie hem heeft, blind ondertekend door een mint zodat de mint niet kan zien wie wat heeft uitgegeven. Geen accounts, geen inloggen. Airhop beheert nooit je geld: je munten staan op deze telefoon en worden uitgegeven door de mints die je kiest.",
   "wallet.explain.send": "Sturen",
   "wallet.explain.send_desc":
     "Zet een bedrag om in een token dat je via Bluetooth aan een peer in de buurt kunt geven, of als tekst kunt delen. Werkt zonder internet. De munten blijven apart gezet tot je bevestigt dat het is aangekomen.",

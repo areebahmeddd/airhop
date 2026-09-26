@@ -963,8 +963,10 @@ export const strings = {
     "Ring position reflects signal strength, not distance",
   "mesh.radar.set_online":
     "Set your status to Online in Profile to discover peers",
-  "mesh.radar.in_range": "in range",
-  "mesh.radar.recently_seen": "recently seen",
+  "mesh.radar.peer_in_range": "{name}, in range",
+  "mesh.radar.peer_recent": "{name}, recently seen",
+  "mesh.radar.relay_in_range": "{name}, relay node, in range",
+  "mesh.radar.relay_recent": "{name}, relay node, recently seen",
   "mesh.radar.peer_hint": "Opens options to message or pay this peer",
 
   // ---- Mesh: peer list ----
@@ -985,6 +987,7 @@ export const strings = {
   "mesh.peer.amount_first": "Send ecash, enter an amount first",
   "mesh.peer.cancel_send": "Cancel send ecash",
   "mesh.peer.view_peer_online": "View peer {name}, online",
+  "mesh.peer.view_relay_online": "View peer {name}, online, relay node",
   "mesh.peer.last_seen_at": "Last seen {ago}",
   "mesh.peer.send_amount": "Send {amount} sats",
   "mesh.peer.direct": "Direct connection",
@@ -1455,7 +1458,7 @@ export const strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "What is Cashu?",
   "wallet.explain.intro":
-    "Cashu is ecash for Bitcoin. A token is a string that is worth money to whoever holds it, signed blindly by a mint so the mint cannot tell who spent what. No accounts, no logins.",
+    "Cashu is ecash for Bitcoin. A token is a string that is worth money to whoever holds it, signed blindly by a mint so the mint cannot tell who spent what. No accounts, no logins. Airhop never holds your money: your coins live on this phone, and the mints you choose issue them.",
   "wallet.explain.send": "Send",
   "wallet.explain.send_desc":
     "Turns an amount into a token you can hand to a nearby peer over Bluetooth, or share as text. Works with no internet. The coins stay reserved until you confirm it landed.",

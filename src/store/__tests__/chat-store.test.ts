@@ -195,8 +195,8 @@ describe("setMessageStatus", () => {
 
   // The outbox drops a message it has given up on and asks for the bubble to
   // say so. "failed" ranks below the three states an undeliverable message
-  // actually sits in, so the rank rule used to discard every one of those
-  // requests and the hourglass stayed forever over something already gone.
+  // actually sits in, so the rank rule alone would discard the request and
+  // leave an hourglass over something already gone.
   it.each(["queued", "sent", "carried", "sending"] as const)(
     "a give-up corrects a bubble stuck at %s",
     (stuck) => {
@@ -233,6 +233,21 @@ describe("setMessageStatus", () => {
     state().setMessageStatus("#test", "m1", "read", 9999);
     state().setMessageStatus("#test", "m1", "sent");
     expect(state().messages["#test"][0].status).toBe("reclaimed");
+  });
+
+  // Unless the mint says the recipient redeemed it first: then it was paid.
+  it("a reclaim the recipient beat reads delivered", () => {
+    state().addMessage(
+      makeMessage({ id: "m1", isMine: true, status: "reclaimed" }),
+    );
+    state().markReclaimedPaid("#test", "m1");
+    expect(state().messages["#test"][0].status).toBe("delivered");
+  });
+
+  it("leaves any other status alone", () => {
+    state().addMessage(makeMessage({ id: "m1", isMine: true, status: "read" }));
+    state().markReclaimedPaid("#test", "m1");
+    expect(state().messages["#test"][0].status).toBe("read");
   });
 });
 
@@ -341,8 +356,8 @@ describe("renameChannel", () => {
   });
 
   it("refuses a rename onto an existing channel and leaves both intact", () => {
-    // Regression: this used to no-op silently while the caller carried on, so
-    // the TARGET channel's description got overwritten with the source's.
+    // A silent no-op would let the caller carry on and overwrite the target
+    // channel's description with the source's.
     state().addChannel("#foo");
     state().addChannel("#bar");
     state().setChannelDescription("#bar", "bar's own description");
@@ -431,10 +446,9 @@ describe("mergeChannel", () => {
 
 // A private channel is identified by its KEY, never its name: the name is a
 // local label that never touches the wire, so two unrelated rooms can both be
-// called "#team". Joining the second under the same label used to overwrite the
-// first one's key, which silently orphaned a room the user was still in (its
-// traffic no longer decrypted). These pin the rule that a clash gets its own
-// room and that re-joining one you already hold is idempotent.
+// called "#team". Overwriting the first one's key on a clash would silently
+// orphan a room the user is still in. These pin the rule that a clash gets its
+// own room and that re-joining one you already hold is idempotent.
 describe("joinPrivateChannel key clashes", () => {
   const KEY_A = "a".repeat(43);
   const KEY_B = "b".repeat(43);

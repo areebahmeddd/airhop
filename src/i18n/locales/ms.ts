@@ -958,8 +958,10 @@ export const strings: Strings = {
     "Kedudukan pada gelang mencerminkan kekuatan isyarat, bukan jarak",
   "mesh.radar.set_online":
     "Tetapkan status anda kepada Dalam talian dalam tab Anda untuk menemui rakan",
-  "mesh.radar.in_range": "dalam jangkauan",
-  "mesh.radar.recently_seen": "baru dilihat",
+  "mesh.radar.peer_in_range": "{name}, dalam jangkauan",
+  "mesh.radar.peer_recent": "{name}, baru dilihat",
+  "mesh.radar.relay_in_range": "{name}, nod geganti, dalam jangkauan",
+  "mesh.radar.relay_recent": "{name}, nod geganti, baru dilihat",
   "mesh.radar.peer_hint":
     "Membuka pilihan untuk menghantar mesej atau membayar rakan ini",
 
@@ -981,6 +983,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Hantar ecash, masukkan jumlah dahulu",
   "mesh.peer.cancel_send": "Batalkan penghantaran ecash",
   "mesh.peer.view_peer_online": "Lihat rakan {name}, dalam talian",
+  "mesh.peer.view_relay_online":
+    "Lihat rakan {name}, dalam talian, nod geganti",
   "mesh.peer.last_seen_at": "Kali terakhir dilihat {ago}",
   "mesh.peer.send_amount": "Hantar {amount} sat",
   "mesh.peer.direct": "Sambungan terus",
@@ -1459,7 +1463,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Apakah itu Cashu?",
   "wallet.explain.intro":
-    "Cashu ialah ecash untuk Bitcoin. Satu token ialah rentetan yang bernilai wang bagi sesiapa yang memegangnya, ditandatangani secara buta oleh sebuah mint supaya mint itu tidak dapat mengetahui siapa membelanjakan apa. Tiada akaun, tiada log masuk.",
+    "Cashu ialah ecash untuk Bitcoin. Satu token ialah rentetan yang bernilai wang bagi sesiapa yang memegangnya, ditandatangani secara buta oleh sebuah mint supaya mint itu tidak dapat mengetahui siapa membelanjakan apa. Tiada akaun, tiada log masuk. Airhop tidak pernah memegang wang anda: syiling anda berada pada telefon ini, dan dikeluarkan oleh mint yang anda pilih.",
   "wallet.explain.send": "Hantar",
   "wallet.explain.send_desc":
     "Menukarkan satu jumlah menjadi token yang boleh anda serahkan kepada rakan berdekatan melalui Bluetooth, atau kongsikan sebagai teks. Berfungsi tanpa internet. Syilingnya kekal disimpan sehingga anda mengesahkan ia sampai.",

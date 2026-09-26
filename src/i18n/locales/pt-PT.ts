@@ -959,8 +959,10 @@ export const strings: Strings = {
     "A posição no anel reflete a força do sinal, não a distância",
   "mesh.radar.set_online":
     "Deixa o teu estado como Online no perfil para descobrires pares",
-  "mesh.radar.in_range": "ao alcance",
-  "mesh.radar.recently_seen": "vistos há pouco",
+  "mesh.radar.peer_in_range": "{name}, ao alcance",
+  "mesh.radar.peer_recent": "{name}, vistos há pouco",
+  "mesh.radar.relay_in_range": "{name}, nó repetidor, ao alcance",
+  "mesh.radar.relay_recent": "{name}, nó repetidor, vistos há pouco",
   "mesh.radar.peer_hint":
     "Abre as opções para escrever a este par ou pagar-lhe",
 
@@ -982,6 +984,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Enviar ecash, indica antes um valor",
   "mesh.peer.cancel_send": "Cancelar o envio de ecash",
   "mesh.peer.view_peer_online": "Ver o par {name}, online",
+  "mesh.peer.view_relay_online": "Ver o par {name}, online, nó repetidor",
   "mesh.peer.last_seen_at": "Visto pela última vez {ago}",
   "mesh.peer.send_amount": "Enviar {amount} sats",
   "mesh.peer.direct": "Ligação direta",
@@ -1466,7 +1469,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "O que é o Cashu?",
   "wallet.explain.intro":
-    "O Cashu é ecash para Bitcoin. Um token é uma sequência que vale dinheiro para quem a tiver, assinada às cegas por uma casa de emissão para que ela não consiga saber quem gastou o quê. Sem contas, sem inícios de sessão.",
+    "O Cashu é ecash para Bitcoin. Um token é uma sequência que vale dinheiro para quem a tiver, assinada às cegas por uma casa de emissão para que ela não consiga saber quem gastou o quê. Sem contas, sem inícios de sessão. O Airhop nunca guarda o teu dinheiro: as tuas moedas ficam neste telemóvel e são emitidas pelas casas de emissão que escolheres.",
   "wallet.explain.send": "Enviar",
   "wallet.explain.send_desc":
     "Transforma um valor num token que entregas a um par por perto via Bluetooth, ou partilhas como texto. Funciona sem Internet. As moedas ficam reservadas até confirmares que chegou.",

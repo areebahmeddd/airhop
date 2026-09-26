@@ -931,8 +931,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "घेरामा रहेको ठाउँले सङ्केतको बल जनाउँछ, दूरी होइन",
   "mesh.radar.set_online":
     "पियर पत्ता लगाउन तपाईं ट्याबमा आफ्नो स्थिति अनलाइन बनाउनुहोस्",
-  "mesh.radar.in_range": "दायरामा",
-  "mesh.radar.recently_seen": "भर्खरै देखिएका",
+  "mesh.radar.peer_in_range": "{name}, दायरामा",
+  "mesh.radar.peer_recent": "{name}, भर्खरै देखिएका",
+  "mesh.radar.relay_in_range": "{name}, रिले नोड, दायरामा",
+  "mesh.radar.relay_recent": "{name}, रिले नोड, भर्खरै देखिएका",
   "mesh.radar.peer_hint":
     "यो पियरलाई सन्देश पठाउने वा भुक्तानी गर्ने विकल्प खोल्छ",
 
@@ -954,6 +956,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash पठाउनुहोस्, पहिले रकम हाल्नुहोस्",
   "mesh.peer.cancel_send": "ecash पठाउने काम रद्द गर्नुहोस्",
   "mesh.peer.view_peer_online": "पियर {name} हेर्नुहोस्, अनलाइन",
+  "mesh.peer.view_relay_online": "पियर {name} हेर्नुहोस्, अनलाइन, रिले नोड",
   "mesh.peer.last_seen_at": "अन्तिम पटक देखिएको {ago}",
   "mesh.peer.send_amount": "{amount} sat पठाउनुहोस्",
   "mesh.peer.direct": "सिधा जडान",
@@ -1428,7 +1431,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu के हो?",
   "wallet.explain.intro":
-    "Cashu, Bitcoin का लागि ecash हो। टोकन भनेको एउटा सूत्र हो जुन बोक्नेका लागि पैसा बराबर हुन्छ, टकसारले आँखा चिम्लेर हस्ताक्षर गरेको ताकि कसले के खर्च गर्‍यो भन्ने टकसारलाई थाहा नहोस्। न खाता, न लगइन।",
+    "Cashu, Bitcoin का लागि ecash हो। टोकन भनेको एउटा सूत्र हो जुन बोक्नेका लागि पैसा बराबर हुन्छ, टकसारले आँखा चिम्लेर हस्ताक्षर गरेको ताकि कसले के खर्च गर्‍यो भन्ने टकसारलाई थाहा नहोस्। न खाता, न लगइन। Airhop ले तपाईंको पैसा कहिल्यै राख्दैन: तपाईंका सिक्का यही फोनमा हुन्छन्, र तिनलाई तपाईंले रोजेका टकसारले जारी गर्छन्।",
   "wallet.explain.send": "पठाउनुहोस्",
   "wallet.explain.send_desc":
     "रकमलाई त्यस्तो टोकनमा बदल्छ जुन तपाईं ब्लुटुथबाट नजिकको पियरलाई दिन वा पाठका रूपमा साझा गर्न सक्नुहुन्छ। इन्टरनेटबिना चल्छ। पुग्यो भनेर तपाईंले पक्का नगरेसम्म सिक्का छुट्याइएकै रहन्छन्।",

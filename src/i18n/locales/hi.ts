@@ -938,8 +938,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "छल्ले की जगह सिग्नल की मज़बूती दिखाती है, दूरी नहीं",
   "mesh.radar.set_online":
     "पीअर ढूँढ़ने के लिए प्रोफ़ाइल में अपनी स्थिति ऑनलाइन करें",
-  "mesh.radar.in_range": "पहुँच में",
-  "mesh.radar.recently_seen": "हाल में दिखे",
+  "mesh.radar.peer_in_range": "{name}, पहुँच में",
+  "mesh.radar.peer_recent": "{name}, हाल में दिखे",
+  "mesh.radar.relay_in_range": "{name}, रिले नोड, पहुँच में",
+  "mesh.radar.relay_recent": "{name}, रिले नोड, हाल में दिखे",
   "mesh.radar.peer_hint":
     "इस पीअर को संदेश भेजने या भुगतान करने के विकल्प खोलता है",
 
@@ -961,6 +963,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash भेजें, पहले राशि डालें",
   "mesh.peer.cancel_send": "ecash भेजना रद्द करें",
   "mesh.peer.view_peer_online": "पीअर {name} देखें, ऑनलाइन",
+  "mesh.peer.view_relay_online": "पीअर {name} देखें, ऑनलाइन, रिले नोड",
   "mesh.peer.last_seen_at": "आख़िरी बार दिखे {ago}",
   "mesh.peer.send_amount": "{amount} sats भेजें",
   "mesh.peer.direct": "सीधा कनेक्शन",
@@ -1428,7 +1431,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu क्या है?",
   "wallet.explain.intro":
-    "Cashu, Bitcoin के लिए ecash है। टोकन एक स्ट्रिंग है जो उसे रखने वाले के लिए पैसे के बराबर है, जिस पर मिंट ने आँख मूँदकर हस्ताक्षर किए हैं ताकि मिंट बता न सके कि किसने क्या खर्च किया। न खाते, न लॉगिन।",
+    "Cashu, Bitcoin के लिए ecash है। टोकन एक स्ट्रिंग है जो उसे रखने वाले के लिए पैसे के बराबर है, जिस पर मिंट ने आँख मूँदकर हस्ताक्षर किए हैं ताकि मिंट बता न सके कि किसने क्या खर्च किया। न खाते, न लॉगिन। Airhop कभी आपका पैसा नहीं रखता: आपके सिक्के इसी फ़ोन पर रहते हैं, और उन्हें आपके चुने हुए मिंट जारी करते हैं।",
   "wallet.explain.send": "भेजें",
   "wallet.explain.send_desc":
     "किसी रकम को ऐसे टोकन में बदलता है जिसे आप ब्लूटूथ पर आस-पास के पीअर को सौंप सकते हैं, या टेक्स्ट के रूप में साझा कर सकते हैं। बिना इंटरनेट चलता है। जब तक आप पुष्टि न करें कि वह पहुँच गया, सिक्के आरक्षित रहते हैं।",

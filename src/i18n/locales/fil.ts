@@ -988,8 +988,10 @@ export const strings: Strings = {
     "Lakas ng signal ang ipinapakita ng posisyon sa singsing, hindi distansya",
   "mesh.radar.set_online":
     "Itakda ang status mo sa Online sa tab na Ikaw para makatuklas ng peer",
-  "mesh.radar.in_range": "nasa saklaw",
-  "mesh.radar.recently_seen": "kamakailan nakita",
+  "mesh.radar.peer_in_range": "{name}, nasa saklaw",
+  "mesh.radar.peer_recent": "{name}, kamakailan nakita",
+  "mesh.radar.relay_in_range": "{name}, relay node, nasa saklaw",
+  "mesh.radar.relay_recent": "{name}, relay node, kamakailan nakita",
   "mesh.radar.peer_hint":
     "Binubuksan ang mga opsyon para mag-mensahe o magbayad sa peer na ito",
 
@@ -1011,6 +1013,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Magpadala ng ecash, maglagay muna ng halaga",
   "mesh.peer.cancel_send": "Kanselahin ang pagpapadala ng ecash",
   "mesh.peer.view_peer_online": "Tingnan ang peer na {name}, online",
+  "mesh.peer.view_relay_online":
+    "Tingnan ang peer na {name}, online, relay node",
   "mesh.peer.last_seen_at": "Huling nakita {ago}",
   "mesh.peer.send_amount": "Magpadala ng {amount} sat",
   "mesh.peer.direct": "Direktang koneksyon",
@@ -1495,7 +1499,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Ano ang Cashu?",
   "wallet.explain.intro":
-    "Ang Cashu ay ecash para sa Bitcoin. Ang isang token ay isang string na may halagang pera para sa sinumang may hawak nito, bulag na nilagdaan ng isang mint kaya hindi masasabi ng mint kung sino ang gumastos ng ano. Walang account, walang login.",
+    "Ang Cashu ay ecash para sa Bitcoin. Ang isang token ay isang string na may halagang pera para sa sinumang may hawak nito, bulag na nilagdaan ng isang mint kaya hindi masasabi ng mint kung sino ang gumastos ng ano. Walang account, walang login. Hindi kailanman hawak ng Airhop ang pera mo: nasa teleponong ito ang mga barya mo, at ang mga mint na pinili mo ang naglalabas ng mga ito.",
   "wallet.explain.send": "Ipadala",
   "wallet.explain.send_desc":
     "Ginagawang token ang isang halaga na kaya mong ibigay sa peer sa malapit sa Bluetooth, o ibahagi bilang teksto. Gumagana nang walang internet. Nananatiling nakalaan ang mga barya hangga't hindi mo kinukumpirmang dumating ito.",

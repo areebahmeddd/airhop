@@ -882,8 +882,10 @@ export const strings: Strings = {
   "mesh.radar.paused": "ሜሽ ቆሟል · አንተ ራቅ ብለሃል",
   "mesh.radar.ring_hint": "የክቡ ቦታ የምልክት ጥንካሬን ያንጸባርቃል እንጂ ርቀትን አይደለም",
   "mesh.radar.set_online": "አቻዎችን ለማግኘት በመገለጫህ ውስጥ ሁኔታህን ወደ ኦንላይን አድርግ",
-  "mesh.radar.in_range": "በክልል ውስጥ",
-  "mesh.radar.recently_seen": "በቅርቡ የታዩ",
+  "mesh.radar.peer_in_range": "{name}፣ በክልል ውስጥ",
+  "mesh.radar.peer_recent": "{name}፣ በቅርቡ የታዩ",
+  "mesh.radar.relay_in_range": "{name}፣ የማስተላለፊያ ኖድ፣ በክልል ውስጥ",
+  "mesh.radar.relay_recent": "{name}፣ የማስተላለፊያ ኖድ፣ በቅርቡ የታዩ",
   "mesh.radar.peer_hint": "ለዚህ አቻ መልእክት ለመላክ ወይም ለመክፈል አማራጮችን ይከፍታል",
 
   // ---- Mesh: peer list ----
@@ -904,6 +906,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash ላክ፤ መጀመሪያ መጠን አስገባ",
   "mesh.peer.cancel_send": "ecash መላክን ሰርዝ",
   "mesh.peer.view_peer_online": "አቻ {name} ን ተመልከት፣ ኦንላይን",
+  "mesh.peer.view_relay_online": "አቻ {name} ን ተመልከት፣ ኦንላይን፣ የማስተላለፊያ ኖድ",
   "mesh.peer.last_seen_at": "ለመጨረሻ ጊዜ የታየው {ago}",
   "mesh.peer.send_amount": "{amount} sats ላክ",
   "mesh.peer.direct": "ቀጥተኛ ግንኙነት",
@@ -1356,7 +1359,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu ምንድን ነው?",
   "wallet.explain.intro":
-    "Cashu ለBitcoin የተዘጋጀ ecash ነው። ቶከን ለያዘው ሰው ገንዘብ የሚያወጣ ሕብረቁምፊ ነው፤ ሚንቱ ማን ምን እንዳወጣ እንዳያውቅ በዓይነ ስውር ፊርማ ይፈረማል። መለያም መግቢያም የለም።",
+    "Cashu ለBitcoin የተዘጋጀ ecash ነው። ቶከን ለያዘው ሰው ገንዘብ የሚያወጣ ሕብረቁምፊ ነው፤ ሚንቱ ማን ምን እንዳወጣ እንዳያውቅ በዓይነ ስውር ፊርማ ይፈረማል። መለያም መግቢያም የለም። Airhop ገንዘብህን በጭራሽ አይይዝም፤ ሳንቲሞችህ በዚህ ስልክ ላይ ናቸው፣ የሚያወጧቸውም የመረጥካቸው ሚንቶች ናቸው።",
   "wallet.explain.send": "ላክ",
   "wallet.explain.send_desc":
     "አንድን መጠን በብሉቱዝ በኩል በአቅራቢያ ላለ አቻ ልታስተላልፈው ወይም እንደ ጽሑፍ ልታጋራው ወደምትችለው ቶከን ይቀይረዋል። ያለ ኢንተርኔት ይሠራል። መድረሱን እስክታረጋግጥ ድረስ ሳንቲሞቹ ተይዘው ይቆያሉ።",

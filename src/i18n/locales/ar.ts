@@ -914,8 +914,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "موضع الحلقة يعكس قوة الإشارة، لا المسافة",
   "mesh.radar.set_online":
     "اضبط حالتك على متصل في الملف الشخصي لاكتشاف النظراء",
-  "mesh.radar.in_range": "ضمن النطاق",
-  "mesh.radar.recently_seen": "شوهد مؤخرًا",
+  "mesh.radar.peer_in_range": "{name}، ضمن النطاق",
+  "mesh.radar.peer_recent": "{name}، شوهد مؤخرًا",
+  "mesh.radar.relay_in_range": "{name}، عقدة تمرير، ضمن النطاق",
+  "mesh.radar.relay_recent": "{name}، عقدة تمرير، شوهد مؤخرًا",
   "mesh.radar.peer_hint": "يفتح خيارات لمراسلة هذا النظير أو الدفع له",
 
   // ---- Mesh: peer list ----
@@ -936,6 +938,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "إرسال نقد إلكتروني، أدخل المبلغ أولًا",
   "mesh.peer.cancel_send": "إلغاء إرسال النقد الإلكتروني",
   "mesh.peer.view_peer_online": "عرض النظير {name}، متصل",
+  "mesh.peer.view_relay_online": "عرض النظير {name}، متصل، عقدة تمرير",
   "mesh.peer.last_seen_at": "آخر ظهور {ago}",
   "mesh.peer.send_amount": "إرسال {amount} ساتس",
   "mesh.peer.direct": "اتصال مباشر",
@@ -1397,7 +1400,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "ما هو Cashu؟",
   "wallet.explain.intro":
-    "Cashu نقد إلكتروني للبيتكوين. التوكن سلسلة نصية تساوي مالًا لمن يحملها، موقّعة بشكل أعمى من دار سك فلا تستطيع الدار معرفة من أنفق ماذا. لا حسابات ولا تسجيل دخول.",
+    "Cashu نقد إلكتروني للبيتكوين. التوكن سلسلة نصية تساوي مالًا لمن يحملها، موقّعة بشكل أعمى من دار سك فلا تستطيع الدار معرفة من أنفق ماذا. لا حسابات ولا تسجيل دخول. لا يحتفظ Airhop بأموالك أبدًا: عملاتك موجودة على هذا الهاتف، وتصدرها دور السك التي تختارها.",
   "wallet.explain.send": "إرسال",
   "wallet.explain.send_desc":
     "يحوّل مبلغًا إلى توكن تسلّمه إلى نظير قريب عبر البلوتوث، أو تشاركه كنص. يعمل دون إنترنت. تبقى العملات محجوزة حتى تؤكد وصوله.",

@@ -84,6 +84,8 @@ import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
+import PixelBird, { BIRD_ROWS } from "@ui/components/pixel-bird";
+import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import { useCopy } from "@ui/hooks/use-copy";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
 import {
@@ -92,6 +94,7 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
+  hitSlopFor,
   LineHeight,
   MIN_TOUCH,
   PRESSED_OPACITY,
@@ -122,6 +125,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Linking,
   Pressable,
   RefreshControl,
@@ -142,6 +146,15 @@ export type WalletAction = "help";
 // Secondary text on the accent-filled balance card. Measured on both fills:
 // white at this opacity on #111111, and #111111 on #F5F5F5, both clear 4.5:1.
 const SECONDARY_ON_ACCENT = 0.72;
+
+// The balance card's issuer mark: 2pt cells draw the bird 22 x 12, about the
+// label's height. Its touch area grows to a thumb but stops short of the
+// balance row below, which has a tap of its own.
+const CARD_MARK_CELL = 2;
+const CARD_MARK_SLOP = {
+  ...hitSlopFor(BIRD_ROWS * CARD_MARK_CELL),
+  bottom: Spacing.xs,
+};
 
 // The action circles in the balance card. The column around a circle is the
 // MIN_TOUCH target.
@@ -454,6 +467,8 @@ export default function WalletScreen({
     () => formatAmount(primary.balance, primary.unit, bitcoinUnit),
     [primary.balance, primary.unit, bitcoinUnit],
   );
+
+  const cardMark = useBirdFlap(Spacing["xs-sm"]);
 
   // Only sat balances have a bitcoin denomination to switch to.
   function toggleBitcoinUnit(): void {
@@ -1630,6 +1645,21 @@ export default function WalletScreen({
 
       {/* Accent-filled, like the user's own chat bubbles. */}
       <View style={styles.balanceCard}>
+        {/* Hidden from screen readers: a triple-tap is all it answers. */}
+        <Pressable
+          style={styles.cardMark}
+          onPress={cardMark.onTap}
+          hitSlop={CARD_MARK_SLOP}
+          accessible={false}
+        >
+          <Animated.View style={{ transform: [{ translateY: cardMark.hop }] }}>
+            <PixelBird
+              color={Colors.textInverse}
+              cell={CARD_MARK_CELL}
+              frame={cardMark.frame}
+            />
+          </Animated.View>
+        </Pressable>
         <Text style={styles.balanceLabel}>{T("wallet.balance.spendable")}</Text>
         {/* Tap toggles sats and bitcoin. No animation: a balance that morphs
             is one people stop trusting. */}
@@ -3672,6 +3702,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       padding: Spacing.lg,
       gap: Spacing.sm,
       alignItems: "center",
+    },
+    cardMark: {
+      position: "absolute",
+      top: Spacing.lg,
+      end: Spacing.lg,
+      opacity: SECONDARY_ON_ACCENT,
     },
     balanceLabel: {
       fontSize: FontSize.xs,

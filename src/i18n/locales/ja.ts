@@ -951,8 +951,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "リングの位置は距離ではなく電波強度を表します",
   "mesh.radar.set_online":
     "ピアを見つけるにはプロフィールでステータスをオンラインにしてください",
-  "mesh.radar.in_range": "圏内",
-  "mesh.radar.recently_seen": "最近見かけました",
+  "mesh.radar.peer_in_range": "{name}、圏内",
+  "mesh.radar.peer_recent": "{name}、最近見かけました",
+  "mesh.radar.relay_in_range": "{name}、リレーノード、圏内",
+  "mesh.radar.relay_recent": "{name}、リレーノード、最近見かけました",
   "mesh.radar.peer_hint":
     "このピアにメッセージを送るか支払うための操作を開きます",
 
@@ -974,6 +976,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecashを送るには、先に金額を入力してください",
   "mesh.peer.cancel_send": "ecashの送信をキャンセル",
   "mesh.peer.view_peer_online": "ピア{name}を表示、オンライン",
+  "mesh.peer.view_relay_online": "ピア{name}を表示、オンライン、リレーノード",
   "mesh.peer.last_seen_at": "最終確認: {ago}",
   "mesh.peer.send_amount": "{amount}サトシを送る",
   "mesh.peer.direct": "直接接続",
@@ -1447,7 +1450,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashuとは",
   "wallet.explain.intro":
-    "Cashuはビットコインのためのecashです。トークンは、持っている人にとって価値のある文字列で、ミントがブラインド署名するため、ミントは誰が何に使ったかを知りません。アカウントもログインも要りません。",
+    "Cashuはビットコインのためのecashです。トークンは、持っている人にとって価値のある文字列で、ミントがブラインド署名するため、ミントは誰が何に使ったかを知りません。アカウントもログインも要りません。Airhopがあなたのお金を預かることはありません。コインはこの端末にあり、発行するのはあなたが選んだミントです。",
   "wallet.explain.send": "送信",
   "wallet.explain.send_desc":
     "金額をトークンに変え、Bluetoothで近くのピアに手渡すか、テキストとして共有できます。インターネットは不要です。届いたと確認するまで、コインは確保されたままです。",

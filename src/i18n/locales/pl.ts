@@ -966,8 +966,10 @@ export const strings: Strings = {
     "Położenie na pierścieniu odzwierciedla siłę sygnału, nie odległość",
   "mesh.radar.set_online":
     "Ustaw status na Dostępny w zakładce Ty, żeby znaleźć peerów",
-  "mesh.radar.in_range": "w zasięgu",
-  "mesh.radar.recently_seen": "widziani niedawno",
+  "mesh.radar.peer_in_range": "{name}, w zasięgu",
+  "mesh.radar.peer_recent": "{name}, widziani niedawno",
+  "mesh.radar.relay_in_range": "{name}, węzeł przekaźnikowy, w zasięgu",
+  "mesh.radar.relay_recent": "{name}, węzeł przekaźnikowy, widziani niedawno",
   "mesh.radar.peer_hint":
     "Otwiera opcje napisania do tego peera albo zapłacenia mu",
 
@@ -989,6 +991,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Wyślij ecash, najpierw podaj kwotę",
   "mesh.peer.cancel_send": "Anuluj wysyłanie ecash",
   "mesh.peer.view_peer_online": "Pokaż peera {name}, dostępny",
+  "mesh.peer.view_relay_online":
+    "Pokaż peera {name}, dostępny, węzeł przekaźnikowy",
   "mesh.peer.last_seen_at": "Ostatnio widziany {ago}",
   "mesh.peer.send_amount": "Wyślij {amount} satów",
   "mesh.peer.direct": "Połączenie bezpośrednie",
@@ -1465,7 +1469,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Czym jest Cashu?",
   "wallet.explain.intro":
-    "Cashu to ecash dla Bitcoina. Token to ciąg znaków wart pieniądze dla tego, kto go ma, podpisany na ślepo przez mennicę, żeby mennica nie widziała, kto co wydał. Bez kont, bez logowania.",
+    "Cashu to ecash dla Bitcoina. Token to ciąg znaków wart pieniądze dla tego, kto go ma, podpisany na ślepo przez mennicę, żeby mennica nie widziała, kto co wydał. Bez kont, bez logowania. Airhop nigdy nie przechowuje twoich pieniędzy: twoje monety są na tym telefonie, a wydają je mennice, które wybierasz.",
   "wallet.explain.send": "Wyślij",
   "wallet.explain.send_desc":
     "Zamienia kwotę w token, który wręczysz peerowi w pobliżu przez Bluetooth albo udostępnisz jako tekst. Działa bez internetu. Monety zostają zarezerwowane, dopóki nie potwierdzisz, że dotarło.",

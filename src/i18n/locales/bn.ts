@@ -931,8 +931,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "বৃত্তে অবস্থান সংকেতের জোর বোঝায়, দূরত্ব নয়",
   "mesh.radar.set_online":
     "পিয়ার খুঁজে পেতে প্রোফাইলে নিজের অবস্থা অনলাইন করুন",
-  "mesh.radar.in_range": "নাগালের মধ্যে",
-  "mesh.radar.recently_seen": "সম্প্রতি দেখা",
+  "mesh.radar.peer_in_range": "{name}, নাগালের মধ্যে",
+  "mesh.radar.peer_recent": "{name}, সম্প্রতি দেখা",
+  "mesh.radar.relay_in_range": "{name}, রিলে নোড, নাগালের মধ্যে",
+  "mesh.radar.relay_recent": "{name}, রিলে নোড, সম্প্রতি দেখা",
   "mesh.radar.peer_hint":
     "এই পিয়ারকে বার্তা পাঠানো বা টাকা দেওয়ার বিকল্প খোলে",
 
@@ -954,6 +956,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash পাঠান, আগে একটি পরিমাণ লিখুন",
   "mesh.peer.cancel_send": "ecash পাঠানো বাতিল করুন",
   "mesh.peer.view_peer_online": "পিয়ার {name} দেখুন, অনলাইন",
+  "mesh.peer.view_relay_online": "পিয়ার {name} দেখুন, অনলাইন, রিলে নোড",
   "mesh.peer.last_seen_at": "শেষ দেখা {ago}",
   "mesh.peer.send_amount": "{amount} sat পাঠান",
   "mesh.peer.direct": "সরাসরি সংযোগ",
@@ -1424,7 +1427,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu কী?",
   "wallet.explain.intro":
-    "Cashu হলো Bitcoin-এর ecash। একটি টোকেন এমন একটি লেখা যা যে ধরে রাখে তার কাছেই টাকার সমান, মিন্ট এতে অন্ধভাবে সই করে তাই মিন্ট বুঝতে পারে না কে কী খরচ করল। কোনো অ্যাকাউন্ট নেই, লগইন নেই।",
+    "Cashu হলো Bitcoin-এর ecash। একটি টোকেন এমন একটি লেখা যা যে ধরে রাখে তার কাছেই টাকার সমান, মিন্ট এতে অন্ধভাবে সই করে তাই মিন্ট বুঝতে পারে না কে কী খরচ করল। কোনো অ্যাকাউন্ট নেই, লগইন নেই। Airhop কখনো আপনার টাকা রাখে না: আপনার মুদ্রা এই ফোনেই থাকে, আর সেগুলো দেয় আপনার বেছে নেওয়া মিন্ট।",
   "wallet.explain.send": "পাঠান",
   "wallet.explain.send_desc":
     "একটি অঙ্ককে এমন টোকেনে বদলায় যা ব্লুটুথে কাছের পিয়ারকে দেওয়া যায়, বা লেখা হিসেবে ভাগ করা যায়। ইন্টারনেট ছাড়াই চলে। এটি পৌঁছেছে বলে নিশ্চিত না করা পর্যন্ত মুদ্রাগুলো সরিয়ে রাখাই থাকে।",

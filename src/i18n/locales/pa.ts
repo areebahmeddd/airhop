@@ -941,8 +941,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "ਛੱਲੇ ਦੀ ਥਾਂ ਸਿਗਨਲ ਦੀ ਤਾਕਤ ਦਰਸਾਉਂਦੀ ਹੈ, ਦੂਰੀ ਨਹੀਂ",
   "mesh.radar.set_online":
     "ਪੀਅਰ ਲੱਭਣ ਲਈ ਪ੍ਰੋਫ਼ਾਈਲ ਵਿੱਚੋਂ ਆਪਣੀ ਹਾਲਤ ਆਨਲਾਈਨ ਸੈੱਟ ਕਰੋ",
-  "mesh.radar.in_range": "ਪਹੁੰਚ ਵਿੱਚ",
-  "mesh.radar.recently_seen": "ਹਾਲ ਹੀ ਵਿੱਚ ਦਿਸੇ",
+  "mesh.radar.peer_in_range": "{name}, ਪਹੁੰਚ ਵਿੱਚ",
+  "mesh.radar.peer_recent": "{name}, ਹਾਲ ਹੀ ਵਿੱਚ ਦਿਸੇ",
+  "mesh.radar.relay_in_range": "{name}, ਰਿਲੇ ਨੋਡ, ਪਹੁੰਚ ਵਿੱਚ",
+  "mesh.radar.relay_recent": "{name}, ਰਿਲੇ ਨੋਡ, ਹਾਲ ਹੀ ਵਿੱਚ ਦਿਸੇ",
   "mesh.radar.peer_hint":
     "ਇਸ ਪੀਅਰ ਨੂੰ ਸੁਨੇਹਾ ਭੇਜਣ ਜਾਂ ਭੁਗਤਾਨ ਕਰਨ ਦੇ ਵਿਕਲਪ ਖੋਲ੍ਹਦਾ ਹੈ",
 
@@ -964,6 +966,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash ਭੇਜੋ, ਪਹਿਲਾਂ ਰਕਮ ਭਰੋ",
   "mesh.peer.cancel_send": "ecash ਭੇਜਣਾ ਰੱਦ ਕਰੋ",
   "mesh.peer.view_peer_online": "ਪੀਅਰ {name} ਦੇਖੋ, ਆਨਲਾਈਨ",
+  "mesh.peer.view_relay_online": "ਪੀਅਰ {name} ਦੇਖੋ, ਆਨਲਾਈਨ, ਰਿਲੇ ਨੋਡ",
   "mesh.peer.last_seen_at": "ਆਖਰੀ ਵਾਰ ਦੇਖਿਆ {ago}",
   "mesh.peer.send_amount": "{amount} sats ਭੇਜੋ",
   "mesh.peer.direct": "ਸਿੱਧਾ ਕਨੈਕਸ਼ਨ",
@@ -1434,7 +1437,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu ਕੀ ਹੈ?",
   "wallet.explain.intro":
-    "Cashu ਬਿਟਕੌਇਨ ਲਈ ecash ਹੈ। ਟੋਕਨ ਇੱਕ ਅਜਿਹੀ ਲਕੀਰ ਹੈ ਜਿਸ ਦੀ ਕੀਮਤ ਉਸ ਦੇ ਹੱਥ ਵਿੱਚ ਹੁੰਦੀ ਹੈ ਜਿਸ ਕੋਲ ਇਹ ਹੈ, ਅਤੇ ਮਿੰਟ ਨੇ ਇਸ ’ਤੇ ਅੱਖਾਂ ਬੰਦ ਕਰ ਕੇ ਦਸਤਖ਼ਤ ਕੀਤੇ ਹੁੰਦੇ ਹਨ ਤਾਂ ਜੋ ਮਿੰਟ ਨੂੰ ਪਤਾ ਨਾ ਲੱਗੇ ਕਿ ਕਿਸ ਨੇ ਕੀ ਖ਼ਰਚਿਆ। ਨਾ ਕੋਈ ਖਾਤਾ, ਨਾ ਕੋਈ ਲਾਗਇਨ।",
+    "Cashu ਬਿਟਕੌਇਨ ਲਈ ecash ਹੈ। ਟੋਕਨ ਇੱਕ ਅਜਿਹੀ ਲਕੀਰ ਹੈ ਜਿਸ ਦੀ ਕੀਮਤ ਉਸ ਦੇ ਹੱਥ ਵਿੱਚ ਹੁੰਦੀ ਹੈ ਜਿਸ ਕੋਲ ਇਹ ਹੈ, ਅਤੇ ਮਿੰਟ ਨੇ ਇਸ ’ਤੇ ਅੱਖਾਂ ਬੰਦ ਕਰ ਕੇ ਦਸਤਖ਼ਤ ਕੀਤੇ ਹੁੰਦੇ ਹਨ ਤਾਂ ਜੋ ਮਿੰਟ ਨੂੰ ਪਤਾ ਨਾ ਲੱਗੇ ਕਿ ਕਿਸ ਨੇ ਕੀ ਖ਼ਰਚਿਆ। ਨਾ ਕੋਈ ਖਾਤਾ, ਨਾ ਕੋਈ ਲਾਗਇਨ। Airhop ਕਦੇ ਵੀ ਤੁਹਾਡਾ ਪੈਸਾ ਨਹੀਂ ਰੱਖਦਾ: ਤੁਹਾਡੇ ਸਿੱਕੇ ਇਸੇ ਫ਼ੋਨ ’ਤੇ ਰਹਿੰਦੇ ਹਨ, ਅਤੇ ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡੇ ਚੁਣੇ ਹੋਏ ਮਿੰਟ ਜਾਰੀ ਕਰਦੇ ਹਨ।",
   "wallet.explain.send": "ਭੇਜੋ",
   "wallet.explain.send_desc":
     "ਰਕਮ ਨੂੰ ਅਜਿਹੇ ਟੋਕਨ ਵਿੱਚ ਬਦਲਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਬਲੂਟੁੱਥ ’ਤੇ ਕਿਸੇ ਨੇੜਲੇ ਪੀਅਰ ਨੂੰ ਸੌਂਪ ਸਕਦੇ ਹੋ, ਜਾਂ ਲਿਖਤ ਵਜੋਂ ਸਾਂਝਾ ਕਰ ਸਕਦੇ ਹੋ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਚੱਲਦਾ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਸਿੱਕੇ ਰਾਖਵੇਂ ਰਹਿੰਦੇ ਹਨ।",

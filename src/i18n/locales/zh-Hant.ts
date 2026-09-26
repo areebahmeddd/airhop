@@ -886,8 +886,10 @@ export const strings: Strings = {
   "mesh.radar.paused": "網狀網路已暫停 · 你處於離開狀態",
   "mesh.radar.ring_hint": "圓環位置反映的是訊號強度，不是距離",
   "mesh.radar.set_online": "在個人頁把狀態設為上線就能找到節點",
-  "mesh.radar.in_range": "在範圍內",
-  "mesh.radar.recently_seen": "最近見過",
+  "mesh.radar.peer_in_range": "{name}，在範圍內",
+  "mesh.radar.peer_recent": "{name}，最近見過",
+  "mesh.radar.relay_in_range": "{name}，中繼節點，在範圍內",
+  "mesh.radar.relay_recent": "{name}，中繼節點，最近見過",
   "mesh.radar.peer_hint": "開啟傳訊息給這個節點或付款給它的選項",
 
   // ---- Mesh: peer list ----
@@ -908,6 +910,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "傳送 ecash，請先輸入金額",
   "mesh.peer.cancel_send": "取消傳送 ecash",
   "mesh.peer.view_peer_online": "查看節點 {name}，上線中",
+  "mesh.peer.view_relay_online": "查看節點 {name}，上線中，中繼節點",
   "mesh.peer.last_seen_at": "最後出現：{ago}",
   "mesh.peer.send_amount": "傳送 {amount} sat",
   "mesh.peer.direct": "直接連線",
@@ -1358,7 +1361,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu 是什麼？",
   "wallet.explain.intro":
-    "Cashu 是比特幣的 ecash。代幣是一串字，誰拿著它就等於拿著錢，它由鑄幣廠盲簽，所以鑄幣廠分不出是誰花了哪一筆。沒有帳戶，也不用登入。",
+    "Cashu 是比特幣的 ecash。代幣是一串字，誰拿著它就等於拿著錢，它由鑄幣廠盲簽，所以鑄幣廠分不出是誰花了哪一筆。沒有帳戶，也不用登入。Airhop 從不保管你的錢：你的幣存在這支手機上，由你選擇的鑄幣廠發行。",
   "wallet.explain.send": "傳送",
   "wallet.explain.send_desc":
     "把一筆金額變成代幣，可以透過藍牙交給附近的節點，也可以當成文字分享。不需要網路。在你確認它已到手之前，這些幣會一直保留著。",

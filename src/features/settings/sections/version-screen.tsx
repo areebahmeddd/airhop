@@ -26,7 +26,9 @@ import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { internetOff, torClaimed } from "@services/network-gate";
+import PixelBird from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";
+import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import {
   FontSize,
   FontWeight,
@@ -38,11 +40,10 @@ import {
 } from "@ui/theme";
 import { File, Paths } from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Easing,
   Linking,
   Platform,
   Pressable,
@@ -232,71 +233,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
     ),
   });
 
-  // Easter egg: triple-tap the version hero and the bird flaps its wings with
-  // a small hop (a nod to "airhop"). Purely local delight, nothing persists.
-  const [birdFrame, setBirdFrame] = useState(0);
-  const [hop] = useState(() => new Animated.Value(0));
-  const flapping = useRef(false);
-  const tapCount = useRef(0);
-  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const flapTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  useEffect(() => {
-    return () => {
-      if (tapTimer.current) clearTimeout(tapTimer.current);
-      flapTimers.current.forEach(clearTimeout);
-    };
-  }, []);
-
-  function playFlap() {
-    if (flapping.current) return;
-    flapping.current = true;
-    // Two beats: downstroke, glide, downstroke, then settle back to the glide
-    // frame. The trailing frame is the settle timer's job, not a fourth entry
-    // here, so the swap ends the moment the wings are back up rather than
-    // holding a dead frame while the tap stays locked out.
-    const frames = [1, 0, 1];
-    frames.forEach((f, i) => {
-      flapTimers.current.push(setTimeout(() => setBirdFrame(f), i * FLAP_MS));
-    });
-    flapTimers.current.push(
-      setTimeout(() => {
-        setBirdFrame(0);
-        flapping.current = false;
-        flapTimers.current = [];
-      }, frames.length * FLAP_MS),
-    );
-    // The lift rides the two downstrokes and springs back as the wings come
-    // up, so the hop and the flap finish together instead of the bird landing
-    // mid-beat.
-    Animated.sequence([
-      Animated.timing(hop, {
-        toValue: -10,
-        duration: frames.length * FLAP_MS,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.spring(hop, {
-        toValue: 0,
-        friction: 5,
-        tension: 120,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }
-
-  function handleHeroTap() {
-    if (tapTimer.current) clearTimeout(tapTimer.current);
-    tapCount.current += 1;
-    if (tapCount.current >= 3) {
-      tapCount.current = 0;
-      playFlap();
-      return;
-    }
-    tapTimer.current = setTimeout(() => {
-      tapCount.current = 0;
-    }, 450);
-  }
+  const flap = useBirdFlap(Spacing["sm-md"]);
 
   async function checkForUpdates() {
     // Skipped rather than leaked: the same fail-closed choice as the wallet's
@@ -361,13 +298,13 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
     <View style={shared.container}>
       <SubHeader title={T("settings.about.version")} onBack={onBack} />
       <SettingsScroll>
-        <Pressable
-          style={styles.hero}
-          onPress={handleHeroTap}
-          accessible={false}
-        >
-          <Animated.View style={{ transform: [{ translateY: hop }] }}>
-            <PixelBird color={Colors.textPrimary} frame={birdFrame} />
+        <Pressable style={styles.hero} onPress={flap.onTap} accessible={false}>
+          <Animated.View style={{ transform: [{ translateY: flap.hop }] }}>
+            <PixelBird
+              color={Colors.textPrimary}
+              cell={HERO_BIRD_CELL}
+              frame={flap.frame}
+            />
           </Animated.View>
           <Text style={styles.wordmark}>airhop</Text>
           <View style={styles.versionBlock}>
@@ -589,64 +526,7 @@ function UpdateResult({
   );
 }
 
-// A small monochrome pixel bird crowning the version hero, drawn in the same
-// idiom as the pixel heart below: a grid of square cells, filled ones taking
-// the current text color so it reads in both themes. A soaring seabird, a nod
-// to the release codename (birds, alphabetical; 1.x is Albatross).
-//
-// Two frames, both 11x6 so the box never resizes mid-swap: a resting glide
-// (wings up) and a downstroke (wings out and down). Alternating them is the
-// triple-tap easter egg.
-const BIRD_FRAMES = [
-  [
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0],
-    [0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0],
-    [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-  ],
-  [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0],
-    [1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1],
-  ],
-];
-const BIRD_CELL = 3;
-// Milliseconds a wing frame holds. At 110 the beat read as a slideshow; 80 is
-// fast enough to look like one motion and still let each frame register.
-const FLAP_MS = 80;
-
-function PixelBird({
-  color,
-  frame,
-}: {
-  color: string;
-  frame: number;
-}): React.JSX.Element {
-  const pixels = BIRD_FRAMES[frame] ?? BIRD_FRAMES[0];
-  return (
-    <View style={{ width: pixels[0].length * BIRD_CELL }}>
-      {pixels.map((row, y) => (
-        <View key={y} style={{ flexDirection: "row" }}>
-          {row.map((cell, x) => (
-            <View
-              key={x}
-              style={{
-                width: BIRD_CELL,
-                height: BIRD_CELL,
-                backgroundColor: cell ? color : "transparent",
-              }}
-            />
-          ))}
-        </View>
-      ))}
-    </View>
-  );
-}
+const HERO_BIRD_CELL = 3;
 
 // A small black-and-white pixel heart, the same shape as the landing footer's,
 // drawn as a grid of square cells so it stays crisp at any density. Filled

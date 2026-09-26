@@ -956,8 +956,10 @@ export const strings: Strings = {
     "Posisi lingkaran mencerminkan kekuatan sinyal, bukan jarak",
   "mesh.radar.set_online":
     "Setel statusmu ke Daring di tab Kamu untuk menemukan rekan",
-  "mesh.radar.in_range": "dalam jangkauan",
-  "mesh.radar.recently_seen": "baru terlihat",
+  "mesh.radar.peer_in_range": "{name}, dalam jangkauan",
+  "mesh.radar.peer_recent": "{name}, baru terlihat",
+  "mesh.radar.relay_in_range": "{name}, simpul relai, dalam jangkauan",
+  "mesh.radar.relay_recent": "{name}, simpul relai, baru terlihat",
   "mesh.radar.peer_hint":
     "Membuka pilihan untuk mengirim pesan atau membayar rekan ini",
 
@@ -979,6 +981,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Kirim ecash, isi jumlahnya dulu",
   "mesh.peer.cancel_send": "Batalkan kirim ecash",
   "mesh.peer.view_peer_online": "Lihat rekan {name}, daring",
+  "mesh.peer.view_relay_online": "Lihat rekan {name}, daring, simpul relai",
   "mesh.peer.last_seen_at": "Terakhir terlihat {ago}",
   "mesh.peer.send_amount": "Kirim {amount} sat",
   "mesh.peer.direct": "Sambungan langsung",
@@ -1455,7 +1458,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Apa itu Cashu?",
   "wallet.explain.intro":
-    "Cashu adalah ecash untuk Bitcoin. Sebuah token adalah deret yang bernilai uang bagi siapa pun yang memegangnya, ditandatangani secara buta oleh mint sehingga mint tidak bisa tahu siapa membelanjakan apa. Tanpa akun, tanpa masuk.",
+    "Cashu adalah ecash untuk Bitcoin. Sebuah token adalah deret yang bernilai uang bagi siapa pun yang memegangnya, ditandatangani secara buta oleh mint sehingga mint tidak bisa tahu siapa membelanjakan apa. Tanpa akun, tanpa masuk. Airhop tidak pernah memegang uangmu: koinmu ada di ponsel ini, dan diterbitkan oleh mint yang kamu pilih.",
   "wallet.explain.send": "Kirim",
   "wallet.explain.send_desc":
     "Mengubah sejumlah nilai menjadi token yang bisa kamu serahkan ke rekan di dekat sini lewat Bluetooth, atau kamu bagikan sebagai teks. Bekerja tanpa internet. Koinnya tetap dicadangkan sampai kamu memastikan ia sampai.",

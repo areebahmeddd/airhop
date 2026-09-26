@@ -947,8 +947,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "Ringens läge speglar signalstyrka, inte avstånd",
   "mesh.radar.set_online":
     "Ställ in din status på Online under Du för att hitta peers",
-  "mesh.radar.in_range": "inom räckhåll",
-  "mesh.radar.recently_seen": "sedd nyligen",
+  "mesh.radar.peer_in_range": "{name}, inom räckhåll",
+  "mesh.radar.peer_recent": "{name}, sedd nyligen",
+  "mesh.radar.relay_in_range": "{name}, relänod, inom räckhåll",
+  "mesh.radar.relay_recent": "{name}, relänod, sedd nyligen",
   "mesh.radar.peer_hint":
     "Öppnar val för att skriva till eller betala den här peern",
 
@@ -970,6 +972,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Skicka ecash, ange ett belopp först",
   "mesh.peer.cancel_send": "Avbryt att skicka ecash",
   "mesh.peer.view_peer_online": "Visa peern {name}, online",
+  "mesh.peer.view_relay_online": "Visa peern {name}, online, relänod",
   "mesh.peer.last_seen_at": "Senast sedd {ago}",
   "mesh.peer.send_amount": "Skicka {amount} sats",
   "mesh.peer.direct": "Direktanslutning",
@@ -1442,7 +1445,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Vad är Cashu?",
   "wallet.explain.intro":
-    "Cashu är ecash för Bitcoin. Ett token är en sträng som är värd pengar för den som har den, blint signerad av en mint så att minten inte kan se vem som gjorde av med vad. Inga konton, inga inloggningar.",
+    "Cashu är ecash för Bitcoin. Ett token är en sträng som är värd pengar för den som har den, blint signerad av en mint så att minten inte kan se vem som gjorde av med vad. Inga konton, inga inloggningar. Airhop håller aldrig dina pengar: dina mynt finns på den här telefonen och ges ut av de mints du väljer.",
   "wallet.explain.send": "Skicka",
   "wallet.explain.send_desc":
     "Gör om ett belopp till ett token du kan lämna över till en peer i närheten via Bluetooth, eller dela som text. Fungerar utan internet. Mynten förblir reserverade tills du bekräftar att det kom fram.",
