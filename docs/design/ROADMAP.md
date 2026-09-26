@@ -30,9 +30,9 @@
 
 ### Gap 5: Files and Video
 
-**bitchat:** Size caps per file type, checked as a packet is decoded: 1 MiB for files, 512 KiB for photos and voice notes. Video crosses the wire but neither platform plays it. Android shows a type badge, iOS shows nothing useful at all.
+**bitchat:** Accepts 1 MiB of any type, checked as a packet is decoded; bitchat-ios keeps the photos and voice notes it sends under 512 KiB. Video crosses the wire but neither platform plays it. Android shows a type badge, iOS shows nothing useful at all.
 
-**Airhop:** Matches the caps and does not raise them. bitchat rejects an oversized packet while decoding it, so a higher ceiling breaks interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file. There is no live video: Bluetooth is too slow, WiFi Aware cannot cross platforms, and LAN needs both peers on one network with it switched on.
+**Airhop:** Matches the ceiling and the send budgets, and does not raise them. bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one breaks interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file. There is no live video: Bluetooth is too slow, WiFi Aware cannot cross platforms, and LAN needs both peers on one network with it switched on.
 
 ### Gap 6: Cashu Wallet
 

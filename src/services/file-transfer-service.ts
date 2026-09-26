@@ -676,9 +676,8 @@ export class FileTransferService {
     channel: string,
     onOutcome?: SendOutcome,
   ): void {
-    // Per-type cap, matching bitchat: over it the far side refuses the file, so
-    // fail here with something the sender can act on rather than after a minute
-    // of progress that was never going to land.
+    // Per-type send budget (see maxBytesForType), checked before anything is
+    // queued so the sender gets a reason about their file, not a transfer.
     const cap = maxBytesForType(meta.type);
     if (fileBytes.length > cap) {
       throw new AttachmentTooLargeError(

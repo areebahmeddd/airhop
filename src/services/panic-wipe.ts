@@ -366,11 +366,11 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // the old identity observed.
   clearLocationCache();
 
-  // 4. Empty the cache directory. Not just the prefixed attachments this used
-  //    to clear: sent documents, sent videos, small sent images and the saved QR
-  //    card all live under other names or in the pickers' own subdirectories and
-  //    survived every wipe. See wipeCacheDirectory. Best-effort: a failure here
-  //    must not abort the wipe, the keys and stores are already gone.
+  // 4. Empty the cache directory, not just the prefixed attachments: a
+  //    picker's copy of something never sent, the saved QR card and, on iOS,
+  //    tmp live under other names. See wipeCacheDirectory. Best-effort: a
+  //    failure here must not abort the wipe, the keys and stores are already
+  //    gone.
   //
   //    Awaited: it yields between batches rather than holding the thread, and
   //    awaiting it is what keeps step 5 honest.

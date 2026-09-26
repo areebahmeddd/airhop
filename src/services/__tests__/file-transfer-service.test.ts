@@ -292,9 +292,8 @@ describe("outbound pacing", () => {
   });
 
   it("rejects a photo over the image cap before queueing anything", () => {
-    // bitchat caps photos at 512 KiB, below the 1 MiB file ceiling. Past it the
-    // peer refuses the whole file, so this has to fail here rather than after a
-    // minute of progress that was never going to land.
+    // A photo's send budget is 512 KiB, below the 1 MiB file ceiling, as
+    // bitchat's is. Past it the send fails here, before anything is queued.
     const { service, broadcast } = makeService();
     const tooBig = new Uint8Array(512 * 1024 + 1);
 

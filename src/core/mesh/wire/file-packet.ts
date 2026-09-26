@@ -9,15 +9,17 @@
 // multi-channel routing and voice-note durations survive without breaking its
 // parsing.
 
-// Limits, from bitchat FileTransferLimits.
+// Limits. MAX_FILE_BYTES is bitchat's FileTransferLimits ceiling, which both
+// clients accept on receive for a file of any type. The per-type figures are
+// send-side budgets matching the ones bitchat-ios applies when it prepares
+// media; neither client applies them on receive.
 
 export const MAX_FILE_BYTES = 1 * 1024 * 1024; // 1 MiB, absolute ceiling
 export const MAX_VOICE_BYTES = 512 * 1024; // 512 KiB
 export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 
-// What Airhop puts on the air for a photo, as opposed to the ceiling above,
-// which is what it will ACCEPT. The two differ because of a receiver-side limit
-// on the other client.
+// What the resizer fits a photo to, under the 512 KiB photo budget above. The
+// two differ because of a receiver-side limit on the other client.
 //
 // bitchat expires a half-built assembly 30 seconds after the FIRST fragment
 // arrives, not 30 seconds after the last: BLEFragmentAssemblyBuffer stamps its
@@ -384,10 +386,10 @@ export function resolveMimeType(
   return MIME_BY_EXTENSION[ext] ?? "application/octet-stream";
 }
 
-// bitchat caps photos and voice notes tighter than the 1 MiB ceiling it applies
-// to files in general (FileTransferLimits). Sending past a cap is not a partial
-// success: the peer refuses the whole file, so the check belongs before the
-// first fragment goes out, not after.
+// The most a send may carry for each kind: send-side budgets, matching the
+// photo and voice-note sizes bitchat-ios sends. Both clients accept up to
+// MAX_FILE_BYTES of any type on receive, so these bound airtime rather than
+// guard the far side, and are checked before the first fragment goes out.
 export function maxBytesForType(type: AttachmentKind): number {
   if (type === "voice") return MAX_VOICE_BYTES;
   if (type === "image") return MAX_IMAGE_BYTES;

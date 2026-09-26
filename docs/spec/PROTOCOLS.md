@@ -234,9 +234,12 @@ Tags `0x05`–`0x07` are Airhop additions. bitchat skips unknown tags by reading
 their u16 length, so they cost nothing in either direction: a bitchat client
 reads the file and ignores the extras.
 
-**Size caps are per type, not one number.** bitchat enforces them when it
-_decodes_, so exceeding one is not a partial success: the whole file is
-refused. Airhop checks before the first fragment goes out.
+**Size caps are per type on send, one number on receive.** The budgets below
+match the ones bitchat-ios applies when it prepares media, and Airhop checks
+them before the first fragment goes out. Neither client applies them on
+receive: both accept up to 1 MiB of any type. A photo is also resized to 256 KiB
+(`MAX_SENT_IMAGE_BYTES`) before it is sent, so a transfer to bitchat finishes
+inside its 30-second assembly window.
 
 | Type          | Cap     |
 | ------------- | ------- |
@@ -245,7 +248,7 @@ refused. Airhop checks before the first fragment goes out.
 | Anything else | 1 MiB   |
 
 > [!IMPORTANT]
-> **These caps cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
+> **The 1 MiB ceiling cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, ~1.13 MiB), and it refuses it by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving, with no error at either end. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
 >
 > Airhop is on both sides of the split on purpose, which is what bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)), as bitchat-ios does; inflation is also bounded as it runs. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that ever approaches it.
 >
