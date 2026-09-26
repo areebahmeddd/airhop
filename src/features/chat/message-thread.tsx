@@ -63,7 +63,7 @@ import { useContactsStore } from "@store/contacts-store";
 import { useGroupStore } from "@store/group-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
-import { usePlaceNamesStore } from "@store/place-names-store";
+import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import { UPLOAD_QUALITY_VALUES, useSettingsStore } from "@store/settings-store";
 import {
   transferEtaSec,
@@ -1481,7 +1481,7 @@ export default function MessageThread({
       null)
     : null;
   const geoPlaceName = usePlaceNamesStore((s) =>
-    channelGeohash !== null ? s.names[channelGeohash] : undefined,
+    channelGeohash !== null ? s.names[placeNameKey(channelGeohash)] : undefined,
   );
 
   // Unseen board notices for this room, driving a dot on the header's notices
@@ -1503,11 +1503,17 @@ export default function MessageThread({
     useActivityStore.getState().markNoticesSeen(noticeGeohash);
     if (noticeGeohash !== "") useActivityStore.getState().markNoticesSeen("");
   }
+  // The lookup is refused while the internet is off or Tor is claimed
+  // (network-gate), so a thread opened then asks again once the gate opens.
+  const geocodeAllowed = useSettingsStore(
+    (s) => s.internetEnabled && !s.torEnabled,
+  );
+  const torActive = useMeshStateStore((s) => s.torActive);
   useEffect(() => {
     if (channelGeohash !== null) {
       usePlaceNamesStore.getState().resolve(channelGeohash);
     }
-  }, [channelGeohash]);
+  }, [channelGeohash, geocodeAllowed, torActive]);
 
   const bridgeActive = useMeshStateStore((s) => s.bridgeActive);
   const bridgePeopleAcross = useMeshStateStore((s) => s.bridgePeopleAcross);
