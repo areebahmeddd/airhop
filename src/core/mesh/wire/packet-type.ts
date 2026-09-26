@@ -14,7 +14,7 @@ export const enum PacketType {
   NOISE_ENCRYPTED = 0x11, // Post-handshake Noise-transport encrypted DM
   DR_ENCRYPTED = 0x12, // Double Ratchet encrypted DM (Airhop-to-Airhop only)
   FRAGMENT = 0x20, // Single BLE fragment of a larger message
-  REQUEST_SYNC = 0x21, // GCS filter gossip request (local-only, TTL=2)
+  REQUEST_SYNC = 0x21, // GCS filter gossip request (link-local, TTL 0)
   FILE_TRANSFER = 0x22, // Binary file / audio / image payload
   BOARD_POST = 0x23, // Signed geohash/mesh bulletin-board post or tombstone
   PREKEY_BUNDLE = 0x24, // Signed batch of one-time prekeys (gossiped)

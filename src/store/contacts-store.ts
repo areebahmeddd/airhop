@@ -40,8 +40,9 @@ export interface Contact {
   //          equally real and equally self-consistent; what is missing is any
   //          evidence about WHO sent it, since a link can be posted on a web
   //          page or pasted into a message by anyone
-  // "manual" only a peer ID was typed in, so no keys at all until their first
-  //          ANNOUNCE arrives
+  // "manual" no card at all: a peer ID typed in, or someone saved by being
+  //          messaged (saveIfAbsent), with at most the Noise key an announce
+  //          gave. The rest arrives only with a session proof (setProvenKeys)
   source: "qr" | "link" | "manual";
   // Whether a human has confirmed the keys above are this person's, and how.
   // Absent means nobody has checked.

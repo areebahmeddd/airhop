@@ -8,10 +8,10 @@
 // nickname, so the SAME peer appeared under two different names on two screens.
 //
 // Precedence, most trusted first:
-//   1. Local nickname: a name the user typed for a contact they verified in
-//      person. Theirs to choose, so it outranks anything the peer asserts.
-//   2. Contact nickname: what the peer called themselves on the card that was
-//      scanned.
+//   1. Local nickname: a name the user typed for a contact whose keys they
+//      hold. Theirs to choose, so it outranks anything the peer asserts.
+//   2. Contact nickname: what the peer called themselves when saved, on their
+//      card or in the announce heard when they were messaged.
 //   3. Announced nickname: what the peer calls themselves over the mesh.
 //   4. Generated username: deterministic from the peer ID; always available.
 //

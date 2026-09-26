@@ -4437,8 +4437,9 @@ export class MeshService {
     text: string,
     nearbyOnly = false,
   ): ChannelSendResult {
-    // One ID shared by the local echo, the BLE packet and the Nostr event, so
-    // a receiver on both transports sees one message rather than two.
+    // One ID shared by the BLE packet and the Nostr event, so a receiver on
+    // both transports sees one message rather than two. Not the sender's own
+    // row, which the composer keys by its own ID.
     const msgId = newMessageId();
     const meshLinks = this.links.size();
 
@@ -4667,8 +4668,7 @@ export class MeshService {
         : undefined;
     const chat = useChatStore.getState();
     // Durable record, so they survive this session and are reachable over the
-    // internet from anywhere. Written with `source: "geo-card"` so the contact
-    // sheet can say how we came to know them.
+    // internet from anywhere.
     useContactsStore.getState().addContact({
       peerID: decoded.peerID,
       noisePubKeyHex: bytesToHex(decoded.noisePubKey),
