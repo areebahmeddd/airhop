@@ -1425,8 +1425,8 @@ test("W26 one forged receipt cannot freeze a wallet", async () => {
 test("W29 a token taken in a dead zone is secured on reconnect without a tap", async () => {
   // Until an offline receipt is swapped, anyone holding the token (the
   // sender, or everyone who read it in a public channel) can redeem it first.
-  // The reconcile pass that runs when the network returns now swaps it, so
-  // the window closes without the recipient thinking to refresh.
+  // Turning the internet switch back on starts the reconcile pass, which
+  // swaps it, so the window closes without the recipient thinking to refresh.
   const s = (scenario = new Scenario({
     id: "W29",
     title: "reconcile redeems offline receipts on its own",
@@ -1464,9 +1464,14 @@ test("W29 a token taken in a dead zone is secured on reconnect without a tap", a
     `outcome=${stored?.outcome ?? "refused"} unverified=${bob.unverifiedBalance()}`,
   );
 
-  // The internet returns: the pass it triggers, and nothing else from bob.
+  // The internet switch goes back on, and nothing else from bob: the switch
+  // itself starts the pass.
   bob.setSetting("internetEnabled", true);
-  await bob.reconcile();
+  await waitFor(
+    s.world,
+    () => bob.balance() === 64 && bob.unverifiedBalance() === 0,
+    20_000,
+  );
   s.check(
     "the receipt is confirmed with no refresh from bob",
     bob.balance() === 64 && bob.unverifiedBalance() === 0,

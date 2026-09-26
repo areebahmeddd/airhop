@@ -549,7 +549,7 @@ half each person is playing.
 - `SimplePool` connects to 3 to 5 relays at once and takes the first ACK, so no single relay is load-bearing
 - Each relay is subscribed and queried on its own, and an event ID counts as seen only once its signature has verified. nostr-tools records the ID first, so across relays one hostile relay's forged copy would hide the genuine event every other relay delivers
 - nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
-- A network coming back is one debounced event (`src/services/reachability.ts`), not a wait on a timer: it rebuilds the pool when the network it was built on has gone or no relay is live, re-checks Tor, retries queued mail and settles wallet leftovers. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
+- A network coming back is one debounced event (`src/services/reachability.ts`), not a wait on a timer: it rebuilds the pool when the network it was built on has gone or no relay is live, re-checks Tor, retries queued mail and settles wallet leftovers. The wallet's pass also starts, unthrottled, the moment the internet switch goes back on or the iOS Tor block lifts. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
 - Tor off by default on both platforms, behind one toggle
 
 ### Radio power policy (Android)
@@ -831,7 +831,7 @@ recipient's whether or not they come online.
 
 Every mint call passes `assertMintNetworkAllowed` in `wallet-service.ts`.
 
-- **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token is stored unconfirmed and checked once the switch is back on, and Lightning actions say why they are off.
+- **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token is stored unconfirmed and swapped by the reconcile pass that turning the switch back on starts, and Lightning actions say why they are off.
 - **Tor on, iOS:** refused (`tor-blocked`) unless the user allows mint calls over the clear net. Tor wraps only Nostr WebSockets there, so `fetch` would expose the IP. Android routes every web request through the proxy and needs no refusal.
 
 The reconcile pass and every refresh, including the one the pass runs to redeem

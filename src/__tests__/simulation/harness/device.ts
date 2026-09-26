@@ -68,6 +68,7 @@ const P = {
   location: "expo-location",
   walletService: "@services/wallet-service",
   ecashTransfer: "@services/payment-router",
+  reachability: "@services/reachability",
   voiceBridge: "@bridge/NativeAirhopVoice",
 } as const;
 
@@ -153,6 +154,9 @@ interface Inner {
   // The payment ladder every screen calls. Held so a scenario can pay the way
   // the app pays, rather than reaching past it into the wallet primitives.
   pay: PayLike;
+  // What tells the wallet the network or its own switches let it reach the
+  // mints again. The app starts it beside the wallet.
+  startReachabilityWatch: () => void;
   // Installs a WiFi native module into THIS sandbox's copy of the bridge shim.
   // Captured inside the registry for the same reason everything else here is:
   // the shim holds a module-scope singleton, and each phone has its own copy.
@@ -1074,7 +1078,11 @@ export class SimDevice {
   private stopNutzapWatcher: (() => void) | null = null;
 
   async walletReady(): Promise<boolean> {
-    return this.world.resolve(this.inner.wallet.initWalletService());
+    const ready = await this.world.resolve(
+      this.inner.wallet.initWalletService(),
+    );
+    this.inner.startReachabilityWatch();
+    return ready;
   }
 
   async addMint(url: string): Promise<boolean> {
@@ -1846,6 +1854,9 @@ function buildSandbox(
 
     const wallet = require(P.walletService) as WalletServiceLike;
     const pay = require(P.ecashTransfer) as PayLike;
+    const { startReachabilityWatch } = require(P.reachability) as {
+      startReachabilityWatch: () => void;
+    };
     const emitter = (require("react-native") as { DeviceEventEmitter: object })
       .DeviceEventEmitter;
     const selectAccounts =
@@ -1872,6 +1883,7 @@ function buildSandbox(
       voice,
       wallet,
       pay,
+      startReachabilityWatch,
       installWifi,
       installLan,
       selectAccounts,
