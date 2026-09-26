@@ -146,7 +146,8 @@ interface ContactsState {
   //   verifiedAtMs     kept once set
   //   localNickname    kept unless the caller supplies one
   //   nickname         a name already on file wins over one arriving now
-  //   nostrPubkeyHex   first key wins, matching setNostrPubkey
+  //   nostrPubkeyHex   first key wins, matching setNostrPubkey, bar an
+  //                    in-person scan, which replaces it with the keys
   //   noise/signing    filled when absent, replaced only by an in-person scan
   //
   // The last is the security-relevant one. `signingPubKeyHex` is not a display
@@ -183,11 +184,11 @@ interface ContactsState {
   // remote static key hashes to the claimed peer ID.
   //
   // Fills empty slots, and on a contact nobody has verified also replaces keys
-  // the session contradicts: those came from a link card that proves nothing
-  // about who made it, and the session does. A verified contact's keys are
-  // never touched, so it can never re-pin what a scan or a safety number
-  // established. Grants no verification: holding somebody's keys is not having
-  // checked them.
+  // the session contradicts, dropping the Nostr key and name that came with
+  // them: those came from a link card that proves nothing about who made it,
+  // and the session does. A verified contact's keys are never touched, so it
+  // can never re-pin what a scan or a safety number established. Grants no
+  // verification: holding somebody's keys is not having checked them.
   setProvenKeys: (
     peerID: string,
     noisePubKeyHex: string,
@@ -252,6 +253,11 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
     return mayReplaceKeys && nextKey.length > 0 ? nextKey : priorKey;
   };
 
+  // First key wins, matching setNostrPubkey: a new npub for a known peer is
+  // suspect rather than authoritative. The scan that may replace the mesh keys
+  // replaces it too, since it came with the ones replaced.
+  const npub = pick(prior.nostrPubkeyHex ?? "", next.nostrPubkeyHex ?? "");
+
   return {
     peerID: prior.peerID,
     noisePubKeyHex: pick(prior.noisePubKeyHex, next.noisePubKeyHex),
@@ -273,12 +279,7 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
       (next.source === "qr" || next.verification !== undefined
         ? (next.verifiedAtMs ?? next.addedAtMs)
         : undefined),
-    // First key wins, matching setNostrPubkey: a new npub for a known peer is
-    // suspect rather than authoritative.
-    nostrPubkeyHex:
-      prior.nostrPubkeyHex !== undefined && prior.nostrPubkeyHex.length > 0
-        ? prior.nostrPubkeyHex
-        : next.nostrPubkeyHex,
+    nostrPubkeyHex: npub.length > 0 ? npub : undefined,
     // Never dropped by a write that did not set one.
     localNickname: next.localNickname ?? prior.localNickname,
     // A re-add (e.g. re-scanning a QR) must never revoke a ring grant.
@@ -380,6 +381,14 @@ export const useContactsStore = create<ContactsState>()(
           ) {
             return state;
           }
+          // A replaced key takes the Nostr key and name from the same card with
+          // it. The npub is where internet DMs to this contact go, and their
+          // next vouched announce supplies the real one.
+          const replaced = (held: string, next: string): boolean =>
+            held.length > 0 && held !== next;
+          const contradicted =
+            replaced(existing.noisePubKeyHex, noise) ||
+            replaced(existing.signingPubKeyHex, signing);
           return {
             contacts: {
               ...state.contacts,
@@ -387,6 +396,9 @@ export const useContactsStore = create<ContactsState>()(
                 ...existing,
                 noisePubKeyHex: noise,
                 signingPubKeyHex: signing,
+                ...(contradicted
+                  ? { nostrPubkeyHex: undefined, nickname: "" }
+                  : {}),
               },
             },
           };

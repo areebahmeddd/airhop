@@ -1114,6 +1114,7 @@ test("C13b a forged msg1 under a peer's ID displaces its live attempt, and the D
 
 interface ContactLike {
   signingPubKeyHex: string;
+  nickname: string;
   nostrPubkeyHex?: string;
 }
 
@@ -1392,26 +1393,32 @@ test("C14b a contact key from a forged link card gives way to a session proof", 
   const channel = "#bluetooth";
   for (const d of cast) d.joinChannel(channel);
 
+  // The card's Nostr key and name are mallory's choice too. Nothing needs to
+  // listen at this key for the test: it only has to be somewhere bob's DMs to
+  // alice must not go.
+  const plantedNpub = "5e".repeat(32);
   const forged = {
     peerID: alice.peerID,
     noisePubKey: alice.identity.noiseStaticPubKey,
     signingPubKey: mallory.identity.signingPubKey,
-    nickname: "alice",
+    nickname: "not alice",
+    nostrPubKey: hexToBytes(plantedNpub),
   };
   const accepted = (
     bob.mesh as unknown as {
-      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+      addVerifiedContact: (card: unknown, opts: unknown) => string;
     }
   ).addVerifiedContact(forged, { inPerson: false });
   (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
     peerID: alice.peerID,
     noisePubKeyHex: bytesToHex(alice.identity.noiseStaticPubKey),
     signingPubKeyHex: bytesToHex(mallory.identity.signingPubKey),
-    nickname: "alice",
+    nickname: "not alice",
     addedAtMs: s.world.wallClock(),
     source: "link",
+    nostrPubkeyHex: plantedNpub,
   });
-  s.check("bob took the link card", accepted);
+  s.check("bob took the link card", accepted === "added");
 
   radio.setTopology([["alice", "bob"]]);
   const aliceKey = bytesToHex(alice.identity.signingPubKey);
@@ -1421,6 +1428,24 @@ test("C14b a contact key from a forged link card gives way to a session proof", 
     60_000,
   );
   s.check("alice's session proof corrected the stored key", corrected);
+  const bobMaps = (
+    bob.mesh as unknown as { nostrPubkeyToPeerID: Map<string, string> }
+  ).nostrPubkeyToPeerID;
+  s.check(
+    "and dropped the Nostr key and name that came with the forged one",
+    contactOf(bob, alice.peerID)?.nostrPubkeyHex !== plantedNpub &&
+      contactOf(bob, alice.peerID)?.nickname !== "not alice" &&
+      bobMaps.get(plantedNpub) === undefined,
+    `npub=${String(contactOf(bob, alice.peerID)?.nostrPubkeyHex)} name=${String(contactOf(bob, alice.peerID)?.nickname)} mapped=${String(bobMaps.get(plantedNpub))}`,
+  );
+  s.check(
+    "so her next announce stores her own",
+    await waitFor(
+      s.world,
+      () => contactOf(bob, alice.peerID)?.nostrPubkeyHex === alice.nostrPubkey,
+      60_000,
+    ),
+  );
   alice.send(channel, "the real alice");
   const verifies = await waitFor(
     s.world,
@@ -1431,6 +1456,96 @@ test("C14b a contact key from a forged link card gives way to a session proof", 
   s.check(
     "and bob sees her nearby",
     await waitFor(s.world, () => bob.peers().includes(alice.peerID), 30_000),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C14c a session proof does not move a key a human verified", async () => {
+  // C14b's other half. Bob scanned a card in person, so its key is his to
+  // replace and nobody else's, even when a session proves possession of the
+  // Noise key it names. Here the scanned card was the forged one; the real
+  // alice opens a session and proves hers, and bob keeps what he verified.
+  const s = (scenario = new Scenario({
+    id: "C14c",
+    title: "a session proof against a verified contact",
+    seed: 79,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+
+  const scanned = bytesToHex(mallory.identity.signingPubKey);
+  (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => string;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+    },
+    { inPerson: true },
+  );
+  (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: alice.peerID,
+    noisePubKeyHex: bytesToHex(alice.identity.noiseStaticPubKey),
+    signingPubKeyHex: scanned,
+    nickname: "alice",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+  });
+
+  radio.setTopology([["alice", "bob"]]);
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID), 30_000);
+  // Alice opens the session: bob never does toward a verified contact whose
+  // announce contradicts it.
+  alice.sendDm(bob.peerID, "it is really me");
+  const registry = (
+    bob.mesh as unknown as {
+      registry: {
+        sessionFor: (p: string) => unknown;
+        provenSigningKey: (p: string) => Uint8Array | undefined;
+      };
+    }
+  ).registry;
+  s.check(
+    "a session completed, so her proof reached bob",
+    await waitFor(
+      s.world,
+      () => registry.sessionFor(alice.peerID) !== undefined,
+      60_000,
+    ),
+  );
+  await s.world.advance(5_000);
+  s.check(
+    "bob's verified key is unchanged",
+    contactOf(bob, alice.peerID)?.signingPubKeyHex === scanned,
+  );
+  s.check(
+    "and the registry records no proof for her",
+    registry.provenSigningKey(alice.peerID) === undefined,
   );
 
   s.expectNone("process health", noCrashes(cast));

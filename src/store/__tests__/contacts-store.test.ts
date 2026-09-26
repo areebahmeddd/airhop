@@ -288,6 +288,18 @@ describe("addContact merges and never weakens", () => {
     state().addContact(linkCard({ nostrPubkeyHex: "dd".repeat(32) }));
     expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
   });
+
+  it("lets an in-person scan replace the Nostr key with the mesh keys", () => {
+    state().addContact(linkCard({ nostrPubkeyHex: "cc".repeat(32) }));
+    state().addContact(makeContact({ nostrPubkeyHex: "dd".repeat(32) }));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("dd".repeat(32));
+  });
+
+  it("keeps the Nostr key a scanned card does not carry", () => {
+    state().addContact(linkCard({ nostrPubkeyHex: "cc".repeat(32) }));
+    state().addContact(makeContact());
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
+  });
 });
 
 // `source` says how the keys arrived, `verification` whether a human has
@@ -418,6 +430,32 @@ describe("setProvenKeys", () => {
     const c = state().getContact(ID);
     expect(c?.signingPubKeyHex).toBe("22".repeat(32));
     expect(isVerified(c)).toBe(false);
+  });
+
+  // The card's npub is where internet DMs to them go, and it came from the
+  // same source as the key the session just refuted.
+  it("drops the Nostr key and name that came with a contradicted key", () => {
+    state().addContact(
+      makeContact({
+        source: "link",
+        nickname: "not them",
+        nostrPubkeyHex: "cc".repeat(32),
+      }),
+    );
+    state().setProvenKeys(ID, "aa".repeat(32), "22".repeat(32));
+    const c = state().getContact(ID);
+    expect(c?.nostrPubkeyHex).toBeUndefined();
+    expect(state().ownNicknameFor(ID)).toBeUndefined();
+    // The next vouched announce fills the npub again.
+    state().setNostrPubkey(ID, "dd".repeat(32));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("dd".repeat(32));
+  });
+
+  it("keeps the Nostr key when the proof only fills an empty slot", () => {
+    state().saveIfAbsent(ID, "swift", "aa".repeat(32));
+    state().setNostrPubkey(ID, "cc".repeat(32));
+    state().setProvenKeys(ID, "aa".repeat(32), "bb".repeat(32));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
   });
 
   it("is a no-op when no contact exists (never invents a stranger)", () => {

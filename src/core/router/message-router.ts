@@ -285,6 +285,13 @@ export class PeerRegistry {
     if (e) e.nostrPubkey = nostrPubkey;
   }
 
+  // For a key learned alongside a signing key a proof has since contradicted.
+  // The next announce fills it again.
+  forgetNostrPubkey(peerID: string): void {
+    const e = this.peers.get(peerID);
+    if (e) e.nostrPubkey = undefined;
+  }
+
   get(peerID: string): PeerEntry | undefined {
     const e = this.peers.get(peerID);
     if (!e) return undefined;

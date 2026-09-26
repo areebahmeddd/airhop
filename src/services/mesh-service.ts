@@ -3097,11 +3097,31 @@ export class MeshService {
     // The key we were checking this peer against was not theirs, so any
     // prekey bundle accepted under it may be someone else's, sealing our
     // courier mail to them. The next genuine bundle replaces it.
-    const corrected = [pinned, contactKey].some(
-      (k) => k !== undefined && !equalBytes(k, state.signingPubKey),
-    );
-    if (corrected && session !== undefined) {
+    const wrong = (k: Uint8Array | undefined): boolean =>
+      k !== undefined && !equalBytes(k, state.signingPubKey);
+    if ((wrong(pinned) || wrong(contactKey)) && session !== undefined) {
       this.peerPrekeys.forget(session.remoteStaticPubKey);
+    }
+    // So may any Nostr key that came with the wrong key, from the announce it
+    // signed or the card that carried it. Kept, it is where our internet DMs to
+    // them go and whose messages land in their thread. The registry's goes
+    // before the contact is written below, whose subscription would otherwise
+    // copy it back; setProvenKeys drops the contact's. Their next vouched
+    // announce supplies the real one.
+    const planted: (string | undefined)[] = [];
+    if (wrong(pinned)) {
+      planted.push(this.registry.nostrPubkeyFor(peerID));
+      this.registry.forgetNostrPubkey(peerID);
+    }
+    if (wrong(contactKey)) {
+      planted.push(
+        useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex,
+      );
+    }
+    for (const npub of planted) {
+      if (npub !== undefined && this.nostrPubkeyToPeerID.get(npub) === peerID) {
+        this.nostrPubkeyToPeerID.delete(npub);
+      }
     }
 
     // Mirrored so the contact sheet re-renders the moment the proof lands.
@@ -6425,6 +6445,21 @@ export class MeshService {
     const nostrPubkeyHex = card.nostrPubKey
       ? bytesToHex(card.nostrPubKey)
       : undefined;
+
+    // A scan replaces the contact's Nostr key along with its mesh keys
+    // (addContact), so the one it replaces stops routing to them as well.
+    const heldNpub = useContactsStore
+      .getState()
+      .getContact(card.peerID)?.nostrPubkeyHex;
+    if (
+      opts.inPerson === true &&
+      nostrPubkeyHex !== undefined &&
+      heldNpub !== undefined &&
+      heldNpub !== nostrPubkeyHex &&
+      this.nostrPubkeyToPeerID.get(heldNpub) === card.peerID
+    ) {
+      this.nostrPubkeyToPeerID.delete(heldNpub);
+    }
 
     // Seed the routing registry so sendDm can pick a transport immediately.
     // Note this does NOT touch peer-store: being a contact is not evidence of
