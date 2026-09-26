@@ -279,6 +279,9 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     return { ok: false, reason: "no-bridges" };
   }
 
+  // Read before anything below moves the bootstrap phase.
+  const retryingHeld = isHoldingAfterFailedStart();
+
   try {
     watchTorBootstrap();
     setTorBootstrap("starting");
@@ -319,6 +322,17 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     setNostrBlocked(false);
     return { ok: true };
   } catch {
+    // Try again from the held state never had a clear net to go back to: the
+    // user asked for Tor and has not been online without it since. So it falls
+    // back to the held state, marker included, and going direct stays the
+    // user's own choice of Tor off. No stopTor, because on Android that routes
+    // the HTTP stack direct before the hold could re-apply.
+    if (retryingHeld) {
+      stopWatchingTorBootstrap();
+      useSettingsStore.getState().setTorStartPending(true);
+      holdAfterFailedStart();
+      return { ok: false, reason: "error" };
+    }
     // A throw is different from a slow bootstrap: the module itself failed, so
     // there is nothing to wait for, and leaving the app with no internet half
     // would be worse than the clear net it started on. Unwind completely.
@@ -340,8 +354,8 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
 async function disableTorRouting(restarting = false): Promise<void> {
   stopWatchingTorBootstrap();
   installDirectSocket();
-  // Nothing is starting, so the marker has nothing left to warn about. It also
-  // clears the notice a previous recovery left on the Tor screen.
+  // Nothing is starting, so the marker has nothing left to warn about. This is
+  // also how Tor off leaves the held state a crashed start left behind.
   useSettingsStore.getState().setTorStartPending(false);
   if (restarting) {
     setNostrBlocked(true);
@@ -387,7 +401,8 @@ function startTorFromPreference(): void {
   // what turns one native crash into an app that cannot be opened, and going
   // direct would put a Tor user on the clear net without asking. So nothing
   // native starts and the internet half is held, exactly as for a network that
-  // blocks Tor. The marker stays until the Tor screen's Try again, or Tor off.
+  // blocks Tor. Only Tor off, or a Try again the native client accepts, clears
+  // the marker and leaves this state.
   if (settings.torStartPending) {
     holdAfterFailedStart();
     return;
@@ -445,6 +460,15 @@ export function isTorStartRecovered(
   return torEnabled && torStartPending && torBootstrap === "blocked";
 }
 
+function isHoldingAfterFailedStart(): boolean {
+  const { torEnabled, torStartPending } = useSettingsStore.getState();
+  return isTorStartRecovered(
+    torEnabled,
+    torStartPending,
+    useMeshStateStore.getState().torBootstrap,
+  );
+}
+
 // Tor runs only when the user wants it and there is an internet half to carry.
 // Otherwise Arti holds guards and refreshes a consensus for nobody, and the
 // master switch's confirm sheet says it disables Tor.
@@ -459,15 +483,19 @@ export function applyInternetAvailability(enabled: boolean): void {
     startTorFromPreference();
     return;
   }
+  // Read before the phase goes to idle below.
+  const held = isHoldingAfterFailedStart();
   stopWatchingTorBootstrap();
   installDirectSocket();
   // Nothing may be held down in the name of a Tor that is no longer running.
   writeNostrBlocked(false);
   setTorActive(false);
   setTorBootstrap("idle");
-  // Not a preference: it describes a start that is about to be stopped, and
-  // leaving it set would disable Tor on the next launch for no reason.
-  useSettingsStore.getState().setTorStartPending(false);
+  // A start in flight is about to be stopped, and a marker left for it would
+  // hold the internet half on the next launch for no reason. The held state's
+  // marker stays: turning the internet back on returns to it, because only Try
+  // again or Tor off may leave it.
+  if (!held) useSettingsStore.getState().setTorStartPending(false);
   void NativeAirhopTor?.stopTor().catch(() => {});
 }
 

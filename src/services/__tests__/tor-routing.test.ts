@@ -29,7 +29,12 @@ const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
 const mockHoldRoute = jest.fn<Promise<void>, []>();
 const mockSetTorActive = jest.fn();
-const mockSetTorBootstrap = jest.fn();
+// Tracked, because a retry and the internet switch read it back to tell the
+// held state from a start in flight.
+let mockTorBootstrap: TorBootstrapPhase = "idle";
+const mockSetTorBootstrap = jest.fn((next: TorBootstrapPhase) => {
+  mockTorBootstrap = next;
+});
 // Tracks the value, so the real "skip when nothing moves" guard in
 // setNostrBlocked is exercised rather than bypassed by a mock that always
 // reports undefined and therefore always looks like a change.
@@ -127,6 +132,9 @@ jest.mock("@store/mesh-state-store", () => ({
       get nostrBlockedByTor() {
         return mockNostrBlocked;
       },
+      get torBootstrap() {
+        return mockTorBootstrap;
+      },
     }),
   },
 }));
@@ -157,6 +165,7 @@ jest.mock("@store/settings-store", () => ({
   },
 }));
 
+import type { TorBootstrapPhase } from "@store/mesh-state-store";
 import {
   applyInternetAvailability,
   isTorRoutingActive,
@@ -345,7 +354,8 @@ describe("disabling Tor on Android", () => {
 // `torEnabled` is written before the native client exists so a relaunch during a
 // bootstrap comes back on Tor rather than on the clear net. Without the marker
 // that ordering replays a fatal native failure on every launch, and the user's
-// only way out is deleting their keys.
+// only way out is deleting their keys. With it, the launch keeps Tor on and
+// holds the internet half, and only Tor off or an accepted Try again leaves.
 describe("surviving a Tor client that kills the process", () => {
   test("the start window is marked before the call and cleared after it", async () => {
     mockTorEnabled = false;
@@ -362,7 +372,8 @@ describe("surviving a Tor client that kills the process", () => {
 
   test("a start that fails cleanly leaves no marker behind", async () => {
     // A rejected start is a failure the app handled and survived. Left set, it
-    // would disable Tor on the next launch for a crash that never happened.
+    // would hold the internet half on the next launch for a crash that never
+    // happened.
     mockTorEnabled = false;
     mockStartTor.mockRejectedValue(new Error("no library"));
 
@@ -449,6 +460,63 @@ describe("surviving a Tor client that kills the process", () => {
     mockTorStartPending = true;
 
     await setTorRouting(false);
+
+    expect(mockTorStartPending).toBe(false);
+  });
+
+  // The toggle's unwind to the clear net assumes the user started there. A
+  // held user did not: they asked for Tor and never got it.
+  test("a Try again that is refused stays held rather than going direct", async () => {
+    mockTorEnabled = true;
+    mockTorStartPending = true;
+    primeTorRoutingOnStartup();
+    jest.clearAllMocks();
+    mockStartTor.mockRejectedValue(new Error("port in use"));
+
+    const result = await setTorRouting(true);
+
+    expect(result).toEqual({ ok: false, reason: "error" });
+    expect(mockTorEnabled).toBe(true);
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalled();
+    expect(isTorRoutingActive()).toBe(false);
+    // Still the held state, so the Try again button is still there.
+    expect(
+      isTorStartRecovered(
+        mockTorEnabled,
+        mockTorStartPending,
+        mockTorBootstrap,
+      ),
+    ).toBe(true);
+  });
+
+  test("the internet switch off and on does not leave the held state", () => {
+    mockTorEnabled = true;
+    mockTorStartPending = true;
+    primeTorRoutingOnStartup();
+
+    applyInternetAvailability(false);
+    applyInternetAvailability(true);
+
+    expect(mockStartTor).not.toHaveBeenCalled();
+    expect(mockTorStartPending).toBe(true);
+    expect(mockNostrBlocked).toBe(true);
+    expect(
+      isTorStartRecovered(
+        mockTorEnabled,
+        mockTorStartPending,
+        mockTorBootstrap,
+      ),
+    ).toBe(true);
+  });
+
+  test("the internet switch off clears the marker of a start in flight", () => {
+    mockTorEnabled = true;
+    mockStartTor.mockReturnValue(new Promise(() => {}));
+    primeTorRoutingOnStartup();
+    expect(mockTorStartPending).toBe(true);
+
+    applyInternetAvailability(false);
 
     expect(mockTorStartPending).toBe(false);
   });

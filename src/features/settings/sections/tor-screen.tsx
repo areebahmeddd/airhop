@@ -96,8 +96,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   const torBootstrap = useMeshStateStore((s) => s.torBootstrap);
   const torActive = useMeshStateStore((s) => s.torActive);
   // A start that never answered: startup kept Tor on and held the internet half
-  // rather than start it again or go direct. It stays until the user chooses
-  // Try again or Tor off, so it is a state rather than a notice to dismiss.
+  // rather than start it again or go direct. Only Tor off, or a Try again the
+  // native client accepts, leaves it (a refused one lands back here), so it is
+  // a state rather than a notice to dismiss.
   const startPending = useSettingsStore((s) => s.torStartPending);
   const recovered = isTorStartRecovered(torEnabled, startPending, torBootstrap);
 
@@ -117,6 +118,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
     // bare "blocked" would not say what happened or what to do.
     if (recovered) return T("settings.tor.recovered");
     if (!torEnabled) return T("common.off");
+    // The internet switch stops Arti on purpose, which is neither starting nor
+    // blocked.
+    if (!internetEnabled) return T("settings.conn.internet_off");
     // Chosen but not yet usable. setTorBridgeMode leaves the running client
     // alone when the selected mode has no lines, so saying "routed" here would
     // credit the selection for a circuit the previous mode is carrying.
