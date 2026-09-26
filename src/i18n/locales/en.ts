@@ -1251,6 +1251,7 @@ export const strings = {
     "Recovery works by asking a mint which coins it signed for you, so it needs to know which mint to ask. Add the mints you were using, then restore.",
   "wallet.backup.restore_failed": "Restore failed",
   "wallet.backup.phrase": "Recovery phrase",
+  "wallet.backup.auth_prompt": "Confirm it’s you to show your recovery phrase",
   "wallet.backup.state_unconfirmed": "Backup on but not confirmed",
   "wallet.backup.state_off": "Backup off",
   "wallet.backup.badge_on": "On",

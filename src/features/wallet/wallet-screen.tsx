@@ -138,6 +138,7 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { confirmOwnerForPhrase } from "./phrase-access";
 import TokenScanSheet, { type ScanTarget } from "./token-scan-sheet";
 
 // What the App-level header can ask of this screen.
@@ -1073,6 +1074,7 @@ export default function WalletScreen({
   // Switches to deterministic secrets now, so new coins are covered even if
   // verification is abandoned.
   async function handleRevealPhrase(): Promise<void> {
+    if (!(await confirmOwnerForPhrase())) return;
     setBusy("backup");
     try {
       const setup = await enableWalletBackup();
@@ -1101,6 +1103,7 @@ export default function WalletScreen({
   }
 
   async function handleViewPhrase(): Promise<void> {
+    if (!(await confirmOwnerForPhrase())) return;
     setBusy("backup");
     try {
       const stored = await getRecoveryPhrase();
