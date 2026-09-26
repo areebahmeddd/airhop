@@ -1253,6 +1253,8 @@ export const strings: Strings = {
     "Herstel werkt door een mint te vragen welke munten hij voor jou heeft ondertekend, dus moet hij weten welke mint hij moet vragen. Voeg de mints toe die je gebruikte en zet dan terug.",
   "wallet.backup.restore_failed": "Terugzetten mislukt",
   "wallet.backup.phrase": "Herstelzin",
+  "wallet.backup.auth_prompt":
+    "Bevestig dat jij het bent om je herstelzin te tonen",
   "wallet.backup.state_unconfirmed": "Back-up aan maar niet bevestigd",
   "wallet.backup.state_off": "Back-up uit",
   "wallet.backup.badge_on": "Aan",

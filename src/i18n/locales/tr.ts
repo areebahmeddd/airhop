@@ -1242,6 +1242,8 @@ export const strings: Strings = {
     "Kurtarma, bir darphaneye senin için hangi jetonları imzaladığını sorarak çalışır, bu yüzden hangi darphaneye soracağını bilmesi gerekir. Kullandığın darphaneleri ekle, sonra geri yükle.",
   "wallet.backup.restore_failed": "Geri yükleme başarısız",
   "wallet.backup.phrase": "Kurtarma ifadesi",
+  "wallet.backup.auth_prompt":
+    "Kurtarma ifadeni göstermek için sen olduğunu onayla",
   "wallet.backup.state_unconfirmed": "Yedek açık ama onaylanmadı",
   "wallet.backup.state_off": "Yedek kapalı",
   "wallet.backup.badge_on": "Açık",

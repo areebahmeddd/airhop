@@ -1229,6 +1229,8 @@ export const strings: Strings = {
     "بحالی ٹکسال سے پوچھ کر چلتی ہے کہ اس نے آپ کے لیے کون سے سکے دستخط کیے، سو اسے معلوم ہونا چاہیے کہ کس ٹکسال سے پوچھے۔ جو ٹکسالیں آپ استعمال کرتے تھے وہ شامل کریں، پھر بحال کریں۔",
   "wallet.backup.restore_failed": "بحالی ناکام",
   "wallet.backup.phrase": "بحالی کا فقرہ",
+  "wallet.backup.auth_prompt":
+    "اپنا بحالی کا فقرہ دکھانے کے لیے تصدیق کریں کہ یہ آپ ہیں",
   "wallet.backup.state_unconfirmed": "بیک اپ چالو مگر تصدیق نہیں ہوئی",
   "wallet.backup.state_off": "بیک اپ بند",
   "wallet.backup.badge_on": "چالو",

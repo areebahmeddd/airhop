@@ -1262,6 +1262,8 @@ export const strings: Strings = {
     "Die Wiederherstellung fragt einen Mint, welche Münzen er für dich signiert hat, sie muss also wissen, welchen sie fragen soll. Füge die Mints hinzu, die du genutzt hast, und stelle dann wieder her.",
   "wallet.backup.restore_failed": "Wiederherstellung fehlgeschlagen",
   "wallet.backup.phrase": "Wiederherstellungsphrase",
+  "wallet.backup.auth_prompt":
+    "Bestätige, dass du es bist, um deine Wiederherstellungsphrase anzuzeigen",
   "wallet.backup.state_unconfirmed": "Sicherung an, aber nicht bestätigt",
   "wallet.backup.state_off": "Sicherung aus",
   "wallet.backup.badge_on": "An",

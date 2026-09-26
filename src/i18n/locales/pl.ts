@@ -1259,6 +1259,8 @@ export const strings: Strings = {
     "Odzyskiwanie polega na pytaniu mennicy, które monety dla ciebie podpisała, więc musi wiedzieć, którą mennicę zapytać. Dodaj mennice, z których korzystałeś, a potem przywróć.",
   "wallet.backup.restore_failed": "Przywracanie się nie powiodło",
   "wallet.backup.phrase": "Fraza odzyskiwania",
+  "wallet.backup.auth_prompt":
+    "Potwierdź, że to ty, aby wyświetlić swoją frazę odzyskiwania",
   "wallet.backup.state_unconfirmed":
     "Kopia zapasowa włączona, ale niepotwierdzona",
   "wallet.backup.state_off": "Kopia zapasowa wyłączona",

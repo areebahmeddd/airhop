@@ -1222,6 +1222,7 @@ export const strings: Strings = {
     "복구는 민트에게 어떤 코인에 서명했는지 물어보는 방식이라, 어느 민트에 물어볼지 알아야 합니다. 사용하던 민트를 추가한 다음 복원하세요.",
   "wallet.backup.restore_failed": "복원 실패",
   "wallet.backup.phrase": "복구 문구",
+  "wallet.backup.auth_prompt": "복구 문구를 보려면 본인임을 확인하세요",
   "wallet.backup.state_unconfirmed": "백업은 켜졌지만 확인되지 않음",
   "wallet.backup.state_off": "백업 꺼짐",
   "wallet.backup.badge_on": "켜짐",

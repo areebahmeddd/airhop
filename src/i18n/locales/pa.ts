@@ -1230,6 +1230,8 @@ export const strings: Strings = {
     "ਰਿਕਵਰੀ ਮਿੰਟ ਤੋਂ ਇਹ ਪੁੱਛ ਕੇ ਕੰਮ ਕਰਦੀ ਹੈ ਕਿ ਉਸ ਨੇ ਤੁਹਾਡੇ ਲਈ ਕਿਹੜੇ ਸਿੱਕੇ ਦਸਤਖ਼ਤ ਕੀਤੇ, ਇਸ ਲਈ ਇਸ ਨੂੰ ਪਤਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ ਕਿ ਕਿਹੜੇ ਮਿੰਟ ਤੋਂ ਪੁੱਛਣਾ ਹੈ। ਜੋ ਮਿੰਟ ਤੁਸੀਂ ਵਰਤ ਰਹੇ ਸੀ, ਉਹ ਜੋੜੋ, ਫਿਰ ਬਹਾਲ ਕਰੋ।",
   "wallet.backup.restore_failed": "ਬਹਾਲੀ ਅਸਫਲ",
   "wallet.backup.phrase": "ਰਿਕਵਰੀ ਵਾਕੰਸ਼",
+  "wallet.backup.auth_prompt":
+    "ਆਪਣਾ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਦਿਖਾਉਣ ਲਈ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਇਹ ਤੁਸੀਂ ਹੋ",
   "wallet.backup.state_unconfirmed": "ਬੈਕਅੱਪ ਚਾਲੂ ਪਰ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ",
   "wallet.backup.state_off": "ਬੈਕਅੱਪ ਬੰਦ",
   "wallet.backup.badge_on": "ਚਾਲੂ",

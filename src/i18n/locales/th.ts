@@ -1210,6 +1210,7 @@ export const strings: Strings = {
     "การกู้คืนทำงานด้วยการถามมินต์ว่าลงลายเซ็นเหรียญใดให้คุณบ้าง จึงต้องรู้ว่าจะถามมินต์ไหน เพิ่มมินต์ที่คุณเคยใช้ แล้วจึงกู้คืน",
   "wallet.backup.restore_failed": "กู้คืนไม่สำเร็จ",
   "wallet.backup.phrase": "วลีกู้คืน",
+  "wallet.backup.auth_prompt": "ยืนยันว่าเป็นคุณเพื่อแสดงวลีกู้คืนของคุณ",
   "wallet.backup.state_unconfirmed": "เปิดข้อมูลสำรองแล้วแต่ยังไม่ยืนยัน",
   "wallet.backup.state_off": "ปิดข้อมูลสำรอง",
   "wallet.backup.badge_on": "เปิด",

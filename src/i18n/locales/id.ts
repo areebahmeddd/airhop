@@ -1249,6 +1249,8 @@ export const strings: Strings = {
     "Pemulihan bekerja dengan menanyai sebuah mint koin mana yang ditandatanganinya untukmu, jadi ia perlu tahu mint mana yang harus ditanya. Tambahkan mint yang dulu kamu pakai, lalu pulihkan.",
   "wallet.backup.restore_failed": "Pemulihan gagal",
   "wallet.backup.phrase": "Frasa pemulihan",
+  "wallet.backup.auth_prompt":
+    "Pastikan ini kamu untuk menampilkan frasa pemulihanmu",
   "wallet.backup.state_unconfirmed": "Cadangan menyala tetapi belum dipastikan",
   "wallet.backup.state_off": "Cadangan mati",
   "wallet.backup.badge_on": "Nyala",

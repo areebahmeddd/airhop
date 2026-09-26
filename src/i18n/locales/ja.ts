@@ -1241,6 +1241,8 @@ export const strings: Strings = {
     "復元は、どのコインに署名したかをミントに尋ねる仕組みなので、どのミントに尋ねるかを知る必要があります。使っていたミントを追加してから復元してください。",
   "wallet.backup.restore_failed": "復元に失敗しました",
   "wallet.backup.phrase": "復元フレーズ",
+  "wallet.backup.auth_prompt":
+    "復元フレーズを表示するため、本人確認をしてください",
   "wallet.backup.state_unconfirmed": "バックアップはオンですが未確認です",
   "wallet.backup.state_off": "バックアップはオフ",
   "wallet.backup.badge_on": "オン",

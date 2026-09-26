@@ -1222,6 +1222,8 @@ export const strings: Strings = {
     "পুনরুদ্ধার কাজ করে মিন্টকে জিজ্ঞেস করে যে সে আপনার জন্য কোন মুদ্রায় সই করেছে, তাই কোন মিন্টকে জিজ্ঞেস করবে তা তার জানা দরকার। যে মিন্টগুলো ব্যবহার করছিলেন সেগুলো যোগ করে তারপর ফেরান।",
   "wallet.backup.restore_failed": "ফেরানো যায়নি",
   "wallet.backup.phrase": "পুনরুদ্ধার বাক্য",
+  "wallet.backup.auth_prompt":
+    "আপনার পুনরুদ্ধার বাক্য দেখাতে নিশ্চিত করুন যে এটি আপনি",
   "wallet.backup.state_unconfirmed": "ব্যাকআপ চালু কিন্তু নিশ্চিত নয়",
   "wallet.backup.state_off": "ব্যাকআপ বন্ধ",
   "wallet.backup.badge_on": "চালু",

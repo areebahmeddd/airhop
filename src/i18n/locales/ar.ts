@@ -1199,6 +1199,7 @@ export const strings: Strings = {
     "تعمل الاستعادة بسؤال دار السك عن العملات التي وقّعتها لك، فهي تحتاج أن تعرف أي دار تسأل. أضف دور السك التي كنت تستخدمها، ثم استعِد.",
   "wallet.backup.restore_failed": "فشلت الاستعادة",
   "wallet.backup.phrase": "عبارة الاستعادة",
+  "wallet.backup.auth_prompt": "أكّد أنك أنت لعرض عبارة الاستعادة",
   "wallet.backup.state_unconfirmed": "النسخ الاحتياطي مفعّل لكن غير مؤكد",
   "wallet.backup.state_off": "النسخ الاحتياطي معطّل",
   "wallet.backup.badge_on": "مفعّل",

@@ -1254,6 +1254,8 @@ export const strings: Strings = {
     "Urejeshaji hufanya kazi kwa kuuliza mint ni sarafu zipi ilizokutia saini, kwa hivyo unahitaji kujua ni mint gani ya kuuliza. Ongeza mint ulizokuwa ukitumia, kisha urejeshe.",
   "wallet.backup.restore_failed": "Urejeshaji umeshindwa",
   "wallet.backup.phrase": "Kifungu cha urejeshaji",
+  "wallet.backup.auth_prompt":
+    "Thibitisha kuwa ni wewe ili kuonyesha kifungu chako cha urejeshaji",
   "wallet.backup.state_unconfirmed":
     "Nakala rudufu imewashwa lakini haijathibitishwa",
   "wallet.backup.state_off": "Nakala rudufu imezimwa",

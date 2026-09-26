@@ -1169,6 +1169,7 @@ export const strings: Strings = {
     "復原的原理是去問鑄幣廠它幫你簽過哪些幣，所以它得知道要問哪一個鑄幣廠。先把你用過的鑄幣廠加上，再復原。",
   "wallet.backup.restore_failed": "復原失敗",
   "wallet.backup.phrase": "復原助記詞",
+  "wallet.backup.auth_prompt": "確認是你本人，以顯示你的復原助記詞",
   "wallet.backup.state_unconfirmed": "備份已開啟但未確認",
   "wallet.backup.state_off": "備份已關閉",
   "wallet.backup.badge_on": "開",

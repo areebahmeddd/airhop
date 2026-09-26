@@ -1268,6 +1268,8 @@ export const strings: Strings = {
     "La récupération consiste à demander à un mint quelles pièces il a signées pour toi, il faut donc savoir auquel s’adresser. Ajoute les mints que tu utilisais, puis restaure.",
   "wallet.backup.restore_failed": "La restauration a échoué",
   "wallet.backup.phrase": "Phrase de récupération",
+  "wallet.backup.auth_prompt":
+    "Confirme que c’est bien toi pour afficher ta phrase de récupération",
   "wallet.backup.state_unconfirmed": "Sauvegarde active mais non confirmée",
   "wallet.backup.state_off": "Sauvegarde désactivée",
   "wallet.backup.badge_on": "Active",

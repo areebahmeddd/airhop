@@ -1164,6 +1164,7 @@ export const strings: Strings = {
     "ማገገሚያው የሚሠራው አንድን ሚንት ለአንተ የትኞቹን ሳንቲሞች እንደፈረመ በመጠየቅ ነው፤ ስለዚህ የትኛውን መጠየቅ እንዳለበት ማወቅ አለበት። ትጠቀምባቸው የነበሩትን ሚንቶች ጨምርና ከዚያ መልስ።",
   "wallet.backup.restore_failed": "መመለስ አልተሳካም",
   "wallet.backup.phrase": "የማገገሚያ ሐረግ",
+  "wallet.backup.auth_prompt": "የማገገሚያ ሐረግህን ለማየት አንተ መሆንህን አረጋግጥ",
   "wallet.backup.state_unconfirmed": "ምትኬ በርቷል ግን አልተረጋገጠም",
   "wallet.backup.state_off": "ምትኬ ጠፍቷል",
   "wallet.backup.badge_on": "በርቷል",

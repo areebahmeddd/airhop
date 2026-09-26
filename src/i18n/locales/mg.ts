@@ -1277,6 +1277,8 @@ export const strings: Strings = {
     "Miasa amin'ny fanontaniana ny mpamoaka hoe vola madinika inona no nosoniaviny ho anao ny famerenana, ka mila mahafantatra izay hanontaniana izy. Ampio ny mpamoaka nampiasainao, avy eo averino.",
   "wallet.backup.restore_failed": "Tsy nahomby ny famerenana",
   "wallet.backup.phrase": "Andian-teny famerenana",
+  "wallet.backup.auth_prompt":
+    "Hamafiso fa ianao tokoa mba hisehoan'ny andian-teny famerenanao",
   "wallet.backup.state_unconfirmed": "Mandeha ny tahiry fa tsy voamarina",
   "wallet.backup.state_off": "Vonoina ny tahiry",
   "wallet.backup.badge_on": "Mandeha",

@@ -1237,6 +1237,8 @@ export const strings: Strings = {
     "Återställning fungerar genom att fråga en mint vilka mynt den signerat åt dig, så den behöver veta vilken mint den ska fråga. Lägg till de mintar du använde och återställ sedan.",
   "wallet.backup.restore_failed": "Återställningen misslyckades",
   "wallet.backup.phrase": "Återställningsfras",
+  "wallet.backup.auth_prompt":
+    "Bekräfta att det är du för att visa din återställningsfras",
   "wallet.backup.state_unconfirmed": "Säkerhetskopia på men inte bekräftad",
   "wallet.backup.state_off": "Säkerhetskopia av",
   "wallet.backup.badge_on": "På",

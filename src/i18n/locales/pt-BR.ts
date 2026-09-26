@@ -1256,6 +1256,8 @@ export const strings: Strings = {
     "A recuperação funciona perguntando a uma casa de emissão quais moedas ela assinou para você, então ela precisa saber a quem perguntar. Adicione as que você usava e depois restaure.",
   "wallet.backup.restore_failed": "A restauração falhou",
   "wallet.backup.phrase": "Frase de recuperação",
+  "wallet.backup.auth_prompt":
+    "Confirme que é você para mostrar sua frase de recuperação",
   "wallet.backup.state_unconfirmed": "Backup ligado mas não confirmado",
   "wallet.backup.state_off": "Backup desligado",
   "wallet.backup.badge_on": "Ligado",

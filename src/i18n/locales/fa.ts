@@ -1230,6 +1230,8 @@ export const strings: Strings = {
     "بازیابی با پرسیدن از یک ضراب‌خانه کار می‌کند که کدام سکه‌ها را برای شما امضا کرده، پس باید بداند از کدام ضراب‌خانه بپرسد. ضراب‌خانه‌هایی را که به کار می‌بردید اضافه کنید، سپس بازگردانید.",
   "wallet.backup.restore_failed": "بازگرداندن ناموفق بود",
   "wallet.backup.phrase": "عبارت بازیابی",
+  "wallet.backup.auth_prompt":
+    "برای نمایش عبارت بازیابی‌تان تأیید کنید که خودتان هستید",
   "wallet.backup.state_unconfirmed": "پشتیبان‌گیری روشن اما تأییدنشده",
   "wallet.backup.state_off": "پشتیبان‌گیری خاموش",
   "wallet.backup.badge_on": "روشن",

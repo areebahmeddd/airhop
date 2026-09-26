@@ -1226,6 +1226,8 @@ export const strings: Strings = {
     "रिकवरी किसी मिंट से पूछकर चलती है कि उसने आपके लिए कौन-से सिक्के हस्ताक्षरित किए, इसलिए उसे पता होना चाहिए कि किससे पूछना है। जिन मिंट का आप इस्तेमाल कर रहे थे उन्हें जोड़ें, फिर बहाल करें।",
   "wallet.backup.restore_failed": "बहाली विफल",
   "wallet.backup.phrase": "रिकवरी वाक्यांश",
+  "wallet.backup.auth_prompt":
+    "अपना रिकवरी वाक्यांश दिखाने के लिए पुष्टि करें कि यह आप हैं",
   "wallet.backup.state_unconfirmed": "बैकअप चालू पर पुष्ट नहीं",
   "wallet.backup.state_off": "बैकअप बंद",
   "wallet.backup.badge_on": "चालू",

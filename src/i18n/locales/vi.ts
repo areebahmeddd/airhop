@@ -1241,6 +1241,7 @@ export const strings: Strings = {
     "Việc khôi phục hoạt động bằng cách hỏi nhà đúc xem nó đã ký những đồng nào cho bạn, nên nó cần biết phải hỏi nhà đúc nào. Hãy thêm những nhà đúc bạn đang dùng, rồi khôi phục.",
   "wallet.backup.restore_failed": "Khôi phục thất bại",
   "wallet.backup.phrase": "Cụm từ khôi phục",
+  "wallet.backup.auth_prompt": "Xác nhận đó là bạn để hiện cụm từ khôi phục",
   "wallet.backup.state_unconfirmed":
     "Sao lưu đang bật nhưng chưa được xác nhận",
   "wallet.backup.state_off": "Sao lưu đang tắt",

@@ -1258,6 +1258,8 @@ export const strings: Strings = {
     "Il ripristino funziona chiedendo a un mint quali monete ha firmato per te, quindi deve sapere a quale rivolgersi. Aggiungi i mint che usavi, poi ripristina.",
   "wallet.backup.restore_failed": "Ripristino non riuscito",
   "wallet.backup.phrase": "Frase di recupero",
+  "wallet.backup.auth_prompt":
+    "Conferma che sei tu per mostrare la tua frase di recupero",
   "wallet.backup.state_unconfirmed": "Backup attivo ma non confermato",
   "wallet.backup.state_off": "Backup disattivato",
   "wallet.backup.badge_on": "Attivo",

@@ -1284,6 +1284,8 @@ export const strings: Strings = {
     "Gumagana ang pagbawi sa pamamagitan ng pagtatanong sa isang mint kung aling mga barya ang nilagdaan nito para sa iyo, kaya kailangan nitong malaman kung aling mint ang tatanungin. Idagdag ang mga mint na ginagamit mo, tapos magbalik.",
   "wallet.backup.restore_failed": "Nabigo ang pagbabalik",
   "wallet.backup.phrase": "Parirala sa pagbawi",
+  "wallet.backup.auth_prompt":
+    "Kumpirmahing ikaw ito para ipakita ang parirala sa pagbawi mo",
   "wallet.backup.state_unconfirmed":
     "Naka-on ang backup pero hindi pa nakumpirma",
   "wallet.backup.state_off": "Naka-off ang backup",

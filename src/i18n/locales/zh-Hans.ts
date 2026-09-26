@@ -1168,6 +1168,7 @@ export const strings: Strings = {
     "恢复的原理是去问铸币厂它为你签过哪些币，所以它得知道该问哪个铸币厂。先把你用过的铸币厂加上，再恢复。",
   "wallet.backup.restore_failed": "恢复失败",
   "wallet.backup.phrase": "恢复助记词",
+  "wallet.backup.auth_prompt": "确认是你本人，以显示你的恢复助记词",
   "wallet.backup.state_unconfirmed": "备份已开启但未确认",
   "wallet.backup.state_off": "备份已关闭",
   "wallet.backup.badge_on": "开",
