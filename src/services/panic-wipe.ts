@@ -98,8 +98,8 @@ export const MMKV_STORE_IDS = [
   // board-store holds signed public bulletin-board posts tied to this identity's
   // signing key; a wipe erases them along with the rest of this identity's data.
   "board-store",
-  // prekey-store holds our one-time prekey private keys and peers' bundles;
-  // both are identity-linked key material and must be destroyed on panic.
+  // prekey-store holds peers' prekey bundles, which say who this identity
+  // talks to. Our own one-time prekey private keys are a keychain item.
   "prekey-store",
   // courier-store holds sealed envelopes carried for other people. Unreadable
   // here (each is Noise X to a key this device does not hold), but a bag of a
@@ -183,7 +183,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   //    in the sequence, and it is the step most likely to fail: the Keychain is
   //    unreadable on a device that has booted but not been unlocked, which is
   //    exactly the seizure scenario the panic wipe exists for. A throw here used
-  //    to abandon everything below - all thirteen MMKV partitions, every store,
+  //    to abandon everything below - every MMKV partition, every store,
   //    the wallet file and the media cache stayed on disk - and the caller
   //    surfaced nothing, so the user got a confirmation haptic and a dead app
   //    over completely intact data.
@@ -319,8 +319,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // process to exit before deleting a directory tree. For a gesture whose threat
   // model is a phone being taken, running them first spends the seconds that
   // matter on the notification shade and a Tor consensus cache while the keys and
-  // the
-  // thirteen message partitions were still on disk. Neither depends on the keys
+  // the message partitions were still on disk. Neither depends on the keys
   // existing, so both belong after the data is gone.
   // Dismiss every notification already in the shade.
   //     Each one carries a sender nickname and a message preview, and they

@@ -448,8 +448,8 @@ export default function ProfileScreen({
     // the app looks exactly like a fresh install over data that is still here,
     // and "did it work?" becomes a guess - which under duress is answered by
     // wiping again. Set after panicWipe, whose own store reset would otherwise
-    // clear it. Re-derived on every launch from the keychain itself, so a retry
-    // that succeeds takes it away without anything having to remember.
+    // clear it. Re-derived on every launch, which retries the deletes, so a
+    // retry that succeeds takes it away.
     if (!keysDestroyed) {
       useMeshStateStore.getState().setWipeIncomplete(true);
       showAlert(

@@ -547,9 +547,9 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
   // work?" must not be a guess, and the natural response to a guess is doing it
   // again. So the claim stands on screen until it stops being true.
   //
-  // Nothing to tap: the retry is automatic on the next launch (see
-  // sweepOrphanedSecrets), which is also what makes this self-clearing rather
-  // than a flag somebody has to remember to lower.
+  // Nothing to tap: the retry is automatic on the next launch (the condemned
+  // identity in launch-identity, the rest in sweepOrphanedSecrets), and that
+  // launch re-derives this from what the retry found, so it clears itself.
   if (inputs.wipeIncomplete === true) {
     banners.push({
       key: "wipe-incomplete",

@@ -92,4 +92,4 @@ export async function loadIdentity(): Promise<Identity | null> {
 }
 
 // The panic wipe is `wipeAllSecrets` in ./keychain, called directly by
-// utils/panic-wipe.ts. It walks the item registry, so it belongs beside it.
+// services/panic-wipe.ts. It walks the item registry, so it belongs beside it.
