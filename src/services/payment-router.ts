@@ -14,6 +14,7 @@
 // it can be undone: "locked to them forever" and "queued, take it back" are one
 // gesture to the user and very different facts about their money.
 
+import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
 import { t, tPlural } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
@@ -24,6 +25,7 @@ import { amountParts } from "@utils/format";
 import { systemRow } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import { isNostrId, NOSTR_ID_PREFIX } from "@utils/username";
+import { utf8ByteLength } from "@utils/utf8-budget";
 import { getMeshService, type MeshService } from "./mesh-service";
 import {
   failNutzapDelivery,
@@ -68,6 +70,9 @@ export interface PayResult {
   final: boolean;
   // Why a better rail was not used. User-facing.
   fallbackReason?: string;
+  // Said in place of the rail when the rail alone promises too much: a queued
+  // token that no queued route can carry. User-facing.
+  routeNote?: string;
 }
 
 export interface PayPersonParams {
@@ -398,6 +403,8 @@ async function payAsToken(params: {
     prepared,
     senderNickname: params.senderNickname,
   });
+  const note =
+    route === "queued" ? tooLargeNote(params.peerID, prepared.token) : null;
 
   return {
     rail: railForRoute(route),
@@ -406,6 +413,7 @@ async function payAsToken(params: {
     mintUrl: prepared.mintUrl,
     txId: prepared.txId,
     ...(route === "queued" ? { token: prepared.token } : {}),
+    ...(note !== null ? { routeNote: note } : {}),
     final: false,
     ...(params.fallbackReason !== undefined
       ? { fallbackReason: params.fallbackReason }
@@ -426,8 +434,31 @@ function railForRoute(route: DeliveryRoute): PayRail {
   }
 }
 
-export function describeRoute(route: DeliveryRoute): string {
-  return describeRail(railForRoute(route));
+export function describeRoute(
+  route: DeliveryRoute,
+  peerID: string,
+  token: string,
+): string {
+  return (
+    (route === "queued" ? tooLargeNote(peerID, token) : null) ??
+    describeRail(railForRoute(route))
+  );
+}
+
+// A private message carries at most 255 bytes over Noise, the Nostr envelope
+// and a courier, and a token carrying DLEQ proofs is usually past it. Only the
+// Double Ratchet between two Airhop phones on the mesh has no such cap, so a
+// queued token is a promise kept only for an Airhop phone coming back in
+// range, and none at all for anyone else. Null when the queue can carry it.
+function tooLargeNote(peerID: string, token: string): string | null {
+  if (utf8ByteLength(token) <= PRIVATE_MESSAGE_MAX_CONTENT_BYTES) return null;
+  const airhop =
+    !isNostrId(peerID) && getMeshService()?.peerRunsAirhop(peerID) === true;
+  return t(
+    airhop
+      ? "wallet.xfer.route_too_large_airhop"
+      : "wallet.xfer.route_too_large",
+  );
 }
 
 function describeRail(rail: PayRail): string {
@@ -461,7 +492,7 @@ export function describePayResult(result: PayResult): string {
     result.fallbackReason !== undefined && result.fallbackReason.length > 0
       ? ` ${t("wallet.pay.why", { reason: result.fallbackReason })}`
       : "";
-  return `${describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
+  return `${result.routeNote ?? describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
 }
 
 // Structural so a relay-refused locked nutzap fits as well as a `PreparedSend`.
@@ -518,7 +549,10 @@ export function deliverTokenToPeer(params: {
   // So Pending explains why it is waiting. A locked nutzap is recorded by the
   // caller, which knows it must not be offered back.
   if ((route === "queued" || route === "needs-courier") && !params.final) {
-    failSend(params.prepared.txId, describeRoute(route));
+    failSend(
+      params.prepared.txId,
+      describeRoute(route, params.peerID, params.prepared.token),
+    );
   }
   return route;
 }

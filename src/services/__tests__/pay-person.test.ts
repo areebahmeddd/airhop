@@ -51,13 +51,14 @@ jest.mock("../mesh-service", () => ({
   getMeshService: jest.fn(),
 }));
 
-import { stripIsolates } from "@i18n";
+import { stripIsolates, t } from "@i18n";
 import { useAlertStore } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { getMeshService } from "../mesh-service";
-import { payPerson } from "../payment-router";
+import { describePayResult, payPerson } from "../payment-router";
 import {
+  failSend,
   findNutzapTarget,
   lockProofsForNutzap,
   prepareSend,
@@ -92,6 +93,7 @@ function fakeMesh(options: {
   online?: boolean;
   route?: "sent" | "sent-nostr" | "needs-courier" | "queued";
   peerNostrPubkey?: string;
+  airhop?: boolean;
 }) {
   return {
     hasDirectLink: jest.fn(() => options.directLink ?? false),
@@ -100,6 +102,7 @@ function fakeMesh(options: {
     getPeerNostrPubkey: jest.fn(() => options.peerNostrPubkey),
     getPeerID: jest.fn(() => "0011223344556677"),
     sendDm: jest.fn(() => options.route ?? "sent"),
+    peerRunsAirhop: jest.fn(() => options.airhop ?? false),
   };
 }
 
@@ -536,5 +539,69 @@ describe("a lock whose answer went missing", () => {
 
     expect(result).toBeNull();
     expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+});
+
+// One proof with its DLEQ witness encodes to about 384 characters, past the
+// 255-byte cap on every queued route except Airhop-to-Airhop over the mesh.
+describe("a token too large for the queue", () => {
+  const LARGE = "cashuB" + "a".repeat(378);
+
+  beforeEach(() => {
+    mockedPrepare.mockResolvedValue({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      txId: "tx-token-1",
+      token: LARGE,
+    });
+  });
+
+  it("does not promise a bitchat or unknown peer it will send", async () => {
+    useMesh({ directLink: false, route: "queued" });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    const said = t("wallet.xfer.route_too_large");
+    expect(result && describePayResult(result)).toContain(said);
+    expect(result && describePayResult(result)).not.toContain(
+      t("wallet.xfer.route_queued"),
+    );
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+  });
+
+  it("says an Airhop peer gets it back in range, or by hand now", async () => {
+    useMesh({ directLink: false, route: "queued", airhop: true });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    const said = t("wallet.xfer.route_too_large_airhop");
+    expect(result && describePayResult(result)).toContain(said);
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+  });
+
+  it("keeps the ordinary queued sentence for a token that fits", async () => {
+    mockedPrepare.mockResolvedValue({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      txId: "tx-token-1",
+      token: "cashuBtoken",
+    });
+    useMesh({ directLink: false, route: "queued" });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result && describePayResult(result)).toContain(
+      t("wallet.xfer.route_queued"),
+    );
   });
 });

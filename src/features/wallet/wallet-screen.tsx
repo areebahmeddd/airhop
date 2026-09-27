@@ -813,6 +813,7 @@ export default function WalletScreen({
     const route = deliverTokenToPeer({ peerID, prepared: pending });
     const amount = pending.amount;
     const unit = pending.unit;
+    const token = pending.token;
     // Handed off, not proven delivered, so it stays pending and reclaimable.
     setShowPeerPicker(false);
     setPending(null);
@@ -821,7 +822,9 @@ export default function WalletScreen({
         ...amountParts(amount, unit),
         name: peerIDToUsername(peerID),
       }),
-      t("wallet.send.sent_to_body", { route: describeRoute(route) }),
+      t("wallet.send.sent_to_body", {
+        route: describeRoute(route, peerID, token),
+      }),
     );
   }
 

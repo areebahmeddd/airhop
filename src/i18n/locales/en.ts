@@ -1406,6 +1406,10 @@ export const strings = {
     "No route to them right now. It will be carried by other devices and delivered when one reaches them.",
   "wallet.xfer.route_queued":
     "They are not reachable yet. It is queued and will send as soon as they are.",
+  "wallet.xfer.route_too_large_airhop":
+    "Too large to go over the internet or with a courier. It sends over Bluetooth when they are back in range, or share the token from Activity to pay them now.",
+  "wallet.xfer.route_too_large":
+    "Too large for any route to them: a token this size reaches only an Airhop phone over Bluetooth. Share it from Activity to pay them.",
   "wallet.xfer.mesh_offline_body":
     "The mesh service is not running, so there is no way to hand the token over. Nothing has been deducted.",
   "wallet.xfer.could_not_send": "Could not send",
