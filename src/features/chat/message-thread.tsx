@@ -2276,6 +2276,14 @@ export default function MessageThread({
       const result = await receiveToken(embedded.raw, {
         counterparty: dmPeerID ?? channel,
       });
+      // Our own unsettled send, posted back to us: Activity reclaims it.
+      if (result.outcome === "own-pending") {
+        showAlert(
+          t("wallet.receive.own_payment"),
+          t("wallet.receive.own_payment_body"),
+        );
+        return;
+      }
       if (result.outcome === "duplicate") {
         showAlert(
           t("chat.ecash.already_claimed"),
