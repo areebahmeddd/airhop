@@ -2141,7 +2141,7 @@ export const strings = {
   "settings.language.rtl_restart": "Reopen now",
   "settings.language.rtl_title": "Reopen Airhop to finish",
   "settings.language.rtl_body":
-    "{value} reads right to left, and Airhop can only change direction when it starts. Close it and open it again to finish switching. Nothing is lost, and your mesh stays connected until you do.",
+    "Switching to {value} changes the reading direction, and Airhop can only change direction when it starts. Close it and open it again to finish switching. Nothing is lost, and your mesh stays connected until you do.",
   "settings.theme.light": "Light",
   "settings.theme.light_desc": "Always use the light palette",
   "settings.theme.dark": "Dark",
