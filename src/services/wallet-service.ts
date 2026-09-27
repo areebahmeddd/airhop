@@ -2093,9 +2093,11 @@ async function swapIntoFreshProofs(
 }
 
 // A refused receipt leaves the balance: nothing counts or selects its coins
-// again, or calls its token taken in. They are not destroyed: the receipt's row keeps them as a token the
-// user can hand back to whoever sent it. More conservative than CDK, which
-// deletes a refused receive's proofs.
+// again, or calls its token taken in. They are not destroyed: the receipt's
+// row keeps them as a token the user can hand back to whoever sent it. More
+// conservative than CDK, which deletes a refused receive's proofs. A reclaimed
+// send is the receipt of its own coins, so its row says so rather than
+// suggesting they go back.
 function refuseReceipt(
   url: string,
   unit: string,
@@ -2122,7 +2124,11 @@ function refuseReceipt(
     });
     return;
   }
-  store.updateTx(receipt, { status: "failed", error: reason, token });
+  store.updateTx(receipt, {
+    status: "failed",
+    error: row.kind === "send" ? t("wallet.svc.reclaim_refused") : reason,
+    token,
+  });
 }
 
 function receiptsOf(coins: StoredProof[]): Set<string> {
@@ -2501,9 +2507,11 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
       unit,
       entry.proofs.filter((p) => !spent.has(p.secret)),
     );
+    // The token is dead, so the row offers nothing to copy.
     store.updateTx(txId, {
       status: "failed",
       error: t("wallet.svc.send_spent_by_swap"),
+      token: undefined,
     });
   }
 }

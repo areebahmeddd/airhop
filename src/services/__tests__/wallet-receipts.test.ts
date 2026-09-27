@@ -11,6 +11,7 @@
 // every input it is handed.
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
+import { t } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { useSettingsStore } from "@store/settings-store";
@@ -311,6 +312,19 @@ describe("a receipt whose coins are paid on", () => {
 });
 
 describe("settling a reclaim", () => {
+  it("keeps a refused reclaim's token to copy, saying the coins were its own", async () => {
+    await receiveOffline(forgedToken(32));
+    const send = await prepareSend({ amount: 32 });
+    expect(reclaimSend(send.txId)).toBe(true);
+
+    const result = await refreshAccount(fabric.url, UNIT);
+
+    expect(result.receipts[send.txId]).toBe("refused");
+    expect(row(send.txId)?.status).toBe("failed");
+    expect(row(send.txId)?.token).toMatch(/^cashuB/);
+    expect(row(send.txId)?.error).toBe(t("wallet.svc.reclaim_refused"));
+  });
+
   it("reads as sent when the refresh finds the recipient redeemed it first", async () => {
     // A stranger's coins, so the ones the recipient spends are not secrets
     // this wallet's phrase derives again in the next test.

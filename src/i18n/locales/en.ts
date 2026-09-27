@@ -1546,6 +1546,8 @@ export const strings = {
     "The mint refused these coins, so they are no longer counted. The token is kept here if you want to send it back.",
   "wallet.svc.coins_unredeemable":
     "These coins cannot be redeemed at this mint, so they are no longer counted. The token is kept here if you want to send it back.",
+  "wallet.svc.reclaim_refused":
+    "The mint would not take back the coins from this send, so they are no longer counted. Their token is kept here to copy.",
   "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",

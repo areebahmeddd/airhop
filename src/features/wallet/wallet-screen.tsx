@@ -753,7 +753,7 @@ export default function WalletScreen({
               if (outcome === "refused") {
                 showAlert(
                   t("wallet.err.mint_refused"),
-                  t("wallet.svc.coins_refused"),
+                  t("wallet.svc.reclaim_refused"),
                 );
                 return;
               }
@@ -1911,11 +1911,10 @@ export default function WalletScreen({
                     {tx.error !== undefined && tx.error.length > 0 ? (
                       <Text style={styles.historyError}>{tx.error}</Text>
                     ) : null}
-                    {/* Coins the mint refused: no longer counted, but still
-                        the sender's to take back, so the token is offered. */}
-                    {tx.kind === "receive" &&
-                    tx.status === "failed" &&
-                    tx.token !== undefined ? (
+                    {/* Coins the mint refused, received or reclaimed: no
+                        longer counted, but the token is still offered. A
+                        failed row keeps one for nothing else. */}
+                    {tx.status === "failed" && tx.token !== undefined ? (
                       <Pressable
                         style={[styles.pendingBtn, styles.historyTokenBtn]}
                         onPress={() =>
