@@ -49,9 +49,10 @@ import {
   loadIdentity,
   saveIdentity,
 } from "@core/crypto/identity";
-import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
+import { KEYCHAIN_ITEMS, writeSecret } from "@core/crypto/keychain";
 import {
   IDENTITY_LOAD_TIMEOUT_MS,
+  planLaunch,
   readLaunchIdentity,
 } from "@services/launch-identity";
 import { panicWipe } from "@services/panic-wipe";
@@ -883,17 +884,44 @@ describe("launch identity: absent, unreadable, condemned", () => {
     }
   });
 
-  test("K05 a stored item that will not parse is unreadable, and nothing is swept", async () => {
+  test("K05 a stored item that will not parse is unreadable, and launch asks rather than onboarding or sweeping", async () => {
     await writeSecret(KEYCHAIN_ITEMS.identity, JSON.stringify({ x: 1 }));
-    await writeSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase, "twelve words");
     await expect(loadIdentity()).rejects.toThrow(/malformed/);
-    await expect(readLaunchIdentity()).resolves.toEqual({
-      kind: "unreadable",
+    const found = await readLaunchIdentity();
+    expect(found).toEqual({ kind: "unreadable" });
+    // No welcome, so no sweep of the wallet secrets beside it.
+    expect(planLaunch(found, false)).toEqual({ kind: "ask" });
+  });
+
+  // What app.tsx does with each answer.
+  test("K07 only a confirmed absence sweeps, and a surviving condemned identity raises the banner", () => {
+    expect(planLaunch({ kind: "absent", keysRemain: false }, false)).toEqual({
+      kind: "welcome",
+      sweep: true,
+      wipeIncomplete: false,
     });
-    expect(secureStore.deleteItemAsync).not.toHaveBeenCalled();
-    await expect(readSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase)).resolves.toBe(
-      "twelve words",
-    );
+    expect(planLaunch({ kind: "absent", keysRemain: true }, false)).toEqual({
+      kind: "welcome",
+      sweep: true,
+      wipeIncomplete: true,
+    });
+  });
+
+  test("K08 right after Erase, an unreadable keychain goes to welcome without a sweep", () => {
+    // Asking again could reload an identity the wipe failed to delete.
+    expect(planLaunch({ kind: "unreadable" }, true)).toEqual({
+      kind: "welcome",
+      sweep: false,
+      wipeIncomplete: false,
+    });
+  });
+
+  test("K09 a stored identity boots, whether or not a wipe came first", async () => {
+    const id = await generateIdentity();
+    for (const justWiped of [false, true]) {
+      const plan = planLaunch({ kind: "present", identity: id }, justWiped);
+      expect(plan.kind === "boot" && plan.identity.peerID).toBe(id.peerID);
+    }
   });
 
   test("K06 once the keychain answers again, the same identity boots", async () => {

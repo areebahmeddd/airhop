@@ -57,7 +57,7 @@ import {
   registerBootStartTask,
   syncAutoStartOnBoot,
 } from "@services/boot-start";
-import { readLaunchIdentity } from "@services/launch-identity";
+import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import { joinSheetPrefill } from "@services/link-router";
 import {
   hasLocationPermission,
@@ -846,13 +846,14 @@ function AppContent(): React.JSX.Element {
       void readLaunchIdentity().then((found) => {
         if (generation !== bootGeneration.current) return;
         setCheckingKeys(false);
-        if (found.kind === "unreadable" && !justWiped) {
+        const plan = planLaunch(found, justWiped);
+        if (plan.kind === "ask") {
           setKeysUnreadable(true);
           return;
         }
         setKeysUnreadable(false);
-        if (found.kind === "present") {
-          const existing = found.identity;
+        if (plan.kind === "boot") {
+          const existing = plan.identity;
           setGeneratedPeerID(existing.peerID);
           setOnboardingStep(null);
           // Android can destroy the Activity while the foreground service keeps
@@ -893,12 +894,10 @@ function AppContent(): React.JSX.Element {
           // A condemned identity the keychain would not delete again. Set after
           // any wipe in this session has reset the store, and onboarding's
           // write is what finally destroys it.
-          if (found.kind === "absent" && found.keysRemain) {
+          if (plan.wipeIncomplete) {
             useMeshStateStore.getState().setWipeIncomplete(true);
           }
-          // Only on a confirmed absence: a keychain that did not answer said
-          // nothing about what it holds.
-          if (found.kind === "absent") {
+          if (plan.sweep) {
             // No identity means nothing on this device owns a wallet secret, so
             // anything still in the keychain is a leftover - in practice, a panic
             // wipe the Keystore refused while the phone was locked. Sweeping here
@@ -910,7 +909,7 @@ function AppContent(): React.JSX.Element {
             // leaves the identity item alone - the very next thing onboarding does
             // is write one, and a delete still in flight would take it with it.
             // See sweepOrphanedSecrets. A first install finds nothing and this is
-            // three no-op deletes.
+            // two no-op deletes.
             void sweepOrphanedSecrets()
               .then((leftovers) => {
                 // Only ever raises the banner. Clearing is not this call's to do:

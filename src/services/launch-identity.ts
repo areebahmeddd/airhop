@@ -57,3 +57,32 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
   if (deleted) clearCondemnedIdentity();
   return { kind: "absent", keysRemain: !deleted };
 }
+
+// What the launch does with that answer. Pure, so the branching app.tsx acts
+// on is testable without rendering the app.
+export type LaunchPlan =
+  | { kind: "boot"; identity: Identity }
+  // The keychain did not answer: the person is asked, and nothing onboards.
+  | { kind: "ask" }
+  // `sweep` only on a confirmed absence, since an unanswered read said nothing
+  // about what the keychain holds. `wipeIncomplete`: a condemned identity
+  // refused its delete again.
+  | { kind: "welcome"; sweep: boolean; wipeIncomplete: boolean };
+
+// `justWiped`: the person just chose Erase, and asking again could reload an
+// identity the wipe failed to delete, so an unanswered read goes to welcome.
+export function planLaunch(
+  found: LaunchIdentity,
+  justWiped: boolean,
+): LaunchPlan {
+  switch (found.kind) {
+    case "present":
+      return { kind: "boot", identity: found.identity };
+    case "unreadable":
+      return justWiped
+        ? { kind: "welcome", sweep: false, wipeIncomplete: false }
+        : { kind: "ask" };
+    case "absent":
+      return { kind: "welcome", sweep: true, wipeIncomplete: found.keysRemain };
+  }
+}
