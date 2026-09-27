@@ -496,6 +496,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} anazungumza.",
   "chat.thread.attach_note":
     "Faili hutumwa ndani ya masafa ya Bluetooth pekee. Maandishi na malipo hufikia anwani kupitia intaneti; viambatisho havifiki.",
+  "chat.thread.media_securing":
+    "Kwanza muunganisho uliosimbwa nao unaandaliwa. Jaribu tena baada ya muda mfupi.",
   "chat.thread.message_peer": "Mtumie ujumbe {name}",
   "chat.thread.send": "Tuma ujumbe",
   "chat.thread.group": "Kikundi",
@@ -1416,6 +1418,10 @@ export const strings: Strings = {
     "Hakuna njia ya kuwafikia kwa sasa. Vifaa vingine vitaibeba na kuifikisha mojawapo litakapowafikia.",
   "wallet.xfer.route_queued":
     "Bado hawafikiki. Ipo kwenye foleni na itatoka mara tu watakapofikika.",
+  "wallet.xfer.route_too_large_airhop":
+    "Ni kubwa mno kupita kwenye intaneti au kubebwa na vifaa vingine. Itatumwa kupitia Bluetooth watakaporudi kwenye masafa, au shiriki tokeni kutoka Shughuli ili kuwalipa sasa.",
+  "wallet.xfer.route_too_large":
+    "Ni kubwa mno kwa njia yoyote ya kuwafikia: tokeni ya ukubwa huu hufikia simu ya Airhop pekee kupitia Bluetooth. Ishiriki kutoka Shughuli ili kuwalipa.",
   "wallet.xfer.mesh_offline_body":
     "Huduma ya mesh haiendeshwi, kwa hivyo hakuna njia ya kukabidhi tokeni. Hakuna kilichopunguzwa.",
   "wallet.xfer.could_not_send": "Haikuweza kutumwa",

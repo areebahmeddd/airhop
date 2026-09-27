@@ -490,6 +490,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}。今は{name}が話しています。",
   "chat.thread.attach_note":
     "ファイルはBluetooth圏内にのみ送られます。テキストと支払いはインターネット上の連絡先にも届きますが、添付は届きません。",
+  "chat.thread.media_securing":
+    "先に相手との暗号化を準備しています。少ししてからもう一度お試しください。",
   "chat.thread.message_peer": "{name}にメッセージ",
   "chat.thread.send": "メッセージを送信",
   "chat.thread.group": "グループ",
@@ -1397,6 +1399,10 @@ export const strings: Strings = {
     "今は相手への経路がありません。他の端末が運び、いずれ相手に届いたときに渡されます。",
   "wallet.xfer.route_queued":
     "相手にはまだつながりません。順番待ちにしてあり、つながり次第送ります。",
+  "wallet.xfer.route_too_large_airhop":
+    "大きすぎるため、インターネット経由でも他の端末に運んでもらうこともできません。相手がBluetooth圏内に戻ったときに送られます。今すぐ支払うには、履歴からトークンを共有してください。",
+  "wallet.xfer.route_too_large":
+    "大きすぎるため、相手に届く経路がありません。このサイズのトークンはBluetooth経由でAirhopを使う端末にしか届きません。支払うには履歴から共有してください。",
   "wallet.xfer.mesh_offline_body":
     "メッシュのサービスが動いていないため、トークンを渡す手段がありません。何も引かれていません。",
   "wallet.xfer.could_not_send": "送信できませんでした",

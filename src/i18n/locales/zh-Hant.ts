@@ -460,6 +460,7 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}。{name} 正在說話。",
   "chat.thread.attach_note":
     "檔案只在藍牙範圍內傳送。文字和付款觸及得到網路上的聯絡人，附件則不行。",
+  "chat.thread.media_securing": "正在先與對方建立加密。請稍後再試。",
   "chat.thread.message_peer": "傳訊息給 {name}",
   "chat.thread.send": "傳送訊息",
   "chat.thread.group": "群組",
@@ -1314,6 +1315,10 @@ export const strings: Strings = {
     "現在沒有通往對方的路徑。它會由其他裝置捎帶，等某台裝置遇到對方時送達。",
   "wallet.xfer.route_queued":
     "現在還聯絡不上對方。它已排隊，等對方觸及得到時馬上送出。",
+  "wallet.xfer.route_too_large_airhop":
+    "太大了，無法透過網路或由其他裝置捎帶送出。對方回到範圍內時會透過藍牙送出；也可以從動態分享代幣，現在就付給對方。",
+  "wallet.xfer.route_too_large":
+    "太大了，沒有任何路徑能送到對方：這麼大的代幣只能透過藍牙送到裝有 Airhop 的手機。請從動態分享它來付給對方。",
   "wallet.xfer.mesh_offline_body":
     "網狀網路服務沒有在跑，所以沒有辦法把代幣交出去。沒有扣掉任何金額。",
   "wallet.xfer.could_not_send": "無法傳送",

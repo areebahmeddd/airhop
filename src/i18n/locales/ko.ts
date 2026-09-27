@@ -482,6 +482,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name}이(가) 말하는 중입니다.",
   "chat.thread.attach_note":
     "파일은 블루투스 범위 안에서만 전송됩니다. 텍스트와 결제는 인터넷 연락처에도 닿지만 첨부 파일은 닿지 않습니다.",
+  "chat.thread.media_securing":
+    "먼저 상대와 암호화를 설정하고 있습니다. 잠시 후 다시 시도하세요.",
   "chat.thread.message_peer": "{name}에게 메시지 보내기",
   "chat.thread.send": "메시지 보내기",
   "chat.thread.group": "그룹",
@@ -1377,6 +1379,10 @@ export const strings: Strings = {
     "지금은 상대에게 갈 경로가 없습니다. 다른 기기들이 실어 나르다가 누군가 닿으면 전달합니다.",
   "wallet.xfer.route_queued":
     "아직 상대에게 닿을 수 없습니다. 대기열에 넣어 두었다가 닿는 즉시 보냅니다.",
+  "wallet.xfer.route_too_large_airhop":
+    "너무 커서 인터넷이나 다른 기기를 통해 보낼 수 없습니다. 상대가 다시 범위에 들어오면 블루투스로 보내며, 지금 지불하려면 활동에서 토큰을 공유하세요.",
+  "wallet.xfer.route_too_large":
+    "너무 커서 상대에게 갈 수 있는 경로가 없습니다. 이 크기의 토큰은 블루투스로 Airhop 휴대폰에만 전달됩니다. 지불하려면 활동에서 공유하세요.",
   "wallet.xfer.mesh_offline_body":
     "메시 서비스가 실행 중이 아니라 토큰을 건넬 방법이 없습니다. 차감된 것은 없습니다.",
   "wallet.xfer.could_not_send": "보내지 못했습니다",

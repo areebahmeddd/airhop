@@ -500,6 +500,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. Miteny i {name}.",
   "chat.thread.attach_note":
     "Ao anatin'ny fetran'ny Bluetooth ihany no andefasana rakitra. Mahatratra ny fifandraisana amin'ny Internet ny lahatsoratra sy ny fandoavam-bola; tsy mahatratra kosa ny fanampiny.",
+  "chat.thread.media_securing":
+    "Mbola omanina aloha ny fifandraisana voafono aminy. Andramo indray afaka kelikely.",
   "chat.thread.message_peer": "Manorata amin'i {name}",
   "chat.thread.send": "Alefaso ny hafatra",
   "chat.thread.group": "Vondrona",
@@ -1438,6 +1440,10 @@ export const strings: Strings = {
     "Tsy misy lalana mankany aminy izao. Hoentin'ny fitaovana hafa izy ary hatolotra rehefa misy mahatratra azy.",
   "wallet.xfer.route_queued":
     "Tsy tratra izy aloha. Am-pilaharana izy ary halefa raha vao azo atao.",
+  "wallet.xfer.route_too_large_airhop":
+    "Lehibe loatra ka tsy afaka mandeha amin'ny Internet na ho entin'ny fitaovana hafa. Halefa amin'ny Bluetooth izy rehefa tafaverina ao anatin'ny fetra, na zarao avy ao amin'ny Hetsika ny tapakila mba handoavana azy izao.",
+  "wallet.xfer.route_too_large":
+    "Lehibe loatra ho an'ny lalana rehetra mankany aminy: ny tapakila mitovy habe amin'ity dia tsy tonga afa-tsy amin'ny finday misy Airhop amin'ny alalan'ny Bluetooth. Zarao avy ao amin'ny Hetsika izy mba handoavana azy.",
   "wallet.xfer.mesh_offline_body":
     "Tsy mandeha ny serivisin'ny harato, ka tsy misy fomba hanolorana ny tapakila. Tsy nisy nesorina.",
   "wallet.xfer.could_not_send": "Tsy voalefa",

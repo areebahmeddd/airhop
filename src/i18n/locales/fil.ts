@@ -505,6 +505,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. Nagsasalita si {name}.",
   "chat.thread.attach_note":
     "Sa saklaw lang ng Bluetooth naipapadala ang mga file. Umaabot sa mga contact sa internet ang teksto at bayad; ang mga attachment, hindi.",
+  "chat.thread.media_securing":
+    "Inihahanda pa ang encryption sa kanila. Subukan ulit maya-maya.",
   "chat.thread.message_peer": "Mag-mensahe kay {name}",
   "chat.thread.send": "Magpadala ng mensahe",
   "chat.thread.group": "Grupo",
@@ -1445,6 +1447,10 @@ export const strings: Strings = {
     "Walang ruta papunta sa kanila ngayon. Dadalhin ito ng ibang device at ihahatid kapag may nakarating sa kanila.",
   "wallet.xfer.route_queued":
     "Hindi pa sila naaabot. Nakapila ito at aalis kapag naabot na sila.",
+  "wallet.xfer.route_too_large_airhop":
+    "Masyadong malaki para dumaan sa internet o dalhin ng ibang device. Ipapadala ito sa Bluetooth kapag nakabalik na sila sa saklaw, o ibahagi ang token mula sa Aktibidad para mabayaran sila ngayon.",
+  "wallet.xfer.route_too_large":
+    "Masyadong malaki para sa anumang ruta papunta sa kanila: ang token na ganito kalaki ay umaabot lang sa teleponong may Airhop sa pamamagitan ng Bluetooth. Ibahagi ito mula sa Aktibidad para mabayaran sila.",
   "wallet.xfer.mesh_offline_body":
     "Hindi tumatakbo ang serbisyo ng mesh, kaya walang paraan para ipasa ang token. Walang naibawas.",
   "wallet.xfer.could_not_send": "Hindi naipadala",

@@ -488,6 +488,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} sedang bercakap.",
   "chat.thread.attach_note":
     "Fail dihantar dalam jangkauan Bluetooth sahaja. Teks dan bayaran mencapai kenalan melalui internet; lampiran tidak.",
+  "chat.thread.media_securing":
+    "Sedang menyediakan penyulitan dengan mereka dahulu. Cuba lagi sebentar lagi.",
   "chat.thread.message_peer": "Hantar mesej kepada {name}",
   "chat.thread.send": "Hantar mesej",
   "chat.thread.group": "Kumpulan",
@@ -1411,6 +1413,10 @@ export const strings: Strings = {
     "Tiada laluan kepada mereka buat masa ini. Peranti lain akan membawanya dan menyampaikannya sebaik salah satu daripadanya sampai kepada mereka.",
   "wallet.xfer.route_queued":
     "Mereka belum boleh dicapai. Ia beratur dan akan keluar sebaik mereka boleh dicapai.",
+  "wallet.xfer.route_too_large_airhop":
+    "Terlalu besar untuk melalui internet atau dibawa oleh peranti lain. Ia akan dihantar melalui Bluetooth apabila mereka kembali dalam jangkauan, atau kongsikan token itu dari Aktiviti untuk membayar mereka sekarang.",
+  "wallet.xfer.route_too_large":
+    "Terlalu besar untuk sebarang laluan kepada mereka: token sebesar ini hanya sampai ke telefon Airhop melalui Bluetooth. Kongsikannya dari Aktiviti untuk membayar mereka.",
   "wallet.xfer.mesh_offline_body":
     "Perkhidmatan mesh tidak berjalan, jadi tiada cara untuk menyerahkan tokennya. Tiada apa-apa ditolak.",
   "wallet.xfer.could_not_send": "Tidak dapat menghantar",

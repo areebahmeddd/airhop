@@ -486,6 +486,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} đang nói.",
   "chat.thread.attach_note":
     "Tệp chỉ gửi được trong tầm Bluetooth. Văn bản và thanh toán tới được các liên hệ trên Internet; tệp đính kèm thì không.",
+  "chat.thread.media_securing":
+    "Đang thiết lập mã hóa với họ trước. Hãy thử lại sau giây lát.",
   "chat.thread.message_peer": "Nhắn tin cho {name}",
   "chat.thread.send": "Gửi tin nhắn",
   "chat.thread.group": "Nhóm",
@@ -1396,6 +1398,10 @@ export const strings: Strings = {
     "Hiện không có đường tới họ. Nó sẽ được các thiết bị khác mang đi và chuyển tới khi có máy nào gặp được họ.",
   "wallet.xfer.route_queued":
     "Chưa liên lạc được với họ. Nó đã vào hàng đợi và sẽ gửi ngay khi liên lạc được.",
+  "wallet.xfer.route_too_large_airhop":
+    "Quá lớn để đi qua Internet hoặc nhờ thiết bị khác mang đi. Nó sẽ gửi qua Bluetooth khi họ trở lại trong tầm, hoặc hãy chia sẻ token từ Hoạt động để trả cho họ ngay.",
+  "wallet.xfer.route_too_large":
+    "Quá lớn cho mọi đường tới họ: token cỡ này chỉ tới được điện thoại dùng Airhop qua Bluetooth. Hãy chia sẻ nó từ Hoạt động để trả cho họ.",
   "wallet.xfer.mesh_offline_body":
     "Dịch vụ mạng lưới không chạy, nên không có cách nào giao token đi. Chưa có khoản nào bị trừ.",
   "wallet.xfer.could_not_send": "Không gửi được",

@@ -494,6 +494,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} mówi.",
   "chat.thread.attach_note":
     "Pliki idą tylko w zasięgu Bluetooth. Tekst i płatności docierają do kontaktów przez internet; załączniki nie.",
+  "chat.thread.media_securing":
+    "Najpierw trwa zestawianie szyfrowanego połączenia z tą osobą. Spróbuj za chwilę.",
   "chat.thread.message_peer": "Napisz do {name}",
   "chat.thread.send": "Wyślij wiadomość",
   "chat.thread.group": "Grupa",
@@ -1416,6 +1418,10 @@ export const strings: Strings = {
     "Na razie nie ma do nich trasy. Poniosą to inne urządzenia i dostarczą, gdy któreś do nich dotrze.",
   "wallet.xfer.route_queued":
     "Jeszcze nie da się do nich dotrzeć. Czeka w kolejce i wyjdzie, gdy tylko będzie można.",
+  "wallet.xfer.route_too_large_airhop":
+    "Za duży na internet i na przekazanie przez inne urządzenia. Pójdzie przez Bluetooth, gdy znów będą w zasięgu, albo udostępnij token z sekcji Aktywność, żeby zapłacić im teraz.",
+  "wallet.xfer.route_too_large":
+    "Za duży na każdą trasę do nich: token tej wielkości dociera tylko do telefonu z Airhop przez Bluetooth. Udostępnij go z sekcji Aktywność, żeby im zapłacić.",
   "wallet.xfer.mesh_offline_body":
     "Usługa sieci mesh nie działa, więc nie ma jak przekazać tokena. Nic nie zostało pobrane.",
   "wallet.xfer.could_not_send": "Nie udało się wysłać",

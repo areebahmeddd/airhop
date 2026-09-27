@@ -495,6 +495,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} est en train de parler.",
   "chat.thread.attach_note":
     "Les fichiers ne partent qu’à portée du Bluetooth. Le texte et les paiements atteignent les contacts par internet ; les pièces jointes non.",
+  "chat.thread.media_securing":
+    "Le chiffrement avec cette personne est encore en cours de mise en place. Réessaie dans un instant.",
   "chat.thread.message_peer": "Écrire à {name}",
   "chat.thread.send": "Envoyer le message",
   "chat.thread.group": "Groupe",
@@ -1427,6 +1429,10 @@ export const strings: Strings = {
     "Aucun chemin jusqu’à eux pour l’instant. D’autres appareils le transporteront et le remettront quand l’un d’eux les atteindra.",
   "wallet.xfer.route_queued":
     "Ils ne sont pas encore joignables. C’est en file d’attente et partira dès qu’ils le seront.",
+  "wallet.xfer.route_too_large_airhop":
+    "Trop volumineux pour passer par internet ou être transporté par d’autres appareils. Il partira par Bluetooth dès qu’ils seront de retour à portée, ou partage le jeton depuis Activité pour les payer maintenant.",
+  "wallet.xfer.route_too_large":
+    "Trop volumineux pour tout chemin jusqu’à eux : un jeton de cette taille n’atteint qu’un téléphone avec Airhop, par Bluetooth. Partage-le depuis Activité pour les payer.",
   "wallet.xfer.mesh_offline_body":
     "Le service de maillage ne tourne pas, il n’y a donc aucun moyen de remettre le jeton. Rien n’a été débité.",
   "wallet.xfer.could_not_send": "Impossible d’envoyer",

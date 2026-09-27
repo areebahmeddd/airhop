@@ -457,6 +457,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}። {name} እየተናገረ ነው።",
   "chat.thread.attach_note":
     "ፋይሎች የሚላኩት በብሉቱዝ ክልል ውስጥ ብቻ ነው። ጽሑፍና ክፍያዎች የኢንተርኔት እውቂያዎችን ይደርሳሉ፤ አባሪዎች ግን አይደርሱም።",
+  "chat.thread.media_securing":
+    "መጀመሪያ ከእነሱ ጋር ምስጠራ እየተዘጋጀ ነው። ከጥቂት ጊዜ በኋላ እንደገና ሞክር።",
   "chat.thread.message_peer": "ለ{name} መልእክት ላክ",
   "chat.thread.send": "መልእክት ላክ",
   "chat.thread.group": "ቡድን",
@@ -1310,6 +1312,10 @@ export const strings: Strings = {
     "አሁን ወደ እነሱ የሚወስድ መንገድ የለም። ሌሎች መሣሪያዎች ይዘውት ይሄዳሉ፤ አንዱ ሲደርስባቸውም ያደርሱታል።",
   "wallet.xfer.route_queued":
     "ገና ሊደረስባቸው አልተቻለም። በተራ ላይ ነው፤ እንደተገኙም ወዲያውኑ ይላካል።",
+  "wallet.xfer.route_too_large_airhop":
+    "በኢንተርኔት ለመሄድ ወይም በሌሎች መሣሪያዎች ለመጓጓዝ በጣም ትልቅ ነው። ወደ ክልል ሲመለሱ በብሉቱዝ ይላካል፤ ወይም አሁን ለመክፈል ቶከኑን ከእንቅስቃሴ አጋራ።",
+  "wallet.xfer.route_too_large":
+    "ወደ እነሱ ለሚወስድ ለማንኛውም መንገድ በጣም ትልቅ ነው፤ የዚህ መጠን ቶከን በብሉቱዝ የሚደርሰው Airhop ያለበትን ስልክ ብቻ ነው። ለመክፈል ከእንቅስቃሴ አጋራው።",
   "wallet.xfer.mesh_offline_body":
     "የሜሽ አገልግሎቱ እየሠራ አይደለም፤ ስለዚህ ቶከኑን የሚያስተላልፍበት መንገድ የለም። ምንም አልተቀነሰም።",
   "wallet.xfer.could_not_send": "መላክ አልተቻለም",

@@ -490,6 +490,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} konuşuyor.",
   "chat.thread.attach_note":
     "Dosyalar yalnızca Bluetooth menzilinde gider. Metin ve ödemeler internetteki kişilere ulaşır; ekler ulaşmaz.",
+  "chat.thread.media_securing":
+    "Önce onlarla şifreleme kuruluyor. Birazdan yeniden dene.",
   "chat.thread.message_peer": "{name} kişisine yaz",
   "chat.thread.send": "Mesaj gönder",
   "chat.thread.group": "Grup",
@@ -1398,6 +1400,10 @@ export const strings: Strings = {
     "Şu anda onlara giden bir yol yok. Başka cihazlar taşıyacak ve biri onlara ulaştığında teslim edilecek.",
   "wallet.xfer.route_queued":
     "Henüz ulaşılabilir değiller. Sırada bekliyor ve ulaşılabilir olur olmaz gidecek.",
+  "wallet.xfer.route_too_large_airhop":
+    "İnternetten gitmek ya da başka cihazlarla taşınmak için fazla büyük. Yeniden menzile girdiklerinde Bluetooth üzerinden gider ya da şimdi ödemek için jetonu Etkinlik'ten paylaş.",
+  "wallet.xfer.route_too_large":
+    "Onlara giden hiçbir yol için fazla büyük: bu boyutta bir jeton yalnızca Bluetooth üzerinden bir Airhop telefonuna ulaşır. Ödemek için Etkinlik'ten paylaş.",
   "wallet.xfer.mesh_offline_body":
     "Mesh hizmeti çalışmıyor, bu yüzden jetonu devretmenin bir yolu yok. Hiçbir şey düşülmedi.",
   "wallet.xfer.could_not_send": "Gönderilemedi",

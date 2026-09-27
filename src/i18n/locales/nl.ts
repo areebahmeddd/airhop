@@ -492,6 +492,8 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} is aan het woord.",
   "chat.thread.attach_note":
     "Bestanden gaan alleen binnen Bluetooth-bereik. Tekst en betalingen bereiken contacten via internet; bijlagen niet.",
+  "chat.thread.media_securing":
+    "Eerst wordt een versleutelde verbinding met ze opgezet. Probeer het zo nog eens.",
   "chat.thread.message_peer": "{name} schrijven",
   "chat.thread.send": "Bericht sturen",
   "chat.thread.group": "Groep",
@@ -1407,6 +1409,10 @@ export const strings: Strings = {
     "Er is nu geen route naar ze toe. Andere toestellen dragen het mee en leveren het af zodra een van hen ze bereikt.",
   "wallet.xfer.route_queued":
     "Ze zijn nog niet bereikbaar. Het staat in de wachtrij en gaat weg zodra dat wel zo is.",
+  "wallet.xfer.route_too_large_airhop":
+    "Te groot om via internet te gaan of door andere toestellen te worden meegedragen. Het gaat via Bluetooth zodra ze weer binnen bereik zijn, of deel het token vanuit Activiteit om ze nu te betalen.",
+  "wallet.xfer.route_too_large":
+    "Te groot voor elke route naar ze toe: een token van deze omvang bereikt alleen een Airhop-toestel via Bluetooth. Deel het vanuit Activiteit om ze te betalen.",
   "wallet.xfer.mesh_offline_body":
     "De meshdienst draait niet, dus er is geen manier om het token af te geven. Er is niets afgeschreven.",
   "wallet.xfer.could_not_send": "Sturen lukte niet",
