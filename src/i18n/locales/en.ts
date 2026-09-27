@@ -2244,7 +2244,6 @@ export const strings = {
   "settings.wipe.in_progress": "Wiping",
   "settings.wipe.in_progress_body":
     "Destroying your keys, messages and files. This takes a few seconds, and finishes on its own if the app is closed.",
-  "settings.wipe.got_it": "Got it",
   "settings.wipe.keys_failed": "Keys could not be destroyed",
   "settings.wipe.keys_failed_body":
     "Your messages, contacts and wallet are gone, but the device refused to release your keys. Unlock the device and wipe again.",
