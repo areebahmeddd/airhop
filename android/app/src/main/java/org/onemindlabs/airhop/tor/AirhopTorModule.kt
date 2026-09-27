@@ -293,8 +293,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                     emitStatus()
                     // A stopped client will not change on its own, and the next start
                     // reschedules. A blocked one will: Arti keeps retrying and clears the
-                    // flag once a circuit lands. iOS recovers the same way through its
-                    // path monitor.
+                    // flag once a circuit lands. The iOS poll goes on the same way.
                     if (!status.running) return@schedule
                     schedulePoll(
                         epoch,
