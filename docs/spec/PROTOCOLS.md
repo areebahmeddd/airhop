@@ -698,6 +698,31 @@ Every other type is absent from both implementations' sync rounds by design. Cou
 | Per-envelope size cap             | `16 KiB`       | Ciphertext ceiling; the plaintext below caps content far lower |
 | Per-peer deposit quota (favorite) | `5 envelopes`  | Trust tier: favorite                                           |
 | Per-peer deposit quota (verified) | `2 envelopes`  | Trust tier: verified/known                                     |
+| Initial spray budget              | `4 copies`     | Clamped to `8` on decode                                       |
+| Remote handover cooldown          | `10 minutes`   | Per envelope, toward a recipient heard only through relays     |
+
+### Depositing and carrying
+
+A sender seals to the recipient's static key as it last knew it (the announce
+pin, else the saved contact), not to a reachability-gated lookup, since a
+courier exists for exactly the peer who has left. It deposits whenever no
+transport reaches the recipient now, with up to four directly linked couriers,
+each getting the full budget. Every re-seal of one message, for a new courier
+or a retry, targets the same one-time prekey.
+
+A carrier acts on each verified announce, as bitchat-ios does:
+
+- **Announce on a link we hold:** hand over the peer's own mail (retired once
+  the write lands), then spray them half the budget of anything else, once per
+  peer. Mail addressed to the peer is never sprayed to them.
+- **Announce heard through relays:** flood the peer's own mail toward them, at
+  most once per envelope per cooldown, and keep carrying it, because nothing
+  acknowledges a flood. Never spray: a flood cannot confirm that a carrier took
+  the copy, so no budget would be spent.
+
+bitchat-ios also requires the link to be Noise-authenticated before a
+destructive handover. Airhop does not track which link a session was made on,
+so it hands over on any link bound by a direct announce.
 
 ### What the envelope carries
 
