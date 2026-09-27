@@ -1,18 +1,18 @@
-// Join with a link: paste an Airhop invite instead of tapping one.
+// Join with a link: the one place an Airhop link takes effect.
 //
-// Tapping a link only works when the link is somewhere tappable. An invite read
-// off another phone, copied out of a message that arrived over the mesh, or
-// written down, had nowhere to go. This is that door, and it goes through the
-// same parseAirhopLink + applyAirhopLink pair the OS deep link uses, so a
-// pasted invite and a tapped one land in exactly the same place.
+// An invite read off another phone, copied out of a message that arrived over
+// the mesh, or written down, is pasted here. A link the OS hands over (a tap in
+// another app) only fills this sheet in, rather than taking effect: an app or a
+// redirecting page can fire one, and only the Join tap says the person wanted
+// it. A pasted invite and a tapped one therefore land in the same place.
 //
 // It accepts every Airhop link rather than only channel invites: rejecting a
 // valid peer or contact link because the sheet is named "join" would be a
 // dead end for no reason. What the link will do is stated before you commit.
 
 import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { applyAirhopLink } from "@services/link-router";
 import { showAlert } from "@store/alert-store";
 import BottomSheet from "@ui/components/bottom-sheet";
@@ -37,9 +37,12 @@ interface Props {
   visible: boolean;
   // Dismiss entirely: backdrop tap or system back.
   onClose: () => void;
-  // Step back to whatever opened this sheet, for the Back button.
-  onBack: () => void;
+  // Step back to whatever opened this sheet, for the Back button. Without one,
+  // nothing opened it (a link from the OS) and the button is Cancel.
+  onBack?: () => void;
   onJoined: (channel: string) => void;
+  // Filled in each time the sheet opens, for a link the OS handed over.
+  initialInput?: string;
 }
 
 export function JoinLinkSheet({
@@ -47,12 +50,20 @@ export function JoinLinkSheet({
   onClose,
   onBack,
   onJoined,
+  initialInput,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
 
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput ?? "");
+  // A new link from the OS replaces whatever the sheet held, during render
+  // rather than in an effect, so the stale text never paints.
+  const [seededWith, setSeededWith] = useState(initialInput);
+  if (initialInput !== seededWith) {
+    setSeededWith(initialInput);
+    if (initialInput !== undefined) setInput(initialInput);
+  }
 
   // Parsed live, so the sheet can say what the link is before it is used. A
   // private invite whose key is malformed is treated as unusable rather than
@@ -122,13 +133,20 @@ export function JoinLinkSheet({
 
   function handleJoin(): void {
     if (link === null) return;
-    const channel = applyAirhopLink(link);
-    if (channel === null) {
-      // Only a contact card can be refused, and only because its peer ID is not
-      // the fingerprint of its own key, which means it was tampered with.
-      showAlert(t("chat.join.unverified"), t("chat.join.unverified_body"));
+    const outcome = applyAirhopLink(link);
+    if ("refused" in outcome) {
+      // Only a contact card gets this far and is refused: either its peer ID is
+      // not the fingerprint of its own key, or it names a different key from
+      // the one already held for them, which a fresh card cannot fix.
+      showAlert(
+        t("chat.join.unverified"),
+        outcome.refused === "conflict"
+          ? t("contacts.scan.key_conflict")
+          : t("chat.join.unverified_body"),
+      );
       return;
     }
+    const { channel } = outcome;
     // A private channel is identified by its key, not its name, so this invite
     // may be a different channel that happens to share a name with one already
     // joined. It lands in its own channel; say so, because the name in the list
@@ -150,7 +168,7 @@ export function JoinLinkSheet({
 
   function handleBack(): void {
     reset();
-    onBack();
+    (onBack ?? onClose)();
   }
 
   return (
@@ -161,7 +179,7 @@ export function JoinLinkSheet({
     >
       <Text style={styles.title}>{T("chat.join.title")}</Text>
 
-      {/* Same scannable card as the other chooser destinations. */}
+      {/* The same card as the other chooser destinations. */}
       <View style={styles.privacyNote}>
         <View style={styles.privacyNoteRow}>
           <Feather
@@ -230,9 +248,11 @@ export function JoinLinkSheet({
           style={styles.cancel}
           onPress={handleBack}
           accessibilityRole="button"
-          accessibilityLabel={T("common.back")}
+          accessibilityLabel={T(onBack ? "common.back" : "common.cancel")}
         >
-          <Text style={styles.cancelText}>{T("common.back")}</Text>
+          <Text style={styles.cancelText}>
+            {T(onBack ? "common.back" : "common.cancel")}
+          </Text>
         </Pressable>
         <Pressable
           style={[styles.confirm, link === null && styles.confirmDisabled]}

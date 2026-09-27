@@ -17,6 +17,7 @@ jest.mock("@bridge/NativeAirhopVoice", () => ({
     startPlayback: jest.fn(() => Promise.resolve()),
     enqueueFrames: jest.fn(() => Promise.resolve()),
     stopPlayback: jest.fn(() => Promise.resolve()),
+    finishPlayback: jest.fn(() => Promise.resolve()),
     startCapture: jest.fn(() => Promise.resolve()),
     stopCapture: jest.fn(() => Promise.resolve()),
     addListener: jest.fn(),
@@ -28,6 +29,7 @@ const native = NativeAirhopVoice as unknown as {
   startPlayback: jest.Mock;
   enqueueFrames: jest.Mock;
   stopPlayback: jest.Mock;
+  finishPlayback: jest.Mock;
 };
 
 const frame = () => [new Uint8Array([1, 2, 3])];
@@ -61,17 +63,85 @@ describe("NativeAudioPlayback", () => {
     // A late END from an earlier talker must not cut off the current one.
     const playback = new NativeAudioPlayback();
     await playback.playFrames("bb", 0x01, frame());
-    playback.endSession("aa");
+    playback.finishSession("aa");
+    playback.stopSession("aa");
 
+    expect(native.finishPlayback).not.toHaveBeenCalled();
     expect(native.stopPlayback).not.toHaveBeenCalled();
   });
 
-  it("releases the speaker when the burst it opened ends", async () => {
+  it("silences at once a burst that was retracted", async () => {
     const playback = new NativeAudioPlayback();
     await playback.playFrames("aa", 0x01, frame());
-    playback.endSession("aa");
+    playback.stopSession("aa");
 
     expect(native.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(native.finishPlayback).not.toHaveBeenCalled();
+  });
+
+  it("lets a burst that ended play out before releasing the speaker", async () => {
+    const onIdle = jest.fn();
+    let drained: () => void = () => undefined;
+    native.finishPlayback.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (drained = resolve)),
+    );
+    const playback = new NativeAudioPlayback(
+      () => true,
+      () => undefined,
+      onIdle,
+    );
+    await playback.playFrames("aa", 0x01, frame());
+    playback.finishSession("aa");
+
+    expect(native.finishPlayback).toHaveBeenCalledTimes(1);
+    expect(native.stopPlayback).not.toHaveBeenCalled();
+    // Handing the audio session back reconfigures it, which on iOS restarts
+    // the engine under the tail and loses it, so it waits for the drain.
+    await Promise.resolve();
+    expect(onIdle).not.toHaveBeenCalled();
+    drained();
+    await new Promise<void>((resolve) => setImmediate(() => resolve()));
+    expect(onIdle).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the audio session alone when a new burst took over the drain", async () => {
+    // A floor handoff: the next talker's audio lands while the last one's tail
+    // is still playing, and reconfiguring the session under it costs it an
+    // engine rebuild.
+    const onIdle = jest.fn();
+    let drained: () => void = () => undefined;
+    native.finishPlayback.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (drained = resolve)),
+    );
+    const playback = new NativeAudioPlayback(
+      () => true,
+      () => undefined,
+      onIdle,
+    );
+    await playback.playFrames("aa", 0x01, frame());
+    playback.finishSession("aa");
+    await playback.playFrames("bb", 0x01, frame());
+    drained();
+    await new Promise<void>((resolve) => setImmediate(() => resolve()));
+
+    expect(onIdle).not.toHaveBeenCalled();
+  });
+
+  it("queues a burst's first audio before an end in the same breath", () => {
+    // A burst whose first batch is also its last (END landing inside the
+    // jitter window, or the idle timeout of a burst that only just got the
+    // floor) hands over both at once. Opening the speaker must not let the
+    // finish overtake the frames, or the drain finds nothing and they are
+    // dropped as late.
+    const playback = new NativeAudioPlayback();
+    void playback.playFrames("aa", 0x01, frame());
+    playback.finishSession("aa");
+
+    const [start] = native.startPlayback.mock.invocationCallOrder;
+    const [enqueue] = native.enqueueFrames.mock.invocationCallOrder;
+    const [finish] = native.finishPlayback.mock.invocationCallOrder;
+    expect(start).toBeLessThan(enqueue);
+    expect(enqueue).toBeLessThan(finish);
   });
 
   it("gives up on a burst the speaker refused, without throwing", async () => {

@@ -189,6 +189,10 @@ const strings: Strings = {
   "home.features.identity.names.line": "Suy ra từ khóa của bạn, nên không ai lấy được tên của bạn.",
   "home.features.identity.qr.name": "Danh bạ qua QR",
   "home.features.identity.qr.line": "Một lần quét mang theo khóa của họ, không chỉ tên.",
+  "home.features.identity.forward.name": "Bảo mật chuyển tiếp",
+  "home.features.identity.forward.line": "Khóa bị lộ cũng không mở được tin nhắn cũ.",
+  "home.features.identity.move.name": "Chuyển sang điện thoại mới",
+  "home.features.identity.move.line": "Trò chuyện và ví được chuyển đi, rồi máy cũ tự xóa.",
   "home.features.identity.panic.name": "Xóa khẩn cấp",
   "home.features.identity.panic.line": "Mọi khóa và mọi tin nhắn bị hủy trong chưa đầy một giây.",
 
@@ -197,6 +201,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Mạng mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Không internet, không router, trên những điện thoại mọi người đã có.",
+  "home.features.networking.lan.name": "Mạng cục bộ",
+  "home.features.networking.lan.line":
+    "WiFi chung hoặc điểm phát sóng, iPhone và Android cùng nhau.",
+  "home.features.networking.hops.name": "Chuyển tiếp nhiều chặng",
+  "home.features.networking.hops.line": "Mỗi điện thoại chuyển tin đi tiếp, tối đa bảy chặng.",
   "home.features.networking.bridge.name": "Cầu mesh",
   "home.features.networking.bridge.line":
     "Nối cuộc trò chuyện công khai của bạn với một nhóm ở gần nhưng ngoài tầm.",

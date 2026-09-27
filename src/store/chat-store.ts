@@ -86,6 +86,9 @@ export interface ChatMessage {
   // True when this public message arrived from another mesh island across the
   // mesh bridge (rendered with a network glyph), rather than over Bluetooth.
   viaBridge?: boolean;
+  // Set on our own public message the user kept off the mesh bridge, so a
+  // retry keeps it radio-only too.
+  nearbyOnly?: true;
   // A place somebody sent, rendered as a card instead of a bubble.
   //
   // On the message rather than in a store of its own because a pin is a
@@ -125,12 +128,9 @@ interface ChatState {
   unreadCounts: Record<string, number>;
   // User-written descriptions for custom channels (persisted via MMKV).
   channelDescriptions: Record<string, string>;
-  // NOTE: channelTransports / channelVisibilities were removed. They were
-  // written by the UI and read by nothing, so a channel marked "Private" was
-  // still plaintext-broadcast to everyone in range and a channel set to "Nostr"
-  // still went out over BLE. Keeping settings that silently do nothing, one of
-  // them implying encryption, is worse than not offering them. Channels are
-  // public by design; privacy lives in DMs (Noise + Double Ratchet).
+  // No per-channel transport or visibility setting: one the send path does not
+  // enforce, and one implying encryption at that, is worse than none. A channel
+  // is private only by holding a key (channelKeys below).
   // User-created channels pinned to the top of "Your Rooms" (WhatsApp-style).
   pinnedChannels: string[];
   // Conversations (channels or DMs) the user has muted.
@@ -147,20 +147,16 @@ interface ChatState {
   // Threads folded into another one, `from` to `to`. A DM is keyed
   // `dm:nostr_<pubkey>` until an in-person scan or a mutual card exchange ties
   // the key to a peer, then `dm:<peerID>`; mergeChannel folds the first into
-  // the second. Anything still
-  // holding the old name resolves through here: the open thread, the
-  // last-thread restore, a tapped notification, a bell row.
+  // the second. Anything still holding the old name resolves through here: the
+  // open thread, the last-thread restore, a tapped notification, a bell row.
   channelRedirects: Record<string, string>;
   // The geohash cell a `dm:nostr_<pubkey>` conversation belongs to.
   //
   // A location-channel DM is written from our per-cell identity, which is
-  // derived from (seed, geohash) - so replying to one needs to know WHICH cell
-  // it happened in. Held only in memory that binding is gone after a relaunch,
-  // and opening such a thread from the Direct list falls through to the MAIN
-  // Nostr identity instead. The recipient then gets a message from a key they
-  // have never seen, which opens a second thread
-  // rather than continuing theirs - and it handed a person we had only ever met
-  // pseudonymously in a location channel our permanent identity, which is the
+  // derived from (seed, geohash), so replying to one needs to know WHICH cell
+  // it happened in. Without it a reply after a relaunch would go out from the
+  // main Nostr identity: a key the recipient has never seen, opening a second
+  // thread and handing someone met pseudonymously our permanent identity, the
   // exact link per-cell identities exist to prevent.
   //
   // Persisted here rather than in a store of its own so it is written, cleared
@@ -173,10 +169,10 @@ interface ChatState {
   //
   // A geohash nickname rides the `n` tag on their CHANNEL messages, so it is
   // known where they are talking and nowhere else: a geo DM carries no nickname
-  // at all. Without this the same person read as "NeverDie#0c08" in the channel
-  // and "anon#0c08" everywhere their conversation appeared - the DM list, the
-  // thread header, the contact sheet - because those all resolve from the pubkey
-  // alone and the pubkey does not know it.
+  // at all. Without this the same person reads as "NeverDie#0c08" in the
+  // channel and "anon#0c08" everywhere their conversation appears (the DM list,
+  // the thread header, the contact sheet), because those all resolve from the
+  // pubkey alone and the pubkey does not know it.
   //
   // Recorded when a conversation with them opens, which is both the moment the
   // name is in hand and the only reason to keep it. Bounded by conversations
@@ -187,14 +183,14 @@ interface ChatState {
   //
   // Both halves are needed before the two threads may be folded into one, and
   // the reason is attribution rather than tidiness. Merging is what switches our
-  // replies from the pseudonymous per-cell rail onto the durable one - and the
+  // replies from the pseudonymous per-cell rail onto the durable one, and the
   // durable inbox recognises a sender only by a Nostr key it already knows.
   // (It cannot do otherwise: the envelope carries a sender peer ID, but that
   // field is unauthenticated, so trusting it would let anyone file a message
   // into anyone's thread.)
   //
   // So switching rails before they hold OUR card lands our messages in a second,
-  // unattributed thread on their side - the exact split this feature exists to
+  // unattributed thread on their side, the exact split this feature exists to
   // heal. Waiting until both have been exchanged means both people cross over at
   // the same moment, and neither ever sees the conversation fork.
   geoCardExchange: Record<string, { theirPeerID?: string; sentMine?: boolean }>;
@@ -248,7 +244,7 @@ interface ChatState {
     half: { theirPeerID?: string; sentMine?: boolean },
   ) => void;
   // Both halves are done and the threads have been folded together, so the
-  // bookkeeping - and the record of which cell we met in - has no one left to
+  // bookkeeping (and the record of which cell we met in) has no one left to
   // serve.
   clearGeoCardExchange: (pubkey: string) => void;
   addMessage: (msg: ChatMessage) => void;
@@ -260,6 +256,9 @@ interface ChatState {
     status: MessageStatus,
     atMs?: number,
   ) => void;
+  // The one way out of "reclaimed": the mint says the recipient redeemed the
+  // token before the sender took it back, so the payment did arrive.
+  markReclaimedPaid: (channel: string, id: string) => void;
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
@@ -274,11 +273,13 @@ interface ChatState {
   // Give up on messages left mid-flight by a process that died, so a retry can
   // be offered instead of an hourglass that never resolves.
   //
-  // "sending" is the only in-flight status with no owner across a restart: the
-  // outbox resumes queued and sent, the courier resumes carried. A message is
+  // Two in-flight statuses have no owner across a restart. A message is
   // "sending" during Undo Send's hold window (held in a ref, flushed on unmount)
   // or between transmit and the transport answering, and a kill in either window
-  // strands it.
+  // strands it. A channel or group message is "queued" while only the in-memory
+  // gossip store holds it, and that store dies with the process, so such a row
+  // is stranded however recent it is. A DM's queued and sent are the outbox's
+  // to resume, and carried the courier's.
   //
   // Marked failed rather than re-sent: the persisted state cannot say whether
   // the bytes reached the radio, so re-sending could duplicate. "failed" is also
@@ -308,7 +309,7 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
 }
 
 // Max messages kept in memory per channel. Oldest are trimmed.
-const MAX_PER_CHANNEL = 200;
+export const MAX_PER_CHANNEL = 200;
 
 // A message stamped this far before a conversation was cleared is still let
 // through: the clock skew the mesh tolerates on a packet (PACKET_MAX_SKEW_MS),
@@ -435,7 +436,7 @@ const throttledMmkvStorage = {
 };
 
 // Force anything still in the window to disk. Called when the app is about to
-// stop being able to write - backgrounding, or a deliberate shutdown - because
+// stop being able to write (backgrounding, or a deliberate shutdown), because
 // a throttle that loses the last 400ms of a conversation on the way out is a
 // worse bug than the one it fixes.
 export function flushChatPersistence(): void {
@@ -551,8 +552,16 @@ export const useChatStore = create<ChatState>()(
 
         set((state) => {
           const existing = state.messages[msg.channel] ?? [];
-          // Deduplicate by id
-          if (existing.some((m) => m.id === msg.id)) return state;
+          // Deduplicate by id, except that radio wins, as in bitchat-ios
+          // BridgeService. A bridged row takes its id from the event's unsigned
+          // radio hint, so the signed radio copy replaces it rather than being
+          // dropped behind it. Already counted and notified as the bridged row.
+          const prior = existing.find((m) => m.id === msg.id);
+          const replacing = prior?.viaBridge === true && msg.viaBridge !== true;
+          if (prior !== undefined && !replacing) return state;
+          const base = replacing
+            ? existing.filter((m) => m !== prior)
+            : existing;
           // Insert by timestamp instead of appending. Mesh messages can arrive
           // out of order (a multi-hop relay is slower than a direct link but
           // still carries the ORIGINAL sender timestamp), which otherwise
@@ -561,17 +570,17 @@ export const useChatStore = create<ChatState>()(
           // the middle of today's conversation.
           // Linear scan from the end: the common case is a genuinely newest
           // message, which lands on the first comparison.
-          let insertAt = existing.length;
+          let insertAt = base.length;
           while (
             insertAt > 0 &&
-            existing[insertAt - 1].timestampMs > msg.timestampMs
+            base[insertAt - 1].timestampMs > msg.timestampMs
           ) {
             insertAt--;
           }
           const next = [
-            ...existing.slice(0, insertAt),
+            ...base.slice(0, insertAt),
             msg,
-            ...existing.slice(insertAt),
+            ...base.slice(insertAt),
           ];
           // Trim to cap, then keep the unread count consistent with what is left.
           const overflow = next.length - MAX_PER_CHANNEL;
@@ -591,7 +600,10 @@ export const useChatStore = create<ChatState>()(
           ).length;
           const droppedUnread = Math.max(0, droppedOthers - readOthers);
           const isUnread =
-            keptNew && !msg.isMine && msg.channel !== state.activeChannel;
+            !replacing &&
+            keptNew &&
+            !msg.isMine &&
+            msg.channel !== state.activeChannel;
           const newUnread =
             Math.max(0, prevUnread - droppedUnread) + (isUnread ? 1 : 0);
           return {
@@ -626,16 +638,15 @@ export const useChatStore = create<ChatState>()(
             // there is nothing left to retry.
             if (m.status === "reclaimed") return m;
             // "failed" is a local give-up, not a late receipt, so it is exempt
-            // from the rank rule in the same way "sending" is - but only over
+            // from the rank rule in the same way "sending" is, but only over
             // the statuses a give-up can legitimately correct.
             //
             // It ranks BELOW sent/carried/queued, which are exactly the states
-            // an undeliverable message sits in, so the rank rule silently
-            // discarded every attempt to mark one failed. The bubble kept its
-            // hourglass forever over a message the outbox had already dropped,
-            // which is the failure the give-up exists to report. It must still
-            // never overwrite delivered or read: those are proof the message
-            // arrived, and a lost receipt is not a lost message.
+            // an undeliverable message sits in, so the rank rule alone would
+            // leave an hourglass forever over a message the outbox has already
+            // dropped. It must still never overwrite delivered or read: those
+            // are proof the message arrived, and a lost receipt is not a lost
+            // message.
             const isLocalGiveUp =
               status === "failed" &&
               (m.status === undefined ||
@@ -659,6 +670,21 @@ export const useChatStore = create<ChatState>()(
                 ? { readAtMs: atMs }
                 : {}),
             };
+          });
+          if (!changed) return state;
+          return { messages: { ...state.messages, [channel]: next } };
+        });
+      },
+
+      markReclaimedPaid(channel, id) {
+        set((state) => {
+          const existing = state.messages[channel];
+          if (existing === undefined) return state;
+          let changed = false;
+          const next = existing.map((m) => {
+            if (m.id !== id || m.status !== "reclaimed") return m;
+            changed = true;
+            return { ...m, status: "delivered" as const };
           });
           if (!changed) return state;
           return { messages: { ...state.messages, [channel]: next } };
@@ -696,9 +722,13 @@ export const useChatStore = create<ChatState>()(
           let changed = false;
           for (const [channel, list] of Object.entries(state.messages)) {
             let touched = false;
+            const heldByGossip = !channel.startsWith("dm:");
             const next = list.map((m) => {
-              if (m.status !== "sending") return m;
-              if (now - m.timestampMs < olderThanMs) return m;
+              const stranded =
+                m.status === "sending"
+                  ? now - m.timestampMs >= olderThanMs
+                  : m.status === "queued" && heldByGossip;
+              if (!stranded) return m;
               touched = true;
               return { ...m, status: "failed" as const };
             });
@@ -747,11 +777,9 @@ export const useChatStore = create<ChatState>()(
           delete geoDmNames[geoKey];
           delete geoCardExchange[geoKey];
           // Clear activeChannel rather than reassigning it to some arbitrary
-          // surviving channel. Picking the first non-DM channel (usually
-          // #bluetooth) while the user sits on the LIST view is wrong, because
-          // addMessage suppresses the unread bump for the
-          // active channel, that channel then silently stopped showing unread
-          // badges until the user opened and closed some other thread.
+          // surviving channel. addMessage suppresses the unread bump for the
+          // active channel, so one picked while the user sits on the LIST view
+          // would silently stop showing unread badges.
           const activeChannel =
             state.activeChannel === channel ? "" : state.activeChannel;
           return {

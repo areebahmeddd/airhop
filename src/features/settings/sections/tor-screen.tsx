@@ -1,18 +1,19 @@
 // Tor sub-screen: whether internet traffic is onion routed, and how it reaches
 // the network.
 //
-// A screen rather than the switch it replaced. Tor now carries a second choice
-// that only matters once it is on, and a row that both toggles and drills in is
-// two controls in one place. The row on the hub shows the current state, so the
-// answer is still visible without opening this.
+// A screen rather than a switch: Tor carries a second choice that only matters
+// once it is on, and a row that both toggles and drills in is two controls in
+// one place. The row on the hub shows the current state, so the answer is
+// visible without opening this.
 //
 // The confirm sheet on the toggle stays. Turning Tor on is a real change in what
 // this device tells the network about itself, and the connectivity group asks
 // before every one of those.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
+  isTorStartRecovered,
   setTorBridgeMode,
   setTorRouting,
   type TorRoutingResult,
@@ -21,8 +22,15 @@ import { showAlert } from "@store/alert-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore, type TorBridgeMode } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
-import { FontFamily, HIT_SLOP, MIN_TOUCH, useThemeColors } from "@ui/theme";
-import React, { useEffect, useRef, useState } from "react";
+import PrimaryButton from "@ui/components/primary-button";
+import {
+  FontFamily,
+  HIT_SLOP,
+  MIN_TOUCH,
+  Spacing,
+  useThemeColors,
+} from "@ui/theme";
+import React, { useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import {
   GroupDivider,
@@ -87,22 +95,11 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   const internetEnabled = useSettingsStore((s) => s.internetEnabled);
   const torBootstrap = useMeshStateStore((s) => s.torBootstrap);
   const torActive = useMeshStateStore((s) => s.torActive);
-  // A start marker still set with Tor off is one that never answered: startup
-  // turned Tor off and left this for the screen to explain.
+  // A start that never answered: startup kept Tor on and held the internet half
+  // rather than retry or go direct. Only Tor off, or a Try again the native
+  // client accepts, clears it, so it is a state rather than a notice to dismiss.
   const startPending = useSettingsStore((s) => s.torStartPending);
-  const recovered = startPending && !torEnabled;
-
-  // Cleared on the way out, not on the way in, so the notice survives being read
-  // once and does not greet every later visit. Read fresh rather than captured:
-  // leaving mid-start would otherwise clear a marker that is still doing its job.
-  useEffect(() => {
-    return () => {
-      const settings = useSettingsStore.getState();
-      if (settings.torStartPending && !settings.torEnabled) {
-        settings.setTorStartPending(false);
-      }
-    };
-  }, []);
+  const recovered = isTorStartRecovered(torEnabled, startPending, torBootstrap);
 
   // Local until applied, so a half-typed bridge line never reaches the client.
   const [draftLines, setDraftLines] = useState(storedLines);
@@ -117,9 +114,12 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   // may claim traffic is onion routed, so nothing else here implies it.
   function statusText(): string {
     // Ahead of the ordinary states: this one the user did not choose, and a
-    // bare "Off" would leave them to work that out for themselves.
+    // bare "blocked" would not say what happened or what to do.
     if (recovered) return T("settings.tor.recovered");
     if (!torEnabled) return T("common.off");
+    // The internet switch stops Arti on purpose, which is neither starting nor
+    // blocked.
+    if (!internetEnabled) return T("settings.conn.internet_off");
     // Chosen but not yet usable. setTorBridgeMode leaves the running client
     // alone when the selected mode has no lines, so saying "routed" here would
     // credit the selection for a circuit the previous mode is carrying.
@@ -217,10 +217,18 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
               description={statusText()}
             />
           </View>
+          {/* Retry only: the switch above is the other way out. */}
+          {recovered && (
+            <PrimaryButton
+              label={T("settings.tor.retry")}
+              onPress={() => void run(() => setTorRouting(true))}
+              disabled={busy}
+              style={{ marginTop: Spacing.md }}
+            />
+          )}
         </View>
 
-        {/* Only once Tor is on: a connection choice with nothing to connect is
-            a control that cannot do anything. */}
+        {/* Only once Tor is on, or it is a control that does nothing. */}
         {torEnabled && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>

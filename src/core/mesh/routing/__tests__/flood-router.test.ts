@@ -6,8 +6,11 @@
 // A mesh with no jitter has every phone answer at once and the radio collides
 // with itself, so the delay matters as much as the decision. TTL and the
 // duplicate check are what bound how far and how long a packet travels.
+import { encodeBoardWire, signBoardPost } from "../../wire/board-packet";
 import { Flags, PacketType, type Packet } from "../../wire/packet-codec";
-import { FloodRouter } from "../flood-router";
+import { FloodRouter, relayDecision, relayLimit } from "../flood-router";
+
+const LOCAL = new Uint8Array(8).fill(0xaa);
 
 function makePacket(_nonceByte: number = 0x01, ttl: number = 7): Packet {
   return {
@@ -27,7 +30,7 @@ describe("FloodRouter", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    router = new FloodRouter();
+    router = new FloodRouter(LOCAL);
   });
 
   afterEach(() => {
@@ -86,6 +89,16 @@ describe("FloodRouter", () => {
     it("does not relay when TTL = 0", () => {
       const sent: Packet[] = [];
       router.receive(makePacket(0x01, 0), (p) => sent.push(p));
+      jest.advanceTimersByTime(300);
+      expect(sent.length).toBe(0);
+    });
+
+    // Relayed, one request would make every node it reached answer with its
+    // whole store. It is still handled locally, so receive() reports it new.
+    it("never relays a REQUEST_SYNC, whatever TTL it claims", () => {
+      const sent: Packet[] = [];
+      const request = { ...makePacket(0x01, 7), type: PacketType.REQUEST_SYNC };
+      expect(router.receive(request, (p) => sent.push(p))).toBe(true);
       jest.advanceTimersByTime(300);
       expect(sent.length).toBe(0);
     });
@@ -153,7 +166,7 @@ describe("FloodRouter", () => {
         .mockReturnValue(1 - Number.EPSILON);
 
       const sent: Packet[] = [];
-      const r = new FloodRouter();
+      const r = new FloodRouter(LOCAL);
       r.receive(makePacket(0x04, 7), (p) => sent.push(p));
 
       jest.advanceTimersByTime(9);
@@ -197,7 +210,7 @@ describe("FloodRouter time-critical relay policy", () => {
 
   it("relays a voice frame inside the jitter buffer's budget", () => {
     // Dense mesh, where ordinary traffic would wait 100-220 ms.
-    const router = new FloodRouter(() => 12);
+    const router = new FloodRouter(LOCAL, () => 12);
     const sent: Packet[] = [];
     router.receive(voicePacket(), (p) => sent.push(p));
 
@@ -207,7 +220,7 @@ describe("FloodRouter time-critical relay policy", () => {
   });
 
   it("leaves ordinary traffic on the wider window", () => {
-    const router = new FloodRouter(() => 12);
+    const router = new FloodRouter(LOCAL, () => 12);
     const sent: Packet[] = [];
     router.receive({ ...voicePacket(), type: PacketType.CHANNEL_MSG }, (p) =>
       sent.push(p),
@@ -221,7 +234,7 @@ describe("FloodRouter time-critical relay policy", () => {
   });
 
   it("clamps voice TTL in a dense mesh so a stream cannot flood to full depth", () => {
-    const router = new FloodRouter(() => 12);
+    const router = new FloodRouter(LOCAL, () => 12);
     const sent: Packet[] = [];
     router.receive(voicePacket(7), (p) => sent.push(p));
     jest.advanceTimersByTime(30);
@@ -231,7 +244,7 @@ describe("FloodRouter time-critical relay policy", () => {
   });
 
   it("keeps full depth in a sparse mesh, so voice reaches as far as text", () => {
-    const router = new FloodRouter(() => 2);
+    const router = new FloodRouter(LOCAL, () => 2);
     const sent: Packet[] = [];
     router.receive(voicePacket(7), (p) => sent.push(p));
     jest.advanceTimersByTime(30);
@@ -240,11 +253,208 @@ describe("FloodRouter time-critical relay policy", () => {
   });
 
   it("still drops a voice frame that has run out of TTL", () => {
-    const router = new FloodRouter(() => 2);
+    const router = new FloodRouter(LOCAL, () => 2);
     const sent: Packet[] = [];
     expect(router.receive(voicePacket(1), (p) => sent.push(p))).toBe(true);
     jest.advanceTimersByTime(60);
     expect(sent).toHaveLength(0);
     router.flush();
+  });
+});
+
+// A transcription of bitchat-ios RelayController.decide, fed the inputs
+// BLEReceivePipeline.relayDecision derives, with Airhop's DR_ENCRYPTED in the
+// directed set. Each row: the packet, the degree, the TTL the relayed copy
+// carries (null for no relay) and the delay window.
+describe("relayDecision", () => {
+  const PEER = new Uint8Array(8).fill(0x11);
+  const OTHER = new Uint8Array(8).fill(0x22);
+
+  function pkt(
+    type: PacketType,
+    opts: { ttl?: number; to?: Uint8Array; from?: Uint8Array } = {},
+  ): Packet {
+    return {
+      type,
+      ttl: opts.ttl ?? 7,
+      flags: opts.to !== undefined ? Flags.HAS_RECIPIENT : 0,
+      senderID: opts.from ?? PEER,
+      recipientID: opts.to ?? new Uint8Array(8),
+      timestamp: Date.now(),
+      signature: new Uint8Array(64),
+      payload: new Uint8Array([1, 2, 3]),
+    };
+  }
+
+  function boardPost(urgent: boolean): Packet {
+    const post = signBoardPost(
+      {
+        postID: new Uint8Array(16),
+        geohash: "",
+        content: "notice",
+        authorSigningKey: new Uint8Array(32),
+        authorNickname: "n",
+        createdAt: 1,
+        expiresAt: 2,
+        flags: urgent ? 0x01 : 0,
+      },
+      new Uint8Array(32).fill(7),
+    );
+    return {
+      ...pkt(PacketType.BOARD_POST),
+      payload: encodeBoardWire({ kind: "post", post }),
+    };
+  }
+
+  const JITTER: Record<string, [number, number]> = {
+    sparse: [10, 40],
+    mid: [60, 150],
+    dense: [80, 180],
+    crowded: [100, 220],
+  };
+  const jitterFor = (degree: number): [number, number] =>
+    degree <= 2
+      ? JITTER.sparse
+      : degree <= 5
+        ? JITTER.mid
+        : degree <= 9
+          ? JITTER.dense
+          : JITTER.crowded;
+  const HANDSHAKE: [number, number] = [10, 35];
+  const DIRECTED: [number, number] = [20, 60];
+  const STREAM: [number, number] = [8, 25];
+
+  function expectRelay(
+    packet: Packet,
+    degree: number,
+    ttl: number | null,
+    delay?: [number, number],
+  ): void {
+    for (let i = 0; i < 40; i++) {
+      const d = relayDecision(packet, degree, LOCAL);
+      if (ttl === null) {
+        expect(d).toBeNull();
+        return;
+      }
+      expect(d?.ttl).toBe(ttl);
+      expect(d!.delayMs).toBeGreaterThanOrEqual(delay![0]);
+      expect(d!.delayMs).toBeLessThanOrEqual(delay![1]);
+    }
+  }
+
+  const DEGREES = [0, 2, 3, 5, 6, 10];
+
+  test.each(DEGREES)("announce and urgent board post at degree %i", (deg) => {
+    const ttl = deg >= 6 ? 4 : 6;
+    expectRelay(pkt(PacketType.ANNOUNCE), deg, ttl, jitterFor(deg));
+    expectRelay(boardPost(true), deg, ttl, jitterFor(deg));
+  });
+
+  test.each(DEGREES)(
+    "public message and plain board post at degree %i",
+    (deg) => {
+      const ttl = deg >= 6 ? 4 : deg <= 2 ? 6 : 5;
+      for (const type of [
+        PacketType.CHANNEL_MSG,
+        PacketType.CHANNEL_MSG_AIRHOP,
+        PacketType.GROUP_MESSAGE,
+        PacketType.FILE_TRANSFER,
+        PacketType.LEAVE,
+      ]) {
+        expectRelay(pkt(type), deg, ttl, jitterFor(deg));
+      }
+      expectRelay(boardPost(false), deg, ttl, jitterFor(deg));
+    },
+  );
+
+  test.each(DEGREES)(
+    "directed types relay at full depth at degree %i",
+    (deg) => {
+      for (const type of [
+        PacketType.NOISE_ENCRYPTED,
+        PacketType.DR_ENCRYPTED,
+        PacketType.COURIER_ENV,
+        PacketType.PING,
+        PacketType.PONG,
+        PacketType.NOSTR_CARRIER,
+        PacketType.FRAGMENT,
+      ]) {
+        expectRelay(pkt(type, { to: OTHER }), deg, 6, DIRECTED);
+      }
+      expectRelay(
+        pkt(PacketType.NOISE_HANDSHAKE, { to: OTHER }),
+        deg,
+        6,
+        HANDSHAKE,
+      );
+      expectRelay(pkt(PacketType.NOISE_HANDSHAKE), deg, 6, HANDSHAKE);
+    },
+  );
+
+  test.each(DEGREES)("broadcast fragments and voice at degree %i", (deg) => {
+    const ttl = deg >= 6 ? 4 : 6;
+    expectRelay(pkt(PacketType.FRAGMENT), deg, ttl, STREAM);
+    expectRelay(pkt(PacketType.VOICE_FRAME), deg, ttl, STREAM);
+  });
+
+  // A recipient only makes these types directed; broadcast, they are clamped
+  // like anything else, and a recipient on another type changes nothing.
+  test("direction is by type as well as recipient", () => {
+    expectRelay(pkt(PacketType.NOISE_ENCRYPTED), 10, 4, JITTER.crowded);
+    expectRelay(pkt(PacketType.NOSTR_CARRIER), 3, 5, JITTER.mid);
+    expectRelay(
+      pkt(PacketType.CHANNEL_MSG, { to: OTHER }),
+      10,
+      4,
+      JITTER.crowded,
+    );
+    // bitchat-android's all-0xFF recipient is a broadcast.
+    const ff = new Uint8Array(8).fill(0xff);
+    expectRelay(pkt(PacketType.FRAGMENT, { to: ff }), 10, 4, STREAM);
+  });
+
+  test.each(DEGREES)("never relayed at degree %i", (deg) => {
+    expectRelay(pkt(PacketType.REQUEST_SYNC), deg, null);
+    expectRelay(pkt(PacketType.REQUEST_SYNC, { to: OTHER }), deg, null);
+    // Ours, whoever sent it, and addressed to us.
+    expectRelay(pkt(PacketType.ANNOUNCE, { from: LOCAL }), deg, null);
+    expectRelay(pkt(PacketType.CHANNEL_MSG, { from: LOCAL }), deg, null);
+    for (const type of [
+      PacketType.NOISE_ENCRYPTED,
+      PacketType.NOISE_HANDSHAKE,
+      PacketType.FRAGMENT,
+      PacketType.DR_ENCRYPTED,
+    ]) {
+      expectRelay(pkt(type, { to: LOCAL }), deg, null);
+    }
+    // Out of hops.
+    expectRelay(pkt(PacketType.CHANNEL_MSG, { ttl: 1 }), deg, null);
+    expectRelay(
+      pkt(PacketType.NOISE_ENCRYPTED, { ttl: 1, to: OTHER }),
+      deg,
+      null,
+    );
+  });
+
+  test("an inflated TTL is capped at 7, a low one is kept", () => {
+    expectRelay(pkt(PacketType.CHANNEL_MSG, { ttl: 255 }), 0, 6, JITTER.sparse);
+    expectRelay(
+      pkt(PacketType.NOISE_ENCRYPTED, { ttl: 255, to: OTHER }),
+      10,
+      6,
+      DIRECTED,
+    );
+    expectRelay(pkt(PacketType.CHANNEL_MSG, { ttl: 3 }), 10, 2, JITTER.crowded);
+    expectRelay(pkt(PacketType.CHANNEL_MSG, { ttl: 2 }), 4, 1, JITTER.mid);
+  });
+
+  test("relayLimit is the ceiling the clamp applies", () => {
+    expect(relayLimit(PacketType.CHANNEL_MSG, false, 0)).toBe(7);
+    expect(relayLimit(PacketType.CHANNEL_MSG, false, 4)).toBe(6);
+    expect(relayLimit(PacketType.BOARD_POST, true, 4)).toBe(7);
+    expect(relayLimit(PacketType.ANNOUNCE, false, 4)).toBe(7);
+    expect(relayLimit(PacketType.CHANNEL_MSG, false, 6)).toBe(5);
+    expect(relayLimit(PacketType.VOICE_FRAME, false, 4)).toBe(7);
+    expect(relayLimit(PacketType.FRAGMENT, false, 6)).toBe(5);
   });
 });

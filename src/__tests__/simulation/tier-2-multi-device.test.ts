@@ -25,11 +25,13 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { base64ToBytes } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
 } from "@core/mesh/discovery/announce-manager";
 import {
+  decodePacket,
   encodePacket,
   Flags,
   PacketType,
@@ -128,8 +130,8 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
   // relayed hop by hop down the line. Speaking the instant the LINKS are up
   // races that: the far nodes relay the message correctly but cannot yet
   // authenticate it, so they forward without displaying, and nothing re-sends
-  // it. That is the signature rule working as designed - bitchat behaves the
-  // same way - but it makes "did it arrive" a question about announce timing
+  // it. That is the signature rule working as designed (bitchat behaves the
+  // same way), but it makes "did it arrive" a question about announce timing
   // rather than about routing, which is what this scenario is for.
   const chainKnowsSender = await waitForCoarse(
     s.world,
@@ -168,7 +170,7 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
   // sync re-serving the message once the key is known, on its own cadence.
   // Asserting convergence the instant the far end lights up would be asserting
   // that no node is ever one hop behind on identity, which is untrue of any
-  // flood network - and made this scenario flaky rather than wrong.
+  // flood network, and would make this scenario flaky rather than wrong.
   await waitForCoarse(
     s.world,
     () => convergence(devices, channel).length === 0,
@@ -208,7 +210,7 @@ test("B02 a lossy, jittery, duplicating radio still converges", async () => {
 
   // Loss is real: this scenario does NOT assert everyone got everything, which
   // a 20%-loss radio cannot guarantee without retransmission. What it asserts
-  // is the thing that must hold regardless - nobody saw anything twice, and
+  // is the thing that must hold regardless: nobody saw anything twice, and
   // nobody saw anything forged.
   s.expectNone("exactly once", exactlyOnce(devices));
   s.expectNone("no duplicate text", noDuplicateText(devices, channel));
@@ -370,7 +372,7 @@ test("B05 a backgrounded iPhone disappears from Android but keeps its link", asy
   );
 
   // Now drop the link and ask the question that actually matters: which side
-  // can still DISCOVER the other. Asserting on link existence would be wrong -
+  // can still DISCOVER the other. Asserting on link existence would be wrong:
   // iOS keeps its central role in the background, so the iPhone dials out and
   // a link reappears regardless of what Android can see.
   radio.setIsolated("iphone", true);
@@ -484,17 +486,15 @@ test("B07 a crowd forming does not drown itself in control traffic", async () =>
   const prekey = radio.countOfType(0x24);
   const total = radio.packetsDelivered;
 
-  // This scenario exists because of a real defect it found. Every link-up used
-  // to mint a freshly timestamped ANNOUNCE and a freshly timestamped
-  // PREKEY_BUNDLE, and broadcast the bundle to EVERY link rather than the new
-  // one. A fresh timestamp means a fresh packet ID, which means no relay
-  // anywhere in the mesh could deduplicate it, so every one of those packets
-  // flood-filled the whole room at TTL 7. Twelve phones forming a room put
-  // 6,597 prekey bundles and 9,211 announces on the air inside half a second,
-  // and the queue was still growing when the harness gave up.
+  // A link-up must not mint a freshly timestamped ANNOUNCE and PREKEY_BUNDLE
+  // and broadcast the bundle to EVERY link rather than the new one. A fresh
+  // timestamp means a fresh packet ID, which no relay anywhere in the mesh can
+  // deduplicate, so each such packet flood-fills the whole room at TTL 7:
+  // twelve phones forming a room would put thousands of prekey bundles and
+  // announces on the air inside half a second.
   //
   // The numbers below are ceilings with headroom, not targets. They are here to
-  // fail loudly if control traffic ever goes quadratic again.
+  // fail loudly if control traffic goes quadratic.
   s.check(
     "the room settled rather than growing without bound",
     total < 12_000,
@@ -524,9 +524,9 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
   // links constantly). A crash or a dead battery is a link drop with no LEAVE,
   // so the other side comes back with no session while this one still seals
   // to the old chain. The message is dropped on arrival until the next
-  // handshake, and a direct-link "sent" used to be the one send that was not
-  // queued for retry. Now it stays queued until the receipt, and the retry
-  // reuses the message id so the recipient shows it exactly once.
+  // handshake, so a direct-link "sent" stays queued until the receipt like any
+  // other send, and the retry reuses the message id so the recipient shows it
+  // exactly once.
   const s = (scenario = new Scenario({
     id: "B08",
     title: "a DM into a peer that lost its session",
@@ -569,6 +569,136 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
     bob
       .messages(`dm:${alice.peerID}`)
       .find((m) => m.text === "after your reboot")?.status === "delivered",
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});
+
+test("B08b a rehandshake with a peer whose last announce is past the TTL ends on one ratchet", async () => {
+  // The ratchet is seeded when a handshake completes, from what we know of the
+  // peer then, and that lookup must not go through the 60s reachability
+  // window. Through it, a peer whose last announce had aged out would get no
+  // fresh ratchet and keep the previous session's: alice seals to her new
+  // chain, bob opens with his old one, and every DM between them fails
+  // silently.
+  const s = (scenario = new Scenario({
+    id: "B08b",
+    title: "rehandshake against an aged-out announce",
+    seed: 81,
+  }));
+  const { radio, devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+
+  bob.send(`dm:${alice.peerID}`, "before the reboot");
+  await waitFor(s.world, () => alice.texts(`dm:${bob.peerID}`).length > 0);
+
+  alice.relaunch();
+  // The moment bob answers alice's new handshake, her entry in his registry
+  // reads as last heard over a minute ago.
+  let aged = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== bob.id || aged) return;
+    const bin = globalThis.atob(data);
+    const raw = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    if (raw[1] !== PacketType.NOISE_HANDSHAKE) return;
+    const registry = (
+      bob.mesh as unknown as {
+        registry: { peers: Map<string, { lastSeenMs: number }> };
+      }
+    ).registry;
+    const entry = registry.peers.get(alice.peerID);
+    if (entry === undefined) return;
+    entry.lastSeenMs -= 2 * 60_000;
+    aged = true;
+  });
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+  alice.send(`dm:${bob.peerID}`, "after the reboot");
+
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the reboot"),
+    60_000,
+  );
+  stop();
+  s.check("bob's entry for alice was past its TTL at the handshake", aged);
+  s.check("the DM reaches bob", landed);
+  const delivered = await waitFor(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .find((m) => m.text === "after the reboot")?.status === "delivered",
+    60_000,
+  );
+  s.check("and alice sees it delivered", delivered);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "after the reboot")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});
+
+test("B08c a rehandshake whose msg3 is lost converges without a restart", async () => {
+  // Alice comes back from a crash and opens a new session. She completes it
+  // on bob's msg2; her msg3 never reaches him, so he keeps the old one. Each
+  // side now seals under keys the other does not hold, and neither side's
+  // recovery fires, since each still has a session. She then walks out of
+  // range for longer than his attempt lasts, as the link that lost msg3
+  // usually means.
+  const s = (scenario = new Scenario({
+    id: "B08c",
+    title: "rehandshake with a lost msg3",
+    seed: 82,
+  }));
+  const { radio, devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+
+  bob.send(`dm:${alice.peerID}`, "before the crash");
+  await waitFor(s.world, () => alice.texts(`dm:${bob.peerID}`).length > 0);
+
+  let lost = false;
+  const restore = radio.loseWrites((fromID, data) => {
+    if (fromID !== alice.id || lost) return false;
+    const p = decodePacket(base64ToBytes(data));
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 64) {
+      return false;
+    }
+    lost = true;
+    return true;
+  });
+  alice.relaunch();
+  await waitFor(s.world, () => lost, 30_000);
+  restore();
+  s.check("alice's msg3 was lost", lost);
+  radio.setIsolated(alice.id, true);
+  await s.world.advance(150_000);
+  radio.setIsolated(alice.id, false);
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 60_000);
+
+  bob.send(`dm:${alice.peerID}`, "after the crash");
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("after the crash"),
+    180_000,
+  );
+  s.check("bob's DM reaches alice", landed);
+  alice.send(`dm:${bob.peerID}`, "and back");
+  const back = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("and back"),
+    30_000,
+  );
+  s.check("and alice's reply reaches bob", back);
+  s.check(
+    "exactly once",
+    alice.texts(`dm:${bob.peerID}`).filter((t) => t === "after the crash")
+      .length === 1,
   );
   s.expectNone("process health", noCrashes(devices));
   s.assert();

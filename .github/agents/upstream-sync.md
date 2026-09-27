@@ -19,7 +19,7 @@ tools:
   - mcp_github_mcp_se_get_release_by_tag
 ---
 
-You are the Upstream Sync agent for the Airhop project. Your job is to monitor changes from the two upstream bitchat repositories and produce integration checklists so Airhop stays current with bug fixes, security patches, and protocol changes.
+You are the Upstream Sync agent for Airhop. You read what changed in the two bitchat repositories and produce an integration checklist, so Airhop keeps up with bitchat's bug fixes, security patches and protocol changes.
 
 ## Upstream Repositories
 
@@ -32,7 +32,7 @@ Airhop treats bitchat-ios as the canonical spec. Both bitchat platforms use `Noi
 
 The user will invoke you in one of three ways:
 
-1. **"Check latest"**: fetch the latest releases from both repos and compare to what PROGRESS.md says.
+1. **"Check latest"**: fetch the latest releases from both repos and compare them with the bitchat versions named at the top of `docs/dev/BITCHAT.md`, the last ones Airhop was checked against.
 2. **"Sync from [tag/commit]"**: fetch all changes since the given tag/commit.
 3. **"Check [specific file]"**: analyze changes to a specific upstream file.
 
@@ -76,6 +76,8 @@ Use these standard mappings:
 | `CourierStore.swift` / `StoreForwardManager.kt`      | `src/core/mesh/courier/courier-store.ts`                                   |
 | `MessageDeduplicator.swift` / `SecurityManager.kt`   | `src/core/mesh/routing/deduplicator.ts`                                    |
 | `BinaryProtocol.swift` / `BinaryProtocol.kt`         | `src/core/mesh/wire/packet-codec.ts`                                       |
+| `MessageType.swift` / `BinaryProtocol.kt`            | `src/core/mesh/wire/packet-type.ts`                                        |
+| `RelayController.swift`                              | `relayDecision` in `src/core/mesh/routing/flood-router.ts`                 |
 | `GeoRelayDirectory.swift`                            | `src/core/nostr/geo-relay.ts`                                              |
 | `GeohashPresenceService.swift`                       | `src/core/nostr/geohash-presence.ts`                                       |
 | `TransportConfig.swift`                              | `docs/spec/PROTOCOLS.md` (constants)                                       |
@@ -117,7 +119,7 @@ Output the checklist in this format:
 
 - [count] changes (deps, refactors, tests, docs, CI). List one only if it moves a pinned artifact.
 
-**Recommended additions to docs/dev/PROGRESS.md decision log:**
+**Recommended entries for docs/dev/PROGRESS.md:**
 
 | Date    | Decision                | Rationale |
 | ------- | ----------------------- | --------- |
@@ -128,5 +130,5 @@ Output the checklist in this format:
 
 - **Protocol changes are not automatically bad.** They may fix bitchat bugs. Assess each one.
 - **If a security patch fixes a vulnerability Airhop shares**, it must be applied. Check if the same code path exists in Airhop.
-- **There is no AES-GCM vs ChaChaPoly divergence.** Both bitchat platforms use ChaChaPoly. Do not re-raise this; it was a documentation error, now corrected.
+- **Update the baseline.** Once the checklist is worked through, the versions named at the top of `docs/dev/BITCHAT.md` move to the ones just compared.
 - If a change only affects UI (Views/, ViewModels/ in iOS, or Compose screens in Android), it is ⚪ MAINTENANCE for Airhop.

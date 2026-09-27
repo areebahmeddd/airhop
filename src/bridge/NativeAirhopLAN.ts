@@ -81,7 +81,8 @@ export interface Spec extends TurboModule {
   //
   // A second, separate socket for moving an identity to a new phone. No mDNS:
   // the new phone's code carries its addresses, so nothing about a move is
-  // advertised. Independent of startLAN, runs with the mesh stopped, and never
+  // advertised. Independent of startLAN: it opens while the mesh still runs,
+  // outlives the mesh stopping when the old phone freezes to send, and never
   // shares a link with it: a mesh write cannot reach a move connection and a
   // move write cannot reach a mesh link.
   //
@@ -94,6 +95,10 @@ export interface Spec extends TurboModule {
   // or served, ethernet, USB tethering), read afresh on every call so a caller
   // can poll while the person joins a network. Rejects with MOVE_LISTEN_FAILED.
   startMoveListener(): Promise<{ port: number; hosts: string[] }>;
+  // The IPv4 address and prefix length of every interface startMoveListener
+  // would list, read afresh on each call. The old phone dials a code's address
+  // only when one of these subnets holds it; that rule lives in TypeScript.
+  localSubnets(): Promise<{ address: string; prefixLength: number }[]>;
   // Close the listener and every move connection.
   stopMove(): Promise<void>;
   // Resolves with the connection ID once connected. Rejects with

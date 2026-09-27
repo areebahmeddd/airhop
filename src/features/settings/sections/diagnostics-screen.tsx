@@ -21,8 +21,8 @@ import {
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import { GCS_MAX_BYTES, GCS_TARGET_FPR } from "@core/mesh/sync/gossip-sync";
-import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   getDiagnosticsReport,
   shareDiagnostics,

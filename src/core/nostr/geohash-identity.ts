@@ -23,6 +23,7 @@ import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { getPublicKey } from "nostr-tools";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 
 // Domain separator, so this seed can never collide with another use of the
 // signing key.
@@ -82,13 +83,14 @@ export function deriveGeohashIdentity(
 // Display name convention shared with bitchat: the self-asserted nickname is
 // suffixed with the last 4 hex chars of the pubkey, so two people who pick the
 // same nickname in a public channel remain distinguishable. Nicknames here are
-// untrusted decoration; the pubkey is the identity.
+// untrusted decoration; the pubkey is the identity. Normalised as an announced
+// name is, so a bidi override cannot reorder the suffix that tells them apart.
 export function geohashDisplayName(
   pubkeyHex: string,
   nickname?: string,
 ): string {
   const suffix = pubkeyHex.slice(-4);
-  const nick = nickname?.trim();
+  const nick = nickname === undefined ? undefined : normalizeNickname(nickname);
   return nick !== undefined && nick.length > 0
     ? `${nick}#${suffix}`
     : `anon#${suffix}`;

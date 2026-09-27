@@ -6,8 +6,8 @@
 // Members must be reachable now (we need their Noise + signing keys to build the
 // roster and deliver the invite). Peers we lack keys for cannot be added yet.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { groupChannel } from "@store/group-store";
 import { usePeerStore } from "@store/peer-store";

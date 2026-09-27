@@ -25,12 +25,15 @@ import {
   decodeQRContent,
   type ContactCard,
 } from "@core/crypto/contact-exchange";
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
 import Avatar from "@ui/components/avatar";
@@ -225,10 +228,9 @@ export default function AddContactScreen({
   //
   // Permission is settled BEFORE the camera stage is entered, not alongside it.
   // Mounting CameraView while the OS prompt is still up hands it a denied
-  // camera; expo-camera doesn't re-acquire the device when the answer arrives,
-  // so granting access left the user staring at a permanently black preview.
-  // Asking first means the camera view only ever mounts with a camera it can
-  // actually open.
+  // camera, and expo-camera doesn't re-acquire the device when the answer
+  // arrives, so the preview stays black for good. Asking first means the camera
+  // view only ever mounts with a camera it can actually open.
   async function handleScanWithCamera(): Promise<void> {
     setError(null);
     const granted = await ensurePermission(
@@ -272,10 +274,10 @@ export default function AddContactScreen({
       setError(t("contacts.scan.photo_needed"));
       return;
     }
-    // Inside the try, not before it. The launch can reject on its own - the OS
-    // refusing to present, a provider crash - and this runs from an onPress as a
-    // bare async call, so a rejection there was unhandled: the sheet stayed open
-    // and the error line this screen already has was never set.
+    // Inside the try, not before it. The launch can reject on its own (the OS
+    // refusing to present, a provider crash), and this runs from an onPress as
+    // a bare async call, so a rejection outside it goes unhandled and the error
+    // line is never set.
     try {
       const picked = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
@@ -327,14 +329,19 @@ export default function AddContactScreen({
       // Reject a card whose peer ID isn't the fingerprint of its own Noise key.
       // Such a QR is claiming an identity it cannot prove. Accepting it would
       // mean every DM "to that contact" gets encrypted to whoever forged it.
-      const accepted =
-        getMeshService()?.addVerifiedContact(card, {
-          inPerson: foundInPerson,
-        }) ?? false;
-      if (!accepted) {
+      // One not read by the camera is also refused when it names a different
+      // key from the one held for them, which only the camera may replace.
+      const result = getMeshService()?.addVerifiedContact(card, {
+        inPerson: foundInPerson,
+      });
+      if (result !== "added") {
         // A security refusal rather than a typo, so it is felt as well as read.
         rejected();
-        setError(t("contacts.scan.tampered"));
+        setError(
+          result === "conflict"
+            ? t("contacts.scan.key_conflict")
+            : t("contacts.scan.tampered"),
+        );
         setStage("entry");
         return;
       }
@@ -396,7 +403,7 @@ export default function AddContactScreen({
   const confirmPill: {
     label: string;
     color: string;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   } = alreadyContact
     ? {
         label: T("contacts.scan.already_added"),
@@ -534,8 +541,7 @@ export default function AddContactScreen({
               <View style={styles.dividerLine} />
             </View>
 
-            {/* One grouped card with a hairline divider, matching the
-                "Start something new" chooser so the two sheets read alike. */}
+            {/* Matches the "Start something new" chooser. */}
             <View style={styles.optionGroup}>
               <Pressable
                 style={styles.optionRow}

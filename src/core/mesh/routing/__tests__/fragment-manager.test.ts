@@ -88,10 +88,10 @@ describe("fragmentPacket", () => {
     expect(frags.length).toBe(3);
   });
 
-  // The regression that matters. Asserting the payload size was what let a
-  // 557-byte frame ship: the payload was 469 and correct by that measure, while
-  // the header, senderID and a 64-byte signature pushed the encoded frame 45
-  // bytes past what any BLE link can carry. Measure what goes on the wire.
+  // The check that matters. A payload of 469 bytes is correct by the payload's
+  // own measure, while the header, senderID and a 64-byte signature push the
+  // encoded frame to 557, 45 bytes past what any BLE link can carry. Measure
+  // what goes on the wire.
   test("every encoded fragment frame fits one BLE write", () => {
     const packet = makeLargePacket(FRAG_DATA_SIZE * 3, identity);
     const frags = fragmentPacket(packet, identity);
@@ -164,6 +164,29 @@ describe("parseFragmentPayload", () => {
     const buf = new Uint8Array(13 + 4);
     // total=0
     expect(decodeFragmentPayload(buf)).toBeNull();
+  });
+
+  // No sender cuts a non-final fragment under 64 bytes (bitchat-ios
+  // minimumChunkSize), so tiny ones only pad out a slot's entry count.
+  function header(index: number, total: number, dataBytes: number) {
+    const buf = new Uint8Array(13 + dataBytes);
+    const view = new DataView(buf.buffer);
+    view.setUint16(8, index, false);
+    view.setUint16(10, total, false);
+    return buf;
+  }
+
+  test("refuses an empty fragment, final or not", () => {
+    expect(decodeFragmentPayload(header(0, 3, 0))).toBeNull();
+    expect(decodeFragmentPayload(header(2, 3, 0))).toBeNull();
+  });
+
+  test("refuses a non-final fragment under 64 bytes, not a final one", () => {
+    expect(decodeFragmentPayload(header(0, 3, 10))).toBeNull();
+    expect(decodeFragmentPayload(header(1, 3, 63))).toBeNull();
+    expect(decodeFragmentPayload(header(1, 3, 64))).not.toBeNull();
+    expect(decodeFragmentPayload(header(2, 3, 10))).not.toBeNull();
+    expect(decodeFragmentPayload(header(0, 1, 1))).not.toBeNull();
   });
 });
 
@@ -442,8 +465,8 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
   test("an oversized fragment does not destroy the assembly it targets", () => {
     // A fragment is capped at 467 bytes on the wire, but the outer packet may
     // be compressed and the decoder inflates up to the sender-declared size, so
-    // one small packet can present a huge `data`. This used to delete the whole
-    // assembly: a remote kill switch for any transfer whose stream ID was
+    // one small packet can present a huge `data`. Deleting the whole assembly
+    // over it would be a remote kill switch for any transfer whose stream ID is
     // observable on the air, with no error at either end.
     const identity = makeIdentity();
     const packet = makeLargePacket(FRAG_DATA_SIZE * 4, identity);
@@ -503,7 +526,7 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
       other[1] = (i >> 8) & 0xff;
       deliver(
         other,
-        spoofFragment(other, 0, 4, PacketType.CHANNEL_MSG, new Uint8Array(4)),
+        spoofFragment(other, 0, 4, PacketType.CHANNEL_MSG, new Uint8Array(64)),
       );
     }
     expect(manager.size).toBe(128);

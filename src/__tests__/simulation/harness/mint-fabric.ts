@@ -3,8 +3,8 @@
 // The seam is `globalThis.fetch`, which is what @cashu/cashu-ts uses for every
 // call. Everything above the wire therefore runs for real: real blinding, real
 // unblinding, real proof selection, real fee arithmetic, real DLEQ
-// verification. The mint does real BDHKE too - it is only forty lines of
-// secp256k1 - because a mint that returned made-up signatures would make every
+// verification. The mint does real BDHKE too (it is only forty lines of
+// secp256k1), because a mint that returned made-up signatures would make every
 // DLEQ check pass or fail for the wrong reason, and DLEQ is precisely what
 // stands between a user and a forged token.
 //
@@ -21,7 +21,13 @@
 //   * Failure is injectable at the transport, so "the mint went away mid-swap"
 //     is the same event the app would see in a tunnel.
 
-import { createDLEQProof, deriveKeysetId } from "@cashu/cashu-ts";
+import {
+  createDLEQProof,
+  deriveKeysetId,
+  getSecretKind,
+  isP2PKSpendAuthorised,
+  type Proof,
+} from "@cashu/cashu-ts";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
@@ -66,15 +72,13 @@ function simInvoiceSats(request: string): number {
 // this wrong would make every signature verify against nothing.
 //
 // The separator is `Secp256k1_HashToCurve_Cashu_`, verified against the NUT-00
-// test vectors in mint-fabric.test.ts. This read `HashToCurvePoint_` for a long
-// time and nothing caught it, because the only consumer was `yFor`, which
-// compares the fabric's own Y against the fabric's own Y: a double-spend was
-// still refused, so W03 passed on a hash the rest of the world disagreed with.
-// What it silently broke was NUT-07 `checkstate`, where the CLIENT computes Y
-// with cashu-ts. Every proof therefore came back UNSPENT no matter what, so any
-// scenario relying on the mint reporting a spent proof - reconcile settling a
-// send, refreshAccount dropping spent proofs - could not have failed if it were
-// wrong, and could not have passed if it were right.
+// test vectors in mint-fabric.test.ts. The fabric's own double-spend check
+// cannot catch a wrong one, since `yFor` compares the fabric's Y against the
+// fabric's Y. NUT-07 `checkstate` can, because the CLIENT computes Y with
+// cashu-ts: under a wrong separator every proof comes back UNSPENT, and any
+// scenario relying on the mint reporting a spent proof (reconcile settling a
+// send, refreshAccount dropping spent proofs) could neither fail when wrong nor
+// pass when right.
 const DOMAIN = new TextEncoder().encode("Secp256k1_HashToCurve_Cashu_");
 
 function hashToCurve(
@@ -106,8 +110,8 @@ export interface MintConditions {
   // returning the outputs. The nastiest real failure: value has moved and the
   // client does not know where.
   swapVanishes: boolean;
-  // The mint completes the swap in full - inputs spent, outputs signed,
-  // response cached - and then the answer never reaches the wallet. Distinct
+  // The mint completes the swap in full (inputs spent, outputs signed,
+  // response cached), and then the answer never reaches the wallet. Distinct
   // from `swapVanishes` in the one way that matters: there IS a successful
   // response, so a NUT-19 mint can hand the same one back to an identical
   // retry. This is the ordinary shape of the failure (a dropped connection, an
@@ -153,7 +157,7 @@ export interface MintConditions {
   // The mint pays the invoice, marks the inputs spent, and then the response
   // never reaches the wallet. The worst melt failure and the realistic one: a
   // dropped connection at exactly the wrong moment. The wallet cannot know
-  // whether it paid, so it must not guess in either direction - releasing the
+  // whether it paid, so it must not guess in either direction: releasing the
   // proofs would double-count money that is gone, dropping them would throw away
   // the unused routing reserve the mint is holding for it.
   meltVanishes: boolean;
@@ -203,7 +207,10 @@ interface Keyset {
 
 export class MintFabric {
   readonly url: string;
-  private readonly keyset: Keyset;
+  // Oldest first; the last is the active one. Earlier keysets are listed as
+  // inactive after a rotation and still honoured as inputs, as NUT-02 says.
+  private readonly keysets: Keyset[] = [];
+  private readonly keysetVersion: 0 | 1;
   // Every proof secret the mint has signed, and whether it has been spent.
   private conditions: MintConditions = { ...DEFAULT_CONDITIONS };
   private readonly quotes = new Map<
@@ -260,12 +267,21 @@ export class MintFabric {
     opts: { keysetVersion?: 0 | 1 } = {},
   ) {
     this.url = url;
+    this.keysetVersion = opts.keysetVersion ?? 0;
+    this.keysets.push(this.buildKeyset("airhop-sim-mint"));
+  }
+
+  private get keyset(): Keyset {
+    return this.keysets[this.keysets.length - 1]!;
+  }
+
+  private buildKeyset(label: string): Keyset {
     const keys = new Map<number, Uint8Array>();
     const publicKeys: Record<string, string> = {};
     for (const amount of DENOMINATIONS) {
       // Deterministic per denomination, so a scenario replays identically.
       const priv = sha256(
-        new TextEncoder().encode(`airhop-sim-mint-${String(amount)}`),
+        new TextEncoder().encode(`${label}-${String(amount)}`),
       );
       keys.set(amount, priv);
       publicKeys[String(amount)] = bytesToHex(
@@ -282,19 +298,24 @@ export class MintFabric {
     // mint's keyset list expands. A v2 id also covers the unit and fee, so it
     // holds only while `inputFeePpk` stays 0.
     const id =
-      opts.keysetVersion === 1
+      this.keysetVersion === 1
         ? deriveKeysetId(publicKeys, {
             versionByte: 1,
             unit: "sat",
             input_fee_ppk: 0,
           })
         : deriveKeysetId(publicKeys, { versionByte: 0 });
-    this.keyset = {
-      id,
-      unit: "sat",
-      keys,
-      publicKeys,
-    };
+    return { id, unit: "sat", keys, publicKeys };
+  }
+
+  // A key rotation: a new active keyset signs from now on, and the old one is
+  // listed inactive with no keys in `/v1/keys` (NUT-01 serves active keysets
+  // only), fetchable by id and still honoured as an input.
+  rotateKeyset(): void {
+    this.keysets.push(
+      this.buildKeyset(`airhop-sim-mint-r${String(this.keysets.length)}`),
+    );
+    this.world.say("MINT_KEYSET_ROTATED", this.keyset.id);
   }
 
   // ---- lifecycle ----
@@ -417,8 +438,8 @@ export class MintFabric {
 
   private dispatch(path: string, body: Record<string, unknown>): Response {
     if (path.startsWith("/v1/info")) return this.info();
-    if (path.startsWith("/v1/keysets")) return this.keysets();
-    if (path.startsWith("/v1/keys")) return this.keys();
+    if (path.startsWith("/v1/keysets")) return this.listKeysets();
+    if (path.startsWith("/v1/keys")) return this.keys(path);
     if (path.startsWith("/v1/checkstate")) return this.checkState(body);
     if (path.startsWith("/v1/restore")) return this.restore(body);
     if (path.startsWith("/v1/swap")) return this.swap(body);
@@ -523,29 +544,74 @@ export class MintFabric {
     });
   }
 
-  private keysets(): Response {
+  private listKeysets(): Response {
     return this.json({
-      keysets: [
-        {
-          id: this.keyset.id,
-          unit: this.keyset.unit,
-          active: true,
-          input_fee_ppk: this.conditions.inputFeePpk,
-        },
-      ],
+      keysets: this.keysets.map((keyset) => ({
+        id: keyset.id,
+        unit: keyset.unit,
+        active: keyset === this.keyset,
+        input_fee_ppk: this.conditions.inputFeePpk,
+      })),
     });
   }
 
-  private keys(): Response {
+  // `/v1/keys` serves the active keyset; `/v1/keys/{id}` any listed one.
+  private keys(path: string): Response {
+    const id = path.slice("/v1/keys/".length);
+    const keyset =
+      id.length > 0 ? this.keysets.find((k) => k.id === id) : this.keyset;
+    if (keyset === undefined) {
+      return this.json({ detail: "keyset not found", code: 12001 }, 400);
+    }
     return this.json({
-      keysets: [
-        {
-          id: this.keyset.id,
-          unit: this.keyset.unit,
-          keys: this.keyset.publicKeys,
-        },
-      ],
+      keysets: [{ id: keyset.id, unit: keyset.unit, keys: keyset.publicKeys }],
     });
+  }
+
+  // BDHKE's check on an input: C == k * hash_to_curve(secret), for the key of
+  // its keyset and amount. A mint that skipped it would redeem any coin a
+  // forger typed out, and every forged-token scenario would pass at the mint.
+  //
+  // Then NUT-11: a coin whose secret is a P2PK lock is spent only with a
+  // witness that key signed. Without it a coin locked to someone else redeems
+  // here, and every path that signs a locked coin passes with the signing
+  // dropped.
+  private refusesInput(input: {
+    id: string;
+    amount: number;
+    secret: string;
+    C: string;
+    witness?: unknown;
+  }): boolean {
+    const priv = this.keysets
+      .find((k) => k.id === input.id)
+      ?.keys.get(input.amount);
+    if (priv === undefined) return true;
+    try {
+      const expected = hashToCurve(
+        new TextEncoder().encode(input.secret),
+      ).multiply(BigInt(`0x${bytesToHex(priv)}`));
+      if (!expected.equals(secp256k1.Point.fromHex(input.C))) return true;
+      return (
+        isP2PKLocked(input.secret) &&
+        !isP2PKSpendAuthorised(input as unknown as Proof)
+      );
+    } catch {
+      return true;
+    }
+  }
+
+  // NUT-02: a mint signs only under its active keyset. 12002 is what makes a
+  // wallet with a stale snapshot repair it, so signing under an old keyset
+  // here would let a rotation scenario pass that a real mint would refuse.
+  private refusesOutputs(outputs: { id: string }[]): Response | null {
+    for (const output of outputs) {
+      if (output.id === this.keyset.id) continue;
+      return this.keysets.some((k) => k.id === output.id)
+        ? this.json({ detail: "Keyset is inactive.", code: 12002 }, 400)
+        : this.json({ detail: "Keyset is not known.", code: 12001 }, 400);
+    }
+    return null;
   }
 
   // NUT-07: which of these proofs has the mint already seen spent?
@@ -578,7 +644,17 @@ export class MintFabric {
       id: string;
     }[];
 
-    // Double-spend check FIRST, before anything is marked. Whoever gets here
+    // Nutshell's order: every input must be the mint's own signature before
+    // its spent state is even consulted.
+    if (inputs.some((input) => this.refusesInput(input))) {
+      this.world.say("MINT_INPUT_UNVERIFIED", "a proof the mint never signed");
+      return this.json(
+        { detail: "Token could not be verified.", code: 10003 },
+        400,
+      );
+    }
+
+    // Double-spend check next, before anything is marked. Whoever gets here
     // second is refused, which is the entire security model of ecash.
     for (const input of inputs) {
       const y = this.yFor(input.secret);
@@ -591,6 +667,9 @@ export class MintFabric {
         return this.json({ detail: "Token already spent.", code: 11001 }, 400);
       }
     }
+
+    const outputRefusal = this.refusesOutputs(outputs);
+    if (outputRefusal !== null) return outputRefusal;
 
     // NUT-02: sum(inputs) - fees == sum(outputs). Enforced as an inequality
     // because a wallet is free to ask for less than it is owed, and refused as
@@ -662,12 +741,14 @@ export class MintFabric {
     if (quote.issued) {
       return this.json({ detail: "Quote already issued.", code: 20002 }, 400);
     }
-    quote.issued = true;
     const outputs = (body.outputs ?? []) as {
       amount: number;
       B_: string;
       id: string;
     }[];
+    const outputRefusal = this.refusesOutputs(outputs);
+    if (outputRefusal !== null) return outputRefusal;
+    quote.issued = true;
     return this.json({ signatures: outputs.map((o) => this.blindSign(o)) });
   }
 
@@ -746,7 +827,18 @@ export class MintFabric {
   }
 
   private melt(body: Record<string, unknown>): Response {
-    const inputs = (body.inputs ?? []) as { secret: string; amount: number }[];
+    const inputs = (body.inputs ?? []) as {
+      id: string;
+      secret: string;
+      amount: number;
+      C: string;
+    }[];
+    if (inputs.some((input) => this.refusesInput(input))) {
+      return this.json(
+        { detail: "Token could not be verified.", code: 10003 },
+        400,
+      );
+    }
     for (const input of inputs) {
       const y = this.yFor(input.secret);
       if (this.spentYs.has(y)) {
@@ -754,6 +846,11 @@ export class MintFabric {
         return this.json({ detail: "Token already spent.", code: 11001 }, 400);
       }
     }
+
+    const outputRefusal = this.refusesOutputs(
+      (body.outputs ?? []) as { id: string }[],
+    );
+    if (outputRefusal !== null) return outputRefusal;
 
     const quoteId = typeof body.quote === "string" ? body.quote : "";
     const quote = this.quotes.get(quoteId);
@@ -801,9 +898,9 @@ export class MintFabric {
     //
     // NOT merely the unused reserve. Those differ whenever the wallet could not
     // assemble inputs summing exactly to amount + reserve, which is the normal
-    // case for a balance made of powers of two. Getting this wrong made the
+    // case for a balance made of powers of two. Getting this wrong makes the
     // fabric quietly pocket the difference, and a wallet losing money to
-    // over-payment would have looked like a passing test.
+    // over-payment looks like a passing test.
     const reserve = this.conditions.meltFeeReserve;
     const unused = Math.max(
       0,
@@ -846,7 +943,7 @@ export class MintFabric {
     if (quote !== undefined) quote.change = change;
 
     if (this.conditions.meltVanishes) {
-      // Paid, inputs burned, change signed - and the wallet hears nothing. It
+      // Paid, inputs burned, change signed, and the wallet hears nothing. It
       // must not guess. Only the quote can tell it what happened.
       this.world.say("MINT_MELT_VANISHED", "paid, but the answer never landed");
       throw new TypeError("Network request failed");
@@ -889,7 +986,9 @@ export class MintFabric {
     C_: string;
     dleq: { e: string; s: string };
   } {
-    const priv = this.keyset.keys.get(output.amount);
+    // Every caller has refused outputs under any other keyset.
+    const keyset = this.keyset;
+    const priv = keyset.keys.get(output.amount);
     if (priv === undefined) {
       throw new Error(`no key for denomination ${output.amount}`);
     }
@@ -898,7 +997,7 @@ export class MintFabric {
     this.totalIssued += output.amount;
     const dleq = createDLEQProof(B, priv);
     const signature = {
-      id: this.keyset.id,
+      id: keyset.id,
       amount: output.amount,
       C_: C.toHex(true),
       dleq: { e: bytesToHex(dleq.e), s: bytesToHex(dleq.s) },
@@ -915,6 +1014,15 @@ export class MintFabric {
 
   isSpent(secret: string): boolean {
     return this.spentYs.has(this.yFor(secret));
+  }
+}
+
+// A secret that does not parse as NUT-10 is a plain random one.
+function isP2PKLocked(secret: string): boolean {
+  try {
+    return getSecretKind(secret) === "P2PK";
+  } catch {
+    return false;
   }
 }
 

@@ -9,18 +9,23 @@
 // worse than one that does not parse at all, because the UI would show it as
 // incoming value.
 
+import { Amount, type Proof } from "@cashu/cashu-ts";
 import { generateSecretKey, getPublicKey, type Event } from "nostr-tools";
+import type { NostrClient } from "../../nostr/nostr-client";
 import {
   KIND_NUTZAP,
   KIND_NUTZAP_INFO,
+  fetchNutzapInfo,
   parseNutzap,
   parseNutzapInfo,
+  publishNutzap,
+  subscribeNutzaps,
 } from "../nutzap";
 
 const MINT = "https://mint.example.com";
 // 33-byte compressed secp256k1 key: what NIP-61 locks proofs to.
 const P2PK = "02" + "ab".repeat(32);
-// 32-byte x-only Nostr key: valid as an author, invalid as a P2PK lock.
+// 32-byte x-only Nostr key: an author, and never a P2PK lock as it stands.
 const NOSTR_PUB = "ab".repeat(32);
 
 function event(overrides: Partial<Event>): Event {
@@ -68,15 +73,33 @@ describe("parseNutzapInfo", () => {
     expect(info?.pubkey).toBe(NOSTR_PUB);
   });
 
-  it("rejects an x-only Nostr key in the pubkey tag", () => {
-    // Locking proofs to a 32-byte key produces ecash nobody can ever unlock,
-    // including the sender. Falling back to event.pubkey would do exactly that.
+  it("reads an x-only pubkey tag as the 02-prefixed key NIP-61 locks to", () => {
+    // What NDK-based wallets publish. NUT-11 signatures are BIP-340, checked
+    // against the x coordinate, so the holder spends a 02 lock whatever the
+    // key's parity.
+    const xOnly = "CD".repeat(32);
     const info = parseNutzapInfo(
       event({
         kind: KIND_NUTZAP_INFO,
         tags: [
           ["mint", MINT],
-          ["pubkey", NOSTR_PUB],
+          ["pubkey", xOnly],
+        ],
+      }),
+    );
+    expect(info?.p2pkPubkey).toBe("02" + "cd".repeat(32));
+  });
+
+  it("never falls back to the author's Nostr key without a pubkey tag", () => {
+    // NIP-61: the lock key MUST NOT be the user's main Nostr key. Their wallet
+    // watches only its own P2PK key, so a lock to anything else never reaches
+    // it.
+    const info = parseNutzapInfo(
+      event({
+        kind: KIND_NUTZAP_INFO,
+        tags: [
+          ["mint", MINT],
+          ["pubkey", "ab".repeat(31)],
         ],
       }),
     );
@@ -126,6 +149,16 @@ describe("parseNutzap", () => {
     expect(zap?.mintUrl).toBe(MINT);
     expect(zap?.unit).toBe("sat");
     expect(zap?.comment).toBe("thanks!");
+  });
+
+  it("reads NIP-61's unit tag, lowercased, and refuses a label that is not a code", () => {
+    const base = [proofTag(2), ["u", MINT]];
+    expect(parseNutzap(event({ tags: [...base, ["unit", "USD"]] }))?.unit).toBe(
+      "usd",
+    );
+    expect(
+      parseNutzap(event({ tags: [...base, ["unit", "1 BTC\n+"]] }))?.unit,
+    ).toBe("sat");
   });
 
   it("returns null without a mint, since the proofs could not be redeemed", () => {
@@ -190,10 +223,113 @@ describe("parseNutzap", () => {
   });
 });
 
+describe("fetchNutzapInfo", () => {
+  function info10019(created_at: number, id: string, p2pk = P2PK): Event {
+    return event({
+      kind: KIND_NUTZAP_INFO,
+      created_at,
+      id,
+      tags: [
+        ["mint", MINT, "sat"],
+        ["pubkey", p2pk],
+      ],
+    });
+  }
+
+  function clientAnswering(events: Event[]): NostrClient {
+    return {
+      queryEvents: jest.fn(() => Promise.resolve(events)),
+    } as unknown as NostrClient;
+  }
+
+  it("takes the newest copy, not the fastest relay's", async () => {
+    const newer = "02" + "ee".repeat(32);
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([
+        info10019(100, "a".repeat(64)),
+        info10019(200, "b".repeat(64), newer),
+      ]),
+    );
+    expect(info?.p2pkPubkey).toBe(newer);
+  });
+
+  it("breaks a tie on the lowest id, as NIP-01 says", async () => {
+    const lower = "02" + "11".repeat(32);
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([
+        info10019(100, "b".repeat(64)),
+        info10019(100, "a".repeat(64), lower),
+      ]),
+    );
+    expect(info?.p2pkPubkey).toBe(lower);
+  });
+
+  it("honours a newer event that opts out, rather than an older valid one", async () => {
+    const optOut = event({
+      kind: KIND_NUTZAP_INFO,
+      created_at: 300,
+      id: "c".repeat(64),
+      tags: [],
+    });
+    const info = await fetchNutzapInfo(
+      NOSTR_PUB,
+      clientAnswering([info10019(100, "a".repeat(64)), optOut]),
+    );
+    expect(info).toBeNull();
+  });
+});
+
+describe("publishNutzap", () => {
+  it("carries each proof's DLEQ witness with r, and the unit", async () => {
+    const publish = jest.fn(() => Promise.resolve());
+    const dleq = { e: "01".repeat(32), s: "02".repeat(32), r: "03".repeat(32) };
+    const published = await publishNutzap({
+      proofs: [
+        {
+          id: "00ad268c4d1f5826",
+          amount: Amount.from(8),
+          secret: "s1",
+          C: "02" + "cd".repeat(32),
+          dleq,
+        } as unknown as Proof,
+      ],
+      mintUrl: MINT,
+      unit: "sat",
+      recipientPubkey: NOSTR_PUB,
+      senderPrivKey: generateSecretKey(),
+      client: { publish } as unknown as NostrClient,
+    });
+
+    const proofTagJson = published.tags.find((t) => t[0] === "proof")?.[1];
+    expect(JSON.parse(proofTagJson ?? "{}").dleq).toEqual(dleq);
+    expect(published.tags).toContainEqual(["unit", "sat"]);
+    // And our own parser reads it back, witness included.
+    expect(parseNutzap(published)?.proofs[0]?.dleq).toEqual(dleq);
+  });
+});
+
+describe("subscribeNutzaps", () => {
+  it("asks relays only for nutzaps from the mints we list (NIP-61 #u)", () => {
+    const subscribe = jest.fn(() => ({ close: jest.fn() }));
+    const client = { subscribe } as unknown as NostrClient;
+    subscribeNutzaps(NOSTR_PUB, [MINT], client, () => {});
+    const [filters] = subscribe.mock.calls[0] as unknown as [
+      Record<string, unknown>[],
+    ];
+    expect(filters[0]).toMatchObject({
+      kinds: [KIND_NUTZAP],
+      "#p": [NOSTR_PUB],
+      "#u": [MINT],
+    });
+  });
+});
+
 describe("key shapes", () => {
-  it("a Nostr identity key is not a valid P2PK lock key", () => {
-    // Documents the distinction the parser enforces: nostr-tools' getPublicKey
-    // returns the 32-byte x-only form, which is never a valid `pubkey` tag.
+  it("a Nostr identity key is x-only, not a compressed P2PK key", () => {
+    // nostr-tools' getPublicKey returns the 32-byte x-only form, which a
+    // sender prefixes with 02 before locking to it (NIP-61).
     const nostrPub = getPublicKey(generateSecretKey());
     expect(nostrPub).toHaveLength(64);
     expect(/^0[23][0-9a-f]{64}$/.test(nostrPub)).toBe(false);

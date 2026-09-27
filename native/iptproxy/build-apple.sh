@@ -74,6 +74,13 @@ rm -rf "$BUILD_ROOT/.git"
 
 cd "$SRC_DIR"
 
+# See build-android.sh.
+if [ -n "${IPTPROXY_GO_RAISES:-}" ]; then
+  info "Raising $IPTPROXY_GO_RAISES"
+  # shellcheck disable=SC2086
+  go get $IPTPROXY_GO_RAISES
+fi
+
 resolved="$(go list -m golang.org/x/mobile)"
 info "gomobile: $resolved"
 grep -q "$GOMOBILE_VERSION" <<<"$resolved" \

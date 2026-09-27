@@ -100,13 +100,17 @@ struct ArtiStatus {
 // ---- Notification names -----------------------------------------------------
 
 extension Notification.Name {
+  /// Posted once Arti is running, never before. AirhopTorModule relays Arti's
+  /// own status with it, and a client that does not exist yet reads as
+  /// blocked rather than starting. Android's first status comes after the
+  /// bind too.
   public static let AirhopTorWillStart = Notification.Name("AirhopTorWillStart")
-  public static let AirhopTorWillRestart = Notification.Name("AirhopTorWillRestart")
   public static let AirhopTorDidBecomeReady = Notification.Name("AirhopTorDidBecomeReady")
-  /// Terminal for this attempt: Arti reporting it cannot make forward
-  /// progress, or the bootstrap deadline elapsing. Without it the app cannot
-  /// tell "still forming" from "never coming", and goes on claiming onion
-  /// routing over a client that has given up.
+  /// Arti reporting it cannot make forward progress, the bootstrap deadline
+  /// elapsing, or a start that failed. Without it the app cannot tell "still
+  /// forming" from "never coming", and goes on claiming onion routing over a
+  /// client that has given up. Not terminal while Arti runs: it keeps
+  /// retrying, and a circuit that lands later posts DidBecomeReady.
   public static let AirhopTorDidStall = Notification.Name("AirhopTorDidStall")
 }
 
@@ -206,7 +210,6 @@ public final class AirhopTorManager: ObservableObject {
     attemptEpoch &+= 1
     let epoch = attemptEpoch
     isStarting = true
-    NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
 
     guard let dir = dataDirectoryURL()?.path else {
       failAttempt(epoch)
@@ -276,10 +279,9 @@ public final class AirhopTorManager: ObservableObject {
           return
         }
         // The listener is bound by the time start returns, so there is
-        // nothing to probe for. The implementation this replaced bound
-        // the port only after bootstrap, which is why it needed a
-        // separate SOCKS reachability poll and a second timeout to go
-        // with it.
+        // nothing to probe for: no SOCKS reachability poll, and no second
+        // timeout to go with one.
+        NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
         self.startStatusPoll(epoch)
         self.startPathMonitorIfNeeded()
         completion?(true)
@@ -352,7 +354,6 @@ public final class AirhopTorManager: ObservableObject {
     }
     guard !restarting, !isStarting else { return }
     restarting = true
-    NotificationCenter.default.post(name: .AirhopTorWillRestart, object: nil)
     isStarting = true
     startIfNeeded()
     restarting = false
@@ -451,15 +452,27 @@ public final class AirhopTorManager: ObservableObject {
 
   private var pollTask: Task<Void, Never>?
 
+  /// Whether the poll has said the current stall already, so it is said once
+  /// rather than every ten seconds. Rearmed when the stall clears, and by each
+  /// new poll. A property rather than a local in the poll, because the
+  /// main-actor closure that writes it is @Sendable.
+  private var stallReported = false
+
   /// Mirror Arti's status into the published properties.
   ///
   /// Polling, not a callback, because a callback from a Rust thread
   /// into Swift would need its own lifetime rules and the thing being watched
   /// changes a handful of times a minute. The interval is what keeps it cheap:
   /// once a second while something is happening, once every ten seconds when
-  /// nothing is.
+  /// nothing is. The same cadence as AirhopTorModule.kt.
+  ///
+  /// A stall is reported once and the poll goes on while Arti runs: Arti keeps
+  /// retrying after a blockage, and a bridge can land well past the deadline.
+  /// JS opens the relay pool only on the ready this reports, so stopping here
+  /// would leave it shut until a network change or a foreground.
   private func startStatusPoll(_ epoch: Int) {
     stopStatusPoll()
+    stallReported = false
     let deadline = Date().addingTimeInterval(Self.bootstrapDeadline)
     pollTask = Task { [weak self] in
       while !Task.isCancelled {
@@ -469,31 +482,30 @@ public final class AirhopTorManager: ObservableObject {
           guard epoch == self.attemptEpoch else { return true }
           self.applyStatus(status)
 
-          if status.blocked {
-            // Arti says it cannot get there from here. This is the
-            // answer a censored network gives, and reporting it is
-            // the difference between "Airhop is broken" and "this
-            // network blocks Tor".
-            self.reportStall(epoch)
-            return true
-          }
           if !status.running {
-            // Gone without anyone here asking for it.
+            // Gone without anyone here asking for it. Nothing changes on
+            // its own from here, and the next start polls again.
             self.reportStall(epoch)
+            self.stopStatusPoll()
             return true
           }
-          if !status.ready, Date() >= deadline {
-            // The backstop: neither progressing nor admitting it.
-            self.reportStall(epoch)
-            return true
-          }
+          // Blocked is Arti saying it cannot get there from here, the
+          // answer a censored network gives, and reporting it is the
+          // difference between "Airhop is broken" and "this network
+          // blocks Tor". The deadline is the backstop: neither
+          // progressing nor admitting it.
+          let stuck = status.blocked || (!status.ready && Date() >= deadline)
+          if stuck, !self.stallReported { self.reportStall(epoch) }
+          self.stallReported = stuck
           return false
         }
         if stop { return }
-        // Ready is the quiet state, but not a finished one: circuits are
-        // lost and rebuilt, and a claim that stops being true has to be
-        // withdrawn rather than left standing until the next foreground.
-        let interval: UInt64 = status.ready ? 10_000_000_000 : 1_000_000_000
+        // Ready and blocked are the quiet states, but not finished ones:
+        // circuits are lost and rebuilt, a claim that stops being true has
+        // to be withdrawn rather than left standing until the next
+        // foreground, and Arti keeps retrying a blockage.
+        let quiet = status.ready || status.blocked
+        let interval: UInt64 = quiet ? 10_000_000_000 : 1_000_000_000
         try? await Task.sleep(nanoseconds: interval)
       }
     }
@@ -523,12 +535,11 @@ public final class AirhopTorManager: ObservableObject {
     NotificationCenter.default.post(name: .AirhopTorDidStall, object: nil)
   }
 
-  /// A start that ran and then stopped going anywhere.
+  /// A start that ran and then stopped going anywhere, or went away.
   private func reportStall(_ epoch: Int) {
     guard epoch == attemptEpoch else { return }
     isStarting = false
     isReady = false
-    stopStatusPoll()
     AirhopLog.tor.error("Tor stalled")
     NotificationCenter.default.post(name: .AirhopTorDidStall, object: nil)
   }
@@ -537,10 +548,10 @@ public final class AirhopTorManager: ObservableObject {
 
   private func startPathMonitorIfNeeded() {
     #if canImport(Network)
-      // "IfNeeded" was once aspirational: with no guard, every start installed
-      // another monitor, so each network change fanned out into that many
-      // concurrent recovery attempts and each monitor held a dispatch queue
-      // for the life of the process.
+      // One monitor for the process. Without the guard every start would
+      // install another, each network change would fan out into that many
+      // concurrent recovery attempts, and each monitor would hold a dispatch
+      // queue for the life of the process.
       guard pathMonitor == nil else { return }
       let monitor = NWPathMonitor()
       pathMonitor = monitor

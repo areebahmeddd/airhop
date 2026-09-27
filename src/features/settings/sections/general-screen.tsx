@@ -11,9 +11,12 @@
 // disk renders by itself. Neither saves a byte, so neither belongs on a screen
 // that reports usage.
 
-import Feather from "@expo/vector-icons/Feather";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useT, useTPlural, type TranslationKey, type Translator } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { getMeshService } from "@services/mesh-service";
 import { setTorRouting } from "@services/tor-routing";
@@ -125,8 +128,8 @@ const FEATURES: {
   // "Feeds", and none should be forced to.
   labelKey: TranslationKey;
   // Unused for "ai": that row renders a robot glyph from
-  // MaterialCommunityIcons instead, which Feather has no equivalent for.
-  icon: keyof typeof Feather.glyphMap;
+  // MaterialDesignIcons instead, which Feather has no equivalent for.
+  icon: FeatherIconName;
   descriptionKey: TranslationKey;
 }[] = [
   {
@@ -165,8 +168,11 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
     // was actually on, to avoid a needless Nostr restart); the now-default
     // internet-on state is (re)applied so the transport matches. Gateway and
     // bridge react to their own settings via MeshService subscriptions.
-    const torWasOn = useSettingsStore.getState().torEnabled;
+    const { torEnabled: torWasOn, stayInvisible } = useSettingsStore.getState();
     useSettingsStore.getState().reset();
+    // Status belongs to the Profile picker, not to the preferences this resets,
+    // and the running mesh keeps it, so the next launch has to as well.
+    useSettingsStore.getState().setStayInvisible(stayInvisible);
     if (torWasOn) void setTorRouting(false);
     getMeshService()?.applyInternetEnabled(true);
     // Lives outside this store; AirhopBootReceiver reads it with no JS up.
@@ -192,16 +198,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
     <View style={styles.container}>
       <SubHeader title={T("settings.section.general")} onBack={onBack} />
       <SettingsScroll>
-        {/* Features. Wallet has shipped, so it leads the group with a switch
-            locked on: the Wallet tab is part of what Airhop is, not something
-            to switch off. The rest aren't built yet and carry a "Coming soon"
-            tag in the same row shape.
-
-            This sat on the settings hub, above the nav list, where it was the
-            first thing you saw and none of it was actionable: one switch you
-            cannot move and two rows that only say "later". The hub now opens on
-            the connectivity toggles instead, and this reads as what it is, a
-            note on what the app does and will do. */}
+        {/* Wallet's switch is locked on: the tab is part of what Airhop is,
+            not something to switch off. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {T("settings.group.features")}
@@ -226,7 +224,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   icon={feature.key === "ai" ? undefined : feature.icon}
                   iconOverride={
                     feature.key === "ai" ? (
-                      <MaterialCommunityIcons
+                      <MaterialDesignIcons
                         name="robot-outline"
                         size={18}
                         color={Colors.textSecondary}
@@ -266,8 +264,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
 
-        {/* Media you send, then media you receive. One box, because from the
-            user's side they are the same subject: how photos behave. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{T("settings.group.media")}</Text>
           <View style={styles.settingsGroup}>
@@ -284,11 +280,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               }
             />
             <GroupDivider />
-            {/* Moved here from Privacy & security. It reads as a privacy
-                control (a seized phone holds less), but every neighbour of it
-                there was about what leaves this device, and this is about what
-                stays on it. Beside quality and show-media it completes one
-                subject: how media behaves, sending through keeping. */}
+            {/* Here, not in Privacy & security: its neighbours there are about
+                what leaves this device, and this is about what stays on it. */}
             <SettingLinkRow
               id="media-retention"
               icon="clock"
@@ -302,11 +295,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               onPress={() => setShowRetentionSheet(true)}
             />
             <GroupDivider />
-            {/* Not a download switch. Media arrives as one packet and is on
-                disk before any of this runs, so there is nothing to decline;
-                this only decides whether it shows by itself or waits behind a
-                tap. Worth having for the shoulder-surfing case, worth naming
-                honestly. */}
+            {/* Not a download switch: media arrives as one packet and is on
+                disk already. This only decides whether it waits behind a tap. */}
             <SettingRow
               id="show-media"
               icon="eye"
@@ -322,9 +312,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
 
-        {/* Reset stands alone, unlabelled: it is not a preference, it is what
-            undoes all of them, and it should not read as one more row in the
-            list above it. */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{T("settings.group.reset")}</Text>
           <View style={styles.settingsGroup}>
@@ -387,10 +374,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         </View>
       </BottomSheet>
 
-      {/* Retention picker. Same grouped-option sheet the quality and undo
-          pickers use, so this reads as one more of those rather than a new
-          kind of control. Each option carries the consequence rather than only
-          the number, because "14 days" says nothing on its own. */}
+      {/* Each option states its consequence: "14 days" says nothing alone. */}
       <BottomSheet
         visible={showRetentionSheet}
         onClose={() => setShowRetentionSheet(false)}

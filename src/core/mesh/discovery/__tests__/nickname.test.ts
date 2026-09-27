@@ -1,9 +1,9 @@
 /**
  * @jest-environment node
  */
-// Nickname canonicalization. The bug these guard against is silent: two valid
-// encodings of one visible name compare unequal, so a mention never fires and
-// one person occupies two rows of a participant list.
+// Nickname canonicalization. The failure these guard against is silent: two
+// valid encodings of one visible name compare unequal, so a mention never fires
+// and one person occupies two rows of a participant list.
 import {
   decodeAnnouncePayload,
   encodeAnnouncePayload,
@@ -117,5 +117,26 @@ describe("announce nickname round-trip", () => {
     // No lone surrogate, so no replacement character on the far side.
     expect(decoded).not.toContain("�");
     expect([...decoded].every((c) => c === "\u{1f600}")).toBe(true);
+  });
+});
+
+// An announced name is the sender's choice, so nothing in it may reorder the
+// text around it or make it compare unequal to the name it imitates.
+describe("normalizeNickname strips what cannot be seen", () => {
+  it("drops overrides, isolates, zero-width space and tag characters", () => {
+    expect(normalizeNickname("M\u202Eom")).toBe("Mom");
+    expect(normalizeNickname("\u2066Mom\u2069")).toBe("Mom");
+    expect(normalizeNickname("Mo\u200Bm")).toBe("Mom");
+    expect(normalizeNickname("Mom\u{E0061}\u{E007F}")).toBe("Mom");
+    expect(sameNickname("Mo\u200Bm", "mom")).toBe(true);
+  });
+
+  it("keeps an emoji joined by ZWJ in one piece", () => {
+    const technologist = "\u{1F469}\u200D\u{1F4BB}";
+    expect(normalizeNickname(technologist)).toBe(technologist);
+  });
+
+  it("keeps a name to one line", () => {
+    expect(normalizeNickname("Mom\n(verified)")).toBe("Mom (verified)");
   });
 });

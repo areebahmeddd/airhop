@@ -9,21 +9,23 @@
 // multi-channel routing and voice-note durations survive without breaking its
 // parsing.
 
-// Limits, from bitchat FileTransferLimits.
+// Limits. MAX_FILE_BYTES is bitchat's FileTransferLimits ceiling, which both
+// clients accept on receive for a file of any type. The per-type figures are
+// send-side budgets matching the ones bitchat-ios applies when it prepares
+// media; neither client applies them on receive.
 
 export const MAX_FILE_BYTES = 1 * 1024 * 1024; // 1 MiB, absolute ceiling
 export const MAX_VOICE_BYTES = 512 * 1024; // 512 KiB
 export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 
-// What Airhop puts on the air for a photo, as opposed to the ceiling above,
-// which is what it will ACCEPT. The two differ because of a receiver-side limit
-// on the other client.
+// What the resizer fits a photo to, under the 512 KiB photo budget above. The
+// two differ because of a receiver-side limit on the other client.
 //
 // bitchat expires a half-built assembly 30 seconds after the FIRST fragment
 // arrives, not 30 seconds after the last: BLEFragmentAssemblyBuffer stamps its
 // `timestamp` once at startAssemblyIfNeeded and never refreshes it. At the ~20ms
 // pacing both clients use, 512 KiB is around 1,120 frames and 22 seconds, so a
-// photo at the ceiling only landed if the link never made us retry a single
+// photo at the budget only lands if the link never makes us retry a single
 // frame. 256 KiB is about 11 seconds, which leaves room for the backoff a busy
 // link forces. bitchat's own photos are 45 KB at a 448px edge, so this stays
 // generous by comparison, and Airhop-to-Airhop is unaffected either way: our own
@@ -60,7 +62,7 @@ export const MAX_FRAMED_FILE_BYTES =
 // bitchat derives a stable message ID for private media from the file name, and
 // only for two exact shapes: `img_<UUID>.jpg` and `voice_<UUID>.m4a` (it also
 // accepts a 16-hex-digit voice token). Any other name makes
-// BitchatFilePacket.stableID return nil, dropping the transfer onto bitchat's
+// privateMediaStableID (private-media-id.ts) return null, dropping it onto the
 // legacy path: no delivery receipt, no arrival dedup, and repeat arrivals
 // stacking up as "name (1)", "name (2)". Nobody reads the name of a photo or a
 // voice note, since both render as media rather than a file row, so matching
@@ -149,6 +151,18 @@ export function extensionForMime(mimeType: string): string {
   return EXTENSION_BY_MIME[mimeType.trim().toLowerCase()] ?? "bin";
 }
 
+// The name a received file is stored under. A known type takes the extension
+// its validated MIME implies, since the OS opens a file by its extension and
+// the sender chose this one. Anything else keeps the sender's, as bitchat-ios
+// does, or a .docx sent as octet-stream would open in nothing.
+export function receivedFileName(name: string, mimeType: string): string {
+  const extension = EXTENSION_BY_MIME[mimeType.trim().toLowerCase()];
+  if (extension === undefined) return ensureFileExtension(name, mimeType);
+  const leaf = name.slice(name.lastIndexOf("/") + 1);
+  const dot = leaf.lastIndexOf(".");
+  return `${dot > 0 ? leaf.slice(0, dot) : leaf}.${extension}`;
+}
+
 // RFC 4122 version 4, from the platform CSPRNG. `Math.random` is banned in this
 // codebase and would be wrong here anyway: two photos naming the same id would
 // collide in bitchat's dedup and the second would be discarded as a duplicate.
@@ -191,15 +205,36 @@ const BITCHAT_ALLOWED_MIME = new Set([
   "application/octet-stream",
 ]);
 
+// The video Airhop sends (EXTENSION_BY_MIME); bitchat-ios sends none. Anything
+// else labelled video/* would go to the OS player unchecked.
+const AIRHOP_VIDEO_MIME = new Set(["video/mp4", "video/quicktime"]);
+
 export function isAllowedMime(mime: string | undefined): boolean {
   if (mime === undefined) return true; // treated as octet-stream
   const m = mime.toLowerCase();
-  return BITCHAT_ALLOWED_MIME.has(m) || m.startsWith("video/");
+  return BITCHAT_ALLOWED_MIME.has(m) || AIRHOP_VIDEO_MIME.has(m);
+}
+
+// MP4 and QuickTime are ISO base media files: a box size, then its type. Every
+// iPhone and Android recording opens with `ftyp`; older QuickTime files may
+// open with one of the others.
+const ISO_BMFF_FIRST_BOXES = new Set([
+  "ftyp",
+  "moov",
+  "wide",
+  "mdat",
+  "free",
+  "skip",
+]);
+
+function startsWithIsoBox(data: Uint8Array): boolean {
+  if (data.length < 8) return false;
+  return ISO_BMFF_FIRST_BOXES.has(String.fromCharCode(...data.subarray(4, 8)));
 }
 
 // Validate a file's leading bytes against its declared MIME type (bitchat
-// MimeType.matches). octet-stream, video, and unknown types skip validation
-// (bitchat is lenient for m4a too). Guards against a peer mislabeling content.
+// MimeType.matches). octet-stream and unknown types skip validation (bitchat is
+// lenient for m4a too). Guards against a peer mislabeling content.
 export function mimeMatchesMagic(
   mime: string | undefined,
   data: Uint8Array,
@@ -292,10 +327,12 @@ export function mimeMatchesMagic(
         at(2) === 0x44 &&
         at(3) === 0x46
       );
+    case "video/mp4":
+    case "video/quicktime":
+      return startsWithIsoBox(data);
     case "application/octet-stream":
       return true;
     default:
-      // Video and anything else: no signature check (Airhop extension).
       return true;
   }
 }
@@ -349,10 +386,10 @@ export function resolveMimeType(
   return MIME_BY_EXTENSION[ext] ?? "application/octet-stream";
 }
 
-// bitchat caps photos and voice notes tighter than the 1 MiB ceiling it applies
-// to files in general (FileTransferLimits). Sending past a cap is not a partial
-// success: the peer refuses the whole file, so the check belongs before the
-// first fragment goes out, not after.
+// The most a send may carry for each kind: send-side budgets, matching the
+// photo and voice-note sizes bitchat-ios sends. Both clients accept up to
+// MAX_FILE_BYTES of any type on receive, so these bound airtime rather than
+// guard the far side, and are checked before the first fragment goes out.
 export function maxBytesForType(type: AttachmentKind): number {
   if (type === "voice") return MAX_VOICE_BYTES;
   if (type === "image") return MAX_IMAGE_BYTES;

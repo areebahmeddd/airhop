@@ -187,7 +187,8 @@ export function mergeGeoRelays(
 // held to the same bar as the ones in bitchat's reviewed directory: ASCII only,
 // wss/https scheme, no credentials/query/fragment/path, a real DNS hostname (at
 // least two labels, each 1-63 chars of [a-z0-9-] with no leading/trailing dash),
-// not a bare IP, and not a loopback/private name. A non-standard port is kept.
+// not an IPv4 address, and not a loopback/private name. A non-standard port is
+// kept.
 export function validateRelayUrl(raw: string): string | null {
   const value = raw.trim();
   // Printable ASCII only (no spaces, no control characters).
@@ -237,8 +238,13 @@ export function validateRelayUrl(raw: string): string | null {
   }
 
   const labels = host.split(".");
-  // At least two labels, and not a bare IPv4 (all-numeric labels).
-  if (labels.length < 2 || labels.every((l) => /^[0-9]+$/.test(l))) return null;
+  // At least two labels, and not an IPv4 address in any spelling. A WHATWG URL
+  // parser reads a host whose last label "ends in a number" (decimal, 0x hex,
+  // or leading-zero octal) as IPv4, so 0x7f.1 is 127.0.0.1. bitchat-ios
+  // refuses only the all-decimal form; this is deliberately stricter, and no
+  // real TLD is numeric, so it refuses nothing legitimate.
+  const last = labels[labels.length - 1];
+  if (labels.length < 2 || /^(0x[0-9a-f]*|[0-9]+)$/.test(last)) return null;
   const labelOk = (l: string): boolean =>
     l.length >= 1 &&
     l.length <= 63 &&

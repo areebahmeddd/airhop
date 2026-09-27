@@ -10,7 +10,7 @@
 //
 // The state half lives in ui/hooks/use-copy.ts.
 
-import { Feather } from "@expo/vector-icons";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {

@@ -7,10 +7,10 @@
 // them is AudioRecord/MediaCodec on Android and AVAudioEngine/AVAudioConverter
 // on iOS. This file is the seam, and it is deliberately thin.
 //
-// If the native module is missing (a platform where it did not register), `isLiveVoiceAvailable` reports false and the app keeps using
-// voice notes. Live voice degrading to a voice note is a designed fallback, not
-// a failure: the whole feature is an optimisation of a gesture that already
-// works.
+// If the native module is missing (a platform where it did not register),
+// `isLiveVoiceAvailable` reports false and the app keeps using voice notes.
+// Live voice degrading to a voice note is a designed fallback, not a failure:
+// the whole feature is an optimisation of a gesture that already works.
 
 import NativeAirhopVoice from "@bridge/NativeAirhopVoice";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
@@ -188,11 +188,19 @@ export class NativeAudioPlayback implements AudioPlaybackBackend {
     }
 
     try {
+      // Both issued before either is awaited. Native runs them in call order,
+      // and a burst whose first batch is also its last is finished in this
+      // same tick: awaiting the open first would let that finish overtake the
+      // frames, and they would arrive at a speaker already released.
+      let opened: Promise<void> = Promise.resolve();
       if (this.openBurst !== burstIDHex) {
         this.openBurst = burstIDHex;
-        await native.startPlayback();
+        opened = native.startPlayback();
       }
-      await native.enqueueFrames(frames.map(bytesToBase64));
+      await Promise.all([
+        opened,
+        native.enqueueFrames(frames.map(bytesToBase64)),
+      ]);
     } catch {
       // The speaker is unavailable (a call, a route change). Give up on this
       // burst rather than retrying into a device that is not listening; the
@@ -201,7 +209,25 @@ export class NativeAudioPlayback implements AudioPlaybackBackend {
     }
   }
 
-  endSession(burstIDHex: string): void {
+  // Let the burst's tail play out, then release the speaker.
+  //
+  // The audio session is handed back only once native reports the drain done,
+  // and only if no newer burst opened meanwhile. Reconfiguring it earlier
+  // restarts the iOS engine under the tail, which loses exactly the audio this
+  // exists to keep, and under a newer burst it costs that burst a rebuild.
+  finishSession(burstIDHex: string): void {
+    if (this.openBurst !== burstIDHex) return;
+    this.openBurst = null;
+    this.onLevel(0);
+    void Promise.resolve(NativeAirhopVoice?.finishPlayback())
+      .catch(() => undefined)
+      .then(() => {
+        if (this.openBurst === null) this.onIdle();
+      });
+  }
+
+  // Silence the burst at once, queued audio included.
+  stopSession(burstIDHex: string): void {
     if (this.openBurst !== burstIDHex) return;
     this.openBurst = null;
     this.onLevel(0);

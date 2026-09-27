@@ -362,3 +362,38 @@ test("R07 ring, answer, ring again; snooze, ring again, snooze over, ring again"
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });
+
+test("R08 a ring or a pin with no link at all is refused, not reported sent", async () => {
+  // An ordinary drop keeps the session, and the router counts a peer as
+  // reachable for a minute after their last announce. Neither is a link.
+  const s = (scenario = new Scenario({
+    id: "R08",
+    title: "link down inside the reachability window, then ring and pin",
+  }));
+  const { alice, bob, radio } = await acquainted(s);
+  bob.allowRing(alice.peerID, true);
+  await waitFor(s.world, () => alice.peerAcceptsRing(bob.peerID), 10_000);
+
+  radio.setIsolated("bob", true);
+  await waitFor(s.world, () => !radio.isLinked("alice", "bob"));
+
+  s.check("a ring into no link is refused", alice.ring(bob.peerID) === null);
+  s.check(
+    "and starts no cooldown it did not earn",
+    alice.ringCooldownMs(bob.peerID) === 0,
+  );
+  s.check(
+    "a pin into no link is refused",
+    alice.sendLocationPin(bob.peerID, 12.9716, 77.5946) === null,
+  );
+
+  radio.setIsolated("bob", false);
+  await waitFor(s.world, () => radio.isLinked("alice", "bob"), 30_000);
+  const thread = `dm:${alice.peerID}`;
+  s.check("back in range, the ring goes", alice.ring(bob.peerID) !== null);
+  const landed = await waitFor(s.world, () => bob.ringsReceived(thread) === 1);
+  s.check("and lands", landed);
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});

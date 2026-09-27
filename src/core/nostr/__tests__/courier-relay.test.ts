@@ -6,7 +6,11 @@
 
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent, generateSecretKey, type Event } from "nostr-tools";
-import type { SealedEnvelope } from "../../mesh/courier/courier-store";
+import { bytesToBase64 } from "../../encoding/base64";
+import {
+  encodeEnvelopePayload,
+  type SealedEnvelope,
+} from "../../mesh/courier/courier-store";
 import { publishCourierDrop, subscribeCourierDrops } from "../courier-relay";
 import type { NostrClient } from "../nostr-client";
 
@@ -29,7 +33,6 @@ function makeClient(overrides?: Partial<NostrClient>): NostrClient {
       .mockResolvedValue({ relay: "wss://mock", accepted: true }),
     subscribe: jest.fn().mockReturnValue({ close: jest.fn() }),
     queryEvents: jest.fn().mockResolvedValue([]),
-    fetchEvent: jest.fn().mockResolvedValue(null),
     close: jest.fn(),
     ...overrides,
   } as unknown as NostrClient;
@@ -145,6 +148,17 @@ describe("subscribeCourierDrops", () => {
     expect(filter.kinds).toContain(1401);
   });
 
+  // bitchat-ios's courierDrops limit. At 20, anyone who can compute the daily
+  // tag could park 20 junk drops and push real offline mail out of backfill.
+  it("asks each relay for up to 100 parked drops", () => {
+    const client = makeClient();
+    subscribeCourierDrops([new Uint8Array(16)], client, () => {});
+    const [filters] = (client.subscribe as jest.Mock).mock.calls[0] as [
+      { limit: number }[],
+    ];
+    expect(filters[0].limit).toBe(100);
+  });
+
   it("returns a no-op closer for an empty tag list", () => {
     const client = makeClient();
 
@@ -167,8 +181,14 @@ describe("subscribeCourierDrops", () => {
 
     const recipientTag = crypto.getRandomValues(new Uint8Array(16));
     const expiryFuture = Math.floor(Date.now() / 1000) + 3600;
-    const ciphertext = new Uint8Array([1, 2, 3, 4]);
-    const b64Content = btoa(String.fromCharCode(...ciphertext));
+    const b64Content = bytesToBase64(
+      encodeEnvelopePayload(
+        makeEnvelope({
+          recipientTag,
+          ciphertext: new Uint8Array([1, 2, 3, 4]),
+        }),
+      ),
+    );
 
     // Build a minimal valid kind 1401 event.
     const event = finalizeEvent(
@@ -195,6 +215,65 @@ describe("subscribeCourierDrops", () => {
   });
 });
 
+// The content is the whole envelope TLV, as bitchat-ios writes and reads it
+// (CourierEnvelope), so what one side publishes the other opens intact,
+// prekey ID included.
+describe("round trip", () => {
+  it("receives exactly the envelope that was published", async () => {
+    const client = makeClient();
+    const envelope = makeEnvelope({ prekeyID: 7 });
+    await publishCourierDrop(envelope, client);
+    const published = (client.publish as jest.Mock).mock.calls[0][0] as Event;
+
+    let capturedCb: ((e: Event) => void) | null = null;
+    (client.subscribe as jest.Mock).mockImplementation(
+      (_f: unknown, cb: (e: Event) => void) => {
+        capturedCb = cb;
+        return { close: jest.fn() };
+      },
+    );
+    const received: SealedEnvelope[] = [];
+    subscribeCourierDrops([envelope.recipientTag], client, (env) =>
+      received.push(env),
+    );
+    capturedCb!(published);
+
+    expect(received).toHaveLength(1);
+    expect(bytesToHex(received[0].ciphertext)).toBe(
+      bytesToHex(envelope.ciphertext),
+    );
+    expect(received[0].prekeyID).toBe(7);
+  });
+
+  it("drops an envelope whose own tag disagrees with the x tag", () => {
+    let capturedCb: ((e: Event) => void) | null = null;
+    const client = makeClient({
+      subscribe: jest.fn().mockImplementation((_f, cb: (e: Event) => void) => {
+        capturedCb = cb;
+        return { close: jest.fn() };
+      }),
+    });
+    const envelope = makeEnvelope();
+    const otherTag = crypto.getRandomValues(new Uint8Array(16));
+    const event = finalizeEvent(
+      {
+        kind: 1401,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ["x", bytesToHex(otherTag)],
+          ["expiration", (Math.floor(Date.now() / 1000) + 3600).toString()],
+        ],
+        content: bytesToBase64(encodeEnvelopePayload(envelope)),
+      },
+      nostrPrivKey,
+    );
+    const received: SealedEnvelope[] = [];
+    subscribeCourierDrops([otherTag], client, (env) => received.push(env));
+    capturedCb!(event);
+    expect(received).toHaveLength(0);
+  });
+});
+
 // Nothing obliges a relay to prune, so it may replay a drop whose NIP-40
 // expiration has passed. Rendering that as live would put a day-old bubble at
 // the bottom of a thread.
@@ -217,7 +296,9 @@ describe("expired drops", () => {
           ["x", bytesToHex(recipientTag)],
           ["expiration", (Math.floor(Date.now() / 1000) - 10).toString()],
         ],
-        content: btoa(String.fromCharCode(1)),
+        content: bytesToBase64(
+          encodeEnvelopePayload(makeEnvelope({ recipientTag })),
+        ),
       },
       nostrPrivKey,
     );

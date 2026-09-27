@@ -12,6 +12,7 @@ import { getStorage } from "@store/mmkv";
 import { noiseXOpen, noiseXSeal } from "../../../crypto/noise-x";
 import {
   computeRecipientTag,
+  COURIER_PROLOGUE,
   CourierStore,
   decodeEnvelopePayload,
   encodeEnvelopePayload,
@@ -279,7 +280,7 @@ describe("CourierStore handover", () => {
     expect(store.size).toBe(0);
   });
 
-  // A refused write - a full GATT queue at the busiest moment of a link-up -
+  // A refused write (a full GATT queue at the busiest moment of a link-up)
   // must not destroy the only copy this device holds.
   test("keeps the envelope when the transport refuses it", () => {
     const store = freshStore();
@@ -337,6 +338,44 @@ describe("CourierStore handover", () => {
   });
 });
 
+// A recipient heard only through relays announces every 15 to 30 s, and each
+// copy flooded toward them crosses the whole mesh.
+describe("CourierStore remote handover", () => {
+  test("offers a recipient's mail once per cooldown, and keeps carrying it", () => {
+    const store = freshStore();
+    const tag = new Uint8Array(16).fill(0x47);
+    store.deposit(
+      makeEnvelopePayload(tag, 4),
+      makeNoiseKeypair().pub,
+      "verified",
+    );
+    const t0 = Date.now();
+
+    const first = store.offerRemoteHandover([tag], t0);
+    expect(first).toHaveLength(1);
+    expect(first[0].copies).toBe(1);
+    expect(store.size).toBe(1);
+
+    expect(store.offerRemoteHandover([tag], t0 + 30_000)).toHaveLength(0);
+    expect(store.offerRemoteHandover([tag], t0 + 10 * 60_000)).toHaveLength(1);
+    // A handover over their own link is not held back by it.
+    expect(store.offerHandover([tag])).toHaveLength(1);
+  });
+
+  test("the cooldown survives a restart", () => {
+    const id = `courier-persist-${String(++storeCounter)}`;
+    const tag = new Uint8Array(16).fill(0x48);
+    const t0 = Date.now();
+    const first = new CourierStore(id);
+    first.deposit(makeEnvelopePayload(tag), makeNoiseKeypair().pub, "verified");
+    first.offerRemoteHandover([tag], t0);
+
+    expect(
+      new CourierStore(id).offerRemoteHandover([tag], t0 + 60_000),
+    ).toHaveLength(0);
+  });
+});
+
 describe("CourierStore spray", () => {
   test("offers half the budget and spends it on commit", () => {
     const store = freshStore();
@@ -373,10 +412,10 @@ describe("CourierStore spray", () => {
 
   test("hands an envelope to each peer once, not once per announce", () => {
     // Spraying is driven by announces, which arrive continuously from the same
-    // neighbours. Without a per-peer record the budget was spent re-handing the
-    // same copy to someone who already held it, so an envelope decayed
-    // 4 -> 2 -> 1 without ever reaching a second carrier - the opposite of what
-    // spray-and-wait is for.
+    // neighbours. Without a per-peer record the budget would be spent
+    // re-handing the same copy to someone who already held it, so an envelope
+    // would decay 4 -> 2 -> 1 without ever reaching a second carrier: the
+    // opposite of what spray-and-wait is for.
     const store = freshStore();
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x11);
@@ -405,6 +444,21 @@ describe("CourierStore spray", () => {
 
     expect(store.offerSpray(depositor.pub)).toHaveLength(0);
     // Anybody else still gets it.
+    expect(store.offerSpray(makeNoiseKeypair().pub)).toHaveLength(1);
+  });
+
+  // Their own mail is a handover. Offered as a spray copy too, it costs a
+  // second write, and half a budget if that write lands first.
+  test("never sprays a peer their own mail", () => {
+    const store = freshStore();
+    const recipient = makeNoiseKeypair();
+    store.deposit(
+      makeEnvelopePayload(computeRecipientTag(recipient.pub), 4),
+      makeNoiseKeypair().pub,
+      "verified",
+    );
+
+    expect(store.offerSpray(recipient.pub)).toHaveLength(0);
     expect(store.offerSpray(makeNoiseKeypair().pub)).toHaveLength(1);
   });
 
@@ -622,7 +676,12 @@ describe("envelope round trip", () => {
       recipientTag: computeRecipientTag(recipient.pub),
       expiryMs: Date.now() + 60_000,
       copies: 4,
-      ciphertext: noiseXSeal(sender.priv, recipient.pub, plaintext),
+      ciphertext: noiseXSeal(
+        sender.priv,
+        recipient.pub,
+        plaintext,
+        COURIER_PROLOGUE,
+      ),
     });
 
     const env = decodeEnvelopePayload(payload);
@@ -631,6 +690,7 @@ describe("envelope round trip", () => {
     const { plaintext: recovered, senderStaticPubKey } = noiseXOpen(
       recipient.priv,
       env!.ciphertext,
+      COURIER_PROLOGUE,
     );
     expect(new TextDecoder().decode(recovered)).toBe("hello courier");
     // The envelope authenticates its sender internally, which is what lets the

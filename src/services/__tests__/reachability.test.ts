@@ -10,8 +10,12 @@ jest.mock("../tor-routing", () => ({
   revalidateTorRouting: () => mockRevalidateTor(),
 }));
 const mockReconcileIfDue = jest.fn();
+const mockReconcile = jest.fn(async () => undefined);
+let mockBlock: "internet-off" | "tor" | null = null;
 jest.mock("../wallet-service", () => ({
   reconcileIfDue: () => mockReconcileIfDue(),
+  reconcile: () => mockReconcile(),
+  mintNetworkBlock: () => mockBlock,
 }));
 
 type NetworkMock = typeof Network & {
@@ -44,6 +48,8 @@ const NONE: Network.NetworkState = {
 // Module state is per watch, so every test gets a fresh module.
 let net: NetworkMock;
 let start: () => void;
+let settings: typeof import("@store/settings-store").useSettingsStore;
+let meshState: typeof import("@store/mesh-state-store").useMeshStateStore;
 
 async function watch(
   initial: Network.NetworkState | null = WIFI,
@@ -52,6 +58,12 @@ async function watch(
     net = require("expo-network") as NetworkMock;
     start = (require("../reachability") as typeof import("../reachability"))
       .startReachabilityWatch;
+    settings = (
+      require("@store/settings-store") as typeof import("@store/settings-store")
+    ).useSettingsStore;
+    meshState = (
+      require("@store/mesh-state-store") as typeof import("@store/mesh-state-store")
+    ).useMeshStateStore;
   });
   net.getNetworkStateAsync.mockImplementationOnce(() =>
     initial === null ? new Promise(() => undefined) : Promise.resolve(initial),
@@ -69,6 +81,8 @@ beforeEach(() => {
   mockOnNetworkChanged.mockClear();
   mockRevalidateTor.mockClear();
   mockReconcileIfDue.mockClear();
+  mockReconcile.mockClear();
+  mockBlock = null;
 });
 
 afterEach(() => {
@@ -181,4 +195,40 @@ test("starting twice subscribes once", async () => {
   const before = net.addNetworkStateListener.mock.calls.length;
   start();
   expect(net.addNetworkStateListener.mock.calls.length).toBe(before);
+});
+
+// Until an offline receipt is swapped, whoever holds its token can spend it
+// first, so the wallet's pass runs as soon as the user's own switches let it
+// reach the mint, not at the next foreground.
+test("the internet switch going back on runs the wallet's pass at once", async () => {
+  mockBlock = "internet-off";
+  await watch(WIFI);
+
+  mockBlock = null;
+  settings.setState({ internetEnabled: true });
+  expect(mockReconcile).toHaveBeenCalledTimes(1);
+
+  // Other changes while it stays open run nothing more.
+  settings.setState({ internetEnabled: true });
+  expect(mockReconcile).toHaveBeenCalledTimes(1);
+});
+
+test("Tor letting go of the traffic on iOS runs the wallet's pass", async () => {
+  mockBlock = "tor";
+  await watch(WIFI);
+
+  // The switch is off, but Tor still claims the traffic until it stops.
+  settings.setState({ torEnabled: false });
+  expect(mockReconcile).not.toHaveBeenCalled();
+
+  mockBlock = null;
+  meshState.setState({ torActive: false });
+  expect(mockReconcile).toHaveBeenCalledTimes(1);
+});
+
+test("a gate that closes runs nothing", async () => {
+  await watch(WIFI);
+  mockBlock = "internet-off";
+  settings.setState({ internetEnabled: false });
+  expect(mockReconcile).not.toHaveBeenCalled();
 });

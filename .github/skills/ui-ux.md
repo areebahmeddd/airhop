@@ -10,20 +10,32 @@ description: >
 
 # UI and UX
 
-Tokens: `src/ui/theme.ts`. Shared components: `src/ui/components/`. Hooks: `src/ui/hooks/`.
+The design system's values and the interaction rules behind them, for anyone adding a screen, a component or a style block. Copy and right-to-left layout rules are in [`i18n.md`](i18n.md).
 
-| Fact              | Value                                                             |
-| ----------------- | ----------------------------------------------------------------- |
-| Spacing           | 4pt grid: 4, 8, 12, 16, 20, 24, 32, 48, 64; between: 2, 6, 10, 14 |
-| Type              | 10, 11, 13, 15, 17, 20, 24, 30, 38; 10 is glyph-only              |
-| Line height       | One per size: 15, 16, 20, 22, 40; tight 12, 17 for a pill glyph   |
-| Radius            | 2, 6, 10, 14, 20, 28, `full`                                      |
-| Motion            | `Duration.base` 180ms, `Duration.slow` 220ms                      |
-| Touch floor       | `MIN_TOUCH` 44                                                    |
-| Full-width button | `BUTTON_HEIGHT` 50                                                |
-| Long press        | `LONG_PRESS_MS` 320                                               |
-| Press, disabled   | `PRESSED_OPACITY` 0.85, `DISABLED_OPACITY` 0.4                    |
-| Palette           | `useThemeColors()`, never `Colors` directly                       |
+| Fact              | Value                                                                                        |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Spacing           | 4pt grid: 4, 8, 12, 16, 20, 24, 32, 48, 64; between: 2, 6, 10, 14                            |
+| Type              | 10, 11, 13, 15, 17, 20, 24, 30, 38; 10 is glyph-only                                         |
+| Line height       | One per size: 15, 16, 20, 22, 40; tight 12, 17 for a pill glyph                              |
+| Radius            | 2, 6, 10, 14, 20, 28, `full`                                                                 |
+| Motion            | `Duration.base` 180ms, `Duration.slow` 220ms                                                 |
+| Touch floor       | `MIN_TOUCH` 44                                                                               |
+| Full-width button | `BUTTON_HEIGHT` 50                                                                           |
+| Long press        | `LONG_PRESS_MS` 320                                                                          |
+| Press, disabled   | `PRESSED_OPACITY` 0.85, `DISABLED_OPACITY` 0.4                                               |
+| Palette           | `useThemeColors()`, never `Colors` directly                                                  |
+| Icons             | Feather, `FeatherIconName` for a name; Material Design Icons only where Feather has no glyph |
+
+## Key Files
+
+| Path                                            | Holds                                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/ui/theme.ts`                               | Every token, `useThemeColors()`, `hitSlopFor`, `withAlpha`                           |
+| `src/ui/components/`                            | `BottomSheet`, `EmptyState`, `PrimaryButton`, `AlertModal`, `Toast` and the rest     |
+| `src/ui/hooks/use-reduced-motion.ts`            | The OS reduce-motion switch, for anything on `Animated`                              |
+| `src/features/settings/settings-primitives.tsx` | Settings rows and groups, `ROW_LABEL_INSET`                                          |
+| `src/platform/haptics.ts`                       | Named haptic verbs, the only importer of `expo-haptics`                              |
+| `eslint.config.js`                              | The haptics, icon-import, physical-side, `toLocaleString` and token-arithmetic rules |
 
 ## The Rule
 
@@ -31,7 +43,7 @@ A value is right when a rule produced it and wrong when somebody picked it.
 
 Quality lives in the relationships between elements, not in any element: radius against padding, target against the thing it represents, one gesture's timing against the same gesture elsewhere. None of it shows in a screenshot; all of it shows in the hand.
 
-Corollary: solving something once is half the job. It is finished when the answer is a token, a shared component, or a lint rule. Every drift in this codebase was a correct decision that never propagated.
+Corollary: solving something once is half the job. It is finished when the answer is a token, a shared component, or a lint rule. Drift is a correct decision that never propagated.
 
 ## Every Tap Reports
 
@@ -117,23 +129,9 @@ An alert demands a tap for news nobody needs to acknowledge. Use `Toast` or an i
 
 ## Motion and Haptics
 
-Durations come from `Duration`, so a list reorder, a sheet dismissal and a toast fade read as one app moving. Reanimated defaults to `ReduceMotion.System` and needs no second gate; `Animated.loop` does, via `useReducedMotion()`.
+Durations come from `Duration`, so a list reorder, a sheet dismissal and a toast fade read as one app moving. Reanimated defaults to `ReduceMotion.System` and needs no second gate; anything on `Animated` does, via `useReducedMotion()` from `src/ui/hooks/use-reduced-motion.ts`.
 
 Haptics come from `@platform/haptics` by name, never `expo-haptics` directly. This is lint-enforced. A gesture threshold that changes the outcome earns a tick, because a threshold is otherwise invisible: the scrim fades continuously and says nothing about where the line is.
-
-## What Not to Do
-
-| Mistake                                     | Correct approach                                                    |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| A `Pressable` with no pressed style         | Add the treatment for its surface kind                              |
-| A literal `50`, `320` or `0.85` in a style  | `BUTTON_HEIGHT`, `LONG_PRESS_MS`, `PRESSED_OPACITY`                 |
-| A hand-picked inner radius                  | `outer - padding`                                                   |
-| Contrast checked against the page           | Check against the surface the element sits on                       |
-| The same object styled in two files         | One shared component, or one token                                  |
-| A count or an ID the user has no word for   | Say what it means, or say nothing                                   |
-| `setState` on a timer with no cleanup       | Ref it and clear on unmount; sheets close fastest right after a tap |
-| Importing `Colors` or `DarkColors` directly | `useThemeColors()`, or the screen ignores the theme setting         |
-| A hand-rolled `Modal` for a sheet           | `BottomSheet`; it owns the drag, scrim and keyboard avoidance       |
 
 ## Where to Read More
 
@@ -141,3 +139,19 @@ Haptics come from `@platform/haptics` by name, never `expo-haptics` directly. Th
 - [Nielsen's 10 usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/)
 - [WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) for 1.4.3, 1.4.11, 2.3.3 and 2.5.8
 - Apple Human Interface Guidelines and Material Design 3, for the conventions the two agree on
+
+## What Not to Do
+
+| Mistake                                                   | Correct approach                                                                                          |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| A `Pressable` with no pressed style                       | Add the treatment for its surface kind                                                                    |
+| A literal `50`, `320` or `0.85` in a style                | `BUTTON_HEIGHT`, `LONG_PRESS_MS`, `PRESSED_OPACITY`                                                       |
+| Arithmetic on a token (`FontSize.xs - 1`)                 | Add the missing value to the scale; eslint rejects the arithmetic                                         |
+| A hand-picked inner radius                                | `outer - padding`                                                                                         |
+| Contrast checked against the page                         | Check against the surface the element sits on                                                             |
+| The same object styled in two files                       | One shared component, or one token                                                                        |
+| `@expo/vector-icons`, or an icon import without `/static` | `@react-native-vector-icons/<family>/static`: the fonts are bundled natively, so nothing loads at runtime |
+| A count or an ID the user has no word for                 | Say what it means, or say nothing                                                                         |
+| `setState` on a timer with no cleanup                     | Ref it and clear on unmount; sheets close fastest right after a tap                                       |
+| Importing `Colors` or `DarkColors` directly               | `useThemeColors()`, or the screen ignores the theme setting                                               |
+| A hand-rolled `Modal` for a sheet                         | `BottomSheet`; it owns the drag, scrim and keyboard avoidance                                             |

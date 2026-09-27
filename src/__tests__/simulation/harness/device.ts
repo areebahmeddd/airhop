@@ -2,16 +2,16 @@
 //
 // The problem this file solves: Airhop is full of module-scope singletons, by
 // design. `getMeshService()` returns one mesh. `useChatStore` is one store.
-// `createMMKV({id})` returns one instance per id. That is correct for an app -
-// there is one phone - and fatal for a simulation, where twenty phones have to
-// disagree with each other about the state of the world.
+// `createMMKV({id})` returns one instance per id. That is correct for an app,
+// where there is one phone, and fatal for a simulation, where twenty phones
+// have to disagree with each other about the state of the world.
 //
-// The fix is not to refactor the app. It is `jest.isolateModules`, which builds
-// a fresh module registry: a second copy of mesh-service, of every store, of
-// the MMKV mock, and - critically - of `DeviceEventEmitter`, so native events
-// raised inside one phone cannot be heard by another. Each phone is therefore a
-// closure over its own private copy of the entire app, and NOTHING in src/ had
-// to change to allow it.
+// The answer is not to refactor the app. It is `jest.isolateModules`, which
+// builds a fresh module registry: a second copy of mesh-service, of every
+// store and of the MMKV mock. Native events, which `react-native` would share
+// across every registry, go through the event router instead. Each phone is
+// therefore a closure over its own private copy of the entire app, and nothing
+// in src/ has to change to allow it.
 //
 // Two consequences worth knowing before reading further:
 //
@@ -68,6 +68,7 @@ const P = {
   location: "expo-location",
   walletService: "@services/wallet-service",
   ecashTransfer: "@services/payment-router",
+  reachability: "@services/reachability",
   voiceBridge: "@bridge/NativeAirhopVoice",
 } as const;
 
@@ -153,6 +154,9 @@ interface Inner {
   // The payment ladder every screen calls. Held so a scenario can pay the way
   // the app pays, rather than reaching past it into the wallet primitives.
   pay: PayLike;
+  // What tells the wallet the network or its own switches let it reach the
+  // mints again. The app starts it beside the wallet.
+  startReachabilityWatch: () => void;
   // Installs a WiFi native module into THIS sandbox's copy of the bridge shim.
   // Captured inside the registry for the same reason everything else here is:
   // the shim holds a module-scope singleton, and each phone has its own copy.
@@ -200,7 +204,6 @@ interface WalletServiceLike {
   settleReclaim: (txId: string) => Promise<string>;
   receiveToken: (
     raw: string,
-    opts?: { preferOffline?: boolean },
   ) => Promise<{ amount: number; outcome: string; dleq?: string }>;
   refreshAccount: (...args: unknown[]) => Promise<unknown>;
   [k: string]: unknown;
@@ -244,6 +247,15 @@ function call(store: StoreLike, action: string, ...args: unknown[]): unknown {
   return (fn as (...a: unknown[]) => unknown)(...args);
 }
 
+// MeshService's ChannelSendResult, structurally.
+interface ChannelSendLike {
+  meshLinks: number;
+  nostr: boolean;
+  gateway: boolean;
+  settled?: Promise<ChannelSendLike>;
+  [k: string]: unknown;
+}
+
 // The subset of MeshService a scenario drives. Structural, so it does not bind
 // to the class inside the sandbox.
 interface MeshLike {
@@ -251,13 +263,9 @@ interface MeshLike {
   sendChannelMessage: (
     channel: string,
     text: string,
+    msgId?: string,
     nearbyOnly?: boolean,
-  ) => {
-    meshLinks: number;
-    nostr: boolean;
-    gateway: boolean;
-    [k: string]: unknown;
-  };
+  ) => ChannelSendLike;
   sendDm: (
     recipientPeerID: string,
     text: string,
@@ -684,7 +692,7 @@ export class SimDevice {
       ) as { sealed: boolean; meshLinks: number } | undefined;
       status = sent?.sealed === true && sent.meshLinks > 0 ? "sent" : "failed";
     } else {
-      const sent = service.sendChannelMessage(channel, text, nearbyOnly);
+      const sent = service.sendChannelMessage(channel, text, id, nearbyOnly);
       // Mirrors message-thread.tsx: a location channel with no live relay but a
       // reachable gateway peer is "carried", not "failed".
       status =
@@ -703,10 +711,11 @@ export class SimDevice {
   sendChannelMessage(
     channel: string,
     text: string,
+    msgId?: string,
     nearbyOnly = false,
-  ): { meshLinks: number; nostr: boolean; gateway: boolean } | undefined {
+  ): ChannelSendLike | undefined {
     this.log("SEND_CHANNEL", `${channel}: ${text}`);
-    return this.mesh?.sendChannelMessage(channel, text, nearbyOnly);
+    return this.mesh?.sendChannelMessage(channel, text, msgId, nearbyOnly);
   }
 
   sendDm(peerID: string, text: string, messageID?: string): string {
@@ -1027,6 +1036,12 @@ export class SimDevice {
     return this.inner.fs?.__disk.get(uri)?.bytes ?? null;
   }
 
+  // Put a file straight into this phone's cache, as if it arrived earlier, so
+  // a scenario can fill the disk without sending every byte over a radio.
+  seedCacheFile(name: string, bytes: Uint8Array): void {
+    this.inner.fs?.__disk.set(`file:///cache/${name}`, { bytes });
+  }
+
   attachments(channel: string): SeenMessage[] {
     return this.messages(channel).filter((m) => m.attachment !== undefined);
   }
@@ -1069,7 +1084,11 @@ export class SimDevice {
   private stopNutzapWatcher: (() => void) | null = null;
 
   async walletReady(): Promise<boolean> {
-    return this.world.resolve(this.inner.wallet.initWalletService());
+    const ready = await this.world.resolve(
+      this.inner.wallet.initWalletService(),
+    );
+    this.inner.startReachabilityWatch();
+    return ready;
   }
 
   async addMint(url: string): Promise<boolean> {
@@ -1170,11 +1189,8 @@ export class SimDevice {
     if (this.lastTxId !== null) this.inner.wallet.confirmSend(this.lastTxId);
   }
 
-  async receiveToken(
-    raw: string,
-    opts: { preferOffline?: boolean } = {},
-  ): Promise<boolean> {
-    const result = await this.receiveTokenResult(raw, opts);
+  async receiveToken(raw: string): Promise<boolean> {
+    const result = await this.receiveTokenResult(raw);
     if (result === null) return false;
     return result.outcome === "swapped" || result.outcome === "stored";
   }
@@ -1185,12 +1201,11 @@ export class SimDevice {
   // Null means the receive was refused outright.
   async receiveTokenResult(
     raw: string,
-    opts: { preferOffline?: boolean } = {},
   ): Promise<{ amount: number; outcome: string; dleq?: string } | null> {
     if (raw.length === 0) return null;
     try {
       const result = await this.world.resolve(
-        this.inner.wallet.receiveToken(raw, opts),
+        this.inner.wallet.receiveToken(raw),
       );
       this.log(
         "RECEIVE_TOKEN",
@@ -1545,6 +1560,8 @@ export class SimDevice {
         relays: (client as { activeRelays: string[] }).activeRelays,
       }),
     );
+    // A second call is a resubscribe, as a transport rebuild does.
+    this.stopNutzapWatcher?.();
     this.stopNutzapWatcher = wallet.startNutzapWatcher({
       myPubkey: pubKey,
       client,
@@ -1591,6 +1608,26 @@ export class SimDevice {
     ).length;
   }
 
+  // Activity rows of one kind, whatever their status.
+  txCount(kind: string): number {
+    const history = this.inner.stores.walletStore.getState().history as
+      { kind: string }[] | undefined;
+    return (history ?? []).filter((tx) => tx.kind === kind).length;
+  }
+
+  // Receipts the mint refused: out of the balance, the coins kept as a token on
+  // the failed row so they can be handed back.
+  refusedReceipts(): { amount: number; token: string }[] {
+    const history = this.inner.stores.walletStore.getState().history as
+      | { kind: string; status: string; amount: number; token?: string }[]
+      | undefined;
+    return (history ?? []).flatMap((tx) =>
+      tx.kind === "receive" && tx.status === "failed" && tx.token
+        ? [{ amount: tx.amount, token: tx.token }]
+        : [],
+    );
+  }
+
   // Rewrite a transaction. For putting the wallet into a state a scenario needs
   // to START from, where building up to it honestly would mean driving a relay
   // failure the fabric cannot stage.
@@ -1626,46 +1663,21 @@ function buildSandbox(
 ): Inner {
   let inner: Inner | null = null;
 
-  // Clear the module registry before isolating.
-  //
-  // `jest.isolateModules` alone does not re-instantiate a module that the
-  // parent registry already holds, and under jest-expo `react-native` is always
-  // already held. The consequence is specific and fatal: `DeviceEventEmitter` is
-  // read through react-native's index getter at CALL time, so every phone's
-  // mesh-service and native module end up talking to whichever emitter was
-  // installed last. Every phone then hears every other phone's native events.
-  // Resetting first forces react-native itself to be rebuilt inside the
-  // isolation window, which is what actually separates the phones.
+  // Clear the module registry before isolating: `jest.isolateModules` alone
+  // does not re-instantiate a module the parent registry already holds.
   jest.resetModules();
 
   jest.isolateModules(() => {
-    // Give this phone its own DeviceEventEmitter, explicitly.
-    //
-    // This is the single most important line in the file, and it exists because
-    // `jest.isolateModules` does NOT reliably re-instantiate `react-native`
-    // under the jest-expo preset: the stores, mesh-service and the native module
-    // are all isolated per sandbox, but they can still resolve to ONE shared
-    // RCTDeviceEventEmitter. When that happens every phone receives every other
-    // phone's native events, and the failure is silent and total - a phone
-    // registers links it is not party to, and a multi-hop delivery "succeeds"
-    // with nothing having relayed it. Every scenario in this directory would
-    // pass for the wrong reason.
-    //
-    // So rather than depend on isolation we cannot verify, the emitter is
-    // replaced with a fresh instance BEFORE this sandbox's modules load. Each
-    // module captures `DeviceEventEmitter` at load time through react-native's
-    // getter, so whatever is installed here is what this phone's mesh-service
-    // listens on and what its native module emits into. Later swaps cannot
-    // disturb a binding that has already been captured.
-    //
-    // smoke.test.ts asserts this holds. If that test ever goes red, nothing
-    // else in this directory means anything.
-    // The DeviceEventEmitter every phone would otherwise share is replaced by
-    // the event router, via a jest.mock in each test file (see
-    // harness/event-router.ts). Nothing needs installing here. What matters is
+    // `react-native` is shared across sandboxes whatever the isolation, so
+    // every phone would hear every other phone's native events: a phone would
+    // register links it is not party to, and a multi-hop delivery would
+    // "succeed" with nothing relaying it. The shared DeviceEventEmitter is
+    // replaced by the event router, via a jest.mock in each test file (see
+    // harness/event-router.ts), so nothing is installed here. What matters is
     // that every entry into THIS phone's code runs inside
-    // `eventRouter().runAs(id, ...)` - done by launch() below for subscription,
-    // and by DeviceOS.runOnThread for every native-to-JS callback.
+    // `eventRouter().runAs(id, ...)`: launch() below does it for subscription,
+    // and DeviceOS.runOnThread for every native-to-JS callback. smoke.test.ts
+    // asserts it holds; if that goes red, nothing else here means anything.
     const androidMod = require(
       P.android,
     ) as typeof import("../../harness/android-native");
@@ -1823,6 +1835,9 @@ function buildSandbox(
 
     const wallet = require(P.walletService) as WalletServiceLike;
     const pay = require(P.ecashTransfer) as PayLike;
+    const { startReachabilityWatch } = require(P.reachability) as {
+      startReachabilityWatch: () => void;
+    };
     const emitter = (require("react-native") as { DeviceEventEmitter: object })
       .DeviceEventEmitter;
     const selectAccounts =
@@ -1849,6 +1864,7 @@ function buildSandbox(
       voice,
       wallet,
       pay,
+      startReachabilityWatch,
       installWifi,
       installLan,
       selectAccounts,

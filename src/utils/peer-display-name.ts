@@ -1,17 +1,15 @@
 // Single source of truth for how a peer is named in the UI.
 //
-// Three names can exist for one peer and they were being resolved
-// inconsistently: peer-list, radar-view and dm-list all called
-// peerIDToUsername() directly, so a peer who had set a nickname, or whom the
-// user had deliberately added as a contact, still showed as the generated
-// "swift-otter-42". Meanwhile channel-info-sheet did consult the announced
-// nickname, so the SAME peer appeared under two different names on two screens.
+// Several names can exist for one peer, and a screen that calls
+// peerIDToUsername() directly shows the generated "swift-otter-42" where
+// another shows their nickname, so one peer reads as two people. Every screen
+// resolves through here instead.
 //
 // Precedence, most trusted first:
-//   1. Local nickname: a name the user typed for a contact they verified in
-//      person. Theirs to choose, so it outranks anything the peer asserts.
-//   2. Contact nickname: what the peer called themselves on the card that was
-//      scanned.
+//   1. Local nickname: a name the user typed for a contact whose keys they
+//      hold. Theirs to choose, so it outranks anything the peer asserts.
+//   2. Contact nickname: what the peer called themselves when saved, on their
+//      card or in the announce heard when they were messaged.
 //   3. Announced nickname: what the peer calls themselves over the mesh.
 //   4. Generated username: deterministic from the peer ID; always available.
 //
@@ -35,14 +33,13 @@ import {
 
 // A Nostr/geohash pseudonym (`nostr_<pubkey>`) is named the same way the cell
 // chat names it (and the same way bitchat does): `anon#<last4>` of the pubkey,
-// or `<nick>#<last4>`. Using the npub label here instead made the very same
-// person you saw as "anon#ed17" in the channel show up as "npub...d4ed17" in the
-// DM header, the DM list and the contact-info sheet. This keeps them identical
-// across all of those. The stored message senderNickname uses this exact form.
+// or `<nick>#<last4>`, never the npub label, so the person seen as "anon#ed17"
+// in the channel is not "npub...d4ed17" in the DM header, the DM list or the
+// contact-info sheet. The stored message senderNickname uses this exact form.
 function nostrPseudonym(peerID: string): string {
   const pubkey = peerID.slice(NOSTR_ID_PREFIX.length);
   // Their geohash nickname rides the `n` tag on channel messages and nothing
-  // else - a geo DM carries none - so the pubkey alone can only ever produce
+  // else (a geo DM carries none), so the pubkey alone can only ever produce
   // "anon#last4". Recorded when the conversation opened; see geoDmNames.
   const known = useChatStore.getState().geoDmNames[pubkey];
   if (known !== undefined && known.length > 0) return known;

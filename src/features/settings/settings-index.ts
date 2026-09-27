@@ -7,8 +7,8 @@
 // indexed: state-dependent rows, live diagnostics readouts, "Coming soon" rows,
 // and the relay lists (raw Pressables, so they cannot carry a highlight).
 
-import Feather from "@expo/vector-icons/Feather";
 import { getLanguage, type TranslationKey, type Translator } from "@i18n";
+import type { FeatherIconName } from "@react-native-vector-icons/feather/static";
 import { scoreMatch, searchKey } from "@utils/search-text";
 import { Platform } from "react-native";
 
@@ -94,7 +94,7 @@ export interface SettingsEntry {
   descriptionKey?: TranslationKey;
   // Where the row lives. Shown under the label on a result.
   sectionKey: TranslationKey;
-  icon: keyof typeof Feather.glyphMap;
+  icon: FeatherIconName;
   target: SettingsTarget;
   // Set only for a row one platform does not render.
   platform?: "android" | "ios";

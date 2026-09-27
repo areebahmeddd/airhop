@@ -15,6 +15,7 @@ import {
   snapshotForMove,
 } from "../move-snapshot";
 import { MMKV_STORE_IDS } from "../panic-wipe";
+import { condemnIdentity, isIdentityCondemned } from "../wipe-marker";
 
 // The same three the panic wipe test replaces: each reaches a native runtime
 // at import, and none of them is what a move does.
@@ -61,6 +62,7 @@ async function oldPhone() {
   await saveIdentity(identity);
   await writeSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase, "twelve words here");
   await writeSecret(KEYCHAIN_ITEMS.walletP2pkKey, "ab".repeat(32));
+  await writeSecret(KEYCHAIN_ITEMS.localPrekeys, "b25lLXRpbWUga2V5cw==");
   getStorage("contacts-store").set(
     "contacts-store",
     persisted({ contacts: { "0011223344556677": { nickname: "sam" } } }),
@@ -84,6 +86,7 @@ async function oldPhone() {
     persisted(
       {
         theme: "dark",
+        stayInvisible: true,
         permissionPrimerSeen: true,
         autoStartOnBoot: true,
       },
@@ -110,6 +113,7 @@ describe("transfer snapshot", () => {
     expect(names).toContain("mmkv:outbox-store");
     // One-time prekey privates never leave the phone that made them.
     expect(names).not.toContain("mmkv:prekey-store");
+    expect(names).not.toContain("secret:localPrekeys");
     expect(names).not.toContain("mmkv:activity-store");
     expect(names).not.toContain("secret:walletEncryptionKey");
     expect(names[names.length - 1]).toBe("secret:identity");
@@ -144,6 +148,8 @@ describe("transfer snapshot", () => {
       }
     ).state;
     expect(state.theme).toBe("dark");
+    // The identity is what was hidden, so it arrives hidden.
+    expect(state.stayInvisible).toBe(true);
     expect(state).not.toHaveProperty("permissionPrimerSeen");
     expect(state).not.toHaveProperty("autoStartOnBoot");
   });
@@ -166,6 +172,19 @@ describe("transfer apply", () => {
       "contacts",
     );
     expect(getStorage("prekey-store").getString("local")).toBeUndefined();
+  });
+
+  it("clears a condemned identity's flag once the moved one is written over it", async () => {
+    const identity = await oldPhone();
+    const sections = asMap(await snapshotForMove(true));
+    freshPhone();
+    // An earlier wipe on this phone could not delete its identity.
+    condemnIdentity();
+
+    await applyMove(sections, identity.noiseStaticPubKey);
+
+    // Otherwise the next launch would delete the identity that just arrived.
+    expect(isIdentityCondemned()).toBe(false);
   });
 
   it("refuses an identity that is not the one the handshake proved", async () => {
@@ -200,6 +219,7 @@ describe("transfer apply", () => {
     expect(isKnownSection("wallet")).toBe(true);
     expect(isKnownSection("mmkv:group-store")).toBe(true);
     expect(isKnownSection("secret:walletEncryptionKey")).toBe(false);
+    expect(isKnownSection("secret:localPrekeys")).toBe(false);
     expect(isKnownSection("mmkv:courier-store")).toBe(false);
     expect(isKnownSection("mmkv:move-marker")).toBe(false);
     expect(isKnownSection("mmkv:constructor")).toBe(false);

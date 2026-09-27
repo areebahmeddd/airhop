@@ -84,6 +84,15 @@ rm -rf "$BUILD_ROOT/.git"
 
 cd "$SRC_DIR"
 
+# Before the gomobile pin check, so that check also proves the raise left
+# gomobile at its pin. See IPTPROXY_GO_RAISES in TOOLCHAIN.env.
+if [ -n "${IPTPROXY_GO_RAISES:-}" ]; then
+  info "Raising $IPTPROXY_GO_RAISES"
+  # Unquoted on purpose: one module@version per word.
+  # shellcheck disable=SC2086
+  go get $IPTPROXY_GO_RAISES
+fi
+
 resolved="$(go list -m golang.org/x/mobile)"
 info "gomobile: $resolved"
 grep -q "$GOMOBILE_VERSION" <<<"$resolved" \

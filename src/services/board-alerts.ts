@@ -11,6 +11,7 @@
 
 import { t } from "@i18n";
 import { useChatStore } from "@store/chat-store";
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import { systemRow } from "@utils/message-text";
 
 export interface UrgentNotice {
@@ -23,7 +24,13 @@ export interface UrgentNotice {
 const COLLAPSE_MS = 4_000;
 const CONTENT_MAX_CHARS = 120;
 
-const handled = new Set<string>();
+// The post IDs are relay and mesh data, so the set is bounded, at the same size
+// as bridge-service's ID sets. Evicting the oldest re-announces a post only if
+// it is replayed after 2,000 newer ones and is still inside the ingest recency
+// window, and then the cost is one repeated line.
+const MAX_HANDLED = 2_000;
+
+const handled = new BoundedIdSet(MAX_HANDLED);
 const pending = new Map<string, UrgentNotice[]>();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 

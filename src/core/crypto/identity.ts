@@ -15,11 +15,11 @@ import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "./keychain";
 // `nostrPubKeyHex`, derived once at construction, and that is what the
 // ANNOUNCE TLV and the QR contact card carry.
 export interface Identity {
-  // X25519 static key pair - used for Noise XX session encryption only
+  // X25519 static key pair, used for Noise XX session encryption only
   noiseStaticPrivKey: Uint8Array;
   noiseStaticPubKey: Uint8Array;
   // Ed25519 key pair. Signs packets, and is the SEED the Nostr identity is
-  // derived from - not the Nostr identity itself.
+  // derived from, not the Nostr identity itself.
   signingPrivKey: Uint8Array;
   signingPubKey: Uint8Array;
   // First 16 hex chars of SHA-256(noiseStaticPubKey) = 8 bytes
@@ -56,6 +56,9 @@ export async function saveIdentity(id: Identity): Promise<void> {
   );
 }
 
+// Null only when there is no item. A present item that will not parse throws:
+// it is unreadable, not absent, and "absent" sends the launch to onboarding,
+// which would write over it.
 export async function loadIdentity(): Promise<Identity | null> {
   const raw = await readSecret(STORAGE_KEY);
   if (!raw) return null;
@@ -69,7 +72,7 @@ export async function loadIdentity(): Promise<Identity | null> {
     typeof (parsed as Record<string, unknown>).noisePrivHex !== "string" ||
     typeof (parsed as Record<string, unknown>).signingPrivHex !== "string"
   ) {
-    return null;
+    throw new Error("identity: stored item is malformed");
   }
 
   const noisePriv = hexToBytes((parsed as Record<string, string>).noisePrivHex);
@@ -89,4 +92,4 @@ export async function loadIdentity(): Promise<Identity | null> {
 }
 
 // The panic wipe is `wipeAllSecrets` in ./keychain, called directly by
-// utils/panic-wipe.ts. It walks the item registry, so it belongs beside it.
+// services/panic-wipe.ts. It walks the item registry, so it belongs beside it.

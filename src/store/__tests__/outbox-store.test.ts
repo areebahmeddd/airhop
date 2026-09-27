@@ -24,7 +24,7 @@ function state() {
 }
 
 function enqueue(id: string, peerID: string, createdAtMs = Date.now()) {
-  state().enqueue({
+  return state().enqueue({
     id,
     recipientPeerID: peerID,
     channel: `dm:${peerID}`,
@@ -152,9 +152,9 @@ describe("expiry", () => {
 
     const dropped = state().evictExpired(now);
 
-    // Eviction used to be silent, which left the sender's message under a
-    // "waiting to send" hourglass forever for something that was never going
-    // out again. The caller marks these failed.
+    // A silent eviction would leave the sender's message under a "waiting to
+    // send" hourglass forever for something that is never going out again. The
+    // caller marks these failed.
     expect(dropped.map((m) => m.id)).toEqual(["stale"]);
   });
 
@@ -204,5 +204,14 @@ describe("expiry", () => {
     expect(state().forPeer(PEER_A)).toHaveLength(MAX_PENDING_PER_PEER);
     // Oldest-first within that peer.
     expect(state().forPeer(PEER_A)[0].id).toBe("a5");
+  });
+
+  it("returns what the cap evicted, so its bubble can say failed", () => {
+    for (let i = 0; i < MAX_PENDING_PER_PEER; i++) {
+      expect(enqueue(`a${String(i)}`, PEER_A)).toEqual([]);
+    }
+    expect(enqueue("a-next", PEER_A).map((m) => m.id)).toEqual(["a0"]);
+    // A duplicate id evicts nothing.
+    expect(enqueue("a-next", PEER_A)).toEqual([]);
   });
 });

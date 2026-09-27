@@ -6,18 +6,13 @@
 // The gap these cover: `enableTorRouting` awaits `awaitTorReady` before it
 // claims anything, so a user toggling Tor on gets an honest answer. But
 // `primeTorRoutingOnStartup` cannot wait, since it runs before the mesh exists.
-// It installs the Tor socket, claims active, and lets Arti bootstrap behind it.
+// It installs the Tor socket and lets Arti bootstrap behind it, and the claim
+// rises only when the status feed or a foreground revalidation reports ready.
 //
-// That is right for traffic and was wrong for the banner. Every relay socket
-// goes through Arti's SOCKS, so a bootstrap that has not finished means relays
-// fail rather than falling back to clear net, which is the correct direction.
-// But a bootstrap that never finishes left `torActive` true forever: the banner
-// read "Tor on" over a Nostr layer that silently never connected, and nothing
-// revisited it. The module's own comment claimed status arrived over
-// `TorStatusChanged`; nothing subscribes to that event.
-//
-// Revalidation now runs on iOS too, off the same app-foreground trigger as
-// Android, using the status snapshot the native module already exposes.
+// Every relay socket goes through Arti's SOCKS, so a bootstrap that has not
+// finished means relays fail rather than falling back to clear net. A banner
+// that claimed Tor before then would read "Tor on" over a Nostr layer that
+// never connected.
 
 const mockGetTorStatus = jest.fn<
   Promise<{
@@ -33,7 +28,12 @@ const mockStartTor = jest.fn<Promise<void>, [string]>();
 const mockStopTor = jest.fn<Promise<void>, []>();
 const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetTorActive = jest.fn();
-const mockSetTorBootstrap = jest.fn();
+// Tracked, because a retry and the internet switch read it back to tell the
+// held state from a start in flight.
+let mockTorBootstrap: TorBootstrapPhase = "idle";
+const mockSetTorBootstrap = jest.fn((next: TorBootstrapPhase) => {
+  mockTorBootstrap = next;
+});
 // Tracks the value, so the real "skip when nothing moves" guard in
 // setNostrBlocked is exercised rather than bypassed by a mock that always
 // reports undefined and therefore always looks like a change.
@@ -71,6 +71,7 @@ const mockRestartNostr = jest.fn();
 let torStatusListener: ((s: unknown) => void) | null = null;
 const mockRemoveListener = jest.fn();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
+const mockHoldRoute = jest.fn<Promise<void>, []>(() => Promise.resolve());
 
 jest.mock("react-native", () => ({
   Platform: { OS: "ios" },
@@ -98,6 +99,7 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
     getTorStatus: () => mockGetTorStatus(),
     awaitTorReady: (s: number) => mockAwaitTorReady(s),
     setAppForeground: (f: boolean) => mockSetAppForeground(f),
+    holdRoute: () => mockHoldRoute(),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   },
@@ -130,6 +132,9 @@ jest.mock("@store/mesh-state-store", () => ({
       get nostrBlockedByTor() {
         return mockNostrBlocked;
       },
+      get torBootstrap() {
+        return mockTorBootstrap;
+      },
     }),
   },
 }));
@@ -160,6 +165,7 @@ jest.mock("@store/settings-store", () => ({
   },
 }));
 
+import type { TorBootstrapPhase } from "@store/mesh-state-store";
 import {
   isTorRoutingActive,
   notifyTorAppForeground,
@@ -219,9 +225,9 @@ describe("enabling Tor on iOS", () => {
     const result = await setTorRouting(true);
 
     // The deadline is a UI answer, not a verdict on the circuit. Arti polls for
-    // longer than this wait allows, so stopping it here used to kill a circuit
-    // that was nearly up, and reverting the socket would have put the user back
-    // on the clear net they had just opted out of. Both are left alone.
+    // longer than this wait allows, so stopping it here would kill a circuit
+    // that is nearly up, and reverting the socket would put the user back on
+    // the clear net they had just opted out of. Both are left alone.
     expect(result).toEqual({ ok: false, reason: "timeout" });
     expect(mockStopTor).not.toHaveBeenCalled();
     // Claiming Tor here would be the whole failure this path exists to avoid.
@@ -306,7 +312,8 @@ describe("revalidating on iOS", () => {
 // `torEnabled` is written before the native client exists so a relaunch during a
 // bootstrap comes back on Tor rather than on the clear net. Without the marker
 // that ordering replays a fatal native failure on every launch, and the user's
-// only way out is deleting their keys.
+// only way out is deleting their keys. With it, the launch keeps Tor on and
+// holds the internet half, and only Tor off or an accepted Try again leaves.
 describe("surviving a Tor client that kills the process", () => {
   test("the start window is marked before the call and cleared after it", async () => {
     mockTorEnabled = false;
@@ -323,7 +330,8 @@ describe("surviving a Tor client that kills the process", () => {
 
   test("a start that fails cleanly leaves no marker behind", async () => {
     // A rejected start is a failure the app handled and survived. Left set, it
-    // would disable Tor on the next launch for a crash that never happened.
+    // would hold the internet half on the next launch for a crash that never
+    // happened.
     mockTorEnabled = false;
     mockStartTor.mockRejectedValue(new Error("no library"));
 
@@ -332,27 +340,28 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockTorStartPending).toBe(false);
   });
 
-  test("a marker left by the previous process turns Tor off instead of retrying", () => {
+  test("a marker left by the previous process keeps Tor on without retrying", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
     expect(mockStartTor).not.toHaveBeenCalled();
-    expect(mockTorEnabled).toBe(false);
-    // Kept, because it is what tells the Tor screen to explain itself. Reverting
-    // a privacy choice silently is the one outcome this must not produce.
+    expect(mockTorEnabled).toBe(true);
+    // Kept, because it is what the Tor screen's Try again answers.
     expect(mockTorStartPending).toBe(true);
   });
 
-  test("recovering leaves the internet half working rather than gated", () => {
+  test("recovering fails closed: relays held and reported blocked", () => {
     mockTorEnabled = true;
     mockTorStartPending = true;
 
     primeTorRoutingOnStartup();
 
-    expect(mockSetTorBootstrap).toHaveBeenCalledWith("idle");
-    expect(mockSetNostrBlockedByTor).not.toHaveBeenCalledWith(true);
+    // The Nostr socket is the only thing iOS proxies, and it is held here.
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalledTimes(1);
+    expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(isTorRoutingActive()).toBe(false);
   });
 
@@ -398,10 +407,10 @@ describe("startup priming on iOS", () => {
     primeTorRoutingOnStartup();
     await Promise.resolve();
 
-    // The claim drives the "internet traffic onion routed" banner. Asserting it
-    // here asserted it before a single circuit had formed, which is true within
-    // seconds on a good network and never true at all on one that blocks Tor,
-    // where it used to sit green for the whole session.
+    // The claim drives the "internet traffic onion routed" banner. Raising it
+    // here would assert it before a single circuit has formed, which is true
+    // within seconds on a good network and never true at all on one that blocks
+    // Tor, where the banner would sit green for the whole session.
     expect(isTorRoutingActive()).toBe(false);
   });
 
@@ -422,9 +431,9 @@ describe("startup priming on iOS", () => {
     await Promise.resolve();
 
     // Neither ready nor starting, with the preference on, is what a network
-    // that blocks Tor looks like. The native side now emits this terminally;
-    // before, the poll loop simply ended and left `isStarting` true forever, so
-    // this branch was unreachable and the banner was dead code.
+    // that blocks Tor looks like. The native side emits this terminally; a poll
+    // loop that simply ended would leave `isStarting` true forever, and this
+    // branch and its banner would be unreachable.
     emitStatus({ isReady: false, isStarting: false });
 
     expect(isTorRoutingActive()).toBe(false);
@@ -434,7 +443,7 @@ describe("startup priming on iOS", () => {
 
 // The live bootstrap signal, which is what iOS has instead of Android's probe.
 //
-// bitchat/ios reports the same three moments as system messages in
+// bitchat-ios reports the same three moments as system messages in
 // ChatViewModel+Tor: starting, started, and "tor could not connect - this
 // network may be blocking it. mesh messaging still works". Airhop's surface is
 // the Mesh banner, but the states and the honesty are the same.

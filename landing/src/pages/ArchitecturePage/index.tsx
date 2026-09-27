@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TextLink from "@/components/ui/TextLink";
 import { useSEO } from "@/hooks/useSEO";
 import { formatDate, useLanguage, useT, type LanguageCode, type Translator } from "@/i18n";
-import { AUTHOR_NAME, REPO_LINKS } from "@/lib/links";
+import { AUTHOR_NAME, REPO_LINKS, REPO_URL } from "@/lib/links";
 import { canonicalUrl, LAST_UPDATED, SEO } from "@/lib/seo";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -299,8 +299,8 @@ export default function ArchitecturePage() {
               </p>
               <p>
                 That constraint buys two things. The entire protocol is testable in CI without a
-                phone, which is why over a thousand tests can cover the wire format, the handshakes
-                and whole multi-device scenarios before a radio is ever involved. And a bug fixed in
+                phone, which is why thousands of tests can cover the wire format, the handshakes and
+                whole multi-device scenarios before a radio is ever involved. And a bug fixed in
                 gossip sync is fixed on both platforms at once, because there is only one
                 implementation of it.
               </p>
@@ -311,8 +311,8 @@ export default function ArchitecturePage() {
                   ["src/ui/", "shared components and theme tokens", "No"],
                   ["src/features/", "chat, discovery, wallet, contacts, settings", "No"],
                   ["src/store/", "Zustand slices persisted to MMKV", "No"],
-                  ["src/services/", "mesh-service, wallet-service, ecash-transfer", "No"],
-                  ["src/core/", "crypto, mesh, nostr, payments, router", "No"],
+                  ["src/services/", "mesh-service, wallet-service, payment-router", "No"],
+                  ["src/core/", "crypto, mesh, nostr, payments, router, move", "No"],
                   ["src/bridge/", "TurboModule specs, the only meeting point", "Interface only"],
                   [
                     "ios/ · android/",
@@ -327,15 +327,18 @@ export default function ArchitecturePage() {
               id="message"
               eyebrow="Orientation · 02"
               title="Follow one message"
-              lede="You type something and press send. From there the router picks a tier, and it is the only part of the system that gets to make that choice."
+              lede="You type something in a direct message and press send. From there one function picks a tier, and it is the only part of the system that gets to make that choice."
             >
               <Figure
                 caption={
                   <>
-                    The three tiers in{" "}
-                    <TextLink href={REPO_LINKS.messageRouter}>message-router.ts</TextLink>, which
-                    holds the entire routing decision. Each tier is tried in order and the first one
-                    that can carry the message wins.
+                    The three tiers{" "}
+                    <TextLink href={`${REPO_URL}/blob/main/src/services/mesh-service.ts`}>
+                      mesh-service.ts
+                    </TextLink>{" "}
+                    walks for every direct message. Each tier is tried in order and the first one
+                    that can carry the message wins. Whatever happens, the message also waits in the
+                    outbox for up to a week until a delivery receipt clears it.
                   </>
                 }
               >
@@ -365,20 +368,20 @@ export default function ArchitecturePage() {
               />
 
               <p>
-                Two cases fall through tier 1 that the diagram cannot show.{" "}
+                Two things the diagram cannot show.{" "}
                 <strong className="text-ink">
-                  A Noise session can only be established over a direct link, never across relays.
+                  A peer several hops away still gets a Noise session.
                 </strong>{" "}
-                So a peer four hops away that you have never messaged has no session to use, and
-                first contact goes over Nostr or courier even though the mesh could physically reach
-                them. Once a session exists it relays across the mesh normally, so this only ever
-                affects the first message.
+                With none open, the first message starts a handshake addressed to them, flooded
+                across the mesh like any directed packet, and goes out the moment it completes.
+                Between two Airhop phones the Double Ratchet then runs inside that session.
               </p>
               <p>
-                The second is size. A direct message longer than one 255-byte PrivateMessagePacket
-                is not split across the Noise session, it goes to courier instead. Sending a
-                truncated packet that bitchat cannot parse would be worse than taking the slower
-                route.
+                The second is size. A direct message holds at most 255 bytes of text, and the
+                composer counts down to it, because the Noise session, Nostr and a courier all carry
+                one bitchat PrivateMessagePacket and bitchat cannot parse a split one. An ecash
+                token with its proofs runs past that, so a token in a queued message can only go by
+                the Double Ratchet between two Airhop phones, and the app says so.
               </p>
 
               <Note label="The choice is automatic">
@@ -412,7 +415,7 @@ export default function ArchitecturePage() {
                   [
                     "TTL",
                     "A hop budget stamped on a packet, reduced by one at each relay",
-                    "Starts at 7, and the packet stops when it reaches zero",
+                    "At most 7, lower in a crowd, and the packet stops when it runs out",
                   ],
                   [
                     "Flooding",
@@ -449,7 +452,7 @@ export default function ArchitecturePage() {
                   [
                     "Ed25519",
                     "A signature scheme",
-                    "Signs every packet. Relays verify before forwarding, so a forgery dies at the first hop",
+                    "Signs what you post. Every phone checks it before showing anything, and checks files, board posts, voice and departures before relaying them too",
                   ],
                   [
                     "X25519",
@@ -484,7 +487,7 @@ export default function ArchitecturePage() {
                   [
                     "Prekey",
                     "A single-use public key published ahead of time",
-                    "Gossiped as 0x24, so a message to a stranger is forward-secret before you ever meet",
+                    "Broadcast over the mesh as 0x24, so mail left for someone who is away stays forward-secret",
                   ],
                 ]}
               />
@@ -501,7 +504,7 @@ export default function ArchitecturePage() {
                   [
                     "Event kind",
                     "A number declaring what an event is for",
-                    "Eight are used, listed in the internet layer section",
+                    "Eleven are used, listed in the internet layer section",
                   ],
                   [
                     "Gift wrap",
@@ -553,7 +556,7 @@ export default function ArchitecturePage() {
                   [
                     "BIP-39",
                     "Twelve words that encode a seed",
-                    "The recovery phrase. Created on first launch so every coin is derived from it; backup counts as on once you have viewed and confirmed it",
+                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words and proved you wrote them down",
                   ],
                   [
                     "bolt11",
@@ -606,7 +609,8 @@ export default function ArchitecturePage() {
                     "No",
                   ],
                   ["Ed25519 signing private key", "Keychain / Keystore", "No"],
-                  ["Wallet AES-256 key", "Keychain / Keystore", "No"],
+                  ["One-time prekey private keys", "Keychain / Keystore", "No"],
+                  ["Wallet AES-256 key and nutzap key", "Keychain / Keystore", "No"],
                   ["Recovery phrase", "Keychain / Keystore", "No, unless you wrote it down"],
                   ["Cashu proofs", "MMKV, AES-256 encrypted", "No"],
                   ["Message history", "MMKV, protected by OS disk encryption", "No"],
@@ -627,16 +631,21 @@ export default function ArchitecturePage() {
                 local nickname for their conversations. It changes only the local display label,
                 never the cryptographic identity.
               </p>
+              <h3 className="text-ink pt-2 text-base font-bold">Moving to a new phone</h3>
               <p>
-                <strong className="text-ink">A new phone gets the keys, not a copy.</strong> The new
-                phone shows a QR code, the old one scans it after Face ID or its passcode, and
-                everything crosses one encrypted connection over the same Wi-Fi or a hotspot. The{" "}
-                <TextLink href="https://noiseprotocol.org/noise.html">Noise XX</TextLink> handshake
-                is pinned to the key in the code, so no other device on the network can stand in.
-                The keys are identical, so the peer ID, name and safety numbers are too, and
-                contacts stay verified without doing anything. Once the new phone confirms it has
-                everything, the old one erases itself, and if both ever run at once, each warns that
-                the identity is on another phone.
+                Airhop keeps your identity and app data on the phone. There is no cloud backup. To
+                move to a new phone, the new phone shows a QR code and the old phone scans it after
+                Face ID or its passcode. The phones then connect over the same Wi-Fi or a hotspot,
+                with no internet or server involved.
+              </p>
+              <p>
+                An encrypted Noise XX handshake is tied to the QR code, and both phones then show
+                the same six words. Nothing moves until you confirm they match on the new phone, so
+                a third device that read the code is turned away. The identity keys, contacts,
+                groups, rooms, chat history, outbox and wallet move to the new phone. The keys stay
+                the same, so the peer ID, name and safety numbers do too. Media files, one-time
+                prekeys and live session state do not move. Once the new phone confirms the
+                transfer, the old phone erases its keys and local data.
               </p>
             </Section>
 
@@ -770,7 +779,8 @@ export default function ArchitecturePage() {
                 A message is broadcast, and every phone that hears it re-broadcasts it with one hop
                 spent. <strong className="text-ink">That is the entire routing algorithm.</strong> A
                 cleverer one would need state that a mesh of strangers cannot agree on. Four
-                mechanisms stop the obvious failure modes.
+                mechanisms stop the obvious failure modes, and the relay rules are bitchat-ios's
+                own, so both apps spread a message the same distance.
               </p>
 
               <Figure caption="A message crossing four hops of the seven it is allowed. Both arms of each loop deliver a copy, but a phone forwards only the first one it sees.">
@@ -780,10 +790,10 @@ export default function ArchitecturePage() {
               <Table
                 head={["Mechanism", "Value", "The failure it prevents"]}
                 rows={[
-                  ["TTL", "7 hops", "A packet circulating forever"],
+                  ["TTL", "7 hops at most", "A packet circulating forever"],
                   [
                     "Relay jitter",
-                    "10 to 220 ms, random",
+                    "10 to 220 ms, random, longer in a crowd",
                     "Every phone in a room answering in the same millisecond and colliding",
                   ],
                   [
@@ -792,9 +802,9 @@ export default function ArchitecturePage() {
                     "The same packet being re-forwarded every time it loops back",
                   ],
                   [
-                    "Fanout",
-                    "about ⌈√n⌉ peers",
-                    "Traffic growing with crowd size instead of staying flat",
+                    "Crowd clamp",
+                    "public TTL cut to 6 with 3 to 5 neighbors, 5 with 6 or more",
+                    "A dense room multiplying copies of a message that has plenty of phones to reach anyway",
                   ],
                 ]}
               />
@@ -841,13 +851,17 @@ export default function ArchitecturePage() {
               <Table
                 head={["Constant", "Value", "Note"]}
                 rows={[
-                  ["Sync interval", "15 seconds", "Broadcast to direct neighbors only"],
                   [
-                    "New-peer sync",
-                    "5 seconds after first ANNOUNCE",
-                    "Lets a joiner catch up fast",
+                    "Sync interval",
+                    "15 seconds, board posts every 60",
+                    "Sent to direct neighbors only, one request per kind",
                   ],
-                  ["Gossip cache", "1000 packets or 8 MiB", "Rolling window the filter describes"],
+                  ["Message window", "6 hours", "How far back a returning peer catches up"],
+                  [
+                    "Gossip cache",
+                    "1000 public messages or 8 MiB",
+                    "Group messages and board posts keep separate stores, so one cannot evict another",
+                  ],
                   ["False positive rate", "1%", "A missed packet, never a wrong one"],
                   ["Filter budget", "~400 bytes", "Fits comfortably inside one exchange"],
                   ["Relayed?", "Never", "REQUEST_SYNC stays between neighbors"],
@@ -912,16 +926,17 @@ export default function ArchitecturePage() {
 
               <h3 className="text-ink pt-2 text-base font-bold">Bitle relay hardware</h3>
               <p>
-                Flash <TextLink href="https://bitle.org">Bitle</TextLink> firmware onto an ESP32
-                relay and place it where people need a longer reach. It speaks Airhop's mesh
-                protocol, carries gossip and courier mail, and links nodes over 915 MHz LoRa, so
-                Bluetooth clusters can reach one another without a phone standing in the gap.
+                <TextLink href="https://bitle.org">Bitle</TextLink> is firmware for an ESP32 relay
+                that speaks the same mesh protocol, carries gossip and courier mail, and links nodes
+                over 915 MHz LoRa, so Bluetooth clusters could reach one another without a phone
+                standing in the gap. The relay would carry the same encrypted packets as a phone,
+                with no Nostr and no internet connection.
               </p>
 
               <p>
-                The relay carries the same encrypted packets as a phone and does not need Nostr or
-                an internet connection. Two Bitle nodes can extend a Bluetooth mesh across a gap,
-                keeping messages, sync and courier delivery on the local radio network.
+                Airhop's side of that is written and tested in simulation, but it has not yet been
+                run against real nodes. That run is on the{" "}
+                <TextLink href={REPO_LINKS.roadmapDoc}>roadmap</TextLink>.
               </p>
 
               <p>
@@ -968,19 +983,25 @@ export default function ArchitecturePage() {
 
               <Note label="A backgrounded iPhone is invisible to Android">
                 Once the app leaves the foreground, CoreBluetooth moves the service UUID into the
-                advertisement's overflow area and drops the local name. Only another iOS device
-                scanning for that exact UUID can see it there. iPhone-to-iPhone discovery keeps
-                working, an already connected link keeps carrying traffic, but iPhone-to-Android
-                discovery stops until the app is reopened. This is a platform behavior and cannot be
-                fixed in application code.
+                advertisement's overflow area. Only another iOS device scanning for that exact UUID
+                can see it there. iPhone-to-iPhone discovery keeps working, an already connected
+                link keeps carrying traffic, but iPhone-to-Android discovery stops until the app is
+                reopened. This is a platform behavior and cannot be fixed in application code.
               </Note>
 
               <p>
-                <strong className="text-ink">Panic wipe is the terminal transition.</strong>{" "}
-                Triple-tapping the logo zeroizes keys in memory, deletes every Keychain and Keystore
-                entry, clears all MMKV partitions, and deletes the app sandbox, in under a second.
-                The wallet file is emptied and its key destroyed, so what stays on disk cannot be
-                read.
+                Invisible survives a relaunch and a start at boot, since it is a choice about being
+                seen. Away lasts until you change it or the app restarts.
+              </p>
+
+              <p>
+                <strong className="text-ink">Panic wipe is the terminal transition.</strong> From
+                the Profile screen, one tap asks for confirmation and three quick taps skip it. It
+                deletes every Keychain and Keystore entry, clears every MMKV partition, empties the
+                cache directory (and tmp on iOS), deletes Tor's state and clears delivered
+                notifications, in a few seconds. The wallet file is emptied and its key destroyed,
+                so what stays on disk cannot be read. Two things are beyond its reach: photos saved
+                to the gallery, and WiFi Aware pairings in the iPhone's own list.
               </p>
             </Section>
 
@@ -1024,9 +1045,10 @@ export default function ArchitecturePage() {
 
               <Note label="Why a room attachment is readable and a direct one is not">
                 A direct attachment is sealed inside the recipient's Noise session as <C>0x20</C>,
-                like the message it arrives with. An app that cannot open a sealed one gets the
-                signed cleartext form instead. In the public Bluetooth room there is nobody to seal
-                to, so{" "}
+                like the message it arrives with. It goes only to a peer that has proven inside that
+                session it can open one; an app that cannot is told so, and nothing goes out in the
+                clear. The older signed cleartext form is still accepted on receipt. In the public
+                Bluetooth room there is nobody to seal to, so{" "}
                 <strong className="text-ink">any device relaying that one can open it</strong>,
                 exactly like the text beside it. Either way the signature covers the file, so nobody
                 can forge or alter one.
@@ -1091,9 +1113,9 @@ export default function ArchitecturePage() {
               <p>
                 Every attachment is <strong className="text-ink">one packet</strong>, not a stream
                 of chunks. The whole file goes into a single TLV payload and the fragment layer
-                splits it for the radio, which is the same path a long text message takes. An
-                earlier plan to chunk large files ourselves was dropped: bitchat enforces its size
-                cap when it <em>decodes</em> a packet, so anything larger is refused outright and
+                splits it for the radio, which is the same path a long text message takes. Chunking
+                a larger file at the app layer would not get around the cap: bitchat enforces it
+                when it <em>decodes</em> a packet, so anything larger is refused outright and
                 interop breaks in both directions.
               </p>
 
@@ -1102,7 +1124,7 @@ export default function ArchitecturePage() {
                 rows={[
                   ["Cap", "512 KiB", "512 KiB", "1 MiB", "1 MiB"],
                   ["Resized first", "Yes", "No", "No", "No"],
-                  ["Sent as", "JPEG", "AAC", "MP4 or MOV", "As-is"],
+                  ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4 or MOV", "As-is"],
                 ]}
               />
 
@@ -1110,7 +1132,10 @@ export default function ArchitecturePage() {
                 Photos are fitted before they leave. The longest edge comes down to 1600 pixels,
                 which is still worth looking at full screen, and the file is re-encoded until it
                 fits the budget: quality first, then resolution once quality alone stops helping.
-                Most photos need one pass. A photo already under the cap is left untouched.
+                Most photos need one pass. A JPEG or WebP is always re-encoded, even when it already
+                fits, because that is what strips its metadata, GPS included, and one the encoder
+                cannot open is refused rather than sent as it is. A GIF or PNG that fits goes
+                unchanged, so an animation stays animated and a screenshot stays lossless.
               </p>
 
               <Note label="What the quality setting actually does">
@@ -1131,9 +1156,11 @@ export default function ArchitecturePage() {
                 cannot claim to be a photo and arrive as something else.
               </p>
               <p>
-                Received files live in the app's own cache, not your gallery, and Settings shows
-                what they cost with a button that actually frees it. Saving one to the gallery is
-                something you do yourself, from the photo viewer or the long-press menu.
+                Received files live in the app's own cache, not your gallery, within a 100 MiB
+                budget that drops the oldest first, and every file is deleted after the retention
+                window you choose (7, 14 or 30 days). Settings shows what they cost with a button
+                that actually frees it. Saving one to the gallery is something you do yourself, from
+                the photo viewer or the long-press menu.
               </p>
             </Section>
 
@@ -1204,15 +1231,21 @@ export default function ArchitecturePage() {
               <p>
                 The same hold on the same button streams live where the mesh can carry it and
                 records a voice note where it cannot, and the button says which one you are about to
-                get. One setting turns the whole thing off, in both directions at once, and voice
-                goes back to behaving exactly as it did before.
+                get. One setting turns the whole thing off, in both directions at once, and holding
+                the mic then always records a voice note.
               </p>
               <p>
-                Live voice is offered only where unencrypted media already is: public mesh rooms and
-                direct messages. A private channel or group would have its audio broadcast in the
-                clear, which would quietly undo the thing that makes it private, so holding the mic
-                there records a voice note instead. Location channels are excluded too, since that
-                would put your voice on public relays.
+                One voice plays at a time, as in bitchat. A speaker who goes quiet or walks away
+                ends after 3 seconds of silence, the last few hundred milliseconds of a burst play
+                out before the next speaker starts, and a voice note you are listening to pauses
+                when someone starts talking.
+              </p>
+              <p>
+                Live voice is offered only in the public mesh room and in direct messages. A private
+                channel or group would have its audio broadcast in the clear, which would quietly
+                undo the thing that makes it private, so holding the mic there records a voice note
+                instead. Location channels are excluded too, since that would put your voice on
+                public relays.
               </p>
             </Section>
 
@@ -1267,8 +1300,16 @@ export default function ArchitecturePage() {
                   ["14", "Rumor, the unsigned inner message"],
                   ["13", "Seal, signed by you, encrypted to them"],
                   ["1059", "Gift wrap, signed by a throwaway key"],
-                  ["20000", "Location channel message"],
+                  ["20000", "Location channel message, and a mesh bridge copy"],
                   ["20001", "Location channel presence heartbeat"],
+                  ["20002", "Private channel message, sealed with the channel key"],
+                  ["1", "Location note, public, with or without an expiry"],
+                  [
+                    "5",
+                    <>
+                      Deletion of a note you posted (<NIP n="09" />)
+                    </>,
+                  ],
                   ["1401", "Courier drop parked on a relay"],
                   [
                     "9321",
@@ -1333,24 +1374,43 @@ export default function ArchitecturePage() {
                 <TextLink href="https://arti.torproject.org">Arti</TextLink>, the Tor Project's Rust
                 client, is compiled into the app binary on both platforms. There is nothing to
                 install and no separate app to keep running. Where they part is reach: on Android
-                the proxy sits in the HTTP client every socket is built from, and on iOS it fronts
-                the Nostr socket alone.
+                the proxy sits in the HTTP stack every web request is built from, and on iOS it
+                fronts the Nostr socket alone.
               </p>
 
               <Table
                 head={["", "iOS", "Android"]}
                 rows={[
-                  ["Covers", "The Nostr WebSocket only", "Every connection the app makes"],
-                  ["Mint traffic", "Blocked while Tor is on, unless you opt in", "Covered"],
+                  [
+                    "Covers",
+                    "The Nostr WebSocket only",
+                    "Every web request and WebSocket, downloads included",
+                  ],
+                  [
+                    "Mint traffic",
+                    "Blocked while Tor is on, unless you allow mint traffic over clear net",
+                    "Covered",
+                  ],
+                  ["Place names", "Not looked up while Tor is on", "Not looked up while Tor is on"],
                 ]}
               />
+
+              <p>
+                Place names come from the phone's own geocoder, a system service that no app proxy
+                reaches, which is why they are skipped rather than looked up in the clear. Each
+                destination gets circuits of its own, so two relays, or a relay and a mint, are
+                never tied together by a shared circuit.
+              </p>
 
               <p>
                 <strong className="text-ink">Failing closed is structural, not timed.</strong> Arti
                 has no clearnet path at all, so a request made before the first circuit exists fails
                 instead of quietly taking the direct route. Protection starts when you turn Tor on,
-                not when the circuit finishes forming. If a network blocks Tor outright, the
-                internet half stops and the app says so instead of falling back.
+                not when the circuit finishes forming. If a network blocks Tor outright, or a bridge
+                you picked is refused, the internet half stops and the app says so instead of
+                falling back. If Tor ever crashes while starting, it stays on at the next launch
+                with the internet half held, and the Tor screen offers Try again beside the switch
+                that turns it off. Only one of those two leaves that state.
               </p>
 
               <p>
@@ -1358,7 +1418,8 @@ export default function ArchitecturePage() {
                 direct connection the first hop goes to a publicly listed relay, so the network you
                 are on can see Tor traffic for what it is. A bridge is an entry point that appears
                 on no public list, and a pluggable transport in front of it disguises the connection
-                itself. Settings offers four ways to reach the network.
+                itself. Settings offers four ways to reach the network, with a fifth listed as
+                coming soon.
               </p>
 
               <Table
@@ -1376,47 +1437,47 @@ export default function ArchitecturePage() {
                     "Its bridge lines are public, so a determined censor blocks them",
                   ],
                   [
-                    "webtunnel",
-                    "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
-                    "Fewer bridges to go around, since each one needs a real website standing in front of it",
+                    "Custom bridges",
+                    "The same as obfs4, using lines the built-in list does not carry",
+                    "You fetch them yourself, and they are only as good as their source",
                   ],
                   [
-                    "Custom bridges",
-                    "The same as obfs4 or webtunnel, using lines the built-in list does not carry",
-                    "You fetch them yourself, and they are only as good as their source",
+                    "webtunnel (coming soon)",
+                    "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
+                    "Not offered yet. Fewer bridges exist, since each needs a real website in front of it",
                   ],
                 ]}
               />
 
               <p>
-                The two disguises work in opposite directions. Where{" "}
+                The disguises work in opposite directions.{" "}
                 <TextLink href="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/obfs4">
                   obfs4
                 </TextLink>{" "}
                 makes the connection look like nothing at all, a stream with no structure to match
-                against,{" "}
+                against.{" "}
                 <TextLink href="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel">
                   webtunnel
-                </TextLink>{" "}
-                makes it look like something entirely ordinary. That is the harder one for a censor
-                to act on, because blocking it means blocking real websites.{" "}
+                </TextLink>
+                , once it ships, makes it look like something entirely ordinary, which is harder for
+                a censor to act on because blocking it means blocking real websites.{" "}
                 <TextLink href="https://snowflake.torproject.org">Snowflake</TextLink> sidesteps the
                 question instead: there is no fixed address to block in the first place.
               </p>
 
               <p>
-                Snowflake, obfs4 and webtunnel are ordinary programs upstream, and Arti would
-                normally run whichever one you chose as a child process. iOS forbids an app spawning
-                an executable, so Airhop compiles all three in and reaches them over loopback
-                instead: each listens on a port the library picks, and Arti dials it as an unmanaged
-                transport. One design that holds on both platforms, instead of a child process on
-                Android and something else on the phone that cannot have one.
+                Snowflake and obfs4 are ordinary programs upstream, and Arti would normally run
+                whichever one you chose as a child process. iOS forbids an app spawning an
+                executable, so Airhop compiles both in and reaches them over loopback instead: each
+                listens on a port the library picks, and Arti dials it as an unmanaged transport.
+                One design that holds on both platforms, instead of a child process on Android and
+                something else on the phone that cannot have one.
               </p>
 
               <p>
                 The built-in obfs4 lines are synced from the Tor Project in CI, not frozen at
                 release, because a list that goes stale between store updates fails exactly where
-                somebody needed it. Custom bridges take obfs4 and webtunnel lines from{" "}
+                somebody needed it. Custom bridges take obfs4 lines from{" "}
                 <TextLink href="https://bridges.torproject.org">bridges.torproject.org</TextLink>{" "}
                 for when the built-in ones are blocked too. Bridges stay off by default: one is
                 slower than a direct connection, and only earns that on a network which blocks or
@@ -1426,9 +1487,10 @@ export default function ArchitecturePage() {
               <Note label="Why iOS blocks mint traffic under Tor">
                 Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
                 expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
-                mint requests entirely while Tor is on and tells you why, with a switch in Settings
-                if you decide the trade is acceptable. Sending and receiving ecash over Bluetooth
-                never touches a mint, so that keeps working either way.
+                mint requests entirely while Tor is on and tells you why. Allow mint traffic over
+                clear net, a Settings switch shown while Tor is on, lifts that if you decide the
+                trade is acceptable. Sending and receiving ecash over Bluetooth never touches a
+                mint, so that keeps working either way.
               </Note>
 
               <p>
@@ -1490,14 +1552,17 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">DLEQ proves origin, not freshness.</strong> A valid
                 proof shows the mint really signed that coin. It can never show the sender did not
                 already spend it, because only the mint knows that. So a coin received offline is
-                shown as unconfirmed on its own line, not folded silently into your balance.
+                shown as unconfirmed on its own line, not folded silently into your balance, and a
+                token reads as genuine only when every coin in it carries a proof that verifies.
+                Once the mint is reachable, the wallet swaps it by itself, which is what confirms
+                it.
                 <br />
                 <br />
                 <strong className="text-ink">Reclaiming settles at the mint.</strong> An undelivered
                 send can be reclaimed because the coins were reserved, not deleted. Online, the
                 coins are swapped at once, so the token you handed out stops working, and if the
                 recipient redeemed it first the app tells you. Offline, they come back unconfirmed
-                until the mint can be asked.
+                and are settled the same way once the mint can be asked.
               </Note>
 
               <p>
@@ -1605,10 +1670,17 @@ export default function ArchitecturePage() {
                     "Mesh bridge",
                     "Off. Links your area's public #bluetooth chat with another out-of-range Bluetooth crowd over the internet, never your DMs",
                   ],
-                  ["The wallet", "Off. Nothing happens until you add a mint yourself"],
+                  [
+                    "Local network",
+                    "Off. Announcing a phone on a network is visible to everyone on it and to whoever runs it",
+                  ],
+                  [
+                    "The wallet",
+                    "Always present, but no mint is ever contacted until you add one yourself",
+                  ],
                   [
                     "Recovery phrase",
-                    "The phrase exists from first launch, so coins are recoverable from day one. Backup counts as on once you have viewed and confirmed it, and stays on: deleting a phrase that coins derive from is deleting the coins",
+                    "The phrase exists from the wallet's first start, so coins are recoverable from day one. Backup counts as on once you have viewed the words, and stays on: deleting a phrase that coins derive from is deleting the coins",
                   ],
                   ["AI assistant", "Off. Nothing downloads until you pick a model"],
                   ["Social bridges", "Off. Individually, per plugin"],
@@ -1624,7 +1696,7 @@ export default function ArchitecturePage() {
               id="modules"
               eyebrow="For developers · 17"
               title="Module map"
-              lede="Around 140 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
+              lede="Around 200 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
             >
               <Figure caption="The layering rule. src/core is the whole protocol and imports nothing native, which is what makes it testable in CI without a phone.">
                 <ModuleMap />
@@ -1636,17 +1708,18 @@ export default function ArchitecturePage() {
                   ["core/crypto/", "identity, noise-xx, noise-x, double-ratchet, contact-exchange"],
                   [
                     "core/mesh/",
-                    "packet-codec, flood-router, deduplicator, fragment-manager, gossip-sync, courier-store, announce-manager, group-protocol, channel-crypto, prekey-store, board-packet, link-registry",
+                    "wire (packet-codec, board-packet), routing (flood-router, deduplicator, fragment-manager), sync (gossip-sync), courier (courier-store, prekey-store), discovery (announce-manager), rooms (group-protocol, channel-crypto), links (link-registry), voice",
                   ],
                   [
                     "core/nostr/",
-                    "nostr-client, gift-wrap, geo-relay, presence, courier-relay, geohash-identity, tor-routing, tor-websocket",
+                    "nostr-client, gift-wrap, geo-relay, geohash-presence, courier-relay, geohash-identity",
                   ],
                   ["core/payments/", "cashu, nutzap, wallet-seed"],
-                  ["core/router/", "message-router, the transport ladder and peer registry"],
+                  ["core/router/", "message-router, the peer registry"],
+                  ["core/move/", "the transfer code, handshake, safety words and bundle"],
                   [
                     "services/",
-                    "mesh-service, wallet-service, ecash-transfer, geohash-channel-service",
+                    "mesh-service, wallet-service, payment-router, geohash-channel-service, bridge-service, tor-routing, tor-websocket, panic-wipe",
                   ],
                 ]}
               />
@@ -1679,15 +1752,18 @@ export default function ArchitecturePage() {
                   ["Service UUID", <C>F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C</C>],
                   ["Characteristic UUID", <C>A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D</C>],
                   ["Protocol version", <C>2</C>],
-                  ["Peer ID in advert", "iOS local name, Android scan-response service data"],
+                  [
+                    "Peer ID in advert",
+                    "Android only, in scan-response service data; iOS advertises the service UUID alone",
+                  ],
                 ]}
               />
 
               <p>
                 The two platforms cannot carry the peer ID the same way. Android puts the first 8
-                bytes in scan-response service data; CoreBluetooth has no service-data API, so iOS
-                advertises the full 16-character peer ID as the local name. Neither can read the
-                other's placement, so a cross-platform link simply skips advert-level dedup and
+                bytes in scan-response service data. CoreBluetooth has no service-data API, so an
+                iPhone advertises only the service UUID. Only an Android phone scanning another
+                Android phone learns the peer ID from the advert; every link involving an iPhone
                 identifies the peer from its first ANNOUNCE.
               </p>
 
@@ -1714,7 +1790,7 @@ export default function ArchitecturePage() {
                   ["REQUEST_SYNC", "0x21", "GCS gossip filter, never relayed"],
                   ["FILE_TRANSFER", "0x22", "File, image, voice note, 1 MiB cap"],
                   ["BOARD_POST", "0x23", "Signed bulletin post, 1 to 7 day expiry"],
-                  ["PREKEY_BUNDLE", "0x24", "One-time prekeys for forward-secret first contact"],
+                  ["PREKEY_BUNDLE", "0x24", "One-time prekeys that courier mail is sealed to"],
                   ["GROUP_MESSAGE", "0x25", "Private group message under an epoch key"],
                   ["PING / PONG", "0x26 / 0x27", "Directed mesh echo, measures hop distance"],
                   ["NOSTR_CARRIER", "0x28", "Gateway-ferried Nostr event"],
@@ -1754,7 +1830,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Key substitution",
-                    "The first signing key seen for a peer is pinned, and no announce can replace it. A key proven inside a Noise session can correct that pin, and otherwise only an in-person QR scan re-pins",
+                    "Three tiers, strongest first: a key proven inside a Noise session, then a saved contact's key, then the first announce's pin. No announce can replace a key, an announce contradicting a saved contact is refused, and only an in-person QR scan re-pins a verified contact",
                   ],
                   [
                     "Claiming someone else's Nostr key",
@@ -1775,7 +1851,19 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Replay",
-                    "Content-derived packet ID, deduplicated for 5 minutes, plus a freshness window where staleness is itself the attack",
+                    "Content-derived packet ID, deduplicated for 5 minutes, and a ±2 minute freshness window on every packet. Only a sync reply this phone asked for in the last 30 seconds may be older",
+                  ],
+                  [
+                    "Handshake flood",
+                    "Inbound handshakes capped at 10 a minute per claimed peer and 30 a minute in total, and a forged reply cannot end a genuine exchange",
+                  ],
+                  [
+                    "Forcing media into the clear",
+                    "An attachment is sealed only to a peer that proved inside its session it can open one, and is never sent unsealed, so announcing a capability away changes nothing",
+                  ],
+                  [
+                    "Storage exhaustion",
+                    "Received media shares a 100 MiB budget, oldest out first, and the courier pool is capped per depositor",
                   ],
                   [
                     "Reading someone else's mail",
@@ -1837,9 +1925,11 @@ export default function ArchitecturePage() {
                 <br />
                 <br />
                 <strong className="text-ink">Who wrote a broadcast, some of the time.</strong> A
-                packet you author leaves with a hop budget drawn from 5 to 7 instead of always 7, so
-                a listener cannot read authorship off the maximum. A 7 is still unambiguous, so
-                about a third of broadcasts remain attributable to the radio that sent them.
+                packet you author leaves with a hop budget drawn from the three values at and below
+                what relays around you would emit (5 to 7 when the mesh is sparse, 3 to 5 in a
+                crowd), so a listener cannot read authorship off the maximum. The top value is still
+                unambiguous, so about a third of broadcasts remain attributable to the radio that
+                sent them.
                 <br />
                 <br />
                 <strong className="text-ink">A compromised operating system.</strong> If the OS is

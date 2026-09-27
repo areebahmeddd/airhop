@@ -28,6 +28,7 @@ import {
 import { applyPresence } from "@services/presence-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
+import { useSettingsStore } from "@store/settings-store";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -50,6 +51,8 @@ function resetStores(): void {
     bridgePeopleAcross: 0,
     presenceStatus: "online",
   });
+  // A start restores a kept Invisible, so Online has to be the saved choice too.
+  useSettingsStore.getState().setStayInvisible(false);
   usePeerStore.getState().clearAll();
 }
 
@@ -79,7 +82,7 @@ describe("teardown, replacement and races", () => {
   test("S21 going Away while a reconcile is mid-flight must not revive the radios", async () => {
     // The controller reads the device before touching a radio, and that read is
     // async. Presence changes are synchronous, so "Away" can land in exactly
-    // that window - and without a re-check afterwards the pass would go on to
+    // that window, and without a re-check afterwards the pass would go on to
     // start the radios the user just asked to stop.
     const os = new DeviceOS({
       platform: "android",
@@ -125,7 +128,7 @@ describe("teardown, replacement and races", () => {
   test("S22 'Stop mesh' tapped when the JS runtime is already gone", async () => {
     // Android can destroy the React instance while the foreground service keeps
     // the process. The notification is still on screen, and its Stop button is
-    // still tappable - but there is no JS left to hand the shutdown to.
+    // still tappable, but there is no JS left to hand the shutdown to.
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict("S22", "Stop mesh with no JS to ask", os);
     const native = androidDevice(os);

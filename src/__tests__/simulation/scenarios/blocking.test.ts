@@ -192,3 +192,133 @@ test("B02 a blocked Nostr-only thread stays blocked", async () => {
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("B03 unblocking a peer on the mesh hears them again", async () => {
+  // The block drops the ratchet, so the Noise session has to go with it. Kept,
+  // it is a session with no ratchet bound to it, where every DM and receipt
+  // from them is dropped without a word until one side restarts.
+  const s = (scenario = new Scenario({
+    id: "B03",
+    title: "block, unblock, and talk again over Bluetooth",
+    seed: 813,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(bob.peerID) && bob.peers().includes(alice.peerID),
+    30_000,
+  );
+
+  bob.sendDm(alice.peerID, "before the block");
+  const control = await waitForCoarse(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("before the block"),
+    30_000,
+  );
+  s.check("the control message arrives", control);
+
+  block(alice, bob.peerID);
+  (alice.store("blockedStore").getState().unblockPeer as (p: string) => void)(
+    bob.peerID,
+  );
+
+  bob.sendDm(alice.peerID, "after the unblock");
+  const heard = await waitForCoarse(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("after the unblock"),
+    60_000,
+  );
+  s.check("their next message arrives", heard);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("B04 couriered mail from a blocked peer still spends its one-time key", async () => {
+  // The prekey an envelope opened under is burned before anything else is
+  // decided. Dropping a blocked sender's mail first would leave the key live,
+  // so a carrier that kept the ciphertext could have it opened after any later
+  // seizure of the phone, which is what the one-time key exists to prevent.
+  const s = (scenario = new Scenario({
+    id: "B04",
+    title: "a blocked sender's courier envelope is dropped and its key burned",
+    seed: 814,
+  }));
+  const radio = new RadioFabric(s.world);
+  const [alice, carrier, bob] = ["alice", "carrier", "bob"].map((id, i) =>
+    SimDevice.create(s.world, {
+      id,
+      platform: "android",
+      seedByte: 11 * (i + 1),
+    }),
+  );
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  // Long enough for every announce and prekey bundle to land.
+  await s.world.advance(10_000);
+
+  block(bob, alice.peerID);
+  radio.setTopology([["alice", "carrier"]]);
+  await s.world.advance(90_000);
+  const status = alice.send(`dm:${bob.peerID}`, "from behind the block");
+  s.check("a courier took it", status === "carried", `status=${status}`);
+
+  interface Carried {
+    courier: { size: number; envelopes: { prekeyID?: number }[] };
+  }
+  const bag = (carrier.mesh as unknown as Carried).courier;
+  await waitForCoarse(s.world, () => bag.size > 0, 30_000);
+  const prekeyID = bag.envelopes[0]?.prekeyID;
+  s.check(
+    "it was sealed to one of bob's one-time keys",
+    prekeyID !== undefined,
+  );
+
+  radio.setTopology([
+    ["alice", "carrier"],
+    ["carrier", "bob"],
+  ]);
+  const handed = await waitForCoarse(s.world, () => bag.size === 0, 60_000);
+  s.check("the carrier handed it over", handed);
+  await s.world.advance(5_000);
+
+  s.check(
+    "nothing from the blocked peer lands",
+    !heardAnywhere(bob, "from behind the block"),
+  );
+  const live = (
+    bob.mesh as unknown as {
+      localPrekeys: { state: { prekeys: { id: number }[] } | null };
+    }
+  ).localPrekeys.state?.prekeys.map((p) => p.id);
+  s.check(
+    "the key it opened under is no longer live",
+    live !== undefined && prekeyID !== undefined && !live.includes(prekeyID),
+    `prekey=${String(prekeyID)} live=[${String(live)}]`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});

@@ -1,10 +1,11 @@
 // What an Airhop link does once it has been parsed.
 //
-// There are two ways one arrives: the OS hands it to us because the user tapped
-// it somewhere else (App.tsx), or the user pastes it into the Join sheet. Both
-// are the same act of consent and must have the same effect, so the effect
-// lives here rather than in either caller. Everything is a pure consequence of
-// the link plus the stores; the caller only decides where to navigate.
+// There are two ways one arrives: the OS hands it over (app.tsx), or the user
+// pastes it into the Join sheet. Only the second is consent. Any installed app,
+// or a page that redirects, can fire an OS link, so that one only fills in the
+// Join sheet, and both take effect the same way: on Join, here. Everything is a
+// pure consequence of the link plus the stores; the caller only decides where
+// to navigate.
 //
 // Parsing stays in utils/deep-link (pure, no crypto). This module owns the side
 // effects, which is why it lives with the services.
@@ -14,14 +15,27 @@ import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
-import type { DeepLink } from "@utils/deep-link";
+import { parseAirhopLink, type DeepLink } from "@utils/deep-link";
 import { getMeshService } from "./mesh-service";
 
-// Apply a link and return the conversation to open, or null when the link
-// carried something we could not accept: a forged contact card, or an invite
-// whose key is malformed. The caller navigates; nothing here touches
-// navigation state.
-export function applyAirhopLink(link: DeepLink): string | null {
+// What an OS-delivered link puts in the Join sheet, or null when it is not an
+// Airhop link. Changes nothing: the person still reads what it does and taps
+// Join.
+export function joinSheetPrefill(url: string | null): string | null {
+  if (url === null) return null;
+  const text = url.trim();
+  return parseAirhopLink(text) === null ? null : text;
+}
+
+// What a link did: the conversation to open, or why it opened none. "conflict"
+// is a contact card naming a different key from the one already held for that
+// peer, which needs other words than a card that was tampered with or an
+// invite whose key is malformed ("invalid").
+export type LinkOutcome =
+  { channel: string } | { refused: "invalid" | "conflict" };
+
+// Apply a link. The caller navigates; nothing here touches navigation state.
+export function applyAirhopLink(link: DeepLink): LinkOutcome {
   if (link.kind === "channel") {
     // A private channel invite carries its E2E key; a public one does not.
     // joinPrivateChannel answers with the room it actually landed in, which
@@ -30,35 +44,39 @@ export function applyAirhopLink(link: DeepLink): string | null {
     if (link.key !== undefined) {
       // Refused, never joined as the public room of that name: the user would
       // believe it private and talk in the clear.
-      if (!isValidChannelKey(link.key)) return null;
-      return useChatStore
-        .getState()
-        .joinPrivateChannel(link.channel, link.key, link.overNostr);
+      if (!isValidChannelKey(link.key)) return { refused: "invalid" };
+      return {
+        channel: useChatStore
+          .getState()
+          .joinPrivateChannel(link.channel, link.key, link.overNostr),
+      };
     }
     useChatStore.getState().addChannel(link.channel);
-    return link.channel;
+    return { channel: link.channel };
   }
 
   if (link.kind === "peer") {
     const channel = `dm:${link.peerID}`;
     useChatStore.getState().addChannel(channel);
-    return channel;
+    return { channel };
   }
 
   // A contact card: verify and import the keys, then open the DM.
   const card = decodeQRContent(link.card);
-  if (card === null) return null;
+  if (card === null) return { refused: "invalid" };
   // Reject a card whose peer ID isn't the fingerprint of its Noise key;
   // accepting it would encrypt every DM to whoever forged the card. Seeds the
   // routing registry and inbound Nostr map as a side effect.
   //
-  // Deliberately NOT in person. Both routes into this function are links - the
-  // OS handing one over, or the user pasting one - and neither says anything
+  // Deliberately NOT in person. Both routes into this function are links (the
+  // OS handing one over, or the user pasting one), and neither says anything
   // about who produced it. So the card may not re-pin keys already bound to
   // that peer (see addVerifiedContact), and the contact it writes is not
   // verified.
-  const accepted = getMeshService()?.addVerifiedContact(card) ?? false;
-  if (!accepted) return null;
+  const result = getMeshService()?.addVerifiedContact(card);
+  if (result !== "added") {
+    return { refused: result === "conflict" ? "conflict" : "invalid" };
+  }
   useContactsStore.getState().addContact({
     peerID: card.peerID,
     noisePubKeyHex: bytesToHex(card.noisePubKey),
@@ -82,5 +100,5 @@ export function applyAirhopLink(link: DeepLink): string | null {
   });
   const channel = `dm:${card.peerID}`;
   useChatStore.getState().addChannel(channel);
-  return channel;
+  return { channel };
 }

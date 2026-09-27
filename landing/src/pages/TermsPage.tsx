@@ -94,14 +94,14 @@ export default function TermsPage() {
             <p className="text-[15px] leading-[1.75]">
               <strong>Ecash is a bearer instrument.</strong> Whoever holds a token can spend it. A
               token sent to the wrong person, posted to a public channel, or read by someone over
-              your shoulder is gone. Transfers over the mesh are final and cannot be reversed by
-              anyone.
+              your shoulder is gone. Once someone has redeemed a token at its mint, the transfer is
+              final and cannot be reversed by anyone.
             </p>
             <p className="text-[15px] leading-[1.75]">
-              <strong>Recovery is your responsibility.</strong> The optional recovery phrase is the
-              only way to rebuild a balance on another device. It is stored on your device and
-              nowhere else. We cannot recover it, reset it, or help you if it is lost, and anyone
-              who obtains it can spend your balance.
+              <strong>Recovery is your responsibility.</strong> The wallet's recovery phrase is the
+              only way to rebuild a balance on another device, and writing it down is up to you. It
+              is stored on your device and nowhere else. We cannot recover it, reset it, or help you
+              if it is lost, and anyone who obtains it can spend your balance.
             </p>
             <p className="text-[15px] leading-[1.75]">
               <strong>Lightning deposits and withdrawals</strong> are performed by your chosen mint

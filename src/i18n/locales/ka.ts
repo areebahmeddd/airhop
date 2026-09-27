@@ -121,6 +121,11 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "ორივე ტელეფონი ერთ Wi-Fi-ს დაუკავშირე, ან ერთზე ჩართე ჰოტსპოტი და მეორით შეუერთდი. ინტერნეტი საჭირო არ არის.",
   "onboarding.transfer.incoming": "{name}-ის გადატანა",
+  "onboarding.transfer.confirm_title": "შეამოწმე ძველი ტელეფონი",
+  "onboarding.transfer.confirm_body":
+    "ძველ ტელეფონზეც ზუსტად ეს სიტყვები უნდა ჩანდეს. თუ სხვა სიტყვები ჩანს ან არცერთი, გააუქმე.",
+  "onboarding.transfer.confirm_cta": "ემთხვევა",
+  "onboarding.transfer.waiting_old": "ძველ ტელეფონზე შეეხე „{action}“-ს",
   "onboarding.transfer.receiving": "მიღება {percent}%",
   "onboarding.transfer.saving": "ინახება ამ ტელეფონზე",
   "onboarding.transfer.releasing": "სრულდება ძველ ტელეფონზე",
@@ -178,6 +183,15 @@ export const strings: Strings = {
   "error.boundary.title": "რაღაც შეცდომა მოხდა",
   "error.boundary.body":
     "Airhop მოულოდნელ პრობლემას წააწყდა და იძულებული გახდა, შეეწყვიტა ის, რასაც აჩვენებდა.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "გასაღებების გახსნა ვერ მოხერხდა",
+  "launch.keys_unreadable_body":
+    "ტელეფონმა Airhop-ის გასაღებები არ განბლოკა. განბლოკე ტელეფონი და სცადე ხელახლა.",
+  "launch.start_over": "წაშლა და თავიდან დაწყება",
+  "launch.start_over_confirm_title": "წავშალოთ ეს ტელეფონი?",
+  "launch.start_over_confirm_body":
+    "ამ ტელეფონზე შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე განადგურდება და თავიდან დაიწყებ, როგორც ახალი ადამიანი. ამის დაბრუნება შეუძლებელია.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "ნაგულისხმევი არხები",
@@ -306,7 +320,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "შენ უკვე სხვა {name}-ში ხარ. არხის სახელები მხოლოდ იარლიყებია, ამიტომ ამ მოწვევამ საკუთარი არხი გახსნა, ის კი, სადაც იყავი, ხელუხლებელი დარჩა. ორივეს სახელი არხის ინფორმაციიდან შეგიძლია შეცვალო.",
   "chat.join.paste_hint":
-    "ჩასვი მოწვევა, რომელიც airhop://-ით იწყება. ბმულზე შეხებაც მუშაობს; ეს იმ ბმულისთვისაა, რომელსაც ვერ შეეხები.",
+    "Airhop-ის ბმული airhop://-ით იწყება. ჩასვი აქ, ან შეამოწმე ის, რაც ბმულზე შეხებისას ჩაიწერა.",
   "chat.join.key_note":
     "პირადი არხის მოწვევას გასაღები თან მოაქვს, ამიტომ შესვლა მყისიერია და არავის არაფერი ეკითხება.",
   "chat.join.offline_note":
@@ -437,8 +451,13 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/წმ",
   "chat.transfer.left": "დარჩა {time}",
+  "chat.transfer.title": "{status}: {name}",
+  "chat.transfer.title_peer": "{status}: {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "კვანძი",
   "chat.thread.cancel_transfer": "{name}-ის გაუქმება",
+  "chat.thread.hide_transfer": "პროგრესის დამალვა",
+  "chat.thread.hide_transfer_hint": "ფაილი მაინც მოვა",
   "chat.thread.queued_more": "კიდევ {count} ელოდება გაგზავნას",
   "chat.thread.across_bridge": "{count} ხიდის მიღმა",
   "chat.thread.bridged": "ხიდით გადავიდა",
@@ -472,6 +491,10 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} საუბრობს.",
   "chat.thread.attach_note":
     "ფაილები მხოლოდ ბლუთუზის რადიუსში იგზავნება. ტექსტი და გადახდები ინტერნეტის კონტაქტებსაც წვდება; დანართები არა.",
+  "chat.thread.media_securing":
+    "ჯერ მასთან დაშიფრული კავშირი მზადდება. სცადე ცოტა ხანში.",
+  "chat.thread.media_unsupported":
+    "მისი აპლიკაცია ვერ იღებს დაშიფრულ ფოტოებსა და ხმოვან ჩანაწერებს, ამიტომ ეს არ გაიგზავნა.",
   "chat.thread.message_peer": "მისწერე {name}-ს",
   "chat.thread.send": "შეტყობინების გაგზავნა",
   "chat.thread.group": "ჯგუფი",
@@ -598,7 +621,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ვიდეო ამ მოწყობილობაზე არ არის",
   "chat.media.gone_voice": "ხმოვანი ჩანაწერი ამ მოწყობილობაზე არ არის",
   "chat.media.gone_file": "ფაილი ამ მოწყობილობაზე არ არის",
-  "chat.media.gone_note": "წაიშალა 7 დღის შემდეგ ან ქეშის გასუფთავებისას",
+  "chat.media.gone_note": "წაიშალა ამ ტელეფონიდან ან ძველიდან არ გადმოტანილა",
   "chat.media.ask_resend": "ხელახლა თხოვნა",
   "chat.media.resend_draft": "შეგიძლია ის {kind} ხელახლა გამომიგზავნო?",
   "chat.media.kind_photo": "ფოტო",
@@ -668,6 +691,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "მიღებულია",
   "chat.ecash.reclaimed": "დაბრუნებულია",
+  "chat.ecash.locked": "სხვაზეა დაკეტილი",
   "chat.ecash.claiming": "მიიღება…",
   "chat.ecash.claim": "მიღება",
   "chat.ecash.claim_amount": "{amount} {unit}-ის მიღება",
@@ -901,6 +925,7 @@ export const strings: Strings = {
     "ხსნის Airhop-ის ნებართვებს სისტემის პარამეტრებში",
   "mesh.banner.hint.battery_settings":
     "ხსნის ამ ტელეფონის ფონური აქტივობის პარამეტრებს",
+  "mesh.banner.hint.tor_settings": "ხსნის Airhop-ის Tor-ის პარამეტრებს",
   "mesh.banner.dismiss": "დახურვა: {label}",
   "mesh.banner.hint.dismiss": "სამუდამოდ მალავს ამ შენიშვნას",
 
@@ -936,8 +961,10 @@ export const strings: Strings = {
     "რგოლზე პოზიცია სიგნალის სიძლიერეს ასახავს, და არა მანძილს",
   "mesh.radar.set_online":
     "დააყენე შენი სტატუსი პროფილში ონლაინზე, რომ კვანძები აღმოაჩინო",
-  "mesh.radar.in_range": "მიღწევადია",
-  "mesh.radar.recently_seen": "ცოტა ხნის წინ ნანახი",
+  "mesh.radar.peer_in_range": "{name}, მიღწევადია",
+  "mesh.radar.peer_recent": "{name}, ცოტა ხნის წინ ნანახი",
+  "mesh.radar.relay_in_range": "{name}, სარელეო კვანძი, მიღწევადია",
+  "mesh.radar.relay_recent": "{name}, სარელეო კვანძი, ცოტა ხნის წინ ნანახი",
   "mesh.radar.peer_hint":
     "ხსნის ამ კვანძისთვის მიწერის ან გადახდის პარამეტრებს",
 
@@ -959,6 +986,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash-ის გაგზავნა, ჯერ შეიყვანე თანხა",
   "mesh.peer.cancel_send": "ecash-ის გაგზავნის გაუქმება",
   "mesh.peer.view_peer_online": "კვანძის {name} ნახვა, ონლაინ",
+  "mesh.peer.view_relay_online": "კვანძის {name} ნახვა, ონლაინ, სარელეო კვანძი",
   "mesh.peer.last_seen_at": "ბოლოს ნანახი {ago}",
   "mesh.peer.send_amount": "{amount} sat-ის გაგზავნა",
   "mesh.peer.direct": "პირდაპირი კავშირი",
@@ -1024,8 +1052,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "თანხა {unit}-ში",
   "wallet.send.body":
     "აწყობილია ოფლაინში იმ ecash-ისგან, რომელიც უკვე გაქვს. ბალანსიდან საბოლოოდ არაფერი გადის, სანამ არ დაადასტურებ, რომ ტოკენი მივიდა.",
-  "wallet.send.stale_fee_note":
-    "საკომისიოები ბოლოს {days} დღის წინ შემოწმდა. თუ ამ ზარაფხანამ მას შემდეგ საკომისიო გაზარდა, გაგზავნა ოდნავ მეტი დაჯდება.",
   "wallet.send.fee_note":
     "{spend} {unit} შენი ბალანსიდან გადის; დამატებული {fee} ფარავს ზარაფხანის საკომისიოს, რომელსაც სხვა შემთხვევაში ის გადაიხდიდა",
   "wallet.send.qr_too_big":
@@ -1069,6 +1095,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "უკვე შენს საფულეშია",
   "wallet.receive.already_have_body":
     "ამ ტოკენის მთელი შიგთავსი უკვე აქ ინახება, ამიტომ არაფერი დამატებულა. ბალანსები არ შეცვლილა.",
+  "wallet.receive.claiming": "ზარაფხანას ჯერ კიდევ ველოდებით",
+  "wallet.receive.claiming_body":
+    "ამ ტოკენის წინა მიღება ზარაფხანას ჯერ არ დაუდასტურებია, ამიტომ ახალი არაფერი გაგზავნილა. საფულე ამას ავტომატურად მოაგვარებს. თუ ზარაფხანამ ის საერთოდ არ მიიღო, შეგიძლია ხელახლა მიიღო.",
   "wallet.receive.stored_unconfirmed":
     "შენახულია {mint}-იდან, მაგრამ ჯერ არ დადასტურებულა ზარაფხანასთან ({reason}).",
   "wallet.receive.offline": "ოფლაინ",
@@ -1078,19 +1107,21 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "გამოსყიდულია {mint}-ში. ახლა დამტკიცებულად შენია: ამ ტოკენის გამგზავნისეული ასლი აღარ მუშაობს.",
   "wallet.receive.stored_pending":
-    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია{dleq}. განაახლე საფულის ჩანართიდან, როგორც კი ონლაინ იქნები.",
+    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია{dleq}. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
   "wallet.receive.dleq_inline":
     " (მისი ხელმოწერა მართლაც სწორია, ამიტომ ტოკენი ნამდვილია)",
   "wallet.receive.dleq_ok":
     "ზარაფხანის ხელმოწერა სწორია, ამიტომ ტოკენი ნამდვილია.",
   "wallet.receive.dleq_uncached":
     "ამ ზარაფხანის გასაღებები აქ არ ინახება, ამიტომ ხელმოწერის ოფლაინში შემოწმება ვერ მოხერხდა.",
+  "wallet.receive.dleq_missing":
+    "მასში ყველა მონეტას არ ახლავს ზარაფხანის ხელმოწერის მტკიცებულება, ამიტომ ოფლაინში შემოწმება ვერ მოხერხდა.",
   "wallet.receive.dleq_warning":
-    "სანამ ონლაინ არ განაახლებ, გამგზავნს პრინციპში შეეძლო ის სხვაგან დაეხარჯა.",
+    "სანამ ონლაინ არ დადასტურდება, გამგზავნს პრინციპში შეეძლო ის სხვაგან დაეხარჯა.",
   "wallet.receive.failed": "მიღება ვერ მოხერხდა",
   "wallet.receive.title": "ecash-ის მიღება",
   "wallet.receive.body":
-    "ჩასვი Cashu ტოკენი. ონლაინ ის მაშინვე გამოისყიდება ზარაფხანაში; ოფლაინში ინახება და დასტურდება მომდევნო განახლებისას.",
+    "ჩასვი Cashu ტოკენი. ონლაინ ის მაშინვე გამოისყიდება ზარაფხანაში; ოფლაინში ინახება და ზარაფხანასთან ავტომატურად დასტურდება, როგორც კი ისევ ონლაინ იქნები.",
   "wallet.receive.scan": "ecash QR კოდის სკანირება",
   "wallet.receive.scan_short": "QR-ის სკანირება",
   "wallet.receive.receiving": "მიიღება…",
@@ -1226,6 +1257,8 @@ export const strings: Strings = {
     "აღდგენა მუშაობს ზარაფხანისთვის კითხვით, თუ რომელ მონეტებს აწერდა ხელს შენთვის, ამიტომ მან უნდა იცოდეს, ვის ჰკითხოს. დაამატე ის ზარაფხანები, რომლებსაც იყენებდი, და შემდეგ აღადგინე.",
   "wallet.backup.restore_failed": "აღდგენა ვერ მოხერხდა",
   "wallet.backup.phrase": "აღდგენის ფრაზა",
+  "wallet.backup.auth_prompt":
+    "დაადასტურე, რომ ეს შენ ხარ, რათა აღდგენის ფრაზა ნახო",
   "wallet.backup.state_unconfirmed":
     "სარეზერვო ასლი ჩართულია, მაგრამ დაუდასტურებელია",
   "wallet.backup.state_off": "სარეზერვო ასლი გამორთულია",
@@ -1306,6 +1339,8 @@ export const strings: Strings = {
     "ზარაფხანის თქმით ეს ტოკენი უკვე გამოსყიდულია, ასე რომ {amount} {unit} მათ მიაღწია და შენს ბალანსში არაფერი დაბრუნებულა.",
   "wallet.copied.token_body":
     "ტოკენი შენს ბუფერშია. ის აქ დარეზერვებული რჩება, სანამ მიწოდებულად არ მონიშნავ, ამიტომ თუ პირველი მცდელობა ჩავარდა, ხელახლა ჩასვამ.",
+  "wallet.copied.refused_token_body":
+    "ტოკენი შენს ბუფერშია. ეს საფულე მას აღარ ითვლის, ამიტომ შეგიძლია დაუბრუნო მას, ვინც გამოგიგზავნა.",
   "wallet.copied.phrase_body":
     "ჩასვი პაროლების მენეჯერში და შემდეგ გაასუფთავე ბუფერი. სხვა აპლიკაციებს ბუფერის წაკითხვა შეუძლიათ, ზოგიერთ კონფიგურაციაში კი ის შენს სხვა მოწყობილობებზეც სინქრონდება.",
   "wallet.refresh.failed": "განახლება ვერ მოხერხდა",
@@ -1317,6 +1352,10 @@ export const strings: Strings = {
     "{amount} {unit} დადასტურდა და ახალ ecash-ზე გაიცვალა.",
   "wallet.refresh.secured":
     "{amount} {unit} ახლა შენი აღდგენის ფრაზითაა დაფარული.",
+  "wallet.refresh.refused":
+    "{amount} {unit} ზარაფხანამ უარყო და შენი ბალანსიდან მოიხსნა. ტოკენი აქტივობაში რჩება.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} ჯერ კიდევ ზარაფხანას ელოდება და მოგვიანებით დადასტურდება.",
   "wallet.refresh.all_confirmed":
     "აქ ყველაფერი უკვე დადასტურებული იყო ზარაფხანასთან.",
   "wallet.pending.reserved_desc":
@@ -1348,9 +1387,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning-ის შეტანა",
   "wallet.activity.ln_withdrawal": "Lightning-ის გატანა",
   "wallet.activity.nutzap_received": "Nutzap მიღებულია",
+  "wallet.activity.nutzap_claiming": "Nutzap, მიმდინარეობს მიღება",
   "wallet.activity.spent_removed": "დახარჯული მონეტები წაიშალა",
   "wallet.activity.refreshed": "ზარაფხანასთან შემოწმდა",
   "wallet.activity.refreshing": "მოწმდება ზარაფხანასთან",
+  "wallet.activity.copy_refused": "უარყოფილი ტოკენის კოპირება",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "მეში ოფლაინია",
@@ -1363,6 +1404,10 @@ export const strings: Strings = {
     "ახლა მისკენ გზა არ არის. სხვა მოწყობილობები წაიღებენ და მიიტანენ, როცა რომელიმე მას მიწვდება.",
   "wallet.xfer.route_queued":
     "ჯერ ვერ მივწვდებით. რიგშია და გაიგზავნება, როგორც კი შესაძლებელი გახდება.",
+  "wallet.xfer.route_too_large_airhop":
+    "ზედმეტად დიდია ინტერნეტით ან სხვა მოწყობილობებით გასაგზავნად. ბლუთუზით გაიგზავნება, როცა ის ისევ რადიუსში მოხვდება, ან ახლავე გადასახდელად გააზიარე ტოკენი „აქტივობიდან“.",
+  "wallet.xfer.route_too_large":
+    "ზედმეტად დიდია მისკენ ნებისმიერი გზისთვის: ამ ზომის ტოკენი მხოლოდ Airhop-ის მქონე ტელეფონს აღწევს ბლუთუზით. გადასახდელად გააზიარე ის „აქტივობიდან“.",
   "wallet.xfer.mesh_offline_body":
     "მეშის სერვისი არ მუშაობს, ამიტომ ტოკენის გადაცემის გზა არ არსებობს. არაფერი ჩამოჭრილა.",
   "wallet.xfer.could_not_send": "გაგზავნა ვერ მოხერხდა",
@@ -1427,13 +1472,13 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "რა არის Cashu?",
   "wallet.explain.intro":
-    "Cashu არის ecash ბიტკოინისთვის. ტოკენი არის სტრიქონი, რომელიც ფულად ღირს ყველასთვის, ვისაც უჭირავს, და რომელსაც ზარაფხანა ბრმად აწერს ხელს, ისე რომ ვერ იგებს, ვინ რა დახარჯა. ანგარიშების და შესვლის გარეშე.",
+    "Cashu არის ecash ბიტკოინისთვის. ტოკენი არის სტრიქონი, რომელიც ფულად ღირს ყველასთვის, ვისაც უჭირავს, და რომელსაც ზარაფხანა ბრმად აწერს ხელს, ისე რომ ვერ იგებს, ვინ რა დახარჯა. ანგარიშების და შესვლის გარეშე. Airhop არასოდეს ინახავს შენს ფულს: შენი მონეტები ამ ტელეფონზეა და მათ შენ მიერ არჩეული ზარაფხანები გამოსცემენ.",
   "wallet.explain.send": "გაგზავნა",
   "wallet.explain.send_desc":
     "თანხას აქცევს ტოკენად, რომელსაც ახლომდებარე კვანძს ბლუთუზით გადასცემ, ან ტექსტად გააზიარებ. მუშაობს ინტერნეტის გარეშე. მონეტები დარეზერვებული რჩება, სანამ არ დაადასტურებ, რომ მივიდა.",
   "wallet.explain.receive": "მიღება",
   "wallet.explain.receive_desc":
-    "ჩასვი ტოკენი დასამატებლად. ონლაინ ის მაშინვე იცვლება ზარაფხანაში, რაც მას დამტკიცებულად შენს ხდის. ოფლაინში ინახება და დაუდასტურებლად მოინიშნება, სანამ არ განაახლებ.",
+    "ჩასვი ტოკენი დასამატებლად. ონლაინ ის მაშინვე იცვლება ზარაფხანაში, რაც მას დამტკიცებულად შენს ხდის. ოფლაინში დაუდასტურებლად ინახება და ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ისევ ონლაინ იქნები.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "იხდის Nostr-ის ვინაობისთვის. თუ ის NIP-61 nutzap-ის ინფორმაციას აქვეყნებს, ecash მის გასაღებზე იკეტება, ისე რომ მხოლოდ მას შეუძლია დახარჯოს. თუ არა, უკან იხევს დაშიფრულ პირად შეტყობინებამდე. სჭირდება ინტერნეტი.",
@@ -1472,6 +1517,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "ეს აღდგენის ფრაზა არასწორია.",
   "wallet.svc.phrase_invalid_body":
     "მოძებნე არასწორად აკრეფილი ან გამოტოვებული სიტყვა. ფრაზას ჩაშენებული საკონტროლო ჯამი აქვს, ამიტომ ერთი არასწორი სიტყვა მთელს აფუჭებს.",
+  "wallet.svc.phrase_unreadable":
+    "შენი აღდგენის ფრაზის წაკითხვა ამ ტელეფონზე ვერ მოხერხდა.",
+  "wallet.svc.phrase_unreadable_body":
+    "არაფერი შეცვლილა და ახალი ფრაზა არ შექმნილა. სცადე ხელახლა, როცა ტელეფონი განბლოკილი იქნება. მანამდე შენი ecash კვლავ მუშაობს.",
   "wallet.svc.need_mint": "ჯერ დაამატე მინიმუმ ერთი ზარაფხანა.",
   "wallet.svc.need_mint_body":
     "აღდგენა მუშაობს ზარაფხანისთვის კითხვით, თუ რომელ მონეტებს აწერდა ხელს შენთვის, ამიტომ მან უნდა იცოდეს, ვის ჰკითხოს.",
@@ -1493,12 +1542,32 @@ export const strings: Strings = {
     "ეს ტოკენი თავისი ზარაფხანის ახალ გასაღებებს იყენებს.",
   "wallet.svc.keyset_unknown_body":
     "მათ მისაღებად ზარაფხანასთან დაკავშირება ახლა შეუძლებელია. არაფერი დაკარგულა: ხელახლა მიიღე, როცა ონლაინ იქნები.",
+  "wallet.svc.keyset_rotated": "ზარაფხანამ ახლახან შეცვალა თავისი გასაღებები.",
+  "wallet.svc.keyset_rotated_body":
+    "მან მოთხოვნა უარყო, სანამ რამე გადაადგილდებოდა, ამიტომ შენი ბალანსი არ შეცვლილა. სცადე ხელახლა ერთ წუთში.",
   "wallet.svc.wrong_mint":
     "ამ ტოკენს ხელი არ მოაწერა იმ ზარაფხანამ, რომელსაც ის ასახელებს.",
+  "wallet.svc.wrong_mint_body":
+    "სულ მცირე ერთი მონეტის ხელმოწერა არ ემთხვევა ზარაფხანის გასაღებებს. არაფერი დამატებულა.",
+  "wallet.svc.unit_mismatch":
+    "ამ ტოკენის მონეტები არ არის იმ ვალუტაში, რომელსაც ის ასახელებს.",
+  "wallet.svc.unit_mismatch_body":
+    "მონიშნულია როგორც {label}, მაგრამ მისი ზოგიერთი მონეტა გამოშვებულია {actual}-ში. სთხოვე გამგზავნს ახალი ტოკენი. არაფერი დამატებულა.",
+  "wallet.svc.locked_other": "ეს მონეტები სხვის საფულეზეა დაკეტილი.",
+  "wallet.svc.locked_other_body":
+    "მათი მიღება მხოლოდ იმას შეუძლია, ვისზეც დაიკეტა. არაფერი დამატებულა.",
+  "wallet.svc.coins_refused":
+    "ზარაფხანამ ეს მონეტები უარყო, ამიტომ ისინი აღარ ითვლება. ტოკენი აქ ინახება, თუ მისი უკან გაგზავნა გინდა.",
+  "wallet.svc.coins_unredeemable":
+    "ამ მონეტების გამოსყიდვა ამ ზარაფხანაში შეუძლებელია, ამიტომ ისინი აღარ ითვლება. ტოკენი აქ ინახება, თუ მისი უკან გაგზავნა გინდა.",
+  "wallet.svc.reclaim_refused":
+    "ზარაფხანამ ამ გაგზავნის მონეტები უკან არ მიიღო, ამიტომ ისინი აღარ ითვლება. მათი ტოკენი აქ ინახება, რომ დააკოპირო.",
+  "wallet.svc.locked_ours_offline": "ეს გადახდა შენს საფულეზეა დაკეტილი.",
+  "wallet.svc.locked_ours_offline_body":
+    "მიიღე, როცა ონლაინ იქნები. მანამდე მას სხვა ვერავინ წაიღებს.",
   "wallet.svc.already_spent": "ეს ecash უკვე დახარჯულია.",
   "wallet.svc.already_spent_body":
     "ვინც ეს ტოკენი გამოგზავნა, ჯერ თვითონ გამოისყიდა, ან იგივე ტოკენი სხვასაც გაუგზავნა.",
-  "wallet.svc.receiving_offline": "მიღება ოფლაინში",
   "wallet.svc.amount_positive": "შეიყვანე ნულზე მეტი თანხა.",
   "wallet.svc.coins_raced": "ეს მონეტები ახლახან სხვა გადახდამ გამოიყენა.",
   "wallet.svc.coins_raced_body":
@@ -1621,6 +1690,8 @@ export const strings: Strings = {
     "ამ bitchat-ის კოდს ვადა გაუვიდა. სთხოვე, ხელახლა გახსნას თავისი QR.",
   "contacts.scan.tampered":
     "ეს QR კოდი არასწორია: მისი კვანძის ID გასაღებებს არ ემთხვევა. შესაძლოა შეცვლილია.",
+  "contacts.scan.key_conflict":
+    "მისთვის უკვე სხვა გასაღები გაქვს, ამიტომ არაფერი შეცვლილა. მის ჩასანაცვლებლად მისი კოდი პირისპირ დაასკანერე.",
   "contacts.scan.already_added": "უკვე შენს კონტაქტებშია",
 
   // ---- Contacts: verifying by QR ----
@@ -1806,7 +1877,7 @@ export const strings: Strings = {
   "settings.general.reset": "პარამეტრების საწყისზე დაბრუნება",
   "settings.general.media_retention": "მედიის შენახვა",
   "settings.general.media_retention_desc":
-    "ფოტოები, ვიდეოები და ხმოვანი ჩანაწერები არჩეული დროის შემდეგ იშლება",
+    "ფოტოები, ვიდეოები, ხმოვანი ჩანაწერები და ფაილები არჩეული დროის შემდეგ იშლება",
   "settings.general.media_retention_sheet":
     "აირჩიე, რამდენ ხანს დარჩეს მედია ამ მოწყობილობაზე. წაშლილი მედია აღდგენას არ ექვემდებარება.",
   "settings.general.retention_7_desc":
@@ -1951,7 +2022,7 @@ export const strings: Strings = {
     "Nostr-ის ტრაფიკი შენს ჩვეულებრივ კავშირს უბრუნდება, ამიტომ რელეები შენს IP მისამართს ისევ დაინახავენ. ორივე შემთხვევაში ბლუთუზზე ეს არ მოქმედებს.",
   "settings.conn.tor_unavailable": "ამ ბილდში Tor-ით მიმართვა მიუწვდომელია.",
   "settings.conn.tor_timeout":
-    "Tor-ს დაკავშირებას ერთ წუთზე მეტი სჭირდება. ის ჩართული რჩება და ცდას აგრძელებს; მეშის ჩანართი გეტყვის, როდის დაიწყო მიმართვა, ან თუ ეს ქსელი მას ბლოკავს.",
+    "Tor ჯერ არ დაკავშირებულა. ის ჩართული რჩება და ცდას აგრძელებს; მეშის ჩანართი გეტყვის, როდის დაიწყო მიმართვა, ან თუ ეს ქსელი მას ბლოკავს.",
   "settings.conn.tor_failed": "Tor ვერ გაეშვა. სცადეთ ხელახლა ცოტა ხანში.",
   "settings.tor.status": "Tor-ის სტატუსი",
   "settings.tor.connection": "კავშირი",
@@ -1974,7 +2045,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "დასაკავშირებლად შეეხეთ ველის გარეთ.",
   "settings.tor.custom_empty": "ჯერ დაამატეთ ერთი ხიდის ხაზი მაინც.",
   "settings.tor.recovered":
-    "Tor გამოირთო, რადგან წინა ჯერზე გაშვება არ დასრულდა. ხელახლა საცდელად თავიდან ჩართეთ.",
+    "წინა ჯერზე Tor-ის გაშვება არ დასრულდა, ამიტომ ინტერნეტ-ტრაფიკი შეჩერებულია. სცადე ხელახლა ან გამორთე Tor, რომ მის გარეშე გახვიდე ინტერნეტში.",
+  "settings.tor.retry": "ხელახლა ცდა",
   "settings.conn.mint_clearnet": "ზარაფხანის ტრაფიკის დაშვება ღია ქსელით",
   "settings.conn.mint_clearnet_desc":
     "iOS-ზე Tor მხოლოდ Nostr-ს ფარავს. დატოვე გამორთული, რომ ზარაფხანის მოთხოვნები დაიბლოკოს; ორივე შემთხვევაში მეშით ecash მაინც მუშაობს.",
@@ -2101,7 +2173,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "ხელახლა გახსნა",
   "settings.language.rtl_title": "დასასრულებლად ხელახლა გახსენი Airhop",
   "settings.language.rtl_body":
-    "{value} მარჯვნიდან მარცხნივ იკითხება, Airhop-ს კი მიმართულების შეცვლა მხოლოდ გაშვებისას შეუძლია. დახურე და ხელახლა გახსენი, რომ გადართვა დასრულდეს. არაფერი იკარგება, და მანამდე შენი მეში დაკავშირებული რჩება.",
+    "{value}-ზე გადართვა კითხვის მიმართულებას ცვლის, Airhop-ს კი მიმართულების შეცვლა მხოლოდ გაშვებისას შეუძლია. დახურე და ხელახლა გახსენი, რომ გადართვა დასრულდეს. არაფერი იკარგება, და მანამდე შენი მეში დაკავშირებული რჩება.",
   "settings.theme.light": "ღია",
   "settings.theme.light_desc": "ყოველთვის ღია პალიტრის გამოყენება",
   "settings.theme.dark": "მუქი",
@@ -2144,9 +2216,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "დაუშვი კამერასთან წვდომა პარამეტრებში, რომ ახალ ტელეფონზე კოდი დაასკანერო.",
   "settings.transfer.confirm_title": "გადავიტანოთ ამ ტელეფონზე?",
-  "settings.transfer.confirm_body":
-    "აქ ყველაფერი გადავა ტელეფონზე, რომელიც ამ კოდს აჩვენებს. როგორც კი მივა, ეს ტელეფონი წაიშლება.",
+  "settings.transfer.verify_body":
+    "ახალ ტელეფონზეც ზუსტად ეს სიტყვები უნდა ჩანდეს. აქ ყველაფერი მასზე გადავა, შემდეგ კი ეს ტელეფონი წაიშლება.",
   "settings.transfer.confirm_cta": "გადატანა",
+  "settings.transfer.waiting_confirm": "დაადასტურე ახალ ტელეფონზე",
   "settings.transfer.connecting": "უკავშირდება ახალ ტელეფონს",
   "settings.transfer.connecting_hint":
     "თუ ეს ტელეფონი ლოკალურ ქსელში მოწყობილობების პოვნის ნებართვას მოითხოვს, დაუშვი.",
@@ -2208,14 +2281,13 @@ export const strings: Strings = {
   "settings.wipe.desc":
     "მაშინვე ანადგურებს ყველა გასაღებს, შეტყობინებასა და ecash-ს",
   "settings.wipe.body":
-    "ეს მაშინვე გაანადგურებს შენს ყველა გასაღებს, შეტყობინებასა და ecash-ს. ამის დაბრუნება შეუძლებელია.",
+    "ეს მაშინვე გაანადგურებს შენს ყველა გასაღებს, შეტყობინებასა და ecash-ს. ამის დაბრუნება შეუძლებელია. გალერეაში შენახული ფოტოები იქვე დარჩება.",
   "settings.wipe.in_progress": "იშლება",
   "settings.wipe.in_progress_body":
     "ნადგურდება შენი გასაღებები, შეტყობინებები და ფაილები. ეს რამდენიმე წამს გრძელდება და თავად სრულდება, მაშინაც კი, თუ აპლიკაცია დაიხურა.",
-  "settings.wipe.got_it": "გასაგებია",
   "settings.wipe.keys_failed": "გასაღებების განადგურება ვერ მოხერხდა",
   "settings.wipe.keys_failed_body":
-    "შენი შეტყობინებები, კონტაქტები და საფულე წაშლილია, მაგრამ მოწყობილობამ შენი გასაღებების გათავისუფლებაზე უარი თქვა. განბლოკე მოწყობილობა და ხელახლა წაშალე.",
+    "შენი შეტყობინებები, კონტაქტები და საფულე წაშლილია, მაგრამ მოწყობილობამ შენი გასაღებების გათავისუფლებაზე უარი თქვა. განბლოკე მოწყობილობა, შემდეგ ხელახლა გახსენი Airhop, რომ წაშლა დასრულდეს.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "დაგვიკავშირდი",
@@ -2263,7 +2335,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "მოწმდება განახლებები",
   "settings.version.up_to_date": "შენ უახლეს ვერსიაზე ხარ.",
   "settings.version.release_notes": "გამოშვების შენიშვნების ნახვა",
-  "settings.version.made_with": "შექმნილია",
+  "settings.version.credit": "შექმნილია {heart}-ით, ავტორი: {author}",
+  "settings.version.heart_a11y": "სიყვარული",
   "settings.version.number": "ვერსია {version}",
   "settings.version.update_to": "განახლება {version}-ზე",
   "settings.version.update_to_a11y": "განახლება ვერსია {version}-ზე",
@@ -2272,6 +2345,8 @@ export const strings: Strings = {
     "ვერსია {version}-ის გამოშვების შენიშვნების ნახვა",
   "settings.version.tor_paused":
     "განახლებების შემოწმება შეჩერებულია Tor-ის ჩართვისას, რომ შენი IP არ გაჟონოს. ნახე გამოშვებების გვერდი ბრაუზერში.",
+  "settings.version.internet_off":
+    "განახლებები შეჩერებულია, სანამ ინტერნეტი გამორთულია. ჩართე {setting} პარამეტრებში.",
   "settings.version.check_failed":
     "განახლებების შემოწმება ვერ მოხერხდა. შეამოწმე კავშირი და სცადე ხელახლა.",
   "settings.version.downloading": "ჩამოტვირთვა {percent}%",
@@ -2449,6 +2524,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} დაუდასტურებელი",
     other: "{count} დაუდასტურებელი",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "საკომისიოები ბოლოს {count} დღის წინ შემოწმდა. თუ ამ ზარაფხანამ მას შემდეგ საკომისიო გაზარდა, გაგზავნა ოდნავ მეტი დაჯდება.",
+    other:
+      "საკომისიოები ბოლოს {count} დღის წინ შემოწმდა. თუ ამ ზარაფხანამ მას შემდეგ საკომისიო გაზარდა, გაგზავნა ოდნავ მეტი დაჯდება.",
   },
   "wallet.spent_removed_detail": {
     one: "{count} მონეტა უკვე დახარჯული იყო და წაიშალა.",

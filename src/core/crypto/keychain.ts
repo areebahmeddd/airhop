@@ -16,8 +16,11 @@ export const KEYCHAIN_ITEMS = {
   walletEncryptionKey: "airhop.wallet.mmkvKey.v1",
   // secp256k1 private key, hex. Nutzaps lock to its public half.
   walletP2pkKey: "airhop.wallet.p2pk.v1",
-  // 12-word BIP-39 phrase, present only if the user enabled backup.
+  // 12-word BIP-39 phrase, generated with the wallet whether or not the user
+  // has seen it yet.
   walletRecoveryPhrase: "airhop.wallet.recovery.v1",
+  // Base64 blob: our one-time prekey private keys (courier/prekey-store.ts).
+  localPrekeys: "airhop.prekeys.local.v1",
 } as const;
 
 export type KeychainItem = (typeof KEYCHAIN_ITEMS)[keyof typeof KEYCHAIN_ITEMS];
@@ -50,6 +53,17 @@ export async function writeSecret(
   await SecureStore.setItemAsync(item, value, OPTIONS);
 }
 
+// Synchronous, for the one caller that is: the prekey store answers inside
+// packet handling and must not leave a write in flight across a teardown.
+// Same null-or-throw contract as readSecret.
+export function readSecretSync(item: KeychainItem): string | null {
+  return SecureStore.getItem(item, OPTIONS);
+}
+
+export function writeSecretSync(item: KeychainItem, value: string): void {
+  SecureStore.setItem(item, value, OPTIONS);
+}
+
 export async function deleteSecret(item: KeychainItem): Promise<void> {
   await SecureStore.deleteItemAsync(item, OPTIONS);
 }
@@ -78,25 +92,29 @@ export async function wipeAllSecrets(): Promise<void> {
 // works.
 //
 // Not framed as "retry the wipe", because it does not need to know a wipe ever
-// happened - which is the point. A secret with no identity to own it has no
-// owner and no reader; deleting it is unconditionally correct, so this needs no
-// persisted "a wipe was attempted here" flag, and a wipe leaves no trace of
-// having been attempted.
+// happened. A secret with no identity to own it has no owner and no reader, so
+// deleting it is unconditionally correct. The identity cannot be judged that
+// way, which is why it alone carries a flag (services/wipe-marker).
 //
 // The identity itself is deliberately NOT swept, and the reason is a race rather
 // than a scruple. The caller runs this without waiting, on its way to showing
 // the welcome screen, and the very next thing onboarding does is WRITE an
 // identity. A delete still in flight when that lands would destroy the key the
-// user just created, leaving an app that cannot start - a far worse outcome than
-// the one this exists to fix. Nothing is lost by skipping it: the caller only
-// reaches here because loadIdentity found no identity, so there is nothing to
-// delete, and in the one case where there might be (a read that failed while the
-// item survived) a keychain refusing reads refuses deletes too.
+// user just created, leaving an app that cannot start, which is far worse than
+// the leftover this exists to fix. Nothing is lost by skipping it: the launch
+// runs this only on a confirmed absence, never after a failed read, and an
+// identity still present there is a condemned one that launch-identity already
+// tried to delete.
 //
 // Nor is the wallet's file key: the wallet partition opens under it at launch
 // on every install, identity or not, and deleting it leaves that partition
 // writing under a key the next launch cannot find. It guards nothing a wipe has
 // not already cleared.
+//
+// Nor are the local prekeys, for the identity's reason: the mesh can mint and
+// publish a batch right after onboarding, and a delete landing late would drop
+// keys peers are already sealing to. The panic wipe deletes them, and so does
+// the launch that deletes a condemned identity.
 //
 // Returns true ONLY when a leftover is positively confirmed: the delete was
 // refused AND a read afterwards still hands back a value. A keychain that
@@ -106,7 +124,8 @@ export async function sweepOrphanedSecrets(): Promise<boolean> {
   const orphanable = Object.values(KEYCHAIN_ITEMS).filter(
     (item) =>
       item !== KEYCHAIN_ITEMS.identity &&
-      item !== KEYCHAIN_ITEMS.walletEncryptionKey,
+      item !== KEYCHAIN_ITEMS.walletEncryptionKey &&
+      item !== KEYCHAIN_ITEMS.localPrekeys,
   );
   const deletes = await Promise.allSettled(orphanable.map(deleteSecret));
   if (deletes.every((r) => r.status === "fulfilled")) return false;

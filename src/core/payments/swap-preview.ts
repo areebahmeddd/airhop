@@ -16,6 +16,11 @@
 //      twice gives two witnesses. Inputs are signed once, before storage, and
 //      the replay never re-signs.
 // `amount` and `fees` are for the UI only: `completeSwap` never reads them.
+//
+// cashu-ts (4.10.0 on) ships `serializeSwapPreview` / `deserializeSwapPreview`
+// for the same job. They are not used here: they carry no version and no
+// bounds on what a corrupt record may hold, and moving to them changes the
+// stored shape of previews already waiting to be replayed.
 
 import {
   Amount,

@@ -69,6 +69,22 @@ describe("noteUrgentNotice", () => {
     expect(lines("#bluetooth")[0].systemKey).toBe("chat.board.urgent_one");
   });
 
+  // The seen set holds relay and mesh data, so it is bounded rather than
+  // growing until restart under a flood of valid urgent posts.
+  it("forgets the oldest post past 2,000 and still dedups the newest", () => {
+    for (let i = 0; i <= 2_000; i++) noteUrgentNotice(notice(`p${i}`));
+    jest.runAllTimers();
+    expect(lines("#bluetooth")).toHaveLength(1);
+
+    noteUrgentNotice(notice("p2000"));
+    jest.runAllTimers();
+    expect(lines("#bluetooth")).toHaveLength(1);
+
+    noteUrgentNotice(notice("p0"));
+    jest.runAllTimers();
+    expect(lines("#bluetooth")).toHaveLength(2);
+  });
+
   it("writes nothing for a channel that is not joined", () => {
     noteUrgentNotice(notice("p1", "#geo:zzzz"));
     jest.runAllTimers();

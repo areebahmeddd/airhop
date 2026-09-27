@@ -115,6 +115,11 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "ሁለቱንም ስልኮች በአንድ Wi-Fi ላይ አድርግ፣ ወይም በአንዱ ላይ ሆትስፖት አብራና ከሌላው ተቀላቀለው። ኢንተርኔት አያስፈልግም።",
   "onboarding.transfer.incoming": "{name} በመተላለፍ ላይ",
+  "onboarding.transfer.confirm_title": "አሮጌውን ስልክህን ፈትሽ",
+  "onboarding.transfer.confirm_body":
+    "አሮጌው ስልክህ እነዚህን ተመሳሳይ ቃላት ማሳየት አለበት። የተለዩ ቃላት ካሳየ ወይም ምንም ካላሳየ ሰርዝ።",
+  "onboarding.transfer.confirm_cta": "ይመሳሰላሉ",
+  "onboarding.transfer.waiting_old": "በአሮጌው ስልክህ ላይ «{action}» የሚለውን ንካ",
   "onboarding.transfer.receiving": "በመቀበል ላይ {percent}%",
   "onboarding.transfer.saving": "ወደዚህ ስልክ በማስቀመጥ ላይ",
   "onboarding.transfer.releasing": "በአሮጌው ስልክህ ላይ በማጠናቀቅ ላይ",
@@ -169,6 +174,15 @@ export const strings: Strings = {
   // ---- The screen after an unhandled error ----
   "error.boundary.title": "የሆነ ችግር ተፈጠረ",
   "error.boundary.body": "Airhop ያልተጠበቀ ችግር አጋጠመውና ያሳይ የነበረውን ማቆም ነበረበት።",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "ቁልፎችህን መክፈት አልተቻለም",
+  "launch.keys_unreadable_body":
+    "ስልክህ የAirhop ቁልፎችን አልከፈተም። ስልኩን ክፈትና እንደገና ሞክር።",
+  "launch.start_over": "አጽዳና እንደገና ጀምር",
+  "launch.start_over_confirm_title": "ይህ ስልክ ይጽዳ?",
+  "launch.start_over_confirm_body":
+    "በዚህ ስልክ ላይ ያሉት ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ይጠፋሉ፤ እንደ አዲስ ሰው እንደገና ትጀምራለህ። ይህ ሊመለስ አይችልም።",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "ነባሪ ሰርጦች",
@@ -287,7 +301,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "አስቀድሞ በሌላ {name} ውስጥ ነህ። የሰርጥ ስሞች መለያዎች ብቻ ናቸው፤ ስለዚህ ይህ ግብዣ የራሱን ሰርጥ ከፍቷል፤ አንተ የነበርክበትም አልተነካም። ከየትኛውም የሰርጥ መረጃ ስሙን መቀየር ትችላለህ።",
   "chat.join.paste_hint":
-    "በairhop:// የሚጀምር ግብዣ ለጥፍ። አገናኝ መንካትም ይሠራል፤ ይህ ግን ልትነካው ለማትችለው አገናኝ ነው።",
+    "የAirhop አገናኝ በairhop:// ይጀምራል። አንዱን እዚህ ለጥፍ፣ ወይም የተነካ አገናኝ የሞላውን ፈትሽ።",
   "chat.join.key_note":
     "የግል ሰርጥ ግብዣ ቁልፉን ይዞ ይመጣል፤ ስለዚህ መቀላቀሉ ወዲያውኑ ነው፤ ከሌላ ማንም ምንም አይጠየቅም።",
   "chat.join.offline_note":
@@ -406,8 +420,13 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} ከ{total}",
   "chat.transfer.speed": "{size}/ሰ",
   "chat.transfer.left": "{time} ቀርቷል",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "አቻ",
   "chat.thread.cancel_transfer": "{name} ን ሰርዝ",
+  "chat.thread.hide_transfer": "ሂደቱን ደብቅ",
+  "chat.thread.hide_transfer_hint": "ፋይሉ አሁንም ይደርሳል",
   "chat.thread.queued_more": "{count} ተጨማሪ ለመላክ በመጠባበቅ ላይ",
   "chat.thread.across_bridge": "{count} ከድልድዩ ማዶ",
   "chat.thread.bridged": "በድልድይ የተላከ",
@@ -438,6 +457,10 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}። {name} እየተናገረ ነው።",
   "chat.thread.attach_note":
     "ፋይሎች የሚላኩት በብሉቱዝ ክልል ውስጥ ብቻ ነው። ጽሑፍና ክፍያዎች የኢንተርኔት እውቂያዎችን ይደርሳሉ፤ አባሪዎች ግን አይደርሱም።",
+  "chat.thread.media_securing":
+    "መጀመሪያ ከእነሱ ጋር ምስጠራ እየተዘጋጀ ነው። ከጥቂት ጊዜ በኋላ እንደገና ሞክር።",
+  "chat.thread.media_unsupported":
+    "መተግበሪያቸው የተመሰጠሩ ፎቶዎችን ወይም የድምፅ መልእክቶችን መቀበል አይችልም፤ ስለዚህ ይህ አልተላከም።",
   "chat.thread.message_peer": "ለ{name} መልእክት ላክ",
   "chat.thread.send": "መልእክት ላክ",
   "chat.thread.group": "ቡድን",
@@ -558,7 +581,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ቪዲዮው በዚህ መሣሪያ ላይ የለም",
   "chat.media.gone_voice": "የድምፅ መልእክቱ በዚህ መሣሪያ ላይ የለም",
   "chat.media.gone_file": "ፋይሉ በዚህ መሣሪያ ላይ የለም",
-  "chat.media.gone_note": "ከ7 ቀናት በኋላ ወይም ጊዜያዊ ማከማቻው ሲጸዳ ተወግዷል",
+  "chat.media.gone_note": "ከዚህ ስልክ ተሰርዟል፣ ወይም ከአሮጌው ስልክህ አልተላለፈም",
   "chat.media.ask_resend": "እንደገና ጠይቅ",
   "chat.media.resend_draft": "ያንን {kind} እንደገና ልትልክልኝ ትችላለህ?",
   "chat.media.kind_photo": "ፎቶ",
@@ -625,6 +648,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "ተወስዷል",
   "chat.ecash.reclaimed": "መልሶ ተገኝቷል",
+  "chat.ecash.locked": "ለሌላ ሰው ተቆልፏል",
   "chat.ecash.claiming": "እየተወሰደ…",
   "chat.ecash.claim": "ውሰድ",
   "chat.ecash.claim_amount": "{amount} {unit} ውሰድ",
@@ -837,6 +861,7 @@ export const strings: Strings = {
   "mesh.banner.hint.location_settings": "የስርዓቱን የአካባቢ ቅንብሮች ይከፍታል",
   "mesh.banner.hint.app_settings": "የAirhop ፈቃዶችን በስርዓት ቅንብሮች ውስጥ ይከፍታል",
   "mesh.banner.hint.battery_settings": "የዚህን ስልክ የጀርባ እንቅስቃሴ ቅንብሮች ይከፍታል",
+  "mesh.banner.hint.tor_settings": "የAirhopን የTor ቅንብሮች ይከፍታል",
   "mesh.banner.dismiss": "አስወግድ፦ {label}",
   "mesh.banner.hint.dismiss": "ይህን ማስታወሻ ለዘለቄታው ይደብቀዋል",
 
@@ -867,8 +892,10 @@ export const strings: Strings = {
   "mesh.radar.paused": "ሜሽ ቆሟል · አንተ ራቅ ብለሃል",
   "mesh.radar.ring_hint": "የክቡ ቦታ የምልክት ጥንካሬን ያንጸባርቃል እንጂ ርቀትን አይደለም",
   "mesh.radar.set_online": "አቻዎችን ለማግኘት በመገለጫህ ውስጥ ሁኔታህን ወደ ኦንላይን አድርግ",
-  "mesh.radar.in_range": "በክልል ውስጥ",
-  "mesh.radar.recently_seen": "በቅርቡ የታዩ",
+  "mesh.radar.peer_in_range": "{name}፣ በክልል ውስጥ",
+  "mesh.radar.peer_recent": "{name}፣ በቅርቡ የታዩ",
+  "mesh.radar.relay_in_range": "{name}፣ የማስተላለፊያ ኖድ፣ በክልል ውስጥ",
+  "mesh.radar.relay_recent": "{name}፣ የማስተላለፊያ ኖድ፣ በቅርቡ የታዩ",
   "mesh.radar.peer_hint": "ለዚህ አቻ መልእክት ለመላክ ወይም ለመክፈል አማራጮችን ይከፍታል",
 
   // ---- Mesh: peer list ----
@@ -889,6 +916,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash ላክ፤ መጀመሪያ መጠን አስገባ",
   "mesh.peer.cancel_send": "ecash መላክን ሰርዝ",
   "mesh.peer.view_peer_online": "አቻ {name} ን ተመልከት፣ ኦንላይን",
+  "mesh.peer.view_relay_online": "አቻ {name} ን ተመልከት፣ ኦንላይን፣ የማስተላለፊያ ኖድ",
   "mesh.peer.last_seen_at": "ለመጨረሻ ጊዜ የታየው {ago}",
   "mesh.peer.send_amount": "{amount} sats ላክ",
   "mesh.peer.direct": "ቀጥተኛ ግንኙነት",
@@ -950,8 +978,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "መጠን በ{unit}",
   "wallet.send.body":
     "አስቀድሞ ካለህ ecash ከመስመር ውጭ ተገንብቷል። ቶከኑ መድረሱን እስክታረጋግጥ ድረስ ከቀሪ ሂሳብህ ለዘለቄታው የሚወጣ ምንም ነገር የለም።",
-  "wallet.send.stale_fee_note":
-    "ክፍያዎቹ መጨረሻ የተመረመሩት ከ{days} ቀን በፊት ነው። ይህ ሚንት ከዚያ ወዲህ ክፍያውን ጨምሮ ከሆነ መላኩ ትንሽ ተጨማሪ ሊያስከፍል ይችላል።",
   "wallet.send.fee_note":
     "{spend} {unit} ከቀሪ ሂሳብህ ይወጣል፤ ተጨማሪው {fee} እነሱ ሊከፍሉት የነበረውን የሚንት ክፍያ ይሸፍናል",
   "wallet.send.qr_too_big":
@@ -995,6 +1021,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "አስቀድሞ በቦርሳህ ውስጥ ነው",
   "wallet.receive.already_have_body":
     "በዚህ ቶከን ውስጥ ያለው ሁሉ አስቀድሞ እዚህ ተከማችቷል፤ ስለዚህ ምንም አልተጨመረም። ቀሪ ሂሳቦች አልተቀየሩም።",
+  "wallet.receive.claiming": "አሁንም ሚንቱን በመጠበቅ ላይ",
+  "wallet.receive.claiming_body":
+    "ይህን ቶከን ቀደም ብሎ የመውሰድ ሙከራ ገና በሚንቱ አልተረጋገጠም፤ ስለዚህ ምንም አዲስ ነገር አልተላከም። ቦርሳው በራሱ ያጠናቅቀዋል። ሚንቱ ፈጽሞ ካልተቀበለው እንደገና ልትወስደው ትችላለህ።",
   "wallet.receive.stored_unconfirmed":
     "ከ{mint} ተከማችቷል፤ ግን ገና ከሚንቱ ጋር አልተረጋገጠም ({reason})።",
   "wallet.receive.offline": "ከመስመር ውጭ",
@@ -1004,17 +1033,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "በ{mint} ተመንዝሯል። አሁን በማስረጃ የአንተ ነው፦ የላኪው የዚህ ቶከን ቅጂ ከእንግዲህ አይሠራም።",
   "wallet.receive.stored_pending":
-    "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም{dleq}። በመስመር ላይ ስትሆን ከቦርሳ ትሩ አድስ።",
+    "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም{dleq}። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.receive.dleq_inline": " (ፊርማው ግን ትክክል ሆኖ ተገኝቷል፤ ስለዚህ ቶከኑ እውነተኛ ነው)",
   "wallet.receive.dleq_ok": "የሚንቱ ፊርማ ትክክል ሆኖ ተገኝቷል፤ ስለዚህ ቶከኑ እውነተኛ ነው።",
   "wallet.receive.dleq_uncached":
     "የሚንቱ ቁልፎች እዚህ አልተከማቹም፤ ስለዚህ ፊርማው ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
+  "wallet.receive.dleq_missing":
+    "በውስጡ ያሉት ሳንቲሞች ሁሉም የሚንቱን የፊርማ ማስረጃ አልያዙም፤ ስለዚህ ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
   "wallet.receive.dleq_warning":
-    "በመስመር ላይ እስክታድስ ድረስ ላኪው በመርህ ደረጃ ሌላ ቦታ አውጥቶት ሊሆን ይችላል።",
+    "በመስመር ላይ እስኪረጋገጥ ድረስ ላኪው በመርህ ደረጃ ሌላ ቦታ አውጥቶት ሊሆን ይችላል።",
   "wallet.receive.failed": "መቀበል አልተቻለም",
   "wallet.receive.title": "ecash ተቀበል",
   "wallet.receive.body":
-    "የCashu ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይመነዘራል፤ ከመስመር ውጭ ሲሆን ደግሞ ተከማችቶ በሚቀጥለው ማደስ ጊዜ ይረጋገጣል።",
+    "የCashu ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይመነዘራል፤ ከመስመር ውጭ ሲሆን ደግሞ ተከማችቶ ወደ መስመር ስትመለስ ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.receive.scan": "የecash QR ኮድ ቃኝ",
   "wallet.receive.scan_short": "QR ቃኝ",
   "wallet.receive.receiving": "እየተቀበለ…",
@@ -1146,6 +1177,7 @@ export const strings: Strings = {
     "ማገገሚያው የሚሠራው አንድን ሚንት ለአንተ የትኞቹን ሳንቲሞች እንደፈረመ በመጠየቅ ነው፤ ስለዚህ የትኛውን መጠየቅ እንዳለበት ማወቅ አለበት። ትጠቀምባቸው የነበሩትን ሚንቶች ጨምርና ከዚያ መልስ።",
   "wallet.backup.restore_failed": "መመለስ አልተሳካም",
   "wallet.backup.phrase": "የማገገሚያ ሐረግ",
+  "wallet.backup.auth_prompt": "የማገገሚያ ሐረግህን ለማየት አንተ መሆንህን አረጋግጥ",
   "wallet.backup.state_unconfirmed": "ምትኬ በርቷል ግን አልተረጋገጠም",
   "wallet.backup.state_off": "ምትኬ ጠፍቷል",
   "wallet.backup.badge_on": "በርቷል",
@@ -1222,6 +1254,8 @@ export const strings: Strings = {
     "ሚንቱ ይህ ቶከን አስቀድሞ እንደተመነዘረ ይገልጻል፤ ስለዚህ {amount} {unit} ደርሷቸዋል፣ ወደ ቀሪ ሂሳብህም ምንም አልተመለሰም።",
   "wallet.copied.token_body":
     "ቶከኑ በቅንጥብ ሰሌዳህ ላይ ነው። እንደደረሰ እስክትመዘግብ ድረስ እዚህ ተይዞ ይቆያል፤ ስለዚህ የመጀመሪያው ሙከራ ካልተሳካ እንደገና ልትለጥፈው ትችላለህ።",
+  "wallet.copied.refused_token_body":
+    "ቶከኑ በቅንጥብ ሰሌዳህ ላይ ነው። ይህ ቦርሳ ከእንግዲህ አይቆጥረውም፤ ስለዚህ ለላከልህ ሰው መመለስ ትችላለህ።",
   "wallet.copied.phrase_body":
     "በይለፍ ቃል አስተዳዳሪ ውስጥ ለጥፈውና ከዚያ ቅንጥብ ሰሌዳህን አጽዳ። ሌሎች መተግበሪያዎች ቅንጥብ ሰሌዳውን ማንበብ ይችላሉ፤ በአንዳንድ ቅንብሮችም ወደ ሌሎች መሣሪያዎችህ ይመሳሰላል።",
   "wallet.refresh.failed": "ማደስ አልተሳካም",
@@ -1230,6 +1264,10 @@ export const strings: Strings = {
   "wallet.refresh.unreachable": "{mints} ሊደረስባቸው አልተቻለም። ሌላው ሁሉ ወቅታዊ ነው።",
   "wallet.refresh.swapped": "{amount} {unit} ተረጋግጦ በአዲስ ecash ተለውጧል።",
   "wallet.refresh.secured": "አሁን {amount} {unit} በማገገሚያ ሐረግህ ተሸፍኗል።",
+  "wallet.refresh.refused":
+    "{amount} {unit} በሚንቱ ውድቅ ተደርጎ ከቀሪ ሂሳብህ ተወግዷል። ቶከኑ በእንቅስቃሴ ውስጥ ይቆያል።",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} አሁንም ሚንቱን እየጠበቀ ነው፤ በኋላ ይረጋገጣል።",
   "wallet.refresh.all_confirmed": "እዚህ ያለው ሁሉ አስቀድሞ ከሚንቱ ጋር ተረጋግጦ ነበር።",
   "wallet.pending.reserved_desc":
     "ተገንብቶ ተይዟል፤ መድረሱ አልተረጋገጠም። ሳንቲሞቹ ሁለት ጊዜ እንዳይወጡ ከቀሪ ሂሳብህ ውጭ ተይዘዋል።",
@@ -1260,9 +1298,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "የLightning ተቀማጭ",
   "wallet.activity.ln_withdrawal": "የLightning ወጪ",
   "wallet.activity.nutzap_received": "Nutzap ደርሷል",
+  "wallet.activity.nutzap_claiming": "Nutzap፣ እየተወሰደ",
   "wallet.activity.spent_removed": "ወጪ የሆኑ ሳንቲሞች ተወግደዋል",
   "wallet.activity.refreshed": "ከሚንቱ ጋር ተረጋግጧል",
   "wallet.activity.refreshing": "ከሚንቱ ጋር በማረጋገጥ ላይ",
+  "wallet.activity.copy_refused": "ውድቅ የተደረገውን ቶከን ቅዳ",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "ሜሽ ከመስመር ውጭ",
@@ -1274,6 +1314,10 @@ export const strings: Strings = {
     "አሁን ወደ እነሱ የሚወስድ መንገድ የለም። ሌሎች መሣሪያዎች ይዘውት ይሄዳሉ፤ አንዱ ሲደርስባቸውም ያደርሱታል።",
   "wallet.xfer.route_queued":
     "ገና ሊደረስባቸው አልተቻለም። በተራ ላይ ነው፤ እንደተገኙም ወዲያውኑ ይላካል።",
+  "wallet.xfer.route_too_large_airhop":
+    "በኢንተርኔት ለመሄድ ወይም በሌሎች መሣሪያዎች ለመጓጓዝ በጣም ትልቅ ነው። ወደ ክልል ሲመለሱ በብሉቱዝ ይላካል፤ ወይም አሁን ለመክፈል ቶከኑን ከእንቅስቃሴ አጋራ።",
+  "wallet.xfer.route_too_large":
+    "ወደ እነሱ ለሚወስድ ለማንኛውም መንገድ በጣም ትልቅ ነው፤ የዚህ መጠን ቶከን በብሉቱዝ የሚደርሰው Airhop ያለበትን ስልክ ብቻ ነው። ለመክፈል ከእንቅስቃሴ አጋራው።",
   "wallet.xfer.mesh_offline_body":
     "የሜሽ አገልግሎቱ እየሠራ አይደለም፤ ስለዚህ ቶከኑን የሚያስተላልፍበት መንገድ የለም። ምንም አልተቀነሰም።",
   "wallet.xfer.could_not_send": "መላክ አልተቻለም",
@@ -1333,13 +1377,13 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu ምንድን ነው?",
   "wallet.explain.intro":
-    "Cashu ለBitcoin የተዘጋጀ ecash ነው። ቶከን ለያዘው ሰው ገንዘብ የሚያወጣ ሕብረቁምፊ ነው፤ ሚንቱ ማን ምን እንዳወጣ እንዳያውቅ በዓይነ ስውር ፊርማ ይፈረማል። መለያም መግቢያም የለም።",
+    "Cashu ለBitcoin የተዘጋጀ ecash ነው። ቶከን ለያዘው ሰው ገንዘብ የሚያወጣ ሕብረቁምፊ ነው፤ ሚንቱ ማን ምን እንዳወጣ እንዳያውቅ በዓይነ ስውር ፊርማ ይፈረማል። መለያም መግቢያም የለም። Airhop ገንዘብህን በጭራሽ አይይዝም፤ ሳንቲሞችህ በዚህ ስልክ ላይ ናቸው፣ የሚያወጧቸውም የመረጥካቸው ሚንቶች ናቸው።",
   "wallet.explain.send": "ላክ",
   "wallet.explain.send_desc":
     "አንድን መጠን በብሉቱዝ በኩል በአቅራቢያ ላለ አቻ ልታስተላልፈው ወይም እንደ ጽሑፍ ልታጋራው ወደምትችለው ቶከን ይቀይረዋል። ያለ ኢንተርኔት ይሠራል። መድረሱን እስክታረጋግጥ ድረስ ሳንቲሞቹ ተይዘው ይቆያሉ።",
   "wallet.explain.receive": "ተቀበል",
   "wallet.explain.receive_desc":
-    "ለመጨመር ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይለወጣል፤ ይህም በማስረጃ የአንተ ያደርገዋል። ከመስመር ውጭ ሲሆን ተከማችቶ እስክታድስ ድረስ ያልተረጋገጠ ሆኖ ይመዘገባል።",
+    "ለመጨመር ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይለወጣል፤ ይህም በማስረጃ የአንተ ያደርገዋል። ከመስመር ውጭ ሲሆን ሳይረጋገጥ ይከማቻል፤ ወደ መስመር ስትመለስም ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "ለNostr ማንነት ይከፍላል። የNIP-61 nutzap መረጃ አሳትመው ከሆነ ecash እነሱ ብቻ እንዲያወጡት በቁልፋቸው ይቆለፋል። ካልሆነ ወደ የተመሰጠረ ቀጥተኛ መልእክት ይመለሳል። ኢንተርኔት ይፈልጋል።",
@@ -1375,6 +1419,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "ያ የማገገሚያ ሐረግ ልክ አይደለም።",
   "wallet.svc.phrase_invalid_body":
     "በስህተት የተጻፈ ወይም የጎደለ ቃል ፈልግ። ሐረጉ አብሮ የተሠራ የማረጋገጫ ስሌት አለው፤ ስለዚህ አንድ የተሳሳተ ቃል ሁሉንም ልክ ያልሆነ ያደርገዋል።",
+  "wallet.svc.phrase_unreadable": "የማገገሚያ ሐረግህ በዚህ ስልክ ላይ ሊነበብ አልቻለም።",
+  "wallet.svc.phrase_unreadable_body":
+    "ምንም አልተለወጠም፤ አዲስ ሐረግም አልተፈጠረም። ስልኩ ሲከፈት እንደገና ሞክር። እስከዚያው ያንተ ecash መስራቱን ይቀጥላል።",
   "wallet.svc.need_mint": "መጀመሪያ ቢያንስ አንድ ሚንት ጨምር።",
   "wallet.svc.need_mint_body":
     "ማገገሚያው የሚሠራው አንድን ሚንት ለአንተ የትኞቹን ሳንቲሞች እንደፈረመ በመጠየቅ ነው፤ ስለዚህ የትኛውን መጠየቅ እንዳለበት ማወቅ አለበት።",
@@ -1394,11 +1441,29 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "ይህ ቶከን ከሚንቱ አዳዲስ ቁልፎችን ይጠቀማል።",
   "wallet.svc.keyset_unknown_body":
     "እነሱን ለማምጣት ሚንቱ አሁን ሊደረስበት አይችልም። ምንም አልጠፋም፤ መስመር ላይ ሲሆኑ እንደገና ይቀበሉት።",
+  "wallet.svc.keyset_rotated": "ሚንቱ አሁን ቁልፎቹን ቀይሯል።",
+  "wallet.svc.keyset_rotated_body":
+    "ምንም ነገር ከመንቀሳቀሱ በፊት ጥያቄውን ውድቅ አድርጓል፤ ስለዚህ ቀሪ ሂሳብህ አልተቀየረም። ከአንድ ደቂቃ በኋላ እንደገና ሞክር።",
   "wallet.svc.wrong_mint": "ይህ ቶከን በጠቀሰው ሚንት አልተፈረመም።",
+  "wallet.svc.wrong_mint_body":
+    "ቢያንስ የአንድ ሳንቲም ፊርማ ከሚንቱ ቁልፎች ጋር አይዛመድም። ምንም አልተጨመረም።",
+  "wallet.svc.unit_mismatch": "የዚህ ቶከን ሳንቲሞች በሚጠቅሰው የገንዘብ አይነት አይደሉም።",
+  "wallet.svc.unit_mismatch_body":
+    "{label} የሚል ስያሜ አለው፤ ግን ከሳንቲሞቹ አንዳንዶቹ የወጡት በ{actual} ነው። ላኪውን አዲስ ቶከን ጠይቅ። ምንም አልተጨመረም።",
+  "wallet.svc.locked_other": "እነዚህ ሳንቲሞች ለሌላ ሰው ቦርሳ ተቆልፈዋል።",
+  "wallet.svc.locked_other_body": "ሊወስዳቸው የሚችለው የተቆለፉለት ሰው ብቻ ነው። ምንም አልተጨመረም።",
+  "wallet.svc.coins_refused":
+    "ሚንቱ እነዚህን ሳንቲሞች ውድቅ አድርጓል፤ ስለዚህ ከእንግዲህ አይቆጠሩም። መልሰህ መላክ ከፈለግህ ቶከኑ እዚህ ተቀምጧል።",
+  "wallet.svc.coins_unredeemable":
+    "እነዚህ ሳንቲሞች በዚህ ሚንት ሊመነዘሩ አይችሉም፤ ስለዚህ ከእንግዲህ አይቆጠሩም። መልሰህ መላክ ከፈለግህ ቶከኑ እዚህ ተቀምጧል።",
+  "wallet.svc.reclaim_refused":
+    "ሚንቱ ከዚህ መላክ የተገኙትን ሳንቲሞች መልሶ ለመውሰድ ፈቃደኛ አልሆነም፤ ስለዚህ ከእንግዲህ አይቆጠሩም። ቶከናቸው እንድትቀዳው እዚህ ተቀምጧል።",
+  "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
+  "wallet.svc.locked_ours_offline_body":
+    "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",
-  "wallet.svc.receiving_offline": "ከመስመር ውጭ እየተቀበለ",
   "wallet.svc.amount_positive": "ከዜሮ የሚበልጥ መጠን አስገባ።",
   "wallet.svc.coins_raced": "እነዚያ ሳንቲሞች አሁን በሌላ ክፍያ ተጠቅመዋል።",
   "wallet.svc.coins_raced_body":
@@ -1504,6 +1569,8 @@ export const strings: Strings = {
     "ያ የbitchat ኮድ ጊዜው አልፎበታል። QR ኮዳቸውን እንደገና እንዲከፍቱ ጠይቃቸው።",
   "contacts.scan.tampered":
     "ይህ QR ኮድ ልክ አይደለም፦ የአቻ መለያው ከቁልፎቹ ጋር አይዛመድም። ተበርዞ ሊሆን ይችላል።",
+  "contacts.scan.key_conflict":
+    "ለእነሱ የተለየ ቁልፍ አስቀድመህ ይዘሃል፤ ስለዚህ ምንም አልተለወጠም። ለመተካት ኮዳቸውን በአካል ተገናኝተህ ቃኝ።",
   "contacts.scan.already_added": "አስቀድሞ በእውቂያዎችህ ውስጥ ነው",
 
   // ---- Contacts: verifying by QR ----
@@ -1675,7 +1742,7 @@ export const strings: Strings = {
   "settings.general.reset": "ቅንብሮችን ዳግም አስጀምር",
   "settings.general.media_retention": "ሚዲያን ለዚህን ያህል ጊዜ ያዝ",
   "settings.general.media_retention_desc":
-    "ፎቶዎች፣ ቪዲዮዎችና የድምፅ መልእክቶች ከተመረጠው ጊዜ በኋላ ይሰረዛሉ",
+    "ፎቶዎች፣ ቪዲዮዎች፣ የድምፅ መልእክቶችና ፋይሎች ከተመረጠው ጊዜ በኋላ ይሰረዛሉ",
   "settings.general.media_retention_sheet":
     "ሚዲያ በዚህ መሣሪያ ላይ ለምን ያህል ጊዜ እንደሚቆይ ምረጥ። የተሰረዘ ሚዲያ ሊመለስ አይችልም።",
   "settings.general.retention_7_desc":
@@ -1812,7 +1879,7 @@ export const strings: Strings = {
     "የNostr ትራፊክ ወደ ተራው ግንኙነትህ ይመለሳል፤ ስለዚህ አስተላላፊዎች እንደገና የIP አድራሻህን ያያሉ። በሁለቱም መንገድ ብሉቱዝ አይነካም።",
   "settings.conn.tor_unavailable": "በዚህ ስሪት ውስጥ የTor አቅጣጫ አይገኝም።",
   "settings.conn.tor_timeout":
-    "Tor ለመገናኘት ከአንድ ደቂቃ በላይ እየወሰደ ነው። በርቶ ይቀጥላል፤ መሞከሩንም ይቀጥላል፤ የሜሽ ትሩ መቼ እያመራ እንደሆነ ወይም ይህ አውታረ መረብ እያገደው እንደሆነ ይነግርሃል።",
+    "Tor ገና አልተገናኘም። በርቶ ይቀጥላል፤ መሞከሩንም ይቀጥላል፤ የሜሽ ትሩ መቼ እያመራ እንደሆነ ወይም ይህ አውታረ መረብ እያገደው እንደሆነ ይነግርሃል።",
   "settings.conn.tor_failed": "Tor ማስጀመር አልተቻለም። ከጥቂት ጊዜ በኋላ እንደገና ይሞክሩ።",
   "settings.tor.status": "የTor ሁኔታ",
   "settings.tor.connection": "ግንኙነት",
@@ -1835,7 +1902,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "ለመገናኘት ከሳጥኑ ውጭ ይንኩ።",
   "settings.tor.custom_empty": "መጀመሪያ ቢያንስ አንድ የድልድይ መስመር ያክሉ።",
   "settings.tor.recovered":
-    "Tor ባለፈው ጊዜ ማስጀመሩን ስላላጠናቀቀ ጠፍቷል። እንደገና ለመሞከር መልሰው ያብሩት።",
+    "Tor ባለፈው ጊዜ ማስጀመሩን ስላላጠናቀቀ የኢንተርኔት ትራፊክ ቆሟል። እንደገና ሞክር፣ ወይም ያለ Tor በመስመር ላይ ለመሆን Torን አጥፋ።",
+  "settings.tor.retry": "እንደገና ሞክር",
   "settings.conn.mint_clearnet": "የሚንት ትራፊክ በክፍት አውታረ መረብ ላይ ይፈቀድ",
   "settings.conn.mint_clearnet_desc":
     "በiOS ላይ Tor የሚሸፍነው Nostr ን ብቻ ነው። የሚንት ጥያቄዎችን ለማገድ አጥፍተህ ተወው፤ በሁለቱም መንገድ በሜሽ ላይ ecash መሥራቱን ይቀጥላል።",
@@ -1957,7 +2025,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "አሁን ክፈት",
   "settings.language.rtl_title": "ለማጠናቀቅ Airhop ን እንደገና ክፈት",
   "settings.language.rtl_body":
-    "{value} ከቀኝ ወደ ግራ ይነበባል፤ Airhop ደግሞ አቅጣጫውን መቀየር የሚችለው ሲጀምር ብቻ ነው። መቀየሩን ለማጠናቀቅ ዝጋውና እንደገና ክፈተው። ምንም አይጠፋም፤ እስከዚያ ድረስም ሜሽህ ተገናኝቶ ይቆያል።",
+    "ወደ {value} መቀየር የንባብ አቅጣጫውን ይቀይራል፤ Airhop ደግሞ አቅጣጫውን መቀየር የሚችለው ሲጀምር ብቻ ነው። መቀየሩን ለማጠናቀቅ ዝጋውና እንደገና ክፈተው። ምንም አይጠፋም፤ እስከዚያ ድረስም ሜሽህ ተገናኝቶ ይቆያል።",
   "settings.theme.light": "ብሩህ",
   "settings.theme.light_desc": "ሁልጊዜ ብሩህ ቀለሞችን ተጠቀም",
   "settings.theme.dark": "ጨለማ",
@@ -1994,9 +2062,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "በአዲሱ ስልክህ ላይ ያለውን ኮድ ለመቃኘት በቅንብሮች ውስጥ የካሜራ መዳረሻን ፍቀድ።",
   "settings.transfer.confirm_title": "ወደዚህ ስልክ ይተላለፍ?",
-  "settings.transfer.confirm_body":
-    "እዚህ ያለው ሁሉ ይህን ኮድ ወደሚያሳየው ስልክ ይዛወራል። እንደደረሰ ይህ ስልክ ይጸዳል።",
+  "settings.transfer.verify_body":
+    "አዲሱ ስልክህ እነዚህን ተመሳሳይ ቃላት ማሳየት አለበት። እዚህ ያለው ሁሉ ወደ እሱ ይሄዳል፤ ከዚያም ይህ ስልክ ይጸዳል።",
   "settings.transfer.confirm_cta": "አስተላልፍ",
+  "settings.transfer.waiting_confirm": "በአዲሱ ስልክህ ላይ አረጋግጥ",
   "settings.transfer.connecting": "ከአዲሱ ስልክህ ጋር በመገናኘት ላይ",
   "settings.transfer.connecting_hint":
     "ይህ ስልክ በአካባቢ አውታረ መረብ ላይ መሣሪያዎችን ለማግኘት ፈቃድ ከጠየቀ ፍቀድለት።",
@@ -2049,14 +2118,13 @@ export const strings: Strings = {
   "settings.wipe.now": "አሁን አጽዳ",
   "settings.wipe.desc": "ሁሉንም ቁልፎች፣ መልእክቶችና ecash ወዲያውኑ አጥፋ",
   "settings.wipe.body":
-    "ይህ ሁሉንም ቁልፎችህን፣ መልእክቶችህንና ecash ህን ወዲያውኑ ያጠፋል። ይህ ሊመለስ አይችልም።",
+    "ይህ ሁሉንም ቁልፎችህን፣ መልእክቶችህንና ecash ህን ወዲያውኑ ያጠፋል። ይህ ሊመለስ አይችልም። ወደ ማዕከለ-ስዕላት ያስቀመጥካቸው ፎቶዎች እዚያው ይቆያሉ።",
   "settings.wipe.in_progress": "እየጸዳ ነው",
   "settings.wipe.in_progress_body":
     "ቁልፎችህ፣ መልእክቶችህና ፋይሎችህ እየጠፉ ናቸው። ጥቂት ሰከንዶች ይወስዳል፤ መተግበሪያው ቢዘጋም በራሱ ይጠናቀቃል።",
-  "settings.wipe.got_it": "ገባኝ",
   "settings.wipe.keys_failed": "ቁልፎቹ ሊጠፉ አልቻሉም",
   "settings.wipe.keys_failed_body":
-    "መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ጠፍተዋል፤ መሣሪያው ግን ቁልፎችህን ለመልቀቅ ፈቃደኛ አልሆነም። መሣሪያውን ክፈትና እንደገና አጽዳ።",
+    "መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ጠፍተዋል፤ መሣሪያው ግን ቁልፎችህን ለመልቀቅ ፈቃደኛ አልሆነም። መሣሪያውን ክፈት፣ ከዚያ ማጽዳቱን ለመጨረስ Airhopን እንደገና ክፈት።",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "አግኙን",
@@ -2101,7 +2169,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "ዝመናዎች እየተመረመሩ ነው",
   "settings.version.up_to_date": "የቅርቡን ስሪት እየተጠቀምክ ነው።",
   "settings.version.release_notes": "የልቀት ማስታወሻዎችን ተመልከት",
-  "settings.version.made_with": "የተሠራው በ",
+  "settings.version.credit": "በ{heart} በ{author} የተሠራ",
+  "settings.version.heart_a11y": "ፍቅር",
   "settings.version.number": "ስሪት {version}",
   "settings.version.update_to": "ወደ {version} አዘምን",
   "settings.version.update_to_a11y": "ወደ ስሪት {version} አዘምን",
@@ -2109,6 +2178,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "የስሪት {version} የልቀት ማስታወሻዎችን ተመልከት",
   "settings.version.tor_paused":
     "IP አድራሻህ እንዳይወጣ Tor በርቶ እያለ የዝመና ምርመራ ይቆማል። የልቀት ገጹን በአሳሽ ተመልከት።",
+  "settings.version.internet_off":
+    "ኢንተርኔት ጠፍቶ እያለ ዝመናዎች ቆመዋል። በቅንብሮች ውስጥ {setting}ን ያብሩ።",
   "settings.version.check_failed":
     "ዝመናዎችን መመርመር አልተቻለም። ግንኙነትህን አረጋግጥና እንደገና ሞክር።",
   "settings.version.downloading": "በማውረድ ላይ {percent}%",
@@ -2280,6 +2351,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} ያልተረጋገጠ",
     other: "{count} ያልተረጋገጡ",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "ክፍያዎቹ መጨረሻ የተመረመሩት ከ{count} ቀን በፊት ነው። ይህ ሚንት ከዚያ ወዲህ ክፍያውን ጨምሮ ከሆነ መላኩ ትንሽ ተጨማሪ ሊያስከፍል ይችላል።",
+    other:
+      "ክፍያዎቹ መጨረሻ የተመረመሩት ከ{count} ቀን በፊት ነው። ይህ ሚንት ከዚያ ወዲህ ክፍያውን ጨምሮ ከሆነ መላኩ ትንሽ ተጨማሪ ሊያስከፍል ይችላል።",
   },
   "wallet.spent_removed_detail": {
     one: "{count} ሳንቲም አስቀድሞ ወጪ ሆኖ ስለነበር ተወግዷል።",

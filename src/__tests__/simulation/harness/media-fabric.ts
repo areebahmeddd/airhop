@@ -144,6 +144,7 @@ export interface VoiceRecord {
   captureStarted: number;
   captureStopped: number;
   playbackStarted: number;
+  playbackFinished: number;
   playbackStopped: number;
   // Every frame handed to the speaker, in order.
   framesPlayed: Uint8Array[];
@@ -165,7 +166,7 @@ const FRAME_INTERVAL_MS = 64;
 // different emitters means frames are emitted into a listener list that is
 // permanently empty, and the microphone silently produces nothing. Handing the
 // emit function in from inside `jest.isolateModules` removes the ambiguity
-// entirely - the caller there is provably in the phone's own registry.
+// entirely: the caller there is provably in the phone's own registry.
 export function createNativeVoiceMock(): {
   module: unknown;
   record: VoiceRecord;
@@ -176,6 +177,7 @@ export function createNativeVoiceMock(): {
     captureStarted: 0,
     captureStopped: 0,
     playbackStarted: 0,
+    playbackFinished: 0,
     playbackStopped: 0,
     framesPlayed: [],
   };
@@ -222,6 +224,9 @@ export function createNativeVoiceMock(): {
     },
     async enqueueFrames(framesBase64: string[]): Promise<void> {
       for (const f of framesBase64) record.framesPlayed.push(fromBase64(f));
+    },
+    async finishPlayback(): Promise<void> {
+      record.playbackFinished++;
     },
     async stopPlayback(): Promise<void> {
       record.playbackStopped++;

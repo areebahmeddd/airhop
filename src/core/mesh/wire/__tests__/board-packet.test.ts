@@ -4,6 +4,7 @@
 // Board wire format: byte-compatible signed posts and tombstones (0x23).
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
+  boardUrgentFlag,
   BoardWireConstants,
   decodeBoardWire,
   encodeBoardWire,
@@ -144,5 +145,46 @@ describe("board wire", () => {
     expect(decoded!.kind === "post" && decoded!.post.content).toBe(
       "market at noon",
     );
+  });
+});
+
+// The relay's peek, bitchat-ios BoardWire.urgentFlag(in:): the flags TLV
+// alone, with no decode and no signature check.
+describe("boardUrgentFlag", () => {
+  it("reads the urgent bit from a post's flags", () => {
+    const urgent = samplePost({ flags: URGENT }).post;
+    const plain = samplePost().post;
+    expect(
+      boardUrgentFlag(encodeBoardWire({ kind: "post", post: urgent })),
+    ).toBe(true);
+    expect(
+      boardUrgentFlag(encodeBoardWire({ kind: "post", post: plain })),
+    ).toBe(false);
+  });
+
+  it("is false for a tombstone, a truncated payload and nothing at all", () => {
+    const { priv, pub } = keypair();
+    const tombstone = signBoardTombstone(newPostID(), pub, 1, priv);
+    expect(
+      boardUrgentFlag(encodeBoardWire({ kind: "tombstone", tombstone })),
+    ).toBe(false);
+    const urgent = encodeBoardWire({
+      kind: "post",
+      post: samplePost({ flags: URGENT }).post,
+    });
+    // Cut inside the TLV before the flags: the walk stops, it does not guess.
+    expect(boardUrgentFlag(urgent.slice(0, 20))).toBe(false);
+    expect(boardUrgentFlag(new Uint8Array(0))).toBe(false);
+  });
+
+  it("reads the first flags TLV even when the post would not decode", () => {
+    // A flags TLV with the urgent bit and nothing else.
+    expect(boardUrgentFlag(new Uint8Array([0x09, 0x00, 0x01, 0x01]))).toBe(
+      true,
+    );
+    // Wrong length: not a flags field it can read.
+    expect(
+      boardUrgentFlag(new Uint8Array([0x09, 0x00, 0x02, 0x01, 0x01])),
+    ).toBe(false);
   });
 });

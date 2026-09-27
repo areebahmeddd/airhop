@@ -1,7 +1,7 @@
 // Reading bitchat's verification QR.
 //
-// The fixtures are built the way bitchat builds them - canonical bytes signed
-// with the Ed25519 key the QR names - so a change to either side's field order
+// The fixtures are built the way bitchat builds them (canonical bytes signed
+// with the Ed25519 key the QR names), so a change to either side's field order
 // or length prefixing shows up here as a signature that no longer verifies.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
@@ -79,6 +79,16 @@ describe("parseBitchatVerifyQr", () => {
     expect(bytesToHex(out.card.nostrPubKey as Uint8Array)).toBe(
       "cc".repeat(32),
     );
+  });
+
+  // Normalised after the signature is checked, which covers the bytes as sent.
+  it("normalises a signed nickname where it enters", () => {
+    const out = parseBitchatVerifyQr(
+      makeQr({ nick: " M\u202Eo\u200Bm\n(verified)" }),
+      NOW,
+    );
+    if (out?.ok !== true) throw new Error("expected ok");
+    expect(out.card.nickname).toBe("Mom (verified)");
   });
 
   // A bitchat user with no Nostr identity is a real user, not a broken code.

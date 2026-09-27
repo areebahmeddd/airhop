@@ -10,6 +10,7 @@
 // `locales/types.ts`.
 
 import { useSettingsStore } from "@store/settings-store";
+import { stripInvisibles } from "@utils/strip-invisibles";
 import { useSyncExternalStore } from "react";
 import { I18nManager } from "react-native";
 import {
@@ -150,6 +151,7 @@ function catalogFor(code: LanguageCode): Locale {
 
 let bootLanguage: LanguageCode = DEFAULT_LANGUAGE;
 let bootDirection: "ltr" | "rtl" = "ltr";
+let unwatchLanguage: (() => void) | null = null;
 
 // A stored preference, which is either a language or "follow the device".
 export type LanguagePreference = LanguageCode | "system";
@@ -299,12 +301,15 @@ export function stripIsolates(text: string): string {
   return text.replace(/[\u2068\u2069]/g, "");
 }
 
+// A value's own bidi controls are stripped first: an isolate or override inside
+// it can only fight the isolate around it, and a pop would close it early and
+// let an override reorder the rest of the sentence.
 function interpolate(template: string, vars?: TranslationVars): string {
   if (vars === undefined) return template;
   return template.replace(PLACEHOLDER, (match, name: string) => {
     const value = vars[name];
     if (value === undefined) return match;
-    return `${ISOLATE_FIRST}${String(value)}${ISOLATE_POP}`;
+    return `${ISOLATE_FIRST}${stripInvisibles(String(value))}${ISOLATE_POP}`;
   });
 }
 
@@ -503,6 +508,17 @@ export function initI18n(): void {
         : DEFAULT_LANGUAGE;
 
   applyLayoutDirection(wanted);
+
+  // Re-pinned whenever the preference moves, whoever moves it: the picker,
+  // Reset settings, a panic wipe or a transfer. Pinned by the picker alone, the
+  // first reopen after any other writer boots in the old direction and asks for
+  // a second one.
+  unwatchLanguage?.();
+  unwatchLanguage = useSettingsStore.subscribe((state, prev) => {
+    if (state.language !== prev.language) {
+      applyLayoutDirection(resolvePreference(state.language));
+    }
+  });
 }
 
 // The picker's data, re-exported so a screen imports it alongside `useT`.

@@ -190,6 +190,10 @@ const strings: Strings = {
     "तपाईंको साँचोबाट बनेको, त्यसैले तपाईंको नाम कसैले लिन सक्दैन।",
   "home.features.identity.qr.name": "QR सम्पर्क",
   "home.features.identity.qr.line": "एकपटक स्क्यान गर्दा नाम मात्र होइन, उनीहरूका साँचो पनि आउँछ।",
+  "home.features.identity.forward.name": "फरवार्ड सेक्रेसी",
+  "home.features.identity.forward.line": "चुहिएको साँचोले पुराना सन्देश खोल्न सक्दैन।",
+  "home.features.identity.move.name": "नयाँ फोनमा सार्ने",
+  "home.features.identity.move.line": "च्याट र वालेट सर्छन्, त्यसपछि पुरानो फोनले आफैँलाई मेटाउँछ।",
   "home.features.identity.panic.name": "आपत्कालीन मेटाइ",
   "home.features.identity.panic.line": "हरेक साँचो र हरेक सन्देश एक सेकेन्डभित्रै नष्ट।",
 
@@ -198,6 +202,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth मेस",
   "home.features.networking.mesh.line":
     "इन्टरनेट छैन, राउटर छैन, मानिसहरूसँग पहिल्यै भएका फोनहरूमै।",
+  "home.features.networking.lan.name": "स्थानीय नेटवर्क",
+  "home.features.networking.lan.line": "साझा WiFi वा हटस्पट, iPhone र Android सँगै।",
+  "home.features.networking.hops.name": "बहु-हप रिले",
+  "home.features.networking.hops.line": "हरेक फोनले सन्देश अघि बढाउँछ, सात हपसम्म।",
   "home.features.networking.bridge.name": "मेस पुल",
   "home.features.networking.bridge.line":
     "तपाईंको सार्वजनिक कुराकानीलाई पहुँचबाहिर रहेको नजिकको भीडसँग जोड्छ।",

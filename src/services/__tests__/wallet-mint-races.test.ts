@@ -13,6 +13,7 @@
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { generateRecoveryPhrase } from "@core/payments/wallet-seed";
+import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
   bootstrapWalletStorage,
@@ -227,7 +228,10 @@ describe("replaying a lost swap", () => {
 describe("swaps hold their inputs", () => {
   it("keeps a refresh's coins out of reach of a send while the mint answers", async () => {
     const token = await strangersToken(8);
-    const stored = await receiveToken(token, { preferOffline: true });
+    // Internet off: stored with no swap staged, so only a refresh swaps it.
+    useSettingsStore.setState({ internetEnabled: false });
+    const stored = await receiveToken(token);
+    useSettingsStore.setState({ internetEnabled: true });
     expect(stored.outcome).toBe("stored");
 
     fabric.setConditions({ latencyMs: 40 });
@@ -385,6 +389,67 @@ describe("redeeming a token twice", () => {
         .getState()
         .history.some((t) => t.kind === "receive" && t.status === "pending"),
     ).toBe(false);
+  });
+});
+
+describe("claiming again while the first claim is in doubt", () => {
+  const receipts = () =>
+    useWalletStore.getState().history.filter((t) => t.kind === "receive");
+
+  it("swaps nothing twice, and claims once the mint says the first never ran", async () => {
+    const token = await strangersToken(8);
+    // Reachable but failing before the swap runs: the claim is staged, and the
+    // reply says nothing about whether it swapped.
+    fabric.setConditions({ serverError: true });
+    try {
+      await expect(receiveToken(token)).rejects.toBeDefined();
+    } finally {
+      fabric.setConditions({ serverError: false });
+    }
+    expect(receipts()).toHaveLength(1);
+    const swaps = fabric.swapCount;
+
+    // Out of reach, nothing can settle the first claim, so no second starts.
+    fabric.setConditions({ offline: true });
+    try {
+      expect((await receiveToken(token)).outcome).toBe("claiming");
+    } finally {
+      fabric.setConditions({ offline: false });
+    }
+    expect(fabric.swapCount).toBe(swaps);
+    expect(receipts()).toHaveLength(1);
+
+    // Back in reach, the replay closes the first claim and this one swaps.
+    expect((await receiveToken(token)).outcome).toBe("swapped");
+    await reconcile();
+    expect(receipts().map((t) => t.status)).toEqual(["completed", "failed"]);
+    expect(spendable()).toBe(8);
+  });
+
+  it("reads as already claimed once the replay recovers the first", async () => {
+    const token = await strangersToken(8);
+    // The mint swaps, and a proxy in front of it loses the answer.
+    const direct = globalThis.fetch;
+    globalThis.fetch = (async (input: unknown, init?: unknown) => {
+      const response = await direct(input as RequestInfo, init as RequestInit);
+      return String(input).endsWith("/v1/swap")
+        ? new Response(JSON.stringify({ detail: "bad gateway" }), {
+            status: 502,
+          })
+        : response;
+    }) as typeof globalThis.fetch;
+    try {
+      await expect(receiveToken(token)).rejects.toBeDefined();
+    } finally {
+      globalThis.fetch = direct;
+    }
+    const swaps = fabric.swapCount;
+
+    expect((await receiveToken(token)).outcome).toBe("duplicate");
+
+    expect(fabric.swapCount).toBe(swaps);
+    expect(receipts().map((t) => t.status)).toEqual(["completed"]);
+    expect(spendable()).toBe(8);
   });
 });
 

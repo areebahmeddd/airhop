@@ -3,9 +3,8 @@
 // Wire model (bitchat-compatible): a whole file is ONE FILE_TRANSFER (0x22)
 // packet whose payload is a BitchatFilePacket TLV. The fragment layer splits it
 // into BLE fragments that each fit one write and reassembles it on the far side,
-// so there is no
-// app-level chunking here. Airhop adds two TLV tags (channel, duration) that
-// bitchat skips.
+// so there is no app-level chunking here. Airhop adds two TLV tags (channel,
+// duration) that bitchat skips.
 //
 //   Send:    file bytes -> BitchatFilePacket TLV -> one FILE_TRANSFER packet
 //            -> fragmentPacket -> paced FRAGMENT writes, one BLE frame each
@@ -20,10 +19,10 @@ import { originTtl } from "@core/mesh/routing/origin-ttl";
 import {
   decodeFilePacket,
   encodeFilePacket,
-  ensureFileExtension,
   isAllowedMime,
   maxBytesForType,
   mimeMatchesMagic,
+  receivedFileName,
   resolveMimeType,
   typeFromMime,
   wireFileName,
@@ -38,6 +37,7 @@ import {
   signPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { t } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore, type ChatAttachment } from "@store/chat-store";
@@ -49,7 +49,9 @@ import {
 } from "@utils/attachment-failure";
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
 import { systemRow } from "@utils/message-text";
+import { stripInvisibles } from "@utils/strip-invisibles";
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 
 // ---- Types ----
 
@@ -63,11 +65,10 @@ import * as FileSystem from "expo-file-system";
 // (TransportConfig.swift), chosen the same way it chooses them in
 // BLEOutboundFragmentPlanner.spacingMs: addressed packets get the shorter one.
 //
-// These were a single 20ms taken from bitchat's bleExpectedWritePerFragmentMs,
-// which is not a spacing at all - it estimates how long a write takes, and is
-// used to size a timeout. bitchat's own note on the real constants: "Aggressive
-// pacing causes packet loss; needs 25-30ms between fragments for reliable
-// delivery."
+// Not bitchat's 20ms bleExpectedWritePerFragmentMs, which is not a spacing at
+// all: it estimates how long a write takes, and sizes a timeout. bitchat's own
+// note on the real constants: "Aggressive pacing causes packet loss; needs
+// 25-30ms between fragments for reliable delivery."
 const FRAGMENT_SPACING_DIRECTED_MS = 25;
 export const FRAGMENT_SPACING_MS = 30;
 
@@ -114,27 +115,70 @@ export interface AttachmentMeta {
 
 // Only the attachment cache files Airhop writes carry this prefix, so a
 // directory sweep never touches anything else in the shared cache dir. Exported
-// because anything else that generates an attachment file (see image-compress)
-// has to land under the same prefix, or the Storage screen would report a size
-// that its Clear button cannot free.
+// because anything else that generates an attachment file (see
+// image-compression) has to land under the same prefix, or the Storage screen
+// would report a size that its Clear button cannot free.
 //
-// The prefix bounds the ROUTINE sweeps - sweepExpiredAttachments,
-// getAttachmentCacheBytes and clearAttachmentCache - and deliberately not the
-// panic wipe, which empties the directory outright. Three classes of file sit
-// outside it and always will: documents and videos the pickers copy into their
-// own subdirectories under the user's own filenames, images small enough to send
-// without a resize, and the saved QR card. Storage therefore under-reports those
-// and Clear cannot free them. That is the right trade for a "free up space"
-// button, which must not reach into directories the OS manages, and the wrong
-// one for a wipe, which must. See wipeCacheDirectory.
+// The prefix bounds the ROUTINE sweeps (sweepExpiredAttachments,
+// getAttachmentCacheBytes and clearAttachmentCache) and deliberately not the
+// panic wipe, which empties the directory outright. Everything sent is adopted
+// under it before it goes (see adoptIntoAttachmentCache), so what sits outside
+// is a picker copy of something never sent, left by a crash, and the saved QR
+// card. That is the right trade for a "free up space" button, which must not
+// reach into directories the OS manages, and the wrong one for a wipe, which
+// must. See wipeCacheDirectory.
 export const CACHE_FILE_PREFIX = "airhop_";
+
+// Received files, apart from sent ones, so the quota below counts only what
+// others put on this phone. Under CACHE_FILE_PREFIX, so the sweeps, Storage and
+// Clear treat them like any other attachment.
+export const INCOMING_FILE_PREFIX = `${CACHE_FILE_PREFIX}in_`;
+
+// The most received media kept on disk, bitchat-ios's defaultQuotaBytes
+// (BLEIncomingFileStore). Retention is the age bound and this the size bound;
+// whichever is reached first wins. Without it anyone who announces once could
+// fill the phone's storage, a 1 MiB file at a time.
+export const INCOMING_QUOTA_BYTES = 100 * 1024 * 1024;
+
+// Make room for a received file of `reservingBytes` by deleting the oldest
+// received files first, as bitchat-ios does before every save. Sent files are
+// never touched: the person chose to keep those. A file that is evicted shows
+// as no longer on this device, the same as one retention removed.
+export function enforceIncomingQuota(reservingBytes: number): void {
+  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
+  if (!dir.exists) return;
+  const received = dir
+    .list()
+    .filter(
+      (entry): entry is FileSystem.File =>
+        entry instanceof FileSystem.File &&
+        entry.name.startsWith(INCOMING_FILE_PREFIX),
+    );
+  let used = received.reduce((sum, file) => sum + file.size, 0);
+  if (used + reservingBytes <= INCOMING_QUOTA_BYTES) return;
+  // An unreadable age sorts first: it can only be older than one we can read.
+  const writtenAt = (file: FileSystem.File): number =>
+    file.lastModified ?? file.creationTime ?? 0;
+  received.sort((a, b) => writtenAt(a) - writtenAt(b));
+  for (const file of received) {
+    if (used + reservingBytes <= INCOMING_QUOTA_BYTES) return;
+    const size = file.size;
+    try {
+      file.delete();
+      used -= size;
+    } catch {
+      // Open elsewhere, or already gone. The next one goes instead.
+    }
+  }
+}
 
 // Distinguishes two files adopted inside the same millisecond.
 let adoptSeq = 0;
 
 // Move a locally produced file into the attachment cache under the prefix, and
-// return where it landed. Used by the image resizer and the voice recorder,
-// both of which write elsewhere by default.
+// return where it landed. Used for everything sent: the image resizer, the voice
+// recorder, and the pickers' copies of a document, a video or a photo sent as
+// it is, all of which land elsewhere by default.
 //
 // The prefix is what `sweepExpiredAttachments`, `getAttachmentCacheBytes` and
 // `clearAttachmentCache` match on, so a file outside it outlives the retention
@@ -159,43 +203,86 @@ export async function adoptIntoAttachmentCache(
   }
 }
 
-export function getAttachmentCacheBytes(): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
-  return dir
-    .list()
-    .filter(
-      (entry): entry is FileSystem.File =>
-        entry instanceof FileSystem.File &&
-        entry.name.startsWith(CACHE_FILE_PREFIX),
-    )
-    .reduce((sum, file) => sum + file.size, 0);
+// Delete a file that will not be sent: the picker's, the resizer's or the
+// recorder's, adopted or not. Only a file under the cache directory: a URI
+// anywhere else is not ours to remove.
+export function discardPickerCopy(uri: string): void {
+  try {
+    if (!uri.startsWith(FileSystem.Paths.cache.uri)) return;
+    const file = new FileSystem.File(uri);
+    if (file.exists) file.delete();
+  } catch {
+    // Already gone. The wipe takes whatever a failure leaves.
+  }
 }
 
-// How long a received or sent attachment stays on disk.
-//
-// Seven days, matching bitchat's media retention sweep. The panic wipe was the
-// only thing that ever removed an attachment, so a photo from a protest months
-// ago was still on the device: the one piece of user content that outlived the
-// conversation it belonged to. Files sit in the OS cache directory, which the
-// system may reclaim under storage pressure, but that is an optimisation the OS
-// makes for its own reasons and not a retention guarantee anyone should rely on.
+// iOS keeps two copies the cache never sees, both under tmp: the system hands
+// a picked document over as a copy in `tmp/<bundle id>-Inbox` before the picker
+// copies it again, and a recorded video stays in tmp after the picker copies it
+// out. Android has neither.
+function temporaryDirectory(): FileSystem.Directory | null {
+  if (Platform.OS !== "ios") return null;
+  try {
+    const tmp = new FileSystem.Directory(
+      FileSystem.Paths.document.parentDirectory,
+      "tmp",
+    );
+    return tmp.exists ? tmp : null;
+  } catch {
+    return null;
+  }
+}
+
+// Those two copies: tmp's top-level files and the system's document Inbox,
+// nothing deeper, since other libraries keep work in flight in tmp's other
+// directories. Empty on Android.
+function temporaryLeftovers(): FileSystem.File[] {
+  const tmp = temporaryDirectory();
+  if (tmp === null) return [];
+  const files: FileSystem.File[] = [];
+  for (const entry of tmp.list()) {
+    if (entry instanceof FileSystem.File) {
+      files.push(entry);
+    } else if (entry.name.endsWith("-Inbox")) {
+      for (const inner of entry.list()) {
+        if (inner instanceof FileSystem.File) files.push(inner);
+      }
+    }
+  }
+  return files;
+}
+
+// What the Storage screen reports and Clear removes: every attachment under
+// the prefix, and on iOS the copies above.
+function attachmentFiles(): FileSystem.File[] {
+  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
+  const cached = dir.exists
+    ? dir
+        .list()
+        .filter(
+          (entry): entry is FileSystem.File =>
+            entry instanceof FileSystem.File &&
+            entry.name.startsWith(CACHE_FILE_PREFIX),
+        )
+    : [];
+  return [...cached, ...temporaryLeftovers()];
+}
+
+export function getAttachmentCacheBytes(): number {
+  return attachmentFiles().reduce((sum, file) => sum + file.size, 0);
+}
+
+// How long a received or sent attachment stays on disk by default: seven days,
+// matching bitchat's media retention sweep. The person can choose 14 or 30 in
+// General (settings-store's mediaRetentionDays), and the received-media quota
+// above can remove a file sooner. Files sit in the OS cache directory, which
+// the system may reclaim under storage pressure, but that is not a retention
+// guarantee anyone should rely on.
 //
 // Seven days is long enough that a thread stays browsable across a week away
 // from signal, and short enough that a seized phone is not an archive.
 export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Delete attachments older than MEDIA_MAX_AGE_MS. Returns the bytes freed.
-//
-// Covers outgoing as well as incoming: both are written under the same prefix,
-// and a photo you sent is exactly as sensitive as one you received. Scheduled by
-// services/media-retention: at launch, and throttled on each return to the app,
-// since a foreground service can keep the process alive for weeks.
-//
-// A file whose age cannot be read is kept. The alternative is deleting user
-// content on the strength of a missing timestamp, and on Android
-// `creationTime` is genuinely absent below API 26, so an unreadable age is an
-// expected state rather than a corrupt one.
 // Most files removed in one pass.
 //
 // Each delete is a synchronous native call, and this runs at launch, so an
@@ -206,54 +293,77 @@ export const MEDIA_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 // being created behind them.
 const MAX_SWEEP_DELETIONS = 200;
 
+// The time a sent file was put under the prefix, which adoptIntoAttachmentCache
+// (and a live burst's note) writes into its name.
+const ADOPTED_AT = new RegExp(`^${CACHE_FILE_PREFIX}(\\d+)_`);
+
+// When a file reached this device. An adopted file is moved, and a move keeps
+// the source's modification time, so a document picked on iOS would otherwise
+// carry the date it was written and expire the moment it was sent.
+function writtenAtMs(entry: FileSystem.File): number | null {
+  const adopted = ADOPTED_AT.exec(entry.name);
+  if (adopted !== null) return Number(adopted[1]);
+  return entry.lastModified ?? entry.creationTime ?? null;
+}
+
+// Bytes freed by deleting `entry` if it is older than the window, or null when
+// it stays.
+function deleteIfExpired(
+  entry: FileSystem.File,
+  now: number,
+  maxAgeMs: number,
+): number | null {
+  const writtenAt = writtenAtMs(entry);
+  if (writtenAt === null) return null;
+  // A timestamp in the future is a clock that moved, not a fresh file. Left
+  // alone: deleting on a bad clock is the worse failure of the two.
+  if (now - writtenAt <= maxAgeMs) return null;
+  const size = entry.size;
+  try {
+    entry.delete();
+    return size;
+  } catch {
+    // Mid-write, locked, or already gone. It will be caught next launch.
+    return null;
+  }
+}
+
+// Delete attachments older than the window. Returns the bytes freed.
+//
+// Covers outgoing as well as incoming: both are written under the same prefix,
+// and a photo you sent is exactly as sensitive as one you received. Scheduled by
+// services/media-retention: at launch, and throttled on each return to the app,
+// since a foreground service can keep the process alive for weeks.
+//
+// A file whose age cannot be read is kept. The alternative is deleting user
+// content on the strength of a missing timestamp, and on Android
+// `creationTime` is genuinely absent below API 26, so an unreadable age is an
+// expected state rather than a corrupt one.
 export function sweepExpiredAttachments(
   now: number = Date.now(),
   maxAgeMs: number = MEDIA_MAX_AGE_MS,
 ): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
   let freed = 0;
   let deleted = 0;
-  for (const entry of dir.list()) {
+  for (const file of attachmentFiles()) {
     if (deleted >= MAX_SWEEP_DELETIONS) break;
-    if (
-      !(entry instanceof FileSystem.File) ||
-      !entry.name.startsWith(CACHE_FILE_PREFIX)
-    ) {
-      continue;
-    }
-    const writtenAt = entry.lastModified ?? entry.creationTime;
-    if (writtenAt === null || writtenAt === undefined) continue;
-    // A timestamp in the future is a clock that moved, not a fresh file. Left
-    // alone: deleting on a bad clock is the worse failure of the two.
-    if (now - writtenAt <= maxAgeMs) continue;
-    const size = entry.size;
-    try {
-      entry.delete();
-      freed += size;
-      deleted++;
-    } catch {
-      // Mid-write, locked, or already gone. It will be caught next launch.
-    }
+    const size = deleteIfExpired(file, now, maxAgeMs);
+    if (size === null) continue;
+    freed += size;
+    deleted++;
   }
   return freed;
 }
 
 export function clearAttachmentCache(): number {
-  const dir = new FileSystem.Directory(FileSystem.Paths.cache);
-  if (!dir.exists) return 0;
   let freed = 0;
-  for (const entry of dir.list()) {
-    if (
-      entry instanceof FileSystem.File &&
-      entry.name.startsWith(CACHE_FILE_PREFIX)
-    ) {
-      freed += entry.size;
-      try {
-        entry.delete();
-      } catch {
-        // Best-effort: skip files that are mid-write or already gone.
-      }
+  for (const file of attachmentFiles()) {
+    const size = file.size;
+    try {
+      file.delete();
+      freed += size;
+    } catch {
+      // Best-effort: skip files that are mid-write or already gone.
     }
   }
   return freed;
@@ -261,21 +371,16 @@ export function clearAttachmentCache(): number {
 
 // Empty the whole cache directory, for the panic wipe alone.
 //
-// clearAttachmentCache above deletes only top-level files carrying our own
-// prefix, which is right for the periodic sweep and wrong for a wipe, because
-// three classes of file the user would absolutely expect to be destroyed do not
+// clearAttachmentCache above deletes only files carrying our own prefix (and
+// the iOS tmp copies), which is right for a "free up space" button and wrong
+// for a wipe, because files the user would expect to be destroyed do not
 // match it:
 //
-//   * documents and videos the user SENT. The pickers copy the original into
-//     their own cache subdirectory under its real filename, and that URI is what
-//     gets attached, so it carries neither our prefix nor our directory.
-//   * images small enough to send unmodified. Only the resize path adopts a file
-//     into the attachment cache and gives it the prefix; an in-budget JPEG stays
-//     wherever the picker left it.
-//   * the saved QR card, written as `airhop-qr-<peerID>.png`. A hyphen, not the
-//     underscore the prefix uses, so it was swept by nothing - a PNG of the
-//     wiped identity's full contact card, under a filename containing its peer
-//     ID.
+//   * the pickers' copies of anything picked and never sent, which sit in
+//     their own subdirectories under the user's own filenames.
+//   * the saved QR card, `airhop-qr-<peerID>.png`: a hyphen, not the prefix's
+//     underscore, and a PNG of the identity's full contact card named after
+//     its peer ID.
 //
 // Everything under the cache directory belongs to this app and is by definition
 // regenerable, so a wipe should take all of it rather than chase prefixes that
@@ -289,7 +394,12 @@ export async function wipeCacheDirectory(): Promise<void> {
   // The root is emptied, not removed. It is where the next attachment lands,
   // and a wipe that deletes it outright leaves the first write after
   // re-onboarding to fail on a directory nothing recreated.
-  await emptyDirectory(dir, { deleted: 0 }, 0);
+  const progress = { deleted: 0 };
+  await emptyDirectory(dir, progress, 0);
+  // iOS tmp holds the pickers' other copies (see temporaryDirectory). A wipe
+  // takes all of it; nothing of the app's own is mid-write while one runs.
+  const tmp = temporaryDirectory();
+  if (tmp !== null) await emptyDirectory(tmp, progress, 0);
 }
 
 // How many entries to remove before handing the thread back.
@@ -357,10 +467,10 @@ async function emptyDirectory(
 // complete, and it has no way to ask for it.
 //
 // "Paced" is in the names because TypeScript will not defend that boolean.
-// These were BroadcastFn/UnicastFn, the names message-router uses for its
-// fire-and-forget `=> void` pair, and a `Promise<boolean>` is silently
-// assignable to a `void` return: crossing the two type-checks, and the only
-// symptom is dropped fragments on a busy radio.
+// message-router's BroadcastFn/UnicastFn are a fire-and-forget `=> void` pair,
+// and a `Promise<boolean>` is silently assignable to a `void` return: crossing
+// the two type-checks, and the only symptom is dropped fragments on a busy
+// radio.
 export type PacedBroadcastFn = (packet: Packet) => Promise<boolean>;
 export type PacedUnicastFn = (
   recipientPeerID: string,
@@ -375,7 +485,7 @@ export type SendOutcome = (delivered: boolean) => void;
 // Seal a file TLV inside the peer's Noise session as payload 0x20, returning
 // the NOISE_ENCRYPTED packet ready to fragment. Returns null when the peer has
 // not proven it can read one (no session, or no authenticated bit 8), and the
-// caller then falls back to the signed cleartext form.
+// DM then does not go: it is never sent in the clear.
 //
 // Injected rather than reached for, so this service keeps knowing nothing about
 // sessions, capabilities or the registry.
@@ -398,6 +508,14 @@ export type UsesBleRadioFn = (
 // refusal is treated as busy. Never asked for a channel file, which any link
 // can carry.
 export type IsReachableFn = (recipientPeerID: string) => boolean;
+
+// Answer a sealed photo or voice note with a DELIVERED carrying its stable ID,
+// which is what the sender's bubble is keyed by (bitchat's private media
+// receipt). Injected for the same reason as SealFileFn.
+export type AckPrivateFileFn = (
+  senderPeerID: string,
+  messageID: string,
+) => void;
 
 // NOTE: naming lives in wireFileName(), which owns the extension and bitchat's
 // stable-ID shape together. Nothing here may put localized UI copy on the wire:
@@ -478,6 +596,8 @@ export class FileTransferService {
   private readonly sealFile?: SealFileFn;
   private readonly usesBleRadio?: UsesBleRadioFn;
   private readonly isReachable?: IsReachableFn;
+  private readonly getDegree: () => number;
+  private readonly ackPrivateFile?: AckPrivateFileFn;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -490,6 +610,10 @@ export class FileTransferService {
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
     isReachable?: IsReachableFn,
+    // Our neighbour count, which a public file's TTL follows (see
+    // origin-ttl.ts). 0 (sparse) when not given.
+    getDegree: () => number = () => 0,
+    ackPrivateFile?: AckPrivateFileFn,
   ) {
     this.identity = identity;
     this.broadcast = broadcast;
@@ -498,6 +622,8 @@ export class FileTransferService {
     this.sealFile = sealFile;
     this.usesBleRadio = usesBleRadio;
     this.isReachable = isReachable;
+    this.getDegree = getDegree;
+    this.ackPrivateFile = ackPrivateFile;
   }
 
   // Receive a fully reassembled FILE_TRANSFER packet from the fragment layer.
@@ -560,9 +686,8 @@ export class FileTransferService {
     channel: string,
     onOutcome?: SendOutcome,
   ): void {
-    // Per-type cap, matching bitchat: over it the far side refuses the file, so
-    // fail here with something the sender can act on rather than after a minute
-    // of progress that was never going to land.
+    // Per-type send budget (see maxBytesForType), checked before anything is
+    // queued so the sender gets a reason about their file, not a transfer.
     const cap = maxBytesForType(meta.type);
     if (fileBytes.length > cap) {
       throw new AttachmentTooLargeError(
@@ -600,41 +725,33 @@ export class FileTransferService {
       return;
     }
 
-    // A private file goes inside the Noise session when the recipient has
-    // proven it can read one.
-    //
-    // The cleartext form below is signed, so a relay cannot forge its sender or
-    // contents, but it is not confidential and every node the file crosses sees
-    // all of it. bitchat classifies that form as the legacy migration fallback
-    // and has scheduled its removal.
-    //
-    // The gate is the authenticated capability, never the announced one. An
-    // announce is self-signed with a key it carries, so anyone who reads a
-    // victim's public Noise key off the air can announce any bits under that
-    // peer ID. Gating on it would let anyone in range clear bit 8 for a peer
-    // and force every attachment into the clear.
-    const sealed = isDM
-      ? (this.sealFile?.(recipientPeerID, tlv) ?? null)
-      : null;
-
-    const pkt: Packet =
-      sealed ??
-      (() => {
-        const raw: Packet = {
-          type: PacketType.FILE_TRANSFER,
-          ttl: isDM ? 7 : originTtl(),
-          flags: isDM ? Flags.HAS_RECIPIENT | Flags.SIGNED : Flags.SIGNED,
-          senderID: hexToBytes(this.identity.peerID),
-          recipientID: isDM
-            ? hexToBytes(recipientPeerID)
-            : new Uint8Array(BROADCAST_ID),
-          timestamp: Date.now(),
-          signature: new Uint8Array(64),
-          payload: tlv,
-        };
-        raw.signature = signPacket(raw, this.identity.signingPrivKey);
-        return raw;
-      })();
+    // A private file goes only inside the Noise session, sealed as 0x20. The
+    // signed cleartext form is not confidential, every node it crosses reads
+    // the whole file, and bitchat classes it as a legacy fallback it is
+    // removing, so a DM that cannot be sealed does not go.
+    let pkt: Packet;
+    if (isDM) {
+      const sealed = this.sealFile?.(recipientPeerID, tlv) ?? null;
+      if (sealed === null) {
+        onOutcome?.(false);
+        return;
+      }
+      pkt = sealed;
+    } else {
+      pkt = {
+        type: PacketType.FILE_TRANSFER,
+        // A public file crosses Bluetooth as fragments, which inherit this TTL
+        // and are relayed as fragments are, so it takes their ceiling.
+        ttl: originTtl(PacketType.FRAGMENT, this.getDegree()),
+        flags: Flags.SIGNED,
+        senderID: hexToBytes(this.identity.peerID),
+        recipientID: new Uint8Array(BROADCAST_ID),
+        timestamp: Date.now(),
+        signature: new Uint8Array(64),
+        payload: tlv,
+      };
+      pkt.signature = signPacket(pkt, this.identity.signingPrivKey);
+    }
 
     // One packet becomes many BLE fragments; a small file may fit in one frame.
     const items: Packet[] =
@@ -822,8 +939,8 @@ export class FileTransferService {
     if (tx.remaining <= 0) {
       this.outbound.delete(transferId);
       store.finish(transferId);
-      // Every fragment was accepted by the radio. That is as much as this side
-      // can ever know: files carry no delivery receipt on either app.
+      // Every fragment was accepted by the radio. Only a sealed photo or voice
+      // note hears more, through its stable-ID DELIVERED; nothing else does.
       tx.onOutcome?.(true);
       return;
     }
@@ -904,52 +1021,32 @@ export class FileTransferService {
       return;
     }
 
-    // A directed attachment is for its addressee, not for whoever relays it.
-    //
-    // FILE_TRANSFER floods like everything else, so a DM attachment travelling
-    // from A to B is forwarded by B onto all of B's other links, and by every
-    // node after that, out to TTL 7. Without this check each of those nodes fell
-    // into the `dm:<sender>` branch below, wrote the file to its own cache and
-    // rendered it in its own thread with A. A private photo sent to one person
-    // was therefore readable by every device within seven hops of either end,
-    // with no key, no session and no signature needed - only proximity.
-    //
-    // Every other directed handler in mesh-service already scopes itself this
-    // way (onNoiseHandshake, onNoiseEncrypted, onDREncrypted, onPing, onPong);
-    // this path was the exception. bitchat scopes it in
-    // BLEFileTransferPolicy.deliveryPlan, which returns "relay only, do not
-    // deliver" when recipientID is not the local peer.
-    //
-    // Relaying is unaffected: that already happened in handleRaw before this
-    // point, so forwarding for other people still works. Only the decision to
-    // DELIVER is narrowed.
+    // A directed attachment is for its addressee alone. A relay forwards it
+    // (handleRaw already has) but must not deliver it: otherwise every node on
+    // the path writes a private file to its own cache and renders it in its own
+    // thread with the sender. bitchat scopes it the same way in
+    // BLEFileTransferPolicy.deliveryPlan ("relay only, do not deliver").
     if (!sealed && !isBroadcast(packet) && !directedToMe) {
       return;
     }
 
-    // The channel tag is attacker-controlled: it is an arbitrary UTF-8 string
-    // read straight off the wire, so it must never decide unchecked which room
-    // the attachment lands in. Two rules bring it in line with the rest of the
-    // app, both mirroring what already exists elsewhere:
+    // The channel tag is attacker-controlled, an arbitrary string read off the
+    // wire, so it never decides unchecked where the file lands:
     //
-    //   - It must name a room the user actually joined. onChannelMsg makes the
-    //     same check with the same reasoning ("any peer in radio range could
-    //     inject arbitrary channels into someone's list"), and this path is the
-    //     one that was still calling addChannel() on an unvalidated name.
-    //   - Media may only travel where canSendMedia() allows. The send side has
-    //     always refused to put an attachment into a private #channel or a
-    //     group: an attachment is signed but NOT encrypted, so one landing in an
-    //     encrypted room breaks exactly the promise that room makes. Enforcing
-    //     it only when sending meant an outsider who knew the room's name could
-    //     do what a member is forbidden from doing.
+    //   - It may name only where media may travel. An attachment is signed but
+    //     not encrypted, so one landing in a private #channel or a group breaks
+    //     the promise that room makes.
+    //   - It may never name a DM. A DM is addressed by recipient ID and never
+    //     tagged (bitchat routes DM attachments the same way), so a tag naming
+    //     one is a forgery that would put the file in that contact's thread,
+    //     which shows no sender. acceptPublicMessage refuses the same for text.
+    //   - It must name a room the user joined, as onChannelMsg requires, or any
+    //     peer in range could add rooms to someone's list.
     //
-    // Only the tag is validated. The derived fallbacks below are computed here
-    // from the packet's own routing, so they are not attacker-chosen: a DM is
-    // addressed by recipient ID and carries no tag at all (bitchat routes DM
-    // attachments the same way), which is why this is not simply a blanket
-    // membership check that would drop a first attachment from a new contact.
+    // The untagged fallbacks below come from the packet's own routing, not from
+    // the sender's choice of string.
     if (fp.channel !== undefined) {
-      if (!canSendMedia(fp.channel)) return;
+      if (fp.channel.startsWith("dm:") || !canSendMedia(fp.channel)) return;
       if (!useChatStore.getState().channels.includes(fp.channel)) return;
     }
 
@@ -958,23 +1055,55 @@ export class FileTransferService {
     const channel =
       fp.channel ??
       (isBroadcast(packet) ? BRIDGE_CHANNEL : `dm:${senderPeerID}`);
+    const isDM = channel.startsWith("dm:");
+    // An untagged broadcast lands in the public room, and someone who left it
+    // stays out: a stranger's photo must not put it back in their list.
+    // Silent, as for text: it is not the sender's failure.
+    if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
     const type = typeFromMime(fp.mimeType);
 
-    // Repair the extension from the MIME before writing: the photo library and
-    // the audio player read the type off it and ignore the MIME. Truncate
-    // first, so a long name loses its middle rather than its extension.
-    const safeName = ensureFileExtension(
+    // A sealed photo or voice note is keyed by bitchat's stable ID, the one the
+    // sender's bubble waits to hear back. A second arrival is the sender
+    // retrying after a lost receipt, so it is answered again, not stored twice.
+    const stableID =
+      sealed && isDM
+        ? privateMediaStableID(senderPeerID, this.identity.peerID, fp.fileName)
+        : null;
+    if (
+      stableID !== null &&
+      (useChatStore.getState().messages[channel] ?? []).some(
+        (m) => m.id === stableID,
+      )
+    ) {
+      this.ackPrivateFile?.(senderPeerID, stableID);
+      return;
+    }
+
+    // Validated above, so this is what the share sheet and the player are told.
+    const mimeType = fp.mimeType?.trim().toLowerCase();
+    // The extension follows the validated MIME before writing: the photo
+    // library and the audio player read the type off it and ignore the MIME.
+    // Truncate first, so a long name loses its middle rather than its
+    // extension.
+    const safeName = receivedFileName(
       (fp.fileName || "file").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 64),
-      fp.mimeType ?? "",
+      mimeType ?? "",
     );
     const file = new FileSystem.File(
       FileSystem.Paths.cache,
-      `${CACHE_FILE_PREFIX}${String(Date.now())}_${safeName}`,
+      `${INCOMING_FILE_PREFIX}${String(Date.now())}_${safeName}`,
     );
     try {
+      enforceIncomingQuota(fp.content.length);
       file.create({ overwrite: true, intermediates: true });
       file.write(fp.content);
     } catch {
+      // Half a file would count toward Storage until the age sweep.
+      try {
+        file.delete();
+      } catch {
+        // Never created.
+      }
       // Decoded and validated, then the disk refused it. Worth saying out loud:
       // unlike the checks above, this one is the receiver's problem to fix
       // (free space, permissions) rather than the sender's to resend around.
@@ -982,9 +1111,11 @@ export class FileTransferService {
       return;
     }
 
-    useChatStore.getState().addChannel(channel);
+    // A first attachment from someone opens the conversation, as a first DM
+    // does. A room is never created here: only joined ones get this far.
+    if (isDM) useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
-      id: `ft-${senderPeerID}-${Date.now()}`,
+      id: stableID ?? `ft-${senderPeerID}-${Date.now()}`,
       channel,
       senderID: senderPeerID,
       senderNickname: this.resolveNickname(senderPeerID),
@@ -996,11 +1127,19 @@ export class FileTransferService {
       attachment: {
         type,
         uri: file.uri,
-        name: fp.fileName ?? undefined,
-        mimeType: fp.mimeType ?? undefined,
+        // Shown in the bubble, the notification and the share sheet's title,
+        // where an override could disguise the extension.
+        name:
+          fp.fileName !== undefined
+            ? stripInvisibles(fp.fileName, { singleLine: true })
+            : undefined,
+        mimeType,
         durationMs: fp.durationMs ?? undefined,
         sizeBytes: fp.content.length,
       },
     });
+    // After the write, so a file the disk refused is not acknowledged. Also
+    // when a cleared thread dropped the row: it did arrive.
+    if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
   }
 }

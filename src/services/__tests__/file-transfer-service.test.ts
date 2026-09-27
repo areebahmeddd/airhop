@@ -10,24 +10,102 @@
 // never reassembles. The assertions below are therefore about WHEN packets are
 // handed to the transport, not just that they are.
 
-import { decodeFilePacket } from "@core/mesh/wire/file-packet";
+import {
+  decodeFilePacket,
+  encodeFilePacket,
+} from "@core/mesh/wire/file-packet";
 import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
-import { FileTransferService } from "../file-transfer-service";
+import {
+  CACHE_FILE_PREFIX,
+  enforceIncomingQuota,
+  FileTransferService,
+  INCOMING_FILE_PREFIX,
+  INCOMING_QUOTA_BYTES,
+} from "../file-transfer-service";
 
-// The service only touches expo-file-system on the RECEIVE path; a shallow
-// mock keeps the module import from pulling in native code.
-jest.mock("expo-file-system", () => ({
-  File: class {},
-  Directory: class {},
-  Paths: { cache: {} },
-}));
+// The service only touches expo-file-system on the RECEIVE path: one flat
+// in-memory cache directory, named files, and a switch to make writes fail.
+// On globalThis because jest.mock factories are hoisted above module bindings.
+interface DiskEntry {
+  bytes: Uint8Array;
+  lastModified: number | null;
+}
+declare global {
+  var __cache: Map<string, DiskEntry>;
+  var __writeFails: boolean;
+}
+globalThis.__cache = new Map();
+globalThis.__writeFails = false;
+
+jest.mock("expo-file-system", () => {
+  class File {
+    readonly name: string;
+    constructor(_dir: unknown, name: string) {
+      this.name = name;
+    }
+    get uri(): string {
+      return `file:///cache/${this.name}`;
+    }
+    get exists(): boolean {
+      return globalThis.__cache.has(this.name);
+    }
+    get size(): number {
+      return globalThis.__cache.get(this.name)?.bytes.length ?? 0;
+    }
+    get lastModified(): number | null {
+      return globalThis.__cache.get(this.name)?.lastModified ?? null;
+    }
+    get creationTime(): number | null {
+      return null;
+    }
+    create(): void {
+      globalThis.__cache.set(this.name, {
+        bytes: new Uint8Array(0),
+        lastModified: Date.now(),
+      });
+    }
+    write(bytes: Uint8Array): void {
+      if (globalThis.__writeFails) throw new Error("ENOSPC");
+      globalThis.__cache.set(this.name, {
+        bytes,
+        lastModified: Date.now(),
+      });
+    }
+    delete(): void {
+      if (!globalThis.__cache.delete(this.name)) throw new Error("ENOENT");
+    }
+  }
+  class Directory {
+    get exists(): boolean {
+      return true;
+    }
+    list(): File[] {
+      return [...globalThis.__cache.keys()].map((n) => new File(null, n));
+    }
+  }
+  return { File, Directory, Paths: { cache: {} } };
+});
 
 const IDENTITY = {
   peerID: "aabbccdd00112233",
   signingPrivKey: new Uint8Array(32).fill(7),
 };
+
+// Stands in for the Noise seal: a DM attachment only ever leaves sealed.
+const SEAL = (recipientPeerID: string, tlv: Uint8Array): Packet => ({
+  type: PacketType.NOISE_ENCRYPTED,
+  ttl: 7,
+  flags: 0,
+  senderID: hexToBytes(IDENTITY.peerID),
+  recipientID: hexToBytes(recipientPeerID),
+  timestamp: Date.now(),
+  signature: new Uint8Array(64),
+  payload: tlv,
+});
 
 const META = {
   type: "image" as const,
@@ -36,9 +114,9 @@ const META = {
   durationMs: 0,
 };
 
-// The transport now answers whether it ACCEPTED the packet, and the pacer waits
-// for that answer before offering the next fragment. `accepted` lets a test play
-// a radio that is refusing writes, which is the case that used to lose files.
+// The transport answers whether it ACCEPTED the packet, and the pacer waits for
+// that answer before offering the next fragment. `accepted` lets a test play a
+// radio that is refusing writes, the case where a file can be lost.
 function makeService(accepted = true, usesBleRadio?: () => boolean) {
   const broadcast = jest.fn().mockResolvedValue(accepted);
   const unicast = jest.fn().mockResolvedValue(accepted);
@@ -47,7 +125,7 @@ function makeService(accepted = true, usesBleRadio?: () => boolean) {
     broadcast,
     unicast,
     (peerID) => peerID,
-    undefined,
+    SEAL,
     usesBleRadio,
   );
   return { service, broadcast, unicast };
@@ -86,15 +164,11 @@ describe("outbound pacing", () => {
     return f;
   })();
 
-  // Fragment spacing exists for the Bluetooth radio, which drops writes handed
-  // over faster than it can make them. A link that is not a radio needs no gap,
-  // and pacing one anyway was the whole reason the WiFi fast path moved a file
-  // no faster than Bluetooth did.
-  // A second transfer starting while the first is mid-write used to open a
+  // A second transfer starting while the first is mid-write must not open a
   // parallel drain loop: `drainTimer` is cleared before the transport is
-  // awaited, so nothing stopped a fresh timer being set in that window. Two
-  // loops on one queue hand the radio fragments at twice the spacing, which is
-  // exactly the loss the spacing prevents.
+  // awaited, so a fresh timer could be set in that window. Two loops on one
+  // queue hand the radio fragments at twice the spacing, which is exactly the
+  // loss the spacing prevents.
   it("does not open a second drain while one is with the transport", async () => {
     // Collected in an array rather than a single binding: TypeScript cannot see
     // that a promise executor runs synchronously, so a plain `let` narrows to
@@ -112,6 +186,7 @@ describe("outbound pacing", () => {
       broadcast,
       unicast,
       (peerID) => peerID,
+      SEAL,
     );
 
     service.sendBytes(FILE, META, "dm:1111222233334444");
@@ -131,6 +206,10 @@ describe("outbound pacing", () => {
     expect(unicast.mock.calls.length).toBeGreaterThan(1);
   });
 
+  // Fragment spacing exists for the Bluetooth radio, which drops writes handed
+  // over faster than it can make them. A link that is not a radio needs no gap,
+  // and pacing one anyway would make the WiFi fast path no faster than
+  // Bluetooth.
   describe("pacing by transport", () => {
     it("waits the Bluetooth gap when the path is Bluetooth", async () => {
       const { service, unicast } = makeService(true, () => true);
@@ -174,7 +253,7 @@ describe("outbound pacing", () => {
 
     service.sendBytes(FILE, META, "#test");
 
-    // The burst is the bug: nothing should have hit the transport yet.
+    // No burst: nothing should have hit the transport yet.
     expect(broadcast).not.toHaveBeenCalled();
     expect(service.pendingCount).toBeGreaterThan(1);
   });
@@ -228,9 +307,8 @@ describe("outbound pacing", () => {
   });
 
   it("rejects a photo over the image cap before queueing anything", () => {
-    // bitchat caps photos at 512 KiB, below the 1 MiB file ceiling. Past it the
-    // peer refuses the whole file, so this has to fail here rather than after a
-    // minute of progress that was never going to land.
+    // A photo's send budget is 512 KiB, below the 1 MiB file ceiling, as
+    // bitchat's is. Past it the send fails here, before anything is queued.
     const { service, broadcast } = makeService();
     const tooBig = new Uint8Array(512 * 1024 + 1);
 
@@ -257,11 +335,11 @@ describe("outbound pacing", () => {
   });
 });
 
-// The bug these guard: two phones sending a photo to each other at the same
-// time. The fragment spacing already sits at what BLE carries one-way, so the
-// second direction fills the stack's write queue and it starts refusing. A refusal
-// that is dropped is a fragment the receiver can never ask for, so its stream
-// stalls at a couple of percent and dies on the idle timeout, while the sender
+// Two phones sending a photo to each other at the same time. The fragment
+// spacing already sits at what BLE carries one-way, so the second direction
+// fills the stack's write queue and it starts refusing. A refusal that is
+// dropped is a fragment the receiver can never ask for, so its stream stalls
+// at a couple of percent and dies on the idle timeout, while the sender
 // marches to 100% and reports "sent". Nothing on this wire acknowledges a
 // fragment, so holding on to a refused one is the only thing that can save it.
 describe("radio backpressure", () => {
@@ -370,20 +448,37 @@ describe("wire format (BitchatFilePacket)", () => {
     durationMs: 0,
   };
 
-  it("sends a small DM file as one FILE_TRANSFER packet decoding to the file", async () => {
+  it("sends a small DM file sealed, carrying the file", async () => {
     const { service, unicast } = makeService();
     service.sendBytes(PNG, IMG_META, "dm:1122334455667788");
     await tick(2);
 
     expect(unicast).toHaveBeenCalledTimes(1);
     const pkt = unicast.mock.calls[0][1] as Packet;
-    expect(pkt.type).toBe(PacketType.FILE_TRANSFER);
+    expect(pkt.type).toBe(PacketType.NOISE_ENCRYPTED);
     const fp = decodeFilePacket(pkt.payload)!;
     expect(fp.fileName).toBe("pic.png");
     expect(fp.mimeType).toBe("image/png");
     expect(Array.from(fp.content)).toEqual(Array.from(PNG));
     // A DM carries no channel tag; it is routed by the recipient ID.
     expect(fp.channel).toBeUndefined();
+  });
+
+  it("never sends a DM file in the clear when it cannot be sealed", async () => {
+    const unicast = jest.fn().mockResolvedValue(true);
+    const service = new FileTransferService(
+      IDENTITY,
+      jest.fn().mockResolvedValue(true),
+      unicast,
+      (peerID) => peerID,
+      () => null,
+    );
+    const outcome = jest.fn();
+    service.sendBytes(PNG, IMG_META, "dm:1122334455667788", outcome);
+    await tick(2);
+
+    expect(outcome).toHaveBeenCalledWith(false);
+    expect(unicast).not.toHaveBeenCalled();
   });
 
   it("tags a channel attachment with its channel for routing", async () => {
@@ -547,7 +642,7 @@ describe("a DM to a peer who has left", () => {
       broadcast,
       unicast,
       (peerID) => peerID,
-      undefined,
+      SEAL,
       undefined,
       () => false,
     );
@@ -569,7 +664,7 @@ describe("a DM to a peer who has left", () => {
       jest.fn().mockResolvedValue(true),
       unicast,
       (peerID) => peerID,
-      undefined,
+      SEAL,
       undefined,
       () => true,
     );
@@ -587,5 +682,242 @@ describe("a file the codec cannot carry", () => {
     service.sendBytes(new Uint8Array(0), META, "#test", outcome);
     expect(outcome).toHaveBeenCalledWith(false);
     expect(service.pendingCount).toBe(0);
+  });
+});
+
+// What a received file may leave on disk, and where it may land.
+describe("receiving a file", () => {
+  const SENDER_BYTES = new Uint8Array([
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+  ]);
+  const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6]);
+
+  function broadcast(payload: Uint8Array): Packet {
+    return {
+      type: PacketType.FILE_TRANSFER,
+      ttl: 7,
+      flags: 0,
+      senderID: SENDER_BYTES,
+      recipientID: new Uint8Array(8),
+      timestamp: Date.now(),
+      signature: new Uint8Array(64),
+      payload,
+    };
+  }
+
+  function photo(): Uint8Array {
+    const tlv = encodeFilePacket({
+      fileName: "photo.jpg",
+      mimeType: "image/jpeg",
+      content: JPEG,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    return tlv;
+  }
+
+  // The receive path is async inside a void call.
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  }
+
+  function put(name: string, bytes: number, lastModified: number | null): void {
+    globalThis.__cache.set(name, {
+      bytes: new Uint8Array(bytes),
+      lastModified,
+    });
+  }
+
+  beforeEach(() => {
+    jest.useRealTimers();
+    globalThis.__cache.clear();
+    globalThis.__writeFails = false;
+    useChatStore.getState().clearAll();
+  });
+
+  it("stores a received file under the incoming prefix", async () => {
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    const names = [...globalThis.__cache.keys()];
+    expect(names).toHaveLength(1);
+    expect(names[0].startsWith(INCOMING_FILE_PREFIX)).toBe(true);
+    expect(useChatStore.getState().messages["#bluetooth"]).toHaveLength(1);
+  });
+
+  // The shown name is the sender's word; nothing in it may disguise what it is.
+  it("stores a received name without its bidi controls, under the validated type", async () => {
+    const tlv = encodeFilePacket({
+      fileName: "invoice\u202Efdp.exe",
+      mimeType: "IMAGE/JPEG",
+      content: JPEG,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(tlv));
+    await settle();
+    const [message] = useChatStore.getState().messages["#bluetooth"] ?? [];
+    expect(message?.attachment?.name).toBe("invoicefdp.exe");
+    expect(message?.attachment?.mimeType).toBe("image/jpeg");
+    // On disk it is what its bytes are, whatever the sender called it.
+    expect([...globalThis.__cache.keys()][0]?.endsWith(".jpg")).toBe(true);
+  });
+  it("does not put back a public room the person left, nor keep the file", async () => {
+    useChatStore.getState().removeChannel("#bluetooth");
+    expect(useChatStore.getState().channels).not.toContain("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(useChatStore.getState().channels).not.toContain("#bluetooth");
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
+  // A DM is addressed by recipient ID and never tagged, so a tag naming one is
+  // a forgery: it would put the file in that contact's thread, unlabelled.
+  it("refuses a public file tagged with a direct message thread", async () => {
+    const contact = "dm:99aa99aa99aa99aa";
+    useChatStore.getState().addChannel(contact);
+    const tlv = encodeFilePacket({
+      fileName: "photo.jpg",
+      mimeType: "image/jpeg",
+      content: JPEG,
+      channel: contact,
+    });
+    if (tlv === null) throw new Error("no TLV");
+    const { service } = makeService();
+    service.onFileTransfer(broadcast(tlv));
+    service.onSealedFile("1122334455667788", tlv);
+    await settle();
+    expect(useChatStore.getState().messages[contact] ?? []).toEqual([]);
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
+  // bitchat's private media receipt: the row takes the stable ID both ends
+  // derive, and the sender hears it back as a DELIVERED.
+  describe("a sealed photo under bitchat's stable-ID name", () => {
+    const SENDER = "1122334455667788";
+    const NAME = "img_1cc2760d-76aa-40c3-8013-c7faa6c2ef99.jpg";
+    const STABLE_ID = privateMediaStableID(SENDER, IDENTITY.peerID, NAME);
+
+    function stablePhoto(fileName = NAME): Uint8Array {
+      const tlv = encodeFilePacket({
+        fileName,
+        mimeType: "image/jpeg",
+        content: JPEG,
+      });
+      if (tlv === null) throw new Error("no TLV");
+      return tlv;
+    }
+
+    function receiver(): { service: FileTransferService; ack: jest.Mock } {
+      const ack = jest.fn();
+      const service = new FileTransferService(
+        IDENTITY,
+        jest.fn().mockResolvedValue(true),
+        jest.fn().mockResolvedValue(true),
+        (peerID) => peerID,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ack,
+      );
+      return { service, ack };
+    }
+
+    it("keys the row by the stable ID and acknowledges it", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      const rows = useChatStore.getState().messages[`dm:${SENDER}`] ?? [];
+      expect(STABLE_ID).not.toBeNull();
+      expect(rows.map((m) => m.id)).toEqual([STABLE_ID]);
+      expect(ack).toHaveBeenCalledWith(SENDER, STABLE_ID);
+    });
+
+    it("answers a repeat again without storing it twice", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      expect(useChatStore.getState().messages[`dm:${SENDER}`]).toHaveLength(1);
+      expect(globalThis.__cache.size).toBe(1);
+      expect(ack).toHaveBeenCalledTimes(2);
+    });
+
+    it("acknowledges nothing for a name outside bitchat's shapes", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto("photo.jpg"));
+      await settle();
+      expect(useChatStore.getState().messages[`dm:${SENDER}`]).toHaveLength(1);
+      expect(ack).not.toHaveBeenCalled();
+    });
+
+    it("acknowledges nothing the disk refused", async () => {
+      const { service, ack } = receiver();
+      globalThis.__writeFails = true;
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      expect(ack).not.toHaveBeenCalled();
+    });
+  });
+
+  it("leaves no half-written file when the disk refuses it", async () => {
+    useChatStore.getState().addChannel("#bluetooth");
+    globalThis.__writeFails = true;
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(globalThis.__cache.size).toBe(0);
+  });
+
+  describe("the 100 MiB quota on received media", () => {
+    const MiB = 1024 * 1024;
+
+    it("evicts the oldest received files first, just enough to fit", () => {
+      put(`${INCOMING_FILE_PREFIX}1_old.jpg`, 40 * MiB, 1_000);
+      put(`${INCOMING_FILE_PREFIX}2_mid.jpg`, 40 * MiB, 2_000);
+      put(`${INCOMING_FILE_PREFIX}3_new.jpg`, 19 * MiB, 3_000);
+      enforceIncomingQuota(2 * MiB);
+      const left = [...globalThis.__cache.keys()];
+      expect(left).not.toContain(`${INCOMING_FILE_PREFIX}1_old.jpg`);
+      expect(left).toContain(`${INCOMING_FILE_PREFIX}2_mid.jpg`);
+      expect(left).toContain(`${INCOMING_FILE_PREFIX}3_new.jpg`);
+    });
+
+    it("never touches a file this phone sent, however large", () => {
+      put(`${CACHE_FILE_PREFIX}sent.mp4`, 200 * MiB, 1);
+      put(`${INCOMING_FILE_PREFIX}1_in.jpg`, 1 * MiB, 5);
+      enforceIncomingQuota(1 * MiB);
+      expect(globalThis.__cache.has(`${CACHE_FILE_PREFIX}sent.mp4`)).toBe(true);
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_in.jpg`)).toBe(
+        true,
+      );
+    });
+
+    it("counts a file with no readable age as the oldest", () => {
+      put(`${INCOMING_FILE_PREFIX}1_dated.jpg`, 60 * MiB, 1_000);
+      put(`${INCOMING_FILE_PREFIX}2_undated.jpg`, 40 * MiB, null);
+      enforceIncomingQuota(1 * MiB);
+      expect(
+        globalThis.__cache.has(`${INCOMING_FILE_PREFIX}2_undated.jpg`),
+      ).toBe(false);
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_dated.jpg`)).toBe(
+        true,
+      );
+    });
+
+    it("is enforced before a received file is written", async () => {
+      useChatStore.getState().addChannel("#bluetooth");
+      put(
+        `${INCOMING_FILE_PREFIX}1_old.jpg`,
+        INCOMING_QUOTA_BYTES - JPEG.length + 1,
+        1,
+      );
+      makeService().service.onFileTransfer(broadcast(photo()));
+      await settle();
+      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_old.jpg`)).toBe(
+        false,
+      );
+      expect(globalThis.__cache.size).toBe(1);
+    });
   });
 });

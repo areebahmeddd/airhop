@@ -4,14 +4,11 @@
 // at the very bottom, outside every section.
 
 import { encodeQRContent } from "@core/crypto/contact-exchange";
-import Feather from "@expo/vector-icons/Feather";
 import {
-  applyLayoutDirection,
   isShipped,
   LANGUAGES,
   needsRelaunch,
   PICKER_LANGUAGES,
-  resolvePreference,
   t,
   useT,
   type TranslationKey,
@@ -19,6 +16,10 @@ import {
 } from "@i18n";
 import { warned } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { shareApk } from "@services/apk-share";
 import { destroyMeshService, getMeshService } from "@services/mesh-service";
 import { panicWipe } from "@services/panic-wipe";
@@ -130,7 +131,7 @@ function getStatusMeta(
     label: string;
     description: string;
     color: string;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   }
 > {
   return {
@@ -197,7 +198,7 @@ const THEME_META: Record<
   {
     labelKey: TranslationKey;
     descriptionKey: TranslationKey;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   }
 > = {
   light: {
@@ -240,6 +241,9 @@ interface Props {
   // Bumped by the shell to pop one level. A counter rather than a boolean, so
   // repeated pops each register.
   popSignal?: number;
+  // The section to open on, read once at mount. The shell remounts this screen
+  // (a new key) whenever it changes where the tab lands.
+  initialView?: SettingsView;
 }
 
 export default function ProfileScreen({
@@ -250,13 +254,14 @@ export default function ProfileScreen({
   onResumeMesh,
   onCanGoBackChange,
   popSignal = 0,
+  initialView = "root",
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const T = useT();
   const shared = useSharedStyles();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const STATUS_META = useMemo(() => getStatusMeta(Colors, T), [Colors, T]);
-  const [view, setView] = useState<SettingsView>("root");
+  const [view, setView] = useState<SettingsView>(initialView);
   // The row a search result named. The provider clears it on its own timer.
   const [highlightId, setHighlightId] = useState<SettingId | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
@@ -442,10 +447,10 @@ export default function ProfileScreen({
     // the moment it is known, while the person is still standing over the
     // decision. The banner is the memory: an alert is dismissed once and then
     // the app looks exactly like a fresh install over data that is still here,
-    // and "did it work?" becomes a guess - which under duress is answered by
+    // and "did it work?" becomes a guess, which under duress is answered by
     // wiping again. Set after panicWipe, whose own store reset would otherwise
-    // clear it. Re-derived on every launch from the keychain itself, so a retry
-    // that succeeds takes it away without anything having to remember.
+    // clear it. Re-derived on every launch, which retries the deletes, so a
+    // retry that succeeds takes it away.
     if (!keysDestroyed) {
       useMeshStateStore.getState().setWipeIncomplete(true);
       showAlert(
@@ -737,12 +742,8 @@ export default function ProfileScreen({
           });
         }}
       >
-        {/* Header: search left, status pencil right. Both wear the app's round
-            icon button, the one the Chats, Mesh and Wallet headers put their
-            actions in; a bare glyph on the background read as decoration.
-
-            Search sits on the left, and alone, because it is the one control
-            here about the whole screen below rather than the identity block. */}
+        {/* Search sits alone on the left: it is the one control about the
+            whole screen rather than the identity block. */}
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [
@@ -782,7 +783,6 @@ export default function ProfileScreen({
           </Pressable>
         </View>
 
-        {/* Identity block: large centered avatar, name, peer ID, no card background */}
         <View style={styles.identityBlock}>
           <View style={styles.avatarWrap}>
             <Avatar username={username} peerID={peerID} size={96} />
@@ -801,10 +801,12 @@ export default function ProfileScreen({
           </View>
         </View>
 
-        {/* Share actions: bordered pill buttons below the identity block */}
         <View style={styles.sharePills}>
           <Pressable
-            style={styles.sharePill}
+            style={({ pressed }) => [
+              styles.sharePill,
+              pressed && shared.rowPressed,
+            ]}
             onPress={() => setShowPeerIDModal(true)}
             accessibilityRole="button"
             accessibilityLabel={T("settings.share_peer_id")}
@@ -817,7 +819,10 @@ export default function ProfileScreen({
             </View>
           </Pressable>
           <Pressable
-            style={styles.sharePill}
+            style={({ pressed }) => [
+              styles.sharePill,
+              pressed && shared.rowPressed,
+            ]}
             onPress={() => setShowQRModal(true)}
             accessibilityRole="button"
             accessibilityLabel={T("settings.qr.show")}
@@ -829,11 +834,13 @@ export default function ProfileScreen({
               </Text>
             </View>
           </Pressable>
-          {/* Android only. For someone who does not have Airhop yet, beside
-            the two pills for someone who already does. */}
+          {/* The app itself, for someone who lacks it. iOS cannot sideload. */}
           {Platform.OS === "android" && (
             <Pressable
-              style={styles.sharePill}
+              style={({ pressed }) => [
+                styles.sharePill,
+                pressed && shared.rowPressed,
+              ]}
               onPress={() => void handleShareApk()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.share_app")}
@@ -852,13 +859,8 @@ export default function ProfileScreen({
           )}
         </View>
 
-        {/* The connectivity toggles. Wallet/AI/Feeds are a standing statement
-          about the app, not controls, so they live under General; these four
-          are the switches people open Settings to flip, and they belong where
-          the thumb already is. */}
         <ConnectivityGroup onOpenTor={() => openSection("tor")} />
 
-        {/* Settings nav: each row drills into its own sub-screen */}
         <View style={shared.section}>
           <View style={shared.settingsGroup}>
             <SettingLinkRow
@@ -896,10 +898,8 @@ export default function ProfileScreen({
               onPress={() => openSection("permissions")}
             />
             <GroupDivider />
-            {/* Left in plain sight rather than behind a tap-count reveal. It
-              changes nothing, and the whole reason it exists is so a tester can
-              read numbers back during a field report - hidden, it would be one
-              more thing to explain before the useful part. */}
+            {/* Not hidden behind a tap-count reveal: it exists so a tester can
+                read numbers back during a field report. */}
             <SettingLinkRow
               icon="activity"
               label={T("settings.section.diagnostics")}
@@ -937,9 +937,8 @@ export default function ProfileScreen({
           </View>
         </View>
 
-        {/* Moving to a new phone. Directly above the danger zone because both
-          answer "I am leaving this device", and the safe answer should be the
-          one you reach first. */}
+        {/* Above the danger zone: both answer "I am leaving this device", and
+            the safe answer should come first. */}
         <View style={shared.section}>
           <View style={shared.settingsGroup}>
             <SettingLinkRow
@@ -952,23 +951,23 @@ export default function ProfileScreen({
           </View>
         </View>
 
-        {/* Danger zone, same settingsGroup box pattern as other sections */}
         <View style={shared.section}>
           <View style={[shared.settingsGroup, styles.dangerGroup]}>
             <Pressable
               ref={wipeHighlight.ref}
               onLayout={wipeHighlight.onLayout}
-              style={[
+              style={({ pressed }) => [
                 styles.dangerRow,
                 wipeHighlight.active && shared.rowHighlighted,
+                pressed && shared.rowPressed,
               ]}
               onPress={handlePanicPress}
               accessibilityRole="button"
               accessibilityLabel={T("settings.wipe.trigger")}
               accessibilityHint={T("settings.wipe.trigger_desc")}
             >
-              {/* Inner View owns the row layout. Pressable does not reliably
-                propagate flexDirection on all RN versions. */}
+              {/* Inner View owns the layout: Pressable does not reliably
+                  propagate flexDirection on every RN version. */}
               <View style={styles.dangerRowInner}>
                 <View style={styles.dangerIconWrap}>
                   <Feather
@@ -990,23 +989,19 @@ export default function ProfileScreen({
           </View>
         </View>
 
-        {/* QR code modal: the QR, a Share button, and a Download button */}
         <BottomSheet
           visible={showQRModal}
           onClose={() => setShowQRModal(false)}
           sheetStyle={shared.sheet}
         >
-          {/* The one settings sheet with a centered body (QR, peer ID, two
-            stacked buttons), so its title centers with them instead of sitting
-            flush left like the rest. */}
+          {/* The one settings sheet with a centered body, so its title
+              centers too. */}
           <Text style={[shared.sheetTitle, styles.qrSheetTitle]}>
             {T("settings.qr.title")}
           </Text>
           <View style={styles.qrLarge}>
-            {/* The mark sits in the middle, which costs the code the modules it
-              covers - so the error-correction level goes up to H (30%
-              recoverable) to pay for it. Without that the logo eats real data
-              and a smudged or angled scan starts failing. */}
+            {/* Level H (30% recoverable) pays for the modules the centre mark
+                covers, so a smudged or angled scan still reads. */}
             <QRCode
               value={qrValue}
               size={QR_SIZE}
@@ -1026,10 +1021,12 @@ export default function ProfileScreen({
               }}
             />
           </View>
-          {/* Above the warning, not below: the same sentence covers the code and
-            the QR, which are the same bytes. */}
+          {/* Above the warning: it covers the code and the QR, the same bytes. */}
           <Pressable
-            style={styles.codeBox}
+            style={({ pressed }) => [
+              styles.codeBox,
+              pressed && shared.sheetBtnPressed,
+            ]}
             onPress={handleCopyContactCode}
             accessibilityRole="button"
             accessibilityLabel={T("settings.qr.copy_code")}
@@ -1058,7 +1055,10 @@ export default function ProfileScreen({
           </View>
           <View style={styles.qrActions}>
             <Pressable
-              style={styles.qrShareBtn}
+              style={({ pressed }) => [
+                styles.qrShareBtn,
+                pressed && shared.sheetBtnPrimaryPressed,
+              ]}
               onPress={() => void handleShareQR()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.share")}
@@ -1069,7 +1069,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.qrDownloadBtn}
+              style={({ pressed }) => [
+                styles.qrDownloadBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => void handleDownloadQR()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.download")}
@@ -1082,9 +1085,8 @@ export default function ProfileScreen({
           </View>
         </BottomSheet>
 
-        {/* Peer ID sheet, not the OS share sheet directly: there has to be room
-          to say what a bare ID can and cannot do, and it cannot do the thing
-          most people reach for it to do. */}
+        {/* A sheet, not the OS share sheet: it has to say what a bare ID
+            cannot do, which is what most people reach for it to do. */}
         <BottomSheet
           visible={showPeerIDModal}
           onClose={() => setShowPeerIDModal(false)}
@@ -1094,7 +1096,10 @@ export default function ProfileScreen({
             {T("settings.peer_id_sheet.title")}
           </Text>
           <Pressable
-            style={styles.idBox}
+            style={({ pressed }) => [
+              styles.idBox,
+              pressed && shared.sheetBtnPressed,
+            ]}
             onPress={handleCopyPeerID}
             accessibilityRole="button"
             accessibilityLabel={T("settings.peer_id_sheet.copy")}
@@ -1114,7 +1119,10 @@ export default function ProfileScreen({
           </View>
           <View style={styles.qrActions}>
             <Pressable
-              style={styles.qrShareBtn}
+              style={({ pressed }) => [
+                styles.qrShareBtn,
+                pressed && shared.sheetBtnPrimaryPressed,
+              ]}
               onPress={() => void handleSharePeerID()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.share_peer_id")}
@@ -1125,7 +1133,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.qrDownloadBtn}
+              style={({ pressed }) => [
+                styles.qrDownloadBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => {
                 setShowPeerIDModal(false);
                 setShowQRModal(true);
@@ -1141,7 +1152,6 @@ export default function ProfileScreen({
           </View>
         </BottomSheet>
 
-        {/* Status modal: bottom sheet, one selectable row per presence state */}
         <BottomSheet
           visible={showStatusModal}
           onClose={() => setShowStatusModal(false)}
@@ -1200,9 +1210,8 @@ export default function ProfileScreen({
           </View>
         </BottomSheet>
 
-        {/* Appearance modal: theme, mono font, and the language list. Three
-          groups outgrow a phone screen, so the body scrolls and the grab
-          handle keeps the drag. */}
+        {/* Three groups outgrow a phone screen, so the body scrolls and the
+            grab handle keeps the drag. */}
         <BottomSheet
           visible={showThemeModal}
           onClose={() => setShowThemeModal(false)}
@@ -1271,8 +1280,7 @@ export default function ProfileScreen({
               })}
             </View>
 
-            {/* Font: keep the sheet open on select so the change is visible live
-                (the mono bits behind it update instantly) and easy to compare. */}
+            {/* Stays open on select, so the font behind it can be compared. */}
             <Text style={styles.appearanceGroupLabel}>
               {T("settings.group.font")}
             </Text>
@@ -1328,17 +1336,9 @@ export default function ProfileScreen({
               })}
             </View>
 
-            {/* Language.
-            No "System" row, matching the Appearance picker directly above: the
-            resolved language is ticked instead, so there is never a row that
-            means "no, really, the other one". First launch follows the phone;
-            choosing here pins it, which is what somebody reading Airhop in
-            Spanish on an English phone actually wants.
-
-            A language with no catalog yet is listed and dimmed rather than
-            hidden. Naming it answers "is my language coming" far better than a
-            picker that silently omits it, and the row goes live the release its
-            catalog lands, with no change here. */}
+            {/* No "System" row: first launch follows the phone and a choice
+                here pins it. A language with no catalog yet is dimmed, not
+                hidden, and goes live the release its catalog lands. */}
             <Text style={styles.appearanceGroupLabel}>
               {T("settings.group.language")}
             </Text>
@@ -1366,15 +1366,11 @@ export default function ProfileScreen({
                       ]}
                       disabled={!shipped}
                       onPress={() => {
+                        // `@i18n` pins the direction and App raises the restart
+                        // notice, not this row: the language can change without
+                        // anyone touching the list. The "pending" tag below is
+                        // the in-place half.
                         setLanguage(code);
-                        // Written now rather than at the next `initI18n`: either
-                        // way it lands on the following launch, but setting it
-                        // here is what makes a single restart enough.
-                        //
-                        // App raises the restart notice, not this row: direction
-                        // can change without anyone touching the list. The
-                        // "pending" tag below is the in-place half.
-                        applyLayoutDirection(resolvePreference(code));
                       }}
                       accessibilityRole={shipped ? "button" : undefined}
                       accessibilityState={
@@ -1399,9 +1395,8 @@ export default function ProfileScreen({
                       </View>
                       <View style={shared.optionText}>
                         <Text style={shared.optionLabel}>{name}</Text>
-                        {/* The endonym stays in its own script and is never
-                        translated, so somebody who cannot read the current UI
-                        language can still find their own row. */}
+                        {/* Never translated, so someone who cannot read the
+                            UI language can still find their own row. */}
                         <Text style={shared.optionDescription}>
                           {spec.endonym}
                         </Text>
@@ -1438,8 +1433,7 @@ export default function ProfileScreen({
           onErased={handleTransferErased}
         />
 
-        {/* Panic wipe modal: confirm, then wipe and drop straight to onboarding
-          rather than making the user tap through a second "Wiped" screen. */}
+        {/* Drops straight to onboarding, with no second "Wiped" screen. */}
         <BottomSheet
           visible={showWipeModal}
           onClose={() => setShowWipeModal(false)}
@@ -1449,7 +1443,10 @@ export default function ProfileScreen({
           <Text style={shared.sheetSubtitle}>{T("settings.wipe.body")}</Text>
           <View style={styles.wipeActions}>
             <Pressable
-              style={styles.wipeConfirmBtn}
+              style={({ pressed }) => [
+                styles.wipeConfirmBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => void handleConfirmWipe()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.wipe.now")}
@@ -1459,7 +1456,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.wipeCancelBtn}
+              style={({ pressed }) => [
+                styles.wipeCancelBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => setShowWipeModal(false)}
               accessibilityRole="button"
               accessibilityLabel={T("common.cancel")}

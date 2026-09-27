@@ -8,9 +8,11 @@
 // the functions below use, so calling them outside a renderer tests React.
 
 import { useSettingsStore } from "@store/settings-store";
+import { I18nManager } from "react-native";
 import {
   activeLanguage,
   getLanguage,
+  initI18n,
   isShipped,
   languageForTag,
   needsRelaunch,
@@ -139,6 +141,26 @@ describe("which language is on screen", () => {
   });
 });
 
+describe("layout direction", () => {
+  it("pins the next launch's direction whoever changes the language", () => {
+    // Reset settings and a panic wipe move the preference without the picker.
+    // Pinned only by the picker, the first reopen after either boots in the old
+    // direction, raises the notice again and needs a second one.
+    const forceRTL = jest.spyOn(I18nManager, "forceRTL");
+    initI18n();
+
+    useSettingsStore.getState().setLanguage("ar");
+    expect(forceRTL).toHaveBeenLastCalledWith(true);
+    expect(useSettingsStore.getState().frameLanguage).toBe("ar");
+
+    useSettingsStore.getState().reset();
+    expect(forceRTL).toHaveBeenLastCalledWith(false);
+    expect(useSettingsStore.getState().frameLanguage).toBe(
+      resolvePreference("system"),
+    );
+  });
+});
+
 describe("device language", () => {
   // What real phones report, not what a spec says they ought to. Every tag
   // resolving to English is somebody reading English beside a finished catalog.
@@ -237,6 +259,14 @@ describe("interpolation", () => {
     // Added per substitution, never around the sentence, so a string with no
     // placeholders is byte-identical to its catalog entry.
     expect(t("common.cancel")).toBe("Cancel");
+  });
+
+  // A value's own pop would close the isolate early, and an override after it
+  // would then reorder the rest of the sentence.
+  it("keeps a value's own bidi controls from escaping its isolate", () => {
+    const hostile = "x\u2069\u202Eevil";
+    const rendered = t("settings.opens_externally", { label: hostile });
+    expect(rendered).toBe("\u2068xevil\u2069, opens outside the app");
   });
 });
 

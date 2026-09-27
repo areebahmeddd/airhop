@@ -19,6 +19,7 @@
 // client only once there is a route for it, and build a new one when the
 // network comes back.
 
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import type { Event } from "nostr-tools";
 import type { Filter } from "nostr-tools/filter";
 import type { SubCloser } from "nostr-tools/pool";
@@ -52,9 +53,9 @@ const PUBLISH_TIMEOUT_MS = 8_000;
 // three-hop Tor circuit, or a congested cellular link. nostr-tools allows 3 s.
 const CONNECT_TIMEOUT_MS = 10_000;
 
-// Ceiling on a one-shot read (querySync / get). Without it these resolve only
-// once every relay has sent EOSE, which never happens on a connection that went
-// away without closing - the case where you walk out of Wi-Fi range mid-request.
+// Ceiling on a one-shot read (querySync). Without it a query resolves only
+// once its relay has sent EOSE, which never happens on a connection that went
+// away without closing, as when you walk out of Wi-Fi range mid-request.
 // The promise would then never settle, and any UI awaiting it stays in its
 // loading state for the rest of the session with no way back. Returning
 // whatever arrived inside the window is both bounded and honest: these reads
@@ -72,6 +73,19 @@ const PUMP_SLICE_MS = 8;
 // with five cells backfilling is low hundreds), so reaching it means a relay is
 // flooding us and the right answer is to stop accepting rather than to grow.
 const MAX_PENDING_EVENTS = 4_000;
+
+// Event IDs one subscription remembers as delivered. Evicting the oldest costs
+// at most a late copy of a long-gone event reaching its handler again, which
+// the handler's own dedup absorbs.
+const MAX_DELIVERED_IDS = 4_000;
+
+// How often the client re-reads the relay sockets for onConnectionChange.
+// nostr-tools reports a connect it was asked for through the pool's hooks, but
+// a live socket dropping, and the relay's own reconnect after it, reach no hook
+// at all, so without this the callback never sees either. The library retries a
+// dropped relay no sooner than every 10 s; half that keeps each transition
+// visible within one retry.
+const CONNECTION_POLL_MS = 5_000;
 
 // Placeholder passed to a queued EOSE callback, which takes no event but shares
 // the queue so it keeps its place in line.
@@ -100,6 +114,7 @@ export class NostrClient {
   private readonly onConnectionChange?: (connected: boolean) => void;
   // Last reported connectivity, so we only notify on an actual transition.
   private connected = false;
+  private readonly connectionPoll: ReturnType<typeof setInterval>;
   // Inbound handler queue and its drain flag. See the pump below.
   private readonly pending: [EventHandler, Event][] = [];
   private draining = false;
@@ -113,6 +128,10 @@ export class NostrClient {
     // that into a single "any live relay" boolean for the caller.
     this.pool.onRelayConnectionSuccess = () => this.reconcileConnected();
     this.pool.onRelayConnectionFailure = () => this.reconcileConnected();
+    this.connectionPoll = setInterval(
+      () => this.reconcileConnected(),
+      CONNECTION_POLL_MS,
+    );
 
     // Merge caller-provided relays with the default DM relay set, deduplicated
     // and capped at MAX_RELAY_COUNT.
@@ -135,14 +154,18 @@ export class NostrClient {
   // publish (which would otherwise block a full PUBLISH_TIMEOUT_MS before
   // rejecting) and route straight to a mesh gateway uplink. Mirrors bitchat's
   // synchronous relaysConnected() check.
+  //
+  // Read from the sockets on every call rather than from `connected`, which
+  // trails them by up to CONNECTION_POLL_MS: a gateway deciding whether to
+  // publish a deposit or hold it must see a relay that dropped a moment ago.
   get isConnected(): boolean {
-    return this.connected;
+    return [...this.pool.listConnectionStatus().values()].some(Boolean);
   }
 
   // Recompute "any relay live" and notify only on a has-any / has-none flip, so
   // the UI's internet-bridge indicator tracks real connectivity without churn.
   private reconcileConnected(): void {
-    const any = [...this.pool.listConnectionStatus().values()].some(Boolean);
+    const any = this.isConnected;
     if (any !== this.connected) {
       this.connected = any;
       this.onConnectionChange?.(any);
@@ -173,6 +196,18 @@ export class NostrClient {
   // same geographically-selected relays for a cell. Omit it for DM / gift-wrap
   // traffic, which uses the default pool.
   // Returns a closer function; call it to cancel the subscription.
+  //
+  // One pool subscription per relay and filter, never one across relays.
+  // nostr-tools (2.25.2) records an event ID as seen before it verifies the
+  // event, in a set shared by every relay in the call, so one relay sending a
+  // bad-signature copy under a genuine ID would hide the real event from every
+  // honest relay. Split per relay, that set only ever hides the relay that
+  // poisoned it. Dedup across relays is ours instead, in bitchat-ios's order:
+  // look up, verify, then record. An ID is recorded only once nostr-tools has
+  // verified the event and the pump has taken it. Each call also gets its own
+  // filter object, because a reconnect writes `since` into it, and a relay that
+  // sent a far-future event must move only its own. Collapse back to one call
+  // per filter once a nostr-tools release carries nbd-wtf/nostr-tools#560.
   subscribe(
     filters: Filter[],
     onEvent: EventHandler,
@@ -180,43 +215,52 @@ export class NostrClient {
     relays?: string[],
   ): SubCloser {
     const targets = this.resolveRelays(relays);
+    const delivered = new BoundedIdSet(MAX_DELIVERED_IDS);
     // Every handler goes through the pump, so no subscription can hold the JS
-    // thread for longer than one time slice however much a relay sends.
-    const deliver = (event: Event): void => this.enqueue(onEvent, event);
-    // EOSE queues behind the events it terminates rather than jumping them.
-    // Nothing passes an onEose today, but "the backfill is complete" arriving
-    // before the backfill would be a genuinely confusing thing to leave lying
-    // around for whoever wires the first one up.
-    const deliverEose =
+    // thread for longer than one time slice however much a relay sends. The
+    // `has` check repeats the lookup below because nostr-tools skips that
+    // lookup for a frame whose prefix it cannot read.
+    const deliver = (event: Event): void => {
+      if (delivered.has(event.id)) return;
+      if (this.enqueue(onEvent, event)) delivered.add(event.id);
+    };
+    // Lookup only. nostr-tools runs it on the raw frame before parsing, so a
+    // copy another relay already delivered costs neither JSON.parse nor Schnorr.
+    const alreadyHaveEvent = (id: string): boolean => delivered.has(id);
+    // EOSE queues behind the events it terminates rather than jumping them, and
+    // fires once every relay has finished its backfill (a relay that fails to
+    // connect counts as finished). Nothing passes an onEose today, but "the
+    // backfill is complete" arriving before the backfill would be a genuinely
+    // confusing thing to leave lying around for whoever wires the first one up.
+    let backfilling = targets.length * filters.length;
+    const oneose =
       onEose === undefined
         ? undefined
-        : (): void => this.enqueue(() => onEose(), EOSE_MARKER);
-    // SimplePool.subscribeMany takes a single merged filter. Merge all filters
-    // into one using OR semantics via the ids/kinds/authors fields approach:
-    // for multiple filters we subscribe each separately and merge the closers.
-    const pinned = filters.map(pinGiftWrapSince);
-    if (pinned.length === 1) {
-      return this.pool.subscribeMany(targets, pinned[0], {
-        onevent: deliver,
-        oneose: deliverEose,
-      });
-    }
-    const closers = pinned.map((f) =>
-      this.pool.subscribeMany(targets, f, { onevent: deliver }),
+        : (): void => {
+            backfilling -= 1;
+            if (backfilling === 0) this.enqueue(() => onEose(), EOSE_MARKER);
+          };
+    const closers = targets.flatMap((url) =>
+      filters.map((filter) =>
+        this.pool.subscribeMany([url], pinGiftWrapSince({ ...filter }), {
+          onevent: deliver,
+          oneose,
+          alreadyHaveEvent,
+        }),
+      ),
     );
     return {
       close: (reason?: string) => closers.forEach((c) => c.close(reason)),
     };
   }
 
-  //
   // Relay traffic arrives on a WebSocket callback, so without this every
   // subscriber handler runs inline on the JS thread the instant an event lands. A
   // handler is not cheap here: it writes a zustand store (and so re-renders),
-  // decrypts gift wraps, and walks the notices list. A burst - a cold start with
+  // decrypts gift wraps, and walks the notices list. A burst (a cold start with
   // several cells backfilling at once, a busy cell, or simply a relay that
-  // decides to send a lot - therefore ran as one unbroken block of JS with no
-  // frame in between. The symptom is not a crash but a freeze: animations that
+  // decides to send a lot) would run as one unbroken block of JS with no frame
+  // in between. The symptom is not a crash but a freeze: animations that
   // need JS between steps stop mid-loop, and taps queue up unanswered, which is
   // indistinguishable from a hang to the person holding the phone.
   //
@@ -228,14 +272,18 @@ export class NostrClient {
   // signature inside its own socket handler, before ours is reached. That cost
   // is bounded by asking for less (see the filters in geohash-channel-service),
   // not from here.
-  private enqueue(handler: EventHandler, event: Event): void {
+  //
+  // Returns whether the event was queued, so a subscription treats as delivered
+  // only what its handler will actually see.
+  private enqueue(handler: EventHandler, event: Event): boolean {
     // Back-pressure rather than unbounded growth. A queue this deep means we are
     // thousands of events behind, at which point the newest are the ones we can
     // most afford to drop: every subscription in the app backfills, so anything
     // missed comes back on the next one.
-    if (this.pending.length >= MAX_PENDING_EVENTS) return;
+    if (this.pending.length >= MAX_PENDING_EVENTS) return false;
     this.pending.push([handler, event]);
     this.scheduleDrain();
+    return true;
   }
 
   private scheduleDrain(): void {
@@ -311,20 +359,19 @@ export class NostrClient {
     });
   }
 
-  // Fetch a single event by its ID (queries all relays, returns first found).
-  async fetchEvent(id: string): Promise<Event | null> {
-    return this.pool.get(
-      this.relays,
-      { ids: [id] },
-      { maxWait: QUERY_MAX_WAIT_MS },
-    );
-  }
-
-  // Query relays and collect all matching events up to eose.
+  // Query relays and collect all matching events up to EOSE. One query per
+  // relay for the same reason subscribe splits (a poisoned relay must not hide
+  // another relay's copy), merged by ID. Every copy returned is verified.
   async queryEvents(filter: Filter): Promise<Event[]> {
-    return this.pool.querySync(this.relays, filter, {
-      maxWait: QUERY_MAX_WAIT_MS,
-    });
+    const params = { maxWait: QUERY_MAX_WAIT_MS };
+    const perRelay = await Promise.all(
+      this.relays.map((url) =>
+        this.pool.querySync([url], { ...filter }, params),
+      ),
+    );
+    const byID = new Map<string, Event>();
+    for (const event of perRelay.flat()) byID.set(event.id, event);
+    return [...byID.values()];
   }
 
   // Close all relay connections. ALL of them, not just the default set.
@@ -335,19 +382,20 @@ export class NostrClient {
   // user has opened, and every bridge rendezvous cell. Those are exactly the
   // relays that know the most about where somebody is.
   //
-  // The consequences were all in the wrong direction. Turning the internet off
-  // left them connected while the Mesh tab reported no relay. Going Away left
-  // them connected over a stopped mesh. A panic wipe left them connected. And
-  // enabling Tor rebuilt the DM pool on the Tor socket while those sockets
-  // stayed on the clear net, holding the device's real IP open to the relays it
-  // had just been bridging through, which is the one thing the toggle exists to
-  // stop. nostr-tools keeps a relay alive until it is closed explicitly and its
-  // idle pruning is never invoked, so nothing collected them.
+  // Left open, they would stay connected after the internet is turned off, on
+  // going Away, and after a panic wipe, and enabling Tor would rebuild the DM
+  // pool on the Tor socket while they stayed on the clear net, holding the
+  // device's real IP open to the relays it had just been bridging through.
+  // nostr-tools closes a relay on its own only after 20 s with no subscription
+  // or publish open on it, and each of those relays holds a subscription for as
+  // long as its cell is in use.
   //
-  // `destroy()` closes every relay the pool holds and empties its map, which is
-  // what "close" was always meant to mean here. The client is single-use either
-  // way: every caller builds a fresh one rather than reopening this.
+  // `destroy()` closes every relay the pool holds and empties its map. The
+  // client is single-use either way: every caller builds a fresh one rather
+  // than reopening this.
   close(): void {
+    // Stopped first, so a closed client reports no further transition.
+    clearInterval(this.connectionPoll);
     this.pool.destroy();
     // Anything still queued belongs to subscriptions that have just gone away,
     // and its handlers close over a transport this client no longer owns. A

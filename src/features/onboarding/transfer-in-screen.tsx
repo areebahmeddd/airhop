@@ -1,12 +1,13 @@
 // Onboarding's other way in: receive the identity from the old phone.
 //
 // One thing at a time, in the order the person needs it: where to scan, whose
-// identity is arriving, and whether the old phone let go of it.
+// identity is arriving, whether both phones show the same words, and whether
+// the old phone let go of it.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT, type TranslationKey } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { rejected, succeeded } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { clearMoveMarker } from "@services/move-marker";
 import {
   MoveReceiver,
@@ -15,6 +16,7 @@ import {
 } from "@services/move-receiver";
 import Avatar from "@ui/components/avatar";
 import PrimaryButton from "@ui/components/primary-button";
+import SafetyWords from "@ui/components/safety-words";
 import TextButton from "@ui/components/text-button";
 import {
   FontSize,
@@ -188,6 +190,28 @@ export default function TransferInScreen({
             </Text>
           </View>
         );
+      case "confirm":
+        return (
+          <View style={styles.center} accessibilityLiveRegion="polite">
+            <Identity peerID={state.peerID} styles={styles} />
+            <Text style={styles.heading} accessibilityRole="header">
+              {T("onboarding.transfer.confirm_title")}
+            </Text>
+            <SafetyWords words={state.words} />
+            <Text style={styles.body}>
+              {T("onboarding.transfer.confirm_body")}
+            </Text>
+          </View>
+        );
+      case "awaiting":
+        // Names the old phone's button, so the two screens agree.
+
+        return busyPanel(
+          T("onboarding.transfer.waiting_old", {
+            action: T("settings.transfer.confirm_cta"),
+          }),
+          state.peerID,
+        );
       case "receiving":
         return (
           <View style={styles.center} accessibilityLiveRegion="polite">
@@ -277,7 +301,23 @@ export default function TransferInScreen({
         />
       );
     }
-    if (state.phase === "receiving") {
+    if (state.phase === "confirm") {
+      // Cancel stays on this screen with a fresh code: the old one has been
+      // read by whichever phone answered.
+      return (
+        <>
+          <PrimaryButton
+            label={T("onboarding.transfer.confirm_cta")}
+            onPress={() => receiver.current?.confirm()}
+          />
+          <TextButton
+            label={T("common.cancel")}
+            onPress={() => receiver.current?.decline()}
+          />
+        </>
+      );
+    }
+    if (state.phase === "awaiting" || state.phase === "receiving") {
       return <TextButton label={T("common.cancel")} onPress={leave} />;
     }
     return null;

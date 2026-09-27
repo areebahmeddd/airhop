@@ -118,6 +118,13 @@
 	<string>Airhop uses your approximate location to place you in nearby area channels (block, city, region). Your exact position never leaves your device.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<!-- The icon fonts the @react-native-vector-icons pods bundle. The app imports
+	     their static entry points, which expect the fonts registered natively. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>Feather.ttf</string>
+		<string>MaterialDesignIcons.ttf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

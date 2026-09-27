@@ -6,9 +6,9 @@
 // What it searches lives in settings-index; what a result does belongs to the
 // hub, which owns the navigation. This screen hands back the entry.
 
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { arrowBack } from "@i18n/layout";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import EmptyState from "@ui/components/empty-state";
 import SearchField from "@ui/components/search-field";
 import { FontSize, hitSlopFor, Spacing, useThemeColors } from "@ui/theme";

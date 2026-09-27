@@ -1,137 +1,15 @@
-# Airhop: Copilot Workspace Instructions
+# Airhop: Copilot Instructions
 
-> This file is automatically loaded by VS Code GitHub Copilot for all sessions in this workspace. It provides the project context needed to give accurate, on-spec suggestions.
+> Loaded by GitHub Copilot for every session in this repository. It points to the project's agent guide rather than repeating it.
 
-## What This Project Is
+**Airhop** is a React Native (Expo bare workflow) iOS and Android app for offline-first, end-to-end encrypted messaging over a Bluetooth mesh, wire-compatible with bitchat.
 
-**Airhop** is a React Native (Expo SDK 57, RN 0.86+, bare workflow, New Architecture) cross-platform iOS + Android application for **offline-first, private peer-to-peer communication** over Bluetooth mesh networks, with Nostr internet bridging and Cashu ecash payments.
+## Before Any Suggestion
 
-It is **wire-protocol-compatible with bitchat** (`permissionlesstech/bitchat`, `permissionlesstech/bitchat-android`), both under the Unlicense (public domain). Airhop nodes and bitchat nodes communicate over BLE without configuration.
+Read [`AGENTS.md`](../AGENTS.md) at the repository root in full. It is the canonical guide for every agent here, Copilot included: where things live, the crypto, storage, protocol, native, copy, TypeScript, design and comment rules, and the four documents to read before writing code. Follow it exactly; where this file and `AGENTS.md` could disagree, `AGENTS.md` wins.
 
-Both bitchat implementations are used as a reference checkout. They are **not part of this repository**: clone them into `bitchat/` yourself, which is where every path below expects them.
+Before working on a subsystem, also read its skill in [`skills/`](skills/). `AGENTS.md` lists which skill covers what.
 
-- `bitchat/ios/`: Swift iOS implementation (copy freely)
-- `bitchat/android/`: Kotlin Android implementation (copy freely)
-- `bitchat/georelays/`: relay discovery scripts and relay CSV
+## Review Agents
 
-Nothing under `bitchat/` is committed, so never cite one of those paths in a file that ships with the repo. Read them freely; write the conclusion, not the citation.
-
-## Read These Docs First
-
-Before working on any code, read in this order:
-
-1. [`docs/design/VISION.md`](docs/design/VISION.md): why + principles
-2. [`docs/spec/ARCHITECTURE.md`](docs/spec/ARCHITECTURE.md): architecture, stack decisions, code snippets
-3. [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md): wire format and constants you must not break
-4. [`docs/dev/PROGRESS.md`](docs/dev/PROGRESS.md): current build state
-
-## Project Folder Structure
-
-```
-src/
-  app/          # root component and tab state machine
-  bridge/       # TurboModule TypeScript specs (hand-maintained, interop layer)
-  i18n/         # translation runtime + the bundled English catalog
-  core/
-    crypto/     # identity, keychain, noise-xx, noise-x, double-ratchet, contact-exchange
-    mesh/       # wire/, routing/, links/, sync/, discovery/, rooms/, courier/, voice/
-    nostr/      # nostr-client, courier-relay, gift-wrap, geo-relay, presence
-    payments/   # cashu, nutzap
-    router/     # transport selection
-  services/     # long-lived runtime wiring, chiefly mesh-service
-  features/     # screen-level logic (chat, contacts, wallet, discovery, settings)
-  ui/           # shared components, theming
-  store/        # Zustand slices + MMKV persistence
-  platform/     # thin wrappers over OS APIs
-  utils/        # pure helpers
-
-android/        # Kotlin: BLE, WiFi Aware, LAN, voice, Tor, app modules + AirhopForegroundService
-ios/            # Swift: BLE, WiFi Aware, pairing, LAN, voice, Tor, app modules
-native/arti/    # Rust: the embedded Tor client both platforms compile
-native/iptproxy/ # Go: the pluggable transports it dials to reach a bridge
-
-assets/data/    # nostr_relays.csv (bundled from bitchat/georelays/, CI-refreshed)
-docs/
-  design/       # VISION.md, ROADMAP.md
-  spec/         # ARCHITECTURE.md, PROTOCOLS.md
-  dev/          # PROGRESS.md, REFERENCE.md
-.github/agents/ # specialized Copilot agents
-.github/skills/ # domain reference files (read before working on a subsystem)
-```
-
-## Non-Negotiable Rules
-
-Apply these to every suggestion, every file, every PR:
-
-1. **All crypto = `@noble/*` only.** `@noble/curves` (X25519, Ed25519), `@noble/ciphers` (ChaCha20-Poly1305, XChaCha20), `@noble/hashes` (SHA-256, HMAC, HKDF). No other crypto library. No exceptions.
-
-2. **Polyfill at entry point.** `import 'react-native-get-random-values'` must be the first import in `src/app/app.tsx` before any `@noble` import.
-
-3. **Key storage.** Private keys via `src/core/crypto/keychain.ts` only (iOS Keychain / Android Keystore); never `expo-secure-store` directly, or the panic wipe cannot reach them. MMKV for non-secret state.
-
-4. **Packet signing.** Every outgoing packet is Ed25519-signed. Every incoming packet has its signature verified before relay or display. Drop unsigned/invalid packets silently.
-
-5. **No plaintext on disk.** Message content is encrypted at rest. Panic wipe destroys all keys, every database, the media cache and Tor state, and reports whether the keys actually went.
-
-6. **Protocol compatibility.** Never change the bitchat v2 packet byte layout (`src/core/mesh/wire/packet-codec.ts`) or the BLE Service UUID without a version bump and compat test. See `docs/spec/PROTOCOLS.md`.
-
-7. **Native code boundary.** Swift lives in `ios/`. Kotlin lives in `android/`. These expose **raw bytes** to TypeScript. Protocol logic, routing, and crypto decisions live in TypeScript (`src/core/`).
-
-8. **Build order.** `src/core/` -> native modules -> `src/features/` -> `src/ui/`. Never write UI before core is unit-tested.
-
-9. **Never hardcode user-facing text.** Add a key to `src/i18n/locales/en.ts` and use `T("your.key")` (component) or `t("your.key")` (outside React). The catalog keeps copy reviewable in one diff and is what makes a thirtieth language a new file rather than a sweep of every screen. CI fails on any hardcoded string. See [`i18n.md`](.github/skills/i18n.md).
-
-10. **Never translate anything that crosses the wire.** The `username.ts` adjective/noun lists derive identity. The transmitted `/hug` and `/slap` text is matched as an **English substring** by bitchat on receipt. Slash command tokens, channel names (`#bluetooth`) and geohashes are protocol. Translate the hint that describes a command, never the command. Enforced by `src/i18n/__tests__/catalog.test.ts`.
-
-11. **Never translate at module load.** `const X = { label: t("k") }` type-checks, renders fine, and freezes in whichever language the app started in. Module constants hold `TranslationKey`s; the component translates on render. Enforced by `npm run i18n:audit`.
-
-12. **Layout uses logical properties.** `marginStart` / `marginEnd` / `start` / `end`, never `marginLeft` / `left`. `textAlign: "right"` becomes `textAlignEnd` from `src/i18n/layout.ts`; directional chevrons come from there too. Arabic, Persian and Urdu ship, so a physical side is wrong on screen today rather than latent. Eslint rejects every one of them.
-
-## Key Protocol Constants (Never Change Without Version Bump)
-
-- **BLE Service UUID:** `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`
-- **BLE Characteristic UUID:** `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`
-- **Noise algorithm:** `Noise_XX_25519_ChaChaPoly_SHA256`
-- **TTL default:** 7 hops
-- **Fragment frame budget:** 512 bytes encoded, giving 467 data bytes
-- **Peer ID:** `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`
-
-Full constant table: [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md)
-
-## TypeScript Conventions
-
-- `tsc --strict` must pass with zero errors
-- No `any` in `src/core/` or `src/bridge/`
-- Named exports only in `src/core/` and `src/bridge/`
-- File naming: `kebab-case.ts`
-- One concern per `src/core/` module, each independently testable. A file that needs "and" to describe it is two files. `src/services/mesh-service.ts` and several `src/features/` screens are far past that; they are known refactor targets, not precedent.
-- User-facing strings live in `src/i18n/locales/en.ts`, never inline in a component
-
-## Code Style
-
-- Write code and comments in a clear, concise, and factual style that follows standard language and platform conventions.
-- Comment intent, assumptions, constraints, or non-obvious decisions, not the implementation.
-- Prefer clear names over unnecessary comments.
-- Do not use em dashes (`—`) or double hyphens (`--`) in comments or documentation. Avoid AI-style, robotic wording. Keep the language natural and human.
-- Byte sizes follow IEC 80000-13: `KiB` / `MiB` for 1024-based values, which is every size this project controls, `KB` / `MB` only for genuinely decimal figures. The label must match the arithmetic.
-
-## Agents Available
-
-- **`@architect`**: architectural compliance review (build order, layer boundaries, protocol compat)
-- **`@upstream-sync`**: analyze bitchat upstream changes and generate integration checklist
-- **`@security-review`**: crypto, key storage, packet signing, OWASP Mobile Top 10 audit
-
-## Skills Available
-
-Skills are reference files in `.github/skills/`. Read the relevant one before working on a subsystem.
-
-| Skill                                                             | Read before working on                                                        |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| [`bitchat-wire-format.md`](.github/skills/bitchat-wire-format.md) | `packet-codec.ts`, BLE native modules, any packet encoding or decoding        |
-| [`native-boundary.md`](.github/skills/native-boundary.md)         | `android/`, `ios/`, `src/bridge/`, TurboModule specs                          |
-| [`mesh-routing.md`](.github/skills/mesh-routing.md)               | `flood-router.ts`, `deduplicator.ts`, `fragment-manager.ts`, `gossip-sync.ts` |
-| [`noise-sessions.md`](.github/skills/noise-sessions.md)           | `noise-xx.ts`, `noise-x.ts`, handshake logic, transport encryption            |
-| [`courier-envelopes.md`](.github/skills/courier-envelopes.md)     | `prekey-bundle.ts`, `prekey-store.ts`, `courier-store.ts`, offline mail       |
-| [`nostr-gift-wrap.md`](.github/skills/nostr-gift-wrap.md)         | `gift-wrap.ts`, `courier-relay.ts`, any Nostr DM or event handling            |
-| [`i18n.md`](.github/skills/i18n.md)                               | `src/i18n/`, any user-facing copy anywhere, right-to-left layout              |
-| [`ui-ux.md`](.github/skills/ui-ux.md)                             | `src/ui/`, any style block, component, tappable surface or dark-mode work     |
+Three review agents live in [`agents/`](agents/): Architect, Security Review and Upstream Sync. Pick one from the agent dropdown in Copilot Chat. `AGENTS.md` says when each one runs.

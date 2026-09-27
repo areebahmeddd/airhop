@@ -28,7 +28,7 @@ export interface PendingMessage {
 export const OUTBOX_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Per recipient, so one unreachable conversation cannot evict another's mail.
-// Eviction is invisible to the sender.
+// `enqueue` returns what it evicted, so the sender's bubble can say failed.
 export const MAX_PENDING_PER_PEER = 100;
 
 // Real send opportunities before a message is called failed. An attempt is
@@ -46,7 +46,8 @@ export const ATTEMPT_MIN_INTERVAL_MS = 2 * 60 * 1000;
 interface OutboxState {
   pending: PendingMessage[];
 
-  enqueue: (msg: Omit<PendingMessage, "attempts">) => void;
+  // Returns the oldest entries the per-recipient cap pushed out, if any.
+  enqueue: (msg: Omit<PendingMessage, "attempts">) => PendingMessage[];
   // Remove a message once it has actually gone out.
   resolve: (id: string) => void;
   // Everything still owed to a given peer, oldest first.
@@ -76,20 +77,21 @@ export const useOutboxStore = create<OutboxState>()(
       pending: [],
 
       enqueue(msg) {
-        set((state) => {
-          // Same id already queued: keep the original attempt count.
-          if (state.pending.some((p) => p.id === msg.id)) return state;
-          const next = [...state.pending, { ...msg, attempts: 0 }];
-          // Oldest-first eviction, within this recipient only.
-          const mine = next.filter(
-            (p) => p.recipientPeerID === msg.recipientPeerID,
-          );
-          if (mine.length <= MAX_PENDING_PER_PEER) return { pending: next };
-          const doomed = new Set(
-            mine.slice(0, mine.length - MAX_PENDING_PER_PEER).map((p) => p.id),
-          );
-          return { pending: next.filter((p) => !doomed.has(p.id)) };
-        });
+        const { pending } = get();
+        // Same id already queued: keep the original attempt count.
+        if (pending.some((p) => p.id === msg.id)) return [];
+        const next = [...pending, { ...msg, attempts: 0 }];
+        // Oldest-first eviction, within this recipient only.
+        const mine = next.filter(
+          (p) => p.recipientPeerID === msg.recipientPeerID,
+        );
+        const evicted = mine.slice(
+          0,
+          Math.max(0, mine.length - MAX_PENDING_PER_PEER),
+        );
+        const doomed = new Set(evicted.map((p) => p.id));
+        set({ pending: next.filter((p) => !doomed.has(p.id)) });
+        return evicted;
       },
 
       resolve(id) {

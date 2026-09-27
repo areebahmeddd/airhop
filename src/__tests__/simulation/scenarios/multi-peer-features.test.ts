@@ -86,7 +86,7 @@ test("F01 a private group is unreadable to the phone standing next to it", async
   );
 
   // No prior conversation. Grouping people you have never messaged is the
-  // ordinary case - you pick them off the radar - and the invite has to survive
+  // ordinary case (you pick them off the radar), and the invite has to survive
   // the handshake it triggers.
   // Dave is in the room and is NOT invited. That is the whole point.
   const groupID = alice.createGroup("south gate crew", [
@@ -249,8 +249,8 @@ test("F03 a message for someone out of range is carried by a third phone", async
 
   const status = alice.send(`dm:${bob.peerID}`, "meet me at the north gate");
   // Alice still has the carrier as a neighbour, so the DM is FLOODED at TTL 7
-  // and reported "sent". That is honest about what happened - it left the
-  // device - but it is not a delivery receipt, and bob is not within those
+  // and reported "sent". That is honest about what happened (it left the
+  // device), but it is not a delivery receipt, and bob is not within those
   // seven hops. What must not happen is the message being forgotten on the
   // strength of that optimism.
   s.check(
@@ -291,23 +291,19 @@ test("F03 a message for someone out of range is carried by a third phone", async
     240_000,
   );
 
-  // This is the acceptance test for the first-contact delivery fix. A DM to a
-  // peer with no Noise session used to report "sent" while the text lived only
-  // in an in-memory handshake slot, so if they walked away before answering it
-  // was gone. It is now queued until something acknowledges it.
   // The acceptance test for first-contact delivery.
   //
-  // Two faults used to make this message disappear for good. Starting a Noise
-  // handshake reported "sent" while the text lived only in an in-memory slot a
-  // 30s reaper could discard. And session completion released queued traffic
-  // BEFORE msg3 reached the far side, so it was decrypted by nobody and dropped
-  // with nothing to say so.
+  // Two faults would make this message disappear for good: reporting "sent"
+  // while the text lives only in an in-memory handshake slot a 30s reaper can
+  // discard, and releasing queued traffic on session completion BEFORE msg3
+  // reaches the far side, where nobody can decrypt it and it is dropped with
+  // nothing to say so.
   //
   // What is asserted is the invariant, not the latency: the message is either
   // delivered, or still queued and owed. It is never silently gone. Delivery
-  // itself can take a couple of minutes of mesh time - a handshake started
+  // itself can take a couple of minutes of mesh time (a handshake started
   // while the peer was unreachable is only abandoned after 30s, and the outbox
-  // sweep runs every 45s - so pinning a deadline here would be asserting an
+  // sweep runs every 45s), so pinning a deadline here would be asserting an
   // immediacy the design never promised.
   const stillOwed = alice.outboxSize() > 0;
   s.check(
@@ -375,7 +371,7 @@ test("F04 Tor refuses to turn on rather than quietly using the clear net", async
   await s.world.advance(5_000);
 
   // The security property is that Tor never reports ON into the clear net.
-  // Either the claim stays down, or it is genuinely routing - never "on" while
+  // Either the claim stays down, or it is genuinely routing: never "on" while
   // traffic goes out unprotected.
   const torActive = phone.meshState().torActive === true;
   s.check(
@@ -618,11 +614,14 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   s.assert(true);
 });
 
-test("F08 an envelope past one frame is carried, not deleted as handed over", async () => {
-  // A long private message seals into an envelope longer than a Bluetooth
-  // frame. Written whole, the carrier's radio refuses it, yet the write was
-  // counted as a handover, so the sender could delete mail nobody held. It
-  // has to go as fragments, and only a complete write is a handover.
+test("F08 a message for someone long gone is carried, past one frame, from the composer", async () => {
+  // The case store-and-forward exists for: the recipient left more than a
+  // minute ago, so the registry no longer shows them, and a carrier is in
+  // range. The DM must reach the carrier, sealed to the key alice still holds,
+  // rather than be flooded at a room bob is not in. A long message also seals
+  // into an envelope longer than a Bluetooth frame. Written whole, the
+  // carrier's radio would refuse it while the write counted as a handover, so
+  // it goes as fragments, and only a complete write is a handover.
   const s = (scenario = new Scenario({
     id: "F08",
     title: "a full-size envelope reaches its carrier over Bluetooth",
@@ -644,9 +643,20 @@ test("F08 an envelope past one frame is carried, not deleted as handed over", as
   // Long enough for every announce to land, so alice holds bob's key to seal
   // to and the carrier's to charge the deposit against.
   await s.world.advance(10_000);
+  // And a conversation first, so alice holds a session and a ratchet for bob,
+  // which must not send the DM flooding into the room instead.
+  alice.send(`dm:${bob.peerID}`, "see you later");
+  const talked = await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("see you later"),
+    120_000,
+  );
+  s.check("alice and bob talked while together", talked);
 
   radio.setIsolated("bob", true);
   await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+  // Past the registry's minute, so bob is gone rather than briefly quiet.
+  await s.world.advance(90_000);
 
   // Envelope fragments from alice, told apart by the inner type byte (12) of
   // the fragment header.
@@ -658,22 +668,15 @@ test("F08 an envelope past one frame is carried, not deleted as handed over", as
     envelopeFragments += bin.includes("\u0004") ? 1 : 0;
   });
 
-  // The largest message a courier envelope can carry, under a UUID message id
-  // as the composer mints: sealed, about 520 bytes on the air.
+  // The largest message a courier envelope can carry: sealed, past 512 bytes
+  // on the air.
   const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
   let text = "";
   for (let i = 0; i < 255; i++) {
     text += alphabet[s.world.rng.int(0, alphabet.length - 1)];
   }
-  // Straight to the courier path. A DM sent through the composer floods to
-  // the carrier first and reaches it only once bob has dropped out of alice's
-  // registry, which is a minute of waiting that tests nothing here.
-  const sealed = (
-    alice.mesh as unknown as {
-      sendViaCourier: (peerID: string, text: string, id: string) => boolean;
-    }
-  ).sendViaCourier(bob.peerID, text, "f08a1b2c-0000-4000-8000-00000000c0de");
-  s.check("alice found a courier", sealed);
+  const status = alice.send(`dm:${bob.peerID}`, text);
+  s.check("alice found a courier", status === "carried", `status=${status}`);
 
   const courier = (
     carrier.mesh as unknown as { courier: { size: number } } | null
@@ -695,6 +698,276 @@ test("F08 an envelope past one frame is carried, not deleted as handed over", as
     radio.framesOversized === 0,
     `oversized=${String(radio.framesOversized)}`,
   );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F09 carried mail is not flooded at peers heard only through relays", async () => {
+  // Spray-and-wait splits a budget of four copies among the carriers it meets.
+  // A carrier that also sprayed every peer it heard through relays would spend
+  // nothing, since a flood confirms no carrier, and every phone within seven
+  // hops would end up holding a copy, re-flooded on each of their announces.
+  // Only the recipient's own mail goes toward a relayed peer, once per
+  // cooldown, and it still reaches them.
+  const s = (scenario = new Scenario({
+    id: "F09",
+    title: "a carrier in a chain sprays its neighbours, not the whole mesh",
+    seed: 609,
+  }));
+  const radio = new RadioFabric(s.world);
+  const ids = ["alice", "bob", "carrier", "d", "e", "f"];
+  const cast = ids.map((id, i) =>
+    SimDevice.create(s.world, android(id, 11 * (i + 1))),
+  );
+  const [alice, bob, carrier, d, e, f] = cast;
+  for (const dev of cast) radio.add(dev);
+  s.track(...cast);
+  const chain: [string, string][] = [
+    ["alice", "carrier"],
+    ["carrier", "d"],
+    ["d", "e"],
+    ["e", "f"],
+  ];
+  radio.setTopology([["alice", "bob"], ...chain]);
+  for (const dev of cast) dev.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((dev) => dev.peerCount() >= 5),
+    60_000,
+  );
+  await s.world.advance(10_000);
+
+  // Bob leaves, and alice writes once he is gone.
+  radio.setTopology(chain);
+  await s.world.advance(90_000);
+  const status = alice.send(`dm:${bob.peerID}`, "back at the north gate");
+  s.check(
+    "alice handed it to the carrier",
+    status === "carried",
+    `status=${status}`,
+  );
+
+  interface Carried {
+    courier: { size: number; envelopes: { copies: number }[] };
+  }
+  const bag = (dev: SimDevice) => (dev.mesh as unknown as Carried).courier;
+  const originated = jest.spyOn(
+    carrier.mesh as unknown as {
+      sendCourierPayloadTo: (
+        payload: Uint8Array,
+        peerID: string,
+      ) => Promise<boolean>;
+    },
+    "sendCourierPayloadTo",
+  );
+  await s.world.advance(180_000);
+  const copies = [carrier, d, e, f].map((dev) =>
+    bag(dev).envelopes.reduce((sum, env) => sum + env.copies, 0),
+  );
+  const held = `carrier=${copies[0]} d=${copies[1]} e=${copies[2]} f=${copies[3]}`;
+  s.check(
+    "the copies in the mesh never exceed the budget",
+    copies.reduce((a, b) => a + b, 0) <= 4,
+    held,
+  );
+  s.check(
+    "a phone reached only through relays carries nothing",
+    bag(f).size === 0,
+    held,
+  );
+  const neighbours = new Set([alice.peerID, d.peerID]);
+  const beyond = originated.mock.calls.filter(
+    ([, peer]) => !neighbours.has(peer),
+  );
+  s.check(
+    "the carrier sent nothing to peers it hears only through relays",
+    beyond.length === 0,
+    `to neighbours=${String(originated.mock.calls.length - beyond.length)}, beyond=${String(beyond.length)}`,
+  );
+
+  // Bob comes back at the far end, where no carrier holds a link to him.
+  originated.mockClear();
+  radio.setTopology([...chain, ["f", "bob"]]);
+  const delivered = await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("back at the north gate"),
+    180_000,
+  );
+  s.check("the mail reaches him through the relays", delivered);
+  const towardBob = originated.mock.calls.filter(
+    ([, peer]) => peer === bob.peerID,
+  );
+  s.check(
+    "it is flooded toward him at most once per cooldown",
+    towardBob.length <= 1,
+    `floods=${String(towardBob.length)}`,
+  );
+  originated.mockRestore();
+
+  s.expectNone("exactly once", exactlyOnce(cast));
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F10 mail written with nobody in range goes to the first carrier that arrives", async () => {
+  // Alice writes to bob, who left long ago, while nobody else is around, so
+  // there is no carrier to seal it to. A carrier walking up later is a
+  // delivery opportunity for every recipient alice owes, not only for itself.
+  const s = (scenario = new Scenario({
+    id: "F10",
+    title: "a carrier that arrives late still takes the mail",
+    seed: 610,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const carrier = SimDevice.create(s.world, android("carrier", 22));
+  const bob = SimDevice.create(s.world, android("bob", 33));
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  await s.world.advance(10_000);
+
+  radio.setIsolated("bob", true);
+  radio.setIsolated("carrier", true);
+  await waitForCoarse(
+    s.world,
+    () =>
+      !radio.isLinked("alice", "bob") && !radio.isLinked("alice", "carrier"),
+    20_000,
+  );
+  // Past the registry's minute, so both are gone rather than briefly quiet.
+  await s.world.advance(90_000);
+
+  const status = alice.send(`dm:${bob.peerID}`, "left you a note");
+  s.check(
+    "with nobody around it is only queued",
+    status === "queued",
+    `status=${status}`,
+  );
+
+  radio.setIsolated("carrier", false);
+  const courier = (
+    carrier.mesh as unknown as { courier: { size: number } } | null
+  )?.courier;
+  const carried = await waitForCoarse(
+    s.world,
+    () => (courier?.size ?? 0) > 0,
+    120_000,
+  );
+  s.check("the carrier that arrived holds the envelope", carried);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F11 a message read after its sender left still reports read, over Nostr", async () => {
+  // Bob gets alice's DM over Bluetooth but opens it only after she has walked
+  // away. The read receipt owed over the mesh has no route left, and bob still
+  // holds the npub alice announced.
+  const s = (scenario = new Scenario({
+    id: "F11",
+    title: "a read receipt follows its sender onto the internet",
+    seed: 611,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const online = (id: string, seedByte: number): DeviceSpec => ({
+    ...android(id, seedByte),
+    internetEnabled: true,
+  });
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(bob.peerID) &&
+      bob.peers().includes(alice.peerID) &&
+      relay.connectionCount("alice") > 0 &&
+      relay.connectionCount("bob") > 0,
+    30_000,
+  );
+
+  alice.send(`dm:${bob.peerID}`, "read me later");
+  const delivered = await waitForCoarse(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .some((m) => m.text === "read me later" && m.status === "delivered"),
+    120_000,
+  );
+  s.check("it was delivered over Bluetooth", delivered);
+
+  radio.setIsolated("alice", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+  // Past the registry's minute, so alice is gone rather than briefly quiet.
+  await s.world.advance(90_000);
+
+  bob.openThread(`dm:${alice.peerID}`);
+  const read = await waitForCoarse(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .some((m) => m.text === "read me later" && m.status === "read"),
+    60_000,
+  );
+  s.check("alice sees it read", read);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F12 a group invite to someone who just walked off waits for them", async () => {
+  // Their session outlives the link, so a live session is no proof the invite
+  // was written anywhere: it has to queue until they are back. addGroupMembers
+  // skips existing members, so nothing would send it again.
+  const s = (scenario = new Scenario({
+    id: "F12",
+    title: "group created with a member whose link dropped a moment ago",
+    seed: 612,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const bob = SimDevice.create(s.world, android("bob", 22));
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(s.world, () => alice.peers().includes(bob.peerID));
+  alice.send(`dm:${bob.peerID}`, "hello");
+  await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).length > 0,
+  );
+
+  radio.setIsolated("bob", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"));
+  const groupID = alice.createGroup("crew", [bob.peerID]);
+  s.check("the group was created", groupID !== null);
+  if (groupID === null) {
+    s.assert();
+    return;
+  }
+
+  radio.setIsolated("bob", false);
+  const joined = await waitForCoarse(
+    s.world,
+    () => bob.knowsGroup(groupID),
+    45_000,
+  );
+  s.check("bob gets the invite once he is back", joined);
 
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);

@@ -194,6 +194,12 @@ const strings: Strings = {
   "home.features.identity.qr.name": "Kontak sa QR",
   "home.features.identity.qr.line":
     "Isang scan ang nagdadala ng kanilang susi, hindi lang ng pangalan.",
+  "home.features.identity.forward.name": "Forward secrecy",
+  "home.features.identity.forward.line":
+    "Hindi mabubuksan ng na-leak na susi ang mga lumang mensahe.",
+  "home.features.identity.move.name": "Ilipat sa bagong telepono",
+  "home.features.identity.move.line":
+    "Lilipat ang mga chat at wallet, saka mabubura ang lumang telepono.",
   "home.features.identity.panic.name": "Panic wipe",
   "home.features.identity.panic.line":
     "Bawat susi at bawat mensahe ay nasisira sa wala pang isang segundo.",
@@ -203,6 +209,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth mesh",
   "home.features.networking.mesh.line":
     "Walang internet, walang router, sa mga teleponong meron na ang mga tao.",
+  "home.features.networking.lan.name": "Lokal na network",
+  "home.features.networking.lan.line": "Iisang WiFi o hotspot, magkasama ang iPhone at Android.",
+  "home.features.networking.hops.name": "Multi-hop na relay",
+  "home.features.networking.hops.line":
+    "Ipinapasa ng bawat telepono ang mensahe, hanggang pitong hop.",
   "home.features.networking.bridge.name": "Tulay ng mesh",
   "home.features.networking.bridge.line":
     "Ikinokonekta ang iyong pampublikong usapan sa kalapit na pangkat na wala sa saklaw.",

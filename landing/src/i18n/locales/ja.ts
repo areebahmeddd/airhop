@@ -186,6 +186,10 @@ const strings: Strings = {
   "home.features.identity.names.line": "あなたの鍵から導かれるので、誰にも奪われません。",
   "home.features.identity.qr.name": "QR での連絡先",
   "home.features.identity.qr.line": "一度読み取れば名前だけでなく鍵も受け取れます。",
+  "home.features.identity.forward.name": "前方秘匿性",
+  "home.features.identity.forward.line": "鍵が漏れても過去のメッセージは開けません。",
+  "home.features.identity.move.name": "新しい端末へ移行",
+  "home.features.identity.move.line": "チャットとウォレットが移り、古い端末は自らを消去します。",
   "home.features.identity.panic.name": "緊急消去",
   "home.features.identity.panic.line": "すべての鍵とメッセージを 1 秒未満で破棄。",
 
@@ -194,6 +198,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth メッシュ",
   "home.features.networking.mesh.line":
     "インターネットもルーターも不要。みんながすでに持っている端末で。",
+  "home.features.networking.lan.name": "ローカルネットワーク",
+  "home.features.networking.lan.line": "共有 WiFi やテザリングで、iPhone と Android がいっしょに。",
+  "home.features.networking.hops.name": "マルチホップ中継",
+  "home.features.networking.hops.line": "各端末がメッセージを受け渡し、最大 7 ホップ。",
   "home.features.networking.bridge.name": "メッシュブリッジ",
   "home.features.networking.bridge.line": "公開チャットを、圏外にいる近くの集団とつなぎます。",
   "home.features.networking.wifi.name": "WiFi の高速経路",

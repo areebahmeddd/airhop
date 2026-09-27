@@ -52,7 +52,7 @@ import { dismissAllNotifications } from "./notification-service";
 import { setNutzapRebinder, stopNutzapWatcher } from "./nutzap-watcher-handle";
 import { resetWalletService } from "./wallet-service";
 import { bumpWipeGeneration } from "./wipe-generation";
-import { beginPanicWipe, endPanicWipe } from "./wipe-marker";
+import { beginPanicWipe, condemnIdentity, endPanicWipe } from "./wipe-marker";
 
 // Ceiling on the two best-effort steps that run after the data is destroyed.
 // Long enough for a normal native round trip, short enough that the confirm
@@ -72,7 +72,7 @@ const KEY_WIPE_TIMEOUT_MS = 5_000;
 // peer-store is intentionally absent: it uses in-memory Zustand with no MMKV
 // persistence, so it resets automatically when the process restarts.
 // wallet-store is absent here on purpose: it is encrypted, so it is destroyed
-// by WALLET_STORE_IDS below rather than cleared through this list.
+// by wipeWalletStorage below rather than cleared through this list.
 // blocked-store records who this identity has blocked, which is tied to this
 // identity's relationships, same as chat data, so it goes too.
 // If a new persisted store is added, add its MMKV ID here.
@@ -98,8 +98,8 @@ export const MMKV_STORE_IDS = [
   // board-store holds signed public bulletin-board posts tied to this identity's
   // signing key; a wipe erases them along with the rest of this identity's data.
   "board-store",
-  // prekey-store holds our one-time prekey private keys and peers' bundles;
-  // both are identity-linked key material and must be destroyed on panic.
+  // prekey-store holds peers' prekey bundles, which say who this identity
+  // talks to. Our own one-time prekey private keys are a keychain item.
   "prekey-store",
   // courier-store holds sealed envelopes carried for other people. Unreadable
   // here (each is Noise X to a key this device does not hold), but a bag of a
@@ -131,7 +131,7 @@ export const MMKV_STORE_IDS = [
 // falsely: everything else is best-effort and its failure changes nothing the
 // user needs to decide about.
 export interface PanicWipeResult {
-  // False when the OS refused to release the keys - a locked Keychain on a
+  // False when the OS refused to release the keys: a locked Keychain on a
   // device that has booted but not been unlocked, which is precisely the
   // seizure case. Everything else is still destroyed; the secrets are not.
   keysDestroyed: boolean;
@@ -140,8 +140,8 @@ export interface PanicWipeResult {
 export async function panicWipe(): Promise<PanicWipeResult> {
   // -1. Silence a live Ring alert first: emptying this store stops
   //     ring-alert-sheet's loop and its overlay before the rest of the
-  //     sequence starts. The tray copy goes with every other notification in
-  //     step 5.
+  //     sequence starts. The tray copy goes with every other notification
+  //     near the end.
   useIncomingRingStore.getState().clearAll();
 
   // 0. Record the intent BEFORE anything is destroyed. Everything below is a
@@ -179,14 +179,12 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // 1. Destroy all private keys from the OS secure enclave. This also removes
   //    the wallet store's AES key, making step 2's ciphertext unrecoverable.
   //
-  //    Guarded, and the wipe continues either way. This was the one bare await
-  //    in the sequence, and it is the step most likely to fail: the Keychain is
-  //    unreadable on a device that has booted but not been unlocked, which is
-  //    exactly the seizure scenario the panic wipe exists for. A throw here used
-  //    to abandon everything below - all thirteen MMKV partitions, every store,
-  //    the wallet file and the media cache stayed on disk - and the caller
-  //    surfaced nothing, so the user got a confirmation haptic and a dead app
-  //    over completely intact data.
+  //    Guarded, and the wipe continues either way. This is the step most likely
+  //    to fail: the Keychain is unreadable on a device that has booted but not
+  //    been unlocked, which is exactly the seizure scenario the panic wipe
+  //    exists for. A throw that abandoned everything below would leave every
+  //    MMKV partition, the wallet file and the media cache on disk behind a
+  //    confirmation haptic.
   //
   //    Continuing is strictly better: the data goes even if the keys resist, and
   //    `keysDestroyed` is returned so the UI can tell the user the one thing
@@ -208,6 +206,10 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   } catch {
     keysDestroyed = false;
   }
+  // Recorded outside every partition cleared below, so a relaunch before the
+  // user re-onboards cannot boot the identity that survived. Set whichever
+  // item refused: both paths that write a new identity clear it.
+  if (!keysDestroyed) condemnIdentity();
 
   // 2. Clear every MMKV partition, through the one handle each is persisted
   //    through. See store/mmkv for why a second handle is fatal.
@@ -253,8 +255,8 @@ export async function panicWipe(): Promise<PanicWipeResult> {
     nostrConnected: false,
     // Tor is reset because it is a privacy *claim*, not just cosmetic state.
     // The wipe tears the transport down, but this flag drives the "Tor on ·
-    // internet traffic routed" banner, so leaving it set meant the UI kept
-    // promising onion routing that was no longer running. A security indicator
+    // internet traffic routed" banner, so left set, the UI would keep
+    // promising onion routing that is no longer running. A security indicator
     // that over-claims is worse than none.
     torActive: false,
     torBootstrap: "idle",
@@ -298,42 +300,39 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // And the wallet STORAGE bootstrap, which resetWalletService does not reach.
   //
   // deleteMMKV unlinks the file, but the JS handle and the resolved `ready`
-  // promise are module scope and survived it. Three things went wrong with that:
-  // the wallet reported itself unlocked and hydrated against a partition that no
-  // longer existed, so the Wallet tab showed an empty-but-working wallet rather
-  // than a first-run one; any later write recreated the file through the stale
-  // handle, still holding the AES key whose keychain copy had just been
-  // destroyed, leaving ciphertext no future launch could ever open; and
-  // re-onboarding in the same process wrote the new identity's proofs under that
-  // same dead key.
+  // promise are module scope and survive it. Left alone, the wallet would
+  // report itself unlocked against a partition that no longer exists (an
+  // empty-but-working Wallet tab rather than a first-run one), a later write
+  // would recreate the file under the AES key whose keychain copy was just
+  // destroyed (ciphertext no launch can open), and re-onboarding in the same
+  // process would write the new identity's proofs under that dead key.
   resetWalletStorage();
 
-  // Tray and Tor, moved to LAST on purpose.
+  // Tray and Tor, LAST on purpose.
   //
   // Neither runs before the keys and stores are gone, because both are slow:
   // dismissing the shade is a native round trip, and wiping Arti polls for its
   // process to exit before deleting a directory tree. For a gesture whose threat
-  // model is a phone being taken, running them first spends the seconds that
-  // matter on the notification shade and a Tor consensus cache while the keys and
-  // the
-  // thirteen message partitions were still on disk. Neither depends on the keys
-  // existing, so both belong after the data is gone.
-  // Dismiss every notification already in the shade.
-  //     Each one carries a sender nickname and a message preview, and they
-  //     survive the process, so a wipe that cleared the database and left the
-  //     lock screen showing the last three conversations has not done what the
-  //     user asked. Best-effort by design.
-  // Time-boxed: both remaining steps are best-effort and run after every byte
-  // is already gone, but the caller holds the confirm sheet until this resolves,
-  // and wipeTorState polls for Arti to exit before deleting its directory.
+  // model is a phone being taken, running them first would spend the seconds
+  // that matter on the notification shade and a Tor consensus cache while the
+  // keys and the message partitions are still on disk. Neither depends on the
+  // keys existing, so both belong after the data is gone.
+  //
+  // Time-boxed: both are best-effort, but the caller holds the confirm sheet
+  // until this resolves.
+  //
+  // Dismiss every notification already in the shade. Each carries a sender
+  // nickname and a message preview and survives the process, so a wipe that
+  // left the lock screen showing the last conversations has not done what the
+  // user asked.
   await settleOr(dismissAllNotifications(), BEST_EFFORT_TIMEOUT_MS, undefined);
 
   // Stop Arti and destroy its data directory, on both platforms.
   //
-  //     Two things survived every wipe here. Arti kept running, holding live
-  //     circuits for an identity that no longer existed. And its state lives
+  //     Two things would otherwise survive the wipe. Arti keeps running, holding
+  //     live circuits for an identity that no longer exists. And its state lives
   //     outside the media cache (Application Support on iOS, the files directory
-  //     on Android), so the media sweep below never reached it: a cached
+  //     on Android), so the media sweep below never reaches it: a cached
   //     consensus, the guard nodes this device chose, directory data and
   //     timestamps. That is on-disk evidence of the shape "this device used
   //     Tor, around here, around then", which is exactly the inference a panic
@@ -362,11 +361,11 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // the old identity observed.
   clearLocationCache();
 
-  // 4. Empty the cache directory. Not just the prefixed attachments this used
-  //    to clear: sent documents, sent videos, small sent images and the saved QR
-  //    card all live under other names or in the pickers' own subdirectories and
-  //    survived every wipe. See wipeCacheDirectory. Best-effort: a failure here
-  //    must not abort the wipe, the keys and stores are already gone.
+  // 4. Empty the cache directory, not just the prefixed attachments: a
+  //    picker's copy of something never sent, the saved QR card and, on iOS,
+  //    tmp live under other names. See wipeCacheDirectory. Best-effort: a
+  //    failure here must not abort the wipe, the keys and stores are already
+  //    gone.
   //
   //    Awaited: it yields between batches rather than holding the thread, and
   //    awaiting it is what keeps step 5 honest.

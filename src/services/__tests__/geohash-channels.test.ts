@@ -14,15 +14,25 @@
 // message fine, so they're pinned here.
 
 import { GeoRelayDirectory } from "@core/nostr/geo-relay";
-import { decodeGeohash, encodeGeohash } from "@core/nostr/geohash-presence";
+import {
+  decodeGeohash,
+  encodeGeohash,
+  KIND_PRESENCE,
+} from "@core/nostr/geohash-presence";
+import type { NostrClient } from "@core/nostr/nostr-client";
 import { GEO_RELAYS } from "@data/relays";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { useChatStore } from "@store/chat-store";
+import { useSettingsStore } from "@store/settings-store";
 import {
   geohashChannel,
   isManualGeoChannel,
   manualGeohashOf,
 } from "@utils/channel-key";
+import type { Event } from "nostr-tools";
 import {
   GEO_CHANNEL_PRECISION,
+  GeohashChannelService,
   geohashLevelName,
   isGeoChannel,
   isValidGeohash,
@@ -30,6 +40,15 @@ import {
 } from "../geohash-channel-service";
 
 jest.mock("expo-location", () => ({}));
+
+// Fixed, so the heartbeat tests resolve #city to one known cell. The "mock"
+// prefix lets the hoisted factory below close over it.
+const mockCoords = { lat: 51.5074, lng: -0.1278 };
+
+jest.mock("../location-service", () => ({
+  getCoarseLocation: () => Promise.resolve(mockCoords),
+  clearLocationCache: () => undefined,
+}));
 
 // Two points ~1km apart in central London, and one far away.
 const LONDON = { lat: 51.5074, lng: -0.1278 };
@@ -228,5 +247,71 @@ describe("relay selection determinism", () => {
       5,
     );
     expect(london).not.toEqual(tokyo);
+  });
+});
+
+// Presence is read from the cell's relays by everyone in the cell, bitchat-ios
+// included. A heartbeat on the default DM relays is never counted, and tells
+// those relays which cell this cell's key is in.
+describe("presence heartbeat relays", () => {
+  // Past the longest jittered gap before the first round.
+  const HEARTBEAT_ROUND_MS = 80_000;
+
+  interface Published {
+    kind: number;
+    relays: string[] | undefined;
+  }
+
+  function newService(published: Published[]): GeohashChannelService {
+    const client = {
+      subscribe: () => ({ close: () => undefined }),
+      publish: async (event: Event, relays?: string[]) => {
+        published.push({ kind: event.kind, relays });
+        return { relay: "", ok: true };
+      },
+    } as unknown as NostrClient;
+    return new GeohashChannelService(
+      client,
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    useSettingsStore.getState().setGeoRelayDiscovery(true);
+    useChatStore.setState({ channels: ["#city"] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("sends each round's heartbeat to the cell's relays", async () => {
+    const published: Published[] = [];
+    const service = newService(published);
+    await service.refresh();
+    await jest.advanceTimersByTimeAsync(HEARTBEAT_ROUND_MS);
+
+    const cell = service.geohashFor("#city");
+    expect(cell).not.toBeNull();
+    const heartbeats = published.filter((p) => p.kind === KIND_PRESENCE);
+    expect(heartbeats).toHaveLength(1);
+    expect(heartbeats[0].relays).toEqual(
+      service.relaysForGeohash(cell as string),
+    );
+    expect(heartbeats[0].relays?.length).toBeGreaterThan(0);
+    service.stop();
+  });
+
+  it("skips the heartbeat for a cell with no relays", async () => {
+    const published: Published[] = [];
+    const service = newService(published);
+    jest.spyOn(service, "relaysForGeohash").mockReturnValue([]);
+    await service.refresh();
+    await jest.advanceTimersByTimeAsync(HEARTBEAT_ROUND_MS);
+
+    expect(published.filter((p) => p.kind === KIND_PRESENCE)).toEqual([]);
+    service.stop();
   });
 });

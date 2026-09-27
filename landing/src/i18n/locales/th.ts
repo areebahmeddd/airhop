@@ -182,6 +182,10 @@ const strings: Strings = {
   "home.features.identity.names.line": "ได้มาจากกุญแจของคุณ จึงไม่มีใครแย่งชื่อคุณไปได้",
   "home.features.identity.qr.name": "ผู้ติดต่อผ่าน QR",
   "home.features.identity.qr.line": "สแกนครั้งเดียวได้กุญแจของเขาไป ไม่ใช่แค่ชื่อ",
+  "home.features.identity.forward.name": "ความลับไปข้างหน้า",
+  "home.features.identity.forward.line": "กุญแจที่รั่วไหลเปิดข้อความเก่าไม่ได้",
+  "home.features.identity.move.name": "ย้ายไปโทรศัพท์เครื่องใหม่",
+  "home.features.identity.move.line": "แชตและกระเป๋าเงินย้ายตามไป แล้วเครื่องเก่าจะล้างตัวเอง",
   "home.features.identity.panic.name": "การล้างฉุกเฉิน",
   "home.features.identity.panic.line": "ทุกกุญแจและทุกข้อความถูกทำลายภายในไม่ถึงหนึ่งวินาที",
 
@@ -190,6 +194,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "เมช Bluetooth",
   "home.features.networking.mesh.line":
     "ไม่ต้องมีอินเทอร์เน็ต ไม่ต้องมีเราเตอร์ บนโทรศัพท์ที่ผู้คนมีอยู่แล้ว",
+  "home.features.networking.lan.name": "เครือข่ายท้องถิ่น",
+  "home.features.networking.lan.line": "WiFi เดียวกันหรือฮอตสปอต ใช้ได้ทั้ง iPhone และ Android",
+  "home.features.networking.hops.name": "ส่งต่อหลายทอด",
+  "home.features.networking.hops.line": "ทุกเครื่องช่วยส่งข้อความต่อ ได้ถึงเจ็ดทอด",
   "home.features.networking.bridge.name": "สะพานเมช",
   "home.features.networking.bridge.line": "เชื่อมแชทสาธารณะของคุณกับกลุ่มคนใกล้ ๆ ที่อยู่นอกระยะ",
   "home.features.networking.wifi.name": "ทางลัด WiFi",

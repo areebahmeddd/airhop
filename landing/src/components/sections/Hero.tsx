@@ -1,4 +1,4 @@
-import { formatShortDate, useLanguage, useT, type LanguageCode, type TranslationKey } from "@/i18n";
+import { useT, type TranslationKey } from "@/i18n";
 import { useRichText } from "@/i18n/rich-text";
 import { REPO_LINKS, STORE_LINKS } from "@/lib/links";
 import {
@@ -78,48 +78,9 @@ const RELEASE_BIRDS: Record<string, string> = {
   "1": "Albatross",
 };
 
-const RELEASES_URL = REPO_LINKS.releases;
+const RELEASE_VERSION = `v${__APP_VERSION__}`;
 
-interface GitHubRelease {
-  tag_name?: unknown;
-  name?: unknown;
-  published_at?: unknown;
-  html_url?: unknown;
-}
-
-interface Release {
-  version: string;
-  bird: string | null;
-  date: string | null;
-  url: string;
-}
-
-const RELEASE_FALLBACK: Release = {
-  version: "v0.9.12",
-  bird: null,
-  date: null,
-  url: RELEASES_URL,
-};
-
-function buildRelease(
-  tag: string,
-  publishedAt: string | null,
-  url: string | null,
-  language: LanguageCode,
-): Release | null {
-  const version = tag.replace(/^v/, "").trim();
-  if (!version) return null;
-
-  const date = publishedAt ? new Date(publishedAt) : null;
-  const hasDate = date && !Number.isNaN(date.getTime());
-
-  return {
-    version: `v${version}`,
-    bird: RELEASE_BIRDS[version.split(".")[0]] || null,
-    date: hasDate ? formatShortDate(language, date) : null,
-    url: url || RELEASES_URL,
-  };
-}
+const RELEASE_BIRD = RELEASE_BIRDS[__APP_VERSION__.split(".")[0]] ?? null;
 
 function Underlined({ delay, children }: { delay: number; children: React.ReactNode }) {
   return (
@@ -281,32 +242,6 @@ function HeroBody() {
 
 export default function Hero() {
   const T = useT();
-  const language = useLanguage();
-  const [release, setRelease] = useState<Release>(RELEASE_FALLBACK);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(REPO_LINKS.releasesApi)
-      .then((res) => (res.ok ? (res.json() as Promise<GitHubRelease>) : null))
-      .then((data) => {
-        if (cancelled || !data) return;
-        const tag = data.tag_name || data.name;
-        if (typeof tag !== "string" || !tag) return;
-        const next = buildRelease(
-          tag,
-          typeof data.published_at === "string" ? data.published_at : null,
-          typeof data.html_url === "string" ? data.html_url : null,
-          language,
-        );
-        if (next) setRelease(next);
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  }, [language]);
 
   return (
     <section className="px-6 md:px-10">
@@ -318,7 +253,7 @@ export default function Hero() {
       >
         <div className="mb-7 flex h-7 items-center">
           <a
-            href={release.url}
+            href={REPO_LINKS.releases}
             target="_blank"
             rel="noopener noreferrer"
             className="group border-line bg-card-subtle hover:border-line-strong active:bg-inner flex h-7 items-center gap-2 rounded-full border ps-0.5 pe-2.5 transition-colors duration-150"
@@ -332,14 +267,9 @@ export default function Hero() {
                 <span className="bg-ok absolute inline-flex h-full w-full animate-ping rounded-full opacity-50" />
                 <span className="bg-ok relative inline-flex h-1.5 w-1.5 rounded-full" />
               </span>
-              {release.version}
-              {release.bird ? <span className="text-secondary">{release.bird}</span> : null}
+              {RELEASE_VERSION}
+              {RELEASE_BIRD ? <span className="text-secondary">{RELEASE_BIRD}</span> : null}
             </span>
-            {release.date ? (
-              <span className="text-secondary mono text-[10px] tracking-wide whitespace-nowrap">
-                {release.date}
-              </span>
-            ) : null}
             <ArrowRight
               size={11}
               strokeWidth={2}

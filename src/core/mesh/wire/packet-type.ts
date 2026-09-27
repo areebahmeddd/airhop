@@ -1,8 +1,9 @@
 // The packet type byte, per PROTOCOLS.md section 3. Its own module so the
 // payload limits can key on it without importing the codec that imports them.
 //
-// Everything up to VOICE_FRAME matches bitchat MessageType.swift /
-// MessageType.kt (public domain). bitchat allocates forward and has reached
+// Everything up to VOICE_FRAME except DR_ENCRYPTED (0x12, Airhop's own) matches
+// bitchat's MessageType enum (public domain; `MessageType.swift` on iOS,
+// `BinaryProtocol.kt` on Android). bitchat allocates forward and has reached
 // 0x2C, so the values just past it are theirs to take, not ours. Airhop's own
 // types live at 0x50 and up; see the note there before adding one.
 export const enum PacketType {
@@ -14,7 +15,7 @@ export const enum PacketType {
   NOISE_ENCRYPTED = 0x11, // Post-handshake Noise-transport encrypted DM
   DR_ENCRYPTED = 0x12, // Double Ratchet encrypted DM (Airhop-to-Airhop only)
   FRAGMENT = 0x20, // Single BLE fragment of a larger message
-  REQUEST_SYNC = 0x21, // GCS filter gossip request (local-only, TTL=2)
+  REQUEST_SYNC = 0x21, // GCS filter gossip request (link-local, TTL 0)
   FILE_TRANSFER = 0x22, // Binary file / audio / image payload
   BOARD_POST = 0x23, // Signed geohash/mesh bulletin-board post or tombstone
   PREKEY_BUNDLE = 0x24, // Signed batch of one-time prekeys (gossiped)

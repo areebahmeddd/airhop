@@ -13,11 +13,13 @@
 // every courier. That is what lets `deposit` recognise the copies as one
 // envelope, so nothing here may re-seal.
 //
-// Envelope wire format (COURIER_ENV packet payload):
-//   [16 bytes: recipient tag]  HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
-//   [8  bytes: expiry]         Unix milliseconds as u64 BE
-//   [1  byte:  copies]         Spray-and-wait budget
-//   [rest:     ciphertext]     Noise X sealed payload
+// Envelope wire format (COURIER_ENV payload, and a kind 1401 drop's content):
+// TLVs of [type u8][length u16 BE][value], as bitchat's CourierEnvelope.
+//   0x01  recipient tag   HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
+//   0x02  expiry          Unix milliseconds, u64 BE
+//   0x03  ciphertext      Noise X sealed payload
+//   0x04  copies          spray-and-wait budget
+//   0x05  prekey ID       one-time prekey sealed to (v2); absent for a static seal
 
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -55,6 +57,37 @@ export const COURIER_INITIAL_COPIES = 4;
 // amplifier for whoever claims 255.
 const MAX_COPIES = 8;
 
+// How long an envelope waits before it is flooded toward its recipient again
+// after one of their relayed announces, matching bitchat's
+// TransportConfig.courierRemoteHandoverCooldownSeconds. They announce every
+// 15 to 30 s, and each flood crosses the whole mesh.
+const REMOTE_HANDOVER_COOLDOWN_MS = 10 * 60 * 1000;
+
+// ---- Seal prologues ----
+
+// The Noise X prologue bitchat-ios seals with (NoiseEncryptionService
+// courierPrologue and prekeyPrologue). A static seal (v1) and a one-time-prekey
+// seal (v2) differ, and the v2 one binds the prekey ID, so a ciphertext cannot
+// be opened against another prekey.
+export const COURIER_PROLOGUE = new TextEncoder().encode("bitchat-courier-v1");
+const PREKEY_PROLOGUE_PREFIX = new TextEncoder().encode("bitchat-prekey-v1");
+
+export function prekeyPrologue(prekeyID: number): Uint8Array {
+  const out = new Uint8Array(PREKEY_PROLOGUE_PREFIX.length + 4);
+  out.set(PREKEY_PROLOGUE_PREFIX, 0);
+  new DataView(out.buffer).setUint32(
+    PREKEY_PROLOGUE_PREFIX.length,
+    prekeyID >>> 0,
+    false,
+  );
+  return out;
+}
+
+// The prologue an envelope was sealed under, from its prekey ID TLV.
+export function sealPrologue(prekeyID: number | undefined): Uint8Array {
+  return prekeyID === undefined ? COURIER_PROLOGUE : prekeyPrologue(prekeyID);
+}
+
 // ---- Recipient tag ----
 
 // Matches CourierEnvelope.recipientTag(noiseStaticKey:epochDay:) in BitFoundation.
@@ -76,6 +109,19 @@ export function computeRecipientTag(
   message.set(dayBuf, TAG_CONTEXT.length);
   const mac = hmac(sha256, recipientNoisePubKey, message);
   return mac.slice(0, 16);
+}
+
+// Every tag a peer's mail may carry right now: yesterday's, today's and
+// tomorrow's, as bitchat's candidateTags. The sender stamps the tag at seal
+// time, so mail carried across midnight bears yesterday's, and a sender whose
+// clock runs ahead seals with tomorrow's.
+export function candidateTags(
+  noisePubKey: Uint8Array,
+  nowMs: number = Date.now(),
+): Uint8Array[] {
+  return [0, -86_400_000, 86_400_000].map((offset) =>
+    computeRecipientTag(noisePubKey, nowMs + offset),
+  );
 }
 
 // ---- Envelope wire format ----
@@ -226,6 +272,9 @@ interface StoredEnvelope {
   // repeat announce from the same neighbour cannot spend budget on a copy they
   // already hold. Per-entry, and it dies with the entry.
   sprayedTo: Set<string>;
+  // When this was last flooded toward its recipient, heard only through
+  // relays. Persisted, so a relaunch does not restart the cooldown.
+  lastRemoteHandoverAt?: number;
 }
 
 // The on-disk shape. Separate from StoredEnvelope because JSON carries neither
@@ -240,6 +289,7 @@ interface PersistedEnvelope {
   copies: number;
   pk?: number;
   to: string[]; // sprayedTo, hex
+  rh?: number; // lastRemoteHandoverAt
 }
 
 // ---- CourierStore ----
@@ -297,6 +347,7 @@ export class CourierStore {
           copies: Math.min(Math.max(r.copies | 0, 1), MAX_COPIES),
           prekeyID: typeof r.pk === "number" ? r.pk : undefined,
           sprayedTo: new Set(Array.isArray(r.to) ? r.to : []),
+          lastRemoteHandoverAt: typeof r.rh === "number" ? r.rh : undefined,
         });
       } catch {
         // Unparseable hex or base64 in one row.
@@ -319,6 +370,7 @@ export class CourierStore {
       copies: e.copies,
       pk: e.prekeyID,
       to: [...e.sprayedTo],
+      rh: e.lastRemoteHandoverAt,
     }));
     this.storage.set(this.key, JSON.stringify(rows));
   }
@@ -411,7 +463,7 @@ export class CourierStore {
   // Envelopes addressed to a peer just met. NON-DESTRUCTIVE: the caller hands
   // each to the transport and calls `commitHandover` only once the write is
   // accepted onto that peer's own link. Retiring before then loses the mail to
-  // a refused write, and refusals are ordinary here - this runs from
+  // a refused write, and refusals are ordinary here: this runs from
   // `onAnnounce`, when the link is busiest with the announce, the prekey bundle
   // and a gossip round, and a full GATT queue answers WRITE_BUSY. bitchat
   // splits handover the same way.
@@ -447,12 +499,44 @@ export class CourierStore {
     return true;
   }
 
+  // Envelopes addressed to a peer heard only through relays, as bitchat's
+  // envelopesForRemoteHandover. Speculative: the copy is flooded toward them
+  // and nothing confirms it arrived, so the envelope stays carried until a
+  // handover over their own link, or its expiry. Offering starts the
+  // cooldown, since a flood has no acceptance to wait for.
+  offerRemoteHandover(
+    tags: Uint8Array[],
+    now: number = Date.now(),
+  ): SealedEnvelope[] {
+    this.evictExpired();
+    const offered: SealedEnvelope[] = [];
+    for (const e of this.envelopes) {
+      if (!tags.some((t) => sameBytes(e.recipientTag, t))) continue;
+      if (
+        e.lastRemoteHandoverAt !== undefined &&
+        now - e.lastRemoteHandoverAt < REMOTE_HANDOVER_COOLDOWN_MS
+      ) {
+        continue;
+      }
+      e.lastRemoteHandoverAt = now;
+      offered.push({
+        recipientTag: e.recipientTag,
+        expiryMs: e.expiryMs,
+        copies: 1,
+        ciphertext: e.ciphertext,
+        prekeyID: e.prekeyID,
+      });
+    }
+    if (offered.length > 0) this.persist();
+    return offered;
+  }
+
   // Spray: when meeting another courier-eligible peer, offer half the copy
   // budget. NON-DESTRUCTIVE, like offerHandover; `commitSpray` spends the budget
   // once the write is accepted, so a refused one leaves this peer eligible to be
   // sprayed again on the next encounter.
   //
-  // Three exclusions, and each is load-bearing:
+  // Four exclusions, and each is load-bearing:
   //
   //   copies < 2   nothing to halve; a carry-only copy is the end of its branch
   //   sprayedTo    once per peer, not once per announce. Announces arrive
@@ -463,19 +547,23 @@ export class CourierStore {
   //                Spraying it back spends half a budget on a hop that delivers
   //                nothing, and leaves a SENDER carrying their own outgoing mail
   //                as third-party mail. bitchat excludes depositorNoiseKey too
-  //
-  // bitchat also excludes envelopes addressed TO this peer. Here that is
-  // structural instead: the caller runs offerHandover first, so anything for
-  // them has already been offered as a delivery rather than as a spray.
-  offerSpray(peerNoisePub: Uint8Array): SealedEnvelope[] {
+  //   their mail   addressed TO this peer, which offerHandover delivers. Both
+  //                commit only once the write lands, so running handover first
+  //                does not take it out of this pass. bitchat excludes it too
+  offerSpray(
+    peerNoisePub: Uint8Array,
+    now: number = Date.now(),
+  ): SealedEnvelope[] {
     this.evictExpired();
     const peerKey = bytesToHex(peerNoisePub);
+    const theirTags = candidateTags(peerNoisePub, now);
     const toSpray: SealedEnvelope[] = [];
 
     for (const e of this.envelopes) {
       if (e.copies < 2) continue;
       if (e.sprayedTo.has(peerKey)) continue;
       if (sameBytes(e.depositorNoisePub, peerNoisePub)) continue;
+      if (theirTags.some((t) => sameBytes(e.recipientTag, t))) continue;
       toSpray.push({
         recipientTag: e.recipientTag,
         expiryMs: e.expiryMs,
@@ -529,19 +617,19 @@ export class CourierStore {
     this.storage.remove(this.key);
   }
 
-  // Returns index of best eviction candidate: prefer verified-tier, then oldest.
   // Which envelope to drop to make room for `incoming`, or -1 to refuse it.
   //
   // Verified mail is evicted before favourite mail, oldest first. The tier of
   // the INCOMING envelope matters too: a verified arrival may never displace a
   // favourite, because that would let anyone who has merely announced push a
-  // contact's mail out of a full pool. bitchat states the same rule - evict a
+  // contact's mail out of a full pool. bitchat states the same rule: evict a
   // favourite only when the incoming envelope is itself a favourite, otherwise
   // reject.
   //
-  // Scoring tier and age together always returns an index for a non-empty pool,
-  // which makes the "pool full, all favourites" refusal at the call site
-  // unreachable and lets a verified envelope displace a favourite.
+  // Not one score over tier and age: that always returns an index for a
+  // non-empty pool, which would make the "pool full, all favourites" refusal
+  // at the call site unreachable and let a verified envelope displace a
+  // favourite.
   private findEvictionCandidate(incoming: CourierTier): number {
     let bestIdx = -1;
     let bestAge = -1;

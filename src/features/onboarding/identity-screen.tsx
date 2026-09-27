@@ -5,6 +5,7 @@
 
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { useT, type TranslationKey } from "@i18n";
+import { clearCondemnedIdentity } from "@services/wipe-marker";
 import PrimaryButton from "@ui/components/primary-button";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
@@ -99,7 +100,6 @@ export default function IdentityScreen({
   }, [stepAnims, reducedMotion, attempt]);
 
   useEffect(() => {
-    // Spin the ring indicator.
     const spinner = Animated.loop(
       Animated.timing(spinAnim, {
         toValue: 1,
@@ -122,6 +122,9 @@ export default function IdentityScreen({
     Promise.all([
       generateIdentity().then(async (id) => {
         await saveIdentity(id);
+        // A refused wipe's condemned flag names the old identity, so the next
+        // launch must not delete this one.
+        clearCondemnedIdentity();
         return id.peerID;
       }),
       delay(MIN_DISPLAY_MS),
@@ -149,8 +152,7 @@ export default function IdentityScreen({
     return (
       <SafeAreaView style={styles.root}>
         <View style={styles.inner}>
-          {/* Live region for the same reason the working state has one: this
-              replaces the spinner with no navigation event. */}
+          {/* Live region: this replaces the spinner with no navigation event. */}
           <View style={styles.copy} accessibilityLiveRegion="assertive">
             <Text style={styles.heading} accessibilityRole="header">
               {T("onboarding.identity.failed_heading")}
@@ -177,14 +179,8 @@ export default function IdentityScreen({
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.inner}>
-        {/* Spinner. Purely decorative for a screen reader: the heading below
-            already announces what is happening, so a second "in progress"
-            element would just be read twice.
-
-            The rotation is deliberately NOT gated on reduce-motion. Both
-            platforms keep their own system spinners turning under that setting
-            because an activity indicator conveys status rather than decoration,
-            and this screen has nothing else to say "still working". */}
+        {/* Hidden from screen readers, since the heading already says it. Spins
+            under reduce-motion, like the system spinners: it is status. */}
         <View
           style={styles.spinnerWrapper}
           importantForAccessibility="no-hide-descendants"
@@ -196,10 +192,8 @@ export default function IdentityScreen({
           <View style={styles.spinnerDot} />
         </View>
 
-        {/* Copy. The live region is what makes the transition audible: this
-            screen replaces the welcome screen with no navigation event, so
-            without it a screen reader user hears nothing at all after tapping
-            Get started and again nothing when it moves on. */}
+        {/* Live region: this replaces welcome with no navigation event, so a
+            screen reader would otherwise announce nothing. */}
         <View style={styles.copy} accessibilityLiveRegion="polite">
           <Text style={styles.heading} accessibilityRole="header">
             {T("onboarding.identity.heading")}
@@ -207,8 +201,7 @@ export default function IdentityScreen({
           <Text style={styles.body}>{T("onboarding.identity.body")}</Text>
         </View>
 
-        {/* Steps: a description of the work, not a checklist. Read as one
-            element so it is four short phrases rather than four stops. */}
+        {/* One element: four short phrases rather than four stops. */}
         <View
           style={styles.steps}
           accessible

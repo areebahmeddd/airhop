@@ -21,6 +21,7 @@
 
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 
 // A card read from our own `airhop:v1/` format, where the Nostr key is part of
 // the fixed layout and therefore always present. Narrower than ContactCard so
@@ -35,9 +36,9 @@ export interface ContactCard {
   nickname: string; // 0-32 UTF-8 characters
   // 32-byte secp256k1 (Nostr identity).
   //
-  // Optional because a card can now come from a bitchat verification QR, where
-  // the npub field is itself optional. Our own `airhop:v1/` cards always carry
-  // one - encodeContactCard refuses without it - so absence means "read from
+  // Optional because a card can come from a bitchat verification QR, where the
+  // npub field is itself optional. Our own `airhop:v1/` cards always carry one
+  // (encodeContactCard refuses without it), so absence means "read from
   // bitchat, mesh-only contact" rather than a malformed card of ours.
   nostrPubKey?: Uint8Array;
 }
@@ -115,8 +116,11 @@ export function decodeContactCard(buf: Uint8Array): AirhopContactCard {
     throw new Error("contact-exchange: buffer truncated");
   }
 
-  const nickname = new TextDecoder().decode(
-    buf.slice(FIXED_HEADER_SIZE, npubStart),
+  // The peer's choice, saved as the contact's own name, so it enters in the
+  // canonical form an announced name does: no bidi overrides, invisibles or
+  // line breaks.
+  const nickname = normalizeNickname(
+    new TextDecoder().decode(buf.slice(FIXED_HEADER_SIZE, npubStart)),
   );
 
   return {

@@ -16,12 +16,14 @@
 //
 // A completed wipe still leaves no trace of having been attempted: the flag
 // survives only an interrupted one, which has left the message store behind
-// anyway.
+// anyway. The exception is a wipe the keychain refused, which leaves the
+// condemned-identity flag below until a new identity replaces the old one.
 
 import { getStorage } from "@store/mmkv";
 
 const STORAGE_ID = "panic-wipe-marker";
 const PENDING_KEY = "pending";
+const CONDEMNED_KEY = "identityCondemned";
 
 // Call before the first destructive step.
 //
@@ -59,6 +61,40 @@ export function endPanicWipe(): void {
 export function isPanicWipePending(): boolean {
   try {
     return getStorage(STORAGE_ID).getBoolean(PENDING_KEY) === true;
+  } catch {
+    return true;
+  }
+}
+
+// The identity a wipe could not delete, recorded until another replaces it.
+//
+// A separate flag from the one above because it outlives the wipe: the marker
+// must clear when the sequence ends (or the wipe replays over the next
+// identity), but a surviving identity must never boot again. Launch deletes it
+// once more and, failing that, goes to welcome, where onboarding overwrites it.
+// It names the old identity's condition rather than a pending wipe, so writing
+// a new identity is what clears it.
+export function condemnIdentity(): void {
+  try {
+    getStorage(STORAGE_ID).set(CONDEMNED_KEY, true);
+  } catch {
+    // Unwritable storage: the wipe already reports the keys as not destroyed.
+  }
+}
+
+// Call once a new identity is written over the condemned one.
+export function clearCondemnedIdentity(): void {
+  try {
+    getStorage(STORAGE_ID).remove(CONDEMNED_KEY);
+  } catch {
+    // No writable storage; there is nothing else to record it in.
+  }
+}
+
+// Fails closed, like isPanicWipePending, and for the same reason.
+export function isIdentityCondemned(): boolean {
+  try {
+    return getStorage(STORAGE_ID).getBoolean(CONDEMNED_KEY) === true;
   } catch {
     return true;
   }

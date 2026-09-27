@@ -3,6 +3,7 @@
 
 import NativeAirhopLAN from "@bridge/NativeAirhopLAN";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
+import type { LocalSubnet } from "@core/move/local-subnet";
 import { DeviceEventEmitter, type EventSubscription } from "react-native";
 
 export type MoveLinkEvent =
@@ -62,6 +63,13 @@ export async function startMoveListener(): Promise<{
 }> {
   if (NativeAirhopLAN === null) throw new Error("move-link-unavailable");
   return NativeAirhopLAN.startMoveListener();
+}
+
+// Empty when unreadable, which refuses every address: failing to "not on the
+// same network" is the safe answer.
+export async function localSubnets(): Promise<LocalSubnet[]> {
+  if (NativeAirhopLAN === null) return [];
+  return NativeAirhopLAN.localSubnets().catch(() => []);
 }
 
 export async function stopMoveLink(): Promise<void> {

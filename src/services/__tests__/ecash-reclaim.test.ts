@@ -32,7 +32,7 @@ import {
   type StoredProof,
   type WalletTx,
 } from "@store/wallet-store";
-import { reclaimTokenSend } from "../payment-router";
+import { reclaimTokenSend, startReclaimFollow } from "../payment-router";
 
 const MINT = "https://mint.example.com";
 const PEER = "aabbccdd00112233";
@@ -154,5 +154,20 @@ describe("reclaimTokenSend", () => {
 
     expect(reclaimTokenSend(TX)).toBe(true);
     expect(useOutboxStore.getState().forPeer(PEER)).toHaveLength(0);
+  });
+});
+
+describe("a reclaim the recipient beat", () => {
+  it("marks the DM paid when the mint's answer comes later", () => {
+    startReclaimFollow();
+    seedQueuedSend();
+    reclaimTokenSend(TX);
+
+    // What the reconcile pass writes on finding the token redeemed.
+    useWalletStore.getState().updateTx(TX, { status: "completed" });
+
+    expect(useChatStore.getState().messages[`dm:${PEER}`][0].status).toBe(
+      "delivered",
+    );
   });
 });

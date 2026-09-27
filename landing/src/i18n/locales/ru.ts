@@ -189,6 +189,10 @@ const strings: Strings = {
     "Выводятся из вашего ключа, поэтому ваше имя никто не займёт.",
   "home.features.identity.qr.name": "Контакты по QR",
   "home.features.identity.qr.line": "Одно сканирование передаёт их ключи, а не только имя.",
+  "home.features.identity.forward.name": "Прямая секретность",
+  "home.features.identity.forward.line": "Утёкший ключ не откроет прошлые сообщения.",
+  "home.features.identity.move.name": "Переезд на новый телефон",
+  "home.features.identity.move.line": "Чаты и кошелёк переезжают, а старый телефон стирает себя.",
   "home.features.identity.panic.name": "Экстренное стирание",
   "home.features.identity.panic.line": "Все ключи и сообщения уничтожаются меньше чем за секунду.",
 
@@ -197,6 +201,11 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth-mesh",
   "home.features.networking.mesh.line":
     "Без интернета, без роутера, на телефонах, которые у людей уже есть.",
+  "home.features.networking.lan.name": "Локальная сеть",
+  "home.features.networking.lan.line": "Общий WiFi или точка доступа, iPhone и Android вместе.",
+  "home.features.networking.hops.name": "Ретрансляция по цепочке",
+  "home.features.networking.hops.line":
+    "Каждый телефон передаёт сообщения дальше, до семи переходов.",
   "home.features.networking.bridge.name": "Мост между mesh",
   "home.features.networking.bridge.line":
     "Связывает ваш публичный чат с группой поблизости за пределами зоны действия.",

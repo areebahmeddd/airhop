@@ -6,8 +6,8 @@
 // cap vs a fixed signed roster on Bluetooth) is stated at the choice.
 
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { useChatStore } from "@store/chat-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";

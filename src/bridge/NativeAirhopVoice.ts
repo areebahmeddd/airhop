@@ -53,7 +53,12 @@ export interface Spec extends TurboModule {
   // the caller's job. See core/mesh/voice/voice-player.ts.
   enqueueFrames(framesBase64: string[]): Promise<void>;
 
-  // Finish once queued audio has drained, and release the speaker.
+  // The burst ended: play out what is queued, then release the speaker.
+  // Resolves once it has, or once a newer burst or a stop cut the drain short,
+  // so the caller knows when the speaker is really free.
+  finishPlayback(): Promise<void>;
+
+  // Release the speaker now, discarding whatever is still queued.
   stopPlayback(): Promise<void>;
 
   // Required by the NativeEventEmitter contract.

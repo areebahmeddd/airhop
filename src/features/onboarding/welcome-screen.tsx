@@ -1,12 +1,11 @@
-// Onboarding step 1: Welcome.
-// The cover of the book. Bold wordmark, one sentence, one action, and a quieter
-// way in for someone bringing an identity from another phone. The design
-// communicates confidence through restraint.
+// Onboarding step 1: Welcome. One sentence, one action, and a quieter way in
+// for someone bringing an identity from another phone.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import PixelBird, { BIRD_COLUMNS, BIRD_ROWS } from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";
 import {
   FontSize,
@@ -62,7 +61,7 @@ export default function WelcomeScreen({
   // the pixel edges crisp.
   const birdCell = Math.max(
     2,
-    Math.round(Math.min(width * 0.5, 240) / BIRD_PIXELS[0].length),
+    Math.round(Math.min(width * 0.5, 240) / BIRD_COLUMNS),
   );
 
   // The consent line is one translated sentence with the two document names
@@ -102,33 +101,24 @@ export default function WelcomeScreen({
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Scrolls only when it has to. `flexGrow: 1` on the content lets the hero
-          keep its `flex: 1` and stay centered on a normal portrait screen; on a
-          short viewport (landscape, a small phone at the largest OS text size)
-          the wordmark, CTA and consent row would clip off the bottom with no
-          way to reach them, which on the very first screen means the app
-          cannot be started at all. */}
+      {/* Scrolls only on a short viewport (landscape, largest text size), where
+          a clipped CTA would leave the app unstartable. */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Centered brand mark filling the space above the footer. Uses the
-            primary text color, so it is a black bird on a light background and a
-            white bird in dark mode. */}
-        {/* minHeight keeps the mark whole once the content is taller than the
-            viewport: with only `flex: 1` the leftover space is zero on a short
-            screen and the bird collapses to nothing. */}
+        {/* minHeight: on a short screen `flex: 1` alone leaves the bird no
+            space at all. */}
         <View
           style={[
             styles.hero,
-            { minHeight: BIRD_PIXELS.length * birdCell + Spacing["3xl"] },
+            { minHeight: BIRD_ROWS * birdCell + Spacing["3xl"] },
           ]}
         >
           <PixelBird color={Colors.textPrimary} cell={birdCell} />
         </View>
 
-        {/* Bottom: wordmark + tagline, left-aligned, then CTA */}
         <View style={styles.footer}>
           <View style={styles.textBlock}>
             <Text style={styles.wordmark} accessibilityRole="header">
@@ -144,15 +134,13 @@ export default function WelcomeScreen({
               onPress={onContinue}
               disabled={!agreed}
               accessibilityLabel={T("onboarding.welcome.cta")}
-              // A dimmed button with no stated reason is a dead end. The hint is
-              // read out the moment focus lands on it, so the blocker is
-              // announced before the tap that would do nothing.
+              // A dimmed button with no stated reason is a dead end; the hint
+              // is read as focus lands, before the tap that would do nothing.
               accessibilityHint={
                 agreed ? undefined : T("onboarding.welcome.cta_hint")
               }
             />
-            {/* Gated by the same agreement: the terms cover an identity
-                brought from another phone as much as a new one. */}
+            {/* The terms cover a transferred identity as much as a new one. */}
             <PrimaryButton
               label={T("onboarding.welcome.transfer")}
               onPress={onTransfer}
@@ -169,12 +157,10 @@ export default function WelcomeScreen({
               accessibilityRole="checkbox"
               accessibilityState={{ checked: agreed }}
               accessibilityLabel={T("onboarding.welcome.consent_a11y")}
-              // The two inline links are inside an accessible parent, which
-              // means a screen reader treats the whole row as one element and
-              // never reaches them. Exposing them as custom actions is the
-              // supported way back in: VoiceOver and TalkBack both offer them
-              // from the actions menu, so the documents are reachable without
-              // breaking the row into three separate stops.
+              // Links inside an accessible parent are unreachable to a screen
+              // reader, so they come back as custom actions rather than
+              // splitting the row into three stops.
+
               accessibilityActions={[
                 { name: "terms", label: T("onboarding.welcome.open_terms") },
                 {
@@ -204,47 +190,6 @@ export default function WelcomeScreen({
 
       <HelloSheet visible={greet} onClose={onGreeted} />
     </SafeAreaView>
-  );
-}
-
-// The Airhop brand mark: a monochrome pixel bird, the same soaring-seabird
-// glide frame that crowns the Version screen and every app icon (a nod to the
-// release codenames, birds, alphabetical; 1.x is Albatross). Drawn as a grid
-// of square cells so it stays crisp at any size; filled cells take the passed
-// color, so it reads in both light and dark themes.
-const BIRD_PIXELS = [
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0],
-  [0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0],
-  [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-  [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-];
-
-function PixelBird({
-  color,
-  cell,
-}: {
-  color: string;
-  cell: number;
-}): React.JSX.Element {
-  return (
-    <View style={{ width: BIRD_PIXELS[0].length * cell }}>
-      {BIRD_PIXELS.map((row, y) => (
-        <View key={y} style={{ flexDirection: "row" }}>
-          {row.map((filled, x) => (
-            <View
-              key={x}
-              style={{
-                width: cell,
-                height: cell,
-                backgroundColor: filled ? color : "transparent",
-              }}
-            />
-          ))}
-        </View>
-      ))}
-    </View>
   );
 }
 

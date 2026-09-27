@@ -143,7 +143,7 @@ async function inlineStylesheet(root: string, shell: string): Promise<string> {
   if (!match) return shell;
 
   const css = await readFile(path.join(root, match[1].replace(/^\//, "")), "utf8");
-  return shell.replace(match[0], `<style>${css}</style>`);
+  return shell.replace(match[0], () => `<style>${css}</style>`);
 }
 
 async function inlineBootScript(
@@ -155,7 +155,7 @@ async function inlineBootScript(
 
   const js = await readFile(path.join(root, match[1].replace(/^\//, "")), "utf8");
   const hash = createHash("sha256").update(js, "utf8").digest("base64");
-  return { shell: shell.replace(match[0], `<script>${js}</script>`), hash: `sha256-${hash}` };
+  return { shell: shell.replace(match[0], () => `<script>${js}</script>`), hash: `sha256-${hash}` };
 }
 
 async function allowInlineBoot(root: string, hash: string) {
@@ -164,7 +164,11 @@ async function allowInlineBoot(root: string, hash: string) {
   if (!headers.includes(CSP_SCRIPT_SRC)) {
     throw new Error(`static-html: _headers has no "${CSP_SCRIPT_SRC}" to extend`);
   }
-  await writeFile(file, headers.replace(CSP_SCRIPT_SRC, `${CSP_SCRIPT_SRC} '${hash}'`), "utf8");
+  await writeFile(
+    file,
+    headers.replace(CSP_SCRIPT_SRC, () => `${CSP_SCRIPT_SRC} '${hash}'`),
+    "utf8",
+  );
 }
 
 export function staticHtml(): Plugin {
@@ -201,14 +205,14 @@ export function staticHtml(): Plugin {
         const localized = preload
           ? shell.replace(
               HEAD_END,
-              `  <link rel="modulepreload" crossorigin href="${preload}" />\n  ${HEAD_END}`,
+              () => `  <link rel="modulepreload" crossorigin href="${preload}" />\n  ${HEAD_END}`,
             )
           : shell;
 
         for (const page of PAGES) {
           const html = localized
-            .replace(ROOT_TAG, rootTag(language))
-            .replace(BLOCK, headBlock(page, language));
+            .replace(ROOT_TAG, () => rootTag(language))
+            .replace(BLOCK, () => headBlock(page, language));
           const route = localizedPath(language, page.path);
 
           if (route === "/") {
@@ -222,8 +226,8 @@ export function staticHtml(): Plugin {
         }
 
         const notFound = localized
-          .replace(ROOT_TAG, rootTag(language))
-          .replace(BLOCK, headBlock(NOT_FOUND_SEO, language));
+          .replace(ROOT_TAG, () => rootTag(language))
+          .replace(BLOCK, () => headBlock(NOT_FOUND_SEO, language));
         const base = localizedPath(language, "/");
         const notFoundDir = base === "/" ? root : path.join(root, base);
         await mkdir(notFoundDir, { recursive: true });

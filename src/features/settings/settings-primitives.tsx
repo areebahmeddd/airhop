@@ -5,9 +5,12 @@
 // It also owns the search-highlight plumbing, for the same reason it owns the
 // row: search names a row on a screen it does not render.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { chevronBack, chevronForward } from "@i18n/layout";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import {
   BUTTON_HEIGHT,
   DISABLED_OPACITY,
@@ -211,7 +214,7 @@ export function useSettingHighlight(id: SettingId | undefined): {
 export interface SettingRowProps {
   // Set on a row settings search can name; also its highlight target.
   id?: SettingId;
-  icon?: keyof typeof Feather.glyphMap;
+  icon?: FeatherIconName;
   // Escape hatch for the rare row whose icon isn't in Feather's set (e.g. a
   // currency glyph from another icon family). Takes precedence over `icon`.
   iconOverride?: React.ReactNode;

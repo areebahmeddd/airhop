@@ -1,9 +1,9 @@
 // Geohash presence heartbeats: kind 20001 ephemeral Nostr events.
 //
 // When the user has location permission, GeohashPresence broadcasts a kind
-// 20001 event to the geohash channel(s) that cover their current location.
-// The event content is the geohash string itself. Subscribers learn that the
-// sender's Nostr pubkey is in that geohash cell.
+// 20001 event to the geohash channel(s) that cover their current location,
+// on each cell's own relays. The event carries the cell in a `g` tag and an
+// empty body. Subscribers learn that the sender's Nostr pubkey is in that cell.
 //
 // Privacy: presence is only broadcast at precision-5 (~5 km x 5 km) and
 // coarser cells: never at precision 6+ which would reveal exact location.
@@ -126,12 +126,6 @@ export interface PresenceConfig {
   nostrPrivKey: Uint8Array; // secp256k1 private key for Nostr event signing
 }
 
-export interface PeerPresence {
-  pubkey: string; // Nostr pubkey (hex)
-  geohash: string; // Where they were seen
-  timestamp: number; // Unix seconds
-}
-
 // Whether presence may be broadcast into a cell of this precision.
 //
 // A heartbeat is a public statement that you are inside a cell. At precision 6
@@ -160,41 +154,19 @@ export class GeohashPresence {
   // the same key in the region, province and city cells at once, which a relay
   // can stitch into one person's location. Cadence and cell selection belong to
   // the caller, which knows which channels the user is in.
-  async publishHeartbeat(geohash: string): Promise<void> {
-    await this.publishPresence(geohash);
+  //
+  // `relays` is the cell's own relay set, where everyone in the cell reads
+  // presence. With none, the heartbeat is skipped, as bitchat-ios skips it:
+  // NostrClient would fall back to the default DM relays, which already see
+  // this cell's key on the geo DM inbox and would then learn its cell too.
+  async publishHeartbeat(geohash: string, relays: string[]): Promise<void> {
+    if (relays.length === 0) return;
+    await this.publishPresence(geohash, relays);
   }
 
   // Nothing to tear down: the schedule lives with the caller.
   stop(): void {
     // Kept so callers can treat every presence object the same way.
-  }
-
-  // Subscribe to presence heartbeats in all geohash cells that cover (lat, lng).
-  // Returns a closer function. The callback receives one PeerPresence per event.
-  subscribePresence(
-    lat: number,
-    lng: number,
-    onPresence: (p: PeerPresence) => void,
-  ): () => void {
-    const geohashes = ancestorGeohashes(lat, lng);
-    const filter = {
-      kinds: [KIND_PRESENCE],
-      "#g": geohashes,
-      since: Math.floor(Date.now() / 1000) - (HEARTBEAT_MAX_MS * 3) / 1000,
-    };
-
-    const closer = this.client.subscribe([filter], (event: Event) => {
-      if (event.kind !== KIND_PRESENCE) return;
-      const g = event.tags.find(([t]) => t === "g")?.[1];
-      if (!g) return;
-      onPresence({
-        pubkey: event.pubkey,
-        geohash: g,
-        timestamp: event.created_at,
-      });
-    });
-
-    return () => closer.close();
   }
 
   // Subscribe to a geohash channel: chat messages AND presence heartbeats.
@@ -276,7 +248,10 @@ export class GeohashPresence {
     }
   }
 
-  private async publishPresence(geohash: string): Promise<void> {
+  private async publishPresence(
+    geohash: string,
+    relays: string[],
+  ): Promise<void> {
     const event = finalizeEvent(
       {
         kind: KIND_PRESENCE,
@@ -290,7 +265,7 @@ export class GeohashPresence {
       },
       this.privKey,
     );
-    await this.client.publish(event);
+    await this.client.publish(event, relays);
   }
 }
 
@@ -313,15 +288,4 @@ export function decorrelationDelayMs(
   random: () => number = secureRandom,
 ): number {
   return 2_000 + random() * 3_000;
-}
-
-// Build the list of geohash strings at all ancestor precisions for (lat, lng).
-// Used to subscribe to presence across multiple precision levels at once.
-function ancestorGeohashes(lat: number, lng: number): string[] {
-  const hashes: string[] = [];
-  const full = encodeGeohash(lat, lng, PRESENCE_PRECISION);
-  for (let p = 1; p <= PRESENCE_PRECISION; p++) {
-    hashes.push(full.slice(0, p));
-  }
-  return hashes;
 }

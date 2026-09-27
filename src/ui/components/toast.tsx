@@ -12,7 +12,10 @@
 // the one place it is needed most is inside a Modal, and a globally mounted
 // toast renders behind those.
 
-import { Feather } from "@expo/vector-icons";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import React, { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
@@ -33,7 +36,7 @@ interface Props {
   // Defaults to a tick, which suits the confirmations this pill mostly carries.
   // A line reporting that something did not happen must pass its own glyph: a
   // tick over "Not saved" reads as the opposite of the words beside it.
-  icon?: React.ComponentProps<typeof Feather>["name"];
+  icon?: FeatherIconName;
   // Lifts the pill clear of whatever is pinned to the bottom of the parent (a
   // compose bar, a row of viewer controls).
   bottomOffset?: number;

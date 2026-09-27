@@ -1,6 +1,6 @@
 // The JS side of AirhopBootReceiver/AirhopBootService: registers the
 // "Airhop.BootStartMesh" headless task Android runs with no Activity and no
-// UI. Every step below is a check, never a request - unlike
+// UI. Every step below is a check, never a request: unlike
 // startMeshWithPermissions in app.tsx, nothing here can prompt.
 //
 // syncAutoStartOnBoot lives in ./boot-sync instead: this file pulls in
@@ -19,6 +19,7 @@ import { AppRegistry, Platform } from "react-native";
 import { sweepMediaIfDue } from "./media-retention";
 import { readMoveMarker } from "./move-marker";
 import { startNotificationPipeline } from "./notification-pipeline";
+import { applyStartupPresence } from "./presence-service";
 import { startReachabilityWatch } from "./reachability";
 import { isPanicWipePending } from "./wipe-marker";
 
@@ -58,6 +59,7 @@ async function bootStartMesh(): Promise<void> {
   }
   const nickname = peerIDToUsername(identity.peerID);
   initMeshService(identity, nickname);
+  applyStartupPresence();
   getMeshService()?.retryRadios();
   // The dependents that need no screen. The rest (wallet, permission prompts)
   // wait for the app to be opened, which runs them for this same mesh.

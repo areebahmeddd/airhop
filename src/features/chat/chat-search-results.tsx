@@ -5,9 +5,12 @@
 // chat, not scoped to whichever sub-tab happens to be selected.
 
 import { isUrgent } from "@core/mesh/wire/board-packet";
-import { Feather } from "@expo/vector-icons";
 import { t, useT, type TranslationKey } from "@i18n";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 
 import { getMeshService } from "@services/mesh-service";
 import { useBoardStore } from "@store/board-store";
@@ -58,7 +61,7 @@ import {
 const MEDIA_FILTERS: {
   key: MediaFilter;
   labelKey: TranslationKey;
-  icon: React.ComponentProps<typeof Feather>["name"];
+  icon: FeatherIconName;
 }[] = [
   { key: "photos", labelKey: "chat.search.photos", icon: "image" },
   { key: "videos", labelKey: "chat.search.videos", icon: "video" },

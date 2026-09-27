@@ -38,11 +38,16 @@ private enum VoiceConst {
   // speaker and the oldest audio is already stale.
   static let maxQueuedFrames = 32
   // How many times one burst may rebuild its playback engine before being
-  // given up on. A route that connects and disconnects repeatedly - a car
-  // stereo at the edge of range - would otherwise rebuild forever, and a
+  // given up on. A route that connects and disconnects repeatedly (a car
+  // stereo at the edge of range) would otherwise rebuild forever, and a
   // burst that has been interrupted eight times has nothing worth hearing
   // left in it. Matches bitchat's maxEngineRestarts in PTTBurstPlayer.swift.
   static let maxPlaybackRestarts = 8
+  // Longest a finished burst may take to play out its tail before the speaker
+  // is released anyway: a full queue (about two seconds) plus a second of
+  // slack. Only a pipeline that stopped reporting finished buffers gets near
+  // it, and that must not keep the speaker and the ducking session forever.
+  static let maxDrainSeconds = Double(maxQueuedFrames) * 0.064 + 1
 }
 
 private enum VoiceEvent {
@@ -82,7 +87,7 @@ extension Double {
 ///
 /// Removing a tap does not cancel a buffer already handed to it, so a callback
 /// from the burst that just ended can still run after the next one has started.
-/// Its frames would be attributed to the new burst - the previous talker's last
+/// Its frames would be attributed to the new burst: the previous talker's last
 /// words playing under the new burst's ID on every listener. Every callback
 /// proves it is still the current capture before emitting anything.
 private final class VoiceCaptureGeneration {
@@ -121,10 +126,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // 0 Hz input and silently fails to enable the microphone, and Airhop hands
   // the session back to playback-only between every burst (the mic button's
   // release path calls setAudioForPlayback). So the second hold and every one
-  // after it would capture nothing while reporting success - the burst goes
-  // live on the far side and no audio ever follows. bitchat hit the same
-  // thing on device and fixed it the same way; see the `engine` comment in
-  // their PTTCaptureEngine.swift.
+  // after it would capture nothing while reporting success: the burst goes
+  // live on the far side and no audio ever follows. bitchat-ios recreates
+  // its capture engine for the same reason (the `engine` comment in its
+  // PTTCaptureEngine.swift).
   private var captureEngine = AVAudioEngine()
   // Whether `captureEngine`'s input unit has been instantiated by us. Reading
   // `inputNode` on an engine that was never armed instantiates it against
@@ -158,7 +163,14 @@ final class AirhopVoiceModule: RCTEventEmitter {
   private var playerNode = AVAudioPlayerNode()
   private var playbackConverter: AVAudioConverter?
   private var isPlaying = false
+  // Buffers scheduled on the current node that have not yet been heard.
   private var queuedFrames = 0
+  // The burst ended and is playing out its tail; `queuedFrames` reaching zero
+  // releases the speaker. See finishPlayback.
+  private var isFinishing = false
+  // finishPlayback promises, resolved by the teardown that ends the burst,
+  // whether it drained or was cut short.
+  private var finishResolvers: [RCTPromiseResolveBlock] = []
   // Watches the engine above for the reconfigure that kills it. One at a
   // time, replaced with the engine it belongs to, and only ever touched on
   // `playbackQueue`. See observePlaybackReconfigure.
@@ -338,7 +350,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   ///
   /// Deliberately only the failures JS cannot see for itself. A call, Siri,
   /// or a switch to another app all leave AppState, and message-thread.tsx
-  /// already ends the hold on that - by the same route a user's release
+  /// already ends the hold on that, by the same route a user's release
   /// takes, which also delivers the voice note. Observing interruptions here
   /// too would race that better ending and sometimes win, turning a note that
   /// would have been sent into one that is dropped. What is left is hardware
@@ -367,7 +379,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
 
     // The input device itself disappeared: headset unplugged, AirPods back
     // in the case. Often arrives alongside the engine notification above,
-    // which costs nothing - the first one to land invalidates the
+    // which costs nothing: the first one to land invalidates the
     // generation and the second finds itself stale.
     captureObservers.append(
       center.addObserver(
@@ -548,6 +560,38 @@ final class AirhopVoiceModule: RCTEventEmitter {
     }
   }
 
+  /// The burst ended: let what is scheduled play out, then release the
+  /// speaker. Resolves once it has.
+  ///
+  /// Stopping at once would cut every burst's last syllable: the speaker
+  /// trails arrival by the jitter window, so the tail is still scheduled when
+  /// END lands, and AVAudioPlayerNode.stop() discards it. JS waits on this
+  /// before handing the audio session back, since that reconfigure would
+  /// rebuild the engine under the tail and lose it the same way. Matches
+  /// finishAfterDrain in bitchat's PTTBurstPlayer.swift.
+  @objc func finishPlayback(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    playbackQueue.async { [weak self] in
+      guard let self else { return }
+      self.finishResolvers.append(resolve)
+      self.isFinishing = true
+      self.teardownIfDrained()
+      guard self.isFinishing else { return }
+      // Backstop for a node that stops reporting finished buffers. Scoped to
+      // this node, so it cannot end a burst that has since replaced it.
+      let node = self.playerNode
+      self.playbackQueue.asyncAfter(deadline: .now() + VoiceConst.maxDrainSeconds) {
+        [weak self, weak node] in
+        guard let self, let node, node === self.playerNode, self.isFinishing else { return }
+        self.teardownPlayback()
+      }
+    }
+  }
+
+  /// Cancel, the listener leaving, or the app going away: silence the burst
+  /// now, queued audio included.
   @objc func stopPlayback(
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
@@ -556,6 +600,11 @@ final class AirhopVoiceModule: RCTEventEmitter {
       self?.teardownPlayback()
       resolve(nil)
     }
+  }
+
+  private func teardownIfDrained() {
+    guard isFinishing, queuedFrames == 0 else { return }
+    teardownPlayback()
   }
 
   private func beginPlayback() throws {
@@ -577,8 +626,8 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// survive its session being reconfigured underneath it, and this app
   /// reconfigures constantly: releaseAudioSession() hands the category back to
   /// playback the moment a talker lets go, which lands under a burst that is
-  /// still playing whenever two people talk over each other - the ordinary
-  /// case on a busy channel, not an exotic one. Reused, the engine stays
+  /// still playing whenever two people talk over each other (the ordinary
+  /// case on a busy channel, not an exotic one). Reused, the engine stays
   /// wedged and every later burst is silent until the app restarts, the same
   /// failure the capture side already recreates to avoid.
   ///
@@ -665,7 +714,11 @@ final class AirhopVoiceModule: RCTEventEmitter {
       // Nothing left to play through. The burst ends here rather than
       // feeding a node that cannot sound; the next one builds again.
       teardownPlayback()
+      return
     }
+    // A finished burst's tail went with the old node, so nothing is left for
+    // the new one to drain.
+    teardownIfDrained()
   }
 
   /// Decode one AAC frame and hand the PCM to the player node. The node owns
@@ -717,14 +770,25 @@ final class AirhopVoiceModule: RCTEventEmitter {
     emitPlaybackLevel(rmsLevel(of: pcm))
 
     queuedFrames += 1
-    playerNode.scheduleBuffer(pcm) { [weak self] in
+    // Counted when heard rather than when the node consumes it, so a drain
+    // does not release the speaker with the tail still in the output path.
+    let node = playerNode
+    node.scheduleBuffer(pcm, completionCallbackType: .dataPlayedBack) { [weak self, weak node] _ in
       guard let self else { return }
-      self.playbackQueue.async { self.queuedFrames = max(0, self.queuedFrames - 1) }
+      self.playbackQueue.async {
+        // stop() fires every handler still pending, so a node already
+        // replaced by a newer burst or a rebuild would otherwise count its
+        // discarded buffers against the node playing now.
+        guard let node, node === self.playerNode else { return }
+        self.queuedFrames = max(0, self.queuedFrames - 1)
+        self.teardownIfDrained()
+      }
     }
   }
 
   private func teardownPlayback() {
     isPlaying = false
+    isFinishing = false
     queuedFrames = 0
     // Dropped first, so a rebuild cannot be started for a burst that is
     // being torn down. A notification already on its way to the main queue
@@ -733,6 +797,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
     if playerNode.engine != nil { playerNode.stop() }
     if playbackEngine.isRunning { playbackEngine.stop() }
     playbackConverter = nil
+    // Last, so a finish is reported only once the speaker really is free.
+    let resolvers = finishResolvers
+    finishResolvers.removeAll()
+    resolvers.forEach { $0(nil) }
   }
 
   // MARK: - Lifecycle

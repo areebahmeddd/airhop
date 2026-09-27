@@ -16,11 +16,11 @@
 // What each row can do is ask, when the OS is still willing to be asked. Once
 // it is not, the only honest action left is to open Settings.
 
-import Feather from "@expo/vector-icons/Feather";
 import {
   ensureBlePermissions,
   hasBlePermissions,
 } from "@platform/ble-permissions";
+import type { FeatherIconName } from "@react-native-vector-icons/feather/static";
 import {
   locationPermissionState,
   requestLocationPermission,
@@ -78,7 +78,7 @@ interface PermMeta {
   // permission's own name in the platform layer: one is ours to rename, the
   // other is not.
   searchId: SettingId;
-  icon: keyof typeof Feather.glyphMap;
+  icon: FeatherIconName;
   labelKey: TranslationKey;
   // Two halves, in the same order on every row: what Airhop uses it for, then
   // what breaks without it. The second half is a consequence, not a

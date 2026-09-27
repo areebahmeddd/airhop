@@ -43,6 +43,20 @@ const Limits = {
   CLOCK_SKEW_MS: 60 * 60 * 1000,
 } as const;
 
+// Whether a post's own times still admit it, whatever the store holds: not yet
+// expired, and not dated further ahead than clock skew explains. The decoder
+// bounds only the created-to-expires span, so a forged future createdAt would
+// sort ahead of honest posts and hold a slot without ever pruning. Pure, so a
+// relay can refuse what ingest would reject.
+export function isLivePost(post: BoardPost, now: number): boolean {
+  return (
+    post.expiresAt > now &&
+    post.createdAt <= now + Limits.CLOCK_SKEW_MS &&
+    post.expiresAt <=
+      now + BoardWireConstants.MAX_LIFETIME_MS + Limits.CLOCK_SKEW_MS
+  );
+}
+
 interface StoredTombstone {
   tombstone: BoardTombstone;
   retainUntil: number;
@@ -120,17 +134,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
     tombstones: StoredTombstone[],
     now: number,
   ): { result: BoardIngestResult; posts: BoardPost[] } {
-    if (post.expiresAt <= now) return { result: "rejected", posts };
-    // Receive-time sanity: the decoder only enforces the created->expires span,
-    // so a forged future createdAt would sort ahead of honest posts and hold a
-    // slot without ever pruning.
-    if (
-      post.createdAt > now + Limits.CLOCK_SKEW_MS ||
-      post.expiresAt >
-        now + BoardWireConstants.MAX_LIFETIME_MS + Limits.CLOCK_SKEW_MS
-    ) {
-      return { result: "rejected", posts };
-    }
+    if (!isLivePost(post, now)) return { result: "rejected", posts };
     if (
       tombstones.some(
         (t) =>

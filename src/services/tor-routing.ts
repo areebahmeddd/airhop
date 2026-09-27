@@ -9,8 +9,9 @@
 // mesh keeps working whatever happens here, and every failure message says so.
 //
 // The platforms differ in one place, and it is coverage. Android installs the
-// proxy into React Native's shared OkHttp client, so every socket is covered,
-// `fetch` included. React Native's WebSocket cannot speak SOCKS5 on iOS, so
+// proxy under every Java HTTP client (React Native's factory and the default
+// ProxySelector), so every web request is covered, `fetch` and downloads
+// included. React Native's WebSocket cannot speak SOCKS5 on iOS, so
 // nostr-tools gets TorWebSocket instead and nothing else is covered, which is
 // why wallet-service refuses a mint call there.
 //
@@ -262,10 +263,11 @@ export async function setTorBridgeMode(
   if (needsBridgeLines() && bridgeLinesForStart() === "") return { ok: true };
 
   await disableTorRouting(true);
-  return enableTorRouting();
+  return enableTorRouting(true);
 }
 
-async function enableTorRouting(): Promise<TorRoutingResult> {
+// `restarting` is a bridge change, for the refusal below.
+async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
   if (NativeAirhopTor == null) {
     return { ok: false, reason: "unavailable" };
   }
@@ -277,6 +279,9 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
   if (needsBridgeLines() && bridgeLinesForStart() === "") {
     return { ok: false, reason: "no-bridges" };
   }
+
+  // Read before anything below moves the bootstrap phase.
+  const retryingHeld = isHoldingAfterFailedStart();
 
   try {
     watchTorBootstrap();
@@ -290,8 +295,9 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     // user asked for Tor. With the gate up the restart only tears down, and the
     // watcher rebuilds on the Tor socket once the circuit is ready.
     setNostrBlocked(true);
-    // Native points its own HTTP client at the proxy inside startTor, before the
-    // client is even built, so there is no window on either platform.
+    // Native holds its own HTTP client inside startTor, before the client is
+    // even built, and routes it to the proxy once the port is bound, so there
+    // is no window on either platform.
     await startNativeTor(NativeAirhopTor);
 
     const ready = await NativeAirhopTor.awaitTorReady(
@@ -317,6 +323,21 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     setNostrBlocked(false);
     return { ok: true };
   } catch {
+    // Neither Try again from the held state nor a bridge change has a clear
+    // net to go back to: the user asked for Tor and has not been online without
+    // it since, and a user who asked for a bridge is likely somewhere a direct
+    // connection is unsafe. So both fall back to the held state, and going
+    // direct stays the user's own choice (Tor off). No stopTor: on Android that
+    // routes the HTTP stack direct before the hold could re-apply.
+    //
+    // Only the retry keeps the marker. A refused bridge line is not a crash,
+    // and the next launch starts again and is refused the same way.
+    if (retryingHeld || restarting) {
+      stopWatchingTorBootstrap();
+      if (retryingHeld) useSettingsStore.getState().setTorStartPending(true);
+      holdAfterFailedStart();
+      return { ok: false, reason: "error" };
+    }
     // A throw is different from a slow bootstrap: the module itself failed, so
     // there is nothing to wait for, and leaving the app with no internet half
     // would be worse than the clear net it started on. Unwind completely.
@@ -338,8 +359,8 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
 async function disableTorRouting(restarting = false): Promise<void> {
   stopWatchingTorBootstrap();
   installDirectSocket();
-  // Nothing is starting, so the marker has nothing left to warn about. It also
-  // clears the notice a previous recovery left on the Tor screen.
+  // Nothing is starting, so the marker has nothing left to warn about. This is
+  // also how Tor off leaves the held state a crashed start left behind.
   useSettingsStore.getState().setTorStartPending(false);
   if (restarting) {
     setNostrBlocked(true);
@@ -379,19 +400,18 @@ export function primeTorRoutingOnStartup(): void {
 // above.
 function startTorFromPreference(): void {
   const settings = useSettingsStore.getState();
+  if (!settings.torEnabled) return;
 
-  // A start that never answered, from a process that is gone. Trying again is
-  // what turns one native crash into an app that cannot be opened, so Tor goes
-  // off instead and the marker stays for the Tor screen to explain. The mesh
-  // comes up on the direct socket, as it does for anyone with Tor off.
+  // A start that never answered, from a process that is gone. Starting again is
+  // what turns one native crash into an app that cannot be opened, and going
+  // direct would put a Tor user on the clear net without asking. So nothing
+  // native starts and the internet half is held, exactly as for a network that
+  // blocks Tor. Only Tor off, or a Try again the native client accepts, clears
+  // the marker and leaves this state.
   if (settings.torStartPending) {
-    settings.setTorEnabled(false);
-    setTorActive(false);
-    setTorBootstrap("idle");
+    holdAfterFailedStart();
     return;
   }
-
-  if (!settings.torEnabled) return;
 
   if (NativeAirhopTor == null) {
     // The preference is on but Tor is unavailable in this build. Leave the
@@ -422,6 +442,38 @@ function startTorFromPreference(): void {
   });
 }
 
+// The held state after a crashed start. Applied rather than written, like the
+// start above, so a pool built before this ran is torn down. On Android the
+// HTTP stack is held on a proxy nothing listens on, so `fetch` fails too; iOS
+// proxies only the Nostr socket, and its wallet and update check already
+// refuse while Tor is on.
+function holdAfterFailedStart(): void {
+  setNostrBlocked(true);
+  setTorActive(false);
+  setTorBootstrap("blocked");
+  void NativeAirhopTor?.holdRoute().catch(() => {});
+}
+
+// Whether the held state above is what the user is looking at: Tor wanted, the
+// marker of a start that never answered, and nothing running. A marker alone
+// is also set for the moment a start is in flight, which is not blocked.
+export function isTorStartRecovered(
+  torEnabled: boolean,
+  torStartPending: boolean,
+  torBootstrap: TorBootstrapPhase,
+): boolean {
+  return torEnabled && torStartPending && torBootstrap === "blocked";
+}
+
+function isHoldingAfterFailedStart(): boolean {
+  const { torEnabled, torStartPending } = useSettingsStore.getState();
+  return isTorStartRecovered(
+    torEnabled,
+    torStartPending,
+    useMeshStateStore.getState().torBootstrap,
+  );
+}
+
 // Tor runs only when the user wants it and there is an internet half to carry.
 // Otherwise Arti holds guards and refreshes a consensus for nobody, and the
 // master switch's confirm sheet says it disables Tor.
@@ -436,15 +488,19 @@ export function applyInternetAvailability(enabled: boolean): void {
     startTorFromPreference();
     return;
   }
+  // Read before the phase goes to idle below.
+  const held = isHoldingAfterFailedStart();
   stopWatchingTorBootstrap();
   installDirectSocket();
   // Nothing may be held down in the name of a Tor that is no longer running.
   writeNostrBlocked(false);
   setTorActive(false);
   setTorBootstrap("idle");
-  // Not a preference: it describes a start that is about to be stopped, and
-  // leaving it set would disable Tor on the next launch for no reason.
-  useSettingsStore.getState().setTorStartPending(false);
+  // A start in flight is about to be stopped, and a marker left for it would
+  // hold the internet half on the next launch for no reason. The held state's
+  // marker stays: turning the internet back on returns to it, because only Try
+  // again or Tor off may leave it.
+  if (!held) useSettingsStore.getState().setTorStartPending(false);
   void NativeAirhopTor?.stopTor().catch(() => {});
 }
 

@@ -9,8 +9,8 @@
 // Airhop reads it for what it carries rather than for what it means to them: the
 // Noise and Ed25519 public keys, the nickname, and optionally an npub. That is
 // exactly a contact card, and it is the only way an Airhop user can pick up a
-// bitchat user's identity in person - our own `airhop:v1/` format is unreadable
-// to bitchat, and theirs was unreadable to us.
+// bitchat user's identity in person: bitchat cannot read our `airhop:v1/`
+// format, and this is the only reader Airhop has for theirs.
 //
 // One-way by nature. We do not answer their challenge protocol, so the bitchat
 // user learns nothing and sees no verification on their side. The UI must not
@@ -29,6 +29,7 @@ import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { decode as decodeBech32 } from "nostr-tools/nip19";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 import type { ContactCard } from "./contact-exchange";
 
 // Domain separator, byte-identical to VerificationQR.context. Signing without
@@ -87,7 +88,7 @@ function canonicalBytes(f: {
 }
 
 // A bitchat npub carries the same 32-byte secp256k1 key our card stores raw.
-// Absent, or malformed, leaves the contact mesh-only - which is a real bitchat
+// Absent, or malformed, leaves the contact mesh-only, which is a real bitchat
 // user, not an error, since the field is optional on their side too.
 function nostrKeyFromNpub(npub: string): Uint8Array | undefined {
   if (npub.length === 0) return undefined;
@@ -178,7 +179,8 @@ export function parseBitchatVerifyQr(
       peerID,
       noisePubKey,
       signingPubKey: hexToBytes(sign),
-      nickname: nick,
+      // Normalised after verifying: the signature covers the bytes as sent.
+      nickname: normalizeNickname(nick),
       nostrPubKey: nostrKeyFromNpub(npub),
     },
   };

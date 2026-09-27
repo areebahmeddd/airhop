@@ -2,8 +2,8 @@
 //
 // Everything above this line in the stack is the real Airhop. Everything below
 // it is physics. The fabric owns exactly the facts a radio cannot know about
-// itself - who is close enough to hear whom, how long a packet takes to arrive,
-// whether it arrives at all - and nothing else. It has no idea what a packet
+// itself (who is close enough to hear whom, how long a packet takes to arrive,
+// whether it arrives at all) and nothing else. It has no idea what a packet
 // means, which is the point: a medium that understood the protocol could not
 // find a protocol bug.
 //
@@ -120,8 +120,8 @@ function pairKey(a: string, b: string): string {
 // Simultaneous central-role links a phone can hold. A radio limit, not a policy
 // one: Android controllers manage roughly seven GATT client connections and
 // refuse the rest with status 133. Mirrors bitchat-ios
-// TransportConfig.bleMaxCentralLinks and the cap now enforced in both Airhop
-// native modules. Without this the simulation would let 25 phones hold 300
+// TransportConfig.bleMaxCentralLinks and the cap both Airhop native modules
+// enforce. Without this the simulation would let 25 phones hold 300
 // simultaneous connections, which is not a network any of this code will ever
 // meet, and would hide the crowd behaviour that actually matters.
 const MAX_CENTRAL_LINKS = 6;
@@ -148,7 +148,7 @@ export class RadioFabric {
   bytesOnAir = 0;
   // Frames a sender offered that no BLE link could carry whole.
   framesOversized = 0;
-  // Airtime by packet type. The medium does not decode packets - it reads byte
+  // Airtime by packet type. The medium does not decode packets: it reads byte
   // [1] of the frame, which is the type, and nothing else. That is enough to
   // answer "what is this room actually spending its radio on", which is the
   // question a crowded mesh lives or dies by.
@@ -268,6 +268,19 @@ export class RadioFabric {
     partial: Partial<LinkConditions>,
   ): void {
     this.perPair.set(pairKey(a, b), partial);
+  }
+
+  // Lose the frames the predicate picks, for a scenario that needs one
+  // particular packet to fade rather than a loss rate. Returns an undo.
+  private readonly losses: ((fromID: string, dataBase64: string) => boolean)[] =
+    [];
+
+  loseWrites(fn: (fromID: string, dataBase64: string) => boolean): () => void {
+    this.losses.push(fn);
+    return () => {
+      const i = this.losses.indexOf(fn);
+      if (i >= 0) this.losses.splice(i, 1);
+    };
   }
 
   private conditionsFor(a: string, b: string): LinkConditions {
@@ -493,7 +506,10 @@ export class RadioFabric {
       return;
     }
 
-    if (this.rng.chance(cond.loss)) {
+    if (
+      this.rng.chance(cond.loss) ||
+      this.losses.some((lose) => lose(fromID, dataBase64))
+    ) {
       this.packetsDropped++;
       this.world.say("PACKET_LOST", `${fromID} -> ${toID} (${bytes}B)`);
       return;

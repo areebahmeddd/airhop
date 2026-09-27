@@ -116,6 +116,10 @@ function chachaDecrypt(
 
 // ---- Sliding-window replay guard (1024-nonce window) ----
 
+// Bit `o` records nonce `highest - o`, stored LSB-first: byte `o >> 3`, mask
+// `1 << (o & 7)`. A new highest nonce ages every recorded offset by `shift`,
+// which on this layout is a left shift carrying from the byte below. bitchat
+// shifts right instead, which forgets recent nonces and lets them replay.
 class ReplayWindow {
   private highest = 0;
   private readonly bits = new Uint8Array(REPLAY_BYTES);
@@ -139,9 +143,9 @@ class ReplayWindow {
           const src = i - byteShift;
           let b = 0;
           if (src >= 0) {
-            b = this.bits[src] >> bitShift;
+            b = (this.bits[src] << bitShift) & 0xff;
             if (bitShift !== 0 && src > 0) {
-              b |= (this.bits[src - 1] << (8 - bitShift)) & 0xff;
+              b |= this.bits[src - 1] >> (8 - bitShift);
             }
           }
           this.bits[i] = b & 0xff;
@@ -275,6 +279,27 @@ export class NoiseHandshake {
     prologue: Uint8Array = new Uint8Array(0),
   ): NoiseHandshake {
     return new NoiseHandshake(localStaticPrivKey, "responder", prologue);
+  }
+
+  // An independent deep copy. Reading msg2 or msg3 mixes `h` and `ck` before
+  // its AEAD check and split() zeroes the keys, so a message that turns out
+  // bad or unbound would spend the handshake it was tried on. Trying it on a
+  // clone keeps the original for the genuine reply.
+  clone(): NoiseHandshake {
+    const copy = new NoiseHandshake(
+      this.localStaticPriv,
+      this.role,
+      new Uint8Array(0),
+    );
+    copy.h = this.h.slice();
+    copy.ck = this.ck.slice();
+    copy.k = this.k?.slice() ?? null;
+    copy.n = this.n;
+    copy.localEphemeralPriv = this.localEphemeralPriv?.slice() ?? null;
+    copy.localEphemeralPub = this.localEphemeralPub?.slice() ?? null;
+    copy.remoteEphemeralPub = this.remoteEphemeralPub?.slice() ?? null;
+    copy.remoteStaticPub = this.remoteStaticPub?.slice() ?? null;
+    return copy;
   }
 
   // msg1: initiator -> responder (-> e)

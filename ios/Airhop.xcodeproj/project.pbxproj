@@ -30,6 +30,7 @@
 		A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */; };
 		A1D3C4E5B6074F1288AA0301 /* Framing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0303 /* Framing.swift */; };
 		A1D3C4E5B6074F1288AA0302 /* AwareDial.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */; };
+		A1D3C4E5B6074F1288AA0305 /* LongWrite.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0306 /* LongWrite.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		BBBFF42043AE47019FA225ED /* AirhopTorSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */; };
 		D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FA0E833A874E33409274CD /* AirhopAppModule.swift */; };
@@ -98,6 +99,7 @@
 		A1D3C4E5B6074F1288AA0202 /* AirhopIPtProxy.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopIPtProxy.swift; path = Airhop/AirhopIPtProxy.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0303 /* Framing.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = Framing.swift; path = Airhop/Transport/Framing.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AwareDial.swift; path = Airhop/Transport/AwareDial.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0306 /* LongWrite.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = LongWrite.swift; path = Airhop/Transport/LongWrite.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Airhop/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopVoiceModule.mm; path = Airhop/AirhopVoiceModule.mm; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				A1D3C4E5B6074F1288AA0104 /* AirhopLANModule.swift */,
 				A1D3C4E5B6074F1288AA0304 /* AwareDial.swift */,
 				A1D3C4E5B6074F1288AA0303 /* Framing.swift */,
+				A1D3C4E5B6074F1288AA0306 /* LongWrite.swift */,
 				C27C0090533B740D2B558EEA /* AirhopLog.swift */,
 				120EE9C30B11446E9538C928 /* AirhopTorManager.swift */,
 				39F97BD127164B6FA2FA731A /* AirhopTorModule.mm */,
@@ -507,6 +510,7 @@
 				A1D3C4E5B6074F1288AA0102 /* AirhopLANModule.swift in Sources */,
 				A1D3C4E5B6074F1288AA0302 /* AwareDial.swift in Sources */,
 				A1D3C4E5B6074F1288AA0301 /* Framing.swift in Sources */,
+				A1D3C4E5B6074F1288AA0305 /* LongWrite.swift in Sources */,
 				166BDE042C843A9400350594 /* AirhopLog.swift in Sources */,
 				6109022D312B46EA9633FD4F /* AirhopTorManager.swift in Sources */,
 				E2C2EF5ECC804D08A15A15AF /* AirhopTorModule.mm in Sources */,

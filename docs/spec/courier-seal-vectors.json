@@ -1,0 +1,39 @@
+{
+  "_comment": [
+    "Noise_X_25519_ChaChaPoly_SHA256 courier seals, made by the Python",
+    "noiseprotocol package (a spec implementation, not Airhop's) with a",
+    "fixed ephemeral key and bitchat-ios's prologues",
+    "(NoiseEncryptionService: courierPrologue, prekeyPrologue). Airhop",
+    "asserts it opens each one; bitchat-ios follows the same transcript.",
+    "The recipient opens v2 with the one-time prekey's private key, which",
+    "here is recipientStaticPriv. All hex lowercase."
+  ],
+  "generator": "noiseprotocol 0.3.1",
+  "senderStaticPriv": "1111111111111111111111111111111111111111111111111111111111111111",
+  "senderStaticPub": "7b4e909bbe7ffe44c465a220037d608ee35897d31ef972f07f74892cb0f73f13",
+  "recipientStaticPriv": "2222222222222222222222222222222222222222222222222222222222222222",
+  "recipientStaticPub": "0faa684ed28867b97f4a6a2dee5df8ce974e76b7018e3f22a1c4cf2678570f20",
+  "ephemeralPriv": "3333333333333333333333333333333333333333333333333333333333333333",
+  "vectors": [
+    {
+      "name": "static seal (v1)",
+      "prologue": "626974636861742d636f75726965722d7631",
+      "payloadUTF8": "courier seal vector v1",
+      "ciphertext": "7b0d47d93427f8311160781c7c733fd89f88970aef490d8aa0ee19a4cb8a1b140fc9c4b5397a2fd083a86a268f56ca357f323a67067b91cc69a43839e5719bc4aaf01492ae88b00e7549a1cbed83713a4c21a314933942ff9e294c6a813fe65ba8faee00ee2a83fac7d494789a9a86cf5ea925822e0e"
+    },
+    {
+      "name": "one-time prekey seal (v2), prekey 7",
+      "prologue": "626974636861742d7072656b65792d763100000007",
+      "payloadUTF8": "courier seal vector v2",
+      "ciphertext": "7b0d47d93427f8311160781c7c733fd89f88970aef490d8aa0ee19a4cb8a1b140fc9c4b5397a2fd083a86a268f56ca357f323a67067b91cc69a43839e5719bc4f32f13a2d53d578dfc7227e6d36b6f534c21a314933942ff9e294c6a813fe65ba8faee00ee290cd1808ad9c707119c313eed54fdf599",
+      "prekeyID": 7
+    },
+    {
+      "name": "one-time prekey seal (v2), prekey 287454020",
+      "prologue": "626974636861742d7072656b65792d763111223344",
+      "payloadUTF8": "courier seal vector v2, large id",
+      "ciphertext": "7b0d47d93427f8311160781c7c733fd89f88970aef490d8aa0ee19a4cb8a1b140fc9c4b5397a2fd083a86a268f56ca357f323a67067b91cc69a43839e5719bc4884b1ae8883be2812a8f6a2369a4b47d4c21a314933942ff9e294c6a813fe65ba8faee00ee2931ed3278a33feb01e0667102fda461646fd43542c33b83be030a",
+      "prekeyID": 287454020
+    }
+  ]
+}

@@ -18,11 +18,16 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   },
 }));
 
+import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
+import { applyAirhopLink, joinSheetPrefill } from "@services/link-router";
 import { getMeshService } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
+import { useChatStore } from "@store/chat-store";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
+import { useSettingsStore } from "@store/settings-store";
+import { channelInviteLink, parseAirhopLink } from "@utils/deep-link";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -45,6 +50,8 @@ function resetStores(): void {
     bridgePeopleAcross: 0,
     presenceStatus: "online",
   });
+  // A start restores a kept Invisible, so Online has to be the saved choice too.
+  useSettingsStore.getState().setStayInvisible(false);
   usePeerStore.getState().clearAll();
   useOutboxStore.setState({ pending: [] });
 }
@@ -363,7 +370,7 @@ describe("mid-session radio chaos and lifecycle", () => {
 
     const presence = useMeshStateStore.getState().presenceStatus;
     // Stopping the mesh was a deliberate choice, made from outside the app.
-    // Reopening must NOT quietly undo it - that would be the app overruling a
+    // Reopening must NOT quietly undo it: that would be the app overruling a
     // decision the user just made, from an event they did not trigger.
     v.check(
       "reopening does not silently restart a mesh the user stopped",
@@ -537,5 +544,37 @@ describe("mid-session radio chaos and lifecycle", () => {
       `${native.peripheralManagersCreated} created in 10s, each reusing the same CBPeripheralManagerOptionRestoreIdentifierKey`,
     );
     v.assert();
+  });
+});
+
+// Any installed app, or a page that redirects, can hand Airhop a link. What the
+// app does with one when it arrives is joinSheetPrefill (app.tsx); what the
+// Join tap does is applyAirhopLink. Only the second may change anything.
+describe("a link from another app", () => {
+  beforeEach(() => {
+    useChatStore.getState().clearAll();
+  });
+
+  test("S33 a private invite changes no store until Join", () => {
+    const key = generateChannelKey();
+    const url = channelInviteLink("#crew", key, true);
+    const before = JSON.stringify(useChatStore.getState().channels);
+
+    const prefill = joinSheetPrefill(url);
+
+    expect(prefill).toBe(url);
+    expect(JSON.stringify(useChatStore.getState().channels)).toBe(before);
+    expect(useChatStore.getState().channelKeys["#crew"]).toBeUndefined();
+
+    // The Join tap.
+    const link = parseAirhopLink(prefill ?? "");
+    const joined = link === null ? null : applyAirhopLink(link);
+    if (joined === null || !("channel" in joined)) throw new Error("refused");
+    expect(useChatStore.getState().channelKeys[joined.channel]).toBe(key);
+  });
+
+  test("S33b anything that is not an Airhop link opens nothing", () => {
+    expect(joinSheetPrefill("https://example.com/")).toBeNull();
+    expect(joinSheetPrefill(null)).toBeNull();
   });
 });

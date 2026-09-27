@@ -1,4 +1,5 @@
-// Tells the internet-facing services when a network came back or changed, so
+// Tells the internet-facing services when a network came back or changed, and
+// the wallet when the user's own switches let it reach its mints again, so
 // they act on the event rather than on their own timers: the relay pool never
 // retries a first connect that failed, a dropped relay waits up to a minute,
 // and Tor's status feed cannot report a change it slept through.
@@ -6,10 +7,12 @@
 // A nudge, never a gate. Nothing refuses to connect because the OS reports no
 // network: the mesh is offline-first and a captive portal reads as connected.
 
+import { useMeshStateStore } from "@store/mesh-state-store";
+import { useSettingsStore } from "@store/settings-store";
 import * as Network from "expo-network";
 import { getMeshService } from "./mesh-service";
 import { revalidateTorRouting } from "./tor-routing";
-import { reconcileIfDue } from "./wallet-service";
+import { mintNetworkBlock, reconcile, reconcileIfDue } from "./wallet-service";
 
 // A Wi-Fi to cellular handoff reports several states inside a second; a change
 // counts once it has held this long. bitchat's NetworkReachabilityMonitor uses
@@ -92,9 +95,31 @@ function observe(state: Network.NetworkState): void {
   }, SETTLE_MS);
 }
 
+// The user's own switches reopen the mint too: the internet turned back on, or
+// on iOS Tor turned off or clear-net mint calls allowed. Until an offline
+// receipt is swapped, whoever holds its token can spend it first, so the pass
+// runs now rather than at the next foreground. Unthrottled: a pass that ran
+// while the gate was shut would otherwise hold this one off for a minute.
+let mintBlocked: boolean | null = null;
+
+function onMintGateInputs(): void {
+  const blocked = mintNetworkBlock() !== null;
+  const reopened = mintBlocked === true && !blocked;
+  mintBlocked = blocked;
+  if (!reopened) return;
+  void reconcile().catch(() => {
+    // Offline after all, or a mint is down. The next trigger tries again.
+  });
+}
+
 // Idempotent, and null-safe against a stopped mesh, so it is never stopped.
 export function startReachabilityWatch(): void {
   if (subscription !== null) return;
+  mintBlocked = mintNetworkBlock() !== null;
+  // Tor's own state as well as the settings: on iOS the block lifts only once
+  // Tor has stopped claiming the traffic.
+  useSettingsStore.subscribe(onMintGateInputs);
+  useMeshStateStore.subscribe(onMintGateInputs);
   subscription = Network.addNetworkStateListener(observe);
   void Network.getNetworkStateAsync()
     .then((state) => {

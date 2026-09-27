@@ -9,10 +9,10 @@
 //     stops duplicate reads.
 
 import { readScan, type ScanTarget } from "@core/payments/scan";
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
 import { succeeded } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import {

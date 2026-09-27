@@ -26,6 +26,9 @@ RCT_EXTERN_METHOD(writeToLANLink:(NSString *)linkID
 RCT_EXTERN_METHOD(startMoveListener:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(localSubnets:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(stopMove:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

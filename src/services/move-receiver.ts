@@ -1,8 +1,16 @@
 // The new phone's side of a transfer: show a code, take the first connection
-// that completes the handshake, collect the bundle whole, install it, commit.
+// that completes the handshake, show the words it shares with the old phone,
+// and only once the person says they match, collect the bundle whole, install
+// it, commit.
 //
-// Reached only from onboarding, on a phone with no identity, so the answer to
-// a failed install is simply the panic wipe: there is nothing here to keep.
+// The first connection may not be the person's old phone: anyone who read the
+// code can race it. Their words differ from the old phone's (which then shows
+// none), so a decline sends them away and a fresh code replaces the one they
+// read. Nothing is written before the match.
+//
+// Reached only from onboarding, on a phone with no identity (or only one a
+// refused wipe condemned), so the answer to a failed install is simply the
+// panic wipe: there is nothing here to keep.
 
 import { loadIdentity } from "@core/crypto/identity";
 import { sweepOrphanedSecrets } from "@core/crypto/keychain";
@@ -10,11 +18,13 @@ import type { NoiseSession } from "@core/crypto/noise-xx";
 import { BundleAssembler } from "@core/move/move-bundle";
 import { MoveHandshake } from "@core/move/move-handshake";
 import { encodeMoveInvite, MOVE_TOKEN_BYTES } from "@core/move/move-invite";
+import { moveSas } from "@core/move/move-sas";
 import {
   canReadVersion,
   decodeMoveMessage,
   encodeAbort,
   encodeCommit,
+  encodeConfirm,
   MoveAbortReason,
   type MoveAbortReasonValue,
   type MoveMessage,
@@ -24,6 +34,7 @@ import { APP_VERSION } from "@data/app-info";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { safetyNumberWords } from "@utils/username";
 import { settleOr } from "@utils/with-timeout";
 import {
   closeMove,
@@ -37,6 +48,7 @@ import {
 import { clearMoveMarker } from "./move-marker";
 import { applyMove, isKnownSection, MoveApplyError } from "./move-snapshot";
 import { panicWipe } from "./panic-wipe";
+import { isIdentityCondemned } from "./wipe-marker";
 
 export type ReceiverFailure =
   | "incompatible"
@@ -52,6 +64,10 @@ export type ReceiverState =
   // Not on Wi-Fi and not serving a hotspot.
   | { phase: "offline" }
   | { phase: "waiting"; code: string }
+  // Connected, nothing written: the person compares these with the old phone's.
+  | { phase: "confirm"; peerID: string; words: string[] }
+  // Matched here; the old phone's Transfer tap is what sends the offer.
+  | { phase: "awaiting"; peerID: string }
   | { phase: "receiving"; peerID: string; progress: number }
   | { phase: "saving"; peerID: string }
   // Committed; waiting for the old phone to say it is erased.
@@ -83,10 +99,8 @@ interface Active {
 
 export class MoveReceiver {
   private state: ReceiverState = { phase: "preparing" };
-  private readonly staticPriv = crypto.getRandomValues(new Uint8Array(32));
-  private readonly token = crypto.getRandomValues(
-    new Uint8Array(MOVE_TOKEN_BYTES),
-  );
+  private staticPriv = crypto.getRandomValues(new Uint8Array(32));
+  private token = crypto.getRandomValues(new Uint8Array(MOVE_TOKEN_BYTES));
   private readonly handshakes = new Map<string, MoveHandshake>();
   private active: Active | null = null;
   private unsubscribe: (() => void) | null = null;
@@ -107,13 +121,52 @@ export class MoveReceiver {
     // Awaited here: the welcome screen's own sweep is not, and landing after
     // the wallet secrets arrive would delete them.
     await sweepOrphanedSecrets().catch(() => false);
-    if ((await loadIdentity().catch(() => null)) !== null) {
+    // A condemned identity is one a refused wipe left behind: launch already
+    // treats it as absent, and the transfer's install overwrites it.
+    if (
+      (await loadIdentity().catch(() => null)) !== null &&
+      !isIdentityCondemned()
+    ) {
       this.set({ phase: "failed", reason: "storage" });
       return;
     }
     if (this.disposed) return;
     this.unsubscribe = subscribeMoveLink((event) => this.onLinkEvent(event));
+    await this.showCode();
+  }
+
+  // The words match: the old phone may send.
+  confirm(): void {
+    const active = this.active;
+    if (active === null || this.state.phase !== "confirm") return;
+    this.set({ phase: "awaiting", peerID: active.peerID });
+    this.sendOn(active, encodeConfirm()).catch(() => {
+      if (this.active === active) this.fail("interrupted");
+    });
+  }
+
+  // The words differ, or the old phone shows none. Whoever answered has read
+  // the code, so a new key and token replace it; the listener stays open.
+  decline(): void {
+    const active = this.active;
+    if (active === null || this.state.phase !== "confirm") return;
+    this.active = null;
+    void settleOr(
+      this.sendOn(active, encodeAbort(MoveAbortReason.CANCELLED)),
+      ABORT_SEND_MS,
+      undefined,
+    ).then(() => closeMove(active.connectionID));
+    this.staticPriv = crypto.getRandomValues(new Uint8Array(32));
+    this.token = crypto.getRandomValues(new Uint8Array(MOVE_TOKEN_BYTES));
+    this.set({ phase: "preparing" });
+    void this.showCode();
+  }
+
+  private async showCode(): Promise<void> {
     await this.refreshCode();
+    if (this.disposed || this.active !== null || this.pollTimer !== null) {
+      return;
+    }
     this.pollTimer = setInterval(() => void this.refreshCode(), HOSTS_POLL_MS);
   }
 
@@ -249,12 +302,20 @@ export class MoveReceiver {
       offerRaw: null,
       assembler: null,
     };
-    this.set({ phase: "receiving", peerID, progress: 0 });
+    this.set({
+      phase: "confirm",
+      peerID,
+      words: safetyNumberWords(moveSas(session.handshakeHash)),
+    });
   }
 
   private async send(plaintext: Uint8Array): Promise<void> {
     const active = this.active;
     if (active === null) return;
+    await this.sendOn(active, plaintext);
+  }
+
+  private async sendOn(active: Active, plaintext: Uint8Array): Promise<void> {
     await writeMove(active.connectionID, active.session.encrypt(plaintext));
   }
 
@@ -262,7 +323,7 @@ export class MoveReceiver {
   // the release is missing.
   private onActiveClosed(): void {
     const phase = this.state.phase;
-    if (phase === "receiving") {
+    if (phase === "confirm" || phase === "awaiting" || phase === "receiving") {
       this.fail("interrupted");
     } else if (phase === "releasing") {
       this.finish(false);
@@ -306,16 +367,26 @@ export class MoveReceiver {
     } catch {
       message = null;
     }
+    const phase = this.state.phase;
     if (message === null) {
-      if (this.state.phase === "receiving") {
+      if (
+        phase === "confirm" ||
+        phase === "awaiting" ||
+        phase === "receiving"
+      ) {
         await this.abortWith(MoveAbortReason.INVALID, "interrupted");
       }
+      return;
+    }
+    // Only a goodbye may arrive before the person has matched the words.
+    if (phase === "confirm" && message.type !== "abort") {
+      await this.abortWith(MoveAbortReason.INVALID, "interrupted");
       return;
     }
 
     switch (message.type) {
       case "offer": {
-        if (active.offer !== null || this.state.phase !== "receiving") return;
+        if (active.offer !== null || phase !== "awaiting") return;
         if (!canReadVersion(APP_VERSION, message.offer.appVersion)) {
           await this.abortWith(MoveAbortReason.INCOMPATIBLE, "incompatible");
           return;
@@ -327,6 +398,7 @@ export class MoveReceiver {
         active.offer = message.offer;
         active.offerRaw = message.raw;
         active.assembler = new BundleAssembler(message.offer);
+        this.set({ phase: "receiving", peerID: active.peerID, progress: 0 });
         return;
       }
       case "chunk": {
@@ -359,7 +431,11 @@ export class MoveReceiver {
         if (this.state.phase === "releasing") this.finish(true);
         return;
       case "abort":
-        if (this.state.phase === "receiving") {
+        if (
+          phase === "confirm" ||
+          phase === "awaiting" ||
+          phase === "receiving"
+        ) {
           this.fail(
             message.reason === MoveAbortReason.CANCELLED
               ? "cancelled"

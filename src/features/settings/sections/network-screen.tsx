@@ -15,8 +15,8 @@ import {
   relayDisplayScheme,
   validateRelayUrl,
 } from "@core/nostr/geo-relay";
-import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { applyInternetAvailability } from "@services/tor-routing";
 import { presentWiFiPairing } from "@services/wifi-pairing-service";

@@ -9,7 +9,6 @@ import {
   hasKeys,
   isVerified,
   useContactsStore,
-  verificationMethod,
   type Contact,
 } from "../contacts-store";
 
@@ -82,9 +81,9 @@ describe("setNostrPubkey", () => {
 
 // A name only you see, kept apart from the one they announce.
 //
-// The two used to be one field, so renaming somebody destroyed the only copy of
-// what they call themselves, and the contact sheet has to show both, or a label
-// the user chose could quietly stand in for the identity they verified.
+// As one field, renaming somebody would destroy the only copy of what they
+// call themselves, and the contact sheet has to show both, or a label the user
+// chose could quietly stand in for the identity they verified.
 describe("local nicknames", () => {
   it("shows your label over theirs, and keeps theirs readable", () => {
     state().addContact(makeContact({ nickname: "swift" }));
@@ -288,6 +287,18 @@ describe("addContact merges and never weakens", () => {
     state().addContact(linkCard({ nostrPubkeyHex: "dd".repeat(32) }));
     expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
   });
+
+  it("lets an in-person scan replace the Nostr key with the mesh keys", () => {
+    state().addContact(linkCard({ nostrPubkeyHex: "cc".repeat(32) }));
+    state().addContact(makeContact({ nostrPubkeyHex: "dd".repeat(32) }));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("dd".repeat(32));
+  });
+
+  it("keeps the Nostr key a scanned card does not carry", () => {
+    state().addContact(linkCard({ nostrPubkeyHex: "cc".repeat(32) }));
+    state().addContact(makeContact());
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
+  });
 });
 
 // `source` says how the keys arrived, `verification` whether a human has
@@ -296,24 +307,10 @@ describe("addContact merges and never weakens", () => {
 describe("verification is separate from source", () => {
   const ID = "aabbccdd00112233";
 
-  it("reads a legacy qr contact as verified in person", () => {
-    // No `verification` field, as records predating it.
-    const legacy: Contact = {
-      peerID: ID,
-      noisePubKeyHex: "aa".repeat(32),
-      signingPubKeyHex: "bb".repeat(32),
-      nickname: "swift",
-      addedAtMs: 1_000,
-      source: "qr",
-    };
-    expect(isVerified(legacy)).toBe(true);
-    expect(verificationMethod(legacy)).toBe("in-person");
-  });
-
   it("treats a link contact as unverified until somebody checks", () => {
     state().addContact(makeContact({ source: "link" }));
     expect(isVerified(state().getContact(ID))).toBe(false);
-    expect(verificationMethod(state().getContact(ID))).toBeUndefined();
+    expect(state().getContact(ID)?.verification).toBeUndefined();
   });
 
   it("verifies a link contact by fingerprint without changing its source", () => {
@@ -401,6 +398,49 @@ describe("setProvenKeys", () => {
     const c = state().getContact(ID);
     expect(c?.noisePubKeyHex).toBe("aa".repeat(32));
     expect(c?.signingPubKeyHex).toBe("bb".repeat(32));
+  });
+
+  it("never re-pins keys a safety number confirmed", () => {
+    state().addContact(makeContact({ source: "link" }));
+    state().markVerified(ID);
+    state().setProvenKeys(ID, "11".repeat(32), "22".repeat(32));
+    expect(state().getContact(ID)?.signingPubKeyHex).toBe("bb".repeat(32));
+  });
+
+  // A link card proves nothing about who made it; a session proves who holds
+  // the Noise key. The session wins on a contact nobody has checked.
+  it("corrects an unverified contact's keys a session contradicts", () => {
+    state().addContact(makeContact({ source: "link" }));
+    state().setProvenKeys(ID, "aa".repeat(32), "22".repeat(32));
+    const c = state().getContact(ID);
+    expect(c?.signingPubKeyHex).toBe("22".repeat(32));
+    expect(isVerified(c)).toBe(false);
+  });
+
+  // The card's npub is where internet DMs to them go, and it came from the
+  // same source as the key the session just refuted.
+  it("drops the Nostr key and name that came with a contradicted key", () => {
+    state().addContact(
+      makeContact({
+        source: "link",
+        nickname: "not them",
+        nostrPubkeyHex: "cc".repeat(32),
+      }),
+    );
+    state().setProvenKeys(ID, "aa".repeat(32), "22".repeat(32));
+    const c = state().getContact(ID);
+    expect(c?.nostrPubkeyHex).toBeUndefined();
+    expect(state().ownNicknameFor(ID)).toBeUndefined();
+    // The next vouched announce fills the npub again.
+    state().setNostrPubkey(ID, "dd".repeat(32));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("dd".repeat(32));
+  });
+
+  it("keeps the Nostr key when the proof only fills an empty slot", () => {
+    state().saveIfAbsent(ID, "swift", "aa".repeat(32));
+    state().setNostrPubkey(ID, "cc".repeat(32));
+    state().setProvenKeys(ID, "aa".repeat(32), "bb".repeat(32));
+    expect(state().getContact(ID)?.nostrPubkeyHex).toBe("cc".repeat(32));
   });
 
   it("is a no-op when no contact exists (never invents a stranger)", () => {

@@ -3,12 +3,10 @@
  */
 // The same-platform fast path.
 //
-// ARCHITECTURE.md lists WiFi Aware (Android only) as an accelerator
-// that the mesh engine is not supposed to notice: same `Transport` interface as
-// BLE, priority 1 in the router, and it carries what BLE cannot. Until this
-// suite the transport was code-complete and entirely unproven. The harness's
-// WiFi bridge was inert - every method a no-op that resolved undefined and
-// never emitted - so no scenario had ever formed a WiFi link.
+// ARCHITECTURE.md lists WiFi Aware as an accelerator that the mesh engine is
+// not supposed to notice: same `Transport` interface as BLE, priority 1 in the
+// router, and it carries what BLE cannot. These scenarios form real links over
+// harness/wifi-fabric.ts rather than taking that on trust.
 //
 // What is worth asserting, and why:
 //
@@ -179,7 +177,7 @@ test("W-F02 an iPhone and an Android never form a WiFi link", async () => {
   droid.launch();
   phone.launch();
 
-  // Both platforms speak WiFi Aware now, which makes it tempting to assume a
+  // Both platforms speak WiFi Aware, which makes it tempting to assume a
   // link between them. Apple requires a paired device for every data path and
   // refuses an open one; Android cannot complete Apple's pairing. So the two
   // implement the same protocol and still cannot reach each other, and every
@@ -447,17 +445,16 @@ test("W-F04 a photo too big for one BLE frame crosses WiFi in one piece", async 
 // The scenario that is NOT here, and why.
 //
 // The obvious question with two radios up is "which one wins for a private
-// message". It was written, and it turned out to be the wrong question. Airhop
-// does not pick a winner. A message is a recipient-addressed, TTL-bounded
-// packet that FLOODS every transport, because no node knows the topology and
-// the recipient may be several hops away. Encryption is what makes it private,
-// not the path. Five separate places in mesh-service write to a WiFi link, so
+// message", and it is the wrong question. Airhop does not pick a winner. A
+// message is a recipient-addressed, TTL-bounded packet that FLOODS every
+// transport, because no node knows the topology and the recipient may be
+// several hops away. Encryption is what makes it private, not the path. Five separate places in mesh-service write to a WiFi link, so
 // disabling any one of them changes nothing observable.
 //
 // For a DM that is doubly unfalsifiable: even with both dedup layers removed,
 // a Double Ratchet message can only be decrypted once, so a second copy can
-// never reach the thread. The test could not fail, which means it was not
-// testing anything.
+// never reach the thread. Such a test could not fail, so it would test
+// nothing.
 //
 // Public messages are where the property has teeth. They have no ratchet, so
 // deduplication is the only thing standing between "two radios" and "every
@@ -729,12 +726,20 @@ test("W-F09 with both radios up, a DM attachment still takes the fast path", asy
     `wifi=${wifi.isLinked("a", "b")} ble links=${a.bleLinkCount()}`,
   );
 
+  // A DM attachment rides the Noise session, which a text opens.
+  const dm = `dm:${b.peerID}`;
+  a.send(dm, "photo coming");
+  await waitFor(
+    s.world,
+    () => a.mesh?.canSealPrivateMedia(b.peerID) === true,
+    30_000,
+  );
+
   // Measure from here, so presence traffic that has already flowed over
   // Bluetooth is not counted against the file.
   const bleBefore = radio.bytesOnAir;
   const wifiBefore = wifi.bytesCarried;
 
-  const dm = `dm:${b.peerID}`;
   const bytes = media.jpeg(64 * 1024);
   s.check(
     "the send was accepted",

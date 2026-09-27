@@ -17,7 +17,7 @@ import {
   type VoiceCodecId,
 } from "./voice-capture";
 
-// 350 ms jitter buffer per ROADMAP.md.
+// 350 ms jitter buffer, as ARCHITECTURE.md specifies.
 const JITTER_BUFFER_MS = 350;
 
 // A session is dropped if no new frame arrives within this window.
@@ -65,7 +65,7 @@ function seqDiff(a: number, b: number): number {
 
 // ---- Types ----
 
-// Injected playback backend - the platform satisfies this interface.
+// Injected playback backend, which the platform satisfies.
 export interface AudioPlaybackBackend {
   // Called when the jitter buffer delivers a batch of ordered frames.
   // frames are in sequence order, ready for decoding and playback.
@@ -74,8 +74,13 @@ export interface AudioPlaybackBackend {
     codec: VoiceCodecId,
     frames: Uint8Array[],
   ): Promise<void>;
-  // Called when a PTT session ends (END/CANCELED received + buffer flushed).
-  endSession(burstIDHex: string): void;
+  // The burst finished on its own (END, the idle timeout, or a cap cutting it
+  // off) and its last batch has been handed over: play out what is queued,
+  // then release the speaker. Matches bitchat's PTTBurstPlayer.finishAfterDrain.
+  finishSession(burstIDHex: string): void;
+  // The burst was retracted: silence it at once, queued audio included.
+  // Matches bitchat's PTTBurstPlayer.stop.
+  stopSession(burstIDHex: string): void;
 }
 
 interface BufferedFrame {
@@ -276,7 +281,7 @@ class VoiceSession {
       this.timeoutTimer = null;
     }
     this.ended = true;
-    this.backend.endSession(this.burstIDHex);
+    this.backend.finishSession(this.burstIDHex);
     this.onDone(this.burstIDHex);
   }
 
@@ -299,9 +304,9 @@ export class VoicePlayer {
   // Every other way a session ends is driven by a packet arriving, and the
   // caller re-reads `activeSessions` right after handing us that packet. The
   // idle timeout is the one that fires with nothing arriving, which is exactly
-  // the case where the talker went quiet without saying so - so without this
-  // the "LIVE - Alice is speaking" pill outlived the audio, waiting for a
-  // packet that was never coming.
+  // the case where the talker went quiet without saying so. Without this the
+  // live pill naming them would outlive the audio, waiting for a packet that
+  // is never coming.
   private readonly onSessionsChanged: () => void;
   // Key: "${senderPeerID}:${sessionId}"
   private sessions = new Map<string, VoiceSession>();
@@ -312,18 +317,18 @@ export class VoicePlayer {
   // speaker to play them through. Mixing was never on the table (neither client
   // does it), but neither is handing the speaker back and forth: each burst
   // arrives about fifteen packets a second, so alternating between two of them
-  // tore down and rebuilt the whole decode-and-play pipeline thirty times a
-  // second and left both voices unintelligible.
+  // tears down and rebuilds the whole decode-and-play pipeline thirty times a
+  // second and leaves both voices unintelligible.
   //
   // So the first burst to produce audio keeps the speaker until it ends. The
-  // others are still counted as talkers - the banner says how many - and their
+  // others are still counted as talkers (the banner says how many), and their
   // voice notes still arrive afterwards, so nothing is lost; it is only not
   // heard live. Matches bitchat's rule in PUSH-TO-TALK-DESIGN.md section 6.
   private floorKey: string | null = null;
   // Bursts cut off for breaking a cap. Every packet of such a burst is ignored
-  // from then on, including its END: without this the session was torn down and
-  // the very next packet opened a replacement with its byte count back at zero,
-  // which handed a flooding peer an unlimited budget one cap at a time.
+  // from then on, including its END. Otherwise the very next packet would open
+  // a replacement session with its byte count back at zero, handing a flooding
+  // peer an unlimited budget one cap at a time.
   private readonly cutOffBursts = new Set<string>();
 
   constructor(
@@ -416,7 +421,7 @@ export class VoicePlayer {
         // The one case that silences the speaker rather than letting it finish.
         // A retraction means the talker wants what they said thrown away, and
         // up to two seconds of it can still be queued in the audio pipeline;
-        // ending the session there is what stops it being played. Matches
+        // stopping the session there is what stops it being played. Matches
         // bitchat's cancelAssembly, which calls stop() on the burst's player.
         this.stopFloor(key, burstIDHex);
         break;
@@ -485,7 +490,7 @@ export class VoicePlayer {
   private stopFloor(key: string, burstIDHex: string): void {
     if (this.floorKey !== key) return;
     this.floorKey = null;
-    this.backend.endSession(burstIDHex);
+    this.backend.stopSession(burstIDHex);
   }
 
   // Active PTT sessions (for UI display).

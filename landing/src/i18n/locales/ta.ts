@@ -196,6 +196,11 @@ const strings: Strings = {
   "home.features.identity.qr.name": "QR தொடர்புகள்",
   "home.features.identity.qr.line":
     "ஒரு வருடல் அவர்களின் பெயரை மட்டுமல்ல, சாவிகளையும் கொண்டு வருகிறது.",
+  "home.features.identity.forward.name": "முன்னோக்கு ரகசியம்",
+  "home.features.identity.forward.line": "கசிந்த சாவியால் பழைய செய்திகளைத் திறக்க முடியாது.",
+  "home.features.identity.move.name": "புதிய தொலைபேசிக்கு மாற்றம்",
+  "home.features.identity.move.line":
+    "அரட்டைகளும் பணப்பையும் இடம்பெயர்கின்றன, பின் பழைய தொலைபேசி தன்னை அழித்துக்கொள்கிறது.",
   "home.features.identity.panic.name": "அவசர அழிப்பு",
   "home.features.identity.panic.line":
     "ஒவ்வொரு சாவியும் ஒவ்வொரு செய்தியும் ஒரு நொடிக்குள் அழிக்கப்படுகிறது.",
@@ -205,6 +210,12 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth மெஷ்",
   "home.features.networking.mesh.line":
     "இணையம் இல்லை, திசைவி இல்லை, மக்களிடம் ஏற்கெனவே உள்ள தொலைபேசிகளில்.",
+  "home.features.networking.lan.name": "உள்ளூர் வலையமைப்பு",
+  "home.features.networking.lan.line":
+    "பகிர்ந்த WiFi அல்லது ஹாட்ஸ்பாட், iPhone-உம் Android-உம் ஒன்றாக.",
+  "home.features.networking.hops.name": "பல-தாவல் அஞ்சல்",
+  "home.features.networking.hops.line":
+    "ஒவ்வொரு தொலைபேசியும் செய்திகளை அனுப்புகிறது, ஏழு தாவல்கள் வரை.",
   "home.features.networking.bridge.name": "மெஷ் பாலம்",
   "home.features.networking.bridge.line":
     "உங்கள் பொது உரையாடலை எல்லைக்கு வெளியே உள்ள அருகிலுள்ள கூட்டத்துடன் இணைக்கிறது.",

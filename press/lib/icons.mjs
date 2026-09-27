@@ -1,4 +1,4 @@
-// Feather icon paths. The app gets these from @expo/vector-icons at runtime;
+// Feather icon paths. The app gets these from @react-native-vector-icons/feather;
 // a headless browser cannot, so they are transcribed here at the same 24x24
 // viewBox and 2px stroke.
 

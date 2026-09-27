@@ -20,12 +20,18 @@
 // and no signature covers the normalized form. A peer that normalizes
 // differently, or not at all, stays fully interoperable.
 
+import { stripInvisibles } from "@utils/strip-invisibles";
+
 // The canonical form of a nickname, for storage and for comparison.
 //
-// Also trims surrounding whitespace: a trailing space is invisible in a name and
+// Also drops invisible and bidi control characters, which could reorder the
+// text around a name or make two identical-looking names compare unequal, and
+// trims surrounding whitespace: a trailing space is invisible in a name and
 // would defeat the comparison this exists to make reliable.
 export function normalizeNickname(nickname: string): string {
-  return nickname.normalize("NFC").trim();
+  return stripInvisibles(nickname.normalize("NFC"), {
+    singleLine: true,
+  }).trim();
 }
 
 // Whether two nicknames name the same person, ignoring encoding and case.

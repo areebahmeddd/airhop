@@ -39,6 +39,11 @@ jest.mock("../wallet-service", () => ({
   failNutzapDelivery: jest.fn(),
   failSend: jest.fn(),
   reclaimSend: jest.fn(),
+  // The real rule: whole days past a day old.
+  staleFeeDays: (ageMs?: number) =>
+    ageMs !== undefined && ageMs >= 86_400_000
+      ? Math.floor(ageMs / 86_400_000)
+      : null,
 }));
 
 jest.mock("../mesh-service", () => ({
@@ -46,12 +51,14 @@ jest.mock("../mesh-service", () => ({
   getMeshService: jest.fn(),
 }));
 
+import { stripIsolates, t } from "@i18n";
 import { useAlertStore } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { getMeshService } from "../mesh-service";
-import { payPerson } from "../payment-router";
+import { describePayResult, payPerson } from "../payment-router";
 import {
+  failSend,
   findNutzapTarget,
   lockProofsForNutzap,
   prepareSend,
@@ -86,6 +93,7 @@ function fakeMesh(options: {
   online?: boolean;
   route?: "sent" | "sent-nostr" | "needs-courier" | "queued";
   peerNostrPubkey?: string;
+  airhop?: boolean;
 }) {
   return {
     hasDirectLink: jest.fn(() => options.directLink ?? false),
@@ -94,6 +102,7 @@ function fakeMesh(options: {
     getPeerNostrPubkey: jest.fn(() => options.peerNostrPubkey),
     getPeerID: jest.fn(() => "0011223344556677"),
     sendDm: jest.fn(() => options.route ?? "sent"),
+    peerRunsAirhop: jest.fn(() => options.airhop ?? false),
   };
 }
 
@@ -422,6 +431,55 @@ describe("payPerson asks before money moves", () => {
     expect(asked[0]?.message).toMatch(/reclaim/);
   });
 
+  it("says when the fee was priced from a schedule days old", async () => {
+    useMesh({ directLink: true, route: "sent" });
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      pricedFromCacheAgeMs: 2 * 86_400_000 + 5_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(stripIsolates(asked[0]?.message ?? "")).toMatch(
+      /last checked 2 days ago/,
+    );
+  });
+
+  it("says nothing about fees priced from a fresh schedule", async () => {
+    useMesh({ directLink: true, route: "sent" });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked[0]?.message).not.toMatch(/last checked/);
+  });
+
+  it("puts the stale fee note in the overpay question when that is the one asked", async () => {
+    useMesh({ directLink: true, route: "sent" });
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 512,
+      fee: 0,
+      exact: false,
+      proofs: [],
+      pricedFromCacheAgeMs: 86_400_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500, recipientName: "Ana" });
+
+    expect(asked).toHaveLength(1);
+    expect(stripIsolates(asked[0]?.message ?? "")).toMatch(
+      /last checked 1 day ago/,
+    );
+  });
+
   it("spends nothing when the user says no", async () => {
     useMesh({ directLink: false, peerNostrPubkey: PUBKEY });
     answer = "cancel";
@@ -442,6 +500,30 @@ describe("payPerson asks before money moves", () => {
     expect(asked).toHaveLength(1);
     expect(mockedPrepare).toHaveBeenCalledTimes(1);
   });
+
+  it("asks again when the fallback token's fee comes from a stale schedule", async () => {
+    // The nutzap's confirm carried no fee note, and the token is what goes.
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedLock.mockRejectedValue(new Error("mint unreachable"));
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      pricedFromCacheAgeMs: 3 * 86_400_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(asked).toHaveLength(2);
+    expect(stripIsolates(asked[1]?.message ?? "")).toMatch(
+      /last checked 3 days ago/,
+    );
+    expect(mockedPrepare).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("a lock whose answer went missing", () => {
@@ -457,5 +539,69 @@ describe("a lock whose answer went missing", () => {
 
     expect(result).toBeNull();
     expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+});
+
+// One proof with its DLEQ witness encodes to about 384 characters, past the
+// 255-byte cap on every queued route except Airhop-to-Airhop over the mesh.
+describe("a token too large for the queue", () => {
+  const LARGE = "cashuB" + "a".repeat(378);
+
+  beforeEach(() => {
+    mockedPrepare.mockResolvedValue({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      txId: "tx-token-1",
+      token: LARGE,
+    });
+  });
+
+  it("does not promise a bitchat or unknown peer it will send", async () => {
+    useMesh({ directLink: false, route: "queued" });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    const said = t("wallet.xfer.route_too_large");
+    expect(result && describePayResult(result)).toContain(said);
+    expect(result && describePayResult(result)).not.toContain(
+      t("wallet.xfer.route_queued"),
+    );
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+  });
+
+  it("says an Airhop peer gets it back in range, or by hand now", async () => {
+    useMesh({ directLink: false, route: "queued", airhop: true });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    const said = t("wallet.xfer.route_too_large_airhop");
+    expect(result && describePayResult(result)).toContain(said);
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+  });
+
+  it("keeps the ordinary queued sentence for a token that fits", async () => {
+    mockedPrepare.mockResolvedValue({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      txId: "tx-token-1",
+      token: "cashuBtoken",
+    });
+    useMesh({ directLink: false, route: "queued" });
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result && describePayResult(result)).toContain(
+      t("wallet.xfer.route_queued"),
+    );
   });
 });

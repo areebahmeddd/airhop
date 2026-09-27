@@ -21,7 +21,7 @@ const TYPE_BIT_MESSAGE = 1;
 const TYPE_BIT_BOARD = 8;
 
 // Timestamps are relative to now: sync candidates are age-bounded per type
-// (announce 60s, message 15min, board 7 days), so a fixed literal would put
+// (announce 60s, message 6 h, board 7 days), so a fixed literal would put
 // every fixture outside its window and quietly test nothing.
 function packet(type: PacketType, seed: number): Packet {
   const senderID = new Uint8Array(8).fill(seed & 0xff);

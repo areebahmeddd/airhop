@@ -6,17 +6,19 @@
 //   kind 10019  "how to pay me", replaceable, published by the receiver
 //               ["relay", <url>]            where to send nutzaps
 //               ["mint", <url>, <unit>...]  mints they accept
-//               ["pubkey", <33-byte hex>]   the P2PK key to lock to
+//               ["pubkey", <hex>]           the P2PK key to lock to
 //   kind 9321   the nutzap, published by the sender; content is the comment
 //               ["proof", <proof JSON>]     one tag per locked proof
 //               ["u", <mint url>]           the issuing mint
+//               ["unit", <unit>]            optional, defaults to sat
 //               ["p", <recipient pubkey>]   who it is for
 //               ["e", <event id>, <relay>]  optional, what is being zapped
 //
 // Two rules lose money if broken: proofs must come from a mint the recipient
-// listed (others are worthless to them), and the lock key is the 33-byte
-// compressed `pubkey` tag, never the 32-byte x-only Nostr key (that lock is
-// unspendable by anyone, sender included). Kind numbers: PROTOCOLS.md section 8.
+// listed (others are worthless to them), and the lock key is the `pubkey`
+// tag, never the author's Nostr key (their wallet watches only its own P2PK
+// key). NUT-11 needs the key compressed, so an x-only tag is locked to as
+// "02" + key, as NIP-61 requires. Kind numbers: PROTOCOLS.md section 8.
 
 import type { Proof, ProofLike } from "@cashu/cashu-ts";
 import { finalizeEvent, type Event } from "nostr-tools";
@@ -34,15 +36,18 @@ const MAX_COMMENT_LENGTH = 280;
 const MAX_MINTS = 16;
 const MAX_RELAYS = 16;
 
-// How far back to look for nutzaps we might have missed while offline.
-const LOOKBACK_S = 60 * 60 * 24 * 30;
+// How far back to look for nutzaps we might have missed while offline. Also
+// how long a settled event is remembered: past this no subscription asks for
+// it again.
+export const NUTZAP_LOOKBACK_S = 60 * 60 * 24 * 30;
 
 export interface NutzapInfo {
   // Nostr pubkey of the person being paid (hex, x-only).
   pubkey: string;
   // In their stated order of preference.
   mintUrls: string[];
-  // 33-byte compressed secp256k1 key to lock proofs to (hex).
+  // 33-byte compressed secp256k1 key to lock proofs to (hex). An x-only tag
+  // arrives here with its "02".
   p2pkPubkey: string;
   // Relays they watch for nutzaps.
   relays: string[];
@@ -76,7 +81,8 @@ export async function publishNutzapInfo(params: {
     throw new Error("nutzap info needs at least one mint");
   }
   if (!/^0[23][0-9a-f]{64}$/i.test(params.p2pkPubkey)) {
-    // The classic NIP-61 mistake: an x-only key locks proofs nobody can unlock.
+    // Published compressed, so a reader that locks to the tag verbatim still
+    // makes a valid NUT-11 lock.
     throw new Error(
       "p2pk pubkey must be a 33-byte compressed secp256k1 key (02/03 prefix)",
     );
@@ -103,6 +109,11 @@ export async function publishNutzapInfo(params: {
 }
 
 // Null (no kind 10019, the common case) means fall back to a token in a DM.
+// Each relay answers with its own copy, fastest first, and a lagging or
+// hostile one can serve an older, validly signed event: the newest wins, by
+// NIP-01's replaceable order (latest `created_at`, then lowest id). An
+// unparseable newest event is null, not an older one: publishing it is how a
+// recipient opts out.
 export async function fetchNutzapInfo(
   recipientPubkey: string,
   client: NostrClient,
@@ -112,9 +123,18 @@ export async function fetchNutzapInfo(
     authors: [recipientPubkey],
     limit: 1,
   });
-  const event = events[0];
-  if (!event) return null;
-  return parseNutzapInfo(event);
+  const newest = events
+    .filter((event) => event.pubkey === recipientPubkey)
+    .reduce<Event | undefined>(
+      (best, event) =>
+        best === undefined ||
+        event.created_at > best.created_at ||
+        (event.created_at === best.created_at && event.id < best.id)
+          ? event
+          : best,
+      undefined,
+    );
+  return newest === undefined ? null : parseNutzapInfo(newest);
 }
 
 export function parseNutzapInfo(event: Event): NutzapInfo | null {
@@ -132,16 +152,27 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
     } else if (name === "relay" && relays.length < MAX_RELAYS) {
       if (/^wss?:\/\//i.test(value)) relays.push(value);
     } else if (name === "pubkey" && p2pkPubkey === undefined) {
-      if (/^0[23][0-9a-f]{64}$/i.test(value)) p2pkPubkey = value.toLowerCase();
+      p2pkPubkey = compressedLockKey(value);
     }
   }
 
   // Both are load-bearing: without a mint we do not know what they accept,
   // without a P2PK key we cannot lock. Never fall back to `event.pubkey` as
-  // the lock key: it is x-only, and no mint can unlock proofs locked to it.
+  // the lock key: NIP-61 forbids the user's main Nostr key, and their wallet
+  // would never look for proofs locked to it.
   if (mintUrls.length === 0 || p2pkPubkey === undefined) return null;
 
   return { pubkey: event.pubkey, mintUrls, p2pkPubkey, relays };
+}
+
+// NIP-61 senders "MUST prefix the public key they P2PK-lock with 02", since
+// wallets built on NDK publish the key x-only, Nostr style. NUT-11 signatures
+// are BIP-340, checked against the x coordinate alone, so the holder spends a
+// 02 lock whatever the key's parity.
+function compressedLockKey(value: string): string | undefined {
+  if (/^0[23][0-9a-f]{64}$/i.test(value)) return value.toLowerCase();
+  if (/^[0-9a-f]{64}$/i.test(value)) return `02${value.toLowerCase()}`;
+  return undefined;
 }
 
 // `proofs` must already be locked to the recipient's `p2pkPubkey` (see
@@ -150,6 +181,7 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
 export async function publishNutzap(params: {
   proofs: Proof[];
   mintUrl: string;
+  unit: string;
   recipientPubkey: string;
   senderPrivKey: Uint8Array;
   client: NostrClient;
@@ -173,6 +205,9 @@ export async function publishNutzap(params: {
       tags: [
         // One tag per proof is the NIP-61 wire format. An array in `content`
         // is an event no other Nostr wallet can read.
+        // The DLEQ witness with its blinding factor `r`: without `r` it
+        // convinces nobody but the mint's own client, and NIP-61 asks
+        // observers to verify it (NUT-12).
         ...params.proofs.map((proof) => [
           "proof",
           JSON.stringify({
@@ -181,11 +216,21 @@ export async function publishNutzap(params: {
             secret: proof.secret,
             C: proof.C,
             ...(proof.witness !== undefined ? { witness: proof.witness } : {}),
+            ...(proof.dleq !== undefined
+              ? {
+                  dleq: {
+                    e: proof.dleq.e,
+                    s: proof.dleq.s,
+                    ...(proof.dleq.r !== undefined ? { r: proof.dleq.r } : {}),
+                  },
+                }
+              : {}),
           }),
         ]),
-        // Exactly one "u", the mint URL: readers take a second "u" (say, a
-        // unit) as a second mint.
+        // Exactly one "u", the mint URL: readers take a second "u" as a
+        // second mint. The unit has its own tag.
         ["u", params.mintUrl],
+        ["unit", params.unit],
         ["p", params.recipientPubkey],
         ...(params.targetEventId ? [["e", params.targetEventId]] : []),
       ],
@@ -199,9 +244,12 @@ export async function publishNutzap(params: {
 }
 
 // Fires once per event. Relays replay, so the caller dedupes (wallet-store
-// tracks redeemed ids).
+// tracks settled ids). `mintUrls` are the exact strings our kind 10019 lists:
+// NIP-61's `#u` filter, so relays never hand over nutzaps from mints we have
+// not signalled, and a compliant sender's `u` tag matches byte for byte.
 export function subscribeNutzaps(
   myPubkey: string,
+  mintUrls: string[],
   client: NostrClient,
   onNutzap: (zap: ReceivedNutzap) => void,
 ): () => void {
@@ -210,7 +258,8 @@ export function subscribeNutzaps(
       {
         kinds: [KIND_NUTZAP],
         "#p": [myPubkey],
-        since: Math.floor(Date.now() / 1000) - LOOKBACK_S,
+        "#u": mintUrls,
+        since: Math.floor(Date.now() / 1000) - NUTZAP_LOOKBACK_S,
       },
     ],
     (event: Event) => {
@@ -226,6 +275,7 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
 
   const proofs: ProofLike[] = [];
   let mintUrl: string | undefined;
+  let unit: string | undefined;
   let targetEventId: string | undefined;
 
   for (const tag of event.tags) {
@@ -238,6 +288,9 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
       if (proof) proofs.push(proof);
     } else if (name === "u" && mintUrl === undefined) {
       if (isHttpUrl(value)) mintUrl = value;
+    } else if (name === "unit" && unit === undefined) {
+      // A currency code shown beside an amount: alphanumerics only.
+      if (/^[a-z0-9]{1,12}$/i.test(value)) unit = value.toLowerCase();
     } else if (name === "e" && targetEventId === undefined) {
       if (/^[0-9a-f]{64}$/i.test(value)) targetEventId = value.toLowerCase();
     }
@@ -255,9 +308,9 @@ export function parseNutzap(event: Event): ReceivedNutzap | null {
     senderPubkey: event.pubkey,
     createdAt: event.created_at,
     mintUrl,
-    // NIP-61 carries no unit tag; sat is the NUT-00 default and the only unit
-    // our kind 10019 advertises.
-    unit: "sat",
+    // NIP-61's `unit` tag, defaulting to sat. Redemption checks the coins
+    // really are in it.
+    unit: unit ?? "sat",
     proofs,
     amount,
     ...(comment.length > 0 ? { comment } : {}),

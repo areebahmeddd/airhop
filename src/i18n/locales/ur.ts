@@ -122,6 +122,11 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "دونوں فون ایک ہی Wi-Fi پر رکھیں، یا ایک پر ہاٹ اسپاٹ چالو کریں اور دوسرے سے اس میں شامل ہوں۔ انٹرنیٹ کی ضرورت نہیں۔",
   "onboarding.transfer.incoming": "{name} منتقل ہو رہا ہے",
+  "onboarding.transfer.confirm_title": "اپنا پرانا فون دیکھیں",
+  "onboarding.transfer.confirm_body":
+    "آپ کے پرانے فون پر یہی الفاظ دکھنے چاہییں۔ اگر وہ مختلف الفاظ دکھائے، یا کوئی بھی نہیں، تو منسوخ کریں۔",
+  "onboarding.transfer.confirm_cta": "یہ ملتے ہیں",
+  "onboarding.transfer.waiting_old": "اپنے پرانے فون پر ”{action}“ چھوئیں",
   "onboarding.transfer.receiving": "موصول ہو رہا ہے {percent}%",
   "onboarding.transfer.saving": "اس فون پر محفوظ ہو رہا ہے",
   "onboarding.transfer.releasing": "آپ کے پرانے فون پر مکمل ہو رہا ہے",
@@ -178,6 +183,15 @@ export const strings: Strings = {
   "error.boundary.title": "کچھ غلط ہو گیا",
   "error.boundary.body":
     "Airhop کو ایک غیر متوقع مسئلہ پیش آیا اور جو دکھا رہا تھا اسے روکنا پڑا۔",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "آپ کی کلیدیں نہیں کھل سکیں",
+  "launch.keys_unreadable_body":
+    "آپ کے فون نے Airhop کی کلیدیں نہیں کھولیں۔ فون کھولیں، پھر دوبارہ کوشش کریں۔",
+  "launch.start_over": "صاف کریں اور نئے سرے سے شروع کریں",
+  "launch.start_over_confirm_title": "یہ فون صاف کریں؟",
+  "launch.start_over_confirm_body":
+    "اس فون پر آپ کی شناخت، پیغامات، رابطے اور بٹوہ تباہ ہو جاتے ہیں، اور آپ ایک نئے شخص کے طور پر دوبارہ شروع کرتے ہیں۔ اسے واپس نہیں لیا جا سکتا۔",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "طے شدہ چینل",
@@ -302,7 +316,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "آپ پہلے ہی ایک اور {name} میں ہیں۔ چینل کے نام محض عنوان ہوتے ہیں، سو اس دعوت نے اپنا الگ چینل کھولا ہے اور جس میں آپ تھے وہ اچھوتا ہے۔ آپ دونوں میں سے کسی کا نام اس کی چینل معلومات سے بدل سکتے ہیں۔",
   "chat.join.paste_hint":
-    "airhop:// سے شروع ہونے والی دعوت چسپاں کریں۔ ربط چھونا بھی کام کرتا ہے؛ یہ اس ربط کے لیے ہے جسے آپ چھو نہیں سکتے۔",
+    "Airhop کا ربط airhop:// سے شروع ہوتا ہے۔ کوئی ربط یہاں چسپاں کریں، یا وہ ربط جانچ لیں جو کسی ربط کو چھونے سے یہاں بھر گیا۔",
   "chat.join.key_note":
     "نجی چینل کی دعوت کلید ساتھ لاتی ہے، سو شامل ہونا فوری ہے اور کسی اور سے کچھ نہیں پوچھا جاتا۔",
   "chat.join.offline_note":
@@ -431,8 +445,13 @@ export const strings: Strings = {
   "chat.transfer.progress": "{total} میں سے {done}",
   "chat.transfer.speed": "{size}/سیکنڈ",
   "chat.transfer.left": "{time} باقی",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "پیئر",
   "chat.thread.cancel_transfer": "{name} منسوخ کریں",
+  "chat.thread.hide_transfer": "پیش رفت چھپائیں",
+  "chat.thread.hide_transfer_hint": "فائل پھر بھی پہنچ جائے گی",
   "chat.thread.queued_more": "مزید {count} بھیجے جانے کے منتظر",
   "chat.thread.across_bridge": "پل کے پار {count}",
   "chat.thread.bridged": "پل سے گزرا",
@@ -465,6 +484,10 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}۔ {name} بول رہے ہیں۔",
   "chat.thread.attach_note":
     "فائلیں صرف بلوٹوتھ کی حدود میں جاتی ہیں۔ متن اور ادائیگیاں انٹرنیٹ کے رابطوں تک پہنچتی ہیں؛ منسلکات نہیں۔",
+  "chat.thread.media_securing":
+    "پہلے ان کے ساتھ خفیہ کاری ترتیب دی جا رہی ہے۔ تھوڑی دیر میں دوبارہ کوشش کریں۔",
+  "chat.thread.media_unsupported":
+    "ان کی ایپ خفیہ کردہ تصاویر یا صوتی نوٹ وصول نہیں کر سکتی، اس لیے یہ نہیں بھیجا گیا۔",
   "chat.thread.message_peer": "{name} کو پیغام بھیجیں",
   "chat.thread.send": "پیغام بھیجیں",
   "chat.thread.group": "گروپ",
@@ -590,7 +613,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "ویڈیو اس آلے پر نہیں",
   "chat.media.gone_voice": "صوتی نوٹ اس آلے پر نہیں",
   "chat.media.gone_file": "فائل اس آلے پر نہیں",
-  "chat.media.gone_note": "7 دن بعد یا کیش صاف ہونے پر ہٹا دیا گیا",
+  "chat.media.gone_note":
+    "اس فون سے ہٹا دیا گیا، یا آپ کے پرانے فون سے منتقل نہیں ہوا",
   "chat.media.ask_resend": "دوبارہ کہیں",
   "chat.media.resend_draft": "کیا آپ {kind} دوبارہ بھیج سکتے ہیں؟",
   "chat.media.kind_photo": "وہ تصویر",
@@ -660,6 +684,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "لے لیا",
   "chat.ecash.reclaimed": "واپس لیا گیا",
+  "chat.ecash.locked": "کسی اور سے بندھا ہوا",
   "chat.ecash.claiming": "لیا جا رہا ہے…",
   "chat.ecash.claim": "لیں",
   "chat.ecash.claim_amount": "{amount} {unit} لیں",
@@ -892,6 +917,7 @@ export const strings: Strings = {
     "نظام کی ترتیبات میں Airhop کی اجازتیں کھولتا ہے",
   "mesh.banner.hint.battery_settings":
     "اس فون کی پس منظر سرگرمی کی ترتیبات کھولتا ہے",
+  "mesh.banner.hint.tor_settings": "Airhop کی Tor ترتیبات کھولتا ہے",
   "mesh.banner.dismiss": "برخاست کریں: {label}",
   "mesh.banner.hint.dismiss": "اس نوٹ کو ہمیشہ کے لیے چھپا دیتا ہے",
 
@@ -925,8 +951,10 @@ export const strings: Strings = {
   "mesh.radar.ring_hint": "حلقے پر جگہ سگنل کی قوت ظاہر کرتی ہے، فاصلہ نہیں",
   "mesh.radar.set_online":
     "پیئرز دریافت کرنے کے لیے آپ ٹیب میں اپنی حالت آن لائن کریں",
-  "mesh.radar.in_range": "حدود میں",
-  "mesh.radar.recently_seen": "حال ہی میں دیکھے گئے",
+  "mesh.radar.peer_in_range": "{name}، حدود میں",
+  "mesh.radar.peer_recent": "{name}، حال ہی میں دیکھے گئے",
+  "mesh.radar.relay_in_range": "{name}، ریلے نوڈ، حدود میں",
+  "mesh.radar.relay_recent": "{name}، ریلے نوڈ، حال ہی میں دیکھے گئے",
   "mesh.radar.peer_hint":
     "اس پیئر کو پیغام بھیجنے یا ادائیگی کے اختیارات کھولتا ہے",
 
@@ -948,6 +976,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "ecash بھیجیں، پہلے رقم درج کریں",
   "mesh.peer.cancel_send": "ecash بھیجنا منسوخ کریں",
   "mesh.peer.view_peer_online": "پیئر {name} دیکھیں، آن لائن",
+  "mesh.peer.view_relay_online": "پیئر {name} دیکھیں، آن لائن، ریلے نوڈ",
   "mesh.peer.last_seen_at": "آخری بار دیکھا گیا {ago}",
   "mesh.peer.send_amount": "{amount} sat بھیجیں",
   "mesh.peer.direct": "براہ راست تعلق",
@@ -1011,8 +1040,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "{unit} میں رقم",
   "wallet.send.body":
     "آپ کے پاس پہلے سے موجود ecash سے آف لائن بنایا گیا۔ جب تک آپ تصدیق نہ کریں کہ ٹوکن پہنچ گیا، آپ کے بیلنس سے کچھ بھی ہمیشہ کے لیے نہیں جاتا۔",
-  "wallet.send.stale_fee_note":
-    "فیسیں آخری بار {days} دن پہلے جانچی گئی تھیں۔ اگر اس ٹکسال نے تب سے فیس بڑھائی ہو تو ترسیل کچھ زیادہ مہنگی پڑ سکتی ہے۔",
   "wallet.send.fee_note":
     "{spend} {unit} آپ کے بیلنس سے جائیں گے؛ اضافی {fee} وہ ٹکسال فیس پوری کرتے ہیں جو ورنہ انہیں دینا پڑتی",
   "wallet.send.qr_too_big":
@@ -1056,6 +1083,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "پہلے ہی آپ کے بٹوے میں",
   "wallet.receive.already_have_body":
     "اس ٹوکن کی ہر چیز پہلے ہی یہاں محفوظ ہے، اس لیے کچھ شامل نہیں ہوا۔ بیلنس جوں کے توں ہیں۔",
+  "wallet.receive.claiming": "ابھی تک ٹکسال کا انتظار ہے",
+  "wallet.receive.claiming_body":
+    "اس ٹوکن کی پچھلی وصولی کی ٹکسال نے ابھی تصدیق نہیں کی، اس لیے کچھ نیا نہیں بھیجا گیا۔ بٹوہ اسے خود بخود نمٹا دیتا ہے۔ اگر ٹکسال نے اسے کبھی لیا ہی نہیں، تو آپ اسے دوبارہ لے سکتے ہیں۔",
   "wallet.receive.stored_unconfirmed":
     "{mint} سے محفوظ، مگر ابھی ٹکسال سے تصدیق نہیں ہوئی ({reason})۔",
   "wallet.receive.offline": "آف لائن",
@@ -1065,18 +1095,20 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} پر بھنا لیا گیا۔ اب یہ ثابت شدہ طور پر آپ کا ہے: بھیجنے والے کے پاس اس ٹوکن کی نقل اب کام نہیں کرتی۔",
   "wallet.receive.stored_pending":
-    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا{dleq}۔ آن لائن ہوتے ہی بٹوہ ٹیب سے تازہ کریں۔",
+    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا{dleq}۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
   "wallet.receive.dleq_inline":
     " (اس کا دستخط تو ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے)",
   "wallet.receive.dleq_ok": "ٹکسال کا دستخط ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے۔",
   "wallet.receive.dleq_uncached":
     "ٹکسال کی کلیدیں یہاں موجود نہیں، اس لیے دستخط آف لائن جانچا نہ جا سکا۔",
+  "wallet.receive.dleq_missing":
+    "اس کے ہر سکے پر ٹکسال کے دستخط کا ثبوت نہیں، اس لیے اسے آف لائن جانچا نہ جا سکا۔",
   "wallet.receive.dleq_warning":
-    "جب تک آپ آن لائن تازہ نہ کریں، اصولاً ممکن ہے بھیجنے والے نے اسے کہیں اور خرچ کر دیا ہو۔",
+    "جب تک آن لائن تصدیق نہ ہو، اصولاً ممکن ہے بھیجنے والے نے اسے کہیں اور خرچ کر دیا ہو۔",
   "wallet.receive.failed": "وصول نہ ہو سکا",
   "wallet.receive.title": "ecash وصول کریں",
   "wallet.receive.body":
-    "Cashu ٹوکن چسپاں کریں۔ آن لائن ہو تو ٹکسال پر فوراً بھنا لیا جاتا ہے؛ آف لائن ہو تو محفوظ ہو جاتا ہے اور اگلی بار تازہ کرنے پر تصدیق ہوتی ہے۔",
+    "Cashu ٹوکن چسپاں کریں۔ آن لائن ہو تو ٹکسال پر فوراً بھنا لیا جاتا ہے؛ آف لائن ہو تو محفوظ ہو جاتا ہے اور آپ کے دوبارہ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
   "wallet.receive.scan": "ecash کا QR کوڈ اسکین کریں",
   "wallet.receive.scan_short": "QR اسکین کریں",
   "wallet.receive.receiving": "وصول ہو رہا ہے…",
@@ -1211,6 +1243,8 @@ export const strings: Strings = {
     "بحالی ٹکسال سے پوچھ کر چلتی ہے کہ اس نے آپ کے لیے کون سے سکے دستخط کیے، سو اسے معلوم ہونا چاہیے کہ کس ٹکسال سے پوچھے۔ جو ٹکسالیں آپ استعمال کرتے تھے وہ شامل کریں، پھر بحال کریں۔",
   "wallet.backup.restore_failed": "بحالی ناکام",
   "wallet.backup.phrase": "بحالی کا فقرہ",
+  "wallet.backup.auth_prompt":
+    "اپنا بحالی کا فقرہ دکھانے کے لیے تصدیق کریں کہ یہ آپ ہیں",
   "wallet.backup.state_unconfirmed": "بیک اپ چالو مگر تصدیق نہیں ہوئی",
   "wallet.backup.state_off": "بیک اپ بند",
   "wallet.backup.badge_on": "چالو",
@@ -1290,6 +1324,8 @@ export const strings: Strings = {
     "ٹکسال کے مطابق یہ ٹوکن پہلے ہی بھنایا جا چکا ہے، اس لیے {amount} {unit} ان تک پہنچ گئے اور آپ کے بیلنس میں کچھ واپس نہیں آیا۔",
   "wallet.copied.token_body":
     "ٹوکن آپ کے کلپ بورڈ پر ہے۔ جب تک آپ اسے پہنچا ہوا نشان زد نہ کریں یہ یہاں مختص رہتا ہے، سو پہلی کوشش ناکام ہو تو آپ اسے دوبارہ چسپاں کر سکتے ہیں۔",
+  "wallet.copied.refused_token_body":
+    "ٹوکن آپ کے کلپ بورڈ پر ہے۔ یہ بٹوہ اب اسے شمار نہیں کرتا، سو آپ اسے بھیجنے والے کو واپس دے سکتے ہیں۔",
   "wallet.copied.phrase_body":
     "اسے کسی پاس ورڈ منتظم میں چسپاں کریں، پھر اپنا کلپ بورڈ صاف کریں۔ دوسری ایپس کلپ بورڈ پڑھ سکتی ہیں، اور کچھ ترتیبات میں یہ آپ کے دوسرے آلات سے ہم وقت ہو جاتا ہے۔",
   "wallet.refresh.failed": "تازہ کرنا ناکام",
@@ -1300,6 +1336,10 @@ export const strings: Strings = {
   "wallet.refresh.swapped":
     "{amount} {unit} تصدیق ہوئے اور نئے ecash سے بدل دیے گئے۔",
   "wallet.refresh.secured": "{amount} {unit} اب آپ کے بحالی فقرے کے تحت ہیں۔",
+  "wallet.refresh.refused":
+    "ٹکسال نے {amount} {unit} رد کر دیے اور وہ آپ کے بیلنس سے ہٹا دیے گئے۔ ٹوکن سرگرمی میں محفوظ رہتا ہے۔",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} ابھی ٹکسال کے منتظر ہیں اور بعد میں ان کی تصدیق ہو جائے گی۔",
   "wallet.refresh.all_confirmed": "یہاں سب کچھ پہلے ہی ٹکسال سے تصدیق شدہ تھا۔",
   "wallet.pending.reserved_desc":
     "بن گیا اور مختص ہے، پہنچنے کی تصدیق نہیں ہوئی۔ سکے آپ کے بیلنس سے باہر رکھے جاتے ہیں تاکہ دو بار خرچ نہ ہوں۔",
@@ -1330,9 +1370,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning جمع",
   "wallet.activity.ln_withdrawal": "Lightning نکاسی",
   "wallet.activity.nutzap_received": "nutzap موصول",
+  "wallet.activity.nutzap_claiming": "Nutzap، لیا جا رہا ہے",
   "wallet.activity.spent_removed": "خرچ شدہ سکے ہٹا دیے گئے",
   "wallet.activity.refreshed": "ٹکسال سے جانچا گیا",
   "wallet.activity.refreshing": "ٹکسال سے جانچ ہو رہی ہے",
+  "wallet.activity.copy_refused": "رد شدہ ٹوکن کاپی کریں",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "میش آف لائن",
@@ -1345,6 +1387,10 @@ export const strings: Strings = {
     "ابھی ان تک کوئی راستہ نہیں۔ دوسرے آلات اسے ساتھ لے جائیں گے اور جب کوئی ان تک پہنچے گا تو پہنچا دیں گے۔",
   "wallet.xfer.route_queued":
     "ان تک ابھی رسائی نہیں۔ یہ قطار میں ہے اور رسائی ہوتے ہی نکل جائے گا۔",
+  "wallet.xfer.route_too_large_airhop":
+    "انٹرنیٹ سے یا دوسرے آلات کے ذریعے جانے کے لیے یہ بہت بڑا ہے۔ جب وہ حدود میں لوٹیں گے تو یہ بلوٹوتھ سے چلا جائے گا، یا ابھی ادائیگی کے لیے سرگرمی سے ٹوکن شیئر کریں۔",
+  "wallet.xfer.route_too_large":
+    "ان تک کسی بھی راستے کے لیے بہت بڑا: اس حجم کا ٹوکن بلوٹوتھ سے صرف Airhop والے فون تک پہنچتا ہے۔ ادائیگی کے لیے اسے سرگرمی سے شیئر کریں۔",
   "wallet.xfer.mesh_offline_body":
     "میش سروس نہیں چل رہی، سو ٹوکن سونپنے کا کوئی طریقہ نہیں۔ کچھ بھی کاٹا نہیں گیا۔",
   "wallet.xfer.could_not_send": "بھیجا نہ جا سکا",
@@ -1409,13 +1455,13 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu کیا ہے؟",
   "wallet.explain.intro":
-    "Cashu، Bitcoin کے لیے ecash ہے۔ ٹوکن ایک ایسی لڑی ہے جو اس کے حامل کے لیے پیسوں کے برابر ہے، ٹکسال کی طرف سے اندھا دستخط شدہ تاکہ ٹکسال جان نہ سکے کہ کس نے کیا خرچ کیا۔ نہ اکاؤنٹ، نہ لاگ اِن۔",
+    "Cashu، Bitcoin کے لیے ecash ہے۔ ٹوکن ایک ایسی لڑی ہے جو اس کے حامل کے لیے پیسوں کے برابر ہے، ٹکسال کی طرف سے اندھا دستخط شدہ تاکہ ٹکسال جان نہ سکے کہ کس نے کیا خرچ کیا۔ نہ اکاؤنٹ، نہ لاگ اِن۔ Airhop کبھی آپ کا پیسہ اپنے پاس نہیں رکھتا: آپ کے سکے اسی فون پر رہتے ہیں، اور انہیں آپ کے چنے ہوئے ٹکسال جاری کرتے ہیں۔",
   "wallet.explain.send": "بھیجیں",
   "wallet.explain.send_desc":
     "رقم کو ایسے ٹوکن میں بدلتا ہے جو آپ بلوٹوتھ پر کسی قریبی پیئر کو دے سکیں، یا متن کے طور پر شیئر کر سکیں۔ انٹرنیٹ کے بغیر کام کرتا ہے۔ جب تک آپ تصدیق نہ کریں کہ یہ پہنچ گیا، سکے مختص رہتے ہیں۔",
   "wallet.explain.receive": "وصول کریں",
   "wallet.explain.receive_desc":
-    "ٹوکن شامل کرنے کے لیے اسے چسپاں کریں۔ آن لائن ہو تو ٹکسال پر فوراً بدل جاتا ہے، جس سے وہ ثابت شدہ طور پر آپ کا ہو جاتا ہے۔ آف لائن ہو تو محفوظ ہو کر غیر تصدیق شدہ نشان زد رہتا ہے جب تک آپ تازہ نہ کریں۔",
+    "ٹوکن شامل کرنے کے لیے اسے چسپاں کریں۔ آن لائن ہو تو ٹکسال پر فوراً بدل جاتا ہے، جس سے وہ ثابت شدہ طور پر آپ کا ہو جاتا ہے۔ آف لائن ہو تو غیر تصدیق شدہ محفوظ ہوتا ہے، اور آپ کے دوبارہ آن لائن ہوتے ہی خود بخود ٹکسال سے تصدیق ہو جاتا ہے۔",
   "wallet.explain.zap": "zap",
   "wallet.explain.zap_desc":
     "کسی Nostr شناخت کو ادائیگی کرتا ہے۔ اگر وہ NIP-61 کی nutzap معلومات شائع کرتے ہیں تو ecash ان کی کلید سے بندھ جاتا ہے، سو صرف وہی اسے خرچ کر سکتے ہیں۔ ورنہ یہ ایک خفیہ براہ راست پیغام پر لوٹ آتا ہے۔ انٹرنیٹ درکار ہے۔",
@@ -1453,6 +1499,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "وہ بحالی فقرہ درست نہیں۔",
   "wallet.svc.phrase_invalid_body":
     "کوئی غلط لکھا یا چھوٹا ہوا لفظ ڈھونڈیں۔ فقرے میں ایک اندرونی جانچ رقم ہوتی ہے، سو ایک غلط لفظ پورے فقرے کو بے کار کر دیتا ہے۔",
+  "wallet.svc.phrase_unreadable": "اس فون پر آپ کا بحالی فقرہ پڑھا نہ جا سکا۔",
+  "wallet.svc.phrase_unreadable_body":
+    "کچھ نہیں بدلا اور کوئی نیا فقرہ نہیں بنا۔ فون کھلنے پر دوبارہ کوشش کریں۔ تب تک آپ کا ecash کام کرتا رہے گا۔",
   "wallet.svc.need_mint": "پہلے کم از کم ایک ٹکسال شامل کریں۔",
   "wallet.svc.need_mint_body":
     "بحالی ٹکسال سے پوچھ کر چلتی ہے کہ اس نے آپ کے لیے کون سے سکے دستخط کیے، سو اسے معلوم ہونا چاہیے کہ کس ٹکسال سے پوچھے۔",
@@ -1473,12 +1522,32 @@ export const strings: Strings = {
     "یہ ٹوکن اپنی ٹکسال کی نئی کلیدیں استعمال کرتا ہے۔",
   "wallet.svc.keyset_unknown_body":
     "انہیں حاصل کرنے کے لیے ابھی ٹکسال تک رسائی نہیں ہو سکتی۔ کچھ ضائع نہیں ہوا: آن لائن ہونے پر اسے دوبارہ وصول کریں۔",
+  "wallet.svc.keyset_rotated": "ٹکسال نے ابھی ابھی اپنی کلیدیں بدلی ہیں۔",
+  "wallet.svc.keyset_rotated_body":
+    "اس نے کچھ بھی منتقل ہونے سے پہلے درخواست رد کر دی، اس لیے آپ کا بیلنس نہیں بدلا۔ ایک منٹ بعد دوبارہ کوشش کریں۔",
   "wallet.svc.wrong_mint":
     "یہ ٹوکن اُس ٹکسال کا دستخط شدہ نہیں جس کا وہ نام لیتا ہے۔",
+  "wallet.svc.wrong_mint_body":
+    "کم از کم ایک سکے کا دستخط ٹکسال کی کلیدوں سے میل نہیں کھاتا۔ کچھ شامل نہیں ہوا۔",
+  "wallet.svc.unit_mismatch":
+    "اس ٹوکن کے سکے اس کرنسی میں نہیں جس کا وہ نام لیتا ہے۔",
+  "wallet.svc.unit_mismatch_body":
+    "اس پر {label} لکھا ہے، مگر اس کے کچھ سکے {actual} میں جاری ہوئے۔ بھیجنے والے سے نیا ٹوکن مانگیں۔ کچھ شامل نہیں ہوا۔",
+  "wallet.svc.locked_other": "یہ سکے کسی اور کے بٹوے سے بندھے ہیں۔",
+  "wallet.svc.locked_other_body":
+    "انہیں صرف وہی شخص لے سکتا ہے جس سے یہ بندھے ہیں۔ کچھ شامل نہیں ہوا۔",
+  "wallet.svc.coins_refused":
+    "ٹکسال نے یہ سکے رد کر دیے، اس لیے اب یہ شمار نہیں ہوتے۔ اگر آپ اسے واپس بھیجنا چاہیں تو ٹوکن یہاں رکھا ہے۔",
+  "wallet.svc.coins_unredeemable":
+    "یہ سکے اس ٹکسال پر بھنائے نہیں جا سکتے، اس لیے اب یہ شمار نہیں ہوتے۔ اگر آپ اسے واپس بھیجنا چاہیں تو ٹوکن یہاں رکھا ہے۔",
+  "wallet.svc.reclaim_refused":
+    "ٹکسال نے اس ترسیل کے سکے واپس لینے سے انکار کر دیا، اس لیے اب وہ شمار نہیں ہوتے۔ ان کا ٹوکن کاپی کرنے کے لیے یہیں رکھا گیا ہے۔",
+  "wallet.svc.locked_ours_offline": "یہ ادائیگی آپ کے بٹوے سے بندھی ہے۔",
+  "wallet.svc.locked_ours_offline_body":
+    "آن لائن ہونے پر اسے لیں۔ تب تک کوئی اور اسے نہیں لے سکتا۔",
   "wallet.svc.already_spent": "یہ ecash پہلے ہی خرچ ہو چکا ہے۔",
   "wallet.svc.already_spent_body":
     "جس نے یہ ٹوکن بھیجا اس نے پہلے خود بھنا لیا، یا وہی ٹوکن کسی اور کو بھی بھیج دیا۔",
-  "wallet.svc.receiving_offline": "آف لائن وصول کرنا",
   "wallet.svc.amount_positive": "صفر سے بڑی رقم درج کریں۔",
   "wallet.svc.coins_raced":
     "وہ سکے ابھی ابھی کسی دوسری ادائیگی نے استعمال کر لیے۔",
@@ -1596,6 +1665,8 @@ export const strings: Strings = {
     "وہ bitchat کوڈ ختم ہو چکا ہے۔ ان سے کہیں کہ اپنا QR دوبارہ کھولیں۔",
   "contacts.scan.tampered":
     "یہ QR کوڈ درست نہیں: اس کی پیئر شناخت اس کی کلیدوں سے میل نہیں کھاتی۔ ہو سکتا ہے اس سے چھیڑ چھاڑ ہوئی ہو۔",
+  "contacts.scan.key_conflict":
+    "آپ کے پاس ان کی ایک مختلف کلید پہلے سے ہے، اس لیے کچھ نہیں بدلا۔ اسے بدلنے کے لیے ان کا کوڈ روبرو اسکین کریں۔",
   "contacts.scan.already_added": "پہلے ہی آپ کے رابطوں میں ہے",
 
   // ---- Contacts: verifying by QR ----
@@ -1778,7 +1849,7 @@ export const strings: Strings = {
   "settings.general.reset": "ترتیبات دوبارہ ترتیب دیں",
   "settings.general.media_retention": "میڈیا اتنی دیر رکھیں",
   "settings.general.media_retention_desc":
-    "منتخب مدت کے بعد تصاویر، ویڈیوز اور صوتی نوٹ حذف ہو جاتے ہیں",
+    "منتخب مدت کے بعد تصاویر، ویڈیوز، صوتی نوٹ اور فائلیں حذف ہو جاتی ہیں",
   "settings.general.media_retention_sheet":
     "منتخب کریں کہ میڈیا اس آلے پر کتنی دیر رہے۔ حذف شدہ میڈیا واپس نہیں لایا جا سکتا۔",
   "settings.general.retention_7_desc":
@@ -1922,7 +1993,7 @@ export const strings: Strings = {
     "Nostr ٹریفک آپ کے عام تعلق پر لوٹ آتا ہے، اس لیے ریلے آپ کا IP پتہ دوبارہ دیکھیں گے۔ بلوٹوتھ دونوں صورتوں میں متاثر نہیں ہوتا۔",
   "settings.conn.tor_unavailable": "اس نسخے میں Tor سے رخ بندی دستیاب نہیں۔",
   "settings.conn.tor_timeout":
-    "Tor کو جڑنے میں ایک منٹ سے زیادہ لگ رہا ہے۔ وہ چالو رہتا ہے اور کوشش جاری رکھتا ہے؛ میش ٹیب بتا دے گا کہ وہ کب رخ بندی کر رہا ہے، یا اگر یہ نیٹ ورک اسے روک رہا ہو۔",
+    "Tor ابھی تک نہیں جڑا۔ وہ چالو رہتا ہے اور کوشش جاری رکھتا ہے؛ میش ٹیب بتا دے گا کہ وہ کب رخ بندی کر رہا ہے، یا اگر یہ نیٹ ورک اسے روک رہا ہو۔",
   "settings.conn.tor_failed":
     "Tor شروع نہیں ہو سکا۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔",
   "settings.tor.status": "Tor کی صورتحال",
@@ -1946,7 +2017,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "جڑنے کے لیے باکس سے باہر ٹیپ کریں۔",
   "settings.tor.custom_empty": "پہلے کم از کم ایک پل کی سطر شامل کریں۔",
   "settings.tor.recovered":
-    "Tor پچھلی بار شروع ہونا مکمل نہیں کر سکا، اس لیے اسے بند کر دیا گیا۔ دوبارہ کوشش کے لیے اسے پھر آن کریں۔",
+    "Tor پچھلی بار شروع ہونا مکمل نہیں کر سکا، اس لیے انٹرنیٹ ٹریفک رکی ہوئی ہے۔ دوبارہ کوشش کریں، یا Tor کے بغیر آن لائن جانے کے لیے اسے بند کریں۔",
+  "settings.tor.retry": "دوبارہ کوشش کریں",
   "settings.conn.mint_clearnet": "ٹکسال کی ٹریفک کھلے نیٹ پر جانے دیں",
   "settings.conn.mint_clearnet_desc":
     "iOS پر Tor صرف Nostr کو ڈھانپتا ہے۔ ٹکسال کی درخواستیں روکنے کے لیے بند رہنے دیں؛ میش پر ecash بہرحال کام کرتا ہے۔",
@@ -2072,7 +2144,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "ابھی دوبارہ کھولیں",
   "settings.language.rtl_title": "مکمل کرنے کے لیے Airhop دوبارہ کھولیں",
   "settings.language.rtl_body":
-    "{value} دائیں سے بائیں پڑھی جاتی ہے، اور Airhop رخ صرف شروع ہوتے وقت بدل سکتا ہے۔ تبدیلی مکمل کرنے کے لیے اسے بند کر کے دوبارہ کھولیں۔ کچھ ضائع نہیں ہوتا، اور جب تک آپ ایسا نہ کریں آپ کی میش جڑی رہتی ہے۔",
+    "{value} پر جانے سے پڑھنے کا رخ بدل جاتا ہے، اور Airhop رخ صرف شروع ہوتے وقت بدل سکتا ہے۔ تبدیلی مکمل کرنے کے لیے اسے بند کر کے دوبارہ کھولیں۔ کچھ ضائع نہیں ہوتا، اور جب تک آپ ایسا نہ کریں آپ کی میش جڑی رہتی ہے۔",
   "settings.theme.light": "روشن",
   "settings.theme.light_desc": "ہمیشہ روشن رنگ استعمال کریں",
   "settings.theme.dark": "تاریک",
@@ -2114,9 +2186,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "اپنے نئے فون پر موجود کوڈ اسکین کرنے کے لیے ترتیبات میں کیمرے تک رسائی چالو کریں۔",
   "settings.transfer.confirm_title": "اس فون پر منتقل کریں؟",
-  "settings.transfer.confirm_body":
-    "یہاں کا سب کچھ اس فون پر چلا جائے گا جو یہ کوڈ دکھا رہا ہے۔ پہنچتے ہی یہ فون صاف ہو جائے گا۔",
+  "settings.transfer.verify_body":
+    "آپ کے نئے فون پر یہی الفاظ دکھنے چاہییں۔ یہاں کی ہر چیز اس پر منتقل ہو گی، پھر یہ فون صاف ہو جائے گا۔",
   "settings.transfer.confirm_cta": "منتقل کریں",
+  "settings.transfer.waiting_confirm": "اپنے نئے فون پر تصدیق کریں",
   "settings.transfer.connecting": "آپ کے نئے فون سے جڑ رہا ہے",
   "settings.transfer.connecting_hint":
     "اگر یہ فون مقامی نیٹ ورک پر آلات تلاش کرنے کی اجازت مانگے تو اجازت دیں۔",
@@ -2175,14 +2248,13 @@ export const strings: Strings = {
   "settings.wipe.now": "ابھی صاف کریں",
   "settings.wipe.desc": "تمام کلیدیں، پیغامات اور ecash فوراً تباہ کر دیتا ہے",
   "settings.wipe.body":
-    "یہ آپ کی تمام کلیدیں، پیغامات اور ecash فوراً تباہ کر دے گا۔ اسے واپس نہیں لیا جا سکتا۔",
+    "یہ آپ کی تمام کلیدیں، پیغامات اور ecash فوراً تباہ کر دے گا۔ اسے واپس نہیں لیا جا سکتا۔ جو تصاویر آپ نے گیلری میں محفوظ کیں وہ وہیں رہیں گی۔",
   "settings.wipe.in_progress": "صاف کیا جا رہا ہے",
   "settings.wipe.in_progress_body":
     "آپ کی کلیدیں، پیغامات اور فائلیں تباہ کی جا رہی ہیں۔ اس میں چند سیکنڈ لگتے ہیں، اور ایپ بند ہو جائے تب بھی یہ خود مکمل ہو جاتا ہے۔",
-  "settings.wipe.got_it": "سمجھ گیا",
   "settings.wipe.keys_failed": "کلیدیں تباہ نہ ہو سکیں",
   "settings.wipe.keys_failed_body":
-    "آپ کے پیغامات، رابطے اور بٹوہ ختم ہو گئے، مگر آلے نے آپ کی کلیدیں چھوڑنے سے انکار کر دیا۔ آلہ کھولیں اور دوبارہ صاف کریں۔",
+    "آپ کے پیغامات، رابطے اور بٹوہ ختم ہو گئے، مگر آلے نے آپ کی کلیدیں چھوڑنے سے انکار کر دیا۔ آلہ کھولیں، پھر صفائی مکمل کرنے کے لیے Airhop دوبارہ کھولیں۔",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "ہم سے رابطہ کریں",
@@ -2228,7 +2300,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "اپ ڈیٹ جانچے جا رہے ہیں",
   "settings.version.up_to_date": "آپ تازہ ترین ورژن پر ہیں۔",
   "settings.version.release_notes": "اجرا کے نوٹ دیکھیں",
-  "settings.version.made_with": "بنایا گیا",
+  "settings.version.credit": "{author} نے {heart} سے بنایا",
+  "settings.version.heart_a11y": "محبت",
   "settings.version.number": "ورژن {version}",
   "settings.version.update_to": "{version} پر اپ ڈیٹ کریں",
   "settings.version.update_to_a11y": "ورژن {version} پر اپ ڈیٹ کریں",
@@ -2236,6 +2309,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "ورژن {version} کے اجرا کے نوٹ دیکھیں",
   "settings.version.tor_paused":
     "Tor چالو ہونے کے دوران اپ ڈیٹ کی جانچ روک دی جاتی ہے، تاکہ وہ آپ کا IP ظاہر نہ کرے۔ اجرا کا صفحہ براؤزر میں دیکھیں۔",
+  "settings.version.internet_off":
+    "انٹرنیٹ بند ہونے تک اپ ڈیٹس رکی ہوئی ہیں۔ ترتیبات میں {setting} آن کریں۔",
   "settings.version.check_failed":
     "اپ ڈیٹ نہیں جانچے جا سکے۔ اپنا تعلق جانچیں اور دوبارہ کوشش کریں۔",
   "settings.version.downloading": "ڈاؤن لوڈ ہو رہا ہے {percent}%",
@@ -2413,6 +2488,11 @@ export const plurals: Plurals = {
   "wallet.mint.unconfirmed_count": {
     one: "{count} غیر تصدیق شدہ",
     other: "{count} غیر تصدیق شدہ",
+  },
+  "wallet.send.stale_fee_note": {
+    one: "فیسیں آخری بار {count} دن پہلے جانچی گئی تھیں۔ اگر اس ٹکسال نے تب سے فیس بڑھائی ہو تو ترسیل کچھ زیادہ مہنگی پڑ سکتی ہے۔",
+    other:
+      "فیسیں آخری بار {count} دن پہلے جانچی گئی تھیں۔ اگر اس ٹکسال نے تب سے فیس بڑھائی ہو تو ترسیل کچھ زیادہ مہنگی پڑ سکتی ہے۔",
   },
   "wallet.spent_removed_detail": {
     one: "{count} سکہ پہلے ہی خرچ ہو چکا تھا اور اسے ہٹا دیا گیا ہے۔",

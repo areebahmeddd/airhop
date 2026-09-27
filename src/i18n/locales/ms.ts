@@ -120,6 +120,11 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "Sambungkan kedua-dua telefon ke Wi-Fi yang sama, atau hidupkan tempat liputan pada satu telefon dan sertainya dari telefon yang lain. Internet tidak diperlukan.",
   "onboarding.transfer.incoming": "Memindahkan {name}",
+  "onboarding.transfer.confirm_title": "Semak telefon lama anda",
+  "onboarding.transfer.confirm_body":
+    "Telefon lama anda sepatutnya memaparkan perkataan yang sama. Jika ia memaparkan perkataan lain, atau tiada langsung, batalkan.",
+  "onboarding.transfer.confirm_cta": "Sepadan",
+  "onboarding.transfer.waiting_old": "Ketik “{action}” pada telefon lama anda",
   "onboarding.transfer.receiving": "Menerima {percent}%",
   "onboarding.transfer.saving": "Menyimpan ke telefon ini",
   "onboarding.transfer.releasing": "Menyelesaikan pada telefon lama anda",
@@ -177,6 +182,15 @@ export const strings: Strings = {
   "error.boundary.title": "Ada sesuatu tidak kena",
   "error.boundary.body":
     "Airhop menemui masalah tidak dijangka dan terpaksa menghentikan apa yang sedang dipaparkan.",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "Tidak dapat membuka kunci anda",
+  "launch.keys_unreadable_body":
+    "Telefon anda tidak membuka kunci Airhop. Buka kunci telefon, kemudian cuba lagi.",
+  "launch.start_over": "Bersihkan dan mula semula",
+  "launch.start_over_confirm_title": "Bersihkan telefon ini?",
+  "launch.start_over_confirm_body":
+    "Identiti, mesej, kenalan dan dompet anda pada telefon ini dimusnahkan, dan anda bermula semula sebagai orang baharu. Ia tidak boleh dibatalkan.",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "Saluran lalai",
@@ -304,7 +318,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Anda sudah berada dalam {name} yang berbeza. Nama saluran hanyalah label, jadi jemputan ini membuka salurannya sendiri dan saluran yang anda sertai tidak disentuh. Anda boleh menamakan semula kedua-duanya daripada maklumat salurannya.",
   "chat.join.paste_hint":
-    "Tampal jemputan yang bermula dengan airhop://. Mengetik pautan juga berfungsi; ini untuk pautan yang tidak boleh anda ketik.",
+    "Pautan Airhop bermula dengan airhop://. Tampal di sini, atau semak pautan yang telah diisi apabila anda mengetik pautan.",
   "chat.join.key_note":
     "Jemputan saluran peribadi membawa kuncinya, jadi penyertaan berlaku serta-merta dan tiada sesiapa lain perlu ditanya apa-apa.",
   "chat.join.offline_note":
@@ -434,8 +448,13 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} daripada {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} lagi",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "rakan",
   "chat.thread.cancel_transfer": "Batalkan {name}",
+  "chat.thread.hide_transfer": "Sembunyikan kemajuan",
+  "chat.thread.hide_transfer_hint": "Fail itu tetap akan sampai",
   "chat.thread.queued_more": "{count} lagi menunggu untuk dihantar",
   "chat.thread.across_bridge": "{count} di seberang jambatan",
   "chat.thread.bridged": "dijambatani",
@@ -469,6 +488,10 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}. {name} sedang bercakap.",
   "chat.thread.attach_note":
     "Fail dihantar dalam jangkauan Bluetooth sahaja. Teks dan bayaran mencapai kenalan melalui internet; lampiran tidak.",
+  "chat.thread.media_securing":
+    "Sedang menyediakan penyulitan dengan mereka dahulu. Cuba lagi sebentar lagi.",
+  "chat.thread.media_unsupported":
+    "Aplikasi mereka tidak dapat menerima gambar atau nota suara yang disulitkan, jadi ini tidak dihantar.",
   "chat.thread.message_peer": "Hantar mesej kepada {name}",
   "chat.thread.send": "Hantar mesej",
   "chat.thread.group": "Kumpulan",
@@ -597,7 +620,7 @@ export const strings: Strings = {
   "chat.media.gone_voice": "Nota suara itu tiada pada peranti ini",
   "chat.media.gone_file": "Fail itu tiada pada peranti ini",
   "chat.media.gone_note":
-    "Dibuang selepas 7 hari atau semasa cache dikosongkan",
+    "Dipadam daripada telefon ini, atau tidak dipindahkan dari telefon lama anda",
   "chat.media.ask_resend": "Minta lagi",
   "chat.media.resend_draft": "Boleh hantar {kind} itu sekali lagi?",
   "chat.media.kind_photo": "gambar",
@@ -669,6 +692,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Dituntut",
   "chat.ecash.reclaimed": "Dituntut semula",
+  "chat.ecash.locked": "Dikunci kepada orang lain",
   "chat.ecash.claiming": "Menuntut…",
   "chat.ecash.claim": "Tuntut",
   "chat.ecash.claim_amount": "Tuntut {amount} {unit}",
@@ -909,6 +933,7 @@ export const strings: Strings = {
     "Membuka kebenaran Airhop dalam tetapan sistem",
   "mesh.banner.hint.battery_settings":
     "Membuka tetapan aktiviti latar belakang telefon ini",
+  "mesh.banner.hint.tor_settings": "Membuka tetapan Tor dalam Airhop",
   "mesh.banner.dismiss": "Tolak: {label}",
   "mesh.banner.hint.dismiss": "Menyembunyikan nota ini buat selamanya",
 
@@ -944,8 +969,10 @@ export const strings: Strings = {
     "Kedudukan pada gelang mencerminkan kekuatan isyarat, bukan jarak",
   "mesh.radar.set_online":
     "Tetapkan status anda kepada Dalam talian dalam tab Anda untuk menemui rakan",
-  "mesh.radar.in_range": "dalam jangkauan",
-  "mesh.radar.recently_seen": "baru dilihat",
+  "mesh.radar.peer_in_range": "{name}, dalam jangkauan",
+  "mesh.radar.peer_recent": "{name}, baru dilihat",
+  "mesh.radar.relay_in_range": "{name}, nod geganti, dalam jangkauan",
+  "mesh.radar.relay_recent": "{name}, nod geganti, baru dilihat",
   "mesh.radar.peer_hint":
     "Membuka pilihan untuk menghantar mesej atau membayar rakan ini",
 
@@ -967,6 +994,8 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "Hantar ecash, masukkan jumlah dahulu",
   "mesh.peer.cancel_send": "Batalkan penghantaran ecash",
   "mesh.peer.view_peer_online": "Lihat rakan {name}, dalam talian",
+  "mesh.peer.view_relay_online":
+    "Lihat rakan {name}, dalam talian, nod geganti",
   "mesh.peer.last_seen_at": "Kali terakhir dilihat {ago}",
   "mesh.peer.send_amount": "Hantar {amount} sat",
   "mesh.peer.direct": "Sambungan terus",
@@ -1033,8 +1062,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "Jumlah dalam {unit}",
   "wallet.send.body":
     "Dibina luar talian daripada ecash yang sudah anda pegang. Tiada apa-apa meninggalkan baki anda buat selamanya sehingga anda mengesahkan token itu sampai.",
-  "wallet.send.stale_fee_note":
-    "Yuran kali terakhir disemak {days} hari lalu. Kalau mint ini sudah menaikkannya sejak itu, hantaran mungkin sedikit lebih mahal.",
   "wallet.send.fee_note":
     "{spend} {unit} keluar daripada baki anda; tambahan {fee} menampung yuran mint yang sepatutnya mereka bayar",
   "wallet.send.qr_too_big":
@@ -1078,6 +1105,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Sudah ada dalam dompet anda",
   "wallet.receive.already_have_body":
     "Semua isi token ini sudah tersimpan di sini, jadi tiada apa-apa ditambah. Baki tidak berubah.",
+  "wallet.receive.claiming": "Masih menunggu mint",
+  "wallet.receive.claiming_body":
+    "Tuntutan terdahulu bagi token ini belum disahkan oleh mint, jadi tiada apa-apa yang baharu dihantar. Dompet akan menyelesaikannya secara automatik. Jika mint tidak pernah menerimanya, anda boleh menuntutnya semula.",
   "wallet.receive.stored_unconfirmed":
     "Disimpan daripada {mint}, tetapi belum disahkan dengan mint ({reason}).",
   "wallet.receive.offline": "luar talian",
@@ -1087,18 +1117,20 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ditebus di {mint}. Ia kini terbukti milik anda: salinan token ini pada pengirim tidak lagi berfungsi.",
   "wallet.receive.stored_pending":
-    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan{dleq}. Segar semula daripada tab Dompet sebaik anda dalam talian.",
+    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan{dleq}. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
   "wallet.receive.dleq_inline":
     " (tandatangannya memang menepati, jadi tokennya tulen)",
   "wallet.receive.dleq_ok": "Tandatangan mint menepati, jadi tokennya tulen.",
   "wallet.receive.dleq_uncached":
     "Kunci mint tidak tersimpan di sini, jadi tandatangannya tidak dapat disemak secara luar talian.",
+  "wallet.receive.dleq_missing":
+    "Bukan setiap syiling di dalamnya membawa bukti tandatangan mint, jadi ia tidak dapat disemak secara luar talian.",
   "wallet.receive.dleq_warning":
-    "Sehingga anda menyegar semula dalam talian, pengirim pada dasarnya mungkin sudah membelanjakannya di tempat lain.",
+    "Sehingga ia disahkan dalam talian, pengirim pada dasarnya mungkin sudah membelanjakannya di tempat lain.",
   "wallet.receive.failed": "Tidak dapat menerima",
   "wallet.receive.title": "Terima ecash",
   "wallet.receive.body":
-    "Tampal satu token Cashu. Dalam talian ia ditebus di mint serta-merta; luar talian ia disimpan dan disahkan pada penyegaran berikutnya.",
+    "Tampal satu token Cashu. Dalam talian ia ditebus di mint serta-merta; luar talian ia disimpan dan disahkan dengan mint secara automatik sebaik anda kembali dalam talian.",
   "wallet.receive.scan": "Imbas kod QR ecash",
   "wallet.receive.scan_short": "Imbas QR",
   "wallet.receive.receiving": "Menerima…",
@@ -1233,6 +1265,8 @@ export const strings: Strings = {
     "Pemulihan berfungsi dengan bertanya kepada sebuah mint syiling mana yang ditandatanganinya untuk anda, jadi ia perlu tahu mint mana yang hendak ditanya. Tambah mint yang anda gunakan dahulu, kemudian pulihkan.",
   "wallet.backup.restore_failed": "Pemulihan gagal",
   "wallet.backup.phrase": "Frasa pemulihan",
+  "wallet.backup.auth_prompt":
+    "Sahkan ini anda untuk memaparkan frasa pemulihan anda",
   "wallet.backup.state_unconfirmed":
     "Sandaran dihidupkan tetapi belum disahkan",
   "wallet.backup.state_off": "Sandaran dimatikan",
@@ -1315,6 +1349,8 @@ export const strings: Strings = {
     "Mint menyatakan token ini sudah ditebus, jadi {amount} {unit} sudah sampai kepada mereka dan tiada apa-apa yang kembali ke baki anda.",
   "wallet.copied.token_body":
     "Token itu ada pada papan keratan anda. Ia kekal disimpan di sini sehingga anda menandakannya sudah dihantar, jadi anda boleh menampalnya sekali lagi kalau percubaan pertama gagal.",
+  "wallet.copied.refused_token_body":
+    "Token itu ada pada papan keratan anda. Dompet ini tidak lagi mengiranya, jadi anda boleh mengembalikannya kepada pengirim.",
   "wallet.copied.phrase_body":
     "Tampalnya ke dalam pengurus kata laluan, kemudian kosongkan papan keratan anda. Aplikasi lain boleh membaca papan keratan, dan pada sesetengah tetapan ia disegerakkan ke peranti anda yang lain.",
   "wallet.refresh.failed": "Penyegaran gagal",
@@ -1326,6 +1362,10 @@ export const strings: Strings = {
     "{amount} {unit} disahkan dan ditukar dengan ecash baharu.",
   "wallet.refresh.secured":
     "{amount} {unit} kini dilindungi oleh frasa pemulihan anda.",
+  "wallet.refresh.refused":
+    "{amount} {unit} ditolak oleh mint dan dikeluarkan daripada baki anda. Token itu kekal dalam Aktiviti.",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} masih menunggu mint dan akan disahkan kemudian.",
   "wallet.refresh.all_confirmed":
     "Semua yang ada di sini sudah disahkan dengan mint.",
   "wallet.pending.reserved_desc":
@@ -1357,9 +1397,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Deposit Lightning",
   "wallet.activity.ln_withdrawal": "Pengeluaran Lightning",
   "wallet.activity.nutzap_received": "Nutzap diterima",
+  "wallet.activity.nutzap_claiming": "Nutzap, sedang dituntut",
   "wallet.activity.spent_removed": "Syiling yang dibelanjakan dibuang",
   "wallet.activity.refreshed": "Disemak dengan mint",
   "wallet.activity.refreshing": "Menyemak dengan mint",
+  "wallet.activity.copy_refused": "Salin token yang ditolak",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "Mesh luar talian",
@@ -1373,6 +1415,10 @@ export const strings: Strings = {
     "Tiada laluan kepada mereka buat masa ini. Peranti lain akan membawanya dan menyampaikannya sebaik salah satu daripadanya sampai kepada mereka.",
   "wallet.xfer.route_queued":
     "Mereka belum boleh dicapai. Ia beratur dan akan keluar sebaik mereka boleh dicapai.",
+  "wallet.xfer.route_too_large_airhop":
+    "Terlalu besar untuk melalui internet atau dibawa oleh peranti lain. Ia akan dihantar melalui Bluetooth apabila mereka kembali dalam jangkauan, atau kongsikan token itu dari Aktiviti untuk membayar mereka sekarang.",
+  "wallet.xfer.route_too_large":
+    "Terlalu besar untuk sebarang laluan kepada mereka: token sebesar ini hanya sampai ke telefon Airhop melalui Bluetooth. Kongsikannya dari Aktiviti untuk membayar mereka.",
   "wallet.xfer.mesh_offline_body":
     "Perkhidmatan mesh tidak berjalan, jadi tiada cara untuk menyerahkan tokennya. Tiada apa-apa ditolak.",
   "wallet.xfer.could_not_send": "Tidak dapat menghantar",
@@ -1437,13 +1483,13 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Apakah itu Cashu?",
   "wallet.explain.intro":
-    "Cashu ialah ecash untuk Bitcoin. Satu token ialah rentetan yang bernilai wang bagi sesiapa yang memegangnya, ditandatangani secara buta oleh sebuah mint supaya mint itu tidak dapat mengetahui siapa membelanjakan apa. Tiada akaun, tiada log masuk.",
+    "Cashu ialah ecash untuk Bitcoin. Satu token ialah rentetan yang bernilai wang bagi sesiapa yang memegangnya, ditandatangani secara buta oleh sebuah mint supaya mint itu tidak dapat mengetahui siapa membelanjakan apa. Tiada akaun, tiada log masuk. Airhop tidak pernah memegang wang anda: syiling anda berada pada telefon ini, dan dikeluarkan oleh mint yang anda pilih.",
   "wallet.explain.send": "Hantar",
   "wallet.explain.send_desc":
     "Menukarkan satu jumlah menjadi token yang boleh anda serahkan kepada rakan berdekatan melalui Bluetooth, atau kongsikan sebagai teks. Berfungsi tanpa internet. Syilingnya kekal disimpan sehingga anda mengesahkan ia sampai.",
   "wallet.explain.receive": "Terima",
   "wallet.explain.receive_desc":
-    "Tampal satu token untuk menambahnya. Dalam talian ia ditukar di mint serta-merta, yang menjadikannya terbukti milik anda. Luar talian ia disimpan dan ditandakan belum disahkan sehingga anda menyegar semula.",
+    "Tampal satu token untuk menambahnya. Dalam talian ia ditukar di mint serta-merta, yang menjadikannya terbukti milik anda. Luar talian ia disimpan sebagai belum disahkan, kemudian disahkan dengan mint secara automatik sebaik sahaja anda kembali dalam talian.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Membayar satu identiti Nostr. Kalau mereka menerbitkan maklumat nutzap NIP-61, ecash itu dikunci kepada kunci mereka supaya hanya mereka boleh membelanjakannya. Kalau tidak, ia kembali kepada mesej terus yang disulitkan. Memerlukan internet.",
@@ -1482,6 +1528,10 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "Frasa pemulihan itu tidak sah.",
   "wallet.svc.phrase_invalid_body":
     "Cari perkataan yang tersalah taip atau tertinggal. Frasa itu mempunyai jumlah semak terbina, jadi satu perkataan yang salah membatalkan keseluruhannya.",
+  "wallet.svc.phrase_unreadable":
+    "Frasa pemulihan anda tidak dapat dibaca pada telefon ini.",
+  "wallet.svc.phrase_unreadable_body":
+    "Tiada apa-apa diubah dan tiada frasa baharu dibuat. Cuba lagi selepas telefon dibuka kunci. Sementara itu ecash anda masih berfungsi.",
   "wallet.svc.need_mint": "Tambah sekurang-kurangnya satu mint dahulu.",
   "wallet.svc.need_mint_body":
     "Pemulihan berfungsi dengan bertanya kepada sebuah mint syiling mana yang ditandatanganinya untuk anda, jadi ia perlu tahu mint mana yang hendak ditanya.",
@@ -1502,12 +1552,32 @@ export const strings: Strings = {
     "Token ini menggunakan kunci baharu daripada mint-nya.",
   "wallet.svc.keyset_unknown_body":
     "Mint tidak dapat dihubungi sekarang untuk mendapatkannya. Tiada apa yang hilang: terima semula apabila anda dalam talian.",
+  "wallet.svc.keyset_rotated": "Mint baru sahaja menukar kuncinya.",
+  "wallet.svc.keyset_rotated_body":
+    "Ia menolak permintaan itu sebelum apa-apa bergerak, jadi baki anda tidak berubah. Cuba lagi dalam seminit.",
   "wallet.svc.wrong_mint":
     "Token ini tidak ditandatangani oleh mint yang dinamakannya.",
+  "wallet.svc.wrong_mint_body":
+    "Tandatangan sekurang-kurangnya satu syiling tidak sepadan dengan kunci mint. Tiada apa-apa ditambah.",
+  "wallet.svc.unit_mismatch":
+    "Syiling dalam token ini bukan dalam mata wang yang dinamakannya.",
+  "wallet.svc.unit_mismatch_body":
+    "Ia dilabel {label}, tetapi sebahagian syilingnya dikeluarkan dalam {actual}. Minta token baharu daripada pengirim. Tiada apa-apa ditambah.",
+  "wallet.svc.locked_other": "Syiling ini dikunci kepada dompet orang lain.",
+  "wallet.svc.locked_other_body":
+    "Hanya orang yang menjadi sasaran kunci itu boleh menuntutnya. Tiada apa-apa ditambah.",
+  "wallet.svc.coins_refused":
+    "Mint menolak syiling ini, jadi ia tidak lagi dikira. Token itu disimpan di sini jika anda mahu menghantarnya kembali.",
+  "wallet.svc.coins_unredeemable":
+    "Syiling ini tidak boleh ditebus di mint ini, jadi ia tidak lagi dikira. Token itu disimpan di sini jika anda mahu menghantarnya kembali.",
+  "wallet.svc.reclaim_refused":
+    "Mint tidak mahu menerima semula syiling daripada penghantaran ini, jadi ia tidak lagi dikira. Tokennya disimpan di sini untuk disalin.",
+  "wallet.svc.locked_ours_offline": "Bayaran ini dikunci kepada dompet anda.",
+  "wallet.svc.locked_ours_offline_body":
+    "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
   "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":
     "Sesiapa yang menghantar token ini menebusnya dahulu, atau menghantar token yang sama kepada orang lain juga.",
-  "wallet.svc.receiving_offline": "menerima secara luar talian",
   "wallet.svc.amount_positive":
     "Masukkan jumlah yang lebih besar daripada sifar.",
   "wallet.svc.coins_raced":
@@ -1630,6 +1700,8 @@ export const strings: Strings = {
     "Kod bitchat itu sudah luput. Minta mereka membuka QR mereka sekali lagi.",
   "contacts.scan.tampered":
     "Kod QR ini tidak sah: ID rakannya tidak sepadan dengan kuncinya. Ia mungkin sudah diubah.",
+  "contacts.scan.key_conflict":
+    "Anda sudah menyimpan kunci lain untuk mereka, jadi tiada apa-apa yang berubah. Imbas kod mereka secara bersemuka untuk menggantikannya.",
   "contacts.scan.already_added": "Sudah ada dalam kenalan anda",
 
   // ---- Contacts: verifying by QR ----
@@ -1818,7 +1890,7 @@ export const strings: Strings = {
   "settings.general.reset": "Tetap semula tetapan",
   "settings.general.media_retention": "Simpan media selama",
   "settings.general.media_retention_desc":
-    "Gambar, video dan nota suara dipadam selepas tempoh yang dipilih",
+    "Gambar, video, nota suara dan fail dipadam selepas tempoh yang dipilih",
   "settings.general.media_retention_sheet":
     "Pilih berapa lama media kekal pada peranti ini. Media yang dipadam tidak boleh dipulihkan.",
   "settings.general.retention_7_desc":
@@ -1968,7 +2040,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Penghalaan Tor tidak tersedia dalam binaan ini.",
   "settings.conn.tor_timeout":
-    "Tor mengambil masa lebih daripada seminit untuk menyambung. Ia kekal hidup dan terus mencuba; tab Mesh akan memberitahu bila ia mula menghala, atau kalau rangkaian ini menyekatnya.",
+    "Tor belum bersambung. Ia kekal hidup dan terus mencuba; tab Mesh akan memberitahu bila ia mula menghala, atau kalau rangkaian ini menyekatnya.",
   "settings.conn.tor_failed":
     "Tor tidak dapat dimulakan. Cuba lagi sebentar lagi.",
   "settings.tor.status": "Status Tor",
@@ -1993,7 +2065,8 @@ export const strings: Strings = {
   "settings.tor.custom_empty":
     "Tambah sekurang-kurangnya satu baris jambatan dahulu.",
   "settings.tor.recovered":
-    "Tor dimatikan kerana ia tidak selesai dimulakan kali terakhir. Hidupkannya semula untuk cuba lagi.",
+    "Tor tidak selesai dimulakan kali terakhir, jadi trafik internet dijeda. Cuba lagi, atau matikan Tor untuk pergi dalam talian tanpanya.",
+  "settings.tor.retry": "Cuba lagi",
   "settings.conn.mint_clearnet":
     "Benarkan trafik mint melalui rangkaian terbuka",
   "settings.conn.mint_clearnet_desc":
@@ -2120,7 +2193,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Buka semula sekarang",
   "settings.language.rtl_title": "Buka semula Airhop untuk menyelesaikannya",
   "settings.language.rtl_body":
-    "{value} dibaca dari kanan ke kiri, dan Airhop hanya boleh menukar arah semasa ia bermula. Tutup dan bukanya semula untuk menyelesaikan pertukaran. Tiada apa-apa hilang, dan mesh anda kekal bersambung sehingga anda melakukannya.",
+    "Bertukar kepada {value} mengubah arah bacaan, dan Airhop hanya boleh menukar arah semasa ia bermula. Tutup dan bukanya semula untuk menyelesaikan pertukaran. Tiada apa-apa hilang, dan mesh anda kekal bersambung sehingga anda melakukannya.",
   "settings.theme.light": "Cerah",
   "settings.theme.light_desc": "Sentiasa guna palet cerah",
   "settings.theme.dark": "Gelap",
@@ -2162,9 +2235,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "Benarkan capaian kamera dalam Tetapan untuk mengimbas kod pada telefon baharu anda.",
   "settings.transfer.confirm_title": "Pindahkan ke telefon ini?",
-  "settings.transfer.confirm_body":
-    "Semua di sini berpindah ke telefon yang memaparkan kod ini. Sebaik sahaja ia tiba, telefon ini dibersihkan.",
+  "settings.transfer.verify_body":
+    "Telefon baharu anda sepatutnya memaparkan perkataan yang sama. Semua di sini berpindah kepadanya, kemudian telefon ini dibersihkan.",
   "settings.transfer.confirm_cta": "Pindahkan",
+  "settings.transfer.waiting_confirm": "Sahkan pada telefon baharu anda",
   "settings.transfer.connecting": "Menyambung ke telefon baharu anda",
   "settings.transfer.connecting_hint":
     "Jika telefon ini meminta untuk mencari peranti pada rangkaian setempat anda, benarkannya.",
@@ -2225,14 +2299,13 @@ export const strings: Strings = {
   "settings.wipe.now": "Bersihkan sekarang",
   "settings.wipe.desc": "Memusnahkan serta-merta semua kunci, mesej dan ecash",
   "settings.wipe.body":
-    "Ini akan memusnahkan serta-merta semua kunci, mesej dan ecash anda. Ia tidak boleh dibatalkan.",
+    "Ini akan memusnahkan serta-merta semua kunci, mesej dan ecash anda. Ia tidak boleh dibatalkan. Foto yang anda simpan ke galeri kekal di sana.",
   "settings.wipe.in_progress": "Membersihkan",
   "settings.wipe.in_progress_body":
     "Memusnahkan kunci, mesej dan fail anda. Ia mengambil beberapa saat dan selesai dengan sendirinya walaupun aplikasi ditutup.",
-  "settings.wipe.got_it": "Faham",
   "settings.wipe.keys_failed": "Kunci tidak dapat dimusnahkan",
   "settings.wipe.keys_failed_body":
-    "Mesej, kenalan dan dompet anda sudah hilang, tetapi peranti enggan melepaskan kunci anda. Buka kunci peranti dan bersihkan sekali lagi.",
+    "Mesej, kenalan dan dompet anda sudah hilang, tetapi peranti enggan melepaskan kunci anda. Buka kunci peranti, kemudian buka semula Airhop untuk menyelesaikan pembersihan.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Hubungi kami",
@@ -2280,7 +2353,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Menyemak kemas kini",
   "settings.version.up_to_date": "Anda menggunakan versi terkini.",
   "settings.version.release_notes": "Lihat nota keluaran",
-  "settings.version.made_with": "Dibuat dengan",
+  "settings.version.credit": "Dibuat dengan {heart} oleh {author}",
+  "settings.version.heart_a11y": "cinta",
   "settings.version.number": "Versi {version}",
   "settings.version.update_to": "Kemas kini kepada {version}",
   "settings.version.update_to_a11y": "Kemas kini kepada versi {version}",
@@ -2288,6 +2362,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "Lihat nota keluaran untuk versi {version}",
   "settings.version.tor_paused":
     "Semakan kemas kini dijeda semasa Tor dihidupkan, supaya ia tidak membocorkan IP anda. Lihat halaman keluaran melalui pelayar.",
+  "settings.version.internet_off":
+    "Kemas kini dijeda semasa internet dimatikan. Hidupkan {setting} dalam Tetapan.",
   "settings.version.check_failed":
     "Tidak dapat menyemak kemas kini. Periksa sambungan anda dan cuba lagi.",
   "settings.version.downloading": "Memuat turun {percent}%",
@@ -2442,6 +2518,10 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} belum disahkan",
+  },
+  "wallet.send.stale_fee_note": {
+    other:
+      "Yuran kali terakhir disemak {count} hari lalu. Kalau mint ini sudah menaikkannya sejak itu, hantaran mungkin sedikit lebih mahal.",
   },
   "wallet.spent_removed_detail": {
     other: "{count} syiling sudah dibelanjakan dan telah dibuang.",

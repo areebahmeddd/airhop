@@ -31,7 +31,7 @@ node scripts/verify-vendored.js --write
 npm run verify:vendored
 ```
 
-Output is written straight into `android/` and `ios/`. [`scripts/verify-vendored.js`](../scripts/verify-vendored.js) hashes it, so CI fails a build whose binaries moved without the source that claims to produce them moving too.
+Output is written straight into `android/` and `ios/`. [`scripts/verify-vendored.js`](../scripts/verify-vendored.js) hashes every committed binary, and the `SHA256SUMS` files the build scripts write, against `vendor.lock.json`, so a binary cannot change without a recorded rebuild. That does not prove a binary corresponds to this source; rebuilding it does. The Android container build is reproducible: run it twice from clean and `SHA256SUMS.android` must not move.
 
 ## Tests
 

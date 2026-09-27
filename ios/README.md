@@ -42,16 +42,18 @@ Both frameworks are pinned by hash; see `native/README.md` for rebuilding them.
 macOS only.
 
 ```sh
-cd ios && pod install
-npm run ios                        # debug build onto a device or simulator
+bundle install                                  # the CocoaPods Gemfile.lock pins
+bundle exec pod install --project-directory=ios
+npm run ios                                     # debug build onto a device or simulator
 ```
 
-Pod versions come from `node_modules`, so a dependency change regenerates
-`Podfile.lock`; CI fails on a stale one.
+Run these from the project root. Pod versions come from `node_modules`, so a
+dependency change regenerates `Podfile.lock`; CI fails on a stale one, and on
+one written by any CocoaPods other than the pinned version.
 
 ## Tests
 
-The pure pieces, `Framing` and `AwareDial`, compile twice: into the app, and
+The pure pieces, `Framing`, `AwareDial` and `LongWrite`, compile twice: into the app, and
 into a Swift package rooted here (`Package.swift`) that exists only so they
 can be tested without a simulator or a scheme. Anything that touches a radio is
 covered by the simulator under `src/__tests__/` and by devices.

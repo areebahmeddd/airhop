@@ -33,7 +33,10 @@ import {
   initMeshService,
   type MeshService,
 } from "@services/mesh-service";
-import { applyPresence } from "@services/presence-service";
+import {
+  applyPresence,
+  applyStartupPresence,
+} from "@services/presence-service";
 import type { AndroidPermission, DeviceOS } from "./os";
 
 // Deterministic identity: a scenario's trace should differ only because of the
@@ -199,7 +202,7 @@ export class AppShell {
     // and retries when the facts change.
     this.os.log("js", "initMeshService");
     initMeshService(this.identity, this.nickname);
-    useMeshStateStore.getState().setPresenceStatus("online");
+    applyStartupPresence();
     this.startMeshDependents();
     await Promise.resolve();
   }
@@ -233,6 +236,7 @@ export class AppShell {
     if (getMeshService()?.peerID === this.identity.peerID) return;
     this.os.log("js", "BOOT_START_MESH");
     initMeshService(this.identity, this.nickname);
+    applyStartupPresence();
   }
 
   async setAppState(next: "active" | "background"): Promise<void> {

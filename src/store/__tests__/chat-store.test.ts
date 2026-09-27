@@ -85,6 +85,48 @@ describe("addMessage ordering", () => {
   });
 });
 
+// A bridged row is keyed on the event's unsigned radio hint, so the signed
+// radio copy of the same message must win the row whichever arrives first.
+describe("radio wins over a bridged row", () => {
+  const T = 1_700_000_000_000;
+  const bridged = makeMessage({
+    id: "mesh-abc",
+    senderID: "nostr_ffff",
+    senderNickname: "alice#ffff",
+    timestampMs: T,
+    viaBridge: true,
+  });
+  const radio = makeMessage({ id: "mesh-abc", timestampMs: T + 400 });
+
+  it("replaces the bridged row with the radio copy that arrives after it", () => {
+    state().addMessage(bridged);
+    state().addMessage(radio);
+    expect(state().messages["#test"]).toEqual([radio]);
+  });
+
+  it("neither notifies nor counts it unread a second time", () => {
+    const seen: string[] = [];
+    const unsubscribe = subscribeInboundMessages((m) => seen.push(m.id));
+    state().addMessage(bridged);
+    state().addMessage(radio);
+    unsubscribe();
+    expect(seen).toEqual(["mesh-abc"]);
+    expect(state().unreadCounts["#test"]).toBe(1);
+  });
+
+  it("keeps the radio row when the bridged copy comes second", () => {
+    state().addMessage(radio);
+    state().addMessage(bridged);
+    expect(state().messages["#test"]).toEqual([radio]);
+  });
+
+  it("keeps the first of two bridged copies", () => {
+    state().addMessage(bridged);
+    state().addMessage({ ...bridged, senderNickname: "mallory#eeee" });
+    expect(state().messages["#test"]).toEqual([bridged]);
+  });
+});
+
 // Relays and sync replay history on every reconnect. What the user cleared or
 // deleted must stay gone, without dropping a peer whose clock runs behind.
 describe("a cleared conversation", () => {
@@ -195,8 +237,8 @@ describe("setMessageStatus", () => {
 
   // The outbox drops a message it has given up on and asks for the bubble to
   // say so. "failed" ranks below the three states an undeliverable message
-  // actually sits in, so the rank rule used to discard every one of those
-  // requests and the hourglass stayed forever over something already gone.
+  // actually sits in, so the rank rule alone would discard the request and
+  // leave an hourglass over something already gone.
   it.each(["queued", "sent", "carried", "sending"] as const)(
     "a give-up corrects a bubble stuck at %s",
     (stuck) => {
@@ -209,7 +251,7 @@ describe("setMessageStatus", () => {
   );
 
   // The other half of the same rule. A receipt is proof the message arrived, and
-  // a sender-side give-up is only ever proof that WE stopped trying - usually
+  // a sender-side give-up is only ever proof that WE stopped trying, usually
   // because the ack was lost, not the message.
   it.each(["delivered", "read"] as const)(
     "but never contradicts a %s receipt",
@@ -233,6 +275,21 @@ describe("setMessageStatus", () => {
     state().setMessageStatus("#test", "m1", "read", 9999);
     state().setMessageStatus("#test", "m1", "sent");
     expect(state().messages["#test"][0].status).toBe("reclaimed");
+  });
+
+  // Unless the mint says the recipient redeemed it first: then it was paid.
+  it("a reclaim the recipient beat reads delivered", () => {
+    state().addMessage(
+      makeMessage({ id: "m1", isMine: true, status: "reclaimed" }),
+    );
+    state().markReclaimedPaid("#test", "m1");
+    expect(state().messages["#test"][0].status).toBe("delivered");
+  });
+
+  it("leaves any other status alone", () => {
+    state().addMessage(makeMessage({ id: "m1", isMine: true, status: "read" }));
+    state().markReclaimedPaid("#test", "m1");
+    expect(state().messages["#test"][0].status).toBe("read");
   });
 });
 
@@ -341,8 +398,8 @@ describe("renameChannel", () => {
   });
 
   it("refuses a rename onto an existing channel and leaves both intact", () => {
-    // Regression: this used to no-op silently while the caller carried on, so
-    // the TARGET channel's description got overwritten with the source's.
+    // A silent no-op would let the caller carry on and overwrite the target
+    // channel's description with the source's.
     state().addChannel("#foo");
     state().addChannel("#bar");
     state().setChannelDescription("#bar", "bar's own description");
@@ -431,10 +488,9 @@ describe("mergeChannel", () => {
 
 // A private channel is identified by its KEY, never its name: the name is a
 // local label that never touches the wire, so two unrelated rooms can both be
-// called "#team". Joining the second under the same label used to overwrite the
-// first one's key, which silently orphaned a room the user was still in (its
-// traffic no longer decrypted). These pin the rule that a clash gets its own
-// room and that re-joining one you already hold is idempotent.
+// called "#team". Overwriting the first one's key on a clash would silently
+// orphan a room the user is still in. These pin the rule that a clash gets its
+// own room and that re-joining one you already hold is idempotent.
 describe("joinPrivateChannel key clashes", () => {
   const KEY_A = "a".repeat(43);
   const KEY_B = "b".repeat(43);
@@ -499,7 +555,7 @@ describe("joinPrivateChannel key clashes", () => {
 // every set(), so one arriving message costs a full JSON encode of every
 // thread. The throttle makes that once per window instead of once per message.
 // What it introduces is a window in which a complete plaintext snapshot lives
-// in a module variable, armed to be written - so the two escape hatches below
+// in a module variable, armed to be written, so the two escape hatches below
 // are part of the feature, not extras.
 describe("chat persistence window", () => {
   beforeEach(() => {
@@ -544,7 +600,7 @@ describe("chat persistence window", () => {
     // Nothing on disk yet: the window is still open.
     expect(readFile()).not.toContain("msg-19");
     jest.advanceTimersByTime(500);
-    // And when it closes, the LAST state lands - not the first, and not each
+    // And when it closes, the LAST state lands: not the first, and not each
     // of the twenty in turn.
     expect(readFile()).toContain("msg-19");
     expect(readFile()).toContain("msg-0");
@@ -682,7 +738,7 @@ describe("mergeChannel", () => {
     expect(st.resolveChannel(NOSTR)).toBe(MESH);
   });
 
-  // The reported bug: the count climbing in a conversation being read.
+  // The unread count must not climb in a conversation being read.
   it("does not make the thread you are reading unread", () => {
     const s = useChatStore.getState();
     s.addChannel(NOSTR);
@@ -782,8 +838,8 @@ describe("markChannelRead", () => {
   });
 });
 
-// A launch settles whatever the last process left mid-send: "sending" is the one
-// in-flight status nothing owns across a restart.
+// A launch settles whatever the last process left mid-send: "sending", and a
+// channel or group "queued" that only the dead process's gossip store held.
 describe("failStaleSending", () => {
   const NOW = 1_700_000_000_000;
   const MINUTE = 60_000;
@@ -811,12 +867,31 @@ describe("failStaleSending", () => {
   });
 
   it("never touches a message that actually went out", () => {
-    for (const status of ["sent", "delivered", "read", "queued"] as const) {
+    for (const status of ["sent", "delivered", "read", "carried"] as const) {
       state().clearAll();
       state().addMessage(held({ status }));
       state().failStaleSending(MINUTE, NOW);
       expect(state().messages["#test"]?.[0]?.status).toBe(status);
     }
+  });
+
+  it("fails a channel or group message left queued, however recent", () => {
+    for (const channel of ["#bluetooth", "group:abc"]) {
+      state().addMessage(
+        held({ channel, status: "queued", timestampMs: NOW - 2_000 }),
+      );
+    }
+    state().failStaleSending(MINUTE, NOW);
+    expect(state().messages["#bluetooth"]?.[0]?.status).toBe("failed");
+    expect(state().messages["group:abc"]?.[0]?.status).toBe("failed");
+  });
+
+  it("leaves a queued DM to the outbox", () => {
+    state().addMessage(
+      held({ channel: "dm:aabbccdd00112233", status: "queued" }),
+    );
+    state().failStaleSending(MINUTE, NOW);
+    expect(state().messages["dm:aabbccdd00112233"]?.[0]?.status).toBe("queued");
   });
 
   it("sweeps every channel, not just the active one", () => {

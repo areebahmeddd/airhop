@@ -2,8 +2,11 @@
 // Reuses the same bottom-sheet chrome as the attachment picker and channel
 // info sheet so it doesn't introduce a new UI paradigm.
 
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import type { ChatMessage } from "@store/chat-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import {
@@ -126,7 +129,7 @@ function ActionRow({
   onPress,
   color,
 }: {
-  icon?: React.ComponentProps<typeof Feather>["name"];
+  icon?: FeatherIconName;
   iconNode?: React.ReactNode;
   label: string;
   onPress: () => void;

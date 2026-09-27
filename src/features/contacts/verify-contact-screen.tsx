@@ -18,15 +18,15 @@
 
 import { decodeQRContent } from "@core/crypto/contact-exchange";
 import { peerFingerprint, safetyNumber } from "@core/crypto/fingerprint";
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
+import SafetyWords from "@ui/components/safety-words";
 import {
   BUTTON_HEIGHT,
-  FontFamily,
   FontSize,
   FontWeight,
   HIT_SLOP,
@@ -146,24 +146,26 @@ export default function VerifyContactScreen({
     // Guard 1: the code must belong to THIS contact, not just any Airhop user.
     if (card.peerID.toLowerCase() !== peerID.toLowerCase()) {
       // Felt, not just shown. The phone is held up at the other screen through a
-      // viewfinder, so the outcome has to reach the hand as well as the eye -
+      // viewfinder, so the outcome has to reach the hand as well as the eye,
       // and these two outcomes are the security answer this screen exists for.
       rejected();
       setOutcome("mismatch");
       return;
     }
     // Guard 2: the peer ID must be the fingerprint of the card's own key.
-    // addVerifiedContact returns false if it isn't (a forged or tampered card).
-    const accepted =
-      getMeshService()?.addVerifiedContact(card, { inPerson: true }) ?? false;
-    if (!accepted) {
+    // addVerifiedContact refuses it if it isn't (a forged or tampered card).
+    const result = getMeshService()?.addVerifiedContact(card, {
+      inPerson: true,
+    });
+    if (result !== "added") {
       rejected();
       setOutcome("tampered");
       return;
     }
     // Upgrade the record to verified. Nothing already saved needs defending
     // here: addContact merges, keeps the earliest added date, and never lets a
-    // write drop a chosen nickname or a learned Nostr key.
+    // write drop a chosen nickname. The scan replaces a learned Nostr key with
+    // the card's, as it replaces the mesh keys.
     //
     // `verifiedAtMs` is the one thing this screen has to say, because it is the
     // only screen that witnesses the moment. It drives the "Verified since"
@@ -193,7 +195,7 @@ export default function VerifyContactScreen({
 
   // Three states, not two. `permission == null` (never asked) and a denial both
   // have to keep CameraView unmounted; only an outright grant may mount it.
-  // Treating "not yet answered" as permitted is exactly the black-preview bug.
+  // Treating "not yet answered" as permitted mounts a black preview.
   const granted = permission?.granted === true;
   const denied = permission != null && !permission.granted;
   const awaitingAnswer = !granted && !denied;
@@ -207,7 +209,6 @@ export default function VerifyContactScreen({
       onRequestClose={onClose}
     >
       <View style={styles.root}>
-        {/* Live camera, only while we're still waiting for a scan. */}
         {stage === "camera" && outcome === null && granted && (
           <CameraView
             style={StyleSheet.absoluteFill}
@@ -234,8 +235,6 @@ export default function VerifyContactScreen({
             <View style={styles.iconBtn} />
           </View>
 
-          {/* Both confirm the same thing, and differ in which channel does
-              the confirming. */}
           {stage === "choose" && (
             <View style={styles.resultCard}>
               <Text style={styles.resultTitle}>
@@ -287,7 +286,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* The code, before either answer. */}
           {stage === "compare" && !compared && words !== null && (
             <View style={styles.resultCard}>
               <Text style={styles.resultTitle}>
@@ -296,16 +294,7 @@ export default function VerifyContactScreen({
               <Text style={styles.resultBody}>
                 {T("contacts.verify.compare_body", { name })}
               </Text>
-              {/* Two rows of three. One line wraps unpredictably across font
-                  scales, and a reader needs the same shape on both phones to
-                  keep their place. */}
-              <View style={styles.wordGrid}>
-                {words.map((word, index) => (
-                  <Text key={`${index}-${word}`} style={styles.word}>
-                    {word}
-                  </Text>
-                ))}
-              </View>
+              <SafetyWords words={words} color="#FFFFFF" />
               <Pressable
                 style={styles.primaryBtn}
                 onPress={handleCodesMatch}
@@ -334,7 +323,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Compared and matched. */}
           {stage === "compare" && compared && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconOk]}>
@@ -359,7 +347,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Scanning */}
           {stage === "camera" && outcome === null && granted && (
             <>
               <View style={styles.frameWrap} pointerEvents="none">
@@ -370,8 +357,8 @@ export default function VerifyContactScreen({
             </>
           )}
 
-          {/* The OS prompt is up, or its answer hasn't landed yet. A word beats
-              a blank screen for the second it takes. */}
+          {/* The OS prompt is up or its answer has not landed: a word beats a
+              blank screen for the second it takes. */}
           {stage === "camera" && outcome === null && awaitingAnswer && (
             <View style={styles.resultCard}>
               <Text style={styles.resultBody}>
@@ -380,7 +367,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Camera unavailable */}
           {stage === "camera" && outcome === null && denied && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconNeutral]}>
@@ -412,7 +398,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Verified */}
           {outcome === "match" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconOk]}>
@@ -437,7 +422,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Wrong person */}
           {outcome === "mismatch" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconWarn]}>
@@ -469,7 +453,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Self-inconsistent card */}
           {outcome === "tampered" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconWarn]}>
@@ -640,24 +623,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     methodSub: {
       fontSize: FontSize.xs,
       color: "rgba(255,255,255,0.6)",
-    },
-    // Three to a row rather than left to wrap: a wrap that differs by font
-    // scale gives the two readers different shapes to follow.
-    wordGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      rowGap: Spacing.sm,
-      columnGap: Spacing.md,
-      marginVertical: Spacing.sm,
-    },
-    word: {
-      width: "30%",
-      textAlign: "center",
-      fontFamily: FontFamily.mono,
-      fontSize: FontSize.lg,
-      color: "#FFFFFF",
-      letterSpacing: 0.5,
     },
   });
 }

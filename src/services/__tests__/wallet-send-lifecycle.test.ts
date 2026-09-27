@@ -354,9 +354,9 @@ describe("receiving a token", () => {
     const other = "https://mint.someone-else.example";
     const token = encodedToken(other, [8]);
 
-    await expect(
-      receiveToken(token, { preferOffline: true }),
-    ).rejects.toMatchObject({ code: "no-mint" });
+    await expect(receiveToken(token)).rejects.toMatchObject({
+      code: "no-mint",
+    });
 
     // Refused, and nothing about our own mint's balance moved.
     expect(spendable()).toBe(before);
@@ -370,7 +370,7 @@ describe("receiving a token", () => {
     const before = spendable();
     const prepared = await prepareSend({ amount: 10 });
 
-    const result = await receiveToken(prepared.token, { preferOffline: true });
+    const result = await receiveToken(prepared.token);
 
     expect(result.outcome).toBe("own-pending");
     expect(result.amount).toBe(10);
@@ -389,7 +389,7 @@ describe("receiving a token", () => {
     reclaimSend(prepared.txId);
     expect(spendable()).toBe(before);
 
-    const result = await receiveToken(prepared.token, { preferOffline: true });
+    const result = await receiveToken(prepared.token);
 
     expect(result.outcome).toBe("duplicate");
     expect(spendable()).toBe(before);

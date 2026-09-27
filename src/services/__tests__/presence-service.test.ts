@@ -6,13 +6,13 @@
 // "Stop mesh" on the Android notification. What matters is that the mesh ends up
 // in the state the label claims, by whatever route the user took to get there.
 //
-// The case that failed was a route nobody had walked: Invisible, then Away, then
-// Online. Discoverability is intent the radio controller holds across a stop, on
-// purpose - an outage must not make an Invisible user discoverable when the
-// radio comes back - and Online only ever cleared it on the edge from Invisible.
-// Coming back through Away skipped that edge, so the mesh restarted scanning and
-// relaying but never advertising. Nobody could see the phone, the profile dot
-// said Online, and no banner disagreed.
+// The route easiest to miss is Invisible, then Away, then Online.
+// Discoverability is intent the radio controller holds across a stop, on
+// purpose (an outage must not make an Invisible user discoverable when the
+// radio comes back), so Online has to re-state it whatever it came from.
+// Cleared only on the edge from Invisible, coming back through Away would
+// restart scanning and relaying but never advertising: nobody could see the
+// phone, the profile dot would say Online, and no banner would disagree.
 
 const mockStart = jest.fn<void, [string]>();
 const mockStop = jest.fn<void, []>();
@@ -28,13 +28,15 @@ jest.mock("../mesh-service", () => ({
 }));
 
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { applyPresence } from "../presence-service";
+import { useSettingsStore } from "@store/settings-store";
+import { applyPresence, applyStartupPresence } from "../presence-service";
 
 beforeEach(() => {
   mockStart.mockReset();
   mockStop.mockReset();
   mockSetDiscoverable.mockReset();
   useMeshStateStore.getState().setPresenceStatus("online");
+  useSettingsStore.getState().reset();
 });
 
 describe("presence transitions", () => {
@@ -63,9 +65,8 @@ describe("presence transitions", () => {
     applyPresence("away", "someone");
     applyPresence("online", "someone");
 
-    // The regression: the restart happened, so the mesh was scanning and
-    // relaying, but discoverability was never re-stated and the controller was
-    // still holding the Invisible choice. The phone advertised to nobody while
+    // Restarting alone is not enough: the mesh would scan and relay while the
+    // controller still held the Invisible choice, advertising to nobody while
     // reporting itself Online.
     expect(mockStart).toHaveBeenCalledWith("someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
@@ -78,5 +79,50 @@ describe("presence transitions", () => {
     applyPresence("invisible", "someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+});
+
+// What the next launch starts in. Invisible is about who can see the phone, so
+// it has to survive a reopen, the language restart and a boot start. Away only
+// pauses this session: opening Airhop again means wanting the mesh.
+describe("presence across a relaunch", () => {
+  test("a start after Invisible comes back Invisible, not advertising", () => {
+    applyPresence("invisible", "someone");
+    mockSetDiscoverable.mockReset();
+    useMeshStateStore.getState().setPresenceStatus("online");
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+
+  test("Online clears the kept Invisible", () => {
+    applyPresence("invisible", "someone");
+    applyPresence("online", "someone");
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+  });
+
+  test("Away is not kept, and leaves the last visibility in place", () => {
+    applyPresence("away", "someone");
+    applyStartupPresence();
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+
+    applyPresence("invisible", "someone");
+    applyPresence("away", "someone");
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+
+  test("a panic wipe's settings reset comes back Online", () => {
+    applyPresence("invisible", "someone");
+    useSettingsStore.getState().reset();
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
   });
 });

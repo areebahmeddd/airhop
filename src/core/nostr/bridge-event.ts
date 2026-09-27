@@ -13,6 +13,7 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 
 const KIND_BRIDGE_MESSAGE = 20000;
 const KIND_BRIDGE_PRESENCE = 20001;
@@ -117,17 +118,17 @@ export interface ParsedBridgeEvent {
 // `bridgeStableID` over this event's own sender, timestamp and content.
 //
 // That single check is what stops the hint being a write primitive. It is used
-// as the timeline row identity, so an unverified hint let anyone who could
-// compute a message's stable ID - which needs only its public sender, timestamp
-// and text - publish a rendezvous event that landed on that exact row on every
-// far island and displaced the genuine copy, with different text under the
+// as the timeline row identity, so an unverified hint would let anyone who can
+// compute a message's stable ID (which needs only its public sender, timestamp
+// and text) publish a rendezvous event that lands on that exact row on every
+// far island and displaces the genuine copy, with different text under the
 // original's identity. Requiring the hash to match its own content means
-// claiming somebody's row now costs a SHA-256 preimage rather than a guess: an
+// claiming somebody's row costs a SHA-256 preimage rather than a guess: an
 // attacker can still publish, but only under an id derived from what they
 // actually said, which is a new row rather than a substituted one.
 // Return the `m`-tag stable ID only when it is the hash of this event's own
-// sender, timestamp and content. Anything else - a missing tag, a short tag, a
-// malformed timestamp, or an id that names a different message - yields
+// sender, timestamp and content. Anything else (a missing tag, a short tag, a
+// malformed timestamp, or an id that names a different message) yields
 // undefined, and the caller falls back to an identity derived from the event.
 function verifiedStableID(
   mTag: string[] | undefined,
@@ -161,7 +162,7 @@ export function parseBridgeEvent(event: NostrEvent): ParsedBridgeEvent | null {
     kind: "message",
     cell,
     content: event.content,
-    nickname,
+    nickname: nickname === undefined ? undefined : normalizeNickname(nickname),
     radioMessageIDHint: verifiedStableID(mTag, event.content),
     meshSenderID: mTag?.[2],
   };

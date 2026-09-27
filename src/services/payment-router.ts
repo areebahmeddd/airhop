@@ -14,7 +14,8 @@
 // it can be undone: "locked to them forever" and "queued, take it back" are one
 // gesture to the user and very different facts about their money.
 
-import { t } from "@i18n";
+import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
+import { t, tPlural } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
@@ -24,6 +25,7 @@ import { amountParts } from "@utils/format";
 import { systemRow } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import { isNostrId, NOSTR_ID_PREFIX } from "@utils/username";
+import { utf8ByteLength } from "@utils/utf8-budget";
 import { getMeshService, type MeshService } from "./mesh-service";
 import {
   failNutzapDelivery,
@@ -35,10 +37,9 @@ import {
   quoteSend,
   reclaimSend,
   settleNutzap,
-  settleReclaim,
+  staleFeeDays,
   WalletError,
   type NutzapTarget,
-  type ReclaimOutcome,
 } from "./wallet-service";
 
 // How the DM actually left the device: "they have it" versus "queued, they
@@ -69,6 +70,9 @@ export interface PayResult {
   final: boolean;
   // Why a better rail was not used. User-facing.
   fallbackReason?: string;
+  // Said in place of the rail when the rail alone promises too much: a queued
+  // token that no queued route can carry. User-facing.
+  routeNote?: string;
 }
 
 export interface PayPersonParams {
@@ -142,7 +146,8 @@ export async function payPerson(
             privKey,
           });
           if (paid !== null) return paid;
-          // The lock committed nothing; already confirmed, so do not ask twice.
+          // The lock committed nothing; already confirmed, so asked again only
+          // about a stale fee.
           return await payAsToken({
             peerID: payee.peerID,
             amount,
@@ -349,12 +354,21 @@ async function payAsToken(params: {
   confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
-  if (quote.exact && !params.confirmed) {
+  // A stale fee schedule is noted in whichever confirmation this quote gets.
+  const staleDays = staleFeeDays(quote.pricedFromCacheAgeMs);
+  const staleNote =
+    staleDays === null
+      ? ""
+      : `\n\n${tPlural("wallet.send.stale_fee_note", staleDays)}`;
+  // A confirm already given was the nutzap's, which carried no fee note, so a
+  // stale one asks again about the token that actually goes.
+  if (quote.exact && (!params.confirmed || staleNote !== "")) {
     const confirmed = await confirmPayment(
       params.amount,
       params.unit,
       params.name,
       false,
+      staleNote,
     );
     if (!confirmed) return null;
   }
@@ -366,7 +380,7 @@ async function payAsToken(params: {
         ...amountParts(params.amount, params.unit),
         spend: amountParts(quote.spend, params.unit).amount,
         extra: amountParts(quote.spend - params.amount, params.unit).amount,
-      }),
+      }) + staleNote,
       t("wallet.xfer.send_amount", {
         amount: amountParts(quote.spend, params.unit).amount,
       }),
@@ -389,6 +403,8 @@ async function payAsToken(params: {
     prepared,
     senderNickname: params.senderNickname,
   });
+  const note =
+    route === "queued" ? tooLargeNote(params.peerID, prepared.token) : null;
 
   return {
     rail: railForRoute(route),
@@ -397,6 +413,7 @@ async function payAsToken(params: {
     mintUrl: prepared.mintUrl,
     txId: prepared.txId,
     ...(route === "queued" ? { token: prepared.token } : {}),
+    ...(note !== null ? { routeNote: note } : {}),
     final: false,
     ...(params.fallbackReason !== undefined
       ? { fallbackReason: params.fallbackReason }
@@ -417,8 +434,31 @@ function railForRoute(route: DeliveryRoute): PayRail {
   }
 }
 
-export function describeRoute(route: DeliveryRoute): string {
-  return describeRail(railForRoute(route));
+export function describeRoute(
+  route: DeliveryRoute,
+  peerID: string,
+  token: string,
+): string {
+  return (
+    (route === "queued" ? tooLargeNote(peerID, token) : null) ??
+    describeRail(railForRoute(route))
+  );
+}
+
+// A private message carries at most 255 bytes over Noise, the Nostr envelope
+// and a courier, and a token carrying DLEQ proofs is usually past it. Only the
+// Double Ratchet between two Airhop phones on the mesh has no such cap, so a
+// queued token is a promise kept only for an Airhop phone coming back in
+// range, and none at all for anyone else. Null when the queue can carry it.
+function tooLargeNote(peerID: string, token: string): string | null {
+  if (utf8ByteLength(token) <= PRIVATE_MESSAGE_MAX_CONTENT_BYTES) return null;
+  const airhop =
+    !isNostrId(peerID) && getMeshService()?.peerRunsAirhop(peerID) === true;
+  return t(
+    airhop
+      ? "wallet.xfer.route_too_large_airhop"
+      : "wallet.xfer.route_too_large",
+  );
 }
 
 function describeRail(rail: PayRail): string {
@@ -452,7 +492,7 @@ export function describePayResult(result: PayResult): string {
     result.fallbackReason !== undefined && result.fallbackReason.length > 0
       ? ` ${t("wallet.pay.why", { reason: result.fallbackReason })}`
       : "";
-  return `${describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
+  return `${result.routeNote ?? describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
 }
 
 // Structural so a relay-refused locked nutzap fits as well as a `PreparedSend`.
@@ -509,7 +549,10 @@ export function deliverTokenToPeer(params: {
   // So Pending explains why it is waiting. A locked nutzap is recorded by the
   // caller, which knows it must not be offered back.
   if ((route === "queued" || route === "needs-courier") && !params.final) {
-    failSend(params.prepared.txId, describeRoute(route));
+    failSend(
+      params.prepared.txId,
+      describeRoute(route, params.peerID, params.prepared.token),
+    );
   }
   return route;
 }
@@ -532,23 +575,31 @@ export function reclaimTokenSend(txId: string): boolean {
   return true;
 }
 
-// The mint's half of a reclaim, after `reclaimTokenSend`. If the recipient had
-// already redeemed the token, the thread says it arrived after all.
-export async function settleReclaimedSend(
-  txId: string,
-): Promise<ReclaimOutcome> {
-  const outcome = await settleReclaim(txId);
-  if (outcome === "claimed") {
-    const peerID = useWalletStore
-      .getState()
-      .history.find((tx) => tx.id === txId)?.counterparty;
-    if (peerID !== undefined && peerID.length > 0) {
-      useChatStore
-        .getState()
-        .setMessageStatus(`dm:${peerID}`, txId, "delivered");
+let followingReclaims = false;
+
+// A reclaimed send turns completed when the mint says the recipient redeemed
+// the token first, either during the reclaim or later from the reconcile pass
+// with nobody awaiting it. Either way the thread says it arrived after all.
+// Idempotent; started once, at launch.
+export function startReclaimFollow(): void {
+  if (followingReclaims) return;
+  followingReclaims = true;
+  useWalletStore.subscribe((state, prev) => {
+    if (state.history === prev.history) return;
+    const reclaimed = new Set(
+      prev.history
+        .filter((tx) => tx.kind === "send" && tx.status === "reclaimed")
+        .map((tx) => tx.id),
+    );
+    if (reclaimed.size === 0) return;
+    for (const tx of state.history) {
+      if (!reclaimed.has(tx.id) || tx.status !== "completed") continue;
+      const peerID = tx.counterparty;
+      if (peerID !== undefined && peerID.length > 0) {
+        useChatStore.getState().markReclaimedPaid(`dm:${peerID}`, tx.id);
+      }
     }
-  }
-  return outcome;
+  });
 }
 
 export function reportWalletError(err: unknown): void {
@@ -582,18 +633,22 @@ export function reportWalletError(err: unknown): void {
 }
 
 // Every payment asks this before money moves: amount, recipient, finality.
+// `note` is appended as given (a stale fee schedule, say).
 function confirmPayment(
   amount: number,
   unit: string,
   name: string,
   final: boolean,
+  note = "",
 ): Promise<boolean> {
   return confirm(
     t("wallet.pay.confirm_title", {
       ...amountParts(amount, unit),
       name,
     }),
-    final ? t("wallet.pay.confirm_final") : t("wallet.pay.confirm_reclaimable"),
+    (final
+      ? t("wallet.pay.confirm_final")
+      : t("wallet.pay.confirm_reclaimable")) + note,
     t("wallet.xfer.send_amount", { amount: amountParts(amount, unit).amount }),
   );
 }

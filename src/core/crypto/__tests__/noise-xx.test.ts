@@ -128,6 +128,33 @@ describe("Noise XX handshake", () => {
     expect(() => sR.decrypt(ct)).toThrow();
   });
 
+  test("a clone spends a bad or foreign msg2 and the original still completes", () => {
+    const initiator = NoiseHandshake.createInitiator(makeKeypair().priv);
+    const responder = NoiseHandshake.createResponder(makeKeypair().priv);
+    const msg1 = initiator.writeMsg1();
+    responder.readMsg1(msg1);
+    const genuine = responder.writeMsg2();
+
+    // Anyone who saw msg1 can answer it validly under their own static key.
+    const forger = NoiseHandshake.createResponder(makeKeypair().priv);
+    forger.readMsg1(msg1);
+    const foreign = initiator.clone();
+    foreign.readMsg2(forger.writeMsg2());
+    foreign.writeMsg3();
+    foreign.split();
+
+    const garbled = genuine.slice();
+    garbled[50] ^= 0xff;
+    expect(() => initiator.clone().readMsg2(garbled)).toThrow();
+
+    initiator.readMsg2(genuine);
+    responder.readMsg3(initiator.writeMsg3());
+    const sI = initiator.split();
+    const sR = responder.split();
+    const ct = sI.encrypt(new TextEncoder().encode("still ours"));
+    expect(new TextDecoder().decode(sR.decrypt(ct))).toBe("still ours");
+  });
+
   test("wrong responder key causes handshake failure", () => {
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
@@ -144,27 +171,95 @@ describe("Noise XX handshake", () => {
   });
 });
 
+// The window has to age every recorded nonce when a higher one arrives. Shifted
+// the wrong way it forgets the most recent ones, which then decrypt a second
+// time (bitchat ships that bug; after 0..100 in order it accepts 93..99 again).
+describe("replay window", () => {
+  function sessionPair() {
+    const i = NoiseHandshake.createInitiator(makeKeypair().priv);
+    const r = NoiseHandshake.createResponder(makeKeypair().priv);
+    r.readMsg1(i.writeMsg1());
+    i.readMsg2(r.writeMsg2());
+    r.readMsg3(i.writeMsg3());
+    return { sender: i.split(), receiver: r.split() };
+  }
+
+  function sealed(count: number) {
+    const { sender, receiver } = sessionPair();
+    const cts = Array.from({ length: count }, (_, n) =>
+      sender.encrypt(Uint8Array.of(n & 0xff)),
+    );
+    const opens = (n: number): boolean => {
+      try {
+        receiver.decrypt(cts[n]);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    return { opens };
+  }
+
+  test("after 0..100 in order, every one of them is refused", () => {
+    const { opens } = sealed(101);
+    for (let n = 0; n <= 100; n++) expect(opens(n)).toBe(true);
+    const replayed = [];
+    for (let n = 0; n <= 100; n++) if (opens(n)) replayed.push(n);
+    expect(replayed).toEqual([]);
+  });
+
+  test("out of order: exactly the unseen nonces inside the window open", () => {
+    const { opens } = sealed(11);
+    for (const n of [0, 1, 2, 3, 5, 9, 10]) expect(opens(n)).toBe(true);
+    const accepted = [];
+    for (let n = 0; n <= 10; n++) if (opens(n)) accepted.push(n);
+    expect(accepted).toEqual([4, 6, 7, 8]);
+  });
+
+  test.each([8, 1023])(
+    "a jump of %i keeps the older nonce recorded",
+    (jump) => {
+      const { opens } = sealed(jump + 1);
+      expect(opens(0)).toBe(true);
+      expect(opens(jump)).toBe(true);
+      expect(opens(0)).toBe(false);
+      expect(opens(jump)).toBe(false);
+      if (jump > 1) expect(opens(1)).toBe(true);
+    },
+  );
+
+  test("a jump of 1024 pushes the older nonce out of the window", () => {
+    const { opens } = sealed(1025);
+    expect(opens(0)).toBe(true);
+    expect(opens(1024)).toBe(true);
+    // Too old to track, so refused whether seen or not.
+    expect(opens(0)).toBe(false);
+    expect(opens(1)).toBe(true);
+    expect(opens(1024)).toBe(false);
+  });
+});
+
 // The seam between Noise and the Double Ratchet.
 //
 // tryInitDR seeds the ratchet's root key from `exporterSecret`. Three properties
 // have to hold together, and a change to any one silently breaks or weakens
 // every Airhop-to-Airhop DM, so all three are pinned here.
 //
-// The middle one is the reason this block exists in its current form. The seed
-// used to come from `handshakeHash`, on the reasoning that Noise XX mixes both
-// parties' ephemerals into it. It does - but it mixes the ephemeral PUBLIC keys,
-// via mixHash, while the secret DH outputs go into the chaining key via mixKey.
-// Every input to the hash is a byte that went over the air, so an observer who
-// captured the handshake could recompute the root key outright. The old tests
-// checked that the seed was not derivable from the STATIC keys and never checked
-// the transcript itself, which is exactly how it survived.
+// The middle one is the easiest to get wrong. `handshakeHash` looks like a
+// seed, since Noise XX mixes both parties' ephemerals into it. It does, but it
+// mixes the ephemeral PUBLIC keys, via mixHash, while the secret DH outputs go
+// into the chaining key via mixKey. Every input to the hash is a byte that went
+// over the air, so a seed taken from it lets an observer who captured the
+// handshake recompute the root key outright. Checking only that the seed is not
+// derivable from the STATIC keys cannot catch that; the transcript itself has
+// to be checked.
 // The rule that stops a completed handshake being an identity claim.
 //
 // A Noise XX handshake proves possession of a static key. It does NOT prove the
 // peer ID in the packet header belongs to that key, because the header is
 // unauthenticated. mesh-service closes that gap with sessionBindsTo: a session
 // is only filed under a peer ID when SHA-256 of the authenticated remote static
-// key derives to it. Preimage resistance is what makes it work - nobody can
+// key derives to it. Preimage resistance is what makes it work: nobody can
 // produce a key that hashes to somebody else's ID.
 //
 // Pinned here because the check is one `if` guarding two handshake paths, and
@@ -258,8 +353,8 @@ describe("Double Ratchet seeding", () => {
 
     expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(i.handshakeHash));
 
-    // Reconstruct the transcript hash the way an eavesdropper would - protocol
-    // name padded to 32, empty prologue, then each message verbatim - and
+    // Reconstruct the transcript hash the way an eavesdropper would (protocol
+    // name padded to 32, empty prologue, then each message verbatim), and
     // confirm it reproduces the PUBLIC hash but not the seed.
     const name = new TextEncoder().encode("Noise_XX_25519_ChaChaPoly_SHA256");
     let h = new Uint8Array(32);
@@ -274,7 +369,7 @@ describe("Double Ratchet seeding", () => {
 
     // The observer's reconstruction is not asserted equal to handshakeHash here
     // (the real transcript absorbs each message in sub-parts), but it IS built
-    // purely from public bytes - and the seed must not be reachable from them.
+    // purely from public bytes, and the seed must not be reachable from them.
     expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(h));
     expect(bytesToHex(i.exporterSecret)).not.toBe(
       bytesToHex(hkdf(sha256, h, undefined, INFO, 32)),
@@ -316,7 +411,7 @@ describe("Double Ratchet seeding", () => {
   test("asking for a third split output leaves the transport keys unchanged", () => {
     // The exporter secret is the third HKDF output of the same split that makes
     // the Noise transport keys. HKDF chains block N from block N-1, so k1/k2 are
-    // identical to a two-output split - but that is a property of the KDF, not
+    // identical to a two-output split, but that is a property of the KDF, not
     // something the type system enforces, and breaking it would silently end
     // transport interop with bitchat. A round-trip pins it.
     const iKeys = makeKeypair();

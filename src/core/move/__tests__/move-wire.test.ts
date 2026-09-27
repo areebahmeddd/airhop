@@ -7,6 +7,7 @@ import {
   encodeAbort,
   encodeChunk,
   encodeCommit,
+  encodeConfirm,
   encodeEnd,
   encodeOffer,
   encodeOfferBody,
@@ -57,6 +58,12 @@ describe("move wire", () => {
       type: "abort",
       reason: MoveAbortReason.STORAGE,
     });
+  });
+
+  it("carries CONFIRM as a bare 0x07 and nothing else", () => {
+    expect(encodeConfirm()).toEqual(Uint8Array.of(0x07));
+    expect(decodeMoveMessage(encodeConfirm())).toEqual({ type: "confirm" });
+    expect(decodeMoveMessage(Uint8Array.of(0x07, 0))).toBeNull();
   });
 
   it("refuses an offer it cannot trust", () => {

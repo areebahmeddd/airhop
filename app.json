@@ -50,7 +50,9 @@
             "deploymentTarget": "16.4"
           }
         }
-      ]
+      ],
+      "@react-native-vector-icons/feather",
+      "@react-native-vector-icons/material-design-icons"
     ],
     "ios": {
       "supportsTablet": false,

@@ -116,6 +116,11 @@ export const strings: Strings = {
   "onboarding.transfer.offline_body":
     "讓兩支手機連上同一個 Wi-Fi，或在一支手機上開啟熱點，再用另一支連上。不需要網際網路。",
   "onboarding.transfer.incoming": "正在轉移 {name}",
+  "onboarding.transfer.confirm_title": "檢查你的舊手機",
+  "onboarding.transfer.confirm_body":
+    "你的舊手機應該會顯示這組相同的字詞。如果顯示的字詞不同，或什麼都沒顯示，請取消。",
+  "onboarding.transfer.confirm_cta": "一致",
+  "onboarding.transfer.waiting_old": "在舊手機上點一下「{action}」",
   "onboarding.transfer.receiving": "正在接收 {percent}%",
   "onboarding.transfer.saving": "正在儲存到這支手機",
   "onboarding.transfer.releasing": "正在舊手機上收尾",
@@ -171,6 +176,15 @@ export const strings: Strings = {
   "error.boundary.title": "出了點問題",
   "error.boundary.body":
     "Airhop 遇到了一個意外問題，不得不停下正在顯示的內容。",
+
+  // ---- Launch: the keychain did not answer ----
+  "launch.keys_unreadable_title": "無法開啟你的金鑰",
+  "launch.keys_unreadable_body":
+    "你的手機沒有解鎖 Airhop 的金鑰。請解鎖手機，然後再試一次。",
+  "launch.start_over": "抹除並重新開始",
+  "launch.start_over_confirm_title": "要抹除這支手機嗎？",
+  "launch.start_over_confirm_body":
+    "這支手機上的身分、訊息、聯絡人和錢包都會被銷毀，你將以新的身分重新開始。此動作無法復原。",
 
   // ---- Chats: channel list ----
   "chat.channels.default": "預設頻道",
@@ -289,7 +303,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "你已經在另一個 {name} 裡了。頻道名稱只是標籤，所以這個邀請開了它自己的頻道，你原本那個不受影響。可以在各自的頻道資訊裡重新命名。",
   "chat.join.paste_hint":
-    "貼上以 airhop:// 開頭的邀請。直接點連結也可以；這裡是為了那些點不了的連結。",
+    "Airhop 連結以 airhop:// 開頭。在這裡貼上一個，或檢查點連結後自動填入的內容。",
   "chat.join.key_note":
     "私密頻道邀請本身帶著金鑰，所以加入是立即的，也不必向任何人索取什麼。",
   "chat.join.offline_note":
@@ -411,8 +425,13 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/秒",
   "chat.transfer.left": "剩餘 {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "節點",
   "chat.thread.cancel_transfer": "取消 {name}",
+  "chat.thread.hide_transfer": "隱藏進度",
+  "chat.thread.hide_transfer_hint": "檔案仍會繼續接收",
   "chat.thread.queued_more": "還有 {count} 則等著傳送",
   "chat.thread.across_bridge": "橋接另一端 {count} 位",
   "chat.thread.bridged": "已橋接",
@@ -441,6 +460,9 @@ export const strings: Strings = {
   "chat.thread.someone_talking": "{hold}。{name} 正在說話。",
   "chat.thread.attach_note":
     "檔案只在藍牙範圍內傳送。文字和付款觸及得到網路上的聯絡人，附件則不行。",
+  "chat.thread.media_securing": "正在先與對方建立加密。請稍後再試。",
+  "chat.thread.media_unsupported":
+    "對方的 App 無法接收加密的照片或語音留言，因此未傳送。",
   "chat.thread.message_peer": "傳訊息給 {name}",
   "chat.thread.send": "傳送訊息",
   "chat.thread.group": "群組",
@@ -561,7 +583,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "這台裝置上沒有這段影片",
   "chat.media.gone_voice": "這台裝置上沒有這則語音留言",
   "chat.media.gone_file": "這台裝置上沒有這個檔案",
-  "chat.media.gone_note": "已在 7 天後或快取被清除時移除",
+  "chat.media.gone_note": "已從這支手機清除，或未從舊手機轉移過來",
   "chat.media.ask_resend": "再問一次",
   "chat.media.resend_draft": "可以再傳一次那{kind}嗎？",
   "chat.media.kind_photo": "張照片",
@@ -628,6 +650,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "已領取",
   "chat.ecash.reclaimed": "已收回",
+  "chat.ecash.locked": "已鎖給他人",
   "chat.ecash.claiming": "領取中…",
   "chat.ecash.claim": "領取",
   "chat.ecash.claim_amount": "領取 {amount} {unit}",
@@ -841,6 +864,7 @@ export const strings: Strings = {
   "mesh.banner.hint.location_settings": "開啟系統定位設定",
   "mesh.banner.hint.app_settings": "在系統設定中開啟 Airhop 的權限",
   "mesh.banner.hint.battery_settings": "開啟這支手機的背景活動設定",
+  "mesh.banner.hint.tor_settings": "開啟 Airhop 的 Tor 設定",
   "mesh.banner.dismiss": "忽略：{label}",
   "mesh.banner.hint.dismiss": "永久隱藏這則提示",
 
@@ -871,8 +895,10 @@ export const strings: Strings = {
   "mesh.radar.paused": "網狀網路已暫停 · 你處於離開狀態",
   "mesh.radar.ring_hint": "圓環位置反映的是訊號強度，不是距離",
   "mesh.radar.set_online": "在個人頁把狀態設為上線就能找到節點",
-  "mesh.radar.in_range": "在範圍內",
-  "mesh.radar.recently_seen": "最近見過",
+  "mesh.radar.peer_in_range": "{name}，在範圍內",
+  "mesh.radar.peer_recent": "{name}，最近見過",
+  "mesh.radar.relay_in_range": "{name}，中繼節點，在範圍內",
+  "mesh.radar.relay_recent": "{name}，中繼節點，最近見過",
   "mesh.radar.peer_hint": "開啟傳訊息給這個節點或付款給它的選項",
 
   // ---- Mesh: peer list ----
@@ -893,6 +919,7 @@ export const strings: Strings = {
   "mesh.peer.amount_first": "傳送 ecash，請先輸入金額",
   "mesh.peer.cancel_send": "取消傳送 ecash",
   "mesh.peer.view_peer_online": "查看節點 {name}，上線中",
+  "mesh.peer.view_relay_online": "查看節點 {name}，上線中，中繼節點",
   "mesh.peer.last_seen_at": "最後出現：{ago}",
   "mesh.peer.send_amount": "傳送 {amount} sat",
   "mesh.peer.direct": "直接連線",
@@ -953,8 +980,6 @@ export const strings: Strings = {
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
     "用你手上已有的 ecash 離線建立。在你確認代幣已送達之前，餘額不會被永久扣掉。",
-  "wallet.send.stale_fee_note":
-    "手續費上次核對是在 {days} 天前。如果這個鑄幣廠之後調高了費率，這筆傳送可能會稍微貴一點。",
   "wallet.send.fee_note":
     "{spend} {unit} 會從你的餘額扣掉；多出的 {fee} 用來抵掉對方本來要付的鑄幣廠手續費",
   "wallet.send.qr_too_big":
@@ -998,6 +1023,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "已經在你的錢包裡",
   "wallet.receive.already_have_body":
     "這個代幣裡的所有內容都已經存在這裡了，所以沒有新增任何東西。餘額沒有變動。",
+  "wallet.receive.claiming": "仍在等待鑄幣廠",
+  "wallet.receive.claiming_body":
+    "這個代幣先前的領取還沒有得到鑄幣廠確認，所以沒有送出新的請求。錢包會自動處理。如果鑄幣廠從未收到它，你可以再領取一次。",
   "wallet.receive.stored_unconfirmed":
     "已從 {mint} 存入，但尚未向鑄幣廠確認（{reason}）。",
   "wallet.receive.offline": "離線",
@@ -1007,17 +1035,19 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "已在 {mint} 兌付。現在它可以被證明屬於你：傳送方手上的這份代幣副本不再有效。",
   "wallet.receive.stored_pending":
-    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用{dleq}。連上網路後請到錢包分頁重新整理。",
+    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用{dleq}。連上網路後會自動向鑄幣廠確認。",
   "wallet.receive.dleq_inline": "（它的簽章確實對得上，所以這個代幣是真的）",
   "wallet.receive.dleq_ok": "鑄幣廠的簽章對得上，所以這個代幣是真的。",
   "wallet.receive.dleq_uncached":
     "這個鑄幣廠的金鑰沒有快取在這裡，所以無法離線核對簽章。",
+  "wallet.receive.dleq_missing":
+    "其中並非每個幣都帶有鑄幣廠的簽章證明，所以無法離線核對。",
   "wallet.receive.dleq_warning":
-    "在你連上網路重新整理之前，傳送方理論上有可能已經把它花在別處。",
+    "在連上網路確認之前，傳送方理論上有可能已經把它花在別處。",
   "wallet.receive.failed": "無法接收",
   "wallet.receive.title": "接收 ecash",
   "wallet.receive.body":
-    "貼上一個 Cashu 代幣。連上網路時它會立刻在鑄幣廠兌付；離線時它會被存起來，等你下次重新整理時再確認。",
+    "貼上一個 Cashu 代幣。連上網路時它會立刻在鑄幣廠兌付；離線時它會被存起來，等你重新連上網路後自動向鑄幣廠確認。",
   "wallet.receive.scan": "掃描 ecash QR 碼",
   "wallet.receive.scan_short": "掃描 QR 碼",
   "wallet.receive.receiving": "接收中…",
@@ -1151,6 +1181,7 @@ export const strings: Strings = {
     "復原的原理是去問鑄幣廠它幫你簽過哪些幣，所以它得知道要問哪一個鑄幣廠。先把你用過的鑄幣廠加上，再復原。",
   "wallet.backup.restore_failed": "復原失敗",
   "wallet.backup.phrase": "復原助記詞",
+  "wallet.backup.auth_prompt": "確認是你本人，以顯示你的復原助記詞",
   "wallet.backup.state_unconfirmed": "備份已開啟但未確認",
   "wallet.backup.state_off": "備份已關閉",
   "wallet.backup.badge_on": "開",
@@ -1226,6 +1257,8 @@ export const strings: Strings = {
     "鑄幣廠表示這個代幣已被兌付，所以這 {amount} {unit} 已經到了對方手上，你的餘額沒有收回任何東西。",
   "wallet.copied.token_body":
     "代幣已經在你的剪貼簿上。在你標記為已送達之前它一直保留在這裡，所以第一次沒成的話可以再貼一次。",
+  "wallet.copied.refused_token_body":
+    "代幣已經在你的剪貼簿上。這個錢包不再計入它，所以你可以把它還給傳送它的人。",
   "wallet.copied.phrase_body":
     "把它貼進密碼管理程式，然後清空剪貼簿。其他 App 讀得到剪貼簿，而且在有些設定下它還會同步到你的其他裝置。",
   "wallet.refresh.failed": "重新整理失敗",
@@ -1234,6 +1267,10 @@ export const strings: Strings = {
   "wallet.refresh.unreachable": "連不上 {mints}。其餘部分都是最新的。",
   "wallet.refresh.swapped": "{amount} {unit} 已確認並換成了新的 ecash。",
   "wallet.refresh.secured": "{amount} {unit} 現在已被你的復原助記詞涵蓋。",
+  "wallet.refresh.refused":
+    "{amount} {unit} 遭鑄幣廠拒絕，已從你的餘額中移除。動態裡保留了這個代幣。",
+  "wallet.refresh.still_unconfirmed":
+    "{amount} {unit} 仍在等待鑄幣廠確認，稍後會完成確認。",
   "wallet.refresh.all_confirmed": "這裡的一切都已經向鑄幣廠確認過了。",
   "wallet.pending.reserved_desc":
     "已建立並保留，送達未確認。這些幣被從你的餘額扣住，以免被花兩次。",
@@ -1264,9 +1301,11 @@ export const strings: Strings = {
   "wallet.activity.ln_deposit": "Lightning 存入",
   "wallet.activity.ln_withdrawal": "Lightning 提領",
   "wallet.activity.nutzap_received": "收到 Nutzap",
+  "wallet.activity.nutzap_claiming": "Nutzap 領取中",
   "wallet.activity.spent_removed": "已移除已花費的幣",
   "wallet.activity.refreshed": "已向鑄幣廠核對",
   "wallet.activity.refreshing": "正在向鑄幣廠核對",
+  "wallet.activity.copy_refused": "複製遭拒絕的代幣",
 
   // ---- Wallet: handing a token to a peer ----
   "wallet.mesh_offline": "網狀網路已離線",
@@ -1278,6 +1317,10 @@ export const strings: Strings = {
     "現在沒有通往對方的路徑。它會由其他裝置捎帶，等某台裝置遇到對方時送達。",
   "wallet.xfer.route_queued":
     "現在還聯絡不上對方。它已排隊，等對方觸及得到時馬上送出。",
+  "wallet.xfer.route_too_large_airhop":
+    "太大了，無法透過網路或由其他裝置捎帶送出。對方回到範圍內時會透過藍牙送出；也可以從動態分享代幣，現在就付給對方。",
+  "wallet.xfer.route_too_large":
+    "太大了，沒有任何路徑能送到對方：這麼大的代幣只能透過藍牙送到裝有 Airhop 的手機。請從動態分享它來付給對方。",
   "wallet.xfer.mesh_offline_body":
     "網狀網路服務沒有在跑，所以沒有辦法把代幣交出去。沒有扣掉任何金額。",
   "wallet.xfer.could_not_send": "無法傳送",
@@ -1335,13 +1378,13 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Cashu 是什麼？",
   "wallet.explain.intro":
-    "Cashu 是比特幣的 ecash。代幣是一串字，誰拿著它就等於拿著錢，它由鑄幣廠盲簽，所以鑄幣廠分不出是誰花了哪一筆。沒有帳戶，也不用登入。",
+    "Cashu 是比特幣的 ecash。代幣是一串字，誰拿著它就等於拿著錢，它由鑄幣廠盲簽，所以鑄幣廠分不出是誰花了哪一筆。沒有帳戶，也不用登入。Airhop 從不保管你的錢：你的幣存在這支手機上，由你選擇的鑄幣廠發行。",
   "wallet.explain.send": "傳送",
   "wallet.explain.send_desc":
     "把一筆金額變成代幣，可以透過藍牙交給附近的節點，也可以當成文字分享。不需要網路。在你確認它已到手之前，這些幣會一直保留著。",
   "wallet.explain.receive": "接收",
   "wallet.explain.receive_desc":
-    "貼上一個代幣就能加進來。連上網路時它會立刻在鑄幣廠換新，因而可以被證明屬於你。離線時它會被存起來並標為未確認，直到你重新整理。",
+    "貼上一個代幣就能加進來。連上網路時它會立刻在鑄幣廠換新，因而可以被證明屬於你。離線時它會先以未確認狀態存起來，等你重新連上網路後自動向鑄幣廠確認。",
   "wallet.explain.zap": "打閃",
   "wallet.explain.zap_desc":
     "付款給一個 Nostr 身分。如果對方公布了 NIP-61 nutzap 資訊，這筆 ecash 會鎖到對方的金鑰上，只有對方花得了。否則會退回到加密私訊的方式。需要網路。",
@@ -1377,6 +1420,9 @@ export const strings: Strings = {
   "wallet.svc.phrase_invalid": "那組復原助記詞無效。",
   "wallet.svc.phrase_invalid_body":
     "請檢查有沒有打錯或漏掉的字。助記詞本身帶著檢查碼，所以只要錯一個字，整組就無效。",
+  "wallet.svc.phrase_unreadable": "無法在這支手機上讀取你的復原助記詞。",
+  "wallet.svc.phrase_unreadable_body":
+    "沒有做任何變更，也沒有產生新的助記詞。請在手機解鎖後再試一次。在這段期間，你的 ecash 仍可正常使用。",
   "wallet.svc.need_mint": "請先至少新增一個鑄幣廠。",
   "wallet.svc.need_mint_body":
     "復原的原理是去問鑄幣廠它幫你簽過哪些幣，所以它得知道要問哪一個鑄幣廠。",
@@ -1396,11 +1442,30 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "此代幣使用了其鑄幣廠的新金鑰。",
   "wallet.svc.keyset_unknown_body":
     "現在無法連線鑄幣廠取得金鑰。沒有任何損失：連網後再次接收即可。",
+  "wallet.svc.keyset_rotated": "鑄幣廠剛剛更換了金鑰。",
+  "wallet.svc.keyset_rotated_body":
+    "它在任何資金移動之前就拒絕了請求，所以你的餘額沒有變動。請一分鐘後再試。",
   "wallet.svc.wrong_mint": "這個代幣並不是由它指名的鑄幣廠簽發的。",
+  "wallet.svc.wrong_mint_body":
+    "至少有一個幣的簽章與鑄幣廠的金鑰不符。沒有新增任何東西。",
+  "wallet.svc.unit_mismatch": "這個代幣裡的幣並不是它所標示的幣別。",
+  "wallet.svc.unit_mismatch_body":
+    "它標示為 {label}，但其中一些幣是以 {actual} 發行的。請向傳送方索取新的代幣。沒有新增任何東西。",
+  "wallet.svc.locked_other": "這些幣已鎖到別人的錢包。",
+  "wallet.svc.locked_other_body":
+    "只有這些幣所鎖定的對象才能領取。沒有新增任何東西。",
+  "wallet.svc.coins_refused":
+    "鑄幣廠拒絕了這些幣，所以它們不再計入。代幣保留在這裡，方便你退回。",
+  "wallet.svc.coins_unredeemable":
+    "這些幣無法在這個鑄幣廠兌付，所以它們不再計入。代幣保留在這裡，方便你退回。",
+  "wallet.svc.reclaim_refused":
+    "鑄幣廠不肯收回這筆傳送裡的幣，所以它們不再計入。代幣保留在這裡，方便你複製。",
+  "wallet.svc.locked_ours_offline": "這筆付款已鎖到你的錢包。",
+  "wallet.svc.locked_ours_offline_body":
+    "連上網路後再領取即可。在這段期間，別人無法拿走它。",
   "wallet.svc.already_spent": "這筆 ecash 已經被花掉了。",
   "wallet.svc.already_spent_body":
     "送這個代幣的人自己先兌付了，或者把同一個代幣也送給了別人。",
-  "wallet.svc.receiving_offline": "離線接收",
   "wallet.svc.amount_positive": "請輸入大於零的金額。",
   "wallet.svc.coins_raced": "那些幣剛剛被另一筆付款用掉了。",
   "wallet.svc.coins_raced_body": "沒有扣掉任何金額。再試一次，錢包會挑另一組。",
@@ -1508,6 +1573,8 @@ export const strings: Strings = {
     "那個 bitchat 代碼已過期。請對方重新開啟自己的 QR 碼。",
   "contacts.scan.tampered":
     "這個 QR 碼無效：它的節點 ID 和它的金鑰對不上。它可能被人動過手腳。",
+  "contacts.scan.key_conflict":
+    "你已經存有這個人的另一把金鑰，所以沒有做任何變更。請當面掃描對方的 QR 碼來替換。",
   "contacts.scan.already_added": "已經在你的聯絡人裡",
 
   // ---- Contacts: verifying by QR ----
@@ -1679,7 +1746,7 @@ export const strings: Strings = {
   "settings.general.reset": "重設設定",
   "settings.general.media_retention": "媒體保留時間",
   "settings.general.media_retention_desc":
-    "照片、影片和語音留言會在所選時間後被刪除",
+    "照片、影片、語音留言和檔案會在所選時間後被刪除",
   "settings.general.media_retention_sheet":
     "選擇媒體在這台裝置上留多久。刪掉的媒體無法復原。",
   "settings.general.retention_7_desc":
@@ -1816,7 +1883,7 @@ export const strings: Strings = {
     "Nostr 流量會回到你原本的連線上，中繼又看得到你的 IP 位址了。不管哪一種，藍牙都不受影響。",
   "settings.conn.tor_unavailable": "這個版本不支援 Tor 路由。",
   "settings.conn.tor_timeout":
-    "Tor 連線已經花了一分多鐘。它會保持開啟並繼續嘗試；網狀網路分頁會告訴你它何時開始轉送，或者這個網路是不是在擋它。",
+    "Tor 還沒有連上。它會保持開啟並繼續嘗試；網狀網路分頁會告訴你它何時開始轉送，或者這個網路是不是在擋它。",
   "settings.conn.tor_failed": "無法啟動 Tor。請稍後再試。",
   "settings.tor.status": "Tor 狀態",
   "settings.tor.connection": "連線方式",
@@ -1839,7 +1906,8 @@ export const strings: Strings = {
   "settings.tor.custom_apply_hint": "點按框外即可連線。",
   "settings.tor.custom_empty": "請先新增至少一條橋接。",
   "settings.tor.recovered":
-    "Tor 已關閉，因為上次未能完成啟動。重新開啟可再試一次。",
+    "Tor 上次未能完成啟動，所以網路流量已暫停。請再試一次，或關閉 Tor，不經 Tor 連上網路。",
+  "settings.tor.retry": "再試一次",
   "settings.conn.mint_clearnet": "允許鑄幣廠流量走明網",
   "settings.conn.mint_clearnet_desc":
     "iOS 上的 Tor 只涵蓋 Nostr。保持關閉就能擋下鑄幣廠請求；不管怎樣，透過網狀網路收付 ecash 都照常可用。",
@@ -1962,7 +2030,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "立即重新開啟",
   "settings.language.rtl_title": "重新開啟 Airhop 以完成切換",
   "settings.language.rtl_body":
-    "{value} 是從右往左讀的，而 Airhop 只能在啟動時改變方向。請關掉再開一次以完成切換。什麼都不會遺失，在那之前你的網狀網路也保持連線。",
+    "切換到 {value} 會改變閱讀方向，而 Airhop 只能在啟動時改變方向。請關掉再開一次以完成切換。什麼都不會遺失，在那之前你的網狀網路也保持連線。",
   "settings.theme.light": "淺色",
   "settings.theme.light_desc": "永遠使用淺色配色",
   "settings.theme.dark": "深色",
@@ -1999,9 +2067,10 @@ export const strings: Strings = {
   "settings.transfer.camera_off_body":
     "請到設定允許相機存取，才能掃描新手機上的碼。",
   "settings.transfer.confirm_title": "轉移到這支手機？",
-  "settings.transfer.confirm_body":
-    "這裡的所有內容會轉移到顯示這個碼的手機。轉移完成後，這支手機會被抹除。",
+  "settings.transfer.verify_body":
+    "你的新手機應該會顯示這組相同的字詞。這裡的所有內容會轉移過去，然後這支手機會被抹除。",
   "settings.transfer.confirm_cta": "轉移",
+  "settings.transfer.waiting_confirm": "請在新手機上確認",
   "settings.transfer.connecting": "正在連線到新手機",
   "settings.transfer.connecting_hint":
     "如果這支手機詢問是否允許尋找區域網路上的裝置，請允許。",
@@ -2054,14 +2123,13 @@ export const strings: Strings = {
   "settings.wipe.now": "立刻抹除",
   "settings.wipe.desc": "立刻銷毀所有金鑰、訊息和 ecash",
   "settings.wipe.body":
-    "這會立刻銷毀你所有的金鑰、訊息和 ecash。此動作無法復原。",
+    "這會立刻銷毀你所有的金鑰、訊息和 ecash。此動作無法復原。你儲存到相簿的照片會留在那裡。",
   "settings.wipe.in_progress": "抹除中",
   "settings.wipe.in_progress_body":
     "正在銷毀你的金鑰、訊息和檔案。這需要幾秒鐘，就算 App 被關掉也會自己完成。",
-  "settings.wipe.got_it": "知道了",
   "settings.wipe.keys_failed": "金鑰無法銷毀",
   "settings.wipe.keys_failed_body":
-    "你的訊息、聯絡人和錢包都已清除，但裝置拒絕釋出你的金鑰。請解鎖裝置後再抹除一次。",
+    "你的訊息、聯絡人和錢包都已清除，但裝置拒絕釋出你的金鑰。請解鎖裝置，然後重新開啟 Airhop 完成抹除。",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "聯絡我們",
@@ -2106,7 +2174,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "正在檢查更新",
   "settings.version.up_to_date": "你用的已經是最新版本。",
   "settings.version.release_notes": "查看發行說明",
-  "settings.version.made_with": "用",
+  "settings.version.credit": "由 {author} 用 {heart} 製作",
+  "settings.version.heart_a11y": "愛",
   "settings.version.number": "版本 {version}",
   "settings.version.update_to": "更新到 {version}",
   "settings.version.update_to_a11y": "更新到版本 {version}",
@@ -2114,6 +2183,8 @@ export const strings: Strings = {
   "settings.version.notes_a11y": "查看 {version} 版的發行說明",
   "settings.version.tor_paused":
     "Tor 開啟期間會暫停檢查更新，以免洩漏你的 IP。請在瀏覽器裡查看發行頁面。",
+  "settings.version.internet_off":
+    "網路關閉期間會暫停更新。請在設定中開啟{setting}。",
   "settings.version.check_failed":
     "無法檢查更新。請檢查你的網路連線後再試一次。",
   "settings.version.downloading": "正在下載 {percent}%",
@@ -2261,6 +2332,10 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     other: "{count} 份未確認",
+  },
+  "wallet.send.stale_fee_note": {
+    other:
+      "手續費上次核對是在 {count} 天前。如果這個鑄幣廠之後調高了費率，這筆傳送可能會稍微貴一點。",
   },
   "wallet.spent_removed_detail": {
     other: "有 {count} 枚幣早就被花掉了，它們已經被移除。",

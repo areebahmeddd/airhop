@@ -4,7 +4,7 @@
 // Tier C: somebody in the room is hostile, or the world is.
 //
 // Everything here is an attack or a failure injected on purpose. The bar is not
-// "the app survives" - it is "the app refuses, and tells the user nothing false
+// "the app survives": it is "the app refuses, and tells the user nothing false
 // while refusing".
 
 jest.mock("expo-location", () => ({}));
@@ -25,12 +25,24 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import {
+  encodeContactCard,
+  type ContactCard,
+} from "@core/crypto/contact-exchange";
 import type { Identity } from "@core/crypto/identity";
+import { NoiseHandshake } from "@core/crypto/noise-xx";
+import { base64ToBytes } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
 } from "@core/mesh/discovery/announce-manager";
 import {
+  openChannelMessage,
+  sealChannelMessage,
+} from "@core/mesh/rooms/channel-crypto";
+import { encodeFilePacket } from "@core/mesh/wire/file-packet";
+import {
+  decodePacket,
   encodePacket,
   Flags,
   PacketType,
@@ -38,15 +50,23 @@ import {
   type Packet,
 } from "@core/mesh/wire/packet-codec";
 import {
+  encodePrekeyBundle,
+  signPrekeyBundle,
+} from "@core/mesh/wire/prekey-bundle";
+import { sealGeoCard } from "@core/nostr/geo-card-proof";
+import {
   channelPacketType,
+  decodeAirhopChannelPayload,
   encodeAirhopChannelPayload,
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
 } from "@core/router/message-router";
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
+import { media } from "./harness/media-fabric";
 import { RadioFabric } from "./harness/radio-fabric";
 import { Scenario, waitFor } from "./harness/scenario";
 
@@ -135,7 +155,7 @@ function forgePublicMessage(opts: {
 
 // An ANNOUNCE that claims `claimedPeerID`, carrying whatever key material the
 // caller wants bound to it. This is the packet that decides, for every later
-// packet, WHICH key a claimed sender is checked against - so getting it wrong
+// packet, WHICH key a claimed sender is checked against, so getting it wrong
 // silently defeats the signature rule that C01 pins.
 function forgeAnnounce(opts: {
   claimedPeerID: string;
@@ -177,7 +197,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   //
   // The attack is one packet upstream of C01 and defeats it completely. A peer
   // ID is the first 16 hex of SHA-256(noise pubkey), and that noise key is
-  // broadcast in the clear in every announce - so Mallory can replay Alice's
+  // broadcast in the clear in every announce, so Mallory can replay Alice's
   // real peer ID and real noise key (both public), attach her OWN signing key,
   // and sign the announce with it. It is internally consistent: the derivation
   // matches and the signature verifies against the key inside the packet.
@@ -185,7 +205,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   //
   // The only thing that stops it is refusing to REPLACE a signing key already
   // bound to that peer. Hence the last assertion, which is the real one: after
-  // the attack, genuine traffic from the real Alice must still verify - which
+  // the attack, genuine traffic from the real Alice must still verify, which
   // it can only do if her original key is still the pinned one.
   const s = (scenario = new Scenario({
     id: "C08",
@@ -227,9 +247,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
 
   // Attack 1: an UNSIGNED announce claiming alice's ID.
   //
-  // This used to be accepted outright. Verification ran only `if (SIGNED)`, so
-  // clearing the flag meant the sender opted out of being checked and their
-  // keys were written to the registry unchallenged.
+  // Verification must not run only `if (SIGNED)`: clearing the flag would let
+  // the sender opt out of being checked and write their keys to the registry
+  // unchallenged.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -243,7 +263,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   await s.world.advance(2000);
 
-  // Attack 2: a fully self-consistent signed announce - alice's public noise
+  // Attack 2: a fully self-consistent signed announce: alice's public noise
   // key (so the peer ID derivation checks out), mallory's signing key, signed
   // by mallory. Both the derivation check and the signature check PASS. Only
   // the pin refuses it.
@@ -261,8 +281,8 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   await s.world.advance(2000);
 
-  // Attack 3: sender mismatch - claim alice's ID while carrying mallory's own
-  // noise key. Rejected because the ID no longer derives from the key.
+  // Attack 3: sender mismatch, claiming alice's ID while carrying mallory's
+  // own noise key. Rejected because the ID does not derive from the key.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -463,9 +483,9 @@ test("C01 a message claiming a trusted peer's ID is refused unless it is signed 
 
   // Attack 1: no signature at all, claiming alice's peer ID.
   //
-  // This is the one that used to work. The old check was `if (SIGNED &&
-  // haveKey) verify`, so clearing the signature flag skipped verification
-  // entirely and the message rendered as alice.
+  // A check of `if (SIGNED && haveKey) verify` would let clearing the
+  // signature flag skip verification entirely, and the message would render
+  // as alice.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -580,6 +600,26 @@ test("C02 the strict signature rule still lets genuine traffic through", async (
     bob.texts(channel).includes("genuinely alice"),
     `bob thread = [${bob.texts(channel).join(" | ")}]`,
   );
+
+  // Signed and within the decode cap, but past a v1 frame's 65,535 bytes: no
+  // client composes one, so it is shown to nobody, as bitchat-ios drops it.
+  const oversized = "x".repeat(0x10000);
+  radio.injectTo(
+    bob.id,
+    alice.id,
+    forgePublicMessage({
+      claimedPeerID: alice.peerID,
+      channel,
+      text: oversized,
+      timestamp: s.world.wallClock(),
+      signWith: alice.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(2000);
+  s.check(
+    "a signed message past a v1 frame is not displayed",
+    !bob.texts(channel).includes(oversized),
+  );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });
@@ -690,4 +730,1333 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
   s.expectNone("no forged senders", noForgedSenders([bob, carol]));
   s.expectNone("process health", noCrashes([bob, carol]));
   s.assert(true);
+});
+
+test("C09b a genuine old LEAVE dressed as a sync reply is refused", async () => {
+  // The freshness window stops a replayed LEAVE, except through the one path
+  // allowed to carry old packets: a reply to our own sync request. Every
+  // neighbour is asked every round, so a neighbour holding a recording of
+  // alice's goodbye could tag it IS_RSR and end her session with us. Only the
+  // types sync serves pass as replies, and LEAVE is not one.
+  const s = (scenario = new Scenario({
+    id: "C09b",
+    title: "replayed departure through the sync exemption",
+    seed: 75,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([
+    ["alice", "bob"],
+    ["mallory", "bob"],
+  ]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  const channel = "#bluetooth";
+  for (const d of cast) d.joinChannel(channel);
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    30_000,
+  );
+  let asked = false;
+  const stop = radio.tapWrites((who, linkID, data) => {
+    if (who !== bob.id || linkID !== `link:${mallory.id}`) return;
+    if (decodeWrite(data)?.type === PacketType.REQUEST_SYNC) asked = true;
+  });
+  s.check(
+    "bob asked mallory for a sync",
+    await waitFor(s.world, () => asked, 40_000),
+  );
+  stop();
+
+  // A recording of alice's real, signed departure from ten minutes ago, and
+  // an equally old message of hers, both re-tagged as replies. Neither ttl nor
+  // IS_RSR is signed, so both signatures still verify.
+  const at = s.world.wallClock() - 10 * 60_000;
+  const recorded = (type: PacketType, payload: Uint8Array): string => {
+    const packet: Packet = {
+      type,
+      ttl: 0,
+      flags: Flags.SIGNED,
+      senderID: peerIdToBytes(alice.peerID),
+      recipientID: new Uint8Array(8),
+      timestamp: at,
+      signature: new Uint8Array(64),
+      payload,
+    };
+    packet.signature = signPacket(packet, alice.identity.signingPrivKey);
+    return toBase64(encodePacket({ ...packet, isRSR: true }));
+  };
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    recorded(PacketType.LEAVE, new Uint8Array(0)),
+  );
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    recorded(
+      PacketType.CHANNEL_MSG,
+      encodeMeshPublicPayload("still here, earlier"),
+    ),
+  );
+  await s.world.advance(3_000);
+
+  s.check(
+    "bob did not drop alice on a recorded goodbye",
+    bob.peers().includes(alice.peerID),
+    `bob sees [${bob.peers().join(",")}]`,
+  );
+  s.check(
+    "while the same reply of a type sync serves is backfilled",
+    bob.texts(channel).includes("still here, earlier"),
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+// A NOISE_HANDSHAKE packet as a hostile phone would write it: any claimed
+// sender, addressed to the victim.
+function forgeHandshake(opts: {
+  claimedPeerID: string;
+  toPeerID: string;
+  payload: Uint8Array;
+  timestamp: number;
+}): string {
+  return toBase64(
+    encodePacket({
+      type: PacketType.NOISE_HANDSHAKE,
+      ttl: 7,
+      flags: Flags.HAS_RECIPIENT,
+      senderID: peerIdToBytes(opts.claimedPeerID),
+      recipientID: peerIdToBytes(opts.toPeerID),
+      timestamp: opts.timestamp,
+      signature: new Uint8Array(64),
+      payload: opts.payload,
+    }),
+  );
+}
+
+function decodeWrite(dataBase64: string): Packet | null {
+  return decodePacket(base64ToBytes(dataBase64));
+}
+
+function pendingHandshakes(device: SimDevice): Map<string, unknown> {
+  return (device.mesh as unknown as { pendingHandshakes: Map<string, unknown> })
+    .pendingHandshakes;
+}
+
+test("C12 a msg1 flood under random IDs stays bounded and first contact still completes", async () => {
+  // Every msg1 costs the victim two DH operations, a stored handshake and a
+  // reply flooded at TTL 7, and the claimed sender is free to choose. 500 of
+  // them under 500 made-up IDs must not become 500 of each.
+  const s = (scenario = new Scenario({
+    id: "C12",
+    title: "handshake initiation flood",
+    seed: 72,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const carol = SimDevice.create(s.world, {
+    id: "carol",
+    platform: "android",
+    seedByte: 33,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, carol, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) && bob.peers().includes(carol.peerID),
+    20_000,
+  );
+
+  const msg2Targets = new Set<string>();
+  radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 96)
+      return;
+    msg2Targets.add(bytesToHex(p.recipientID));
+  });
+
+  const floodStart = s.world.now;
+  for (let i = 0; i < 500; i++) {
+    const id = bytesToHex(sha256(Uint8Array.of(i >> 8, i & 0xff))).slice(0, 16);
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      forgeHandshake({
+        claimedPeerID: id,
+        toPeerID: bob.peerID,
+        payload: NoiseHandshake.createInitiator(
+          ed25519.utils.randomSecretKey(),
+        ).writeMsg1(),
+        timestamp: s.world.wallClock(),
+      }),
+    );
+    if (i % 50 === 49) await s.world.advance(1000);
+  }
+
+  s.check(
+    "bob answered at most 30 forged openings in the minute",
+    msg2Targets.size <= 30,
+    `msg2 sent to ${String(msg2Targets.size)} peers`,
+  );
+  s.check(
+    "and holds no more handshakes than he answered",
+    pendingHandshakes(bob).size <= 30,
+    `pending = ${String(pendingHandshakes(bob).size)}`,
+  );
+
+  // Our own initiations never meet the msg1 budget, so bob reaching out to
+  // someone new works in the middle of the flood.
+  bob.send(`dm:${alice.peerID}`, "bob, during the flood");
+  const outbound = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("bob, during the flood"),
+    10_000,
+  );
+  s.check("bob's own first-contact DM completes during the flood", outbound);
+
+  // An inbound first contact waits out the minute, then completes from the
+  // outbox without anyone doing anything.
+  carol.send(`dm:${bob.peerID}`, "carol, first contact");
+  const inbound = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${carol.peerID}`).includes("carol, first contact"),
+    180_000,
+  );
+  s.check(
+    "an inbound first-contact DM still lands once the window slides",
+    inbound,
+    `landed after ${String(s.world.now - floodStart)} ms`,
+  );
+  s.check(
+    "expired handshakes do not accumulate",
+    pendingHandshakes(bob).size <= 31,
+    `pending = ${String(pendingHandshakes(bob).size)}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C13 a forged msg2 does not cost the genuine handshake", async () => {
+  // Bob's msg1 floods, so anyone can answer it with a valid msg2 under their
+  // own static key and the peer ID bob addressed. It fails the identity
+  // binding only once it has been read into a handshake. Read into the real
+  // one, it would spend it and leave the genuine msg2 nothing to complete.
+  const s = (scenario = new Scenario({
+    id: "C13",
+    title: "forged handshake reply",
+    seed: 73,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  let forged = 0;
+  radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 32)
+      return;
+    // Mallory is one hop from bob, as alice is, so her answer lands first.
+    const responder = NoiseHandshake.createResponder(
+      mallory.identity.noiseStaticPrivKey,
+    );
+    responder.readMsg1(p.payload);
+    const msg2 = responder.writeMsg2();
+    const garbled = msg2.slice();
+    garbled[60] ^= 0xff;
+    forged++;
+    setTimeout(() => {
+      for (const payload of [msg2, garbled]) {
+        radio.injectTo(
+          bob.id,
+          mallory.id,
+          forgeHandshake({
+            claimedPeerID: alice.peerID,
+            toPeerID: bob.peerID,
+            payload,
+            timestamp: s.world.wallClock(),
+          }),
+        );
+      }
+    }, 1);
+  });
+
+  const sentAt = s.world.now;
+  bob.send(`dm:${alice.peerID}`, "first words");
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("first words"),
+    10_000,
+  );
+  s.check("mallory answered bob's msg1 first", forged > 0);
+  s.check(
+    "the genuine msg2 still completes, well inside any outbox retry",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C13b a forged msg1 under a peer's ID displaces its live attempt, and the DM recovers", async () => {
+  // The case a clone cannot cover. A msg1 is how a peer that restarted opens a
+  // new handshake, so a fresh one replaces a responder attempt in flight, and
+  // its claimed sender is unauthenticated. bitchat-ios yields the same way. The
+  // accepted cost is one handshake round: the message is delayed, not lost.
+  const s = (scenario = new Scenario({
+    id: "C13b",
+    title: "handshake displaced by a forged opening",
+    seed: 74,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  let displaced = false;
+  const stop = radio.tapWrites((fromID, _link, data) => {
+    if (fromID !== bob.id || displaced) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 96)
+      return;
+    // Bob has just answered alice's msg1. Before her msg3 lands, a fresh
+    // opening in her name replaces the attempt it belongs to.
+    displaced = true;
+    setTimeout(() => {
+      radio.injectTo(
+        bob.id,
+        mallory.id,
+        forgeHandshake({
+          claimedPeerID: alice.peerID,
+          toPeerID: bob.peerID,
+          payload: NoiseHandshake.createInitiator(
+            mallory.identity.noiseStaticPrivKey,
+          ).writeMsg1(),
+          timestamp: s.world.wallClock(),
+        }),
+      );
+    }, 1);
+  });
+
+  alice.send(`dm:${bob.peerID}`, "delayed, not lost");
+  await s.world.advance(3_000);
+  stop();
+  s.check("the forged opening displaced bob's responder attempt", displaced);
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("delayed, not lost"),
+    180_000,
+  );
+  s.check("the DM still arrives once a later handshake completes", landed);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "delayed, not lost")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+interface ContactLike {
+  signingPubKeyHex: string;
+  nickname: string;
+  nostrPubkeyHex?: string;
+}
+
+function contactOf(device: SimDevice, peerID: string): ContactLike | undefined {
+  return (
+    device.store("contactsStore").getState().contacts as Record<
+      string,
+      ContactLike
+    >
+  )[peerID];
+}
+
+// The prekeys bob would seal to for this Noise key, as hex.
+function prekeysHeldFor(device: SimDevice, noiseKey: Uint8Array): string[] {
+  const peers = (
+    device.mesh as unknown as {
+      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
+    }
+  ).peerPrekeys.peers;
+  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
+}
+
+// A packet claiming `claimedPeerID`, signed with whatever key the caller holds.
+function forgeSigned(opts: {
+  type: PacketType;
+  claimedPeerID: string;
+  recipientPeerID?: string;
+  payload: Uint8Array;
+  timestamp: number;
+  signWith: Uint8Array;
+}): string {
+  const packet: Packet = {
+    type: opts.type,
+    ttl: 7,
+    flags:
+      Flags.SIGNED |
+      (opts.recipientPeerID !== undefined ? Flags.HAS_RECIPIENT : 0),
+    senderID: peerIdToBytes(opts.claimedPeerID),
+    recipientID:
+      opts.recipientPeerID !== undefined
+        ? peerIdToBytes(opts.recipientPeerID)
+        : new Uint8Array(8),
+    timestamp: opts.timestamp,
+    signature: new Uint8Array(64),
+    payload: opts.payload,
+  };
+  packet.signature = signPacket(packet, opts.signWith);
+  return toBase64(encodePacket(packet));
+}
+
+test("C14 after a restart, whoever announces first as a saved contact speaks for nobody", async () => {
+  // The registry of who holds which key starts empty after a restart. Mallory,
+  // in range, announces alice's peer ID and public Noise key with her own
+  // signing key, which is self-consistent and so passes every check an
+  // announce can be put to. Bob holds alice's key from an earlier session, on
+  // her saved contact, and that is the key she must be held to: not the one
+  // whoever announced first.
+  const s = (scenario = new Scenario({
+    id: "C14",
+    title: "restart, then an impostor announces a saved contact",
+    seed: 76,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([["alice", "bob"]]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  const channel = "#bluetooth";
+  for (const d of cast) d.joinChannel(channel);
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  // Messaging alice saves her, and the session proves her keys onto the record.
+  bob.send(`dm:${alice.peerID}`, "hi alice");
+  const aliceKey = bytesToHex(alice.identity.signingPubKey);
+  const saved = await waitFor(
+    s.world,
+    () => contactOf(bob, alice.peerID)?.signingPubKeyHex === aliceKey,
+    20_000,
+  );
+  s.check("bob saved alice with her proven signing key", saved);
+  s.world.say("TOPOLOGY_CHANGE", "alice leaves; bob restarts beside mallory");
+  radio.setTopology([["bob", "mallory"]]);
+  bob.relaunch();
+  bob.joinChannel(channel);
+  // As for a bitchat contact, which never announces a Nostr key. After the
+  // restart, or the registry would put alice's own back at once.
+  bob.store("contactsStore").setState({
+    contacts: {
+      ...(bob.store("contactsStore").getState().contacts as Record<
+        string,
+        ContactLike
+      >),
+      [alice.peerID]: {
+        ...contactOf(bob, alice.peerID)!,
+        nostrPubkeyHex: undefined,
+      },
+    },
+  });
+
+  await waitFor(s.world, () => radio.isLinked("bob", "mallory"), 30_000);
+  await s.world.advance(2_000);
+
+  const inject = (frame: string): void => {
+    radio.injectTo(bob.id, mallory.id, frame);
+  };
+  inject(
+    forgeAnnounce({
+      claimedPeerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+      nostrPubKey: hexToBytes(mallory.nostrPubkey),
+    }),
+  );
+  await s.world.advance(1_000);
+  const now = (): number => s.world.wallClock();
+  inject(
+    forgePublicMessage({
+      claimedPeerID: alice.peerID,
+      channel,
+      text: "alice: meet me by the gate",
+      timestamp: now(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  inject(
+    forgeSigned({
+      type: PacketType.FILE_TRANSFER,
+      claimedPeerID: alice.peerID,
+      payload: encodeFilePacket({
+        fileName: "gate.jpg",
+        mimeType: "image/jpeg",
+        content: media.jpeg(300),
+        channel,
+      })!,
+      timestamp: now(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  const bundle = signPrekeyBundle(
+    {
+      noiseStaticPublicKey: alice.identity.noiseStaticPubKey,
+      prekeys: [{ id: 1, publicKey: new Uint8Array(32).fill(9) }],
+      generatedAt: now(),
+    },
+    mallory.identity.signingPrivKey,
+  );
+  inject(
+    forgeSigned({
+      type: PacketType.PREKEY_BUNDLE,
+      claimedPeerID: alice.peerID,
+      payload: encodePrekeyBundle(bundle)!,
+      timestamp: now(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(3_000);
+
+  s.check(
+    "mallory's post under alice's name is not shown",
+    !bob.texts(channel).includes("alice: meet me by the gate"),
+  );
+  s.check(
+    "nor her photo under alice's name",
+    bob.attachments(channel).length === 0,
+  );
+  s.check(
+    "nor her prekey bundle kept for alice's key",
+    !prekeysHeldFor(bob, alice.identity.noiseStaticPubKey).includes(
+      "09".repeat(32),
+    ),
+  );
+  s.check(
+    "nor her Nostr key planted on alice's contact",
+    contactOf(bob, alice.peerID)?.nostrPubkeyHex === undefined,
+  );
+
+  // One hop away, relayed by mallory's phone, so no session forms on a link
+  // and nothing but the stored key tells her apart from the impostor.
+  s.world.say("TOPOLOGY_CHANGE", "alice returns, one hop beyond mallory");
+  radio.setTopology([
+    ["bob", "mallory"],
+    ["mallory", "alice"],
+  ]);
+  const back = await waitFor(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    30_000,
+  );
+  s.check("alice's own announce is accepted", back);
+  alice.send(channel, "alice, really");
+  const verifies = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes("alice, really"),
+    15_000,
+  );
+  s.check("and her traffic verifies", verifies);
+  s.check(
+    "while bob holds no session with her to have proven it",
+    (
+      bob.mesh as unknown as {
+        registry: { sessionFor: (p: string) => unknown };
+      }
+    ).registry.sessionFor(alice.peerID) === undefined,
+  );
+
+  inject(
+    forgeSigned({
+      type: PacketType.LEAVE,
+      claimedPeerID: alice.peerID,
+      payload: new Uint8Array(0),
+      timestamp: now(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(3_000);
+  s.check(
+    "a LEAVE mallory signs in her name does not remove her",
+    bob.peers().includes(alice.peerID),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C14b a contact key from a forged link card gives way to a session proof", async () => {
+  // A link card proves nothing about who made it. This one carries alice's
+  // real peer ID and Noise key with mallory's signing key. Bob's announces
+  // check refuses the real alice against it, and only a session can say which
+  // key is hers: she completes one because she holds the Noise private key,
+  // and her proof corrects the stored contact.
+  const s = (scenario = new Scenario({
+    id: "C14b",
+    title: "a forged link card against the real peer",
+    seed: 78,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  const channel = "#bluetooth";
+  for (const d of cast) d.joinChannel(channel);
+
+  // The card's Nostr key and name are mallory's choice too. Nothing needs to
+  // listen at this key for the test: it only has to be somewhere bob's DMs to
+  // alice must not go.
+  const plantedNpub = "5e".repeat(32);
+  const forged = {
+    peerID: alice.peerID,
+    noisePubKey: alice.identity.noiseStaticPubKey,
+    signingPubKey: mallory.identity.signingPubKey,
+    nickname: "not alice",
+    nostrPubKey: hexToBytes(plantedNpub),
+  };
+  const accepted = (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => string;
+    }
+  ).addVerifiedContact(forged, { inPerson: false });
+  (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: alice.peerID,
+    noisePubKeyHex: bytesToHex(alice.identity.noiseStaticPubKey),
+    signingPubKeyHex: bytesToHex(mallory.identity.signingPubKey),
+    nickname: "not alice",
+    addedAtMs: s.world.wallClock(),
+    source: "link",
+    nostrPubkeyHex: plantedNpub,
+  });
+  s.check("bob took the link card", accepted === "added");
+
+  radio.setTopology([["alice", "bob"]]);
+  const aliceKey = bytesToHex(alice.identity.signingPubKey);
+  const corrected = await waitFor(
+    s.world,
+    () => contactOf(bob, alice.peerID)?.signingPubKeyHex === aliceKey,
+    60_000,
+  );
+  s.check("alice's session proof corrected the stored key", corrected);
+  const bobMaps = (
+    bob.mesh as unknown as { nostrPubkeyToPeerID: Map<string, string> }
+  ).nostrPubkeyToPeerID;
+  s.check(
+    "and dropped the Nostr key and name that came with the forged one",
+    contactOf(bob, alice.peerID)?.nostrPubkeyHex !== plantedNpub &&
+      contactOf(bob, alice.peerID)?.nickname !== "not alice" &&
+      bobMaps.get(plantedNpub) === undefined,
+    `npub=${String(contactOf(bob, alice.peerID)?.nostrPubkeyHex)} name=${String(contactOf(bob, alice.peerID)?.nickname)} mapped=${String(bobMaps.get(plantedNpub))}`,
+  );
+  s.check(
+    "so her next announce stores her own",
+    await waitFor(
+      s.world,
+      () => contactOf(bob, alice.peerID)?.nostrPubkeyHex === alice.nostrPubkey,
+      60_000,
+    ),
+  );
+  alice.send(channel, "the real alice");
+  const verifies = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes("the real alice"),
+    30_000,
+  );
+  s.check("and her traffic verifies from then on", verifies);
+  s.check(
+    "and bob sees her nearby",
+    await waitFor(s.world, () => bob.peers().includes(alice.peerID), 30_000),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C14c a session proof does not move a key a human verified", async () => {
+  // C14b's other half. Bob scanned a card in person, so its key is his to
+  // replace and nobody else's, even when a session proves possession of the
+  // Noise key it names. Here the scanned card was the forged one; the real
+  // alice opens a session and proves hers, and bob keeps what he verified.
+  const s = (scenario = new Scenario({
+    id: "C14c",
+    title: "a session proof against a verified contact",
+    seed: 79,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  radio.setTopology([]);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+
+  const scanned = bytesToHex(mallory.identity.signingPubKey);
+  (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => string;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+    },
+    { inPerson: true },
+  );
+  (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: alice.peerID,
+    noisePubKeyHex: bytesToHex(alice.identity.noiseStaticPubKey),
+    signingPubKeyHex: scanned,
+    nickname: "alice",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+  });
+
+  radio.setTopology([["alice", "bob"]]);
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID), 30_000);
+  // Alice opens the session: bob never does toward a verified contact whose
+  // announce contradicts it.
+  alice.sendDm(bob.peerID, "it is really me");
+  const registry = (
+    bob.mesh as unknown as {
+      registry: {
+        sessionFor: (p: string) => unknown;
+        provenSigningKey: (p: string) => Uint8Array | undefined;
+      };
+    }
+  ).registry;
+  s.check(
+    "a session completed, so her proof reached bob",
+    await waitFor(
+      s.world,
+      () => registry.sessionFor(alice.peerID) !== undefined,
+      60_000,
+    ),
+  );
+  await s.world.advance(5_000);
+  s.check(
+    "bob's verified key is unchanged",
+    contactOf(bob, alice.peerID)?.signingPubKeyHex === scanned,
+  );
+  s.check(
+    "and the registry records no proof for her",
+    registry.provenSigningKey(alice.peerID) === undefined,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C11 one forged ratchet packet does not break a conversation", async () => {
+  // A DR_ENCRYPTED header is cleartext, and a packet only has to be addressed
+  // to bob and claim alice. Decrypted before it is authenticated, one such
+  // packet would step bob's ratchet onto a chain alice never had, and every DM
+  // between them would fail from then on without a word.
+  const s = (scenario = new Scenario({
+    id: "C11",
+    title: "forged Double Ratchet packet",
+    seed: 71,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  alice.send(`dm:${bob.peerID}`, "one");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("one"),
+    20_000,
+  );
+  bob.send(`dm:${alice.peerID}`, "two");
+  await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("two"),
+    20_000,
+  );
+
+  // A fresh ratchet key in the header, as a forger would pick, once unsigned
+  // and once signed with mallory's own key.
+  const forged = new Uint8Array(40 + 48).fill(0x5a);
+  forged.set(ed25519.utils.randomSecretKey(), 0);
+  forged.fill(0, 32, 40);
+  const unsigned: Packet = {
+    type: PacketType.DR_ENCRYPTED,
+    ttl: 7,
+    flags: Flags.HAS_RECIPIENT,
+    senderID: peerIdToBytes(alice.peerID),
+    recipientID: peerIdToBytes(bob.peerID),
+    timestamp: s.world.wallClock(),
+    signature: new Uint8Array(64),
+    payload: forged,
+  };
+  radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(unsigned)));
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    forgeSigned({
+      type: PacketType.DR_ENCRYPTED,
+      claimedPeerID: alice.peerID,
+      recipientPeerID: bob.peerID,
+      payload: forged,
+      timestamp: s.world.wallClock() + 1,
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(1_000);
+
+  const sentAt = s.world.now;
+  alice.send(`dm:${bob.peerID}`, "after the forgery");
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the forgery"),
+    10_000,
+  );
+  s.check(
+    "the next DM still arrives, without waiting for a retry",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  const delivered = await waitFor(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .find((m) => m.text === "after the forgery")?.status === "delivered",
+    10_000,
+  );
+  s.check("and alice sees it delivered", delivered);
+  s.check(
+    "exactly once",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "after the forgery")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+test("C11b a genuine ratchet packet replayed past dedup does not evict the session", async () => {
+  // The signature is alice's own, so it passes, and the message key is spent,
+  // so decryption fails. Dedup holds 1000 packet IDs and anyone in range can
+  // push that many, and the freshness window is two minutes. A session torn
+  // down on that failure is one any listener can evict at will.
+  const s = (scenario = new Scenario({
+    id: "C11b",
+    title: "replayed Double Ratchet packet",
+    seed: 72,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  const captured: string[] = [];
+  const stop = radio.tapWrites((fromID, _link, data) => {
+    const p = decodeWrite(data);
+    if (
+      fromID === alice.id &&
+      p?.type === PacketType.DR_ENCRYPTED &&
+      bytesToHex(p.recipientID) === bob.peerID
+    ) {
+      captured.push(data);
+    }
+  });
+  alice.send(`dm:${bob.peerID}`, "one");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("one"),
+    20_000,
+  );
+  stop();
+  s.check("a ratchet packet was captured", captured.length > 0);
+
+  const sessionFor = (): unknown =>
+    (
+      bob.mesh as unknown as {
+        registry: { sessionFor: (p: string) => unknown };
+      }
+    ).registry.sessionFor(alice.peerID);
+  const before = sessionFor();
+
+  // 1000 packets bob has never seen push the capture out of his dedup. ttl 0
+  // and an unknown recipient, so none is relayed or shown.
+  for (let i = 0; i < 1000; i++) {
+    const filler: Packet = {
+      type: PacketType.NOISE_ENCRYPTED,
+      ttl: 0,
+      flags: Flags.HAS_RECIPIENT,
+      senderID: peerIdToBytes(mallory.peerID),
+      recipientID: peerIdToBytes("00000000000000aa"),
+      timestamp: s.world.wallClock() + i,
+      signature: new Uint8Array(64),
+      payload: new Uint8Array(16),
+    };
+    radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(filler)));
+  }
+  for (const frame of captured) radio.injectTo(bob.id, mallory.id, frame);
+  await s.world.advance(1_000);
+
+  s.check("bob still holds the same session", sessionFor() === before);
+  const sentAt = s.world.now;
+  alice.send(`dm:${bob.peerID}`, "after the replay");
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the replay"),
+    10_000,
+  );
+  s.check(
+    "and the next DM still arrives promptly",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  s.check(
+    "the replay added nothing to the thread",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "one").length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
+// Three phones in radio range of each other, the first two about to be
+// attacked by the third, with every link up and every announce heard.
+async function threeInRange(
+  seed: number,
+  id: string,
+  title: string,
+): Promise<{
+  s: Scenario;
+  radio: RadioFabric;
+  alice: SimDevice;
+  bob: SimDevice;
+  mallory: SimDevice;
+}> {
+  const s = (scenario = new Scenario({ id, title, seed }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  for (const d of [alice, bob, mallory]) radio.add(d);
+  s.track(alice, bob, mallory);
+  for (const d of [alice, bob, mallory]) d.launch();
+  await waitFor(
+    s.world,
+    () =>
+      bob.peers().includes(alice.peerID) &&
+      bob.peers().includes(mallory.peerID),
+    20_000,
+  );
+  return { s, radio, alice, bob, mallory };
+}
+
+test("F10 a private-room member cannot write in another member's name", async () => {
+  // Holding the room key makes mallory a member, able to seal anything. On
+  // Bluetooth the outer signature says who sent it, so a sealed author that
+  // differs is a claim to be someone else. And re-using alice's message ID
+  // under her own name must not swallow alice's message.
+  const { s, radio, alice, bob, mallory } = await threeInRange(
+    610,
+    "F10",
+    "forged author in a private room",
+  );
+  const channel = "#crew";
+  const key = new Uint8Array(32).fill(7);
+  for (const d of [alice, bob, mallory]) d.joinPrivateChannel(channel, key);
+  const keyB64 = (
+    bob.store("chatStore").getState().channelKeys as Record<string, string>
+  )[channel];
+
+  const sealed = (senderID: string, msgId: string, text: string): string =>
+    forgeSigned({
+      type: PacketType.CHANNEL_ENC,
+      claimedPeerID: mallory.peerID,
+      payload: sealChannelMessage(keyB64, {
+        msgId,
+        senderID,
+        senderNickname: "someone",
+        text,
+      }),
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    });
+
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    sealed(alice.peerID, "f10", "alice: pay me"),
+  );
+
+  // When alice speaks, mallory reads her message ID off the air and gets a
+  // copy of her own under it to bob first.
+  let copied = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== alice.id || copied) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.CHANNEL_ENC) return;
+    const opened = openChannelMessage(keyB64, p.payload);
+    if (opened === null) return;
+    copied = true;
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      sealed(mallory.peerID, opened.msgId, "mallory's version"),
+    );
+  });
+  alice.send(channel, "alice's own words");
+  await s.world.advance(3_000);
+  stop();
+
+  const rows = bob.messages(channel);
+  s.check(
+    "a message sealed in alice's name but signed by mallory is dropped",
+    !rows.some((m) => m.text === "alice: pay me"),
+  );
+  s.check("mallory copied alice's message ID", copied);
+  s.check(
+    "alice's message still shows, as hers",
+    rows.some(
+      (m) => m.text === "alice's own words" && m.senderID === alice.peerID,
+    ),
+    `rows=${JSON.stringify(rows.map((m) => [m.senderID.slice(0, 4), m.text]))}`,
+  );
+  s.check(
+    "and mallory's copy stands apart, as hers",
+    rows.some(
+      (m) => m.text === "mallory's version" && m.senderID === mallory.peerID,
+    ),
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
+});
+
+test("C16 a copied message ID cannot displace a room message", async () => {
+  // A room message and its internet copy share a message ID so they collapse
+  // into one bubble. Mallory reads alice's off the air and gets her own text
+  // to bob first under the same ID. Bob must see both, each as its author's.
+  const { s, radio, alice, bob, mallory } = await threeInRange(
+    611,
+    "C16",
+    "copied room message ID",
+  );
+  const channel = "#den";
+  for (const d of [alice, bob, mallory]) d.joinChannel(channel);
+
+  let copied = false;
+  const stop = radio.tapWrites((who, _link, data) => {
+    if (who !== alice.id || copied) return;
+    const p = decodeWrite(data);
+    if (p?.type !== PacketType.CHANNEL_MSG_AIRHOP) return;
+    const decoded = decodeAirhopChannelPayload(p.payload);
+    if (decoded === null) return;
+    copied = true;
+    radio.injectTo(
+      bob.id,
+      mallory.id,
+      forgeSigned({
+        type: PacketType.CHANNEL_MSG_AIRHOP,
+        claimedPeerID: mallory.peerID,
+        payload: encodeAirhopChannelPayload(
+          channel,
+          "the gate is closed",
+          decoded.msgId,
+        ),
+        timestamp: s.world.wallClock(),
+        signWith: mallory.identity.signingPrivKey,
+      }),
+    );
+  });
+  alice.send(channel, "the gate is open");
+  await s.world.advance(3_000);
+  stop();
+
+  const rows = bob.messages(channel);
+  s.check("mallory copied alice's message ID", copied);
+  s.check(
+    "alice's message still shows, as hers",
+    rows.some(
+      (m) => m.text === "the gate is open" && m.senderID === alice.peerID,
+    ),
+    `rows=${JSON.stringify(rows.map((m) => [m.senderID.slice(0, 4), m.text]))}`,
+  );
+  s.check(
+    "and mallory's stands apart, as hers",
+    rows.some(
+      (m) => m.text === "the gate is closed" && m.senderID === mallory.peerID,
+    ),
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
+});
+
+test("C15 a stranger in a location DM cannot hand over a friend's card", async () => {
+  // Every field of alice's card is public. A stranger, known to bob only by a
+  // per-cell pseudonym, forwards it; bob has already shared his own, so an
+  // accepted card would fold the stranger's thread into alice's and every
+  // later word from the pseudonym would read as hers. The card must carry
+  // alice's own proof over this very conversation.
+  const { s, alice, bob, mallory } = await threeInRange(
+    612,
+    "C15",
+    "forwarded contact card in a location DM",
+  );
+  const aliceCard = (
+    alice.mesh as unknown as { getContactCard: () => ContactCard }
+  ).getContactCard();
+  (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+    }
+  ).addVerifiedContact(aliceCard, { inPerson: true });
+  (bob.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: alice.peerID,
+    noisePubKeyHex: bytesToHex(aliceCard.noisePubKey),
+    signingPubKeyHex: bytesToHex(aliceCard.signingPubKey),
+    nickname: "alice",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+  });
+
+  const bobCell = "b0".repeat(32);
+  const strangerCell = "5a".repeat(32);
+  const aliceCell = "a1".repeat(32);
+  const chat = bob.store("chatStore");
+  const noteExchange = chat.getState().noteGeoCardExchange as (
+    pubkey: string,
+    half: { sentMine: boolean },
+  ) => void;
+  noteExchange(strangerCell, { sentMine: true });
+  noteExchange(aliceCell, { sentMine: true });
+  const accept = (body: Uint8Array, from: string): string | null =>
+    (
+      bob.mesh as unknown as {
+        acceptGeoContactCard: (
+          body: Uint8Array,
+          sender: string,
+          recipient: string,
+        ) => string | null;
+      }
+    ).acceptGeoContactCard(body, from, bobCell);
+  const redirects = (): Record<string, string> =>
+    chat.getState().channelRedirects as Record<string, string>;
+
+  const plain = encodeContactCard(aliceCard);
+  const substituted = encodeContactCard({
+    ...aliceCard,
+    signingPubKey: mallory.identity.signingPubKey,
+  });
+  const attempts = [
+    // Alice's card as she publishes it, with no proof at all.
+    plain,
+    // Alice's card with a proof mallory can make: by her own key.
+    sealGeoCard(plain, strangerCell, bobCell, mallory.identity.signingPrivKey),
+    // Mallory's key written into alice's card, proven by that key.
+    sealGeoCard(
+      substituted,
+      strangerCell,
+      bobCell,
+      mallory.identity.signingPrivKey,
+    ),
+  ];
+  const accepted = attempts.map((body) => accept(body, strangerCell));
+  s.check(
+    "every forwarded card is refused",
+    accepted.every((r) => r === null),
+    `accepted=${JSON.stringify(accepted)}`,
+  );
+  s.check(
+    "the stranger's thread was not folded into alice's",
+    redirects()[`dm:nostr_${strangerCell}`] === undefined,
+  );
+  s.check(
+    "alice's saved key is untouched",
+    contactOf(bob, alice.peerID)?.signingPubKeyHex ===
+      bytesToHex(aliceCard.signingPubKey),
+  );
+  s.check(
+    "and nothing was written in the stranger's thread",
+    bob.messages(`dm:nostr_${strangerCell}`).length === 0,
+  );
+
+  // The control: alice's own card, proven by her from her own pseudonym.
+  const genuine = accept(
+    sealGeoCard(plain, aliceCell, bobCell, alice.identity.signingPrivKey),
+    aliceCell,
+  );
+  s.check(
+    "alice's own proven card completes the exchange",
+    genuine === alice.peerID &&
+      redirects()[`dm:nostr_${aliceCell}`] === `dm:${alice.peerID}`,
+  );
+  s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
 });

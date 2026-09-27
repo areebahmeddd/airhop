@@ -107,6 +107,22 @@ describe("parseBridgeEvent", () => {
     expect(parsed!.meshSenderID).toBe("a1b2c3d4e5f60718");
   });
 
+  // The `n` tag is whatever the signer wrote, and it is shown as a name.
+  test("normalises the nickname tag where it enters", () => {
+    const ev = createBridgeMeshEvent({
+      content: "hi",
+      cell: "u4pruy",
+      privKey: CELL_KEY,
+      meshSenderID: "a1b2c3d4e5f60718",
+      meshTimestampMs: 1700000000000,
+    });
+    const tagged = {
+      ...ev,
+      tags: [...ev.tags, ["n", "M\u202Eo\u200Bm\n(verified)"]],
+    };
+    expect(parseBridgeEvent(tagged)?.nickname).toBe("Mom (verified)");
+  });
+
   test("round-trips a presence event", () => {
     const ev = createBridgePresenceEvent("u4pruy", CELL_KEY);
     const parsed = parseBridgeEvent(ev);
@@ -131,7 +147,7 @@ describe("parseBridgeEvent", () => {
   // public, so anyone could compute a victim's stable ID, publish their own
   // rendezvous event claiming it, and land on that exact row on every far
   // island with different words under the original's identity. Claiming a row
-  // now requires the id to hash the claimant's OWN content.
+  // requires the id to hash the claimant's OWN content.
   test("ignores a stable ID that does not match the event's own content", () => {
     const genuine = createBridgeMeshEvent({
       content: "meet at the north gate",

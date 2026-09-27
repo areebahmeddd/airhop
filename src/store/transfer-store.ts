@@ -73,7 +73,8 @@ interface TransferState {
   // catch the absence of events (a peer that stopped sending). Idempotent.
   reconcile: () => void;
   activeForChannel: (channel: string) => Transfer[];
-  activeCount: () => number;
+  // In flight (active or stalled), in one direction or both.
+  activeCount: (direction?: TransferDirection) => number;
   clearAll: () => void;
 }
 
@@ -252,9 +253,11 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
       .sort((a, b) => a.startedAtMs - b.startedAtMs);
   },
 
-  activeCount() {
+  activeCount(direction) {
     return Object.values(get().transfers).filter(
-      (t) => t.status === "active" || t.status === "stalled",
+      (t) =>
+        (t.status === "active" || t.status === "stalled") &&
+        (direction === undefined || t.direction === direction),
     ).length;
   },
 

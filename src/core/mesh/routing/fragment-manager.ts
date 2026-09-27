@@ -3,7 +3,7 @@
 //
 // Wire-compatible with bitchat-ios BLEFragmentHandler / BLEFragmentAssemblyBuffer.
 //
-// Fragment payload layout (inside a FILE_CHUNK / 0x05 packet):
+// Fragment payload layout (inside a FRAGMENT / 0x20 packet):
 //   [8 bytes: fragment stream ID (u64 BE, random per original packet)]
 //   [2 bytes: fragment index (u16 BE, 0-based)]
 //   [2 bytes: total fragment count (u16 BE)]
@@ -28,13 +28,13 @@ import { maxPayloadBytes } from "../wire/payload-limits";
 // frame we hand the radio.
 //
 // This has to be a FRAME budget, not a payload budget. Spent as the latter, 469
-// payload bytes plus a 16-byte header, an 8-byte senderID and a 64-byte signature
-// encode to 557 bytes, 45 over the limit. Android writes
-// without response, so the stack truncated to MTU-3 and the far side's decoder
-// failed reading a signature whose last bytes never arrived; iOS falls back to a
-// long write, which cannot exceed 512 either. Every fragment of every attachment
-// was discarded before any handler saw it, with no error on either side. Live
-// voice was unaffected only because a burst is 210 bytes and never fragments.
+// payload bytes plus a 16-byte header, an 8-byte senderID and a 64-byte
+// signature encode to 557 bytes, 45 over the limit. Android writes without
+// response, so the stack truncates to MTU-3 and the far side's decoder fails
+// reading a signature whose last bytes never arrive; iOS falls back to a long
+// write, which cannot exceed 512 either. Every fragment of every attachment
+// would be discarded before any handler saw it, with no error on either side.
+// Live voice would not show it, since a burst is 210 bytes and never fragments.
 export const MAX_BLE_FRAME = 512;
 
 // Bytes consumed by the fragment header inside the payload.
@@ -60,16 +60,24 @@ export const FRAG_DATA_SIZE = MAX_BLE_FRAME - FRAME_OVERHEAD; // 467 bytes
 // Max simultaneous reassembly slots. Matches bitchat.
 const MAX_CONCURRENT = 128;
 
+// The least data a fragment other than the last may carry. No sender cuts one
+// smaller: bitchat-ios never goes under its BLEOutboundFragmentPlanner
+// minimumChunkSize, 64, and Airhop's are FRAG_DATA_SIZE. Refusing smaller
+// bounds a slot's entries by its byte budget over 64, where empty or tiny
+// fragments would pack up to 10,000 map entries into almost no bytes, across
+// every slot.
+const MIN_NONFINAL_FRAGMENT_BYTES = 64;
+
 // How long a partial assembly may sit SILENT before it is dropped. Measured
 // from the last fragment that arrived, not from the first.
 //
 // That distinction is the whole point. A 512 KiB photo is about 1,120
 // fragments, and the sender paces them 20ms apart, so it cannot arrive in under
-// ~22 seconds; a 1 MiB file takes twice that. Timing out on total duration
-// deleted the half-built file mid-transfer, and the fragments still coming in
-// then started a fresh assembly that could never reach its total, so the file
-// was lost silently and permanently. Idle time is the thing that actually means
-// the sender is gone.
+// ~22 seconds; a 1 MiB file takes twice that. A timeout on total duration
+// would delete the half-built file mid-transfer, and the fragments still coming
+// in would start a fresh assembly that could never reach its total, losing the
+// file silently. Idle time is the thing that actually means the sender is
+// gone.
 const TIMEOUT_MS = 30_000;
 
 // Everything a frame carries besides its payload: the v2 header, sender and
@@ -215,6 +223,11 @@ export function decodeFragmentPayload(
   const total = view.getUint16(10, false);
 
   if (total === 0 || total > 10_000 || index >= total) return null;
+  const dataLength = payload.length - FRAG_HEADER_LEN;
+  if (dataLength === 0) return null;
+  if (index < total - 1 && dataLength < MIN_NONFINAL_FRAGMENT_BYTES) {
+    return null;
+  }
 
   return {
     streamU64,

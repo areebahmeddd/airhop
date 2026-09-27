@@ -7,9 +7,9 @@
 // Tapping a peer opens their detail sheet with no separate "add contact" step,
 // since a peer visible here is already reachable.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT, useTPlural } from "@i18n";
 import { arrowForward } from "@i18n/layout";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService, type MeshPingResult } from "@services/mesh-service";
 import { describePayResult, payPerson } from "@services/payment-router";
 import { showAlert } from "@store/alert-store";
@@ -86,12 +86,10 @@ export default function PeerList({
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
-  // Selected, not whole-store. Subscribing to the stores wholesale meant this
-  // screen re-rendered on every change either one made - and `addChannel` from
-  // the chat store meant EVERY INBOUND MESSAGE re-rendered the radar, which has
-  // nothing to do with peers. In a crowded room, with announces and per-link
-  // RSSI polls arriving continuously, that is the one place in the app with real
-  // render-thrash exposure.
+  // Selected, not whole-store: a wholesale chat-store subscription re-renders
+  // the radar on every inbound message. In a crowded room, with announces and
+  // per-link RSSI polls arriving continuously, this is the one place in the app
+  // with real render-thrash exposure.
   const peers = usePeerStore((s) => s.peers);
   const evictStale = usePeerStore((s) => s.evictStale);
   const addChannel = useChatStore((s) => s.addChannel);
@@ -114,7 +112,7 @@ export default function PeerList({
   const [sendSatsAmount, setSendSatsAmount] = useState("");
   const [showSendSats, setShowSendSats] = useState(false);
   // Set while a send is in flight. Quoting involves an await, so without this a
-  // double tap starts two sends; the second now loses the reservation race and
+  // double tap starts two sends, and the second loses the reservation race and
   // reports a confusing "those coins were just used" instead of doing nothing.
   const [sendingSats, setSendingSats] = useState(false);
   const { copied: copiedPeerID, copy } = useCopy();
@@ -254,13 +252,10 @@ export default function PeerList({
 
   // The typed amount as a number, or null when it is not a spendable one.
   //
-  // Parsed here rather than inside handleSendSats, which can only silently
-  // `return` on anything invalid while the confirm button greys out on an EMPTY
-  // field alone. A "0", a stray "-" or a pasted "12.5" then leaves an enabled
-  // arrow that does nothing when tapped: the worst class of dead control, since
-  // the user has
-  // no way to tell it from a failed send. One source of validity now drives
-  // both the button's disabled state and the send.
+  // Parsed here rather than inside handleSendSats, so one source of validity
+  // drives both the button's disabled state and the send. Otherwise a "0", a
+  // stray "-" or a pasted "12.5" leaves an enabled arrow that does nothing,
+  // which the user cannot tell from a failed send.
   const parsedSats = useMemo(() => {
     return parseWholeNumber(sendSatsAmount);
   }, [sendSatsAmount]);
@@ -296,16 +291,14 @@ export default function PeerList({
                 ]}
                 onPress={() => setSelectedPeer(item)}
                 accessibilityRole="button"
-                // Relay appended rather than substituted: whether the box on the
-                // pole is still answering matters as much as whether a person
-                // is, so it keeps the same online/offline label a peer gets.
-                accessibilityLabel={`${t("mesh.peer.view_peer_online", {
-                  name: username,
-                })}${
+                // A relay keeps the online label a person gets: whether the box
+                // on the pole is still answering matters just as much.
+                accessibilityLabel={t(
                   item.isInfrastructure === true
-                    ? `, ${t("mesh.peer.relay")}`
-                    : ""
-                }`}
+                    ? "mesh.peer.view_relay_online"
+                    : "mesh.peer.view_peer_online",
+                  { name: username },
+                )}
               >
                 <View style={styles.avatarWrapper}>
                   {item.isInfrastructure === true ? (
@@ -326,9 +319,8 @@ export default function PeerList({
                   <Text style={styles.rowUsername} numberOfLines={1}>
                     {username}
                   </Text>
-                  {/* A relay's ID is of no use to anyone: it will never be a
-                      contact and there is nothing to look it up against. The
-                      word earns the line more than sixteen hex characters. */}
+                  {/* A relay's ID is of no use: it will never be a contact and
+                      there is nothing to look it up against. */}
                   {item.isInfrastructure === true ? (
                     <Text style={styles.rowRelay}>{T("mesh.peer.relay")}</Text>
                   ) : (
@@ -358,7 +350,6 @@ export default function PeerList({
         />
       )}
 
-      {/* Peer detail sheet */}
       <BottomSheet
         visible={selectedPeer !== null}
         onClose={closeSheet}
@@ -366,7 +357,6 @@ export default function PeerList({
       >
         {shownPeer && (
           <>
-            {/* Identity */}
             <View style={styles.sheetIdentity}>
               {shownPeer.isInfrastructure === true ? (
                 <RelayGlyph size={64} />
@@ -380,9 +370,8 @@ export default function PeerList({
               <Text style={styles.sheetUsername}>
                 {resolveDisplayName(shownPeer.peerID)}
               </Text>
-              {/* Only when the title is a name the user chose. Unrenamed, the
-                  title already IS what they call themselves, and repeating it
-                  underneath would be the same word twice. */}
+              {/* Only when the title is a name the user chose; otherwise it
+                  would repeat the title. */}
               {resolveDisplayName(shownPeer.peerID) !==
                 resolvePeerOwnName(shownPeer.peerID) && (
                 <Text style={styles.sheetOwnName}>
@@ -391,9 +380,8 @@ export default function PeerList({
                   })}
                 </Text>
               )}
-              {/* Same copy affordance as the contact sheet: one tap, and the
-                  glyph turns into a check in place. Hand-selecting the ID
-                  would fight this sheet's pan-to-dismiss gesture. */}
+              {/* Tap to copy: hand-selecting the ID would fight the sheet's
+                  pan-to-dismiss gesture. */}
               <Pressable
                 style={styles.sheetPeerIDRow}
                 onPress={() => copy(shownPeer.peerID)}
@@ -428,9 +416,8 @@ export default function PeerList({
                       })}
                 </Text>
               </View>
-              {/* In range only: a peer nobody has heard from in a minute has
-                  nothing to answer a ping with, and a relay is a box on a pole
-                  rather than somebody you are trying to find. */}
+              {/* In range only: a peer unheard for a minute cannot answer a
+                  ping, and a relay is not somebody you are trying to find. */}
               {shownPeer.isInfrastructure !== true && isOnline(shownPeer) && (
                 <DistanceRow
                   isDirect={shownPeer.isDirect === true}
@@ -442,10 +429,8 @@ export default function PeerList({
               )}
             </View>
 
-            {/* A relay gets an explanation where a person gets actions. Both
-                would be dead controls: nobody reads the messages, and there is
-                no wallet to receive sats. Saying what the thing is answers the
-                question that made the user tap it. */}
+            {/* A relay gets an explanation instead of actions: nobody reads
+                its messages and it has no wallet to receive sats. */}
             {shownPeer.isInfrastructure === true ? (
               <View style={styles.relayNote}>
                 <Text style={styles.relayNoteTitle}>
@@ -524,10 +509,8 @@ export default function PeerList({
                         busy: sendingSats,
                       }}
                     >
-                      {/* Quoting the token is a network round trip, so a send can
-                        sit for a second or two. A frozen arrow gave no sign the
-                        tap had registered, which is what invites the double tap
-                        the `sendingSats` guard exists to survive. */}
+                      {/* Quoting is a network round trip; a frozen arrow would
+                          invite the double tap `sendingSats` guards against. */}
                       {sendingSats ? (
                         <ActivityIndicator
                           size="small"
@@ -565,7 +548,6 @@ export default function PeerList({
         )}
       </BottomSheet>
 
-      {/* QR scanner */}
       <AddContactScreen
         visible={showQRScan}
         onClose={() => setShowQRScan(false)}

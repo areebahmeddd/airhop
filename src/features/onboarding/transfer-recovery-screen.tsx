@@ -7,8 +7,8 @@
 //              is what the old phone tells the person to look for.
 
 import { loadIdentity } from "@core/crypto/identity";
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import Avatar from "@ui/components/avatar";
 import PrimaryButton from "@ui/components/primary-button";
 import TextButton from "@ui/components/text-button";

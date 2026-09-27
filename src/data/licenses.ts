@@ -27,17 +27,14 @@ export interface LicenseGroup {
 
 const DEPENDENCIES = pkg.dependencies as Record<string, string>;
 
-// Strips the range prefix ("^1.2.3" / "~1.2.3" -> "1.2.3") so the screen
-// shows a bare version. Falls back to "n/a" if a listed package somehow isn't
-// a dependency (e.g. renamed and not yet removed from this file).
+// The pinned version without its range prefix ("~1.2.3" -> "1.2.3"), or "n/a"
+// for an entry that is no longer a dependency.
 function versionOf(name: string): string {
   const range = DEPENDENCIES[name];
   return range ? range.replace(/^[\^~]/, "") : "n/a";
 }
 
-// Curated catalog: name, license, and repo, grouped by role and alphabetical.
-// Each group starts with a one-line summary of what its packages are for.
-// Versions are filled in from package.json by the mapping below.
+// Grouped by role, alphabetical within a group.
 const CATALOG: {
   category: string;
   description: string;
@@ -54,7 +51,11 @@ const CATALOG: {
     description:
       "What the app is built on: React and React Native, packaged by Expo.",
     packages: [
-      { name: "expo", license: "MIT", repo: "https://github.com/expo/expo" },
+      {
+        name: "expo",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo",
+      },
       {
         name: "react",
         license: "MIT",
@@ -70,97 +71,112 @@ const CATALOG: {
   {
     category: "Device features",
     description:
-      "The parts of the phone the app asks for: camera, microphone, location, files, notifications.",
+      "The parts of the phone the app uses: camera, microphone, location, files, notifications, network state and the screen lock.",
     packages: [
       {
         name: "expo-audio",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-audio",
       },
       {
         name: "expo-build-properties",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-build-properties",
       },
       {
         name: "expo-camera",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-camera",
       },
       {
         name: "expo-clipboard",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-clipboard",
       },
       {
         name: "expo-document-picker",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-document-picker",
       },
       {
         name: "expo-file-system",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-file-system",
       },
       {
         name: "expo-haptics",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-haptics",
       },
       {
         name: "expo-image-manipulator",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-image-manipulator",
       },
       {
         name: "expo-image-picker",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-image-picker",
+      },
+      {
+        name: "expo-intent-launcher",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-intent-launcher",
+      },
+      {
+        name: "expo-local-authentication",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-local-authentication",
       },
       {
         name: "expo-location",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-location",
       },
       {
         name: "expo-media-library",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-media-library",
       },
       {
         name: "expo-navigation-bar",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-navigation-bar",
+      },
+      {
+        name: "expo-network",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-network",
       },
       {
         name: "expo-notifications",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-notifications",
       },
       {
         name: "expo-screen-capture",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-screen-capture",
       },
       {
         name: "expo-sharing",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-sharing",
       },
       {
         name: "expo-status-bar",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-status-bar",
       },
       {
         name: "expo-system-ui",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-system-ui",
       },
       {
         name: "expo-video",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-video",
       },
     ],
   },
@@ -172,22 +188,27 @@ const CATALOG: {
       {
         name: "@expo-google-fonts/jetbrains-mono",
         license: "MIT AND OFL-1.1",
-        repo: "https://github.com/expo/google-fonts",
+        repo: "https://github.com/expo/google-fonts/tree/main/font-packages/jetbrains-mono",
       },
       {
-        name: "@expo/vector-icons",
+        name: "@react-native-vector-icons/feather",
         license: "MIT",
-        repo: "https://github.com/expo/vector-icons",
+        repo: "https://github.com/oblador/react-native-vector-icons/tree/master/packages/feather",
+      },
+      {
+        name: "@react-native-vector-icons/material-design-icons",
+        license: "MIT",
+        repo: "https://github.com/oblador/react-native-vector-icons/tree/master/packages/material-design-icons",
       },
       {
         name: "expo-asset",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-asset",
       },
       {
         name: "expo-font",
         license: "MIT",
-        repo: "https://github.com/expo/expo",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-font",
       },
       {
         name: "react-native-gesture-handler",

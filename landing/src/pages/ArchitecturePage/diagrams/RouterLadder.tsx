@@ -4,16 +4,16 @@ export function RouterLadder() {
   const rungs = [
     {
       n: "1",
-      label: "Direct link",
-      note: "BLE mesh, WiFi or LAN if linked",
-      cond: "a Noise session with them is already open",
-      res: "encrypted and sent straight to them",
+      label: "Mesh",
+      note: "BLE, WiFi or LAN, direct or relayed",
+      cond: "heard recently; a handshake starts if none",
+      res: "encrypted in their Noise session and sent",
     },
     {
       n: "2",
       label: "Nostr DM",
       note: "NIP-17 gift wrap",
-      cond: "their Nostr key is known and you are online",
+      cond: "no radio reaches them; Nostr key known; online",
       res: "goes over the internet, shown as pending",
     },
     {

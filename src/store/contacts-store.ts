@@ -1,10 +1,9 @@
-// Known contacts: identities the user has deliberately added (via QR).
+// Known contacts: identities the user has chosen to keep (a scanned QR, a
+// link, a typed peer ID, or someone they messaged).
 //
-// This is the piece that was missing entirely. `peer-store` holds *nearby*
-// peers and is ephemeral by design: it is rebuilt from live ANNOUNCE traffic
-// and forgets everything on restart. So "Add Contact" had nowhere durable to
-// write, and did nothing beyond creating a chat-store channel string: no keys
-// captured, no name remembered, nothing that survived a relaunch.
+// `peer-store` holds *nearby* peers and is ephemeral by design: it is rebuilt
+// from live ANNOUNCE traffic and forgets everything on restart. This is where
+// "Add Contact" writes the keys and name that must survive a relaunch.
 //
 // A contact is a *known* identity; a peer is a *reachable* one. They are
 // deliberately separate: someone can be a contact while out of range for days,
@@ -40,8 +39,9 @@ export interface Contact {
   //          equally real and equally self-consistent; what is missing is any
   //          evidence about WHO sent it, since a link can be posted on a web
   //          page or pasted into a message by anyone
-  // "manual" only a peer ID was typed in, so no keys at all until their first
-  //          ANNOUNCE arrives
+  // "manual" no card at all: a peer ID typed in, or someone saved by being
+  //          messaged (saveIfAbsent), with at most the Noise key an announce
+  //          gave. The rest arrives only with a session proof (setProvenKeys)
   source: "qr" | "link" | "manual";
   // Whether a human has confirmed the keys above are this person's, and how.
   // Absent means nobody has checked.
@@ -57,9 +57,6 @@ export interface Contact {
   //               importing any, so it grants no re-pinning power
   //
   // Equally strong as verification. They differ in what else they may do.
-  //
-  // Absent on records predating the field; `isVerified` reads `source === "qr"`
-  // as in-person for those, so no migration is required.
   verification?: "in-person" | "fingerprint";
   // The peer's Nostr public key (secp256k1 hex), once we've learned it from a
   // v2 QR card or their ANNOUNCE. This is what makes an out-of-range contact
@@ -82,10 +79,7 @@ export interface Contact {
   localNickname?: string;
   // When the confirmation happened, which is not when the contact was saved.
   // Holding them apart is what lets `addContact` keep the earliest `addedAtMs`
-  // unconditionally.
-  //
-  // Absent on records predating the field; readers fall back to `addedAtMs`,
-  // which those records were stamped with at confirmation time.
+  // unconditionally. Written with `verification`, never without it.
   verifiedAtMs?: number;
   // Whether this contact may Ring you: an alert that rings/vibrates through
   // mute until acknowledged. Absent or false means no. A per-contact grant,
@@ -105,21 +99,8 @@ const SOURCE_RANK: Readonly<Record<Contact["source"], number>> = {
 
 // Has a human confirmed this identity, by any means. The one place that
 // question is answered, so no two surfaces can disagree about one contact.
-//
-// The `source` fallback carries records predating `verification`, where a `qr`
-// source could only have come from the camera.
 export function isVerified(contact: Contact | undefined): boolean {
-  if (contact === undefined) return false;
-  return contact.verification !== undefined || contact.source === "qr";
-}
-
-// Which means was used, for the line under the shield. Same fallback.
-export function verificationMethod(
-  contact: Contact | undefined,
-): Contact["verification"] | undefined {
-  if (contact === undefined) return undefined;
-  if (contact.verification !== undefined) return contact.verification;
-  return contact.source === "qr" ? "in-person" : undefined;
+  return contact?.verification !== undefined;
 }
 
 // Do we hold enough of this identity to reach them and to label them.
@@ -146,13 +127,16 @@ interface ContactsState {
   //   verifiedAtMs     kept once set
   //   localNickname    kept unless the caller supplies one
   //   nickname         a name already on file wins over one arriving now
-  //   nostrPubkeyHex   first key wins, matching setNostrPubkey
+  //   nostrPubkeyHex   first key wins, matching setNostrPubkey, bar an
+  //                    in-person scan, which replaces it with the keys
   //   noise/signing    filled when absent, replaced only by an in-person scan
   //
   // The last is the security-relevant one. `signingPubKeyHex` is not a display
-  // field: `leaveIsAuthentic` falls back to it to check a LEAVE when the live
-  // registry holds no pin, which is every restart. The registry already refuses
-  // an over-the-air re-pin, and this holds the durable copy to the same rule.
+  // field: mesh-service checks every signature against it ahead of any key an
+  // announce pinned, and refuses an announce that contradicts it, which is what
+  // stops someone announcing first after a restart. The registry already
+  // refuses an over-the-air re-pin, and this holds the durable copy to the
+  // same rule.
   addContact: (contact: Contact) => void;
   // Save a peer as an unverified contact if not already saved. The one entry
   // point for the Signal-style "people you message are kept" behaviour, so
@@ -180,9 +164,12 @@ interface ContactsState {
   // inside a completed Noise session, and a session completes only when the
   // remote static key hashes to the claimed peer ID.
   //
-  // Fills empty slots and nothing else, so it can never re-pin what a scan
-  // established, and grants no verification: holding somebody's keys is not
-  // having checked them.
+  // Fills empty slots, and on a contact nobody has verified also replaces keys
+  // the session contradicts, dropping the Nostr key and name that came with
+  // them: those came from a link card that proves nothing about who made it,
+  // and the session does. A verified contact's keys are never touched, so it
+  // can never re-pin what a scan or a safety number established. Grants no
+  // verification: holding somebody's keys is not having checked them.
   setProvenKeys: (
     peerID: string,
     noisePubKeyHex: string,
@@ -247,6 +234,11 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
     return mayReplaceKeys && nextKey.length > 0 ? nextKey : priorKey;
   };
 
+  // First key wins, matching setNostrPubkey: a new npub for a known peer is
+  // suspect rather than authoritative. The scan that may replace the mesh keys
+  // replaces it too, since it came with the ones replaced.
+  const npub = pick(prior.nostrPubkeyHex ?? "", next.nostrPubkeyHex ?? "");
+
   return {
     peerID: prior.peerID,
     noisePubKeyHex: pick(prior.noisePubKeyHex, next.noisePubKeyHex),
@@ -258,22 +250,16 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
     source,
     // Set only by a write that carries one: a camera scan states "in-person",
     // `markVerified` states "fingerprint". A link carries neither, so it can
-    // neither remove nor invent it. `verificationMethod` supplies the reading
-    // for records predating the field.
+    // neither remove nor invent it.
     verification:
-      verificationMethod(prior) ??
+      prior.verification ??
       (next.source === "qr" ? "in-person" : next.verification),
     verifiedAtMs:
       prior.verifiedAtMs ??
       (next.source === "qr" || next.verification !== undefined
         ? (next.verifiedAtMs ?? next.addedAtMs)
         : undefined),
-    // First key wins, matching setNostrPubkey: a new npub for a known peer is
-    // suspect rather than authoritative.
-    nostrPubkeyHex:
-      prior.nostrPubkeyHex !== undefined && prior.nostrPubkeyHex.length > 0
-        ? prior.nostrPubkeyHex
-        : next.nostrPubkeyHex,
+    nostrPubkeyHex: npub.length > 0 ? npub : undefined,
     // Never dropped by a write that did not set one.
     localNickname: next.localNickname ?? prior.localNickname,
     // A re-add (e.g. re-scanning a QR) must never revoke a ring grant.
@@ -362,14 +348,11 @@ export const useContactsStore = create<ContactsState>()(
           // Never manufacture a contact, matching setNostrPubkey: completing a
           // session with somebody is not the user choosing to keep them.
           if (!existing) return state;
-          const noise =
-            existing.noisePubKeyHex.length === 0
-              ? noisePubKeyHex
-              : existing.noisePubKeyHex;
-          const signing =
-            existing.signingPubKeyHex.length === 0
-              ? signingPubKeyHex
-              : existing.signingPubKeyHex;
+          const correctable = !isVerified(existing);
+          const pick = (held: string, proven: string): string =>
+            held.length === 0 || correctable ? proven : held;
+          const noise = pick(existing.noisePubKeyHex, noisePubKeyHex);
+          const signing = pick(existing.signingPubKeyHex, signingPubKeyHex);
           // Same object when neither slot moved, so a peer re-proving itself on
           // every reconnect does not re-render every screen watching this store.
           if (
@@ -378,6 +361,14 @@ export const useContactsStore = create<ContactsState>()(
           ) {
             return state;
           }
+          // A replaced key takes the Nostr key and name from the same card with
+          // it. The npub is where internet DMs to this contact go, and their
+          // next vouched announce supplies the real one.
+          const replaced = (held: string, next: string): boolean =>
+            held.length > 0 && held !== next;
+          const contradicted =
+            replaced(existing.noisePubKeyHex, noise) ||
+            replaced(existing.signingPubKeyHex, signing);
           return {
             contacts: {
               ...state.contacts,
@@ -385,6 +376,9 @@ export const useContactsStore = create<ContactsState>()(
                 ...existing,
                 noisePubKeyHex: noise,
                 signingPubKeyHex: signing,
+                ...(contradicted
+                  ? { nostrPubkeyHex: undefined, nickname: "" }
+                  : {}),
               },
             },
           };

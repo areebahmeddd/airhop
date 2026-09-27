@@ -24,7 +24,14 @@
 // testing how well we guessed someone's street corner.
 
 import { GEO_CHANNEL_PRECISION } from "@services/geohash-channel-service";
-import { encodeGeohash } from "../geohash-presence";
+import type { Event } from "nostr-tools";
+import { generateSecretKey } from "nostr-tools";
+import {
+  encodeGeohash,
+  GeohashPresence,
+  KIND_PRESENCE,
+} from "../geohash-presence";
+import type { NostrClient } from "../nostr-client";
 
 // A point in Kumaraswamy Layout, Bengaluru.
 const BLR_LAT = 12.9082;
@@ -61,5 +68,35 @@ describe("geohash interop with bitchat", () => {
     expect(encodeGeohash(37.422, -122.0841, 2)).not.toBe(
       encodeGeohash(BLR_LAT, BLR_LNG, 2),
     );
+  });
+});
+
+// bitchat-ios reads presence from the cell's own relays and sends a heartbeat
+// only when that list is non-empty (GeohashPresenceService). A heartbeat sent
+// anywhere else is never counted, and tells the DM relays where the key is.
+describe("presence heartbeat relays", () => {
+  const CELL_RELAYS = ["wss://near-1.example", "wss://near-2.example"];
+
+  function presenceWith(publish: jest.Mock): GeohashPresence {
+    return new GeohashPresence({ nostrPrivKey: generateSecretKey() }, {
+      publish,
+    } as unknown as NostrClient);
+  }
+
+  it("publishes a kind 20001 heartbeat to the cell's relays only", async () => {
+    const publish = jest.fn().mockResolvedValue({ relay: "", ok: true });
+    await presenceWith(publish).publishHeartbeat("tdr1k", CELL_RELAYS);
+
+    expect(publish).toHaveBeenCalledTimes(1);
+    const [event, relays] = publish.mock.calls[0] as [Event, string[]];
+    expect(event.kind).toBe(KIND_PRESENCE);
+    expect(event.tags).toEqual([["g", "tdr1k"]]);
+    expect(relays).toEqual(CELL_RELAYS);
+  });
+
+  it("skips the heartbeat when the cell has no relays", async () => {
+    const publish = jest.fn().mockResolvedValue({ relay: "", ok: true });
+    await presenceWith(publish).publishHeartbeat("tdr1k", []);
+    expect(publish).not.toHaveBeenCalled();
   });
 });

@@ -10,9 +10,12 @@
 //   0x02  Noise static pub   (32 bytes X25519)
 //   0x03  Ed25519 signing pub (32 bytes)
 //   0x04  neighbor IDs       (optional, up to 10 x 8 bytes)
-//   0x05  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
+//   0x05  capabilities       (bitchat bitfield)
+//   0x06  bridge cell        (bitchat; decoded, ignored)
+//   0x07  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
+//   0xB1  Bitle relay role   (read, never written)
 //
-// Broadcast interval: 30 seconds.
+// Broadcast interval: 15 to 30 seconds while connected, faster while isolated.
 import { hexToBytes } from "@noble/hashes/utils.js";
 import type { Identity } from "../../crypto/identity";
 import {

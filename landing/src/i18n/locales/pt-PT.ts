@@ -192,6 +192,11 @@ const strings: Strings = {
     "Derivados da sua chave, por isso ninguém lhe pode tirar o seu.",
   "home.features.identity.qr.name": "Contatos por código QR",
   "home.features.identity.qr.line": "Uma leitura transporta as chaves, não só o nome.",
+  "home.features.identity.forward.name": "Sigilo futuro",
+  "home.features.identity.forward.line": "Uma chave divulgada não abre mensagens antigas.",
+  "home.features.identity.move.name": "Mudança de telemóvel",
+  "home.features.identity.move.line":
+    "Conversas e carteira vão junto, e o telemóvel antigo apaga-se.",
   "home.features.identity.panic.name": "Limpeza de pânico",
   "home.features.identity.panic.line":
     "Todas as chaves e mensagens destruídas em menos de um segundo.",
@@ -201,6 +206,10 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Rede mesh Bluetooth",
   "home.features.networking.mesh.line":
     "Sem Internet, sem router, em telemóveis que as pessoas já têm.",
+  "home.features.networking.lan.name": "Rede local",
+  "home.features.networking.lan.line": "WiFi partilhado ou um hotspot, iPhone e Android juntos.",
+  "home.features.networking.hops.name": "Retransmissão em vários saltos",
+  "home.features.networking.hops.line": "Cada telemóvel passa as mensagens, até sete saltos.",
   "home.features.networking.bridge.name": "Ponte mesh",
   "home.features.networking.bridge.line":
     "Liga a sua conversa pública a um grupo próximo fora de alcance.",

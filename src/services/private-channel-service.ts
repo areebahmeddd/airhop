@@ -20,6 +20,7 @@
 
 import { bytesToBase64, tryBase64ToBytes } from "@core/encoding/base64";
 import {
+  channelRowID,
   deriveChannelNostrIdentity,
   openChannelMessage,
   type ChannelNostrIdentity,
@@ -99,10 +100,14 @@ export class PrivateChannelService {
   }
 
   // Publish an already-sealed private-channel message over Nostr. The author is
-  // derived from the key alone.
-  publish(keyB64: string, blob: Uint8Array, msgId: string): void {
+  // derived from the key alone. Resolves whether a relay accepted it.
+  async publish(
+    keyB64: string,
+    blob: Uint8Array,
+    msgId: string,
+  ): Promise<boolean> {
     const identity = this.identityFor(keyB64);
-    if (identity === null) return;
+    if (identity === null) return false;
     try {
       const event = finalizeEvent(
         {
@@ -113,9 +118,11 @@ export class PrivateChannelService {
         },
         identity.privKey,
       );
-      void this.client.publish(event).catch(() => undefined);
+      await this.client.publish(event);
+      return true;
     } catch {
       // Relay unreachable / signing failure: the BLE broadcast still happened.
+      return false;
     }
   }
 
@@ -161,8 +168,9 @@ export class PrivateChannelService {
         .noteMember(channel, opened.senderID, senderNickname);
 
       useChatStore.getState().addMessage({
-        // Shared id with the BLE copy so both transports collapse to one bubble.
-        id: `ch-${opened.msgId}`,
+        // Shared with the BLE copy from the same author, so both transports
+        // collapse to one bubble and a copy claiming another author cannot.
+        id: channelRowID(opened.senderID, opened.msgId),
         channel,
         senderID: opened.senderID,
         senderNickname,

@@ -19,9 +19,13 @@
 // each setter would persist that emptiness over what arrived.
 
 import { loadIdentity } from "@core/crypto/identity";
-import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
+import {
+  deleteSecret,
+  KEYCHAIN_ITEMS,
+  readSecret,
+  writeSecret,
+} from "@core/crypto/keychain";
 import type { MoveSection } from "@core/move/move-bundle";
-import { applyLayoutDirection, resolvePreference } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "@noble/hashes/utils.js";
 import { useBlockedStore } from "@store/blocked-store";
@@ -39,6 +43,7 @@ import { DEVICE_SETTINGS, useSettingsStore } from "@store/settings-store";
 import { exportWalletState, importWalletState } from "@store/wallet-store";
 import { setMoveMarker } from "./move-marker";
 import { MMKV_STORE_IDS } from "./panic-wipe";
+import { clearCondemnedIdentity } from "./wipe-marker";
 
 type StoreId = (typeof MMKV_STORE_IDS)[number];
 type SecretName = keyof typeof KEYCHAIN_ITEMS;
@@ -104,13 +109,9 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
       editPersisted(value, (state) => {
         for (const key of DEVICE_SETTINGS) delete state[key];
       }),
-    reload: () => {
-      void useSettingsStore.persist.rehydrate();
-      // A direction change applies on the next launch; the shell's notice says so.
-      applyLayoutDirection(
-        resolvePreference(useSettingsStore.getState().language),
-      );
-    },
+    // A direction change applies on the next launch: `@i18n` pins it when the
+    // rehydrated language lands, and the shell's notice says so.
+    reload: () => void useSettingsStore.persist.rehydrate(),
   },
   // Public and gossiped: the mesh brings it back.
   "board-store": null,
@@ -144,6 +145,8 @@ const SECRETS: Record<SecretName, "move" | "regenerate"> = {
   // Nutzaps already locked to it, and kind 10019 still names it.
   walletP2pkKey: "move",
   walletRecoveryPhrase: "move",
+  // One-time keys never leave their phone; the new one mints its own batch.
+  localPrekeys: "regenerate",
 };
 
 const PARTITION_PREFIX = "mmkv:";
@@ -330,6 +333,10 @@ export async function applyMove(
         await writeAndVerify(KEYCHAIN_ITEMS[name], fromUtf8.decode(data));
       }
     }
+    // Any one-time keys here belong to an earlier identity, a condemned one
+    // whose delete was refused, and the arriving identity must not publish
+    // them: that would link the two.
+    await deleteSecret(KEYCHAIN_ITEMS.localPrekeys);
     await writeAndVerify(KEYCHAIN_ITEMS.identity, identityRaw);
   } catch (error) {
     if (error instanceof MoveApplyError) throw error;
@@ -340,6 +347,8 @@ export async function applyMove(
   if (identity === null || !sameBytes(identity.noiseStaticPubKey, noiseKey)) {
     throw new MoveApplyError("storage");
   }
+  // A condemned identity from an earlier refused wipe is overwritten now.
+  clearCondemnedIdentity();
   setMoveMarker("committed");
   for (const [, policy] of movedPartitions()) policy.reload();
   return identity.peerID;

@@ -187,6 +187,11 @@ const strings: Strings = {
   "home.features.identity.names.line": "Härledda ur din nyckel, så ingen kan ta ditt.",
   "home.features.identity.qr.name": "Kontakter via QR",
   "home.features.identity.qr.line": "En skanning bär deras nycklar, inte bara deras namn.",
+  "home.features.identity.forward.name": "Framåtsekretess",
+  "home.features.identity.forward.line": "En läckt nyckel låser inte upp gamla meddelanden.",
+  "home.features.identity.move.name": "Flytt till ny telefon",
+  "home.features.identity.move.line":
+    "Chattar och plånbok följer med, sedan raderar den gamla telefonen sig själv.",
   "home.features.identity.panic.name": "Nödradering",
   "home.features.identity.panic.line":
     "Varje nyckel och varje meddelande förstörda på under en sekund.",
@@ -196,6 +201,12 @@ const strings: Strings = {
   "home.features.networking.mesh.name": "Bluetooth-mesh",
   "home.features.networking.mesh.line":
     "Inget internet, ingen router, på telefoner folk redan äger.",
+  "home.features.networking.lan.name": "Lokalt nätverk",
+  "home.features.networking.lan.line":
+    "Delat WiFi eller en hotspot, iPhone och Android tillsammans.",
+  "home.features.networking.hops.name": "Vidarebefordran i flera hopp",
+  "home.features.networking.hops.line":
+    "Varje telefon skickar meddelanden vidare, upp till sju hopp.",
   "home.features.networking.bridge.name": "Mesh-brygga",
   "home.features.networking.bridge.line":
     "Kopplar din öppna chatt till en grupp i närheten utanför räckvidd.",
