@@ -627,7 +627,14 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   );
 
   // The control: a real attachment from alice still arrives. A rule that
-  // dropped everything would pass all four checks above and be worthless.
+  // dropped everything would pass all four checks above and be worthless. A DM
+  // attachment needs a session, which a text opens.
+  alice.send(`dm:${bob.peerID}`, "photo coming");
+  await waitFor(
+    s.world,
+    () => alice.mesh?.canSealPrivateMedia(bob.peerID) === true,
+    30_000,
+  );
   alice.sendAttachment(`dm:${bob.peerID}`, media.jpeg(3_000), {
     type: "image",
     name: "real.jpg",
@@ -1041,6 +1048,86 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   s.check(
     "and no whole cleartext file packet was transmitted either",
     onAir.every((p) => p.type !== PacketType.FILE_TRANSFER),
+  );
+
+  s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("M15 a first photo to a stranger waits for a session instead of going out in the clear", async () => {
+  // The seal needs a session, and the cleartext fallback is for a peer that has
+  // not proven it can read a sealed file. A stranger nobody has messaged yet
+  // has no session at all, so a photo as the first act in a conversation used
+  // to cross the air readable, under a thread promising an encrypted one.
+  const s = (scenario = new Scenario({
+    id: "M15",
+    title: "a photo before any text starts the handshake and is refused",
+    seed: 23,
+  }));
+  const { radio, devices } = room(s, [
+    android("alice", 11),
+    android("bob", 22),
+  ]);
+  const [alice, bob] = devices;
+  const direct = await waitFor(
+    s.world,
+    () => alice.isDirectPeer(bob.peerID) && bob.isDirectPeer(alice.peerID),
+    30_000,
+  );
+  s.check("alice and bob hold a direct link", direct);
+
+  const onAir: Packet[] = [];
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== alice.id) return;
+    const p = decodePacket(fromBase64(dataBase64));
+    if (p !== null) onAir.push(p);
+  });
+
+  const aliceThread = `dm:${bob.peerID}`;
+  const bobThread = `dm:${alice.peerID}`;
+  const photo = media.jpeg(8_000);
+  const meta = {
+    type: "image",
+    name: "first.jpg",
+    mimeType: "image/jpeg",
+  };
+  s.check(
+    "the first send is refused while there is no session",
+    !alice.sendAttachment(aliceThread, photo, meta),
+  );
+
+  const sealable = await waitFor(
+    s.world,
+    () => alice.mesh?.canSealPrivateMedia(bob.peerID) === true,
+    30_000,
+  );
+  s.check("the refusal started the handshake, and bob proved bit 8", sealable);
+
+  s.check(
+    "the retry is accepted",
+    alice.sendAttachment(aliceThread, photo, meta),
+  );
+  const arrived = await waitFor(
+    s.world,
+    () => bob.attachments(bobThread).length > 0,
+    60_000,
+  );
+  stopTap();
+  s.check("the photo arrives", arrived);
+
+  // Fragment byte 12 is the inner packet type; see M09.
+  const cleartext = onAir.filter(
+    (p) =>
+      p.type === PacketType.FILE_TRANSFER ||
+      (p.type === PacketType.FRAGMENT &&
+        p.payload.length > 12 &&
+        p.payload[12] === PacketType.FILE_TRANSFER),
+  );
+  s.check(
+    "no part of it ever crossed the air as a cleartext file packet",
+    cleartext.length === 0,
+    `${String(cleartext.length)} cleartext file packet(s)`,
   );
 
   s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));

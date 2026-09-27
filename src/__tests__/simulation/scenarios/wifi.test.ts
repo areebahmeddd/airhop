@@ -729,12 +729,20 @@ test("W-F09 with both radios up, a DM attachment still takes the fast path", asy
     `wifi=${wifi.isLinked("a", "b")} ble links=${a.bleLinkCount()}`,
   );
 
+  // A DM attachment rides the Noise session, which a text opens.
+  const dm = `dm:${b.peerID}`;
+  a.send(dm, "photo coming");
+  await waitFor(
+    s.world,
+    () => a.mesh?.canSealPrivateMedia(b.peerID) === true,
+    30_000,
+  );
+
   // Measure from here, so presence traffic that has already flowed over
   // Bluetooth is not counted against the file.
   const bleBefore = radio.bytesOnAir;
   const wifiBefore = wifi.bytesCarried;
 
-  const dm = `dm:${b.peerID}`;
   const bytes = media.jpeg(64 * 1024);
   s.check(
     "the send was accepted",

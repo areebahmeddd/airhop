@@ -6412,16 +6412,28 @@ export class MeshService {
   // went nowhere, so the caller surfaces that instead of a confident "sent"
   // (the text path reports reach the same way); the user can retry when a link
   // returns.
+  //
+  // A DM also needs a session. Without one there is nothing to seal under, and
+  // the signed cleartext fallback is for a peer that has not proven it can read
+  // a sealed file, not for one nobody has asked. So, as for a pin or a ring,
+  // the handshake starts and the send is refused; a retry a moment later finds
+  // the session and the 0x21 proof that follows it on both sides.
   sendAttachment(
     channel: string,
     bytes: Uint8Array,
     meta: AttachmentMeta,
     onOutcome?: SendOutcome,
   ): boolean {
-    const reached = channel.startsWith("dm:")
-      ? this.links.hasPeer(channel.slice(3))
-      : this.links.size() > 0;
-    if (!reached) return false;
+    if (channel.startsWith("dm:")) {
+      const peerID = channel.slice(3);
+      if (!this.links.hasPeer(peerID)) return false;
+      if (this.registry.get(peerID)?.session === undefined) {
+        this.ensureNoiseSession(peerID);
+        return false;
+      }
+    } else if (this.links.size() === 0) {
+      return false;
+    }
     this.fileXfer.sendBytes(bytes, meta, channel, onOutcome);
     return true;
   }
