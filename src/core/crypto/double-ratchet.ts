@@ -199,7 +199,7 @@ export function initReceiver(
 // it one only when it performs a DH ratchet step, which happens on the first
 // message it receives. So the side that answered the handshake cannot send
 // until the side that started it has spoken. That is the algorithm working
-// correctly, not a defect - but it means every caller has to ask before
+// correctly, not a defect, but it means every caller has to ask before
 // encrypting, because `ratchetEncrypt` throws rather than returning null, and an
 // exception on the send path is not something a UI can do anything useful with.
 export function canEncrypt(state: RatchetState): boolean {

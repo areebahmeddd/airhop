@@ -64,7 +64,7 @@ const MAX_FRAMES_PER_PACKET = 8;
 // the user, so releasing still ends the burst normally with an END packet and
 // still produces the voice note. Nothing is torn down under their finger. What
 // stops is airtime, which matters because a burst is ~2 KiB/s of a link that
-// carries ~18 KiB/s in total, and because every listener now cuts a burst off at
+// carries ~18 KiB/s in total, and because every listener cuts a burst off at
 // its own inbound ceiling anyway. Enforcing it here means one sender stops
 // sending, rather than every receiver independently deciding to stop listening.
 export const MAX_BURST_MS = 120_000;
@@ -104,7 +104,7 @@ const RETRACT_REPEAT_MS = [110, 330];
 // Below this the press was a tap on the mic rather than a hold, and both ends
 // should be left with nothing: the talker sees no bubble in their own thread,
 // so a listener must not be holding a third of a second of audio as a voice
-// note. That is why a short burst is RETRACTED and not ended - the same call
+// note. That is why a short burst is RETRACTED and not ended, the same call
 // bitchat makes in PTTLiveVoiceSession.finish(), which sends `.canceled` below
 // its own minimum and deletes the file rather than delivering it.
 //
@@ -151,8 +151,8 @@ export class VoiceCaptureSession {
   // Whether the microphone is open for this burst.
   //
   // One flag, because there is one thing that opens it and one thing that
-  // closes it: the user's finger. Nothing else may end a burst early - not a
-  // peer walking out of range, not a Noise session going away - because the
+  // closes it: the user's finger. Nothing else may end a burst early (not a
+  // peer walking out of range, not a Noise session going away), because the
   // hold is also a recording, and a recording that stops when the radio does is
   // a message the talker loses half of without being told. The wire is
   // best-effort on top of that; see emit().
@@ -199,7 +199,7 @@ export class VoiceCaptureSession {
   }
 
   // Begin a PTT burst: opens the microphone. Nothing goes on the wire until the
-  // first frame arrives - see sendStartIfNeeded.
+  // first frame arrives; see sendStartIfNeeded.
   //
   // Throws if the microphone could not be opened. The burst is left closable
   // either way: the caller still has a finger on the button, and cancelPtt()
@@ -242,8 +242,8 @@ export class VoiceCaptureSession {
     // Measured in captured audio, not in how long the button was down. bitchat
     // checks both because its frame counter can outlive the hold; ours cannot,
     // since a frame exists only if the microphone produced it. So the frame
-    // count already covers the case the wall clock is there for - a long hold
-    // that captured nothing because the mic never opened - and covers it more
+    // count already covers the case the wall clock is there for (a long hold
+    // that captured nothing because the mic never opened), and covers it more
     // honestly, without counting the time the mic took to open as speech.
     if (this.recordedDurationMs < MIN_BURST_KEEP_MS) {
       this.discard();
@@ -341,8 +341,8 @@ export class VoiceCaptureSession {
   // Announce the burst, once, on the first frame that will be sent.
   //
   // Deliberately not done when the button goes down. A microphone that fails to
-  // open - a stale audio session, a call holding the input, a permission
-  // revoked between the check and the press - would otherwise leave a START on
+  // open (a stale audio session, a call holding the input, a permission
+  // revoked between the check and the press) would otherwise leave a START on
   // the wire with no audio behind it, and both clients turn a bare START into a
   // live bubble: bitchat opens an assembly for it (ChatLiveVoiceCoordinator
   // .handle), Airhop opens a session (VoicePlayer.handleBurstPayload). The far
@@ -404,13 +404,13 @@ export class VoiceCaptureSession {
 
   // Put one burst packet on the wire, if there is a wire.
   //
-  // Best-effort, always. A frame that cannot go out - nobody in range, a Noise
-  // session that went away when the peer walked off - is dropped and the burst
+  // Best-effort, always. A frame that cannot go out (nobody in range, a Noise
+  // session that went away when the peer walked off) is dropped and the burst
   // carries on: live audio has no queue worth waiting in, but the microphone is
   // still open and the recording is still accumulating, so the words survive as
-  // the voice note the release sends. Stopping the capture here instead cost
-  // the talker the second half of a sentence every time a link flapped, which
-  // on Bluetooth is often, and told them nothing.
+  // the voice note the release sends. Stopping the capture here instead would
+  // cost the talker the second half of a sentence every time a link flaps,
+  // which on Bluetooth is often, and tell them nothing.
   private emit(burstPayload: Uint8Array): void {
     // A DM burst is sealed to one peer and never broadcast. Same bytes, and
     // the only difference is the envelope they travel in.

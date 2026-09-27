@@ -74,7 +74,7 @@ export function wrapDm(
   const senderPubkey = getPublicKey(senderPrivKey);
   const recipientXOnly = hexToBytes(recipientPubkeyHex);
 
-  // Step 1: Rumor (kind 14, unsigned - per NIP-17 a rumor is never signed).
+  // Step 1: Rumor (kind 14, unsigned: per NIP-17 a rumor is never signed).
   // Empty tags, matching bitchat (the recipient is targeted by the gift wrap's
   // `p` tag, not the rumor).
   const rumor: UnsignedEvent = {
@@ -86,7 +86,7 @@ export function wrapDm(
   };
   const rumorJson = JSON.stringify(rumor);
 
-  // Step 2: Seal (kind 13) - encrypt the rumor to the recipient with bitchat's
+  // Step 2: Seal (kind 13). Encrypt the rumor to the recipient with bitchat's
   // nip44-v2 flavor, sign with the sender's real key so the recipient can
   // authenticate who sent it.
   const sealEvent = finalizeEvent(
@@ -99,7 +99,7 @@ export function wrapDm(
     senderPrivKey,
   );
 
-  // Step 3: Gift wrap (kind 1059) - encrypt the seal with a throwaway ephemeral
+  // Step 3: Gift wrap (kind 1059). Encrypt the seal with a throwaway ephemeral
   // key so relays cannot see the sender.
   const ephemeralPrivKey = generateSecretKey();
   const ephemeralPubkey = getPublicKey(ephemeralPrivKey);
@@ -196,7 +196,7 @@ export function unwrapDm(
   // The rumor's own clock has to be plausible.
   //
   // The gift wrap's outer timestamp is randomised by design (NIP-17), so the
-  // inner rumor's `created_at` is the only claim about when this was sent - and
+  // inner rumor's `created_at` is the only claim about when this was sent, and
   // nothing signs it into a window. A relay, or the sender, can date it
   // arbitrarily. Threads sort by time, so a far-future rumor pins itself to the
   // bottom of a conversation for good and a far-past one buries itself in

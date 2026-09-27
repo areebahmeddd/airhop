@@ -254,14 +254,13 @@ export class NostrClient {
     };
   }
 
-  //
   // Relay traffic arrives on a WebSocket callback, so without this every
   // subscriber handler runs inline on the JS thread the instant an event lands. A
   // handler is not cheap here: it writes a zustand store (and so re-renders),
-  // decrypts gift wraps, and walks the notices list. A burst - a cold start with
+  // decrypts gift wraps, and walks the notices list. A burst (a cold start with
   // several cells backfilling at once, a busy cell, or simply a relay that
-  // decides to send a lot - therefore ran as one unbroken block of JS with no
-  // frame in between. The symptom is not a crash but a freeze: animations that
+  // decides to send a lot) would run as one unbroken block of JS with no frame
+  // in between. The symptom is not a crash but a freeze: animations that
   // need JS between steps stop mid-loop, and taps queue up unanswered, which is
   // indistinguishable from a hang to the person holding the phone.
   //

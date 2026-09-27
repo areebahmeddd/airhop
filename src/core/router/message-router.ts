@@ -73,7 +73,7 @@ export interface PeerEntry {
   authenticatedCapabilities?: number;
   // Whether `signingPubKey` was learned from an authenticated 0x21 rather than
   // trusted on first use from an announce. Once true, no announce may change
-  // the key - and an authenticated key MAY correct a TOFU pin, which is what
+  // the key, and an authenticated key MAY correct a TOFU pin, which is what
   // heals the case where an attacker announced before the real peer did.
   signingKeyAuthenticated?: boolean;
   // Rendezvous geohash cell a bridge peer advertises (ANNOUNCE TLV 0x06), so a
@@ -97,10 +97,9 @@ const CAPABILITY_BRIDGE = 1 << 7;
 // detectably wrong, which is what makes a Sybil flood a resource problem rather
 // than a signature problem.
 //
-// Reads were already TTL-bounded, so a flood never made a fake peer look
-// reachable - but the underlying map grew without limit and was never swept, so
-// the memory was held for the life of the process and every reachablePeers()
-// scan walked all of it. 200 matches prekey-store.ts, which caps the same class
+// Reads are TTL-bounded, so a flood never makes a fake peer look reachable,
+// but without a cap the underlying map would grow for the life of the process
+// and every reachablePeers() scan would walk all of it. 200 matches prekey-store.ts, which caps the same class
 // of gossiped, attacker-supplied state the same way.
 const MAX_TRACKED_PEERS = 200;
 
@@ -128,8 +127,8 @@ export class PeerRegistry {
 
     // TOFU key pinning. A valid packet signature only proves an announce is
     // self-consistent: it is checked against the Ed25519 key carried inside
-    // that same announce. Since peerIDs derive from the Noise public key - and
-    // that key is broadcast in the clear in every announce - an attacker can
+    // that same announce. Since peerIDs derive from the Noise public key, and
+    // that key is broadcast in the clear in every announce, an attacker can
     // replay a victim's peerID and Noise key while substituting their own
     // signing key, then sign with it. Both the derivation check and the
     // signature check in onAnnounce pass. Only refusing to *replace* a signing
@@ -178,8 +177,8 @@ export class PeerRegistry {
   // Returns false when the claim conflicts with a key this peer has already
   // proven, which is the only case a caller has to act on: two different
   // authenticated keys for one peer ID cannot both be real, and the first one
-  // stands. Everything else - unknown peer, first proof, repeat of the same
-  // proof - returns true.
+  // stands. Everything else (unknown peer, first proof, repeat of the same
+  // proof) returns true.
   //
   // A proof MAY replace a trust-on-first-use pin. That is the point rather than
   // a loophole: TOFU binds whoever announced first, and an attacker can win
@@ -425,10 +424,8 @@ export type NostrSendFn = (
 
 // There is deliberately no separate WiFiUnicastFn tier here. It would duplicate
 // what the injected `unicast` callback already does: MeshService's unicast checks
-// for an active WiFi link and uses it before falling back to BLE. A second WiFi
-// check in the router means the transport is consulted
-// twice, and because the parameter was never actually passed, it read like an
-// unfinished feature when the behaviour was in fact already correct.
+// for an active WiFi link and uses it before falling back to BLE, so a second
+// WiFi check in the router would consult the transport twice.
 //
 // Transport selection belongs in the callback that owns the link maps, not here.
 // The router only decides WHICH tier to use (direct / Nostr / courier); how a
@@ -744,9 +741,9 @@ export class MessageRouter {
   //
   // Resolved through `sessionFor`, never `get()`: the packet is already here, so
   // the peer's reachability window has no bearing on whether it can be read.
-  // Gating it on the TTL dropped DMs from a direct peer whose announce had aged
-  // out, while the sender's sendDm reported "sent" and the outbox never queued a
-  // retry.
+  // Gating it on the TTL would drop DMs from a direct peer whose announce has
+  // aged out, while the sender's sendDm reports "sent" and the outbox never
+  // queues a retry.
   decryptDm(packet: Packet, senderPeerID: string): NoisePayload | null {
     const session = this.registry.sessionFor(senderPeerID);
     if (session === undefined) return null;

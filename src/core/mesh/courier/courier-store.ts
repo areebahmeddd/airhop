@@ -461,7 +461,7 @@ export class CourierStore {
   // Envelopes addressed to a peer just met. NON-DESTRUCTIVE: the caller hands
   // each to the transport and calls `commitHandover` only once the write is
   // accepted onto that peer's own link. Retiring before then loses the mail to
-  // a refused write, and refusals are ordinary here - this runs from
+  // a refused write, and refusals are ordinary here: this runs from
   // `onAnnounce`, when the link is busiest with the announce, the prekey bundle
   // and a gossip round, and a full GATT queue answers WRITE_BUSY. bitchat
   // splits handover the same way.
@@ -615,19 +615,19 @@ export class CourierStore {
     this.storage.remove(this.key);
   }
 
-  // Returns index of best eviction candidate: prefer verified-tier, then oldest.
   // Which envelope to drop to make room for `incoming`, or -1 to refuse it.
   //
   // Verified mail is evicted before favourite mail, oldest first. The tier of
   // the INCOMING envelope matters too: a verified arrival may never displace a
   // favourite, because that would let anyone who has merely announced push a
-  // contact's mail out of a full pool. bitchat states the same rule - evict a
+  // contact's mail out of a full pool. bitchat states the same rule: evict a
   // favourite only when the incoming envelope is itself a favourite, otherwise
   // reject.
   //
-  // Scoring tier and age together always returns an index for a non-empty pool,
-  // which makes the "pool full, all favourites" refusal at the call site
-  // unreachable and lets a verified envelope displace a favourite.
+  // Not one score over tier and age: that always returns an index for a
+  // non-empty pool, which would make the "pool full, all favourites" refusal
+  // at the call site unreachable and let a verified envelope displace a
+  // favourite.
   private findEvictionCandidate(incoming: CourierTier): number {
     let bestIdx = -1;
     let bestAge = -1;

@@ -28,13 +28,13 @@ import { maxPayloadBytes } from "../wire/payload-limits";
 // frame we hand the radio.
 //
 // This has to be a FRAME budget, not a payload budget. Spent as the latter, 469
-// payload bytes plus a 16-byte header, an 8-byte senderID and a 64-byte signature
-// encode to 557 bytes, 45 over the limit. Android writes
-// without response, so the stack truncated to MTU-3 and the far side's decoder
-// failed reading a signature whose last bytes never arrived; iOS falls back to a
-// long write, which cannot exceed 512 either. Every fragment of every attachment
-// was discarded before any handler saw it, with no error on either side. Live
-// voice was unaffected only because a burst is 210 bytes and never fragments.
+// payload bytes plus a 16-byte header, an 8-byte senderID and a 64-byte
+// signature encode to 557 bytes, 45 over the limit. Android writes without
+// response, so the stack truncates to MTU-3 and the far side's decoder fails
+// reading a signature whose last bytes never arrive; iOS falls back to a long
+// write, which cannot exceed 512 either. Every fragment of every attachment
+// would be discarded before any handler saw it, with no error on either side.
+// Live voice would not show it, since a burst is 210 bytes and never fragments.
 export const MAX_BLE_FRAME = 512;
 
 // Bytes consumed by the fragment header inside the payload.
@@ -73,11 +73,11 @@ const MIN_NONFINAL_FRAGMENT_BYTES = 64;
 //
 // That distinction is the whole point. A 512 KiB photo is about 1,120
 // fragments, and the sender paces them 20ms apart, so it cannot arrive in under
-// ~22 seconds; a 1 MiB file takes twice that. Timing out on total duration
-// deleted the half-built file mid-transfer, and the fragments still coming in
-// then started a fresh assembly that could never reach its total, so the file
-// was lost silently and permanently. Idle time is the thing that actually means
-// the sender is gone.
+// ~22 seconds; a 1 MiB file takes twice that. A timeout on total duration
+// would delete the half-built file mid-transfer, and the fragments still coming
+// in would start a fresh assembly that could never reach its total, losing the
+// file silently. Idle time is the thing that actually means the sender is
+// gone.
 const TIMEOUT_MS = 30_000;
 
 // Everything a frame carries besides its payload: the v2 header, sender and

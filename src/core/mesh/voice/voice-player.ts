@@ -65,7 +65,7 @@ function seqDiff(a: number, b: number): number {
 
 // ---- Types ----
 
-// Injected playback backend - the platform satisfies this interface.
+// Injected playback backend, which the platform satisfies.
 export interface AudioPlaybackBackend {
   // Called when the jitter buffer delivers a batch of ordered frames.
   // frames are in sequence order, ready for decoding and playback.
@@ -304,9 +304,9 @@ export class VoicePlayer {
   // Every other way a session ends is driven by a packet arriving, and the
   // caller re-reads `activeSessions` right after handing us that packet. The
   // idle timeout is the one that fires with nothing arriving, which is exactly
-  // the case where the talker went quiet without saying so - so without this
-  // the "LIVE - Alice is speaking" pill outlived the audio, waiting for a
-  // packet that was never coming.
+  // the case where the talker went quiet without saying so. Without this the
+  // live pill naming them would outlive the audio, waiting for a packet that
+  // is never coming.
   private readonly onSessionsChanged: () => void;
   // Key: "${senderPeerID}:${sessionId}"
   private sessions = new Map<string, VoiceSession>();
@@ -317,18 +317,18 @@ export class VoicePlayer {
   // speaker to play them through. Mixing was never on the table (neither client
   // does it), but neither is handing the speaker back and forth: each burst
   // arrives about fifteen packets a second, so alternating between two of them
-  // tore down and rebuilt the whole decode-and-play pipeline thirty times a
-  // second and left both voices unintelligible.
+  // tears down and rebuilds the whole decode-and-play pipeline thirty times a
+  // second and leaves both voices unintelligible.
   //
   // So the first burst to produce audio keeps the speaker until it ends. The
-  // others are still counted as talkers - the banner says how many - and their
+  // others are still counted as talkers (the banner says how many), and their
   // voice notes still arrive afterwards, so nothing is lost; it is only not
   // heard live. Matches bitchat's rule in PUSH-TO-TALK-DESIGN.md section 6.
   private floorKey: string | null = null;
   // Bursts cut off for breaking a cap. Every packet of such a burst is ignored
-  // from then on, including its END: without this the session was torn down and
-  // the very next packet opened a replacement with its byte count back at zero,
-  // which handed a flooding peer an unlimited budget one cap at a time.
+  // from then on, including its END. Otherwise the very next packet would open
+  // a replacement session with its byte count back at zero, handing a flooding
+  // peer an unlimited budget one cap at a time.
   private readonly cutOffBursts = new Set<string>();
 
   constructor(
