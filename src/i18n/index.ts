@@ -151,6 +151,7 @@ function catalogFor(code: LanguageCode): Locale {
 
 let bootLanguage: LanguageCode = DEFAULT_LANGUAGE;
 let bootDirection: "ltr" | "rtl" = "ltr";
+let unwatchLanguage: (() => void) | null = null;
 
 // A stored preference, which is either a language or "follow the device".
 export type LanguagePreference = LanguageCode | "system";
@@ -507,6 +508,17 @@ export function initI18n(): void {
         : DEFAULT_LANGUAGE;
 
   applyLayoutDirection(wanted);
+
+  // Re-pinned whenever the preference moves, whoever moves it: the picker,
+  // Reset settings, a panic wipe or a transfer. Pinned by the picker alone, the
+  // first reopen after any other writer boots in the old direction and asks for
+  // a second one.
+  unwatchLanguage?.();
+  unwatchLanguage = useSettingsStore.subscribe((state, prev) => {
+    if (state.language !== prev.language) {
+      applyLayoutDirection(resolvePreference(state.language));
+    }
+  });
 }
 
 // The picker's data, re-exported so a screen imports it alongside `useT`.

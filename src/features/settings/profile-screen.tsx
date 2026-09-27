@@ -6,12 +6,10 @@
 import { encodeQRContent } from "@core/crypto/contact-exchange";
 import Feather from "@expo/vector-icons/Feather";
 import {
-  applyLayoutDirection,
   isShipped,
   LANGUAGES,
   needsRelaunch,
   PICKER_LANGUAGES,
-  resolvePreference,
   t,
   useT,
   type TranslationKey,
@@ -1370,15 +1368,11 @@ export default function ProfileScreen({
                       ]}
                       disabled={!shipped}
                       onPress={() => {
+                        // `@i18n` pins the direction and App raises the restart
+                        // notice, not this row: the language can change without
+                        // anyone touching the list. The "pending" tag below is
+                        // the in-place half.
                         setLanguage(code);
-                        // Written now rather than at the next `initI18n`: either
-                        // way it lands on the following launch, but setting it
-                        // here is what makes a single restart enough.
-                        //
-                        // App raises the restart notice, not this row: direction
-                        // can change without anyone touching the list. The
-                        // "pending" tag below is the in-place half.
-                        applyLayoutDirection(resolvePreference(code));
                       }}
                       accessibilityRole={shipped ? "button" : undefined}
                       accessibilityState={

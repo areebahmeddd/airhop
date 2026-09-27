@@ -8,9 +8,11 @@
 // the functions below use, so calling them outside a renderer tests React.
 
 import { useSettingsStore } from "@store/settings-store";
+import { I18nManager } from "react-native";
 import {
   activeLanguage,
   getLanguage,
+  initI18n,
   isShipped,
   languageForTag,
   needsRelaunch,
@@ -136,6 +138,26 @@ describe("which language is on screen", () => {
       // Rendering a language whose direction matches the frame in force.
       expect(isRTL(getLanguage())).toBe(false);
     }
+  });
+});
+
+describe("layout direction", () => {
+  it("pins the next launch's direction whoever changes the language", () => {
+    // Reset settings and a panic wipe move the preference without the picker.
+    // Pinned only by the picker, the first reopen after either boots in the old
+    // direction, raises the notice again and needs a second one.
+    const forceRTL = jest.spyOn(I18nManager, "forceRTL");
+    initI18n();
+
+    useSettingsStore.getState().setLanguage("ar");
+    expect(forceRTL).toHaveBeenLastCalledWith(true);
+    expect(useSettingsStore.getState().frameLanguage).toBe("ar");
+
+    useSettingsStore.getState().reset();
+    expect(forceRTL).toHaveBeenLastCalledWith(false);
+    expect(useSettingsStore.getState().frameLanguage).toBe(
+      resolvePreference("system"),
+    );
   });
 });
 

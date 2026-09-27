@@ -26,7 +26,6 @@ import {
   writeSecret,
 } from "@core/crypto/keychain";
 import type { MoveSection } from "@core/move/move-bundle";
-import { applyLayoutDirection, resolvePreference } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "@noble/hashes/utils.js";
 import { useBlockedStore } from "@store/blocked-store";
@@ -110,13 +109,9 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
       editPersisted(value, (state) => {
         for (const key of DEVICE_SETTINGS) delete state[key];
       }),
-    reload: () => {
-      void useSettingsStore.persist.rehydrate();
-      // A direction change applies on the next launch; the shell's notice says so.
-      applyLayoutDirection(
-        resolvePreference(useSettingsStore.getState().language),
-      );
-    },
+    // A direction change applies on the next launch: `@i18n` pins it when the
+    // rehydrated language lands, and the shell's notice says so.
+    reload: () => void useSettingsStore.persist.rehydrate(),
   },
   // Public and gossiped: the mesh brings it back.
   "board-store": null,
