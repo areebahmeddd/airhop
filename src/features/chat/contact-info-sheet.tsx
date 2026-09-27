@@ -17,12 +17,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useChatStore } from "@store/chat-store";
-import {
-  hasKeys,
-  isVerified,
-  useContactsStore,
-  verificationMethod,
-} from "@store/contacts-store";
+import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useRingStore } from "@store/ring-store";
@@ -323,20 +318,17 @@ export default function ContactInfoSheet({
             key: "verify",
             icon: "shield",
             iconColor: Colors.verified,
-            // When the check happened, not when the contact was saved. Absent
-            // on records predating the field, which stamped the same date into
-            // `addedAtMs`, so the fallback is exact rather than a guess.
-            label: contact
-              ? T("chat.contact.verified_since", {
-                  date: formatLongDate(
-                    contact.verifiedAtMs ?? contact.addedAtMs,
-                  ),
-                })
-              : T("chat.contact.verified"),
+            // When the check happened, not when the contact was saved.
+            label:
+              contact?.verifiedAtMs !== undefined
+                ? T("chat.contact.verified_since", {
+                    date: formatLongDate(contact.verifiedAtMs),
+                  })
+                : T("chat.contact.verified"),
             // Which channel did the confirming. Equally strong either way; the
             // line is so somebody can tell later how they checked.
             sub:
-              verificationMethod(contact) === "fingerprint"
+              contact?.verification === "fingerprint"
                 ? T("chat.contact.verified_desc_compared")
                 : T("chat.contact.verified_desc"),
           }

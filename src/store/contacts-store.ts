@@ -57,9 +57,6 @@ export interface Contact {
   //               importing any, so it grants no re-pinning power
   //
   // Equally strong as verification. They differ in what else they may do.
-  //
-  // Absent on records predating the field; `isVerified` reads `source === "qr"`
-  // as in-person for those, so no migration is required.
   verification?: "in-person" | "fingerprint";
   // The peer's Nostr public key (secp256k1 hex), once we've learned it from a
   // v2 QR card or their ANNOUNCE. This is what makes an out-of-range contact
@@ -82,10 +79,7 @@ export interface Contact {
   localNickname?: string;
   // When the confirmation happened, which is not when the contact was saved.
   // Holding them apart is what lets `addContact` keep the earliest `addedAtMs`
-  // unconditionally.
-  //
-  // Absent on records predating the field; readers fall back to `addedAtMs`,
-  // which those records were stamped with at confirmation time.
+  // unconditionally. Written with `verification`, never without it.
   verifiedAtMs?: number;
   // Whether this contact may Ring you: an alert that rings/vibrates through
   // mute until acknowledged. Absent or false means no. A per-contact grant,
@@ -105,21 +99,8 @@ const SOURCE_RANK: Readonly<Record<Contact["source"], number>> = {
 
 // Has a human confirmed this identity, by any means. The one place that
 // question is answered, so no two surfaces can disagree about one contact.
-//
-// The `source` fallback carries records predating `verification`, where a `qr`
-// source could only have come from the camera.
 export function isVerified(contact: Contact | undefined): boolean {
-  if (contact === undefined) return false;
-  return contact.verification !== undefined || contact.source === "qr";
-}
-
-// Which means was used, for the line under the shield. Same fallback.
-export function verificationMethod(
-  contact: Contact | undefined,
-): Contact["verification"] | undefined {
-  if (contact === undefined) return undefined;
-  if (contact.verification !== undefined) return contact.verification;
-  return contact.source === "qr" ? "in-person" : undefined;
+  return contact?.verification !== undefined;
 }
 
 // Do we hold enough of this identity to reach them and to label them.
@@ -269,10 +250,9 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
     source,
     // Set only by a write that carries one: a camera scan states "in-person",
     // `markVerified` states "fingerprint". A link carries neither, so it can
-    // neither remove nor invent it. `verificationMethod` supplies the reading
-    // for records predating the field.
+    // neither remove nor invent it.
     verification:
-      verificationMethod(prior) ??
+      prior.verification ??
       (next.source === "qr" ? "in-person" : next.verification),
     verifiedAtMs:
       prior.verifiedAtMs ??

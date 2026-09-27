@@ -9,7 +9,6 @@ import {
   hasKeys,
   isVerified,
   useContactsStore,
-  verificationMethod,
   type Contact,
 } from "../contacts-store";
 
@@ -308,24 +307,10 @@ describe("addContact merges and never weakens", () => {
 describe("verification is separate from source", () => {
   const ID = "aabbccdd00112233";
 
-  it("reads a legacy qr contact as verified in person", () => {
-    // No `verification` field, as records predating it.
-    const legacy: Contact = {
-      peerID: ID,
-      noisePubKeyHex: "aa".repeat(32),
-      signingPubKeyHex: "bb".repeat(32),
-      nickname: "swift",
-      addedAtMs: 1_000,
-      source: "qr",
-    };
-    expect(isVerified(legacy)).toBe(true);
-    expect(verificationMethod(legacy)).toBe("in-person");
-  });
-
   it("treats a link contact as unverified until somebody checks", () => {
     state().addContact(makeContact({ source: "link" }));
     expect(isVerified(state().getContact(ID))).toBe(false);
-    expect(verificationMethod(state().getContact(ID))).toBeUndefined();
+    expect(state().getContact(ID)?.verification).toBeUndefined();
   });
 
   it("verifies a link contact by fingerprint without changing its source", () => {
