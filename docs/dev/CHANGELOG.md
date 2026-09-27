@@ -5,6 +5,24 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- release: v1.0.9 (security findings from claude opus 5.5) (#74) (by @Areeb Ahmed) (#74) [4749185]
+- feat(identity): transfer to a new phone (#72) (by @Areeb Ahmed) (#72) [d695f3c]
+- feat(wallet): redesign the wallet screen (#70) (by @Areeb Ahmed) (#70) [a289c36]
+- docs: bring architecture, glossary, progress and landing up to date (by @areebahmeddd) [4fd6c81]
+- chore(i18n): add and prune strings for this change in all 35 locales (by @areebahmeddd) [1945a17]
+- fix(app): keep notifications alive off screen, honour the OS and the wipe (by @areebahmeddd) [f28120c]
+- fix(wallet): never double-spend, lose or resurrect coins (by @areebahmeddd) [723f40d]
+- fix(chat): make groups, forwards, voice and media behave as they claim (by @areebahmeddd) [0cba17c]
+- fix(nostr): keep geohash DMs unlinkable, dedupe replays, fix channel identities (by @areebahmeddd) [db1c56d]
+- fix(mesh): cap payloads per type, fragment everything over a Bluetooth frame (by @areebahmeddd) [460cf76]
+- fix(nostr): reconnect relays when the network returns, and hold the pool behind Tor (#69) (by @Areeb Ahmed) (#69) [0d256af]
+- fix: contain ingress faults and fuzz every wire decoder (#68) (by @Areeb Ahmed) (#68) [f5bc8c8]
+- refactor: cleanup kotlin and swift code (by @areebahmeddd) [29a8b2b]
+
+**Full changelog:** [v1.0.8..v1.0.9](https://github.com/areebahmeddd/airhop/compare/v1.0.8..v1.0.9)
+
+## What's New
+
 - fix(release): don't block the clean-tree check on untracked files (by @areebahmeddd) [9a548e7]
 - test(native): add unit tests for ios and android platforms (by @areebahmeddd) [28bfb3d]
 - feat(chat): filter sheet on the chats screen and a verified badge (by @areebahmeddd) [9f18d90]
