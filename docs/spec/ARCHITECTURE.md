@@ -422,12 +422,13 @@ network, and whoever runs it, that this phone is carrying Airhop, which on a
 workplace or venue network is an attendance list. The Settings copy says that
 rather than selling the speed.
 
-Only local interfaces take part. Android accepts a socket only on Wi-Fi, its
-own hotspot, USB tethering or Ethernet (by interface name), and iOS refuses
-cellular and loopback and does not use peer-to-peer Wi-Fi (AWDL), so two
-iPhones on different networks do not find each other. At most 16 inbound mesh
-sockets and 4 transfer sockets are held at once; one over the cap is closed on
-accept, since each is a thread.
+Only local interfaces take part. On Android a socket whose interface can be
+named must be on Wi-Fi, its own hotspot, USB tethering or Ethernet (one it
+cannot name is accepted), and iOS refuses cellular and loopback and does not
+use peer-to-peer Wi-Fi (AWDL), so two iPhones on different networks do not
+find each other. At most 16 inbound mesh sockets and 4 transfer sockets are
+held at once; one over the cap is closed on accept, since each is a thread.
+Both platforms hold at most 64 discovered mDNS names.
 
 Links carry the same liveness as Wi-Fi Aware: a zero-length heartbeat every
 8 s, closed after 30 s of silence, on both platforms. On Android a frame must

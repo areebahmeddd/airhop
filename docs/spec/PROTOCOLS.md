@@ -540,7 +540,7 @@ through to `scheduleRelayIfNeeded`, and `RelayController.decide` receives the
 type as booleans that are all false for an unknown one, so it takes the ordinary
 broadcast relay path. A named Airhop channel therefore crosses a mesh made of
 bitchat phones while staying invisible to their users. Pinned end to end by the
-three-node scenario in `services/__tests__/sim/conformance.test.ts`.
+three-node scenario in `src/__tests__/simulation/conformance.test.ts`.
 
 Catch-up is preserved by giving the type its own sync bit
 ([section 5.2](#52-sync-type-bits)); without one, moving these messages off
@@ -887,7 +887,7 @@ dropped at the far end. This is correct behaviour and reads as a delivery bug in
 the field.
 
 `simulation/scenarios/relay.test.ts` pins the forwarding rules against a relay that holds no keys
-and never announces (`sim/harness/relay-node.ts`): delivery through one relay,
+and never announces (`src/__tests__/simulation/harness/relay-node.ts`): delivery through one relay,
 discovery without the relay entering the roster, a two-relay chain with no person
 between, a three-relay ring forwarding each packet once, and a private message
 crossing a node that cannot read it. That is the bare shape on purpose, because

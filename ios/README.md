@@ -42,12 +42,14 @@ Both frameworks are pinned by hash; see `native/README.md` for rebuilding them.
 macOS only.
 
 ```sh
-cd ios && pod install
-npm run ios                        # debug build onto a device or simulator
+bundle install                                  # the CocoaPods Gemfile.lock pins
+bundle exec pod install --project-directory=ios
+npm run ios                                     # debug build onto a device or simulator
 ```
 
-Pod versions come from `node_modules`, so a dependency change regenerates
-`Podfile.lock`; CI fails on a stale one.
+Run these from the project root. Pod versions come from `node_modules`, so a
+dependency change regenerates `Podfile.lock`; CI fails on a stale one, and on
+one written by any CocoaPods other than the pinned version.
 
 ## Tests
 
