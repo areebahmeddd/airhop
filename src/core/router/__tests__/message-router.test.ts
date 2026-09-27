@@ -989,6 +989,18 @@ describe("PeerRegistry: authenticated peer state", () => {
     );
     jest.useRealTimers();
   });
+
+  // Courier mail is sealed to this key for a peer who has left, which is
+  // exactly when get() stops answering.
+  test("noiseKeyFor outlives reachability", () => {
+    jest.useFakeTimers();
+    const r = withAnnouncedPeer();
+    jest.advanceTimersByTime(10 * 60_000);
+    expect(r.get(PEER)).toBeUndefined();
+    expect(r.noiseKeyFor(PEER)).toEqual(new Uint8Array(32));
+    expect(r.noiseKeyFor("ffffffffffffffff")).toBeUndefined();
+    jest.useRealTimers();
+  });
 });
 
 // The rule the add-contact screen leans on: a card read off the other phone may

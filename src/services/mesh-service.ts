@@ -3759,11 +3759,10 @@ export class MeshService {
     text: string,
     messageID: string,
   ): boolean {
-    const peer = this.registry.get(recipientPeerID);
-    const noisePub = peer?.noisePubKey;
     // Sealing is to their static Noise key; without it there is no envelope to
-    // build. (Known from a prior ANNOUNCE or a scanned contact card.)
-    if (!noisePub) return false;
+    // build.
+    const noisePub = this.courierSealKey(recipientPeerID);
+    if (noisePub === undefined) return false;
 
     // Refuse when nobody can carry it, rather than reporting success.
     //
@@ -3886,6 +3885,21 @@ export class MeshService {
     } catch {
       return false;
     }
+  }
+
+  // The static key to seal a peer's courier mail to, whether or not they are
+  // reachable: the key an announce pinned, else a saved contact's, as
+  // bitchat-ios reads its favourites (CourierDirectory.noiseKey). A contact's
+  // key must derive to the ID, as for contactSigningKey.
+  private courierSealKey(peerID: string): Uint8Array | undefined {
+    const pinned = this.registry.noiseKeyFor(peerID);
+    if (pinned !== undefined) return pinned;
+    const noise = useContactsStore
+      .getState()
+      .getContact(peerID)?.noisePubKeyHex;
+    if (noise === undefined || !HEX_32.test(noise)) return undefined;
+    const key = hexToBytes(noise);
+    return bytesToHex(sha256(key)).slice(0, 16) === peerID ? key : undefined;
   }
 
   // Hand one envelope to ONE named peer.
@@ -6128,12 +6142,22 @@ export class MeshService {
     // fast path is still a neighbour to hand the packet to, and counting it out
     // spends the internet on a hop this node can make itself.
     const canReachMesh = hasDirectLink || this.links.size() > 0;
+    // Every mesh tier needs the peer heard within the registry TTL, as
+    // bitchat-ios needs them reachable before it sends over the mesh. A flood
+    // to a peer who has left is a send nobody receives, and it would keep the
+    // message from ever reaching Nostr or a courier below.
+    const peer = this.registry.get(recipientPeerID);
     // Same gate as the receipt path: a ratchet that has not yet been given a
     // sending chain cannot encrypt, and the Noise transport below is a fully
     // valid route in the meantime. Falling through costs this one message its
     // per-message forward secrecy; throwing would cost the user their message
     // and surface as an exception inside the composer.
-    if (drState !== undefined && canEncrypt(drState) && canReachMesh) {
+    if (
+      peer !== undefined &&
+      drState !== undefined &&
+      canEncrypt(drState) &&
+      canReachMesh
+    ) {
       this.sendDRMessage(
         recipientPeerID,
         encodeDmMessage(msgID, text),
@@ -6149,7 +6173,6 @@ export class MeshService {
     // bitchat does (BLEService.broadcastPacket for the handshake init). Every
     // relay forwards it and only the addressee acts on it; the msg2/msg3 replies
     // flood back the same way (see onNoiseHandshake).
-    const peer = this.registry.get(recipientPeerID);
     if (peer !== undefined && peer.session === undefined && canReachMesh) {
       const existing = this.activeHandshake(recipientPeerID);
       if (existing) {

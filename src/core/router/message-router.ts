@@ -312,6 +312,13 @@ export class PeerRegistry {
     return this.peers.get(peerID)?.signingPubKey;
   }
 
+  // The Noise static key pinned to this peer, ignoring reachability. Courier
+  // mail is sealed to it, and a courier exists for exactly the peer `get()` has
+  // stopped showing.
+  noiseKeyFor(peerID: string): Uint8Array | undefined {
+    return this.peers.get(peerID)?.noisePubKey;
+  }
+
   // The Nostr key the peer announced, ignoring reachability.
   nostrPubkeyFor(peerID: string): string | undefined {
     return this.peers.get(peerID)?.nostrPubkey;

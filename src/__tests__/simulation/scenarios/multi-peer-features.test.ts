@@ -618,10 +618,13 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   s.assert(true);
 });
 
-test("F08 an envelope past one frame is carried, not deleted as handed over", async () => {
-  // A long private message seals into an envelope longer than a Bluetooth
-  // frame. Written whole, the carrier's radio refuses it, yet the write was
-  // counted as a handover, so the sender could delete mail nobody held. It
+test("F08 a message for someone long gone is carried, past one frame, from the composer", async () => {
+  // The case store-and-forward exists for: the recipient left more than a
+  // minute ago, so the registry no longer shows them, and a carrier is in
+  // range. The DM must reach the carrier, sealed to the key alice still holds,
+  // rather than be flooded at a room bob is not in. A long message also seals
+  // into an envelope longer than a Bluetooth frame. Written whole, the
+  // carrier's radio refuses it, yet the write was counted as a handover, so it
   // has to go as fragments, and only a complete write is a handover.
   const s = (scenario = new Scenario({
     id: "F08",
@@ -644,9 +647,20 @@ test("F08 an envelope past one frame is carried, not deleted as handed over", as
   // Long enough for every announce to land, so alice holds bob's key to seal
   // to and the carrier's to charge the deposit against.
   await s.world.advance(10_000);
+  // And a conversation first, so alice holds a session and a ratchet for bob:
+  // the tier that used to flood the DM into the room instead.
+  alice.send(`dm:${bob.peerID}`, "see you later");
+  const talked = await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("see you later"),
+    120_000,
+  );
+  s.check("alice and bob talked while together", talked);
 
   radio.setIsolated("bob", true);
   await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+  // Past the registry's minute, so bob is gone rather than briefly quiet.
+  await s.world.advance(90_000);
 
   // Envelope fragments from alice, told apart by the inner type byte (12) of
   // the fragment header.
@@ -658,22 +672,15 @@ test("F08 an envelope past one frame is carried, not deleted as handed over", as
     envelopeFragments += bin.includes("\u0004") ? 1 : 0;
   });
 
-  // The largest message a courier envelope can carry, under a UUID message id
-  // as the composer mints: sealed, about 520 bytes on the air.
+  // The largest message a courier envelope can carry: sealed, past 512 bytes
+  // on the air.
   const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
   let text = "";
   for (let i = 0; i < 255; i++) {
     text += alphabet[s.world.rng.int(0, alphabet.length - 1)];
   }
-  // Straight to the courier path. A DM sent through the composer floods to
-  // the carrier first and reaches it only once bob has dropped out of alice's
-  // registry, which is a minute of waiting that tests nothing here.
-  const sealed = (
-    alice.mesh as unknown as {
-      sendViaCourier: (peerID: string, text: string, id: string) => boolean;
-    }
-  ).sendViaCourier(bob.peerID, text, "f08a1b2c-0000-4000-8000-00000000c0de");
-  s.check("alice found a courier", sealed);
+  const status = alice.send(`dm:${bob.peerID}`, text);
+  s.check("alice found a courier", status === "carried", `status=${status}`);
 
   const courier = (
     carrier.mesh as unknown as { courier: { size: number } } | null
