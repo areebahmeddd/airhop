@@ -39,7 +39,6 @@ import {
   describeRoute,
   payPerson,
   reclaimTokenSend,
-  settleReclaimedSend,
 } from "@services/payment-router";
 import {
   addMint as addMintService,
@@ -60,6 +59,7 @@ import {
   reconcile,
   refreshAccount,
   restoreFromRecoveryPhrase,
+  settleReclaim,
   staleFeeDays,
   WalletError,
   type LightningDeposit,
@@ -732,7 +732,7 @@ export default function WalletScreen({
     );
   }
 
-  // Instant, even offline; the mint's half follows in settleReclaimedSend.
+  // Instant, even offline; the mint's half follows in settleReclaim.
   function handleReclaim(tx: WalletTx | PreparedSend): void {
     // WalletTx `id` and PreparedSend `txId` are the same value.
     const txId = "txId" in tx ? tx.txId : tx.id;
@@ -749,7 +749,7 @@ export default function WalletScreen({
           onPress: () => {
             if (!reclaimTokenSend(txId)) return;
             setPending(null);
-            void settleReclaimedSend(txId).then((outcome) => {
+            void settleReclaim(txId).then((outcome) => {
               if (outcome === "refused") {
                 showAlert(
                   t("wallet.err.mint_refused"),

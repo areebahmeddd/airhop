@@ -860,7 +860,9 @@ is reached. Online, reclaiming swaps the coins at once, as cashu.me does by
 receiving its own token, so the copy handed out stops working; if the recipient
 redeemed it first, the send is marked completed rather than shown as balance.
 Offline, the coins come back unconfirmed until the reconcile pass or a refresh
-swaps them once the mint is reachable. The UI says so before reclaiming.
+reaches the mint: it swaps them, or finds the recipient redeemed them first and
+marks the send completed the same way, with the chat card and bubble following.
+The UI says so before reclaiming.
 
 ### Recovery
 

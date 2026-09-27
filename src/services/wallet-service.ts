@@ -1908,16 +1908,23 @@ async function refreshAccountOnce(
       unit,
       spent.map((p) => p.secret),
     );
-    recordTx({
-      kind: "swap",
-      status: "failed",
-      amount: spent.reduce((s, p) => s + p.amount, 0),
-      unit,
-      mintUrl: url,
-      spentRemoved: true,
-      error: t("wallet.svc.mint_says_spent"),
-    });
-    closeReceipts(receiptsOf(spent), "spent");
+    const landed = closeReceipts(receiptsOf(spent), "spent");
+    // A reclaimed send whose recipient got there first is a payment that
+    // landed, and the send row is its debit; only the rest is a loss.
+    const lost = spent.filter(
+      (p) => p.receiptTxId === undefined || !landed.has(p.receiptTxId),
+    );
+    if (lost.length > 0) {
+      recordTx({
+        kind: "swap",
+        status: "failed",
+        amount: lost.reduce((s, p) => s + p.amount, 0),
+        unit,
+        mintUrl: url,
+        spentRemoved: true,
+        error: t("wallet.svc.mint_says_spent"),
+      });
+    }
   }
 
   result.spentRemoved = spent.length;
@@ -2125,12 +2132,16 @@ function receiptsOf(coins: StoredProof[]): Set<string> {
 }
 
 // Close offline receipts none of whose coins this wallet still holds: swapped
-// (confirmed) or paid on, or all spent by someone else first. A row still holding
-// a swap preview is `reconcile`'s, and a reclaimed send keeps its own status.
+// (confirmed) or paid on, or all spent by someone else first. A row still
+// holding a swap preview is `reconcile`'s. A reclaimed send whose coins were
+// all spent is a payment the recipient redeemed before the reclaim reached the
+// mint, so it reads completed, as `settleReclaim` records it when it can ask
+// at once. Returns those sends.
 function closeReceipts(
   receipts: Set<string>,
   outcome: "swapped" | "spent" = "swapped",
-): void {
+): Set<string> {
+  const landed = new Set<string>();
   const state = useWalletStore.getState();
   const stillHeld = new Set<string>();
   const pools = [
@@ -2143,9 +2154,8 @@ function closeReceipts(
     }
   }
   for (const tx of state.history) {
+    if (!receipts.has(tx.id) || stillHeld.has(tx.id)) continue;
     if (
-      receipts.has(tx.id) &&
-      !stillHeld.has(tx.id) &&
       tx.kind === "receive" &&
       tx.status === "pending" &&
       tx.swapPreview === undefined
@@ -2156,8 +2166,16 @@ function closeReceipts(
           ? { status: "completed", error: undefined }
           : { status: "failed", error: t("wallet.svc.already_spent_body") },
       );
+    } else if (
+      outcome === "spent" &&
+      tx.kind === "send" &&
+      tx.status === "reclaimed"
+    ) {
+      state.updateTx(tx.id, { status: "completed" });
+      landed.add(tx.id);
     }
   }
+  return landed;
 }
 
 // The reserved coins went to a recipient or into the mint's hands. An offline

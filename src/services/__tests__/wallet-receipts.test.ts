@@ -311,6 +311,29 @@ describe("a receipt whose coins are paid on", () => {
 });
 
 describe("settling a reclaim", () => {
+  it("reads as sent when the refresh finds the recipient redeemed it first", async () => {
+    // A stranger's coins, so the ones the recipient spends are not secrets
+    // this wallet's phrase derives again in the next test.
+    await receiveOffline(await strangersToken(8));
+    const send = await prepareSend({ amount: 8 });
+    const recipient = new Wallet(new Mint(fabric.url), { unit: UNIT });
+    await recipient.loadMint();
+    await recipient.receive(send.token);
+
+    // Reclaimed with nothing asked of the mint, as offline; the refresh
+    // learns the rest.
+    expect(reclaimSend(send.txId)).toBe(true);
+    await refreshAccount(fabric.url, UNIT);
+
+    expect(row(send.txId)?.status).toBe("completed");
+    expect(sum(held())).toBe(0);
+    // The send is the debit; a second "spent proofs removed" would count it
+    // twice.
+    expect(
+      useWalletStore.getState().history.some((t) => t.spentRemoved === true),
+    ).toBe(false);
+  });
+
   it("swaps the reclaimed coins even behind a queue of older receipts", async () => {
     // Nine older receipts, one more than a refresh swaps in one go.
     for (let i = 0; i < 9; i++) {

@@ -35,11 +35,9 @@ import {
   quoteSend,
   reclaimSend,
   settleNutzap,
-  settleReclaim,
   staleFeeDays,
   WalletError,
   type NutzapTarget,
-  type ReclaimOutcome,
 } from "./wallet-service";
 
 // How the DM actually left the device: "they have it" versus "queued, they
@@ -540,21 +538,31 @@ export function reclaimTokenSend(txId: string): boolean {
   return true;
 }
 
-// The mint's half of a reclaim, after `reclaimTokenSend`. If the recipient had
-// already redeemed the token, the thread says it arrived after all.
-export async function settleReclaimedSend(
-  txId: string,
-): Promise<ReclaimOutcome> {
-  const outcome = await settleReclaim(txId);
-  if (outcome === "claimed") {
-    const peerID = useWalletStore
-      .getState()
-      .history.find((tx) => tx.id === txId)?.counterparty;
-    if (peerID !== undefined && peerID.length > 0) {
-      useChatStore.getState().markReclaimedPaid(`dm:${peerID}`, txId);
+let followingReclaims = false;
+
+// A reclaimed send turns completed when the mint says the recipient redeemed
+// the token first: at once when the reclaim can ask, or passes later from the
+// reconcile pass, with nobody awaiting it. Either way the thread says it
+// arrived after all. Idempotent; started once, at launch.
+export function startReclaimFollow(): void {
+  if (followingReclaims) return;
+  followingReclaims = true;
+  useWalletStore.subscribe((state, prev) => {
+    if (state.history === prev.history) return;
+    const reclaimed = new Set(
+      prev.history
+        .filter((tx) => tx.kind === "send" && tx.status === "reclaimed")
+        .map((tx) => tx.id),
+    );
+    if (reclaimed.size === 0) return;
+    for (const tx of state.history) {
+      if (!reclaimed.has(tx.id) || tx.status !== "completed") continue;
+      const peerID = tx.counterparty;
+      if (peerID !== undefined && peerID.length > 0) {
+        useChatStore.getState().markReclaimedPaid(`dm:${peerID}`, tx.id);
+      }
     }
-  }
-  return outcome;
+  });
 }
 
 export function reportWalletError(err: unknown): void {
