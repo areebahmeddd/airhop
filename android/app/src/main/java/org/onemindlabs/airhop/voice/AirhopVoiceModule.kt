@@ -39,7 +39,6 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.nio.ByteBuffer
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -144,9 +143,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
 
     // ---- Playback state ------------------------------------------------------
 
-    private val playing = AtomicBoolean(false)
-    private var playbackThread: Thread? = null
-    private val frameQueue = LinkedBlockingQueue<ByteArray>()
+    private val playback = PlaybackBursts(MAX_QUEUED_FRAMES)
 
     private var listenerCount = 0
 
@@ -337,53 +334,35 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun startPlayback(promise: Promise) {
         // One voice at a time: an incoming burst replaces whatever was playing
-        // rather than mixing with it.
-        stopPlaybackInternal()
-        frameQueue.clear()
-        playing.set(true)
-        val thread = Thread({ runPlayback() }, "AirhopVoicePlayback")
+        // rather than mixing with it. The thread it replaces is not joined, for
+        // the same reason capture is not; see PlaybackBursts.
+        val burst = playback.start()
+        val thread = Thread({ runPlayback(burst) }, "AirhopVoicePlayback")
         thread.priority = Thread.MAX_PRIORITY
-        playbackThread = thread
         thread.start()
         promise.resolve(null)
     }
 
     @ReactMethod
     fun enqueueFrames(framesBase64: ReadableArray, promise: Promise) {
-        if (!playing.get()) {
-            // Frames for a burst that already ended. Dropping is correct: late
-            // audio is worthless, which is why there is no retransmit anywhere
-            // in this path.
-            promise.resolve(null)
-            return
-        }
         for (i in 0 until framesBase64.size()) {
             val encoded = framesBase64.getString(i) ?: continue
             val frame = runCatching { Base64.decode(encoded, Base64.NO_WRAP) }.getOrNull()
             if (frame == null || frame.isEmpty()) continue
-            // Drop the oldest rather than block the bridge when the speaker is
-            // behind: the queue holding means the audio in it is already stale.
-            while (frameQueue.size >= MAX_QUEUED_FRAMES) frameQueue.poll()
-            frameQueue.offer(frame)
+            // Refused means the burst has ended, and the rest of the batch is
+            // as late as this frame.
+            if (!playback.enqueue(frame)) break
         }
         promise.resolve(null)
     }
 
     @ReactMethod
     fun stopPlayback(promise: Promise) {
-        stopPlaybackInternal()
+        playback.stop()
         promise.resolve(null)
     }
 
-    private fun stopPlaybackInternal() {
-        playing.set(false)
-        // Wake the queue's blocking take so the thread can see the flag and
-        // finish. Not joined, for the same reason capture is not.
-        frameQueue.offer(ByteArray(0))
-        playbackThread = null
-    }
-
-    private fun runPlayback() {
+    private fun runPlayback(burst: PlaybackBurst) {
         var decoder: MediaCodec? = null
         var track: AudioTrack? = null
         try {
@@ -438,11 +417,11 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             track.play()
 
             val info = MediaCodec.BufferInfo()
-            while (playing.get()) {
+            while (playback.isCurrent(burst)) {
                 // Waits rather than spins: a burst with a gap in it should cost
                 // nothing while the gap lasts.
-                val frame = frameQueue.take()
-                if (frame.isEmpty()) continue // wake-up sentinel from stop
+                val frame = burst.frames.take()
+                if (frame.isEmpty()) continue // woken to notice it was superseded
                 feedDecoder(decoder, frame)
                 drainDecoder(decoder, info, track)
             }
@@ -451,12 +430,12 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.w(TAG, "playback failed", e)
         } finally {
-            playing.set(false)
+            playback.ended(burst)
             runCatching { track?.stop() }
             runCatching { track?.release() }
             runCatching { decoder?.stop() }
             runCatching { decoder?.release() }
-            frameQueue.clear()
+            burst.frames.clear()
         }
     }
 
@@ -496,7 +475,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     override fun invalidate() {
         captureGeneration.incrementAndGet()
         capturing.set(false)
-        stopPlaybackInternal()
+        playback.stop()
         super.invalidate()
     }
 
