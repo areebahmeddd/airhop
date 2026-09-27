@@ -2628,6 +2628,7 @@ export default function MessageThread({
             // taken every fragment, not when the transfer is queued.
             (delivered) => {
               setStatus(item.channel, item.id, delivered ? "sent" : "failed");
+              if (delivered) sendCaptionForBitchat(item.channel, item.text);
             },
           );
           if (!reached) {
