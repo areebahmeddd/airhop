@@ -66,6 +66,8 @@ export type ReceiverState =
   | { phase: "waiting"; code: string }
   // Connected, nothing written: the person compares these with the old phone's.
   | { phase: "confirm"; peerID: string; words: string[] }
+  // Matched here; the old phone's Transfer tap is what sends the offer.
+  | { phase: "awaiting"; peerID: string }
   | { phase: "receiving"; peerID: string; progress: number }
   | { phase: "saving"; peerID: string }
   // Committed; waiting for the old phone to say it is erased.
@@ -137,7 +139,7 @@ export class MoveReceiver {
   confirm(): void {
     const active = this.active;
     if (active === null || this.state.phase !== "confirm") return;
-    this.set({ phase: "receiving", peerID: active.peerID, progress: 0 });
+    this.set({ phase: "awaiting", peerID: active.peerID });
     this.sendOn(active, encodeConfirm()).catch(() => {
       if (this.active === active) this.fail("interrupted");
     });
@@ -321,7 +323,7 @@ export class MoveReceiver {
   // the release is missing.
   private onActiveClosed(): void {
     const phase = this.state.phase;
-    if (phase === "confirm" || phase === "receiving") {
+    if (phase === "confirm" || phase === "awaiting" || phase === "receiving") {
       this.fail("interrupted");
     } else if (phase === "releasing") {
       this.finish(false);
@@ -367,7 +369,11 @@ export class MoveReceiver {
     }
     const phase = this.state.phase;
     if (message === null) {
-      if (phase === "confirm" || phase === "receiving") {
+      if (
+        phase === "confirm" ||
+        phase === "awaiting" ||
+        phase === "receiving"
+      ) {
         await this.abortWith(MoveAbortReason.INVALID, "interrupted");
       }
       return;
@@ -380,7 +386,7 @@ export class MoveReceiver {
 
     switch (message.type) {
       case "offer": {
-        if (active.offer !== null || phase !== "receiving") return;
+        if (active.offer !== null || phase !== "awaiting") return;
         if (!canReadVersion(APP_VERSION, message.offer.appVersion)) {
           await this.abortWith(MoveAbortReason.INCOMPATIBLE, "incompatible");
           return;
@@ -392,6 +398,7 @@ export class MoveReceiver {
         active.offer = message.offer;
         active.offerRaw = message.raw;
         active.assembler = new BundleAssembler(message.offer);
+        this.set({ phase: "receiving", peerID: active.peerID, progress: 0 });
         return;
       }
       case "chunk": {
@@ -424,7 +431,11 @@ export class MoveReceiver {
         if (this.state.phase === "releasing") this.finish(true);
         return;
       case "abort":
-        if (phase === "confirm" || phase === "receiving") {
+        if (
+          phase === "confirm" ||
+          phase === "awaiting" ||
+          phase === "receiving"
+        ) {
           this.fail(
             message.reason === MoveAbortReason.CANCELLED
               ? "cancelled"

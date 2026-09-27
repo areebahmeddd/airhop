@@ -716,11 +716,13 @@ describe("device transfer, the words both phones show", () => {
       await until(
         () =>
           lastPhase(r.senderStates) === "verify" &&
-          lastPhase(r.receiverStates) === "receiving",
+          lastPhase(r.receiverStates) === "awaiting",
       ),
     ).toBe(true);
     await settle();
     expect(lastPhase(r.senderStates)).toBe("verify");
+    // Nothing moves until the tap, and the new phone says whose turn it is.
+    expect(lastPhase(r.receiverStates)).toBe("awaiting");
     expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
     expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();
 

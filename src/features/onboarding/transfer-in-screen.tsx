@@ -203,6 +203,14 @@ export default function TransferInScreen({
             </Text>
           </View>
         );
+      case "awaiting":
+        // The old phone's counterpart is "Confirm on your new phone".
+        return busyPanel(
+          T("onboarding.transfer.waiting_old", {
+            action: T("settings.transfer.confirm_cta"),
+          }),
+          state.peerID,
+        );
       case "receiving":
         return (
           <View style={styles.center} accessibilityLiveRegion="polite">
@@ -308,7 +316,7 @@ export default function TransferInScreen({
         </>
       );
     }
-    if (state.phase === "receiving") {
+    if (state.phase === "awaiting" || state.phase === "receiving") {
       return <TextButton label={T("common.cancel")} onPress={leave} />;
     }
     return null;

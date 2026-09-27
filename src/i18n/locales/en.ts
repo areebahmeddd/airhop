@@ -154,6 +154,7 @@ export const strings = {
   "onboarding.transfer.confirm_body":
     "Your old phone should show these same words. If it shows different words, or none, cancel.",
   "onboarding.transfer.confirm_cta": "They match",
+  "onboarding.transfer.waiting_old": "Tap {action} on your old phone",
   "onboarding.transfer.receiving": "Receiving {percent}%",
   "onboarding.transfer.saving": "Saving to this phone",
   "onboarding.transfer.releasing": "Finishing on your old phone",
