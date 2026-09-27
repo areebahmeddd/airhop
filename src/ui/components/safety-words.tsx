@@ -39,6 +39,9 @@ export default function SafetyWords({
 function createStyles(color: string) {
   return StyleSheet.create({
     grid: {
+      // Pinned, so a right-to-left phone beside a left-to-right one shows the
+      // Latin words in the same order rather than each row mirrored.
+      direction: "ltr",
       flexDirection: "row",
       flexWrap: "wrap",
       justifyContent: "center",
