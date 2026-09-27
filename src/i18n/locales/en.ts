@@ -2248,7 +2248,7 @@ export const strings = {
     "Destroying your keys, messages and files. This takes a few seconds, and finishes on its own if the app is closed.",
   "settings.wipe.keys_failed": "Keys could not be destroyed",
   "settings.wipe.keys_failed_body":
-    "Your messages, contacts and wallet are gone, but the device refused to release your keys. Unlock the device and wipe again.",
+    "Your messages, contacts and wallet are gone, but the device refused to release your keys. Unlock the device, then reopen Airhop to finish the wipe.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Contact us",
