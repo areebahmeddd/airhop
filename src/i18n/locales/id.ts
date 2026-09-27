@@ -495,6 +495,8 @@ export const strings: Strings = {
     "Berkas hanya terkirim dalam jangkauan Bluetooth. Teks dan pembayaran menjangkau kontak lewat internet; lampiran tidak.",
   "chat.thread.media_securing":
     "Sedang menyiapkan enkripsi dengan mereka dulu. Coba lagi sebentar lagi.",
+  "chat.thread.media_unsupported":
+    "Aplikasi mereka tidak bisa menerima foto atau catatan suara terenkripsi, jadi ini tidak dikirim.",
   "chat.thread.message_peer": "Kirimi {name} pesan",
   "chat.thread.send": "Kirim pesan",
   "chat.thread.group": "Grup",

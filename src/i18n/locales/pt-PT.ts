@@ -492,6 +492,8 @@ export const strings: Strings = {
     "Os ficheiros só saem dentro do alcance do Bluetooth. Texto e pagamentos alcançam contactos pela Internet; anexos não.",
   "chat.thread.media_securing":
     "A configurar primeiro a encriptação com a pessoa. Tenta de novo daqui a pouco.",
+  "chat.thread.media_unsupported":
+    "A aplicação da pessoa não recebe fotografias nem notas de voz encriptadas, por isso isto não foi enviado.",
   "chat.thread.message_peer": "Escrever a {name}",
   "chat.thread.send": "Enviar a mensagem",
   "chat.thread.group": "Grupo",

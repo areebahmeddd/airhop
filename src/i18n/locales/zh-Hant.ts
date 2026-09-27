@@ -461,6 +461,8 @@ export const strings: Strings = {
   "chat.thread.attach_note":
     "檔案只在藍牙範圍內傳送。文字和付款觸及得到網路上的聯絡人，附件則不行。",
   "chat.thread.media_securing": "正在先與對方建立加密。請稍後再試。",
+  "chat.thread.media_unsupported":
+    "對方的 App 無法接收加密的照片或語音留言，因此未傳送。",
   "chat.thread.message_peer": "傳訊息給 {name}",
   "chat.thread.send": "傳送訊息",
   "chat.thread.group": "群組",

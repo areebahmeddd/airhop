@@ -461,6 +461,8 @@ export const strings: Strings = {
   "chat.thread.attach_note":
     "文件只在蓝牙范围内发送。文字和付款能触达互联网上的联系人，附件不行。",
   "chat.thread.media_securing": "正在先与对方建立加密。请稍后再试。",
+  "chat.thread.media_unsupported":
+    "对方的应用无法接收加密的照片或语音留言，因此未发送。",
   "chat.thread.message_peer": "给 {name} 发消息",
   "chat.thread.send": "发送消息",
   "chat.thread.group": "群组",

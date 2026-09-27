@@ -484,6 +484,8 @@ export const strings: Strings = {
     "파일은 블루투스 범위 안에서만 전송됩니다. 텍스트와 결제는 인터넷 연락처에도 닿지만 첨부 파일은 닿지 않습니다.",
   "chat.thread.media_securing":
     "먼저 상대와 암호화를 설정하고 있습니다. 잠시 후 다시 시도하세요.",
+  "chat.thread.media_unsupported":
+    "상대방 앱이 암호화된 사진이나 음성 메모를 받을 수 없어 보내지 않았습니다.",
   "chat.thread.message_peer": "{name}에게 메시지 보내기",
   "chat.thread.send": "메시지 보내기",
   "chat.thread.group": "그룹",

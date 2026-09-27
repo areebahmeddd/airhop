@@ -502,6 +502,8 @@ export const strings: Strings = {
     "Dateien gehen nur in Bluetooth-Reichweite raus. Text und Zahlungen erreichen Internetkontakte, Anhänge nicht.",
   "chat.thread.media_securing":
     "Die Verschlüsselung mit der Person wird noch eingerichtet. Versuche es gleich noch einmal.",
+  "chat.thread.media_unsupported":
+    "Die App der Person kann keine verschlüsselten Fotos oder Sprachnotizen empfangen, deshalb wurde das nicht gesendet.",
   "chat.thread.message_peer": "{name} schreiben",
   "chat.thread.send": "Nachricht senden",
   "chat.thread.group": "Gruppe",

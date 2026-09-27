@@ -485,6 +485,8 @@ export const strings: Strings = {
     "فایل‌ها تنها در محدودهٔ بلوتوث می‌روند. متن و پرداخت به مخاطبان اینترنتی می‌رسند؛ پیوست‌ها نه.",
   "chat.thread.media_securing":
     "نخست باید رمزگذاری با این فرد برقرار شود. کمی بعد دوباره تلاش کنید.",
+  "chat.thread.media_unsupported":
+    "برنامه‌شان نمی‌تواند عکس یا پیام صوتی رمزگذاری‌شده دریافت کند، پس این فرستاده نشد.",
   "chat.thread.message_peer": "پیام به {name}",
   "chat.thread.send": "فرستادن پیام",
   "chat.thread.group": "گروه",

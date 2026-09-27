@@ -497,6 +497,8 @@ export const strings: Strings = {
     "Les fichiers ne partent qu’à portée du Bluetooth. Le texte et les paiements atteignent les contacts par internet ; les pièces jointes non.",
   "chat.thread.media_securing":
     "Le chiffrement avec cette personne est encore en cours de mise en place. Réessaie dans un instant.",
+  "chat.thread.media_unsupported":
+    "L’app de cette personne ne peut pas recevoir de photos ni de notes vocales chiffrées, ceci n’a donc pas été envoyé.",
   "chat.thread.message_peer": "Écrire à {name}",
   "chat.thread.send": "Envoyer le message",
   "chat.thread.group": "Groupe",

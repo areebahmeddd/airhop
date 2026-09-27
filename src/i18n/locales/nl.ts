@@ -494,6 +494,8 @@ export const strings: Strings = {
     "Bestanden gaan alleen binnen Bluetooth-bereik. Tekst en betalingen bereiken contacten via internet; bijlagen niet.",
   "chat.thread.media_securing":
     "Eerst wordt een versleutelde verbinding met ze opgezet. Probeer het zo nog eens.",
+  "chat.thread.media_unsupported":
+    "Hun app kan geen versleutelde foto’s of spraakberichten ontvangen, dus dit is niet verstuurd.",
   "chat.thread.message_peer": "{name} schrijven",
   "chat.thread.send": "Bericht sturen",
   "chat.thread.group": "Groep",

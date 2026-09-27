@@ -493,6 +493,8 @@ export const strings: Strings = {
     "Файли йдуть лише в радіусі Bluetooth. Текст і платежі дістають контактів через інтернет; вкладення — ні.",
   "chat.thread.media_securing":
     "Спершу налаштовується шифрування з ними. Спробуйте за мить.",
+  "chat.thread.media_unsupported":
+    "Їхній застосунок не може отримувати зашифровані фото чи голосові нотатки, тож це не надіслано.",
   "chat.thread.message_peer": "Написати {name}",
   "chat.thread.send": "Надіслати повідомлення",
   "chat.thread.group": "Група",

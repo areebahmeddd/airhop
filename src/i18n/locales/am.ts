@@ -459,6 +459,8 @@ export const strings: Strings = {
     "ፋይሎች የሚላኩት በብሉቱዝ ክልል ውስጥ ብቻ ነው። ጽሑፍና ክፍያዎች የኢንተርኔት እውቂያዎችን ይደርሳሉ፤ አባሪዎች ግን አይደርሱም።",
   "chat.thread.media_securing":
     "መጀመሪያ ከእነሱ ጋር ምስጠራ እየተዘጋጀ ነው። ከጥቂት ጊዜ በኋላ እንደገና ሞክር።",
+  "chat.thread.media_unsupported":
+    "መተግበሪያቸው የተመሰጠሩ ፎቶዎችን ወይም የድምፅ መልእክቶችን መቀበል አይችልም፤ ስለዚህ ይህ አልተላከም።",
   "chat.thread.message_peer": "ለ{name} መልእክት ላክ",
   "chat.thread.send": "መልእክት ላክ",
   "chat.thread.group": "ቡድን",

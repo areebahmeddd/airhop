@@ -498,6 +498,8 @@ export const strings: Strings = {
     "Faili hutumwa ndani ya masafa ya Bluetooth pekee. Maandishi na malipo hufikia anwani kupitia intaneti; viambatisho havifiki.",
   "chat.thread.media_securing":
     "Kwanza muunganisho uliosimbwa nao unaandaliwa. Jaribu tena baada ya muda mfupi.",
+  "chat.thread.media_unsupported":
+    "Programu yao haiwezi kupokea picha wala noti za sauti zilizosimbwa, kwa hivyo hii haikutumwa.",
   "chat.thread.message_peer": "Mtumie ujumbe {name}",
   "chat.thread.send": "Tuma ujumbe",
   "chat.thread.group": "Kikundi",

@@ -488,6 +488,8 @@ export const strings: Strings = {
     "Tệp chỉ gửi được trong tầm Bluetooth. Văn bản và thanh toán tới được các liên hệ trên Internet; tệp đính kèm thì không.",
   "chat.thread.media_securing":
     "Đang thiết lập mã hóa với họ trước. Hãy thử lại sau giây lát.",
+  "chat.thread.media_unsupported":
+    "Ứng dụng của họ không nhận được ảnh hay tin nhắn thoại đã mã hóa, nên nội dung này không được gửi.",
   "chat.thread.message_peer": "Nhắn tin cho {name}",
   "chat.thread.send": "Gửi tin nhắn",
   "chat.thread.group": "Nhóm",

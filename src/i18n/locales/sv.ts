@@ -489,6 +489,8 @@ export const strings: Strings = {
     "Filer skickas bara inom Bluetooth-räckhåll. Text och betalningar når kontakter över internet; bilagor gör det inte.",
   "chat.thread.media_securing":
     "Först sätts en krypterad anslutning upp med dem. Försök igen om en stund.",
+  "chat.thread.media_unsupported":
+    "Deras app kan inte ta emot krypterade foton eller röstmeddelanden, så det här skickades inte.",
   "chat.thread.message_peer": "Skriv till {name}",
   "chat.thread.send": "Skicka meddelande",
   "chat.thread.group": "Grupp",

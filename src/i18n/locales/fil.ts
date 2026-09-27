@@ -507,6 +507,8 @@ export const strings: Strings = {
     "Sa saklaw lang ng Bluetooth naipapadala ang mga file. Umaabot sa mga contact sa internet ang teksto at bayad; ang mga attachment, hindi.",
   "chat.thread.media_securing":
     "Inihahanda pa ang encryption sa kanila. Subukan ulit maya-maya.",
+  "chat.thread.media_unsupported":
+    "Hindi makatanggap ang app nila ng naka-encrypt na larawan o voice note, kaya hindi ito naipadala.",
   "chat.thread.message_peer": "Mag-mensahe kay {name}",
   "chat.thread.send": "Magpadala ng mensahe",
   "chat.thread.group": "Grupo",

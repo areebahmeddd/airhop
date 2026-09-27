@@ -492,6 +492,8 @@ export const strings: Strings = {
     "ファイルはBluetooth圏内にのみ送られます。テキストと支払いはインターネット上の連絡先にも届きますが、添付は届きません。",
   "chat.thread.media_securing":
     "先に相手との暗号化を準備しています。少ししてからもう一度お試しください。",
+  "chat.thread.media_unsupported":
+    "相手のアプリは暗号化された写真やボイスメモを受け取れないため、送信しませんでした。",
   "chat.thread.message_peer": "{name}にメッセージ",
   "chat.thread.send": "メッセージを送信",
   "chat.thread.group": "グループ",

@@ -492,6 +492,8 @@ export const strings: Strings = {
     "Dosyalar yalnızca Bluetooth menzilinde gider. Metin ve ödemeler internetteki kişilere ulaşır; ekler ulaşmaz.",
   "chat.thread.media_securing":
     "Önce onlarla şifreleme kuruluyor. Birazdan yeniden dene.",
+  "chat.thread.media_unsupported":
+    "Uygulamaları şifreli fotoğraf veya sesli not alamıyor, bu yüzden bu gönderilmedi.",
   "chat.thread.message_peer": "{name} kişisine yaz",
   "chat.thread.send": "Mesaj gönder",
   "chat.thread.group": "Grup",

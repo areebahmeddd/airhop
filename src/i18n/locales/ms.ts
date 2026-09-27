@@ -490,6 +490,8 @@ export const strings: Strings = {
     "Fail dihantar dalam jangkauan Bluetooth sahaja. Teks dan bayaran mencapai kenalan melalui internet; lampiran tidak.",
   "chat.thread.media_securing":
     "Sedang menyediakan penyulitan dengan mereka dahulu. Cuba lagi sebentar lagi.",
+  "chat.thread.media_unsupported":
+    "Aplikasi mereka tidak dapat menerima gambar atau nota suara yang disulitkan, jadi ini tidak dihantar.",
   "chat.thread.message_peer": "Hantar mesej kepada {name}",
   "chat.thread.send": "Hantar mesej",
   "chat.thread.group": "Kumpulan",

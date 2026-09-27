@@ -502,6 +502,8 @@ export const strings: Strings = {
     "Ao anatin'ny fetran'ny Bluetooth ihany no andefasana rakitra. Mahatratra ny fifandraisana amin'ny Internet ny lahatsoratra sy ny fandoavam-bola; tsy mahatratra kosa ny fanampiny.",
   "chat.thread.media_securing":
     "Mbola omanina aloha ny fifandraisana voafono aminy. Andramo indray afaka kelikely.",
+  "chat.thread.media_unsupported":
+    "Tsy afaka mandray sary na naoty feo voafono ny rindranasany, ka tsy nalefa ity.",
   "chat.thread.message_peer": "Manorata amin'i {name}",
   "chat.thread.send": "Alefaso ny hafatra",
   "chat.thread.group": "Vondrona",

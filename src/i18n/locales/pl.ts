@@ -496,6 +496,8 @@ export const strings: Strings = {
     "Pliki idą tylko w zasięgu Bluetooth. Tekst i płatności docierają do kontaktów przez internet; załączniki nie.",
   "chat.thread.media_securing":
     "Najpierw trwa zestawianie szyfrowanego połączenia z tą osobą. Spróbuj za chwilę.",
+  "chat.thread.media_unsupported":
+    "Aplikacja tej osoby nie może odbierać szyfrowanych zdjęć ani notatek głosowych, więc tego nie wysłano.",
   "chat.thread.message_peer": "Napisz do {name}",
   "chat.thread.send": "Wyślij wiadomość",
   "chat.thread.group": "Grupa",
