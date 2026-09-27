@@ -46,10 +46,10 @@
 //
 // On the socket, frames are [4-byte BE length][data]. Two are the module's own
 // and never reach TypeScript: a hello, first on every socket in both directions,
-// naming the sender so an accepted socket is attributed to a peer, and only
-// once it arrives is the link reported as connected; and a
-// zero-length heartbeat, so a socket whose far side vanished without a FIN is
-// closed in seconds.
+// which names the sender so an accepted socket is attributed to a peer, and
+// without which the link is never reported as connected; and a zero-length
+// heartbeat, so a socket whose far side vanished without a FIN is closed in
+// seconds.
 package org.onemindlabs.airhop.wifi
 
 import android.content.BroadcastReceiver
@@ -209,8 +209,6 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     override fun getName(): String = "AirhopWiFi"
 
     // ---- State model ---------------------------------------------------------
-
-    // Role and DialState are in AwareDial.kt, beside the rules that read them.
 
     // Handles are session-scoped: cleared on every discovery restart, refilled
     // by the next match or message.

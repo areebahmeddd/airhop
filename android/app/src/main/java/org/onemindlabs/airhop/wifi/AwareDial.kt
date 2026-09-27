@@ -87,7 +87,7 @@ internal object AwareDial {
 
     // Aware data interfaces are aware_data0..N-1: the prefix is
     // AWARE_INTERFACE_PREFIX in AOSP's WifiAwareDataPathStateManager, and
-    // Samsung's builds use it too (the #37 logs show %aware_data0). The server
+    // Samsung's builds use it too (%aware_data0 in their logs). The server
     // socket listens on every interface, so this is what keeps it to data paths.
     fun isAwareInterface(name: String?): Boolean = name?.startsWith("aware_data") == true
 

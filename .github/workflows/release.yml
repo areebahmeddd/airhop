@@ -264,8 +264,8 @@ jobs:
           # This asserts it rather than realigning.
           "${BUILD_TOOLS}/zipalign" -c -P 16 4 unsigned/airhop.apk
 
-          # APK Signature Scheme v2 only, as every earlier release: minSdk 26
-          # needs no v1, and v3 matters only for rotating the key.
+          # APK Signature Scheme v2 only: minSdk 26 needs no v1, and v3
+          # matters only for rotating the key.
           "${BUILD_TOOLS}/apksigner" sign \
             --ks "$KEYSTORE" \
             --ks-key-alias "$ANDROID_KEY_ALIAS" \

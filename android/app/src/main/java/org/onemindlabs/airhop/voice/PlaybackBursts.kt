@@ -50,11 +50,13 @@ internal class PlaybackBurst(val generation: Int) {
 
     companion object {
         // Offered to wake a blocked take() so the thread notices it is no
-        // longer current. Compared by identity: an empty frame is never queued.
+        // longer current. Any empty frame but END reads as this, since
+        // enqueue never queues an empty one.
         val WAKE = ByteArray(0)
 
-        // Offered by finish(), behind everything already queued. The thread
-        // plays up to it, then plays out and releases.
+        // Offered by finish(), behind everything already queued, and told
+        // apart from WAKE by identity. The thread plays up to it, then plays
+        // out and releases.
         val END = ByteArray(0)
     }
 }

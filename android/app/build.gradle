@@ -79,7 +79,8 @@ android {
         release {
             // The release workflow passes -Pairhop.unsignedRelease=true and
             // signs in a separate job, so no Gradle or npm code runs beside
-            // the key. Left unset, a release build is unsigned.
+            // the key. With it set and no key in the environment, no
+            // signingConfig applies and the build comes out unsigned.
             def unsignedRelease = (findProperty('airhop.unsignedRelease') ?: 'false').toBoolean()
             if (System.getenv("ANDROID_KEYSTORE_FILE")) {
                 signingConfig signingConfigs.release
