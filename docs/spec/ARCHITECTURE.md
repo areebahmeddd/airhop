@@ -823,7 +823,7 @@ Radio leads so a person in front of you does not wait on a mint, and so it
 works with no internet. A nutzap beats a token because locked proofs are the
 recipient's whether or not they come online.
 
-- **One confirm.** The user is asked once, after the rail is known, and the question says whether the payment can be undone. A nutzap that fails to lock falls through to a token without asking again. An inexact token amount asks its overpay question in place of the confirm.
+- **One confirm.** The user is asked once, after the rail is known, and the question says whether the payment can be undone. A nutzap that fails to lock falls through to a token without asking again, unless the token was priced from a stale fee schedule, which is then said in a second confirm. An inexact token amount asks its overpay question in place of the confirm.
 - **One commitment.** Proofs are reserved (rails 1, 3, 4) or P2PK-locked (rail 2), never both. A failure before committing falls through; after committing, only delivery retries. A lock whose request may have reached the mint stops the ladder.
 - **Finality is reported.** `PayResult.final` is true only for nutzaps, and the result names the rail and whether Activity will offer the money back.
 

@@ -141,7 +141,8 @@ export async function payPerson(
             privKey,
           });
           if (paid !== null) return paid;
-          // The lock committed nothing; already confirmed, so do not ask twice.
+          // The lock committed nothing; already confirmed, so asked again only
+          // about a stale fee.
           return await payAsToken({
             peerID: payee.peerID,
             amount,
@@ -354,7 +355,9 @@ async function payAsToken(params: {
     staleDays === null
       ? ""
       : `\n\n${tPlural("wallet.send.stale_fee_note", staleDays)}`;
-  if (quote.exact && !params.confirmed) {
+  // A confirm already given was the nutzap's, which carried no fee note, so a
+  // stale one asks again about the token that actually goes.
+  if (quote.exact && (!params.confirmed || staleNote !== "")) {
     const confirmed = await confirmPayment(
       params.amount,
       params.unit,

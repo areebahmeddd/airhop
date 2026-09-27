@@ -497,6 +497,30 @@ describe("payPerson asks before money moves", () => {
     expect(asked).toHaveLength(1);
     expect(mockedPrepare).toHaveBeenCalledTimes(1);
   });
+
+  it("asks again when the fallback token's fee comes from a stale schedule", async () => {
+    // The nutzap's confirm carried no fee note, and the token is what goes.
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedLock.mockRejectedValue(new Error("mint unreachable"));
+    mockedQuote.mockResolvedValueOnce({
+      mintUrl: MINT,
+      unit: "sat",
+      amount: 500,
+      spend: 500,
+      fee: 0,
+      exact: true,
+      proofs: [],
+      pricedFromCacheAgeMs: 3 * 86_400_000,
+    });
+
+    await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(asked).toHaveLength(2);
+    expect(stripIsolates(asked[1]?.message ?? "")).toMatch(
+      /last checked 3 days ago/,
+    );
+    expect(mockedPrepare).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("a lock whose answer went missing", () => {
