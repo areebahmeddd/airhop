@@ -81,7 +81,8 @@ export interface Spec extends TurboModule {
   //
   // A second, separate socket for moving an identity to a new phone. No mDNS:
   // the new phone's code carries its addresses, so nothing about a move is
-  // advertised. Independent of startLAN, runs with the mesh stopped, and never
+  // advertised. Independent of startLAN: it opens while the mesh still runs,
+  // outlives the mesh stopping when the old phone freezes to send, and never
   // shares a link with it: a mesh write cannot reach a move connection and a
   // move write cannot reach a mesh link.
   //

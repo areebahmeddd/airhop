@@ -307,7 +307,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         serverPort = 0
         instanceName = null
 
-        // Mesh links only: a transfer runs with the mesh stopped.
+        // Mesh links only: a move connection outlives the mesh stopping when the
+        // old phone freezes to send.
         for ((id, link) in links.entries.toList()) {
             if (!link.move) handleLinkClose(id)
         }
