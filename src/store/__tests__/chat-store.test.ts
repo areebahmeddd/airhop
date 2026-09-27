@@ -838,8 +838,8 @@ describe("markChannelRead", () => {
   });
 });
 
-// A launch settles whatever the last process left mid-send: "sending" is the one
-// in-flight status nothing owns across a restart.
+// A launch settles whatever the last process left mid-send: "sending", and a
+// channel or group "queued" that only the dead process's gossip store held.
 describe("failStaleSending", () => {
   const NOW = 1_700_000_000_000;
   const MINUTE = 60_000;
@@ -867,12 +867,31 @@ describe("failStaleSending", () => {
   });
 
   it("never touches a message that actually went out", () => {
-    for (const status of ["sent", "delivered", "read", "queued"] as const) {
+    for (const status of ["sent", "delivered", "read", "carried"] as const) {
       state().clearAll();
       state().addMessage(held({ status }));
       state().failStaleSending(MINUTE, NOW);
       expect(state().messages["#test"]?.[0]?.status).toBe(status);
     }
+  });
+
+  it("fails a channel or group message left queued, however recent", () => {
+    for (const channel of ["#bluetooth", "group:abc"]) {
+      state().addMessage(
+        held({ channel, status: "queued", timestampMs: NOW - 2_000 }),
+      );
+    }
+    state().failStaleSending(MINUTE, NOW);
+    expect(state().messages["#bluetooth"]?.[0]?.status).toBe("failed");
+    expect(state().messages["group:abc"]?.[0]?.status).toBe("failed");
+  });
+
+  it("leaves a queued DM to the outbox", () => {
+    state().addMessage(
+      held({ channel: "dm:aabbccdd00112233", status: "queued" }),
+    );
+    state().failStaleSending(MINUTE, NOW);
+    expect(state().messages["dm:aabbccdd00112233"]?.[0]?.status).toBe("queued");
   });
 
   it("sweeps every channel, not just the active one", () => {

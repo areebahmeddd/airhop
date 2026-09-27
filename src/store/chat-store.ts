@@ -273,11 +273,13 @@ interface ChatState {
   // Give up on messages left mid-flight by a process that died, so a retry can
   // be offered instead of an hourglass that never resolves.
   //
-  // "sending" is the only in-flight status with no owner across a restart: the
-  // outbox resumes queued and sent, the courier resumes carried. A message is
+  // Two in-flight statuses have no owner across a restart. A message is
   // "sending" during Undo Send's hold window (held in a ref, flushed on unmount)
   // or between transmit and the transport answering, and a kill in either window
-  // strands it.
+  // strands it. A channel or group message is "queued" while only the in-memory
+  // gossip store holds it, and that store dies with the process, so such a row
+  // is stranded however recent it is. A DM's queued and sent are the outbox's
+  // to resume, and carried the courier's.
   //
   // Marked failed rather than re-sent: the persisted state cannot say whether
   // the bytes reached the radio, so re-sending could duplicate. "failed" is also
@@ -721,9 +723,13 @@ export const useChatStore = create<ChatState>()(
           let changed = false;
           for (const [channel, list] of Object.entries(state.messages)) {
             let touched = false;
+            const heldByGossip = !channel.startsWith("dm:");
             const next = list.map((m) => {
-              if (m.status !== "sending") return m;
-              if (now - m.timestampMs < olderThanMs) return m;
+              const stranded =
+                m.status === "sending"
+                  ? now - m.timestampMs >= olderThanMs
+                  : m.status === "queued" && heldByGossip;
+              if (!stranded) return m;
               touched = true;
               return { ...m, status: "failed" as const };
             });
