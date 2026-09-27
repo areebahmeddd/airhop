@@ -1901,7 +1901,14 @@ export default function MessageThread({
   // Brief delivery status hint shown below the compose bar for DMs.
   // "queued" = no route available; cleared after 4 seconds.
   const [dmStatus, setDmStatus] = useState<
-    "queued" | "no-reach" | "gateway" | "no-group-key" | "group-queued" | null
+    | "queued"
+    | "no-reach"
+    | "gateway"
+    | "no-group-key"
+    | "group-queued"
+    | "media-far"
+    | "media-securing"
+    | null
   >(null);
   // Brief confirmation pill. Separate from dmStatus: that strip explains why a
   // message has not arrived and belongs above the compose bar; this confirms
@@ -2317,7 +2324,14 @@ export default function MessageThread({
 
   // Show a brief status hint, then auto-clear after 4 seconds.
   function showStatus(
-    kind: "queued" | "no-reach" | "gateway" | "no-group-key" | "group-queued",
+    kind:
+      | "queued"
+      | "no-reach"
+      | "gateway"
+      | "no-group-key"
+      | "group-queued"
+      | "media-far"
+      | "media-securing",
   ): void {
     if (dmStatusTimerRef.current) clearTimeout(dmStatusTimerRef.current);
     setDmStatus(kind);
@@ -2360,6 +2374,18 @@ export default function MessageThread({
   // A channel broadcast that reached no transport at all.
   function showNoReachStatus(): void {
     showStatus("no-reach");
+  }
+
+  // An attachment refused before it started. A DM one needs a direct link, and
+  // a session to seal it under, which the refusal has just started to open.
+  function showMediaRefusedStatus(targetChannel: string): void {
+    if (!targetChannel.startsWith("dm:")) {
+      showNoReachStatus();
+      return;
+    }
+    const linked =
+      getMeshService()?.hasDirectLink(targetChannel.slice(3)) === true;
+    showStatus(linked ? "media-securing" : "media-far");
   }
 
   // Screenshot detection. Who gets told, and why, lives in `media-policy` beside
@@ -2606,7 +2632,7 @@ export default function MessageThread({
           );
           if (!reached) {
             setStatus(item.channel, item.id, "failed");
-            showNoReachStatus();
+            showMediaRefusedStatus(item.channel);
           }
         } catch {
           setStatus(item.channel, item.id, "failed");
@@ -2883,7 +2909,7 @@ export default function MessageThread({
           useChatStore
             .getState()
             .setMessageStatus(targetChannel, msg.id, "failed");
-          showNoReachStatus();
+          showMediaRefusedStatus(targetChannel);
         }
       } catch (err) {
         // The bubble is already on screen, so mark it failed the way an
@@ -5017,6 +5043,24 @@ export default function MessageThread({
         <View style={styles.dmStatusBar}>
           <Feather name="clock" size={12} color={Colors.textMuted} />
           <Text style={styles.dmStatusText}>{T("chat.thread.no_route")}</Text>
+        </View>
+      )}
+      {/* Their texts go multi-hop or over the internet; a file only ever takes
+          a direct link, so say so rather than leave a bare red bubble. */}
+      {isDM && dmStatus === "media-far" && (
+        <View style={styles.dmStatusBar}>
+          <Feather name="bluetooth" size={12} color={Colors.textMuted} />
+          <Text style={styles.dmStatusText}>
+            {T("chat.thread.attach_note")}
+          </Text>
+        </View>
+      )}
+      {isDM && dmStatus === "media-securing" && (
+        <View style={styles.dmStatusBar}>
+          <Feather name="lock" size={12} color={Colors.textMuted} />
+          <Text style={styles.dmStatusText}>
+            {T("chat.thread.media_securing")}
+          </Text>
         </View>
       )}
       {!isDM && dmStatus === "gateway" && (
