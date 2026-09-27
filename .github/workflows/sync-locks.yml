@@ -1,8 +1,6 @@
 name: Sync Native Lockfiles
 
 on:
-  # Not main, which takes lockfiles only through a pull request whose CI fails
-  # on a stale one. Naming branches alone also keeps tag pushes out.
   push:
     branches-ignore: [main]
     paths:

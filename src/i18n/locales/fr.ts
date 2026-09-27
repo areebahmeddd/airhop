@@ -466,7 +466,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} de l’autre côté du pont",
   "chat.thread.bridged": "via le pont",
   "chat.thread.invite_body":
-    "Rejoins-moi dans {channel} sur Airhop : messagerie maillée privée, pensée d’abord pour le hors-ligne.",
+    "Rejoins-moi dans {channel} sur Airhop — messagerie maillée privée, pensée d’abord pour le hors-ligne.",
   "chat.thread.go_back_unread": "Revenir, {count} non lus",
   "chat.thread.view_info": "Voir les infos de {name}",
   "chat.thread.notices_new": "Avis de ce canal, {count} nouveaux",
@@ -2309,7 +2309,7 @@ export const strings: Strings = {
     "Le code QR n’a pas pu être enregistré. Réessaie.",
   "settings.qr.share_message": "Ajoute-moi sur Airhop",
   "settings.qr.share_body":
-    "Ajoute-moi sur Airhop : messagerie maillée privée, pensée d’abord pour le hors-ligne.",
+    "Ajoute-moi sur Airhop — messagerie maillée privée, pensée d’abord pour le hors-ligne.",
   "settings.qr.show_short": "Voir le QR",
   "settings.qr.title": "Ton code QR",
   "settings.qr.note":

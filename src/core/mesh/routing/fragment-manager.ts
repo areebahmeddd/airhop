@@ -3,7 +3,7 @@
 //
 // Wire-compatible with bitchat-ios BLEFragmentHandler / BLEFragmentAssemblyBuffer.
 //
-// Fragment payload layout (inside a FILE_CHUNK / 0x05 packet):
+// Fragment payload layout (inside a FRAGMENT / 0x20 packet):
 //   [8 bytes: fragment stream ID (u64 BE, random per original packet)]
 //   [2 bytes: fragment index (u16 BE, 0-based)]
 //   [2 bytes: total fragment count (u16 BE)]

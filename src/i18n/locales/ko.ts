@@ -454,7 +454,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "브리지 건너편에 {count}명",
   "chat.thread.bridged": "브리지됨",
   "chat.thread.invite_body":
-    "Airhop의 {channel}에서 함께해요: 오프라인 우선 비공개 메시 메시징.",
+    "Airhop의 {channel}에서 함께해요 — 오프라인 우선 비공개 메시 메시징.",
   "chat.thread.go_back_unread": "뒤로 가기, 읽지 않음 {count}개",
   "chat.thread.view_info": "{name}의 정보 보기",
   "chat.thread.notices_new": "이 채널의 공지, 새 항목 {count}개",
@@ -2209,7 +2209,7 @@ export const strings: Strings = {
     "QR 코드를 저장하지 못했습니다. 다시 시도하세요.",
   "settings.qr.share_message": "Airhop에서 나를 추가하세요",
   "settings.qr.share_body":
-    "Airhop에서 나를 추가하세요: 오프라인 우선 비공개 메시 메시징.",
+    "Airhop에서 나를 추가하세요 — 오프라인 우선 비공개 메시 메시징.",
   "settings.qr.show_short": "QR 보기",
   "settings.qr.title": "내 QR 코드",
   "settings.qr.note":

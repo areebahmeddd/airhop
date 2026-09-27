@@ -8,7 +8,7 @@ import {
 import type { TranslationKey } from "../i18n/locales/types.ts";
 import { SITE_URL } from "./links.ts";
 
-export const LAST_UPDATED = "2026-08-01";
+export const LAST_UPDATED = "2026-09-01";
 
 export interface PageSeo {
   path: string;

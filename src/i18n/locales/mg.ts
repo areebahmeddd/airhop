@@ -469,7 +469,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} any ampitan'ny tetezana",
   "chat.thread.bridged": "nampitaina",
   "chat.thread.invite_body":
-    "Ndao hiaraka amiko ao amin'ny {channel} ao amin'ny Airhop: hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
+    "Ndao hiaraka amiko ao amin'ny {channel} ao amin'ny Airhop — hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
   "chat.thread.go_back_unread": "Miverina, {count} tsy voavaky",
   "chat.thread.view_info": "Jereo ny mombamomba an'i {name}",
   "chat.thread.notices_new": "Filazana amin'ity fantsona ity, {count} vaovao",
@@ -2329,7 +2329,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Tsy voatahiry ny kaody QR. Andramo indray.",
   "settings.qr.share_message": "Ampio aho ao amin'ny Airhop",
   "settings.qr.share_body":
-    "Ampio aho ao amin'ny Airhop: hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
+    "Ampio aho ao amin'ny Airhop — hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
   "settings.qr.show_short": "Asehoy ny QR",
   "settings.qr.title": "Ny kaody QR-nao",
   "settings.qr.note":

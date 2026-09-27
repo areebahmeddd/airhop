@@ -462,7 +462,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} aan de overkant van de brug",
   "chat.thread.bridged": "via de brug",
   "chat.thread.invite_body":
-    "Kom bij me in {channel} op Airhop: privé meshberichten, offline-first.",
+    "Kom bij me in {channel} op Airhop — privé meshberichten, offline-first.",
   "chat.thread.go_back_unread": "Terug, {count} ongelezen",
   "chat.thread.view_info": "Info van {name} bekijken",
   "chat.thread.notices_new": "Meldingen van dit kanaal, {count} nieuw",
@@ -2277,7 +2277,7 @@ export const strings: Strings = {
     "De QR-code kon niet worden opgeslagen. Probeer het opnieuw.",
   "settings.qr.share_message": "Voeg me toe op Airhop",
   "settings.qr.share_body":
-    "Voeg me toe op Airhop: privé meshberichten, offline-first.",
+    "Voeg me toe op Airhop — privé meshberichten, offline-first.",
   "settings.qr.show_short": "QR tonen",
   "settings.qr.title": "Jouw QR-code",
   "settings.qr.note":

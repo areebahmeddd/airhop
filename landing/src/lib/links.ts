@@ -37,7 +37,6 @@ export const REPO_LINKS = {
   progressDoc: `${REPO}/blob/main/docs/dev/PROGRESS.md`,
   roadmapDoc: `${REPO}/blob/main/docs/design/ROADMAP.md`,
   visionDoc: `${REPO}/blob/main/docs/design/VISION.md`,
-  messageRouter: `${REPO}/blob/main/src/core/router/message-router.ts`,
   issues: `${REPO}/issues`,
   discussions: `${REPO}/discussions`,
   releases: `${REPO}/releases/latest`,

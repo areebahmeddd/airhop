@@ -462,7 +462,7 @@ test("N04 a gateway that loses its connection mid-conversation degrades quietly"
     leftAgain ? "GATEWAY_RECOVERED" : "GATEWAY_RECOVERY_SLOW",
     leftAgain
       ? "messages left again once the carrier was back"
-      : `not yet republished (${relay.eventsOfKind(KIND_GEOHASH_MESSAGE).length} cell events); see PROGRESS.md`,
+      : `not yet republished (${relay.eventsOfKind(KIND_GEOHASH_MESSAGE).length} cell events)`,
   );
 
   s.expectNone("no duplicate text", noDuplicateText(cast, CELL_CHANNEL));

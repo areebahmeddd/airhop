@@ -53,7 +53,7 @@ one written by any CocoaPods other than the pinned version.
 
 ## Tests
 
-The pure pieces, `Framing` and `AwareDial`, compile twice: into the app, and
+The pure pieces, `Framing`, `AwareDial` and `LongWrite`, compile twice: into the app, and
 into a Swift package rooted here (`Package.swift`) that exists only so they
 can be tested without a simulator or a scheme. Anything that touches a radio is
 covered by the simulator under `src/__tests__/` and by devices.

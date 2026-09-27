@@ -65,7 +65,7 @@ export function GossipSync() {
       </text>
 
       <text x={16} y={262} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        Runs every 15 seconds, and 5 seconds after meeting a new peer. Never relayed, so it stays a
+        Runs every 15 seconds, and covers the last 6 hours of messages. Never relayed, so it stays a
         conversation between neighbors.
       </text>
     </svg>

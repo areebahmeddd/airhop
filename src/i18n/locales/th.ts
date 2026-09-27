@@ -451,7 +451,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} คนอีกฝั่งของบริดจ์",
   "chat.thread.bridged": "เชื่อมผ่านบริดจ์",
   "chat.thread.invite_body":
-    "มาร่วมกับฉันใน {channel} บน Airhop: แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
+    "มาร่วมกับฉันใน {channel} บน Airhop — แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
   "chat.thread.go_back_unread": "กลับ ยังไม่อ่าน {count}",
   "chat.thread.view_info": "ดูข้อมูลของ {name}",
   "chat.thread.notices_new": "ประกาศสำหรับช่องนี้ ใหม่ {count}",
@@ -2190,7 +2190,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "บันทึกคิวอาร์โค้ดไม่สำเร็จ ลองอีกครั้ง",
   "settings.qr.share_message": "เพิ่มฉันบน Airhop",
   "settings.qr.share_body":
-    "เพิ่มฉันบน Airhop: แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
+    "เพิ่มฉันบน Airhop — แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
   "settings.qr.show_short": "แสดง QR",
   "settings.qr.title": "คิวอาร์โค้ดของคุณ",
   "settings.qr.note":

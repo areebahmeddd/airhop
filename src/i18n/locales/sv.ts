@@ -459,7 +459,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} på andra sidan bryggan",
   "chat.thread.bridged": "bryggat",
   "chat.thread.invite_body":
-    "Kom med mig i {channel} på Airhop: privata meshmeddelanden som fungerar offline först.",
+    "Kom med mig i {channel} på Airhop — privata meshmeddelanden som fungerar offline först.",
   "chat.thread.go_back_unread": "Tillbaka, {count} olästa",
   "chat.thread.view_info": "Visa info om {name}",
   "chat.thread.notices_new": "Anslag för den här kanalen, {count} nya",
@@ -2245,7 +2245,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR-koden kunde inte sparas. Försök igen.",
   "settings.qr.share_message": "Lägg till mig på Airhop",
   "settings.qr.share_body":
-    "Lägg till mig på Airhop: privata meshmeddelanden som fungerar offline först.",
+    "Lägg till mig på Airhop — privata meshmeddelanden som fungerar offline först.",
   "settings.qr.show_short": "Visa QR",
   "settings.qr.title": "Din QR-kod",
   "settings.qr.note":

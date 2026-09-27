@@ -11,8 +11,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # The commit job pushes to the branch this runs on. main takes rebuilt
-  # binaries only through a pull request, and a tag cannot take a commit.
   branch:
     name: Check the target branch
     runs-on: ubuntu-24.04

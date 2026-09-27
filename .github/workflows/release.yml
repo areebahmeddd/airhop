@@ -1,7 +1,5 @@
 name: Release and Changelog
 
-# A manual run is "Run workflow" with "Use workflow from" set to the tag. Any
-# other ref is refused, so provenance always names refs/tags/<tag>.
 on:
   push:
     tags:
@@ -12,10 +10,8 @@ permissions:
   contents: read
 
 env:
-  # SHA-256 of the release signing certificate. Committed so that a change to it
-  # is a reviewed diff, and checked against every signed APK and AAB below.
-  # Rotating the key means changing this in the same commit, and README.md and
-  # SECURITY.md with it.
+  # SHA-256 of the release signing certificate; changes are reviewed and checked against every signed APK/AAB.
+  # Key rotation requires updating this, README.md, and SECURITY.md in the same commit.
   ANDROID_SIGNING_CERT_SHA256: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
 
 concurrency:

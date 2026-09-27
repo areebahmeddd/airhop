@@ -17,7 +17,7 @@ import {
   type VoiceCodecId,
 } from "./voice-capture";
 
-// 350 ms jitter buffer per ROADMAP.md.
+// 350 ms jitter buffer, as ARCHITECTURE.md specifies.
 const JITTER_BUFFER_MS = 350;
 
 // A session is dropped if no new frame arrives within this window.

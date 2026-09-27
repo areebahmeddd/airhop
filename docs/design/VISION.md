@@ -12,7 +12,7 @@ It is a **spiritual fork of bitchat** ([permissionlesstech/bitchat](https://gith
 - Two WiFi transports beside Bluetooth: WiFi Aware as the same-platform fast path, and LAN over mDNS and TCP, which carries the mesh between an iPhone and an Android as no direct-WiFi stack can
 - Bridges and pluggable transports on top of Tor, so the internet half still works where Tor itself is blocked; bitchat routes through Tor but has neither
 - A full Cashu wallet, not a token decoder: balances, mints, Lightning in and out, and value moving device to device with no internet
-- Double Ratchet on live DMs, and one-time prekeys for mail left with a courier, so waiting mail survives a key leaking later
+- Double Ratchet on live DMs, so every message has its own key, and one-time prekeys for mail left with a courier on both platforms, so waiting mail survives a key leaking later
 - Video that plays inline; bitchat carries it across the wire but opens it on neither platform
 - An interface built for people who are not us, in 35 languages, with QR contact exchange and names derived from keys
 
@@ -65,7 +65,7 @@ What each feature is for, and when someone would actually reach for it.
 - QR contacts. A scanned card carries public keys, and the peer ID is checked against them before anything is trusted. A card arriving by `airhop://` link is recorded as unverified; only an in-person scan counts.
 - End-to-end encryption. Live sessions use Noise XX. Nobody in the middle, including relaying phones, can read a private message.
 - Forward secrecy. Double Ratchet for live chats, and single-use prekeys for mail left with a courier, so an old message stays protected even if a key leaks later.
-- Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over Wi-Fi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
+- Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over WiFi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
 - Panic wipe. The panic button on the Profile screen, triple-tapped to skip the confirmation, and every key, message, group, notice and prekey is gone in under a second.
 
 ### Networking
@@ -74,7 +74,7 @@ What each feature is for, and when someone would actually reach for it.
 - Multi-hop routing. Messages relay through up to seven phones, so two people who cannot see each other still connect through the strangers between them.
 - WiFi fast path. Two Androids, or two iPhones, move large files over a direct WiFi link, steadier than Bluetooth and leaving the radio free. It never crosses platforms.
 - Local network. On one shared WiFi, an iPhone and an Android carry the whole mesh straight to each other. Off until you turn it on, since joining announces you to everyone else on the network.
-- Relay nodes. Bitle hardware speaks the same protocol as a phone, so a fixed node holds a mesh open where nobody is standing.
+- Relay nodes. Bitle hardware speaks the same protocol as a phone, so a fixed node can hold a mesh open where nobody is standing.
 - bitchat compatibility. An Airhop phone and a bitchat phone join the same mesh and talk with no setup. bitchat ignores Airhop's own additions instead of breaking on them.
 
 ### Internet
@@ -83,12 +83,12 @@ What each feature is for, and when someone would actually reach for it.
 - Geo-relay discovery. Location channels pick relays near that place, so people in one city converge on the same ones.
 - Mesh bridge. Joins your local `#bluetooth` room to another crowd too far away to reach by radio.
 - Internet gateway. Off by default. Turn it on and your phone carries public location traffic for nearby people who have no connection of their own.
-- Tor. Built in on both platforms, with nothing else to install. Every relay connection is dialled through it, so operators never see your IP and switching it on never leaves traffic in the clear.
+- Tor. Built in on both platforms, with nothing else to install, and off until you turn it on. Once on, every relay connection is dialled through it, so operators never see your IP and nothing falls back to the clear.
 
 ### Optional
 
 - Cashu ecash. Send value device to device with no internet and no payment company. Settle a shared bill in a dead zone; the recipient redeems whenever they are back online.
-- Lightning. Top up and cash out through a mint you pick, the only part of the wallet that needs a connection.
+- Lightning. Top up and cash out through a mint you pick, whenever you have a connection.
 - Nutzaps. Pay a Nostr identity in ecash when you do have a connection, locked to their key so only they can spend it.
 - Wallet recovery. Off by default. Turn it on and twelve words rebuild your balance on a new phone.
 - Local assistant. On-device inference. Questions answered with nothing leaving the phone.

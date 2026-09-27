@@ -457,7 +457,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "ब्रिज के पार {count}",
   "chat.thread.bridged": "ब्रिज किया",
   "chat.thread.invite_body":
-    "Airhop पर {channel} में मेरे साथ जुड़ें: ऑफ़लाइन-पहले, निजी मेश मैसेजिंग।",
+    "Airhop पर {channel} में मेरे साथ जुड़ें — ऑफ़लाइन-पहले, निजी मेश मैसेजिंग।",
   "chat.thread.go_back_unread": "वापस जाएँ, {count} अपठित",
   "chat.thread.view_info": "{name} की जानकारी देखें",
   "chat.thread.notices_new": "इस चैनल की सूचनाएँ, {count} नई",
@@ -2225,7 +2225,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR कोड सहेजा नहीं जा सका। फिर कोशिश करें।",
   "settings.qr.share_message": "मुझे Airhop पर जोड़ें",
   "settings.qr.share_body":
-    "मुझे Airhop पर जोड़ें: ऑफ़लाइन-पहले, निजी मेश मैसेजिंग।",
+    "मुझे Airhop पर जोड़ें — ऑफ़लाइन-पहले, निजी मेश मैसेजिंग।",
   "settings.qr.show_short": "QR दिखाएँ",
   "settings.qr.title": "आपका QR कोड",
   "settings.qr.note":

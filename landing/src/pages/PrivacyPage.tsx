@@ -28,7 +28,7 @@ export default function PrivacyPage() {
               <li>No project-operated accounts or messaging servers.</li>
               <li>No analytics, advertising, telemetry, or tracking of any kind.</li>
               <li>No sale of user data.</li>
-              <li>Your identity is a cryptographic key pair that never leaves your device.</li>
+              <li>Your identity is a cryptographic key pair kept only on your device.</li>
               <li>
                 All source code is{" "}
                 <TextLink href={REPO_URL} tone="quiet">
@@ -48,11 +48,15 @@ export default function PrivacyPage() {
             <ul className="marker:text-mute list-disc space-y-2.5 pl-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Identity keys.</strong> An Ed25519 signing key and a Noise static key are
-                generated locally on first launch and stored in your device's secure storage (iOS
-                Keychain or Android Keystore). A Nostr key, a separate identity for each location
-                cell you use, and one-time prekeys are all derived from that signing key rather than
-                stored separately. Your public keys are shared with peers you communicate with.{" "}
-                <strong>Private keys never leave your device.</strong>
+                generated locally when you set up the app and stored in your device's secure storage
+                (iOS Keychain or Android Keystore). A Nostr key and a separate identity for each
+                location cell you use are derived from that signing key rather than stored
+                separately. One-time prekeys, which let someone leave you a protected message while
+                you are away, are random keys kept in the same secure storage. Your public keys are
+                shared with peers you communicate with.{" "}
+                <strong>Private keys never leave your device</strong>, except when you move Airhop
+                to a new phone of your own, which sends them directly between the two phones over
+                your local network, encrypted, after your phone confirms it is you.
               </li>
               <li>
                 <strong>Display name and preferences.</strong> Your generated display name and app
@@ -63,7 +67,7 @@ export default function PrivacyPage() {
                 and are never sent to us. They are protected by the operating system's app sandbox
                 and whole-device encryption, not by a separate app-level cipher, so a person with
                 access to an unlocked device can read them. Delete a conversation at any time, or
-                wipe everything instantly with panic wipe.
+                wipe everything with panic wipe.
               </li>
               <li>
                 <strong>Private group state.</strong> Group names, member lists, and the current
@@ -74,14 +78,16 @@ export default function PrivacyPage() {
                 <strong>Bulletin board notices.</strong> Signed public notices, and the deletion
                 markers that retract them, persist until the author's chosen expiry, at most seven
                 days. These are public to the mesh or area they were posted to, not private
-                messages.
+                messages. A note left in a location channel with no expiry goes only to Nostr
+                relays, which keep it under their own policies.
               </li>
               <li>
-                <strong>Media attachments.</strong> Photos, videos, voice notes, and files you
-                send or receive are written to the app's cache so they stay viewable. They are
-                deleted automatically once they pass the retention window set in General (seven
-                days by default), and also by panic wipe, by clearing the cache in settings, or by
-                removing the app.
+                <strong>Media attachments.</strong> Photos, videos, voice notes, and files you send
+                or receive are written to the app's cache so they stay viewable. They are deleted
+                automatically once they pass the retention window set in General (seven days by
+                default), and also by panic wipe, by clearing the cache in settings, or by removing
+                the app. Received files share a 100 MiB budget, and the oldest are removed first
+                once it is full.
               </li>
               <li>
                 <strong>Queued outgoing messages.</strong> A private message that has not yet been
@@ -98,9 +104,9 @@ export default function PrivacyPage() {
                 <strong>Ecash wallet.</strong> Cashu tokens are bearer instruments, so they are kept
                 in a separate file encrypted with AES-256 under a key held in your device's secure
                 storage. The same file holds the mints you added, their public keys, and your
-                transaction history (amounts, timestamps, and the mint involved). If a recovery
-                phrase is set up, the twelve words live in secure storage alongside your identity
-                keys, never in the wallet file.{" "}
+                transaction history (amounts, timestamps, and the mint involved). The wallet's
+                twelve-word recovery phrase is created when the wallet is first set up and lives in
+                secure storage alongside your identity keys, never in the wallet file.{" "}
                 <strong>
                   No payment backend is involved and none of this is transmitted to us.
                 </strong>
@@ -161,9 +167,9 @@ export default function PrivacyPage() {
               That is the format bitchat reads, and matching it is what lets the two apps exchange
               media at all. Because attachments relay hop by hop, any device carrying a room
               attachment can read it, so treat one as visible to the mesh rather than private. A
-              direct attachment is sealed inside that person's encrypted session, so no relay can
-              read it. An app that cannot open a sealed attachment receives the readable form
-              instead.
+              direct attachment is always sealed inside that person's encrypted session, so no relay
+              can read it. It is never sent in readable form: if the other app cannot open a sealed
+              attachment, the send is refused and you are told why.
             </p>
             <p className="text-[15px] leading-[1.75]">
               Nearby mesh devices are not limited to Airhop.{" "}
@@ -218,7 +224,8 @@ export default function PrivacyPage() {
               <li>
                 <strong>Private messages.</strong> Fallback messages use NIP-17 gift wraps. Relay
                 operators can observe event timestamps and network metadata, but not message
-                content.
+                content. Delivery and read receipts go the same way, gift wrapped, when the person
+                who sent the message is out of Bluetooth range.
               </li>
               <li>
                 <strong>Public channel messages.</strong> These include a channel identifier,
@@ -241,7 +248,8 @@ export default function PrivacyPage() {
               <li>
                 <strong>Exact coordinates never leave your device</strong> and are never stored.
                 Your position is truncated to a grid cell, and the smallest cell we ever publish is
-                roughly 150 meters across.
+                roughly 150 meters across. The one exception is a location pin you choose to send in
+                a direct message, which carries your real coordinates, encrypted to that person.
               </li>
               <li>
                 A cell still reveals an approximate area to peers and relays. A finer cell reveals a
@@ -281,10 +289,10 @@ export default function PrivacyPage() {
                 is severed by the maths rather than by policy.
               </li>
               <li>
-                <strong>Tor.</strong> On Android, Tor covers mint traffic along with everything else
-                the app sends. On iOS, Tor only wraps Nostr connections, so{" "}
-                <strong>mint requests are blocked while Tor is on</strong> unless you opt in beside
-                the Tor switch in Settings. Mesh payments are unaffected either way.
+                <strong>Tor.</strong> On Android, Tor covers mint traffic along with the app's other
+                web requests. On iOS, Tor only wraps Nostr connections, so{" "}
+                <strong>mint requests are blocked while Tor is on</strong> unless you turn on "Allow
+                mint traffic over clear net" in Settings. Mesh payments are unaffected either way.
               </li>
               <li>
                 <strong>Nutzaps are public.</strong> A NIP-61 nutzap is an unencrypted Nostr event.
@@ -293,9 +301,11 @@ export default function PrivacyPage() {
                 encrypted-message fallback does not have this property.
               </li>
               <li>
-                <strong>Recovery phrase.</strong> Optional and off by default. It is stored only in
-                your device's secure storage, is never transmitted, and is never shown to a mint.
-                Anyone who obtains it can spend your balance.
+                <strong>Recovery phrase.</strong> Created automatically when the wallet is first set
+                up, so coins can be recovered from the start. It is stored only in your device's
+                secure storage, is never transmitted, is never shown to a mint, and is displayed
+                only after Face ID, a fingerprint or your passcode confirms it is you. Anyone who
+                obtains it can spend your balance.
               </li>
             </ul>
           </section>
@@ -306,8 +316,15 @@ export default function PrivacyPage() {
               Airhop can route its internet traffic through Tor, using Arti built into the app.
               There is nothing separate to install. With Tor on,{" "}
               <strong>relay operators cannot see your IP address.</strong> Coverage differs by
-              platform: on Android, Tor covers every connection the app makes. On iOS, it covers
-              only the Nostr connections. Tor is off by default.
+              platform: on Android, Tor covers every web request the app makes, including mints and
+              downloads. On iOS, it covers only the Nostr connections. Tor is off by default.
+            </p>
+            <p className="text-[15px] leading-[1.75]">
+              Place names for location channels come from your phone's own geocoding service, which
+              no app can route through Tor, so none are looked up while Tor is on or the internet
+              switch is off. Tor also fails closed: if it cannot start, or a bridge you chose is
+              refused, Airhop holds its internet traffic and tells you, rather than falling back to
+              a direct connection.
             </p>
             <p className="text-[15px] leading-[1.75]">
               Tor hides your address from the relay, but not the fact that you are using Tor. On a
@@ -400,7 +417,7 @@ export default function PrivacyPage() {
             <h2 className="text-ink text-base font-semibold">How long data is kept</h2>
             <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
               <li>
-                <strong>Undelivered private messages:</strong> until acknowledged, or 24 hours,
+                <strong>Undelivered private messages:</strong> until delivered, or seven days,
                 whichever comes first.
               </li>
               <li>
@@ -435,8 +452,11 @@ export default function PrivacyPage() {
             <h2 className="text-ink text-base font-semibold">Your controls</h2>
             <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
               <li>
-                <strong>Panic wipe.</strong> Instantly erase all local keys, messages, queued mail,
-                and app data from the Profile screen.
+                <strong>Panic wipe.</strong> Erase all local keys, messages, queued mail, cached
+                media, Tor state, notifications, and app data from the Profile screen. Photos you
+                saved to your gallery belong to your phone's photo library and stay there, and on
+                iPhone a WiFi Aware pairing stays in the system's own list until you remove it in
+                the Settings app.
               </li>
               <li>
                 <strong>Feature controls.</strong> Tor routing, the mesh bridge, and the internet
@@ -446,7 +466,8 @@ export default function PrivacyPage() {
               <li>
                 <strong>Wallet.</strong> Remove a mint at any time from the Wallet tab. Removing one
                 deletes the coins held there from this device, so withdraw or send them first. A
-                panic wipe destroys the wallet file and its encryption key together.
+                panic wipe destroys the wallet file, its encryption key, and the recovery phrase
+                together.
               </li>
               <li>
                 <strong>System permissions.</strong> Bluetooth, location, microphone, camera, photo
@@ -470,21 +491,15 @@ export default function PrivacyPage() {
               </strong>
             </p>
             <p className="text-[15px] leading-[1.75]">
-              The relay map is drawn from data bundled into the site at build time. Viewing it
-              contacts no one.
+              The relay map and the release version are bundled into the site at build time, so your
+              browser contacts no one but this site.
             </p>
-            <p className="text-[15px] leading-[1.75]">Two things happen outside our control:</p>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
-              <li>
-                <strong>Hosting logs.</strong> Cloudflare's infrastructure may log standard request
-                metadata (IP address, browser, page path) for security and availability purposes. We
-                do not access these logs for analytics or share them with any third party.
-              </li>
-              <li>
-                <strong>GitHub API.</strong> The site makes one browser-side request to GitHub, for
-                the latest release tag shown in the header. No user data is included in it.
-              </li>
-            </ul>
+            <p className="text-[15px] leading-[1.75]">
+              <strong>Hosting logs</strong> are outside our control. Cloudflare's infrastructure may
+              log standard request metadata (IP address, browser, page path) for security and
+              availability purposes. We do not access these logs for analytics or share them with
+              any third party.
+            </p>
           </section>
 
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">

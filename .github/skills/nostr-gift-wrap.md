@@ -1,147 +1,101 @@
 ---
 description: >
-  Reference for the NIP-59 gift-wrap implementation and the Nostr courier relay
-  bridge. Read this before touching src/core/nostr/gift-wrap.ts or
-  courier-relay.ts. The three-layer structure has specific key and verification
-  requirements that are not obvious from the NIPs alone.
+  Reference for Nostr DMs (NIP-17 gift wrap with bitchat's nip44-v2 cipher),
+  the bitchat1: envelope inside them, courier drops (kind 1401) and relay
+  subscriptions. Read this before touching src/core/nostr/. The layering has
+  key and verification requirements that are not obvious from the NIPs alone,
+  and the cipher is deliberately not the published NIP-44.
 ---
 
-# Nostr Gift-Wrap and Courier Relay
+# Nostr Gift Wrap and Courier Relay
 
-Implementation: `src/core/nostr/gift-wrap.ts` and `courier-relay.ts`.
+How a DM, a receipt or parked courier mail crosses the internet when no radio reaches the peer. Kinds and constants are in [PROTOCOLS.md section 8](../../docs/spec/PROTOCOLS.md#8-identity--nostr-constants); the cipher's divergence from NIP-44 is [section 7.1](../../docs/spec/PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44).
 
-## Key Distinction: Nostr Keys vs BLE Keys
+## Key Files
 
-Airhop identity uses three key systems, all rooted in one stored key pair:
+| Path                                  | Holds                                                          |
+| ------------------------------------- | -------------------------------------------------------------- |
+| `src/core/nostr/gift-wrap.ts`         | `wrapDm`, `unwrapDm`, `deriveNostrPrivKey`                     |
+| `src/core/nostr/bitchat-nip44.ts`     | bitchat's `nip44-v2` encryption, even-Y key normalisation      |
+| `src/core/nostr/bitchat-envelope.ts`  | The `bitchat1:` content: DM, receipt and contact card          |
+| `src/core/nostr/courier-relay.ts`     | `publishCourierDrop`, `subscribeCourierDrops` (kind 1401)      |
+| `src/core/nostr/nostr-client.ts`      | `NostrClient`: pool, per-relay subscriptions, `isConnected`    |
+| `src/core/nostr/opened-gift-wraps.ts` | Wraps already opened this session                              |
+| `src/core/nostr/geohash-identity.ts`  | Per-cell identity for location channels and their DMs          |
+| `src/services/mesh-service.ts`        | Inbox subscription, `publishNostrAck`, `sendReadReceipts`      |
+| `src/services/tor-routing.ts`         | Whether relay sockets may open at all                          |
+| `bitchat/ios/bitchat/Nostr/`          | Reference: `NostrProtocol.swift`, `NostrEmbeddedBitChat.swift` |
 
-| Key          | Curve     | Used for                                       |
-| ------------ | --------- | ---------------------------------------------- |
-| Noise static | X25519    | BLE session encryption (Noise XX)              |
-| Signing key  | Ed25519   | Packet, board, prekey, and group-state signing |
-| Nostr key    | secp256k1 | Nostr events, derived from the signing key     |
+## Keys
 
-The Ed25519 signing key is **not** the Nostr key. Nostr uses secp256k1 (Schnorr), so the `npub` cannot be the Ed25519 public key. Use `deriveNostrPrivKey(ed25519PrivKey)` to derive a deterministic secp256k1 key from the Ed25519 identity key via HKDF-SHA256. Only the Ed25519 and X25519 keys are stored; the Nostr key is re-derived, so there is no third key pair to manage.
+| Key          | Curve     | Used for                                      |
+| ------------ | --------- | --------------------------------------------- |
+| Noise static | X25519    | Mesh sessions (Noise XX), peer ID             |
+| Signing key  | Ed25519   | Packet, board, prekey and group-state signing |
+| Nostr key    | secp256k1 | Nostr events; derived, never stored           |
 
-Location channels derive a further per-geohash secp256k1 identity from the same signing key, so presence in one cell cannot be linked to another.
+The Ed25519 key is **not** the Nostr key; Nostr signs with BIP-340 Schnorr on secp256k1. `deriveNostrPrivKey(signingPrivKey)` is `HKDF-SHA256(ikm = signing key, info = "airhop-nostr-key-v1", 32)`. Location channels derive a further identity per geohash from the same key (`geohash-identity.ts`), so presence in one cell cannot be linked to another; a DM from a location channel is wrapped from that per-cell key.
 
-```typescript
-// src/core/nostr/gift-wrap.ts
-export function deriveNostrPrivKey(ed25519PrivKey: Uint8Array): Uint8Array {
-  const info = new TextEncoder().encode("airhop-nostr-key-v1");
-  return hkdf(sha256, ed25519PrivKey, undefined, info, 32);
-}
+## Gift Wrap (NIP-17 Shape, bitchat Cipher)
+
+```text
+content (a bitchat1: envelope)
+  -> Rumor     kind 14, unsigned, pubkey = sender, tags []
+  -> Seal      kind 13, signed by the sender, rumor encrypted to the recipient
+  -> Gift wrap kind 1059, signed by a fresh throwaway key, tags [["p", recipient]]
 ```
 
-## NIP-59 Gift-Wrap: Three-Layer Structure
+- **Cipher.** Both layers use `bitchatNip44Encrypt`: XChaCha20-Poly1305, key `HKDF(compressed ECDH point, salt empty, info "nip44-v2")`, no padding, framed `"v2:" + base64url(nonce24 || ciphertext || tag)`. It is not NIP-44 and must stay byte-identical to bitchat's, since the event signature covers the ciphertext. Reaching for `nip44` in nostr-tools produces DMs no bitchat or Airhop peer can open, silently at both ends.
+- **Keys.** Private keys are normalised to even Y before ECDH, and decrypt tries both parities of the sender's x-only key, as bitchat does.
+- **Timestamps.** Seal and wrap `created_at` are randomised ±15 minutes (bitchat's window, not NIP-59's two days). The rumor keeps the real send time.
+- **The throwaway key** is new for every wrap, so relays see neither sender nor linkage between wraps.
 
-### Send flow
+### Receive (`unwrapDm`)
 
-```
-plaintext
-  -> Rumor  (kind 14, unsigned)          built with sender's real pubkey
-  -> Seal   (kind 13, signed by sender)  encrypts rumor with NIP-44 to recipient
-  -> Gift wrap (kind 1059, ephemeral)    encrypts seal with NIP-44, throwaway key
-```
+1. Decrypt the wrap with our key and the wrap's `pubkey`.
+2. `verifyEvent(seal)`, and require kind 13. **Security-critical:** without it anyone who knows our pubkey can forge DMs.
+3. Decrypt the seal with our key and the seal's `pubkey`.
+4. `validateEvent(rumor)`, require kind 14, and require `seal.pubkey === rumor.pubkey`. The rumor is unsigned, so this is the only shape check it gets; a missing or non-numeric `created_at` would otherwise slip past every comparison.
+5. Require the rumor's `created_at` within the subscription's lookback (plus 15 minutes) and at most 15 minutes ahead, so nobody chooses where their message lands in a thread.
 
-### Layer 1: Rumor (kind 14)
+No recipient tag is checked on the rumor: the seal is encrypted to our key, so a rumor meant for anyone else cannot open. The inbox subscribes to kind 1059 `#p` our key with a 7-day lookback (the sender's outbox lifetime), and skips a wrap ID already opened (`OpenedGiftWraps`) so a relay replaying the window after a reconnect is not decrypted and acknowledged twice. A sender's retry arrives in a new wrap and is acknowledged again.
 
-An `UnsignedEvent`. Never signed, per NIP-17 a rumor must not have a signature.
+## The bitchat1: Envelope
 
-```typescript
-{
-  kind: 14,
-  pubkey: senderPubkey,      // sender's real secp256k1 pubkey
-  created_at: now,
-  tags: [],                  // as bitchat: the gift wrap's `p` tag targets the recipient
-  content: plaintextMessage,
-}
-```
+bitchat never puts raw text in a Nostr DM. The rumor's content is `"bitchat1:" + base64url(packet)`, where the packet is an unsigned `NOISE_ENCRYPTED` frame (the mesh wire format) holding a Noise payload: `PRIVATE_MESSAGE`, `DELIVERED`, `READ_RECEIPT`, or Airhop's `CONTACT_CARD`. A bitchat client drops a DM without the prefix.
 
-### Layer 2: Seal (kind 13)
+- Content is capped at one `PrivateMessagePacket`, 255 UTF-8 bytes; `encodeBitchatDmEnvelope` returns null past it.
+- A pseudonymous (location-channel) DM puts random bytes in `senderID`, never our mesh ID, which would tie the cell identity to it.
+- **Receipts.** A message read after its sender left range has no mesh route for its receipt, so `sendReadReceipts` sends it over Nostr, as bitchat-ios routes one; a DM that arrived over Nostr is acknowledged over Nostr. Couriered mail is acknowledged over both routes.
 
-Signed by the **sender's real key**. This is intentional: it authenticates the sender to the recipient, while the outer gift wrap hides that identity from relay operators.
+## Courier Drop (Kind 1401)
 
-```typescript
-const conversationKey = nip44.getConversationKey(
-  senderPrivKey,
-  recipientPubkeyHex,
-);
-content = nip44.encrypt(JSON.stringify(rumor), conversationKey);
-// event is signed with senderPrivKey
-```
+Sealed courier envelopes parked on relays, so delivery does not need a carrier to meet the recipient (bitchat-ios `BridgeCourierService`).
 
-### Layer 3: Gift Wrap (kind 1059)
-
-Signed by a freshly generated throwaway key. The ephemeral key's pubkey becomes the gift wrap's `pubkey` field. Relay operators see the throwaway pubkey, not the real sender.
-
-```typescript
-const ephemeralPrivKey = generateSecretKey(); // new key every send
-const wrapConvKey = nip44.getConversationKey(
-  ephemeralPrivKey,
-  recipientPubkeyHex,
-);
-content = nip44.encrypt(JSON.stringify(sealEvent), wrapConvKey);
-// Seal and wrap timestamps are randomized +/-15 minutes (bitchat's window, not NIP-59's two days)
-```
-
-### Receive flow
-
-```
-1. Decrypt gift wrap using recipient key + gift wrap pubkey field
-2. Verify seal signature (rejects forged DMs)
-3. Decrypt seal using recipient key + seal pubkey field
-4. Check the rumor is a well-formed kind 14 (nostr-tools validateEvent) and that seal.pubkey === rumor.pubkey (prevents identity substitution)
-5. Check the rumor's created_at is inside the subscription's lookback and at most 15 minutes ahead (15 minutes of skew either side)
-```
-
-Step 2 is security-critical. Skipping it means anyone who knows the recipient's pubkey can forge DMs.
-
-There is no recipient-tag check on the rumor. The recipient binding comes from the seal encryption: the seal is NIP-44 encrypted to the recipient's key, so a rumor meant for anyone else cannot be opened. The rumor is unsigned, so nothing else checks its shape: a missing or non-numeric `created_at` would slip past every time comparison, which is why step 4 runs `validateEvent` first.
-
-## Courier Relay (kind 1401)
-
-When BLE delivery fails, sealed courier envelopes are parked on Nostr relays. The recipient polls when they come online.
-
-### Event Format
-
-```
+```text
 kind:    1401
-tags:    [["x", recipientTagHex], ["expiration", unixSecString]]
-content: base64(encodeEnvelopePayload(envelope))
+tags:    [["x", recipientTagHex], ["expiration", unixSeconds]]
+content: base64(CourierEnvelope TLV), as bitchat-ios createCourierDropEvent
 ```
 
-The `x` tag is a 16-byte HMAC-derived daily recipient tag (see `computeRecipientTag` in `courier-store.ts`). It rotates daily. This is not unlinkability: anyone holding the peer's static key can compute its tag for any day.
+- Signed by a throwaway key minted per publish, never the device identity: the envelope authenticates its sender inside the Noise X seal, and a stable publisher key would make every drop attributable to one npub. The key is not a parameter, so no caller can pass the identity.
+- Published once per message with `copies` 1, since a relay copy goes to the recipient, never to another carrier.
+- The `x` tag is the envelope's daily recipient tag (see [`courier-envelopes.md`](courier-envelopes.md)). It is not unlinkable: anyone holding the peer's static key computes it for any day.
+- **Subscription:** `{ kinds: [1401], "#x": candidateTags (yesterday, today, tomorrow), since: now - 24 h, limit: 100 }`, renewed when the UTC day rolls over. The limit is bitchat-ios's `courierDrops`; there is no paging with `until`, since a flood can outrun any page budget and every junk page costs Schnorr checks.
+- NIP-40 relays expire the event; a drop whose expiry has passed is ignored.
 
-The event is signed by a throwaway key minted per publish, never the device identity: the envelope authenticates its sender inside the Noise X seal, and a stable publisher key would make every drop attributable to one npub. bitchat mints per publish too.
+## Relays and Subscriptions
 
-NIP-40 compliant relays auto-expire the event at the `expiration` timestamp. Non-compliant relays keep it; the recipient ignores stale envelopes.
-
-### Subscription Filter
-
-Subscribers query by `#x` tag with their current and previous day's tags:
-
-```typescript
-{ kinds: [1401], "#x": [todayTagHex, ...], since: now - 86400, limit: 100 }
-```
-
-The limit is bitchat-ios's (`courierDrops`, limit 100). It bounds a flood rather than honest volume, since anyone who heard an announce can compute the daily tag and park junk after real mail. There is no paging with `until`, as in bitchat-ios: a flood can outrun any page budget, and every junk page costs Schnorr checks.
-
-## Subscribing Across Relays
-
-`NostrClient.subscribe` opens one `subscribeMany([url], ...)` per relay and per filter, each with its own filter copy, and `queryEvents` runs one `querySync` per relay and merges by event ID. nostr-tools records an event ID as seen before verifying its signature, in a set shared across the relays of one call, so a hostile relay's forged copy with the genuine ID would suppress every honest relay's copy; and a rejected far-future event from one relay would move the shared `since` another relay reconnects with. Airhop keeps its own set of delivered IDs per `subscribe()` call, recorded only after verification and only when the event was actually queued, and hands it to nostr-tools as a lookup-only `alreadyHaveEvent`. Collapse back to one call when a nostr-tools release carries PR #560.
-
-## Event Kind Summary
-
-| Kind | Name         | Signed by         |
-| ---- | ------------ | ----------------- |
-| 14   | Rumor        | Nobody (unsigned) |
-| 13   | Seal         | Real sender key   |
-| 1059 | Gift wrap    | Ephemeral key     |
-| 1401 | Courier drop | Throwaway key     |
+- **One subscription per relay and filter.** nostr-tools 2.25.2 records an event ID as seen before verifying it, in a set shared across the relays of one call, so a hostile relay's forged copy under a genuine ID would hide every honest relay's copy, and a far-future event from one relay would move the `since` another reconnects with. `NostrClient.subscribe` keeps its own delivered-ID set per call, recorded only after verification, and hands nostr-tools a lookup-only `alreadyHaveEvent`. Collapse back to one call once a release carries nbd-wtf/nostr-tools#560.
+- **Gift-wrap filters keep their `since`.** nostr-tools moves `since` past the newest `created_at` on reconnect, and a wrap's is blurred up to 15 minutes ahead, so relays would withhold newer wraps (`pinGiftWrapSince`).
+- **`isConnected` reads the sockets on every call**, so a gateway that just lost signal stops advertising and publishing into a dead pool.
+- **Tor.** Relay sockets open only when `tor-routing.ts` allows. While Tor is wanted and not yet carrying, or held after a failed start, `nostrBlockedByTor` holds the pool: nothing falls back to the clear net.
 
 ## What Not to Do
 
-- Do not sign the rumor (kind 14). It must stay as `UnsignedEvent`.
-- Do not reuse the ephemeral key across gift wraps. Generate a fresh one every time.
-- Do not use the Ed25519 signing key directly with `nostr-tools`; derive the secp256k1 key first.
-- Do not skip seal signature verification on receive (`verifyEvent(seal)`).
+- Use nostr-tools `nip44`, or any standard NIP-44 library, for DM layers.
+- Sign the rumor, or skip `verifyEvent(seal)` or the `seal.pubkey === rumor.pubkey` check.
+- Reuse a throwaway key across wraps or drops, or sign a drop with the device identity.
+- Use the Ed25519 signing key directly with nostr-tools; derive the secp256k1 key first.
+- Put raw text in a DM rumor, or our mesh ID in a location-channel envelope.
+- Subscribe across relays in one call, or open a relay socket around the Tor gate.

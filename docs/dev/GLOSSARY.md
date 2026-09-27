@@ -1,101 +1,123 @@
 # Airhop: Glossary
 
+Short definitions of the terms used across the docs and the code, for anyone reading them for the first time. Each entry says what the term means and where Airhop uses it; the behavior itself is specified in [ARCHITECTURE.md](../spec/ARCHITECTURE.md) and the constants in [PROTOCOLS.md](../spec/PROTOCOLS.md). For how bitchat does the same things, see [BITCHAT.md](BITCHAT.md).
+
+## Airhop and bitchat Terms
+
+**Announce**: A signed `ANNOUNCE` packet a phone broadcasts to say it is present, carrying its nickname, Noise static key and Ed25519 signing key. Peers learn who is nearby, and which key to verify each sender against, from announces.
+
+**bitchat-ios / bitchat-android**: The two bitchat apps ([permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)). Airhop is wire-compatible with both, and treats bitchat-ios as the source of truth where they differ.
+
+**Bridge (mesh bridge)**: An opt-in setting, off by default, that joins the local `#bluetooth` room to another crowd too far away for radio by republishing it through a Nostr rendezvous cell. Not to be confused with a **Tor bridge**, an unlisted Tor entry point.
+
+**Courier**: Store-and-forward delivery by people. When nothing can reach the recipient, a nearby phone carries a sealed envelope and hands it over when it meets them. The carrier cannot read it, and envelopes are capped at 16 KiB, so media never travels this way.
+
+**Gateway (internet gateway)**: An opt-in setting, off by default, under which a phone with internet carries public location-channel traffic to and from Nostr for nearby phones that have none.
+
+**Location channel**: A public room scoped to a geohash cell and carried over Nostr, from `#region` down to `#block`.
+
+**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) gossiped over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
+
+**Peer ID**: A phone's 8-byte mesh address, `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. It stays the same until a panic wipe replaces the identity.
+
+**Safety number**: Six words derived from two peers' keys, read aloud to each other to verify a contact without a camera. The device transfer shows six words from its own handshake the same way.
+
 ## Cryptography
 
-**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve digital signature scheme. Every outgoing BLE packet is signed with the sender's Ed25519 key; every relay verifies the signature before forwarding.
+**[ChaCha20-Poly1305](https://datatracker.ietf.org/doc/html/rfc8439)**: An authenticated encryption cipher (AEAD). The symmetric cipher inside Noise XX and Noise X.
 
-**[X25519](https://cr.yp.to/ecdh.html)**: Elliptic curve Diffie-Hellman using Curve25519. The key agreement function inside both Noise XX and Noise X.
+**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: Signal's per-message key agreement, which gives each message its own key so one leaked key exposes no other message. Airhop runs it on live DMs between two Airhop phones, seeded from and bound to their Noise session. Courier mail gets its forward secrecy from one-time prekeys instead.
 
-**[SHA-256](https://en.wikipedia.org/wiki/SHA-2)**: A cryptographic hash function. Used for Peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`), packet deduplication IDs, the hash function inside the Noise suite, and the hash inside GCS filters during gossip sync (`gossip-sync.ts`; Airhop does not use SipHash).
+**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts and voice frames are also verified before they are relayed.
 
-**[HKDF](https://datatracker.ietf.org/doc/html/rfc5869)**: HMAC-based Key Derivation Function. Derives session keys and subkeys from Diffie-Hellman shared secrets inside the Noise handshake and Double Ratchet.
+**[HKDF](https://datatracker.ietf.org/doc/html/rfc5869)**: HMAC-based Key Derivation Function. Derives keys from Diffie-Hellman outputs inside Noise, the Double Ratchet and the Nostr DM construction.
 
-**[ChaCha20-Poly1305](https://datatracker.ietf.org/doc/html/rfc7539)**: An authenticated encryption cipher (AEAD). Used as the symmetric cipher inside the Noise XX and Noise X handshakes.
+**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for authenticated key exchange. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` to seal courier envelopes one way.
 
-**[XChaCha20-Poly1305](https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction)**: ChaCha20-Poly1305 with a 192-bit nonce instead of 96-bit. Used by bitchat's NIP-44 variant for Nostr DM encryption (see PROTOCOLS.md section 7.1); the extended nonce eliminates nonce-reuse risk.
+**[SHA-256](https://en.wikipedia.org/wiki/SHA-2)**: A cryptographic hash. Derives the peer ID, packet deduplication IDs and GCS filter entries, and is the hash inside the Noise suite. Airhop does not use SipHash.
 
-**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for building authenticated key exchange protocols. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` for one-way courier envelope sealing.
+**[X25519](https://cr.yp.to/ecdh.html)**: Diffie-Hellman over Curve25519. The key agreement inside Noise XX, Noise X and the Double Ratchet.
 
-**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: A key agreement algorithm that provides per-message forward secrecy. The same algorithm used by Signal and WhatsApp. Airhop applies it to live DMs between two Airhop phones, seeded from and bound to their Noise session, so that compromise of one message key does not expose others. Courier mail gets its forward secrecy from one-time prekeys instead.
+**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Signal's Extended Triple Diffie-Hellman, which starts a Double Ratchet with an offline recipient from prekeys published in advance. Airhop does not use it: the Noise handshake already seeds the ratchet, and one-time prekeys serve courier mail.
 
-**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Extended Triple Diffie-Hellman. A key agreement protocol that lets a sender initiate a Double Ratchet session with a recipient who is offline, using prekey bundles the recipient publishes in advance. Airhop does not use X3DH: the Noise handshake already seeds the ratchet, and one-time prekeys are gossiped over the mesh as `0x24`, never published to Nostr.
+**[XChaCha20-Poly1305](https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction)**: ChaCha20-Poly1305 with a 192-bit nonce, long enough to draw at random safely. bitchat's Nostr DM construction uses it ([PROTOCOLS.md section 7.1](../spec/PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)).
 
 ## Networking and Transport
 
-**[BLE (Bluetooth Low Energy)](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy)**: A low-power Bluetooth variant for short-range device communication. The primary offline transport in Airhop; every device acts as both a GATT Central and GATT Peripheral simultaneously.
+**[BLE (Bluetooth Low Energy)](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy)**: Low-power, short-range Bluetooth, and Airhop's primary offline transport. Every phone is a GATT Central and a GATT Peripheral at once.
 
-**[GATT (Generic Attribute Profile)](https://bluetooth.com/specifications/specs/)**: The client-server protocol layered on top of BLE. A GATT Central scans and connects; a GATT Peripheral advertises and accepts connections. Airhop runs both roles on the same device to form a mesh.
+**[DEFLATE (raw)](https://datatracker.ietf.org/doc/html/rfc1951)**: Lossless compression applied to packet payloads so more fits in a 512-byte BLE write. `packet-compression.ts` uses pako's `deflateRaw` / `inflateRaw`, matching bitchat's headerless zlib stream.
 
-**TTL (Time To Live)**: A counter embedded in each BLE packet. Every relay node decrements it by one before forwarding; the packet is dropped when TTL reaches zero. Default TTL is 7, bounding propagation to 7 hops.
+**[GATT (Generic Attribute Profile)](https://www.bluetooth.com/specifications/specs/)**: The client-server protocol on top of BLE. A Central scans and connects; a Peripheral advertises and accepts connections. Running both roles on one phone is what makes a mesh.
 
-**[WiFi Aware](https://wi-fi.org/discover-wi-fi/wi-fi-aware)**: The Wi-Fi Alliance's Neighbor Awareness Networking (NAN), for direct device-to-device WiFi connections without a router or internet connection. Up to 250 Mbps at ~30 m range. Android has it from API 26 (data path from API 29); iOS from 26, on iPhone 12 and later. Used for high-bandwidth transfers between two devices on the same platform. Not a cross-platform path despite both sides speaking it: Apple requires a paired data path and refuses an open one, and Android cannot complete Apple's pairing.
+**GCS (Golomb-Coded Set)**: A compact probabilistic set of hashes, smaller than a Bloom filter. Gossip sync uses one so two peers can see which packets each holds and exchange only what is missing (`gossip-sync.ts`). See [Golomb coding](https://en.wikipedia.org/wiki/Golomb_coding).
 
-**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, on the proprietary AWDL radio protocol. Airhop does **not** use it. A module was written, never worked on a device, and was removed; the iOS fast path is Apple's standards-based `WiFiAware` framework instead. Kept here because the name still appears in older commits and issues.
+**LAN transport**: Airhop's mesh over a shared WiFi network or hotspot, found by mDNS and carried over TCP. It carries the same packets as Bluetooth and works between an iPhone and an Android. Off by default.
 
-**[NFC (Near Field Communication)](https://en.wikipedia.org/wiki/Near-field_communication)**: Short-range radio for tap-to-exchange between two devices held together. The appeal for a messenger is that the range itself is the security property: a few centimetres is hard to eavesdrop on and impossible to spoof from across a room, which makes it a natural way to bind a key fingerprint to a person standing in front of you. **Not implemented in Airhop.** Contact exchange is camera QR only (`add-contact-screen.tsx`), which gives the same in-person guarantee with no extra dependency and works on every device.
+**[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: An eviction policy that drops the least recently used entry when a cache is full. The packet deduplication seen-set uses it (1,000 entries, 5 minutes).
 
-**GCS (Golomb-Coded Set)**: A probabilistic data structure, more compact than a Bloom filter, that encodes a set of hashes. Used in gossip sync to let two peers compare which messages each holds and exchange only what is missing. See [Golomb coding](https://en.wikipedia.org/wiki/Golomb_coding).
+**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, over the proprietary AWDL radio. Airhop does not use it; the iOS fast path is Apple's standards-based `WiFiAware` framework. The name appears in early commits.
 
-**[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: A cache eviction policy that removes the least-recently-accessed entry when the cache is full. Used for the 1,000-entry packet deduplication seen-set. The per-kind gossip stores (up to 1,000 public messages or 8 MiB, whichever fills first) evict the oldest inserted instead.
+**[NFC (Near Field Communication)](https://en.wikipedia.org/wiki/Near-field_communication)**: Tap-to-exchange radio with a range of a few centimeters. Not used: contact exchange is a camera QR scan (`add-contact-screen.tsx`), which gives the same in-person guarantee and works on every phone.
 
-## Nostr Protocol
+**TTL (Time To Live)**: A hop counter in each packet, decremented by every relay; the packet stops at zero. The ceiling is 7 hops. An announce always starts at 7, other broadcasts start a little below the relay ceiling for the sender's link count, and relays clamp broadcasts lower in dense meshes ([PROTOCOLS.md section 4](../spec/PROTOCOLS.md#4-routing-constants)).
 
-**[Nostr](https://nostr.org)**: Notes and Other Stuff Transmitted by Relays. A simple, open, decentralized protocol where clients sign events with keypairs and publish them to relays. Airhop uses Nostr as its internet bridge transport when BLE range is insufficient.
+**[WiFi Aware](https://www.wi-fi.org/discover-wi-fi/wi-fi-aware)**: The Wi-Fi Alliance's Neighbor Awareness Networking (NAN): direct phone-to-phone WiFi with no router. Android has it from API 26 (data path from API 29), iOS from 26 on iPhone 12 and later. Airhop uses it as the fast path between two phones on the same platform. It does not cross platforms: Apple requires a paired data path, which Android cannot complete.
 
-**NIP (Nostr Improvement Proposal)**: A numbered specification defining a Nostr protocol feature or extension. The full list is at [github.com/nostr-protocol/nips](https://github.com/nostr-protocol/nips).
+## Nostr
 
-**[NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md)**: The Nostr private direct message standard. Wraps messages using gift-wrap (NIP-59) so relay operators see neither sender, recipient, nor content.
+**[Geohash](https://en.wikipedia.org/wiki/Geohash)**: A short string that names a rectangular area, with each extra character narrowing it. Location channels run from a 2-character region to a 7-character block; a city is 5 characters, about 5 km across. The named channels resolve their geohash from the phone's location, and any cell can be opened by typing its geohash.
 
-**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Nostr relay-managed groups. Considered and rejected for Airhop: it puts membership enforcement on a relay. See ARCHITECTURE.md section 6, Channels and Groups.
+**[Gift wrap (NIP-59)](https://github.com/nostr-protocol/nips/blob/master/59.md)**: A metadata-hiding envelope for Nostr events. The message is sealed inside two nested layers, and the outer one is signed by a throwaway key, so relay operators cannot see who is talking to whom.
 
-**[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: The Nostr encryption standard, versioned. The published construction is ChaCha20 with an HMAC-SHA256 tag; bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead (PROTOCOLS.md section 7.1). Used inside NIP-17 gift-wrap envelopes.
+**[Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula)**: Great-circle distance between two coordinates. `geo-relay.ts` uses it to pick the relays nearest a geohash from `assets/data/nostr_relays.csv`.
 
-**[NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.md)**: See Gift-wrap above.
+**[Nostr](https://nostr.com)**: Notes and Other Stuff Transmitted by Relays. An open protocol where clients sign events with key pairs and publish them to relays. Airhop's internet transport when radio range runs out.
 
-**[Gift-wrap (NIP-59)](https://github.com/nostr-protocol/nips/blob/master/59.md)**: A metadata-minimizing envelope scheme for Nostr events. The real message is sealed inside two nested encryption layers; the outer layer uses an ephemeral throwaway key so relay operators cannot learn who is talking to whom.
+**NIP (Nostr Implementation Possibility)**: A numbered Nostr specification. The full list is at [github.com/nostr-protocol/nips](https://github.com/nostr-protocol/nips).
 
-**[NIP-61](https://github.com/nostr-protocol/nips/blob/master/61.md)**: The Nutzap standard. Defines how to send Cashu ecash tokens via Nostr events as a form of Lightning-backed payment.
+**[NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md)**: Nostr private direct messages, wrapped in gift wrap so relays see neither sender, recipient nor content.
 
-**[Geohash](https://en.wikipedia.org/wiki/Geohash)**: A geographic encoding that maps GPS coordinates to a short alphanumeric string, hierarchically scoping an area. Airhop scopes location-based Nostr channels by geohash, from a 2-character region down to a 7-character city block (a city is 5 characters, ~5 km x 5 km). The named channels resolve their geohash from your location; you can also teleport to any cell by entering its geohash.
+**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Relay-managed groups. Not used, because it puts membership enforcement on a relay ([ARCHITECTURE.md section 6](../spec/ARCHITECTURE.md#nip-29-was-not-used)).
 
-**[Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula)**: A formula for computing the great-circle distance between two GPS coordinates on a sphere. Used by `geo-relay.ts` to select the nearest Nostr relay from `assets/data/nostr_relays.csv`.
+**[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: Nostr's versioned encryption standard: ChaCha20 with an HMAC-SHA256 tag. bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead.
+
+**[NIP-61](https://github.com/nostr-protocol/nips/blob/master/61.md)**: Nutzaps: Cashu ecash sent in a Nostr event, locked to the recipient's key.
 
 ## Payments
 
-**[Cashu](https://cashu.space)**: A Chaumian ecash protocol backed by Bitcoin and Lightning. Tokens are cryptographically signed bearer instruments that transfer with no internet connection. Airhop uses Cashu for offline BLE payments; internet is only needed to move value in or out over Lightning, and to confirm a received token is unspent.
+**[Cashu](https://cashu.space)**: Chaumian ecash backed by bitcoin. Tokens are signed bearer instruments that move between phones with no internet; a connection is needed only to move value in or out over Lightning and to redeem a received token at its mint.
 
-**Mint**: The server that issues and redeems ecash and holds the bitcoin backing it. The only trusted party in the payment system. Airhop ships with no default mint: the user chooses one, or runs their own.
+**[DLEQ (Discrete Log Equality proof)](https://github.com/cashubtc/nuts/blob/main/12.md)**: A proof that a mint signed a coin correctly, checkable with the mint's public keys and no network. It proves a coin is genuine, not that it is unspent: only the mint knows that.
 
-**Proof**: One ecash coin. An amount, a random secret only its owner knows, and the mint's blind signature over that secret. A **token** is one or more proofs packed into a single `cashuB…` string, which is what actually moves between devices.
+**Mint**: The server that issues and redeems ecash and holds the bitcoin behind it, and the only trusted party in the payment system. Airhop ships with no default mint.
 
-**[DLEQ (Discrete Log Equivalence Proof)](https://en.wikipedia.org/wiki/Proof_of_knowledge#Sigma_protocols)**: A zero-knowledge proof that lets a Cashu mint prove a token was correctly blind-signed without revealing its private key. Lets a recipient verify a token is genuine with no network. It cannot prove the token is _unspent_: only the mint knows that.
+**[NUT](https://github.com/cashubtc/nuts)**: A numbered Cashu specification ("Notation, Usage, and Terminology"). Airhop implements, among others, NUT-04 and NUT-05 (Lightning in and out), NUT-07 (proof state), NUT-09 (restore), NUT-11 (P2PK locks), NUT-12 (DLEQ), NUT-13 (deterministic secrets for the recovery phrase) and NUT-19 (cached responses).
 
-**[NUT](https://github.com/cashubtc/nuts)**: A numbered Cashu specification ("Notation, Usage, and Terminology"), the Cashu equivalent of a NIP. Airhop implements NUT-04/05 (Lightning in and out), NUT-07 (proof state), NUT-11 (P2PK locking), NUT-12 (DLEQ), and NUT-13 (deterministic secrets for the recovery phrase).
+**Nutzap**: A Cashu payment sent over Nostr under NIP-61. The ecash is locked to the recipient's key, so the event can be public while only they can spend it.
 
-**Nutzap**: A Cashu payment sent via Nostr ([NIP-61](https://github.com/nostr-protocol/nips/blob/master/61.md)). The ecash is locked to the recipient's public key, so the event can be public while only they can spend it.
+**Proof**: One ecash coin: an amount, a secret only its owner knows, and the mint's blind signature over it. A **token** is one or more proofs packed into a single `cashuB…` string, which is what moves between phones.
 
 ## Tools and Libraries
 
-**[DEFLATE (raw)](https://datatracker.ietf.org/doc/html/rfc1951)**: A lossless compression algorithm. Applied to BLE packet payloads before transmission to fit more content within the 512-byte BLE write ceiling. `packet-compression.ts` uses pako's `deflateRaw` / `inflateRaw`, matching bitchat's headerless zlib stream.
+**[AAC (Advanced Audio Coding)](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)**: Lossy audio compression. Push-to-talk voice is AAC-LC at 16 kHz mono, sent as `VOICE_FRAME` (`0x29`) bursts.
 
-**[AAC (Advanced Audio Coding)](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)**: A lossy audio compression format. Airhop encodes push-to-talk voice at 16 kHz mono using AAC before transmission as BLE `VOICE_FRAME` packets.
+**[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust Tor client. Airhop embeds it on both platforms from `native/arti/`, as an xcframework on iOS and a JNI library on Android. Off by default; when on, it runs a SOCKS5 listener on loopback that every relay connection is dialled through.
 
-**[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust implementation of the Tor client. Airhop embeds it on both platforms, built from `native/arti/` and linked as an xcframework on iOS and a JNI library on Android. Off by default; when on, it exposes a SOCKS5 listener on loopback that the app points its sockets at.
-
-**[TurboModule](https://reactnative.dev/docs/the-new-architecture/what-are-turbo-native-modules)**: React Native's new architecture native module system. `src/bridge/NativeAirhopBLE.ts` is a hand-maintained TypeScript spec resolved through the interop layer, not Codegen input that provides a typed interface over the Swift and Kotlin BLE implementations.
+**[TurboModule](https://reactnative.dev/docs/turbo-native-modules-introduction)**: React Native's native module system. The specs in `src/bridge/` are hand-maintained TypeScript interfaces over the Swift and Kotlin modules, resolved through the interop layer rather than generated by Codegen.
 
 ## Localization
 
-**[BCP 47](https://www.rfc-editor.org/info/bcp47)**: The standard for language tags (`en`, `pt-BR`, `zh-Hans`). `src/i18n/languages.ts` is keyed on these.
+**[BCP 47](https://www.rfc-editor.org/info/bcp47)**: The standard for language tags (`en`, `pt-BR`, `zh-Hans`). `src/i18n/languages.ts` is keyed on them.
 
-**[CLDR plural category](https://cldr.unicode.org/index/cldr-spec/plural-rules)**: The set of grammatical number forms a language uses. English has `one` and `other`, Russian four, Arabic six, Chinese only `other`. `tPlural` selects one per call, through the rules in `src/i18n/plurals.ts`.
+**[CLDR plural category](https://cldr.unicode.org/index/cldr-spec/plural-rules)**: The grammatical number forms a language uses. English has `one` and `other`, Russian four, Arabic six, Chinese only `other`. `tPlural` picks one per call through the rules in `src/i18n/plurals.ts`.
 
-**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What a language picker lists, matching bitchat's `AppLanguageSettings.endonym(for:)`.
+**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What the language picker lists, as bitchat's `AppLanguageSettings.endonym(for:)` does.
 
-**[ICU](https://icu.unicode.org/)**: The Unicode internationalization library the platform exposes through `Intl`. Backs date, time and number formatting, so `src/utils/format.ts` pins the locale and numbering system to keep output stable across OS versions. Hermes exposes `DateTimeFormat`, `NumberFormat` and `Collator` from it, but not `PluralRules`.
+**[ICU](https://icu.unicode.org/)**: The Unicode internationalization library behind `Intl`. It backs date, time and number formatting, so `src/utils/format.ts` pins the locale and numbering system to keep output stable across OS versions. Hermes exposes `DateTimeFormat`, `NumberFormat` and `Collator` from it, but not `PluralRules`.
 
-**LTR / RTL**: Left-to-right and right-to-left layout direction. `I18nManager` sets it once per process, so changing between them needs a relaunch; layout uses logical properties plus the helpers in `src/i18n/layout.ts`.
+**Locale**: A language plus its formatting conventions. In Airhop a locale is a TypeScript module under `src/i18n/locales/`, compiled into the bundle rather than fetched; 35 ship.
 
-**Locale**: A language plus its formatting conventions. In Airhop a locale is a TypeScript module under `src/i18n/locales/`, compiled into the bundle rather than fetched. English is the only one today.
+**LTR / RTL**: Left-to-right and right-to-left layout. `I18nManager` sets the direction once per process, so switching between them applies on the next launch; layout uses logical properties plus the helpers in `src/i18n/layout.ts`.
 
 **Translation key**: The identifier a string is looked up by (`chat.dm.clear`). Code holds keys, never sentences; `TranslationKey` is derived from `en.ts`, so an unknown key is a compile error.

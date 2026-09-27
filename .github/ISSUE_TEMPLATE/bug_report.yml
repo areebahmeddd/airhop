@@ -1,6 +1,6 @@
 name: Bug report
 description: Report something in the app that does not work
-labels: ['bug']
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
@@ -49,7 +49,7 @@ body:
     id: version
     attributes:
       label: Airhop version
-      description: Find it under Settings, then Version.
+      description: Find it under Settings, then About, then Version.
       placeholder: 1.0.0 (albatross)
     validations:
       required: true
@@ -61,7 +61,7 @@ body:
       options:
         - Bluetooth mesh
         - LAN (mDNS + TCP)
-        - WiFi Aware
+        - Wi-Fi Aware
         - Nostr relays
         - Courier (store-and-forward)
         - None or not sure
@@ -73,7 +73,7 @@ body:
     attributes:
       label: Other device
       description: What the second device runs, if one is involved.
-      placeholder: bitchat on Android 16
+      placeholder: bitchat-android on Android 16
 
   - type: textarea
     id: extra

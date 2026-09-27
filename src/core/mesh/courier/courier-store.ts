@@ -13,11 +13,13 @@
 // every courier. That is what lets `deposit` recognise the copies as one
 // envelope, so nothing here may re-seal.
 //
-// Envelope wire format (COURIER_ENV packet payload):
-//   [16 bytes: recipient tag]  HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
-//   [8  bytes: expiry]         Unix milliseconds as u64 BE
-//   [1  byte:  copies]         Spray-and-wait budget
-//   [rest:     ciphertext]     Noise X sealed payload
+// Envelope wire format (COURIER_ENV payload, and a kind 1401 drop's content):
+// TLVs of [type u8][length u16 BE][value], as bitchat's CourierEnvelope.
+//   0x01  recipient tag   HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
+//   0x02  expiry          Unix milliseconds, u64 BE
+//   0x03  ciphertext      Noise X sealed payload
+//   0x04  copies          spray-and-wait budget
+//   0x05  prekey ID       one-time prekey sealed to (v2); absent for a static seal
 
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";

@@ -472,7 +472,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} sa kabila ng tulay",
   "chat.thread.bridged": "naitulay",
   "chat.thread.invite_body":
-    "Samahan mo ako sa {channel} sa Airhop: pribadong pag-mensahe sa mesh, offline muna.",
+    "Samahan mo ako sa {channel} sa Airhop — pribadong pag-mensahe sa mesh, offline muna.",
   "chat.thread.go_back_unread": "Bumalik, {count} ang hindi pa nababasa",
   "chat.thread.view_info": "Tingnan ang impormasyon para kay {name}",
   "chat.thread.notices_new":
@@ -2323,7 +2323,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Hindi na-save ang QR code. Subukan ulit.",
   "settings.qr.share_message": "Idagdag mo ako sa Airhop",
   "settings.qr.share_body":
-    "Idagdag mo ako sa Airhop: pribadong pag-mensahe sa mesh, offline muna.",
+    "Idagdag mo ako sa Airhop — pribadong pag-mensahe sa mesh, offline muna.",
   "settings.qr.show_short": "Ipakita ang QR",
   "settings.qr.title": "Ang QR code mo",
   "settings.qr.note":

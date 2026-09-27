@@ -436,7 +436,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "桥接对面 {count} 位",
   "chat.thread.bridged": "已桥接",
   "chat.thread.invite_body":
-    "来 Airhop 的 {channel} 一起聊吧：离线优先的私密网状网络通信。",
+    "来 Airhop 的 {channel} 一起聊吧 — 离线优先的私密网状网络通信。",
   "chat.thread.go_back_unread": "返回，{count} 条未读",
   "chat.thread.view_info": "查看 {name} 的信息",
   "chat.thread.notices_new": "本频道的公告，{count} 条新的",
@@ -2101,7 +2101,7 @@ export const strings: Strings = {
   "settings.qr.save_failed": "无法保存",
   "settings.qr.save_failed_body": "二维码无法保存。请再试一次。",
   "settings.qr.share_message": "在 Airhop 上加我",
-  "settings.qr.share_body": "在 Airhop 上加我：离线优先的私密网状网络通信。",
+  "settings.qr.share_body": "在 Airhop 上加我 — 离线优先的私密网状网络通信。",
   "settings.qr.show_short": "显示二维码",
   "settings.qr.title": "你的二维码",
   "settings.qr.note":

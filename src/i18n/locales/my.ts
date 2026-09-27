@@ -467,7 +467,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "တံတားတစ်ဖက်တွင် {count} ဦး",
   "chat.thread.bridged": "တံတားဖြင့် ချိတ်ဆက်ထားသည်",
   "chat.thread.invite_body":
-    "Airhop ရှိ {channel} တွင် ကျွန်ုပ်နှင့် ပူးပေါင်းပါ။ အော့ဖ်လိုင်းဦးစားပေး သီးသန့်မက်ရှ်စကားပြောစနစ်။",
+    "Airhop ရှိ {channel} တွင် ကျွန်ုပ်နှင့် ပူးပေါင်းပါ — အော့ဖ်လိုင်းဦးစားပေး သီးသန့်မက်ရှ်စကားပြောစနစ်။",
   "chat.thread.go_back_unread": "ပြန်သွားပါ၊ မဖတ်ရသေးသည် {count} ခု",
   "chat.thread.view_info": "{name} ၏ အချက်အလက်ကို ကြည့်ပါ",
   "chat.thread.notices_new": "ဤချန်နယ်၏ အသိပေးချက်များ၊ အသစ် {count} ခု",
@@ -2311,7 +2311,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR ကုဒ်ကို မသိမ်းနိုင်ပါ။ ထပ်စမ်းကြည့်ပါ။",
   "settings.qr.share_message": "Airhop တွင် ကျွန်ုပ်ကို ထည့်ပါ",
   "settings.qr.share_body":
-    "Airhop တွင် ကျွန်ုပ်ကို ထည့်ပါ။ အော့ဖ်လိုင်းဦးစားပေး သီးသန့်မက်ရှ်စကားပြောစနစ်။",
+    "Airhop တွင် ကျွန်ုပ်ကို ထည့်ပါ — အော့ဖ်လိုင်းဦးစားပေး သီးသန့်မက်ရှ်စကားပြောစနစ်။",
   "settings.qr.show_short": "QR ပြပါ",
   "settings.qr.title": "သင့် QR ကုဒ်",
   "settings.qr.note":

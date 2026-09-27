@@ -50,8 +50,9 @@ lock in the same commit:
 ## Tests
 
 JVM tests, no device, under `app/src/test/`. They cover the pure pieces:
-`Framing` and `AwareDial` (the Aware follow-up messages, hello frame, tiebreak
-and backoff). Anything that touches a radio is covered by the simulator under
+`Framing` and `FrameReader`, `AwareDial` (the Aware follow-up messages, hello
+frame, tiebreak and backoff), the LAN interface filter, the Tor proxy selector
+and the voice playback bursts. Anything that touches a radio is covered by the simulator under
 `src/__tests__/` and by devices.
 
 ```sh

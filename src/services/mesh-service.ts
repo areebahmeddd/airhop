@@ -1743,10 +1743,9 @@ export class MeshService {
     // then fed into the assembler. When all fragments arrive the reassembled
     // inner packet is routed through routePacket without another flood cycle.
     if (packet.type === PacketType.FRAGMENT) {
-      // Fragments inherit the parent packet's version, route and recipient, so
-      // a routed file crosses the mesh on the path its parent planned, and one
-      // addressed to us stops here (relayDecision) rather than being echoed
-      // back out over every other link.
+      // Fragments carry the parent packet's TTL and recipient, never its
+      // route, so one addressed to us stops here (relayDecision) rather than
+      // being echoed back out over every other link.
       this.floodRouter.receive(packet, (relay) => {
         this.relayPacket(relay, linkID);
       });
@@ -2799,7 +2798,7 @@ export class MeshService {
   //
   // Returns the packet rather than sending it, so fragmentation and pacing stay
   // with the file-transfer service: a 512 KiB photo is one Noise ciphertext
-  // that still has to be split into 469-byte frames.
+  // that still has to be split into 467-byte fragments.
   private sealFileForPeer(
     recipientPeerID: string,
     fileTlv: Uint8Array,

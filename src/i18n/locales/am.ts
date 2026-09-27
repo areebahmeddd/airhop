@@ -431,7 +431,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} ከድልድዩ ማዶ",
   "chat.thread.bridged": "በድልድይ የተላከ",
   "chat.thread.invite_body":
-    "በAirhop ላይ በ{channel} ውስጥ ተቀላቀለኝ፦ ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
+    "በAirhop ላይ በ{channel} ውስጥ ተቀላቀለኝ — ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
   "chat.thread.go_back_unread": "ተመለስ፣ {count} ያልተነበቡ",
   "chat.thread.view_info": "የ{name} መረጃን ተመልከት",
   "chat.thread.notices_new": "የዚህ ሰርጥ ማስታወቂያዎች፣ {count} አዲስ",
@@ -2100,7 +2100,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR ኮዱ ሊቀመጥ አልቻለም። እንደገና ሞክር።",
   "settings.qr.share_message": "በAirhop ላይ ጨምረኝ",
   "settings.qr.share_body":
-    "በAirhop ላይ ጨምረኝ፦ ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
+    "በAirhop ላይ ጨምረኝ — ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
   "settings.qr.show_short": "QR አሳይ",
   "settings.qr.title": "የአንተ QR ኮድ",
   "settings.qr.note":

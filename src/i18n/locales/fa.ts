@@ -455,7 +455,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} نفر آن سوی پل",
   "chat.thread.bridged": "پل‌خورده",
   "chat.thread.invite_body":
-    "در {channel} روی Airhop به من بپیوندید: پیام‌رسان مش خصوصی با اولویت برون‌خط.",
+    "در {channel} روی Airhop به من بپیوندید — پیام‌رسان مش خصوصی با اولویت برون‌خط.",
   "chat.thread.go_back_unread": "بازگشت، {count} خوانده‌نشده",
   "chat.thread.view_info": "دیدن اطلاعات {name}",
   "chat.thread.notices_new": "اعلان‌های این کانال، {count} تازه",
@@ -2231,7 +2231,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "کد QR ذخیره نشد. دوباره تلاش کنید.",
   "settings.qr.share_message": "من را در Airhop اضافه کنید",
   "settings.qr.share_body":
-    "من را در Airhop اضافه کنید: پیام‌رسان مش خصوصی با اولویت برون‌خط.",
+    "من را در Airhop اضافه کنید — پیام‌رسان مش خصوصی با اولویت برون‌خط.",
   "settings.qr.show_short": "نمایش QR",
   "settings.qr.title": "کد QR شما",
   "settings.qr.note":

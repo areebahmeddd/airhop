@@ -456,7 +456,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} ở bên kia cầu nối",
   "chat.thread.bridged": "đã bắc cầu",
   "chat.thread.invite_body":
-    "Vào {channel} với mình trên Airhop: nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
+    "Vào {channel} với mình trên Airhop — nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
   "chat.thread.go_back_unread": "Quay lại, {count} chưa đọc",
   "chat.thread.view_info": "Xem thông tin của {name}",
   "chat.thread.notices_new": "Bản tin của kênh này, {count} mới",
@@ -2249,7 +2249,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Không lưu được mã QR. Hãy thử lại.",
   "settings.qr.share_message": "Thêm tôi trên Airhop",
   "settings.qr.share_body":
-    "Thêm tôi trên Airhop: nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
+    "Thêm tôi trên Airhop — nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
   "settings.qr.show_short": "Hiện QR",
   "settings.qr.title": "Mã QR của bạn",
   "settings.qr.note":

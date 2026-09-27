@@ -464,7 +464,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} al otro lado del puente",
   "chat.thread.bridged": "enlazado",
   "chat.thread.invite_body":
-    "Únete a mí en {channel} en Airhop: mensajería en malla privada y con prioridad sin conexión.",
+    "Únete a mí en {channel} en Airhop — mensajería en malla privada y con prioridad sin conexión.",
   "chat.thread.go_back_unread": "Volver, {count} sin leer",
   "chat.thread.view_info": "Ver la información de {name}",
   "chat.thread.notices_new": "Avisos de este canal, {count} nuevos",
@@ -2290,7 +2290,7 @@ export const strings: Strings = {
     "No se pudo guardar el código QR. Inténtalo de nuevo.",
   "settings.qr.share_message": "Añádeme en Airhop",
   "settings.qr.share_body":
-    "Añádeme en Airhop: mensajería en malla privada y con prioridad sin conexión.",
+    "Añádeme en Airhop — mensajería en malla privada y con prioridad sin conexión.",
   "settings.qr.show_short": "Ver QR",
   "settings.qr.title": "Tu código QR",
   "settings.qr.note":

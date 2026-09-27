@@ -462,7 +462,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} ხიდის მიღმა",
   "chat.thread.bridged": "ხიდით გადავიდა",
   "chat.thread.invite_body":
-    "შემომიერთდი {channel}-ში Airhop-ზე: პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
+    "შემომიერთდი {channel}-ში Airhop-ზე — პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
   "chat.thread.go_back_unread": "უკან, {count} წაუკითხავი",
   "chat.thread.view_info": "{name}-ის ინფორმაციის ნახვა",
   "chat.thread.notices_new": "ამ არხის განცხადებები, {count} ახალი",
@@ -2261,7 +2261,7 @@ export const strings: Strings = {
     "QR კოდის შენახვა ვერ მოხერხდა. სცადე ხელახლა.",
   "settings.qr.share_message": "დამამატე Airhop-ზე",
   "settings.qr.share_body":
-    "დამამატე Airhop-ზე: პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
+    "დამამატე Airhop-ზე — პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
   "settings.qr.show_short": "QR-ის ჩვენება",
   "settings.qr.title": "შენი QR კოდი",
   "settings.qr.note":

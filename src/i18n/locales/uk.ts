@@ -460,7 +460,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} по той бік мосту",
   "chat.thread.bridged": "змощено",
   "chat.thread.invite_body":
-    "Приєднуйтеся до мене в {channel} на Airhop: приватні повідомлення через mesh, спершу офлайн.",
+    "Приєднуйтеся до мене в {channel} на Airhop — приватні повідомлення через mesh, спершу офлайн.",
   "chat.thread.go_back_unread": "Назад, {count} непрочитаних",
   "chat.thread.view_info": "Переглянути відомості про {name}",
   "chat.thread.notices_new": "Оголошення цього каналу, {count} нових",
@@ -2263,7 +2263,7 @@ export const strings: Strings = {
     "Не вдалося зберегти QR-код. Спробуйте ще раз.",
   "settings.qr.share_message": "Додайте мене в Airhop",
   "settings.qr.share_body":
-    "Додайте мене в Airhop: приватні повідомлення через mesh, спершу офлайн.",
+    "Додайте мене в Airhop — приватні повідомлення через mesh, спершу офлайн.",
   "settings.qr.show_short": "Показати QR",
   "settings.qr.title": "Ваш QR-код",
   "settings.qr.note":

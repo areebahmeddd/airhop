@@ -466,7 +466,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} ng'ambo ya daraja",
   "chat.thread.bridged": "imevushwa",
   "chat.thread.invite_body":
-    "Jiunge nami kwenye {channel} kwenye Airhop: jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
+    "Jiunge nami kwenye {channel} kwenye Airhop — jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
   "chat.thread.go_back_unread": "Rudi nyuma, {count} hazijasomwa",
   "chat.thread.view_info": "Tazama taarifa za {name}",
   "chat.thread.notices_new": "Matangazo ya kituo hiki, {count} mapya",
@@ -2294,7 +2294,7 @@ export const strings: Strings = {
     "Msimbo wa QR haukuweza kuhifadhiwa. Jaribu tena.",
   "settings.qr.share_message": "Niongeze kwenye Airhop",
   "settings.qr.share_body":
-    "Niongeze kwenye Airhop: jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
+    "Niongeze kwenye Airhop — jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
   "settings.qr.show_short": "Onyesha QR",
   "settings.qr.title": "Msimbo wako wa QR",
   "settings.qr.note":

@@ -462,7 +462,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "ブリッジ越しに{count}人",
   "chat.thread.bridged": "ブリッジ経由",
   "chat.thread.invite_body":
-    "Airhopの{channel}に来ませんか。インターネットなしで動く、プライベートなメッシュメッセージング。",
+    "Airhopの{channel}に来ませんか — インターネットなしで動く、プライベートなメッシュメッセージング。",
   "chat.thread.go_back_unread": "戻る、未読{count}件",
   "chat.thread.view_info": "{name}の情報を見る",
   "chat.thread.notices_new": "このチャンネルのお知らせ、新着{count}件",
@@ -2249,7 +2249,7 @@ export const strings: Strings = {
     "QRコードを保存できませんでした。もう一度お試しください。",
   "settings.qr.share_message": "Airhopで私を追加してください",
   "settings.qr.share_body":
-    "Airhopで私を追加してください。インターネットなしで動く、プライベートなメッシュメッセージング。",
+    "Airhopで私を追加してください — インターネットなしで動く、プライベートなメッシュメッセージング。",
   "settings.qr.show_short": "QRを表示",
   "settings.qr.title": "あなたのQRコード",
   "settings.qr.note":

@@ -8,16 +8,18 @@
 // Event format (kind 1401):
 //   kind:    1401
 //   tags:    [["x", recipientTagHex], ["expiration", unixSecString]]
-//   content: base64(ciphertext)  - the Noise X ciphertext from courier-store
+//   content: base64(envelope TLV), the whole envelope as bitchat-ios's
+//            CourierEnvelope encodes it (tag, expiry, ciphertext, prekey ID)
 //
 // The "x" tag is a 16-byte HMAC-derived daily tag (see courier-store.ts
 // recipientTag()). Relays supporting NIP-40 will auto-expire the event at
 // the expiration timestamp.
 
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent, generateSecretKey, type Event } from "nostr-tools";
 import { base64ToBytes, bytesToBase64 } from "../encoding/base64";
 import {
+  decodeEnvelopePayload,
   encodeEnvelopePayload,
   type SealedEnvelope,
 } from "../mesh/courier/courier-store";
@@ -115,22 +117,23 @@ function parseCourierDropEvent(event: Event): SealedEnvelope | null {
 
   if (isNaN(expiryMs) || expiryMs < Date.now()) return null; // already expired
 
-  let ciphertext: Uint8Array;
+  let envelope: SealedEnvelope | null;
   try {
-    ciphertext = base64ToBytes(event.content);
+    envelope = decodeEnvelopePayload(base64ToBytes(event.content));
   } catch {
     return null;
   }
+  if (envelope === null || envelope.ciphertext.length === 0) return null;
+  // The envelope's own tag must match the filterable one, as bitchat-ios
+  // checks, or a mislabeled drop rides a subscription it does not belong to.
+  if (bytesToHex(envelope.recipientTag) !== xTag[1].toLowerCase()) return null;
 
-  let recipientTag: Uint8Array;
-  try {
-    recipientTag = hexToBytes(xTag[1]);
-  } catch {
-    return null;
-  }
+  if (envelope.expiryMs < Date.now()) return null;
 
-  if (recipientTag.length !== 16) return null;
-  if (ciphertext.length === 0) return null;
-
-  return { recipientTag, expiryMs, copies: 1, ciphertext };
+  // A drop is published once and never carried on, whatever its copies field.
+  return {
+    ...envelope,
+    expiryMs: Math.min(envelope.expiryMs, expiryMs),
+    copies: 1,
+  };
 }

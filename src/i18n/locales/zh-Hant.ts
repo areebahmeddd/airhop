@@ -436,7 +436,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "橋接另一端 {count} 位",
   "chat.thread.bridged": "已橋接",
   "chat.thread.invite_body":
-    "來 Airhop 的 {channel} 一起聊吧：離線優先的私密網狀網路通訊。",
+    "來 Airhop 的 {channel} 一起聊吧 — 離線優先的私密網狀網路通訊。",
   "chat.thread.go_back_unread": "返回，{count} 則未讀",
   "chat.thread.view_info": "查看 {name} 的資訊",
   "chat.thread.notices_new": "本頻道的公告，{count} 則新的",
@@ -2105,7 +2105,7 @@ export const strings: Strings = {
   "settings.qr.save_failed": "無法儲存",
   "settings.qr.save_failed_body": "QR 碼無法儲存。請再試一次。",
   "settings.qr.share_message": "在 Airhop 上加我",
-  "settings.qr.share_body": "在 Airhop 上加我：離線優先的私密網狀網路通訊。",
+  "settings.qr.share_body": "在 Airhop 上加我 — 離線優先的私密網狀網路通訊。",
   "settings.qr.show_short": "顯示 QR 碼",
   "settings.qr.title": "你的 QR 碼",
   "settings.qr.note":

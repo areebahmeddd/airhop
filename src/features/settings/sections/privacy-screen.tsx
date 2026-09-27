@@ -31,7 +31,7 @@ const SECTIONS: LegalSection[] = [
       "Airhop stores data only on your device. None of it is transmitted to us.",
       {
         bullets: [
-          "**Identity keys.** An Ed25519 signing key and a Noise static key are generated locally on first launch and stored in your device's secure storage (iOS Keychain or Android Keystore). A Nostr key, a separate identity for each location cell you use, and one-time prekeys are all derived from that signing key rather than stored separately. Your public keys are shared with peers you communicate with. **Private keys never leave your device.**",
+          "**Identity keys.** An Ed25519 signing key and a Noise static key are generated locally on first launch and stored in your device's secure storage (iOS Keychain or Android Keystore). A Nostr key and a separate identity for each location cell you use are derived from that signing key rather than stored separately. One-time prekeys, which let someone leave you a protected message while you are away, are random keys kept in the same secure storage. Your public keys are shared with peers you communicate with. **Private keys never leave your device**, except when you move Airhop to a new phone of your own, which sends them directly between the two phones over your local network, encrypted, after your phone confirms it is you.",
           "**Display name and preferences.** Your generated display name and app settings are stored locally.",
           "**Message history.** Conversations are stored locally on your device and are never sent to us. They are protected by the operating system's app sandbox and whole-device encryption, not by a separate app-level cipher, so a person with access to an unlocked device can read them. Delete a conversation at any time, or wipe everything instantly with panic wipe.",
           "**Private group state.** Group names, member lists, and the current group key are stored locally so you can keep reading the group. They are removed by panic wipe or by removing the app.",
@@ -61,7 +61,7 @@ const SECTIONS: LegalSection[] = [
         ],
       },
       "Private text messages are encrypted end-to-end and readable only by the intended recipient. Public channel messages are visible to all participants in that channel.",
-      "**Attachments are a partial exception: a photo, video, voice note, or file posted to the public Bluetooth room is signed but not encrypted.** That is the format bitchat reads, and matching it is what lets the two apps exchange media at all. Because attachments relay hop by hop, any device carrying a room attachment can read it, so treat one as visible to the mesh rather than private. A direct attachment is sealed inside that person's encrypted session, so no relay can read it. An app that cannot open a sealed attachment receives the readable form instead.",
+      "**Attachments are a partial exception: a photo, video, voice note, or file posted to the public Bluetooth room is signed but not encrypted.** That is the format bitchat reads, and matching it is what lets the two apps exchange media at all. Because attachments relay hop by hop, any device carrying a room attachment can read it, so treat one as visible to the mesh rather than private. A direct attachment is always sealed inside that person's encrypted session, so no relay can read it. It is never sent in readable form: if the other app cannot open a sealed attachment, the send is refused and you are told why.",
       "Nearby mesh devices are not limited to Airhop. [bitchat](https://bitchat.free) is a separate, compatible app that can join the same mesh and receive this same data. bitchat is an independent project with its own codebase, not operated or audited by us.",
     ],
   },
@@ -112,7 +112,7 @@ const SECTIONS: LegalSection[] = [
           "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the maths rather than by policy.",
           "**Tor.** On Android, Tor covers mint traffic along with everything else. On iOS, Tor only wraps Nostr connections, so **mint requests are blocked while Tor is on** unless you opt in beside the Tor switch in Settings. Mesh payments are unaffected either way.",
           "**Nutzaps are public.** A NIP-61 nutzap is an unencrypted Nostr event. The ecash is locked to the recipient so nobody else can spend it, but relays and observers can see that one public key paid another, and the amount. The encrypted-message fallback does not have this property.",
-          "**Recovery phrase.** Optional and off by default. It is stored only in your device's secure storage, is never transmitted, and is never shown to a mint. Anyone who obtains it can spend your balance.",
+          "**Recovery phrase.** Created automatically when the wallet is first set up, so coins can be recovered from the start. It is stored only in your device's secure storage, is never transmitted, is never shown to a mint, and is displayed only after Face ID, a fingerprint or your passcode confirms it is you. Anyone who obtains it can spend your balance.",
         ],
       },
     ],

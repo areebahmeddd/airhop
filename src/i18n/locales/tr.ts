@@ -462,7 +462,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "köprünün karşısında {count}",
   "chat.thread.bridged": "köprülendi",
   "chat.thread.invite_body":
-    "Airhop'ta {channel} kanalında bana katıl: önce çevrimdışı çalışan, özel mesh mesajlaşma.",
+    "Airhop'ta {channel} kanalında bana katıl — önce çevrimdışı çalışan, özel mesh mesajlaşma.",
   "chat.thread.go_back_unread": "Geri dön, {count} okunmamış",
   "chat.thread.view_info": "{name} bilgisini görüntüle",
   "chat.thread.notices_new": "Bu kanalın duyuruları, {count} yeni",
@@ -2248,7 +2248,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR kod kaydedilemedi. Yeniden dene.",
   "settings.qr.share_message": "Beni Airhop'ta ekle",
   "settings.qr.share_body":
-    "Beni Airhop'ta ekle: önce çevrimdışı çalışan, özel mesh mesajlaşma.",
+    "Beni Airhop'ta ekle — önce çevrimdışı çalışan, özel mesh mesajlaşma.",
   "settings.qr.show_short": "QR göster",
   "settings.qr.title": "QR kodun",
   "settings.qr.note":

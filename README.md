@@ -176,10 +176,10 @@ Signal and Threema are here as the benchmark rather than as alternatives. Both a
 
 Every release APK is signed with one key. An APK a friend sends you, or one shared from another phone over Quick Share, should match it before you install it the first time. After that, Android refuses any update signed by a different key.
 
-| Field            | Value                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| Package          | `org.onemindlabs.airhop`                                                                          |
-| Signing SHA-256  | `60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49` |
+| Field           | Value                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| Package         | `org.onemindlabs.airhop`                                                                          |
+| Signing SHA-256 | `60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49` |
 
 With the Android SDK build tools, this must print exactly one signer, with that digest:
 
@@ -275,18 +275,19 @@ cd .. && npm run android
 
 ## Documentation
 
-| Document                                     | Description                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| [VISION.md](docs/design/VISION.md)           | Why Airhop exists and what it will never compromise on              |
-| [ROADMAP.md](docs/design/ROADMAP.md)         | Version targets (v0.5.0 to v2.0.0), and gap analysis                |
-| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) | System architecture, design decisions, and stack rationale          |
-| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)       | Wire format, BLE UUIDs, and protocol specifications                 |
-| [REFERENCE.md](docs/dev/REFERENCE.md)        | Bitchat codebase deep dive and implementation reference             |
-| [PROGRESS.md](docs/dev/PROGRESS.md)          | Current build, development milestones, and security analysis        |
-| [GLOSSARY.md](docs/dev/GLOSSARY.md)          | Definitions of technical terms used throughout the documentation    |
-| [CONTRIBUTING.md](CONTRIBUTING.md)           | Development workflow, coding standards, and pull request guidelines |
-| [SECURITY.md](SECURITY.md)                   | Security policy and vulnerability reporting                         |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)     | Community standards and expectations                                |
+| Document                                                      | Description                                                      |
+| ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [VISION.md](docs/design/VISION.md)                            | Why Airhop exists and what it will never compromise on           |
+| [ROADMAP.md](docs/design/ROADMAP.md)                          | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
+| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)                  | System architecture, design decisions, and stack rationale       |
+| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)                        | Wire format, BLE UUIDs, and protocol specifications              |
+| [BITCHAT.md](docs/dev/BITCHAT.md)                             | Bitchat codebase deep dive and implementation reference          |
+| [PROGRESS.md](docs/dev/PROGRESS.md)                           | Current build, development milestones, and security analysis     |
+| [SECURITY-REVIEW-1.0.9.md](docs/dev/SECURITY-REVIEW-1.0.9.md) | The v1.0.9 security review: every finding, its status and fix    |
+| [GLOSSARY.md](docs/dev/GLOSSARY.md)                           | Definitions of technical terms used throughout the documentation |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                            | Development workflow and pull request guidelines                 |
+| [SECURITY.md](SECURITY.md)                                    | Security policy and vulnerability reporting                      |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)                      | Community standards and expectations                             |
 
 ## Acknowledgements
 

@@ -472,7 +472,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "பாலத்துக்கு அப்பால் {count}",
   "chat.thread.bridged": "பாலம் கடந்தது",
   "chat.thread.invite_body":
-    "Airhop இல் {channel} இல் என்னுடன் சேருங்கள்: தனிப்பட்ட மெஷ் செய்தியனுப்பல், முதலில் ஆஃப்லைன்.",
+    "Airhop இல் {channel} இல் என்னுடன் சேருங்கள் — தனிப்பட்ட மெஷ் செய்தியனுப்பல், முதலில் ஆஃப்லைன்.",
   "chat.thread.go_back_unread": "பின் செல், {count} படிக்கப்படாதவை",
   "chat.thread.view_info": "{name} இன் தகவலைப் பார்",
   "chat.thread.notices_new": "இந்தச் சேனலின் அறிவிப்புகள், {count} புதியவை",
@@ -2336,7 +2336,7 @@ export const strings: Strings = {
     "QR குறியீட்டைச் சேமிக்க முடியவில்லை. மீண்டும் முயலுங்கள்.",
   "settings.qr.share_message": "என்னை Airhop இல் சேருங்கள்",
   "settings.qr.share_body":
-    "என்னை Airhop இல் சேருங்கள்: தனிப்பட்ட மெஷ் செய்தியனுப்பல், முதலில் ஆஃப்லைன்.",
+    "என்னை Airhop இல் சேருங்கள் — தனிப்பட்ட மெஷ் செய்தியனுப்பல், முதலில் ஆஃப்லைன்.",
   "settings.qr.show_short": "QR காட்டு",
   "settings.qr.title": "உங்கள் QR குறியீடு",
   "settings.qr.note":

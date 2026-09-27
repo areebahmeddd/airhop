@@ -458,7 +458,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "সেতুর ওপারে {count}",
   "chat.thread.bridged": "সেতু পেরিয়েছে",
   "chat.thread.invite_body":
-    "Airhop-এ {channel}-এ আমার সঙ্গে যোগ দিন: অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
+    "Airhop-এ {channel}-এ আমার সঙ্গে যোগ দিন — অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
   "chat.thread.go_back_unread": "ফিরে যান, {count}টি অপঠিত",
   "chat.thread.view_info": "{name}-এর তথ্য দেখুন",
   "chat.thread.notices_new": "এই চ্যানেলের নোটিশ, {count}টি নতুন",
@@ -2217,7 +2217,7 @@ export const strings: Strings = {
     "QR কোডটি সংরক্ষণ করা গেল না। আবার চেষ্টা করুন।",
   "settings.qr.share_message": "Airhop-এ আমাকে যোগ করুন",
   "settings.qr.share_body":
-    "Airhop-এ আমাকে যোগ করুন: অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
+    "Airhop-এ আমাকে যোগ করুন — অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
   "settings.qr.show_short": "QR দেখান",
   "settings.qr.title": "আপনার QR কোড",
   "settings.qr.note":

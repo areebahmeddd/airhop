@@ -1,10 +1,7 @@
-// Message router: decides which transport carries each message.
-//
-// Priority order (per ARCHITECTURE.md section 3, Transport Stack):
-//   1. WiFi Aware direct, Android only (high-bandwidth, same Noise session)
-//   2. BLE mesh direct (Noise session established)
-//   3. Nostr gift-wrap DM (if recipient's Nostr pubkey is known)
-//   4. Courier (store-and-forward via connected mesh peers)
+// Message router: the peer registry and the Noise-sealed DM send, with Nostr
+// and courier fallbacks for when no session reaches the peer. The full DM
+// ladder (Double Ratchet first, then this, then the outbox) lives in
+// MeshService.trySendDm; ARCHITECTURE.md section 4 describes it.
 //
 // The router does not own a network connection. BLE and Courier are injected
 // as plain callbacks. The optional Nostr and WiFi send functions are injected at
@@ -35,8 +32,8 @@ import {
 //
 // Derived rather than a literal, because ANNOUNCE is the only thing that
 // refreshes lastSeenMs: a window narrower than one announce interval expires
-// peers that are still there. Matches bitchat's 45-60s reachability retention
-// (TransportConfig.bleReachabilityRetention*Seconds).
+// peers that are still there. Close to bitchat's 45-60 s reachability
+// retention (TransportConfig.bleReachabilityRetention*Seconds).
 const DIRECT_PEER_TTL_MS = ANNOUNCE_CONNECTED_MAX_MS * 1.5;
 
 // Timeout for mesh peers learned via relayed ANNOUNCEs (not directly connected).
@@ -613,8 +610,7 @@ export class MessageRouter {
   // Transport selection:
   //   1. Direct: if the recipient has an active Noise session, encrypt and
   //      unicast it. The injected `unicast` callback picks the physical
-  //      transport, preferring a WiFi Aware link (Android only) over BLE when
-  //      one exists. Both share the same Noise session, which is
+  //      transport, preferring Wi-Fi Aware, then LAN, then BLE. Both share the same Noise session, which is
   //      transport-agnostic.
   //   2. Nostr: if a NostrSendFn was injected and the recipient's Nostr pubkey
   //      is known, fire-and-forget a gift-wrap DM over the internet. Returns

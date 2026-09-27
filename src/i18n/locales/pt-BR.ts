@@ -464,7 +464,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} do outro lado da ponte",
   "chat.thread.bridged": "pela ponte",
   "chat.thread.invite_body":
-    "Me encontre em {channel} no Airhop: mensagens em malha privadas, feitas primeiro para o offline.",
+    "Me encontre em {channel} no Airhop — mensagens em malha privadas, feitas primeiro para o offline.",
   "chat.thread.go_back_unread": "Voltar, {count} não lidas",
   "chat.thread.view_info": "Ver as informações de {name}",
   "chat.thread.notices_new": "Avisos deste canal, {count} novos",
@@ -2285,7 +2285,7 @@ export const strings: Strings = {
     "Não foi possível salvar o código QR. Tente de novo.",
   "settings.qr.share_message": "Me adicione no Airhop",
   "settings.qr.share_body":
-    "Me adicione no Airhop: mensagens em malha privadas, feitas primeiro para o offline.",
+    "Me adicione no Airhop — mensagens em malha privadas, feitas primeiro para o offline.",
   "settings.qr.show_short": "Ver QR",
   "settings.qr.title": "Seu código QR",
   "settings.qr.note":

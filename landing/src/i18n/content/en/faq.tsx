@@ -144,16 +144,17 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             <strong>Blocking is one-sided and local to your phone</strong>, so it hides them from
-            you rather than announcing anything to them. Your device also keeps relaying mesh
-            traffic that happens to route through it, theirs included, because refusing would
-            degrade the network for everyone else routing through you. None of that relayed traffic
-            is ever shown to you.
+            you rather than announcing anything to them. It also ends any encrypted session you had
+            with them. Your device still passes on live mesh traffic that happens to route through
+            it, theirs included, because refusing would degrade the network for everyone else
+            routing through you. None of it is ever shown to you, and your phone does not keep their
+            messages to hand on later to people who missed them.
           </>
         ),
       },
       {
         q: "Can people tell when I have read their message?",
-        a: "In a direct message, yes, the same way most messengers work. The receipt is only sent when the app is actually open in front of you, so a message that arrives while Airhop is in your pocket stays unread until you look at it. Public and location channels have no receipts at all.",
+        a: "In a direct message, yes, the same way most messengers work. The receipt is only sent when the app is actually open in front of you, so a message that arrives while Airhop is in your pocket stays unread until you look at it. If the sender has left Bluetooth range by then, the receipt follows them over the internet fallback when you are online. Public and location channels have no receipts at all.",
       },
       {
         q: "Can I talk instead of typing?",
@@ -253,11 +254,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "How does the mesh relay messages?",
-        a: "Every phone listens and announces at the same time, so each one is both a receiver and a relay. When a message arrives, your phone checks its signature, drops it if it has already seen it, and passes it on with one of its 7 hops used up. It waits a random fraction of a second first, somewhere between 10 and 220 milliseconds, so that a room full of phones does not all speak at once and drown each other out. Each phone forwards to a sample of nearby devices rather than everyone in range, which is why a crowded mesh does not carry more traffic than a quiet one.",
+        a: "Every phone listens and announces at the same time, so each one is both a receiver and a relay. When a message arrives, your phone drops it if it has already seen it, and otherwise passes it on to every other device it is linked to with one hop used up, out of at most 7. It waits a random fraction of a second first, somewhere between 10 and 220 milliseconds, so that a room full of phones does not all speak at once and drown each other out. The busier the room, the longer each phone waits and the fewer hops it lets a public message travel, since a crowd has plenty of phones close by to carry it and every extra hop there only multiplies copies. Nothing is shown to you until its signature checks out.",
       },
       {
         q: "How far can messages travel?",
-        a: "Each hop covers roughly 10 to 30 meters indoors and up to 100 in the open, and a message is allowed 7 of them, so it can cross a few hundred meters before it stops. The more people around you have Airhop, the further it reaches, because every one of their phones is another relay. Messages held for someone who is not around have no range limit at all: your phone simply carries them until a path to that person exists, however long that takes. That applies to text. An attachment is not carried this way and needs a live link at the moment you send it.",
+        a: "Each hop covers roughly 10 to 30 meters indoors and up to 100 in the open, and a message is allowed 7 of them, so it can cross a few hundred meters before it stops. The more people around you have Airhop, the further it reaches, because every one of their phones is another relay. Messages held for someone who is not around have no range limit at all: your phone keeps a text message for up to a week until a path to that person exists, and another phone can carry a sealed copy for up to a day until it meets them. That applies to text. An attachment is not carried this way and needs a live link at the moment you send it.",
       },
       {
         q: "What media can I send?",
@@ -441,12 +442,18 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Does Airhop use Tor?",
         a: (
           <>
-            Yes, optionally, on both platforms.{" "}
-            <TextLink href="https://torproject.org">Tor</TextLink> covers Nostr traffic
-            specifically. Both iOS and Android embed{" "}
-            <TextLink href="https://arti.torproject.org">Arti</TextLink>, so there is no separate
-            app to install. When enabled, all Nostr relay traffic is routed over Tor. It has no
-            effect on the BLE mesh itself, which never touches the internet either way.
+            Yes, optionally, on both platforms. Both iOS and Android embed{" "}
+            <TextLink href="https://arti.torproject.org">Arti</TextLink>, the{" "}
+            <TextLink href="https://torproject.org">Tor</TextLink> Project's own client, so there is
+            no separate app to install. When enabled, all Nostr relay traffic is routed over Tor on
+            both platforms, and on Android every other web request the app makes goes through it
+            too. It has no effect on the BLE mesh itself, which never touches the internet either
+            way.
+            <br />
+            <br />
+            It fails closed. If Tor cannot start, or a bridge you picked is refused, Airhop holds
+            its internet traffic and says so, with a Try again button, rather than quietly
+            connecting without Tor.
           </>
         ),
       },
@@ -502,12 +509,14 @@ export const FAQ_SECTIONS: FaqSection[] = [
                 rotates.
               </li>
             </ul>
-            The exceptions are attachments, which are signed rather than encrypted for bitchat
-            compatibility (nobody can forge or alter one, but any device relaying it can open it),
-            live voice in a public room, which is broadcast the same way while you hold the mic (a
-            burst inside a direct message is sealed in the same Noise session as your text), and
-            public geohash channels, which are readable by design since anyone nearby can join them.
-            That is why neither media nor live voice is offered in a private channel or group.
+            The exceptions are attachments posted to the public Bluetooth room, which are signed
+            rather than encrypted for bitchat compatibility (nobody can forge or alter one, but any
+            device relaying it can open it), live voice in a public room, which is broadcast the
+            same way while you hold the mic, and public geohash channels, which are readable by
+            design since anyone nearby can join them. Attachments and live voice in a direct message
+            are always sealed in the same Noise session as your text. A broadcast has no single
+            session to seal to, which is why neither media nor live voice is offered in a private
+            channel or group.
             <br />
             <br />
             <strong>Anonymous: partially.</strong>
@@ -585,9 +594,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Can someone impersonate me?",
         a: (
           <>
-            No. Your identity is your private key, and every packet you send is Ed25519-signed.
-            Nodes on the mesh verify signatures before relaying anything, so a forged packet
-            claiming to be from you is dropped at every hop. Display names are derived
+            No. Your identity is your private key, and everything you post is Ed25519-signed. Every
+            phone checks the signature against your key before showing or acting on anything, so a
+            forged packet claiming to be from you is dropped. Display names are derived
             deterministically from your public key and cannot be registered or squatted by anyone
             else. Noise XX mutual authentication prevents man-in-the-middle attacks on direct
             message sessions.
@@ -626,8 +635,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             falling back to writing coins in the clear.
             <br />
             <br />
-            None of it syncs to a cloud backup, because there is no account to sync to, and panic
-            wipe destroys the lot in under a second.
+            None of it goes into an iCloud or Google backup, because Airhop excludes its data from
+            both, and panic wipe destroys the lot in a few seconds.
           </>
         ),
       },
@@ -660,10 +669,12 @@ export const FAQ_SECTIONS: FaqSection[] = [
             nothing for a third party to hand over, subpoena, or breach.
             <br />
             <br />
-            <strong>Your ecash balance is the one exception, and only if you opt in.</strong> The
-            wallet has a recovery phrase you can turn on, which lets a new device rebuild the
-            balance from your mints. It is off by default and covers money only, not your identity,
-            chats, or contacts. The payments section has the full picture.
+            <strong>
+              Your ecash balance is the one exception, if you wrote down its recovery phrase.
+            </strong>{" "}
+            The wallet creates the phrase for you when it is first set up, and it lets a new device
+            rebuild the balance from your mints. It covers money only, not your identity, chats, or
+            contacts. The payments section has the full picture.
             <br />
             <br />
             Losing a phone is not the same as replacing one. If you still have the old device and
@@ -679,8 +690,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <strong>
               Device migration moves your identity, messages, contacts, and wallet to the new phone
             </strong>{" "}
-            over a direct link between the two devices. It works in either direction between iPhone
-            and Android, and nothing passes through a server, because there is none to pass through.
+            over a direct link between the two devices on the same WiFi or hotspot. It works in
+            either direction between iPhone and Android, and nothing passes through a server,
+            because there is none to pass through. The old phone asks for Face ID, a fingerprint or
+            its passcode first, and both phones then show the same six words, so you can confirm
+            they are talking to each other and nobody else. Media files stay behind.
             <br />
             <br />
             <strong>It is a move, not a copy.</strong> The moment the new phone confirms it has
@@ -701,8 +715,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "What is panic wipe?",
         a: (
           <>
-            Triple-tapping the logo destroys every identity key and all message data in under a
-            second, for a situation where you need the app emptied right now.{" "}
+            The Panic wipe row in Profile destroys every identity key, all message data, the wallet,
+            cached media and Tor state in a few seconds. One tap asks you to confirm; three quick
+            taps skip the question, for a situation where you need the app emptied right now.{" "}
             <strong>This cannot be undone.</strong>
             <br />
             <br />
@@ -724,6 +739,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
               </li>
               <li>
                 Contacts who scanned your QR code. They still hold your old keys on their device.
+              </li>
+              <li>
+                Photos you saved to your gallery, which belong to your phone&apos;s photo library.
               </li>
             </ul>
             So a wipe makes you unlinkable <strong>from here on</strong>, because the new identity
@@ -752,7 +770,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             comes from, and none of it changes how the mesh works: messages still arrive, people are
             still found, the radio just looks less often.{" "}
             <strong>If you want it to stop entirely, set your status to Away in Profile:</strong>{" "}
-            that stops scanning and announcing, and nothing runs until you set it back.
+            that stops scanning and announcing, and nothing runs until you set it back or restart
+            the app.
           </>
         ),
       },
@@ -987,11 +1006,15 @@ export const FAQ_SECTIONS: FaqSection[] = [
             balance.
             <br />
             <br />
-            Offline, Airhop still checks the mint's signature on every token it receives (a{" "}
+            Offline, Airhop still checks the mint's signature on every coin it receives (a{" "}
             <TextLink href="https://github.com/cashubtc/nuts/blob/main/12.md">DLEQ proof</TextLink>
-            ), so a forged token is rejected outright. That proves the mint issued it.{" "}
-            <strong>It can never prove it is unspent, because only the mint knows that.</strong> Tap
-            Refresh once you are online and the unconfirmed line clears.
+            ), so a coin whose proof fails is rejected outright, and a token only reads as genuine
+            when every coin in it checks out. That proves the mint issued it.{" "}
+            <strong>
+              It can never prove it is unspent, because only the mint knows that.
+            </strong>{" "}
+            Once you are back online, Airhop confirms it with the mint by itself and the unconfirmed
+            line clears.
           </>
         ),
       },
@@ -1094,8 +1117,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             On iPhone, not yet. Tor there only wraps the Nostr connection, so a mint request would
             reveal your IP address alongside your coins. Rather than leak that quietly,{" "}
-            <strong>Airhop blocks mint requests while Tor is on</strong> and explains why, with an
-            opt-in switch under Settings if you decide you do not mind.
+            <strong>Airhop blocks mint requests while Tor is on</strong> and explains why. If you
+            decide you do not mind, turn on Allow mint traffic over clear net in Settings.
             <br />
             <br />
             Sending and receiving over Bluetooth never touches a mint, so that keeps working with
@@ -1123,14 +1146,16 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "What happens to my ecash if I lose my phone?",
         a: (
           <>
-            By default it is gone. Coins are secrets stored only on that device, so the bitcoin
-            stays at the mint and nobody can ever claim it again.
+            Unless you wrote down the recovery phrase, it is gone. Coins are secrets stored only on
+            that device, so the bitcoin stays at the mint and nobody can ever claim it again.
             <br />
             <br />
-            <strong>Turn on the recovery phrase to change that.</strong> Airhop generates twelve
-            words and derives your coins from them instead of from random numbers, so a new phone
-            can rebuild the balance by asking your mints which coins they signed. Write the words on
-            paper, keep your mint list beside them, and never store them on the phone they protect.
+            <strong>The recovery phrase changes that.</strong> Airhop generates twelve words when
+            the wallet is first set up and derives your coins from them instead of from random
+            numbers, so a new phone can rebuild the balance by asking your mints which coins they
+            signed. The words are shown only after Face ID, a fingerprint or your passcode. Write
+            them on paper, keep your mint list beside them, and never store them on the phone they
+            protect.
             <br />
             <br />
             Two things it does not cover: your identity, chats and contacts, which have no backup at

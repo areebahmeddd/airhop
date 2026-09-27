@@ -21,8 +21,8 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.cache }}
-        # package.json names no packageManager, so nothing caches unasked;
-        # stated anyway so adding one cannot turn caching back on.
+        # Follows `cache` explicitly, so adding a packageManager field to
+        # package.json cannot turn caching back on for a job that switched it off.
         package-manager-cache: ${{ inputs.cache != '' }}
 
     - name: Install dependencies

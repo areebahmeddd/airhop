@@ -462,7 +462,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} di seberang jembatan",
   "chat.thread.bridged": "lewat jembatan",
   "chat.thread.invite_body":
-    "Gabung denganku di {channel} pada Airhop: perpesanan mesh yang privat dan mengutamakan luring.",
+    "Gabung denganku di {channel} pada Airhop — perpesanan mesh yang privat dan mengutamakan luring.",
   "chat.thread.go_back_unread": "Kembali, {count} belum dibaca",
   "chat.thread.view_info": "Lihat info untuk {name}",
   "chat.thread.notices_new": "Pengumuman untuk kanal ini, {count} baru",
@@ -2266,7 +2266,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Kode QR tidak bisa disimpan. Coba lagi.",
   "settings.qr.share_message": "Tambahkan aku di Airhop",
   "settings.qr.share_body":
-    "Tambahkan aku di Airhop: perpesanan mesh yang privat dan mengutamakan luring.",
+    "Tambahkan aku di Airhop — perpesanan mesh yang privat dan mengutamakan luring.",
   "settings.qr.show_short": "Tampilkan QR",
   "settings.qr.title": "Kode QR-mu",
   "settings.qr.note":

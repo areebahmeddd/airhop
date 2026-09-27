@@ -1,145 +1,72 @@
-# Contributing & Development Guide
+# Contributing to Airhop
 
-Thanks for your interest in contributing to Airhop. This guide covers coding standards, crypto rules, testing requirements, and the pull request process.
+Thanks for your interest in contributing. This guide walks you from picking up an issue to a merged pull request. The rules the code itself must follow (crypto, storage, protocol compatibility, native boundary, copy, TypeScript, design and comments) live in [`AGENTS.md`](AGENTS.md), which binds human contributors and AI agents alike.
 
-By participating, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Found a vulnerability? Report it privately, as [`SECURITY.md`](SECURITY.md) describes, never in a public issue.
 
-> Standards for everyone working in this codebase, for human contributors and AI agents alike. If it isn't in the code and isn't here, it doesn't exist as a standard.
+## 1. Read First
 
-## 1. Read Before You Touch Anything
-
-Every contributor reads these documents before writing a single line of code, in this order:
+Read these before writing code:
 
 1. [`docs/design/VISION.md`](docs/design/VISION.md): what Airhop is and what it will never compromise on
 2. [`docs/spec/ARCHITECTURE.md`](docs/spec/ARCHITECTURE.md): the architecture decisions and why they were made
-3. [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md): the wire format and exact constants you must not break
-4. [`docs/dev/PROGRESS.md`](docs/dev/PROGRESS.md): current build state; what's done and what's next
+3. [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md): the wire format and the constants you must not break
+4. [`docs/dev/PROGRESS.md`](docs/dev/PROGRESS.md): what is done and what is next
+5. [`AGENTS.md`](AGENTS.md): the rules, and where each part of the code lives
 
-Skipping this step causes rework.
+If your change touches one subsystem, also read its skill in [`.github/skills/`](.github/skills/); `AGENTS.md` lists which covers what. Skipping this step causes rework.
 
-## 2. Build Order
+## 2. Set Up
 
-```
-src/core/ -> Native modules -> src/features/ -> src/ui/
-```
+[`README.md`](README.md), "Getting Started", covers cloning, `npm install`, and the Xcode and Android Studio setup. BLE does not run in the iOS Simulator or the Android Emulator, so mesh work needs two physical phones.
 
-- **Do not write `src/features/` code** until the `src/core/` service it depends on has passing unit tests.
-- **Do not write `src/ui/` code** until the feature logic in `src/features/` is proved functional.
-- **Native code** (`android/`, `ios/`, `native/arti/`, `native/iptproxy/`) is a thin I/O layer. It changes when a radio or the OS demands it (a transport's connection handling, a platform quirk, a Tor bump), never to carry protocol logic, which lives in TypeScript.
-
-## 3. Coding Standards
-
-### TypeScript (all code)
-
-- Strict mode everywhere. All files must pass `tsc --strict` with zero errors.
-- No `any` types in `src/core/` or `src/bridge/`. Period.
-- Named exports only. No default exports in `src/core/` or `src/bridge/`.
-- File naming: `kebab-case.ts` throughout.
-- One concern per `src/core/` module, each independently testable. A file that needs "and" to describe it is two files. `src/services/mesh-service.ts` and several `src/features/` screens are far past that; they are known refactor targets, not precedent.
-
-### Native Code (Android + iOS)
-
-- Platform code lives in `android/` and `ios/`. The other native trees are `native/arti/`, the embedded Tor client both platforms compile from one Rust crate, and `native/iptproxy/`, the pluggable transports it dials to reach a bridge.
-- Native modules expose **raw bytes** to TypeScript. They do not interpret packets, run routing logic, or make crypto decisions. `native/arti/` is the exception that proves it: it owns a SOCKS5 listener and its own lifecycle, and still knows nothing about packets, routing or encryption.
-- `AirhopBLEModule` is the one and only native module for BLE. Do not create additional BLE modules.
-- Rust is formatted with `cargo fmt` and linted with `cargo clippy -D warnings`. CI runs both.
-
-## 4. Crypto Rules
-
-These are not style guidelines. Violating them is a build blocker.
-
-| Rule                                                                                       | Enforcement                                 |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| All crypto MUST use `@noble/curves`, `@noble/ciphers`, `@noble/hashes`                     | Reject any PR importing other crypto libs   |
-| NEVER use `Math.random()` for anything security-related                                    | `@noble/hashes` HKDF or OS CSPRNG only      |
-| Polyfill `crypto.getRandomValues` with `react-native-get-random-values` at app entry point | Required before importing any noble library |
-| Private keys MUST only be stored via `src/core/crypto/keychain.ts`                         | Registry the panic wipe enumerates          |
-| Message content MUST only be stored in encrypted MMKV                                      | Not AsyncStorage, not SQLite plaintext      |
-| NEVER log private keys, session keys, plaintext message content, or Cashu token proofs     | Zero exceptions                             |
-| All outgoing packets MUST be Ed25519 signed                                                | `packet-codec.ts` enforces this             |
-| All incoming packets MUST have signatures verified before relay or display                 | Drop on failure, never propagate            |
-
-## 5. Protocol Compatibility Rules
-
-These rules exist because a bug here breaks Airhop's interoperability with bitchat.
-
-- **Never change the bitchat v2 packet byte layout** in `packet-codec.ts` without:
-  1. Bumping `version` byte from `2` to `3`
-  2. Maintaining a `v2` decode path for backward compat
-  3. Testing cross-protocol delivery: Airhop v3 node -> bitchat node
-- **Never change the BLE Service UUID or Characteristic UUID.** They are fixed in `PROTOCOLS.md`, section 1. Changing them creates a network partition.
-- **Never change Peer ID derivation.** It is `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. Changing it breaks gossip sync and DM addressing.
-- **Airhop-only packet types start at `0x50`**: `0x50` (private channel, sealed) and `0x51` (private channel message). Both are safe to broadcast: bitchat drops unknown types silently. Anything new must sit at `0x50` or above. Do not take anything in bitchat's range: `0x2A` and `0x2B` are reserved upstream for courier spray-ack, and `0x29` is push-to-talk, which bitchat ships too and which must stay wire-identical.
-- Before any protocol change ships, run: Airhop node ↔ bitchat-ios node ↔ bitchat-android node message exchange test.
-
-## 6. Testing Requirements
-
-### src/core/ (100% coverage required on critical paths)
-
-| Module                        | Required Tests                                                                                                        |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `packet-codec.ts`             | Encode/decode round-trip; byte layout matches `PROTOCOLS.md`, section 2                                               |
-| `noise-xx.ts`                 | Pass official Noise test vectors from [noiseprotocol.org](https://noiseprotocol.org/noise.html#appendix-test-vectors) |
-| `noise-xx.ts`                 | Cross-language test: JS client handshake with bitchat-ios Swift server                                                |
-| `gossip-sync.ts` (GCS filter) | Bit-for-bit match with bitchat Swift/Kotlin test vectors                                                              |
-| `deduplicator.ts`             | LRU eviction at 1000 entries; 5-minute expiry window                                                                  |
-| `flood-router.ts`             | TTL decrement; jitter scheduling; loop prevention                                                                     |
-| `cashu.ts`                    | Token parse/embed/redeem round-trip                                                                                   |
-
-Run tests: `npm test -- --testPathPattern=src/core`
-
-### Native
-
-The pure parts of the native modules have unit tests on both platforms: the stream framing every TCP link uses (`Framing`) and the Wi-Fi Aware dial rules (`AwareDial`, which differ by platform on purpose). Anything that touches a radio is covered by the simulator and by devices, not here. Keep new logic of that kind in a pure object beside its module so it can be tested the same way; each platform's README says how.
+Before you change anything, confirm the tree is green:
 
 ```sh
-cd android && ./gradlew :app:testDebugUnitTest   # android/app/src/test/
-swift test --package-path ios                    # ios/Tests/, any Mac
+npm run typecheck && npm run lint && npm test
 ```
 
-## 7. AI Agent Usage
+For protocol work, clone the bitchat reference implementations into `bitchat/` as [`AGENTS.md`](AGENTS.md) describes. They are not part of this repository.
 
-Three specialized agents are available in `.github/agents/`. Invoke them via VS Code Copilot chat.
+## 3. Make the Change
 
-### `@architect`
+Work in the build order `AGENTS.md` sets: `src/core/` first, with tests, then native modules, then `src/features/`, then `src/ui/`. Keep the change to one concern, and follow the file's existing conventions before introducing your own.
 
-**When:** Before merging any change to `src/core/`, `android/`, or `ios/`.  
-**What it checks:** Build order compliance, layer boundary violations, protocol compatibility, crypto library usage, key storage rules.
+A protocol change (packet layout, a new packet type, anything bitchat reads) needs a message exchange across an Airhop phone, a bitchat-ios phone and a bitchat-android phone before it ships. Say in the pull request what you tested.
 
-### `@upstream-sync`
+## 4. Test
 
-**When:** When bitchat (`permissionlesstech/bitchat` or `permissionlesstech/bitchat-android`) publishes a new release or merge.  
-**What it produces:** Integration checklist categorizing changes as PROTOCOL / SECURITY / BUG FIX / FEATURE, with mapping to Airhop's TypeScript equivalents.
+A change to `src/core/` comes with unit tests, and a bug fix comes with a test that fails without the fix. Beyond that:
 
-### `@security-review`
+- **Wire contracts** pin literal expected bytes (bitchat's, or a spec's), not a round trip through the code under test. `src/core/mesh/wire/__tests__/packet-frame-vectors.test.ts` and the courier vectors in `docs/spec/` are the pattern.
+- **Behavior across the whole app** (lifecycles, several phones, lossy links) belongs in the suites under `src/__tests__/`.
+- **Native code** keeps new logic in a pure object beside its module, so it can be unit tested without a radio.
 
-**When:** Before any PR touching `src/core/crypto/`, key storage, or packet signing code.  
-**What it checks:** Crypto compliance, key storage, packet signing, OWASP Mobile Top 10.
+Where the tests live and how to run them:
 
-## 8. Commit Sign-Off (DCO)
+| Area                       | Guide                                             |
+| -------------------------- | ------------------------------------------------- |
+| TypeScript, and simulation | [`src/README.md`](src/README.md), "Testing"       |
+| Android (Kotlin)           | [`android/README.md`](android/README.md), "Tests" |
+| iOS (Swift)                | [`ios/README.md`](ios/README.md), "Tests"         |
+| Tor client (Rust)          | [`native/README.md`](native/README.md), "Tests"   |
 
-All commits must include a `Signed-off-by` trailer. Use `git commit -s` to add it automatically:
+Each native README also gives its formatter. CI checks Kotlin with ktfmt and Swift with swift-format; Rust is formatted and linted with `cargo fmt` and `cargo clippy` on a host toolchain before you commit.
 
-```
+## 5. Review Agents
+
+`AGENTS.md` lists three review agents in `.github/agents/` and when each one runs: Architect for `src/core/` and native changes, Security Review for crypto, key storage, packet signing and device transfer, and Upstream Sync for a new bitchat release. Run the ones your change calls for and address what they flag before asking for review.
+
+## 6. Sign Off Your Commits (DCO)
+
+Every commit carries a `Signed-off-by` trailer. `git commit -s` adds it:
+
+```text
 Signed-off-by: Your Name <your@email.com>
 ```
 
-This certifies that you agree to the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the contribution or have the right to submit it under this project's license.
+It certifies that you agree to the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the contribution or have the right to submit it under this project's license.
 
-## 9. PR Checklist
+## 7. Open the Pull Request
 
-Before opening any pull request:
-
-- [ ] `npm run verify:invisibles` passes (no literal control, bidirectional, or zero-width characters in source)
-- [ ] `npm run verify:vendored` passes (vendored binaries match their recorded hashes)
-- [ ] `npm run i18n:audit -- --max 0` passes (no hardcoded user-facing strings)
-- [ ] `npm run i18n:native` passes (native language, permission, and service notice strings are in sync)
-- [ ] `npm run deadcode` reports nothing new (unused exports, files, and dependencies)
-- [ ] `npm run typecheck` passes with zero errors
-- [ ] `npm run format:check` passes (no uncommitted format changes)
-- [ ] `npm run lint` passes with zero errors
-- [ ] `npm run coverage` passes with zero failures
-- [ ] `docs/dev/PROGRESS.md` updated if a milestone was completed or a decision was made
-- [ ] `docs/design/ROADMAP.md` updated if a feature was added, removed, or reprioritized
-- [ ] If touching `src/core/` or `android/` or `ios/`: invoke `@architect` agent for review
-- [ ] If touching `src/core/crypto/`, key storage, or packet signing: invoke `@security-review` agent
+Fill in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md). Its checklist is what review expects: every check CI runs, with the commands to run them locally, the documentation to update, and the review agents. Link the issue the change closes, and for any UI change attach before and after screenshots in both themes.

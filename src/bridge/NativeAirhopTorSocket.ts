@@ -3,7 +3,7 @@
 // speak SOCKS5, which is why this exists.
 //
 // iOS ONLY, backed by ios/Airhop/AirhopTorSocket.swift and driven by
-// core/nostr/tor-websocket.ts. A classic RCTEventEmitter rather than a Codegen
+// services/tor-websocket.ts. A classic RCTEventEmitter rather than a Codegen
 // TurboModule, so it is reached through NativeModules and its events through
 // NativeEventEmitter, mirroring NativeAirhopTor.
 //

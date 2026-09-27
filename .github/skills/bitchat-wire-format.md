@@ -8,175 +8,181 @@ description: >
 
 # bitchat Wire Format
 
-Source of truth: `bitchat/ios/localPackages/BitFoundation/Sources/BitFoundation/BinaryProtocol.swift` and the Android equivalent `BinaryProtocol.kt`. The Airhop implementation is in `src/core/mesh/wire/packet-codec.ts`.
+The packet frame, the type registry and the payloads every other subsystem rides on. The full specification, with every payload layout, is [PROTOCOLS.md](../../docs/spec/PROTOCOLS.md) sections 1 to 3; this card is the working summary.
 
-## Fixed Header (v2, 16 bytes)
+## Key Files
 
-Every packet starts with this exact layout. Field order is non-negotiable.
+| Path                                                                                          | Holds                                                        |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `src/core/mesh/wire/packet-codec.ts`                                                          | Frame encode and decode, signing, packet ID, broadcast test  |
+| `src/core/mesh/wire/packet-type.ts`                                                           | The type byte, and the retired values                        |
+| `src/core/mesh/wire/payload-limits.ts`                                                        | Receive-side ceiling on each type's decoded payload          |
+| `src/core/mesh/wire/message-padding.ts`, `packet-compression.ts`                              | PKCS#7 block padding, raw DEFLATE                            |
+| `src/core/mesh/wire/noise-payload.ts`                                                         | The typed plaintext inside `NOISE_ENCRYPTED`                 |
+| `src/core/mesh/wire/private-media-id.ts`                                                      | bitchat's stable ID for a sealed photo or voice note         |
+| `src/core/mesh/discovery/announce-manager.ts`                                                 | `ANNOUNCE` TLV and capability bits                           |
+| `src/core/router/message-router.ts`                                                           | Public channel payloads (`channelPacketType` and its codecs) |
+| `bitchat/ios/localPackages/BitFoundation/Sources/BitFoundation/`                              | Reference: `BinaryProtocol.swift`, `MessageType.swift`       |
+| `bitchat/android/app/src/main/java/com/bitchat/android/protocol/`                             | Reference: `BinaryProtocol.kt`                               |
+| `src/core/mesh/wire/__tests__/packet-frame-vectors.test.ts`, `packet-payload-vectors.test.ts` | Byte layouts pinned against bitchat                          |
 
-Two header versions exist and both must be **decoded**: v1 is 14 bytes with a `u16` payload length and no route section; v2 is 16 bytes with a `u32` length. Airhop **emits v2 for everything** (bitchat decodes v2 for every type), but bitchat still emits v1 for its small broadcasts such as announce and leave, so a v1 decoder path is required. Read the version byte, never assume.
+## Frame
+
+Two header versions exist and both are **decoded**; read the version byte, never assume. v1 is 14 bytes with a `u16` payload length and no route section, and bitchat still emits it for its core broadcasts (announce, message, leave). v2 is 16 bytes with a `u32` length. Airhop **emits v2 for everything**, which bitchat decodes for every type.
 
 | Offset | Size | Type   | Field         | Notes                                       |
 | ------ | ---- | ------ | ------------- | ------------------------------------------- |
-| 0      | 1    | u8     | version       | `2` on send; accept `1` and `2` on receive  |
-| 1      | 1    | u8     | type          | See packet type table below                 |
-| 2      | 1    | u8     | ttl           | Default `7`; must be set to `0` for signing |
-| 3-10   | 8    | u64-BE | timestamp     | Unix **milliseconds**, big-endian           |
-| 11     | 1    | u8     | flags         | See flag bits below                         |
-| 12-15  | 4    | u32-BE | payloadLength | Length of the payload section only          |
+| 0      | 1    | u8     | version       | `2` on send; `1` and `2` accepted           |
+| 1      | 1    | u8     | type          | See the registry below                      |
+| 2      | 1    | u8     | ttl           | Hop budget; zeroed in the signed bytes      |
+| 3-10   | 8    | u64-BE | timestamp     | Unix **milliseconds**                       |
+| 11     | 1    | u8     | flags         | See below                                   |
+| 12-15  | 4    | u32-BE | payloadLength | Payload plus `originalSize`; excludes route |
 
-## Variable Sections (in this order after the header)
+Then, in this order:
 
+```text
+senderID      8 bytes    always
+recipientID   8 bytes    only with HAS_RECIPIENT
+route         variable   v2 only, with HAS_ROUTE: [count u8][hop 8B] x count
+originalSize  2 or 4 B   only with COMPRESSED (the length field's width)
+payload       N bytes    compressed bytes when COMPRESSED, else raw
+signature     64 bytes   only with SIGNED (Ed25519)
 ```
-senderID     8 bytes     always present
-recipientID  8 bytes     only when HAS_RECIPIENT flag is set
-route        variable    only when HAS_ROUTE flag is set: [count u8][hop1 8B]...[hopN 8B]
-payload      N bytes     payloadLength bytes
-signature    64 bytes    only when HAS_SIGNATURE flag is set (Ed25519)
-```
 
-Broadcast packets omit the `recipientID` field entirely. `HAS_RECIPIENT` is cleared. Decoders set `recipientID` to all-zeros when the flag is absent.
+| Bit | Hex    | Codec name      | Meaning                                         |
+| --- | ------ | --------------- | ----------------------------------------------- |
+| 0   | `0x01` | `HAS_RECIPIENT` | `recipientID` present                           |
+| 1   | `0x02` | `SIGNED`        | Signature appended (bitchat's `hasSignature`)   |
+| 2   | `0x04` | `COMPRESSED`    | Raw-DEFLATE payload, preceded by `originalSize` |
+| 3   | `0x08` | `HAS_ROUTE`     | Source-route hop list present                   |
+| 4   | `0x10` | `IS_RSR`        | Solicited sync response                         |
 
-## Flag Bits
+**TTL.** Announces and directed traffic leave at `7`. A broadcast this node authors draws its TTL from the top three values under its degree's relay ceiling (`origin-ttl.ts`), so the maximum alone does not mark the author. Relays clamp and decrement per [`mesh-routing.md`](mesh-routing.md).
 
-| Bit | Hex    | Name          | Meaning                                       |
-| --- | ------ | ------------- | --------------------------------------------- |
-| 0   | `0x01` | HAS_RECIPIENT | `recipientID` field is present (unicast)      |
-| 1   | `0x02` | HAS_SIGNATURE | 64-byte Ed25519 signature is appended         |
-| 2   | `0x04` | COMPRESSED    | Raw-DEFLATE payload, preceded by originalSize |
-| 3   | `0x08` | HAS_ROUTE     | Source-route hop list is present              |
-| 4   | `0x10` | IS_RSR        | This is a solicited sync response             |
+**Broadcast** has three spellings, all accepted by `isBroadcast`: `HAS_RECIPIENT` clear (what Airhop and bitchat-ios emit; decoded as all-zeros), an all-zero `recipientID`, and an all-`0xFF` `recipientID` with the flag set, which bitchat-android writes on live voice and public files.
 
-## Signing Rule
+**Padding** means two different things ([PROTOCOLS section 2.1](../../docs/spec/PROTOCOLS.md#21-padding-two-different-rules)):
 
-To sign or verify a packet:
+- The **signing preimage** is padded for every type, always.
+- The **outbound frame** is PKCS#7-padded only where ciphertext length leaks plaintext length: `NOISE_ENCRYPTED`, `NOISE_HANDSHAKE`, `DR_ENCRYPTED` and `CHANNEL_ENC` (`padsBLEFrame`). Decoders accept either form.
 
-1. Encode the full packet with `ttl = 0`, `IS_RSR = false`, `HAS_SIGNATURE = 0` (omit the signature field).
-2. Ed25519-sign or verify the resulting bytes.
+## Signing and Packet ID
 
-Clearing TTL lets relays decrement it without invalidating the signature. This matches `toBinaryDataForSigning()` in bitchat-ios and bitchat-android.
+Sign or verify over `encodePacket` with `ttl = 0`, `IS_RSR` cleared, `SIGNED` cleared (no signature field) and padding forced on. This is bitchat's `toBinaryDataForSigning()`: relays decrement TTL and tag sync replies without invalidating the signature.
 
-## Packet ID (Deduplication Key)
+A decoded packet keeps its payload exactly as received, compressed bytes and the compress decision included, and re-encoding reuses that form. DEFLATE output is not canonical across zlib, Apple's encoder and pako, so re-compressing on verify or relay would change the preimage and break the signature for every node downstream.
 
-```
+```text
 PacketID = SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
 ```
 
-There is no nonce field. Deduplication is content-addressed. See `computePacketId` in `packet-codec.ts` and `PacketIdUtil.swift` / `PacketIdUtil.kt`.
+No nonce field; deduplication is content-addressed (`computePacketId`, bitchat's `PacketIdUtil`).
 
 ## Packet Type Registry
 
-bitchat allocates forward and has reached `0x2C`. `0x29` is defined by both
-projects; `0x2A` and `0x2B` are reserved upstream for courier spray-ack, and
-`0x2C` is `announceV2`. The range just above `0x29` is not free.
+Everything up to `0x29` is bitchat's. bitchat allocates forward and has reached `0x2C` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
 
-Airhop extensions therefore live at `0x50` and up. Read `MessageType.swift`
-before claiming a value, and keep clear of bitchat's frontier by a margin;
-`conformance.test.ts` parses their enum and fails if the gap closes to 16.
+A bitchat node never interprets a type it does not know, but it relays it: the unknown case falls through to `scheduleRelayIfNeeded`, and `RelayController.decide` treats it as an ordinary broadcast. An Airhop-only type therefore crosses a mesh of bitchat phones, invisible to their users. Two projects giving one number two meanings is the risk, not relaying.
 
-A bitchat node never interprets a type it does not know, but it does relay it,
-so an extension still crosses a mesh of bitchat phones. Relaying is not the
-risk; two projects assigning meaning to the same number is.
+| Name                 | Hex             | Direction         | Carries                                                   |
+| -------------------- | --------------- | ----------------- | --------------------------------------------------------- |
+| `ANNOUNCE`           | `0x01`          | Broadcast         | Signed presence heartbeat, TLV payload                    |
+| `CHANNEL_MSG`        | `0x02`          | Broadcast         | `#bluetooth` message, bare UTF-8                          |
+| `LEAVE`              | `0x03`          | Broadcast         | Peer departing, signed                                    |
+| `COURIER_ENV`        | `0x04`          | Directed          | Sealed store-and-forward envelope                         |
+| `NOISE_HANDSHAKE`    | `0x10`          | Unicast           | Noise XX msg1, msg2 or msg3                               |
+| `NOISE_ENCRYPTED`    | `0x11`          | Unicast           | Typed Noise payload (below)                               |
+| `DR_ENCRYPTED`       | `0x12`          | Unicast           | Double Ratchet DM, signed (Airhop only)                   |
+| `FRAGMENT`           | `0x20`          | Broadcast/Unicast | One fragment of a larger packet                           |
+| `REQUEST_SYNC`       | `0x21`          | Unicast           | GCS gossip request, TTL 0, addressed to one link peer     |
+| `FILE_TRANSFER`      | `0x22`          | Broadcast/Unicast | `BitchatFilePacket`, 1 MiB content cap                    |
+| `BOARD_POST`         | `0x23`          | Broadcast         | Signed bulletin-board post or tombstone                   |
+| `PREKEY_BUNDLE`      | `0x24`          | Broadcast         | Signed one-time prekeys; flooded, never gossip-synced     |
+| `GROUP_MESSAGE`      | `0x25`          | Broadcast         | Private group: cleartext groupID + epoch, ChaChaPoly body |
+| `PING` / `PONG`      | `0x26` / `0x27` | Unicast           | Directed echo (nonce + origin TTL)                        |
+| `NOSTR_CARRIER`      | `0x28`          | Broadcast/Unicast | Gateway-ferried signed Nostr event                        |
+| `VOICE_FRAME`        | `0x29`          | Broadcast         | Live push-to-talk burst, signed                           |
+| `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
+| `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-| Name                 | Hex    | Direction         | Description                                                                 |
-| -------------------- | ------ | ----------------- | --------------------------------------------------------------------------- |
-| `ANNOUNCE`           | `0x01` | Broadcast         | Signed presence heartbeat; TLV payload                                      |
-| `CHANNEL_MSG`        | `0x02` | Broadcast         | Public channel message                                                      |
-| `LEAVE`              | `0x03` | Broadcast         | Peer departing                                                              |
-| `COURIER_ENV`        | `0x04` | Directed          | Store-and-forward sealed envelope                                           |
-| `NOISE_HANDSHAKE`    | `0x10` | Unicast           | Noise XX handshake message                                                  |
-| `NOISE_ENCRYPTED`    | `0x11` | Unicast           | Post-handshake payload (DM, receipts, group invites, private media, voice)  |
-| `DR_ENCRYPTED`       | `0x12` | Unicast           | Double Ratchet DM (Airhop extension)                                        |
-| `FRAGMENT`           | `0x20` | Broadcast/Unicast | BLE fragment of a larger message                                            |
-| `REQUEST_SYNC`       | `0x21` | Unicast           | GCS gossip request; TTL=0, never relayed, always addressed to one link peer |
-| `FILE_TRANSFER`      | `0x22` | Broadcast/Unicast | Binary file, audio, or image payload; 1 MiB cap                             |
-| `BOARD_POST`         | `0x23` | Broadcast         | Signed bulletin-board post or tombstone                                     |
-| `PREKEY_BUNDLE`      | `0x24` | Broadcast         | Signed batch of one-time public prekeys                                     |
-| `GROUP_MESSAGE`      | `0x25` | Broadcast         | Group-encrypted message (groupID + epoch, ChaChaPoly)                       |
-| `PING`               | `0x26` | Unicast           | Directed echo request (nonce + origin TTL)                                  |
-| `PONG`               | `0x27` | Unicast           | Directed echo reply (echoed nonce)                                          |
-| `NOSTR_CARRIER`      | `0x28` | Broadcast/Unicast | Gateway-ferried signed Nostr event                                          |
-| `VOICE_FRAME`        | `0x29` | Broadcast         | Live PTT audio burst, signed like a public message                          |
-| `CHANNEL_ENC`        | `0x50` | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop extension)                      |
-| `CHANNEL_MSG_AIRHOP` | `0x51` | Broadcast         | Named Airhop public channel, i.e. a location cell (Airhop extension)        |
+Retired, never to be reused: `0x30 VIDEO_FRAME` (a same-platform WiFi path, so never cross-platform; video ships as a file) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
 
-Two types were specified and then removed. Do not reintroduce them:
+Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
-- `0x30 VIDEO_FRAME`: was specified over a same-platform WiFi path, so iOS-to-Android video was never achievable. Video ships as a file over `FILE_TRANSFER` instead.
-- `0x40 CASHU_TOKEN`: ecash travels as text inside an ordinary encrypted DM and is detected by `findTokensInText()`. A dedicated type would be a second path to keep in sync for no gain.
+## Public Channel Payloads
 
-## Public Channel Message Payloads
-
-A public message takes one of two packet types. The type decides the payload, so
-neither carries a marker byte and neither decoder needs a heuristic.
+The packet type decides the payload, so neither form carries a marker byte.
 
 | Channel      | Type   | Payload                                      |
 | ------------ | ------ | -------------------------------------------- |
-| `#bluetooth` | `0x02` | The message text as UTF-8, and nothing else  |
+| `#bluetooth` | `0x02` | The message text as UTF-8, nothing else      |
 | Any other    | `0x51` | `[chLen u8][channel][idLen u8][msgId][text]` |
 
-bitchat's mesh has one public room, which Airhop names `#bluetooth`. Its payload
-carries no channel field and no message ID: `BLEService.sendMessage` writes the
-message text as UTF-8, and `BLEPublicMessageHandler` reads the whole payload back
-as the body. Anything wrapped around the text is displayed as part of it, so that
-channel must send and accept the bare form.
+bitchat's mesh has one public room, and `BLEPublicMessageHandler` renders the whole payload as the body, so `#bluetooth` sends and accepts the bare form. It needs no message ID: bitchat-ios derives one from sender, timestamp and content (`MeshMessageIdentity.stableID`), and Airhop's `bridgeStableID` matches it. The payload is decoded strictly; invalid UTF-8 is dropped, not rendered as replacement characters.
 
-No message ID is needed there because both implementations derive the same one
-from sender, timestamp and content, in `MeshMessageIdentity.stableID` and
-`bridgeStableID` respectively. The payload is decoded strictly: invalid UTF-8 is
-dropped rather than rendered as replacement characters, matching bitchat-ios.
+Location cells travel under `0x51`, where both bitchat clients see an unknown type and relay it. Catch-up comes from its own gossip-sync bit, 24, which bitchat masks off ([PROTOCOLS section 5.2](../../docs/spec/PROTOCOLS.md#52-sync-type-bits)).
 
-Airhop's other public channels are location cells, which bitchat has no room to
-put and no channel field to name. They travel under `CHANNEL_MSG_AIRHOP` instead,
-where both bitchat clients treat the type as unknown.
+## ANNOUNCE TLV
 
-Unknown does not mean lost. bitchat's type switch logs the unknown case and falls
-through to `scheduleRelayIfNeeded`, and `RelayController.decide` receives the type
-as a set of flags that are all false for an unrecognised value, so the packet
-takes the ordinary broadcast relay path. An Airhop-only type therefore crosses a
-mesh made of bitchat phones while staying invisible to their users. `DR_ENCRYPTED`
-and `CHANNEL_ENC` behave the same way.
+`[type u8][length u8][value]`. Tags `0x01` to `0x06` are bitchat's.
 
-Catch-up is preserved by giving `CHANNEL_MSG_AIRHOP` its own gossip-sync bit, 24.
-bitchat masks off bits it does not recognise, so setting it costs nothing in
-either direction. See PROTOCOLS section 5.2.
+| Tag    | Field           | Size           | Notes                                                                                |
+| ------ | --------------- | -------------- | ------------------------------------------------------------------------------------ |
+| `0x01` | nickname        | up to 32 bytes | UTF-8, NFC-canonicalized, cut on a character boundary                                |
+| `0x02` | Noise pub key   | 32 bytes       | X25519 static key; `senderID` must derive from it                                    |
+| `0x03` | signing pub key | 32 bytes       | Ed25519                                                                              |
+| `0x04` | neighbor IDs    | up to 80 bytes | Decoded, never emitted: it hands a passive listener the room's adjacency graph       |
+| `0x05` | capabilities    | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                    |
+| `0x06` | bridge geohash  | up to 12 bytes | Rendezvous cell a bridge gateway serves                                              |
+| `0x07` | Nostr pub key   | 32 bytes       | Airhop only, x-only secp256k1. A claim, not a proof: see `bindNostrPubkey`           |
+| `0xB1` | Bitle role      | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; cosmetic only, since self-signed |
 
-Implementation: `channelPacketType`, `encodeMeshPublicPayload`,
-`decodeMeshPublicPayload`, `encodeAirhopChannelPayload` and
-`decodeAirhopChannelPayload` in `src/core/router/message-router.ts`. Byte layout
-is pinned by `src/core/mesh/wire/__tests__/packet-payload-vectors.test.ts`, and the
-end-to-end behaviour by the three-node scenario in
-`src/__tests__/simulation/conformance.test.ts`.
+Receive rules: signature mandatory, and `senderID` must derive from the `0x02` key. Freshness is the ingress rule every packet meets (within 2 minutes of our clock, unless a solicited sync reply; see [`mesh-routing.md`](mesh-routing.md)), and the announce handler also refuses one more than 15 minutes off (`isAnnounceFresh`).
 
-## ANNOUNCE TLV Payload
+## Noise Inner Payload
 
-The `ANNOUNCE` packet payload is TLV-encoded. TLV format: `[type u8][length u8][value N bytes]`.
+The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bitchat drops an unknown type, so raw text is never valid here. Full table and capability bits: [PROTOCOLS section 3.3](../../docs/spec/PROTOCOLS.md#33-noise-inner-payload-types).
 
-| Tag    | Field           | Size           | Notes                                                                                                                          |
-| ------ | --------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `0x01` | nickname        | up to 32 bytes | UTF-8                                                                                                                          |
-| `0x02` | Noise pub key   | 32 bytes       | X25519 static public key                                                                                                       |
-| `0x03` | signing pub key | 32 bytes       | Ed25519 public key                                                                                                             |
-| `0x04` | neighbor IDs    | up to 80 bytes | Optional; up to 10 x 8-byte IDs. Decoded, never emitted by Airhop: the list hands a passive listener the local adjacency graph |
-| `0x05` | capabilities    | 1 to 4 bytes   | bitchat capability bits, little-endian                                                                                         |
-| `0x06` | bridge geohash  | up to 12 bytes | bitchat rendezvous cell for the mesh bridge                                                                                    |
-| `0x07` | Nostr pub key   | 32 bytes       | Airhop extension, secp256k1 X-only. A claim signed by the announcer, not by the key: see `bindNostrPubkey` in mesh-service     |
+| Type          | Name                                | Type             | Name                                                        |
+| ------------- | ----------------------------------- | ---------------- | ----------------------------------------------------------- |
+| `0x01`        | `PRIVATE_MESSAGE`                   | `0x20`           | `PRIVATE_FILE`                                              |
+| `0x02`        | `READ_RECEIPT`                      | `0x09`           | alias of `0x20`, accepted, never sent                       |
+| `0x03`        | `DELIVERED`                         | `0x21`           | `AUTHENTICATED_PEER_STATE`                                  |
+| `0x06`/`0x07` | `GROUP_INVITE` / `GROUP_KEY_UPDATE` | `0x22`           | `CONTACT_CARD` (Airhop)                                     |
+| `0x08`        | `VOICE_FRAME`                       | `0x50` to `0x53` | `LOCATION_PIN`, `RING`, `RING_ACK`, `RING_REFUSED` (Airhop) |
 
-## BLE Identifiers
+- `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients.
+- A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.
+- A sealed photo or voice note is keyed by `privateMediaStableID` (`media-<32 hex>`, from sender, recipient and an `img_<UUID>.jpg` or `voice_<UUID>.m4a` name), and the receiver answers with a `DELIVERED` naming it.
+- Capabilities in `0x21` are authoritative; announced bits are a hint that chooses wording, never how to send.
+- Airhop's own Noise payload types start at `0x50`; `0x22` predates the rule.
 
-These must never change without a coordinated protocol version bump.
+A Nostr DM carries the same bytes: an unsigned `NOISE_ENCRYPTED` packet holding a Noise payload, base64url behind `bitchat1:` (`bitchat-envelope.ts`, see [`nostr-gift-wrap.md`](nostr-gift-wrap.md)).
 
-| Identifier          | Value                                  |
-| ------------------- | -------------------------------------- |
-| Service UUID        | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C` |
-| Characteristic UUID | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D` |
-| Peer ID in advert   | iOS local name, Android service data   |
-| Protocol version    | `2`                                    |
+## BLE Identifiers and Peer ID
 
-## Peer ID Derivation
+These never change without a coordinated protocol version bump.
 
-```
+| Identifier          | Value                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| Service UUID        | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`                                                       |
+| Characteristic UUID | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`                                                       |
+| Protocol version    | `2`                                                                                          |
+| Peer ID in advert   | Android: 8 bytes in scan-response service data. iOS: none, service UUID only, as bitchat-ios |
+
+```text
 peerID = hex(SHA-256(noiseStaticPubKey)).slice(0, 16)
 ```
 
-16 hex characters representing the first 8 bytes of the hash. Peer ID is derived from the Noise static key, not the Ed25519 signing key.
+The peer ID derives from the Noise static key, never the Ed25519 key. A scanner that reads no ID from the advert connects anyway and learns the peer from its first `ANNOUNCE`.
+
+## What Not to Do
+
+- Change a byte of the frame layout without bumping the protocol version.
+- Sign over an unpadded preimage, or re-compress a received payload before verifying or relaying it.
+- Treat only `HAS_RECIPIENT` clear as broadcast; bitchat-android's all-`0xFF` form is a broadcast too.
+- Claim a type byte below `0x50`, or reuse `0x30` or `0x40`.
+- Put a marker byte, channel field or message ID into a `#bluetooth` payload.
+- Emit the `0x04` neighbor TLV or originate a source route.
+- Send a DM attachment as a cleartext `FILE_TRANSFER`, or act on an announced capability bit.

@@ -448,7 +448,7 @@ export const strings: Strings = {
   "chat.thread.across_bridge": "{count} عبر الجسر",
   "chat.thread.bridged": "مجسّرة",
   "chat.thread.invite_body":
-    "انضم إليّ في {channel} على Airhop: مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
+    "انضم إليّ في {channel} على Airhop — مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
   "chat.thread.go_back_unread": "رجوع، {count} غير مقروءة",
   "chat.thread.view_info": "عرض معلومات {name}",
   "chat.thread.notices_new": "إعلانات هذه القناة، {count} جديدة",
@@ -2173,7 +2173,7 @@ export const strings: Strings = {
     "تعذّر حفظ رمز الاستجابة السريعة. حاول مرة أخرى.",
   "settings.qr.share_message": "أضفني على Airhop",
   "settings.qr.share_body":
-    "أضفني على Airhop: مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
+    "أضفني على Airhop — مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
   "settings.qr.show_short": "عرض الرمز",
   "settings.qr.title": "رمز الاستجابة السريعة الخاص بك",
   "settings.qr.note":
