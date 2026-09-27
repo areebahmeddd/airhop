@@ -44,6 +44,7 @@ If both sides try to initiate simultaneously (race condition), the side that rec
 - The msg1 gate runs before any DH. A refused initiation of ours leaves the DM in the outbox ("handshaking") rather than failing it.
 - Pending handshakes expire after 30 s, swept on every insert and on the 45 s outbox sweep, so memory stays bounded under a flood.
 - A responder attempt that expires while we still hold a session with its peer means msg3 was lost after the initiator completed on msg2: the two sides now hold different sessions. As in bitchat-ios's rollback (`NoiseSessionManager`, "a rollback always owns one local convergence attempt"), the old session stays and we send one msg1 of our own, whose session replaces the old one only on completion. The attempt waits while the peer is unheard or no link is up, since a lost msg3 usually means a dropped link.
+- A Noise or Double Ratchet packet that fails to decrypt is discarded and never clears a session (Signal DR §3.5; bitchat-ios `BLENoisePacketHandler`). A genuine signed packet replayed once it has left the 1000-entry dedup fails this way, so clearing on failure would let anyone who recorded one evict working keys. Only a peer with no session at all is answered with a handshake (`recoverSession`).
 - msg2 and msg3 are read on a `clone()` of the pending handshake. The pending entry is replaced only by a bound session; a failure keeps it, so one forged or garbled reply cannot end a genuine handshake.
 
 ### Session State

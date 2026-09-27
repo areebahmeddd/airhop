@@ -1657,6 +1657,105 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
   s.assert();
 });
 
+test("C11b a genuine ratchet packet replayed past dedup does not evict the session", async () => {
+  // The signature is alice's own, so it passes, and the message key is spent,
+  // so decryption fails. Dedup holds 1000 packet IDs and anyone in range can
+  // push that many, and the freshness window is two minutes. A session torn
+  // down on that failure is one any listener can evict at will.
+  const s = (scenario = new Scenario({
+    id: "C11b",
+    title: "replayed Double Ratchet packet",
+    seed: 72,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  const mallory = SimDevice.create(s.world, {
+    id: "mallory",
+    platform: "android",
+    seedByte: 77,
+  });
+  const cast = [alice, bob, mallory];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  const captured: string[] = [];
+  const stop = radio.tapWrites((fromID, _link, data) => {
+    const p = decodeWrite(data);
+    if (
+      fromID === alice.id &&
+      p?.type === PacketType.DR_ENCRYPTED &&
+      bytesToHex(p.recipientID) === bob.peerID
+    ) {
+      captured.push(data);
+    }
+  });
+  alice.send(`dm:${bob.peerID}`, "one");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("one"),
+    20_000,
+  );
+  stop();
+  s.check("a ratchet packet was captured", captured.length > 0);
+
+  const sessionFor = (): unknown =>
+    (
+      bob.mesh as unknown as {
+        registry: { sessionFor: (p: string) => unknown };
+      }
+    ).registry.sessionFor(alice.peerID);
+  const before = sessionFor();
+
+  // 1000 packets bob has never seen push the capture out of his dedup. ttl 0
+  // and an unknown recipient, so none is relayed or shown.
+  for (let i = 0; i < 1000; i++) {
+    const filler: Packet = {
+      type: PacketType.NOISE_ENCRYPTED,
+      ttl: 0,
+      flags: Flags.HAS_RECIPIENT,
+      senderID: peerIdToBytes(mallory.peerID),
+      recipientID: peerIdToBytes("00000000000000aa"),
+      timestamp: s.world.wallClock() + i,
+      signature: new Uint8Array(64),
+      payload: new Uint8Array(16),
+    };
+    radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(filler)));
+  }
+  for (const frame of captured) radio.injectTo(bob.id, mallory.id, frame);
+  await s.world.advance(1_000);
+
+  s.check("bob still holds the same session", sessionFor() === before);
+  const sentAt = s.world.now;
+  alice.send(`dm:${bob.peerID}`, "after the replay");
+  const landed = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("after the replay"),
+    10_000,
+  );
+  s.check(
+    "and the next DM still arrives promptly",
+    landed && s.world.now - sentAt < 5_000,
+    `after ${String(s.world.now - sentAt)} ms`,
+  );
+  s.check(
+    "the replay added nothing to the thread",
+    bob.texts(`dm:${alice.peerID}`).filter((t) => t === "one").length === 1,
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert();
+});
+
 // Three phones in radio range of each other, the first two about to be
 // attacked by the third, with every link up and every announce heard.
 async function threeInRange(

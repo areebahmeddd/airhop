@@ -3347,11 +3347,15 @@ export class MeshService {
       bound.ratchet = this.seedRatchet("responder", session);
     }
 
+    // A failure is discarded, as the Double Ratchet spec says, and the session
+    // kept. A genuine signed packet fails here when it is a replay that
+    // outlived dedup, so tearing the session down would hand whoever recorded
+    // one a way to evict working keys (bitchat-ios refuses the same). Two
+    // sessions out of step heal through reapExpiredHandshakes instead.
     let plaintext: Uint8Array;
     try {
       plaintext = ratchetDecrypt(bound.ratchet, packet.payload);
     } catch {
-      this.healRatchet(senderID, bound.ratchet);
       return;
     }
 
@@ -3395,22 +3399,6 @@ export class MeshService {
     // user opens this conversation. Both are best-effort over the same DR link.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
     this.pendingReadAcks.add(senderID, payload.messageId);
-  }
-
-  // A signed DR packet that will not decrypt. Decrypt leaves the ratchet
-  // untouched on failure, forgeries fail the signature, and replays stop at
-  // dedup and the freshness window, so what is left is two ratchets out of
-  // step, which only a new session repairs. Taken only on a key the peer
-  // proved in a session: an announce pin is forgeable, and would let whoever
-  // won it tear our sessions down. And not before this ratchet has received
-  // anything, since a message sealed under the previous session can still be
-  // in flight. The new handshake runs under the handshake rate limit.
-  private healRatchet(peerID: string, ratchet: RatchetState): void {
-    if (ratchet.CKr === null) return;
-    if (this.registry.provenSigningKey(peerID) === undefined) return;
-    this.registry.clearSession(peerID);
-    this.drStates.delete(peerID);
-    this.ensureNoiseSession(peerID);
   }
 
   // Send a delivery/read receipt back to a message's sender over the Double
