@@ -38,8 +38,8 @@ private enum VoiceConst {
   // speaker and the oldest audio is already stale.
   static let maxQueuedFrames = 32
   // How many times one burst may rebuild its playback engine before being
-  // given up on. A route that connects and disconnects repeatedly - a car
-  // stereo at the edge of range - would otherwise rebuild forever, and a
+  // given up on. A route that connects and disconnects repeatedly (a car
+  // stereo at the edge of range) would otherwise rebuild forever, and a
   // burst that has been interrupted eight times has nothing worth hearing
   // left in it. Matches bitchat's maxEngineRestarts in PTTBurstPlayer.swift.
   static let maxPlaybackRestarts = 8
@@ -87,7 +87,7 @@ extension Double {
 ///
 /// Removing a tap does not cancel a buffer already handed to it, so a callback
 /// from the burst that just ended can still run after the next one has started.
-/// Its frames would be attributed to the new burst - the previous talker's last
+/// Its frames would be attributed to the new burst: the previous talker's last
 /// words playing under the new burst's ID on every listener. Every callback
 /// proves it is still the current capture before emitting anything.
 private final class VoiceCaptureGeneration {
@@ -126,10 +126,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // 0 Hz input and silently fails to enable the microphone, and Airhop hands
   // the session back to playback-only between every burst (the mic button's
   // release path calls setAudioForPlayback). So the second hold and every one
-  // after it would capture nothing while reporting success - the burst goes
-  // live on the far side and no audio ever follows. bitchat hit the same
-  // thing on device and fixed it the same way; see the `engine` comment in
-  // their PTTCaptureEngine.swift.
+  // after it would capture nothing while reporting success: the burst goes
+  // live on the far side and no audio ever follows. bitchat-ios recreates
+  // its capture engine for the same reason (the `engine` comment in its
+  // PTTCaptureEngine.swift).
   private var captureEngine = AVAudioEngine()
   // Whether `captureEngine`'s input unit has been instantiated by us. Reading
   // `inputNode` on an engine that was never armed instantiates it against
@@ -350,7 +350,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   ///
   /// Deliberately only the failures JS cannot see for itself. A call, Siri,
   /// or a switch to another app all leave AppState, and message-thread.tsx
-  /// already ends the hold on that - by the same route a user's release
+  /// already ends the hold on that, by the same route a user's release
   /// takes, which also delivers the voice note. Observing interruptions here
   /// too would race that better ending and sometimes win, turning a note that
   /// would have been sent into one that is dropped. What is left is hardware
@@ -379,7 +379,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
 
     // The input device itself disappeared: headset unplugged, AirPods back
     // in the case. Often arrives alongside the engine notification above,
-    // which costs nothing - the first one to land invalidates the
+    // which costs nothing: the first one to land invalidates the
     // generation and the second finds itself stale.
     captureObservers.append(
       center.addObserver(
@@ -626,8 +626,8 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// survive its session being reconfigured underneath it, and this app
   /// reconfigures constantly: releaseAudioSession() hands the category back to
   /// playback the moment a talker lets go, which lands under a burst that is
-  /// still playing whenever two people talk over each other - the ordinary
-  /// case on a busy channel, not an exotic one. Reused, the engine stays
+  /// still playing whenever two people talk over each other (the ordinary
+  /// case on a busy channel, not an exotic one). Reused, the engine stays
   /// wedged and every later burst is silent until the app restarts, the same
   /// failure the capture side already recreates to avoid.
   ///

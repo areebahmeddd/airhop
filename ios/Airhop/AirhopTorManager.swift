@@ -279,10 +279,8 @@ public final class AirhopTorManager: ObservableObject {
           return
         }
         // The listener is bound by the time start returns, so there is
-        // nothing to probe for. The implementation this replaced bound
-        // the port only after bootstrap, which is why it needed a
-        // separate SOCKS reachability poll and a second timeout to go
-        // with it.
+        // nothing to probe for: no SOCKS reachability poll, and no second
+        // timeout to go with one.
         NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
         self.startStatusPoll(epoch)
         self.startPathMonitorIfNeeded()
@@ -550,10 +548,10 @@ public final class AirhopTorManager: ObservableObject {
 
   private func startPathMonitorIfNeeded() {
     #if canImport(Network)
-      // "IfNeeded" was once aspirational: with no guard, every start installed
-      // another monitor, so each network change fanned out into that many
-      // concurrent recovery attempts and each monitor held a dispatch queue
-      // for the life of the process.
+      // One monitor for the process. Without the guard every start would
+      // install another, each network change would fan out into that many
+      // concurrent recovery attempts, and each monitor would hold a dispatch
+      // queue for the life of the process.
       guard pathMonitor == nil else { return }
       let monitor = NWPathMonitor()
       pathMonitor = monitor

@@ -60,9 +60,9 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
     // awaitTorReady gets its own thread instead of sharing the scheduler.
     //
     // It blocks for the caller's whole timeout, up to a minute, and the
-    // scheduler has one thread: sharing them starved the status poll, so
-    // TorStatusChanged went quiet during the window the Mesh banner exists to
-    // narrate. Cached, not fixed, since waits are rare and overlap briefly.
+    // scheduler has one thread: sharing it would starve the status poll, and
+    // TorStatusChanged would go quiet during the window the Mesh banner exists
+    // to narrate. Cached, not fixed, since waits are rare and overlap briefly.
     private val waiters = Executors.newCachedThreadPool { r ->
         Thread(r, "airhop-tor-await").apply { isDaemon = true }
     }

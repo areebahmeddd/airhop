@@ -447,7 +447,7 @@ pub fn stop() -> i32 {
     // instead, bounded by the timeout below.
     //
     // Android serialises these calls on one thread anyway; iOS does not, which
-    // is exactly why the fix belongs here rather than in either app.
+    // is why the lock is held here rather than in either app.
     let mut guard = match state().lock() {
         Ok(g) => g,
         Err(_) => return AIRHOP_TOR_ERR_RUNTIME,

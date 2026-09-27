@@ -138,8 +138,8 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     // that triggered it, and on a walkie-talkie the next press lands inside
     // that window routinely. Without a generation the dying thread's teardown
     // clears `capturing` out from under its successor, whose loop then exits
-    // before its first read - the burst opens, reports success, and captures
-    // nothing - and its flushed tail frames are delivered to the successor's
+    // before its first read (the burst opens, reports success, and captures
+    // nothing), and its flushed tail frames are delivered to the successor's
     // listener as if they were the new burst's audio.
     private val captureGeneration = AtomicInteger(0)
 
@@ -175,7 +175,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                 {
                     // The previous capture may still be releasing the microphone and
                     // its encoder. Opening AudioRecord on top of it fails to
-                    // initialise, so wait it out - here on the new audio thread, never
+                    // initialise, so wait it out: here on the new audio thread, never
                     // on the caller, which is the mic button's own release path.
                     runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
                     runCapture(generation)
