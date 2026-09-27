@@ -1472,7 +1472,7 @@ export const strings = {
     "Turns an amount into a token you can hand to a nearby peer over Bluetooth, or share as text. Works with no internet. The coins stay reserved until you confirm it landed.",
   "wallet.explain.receive": "Receive",
   "wallet.explain.receive_desc":
-    "Paste a token to add it. Online it is swapped at the mint immediately, which makes it provably yours. Offline it is stored and marked unconfirmed until you refresh.",
+    "Paste a token to add it. Online it is swapped at the mint immediately, which makes it provably yours. Offline it is stored unconfirmed and confirmed with the mint automatically once you are back online.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Pays a Nostr identity. If they publish NIP-61 nutzap info, the ecash is locked to their key so only they can spend it. Otherwise it falls back to an encrypted DM. Needs internet.",
