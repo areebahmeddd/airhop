@@ -209,7 +209,7 @@ registerBootStartTask();
 // "Stop mesh" on the Android background notification. The native service
 // hands it here rather than tearing things down itself, so stopping from the
 // notification and stopping from the Status picker are the same action: the
-// radios come down, the gateway switches off, and presence lands on Away - so
+// radios come down, the gateway switches off, and presence lands on Away, so
 // reopening the app shows "Mesh paused · You're away" with a way back, not a
 // dead mesh wearing a green dot.
 //
@@ -279,7 +279,7 @@ async function startMeshWithPermissions(
   // Explain the ask before the OS makes it, once per install.
   //
   // Gated on the permission not already being held, so it never appears for a
-  // returning user whose grant is settled - and gated on the flag so a user who
+  // returning user whose grant is settled, and on the flag, so a user who
   // declined does not get the lecture again on every launch. It resolves however
   // the sheet is dismissed, so nothing here can hang: a primer that failed to
   // resolve would hold BLE startup behind it forever, which is a far worse bug
@@ -294,17 +294,17 @@ async function startMeshWithPermissions(
   // Both awaits below are time-boxed, and the deadline is the point of them
   // rather than a nicety. Everything from here to initMeshService() is a
   // conversation with the OS about permissions, and the mesh must not wait for it
-  // to finish. It is not a conversation the app controls: the primer resolves on a
-  // sheet the user has to dismiss, and
-  // `PermissionsAndroid.requestMultiple` settles on a dialog hosted by another
-  // process, which an Activity teardown can orphan. Either one going quiet left
-  // a running app with no mesh at all and a Mesh tab reading "starting..." for
-  // the rest of the session, which is indistinguishable from a broken radio.
+  // to finish. It is not a conversation the app controls: the primer resolves on
+  // a sheet the user has to dismiss, and `PermissionsAndroid.requestMultiple`
+  // settles on a dialog hosted by another process, which an Activity teardown
+  // can orphan. Either one going quiet would leave a running app with no mesh at
+  // all and a Mesh tab reading "starting..." for the rest of the session, which
+  // is indistinguishable from a broken radio.
   //
   // Missing the deadline costs nothing that matters. The radio controller reads
   // the real grant off the device on its first pass and publishes the true
   // blocker, so a permission answer that arrives late, or never, changes only
-  // how quickly the banner is right - not whether the mesh exists.
+  // how quickly the banner is right, not whether the mesh exists.
   const settings = useSettingsStore.getState();
   if (
     !settings.permissionPrimerSeen &&
@@ -363,13 +363,13 @@ async function startMeshWithPermissions(
 function applyBlePermissionResult(perm: BlePermissionResult): void {
   // Record WHY the mesh cannot run, not merely that it cannot.
   //
-  // A single "granted" boolean collapsed two situations that need different
-  // responses: denied but re-askable, and denied for good. Only the first is
-  // fixed by asking again, so rendering both as "Bluetooth permission needed"
-  // sends half of them nowhere. The controller re-reads the device on its first
-  // pass and will
-  // correct this either way; setting it here means the banner is right during
-  // the very first frames rather than after the first reconcile.
+  // A single "granted" boolean would collapse two situations that need
+  // different responses: denied but re-askable, and denied for good. Only the
+  // first is fixed by asking again, so rendering both as "Bluetooth permission
+  // needed" sends half of them nowhere. The controller re-reads the device on
+  // its first pass and corrects this either way; setting it here means the
+  // banner is right during the very first frames rather than after the first
+  // reconcile.
   const blocker = useMeshStateStore.getState().setBleBlocker;
   // Recorded separately, and BEFORE the mesh starts, so the controller's first
   // reconcile refines the platform's coarse "denied" into the permanent form
@@ -461,9 +461,8 @@ function startMeshDependents(): void {
     // NostrClient and that instance dies with every transport rebuild, so without
     // rebinding, toggling Tor or internet fallback ends NIP-61 for the rest of the
     // session and silently stops redeeming incoming payments. The mesh service
-    // calls the
-    // rebinder after it builds a transport, so the subscription follows the
-    // client instead of outliving it.
+    // calls the rebinder after it builds a transport, so the subscription follows
+    // the client instead of outliving it.
     setNutzapRebinder(() => {
       const live = getMeshService()?.getNostrClient();
       const myPubkey = getMeshService()?.getNostrPubKeyHex();
@@ -507,8 +506,8 @@ function startMeshDependents(): void {
   })();
 
   // Remaining permission prompts, sequenced one after another so the OS never
-  // shows two at once (concurrent prompts raced on a fresh install: the
-  // notification prompt got swallowed and sometimes crashed). Runs after the
+  // shows two at once (concurrent prompts race on a fresh install: the
+  // notification prompt gets swallowed, and can crash). Runs after the
   // mesh has started so BLE is never held up waiting on any of them.
   //   1. Location powers the geohash public channels (#block...#region): without a
   //      position the app cannot resolve its cell, so they stay BLE-only and
@@ -549,9 +548,9 @@ async function handleBannerAction(
       return;
 
     case "enable-bluetooth": {
-      // Android can show the system enable dialog in place. iOS cannot - Apple
-      // provides no API to turn the radio on from inside an app - so it
-      // resolves false and we fall back to Settings rather than offering a
+      // Android can show the system enable dialog in place. iOS cannot (Apple
+      // provides no API to turn the radio on from inside an app), so it
+      // resolves false and falls back to Settings rather than offering a
       // button that does nothing.
       const enabled = await AirhopBLE.requestEnableBluetooth().catch(
         () => false,
@@ -619,7 +618,7 @@ async function handleBannerAction(
 //
 // The boundary has to be OUTSIDE that component rather than somewhere inside
 // its tree, because the failures worth surviving are the ones that take the
-// shell down with them - a throw while rendering the tab bar, or from a decoder
+// shell down with them: a throw while rendering the tab bar, or from a decoder
 // running off a packet that arrived a moment ago. A boundary mounted under the
 // thing that broke catches nothing.
 //
@@ -629,8 +628,8 @@ async function handleBannerAction(
 export default function App(): React.JSX.Element {
   const boundary = useRef<ErrorBoundary>(null);
 
-  // React catches what it renders. Everything else - a rejected promise nobody
-  // awaited, a throw inside a native event listener, a setTimeout callback -
+  // React catches what it renders. Everything else (a rejected promise nobody
+  // awaited, a throw inside a native event listener, a setTimeout callback)
   // goes to ErrorUtils instead, and in a release build the default handler
   // there ends the process. Routed onto the same screen so both kinds of
   // failure look the same to the person holding the phone.
@@ -821,7 +820,7 @@ function AppContent(): React.JSX.Element {
   // Set imperatively rather than through the declarative <NavigationBar>
   // component, and the difference is the whole point. That component keeps a
   // module-level stack of mounted entries and re-derives the native state
-  // whenever the stack changes - including when it EMPTIES. Unmounting the last
+  // whenever the stack changes, including when it EMPTIES. Unmounting the last
   // one therefore fires `ExpoNavigationBar.setHidden(false)` on a setImmediate,
   // unawaited and uncaught. The one moment the stack empties is teardown: the
   // Activity is destroyed, React unmounts the root, and the call lands on an
@@ -1013,10 +1012,10 @@ function AppContent(): React.JSX.Element {
   // Scoped to the Chats tab, because "open" has to mean "on screen".
   //
   // chatView survives a tab switch by design, so without the tab test a thread
-  // left behind on Chats stayed the active channel while the user looked at the
-  // radar or the wallet. Everything downstream trusts that: inbound messages to
-  // it were marked read, produced no haptic and no bell entry, and vanished from
-  // the unread counts, all while nobody was looking at them.
+  // left behind on Chats would stay the active channel while the user looks at
+  // the radar or the wallet. Everything downstream trusts that: inbound messages
+  // to it would be marked read, with no haptic, no bell entry and no unread
+  // count, while nobody is looking at them.
   const openThread =
     tab === "chats" && chatView.kind === "thread"
       ? (channelRedirects[chatView.channel] ?? chatView.channel)
@@ -1139,10 +1138,9 @@ function AppContent(): React.JSX.Element {
         // Re-resolve the location channels when the answer actually moved.
         //
         // Leaving for system Settings and coming back is the main way a location
-        // grant changes, and this handler recorded it without acting on it, so
-        // the geohash channels stayed empty on the one edge where they were most
-        // likely to have just become available. Gated on the change so an
-        // ordinary resume does not re-subscribe every cell.
+        // grant changes, so this edge is when the geohash channels have most
+        // likely just become available. Gated on the change so an ordinary
+        // resume does not re-subscribe every cell.
         if (changed && granted) getMeshService()?.refreshGeoChannels();
       });
       // Re-check the radios unconditionally.
@@ -1150,8 +1148,8 @@ function AppContent(): React.JSX.Element {
       // Never compare the BLE permission against the last known value and act
       // only on a change. Every blocker that is not a permission (Bluetooth
       // switched off, location services switched off, a grant that has not yet
-      // reached the Bluetooth stack) then comes back to a
-      // mesh that had decided nothing needed doing. The controller is a
+      // reached the Bluetooth stack) would then come back to a mesh that decided
+      // nothing needed doing. The controller is a
       // reconciler: it reads the device itself and issues only the calls that
       // change something, so calling it on every resume is both correct and
       // free.
@@ -1169,11 +1167,11 @@ function AppContent(): React.JSX.Element {
       //
       // It means the app is on screen but not receiving events: a permission
       // dialog on top of it, the app switcher open, an incoming call. Reading it
-      // as backgrounded told the power policy nobody was watching, which drops
-      // the radios to power-saver, and every mode change restarts the scanner.
-      // The result was that the OS permission dialog - the single most common
-      // way to reach this state, on the very first launch - bounced the scan off
-      // and on again underneath itself. Everything else here still treats it as
+      // as backgrounded would tell the power policy nobody is watching, which
+      // drops the radios to power-saver, and every mode change restarts the
+      // scanner: the OS permission dialog, the most common way into this state
+      // on the very first launch, would bounce the scan off and on underneath
+      // itself. Everything else here still treats it as
       // "not active", which is right for them: a notification should be raised
       // and chat state flushed, because the user genuinely is not reading the
       // screen. The app-switcher cover is not one of them, and is native for
@@ -1204,10 +1202,9 @@ function AppContent(): React.JSX.Element {
         // under it. Cheap, and it corrects the claim rather than the routing.
         void revalidateTorRouting();
         // Leaving the app is also how a Lightning invoice gets paid: the user
-        // switches to their Lightning wallet, pays, and comes back. Until this,
-        // the deposit only landed if the deposit sheet happened to still be open
-        // (it polls) or the user thought to pull to refresh, so coming back to a
-        // balance that had not moved was the normal experience of paying.
+        // switches to their Lightning wallet, pays, and comes back. Without
+        // this, the deposit lands only if the deposit sheet is still open (it
+        // polls) or the user thinks to pull to refresh.
         //
         // Throttled and deduplicated inside the service, and returns
         // immediately: a pass is minutes of mint round trips and must never be
@@ -1314,19 +1311,13 @@ function AppContent(): React.JSX.Element {
     // actually belongs to. That matters when opened from search, which spans
     // both; a no-op when opened from the list itself (already the right tab).
     setChatSubTab(channel.startsWith("dm:") ? "dms" : "channels");
-    // Switch to Chats, which this did not do.
-    //
     // The thread render is gated on `tab === "chats"`, so setting the view
-    // without the tab opened nothing: a tapped notification, a deep link and the
-    // restored last thread all landed on whatever tab was showing, usually Mesh.
-    // Worse than doing nothing, because the "what is being read" effect is
-    // driven by chatView alone, so the app marked the message read, cleared its
-    // unread count and dismissed its notification while showing the radar. The
-    // message was gone with nothing to say it had arrived.
+    // without the tab would open nothing: a tapped notification, a deep link or
+    // the restored last thread would land on whatever tab is showing.
     //
     // `false` keeps the view: navigateToTab resets chatView to the list when it
-    // is told to, and this is the one caller that has already chosen a thread.
-    // Matches openDMFromMesh and openTransferChannel, which always did this.
+    // is told to, and this caller has already chosen a thread. Matches
+    // openDMFromMesh and openTransferChannel.
     navigateToTab("chats", false);
     setChatView({ kind: "thread", channel });
   }
@@ -1569,9 +1560,9 @@ function AppContent(): React.JSX.Element {
     );
   }
 
-  // Render nothing until the identity check resolves (and the bundled font is
-  // ready). This prevents a flash of the welcome screen for returning users on
-  // every app launch, and of system-font mono text before JetBrains Mono loads.
+  // Render nothing until the identity check resolves, so a returning user never
+  // sees a flash of the welcome screen. The font is not waited for (see
+  // useFonts above).
   if (!appReady) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -2101,11 +2092,10 @@ function AppContent(): React.JSX.Element {
               <GestureDetector gesture={swipeGesture}>
                 <View style={styles.content}>
                   {tab === "chats" && chatView.kind === "thread" ? (
-                    // Keyed by channel so switching threads REMOUNTS. Without
-                    // this the component persisted across a channel change and
-                    // leaked per-thread state: an unsent draft typed in one
-                    // chat reappears in the next, and a "queued for delivery"
-                    // banner from the previous chat renders over the new one.
+                    // Keyed by channel so switching threads REMOUNTS. Otherwise
+                    // per-thread state leaks across a channel change: a draft
+                    // typed in one chat reappears in the next, and a "queued
+                    // for delivery" banner renders over the new one.
                     <MessageThread
                       key={openThread}
                       channel={openThread}
@@ -2230,9 +2220,10 @@ function AppContent(): React.JSX.Element {
                   child is laid out against its parent's PADDING box, so
                   `bottom: 0` sits within the outer inset rather than above
                   it, and under three-button navigation (about 48pt) the
-                  system buttons would draw over the tab bar. Not `useSafeAreaInsets`: the
-                  provider renders inside this component, so the hook would
-                  sit above it and throw. */}
+                  system buttons would draw over the tab bar.
+
+                  Not `useSafeAreaInsets`: the provider renders inside this
+                  component, so the hook would sit above it and throw. */}
               {!isInThread && (
                 <SafeAreaView
                   edges={["bottom"]}
@@ -2240,8 +2231,6 @@ function AppContent(): React.JSX.Element {
                   pointerEvents="box-none"
                 >
                   <TransferBadge onOpen={openTransferChannel} />
-                  {/* The wrap carries the shadow: the bar clips its children
-                      to the pill, and a clipped view cannot cast one. */}
                   <View style={styles.tabBarWrap}>
                     {/* tablist makes screen readers announce the four as one
                         group ("tab 2 of 4") rather than unrelated buttons. */}

@@ -1,10 +1,9 @@
-// Known contacts: identities the user has deliberately added (via QR).
+// Known contacts: identities the user has chosen to keep (a scanned QR, a
+// link, a typed peer ID, or someone they messaged).
 //
-// This is the piece that was missing entirely. `peer-store` holds *nearby*
-// peers and is ephemeral by design: it is rebuilt from live ANNOUNCE traffic
-// and forgets everything on restart. So "Add Contact" had nowhere durable to
-// write, and did nothing beyond creating a chat-store channel string: no keys
-// captured, no name remembered, nothing that survived a relaunch.
+// `peer-store` holds *nearby* peers and is ephemeral by design: it is rebuilt
+// from live ANNOUNCE traffic and forgets everything on restart. This is where
+// "Add Contact" writes the keys and name that must survive a relaunch.
 //
 // A contact is a *known* identity; a peer is a *reachable* one. They are
 // deliberately separate: someone can be a contact while out of range for days,

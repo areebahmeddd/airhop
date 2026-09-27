@@ -78,8 +78,8 @@ import {
 } from "@utils/channel-key";
 
 // Blocking, on the Nostr side. The mesh enforces it at one chokepoint in
-// `routePacket`; nothing did here, so a blocked person kept posting in location
-// channels, kept counting toward the participant total, and could still open a
+// `routePacket`, and this is the equivalent here, so a blocked person neither
+// posts in location channels, counts toward the participant total, nor opens a
 // geo DM.
 //
 // A geohash identity is a per-cell secp256k1 pubkey addressed everywhere as
@@ -131,8 +131,6 @@ export function isGeoChannel(channel: string): boolean {
   return channel in GEO_CHANNEL_PRECISION || isManualGeoChannel(channel);
 }
 
-// The bare geohash a teleported channel points at, or null for a named/other
-// channel (whose geohash is location-derived, not fixed in the key).
 // Canonicalise raw user input into a geohash: lowercase, drop a leading #,
 // discard anything outside the alphabet, cap at 12 chars. Mirrors bitchat's
 // LocationStateManager.normalizeGeohash so both accept the same strings.
@@ -210,15 +208,15 @@ const TAG_TOPIC = "t"; // ["t","urgent"] parity with urgent board posts
 // How far back the location-note feed looks.
 //
 // Without a `since`, five joined cells each pull their relays' 200 most recent
-// `#g` notes however old they are. A note that
-// predates this window is either NIP-40 expired or older than the 7-day life of
-// the board post it mirrors, so it has nothing to show; asking for it only
-// bought a bigger cold-start burst to verify and throw away.
+// `#g` notes however old they are. A note that predates this window is either
+// NIP-40 expired or older than the 7-day life of the board post it mirrors, so
+// it has nothing to show; asking for it only buys a bigger cold-start burst to
+// verify and throw away.
 const GEO_NOTE_LOOKBACK_SECONDS = 7 * 24 * 60 * 60;
 
 // Deletions are asked for by author, and this caps how many authors one filter
 // may name. Ordered by when we last heard from them, so the cap drops the
-// authors whose notes are oldest - which are the ones nearest to ageing out of
+// authors whose notes are oldest, which are the ones nearest to ageing out of
 // the window above anyway.
 const MAX_DELETION_AUTHORS = 128;
 
@@ -356,8 +354,8 @@ export class GeohashChannelService {
   async refresh(): Promise<void> {
     // Location may be null (denied or off). That only affects the named
     // channels, whose cell is derived from where the user is. Teleported
-    // channels carry a fixed geohash and stay live regardless, so we no longer
-    // tear everything down when there is no fix.
+    // channels carry a fixed geohash and stay live regardless, so a missing fix
+    // takes down only the named ones.
     const coords = await getCoarseLocation();
     this.coords = coords;
 
@@ -385,7 +383,7 @@ export class GeohashChannelService {
       this.subscribeChannel(channel, geohash);
     }
 
-    // Decided here, once, from the state that actually exists - rather than
+    // Decided here, once, from the state that actually exists, rather than
     // started as a side effect of a cell changing. Leaving every location
     // channel would otherwise leave a heartbeat timer running forever with
     // nothing to announce into.
@@ -494,7 +492,7 @@ export class GeohashChannelService {
   // Publish the cells we are currently listening for geo DMs in.
   //
   // The per-cell DM inbox is opened per SUBSCRIBED channel, so leaving the
-  // channel - or simply moving until the cell resolves elsewhere - ends it with
+  // channel, or simply moving until the cell resolves elsewhere, ends it with
   // nothing said. Sending still works either way (the key is derived from the
   // cell, not from where we are standing), so this is the RECEIVING half, and it
   // is the half a conversation goes quiet on. A thread compares its own cell
@@ -614,7 +612,7 @@ export class GeohashChannelService {
   //
   // A teleported cell is somewhere the user is NOT. Announcing presence there
   // would be a false statement about their location, which is worse than an
-  // undercount - and the `t=teleport` marker on messages exists precisely
+  // undercount, and the `t=teleport` marker on messages exists precisely
   // because the two are different things. Fine-grained cells are excluded by
   // mayBroadcastPresence; see geohash-presence.ts for why that restriction is the
   // feature rather than a limitation.
@@ -791,7 +789,7 @@ export class GeohashChannelService {
   // Whether this Nostr pubkey is someone we met in a location channel, i.e. the
   // caller must route a reply from our per-cell identity rather than our main
   // one. Returns the cell if so, and undefined for a peer who reached our
-  // durable identity - where replying from it is the correct thing to do.
+  // durable identity, where replying from it is the correct thing to do.
   //
   // Read from the persisted store rather than a field, so the answer is the same
   // on the first launch of a conversation and every one after it. The cell is
@@ -947,7 +945,7 @@ export class GeohashChannelService {
     if (env === null) return;
 
     // Resolved, not assumed. Once a card exchange completes we fold this
-    // pseudonymous thread into the durable one - but the other side only stops
+    // pseudonymous thread into the durable one, but the other side only stops
     // using this rail when OUR card reaches them, and that is a relay round trip
     // away. Anything they send in between arrives here addressed to a name that
     // is now an alias, and writing to it directly would file the message in a
@@ -956,8 +954,8 @@ export class GeohashChannelService {
     const pseudonymous = `dm:nostr_${dm.senderPubkey}`;
     const channel = useChatStore.getState().resolveChannel(pseudonymous);
     // Re-bound only while this is still a pseudonymous conversation. Completing
-    // a card exchange deliberately drops the cell - once the thread is durable,
-    // where we met is a location breadcrumb with nothing left to serve - and a
+    // a card exchange deliberately drops the cell (once the thread is durable,
+    // where we met is a location breadcrumb with nothing left to serve), and a
     // late message on the old rail must not quietly write it back.
     if (channel === pseudonymous) {
       this.registerGeoDmPeer(dm.senderPubkey, geohash);
@@ -980,7 +978,7 @@ export class GeohashChannelService {
     //
     // No bubble and no receipt: a card is not a message. What the reader gets is
     // the system line the mesh layer writes once the card has actually been
-    // accepted - saying "they shared their contact" for one that failed its
+    // accepted: saying "they shared their contact" for one that failed its
     // binding check would be worse than silence.
     if (env.type === NoisePayloadType.CONTACT_CARD) {
       if (env.body !== undefined) {
@@ -1179,14 +1177,12 @@ export class GeohashChannelService {
   // geo relays apiece would pull thousands of events with nothing to do with this
   // app. Every one of them costs a SHA-256 and a schnorr verify inside
   // nostr-tools' socket handler, on the JS thread, before our handler is even
-  // reached. That is what froze the app on a fresh install with WiFi on: the
-  // radar's sonar loop stopped between pulses, the tab bar stopped answering,
-  // and turning WiFi off "fixed" it because with no relay reachable the flood
-  // never arrived.
+  // reached, which is enough to freeze the app on a fresh install with WiFi
+  // on.
   //
   // Scoping by author loses nothing. handleNoteDeletion already refuses any
-  // deletion not signed by the same key that signed the note - `e` tags are
-  // free to write, so a deletion from an author we hold no note from could never
+  // deletion not signed by the same key that signed the note (`e` tags are
+  // free to write), so a deletion from an author we hold no note from could never
   // have applied. The relay filters it rather than the client paying for it
   // first.
   private resubscribeDeletions(channel: string, geohash: string): void {

@@ -39,11 +39,10 @@ export function applyPresence(next: PresenceStatus, nickname: string): void {
     // Discoverability is intent the radio controller holds across a stop:
     // suspend() and stop() clear `running` and leave `discoverable` alone, on
     // purpose, so an outage does not make an Invisible user discoverable when
-    // the radio returns. The cost was that Online could not undo it. Going
-    // Invisible, then Away, then Online restarted the mesh with the controller
-    // still holding discoverable=false, so the phone scanned and relayed but
-    // never advertised - nobody could see it - while the profile dot said
-    // Online and no banner disagreed. Nothing corrected it short of a relaunch.
+    // the radio returns. So Online has to undo it itself: Invisible, then Away,
+    // then Online would otherwise restart the mesh still holding
+    // discoverable=false, scanning and relaying but never advertising, while
+    // the profile dot says Online.
     //
     // setDiscoverable is a no-op when the value already matches, so saying it
     // every time costs nothing and removes the ordering dependency entirely.

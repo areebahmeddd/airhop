@@ -1,6 +1,6 @@
 // The JS side of AirhopBootReceiver/AirhopBootService: registers the
 // "Airhop.BootStartMesh" headless task Android runs with no Activity and no
-// UI. Every step below is a check, never a request - unlike
+// UI. Every step below is a check, never a request: unlike
 // startMeshWithPermissions in app.tsx, nothing here can prompt.
 //
 // syncAutoStartOnBoot lives in ./boot-sync instead: this file pulls in

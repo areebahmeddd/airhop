@@ -33,14 +33,13 @@ import {
 
 // A Nostr/geohash pseudonym (`nostr_<pubkey>`) is named the same way the cell
 // chat names it (and the same way bitchat does): `anon#<last4>` of the pubkey,
-// or `<nick>#<last4>`. Using the npub label here instead made the very same
-// person you saw as "anon#ed17" in the channel show up as "npub...d4ed17" in the
-// DM header, the DM list and the contact-info sheet. This keeps them identical
-// across all of those. The stored message senderNickname uses this exact form.
+// or `<nick>#<last4>`, never the npub label, so the person seen as "anon#ed17"
+// in the channel is not "npub...d4ed17" in the DM header, the DM list or the
+// contact-info sheet. The stored message senderNickname uses this exact form.
 function nostrPseudonym(peerID: string): string {
   const pubkey = peerID.slice(NOSTR_ID_PREFIX.length);
   // Their geohash nickname rides the `n` tag on channel messages and nothing
-  // else - a geo DM carries none - so the pubkey alone can only ever produce
+  // else (a geo DM carries none), so the pubkey alone can only ever produce
   // "anon#last4". Recorded when the conversation opened; see geoDmNames.
   const known = useChatStore.getState().geoDmNames[pubkey];
   if (known !== undefined && known.length > 0) return known;

@@ -72,7 +72,7 @@ const KEY_WIPE_TIMEOUT_MS = 5_000;
 // peer-store is intentionally absent: it uses in-memory Zustand with no MMKV
 // persistence, so it resets automatically when the process restarts.
 // wallet-store is absent here on purpose: it is encrypted, so it is destroyed
-// by WALLET_STORE_IDS below rather than cleared through this list.
+// by wipeWalletStorage below rather than cleared through this list.
 // blocked-store records who this identity has blocked, which is tied to this
 // identity's relationships, same as chat data, so it goes too.
 // If a new persisted store is added, add its MMKV ID here.
@@ -131,7 +131,7 @@ export const MMKV_STORE_IDS = [
 // falsely: everything else is best-effort and its failure changes nothing the
 // user needs to decide about.
 export interface PanicWipeResult {
-  // False when the OS refused to release the keys - a locked Keychain on a
+  // False when the OS refused to release the keys: a locked Keychain on a
   // device that has booted but not been unlocked, which is precisely the
   // seizure case. Everything else is still destroyed; the secrets are not.
   keysDestroyed: boolean;
@@ -140,8 +140,8 @@ export interface PanicWipeResult {
 export async function panicWipe(): Promise<PanicWipeResult> {
   // -1. Silence a live Ring alert first: emptying this store stops
   //     ring-alert-sheet's loop and its overlay before the rest of the
-  //     sequence starts. The tray copy goes with every other notification in
-  //     step 5.
+  //     sequence starts. The tray copy goes with every other notification
+  //     near the end.
   useIncomingRingStore.getState().clearAll();
 
   // 0. Record the intent BEFORE anything is destroyed. Everything below is a
@@ -255,8 +255,8 @@ export async function panicWipe(): Promise<PanicWipeResult> {
     nostrConnected: false,
     // Tor is reset because it is a privacy *claim*, not just cosmetic state.
     // The wipe tears the transport down, but this flag drives the "Tor on ·
-    // internet traffic routed" banner, so leaving it set meant the UI kept
-    // promising onion routing that was no longer running. A security indicator
+    // internet traffic routed" banner, so left set, the UI would keep
+    // promising onion routing that is no longer running. A security indicator
     // that over-claims is worse than none.
     torActive: false,
     torBootstrap: "idle",
@@ -300,14 +300,12 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // And the wallet STORAGE bootstrap, which resetWalletService does not reach.
   //
   // deleteMMKV unlinks the file, but the JS handle and the resolved `ready`
-  // promise are module scope and survived it. Three things went wrong with that:
-  // the wallet reported itself unlocked and hydrated against a partition that no
-  // longer existed, so the Wallet tab showed an empty-but-working wallet rather
-  // than a first-run one; any later write recreated the file through the stale
-  // handle, still holding the AES key whose keychain copy had just been
-  // destroyed, leaving ciphertext no future launch could ever open; and
-  // re-onboarding in the same process wrote the new identity's proofs under that
-  // same dead key.
+  // promise are module scope and survive it. Left alone, the wallet would
+  // report itself unlocked against a partition that no longer exists (an
+  // empty-but-working Wallet tab rather than a first-run one), a later write
+  // would recreate the file under the AES key whose keychain copy was just
+  // destroyed (ciphertext no launch can open), and re-onboarding in the same
+  // process would write the new identity's proofs under that dead key.
   resetWalletStorage();
 
   // Tray and Tor, LAST on purpose.

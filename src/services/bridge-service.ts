@@ -205,8 +205,8 @@ export class BridgeService {
     this.subscription = null;
     this.subscribedCell = null;
     // Everyone counted "across" was across the OLD cell. Carrying them into the
-    // new one inflated the banner with people the user has just walked away
-    // from, for as long as their ten-minute presence TTL had left to run.
+    // new one would inflate the banner with people the user has just walked
+    // away from, for as long as their ten-minute presence TTL has left to run.
     this.participants.clear();
     // And let the first heartbeat into the new cell go out immediately rather
     // than waiting out the rate limit from the previous one, which leaves the
@@ -586,24 +586,20 @@ export class BridgeService {
   // Relay connectivity moved under us. Re-publish the status, because `active`
   // depends on it and nothing else recomputes on that edge.
   //
-  // Status was only emitted on refresh, teardown and an inbound participant
-  // event, and all three need working relays. So losing them left the banner
-  // claiming to be bridging islands for as long as the outage lasted, bounded
-  // only by the four-minute presence tick. Gating `active` on relays fixed the
-  // value; this is what makes anyone recompute it.
+  // Refresh, teardown and an inbound participant event also emit it, but all
+  // three need working relays, so without this the banner would claim to be
+  // bridging islands for as long as an outage lasts, bounded only by the
+  // four-minute presence tick.
   onRelayConnectivityChanged(): void {
     this.emitStatus();
   }
 
   private emitStatus(): void {
     this.hooks.onStatus({
-      // The same predicate the advertised capability uses, relays included.
-      //
-      // These two had drifted: the bit peers read self-gated on live relays, but
-      // the banner did not, so a phone with the toggle on and every relay down
-      // told its owner it was bridging islands while it could neither publish
-      // nor receive a single message. A status indicator that over-claims is the
-      // failure the banner layer exists to prevent.
+      // The same predicate the advertised capability uses, relays included,
+      // so a phone with the toggle on and every relay down never tells its
+      // owner it is bridging islands. A status indicator that over-claims is
+      // the failure the banner layer exists to prevent.
       active:
         this.enabled &&
         this.activeCell !== null &&

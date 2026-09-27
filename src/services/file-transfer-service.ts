@@ -65,11 +65,10 @@ import { Platform } from "react-native";
 // (TransportConfig.swift), chosen the same way it chooses them in
 // BLEOutboundFragmentPlanner.spacingMs: addressed packets get the shorter one.
 //
-// These were a single 20ms taken from bitchat's bleExpectedWritePerFragmentMs,
-// which is not a spacing at all - it estimates how long a write takes, and is
-// used to size a timeout. bitchat's own note on the real constants: "Aggressive
-// pacing causes packet loss; needs 25-30ms between fragments for reliable
-// delivery."
+// Not bitchat's 20ms bleExpectedWritePerFragmentMs, which is not a spacing at
+// all: it estimates how long a write takes, and sizes a timeout. bitchat's own
+// note on the real constants: "Aggressive pacing causes packet loss; needs
+// 25-30ms between fragments for reliable delivery."
 const FRAGMENT_SPACING_DIRECTED_MS = 25;
 export const FRAGMENT_SPACING_MS = 30;
 
@@ -468,10 +467,10 @@ async function emptyDirectory(
 // complete, and it has no way to ask for it.
 //
 // "Paced" is in the names because TypeScript will not defend that boolean.
-// These were BroadcastFn/UnicastFn, the names message-router uses for its
-// fire-and-forget `=> void` pair, and a `Promise<boolean>` is silently
-// assignable to a `void` return: crossing the two type-checks, and the only
-// symptom is dropped fragments on a busy radio.
+// message-router's BroadcastFn/UnicastFn are a fire-and-forget `=> void` pair,
+// and a `Promise<boolean>` is silently assignable to a `void` return: crossing
+// the two type-checks, and the only symptom is dropped fragments on a busy
+// radio.
 export type PacedBroadcastFn = (packet: Packet) => Promise<boolean>;
 export type PacedUnicastFn = (
   recipientPeerID: string,

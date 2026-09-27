@@ -137,8 +137,8 @@ async function fitToBudget(
     uri,
     // Resolved, never assumed. Defaulting an unlabelled file to image/jpeg
     // would put that on the wire for a PNG, and the receiver checks the
-    // declared type against the file's magic bytes: it would have thrown the
-    // photo away for lying about itself.
+    // declared type against the file's magic bytes: it would throw the photo
+    // away for lying about itself.
     mimeType: resolveMimeType(mimeType, name),
     name: name ?? "photo.jpg",
     sizeBytes: fileSize(uri),

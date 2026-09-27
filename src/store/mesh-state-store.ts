@@ -2,9 +2,8 @@
 //
 // Without this, "Bluetooth is switched off", "you denied the permission",
 // "location is off" and "nobody is nearby" all render identically, as an empty
-// peer list and a radar spinning "Scanning for nearby peers..." forever. That is
-// impossible for a user to diagnose and was the single most confusing gap in
-// the Mesh tab.
+// peer list and a radar spinning "Scanning for nearby peers..." forever, which
+// no user can diagnose.
 //
 // The Mesh tab can show SEVERAL banners at once (e.g. Bluetooth off AND location
 // off), so this exposes an ordered list rather than a single state. Order is
@@ -25,7 +24,7 @@ import { useSettingsStore } from "./settings-store";
 // Presence the user chose in Profile. Online advertises + scans, Away stops the
 // mesh entirely, Invisible scans but stops advertising. Lives here, not in the
 // Profile screen's local state, so it survives that screen unmounting on a tab
-// switch: otherwise the label reset to "Online" while the mesh stayed stopped.
+// switch: otherwise the label would reset to "Online" with the mesh stopped.
 export type PresenceStatus = "online" | "away" | "invisible";
 
 // A banner's semantic tone, which the status bar maps to a hue. Each names a
@@ -53,7 +52,7 @@ export type TorBootstrapPhase = "idle" | "starting" | "blocked";
 //   unsupported  no Aware hardware, or an OS below the floor (API 29 on
 //                Android, iOS 26 here).
 //   active       attached, publishing and subscribing.
-//   unavailable  the device has it, but not right now - WiFi switched off,
+//   unavailable  the device has it, but not right now: WiFi switched off,
 //                tethering, battery saver. Android only, since iOS exposes no
 //                equivalent reading. The only state worth a banner: it is the
 //                one the user can undo, and the difference it makes (a video
@@ -103,8 +102,8 @@ export type LanState =
 // permissionGranted, locationServices). Three booleans describe eight states,
 // five of which are impossible, and nothing stops them contradicting each other,
 // which is how "permission granted, Bluetooth on, radios dead" becomes a state
-// the UI has no vocabulary for. One
-// value, set from one place, cannot disagree with itself.
+// the UI has no vocabulary for. One value, set from one place, cannot disagree
+// with itself.
 //
 // Ordered loosely by how early it stops us:
 //   unsupported            no BLE hardware. Nothing will ever fix this.
@@ -123,9 +122,8 @@ export type LanState =
 //                          honoured them yet. Transient by definition.
 //   none                   nothing is in the way.
 //
-// A `precise-location` member covered the Android 12+ "Approximate" case. It
-// went with the location coupling: the mesh no longer asks for location on API
-// 31+, so the state cannot arise.
+// No member for Android 12+'s "Approximate" location: the mesh does not ask for
+// location on API 31+, so it cannot block anything.
 export type BleBlocker =
   | "none"
   | "starting"
@@ -144,7 +142,7 @@ export type BannerAction =
   | "open-location-settings"
   | "open-app-settings"
   // Open the OEM's own background/autostart screen. Android only, and only on
-  // the brands that actually need it - see utils/battery-optimization.ts.
+  // the brands that actually need it; see utils/battery-optimization.ts.
   | "open-background-limits"
   // Airhop's own Tor screen, where a blocked or held Tor is resolved.
   | "open-tor-settings";
@@ -163,17 +161,16 @@ export interface MeshBanner {
   // Only advisories are dismissible. A real blocker is not: hiding "Bluetooth
   // is off" would leave an empty radar with nothing explaining it, which is the
   // state this whole banner system exists to eliminate. Advice about a phone's
-  // background behaviour is different - it is true, it is worth saying once,
+  // background behaviour is different: it is true, it is worth saying once,
   // and a user who has read it should not have to read it forever.
   dismissible?: boolean;
 }
 
 interface MeshStateStore {
   // Why the BLE mesh cannot run, or "none". Starts at "starting" rather than
-  // "none": on the very first render we have not asked the device anything yet,
-  // and claiming a healthy mesh before checking is the assumption that produced
-  // a silent dead radio on first install. "starting" is honest and renders as a
-  // calm note rather than an alarm.
+  // "none": on the very first render nothing has asked the device anything yet,
+  // and claiming a healthy mesh before checking would hide a dead radio.
+  // "starting" is honest and renders as a calm note rather than an alarm.
   bleBlocker: BleBlocker;
   // This device's Bluetooth chipset has no peripheral role, so it can scan and
   // relay but can never advertise. Distinct from every BleBlocker: the mesh is
@@ -184,13 +181,13 @@ interface MeshStateStore {
   // Android, any denial on iOS).
   //
   // Kept apart from bleBlocker because only the permission REQUEST can answer
-  // it - neither platform reports it through the radio, so a later reconcile
+  // it: neither platform reports it through the radio, so a later reconcile
   // reading the device would otherwise downgrade a known-permanent refusal back
   // to "ask again", and the banner would offer a prompt the OS silently
   // swallows.
   blePermissionBlocked: boolean;
   // Whether the radios are deliberately running a reduced scan that the user
-  // would notice - a low battery with the app open. Set by the radio controller,
+  // would notice: a low battery with the app open. Set by the radio controller,
   // which is the only thing that knows both the power mode and whether anyone is
   // looking. Never true while backgrounded: a slower scan nobody is waiting on
   // is not worth a banner.
@@ -203,13 +200,13 @@ interface MeshStateStore {
   // A panic wipe left secrets on the device. Set when a wipe reports that the
   // keychain refused something, and when a launch with no identity to own them
   // still finds secrets it can read. Never persisted: it is re-derived every
-  // launch, so a retry that succeeds simply stops raising it - and a wipe leaves
+  // launch, so a retry that succeeds simply stops raising it, and a wipe leaves
   // no on-disk trace of having been attempted.
   wipeIncomplete: boolean;
   // The location cells we are currently listening for geo DMs in, or null when
   // we cannot say (no position fix, or the mesh is stopped). A conversation
   // started in a cell that is not in this list can still be written to, but
-  // nothing sent back reaches us - see publishLiveCells in
+  // nothing sent back reaches us; see publishLiveCells in
   // services/geohash-channel-service for why null is not the empty list.
   liveGeoCells: string[] | null;
   // State of the WiFi Aware fast path (see services/wifi-controller).
@@ -382,7 +379,7 @@ export interface MeshBannerInputs {
   bleBlocker: BleBlocker;
   locationGranted: boolean;
   // The OEM brand whose background limits are known to kill foreground services
-  // (Xiaomi, Samsung, Oppo, ...), or undefined when there is nothing to say -
+  // (Xiaomi, Samsung, Oppo, ...), or undefined when there is nothing to say:
   // stock Android, iOS, or a user who has already acknowledged the note.
   //
   // Optional so every existing caller keeps compiling and simply gets no
@@ -434,10 +431,10 @@ function hasOtherLocalTransport(inputs: MeshBannerInputs): boolean {
 // One blocker, one banner, one way out.
 //
 // Every branch names the specific thing that is wrong rather than a category,
-// because the generic version of this ("Bluetooth permission needed") was
-// advice that could not be acted on: it was shown for a revoked permission, a
-// permanently blocked one, and a location downgrade, and only one of those is
-// fixed by granting Bluetooth.
+// because the generic version of this ("Bluetooth permission needed") is advice
+// that cannot be acted on: it would cover a revoked permission, a permanently
+// blocked one, and a location downgrade, and only one of those is fixed by
+// granting Bluetooth.
 function bleBlockerBanner(
   blocker: BleBlocker,
   otherLocalTransport: boolean,
@@ -539,7 +536,7 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
   const banners: MeshBanner[] = [];
 
   // A panic wipe that did not commit, and the one banner that outranks even
-  // Away - because it is not about the mesh at all.
+  // Away, because it is not about the mesh at all.
   //
   // The wipe already raises an alert when the keychain refuses something, but an
   // alert is dismissed once and then gone, leaving an app that looks like a

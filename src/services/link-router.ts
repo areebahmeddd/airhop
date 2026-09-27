@@ -68,8 +68,8 @@ export function applyAirhopLink(link: DeepLink): LinkOutcome {
   // accepting it would encrypt every DM to whoever forged the card. Seeds the
   // routing registry and inbound Nostr map as a side effect.
   //
-  // Deliberately NOT in person. Both routes into this function are links - the
-  // OS handing one over, or the user pasting one - and neither says anything
+  // Deliberately NOT in person. Both routes into this function are links (the
+  // OS handing one over, or the user pasting one), and neither says anything
   // about who produced it. So the card may not re-pin keys already bound to
   // that peer (see addVerifiedContact), and the contact it writes is not
   // verified.

@@ -128,12 +128,9 @@ interface ChatState {
   unreadCounts: Record<string, number>;
   // User-written descriptions for custom channels (persisted via MMKV).
   channelDescriptions: Record<string, string>;
-  // NOTE: channelTransports / channelVisibilities were removed. They were
-  // written by the UI and read by nothing, so a channel marked "Private" was
-  // still plaintext-broadcast to everyone in range and a channel set to "Nostr"
-  // still went out over BLE. Keeping settings that silently do nothing, one of
-  // them implying encryption, is worse than not offering them. Channels are
-  // public by design; privacy lives in DMs (Noise + Double Ratchet).
+  // No per-channel transport or visibility setting: one the send path does not
+  // enforce, and one implying encryption at that, is worse than none. A channel
+  // is private only by holding a key (channelKeys below).
   // User-created channels pinned to the top of "Your Rooms" (WhatsApp-style).
   pinnedChannels: string[];
   // Conversations (channels or DMs) the user has muted.
@@ -172,10 +169,10 @@ interface ChatState {
   //
   // A geohash nickname rides the `n` tag on their CHANNEL messages, so it is
   // known where they are talking and nowhere else: a geo DM carries no nickname
-  // at all. Without this the same person read as "NeverDie#0c08" in the channel
-  // and "anon#0c08" everywhere their conversation appeared - the DM list, the
-  // thread header, the contact sheet - because those all resolve from the pubkey
-  // alone and the pubkey does not know it.
+  // at all. Without this the same person reads as "NeverDie#0c08" in the
+  // channel and "anon#0c08" everywhere their conversation appears (the DM list,
+  // the thread header, the contact sheet), because those all resolve from the
+  // pubkey alone and the pubkey does not know it.
   //
   // Recorded when a conversation with them opens, which is both the moment the
   // name is in hand and the only reason to keep it. Bounded by conversations
@@ -186,14 +183,14 @@ interface ChatState {
   //
   // Both halves are needed before the two threads may be folded into one, and
   // the reason is attribution rather than tidiness. Merging is what switches our
-  // replies from the pseudonymous per-cell rail onto the durable one - and the
+  // replies from the pseudonymous per-cell rail onto the durable one, and the
   // durable inbox recognises a sender only by a Nostr key it already knows.
   // (It cannot do otherwise: the envelope carries a sender peer ID, but that
   // field is unauthenticated, so trusting it would let anyone file a message
   // into anyone's thread.)
   //
   // So switching rails before they hold OUR card lands our messages in a second,
-  // unattributed thread on their side - the exact split this feature exists to
+  // unattributed thread on their side, the exact split this feature exists to
   // heal. Waiting until both have been exchanged means both people cross over at
   // the same moment, and neither ever sees the conversation fork.
   geoCardExchange: Record<string, { theirPeerID?: string; sentMine?: boolean }>;
@@ -247,7 +244,7 @@ interface ChatState {
     half: { theirPeerID?: string; sentMine?: boolean },
   ) => void;
   // Both halves are done and the threads have been folded together, so the
-  // bookkeeping - and the record of which cell we met in - has no one left to
+  // bookkeeping (and the record of which cell we met in) has no one left to
   // serve.
   clearGeoCardExchange: (pubkey: string) => void;
   addMessage: (msg: ChatMessage) => void;
@@ -439,7 +436,7 @@ const throttledMmkvStorage = {
 };
 
 // Force anything still in the window to disk. Called when the app is about to
-// stop being able to write - backgrounding, or a deliberate shutdown - because
+// stop being able to write (backgrounding, or a deliberate shutdown), because
 // a throttle that loses the last 400ms of a conversation on the way out is a
 // worse bug than the one it fixes.
 export function flushChatPersistence(): void {
@@ -641,16 +638,15 @@ export const useChatStore = create<ChatState>()(
             // there is nothing left to retry.
             if (m.status === "reclaimed") return m;
             // "failed" is a local give-up, not a late receipt, so it is exempt
-            // from the rank rule in the same way "sending" is - but only over
+            // from the rank rule in the same way "sending" is, but only over
             // the statuses a give-up can legitimately correct.
             //
             // It ranks BELOW sent/carried/queued, which are exactly the states
-            // an undeliverable message sits in, so the rank rule silently
-            // discarded every attempt to mark one failed. The bubble kept its
-            // hourglass forever over a message the outbox had already dropped,
-            // which is the failure the give-up exists to report. It must still
-            // never overwrite delivered or read: those are proof the message
-            // arrived, and a lost receipt is not a lost message.
+            // an undeliverable message sits in, so the rank rule alone would
+            // leave an hourglass forever over a message the outbox has already
+            // dropped. It must still never overwrite delivered or read: those
+            // are proof the message arrived, and a lost receipt is not a lost
+            // message.
             const isLocalGiveUp =
               status === "failed" &&
               (m.status === undefined ||
@@ -781,11 +777,9 @@ export const useChatStore = create<ChatState>()(
           delete geoDmNames[geoKey];
           delete geoCardExchange[geoKey];
           // Clear activeChannel rather than reassigning it to some arbitrary
-          // surviving channel. Picking the first non-DM channel (usually
-          // #bluetooth) while the user sits on the LIST view is wrong, because
-          // addMessage suppresses the unread bump for the
-          // active channel, that channel then silently stopped showing unread
-          // badges until the user opened and closed some other thread.
+          // surviving channel. addMessage suppresses the unread bump for the
+          // active channel, so one picked while the user sits on the LIST view
+          // would silently stop showing unread badges.
           const activeChannel =
             state.activeChannel === channel ? "" : state.activeChannel;
           return {
