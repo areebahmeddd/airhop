@@ -25,11 +25,13 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { base64ToBytes } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
 } from "@core/mesh/discovery/announce-manager";
 import {
+  decodePacket,
   encodePacket,
   Flags,
   PacketType,
@@ -635,6 +637,68 @@ test("B08b a rehandshake with a peer whose last announce is past the TTL ends on
   s.check(
     "exactly once",
     bob.texts(`dm:${alice.peerID}`).filter((t) => t === "after the reboot")
+      .length === 1,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert();
+});
+
+test("B08c a rehandshake whose msg3 is lost converges without a restart", async () => {
+  // Alice comes back from a crash and opens a new session. She completes it
+  // on bob's msg2; her msg3 never reaches him, so he keeps the old one. Each
+  // side now seals under keys the other does not hold, and neither side's
+  // recovery fires, since each still has a session. She then walks out of
+  // range for longer than his attempt lasts, as the link that lost msg3
+  // usually means.
+  const s = (scenario = new Scenario({
+    id: "B08c",
+    title: "rehandshake with a lost msg3",
+    seed: 82,
+  }));
+  const { radio, devices } = phones(s, 2);
+  const [alice, bob] = devices;
+  for (const d of devices) d.launch();
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID));
+
+  bob.send(`dm:${alice.peerID}`, "before the crash");
+  await waitFor(s.world, () => alice.texts(`dm:${bob.peerID}`).length > 0);
+
+  let lost = false;
+  const restore = radio.loseWrites((fromID, data) => {
+    if (fromID !== alice.id || lost) return false;
+    const p = decodePacket(base64ToBytes(data));
+    if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 64) {
+      return false;
+    }
+    lost = true;
+    return true;
+  });
+  alice.relaunch();
+  await waitFor(s.world, () => lost, 30_000);
+  restore();
+  s.check("alice's msg3 was lost", lost);
+  radio.setIsolated(alice.id, true);
+  await s.world.advance(150_000);
+  radio.setIsolated(alice.id, false);
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 60_000);
+
+  bob.send(`dm:${alice.peerID}`, "after the crash");
+  const landed = await waitFor(
+    s.world,
+    () => alice.texts(`dm:${bob.peerID}`).includes("after the crash"),
+    180_000,
+  );
+  s.check("bob's DM reaches alice", landed);
+  alice.send(`dm:${bob.peerID}`, "and back");
+  const back = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("and back"),
+    30_000,
+  );
+  s.check("and alice's reply reaches bob", back);
+  s.check(
+    "exactly once",
+    alice.texts(`dm:${bob.peerID}`).filter((t) => t === "after the crash")
       .length === 1,
   );
   s.expectNone("process health", noCrashes(devices));

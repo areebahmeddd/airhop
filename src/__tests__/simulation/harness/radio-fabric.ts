@@ -270,6 +270,19 @@ export class RadioFabric {
     this.perPair.set(pairKey(a, b), partial);
   }
 
+  // Lose the frames the predicate picks, for a scenario that needs one
+  // particular packet to fade rather than a loss rate. Returns an undo.
+  private readonly losses: ((fromID: string, dataBase64: string) => boolean)[] =
+    [];
+
+  loseWrites(fn: (fromID: string, dataBase64: string) => boolean): () => void {
+    this.losses.push(fn);
+    return () => {
+      const i = this.losses.indexOf(fn);
+      if (i >= 0) this.losses.splice(i, 1);
+    };
+  }
+
   private conditionsFor(a: string, b: string): LinkConditions {
     return { ...this.conditions, ...(this.perPair.get(pairKey(a, b)) ?? {}) };
   }
@@ -493,7 +506,10 @@ export class RadioFabric {
       return;
     }
 
-    if (this.rng.chance(cond.loss)) {
+    if (
+      this.rng.chance(cond.loss) ||
+      this.losses.some((lose) => lose(fromID, dataBase64))
+    ) {
       this.packetsDropped++;
       this.world.say("PACKET_LOST", `${fromID} -> ${toID} (${bytes}B)`);
       return;

@@ -1150,6 +1150,9 @@ export class MeshService {
     this.outboxSweepTimer = setInterval(() => {
       this.expireQueuedMail();
       this.refreshCourierDropsIfDayChanged();
+      // The only reaper that runs without a new handshake to store, which a
+      // pair stranded by a lost msg3 never has.
+      this.reapExpiredHandshakes(Date.now());
     }, OUTBOX_SWEEP_INTERVAL_MS);
 
     // Subscribe to gift-wrap events addressed to our Nostr pubkey, and to
@@ -2310,16 +2313,45 @@ export class MeshService {
     return p;
   }
 
-  // File a handshake attempt, first dropping every attempt past its timeout.
+  // File a handshake attempt, then drop every other attempt past its timeout.
   // Responder entries are never looked up on the send path, so without this a
   // msg1 whose sender never answers would stay here for good. With the
-  // inbound-msg1 budget it bounds the map to about a timeout's worth.
+  // inbound-msg1 budget it bounds the map to about a timeout's worth, plus at
+  // most one owed attempt per session held.
   private storePendingHandshake(peerID: string, entry: PendingHandshake): void {
-    const cutoff = entry.startedAt - HANDSHAKE_TIMEOUT_MS;
-    for (const [id, p] of this.pendingHandshakes) {
-      if (p.startedAt < cutoff) this.pendingHandshakes.delete(id);
-    }
     this.pendingHandshakes.set(peerID, entry);
+    this.reapExpiredHandshakes(entry.startedAt);
+  }
+
+  // Drop every handshake attempt past its timeout.
+  //
+  // A responder attempt that dies while we still hold a session with its peer
+  // is the one that cannot heal by itself. The initiator completed on msg2 and
+  // seals under the new keys; its msg3 never reached us, so we seal under the
+  // old ones, and each side's traffic fails at the other. recoverSession sees
+  // a session on both sides and does nothing. As bitchat-ios does on the same
+  // rollback, the old session stays and we make one initiator attempt of our
+  // own, whose session replaces it only on completion.
+  //
+  // A msg3 is most often lost to a link dropping, so the peer may be out of
+  // reach when the attempt falls due. It stays filed until they are heard
+  // again rather than being spent on a msg1 nobody receives.
+  private reapExpiredHandshakes(now: number): void {
+    const stranded: string[] = [];
+    for (const [id, p] of this.pendingHandshakes) {
+      if (now - p.startedAt <= HANDSHAKE_TIMEOUT_MS) continue;
+      if (
+        p.role === "responder" &&
+        this.registry.sessionFor(id) !== undefined
+      ) {
+        if (this.registry.get(id) === undefined || this.links.size() === 0) {
+          continue;
+        }
+        stranded.push(id);
+      }
+      this.pendingHandshakes.delete(id);
+    }
+    for (const id of stranded) this.initiateHandshake(id);
   }
 
   // Whether a completed Noise session's authenticated remote static key derives
@@ -2539,6 +2571,11 @@ export class MeshService {
   // exists, so it is safe to call speculatively.
   private ensureNoiseSession(peerID: string): void {
     if (this.registry.get(peerID)?.session !== undefined) return;
+    this.initiateHandshake(peerID);
+  }
+
+  // Send msg1, whatever session we hold. No-op while an attempt is in flight.
+  private initiateHandshake(peerID: string): void {
     if (this.activeHandshake(peerID) !== undefined) return;
     // Any link, on any transport: the callers that need a session before they
     // can send at all (a location pin, an owed group state) have no other way
