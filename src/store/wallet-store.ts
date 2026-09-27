@@ -245,6 +245,9 @@ interface WalletState {
   // fill Activity or push real history out.
   removeTx: (id: string) => void;
   markTokenClaimed: (firstSecret: string) => void;
+  // Coins the mint refused are no longer held, so neither Receive nor a chat
+  // card may call their token taken in.
+  unmarkTokensClaimed: (secrets: string[]) => void;
 
   // ---- Backup / NUT-13 counters ----
   setBackupEnabled: (enabled: boolean) => void;
@@ -954,6 +957,19 @@ export const useWalletStore = create<WalletState>()(
                   MAX_CLAIMED_TOKENS,
                 ),
               },
+        );
+      },
+
+      unmarkTokensClaimed(secrets) {
+        const drop = new Set(secrets);
+        set((state) =>
+          state.claimedTokens.some((secret) => drop.has(secret))
+            ? {
+                claimedTokens: state.claimedTokens.filter(
+                  (secret) => !drop.has(secret),
+                ),
+              }
+            : state,
         );
       },
 

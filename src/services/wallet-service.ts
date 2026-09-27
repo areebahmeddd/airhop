@@ -2085,7 +2085,7 @@ async function swapIntoFreshProofs(
 }
 
 // A refused receipt leaves the balance: nothing counts or selects its coins
-// again. They are not destroyed: the receipt's row keeps them as a token the
+// again, or calls its token taken in. They are not destroyed: the receipt's row keeps them as a token the
 // user can hand back to whoever sent it. More conservative than CDK, which
 // deletes a refused receive's proofs.
 function refuseReceipt(
@@ -2096,11 +2096,9 @@ function refuseReceipt(
   reason: string,
 ): void {
   const store = useWalletStore.getState();
-  store.removeProofs(
-    url,
-    unit,
-    coins.map((p) => p.secret),
-  );
+  const secrets = coins.map((p) => p.secret);
+  store.removeProofs(url, unit, secrets);
+  store.unmarkTokensClaimed(secrets);
   const token = buildToken(url, coins, unit);
   const face = coins.reduce((s, p) => s + p.amount, 0);
   const row = store.history.find((tx) => tx.id === receipt);

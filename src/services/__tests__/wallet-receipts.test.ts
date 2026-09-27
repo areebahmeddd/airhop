@@ -202,6 +202,18 @@ describe("one forged receipt among honest ones", () => {
     expect(row(forged)?.token).toMatch(/^cashuB/);
   });
 
+  it("is no longer called taken in, so its token goes back to the mint", async () => {
+    const forged = forgedToken(32);
+    await receiveOffline(forged);
+    await refreshAccount(fabric.url, UNIT);
+
+    expect(useWalletStore.getState().claimedTokens).toHaveLength(0);
+    // Pasted again it is refused by the mint, not read as already held.
+    await expect(receiveToken(forged)).rejects.toMatchObject({
+      code: "mint-error",
+    });
+  });
+
   it("leaves the next refresh with nothing to fail on", async () => {
     await receiveOffline(forgedToken(32));
     await refreshAccount(fabric.url, UNIT);
