@@ -173,14 +173,13 @@ final class AirhopTorModule: RCTEventEmitter {
   /// One observer per notification, never `forName: nil`.
   ///
   /// A catch-all is invoked for every notification posted anywhere in the
-  /// process, UIKit's keyboard and scene changes included, to filter four out.
+  /// process, UIKit's keyboard and scene changes included, to filter three out.
   /// Ready and stall are the load-bearing pair: without the stall, JS cannot
   /// tell "still forming" from "gave up".
   private func subscribeToTorNotifications() {
     let nc = NotificationCenter.default
     let names: [Notification.Name] = [
       .AirhopTorWillStart,
-      .AirhopTorWillRestart,
       .AirhopTorDidBecomeReady,
       .AirhopTorDidStall,
     ]

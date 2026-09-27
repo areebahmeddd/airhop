@@ -100,8 +100,11 @@ struct ArtiStatus {
 // ---- Notification names -----------------------------------------------------
 
 extension Notification.Name {
+  /// Posted once Arti is running, never before. AirhopTorModule relays Arti's
+  /// own status with it, and a client that does not exist yet reads as
+  /// blocked rather than starting. Android's first status comes after the
+  /// bind too.
   public static let AirhopTorWillStart = Notification.Name("AirhopTorWillStart")
-  public static let AirhopTorWillRestart = Notification.Name("AirhopTorWillRestart")
   public static let AirhopTorDidBecomeReady = Notification.Name("AirhopTorDidBecomeReady")
   /// Terminal for this attempt: Arti reporting it cannot make forward
   /// progress, or the bootstrap deadline elapsing. Without it the app cannot
@@ -206,7 +209,6 @@ public final class AirhopTorManager: ObservableObject {
     attemptEpoch &+= 1
     let epoch = attemptEpoch
     isStarting = true
-    NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
 
     guard let dir = dataDirectoryURL()?.path else {
       failAttempt(epoch)
@@ -280,6 +282,7 @@ public final class AirhopTorManager: ObservableObject {
         // the port only after bootstrap, which is why it needed a
         // separate SOCKS reachability poll and a second timeout to go
         // with it.
+        NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
         self.startStatusPoll(epoch)
         self.startPathMonitorIfNeeded()
         completion?(true)
@@ -352,7 +355,6 @@ public final class AirhopTorManager: ObservableObject {
     }
     guard !restarting, !isStarting else { return }
     restarting = true
-    NotificationCenter.default.post(name: .AirhopTorWillRestart, object: nil)
     isStarting = true
     startIfNeeded()
     restarting = false
