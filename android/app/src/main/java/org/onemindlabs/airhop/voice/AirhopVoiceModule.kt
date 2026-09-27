@@ -109,6 +109,17 @@ private const val MAX_QUEUED_FRAMES = 32
 // instead of hanging on the button.
 private const val CAPTURE_HANDOFF_TIMEOUT_MS = 500L
 
+// How many times a finished burst polls the decoder for the frames it is still
+// holding. Each poll waits up to CODEC_TIMEOUT_US, so this bounds the flush at
+// a tenth of a second for a decoder that never reports end of stream.
+private const val DECODER_FLUSH_POLLS = 10
+
+// Slack on top of the written-but-unplayed audio a finished burst waits out
+// before releasing its track anyway. Covers scheduling jitter and a mixer that
+// holds back the last partial period until more data or a stop arrives.
+private const val PLAYOUT_SLACK_MS = 200L
+private const val PLAYOUT_POLL_MS = 10L
+
 class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
@@ -356,6 +367,18 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(null)
     }
 
+    // The burst ended: play out what is queued, then release the speaker, and
+    // resolve only then. Stopping at once would cut every burst's last
+    // syllable, since the speaker trails arrival by the jitter window and the
+    // tail is still queued when END lands. Matches finishAfterDrain in
+    // bitchat's PTTBurstPlayer.
+    @ReactMethod
+    fun finishPlayback(promise: Promise) {
+        playback.finish { promise.resolve(null) }
+    }
+
+    // Cancel, the listener leaving, or the app going away: silence the burst
+    // now, queued audio included.
     @ReactMethod
     fun stopPlayback(promise: Promise) {
         playback.stop()
@@ -417,13 +440,18 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             track.play()
 
             val info = MediaCodec.BufferInfo()
+            var written = 0L
             while (playback.isCurrent(burst)) {
                 // Waits rather than spins: a burst with a gap in it should cost
                 // nothing while the gap lasts.
                 val frame = burst.frames.take()
+                if (frame === PlaybackBurst.END) {
+                    playOut(burst, decoder, info, track, written)
+                    break
+                }
                 if (frame.isEmpty()) continue // woken to notice it was superseded
                 feedDecoder(decoder, frame)
-                drainDecoder(decoder, info, track)
+                written += drainDecoder(decoder, info, track, 0L)
             }
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
@@ -436,6 +464,37 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             runCatching { decoder?.stop() }
             runCatching { decoder?.release() }
             burst.frames.clear()
+            burst.markReleased()
+        }
+    }
+
+    // A finished burst's tail: what the decoder still holds, then the audio
+    // already written to the track. release() discards whatever the track has
+    // not handed to the mixer yet, so this waits for the playback head to
+    // catch up with everything written. A newer burst cuts it short.
+    private fun playOut(
+        burst: PlaybackBurst,
+        decoder: MediaCodec,
+        info: MediaCodec.BufferInfo,
+        track: AudioTrack,
+        writtenSoFar: Long,
+    ) {
+        var written = writtenSoFar
+        feedEndOfStream(decoder)
+        var polls = 0
+        while (playback.isCurrent(burst) && polls++ < DECODER_FLUSH_POLLS) {
+            written += drainDecoder(decoder, info, track, CODEC_TIMEOUT_US)
+            if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) break
+        }
+        val unplayed = (written - track.playbackHeadPosition).coerceAtLeast(0L)
+        val deadline =
+            System.nanoTime() + (unplayed * 1_000L / SAMPLE_RATE + PLAYOUT_SLACK_MS) * 1_000_000L
+        while (
+            playback.isCurrent(burst) &&
+                track.playbackHeadPosition < written &&
+                System.nanoTime() < deadline
+        ) {
+            Thread.sleep(PLAYOUT_POLL_MS)
         }
     }
 
@@ -448,14 +507,18 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         decoder.queueInputBuffer(index, 0, frame.size, 0L, 0)
     }
 
+    // Moves decoded audio to the track and returns how many sample frames
+    // went in, which is what the playback head is measured against.
     private fun drainDecoder(
         decoder: MediaCodec,
         info: MediaCodec.BufferInfo,
         track: AudioTrack,
-    ) {
+        timeoutUs: Long,
+    ): Long {
+        var frames = 0L
         while (true) {
-            val index = decoder.dequeueOutputBuffer(info, 0)
-            if (index < 0) return
+            val index = decoder.dequeueOutputBuffer(info, timeoutUs)
+            if (index < 0) return frames
             val output = decoder.getOutputBuffer(index)
             if (output != null && info.size > 0) {
                 val pcm = ByteArray(info.size)
@@ -464,9 +527,11 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                 emitPlaybackLevel(rmsLevel(pcm, info.size))
                 // Blocking write, but on the playback thread only: this is the
                 // speaker setting the pace, which is exactly right.
-                track.write(pcm, 0, pcm.size)
+                val bytes = track.write(pcm, 0, pcm.size)
+                if (bytes > 0) frames += bytes / (2 * CHANNELS)
             }
             decoder.releaseOutputBuffer(index, false)
+            if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) return frames
         }
     }
 

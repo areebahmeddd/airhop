@@ -6,6 +6,7 @@ import { Flags, PacketType } from "../../wire/packet-codec";
 import {
   encodeBurstCanceled,
   encodeBurstData,
+  encodeBurstEnd,
   encodeBurstStart,
   VoiceCodec,
 } from "../voice-capture";
@@ -61,6 +62,19 @@ function makeCanceledPacket(seed: number): Packet {
   };
 }
 
+function makeEndPacket(seed: number, seq: number): Packet {
+  return {
+    type: PacketType.VOICE_FRAME,
+    ttl: 7,
+    flags: Flags.SIGNED,
+    senderID: new Uint8Array(8),
+    recipientID: new Uint8Array(8),
+    timestamp: Math.floor(Date.now() / 1000),
+    signature: new Uint8Array(64),
+    payload: encodeBurstEnd(burstID(seed), seq, seq - 1, (seq - 1) * 64),
+  };
+}
+
 function makeDataPacket(seed: number, seq: number, data?: Uint8Array): Packet {
   const frames = [data ?? new Uint8Array([seq & 0xff])];
   return {
@@ -94,7 +108,8 @@ describe("a talker who stops without saying so", () => {
       new VoicePlayer(
         {
           playFrames: () => Promise.resolve(),
-          endSession: () => undefined,
+          finishSession: () => undefined,
+          stopSession: () => undefined,
         },
         () => changes.push(player.activeSessions.length),
       ),
@@ -117,19 +132,16 @@ describe("a talker who stops without saying so", () => {
 
 describe("VoicePlayer", () => {
   let playedFrames: Uint8Array[][];
-  let endedSessions: string[];
   let backend: AudioPlaybackBackend;
 
   beforeEach(() => {
     playedFrames = [];
-    endedSessions = [];
     backend = {
       playFrames: async (_burstIDHex, _codec, frames) => {
         playedFrames.push(frames);
       },
-      endSession: (burstIDHex) => {
-        endedSessions.push(burstIDHex);
-      },
+      finishSession: () => undefined,
+      stopSession: () => undefined,
     };
   });
 
@@ -222,7 +234,8 @@ describe("VoicePlayer resource caps", () => {
           played.push(burstIDHex);
           return Promise.resolve();
         },
-        endSession: () => undefined,
+        finishSession: () => undefined,
+        stopSession: () => undefined,
       }),
     );
 
@@ -259,7 +272,10 @@ describe("VoicePlayer inbound burst caps", () => {
       playFrames: async () => {
         /* discard: these tests assert session lifecycle, not audio */
       },
-      endSession: () => {
+      finishSession: () => {
+        /* no-op */
+      },
+      stopSession: () => {
         /* no-op */
       },
     };
@@ -341,22 +357,27 @@ describe("two people talking at once", () => {
   function playerWithLog(): {
     player: VoicePlayer;
     played: string[];
-    ended: string[];
+    finished: string[];
+    stopped: string[];
   } {
     const played: string[] = [];
-    const ended: string[] = [];
+    const finished: string[] = [];
+    const stopped: string[] = [];
     const player = track(
       new VoicePlayer({
         playFrames: (burstIDHex) => {
           played.push(burstIDHex);
           return Promise.resolve();
         },
-        endSession: (burstIDHex) => {
-          ended.push(burstIDHex);
+        finishSession: (burstIDHex) => {
+          finished.push(burstIDHex);
+        },
+        stopSession: (burstIDHex) => {
+          stopped.push(burstIDHex);
         },
       }),
     );
-    return { player, played, ended };
+    return { player, played, finished, stopped };
   }
 
   // The hex spelling of burstID(seed): eight copies of the same byte.
@@ -410,7 +431,7 @@ describe("two people talking at once", () => {
   });
 
   it("silences a retracted burst instead of letting its tail play out", () => {
-    const { player, ended } = playerWithLog();
+    const { player, finished, stopped } = playerWithLog();
 
     player.handlePacket(makeStartPacket(1), "alice");
     player.handlePacket(makeDataPacket(1, 1), "alice");
@@ -418,9 +439,47 @@ describe("two people talking at once", () => {
 
     player.handlePacket(makeCanceledPacket(1), "alice");
     // Up to two seconds of what she took back can still be queued in the audio
-    // pipeline; ending the session is what stops it being heard.
-    expect(ended).toEqual([hex(1)]);
+    // pipeline; stopping the session is what stops it being heard.
+    expect(stopped).toEqual([hex(1)]);
+    expect(finished).toEqual([]);
     expect(player.activeSessions).toHaveLength(0);
+  });
+
+  it("lets an ended burst's tail play out rather than cutting it off", () => {
+    // The speaker trails arrival by about the jitter window, and the talker's
+    // last DATA and END leave together, so when END lands the last syllable is
+    // still queued. Stopping there loses it on every burst.
+    const log: string[] = [];
+    const player = track(
+      new VoicePlayer({
+        playFrames: (_burstIDHex, _codec, frames) => {
+          log.push(`play ${String(frames[0][0])}`);
+          return Promise.resolve();
+        },
+        finishSession: () => log.push("finish"),
+        stopSession: () => log.push("stop"),
+      }),
+    );
+
+    player.handlePacket(makeStartPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    jest.advanceTimersByTime(400);
+    player.handlePacket(makeDataPacket(1, 2), "alice");
+    player.handlePacket(makeEndPacket(1, 3), "alice");
+
+    expect(log).toEqual(["play 1", "play 2", "finish"]);
+    expect(player.activeSessions).toHaveLength(0);
+  });
+
+  it("lets a burst that went quiet play out too", () => {
+    const { player, finished, stopped } = playerWithLog();
+
+    player.handlePacket(makeStartPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    jest.advanceTimersByTime(3_500);
+
+    expect(finished).toEqual([hex(1)]);
+    expect(stopped).toEqual([]);
   });
 });
 
@@ -438,7 +497,8 @@ describe("live playback through gaps", () => {
         played.push(frames.map((f) => f[0]));
         return Promise.resolve();
       },
-      endSession: () => undefined,
+      finishSession: () => undefined,
+      stopSession: () => undefined,
     };
   });
   afterEach(() => {

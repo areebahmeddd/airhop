@@ -74,8 +74,13 @@ export interface AudioPlaybackBackend {
     codec: VoiceCodecId,
     frames: Uint8Array[],
   ): Promise<void>;
-  // Called when a PTT session ends (END/CANCELED received + buffer flushed).
-  endSession(burstIDHex: string): void;
+  // The burst finished on its own (END, the idle timeout, or a cap cutting it
+  // off) and its last batch has been handed over: play out what is queued,
+  // then release the speaker. Matches bitchat's PTTBurstPlayer.finishAfterDrain.
+  finishSession(burstIDHex: string): void;
+  // The burst was retracted: silence it at once, queued audio included.
+  // Matches bitchat's PTTBurstPlayer.stop.
+  stopSession(burstIDHex: string): void;
 }
 
 interface BufferedFrame {
@@ -276,7 +281,7 @@ class VoiceSession {
       this.timeoutTimer = null;
     }
     this.ended = true;
-    this.backend.endSession(this.burstIDHex);
+    this.backend.finishSession(this.burstIDHex);
     this.onDone(this.burstIDHex);
   }
 
@@ -416,7 +421,7 @@ export class VoicePlayer {
         // The one case that silences the speaker rather than letting it finish.
         // A retraction means the talker wants what they said thrown away, and
         // up to two seconds of it can still be queued in the audio pipeline;
-        // ending the session there is what stops it being played. Matches
+        // stopping the session there is what stops it being played. Matches
         // bitchat's cancelAssembly, which calls stop() on the burst's player.
         this.stopFloor(key, burstIDHex);
         break;
@@ -485,7 +490,7 @@ export class VoicePlayer {
   private stopFloor(key: string, burstIDHex: string): void {
     if (this.floorKey !== key) return;
     this.floorKey = null;
-    this.backend.endSession(burstIDHex);
+    this.backend.stopSession(burstIDHex);
   }
 
   // Active PTT sessions (for UI display).

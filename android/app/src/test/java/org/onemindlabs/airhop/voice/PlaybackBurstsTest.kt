@@ -69,6 +69,70 @@ class PlaybackBurstsTest {
         assertFalse(bursts.enqueue(frame(1)))
     }
 
+    // ---- Finishing ----
+
+    @Test
+    fun finishPlaysWhatIsQueuedThenEnds() {
+        val bursts = PlaybackBursts(32)
+        val a = bursts.start()
+        bursts.enqueue(frame(1))
+        bursts.enqueue(frame(2))
+        var released = false
+        bursts.finish { released = true }
+
+        // Still current: it owns the speaker until it has played out.
+        assertTrue(bursts.isCurrent(a))
+        assertEquals(1, a.frames.take()[0].toInt())
+        assertEquals(2, a.frames.take()[0].toInt())
+        assertSame(PlaybackBurst.END, a.frames.take())
+        // Nothing more joins a burst that has ended.
+        assertFalse(bursts.enqueue(frame(3)))
+
+        assertFalse(released)
+        bursts.ended(a)
+        a.markReleased()
+        assertTrue(released)
+    }
+
+    @Test
+    fun aNewBurstCutsADrainShort() {
+        val bursts = PlaybackBursts(32)
+        val a = bursts.start()
+        bursts.enqueue(frame(1))
+        var released = false
+        bursts.finish { released = true }
+        val b = bursts.start()
+
+        assertFalse(bursts.isCurrent(a))
+        assertTrue(bursts.isCurrent(b))
+        // The draining thread's exit reports its own release, not the new one's.
+        bursts.ended(a)
+        a.markReleased()
+        assertTrue(released)
+        assertTrue(bursts.isCurrent(b))
+        assertTrue(bursts.enqueue(frame(2)))
+    }
+
+    @Test
+    fun finishWithNothingPlayingResolvesAtOnce() {
+        val bursts = PlaybackBursts(32)
+        var released = false
+        bursts.finish { released = true }
+        assertTrue(released)
+    }
+
+    @Test
+    fun finishAfterTheThreadAlreadyLetGoResolvesAtOnce() {
+        // A thread that died on a codec failure has released before JS asks.
+        val bursts = PlaybackBursts(32)
+        val a = bursts.start()
+        bursts.ended(a)
+        a.markReleased()
+        var released = false
+        bursts.finish { released = true }
+        assertTrue(released)
+    }
+
     // ---- Queue cap ----
 
     @Test

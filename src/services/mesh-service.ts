@@ -2051,8 +2051,8 @@ export class MeshService {
         // first. Restoring there would reconfigure the session beneath our own
         // capture engine, which reads that as the microphone being taken away
         // and ends the burst the user is still holding. This guard is the
-        // reason the call lives here rather than beside the stopPlayback() that
-        // prompts it.
+        // reason the call lives here rather than beside the native release
+        // that prompts it.
         if (this.pttCapture !== null) return;
         // A burst arriving in this same instant can land after this and pay for
         // one engine rebuild. The player recovers from that on its own, and
