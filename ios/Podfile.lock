@@ -1662,6 +1662,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-vector-icons-feather (13.1.4)
+  - react-native-vector-icons-material-design-icons (13.1.4)
   - React-NativeModulesApple (0.86.3):
     - hermes-engine
     - React-callinvoker
@@ -2376,6 +2378,8 @@ DEPENDENCIES:
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-vector-icons-feather (from `../node_modules/@react-native-vector-icons/feather`)"
+  - "react-native-vector-icons-material-design-icons (from `../node_modules/@react-native-vector-icons/material-design-icons`)"
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2575,6 +2579,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-get-random-values"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-vector-icons-feather:
+    :path: "../node_modules/@react-native-vector-icons/feather"
+  react-native-vector-icons-material-design-icons:
+    :path: "../node_modules/@react-native-vector-icons/material-design-icons"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -2734,6 +2742,8 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: 530bff1bba9511a5133e3cf8170e3b2c0df49e89
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-safe-area-context: 6b4966397ada0f7dd481e4486a2ef936834861a1
+  react-native-vector-icons-feather: ce6037c8381f97c4f40941bc518b24dccc604dd8
+  react-native-vector-icons-material-design-icons: 9e98e87947156bfe95135fb523b62821486044e3
   React-NativeModulesApple: 2b658272ca69df0694cf5d54f9510aa7c33977bc
   React-networking: 6be0b80e18e710dd30e77b04838ec46666a7bb78
   React-oscompat: cea7c66df8076bd97e95885d7f584b86afffde41
