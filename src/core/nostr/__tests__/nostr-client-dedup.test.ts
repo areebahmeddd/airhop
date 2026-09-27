@@ -2,9 +2,10 @@
 //
 // nostr-tools 2.25.2 records an event ID as seen before it verifies the event,
 // in one set shared by every relay a pool call spans, and writes a reconnect's
-// `since` into one filter object shared the same way. So a relay that sent a
-// bad-signature copy under a genuine ID suppressed the real event from every
-// other relay, and a rejected far-future event moved every relay's cursor.
+// `since` into one filter object shared the same way. Left to it, a relay that
+// sends a bad-signature copy under a genuine ID suppresses the real event from
+// every other relay, and a rejected far-future event moves every relay's
+// cursor.
 // These run the real SimplePool over a scripted socket, so the library's own
 // dedup, verification and reconnect are what is under test.
 

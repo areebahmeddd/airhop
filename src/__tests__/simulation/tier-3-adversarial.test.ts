@@ -959,8 +959,8 @@ test("C12 a msg1 flood under random IDs stays bounded and first contact still co
 test("C13 a forged msg2 does not cost the genuine handshake", async () => {
   // Bob's msg1 floods, so anyone can answer it with a valid msg2 under their
   // own static key and the peer ID bob addressed. It fails the identity
-  // binding, but only after it was read into the handshake. Read into the real
-  // one, it spent it and the genuine msg2 found nothing to complete.
+  // binding only once it has been read into a handshake. Read into the real
+  // one, it would spend it and leave the genuine msg2 nothing to complete.
   const s = (scenario = new Scenario({
     id: "C13",
     title: "forged handshake reply",
@@ -1554,9 +1554,9 @@ test("C14c a session proof does not move a key a human verified", async () => {
 
 test("C11 one forged ratchet packet does not break a conversation", async () => {
   // A DR_ENCRYPTED header is cleartext, and a packet only has to be addressed
-  // to bob and claim alice. Decrypted before it was authenticated, one such
-  // packet stepped bob's ratchet onto a chain alice never had, and every DM
-  // between them failed from then on without a word.
+  // to bob and claim alice. Decrypted before it is authenticated, one such
+  // packet would step bob's ratchet onto a chain alice never had, and every DM
+  // between them would fail from then on without a word.
   const s = (scenario = new Scenario({
     id: "C11",
     title: "forged Double Ratchet packet",

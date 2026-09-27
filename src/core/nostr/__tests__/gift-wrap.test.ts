@@ -182,8 +182,8 @@ describe("rumor timestamp window", () => {
 });
 
 // The rumor is unsigned, so its shape is checked by nothing but unwrapDm. A
-// missing or string created_at passed the window check (every comparison with
-// it is false) and filed the message at a NaN time.
+// missing or string created_at would pass the window check (every comparison
+// with it is false) and file the message at a NaN time.
 describe("rumor shape", () => {
   // Seals and wraps arbitrary rumor JSON the way wrapDm would, so the sender
   // can be the one who shaped it.

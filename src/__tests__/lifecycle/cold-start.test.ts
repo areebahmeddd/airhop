@@ -1,11 +1,12 @@
 /**
  * @jest-environment node
  */
-// Scenarios 1-10: what happens between tapping the icon and having a mesh.
+// What happens between tapping the icon and having a mesh: permissions, the
+// radios and the choices a launch restores, then what launch reads from the
+// keychain and what it refuses to boot.
 //
-// Every check asserts what a CORRECT app does. These all failed before the
-// radio-controller rewrite; the traces printed on failure are the evidence for
-// why, and are worth reading if one ever goes red again.
+// Every check asserts what a CORRECT app does. The traces printed on failure
+// say why, and are worth reading when one goes red.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("@bridge/NativeAirhopBLE", () => ({

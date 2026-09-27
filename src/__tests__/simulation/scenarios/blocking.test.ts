@@ -251,8 +251,8 @@ test("B03 unblocking a peer on the mesh hears them again", async () => {
 
 test("B04 couriered mail from a blocked peer still spends its one-time key", async () => {
   // The prekey an envelope opened under is burned before anything else is
-  // decided. Dropping a blocked sender's mail first left the key live, so a
-  // carrier that kept the ciphertext could have it opened after any later
+  // decided. Dropping a blocked sender's mail first would leave the key live,
+  // so a carrier that kept the ciphertext could have it opened after any later
   // seizure of the phone, which is what the one-time key exists to prevent.
   const s = (scenario = new Scenario({
     id: "B04",

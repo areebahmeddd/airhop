@@ -624,8 +624,8 @@ test("F08 a message for someone long gone is carried, past one frame, from the c
   // range. The DM must reach the carrier, sealed to the key alice still holds,
   // rather than be flooded at a room bob is not in. A long message also seals
   // into an envelope longer than a Bluetooth frame. Written whole, the
-  // carrier's radio refuses it, yet the write was counted as a handover, so it
-  // has to go as fragments, and only a complete write is a handover.
+  // carrier's radio would refuse it while the write counted as a handover, so
+  // it goes as fragments, and only a complete write is a handover.
   const s = (scenario = new Scenario({
     id: "F08",
     title: "a full-size envelope reaches its carrier over Bluetooth",
@@ -647,8 +647,8 @@ test("F08 a message for someone long gone is carried, past one frame, from the c
   // Long enough for every announce to land, so alice holds bob's key to seal
   // to and the carrier's to charge the deposit against.
   await s.world.advance(10_000);
-  // And a conversation first, so alice holds a session and a ratchet for bob:
-  // the tier that used to flood the DM into the room instead.
+  // And a conversation first, so alice holds a session and a ratchet for bob,
+  // which must not send the DM flooding into the room instead.
   alice.send(`dm:${bob.peerID}`, "see you later");
   const talked = await waitForCoarse(
     s.world,
@@ -709,11 +709,11 @@ test("F08 a message for someone long gone is carried, past one frame, from the c
 
 test("F09 carried mail is not flooded at peers heard only through relays", async () => {
   // Spray-and-wait splits a budget of four copies among the carriers it meets.
-  // A carrier that also sprayed every peer it heard through relays spent
-  // nothing, since a flood confirms no carrier, so every phone within seven
-  // hops ended up holding a copy, re-flooded on each of their announces. Only
-  // the recipient's own mail goes toward a relayed peer, once per cooldown,
-  // and it still reaches them.
+  // A carrier that also sprayed every peer it heard through relays would spend
+  // nothing, since a flood confirms no carrier, and every phone within seven
+  // hops would end up holding a copy, re-flooded on each of their announces.
+  // Only the recipient's own mail goes toward a relayed peer, once per
+  // cooldown, and it still reaches them.
   const s = (scenario = new Scenario({
     id: "F09",
     title: "a carrier in a chain sprays its neighbours, not the whole mesh",
@@ -934,9 +934,9 @@ test("F11 a message read after its sender left still reports read, over Nostr", 
 });
 
 test("F12 a group invite to someone who just walked off waits for them", async () => {
-  // Their session outlives the link, so the invite used to be written into no
-  // link, treated as sent and never queued. addGroupMembers skips existing
-  // members, so nothing could send it again.
+  // Their session outlives the link, so a live session is no proof the invite
+  // was written anywhere: it has to queue until they are back. addGroupMembers
+  // skips existing members, so nothing would send it again.
   const s = (scenario = new Scenario({
     id: "F12",
     title: "group created with a member whose link dropped a moment ago",

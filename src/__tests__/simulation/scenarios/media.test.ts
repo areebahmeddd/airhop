@@ -1059,8 +1059,9 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
 test("M15 a first photo to a stranger waits for a session instead of going out in the clear", async () => {
   // The seal needs a session, and the cleartext fallback is for a peer that has
   // not proven it can read a sealed file. A stranger nobody has messaged yet
-  // has no session at all, so a photo as the first act in a conversation used
-  // to cross the air readable, under a thread promising an encrypted one.
+  // has no session at all, so a photo as the first act in a conversation must
+  // wait for one rather than cross the air readable under a thread promising
+  // an encrypted one.
   const s = (scenario = new Scenario({
     id: "M15",
     title: "a photo before any text starts the handshake and is refused",
@@ -1375,7 +1376,7 @@ test("M11 a bitchat-android voice burst reaches an Airhop speaker", async () => 
 test("M13 past 100 MiB of received media, the oldest file goes and the newest plays", async () => {
   // bitchat-ios keeps received media under a 100 MiB quota, oldest first. The
   // disk is filled directly rather than over a radio: it is the eviction that
-  // is under test, not a hundred megabytes of Bluetooth.
+  // is under test, not 100 MiB of Bluetooth.
   const s = (scenario = new Scenario({
     id: "M13",
     title: "received media is capped, and the oldest is what makes room",
@@ -1396,8 +1397,7 @@ test("M13 past 100 MiB of received media, the oldest file goes and the newest pl
   await waitFor(s.world, () => bob.attachments(channel).length === 1, 60_000);
 
   // Everything received since, up to 20 KB short of room for the next photo.
-  // One buffer shared by every entry, so the test holds a megabyte, not a
-  // hundred.
+  // One buffer shared by every entry, so the test holds 1 MiB, not 100.
   const MiB = 1024 * 1024;
   const second = media.jpeg(40_000);
   const filler = new Uint8Array(MiB);

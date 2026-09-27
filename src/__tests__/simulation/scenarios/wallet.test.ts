@@ -1355,8 +1355,8 @@ test("W24 a real coin cannot vouch for forged ones in a dead zone", async () => 
 
 test("W26 one forged receipt cannot freeze a wallet", async () => {
   // Offline receipts pool in one account until a refresh. Swapped as one
-  // batch, a single refused coin failed the whole swap on every refresh, and
-  // the honest receipts beside it stayed in their senders' hands.
+  // batch, a single refused coin would fail the whole swap on every refresh,
+  // leaving the honest receipts beside it in their senders' hands.
   const s = (scenario = new Scenario({
     id: "W26",
     title: "each receipt is swapped on its own",

@@ -578,10 +578,11 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
 
 test("B08b a rehandshake with a peer whose last announce is past the TTL ends on one ratchet", async () => {
   // The ratchet is seeded when a handshake completes, from what we know of the
-  // peer then. Looked up through the 60s reachability window, a peer whose
-  // last announce had aged out got no fresh ratchet, and the previous
-  // session's stayed in place: alice sealed to her new chain, bob opened with
-  // his old one, and every DM between them failed silently.
+  // peer then, and that lookup must not go through the 60s reachability
+  // window. Through it, a peer whose last announce had aged out would get no
+  // fresh ratchet and keep the previous session's: alice seals to her new
+  // chain, bob opens with his old one, and every DM between them fails
+  // silently.
   const s = (scenario = new Scenario({
     id: "B08b",
     title: "rehandshake against an aged-out announce",

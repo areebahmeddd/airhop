@@ -270,13 +270,13 @@ describe("VoicePlayer inbound burst caps", () => {
   function makeBackend(): AudioPlaybackBackend {
     return {
       playFrames: async () => {
-        /* discard: these tests assert session lifecycle, not audio */
+        // Discarded: these tests assert session lifecycle, not audio.
       },
       finishSession: () => {
-        /* no-op */
+        // No-op.
       },
       stopSession: () => {
-        /* no-op */
+        // No-op.
       },
     };
   }
