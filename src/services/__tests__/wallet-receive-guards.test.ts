@@ -18,12 +18,14 @@ import {
 import { KEYCHAIN_ITEMS, writeSecret } from "@core/crypto/keychain";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
   bootstrapWalletStorage,
   useWalletStore,
   whenWalletHydrated,
 } from "@store/wallet-store";
+import { Platform } from "react-native";
 import { MintFabric } from "../../__tests__/simulation/harness/mint-fabric";
 import { World } from "../../__tests__/simulation/harness/world";
 import {
@@ -208,6 +210,20 @@ describe("coins locked to a key", () => {
     const result = await receiveToken(token);
     expect(result.outcome).toBe("swapped");
     expect(held()).toBe(16);
+  });
+
+  it("names the Tor setting, not the connection, when Tor holds the claim back (iOS)", async () => {
+    expect(Platform.OS).toBe("ios");
+    const token = await lockedToken(16, OUR_PUB);
+    useSettingsStore.setState({ torEnabled: true });
+    try {
+      await expect(receiveToken(token)).rejects.toMatchObject({
+        code: "tor-blocked",
+      });
+    } finally {
+      useSettingsStore.setState({ torEnabled: false });
+    }
+    expect(held()).toBe(0);
   });
 });
 

@@ -1340,8 +1340,11 @@ export async function receiveToken(
     // Locked to us, the coins are safe where they are: nobody else can spend
     // them, and stored they could not be spent by us either, since only a
     // signing swap unlocks them. A staged request keeps its preview for
-    // `reconcile`; otherwise the chat card still offers Claim.
-    if (signingKey !== undefined) throw lockedToUsOffline();
+    // `reconcile`; otherwise the chat card still offers Claim. Blocked by Tor,
+    // the user is online, so the refusal names the setting instead.
+    if (signingKey !== undefined) {
+      throw walletErr.code === "tor-blocked" ? walletErr : lockedToUsOffline();
+    }
     // The request may never have left, or only its answer was lost. Store
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
