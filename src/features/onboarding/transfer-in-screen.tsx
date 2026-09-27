@@ -1,7 +1,7 @@
 // Onboarding's other way in: receive the identity from the old phone.
 //
 // One thing at a time, in the order the person needs it: where to scan, whose
-// identity is arriving and whether both phones show the same words, and whether
+// identity is arriving, whether both phones show the same words, and whether
 // the old phone let go of it.
 
 import Feather from "@expo/vector-icons/Feather";
@@ -204,7 +204,8 @@ export default function TransferInScreen({
           </View>
         );
       case "awaiting":
-        // The old phone's counterpart is "Confirm on your new phone".
+        // Names the old phone's button, so the two screens agree.
+
         return busyPanel(
           T("onboarding.transfer.waiting_old", {
             action: T("settings.transfer.confirm_cta"),

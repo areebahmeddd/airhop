@@ -1,10 +1,10 @@
 // Tor sub-screen: whether internet traffic is onion routed, and how it reaches
 // the network.
 //
-// A screen rather than the switch it replaced. Tor now carries a second choice
-// that only matters once it is on, and a row that both toggles and drills in is
-// two controls in one place. The row on the hub shows the current state, so the
-// answer is still visible without opening this.
+// A screen rather than a switch: Tor carries a second choice that only matters
+// once it is on, and a row that both toggles and drills in is two controls in
+// one place. The row on the hub shows the current state, so the answer is
+// visible without opening this.
 //
 // The confirm sheet on the toggle stays. Turning Tor on is a real change in what
 // this device tells the network about itself, and the connectivity group asks
@@ -96,9 +96,8 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   const torBootstrap = useMeshStateStore((s) => s.torBootstrap);
   const torActive = useMeshStateStore((s) => s.torActive);
   // A start that never answered: startup kept Tor on and held the internet half
-  // rather than start it again or go direct. Only Tor off, or a Try again the
-  // native client accepts, leaves it (a refused one lands back here), so it is
-  // a state rather than a notice to dismiss.
+  // rather than retry or go direct. Only Tor off, or a Try again the native
+  // client accepts, clears it, so it is a state rather than a notice to dismiss.
   const startPending = useSettingsStore((s) => s.torStartPending);
   const recovered = isTorStartRecovered(torEnabled, startPending, torBootstrap);
 
@@ -218,8 +217,7 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
               description={statusText()}
             />
           </View>
-          {/* The other way out is the switch above, whose sheet already
-              explains turning Tor off. */}
+          {/* Retry only: the switch above is the other way out. */}
           {recovered && (
             <PrimaryButton
               label={T("settings.tor.retry")}
@@ -230,8 +228,7 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
           )}
         </View>
 
-        {/* Only once Tor is on: a connection choice with nothing to connect is
-            a control that cannot do anything. */}
+        {/* Only once Tor is on, or it is a control that does nothing. */}
         {torEnabled && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>

@@ -146,7 +146,7 @@ export default function VerifyContactScreen({
     // Guard 1: the code must belong to THIS contact, not just any Airhop user.
     if (card.peerID.toLowerCase() !== peerID.toLowerCase()) {
       // Felt, not just shown. The phone is held up at the other screen through a
-      // viewfinder, so the outcome has to reach the hand as well as the eye -
+      // viewfinder, so the outcome has to reach the hand as well as the eye,
       // and these two outcomes are the security answer this screen exists for.
       rejected();
       setOutcome("mismatch");
@@ -195,7 +195,7 @@ export default function VerifyContactScreen({
 
   // Three states, not two. `permission == null` (never asked) and a denial both
   // have to keep CameraView unmounted; only an outright grant may mount it.
-  // Treating "not yet answered" as permitted is exactly the black-preview bug.
+  // Treating "not yet answered" as permitted mounts a black preview.
   const granted = permission?.granted === true;
   const denied = permission != null && !permission.granted;
   const awaitingAnswer = !granted && !denied;
@@ -209,7 +209,6 @@ export default function VerifyContactScreen({
       onRequestClose={onClose}
     >
       <View style={styles.root}>
-        {/* Live camera, only while we're still waiting for a scan. */}
         {stage === "camera" && outcome === null && granted && (
           <CameraView
             style={StyleSheet.absoluteFill}
@@ -236,8 +235,6 @@ export default function VerifyContactScreen({
             <View style={styles.iconBtn} />
           </View>
 
-          {/* Both confirm the same thing, and differ in which channel does
-              the confirming. */}
           {stage === "choose" && (
             <View style={styles.resultCard}>
               <Text style={styles.resultTitle}>
@@ -289,7 +286,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* The code, before either answer. */}
           {stage === "compare" && !compared && words !== null && (
             <View style={styles.resultCard}>
               <Text style={styles.resultTitle}>
@@ -327,7 +323,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Compared and matched. */}
           {stage === "compare" && compared && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconOk]}>
@@ -352,7 +347,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Scanning */}
           {stage === "camera" && outcome === null && granted && (
             <>
               <View style={styles.frameWrap} pointerEvents="none">
@@ -363,8 +357,8 @@ export default function VerifyContactScreen({
             </>
           )}
 
-          {/* The OS prompt is up, or its answer hasn't landed yet. A word beats
-              a blank screen for the second it takes. */}
+          {/* The OS prompt is up or its answer has not landed: a word beats a
+              blank screen for the second it takes. */}
           {stage === "camera" && outcome === null && awaitingAnswer && (
             <View style={styles.resultCard}>
               <Text style={styles.resultBody}>
@@ -373,7 +367,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Camera unavailable */}
           {stage === "camera" && outcome === null && denied && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconNeutral]}>
@@ -405,7 +398,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Verified */}
           {outcome === "match" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconOk]}>
@@ -430,7 +422,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Wrong person */}
           {outcome === "mismatch" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconWarn]}>
@@ -462,7 +453,6 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {/* Self-inconsistent card */}
           {outcome === "tampered" && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconWarn]}>

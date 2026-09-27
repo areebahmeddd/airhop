@@ -172,8 +172,7 @@ export function GeohashJumpSheet({
       scrollable
     >
       <Text style={styles.title}>{T("chat.jump.title")}</Text>
-      {/* Same scannable card as the other create sheets, so all three
-              chooser destinations read alike. */}
+      {/* The same card as the other chooser destinations. */}
       <View style={styles.privacyNote}>
         <View style={styles.privacyNoteRow}>
           <Feather
@@ -226,9 +225,7 @@ export function GeohashJumpSheet({
           selectionColor={Colors.selection}
         />
       </View>
-      {/* Only speak when there is something to say about what was typed. The
-          length rule is enforced by the disabled Go button, so stating it up
-          front is noise. */}
+      {/* No length hint: the disabled Go button already enforces it. */}
       {(localChannel !== null || level !== null) && (
         <Text style={styles.hint}>
           {localChannel !== null
@@ -243,8 +240,6 @@ export function GeohashJumpSheet({
       )}
       {error !== null && <Text style={styles.error}>{error}</Text>}
 
-      {/* Nearby: the cells around yours, one tap each. Only when we know where
-          you are, since "nearby" is meaningless otherwise. */}
       {neighbours.length > 0 && (
         <View style={styles.saved}>
           <Text style={styles.savedLabel}>NEARBY</Text>
@@ -319,10 +314,6 @@ export function GeohashJumpSheet({
         </View>
       )}
 
-      {/* Where a geohash comes from. Every location channel shows its own with
-          a copy button, so the answer is one tap away inside the app rather
-          than something to look up elsewhere. Written as ">"-separated steps:
-          it is a route to follow, not a sentence to parse. */}
       <Text style={styles.footNote}>{T("chat.jump.how")}</Text>
 
       <View style={styles.actions}>

@@ -9,8 +9,8 @@ import { useReducedMotion } from "./use-reduced-motion";
 const TAPS = 3;
 // Longest pause between taps that still counts toward the three.
 const TAP_GAP_MS = 450;
-// A wing frame holds this long. At 110 the beat read as a slideshow; 80 is
-// fast enough to look like one motion and still let each frame register.
+// A wing frame holds this long. Much slower reads as a slideshow; 80 looks
+// like one motion and still lets each frame register.
 const FLAP_MS = 80;
 // Downstroke, glide, downstroke. Settling back on the glide is the final
 // timer's job, so the bird unlocks the moment the wings are back up rather

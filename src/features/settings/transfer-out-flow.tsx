@@ -521,7 +521,6 @@ export default function TransferOutFlow({
               : T("settings.transfer.unchanged"),
           actions: (
             <>
-              {/* Fixed in Settings, then retried. */}
               {state.reason === "permission" ? (
                 <>
                   <PrimaryButton

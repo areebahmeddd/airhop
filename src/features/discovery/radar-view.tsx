@@ -92,10 +92,9 @@ interface Props {
 // recency when it isn't (a peer heard via a multi-hop relay has no RSSI of its
 // own, since we never had a direct radio link to measure).
 //
-// The rings are deliberately labelled by signal strength rather than distance.
-// RSSI is not a distance: it swings tens of dB with orientation, bodies, walls
-// and radio, so "~5m" was fiction. Presenting it as signal is both honest and
-// what the number actually is.
+// The rings are labelled by signal strength rather than distance. RSSI swings
+// tens of dB with orientation, bodies, walls and radio, so any metre figure
+// derived from it would be invented.
 const RSSI_STRONG = -60; // dBm, roughly same-room
 const RSSI_MEDIUM = -80; // dBm, beyond that it's the edge of usable range
 
@@ -352,27 +351,9 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     >
       {canvasSize > 0 && (
         <>
-          {/* ---- Radar canvas -------------------------------------------
-              The rings, the compass and the sweep are one picture of "who is
-              around me", and none of it means anything read out piece by piece:
-              a screen reader was stepping through four unlabelled compass
-              letters and three ring names before reaching a peer. The canvas is
-              therefore hidden as a whole and the individual peers and the centre
-              button opt back in below, which leaves a screen reader with
-              exactly the actionable elements plus the status line. */}
-          {/* `direction: "ltr"` is load-bearing, not decoration.
-              Everything inside this canvas is placed by absolute `left` against
-              a coordinate system this file computes itself: the compass letters,
-              the guide rings, and every peer, whose x is `C + cos(angle) * r`.
-              Under an app-wide right-to-left direction Yoga resolves those
-              against the inherited direction and mirrors the whole dial, which
-              put East on the left and moved every peer to the opposite side of
-              the screen from where they physically are.
-
-              The radar is a polar plot of physical space, so it must never
-              mirror. Pinning the direction here says that once, in the one place
-              the geometry is decided, rather than asking every `left` inside to
-              remember. */}
+          {/* `direction: "ltr"` is load-bearing: everything inside is placed by
+              absolute `left` in this file's own coordinates, and a polar plot
+              of physical space must never mirror under right-to-left. */}
           <View
             style={{ width: canvasSize, height: canvasSize, direction: "ltr" }}
           >
@@ -388,12 +369,9 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               style={[styles.wave, waveBox, waveStyle(manualWave, 0.34, 0.06)]}
             />
 
-            {/* Static distance guide rings with labels, and the cardinal
-                letters. Both are chart furniture: the rings are named in the
-                hint line under the dial and the compass is decorative (BLE
-                gives proximity, never bearing), so neither is worth a screen
-                reader stop. Capped font scaling because they are absolutely
-                positioned against the ring geometry and cannot reflow. */}
+            {/* Chart furniture, hidden from screen readers: the hint line names
+                the rings and the compass is decorative. Font scaling is capped
+                because the labels are pinned to the ring geometry. */}
             <View
               style={StyleSheet.absoluteFill}
               pointerEvents="none"
@@ -444,7 +422,6 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               ))}
             </View>
 
-            {/* Center dot: this device. A tap sends one sonar wave. */}
             <Pressable
               style={[
                 styles.selfButton,
@@ -465,7 +442,6 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
               </Animated.View>
             </Pressable>
 
-            {/* Peer nodes placed on their signal-strength ring */}
             {(byRing as NearbyPeer[][]).map((group, ri) =>
               group.map((peer) => {
                 const pos = peerPos(ri as 0 | 1 | 2, peer.peerID);
@@ -483,11 +459,8 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
             )}
           </View>
 
-          {/* ---- Status --------------------------------------------------
-              One live region around both lines, so switching Bluetooth off or
-              being denied the permission is announced when it happens rather
-              than only if the user happens to swipe back down here, and the
-              two lines read as one stop. */}
+          {/* One live region, so a blocker is announced when it happens and
+              the two lines read as one stop. */}
           <View style={styles.status} accessibilityLiveRegion="polite">
             <Text style={styles.statusText}>
               {peers.length > 0
@@ -497,9 +470,6 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
                   : blockerHeadline(blocker)}
             </Text>
             <Text style={styles.hintText}>
-              {/* Signal strength, NOT distance. RSSI varies by tens of dB with
-                orientation, obstacles and radio, so any metre figure derived
-                from it would be invented. Ring = signal, and the label says so. */}
               {peers.length > 0
                 ? T("mesh.radar.ring_hint")
                 : away

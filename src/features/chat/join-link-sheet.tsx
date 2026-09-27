@@ -4,7 +4,7 @@
 // the mesh, or written down, is pasted here. A link the OS hands over (a tap in
 // another app) only fills this sheet in, rather than taking effect: an app or a
 // redirecting page can fire one, and only the Join tap says the person wanted
-// it. So a pasted invite and a tapped one land in exactly the same place.
+// it. A pasted invite and a tapped one therefore land in the same place.
 //
 // It accepts every Airhop link rather than only channel invites: rejecting a
 // valid peer or contact link because the sheet is named "join" would be a
@@ -179,7 +179,7 @@ export function JoinLinkSheet({
     >
       <Text style={styles.title}>{T("chat.join.title")}</Text>
 
-      {/* Same scannable card as the other chooser destinations. */}
+      {/* The same card as the other chooser destinations. */}
       <View style={styles.privacyNote}>
         <View style={styles.privacyNoteRow}>
           <Feather

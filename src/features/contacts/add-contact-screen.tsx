@@ -225,10 +225,9 @@ export default function AddContactScreen({
   //
   // Permission is settled BEFORE the camera stage is entered, not alongside it.
   // Mounting CameraView while the OS prompt is still up hands it a denied
-  // camera; expo-camera doesn't re-acquire the device when the answer arrives,
-  // so granting access left the user staring at a permanently black preview.
-  // Asking first means the camera view only ever mounts with a camera it can
-  // actually open.
+  // camera, and expo-camera doesn't re-acquire the device when the answer
+  // arrives, so the preview stays black for good. Asking first means the camera
+  // view only ever mounts with a camera it can actually open.
   async function handleScanWithCamera(): Promise<void> {
     setError(null);
     const granted = await ensurePermission(
@@ -272,10 +271,10 @@ export default function AddContactScreen({
       setError(t("contacts.scan.photo_needed"));
       return;
     }
-    // Inside the try, not before it. The launch can reject on its own - the OS
-    // refusing to present, a provider crash - and this runs from an onPress as a
-    // bare async call, so a rejection there was unhandled: the sheet stayed open
-    // and the error line this screen already has was never set.
+    // Inside the try, not before it. The launch can reject on its own (the OS
+    // refusing to present, a provider crash), and this runs from an onPress as
+    // a bare async call, so a rejection outside it goes unhandled and the error
+    // line is never set.
     try {
       const picked = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
@@ -539,8 +538,7 @@ export default function AddContactScreen({
               <View style={styles.dividerLine} />
             </View>
 
-            {/* One grouped card with a hairline divider, matching the
-                "Start something new" chooser so the two sheets read alike. */}
+            {/* Matches the "Start something new" chooser. */}
             <View style={styles.optionGroup}>
               <Pressable
                 style={styles.optionRow}

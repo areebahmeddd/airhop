@@ -42,14 +42,13 @@ const RESUME_PILL_HEIGHT = 24;
 
 interface Props {
   banners: MeshBanner[];
-  // Perform a banner's one-tap fix. Every blocker that a user can do something
-  // about carries one, because the alternative is a red bar describing a
-  // problem and leaving them to find the setting themselves - and the settings
-  // in question (the OS location toggle, the app's own permission page) are not
-  // somewhere people think to look when a chat app says it cannot see anyone.
+  // Perform a banner's one-tap fix. Every blocker a user can act on carries
+  // one: the settings in question (the OS location toggle, the app's own
+  // permission page) are not somewhere people think to look when a chat app
+  // says it cannot see anyone.
   onAction?: (kind: BannerAction) => void;
   // Put an advisory away for good. Only banners marked dismissible offer this;
-  // a real blocker has no x , because hiding it would leave an empty radar with
+  // a real blocker has no x, because hiding it would leave an empty radar with
   // nothing explaining it.
   onDismiss?: (key: string) => void;
 }
@@ -115,11 +114,10 @@ export default function MeshStatusBar({
   if (banners.length === 0) return null;
 
   return (
-    // One live region for the stack. Bluetooth being switched off, a permission
-    // being revoked in system settings, or Tor coming up are all things that
-    // happen TO the user rather than because of them, and until now the only way
-    // to learn about any of them was to look. "polite" so it waits for a pause
-    // rather than cutting across whatever is being read.
+    // One live region for the stack. Bluetooth switched off, a permission
+    // revoked, or Tor coming up all happen TO the user, so they are announced
+    // rather than left to be found. "polite" so it waits for a pause rather
+    // than cutting across whatever is being read.
     <View accessibilityLiveRegion="polite">
       {banners.map((banner, index) => (
         <View
@@ -128,7 +126,7 @@ export default function MeshStatusBar({
             styles.bar,
             { backgroundColor: Colors.accentGhost },
             // Several banners can be up at once, and with one flat tint behind
-            // all of them they ran together as a single paragraph. A hairline
+            // all of them they run together as a single paragraph. A hairline
             // between keeps them countable.
             index > 0 && {
               borderTopWidth: StyleSheet.hairlineWidth,
@@ -171,8 +169,8 @@ export default function MeshStatusBar({
             <Pressable
               style={[styles.action, { borderColor: Colors.border }]}
               onPress={() => onAction(banner.action!.kind)}
-              // The pill draws small so the banner stays slim; the slop is what
-              // gets the target to the 44pt floor. It was 8, leaving it at 39.
+              // The pill draws small so the banner stays slim; the slop gets
+              // the target to the 44pt floor.
               hitSlop={hitSlopFor(RESUME_PILL_HEIGHT)}
               accessibilityRole="button"
               accessibilityLabel={`${banner.action.label}: ${banner.label}`}

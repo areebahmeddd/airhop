@@ -1,7 +1,5 @@
-// Onboarding step 1: Welcome.
-// The cover of the book. Bold wordmark, one sentence, one action, and a quieter
-// way in for someone bringing an identity from another phone. The design
-// communicates confidence through restraint.
+// Onboarding step 1: Welcome. One sentence, one action, and a quieter way in
+// for someone bringing an identity from another phone.
 
 import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
@@ -103,19 +101,14 @@ export default function WelcomeScreen({
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Scrolls only when it has to. `flexGrow: 1` on the content lets the hero
-          keep its `flex: 1` and stay centered on a normal portrait screen; on a
-          short viewport (landscape, a small phone at the largest OS text size)
-          the wordmark, CTA and consent row would clip off the bottom with no
-          way to reach them, which on the very first screen means the app
-          cannot be started at all. */}
+      {/* Scrolls only on a short viewport (landscape, largest text size), where
+          a clipped CTA would leave the app unstartable. */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* The brand mark fills the space above the footer. minHeight keeps
-            it whole on a short screen, where `flex: 1` alone leaves it no
+        {/* minHeight: on a short screen `flex: 1` alone leaves the bird no
             space at all. */}
         <View
           style={[
@@ -126,7 +119,6 @@ export default function WelcomeScreen({
           <PixelBird color={Colors.textPrimary} cell={birdCell} />
         </View>
 
-        {/* Bottom: wordmark + tagline, left-aligned, then CTA */}
         <View style={styles.footer}>
           <View style={styles.textBlock}>
             <Text style={styles.wordmark} accessibilityRole="header">
@@ -142,15 +134,13 @@ export default function WelcomeScreen({
               onPress={onContinue}
               disabled={!agreed}
               accessibilityLabel={T("onboarding.welcome.cta")}
-              // A dimmed button with no stated reason is a dead end. The hint is
-              // read out the moment focus lands on it, so the blocker is
-              // announced before the tap that would do nothing.
+              // A dimmed button with no stated reason is a dead end; the hint
+              // is read as focus lands, before the tap that would do nothing.
               accessibilityHint={
                 agreed ? undefined : T("onboarding.welcome.cta_hint")
               }
             />
-            {/* Gated by the same agreement: the terms cover an identity
-                brought from another phone as much as a new one. */}
+            {/* The terms cover a transferred identity as much as a new one. */}
             <PrimaryButton
               label={T("onboarding.welcome.transfer")}
               onPress={onTransfer}
@@ -167,12 +157,10 @@ export default function WelcomeScreen({
               accessibilityRole="checkbox"
               accessibilityState={{ checked: agreed }}
               accessibilityLabel={T("onboarding.welcome.consent_a11y")}
-              // The two inline links are inside an accessible parent, which
-              // means a screen reader treats the whole row as one element and
-              // never reaches them. Exposing them as custom actions is the
-              // supported way back in: VoiceOver and TalkBack both offer them
-              // from the actions menu, so the documents are reachable without
-              // breaking the row into three separate stops.
+              // Links inside an accessible parent are unreachable to a screen
+              // reader, so they come back as custom actions rather than
+              // splitting the row into three stops.
+
               accessibilityActions={[
                 { name: "terms", label: T("onboarding.welcome.open_terms") },
                 {

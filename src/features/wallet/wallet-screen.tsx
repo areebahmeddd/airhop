@@ -1656,7 +1656,6 @@ export default function WalletScreen({
         </View>
       )}
 
-      {/* Accent-filled, like the user's own chat bubbles. */}
       <View style={styles.balanceCard}>
         {/* Hidden from screen readers: a triple-tap is all it answers. */}
         <Pressable
@@ -1805,13 +1804,11 @@ export default function WalletScreen({
 
       {backupRow}
 
-      {/* Always shown, so an empty wallet does not look like a lost history.
-          Newest first; three rows until "Show more". */}
+      {/* Always shown, so an empty wallet does not look like a lost history. */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{T("wallet.activity.title")}</Text>
-        {/* Unclaimed sends lead, with their actions: their proofs are
-            reserved, not spent, and until one is marked delivered or
-            reclaimed this card is the only way back to that value. */}
+        {/* Unclaimed sends lead: their proofs are reserved, not spent, and
+            this card is the only way back to that value. */}
         {pendingSends.map((tx) => {
           // An unpublished nutzap is locked to the recipient: no reclaim.
           const reclaimable = reserved[tx.id] !== undefined;
@@ -2219,7 +2216,6 @@ export default function WalletScreen({
             />
           )}
 
-          {/* The sheet's one action: filled, above the way out, as in SheetActions. */}
           <Pressable
             style={[styles.modalConfirm, styles.pillWithIcon]}
             onPress={() => switchSheet(() => setShowAddMint(true))}
@@ -2577,9 +2573,8 @@ export default function WalletScreen({
             </Text>
           )}
         </View>
-        {/* A QR rather than 400 characters of base64, and every Cashu
-            wallet scans one. Text fallback for a token too large to encode (an unusually
-            fragmented balance). */}
+        {/* A QR, since every Cashu wallet scans one. Text is the fallback for
+            a token too large to encode (an unusually fragmented balance). */}
         {pending !== null && canEncodeTokenQr(pending.token) ? (
           <View style={styles.qrFrame}>
             <QRCode
