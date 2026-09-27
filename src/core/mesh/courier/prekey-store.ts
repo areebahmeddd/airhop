@@ -237,16 +237,19 @@ export class LocalPrekeyStore {
   }
 
   // Mark a prekey used: move it to the grace window and replenish the pool.
-  consume(id: number): void {
+  // False when it was not live (already spent, or unknown), since then the
+  // published bundle has not changed.
+  consume(id: number): boolean {
     const state = this.load();
-    if (state === null) return;
+    if (state === null) return false;
     const idx = state.prekeys.findIndex((p) => p.id === id);
-    if (idx < 0) return;
+    if (idx < 0) return false;
     const [used] = state.prekeys.splice(idx, 1);
     state.consumed.push({ ...used, consumedAt: Date.now() });
     this.pruneConsumed(state);
     this.persist();
     this.ensure();
+    return true;
   }
 
   // Drop consumed keys past their grace, and all but the newest batch.
@@ -265,6 +268,10 @@ interface StoredPeerBundle {
   generatedAt: number;
   prekeys: { id: number; pub: string }[]; // pub hex
   usedIds: number[];
+  // Message ID to the prekey it was sealed to, so every re-seal of one message
+  // spends the same prekey. Each ID is assigned once and only IDs the bundle
+  // still offers are kept, so this never outgrows the bundle.
+  assignments?: Record<string, number>;
   receivedAt: number;
 }
 
@@ -295,7 +302,10 @@ export class PeerPrekeyStore {
   }
 
   // Store a (caller-verified) bundle, replacing an older one for the same noise
-  // key. A newer bundle resets the used-id set: its prekeys are fresh.
+  // key. What we sealed to a prekey the new bundle still offers stays spent:
+  // an owner's top-up keeps its unconsumed keys, and forgetting would seal a
+  // second message to a key already in flight. bitchat-ios carries both the
+  // same way (PrekeyBundleStore.ingest).
   //
   // One dated past the announce skew is refused, since "newer" is judged by
   // that date: a bundle stamped years ahead would shut out every genuine one
@@ -307,31 +317,47 @@ export class PeerPrekeyStore {
     if (existing !== undefined && bundle.generatedAt <= existing.generatedAt) {
       return; // not newer
     }
+    const offered = new Set(bundle.prekeys.map((p) => p.id));
     this.peers[noiseHex] = {
       generatedAt: bundle.generatedAt,
       prekeys: bundle.prekeys.map((p) => ({
         id: p.id,
         pub: bytesToHex(p.publicKey),
       })),
-      usedIds: [],
+      usedIds: (existing?.usedIds ?? []).filter((id) => offered.has(id)),
+      assignments: Object.fromEntries(
+        Object.entries(existing?.assignments ?? {}).filter(([, id]) =>
+          offered.has(id),
+        ),
+      ),
       receivedAt: Date.now(),
     };
     this.enforceCap();
     this.persist();
   }
 
-  // Assign an unused prekey for sealing to this peer, marking it used so a
-  // later message picks a different one. Null when we hold no fresh prekey.
+  // The prekey to seal this message to: the one it was already assigned, else
+  // an unused one, marked used so a later message picks a different one. A
+  // message is re-sealed for every courier sweep, and one message spending
+  // exactly one prekey is bitchat-ios's rule (assignRecipientPrekey). Null
+  // when we hold no fresh prekey.
   assign(
     noiseStaticPubKey: Uint8Array,
+    messageID: string,
   ): { id: number; publicKey: Uint8Array } | null {
     const noiseHex = bytesToHex(noiseStaticPubKey);
     const peer = this.peers[noiseHex];
     if (peer === undefined) return null;
+    const assigned = peer.assignments?.[messageID];
+    const prior = peer.prekeys.find((p) => p.id === assigned);
+    if (prior !== undefined) {
+      return { id: prior.id, publicKey: hexToBytes(prior.pub) };
+    }
     const used = new Set(peer.usedIds);
     const next = peer.prekeys.find((p) => !used.has(p.id));
     if (next === undefined) return null;
     peer.usedIds.push(next.id);
+    peer.assignments = { ...peer.assignments, [messageID]: next.id };
     this.persist();
     return { id: next.id, publicKey: hexToBytes(next.pub) };
   }

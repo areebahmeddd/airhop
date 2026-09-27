@@ -186,12 +186,50 @@ describe("PeerPrekeyStore", () => {
     peers.ingest(bundle);
     const assigned = new Set<number>();
     for (let i = 0; i < PREKEY_MAX_PREKEYS; i++) {
-      const a = peers.assign(noise.pub)!;
+      const a = peers.assign(noise.pub, `msg-${i}`)!;
       expect(assigned.has(a.id)).toBe(false);
       assigned.add(a.id);
     }
     // Pool exhausted: no more to hand out.
-    expect(peers.assign(noise.pub)).toBeNull();
+    expect(peers.assign(noise.pub, "msg-new")).toBeNull();
+  });
+
+  // A message is re-sealed on every courier sweep. Spending a prekey per seal
+  // burns the owner's bundle, and every copy but the first leaves its key live.
+  it("seals every copy of one message to the same prekey", () => {
+    const local = new LocalPrekeyStore(memorySlot());
+    const peers = new PeerPrekeyStore(freshId("peers"));
+    const noise = x25519Keypair();
+    peers.ingest(
+      local.buildBundle(noise.pub, ed25519.utils.randomSecretKey())!,
+    );
+
+    const first = peers.assign(noise.pub, "msg-a")!;
+    expect(peers.assign(noise.pub, "msg-a")!.id).toBe(first.id);
+    expect(peers.assign(noise.pub, "msg-b")!.id).not.toBe(first.id);
+  });
+
+  // The owner's top-up keeps its unconsumed keys, so a newer bundle must not
+  // make a key already sealed to look unused, or re-seal a message elsewhere.
+  it("keeps what it sealed across the owner's next bundle", () => {
+    const local = new LocalPrekeyStore(memorySlot());
+    const peers = new PeerPrekeyStore(freshId("peers"));
+    const signPriv = ed25519.utils.randomSecretKey();
+    const noise = x25519Keypair();
+    peers.ingest(local.buildBundle(noise.pub, signPriv)!);
+    const a = peers.assign(noise.pub, "msg-a")!;
+    const b = peers.assign(noise.pub, "msg-b")!;
+
+    // The owner opens msg-a: its key goes, msg-b's stays on offer.
+    expect(local.consume(a.id)).toBe(true);
+    expect(local.consume(a.id)).toBe(false);
+    peers.ingest(local.buildBundle(noise.pub, signPriv)!);
+
+    expect(peers.assign(noise.pub, "msg-b")!.id).toBe(b.id);
+    const c = peers.assign(noise.pub, "msg-c")!;
+    expect([a.id, b.id]).not.toContain(c.id);
+    // A message whose key the owner spent gets a fresh one.
+    expect(peers.assign(noise.pub, "msg-a")!.id).not.toBe(a.id);
   });
 
   it("ignores an older bundle and adopts a newer one", () => {
@@ -230,7 +268,7 @@ describe("PeerPrekeyStore", () => {
     );
     peers.forget(noise.pub);
     expect(peers.has(noise.pub)).toBe(false);
-    expect(peers.assign(noise.pub)).toBeNull();
+    expect(peers.assign(noise.pub, "msg")).toBeNull();
   });
 });
 
@@ -245,7 +283,7 @@ describe("forward-secret courier seal/open via prekey", () => {
     // Sender stores it and assigns a prekey to seal to.
     const senderPeers = new PeerPrekeyStore(freshId("peers"));
     senderPeers.ingest(bundle);
-    const prekey = senderPeers.assign(recipNoise.pub)!;
+    const prekey = senderPeers.assign(recipNoise.pub, "msg")!;
 
     const sender = x25519Keypair();
     // Sealed as mesh-service does: Noise X to the ONE-TIME prekey rather than

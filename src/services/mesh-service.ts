@@ -3809,7 +3809,7 @@ export class MeshService {
       // Prefer a forward-secret v2 seal when we hold a prekey bundle for them:
       // target a one-time prekey instead of their long-lived static key. Falls
       // back to a v1 static seal when we have no bundle.
-      const prekey = this.peerPrekeys.assign(noisePub) ?? undefined;
+      const prekey = this.peerPrekeys.assign(noisePub, messageID) ?? undefined;
       const ciphertext = noiseXSeal(
         this.identity.noiseStaticPrivKey,
         prekey?.publicKey ?? noisePub,
@@ -4049,6 +4049,20 @@ export class MeshService {
         env.ciphertext,
         sealPrologue(env.prekeyID),
       );
+      // Burn the one-time prekey the moment it has opened anything, before a
+      // block, type or dedupe check can return: a later copy of a message
+      // already read would otherwise leave its key live, able to open that
+      // ciphertext for as long as the phone keeps it. bitchat-ios marks it
+      // consumed inside the open for the same reason. A copy opened under a
+      // key already spent changes no bundle, so it floods none.
+      if (
+        env.prekeyID !== undefined &&
+        this.localPrekeys.consume(env.prekeyID)
+      ) {
+        // The held bundle now advertises a spent key, so this is the one path
+        // that must mint a new packet rather than re-send the current one.
+        this.emitPrekeyBundle(true);
+      }
       // Identify the sender from the key the envelope authenticates, not from
       // the packet header, which names whoever relayed it to us.
       const fromPeerID = bytesToHex(sha256(senderStaticPubKey)).slice(0, 16);
@@ -4106,15 +4120,6 @@ export class MeshService {
           NoisePayloadType.DELIVERED,
           pm.messageID,
         );
-      }
-
-      // Burn the one-time prekey now that it has opened a message, then
-      // publish a fresh bundle so senders stop using the spent key.
-      if (env.prekeyID !== undefined) {
-        this.localPrekeys.consume(env.prekeyID);
-        // The held bundle now advertises a spent key, so this is the one path
-        // that must mint a new packet rather than re-send the current one.
-        this.emitPrekeyBundle(true);
       }
     } catch {
       // Not actually decryptable by us: a tag collision. Drop it.
