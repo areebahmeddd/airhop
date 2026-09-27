@@ -3862,7 +3862,12 @@ export default function MessageThread({
       // it finalizes into, and the mic to answer with, where they belong.
       // Only on the transition into talking, not once per burst packet.
       const talking = names.length > 0;
-      if (talking && !liveTalkingRef.current) jumpToLatest();
+      if (talking && !liveTalkingRef.current) {
+        jumpToLatest();
+        // A live voice and a voice note would play over each other, so the
+        // note pauses, as bitchat-ios pauses it for a burst.
+        setPlayingMessageId(null);
+      }
       // Nobody is holding the floor any more, so the banner is about to go and
       // its meter must not be left showing the last thing that was said.
       if (!talking) resetWave();
