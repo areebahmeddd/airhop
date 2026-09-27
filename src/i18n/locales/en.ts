@@ -515,6 +515,8 @@ export const strings = {
     "Files send over Bluetooth range only. Text and payments reach internet contacts; attachments do not.",
   "chat.thread.media_securing":
     "Setting up encryption with them first. Try again in a moment.",
+  "chat.thread.media_unsupported":
+    "Their app cannot receive encrypted photos or voice notes, so this was not sent.",
   "chat.thread.message_peer": "Message {name}",
   "chat.thread.send": "Send message",
   "chat.thread.group": "Group",

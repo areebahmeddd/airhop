@@ -487,7 +487,7 @@ export type SendOutcome = (delivered: boolean) => void;
 // Seal a file TLV inside the peer's Noise session as payload 0x20, returning
 // the NOISE_ENCRYPTED packet ready to fragment. Returns null when the peer has
 // not proven it can read one (no session, or no authenticated bit 8), and the
-// caller then falls back to the signed cleartext form.
+// DM then does not go: it is never sent in the clear.
 //
 // Injected rather than reached for, so this service keeps knowing nothing about
 // sessions, capabilities or the registry.
@@ -727,43 +727,33 @@ export class FileTransferService {
       return;
     }
 
-    // A private file goes inside the Noise session when the recipient has
-    // proven it can read one.
-    //
-    // The cleartext form below is signed, so a relay cannot forge its sender or
-    // contents, but it is not confidential and every node the file crosses sees
-    // all of it. bitchat classifies that form as the legacy migration fallback
-    // and has scheduled its removal.
-    //
-    // The gate is the authenticated capability, never the announced one. An
-    // announce is self-signed with a key it carries, so anyone who reads a
-    // victim's public Noise key off the air can announce any bits under that
-    // peer ID. Gating on it would let anyone in range clear bit 8 for a peer
-    // and force every attachment into the clear.
-    const sealed = isDM
-      ? (this.sealFile?.(recipientPeerID, tlv) ?? null)
-      : null;
-
-    const pkt: Packet =
-      sealed ??
-      (() => {
-        const raw: Packet = {
-          type: PacketType.FILE_TRANSFER,
-          // A public file crosses Bluetooth as fragments, which inherit this
-          // TTL and are relayed as fragments are, so it takes their ceiling.
-          ttl: isDM ? 7 : originTtl(PacketType.FRAGMENT, this.getDegree()),
-          flags: isDM ? Flags.HAS_RECIPIENT | Flags.SIGNED : Flags.SIGNED,
-          senderID: hexToBytes(this.identity.peerID),
-          recipientID: isDM
-            ? hexToBytes(recipientPeerID)
-            : new Uint8Array(BROADCAST_ID),
-          timestamp: Date.now(),
-          signature: new Uint8Array(64),
-          payload: tlv,
-        };
-        raw.signature = signPacket(raw, this.identity.signingPrivKey);
-        return raw;
-      })();
+    // A private file goes only inside the Noise session, sealed as 0x20. The
+    // signed cleartext form is not confidential, every node it crosses reads
+    // the whole file, and bitchat classes it as a legacy fallback it is
+    // removing, so a DM that cannot be sealed does not go.
+    let pkt: Packet;
+    if (isDM) {
+      const sealed = this.sealFile?.(recipientPeerID, tlv) ?? null;
+      if (sealed === null) {
+        onOutcome?.(false);
+        return;
+      }
+      pkt = sealed;
+    } else {
+      pkt = {
+        type: PacketType.FILE_TRANSFER,
+        // A public file crosses Bluetooth as fragments, which inherit this TTL
+        // and are relayed as fragments are, so it takes their ceiling.
+        ttl: originTtl(PacketType.FRAGMENT, this.getDegree()),
+        flags: Flags.SIGNED,
+        senderID: hexToBytes(this.identity.peerID),
+        recipientID: new Uint8Array(BROADCAST_ID),
+        timestamp: Date.now(),
+        signature: new Uint8Array(64),
+        payload: tlv,
+      };
+      pkt.signature = signPacket(pkt, this.identity.signingPrivKey);
+    }
 
     // One packet becomes many BLE fragments; a small file may fit in one frame.
     const items: Packet[] =

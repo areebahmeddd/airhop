@@ -1908,6 +1908,7 @@ export default function MessageThread({
     | "group-queued"
     | "media-far"
     | "media-securing"
+    | "media-unsupported"
     | null
   >(null);
   // Brief confirmation pill. Separate from dmStatus: that strip explains why a
@@ -2331,7 +2332,8 @@ export default function MessageThread({
       | "no-group-key"
       | "group-queued"
       | "media-far"
-      | "media-securing",
+      | "media-securing"
+      | "media-unsupported",
   ): void {
     if (dmStatusTimerRef.current) clearTimeout(dmStatusTimerRef.current);
     setDmStatus(kind);
@@ -2376,16 +2378,17 @@ export default function MessageThread({
     showStatus("no-reach");
   }
 
-  // An attachment refused before it started. A DM one needs a direct link, and
-  // a session to seal it under, which the refusal has just started to open.
+  // An attachment refused before it started. A DM one needs a direct link and
+  // a session to seal it under, which the refusal has just started to open, or
+  // a peer whose app reads sealed files at all.
   function showMediaRefusedStatus(targetChannel: string): void {
     if (!targetChannel.startsWith("dm:")) {
       showNoReachStatus();
       return;
     }
-    const linked =
-      getMeshService()?.hasDirectLink(targetChannel.slice(3)) === true;
-    showStatus(linked ? "media-securing" : "media-far");
+    const reason =
+      getMeshService()?.mediaRefusal(targetChannel.slice(3)) ?? "far";
+    showStatus(`media-${reason}`);
   }
 
   // Screenshot detection. Who gets told, and why, lives in `media-policy` beside
@@ -5061,6 +5064,14 @@ export default function MessageThread({
           <Feather name="lock" size={12} color={Colors.textMuted} />
           <Text style={styles.dmStatusText}>
             {T("chat.thread.media_securing")}
+          </Text>
+        </View>
+      )}
+      {isDM && dmStatus === "media-unsupported" && (
+        <View style={styles.dmStatusBar}>
+          <Feather name="lock" size={12} color={Colors.textMuted} />
+          <Text style={styles.dmStatusText}>
+            {T("chat.thread.media_unsupported")}
           </Text>
         </View>
       )}

@@ -2804,6 +2804,20 @@ export class MeshService {
     );
   }
 
+  // Why a DM attachment was refused, for the thread to say. "securing" while
+  // the session or its proof is on the way, which the announced bit predicts;
+  // "unsupported" for a peer whose app does not read sealed files at all. The
+  // announce is forgeable, which is why it only chooses the words here and
+  // never the gate above.
+  mediaRefusal(recipientPeerID: string): "far" | "securing" | "unsupported" {
+    if (!this.links.hasPeer(recipientPeerID)) return "far";
+    const peer = this.registry.get(recipientPeerID);
+    if (peer?.session === undefined) return "securing";
+    return ((peer.capabilities ?? 0) & Capability.privateMedia) !== 0
+      ? "securing"
+      : "unsupported";
+  }
+
   // Whether this peer has proven, inside their own 0x21 state, that they
   // currently accept a ring from us. The contact sheet subscribes to the same
   // fact through NearbyPeer.acceptsRing; this is for callers outside React.
@@ -2823,10 +2837,10 @@ export class MeshService {
 
   // Seal a whole file inside a peer's Noise session as payload 0x20.
   //
-  // Returns null, meaning send it the cleartext way, unless a live session
-  // exists and the peer has proven capability bit 8 inside it. Announced bits
-  // do not qualify; see the call site in file-transfer-service for why gating
-  // on them would be a downgrade attack anyone in radio range could run.
+  // Returns null, meaning it cannot go, unless a live session exists and the
+  // peer has proven capability bit 8 inside it. Announced bits do not qualify:
+  // an announce is self-signed with the key it carries, so anyone in range
+  // could set or clear them for a peer.
   //
   // Returns the packet rather than sending it, so fragmentation and pacing stay
   // with the file-transfer service: a 512 KiB photo is one Noise ciphertext
@@ -6435,11 +6449,12 @@ export class MeshService {
   // (the text path reports reach the same way); the user can retry when a link
   // returns.
   //
-  // A DM also needs a session. Without one there is nothing to seal under, and
-  // the signed cleartext fallback is for a peer that has not proven it can read
-  // a sealed file, not for one nobody has asked. So, as for a pin or a ring,
-  // the handshake starts and the send is refused; a retry a moment later finds
-  // the session and the 0x21 proof that follows it on both sides.
+  // A DM also needs a session and the peer's proof, inside it, that it reads a
+  // sealed file (capability bit 8). A DM attachment is never sent in the
+  // clear: bitchat classes that form as a legacy fallback it is removing. With
+  // no session, as for a pin or a ring, the handshake starts and the send is
+  // refused; a retry a moment later finds the session and the 0x21 proof that
+  // follows it on both sides.
   sendAttachment(
     channel: string,
     bytes: Uint8Array,
@@ -6453,6 +6468,7 @@ export class MeshService {
         this.ensureNoiseSession(peerID);
         return false;
       }
+      if (!this.canSealPrivateMedia(peerID)) return false;
     } else if (this.links.size() === 0) {
       return false;
     }

@@ -16,6 +16,7 @@ import {
 } from "@core/mesh/wire/file-packet";
 import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
 import {
@@ -94,6 +95,18 @@ const IDENTITY = {
   signingPrivKey: new Uint8Array(32).fill(7),
 };
 
+// Stands in for the Noise seal: a DM attachment only ever leaves sealed.
+const SEAL = (recipientPeerID: string, tlv: Uint8Array): Packet => ({
+  type: PacketType.NOISE_ENCRYPTED,
+  ttl: 7,
+  flags: 0,
+  senderID: hexToBytes(IDENTITY.peerID),
+  recipientID: hexToBytes(recipientPeerID),
+  timestamp: Date.now(),
+  signature: new Uint8Array(64),
+  payload: tlv,
+});
+
 const META = {
   type: "image" as const,
   name: "photo.jpg",
@@ -112,7 +125,7 @@ function makeService(accepted = true, usesBleRadio?: () => boolean) {
     broadcast,
     unicast,
     (peerID) => peerID,
-    undefined,
+    SEAL,
     usesBleRadio,
   );
   return { service, broadcast, unicast };
@@ -177,6 +190,7 @@ describe("outbound pacing", () => {
       broadcast,
       unicast,
       (peerID) => peerID,
+      SEAL,
     );
 
     service.sendBytes(FILE, META, "dm:1111222233334444");
@@ -434,20 +448,37 @@ describe("wire format (BitchatFilePacket)", () => {
     durationMs: 0,
   };
 
-  it("sends a small DM file as one FILE_TRANSFER packet decoding to the file", async () => {
+  it("sends a small DM file sealed, carrying the file", async () => {
     const { service, unicast } = makeService();
     service.sendBytes(PNG, IMG_META, "dm:1122334455667788");
     await tick(2);
 
     expect(unicast).toHaveBeenCalledTimes(1);
     const pkt = unicast.mock.calls[0][1] as Packet;
-    expect(pkt.type).toBe(PacketType.FILE_TRANSFER);
+    expect(pkt.type).toBe(PacketType.NOISE_ENCRYPTED);
     const fp = decodeFilePacket(pkt.payload)!;
     expect(fp.fileName).toBe("pic.png");
     expect(fp.mimeType).toBe("image/png");
     expect(Array.from(fp.content)).toEqual(Array.from(PNG));
     // A DM carries no channel tag; it is routed by the recipient ID.
     expect(fp.channel).toBeUndefined();
+  });
+
+  it("never sends a DM file in the clear when it cannot be sealed", async () => {
+    const unicast = jest.fn().mockResolvedValue(true);
+    const service = new FileTransferService(
+      IDENTITY,
+      jest.fn().mockResolvedValue(true),
+      unicast,
+      (peerID) => peerID,
+      () => null,
+    );
+    const outcome = jest.fn();
+    service.sendBytes(PNG, IMG_META, "dm:1122334455667788", outcome);
+    await tick(2);
+
+    expect(outcome).toHaveBeenCalledWith(false);
+    expect(unicast).not.toHaveBeenCalled();
   });
 
   it("tags a channel attachment with its channel for routing", async () => {
@@ -611,7 +642,7 @@ describe("a DM to a peer who has left", () => {
       broadcast,
       unicast,
       (peerID) => peerID,
-      undefined,
+      SEAL,
       undefined,
       () => false,
     );
@@ -633,7 +664,7 @@ describe("a DM to a peer who has left", () => {
       jest.fn().mockResolvedValue(true),
       unicast,
       (peerID) => peerID,
-      undefined,
+      SEAL,
       undefined,
       () => true,
     );
