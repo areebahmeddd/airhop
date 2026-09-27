@@ -263,10 +263,11 @@ export async function setTorBridgeMode(
   if (needsBridgeLines() && bridgeLinesForStart() === "") return { ok: true };
 
   await disableTorRouting(true);
-  return enableTorRouting();
+  return enableTorRouting(true);
 }
 
-async function enableTorRouting(): Promise<TorRoutingResult> {
+// `restarting` is a bridge change, for the refusal below.
+async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
   if (NativeAirhopTor == null) {
     return { ok: false, reason: "unavailable" };
   }
@@ -322,14 +323,18 @@ async function enableTorRouting(): Promise<TorRoutingResult> {
     setNostrBlocked(false);
     return { ok: true };
   } catch {
-    // Try again from the held state never had a clear net to go back to: the
-    // user asked for Tor and has not been online without it since. So it falls
-    // back to the held state, marker included, and going direct stays the
-    // user's own choice of Tor off. No stopTor, because on Android that routes
+    // Neither Try again from the held state nor a bridge change had a clear net
+    // to go back to: the user asked for Tor and has not been online without it
+    // since, and a user who asked for a bridge is likely somewhere a direct
+    // connection is unsafe. So both fall back to the held state, and going
+    // direct stays the user's own choice of Tor off. No stopTor, because on Android that routes
     // the HTTP stack direct before the hold could re-apply.
-    if (retryingHeld) {
+    //
+    // Only the retry keeps the marker. A refused bridge line is not a crash,
+    // and the next launch starts again and is refused the same way.
+    if (retryingHeld || restarting) {
       stopWatchingTorBootstrap();
-      useSettingsStore.getState().setTorStartPending(true);
+      if (retryingHeld) useSettingsStore.getState().setTorStartPending(true);
       holdAfterFailedStart();
       return { ok: false, reason: "error" };
     }

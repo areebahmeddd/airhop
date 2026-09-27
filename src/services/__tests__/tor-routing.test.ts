@@ -875,6 +875,32 @@ describe("bridge modes", () => {
     mockRestartNostr.mockReset();
   });
 
+  // The toggle's unwind to the clear net assumes the user started there. A
+  // bridge change starts on Tor, and a bad pasted line or a transport that
+  // will not start must not become a quiet switch to the device's own address.
+  test("a restart the client refuses stays held rather than going direct", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockRejectedValue(new Error("bridge line"));
+    const rebuiltWhileOff: boolean[] = [];
+    mockRestartNostr.mockImplementation(() => {
+      rebuiltWhileOff.push(!mockTorEnabled || !mockNostrBlocked);
+    });
+
+    const result = await setTorBridgeMode("custom", "webtunnel 192.0.2.1:443");
+
+    expect(result).toEqual({ ok: false, reason: "error" });
+    expect(mockTorEnabled).toBe(true);
+    expect(mockNostrBlocked).toBe(true);
+    expect(rebuiltWhileOff).not.toContain(true);
+    expect(mockHoldRoute).toHaveBeenCalled();
+    expect(mockTorBootstrap).toBe("blocked");
+    expect(isTorRoutingActive()).toBe(false);
+    // Nothing crashed, so the next launch starts again (and is refused the
+    // same way) rather than offering a Try again for a crash.
+    expect(mockTorStartPending).toBe(false);
+    mockRestartNostr.mockReset();
+  });
+
   test("changing mode while Tor is off persists without starting anything", async () => {
     mockTorEnabled = false;
     await setTorBridgeMode("custom", "obfs4 192.0.2.1:443 ABCD");

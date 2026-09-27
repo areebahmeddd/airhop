@@ -1023,7 +1023,9 @@ stale between store updates and would fail exactly where a user needed it.
 The client refuses to start rather than fall back: a line that does not parse, a
 transport Airhop does not ship, or one whose local proxy is not running stops
 the start before anything binds. A user who asked for a bridge is likely
-somewhere a direct connection is unsafe.
+somewhere a direct connection is unsafe. The app follows suit: a bridge change
+whose restart is refused keeps Tor on with the internet half held, as on a
+network that blocks Tor, and only turning Tor off goes direct.
 
 ### Building the Tor client
 
