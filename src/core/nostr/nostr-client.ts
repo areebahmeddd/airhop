@@ -19,6 +19,7 @@
 // client only once there is a route for it, and build a new one when the
 // network comes back.
 
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import type { Event } from "nostr-tools";
 import type { Filter } from "nostr-tools/filter";
 import type { SubCloser } from "nostr-tools/pool";
@@ -72,6 +73,11 @@ const PUMP_SLICE_MS = 8;
 // with five cells backfilling is low hundreds), so reaching it means a relay is
 // flooding us and the right answer is to stop accepting rather than to grow.
 const MAX_PENDING_EVENTS = 4_000;
+
+// Event IDs one subscription remembers as delivered. Evicting the oldest costs
+// at most a late copy of a long-gone event reaching its handler again, which
+// the handler's own dedup absorbs.
+const MAX_DELIVERED_IDS = 4_000;
 
 // Placeholder passed to a queued EOSE callback, which takes no event but shares
 // the queue so it keeps its place in line.
@@ -192,14 +198,14 @@ export class NostrClient {
     relays?: string[],
   ): SubCloser {
     const targets = this.resolveRelays(relays);
-    const delivered = new Set<string>();
+    const delivered = new BoundedIdSet(MAX_DELIVERED_IDS);
     // Every handler goes through the pump, so no subscription can hold the JS
     // thread for longer than one time slice however much a relay sends. The
     // `has` check repeats the lookup below because nostr-tools skips that
     // lookup for a frame whose prefix it cannot read.
     const deliver = (event: Event): void => {
       if (delivered.has(event.id)) return;
-      if (this.enqueue(onEvent, event)) rememberDelivered(delivered, event.id);
+      if (this.enqueue(onEvent, event)) delivered.add(event.id);
     };
     // Lookup only. nostr-tools runs it on the raw frame before parsing, so a
     // copy another relay already delivered costs neither JSON.parse nor Schnorr.
@@ -395,17 +401,6 @@ function pinGiftWrapSince(filter: Filter): Filter {
     get: () => since,
     set: () => {},
   });
-}
-
-// Same shape as OpenedGiftWraps. Evicting the oldest ID costs at most a late
-// copy of a long-gone event reaching its handler again, which the handler's own
-// dedup absorbs. Sets iterate in insertion order.
-function rememberDelivered(ids: Set<string>, id: string): void {
-  if (ids.size >= MAX_PENDING_EVENTS) {
-    const oldest = ids.values().next().value;
-    if (oldest !== undefined) ids.delete(oldest);
-  }
-  ids.add(id);
 }
 
 // Ensure a relay URL starts with wss:// or ws://, and strip a trailing slash.

@@ -92,6 +92,7 @@ import {
 } from "@core/mesh/routing/fragment-manager";
 import { HandshakeRateLimiter } from "@core/mesh/routing/handshake-rate-limiter";
 import { originTtl } from "@core/mesh/routing/origin-ttl";
+import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter";
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
@@ -535,9 +536,12 @@ export class MeshService {
   private readonly rebroadcastEventIDs = new Set<string>();
   // Sliding 60s window of downlink-rebroadcast timestamps, bounding BLE airtime.
   private downlinkSendTimes: number[] = [];
-  // Per-depositor sliding 60s windows of uplink-deposit timestamps, so one mesh
-  // peer cannot make our gateway spam relays (bitchat uplinkDepositTimes).
-  private readonly uplinkDepositTimes = new Map<string, number[]>();
+  // Per-depositor sliding 60s windows of uplink deposits, so one mesh peer
+  // cannot make our gateway spam relays (bitchat uplinkDepositTimes).
+  private readonly uplinkDeposits = new SlidingWindowLimiter(
+    UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR,
+    60_000,
+  );
   // Unsubscribe for the chat-store listener that re-syncs private Nostr channels.
   private chatUnsub: (() => void) | null = null;
   // Unsubscribe for the settings listener that re-announces on a gateway toggle.
@@ -5760,25 +5764,7 @@ export class MeshService {
   // Consume a per-depositor token from a 60s sliding window. Returns false when
   // the depositor is over quota. Mirrors bitchat GatewayService.allowUplinkDeposit.
   private allowUplinkDeposit(depositor: string): boolean {
-    const now = Date.now();
-    const times = (this.uplinkDepositTimes.get(depositor) ?? []).filter(
-      (t) => now - t < 60_000,
-    );
-    if (times.length >= UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR) {
-      this.uplinkDepositTimes.set(depositor, times);
-      return false;
-    }
-    times.push(now);
-    this.uplinkDepositTimes.set(depositor, times);
-    // Bound the tracker against a churn of spoofed/one-shot depositor IDs.
-    if (this.uplinkDepositTimes.size > 512) {
-      for (const [id, ts] of this.uplinkDepositTimes) {
-        const live = ts.filter((t) => now - t < 60_000);
-        if (live.length === 0) this.uplinkDepositTimes.delete(id);
-        else this.uplinkDepositTimes.set(id, live);
-      }
-    }
-    return true;
+    return this.uplinkDeposits.tryAcquire(depositor, Date.now());
   }
 
   // ---- Gateway origination (0x28) ----

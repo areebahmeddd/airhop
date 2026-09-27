@@ -11,6 +11,7 @@
 
 import { t } from "@i18n";
 import { useChatStore } from "@store/chat-store";
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import { systemRow } from "@utils/message-text";
 
 export interface UrgentNotice {
@@ -29,17 +30,12 @@ const CONTENT_MAX_CHARS = 120;
 // window, and then the cost is one repeated line.
 const MAX_HANDLED = 2_000;
 
-const handled = new Set<string>();
+const handled = new BoundedIdSet(MAX_HANDLED);
 const pending = new Map<string, UrgentNotice[]>();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function noteUrgentNotice(notice: UrgentNotice): void {
   if (handled.has(notice.postID)) return;
-  if (handled.size >= MAX_HANDLED) {
-    // Sets iterate in insertion order.
-    const oldest = handled.values().next().value;
-    if (oldest !== undefined) handled.delete(oldest);
-  }
   handled.add(notice.postID);
   const list = pending.get(notice.channel) ?? [];
   list.push(notice);

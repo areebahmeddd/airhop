@@ -17,6 +17,7 @@
 // Boundary-neighbor coverage (subscribing to adjacent cells) is a future
 // refinement; two islands in the same ~1.2 km cell meet today.
 
+import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter";
 import {
   CarrierDirection,
   encodeNostrCarrier,
@@ -43,6 +44,7 @@ import {
 import { decodeGeohash, encodeGeohash } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { useSettingsStore } from "@store/settings-store";
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import { verifyEvent, type Event as NostrEvent } from "nostr-tools";
 import { getCoarseLocation } from "./location-service";
 
@@ -63,6 +65,8 @@ export const UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR = 10;
 // Minimum spacing between our own presence heartbeats.
 const PRESENCE_MIN_INTERVAL_MS = 30_000;
 export const ID_SET_CAP = 512;
+// Event and radio-copy IDs each loop-prevention set remembers.
+const LOOP_CACHE_CAP = 2_000;
 
 // A remote-island message to render into the local #bluetooth timeline.
 export interface BridgeInboundMessage {
@@ -111,13 +115,16 @@ export class BridgeService {
   private readonly identityCache = new Map<string, GeohashIdentity>();
 
   // Loop prevention (mirrors the gateway's three caches).
-  private readonly publishedEventIDs = new Set<string>(); // our own published events
-  private readonly receivedEventIDs = new Set<string>(); // acted-on once
-  private readonly rebroadcastEventIDs = new Set<string>(); // ferried to mesh once
-  private readonly seenRadioStableIDs = new Set<string>(); // radio copies present
+  private readonly publishedEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // our own published events
+  private readonly receivedEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // acted-on once
+  private readonly rebroadcastEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // ferried to mesh once
+  private readonly seenRadioStableIDs = new BoundedIdSet(LOOP_CACHE_CAP); // radio copies present
 
   // Rate limiting.
-  private readonly uplinkDepositTimes = new Map<string, number[]>();
+  private readonly uplinkDeposits = new SlidingWindowLimiter(
+    UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR,
+    60_000,
+  );
   private downlinkSendTimes: number[] = [];
 
   // "People across the bridge" accounting.
@@ -278,7 +285,7 @@ export class BridgeService {
       meshSenderID: senderPeerID,
       meshTimestampMs: timestampMs,
     });
-    this.remember(this.publishedEventIDs, event.id);
+    this.publishedEventIDs.add(event.id);
     // Our own radio copy is already on our timeline; note its stable ID so the
     // event coming back from our own subscription is recognised as a local copy.
     this.seenRadioStableIDs.add(
@@ -308,8 +315,7 @@ export class BridgeService {
     content: string,
   ): void {
     if (!this.enabled) return;
-    this.remember(
-      this.seenRadioStableIDs,
+    this.seenRadioStableIDs.add(
       bridgeStableID(senderIDHex, timestampMs, content),
     );
   }
@@ -326,12 +332,12 @@ export class BridgeService {
     // self-recognition, so a relay backfill after a restart is still ours).
     if (this.publishedEventIDs.has(event.id)) return;
     if (this.isOwnEvent(event, parsed.cell)) {
-      this.remember(this.publishedEventIDs, event.id);
+      this.publishedEventIDs.add(event.id);
       return;
     }
     if (!verifyEvent(event)) return;
     if (this.receivedEventIDs.has(event.id)) return;
-    this.remember(this.receivedEventIDs, event.id);
+    this.receivedEventIDs.add(event.id);
 
     if (parsed.kind === "presence") {
       this.recordParticipant(event.pubkey);
@@ -370,7 +376,7 @@ export class BridgeService {
     );
     if (payload === null) return;
     this.hooks.broadcastCarrierFromBridge(payload);
-    this.remember(this.rebroadcastEventIDs, event.id);
+    this.rebroadcastEventIDs.add(event.id);
     this.downlinkSendTimes.push(now);
   }
 
@@ -417,7 +423,7 @@ export class BridgeService {
     if (this.publishedEventIDs.has(event.id)) return;
     if (!this.allowUplinkDeposit(depositor)) return;
     if (!verifyEvent(event)) return;
-    this.remember(this.publishedEventIDs, event.id);
+    this.publishedEventIDs.add(event.id);
     void this.client
       .publish(event, this.relaysForCell(carrier.geohash))
       .catch(() => {});
@@ -432,7 +438,7 @@ export class BridgeService {
     if (this.receivedEventIDs.has(event.id)) return;
     // Recorded only once verified, so a forged copy cannot poison the cache.
     if (!verifyEvent(event)) return;
-    this.remember(this.receivedEventIDs, event.id);
+    this.receivedEventIDs.add(event.id);
     const isLocalRadioCopy =
       parsed.radioMessageIDHint !== undefined &&
       this.seenRadioStableIDs.has(parsed.radioMessageIDHint);
@@ -451,7 +457,7 @@ export class BridgeService {
     this.lastPresenceAtMs = now;
     const identity = this.identityFor(this.activeCell);
     const event = createBridgePresenceEvent(this.activeCell, identity.privKey);
-    this.remember(this.publishedEventIDs, event.id);
+    this.publishedEventIDs.add(event.id);
     void this.client
       .publish(event, this.relaysForCell(this.activeCell))
       .catch(() => {});
@@ -565,32 +571,7 @@ export class BridgeService {
   }
 
   private allowUplinkDeposit(depositor: string): boolean {
-    const now = Date.now();
-    const times = (this.uplinkDepositTimes.get(depositor) ?? []).filter(
-      (t) => now - t < 60_000,
-    );
-    if (times.length >= UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR) {
-      this.uplinkDepositTimes.set(depositor, times);
-      return false;
-    }
-    times.push(now);
-    this.uplinkDepositTimes.set(depositor, times);
-    if (this.uplinkDepositTimes.size > ID_SET_CAP) {
-      for (const [id, ts] of this.uplinkDepositTimes) {
-        if (ts.every((t) => now - t >= 60_000)) {
-          this.uplinkDepositTimes.delete(id);
-        }
-      }
-    }
-    return true;
-  }
-
-  private remember(set: Set<string>, id: string): void {
-    set.add(id);
-    if (set.size > 2000) {
-      const oldest = set.values().next().value;
-      if (oldest !== undefined) set.delete(oldest);
-    }
+    return this.uplinkDeposits.tryAcquire(depositor, Date.now());
   }
 
   // Relay connectivity moved under us. Re-publish the status, because `active`
