@@ -29,6 +29,7 @@ import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { decode as decodeBech32 } from "nostr-tools/nip19";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 import type { ContactCard } from "./contact-exchange";
 
 // Domain separator, byte-identical to VerificationQR.context. Signing without
@@ -178,7 +179,8 @@ export function parseBitchatVerifyQr(
       peerID,
       noisePubKey,
       signingPubKey: hexToBytes(sign),
-      nickname: nick,
+      // Normalised only now: the signature covers the bytes as sent.
+      nickname: normalizeNickname(nick),
       nostrPubKey: nostrKeyFromNpub(npub),
     },
   };

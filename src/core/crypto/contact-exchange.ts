@@ -21,6 +21,7 @@
 
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 
 // A card read from our own `airhop:v1/` format, where the Nostr key is part of
 // the fixed layout and therefore always present. Narrower than ContactCard so
@@ -115,8 +116,11 @@ export function decodeContactCard(buf: Uint8Array): AirhopContactCard {
     throw new Error("contact-exchange: buffer truncated");
   }
 
-  const nickname = new TextDecoder().decode(
-    buf.slice(FIXED_HEADER_SIZE, npubStart),
+  // The peer's choice, saved as the contact's own name, so it enters in the
+  // canonical form an announced name does: no bidi overrides, invisibles or
+  // line breaks.
+  const nickname = normalizeNickname(
+    new TextDecoder().decode(buf.slice(FIXED_HEADER_SIZE, npubStart)),
   );
 
   return {

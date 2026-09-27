@@ -13,6 +13,7 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
+import { normalizeNickname } from "../mesh/discovery/nickname";
 
 const KIND_BRIDGE_MESSAGE = 20000;
 const KIND_BRIDGE_PRESENCE = 20001;
@@ -161,7 +162,7 @@ export function parseBridgeEvent(event: NostrEvent): ParsedBridgeEvent | null {
     kind: "message",
     cell,
     content: event.content,
-    nickname,
+    nickname: nickname === undefined ? undefined : normalizeNickname(nickname),
     radioMessageIDHint: verifiedStableID(mTag, event.content),
     meshSenderID: mTag?.[2],
   };

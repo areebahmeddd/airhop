@@ -98,6 +98,15 @@ describe("geohashDisplayName", () => {
     expect(geohashDisplayName(pubkey)).toBe("anon#beef");
     expect(geohashDisplayName(pubkey, "")).toBe("anon#beef");
     expect(geohashDisplayName(pubkey, "   ")).toBe("anon#beef");
+    expect(geohashDisplayName(pubkey, "\u200B\u202E")).toBe("anon#beef");
+  });
+
+  // A bidi override in the name would reorder the suffix that tells two
+  // people apart, so the name is normalised as an announced one is.
+  it("normalises the nickname before suffixing it", () => {
+    expect(geohashDisplayName(pubkey, "M\u202Eo\u200Bm\n(x)")).toBe(
+      "Mom (x)#beef",
+    );
   });
 
   it("keeps identical nicknames distinguishable", () => {

@@ -81,6 +81,16 @@ describe("parseBitchatVerifyQr", () => {
     );
   });
 
+  // Normalised after the signature is checked, which covers the bytes as sent.
+  it("normalises a signed nickname where it enters", () => {
+    const out = parseBitchatVerifyQr(
+      makeQr({ nick: " M\u202Eo\u200Bm\n(verified)" }),
+      NOW,
+    );
+    if (out?.ok !== true) throw new Error("expected ok");
+    expect(out.card.nickname).toBe("Mom (verified)");
+  });
+
   // A bitchat user with no Nostr identity is a real user, not a broken code.
   it("accepts a code with no npub, leaving a mesh-only contact", () => {
     const out = parseBitchatVerifyQr(makeQr({ npub: "" }), NOW);

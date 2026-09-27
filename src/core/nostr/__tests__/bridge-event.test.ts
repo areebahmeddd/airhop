@@ -107,6 +107,22 @@ describe("parseBridgeEvent", () => {
     expect(parsed!.meshSenderID).toBe("a1b2c3d4e5f60718");
   });
 
+  // The `n` tag is whatever the signer wrote, and it is shown as a name.
+  test("normalises the nickname tag where it enters", () => {
+    const ev = createBridgeMeshEvent({
+      content: "hi",
+      cell: "u4pruy",
+      privKey: CELL_KEY,
+      meshSenderID: "a1b2c3d4e5f60718",
+      meshTimestampMs: 1700000000000,
+    });
+    const tagged = {
+      ...ev,
+      tags: [...ev.tags, ["n", "M\u202Eo\u200Bm\n(verified)"]],
+    };
+    expect(parseBridgeEvent(tagged)?.nickname).toBe("Mom (verified)");
+  });
+
   test("round-trips a presence event", () => {
     const ev = createBridgePresenceEvent("u4pruy", CELL_KEY);
     const parsed = parseBridgeEvent(ev);
