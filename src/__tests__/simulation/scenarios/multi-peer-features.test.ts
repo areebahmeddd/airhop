@@ -932,3 +932,47 @@ test("F11 a message read after its sender left still reports read, over Nostr", 
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("F12 a group invite to someone who just walked off waits for them", async () => {
+  // Their session outlives the link, so the invite used to be written into no
+  // link, treated as sent and never queued. addGroupMembers skips existing
+  // members, so nothing could send it again.
+  const s = (scenario = new Scenario({
+    id: "F12",
+    title: "group created with a member whose link dropped a moment ago",
+    seed: 612,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const bob = SimDevice.create(s.world, android("bob", 22));
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(s.world, () => alice.peers().includes(bob.peerID));
+  alice.send(`dm:${bob.peerID}`, "hello");
+  await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).length > 0,
+  );
+
+  radio.setIsolated("bob", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"));
+  const groupID = alice.createGroup("crew", [bob.peerID]);
+  s.check("the group was created", groupID !== null);
+  if (groupID === null) {
+    s.assert();
+    return;
+  }
+
+  radio.setIsolated("bob", false);
+  const joined = await waitForCoarse(
+    s.world,
+    () => bob.knowsGroup(groupID),
+    45_000,
+  );
+  s.check("bob gets the invite once he is back", joined);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});

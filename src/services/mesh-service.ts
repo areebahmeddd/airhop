@@ -2607,8 +2607,9 @@ export class MeshService {
     }
   }
 
-  // Deliver any group states owed to a peer now that a session exists, each under
-  // the type it was queued with. A send that fails re-queues through the normal
+  // Deliver any group states owed to a peer now that a session exists, or that
+  // they are back in range of the one they kept, each under the type it was
+  // queued with. A send that fails re-queues through the normal
   // path, so nothing is lost by taking them out of the store first.
   private flushPendingGroupInvites(peerID: string): void {
     evictExpiredOwedGroupStates();
@@ -2865,6 +2866,10 @@ export class MeshService {
       // an expected path.
       return null;
     }
+    // A dropped link keeps its session, and the router counts the peer as
+    // reachable for a minute after they go, so it alone would call a pin sent
+    // that no link carried.
+    if (this.links.size() === 0) return null;
     const sent = this.router.sendNoisePayload(
       peerID,
       NoisePayloadType.LOCATION_PIN,
@@ -2931,6 +2936,8 @@ export class MeshService {
   //
   // Returns the ring id, or null when no session exists to carry it.
   sendRing(peerID: string): string | null {
+    // Same reason as the pin: a kept session is not a link.
+    if (this.links.size() === 0) return null;
     const ringID = newMessageId();
     const sent = this.router.sendNoisePayload(
       peerID,
@@ -3707,6 +3714,9 @@ export class MeshService {
       // This peer is reachable again: deliver anything we owe them. Covers the
       // ordinary case of someone walking back into range.
       this.flushOutbox(peerID);
+      // A kept session never completes a handshake again, which is the other
+      // thing that releases what they are owed.
+      this.flushPendingGroupInvites(peerID);
       // And hand them any envelopes we're carrying for third parties.
       this.sprayCourierTo(peerID, isDirectAnnounce);
       // A new neighbour is also a new carrier for mail we owe people nobody
@@ -5228,27 +5238,30 @@ export class MeshService {
     // session establishment delivers it.
     for (const peerID of memberPeerIDs) {
       if (peerID === this.identity.peerID) continue;
-      const delivered = this.router.sendNoisePayload(
+      this.sendGroupStateQueued(
         peerID,
         NoisePayloadType.GROUP_INVITE,
         stateBytes,
       );
-      if (!delivered) {
-        this.queueGroupState(peerID, NoisePayloadType.GROUP_INVITE, stateBytes);
-      }
     }
     return groupIDHex;
   }
 
   // Route a group-state blob to a roster member by fingerprint (its first 16 hex
-  // ARE the peer ID). Sends over their Noise session; if none is up yet, queues
-  // it and starts a handshake so the update lands once they reconnect.
+  // ARE the peer ID). Sends over their Noise session; if none is up yet, or no
+  // link is held to carry it, queues it so it lands once they reconnect. The
+  // session outlives a dropped link, so it alone does not mean the state left.
   private sendGroupStateQueued(
     peerID: string,
     type: NoisePayloadTypeValue,
     stateBytes: Uint8Array,
   ): void {
-    if (this.router.sendNoisePayload(peerID, type, stateBytes)) return;
+    if (
+      this.links.size() > 0 &&
+      this.router.sendNoisePayload(peerID, type, stateBytes)
+    ) {
+      return;
+    }
     this.queueGroupState(peerID, type, stateBytes);
   }
 
