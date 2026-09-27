@@ -262,10 +262,11 @@ const PERMISSION_PROMPT_TIMEOUT_MS = 60_000;
 // anything past this is the binder wedged rather than a slow answer.
 const PERMISSION_CHECK_TIMEOUT_MS = 3_000;
 
-// How old a "sending" message must be before a launch treats it as stranded.
-// Far past the longest Undo Send window, so it can only reach messages a dead
-// process left behind.
-const STALE_SEND_MS = 60_000;
+// Whether this JS runtime has settled the sends a dead process left behind.
+// Module scope, not component state: an Android Activity recreated under a
+// live runtime remounts App while its transfers are still running, and a fresh
+// process starts with every "sending" row an orphan, however young.
+let staleSendsSettled = false;
 
 // Request the BLE runtime permissions the OS requires, THEN start the mesh.
 // Without the grant, native startScanning/startAdvertising throw and are
@@ -1062,13 +1063,15 @@ function AppContent(): React.JSX.Element {
     sweepMediaIfDue();
   }, []);
 
-  // Settle messages the last process left mid-send, once per launch.
+  // Settle messages the last process left mid-send, once per JS runtime.
   //
   // Same shape as the sweep above, and here for the same reason: nothing else
   // owns them. See failStaleSending for why they are failed rather than
   // re-sent.
   useEffect(() => {
-    useChatStore.getState().failStaleSending(STALE_SEND_MS);
+    if (staleSendsSettled) return;
+    staleSendsSettled = true;
+    useChatStore.getState().failStaleSending(0);
   }, []);
 
   // Claim an audible audio session once. Otherwise it is the OS default, which
