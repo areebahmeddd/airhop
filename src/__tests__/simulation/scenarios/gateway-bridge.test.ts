@@ -474,6 +474,62 @@ test("N04 a gateway that loses its connection mid-conversation degrades quietly"
   s.assert(true);
 });
 
+test("N12 a deposit that lands just after the carrier drops is held, then published", async () => {
+  const s = (scenario = new Scenario({
+    id: "N12",
+    title: "the lift doors close with a message in flight",
+    seed: 719,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+
+  const gateway = SimDevice.create(
+    s.world,
+    { ...android("gateway", 11), gatewayEnabled: true },
+    relay,
+  );
+  const stranded = SimDevice.create(s.world, android("stranded", 22), relay);
+  const cast = [gateway, stranded];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("stranded", true);
+  for (const d of cast) d.launch();
+
+  await waitForCoarse(s.world, () => stranded.peerCount() === 1, 40_000);
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, cast, CELL_CHANNEL);
+  await waitForCoarse(s.world, () => stranded.seesGateway(), 60_000);
+
+  // The sockets die with no pool hook, and the deposit arrives before the
+  // gateway's withdrawal announce can.
+  relay.setOffline("gateway", true);
+  stranded.send(CELL_CHANNEL, "as the doors closed");
+  await settleIn(s, 5_000);
+  const published = (): boolean =>
+    relay
+      .eventsOfKind(KIND_GEOHASH_MESSAGE)
+      .some((e) => e.content.includes("as the doors closed"));
+  s.check(
+    "nothing reached the relays while the carrier was offline",
+    !published(),
+    "no relay was reachable",
+  );
+
+  relay.setOffline("gateway", false);
+  const out = await waitForCoarse(s.world, published, 120_000);
+  s.check(
+    "the held deposit went out once the carrier's relays were back",
+    out,
+    "it was published into a dead pool and lost",
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
 // ---- Mesh bridge ----
 
 // Two groups of people in one place who cannot hear each other over Bluetooth:

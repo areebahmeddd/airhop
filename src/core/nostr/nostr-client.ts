@@ -79,6 +79,14 @@ const MAX_PENDING_EVENTS = 4_000;
 // the handler's own dedup absorbs.
 const MAX_DELIVERED_IDS = 4_000;
 
+// How often the client re-reads the relay sockets for onConnectionChange.
+// nostr-tools reports a connect it was asked for through the pool's hooks, but
+// a live socket dropping, and the relay's own reconnect after it, reach no hook
+// at all, so without this the callback never sees either. The library retries a
+// dropped relay no sooner than every 10 s; half that keeps each transition
+// visible within one retry.
+const CONNECTION_POLL_MS = 5_000;
+
 // Placeholder passed to a queued EOSE callback, which takes no event but shares
 // the queue so it keeps its place in line.
 const EOSE_MARKER = {} as Event;
@@ -106,6 +114,7 @@ export class NostrClient {
   private readonly onConnectionChange?: (connected: boolean) => void;
   // Last reported connectivity, so we only notify on an actual transition.
   private connected = false;
+  private readonly connectionPoll: ReturnType<typeof setInterval>;
   // Inbound handler queue and its drain flag. See the pump below.
   private readonly pending: [EventHandler, Event][] = [];
   private draining = false;
@@ -119,6 +128,10 @@ export class NostrClient {
     // that into a single "any live relay" boolean for the caller.
     this.pool.onRelayConnectionSuccess = () => this.reconcileConnected();
     this.pool.onRelayConnectionFailure = () => this.reconcileConnected();
+    this.connectionPoll = setInterval(
+      () => this.reconcileConnected(),
+      CONNECTION_POLL_MS,
+    );
 
     // Merge caller-provided relays with the default DM relay set, deduplicated
     // and capped at MAX_RELAY_COUNT.
@@ -141,14 +154,18 @@ export class NostrClient {
   // publish (which would otherwise block a full PUBLISH_TIMEOUT_MS before
   // rejecting) and route straight to a mesh gateway uplink. Mirrors bitchat's
   // synchronous relaysConnected() check.
+  //
+  // Read from the sockets on every call rather than from `connected`, which
+  // trails them by up to CONNECTION_POLL_MS: a gateway deciding whether to
+  // publish a deposit or hold it must see a relay that dropped a moment ago.
   get isConnected(): boolean {
-    return this.connected;
+    return [...this.pool.listConnectionStatus().values()].some(Boolean);
   }
 
   // Recompute "any relay live" and notify only on a has-any / has-none flip, so
   // the UI's internet-bridge indicator tracks real connectivity without churn.
   private reconcileConnected(): void {
-    const any = [...this.pool.listConnectionStatus().values()].some(Boolean);
+    const any = this.isConnected;
     if (any !== this.connected) {
       this.connected = any;
       this.onConnectionChange?.(any);
@@ -372,13 +389,16 @@ export class NostrClient {
   // enabling Tor rebuilt the DM pool on the Tor socket while those sockets
   // stayed on the clear net, holding the device's real IP open to the relays it
   // had just been bridging through, which is the one thing the toggle exists to
-  // stop. nostr-tools keeps a relay alive until it is closed explicitly and its
-  // idle pruning is never invoked, so nothing collected them.
+  // stop. nostr-tools closes a relay on its own only after 20 s with no
+  // subscription or publish open on it, and each of those relays holds a
+  // subscription for as long as its cell is in use.
   //
   // `destroy()` closes every relay the pool holds and empties its map, which is
   // what "close" was always meant to mean here. The client is single-use either
   // way: every caller builds a fresh one rather than reopening this.
   close(): void {
+    // Stopped first, so a closed client reports no further transition.
+    clearInterval(this.connectionPoll);
     this.pool.destroy();
     // Anything still queued belongs to subscriptions that have just gone away,
     // and its handlers close over a transport this client no longer owns. A

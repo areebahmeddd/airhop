@@ -21,17 +21,30 @@ jest.mock("nostr-tools/pool", () => ({
     listConnectionStatus(): Map<string, boolean> {
       return new Map();
     }
+    destroy(): void {}
   },
 }));
 
 const SINCE = 1_700_000_000;
 
+// Closed after each test: a live client holds its connection poll open.
+const clients: NostrClient[] = [];
+function open(): NostrClient {
+  const client = new NostrClient();
+  clients.push(client);
+  return client;
+}
+
 beforeEach(() => {
   mockFilters.length = 0;
 });
 
+afterEach(() => {
+  for (const client of clients.splice(0)) client.close();
+});
+
 test("a reconnect cannot move a gift-wrap subscription's since", () => {
-  new NostrClient().subscribe(
+  open().subscribe(
     [{ kinds: [1059], "#p": ["ab"], since: SINCE }],
     () => undefined,
   );
@@ -50,7 +63,7 @@ test("a reconnect cannot move a gift-wrap subscription's since", () => {
 
 test("every relay gets its own copy of any other filter", () => {
   const channel: Filter = { kinds: [20000], since: SINCE };
-  new NostrClient().subscribe([channel], () => undefined);
+  open().subscribe([channel], () => undefined);
   expect(mockFilters.length).toBeGreaterThan(1);
   for (const filter of mockFilters) expect(filter).toEqual(channel);
   expect(new Set(mockFilters).size).toBe(mockFilters.length);

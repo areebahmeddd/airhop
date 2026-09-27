@@ -128,6 +128,8 @@ describe("the inbound pump", () => {
       await new Promise((resolve) => setTimeout(resolve, 1));
     }
     expect(seen).toHaveLength(12);
+    // On real timers its connection poll would outlive the test.
+    client.close();
   });
 
   it("keeps going when a handler throws on attacker-supplied content", async () => {

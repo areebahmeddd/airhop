@@ -37,9 +37,21 @@ jest.mock("nostr-tools/pool", () => ({
     listConnectionStatus(): Map<string, boolean> {
       return new Map();
     }
-    close(): void {}
+    destroy(): void {}
   },
 }));
+
+// Closed after each test: a live client holds its connection poll open.
+const clients: NostrClient[] = [];
+function open(): NostrClient {
+  const client = new NostrClient({ relays: [] });
+  clients.push(client);
+  return client;
+}
+
+afterEach(() => {
+  for (const client of clients.splice(0)) client.close();
+});
 
 // Five nearest relays for a cell, as GeoRelayDirectory would return them.
 const NEAREST = ["wss://n1", "wss://n2", "wss://n3", "wss://n4", "wss://n5"];
@@ -65,7 +77,7 @@ describe("NostrClient relay targeting", () => {
   const geoSet = mergeGeoRelays(NEAREST, CUSTOM, true, GEO_RELAY_COUNT);
 
   test("publish contacts the custom relay alongside the whole interop set", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = open();
     await client.publish(EVENT, geoSet);
 
     expect(mockPublishTargets).toHaveLength(1);
@@ -77,7 +89,7 @@ describe("NostrClient relay targeting", () => {
   });
 
   test("subscribe contacts the custom relay alongside the whole interop set", () => {
-    const client = new NostrClient({ relays: [] });
+    const client = open();
     client.subscribe([{ kinds: [20000] }], () => undefined, undefined, geoSet);
 
     // One pool subscription per relay (see NostrClient.subscribe).
@@ -92,7 +104,7 @@ describe("NostrClient relay targeting", () => {
       { length: MAX_CUSTOM_RELAYS },
       (_, i) => `wss://c${i}.example.com`,
     );
-    const client = new NostrClient({ relays: [] });
+    const client = open();
     await client.publish(
       EVENT,
       mergeGeoRelays(NEAREST, full, true, GEO_RELAY_COUNT),
@@ -107,7 +119,7 @@ describe("NostrClient relay targeting", () => {
       { length: 40 },
       (_, i) => `wss://r${i}.example.com`,
     );
-    const client = new NostrClient({ relays: [] });
+    const client = open();
     await client.publish(EVENT, many);
 
     expect(mockPublishTargets[0]).toHaveLength(
@@ -116,7 +128,7 @@ describe("NostrClient relay targeting", () => {
   });
 
   test("the default DM pool is unchanged: defaults only, no override applied", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = open();
     expect(client.activeRelays).toEqual([
       "wss://nos.lol",
       "wss://offchain.pub",
