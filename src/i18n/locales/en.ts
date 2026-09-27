@@ -1991,7 +1991,7 @@ export const strings = {
   "settings.conn.tor_unavailable":
     "Tor routing is not available in this build.",
   "settings.conn.tor_timeout":
-    "Tor is taking longer than a minute to connect. It stays on and keeps trying; the Mesh tab will say when it is routing, or if this network is blocking it.",
+    "Tor has not connected yet. It stays on and keeps trying; the Mesh tab will say when it is routing, or if this network is blocking it.",
   "settings.conn.tor_failed": "Could not start Tor. Try again in a moment.",
   "settings.tor.status": "Tor status",
   "settings.tor.connection": "Connection",
