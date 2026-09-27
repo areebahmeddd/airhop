@@ -85,6 +85,48 @@ describe("addMessage ordering", () => {
   });
 });
 
+// A bridged row is keyed on the event's unsigned radio hint, so the signed
+// radio copy of the same message must win the row whichever arrives first.
+describe("radio wins over a bridged row", () => {
+  const T = 1_700_000_000_000;
+  const bridged = makeMessage({
+    id: "mesh-abc",
+    senderID: "nostr_ffff",
+    senderNickname: "alice#ffff",
+    timestampMs: T,
+    viaBridge: true,
+  });
+  const radio = makeMessage({ id: "mesh-abc", timestampMs: T + 400 });
+
+  it("replaces the bridged row with the radio copy that arrives after it", () => {
+    state().addMessage(bridged);
+    state().addMessage(radio);
+    expect(state().messages["#test"]).toEqual([radio]);
+  });
+
+  it("neither notifies nor counts it unread a second time", () => {
+    const seen: string[] = [];
+    const unsubscribe = subscribeInboundMessages((m) => seen.push(m.id));
+    state().addMessage(bridged);
+    state().addMessage(radio);
+    unsubscribe();
+    expect(seen).toEqual(["mesh-abc"]);
+    expect(state().unreadCounts["#test"]).toBe(1);
+  });
+
+  it("keeps the radio row when the bridged copy comes second", () => {
+    state().addMessage(radio);
+    state().addMessage(bridged);
+    expect(state().messages["#test"]).toEqual([radio]);
+  });
+
+  it("keeps the first of two bridged copies", () => {
+    state().addMessage(bridged);
+    state().addMessage({ ...bridged, senderNickname: "mallory#eeee" });
+    expect(state().messages["#test"]).toEqual([bridged]);
+  });
+});
+
 // Relays and sync replay history on every reconnect. What the user cleared or
 // deleted must stay gone, without dropping a peer whose clock runs behind.
 describe("a cleared conversation", () => {

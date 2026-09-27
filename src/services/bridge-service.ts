@@ -11,7 +11,9 @@
 // caches, per-role rate limits) but leans on Airhop infrastructure and keeps the
 // dedup simple: both the radio copy and the bridged copy key the timeline row on
 // the same content-derived stable ID, so duplicates collapse in either arrival
-// order without bitchat's alias-removal bookkeeping.
+// order without bitchat's alias-removal bookkeeping. The radio copy still wins
+// the row, as in bitchat: the chat store replaces a bridged row when the signed
+// radio copy arrives, since the hint the bridged row is keyed on is unsigned.
 //
 // Scope note: the rendezvous covers the device's own geohash-6 cell only.
 // Boundary-neighbor coverage (subscribing to adjacent cells) is a future

@@ -550,8 +550,16 @@ export const useChatStore = create<ChatState>()(
 
         set((state) => {
           const existing = state.messages[msg.channel] ?? [];
-          // Deduplicate by id
-          if (existing.some((m) => m.id === msg.id)) return state;
+          // Deduplicate by id, except that radio wins, as in bitchat-ios
+          // BridgeService. A bridged row takes its id from the event's unsigned
+          // radio hint, so the signed radio copy replaces it rather than being
+          // dropped behind it. Already counted and notified as the bridged row.
+          const prior = existing.find((m) => m.id === msg.id);
+          const replacing = prior?.viaBridge === true && msg.viaBridge !== true;
+          if (prior !== undefined && !replacing) return state;
+          const base = replacing
+            ? existing.filter((m) => m !== prior)
+            : existing;
           // Insert by timestamp instead of appending. Mesh messages can arrive
           // out of order (a multi-hop relay is slower than a direct link but
           // still carries the ORIGINAL sender timestamp), which otherwise
@@ -560,17 +568,17 @@ export const useChatStore = create<ChatState>()(
           // the middle of today's conversation.
           // Linear scan from the end: the common case is a genuinely newest
           // message, which lands on the first comparison.
-          let insertAt = existing.length;
+          let insertAt = base.length;
           while (
             insertAt > 0 &&
-            existing[insertAt - 1].timestampMs > msg.timestampMs
+            base[insertAt - 1].timestampMs > msg.timestampMs
           ) {
             insertAt--;
           }
           const next = [
-            ...existing.slice(0, insertAt),
+            ...base.slice(0, insertAt),
             msg,
-            ...existing.slice(insertAt),
+            ...base.slice(insertAt),
           ];
           // Trim to cap, then keep the unread count consistent with what is left.
           const overflow = next.length - MAX_PER_CHANNEL;
@@ -590,7 +598,10 @@ export const useChatStore = create<ChatState>()(
           ).length;
           const droppedUnread = Math.max(0, droppedOthers - readOthers);
           const isUnread =
-            keptNew && !msg.isMine && msg.channel !== state.activeChannel;
+            !replacing &&
+            keptNew &&
+            !msg.isMine &&
+            msg.channel !== state.activeChannel;
           const newUnread =
             Math.max(0, prevUnread - droppedUnread) + (isUnread ? 1 : 0);
           return {
