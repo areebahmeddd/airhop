@@ -8,7 +8,8 @@
 // none), so a decline sends them away and a fresh code replaces the one they
 // read. Nothing is written before the match.
 //
-// Reached only from onboarding, on a phone with no identity, so the answer to
+// Reached only from onboarding, on a phone with no identity (or only one a
+// refused wipe condemned), so the answer to
 // a failed install is simply the panic wipe: there is nothing here to keep.
 
 import { loadIdentity } from "@core/crypto/identity";
@@ -47,6 +48,7 @@ import {
 import { clearMoveMarker } from "./move-marker";
 import { applyMove, isKnownSection, MoveApplyError } from "./move-snapshot";
 import { panicWipe } from "./panic-wipe";
+import { isIdentityCondemned } from "./wipe-marker";
 
 export type ReceiverFailure =
   | "incompatible"
@@ -117,7 +119,12 @@ export class MoveReceiver {
     // Awaited here: the welcome screen's own sweep is not, and landing after
     // the wallet secrets arrive would delete them.
     await sweepOrphanedSecrets().catch(() => false);
-    if ((await loadIdentity().catch(() => null)) !== null) {
+    // A condemned identity is one a refused wipe left behind: launch already
+    // treats it as absent, and the transfer's install overwrites it.
+    if (
+      (await loadIdentity().catch(() => null)) !== null &&
+      !isIdentityCondemned()
+    ) {
       this.set({ phase: "failed", reason: "storage" });
       return;
     }

@@ -138,6 +138,8 @@ export class MoveSender {
       this.fail("unreachable");
       return;
     }
+    // A cancel during either read has already torn down, and would not again.
+    if (this.cancelled) return;
     this.unsubscribe = subscribeMoveLink((event) => this.onLinkEvent(event));
 
     const connectionID = await this.dial(hosts);

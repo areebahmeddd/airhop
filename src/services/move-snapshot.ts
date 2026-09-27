@@ -19,7 +19,12 @@
 // each setter would persist that emptiness over what arrived.
 
 import { loadIdentity } from "@core/crypto/identity";
-import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
+import {
+  deleteSecret,
+  KEYCHAIN_ITEMS,
+  readSecret,
+  writeSecret,
+} from "@core/crypto/keychain";
 import type { MoveSection } from "@core/move/move-bundle";
 import { applyLayoutDirection, resolvePreference } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
@@ -333,6 +338,10 @@ export async function applyMove(
         await writeAndVerify(KEYCHAIN_ITEMS[name], fromUtf8.decode(data));
       }
     }
+    // Any one-time keys here belong to an earlier identity, a condemned one
+    // whose delete was refused, and the arriving identity must not publish
+    // them: that would link the two.
+    await deleteSecret(KEYCHAIN_ITEMS.localPrekeys);
     await writeAndVerify(KEYCHAIN_ITEMS.identity, identityRaw);
   } catch (error) {
     if (error instanceof MoveApplyError) throw error;

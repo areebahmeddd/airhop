@@ -20,6 +20,7 @@ import type { MoveLinkEvent } from "../move-link";
 import type * as MarkerModule from "../move-marker";
 import type * as ReceiverModule from "../move-receiver";
 import type * as SenderModule from "../move-sender";
+import type * as WipeMarkerModule from "../wipe-marker";
 
 type Side = "old" | "new" | "evil";
 type Dialer = Exclude<Side, "new">;
@@ -54,6 +55,10 @@ class LinkBus {
     null;
   private held: (() => void)[] = [];
   private holding = false;
+
+  listenerCount(side: Side): number {
+    return this.listeners[side].length;
+  }
 
   release(): void {
     this.holding = false;
@@ -180,6 +185,7 @@ interface Phone {
   invite: typeof InviteModule;
   sender: typeof SenderModule;
   receiver: typeof ReceiverModule;
+  wipeMarker: typeof WipeMarkerModule;
   secureStore: { setItemAsync: jest.Mock };
   mesh: { destroyMeshService: jest.Mock };
 }
@@ -240,6 +246,7 @@ function phone(side: Side): Phone {
       invite: require("@core/move/move-invite"),
       sender: require("../move-sender"),
       receiver: require("../move-receiver"),
+      wipeMarker: require("../wipe-marker"),
       secureStore: require("expo-secure-store"),
       mesh: require("../mesh-service"),
     };
@@ -300,6 +307,8 @@ async function rig(
   versions = { old: "1.0.8", new: "1.0.8", evil: "1.0.8" },
   // Taps They match as soon as the words show.
   autoConfirm = true,
+  // Runs on the new phone before its receiver starts.
+  prepareNew?: (p: Phone) => Promise<void>,
 ): Promise<Rig> {
   const bus = new LinkBus();
   g.__moveBus = bus;
@@ -334,6 +343,11 @@ async function rig(
   await evilPhone.identity.saveIdentity(
     await evilPhone.identity.generateIdentity(),
   );
+
+  if (prepareNew !== undefined) {
+    g.__moveSide = "new";
+    await prepareNew(newPhone);
+  }
 
   const receiverStates: ReceiverModule.ReceiverState[] = [];
   const receiver: ReceiverModule.MoveReceiver =
@@ -410,7 +424,6 @@ describe("device transfer, end to end", () => {
     );
     expect(ok).toBe(true);
 
-    // DEBUG
     const done = r.receiverStates[r.receiverStates.length - 1];
     expect(done).toEqual({ phase: "done", peerID: r.peerID, released: true });
     expect(await identityOf(r.newPhone)).toBe(r.peerID);
@@ -603,6 +616,47 @@ describe("device transfer, end to end", () => {
     expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
     expect(await identityOf(r.oldPhone)).toBe(r.peerID);
     expect(await identityOf(r.newPhone)).toBeNull();
+  });
+
+  it("an identity a refused wipe left behind does not block a transfer in, and its prekeys go", async () => {
+    const r = await rig(undefined, true, async (p) => {
+      await p.identity.saveIdentity(await p.identity.generateIdentity());
+      await p.keychain.writeSecret(
+        p.keychain.KEYCHAIN_ITEMS.localPrekeys,
+        "old-prekeys",
+      );
+      p.wipeMarker.condemnIdentity();
+    });
+    r.send();
+    expect(
+      await until(
+        () =>
+          lastPhase(r.senderStates) === "done" &&
+          lastPhase(r.receiverStates) === "done",
+      ),
+    ).toBe(true);
+    expect(await identityOf(r.newPhone)).toBe(r.peerID);
+    expect(r.newPhone.wipeMarker.isIdentityCondemned()).toBe(false);
+    // The condemned identity's one-time keys must not be published by the
+    // identity that replaced it.
+    expect(
+      await r.newPhone.keychain.readSecret(
+        r.newPhone.keychain.KEYCHAIN_ITEMS.localPrekeys,
+      ),
+    ).toBeNull();
+    r.receiver.dispose();
+  });
+
+  it("cancelled while connecting: the old phone leaves nothing listening", async () => {
+    const r = await rig();
+    const sender = r.send();
+    // Before the identity read and the subnet check have answered.
+    sender.cancel();
+    await settle();
+    expect(r.bus.listenerCount("old")).toBe(0);
+    expect(r.bus.dials).toBe(0);
+    expect(r.resumed).not.toHaveBeenCalled();
+    r.receiver.dispose();
   });
 
   it("without chat history the rooms and their keys move, the messages do not", async () => {
