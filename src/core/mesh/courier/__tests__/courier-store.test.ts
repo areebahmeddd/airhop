@@ -338,6 +338,44 @@ describe("CourierStore handover", () => {
   });
 });
 
+// A recipient heard only through relays announces every 15 to 30 s, and each
+// copy flooded toward them crosses the whole mesh.
+describe("CourierStore remote handover", () => {
+  test("offers a recipient's mail once per cooldown, and keeps carrying it", () => {
+    const store = freshStore();
+    const tag = new Uint8Array(16).fill(0x47);
+    store.deposit(
+      makeEnvelopePayload(tag, 4),
+      makeNoiseKeypair().pub,
+      "verified",
+    );
+    const t0 = Date.now();
+
+    const first = store.offerRemoteHandover([tag], t0);
+    expect(first).toHaveLength(1);
+    expect(first[0].copies).toBe(1);
+    expect(store.size).toBe(1);
+
+    expect(store.offerRemoteHandover([tag], t0 + 30_000)).toHaveLength(0);
+    expect(store.offerRemoteHandover([tag], t0 + 10 * 60_000)).toHaveLength(1);
+    // A handover over their own link is not held back by it.
+    expect(store.offerHandover([tag])).toHaveLength(1);
+  });
+
+  test("the cooldown survives a restart", () => {
+    const id = `courier-persist-${String(++storeCounter)}`;
+    const tag = new Uint8Array(16).fill(0x48);
+    const t0 = Date.now();
+    const first = new CourierStore(id);
+    first.deposit(makeEnvelopePayload(tag), makeNoiseKeypair().pub, "verified");
+    first.offerRemoteHandover([tag], t0);
+
+    expect(
+      new CourierStore(id).offerRemoteHandover([tag], t0 + 60_000),
+    ).toHaveLength(0);
+  });
+});
+
 describe("CourierStore spray", () => {
   test("offers half the budget and spends it on commit", () => {
     const store = freshStore();
@@ -406,6 +444,21 @@ describe("CourierStore spray", () => {
 
     expect(store.offerSpray(depositor.pub)).toHaveLength(0);
     // Anybody else still gets it.
+    expect(store.offerSpray(makeNoiseKeypair().pub)).toHaveLength(1);
+  });
+
+  // Their own mail is a handover. Offered as a spray copy too, it costs a
+  // second write, and half a budget if that write lands first.
+  test("never sprays a peer their own mail", () => {
+    const store = freshStore();
+    const recipient = makeNoiseKeypair();
+    store.deposit(
+      makeEnvelopePayload(computeRecipientTag(recipient.pub), 4),
+      makeNoiseKeypair().pub,
+      "verified",
+    );
+
+    expect(store.offerSpray(recipient.pub)).toHaveLength(0);
     expect(store.offerSpray(makeNoiseKeypair().pub)).toHaveLength(1);
   });
 

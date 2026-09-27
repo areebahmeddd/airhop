@@ -34,6 +34,7 @@ import { noiseXOpen, noiseXSeal } from "@core/crypto/noise-x";
 import { NoiseHandshake, type NoiseSession } from "@core/crypto/noise-xx";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
+  candidateTags,
   computeRecipientTag,
   COURIER_INITIAL_COPIES,
   CourierStore,
@@ -3663,7 +3664,7 @@ export class MeshService {
       // ordinary case of someone walking back into range.
       this.flushOutbox(peerID);
       // And hand them any envelopes we're carrying for third parties.
-      this.sprayCourierTo(peerID);
+      this.sprayCourierTo(peerID, isDirectAnnounce);
       // A saved contact on a link we hold gets a session now rather than on
       // the first message, so everything a session proves (signing key, ring
       // grant, private media) holds before either side types. bitchat opens
@@ -3970,23 +3971,11 @@ export class MeshService {
     // handler.
     if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
 
-    // Is it ours? Check today's tag and yesterday's: an envelope sealed just
-    // before a UTC day boundary carries the previous day's tag, and dropping
-    // those would silently lose messages once a day.
-    const myPub = x25519.getPublicKey(this.identity.noiseStaticPrivKey);
-    const now = Date.now();
-    // Three days, not two: yesterday, today, and TOMORROW.
-    //
-    // The tag is derived from a UTC epoch day, so a sender whose clock runs
-    // ahead across the boundary seals with tomorrow's tag. Checking only
-    // backwards meant that envelope was silently unmatchable and we carried our
-    // own mail around instead of opening it. bitchat's candidateTags spans the
-    // same three days for the same reason.
-    const tags = [
-      computeRecipientTag(myPub, now),
-      computeRecipientTag(myPub, now - 86_400_000),
-      computeRecipientTag(myPub, now + 86_400_000),
-    ];
+    // Is it ours? Any of the three days' tags, or mail sealed across a UTC day
+    // boundary is carried around instead of opened.
+    const tags = candidateTags(
+      x25519.getPublicKey(this.identity.noiseStaticPrivKey),
+    );
     const env = decodeEnvelopePayload(packet.payload);
     if (env === null) return;
 
@@ -4126,9 +4115,9 @@ export class MeshService {
     }
   }
 
-  // Hand carried envelopes to a peer we just met.
+  // Hand carried envelopes to a peer whose announce we just heard.
   //
-  // Two distinct operations, in this order and never merged:
+  // A peer on a link we hold gets two distinct operations, never merged:
   //
   //   1. HANDOVER  mail addressed to this peer. They are the destination, so
   //      the copy carries no spray budget and the envelope is retired once it
@@ -4138,31 +4127,33 @@ export class MeshService {
   //   2. SPRAY     mail for somebody else, offered to them as another carrier.
   //      Half the remaining budget, once per peer.
   //
-  // Handover first is also why the spray pass needs no "addressed to this peer"
-  // exclusion of its own, which bitchat's transferSprayCopies carries: by then
-  // there are none left. Both commit only after the transport confirms, which is
-  // why neither loop mutates the store directly.
-  private sprayCourierTo(peerID: string): void {
+  // Both commit only after the transport confirms, which is why neither loop
+  // mutates the store directly.
+  //
+  // A peer heard only through relays gets their own mail flooded toward them
+  // and nothing else, at most once per envelope per cooldown, and it stays
+  // carried: nothing acknowledges a flood. Never a spray, since a flood cannot
+  // confirm a carrier took it, so no budget would ever be spent and every peer
+  // within seven hops would end up carrying a copy. This is bitchat-ios's split
+  // on the same announce.
+  private sprayCourierTo(peerID: string, isDirectAnnounce: boolean): void {
     const peer = this.registry.get(peerID);
     if (!peer?.noisePubKey) return;
     const peerPub = peer.noisePubKey;
+    const tags = candidateTags(peerPub);
 
-    // All three days. The tag is stamped by the SENDER at seal time and rotates
-    // on the UTC epoch day, while an envelope lives 24h - so anything carried
-    // across midnight bears yesterday's tag, and a sender whose clock runs ahead
-    // seals with tomorrow's. Checking one day missed most of what a carrier
-    // actually holds. Matches the receive gate and bitchat's candidateTags.
-    const now = Date.now();
-    const tags = [0, -86_400_000, 86_400_000].map((offset) =>
-      computeRecipientTag(peerPub, now + offset),
-    );
+    if (!isDirectAnnounce) {
+      for (const env of this.courier.offerRemoteHandover(tags)) {
+        void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID);
+      }
+      return;
+    }
 
     for (const env of this.courier.offerHandover(tags)) {
       void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID).then(
         (delivered) => {
           // Only a write accepted onto THIS peer's link retires the envelope. A
-          // refusal, or a speculative flood at a peer several hops away, leaves
-          // it carried for the next encounter.
+          // refusal leaves it carried for the next encounter.
           if (delivered) this.courier.commitHandover(env.ciphertext);
         },
       );
@@ -7184,11 +7175,9 @@ export class MeshService {
 
     const now = Date.now();
     this.courierDropDay = Math.floor(now / 86_400_000);
-    const tags = [0, -86_400_000, 86_400_000].map((offset) =>
-      computeRecipientTag(
-        x25519.getPublicKey(this.identity.noiseStaticPrivKey),
-        now + offset,
-      ),
+    const tags = candidateTags(
+      x25519.getPublicKey(this.identity.noiseStaticPrivKey),
+      now,
     );
 
     const close = subscribeCourierDropEvents(tags, client, (env) => {

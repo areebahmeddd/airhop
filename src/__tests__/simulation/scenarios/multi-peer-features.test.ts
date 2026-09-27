@@ -706,3 +706,110 @@ test("F08 a message for someone long gone is carried, past one frame, from the c
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("F09 carried mail is not flooded at peers heard only through relays", async () => {
+  // Spray-and-wait splits a budget of four copies among the carriers it meets.
+  // A carrier that also sprayed every peer it heard through relays spent
+  // nothing, since a flood confirms no carrier, so every phone within seven
+  // hops ended up holding a copy, re-flooded on each of their announces. Only
+  // the recipient's own mail goes toward a relayed peer, once per cooldown,
+  // and it still reaches them.
+  const s = (scenario = new Scenario({
+    id: "F09",
+    title: "a carrier in a chain sprays its neighbours, not the whole mesh",
+    seed: 609,
+  }));
+  const radio = new RadioFabric(s.world);
+  const ids = ["alice", "bob", "carrier", "d", "e", "f"];
+  const cast = ids.map((id, i) =>
+    SimDevice.create(s.world, android(id, 11 * (i + 1))),
+  );
+  const [alice, bob, carrier, d, e, f] = cast;
+  for (const dev of cast) radio.add(dev);
+  s.track(...cast);
+  const chain: [string, string][] = [
+    ["alice", "carrier"],
+    ["carrier", "d"],
+    ["d", "e"],
+    ["e", "f"],
+  ];
+  radio.setTopology([["alice", "bob"], ...chain]);
+  for (const dev of cast) dev.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((dev) => dev.peerCount() >= 5),
+    60_000,
+  );
+  await s.world.advance(10_000);
+
+  // Bob leaves, and alice writes once he is gone.
+  radio.setTopology(chain);
+  await s.world.advance(90_000);
+  const status = alice.send(`dm:${bob.peerID}`, "back at the north gate");
+  s.check(
+    "alice handed it to the carrier",
+    status === "carried",
+    `status=${status}`,
+  );
+
+  interface Carried {
+    courier: { size: number; envelopes: { copies: number }[] };
+  }
+  const bag = (dev: SimDevice) => (dev.mesh as unknown as Carried).courier;
+  const originated = jest.spyOn(
+    carrier.mesh as unknown as {
+      sendCourierPayloadTo: (
+        payload: Uint8Array,
+        peerID: string,
+      ) => Promise<boolean>;
+    },
+    "sendCourierPayloadTo",
+  );
+  await s.world.advance(180_000);
+  const copies = [carrier, d, e, f].map((dev) =>
+    bag(dev).envelopes.reduce((sum, env) => sum + env.copies, 0),
+  );
+  const held = `carrier=${copies[0]} d=${copies[1]} e=${copies[2]} f=${copies[3]}`;
+  s.check(
+    "the copies in the mesh never exceed the budget",
+    copies.reduce((a, b) => a + b, 0) <= 4,
+    held,
+  );
+  s.check(
+    "a phone reached only through relays carries nothing",
+    bag(f).size === 0,
+    held,
+  );
+  const neighbours = new Set([alice.peerID, d.peerID]);
+  const beyond = originated.mock.calls.filter(
+    ([, peer]) => !neighbours.has(peer),
+  );
+  s.check(
+    "the carrier sent nothing to peers it hears only through relays",
+    beyond.length === 0,
+    `to neighbours=${String(originated.mock.calls.length - beyond.length)}, beyond=${String(beyond.length)}`,
+  );
+
+  // Bob comes back at the far end, where no carrier holds a link to him.
+  originated.mockClear();
+  radio.setTopology([...chain, ["f", "bob"]]);
+  const delivered = await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("back at the north gate"),
+    180_000,
+  );
+  s.check("the mail reaches him through the relays", delivered);
+  const towardBob = originated.mock.calls.filter(
+    ([, peer]) => peer === bob.peerID,
+  );
+  s.check(
+    "it is flooded toward him at most once per cooldown",
+    towardBob.length <= 1,
+    `floods=${String(towardBob.length)}`,
+  );
+  originated.mockRestore();
+
+  s.expectNone("exactly once", exactlyOnce(cast));
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
