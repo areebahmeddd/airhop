@@ -1586,3 +1586,146 @@ test("N15 a bridge ignores deposits whose sender it cannot verify", async () => 
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+// ---- What a channel send reports ----
+
+test("N17 a retried location post is one message to the neighbour who hears both", async () => {
+  // The composer retries a failed post under its row's id, so both copies are
+  // one message wherever they land rather than a second bubble for anyone who
+  // heard the first.
+  const s = (scenario = new Scenario({
+    id: "N17",
+    title: "a retry reuses the wire id, so receivers collapse it",
+    seed: 717,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11), relay);
+  const bob = SimDevice.create(s.world, android("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => alice.peers().includes(bob.peerID),
+    30_000,
+  );
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  s.check(
+    "both phones resolved the city cell",
+    await cellsResolved(s, cast, CELL_CHANNEL),
+  );
+
+  const text = "is the north road open";
+  alice.sendChannelMessage(CELL_CHANNEL, text, "n17-row");
+  await advanceFor(s.world, 5_000);
+  alice.sendChannelMessage(CELL_CHANNEL, text, "n17-row");
+  await advanceFor(s.world, 20_000);
+
+  const copies = bob.texts(CELL_CHANNEL).filter((t) => t === text).length;
+  s.check("bob holds the post once", copies === 1, `copies=${String(copies)}`);
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N18 a lone phone's bridged room message reads as sent", async () => {
+  // Nobody is in radio range, but the bridge put the message on a live relay
+  // for the other islands. That is reach, not a message waiting to go.
+  const s = (scenario = new Scenario({
+    id: "N18",
+    title: "the bridge publish counts as reach on the public room",
+    seed: 718,
+  }));
+  const relay = new RelayFabric(s.world);
+  const lone = SimDevice.create(
+    s.world,
+    { ...android("lone", 11), bridgeEnabled: true },
+    relay,
+  );
+  locations().place(lone.id, PLACES.bengaluru);
+  s.track(lone);
+  lone.launch();
+  lone.joinChannel(BRIDGE_CHANNEL);
+  lone.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, [lone], CELL_CHANNEL);
+  const bridge = (
+    lone.mesh as unknown as {
+      bridgeService: { advertisedBridgeGeohash: () => string | undefined };
+    }
+  ).bridgeService;
+  s.check(
+    "the phone is online with a rendezvous cell",
+    await waitForCoarse(
+      s.world,
+      () => bridge.advertisedBridgeGeohash() !== undefined,
+      90_000,
+    ),
+  );
+
+  const sent = lone.sendChannelMessage(BRIDGE_CHANNEL, "anyone out there");
+  s.check(
+    "no radio link carried it, the bridge did",
+    sent?.meshLinks === 0 && sent.nostr,
+    JSON.stringify(sent),
+  );
+  s.expectNone("process health", noCrashes([lone]));
+  s.assert(true);
+});
+
+test("N19 a location post no relay accepts settles as reaching nobody", async () => {
+  // A live socket is not an acceptance. Every relay holds back its OK, so the
+  // post that left with a socket open has, once they have answered, reached
+  // nobody.
+  const s = (scenario = new Scenario({
+    id: "N19",
+    title: "reach follows the relay's answer, not the socket",
+    seed: 719,
+  }));
+  const relay = new RelayFabric(s.world);
+  const lone = SimDevice.create(s.world, android("lone", 11), relay);
+  locations().place(lone.id, PLACES.bengaluru);
+  s.track(lone);
+  lone.launch();
+  lone.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, [lone], CELL_CHANNEL);
+  await waitForCoarse(s.world, () => relay.connectionCount("lone") > 0, 60_000);
+
+  relay.setAllRelayConditions({ withholdOk: true });
+  const refused = lone.sendChannelMessage(CELL_CHANNEL, "is anyone here");
+  s.check(
+    "it left with a relay socket open",
+    refused?.nostr === true,
+    JSON.stringify(refused),
+  );
+  let refusedSettled: { nostr: boolean; gateway: boolean } | undefined;
+  void refused?.settled?.then((r) => {
+    refusedSettled = r;
+  });
+  await advanceFor(s.world, 30_000);
+  s.check(
+    "and once the relays had answered, it had reached nobody",
+    refusedSettled !== undefined &&
+      !refusedSettled.nostr &&
+      !refusedSettled.gateway,
+    JSON.stringify(refusedSettled),
+  );
+
+  relay.setAllRelayConditions({ withholdOk: false });
+  const accepted = lone.sendChannelMessage(CELL_CHANNEL, "and now");
+  let acceptedSettled: { nostr: boolean } | undefined;
+  void accepted?.settled?.then((r) => {
+    acceptedSettled = r;
+  });
+  await advanceFor(s.world, 30_000);
+  s.check(
+    "a relay that accepts it settles as reached",
+    acceptedSettled?.nostr === true,
+    JSON.stringify(acceptedSettled),
+  );
+  s.expectNone("process health", noCrashes([lone]));
+  s.assert(true);
+});

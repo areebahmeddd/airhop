@@ -86,6 +86,9 @@ export interface ChatMessage {
   // True when this public message arrived from another mesh island across the
   // mesh bridge (rendered with a network glyph), rather than over Bluetooth.
   viaBridge?: boolean;
+  // Set on our own public message the user kept off the mesh bridge, so a
+  // retry keeps it radio-only too.
+  nearbyOnly?: true;
   // A place somebody sent, rendered as a card instead of a bubble.
   //
   // On the message rather than in a store of its own because a pin is a

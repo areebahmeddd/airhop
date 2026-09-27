@@ -1927,7 +1927,6 @@ export default function MessageThread({
   const pendingSendRef = useRef<{
     msg: ChatMessage;
     timer: ReturnType<typeof setTimeout>;
-    nearbyOnly: boolean;
   } | null>(null);
   const [heldMessage, setHeldMessage] = useState<ChatMessage | null>(null);
   // "Nearby only": keep the next public #bluetooth message off the internet
@@ -2428,7 +2427,7 @@ export default function MessageThread({
   // The real transmission, run when the hold window elapses or is committed.
   // Reads everything from the message and from live getters, so it is safe to
   // call from a stale closure (a fired timer, or the unmount flush).
-  function transmit(msg: ChatMessage, nearbyOnly = false): void {
+  function transmit(msg: ChatMessage): void {
     const setStatus = useChatStore.getState().setMessageStatus;
     const msgChannel = msg.channel;
     const service = getMeshService();
@@ -2500,32 +2499,52 @@ export default function MessageThread({
       // peer took it to publish for us ("carried"), or it went nowhere. Read
       // from what happened, not from whether the channel may use the internet,
       // or a location channel on Bluetooth alone shows a sent tick.
-      const sent = service.sendChannelMessage(msgChannel, msg.text, nearbyOnly);
-      if (sent.meshLinks > 0 || sent.nostr) {
-        setStatus(msgChannel, msg.id, "sent");
-      } else if (sent.gateway) {
-        setStatus(msgChannel, msg.id, "carried");
-        showStatus("gateway");
-      } else if (
-        isGeoChannel(msgChannel) ||
-        useChatStore.getState().channelKeys[msgChannel] !== undefined
-      ) {
-        // A location cell's audience is everyone in it, reached over the
-        // internet. A Bluetooth neighbour arriving later will sync the packet,
-        // but the cell itself never sees it, so this is as far as it goes.
-        //
-        // A private channel's sealed packet is never kept for sync and its
-        // relay publish is one-shot, so nothing sends it later either. Failed
-        // is what offers Retry.
-        setStatus(msgChannel, msg.id, "failed");
-        showNoReachStatus();
-      } else {
-        // A public mesh room's audience IS whoever is in range, and the packet
-        // stays a gossip candidate for six hours, so the next neighbour to turn
-        // up gets it. Same reasoning as the group branch above: this is waiting,
-        // not broken, and painting it red would be the harsher of two lies.
-        setStatus(msgChannel, msg.id, "queued");
-        showNoReachStatus();
+      //
+      // The row's id is the wire id, so a retry is the same message again and
+      // collapses with the first copy wherever both land.
+      const sent = service.sendChannelMessage(
+        msgChannel,
+        msg.text,
+        msg.id,
+        msg.nearbyOnly === true,
+      );
+      const settle = (reach: typeof sent, announce: boolean): void => {
+        if (reach.meshLinks > 0 || reach.nostr) {
+          setStatus(msgChannel, msg.id, "sent");
+        } else if (reach.gateway) {
+          setStatus(msgChannel, msg.id, "carried");
+          if (announce) showStatus("gateway");
+        } else if (
+          isGeoChannel(msgChannel) ||
+          useChatStore.getState().channelKeys[msgChannel] !== undefined
+        ) {
+          // A location cell's audience is everyone in it, reached over the
+          // internet. A Bluetooth neighbour arriving later will sync the packet,
+          // but the cell itself never sees it, so this is as far as it goes.
+          //
+          // A private channel's sealed packet is never kept for sync and its
+          // relay publish is one-shot, so nothing sends it later either. Failed
+          // is what offers Retry.
+          setStatus(msgChannel, msg.id, "failed");
+          if (announce) showNoReachStatus();
+        } else {
+          // A public mesh room's audience IS whoever is in range, and the packet
+          // stays a gossip candidate for six hours, so the next neighbour to
+          // turn up gets it. Same reasoning as the group branch above: this is
+          // waiting, not broken, and painting it red would be the harsher of
+          // two lies.
+          setStatus(msgChannel, msg.id, "queued");
+          if (announce) showNoReachStatus();
+        }
+      };
+      settle(sent, true);
+      // Only a relay carried it, on the strength of an open socket. Every relay
+      // may still refuse or never answer, so the answer has the last word. No
+      // hint then: it could land on whatever thread is open by the time.
+      if (sent.meshLinks === 0 && sent.nostr) {
+        void sent.settled?.then((reach) => {
+          if (!reach.nostr) settle(reach, false);
+        });
       }
     }
   }
@@ -2545,7 +2564,7 @@ export default function MessageThread({
     clearTimeout(pending.timer);
     pendingSendRef.current = null;
     setHeldMessage(null);
-    transmit(pending.msg, pending.nearbyOnly);
+    transmit(pending.msg);
   }
 
   // Resend a failed message: flip it back to sending and run the send path,
@@ -2638,6 +2657,12 @@ export default function MessageThread({
     // At most one message is ever held: commit the previous one first.
     commitHeld();
 
+    // Capture nearby-only at send time (only meaningful on the bridged public
+    // channel), then reset the composer flag for the next message. It rides on
+    // the row, so a retry keeps it.
+    const nearby = nearbyOnly && channel === BRIDGE_CHANNEL;
+    if (nearbyOnly) setNearbyOnly(false);
+
     const msg: ChatMessage = {
       id: newMessageId(),
       channel,
@@ -2647,6 +2672,7 @@ export default function MessageThread({
       timestampMs: Date.now(),
       isMine: true,
       status: "sending",
+      ...(nearby ? { nearbyOnly: true } : {}),
     };
     // Sending is what creates the conversation. Inbound messages already call
     // addChannel before addMessage; without the same call here, a thread you
@@ -2658,24 +2684,15 @@ export default function MessageThread({
     addMessage(msg);
     setDraft("");
 
-    // Capture nearby-only at send time (only meaningful on the bridged public
-    // channel), then reset the composer flag for the next message.
-    const nearby = nearbyOnly && channel === BRIDGE_CHANNEL;
-    if (nearbyOnly) setNearbyOnly(false);
-
     // Undo send is a preference (General settings). When it is off, there is no
     // hold window: transmit right away with no pill. Otherwise hold the message
     // for the chosen number of seconds behind the undo pill.
     if (undoSendSeconds <= 0) {
-      transmit(msg, nearby);
+      transmit(msg);
       return;
     }
     const timer = setTimeout(commitHeld, undoSendSeconds * 1000);
-    pendingSendRef.current = {
-      msg,
-      timer,
-      nearbyOnly: nearby,
-    };
+    pendingSendRef.current = { msg, timer };
     setHeldMessage(msg);
   }
 
@@ -2701,7 +2718,7 @@ export default function MessageThread({
       if (pending) {
         clearTimeout(pending.timer);
         pendingSendRef.current = null;
-        transmitRef.current(pending.msg, pending.nearbyOnly);
+        transmitRef.current(pending.msg);
       }
     };
   }, []);

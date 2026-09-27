@@ -308,6 +308,11 @@ export interface ChannelSendResult {
   // capability and took the signed event to publish on our behalf. Not delivered,
   // but on its way, which is worth telling the user apart from "nobody got this".
   gateway: boolean;
+  // The same result once the relays have answered, present whenever a relay
+  // publish went out. A live socket is not an acceptance: every relay may refuse
+  // or never ACK, and then `nostr` here is false (and `gateway` says whether a
+  // gateway peer took the event instead).
+  settled?: Promise<ChannelSendResult>;
 }
 
 // What a group send actually achieved. Groups have no delivery receipts on
@@ -4479,21 +4484,23 @@ export class MeshService {
   // BLE always carries it (that's the offline guarantee). Location-scoped
   // channels ALSO publish to their geohash cell over Nostr, so someone in the
   // same city but out of Bluetooth range actually receives it, which is what
-  // "#city" claimed to do all along. #bluetooth is never bridged.
+  // "#city" claimed to do all along. #bluetooth has no cell, and leaves the
+  // radio only through the mesh bridge.
   // Returns where the message actually went, so the UI can tell the user when
   // it reached nobody. Returning void hides a broadcast with zero connected
   // links behind a bubble that looks sent.
   // `nearbyOnly` keeps a public #bluetooth message radio-only: it is broadcast
   // over Bluetooth but never bridged to the internet, even while bridging is on.
+  //
+  // `msgId` is shared by the BLE packet and the Nostr event, so a receiver on
+  // both transports sees one message rather than two. The composer passes its
+  // row's id, so a retry is the same message again rather than a new one.
   sendChannelMessage(
     channel: string,
     text: string,
+    msgId: string = newMessageId(),
     nearbyOnly = false,
   ): ChannelSendResult {
-    // One ID shared by the BLE packet and the Nostr event, so a receiver on
-    // both transports sees one message rather than two. Not the sender's own
-    // row, which the composer keys by its own ID.
-    const msgId = newMessageId();
     const meshLinks = this.links.size();
 
     // Private (custom) channel: seal with its key and broadcast encrypted over
@@ -4511,16 +4518,20 @@ export class MeshService {
       });
       this.router.sendChannelEnc(blob);
       const overNostr = chatState.channelReach[channel] === "ble+nostr";
-      if (overNostr) {
-        this.privateChannels?.publish(channelKey, blob, msgId);
-      }
+      const published = overNostr
+        ? this.privateChannels?.publish(channelKey, blob, msgId)
+        : undefined;
       // `overNostr` is the channel's configured reach. Whether a relay is up is
       // a separate question.
-      return {
+      const sent = {
         msgId,
         meshLinks,
         nostr: overNostr && this.relaysConnected,
         gateway: false,
+      };
+      return {
+        ...sent,
+        settled: published?.then((nostr) => ({ ...sent, nostr })),
       };
     }
 
@@ -4542,32 +4553,44 @@ export class MeshService {
       this.geoChannels !== null &&
       isGeoChannel(channel) &&
       this.geoChannels.geohashFor(channel) !== null;
-    if (viaGeo) void this.geoChannels?.publish(channel, text, msgId);
+    const geoPublish = viaGeo
+      ? this.geoChannels?.publish(channel, text, msgId).catch(() => false)
+      : undefined;
     // `viaGeo` only says the channel resolves to a cell. Reaching the internet
     // also needs a relay up; with none, `publish` hands the signed event to a
-    // gateway peer instead, and that hand-off is what to report.
+    // gateway peer instead, and that hand-off is what to report. It does the
+    // same once live relays have all refused, hence the second look.
     const relaysLive = viaGeo && this.relaysConnected;
-    const viaGateway =
-      viaGeo &&
-      !relaysLive &&
-      this.registry.firstReachableGateway() !== undefined;
+    const viaGateway = (): boolean =>
+      viaGeo && this.registry.firstReachableGateway() !== undefined;
 
     // Bridge the public mesh channel across islands (its own signed rendezvous
-    // copy), unless the user marked this message nearby-only.
-    if (channel === BRIDGE_CHANNEL) {
-      this.bridgeService?.bridgeOutgoing(
-        text,
-        this.identity.peerID,
-        timestampMs,
-        nearbyOnly,
-      );
-    }
+    // copy), unless the user marked this message nearby-only. A copy on a live
+    // relay reaches the other islands, so it is reach like any other publish.
+    const bridged =
+      channel === BRIDGE_CHANNEL
+        ? this.bridgeService?.bridgeOutgoing(
+            text,
+            this.identity.peerID,
+            timestampMs,
+            nearbyOnly,
+          )
+        : undefined;
 
-    return {
+    const sent = {
       msgId,
       meshLinks: teleported ? 0 : meshLinks,
-      nostr: relaysLive,
-      gateway: viaGateway,
+      nostr: relaysLive || bridged !== undefined,
+      gateway: !relaysLive && viaGateway(),
+    };
+    const published = relaysLive ? geoPublish : bridged;
+    return {
+      ...sent,
+      settled: published?.then((nostr) => ({
+        ...sent,
+        nostr,
+        gateway: !nostr && viaGateway(),
+      })),
     };
   }
 

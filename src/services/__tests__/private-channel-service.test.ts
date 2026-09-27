@@ -53,6 +53,28 @@ describe("PrivateChannelService", () => {
     );
   });
 
+  // The sender's tick follows this answer, so a refusal must reach it.
+  it("resolves whether a relay accepted the message", async () => {
+    const key = generateChannelKey();
+    const accepting = new PrivateChannelService(
+      fakeClient().client,
+      "aabbccdd00112233",
+    );
+    const refusing = new PrivateChannelService(
+      {
+        publish: () => Promise.reject(new Error("Publish timeout")),
+      } as unknown as NostrClient,
+      "aabbccdd00112233",
+    );
+
+    await expect(
+      accepting.publish(key, new Uint8Array([1]), "m1"),
+    ).resolves.toBe(true);
+    await expect(
+      refusing.publish(key, new Uint8Array([1]), "m1"),
+    ).resolves.toBe(false);
+  });
+
   it("resubscribes when a label comes to hold a different key", () => {
     const { client, subscribed, closed } = fakeClient();
     const service = new PrivateChannelService(client, "aabbccdd00112233");

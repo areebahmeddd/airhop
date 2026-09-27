@@ -269,15 +269,19 @@ export class BridgeService {
   // Compose and ship the bridged copy of an outgoing public #bluetooth message.
   // Call AFTER the radio send. `timestampMs` must equal the radio packet's
   // timestamp so the bridged copy and the radio copy derive the same stable ID.
+  //
+  // When it went to live relays, returns whether one accepted it. Otherwise
+  // undefined: bridging off, nearby-only, no cell, or offline, where the only
+  // carrier is a bridge peer, a radio neighbour the caller already counts.
   bridgeOutgoing(
     content: string,
     senderPeerID: string,
     timestampMs: number,
     nearbyOnly: boolean,
-  ): void {
-    if (!this.enabled || nearbyOnly) return;
+  ): Promise<boolean> | undefined {
+    if (!this.enabled || nearbyOnly) return undefined;
     const cell = this.activeCell;
-    if (cell === null || content.length === 0) return;
+    if (cell === null || content.length === 0) return undefined;
     const identity = this.identityFor(cell);
     const event = createBridgeMeshEvent({
       content,
@@ -294,10 +298,13 @@ export class BridgeService {
       bridgeStableID(senderPeerID, timestampMs, content),
     );
     if (this.hooks.relaysConnected()) {
-      void this.client.publish(event, this.relaysForCell(cell)).catch(() => {});
-    } else {
-      this.uplinkViaBridgePeer(event, cell);
+      return this.client.publish(event, this.relaysForCell(cell)).then(
+        () => true,
+        () => false,
+      );
     }
+    this.uplinkViaBridgePeer(event, cell);
+    return undefined;
   }
 
   private uplinkViaBridgePeer(event: NostrEvent, cell: string): void {

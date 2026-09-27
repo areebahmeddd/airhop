@@ -247,6 +247,15 @@ function call(store: StoreLike, action: string, ...args: unknown[]): unknown {
   return (fn as (...a: unknown[]) => unknown)(...args);
 }
 
+// MeshService's ChannelSendResult, structurally.
+interface ChannelSendLike {
+  meshLinks: number;
+  nostr: boolean;
+  gateway: boolean;
+  settled?: Promise<ChannelSendLike>;
+  [k: string]: unknown;
+}
+
 // The subset of MeshService a scenario drives. Structural, so it does not bind
 // to the class inside the sandbox.
 interface MeshLike {
@@ -254,13 +263,9 @@ interface MeshLike {
   sendChannelMessage: (
     channel: string,
     text: string,
+    msgId?: string,
     nearbyOnly?: boolean,
-  ) => {
-    meshLinks: number;
-    nostr: boolean;
-    gateway: boolean;
-    [k: string]: unknown;
-  };
+  ) => ChannelSendLike;
   sendDm: (
     recipientPeerID: string,
     text: string,
@@ -687,7 +692,7 @@ export class SimDevice {
       ) as { sealed: boolean; meshLinks: number } | undefined;
       status = sent?.sealed === true && sent.meshLinks > 0 ? "sent" : "failed";
     } else {
-      const sent = service.sendChannelMessage(channel, text, nearbyOnly);
+      const sent = service.sendChannelMessage(channel, text, id, nearbyOnly);
       // Mirrors message-thread.tsx: a location channel with no live relay but a
       // reachable gateway peer is "carried", not "failed".
       status =
@@ -706,10 +711,11 @@ export class SimDevice {
   sendChannelMessage(
     channel: string,
     text: string,
+    msgId?: string,
     nearbyOnly = false,
-  ): { meshLinks: number; nostr: boolean; gateway: boolean } | undefined {
+  ): ChannelSendLike | undefined {
     this.log("SEND_CHANNEL", `${channel}: ${text}`);
-    return this.mesh?.sendChannelMessage(channel, text, nearbyOnly);
+    return this.mesh?.sendChannelMessage(channel, text, msgId, nearbyOnly);
   }
 
   sendDm(peerID: string, text: string, messageID?: string): string {
