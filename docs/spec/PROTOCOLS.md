@@ -826,7 +826,7 @@ bitchat reached the same conclusion about its own docs and has relabelled them (
 | Nostr gift wrap kind | `1059` (NIP-17 outer envelope, signed by ephemeral key). Seal and wrap timestamps are randomized ±15 min, bitchat's window rather than NIP-59's two days                               |
 | Nostr courier drop   | `1401` (Nostr store-and-forward envelope; `#x` tag = recipient tag hex; NIP-40 expiry). Fetched 24 h back, `limit` 100, as bitchat-ios                                                 |
 | Nutzap event kind    | `9321` (NIP-61; `proof` tag per proof, with `dleq` including `r` when the mint issued one; `u` = mint; `unit`, default sat). Airhop subscribes with `#p` and `#u` (the mints it holds) |
-| Wallet info kind     | `10019` (NIP-61; `mint`, `relay`, 33-byte `pubkey`). The newest event by `created_at`, then lowest id, is used, and an unparseable newest one means none                               |
+| Wallet info kind     | `10019` (NIP-61; `mint`, `relay`, `pubkey`: an x-only key is locked to as `02` + key). The newest by `created_at`, then lowest id, is used; an unparseable newest one means none       |
 | Cashu wallet kind    | `17375` (NIP-60, not published by Airhop yet)                                                                                                                                          |
 | Token event kind     | `7375` (NIP-60, not published by Airhop yet)                                                                                                                                           |
 | Geohash precision    | 5 characters (~5 km × 5 km cell)                                                                                                                                                       |

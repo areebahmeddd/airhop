@@ -200,6 +200,15 @@ describe("coins locked to a key", () => {
     expect(held()).toBe(16);
   });
 
+  it("claims coins locked to the 02 form of our key, as NIP-61 senders lock", async () => {
+    // Our key is an 03 key, so this is the lock a sender makes from an x-only
+    // kind 10019 key: the 02 prefix whatever the parity.
+    expect(OUR_PUB.startsWith("03")).toBe(true);
+    const token = await lockedToken(8, "02" + OUR_PUB.slice(2));
+    expect((await receiveToken(token)).outcome).toBe("swapped");
+    expect(held()).toBe(8);
+  });
+
   it("asks for a connection rather than storing coins locked to us", async () => {
     // Stored, they would count as balance nothing but a signing swap can
     // spend, and a send could hand them on as a worthless token.

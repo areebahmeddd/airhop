@@ -6,7 +6,7 @@
 //   kind 10019  "how to pay me", replaceable, published by the receiver
 //               ["relay", <url>]            where to send nutzaps
 //               ["mint", <url>, <unit>...]  mints they accept
-//               ["pubkey", <33-byte hex>]   the P2PK key to lock to
+//               ["pubkey", <hex>]           the P2PK key to lock to
 //   kind 9321   the nutzap, published by the sender; content is the comment
 //               ["proof", <proof JSON>]     one tag per locked proof
 //               ["u", <mint url>]           the issuing mint
@@ -15,9 +15,10 @@
 //               ["e", <event id>, <relay>]  optional, what is being zapped
 //
 // Two rules lose money if broken: proofs must come from a mint the recipient
-// listed (others are worthless to them), and the lock key is the 33-byte
-// compressed `pubkey` tag, never the 32-byte x-only Nostr key (that lock is
-// unspendable by anyone, sender included). Kind numbers: PROTOCOLS.md section 8.
+// listed (others are worthless to them), and the lock key is the `pubkey`
+// tag, never the author's Nostr key (their wallet watches only its own P2PK
+// key). NUT-11 needs the key compressed, so an x-only tag is locked to as
+// "02" + key, as NIP-61 requires. Kind numbers: PROTOCOLS.md section 8.
 
 import type { Proof, ProofLike } from "@cashu/cashu-ts";
 import { finalizeEvent, type Event } from "nostr-tools";
@@ -45,7 +46,8 @@ export interface NutzapInfo {
   pubkey: string;
   // In their stated order of preference.
   mintUrls: string[];
-  // 33-byte compressed secp256k1 key to lock proofs to (hex).
+  // 33-byte compressed secp256k1 key to lock proofs to (hex). An x-only tag
+  // arrives here with its "02".
   p2pkPubkey: string;
   // Relays they watch for nutzaps.
   relays: string[];
@@ -79,7 +81,8 @@ export async function publishNutzapInfo(params: {
     throw new Error("nutzap info needs at least one mint");
   }
   if (!/^0[23][0-9a-f]{64}$/i.test(params.p2pkPubkey)) {
-    // The classic NIP-61 mistake: an x-only key locks proofs nobody can unlock.
+    // Whole, so a reader that locks to the tag verbatim still makes a valid
+    // NUT-11 lock.
     throw new Error(
       "p2pk pubkey must be a 33-byte compressed secp256k1 key (02/03 prefix)",
     );
@@ -149,16 +152,27 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
     } else if (name === "relay" && relays.length < MAX_RELAYS) {
       if (/^wss?:\/\//i.test(value)) relays.push(value);
     } else if (name === "pubkey" && p2pkPubkey === undefined) {
-      if (/^0[23][0-9a-f]{64}$/i.test(value)) p2pkPubkey = value.toLowerCase();
+      p2pkPubkey = compressedLockKey(value);
     }
   }
 
   // Both are load-bearing: without a mint we do not know what they accept,
   // without a P2PK key we cannot lock. Never fall back to `event.pubkey` as
-  // the lock key: it is x-only, and no mint can unlock proofs locked to it.
+  // the lock key: NIP-61 forbids the user's main Nostr key, and their wallet
+  // would never look for proofs locked to it.
   if (mintUrls.length === 0 || p2pkPubkey === undefined) return null;
 
   return { pubkey: event.pubkey, mintUrls, p2pkPubkey, relays };
+}
+
+// NIP-61 senders "MUST prefix the public key they P2PK-lock with 02", since
+// wallets built on NDK publish the key x-only, Nostr style. NUT-11 signatures
+// are BIP-340, checked against the x coordinate alone, so the holder spends a
+// 02 lock whatever the key's parity.
+function compressedLockKey(value: string): string | undefined {
+  if (/^0[23][0-9a-f]{64}$/i.test(value)) return value.toLowerCase();
+  if (/^[0-9a-f]{64}$/i.test(value)) return `02${value.toLowerCase()}`;
+  return undefined;
 }
 
 // `proofs` must already be locked to the recipient's `p2pkPubkey` (see

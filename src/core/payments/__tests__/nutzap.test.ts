@@ -25,7 +25,7 @@ import {
 const MINT = "https://mint.example.com";
 // 33-byte compressed secp256k1 key: what NIP-61 locks proofs to.
 const P2PK = "02" + "ab".repeat(32);
-// 32-byte x-only Nostr key: valid as an author, invalid as a P2PK lock.
+// 32-byte x-only Nostr key: an author, and never a P2PK lock as it stands.
 const NOSTR_PUB = "ab".repeat(32);
 
 function event(overrides: Partial<Event>): Event {
@@ -73,15 +73,33 @@ describe("parseNutzapInfo", () => {
     expect(info?.pubkey).toBe(NOSTR_PUB);
   });
 
-  it("rejects an x-only Nostr key in the pubkey tag", () => {
-    // Locking proofs to a 32-byte key produces ecash nobody can ever unlock,
-    // including the sender. Falling back to event.pubkey would do exactly that.
+  it("reads an x-only pubkey tag as the 02-prefixed key NIP-61 locks to", () => {
+    // What NDK-based wallets publish. NUT-11 signatures are BIP-340, checked
+    // against the x coordinate, so the holder spends a 02 lock whatever the
+    // key's parity.
+    const xOnly = "CD".repeat(32);
     const info = parseNutzapInfo(
       event({
         kind: KIND_NUTZAP_INFO,
         tags: [
           ["mint", MINT],
-          ["pubkey", NOSTR_PUB],
+          ["pubkey", xOnly],
+        ],
+      }),
+    );
+    expect(info?.p2pkPubkey).toBe("02" + "cd".repeat(32));
+  });
+
+  it("never falls back to the author's Nostr key without a pubkey tag", () => {
+    // NIP-61: the lock key MUST NOT be the user's main Nostr key. Their wallet
+    // watches only its own P2PK key, so a lock to anything else never reaches
+    // it.
+    const info = parseNutzapInfo(
+      event({
+        kind: KIND_NUTZAP_INFO,
+        tags: [
+          ["mint", MINT],
+          ["pubkey", "ab".repeat(31)],
         ],
       }),
     );
@@ -309,9 +327,9 @@ describe("subscribeNutzaps", () => {
 });
 
 describe("key shapes", () => {
-  it("a Nostr identity key is not a valid P2PK lock key", () => {
-    // Documents the distinction the parser enforces: nostr-tools' getPublicKey
-    // returns the 32-byte x-only form, which is never a valid `pubkey` tag.
+  it("a Nostr identity key is x-only, not a compressed P2PK key", () => {
+    // nostr-tools' getPublicKey returns the 32-byte x-only form, which a
+    // sender prefixes with 02 before locking to it (NIP-61).
     const nostrPub = getPublicKey(generateSecretKey());
     expect(nostrPub).toHaveLength(64);
     expect(/^0[23][0-9a-f]{64}$/.test(nostrPub)).toBe(false);
