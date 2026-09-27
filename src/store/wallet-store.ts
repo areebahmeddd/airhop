@@ -241,8 +241,9 @@ interface WalletState {
   // ---- Nutzap ----
   setNutzapPubkey: (pubkey: string) => void;
   markNutzapSettled: (eventId: string, createdAt: number) => void;
-  // A nutzap row the mint refused outright: nothing moved, and spam must not
-  // fill Activity or push real history out.
+  // A row whose swap never happened: a nutzap the mint refused outright, where
+  // spam must not fill Activity or push real history out, or a swap run again
+  // on a fresh keyset.
   removeTx: (id: string) => void;
   markTokenClaimed: (firstSecret: string) => void;
   // Coins the mint refused are no longer held, so neither Receive nor a chat

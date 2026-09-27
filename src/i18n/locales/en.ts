@@ -1532,6 +1532,9 @@ export const strings = {
   "wallet.svc.keyset_unknown": "This token uses new keys from its mint.",
   "wallet.svc.keyset_unknown_body":
     "The mint can’t be reached right now to fetch them. Nothing is lost: receive it again once you’re online.",
+  "wallet.svc.keyset_rotated": "The mint has just changed its keys.",
+  "wallet.svc.keyset_rotated_body":
+    "It turned the request down before anything moved, so your balance is unchanged. Try again in a minute.",
   "wallet.svc.wrong_mint": "This token was not signed by the mint it names.",
   "wallet.svc.wrong_mint_body":
     "At least one coin’s signature does not match the mint’s keys. Nothing was added.",

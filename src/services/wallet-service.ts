@@ -24,6 +24,7 @@ import {
   NetworkError,
   OutputData,
   setGlobalRequestOptions,
+  StaleKeysetError,
   UnknownKeysetError,
   Wallet,
   type CounterSource,
@@ -253,6 +254,15 @@ function isMintSilent(err: unknown): boolean {
 
 function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
   if (err instanceof WalletError) return err;
+  // The mint's 12xxx answer, wrapped in cashu-ts's instruction to its caller.
+  // The copy stays clear of the words `isAlreadySpentError` looks for.
+  if (err instanceof StaleKeysetError) {
+    return new WalletError(
+      "mint-error",
+      t("wallet.svc.keyset_rotated"),
+      t("wallet.svc.keyset_rotated_body"),
+    );
+  }
   if (isMintOperationError(err)) {
     return new WalletError("mint-error", err.message, String(err));
   }
@@ -1010,6 +1020,32 @@ async function completeSwapInFlight(
   }
 }
 
+// A staged swap whose outputs the mint refused for their keyset (NUT-02 12xxx,
+// raised by cashu-ts as `StaleKeysetError`): the keyset rotated after this
+// phone cached the list, and a fee change is a rotation too. The swap is
+// atomic, so nothing moved and the inputs are as good as before. The row goes
+// rather than failing: the operation is run again, or its caller reports it.
+function discardStagedSwap(txId: string): void {
+  const store = useWalletStore.getState();
+  store.releaseReserved(txId);
+  store.removeTx(txId);
+}
+
+// With `repaired` cashu-ts has already fetched the current keysets, and its
+// contract is that the caller prepares the operation again. Once: when the
+// mint refuses the fresh keyset too, or cashu-ts would not refresh (it does so
+// at most once a minute), the caller gets the refusal in the wallet's words.
+async function retryPastStaleKeyset<T>(run: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await run();
+    } catch (err) {
+      if (!(err instanceof StaleKeysetError)) throw err;
+      if (!err.repaired || attempt > 1) throw asWalletError(err, "mint-error");
+    }
+  }
+}
+
 // ---- Receive ----
 
 export interface ReceiveResult {
@@ -1175,9 +1211,16 @@ function lockedToUsOffline(): WalletError {
 
 // Decode, verify DLEQ offline, swap at the mint, and store the raw proofs only
 // when the mint is unreachable. A failed DLEQ is refused and never stored.
-export async function receiveToken(
+export function receiveToken(
   raw: string,
   opts: { counterparty?: string } = {},
+): Promise<ReceiveResult> {
+  return retryPastStaleKeyset(() => receiveTokenOnce(raw, opts));
+}
+
+async function receiveTokenOnce(
+  raw: string,
+  opts: { counterparty?: string },
 ): Promise<ReceiveResult> {
   assertUnlocked();
   const epoch = walletEpoch;
@@ -1320,6 +1363,10 @@ export async function receiveToken(
     };
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
+    if (staged && err instanceof StaleKeysetError) {
+      discardStagedSwap(txId);
+      throw err;
+    }
     const walletErr = asWalletError(err, "mint-error");
     // Never clear the preview here, not even on "already spent" (possibly our
     // own first attempt). Only `reconcile` can learn whether the mint took
@@ -2024,7 +2071,9 @@ type SwapOutcome =
 //            outright. Either way the inputs are untouched.
 //   pending  the answer was lost or reads "already spent" (possibly our own
 //            earlier attempt): the preview stays for `reconcile`. Or a send
-//            reserved the coins first, and they wait for the next refresh.
+//            reserved the coins first, or the mint refused the outputs'
+//            keyset (see `discardStagedSwap`), and they wait for the next
+//            refresh.
 async function swapIntoFreshProofs(
   wallet: Wallet,
   url: string,
@@ -2084,6 +2133,12 @@ async function swapIntoFreshProofs(
     if (!staged) {
       if (isMintSilent(err)) throw walletErr;
       return { status: "refused", reason: t("wallet.svc.coins_unredeemable") };
+    }
+    // Says nothing about the coins, and cashu-ts has usually refreshed the
+    // keysets for the next pass already.
+    if (err instanceof StaleKeysetError) {
+      discardStagedSwap(txId);
+      return { status: "pending" };
     }
     if (isDefiniteRefusal(err)) {
       abandonStagedSwap(txId, walletErr.message);
@@ -3277,6 +3332,11 @@ async function swapDownForMelt(
       store.releaseReserved(txId);
       return selection;
     }
+    // Nothing moved, so this is the "nothing sent" case after all.
+    if (err instanceof StaleKeysetError) {
+      discardStagedSwap(txId);
+      return selection;
+    }
     const walletErr = asWalletError(err, "mint-error");
     if (isDefiniteRefusal(err)) {
       abandonStagedSwap(txId, walletErr.message);
@@ -3802,6 +3862,11 @@ async function redeemNutzapProofs(params: {
       if (!isMintSilent(err)) settle();
       throw walletErr;
     }
+    // Not settled: the proofs are good, and the event is tried again.
+    if (err instanceof StaleKeysetError) {
+      discardStagedSwap(txId);
+      throw err;
+    }
     if (isDefiniteRefusal(err)) {
       // Nothing moved, so nothing to show.
       store.removeTx(txId);
@@ -3825,14 +3890,24 @@ async function redeemNutzapProofs(params: {
   return amount;
 }
 
-// Lock proofs to a nutzap recipient. Always an online swap: the lock lives in
-// the output secret, so held proofs cannot be retro-fitted.
-export async function lockProofsForNutzap(params: {
+interface NutzapLockParams {
   amount: number;
   mintUrl: string;
   unit: string;
   recipientPubkey: string;
-}): Promise<{ locked: Proof[]; txId: string }> {
+}
+
+// Lock proofs to a nutzap recipient. Always an online swap: the lock lives in
+// the output secret, so held proofs cannot be retro-fitted.
+export function lockProofsForNutzap(
+  params: NutzapLockParams,
+): Promise<{ locked: Proof[]; txId: string }> {
+  return retryPastStaleKeyset(() => lockProofsOnce(params));
+}
+
+async function lockProofsOnce(
+  params: NutzapLockParams,
+): Promise<{ locked: Proof[]; txId: string }> {
   assertUnlocked();
   assertMintNetworkAllowed();
   const url = normalizeMintUrl(params.mintUrl);
@@ -3885,6 +3960,11 @@ export async function lockProofsForNutzap(params: {
     if (!staged) {
       store.releaseReserved(txId);
       throw walletErr;
+    }
+    // Not in doubt: the mint provably locked nothing.
+    if (err instanceof StaleKeysetError) {
+      discardStagedSwap(txId);
+      throw err;
     }
     if (isDefiniteRefusal(err)) {
       abandonStagedSwap(txId, walletErr.message);
@@ -4058,15 +4138,17 @@ export function startNutzapWatcher(params: {
     inFlight.add(zap.eventId);
     queue = queue.then(async () => {
       try {
-        const amount = await redeemNutzapProofs({
-          proofs: zap.proofs,
-          mintUrl: zap.mintUrl,
-          unit: zap.unit,
-          eventId: zap.eventId,
-          createdAt: zap.createdAt,
-          senderPubkey: zap.senderPubkey,
-          comment: zap.comment,
-        });
+        const amount = await retryPastStaleKeyset(() =>
+          redeemNutzapProofs({
+            proofs: zap.proofs,
+            mintUrl: zap.mintUrl,
+            unit: zap.unit,
+            eventId: zap.eventId,
+            createdAt: zap.createdAt,
+            senderPubkey: zap.senderPubkey,
+            comment: zap.comment,
+          }),
+        );
         if (amount > 0) params.onRedeemed?.(amount, zap.unit, zap.senderPubkey);
       } catch {
         // Refusals are settled inside; the rest waits for a resubscribe.

@@ -312,6 +312,21 @@ describe("a mint that gives no answer about a nutzap", () => {
   });
 });
 
+describe("a nutzap after the mint rotated its keyset", () => {
+  it("is redeemed on the new keyset, with one row", async () => {
+    // The wallet's cached snapshot still calls the old keyset active, so the
+    // first swap's outputs are refused; cashu-ts refreshes and asks again.
+    const event = nutzapEvent(await lockedProofs(8, OUR_PUB));
+    fabric.rotateKeyset();
+    deliver(event);
+    await settle();
+
+    expect(held()).toBe(8);
+    expect(nutzapRows().map((tx) => tx.status)).toEqual(["completed"]);
+    expect(settled(event.id)).toBe(true);
+  });
+});
+
 describe("a burst of nutzaps", () => {
   it("is redeemed one at a time", async () => {
     const events: Event[] = [];
