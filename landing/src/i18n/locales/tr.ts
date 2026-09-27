@@ -203,13 +203,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "İnternet yok, yönlendirici yok; insanların zaten sahip olduğu telefonlarda.",
   "home.features.networking.lan.name": "Yerel ağ",
-  "home.features.networking.lan.line": "Ortak WiFi ya da hotspot, iPhone ve Android birlikte.",
+  "home.features.networking.lan.line": "Ortak Wi-Fi ya da hotspot, iPhone ve Android birlikte.",
   "home.features.networking.hops.name": "Çok atlamalı aktarma",
   "home.features.networking.hops.line": "Her telefon mesajları iletir, en fazla yedi atlama.",
   "home.features.networking.bridge.name": "Mesh köprüsü",
   "home.features.networking.bridge.line":
     "Açık sohbetinizi menzil dışındaki yakın bir kalabalıkla birleştirir.",
-  "home.features.networking.wifi.name": "WiFi hızlı yolu",
+  "home.features.networking.wifi.name": "Wi-Fi hızlı yolu",
   "home.features.networking.wifi.line": "İki Android ya da iki iPhone arasında daha hızlı aktarım.",
   "home.features.networking.bitchat.name": "bitchat uyumlu",
   "home.features.networking.bitchat.line":

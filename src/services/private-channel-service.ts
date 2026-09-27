@@ -30,6 +30,7 @@ import type { NostrClient } from "@core/nostr/nostr-client";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
+import { inboundText } from "@utils/emote";
 import { unverifiedSenderName } from "@utils/peer-display-name";
 import type { Event } from "nostr-tools";
 import { finalizeEvent } from "nostr-tools";
@@ -174,7 +175,7 @@ export class PrivateChannelService {
         channel,
         senderID: opened.senderID,
         senderNickname,
-        text: opened.text,
+        ...inboundText(opened.text, opened.senderNickname, senderNickname),
         // Clamped: a future-dated event would pin itself below every message.
         timestampMs:
           Math.min(event.created_at, Math.floor(Date.now() / 1000)) * 1000,

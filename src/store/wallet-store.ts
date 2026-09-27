@@ -26,6 +26,7 @@
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { bytesToBase64 } from "@core/encoding/base64";
 import { NUTZAP_LOOKBACK_S } from "@core/payments/nutzap";
+import type { CatalogKey, TranslationVars } from "@i18n";
 import { createMMKV, deleteMMKV } from "react-native-mmkv";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -128,8 +129,14 @@ export interface WalletTx {
   // Swap only: proofs the mint reported spent were dropped. The one swap whose
   // value really left.
   spentRemoved?: boolean;
-  // Shown verbatim on `failed`.
+  // Why the row failed or is waiting. `errorKey` names Airhop's words, which
+  // re-read in the language the wallet is opened in; without one, `error` is
+  // shown verbatim, which is right for a mint's own text. `error` is always
+  // written beside a key as the plain fallback, and clearing it clears the
+  // reason: see `txErrorText`.
   error?: string;
+  errorKey?: CatalogKey;
+  errorVars?: TranslationVars;
 }
 
 // A trusted mint plus what we cache to stay useful offline.

@@ -23,14 +23,11 @@ export const strings: Strings = {
   "common.share": "分享",
   "common.settings": "設定",
   "common.on": "開啟",
-  "common.off": "關",
+  "common.off": "關閉",
 
   // ---- Dates ----
   "format.today": "今天",
   "format.yesterday": "昨天",
-  "format.minutes_ago": "{count} 分鐘前",
-  "format.hours_ago": "{count} 小時前",
-  "format.days_ago": "{count} 天前",
   "format.just_now": "剛剛",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -243,6 +240,7 @@ export const strings: Strings = {
   "chat.group_badge": "群組",
   "chat.more": "更多",
   "chat.no_messages": "還沒有訊息",
+  "chat.sender_preview": "{sender}：{preview}",
   "chat.presence.nearby_none": "附近沒有人",
   "chat.presence.active_none": "無人活躍",
   "chat.you": "你",
@@ -313,6 +311,7 @@ export const strings: Strings = {
   "chat.jump.failed": "無法開啟該網格。請稍後再試。",
   "chat.jump.title": "前往某個地方",
   "chat.jump.saved": "已儲存的地點",
+  "chat.jump.nearby": "附近",
   "chat.jump.anywhere": "開啟任何地方的公開位置頻道，就算你人不在那裡。",
   "chat.jump.geohash_note":
     "輸入它的 geohash。位置落在該網格內的每個人共用同一個頻道。",
@@ -320,7 +319,22 @@ export const strings: Strings = {
     "你會顯示為遠端接入，而不是就在附近。它只透過網路觸及。",
   "chat.jump.level_cell": "{level} 網格",
   "chat.jump.already_here": "你已經在這裡了。前往會開啟你的 {name} 頻道。",
-  "chat.jump.open_direction": "開啟你{direction}方的網格",
+  "chat.jump.dir.n": "北",
+  "chat.jump.dir.ne": "東北",
+  "chat.jump.dir.e": "東",
+  "chat.jump.dir.se": "東南",
+  "chat.jump.dir.s": "南",
+  "chat.jump.dir.sw": "西南",
+  "chat.jump.dir.w": "西",
+  "chat.jump.dir.nw": "西北",
+  "chat.jump.open_n": "開啟正北方的網格",
+  "chat.jump.open_ne": "開啟東北方的網格",
+  "chat.jump.open_e": "開啟正東方的網格",
+  "chat.jump.open_se": "開啟東南方的網格",
+  "chat.jump.open_s": "開啟正南方的網格",
+  "chat.jump.open_sw": "開啟西南方的網格",
+  "chat.jump.open_w": "開啟正西方的網格",
+  "chat.jump.open_nw": "開啟西北方的網格",
   "chat.jump.open_place": "開啟 {name}",
   "chat.jump.remove_place": "把 {name} 從已儲存的地點中移除",
   "chat.jump.go": "前往",
@@ -432,18 +446,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "取消 {name}",
   "chat.thread.hide_transfer": "隱藏進度",
   "chat.thread.hide_transfer_hint": "檔案仍會繼續接收",
-  "chat.thread.queued_more": "還有 {count} 則等著傳送",
-  "chat.thread.across_bridge": "橋接另一端 {count} 位",
   "chat.thread.bridged": "已橋接",
   "chat.thread.invite_body":
     "來 Airhop 的 {channel} 一起聊吧 — 離線優先的私密網狀網路通訊。",
-  "chat.thread.go_back_unread": "返回，{count} 則未讀",
   "chat.thread.view_info": "查看 {name} 的資訊",
-  "chat.thread.notices_new": "本頻道的公告，{count} 則新的",
   "chat.board.urgent_one": "來自 {author} 的緊急公告 · {content}",
-  "chat.board.urgent_many": "{count} 則新的緊急公告 · 開啟公告",
+  "chat.board.urgent_one_anon": "緊急公告 · {content}",
   "chat.thread.say_something": "在 {channel} 裡說點什麼吧。",
-  "chat.thread.jump_latest_new": "跳到最新訊息，{count} 則新的",
   "chat.thread.unconfirmed_since": "自 {date} 起沒有確認過遞送",
   "chat.thread.no_reach": "附近沒有節點 · 還沒有人收到這則訊息",
   "chat.thread.channel_needs_internet":
@@ -472,7 +481,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "你截了圖",
   "chat.screenshot.you_took_private": "你截了圖 · 沒有告訴任何人",
   "chat.screenshot.heads_up": "提醒你一下",
-  "chat.screenshot.notice": "* {name} 截了圖 *",
+  "chat.screenshot.peer_took": "{name} 截了圖",
   "chat.screenshot.notified_dm": "{name} 已經知道你截了這段對話的圖。",
   "chat.screenshot.notified": "本頻道的所有人都已經知道你截了圖。",
   "chat.screenshot.not_notified":
@@ -515,7 +524,7 @@ export const strings: Strings = {
   "chat.attach.document": "文件",
   "chat.attach.document_desc": "傳送任何檔案或 PDF",
   "chat.attach.voice": "語音留言",
-  "chat.attach.voice_desc": "錄製並傳送一則語音訊息",
+  "chat.attach.voice_desc": "錄製並傳送一則語音留言",
   "chat.attach.ecash": "傳送 ecash",
   "chat.attach.ecash_desc": "從你的錢包傳送 Cashu sat",
   "chat.attach.location": "位置",
@@ -523,10 +532,10 @@ export const strings: Strings = {
   "chat.attach.title": "附加",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "分享了一個位置",
+  "chat.location.sent_summary": "已分享位置",
   "chat.location.received_summary": "分享了自己的位置",
   "chat.location.title": "位置",
-  "chat.location.away": "{direction}方{distance}",
+  "chat.location.away": "{direction}方 {distance}",
   "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "在地圖中開啟",
   "chat.location.no_forward": "位置無法轉傳",
@@ -554,15 +563,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "西北",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "響鈴",
+  "chat.ring.sent_summary": "已響鈴",
   "chat.ring.received_summary": "響鈴通知你",
   "chat.ring.alert.title": "{sender} 正在響鈴",
   "chat.ring.alert.body": "請查看你的訊息",
   "chat.ring.alert.open": "開啟",
   "chat.ring.alert.snooze": "暫停 1 小時",
-  "chat.ring.sent_snoozed": "已響鈴,已延後",
-  "chat.ring.sent_too_soon": "已響鈴,過於頻繁",
-  "chat.ring.sent_not_allowed": "已響鈴,未獲允許",
+  "chat.ring.sent_snoozed": "已響鈴 · 已延後",
+  "chat.ring.sent_too_soon": "已響鈴 · 過於頻繁",
+  "chat.ring.sent_not_allowed": "已響鈴 · 未獲允許",
   "chat.attach.send_anyway": "還是傳送",
   "chat.attach.bitchat_too_big": "這可能送不到",
   "chat.attach.bitchat_too_big_body":
@@ -632,6 +641,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "停止錄製並傳送",
   "chat.voice.lift_lock": "向上滑動即可免持錄製",
   "chat.voice.live_speaking": "{name} 正在說話",
+  "chat.voice.live_ended": "已結束",
   "voice.unavailable": "即時語音無法使用",
   "voice.recording_stopped": "錄製已停止",
 
@@ -688,7 +698,6 @@ export const strings: Strings = {
   "chat.info.message_member": "傳訊息給 {name}",
   "chat.info.remove_member_a11y": "移除 {name}",
   "chat.info.no_addable": "沒有可加入的可觸及節點。成員必須在附近。",
-  "chat.info.add_count": "加入 {count} 位",
   "chat.info.teleported_tag": "{level}  ·  遠端",
   "chat.info.active": "活躍",
   "chat.info.members": "成員",
@@ -746,7 +755,7 @@ export const strings: Strings = {
   "chat.contact.verify": "驗證聯絡人",
   "chat.contact.allow_ring": "允許響鈴提醒",
   "chat.contact.allow_ring_desc":
-    "讓對方響鈴提醒你,即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
+    "讓對方響鈴提醒你，即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
   "chat.contact.ring_action": "響鈴",
   "chat.contact.ringing": "響鈴中…",
   "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
@@ -768,8 +777,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 天",
   "chat.notices.7_days": "7 天",
   "chat.notices.fading": "淡去中",
-  "chat.notices.fades_in_hours": "{count} 小時後淡去",
-  "chat.notices.fades_in_days": "{count} 天後淡去",
   "chat.notices.scope_geo": "地理",
   "chat.notices.scope_mesh": "網狀網",
   "chat.notices.urgent_short": "緊急",
@@ -785,10 +792,20 @@ export const strings: Strings = {
   "chat.search.links": "連結",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "依{filter}篩選",
-  "chat.search.no_matches": "沒有符合「{query}」的{filter}",
-  "chat.search.no_media": "還沒有{filter}",
+  "chat.search.no_photos": "還沒有照片",
+  "chat.search.no_videos": "還沒有影片",
+  "chat.search.no_audio": "還沒有音訊",
+  "chat.search.no_documents": "還沒有文件",
+  "chat.search.no_links": "還沒有連結",
+  "chat.search.no_ecash": "還沒有 ecash",
+  "chat.search.no_photos_matching": "沒有符合「{query}」的照片",
+  "chat.search.no_videos_matching": "沒有符合「{query}」的影片",
+  "chat.search.no_audio_matching": "沒有符合「{query}」的音訊",
+  "chat.search.no_documents_matching": "沒有符合「{query}」的文件",
+  "chat.search.no_links_matching": "沒有符合「{query}」的連結",
+  "chat.search.no_ecash_matching": "沒有符合「{query}」的 ecash",
   "chat.search.result_a11y": "{chat}，來自 {sender} 的{kind}",
-  "chat.search.you": "你",
+  "chat.search.result_mine_a11y": "{chat}，你傳送的{kind}",
   "chat.search.section_chats": "聊天",
   "chat.search.section_messages": "訊息",
   "chat.search.section_notices": "公告",
@@ -796,15 +813,13 @@ export const strings: Strings = {
   "chat.search.no_results": "沒有「{query}」的結果",
   "chat.search.open_chat": "開啟 {name}",
   "chat.search.message_a11y": "{chat}，來自 {sender} 的訊息：{snippet}",
+  "chat.search.message_mine_a11y": "{chat}，你的訊息：{snippet}",
   "chat.search.notice_a11y": "{chat} 中來自 {author} 的公告：{snippet}",
   "chat.search.urgent": "緊急 ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "這份清單裡有 {count} 則。清空只會把它們從這裡移除，訊息在各自的對話中仍然未讀。全部標為已讀則兩邊都會清掉。",
   "chat.notif.mark_all_read": "全部標為已讀",
   "chat.notif.clear_list": "清空清單",
-  "chat.notif.clear_all_a11y": "清空全部 {count} 則通知",
   "chat.notif.title": "通知",
   "chat.notif.clear_short": "清空",
   "chat.notif.close": "關閉通知",
@@ -820,18 +835,21 @@ export const strings: Strings = {
   "chat.forward.cant_send_here": "這裡不能轉傳",
   "chat.forward.cant_send_to": "不能轉傳給 {name}",
   "chat.forward.too_long_for_dm":
-    "太長，無法作為私訊傳送。請改為轉寄到頻道或群組。",
+    "太長，無法作為私訊傳送。請改為轉傳到頻道或群組。",
   "chat.forward.channels": "頻道",
   "chat.forward.groups": "群組",
   "chat.forward.locations": "位置",
   "chat.forward.dms": "私訊",
   "chat.forward.none": "還沒有其他聊天",
+  "chat.forward.app_row": "未轉傳",
+  "chat.forward.app_row_body":
+    "這一行來自 Airhop，不是某個人傳的，所以沒有可轉傳的內容。",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "正在啟動網狀網路…",
   "mesh.banner.no_bluetooth": "這台裝置沒有藍牙 · 僅網路",
   "mesh.banner.bluetooth_off": "藍牙已關 · 網狀網路無法使用",
-  "mesh.banner.bluetooth_off_wifi": "藍牙已關 · 網狀網路透過 WiFi 運作",
+  "mesh.banner.bluetooth_off_wifi": "藍牙已關 · 網狀網路透過 Wi-Fi 運作",
   "mesh.banner.permission_needed": "需要藍牙權限",
   "mesh.banner.blocked": "藍牙被擋下 · 請在設定中允許",
   "mesh.banner.location_permission": "需要定位才找得到節點",
@@ -854,7 +872,6 @@ export const strings: Strings = {
   "mesh.banner.gateway": "網路閘道已開 · 正替附近節點中繼",
   "mesh.banner.bridge": "網狀網路橋接已開 · 公開聊天已連通",
   "mesh.banner.background_limits": "{brand} 可能會在背景暫停網狀網路",
-  "mesh.banner.bridge_across": "網狀網路橋接已開 · 橋接另一端有 {count} 位",
   "mesh.banner.action.turn_on": "開啟",
   "mesh.banner.action.allow": "允許",
   "mesh.banner.action.resume": "恢復",
@@ -921,7 +938,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "查看節點 {name}，上線中",
   "mesh.peer.view_relay_online": "查看節點 {name}，上線中，中繼節點",
   "mesh.peer.last_seen_at": "最後出現：{ago}",
-  "mesh.peer.send_amount": "傳送 {amount} sat",
+  "mesh.peer.send_unit_amount": "傳送 {amount} {unit}",
   "mesh.peer.direct": "直接連線",
   "mesh.peer.check_distance": "量一下距離",
   "mesh.peer.checking": "量測中",
@@ -965,7 +982,7 @@ export const strings: Strings = {
   "wallet.choose.topup_desc": "用任何 Lightning 錢包支付發票",
   "wallet.choose.token": "建立代幣",
   "wallet.choose.token_desc": "分享或出示 QR 碼，離線也可以",
-  "wallet.choose.zap": "給 Nostr 聯絡人發 zap",
+  "wallet.choose.zap": "打閃給 Nostr 聯絡人",
   "wallet.choose.zap_desc": "發到對方的 npub，經由網路",
   "wallet.choose.invoice": "支付 Lightning 發票",
   "wallet.choose.invoice_desc": "提領到任何 Lightning 錢包",
@@ -989,7 +1006,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "這個代幣拆成的幣太多，塞不進一個 QR 碼。請改用分享或複製。",
   "wallet.send.scan_note":
-    "讓對方用自己的錢包掃這個。在你標記為已送達之前仍然可以收回。",
+    "讓對方用自己的錢包掃這個。在你標記為已收到之前仍然可以收回。",
   "wallet.send.mesh_note":
     "代幣會以加密私訊的形式透過網狀網路送出。不需要網路。",
   "wallet.send.no_peers_note":
@@ -1010,7 +1027,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "在錢包中開啟",
   "wallet.send.to_peer": "把代幣傳給附近的節點",
   "wallet.send.to_peer_short": "傳給節點",
-  "wallet.send.mark_delivered": "標記為已送達並結束",
+  "wallet.send.mark_delivered": "標記為已收到",
   "wallet.send.they_got_it": "對方收到了",
   "wallet.send.keep_pending": "讓這筆傳送保持待處理",
   "wallet.send.decide_later": "稍後再決定",
@@ -1034,9 +1051,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n「{memo}」",
   "wallet.receive.redeemed_at":
     "已在 {mint} 兌付。現在它可以被證明屬於你：傳送方手上的這份代幣副本不再有效。",
-  "wallet.receive.stored_pending":
-    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用{dleq}。連上網路後會自動向鑄幣廠確認。",
-  "wallet.receive.dleq_inline": "（它的簽章確實對得上，所以這個代幣是真的）",
+  "wallet.receive.pending_unconfirmed":
+    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用。連上網路後會自動向鑄幣廠確認。",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用。它的簽章對得上，所以這個代幣是真的。連上網路後會自動向鑄幣廠確認。",
   "wallet.receive.dleq_ok": "鑄幣廠的簽章對得上，所以這個代幣是真的。",
   "wallet.receive.dleq_uncached":
     "這個鑄幣廠的金鑰沒有快取在這裡，所以無法離線核對簽章。",
@@ -1098,7 +1116,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "把所有餘額整合到一個鑄幣廠",
   "wallet.mint.confirm_with": "向 {mint} 核對餘額",
   "wallet.mint.available_amount": "可用 {amount} {unit}",
-  "wallet.mint.split_across": "餘額分散在 {count} 個鑄幣廠。把它整合到一個。",
   "wallet.mint.move_everything_to": "把全部搬到 {mint}",
   "wallet.mint.consolidate_title": "整合到一個鑄幣廠",
   "wallet.mint.moving": "搬移中…",
@@ -1109,10 +1126,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "什麼都沒搬",
   "wallet.mint.move_pending": "正在轉移",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} 已離開 {mint}，正在轉往 {target}。存入被領取後即到帳，錢包會持續重試。",
+    "{amount} {unit} 已離開 {mint}，正在轉往 {target}。這筆轉移被領取後即到帳，錢包會持續重試。",
   "wallet.mint.destination": "· 目的地",
   "wallet.mint.will_move": "· 將被搬移",
   "wallet.mint.issued_by": "發行方",
+  "wallet.mint.test_badge": "測試",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop 錢包儲值",
@@ -1138,7 +1156,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最多 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "付 {amount} {unit}",
-  "wallet.ln.deposit_title": "透過 Lightning 存入",
+  "wallet.ln.deposit_title": "透過 Lightning 儲值",
   "wallet.ln.amount_placeholder": "金額（sat）",
   "wallet.ln.requesting": "請求中…",
   "wallet.ln.get_invoice": "取得發票",
@@ -1170,7 +1188,7 @@ export const strings: Strings = {
     "你已經有一組復原助記詞了。復原另一組會把它換掉。舊助記詞已涵蓋的幣在這台裝置上仍然花得出去，但不再可以復原，所以請先確認舊的字已經抄下來，再繼續。",
   "wallet.backup.replace": "取代",
   "wallet.backup.replace_unseen_body":
-    "此錢包已有一個在設定時為你產生的復原短語，你的幣都是用它建立的。復原另一個短語會永久取代它。這些幣仍可在本裝置上花用，並會在每個鑄幣廠下次重新整理時轉到新短語之下。",
+    "此錢包已有一組在設定時為你產生的復原助記詞，你的幣都是用它建立的。復原另一組助記詞會永久取代它。這些幣仍可在本裝置上花用，並會在每個鑄幣廠下次重新整理時轉到新助記詞之下。",
   "wallet.backup.invalid_phrase": "那組助記詞無效",
   "wallet.backup.invalid_phrase_body":
     "助記詞本身帶著檢查碼，而這一組沒有通過。請檢查有沒有打錯、漏掉或前後顛倒的字。",
@@ -1256,7 +1274,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "鑄幣廠表示這個代幣已被兌付，所以這 {amount} {unit} 已經到了對方手上，你的餘額沒有收回任何東西。",
   "wallet.copied.token_body":
-    "代幣已經在你的剪貼簿上。在你標記為已送達之前它一直保留在這裡，所以第一次沒成的話可以再貼一次。",
+    "代幣已經在你的剪貼簿上。在你標記為已收到之前它一直保留在這裡，所以第一次沒成的話可以再貼一次。",
   "wallet.copied.refused_token_body":
     "代幣已經在你的剪貼簿上。這個錢包不再計入它，所以你可以把它還給傳送它的人。",
   "wallet.copied.phrase_body":
@@ -1279,8 +1297,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "把這個代幣顯示成 QR 碼",
   "wallet.pending.copy_again": "再複製一次代幣",
   "wallet.pending.share_again": "再分享一次代幣",
-  "wallet.pending.mark_delivered": "把這個代幣標記為已送達",
-  "wallet.pending.delivered": "已送達",
+  "wallet.pending.mark_delivered": "標記為已收到",
+  "wallet.pending.delivered": "已收到",
   "wallet.pending.reclaim_into": "把這個代幣收回你的餘額",
   "wallet.activity.title": "動態",
   "wallet.activity.none": "還沒有內容",
@@ -1298,7 +1316,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "失敗",
   "wallet.activity.status_reclaimed": "已收回",
   "wallet.activity.status_expired": "已過期",
-  "wallet.activity.ln_deposit": "Lightning 存入",
+  "wallet.activity.ln_deposit": "Lightning 儲值",
   "wallet.activity.ln_withdrawal": "Lightning 提領",
   "wallet.activity.nutzap_received": "收到 Nutzap",
   "wallet.activity.nutzap_claiming": "Nutzap 領取中",
@@ -1338,7 +1356,13 @@ export const strings: Strings = {
     "已鎖到對方的金鑰，但還沒有東西能把它帶過去。它已排隊，代幣在動態裡。",
   "wallet.pay.final": "已鎖定的付款無法收回：現在只有對方的金鑰花得了這些幣。",
   "wallet.pay.reclaimable": "在你確認它已送達之前，都可以在「動態」中收回。",
-  "wallet.pay.why": "之所以走這條路，是因為{reason}。",
+  "wallet.pay.why_no_relay": "之所以走這條路，是因為沒有中繼連線。",
+  "wallet.pay.why_no_shared_mint":
+    "之所以走這條路，是因為你在對方接受的任何鑄幣廠都沒有足夠的餘額。",
+  "wallet.pay.why_no_nutzap_info":
+    "之所以走這條路，是因為收款方沒有公布 nutzap 資訊（NIP-61 kind 10019）。",
+  "wallet.pay.result": "{rail}{finality}",
+  "wallet.pay.result_why": "{rail}{reason}{finality}",
   "wallet.pay.sent_title": "{amount} {unit} 給 {name}",
   "wallet.pay.thread_receipt": "你送出了 {amount} {unit}，已鎖到對方的金鑰。",
   "wallet.pay.title": "傳送 ecash",
@@ -1471,16 +1495,17 @@ export const strings: Strings = {
   "wallet.svc.coins_raced_body": "沒有扣掉任何金額。再試一次，錢包會挑另一組。",
   "wallet.svc.no_ecash": "還沒有 ecash。",
   "wallet.svc.no_ecash_body":
-    "新增一個鑄幣廠並透過 Lightning 存入，或者從別人那裡收一個代幣。",
+    "新增一個鑄幣廠並透過 Lightning 儲值，或者從別人那裡收一個代幣。",
   "wallet.svc.split_across_mints": "你的餘額分散在好幾個鑄幣廠。",
   "wallet.svc.mint_says_spent": "鑄幣廠回報這筆 ecash 已被花用。",
   "wallet.svc.issue_against_invoice": "憑 Lightning 發票發行 ecash",
   "wallet.svc.pay_invoice": "付掉一張 Lightning 發票",
-  "wallet.svc.unknown_deposit": "未知的存入。",
+  "wallet.svc.unknown_deposit": "未知的儲值。",
   "wallet.svc.invoice_expired_before": "這張發票在被付掉之前就過期了。",
   "wallet.svc.invoice_expired": "那張發票已過期。",
   "wallet.svc.invoice_unpaid": "這張發票還沒有被付掉。",
-  "wallet.svc.payment_unknown": "付款狀態未知；下次重新整理時會再查一遍。",
+  "wallet.svc.payment_unknown_after":
+    "{reason} 付款狀態未知；下次重新整理時會再查一遍。",
   "wallet.svc.melt_change_pending": "你的發票已付款。",
   "wallet.svc.melt_change_pending_body":
     "鑄幣廠還沒退回沒用掉的路由費。它會在下次重新整理時自動領回，這期間不會有任何損失。",
@@ -1514,16 +1539,12 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "那筆付款指名的鑄幣廠你並沒有在用。",
   "wallet.svc.unknown_mint_body":
     "如果你信任它，請先自己把這個鑄幣廠加上；不會從你沒有選過的鑄幣廠兌付任何東西。",
-  "wallet.svc.no_relay": "沒有中繼連線",
-  "wallet.svc.no_shared_mint": "沒有餘額足夠的共同鑄幣廠",
-  "wallet.svc.no_nutzap_info":
-    "收款方沒有公布 nutzap 資訊（NIP-61 kind 10019）",
   "wallet.svc.locked_undelivered":
     "已鎖到對方的金鑰但尚未送達。從這筆交易分享代幣就能完成。",
   "wallet.svc.swap_lost":
     "鑄幣廠始終沒有完成這次換新，所以沒有憑它發行任何東西。",
   "wallet.svc.mint_lost":
-    "鑄幣方已發放這筆存款，但無法重建其代幣。從復原詞組復原即可取回。",
+    "鑄幣廠已為這筆儲值發行了幣，但無法重建這些幣。用你的復原助記詞復原即可取回。",
   "wallet.svc.swap_unreadable": "這次換新存下來的格式，目前版本無法重放。",
   "wallet.svc.lock_in_doubt": "這筆付款可能已完成，也可能沒有。",
   "wallet.svc.lock_in_doubt_body":
@@ -1644,7 +1665,7 @@ export const strings: Strings = {
   "settings.section.privacy": "隱私與安全",
   "settings.section.privacy_desc": "前向保密、簽章封包、已封鎖的節點",
   "settings.section.network": "網路與中繼",
-  "settings.section.network_desc": "網路備援、nostr 中繼、bitchat 相容",
+  "settings.section.network_desc": "網路備援、Nostr 中繼、bitchat 相容",
   "settings.section.permissions": "權限",
   "settings.section.permissions_desc": "藍牙、定位、通知、相機、麥克風",
   "settings.section.storage": "儲存與資料",
@@ -1690,12 +1711,10 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "沒有訊號讀數",
   "settings.diag.no_peers": "範圍內沒有人",
-  "settings.diag.no_peers_desc": "已開啟 {links} 條無線連線",
   "settings.diag.gcs_size": "篩選器大小",
   "settings.diag.gcs_size_desc": "送上空中的最大同步篩選器",
   "settings.diag.fpr": "誤判率",
   "settings.diag.fpr_desc": "篩選器多常會誤稱我們少了某個封包",
-  "settings.diag.bytes": "{n} 位元組",
   "settings.diag.footnote":
     "這裡的內容都不能改。這些數值是固定的，好讓 Airhop 保持與 bitchat 相容。",
   "settings.diag.share": "分享診斷資訊",
@@ -1715,7 +1734,6 @@ export const strings: Strings = {
   "settings.general.undo": "收回傳送",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "錢包",
-  "settings.general.undo_seconds": "{count} 秒",
   "settings.general.undo_a11y": "收回傳送：{value}",
   "settings.general.quality_a11y": "把上傳品質設為 {value}",
   "settings.general.undo_desc":
@@ -1772,7 +1790,7 @@ export const strings: Strings = {
     "不讓寄件者和訊息出現在鎖定畫面上，因為鎖定畫面不解鎖就看得到它們",
   "settings.security.ring_alerts": "響鈴提醒",
   "settings.security.ring_alerts_desc":
-    "響鈴的總開關。關閉後將拒絕所有響鈴,無論你允許了哪些聯絡人。",
+    "響鈴的總開關。關閉後將拒絕所有響鈴，無論你允許了哪些聯絡人。",
   "settings.security.no_blocked": "沒有被封鎖的節點",
   "settings.security.no_blocked_desc":
     "被封鎖的節點不能傳訊息給你，也不會出現在網狀網路分頁",
@@ -1801,7 +1819,6 @@ export const strings: Strings = {
     "位置頻道和網狀網路橋接將不再自動挑選最近的中繼，只用你新增的那些。這可能會縮小涵蓋範圍，而且你可能再也遇不到 bitchat 使用者，因為他們都聚在最近的中繼上。",
   "settings.network.custom": "自訂中繼",
   "settings.network.custom_desc": "為位置頻道和網狀網路橋接新增你自己的中繼",
-  "settings.network.custom_added": "已新增 {count} 個，上限 {max} 個",
   "settings.network.dm_relays": "訊息中繼",
   "settings.network.dm_relays_desc":
     "私訊和私密頻道永遠使用這些。自訂中繼不會改變它們。",
@@ -1811,17 +1828,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "新增中繼",
   "settings.network.remove_relay": "移除 {url}",
   "settings.network.add_short": "新增",
-  "settings.network.relay_limit":
-    "你最多能新增 {count} 個中繼。先移除一個才能再加。",
   "settings.network.relay_duplicate": "那個中繼已經在你的清單裡了。",
   "settings.network.relay_invalid":
     "請輸入有效的中繼主機名稱，例如 relay.example.com。只有當中繼不用預設連接埠時才需要寫連接埠。不允許使用 IP 位址和本機名稱。",
   "settings.network.lan": "本機網路",
   "settings.network.lan_desc":
-    "聯繫同一 WiFi 上的人，iPhone 與 Android 之間也可以。網路上的其他裝置能看到你正在執行 Airhop。",
+    "聯絡同一 Wi-Fi 上的人，iPhone 與 Android 之間也可以。網路上的其他裝置能看到你正在執行 Airhop。",
   "settings.network.lan_searching": "此網路上沒有 Airhop 裝置",
   "settings.network.lan_active": "已在此網路上連線",
-  "settings.network.lan_unavailable": "未連上 WiFi 網路",
+  "settings.network.lan_unavailable": "未連上 Wi-Fi 網路",
   "settings.network.lan_permission": "Airhop 的本機網路存取已關閉",
   "settings.network.lan_unsupported": "此裝置不支援",
   "settings.network.lan_foreground":
@@ -1835,14 +1850,14 @@ export const strings: Strings = {
   "settings.network.wifi_paired": "已配對的裝置",
   "settings.network.wifi_pair_find": "尋找裝置",
   "settings.network.wifi_pair_find_desc":
-    "尋找附近正在顯示自己的iPhone。兩台裝置都需為iOS 26或更新版本。",
-  "settings.network.wifi_pair_show": "顯示這台iPhone",
+    "尋找附近正在顯示自己的 iPhone。兩台裝置都需為 iOS 26 或更新版本。",
+  "settings.network.wifi_pair_show": "顯示這台 iPhone",
   "settings.network.wifi_pair_show_desc":
-    "讓附近的iPhone找到這台。一人尋找，另一人顯示，同時進行。",
-  "settings.network.wifi_pair_find_action": "選擇附近的iPhone",
-  "settings.network.wifi_pair_show_action": "讓這台iPhone可被發現",
-  "settings.network.wifi_pair_unavailable": "Wi-Fi Aware目前無法使用",
-  "settings.network.wifi_pair_forget": "在Settings App中移除配對",
+    "讓附近的 iPhone 找到這台。一人尋找，另一人顯示，同時進行。",
+  "settings.network.wifi_pair_find_action": "選擇附近的 iPhone",
+  "settings.network.wifi_pair_show_action": "讓這台 iPhone 可被發現",
+  "settings.network.wifi_pair_unavailable": "Wi-Fi Aware 目前無法使用",
+  "settings.network.wifi_pair_forget": "在「設定」App 中移除配對",
   "settings.network.bitchat": "bitchat 相容",
   "settings.network.bitchat_desc":
     "和 bitchat 用同一套 BLE 網狀網路，完全互通。這一項永遠開啟，無法關閉。",
@@ -1958,7 +1973,7 @@ export const strings: Strings = {
     "用來從圖庫傳送照片並儲存收到的媒體。沒有它，你仍然可以用相機現拍現傳。",
   "settings.permissions.microphone": "麥克風",
   "settings.permissions.microphone_desc":
-    "用來錄製和傳送語音訊息，或使用即時語音。沒有它，語音訊息和即時語音都用不了。",
+    "用來錄製和傳送語音留言，或使用即時語音。沒有它，語音留言和即時語音都用不了。",
   "settings.permissions.allow": "允許這項權限",
   "settings.permissions.open_settings": "開啟系統設定以更改這項權限",
   "settings.permissions.system": "系統",
@@ -2192,7 +2207,7 @@ export const strings: Strings = {
   "settings.version.download_failed": "下載失敗。請檢查網路連線後再試一次。",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind}有 {size} KiB，超過了 {cap} KiB 的上限。",
+  "transfer.too_large": "{kind}有 {size}，超過了 {cap} 的上限。",
   "transfer.failed.malformed":
     "有個附件送到時已損壞，無法開啟。請對方重傳一次。",
   "transfer.failed.unsupported_type":
@@ -2201,10 +2216,8 @@ export const strings: Strings = {
     "有個附件被拒收：它的內容和它宣稱的檔案類型對不上。",
   "transfer.failed.storage": "有個附件送到了，但無法儲存。請檢查可用空間。",
   "transfer.badge.waiting": "等待中 · {name}",
-  "transfer.badge.active_count": "{count} 項傳輸",
   "transfer.badge.sending": "正在傳送{name}",
   "transfer.badge.receiving": "正在接收{name}",
-  "transfer.badge.a11y": "{label}，{percent}%。開啟對話。",
   "transfer.kind.photo": "照片",
   "transfer.kind.video": "影片",
   "transfer.kind.voice": "語音留言",
@@ -2231,10 +2244,11 @@ export const strings: Strings = {
   "notif.notice": "公告 · {content}",
   "notif.incoming_file": "有檔案傳來",
   "notif.preview.photo": "📷 照片",
-  "notif.preview.voice": "🎤 語音訊息",
+  "notif.preview.voice": "🎤 語音留言",
   "notif.preview.video": "🎥 影片",
   "notif.preview.document": "📄 文件",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "新訊息",
   "notif.hidden.channel": "有新動態",
@@ -2246,6 +2260,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count} 分鐘前",
+  },
+  "format.hours_ago": {
+    other: "{count} 小時前",
+  },
+  "format.days_ago": {
+    other: "{count} 天前",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "再顯示 {count} 個",
@@ -2286,6 +2311,44 @@ export const plurals: Plurals = {
     other: "{count} 人正在說話",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "還有 {count} 則等著傳送",
+  },
+  "chat.thread.across_bridge": {
+    other: "橋接另一端有 {count} 人",
+  },
+  "chat.thread.go_back_unread": {
+    other: "返回，{count} 則未讀",
+  },
+  "chat.thread.notices_new": {
+    other: "本頻道的公告，{count} 則新公告",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "跳到最新訊息，{count} 則新訊息",
+  },
+  "chat.board.urgent_many": {
+    other: "{count} 則新的緊急公告 · 開啟公告",
+  },
+  "chat.info.add_count": {
+    other: "加入 {count} 位",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "{count} 小時後淡去",
+  },
+  "chat.notices.fades_in_days": {
+    other: "{count} 天後淡去",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "這份清單裡有 {count} 則通知。清空只會把它們從這裡移除，訊息在各自的對話中仍然未讀。全部標為已讀則兩邊都會清掉。",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "清空全部 {count} 則通知",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "範圍內有 {count} 個節點",
@@ -2303,15 +2366,23 @@ export const plurals: Plurals = {
     other: "{count} 位成員",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "網狀網路橋接已開 · 橋接另一端有 {count} 人",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} 那裡有 {count} 枚幣，共 {balance} {unit}。移除會把這些幣從這台裝置上永久抹掉，而且它們沒有備份。請先把餘額領走或送出去。",
+      "{mint} 那裡有 {count} 枚幣，共 {balance} {unit}。移除會把這筆餘額從這台裝置上永久抹掉，而且沒有備份。請先把餘額領走或送出去。",
+  },
+  "wallet.mint.split_across": {
+    other: "餘額分散在 {count} 個鑄幣廠。把它整合到一個。",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    other: "{count} 筆存入正在等待入帳。每次開啟 App 時都會重新檢查。",
+    other: "{count} 筆儲值正在等待付款。每次開啟 App 時都會重新檢查。",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2320,7 +2391,7 @@ export const plurals: Plurals = {
   },
   "wallet.backup.already_spent": {
     other:
-      "找到了 {count} 枚幣，但它們已經被花掉了，所以沒有為它們入帳。這很正常：你花過的每一枚幣，都會一直留在鑄幣廠留存的紀錄裡。",
+      "找到了 {count} 枚幣，但它們已經被花掉了，所以沒有任何入帳。這很正常：你花過的每一枚幣，都會一直留在鑄幣廠留存的紀錄裡。",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2341,8 +2412,31 @@ export const plurals: Plurals = {
     other: "有 {count} 枚幣早就被花掉了，它們已經被移除。",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "已開啟 {count} 條無線連線",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count} 秒",
+  },
+  "settings.network.custom_added": {
+    other: "已新增 {count} 個，上限 {max} 個",
+  },
+  "settings.network.relay_limit": {
+    other: "你最多能新增 {count} 個中繼。先移除一個才能再加。",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "{count} 項傳輸",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}，{count}%。開啟對話。",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "附近有人",
     other: "附近有 {count} 人",
   },
 };

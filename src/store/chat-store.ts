@@ -1,7 +1,7 @@
 // Chat state: channels and messages.
 // MMKV-persisted so messages survive app restarts.
 
-import type { TranslationKey, TranslationVars } from "@i18n";
+import type { CatalogKey, TranslationVars } from "@i18n";
 import { MAX_CHANNEL_NAME } from "@utils/deep-link";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -79,7 +79,7 @@ export interface ChatMessage {
   // created. It is the fallback for rows saved before this field existed, and
   // what the wire paths read. Read both through `messageText()` in
   // `@utils/message-text`; never read `text` directly to put words on screen.
-  systemKey?: TranslationKey;
+  systemKey?: CatalogKey;
   systemVars?: TranslationVars;
   // Set only on the sender's own outgoing copy of a forwarded message.
   forwarded?: boolean;

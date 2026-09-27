@@ -11,7 +11,9 @@
 // directional isolates `interpolate` adds. A lock screen is where those matter
 // most, being the one surface that shows a stranger's nickname inside Airhop's
 // own sentence, so the isolation is asserted rather than stripped.
+import { getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
+import { toProofLike } from "@core/payments/cashu";
 import { stripIsolates } from "@i18n";
 import type { ChatMessage } from "@store/chat-store";
 import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
@@ -205,7 +207,7 @@ describe("attachment previews", () => {
   it("labels each media type the way a chat app does", () => {
     expect(attachmentSummary({ type: "image", uri: "x" })).toBe("📷 Photo");
     expect(attachmentSummary({ type: "voice", uri: "x" })).toBe(
-      "🎤 Voice message",
+      "🎤 Voice note",
     );
     expect(attachmentSummary({ type: "video", uri: "x" })).toBe("🎥 Video");
     expect(
@@ -228,7 +230,26 @@ describe("attachment previews", () => {
       messagePreview(
         msg({ text: "", attachment: { type: "voice", uri: "x" } }),
       ),
-    ).toBe("🎤 Voice message");
+    ).toBe("🎤 Voice note");
+  });
+
+  // A lock screen is readable by anyone holding the phone, and a token is money
+  // to whoever copies it.
+  it("names an ecash token by its amount, never by the token", () => {
+    const token = getEncodedToken({
+      mint: "https://mint.example.com",
+      unit: "sat",
+      proofs: [16, 4, 1].map((amount, i) =>
+        toProofLike({
+          id: "00ad268c4d1f5826",
+          amount,
+          secret: `secret-${String(i)}`,
+          C: "02" + "ab".repeat(32),
+        }),
+      ),
+    } as unknown as Token);
+    const { body } = notificationContentFor(msg({ text: token }));
+    expect(stripIsolates(body)).toBe("Ecash · 21 sat");
   });
 });
 

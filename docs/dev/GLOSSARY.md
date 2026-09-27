@@ -52,7 +52,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **GCS (Golomb-Coded Set)**: A compact probabilistic set of hashes, smaller than a Bloom filter. Gossip sync uses one so two peers can see which packets each holds and exchange only what is missing (`gossip-sync.ts`). See [Golomb coding](https://en.wikipedia.org/wiki/Golomb_coding).
 
-**LAN transport**: Airhop's mesh over a shared WiFi network or hotspot, found by mDNS and carried over TCP. It carries the same packets as Bluetooth and works between an iPhone and an Android. Off by default.
+**LAN transport**: Airhop's mesh over a shared Wi-Fi network or hotspot, found by mDNS and carried over TCP. It carries the same packets as Bluetooth and works between an iPhone and an Android. Off by default.
 
 **[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: An eviction policy that drops the least recently used entry when a cache is full. The packet deduplication seen-set uses it (1,000 entries, 5 minutes).
 
@@ -62,7 +62,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **TTL (Time To Live)**: A hop counter in each packet, decremented by every relay; the packet stops at zero. The ceiling is 7 hops. An announce always starts at 7, other broadcasts start a little below the relay ceiling for the sender's link count, and relays clamp broadcasts lower in dense meshes ([PROTOCOLS.md section 4](../spec/PROTOCOLS.md#4-routing-constants)).
 
-**[WiFi Aware](https://www.wi-fi.org/discover-wi-fi/wi-fi-aware)**: The Wi-Fi Alliance's Neighbor Awareness Networking (NAN): direct phone-to-phone WiFi with no router. Android has it from API 26 (data path from API 29), iOS from 26 on iPhone 12 and later. Airhop uses it as the fast path between two phones on the same platform. It does not cross platforms: Apple requires a paired data path, which Android cannot complete.
+**[Wi-Fi Aware](https://www.wi-fi.org/discover-wi-fi/wi-fi-aware)**: The Wi-Fi Alliance's Neighbor Awareness Networking (NAN): direct phone-to-phone Wi-Fi with no router. Android has it from API 26 (data path from API 29), iOS from 26 on iPhone 12 and later. Airhop uses it as the fast path between two phones on the same platform. It does not cross platforms: Apple requires a paired data path, which Android cannot complete.
 
 ## Nostr
 

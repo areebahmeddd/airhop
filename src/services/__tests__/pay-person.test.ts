@@ -571,7 +571,11 @@ describe("a token too large for the queue", () => {
     expect(result && describePayResult(result)).not.toContain(
       t("wallet.xfer.route_queued"),
     );
-    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+    // Stored by key, so Pending re-reads it after a language switch.
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", {
+      error: said,
+      errorKey: "wallet.xfer.route_too_large",
+    });
   });
 
   it("says an Airhop peer gets it back in range, or by hand now", async () => {
@@ -581,7 +585,10 @@ describe("a token too large for the queue", () => {
 
     const said = t("wallet.xfer.route_too_large_airhop");
     expect(result && describePayResult(result)).toContain(said);
-    expect(failSend).toHaveBeenCalledWith("tx-token-1", said);
+    expect(failSend).toHaveBeenCalledWith("tx-token-1", {
+      error: said,
+      errorKey: "wallet.xfer.route_too_large_airhop",
+    });
   });
 
   it("keeps the ordinary queued sentence for a token that fits", async () => {

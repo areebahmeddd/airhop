@@ -210,14 +210,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Walang internet, walang router, sa mga teleponong meron na ang mga tao.",
   "home.features.networking.lan.name": "Lokal na network",
-  "home.features.networking.lan.line": "Iisang WiFi o hotspot, magkasama ang iPhone at Android.",
+  "home.features.networking.lan.line": "Iisang Wi-Fi o hotspot, magkasama ang iPhone at Android.",
   "home.features.networking.hops.name": "Multi-hop na relay",
   "home.features.networking.hops.line":
     "Ipinapasa ng bawat telepono ang mensahe, hanggang pitong hop.",
   "home.features.networking.bridge.name": "Tulay ng mesh",
   "home.features.networking.bridge.line":
     "Ikinokonekta ang iyong pampublikong usapan sa kalapit na pangkat na wala sa saklaw.",
-  "home.features.networking.wifi.name": "Mabilis na daan sa WiFi",
+  "home.features.networking.wifi.name": "Mabilis na daan sa Wi-Fi",
   "home.features.networking.wifi.line":
     "Mas mabilis na paglipat sa pagitan ng dalawang Android o dalawang iPhone.",
   "home.features.networking.bitchat.name": "Tugma sa bitchat",

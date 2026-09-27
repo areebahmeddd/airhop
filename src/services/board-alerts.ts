@@ -9,10 +9,10 @@
 // own-post and recency gates; the handled set covers a resubscribe replaying a
 // note that is still inside that window.
 
-import { t } from "@i18n";
 import { useChatStore } from "@store/chat-store";
 import { BoundedIdSet } from "@utils/bounded-id-set";
 import { systemRow } from "@utils/message-text";
+import { truncateToCodePoints } from "@utils/utf8-budget";
 
 export interface UrgentNotice {
   postID: string;
@@ -56,12 +56,18 @@ function flush(): void {
       channel,
       senderID: "",
       senderNickname: "",
-      ...(single !== null
-        ? systemRow("chat.board.urgent_one", {
-            author: single.authorNickname || t("notif.someone"),
-            content: clip(single.content),
-          })
-        : systemRow("chat.board.urgent_many", { count: notices.length })),
+      // An author-less notice takes its own sentence rather than a stand-in
+      // name, which would be stored in the language of the day it arrived.
+      ...(single === null
+        ? systemRow("chat.board.urgent_many", { count: notices.length })
+        : single.authorNickname.length > 0
+          ? systemRow("chat.board.urgent_one", {
+              author: single.authorNickname,
+              content: clip(single.content),
+            })
+          : systemRow("chat.board.urgent_one_anon", {
+              content: clip(single.content),
+            })),
       timestampMs: now,
       isMine: false,
       isSystem: true,
@@ -73,10 +79,8 @@ function flush(): void {
 // The line is a pointer, not the post; Notices has the rest.
 function clip(content: string): string {
   const flat = content.replace(/\s+/g, " ").trim();
-  const chars = Array.from(flat);
-  return chars.length > CONTENT_MAX_CHARS
-    ? chars.slice(0, CONTENT_MAX_CHARS).join("") + "…"
-    : flat;
+  const cut = truncateToCodePoints(flat, CONTENT_MAX_CHARS);
+  return cut === flat ? flat : `${cut}…`;
 }
 
 export function resetBoardAlerts(): void {

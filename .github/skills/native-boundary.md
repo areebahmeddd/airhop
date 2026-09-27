@@ -41,7 +41,7 @@ The one exception is Arti (`native/arti/`): a Tor client owns a SOCKS5 listener 
 
 - **Hand-maintained, not Codegen input.** `package.json` declares no `codegenConfig`. The modules are legacy bridge modules resolved through the New Architecture interop layer; the spec shape is kept so both platforms expose one surface and a Codegen migration has a starting point. No business logic in these files.
 - **Bytes cross as base64 strings.** Encode before calling, decode on receipt.
-- **Stream framing** on WiFi Aware and LAN is `[u32 BE length][bytes]`, applied by native, byte-identical on both. BLE writes are single ATT values, 512 bytes at most; fragmentation happens in TypeScript.
+- **Stream framing** on Wi-Fi Aware and LAN is `[u32 BE length][bytes]`, applied by native, byte-identical on both. BLE writes are single ATT values, 512 bytes at most; fragmentation happens in TypeScript.
 - **Refuse, never pretend.** A start that cannot run rejects with a `code` the caller branches on (`RADIO_OFF`, `PERMISSION_DENIED`, `UNSUPPORTED`, `LAN_UNAVAILABLE` and so on), rather than resolving and leaving a dead radio behind a UI that believes it runs.
 - **Optional modules** use `TurboModuleRegistry.get` and callers optional-chain: a missing module is an answer (unsupported), not a crash. Only `AirhopBLE` is `getEnforcing`.
 - **Events** go through `NativeEventEmitter`, named `<Module>.<event>`, and every spec carries `addListener` / `removeListeners`.
@@ -54,7 +54,7 @@ TurboModule specs are named `Native<Name>.ts` in `src/bridge/`, Codegen's conven
 | Spec                         | Registered as         | Platforms | Purpose                                                                                       |
 | ---------------------------- | --------------------- | --------- | --------------------------------------------------------------------------------------------- |
 | `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | Both      | BLE peripheral and central I/O, radio state, power mode                                       |
-| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | Both      | WiFi Aware I/O; same-platform only (Android API 29+, iOS 26+)                                 |
+| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | Both      | Wi-Fi Aware I/O; same-platform only (Android API 29+, iOS 26+)                                |
 | `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS       | Wi-Fi Aware pairing sheet; absent on Android                                                  |
 | `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | Both      | mDNS discovery and TCP links, and the device-transfer socket                                  |
 | `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | Both      | AAC-LC capture and playback for live voice                                                    |
@@ -103,7 +103,7 @@ Both native modules hold these as constants and advertise, scan and serve on the
 
 ## One Module per Contract
 
-There is one BLE module (`AirhopBLEModule`). Extend it; never add a second. The same holds for every radio: a new capability goes into the module that owns the radio, and a new spec exists only for a genuinely separate contract, as pairing (a precondition to having WiFi links) and the Tor socket (an iOS-only shim) are.
+There is one BLE module (`AirhopBLEModule`). Extend it; never add a second. The same holds for every radio: a new capability goes into the module that owns the radio, and a new spec exists only for a genuinely separate contract, as pairing (a precondition to having Wi-Fi links) and the Tor socket (an iOS-only shim) are.
 
 ## What Not to Do
 

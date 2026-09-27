@@ -71,7 +71,7 @@ const CATALOG: {
   {
     category: "Device features",
     description:
-      "The parts of the phone the app uses: camera, microphone, location, files, notifications, network state and the screen lock.",
+      "The parts of the phone the app uses: camera, microphone, location, files, notifications, network state, languages and the screen lock.",
     packages: [
       {
         name: "expo-audio",
@@ -127,6 +127,11 @@ const CATALOG: {
         name: "expo-local-authentication",
         license: "MIT",
         repo: "https://github.com/expo/expo/tree/main/packages/expo-local-authentication",
+      },
+      {
+        name: "expo-localization",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-localization",
       },
       {
         name: "expo-location",

@@ -202,13 +202,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "न इंटरनेट, न राउटर, उन्हीं फ़ोनों पर जो लोगों के पास पहले से हैं।",
   "home.features.networking.lan.name": "लोकल नेटवर्क",
-  "home.features.networking.lan.line": "साझा WiFi या हॉटस्पॉट, iPhone और Android साथ-साथ।",
+  "home.features.networking.lan.line": "साझा Wi-Fi या हॉटस्पॉट, iPhone और Android साथ-साथ।",
   "home.features.networking.hops.name": "मल्टी-हॉप रिले",
   "home.features.networking.hops.line": "हर फ़ोन संदेश आगे बढ़ाता है, सात हॉप तक।",
   "home.features.networking.bridge.name": "मेश पुल",
   "home.features.networking.bridge.line":
     "आपकी सार्वजनिक चैट को सीमा से बाहर मौजूद पास की भीड़ से जोड़ता है।",
-  "home.features.networking.wifi.name": "WiFi फ़ास्ट पाथ",
+  "home.features.networking.wifi.name": "Wi-Fi फ़ास्ट पाथ",
   "home.features.networking.wifi.line": "दो Android या दो iPhone के बीच तेज़ ट्रांसफ़र।",
   "home.features.networking.bitchat.name": "bitchat के साथ संगत",
   "home.features.networking.bitchat.line":

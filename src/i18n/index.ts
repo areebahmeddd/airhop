@@ -11,6 +11,7 @@
 
 import { useSettingsStore } from "@store/settings-store";
 import { stripInvisibles } from "@utils/strip-invisibles";
+import { getLocales } from "expo-localization";
 import { useSyncExternalStore } from "react";
 import { I18nManager } from "react-native";
 import {
@@ -61,7 +62,8 @@ import { selectPlural } from "./plurals";
 import { PSEUDO_LANGUAGE, pseudoLocale } from "./pseudo";
 
 export type { LanguageCode } from "./languages";
-export type { TranslationKey } from "./locales/types";
+export type { CatalogKey, PluralKey, TranslationKey } from "./locales/types";
+export { upperCase } from "./upper-case";
 
 // ---- The catalogs ----
 //
@@ -136,25 +138,10 @@ function catalogFor(code: LanguageCode): Locale {
   return CATALOGS[code] ?? en;
 }
 
-// ---- Layout direction ----
+// ---- The device language ----
 //
-// Yoga reads the direction flag once at process start, so a change lands on the
-// next launch. Forcing a relaunch is not an option: it destroys every Noise
-// session, empties the peer table and cuts live voice, and iOS has no sanctioned
-// self-restart anyway. A language disagreeing with the frame therefore waits as
-// a preference, and the UI keeps the boot language until then.
-//
-// Both facts below are read, never assumed: `I18nManager.isRTL` for the
-// direction in force, `frameLanguage` for the language it belongs to. Assuming
-// puts right-to-left prose in a left-to-right frame on a first launch, with
-// `needsRelaunch` reporting false.
-
-let bootLanguage: LanguageCode = DEFAULT_LANGUAGE;
-let bootDirection: "ltr" | "rtl" = "ltr";
-let unwatchLanguage: (() => void) | null = null;
-
-// A stored preference, which is either a language or "follow the device".
-export type LanguagePreference = LanguageCode | "system";
+// What "system" means: the first of the phone's preferred languages that has a
+// catalog, sampled once and re-sampled on the foreground edge.
 
 // Retired codes a device still reports: `tl` for Filipino on Android, `in` the
 // legacy Java Indonesian. Chinese and Portuguese stay out of it, since
@@ -169,15 +156,31 @@ const LANGUAGE_ALIASES: Record<string, LanguageCode> = {
 // language Airhop knows, not necessarily one it has translated:
 // `resolvePreference` applies the shipping gate afterwards.
 export function languageForTag(tag: string): LanguageCode {
+  return matchTag(tag) ?? DEFAULT_LANGUAGE;
+}
+
+// The first of the phone's preferred languages that ships, the way both OSes
+// pick a resource. A Catalan reader with Spanish second gets Spanish, not
+// English, and so does the foreground-service notice Android picks by itself.
+export function languageForTags(tags: readonly string[]): LanguageCode {
+  for (const tag of tags) {
+    const code = matchTag(tag);
+    if (code !== null && isShipped(code)) return code;
+  }
+  return DEFAULT_LANGUAGE;
+}
+
+// Null when the tag names nothing Airhop knows, so a preference list can move
+// on to its next entry rather than stopping at English.
+function matchTag(tag: string): LanguageCode | null {
   // A device can be set to the pseudolocale tag on a debug build; it is a
   // debugging instrument, so it is never inferred, only chosen.
   if (tag !== PSEUDO_LANGUAGE && isLanguageCode(tag)) return tag;
 
   // The Punjabi catalog is Gurmukhi. Pakistan writes Shahmukhi, an Arabic
-  // script with no letters in common, so English is the better fallback there.
-  // Android's resource layer already declines the match on script; this is the
-  // same rule in JavaScript.
-  if (/^pa[-_](PK|Arab)/i.test(tag)) return DEFAULT_LANGUAGE;
+  // script with no letters in common, so it is no match. Android's resource
+  // layer already declines it on script; this is the same rule in JavaScript.
+  if (/^pa[-_](PK|Arab)/i.test(tag)) return null;
 
   const base = tag.split("-")[0];
   // Neither two-variant language may match on its base alone: guessing
@@ -187,7 +190,9 @@ export function languageForTag(tag: string): LanguageCode {
     if (isLanguageCode(base)) return base;
   }
   if (tag.startsWith("zh")) {
-    // Hant for the places that write it, Hans otherwise.
+    // A named script decides; the region only when there is none, since iOS
+    // adds one to every tag and Hong Kong has Simplified readers too.
+    if (/Hans/i.test(tag)) return "zh-Hans";
     return /Hant|TW|HK|MO/i.test(tag) ? "zh-Hant" : "zh-Hans";
   }
   if (tag.startsWith("pt")) {
@@ -200,24 +205,23 @@ export function languageForTag(tag: string): LanguageCode {
   if (base !== undefined && base in LANGUAGE_ALIASES) {
     return LANGUAGE_ALIASES[base] as LanguageCode;
   }
-  return DEFAULT_LANGUAGE;
+  return null;
 }
 
-// The device's language, sampled and cached. `Intl.DateTimeFormat` needs no
-// dependency and is present on Hermes on both platforms, the same way
-// `place-names-store` reads it. On Android it reflects Android 13's per-app
-// language too, since both land in the app's own Configuration.
-//
-// Re-sampled on the foreground edge, not once per process: both Android pickers
-// recreate the Activity while the JS context survives.
+// The phone's preferred languages, in order, a per-app language first where
+// one is set. Hermes' default `Intl` locale is only the head of this list.
+function deviceTags(): string[] {
+  return getLocales().map((locale) => locale.languageTag);
+}
+
+// Re-sampled on the foreground edge, not once per process: both Android
+// pickers recreate the Activity while the JS context survives.
 let deviceLanguage: LanguageCode | null = null;
 
 function getDeviceLanguage(): LanguageCode {
   if (deviceLanguage === null) {
     try {
-      deviceLanguage = languageForTag(
-        Intl.DateTimeFormat().resolvedOptions().locale,
-      );
+      deviceLanguage = languageForTags(deviceTags());
     } catch {
       deviceLanguage = DEFAULT_LANGUAGE;
     }
@@ -225,9 +229,9 @@ function getDeviceLanguage(): LanguageCode {
   return deviceLanguage;
 }
 
-// Bumped when the sampled device language changes. `useLanguage` subscribes,
-// because the store it otherwise watches holds the preference: on "system" that
-// value does not move when the OS language does, so nothing would re-render.
+// Bumped when the sampled device language changes. The hooks subscribe to it
+// because the store holds the preference, and "system" does not move when the
+// OS language does.
 let deviceEpoch = 0;
 const deviceListeners = new Set<() => void>();
 
@@ -248,9 +252,32 @@ export function refreshDeviceLanguage(): void {
   const before = deviceLanguage;
   deviceLanguage = null;
   if (getDeviceLanguage() === before) return;
+  // Pinned now, as a picker change is, or the next launch boots in the old
+  // direction and a second one is needed.
+  applyLayoutDirection(resolvePreference(useSettingsStore.getState().language));
   deviceEpoch++;
   for (const notify of deviceListeners) notify();
 }
+
+// ---- Layout direction ----
+//
+// Yoga reads the direction flag once at process start, so a change lands on the
+// next launch. Forcing a relaunch is not an option: it destroys every Noise
+// session, empties the peer table and cuts live voice, and iOS has no sanctioned
+// self-restart anyway. A language disagreeing with the frame therefore waits as
+// a preference, and the UI keeps the boot language until then.
+//
+// Both facts below are read, never assumed: `I18nManager.isRTL` for the
+// direction in force, `frameLanguage` for the language it belongs to. Assuming
+// puts right-to-left prose in a left-to-right frame on a first launch, with
+// `needsRelaunch` reporting false.
+
+let bootLanguage: LanguageCode = DEFAULT_LANGUAGE;
+let bootDirection: "ltr" | "rtl" = "ltr";
+let unwatchLanguage: (() => void) | null = null;
+
+// A stored preference, which is either a language or "follow the device".
+export type LanguagePreference = LanguageCode | "system";
 
 // What a preference means right now, before the direction rule is applied.
 export function resolvePreference(pref: LanguagePreference): LanguageCode {
@@ -269,9 +296,80 @@ export function activeLanguage(pref: LanguagePreference): LanguageCode {
 
 // Whether the chosen language is waiting for a relaunch to take effect, so the
 // picker can say so instead of looking broken.
+//
+// The second clause is a first launch on a right-to-left phone set to a
+// language Airhop does not ship (Hebrew, Pashto): React Native mirrors the
+// frame from the device locale, the fallback is English, and no shipped
+// language fits the frame. English is rendered, but mirrored until a restart
+// lets `applyLayoutDirection` take hold.
 export function needsRelaunch(pref: LanguagePreference): boolean {
-  return activeLanguage(pref) !== resolvePreference(pref);
+  const active = activeLanguage(pref);
+  return (
+    active !== resolvePreference(pref) ||
+    LANGUAGES[active].direction !== bootDirection
+  );
 }
+
+// Pinning direction to the app's language matters even for a left-to-right one:
+// React Native otherwise mirrors the whole layout on a device set to Arabic or
+// Hebrew, putting English text in a right-to-left frame. Pinned, the app looks
+// the same everywhere, the guarantee the bundled catalog gives the text.
+//
+// Takes effect on the next launch, so the language is recorded for `initI18n`
+// to read back. Called at boot and again whenever the wanted language moves,
+// which is what makes a single restart enough.
+export function applyLayoutDirection(code: LanguageCode): void {
+  const shouldBeRTL = isRTL(code);
+  I18nManager.allowRTL(shouldBeRTL);
+  // Unconditional: `I18nManager.isRTL` is a constant read at module load, so it
+  // answers with the direction this process booted in and never moves. Guarded
+  // on it, only the first change per session takes effect. Setting the same
+  // value twice is free; the write below is what needs a guard.
+  I18nManager.forceRTL(shouldBeRTL);
+  // Only on a change: a zustand `set` persists the whole store, and this runs at
+  // every launch and on every preference change.
+  const store = useSettingsStore.getState();
+  if (store.frameLanguage !== code) store.setFrameLanguage(code);
+}
+
+// Called once from the root before the first render, so the first frame is
+// already laid out correctly and the direction is fixed for the process.
+export function initI18n(): void {
+  const store = useSettingsStore.getState();
+  const wanted = resolvePreference(store.language);
+
+  bootDirection = I18nManager.isRTL ? "rtl" : "ltr";
+
+  // The recorded language when it still agrees with the direction in force,
+  // otherwise one that does: `bootLanguage` is the UI's fallback, and prose in
+  // the wrong frame is what this mechanism prevents. `wanted` is tried before
+  // the default because a panic wipe clears the record while the native flag
+  // survives, and on a right-to-left phone the device language is right.
+  const recorded = store.frameLanguage;
+  bootLanguage =
+    recorded !== null &&
+    isShipped(recorded) &&
+    LANGUAGES[recorded].direction === bootDirection
+      ? recorded
+      : LANGUAGES[wanted].direction === bootDirection
+        ? wanted
+        : DEFAULT_LANGUAGE;
+
+  applyLayoutDirection(wanted);
+
+  // Re-pinned whenever the preference moves, whoever moves it: the picker,
+  // Reset settings, a panic wipe or a transfer. Pinned by the picker alone, the
+  // first reopen after any other writer boots in the old direction and asks for
+  // a second one.
+  unwatchLanguage?.();
+  unwatchLanguage = useSettingsStore.subscribe((state, prev) => {
+    if (state.language !== prev.language) {
+      applyLayoutDirection(resolvePreference(state.language));
+    }
+  });
+}
+
+// ---- Interpolation ----
 
 export type TranslationVars = Record<string, string | number>;
 
@@ -292,8 +390,8 @@ const PLACEHOLDER = /\{(\w+)\}/g;
 //
 // Escapes, because `scripts/check-invisibles.js` forbids the literal characters
 // in source.
-const ISOLATE_FIRST = "\u2068";
-const ISOLATE_POP = "\u2069";
+export const ISOLATE_FIRST = "\u2068";
+export const ISOLATE_POP = "\u2069";
 
 // Strips the isolates back out, for callers that compare rendered text rather
 // than showing it. See `@utils/chat-search`.
@@ -313,6 +411,8 @@ function interpolate(template: string, vars?: TranslationVars): string {
   });
 }
 
+// ---- Translators ----
+
 export interface Translator {
   // The language this translator is bound to, for callers that need to format
   // a date or a number in the same locale as the surrounding text.
@@ -322,6 +422,11 @@ export interface Translator {
 
 export interface PluralTranslator {
   (key: PluralKey, count: number, vars?: TranslationVars): string;
+}
+
+// For a key that came off disk, where a stored row may name either map.
+export function isPluralKey(key: string): key is PluralKey {
+  return Object.prototype.hasOwnProperty.call(en.plurals, key);
 }
 
 // Grouped by the locale's own rule, pinned to Latin digits like every other
@@ -379,11 +484,15 @@ function getTPlural(language: LanguageCode): PluralTranslator {
   if (translator === undefined) {
     translator = (key, count, vars) => {
       const forms = catalogFor(language).plurals[key];
-      // Unreachable while `catalog.test.ts` holds every catalog to
-      // `PLURAL_CATEGORIES`. Kept because the type cannot prove it: every
+      // The exact match first, as ICU orders it. The `?? forms.other` is
+      // unreachable while `catalog.test.ts` holds every catalog to
+      // `PLURAL_CATEGORIES`, and kept because the type cannot prove it: every
       // category but `other` is optional, and `other` is the one CLDR
       // guarantees everywhere.
-      const template = forms[selectPlural(language, count)] ?? forms.other;
+      const template =
+        (count === 1 ? forms["=1"] : undefined) ??
+        forms[selectPlural(language, count)] ??
+        forms.other;
       return interpolate(template, {
         count: formatCount(language, count),
         ...vars,
@@ -397,19 +506,29 @@ function getTPlural(language: LanguageCode): PluralTranslator {
 // ---- Hooks ----
 //
 // These subscribe to the language preference, so changing it re-renders the
-// tree. Everything below the root reads through them, which is why every
-// language after the first moved no screen.
+// tree. Everything below the root reads through them, so adding a language
+// touches no screen.
 
-export function useLanguage(): LanguageCode {
+// Two sources: the picker writes the preference, the OS writes the device
+// language underneath a preference of "system".
+function usePreference(): LanguagePreference {
   const preference = useSettingsStore((s) => s.language);
-  // Two sources: the picker writes the preference, the OS writes the device
-  // language underneath a preference of "system".
   useSyncExternalStore(
     subscribeDeviceLanguage,
     readDeviceEpoch,
     readDeviceEpoch,
   );
-  return activeLanguage(preference);
+  return preference;
+}
+
+// The language the preference asks for, before the direction rule defers it.
+// What the restart notice watches.
+export function useWantedLanguage(): LanguageCode {
+  return resolvePreference(usePreference());
+}
+
+export function useLanguage(): LanguageCode {
+  return activeLanguage(usePreference());
 }
 
 export function useT(): Translator {
@@ -455,70 +574,10 @@ export function translatorFor(code: LanguageCode): Translator {
 
 /**
  * @public `catalog.test.ts` renders every catalog's plural forms in its own
- * language, the only way to check the digits a count comes out in. knip reads
- * the tag, so it stays a JSDoc block.
+ * language, the only way to check the digits a count comes out in.
  */
 export function pluralTranslatorFor(code: LanguageCode): PluralTranslator {
   return getTPlural(code);
-}
-
-// Pinning direction to the app's language matters even for a left-to-right one:
-// React Native otherwise mirrors the whole layout on a device set to Arabic or
-// Hebrew, putting English text in a right-to-left frame. Pinned, the app looks
-// the same everywhere, the guarantee the bundled catalog gives the text.
-//
-// Takes effect on the next launch, so the language is recorded for `initI18n`
-// to read back. Called at boot and again the moment one is chosen, which is what
-// makes a single restart enough.
-export function applyLayoutDirection(code: LanguageCode): void {
-  const shouldBeRTL = isRTL(code);
-  I18nManager.allowRTL(shouldBeRTL);
-  // Unconditional: `I18nManager.isRTL` is a constant read at module load, so it
-  // answers with the direction this process BOOTED in and never moves. Guarded
-  // on it, only the first change per session takes effect. Setting the same
-  // value twice is free; the write below is what needs a guard.
-  I18nManager.forceRTL(shouldBeRTL);
-  // Only on a change: a zustand `set` persists the whole store, and this runs at
-  // every launch and every tap in the picker.
-  const store = useSettingsStore.getState();
-  if (store.frameLanguage !== code) store.setFrameLanguage(code);
-}
-
-// Called once from the root before the first render, so the first frame is
-// already laid out correctly and the direction is fixed for the process.
-export function initI18n(): void {
-  const store = useSettingsStore.getState();
-  const wanted = resolvePreference(store.language);
-
-  bootDirection = I18nManager.isRTL ? "rtl" : "ltr";
-
-  // The recorded language when it still agrees with the direction in force,
-  // otherwise one that does: `bootLanguage` is the UI's fallback, and prose in
-  // the wrong frame is what this mechanism prevents. `wanted` is tried before
-  // the default because a panic wipe clears the record while the native flag
-  // survives, and on a right-to-left phone the device language is right.
-  const recorded = store.frameLanguage;
-  bootLanguage =
-    recorded !== null &&
-    isShipped(recorded) &&
-    LANGUAGES[recorded].direction === bootDirection
-      ? recorded
-      : LANGUAGES[wanted].direction === bootDirection
-        ? wanted
-        : DEFAULT_LANGUAGE;
-
-  applyLayoutDirection(wanted);
-
-  // Re-pinned whenever the preference moves, whoever moves it: the picker,
-  // Reset settings, a panic wipe or a transfer. Pinned by the picker alone, the
-  // first reopen after any other writer boots in the old direction and asks for
-  // a second one.
-  unwatchLanguage?.();
-  unwatchLanguage = useSettingsStore.subscribe((state, prev) => {
-    if (state.language !== prev.language) {
-      applyLayoutDirection(resolvePreference(state.language));
-    }
-  });
 }
 
 // The picker's data, re-exported so a screen imports it alongside `useT`.

@@ -23,14 +23,11 @@ export const strings: Strings = {
   "common.share": "Udostępnij",
   "common.settings": "Ustawienia",
   "common.on": "Włączone",
-  "common.off": "Wył.",
+  "common.off": "Wyłączone",
 
   // ---- Dates ----
   "format.today": "Dziś",
   "format.yesterday": "Wczoraj",
-  "format.minutes_ago": "{count} min temu",
-  "format.hours_ago": "{count} h temu",
-  "format.days_ago": "{count} dni temu",
   "format.just_now": "przed chwilą",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -50,7 +47,7 @@ export const strings: Strings = {
   "chat.filter.a11y": "Filtruj czaty",
   "chat.filter.all": "Wszystkie",
   "chat.filter.unread": "Nieprzeczytane",
-  "chat.filter.verified": "Zweryfikowany",
+  "chat.filter.verified": "Zweryfikowane",
   "chat.filter.nearby": "W pobliżu",
   "chat.filter.private": "Prywatne",
   "chat.filter.none": "Żaden czat nie pasuje do tego filtra",
@@ -74,7 +71,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_terms": "Otwórz regulamin",
   "onboarding.welcome.open_privacy": "Otwórz politykę prywatności",
   "onboarding.welcome.consent":
-    "Naciskając {cta}, akceptujesz nasz {terms} i naszą {privacy}.",
+    "Naciskając {cta}, akceptujesz dokumenty: {terms} i {privacy}.",
   "onboarding.welcome.transfer": "Przenieś z innego telefonu",
 
   // ---- Onboarding: identity generation ----
@@ -149,7 +146,7 @@ export const strings: Strings = {
   // ---- Onboarding: the author's note ----
   "onboarding.hello.title": "Witaj w Airhop!",
   "onboarding.hello.p1":
-    "Airhop powstał na bazie aplikacji bitchat jako niezależny projekt poboczny o otwartym kodzie. Nie jest powiązany ani firmowany przez projekt bitchat, ani nie jest imitacją żadnej istniejącej aplikacji czy usługi, to po prostu coś, co lubię budować i dzielić się tym ze społecznością.",
+    "Airhop powstał na bazie aplikacji bitchat jako niezależny projekt poboczny o otwartym kodzie. Nie jest powiązany z projektem bitchat ani przez niego firmowany, ani nie jest imitacją żadnej istniejącej aplikacji czy usługi, to po prostu coś, co lubię budować i dzielić się tym ze społecznością.",
   "onboarding.hello.p2":
     "To pierwsze wydanie na iOS i Androida, więc choć testowałem je ze znajomymi, pewnie natrafisz na kilka błędów. Jeśli tak, albo jeśli masz pomysł na funkcję, chętnie o tym usłyszę. Załóż zgłoszenie na {github} albo napisz do mnie na {email}.",
   "onboarding.hello.p3":
@@ -258,6 +255,7 @@ export const strings: Strings = {
   "chat.group_badge": "Grupa",
   "chat.more": "Więcej",
   "chat.no_messages": "Jeszcze żadnych wiadomości",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Nikogo w pobliżu",
   "chat.presence.active_none": "Nikt nie jest aktywny",
   "chat.you": "Ty",
@@ -331,7 +329,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Nie udało się otworzyć tej komórki. Spróbuj za chwilę.",
   "chat.jump.title": "Przejdź do miejsca",
-  "chat.jump.saved": "ZAPISANE MIEJSCA",
+  "chat.jump.saved": "Zapisane miejsca",
+  "chat.jump.nearby": "W pobliżu",
   "chat.jump.anywhere":
     "Otwórz publiczny kanał lokalizacyjny gdziekolwiek, nawet w miejscu, w którym cię nie ma.",
   "chat.jump.geohash_note":
@@ -340,7 +339,22 @@ export const strings: Strings = {
     "Pokazujesz się jako teleportowany, nie jako obecny w pobliżu. Dociera to wyłącznie przez internet.",
   "chat.jump.level_cell": "Komórka na poziomie: {level}",
   "chat.jump.already_here": "Już tu jesteś. Idź otwiera twój kanał {name}.",
-  "chat.jump.open_direction": "Otwórz komórkę na {direction} od ciebie",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NE",
+  "chat.jump.dir.e": "E",
+  "chat.jump.dir.se": "SE",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SW",
+  "chat.jump.dir.w": "W",
+  "chat.jump.dir.nw": "NW",
+  "chat.jump.open_n": "Otwórz komórkę na północ",
+  "chat.jump.open_ne": "Otwórz komórkę na północny wschód",
+  "chat.jump.open_e": "Otwórz komórkę na wschód",
+  "chat.jump.open_se": "Otwórz komórkę na południowy wschód",
+  "chat.jump.open_s": "Otwórz komórkę na południe",
+  "chat.jump.open_sw": "Otwórz komórkę na południowy zachód",
+  "chat.jump.open_w": "Otwórz komórkę na zachód",
+  "chat.jump.open_nw": "Otwórz komórkę na północny zachód",
   "chat.jump.open_place": "Otwórz {name}",
   "chat.jump.remove_place": "Usuń {name} z zapisanych miejsc",
   "chat.jump.go": "Idź",
@@ -369,7 +383,7 @@ export const strings: Strings = {
     "Do 16 osób wybranych przez ciebie. Nie ma linku z zaproszeniem, więc nikt nie wejdzie dzięki przesłaniu go dalej.",
   "chat.group.bluetooth":
     "Tylko Bluetooth. Członkowie poza zasięgiem dostają wiadomości, gdy wrócą.",
-  "chat.group.members_label": "CZŁONKOWIE",
+  "chat.group.members_label": "Członkowie",
   "chat.group.none_in_range":
     "Nikogo nie ma w zasięgu. Członkowie muszą być w pobliżu, gdy tworzysz grupę.",
   "chat.group.create_title": "Utwórz grupę",
@@ -401,7 +415,7 @@ export const strings: Strings = {
 
   // ---- Chats: message thread ----
   "chat.cmd.a11y": "Polecenie /{cmd}: {hint}",
-  "chat.cmd.hug_hint": "Wyślij ciepłego uścisku",
+  "chat.cmd.hug_hint": "Wyślij ciepły uścisk",
   "chat.cmd.slap_hint": "Uderz dużym pstrągiem",
   "chat.cmd.emote_needs_target": "Wskaż kogo, na przykład /{command} @nazwa",
   "chat.status.sending": "Wysyłanie…",
@@ -433,7 +447,7 @@ export const strings: Strings = {
   "chat.geo.keep_person": "Zachowaj tę osobę",
   "chat.geo.keep_person_desc":
     "Udostępnij swój kontakt, żeby dało się rozmawiać dalej, gdy któreś z was się przeniesie. Ta osoba pozna twoją stałą tożsamość.",
-  "chat.geo.card_sent": "Udostępniono · czekanie na ich",
+  "chat.geo.card_sent": "Udostępniono · czekanie na kontakt tej osoby",
   "chat.thread.left_cell":
     "Opuściłeś tę okolicę, więc nie dosięgną cię tutaj. Wymieńcie kody, żeby rozmawiać dalej gdziekolwiek.",
   "chat.thread.no_route":
@@ -459,20 +473,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Anuluj {name}",
   "chat.thread.hide_transfer": "Ukryj postęp",
   "chat.thread.hide_transfer_hint": "Plik i tak dotrze",
-  "chat.thread.queued_more": "jeszcze {count} czeka na wysłanie",
-  "chat.thread.across_bridge": "{count} po drugiej stronie mostu",
   "chat.thread.bridged": "przez most",
   "chat.thread.invite_body":
     "Dołącz do mnie w {channel} na Airhop — prywatne wiadomości w sieci mesh, działające przede wszystkim offline.",
-  "chat.thread.go_back_unread": "Wstecz, {count} nieprzeczytanych",
   "chat.thread.view_info": "Pokaż informacje o {name}",
-  "chat.thread.notices_new": "Ogłoszenia z tego kanału, {count} nowych",
   "chat.board.urgent_one": "Pilne ogłoszenie od {author} · {content}",
-  "chat.board.urgent_many":
-    "Nowe pilne ogłoszenia: {count} · otwórz Ogłoszenia",
+  "chat.board.urgent_one_anon": "Pilne ogłoszenie · {content}",
   "chat.thread.say_something": "Powiedz coś w {channel}.",
-  "chat.thread.jump_latest_new":
-    "Przejdź do najnowszej wiadomości, {count} nowych",
   "chat.thread.unconfirmed_since": "Brak potwierdzonej dostawy od {date}",
   "chat.thread.no_reach":
     "Brak peerów w pobliżu · nikt tego jeszcze nie dostał",
@@ -490,7 +497,7 @@ export const strings: Strings = {
     "Nie jesteś już w tej grupie, więc nie da się tego wysłać",
   "chat.thread.no_reach_offline":
     "Internet wyłączony i brak peerów w pobliżu · nikt tego jeszcze nie dostał",
-  "chat.thread.mention": "Wspomnij {name}",
+  "chat.thread.mention": "Wspomnij o {name}",
   "chat.thread.someone_talking": "{hold}. {name} mówi.",
   "chat.thread.attach_note":
     "Pliki idą tylko w zasięgu Bluetooth. Tekst i płatności docierają do kontaktów przez internet; załączniki nie.",
@@ -510,7 +517,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Zrobiłeś zrzut ekranu · nikomu nie powiedziano",
   "chat.screenshot.heads_up": "Uwaga",
-  "chat.screenshot.notice": "* {name} zrobił zrzut ekranu *",
+  "chat.screenshot.peer_took": "Osoba {name} zrobiła zrzut ekranu",
   "chat.screenshot.notified_dm":
     "{name} został poinformowany, że zrobiłeś zrzut ekranu tej rozmowy.",
   "chat.screenshot.notified":
@@ -557,7 +564,7 @@ export const strings: Strings = {
   "chat.attach.document": "Dokument",
   "chat.attach.document_desc": "Wyślij dowolny plik albo PDF",
   "chat.attach.voice": "Notatka głosowa",
-  "chat.attach.voice_desc": "Nagraj i wyślij wiadomość głosową",
+  "chat.attach.voice_desc": "Nagraj i wyślij notatkę głosową",
   "chat.attach.ecash": "Wyślij ecash",
   "chat.attach.ecash_desc": "Wyślij saty Cashu ze swojego portfela",
   "chat.attach.location": "Lokalizacja",
@@ -565,7 +572,7 @@ export const strings: Strings = {
   "chat.attach.title": "Załącz",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Udostępnił lokalizację",
+  "chat.location.sent_summary": "Udostępniono lokalizację",
   "chat.location.received_summary": "Udostępnił swoją lokalizację",
   "chat.location.title": "Lokalizacja",
   "chat.location.away": "{distance} na {direction}",
@@ -597,15 +604,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "północny zachód",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Zadzwonił",
+  "chat.ring.sent_summary": "Zadzwoniono",
   "chat.ring.received_summary": "Zadzwonił do ciebie",
   "chat.ring.alert.title": "{sender} dzwoni do ciebie",
   "chat.ring.alert.body": "Sprawdź swoje wiadomości",
   "chat.ring.alert.open": "Otwórz",
   "chat.ring.alert.snooze": "Odłóż na 1 godzinę",
-  "chat.ring.sent_snoozed": "Zadzwoniono, odłożone",
-  "chat.ring.sent_too_soon": "Zadzwoniono, za wcześnie",
-  "chat.ring.sent_not_allowed": "Zadzwoniono, niedozwolone",
+  "chat.ring.sent_snoozed": "Zadzwoniono · odłożone",
+  "chat.ring.sent_too_soon": "Zadzwoniono · za wcześnie",
+  "chat.ring.sent_not_allowed": "Zadzwoniono · niedozwolone",
   "chat.attach.send_anyway": "Wyślij mimo to",
   "chat.attach.bitchat_too_big": "To może nie dotrzeć",
   "chat.attach.bitchat_too_big_body":
@@ -681,6 +688,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Zatrzymaj nagrywanie i wyślij",
   "chat.voice.lift_lock": "Przesuń w górę, żeby nagrywać bez trzymania",
   "chat.voice.live_speaking": "{name} mówi",
+  "chat.voice.live_ended": "Zakończono",
   "voice.unavailable": "Głos na żywo niedostępny",
   "voice.recording_stopped": "Nagrywanie zatrzymane",
 
@@ -742,7 +750,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Usuń {name}",
   "chat.info.no_addable":
     "Brak osiągalnych peerów do dodania. Członkowie muszą być w pobliżu.",
-  "chat.info.add_count": "Dodaj {count}",
   "chat.info.teleported_tag": "{level}  ·  teleportacja",
   "chat.info.active": "Aktywni",
   "chat.info.members": "Członkowie",
@@ -827,8 +834,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 dni",
   "chat.notices.7_days": "7 dni",
   "chat.notices.fading": "znika",
-  "chat.notices.fades_in_hours": "zniknie za {count} h",
-  "chat.notices.fades_in_days": "zniknie za {count} dni",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Pilne",
@@ -845,10 +850,20 @@ export const strings: Strings = {
   "chat.search.links": "Linki",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Filtruj: {filter}",
-  "chat.search.no_matches": "Brak wyników w kategorii {filter} dla „{query}”",
-  "chat.search.no_media": "Jeszcze nic w kategorii {filter}",
+  "chat.search.no_photos": "Nie ma jeszcze zdjęć",
+  "chat.search.no_videos": "Nie ma jeszcze filmów",
+  "chat.search.no_audio": "Nie ma jeszcze nagrań audio",
+  "chat.search.no_documents": "Nie ma jeszcze dokumentów",
+  "chat.search.no_links": "Nie ma jeszcze linków",
+  "chat.search.no_ecash": "Nie ma jeszcze ecash",
+  "chat.search.no_photos_matching": "Brak zdjęć dla „{query}”",
+  "chat.search.no_videos_matching": "Brak filmów dla „{query}”",
+  "chat.search.no_audio_matching": "Brak nagrań audio dla „{query}”",
+  "chat.search.no_documents_matching": "Brak dokumentów dla „{query}”",
+  "chat.search.no_links_matching": "Brak linków dla „{query}”",
+  "chat.search.no_ecash_matching": "Brak ecash dla „{query}”",
   "chat.search.result_a11y": "{chat}, {kind} od {sender}",
-  "chat.search.you": "ty",
+  "chat.search.result_mine_a11y": "{chat}, {kind} od ciebie",
   "chat.search.section_chats": "Czaty",
   "chat.search.section_messages": "Wiadomości",
   "chat.search.section_notices": "Ogłoszenia",
@@ -857,15 +872,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Brak wyników dla „{query}”",
   "chat.search.open_chat": "Otwórz {name}",
   "chat.search.message_a11y": "{chat}, wiadomość od {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, twoja wiadomość: {snippet}",
   "chat.search.notice_a11y": "Ogłoszenie w {chat} od {author}: {snippet}",
   "chat.search.urgent": "Pilne ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "Na tej liście jest {count}. Wyczyszczenie usuwa je tylko stąd, a wiadomości zostają nieprzeczytane w swoich rozmowach. Oznaczenie wszystkich jako przeczytane porządkuje jedno i drugie.",
   "chat.notif.mark_all_read": "Oznacz wszystkie jako przeczytane",
   "chat.notif.clear_list": "Wyczyść listę",
-  "chat.notif.clear_all_a11y": "Wyczyść wszystkie powiadomienia: {count}",
   "chat.notif.title": "Powiadomienia",
   "chat.notif.clear_short": "Wyczyść",
   "chat.notif.close": "Zamknij powiadomienia",
@@ -888,6 +901,9 @@ export const strings: Strings = {
   "chat.forward.locations": "Lokalizacje",
   "chat.forward.dms": "Wiadomości bezpośrednie",
   "chat.forward.none": "Jeszcze żadnych innych czatów",
+  "chat.forward.app_row": "Nie przesłano dalej",
+  "chat.forward.app_row_body":
+    "Ten wiersz pochodzi od Airhop, a nie od osoby, więc nie ma czego przesyłać dalej.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Uruchamianie sieci mesh…",
@@ -895,7 +911,7 @@ export const strings: Strings = {
     "Brak Bluetooth na tym urządzeniu · tylko internet",
   "mesh.banner.bluetooth_off": "Bluetooth wyłączony · sieć mesh niedostępna",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth wyłączony · sieć mesh działa przez WiFi",
+    "Bluetooth wyłączony · sieć mesh działa przez Wi-Fi",
   "mesh.banner.permission_needed": "Potrzebne uprawnienie do Bluetooth",
   "mesh.banner.blocked":
     "Bluetooth zablokowany · zezwól na niego w Ustawieniach",
@@ -926,8 +942,6 @@ export const strings: Strings = {
     "Brama internetowa włączona · przekazywanie dla peerów w pobliżu",
   "mesh.banner.bridge": "Most mesh włączony · czat publiczny połączony",
   "mesh.banner.background_limits": "{brand} może wstrzymać sieć mesh w tle",
-  "mesh.banner.bridge_across":
-    "Most mesh włączony · {count} po drugiej stronie mostu",
   "mesh.banner.action.turn_on": "Włącz",
   "mesh.banner.action.allow": "Zezwól",
   "mesh.banner.action.resume": "Wznów",
@@ -978,9 +992,9 @@ export const strings: Strings = {
   "mesh.radar.set_online":
     "Ustaw status na Dostępny w zakładce Ty, żeby znaleźć peerów",
   "mesh.radar.peer_in_range": "{name}, w zasięgu",
-  "mesh.radar.peer_recent": "{name}, widziani niedawno",
+  "mesh.radar.peer_recent": "{name}, widziano niedawno",
   "mesh.radar.relay_in_range": "{name}, węzeł przekaźnikowy, w zasięgu",
-  "mesh.radar.relay_recent": "{name}, węzeł przekaźnikowy, widziani niedawno",
+  "mesh.radar.relay_recent": "{name}, węzeł przekaźnikowy, widziano niedawno",
   "mesh.radar.peer_hint":
     "Otwiera opcje napisania do tego peera albo zapłacenia mu",
 
@@ -990,7 +1004,7 @@ export const strings: Strings = {
     "Inne urządzenia z Airhop albo bitchat w zasięgu Bluetooth pojawiają się tutaj.",
   "mesh.peer.id_copied": "Skopiowano identyfikator peera",
   "mesh.peer.copy_id": "Kopiuj identyfikator peera",
-  "mesh.peer.their_name": "Podaje się za {name}",
+  "mesh.peer.their_name": "Przedstawia się jako {name}",
   "mesh.peer.in_range": "W zasięgu",
   "mesh.peer.relay": "Węzeł przekaźnikowy",
   "mesh.peer.relay_body":
@@ -1005,7 +1019,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "Pokaż peera {name}, dostępny, węzeł przekaźnikowy",
   "mesh.peer.last_seen_at": "Ostatnio widziany {ago}",
-  "mesh.peer.send_amount": "Wyślij {amount} satów",
+  "mesh.peer.send_unit_amount": "Wyślij {amount} {unit}",
   "mesh.peer.direct": "Połączenie bezpośrednie",
   "mesh.peer.check_distance": "Sprawdź odległość",
   "mesh.peer.checking": "Sprawdzanie",
@@ -1077,7 +1091,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Ten token jest rozbity na zbyt wiele monet, żeby zmieścił się w kodzie QR. Udostępnij go albo skopiuj.",
   "wallet.send.scan_note":
-    "Niech zeskanują to ze swojego portfela. Da się to odzyskać, dopóki nie oznaczysz jako dostarczone.",
+    "Niech ta osoba zeskanuje to w swoim portfelu. Da się to odzyskać, dopóki nie oznaczysz tego jako odebrane.",
   "wallet.send.mesh_note":
     "Token idzie jako zaszyfrowana wiadomość bezpośrednia przez sieć mesh. Internet niepotrzebny.",
   "wallet.send.no_peers_note":
@@ -1098,7 +1112,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Otwórz w portfelu",
   "wallet.send.to_peer": "Wyślij token peerowi w pobliżu",
   "wallet.send.to_peer_short": "Wyślij peerowi",
-  "wallet.send.mark_delivered": "Oznacz jako dostarczone i zakończ",
+  "wallet.send.mark_delivered": "Oznacz jako odebrane",
   "wallet.send.they_got_it": "Dostali",
   "wallet.send.keep_pending": "Zostaw tę wysyłkę jako oczekującą",
   "wallet.send.decide_later": "Zdecyduj później",
@@ -1122,10 +1136,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n„{memo}”",
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
-  "wallet.receive.stored_pending":
-    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane{dleq}. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
-  "wallet.receive.dleq_inline":
-    " (podpis się zgadza, więc token jest prawdziwy)",
+  "wallet.receive.pending_unconfirmed":
+    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Podpis się zgadza, więc token jest prawdziwy. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
   "wallet.receive.dleq_ok":
     "Podpis mennicy się zgadza, więc token jest prawdziwy.",
   "wallet.receive.dleq_uncached":
@@ -1146,7 +1160,7 @@ export const strings: Strings = {
   "wallet.nutzap.received_title": "+{amount} {unit}",
   "wallet.nutzap.received_body":
     "Nutzap odebrany od {from}… i zrealizowany do twojego portfela.",
-  "wallet.zap.title": "Zapnij tożsamość Nostr",
+  "wallet.zap.title": "Wyślij zap do tożsamości Nostr",
   "wallet.zap.not_npub": "to nie jest npub",
   "wallet.zap.bad_key": "zły klucz",
   "wallet.zap.invalid_pubkey": "Nieprawidłowy klucz publiczny",
@@ -1156,13 +1170,13 @@ export const strings: Strings = {
   "wallet.zap.failed": "Zap się nie udał",
   "wallet.zap.body":
     "Jeśli publikują dane nutzap wedle NIP-61, ecash zostaje przypisany do ich klucza, więc nikt inny go nie wyda i nie da się go cofnąć. Jeśli nie, idzie jako token, który możesz odzyskać. Dowiesz się, co się stało.",
-  "wallet.zap.contact": "Zapnij {name}",
+  "wallet.zap.contact": "Wyślij zap do {name}",
   "wallet.zap.pubkey_placeholder": "npub1… albo 64 znaki szesnastkowe",
   "wallet.zap.sending": "Wysyłanie…",
   "wallet.nostr.copied_body":
-    "Daj to komuś, a będzie mógł zapnąć cię z Airhop albo dowolnego innego portfela Nostr, bez Bluetooth.",
+    "Daj to komuś, a będzie mógł wysłać ci zap z Airhop albo dowolnego innego portfela Nostr, bez Bluetooth.",
   "wallet.nostr.copy_key":
-    "Skopiuj swój klucz Nostr, żeby ludzie mogli cię zapinać",
+    "Skopiuj swój klucz Nostr, żeby ludzie mogli wysyłać ci zapy",
   "wallet.nostr.your_key": "Twój klucz Nostr",
 
   // ---- Wallet: mints ----
@@ -1189,8 +1203,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Przenieś wszystkie salda do jednej mennicy",
   "wallet.mint.confirm_with": "Sprawdź saldo w {mint}",
   "wallet.mint.available_amount": "dostępne: {amount} {unit}",
-  "wallet.mint.split_across":
-    "Saldo rozbite na {count} mennic. Przenieś je do jednej.",
   "wallet.mint.move_everything_to": "Przenieś wszystko do {mint}",
   "wallet.mint.consolidate_title": "Przenieś do jednej mennicy",
   "wallet.mint.moving": "Przenoszenie…",
@@ -1201,10 +1213,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Nic nie przeniesiono",
   "wallet.mint.move_pending": "W drodze",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} opuściło {mint} i jest w drodze do {target}. Dotrze, gdy wpłata zostanie odebrana, a portfel ponawia próby.",
+    "{amount} {unit} opuściło {mint} i jest w drodze do {target}. Dotrze, gdy przelew zostanie odebrany, a portfel ponawia próby.",
   "wallet.mint.destination": "· cel",
   "wallet.mint.will_move": "· zostanie przeniesione",
   "wallet.mint.issued_by": "Wydane przez",
+  "wallet.mint.test_badge": "Test",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Doładowanie portfela Airhop",
@@ -1230,7 +1243,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "do {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Zapłać {amount} {unit}",
-  "wallet.ln.deposit_title": "Wpłata przez Lightning",
+  "wallet.ln.deposit_title": "Doładuj przez Lightning",
   "wallet.ln.amount_placeholder": "Kwota w satach",
   "wallet.ln.requesting": "Wysyłanie żądania…",
   "wallet.ln.get_invoice": "Pobierz fakturę",
@@ -1354,7 +1367,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Mennica podaje, że ten token został już zrealizowany, więc {amount} {unit} do nich dotarło i nic nie wróciło na twoje saldo.",
   "wallet.copied.token_body":
-    "Token jest w schowku. Zostaje tu zarezerwowany, dopóki nie oznaczysz go jako dostarczonego, więc możesz go wkleić ponownie, jeśli pierwsza próba się nie uda.",
+    "Token jest w schowku. Zostaje tu zarezerwowany, dopóki nie oznaczysz go jako odebranego, więc możesz go wkleić ponownie, jeśli pierwsza próba się nie uda.",
   "wallet.copied.refused_token_body":
     "Token jest w schowku. Ten portfel już go nie liczy, więc możesz go oddać osobie, która go wysłała.",
   "wallet.copied.phrase_body":
@@ -1381,8 +1394,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Pokaż ten token jako kod QR",
   "wallet.pending.copy_again": "Skopiuj token ponownie",
   "wallet.pending.share_again": "Udostępnij token ponownie",
-  "wallet.pending.mark_delivered": "Oznacz ten token jako dostarczony",
-  "wallet.pending.delivered": "Dostarczone",
+  "wallet.pending.mark_delivered": "Oznacz jako odebrane",
+  "wallet.pending.delivered": "Odebrane",
   "wallet.pending.reclaim_into": "Odzyskaj ten token na swoje saldo",
   "wallet.activity.title": "Aktywność",
   "wallet.activity.none": "Jeszcze nic",
@@ -1400,7 +1413,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "nieudane",
   "wallet.activity.status_reclaimed": "odzyskane",
   "wallet.activity.status_expired": "wygasłe",
-  "wallet.activity.ln_deposit": "Wpłata przez Lightning",
+  "wallet.activity.ln_deposit": "Doładowanie przez Lightning",
   "wallet.activity.ln_withdrawal": "Wypłata przez Lightning",
   "wallet.activity.nutzap_received": "Odebrano nutzapa",
   "wallet.activity.nutzap_claiming": "Nutzap, trwa odbieranie",
@@ -1443,7 +1456,14 @@ export const strings: Strings = {
     "Przypisanych płatności nie da się odzyskać: tylko ich klucz może teraz wydać te monety.",
   "wallet.pay.reclaimable":
     "Da się to odzyskać w sekcji Aktywność, dopóki nie potwierdzisz, że dotarło.",
-  "wallet.pay.why": "Wysłane tą drogą, ponieważ {reason}.",
+  "wallet.pay.why_no_relay":
+    "Wysłane tą drogą, ponieważ nie było połączenia z przekaźnikiem.",
+  "wallet.pay.why_no_shared_mint":
+    "Wysłane tą drogą, ponieważ nie masz wystarczających środków w żadnej mennicy, którą akceptuje odbiorca.",
+  "wallet.pay.why_no_nutzap_info":
+    "Wysłane tą drogą, ponieważ odbiorca nie opublikował danych nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} do {name}",
   "wallet.pay.thread_receipt":
     "Wysłałeś {amount} {unit}, przypisane do ich klucza.",
@@ -1590,18 +1610,18 @@ export const strings: Strings = {
     "Nic nie zostało pobrane. Spróbuj ponownie, a portfel wybierze inny zestaw.",
   "wallet.svc.no_ecash": "Jeszcze żadnego ecasha.",
   "wallet.svc.no_ecash_body":
-    "Dodaj mennicę i wpłać przez Lightning albo odbierz od kogoś token.",
+    "Dodaj mennicę i doładuj przez Lightning albo odbierz od kogoś token.",
   "wallet.svc.split_across_mints": "Twoje saldo jest rozbite na kilka mennic.",
   "wallet.svc.mint_says_spent": "Mennica zgłosiła ten ecash jako już wydany.",
   "wallet.svc.issue_against_invoice": "wydać ecash pod fakturę Lightning",
   "wallet.svc.pay_invoice": "opłacić faktury Lightning",
-  "wallet.svc.unknown_deposit": "Nieznana wpłata.",
+  "wallet.svc.unknown_deposit": "Nieznane doładowanie.",
   "wallet.svc.invoice_expired_before":
     "Faktura wygasła, zanim została opłacona.",
   "wallet.svc.invoice_expired": "Ta faktura wygasła.",
   "wallet.svc.invoice_unpaid": "Faktura nie została jeszcze opłacona.",
-  "wallet.svc.payment_unknown":
-    "Stan płatności nieznany; sprawdzony ponownie przy następnym odświeżeniu.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Stan płatności nieznany; sprawdzony ponownie przy następnym odświeżeniu.",
   "wallet.svc.melt_change_pending": "Twoja faktura została opłacona.",
   "wallet.svc.melt_change_pending_body":
     "Mennica nie zwróciła jeszcze niewykorzystanej opłaty za trasowanie. Zostanie odebrana automatycznie przy następnym odświeżeniu i nic w międzyczasie nie ginie.",
@@ -1641,16 +1661,12 @@ export const strings: Strings = {
     "Ta płatność wskazuje mennicę, z której nie korzystasz.",
   "wallet.svc.unknown_mint_body":
     "Dodaj tę mennicę sam, jeśli jej ufasz; nic nie jest realizowane w mennicy, której nie wybrałeś.",
-  "wallet.svc.no_relay": "brak połączenia z przekaźnikiem",
-  "wallet.svc.no_shared_mint": "brak wspólnej mennicy z wystarczającym saldem",
-  "wallet.svc.no_nutzap_info":
-    "odbiorca nie opublikował danych nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Przypisane do ich klucza, ale jeszcze niedostarczone. Udostępnij token z tej transakcji, żeby ją dokończyć.",
   "wallet.svc.swap_lost":
     "Mennica nigdy nie dokończyła tej wymiany, więc nic pod nią nie wydano.",
   "wallet.svc.mint_lost":
-    "Mint wydał tę wpłatę, ale nie udało się odtworzyć jej monet. Przywrócenie z frazy odzyskiwania je odzyska.",
+    "Mennica wydała to doładowanie, ale nie udało się odtworzyć jego monet. Przywrócenie z frazy odzyskiwania je odzyska.",
   "wallet.svc.swap_unreadable":
     "Ta wymiana została zapisana w postaci, której ta wersja nie odtworzy.",
   "wallet.svc.lock_in_doubt": "Ta płatność mogła przejść albo nie.",
@@ -1778,7 +1794,7 @@ export const strings: Strings = {
     "Forward secrecy, podpisane pakiety, zablokowani peerzy",
   "settings.section.network": "Sieć i przekaźniki",
   "settings.section.network_desc":
-    "Internet zapasowo, przekaźniki nostr, zgodność z bitchat",
+    "Internet zapasowo, przekaźniki Nostr, zgodność z bitchat",
   "settings.section.permissions": "Uprawnienia",
   "settings.section.permissions_desc":
     "Bluetooth, lokalizacja, powiadomienia, aparat, mikrofon",
@@ -1827,14 +1843,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Brak odczytu sygnału",
   "settings.diag.no_peers": "Nikogo w zasięgu",
-  "settings.diag.no_peers_desc": "otwarte łącza radiowe: {links}",
   "settings.diag.gcs_size": "Rozmiar filtra",
   "settings.diag.gcs_size_desc":
     "Największy filtr synchronizacji wypuszczony w eter",
   "settings.diag.fpr": "Odsetek fałszywych trafień",
   "settings.diag.fpr_desc":
     "Jak często filtr twierdzi, że mamy pakiet, którego nam brakuje",
-  "settings.diag.bytes": "{n} bajtów",
   "settings.diag.footnote":
     "Nic tutaj nie da się zmienić. Te wartości są ustalone, żeby Airhop pozostał zgodny z bitchat.",
   "settings.diag.share": "Udostępnij diagnostykę",
@@ -1854,7 +1868,6 @@ export const strings: Strings = {
   "settings.general.undo": "Cofanie wysyłki",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Portfel",
-  "settings.general.undo_seconds": "{count} sekund",
   "settings.general.undo_a11y": "Cofanie wysyłki: {value}",
   "settings.general.quality_a11y": "Ustaw jakość przesyłania na {value}",
   "settings.general.undo_desc":
@@ -1946,7 +1959,6 @@ export const strings: Strings = {
   "settings.network.custom": "Własne przekaźniki",
   "settings.network.custom_desc":
     "Dodaj własne przekaźniki dla kanałów lokalizacyjnych i mostu mesh",
-  "settings.network.custom_added": "dodano {count} z {max}",
   "settings.network.dm_relays": "Przekaźniki wiadomości",
   "settings.network.dm_relays_desc":
     "Wiadomości bezpośrednie i kanały prywatne zawsze korzystają z tych. Własne przekaźniki tego nie zmieniają.",
@@ -1957,18 +1969,16 @@ export const strings: Strings = {
   "settings.network.add_relay": "Dodaj przekaźnik",
   "settings.network.remove_relay": "Usuń {url}",
   "settings.network.add_short": "Dodaj",
-  "settings.network.relay_limit":
-    "Możesz dodać {count} przekaźników. Usuń jeden, żeby dodać kolejny.",
   "settings.network.relay_duplicate":
     "Ten przekaźnik już jest na twojej liście.",
   "settings.network.relay_invalid":
     "Podaj prawidłowy adres przekaźnika, np. relay.example.com. Port jest potrzebny tylko wtedy, gdy przekaźnik nie używa domyślnego. Adresy IP i nazwy lokalne są niedozwolone.",
   "settings.network.lan": "Sieć lokalna",
   "settings.network.lan_desc":
-    "Docieraj do osób w tej samej sieci WiFi, także między iPhone'em a Androidem. Inne urządzenia w sieci widzą, że używasz Airhop.",
+    "Docieraj do osób w tej samej sieci Wi-Fi, także między iPhone'em a Androidem. Inne urządzenia w sieci widzą, że używasz Airhop.",
   "settings.network.lan_searching": "Brak urządzeń Airhop w tej sieci",
   "settings.network.lan_active": "Połączono w tej sieci",
-  "settings.network.lan_unavailable": "Brak połączenia z siecią WiFi",
+  "settings.network.lan_unavailable": "Brak połączenia z siecią Wi-Fi",
   "settings.network.lan_permission":
     "Dostęp do sieci lokalnej jest wyłączony dla Airhop",
   "settings.network.lan_unsupported": "Niedostępne na tym urządzeniu",
@@ -1991,7 +2001,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action": "Uczyń tego iPhone'a wykrywalnym",
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware jest teraz niedostępne",
-  "settings.network.wifi_pair_forget": "Usuń sparowanie w aplikacji Settings",
+  "settings.network.wifi_pair_forget": "Usuń sparowanie w aplikacji Ustawienia",
   "settings.network.bitchat": "Zgodność z bitchat",
   "settings.network.bitchat_desc":
     "Ta sama sieć mesh BLE co w bitchat, w pełni współdziałająca. To jest zawsze włączone i nie da się tego wyłączyć.",
@@ -2114,7 +2124,7 @@ export const strings: Strings = {
     "Wysyła zdjęcia z galerii i zapisuje odebrane multimedia. Bez tego nadal możesz robić i wysyłać nowe zdjęcia aparatem.",
   "settings.permissions.microphone": "Mikrofon",
   "settings.permissions.microphone_desc":
-    "Nagrywa i wysyła wiadomości głosowe albo obsługuje głos na żywo. Bez niego wiadomości głosowe i głos na żywo nie zadziałają.",
+    "Nagrywa i wysyła notatki głosowe albo obsługuje głos na żywo. Bez niego notatki głosowe i głos na żywo nie zadziałają.",
   "settings.permissions.allow": "Zezwól na to uprawnienie",
   "settings.permissions.open_settings":
     "Otwórz ustawienia systemu, żeby zmienić to uprawnienie",
@@ -2374,7 +2384,7 @@ export const strings: Strings = {
     "Pobieranie nie powiodło się. Sprawdź połączenie i spróbuj ponownie.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} ma {size} KiB, ponad limit {cap} KiB.",
+  "transfer.too_large": "{kind} ma {size}, ponad limit {cap}.",
   "transfer.failed.malformed":
     "Załącznik dotarł uszkodzony i nie dało się go otworzyć. Poproś o ponowne wysłanie.",
   "transfer.failed.unsupported_type":
@@ -2384,10 +2394,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Załącznik dotarł, ale nie dało się go zapisać. Sprawdź wolne miejsce.",
   "transfer.badge.waiting": "Czekanie · {name}",
-  "transfer.badge.active_count": "{count} transferów",
   "transfer.badge.sending": "Wysyłanie: {name}",
   "transfer.badge.receiving": "Odbieranie: {name}",
-  "transfer.badge.a11y": "{label}, {percent} procent. Otwórz rozmowę.",
   "transfer.kind.photo": "Zdjęcie",
   "transfer.kind.video": "Wideo",
   "transfer.kind.voice": "Notatka głosowa",
@@ -2417,21 +2425,42 @@ export const strings: Strings = {
   "notif.notice": "Ogłoszenie · {content}",
   "notif.incoming_file": "Plik przychodzący",
   "notif.preview.photo": "📷 Zdjęcie",
-  "notif.preview.voice": "🎤 Wiadomość głosowa",
+  "notif.preview.voice": "🎤 Notatka głosowa",
   "notif.preview.video": "🎥 Wideo",
   "notif.preview.document": "📄 Dokument",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Nowa wiadomość",
   "notif.hidden.channel": "Nowa aktywność",
-  "notif.hidden.mention": "Ktoś cię wspomniał",
-  "notif.mention.title": "{sender} cię wspomniał",
+  "notif.hidden.mention": "Ktoś o tobie wspomniał",
+  "notif.mention.title": "{sender} wspomina o tobie",
   "notif.ring.hidden": "Dzwonienie",
   "notif.ring.title": "{sender} dzwoni do ciebie",
   "notif.ring.body": "Sprawdź swoje wiadomości",
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} minutę temu",
+    few: "{count} minuty temu",
+    many: "{count} minut temu",
+    other: "{count} minuty temu",
+  },
+  "format.hours_ago": {
+    one: "{count} godzinę temu",
+    few: "{count} godziny temu",
+    many: "{count} godzin temu",
+    other: "{count} godziny temu",
+  },
+  "format.days_ago": {
+    one: "{count} dzień temu",
+    few: "{count} dni temu",
+    many: "{count} dni temu",
+    other: "{count} dnia temu",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Pokaż jeszcze {count}",
@@ -2508,6 +2537,77 @@ export const plurals: Plurals = {
     other: "{count} osoby mówi",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "jeszcze {count} czeka na wysłanie",
+    few: "jeszcze {count} czekają na wysłanie",
+    many: "jeszcze {count} czeka na wysłanie",
+    other: "jeszcze {count} czeka na wysłanie",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} osoba po drugiej stronie mostu",
+    few: "{count} osoby po drugiej stronie mostu",
+    many: "{count} osób po drugiej stronie mostu",
+    other: "{count} osoby po drugiej stronie mostu",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Wstecz, {count} nieprzeczytana wiadomość",
+    few: "Wstecz, {count} nieprzeczytane wiadomości",
+    many: "Wstecz, {count} nieprzeczytanych wiadomości",
+    other: "Wstecz, {count} nieprzeczytanej wiadomości",
+  },
+  "chat.thread.notices_new": {
+    one: "Ogłoszenia z tego kanału, {count} nowe",
+    few: "Ogłoszenia z tego kanału, {count} nowe",
+    many: "Ogłoszenia z tego kanału, {count} nowych",
+    other: "Ogłoszenia z tego kanału, {count} nowego",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Przejdź do najnowszej wiadomości, {count} nowa",
+    few: "Przejdź do najnowszej wiadomości, {count} nowe",
+    many: "Przejdź do najnowszej wiadomości, {count} nowych",
+    other: "Przejdź do najnowszej wiadomości, {count} nowej",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} nowe pilne ogłoszenie · otwórz Ogłoszenia",
+    few: "{count} nowe pilne ogłoszenia · otwórz Ogłoszenia",
+    many: "{count} nowych pilnych ogłoszeń · otwórz Ogłoszenia",
+    other: "{count} nowego pilnego ogłoszenia · otwórz Ogłoszenia",
+  },
+  "chat.info.add_count": {
+    one: "Dodaj {count}",
+    few: "Dodaj {count}",
+    many: "Dodaj {count}",
+    other: "Dodaj {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "zniknie za {count} godzinę",
+    few: "zniknie za {count} godziny",
+    many: "zniknie za {count} godzin",
+    other: "zniknie za {count} godziny",
+  },
+  "chat.notices.fades_in_days": {
+    one: "zniknie za {count} dzień",
+    few: "zniknie za {count} dni",
+    many: "zniknie za {count} dni",
+    other: "zniknie za {count} dnia",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "Na tej liście jest {count} powiadomienie. Wyczyszczenie usuwa je tylko stąd, a wiadomość zostaje nieprzeczytana w swojej rozmowie. Oznaczenie wszystkich jako przeczytane czyści jedno i drugie.",
+    few: "Na tej liście są {count} powiadomienia. Wyczyszczenie usuwa je tylko stąd, a wiadomości zostają nieprzeczytane w swoich rozmowach. Oznaczenie wszystkich jako przeczytane czyści jedno i drugie.",
+    many: "Na tej liście jest {count} powiadomień. Wyczyszczenie usuwa je tylko stąd, a wiadomości zostają nieprzeczytane w swoich rozmowach. Oznaczenie wszystkich jako przeczytane czyści jedno i drugie.",
+    other:
+      "Na tej liście jest {count} powiadomienia. Wyczyszczenie usuwa je tylko stąd, a wiadomości zostają nieprzeczytane w swoich rozmowach. Oznaczenie wszystkich jako przeczytane czyści jedno i drugie.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Wyczyść {count} powiadomienie",
+    few: "Wyczyść wszystkie {count} powiadomienia",
+    many: "Wyczyść wszystkie {count} powiadomień",
+    other: "Wyczyść wszystkie {count} powiadomienia",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} peer w zasięgu",
@@ -2540,22 +2640,36 @@ export const plurals: Plurals = {
     other: "{count} członka",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Most mesh włączony · {count} osoba po drugiej stronie mostu",
+    few: "Most mesh włączony · {count} osoby po drugiej stronie mostu",
+    many: "Most mesh włączony · {count} osób po drugiej stronie mostu",
+    other: "Most mesh włączony · {count} osoby po drugiej stronie mostu",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} przechowuje {balance} {unit} w {count} monecie. Usunięcie kasuje tę monetę z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
-    few: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
-    many: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+    one: "{mint} przechowuje {balance} {unit} w {count} monecie. Usunięcie kasuje to saldo z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw je wypłać albo wyślij.",
+    few: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje to saldo z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw je wypłać albo wyślij.",
+    many: "{mint} przechowuje {balance} {unit} w {count} monetach. Usunięcie kasuje to saldo z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw je wypłać albo wyślij.",
     other:
-      "{mint} przechowuje {balance} {unit} w {count} monety. Usunięcie kasuje te monety z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw wypłać albo wyślij saldo.",
+      "{mint} przechowuje {balance} {unit} w {count} monety. Usunięcie kasuje to saldo z tego urządzenia na stałe i nie ma kopii zapasowej. Najpierw je wypłać albo wyślij.",
+  },
+  "wallet.mint.split_across": {
+    one: "Saldo rozbite na {count} mennicę. Przenieś je do jednej.",
+    few: "Saldo rozbite na {count} mennice. Przenieś je do jednej.",
+    many: "Saldo rozbite na {count} mennic. Przenieś je do jednej.",
+    other: "Saldo rozbite na {count} mennicy. Przenieś je do jednej.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} wpłata czeka na płatność. Sprawdzana ponownie przy każdym otwarciu aplikacji.",
-    few: "{count} wpłaty czekają na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
-    many: "{count} wpłat czeka na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
+    one: "{count} doładowanie czeka na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
+    few: "{count} doładowania czekają na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
+    many: "{count} doładowań czeka na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
     other:
-      "{count} wpłaty czeka na płatność. Sprawdzana ponownie przy każdym otwarciu aplikacji.",
+      "{count} doładowania czeka na płatność. Sprawdzane ponownie przy każdym otwarciu aplikacji.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2566,11 +2680,11 @@ export const plurals: Plurals = {
     other: "Odzyskano {count} niewydanej monety z {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "Znaleziono {count} monetę, ale była już wydana, więc nic za nią nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
-    few: "Znaleziono {count} monety, ale były już wydane, więc nic za nie nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
-    many: "Znaleziono {count} monet, ale były już wydane, więc nic za nie nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
+    one: "Znaleziono {count} monetę, ale była już wydana, więc nic nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
+    few: "Znaleziono {count} monety, ale były już wydane, więc nic nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
+    many: "Znaleziono {count} monet, ale były już wydane, więc nic nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
     other:
-      "Znaleziono {count} monety, ale była już wydana, więc nic za nią nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
+      "Znaleziono {count} monety, ale były już wydane, więc nic nie dopisano. To normalne: każda moneta, którą kiedykolwiek wydałeś, zostaje w rejestrze prowadzonym przez mennicę.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2606,9 +2720,50 @@ export const plurals: Plurals = {
     other: "Usunięto {count} już wydanej monety.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} otwarte łącze radiowe",
+    few: "{count} otwarte łącza radiowe",
+    many: "{count} otwartych łączy radiowych",
+    other: "{count} otwartego łącza radiowego",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} sekunda",
+    few: "{count} sekundy",
+    many: "{count} sekund",
+    other: "{count} sekundy",
+  },
+  "settings.network.custom_added": {
+    one: "dodano {count} z {max}",
+    few: "dodano {count} z {max}",
+    many: "dodano {count} z {max}",
+    other: "dodano {count} z {max}",
+  },
+  "settings.network.relay_limit": {
+    one: "Możesz dodać {count} przekaźnik. Usuń go, żeby dodać inny.",
+    few: "Możesz dodać {count} przekaźniki. Usuń jeden, żeby dodać kolejny.",
+    many: "Możesz dodać {count} przekaźników. Usuń jeden, żeby dodać kolejny.",
+    other: "Możesz dodać {count} przekaźnika. Usuń jeden, żeby dodać kolejny.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} transfer",
+    few: "{count} transfery",
+    many: "{count} transferów",
+    other: "{count} transferu",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} procent. Otwórz rozmowę.",
+    few: "{label}, {count} procent. Otwórz rozmowę.",
+    many: "{label}, {count} procent. Otwórz rozmowę.",
+    other: "{label}, {count} procent. Otwórz rozmowę.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Ktoś w pobliżu",
+    "=1": "Ktoś w pobliżu",
+    one: "{count} osoba w pobliżu",
     few: "{count} osoby w pobliżu",
     many: "{count} osób w pobliżu",
     other: "{count} osoby w pobliżu",

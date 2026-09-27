@@ -209,13 +209,13 @@ const strings: Strings = {
     "Sin internet, sin router, en teléfonos que la gente ya tiene.",
   "home.features.networking.lan.name": "Red local",
   "home.features.networking.lan.line":
-    "WiFi compartido o un punto de acceso, iPhone y Android juntos.",
+    "Wi-Fi compartido o un punto de acceso, iPhone y Android juntos.",
   "home.features.networking.hops.name": "Retransmisión multisalto",
   "home.features.networking.hops.line": "Cada teléfono reenvía los mensajes, hasta siete saltos.",
   "home.features.networking.bridge.name": "Puente mesh",
   "home.features.networking.bridge.line":
     "Conecta tu chat público con un grupo cercano fuera de alcance.",
-  "home.features.networking.wifi.name": "Vía rápida WiFi",
+  "home.features.networking.wifi.name": "Vía rápida Wi-Fi",
   "home.features.networking.wifi.line":
     "Transferencias más rápidas entre dos Android o dos iPhone.",
   "home.features.networking.bitchat.name": "Compatible con bitchat",

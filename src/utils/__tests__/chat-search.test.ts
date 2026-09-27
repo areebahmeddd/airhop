@@ -255,3 +255,44 @@ describe("snippets read as written", () => {
     expect(snippet.slice(matchStart, matchEnd)).toBe("stanbul");
   });
 });
+
+// A snippet is a window cut out of the middle of a message, at an index counted
+// in UTF-16 units. Cut there as is, an emoji at either edge splits into a lone
+// surrogate, which renders as a replacement box.
+describe("snippet edges", () => {
+  const SMILE = String.fromCodePoint(0x1f600);
+  const loneSurrogate = (text: string): boolean =>
+    [...text].some((ch) => {
+      const unit = ch.charCodeAt(0);
+      return ch.length === 1 && unit >= 0xd800 && unit <= 0xdfff;
+    });
+
+  it("never opens or closes on half an emoji", () => {
+    // Both edges land mid-pair: 30 units either side of the match is 15 emoji
+    // and a half.
+    for (const pad of ["a", "ab"]) {
+      const text = `${pad}${SMILE.repeat(20)} north ${SMILE.repeat(20)}`;
+      const hits = searchMessages("north", {
+        "#city": [msg({ id: "a", text })],
+      });
+      const { snippet, matchStart, matchEnd } = hits[0];
+      expect(loneSurrogate(snippet)).toBe(false);
+      expect(snippet.slice(matchStart, matchEnd)).toBe("north");
+    }
+  });
+
+  it("cuts a notice shown for its author on a character boundary", () => {
+    const hits = searchNotices("sam", [
+      {
+        id: "n1",
+        channel: "#bluetooth",
+        content: `a${SMILE.repeat(80)}`,
+        author: "sam",
+        timestampMs: 1,
+        isUrgent: false,
+      },
+    ]);
+    expect(loneSurrogate(hits[0].snippet)).toBe(false);
+    expect(hits[0].snippet.endsWith("…")).toBe(true);
+  });
+});

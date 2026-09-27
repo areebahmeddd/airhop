@@ -210,14 +210,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Tsy misy Internet, tsy misy router, amin'ny findy efa ananan'ny olona.",
   "home.features.networking.lan.name": "Tambajotra eo an-toerana",
-  "home.features.networking.lan.line": "WiFi iombonana na hotspot, iPhone sy Android miaraka.",
+  "home.features.networking.lan.line": "Wi-Fi iombonana na hotspot, iPhone sy Android miaraka.",
   "home.features.networking.hops.name": "Fampitana an-dingana maro",
   "home.features.networking.hops.line":
     "Mampita ny hafatra ny findy tsirairay, hatramin'ny dingana fito.",
   "home.features.networking.bridge.name": "Tetezan'ny harato",
   "home.features.networking.bridge.line":
     "Mampifandray ny resakao ho an'ny daholobe amin'ny vondrona akaiky lavitra ny fetra.",
-  "home.features.networking.wifi.name": "Lalana haingana WiFi",
+  "home.features.networking.wifi.name": "Lalana haingana Wi-Fi",
   "home.features.networking.wifi.line":
     "Famindrana haingana kokoa eo amin'ny Android roa na iPhone roa.",
   "home.features.networking.bitchat.name": "Mifanaraka amin'ny bitchat",

@@ -24,6 +24,7 @@ import { useRingStore } from "@store/ring-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
+import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import {
   BUTTON_HEIGHT,
@@ -114,11 +115,11 @@ export default function ContactInfoSheet({
   // control that is not there cannot teach that renaming exists or what unlocks
   // it; shown and explained, the same tap does both.
   //
-  // Offered on a location-channel pseudonym too, where it cannot be used - a
+  // Offered on a location-channel pseudonym too, where it cannot be used: a
   // per-cell name changes when someone moves, so a label pinned to it would
-  // outlive the thing it names. But hiding it there left the sheet with no
-  // answer to "can I call them something else", and the answer is a real path
-  // rather than a no: swap cards, then rename. The note below names the step.
+  // outlive the thing it names. Hiding it would leave the sheet with no answer
+  // to "can I call them something else", and the answer is a real path rather
+  // than a no: swap cards, then rename. The note below names the step.
   const canRename = peerID !== null;
   // Renaming needs their keys, not their verification, matching bitchat's
   // `canEditLocalAlias`. See setLocalNickname for why that is the whole gate.
@@ -126,12 +127,11 @@ export default function ContactInfoSheet({
   // Held as "which peer is this about" rather than a bare boolean, and derived
   // back below.
   //
-  // This sheet is mounted once and reused for everyone, so plain flags leaked
-  // between people: opening an unverified contact showed the blocked note before
-  // anything was tapped, and - the one that mattered - a half-typed name for one
-  // person was still in the field when the sheet reopened on another, one tap
-  // away from being saved to the wrong contact. Comparing against the peer makes
-  // that impossible rather than merely unlikely.
+  // This sheet is mounted once and reused for everyone, so plain flags would
+  // leak between people: the blocked note would show before anything was
+  // tapped, and a half-typed name for one person would still be in the field
+  // when the sheet reopened on another, one tap from the wrong contact.
+  // Comparing against the peer makes that impossible rather than unlikely.
   const [editingFor, setEditingFor] = useState<string | null>(null);
   const [blockedFor, setBlockedFor] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -410,9 +410,9 @@ export default function ContactInfoSheet({
               {/* Only when the two differ, so an unrenamed contact is not told
                   their name twice. Blank is the clear action. */}
               {!editingName && contact?.localNickname !== undefined && (
-                <Text style={styles.renameHint}>
+                <UpperText style={styles.renameHint}>
                   {T("chat.contact.renamed_by_you")}
-                </Text>
+                </UpperText>
               )}
               {/* The reason, on the tap that asked for it. Verify sits a few
                   rows below, so the explanation and the fix are on one screen. */}
@@ -436,9 +436,9 @@ export default function ContactInfoSheet({
                   accessibilityRole="button"
                   accessibilityLabel={T("chat.contact.copy_nostr")}
                 >
-                  <Text style={styles.keyBoxLabel}>
+                  <UpperText style={styles.keyBoxLabel}>
                     {T("chat.contact.nostr_key")}
-                  </Text>
+                  </UpperText>
                   <View style={styles.keyBoxRow}>
                     <Text style={styles.keyBoxValue}>{idValue}</Text>
                     <CopyGlyph
@@ -662,7 +662,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.xs,
     },
     // The rename pencil, top-right. On a round ground like every other icon
-    // action in the app; bare, it read as decoration rather than a control.
+    // action in the app; bare, it reads as decoration rather than a control.
     cornerBtn: {
       position: "absolute",
       top: Spacing.base,
@@ -705,7 +705,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize["2xs"],
       color: Colors.textMuted,
       letterSpacing: 0.4,
-      textTransform: "uppercase",
     },
     identityBox: {
       alignSelf: "stretch",
@@ -767,7 +766,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
     },
     keyBoxRow: {

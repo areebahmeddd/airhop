@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Ngayon",
   "format.yesterday": "Kahapon",
-  "format.minutes_ago": "{count} min ang nakalipas",
-  "format.hours_ago": "{count} oras ang nakalipas",
-  "format.days_ago": "{count} araw ang nakalipas",
   "format.just_now": "kanina lang",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -262,6 +259,7 @@ export const strings: Strings = {
   "chat.group_badge": "Grupo",
   "chat.more": "Higit pa",
   "chat.no_messages": "Wala pang mensahe",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Walang malapit",
   "chat.presence.active_none": "Walang aktibo",
   "chat.you": "Ikaw",
@@ -339,7 +337,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Hindi nabuksan ang cell na iyon. Subukan ulit maya-maya.",
   "chat.jump.title": "Pumunta sa isang lugar",
-  "chat.jump.saved": "MGA NAKA-SAVE NA LUGAR",
+  "chat.jump.saved": "Mga naka-save na lugar",
+  "chat.jump.nearby": "Malapit",
   "chat.jump.anywhere":
     "Buksan ang pampublikong channel ng lokasyon kahit saan, pati sa lugar na wala ka.",
   "chat.jump.geohash_note":
@@ -349,7 +348,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "Cell sa antas na {level}",
   "chat.jump.already_here":
     "Nandito ka na. Bubuksan ng Pumunta ang channel mong {name}.",
-  "chat.jump.open_direction": "Buksan ang cell sa {direction} mo",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NE",
+  "chat.jump.dir.e": "E",
+  "chat.jump.dir.se": "SE",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SW",
+  "chat.jump.dir.w": "W",
+  "chat.jump.dir.nw": "NW",
+  "chat.jump.open_n": "Buksan ang cell sa hilaga",
+  "chat.jump.open_ne": "Buksan ang cell sa hilagang-silangan",
+  "chat.jump.open_e": "Buksan ang cell sa silangan",
+  "chat.jump.open_se": "Buksan ang cell sa timog-silangan",
+  "chat.jump.open_s": "Buksan ang cell sa timog",
+  "chat.jump.open_sw": "Buksan ang cell sa timog-kanluran",
+  "chat.jump.open_w": "Buksan ang cell sa kanluran",
+  "chat.jump.open_nw": "Buksan ang cell sa hilagang-kanluran",
   "chat.jump.open_place": "Buksan ang {name}",
   "chat.jump.remove_place": "Alisin ang {name} sa mga naka-save na lugar",
   "chat.jump.go": "Pumunta",
@@ -378,7 +392,7 @@ export const strings: Strings = {
     "Hanggang 16 na tao, ikaw ang pipili. Walang link ng imbitasyon, kaya walang nakakasali dahil lang may nagpasa nito sa kanila.",
   "chat.group.bluetooth":
     "Bluetooth lang. Natatanggap ng mga miyembrong wala sa saklaw ang mga mensahe kapag nakabalik na sila.",
-  "chat.group.members_label": "MGA MIYEMBRO",
+  "chat.group.members_label": "Mga miyembro",
   "chat.group.none_in_range":
     "Walang taong nasa saklaw. Dapat nasa malapit ang mga miyembro kapag gumawa ka ng grupo.",
   "chat.group.create_title": "Gumawa ng grupo",
@@ -468,21 +482,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Kanselahin ang {name}",
   "chat.thread.hide_transfer": "Itago ang progreso",
   "chat.thread.hide_transfer_hint": "Darating pa rin ang file",
-  "chat.thread.queued_more": "{count} pa ang naghihintay maipadala",
-  "chat.thread.across_bridge": "{count} sa kabila ng tulay",
   "chat.thread.bridged": "naitulay",
   "chat.thread.invite_body":
     "Samahan mo ako sa {channel} sa Airhop — pribadong pag-mensahe sa mesh, offline muna.",
-  "chat.thread.go_back_unread": "Bumalik, {count} ang hindi pa nababasa",
   "chat.thread.view_info": "Tingnan ang impormasyon para kay {name}",
-  "chat.thread.notices_new":
-    "Mga paskil para sa channel na ito, {count} ang bago",
   "chat.board.urgent_one": "Mahalagang paskil mula kay {author} · {content}",
-  "chat.board.urgent_many":
-    "{count} bagong mahalagang paskil · buksan ang Mga paskil",
+  "chat.board.urgent_one_anon": "Mahalagang paskil · {content}",
   "chat.thread.say_something": "Magsabi ng kahit ano sa {channel}.",
-  "chat.thread.jump_latest_new":
-    "Tumalon sa pinakabagong mensahe, {count} ang bago",
   "chat.thread.unconfirmed_since":
     "Walang naihatid na nakumpirma mula noong {date}",
   "chat.thread.no_reach":
@@ -521,7 +527,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Kumuha ka ng screenshot · walang sinabihan",
   "chat.screenshot.heads_up": "Paalala",
-  "chat.screenshot.notice": "* Kumuha ng screenshot si {name} *",
+  "chat.screenshot.peer_took": "Kumuha ng screenshot si {name}",
   "chat.screenshot.notified_dm":
     "Nabalitaan ni {name} na kumuha ka ng screenshot ng usapang ito.",
   "chat.screenshot.notified":
@@ -568,7 +574,7 @@ export const strings: Strings = {
   "chat.attach.document": "Dokumento",
   "chat.attach.document_desc": "Magpadala ng kahit anong file o PDF",
   "chat.attach.voice": "Voice note",
-  "chat.attach.voice_desc": "Mag-record at magpadala ng mensaheng boses",
+  "chat.attach.voice_desc": "Mag-record at magpadala ng voice note",
   "chat.attach.ecash": "Magpadala ng ecash",
   "chat.attach.ecash_desc": "Magpadala ng Cashu sat mula sa wallet mo",
   "chat.attach.location": "Lokasyon",
@@ -576,7 +582,7 @@ export const strings: Strings = {
   "chat.attach.title": "Maglakip",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Nagbahagi ng lokasyon",
+  "chat.location.sent_summary": "Naibahagi ang lokasyon",
   "chat.location.received_summary": "Ibinahagi ang lokasyon niya",
   "chat.location.title": "Lokasyon",
   "chat.location.away": "{distance} pa-{direction}",
@@ -608,15 +614,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "hilagang-kanluran",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Tumawag",
+  "chat.ring.sent_summary": "Naipadala ang tawag",
   "chat.ring.received_summary": "Tumawag sa iyo",
   "chat.ring.alert.title": "Tumatawag si {sender}",
   "chat.ring.alert.body": "Suriin ang iyong mga mensahe",
   "chat.ring.alert.open": "Buksan",
   "chat.ring.alert.snooze": "I-snooze ng 1 oras",
-  "chat.ring.sent_snoozed": "Tumawag, ipinagpaliban",
-  "chat.ring.sent_too_soon": "Tumawag, masyadong maaga",
-  "chat.ring.sent_not_allowed": "Tumawag, hindi pinapayagan",
+  "chat.ring.sent_snoozed": "Naipadala ang tawag · ipinagpaliban",
+  "chat.ring.sent_too_soon": "Naipadala ang tawag · masyadong maaga",
+  "chat.ring.sent_not_allowed": "Naipadala ang tawag · hindi pinapayagan",
   "chat.attach.send_anyway": "Ipadala pa rin",
   "chat.attach.bitchat_too_big": "Maaaring hindi ito dumating",
   "chat.attach.bitchat_too_big_body":
@@ -695,6 +701,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Itigil ang pagre-record at ipadala",
   "chat.voice.lift_lock": "Mag-slide paitaas para mag-record nang hands-free",
   "chat.voice.live_speaking": "Nagsasalita si {name}",
+  "chat.voice.live_ended": "Tapos na",
   "voice.unavailable": "Hindi available ang live na boses",
   "voice.recording_stopped": "Itinigil ang pagre-record",
 
@@ -756,7 +763,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Alisin si {name}",
   "chat.info.no_addable":
     "Walang naaabot na peer na maidaragdag. Dapat nasa malapit ang mga miyembro.",
-  "chat.info.add_count": "Magdagdag ng {count}",
   "chat.info.teleported_tag": "{level}  ·  nagteleport",
   "chat.info.active": "Aktibo",
   "chat.info.members": "Mga Miyembro",
@@ -843,8 +849,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 araw",
   "chat.notices.7_days": "7 araw",
   "chat.notices.fading": "kumukupas",
-  "chat.notices.fades_in_hours": "kukupas sa loob ng {count} oras",
-  "chat.notices.fades_in_days": "kukupas sa loob ng {count} araw",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Mahalaga",
@@ -861,10 +865,21 @@ export const strings: Strings = {
   "chat.search.links": "Mga Link",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "I-filter ayon sa {filter}",
-  "chat.search.no_matches": "Walang {filter} na tumutugma sa “{query}”",
-  "chat.search.no_media": "Wala pang {filter}",
+  "chat.search.no_photos": "Wala pang larawan",
+  "chat.search.no_videos": "Wala pang video",
+  "chat.search.no_audio": "Wala pang audio",
+  "chat.search.no_documents": "Wala pang dokumento",
+  "chat.search.no_links": "Wala pang link",
+  "chat.search.no_ecash": "Wala pang ecash",
+  "chat.search.no_photos_matching": "Walang larawang tumutugma sa “{query}”",
+  "chat.search.no_videos_matching": "Walang video na tumutugma sa “{query}”",
+  "chat.search.no_audio_matching": "Walang audio na tumutugma sa “{query}”",
+  "chat.search.no_documents_matching":
+    "Walang dokumentong tumutugma sa “{query}”",
+  "chat.search.no_links_matching": "Walang link na tumutugma sa “{query}”",
+  "chat.search.no_ecash_matching": "Walang ecash na tumutugma sa “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} mula kay {sender}",
-  "chat.search.you": "ikaw",
+  "chat.search.result_mine_a11y": "{chat}, {kind} na ipinadala mo",
   "chat.search.section_chats": "Mga Chat",
   "chat.search.section_messages": "Mga Mensahe",
   "chat.search.section_notices": "Mga Paskil",
@@ -873,15 +888,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Walang resulta para sa “{query}”",
   "chat.search.open_chat": "Buksan ang {name}",
   "chat.search.message_a11y": "{chat}, mensahe mula kay {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ang mensahe mo: {snippet}",
   "chat.search.notice_a11y": "Paskil sa {chat} mula kay {author}: {snippet}",
   "chat.search.urgent": "Mahalaga ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "May {count} sa listahang ito. Kapag nilinis, dito lang sila naaalis, at nananatiling hindi pa nababasa ang mga mensahe sa mga usapan nila. Kapag minarkahang nabasa lahat, nalilinis pareho.",
   "chat.notif.mark_all_read": "Markahang nabasa lahat",
   "chat.notif.clear_list": "Linisin ang listahan",
-  "chat.notif.clear_all_a11y": "Linisin ang lahat ng {count} abiso",
   "chat.notif.title": "Mga Abiso",
   "chat.notif.clear_short": "Linisin",
   "chat.notif.close": "Isara ang mga abiso",
@@ -904,6 +917,9 @@ export const strings: Strings = {
   "chat.forward.locations": "Mga Lokasyon",
   "chat.forward.dms": "Mga direktang mensahe",
   "chat.forward.none": "Wala pang ibang chat",
+  "chat.forward.app_row": "Hindi naipasa",
+  "chat.forward.app_row_body":
+    "Galing ang linyang ito sa Airhop, hindi sa isang tao, kaya walang maipapasa.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Sinisimulan ang mesh…",
@@ -912,7 +928,7 @@ export const strings: Strings = {
   "mesh.banner.bluetooth_off":
     "Naka-off ang Bluetooth · hindi available ang mesh",
   "mesh.banner.bluetooth_off_wifi":
-    "Naka-off ang Bluetooth · tumatakbo ang mesh sa WiFi",
+    "Naka-off ang Bluetooth · tumatakbo ang mesh sa Wi-Fi",
   "mesh.banner.permission_needed": "Kailangan ng pahintulot sa Bluetooth",
   "mesh.banner.blocked":
     "Naka-block ang Bluetooth · payagan ito sa Mga Setting",
@@ -947,8 +963,6 @@ export const strings: Strings = {
     "Naka-on ang mesh bridge · nakaugnay ang pampublikong chat",
   "mesh.banner.background_limits":
     "Maaaring i-pause ng {brand} ang mesh sa background",
-  "mesh.banner.bridge_across":
-    "Naka-on ang mesh bridge · {count} sa kabila ng tulay",
   "mesh.banner.action.turn_on": "I-on",
   "mesh.banner.action.allow": "Payagan",
   "mesh.banner.action.resume": "Ipagpatuloy",
@@ -1028,7 +1042,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "Tingnan ang peer na {name}, online, relay node",
   "mesh.peer.last_seen_at": "Huling nakita {ago}",
-  "mesh.peer.send_amount": "Magpadala ng {amount} sat",
+  "mesh.peer.send_unit_amount": "Magpadala ng {amount} {unit}",
   "mesh.peer.direct": "Direktang koneksyon",
   "mesh.peer.check_distance": "Suriin ang distansya",
   "mesh.peer.checking": "Sinusuri",
@@ -1102,7 +1116,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Nahahati ang token na ito sa napakaraming barya kaya hindi ito kasya sa QR code. Ibahagi o kopyahin na lang ito.",
   "wallet.send.scan_note":
-    "Ipa-scan ito sa kanila mula sa wallet nila. Mababawi pa rin ito hangga't hindi mo ito minamarkahang naihatid.",
+    "Ipa-scan ito sa kanila mula sa wallet nila. Mababawi pa rin ito hangga't hindi mo ito minamarkahang natanggap.",
   "wallet.send.mesh_note":
     "Lumalabas ang token bilang naka-encrypt na direktang mensahe sa mesh. Hindi kailangan ng internet.",
   "wallet.send.no_peers_note":
@@ -1123,7 +1137,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Buksan sa wallet",
   "wallet.send.to_peer": "Ipadala ang token sa peer sa malapit",
   "wallet.send.to_peer_short": "Ipadala sa peer",
-  "wallet.send.mark_delivered": "Markahang naihatid at tapusin",
+  "wallet.send.mark_delivered": "Markahang natanggap",
   "wallet.send.they_got_it": "Natanggap nila",
   "wallet.send.keep_pending": "Iwang nakabinbin ang padalang ito",
   "wallet.send.decide_later": "Magpasya mamaya",
@@ -1147,10 +1161,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Natubos sa {mint}. Napatutunayang sa iyo na ito ngayon: hindi na gumagana ang kopya ng token na ito sa nagpadala.",
-  "wallet.receive.stored_pending":
-    "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos{dleq}. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
-  "wallet.receive.dleq_inline":
-    " (tumutugma naman ang lagda nito, kaya tunay ang token)",
+  "wallet.receive.pending_unconfirmed":
+    "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Tumutugma ang lagda nito, kaya tunay ang token. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
   "wallet.receive.dleq_ok":
     "Tumutugma ang lagda ng mint, kaya tunay ang token.",
   "wallet.receive.dleq_uncached":
@@ -1214,8 +1228,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Ilipat ang lahat ng balanse sa isang mint",
   "wallet.mint.confirm_with": "Suriin ang balanse sa {mint}",
   "wallet.mint.available_amount": "{amount} {unit} ang available",
-  "wallet.mint.split_across":
-    "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
   "wallet.mint.move_everything_to": "Ilipat ang lahat sa {mint}",
   "wallet.mint.consolidate_title": "Ilipat sa isang mint",
   "wallet.mint.moving": "Inililipat…",
@@ -1226,10 +1238,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Walang nailipat",
   "wallet.mint.move_pending": "Papunta na",
   "wallet.mint.deposit_pending":
-    "Umalis na ang {amount} {unit} sa {mint} at papunta na sa {target}. Darating ito kapag nakuha na ang deposito, at patuloy na sumusubok ang wallet.",
+    "Umalis na ang {amount} {unit} sa {mint} at papunta na sa {target}. Darating ito kapag nakuha na ang paglilipat, at patuloy na sumusubok ang wallet.",
   "wallet.mint.destination": "· patutunguhan",
   "wallet.mint.will_move": "· ililipat",
   "wallet.mint.issued_by": "Inilabas ng",
+  "wallet.mint.test_badge": "Test",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Pagdagdag sa wallet ng Airhop",
@@ -1256,7 +1269,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "hanggang {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Magbayad ng {amount} {unit}",
-  "wallet.ln.deposit_title": "Magdeposito sa Lightning",
+  "wallet.ln.deposit_title": "Mag-top up gamit ang Lightning",
   "wallet.ln.amount_placeholder": "Halaga sa sat",
   "wallet.ln.requesting": "Humihiling…",
   "wallet.ln.get_invoice": "Kumuha ng invoice",
@@ -1288,7 +1301,7 @@ export const strings: Strings = {
     "May parirala ka na sa pagbawi. Kapag nagbalik ka ng iba, mapapalitan ito. Mananatiling nagagastos sa device na ito ang mga baryang sakop na ng lumang parirala, pero titigil silang maibalik, kaya tiyaking nakasulat na ang lumang mga salita bago ka magpatuloy.",
   "wallet.backup.replace": "Palitan",
   "wallet.backup.replace_unseen_body":
-    "May recovery phrase na ang wallet na ito, ginawa para sa iyo noong i-set up ito, at doon ginawa ang iyong mga coin. Ang pag-restore ng ibang phrase ay tuluyang papalit dito. Magagastos pa rin ang mga coin sa device na ito at lilipat sa bagong phrase sa susunod na i-refresh ang bawat mint.",
+    "May parirala sa pagbawi na ang wallet na ito, ginawa para sa iyo noong i-set up ito, at doon ginawa ang iyong mga barya. Ang pagbabalik ng ibang parirala ay tuluyang papalit dito. Magagastos pa rin ang mga barya sa device na ito at lilipat sa bagong parirala sa susunod na i-refresh ang bawat mint.",
   "wallet.backup.invalid_phrase": "Hindi wasto ang pariralang iyon",
   "wallet.backup.invalid_phrase_body":
     "May nakapaloob na checksum ang parirala at hindi ito pumapasa. Maghanap ng maling pagkakatipa, nawawala o napagpalit na salita.",
@@ -1382,7 +1395,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Sabi ng mint, natubos na ang token na ito, kaya nakarating sa kanila ang {amount} {unit} at walang bumalik sa balanse mo.",
   "wallet.copied.token_body":
-    "Nasa clipboard mo ang token. Nananatili itong nakalaan dito hangga't hindi mo ito minamarkahang naihatid, kaya puwede mo itong idikit ulit kung mabigo ang unang subok.",
+    "Nasa clipboard mo ang token. Nananatili itong nakalaan dito hangga't hindi mo ito minamarkahang natanggap, kaya puwede mo itong idikit ulit kung mabigo ang unang subok.",
   "wallet.copied.refused_token_body":
     "Nasa clipboard mo ang token. Hindi na ito binibilang ng wallet na ito, kaya puwede mo itong ibalik sa nagpadala.",
   "wallet.copied.phrase_body":
@@ -1408,8 +1421,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Ipakita ang token na ito bilang QR code",
   "wallet.pending.copy_again": "Kopyahin ulit ang token",
   "wallet.pending.share_again": "Ibahagi ulit ang token",
-  "wallet.pending.mark_delivered": "Markahang naihatid ang token na ito",
-  "wallet.pending.delivered": "Naihatid",
+  "wallet.pending.mark_delivered": "Markahang natanggap",
+  "wallet.pending.delivered": "Natanggap",
   "wallet.pending.reclaim_into":
     "Bawiin ang token na ito pabalik sa balanse mo",
   "wallet.activity.title": "Aktibidad",
@@ -1428,11 +1441,11 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "nabigo",
   "wallet.activity.status_reclaimed": "nabawi",
   "wallet.activity.status_expired": "nag-expire",
-  "wallet.activity.ln_deposit": "Deposito sa Lightning",
+  "wallet.activity.ln_deposit": "Top-up gamit ang Lightning",
   "wallet.activity.ln_withdrawal": "Withdrawal sa Lightning",
   "wallet.activity.nutzap_received": "Natanggap na nutzap",
   "wallet.activity.nutzap_claiming": "Nutzap, inaangkin",
-  "wallet.activity.spent_removed": "Inalis ang mga nagastos na coin",
+  "wallet.activity.spent_removed": "Inalis ang mga nagastos na barya",
   "wallet.activity.refreshed": "Nasuri sa mint",
   "wallet.activity.refreshing": "Sinusuri sa mint",
   "wallet.activity.copy_refused": "Kopyahin ang tinanggihang token",
@@ -1472,20 +1485,27 @@ export const strings: Strings = {
     "Hindi mababawi ang mga nakakandadong bayad: susi lang nila ang makakagastos ng mga baryang ito ngayon.",
   "wallet.pay.reclaimable":
     "Mananatili itong mababawi mula sa Aktibidad hangga't hindi mo kinukumpirmang dumating ito.",
-  "wallet.pay.why": "Ipinadala sa ganitong paraan dahil {reason}.",
+  "wallet.pay.why_no_relay":
+    "Ipinadala sa ganitong paraan dahil walang koneksyon sa relay.",
+  "wallet.pay.why_no_shared_mint":
+    "Ipinadala sa ganitong paraan dahil wala kang sapat na balanse sa alinmang mint na tinatanggap nila.",
+  "wallet.pay.why_no_nutzap_info":
+    "Ipinadala sa ganitong paraan dahil hindi naglathala ang tatanggap ng impormasyong nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} kay {name}",
   "wallet.pay.thread_receipt":
     "Nagpadala ka ng {amount} {unit}, nakakandado sa susi nila.",
   "wallet.pay.title": "Magpadala ng ecash",
   "wallet.pay.to": "Kay {name}",
   "wallet.pay.amount": "Halaga sa sat",
-  "wallet.pay.memo": "Tala (opsyonal, pampubliko)",
+  "wallet.pay.memo": "Memo (opsyonal, pampubliko)",
   "wallet.pay.send": "Ipadala",
   "wallet.pay.sending": "Ipinapadala…",
   "wallet.pay.action": "Magpadala ng ecash",
   "wallet.pay.confirm_title": "Ipadala ang {amount} {unit} kay {name}?",
   "wallet.pay.confirm_final":
-    "Naka-lock ito sa kanilang key. Kapag naipadala, hindi na ito mababawi.",
+    "Nakakandado ito sa kanilang susi. Kapag naipadala, hindi na ito mababawi.",
   "wallet.pay.confirm_reclaimable":
     "Mababawi mo ito mula sa Aktibidad hangga't hindi pa nila ito kinukuha.",
 
@@ -1625,7 +1645,7 @@ export const strings: Strings = {
     "Walang naibawas. Subukan ulit at pipili ang wallet ng ibang set.",
   "wallet.svc.no_ecash": "Wala pang ecash.",
   "wallet.svc.no_ecash_body":
-    "Magdagdag ng mint at magdeposito sa Lightning, o tumanggap ng token mula sa isang tao.",
+    "Magdagdag ng mint at mag-top up gamit ang Lightning, o tumanggap ng token mula sa isang tao.",
   "wallet.svc.split_across_mints":
     "Nahahati sa iba't ibang mint ang balanse mo.",
   "wallet.svc.mint_says_spent":
@@ -1633,13 +1653,13 @@ export const strings: Strings = {
   "wallet.svc.issue_against_invoice":
     "maglabas ng ecash laban sa isang invoice ng Lightning",
   "wallet.svc.pay_invoice": "magbayad ng isang invoice ng Lightning",
-  "wallet.svc.unknown_deposit": "Hindi kilalang deposito.",
+  "wallet.svc.unknown_deposit": "Hindi kilalang top-up.",
   "wallet.svc.invoice_expired_before":
     "Nag-expire ang invoice bago ito nabayaran.",
   "wallet.svc.invoice_expired": "Nag-expire ang invoice na iyon.",
   "wallet.svc.invoice_unpaid": "Hindi pa nababayaran ang invoice.",
-  "wallet.svc.payment_unknown":
-    "Hindi alam ang status ng bayad; susuriin ulit sa susunod na pag-refresh.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Hindi alam ang status ng bayad; susuriin ulit sa susunod na pag-refresh.",
   "wallet.svc.melt_change_pending": "Nabayaran ang invoice mo.",
   "wallet.svc.melt_change_pending_body":
     "Hindi pa ibinabalik ng mint ang hindi nagamit na bayarin sa pagruruta. Kusa itong nakukuha sa susunod na pag-refresh, at walang nawawala samantala.",
@@ -1681,24 +1701,19 @@ export const strings: Strings = {
     "Tumutukoy ang bayad na iyon sa mintong hindi mo ginagamit.",
   "wallet.svc.unknown_mint_body":
     "Idagdag mo mismo ang mint kung pinagkakatiwalaan mo ito; walang tinutubos mula sa mintong hindi mo pinili.",
-  "wallet.svc.no_relay": "walang koneksyon sa relay",
-  "wallet.svc.no_shared_mint":
-    "walang magkasamang mint na may sapat na balanse",
-  "wallet.svc.no_nutzap_info":
-    "hindi naglathala ang tatanggap ng impormasyong nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Nakakandado sa susi nila pero hindi pa naihahatid. Ibahagi ang token mula sa transaksyong ito para makumpleto ito.",
   "wallet.svc.swap_lost":
     "Hindi kailanman natapos ng mint ang palitang ito, kaya walang inilabas laban dito.",
   "wallet.svc.mint_lost":
-    "Inisyu ng mint ang deposit na ito, pero hindi na-rebuild ang mga coin nito. Maibabalik ang mga ito sa pag-restore mula sa recovery phrase mo.",
+    "Inisyu ng mint ang top-up na ito, pero hindi na mabuo muli ang mga barya nito. Maibabalik ang mga ito kapag nagbalik ka mula sa parirala mo sa pagbawi.",
   "wallet.svc.swap_unreadable":
     "Na-save ang palitang ito sa anyong hindi kayang ulitin ng bersyong ito.",
   "wallet.svc.lock_in_doubt": "Maaaring natuloy o hindi ang bayad na ito.",
   "wallet.svc.lock_in_doubt_body":
     "Walang ibang naipadala. Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan. Kung natuloy, lalabas ang naka-lock na token sa Aktibidad para iabot mo. Kung hindi, babalik ang mga barya.",
   "wallet.svc.send_spent_by_swap":
-    "Na-swap pabalik sa iyong wallet ang mga coin na ito bago na-claim ang token na ito, kaya hindi na ito ma-claim. Nasa balanse mo ang halaga.",
+    "Napalitan pabalik sa iyong wallet ang mga baryang ito bago naangkin ang token na ito, kaya hindi na ito maaangkin. Nasa balanse mo ang halaga.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Na-verify sa pamamagitan ng QR",
@@ -1788,7 +1803,7 @@ export const strings: Strings = {
   "settings.coming_soon": "Malapit nang dumating",
   "settings.opens_externally": "{label}, bumubukas sa labas ng app",
   "settings.peer_id": "Peer ID",
-  "settings.share_peer_id": "Ibahagi ang iyong Peer ID",
+  "settings.share_peer_id": "Ibahagi ang iyong peer ID",
   "settings.share_id_short": "Ibahagi ang ID",
   "settings.share_app": "Ibahagi ang app ng Airhop",
   "settings.share_app_short": "Ibahagi ang app",
@@ -1819,7 +1834,7 @@ export const strings: Strings = {
     "Forward secrecy, nilagdaang packet, mga naka-block na peer",
   "settings.section.network": "Network at mga relay",
   "settings.section.network_desc":
-    "Fallback sa internet, mga relay ng nostr, pagkatugma sa bitchat",
+    "Fallback sa internet, mga relay ng Nostr, pagkatugma sa bitchat",
   "settings.section.permissions": "Mga Pahintulot",
   "settings.section.permissions_desc":
     "Bluetooth, lokasyon, mga abiso, camera, mikropono",
@@ -1869,19 +1884,17 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Walang pagbasa ng signal",
   "settings.diag.no_peers": "Walang tao sa saklaw",
-  "settings.diag.no_peers_desc": "{links} bukas na link ng radyo",
   "settings.diag.gcs_size": "Laki ng filter",
   "settings.diag.gcs_size_desc":
     "Pinakamalaking sync filter na ipinadala sa ere",
   "settings.diag.fpr": "Antas ng false positive",
   "settings.diag.fpr_desc":
     "Gaano kadalas iginigiit ng filter na may packet tayong wala naman",
-  "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Walang mababago rito. Nakatakda ang mga halagang ito para manatiling tugma ang Airhop sa bitchat.",
   "settings.diag.share": "Ibahagi ang diagnostics",
   "settings.diag.share_desc":
-    "Estado ng transport at settings para sa bug report. Walang mensahe, pangalan, o key kailanman.",
+    "Estado ng transport at settings para sa bug report. Walang mensahe, pangalan, o susi kailanman.",
   "settings.section.storage_desc": "Paggamit at cache",
   "settings.section.appearance": "Anyo",
   "settings.section.appearance_desc": "Tema, font at wika",
@@ -1897,7 +1910,6 @@ export const strings: Strings = {
   "settings.general.undo": "I-undo ang pagpapadala",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Wallet",
-  "settings.general.undo_seconds": "{count} segundo",
   "settings.general.undo_a11y": "I-undo ang pagpapadala: {value}",
   "settings.general.quality_a11y": "Itakda ang kalidad ng upload sa {value}",
   "settings.general.undo_desc":
@@ -1990,7 +2002,6 @@ export const strings: Strings = {
   "settings.network.custom": "Sariling mga relay",
   "settings.network.custom_desc":
     "Magdagdag ng sarili mong relay para sa mga channel ng lokasyon at sa mesh bridge",
-  "settings.network.custom_added": "{count} sa {max} ang naidagdag",
   "settings.network.dm_relays": "Mga relay ng mensahe",
   "settings.network.dm_relays_desc":
     "Lagi itong ginagamit ng mga direktang mensahe at pribadong channel. Hindi ito binabago ng sarili mong mga relay.",
@@ -2001,17 +2012,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "Magdagdag ng relay",
   "settings.network.remove_relay": "Alisin ang {url}",
   "settings.network.add_short": "Idagdag",
-  "settings.network.relay_limit":
-    "Puwede kang magdagdag ng {count} relay. Mag-alis ng isa para makapagdagdag ng iba.",
   "settings.network.relay_duplicate": "Nasa listahan mo na ang relay na iyon.",
   "settings.network.relay_invalid":
     "Maglagay ng wastong host ng relay, hal. relay.example.com. Kailangan lang ng port kung hindi ginagamit ng relay ang default. Hindi pinapayagan ang mga IP address at lokal na pangalan.",
   "settings.network.lan": "Lokal na network",
   "settings.network.lan_desc":
-    "Abutin ang mga tao sa iisang WiFi, kasama ang pagitan ng iPhone at Android. Makikita ng ibang device sa network na gumagamit ka ng Airhop.",
+    "Abutin ang mga tao sa iisang Wi-Fi, kasama ang pagitan ng iPhone at Android. Makikita ng ibang device sa network na gumagamit ka ng Airhop.",
   "settings.network.lan_searching": "Walang Airhop device sa network na ito",
   "settings.network.lan_active": "Nakakonekta sa network na ito",
-  "settings.network.lan_unavailable": "Wala sa isang WiFi network",
+  "settings.network.lan_unavailable": "Wala sa isang Wi-Fi network",
   "settings.network.lan_permission":
     "Naka-off ang lokal na network access para sa Airhop",
   "settings.network.lan_unsupported": "Hindi available sa device na ito",
@@ -2159,7 +2168,7 @@ export const strings: Strings = {
     "Nagpapadala ng larawan mula sa gallery mo at nagse-save ng natanggap na media. Kung wala ito, puwede ka pa ring kumuha at magpadala ng bagong larawan gamit ang camera.",
   "settings.permissions.microphone": "Mikropono",
   "settings.permissions.microphone_desc":
-    "Nagre-record at nagpapadala ng mensaheng boses o gumagamit ng live na boses. Kung wala ito, hindi gagana ang mensaheng boses at ang live na boses.",
+    "Nagre-record at nagpapadala ng voice note o gumagamit ng live na boses. Kung wala ito, hindi gagana ang voice note at ang live na boses.",
   "settings.permissions.allow": "Ibigay ang pahintulot na ito",
   "settings.permissions.open_settings":
     "Buksan ang mga setting ng sistema para baguhin ang pahintulot na ito",
@@ -2335,7 +2344,7 @@ export const strings: Strings = {
   "settings.qr.download": "I-download ang QR code",
   "settings.qr.download_short": "I-download ang QR",
   "settings.qr.show": "Ipakita ang QR code",
-  "settings.wipe.trigger": "Pukawin ang panic wipe",
+  "settings.wipe.trigger": "Simulan ang panic wipe",
   "settings.wipe.trigger_desc":
     "Mag-tap nang tatlong beses para agad maglinis nang walang kumpirmasyon",
   "settings.wipe.title": "Panic wipe",
@@ -2417,8 +2426,7 @@ export const strings: Strings = {
     "Nabigo ang pag-download. Suriin ang iyong koneksyon at subukan ulit.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large":
-    "{size} KiB ang {kind}, lampas sa limitasyong {cap} KiB.",
+  "transfer.too_large": "{size} ang {kind}, lampas sa limitasyong {cap}.",
   "transfer.failed.malformed":
     "May attachment na dumating nang sira at hindi nabuksan. Hilingin sa kanilang ipadala itong muli.",
   "transfer.failed.unsupported_type":
@@ -2428,10 +2436,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "May attachment na dumating pero hindi na-save. Suriin ang libreng espasyo mo.",
   "transfer.badge.waiting": "Naghihintay · {name}",
-  "transfer.badge.active_count": "{count} transfer",
   "transfer.badge.sending": "Ipinapadala ang {name}",
   "transfer.badge.receiving": "Tinatanggap ang {name}",
-  "transfer.badge.a11y": "{label}, {percent} porsyento. Buksan ang usapan.",
   "transfer.kind.photo": "Larawan",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Voice note",
@@ -2461,10 +2467,11 @@ export const strings: Strings = {
   "notif.notice": "Paskil · {content}",
   "notif.incoming_file": "Papasok na file",
   "notif.preview.photo": "📷 Larawan",
-  "notif.preview.voice": "🎤 Mensaheng boses",
+  "notif.preview.voice": "🎤 Voice note",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokumento",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Bagong mensahe",
   "notif.hidden.channel": "Bagong aktibidad",
@@ -2476,6 +2483,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} minuto ang nakalipas",
+    other: "{count} minuto ang nakalipas",
+  },
+  "format.hours_ago": {
+    one: "{count} oras ang nakalipas",
+    other: "{count} oras ang nakalipas",
+  },
+  "format.days_ago": {
+    one: "{count} araw ang nakalipas",
+    other: "{count} araw ang nakalipas",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Ipakita ang {count} pa",
@@ -2483,97 +2504,155 @@ export const plurals: Plurals = {
   },
   "chat.channels.show_more_a11y": {
     one: "Ipakita ang {count} pang default na channel",
-    other: "Ipakita ang {count} na pang default na channel",
+    other: "Ipakita ang {count} pang default na channel",
   },
 
   // ---- Chats: vocabulary shared by both lists ----
   "a11y.unread_count": {
     one: "{label}, {count} hindi pa nababasa",
-    other: "{label}, {count} na hindi pa nababasa",
+    other: "{label}, {count} hindi pa nababasa",
   },
   "a11y.new_count": {
     one: "{label}, {count} bago",
-    other: "{label}, {count} na bago",
+    other: "{label}, {count} bago",
   },
   "chat.a11y.unread": {
     one: "{count} hindi pa nababasa",
-    other: "{count} na hindi pa nababasa",
+    other: "{count} hindi pa nababasa",
   },
   "chat.thread.length_left": {
     one: "{count} ang natitira",
-    other: "{count} na ang natitira",
+    other: "{count} ang natitira",
   },
   "settings.general.retention_days": {
     one: "{count} araw",
-    other: "{count} na araw",
+    other: "{count} araw",
   },
   "chat.info.group_reach": {
     one: "{reachable} sa {count} miyembro ang maaabot",
-    other: "{reachable} sa {count} na miyembro ang maaabot",
+    other: "{reachable} sa {count} miyembro ang maaabot",
   },
   "chat.group_members": {
     one: "Pribadong grupo  ·  {count} miyembro",
-    other: "Pribadong grupo  ·  {count} na miyembro",
+    other: "Pribadong grupo  ·  {count} miyembro",
   },
   "chat.select.count": {
     one: "{count} ang napili",
-    other: "{count} na ang napili",
+    other: "{count} ang napili",
   },
   "chat.select.forward": {
     one: "I-forward ang {count} mensahe",
-    other: "I-forward ang {count} na mensahe",
+    other: "I-forward ang {count} mensahe",
   },
   "chat.voice.live_speaking_count": {
     one: "{count} ang nagsasalita",
-    other: "{count} na ang nagsasalita",
+    other: "{count} ang nagsasalita",
+  },
+
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "{count} pa ang naghihintay maipadala",
+    other: "{count} pa ang naghihintay maipadala",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} tao sa kabila ng tulay",
+    other: "{count} tao sa kabila ng tulay",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Bumalik, {count} ang hindi pa nababasa",
+    other: "Bumalik, {count} ang hindi pa nababasa",
+  },
+  "chat.thread.notices_new": {
+    one: "Mga paskil para sa channel na ito, {count} ang bago",
+    other: "Mga paskil para sa channel na ito, {count} ang bago",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Tumalon sa pinakabagong mensahe, {count} ang bago",
+    other: "Tumalon sa pinakabagong mensahe, {count} ang bago",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} bagong mahalagang paskil · buksan ang Mga paskil",
+    other: "{count} bagong mahalagang paskil · buksan ang Mga paskil",
+  },
+  "chat.info.add_count": {
+    one: "Magdagdag ng {count}",
+    other: "Magdagdag ng {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "kukupas sa loob ng {count} oras",
+    other: "kukupas sa loob ng {count} oras",
+  },
+  "chat.notices.fades_in_days": {
+    one: "kukupas sa loob ng {count} araw",
+    other: "kukupas sa loob ng {count} araw",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "May {count} abiso sa listahang ito. Kapag nilinis, dito lang naaalis ang mga ito, at nananatiling hindi pa nababasa ang mga mensahe sa kani-kanilang usapan. Kapag minarkahang nabasa lahat, nalilinis pareho.",
+    other:
+      "May {count} abiso sa listahang ito. Kapag nilinis, dito lang naaalis ang mga ito, at nananatiling hindi pa nababasa ang mga mensahe sa kani-kanilang usapan. Kapag minarkahang nabasa lahat, nalilinis pareho.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Linisin ang {count} abiso",
+    other: "Linisin ang {count} abiso",
   },
 
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} peer ang nasa saklaw",
-    other: "{count} na peer ang nasa saklaw",
+    other: "{count} peer ang nasa saklaw",
   },
   "mesh.peer.hops_away": {
     one: "{count} hop ang layo",
-    other: "{count} na hop ang layo",
+    other: "{count} hop ang layo",
   },
   "chat.presence.active": {
     one: "{count} ang aktibo",
-    other: "{count} na ang aktibo",
+    other: "{count} ang aktibo",
   },
   "chat.presence.nearby": {
     one: "{count} ang malapit",
-    other: "{count} na ang malapit",
+    other: "{count} ang malapit",
   },
   "chat.presence.members": {
     one: "{count} miyembro",
-    other: "{count} na miyembro",
+    other: "{count} miyembro",
+  },
+
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Naka-on ang mesh bridge · {count} tao sa kabila ng tulay",
+    other: "Naka-on ang mesh bridge · {count} tao sa kabila ng tulay",
   },
 
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang baryang iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
+    one: "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang balanseng iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
     other:
-      "May hawak ang {mint} na {balance} {unit} sa {count} na barya. Kapag inalis ito, permanenteng mabubura ang mga baryang iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
+      "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang balanseng iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
+  },
+  "wallet.mint.split_across": {
+    one: "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
+    other: "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} deposito ang naghihintay ng bayad. Sinusuri muli sa tuwing bubuksan ang app.",
+    one: "{count} top-up ang naghihintay ng bayad. Sinusuri muli sa tuwing bubuksan ang app.",
     other:
-      "{count} na deposito ang naghihintay ng bayad. Sinusuri muli sa tuwing bubuksan ang app.",
+      "{count} top-up ang naghihintay ng bayad. Sinusuri muli sa tuwing bubuksan ang app.",
   },
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     one: "Nabawi ang {count} hindi pa nagagastos na barya mula sa {mints}.",
-    other:
-      "Nabawi ang {count} na hindi pa nagagastos na barya mula sa {mints}.",
+    other: "Nabawi ang {count} hindi pa nagagastos na barya mula sa {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "May natagpuang {count} barya pero nagastos na ito, kaya walang na-kredito para rito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",
+    one: "May natagpuang {count} barya pero nagastos na, kaya walang na-kredito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",
     other:
-      "May natagpuang {count} na barya pero nagastos na ang mga ito, kaya walang na-kredito para sa mga ito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",
+      "May natagpuang {count} barya pero nagastos na, kaya walang na-kredito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2583,11 +2662,11 @@ export const plurals: Plurals = {
   },
   "wallet.activity.show_more_a11y": {
     one: "Ipakita ang {count} pang bayad",
-    other: "Ipakita ang {count} na pang bayad",
+    other: "Ipakita ang {count} pang bayad",
   },
   "wallet.mint.unconfirmed_count": {
     one: "{count} hindi pa nakumpirma",
-    other: "{count} na hindi pa nakumpirma",
+    other: "{count} hindi pa nakumpirma",
   },
   "wallet.send.stale_fee_note": {
     one: "Huling sinuri ang mga bayarin {count} araw ang nakalipas. Kung itinaas ng mint na ito ang bayarin nito mula noon, maaaring bahagyang mas mahal ang padala.",
@@ -2595,14 +2674,44 @@ export const plurals: Plurals = {
       "Huling sinuri ang mga bayarin {count} araw ang nakalipas. Kung itinaas ng mint na ito ang bayarin nito mula noon, maaaring bahagyang mas mahal ang padala.",
   },
   "wallet.spent_removed_detail": {
-    one: "Nagastos na ang {count} barya at inalis na ito.",
-    other: "Nagastos na ang {count} na barya at inalis na ang mga ito.",
+    one: "Nagastos na ang {count} barya at inalis na.",
+    other: "Nagastos na ang {count} barya at inalis na.",
+  },
+
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} bukas na link ng radyo",
+    other: "{count} bukas na link ng radyo",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} segundo",
+    other: "{count} segundo",
+  },
+  "settings.network.custom_added": {
+    one: "{count} sa {max} ang naidagdag",
+    other: "{count} sa {max} ang naidagdag",
+  },
+  "settings.network.relay_limit": {
+    one: "Puwede kang magdagdag ng {count} relay. Mag-alis ng isa para makapagdagdag ng iba.",
+    other:
+      "Puwede kang magdagdag ng {count} relay. Mag-alis ng isa para makapagdagdag ng iba.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} transfer",
+    other: "{count} transfer",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} porsyento. Buksan ang usapan.",
+    other: "{label}, {count} porsyento. Buksan ang usapan.",
   },
 
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "May malapit na tao",
-    other: "{count} na tao ang malapit",
+    "=1": "May malapit na tao",
+    one: "{count} tao ang malapit",
+    other: "{count} tao ang malapit",
   },
 };
 

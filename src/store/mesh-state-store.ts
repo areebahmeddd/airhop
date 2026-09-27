@@ -12,7 +12,7 @@
 // Not persisted: every field is live device state that must be re-read on
 // launch, never restored from disk.
 
-import { t, useLanguage } from "@i18n";
+import { t, tPlural, useLanguage } from "@i18n";
 import {
   getDeviceBrand,
   needsBatteryOptimizationPrompt,
@@ -751,7 +751,7 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
       key: "bridge",
       label:
         across > 0
-          ? t("mesh.banner.bridge_across", { count: across })
+          ? tPlural("mesh.banner.bridge_across", across)
           : t("mesh.banner.bridge"),
       tone: "bridge",
     });

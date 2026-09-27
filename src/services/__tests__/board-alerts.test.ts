@@ -103,9 +103,27 @@ describe("noteUrgentNotice", () => {
     expect(Array.from(text)).toHaveLength(121);
   });
 
-  it("falls back to a stand-in when the author has no nickname", () => {
+  // Clipping at a raw index splits a conjunct or an emoji sequence, and the
+  // ellipsis then sits on a dotted circle or half a family.
+  it("clips between characters, never inside one", () => {
+    const conjunct = "\u0915\u094D\u0937"; // क्ष
+    noteUrgentNotice({
+      ...notice("p1"),
+      content: "x".repeat(119) + conjunct + "y",
+    });
+    jest.runAllTimers();
+    const text = lines("#bluetooth")[0].systemVars?.content as string;
+    // The cut fell after the virama, which is backed off with nothing after.
+    expect(text).toBe("x".repeat(119) + "\u0915…");
+  });
+
+  // "Someone" stored in the row would stay in the language of the day it
+  // arrived, so the author-less notice has its own sentence instead.
+  it("uses the author-less sentence when the author has no nickname", () => {
     noteUrgentNotice({ ...notice("p1"), authorNickname: "" });
     jest.runAllTimers();
-    expect(lines("#bluetooth")[0].systemVars?.author).toBe("Someone");
+    const [row] = lines("#bluetooth");
+    expect(row.systemKey).toBe("chat.board.urgent_one_anon");
+    expect(row.systemVars).toEqual({ content: "water at gate 3" });
   });
 });

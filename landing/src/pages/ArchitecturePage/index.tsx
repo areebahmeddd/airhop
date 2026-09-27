@@ -316,7 +316,7 @@ export default function ArchitecturePage() {
                   ["src/bridge/", "TurboModule specs, the only meeting point", "Interface only"],
                   [
                     "ios/ · android/",
-                    "CoreBluetooth, GATT server, WiFi Aware, mDNS, Arti, foreground service",
+                    "CoreBluetooth, GATT server, Wi-Fi Aware, mDNS, Arti, foreground service",
                     "Yes",
                   ],
                 ]}
@@ -388,7 +388,7 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">Airhop picks a tier for you on every message,</strong>{" "}
                 and picks again on the next one, because peers move in and out of range between the
                 two. There is one send button and the ladder runs underneath it, so a message
-                carried by courier and one that went over WiFi look identical to whoever sent it.
+                carried by courier and one that went over Wi-Fi look identical to whoever sent it.
               </Note>
             </Section>
 
@@ -656,7 +656,7 @@ export default function ArchitecturePage() {
               lede="Five ways a message can move. Bluetooth is the default because it needs nothing: no internet, no router, no setup. The others each cover a case Bluetooth cannot."
             >
               <Table
-                head={["", "BLE mesh", "LAN (mDNS)", "WiFi Aware", "Nostr relays", "Courier"]}
+                head={["", "BLE mesh", "LAN (mDNS)", "Wi-Fi Aware", "Nostr relays", "Courier"]}
                 rows={[
                   [
                     "Carries",
@@ -725,20 +725,20 @@ export default function ArchitecturePage() {
                 which phone you own: this is the path that joins an iPhone to an Android without the
                 internet. It shines where Bluetooth struggles but a network already exists, like a
                 ship with steel between decks, a hotel, a conference floor. Its one weak spot is
-                guest WiFi: many hotels and venues block phones from reaching each other at the
+                guest Wi-Fi: many hotels and venues block phones from reaching each other at the
                 access point, and nothing announces that in advance.
               </p>
 
-              <h3 className="text-ink pt-2 text-base font-bold">WiFi Aware</h3>
+              <h3 className="text-ink pt-2 text-base font-bold">Wi-Fi Aware</h3>
               <p>
-                <TextLink href="https://wi-fi.org/discover-wi-fi/wi-fi-aware">WiFi Aware</TextLink>{" "}
-                is the WiFi radio without a router. Two phones talk directly, which is why it works
-                in an empty field, at WiFi speed. Both platforms run the same protocol, but{" "}
+                <TextLink href="https://wi-fi.org/discover-wi-fi/wi-fi-aware">Wi-Fi Aware</TextLink>{" "}
+                is the Wi-Fi radio without a router. Two phones talk directly, which is why it works
+                in an empty field, at Wi-Fi speed. Both platforms run the same protocol, but{" "}
                 <strong className="text-ink">
                   Apple requires a paired data path that Android cannot complete,
                 </strong>{" "}
                 so it links Android to Android (Android 10.0 and up) or iPhone to iPhone (iOS 26.0
-                and up), never across. The two WiFi paths do not overlap: Aware works with no
+                and up), never across. The two Wi-Fi paths do not overlap: Aware works with no
                 network at all, which LAN cannot do, and LAN reaches every phone on a network across
                 both platforms, which Aware cannot do.
               </p>
@@ -750,7 +750,7 @@ export default function ArchitecturePage() {
                 files. The usual workaround is to upload the file to an HTTP host and post a link,
                 and that host is a central server that can log, throttle or remove your files, which
                 is what this project exists to avoid. So attachments travel over Bluetooth, LAN or
-                WiFi Aware, or they do not travel.
+                Wi-Fi Aware, or they do not travel.
               </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">Courier</h3>
@@ -762,9 +762,9 @@ export default function ArchitecturePage() {
 
               <Note label="How they combine">
                 A phone runs every transport it can at once. When a peer is reachable more than one
-                way, a packet takes the fastest link: WiFi Aware, then LAN, then Bluetooth. If that
+                way, a packet takes the fastest link: Wi-Fi Aware, then LAN, then Bluetooth. If that
                 link drops mid-transfer the next one carries on, and the receiver reassembles by
-                index, so a file that started over WiFi and finished over Bluetooth looks the same
+                index, so a file that started over Wi-Fi and finished over Bluetooth looks the same
                 on arrival.
               </Note>
             </Section>
@@ -1001,7 +1001,7 @@ export default function ArchitecturePage() {
                 cache directory (and tmp on iOS), deletes Tor's state and clears delivered
                 notifications, in a few seconds. The wallet file is emptied and its key destroyed,
                 so what stays on disk cannot be read. Two things are beyond its reach: photos saved
-                to the gallery, and WiFi Aware pairings in the iPhone's own list.
+                to the gallery, and Wi-Fi Aware pairings in the iPhone's own list.
               </p>
             </Section>
 

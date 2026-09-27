@@ -24,6 +24,7 @@
 // they stay live over the internet even with no location fix.
 
 import { BoardWireConstants } from "@core/mesh/wire/board-packet";
+import { isFavoriteControl } from "@core/mesh/wire/favorite-control";
 import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
 import {
   decodeBitchatEnvelope,
@@ -65,6 +66,7 @@ import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { useSettingsStore } from "@store/settings-store";
+import { inboundText } from "@utils/emote";
 import { systemPreview } from "@utils/message-text";
 import { truncateToUtf8Bytes } from "@utils/utf8-budget";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
@@ -992,13 +994,35 @@ export class GeohashChannelService {
     }
     if (env.type !== NoisePayloadType.PRIVATE_MESSAGE) return;
 
+    // bitchat's favourite notice is control text: acknowledged, as bitchat
+    // acknowledges it, and never shown.
+    if (isFavoriteControl(env.content)) {
+      this.publishGeoWrap(
+        geohash,
+        dm.senderPubkey,
+        encodeBitchatAckEnvelope(
+          null,
+          null,
+          NoisePayloadType.DELIVERED,
+          env.messageID,
+        ),
+      );
+      return;
+    }
+
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
       id: env.messageID,
       channel,
       senderID: `nostr_${dm.senderPubkey}`,
       senderNickname: geohashDisplayName(dm.senderPubkey),
-      text: env.content,
+      // The name they go by in the cell, which is what their screenshot notice
+      // carries. Unknown until they have spoken in the channel, and until then
+      // a notice stays an ordinary message.
+      ...inboundText(
+        env.content,
+        useChatStore.getState().geoDmNames[dm.senderPubkey] ?? "",
+      ),
       timestampMs: Math.min(dm.timestamp, Math.floor(Date.now() / 1000)) * 1000,
       isMine: false,
     });

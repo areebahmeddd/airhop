@@ -6,6 +6,7 @@
 // the right string on the day it runs and stores it; it only goes wrong later,
 // for a user who switches language and finds their history did not.
 
+import { stripIsolates } from "@i18n";
 import { en } from "@i18n/locales/en";
 import type { ActivityEntry } from "@store/activity-store";
 import type { ChatMessage } from "@store/chat-store";
@@ -14,6 +15,9 @@ import {
   messageText,
   systemPreview,
   systemRow,
+  txErrorText,
+  txFailure,
+  txFailureVerbatim,
 } from "../message-text";
 
 function message(fields: Partial<ChatMessage>): ChatMessage {
@@ -79,6 +83,20 @@ describe("messageText", () => {
       systemVars: { name: "north gate crew" },
     });
     expect(messageText(row)).toContain("north gate crew");
+  });
+
+  it("re-renders a counted row through its plural", () => {
+    // The count is stored as a variable and chooses the form on every render,
+    // so the row agrees with its number in whichever language reads it.
+    const row = message({
+      text: "stale",
+      isSystem: true,
+      systemKey: "chat.board.urgent_many",
+      systemVars: { count: 1200 },
+    });
+    expect(stripIsolates(messageText(row))).toBe(
+      "1,200 new urgent notices · open Notices",
+    );
   });
 
   it("keeps a user's words inside a translated sentence", () => {
@@ -152,5 +170,41 @@ describe("systemRow and systemPreview keep storage plain", () => {
     expect(row.systemVars).toBeUndefined();
     expect(row.text.length).toBeGreaterThan(0);
     expect(ISOLATES.test(row.text)).toBe(false);
+  });
+});
+
+// A wallet row's reason, which outlives the language it was written in the same
+// way a chat row does. A mint writes its own and that is never touched.
+describe("txErrorText", () => {
+  it("re-renders Airhop's reason from its key, ignoring the stored text", () => {
+    const tx = {
+      ...txFailure("wallet.svc.mint_lost"),
+      error: "STALE, WRITTEN IN A LANGUAGE YOU NO LONGER READ",
+    };
+    expect(txErrorText(tx)).toBe(en.strings["wallet.svc.mint_lost"]);
+  });
+
+  it("shows a mint's text, and a row saved before the key, as written", () => {
+    expect(txErrorText(txFailureVerbatim("Token already spent."))).toBe(
+      "Token already spent.",
+    );
+    expect(txErrorText({ error: "an old row's reason" })).toBe(
+      "an old row's reason",
+    );
+  });
+
+  it("drops a mint's text over an earlier key", () => {
+    const tx = {
+      ...txFailure("wallet.svc.mint_lost"),
+      ...txFailureVerbatim("quote expired"),
+    };
+    expect(txErrorText(tx)).toBe("quote expired");
+  });
+
+  it("reads a cleared reason as none, whatever key is left beside it", () => {
+    expect(
+      txErrorText({ ...txFailure("wallet.svc.mint_lost"), error: undefined }),
+    ).toBeNull();
+    expect(txErrorText({})).toBeNull();
   });
 });

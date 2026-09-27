@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Hari ini",
   "format.yesterday": "Semalam",
-  "format.minutes_ago": "{count} min lalu",
-  "format.hours_ago": "{count} jam lalu",
-  "format.days_ago": "{count} hari lalu",
   "format.just_now": "sebentar tadi",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -254,6 +251,7 @@ export const strings: Strings = {
   "chat.group_badge": "Kumpulan",
   "chat.more": "Lagi",
   "chat.no_messages": "Belum ada mesej",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Tiada sesiapa berdekatan",
   "chat.presence.active_none": "Tiada sesiapa aktif",
   "chat.you": "Anda",
@@ -327,7 +325,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Sel itu tidak dapat dibuka. Cuba lagi sebentar lagi.",
   "chat.jump.title": "Pergi ke suatu tempat",
-  "chat.jump.saved": "TEMPAT DISIMPAN",
+  "chat.jump.saved": "Tempat disimpan",
+  "chat.jump.nearby": "Berdekatan",
   "chat.jump.anywhere":
     "Buka saluran lokasi awam di mana-mana, malah tempat yang anda tidak berada.",
   "chat.jump.geohash_note":
@@ -337,7 +336,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "Sel peringkat {level}",
   "chat.jump.already_here":
     "Anda sudah ada di sini. Pergi akan membuka saluran {name} anda.",
-  "chat.jump.open_direction": "Buka sel di sebelah {direction} anda",
+  "chat.jump.dir.n": "U",
+  "chat.jump.dir.ne": "TL",
+  "chat.jump.dir.e": "T",
+  "chat.jump.dir.se": "TG",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "BD",
+  "chat.jump.dir.w": "B",
+  "chat.jump.dir.nw": "BL",
+  "chat.jump.open_n": "Buka sel di sebelah utara",
+  "chat.jump.open_ne": "Buka sel di sebelah timur laut",
+  "chat.jump.open_e": "Buka sel di sebelah timur",
+  "chat.jump.open_se": "Buka sel di sebelah tenggara",
+  "chat.jump.open_s": "Buka sel di sebelah selatan",
+  "chat.jump.open_sw": "Buka sel di sebelah barat daya",
+  "chat.jump.open_w": "Buka sel di sebelah barat",
+  "chat.jump.open_nw": "Buka sel di sebelah barat laut",
   "chat.jump.open_place": "Buka {name}",
   "chat.jump.remove_place": "Buang {name} daripada tempat disimpan",
   "chat.jump.go": "Pergi",
@@ -363,10 +377,10 @@ export const strings: Strings = {
   "chat.group.e2ee":
     "Disulitkan hujung ke hujung. Hanya ahli boleh membaca mesejnya.",
   "chat.group.cap":
-    "Sehingga 16 orang, dipilih oleh anda. Tiada pautan jemputan, jadi tiada sesiapa masuk kerana pautan yang dikirimkan orang lain.",
+    "Sehingga 16 orang, dipilih oleh anda. Tiada pautan jemputan, jadi tiada sesiapa masuk kerana pautan yang dimajukan orang lain.",
   "chat.group.bluetooth":
     "Bluetooth sahaja. Ahli di luar jangkauan menerima mesejnya sebaik mereka kembali.",
-  "chat.group.members_label": "AHLI",
+  "chat.group.members_label": "Ahli",
   "chat.group.none_in_range":
     "Tiada sesiapa dalam jangkauan. Ahli mesti berdekatan semasa anda mencipta kumpulan itu.",
   "chat.group.create_title": "Cipta sebuah kumpulan",
@@ -455,18 +469,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Batalkan {name}",
   "chat.thread.hide_transfer": "Sembunyikan kemajuan",
   "chat.thread.hide_transfer_hint": "Fail itu tetap akan sampai",
-  "chat.thread.queued_more": "{count} lagi menunggu untuk dihantar",
-  "chat.thread.across_bridge": "{count} di seberang jambatan",
   "chat.thread.bridged": "dijambatani",
   "chat.thread.invite_body":
     "Sertai saya dalam {channel} pada Airhop — pemesejan mesh peribadi yang mengutamakan luar talian.",
-  "chat.thread.go_back_unread": "Kembali, {count} belum dibaca",
   "chat.thread.view_info": "Lihat maklumat untuk {name}",
-  "chat.thread.notices_new": "Notis untuk saluran ini, {count} baharu",
   "chat.board.urgent_one": "Notis mendesak daripada {author} · {content}",
-  "chat.board.urgent_many": "{count} notis mendesak baharu · buka Notis",
+  "chat.board.urgent_one_anon": "Notis mendesak · {content}",
   "chat.thread.say_something": "Katakan sesuatu dalam {channel}.",
-  "chat.thread.jump_latest_new": "Lompat ke mesej terkini, {count} baharu",
   "chat.thread.unconfirmed_since": "Tiada penghantaran disahkan sejak {date}",
   "chat.thread.no_reach":
     "Tiada rakan berdekatan · belum ada sesiapa menerima ini",
@@ -504,7 +513,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Anda mengambil tangkapan skrin · tiada sesiapa diberitahu",
   "chat.screenshot.heads_up": "Perhatian",
-  "chat.screenshot.notice": "* {name} mengambil tangkapan skrin *",
+  "chat.screenshot.peer_took": "{name} mengambil tangkapan skrin",
   "chat.screenshot.notified_dm":
     "{name} telah diberitahu bahawa anda mengambil tangkapan skrin perbualan ini.",
   "chat.screenshot.notified":
@@ -515,14 +524,14 @@ export const strings: Strings = {
   "chat.thread.go_back": "Kembali",
   "chat.bubble.via_bridge": "melalui jambatan mesh",
   "chat.bubble.view_profile": "Lihat profil {name}",
-  "chat.bubble.forwarded": "Dikirimkan",
+  "chat.bubble.forwarded": "Dimajukan",
   "chat.bubble.attachment": "lampiran",
   "chat.bubble.a11y": "{sender}: {body}. Tekan lama untuk pilihan lain.",
   "chat.bubble.failed_retry": "Gagal dihantar. Ketik untuk mencuba lagi.",
 
   // ---- Chats: message actions and info ----
   "chat.info.title": "Maklumat mesej",
-  "chat.info.delivered_to": "Dihantar kepada {name}",
+  "chat.info.delivered_to": "Sampai kepada {name}",
   "chat.info.read_by": "Dibaca oleh {name}",
   "chat.info.group_reach_desc":
     "Boleh dicapai sekarang, bukan pengesahan penghantaran",
@@ -537,7 +546,7 @@ export const strings: Strings = {
   "chat.action.info": "Maklumat mesej",
   "chat.action.save_photos": "Simpan ke gambar",
   "chat.action.save_copy": "Simpan satu salinan",
-  "chat.action.forward": "Kirim",
+  "chat.action.forward": "Majukan",
   "chat.action.select": "Pilih",
   "chat.select.cancel": "Batalkan pemilihan",
 
@@ -550,7 +559,7 @@ export const strings: Strings = {
   "chat.attach.document": "Dokumen",
   "chat.attach.document_desc": "Hantar mana-mana fail atau PDF",
   "chat.attach.voice": "Nota suara",
-  "chat.attach.voice_desc": "Rakam dan hantar mesej suara",
+  "chat.attach.voice_desc": "Rakam dan hantar nota suara",
   "chat.attach.ecash": "Hantar ecash",
   "chat.attach.ecash_desc": "Hantar sat Cashu daripada dompet anda",
   "chat.attach.location": "Lokasi",
@@ -558,13 +567,13 @@ export const strings: Strings = {
   "chat.attach.title": "Lampirkan",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Berkongsi satu lokasi",
+  "chat.location.sent_summary": "Lokasi dikongsi",
   "chat.location.received_summary": "Berkongsi lokasinya",
   "chat.location.title": "Lokasi",
   "chat.location.away": "{distance} ke {direction}",
   "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "Buka dalam Peta",
-  "chat.location.no_forward": "Lokasi tidak dikirimkan",
+  "chat.location.no_forward": "Lokasi tidak dimajukan",
   "chat.location.no_forward_body":
     "Satu lokasi dihantar kepada seorang sahaja. Kongsikan lokasi anda sendiri kalau anda mahu orang lain memilikinya.",
   "chat.location.no_fix": "Benarkan lokasi untuk melihat sejauh mana ini",
@@ -589,15 +598,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "barat laut",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Berdering",
-  "chat.ring.received_summary": "Berdering kepada anda",
-  "chat.ring.alert.title": "{sender} sedang berdering",
+  "chat.ring.sent_summary": "Deringan dihantar",
+  "chat.ring.received_summary": "Mendering anda",
+  "chat.ring.alert.title": "{sender} sedang mendering anda",
   "chat.ring.alert.body": "Semak mesej anda",
   "chat.ring.alert.open": "Buka",
   "chat.ring.alert.snooze": "Tunda 1 jam",
-  "chat.ring.sent_snoozed": "Berdering, ditangguhkan",
-  "chat.ring.sent_too_soon": "Berdering, terlalu awal",
-  "chat.ring.sent_not_allowed": "Berdering, tidak dibenarkan",
+  "chat.ring.sent_snoozed": "Deringan dihantar · ditangguhkan",
+  "chat.ring.sent_too_soon": "Deringan dihantar · terlalu awal",
+  "chat.ring.sent_not_allowed": "Deringan dihantar · tidak dibenarkan",
   "chat.attach.send_anyway": "Hantar juga",
   "chat.attach.bitchat_too_big": "Ini mungkin tidak sampai",
   "chat.attach.bitchat_too_big_body":
@@ -673,6 +682,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Hentikan rakaman dan hantar",
   "chat.voice.lift_lock": "Luncurkan ke atas untuk merakam tanpa memegang",
   "chat.voice.live_speaking": "{name} sedang bercakap",
+  "chat.voice.live_ended": "Tamat",
   "voice.unavailable": "Suara langsung tidak tersedia",
   "voice.recording_stopped": "Rakaman dihentikan",
 
@@ -734,7 +744,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Keluarkan {name}",
   "chat.info.no_addable":
     "Tiada rakan boleh dicapai untuk ditambah. Ahli mesti berdekatan.",
-  "chat.info.add_count": "Tambah {count}",
   "chat.info.teleported_tag": "{level}  ·  terpindah",
   "chat.info.active": "Aktif",
   "chat.info.members": "Ahli",
@@ -820,8 +829,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 hari",
   "chat.notices.7_days": "7 hari",
   "chat.notices.fading": "sedang pudar",
-  "chat.notices.fades_in_hours": "pudar dalam {count} jam",
-  "chat.notices.fades_in_days": "pudar dalam {count} hari",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Mendesak",
@@ -838,10 +845,22 @@ export const strings: Strings = {
   "chat.search.links": "Pautan",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Tapis mengikut {filter}",
-  "chat.search.no_matches": "Tiada {filter} yang sepadan dengan “{query}”",
-  "chat.search.no_media": "Belum ada {filter}",
+  "chat.search.no_photos": "Belum ada gambar",
+  "chat.search.no_videos": "Belum ada video",
+  "chat.search.no_audio": "Belum ada audio",
+  "chat.search.no_documents": "Belum ada dokumen",
+  "chat.search.no_links": "Belum ada pautan",
+  "chat.search.no_ecash": "Belum ada ecash",
+  "chat.search.no_photos_matching":
+    "Tiada gambar yang sepadan dengan “{query}”",
+  "chat.search.no_videos_matching": "Tiada video yang sepadan dengan “{query}”",
+  "chat.search.no_audio_matching": "Tiada audio yang sepadan dengan “{query}”",
+  "chat.search.no_documents_matching":
+    "Tiada dokumen yang sepadan dengan “{query}”",
+  "chat.search.no_links_matching": "Tiada pautan yang sepadan dengan “{query}”",
+  "chat.search.no_ecash_matching": "Tiada ecash yang sepadan dengan “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} daripada {sender}",
-  "chat.search.you": "anda",
+  "chat.search.result_mine_a11y": "{chat}, {kind} yang anda hantar",
   "chat.search.section_chats": "Sembang",
   "chat.search.section_messages": "Mesej",
   "chat.search.section_notices": "Notis",
@@ -850,15 +869,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Tiada hasil untuk “{query}”",
   "chat.search.open_chat": "Buka {name}",
   "chat.search.message_a11y": "{chat}, mesej daripada {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, mesej anda: {snippet}",
   "chat.search.notice_a11y": "Notis dalam {chat} daripada {author}: {snippet}",
   "chat.search.urgent": "Mendesak ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "Ada {count} dalam senarai ini. Mengosongkannya hanya membuangnya dari sini, dan mesejnya kekal belum dibaca dalam perbualan masing-masing. Menandakan semuanya sudah dibaca mengemaskan kedua-duanya.",
   "chat.notif.mark_all_read": "Tandakan semua sudah dibaca",
   "chat.notif.clear_list": "Kosongkan senarai",
-  "chat.notif.clear_all_a11y": "Kosongkan kesemua {count} pemberitahuan",
   "chat.notif.title": "Pemberitahuan",
   "chat.notif.clear_short": "Kosongkan",
   "chat.notif.close": "Tutup pemberitahuan",
@@ -870,17 +887,20 @@ export const strings: Strings = {
   "chat.notif.in_room": "di {room}",
 
   // ---- Chats: forward ----
-  "chat.forward.title": "Kirim kepada…",
-  "chat.forward.to": "Kirim kepada {name}",
-  "chat.forward.cant_send_here": "Tidak boleh dikirim ke sini",
-  "chat.forward.cant_send_to": "Tidak boleh dikirim kepada {name}",
+  "chat.forward.title": "Majukan kepada…",
+  "chat.forward.to": "Majukan kepada {name}",
+  "chat.forward.cant_send_here": "Tidak boleh dimajukan ke sini",
+  "chat.forward.cant_send_to": "Tidak boleh dimajukan kepada {name}",
   "chat.forward.too_long_for_dm":
-    "Terlalu panjang untuk mesej langsung. Majukan ke saluran atau kumpulan sahaja.",
+    "Terlalu panjang untuk mesej terus. Majukan ke saluran atau kumpulan sahaja.",
   "chat.forward.channels": "Saluran",
   "chat.forward.groups": "Kumpulan",
   "chat.forward.locations": "Lokasi",
   "chat.forward.dms": "Mesej terus",
   "chat.forward.none": "Belum ada sembang lain",
+  "chat.forward.app_row": "Tidak dimajukan",
+  "chat.forward.app_row_body":
+    "Baris ini daripada Airhop, bukan daripada seseorang, jadi tiada apa-apa untuk dimajukan.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Menghidupkan mesh…",
@@ -888,7 +908,7 @@ export const strings: Strings = {
     "Tiada Bluetooth pada peranti ini · internet sahaja",
   "mesh.banner.bluetooth_off": "Bluetooth dimatikan · mesh tidak tersedia",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth dimatikan · mesh berjalan melalui WiFi",
+    "Bluetooth dimatikan · mesh berjalan melalui Wi-Fi",
   "mesh.banner.permission_needed": "Kebenaran Bluetooth diperlukan",
   "mesh.banner.blocked": "Bluetooth disekat · benarkannya dalam Tetapan",
   "mesh.banner.location_permission": "Lokasi diperlukan untuk mencari rakan",
@@ -919,8 +939,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "Jambatan mesh dihidupkan · sembang awam disambungkan",
   "mesh.banner.background_limits":
     "{brand} mungkin menjeda mesh di latar belakang",
-  "mesh.banner.bridge_across":
-    "Jambatan mesh dihidupkan · {count} di seberang jambatan",
   "mesh.banner.action.turn_on": "Hidupkan",
   "mesh.banner.action.allow": "Benarkan",
   "mesh.banner.action.resume": "Sambung semula",
@@ -997,7 +1015,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "Lihat rakan {name}, dalam talian, nod geganti",
   "mesh.peer.last_seen_at": "Kali terakhir dilihat {ago}",
-  "mesh.peer.send_amount": "Hantar {amount} sat",
+  "mesh.peer.send_unit_amount": "Hantar {amount} {unit}",
   "mesh.peer.direct": "Sambungan terus",
   "mesh.peer.check_distance": "Periksa jarak",
   "mesh.peer.checking": "Memeriksa",
@@ -1071,7 +1089,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Token ini terbelah kepada terlalu banyak syiling untuk muat dalam kod QR. Kongsi atau salin sahaja.",
   "wallet.send.scan_note":
-    "Minta mereka mengimbas ini daripada dompet mereka. Masih boleh dituntut semula sehingga anda menandakannya sudah dihantar.",
+    "Minta mereka mengimbas ini daripada dompet mereka. Masih boleh dituntut semula sehingga anda menandakannya sudah diterima.",
   "wallet.send.mesh_note":
     "Token keluar sebagai mesej terus yang disulitkan melalui mesh. Tidak perlu internet.",
   "wallet.send.no_peers_note":
@@ -1092,7 +1110,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Buka dalam dompet",
   "wallet.send.to_peer": "Hantar token kepada rakan berdekatan",
   "wallet.send.to_peer_short": "Hantar kepada rakan",
-  "wallet.send.mark_delivered": "Tandakan sudah dihantar dan selesaikan",
+  "wallet.send.mark_delivered": "Tandakan sudah diterima",
   "wallet.send.they_got_it": "Mereka menerimanya",
   "wallet.send.keep_pending": "Biarkan hantaran ini tertunda",
   "wallet.send.decide_later": "Putuskan kemudian",
@@ -1116,11 +1134,11 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Ditebus di {mint}. Ia kini terbukti milik anda: salinan token ini pada pengirim tidak lagi berfungsi.",
-  "wallet.receive.stored_pending":
-    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan{dleq}. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
-  "wallet.receive.dleq_inline":
-    " (tandatangannya memang menepati, jadi tokennya tulen)",
-  "wallet.receive.dleq_ok": "Tandatangan mint menepati, jadi tokennya tulen.",
+  "wallet.receive.pending_unconfirmed":
+    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Tandatangannya sah, jadi tokennya tulen. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
+  "wallet.receive.dleq_ok": "Tandatangan mint sah, jadi tokennya tulen.",
   "wallet.receive.dleq_uncached":
     "Kunci mint tidak tersimpan di sini, jadi tandatangannya tidak dapat disemak secara luar talian.",
   "wallet.receive.dleq_missing":
@@ -1181,8 +1199,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Pindahkan semua baki ke satu mint",
   "wallet.mint.confirm_with": "Semak baki dengan {mint}",
   "wallet.mint.available_amount": "{amount} {unit} tersedia",
-  "wallet.mint.split_across":
-    "Baki terbelah merentasi {count} mint. Pindahkannya ke satu.",
   "wallet.mint.move_everything_to": "Pindahkan semuanya ke {mint}",
   "wallet.mint.consolidate_title": "Pindah ke satu mint",
   "wallet.mint.moving": "Memindahkan…",
@@ -1193,10 +1209,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Tiada apa-apa dipindahkan",
   "wallet.mint.move_pending": "Dalam perjalanan",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} telah keluar dari {mint} dan dalam perjalanan ke {target}. Ia tiba sebaik deposit dituntut, dan dompet terus mencuba.",
+    "{amount} {unit} telah keluar dari {mint} dan dalam perjalanan ke {target}. Ia tiba sebaik pemindahan ini dituntut, dan dompet terus mencuba.",
   "wallet.mint.destination": "· destinasi",
   "wallet.mint.will_move": "· akan dipindahkan",
   "wallet.mint.issued_by": "Dikeluarkan oleh",
+  "wallet.mint.test_badge": "Ujian",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Tambah nilai dompet Airhop",
@@ -1222,7 +1239,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "sehingga {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Bayar {amount} {unit}",
-  "wallet.ln.deposit_title": "Deposit melalui Lightning",
+  "wallet.ln.deposit_title": "Tambah nilai melalui Lightning",
   "wallet.ln.amount_placeholder": "Jumlah dalam sat",
   "wallet.ln.requesting": "Meminta…",
   "wallet.ln.get_invoice": "Dapatkan invois",
@@ -1254,7 +1271,7 @@ export const strings: Strings = {
     "Anda sudah ada frasa pemulihan. Memulihkan frasa lain akan menggantikannya. Syiling yang sudah dilindungi frasa lama kekal boleh dibelanjakan pada peranti ini, tetapi berhenti boleh dipulihkan, jadi pastikan perkataan lama itu sudah ditulis sebelum anda meneruskan.",
   "wallet.backup.replace": "Gantikan",
   "wallet.backup.replace_unseen_body":
-    "Dompet ini sudah ada frasa pemulihan yang dibuat untuk anda semasa persediaan, dan syiling anda dicipta dengannya. Memulihkan frasa lain akan menggantikannya selama-lamanya. Syiling kekal boleh dibelanjakan pada peranti ini dan berpindah ke frasa baharu apabila setiap mint dimuat semula seterusnya.",
+    "Dompet ini sudah ada frasa pemulihan yang dibuat untuk anda semasa persediaan, dan syiling anda dicipta dengannya. Memulihkan frasa lain akan menggantikannya selama-lamanya. Syiling kekal boleh dibelanjakan pada peranti ini dan berpindah ke frasa baharu apabila setiap mint disegar semula seterusnya.",
   "wallet.backup.invalid_phrase": "Frasa itu tidak sah",
   "wallet.backup.invalid_phrase_body":
     "Frasa itu mempunyai jumlah semak terbina dan yang ini tidak lulus. Cari perkataan yang tersalah taip, tertinggal atau tertukar.",
@@ -1285,7 +1302,7 @@ export const strings: Strings = {
   "wallet.backup.unconfirmed_body":
     "Anda tidak pernah mengesahkan adanya salinan bertulis. Buat masa ini perkataan itu hanya wujud pada telefon ini, sedangkan itulah satu-satunya perkara yang sepatutnya dapat diharungi oleh sandaran. Lihat frasanya dan tuliskannya.",
   "wallet.backup.not_covered":
-    "{amount} belum dilindungi. Syiling yang diberikan kepada anda membawa rahsia sesiapa yang menghantarnya, jadi ia hanya masuk ke bawah frasa anda setelah ditukar. Segar semula sebuah mint untuk mengamankannya.",
+    "{amount} belum dilindungi. Syiling yang diberikan kepada anda membawa rahsia sesiapa yang menghantarnya, jadi ia hanya masuk ke bawah frasa anda setelah ditukar. Segar semula sebuah mint untuk melindunginya.",
   "wallet.backup.off_body":
     "Ecash anda hanya wujud pada telefon ini. Kalau anda kehilangannya, tiada siapa boleh memulihkan wang itu, termasuk anda. Frasa pemulihan ialah dua belas perkataan yang boleh membina semula baki anda di mana-mana.",
   "wallet.backup.about_to_see":
@@ -1348,7 +1365,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Mint menyatakan token ini sudah ditebus, jadi {amount} {unit} sudah sampai kepada mereka dan tiada apa-apa yang kembali ke baki anda.",
   "wallet.copied.token_body":
-    "Token itu ada pada papan keratan anda. Ia kekal disimpan di sini sehingga anda menandakannya sudah dihantar, jadi anda boleh menampalnya sekali lagi kalau percubaan pertama gagal.",
+    "Token itu ada pada papan keratan anda. Ia kekal disimpan di sini sehingga anda menandakannya sudah diterima, jadi anda boleh menampalnya sekali lagi kalau percubaan pertama gagal.",
   "wallet.copied.refused_token_body":
     "Token itu ada pada papan keratan anda. Dompet ini tidak lagi mengiranya, jadi anda boleh mengembalikannya kepada pengirim.",
   "wallet.copied.phrase_body":
@@ -1375,8 +1392,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Tunjuk token ini sebagai kod QR",
   "wallet.pending.copy_again": "Salin token itu sekali lagi",
   "wallet.pending.share_again": "Kongsi token itu sekali lagi",
-  "wallet.pending.mark_delivered": "Tandakan token ini sudah dihantar",
-  "wallet.pending.delivered": "Sudah dihantar",
+  "wallet.pending.mark_delivered": "Tandakan sudah diterima",
+  "wallet.pending.delivered": "Sudah diterima",
   "wallet.pending.reclaim_into": "Tuntut semula token ini ke dalam baki anda",
   "wallet.activity.title": "Aktiviti",
   "wallet.activity.none": "Belum ada apa-apa",
@@ -1394,7 +1411,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "gagal",
   "wallet.activity.status_reclaimed": "dituntut semula",
   "wallet.activity.status_expired": "luput",
-  "wallet.activity.ln_deposit": "Deposit Lightning",
+  "wallet.activity.ln_deposit": "Tambah nilai Lightning",
   "wallet.activity.ln_withdrawal": "Pengeluaran Lightning",
   "wallet.activity.nutzap_received": "Nutzap diterima",
   "wallet.activity.nutzap_claiming": "Nutzap, sedang dituntut",
@@ -1438,14 +1455,21 @@ export const strings: Strings = {
     "Bayaran yang dikunci tidak boleh dituntut semula: hanya kunci mereka boleh membelanjakan syiling ini sekarang.",
   "wallet.pay.reclaimable":
     "Ia kekal boleh dituntut semula dari Aktiviti sehingga anda mengesahkan ia sampai.",
-  "wallet.pay.why": "Dihantar melalui laluan ini kerana {reason}.",
+  "wallet.pay.why_no_relay":
+    "Dihantar melalui laluan ini kerana tiada sambungan geganti.",
+  "wallet.pay.why_no_shared_mint":
+    "Dihantar melalui laluan ini kerana baki anda tidak mencukupi di mana-mana mint yang mereka terima.",
+  "wallet.pay.why_no_nutzap_info":
+    "Dihantar melalui laluan ini kerana penerima belum menerbitkan maklumat nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} kepada {name}",
   "wallet.pay.thread_receipt":
     "Anda menghantar {amount} {unit}, dikunci kepada kunci mereka.",
   "wallet.pay.title": "Hantar ecash",
   "wallet.pay.to": "Kepada {name}",
   "wallet.pay.amount": "Jumlah dalam sat",
-  "wallet.pay.memo": "Nota (pilihan, terbuka kepada umum)",
+  "wallet.pay.memo": "Memo (pilihan, terbuka kepada umum)",
   "wallet.pay.send": "Hantar",
   "wallet.pay.sending": "Menghantar…",
   "wallet.pay.action": "Hantar ecash",
@@ -1586,19 +1610,19 @@ export const strings: Strings = {
     "Tiada apa-apa ditolak. Cuba lagi dan dompet akan memilih set yang berbeza.",
   "wallet.svc.no_ecash": "Belum ada ecash.",
   "wallet.svc.no_ecash_body":
-    "Tambah sebuah mint dan deposit melalui Lightning, atau terima token daripada seseorang.",
+    "Tambah sebuah mint dan tambah nilai melalui Lightning, atau terima token daripada seseorang.",
   "wallet.svc.split_across_mints":
     "Baki anda terbelah merentasi beberapa mint.",
   "wallet.svc.mint_says_spent": "Mint melaporkan ecash ini sudah dibelanjakan.",
   "wallet.svc.issue_against_invoice":
     "mengeluarkan ecash terhadap satu invois Lightning",
   "wallet.svc.pay_invoice": "membayar satu invois Lightning",
-  "wallet.svc.unknown_deposit": "Deposit tidak dikenali.",
+  "wallet.svc.unknown_deposit": "Tambah nilai tidak dikenali.",
   "wallet.svc.invoice_expired_before": "Invois itu luput sebelum ia dibayar.",
   "wallet.svc.invoice_expired": "Invois itu sudah luput.",
   "wallet.svc.invoice_unpaid": "Invois itu belum dibayar.",
-  "wallet.svc.payment_unknown":
-    "Status bayaran tidak diketahui; disemak semula pada penyegaran berikutnya.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Status bayaran tidak diketahui; disemak semula pada penyegaran berikutnya.",
   "wallet.svc.melt_change_pending": "Invois anda sudah dibayar.",
   "wallet.svc.melt_change_pending_body":
     "Mint belum memulangkan yuran penghalaan yang tidak digunakan. Ia dituntut secara automatik pada penyegaran berikutnya, dan tiada apa-apa hilang sementara itu.",
@@ -1616,7 +1640,7 @@ export const strings: Strings = {
     "Sumber dan destinasinya mint yang sama, jadi tiada apa-apa untuk dipindahkan.",
   "wallet.svc.quote_failed_retried": "Sebut harga gagal, penyatuan dicuba lagi",
   "wallet.svc.amount_unfit_retried":
-    "Jumlah tidak menepati, penyatuan dicuba lagi",
+    "Jumlah tidak sesuai, penyatuan dicuba lagi",
   "wallet.svc.cannot_size": "Saiz pemindahan ini tidak dapat ditentukan.",
   "wallet.svc.insufficient_at_mint": "Baki tidak mencukupi di {mint}.",
   "wallet.svc.inexact_title":
@@ -1639,16 +1663,12 @@ export const strings: Strings = {
     "Bayaran itu menamakan mint yang anda tidak gunakan.",
   "wallet.svc.unknown_mint_body":
     "Tambah mint itu sendiri kalau anda mempercayainya; tiada apa-apa ditebus daripada mint yang anda tidak pilih.",
-  "wallet.svc.no_relay": "tiada sambungan geganti",
-  "wallet.svc.no_shared_mint": "tiada mint dikongsi dengan baki yang mencukupi",
-  "wallet.svc.no_nutzap_info":
-    "penerima belum menerbitkan maklumat nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Dikunci kepada kunci mereka tetapi belum dihantar. Kongsikan token daripada urus niaga ini untuk melengkapkannya.",
   "wallet.svc.swap_lost":
     "Mint tidak pernah melengkapkan pertukaran ini, jadi tiada apa-apa dikeluarkan terhadapnya.",
   "wallet.svc.mint_lost":
-    "Mint telah mengeluarkan deposit ini, tetapi syilingnya tidak dapat dibina semula. Memulihkan daripada frasa pemulihan anda akan mengembalikannya.",
+    "Mint telah mengeluarkan tambah nilai ini, tetapi syilingnya tidak dapat dibina semula. Memulihkan daripada frasa pemulihan anda akan mengembalikannya.",
   "wallet.svc.swap_unreadable":
     "Pertukaran ini disimpan dalam bentuk yang tidak boleh dimainkan semula oleh versi ini.",
   "wallet.svc.lock_in_doubt":
@@ -1749,7 +1769,7 @@ export const strings: Strings = {
   "settings.share_peer_id": "Kongsi ID rakan anda",
   "settings.share_id_short": "Kongsi ID",
   "settings.share_app": "Kongsi aplikasi Airhop",
-  "settings.share_app_short": "Kongsi app",
+  "settings.share_app_short": "Kongsi aplikasi",
   "settings.share_app_dialog": "Dapatkan Airhop",
   "settings.share_app_unsupported": "Tidak dapat kongsi pemasangan ini",
   "settings.share_app_unsupported_body":
@@ -1777,7 +1797,7 @@ export const strings: Strings = {
     "Forward secrecy, paket bertandatangan, rakan disekat",
   "settings.section.network": "Rangkaian dan geganti",
   "settings.section.network_desc":
-    "Sandaran internet, geganti nostr, keserasian bitchat",
+    "Sandaran internet, geganti Nostr, keserasian bitchat",
   "settings.section.permissions": "Kebenaran",
   "settings.section.permissions_desc":
     "Bluetooth, lokasi, pemberitahuan, kamera, mikrofon",
@@ -1827,14 +1847,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Tiada bacaan isyarat",
   "settings.diag.no_peers": "Tiada sesiapa dalam jangkauan",
-  "settings.diag.no_peers_desc": "{links} pautan radio terbuka",
   "settings.diag.gcs_size": "Saiz penapis",
   "settings.diag.gcs_size_desc":
     "Penapis penyegerakan terbesar yang dilepaskan ke udara",
   "settings.diag.fpr": "Kadar positif palsu",
   "settings.diag.fpr_desc":
     "Sekerap mana penapis mendakwa ada paket yang sebenarnya kita tiada",
-  "settings.diag.bytes": "{n} bait",
   "settings.diag.footnote":
     "Tiada apa-apa di sini boleh diubah. Nilai ini ditetapkan supaya Airhop kekal serasi dengan bitchat.",
   "settings.diag.share": "Kongsi diagnostik",
@@ -1855,7 +1873,6 @@ export const strings: Strings = {
   "settings.general.undo": "Batalkan hantaran",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Dompet",
-  "settings.general.undo_seconds": "{count} saat",
   "settings.general.undo_a11y": "Batalkan hantaran: {value}",
   "settings.general.quality_a11y": "Tetapkan kualiti muat naik kepada {value}",
   "settings.general.undo_desc":
@@ -1938,7 +1955,7 @@ export const strings: Strings = {
   "settings.network.turn_off": "Matikan",
   "settings.network.discovery": "Penemuan geo-geganti",
   "settings.network.discovery_desc":
-    "Pilih sendiri geganti terdekat untuk sel lokasi daripada 300+ geganti yang tersebar",
+    "Memilih geganti terdekat secara automatik untuk sel lokasi daripada 300+ geganti yang tersebar",
   "settings.network.discovery_needs_relay": "Tambah geganti sendiri dahulu",
   "settings.network.discovery_needs_relay_body":
     "Penemuan automatiklah yang menghalakan Airhop ke geganti terdekat. Mematikannya hanya masuk akal selepas anda menyematkan geganti sendiri di bawah, jadi tambah sekurang-kurangnya satu dahulu.",
@@ -1948,7 +1965,6 @@ export const strings: Strings = {
   "settings.network.custom": "Geganti sendiri",
   "settings.network.custom_desc":
     "Tambah geganti anda sendiri untuk saluran lokasi dan jambatan mesh",
-  "settings.network.custom_added": "{count} daripada {max} ditambah",
   "settings.network.dm_relays": "Geganti mesej",
   "settings.network.dm_relays_desc":
     "Mesej terus dan saluran peribadi sentiasa menggunakan geganti ini. Geganti sendiri tidak mengubahnya.",
@@ -1959,18 +1975,16 @@ export const strings: Strings = {
   "settings.network.add_relay": "Tambah geganti",
   "settings.network.remove_relay": "Buang {url}",
   "settings.network.add_short": "Tambah",
-  "settings.network.relay_limit":
-    "Anda boleh menambah {count} geganti. Buang satu untuk menambah yang lain.",
   "settings.network.relay_duplicate":
     "Geganti itu sudah ada dalam senarai anda.",
   "settings.network.relay_invalid":
     "Masukkan hos geganti yang sah, contohnya relay.example.com. Port hanya diperlukan kalau geganti itu tidak menggunakan port lalai. Alamat IP dan nama setempat tidak dibenarkan.",
   "settings.network.lan": "Rangkaian setempat",
   "settings.network.lan_desc":
-    "Hubungi orang pada WiFi yang sama, termasuk antara iPhone dan Android. Peranti lain pada rangkaian boleh melihat bahawa anda menggunakan Airhop.",
+    "Hubungi orang pada Wi-Fi yang sama, termasuk antara iPhone dan Android. Peranti lain pada rangkaian boleh melihat bahawa anda menggunakan Airhop.",
   "settings.network.lan_searching": "Tiada peranti Airhop pada rangkaian ini",
   "settings.network.lan_active": "Bersambung pada rangkaian ini",
-  "settings.network.lan_unavailable": "Tiada pada rangkaian WiFi",
+  "settings.network.lan_unavailable": "Tiada pada rangkaian Wi-Fi",
   "settings.network.lan_permission":
     "Akses rangkaian setempat dimatikan untuk Airhop",
   "settings.network.lan_unsupported": "Tidak tersedia pada peranti ini",
@@ -1993,8 +2007,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action": "Jadikan iPhone ini boleh ditemui",
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware tidak tersedia buat masa ini",
-  "settings.network.wifi_pair_forget":
-    "Buang gandingan dalam aplikasi Settings",
+  "settings.network.wifi_pair_forget": "Buang gandingan dalam aplikasi Tetapan",
   "settings.network.bitchat": "Keserasian bitchat",
   "settings.network.bitchat_desc":
     "Mesh BLE yang sama dengan bitchat, saling beroperasi sepenuhnya. Ini sentiasa hidup dan tidak boleh dimatikan.",
@@ -2011,10 +2024,10 @@ export const strings: Strings = {
     "Mesej hanya akan sampai semasa Airhop dibuka, dan telefon ini berhenti menyampaikan untuk orang berdekatan. Pemberitahuan berterusan itu hilang.",
   "settings.conn.autostart": "Mula secara automatik",
   "settings.conn.autostart_desc":
-    "Mulakan semula rangkaian selepas telefon anda but semula",
+    "Mulakan semula mesh selepas telefon anda but semula",
   "settings.conn.autostart_on_title": "Mulakan Airhop selepas but semula?",
   "settings.conn.autostart_on_body":
-    "Airhop akan mula sendiri dan menyertai semula rangkaian pada kali seterusnya telefon anda but semula, tanpa sebarang pemberitahuan sehingga ia berlaku. Sesetengah pengeluar telefon menyekat perkara ini melainkan anda juga membenarkannya dalam tetapan bateri mereka sendiri.",
+    "Airhop akan mula sendiri dan menyertai semula mesh pada kali seterusnya telefon anda but semula, tanpa sebarang pemberitahuan sehingga ia berlaku. Sesetengah pengeluar telefon menyekat perkara ini melainkan anda juga membenarkannya dalam tetapan bateri mereka sendiri.",
   "settings.conn.autostart_off_title": "Berhenti bermula selepas but semula?",
   "settings.conn.autostart_off_body":
     "Airhop akan kekal tertutup selepas telefon anda but semula, sehingga anda membukanya sendiri.",
@@ -2118,7 +2131,7 @@ export const strings: Strings = {
     "Menghantar gambar daripada galeri anda dan menyimpan media yang diterima. Tanpanya anda masih boleh merakam dan menghantar gambar baharu dengan kamera.",
   "settings.permissions.microphone": "Mikrofon",
   "settings.permissions.microphone_desc":
-    "Merakam dan menghantar mesej suara atau menggunakan suara langsung. Tanpanya mesej suara dan suara langsung tidak akan berfungsi.",
+    "Merakam dan menghantar nota suara atau menggunakan suara langsung. Tanpanya nota suara dan suara langsung tidak akan berfungsi.",
   "settings.permissions.allow": "Berikan kebenaran ini",
   "settings.permissions.open_settings":
     "Buka tetapan sistem untuk mengubah kebenaran ini",
@@ -2372,7 +2385,7 @@ export const strings: Strings = {
     "Muat turun gagal. Semak sambungan anda dan cuba lagi.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} bersaiz {size} KiB, melebihi had {cap} KiB.",
+  "transfer.too_large": "{kind} bersaiz {size}, melebihi had {cap}.",
   "transfer.failed.malformed":
     "Satu lampiran tiba dalam keadaan rosak dan tidak dapat dibuka. Minta mereka menghantarnya sekali lagi.",
   "transfer.failed.unsupported_type":
@@ -2382,10 +2395,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Satu lampiran tiba tetapi tidak dapat disimpan. Periksa ruang kosong anda.",
   "transfer.badge.waiting": "Menunggu · {name}",
-  "transfer.badge.active_count": "{count} pemindahan",
   "transfer.badge.sending": "Menghantar {name}",
   "transfer.badge.receiving": "Menerima {name}",
-  "transfer.badge.a11y": "{label}, {percent} peratus. Buka perbualan.",
   "transfer.kind.photo": "Gambar",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Nota suara",
@@ -2406,7 +2417,7 @@ export const strings: Strings = {
     "Nota sekali-sekala apabila mesh menemui orang dalam jangkauan Bluetooth.",
   "notif.channel.ring": "Dering",
   "notif.channel.ring_desc":
-    "Makluman daripada kenalan yang anda benarkan untuk berdering kepada anda.",
+    "Makluman daripada kenalan yang anda benarkan untuk mendering anda.",
   "notif.nearby.body":
     "Dalam jangkauan Bluetooth sekarang. Ketik untuk membuka mesh.",
   "notif.channel_message": "{sender}: {preview}",
@@ -2415,21 +2426,33 @@ export const strings: Strings = {
   "notif.notice": "Notis · {content}",
   "notif.incoming_file": "Fail masuk",
   "notif.preview.photo": "📷 Gambar",
-  "notif.preview.voice": "🎤 Mesej suara",
+  "notif.preview.voice": "🎤 Nota suara",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokumen",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Mesej baharu",
   "notif.hidden.channel": "Aktiviti baharu",
   "notif.hidden.mention": "Anda disebut",
   "notif.mention.title": "{sender} menyebut anda",
   "notif.ring.hidden": "Dering",
-  "notif.ring.title": "{sender} sedang berdering kepada anda",
+  "notif.ring.title": "{sender} sedang mendering anda",
   "notif.ring.body": "Semak mesej anda",
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count} minit lalu",
+  },
+  "format.hours_ago": {
+    other: "{count} jam lalu",
+  },
+  "format.days_ago": {
+    other: "{count} hari lalu",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "Tunjuk {count} lagi",
@@ -2464,10 +2487,48 @@ export const plurals: Plurals = {
     other: "{count} dipilih",
   },
   "chat.select.forward": {
-    other: "Kirim {count} mesej",
+    other: "Majukan {count} mesej",
   },
   "chat.voice.live_speaking_count": {
     other: "{count} sedang bercakap",
+  },
+
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "{count} lagi menunggu untuk dihantar",
+  },
+  "chat.thread.across_bridge": {
+    other: "{count} orang di seberang jambatan",
+  },
+  "chat.thread.go_back_unread": {
+    other: "Kembali, {count} belum dibaca",
+  },
+  "chat.thread.notices_new": {
+    other: "Notis untuk saluran ini, {count} baharu",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "Lompat ke mesej terkini, {count} baharu",
+  },
+  "chat.board.urgent_many": {
+    other: "{count} notis mendesak baharu · buka Notis",
+  },
+  "chat.info.add_count": {
+    other: "Tambah {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "pudar dalam {count} jam",
+  },
+  "chat.notices.fades_in_days": {
+    other: "pudar dalam {count} hari",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "Ada {count} pemberitahuan dalam senarai ini. Mengosongkannya hanya membuangnya dari sini, dan mesejnya kekal belum dibaca dalam perbualan masing-masing. Menandakan semuanya sudah dibaca mengemaskan kedua-duanya.",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "Kosongkan kesemua {count} pemberitahuan",
   },
 
   // ---- Mesh: peer list ----
@@ -2487,16 +2548,24 @@ export const plurals: Plurals = {
     other: "{count} ahli",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "Jambatan mesh dihidupkan · {count} orang di seberang jambatan",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} memegang {balance} {unit} dalam {count} syiling. Membuangnya memadam syiling itu daripada peranti ini secara kekal dan tiada sandarannya. Keluarkan atau hantar bakinya dahulu.",
+      "{mint} memegang {balance} {unit} dalam {count} syiling. Membuangnya memadam baki itu daripada peranti ini secara kekal dan tiada sandarannya. Keluarkan atau hantar bakinya dahulu.",
+  },
+  "wallet.mint.split_across": {
+    other: "Baki terbelah merentasi {count} mint. Pindahkannya ke satu.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
     other:
-      "{count} deposit menunggu bayaran. Diperiksa semula setiap kali aplikasi dibuka.",
+      "{count} tambah nilai menunggu bayaran. Diperiksa semula setiap kali aplikasi dibuka.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2506,7 +2575,7 @@ export const plurals: Plurals = {
   },
   "wallet.backup.already_spent": {
     other:
-      "{count} syiling dijumpai tetapi sudah dibelanjakan, jadi tiada apa-apa dikreditkan untuknya. Ini normal: setiap syiling yang pernah anda belanjakan tetap muncul dalam rekod yang disimpan mint.",
+      "{count} syiling dijumpai tetapi sudah dibelanjakan, jadi tiada apa-apa dikreditkan. Ini normal: setiap syiling yang pernah anda belanjakan tetap muncul dalam rekod yang disimpan mint.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2527,8 +2596,32 @@ export const plurals: Plurals = {
     other: "{count} syiling sudah dibelanjakan dan telah dibuang.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "{count} pautan radio terbuka",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count} saat",
+  },
+  "settings.network.custom_added": {
+    other: "{count} daripada {max} ditambah",
+  },
+  "settings.network.relay_limit": {
+    other:
+      "Anda boleh menambah {count} geganti. Buang satu untuk menambah yang lain.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "{count} pemindahan",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}, {count} peratus. Buka perbualan.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "Seseorang berdekatan",
     other: "{count} orang berdekatan",
   },
 };

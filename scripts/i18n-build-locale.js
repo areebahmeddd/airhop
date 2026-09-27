@@ -9,9 +9,10 @@
 // ordered by construction and the only thing left to review is the words.
 //
 // Fatal: a missing or extra key, an empty string, a placeholder that does not
-// match English, a plural set that is not the language's CLDR categories, a
-// protocol token or proper noun that did not survive, a character from a script
-// the language does not write in.
+// match English, a plural set that is not the language's CLDR categories (plus
+// `=1` where English has one), a `one` form without `{count}`, a protocol token
+// or proper noun that did not survive, a character from a script the language
+// does not write in.
 //
 // `catalog.test.ts` re-checks all of it on every later edit, so this is a first
 // line, not the only one.
@@ -187,13 +188,19 @@ function validate(code, english, translated, categories) {
     }
   }
 
-  const wanted = [...(categories[code] ?? ["other"])].sort();
+  const languageCategories = categories[code] ?? ["other"];
   for (const key of Object.keys(english.plurals)) {
     const forms = (translated.plurals ?? {})[key];
     if (forms === undefined) {
       errors.push(`missing plural: ${key}`);
       continue;
     }
+    // `=1` follows English key by key: it belongs to the wording, not the
+    // language.
+    const wanted = [
+      ...languageCategories,
+      ...("=1" in english.plurals[key] ? ["=1"] : []),
+    ].sort();
     const got = Object.keys(forms).sort();
     if (got.join(",") !== wanted.join(",")) {
       errors.push(
@@ -204,6 +211,11 @@ function validate(code, english, translated, categories) {
       if (typeof value !== "string" || value.trim().length === 0) {
         errors.push(`empty plural: ${key}.${category}`);
       }
+    }
+    // CLDR `one` covers more than 1 in many languages, so it must show the
+    // number. Wording that means exactly one goes in `=1`.
+    if (typeof forms.one === "string" && !forms.one.includes("{count}")) {
+      errors.push(`plural ${key}.one: no {count}`);
     }
   }
   for (const key of Object.keys(translated.plurals ?? {})) {
@@ -253,6 +265,9 @@ function emit(code, layout, translated, categories) {
       lines.push(`  // ---- ${section} ----`);
     }
     lines.push(`  ${quote(key)}: {`);
+    if ("=1" in translated.plurals[key]) {
+      lines.push(`    "=1": ${quote(translated.plurals[key]["=1"])},`);
+    }
     for (const category of order) {
       lines.push(
         `    ${category}: ${quote(translated.plurals[key][category])},`,

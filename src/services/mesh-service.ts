@@ -117,6 +117,7 @@ import {
   encodeDmMessage,
   encodeDmReceipt,
 } from "@core/mesh/wire/dm-payload";
+import { isFavoriteControl } from "@core/mesh/wire/favorite-control";
 import {
   decodeLocationPin,
   encodeLocationPin,
@@ -233,11 +234,13 @@ import { notifyInboundRing, useRingStore } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
 import { geohashChannel, isManualGeoChannel } from "@utils/channel-key";
+import { inboundText } from "@utils/emote";
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
 import { systemPreview, systemRow } from "@utils/message-text";
 import {
   channelSenderName,
   resolveDisplayName,
+  resolvePeerOwnName,
 } from "@utils/peer-display-name";
 import {
   getPublicKey,
@@ -3282,6 +3285,13 @@ export class MeshService {
     const pm = decodePrivateMessagePacket(payload.body);
     if (pm === null) return;
 
+    // bitchat's favourite notice is control text, not a message. Acknowledged,
+    // as bitchat acknowledges it, so the sender stops retrying; never shown.
+    if (isFavoriteControl(pm.content)) {
+      this.sendReceipt(senderID, DmPayloadType.DELIVERED, pm.messageID);
+      return;
+    }
+
     const nickname = resolveDisplayName(senderID);
     useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
@@ -3291,7 +3301,7 @@ export class MeshService {
       channel,
       senderID,
       senderNickname: nickname,
-      text: pm.content,
+      ...inboundText(pm.content, resolvePeerOwnName(senderID), nickname),
       timestampMs: packet.timestamp,
       isMine: false,
     });
@@ -3376,7 +3386,7 @@ export class MeshService {
       channel,
       senderID,
       senderNickname: nickname,
-      text: payload.text,
+      ...inboundText(payload.text, resolvePeerOwnName(senderID), nickname),
       timestampMs: packet.timestamp,
       isMine: false,
     });
@@ -4103,7 +4113,11 @@ export class MeshService {
         channel,
         senderID: fromPeerID,
         senderNickname: resolveDisplayName(fromPeerID),
-        text: pm.content,
+        ...inboundText(
+          pm.content,
+          resolvePeerOwnName(fromPeerID),
+          resolveDisplayName(fromPeerID),
+        ),
         timestampMs: sentAtMs,
         isMine: false,
       });
@@ -4437,7 +4451,7 @@ export class MeshService {
         channel,
         senderID,
         senderNickname: nickname,
-        text: opened.text,
+        ...inboundText(opened.text, opened.senderNickname, nickname),
         timestampMs: packet.timestamp,
         isMine: false,
       });
@@ -5579,7 +5593,7 @@ export class MeshService {
       channel,
       senderID: member.fingerprint.slice(0, 16),
       senderNickname: plain.senderNickname || member.nickname,
-      text: plain.content,
+      ...inboundText(plain.content, plain.senderNickname || member.nickname),
       timestampMs: Math.min(plain.timestampMs, Date.now()),
       isMine: false,
     });
@@ -7141,13 +7155,27 @@ export class MeshService {
           }
           if (env.type !== NoisePayloadType.PRIVATE_MESSAGE) return;
 
+          // Control text, acknowledged and never shown: see the mesh path.
+          if (isFavoriteControl(env.content)) {
+            this.publishNostrAck(
+              dm.senderPubkey,
+              NoisePayloadType.DELIVERED,
+              env.messageID,
+            );
+            return;
+          }
+
           useChatStore.getState().addChannel(channel);
           useChatStore.getState().addMessage({
             id: env.messageID,
             channel,
             senderID: senderKey,
             senderNickname: resolveDisplayName(senderKey),
-            text: env.content,
+            ...inboundText(
+              env.content,
+              resolvePeerOwnName(senderKey),
+              resolveDisplayName(senderKey),
+            ),
             // Clamped, as the location-channel inbox is: the rumor may run up
             // to the tolerated skew ahead of our clock.
             timestampMs:

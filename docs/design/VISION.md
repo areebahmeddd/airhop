@@ -9,7 +9,7 @@ Airhop is a **cross-platform (iOS + Android) React Native application** for priv
 It is a **spiritual fork of bitchat** ([permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)). We share bitchat's BLE wire protocol, service UUIDs, security model, and Nostr transport. We are not competitors. We are builders on the same open foundation, extending it with:
 
 - One TypeScript codebase in place of two native apps that drift apart and break cross-platform compat
-- Two WiFi transports beside Bluetooth: WiFi Aware as the same-platform fast path, and LAN over mDNS and TCP, which carries the mesh between an iPhone and an Android as no direct-WiFi stack can
+- Two Wi-Fi transports beside Bluetooth: Wi-Fi Aware as the same-platform fast path, and LAN over mDNS and TCP, which carries the mesh between an iPhone and an Android as no direct-Wi-Fi stack can
 - Bridges and pluggable transports on top of Tor, so the internet half still works where Tor itself is blocked; bitchat routes through Tor but has neither
 - A full Cashu wallet, not a token decoder: balances, mints, Lightning in and out, and value moving device to device with no internet
 - Double Ratchet on live DMs, so every message has its own key, and one-time prekeys for mail left with a courier on both platforms, so waiting mail survives a key leaking later
@@ -65,15 +65,15 @@ What each feature is for, and when someone would actually reach for it.
 - QR contacts. A scanned card carries public keys, and the peer ID is checked against them before anything is trusted. A card arriving by `airhop://` link is recorded as unverified; only an in-person scan counts.
 - End-to-end encryption. Live sessions use Noise XX. Nobody in the middle, including relaying phones, can read a private message.
 - Forward secrecy. Double Ratchet for live chats, and single-use prekeys for mail left with a courier, so an old message stays protected even if a key leaks later.
-- Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over WiFi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
+- Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over Wi-Fi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
 - Panic wipe. The panic button on the Profile screen, triple-tapped to skip the confirmation, and every key, message, group, notice and prekey is gone in under a second.
 
 ### Networking
 
 - Bluetooth mesh. The part that works when nothing else does. No towers, no router, no bill.
 - Multi-hop routing. Messages relay through up to seven phones, so two people who cannot see each other still connect through the strangers between them.
-- WiFi fast path. Two Androids, or two iPhones, move large files over a direct WiFi link, steadier than Bluetooth and leaving the radio free. It never crosses platforms.
-- Local network. On one shared WiFi, an iPhone and an Android carry the whole mesh straight to each other. Off until you turn it on, since joining announces you to everyone else on the network.
+- Wi-Fi fast path. Two Androids, or two iPhones, move large files over a direct Wi-Fi link, steadier than Bluetooth and leaving the radio free. It never crosses platforms.
+- Local network. On one shared Wi-Fi, an iPhone and an Android carry the whole mesh straight to each other. Off until you turn it on, since joining announces you to everyone else on the network.
 - Relay nodes. Bitle hardware speaks the same protocol as a phone, so a fixed node can hold a mesh open where nobody is standing.
 - bitchat compatibility. An Airhop phone and a bitchat phone join the same mesh and talk with no setup. bitchat ignores Airhop's own additions instead of breaking on them.
 
@@ -96,7 +96,7 @@ What each feature is for, and when someone would actually reach for it.
 
 ## What We Are Not Building
 
-- **A video call app.** Bluetooth is far too slow at ~18 KiB/s, WiFi Aware does not cross platforms, and LAN needs both people on one network with it switched on. Video is shared as files instead.
+- **A video call app.** Bluetooth is far too slow at ~18 KiB/s, Wi-Fi Aware does not cross platforms, and LAN needs both people on one network with it switched on. Video is shared as files instead.
 - **A server.** We operate no relays, mints, or infrastructure. Ever.
 - **A centralized social network.** No profiles hosted on our servers. No search index we control.
 - **A KYC product.** No phone number. No email. No government ID.
@@ -107,7 +107,7 @@ What each feature is for, and when someone would actually reach for it.
 
 - An Airhop node and a bitchat node find each other over Bluetooth and exchange messages with no configuration
 - A message crosses five hops of strangers' phones in a city with no internet
-- An iPhone and an Android carry the mesh to each other over a shared WiFi network, with the Bluetooth radio idle
+- An iPhone and an Android carry the mesh to each other over a shared Wi-Fi network, with the Bluetooth radio idle
 - Live voice stays intelligible across a three-device relay chain
 - 500 sats reach a contact with no connection on either phone, and redeem when one of them is back online
 - Someone who has never heard of Noise or Nostr installs it and sends a message, in their own language, without being taught

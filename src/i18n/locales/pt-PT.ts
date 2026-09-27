@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Hoje",
   "format.yesterday": "Ontem",
-  "format.minutes_ago": "há {count} min",
-  "format.hours_ago": "há {count} h",
-  "format.days_ago": "há {count} d",
   "format.just_now": "agora mesmo",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -254,6 +251,7 @@ export const strings: Strings = {
   "chat.group_badge": "Grupo",
   "chat.more": "Mais",
   "chat.no_messages": "Ainda não há mensagens",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Ninguém por perto",
   "chat.presence.active_none": "Ninguém ativo",
   "chat.you": "Tu",
@@ -331,7 +329,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Não foi possível abrir essa célula. Tenta de novo daqui a pouco.",
   "chat.jump.title": "Ir a um lugar",
-  "chat.jump.saved": "LUGARES GUARDADOS",
+  "chat.jump.saved": "Lugares guardados",
+  "chat.jump.nearby": "Por perto",
   "chat.jump.anywhere":
     "Abre o canal de localização público de qualquer lugar, mesmo de um onde não estás.",
   "chat.jump.geohash_note":
@@ -340,7 +339,22 @@ export const strings: Strings = {
     "Apareces como teletransportado, não como por perto. Só alcança pela Internet.",
   "chat.jump.level_cell": "Célula de {level}",
   "chat.jump.already_here": "Já estás aqui. Ir abre o teu canal {name}.",
-  "chat.jump.open_direction": "Abrir a célula a {direction}",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NE",
+  "chat.jump.dir.e": "E",
+  "chat.jump.dir.se": "SE",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SO",
+  "chat.jump.dir.w": "O",
+  "chat.jump.dir.nw": "NO",
+  "chat.jump.open_n": "Abrir a célula a norte",
+  "chat.jump.open_ne": "Abrir a célula a nordeste",
+  "chat.jump.open_e": "Abrir a célula a este",
+  "chat.jump.open_se": "Abrir a célula a sudeste",
+  "chat.jump.open_s": "Abrir a célula a sul",
+  "chat.jump.open_sw": "Abrir a célula a sudoeste",
+  "chat.jump.open_w": "Abrir a célula a oeste",
+  "chat.jump.open_nw": "Abrir a célula a noroeste",
   "chat.jump.open_place": "Abrir {name}",
   "chat.jump.remove_place": "Remover {name} dos lugares guardados",
   "chat.jump.go": "Ir",
@@ -369,7 +383,7 @@ export const strings: Strings = {
     "Até 16 pessoas, escolhidas por ti. Não existe ligação de convite, por isso ninguém entra por ter recebido uma reencaminhada.",
   "chat.group.bluetooth":
     "Só Bluetooth. Os membros fora de alcance recebem as mensagens quando voltarem.",
-  "chat.group.members_label": "MEMBROS",
+  "chat.group.members_label": "Membros",
   "chat.group.none_in_range":
     "Não há ninguém ao alcance. Os membros têm de estar por perto quando crias o grupo.",
   "chat.group.create_title": "Criar um grupo",
@@ -403,7 +417,7 @@ export const strings: Strings = {
   "chat.cmd.a11y": "Comando /{cmd}: {hint}",
   "chat.cmd.hug_hint": "Manda um abraço",
   "chat.cmd.slap_hint": "Dá uma bofetada com uma truta grande",
-  "chat.cmd.emote_needs_target": "Indique quem, por exemplo /{command} @nome",
+  "chat.cmd.emote_needs_target": "Indica quem, por exemplo /{command} @nome",
   "chat.status.sending": "A enviar…",
   "chat.status.undo_send": "Anular o envio",
   "chat.status.undo": "Anular",
@@ -458,18 +472,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Cancelar {name}",
   "chat.thread.hide_transfer": "Ocultar progresso",
   "chat.thread.hide_transfer_hint": "O ficheiro continua a chegar",
-  "chat.thread.queued_more": "Mais {count} a aguardar para sair",
-  "chat.thread.across_bridge": "{count} do outro lado da ponte",
   "chat.thread.bridged": "pela ponte",
   "chat.thread.invite_body":
     "Encontra-te comigo em {channel} no Airhop — mensagens em malha privadas, feitas primeiro para o offline.",
-  "chat.thread.go_back_unread": "Voltar, {count} não lidas",
   "chat.thread.view_info": "Ver as informações de {name}",
-  "chat.thread.notices_new": "Avisos deste canal, {count} novos",
   "chat.board.urgent_one": "Aviso urgente de {author} · {content}",
-  "chat.board.urgent_many": "{count} novos avisos urgentes · abrir Avisos",
+  "chat.board.urgent_one_anon": "Aviso urgente · {content}",
   "chat.thread.say_something": "Diz alguma coisa em {channel}.",
-  "chat.thread.jump_latest_new": "Ir para a última mensagem, {count} novas",
   "chat.thread.unconfirmed_since": "Nenhuma entrega confirmada desde {date}",
   "chat.thread.no_reach": "Nenhum par por perto · ainda ninguém recebeu isto",
   "chat.thread.channel_needs_internet":
@@ -506,7 +515,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Fizeste uma captura de ecrã · ninguém foi avisado",
   "chat.screenshot.heads_up": "Atenção",
-  "chat.screenshot.notice": "* {name} fez uma captura de ecrã *",
+  "chat.screenshot.peer_took": "{name} fez uma captura de ecrã",
   "chat.screenshot.notified_dm":
     "{name} foi avisado de que fizeste uma captura de ecrã desta conversa.",
   "chat.screenshot.notified":
@@ -552,7 +561,7 @@ export const strings: Strings = {
   "chat.attach.document": "Documento",
   "chat.attach.document_desc": "Envia qualquer ficheiro ou PDF",
   "chat.attach.voice": "Nota de voz",
-  "chat.attach.voice_desc": "Grava e envia uma mensagem de voz",
+  "chat.attach.voice_desc": "Grava e envia uma nota de voz",
   "chat.attach.ecash": "Enviar ecash",
   "chat.attach.ecash_desc": "Envia sats Cashu da tua carteira",
   "chat.attach.location": "Localização",
@@ -560,7 +569,7 @@ export const strings: Strings = {
   "chat.attach.title": "Anexar",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Partilhou uma localização",
+  "chat.location.sent_summary": "Localização partilhada",
   "chat.location.received_summary": "Partilhou a localização",
   "chat.location.title": "Localização",
   "chat.location.away": "{distance} {direction}",
@@ -592,15 +601,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "a noroeste",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Tocou",
+  "chat.ring.sent_summary": "Toque enviado",
   "chat.ring.received_summary": "Tocou-te",
   "chat.ring.alert.title": "{sender} está a tocar",
   "chat.ring.alert.body": "Verifica as tuas mensagens",
   "chat.ring.alert.open": "Abrir",
   "chat.ring.alert.snooze": "Adiar 1 hora",
-  "chat.ring.sent_snoozed": "Tocou, adiado",
-  "chat.ring.sent_too_soon": "Tocou, demasiado cedo",
-  "chat.ring.sent_not_allowed": "Tocou, não permitido",
+  "chat.ring.sent_snoozed": "Toque enviado · adiado",
+  "chat.ring.sent_too_soon": "Toque enviado · demasiado cedo",
+  "chat.ring.sent_not_allowed": "Toque enviado · não permitido",
   "chat.attach.send_anyway": "Enviar mesmo assim",
   "chat.attach.bitchat_too_big": "Isto pode não chegar",
   "chat.attach.bitchat_too_big_body":
@@ -678,6 +687,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Parar a gravação e enviar",
   "chat.voice.lift_lock": "Desliza para cima para gravares sem manter premido",
   "chat.voice.live_speaking": "{name} está a falar",
+  "chat.voice.live_ended": "Terminado",
   "voice.unavailable": "Voz em direto indisponível",
   "voice.recording_stopped": "Gravação interrompida",
 
@@ -697,7 +707,7 @@ export const strings: Strings = {
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "Resgatado",
   "chat.ecash.reclaimed": "Retomado",
-  "chat.ecash.locked": "Bloqueado para outra pessoa",
+  "chat.ecash.locked": "Trancado para outra pessoa",
   "chat.ecash.claiming": "A resgatar…",
   "chat.ecash.claim": "Resgatar",
   "chat.ecash.claim_amount": "Resgatar {amount} {unit}",
@@ -712,7 +722,7 @@ export const strings: Strings = {
   "chat.info.reclaimed": "Retomado",
   "chat.info.reclaimed_desc":
     "Trouxeste este pagamento de volta para a tua carteira, por isso não será entregue",
-  "chat.info.about": "Acerca",
+  "chat.info.about": "Sobre",
   "chat.info.group_desc":
     "Um grupo privado. Só os membros que quem o criou adicionou conseguem ler, e fica no Bluetooth.",
   "chat.info.teleported_desc":
@@ -733,12 +743,11 @@ export const strings: Strings = {
     "Qualquer pessoa que entre consegue ler todas as mensagens. Usa uma mensagem direta para conversa privada; as diretas são encriptadas ponta a ponta.",
   "chat.info.remove_member": "Remover o membro",
   "chat.info.remove_member_body":
-    "Remover {name} do grupo? A chave do grupo é trocada para que a pessoa não consiga mais ler as mensagens novas.",
+    "Remover {name} do grupo? A chave do grupo é trocada para que a pessoa já não consiga ler as mensagens novas.",
   "chat.info.message_member": "Escrever a {name}",
   "chat.info.remove_member_a11y": "Remover {name}",
   "chat.info.no_addable":
     "Nenhum par acessível para adicionar. Os membros têm de estar por perto.",
-  "chat.info.add_count": "Adicionar {count}",
   "chat.info.teleported_tag": "{level}  ·  teletransportado",
   "chat.info.active": "Ativo",
   "chat.info.members": "Membros",
@@ -799,13 +808,16 @@ export const strings: Strings = {
   "chat.contact.verify": "Verificar o contacto",
   "chat.contact.allow_ring": "Permitir alertas de toque",
   "chat.contact.allow_ring_desc":
-    "Permite que façam o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
+    "Permite que esta pessoa faça o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
   "chat.contact.ring_action": "Tocar",
   "chat.contact.ringing": "A tocar…",
-  "chat.contact.ring_hint_nearby": "Tocar só funciona enquanto estão por perto",
-  "chat.contact.ring_hint_not_allowed": "Não te permitiram fazê-los tocar",
-  "chat.contact.ring_hint_snoozed": "Adiaram os toques por agora",
-  "chat.contact.ring_hint_too_soon": "Foram tocados há instantes",
+  "chat.contact.ring_hint_nearby":
+    "Tocar só funciona enquanto a pessoa está por perto",
+  "chat.contact.ring_hint_not_allowed":
+    "Esta pessoa não te deixou fazer tocar o telemóvel dela",
+  "chat.contact.ring_hint_snoozed": "A pessoa adiou os toques por agora",
+  "chat.contact.ring_hint_too_soon":
+    "O telemóvel desta pessoa tocou há instantes",
   "chat.contact.ring_hint_again_in": "Tocar de novo dentro de {time}",
 
   // ---- Chats: bulletin board notices ----
@@ -821,8 +833,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 dias",
   "chat.notices.7_days": "7 dias",
   "chat.notices.fading": "a desaparecer",
-  "chat.notices.fades_in_hours": "desaparece em {count} h",
-  "chat.notices.fades_in_days": "desaparece em {count} d",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Malha",
   "chat.notices.urgent_short": "Urgente",
@@ -839,10 +849,22 @@ export const strings: Strings = {
   "chat.search.links": "Ligações",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Filtrar por {filter}",
-  "chat.search.no_matches": "Nenhum {filter} corresponde a “{query}”",
-  "chat.search.no_media": "Ainda não há {filter}",
+  "chat.search.no_photos": "Ainda não há fotografias",
+  "chat.search.no_videos": "Ainda não há vídeos",
+  "chat.search.no_audio": "Ainda não há áudio",
+  "chat.search.no_documents": "Ainda não há documentos",
+  "chat.search.no_links": "Ainda não há ligações",
+  "chat.search.no_ecash": "Ainda não há ecash",
+  "chat.search.no_photos_matching":
+    "Nenhuma fotografia corresponde a “{query}”",
+  "chat.search.no_videos_matching": "Nenhum vídeo corresponde a “{query}”",
+  "chat.search.no_audio_matching": "Nenhum áudio corresponde a “{query}”",
+  "chat.search.no_documents_matching":
+    "Nenhum documento corresponde a “{query}”",
+  "chat.search.no_links_matching": "Nenhuma ligação corresponde a “{query}”",
+  "chat.search.no_ecash_matching": "Nenhum ecash corresponde a “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} de {sender}",
-  "chat.search.you": "tu",
+  "chat.search.result_mine_a11y": "{chat}, {kind} que enviaste",
   "chat.search.section_chats": "Conversas",
   "chat.search.section_messages": "Mensagens",
   "chat.search.section_notices": "Avisos",
@@ -851,15 +873,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Nenhum resultado para “{query}”",
   "chat.search.open_chat": "Abrir {name}",
   "chat.search.message_a11y": "{chat}, mensagem de {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, a tua mensagem: {snippet}",
   "chat.search.notice_a11y": "Aviso em {chat} de {author}: {snippet}",
   "chat.search.urgent": "Urgente ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "Há {count} nesta lista. Limpar tira só daqui, e as mensagens continuam por ler nas conversas delas. Marcar tudo como lido limpa os dois.",
   "chat.notif.mark_all_read": "Marcar tudo como lido",
   "chat.notif.clear_list": "Limpar a lista",
-  "chat.notif.clear_all_a11y": "Limpar todas as {count} notificações",
   "chat.notif.title": "Notificações",
   "chat.notif.clear_short": "Limpar",
   "chat.notif.close": "Fechar as notificações",
@@ -876,19 +896,22 @@ export const strings: Strings = {
   "chat.forward.cant_send_here": "Não é possível reencaminhar aqui",
   "chat.forward.cant_send_to": "Não é possível reencaminhar para {name}",
   "chat.forward.too_long_for_dm":
-    "Demasiado longa para uma mensagem direta. Reencaminhe-a para um canal ou grupo.",
+    "Demasiado longa para uma mensagem direta. Reencaminha-a para um canal ou grupo.",
   "chat.forward.channels": "Canais",
   "chat.forward.groups": "Grupos",
   "chat.forward.locations": "Localizações",
   "chat.forward.dms": "Mensagens diretas",
   "chat.forward.none": "Ainda não há outras conversas",
+  "chat.forward.app_row": "Não reencaminhado",
+  "chat.forward.app_row_body":
+    "Esta linha é do Airhop, não de uma pessoa, por isso não há nada para reencaminhar.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "A iniciar a malha…",
   "mesh.banner.no_bluetooth": "Sem Bluetooth neste dispositivo · só Internet",
   "mesh.banner.bluetooth_off": "Bluetooth desligado · malha indisponível",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth desligado · malha a funcionar por WiFi",
+    "Bluetooth desligado · malha a funcionar por Wi-Fi",
   "mesh.banner.permission_needed": "É precisa a permissão de Bluetooth",
   "mesh.banner.blocked": "Bluetooth bloqueado · permite nas definições",
   "mesh.banner.location_permission":
@@ -920,8 +943,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "Ponte de malha ligada · conversa pública ligada",
   "mesh.banner.background_limits":
     "O {brand} pode pôr a malha em pausa em segundo plano",
-  "mesh.banner.bridge_across":
-    "Ponte de malha ligada · {count} do outro lado da ponte",
   "mesh.banner.action.turn_on": "Ligar",
   "mesh.banner.action.allow": "Permitir",
   "mesh.banner.action.resume": "Retomar",
@@ -971,9 +992,9 @@ export const strings: Strings = {
   "mesh.radar.set_online":
     "Deixa o teu estado como Online no perfil para descobrires pares",
   "mesh.radar.peer_in_range": "{name}, ao alcance",
-  "mesh.radar.peer_recent": "{name}, vistos há pouco",
+  "mesh.radar.peer_recent": "{name}, visto há pouco",
   "mesh.radar.relay_in_range": "{name}, nó repetidor, ao alcance",
-  "mesh.radar.relay_recent": "{name}, nó repetidor, vistos há pouco",
+  "mesh.radar.relay_recent": "{name}, nó repetidor, visto há pouco",
   "mesh.radar.peer_hint":
     "Abre as opções para escrever a este par ou pagar-lhe",
 
@@ -997,7 +1018,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "Ver o par {name}, online",
   "mesh.peer.view_relay_online": "Ver o par {name}, online, nó repetidor",
   "mesh.peer.last_seen_at": "Visto pela última vez {ago}",
-  "mesh.peer.send_amount": "Enviar {amount} sats",
+  "mesh.peer.send_unit_amount": "Enviar {amount} {unit}",
   "mesh.peer.direct": "Ligação direta",
   "mesh.peer.check_distance": "Verificar a distância",
   "mesh.peer.checking": "A verificar",
@@ -1037,11 +1058,11 @@ export const strings: Strings = {
   "wallet.token": "Token",
   "wallet.action.send_disabled":
     "Enviar um token de ecash, indisponível com o saldo a zero",
-  "wallet.action.scan": "Digitalizar",
-  "wallet.action.scan_a11y": "Digitalizar um token, uma fatura ou um npub",
+  "wallet.action.scan": "Ler",
+  "wallet.action.scan_a11y": "Ler um token, uma fatura ou um npub",
   "wallet.choose.paste": "Colar um token",
   "wallet.choose.paste_desc": "Funciona offline",
-  "wallet.choose.scan": "Digitalizar um código QR",
+  "wallet.choose.scan": "Ler um código QR",
   "wallet.choose.scan_desc": "Um token Cashu de qualquer carteira",
   "wallet.choose.topup": "Carregar via Lightning",
   "wallet.choose.topup_desc":
@@ -1072,7 +1093,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Este token está dividido em moedas a mais para caber num código QR. Partilha ou copia.",
   "wallet.send.scan_note":
-    "Pede que leiam isto a partir da carteira deles. Continua retomável até o marcares como entregue.",
+    "Pede à pessoa que leia isto a partir da carteira dela. Continua retomável até o marcares como recebido.",
   "wallet.send.mesh_note":
     "O token sai como uma mensagem direta encriptada pela malha. Não precisa de Internet.",
   "wallet.send.no_peers_note":
@@ -1093,7 +1114,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Abrir numa carteira",
   "wallet.send.to_peer": "Enviar o token a um par por perto",
   "wallet.send.to_peer_short": "Enviar a um par",
-  "wallet.send.mark_delivered": "Marcar como entregue e concluir",
+  "wallet.send.mark_delivered": "Marcar como recebido",
   "wallet.send.they_got_it": "A pessoa recebeu",
   "wallet.send.keep_pending": "Deixar este envio pendente",
   "wallet.send.decide_later": "Decidir depois",
@@ -1117,10 +1138,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Resgatado em {mint}. Agora é teu de forma comprovável: a cópia deste token que quem enviou tem já não funciona.",
-  "wallet.receive.stored_pending":
-    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto{dleq}. É confirmado automaticamente com a casa de emissão assim que estiveres online.",
-  "wallet.receive.dleq_inline":
-    " (a assinatura confere, por isso o token é autêntico)",
+  "wallet.receive.pending_unconfirmed":
+    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. É confirmado automaticamente com a casa de emissão assim que estiveres online.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. A assinatura confere, por isso o token é autêntico. É confirmado automaticamente com a casa de emissão assim que estiveres online.",
   "wallet.receive.dleq_ok":
     "A assinatura da casa de emissão confere, por isso o token é autêntico.",
   "wallet.receive.dleq_uncached":
@@ -1184,8 +1205,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Mover todos os saldos para uma casa de emissão",
   "wallet.mint.confirm_with": "Verificar o saldo com {mint}",
   "wallet.mint.available_amount": "{amount} {unit} disponíveis",
-  "wallet.mint.split_across":
-    "Saldo espalhado por {count} casas de emissão. Move para uma só.",
   "wallet.mint.move_everything_to": "Mover tudo para {mint}",
   "wallet.mint.consolidate_title": "Mover para uma casa de emissão",
   "wallet.mint.moving": "A mover…",
@@ -1196,10 +1215,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Nada foi movido",
   "wallet.mint.move_pending": "A caminho",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} saíram de {mint} e estão a caminho de {target}. Chegam assim que o depósito for resgatado, e a carteira continua a tentar.",
+    "{amount} {unit} saíram de {mint} e estão a caminho de {target}. Chegam assim que a transferência for resgatada, e a carteira continua a tentar.",
   "wallet.mint.destination": "· destino",
   "wallet.mint.will_move": "· será movido",
   "wallet.mint.issued_by": "Emitido por",
+  "wallet.mint.test_badge": "Teste",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Carregamento da carteira Airhop",
@@ -1225,7 +1245,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "até {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Pagar {amount} {unit}",
-  "wallet.ln.deposit_title": "Depositar por Lightning",
+  "wallet.ln.deposit_title": "Carregar via Lightning",
   "wallet.ln.amount_placeholder": "Valor em sats",
   "wallet.ln.requesting": "A pedir…",
   "wallet.ln.get_invoice": "Obter uma fatura",
@@ -1258,7 +1278,7 @@ export const strings: Strings = {
     "Já tens uma frase de recuperação. Restaurar outra substitui a atual. As moedas já cobertas pela frase antiga continuam a poder ser gastas neste dispositivo, mas deixam de ser restauráveis, por isso confirma que as palavras antigas estão anotadas antes de continuares.",
   "wallet.backup.replace": "Substituir",
   "wallet.backup.replace_unseen_body":
-    "Esta carteira já tem uma frase de recuperação, criada para si na configuração, e as suas moedas foram criadas com ela. Restaurar outra frase substitui-a para sempre. As moedas continuam utilizáveis neste dispositivo e passam para a nova frase na próxima atualização de cada mint.",
+    "Esta carteira já tem uma frase de recuperação, criada para ti na configuração, e as tuas moedas foram criadas com ela. Restaurar outra frase substitui-a para sempre. As moedas continuam utilizáveis neste dispositivo e passam para a nova frase na próxima atualização de cada casa de emissão.",
   "wallet.backup.invalid_phrase": "Essa frase não é válida",
   "wallet.backup.invalid_phrase_body":
     "A frase tem uma soma de verificação embutida e esta não passa. Procura uma palavra mal escrita, em falta ou trocada de lugar.",
@@ -1352,7 +1372,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "A casa de emissão indica que este token já foi resgatado, por isso os {amount} {unit} chegaram à pessoa e nada voltou para o teu saldo.",
   "wallet.copied.token_body":
-    "O token está na tua área de transferência. Continua reservado aqui até o marcares como entregue, por isso podes colá-lo de novo se a primeira tentativa falhar.",
+    "O token está na tua área de transferência. Continua reservado aqui até o marcares como recebido, por isso podes colá-lo de novo se a primeira tentativa falhar.",
   "wallet.copied.refused_token_body":
     "O token está na tua área de transferência. Esta carteira já não o conta, por isso podes devolvê-lo a quem to enviou.",
   "wallet.copied.phrase_body":
@@ -1379,8 +1399,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Mostrar este token como código QR",
   "wallet.pending.copy_again": "Copiar o token de novo",
   "wallet.pending.share_again": "Partilhar o token de novo",
-  "wallet.pending.mark_delivered": "Marcar este token como entregue",
-  "wallet.pending.delivered": "Entregue",
+  "wallet.pending.mark_delivered": "Marcar como recebido",
+  "wallet.pending.delivered": "Recebido",
   "wallet.pending.reclaim_into": "Retomar este token para o teu saldo",
   "wallet.activity.title": "Atividade",
   "wallet.activity.none": "Ainda nada",
@@ -1398,7 +1418,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "falhou",
   "wallet.activity.status_reclaimed": "retomado",
   "wallet.activity.status_expired": "expirado",
-  "wallet.activity.ln_deposit": "Depósito Lightning",
+  "wallet.activity.ln_deposit": "Carregamento Lightning",
   "wallet.activity.ln_withdrawal": "Levantamento Lightning",
   "wallet.activity.nutzap_received": "Nutzap recebido",
   "wallet.activity.nutzap_claiming": "Nutzap, a resgatar",
@@ -1442,22 +1462,29 @@ export const strings: Strings = {
     "Pagamentos trancados não podem ser retomados: agora só a chave da pessoa pode gastar estas moedas.",
   "wallet.pay.reclaimable":
     "Continua retomável em Atividade até confirmares que chegou.",
-  "wallet.pay.why": "Enviado assim porque {reason}.",
+  "wallet.pay.why_no_relay":
+    "Enviado assim porque não havia ligação a nenhum relay.",
+  "wallet.pay.why_no_shared_mint":
+    "Enviado assim porque não tens saldo suficiente em nenhuma casa de emissão que a pessoa aceite.",
+  "wallet.pay.why_no_nutzap_info":
+    "Enviado assim porque quem vai receber não publicou informações de nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} para {name}",
   "wallet.pay.thread_receipt":
     "Enviaste {amount} {unit}, trancados na chave da pessoa.",
   "wallet.pay.title": "Enviar ecash",
   "wallet.pay.to": "Para {name}",
   "wallet.pay.amount": "Valor em sats",
-  "wallet.pay.memo": "Observação (opcional, pública)",
+  "wallet.pay.memo": "Nota (opcional, pública)",
   "wallet.pay.send": "Enviar",
   "wallet.pay.sending": "A enviar…",
   "wallet.pay.action": "Enviar ecash",
   "wallet.pay.confirm_title": "Enviar {amount} {unit} para {name}?",
   "wallet.pay.confirm_final":
-    "Fica bloqueado na chave da pessoa. Depois de enviado, não pode ser recuperado.",
+    "Fica trancado na chave da pessoa. Depois de enviado, não pode ser retomado.",
   "wallet.pay.confirm_reclaimable":
-    "Pode recuperá-lo em Atividade até que seja resgatado.",
+    "Podes retomá-lo em Atividade até que a pessoa o resgate.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Acesso à câmara",
@@ -1476,7 +1503,7 @@ export const strings: Strings = {
   "wallet.scan.aim_invoice": "Aponta para o código QR de uma fatura Lightning.",
   "wallet.scan.title_token": "Ler ecash",
   "wallet.scan.title_invoice": "Ler fatura",
-  "wallet.scan.title_any": "Digitalizar um código QR",
+  "wallet.scan.title_any": "Ler um código QR",
   "wallet.scan.aim_any":
     "Aponta para o código QR de um token, uma fatura ou um npub.",
   "wallet.scan.no_any": "Nenhum token, fatura ou npub encontrado nessa imagem.",
@@ -1558,9 +1585,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token_body":
     "Os tokens começam por cashuA ou cashuB. Verifica se nada foi cortado na cópia.",
   "wallet.svc.keyset_unknown":
-    "Este token usa chaves novas da sua casa de emissão.",
+    "Este token usa chaves novas da casa de emissão dele.",
   "wallet.svc.keyset_unknown_body":
-    "Não é possível contactar a casa de emissão agora para as obter. Nada se perde: receba-o de novo quando estiver online.",
+    "Não é possível contactar a casa de emissão agora para as obter. Nada se perde: recebe-o de novo quando estiveres online.",
   "wallet.svc.keyset_rotated": "A casa de emissão acabou de mudar as chaves.",
   "wallet.svc.keyset_rotated_body":
     "Recusou o pedido antes de qualquer movimento, por isso o teu saldo não mudou. Tenta de novo daqui a um minuto.",
@@ -1573,9 +1600,9 @@ export const strings: Strings = {
   "wallet.svc.unit_mismatch_body":
     "Está marcado como {label}, mas algumas das moedas foram emitidas em {actual}. Pede um token novo a quem o enviou. Nada foi adicionado.",
   "wallet.svc.locked_other":
-    "Estas moedas estão bloqueadas para a carteira de outra pessoa.",
+    "Estas moedas estão trancadas para a carteira de outra pessoa.",
   "wallet.svc.locked_other_body":
-    "Só a pessoa para quem foram bloqueadas as pode resgatar. Nada foi adicionado.",
+    "Só a pessoa para quem foram trancadas as pode resgatar. Nada foi adicionado.",
   "wallet.svc.coins_refused":
     "A casa de emissão recusou estas moedas, por isso já não contam. O token fica guardado aqui caso o queiras devolver.",
   "wallet.svc.coins_unredeemable":
@@ -1583,7 +1610,7 @@ export const strings: Strings = {
   "wallet.svc.reclaim_refused":
     "A casa de emissão não aceitou de volta as moedas deste envio, por isso já não contam. O token delas fica guardado aqui para copiares.",
   "wallet.svc.locked_ours_offline":
-    "Este pagamento está bloqueado para a tua carteira.",
+    "Este pagamento está trancado para a tua carteira.",
   "wallet.svc.locked_ours_offline_body":
     "Resgata-o quando estiveres online. Entretanto, mais ninguém o pode levar.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
@@ -1596,7 +1623,7 @@ export const strings: Strings = {
     "Nada foi descontado. Tenta de novo e a carteira escolhe outro conjunto.",
   "wallet.svc.no_ecash": "Ainda sem ecash.",
   "wallet.svc.no_ecash_body":
-    "Adiciona uma casa de emissão e deposita por Lightning, ou recebe um token de alguém.",
+    "Adiciona uma casa de emissão e carrega via Lightning, ou recebe um token de alguém.",
   "wallet.svc.split_across_mints":
     "O teu saldo está espalhado por várias casas de emissão.",
   "wallet.svc.mint_says_spent":
@@ -1604,15 +1631,15 @@ export const strings: Strings = {
   "wallet.svc.issue_against_invoice":
     "emitir ecash contra uma fatura Lightning",
   "wallet.svc.pay_invoice": "pagar uma fatura Lightning",
-  "wallet.svc.unknown_deposit": "Depósito desconhecido.",
+  "wallet.svc.unknown_deposit": "Carregamento desconhecido.",
   "wallet.svc.invoice_expired_before": "A fatura expirou antes de ser paga.",
   "wallet.svc.invoice_expired": "Essa fatura expirou.",
   "wallet.svc.invoice_unpaid": "A fatura ainda não foi paga.",
-  "wallet.svc.payment_unknown":
-    "Estado do pagamento desconhecido; será verificado de novo na próxima atualização.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Estado do pagamento desconhecido; será verificado de novo na próxima atualização.",
   "wallet.svc.melt_change_pending": "A tua fatura foi paga.",
   "wallet.svc.melt_change_pending_body":
-    "A casa de emissão ainda não devolveu a taxa de encaminhamento não usada. É reclamada automaticamente na próxima atualização, e nada se perde entretanto.",
+    "A casa de emissão ainda não devolveu a taxa de encaminhamento não usada. É resgatada automaticamente na próxima atualização, e nada se perde entretanto.",
   "wallet.svc.mint_did_not_pay":
     "A casa de emissão não pagou esta fatura. O teu saldo não mudou.",
   "wallet.svc.not_an_invoice": "Isso não é uma fatura Lightning.",
@@ -1648,24 +1675,19 @@ export const strings: Strings = {
     "Esse pagamento cita uma casa de emissão que não usas.",
   "wallet.svc.unknown_mint_body":
     "Adiciona-a tu mesmo se confiares nela; nada é resgatado de uma casa de emissão que não escolheste.",
-  "wallet.svc.no_relay": "sem ligação a nenhum relay",
-  "wallet.svc.no_shared_mint":
-    "nenhuma casa de emissão em comum com saldo suficiente",
-  "wallet.svc.no_nutzap_info":
-    "quem vai receber não publicou informações de nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Trancado na chave da pessoa mas ainda não entregue. Partilha o token desta transação para concluir.",
   "wallet.svc.swap_lost":
     "A casa de emissão nunca concluiu esta troca, por isso nada foi emitido em contrapartida.",
   "wallet.svc.mint_lost":
-    "O mint emitiu este depósito, mas não foi possível reconstruir as suas moedas. Restaurar a partir da frase de recuperação recupera-as.",
+    "A casa de emissão emitiu este carregamento, mas não foi possível reconstruir as moedas dele. Restaurar a partir da tua frase de recuperação recupera-as.",
   "wallet.svc.swap_unreadable":
     "Esta troca foi guardada num formato que esta versão não consegue repetir.",
   "wallet.svc.lock_in_doubt": "Este pagamento pode ou não ter sido feito.",
   "wallet.svc.lock_in_doubt_body":
-    "Não foi enviado mais nada. As moedas ficam retidas até a casa de emissão confirmar o resultado. Se o pagamento passou, o token bloqueado aparece em Atividade para o entregar. Se não, as moedas voltam.",
+    "Não foi enviado mais nada. As moedas ficam retidas até a casa de emissão confirmar o resultado. Se o pagamento passou, o token trancado aparece em Atividade para o entregares. Se não, as moedas voltam.",
   "wallet.svc.send_spent_by_swap":
-    "Estas moedas foram trocadas de volta para a sua carteira antes de este token ser resgatado, por isso já não pode ser resgatado. O valor está no seu saldo.",
+    "Estas moedas foram trocadas de volta para a tua carteira antes de este token ser resgatado, por isso já não pode ser resgatado. O valor está no teu saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verificado por QR",
@@ -1757,7 +1779,7 @@ export const strings: Strings = {
   "settings.share_peer_id": "Partilhar o teu ID de par",
   "settings.share_id_short": "Partilhar o ID",
   "settings.share_app": "Partilhar a aplicação Airhop",
-  "settings.share_app_short": "Partilhar App",
+  "settings.share_app_short": "Partilhar app",
   "settings.share_app_dialog": "Experimenta o Airhop",
   "settings.share_app_unsupported": "Não é possível partilhar esta instalação",
   "settings.share_app_unsupported_body":
@@ -1785,7 +1807,7 @@ export const strings: Strings = {
     "Sigilo persistente, pacotes assinados, pares bloqueados",
   "settings.section.network": "Rede e relays",
   "settings.section.network_desc":
-    "Recurso à Internet, relays nostr, compatibilidade com o bitchat",
+    "Recurso à Internet, relays Nostr, compatibilidade com o bitchat",
   "settings.section.permissions": "Permissões",
   "settings.section.permissions_desc":
     "Bluetooth, localização, notificações, câmara, microfone",
@@ -1835,13 +1857,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Sem leitura de sinal",
   "settings.diag.no_peers": "Ninguém ao alcance",
-  "settings.diag.no_peers_desc": "{links} ligações de rádio abertas",
   "settings.diag.gcs_size": "Tamanho do filtro",
   "settings.diag.gcs_size_desc": "O maior filtro de sincronização posto no ar",
   "settings.diag.fpr": "Taxa de falsos positivos",
   "settings.diag.fpr_desc":
     "Com que frequência o filtro diz que temos um pacote que nos falta",
-  "settings.diag.bytes": "{n} bytes",
   "settings.diag.footnote":
     "Nada aqui pode ser alterado. Estes valores são fixos para que o Airhop se mantenha compatível com o bitchat.",
   "settings.diag.share": "Partilhar diagnóstico",
@@ -1855,14 +1875,13 @@ export const strings: Strings = {
     "Contacta-nos, comunica um erro, ou lê as perguntas frequentes",
   "settings.section.support": "Apoiar",
   "settings.section.support_desc": "Ajuda a manter o desenvolvimento ativo",
-  "settings.section.about": "Acerca",
+  "settings.section.about": "Sobre",
   "settings.section.about_desc": "Versão, registo de alterações e código",
 
   // ---- Settings: general ----
   "settings.general.undo": "Anular o envio",
   "settings.general.feature_ai": "IA",
   "settings.general.feature_wallet": "Carteira",
-  "settings.general.undo_seconds": "{count} segundos",
   "settings.general.undo_a11y": "Anular o envio: {value}",
   "settings.general.quality_a11y": "Definir a qualidade de envio para {value}",
   "settings.general.undo_desc":
@@ -1957,7 +1976,6 @@ export const strings: Strings = {
   "settings.network.custom": "Relays personalizados",
   "settings.network.custom_desc":
     "Adiciona os teus próprios relays para os canais de localização e a ponte de malha",
-  "settings.network.custom_added": "{count} de {max} adicionados",
   "settings.network.dm_relays": "Relays de mensagens",
   "settings.network.dm_relays_desc":
     "As mensagens diretas e os canais privados usam sempre estes. Os relays personalizados não os alteram.",
@@ -1968,17 +1986,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "Adicionar relay",
   "settings.network.remove_relay": "Remover {url}",
   "settings.network.add_short": "Adicionar",
-  "settings.network.relay_limit":
-    "Podes adicionar {count} relays. Remove um para adicionares outro.",
   "settings.network.relay_duplicate": "Esse relay já está na tua lista.",
   "settings.network.relay_invalid":
     "Escreve um anfitrião de relay válido, por exemplo relay.example.com. Só é preciso uma porta se o relay não usar a predefinida. Não são permitidos endereços IP nem nomes locais.",
   "settings.network.lan": "Rede local",
   "settings.network.lan_desc":
-    "Alcance quem está na mesma WiFi, incluindo entre iPhone e Android. Outros dispositivos na rede podem ver que está a usar o Airhop.",
+    "Alcança quem está na mesma rede Wi-Fi, incluindo entre iPhone e Android. Outros dispositivos na rede podem ver que estás a usar o Airhop.",
   "settings.network.lan_searching": "Nenhum dispositivo Airhop nesta rede",
   "settings.network.lan_active": "Ligado nesta rede",
-  "settings.network.lan_unavailable": "Não está numa rede WiFi",
+  "settings.network.lan_unavailable": "Não estás numa rede Wi-Fi",
   "settings.network.lan_permission":
     "O acesso à rede local está desligado para o Airhop",
   "settings.network.lan_unsupported": "Não disponível neste dispositivo",
@@ -1988,7 +2004,7 @@ export const strings: Strings = {
   "settings.network.wifi_aware_desc":
     "Transferências de fotos e ficheiros mais rápidas entre dois telemóveis da mesma plataforma. O Bluetooth transporta tudo de qualquer forma.",
   "settings.network.wifi_unstable":
-    "Em pausa. Interrompia repetidamente o Wi-Fi deste telemóvel. Desligue e ligue para tentar de novo.",
+    "Em pausa. Interrompia repetidamente o Wi-Fi deste telemóvel. Desliga e liga para tentar de novo.",
   "settings.network.wifi_pair": "Emparelhamento",
   "settings.network.wifi_paired": "Dispositivos emparelhados",
   "settings.network.wifi_pair_find": "Encontrar um dispositivo",
@@ -1996,13 +2012,13 @@ export const strings: Strings = {
     "Procurar um iPhone por perto que se esteja a mostrar. Ambos precisam de iOS 26 ou posterior.",
   "settings.network.wifi_pair_show": "Mostrar este iPhone",
   "settings.network.wifi_pair_show_desc":
-    "Deixe um iPhone por perto encontrar este. Um procura e o outro mostra-se, ao mesmo tempo.",
+    "Deixa um iPhone por perto encontrar este. Um procura e o outro mostra-se, ao mesmo tempo.",
   "settings.network.wifi_pair_find_action": "Escolher um iPhone por perto",
   "settings.network.wifi_pair_show_action": "Tornar este iPhone detetável",
   "settings.network.wifi_pair_unavailable":
     "O Wi-Fi Aware não está disponível de momento",
   "settings.network.wifi_pair_forget":
-    "Remova um emparelhamento na app Settings",
+    "Remove um emparelhamento na app Definições",
   "settings.network.bitchat": "Compatibilidade com o bitchat",
   "settings.network.bitchat_desc":
     "A mesma malha BLE do bitchat, totalmente interoperável. Está sempre ligada e não pode ser desativada.",
@@ -2019,10 +2035,10 @@ export const strings: Strings = {
     "As mensagens só chegam com o Airhop aberto, e este telemóvel deixa de repassar para quem está por perto. A notificação permanente desaparece.",
   "settings.conn.autostart": "Iniciar automaticamente",
   "settings.conn.autostart_desc":
-    "Reinicia a rede depois de o teu telemóvel reiniciar",
+    "Reinicia a malha depois de o teu telemóvel reiniciar",
   "settings.conn.autostart_on_title": "Iniciar o Airhop após um reinício?",
   "settings.conn.autostart_on_body":
-    "O Airhop inicia-se sozinho e volta a juntar-se à rede da próxima vez que o teu telemóvel reiniciar, sem qualquer notificação até isso acontecer. Alguns fabricantes bloqueiam isto a menos que também o permitas nas definições de bateria deles.",
+    "O Airhop inicia-se sozinho e volta a juntar-se à malha da próxima vez que o teu telemóvel reiniciar, sem qualquer notificação até isso acontecer. Alguns fabricantes bloqueiam isto a menos que também o permitas nas definições de bateria deles.",
   "settings.conn.autostart_off_title": "Parar de iniciar após um reinício?",
   "settings.conn.autostart_off_body":
     "O Airhop permanece fechado depois de o teu telemóvel reiniciar, até o abrires tu mesmo.",
@@ -2050,28 +2066,28 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "O Tor ainda não se ligou. Fica ligado e continua a tentar; o separador Malha diz quando estiver a encaminhar, ou se esta rede o estiver a bloquear.",
   "settings.conn.tor_failed":
-    "Não foi possível iniciar o Tor. Tente novamente dentro de momentos.",
+    "Não foi possível iniciar o Tor. Tenta de novo daqui a pouco.",
   "settings.tor.status": "Estado do Tor",
   "settings.tor.connection": "Ligação",
   "settings.tor.mode_off": "Direta",
   "settings.tor.mode_off_desc":
-    "Liga diretamente ao Tor. O mais rápido, mas quem observa esta rede vê que usa Tor.",
+    "Liga diretamente ao Tor. O mais rápido, mas quem observa esta rede vê que usas o Tor.",
   "settings.tor.mode_snowflake": "Snowflake",
   "settings.tor.mode_snowflake_desc":
-    "Esconde que usa Tor e continua a funcionar onde as pontes estão bloqueadas. O mais lento a ligar.",
+    "Esconde que usas o Tor e continua a funcionar onde as pontes estão bloqueadas. O mais lento a ligar.",
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
-    "Esconde que usa Tor. Mais rápido do que o Snowflake, mas estas pontes são públicas e algumas redes bloqueiam-nas.",
+    "Esconde que usas o Tor. Mais rápido do que o Snowflake, mas estas pontes são públicas e algumas redes bloqueiam-nas.",
   "settings.tor.mode_webtunnel": "webtunnel",
   "settings.tor.mode_webtunnel_desc":
-    "Esconde que usa o Tor parecendo uma visita comum a um site. Mais difícil de bloquear do que os outros.",
+    "Esconde que usas o Tor parecendo uma visita comum a um site. Mais difícil de bloquear do que os outros.",
   "settings.tor.mode_custom": "Pontes próprias",
   "settings.tor.mode_custom_desc":
-    "Use linhas de ponte obfs4 de bridges.torproject.org. Tente isto quando as outras falharem.",
-  "settings.tor.custom_placeholder": "Cole uma linha de ponte por linha",
-  "settings.tor.custom_apply_hint": "Toque fora da caixa para ligar.",
+    "Usa linhas de ponte obfs4 de bridges.torproject.org. Tenta isto quando as outras falharem.",
+  "settings.tor.custom_placeholder": "Cola uma linha de ponte por linha",
+  "settings.tor.custom_apply_hint": "Toca fora da caixa para ligar.",
   "settings.tor.custom_empty":
-    "Adicione pelo menos uma linha de ponte primeiro.",
+    "Adiciona primeiro pelo menos uma linha de ponte.",
   "settings.tor.recovered":
     "O Tor não terminou de iniciar da última vez, por isso o tráfego de Internet está em pausa. Tenta de novo, ou desliga o Tor para ficares online sem ele.",
   "settings.tor.retry": "Tentar de novo",
@@ -2127,7 +2143,7 @@ export const strings: Strings = {
     "Envia fotografias da tua galeria e guarda a multimédia recebida. Sem isto, ainda podes tirar e enviar fotografias novas com a câmara.",
   "settings.permissions.microphone": "Microfone",
   "settings.permissions.microphone_desc":
-    "Grava e envia mensagens de voz ou usa a voz em direto. Sem isto, as mensagens de voz e a voz em direto não funcionam.",
+    "Grava e envia notas de voz ou usa a voz em direto. Sem isto, as notas de voz e a voz em direto não funcionam.",
   "settings.permissions.allow": "Conceder esta permissão",
   "settings.permissions.open_settings":
     "Abrir as definições do sistema para alterar esta permissão",
@@ -2381,10 +2397,10 @@ export const strings: Strings = {
   "settings.version.downloading": "A transferir {percent}%",
   "settings.version.install": "Instalar",
   "settings.version.download_failed":
-    "A transferência falhou. Verifique a sua ligação e tente novamente.",
+    "A transferência falhou. Verifica a tua ligação e tenta de novo.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} tem {size} KiB e passa do limite de {cap} KiB.",
+  "transfer.too_large": "{kind} tem {size} e passa do limite de {cap}.",
   "transfer.failed.malformed":
     "Um anexo chegou danificado e não abriu. Pede à pessoa que o envie de novo.",
   "transfer.failed.unsupported_type":
@@ -2394,10 +2410,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Um anexo chegou mas não pôde ser guardado. Verifica o espaço livre.",
   "transfer.badge.waiting": "A aguardar · {name}",
-  "transfer.badge.active_count": "{count} transferências",
   "transfer.badge.sending": "A enviar {name}",
   "transfer.badge.receiving": "A receber {name}",
-  "transfer.badge.a11y": "{label}, {percent} por cento. Abrir a conversa.",
   "transfer.kind.photo": "Fotografia",
   "transfer.kind.video": "Vídeo",
   "transfer.kind.voice": "Nota de voz",
@@ -2426,10 +2440,11 @@ export const strings: Strings = {
   "notif.notice": "Aviso · {content}",
   "notif.incoming_file": "Ficheiro a chegar",
   "notif.preview.photo": "📷 Fotografia",
-  "notif.preview.voice": "🎤 Mensagem de voz",
+  "notif.preview.voice": "🎤 Nota de voz",
   "notif.preview.video": "🎥 Vídeo",
   "notif.preview.document": "📄 Documento",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Mensagem nova",
   "notif.hidden.channel": "Atividade nova",
@@ -2441,6 +2456,23 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "há {count} minuto",
+    many: "há {count} minutos",
+    other: "há {count} minutos",
+  },
+  "format.hours_ago": {
+    one: "há {count} hora",
+    many: "há {count} horas",
+    other: "há {count} horas",
+  },
+  "format.days_ago": {
+    one: "há {count} dia",
+    many: "há {count} dias",
+    other: "há {count} dias",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Mostrar mais {count}",
@@ -2505,6 +2537,66 @@ export const plurals: Plurals = {
     other: "{count} a falar",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "Mais {count} a aguardar para sair",
+    many: "Mais {count} a aguardar para sair",
+    other: "Mais {count} a aguardar para sair",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} pessoa do outro lado da ponte",
+    many: "{count} pessoas do outro lado da ponte",
+    other: "{count} pessoas do outro lado da ponte",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Voltar, {count} por ler",
+    many: "Voltar, {count} por ler",
+    other: "Voltar, {count} por ler",
+  },
+  "chat.thread.notices_new": {
+    one: "Avisos deste canal, {count} novo",
+    many: "Avisos deste canal, {count} novos",
+    other: "Avisos deste canal, {count} novos",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Ir para a última mensagem, {count} nova",
+    many: "Ir para a última mensagem, {count} novas",
+    other: "Ir para a última mensagem, {count} novas",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} novo aviso urgente · abrir Avisos",
+    many: "{count} novos avisos urgentes · abrir Avisos",
+    other: "{count} novos avisos urgentes · abrir Avisos",
+  },
+  "chat.info.add_count": {
+    one: "Adicionar {count}",
+    many: "Adicionar {count}",
+    other: "Adicionar {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "desaparece daqui a {count} hora",
+    many: "desaparece daqui a {count} horas",
+    other: "desaparece daqui a {count} horas",
+  },
+  "chat.notices.fades_in_days": {
+    one: "desaparece daqui a {count} dia",
+    many: "desaparece daqui a {count} dias",
+    other: "desaparece daqui a {count} dias",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "Há {count} notificação nesta lista. Limpar tira-a só daqui, e a mensagem continua por ler na conversa dela. Marcar tudo como lido limpa os dois.",
+    many: "Há {count} notificações nesta lista. Limpar tira-as só daqui, e as mensagens continuam por ler nas conversas delas. Marcar tudo como lido limpa os dois.",
+    other:
+      "Há {count} notificações nesta lista. Limpar tira-as só daqui, e as mensagens continuam por ler nas conversas delas. Marcar tudo como lido limpa os dois.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Limpar {count} notificação",
+    many: "Limpar todas as {count} notificações",
+    other: "Limpar todas as {count} notificações",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} par ao alcance",
@@ -2532,20 +2624,32 @@ export const plurals: Plurals = {
     other: "{count} membros",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Ponte de malha ligada · {count} pessoa do outro lado da ponte",
+    many: "Ponte de malha ligada · {count} pessoas do outro lado da ponte",
+    other: "Ponte de malha ligada · {count} pessoas do outro lado da ponte",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} tem {balance} {unit} em {count} moeda. Removê-lo apaga essa moeda deste dispositivo para sempre, e não há cópia de segurança dela. Levanta ou envia primeiro o saldo.",
-    many: "{mint} tem {balance} {unit} em {count} moedas. Removê-lo apaga essas moedas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
+    one: "{mint} tem {balance} {unit} em {count} moeda. Removê-la apaga esse saldo deste dispositivo para sempre, e não há cópia de segurança. Levanta ou envia primeiro o saldo.",
+    many: "{mint} tem {balance} {unit} em {count} moedas. Removê-la apaga esse saldo deste dispositivo para sempre, e não há cópia de segurança. Levanta ou envia primeiro o saldo.",
     other:
-      "{mint} tem {balance} {unit} em {count} moedas. Removê-lo apaga essas moedas deste dispositivo para sempre, e não há cópia de segurança delas. Levanta ou envia primeiro o saldo.",
+      "{mint} tem {balance} {unit} em {count} moedas. Removê-la apaga esse saldo deste dispositivo para sempre, e não há cópia de segurança. Levanta ou envia primeiro o saldo.",
+  },
+  "wallet.mint.split_across": {
+    one: "Saldo espalhado por {count} casa de emissão. Move para uma só.",
+    many: "Saldo espalhado por {count} casas de emissão. Move para uma só.",
+    other: "Saldo espalhado por {count} casas de emissão. Move para uma só.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} depósito a aguardar pagamento. É verificado de novo sempre que a aplicação abre.",
-    many: "{count} depósitos a aguardar pagamento. São verificados de novo sempre que a aplicação abre.",
+    one: "{count} carregamento a aguardar pagamento. É verificado de novo sempre que a aplicação abre.",
+    many: "{count} carregamentos a aguardar pagamento. São verificados de novo sempre que a aplicação abre.",
     other:
-      "{count} depósitos a aguardar pagamento. São verificados de novo sempre que a aplicação abre.",
+      "{count} carregamentos a aguardar pagamento. São verificados de novo sempre que a aplicação abre.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2555,10 +2659,10 @@ export const plurals: Plurals = {
     other: "{count} moedas por gastar recuperadas de {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "Foi encontrada {count} moeda, mas já tinha sido gasta, por isso nada foi creditado por ela. É normal: cada moeda que alguma vez gastaste continua nos registos que o mint guarda.",
-    many: "Foram encontradas {count} moedas, mas já tinham sido gastas, por isso nada foi creditado por elas. É normal: cada moeda que alguma vez gastaste continua nos registos que o mint guarda.",
+    one: "Foi encontrada {count} moeda, mas já tinha sido gasta, por isso nada foi creditado. É normal: cada moeda que alguma vez gastaste continua nos registos que a casa de emissão guarda.",
+    many: "Foram encontradas {count} moedas, mas já tinham sido gastas, por isso nada foi creditado. É normal: cada moeda que alguma vez gastaste continua nos registos que a casa de emissão guarda.",
     other:
-      "Foram encontradas {count} moedas, mas já tinham sido gastas, por isso nada foi creditado por elas. É normal: cada moeda que alguma vez gastaste continua nos registos que o mint guarda.",
+      "Foram encontradas {count} moedas, mas já tinham sido gastas, por isso nada foi creditado. É normal: cada moeda que alguma vez gastaste continua nos registos que a casa de emissão guarda.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2589,9 +2693,44 @@ export const plurals: Plurals = {
     other: "{count} moedas já tinham sido gastas, e foram removidas.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} ligação de rádio aberta",
+    many: "{count} ligações de rádio abertas",
+    other: "{count} ligações de rádio abertas",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} segundo",
+    many: "{count} segundos",
+    other: "{count} segundos",
+  },
+  "settings.network.custom_added": {
+    one: "{count} de {max} adicionado",
+    many: "{count} de {max} adicionados",
+    other: "{count} de {max} adicionados",
+  },
+  "settings.network.relay_limit": {
+    one: "Podes adicionar {count} relay. Remove-o para adicionares outro.",
+    many: "Podes adicionar {count} relays. Remove um para adicionares outro.",
+    other: "Podes adicionar {count} relays. Remove um para adicionares outro.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} transferência",
+    many: "{count} transferências",
+    other: "{count} transferências",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} por cento. Abrir a conversa.",
+    many: "{label}, {count} por cento. Abrir a conversa.",
+    other: "{label}, {count} por cento. Abrir a conversa.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Há alguém por perto",
+    "=1": "Há alguém por perto",
+    one: "Há {count} pessoa por perto",
     many: "Há {count} pessoas por perto",
     other: "Há {count} pessoas por perto",
   },

@@ -47,8 +47,10 @@ import {
   AttachmentFailureNotifier,
   type AttachmentFailure,
 } from "@utils/attachment-failure";
+import { formatBytes } from "@utils/format";
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
 import { systemRow } from "@utils/message-text";
+import { safeFileName } from "@utils/safe-file-name";
 import { stripInvisibles } from "@utils/strip-invisibles";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
@@ -191,7 +193,7 @@ export async function adoptIntoAttachmentCache(
 ): Promise<string> {
   try {
     adoptSeq += 1;
-    const safeName = name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 64);
+    const safeName = safeFileName(name);
     const destination = new FileSystem.File(
       FileSystem.Paths.cache,
       `${CACHE_FILE_PREFIX}${String(Date.now())}_${String(adoptSeq)}_${safeName}`,
@@ -693,8 +695,8 @@ export class FileTransferService {
       throw new AttachmentTooLargeError(
         t("transfer.too_large", {
           kind: sizeLabel(meta.type),
-          size: (fileBytes.length / 1024).toFixed(0),
-          cap: (cap / 1024).toFixed(0),
+          size: formatBytes(fileBytes.length, true),
+          cap: formatBytes(cap),
         }),
       );
     }
@@ -1086,7 +1088,7 @@ export class FileTransferService {
     // Truncate first, so a long name loses its middle rather than its
     // extension.
     const safeName = receivedFileName(
-      (fp.fileName || "file").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 64),
+      safeFileName(fp.fileName || "file"),
       mimeType ?? "",
     );
     const file = new FileSystem.File(

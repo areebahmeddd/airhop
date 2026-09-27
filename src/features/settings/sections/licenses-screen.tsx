@@ -1,10 +1,9 @@
 // Licenses sub-screen: every third-party package this app ships with, its
-// license, and a tap to open its repository. Data snapshotted from each
-// package's own package.json (src/data/licenses.ts), not a fabricated list.
-// Each group opens with a one-line note on what those packages are for.
+// license, and a tap to open its repository. The data is snapshotted from each
+// package's own package.json into src/data/licenses.ts. Each group opens with a one-line note on what those packages are for.
 
 import { THIRD_PARTY_LICENSES } from "@data/licenses";
-import { useT } from "@i18n";
+import { upperCase, useT } from "@i18n";
 import { FontSize, LineHeight, Spacing, useThemeColors } from "@ui/theme";
 import React, { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
@@ -31,7 +30,10 @@ export default function LicensesScreen({ onBack }: Props): React.JSX.Element {
         {THIRD_PARTY_LICENSES.map((group) => (
           <View key={group.category} style={styles.section}>
             <View style={local.header}>
-              <Text style={styles.sectionTitle}>{group.category}</Text>
+              {/* The catalog of packages is English, so its case is too. */}
+              <Text style={styles.sectionTitle}>
+                {upperCase(group.category, "en")}
+              </Text>
               <Text style={local.description}>{group.description}</Text>
             </View>
             <View style={styles.settingsGroup}>

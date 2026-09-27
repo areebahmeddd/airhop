@@ -105,7 +105,7 @@ const ROWS: {
   {
     name: "Bridgefy",
     href: "https://bridgefy.me",
-    transport: "Bluetooth + WiFi",
+    transport: "Bluetooth + Wi-Fi",
     encryption: "Signal (libsignal)",
     offline: true,
     hardwareFree: true,
@@ -123,7 +123,7 @@ const ROWS: {
   {
     name: "Briar",
     href: "https://briarproject.org",
-    transport: "Bluetooth + WiFi + Tor",
+    transport: "Bluetooth + Wi-Fi + Tor",
     encryption: "Bramble",
     offline: true,
     hardwareFree: true,
@@ -141,7 +141,7 @@ const ROWS: {
   {
     name: "Airhop",
     href: REPO_URL,
-    transport: "Bluetooth + Nostr + mDNS + WiFi + Tor",
+    transport: "Bluetooth + Nostr + mDNS + Wi-Fi + Tor",
     encryption: "Noise XX + Double Ratchet",
     offline: true,
     hardwareFree: true,

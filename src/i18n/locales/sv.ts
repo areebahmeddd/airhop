@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "I dag",
   "format.yesterday": "I går",
-  "format.minutes_ago": "för {count} min sedan",
-  "format.hours_ago": "för {count} tim sedan",
-  "format.days_ago": "för {count} dgr sedan",
   "format.just_now": "nyss",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -50,7 +47,7 @@ export const strings: Strings = {
   "chat.filter.a11y": "Filtrera chattar",
   "chat.filter.all": "Alla",
   "chat.filter.unread": "Olästa",
-  "chat.filter.verified": "Verifierad",
+  "chat.filter.verified": "Verifierade",
   "chat.filter.nearby": "I närheten",
   "chat.filter.private": "Privata",
   "chat.filter.none": "Inga chattar matchar det här filtret",
@@ -124,7 +121,7 @@ export const strings: Strings = {
     "Din gamla telefon ska visa samma ord. Om den visar andra ord, eller inga alls, avbryt.",
   "onboarding.transfer.confirm_cta": "De stämmer",
   "onboarding.transfer.waiting_old": "Tryck på {action} på din gamla telefon",
-  "onboarding.transfer.receiving": "Tar emot {percent}%",
+  "onboarding.transfer.receiving": "Tar emot {percent} %",
   "onboarding.transfer.saving": "Sparar på den här telefonen",
   "onboarding.transfer.releasing": "Slutför på din gamla telefon",
   "onboarding.transfer.keep_open":
@@ -155,8 +152,7 @@ export const strings: Strings = {
 
   // ---- Onboarding: permission primer ----
   "onboarding.primer.title": "Innan telefonen frågar",
-  "onboarding.primer.lede":
-    "Så här gör var och en av dem, och så här gör de inte.",
+  "onboarding.primer.lede": "Här är vad var och en gör, och vad den inte gör.",
   "onboarding.primer.bluetooth.title": "Bluetooth",
   "onboarding.primer.bluetooth.body":
     "Hittar enheter i närheten och skickar meddelanden vidare mellan dem. Det är så meshen bildas, och den fungerar utan internet.",
@@ -254,6 +250,7 @@ export const strings: Strings = {
   "chat.group_badge": "Grupp",
   "chat.more": "Mer",
   "chat.no_messages": "Inga meddelanden än",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Ingen i närheten",
   "chat.presence.active_none": "Ingen aktiv",
   "chat.you": "Du",
@@ -311,12 +308,12 @@ export const strings: Strings = {
   "chat.join.paste": "Klistra in från urklipp",
   "chat.join.join": "Gå med",
   "chat.join.public_channel":
-    "Öppna kanalen {name}. Alla i närheten kan läsa den.",
+    "Öppen kanal {name}. Alla i närheten kan läsa den.",
   "chat.join.private_channel": "Privata kanalen {name}. {reach}",
   "chat.join.dm_with": "Direktmeddelande med {name}.",
   "chat.join.joined_as": "Gick med som {name}",
   "chat.join.name_clash_body":
-    "Du är redan med i ett annat {name}. Kanalnamn är bara etiketter, så inbjudan öppnade en egen kanal och den du var med i är orörd. Du kan byta namn på båda från kanalinfon.",
+    "Du är redan med i en annan kanal som heter {name}. Kanalnamn är bara etiketter, så inbjudan öppnade en egen kanal och den du var med i är orörd. Du kan byta namn på vilken som helst av dem från kanalinfon.",
   "chat.join.paste_hint":
     "En Airhop-länk börjar med airhop://. Klistra in en här, eller kontrollera den som en länk du tryckte på fyllde i.",
   "chat.join.key_note":
@@ -327,7 +324,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Cellen kunde inte öppnas. Försök igen om en stund.",
   "chat.jump.title": "Gå till en plats",
-  "chat.jump.saved": "SPARADE PLATSER",
+  "chat.jump.saved": "Sparade platser",
+  "chat.jump.nearby": "I närheten",
   "chat.jump.anywhere":
     "Öppna en öppen platskanal var som helst, även på en plats där du inte är.",
   "chat.jump.geohash_note":
@@ -336,7 +334,22 @@ export const strings: Strings = {
     "Du visas som teleporterad, inte som i närheten. Det når fram bara över internet.",
   "chat.jump.level_cell": "Cell på {level}-nivå",
   "chat.jump.already_here": "Du är redan här. Gå öppnar din {name}-kanal.",
-  "chat.jump.open_direction": "Öppna cellen {direction} om dig",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NO",
+  "chat.jump.dir.e": "Ö",
+  "chat.jump.dir.se": "SO",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SV",
+  "chat.jump.dir.w": "V",
+  "chat.jump.dir.nw": "NV",
+  "chat.jump.open_n": "Öppna cellen i norr",
+  "chat.jump.open_ne": "Öppna cellen i nordost",
+  "chat.jump.open_e": "Öppna cellen i öster",
+  "chat.jump.open_se": "Öppna cellen i sydost",
+  "chat.jump.open_s": "Öppna cellen i söder",
+  "chat.jump.open_sw": "Öppna cellen i sydväst",
+  "chat.jump.open_w": "Öppna cellen i väster",
+  "chat.jump.open_nw": "Öppna cellen i nordväst",
   "chat.jump.open_place": "Öppna {name}",
   "chat.jump.remove_place": "Ta bort {name} från sparade platser",
   "chat.jump.go": "Gå",
@@ -365,7 +378,7 @@ export const strings: Strings = {
     "Upp till 16 personer, valda av dig. Det finns ingen inbjudningslänk, så ingen kommer in genom att få en vidarebefordrad.",
   "chat.group.bluetooth":
     "Endast Bluetooth. Medlemmar utom räckhåll får meddelandena när de är tillbaka.",
-  "chat.group.members_label": "MEDLEMMAR",
+  "chat.group.members_label": "Medlemmar",
   "chat.group.none_in_range":
     "Ingen är inom räckhåll. Medlemmar måste vara i närheten när du skapar gruppen.",
   "chat.group.create_title": "Skapa en grupp",
@@ -437,7 +450,7 @@ export const strings: Strings = {
   "chat.thread.empty_desc": "Börja ett krypterat samtal.",
   "chat.thread.jump_latest": "Hoppa till senaste meddelandet",
   "chat.thread.back_to_members": "Tillbaka till medlemmarna",
-  "chat.thread.nostr_key": "Nostr-publik nyckel",
+  "chat.thread.nostr_key": "Publik Nostr-nyckel",
   "chat.thread.in_range": "Inom räckhåll",
   "chat.voice.not_recorded": "Röstmeddelandet spelades inte in",
   "chat.thread.message": "Meddelande",
@@ -455,18 +468,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Avbryt {name}",
   "chat.thread.hide_transfer": "Dölj förlopp",
   "chat.thread.hide_transfer_hint": "Filen kommer ändå fram",
-  "chat.thread.queued_more": "{count} till väntar på att skickas",
-  "chat.thread.across_bridge": "{count} på andra sidan bryggan",
   "chat.thread.bridged": "bryggat",
   "chat.thread.invite_body":
     "Kom med mig i {channel} på Airhop — privata meshmeddelanden som fungerar offline först.",
-  "chat.thread.go_back_unread": "Tillbaka, {count} olästa",
   "chat.thread.view_info": "Visa info om {name}",
-  "chat.thread.notices_new": "Anslag för den här kanalen, {count} nya",
   "chat.board.urgent_one": "Brådskande anslag från {author} · {content}",
-  "chat.board.urgent_many": "{count} nya brådskande anslag · öppna Anslag",
+  "chat.board.urgent_one_anon": "Brådskande anslag · {content}",
   "chat.thread.say_something": "Säg något i {channel}.",
-  "chat.thread.jump_latest_new": "Hoppa till senaste meddelandet, {count} nya",
   "chat.thread.unconfirmed_since": "Ingen leverans bekräftad sedan {date}",
   "chat.thread.no_reach": "Inga peers i närheten · ingen har fått det här än",
   "chat.thread.channel_needs_internet":
@@ -503,7 +511,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Du tog en skärmbild · ingen fick veta det",
   "chat.screenshot.heads_up": "Obs",
-  "chat.screenshot.notice": "* {name} tog en skärmbild *",
+  "chat.screenshot.peer_took": "{name} tog en skärmbild",
   "chat.screenshot.notified_dm":
     "{name} fick veta att du tog en skärmbild av det här samtalet.",
   "chat.screenshot.notified":
@@ -557,7 +565,7 @@ export const strings: Strings = {
   "chat.attach.title": "Bifoga",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Delade en plats",
+  "chat.location.sent_summary": "Plats delad",
   "chat.location.received_summary": "Delade sin plats",
   "chat.location.title": "Plats",
   "chat.location.away": "{distance} {direction}",
@@ -588,19 +596,19 @@ export const strings: Strings = {
   "chat.location.direction.nw": "nordväst",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Ringde",
+  "chat.ring.sent_summary": "Ringning skickad",
   "chat.ring.received_summary": "Ringde dig",
   "chat.ring.alert.title": "{sender} ringer dig",
   "chat.ring.alert.body": "Kolla dina meddelanden",
   "chat.ring.alert.open": "Öppna",
   "chat.ring.alert.snooze": "Snooza i 1 timme",
-  "chat.ring.sent_snoozed": "Ringde, uppskjutet",
-  "chat.ring.sent_too_soon": "Ringde, för tidigt",
-  "chat.ring.sent_not_allowed": "Ringde, inte tillåtet",
+  "chat.ring.sent_snoozed": "Ringning skickad · uppskjuten",
+  "chat.ring.sent_too_soon": "Ringning skickad · för tidigt",
+  "chat.ring.sent_not_allowed": "Ringning skickad · inte tillåten",
   "chat.attach.send_anyway": "Skicka ändå",
   "chat.attach.bitchat_too_big": "Det här kanske inte kommer fram",
   "chat.attach.bitchat_too_big_body":
-    "{name} använder bitchat, som ger upp halvvägs vid en stor fil. Under ungefär 350 KiB är tillförlitligt. Att skicka den till en Airhop-kontakt har ingen sådan gräns.",
+    "{name} använder bitchat, som ger upp halvvägs vid en stor fil. Filer under ungefär 350 KiB kommer fram tillförlitligt. Till en Airhop-kontakt finns ingen sådan gräns.",
   "chat.attach.bitchat_unopenable": "De kanske inte kan öppna det här",
   "chat.attach.bitchat_unopenable_body":
     "{name} använder bitchat, som visar foton och röstmeddelanden men listar allt annat som en fil den inte kan öppna. Det kommer fram, de kanske bara inte kan titta på det.",
@@ -672,7 +680,8 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Stoppa inspelningen och skicka",
   "chat.voice.lift_lock": "Dra uppåt för att spela in handsfree",
   "chat.voice.live_speaking": "{name} talar",
-  "voice.unavailable": "Direktröst är inte tillgängligt",
+  "chat.voice.live_ended": "Avslutad",
+  "voice.unavailable": "Direktröst är inte tillgänglig",
   "voice.recording_stopped": "Inspelningen stoppades",
 
   // ---- Chats: permissions asked mid-thread ----
@@ -733,7 +742,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Ta bort {name}",
   "chat.info.no_addable":
     "Inga nåbara peers att lägga till. Medlemmar måste vara i närheten.",
-  "chat.info.add_count": "Lägg till {count}",
   "chat.info.teleported_tag": "{level}  ·  teleporterad",
   "chat.info.active": "Aktiv",
   "chat.info.members": "Medlemmar",
@@ -778,8 +786,8 @@ export const strings: Strings = {
     "Inslaget enligt NIP-17, så reläer kan inte läsa det",
   "chat.contact.e2ee_mesh":
     "Noise XX, plus Double Ratchet mellan Airhop-enheter",
-  "chat.contact.copy_nostr": "Kopiera Nostr-publik nyckel",
-  "chat.contact.nostr_key": "Nostr-publik nyckel",
+  "chat.contact.copy_nostr": "Kopiera publik Nostr-nyckel",
+  "chat.contact.nostr_key": "Publik Nostr-nyckel",
   "chat.contact.cell_key_note":
     "Nyckeln hör till området där ni möttes. Den ändras om någon av er flyttar på sig, och samtalet tar slut med den. Byt kontakter för att kunna fortsätta prata var som helst.",
   "chat.contact.peer_name": "Peernamn",
@@ -819,8 +827,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 dagar",
   "chat.notices.7_days": "7 dagar",
   "chat.notices.fading": "bleknar",
-  "chat.notices.fades_in_hours": "bleknar om {count} tim",
-  "chat.notices.fades_in_days": "bleknar om {count} dgr",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Brådskande",
@@ -837,10 +843,20 @@ export const strings: Strings = {
   "chat.search.links": "Länkar",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Filtrera på {filter}",
-  "chat.search.no_matches": "Inga {filter} som matchar ”{query}”",
-  "chat.search.no_media": "Inga {filter} än",
+  "chat.search.no_photos": "Inga foton än",
+  "chat.search.no_videos": "Inga videor än",
+  "chat.search.no_audio": "Inget ljud än",
+  "chat.search.no_documents": "Inga dokument än",
+  "chat.search.no_links": "Inga länkar än",
+  "chat.search.no_ecash": "Ingen ecash än",
+  "chat.search.no_photos_matching": "Inga foton matchar ”{query}”",
+  "chat.search.no_videos_matching": "Inga videor matchar ”{query}”",
+  "chat.search.no_audio_matching": "Inget ljud matchar ”{query}”",
+  "chat.search.no_documents_matching": "Inga dokument matchar ”{query}”",
+  "chat.search.no_links_matching": "Inga länkar matchar ”{query}”",
+  "chat.search.no_ecash_matching": "Ingen ecash matchar ”{query}”",
   "chat.search.result_a11y": "{chat}, {kind} från {sender}",
-  "chat.search.you": "du",
+  "chat.search.result_mine_a11y": "{chat}, {kind} från dig",
   "chat.search.section_chats": "Chattar",
   "chat.search.section_messages": "Meddelanden",
   "chat.search.section_notices": "Anslag",
@@ -849,15 +865,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Inga resultat för ”{query}”",
   "chat.search.open_chat": "Öppna {name}",
   "chat.search.message_a11y": "{chat}, meddelande från {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ditt meddelande: {snippet}",
   "chat.search.notice_a11y": "Anslag i {chat} från {author}: {snippet}",
   "chat.search.urgent": "Brådskande ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} i den här listan. Att rensa tar bort dem bara härifrån, och meddelandena förblir olästa i sina konversationer. Att markera allt som läst rensar båda.",
   "chat.notif.mark_all_read": "Markera allt som läst",
   "chat.notif.clear_list": "Rensa listan",
-  "chat.notif.clear_all_a11y": "Rensa alla {count} aviseringar",
   "chat.notif.title": "Aviseringar",
   "chat.notif.clear_short": "Rensa",
   "chat.notif.close": "Stäng aviseringarna",
@@ -880,12 +894,15 @@ export const strings: Strings = {
   "chat.forward.locations": "Platser",
   "chat.forward.dms": "Direktmeddelanden",
   "chat.forward.none": "Inga andra chattar än",
+  "chat.forward.app_row": "Vidarebefordrades inte",
+  "chat.forward.app_row_body":
+    "Den här raden kommer från Airhop, inte från en person, så det finns inget att vidarebefordra.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Startar meshen…",
   "mesh.banner.no_bluetooth": "Ingen Bluetooth på enheten · endast internet",
   "mesh.banner.bluetooth_off": "Bluetooth av · meshen är otillgänglig",
-  "mesh.banner.bluetooth_off_wifi": "Bluetooth av · meshen körs över WiFi",
+  "mesh.banner.bluetooth_off_wifi": "Bluetooth av · meshen körs över Wi-Fi",
   "mesh.banner.permission_needed": "Bluetooth-behörighet krävs",
   "mesh.banner.blocked": "Bluetooth blockerat · tillåt det i Inställningar",
   "mesh.banner.location_permission": "Plats krävs för att hitta peers",
@@ -912,7 +929,6 @@ export const strings: Strings = {
     "Internetgateway på · skickar vidare för peers i närheten",
   "mesh.banner.bridge": "Meshbrygga på · den öppna chatten är länkad",
   "mesh.banner.background_limits": "{brand} kan pausa meshen i bakgrunden",
-  "mesh.banner.bridge_across": "Meshbrygga på · {count} på andra sidan bryggan",
   "mesh.banner.action.turn_on": "Slå på",
   "mesh.banner.action.allow": "Tillåt",
   "mesh.banner.action.resume": "Återuppta",
@@ -985,7 +1001,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "Visa peern {name}, online",
   "mesh.peer.view_relay_online": "Visa peern {name}, online, relänod",
   "mesh.peer.last_seen_at": "Senast sedd {ago}",
-  "mesh.peer.send_amount": "Skicka {amount} sats",
+  "mesh.peer.send_unit_amount": "Skicka {amount} {unit}",
   "mesh.peer.direct": "Direktanslutning",
   "mesh.peer.check_distance": "Kontrollera avstånd",
   "mesh.peer.checking": "Kontrollerar",
@@ -1009,31 +1025,31 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "Plånbokens lagring är låst. Din ecash ligger i en krypterad fil vars nyckel finns i enhetens nyckelring, och den gick inte att öppna. Lås upp enheten och öppna Airhop igen.",
   "wallet.balance.tor_blocked":
-    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till din ecash. Att skicka och ta emot över meshen fungerar ändå. Vill du nå minter trots det, slå på {setting} i Inställningar.",
+    "Tor är på, så mint-förfrågningar blockeras: de skulle gå ut över det öppna nätet och knyta din IP till din ecash. Att skicka och ta emot över meshen fungerar ändå. Vill du nå mintar trots det, slå på {setting} i Inställningar.",
   "wallet.balance.offline":
     "Offline. Du kan fortfarande betala folk i närheten och skicka token.",
   "wallet.balance.internet_off":
-    "Internet är avstängt, så plånboken fungerar bara i närheten. Slå på {setting} i Inställningar för att nå minter.",
+    "Internet är avstängt, så plånboken fungerar bara i närheten. Slå på {setting} i Inställningar för att nå mintar.",
   "wallet.balance.unconfirmed_note":
     "{amount} är ännu inte bekräftat hos minten",
   "wallet.balance.reserved_note":
     "{amount} är reserverat för en sändning på väg",
   "wallet.balance.other_mint_note": "{amount} hos en annan mint",
   "wallet.balance.test_mint_note":
-    "Innehåller låtsaspengar från en testmint. Det är inte bitcoin och går inte att lösa in.",
+    "Innehåller låtsaspengar från en testmint. Det är inte bitcoin och går inte att ta ut.",
   "wallet.token": "Token",
   "wallet.action.send_disabled":
     "Skicka ett ecash-token, går inte med tomt saldo",
   "wallet.action.scan": "Skanna",
-  "wallet.action.scan_a11y": "Skanna en token, faktura eller npub",
-  "wallet.choose.paste": "Klistra in en token",
+  "wallet.action.scan_a11y": "Skanna ett token, en faktura eller en npub",
+  "wallet.choose.paste": "Klistra in ett token",
   "wallet.choose.paste_desc": "Fungerar offline",
   "wallet.choose.scan": "Skanna en QR-kod",
-  "wallet.choose.scan_desc": "En Cashu-token från valfri plånbok",
+  "wallet.choose.scan_desc": "Ett Cashu-token från valfri plånbok",
   "wallet.choose.topup": "Fyll på via Lightning",
   "wallet.choose.topup_desc": "Betala en faktura från valfri Lightning-plånbok",
-  "wallet.choose.token": "Skapa en token",
-  "wallet.choose.token_desc": "Dela den eller visa en QR-kod, även offline",
+  "wallet.choose.token": "Skapa ett token",
+  "wallet.choose.token_desc": "Dela det eller visa en QR-kod, även offline",
   "wallet.choose.zap": "Zappa en Nostr-kontakt",
   "wallet.choose.zap_desc": "Till deras npub, över internet",
   "wallet.choose.invoice": "Betala en Lightning-faktura",
@@ -1058,7 +1074,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Tokenet är uppdelat på för många mynt för att rymmas i en QR-kod. Dela eller kopiera det i stället.",
   "wallet.send.scan_note":
-    "Låt dem skanna det här från sin egen plånbok. Det går att ta tillbaka tills du markerar det som levererat.",
+    "Låt dem skanna det här från sin egen plånbok. Det går att ta tillbaka tills du markerar det som mottaget.",
   "wallet.send.mesh_note":
     "Tokenet går ut som ett krypterat direktmeddelande över meshen. Inget internet behövs.",
   "wallet.send.no_peers_note":
@@ -1079,7 +1095,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Öppna i plånbok",
   "wallet.send.to_peer": "Skicka tokenet till en peer i närheten",
   "wallet.send.to_peer_short": "Skicka till peer",
-  "wallet.send.mark_delivered": "Markera som levererat och avsluta",
+  "wallet.send.mark_delivered": "Markera som mottaget",
   "wallet.send.they_got_it": "De fick det",
   "wallet.send.keep_pending": "Låt sändningen förbli väntande",
   "wallet.send.decide_later": "Bestäm senare",
@@ -1103,9 +1119,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n”{memo}”",
   "wallet.receive.redeemed_at":
     "Inlöst hos {mint}. Det är bevisligen ditt nu: avsändarens kopia av tokenet fungerar inte längre.",
-  "wallet.receive.stored_pending":
-    "Sparat från {mint}, men minten har ännu inte bekräftat att det är obrukat{dleq}. Det bekräftas automatiskt hos minten när du är online.",
-  "wallet.receive.dleq_inline": " (signaturen stämmer, så tokenet är äkta)",
+  "wallet.receive.pending_unconfirmed":
+    "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Det bekräftas automatiskt hos minten när du är online.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Signaturen stämmer, så tokenet är äkta. Det bekräftas automatiskt hos minten när du är online.",
   "wallet.receive.dleq_ok": "Mintens signatur stämmer, så tokenet är äkta.",
   "wallet.receive.dleq_uncached":
     "Mintens nycklar finns inte här, så signaturen kunde inte kontrolleras offline.",
@@ -1130,7 +1147,7 @@ export const strings: Strings = {
   "wallet.zap.bad_key": "felaktig nyckel",
   "wallet.zap.invalid_pubkey": "Ogiltig publik nyckel",
   "wallet.zap.invalid_pubkey_body":
-    "Ange en npub1… eller en Nostr-publik nyckel på 64 hex-tecken.",
+    "Ange en npub1… eller en publik Nostr-nyckel på 64 hex-tecken.",
   "wallet.zap.sent": "Nutzap skickad",
   "wallet.zap.failed": "Zappen misslyckades",
   "wallet.zap.body":
@@ -1158,7 +1175,7 @@ export const strings: Strings = {
   "wallet.mint.add_body":
     "En mint håller de bitcoin som täcker din ecash, så välj en du skulle anförtro det saldo du har där. URL:en kontrolleras innan den sparas. Kör en egen med Nutshell om du hellre slipper lita på någon.",
   "wallet.mint.consolidate_body":
-    "Ett token kan bara någonsin nämna en mint, så ett saldo utspritt på flera kan inte betala ett belopp större än vad den största håller. Airhop kan flytta det: varje annan mint betalar en Lightning-faktura utställd av den du väljer. Det kostar en liten routingavgift och kräver internet.",
+    "Ett token kan bara gälla en enda mint, så ett saldo utspritt på flera kan inte betala ett belopp större än vad den största håller. Airhop kan flytta det: varje annan mint betalar en Lightning-faktura utställd av den du väljer. Det kostar en liten routingavgift och kräver internet.",
   "wallet.mint.add_short": "Lägg till mint",
   "wallet.mint.checking": "Kontrollerar…",
   "wallet.mint.remove_with_balance": "Ta bort en mint med saldo?",
@@ -1167,8 +1184,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Flytta alla saldon till en mint",
   "wallet.mint.confirm_with": "Kontrollera saldot hos {mint}",
   "wallet.mint.available_amount": "{amount} {unit} tillgängligt",
-  "wallet.mint.split_across":
-    "Saldot är uppdelat på {count} mintar. Flytta det till en.",
   "wallet.mint.move_everything_to": "Flytta allt till {mint}",
   "wallet.mint.consolidate_title": "Flytta till en mint",
   "wallet.mint.moving": "Flyttar…",
@@ -1179,10 +1194,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Inget flyttades",
   "wallet.mint.move_pending": "På väg",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} har lämnat {mint} och är på väg till {target}. Det kommer fram när insättningen har hämtats, och plånboken fortsätter försöka.",
+    "{amount} {unit} har lämnat {mint} och är på väg till {target}. Det kommer fram när överföringen har hämtats, och plånboken fortsätter försöka.",
   "wallet.mint.destination": "· mål",
   "wallet.mint.will_move": "· flyttas",
   "wallet.mint.issued_by": "Utgiven av",
+  "wallet.mint.test_badge": "Test",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Påfyllning av Airhop-plånboken",
@@ -1208,7 +1224,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "upp till {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Betala {amount} {unit}",
-  "wallet.ln.deposit_title": "Sätt in över Lightning",
+  "wallet.ln.deposit_title": "Fyll på via Lightning",
   "wallet.ln.amount_placeholder": "Belopp i sats",
   "wallet.ln.requesting": "Begär…",
   "wallet.ln.get_invoice": "Hämta faktura",
@@ -1218,7 +1234,7 @@ export const strings: Strings = {
   "wallet.ln.waiting": "Väntar på betalning…",
   "wallet.ln.new_invoice": "Skapa en ny faktura",
   "wallet.ln.new_invoice_short": "Ny faktura",
-  "wallet.ln.withdraw_title": "Lös ut till Lightning",
+  "wallet.ln.withdraw_title": "Ta ut till Lightning",
   "wallet.ln.scan_invoice": "Skanna QR-koden för en Lightning-faktura",
   "wallet.ln.paid_from": "Betalt från",
   "wallet.ln.invoice": "Faktura",
@@ -1332,7 +1348,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Minten säger att tokenet redan är inlöst, så de {amount} {unit} nådde fram till dem och inget kom tillbaka till ditt saldo.",
   "wallet.copied.token_body":
-    "Tokenet ligger i urklipp. Det förblir reserverat här tills du markerar det som levererat, så du kan klistra in det igen om första försöket misslyckas.",
+    "Tokenet ligger i urklipp. Det förblir reserverat här tills du markerar det som mottaget, så du kan klistra in det igen om första försöket misslyckas.",
   "wallet.copied.refused_token_body":
     "Tokenet ligger i urklipp. Plånboken räknar inte längre med det, så du kan ge tillbaka det till den som skickade det.",
   "wallet.copied.phrase_body":
@@ -1358,8 +1374,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Visa tokenet som en QR-kod",
   "wallet.pending.copy_again": "Kopiera tokenet igen",
   "wallet.pending.share_again": "Dela tokenet igen",
-  "wallet.pending.mark_delivered": "Markera tokenet som levererat",
-  "wallet.pending.delivered": "Levererat",
+  "wallet.pending.mark_delivered": "Markera som mottaget",
+  "wallet.pending.delivered": "Mottaget",
   "wallet.pending.reclaim_into": "Ta tillbaka tokenet till ditt saldo",
   "wallet.activity.title": "Aktivitet",
   "wallet.activity.none": "Inget än",
@@ -1377,11 +1393,11 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "misslyckades",
   "wallet.activity.status_reclaimed": "tillbakataget",
   "wallet.activity.status_expired": "utgånget",
-  "wallet.activity.ln_deposit": "Lightning-insättning",
+  "wallet.activity.ln_deposit": "Lightning-påfyllning",
   "wallet.activity.ln_withdrawal": "Lightning-uttag",
   "wallet.activity.nutzap_received": "Nutzap mottagen",
   "wallet.activity.nutzap_claiming": "Nutzap, hämtas",
-  "wallet.activity.spent_removed": "Spenderade mynt borttagna",
+  "wallet.activity.spent_removed": "Förbrukade mynt borttagna",
   "wallet.activity.refreshed": "Kontrollerad hos minten",
   "wallet.activity.refreshing": "Kontrollerar hos minten",
   "wallet.activity.copy_refused": "Kopiera det avvisade tokenet",
@@ -1420,7 +1436,14 @@ export const strings: Strings = {
     "Låsta betalningar går inte att ta tillbaka: bara deras nyckel kan använda mynten nu.",
   "wallet.pay.reclaimable":
     "Det går att ta tillbaka under Aktivitet tills du bekräftar att det kom fram.",
-  "wallet.pay.why": "Skickat så här eftersom {reason}.",
+  "wallet.pay.why_no_relay":
+    "Skickat så här eftersom det inte fanns någon reläanslutning.",
+  "wallet.pay.why_no_shared_mint":
+    "Skickat så här eftersom du inte har tillräckligt hos någon mint som mottagaren accepterar.",
+  "wallet.pay.why_no_nutzap_info":
+    "Skickat så här eftersom mottagaren inte har publicerat nutzapuppgifter (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} till {name}",
   "wallet.pay.thread_receipt":
     "Du skickade {amount} {unit}, låst till deras nyckel.",
@@ -1455,8 +1478,10 @@ export const strings: Strings = {
   "wallet.scan.title_token": "Skanna ecash",
   "wallet.scan.title_invoice": "Skanna faktura",
   "wallet.scan.title_any": "Skanna en QR-kod",
-  "wallet.scan.aim_any": "Rikta mot QR-koden för en token, faktura eller npub.",
-  "wallet.scan.no_any": "Ingen token, faktura eller npub hittades i bilden.",
+  "wallet.scan.aim_any":
+    "Rikta mot QR-koden för ett token, en faktura eller en npub.",
+  "wallet.scan.no_any":
+    "Inget token, ingen faktura eller npub hittades i bilden.",
   "wallet.scan.use_camera_a11y": "Skanna med kameran",
   "wallet.scan.use_camera": "Använd kameran",
   "wallet.scan.pick_image_a11y": "Läs en QR-kod ur en sparad bild",
@@ -1465,7 +1490,7 @@ export const strings: Strings = {
   // ---- Wallet: what is Cashu ----
   "wallet.explain.title": "Vad är Cashu?",
   "wallet.explain.intro":
-    "Cashu är ecash för Bitcoin. Ett token är en sträng som är värd pengar för den som har den, blint signerad av en mint så att minten inte kan se vem som gjorde av med vad. Inga konton, inga inloggningar. Airhop håller aldrig dina pengar: dina mynt finns på den här telefonen och ges ut av de mints du väljer.",
+    "Cashu är ecash för Bitcoin. Ett token är en sträng som är värd pengar för den som har den, blint signerad av en mint så att minten inte kan se vem som gjorde av med vad. Inga konton, inga inloggningar. Airhop håller aldrig dina pengar: dina mynt finns på den här telefonen och ges ut av de mintar du väljer.",
   "wallet.explain.send": "Skicka",
   "wallet.explain.send_desc":
     "Gör om ett belopp till ett token du kan lämna över till en peer i närheten via Bluetooth, eller dela som text. Fungerar utan internet. Mynten förblir reserverade tills du bekräftar att det kom fram.",
@@ -1529,9 +1554,9 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token_body":
     "Token börjar med cashuA eller cashuB. Kontrollera att inget kapades när det kopierades.",
   "wallet.svc.keyset_unknown":
-    "Den här token använder nya nycklar från sin mint.",
+    "Det här tokenet använder nya nycklar från sin mint.",
   "wallet.svc.keyset_unknown_body":
-    "Minten går inte att nå just nu för att hämta dem. Inget går förlorat: ta emot den igen när du är online.",
+    "Minten går inte att nå just nu för att hämta dem. Inget går förlorat: ta emot det igen när du är online.",
   "wallet.svc.keyset_rotated": "Minten har precis bytt nycklar.",
   "wallet.svc.keyset_rotated_body":
     "Den avvisade begäran innan något flyttades, så ditt saldo är oförändrat. Försök igen om en minut.",
@@ -1562,19 +1587,19 @@ export const strings: Strings = {
     "Inget drogs. Försök igen så väljer plånboken en annan uppsättning.",
   "wallet.svc.no_ecash": "Ingen ecash än.",
   "wallet.svc.no_ecash_body":
-    "Lägg till en mint och sätt in över Lightning, eller ta emot ett token från någon.",
+    "Lägg till en mint och fyll på via Lightning, eller ta emot ett token från någon.",
   "wallet.svc.split_across_mints": "Ditt saldo är uppdelat på flera mintar.",
   "wallet.svc.mint_says_spent":
     "Minten rapporterade ecashen som redan förbrukad.",
   "wallet.svc.issue_against_invoice": "ge ut ecash mot en Lightning-faktura",
   "wallet.svc.pay_invoice": "betala en Lightning-faktura",
-  "wallet.svc.unknown_deposit": "Okänd insättning.",
+  "wallet.svc.unknown_deposit": "Okänd påfyllning.",
   "wallet.svc.invoice_expired_before":
     "Fakturan gick ut innan den hann betalas.",
   "wallet.svc.invoice_expired": "Fakturan har gått ut.",
   "wallet.svc.invoice_unpaid": "Fakturan är ännu inte betald.",
-  "wallet.svc.payment_unknown":
-    "Betalningsstatusen är okänd; kontrolleras igen vid nästa uppdatering.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Betalningsstatusen är okänd; kontrolleras igen vid nästa uppdatering.",
   "wallet.svc.melt_change_pending": "Din faktura betalades.",
   "wallet.svc.melt_change_pending_body":
     "Minten har ännu inte lämnat tillbaka den oanvända routingavgiften. Den hämtas automatiskt vid nästa uppdatering, och inget går förlorat under tiden.",
@@ -1615,24 +1640,20 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "Betalningen uppger en mint du inte använder.",
   "wallet.svc.unknown_mint_body":
     "Lägg till minten själv om du litar på den; inget löses in hos en mint du inte har valt.",
-  "wallet.svc.no_relay": "ingen reläanslutning",
-  "wallet.svc.no_shared_mint": "ingen gemensam mint med tillräckligt saldo",
-  "wallet.svc.no_nutzap_info":
-    "mottagaren har inte publicerat nutzapuppgifter (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Låst till deras nyckel men ännu inte levererat. Dela tokenet från den här transaktionen för att slutföra den.",
   "wallet.svc.swap_lost":
     "Minten slutförde aldrig bytet, så inget gavs ut mot det.",
   "wallet.svc.mint_lost":
-    "Minten har gett ut den här insättningen, men dess mynt kunde inte återskapas. Att återställa från din återställningsfras hämtar tillbaka dem.",
+    "Minten har gett ut den här påfyllningen, men dess mynt kunde inte återskapas. Att återställa från din återställningsfras hämtar tillbaka dem.",
   "wallet.svc.swap_unreadable":
     "Bytet sparades i en form som den här versionen inte kan spela upp igen.",
   "wallet.svc.lock_in_doubt":
     "Den här betalningen kan ha gått igenom eller inte.",
   "wallet.svc.lock_in_doubt_body":
-    "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas den låsta token under Aktivitet så att du kan lämna över den. Annars kommer mynten tillbaka.",
+    "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas det låsta tokenet under Aktivitet så att du kan lämna över det. Annars kommer mynten tillbaka.",
   "wallet.svc.send_spent_by_swap":
-    "De här mynten växlades tillbaka till din plånbok innan token löstes in, så den kan inte längre lösas in. Beloppet finns i ditt saldo.",
+    "De här mynten växlades tillbaka till din plånbok innan tokenet hämtades, så det kan inte längre hämtas. Beloppet finns i ditt saldo.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verifierad via QR",
@@ -1752,7 +1773,7 @@ export const strings: Strings = {
     "Forward secrecy, signerade paket, blockerade peers",
   "settings.section.network": "Nätverk och reläer",
   "settings.section.network_desc":
-    "Internet som reserv, nostr-reläer, bitchat-kompatibilitet",
+    "Internet som reserv, Nostr-reläer, bitchat-kompatibilitet",
   "settings.section.permissions": "Behörigheter",
   "settings.section.permissions_desc":
     "Bluetooth, plats, aviseringar, kamera, mikrofon",
@@ -1783,7 +1804,7 @@ export const strings: Strings = {
   "settings.diag.ble_links_desc":
     "Enheter som telefonen är direkt ansluten till",
   "settings.diag.lan": "Lokalt nätverk",
-  "settings.diag.lan_desc": "Telefoner i samma wifi-nätverk",
+  "settings.diag.lan_desc": "Telefoner i samma Wi-Fi-nätverk",
   "settings.diag.wifi": "Wi-Fi Aware",
   "settings.diag.wifi_about": "Telefon till telefon utan router",
   "settings.diag.wifi_active": "Igång",
@@ -1802,13 +1823,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Ingen signalavläsning",
   "settings.diag.no_peers": "Ingen inom räckhåll",
-  "settings.diag.no_peers_desc": "{links} radiolänk(ar) öppna",
   "settings.diag.gcs_size": "Filterstorlek",
   "settings.diag.gcs_size_desc": "Största synkfilter som skickats ut",
   "settings.diag.fpr": "Andel falska träffar",
   "settings.diag.fpr_desc":
     "Hur ofta filtret påstår att vi har ett paket vi saknar",
-  "settings.diag.bytes": "{n} byte",
   "settings.diag.footnote":
     "Inget här går att ändra. Värdena är låsta för att Airhop ska förbli kompatibelt med bitchat.",
   "settings.diag.share": "Dela diagnostik",
@@ -1829,7 +1848,6 @@ export const strings: Strings = {
   "settings.general.undo": "Ångra sändning",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Plånbok",
-  "settings.general.undo_seconds": "{count} sekunder",
   "settings.general.undo_a11y": "Ångra sändning: {value}",
   "settings.general.quality_a11y": "Ställ in uppladdningskvalitet på {value}",
   "settings.general.undo_desc":
@@ -1919,7 +1937,6 @@ export const strings: Strings = {
   "settings.network.custom": "Egna reläer",
   "settings.network.custom_desc":
     "Lägg till egna reläer för platskanaler och meshbryggan",
-  "settings.network.custom_added": "{count} av {max} tillagda",
   "settings.network.dm_relays": "Meddelandereläer",
   "settings.network.dm_relays_desc":
     "Direktmeddelanden och privata kanaler använder alltid dessa. Egna reläer ändrar dem inte.",
@@ -1929,17 +1946,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "Lägg till relä",
   "settings.network.remove_relay": "Ta bort {url}",
   "settings.network.add_short": "Lägg till",
-  "settings.network.relay_limit":
-    "Du kan lägga till {count} reläer. Ta bort ett för att lägga till ett annat.",
   "settings.network.relay_duplicate": "Det reläet finns redan i din lista.",
   "settings.network.relay_invalid":
     "Ange en giltig relävärd, t.ex. relay.example.com. En port behövs bara om reläet inte använder standardporten. IP-adresser och lokala namn är inte tillåtna.",
   "settings.network.lan": "Lokalt nätverk",
   "settings.network.lan_desc":
-    "Nå personer på samma WiFi, även mellan iPhone och Android. Andra enheter i nätverket kan se att du kör Airhop.",
+    "Nå personer på samma Wi-Fi, även mellan iPhone och Android. Andra enheter i nätverket kan se att du kör Airhop.",
   "settings.network.lan_searching": "Inga Airhop-enheter i det här nätverket",
   "settings.network.lan_active": "Ansluten i det här nätverket",
-  "settings.network.lan_unavailable": "Inte på ett WiFi-nätverk",
+  "settings.network.lan_unavailable": "Inte på ett Wi-Fi-nätverk",
   "settings.network.lan_permission":
     "Åtkomst till lokalt nätverk är avstängd för Airhop",
   "settings.network.lan_unsupported": "Inte tillgängligt på den här enheten",
@@ -1949,7 +1964,7 @@ export const strings: Strings = {
   "settings.network.wifi_aware_desc":
     "Snabbare överföring av foton och filer mellan två telefoner på samma plattform. Bluetooth bär ändå allt.",
   "settings.network.wifi_unstable":
-    "Pausad. Den fortsatte störa wifi på den här telefonen. Stäng av och slå på för att försöka igen.",
+    "Pausad. Den fortsatte störa Wi-Fi på den här telefonen. Stäng av och slå på för att försöka igen.",
   "settings.network.wifi_pair": "Parkoppling",
   "settings.network.wifi_paired": "Parkopplade enheter",
   "settings.network.wifi_pair_find": "Hitta en enhet",
@@ -1963,7 +1978,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware är inte tillgängligt just nu",
   "settings.network.wifi_pair_forget":
-    "Ta bort en parkoppling i appen Settings",
+    "Ta bort en parkoppling i appen Inställningar",
   "settings.network.bitchat": "bitchat-kompatibilitet",
   "settings.network.bitchat_desc":
     "Samma BLE-mesh som bitchat, fullt driftskompatibel. Detta är alltid på och går inte att stänga av.",
@@ -1979,10 +1994,10 @@ export const strings: Strings = {
     "Meddelanden kommer bara fram medan Airhop är öppet, och telefonen slutar skicka vidare åt folk i närheten. Den pågående aviseringen försvinner.",
   "settings.conn.autostart": "Starta automatiskt",
   "settings.conn.autostart_desc":
-    "Startar om nätverket efter att din telefon startat om",
+    "Startar om meshen efter att din telefon startat om",
   "settings.conn.autostart_on_title": "Starta Airhop efter en omstart?",
   "settings.conn.autostart_on_body":
-    "Airhop startar sig självt och ansluter till nätverket igen nästa gång din telefon startar om, utan någon avisering förrän det sker. Vissa telefontillverkare blockerar detta om du inte också tillåter det i deras egna batteriinställningar.",
+    "Airhop startar av sig själv och ansluter till meshen igen nästa gång din telefon startar om, utan någon avisering förrän det sker. Vissa telefontillverkare blockerar detta om du inte också tillåter det i deras egna batteriinställningar.",
   "settings.conn.autostart_off_title": "Sluta starta efter en omstart?",
   "settings.conn.autostart_off_body":
     "Airhop förblir stängt efter att din telefon startat om, tills du själv öppnar det.",
@@ -2084,7 +2099,7 @@ export const strings: Strings = {
     "Skicka foton från biblioteket och spara mottagen media. Utan den kan du fortfarande ta och skicka nya foton med kameran.",
   "settings.permissions.microphone": "Mikrofon",
   "settings.permissions.microphone_desc":
-    "Spela in och skicka röstmeddelanden eller använda direktröst. Utan den fungerar varken röstmeddelanden eller direktröst.",
+    "Spela in och skicka röstmeddelanden eller använd direktröst. Utan den fungerar varken röstmeddelanden eller direktröst.",
   "settings.permissions.allow": "Tillåt den här behörigheten",
   "settings.permissions.open_settings":
     "Öppna systeminställningarna för att ändra behörigheten",
@@ -2209,7 +2224,7 @@ export const strings: Strings = {
   "settings.transfer.connecting": "Ansluter till din nya telefon",
   "settings.transfer.connecting_hint":
     "Om den här telefonen ber om att få hitta enheter i ditt lokala nätverk, tillåt det.",
-  "settings.transfer.sending": "Flyttar {percent}%",
+  "settings.transfer.sending": "Flyttar {percent} %",
   "settings.transfer.keep_open":
     "Håll Airhop öppet på båda telefonerna tills det är klart.",
   "settings.transfer.finishing": "Slutför på din nya telefon",
@@ -2333,13 +2348,13 @@ export const strings: Strings = {
     "Uppdateringar är pausade medan internet är avstängt. Slå på {setting} i Inställningar.",
   "settings.version.check_failed":
     "Kunde inte söka efter uppdateringar. Kontrollera din uppkoppling och försök igen.",
-  "settings.version.downloading": "Laddar ner {percent}%",
+  "settings.version.downloading": "Laddar ner {percent} %",
   "settings.version.install": "Installera",
   "settings.version.download_failed":
     "Nedladdningen misslyckades. Kontrollera din anslutning och försök igen.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} är {size} KiB, över gränsen på {cap} KiB.",
+  "transfer.too_large": "{kind} är {size}, över gränsen på {cap}.",
   "transfer.failed.malformed":
     "En bilaga kom fram skadad och kunde inte öppnas. Be dem skicka den igen.",
   "transfer.failed.unsupported_type":
@@ -2349,10 +2364,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "En bilaga kom fram men kunde inte sparas. Kontrollera det lediga utrymmet.",
   "transfer.badge.waiting": "Väntar · {name}",
-  "transfer.badge.active_count": "{count} överföringar",
   "transfer.badge.sending": "Skickar {name}",
   "transfer.badge.receiving": "Tar emot {name}",
-  "transfer.badge.a11y": "{label}, {percent} procent. Öppna konversationen.",
   "transfer.kind.photo": "Foto",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Röstmeddelande",
@@ -2386,6 +2399,7 @@ export const strings: Strings = {
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Dokument",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Nytt meddelande",
   "notif.hidden.channel": "Ny aktivitet",
@@ -2397,6 +2411,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "för {count} minut sedan",
+    other: "för {count} minuter sedan",
+  },
+  "format.hours_ago": {
+    one: "för {count} timme sedan",
+    other: "för {count} timmar sedan",
+  },
+  "format.days_ago": {
+    one: "för {count} dag sedan",
+    other: "för {count} dagar sedan",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Visa {count} till",
@@ -2449,6 +2477,55 @@ export const plurals: Plurals = {
     other: "{count} talar",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "{count} till väntar på att skickas",
+    other: "{count} till väntar på att skickas",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} person på andra sidan bryggan",
+    other: "{count} personer på andra sidan bryggan",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Tillbaka, {count} oläst",
+    other: "Tillbaka, {count} olästa",
+  },
+  "chat.thread.notices_new": {
+    one: "Anslag för den här kanalen, {count} nytt",
+    other: "Anslag för den här kanalen, {count} nya",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Hoppa till senaste meddelandet, {count} nytt",
+    other: "Hoppa till senaste meddelandet, {count} nya",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} nytt brådskande anslag · öppna Anslag",
+    other: "{count} nya brådskande anslag · öppna Anslag",
+  },
+  "chat.info.add_count": {
+    one: "Lägg till {count}",
+    other: "Lägg till {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "bleknar om {count} timme",
+    other: "bleknar om {count} timmar",
+  },
+  "chat.notices.fades_in_days": {
+    one: "bleknar om {count} dag",
+    other: "bleknar om {count} dagar",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "{count} avisering i den här listan. Att rensa tar bort den bara härifrån, och meddelandet förblir oläst i sin konversation. Att markera allt som läst rensar båda.",
+    other:
+      "{count} aviseringar i den här listan. Att rensa tar bort dem bara härifrån, och meddelandena förblir olästa i sina konversationer. Att markera allt som läst rensar båda.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Rensa {count} avisering",
+    other: "Rensa alla {count} aviseringar",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} peer inom räckhåll",
@@ -2471,29 +2548,39 @@ export const plurals: Plurals = {
     other: "{count} medlemmar",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Meshbrygga på · {count} person på andra sidan bryggan",
+    other: "Meshbrygga på · {count} personer på andra sidan bryggan",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det myntet från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
+    one: "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det saldot från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
     other:
-      "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar de mynten från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
+      "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det saldot från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
+  },
+  "wallet.mint.split_across": {
+    one: "Saldot är uppdelat på {count} mint. Flytta det till en.",
+    other: "Saldot är uppdelat på {count} mintar. Flytta det till en.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} insättning väntar på betalning. Kontrolleras på nytt varje gång appen öppnas.",
+    one: "{count} påfyllning väntar på betalning. Kontrolleras på nytt varje gång appen öppnas.",
     other:
-      "{count} insättningar väntar på betalning. Kontrolleras på nytt varje gång appen öppnas.",
+      "{count} påfyllningar väntar på betalning. Kontrolleras på nytt varje gång appen öppnas.",
   },
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
-    one: "Återställde {count} obrukat mynt från {mints}.",
-    other: "Återställde {count} obrukade mynt från {mints}.",
+    one: "Återställde {count} oförbrukat mynt från {mints}.",
+    other: "Återställde {count} oförbrukade mynt från {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "{count} mynt hittades men var redan förbrukat, så inget krediterades för det. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",
+    one: "{count} mynt hittades men var redan förbrukat, så inget krediterades. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",
     other:
-      "{count} mynt hittades men var redan förbrukade, så inget krediterades för dem. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",
+      "{count} mynt hittades men var redan förbrukade, så inget krediterades. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2519,9 +2606,39 @@ export const plurals: Plurals = {
     other: "{count} mynt var redan förbrukade och har tagits bort.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} radiolänk öppen",
+    other: "{count} radiolänkar öppna",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} sekund",
+    other: "{count} sekunder",
+  },
+  "settings.network.custom_added": {
+    one: "{count} av {max} tillagt",
+    other: "{count} av {max} tillagda",
+  },
+  "settings.network.relay_limit": {
+    one: "Du kan lägga till {count} relä. Ta bort det för att lägga till ett annat.",
+    other:
+      "Du kan lägga till {count} reläer. Ta bort ett för att lägga till ett annat.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} överföring",
+    other: "{count} överföringar",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} procent. Öppna konversationen.",
+    other: "{label}, {count} procent. Öppna konversationen.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Någon i närheten",
+    "=1": "Någon i närheten",
+    one: "{count} person i närheten",
     other: "{count} personer i närheten",
   },
 };

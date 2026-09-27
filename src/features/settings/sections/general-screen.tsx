@@ -4,14 +4,17 @@
 // behave. Features first, then messages, then media, with reset kept apart at
 // the bottom.
 //
-// The two media rows sat under Storage & Data before, borrowed from where
-// WhatsApp and Signal keep theirs. Theirs gate downloads and bandwidth; these
-// do not. Upload quality picks how much detail to keep inside a fixed 512 KiB
-// budget, and Show media automatically only decides whether a photo already on
-// disk renders by itself. Neither saves a byte, so neither belongs on a screen
-// that reports usage.
+// The media rows are here rather than under Storage & Data, where WhatsApp and
+// Signal keep theirs: theirs gate downloads and bandwidth, and these save no
+// byte, so they do not belong on a screen that reports usage.
 
-import { useT, useTPlural, type TranslationKey, type Translator } from "@i18n";
+import {
+  useT,
+  useTPlural,
+  type PluralTranslator,
+  type TranslationKey,
+  type Translator,
+} from "@i18n";
 import {
   Feather,
   type FeatherIconName,
@@ -28,6 +31,7 @@ import {
   type UploadQuality,
 } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import { useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -74,11 +78,15 @@ const UNDO_OPTIONS: {
   },
 ];
 
-function undoLabel(T: Translator, seconds: number): string {
+function undoLabel(
+  T: Translator,
+  TP: PluralTranslator,
+  seconds: number,
+): string {
   const match = UNDO_OPTIONS.find((o) => o.value === seconds);
   return match
     ? T(match.labelKey)
-    : T("settings.general.undo_seconds", { count: seconds });
+    : TP("settings.general.undo_seconds", seconds);
 }
 
 const QUALITY_META: Record<
@@ -123,8 +131,7 @@ type FeatureKey = "ai" | "feeds";
 
 const FEATURES: {
   key: FeatureKey;
-  // "AI" and "Feeds" are product names for unshipped features, so the label is
-  // a key like everything else: several languages will want to translate
+  // A key even for a product name: several languages will want to translate
   // "Feeds", and none should be forced to.
   labelKey: TranslationKey;
   // Unused for "ai": that row renders a robot glyph from
@@ -201,9 +208,9 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         {/* Wallet's switch is locked on: the tab is part of what Airhop is,
             not something to switch off. */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.features")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               icon="credit-card"
@@ -245,9 +252,9 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.messages")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingLinkRow
               id="undo"
@@ -256,7 +263,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               description={T("settings.general.undo_desc")}
               control={
                 <Text style={styles.settingValue}>
-                  {undoLabel(T, undoSendSeconds)}
+                  {undoLabel(T, TP, undoSendSeconds)}
                 </Text>
               }
               onPress={() => setShowUndoSheet(true)}
@@ -265,7 +272,9 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("settings.group.media")}</Text>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.media")}
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingLinkRow
               id="media-quality"
@@ -313,7 +322,9 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("settings.group.reset")}</Text>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.reset")}
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingLinkRow
               id="reset"
@@ -374,7 +385,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         </View>
       </BottomSheet>
 
-      {/* Each option states its consequence: "14 days" says nothing alone. */}
       <BottomSheet
         visible={showRetentionSheet}
         onClose={() => setShowRetentionSheet(false)}

@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "오늘",
   "format.yesterday": "어제",
-  "format.minutes_ago": "{count}분 전",
-  "format.hours_ago": "{count}시간 전",
-  "format.days_ago": "{count}일 전",
   "format.just_now": "방금",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -251,6 +248,7 @@ export const strings: Strings = {
   "chat.group_badge": "그룹",
   "chat.more": "더 보기",
   "chat.no_messages": "아직 메시지가 없습니다",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "근처에 아무도 없음",
   "chat.presence.active_none": "활동 중인 사람 없음",
   "chat.you": "나",
@@ -324,6 +322,7 @@ export const strings: Strings = {
   "chat.jump.failed": "그 셀을 열지 못했습니다. 잠시 후 다시 시도하세요.",
   "chat.jump.title": "장소로 이동",
   "chat.jump.saved": "저장된 장소",
+  "chat.jump.nearby": "근처",
   "chat.jump.anywhere":
     "지금 있지 않은 곳이라도 어디든 공개 위치 채널을 엽니다.",
   "chat.jump.geohash_note":
@@ -333,7 +332,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level} 셀",
   "chat.jump.already_here":
     "이미 여기 있습니다. 이동을 누르면 {name} 채널이 열립니다.",
-  "chat.jump.open_direction": "{direction} 방향의 셀 열기",
+  "chat.jump.dir.n": "북",
+  "chat.jump.dir.ne": "북동",
+  "chat.jump.dir.e": "동",
+  "chat.jump.dir.se": "남동",
+  "chat.jump.dir.s": "남",
+  "chat.jump.dir.sw": "남서",
+  "chat.jump.dir.w": "서",
+  "chat.jump.dir.nw": "북서",
+  "chat.jump.open_n": "북쪽 셀 열기",
+  "chat.jump.open_ne": "북동쪽 셀 열기",
+  "chat.jump.open_e": "동쪽 셀 열기",
+  "chat.jump.open_se": "남동쪽 셀 열기",
+  "chat.jump.open_s": "남쪽 셀 열기",
+  "chat.jump.open_sw": "남서쪽 셀 열기",
+  "chat.jump.open_w": "서쪽 셀 열기",
+  "chat.jump.open_nw": "북서쪽 셀 열기",
   "chat.jump.open_place": "{name} 열기",
   "chat.jump.remove_place": "저장된 장소에서 {name} 제거",
   "chat.jump.go": "이동",
@@ -450,18 +464,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name} 취소",
   "chat.thread.hide_transfer": "진행 상황 숨기기",
   "chat.thread.hide_transfer_hint": "파일은 그대로 계속 받습니다",
-  "chat.thread.queued_more": "{count}개가 더 전송을 기다리는 중",
-  "chat.thread.across_bridge": "브리지 건너편에 {count}명",
   "chat.thread.bridged": "브리지됨",
   "chat.thread.invite_body":
     "Airhop의 {channel}에서 함께해요 — 오프라인 우선 비공개 메시 메시징.",
-  "chat.thread.go_back_unread": "뒤로 가기, 읽지 않음 {count}개",
   "chat.thread.view_info": "{name}의 정보 보기",
-  "chat.thread.notices_new": "이 채널의 공지, 새 항목 {count}개",
   "chat.board.urgent_one": "{author} 님의 긴급 공지 · {content}",
-  "chat.board.urgent_many": "새 긴급 공지 {count}개 · 공지 열기",
+  "chat.board.urgent_one_anon": "긴급 공지 · {content}",
   "chat.thread.say_something": "{channel}에서 한마디 하세요.",
-  "chat.thread.jump_latest_new": "최신 메시지로 이동, 새 항목 {count}개",
   "chat.thread.unconfirmed_since": "{date} 이후 전달이 확인되지 않음",
   "chat.thread.no_reach": "근처에 피어 없음 · 아직 아무도 받지 못했습니다",
   "chat.thread.channel_needs_internet":
@@ -477,7 +486,7 @@ export const strings: Strings = {
   "chat.thread.no_group_key":
     "이 그룹에 더 이상 속해 있지 않아 보낼 수 없습니다",
   "chat.thread.no_reach_offline":
-    "인터넷 꺼짐이고 근처에 피어도 없음 · 아직 아무도 받지 못했습니다",
+    "인터넷이 꺼져 있고 근처에 피어도 없음 · 아직 아무도 받지 못했습니다",
   "chat.thread.mention": "{name} 언급하기",
   "chat.thread.someone_talking": "{hold}. {name}이(가) 말하는 중입니다.",
   "chat.thread.attach_note":
@@ -496,7 +505,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "화면을 캡처했습니다 · 아무에게도 알리지 않았습니다",
   "chat.screenshot.heads_up": "알려드립니다",
-  "chat.screenshot.notice": "* {name}이(가) 화면을 캡처했습니다 *",
+  "chat.screenshot.peer_took": "{name} 님이 화면을 캡처했습니다",
   "chat.screenshot.notified_dm": "{name}에게 이 대화를 캡처했다고 알렸습니다.",
   "chat.screenshot.notified":
     "이 채널의 모두에게 화면을 캡처했다고 알렸습니다.",
@@ -541,7 +550,7 @@ export const strings: Strings = {
   "chat.attach.document": "문서",
   "chat.attach.document_desc": "아무 파일이나 PDF 보내기",
   "chat.attach.voice": "음성 메모",
-  "chat.attach.voice_desc": "음성 메시지를 녹음해 보내기",
+  "chat.attach.voice_desc": "음성 메모를 녹음해 보내기",
   "chat.attach.ecash": "ecash 보내기",
   "chat.attach.ecash_desc": "지갑에서 Cashu sats 보내기",
   "chat.attach.location": "위치",
@@ -549,12 +558,12 @@ export const strings: Strings = {
   "chat.attach.title": "첨부",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "위치를 공유했습니다",
+  "chat.location.sent_summary": "위치 공유됨",
   "chat.location.received_summary": "위치를 공유했습니다",
   "chat.location.title": "위치",
   "chat.location.away": "{distance} {direction}",
   "chat.location.accuracy": "±{distance}",
-  "chat.location.open_maps": "Maps에서 열기",
+  "chat.location.open_maps": "지도에서 열기",
   "chat.location.no_forward": "위치는 전달되지 않습니다",
   "chat.location.no_forward_body":
     "위치는 한 사람에게만 보냅니다. 다른 사람에게도 알리고 싶다면 내 위치를 직접 공유하세요.",
@@ -580,15 +589,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "북서쪽",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "벨을 울렸습니다",
+  "chat.ring.sent_summary": "벨 울림",
   "chat.ring.received_summary": "벨이 울렸습니다",
   "chat.ring.alert.title": "{sender}님이 벨을 울리고 있습니다",
   "chat.ring.alert.body": "메시지를 확인하세요",
   "chat.ring.alert.open": "열기",
   "chat.ring.alert.snooze": "1시간 동안 끄기",
-  "chat.ring.sent_snoozed": "벨 울림, 미룸",
-  "chat.ring.sent_too_soon": "벨 울림, 너무 이름",
-  "chat.ring.sent_not_allowed": "벨 울림, 허용되지 않음",
+  "chat.ring.sent_snoozed": "벨 울림 · 미룸",
+  "chat.ring.sent_too_soon": "벨 울림 · 너무 잦음",
+  "chat.ring.sent_not_allowed": "벨 울림 · 허용되지 않음",
   "chat.attach.send_anyway": "그래도 보내기",
   "chat.attach.bitchat_too_big": "도착하지 않을 수 있습니다",
   "chat.attach.bitchat_too_big_body":
@@ -661,6 +670,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "녹음을 멈추고 보내기",
   "chat.voice.lift_lock": "위로 밀면 손을 떼고 녹음",
   "chat.voice.live_speaking": "{name}이(가) 말하는 중",
+  "chat.voice.live_ended": "종료됨",
   "voice.unavailable": "실시간 음성을 사용할 수 없음",
   "voice.recording_stopped": "녹음이 중지되었습니다",
 
@@ -720,7 +730,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name} 제외",
   "chat.info.no_addable":
     "추가할 수 있는 피어가 없습니다. 멤버가 근처에 있어야 합니다.",
-  "chat.info.add_count": "{count}명 추가",
   "chat.info.teleported_tag": "{level}  ·  텔레포트",
   "chat.info.active": "활동 중",
   "chat.info.members": "멤버",
@@ -772,7 +781,7 @@ export const strings: Strings = {
   "chat.contact.peer_id": "피어 ID",
   "chat.contact.rename": "이름 바꾸기",
   "chat.contact.rename_needs_contact":
-    "키를 가지고 있는 사람만 이름을 바꿀 수 있습니다. 먼저 연락처 카드를 교환하면, 나에게만 보이는 이름을 붙일 수 있습니다.",
+    "키를 가지고 있는 상대에게만 이름을 붙일 수 있습니다. 먼저 연락처 카드를 교환하면, 나에게만 보이는 이름을 붙일 수 있습니다.",
   "chat.contact.rename_needs_keys":
     "이 연락처의 키가 아직 없습니다. 메시지를 보내거나 코드를 스캔하면 나에게만 보이는 이름을 붙일 수 있습니다.",
   "chat.contact.renamed_by_you": "내가 붙인 이름",
@@ -805,8 +814,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3일",
   "chat.notices.7_days": "7일",
   "chat.notices.fading": "사라지는 중",
-  "chat.notices.fades_in_hours": "{count}시간 후 사라짐",
-  "chat.notices.fades_in_days": "{count}일 후 사라짐",
   "chat.notices.scope_geo": "지오",
   "chat.notices.scope_mesh": "메시",
   "chat.notices.urgent_short": "긴급",
@@ -823,10 +830,20 @@ export const strings: Strings = {
   "chat.search.links": "링크",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "{filter}(으)로 필터",
-  "chat.search.no_matches": "“{query}”와(과) 일치하는 {filter} 없음",
-  "chat.search.no_media": "아직 {filter} 없음",
+  "chat.search.no_photos": "아직 사진 없음",
+  "chat.search.no_videos": "아직 동영상 없음",
+  "chat.search.no_audio": "아직 오디오 없음",
+  "chat.search.no_documents": "아직 문서 없음",
+  "chat.search.no_links": "아직 링크 없음",
+  "chat.search.no_ecash": "아직 ecash 없음",
+  "chat.search.no_photos_matching": "“{query}”와(과) 일치하는 사진 없음",
+  "chat.search.no_videos_matching": "“{query}”와(과) 일치하는 동영상 없음",
+  "chat.search.no_audio_matching": "“{query}”와(과) 일치하는 오디오 없음",
+  "chat.search.no_documents_matching": "“{query}”와(과) 일치하는 문서 없음",
+  "chat.search.no_links_matching": "“{query}”와(과) 일치하는 링크 없음",
+  "chat.search.no_ecash_matching": "“{query}”와(과) 일치하는 ecash 없음",
   "chat.search.result_a11y": "{chat}, {sender}의 {kind}",
-  "chat.search.you": "나",
+  "chat.search.result_mine_a11y": "{chat}, 내가 보낸 {kind}",
   "chat.search.section_chats": "채팅",
   "chat.search.section_messages": "메시지",
   "chat.search.section_notices": "공지",
@@ -834,15 +851,13 @@ export const strings: Strings = {
   "chat.search.no_results": "“{query}”에 대한 결과 없음",
   "chat.search.open_chat": "{name} 열기",
   "chat.search.message_a11y": "{chat}, {sender}의 메시지: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, 내 메시지: {snippet}",
   "chat.search.notice_a11y": "{chat}의 {author} 공지: {snippet}",
   "chat.search.urgent": "긴급 ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "이 목록에 {count}개가 있습니다. 지우면 여기서만 없어지고 메시지는 각 대화에서 읽지 않은 상태로 남습니다. 모두 읽음으로 표시하면 둘 다 정리됩니다.",
   "chat.notif.mark_all_read": "모두 읽음으로 표시",
   "chat.notif.clear_list": "목록 지우기",
-  "chat.notif.clear_all_a11y": "알림 {count}개 모두 지우기",
   "chat.notif.title": "알림",
   "chat.notif.clear_short": "지우기",
   "chat.notif.close": "알림 닫기",
@@ -865,12 +880,15 @@ export const strings: Strings = {
   "chat.forward.locations": "위치",
   "chat.forward.dms": "다이렉트 메시지",
   "chat.forward.none": "아직 다른 채팅이 없습니다",
+  "chat.forward.app_row": "전달되지 않음",
+  "chat.forward.app_row_body":
+    "이 줄은 사람이 아니라 Airhop이 작성한 것이므로 전달할 내용이 없습니다.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "메시를 시작하는 중…",
   "mesh.banner.no_bluetooth": "이 기기에 블루투스 없음 · 인터넷만 사용",
   "mesh.banner.bluetooth_off": "블루투스 꺼짐 · 메시 사용 불가",
-  "mesh.banner.bluetooth_off_wifi": "블루투스 꺼짐 · 메시는 WiFi로 동작 중",
+  "mesh.banner.bluetooth_off_wifi": "블루투스 꺼짐 · 메시는 Wi-Fi로 동작 중",
   "mesh.banner.permission_needed": "블루투스 권한이 필요합니다",
   "mesh.banner.blocked": "블루투스 차단됨 · 설정에서 허용하세요",
   "mesh.banner.location_permission": "피어를 찾으려면 위치가 필요합니다",
@@ -898,7 +916,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "메시 브리지 켜짐 · 공개 채팅 연결됨",
   "mesh.banner.background_limits":
     "{brand}이(가) 백그라운드에서 메시를 일시 중지할 수 있습니다",
-  "mesh.banner.bridge_across": "메시 브리지 켜짐 · 브리지 건너편에 {count}명",
   "mesh.banner.action.turn_on": "켜기",
   "mesh.banner.action.allow": "허용",
   "mesh.banner.action.resume": "재개",
@@ -971,7 +988,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "피어 {name} 보기, 온라인",
   "mesh.peer.view_relay_online": "피어 {name} 보기, 온라인, 릴레이 노드",
   "mesh.peer.last_seen_at": "마지막 확인: {ago}",
-  "mesh.peer.send_amount": "{amount} sats 보내기",
+  "mesh.peer.send_unit_amount": "{amount} {unit} 보내기",
   "mesh.peer.direct": "직접 연결",
   "mesh.peer.check_distance": "거리 확인",
   "mesh.peer.checking": "확인하는 중",
@@ -1044,7 +1061,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "이 토큰은 너무 많은 코인으로 나뉘어 QR 코드에 담기지 않습니다. 대신 공유하거나 복사하세요.",
   "wallet.send.scan_note":
-    "상대방이 자기 지갑에서 이것을 스캔하게 하세요. 전달 완료로 표시하기 전까지는 회수할 수 있습니다.",
+    "상대방이 자기 지갑에서 이것을 스캔하게 하세요. 받은 것으로 표시하기 전까지는 회수할 수 있습니다.",
   "wallet.send.mesh_note":
     "토큰은 메시를 통해 암호화된 DM으로 나갑니다. 인터넷이 필요 없습니다.",
   "wallet.send.no_peers_note":
@@ -1065,7 +1082,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "지갑에서 열기",
   "wallet.send.to_peer": "근처 피어에게 토큰 보내기",
   "wallet.send.to_peer_short": "피어에게 보내기",
-  "wallet.send.mark_delivered": "전달 완료로 표시하고 마치기",
+  "wallet.send.mark_delivered": "받은 것으로 표시",
   "wallet.send.they_got_it": "상대방이 받았습니다",
   "wallet.send.keep_pending": "이 전송을 대기 상태로 두기",
   "wallet.send.decide_later": "나중에 결정",
@@ -1089,9 +1106,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "{mint}에서 교환했습니다. 이제 증명 가능하게 내 것이며, 보낸 사람이 가진 이 토큰의 사본은 더 이상 작동하지 않습니다.",
-  "wallet.receive.stored_pending":
-    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다{dleq}. 온라인이 되면 민트에서 자동으로 확인됩니다.",
-  "wallet.receive.dleq_inline": " (서명은 확인되므로 토큰 자체는 진짜입니다)",
+  "wallet.receive.pending_unconfirmed":
+    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 서명이 확인되므로 토큰은 진짜입니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
   "wallet.receive.dleq_ok": "민트의 서명이 확인되므로 토큰은 진짜입니다.",
   "wallet.receive.dleq_uncached":
     "민트의 키가 여기에 캐시되어 있지 않아 서명을 오프라인에서 확인하지 못했습니다.",
@@ -1139,7 +1157,7 @@ export const strings: Strings = {
     "{mint}을(를) 지갑에서 제거할까요? 캐시된 키도 함께 사라지므로 이 민트의 토큰을 오프라인에서 검증할 수 없게 됩니다.",
   "wallet.mint.title": "민트",
   "wallet.mint.none_desc":
-    "민트는 ecash를 발행하고 환전합니다. Lightning으로 충전하거나 그 민트의 토큰을 받으려면 추가하세요.",
+    "민트는 ecash를 발행하고 교환합니다. Lightning으로 충전하거나 그 민트의 토큰을 받으려면 추가하세요.",
   "wallet.mint.add": "민트 추가",
   "wallet.mint.add_body":
     "민트는 ecash를 뒷받침하는 Bitcoin을 보유하므로, 거기 둘 잔액을 맡길 만큼 신뢰하는 곳을 고르세요. URL은 저장하기 전에 확인합니다. 아무도 신뢰하고 싶지 않다면 Nutshell로 직접 운영하세요.",
@@ -1153,8 +1171,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "모든 잔액을 한 민트로 옮기기",
   "wallet.mint.confirm_with": "{mint}에서 잔액 확인",
   "wallet.mint.available_amount": "{amount} {unit} 사용 가능",
-  "wallet.mint.split_across":
-    "잔액이 민트 {count}곳에 나뉘어 있습니다. 한 곳으로 옮기세요.",
   "wallet.mint.move_everything_to": "모두 {mint}(으)로 옮기기",
   "wallet.mint.consolidate_title": "한 민트로 옮기기",
   "wallet.mint.moving": "옮기는 중…",
@@ -1165,10 +1181,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "옮겨진 것이 없습니다",
   "wallet.mint.move_pending": "이동 중",
   "wallet.mint.deposit_pending":
-    "{amount} {unit}이(가) {mint}에서 나와 {target}(으)로 가는 중입니다. 입금을 받으면 도착하며, 지갑이 계속 재시도합니다.",
+    "{amount} {unit}이(가) {mint}에서 나와 {target}(으)로 가는 중입니다. 이체를 받으면 도착하며, 지갑이 계속 재시도합니다.",
   "wallet.mint.destination": "· 대상",
   "wallet.mint.will_move": "· 옮겨질 예정",
   "wallet.mint.issued_by": "발행처",
+  "wallet.mint.test_badge": "테스트",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop 지갑 충전",
@@ -1194,7 +1211,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "최대 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} 결제",
-  "wallet.ln.deposit_title": "Lightning으로 입금",
+  "wallet.ln.deposit_title": "Lightning으로 충전",
   "wallet.ln.amount_placeholder": "sats 단위 금액",
   "wallet.ln.requesting": "요청하는 중…",
   "wallet.ln.get_invoice": "인보이스 받기",
@@ -1315,7 +1332,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "민트에 따르면 이 토큰은 이미 교환되었으므로, {amount} {unit}은(는) 상대에게 도착했고 잔액으로 돌아온 것은 없습니다.",
   "wallet.copied.token_body":
-    "토큰이 클립보드에 있습니다. 전달 완료로 표시하기 전까지는 여기 예약된 채로 남으므로, 첫 시도가 실패하면 다시 붙여넣을 수 있습니다.",
+    "토큰이 클립보드에 있습니다. 받은 것으로 표시하기 전까지는 여기 예약된 채로 남으므로, 첫 시도가 실패하면 다시 붙여넣을 수 있습니다.",
   "wallet.copied.refused_token_body":
     "토큰이 클립보드에 있습니다. 이 지갑에서는 더 이상 계산하지 않으므로 보낸 사람에게 돌려줄 수 있습니다.",
   "wallet.copied.phrase_body":
@@ -1342,8 +1359,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "이 토큰을 QR 코드로 표시",
   "wallet.pending.copy_again": "토큰 다시 복사",
   "wallet.pending.share_again": "토큰 다시 공유",
-  "wallet.pending.mark_delivered": "이 토큰을 전달 완료로 표시",
-  "wallet.pending.delivered": "전달됨",
+  "wallet.pending.mark_delivered": "받은 것으로 표시",
+  "wallet.pending.delivered": "받음",
   "wallet.pending.reclaim_into": "이 토큰을 잔액으로 회수",
   "wallet.activity.title": "활동",
   "wallet.activity.none": "아직 없음",
@@ -1361,7 +1378,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "실패",
   "wallet.activity.status_reclaimed": "회수됨",
   "wallet.activity.status_expired": "만료됨",
-  "wallet.activity.ln_deposit": "Lightning 입금",
+  "wallet.activity.ln_deposit": "Lightning 충전",
   "wallet.activity.ln_withdrawal": "Lightning 출금",
   "wallet.activity.nutzap_received": "Nutzap 받음",
   "wallet.activity.nutzap_claiming": "Nutzap 받는 중",
@@ -1404,7 +1421,13 @@ export const strings: Strings = {
     "잠긴 결제는 회수할 수 없습니다. 이제 이 코인들은 상대의 키로만 쓸 수 있습니다.",
   "wallet.pay.reclaimable":
     "도착했음을 확인하기 전까지는 활동에서 회수할 수 있습니다.",
-  "wallet.pay.why": "{reason} 때문에 이 방법으로 보냈습니다.",
+  "wallet.pay.why_no_relay": "릴레이 연결이 없어서 이 방법으로 보냈습니다.",
+  "wallet.pay.why_no_shared_mint":
+    "상대가 받는 어느 민트에도 잔액이 충분하지 않아서 이 방법으로 보냈습니다.",
+  "wallet.pay.why_no_nutzap_info":
+    "받는 사람이 nutzap 정보(NIP-61 kind 10019)를 게시하지 않아서 이 방법으로 보냈습니다.",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{name}에게 {amount} {unit}",
   "wallet.pay.thread_receipt":
     "{amount} {unit}을(를) 상대의 키에 잠가 보냈습니다.",
@@ -1419,7 +1442,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "상대의 키에 잠깁니다. 보낸 뒤에는 되돌릴 수 없습니다.",
   "wallet.pay.confirm_reclaimable":
-    "상대가 받기 전까지는 활동에서 되찾을 수 있습니다.",
+    "상대가 받기 전까지는 활동에서 회수할 수 있습니다.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "카메라 접근",
@@ -1547,19 +1570,19 @@ export const strings: Strings = {
     "차감된 것은 없습니다. 다시 시도하면 지갑이 다른 조합을 고릅니다.",
   "wallet.svc.no_ecash": "아직 ecash가 없습니다.",
   "wallet.svc.no_ecash_body":
-    "민트를 추가하고 Lightning으로 입금하거나, 누군가에게 토큰을 받으세요.",
+    "민트를 추가하고 Lightning으로 충전하거나, 누군가에게 토큰을 받으세요.",
   "wallet.svc.split_across_mints": "잔액이 여러 민트에 나뉘어 있습니다.",
   "wallet.svc.mint_says_spent":
     "민트가 이 ecash를 이미 사용된 것으로 보고했습니다.",
   "wallet.svc.issue_against_invoice": "Lightning 인보이스를 근거로 ecash 발행",
   "wallet.svc.pay_invoice": "Lightning 인보이스 결제",
-  "wallet.svc.unknown_deposit": "알 수 없는 입금입니다.",
+  "wallet.svc.unknown_deposit": "알 수 없는 충전입니다.",
   "wallet.svc.invoice_expired_before":
     "결제되기 전에 인보이스가 만료되었습니다.",
   "wallet.svc.invoice_expired": "그 인보이스는 만료되었습니다.",
   "wallet.svc.invoice_unpaid": "인보이스가 아직 결제되지 않았습니다.",
-  "wallet.svc.payment_unknown":
-    "결제 상태를 알 수 없습니다. 다음 새로 고침에서 다시 확인합니다.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} 결제 상태를 알 수 없습니다. 다음 새로 고침에서 다시 확인합니다.",
   "wallet.svc.melt_change_pending": "인보이스가 결제되었습니다.",
   "wallet.svc.melt_change_pending_body":
     "민트가 쓰이지 않은 라우팅 수수료를 아직 돌려주지 않았습니다. 다음 새로 고침에서 자동으로 회수하며, 그동안 잃는 것은 없습니다.",
@@ -1588,7 +1611,7 @@ export const strings: Strings = {
   "wallet.svc.have_tried_send":
     "{total} {unit}을(를) 보유한 상태에서 {amount}을(를) 보내려 했습니다.",
   "wallet.svc.invoice_needs":
-    "이 인보이스는 라우팅 예약분을 포함해 {total} {unit}이 필요한데, 보유액은 {balance}입니다.",
+    "이 인보이스는 라우팅 예약분을 포함해 {total} {unit}이(가) 필요한데, 보유액은 {balance}입니다.",
   "wallet.svc.nothing_to_move": "{mint}에는 옮길 {unit}이(가) 없습니다.",
   "wallet.svc.consolidate_memo": "{mint}에서 통합",
   "wallet.svc.cannot_size_detail":
@@ -1598,23 +1621,19 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "그 결제는 사용하지 않는 민트를 지목합니다.",
   "wallet.svc.unknown_mint_body":
     "신뢰한다면 그 민트를 직접 먼저 추가하세요. 선택하지 않은 민트에서는 아무것도 교환하지 않습니다.",
-  "wallet.svc.no_relay": "릴레이 연결 없음",
-  "wallet.svc.no_shared_mint": "잔액이 충분한 공통 민트 없음",
-  "wallet.svc.no_nutzap_info":
-    "받는 사람이 nutzap 정보를 게시하지 않음 (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "상대의 키에 잠겼지만 아직 전달되지 않았습니다. 이 거래의 토큰을 공유해 마무리하세요.",
   "wallet.svc.swap_lost":
     "민트가 이 교환을 끝내지 않아 그에 대해 발행된 것이 없습니다.",
   "wallet.svc.mint_lost":
-    "민트가 이 입금을 발행했지만 코인을 다시 만들지 못했습니다. 복구 문구로 복원하면 되찾을 수 있습니다.",
+    "민트가 이 충전을 발행했지만 코인을 다시 만들지 못했습니다. 복구 문구로 복원하면 되찾을 수 있습니다.",
   "wallet.svc.swap_unreadable":
     "이 교환은 이 버전이 다시 처리할 수 없는 형식으로 저장되었습니다.",
   "wallet.svc.lock_in_doubt": "이 결제가 처리되었는지 알 수 없습니다.",
   "wallet.svc.lock_in_doubt_body":
     "다른 것은 보내지지 않았습니다. 민트가 결과를 확인할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 활동에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
   "wallet.svc.send_spent_by_swap":
-    "이 토큰을 받기 전에 코인이 스왑되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
+    "이 토큰을 받기 전에 코인이 교환되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR로 확인됨",
@@ -1731,7 +1750,7 @@ export const strings: Strings = {
   "settings.section.privacy_desc": "순방향 비밀성, 서명된 패킷, 차단된 피어",
   "settings.section.network": "네트워크 및 릴레이",
   "settings.section.network_desc":
-    "인터넷 대체 경로, nostr 릴레이, bitchat 호환성",
+    "인터넷 대체 경로, Nostr 릴레이, bitchat 호환성",
   "settings.section.permissions": "권한",
   "settings.section.permissions_desc": "블루투스, 위치, 알림, 카메라, 마이크",
   "settings.section.storage": "저장 공간 및 데이터",
@@ -1777,12 +1796,10 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "신호 측정값 없음",
   "settings.diag.no_peers": "범위 내에 아무도 없음",
-  "settings.diag.no_peers_desc": "무선 링크 {links}개 열림",
   "settings.diag.gcs_size": "필터 크기",
   "settings.diag.gcs_size_desc": "전파에 실어 보낸 가장 큰 동기화 필터",
   "settings.diag.fpr": "거짓 양성 비율",
   "settings.diag.fpr_desc": "우리에게 없는 패킷을 있다고 필터가 주장하는 빈도",
-  "settings.diag.bytes": "{n} 바이트",
   "settings.diag.footnote":
     "여기서는 아무것도 바꿀 수 없습니다. Airhop이 bitchat과 계속 호환되도록 이 값들은 고정되어 있습니다.",
   "settings.diag.share": "진단 정보 공유",
@@ -1802,7 +1819,6 @@ export const strings: Strings = {
   "settings.general.undo": "보내기 취소",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "지갑",
-  "settings.general.undo_seconds": "{count}초",
   "settings.general.undo_a11y": "보내기 취소: {value}",
   "settings.general.quality_a11y": "업로드 품질을 {value}(으)로 설정",
   "settings.general.undo_desc":
@@ -1892,7 +1908,6 @@ export const strings: Strings = {
   "settings.network.custom": "사용자 릴레이",
   "settings.network.custom_desc":
     "위치 채널과 메시 브리지에 쓸 릴레이를 직접 추가하세요",
-  "settings.network.custom_added": "{max}개 중 {count}개 추가됨",
   "settings.network.dm_relays": "메시지 릴레이",
   "settings.network.dm_relays_desc":
     "다이렉트 메시지와 비공개 채널은 항상 이 릴레이를 사용합니다. 사용자 릴레이는 이를 바꾸지 않습니다.",
@@ -1902,17 +1917,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "릴레이 추가",
   "settings.network.remove_relay": "{url} 제거",
   "settings.network.add_short": "추가",
-  "settings.network.relay_limit":
-    "릴레이는 {count}개까지 추가할 수 있습니다. 하나를 제거해야 다른 것을 추가할 수 있습니다.",
   "settings.network.relay_duplicate": "그 릴레이는 이미 목록에 있습니다.",
   "settings.network.relay_invalid":
     "relay.example.com 같은 올바른 릴레이 호스트를 입력하세요. 포트는 릴레이가 기본값을 쓰지 않을 때만 필요합니다. IP 주소와 로컬 이름은 허용되지 않습니다.",
   "settings.network.lan": "로컬 네트워크",
   "settings.network.lan_desc":
-    "같은 WiFi에 있는 사람에게 연결합니다. iPhone과 Android 사이에서도 됩니다. 네트워크의 다른 기기는 당신이 Airhop을 쓰고 있다는 것을 볼 수 있습니다.",
+    "같은 Wi-Fi에 있는 사람에게 연결합니다. iPhone과 Android 사이에서도 됩니다. 네트워크의 다른 기기는 내가 Airhop을 쓰고 있다는 것을 볼 수 있습니다.",
   "settings.network.lan_searching": "이 네트워크에 Airhop 기기가 없습니다",
   "settings.network.lan_active": "이 네트워크에서 연결됨",
-  "settings.network.lan_unavailable": "WiFi 네트워크에 있지 않습니다",
+  "settings.network.lan_unavailable": "Wi-Fi 네트워크에 있지 않습니다",
   "settings.network.lan_permission":
     "Airhop의 로컬 네트워크 접근이 꺼져 있습니다",
   "settings.network.lan_unsupported": "이 기기에서는 사용할 수 없습니다",
@@ -1935,7 +1948,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action": "이 iPhone을 검색 가능하게 하기",
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware를 지금은 사용할 수 없습니다",
-  "settings.network.wifi_pair_forget": "Settings 앱에서 페어링 제거",
+  "settings.network.wifi_pair_forget": "설정 앱에서 페어링 제거",
   "settings.network.bitchat": "bitchat 호환성",
   "settings.network.bitchat_desc":
     "bitchat과 동일한 BLE 메시로 완전히 상호 운용됩니다. 항상 켜져 있으며 끌 수 없습니다.",
@@ -1999,9 +2012,9 @@ export const strings: Strings = {
   "settings.tor.mode_custom": "사용자 브리지",
   "settings.tor.mode_custom_desc":
     "bridges.torproject.org에서 받은 obfs4 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
-  "settings.tor.custom_placeholder": "한 줄에 브리지 한 줄씩 붙여넣기",
+  "settings.tor.custom_placeholder": "한 줄에 브리지 라인 하나씩 붙여넣기",
   "settings.tor.custom_apply_hint": "연결하려면 입력란 밖을 누르세요.",
-  "settings.tor.custom_empty": "먼저 브리지 줄을 하나 이상 추가하세요.",
+  "settings.tor.custom_empty": "먼저 브리지 라인을 하나 이상 추가하세요.",
   "settings.tor.recovered":
     "Tor가 지난번에 시작을 마치지 못해 인터넷 트래픽이 일시 중지되었습니다. 다시 시도하거나, Tor를 끄고 Tor 없이 온라인에 연결하세요.",
   "settings.tor.retry": "다시 시도",
@@ -2055,7 +2068,7 @@ export const strings: Strings = {
     "라이브러리의 사진을 보내고 받은 미디어를 저장합니다. 이것이 없어도 카메라로 새 사진을 찍어 보낼 수 있습니다.",
   "settings.permissions.microphone": "마이크",
   "settings.permissions.microphone_desc":
-    "음성 메시지를 녹음해 보내거나 실시간 음성을 사용합니다. 이것이 없으면 음성 메시지와 실시간 음성이 작동하지 않습니다.",
+    "음성 메모를 녹음해 보내거나 실시간 음성을 사용합니다. 이것이 없으면 음성 메모와 실시간 음성이 작동하지 않습니다.",
   "settings.permissions.allow": "이 권한 허용",
   "settings.permissions.open_settings": "이 권한을 바꾸려면 시스템 설정 열기",
   "settings.permissions.system": "시스템",
@@ -2297,7 +2310,7 @@ export const strings: Strings = {
     "다운로드에 실패했습니다. 연결을 확인한 후 다시 시도하세요.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind}이(가) {size} KiB로 {cap} KiB 제한을 넘습니다.",
+  "transfer.too_large": "{kind}이(가) {size}(으)로 {cap} 제한을 넘습니다.",
   "transfer.failed.malformed":
     "첨부 파일이 손상된 상태로 도착해 열 수 없었습니다. 상대방에게 다시 보내달라고 하세요.",
   "transfer.failed.unsupported_type":
@@ -2307,10 +2320,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "첨부 파일이 도착했지만 저장하지 못했습니다. 여유 공간을 확인하세요.",
   "transfer.badge.waiting": "대기 중 · {name}",
-  "transfer.badge.active_count": "전송 {count}건",
   "transfer.badge.sending": "{name} 보내는 중",
   "transfer.badge.receiving": "{name} 받는 중",
-  "transfer.badge.a11y": "{label}, {percent} 퍼센트. 대화 열기.",
   "transfer.kind.photo": "사진",
   "transfer.kind.video": "동영상",
   "transfer.kind.voice": "음성 메모",
@@ -2339,10 +2350,11 @@ export const strings: Strings = {
   "notif.notice": "공지 · {content}",
   "notif.incoming_file": "수신 중인 파일",
   "notif.preview.photo": "📷 사진",
-  "notif.preview.voice": "🎤 음성 메시지",
+  "notif.preview.voice": "🎤 음성 메모",
   "notif.preview.video": "🎥 동영상",
   "notif.preview.document": "📄 문서",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "새 메시지",
   "notif.hidden.channel": "새 활동",
@@ -2354,6 +2366,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count}분 전",
+  },
+  "format.hours_ago": {
+    other: "{count}시간 전",
+  },
+  "format.days_ago": {
+    other: "{count}일 전",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "{count}개 더 보기",
@@ -2394,6 +2417,44 @@ export const plurals: Plurals = {
     other: "{count}명이 말하는 중",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "{count}개가 더 전송을 기다리는 중",
+  },
+  "chat.thread.across_bridge": {
+    other: "브리지 건너편에 {count}명",
+  },
+  "chat.thread.go_back_unread": {
+    other: "뒤로 가기, 읽지 않음 {count}개",
+  },
+  "chat.thread.notices_new": {
+    other: "이 채널의 공지, 새 항목 {count}개",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "최신 메시지로 이동, 새 메시지 {count}개",
+  },
+  "chat.board.urgent_many": {
+    other: "새 긴급 공지 {count}개 · 공지 열기",
+  },
+  "chat.info.add_count": {
+    other: "{count}명 추가",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "{count}시간 후 사라짐",
+  },
+  "chat.notices.fades_in_days": {
+    other: "{count}일 후 사라짐",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "이 목록에 알림 {count}개가 있습니다. 지우면 여기서만 없어지고 메시지는 각 대화에서 읽지 않은 상태로 남습니다. 모두 읽음으로 표시하면 둘 다 정리됩니다.",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "알림 {count}개 모두 지우기",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "범위 내 피어 {count}명",
@@ -2411,16 +2472,24 @@ export const plurals: Plurals = {
     other: "멤버 {count}명",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "메시 브리지 켜짐 · 브리지 건너편에 {count}명",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint}이(가) 코인 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 해당 코인이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
+      "{mint}이(가) 코인 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 그 잔액이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
+  },
+  "wallet.mint.split_across": {
+    other: "잔액이 민트 {count}곳에 나뉘어 있습니다. 한 곳으로 옮기세요.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
     other:
-      "입금 {count}건이 결제를 기다리고 있습니다. 앱을 열 때마다 다시 확인합니다.",
+      "충전 {count}건이 결제를 기다리고 있습니다. 앱을 열 때마다 다시 확인합니다.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2450,8 +2519,32 @@ export const plurals: Plurals = {
     other: "코인 {count}개가 이미 사용되어 제거되었습니다.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "무선 링크 {count}개 열림",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count}초",
+  },
+  "settings.network.custom_added": {
+    other: "{max}개 중 {count}개 추가됨",
+  },
+  "settings.network.relay_limit": {
+    other:
+      "릴레이는 {count}개까지 추가할 수 있습니다. 하나를 제거해야 다른 것을 추가할 수 있습니다.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "전송 {count}건",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}, {count}퍼센트. 대화 열기.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "근처에 누군가 있음",
     other: "근처에 {count}명",
   },
 };

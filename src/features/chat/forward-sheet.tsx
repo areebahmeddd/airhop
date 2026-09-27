@@ -11,11 +11,11 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
-
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import {
   DISABLED_OPACITY,
   FontSize,
@@ -163,7 +163,9 @@ export default function ForwardSheet({
         ) : (
           sections.map((section) => (
             <View key={section.kind} style={styles.section}>
-              <Text style={styles.sectionHeader}>{T(section.titleKey)}</Text>
+              <UpperText style={styles.sectionHeader}>
+                {T(section.titleKey)}
+              </UpperText>
               <View style={styles.group}>
                 {section.data.map((item, i) => {
                   const kind = kindOf(item);
@@ -254,7 +256,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
       letterSpacing: 0.6,
-      textTransform: "uppercase",
       paddingHorizontal: Spacing.sm,
       paddingBottom: Spacing.xs,
     },

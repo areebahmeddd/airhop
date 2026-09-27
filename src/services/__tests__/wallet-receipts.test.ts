@@ -323,6 +323,8 @@ describe("settling a reclaim", () => {
     expect(row(send.txId)?.status).toBe("failed");
     expect(row(send.txId)?.token).toMatch(/^cashuB/);
     expect(row(send.txId)?.error).toBe(t("wallet.svc.reclaim_refused"));
+    // Airhop's words, so kept by key for the language the wallet is read in.
+    expect(row(send.txId)?.errorKey).toBe("wallet.svc.reclaim_refused");
   });
 
   it("reads as sent when the refresh finds the recipient redeemed it first", async () => {

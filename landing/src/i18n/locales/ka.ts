@@ -204,14 +204,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "არც ინტერნეტი, არც როუტერი, იმ ტელეფონებზე, რომლებიც ხალხს უკვე აქვს.",
   "home.features.networking.lan.name": "ლოკალური ქსელი",
-  "home.features.networking.lan.line": "საერთო WiFi ან ჰოტსპოტი, iPhone და Android ერთად.",
+  "home.features.networking.lan.line": "საერთო Wi-Fi ან ჰოტსპოტი, iPhone და Android ერთად.",
   "home.features.networking.hops.name": "მრავალსაფეხურიანი რელე",
   "home.features.networking.hops.line":
     "ყოველი ტელეფონი შეტყობინებებს გადასცემს, შვიდ საფეხურამდე.",
   "home.features.networking.bridge.name": "მეშ-ხიდი",
   "home.features.networking.bridge.line":
     "აკავშირებს თქვენს საჯარო მიმოწერას ახლომდებარე, მიწვდომის მიღმა მყოფ ჯგუფთან.",
-  "home.features.networking.wifi.name": "WiFi-ის სწრაფი გზა",
+  "home.features.networking.wifi.name": "Wi-Fi-ის სწრაფი გზა",
   "home.features.networking.wifi.line": "უფრო სწრაფი გადაცემა ორ Android-ს ან ორ iPhone-ს შორის.",
   "home.features.networking.bitchat.name": "bitchat-თან თავსებადი",
   "home.features.networking.bitchat.line":

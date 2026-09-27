@@ -106,7 +106,7 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-Retired, never to be reused: `0x30 VIDEO_FRAME` (a same-platform WiFi path, so never cross-platform; video ships as a file) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
+Retired, never to be reused: `0x30 VIDEO_FRAME` (a same-platform Wi-Fi path, so never cross-platform; video ships as a file) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
 
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 

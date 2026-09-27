@@ -61,17 +61,11 @@ const SETTING_ICON_WIDTH = 22;
 // label, never to the icon.
 const ROW_LABEL_INSET = SETTING_ICON_WIDTH + Spacing.base + Spacing.sm;
 
-// One theme-reactive StyleSheet shared by the settings hub and every
-// sub-screen, so light/dark mode stays pixel-for-pixel consistent across
-// all of them. Call useSharedStyles() inside any component that needs it.
 export function useSharedStyles() {
   const Colors = useThemeColors();
-  // RN's Modal renders outside the screen's own SafeAreaView, so the bottom
-  // sheet's fixed padding alone doesn't clear a device's gesture-nav inset.
-  // Taller sheets (e.g. the panic-wipe confirm, which stacks an icon, title,
-  // a two-line subtitle, and a button row) can end up with their actions
-  // sitting under the system bar. Bake the real inset into `sheet` itself so
-  // every bottom sheet stays clear of it.
+  // RN's Modal renders outside the screen's own SafeAreaView, so the sheet's
+  // fixed padding alone leaves a tall sheet's actions under the gesture-nav
+  // bar. The real inset is baked into `sheet` so every bottom sheet clears it.
   const insets = useSafeAreaInsets();
   return useMemo(() => {
     const base = createStyles(Colors);
@@ -124,8 +118,8 @@ export function SettingsHighlightProvider({
 // The scroll body every settings screen puts under its header, and the only
 // thing that can scroll a highlighted row into view.
 //
-// `contentContainerStyle` is excluded: the content box moved onto a real View
-// inside, so passing one would be silently ignored. Every other ScrollView prop
+// `contentContainerStyle` is excluded: the content box is a real View inside,
+// so passing one would be silently ignored. Every other ScrollView prop
 // passes through, which is how the hub keeps its scroll-position bookkeeping.
 export const SettingsScroll = React.forwardRef<
   ScrollView,
@@ -331,13 +325,13 @@ export function SettingLinkRow({
 // ---- SettingSwitch: the one switch every settings row uses ----
 
 // RN's Switch defaults are tuned for a light canvas, so the palette is set
-// here once rather than per row. The thumb stays white in both themes: on
-// dark it was reading as a hole punched in the green track, and against the
-// off-track it all but vanished. The off-track uses borderStrong so the
-// control still has a visible outline sitting on a surface-colored row.
-// A disabled switch is dimmed rather than recolored: it still reads as on or
-// off at a glance, just plainly not yours to change. RN greys the control
-// inconsistently across platforms, so the opacity is set here.
+// here once rather than per row. The thumb stays white in both themes: a dark
+// thumb reads as a hole punched in the green track and vanishes against the
+// off-track. The off-track uses borderStrong so the control keeps a visible
+// outline on a surface-colored row.
+// A disabled switch is dimmed rather than recolored, so it still reads as on
+// or off at a glance. RN greys the control inconsistently across platforms,
+// so the opacity is set here.
 export function SettingSwitch({
   style,
   ...props
@@ -384,9 +378,7 @@ export function SubHeader({
       >
         <Feather name={chevronBack} size={24} color={Colors.textPrimary} />
       </Pressable>
-      {/* The screen's name, so a screen reader announces where the drill-in
-          landed. Twelve sub-screens share this header and none of them was
-          exposing a heading. */}
+      {/* A heading, so a screen reader announces where the drill-in landed. */}
       <Text style={styles.subHeaderTitle} accessibilityRole="header">
         {title}
       </Text>
@@ -413,7 +405,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       paddingHorizontal: Spacing.base,
       // minHeight, so a wrapped title at large system font is not clipped.
-      // Shared by every settings sub-screen.
       minHeight: 56,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: Colors.border,
@@ -447,7 +438,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
       paddingHorizontal: Spacing.xs,
     },
     settingsGroup: {
@@ -463,8 +453,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       marginStart: ROW_LABEL_INSET,
     },
     // A row with a description is comfortably past the touch floor already; one
-    // without (a bare label plus a switch, which is most of Network and General)
-    // came to ~39pt. The minimum only ever affects those.
+    // without (a bare label plus a switch) comes to about 39pt. The minimum only
+    // ever affects those.
     settingRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -604,8 +594,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     sheetBtnPrimaryPressed: {
       opacity: PRESSED_OPACITY,
     },
-    // A sheet whose option list is longer than the sheet. The language picker
-    // ships with ten entries and targets thirty, so it scrolls from the start
+    // A sheet whose option list is longer than the sheet, such as the language
+    // picker.
     sheetScroll: {
       width: "100%",
       maxHeight: 380,

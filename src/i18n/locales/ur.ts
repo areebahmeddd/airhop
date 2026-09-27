@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "آج",
   "format.yesterday": "کل",
-  "format.minutes_ago": "{count} منٹ پہلے",
-  "format.hours_ago": "{count} گھنٹے پہلے",
-  "format.days_ago": "{count} دن پہلے",
   "format.just_now": "ابھی ابھی",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -255,6 +252,7 @@ export const strings: Strings = {
   "chat.group_badge": "گروپ",
   "chat.more": "مزید",
   "chat.no_messages": "ابھی کوئی پیغام نہیں",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "قریب کوئی نہیں",
   "chat.presence.active_none": "کوئی سرگرم نہیں",
   "chat.you": "آپ",
@@ -326,6 +324,7 @@ export const strings: Strings = {
   "chat.jump.failed": "وہ خانہ نہ کھل سکا۔ تھوڑی دیر میں دوبارہ کوشش کریں۔",
   "chat.jump.title": "کسی جگہ جائیں",
   "chat.jump.saved": "محفوظ جگہیں",
+  "chat.jump.nearby": "قریب",
   "chat.jump.anywhere":
     "کسی بھی جگہ کا عوامی مقامی چینل کھولیں، اُس جگہ کا بھی جہاں آپ نہیں ہیں۔",
   "chat.jump.geohash_note":
@@ -335,7 +334,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level} درجے کا خانہ",
   "chat.jump.already_here":
     "آپ پہلے ہی یہاں ہیں۔ جائیں آپ کا {name} چینل کھولے گا۔",
-  "chat.jump.open_direction": "اپنے {direction} والا خانہ کھولیں",
+  "chat.jump.dir.n": "شمال",
+  "chat.jump.dir.ne": "شمال مشرق",
+  "chat.jump.dir.e": "مشرق",
+  "chat.jump.dir.se": "جنوب مشرق",
+  "chat.jump.dir.s": "جنوب",
+  "chat.jump.dir.sw": "جنوب مغرب",
+  "chat.jump.dir.w": "مغرب",
+  "chat.jump.dir.nw": "شمال مغرب",
+  "chat.jump.open_n": "شمال کی طرف والا خانہ کھولیں",
+  "chat.jump.open_ne": "شمال مشرق کی طرف والا خانہ کھولیں",
+  "chat.jump.open_e": "مشرق کی طرف والا خانہ کھولیں",
+  "chat.jump.open_se": "جنوب مشرق کی طرف والا خانہ کھولیں",
+  "chat.jump.open_s": "جنوب کی طرف والا خانہ کھولیں",
+  "chat.jump.open_sw": "جنوب مغرب کی طرف والا خانہ کھولیں",
+  "chat.jump.open_w": "مغرب کی طرف والا خانہ کھولیں",
+  "chat.jump.open_nw": "شمال مغرب کی طرف والا خانہ کھولیں",
   "chat.jump.open_place": "{name} کھولیں",
   "chat.jump.remove_place": "{name} کو محفوظ جگہوں سے ہٹائیں",
   "chat.jump.go": "جائیں",
@@ -452,18 +466,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name} منسوخ کریں",
   "chat.thread.hide_transfer": "پیش رفت چھپائیں",
   "chat.thread.hide_transfer_hint": "فائل پھر بھی پہنچ جائے گی",
-  "chat.thread.queued_more": "مزید {count} بھیجے جانے کے منتظر",
-  "chat.thread.across_bridge": "پل کے پار {count}",
   "chat.thread.bridged": "پل سے گزرا",
   "chat.thread.invite_body":
     "Airhop پر {channel} میں میرے ساتھ شامل ہوں — نجی میش پیغام رسانی، پہلے آف لائن۔",
-  "chat.thread.go_back_unread": "واپس جائیں، {count} غیر پڑھے",
   "chat.thread.view_info": "{name} کی معلومات دیکھیں",
-  "chat.thread.notices_new": "اس چینل کے اعلانات، {count} نئے",
   "chat.board.urgent_one": "{author} کی طرف سے فوری اعلان · {content}",
-  "chat.board.urgent_many": "{count} نئے فوری اعلانات · اعلانات کھولیں",
+  "chat.board.urgent_one_anon": "فوری اعلان · {content}",
   "chat.thread.say_something": "{channel} میں کچھ کہیں۔",
-  "chat.thread.jump_latest_new": "تازہ ترین پیغام پر جائیں، {count} نئے",
   "chat.thread.unconfirmed_since": "{date} سے کوئی پہنچنے کی تصدیق نہیں",
   "chat.thread.no_reach": "قریب کوئی پیئر نہیں · ابھی کسی کو یہ نہیں ملا",
   "chat.thread.channel_needs_internet":
@@ -499,7 +508,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "آپ نے اسکرین تصویر لی · کسی کو نہیں بتایا گیا",
   "chat.screenshot.heads_up": "خبردار",
-  "chat.screenshot.notice": "* {name} نے اسکرین تصویر لی *",
+  "chat.screenshot.peer_took": "{name} نے اسکرین تصویر لی",
   "chat.screenshot.notified_dm":
     "{name} کو بتا دیا گیا کہ آپ نے اس گفتگو کی اسکرین تصویر لی۔",
   "chat.screenshot.notified":
@@ -544,7 +553,7 @@ export const strings: Strings = {
   "chat.attach.document": "دستاویز",
   "chat.attach.document_desc": "کوئی بھی فائل یا PDF بھیجیں",
   "chat.attach.voice": "صوتی نوٹ",
-  "chat.attach.voice_desc": "صوتی پیغام ریکارڈ کر کے بھیجیں",
+  "chat.attach.voice_desc": "صوتی نوٹ ریکارڈ کر کے بھیجیں",
   "chat.attach.ecash": "ecash بھیجیں",
   "chat.attach.ecash_desc": "اپنے بٹوے سے Cashu کے sat بھیجیں",
   "chat.attach.location": "مقام",
@@ -552,7 +561,7 @@ export const strings: Strings = {
   "chat.attach.title": "منسلک کریں",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "ایک مقام شیئر کیا",
+  "chat.location.sent_summary": "مقام شیئر کیا گیا",
   "chat.location.received_summary": "اپنا مقام شیئر کیا",
   "chat.location.title": "مقام",
   "chat.location.away": "{distance} {direction} کی جانب",
@@ -583,15 +592,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "شمال مغرب",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "گھنٹی بجائی",
+  "chat.ring.sent_summary": "گھنٹی بھیجی گئی",
   "chat.ring.received_summary": "آپ کو گھنٹی بجائی",
   "chat.ring.alert.title": "{sender} آپ کو گھنٹی بجا رہے ہیں",
   "chat.ring.alert.body": "اپنے پیغامات دیکھیں",
   "chat.ring.alert.open": "کھولیں",
   "chat.ring.alert.snooze": "1 گھنٹے کے لیے ملتوی کریں",
-  "chat.ring.sent_snoozed": "گھنٹی بجائی، مؤخر",
-  "chat.ring.sent_too_soon": "گھنٹی بجائی، بہت جلدی",
-  "chat.ring.sent_not_allowed": "گھنٹی بجائی، اجازت نہیں",
+  "chat.ring.sent_snoozed": "گھنٹی بھیجی گئی · مؤخر",
+  "chat.ring.sent_too_soon": "گھنٹی بھیجی گئی · بہت جلدی",
+  "chat.ring.sent_not_allowed": "گھنٹی بھیجی گئی · اجازت نہیں",
   "chat.attach.send_anyway": "پھر بھی بھیجیں",
   "chat.attach.bitchat_too_big": "شاید یہ نہ پہنچے",
   "chat.attach.bitchat_too_big_body":
@@ -665,6 +674,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "ریکارڈنگ روکیں اور بھیجیں",
   "chat.voice.lift_lock": "ہاتھ آزاد ریکارڈنگ کے لیے اوپر سرکائیں",
   "chat.voice.live_speaking": "{name} بول رہے ہیں",
+  "chat.voice.live_ended": "ختم",
   "voice.unavailable": "براہ راست آواز دستیاب نہیں",
   "voice.recording_stopped": "ریکارڈنگ روک دی گئی",
 
@@ -724,7 +734,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name} نکالیں",
   "chat.info.no_addable":
     "شامل کرنے کو کوئی قابل رسائی پیئر نہیں۔ ارکان کا قریب ہونا ضروری ہے۔",
-  "chat.info.add_count": "{count} شامل کریں",
   "chat.info.teleported_tag": "{level}  ·  منتقل شدہ",
   "chat.info.active": "سرگرم",
   "chat.info.members": "ارکان",
@@ -809,8 +818,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 دن",
   "chat.notices.7_days": "7 دن",
   "chat.notices.fading": "مٹ رہا ہے",
-  "chat.notices.fades_in_hours": "{count} گھنٹے میں مٹ جائے گا",
-  "chat.notices.fades_in_days": "{count} دن میں مٹ جائے گا",
   "chat.notices.scope_geo": "جیو",
   "chat.notices.scope_mesh": "میش",
   "chat.notices.urgent_short": "فوری",
@@ -827,10 +834,21 @@ export const strings: Strings = {
   "chat.search.links": "ربط",
   "chat.search.ecash": "ecash",
   "chat.search.filter_by": "{filter} سے چھانیں",
-  "chat.search.no_matches": "”{query}“ سے میل کھاتا کوئی {filter} نہیں",
-  "chat.search.no_media": "ابھی کوئی {filter} نہیں",
+  "chat.search.no_photos": "ابھی کوئی تصویر نہیں",
+  "chat.search.no_videos": "ابھی کوئی ویڈیو نہیں",
+  "chat.search.no_audio": "ابھی کوئی آڈیو نہیں",
+  "chat.search.no_documents": "ابھی کوئی دستاویز نہیں",
+  "chat.search.no_links": "ابھی کوئی ربط نہیں",
+  "chat.search.no_ecash": "ابھی کوئی ecash نہیں",
+  "chat.search.no_photos_matching": "”{query}“ سے میل کھاتی کوئی تصویر نہیں",
+  "chat.search.no_videos_matching": "”{query}“ سے میل کھاتی کوئی ویڈیو نہیں",
+  "chat.search.no_audio_matching": "”{query}“ سے میل کھاتا کوئی آڈیو نہیں",
+  "chat.search.no_documents_matching":
+    "”{query}“ سے میل کھاتی کوئی دستاویز نہیں",
+  "chat.search.no_links_matching": "”{query}“ سے میل کھاتا کوئی ربط نہیں",
+  "chat.search.no_ecash_matching": "”{query}“ سے میل کھاتا کوئی ecash نہیں",
   "chat.search.result_a11y": "{chat}، {sender} کی طرف سے {kind}",
-  "chat.search.you": "آپ",
+  "chat.search.result_mine_a11y": "{chat}، آپ کی طرف سے {kind}",
   "chat.search.section_chats": "چیٹس",
   "chat.search.section_messages": "پیغامات",
   "chat.search.section_notices": "اعلانات",
@@ -839,15 +857,13 @@ export const strings: Strings = {
   "chat.search.no_results": "”{query}“ کا کوئی نتیجہ نہیں",
   "chat.search.open_chat": "{name} کھولیں",
   "chat.search.message_a11y": "{chat}، {sender} کا پیغام: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}، آپ کا پیغام: {snippet}",
   "chat.search.notice_a11y": "{chat} میں {author} کا اعلان: {snippet}",
   "chat.search.urgent": "فوری ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "اس فہرست میں {count} ہیں۔ صاف کرنے سے یہ صرف یہاں سے ہٹتے ہیں، اور پیغام اپنی گفتگو میں غیر پڑھے ہی رہتے ہیں۔ سب کو پڑھا ہوا نشان زد کرنے سے دونوں صاف ہو جاتے ہیں۔",
   "chat.notif.mark_all_read": "سب کو پڑھا ہوا نشان زد کریں",
   "chat.notif.clear_list": "فہرست صاف کریں",
-  "chat.notif.clear_all_a11y": "تمام {count} اطلاعات صاف کریں",
   "chat.notif.title": "اطلاعات",
   "chat.notif.clear_short": "صاف کریں",
   "chat.notif.close": "اطلاعات بند کریں",
@@ -870,12 +886,15 @@ export const strings: Strings = {
   "chat.forward.locations": "مقامات",
   "chat.forward.dms": "براہ راست پیغامات",
   "chat.forward.none": "ابھی کوئی اور چیٹ نہیں",
+  "chat.forward.app_row": "آگے نہیں بھیجا گیا",
+  "chat.forward.app_row_body":
+    "یہ سطر کسی شخص کی نہیں بلکہ Airhop کی طرف سے ہے، اس لیے آگے بھیجنے کو کچھ نہیں۔",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "میش شروع ہو رہی ہے…",
   "mesh.banner.no_bluetooth": "اس آلے پر بلوٹوتھ نہیں · صرف انٹرنیٹ",
   "mesh.banner.bluetooth_off": "بلوٹوتھ بند · میش دستیاب نہیں",
-  "mesh.banner.bluetooth_off_wifi": "بلوٹوتھ بند · میش WiFi پر چل رہا ہے",
+  "mesh.banner.bluetooth_off_wifi": "بلوٹوتھ بند · میش Wi-Fi پر چل رہا ہے",
   "mesh.banner.permission_needed": "بلوٹوتھ کی اجازت درکار ہے",
   "mesh.banner.blocked": "بلوٹوتھ مسدود · ترتیبات میں اس کی اجازت دیں",
   "mesh.banner.location_permission": "پیئرز ڈھونڈنے کے لیے مقام درکار ہے",
@@ -890,7 +909,7 @@ export const strings: Strings = {
     "صفائی ادھوری · کچھ ڈیٹا رہ سکتا ہے، دوبارہ کھولنے پر پھر کوشش ہو گی",
   "mesh.banner.identity_elsewhere":
     "آپ کی شناخت کسی دوسرے فون پر بھی ہے · جو فون آپ استعمال نہیں کرتے، اسے صاف کریں",
-  "mesh.banner.wifi_off": "وائی فائی بند · بڑی فائلیں سست بھیجی جائیں گی",
+  "mesh.banner.wifi_off": "Wi-Fi بند · بڑی فائلیں سست بھیجی جائیں گی",
   "mesh.banner.clock_skew":
     "اس فون کی گھڑی غلط ہے · تاریخ اور وقت خودکار پر رکھیں",
   "mesh.banner.internet_off": "انٹرنیٹ بند · صرف بلوٹوتھ",
@@ -904,7 +923,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "میش پل چالو · عوامی چیٹ جڑ گئی",
   "mesh.banner.background_limits":
     "{brand} پس منظر میں میش کو موقوف کر سکتا ہے",
-  "mesh.banner.bridge_across": "میش پل چالو · پل کے پار {count}",
   "mesh.banner.action.turn_on": "چالو کریں",
   "mesh.banner.action.allow": "اجازت دیں",
   "mesh.banner.action.resume": "جاری رکھیں",
@@ -978,7 +996,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "پیئر {name} دیکھیں، آن لائن",
   "mesh.peer.view_relay_online": "پیئر {name} دیکھیں، آن لائن، ریلے نوڈ",
   "mesh.peer.last_seen_at": "آخری بار دیکھا گیا {ago}",
-  "mesh.peer.send_amount": "{amount} sat بھیجیں",
+  "mesh.peer.send_unit_amount": "{amount} {unit} بھیجیں",
   "mesh.peer.direct": "براہ راست تعلق",
   "mesh.peer.check_distance": "فاصلہ جانچیں",
   "mesh.peer.checking": "جانچا جا رہا ہے",
@@ -1006,7 +1024,7 @@ export const strings: Strings = {
   "wallet.balance.offline":
     "آف لائن۔ آپ اب بھی قریبی لوگوں کو ادائیگی کر سکتے ہیں اور ٹوکن بھیج سکتے ہیں۔",
   "wallet.balance.internet_off":
-    "انٹرنیٹ بند ہے، اس لیے والیٹ صرف قریب کام کرتا ہے۔ ٹکسالوں تک پہنچنے کے لیے ترتیبات میں {setting} آن کریں۔",
+    "انٹرنیٹ بند ہے، اس لیے بٹوہ صرف قریب کام کرتا ہے۔ ٹکسالوں تک پہنچنے کے لیے ترتیبات میں {setting} آن کریں۔",
   "wallet.balance.unconfirmed_note": "{amount} ابھی ٹکسال سے تصدیق شدہ نہیں",
   "wallet.balance.reserved_note":
     "{amount} راستے میں موجود ایک ترسیل کے لیے مختص",
@@ -1020,15 +1038,15 @@ export const strings: Strings = {
   "wallet.choose.paste": "ٹوکن پیسٹ کریں",
   "wallet.choose.paste_desc": "آف لائن بھی چلتا ہے",
   "wallet.choose.scan": "QR کوڈ اسکین کریں",
-  "wallet.choose.scan_desc": "کسی بھی والیٹ کا Cashu ٹوکن",
+  "wallet.choose.scan_desc": "کسی بھی بٹوے کا Cashu ٹوکن",
   "wallet.choose.topup": "Lightning سے ٹاپ اپ",
-  "wallet.choose.topup_desc": "کسی بھی Lightning والیٹ سے بل ادا کریں",
+  "wallet.choose.topup_desc": "کسی بھی Lightning بٹوے سے بل ادا کریں",
   "wallet.choose.token": "ٹوکن بنائیں",
   "wallet.choose.token_desc": "شیئر کریں یا QR کوڈ دکھائیں، آف لائن بھی",
   "wallet.choose.zap": "کسی Nostr رابطے کو zap بھیجیں",
   "wallet.choose.zap_desc": "ان کے npub پر، انٹرنیٹ کے ذریعے",
   "wallet.choose.invoice": "Lightning بل ادا کریں",
-  "wallet.choose.invoice_desc": "کسی بھی Lightning والیٹ میں نکالیں",
+  "wallet.choose.invoice_desc": "کسی بھی Lightning بٹوے میں نکالیں",
   "wallet.choose.tor_paused": "Tor آن ہونے تک رکا ہوا ہے",
   "wallet.choose.offline": "انٹرنیٹ درکار ہے",
   "wallet.choose.internet_off": "انٹرنیٹ بند ہے",
@@ -1049,7 +1067,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "یہ ٹوکن اتنے سکوں میں بٹا ہوا ہے کہ QR کوڈ میں نہیں سماتا۔ اس کے بجائے اسے شیئر یا کاپی کریں۔",
   "wallet.send.scan_note":
-    "انہیں کہیں کہ یہ اپنے بٹوے سے اسکین کریں۔ جب تک آپ اسے پہنچا ہوا نشان زد نہ کریں، یہ واپس لیا جا سکتا ہے۔",
+    "انہیں کہیں کہ یہ اپنے بٹوے سے اسکین کریں۔ جب تک آپ اسے موصول شدہ نشان زد نہ کریں، یہ واپس لیا جا سکتا ہے۔",
   "wallet.send.mesh_note":
     "ٹوکن میش پر ایک خفیہ براہ راست پیغام کے طور پر جاتا ہے۔ انٹرنیٹ درکار نہیں۔",
   "wallet.send.no_peers_note":
@@ -1070,7 +1088,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "بٹوے میں کھولیں",
   "wallet.send.to_peer": "ٹوکن کسی قریبی پیئر کو بھیجیں",
   "wallet.send.to_peer_short": "پیئر کو بھیجیں",
-  "wallet.send.mark_delivered": "پہنچا ہوا نشان زد کریں اور ختم کریں",
+  "wallet.send.mark_delivered": "موصول شدہ نشان زد کریں",
   "wallet.send.they_got_it": "انہیں مل گیا",
   "wallet.send.keep_pending": "یہ ترسیل زیر التوا رہنے دیں",
   "wallet.send.decide_later": "بعد میں فیصلہ کریں",
@@ -1094,10 +1112,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n”{memo}“",
   "wallet.receive.redeemed_at":
     "{mint} پر بھنا لیا گیا۔ اب یہ ثابت شدہ طور پر آپ کا ہے: بھیجنے والے کے پاس اس ٹوکن کی نقل اب کام نہیں کرتی۔",
-  "wallet.receive.stored_pending":
-    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا{dleq}۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
-  "wallet.receive.dleq_inline":
-    " (اس کا دستخط تو ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے)",
+  "wallet.receive.pending_unconfirmed":
+    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ اس کا دستخط درست ہے، سو ٹوکن اصلی ہے۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
   "wallet.receive.dleq_ok": "ٹکسال کا دستخط ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے۔",
   "wallet.receive.dleq_uncached":
     "ٹکسال کی کلیدیں یہاں موجود نہیں، اس لیے دستخط آف لائن جانچا نہ جا سکا۔",
@@ -1160,8 +1178,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "تمام بیلنس ایک ٹکسال میں منتقل کریں",
   "wallet.mint.confirm_with": "{mint} کے ساتھ بیلنس چیک کریں",
   "wallet.mint.available_amount": "{amount} {unit} دستیاب",
-  "wallet.mint.split_across":
-    "بیلنس {count} ٹکسالوں میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
   "wallet.mint.move_everything_to": "سب کچھ {mint} میں منتقل کریں",
   "wallet.mint.consolidate_title": "ایک ٹکسال میں منتقل کریں",
   "wallet.mint.moving": "منتقل ہو رہا ہے…",
@@ -1172,10 +1188,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "کچھ منتقل نہیں ہوا",
   "wallet.mint.move_pending": "راستے میں ہے",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} {mint} سے نکل چکے ہیں اور {target} کی طرف راستے میں ہیں۔ جمع وصول ہوتے ہی پہنچ جائیں گے، اور والیٹ کوشش جاری رکھتا ہے۔",
+    "{amount} {unit} {mint} سے نکل چکے ہیں اور {target} کی طرف راستے میں ہیں۔ منتقلی لیے جاتے ہی پہنچ جائیں گے، اور بٹوہ کوشش جاری رکھتا ہے۔",
   "wallet.mint.destination": "· منزل",
   "wallet.mint.will_move": "· منتقل کیا جائے گا",
   "wallet.mint.issued_by": "جاری کردہ",
+  "wallet.mint.test_badge": "آزمائشی",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop بٹوے میں رقم ڈالنا",
@@ -1201,7 +1218,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} تک",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ادا کریں",
-  "wallet.ln.deposit_title": "Lightning سے جمع کرنا",
+  "wallet.ln.deposit_title": "Lightning سے ٹاپ اپ",
   "wallet.ln.amount_placeholder": "sat میں رقم",
   "wallet.ln.requesting": "درخواست دی جا رہی ہے…",
   "wallet.ln.get_invoice": "بل حاصل کریں",
@@ -1233,7 +1250,7 @@ export const strings: Strings = {
     "آپ کے پاس پہلے ہی ایک بحالی فقرہ ہے۔ کوئی دوسرا بحال کرنے سے وہ بدل جائے گا۔ جو سکے پرانا فقرہ پہلے ہی سنبھالے ہوئے تھا وہ اس آلے پر خرچ ہوتے رہیں گے، مگر بحال نہیں ہو سکیں گے، سو آگے بڑھنے سے پہلے یقینی بنائیں کہ پرانے الفاظ لکھے ہوئے ہیں۔",
   "wallet.backup.replace": "بدلیں",
   "wallet.backup.replace_unseen_body":
-    "اس والیٹ میں پہلے سے ایک ریکوری فریز موجود ہے، جو سیٹ اپ کے وقت آپ کے لیے بنایا گیا تھا، اور آپ کے سکے اسی سے بنے ہیں۔ کوئی اور فریز ریسٹور کرنے سے یہ ہمیشہ کے لیے بدل جائے گا۔ سکے اس ڈیوائس پر خرچ کیے جا سکیں گے اور ہر منٹ کے اگلی بار ریفریش ہونے پر نئے فریز کے تحت آ جائیں گے۔",
+    "اس بٹوے میں پہلے سے ایک بحالی کا فقرہ موجود ہے، جو ترتیب کے وقت آپ کے لیے بنایا گیا تھا، اور آپ کے سکے اسی کے تحت بنے ہیں۔ کوئی دوسرا فقرہ بحال کرنے سے یہ ہمیشہ کے لیے بدل جائے گا۔ سکے اس آلے پر خرچ کیے جا سکیں گے اور ہر ٹکسال کے اگلی بار تازہ ہونے پر نئے فقرے کے تحت آ جائیں گے۔",
   "wallet.backup.invalid_phrase": "وہ فقرہ درست نہیں",
   "wallet.backup.invalid_phrase_body":
     "فقرے میں ایک اندرونی جانچ رقم ہوتی ہے اور یہ اس پر پورا نہیں اترتا۔ کوئی غلط لکھا، چھوٹا ہوا یا آگے پیچھے ہوا لفظ ڈھونڈیں۔",
@@ -1323,7 +1340,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "ٹکسال کے مطابق یہ ٹوکن پہلے ہی بھنایا جا چکا ہے، اس لیے {amount} {unit} ان تک پہنچ گئے اور آپ کے بیلنس میں کچھ واپس نہیں آیا۔",
   "wallet.copied.token_body":
-    "ٹوکن آپ کے کلپ بورڈ پر ہے۔ جب تک آپ اسے پہنچا ہوا نشان زد نہ کریں یہ یہاں مختص رہتا ہے، سو پہلی کوشش ناکام ہو تو آپ اسے دوبارہ چسپاں کر سکتے ہیں۔",
+    "ٹوکن آپ کے کلپ بورڈ پر ہے۔ جب تک آپ اسے موصول شدہ نشان زد نہ کریں یہ یہاں مختص رہتا ہے، سو پہلی کوشش ناکام ہو تو آپ اسے دوبارہ چسپاں کر سکتے ہیں۔",
   "wallet.copied.refused_token_body":
     "ٹوکن آپ کے کلپ بورڈ پر ہے۔ یہ بٹوہ اب اسے شمار نہیں کرتا، سو آپ اسے بھیجنے والے کو واپس دے سکتے ہیں۔",
   "wallet.copied.phrase_body":
@@ -1348,8 +1365,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "یہ ٹوکن QR کوڈ کے طور پر دکھائیں",
   "wallet.pending.copy_again": "ٹوکن دوبارہ کاپی کریں",
   "wallet.pending.share_again": "ٹوکن دوبارہ شیئر کریں",
-  "wallet.pending.mark_delivered": "اس ٹوکن کو پہنچا ہوا نشان زد کریں",
-  "wallet.pending.delivered": "پہنچ گیا",
+  "wallet.pending.mark_delivered": "موصول شدہ نشان زد کریں",
+  "wallet.pending.delivered": "موصول",
   "wallet.pending.reclaim_into": "یہ ٹوکن اپنے بیلنس میں واپس لیں",
   "wallet.activity.title": "سرگرمی",
   "wallet.activity.none": "ابھی کچھ نہیں",
@@ -1367,7 +1384,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "ناکام",
   "wallet.activity.status_reclaimed": "واپس لیا گیا",
   "wallet.activity.status_expired": "مدت ختم",
-  "wallet.activity.ln_deposit": "Lightning جمع",
+  "wallet.activity.ln_deposit": "Lightning ٹاپ اپ",
   "wallet.activity.ln_withdrawal": "Lightning نکاسی",
   "wallet.activity.nutzap_received": "nutzap موصول",
   "wallet.activity.nutzap_claiming": "Nutzap، لیا جا رہا ہے",
@@ -1410,14 +1427,21 @@ export const strings: Strings = {
     "بندھی ہوئی ادائیگیاں واپس نہیں لی جا سکتیں: اب یہ سکے صرف ان کی کلید خرچ کر سکتی ہے۔",
   "wallet.pay.reclaimable":
     "جب تک آپ تصدیق نہ کریں کہ یہ پہنچ گیا، سرگرمی سے اسے واپس لیا جا سکتا ہے۔",
-  "wallet.pay.why": "اس راستے سے بھیجا گیا کیونکہ {reason}۔",
+  "wallet.pay.why_no_relay":
+    "اس راستے سے بھیجا گیا کیونکہ کوئی ریلے تعلق نہیں تھا۔",
+  "wallet.pay.why_no_shared_mint":
+    "اس راستے سے بھیجا گیا کیونکہ ان کی قبول کردہ کسی بھی ٹکسال میں آپ کے پاس کافی رقم نہیں۔",
+  "wallet.pay.why_no_nutzap_info":
+    "اس راستے سے بھیجا گیا کیونکہ وصول کنندہ نے nutzap معلومات شائع نہیں کیں (NIP-61 kind 10019)۔",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} برائے {name}",
   "wallet.pay.thread_receipt":
     "آپ نے {amount} {unit} بھیجے، ان کی کلید سے بندھے ہوئے۔",
   "wallet.pay.title": "ecash بھیجیں",
   "wallet.pay.to": "برائے {name}",
   "wallet.pay.amount": "sat میں رقم",
-  "wallet.pay.memo": "نوٹ (اختیاری، عوامی)",
+  "wallet.pay.memo": "یادداشت (اختیاری، عوامی)",
   "wallet.pay.send": "بھیجیں",
   "wallet.pay.sending": "بھیجا جا رہا ہے…",
   "wallet.pay.action": "ecash بھیجیں",
@@ -1555,17 +1579,17 @@ export const strings: Strings = {
     "کچھ بھی کاٹا نہیں گیا۔ دوبارہ کوشش کریں اور بٹوہ کوئی اور مجموعہ چن لے گا۔",
   "wallet.svc.no_ecash": "ابھی کوئی ecash نہیں۔",
   "wallet.svc.no_ecash_body":
-    "ٹکسال شامل کریں اور Lightning سے جمع کریں، یا کسی سے ٹوکن وصول کریں۔",
+    "ٹکسال شامل کریں اور Lightning سے ٹاپ اپ کریں، یا کسی سے ٹوکن وصول کریں۔",
   "wallet.svc.split_across_mints": "آپ کا بیلنس کئی ٹکسالوں میں بٹا ہوا ہے۔",
   "wallet.svc.mint_says_spent": "ٹکسال نے اس ecash کو پہلے سے خرچ شدہ بتایا۔",
   "wallet.svc.issue_against_invoice": "Lightning بل کے بدلے ecash جاری کرنا",
   "wallet.svc.pay_invoice": "Lightning بل ادا کرنا",
-  "wallet.svc.unknown_deposit": "نامعلوم جمع۔",
+  "wallet.svc.unknown_deposit": "نامعلوم ٹاپ اپ۔",
   "wallet.svc.invoice_expired_before": "ادا ہونے سے پہلے بل کی مدت ختم ہو گئی۔",
   "wallet.svc.invoice_expired": "اس بل کی مدت ختم ہو گئی۔",
   "wallet.svc.invoice_unpaid": "بل ابھی ادا نہیں ہوا۔",
-  "wallet.svc.payment_unknown":
-    "ادائیگی کی حالت نامعلوم؛ اگلی بار تازہ کرنے پر دوبارہ جانچی جائے گی۔",
+  "wallet.svc.payment_unknown_after":
+    "{reason} ادائیگی کی حالت نامعلوم؛ اگلی بار تازہ کرنے پر دوبارہ جانچی جائے گی۔",
   "wallet.svc.melt_change_pending": "آپ کا بل ادا ہو گیا۔",
   "wallet.svc.melt_change_pending_body":
     "ٹکسال نے غیر استعمال شدہ رخ بندی فیس ابھی واپس نہیں کی۔ اگلی بار تازہ کرنے پر یہ خود لے لی جاتی ہے، اور اس دوران کچھ ضائع نہیں ہوتا۔",
@@ -1605,23 +1629,19 @@ export const strings: Strings = {
     "وہ ادائیگی ایسی ٹکسال کا نام لیتی ہے جو آپ استعمال نہیں کرتے۔",
   "wallet.svc.unknown_mint_body":
     "اگر آپ اس پر بھروسا کرتے ہیں تو ٹکسال خود شامل کریں؛ جو ٹکسال آپ نے نہ چنی ہو اس سے کچھ نہیں بھنایا جاتا۔",
-  "wallet.svc.no_relay": "کوئی ریلے تعلق نہیں",
-  "wallet.svc.no_shared_mint": "کافی بیلنس والی کوئی مشترکہ ٹکسال نہیں",
-  "wallet.svc.no_nutzap_info":
-    "وصول کنندہ نے nutzap معلومات شائع نہیں کیں (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "ان کی کلید سے بندھا مگر ابھی پہنچا نہیں۔ اسے مکمل کرنے کے لیے اس لین دین کا ٹوکن شیئر کریں۔",
   "wallet.svc.swap_lost":
     "ٹکسال نے یہ تبادلہ کبھی مکمل نہ کیا، سو اس کے بدلے کچھ جاری نہیں ہوا۔",
   "wallet.svc.mint_lost":
-    "منٹ نے یہ ڈپازٹ جاری کیا، لیکن اس کے سکے دوبارہ نہیں بن سکے۔ اپنے ریکوری فقرے سے بحال کرنے پر وہ واپس مل جاتے ہیں۔",
+    "ٹکسال نے یہ ٹاپ اپ جاری کیا، لیکن اس کے سکے دوبارہ نہیں بن سکے۔ اپنے بحالی کے فقرے سے بحال کرنے پر وہ واپس مل جاتے ہیں۔",
   "wallet.svc.swap_unreadable":
     "یہ تبادلہ ایسی شکل میں محفوظ ہوا جسے یہ نسخہ دوبارہ نہیں چلا سکتا۔",
   "wallet.svc.lock_in_doubt": "یہ ادائیگی ہوئی یا نہیں، یقینی نہیں۔",
   "wallet.svc.lock_in_doubt_body":
     "اور کچھ نہیں بھیجا گیا۔ جب تک ٹکسال نتیجے کی تصدیق نہ کرے، سکے روکے گئے ہیں۔ اگر ادائیگی ہو گئی تو لاک ٹوکن حوالے کرنے کے لیے سرگرمی میں دکھائی دے گا۔ ورنہ سکے واپس آ جائیں گے۔",
   "wallet.svc.send_spent_by_swap":
-    "یہ ٹوکن وصول ہونے سے پہلے ہی یہ سکے سویپ ہو کر آپ کے والیٹ میں واپس آ گئے، اس لیے اب اسے وصول نہیں کیا جا سکتا۔ رقم آپ کے بیلنس میں ہے۔",
+    "یہ ٹوکن لیے جانے سے پہلے ہی یہ سکے تبدیل ہو کر آپ کے بٹوے میں واپس آ گئے، اس لیے اب اسے لیا نہیں جا سکتا۔ رقم آپ کے بیلنس میں ہے۔",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR سے تصدیق شدہ",
@@ -1740,7 +1760,7 @@ export const strings: Strings = {
     "Forward secrecy، دستخط شدہ پیکٹ، مسدود پیئرز",
   "settings.section.network": "نیٹ ورک اور ریلے",
   "settings.section.network_desc":
-    "انٹرنیٹ کا متبادل، nostr ریلے، bitchat سے ہم آہنگی",
+    "انٹرنیٹ کا متبادل، Nostr ریلے، bitchat سے ہم آہنگی",
   "settings.section.permissions": "اجازتیں",
   "settings.section.permissions_desc":
     "بلوٹوتھ، مقام، اطلاعات، کیمرا، مائیکروفون",
@@ -1788,13 +1808,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "سگنل کی کوئی پیمائش نہیں",
   "settings.diag.no_peers": "حدود میں کوئی نہیں",
-  "settings.diag.no_peers_desc": "{links} ریڈیو روابط کھلے ہیں",
   "settings.diag.gcs_size": "فلٹر کا حجم",
   "settings.diag.gcs_size_desc": "ہوا میں بھیجا گیا سب سے بڑا ہم وقت سازی فلٹر",
   "settings.diag.fpr": "غلط مثبت کی شرح",
   "settings.diag.fpr_desc":
     "فلٹر کتنی بار ایسا پیکٹ ہونے کا دعویٰ کرتا ہے جو ہمارے پاس نہیں",
-  "settings.diag.bytes": "{n} بائٹ",
   "settings.diag.footnote":
     "یہاں کچھ بھی بدلا نہیں جا سکتا۔ یہ قدریں طے شدہ ہیں تاکہ Airhop bitchat سے ہم آہنگ رہے۔",
   "settings.diag.share": "تشخیص شیئر کریں",
@@ -1815,7 +1833,6 @@ export const strings: Strings = {
   "settings.general.undo": "بھیجنا واپس لینا",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "بٹوہ",
-  "settings.general.undo_seconds": "{count} سیکنڈ",
   "settings.general.undo_a11y": "بھیجنا واپس لینا: {value}",
   "settings.general.quality_a11y": "اپ لوڈ کا معیار {value} کریں",
   "settings.general.undo_desc":
@@ -1906,7 +1923,6 @@ export const strings: Strings = {
   "settings.network.custom": "اپنے ریلے",
   "settings.network.custom_desc":
     "مقامی چینلوں اور میش پل کے لیے اپنے ریلے شامل کریں",
-  "settings.network.custom_added": "{max} میں سے {count} شامل",
   "settings.network.dm_relays": "پیغامات کے ریلے",
   "settings.network.dm_relays_desc":
     "براہ راست پیغامات اور نجی چینل ہمیشہ یہی استعمال کرتے ہیں۔ آپ کے اپنے ریلے انہیں نہیں بدلتے۔",
@@ -1916,17 +1932,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "ریلے شامل کریں",
   "settings.network.remove_relay": "{url} ہٹائیں",
   "settings.network.add_short": "شامل کریں",
-  "settings.network.relay_limit":
-    "آپ {count} ریلے شامل کر سکتے ہیں۔ دوسرا شامل کرنے کے لیے ایک ہٹائیں۔",
   "settings.network.relay_duplicate": "وہ ریلے پہلے ہی آپ کی فہرست میں ہے۔",
   "settings.network.relay_invalid":
     "درست ریلے میزبان درج کریں، مثلاً relay.example.com۔ پورٹ صرف تب چاہیے جب ریلے طے شدہ پورٹ استعمال نہ کرتا ہو۔ IP پتے اور مقامی نام قابل قبول نہیں۔",
   "settings.network.lan": "مقامی نیٹ ورک",
   "settings.network.lan_desc":
-    "اسی WiFi پر موجود لوگوں تک پہنچیں، iPhone اور Android کے درمیان بھی۔ نیٹ ورک پر موجود دوسرے آلات دیکھ سکتے ہیں کہ آپ Airhop چلا رہے ہیں۔",
+    "اسی Wi-Fi پر موجود لوگوں تک پہنچیں، iPhone اور Android کے درمیان بھی۔ نیٹ ورک پر موجود دوسرے آلات دیکھ سکتے ہیں کہ آپ Airhop چلا رہے ہیں۔",
   "settings.network.lan_searching": "اس نیٹ ورک پر کوئی Airhop آلہ نہیں",
   "settings.network.lan_active": "اس نیٹ ورک پر منسلک",
-  "settings.network.lan_unavailable": "کسی WiFi نیٹ ورک پر نہیں",
+  "settings.network.lan_unavailable": "کسی Wi-Fi نیٹ ورک پر نہیں",
   "settings.network.lan_permission":
     "Airhop کے لیے مقامی نیٹ ورک تک رسائی بند ہے",
   "settings.network.lan_unsupported": "اس آلے پر دستیاب نہیں",
@@ -1948,7 +1962,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_find_action": "قریبی iPhone منتخب کریں",
   "settings.network.wifi_pair_show_action": "اس iPhone کو قابل دریافت بنائیں",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware اس وقت دستیاب نہیں ہے",
-  "settings.network.wifi_pair_forget": "Settings ایپ میں جوڑا ہٹائیں",
+  "settings.network.wifi_pair_forget": "ترتیبات ایپ میں جوڑا ہٹائیں",
   "settings.network.bitchat": "bitchat سے ہم آہنگی",
   "settings.network.bitchat_desc":
     "وہی BLE میش جو bitchat کی ہے، مکمل طور پر باہم کارگر۔ یہ ہمیشہ چالو رہتا ہے اور بند نہیں کیا جا سکتا۔",
@@ -2069,7 +2083,7 @@ export const strings: Strings = {
     "آپ کی گیلری سے تصاویر بھیجتا ہے اور موصول میڈیا محفوظ کرتا ہے۔ اس کے بغیر بھی آپ کیمرے سے نئی تصاویر بنا کر بھیج سکتے ہیں۔",
   "settings.permissions.microphone": "مائیکروفون",
   "settings.permissions.microphone_desc":
-    "صوتی پیغام ریکارڈ کر کے بھیجتا ہے یا براہ راست آواز چلاتا ہے۔ اس کے بغیر صوتی پیغام اور براہ راست آواز کام نہیں کریں گے۔",
+    "صوتی نوٹ ریکارڈ کر کے بھیجیں یا براہ راست آواز استعمال کریں۔ اس کے بغیر صوتی نوٹ اور براہ راست آواز کام نہیں کریں گے۔",
   "settings.permissions.allow": "یہ اجازت دیں",
   "settings.permissions.open_settings":
     "یہ اجازت بدلنے کے لیے نظام کی ترتیبات کھولیں",
@@ -2319,8 +2333,7 @@ export const strings: Strings = {
     "ڈاؤن لوڈ ناکام ہوا۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large":
-    "{kind} {size} KiB کا ہے، جو {cap} KiB کی حد سے زیادہ ہے۔",
+  "transfer.too_large": "{kind} {size} کا ہے، جو {cap} کی حد سے زیادہ ہے۔",
   "transfer.failed.malformed":
     "ایک منسلکہ خراب حالت میں پہنچا اور کھل نہ سکا۔ ان سے دوبارہ بھیجنے کو کہیں۔",
   "transfer.failed.unsupported_type":
@@ -2330,10 +2343,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "ایک منسلکہ پہنچا مگر محفوظ نہ ہو سکا۔ اپنی خالی جگہ جانچیں۔",
   "transfer.badge.waiting": "انتظار میں · {name}",
-  "transfer.badge.active_count": "{count} منتقلیاں",
   "transfer.badge.sending": "{name} بھیجا جا رہا ہے",
   "transfer.badge.receiving": "{name} موصول ہو رہا ہے",
-  "transfer.badge.a11y": "{label}، {percent} فیصد۔ گفتگو کھولیں۔",
   "transfer.kind.photo": "تصویر",
   "transfer.kind.video": "ویڈیو",
   "transfer.kind.voice": "صوتی نوٹ",
@@ -2362,10 +2373,11 @@ export const strings: Strings = {
   "notif.notice": "اعلان · {content}",
   "notif.incoming_file": "آنے والی فائل",
   "notif.preview.photo": "📷 تصویر",
-  "notif.preview.voice": "🎤 صوتی پیغام",
+  "notif.preview.voice": "🎤 صوتی نوٹ",
   "notif.preview.video": "🎥 ویڈیو",
   "notif.preview.document": "📄 دستاویز",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "نیا پیغام",
   "notif.hidden.channel": "نئی سرگرمی",
@@ -2377,6 +2389,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} منٹ پہلے",
+    other: "{count} منٹ پہلے",
+  },
+  "format.hours_ago": {
+    one: "{count} گھنٹہ پہلے",
+    other: "{count} گھنٹے پہلے",
+  },
+  "format.days_ago": {
+    one: "{count} دن پہلے",
+    other: "{count} دن پہلے",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "مزید {count} دکھائیں",
@@ -2429,6 +2455,55 @@ export const plurals: Plurals = {
     other: "{count} بول رہے ہیں",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "مزید {count} بھیجے جانے کا منتظر",
+    other: "مزید {count} بھیجے جانے کے منتظر",
+  },
+  "chat.thread.across_bridge": {
+    one: "پل کے پار {count} شخص",
+    other: "پل کے پار {count} لوگ",
+  },
+  "chat.thread.go_back_unread": {
+    one: "واپس جائیں، {count} غیر پڑھا",
+    other: "واپس جائیں، {count} غیر پڑھے",
+  },
+  "chat.thread.notices_new": {
+    one: "اس چینل کے اعلانات، {count} نیا",
+    other: "اس چینل کے اعلانات، {count} نئے",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "تازہ ترین پیغام پر جائیں، {count} نیا",
+    other: "تازہ ترین پیغام پر جائیں، {count} نئے",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} نیا فوری اعلان · اعلانات کھولیں",
+    other: "{count} نئے فوری اعلانات · اعلانات کھولیں",
+  },
+  "chat.info.add_count": {
+    one: "{count} شامل کریں",
+    other: "{count} شامل کریں",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "{count} گھنٹے میں مٹ جائے گا",
+    other: "{count} گھنٹے میں مٹ جائے گا",
+  },
+  "chat.notices.fades_in_days": {
+    one: "{count} دن میں مٹ جائے گا",
+    other: "{count} دن میں مٹ جائے گا",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "اس فہرست میں {count} اطلاع ہے۔ صاف کرنے سے یہ صرف یہاں سے ہٹتی ہے، اور پیغام اپنی گفتگو میں غیر پڑھا ہی رہتا ہے۔ سب کو پڑھا ہوا نشان زد کرنے سے دونوں صاف ہو جاتے ہیں۔",
+    other:
+      "اس فہرست میں {count} اطلاعات ہیں۔ صاف کرنے سے یہ صرف یہاں سے ہٹتی ہیں، اور پیغام اپنی گفتگو میں غیر پڑھے ہی رہتے ہیں۔ سب کو پڑھا ہوا نشان زد کرنے سے دونوں صاف ہو جاتے ہیں۔",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "{count} اطلاع صاف کریں",
+    other: "تمام {count} اطلاعات صاف کریں",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} پیئر حدود میں",
@@ -2451,18 +2526,28 @@ export const plurals: Plurals = {
     other: "{count} ارکان",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "میش پل چالو · پل کے پار {count} شخص",
+    other: "میش پل چالو · پل کے پار {count} لوگ",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} کے پاس {count} سکے میں {balance} {unit} ہیں۔ اسے ہٹانے سے وہ سکہ اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
+    one: "{mint} کے پاس {count} سکے میں {balance} {unit} ہیں۔ اسے ہٹانے سے یہ بیلنس اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
     other:
-      "{mint} کے پاس {count} سکوں میں {balance} {unit} ہیں۔ اسے ہٹانے سے وہ سکے اس آلے سے ہمیشہ کے لیے مٹ جائیں گے اور ان کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
+      "{mint} کے پاس {count} سکوں میں {balance} {unit} ہیں۔ اسے ہٹانے سے یہ بیلنس اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
+  },
+  "wallet.mint.split_across": {
+    one: "بیلنس {count} ٹکسال میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
+    other: "بیلنس {count} ٹکسالوں میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} جمع ادائیگی کا منتظر ہے۔ ایپ کھلنے پر ہر بار دوبارہ جانچا جاتا ہے۔",
+    one: "{count} ٹاپ اپ ادائیگی کا منتظر ہے۔ ایپ کھلنے پر ہر بار دوبارہ جانچا جاتا ہے۔",
     other:
-      "{count} جمع ادائیگی کے منتظر ہیں۔ ایپ کھلنے پر ہر بار دوبارہ جانچے جاتے ہیں۔",
+      "{count} ٹاپ اپ ادائیگی کے منتظر ہیں۔ ایپ کھلنے پر ہر بار دوبارہ جانچے جاتے ہیں۔",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2471,9 +2556,9 @@ export const plurals: Plurals = {
     other: "{mints} سے {count} غیر خرچ شدہ سکے بحال ہوئے۔",
   },
   "wallet.backup.already_spent": {
-    one: "{count} سکہ ملا مگر وہ پہلے ہی خرچ ہو چکا تھا، اس لیے اس کے بدلے کچھ جمع نہیں ہوا۔ یہ معمول کی بات ہے: آپ نے جو بھی سکہ کبھی خرچ کیا ہو وہ ٹکسال کے ریکارڈ میں موجود رہتا ہے۔",
+    one: "{count} سکہ ملا مگر وہ پہلے ہی خرچ ہو چکا تھا، اس لیے کچھ جمع نہیں ہوا۔ یہ معمول کی بات ہے: آپ نے جو بھی سکہ کبھی خرچ کیا ہو وہ ٹکسال کے ریکارڈ میں موجود رہتا ہے۔",
     other:
-      "{count} سکے ملے مگر وہ پہلے ہی خرچ ہو چکے تھے، اس لیے ان کے بدلے کچھ جمع نہیں ہوا۔ یہ معمول کی بات ہے: آپ نے جو بھی سکہ کبھی خرچ کیا ہو وہ ٹکسال کے ریکارڈ میں موجود رہتا ہے۔",
+      "{count} سکے ملے مگر وہ پہلے ہی خرچ ہو چکے تھے، اس لیے کچھ جمع نہیں ہوا۔ یہ معمول کی بات ہے: آپ نے جو بھی سکہ کبھی خرچ کیا ہو وہ ٹکسال کے ریکارڈ میں موجود رہتا ہے۔",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2499,9 +2584,39 @@ export const plurals: Plurals = {
     other: "{count} سکے پہلے ہی خرچ ہو چکے تھے اور انہیں ہٹا دیا گیا ہے۔",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} ریڈیو ربط کھلا ہے",
+    other: "{count} ریڈیو روابط کھلے ہیں",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} سیکنڈ",
+    other: "{count} سیکنڈ",
+  },
+  "settings.network.custom_added": {
+    one: "{max} میں سے {count} شامل",
+    other: "{max} میں سے {count} شامل",
+  },
+  "settings.network.relay_limit": {
+    one: "آپ {count} ریلے شامل کر سکتے ہیں۔ دوسرا شامل کرنے کے لیے اسے ہٹائیں۔",
+    other:
+      "آپ {count} ریلے شامل کر سکتے ہیں۔ دوسرا شامل کرنے کے لیے ایک ہٹائیں۔",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} منتقلی",
+    other: "{count} منتقلیاں",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}، {count} فیصد۔ گفتگو کھولیں۔",
+    other: "{label}، {count} فیصد۔ گفتگو کھولیں۔",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "قریب کوئی موجود ہے",
+    "=1": "قریب کوئی موجود ہے",
+    one: "{count} شخص قریب ہے",
     other: "{count} لوگ قریب ہیں",
   },
 };

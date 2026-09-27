@@ -205,13 +205,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Sem internet, sem roteador, em celulares que as pessoas já têm.",
   "home.features.networking.lan.name": "Rede local",
-  "home.features.networking.lan.line": "WiFi compartilhado ou um hotspot, iPhone e Android juntos.",
+  "home.features.networking.lan.line":
+    "Wi-Fi compartilhado ou um hotspot, iPhone e Android juntos.",
   "home.features.networking.hops.name": "Retransmissão em vários saltos",
   "home.features.networking.hops.line": "Cada celular repassa as mensagens, até sete saltos.",
   "home.features.networking.bridge.name": "Ponte mesh",
   "home.features.networking.bridge.line":
     "Liga sua conversa pública a um grupo próximo fora de alcance.",
-  "home.features.networking.wifi.name": "Atalho por WiFi",
+  "home.features.networking.wifi.name": "Atalho por Wi-Fi",
   "home.features.networking.wifi.line":
     "Transferências mais rápidas entre dois Androids ou dois iPhones.",
   "home.features.networking.bitchat.name": "Compatível com bitchat",

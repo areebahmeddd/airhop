@@ -1,12 +1,11 @@
 // Diagnostics sub-screen: what the radios are actually doing, right now.
 //
 // Read-only, deliberately and completely. bitchat's equivalent lets you change
-// protocol parameters - GCS filter size, GATT link caps, relay on/off - and that
-// is the wrong shape for us: our constants are chosen to match bitchat
-// byte-for-byte, so a slider that changes one is a slider that stops us
-// interoperating with the client this whole app exists to talk to. The link cap
-// is a safety limit (Android refuses past ~7 GATT clients), and turning relay
-// off makes you a freeloader on everyone else's mesh.
+// protocol parameters (GCS filter size, GATT link caps, relay on/off), and that
+// is the wrong shape here: the constants match bitchat byte-for-byte, so a
+// slider that changes one stops this node interoperating with bitchat. The link
+// cap is a safety limit (Android refuses past about 7 GATT clients), and turning
+// relay off makes a node a freeloader on everyone else's mesh.
 //
 // So this screen answers questions and offers no decisions. The question it
 // exists for is the one a field report cannot answer without it: when two phones
@@ -21,7 +20,7 @@ import {
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import { GCS_MAX_BYTES, GCS_TARGET_FPR } from "@core/mesh/sync/gossip-sync";
-import { t, useT } from "@i18n";
+import { t, useT, useTPlural } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   getDiagnosticsReport,
@@ -31,9 +30,10 @@ import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import { FontFamily, FontSize, Spacing, useThemeColors } from "@ui/theme";
-import { formatNumber } from "@utils/format";
+import { formatBytes, formatNumber, formatPercent } from "@utils/format";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -86,6 +86,7 @@ export default function DiagnosticsScreen({
   onBack,
 }: Props): React.JSX.Element {
   const T = useT();
+  const TP = useTPlural();
   const Colors = useThemeColors();
   const styles = useSharedStyles();
   const local = useMemo(() => createStyles(Colors), [Colors]);
@@ -97,24 +98,16 @@ export default function DiagnosticsScreen({
   const lanState = useMeshStateStore((s) => s.lanState);
   const nostrConnected = useMeshStateStore((s) => s.nostrConnected);
 
-  // Counters live on the service rather than in a store, so they are polled.
-  // A snapshot in state rather than a read during render: reading a mutable
-  // service field while rendering makes the screen disagree with itself between
-  // two rows of the same pass.
-  // The clock rides along with the counters rather than being read during
-  // render: one tick drives both, so the peer list ages on the same beat the
-  // numbers move on, and there is only one timer to clean up.
+  // Counters live on the service rather than in a store, so they are polled
+  // into a snapshot: a mutable service field read during render lets two rows
+  // of the same pass disagree. The clock rides in the same snapshot, so the
+  // peer list ages on the beat the numbers move on, with one timer to clean up.
   const [snapshot, setSnapshot] = useState(readSnapshot);
   useEffect(() => {
     const timer = setInterval(() => setSnapshot(readSnapshot()), REFRESH_MS);
     return () => clearInterval(timer);
   }, []);
-  const counters = snapshot;
 
-  // Building the report awaits the native log, so a second tap while the first
-  // is still collecting is dropped rather than opening two share sheets. A ref,
-  // not the state: two taps in one tick both read the state as false.
-  const sharingRef = useRef(false);
   async function handleCopy(): Promise<void> {
     setShowShareSheet(false);
     try {
@@ -124,6 +117,10 @@ export default function DiagnosticsScreen({
     }
   }
 
+  // Building the report awaits the native log, so a second tap while the first
+  // is still collecting is dropped rather than opening two share sheets. A ref,
+  // not state: two taps in one tick both read state as false.
+  const sharingRef = useRef(false);
   async function handleShare(): Promise<void> {
     setShowShareSheet(false);
     if (sharingRef.current) return;
@@ -143,7 +140,7 @@ export default function DiagnosticsScreen({
       return (b.rssi ?? -999) - (a.rssi ?? -999);
     });
 
-  const links = Object.values(counters.links).reduce((a, b) => a + b, 0);
+  const links = Object.values(snapshot.links).reduce((a, b) => a + b, 0);
 
   return (
     <View style={styles.container}>
@@ -153,9 +150,9 @@ export default function DiagnosticsScreen({
             different questions: a link is a socket we hold, a peer may be
             several hops away with no link of ours near it. */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.transports")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               icon="bluetooth"
@@ -163,7 +160,7 @@ export default function DiagnosticsScreen({
               description={T("settings.diag.ble_links_desc")}
               control={
                 <Text style={[styles.settingValue, styles.settingValueMono]}>
-                  {formatNumber(counters.links.ble)}
+                  {formatNumber(snapshot.links.ble)}
                 </Text>
               }
             />
@@ -178,7 +175,7 @@ export default function DiagnosticsScreen({
               }
               control={
                 <Text style={[styles.settingValue, styles.settingValueMono]}>
-                  {formatNumber(counters.links.lan)}
+                  {formatNumber(snapshot.links.lan)}
                 </Text>
               }
             />
@@ -191,7 +188,7 @@ export default function DiagnosticsScreen({
               )}`}
               control={
                 <Text style={[styles.settingValue, styles.settingValueMono]}>
-                  {formatNumber(counters.links.wifi)}
+                  {formatNumber(snapshot.links.wifi)}
                 </Text>
               }
             />
@@ -220,9 +217,9 @@ export default function DiagnosticsScreen({
               diagnostics screen "0" is an answer, and a count that appears only
               sometimes is one the reader cannot trust. */}
           <View style={local.headingRow}>
-            <Text style={styles.sectionTitle}>
+            <UpperText style={styles.sectionTitle}>
               {T("settings.group.nearby")}
-            </Text>
+            </UpperText>
             <Text style={styles.sectionTitle}>
               {formatNumber(nearby.length)}
             </Text>
@@ -232,9 +229,7 @@ export default function DiagnosticsScreen({
               <SettingRow
                 icon="search"
                 label={T("settings.diag.no_peers")}
-                description={T("settings.diag.no_peers_desc", {
-                  links: formatNumber(links),
-                })}
+                description={TP("settings.diag.no_peers_desc", links)}
               />
             ) : (
               nearby.map((peer, i) => (
@@ -282,10 +277,12 @@ export default function DiagnosticsScreen({
         </View>
 
         {/* Sync parameters, shown because they are the first thing anyone asks
-            about when two phones will not converge - and fixed, because they
+            about when two phones will not converge, and fixed, because they
             have to match bitchat's exactly or reconciliation degrades. */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("settings.group.sync")}</Text>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.sync")}
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               icon="filter"
@@ -293,9 +290,7 @@ export default function DiagnosticsScreen({
               description={T("settings.diag.gcs_size_desc")}
               control={
                 <Text style={styles.settingValue}>
-                  {T("settings.diag.bytes", {
-                    n: formatNumber(GCS_MAX_BYTES),
-                  })}
+                  {formatBytes(GCS_MAX_BYTES)}
                 </Text>
               }
             />
@@ -306,7 +301,7 @@ export default function DiagnosticsScreen({
               description={T("settings.diag.fpr_desc")}
               control={
                 <Text style={[styles.settingValue, styles.settingValueMono]}>
-                  {`${formatNumber(GCS_TARGET_FPR * 100)}%`}
+                  {formatPercent(GCS_TARGET_FPR)}
                 </Text>
               }
             />

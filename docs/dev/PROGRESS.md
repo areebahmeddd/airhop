@@ -76,11 +76,11 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] `src/utils/username.ts`: deterministic adjective-noun-suffix name from the peer ID, 128-entry word lists
 - [x] `src/services/panic-wipe.ts`: clears every keychain item, all MMKV partitions, the media cache, the notification tray and Arti's data directory, and reports whether the keys were destroyed. `wipe-marker.ts` records the intent first, so a wipe killed mid-run finishes on the next launch
 
-### v0.9.0: WiFi Transports
+### v0.9.0: Wi-Fi Transports
 
-- [x] WiFi Aware on both platforms: Apple's `WiFiAware` framework on iOS, `WifiAwareManager` on Android, on by default
+- [x] Wi-Fi Aware on both platforms: Apple's `WiFiAware` framework on iOS, `WifiAwareManager` on Android, on by default
 - [x] `AirhopLANModule`: mDNS discovery plus TCP links (`NWListener` / `NWBrowser`, `NsdManager`), carrying the same packets the radio carries
-- [x] `src/services/lan-controller.ts`: link lifecycle, registered beside BLE and WiFi Aware, off by default behind `lanTransportEnabled`
+- [x] `src/services/lan-controller.ts`: link lifecycle, registered beside BLE and Wi-Fi Aware, off by default behind `lanTransportEnabled`
 - [x] `src/services/lan-dial-policy.ts`: the ring that caps LAN at 8 links per phone
 - [x] Video and any other allowed file type shared as attachments, played inline
 - [x] Battery optimization flow (`src/platform/battery-optimization.ts`: OEM deep links for 10 skins, standard Android fallback)

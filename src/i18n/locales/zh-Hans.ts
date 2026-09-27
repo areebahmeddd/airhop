@@ -23,14 +23,11 @@ export const strings: Strings = {
   "common.share": "分享",
   "common.settings": "设置",
   "common.on": "开启",
-  "common.off": "关",
+  "common.off": "关闭",
 
   // ---- Dates ----
   "format.today": "今天",
   "format.yesterday": "昨天",
-  "format.minutes_ago": "{count} 分钟前",
-  "format.hours_ago": "{count} 小时前",
-  "format.days_ago": "{count} 天前",
   "format.just_now": "刚刚",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -243,6 +240,7 @@ export const strings: Strings = {
   "chat.group_badge": "群组",
   "chat.more": "更多",
   "chat.no_messages": "还没有消息",
+  "chat.sender_preview": "{sender}：{preview}",
   "chat.presence.nearby_none": "附近没有人",
   "chat.presence.active_none": "无人活跃",
   "chat.you": "你",
@@ -313,6 +311,7 @@ export const strings: Strings = {
   "chat.jump.failed": "无法打开该网格。请稍后再试。",
   "chat.jump.title": "前往某地",
   "chat.jump.saved": "已保存的地点",
+  "chat.jump.nearby": "附近",
   "chat.jump.anywhere": "打开任意地点的公开位置频道，哪怕你并不在那里。",
   "chat.jump.geohash_note":
     "输入它的 geohash。位置落在该网格内的每个人共享同一个频道。",
@@ -320,7 +319,22 @@ export const strings: Strings = {
     "你会显示为远程接入，而不是就在附近。它只通过互联网触达。",
   "chat.jump.level_cell": "{level} 网格",
   "chat.jump.already_here": "你已经在这里了。前往会打开你的 {name} 频道。",
-  "chat.jump.open_direction": "打开你{direction}方向的网格",
+  "chat.jump.dir.n": "北",
+  "chat.jump.dir.ne": "东北",
+  "chat.jump.dir.e": "东",
+  "chat.jump.dir.se": "东南",
+  "chat.jump.dir.s": "南",
+  "chat.jump.dir.sw": "西南",
+  "chat.jump.dir.w": "西",
+  "chat.jump.dir.nw": "西北",
+  "chat.jump.open_n": "打开正北方向的网格",
+  "chat.jump.open_ne": "打开东北方向的网格",
+  "chat.jump.open_e": "打开正东方向的网格",
+  "chat.jump.open_se": "打开东南方向的网格",
+  "chat.jump.open_s": "打开正南方向的网格",
+  "chat.jump.open_sw": "打开西南方向的网格",
+  "chat.jump.open_w": "打开正西方向的网格",
+  "chat.jump.open_nw": "打开西北方向的网格",
   "chat.jump.open_place": "打开 {name}",
   "chat.jump.remove_place": "从已保存的地点中移除 {name}",
   "chat.jump.go": "前往",
@@ -432,18 +446,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "取消 {name}",
   "chat.thread.hide_transfer": "隐藏进度",
   "chat.thread.hide_transfer_hint": "文件仍会继续接收",
-  "chat.thread.queued_more": "还有 {count} 条等待发送",
-  "chat.thread.across_bridge": "桥接对面 {count} 位",
   "chat.thread.bridged": "已桥接",
   "chat.thread.invite_body":
     "来 Airhop 的 {channel} 一起聊吧 — 离线优先的私密网状网络通信。",
-  "chat.thread.go_back_unread": "返回，{count} 条未读",
   "chat.thread.view_info": "查看 {name} 的信息",
-  "chat.thread.notices_new": "本频道的公告，{count} 条新的",
   "chat.board.urgent_one": "来自 {author} 的紧急公告 · {content}",
-  "chat.board.urgent_many": "{count} 条新的紧急公告 · 打开公告",
+  "chat.board.urgent_one_anon": "紧急公告 · {content}",
   "chat.thread.say_something": "在 {channel} 里说点什么吧。",
-  "chat.thread.jump_latest_new": "跳到最新消息，{count} 条新的",
   "chat.thread.unconfirmed_since": "自 {date} 起没有确认过送达",
   "chat.thread.no_reach": "附近没有节点 · 还没有人收到这条消息",
   "chat.thread.channel_needs_internet":
@@ -472,7 +481,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "你截了屏",
   "chat.screenshot.you_took_private": "你截了屏 · 没有告诉任何人",
   "chat.screenshot.heads_up": "提醒一下",
-  "chat.screenshot.notice": "* {name} 截了屏 *",
+  "chat.screenshot.peer_took": "{name} 截了屏",
   "chat.screenshot.notified_dm": "{name} 已被告知你截了这段对话的屏。",
   "chat.screenshot.notified": "本频道的所有人都已被告知你截了屏。",
   "chat.screenshot.not_notified":
@@ -515,7 +524,7 @@ export const strings: Strings = {
   "chat.attach.document": "文档",
   "chat.attach.document_desc": "发送任意文件或 PDF",
   "chat.attach.voice": "语音留言",
-  "chat.attach.voice_desc": "录制并发送一条语音消息",
+  "chat.attach.voice_desc": "录制并发送一条语音留言",
   "chat.attach.ecash": "发送 ecash",
   "chat.attach.ecash_desc": "从你的钱包发送 Cashu sat",
   "chat.attach.location": "位置",
@@ -523,10 +532,10 @@ export const strings: Strings = {
   "chat.attach.title": "附件",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "分享了一个位置",
+  "chat.location.sent_summary": "已分享位置",
   "chat.location.received_summary": "分享了自己的位置",
   "chat.location.title": "位置",
-  "chat.location.away": "{direction}{distance}",
+  "chat.location.away": "{direction} {distance}",
   "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "在地图中打开",
   "chat.location.no_forward": "位置不能转发",
@@ -554,15 +563,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "西北",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "响铃",
+  "chat.ring.sent_summary": "已响铃",
   "chat.ring.received_summary": "响铃通知你",
   "chat.ring.alert.title": "{sender} 正在响铃",
   "chat.ring.alert.body": "请查看你的消息",
   "chat.ring.alert.open": "打开",
   "chat.ring.alert.snooze": "暂停 1 小时",
-  "chat.ring.sent_snoozed": "已响铃,已推迟",
-  "chat.ring.sent_too_soon": "已响铃,过于频繁",
-  "chat.ring.sent_not_allowed": "已响铃,未获允许",
+  "chat.ring.sent_snoozed": "已响铃 · 已推迟",
+  "chat.ring.sent_too_soon": "已响铃 · 过于频繁",
+  "chat.ring.sent_not_allowed": "已响铃 · 未获允许",
   "chat.attach.send_anyway": "仍然发送",
   "chat.attach.bitchat_too_big": "这可能送不到",
   "chat.attach.bitchat_too_big_body":
@@ -632,6 +641,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "停止录制并发送",
   "chat.voice.lift_lock": "向上滑动可免手持录制",
   "chat.voice.live_speaking": "{name} 正在说话",
+  "chat.voice.live_ended": "已结束",
   "voice.unavailable": "实时语音不可用",
   "voice.recording_stopped": "录制已停止",
 
@@ -688,7 +698,6 @@ export const strings: Strings = {
   "chat.info.message_member": "给 {name} 发消息",
   "chat.info.remove_member_a11y": "移除 {name}",
   "chat.info.no_addable": "没有可添加的可达节点。成员必须在附近。",
-  "chat.info.add_count": "添加 {count} 位",
   "chat.info.teleported_tag": "{level}  ·  远程",
   "chat.info.active": "活跃",
   "chat.info.members": "成员",
@@ -723,7 +732,7 @@ export const strings: Strings = {
   "chat.contact.anonymous_desc": "一个 geohash 化名，没有可供验证的长期身份",
   "chat.contact.verified": "已验证",
   "chat.contact.verified_desc": "你扫过对方的二维码",
-  "chat.contact.verified_desc_compared": "你和对方核对过二维码",
+  "chat.contact.verified_desc_compared": "你和对方核对过代码",
   "chat.contact.not_verified": "未验证",
   "chat.contact.not_verified_desc":
     "扫描对方的二维码，或者在通话中核对一次，以确认这真的是本人",
@@ -746,7 +755,7 @@ export const strings: Strings = {
   "chat.contact.verify": "验证联系人",
   "chat.contact.allow_ring": "允许响铃提醒",
   "chat.contact.allow_ring_desc":
-    "让对方响铃提醒你,即使此对话已静音。静音模式和勿扰模式仍然生效。",
+    "让对方响铃提醒你，即使此对话已静音。静音模式和勿扰模式仍然生效。",
   "chat.contact.ring_action": "响铃",
   "chat.contact.ringing": "响铃中…",
   "chat.contact.ring_hint_nearby": "响铃仅在对方在附近时可用",
@@ -768,8 +777,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 天",
   "chat.notices.7_days": "7 天",
   "chat.notices.fading": "消退中",
-  "chat.notices.fades_in_hours": "{count} 小时后消退",
-  "chat.notices.fades_in_days": "{count} 天后消退",
   "chat.notices.scope_geo": "地理",
   "chat.notices.scope_mesh": "网状网",
   "chat.notices.urgent_short": "紧急",
@@ -785,10 +792,20 @@ export const strings: Strings = {
   "chat.search.links": "链接",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "按{filter}筛选",
-  "chat.search.no_matches": "没有与“{query}”匹配的{filter}",
-  "chat.search.no_media": "还没有{filter}",
+  "chat.search.no_photos": "还没有照片",
+  "chat.search.no_videos": "还没有视频",
+  "chat.search.no_audio": "还没有音频",
+  "chat.search.no_documents": "还没有文档",
+  "chat.search.no_links": "还没有链接",
+  "chat.search.no_ecash": "还没有 ecash",
+  "chat.search.no_photos_matching": "没有与“{query}”匹配的照片",
+  "chat.search.no_videos_matching": "没有与“{query}”匹配的视频",
+  "chat.search.no_audio_matching": "没有与“{query}”匹配的音频",
+  "chat.search.no_documents_matching": "没有与“{query}”匹配的文档",
+  "chat.search.no_links_matching": "没有与“{query}”匹配的链接",
+  "chat.search.no_ecash_matching": "没有与“{query}”匹配的 ecash",
   "chat.search.result_a11y": "{chat}，来自 {sender} 的{kind}",
-  "chat.search.you": "你",
+  "chat.search.result_mine_a11y": "{chat}，你发送的{kind}",
   "chat.search.section_chats": "聊天",
   "chat.search.section_messages": "消息",
   "chat.search.section_notices": "公告",
@@ -796,15 +813,13 @@ export const strings: Strings = {
   "chat.search.no_results": "没有“{query}”的结果",
   "chat.search.open_chat": "打开 {name}",
   "chat.search.message_a11y": "{chat}，来自 {sender} 的消息：{snippet}",
+  "chat.search.message_mine_a11y": "{chat}，你的消息：{snippet}",
   "chat.search.notice_a11y": "{chat} 中来自 {author} 的公告：{snippet}",
   "chat.search.urgent": "紧急 ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "这个列表里有 {count} 条。清空只会把它们从这里移除，消息在各自的对话中仍然未读。全部标为已读则两边都会清掉。",
   "chat.notif.mark_all_read": "全部标为已读",
   "chat.notif.clear_list": "清空列表",
-  "chat.notif.clear_all_a11y": "清空全部 {count} 条通知",
   "chat.notif.title": "通知",
   "chat.notif.clear_short": "清空",
   "chat.notif.close": "关闭通知",
@@ -826,12 +841,15 @@ export const strings: Strings = {
   "chat.forward.locations": "位置",
   "chat.forward.dms": "私信",
   "chat.forward.none": "还没有其他聊天",
+  "chat.forward.app_row": "未转发",
+  "chat.forward.app_row_body":
+    "这一行来自 Airhop，不是某个人发的，所以没有可转发的内容。",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "正在启动网状网络…",
   "mesh.banner.no_bluetooth": "这台设备没有蓝牙 · 仅互联网",
   "mesh.banner.bluetooth_off": "蓝牙已关 · 网状网络不可用",
-  "mesh.banner.bluetooth_off_wifi": "蓝牙已关 · 网状网络通过 WiFi 运行",
+  "mesh.banner.bluetooth_off_wifi": "蓝牙已关 · 网状网络通过 Wi-Fi 运行",
   "mesh.banner.permission_needed": "需要蓝牙权限",
   "mesh.banner.blocked": "蓝牙被拦截 · 请在设置中允许",
   "mesh.banner.location_permission": "需要定位才能找到节点",
@@ -854,7 +872,6 @@ export const strings: Strings = {
   "mesh.banner.gateway": "互联网网关已开 · 正为附近节点中继",
   "mesh.banner.bridge": "网状网络桥接已开 · 公开聊天已连通",
   "mesh.banner.background_limits": "{brand} 可能会在后台暂停网状网络",
-  "mesh.banner.bridge_across": "网状网络桥接已开 · 桥接对面有 {count} 位",
   "mesh.banner.action.turn_on": "开启",
   "mesh.banner.action.allow": "允许",
   "mesh.banner.action.resume": "恢复",
@@ -921,7 +938,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "查看节点 {name}，在线",
   "mesh.peer.view_relay_online": "查看节点 {name}，在线，中继节点",
   "mesh.peer.last_seen_at": "最后出现：{ago}",
-  "mesh.peer.send_amount": "发送 {amount} sat",
+  "mesh.peer.send_unit_amount": "发送 {amount} {unit}",
   "mesh.peer.direct": "直接连接",
   "mesh.peer.check_distance": "测一下距离",
   "mesh.peer.checking": "测量中",
@@ -965,7 +982,7 @@ export const strings: Strings = {
   "wallet.choose.topup_desc": "用任何 Lightning 钱包支付发票",
   "wallet.choose.token": "创建代币",
   "wallet.choose.token_desc": "分享或出示二维码，离线也可以",
-  "wallet.choose.zap": "给 Nostr 联系人发 zap",
+  "wallet.choose.zap": "给 Nostr 联系人打闪",
   "wallet.choose.zap_desc": "发到对方的 npub，经由互联网",
   "wallet.choose.invoice": "支付 Lightning 发票",
   "wallet.choose.invoice_desc": "提现到任何 Lightning 钱包",
@@ -989,7 +1006,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "这个代币拆成的币太多，装不进一个二维码。请改用分享或复制。",
   "wallet.send.scan_note":
-    "让对方用自己的钱包扫这个。在你标记为已送达之前仍然可以收回。",
+    "让对方用自己的钱包扫这个。在你标记为已收到之前仍然可以收回。",
   "wallet.send.mesh_note": "代币会作为加密私信通过网状网络发出。无需互联网。",
   "wallet.send.no_peers_note":
     "打开网状网络标签页寻找附近设备，或者换一种方式分享代币。",
@@ -1009,7 +1026,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "在钱包中打开",
   "wallet.send.to_peer": "把代币发给附近的节点",
   "wallet.send.to_peer_short": "发给节点",
-  "wallet.send.mark_delivered": "标记为已送达并结束",
+  "wallet.send.mark_delivered": "标记为已收到",
   "wallet.send.they_got_it": "对方收到了",
   "wallet.send.keep_pending": "让这笔发送保持待处理",
   "wallet.send.decide_later": "稍后再定",
@@ -1033,9 +1050,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "已在 {mint} 兑付。现在它可被证明属于你：发送方手里的这份代币副本不再有效。",
-  "wallet.receive.stored_pending":
-    "已从 {mint} 存入，但铸币厂尚未确认它未被花费{dleq}。联网后会自动与铸币厂确认。",
-  "wallet.receive.dleq_inline": "（它的签名确实对得上，所以这个代币是真的）",
+  "wallet.receive.pending_unconfirmed":
+    "已从 {mint} 存入，但铸币厂尚未确认它未被花费。联网后会自动与铸币厂确认。",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "已从 {mint} 存入，但铸币厂尚未确认它未被花费。它的签名对得上，所以这个代币是真的。联网后会自动与铸币厂确认。",
   "wallet.receive.dleq_ok": "铸币厂的签名对得上，所以这个代币是真的。",
   "wallet.receive.dleq_uncached":
     "这个铸币厂的密钥没有缓存在这里，所以无法离线核验签名。",
@@ -1097,7 +1115,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "把所有余额归拢到一个铸币厂",
   "wallet.mint.confirm_with": "向 {mint} 核对余额",
   "wallet.mint.available_amount": "可用 {amount} {unit}",
-  "wallet.mint.split_across": "余额分散在 {count} 个铸币厂。把它归拢到一个。",
   "wallet.mint.move_everything_to": "把全部转到 {mint}",
   "wallet.mint.consolidate_title": "归拢到一个铸币厂",
   "wallet.mint.moving": "转移中…",
@@ -1108,10 +1125,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "没有转移任何东西",
   "wallet.mint.move_pending": "正在转移",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} 已离开 {mint}，正在转往 {target}。存入被领取后即到账，钱包会持续重试。",
+    "{amount} {unit} 已离开 {mint}，正在转往 {target}。这笔转移被领取后即到账，钱包会持续重试。",
   "wallet.mint.destination": "· 目标",
   "wallet.mint.will_move": "· 将被转移",
   "wallet.mint.issued_by": "发行方",
+  "wallet.mint.test_badge": "测试",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop 钱包充值",
@@ -1137,7 +1155,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最多 {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "支付 {amount} {unit}",
-  "wallet.ln.deposit_title": "通过 Lightning 存入",
+  "wallet.ln.deposit_title": "通过 Lightning 充值",
   "wallet.ln.amount_placeholder": "金额（sat）",
   "wallet.ln.requesting": "请求中…",
   "wallet.ln.get_invoice": "获取发票",
@@ -1169,7 +1187,7 @@ export const strings: Strings = {
     "你已经有一组恢复助记词了。恢复另一组会把它替换掉。旧助记词已覆盖的币在这台设备上仍然可以花，但不再可恢复，所以请先确认旧的词已经抄写下来，再继续。",
   "wallet.backup.replace": "替换",
   "wallet.backup.replace_unseen_body":
-    "此钱包已有一个在设置时为你生成的恢复短语，你的币都是用它创建的。恢复另一个短语会永久替换它。这些币仍可在本设备上花费，并会在每个铸币厂下次刷新时转到新短语之下。",
+    "此钱包已有一组在设置时为你生成的恢复助记词，你的币都是用它创建的。恢复另一组助记词会永久替换它。这些币仍可在本设备上花费，并会在每个铸币厂下次刷新时转到新助记词之下。",
   "wallet.backup.invalid_phrase": "那组助记词无效",
   "wallet.backup.invalid_phrase_body":
     "助记词自带校验和，而这一组没有通过。请检查是否有拼错、遗漏或顺序颠倒的词。",
@@ -1255,7 +1273,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "铸币厂表示这个代币已被兑付，所以这 {amount} {unit} 已经到了对方手上，你的余额没有收回任何东西。",
   "wallet.copied.token_body":
-    "代币已在你的剪贴板上。在你标记为已送达之前它一直预留在这里，所以第一次没成的话可以再粘贴一次。",
+    "代币已在你的剪贴板上。在你标记为已收到之前它一直预留在这里，所以第一次没成的话可以再粘贴一次。",
   "wallet.copied.refused_token_body":
     "代币已在你的剪贴板上。这个钱包不再计入它，所以你可以把它还给发送它的人。",
   "wallet.copied.phrase_body":
@@ -1278,8 +1296,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "把这个代币显示为二维码",
   "wallet.pending.copy_again": "再复制一次代币",
   "wallet.pending.share_again": "再分享一次代币",
-  "wallet.pending.mark_delivered": "把这个代币标记为已送达",
-  "wallet.pending.delivered": "已送达",
+  "wallet.pending.mark_delivered": "标记为已收到",
+  "wallet.pending.delivered": "已收到",
   "wallet.pending.reclaim_into": "把这个代币收回你的余额",
   "wallet.activity.title": "动态",
   "wallet.activity.none": "还没有内容",
@@ -1297,7 +1315,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "失败",
   "wallet.activity.status_reclaimed": "已收回",
   "wallet.activity.status_expired": "已过期",
-  "wallet.activity.ln_deposit": "Lightning 存入",
+  "wallet.activity.ln_deposit": "Lightning 充值",
   "wallet.activity.ln_withdrawal": "Lightning 提现",
   "wallet.activity.nutzap_received": "收到 Nutzap",
   "wallet.activity.nutzap_claiming": "Nutzap 领取中",
@@ -1337,7 +1355,13 @@ export const strings: Strings = {
     "已锁定到对方的密钥，但还没有东西能把它带过去。它已排队，代币在动态里。",
   "wallet.pay.final": "已锁定的付款无法收回：现在只有对方的密钥能花这些币。",
   "wallet.pay.reclaimable": "在你确认它已送达之前，都可以在“动态”中收回。",
-  "wallet.pay.why": "之所以走这条路，是因为{reason}。",
+  "wallet.pay.why_no_relay": "之所以走这条路，是因为没有中继连接。",
+  "wallet.pay.why_no_shared_mint":
+    "之所以走这条路，是因为你在对方接受的任何铸币厂都没有足够的余额。",
+  "wallet.pay.why_no_nutzap_info":
+    "之所以走这条路，是因为接收方没有公布 nutzap 信息（NIP-61 kind 10019）。",
+  "wallet.pay.result": "{rail}{finality}",
+  "wallet.pay.result_why": "{rail}{reason}{finality}",
   "wallet.pay.sent_title": "{amount} {unit} 给 {name}",
   "wallet.pay.thread_receipt": "你发出了 {amount} {unit}，已锁定到对方的密钥。",
   "wallet.pay.title": "发送 ecash",
@@ -1470,16 +1494,17 @@ export const strings: Strings = {
   "wallet.svc.coins_raced_body": "没有扣除任何金额。再试一次，钱包会挑另一组。",
   "wallet.svc.no_ecash": "还没有 ecash。",
   "wallet.svc.no_ecash_body":
-    "添加一个铸币厂并通过 Lightning 存入，或者从别人那里收一个代币。",
+    "添加一个铸币厂并通过 Lightning 充值，或者从别人那里收一个代币。",
   "wallet.svc.split_across_mints": "你的余额分散在多个铸币厂。",
   "wallet.svc.mint_says_spent": "铸币厂报告这笔 ecash 已被花费。",
   "wallet.svc.issue_against_invoice": "凭 Lightning 发票发行 ecash",
   "wallet.svc.pay_invoice": "支付 Lightning 发票",
-  "wallet.svc.unknown_deposit": "未知的存入。",
+  "wallet.svc.unknown_deposit": "未知的充值。",
   "wallet.svc.invoice_expired_before": "这张发票在被支付之前就过期了。",
   "wallet.svc.invoice_expired": "那张发票已过期。",
   "wallet.svc.invoice_unpaid": "这张发票还没有被支付。",
-  "wallet.svc.payment_unknown": "付款状态未知；下次刷新时会再查一遍。",
+  "wallet.svc.payment_unknown_after":
+    "{reason} 付款状态未知；下次刷新时会再查一遍。",
   "wallet.svc.melt_change_pending": "你的发票已支付。",
   "wallet.svc.melt_change_pending_body":
     "铸币厂还没有退回没用掉的路由费。它会在下次刷新时自动领回，这期间不会有任何损失。",
@@ -1513,16 +1538,12 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "那笔付款指明的铸币厂你并没有在用。",
   "wallet.svc.unknown_mint_body":
     "如果你信任它，请先自己把这个铸币厂添加上；不会从你没有选择过的铸币厂兑付任何东西。",
-  "wallet.svc.no_relay": "没有中继连接",
-  "wallet.svc.no_shared_mint": "没有余额足够的共同铸币厂",
-  "wallet.svc.no_nutzap_info":
-    "接收方没有公布 nutzap 信息（NIP-61 kind 10019）",
   "wallet.svc.locked_undelivered":
     "已锁定到对方的密钥但尚未送达。从这笔交易分享代币即可完成。",
   "wallet.svc.swap_lost":
     "铸币厂始终没有完成这次换新，因此没有凭它发行任何东西。",
   "wallet.svc.mint_lost":
-    "铸币方已发放这笔存款，但无法重建其代币。从恢复短语恢复即可找回。",
+    "铸币厂已为这笔充值发行了币，但无法重建这些币。用你的恢复助记词恢复即可找回。",
   "wallet.svc.swap_unreadable": "这次换新保存的格式，当前版本无法重放。",
   "wallet.svc.lock_in_doubt": "这笔付款可能已完成，也可能没有。",
   "wallet.svc.lock_in_doubt_body":
@@ -1642,7 +1663,7 @@ export const strings: Strings = {
   "settings.section.privacy": "隐私与安全",
   "settings.section.privacy_desc": "前向保密、签名数据包、已屏蔽的节点",
   "settings.section.network": "网络与中继",
-  "settings.section.network_desc": "互联网回退、nostr 中继、bitchat 兼容",
+  "settings.section.network_desc": "互联网回退、Nostr 中继、bitchat 兼容",
   "settings.section.permissions": "权限",
   "settings.section.permissions_desc": "蓝牙、定位、通知、相机、麦克风",
   "settings.section.storage": "存储与数据",
@@ -1688,12 +1709,10 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "没有信号读数",
   "settings.diag.no_peers": "范围内没有人",
-  "settings.diag.no_peers_desc": "已打开 {links} 条无线链路",
   "settings.diag.gcs_size": "过滤器大小",
   "settings.diag.gcs_size_desc": "发到空中的最大同步过滤器",
   "settings.diag.fpr": "误报率",
   "settings.diag.fpr_desc": "过滤器多久会误称我们缺了某个数据包",
-  "settings.diag.bytes": "{n} 字节",
   "settings.diag.footnote":
     "这里的内容都不能改。这些数值是固定的，好让 Airhop 保持与 bitchat 兼容。",
   "settings.diag.share": "分享诊断信息",
@@ -1713,7 +1732,6 @@ export const strings: Strings = {
   "settings.general.undo": "撤回发送",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "钱包",
-  "settings.general.undo_seconds": "{count} 秒",
   "settings.general.undo_a11y": "撤回发送：{value}",
   "settings.general.quality_a11y": "把上传质量设为 {value}",
   "settings.general.undo_desc":
@@ -1769,7 +1787,7 @@ export const strings: Strings = {
     "不让发件人和消息出现在锁屏上，因为锁屏不解锁就能看到它们",
   "settings.security.ring_alerts": "响铃提醒",
   "settings.security.ring_alerts_desc":
-    "响铃的总开关。关闭后将拒绝所有响铃,无论你允许了哪些联系人。",
+    "响铃的总开关。关闭后将拒绝所有响铃，无论你允许了哪些联系人。",
   "settings.security.no_blocked": "没有被屏蔽的节点",
   "settings.security.no_blocked_desc":
     "被屏蔽的节点不能给你发消息，也不会出现在网状网络标签页",
@@ -1798,7 +1816,6 @@ export const strings: Strings = {
     "位置频道和网状网络桥接将不再自动选取最近的中继，只用你添加的那些。这可能会缩小覆盖范围，而且你可能再也遇不到 bitchat 用户，因为他们都汇聚在最近的中继上。",
   "settings.network.custom": "自定义中继",
   "settings.network.custom_desc": "为位置频道和网状网络桥接添加你自己的中继",
-  "settings.network.custom_added": "已添加 {count} 个，上限 {max} 个",
   "settings.network.dm_relays": "消息中继",
   "settings.network.dm_relays_desc":
     "私信和私密频道始终使用这些。自定义中继不会改变它们。",
@@ -1808,17 +1825,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "添加中继",
   "settings.network.remove_relay": "移除 {url}",
   "settings.network.add_short": "添加",
-  "settings.network.relay_limit":
-    "你最多能添加 {count} 个中继。先移除一个才能再加。",
   "settings.network.relay_duplicate": "那个中继已经在你的列表里了。",
   "settings.network.relay_invalid":
     "请输入有效的中继主机名，例如 relay.example.com。只有当中继不使用默认端口时才需要写端口。不允许使用 IP 地址和本地名称。",
   "settings.network.lan": "本地网络",
   "settings.network.lan_desc":
-    "联系同一 WiFi 上的人，iPhone 和 Android 之间也可以。网络上的其他设备能看到你在运行 Airhop。",
+    "联系同一 Wi-Fi 上的人，iPhone 和 Android 之间也可以。网络上的其他设备能看到你在运行 Airhop。",
   "settings.network.lan_searching": "此网络上没有 Airhop 设备",
   "settings.network.lan_active": "已在此网络上连接",
-  "settings.network.lan_unavailable": "未连接 WiFi 网络",
+  "settings.network.lan_unavailable": "未连接 Wi-Fi 网络",
   "settings.network.lan_permission": "Airhop 的本地网络访问已关闭",
   "settings.network.lan_unsupported": "此设备不支持",
   "settings.network.lan_foreground":
@@ -1832,14 +1847,14 @@ export const strings: Strings = {
   "settings.network.wifi_paired": "已配对的设备",
   "settings.network.wifi_pair_find": "查找设备",
   "settings.network.wifi_pair_find_desc":
-    "查找附近正在显示自己的iPhone。两台设备都需为iOS 26或更新版本。",
-  "settings.network.wifi_pair_show": "显示这台iPhone",
+    "查找附近正在显示自己的 iPhone。两台设备都需为 iOS 26 或更新版本。",
+  "settings.network.wifi_pair_show": "显示这台 iPhone",
   "settings.network.wifi_pair_show_desc":
-    "让附近的iPhone找到这台。一人查找，另一人显示，同时进行。",
-  "settings.network.wifi_pair_find_action": "选择附近的iPhone",
-  "settings.network.wifi_pair_show_action": "让这台iPhone可被发现",
-  "settings.network.wifi_pair_unavailable": "Wi-Fi Aware目前不可用",
-  "settings.network.wifi_pair_forget": "在Settings应用中移除配对",
+    "让附近的 iPhone 找到这台。一人查找，另一人显示，同时进行。",
+  "settings.network.wifi_pair_find_action": "选择附近的 iPhone",
+  "settings.network.wifi_pair_show_action": "让这台 iPhone 可被发现",
+  "settings.network.wifi_pair_unavailable": "Wi-Fi Aware 目前不可用",
+  "settings.network.wifi_pair_forget": "在“设置”应用中移除配对",
   "settings.network.bitchat": "bitchat 兼容",
   "settings.network.bitchat_desc":
     "与 bitchat 使用同一套 BLE 网状网络，完全互通。这一项始终开启，无法关闭。",
@@ -1955,7 +1970,7 @@ export const strings: Strings = {
     "用于从图库发送照片并保存收到的媒体。没有它，你仍然可以用相机现拍现发。",
   "settings.permissions.microphone": "麦克风",
   "settings.permissions.microphone_desc":
-    "用于录制和发送语音消息，或使用实时语音。没有它，语音消息和实时语音都用不了。",
+    "用于录制和发送语音留言，或使用实时语音。没有它，语音留言和实时语音都用不了。",
   "settings.permissions.allow": "允许该权限",
   "settings.permissions.open_settings": "打开系统设置以更改该权限",
   "settings.permissions.system": "系统",
@@ -2187,7 +2202,7 @@ export const strings: Strings = {
   "settings.version.download_failed": "下载失败。请检查网络连接后重试。",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind}有 {size} KiB，超过了 {cap} KiB 的上限。",
+  "transfer.too_large": "{kind}有 {size}，超过了 {cap} 的上限。",
   "transfer.failed.malformed":
     "一个附件到达时已损坏，无法打开。请对方重新发一次。",
   "transfer.failed.unsupported_type":
@@ -2196,10 +2211,8 @@ export const strings: Strings = {
     "一个附件被拒收：它的内容和它声称的文件类型对不上。",
   "transfer.failed.storage": "一个附件到达了，但无法保存。请检查可用空间。",
   "transfer.badge.waiting": "等待中 · {name}",
-  "transfer.badge.active_count": "{count} 项传输",
   "transfer.badge.sending": "正在发送{name}",
   "transfer.badge.receiving": "正在接收{name}",
-  "transfer.badge.a11y": "{label}，{percent}%。打开对话。",
   "transfer.kind.photo": "照片",
   "transfer.kind.video": "视频",
   "transfer.kind.voice": "语音留言",
@@ -2226,10 +2239,11 @@ export const strings: Strings = {
   "notif.notice": "公告 · {content}",
   "notif.incoming_file": "有文件传来",
   "notif.preview.photo": "📷 照片",
-  "notif.preview.voice": "🎤 语音消息",
+  "notif.preview.voice": "🎤 语音留言",
   "notif.preview.video": "🎥 视频",
   "notif.preview.document": "📄 文档",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "新消息",
   "notif.hidden.channel": "有新动态",
@@ -2241,6 +2255,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count} 分钟前",
+  },
+  "format.hours_ago": {
+    other: "{count} 小时前",
+  },
+  "format.days_ago": {
+    other: "{count} 天前",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "再显示 {count} 个",
@@ -2281,6 +2306,44 @@ export const plurals: Plurals = {
     other: "{count} 人正在说话",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "还有 {count} 条等待发送",
+  },
+  "chat.thread.across_bridge": {
+    other: "桥接对面有 {count} 人",
+  },
+  "chat.thread.go_back_unread": {
+    other: "返回，{count} 条未读",
+  },
+  "chat.thread.notices_new": {
+    other: "本频道的公告，{count} 条新公告",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "跳到最新消息，{count} 条新消息",
+  },
+  "chat.board.urgent_many": {
+    other: "{count} 条新的紧急公告 · 打开公告",
+  },
+  "chat.info.add_count": {
+    other: "添加 {count} 位",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "{count} 小时后消退",
+  },
+  "chat.notices.fades_in_days": {
+    other: "{count} 天后消退",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "这个列表里有 {count} 条通知。清空只会把它们从这里移除，消息在各自的对话中仍然未读。全部标为已读则两边都会清掉。",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "清空全部 {count} 条通知",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "范围内有 {count} 个节点",
@@ -2298,15 +2361,23 @@ export const plurals: Plurals = {
     other: "{count} 位成员",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "网状网络桥接已开 · 桥接对面有 {count} 人",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} 处有 {count} 枚币，共 {balance} {unit}。移除会把这些币从这台设备上永久抹掉，而且它们没有备份。请先把余额取走或发出去。",
+      "{mint} 处有 {count} 枚币，共 {balance} {unit}。移除会把这笔余额从这台设备上永久抹掉，而且没有备份。请先把余额取走或发出去。",
+  },
+  "wallet.mint.split_across": {
+    other: "余额分散在 {count} 个铸币厂。把它归拢到一个。",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    other: "{count} 笔存入正在等待到账。每次打开应用时都会重新检查。",
+    other: "{count} 笔充值正在等待付款。每次打开应用时都会重新检查。",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2315,7 +2386,7 @@ export const plurals: Plurals = {
   },
   "wallet.backup.already_spent": {
     other:
-      "找到了 {count} 枚币，但它们已经被花掉了，所以没有为它们入账。这很正常：你花过的每一枚币，都会一直留在铸币厂保存的记录里。",
+      "找到了 {count} 枚币，但它们已经被花掉了，所以没有任何入账。这很正常：你花过的每一枚币，都会一直留在铸币厂保存的记录里。",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2336,8 +2407,31 @@ export const plurals: Plurals = {
     other: "有 {count} 枚币早已被花掉，它们已被移除。",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "已打开 {count} 条无线链路",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count} 秒",
+  },
+  "settings.network.custom_added": {
+    other: "已添加 {count} 个，上限 {max} 个",
+  },
+  "settings.network.relay_limit": {
+    other: "你最多能添加 {count} 个中继。先移除一个才能再加。",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "{count} 项传输",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}，{count}%。打开对话。",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "附近有人",
     other: "附近有 {count} 人",
   },
 };

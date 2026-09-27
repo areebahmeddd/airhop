@@ -1,6 +1,6 @@
-// Long-press context menu for a message: save, forward, copy, info.
-// Reuses the same bottom-sheet chrome as the attachment picker and channel
-// info sheet so it doesn't introduce a new UI paradigm.
+// Long-press context menu for a message: info, save, forward, copy and select.
+// It shares the bottom-sheet chrome of the attachment picker and the channel
+// info sheet.
 
 import { useT } from "@i18n";
 import {
@@ -57,6 +57,12 @@ export default function MessageActionSheet({
   const canShowInfo =
     message.isMine && !message.isSystem && message.status !== undefined;
 
+  // A row Airhop wrote is not forwarded (see forwardMessage), so it is not
+  // offered. A place is, and explains why not when tapped: someone looking for
+  // how to pass a location on is told, rather than finding nothing.
+  const canForward =
+    message.systemKey === undefined || message.locationPin !== undefined;
+
   // Photos and videos have somewhere to go (the system gallery); everything
   // else goes out through the share sheet, so the row says what will happen.
   const isGallery =
@@ -65,9 +71,7 @@ export default function MessageActionSheet({
 
   return (
     <BottomSheet visible onClose={onClose} sheetStyle={styles.sheet}>
-      {/* Everyday actions, grouped in one box so it matches the channel
-          "more" sheet: transparent rows on a single raised card, hairline
-          dividers between them, corners clipped by the card. */}
+      {/* One card of rows, matching the channel "more" sheet. */}
       <View style={styles.actionGroup}>
         {canShowInfo && (
           <ActionRow
@@ -92,16 +96,24 @@ export default function MessageActionSheet({
             />
           </>
         )}
-        {(canShowInfo || message.attachment) && <View style={styles.divider} />}
-        <ActionRow
-          icon="corner-up-right"
-          label={T("chat.action.forward")}
-          onPress={() => act(onForward)}
-          color={Colors.textPrimary}
-        />
+        {canForward && (
+          <>
+            {(canShowInfo || message.attachment) && (
+              <View style={styles.divider} />
+            )}
+            <ActionRow
+              icon="corner-up-right"
+              label={T("chat.action.forward")}
+              onPress={() => act(onForward)}
+              color={Colors.textPrimary}
+            />
+          </>
+        )}
         {message.text.length > 0 && (
           <>
-            <View style={styles.divider} />
+            {(canShowInfo || message.attachment || canForward) && (
+              <View style={styles.divider} />
+            )}
             <ActionRow
               icon="copy"
               label={T("common.copy")}
@@ -124,13 +136,11 @@ export default function MessageActionSheet({
 
 function ActionRow({
   icon,
-  iconNode,
   label,
   onPress,
   color,
 }: {
-  icon?: FeatherIconName;
-  iconNode?: React.ReactNode;
+  icon: FeatherIconName;
   label: string;
   onPress: () => void;
   color: string;
@@ -144,7 +154,7 @@ function ActionRow({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      {iconNode ?? (icon && <Feather name={icon} size={17} color={color} />)}
+      <Feather name={icon} size={17} color={color} />
       <Text style={[styles.actionLabel, { color }]}>{label}</Text>
     </Pressable>
   );

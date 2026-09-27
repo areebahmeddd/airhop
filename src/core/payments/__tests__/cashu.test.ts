@@ -20,6 +20,7 @@ import {
   isLikelyTestMint,
   mayContainToken,
   mintsOfUnresolvedTokens,
+  pureTokenAmount,
   readToken,
   satsToBtc,
   selectProofsForAmount,
@@ -261,6 +262,39 @@ describe("mintsOfUnresolvedTokens", () => {
 
   it("names nothing for text that is not a token", () => {
     expect(mintsOfUnresolvedTokens("cashuB" + "x".repeat(60))).toEqual([]);
+  });
+});
+
+// What a preview says in place of a message that is only a token.
+describe("pureTokenAmount", () => {
+  it("reads the amount and unit of a message that is one token", () => {
+    expect(pureTokenAmount(realToken([16, 4, 1]))).toEqual({
+      amount: 21,
+      unit: "sat",
+    });
+    // Surrounding whitespace, as a pasted token often has.
+    expect(pureTokenAmount(`  ${realToken([150], undefined, "USD")} `)).toEqual(
+      { amount: 150, unit: "usd" },
+    );
+  });
+
+  it("reads a token whose v2 keyset this wallet has not fetched", () => {
+    const v2Token = getEncodedToken({
+      mint: MINT,
+      unit: "sat",
+      proofs: proofSet([8]).map((p) =>
+        toProofLike({ ...p, id: "01" + "ab".repeat(32) }),
+      ),
+    } as unknown as Token);
+    expect(decodeToken(v2Token)).toBeNull();
+    expect(pureTokenAmount(v2Token)).toEqual({ amount: 8, unit: "sat" });
+  });
+
+  it("is null for prose, a token with prose around it, or no token", () => {
+    expect(pureTokenAmount("hello")).toBeNull();
+    expect(pureTokenAmount(`thanks ${realToken([2])}`)).toBeNull();
+    expect(pureTokenAmount("cashuB" + "x".repeat(60))).toBeNull();
+    expect(pureTokenAmount(encodedToken(MINT, []))).toBeNull();
   });
 });
 

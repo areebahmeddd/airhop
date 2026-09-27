@@ -203,13 +203,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "इन्टरनेट छैन, राउटर छैन, मानिसहरूसँग पहिल्यै भएका फोनहरूमै।",
   "home.features.networking.lan.name": "स्थानीय नेटवर्क",
-  "home.features.networking.lan.line": "साझा WiFi वा हटस्पट, iPhone र Android सँगै।",
+  "home.features.networking.lan.line": "साझा Wi-Fi वा हटस्पट, iPhone र Android सँगै।",
   "home.features.networking.hops.name": "बहु-हप रिले",
   "home.features.networking.hops.line": "हरेक फोनले सन्देश अघि बढाउँछ, सात हपसम्म।",
   "home.features.networking.bridge.name": "मेस पुल",
   "home.features.networking.bridge.line":
     "तपाईंको सार्वजनिक कुराकानीलाई पहुँचबाहिर रहेको नजिकको भीडसँग जोड्छ।",
-  "home.features.networking.wifi.name": "WiFi छिटो बाटो",
+  "home.features.networking.wifi.name": "Wi-Fi छिटो बाटो",
   "home.features.networking.wifi.line": "दुई Android वा दुई iPhone बीच छिटो पठाउने।",
   "home.features.networking.bitchat.name": "bitchat सँग मिल्ने",
   "home.features.networking.bitchat.line": "दुवै एप कुनै मिलानविनै उही मेसमा जोडिन्छन्।",

@@ -66,7 +66,7 @@ describe("computeMeshBanners", () => {
       });
       expect(banner.key).toBe("ble-adapter-off");
       expect(banner.tone).toBe("caution");
-      expect(banner.label).toBe("Bluetooth off · mesh running over WiFi");
+      expect(banner.label).toBe("Bluetooth off · mesh running over Wi-Fi");
       // Still worth turning back on: range, the screen being off, and the
       // other platform all need it.
       expect(banner.action).toEqual({
@@ -213,7 +213,7 @@ describe("computeMeshBanners", () => {
       bridgePeopleAcross: 4,
     });
     expect(stripIsolates(withCount[0].label)).toBe(
-      "Mesh bridge on · 4 across the bridge",
+      "Mesh bridge on · 4 people across the bridge",
     );
   });
 

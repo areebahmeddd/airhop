@@ -1,9 +1,9 @@
-// Onboarding step 3: Username reveal.
-// Shows the user their deterministic human-readable username derived from the
-// generated peer ID. Communicates that this is permanent and unique to them.
+// Onboarding step 3: the username reveal. Shows the human-readable name derived
+// from the generated peer ID, and that it is permanent and unique to them.
 
 import { useT, type Translator } from "@i18n";
 import PrimaryButton from "@ui/components/primary-button";
+import UpperText from "@ui/components/upper-text";
 import {
   avatarColor,
   FontFamily,
@@ -44,18 +44,16 @@ export default function UsernameScreen({
     <SafeAreaView style={styles.root}>
       {/* Same "centre if it fits, scroll if it does not" container as the
           welcome screen. This card is the tallest fixed block in onboarding, so
-          on a short viewport it was the CTA underneath that got clipped. */}
+          on a short viewport it is the CTA underneath that would be clipped. */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
         <View style={styles.inner}>
-          {/* Identity card. Read as one element: broken into its eight Texts a
-              screen reader recites "Your name on the mesh", the name, "Peer
-              ID", 16 characters of hex read digit by digit, then three
-              label/value pairs, as ten separate stops. One label states the
-              same thing in the order a sighted user takes it in. */}
+          {/* Read as one element: its Texts would otherwise be ten screen
+              reader stops, the peer ID read digit by digit. One label says it
+              in the order a sighted user takes it in. */}
           <View
             style={[styles.card, { borderColor: withAlpha(accentColor, 0.2) }]}
             accessible
@@ -65,7 +63,6 @@ export default function UsernameScreen({
               props: props.map((p) => `${p.label}: ${p.value}`).join(". "),
             })}
           >
-            {/* Avatar */}
             <View
               style={[
                 styles.avatarCircle,
@@ -80,26 +77,24 @@ export default function UsernameScreen({
               </Text>
             </View>
 
-            {/* Username */}
-            <Text style={styles.label}>{T("onboarding.username.label")}</Text>
+            <UpperText style={styles.label}>
+              {T("onboarding.username.label")}
+            </UpperText>
             <Text style={[styles.username, { color: accentColor }]}>
               {username}
             </Text>
 
-            {/* Peer ID */}
-            <Text style={styles.peerIDLabel}>
+            <UpperText style={styles.peerIDLabel}>
               {T("onboarding.username.peer_id")}
-            </Text>
+            </UpperText>
             <Text style={styles.peerID}>
               {peerID.slice(0, 8)}
               {"\u2009\u00b7\u2009"}
               {peerID.slice(8)}
             </Text>
 
-            {/* Divider */}
             <View style={styles.divider} />
 
-            {/* Properties */}
             <View style={styles.props}>
               {props.map((p) => (
                 <View key={p.label} style={styles.propRow}>
@@ -117,13 +112,11 @@ export default function UsernameScreen({
             </View>
           </View>
 
-          {/* Explanation */}
           <Text style={styles.explanation}>
             {T("onboarding.username.explanation")}
           </Text>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <PrimaryButton
             label={T("onboarding.username.cta")}
@@ -205,7 +198,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
     },
     username: {
       fontSize: FontSize.lg,
@@ -217,7 +209,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
       marginTop: Spacing.sm,
     },
     peerID: {

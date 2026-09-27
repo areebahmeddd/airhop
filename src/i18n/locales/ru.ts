@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Сегодня",
   "format.yesterday": "Вчера",
-  "format.minutes_ago": "{count} мин назад",
-  "format.hours_ago": "{count} ч назад",
-  "format.days_ago": "{count} д назад",
   "format.just_now": "только что",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -253,6 +250,7 @@ export const strings: Strings = {
   "chat.group_badge": "Группа",
   "chat.more": "Ещё",
   "chat.no_messages": "Сообщений пока нет",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Никого поблизости",
   "chat.presence.active_none": "Никто не активен",
   "chat.you": "Вы",
@@ -329,7 +327,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Не удалось открыть эту ячейку. Попробуйте через минуту.",
   "chat.jump.title": "Перейти к месту",
-  "chat.jump.saved": "СОХРАНЁННЫЕ МЕСТА",
+  "chat.jump.saved": "Сохранённые места",
+  "chat.jump.nearby": "Рядом",
   "chat.jump.anywhere":
     "Откройте открытый канал местоположения где угодно, даже там, где вас нет.",
   "chat.jump.geohash_note":
@@ -338,7 +337,22 @@ export const strings: Strings = {
     "Вы отображаетесь как телепортировавшийся, а не как находящийся рядом. Канал доходит только через интернет.",
   "chat.jump.level_cell": "Ячейка: {level}",
   "chat.jump.already_here": "Вы уже здесь. «Перейти» откроет ваш канал {name}.",
-  "chat.jump.open_direction": "Открыть ячейку {direction}",
+  "chat.jump.dir.n": "С",
+  "chat.jump.dir.ne": "СВ",
+  "chat.jump.dir.e": "В",
+  "chat.jump.dir.se": "ЮВ",
+  "chat.jump.dir.s": "Ю",
+  "chat.jump.dir.sw": "ЮЗ",
+  "chat.jump.dir.w": "З",
+  "chat.jump.dir.nw": "СЗ",
+  "chat.jump.open_n": "Открыть ячейку к северу",
+  "chat.jump.open_ne": "Открыть ячейку к северо-востоку",
+  "chat.jump.open_e": "Открыть ячейку к востоку",
+  "chat.jump.open_se": "Открыть ячейку к юго-востоку",
+  "chat.jump.open_s": "Открыть ячейку к югу",
+  "chat.jump.open_sw": "Открыть ячейку к юго-западу",
+  "chat.jump.open_w": "Открыть ячейку к западу",
+  "chat.jump.open_nw": "Открыть ячейку к северо-западу",
   "chat.jump.open_place": "Открыть {name}",
   "chat.jump.remove_place": "Убрать {name} из сохранённых мест",
   "chat.jump.go": "Перейти",
@@ -367,7 +381,7 @@ export const strings: Strings = {
     "До 16 человек, которых выбираете вы. Ссылки-приглашения нет, поэтому никто не войдёт из-за того, что ему её переслали.",
   "chat.group.bluetooth":
     "Только Bluetooth. Участники вне зоны действия получат сообщения, как только вернутся.",
-  "chat.group.members_label": "УЧАСТНИКИ",
+  "chat.group.members_label": "Участники",
   "chat.group.none_in_range":
     "Рядом никого нет. При создании группы участники должны быть поблизости.",
   "chat.group.create_title": "Создать группу",
@@ -456,20 +470,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Отменить {name}",
   "chat.thread.hide_transfer": "Скрыть прогресс",
   "chat.thread.hide_transfer_hint": "Файл всё равно придёт",
-  "chat.thread.queued_more": "Ещё {count} ждут отправки",
-  "chat.thread.across_bridge": "{count} через мост",
   "chat.thread.bridged": "через мост",
   "chat.thread.invite_body":
     "Присоединяйтесь ко мне в {channel} на Airhop — приватные сообщения по mesh-сети, работающие без интернета.",
-  "chat.thread.go_back_unread": "Назад, {count} непрочитанных",
   "chat.thread.view_info": "Показать сведения о {name}",
-  "chat.thread.notices_new": "Объявления этого канала, {count} новых",
   "chat.board.urgent_one": "Срочное объявление от {author} · {content}",
-  "chat.board.urgent_many":
-    "Новых срочных объявлений: {count} · открыть Объявления",
+  "chat.board.urgent_one_anon": "Срочное объявление · {content}",
   "chat.thread.say_something": "Скажите что-нибудь в {channel}.",
-  "chat.thread.jump_latest_new":
-    "Перейти к последнему сообщению, {count} новых",
   "chat.thread.unconfirmed_since": "С {date} доставка не подтверждалась",
   "chat.thread.no_reach": "Рядом нет узлов · это ещё никто не получил",
   "chat.thread.channel_needs_internet":
@@ -506,7 +513,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Вы сделали снимок экрана · никого не уведомили",
   "chat.screenshot.heads_up": "Обратите внимание",
-  "chat.screenshot.notice": "* {name} сделал снимок экрана *",
+  "chat.screenshot.peer_took": "{name} сделал снимок экрана",
   "chat.screenshot.notified_dm":
     "{name} уведомлён о том, что вы сделали снимок экрана этого разговора.",
   "chat.screenshot.notified":
@@ -553,7 +560,7 @@ export const strings: Strings = {
   "chat.attach.document": "Документ",
   "chat.attach.document_desc": "Отправить любой файл или PDF",
   "chat.attach.voice": "Голосовая заметка",
-  "chat.attach.voice_desc": "Записать и отправить голосовое сообщение",
+  "chat.attach.voice_desc": "Записать и отправить голосовую заметку",
   "chat.attach.ecash": "Отправить ecash",
   "chat.attach.ecash_desc": "Отправить сатоши Cashu из кошелька",
   "chat.attach.location": "Геопозиция",
@@ -561,7 +568,7 @@ export const strings: Strings = {
   "chat.attach.title": "Вложить",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Отправлена геопозиция",
+  "chat.location.sent_summary": "Геопозиция отправлена",
   "chat.location.received_summary": "Поделился геопозицией",
   "chat.location.title": "Геопозиция",
   "chat.location.away": "{distance} {direction}",
@@ -592,15 +599,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "к северо-западу",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Позвонил",
+  "chat.ring.sent_summary": "Звонок отправлен",
   "chat.ring.received_summary": "Позвонил вам",
   "chat.ring.alert.title": "{sender} звонит вам",
   "chat.ring.alert.body": "Проверьте свои сообщения",
   "chat.ring.alert.open": "Открыть",
   "chat.ring.alert.snooze": "Отложить на 1 час",
-  "chat.ring.sent_snoozed": "Позвонили, отложено",
-  "chat.ring.sent_too_soon": "Позвонили, слишком рано",
-  "chat.ring.sent_not_allowed": "Позвонили, не разрешено",
+  "chat.ring.sent_snoozed": "Звонок отправлен · отложено",
+  "chat.ring.sent_too_soon": "Звонок отправлен · слишком рано",
+  "chat.ring.sent_not_allowed": "Звонок отправлен · не разрешено",
   "chat.attach.send_anyway": "Всё равно отправить",
   "chat.attach.bitchat_too_big": "Это может не дойти",
   "chat.attach.bitchat_too_big_body":
@@ -675,6 +682,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Остановить запись и отправить",
   "chat.voice.lift_lock": "Проведите вверх для записи без рук",
   "chat.voice.live_speaking": "{name} говорит",
+  "chat.voice.live_ended": "Завершено",
   "voice.unavailable": "Голосовая связь недоступна",
   "voice.recording_stopped": "Запись остановлена",
 
@@ -709,7 +717,7 @@ export const strings: Strings = {
   "chat.info.reclaimed": "Возвращено",
   "chat.info.reclaimed_desc":
     "Вы вернули этот платёж в кошелёк, поэтому он не будет доставлен",
-  "chat.info.about": "О канале",
+  "chat.info.about": "Описание",
   "chat.info.group_desc":
     "Приватная группа. Читать могут только участники, добавленные создателем, и она остаётся на Bluetooth.",
   "chat.info.teleported_desc":
@@ -735,9 +743,8 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Удалить {name}",
   "chat.info.no_addable":
     "Нет доступных узлов для добавления. Участники должны быть поблизости.",
-  "chat.info.add_count": "Добавить: {count}",
   "chat.info.teleported_tag": "{level}  ·  телепорт",
-  "chat.info.active": "Активен",
+  "chat.info.active": "Активные",
   "chat.info.members": "Участники",
   "chat.info.bookmark": "Сохранить это место",
   "chat.info.remove_bookmark": "Убрать из сохранённых",
@@ -819,8 +826,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 дня",
   "chat.notices.7_days": "7 дней",
   "chat.notices.fading": "исчезает",
-  "chat.notices.fades_in_hours": "исчезнет через {count} ч",
-  "chat.notices.fades_in_days": "исчезнет через {count} д",
   "chat.notices.scope_geo": "Гео",
   "chat.notices.scope_mesh": "Сеть",
   "chat.notices.urgent_short": "Срочно",
@@ -837,11 +842,20 @@ export const strings: Strings = {
   "chat.search.links": "Ссылки",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Фильтр: {filter}",
-  "chat.search.no_matches":
-    "Нет совпадений в разделе «{filter}» по запросу «{query}»",
-  "chat.search.no_media": "В разделе «{filter}» пока пусто",
+  "chat.search.no_photos": "Фото пока нет",
+  "chat.search.no_videos": "Видео пока нет",
+  "chat.search.no_audio": "Аудио пока нет",
+  "chat.search.no_documents": "Документов пока нет",
+  "chat.search.no_links": "Ссылок пока нет",
+  "chat.search.no_ecash": "Ecash пока нет",
+  "chat.search.no_photos_matching": "Нет фото по запросу «{query}»",
+  "chat.search.no_videos_matching": "Нет видео по запросу «{query}»",
+  "chat.search.no_audio_matching": "Нет аудио по запросу «{query}»",
+  "chat.search.no_documents_matching": "Нет документов по запросу «{query}»",
+  "chat.search.no_links_matching": "Нет ссылок по запросу «{query}»",
+  "chat.search.no_ecash_matching": "Нет ecash по запросу «{query}»",
   "chat.search.result_a11y": "{chat}, {kind} от {sender}",
-  "chat.search.you": "вы",
+  "chat.search.result_mine_a11y": "{chat}, {kind}, отправлено вами",
   "chat.search.section_chats": "Чаты",
   "chat.search.section_messages": "Сообщения",
   "chat.search.section_notices": "Объявления",
@@ -849,15 +863,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Нет результатов по запросу «{query}»",
   "chat.search.open_chat": "Открыть {name}",
   "chat.search.message_a11y": "{chat}, сообщение от {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ваше сообщение: {snippet}",
   "chat.search.notice_a11y": "Объявление в {chat} от {author}: {snippet}",
   "chat.search.urgent": "Срочно ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} в этом списке. Очистка убирает их только отсюда, а сообщения остаются непрочитанными в своих разговорах. «Отметить все прочитанными» очищает и то, и другое.",
   "chat.notif.mark_all_read": "Отметить все прочитанными",
   "chat.notif.clear_list": "Очистить список",
-  "chat.notif.clear_all_a11y": "Удалить все уведомления: {count}",
   "chat.notif.title": "Уведомления",
   "chat.notif.clear_short": "Очистить",
   "chat.notif.close": "Закрыть уведомления",
@@ -880,6 +892,9 @@ export const strings: Strings = {
   "chat.forward.locations": "Места",
   "chat.forward.dms": "Личные сообщения",
   "chat.forward.none": "Других чатов пока нет",
+  "chat.forward.app_row": "Не переслано",
+  "chat.forward.app_row_body":
+    "Эта строка от Airhop, а не от человека, так что пересылать нечего.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Запускаем сеть…",
@@ -887,7 +902,7 @@ export const strings: Strings = {
     "На этом устройстве нет Bluetooth · только интернет",
   "mesh.banner.bluetooth_off": "Bluetooth выключен · сеть недоступна",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth выключен · сеть работает через WiFi",
+    "Bluetooth выключен · сеть работает через Wi-Fi",
   "mesh.banner.permission_needed": "Нужно разрешение на Bluetooth",
   "mesh.banner.blocked": "Bluetooth заблокирован · разрешите его в настройках",
   "mesh.banner.location_permission": "Для поиска узлов нужна геопозиция",
@@ -916,7 +931,6 @@ export const strings: Strings = {
     "Интернет-шлюз включён · передаём для узлов поблизости",
   "mesh.banner.bridge": "Мост сети включён · открытый чат связан",
   "mesh.banner.background_limits": "{brand} может приостанавливать сеть в фоне",
-  "mesh.banner.bridge_across": "Мост сети включён · {count} через мост",
   "mesh.banner.action.turn_on": "Включить",
   "mesh.banner.action.allow": "Разрешить",
   "mesh.banner.action.resume": "Возобновить",
@@ -952,7 +966,7 @@ export const strings: Strings = {
   "mesh.radar.hint_allow_settings":
     "Разрешите Bluetooth в настройках, чтобы находить узлы",
   "mesh.radar.hint_location_permission":
-    "Android 11 и старше нужна геопозиция для сканирования по Bluetooth",
+    "Android 11 и более ранним версиям нужна геопозиция для сканирования по Bluetooth",
   "mesh.radar.hint_android_location":
     "Android нужна включённая геопозиция, чтобы возвращать результаты сканирования Bluetooth",
   "mesh.radar.signal_strong": "Сильный",
@@ -994,7 +1008,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "Открыть узел {name}, в сети, узел-ретранслятор",
   "mesh.peer.last_seen_at": "Был в сети {ago}",
-  "mesh.peer.send_amount": "Отправить {amount} сатоши",
+  "mesh.peer.send_unit_amount": "Отправить {amount} {unit}",
   "mesh.peer.direct": "Прямое соединение",
   "mesh.peer.check_distance": "Измерить расстояние",
   "mesh.peer.checking": "Измеряем",
@@ -1067,7 +1081,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Этот токен разбит на слишком много монет, чтобы поместиться в QR-код. Поделитесь им или скопируйте его.",
   "wallet.send.scan_note":
-    "Попросите отсканировать это из их кошелька. До отметки о доставке токен можно вернуть.",
+    "Попросите получателя отсканировать это в своём кошельке. Токен можно вернуть, пока вы не отметите его как полученный.",
   "wallet.send.mesh_note":
     "Токен уходит как зашифрованное личное сообщение по сети. Интернет не нужен.",
   "wallet.send.no_peers_note":
@@ -1088,7 +1102,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Открыть в кошельке",
   "wallet.send.to_peer": "Отправить токен узлу поблизости",
   "wallet.send.to_peer_short": "Отправить узлу",
-  "wallet.send.mark_delivered": "Отметить доставленным и завершить",
+  "wallet.send.mark_delivered": "Отметить как полученное",
   "wallet.send.they_got_it": "Получено",
   "wallet.send.keep_pending": "Оставить отправку в ожидании",
   "wallet.send.decide_later": "Решить позже",
@@ -1112,10 +1126,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "Погашено в {mint}. Теперь это доказуемо ваше: копия этого токена у отправителя больше не работает.",
-  "wallet.receive.stored_pending":
-    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено{dleq}. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
-  "wallet.receive.dleq_inline":
-    " (подпись при этом сходится, так что токен подлинный)",
+  "wallet.receive.pending_unconfirmed":
+    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено. Подпись сходится, так что токен подлинный. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
   "wallet.receive.dleq_ok":
     "Подпись монетного двора сходится, значит токен подлинный.",
   "wallet.receive.dleq_uncached":
@@ -1179,8 +1193,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Перенести все балансы в один двор",
   "wallet.mint.confirm_with": "Проверить баланс в {mint}",
   "wallet.mint.available_amount": "Доступно {amount} {unit}",
-  "wallet.mint.split_across":
-    "Баланс разбит по монетным дворам: {count}. Перенесите его в один.",
   "wallet.mint.move_everything_to": "Перенести всё в {mint}",
   "wallet.mint.consolidate_title": "Перенос в один монетный двор",
   "wallet.mint.moving": "Переносим…",
@@ -1191,10 +1203,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Ничего не перенесено",
   "wallet.mint.move_pending": "В пути",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} ушли с {mint} и уже в пути к {target}. Они поступят, как только депозит будет получен, а кошелёк продолжает попытки.",
+    "{amount} {unit} ушли с {mint} и уже в пути к {target}. Они поступят, как только перевод будет получен, а кошелёк продолжает попытки.",
   "wallet.mint.destination": "· назначение",
   "wallet.mint.will_move": "· будет перенесено",
   "wallet.mint.issued_by": "Выпущено",
+  "wallet.mint.test_badge": "Тест",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Пополнение кошелька Airhop",
@@ -1220,7 +1233,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "до {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Оплатить {amount} {unit}",
-  "wallet.ln.deposit_title": "Пополнение через Lightning",
+  "wallet.ln.deposit_title": "Пополнить через Lightning",
   "wallet.ln.amount_placeholder": "Сумма в сатоши",
   "wallet.ln.requesting": "Запрашиваем…",
   "wallet.ln.get_invoice": "Получить счёт",
@@ -1252,7 +1265,7 @@ export const strings: Strings = {
     "У вас уже есть фраза восстановления. Восстановление другой заменит её. Монеты, уже покрытые старой фразой, останутся доступными на этом устройстве, но перестанут быть восстановимыми, поэтому убедитесь, что старые слова записаны, прежде чем продолжать.",
   "wallet.backup.replace": "Заменить",
   "wallet.backup.replace_unseen_body":
-    "У этого кошелька уже есть фраза восстановления, созданная для вас при настройке, и ваши монеты созданы с ней. Восстановление другой фразы заменит её навсегда. Монеты останутся доступны на этом устройстве и перейдут под новую фразу при следующем обновлении каждого минта.",
+    "У этого кошелька уже есть фраза восстановления, созданная для вас при настройке, и ваши монеты созданы с ней. Восстановление другой фразы заменит её навсегда. Монеты останутся доступны на этом устройстве и перейдут под новую фразу при следующем обновлении каждого монетного двора.",
   "wallet.backup.invalid_phrase": "Эта фраза недействительна",
   "wallet.backup.invalid_phrase_body":
     "У фразы есть встроенная контрольная сумма, и эта её не проходит. Проверьте, нет ли опечатки, пропущенного или переставленного слова.",
@@ -1309,7 +1322,7 @@ export const strings: Strings = {
   "wallet.backup.write_down": "Запишите это",
   "wallet.backup.copy_phrase": "Копировать фразу восстановления в буфер обмена",
   "wallet.backup.copy_clipboard": "Копировать в буфер обмена",
-  "wallet.backup.written_down": "Я их записал",
+  "wallet.backup.written_down": "Слова записаны",
   "wallet.backup.check_copy": "Сверьтесь со своей записью",
   "wallet.backup.confirm": "Подтвердить",
   "wallet.backup.restore_title": "Восстановление по фразе",
@@ -1343,7 +1356,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Монетный двор сообщает, что этот токен уже погашен, так что {amount} {unit} дошли до них и на ваш баланс ничего не вернулось.",
   "wallet.copied.token_body":
-    "Токен в буфере обмена. Он остаётся зарезервированным здесь, пока вы не отметите доставку, так что при неудачной первой попытке его можно вставить снова.",
+    "Токен в буфере обмена. Он остаётся зарезервированным здесь, пока вы не отметите его как полученный, так что при неудачной первой попытке его можно вставить снова.",
   "wallet.copied.refused_token_body":
     "Токен в буфере обмена. Этот кошелёк его больше не учитывает, так что вы можете вернуть его отправителю.",
   "wallet.copied.phrase_body":
@@ -1370,8 +1383,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Показать этот токен как QR-код",
   "wallet.pending.copy_again": "Снова скопировать токен",
   "wallet.pending.share_again": "Снова поделиться токеном",
-  "wallet.pending.mark_delivered": "Отметить этот токен доставленным",
-  "wallet.pending.delivered": "Доставлено",
+  "wallet.pending.mark_delivered": "Отметить как полученное",
+  "wallet.pending.delivered": "Получено",
   "wallet.pending.reclaim_into": "Вернуть этот токен на баланс",
   "wallet.activity.title": "Активность",
   "wallet.activity.none": "Пока ничего",
@@ -1389,7 +1402,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "ошибка",
   "wallet.activity.status_reclaimed": "возвращено",
   "wallet.activity.status_expired": "истекло",
-  "wallet.activity.ln_deposit": "Пополнение Lightning",
+  "wallet.activity.ln_deposit": "Пополнение через Lightning",
   "wallet.activity.ln_withdrawal": "Вывод через Lightning",
   "wallet.activity.nutzap_received": "Nutzap получен",
   "wallet.activity.nutzap_claiming": "Nutzap, получение",
@@ -1432,10 +1445,17 @@ export const strings: Strings = {
     "Привязанные платежи вернуть нельзя: потратить эти монеты теперь может только их ключ.",
   "wallet.pay.reclaimable":
     "Платёж можно вернуть в разделе «Активность», пока вы не подтвердите получение.",
-  "wallet.pay.why": "Отправлено так, потому что {reason}.",
+  "wallet.pay.why_no_relay":
+    "Отправлено так, потому что не было связи с ретранслятором.",
+  "wallet.pay.why_no_shared_mint":
+    "Отправлено так, потому что ни в одном монетном дворе, который принимает получатель, у вас недостаточно средств.",
+  "wallet.pay.why_no_nutzap_info":
+    "Отправлено так, потому что получатель не опубликовал сведения nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} для {name}",
   "wallet.pay.thread_receipt":
-    "Вы отправили {amount} {unit}, привязано к их ключу.",
+    "Вы отправили {amount} {unit} с привязкой к их ключу.",
   "wallet.pay.title": "Отправить ecash",
   "wallet.pay.to": "Кому: {name}",
   "wallet.pay.amount": "Сумма в сатоши",
@@ -1580,7 +1600,7 @@ export const strings: Strings = {
     "Ничего не списано. Попробуйте снова, и кошелёк выберет другой набор.",
   "wallet.svc.no_ecash": "Ecash пока нет.",
   "wallet.svc.no_ecash_body":
-    "Добавьте монетный двор и пополните счёт через Lightning или получите токен от кого-нибудь.",
+    "Добавьте монетный двор и пополните через Lightning или получите токен от кого-нибудь.",
   "wallet.svc.split_across_mints":
     "Ваш баланс разбит по нескольким монетным дворам.",
   "wallet.svc.mint_says_spent":
@@ -1591,11 +1611,11 @@ export const strings: Strings = {
   "wallet.svc.invoice_expired_before": "Срок действия счёта истёк до оплаты.",
   "wallet.svc.invoice_expired": "Срок действия этого счёта истёк.",
   "wallet.svc.invoice_unpaid": "Счёт ещё не оплачен.",
-  "wallet.svc.payment_unknown":
-    "Статус платежа неизвестен; проверим снова при следующем обновлении.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Статус платежа неизвестен; проверим снова при следующем обновлении.",
   "wallet.svc.melt_change_pending": "Ваш счёт оплачен.",
   "wallet.svc.melt_change_pending_body":
-    "Монетный двор ещё не вернул неизрасходованную комиссию за маршрутизацию. Она заберётся автоматически при следующем обновлении, и ничего тем временем не теряется.",
+    "Монетный двор ещё не вернул неизрасходованную комиссию за маршрутизацию. Она будет получена автоматически при следующем обновлении, и ничего тем временем не теряется.",
   "wallet.svc.mint_did_not_pay":
     "Монетный двор не оплатил этот счёт. Ваш баланс не изменился.",
   "wallet.svc.not_an_invoice": "Это не счёт Lightning.",
@@ -1632,17 +1652,12 @@ export const strings: Strings = {
     "В этом платеже указан монетный двор, которым вы не пользуетесь.",
   "wallet.svc.unknown_mint_body":
     "Сначала добавьте двор сами, если доверяете ему; с двора, который вы не выбирали, ничего не гасится.",
-  "wallet.svc.no_relay": "нет связи с ретранслятором",
-  "wallet.svc.no_shared_mint":
-    "нет общего монетного двора с достаточным балансом",
-  "wallet.svc.no_nutzap_info":
-    "получатель не опубликовал сведения nutzap (NIP-61, вид 10019)",
   "wallet.svc.locked_undelivered":
     "Привязано к их ключу, но пока не доставлено. Передайте токен из этой операции, чтобы завершить её.",
   "wallet.svc.swap_lost":
     "Монетный двор так и не завершил этот обмен, поэтому взамен ничего не выпущено.",
   "wallet.svc.mint_lost":
-    "Минт выпустил этот депозит, но его монеты не удалось восстановить. Восстановление из фразы восстановления вернёт их.",
+    "Монетный двор выпустил это пополнение, но его монеты не удалось восстановить. Восстановление из фразы восстановления вернёт их.",
   "wallet.svc.swap_unreadable":
     "Этот обмен сохранён в формате, который эта версия не может воспроизвести.",
   "wallet.svc.lock_in_doubt": "Неизвестно, прошёл ли этот платёж.",
@@ -1742,8 +1757,8 @@ export const strings: Strings = {
   "settings.share_peer_id": "Поделиться своим идентификатором узла",
   "settings.share_id_short": "Поделиться ID",
   "settings.share_app": "Поделиться приложением Airhop",
-  "settings.share_app_short": "Поделиться Airhop",
-  "settings.share_app_dialog": "Получи Airhop",
+  "settings.share_app_short": "Поделиться приложением",
+  "settings.share_app_dialog": "Получите Airhop",
   "settings.share_app_unsupported": "Не удаётся поделиться этой установкой",
   "settings.share_app_unsupported_body":
     "Эта копия Airhop установлена в виде нескольких частей, и её нельзя отправить одним файлом. Вместо этого скачайте однофайловую версию с GitHub Releases.",
@@ -1770,7 +1785,7 @@ export const strings: Strings = {
     "Прямая секретность, подписанные пакеты, заблокированные узлы",
   "settings.section.network": "Сеть и ретрансляторы",
   "settings.section.network_desc":
-    "Резервный интернет, ретрансляторы nostr, совместимость с bitchat",
+    "Резервный интернет, ретрансляторы Nostr, совместимость с bitchat",
   "settings.section.permissions": "Разрешения",
   "settings.section.permissions_desc":
     "Bluetooth, геопозиция, уведомления, камера, микрофон",
@@ -1820,14 +1835,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} дБм",
   "settings.diag.no_rssi": "Нет данных о сигнале",
   "settings.diag.no_peers": "В зоне действия никого",
-  "settings.diag.no_peers_desc": "Открытых радиосоединений: {links}",
   "settings.diag.gcs_size": "Размер фильтра",
   "settings.diag.gcs_size_desc":
     "Самый большой фильтр синхронизации, отправленный в эфир",
   "settings.diag.fpr": "Доля ложных срабатываний",
   "settings.diag.fpr_desc":
     "Как часто фильтр заявляет о пакете, которого у нас нет",
-  "settings.diag.bytes": "{n} байт",
   "settings.diag.footnote":
     "Здесь ничего нельзя изменить. Эти значения зафиксированы, чтобы Airhop оставался совместимым с bitchat.",
   "settings.diag.share": "Поделиться диагностикой",
@@ -1848,7 +1861,6 @@ export const strings: Strings = {
   "settings.general.undo": "Отмена отправки",
   "settings.general.feature_ai": "ИИ",
   "settings.general.feature_wallet": "Кошелёк",
-  "settings.general.undo_seconds": "{count} секунд",
   "settings.general.undo_a11y": "Отмена отправки: {value}",
   "settings.general.quality_a11y": "Установить качество загрузки: {value}",
   "settings.general.undo_desc":
@@ -1941,7 +1953,6 @@ export const strings: Strings = {
   "settings.network.custom": "Свои ретрансляторы",
   "settings.network.custom_desc":
     "Добавьте свои ретрансляторы для каналов местоположения и моста сети",
-  "settings.network.custom_added": "Добавлено {count} из {max}",
   "settings.network.dm_relays": "Ретрансляторы сообщений",
   "settings.network.dm_relays_desc":
     "Личные сообщения и приватные каналы всегда используют их. Свои ретрансляторы этого не меняют.",
@@ -1952,18 +1963,16 @@ export const strings: Strings = {
   "settings.network.add_relay": "Добавить ретранслятор",
   "settings.network.remove_relay": "Убрать {url}",
   "settings.network.add_short": "Добавить",
-  "settings.network.relay_limit":
-    "Можно добавить ретрансляторов: {count}. Уберите один, чтобы добавить другой.",
   "settings.network.relay_duplicate":
     "Этот ретранслятор уже есть в вашем списке.",
   "settings.network.relay_invalid":
     "Введите корректный хост ретранслятора, например relay.example.com. Порт нужен, только если ретранслятор не использует стандартный. IP-адреса и локальные имена не допускаются.",
   "settings.network.lan": "Локальная сеть",
   "settings.network.lan_desc":
-    "Связывайтесь с теми, кто в той же сети WiFi, в том числе между iPhone и Android. Другие устройства в сети видят, что вы используете Airhop.",
+    "Связывайтесь с теми, кто в той же сети Wi-Fi, в том числе между iPhone и Android. Другие устройства в сети видят, что вы используете Airhop.",
   "settings.network.lan_searching": "В этой сети нет устройств Airhop",
   "settings.network.lan_active": "Подключено в этой сети",
-  "settings.network.lan_unavailable": "Вы не в сети WiFi",
+  "settings.network.lan_unavailable": "Вы не в сети Wi-Fi",
   "settings.network.lan_permission":
     "Доступ к локальной сети для Airhop выключен",
   "settings.network.lan_unsupported": "Недоступно на этом устройстве",
@@ -1985,7 +1994,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_find_action": "Выберите ближайший iPhone",
   "settings.network.wifi_pair_show_action": "Сделать этот iPhone видимым",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware сейчас недоступен",
-  "settings.network.wifi_pair_forget": "Удалите связь в приложении Settings",
+  "settings.network.wifi_pair_forget": "Удалите связь в приложении «Настройки»",
   "settings.network.bitchat": "Совместимость с bitchat",
   "settings.network.bitchat_desc":
     "Та же BLE-сеть, что и у bitchat, полностью совместима. Это всегда включено и не отключается.",
@@ -2109,7 +2118,7 @@ export const strings: Strings = {
     "Отправляйте фото из медиатеки и сохраняйте полученные медиа. Без этого вы всё ещё можете снимать и отправлять новые фото камерой.",
   "settings.permissions.microphone": "Микрофон",
   "settings.permissions.microphone_desc":
-    "Записывайте и отправляйте голосовые сообщения или пользуйтесь голосовой связью. Без него голосовые сообщения и голосовая связь работать не будут.",
+    "Записывайте и отправляйте голосовые заметки или пользуйтесь голосовой связью. Без него голосовые заметки и голосовая связь работать не будут.",
   "settings.permissions.allow": "Дать это разрешение",
   "settings.permissions.open_settings":
     "Открыть системные настройки, чтобы изменить это разрешение",
@@ -2194,7 +2203,7 @@ export const strings: Strings = {
   // ---- Settings: profile and identity ----
   "settings.status.online": "В сети",
   "settings.status.online_desc": "Виден другим, вещает и сканирует",
-  "settings.status.away": "Отошёл",
+  "settings.status.away": "Нет на месте",
   "settings.status.away_desc": "Сеть приостановлена, не сканирует и не вещает",
   "settings.status.invisible": "Невидимка",
   "settings.status.invisible_desc": "Сканирует, но скрыт от обнаружения",
@@ -2361,7 +2370,7 @@ export const strings: Strings = {
     "Не удалось загрузить. Проверьте подключение и повторите попытку.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind}: {size} KiB, это больше предела в {cap} KiB.",
+  "transfer.too_large": "{kind}: {size}, это больше предела в {cap}.",
   "transfer.failed.malformed":
     "Вложение пришло повреждённым и не открылось. Попросите отправить его снова.",
   "transfer.failed.unsupported_type":
@@ -2371,10 +2380,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Вложение пришло, но сохранить его не удалось. Проверьте свободное место.",
   "transfer.badge.waiting": "Ожидание · {name}",
-  "transfer.badge.active_count": "Передач: {count}",
   "transfer.badge.sending": "Отправляем {name}",
   "transfer.badge.receiving": "Получаем {name}",
-  "transfer.badge.a11y": "{label}, {percent} процентов. Открыть разговор.",
   "transfer.kind.photo": "Фото",
   "transfer.kind.video": "Видео",
   "transfer.kind.voice": "Голосовая заметка",
@@ -2404,10 +2411,11 @@ export const strings: Strings = {
   "notif.notice": "Объявление · {content}",
   "notif.incoming_file": "Входящий файл",
   "notif.preview.photo": "📷 Фото",
-  "notif.preview.voice": "🎤 Голосовое сообщение",
+  "notif.preview.voice": "🎤 Голосовая заметка",
   "notif.preview.video": "🎥 Видео",
   "notif.preview.document": "📄 Документ",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Новое сообщение",
   "notif.hidden.channel": "Новая активность",
@@ -2419,6 +2427,26 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} минуту назад",
+    few: "{count} минуты назад",
+    many: "{count} минут назад",
+    other: "{count} минуты назад",
+  },
+  "format.hours_ago": {
+    one: "{count} час назад",
+    few: "{count} часа назад",
+    many: "{count} часов назад",
+    other: "{count} часа назад",
+  },
+  "format.days_ago": {
+    one: "{count} день назад",
+    few: "{count} дня назад",
+    many: "{count} дней назад",
+    other: "{count} дня назад",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Показать ещё {count}",
@@ -2465,10 +2493,10 @@ export const plurals: Plurals = {
     other: "{count} дня",
   },
   "chat.info.group_reach": {
-    one: "{reachable} из {count} участника доступен",
-    few: "{reachable} из {count} участников доступны",
-    many: "{reachable} из {count} участников доступны",
-    other: "{reachable} из {count} участника доступны",
+    one: "Доступно: {reachable} из {count} участника",
+    few: "Доступно: {reachable} из {count} участников",
+    many: "Доступно: {reachable} из {count} участников",
+    other: "Доступно: {reachable} из {count} участника",
   },
   "chat.group_members": {
     one: "Приватная группа  ·  {count} участник",
@@ -2493,6 +2521,77 @@ export const plurals: Plurals = {
     few: "{count} говорят",
     many: "{count} говорят",
     other: "{count} говорит",
+  },
+
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "Ещё {count} ждёт отправки",
+    few: "Ещё {count} ждут отправки",
+    many: "Ещё {count} ждут отправки",
+    other: "Ещё {count} ждут отправки",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} человек через мост",
+    few: "{count} человека через мост",
+    many: "{count} человек через мост",
+    other: "{count} человека через мост",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Назад, {count} непрочитанное",
+    few: "Назад, {count} непрочитанных",
+    many: "Назад, {count} непрочитанных",
+    other: "Назад, {count} непрочитанного",
+  },
+  "chat.thread.notices_new": {
+    one: "Объявления этого канала, {count} новое",
+    few: "Объявления этого канала, {count} новых",
+    many: "Объявления этого канала, {count} новых",
+    other: "Объявления этого канала, {count} нового",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Перейти к последнему сообщению, {count} новое",
+    few: "Перейти к последнему сообщению, {count} новых",
+    many: "Перейти к последнему сообщению, {count} новых",
+    other: "Перейти к последнему сообщению, {count} нового",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} новое срочное объявление · открыть Объявления",
+    few: "{count} новых срочных объявления · открыть Объявления",
+    many: "{count} новых срочных объявлений · открыть Объявления",
+    other: "{count} нового срочного объявления · открыть Объявления",
+  },
+  "chat.info.add_count": {
+    one: "Добавить: {count}",
+    few: "Добавить: {count}",
+    many: "Добавить: {count}",
+    other: "Добавить: {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "исчезнет через {count} час",
+    few: "исчезнет через {count} часа",
+    many: "исчезнет через {count} часов",
+    other: "исчезнет через {count} часа",
+  },
+  "chat.notices.fades_in_days": {
+    one: "исчезнет через {count} день",
+    few: "исчезнет через {count} дня",
+    many: "исчезнет через {count} дней",
+    other: "исчезнет через {count} дня",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "{count} уведомление в этом списке. Очистка убирает уведомления только отсюда, а сообщения остаются непрочитанными в своих разговорах. «Отметить все прочитанными» очищает и то, и другое.",
+    few: "{count} уведомления в этом списке. Очистка убирает их только отсюда, а сообщения остаются непрочитанными в своих разговорах. «Отметить все прочитанными» очищает и то, и другое.",
+    many: "{count} уведомлений в этом списке. Очистка убирает их только отсюда, а сообщения остаются непрочитанными в своих разговорах. «Отметить все прочитанными» очищает и то, и другое.",
+    other:
+      "{count} уведомления в этом списке. Очистка убирает их только отсюда, а сообщения остаются непрочитанными в своих разговорах. «Отметить все прочитанными» очищает и то, и другое.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Очистить {count} уведомление",
+    few: "Очистить все {count} уведомления",
+    many: "Очистить все {count} уведомлений",
+    other: "Очистить все {count} уведомления",
   },
 
   // ---- Mesh: peer list ----
@@ -2527,13 +2626,27 @@ export const plurals: Plurals = {
     other: "{count} участника",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Мост сети включён · {count} человек через мост",
+    few: "Мост сети включён · {count} человека через мост",
+    many: "Мост сети включён · {count} человек через мост",
+    other: "Мост сети включён · {count} человека через мост",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} держит {balance} {unit} в {count} монете. Удаление навсегда сотрёт её с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
-    few: "{mint} держит {balance} {unit} в {count} монетах. Удаление навсегда сотрёт их с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
-    many: "{mint} держит {balance} {unit} в {count} монетах. Удаление навсегда сотрёт их с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
+    one: "{mint} держит {balance} {unit} в {count} монете. Удаление навсегда сотрёт эти средства с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
+    few: "{mint} держит {balance} {unit} в {count} монетах. Удаление навсегда сотрёт эти средства с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
+    many: "{mint} держит {balance} {unit} в {count} монетах. Удаление навсегда сотрёт эти средства с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
     other:
-      "{mint} держит {balance} {unit} в {count} монеты. Удаление навсегда сотрёт их с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
+      "{mint} держит {balance} {unit} в {count} монеты. Удаление навсегда сотрёт эти средства с этого устройства, а резервной копии нет. Сначала выведите или отправьте баланс.",
+  },
+  "wallet.mint.split_across": {
+    one: "Баланс разбит по {count} монетному двору. Перенесите его в один.",
+    few: "Баланс разбит по {count} монетным дворам. Перенесите его в один.",
+    many: "Баланс разбит по {count} монетным дворам. Перенесите его в один.",
+    other: "Баланс разбит по {count} монетным дворам. Перенесите его в один.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2553,11 +2666,11 @@ export const plurals: Plurals = {
     other: "Восстановлено {count} непотраченной монеты из {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "Найдена {count} монета, но она уже потрачена, поэтому за неё ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
-    few: "Найдено {count} монеты, но они уже потрачены, поэтому за них ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
-    many: "Найдено {count} монет, но они уже потрачены, поэтому за них ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
+    one: "Найдена {count} уже потраченная монета, поэтому ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
+    few: "Найдено {count} монеты, но они уже потрачены, поэтому ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
+    many: "Найдено {count} монет, но они уже потрачены, поэтому ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
     other:
-      "Найдено {count} монеты, но они уже потрачены, поэтому за них ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
+      "Найдено {count} монеты, но они уже потрачены, поэтому ничего не зачислено. Это нормально: каждая когда-либо потраченная вами монета остаётся в записях монетного двора.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2593,8 +2706,50 @@ export const plurals: Plurals = {
     other: "{count} монеты были уже потрачены и удалены.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "Открыто {count} радиосоединение",
+    few: "Открыто {count} радиосоединения",
+    many: "Открыто {count} радиосоединений",
+    other: "Открыто {count} радиосоединения",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} секунда",
+    few: "{count} секунды",
+    many: "{count} секунд",
+    other: "{count} секунды",
+  },
+  "settings.network.custom_added": {
+    one: "Добавлено {count} из {max}",
+    few: "Добавлено {count} из {max}",
+    many: "Добавлено {count} из {max}",
+    other: "Добавлено {count} из {max}",
+  },
+  "settings.network.relay_limit": {
+    one: "Можно добавить {count} ретранслятор. Уберите один, чтобы добавить другой.",
+    few: "Можно добавить {count} ретранслятора. Уберите один, чтобы добавить другой.",
+    many: "Можно добавить {count} ретрансляторов. Уберите один, чтобы добавить другой.",
+    other:
+      "Можно добавить {count} ретранслятора. Уберите один, чтобы добавить другой.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} передача",
+    few: "{count} передачи",
+    many: "{count} передач",
+    other: "{count} передачи",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} процент. Открыть разговор.",
+    few: "{label}, {count} процента. Открыть разговор.",
+    many: "{label}, {count} процентов. Открыть разговор.",
+    other: "{label}, {count} процента. Открыть разговор.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "Кто-то поблизости",
     one: "{count} человек поблизости",
     few: "{count} человека поблизости",
     many: "{count} человек поблизости",

@@ -212,14 +212,14 @@ const strings: Strings = {
     "இணையம் இல்லை, திசைவி இல்லை, மக்களிடம் ஏற்கெனவே உள்ள தொலைபேசிகளில்.",
   "home.features.networking.lan.name": "உள்ளூர் வலையமைப்பு",
   "home.features.networking.lan.line":
-    "பகிர்ந்த WiFi அல்லது ஹாட்ஸ்பாட், iPhone-உம் Android-உம் ஒன்றாக.",
+    "பகிர்ந்த Wi-Fi அல்லது ஹாட்ஸ்பாட், iPhone-உம் Android-உம் ஒன்றாக.",
   "home.features.networking.hops.name": "பல-தாவல் அஞ்சல்",
   "home.features.networking.hops.line":
     "ஒவ்வொரு தொலைபேசியும் செய்திகளை அனுப்புகிறது, ஏழு தாவல்கள் வரை.",
   "home.features.networking.bridge.name": "மெஷ் பாலம்",
   "home.features.networking.bridge.line":
     "உங்கள் பொது உரையாடலை எல்லைக்கு வெளியே உள்ள அருகிலுள்ள கூட்டத்துடன் இணைக்கிறது.",
-  "home.features.networking.wifi.name": "WiFi விரைவுப் பாதை",
+  "home.features.networking.wifi.name": "Wi-Fi விரைவுப் பாதை",
   "home.features.networking.wifi.line":
     "இரண்டு Android அல்லது இரண்டு iPhone இடையே வேகமான பரிமாற்றம்.",
   "home.features.networking.bitchat.name": "bitchat உடன் இணக்கம்",

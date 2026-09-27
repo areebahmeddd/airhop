@@ -6,7 +6,7 @@
 // a row to jump straight to that conversation or channel. The data comes from
 // activity-store, which logs one entry per inbound message or notice.
 
-import { t, useT } from "@i18n";
+import { t, tPlural, useT } from "@i18n";
 import { chevronBack, textAlignEnd } from "@i18n/layout";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { useActivityStore, type ActivityEntry } from "@store/activity-store";
@@ -74,7 +74,7 @@ export default function NotificationCenter({
   function handleClearAll(): void {
     showAlert(
       t("chat.notif.title"),
-      t("chat.notif.actions_body", { count: entries.length }),
+      tPlural("chat.notif.actions_body", entries.length),
       [
         { text: t("chat.notif.mark_all_read"), onPress: markAllRead },
         {
@@ -113,9 +113,10 @@ export default function NotificationCenter({
               style={styles.headerBtn}
               onPress={handleClearAll}
               accessibilityRole="button"
-              accessibilityLabel={t("chat.notif.clear_all_a11y", {
-                count: entries.length,
-              })}
+              accessibilityLabel={tPlural(
+                "chat.notif.clear_all_a11y",
+                entries.length,
+              )}
               hitSlop={HIT_SLOP}
             >
               <Text style={styles.clearText}>
@@ -148,7 +149,6 @@ export default function NotificationCenter({
           }
         />
       </SafeAreaView>
-      {/* Its own window, and it is message previews. */}
     </Modal>
   );
 }

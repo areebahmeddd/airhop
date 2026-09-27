@@ -6,11 +6,11 @@
 // one place. The row on the hub shows the current state, so the answer is
 // visible without opening this.
 //
-// The confirm sheet on the toggle stays. Turning Tor on is a real change in what
-// this device tells the network about itself, and the connectivity group asks
-// before every one of those.
+// The toggle asks for confirmation. Turning Tor on is a real change in what this
+// device tells the network about itself, and the connectivity group asks before
+// every one of those.
 
-import { useT } from "@i18n";
+import { useT, type TranslationKey } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   isTorStartRecovered,
@@ -23,6 +23,7 @@ import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore, type TorBridgeMode } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
+import UpperText from "@ui/components/upper-text";
 import {
   FontFamily,
   HIT_SLOP,
@@ -54,8 +55,8 @@ interface Props {
 const MODES: {
   // Null is a transport the app carries but does not offer yet.
   value: TorBridgeMode | null;
-  labelKey: Parameters<ReturnType<typeof useT>>[0];
-  descriptionKey: Parameters<ReturnType<typeof useT>>[0];
+  labelKey: TranslationKey;
+  descriptionKey: TranslationKey;
 }[] = [
   {
     value: "off",
@@ -194,9 +195,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
       <SubHeader title={T("settings.conn.tor")} onBack={onBack} />
       <SettingsScroll>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.conn.tor_short")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               icon="shield"
@@ -231,9 +232,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
         {/* Only once Tor is on, or it is a control that does nothing. */}
         {torEnabled && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <UpperText style={styles.sectionTitle}>
               {T("settings.tor.connection")}
-            </Text>
+            </UpperText>
             <View style={styles.optionGroup}>
               {MODES.map((mode, i) => {
                 const value = mode.value;
@@ -285,9 +286,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
 
         {torEnabled && bridgeMode === "custom" && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <UpperText style={styles.sectionTitle}>
               {T("settings.tor.mode_custom")}
-            </Text>
+            </UpperText>
             <View style={styles.settingsGroup}>
               <View style={styles.settingRow}>
                 <TextInput

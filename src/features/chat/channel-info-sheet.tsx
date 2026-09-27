@@ -29,6 +29,7 @@ import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
+import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import {
   BUTTON_HEIGHT,
@@ -289,10 +290,10 @@ export default function ChannelInfoSheet({
         ? T("chat.info.teleported_desc")
         : T("chat.info.custom_desc"));
 
-  // The three at-a-glance facts, computed once so the card below stays declarative:
-  // privacy (is it encrypted), reach (which transports carry it), and location
-  // (the geohash, for geo channels), in one card rather than spread across
-  // paragraph-heavy sections restating the same thing.
+  // The three at-a-glance facts, computed once so the card below stays
+  // declarative: privacy (is it encrypted), reach (which transports carry it),
+  // and location (the geohash, for geo channels), in one card rather than
+  // spread across paragraph-heavy sections restating the same thing.
   // "unlock" for public (unencrypted), distinct from the reach row's "globe".
   const privacyIcon: FeatherIconName = encrypted ? "lock" : "unlock";
   const privacyColor = encrypted ? Colors.e2ee : Colors.danger;
@@ -552,9 +553,10 @@ export default function ChannelInfoSheet({
         // search has focus, instead of being eaten dismissing the keyboard.
         keyboardShouldPersistTaps="handled"
       >
-        {/* About */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{T("chat.info.about")}</Text>
+          <UpperText style={styles.sectionLabel}>
+            {T("chat.info.about")}
+          </UpperText>
           <Text style={styles.description}>{resolvedDescription}</Text>
         </View>
 
@@ -662,9 +664,9 @@ export default function ChannelInfoSheet({
                 with a "You" row, a search toggle, and a chat action per member. */}
         <View style={styles.section}>
           <View style={styles.memberHeaderRow}>
-            <Text style={styles.sectionLabel}>
+            <UpperText style={styles.sectionLabel}>
               {`${memberSectionTitle} · ${memberTotal}`}
-            </Text>
+            </UpperText>
             <Pressable
               onPress={() => {
                 setSearching((s) => !s);
@@ -889,7 +891,7 @@ export default function ChannelInfoSheet({
           >
             <Text style={styles.addConfirmText}>
               {addSelected.size > 0
-                ? T("chat.info.add_count", { count: addSelected.size })
+                ? TP("chat.info.add_count", addSelected.size)
                 : T("chat.info.add")}
             </Text>
           </Pressable>
@@ -960,7 +962,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.8,
     },
     description: {

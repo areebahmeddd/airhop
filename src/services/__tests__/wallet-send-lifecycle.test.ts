@@ -22,6 +22,7 @@ import {
   whenWalletHydrated,
   type StoredProof,
 } from "@store/wallet-store";
+import { txFailureVerbatim } from "@utils/message-text";
 import {
   confirmSend,
   failNutzapDelivery,
@@ -261,7 +262,7 @@ describe("resolving a send", () => {
     // the token can still be re-shared or pulled back deliberately.
     const prepared = await prepareSend({ amount: 10 });
 
-    failSend(prepared.txId, "relay timeout");
+    failSend(prepared.txId, txFailureVerbatim("relay timeout"));
 
     expect(reservedTotal()).toBe(10);
     expect(reclaimSend(prepared.txId)).toBe(true);
@@ -449,7 +450,10 @@ describe("a nutzap, once locked to their key", () => {
     lockedNutzap();
     const after = spendable();
 
-    failNutzapDelivery(NUTZAP_TX, "no relay accepted the event");
+    failNutzapDelivery(
+      NUTZAP_TX,
+      txFailureVerbatim("no relay accepted the event"),
+    );
 
     // Still not reclaimable, and still not credited: a failed delivery says
     // nothing about whether the recipient can spend the proofs.

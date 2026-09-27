@@ -13,8 +13,10 @@ import { groupChannel } from "@store/group-store";
 import { usePeerStore } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import {
   BUTTON_HEIGHT,
+  DISABLED_OPACITY,
   FontSize,
   FontWeight,
   LineHeight,
@@ -64,8 +66,8 @@ export function NewGroupSheet({ visible, onClose, onBack, onCreated }: Props) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(peerID)) next.delete(peerID);
-      // Cap at 15 others (creator makes 16). Silently ignore taps past the cap
-      // rather than letting createGroup fail later with a misleading error.
+      // Taps past the cap are ignored here rather than left for createGroup
+      // to fail later with a misleading error.
       else if (next.size < MAX_OTHER_MEMBERS) next.add(peerID);
       return next;
     });
@@ -110,8 +112,8 @@ export function NewGroupSheet({ visible, onClose, onBack, onCreated }: Props) {
     >
       <Text style={styles.title}>{T("chat.group.create_title")}</Text>
       {/* Same scannable card as the create-channel sheet, so the two sides
-              of the chooser stay comparable: what it protects, who can get in,
-              how far it reaches. */}
+          of the chooser stay comparable: what it protects, who can get in,
+          how far it reaches. */}
       <View style={styles.privacyNote}>
         <View style={styles.privacyNoteRow}>
           <Feather
@@ -155,12 +157,12 @@ export function NewGroupSheet({ visible, onClose, onBack, onCreated }: Props) {
       />
 
       {/* Label and list are one block: the sheet's own gap would otherwise
-              push the heading away from the thing it labels. */}
+          push the heading away from the thing it labels. */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>
+        <UpperText style={styles.sectionLabel}>
           {T("chat.group.members_label")}
           {selected.size > 0 ? ` · ${String(selected.size)}` : ""}
-        </Text>
+        </UpperText>
 
         {reachable.length === 0 ? (
           <Text style={styles.empty}>{T("chat.group.none_in_range")}</Text>
@@ -217,7 +219,8 @@ export function NewGroupSheet({ visible, onClose, onBack, onCreated }: Props) {
           disabled={!canCreate}
           accessibilityRole="button"
           accessibilityLabel={T("chat.group.create")}
-          // Without this a reader user taps into what sounds like plain text.
+          // Without this a screen reader user taps into what sounds like
+          // plain text.
           accessibilityState={{ disabled: !canCreate }}
         >
           <Text style={styles.confirmText}>{T("chat.group.create")}</Text>
@@ -342,7 +345,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    confirmDisabled: { opacity: 0.4 },
+    confirmDisabled: { opacity: DISABLED_OPACITY },
     confirmText: {
       fontSize: FontSize.base,
       color: Colors.textInverse,

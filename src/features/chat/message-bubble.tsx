@@ -7,6 +7,7 @@
 
 import type { EmbeddedToken } from "@core/payments/cashu";
 import { useT } from "@i18n";
+import { contentTextAlign } from "@i18n/layout";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
@@ -45,9 +46,9 @@ import LocationCard from "./location-card";
 // 44pt floor from 32pt without making the bubbles taller.
 const AVATAR_TAP_SIZE = 32;
 
-// Memoized (see the export) so a thread of hundreds of messages doesn't
-// re-render every bubble on each keyboard/scroll/state tick, which is what
-// triggered React Native's "VirtualizedList slow to update" warning. A message
+// Memoized (see the export) so a thread of hundreds of messages does not
+// re-render every bubble on each keyboard, scroll or state tick, which trips
+// React Native's "VirtualizedList slow to update" warning. A message
 // object is replaced whenever it changes (immutable store updates), so a
 // reference check on `item` is enough; `tokens` is skipped because it derives
 // from `item.text`, and the plain callbacks are behaviorally stable (they act
@@ -69,8 +70,9 @@ interface Props {
   //
   // The comparator cannot check the render props themselves. They are fresh
   // closures every parent render, so comparing them would defeat the memo (the
-  // composer's draft changes per keystroke); ignoring them froze the bubble on
-  // its first render, so tapping load/play/claim changed nothing on screen.
+  // composer's draft changes per keystroke), and ignoring them would freeze the
+  // bubble on its first render, so a tap on load, play or claim would show
+  // nothing.
   // Row-scoped, so one tap re-renders one bubble.
   renderState: string;
   formatTime: (ms: number) => string;
@@ -171,7 +173,7 @@ function MessageBubble({
             styles.selectCheck,
             // Own rows pack to the end, so the check needs the free space on its
             // trailing side to stay in the same column as the one on a received
-            // row. Without it the check hugged the bubble and the column zigzagged.
+            // row. Without it the check hugs the bubble and the column zigzags.
             item.isMine && styles.selectCheckLeading,
             selected === true && styles.selectCheckOn,
           ]}
@@ -312,6 +314,7 @@ function MessageBubble({
                   item.isMine
                     ? styles.messageTextMine
                     : styles.messageTextTheirs,
+                  { textAlign: contentTextAlign(messageText(item)) },
                 ]}
               >
                 {renderMessageText(
@@ -489,9 +492,6 @@ function StatusTick({
         />
       );
     case "read":
-      // Read is the one status that spends colour: a filled blue double-check,
-      // the universal "they've seen it" signal. Delivered stays monochrome
-      // (a dim double-check), so the jump to blue reads as a real state change.
       return (
         <MaterialDesignIcons
           name="check-all"

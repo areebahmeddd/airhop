@@ -9,7 +9,7 @@
 // themselves live in chat-store. Persisted so the history survives a restart,
 // and capped so a busy channel can't grow it without bound.
 
-import type { TranslationKey, TranslationVars } from "@i18n";
+import type { CatalogKey, TranslationVars } from "@i18n";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { getStorage } from "./mmkv";
@@ -31,7 +31,7 @@ export interface ActivityEntry {
   // rather than a person. Same contract as `systemKey` on ChatMessage:
   // `preview` remains the fallback, and callers read `activityPreview()` from
   // `@utils/message-text`.
-  previewKey?: TranslationKey;
+  previewKey?: CatalogKey;
   previewVars?: TranslationVars;
   timestampMs: number;
   // False until the user has opened the bell screen and seen it.

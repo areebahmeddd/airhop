@@ -8,6 +8,7 @@
 // the functions below use, so calling them outside a renderer tests React.
 
 import { useSettingsStore } from "@store/settings-store";
+import { getLocales } from "expo-localization";
 import { I18nManager } from "react-native";
 import {
   activeLanguage,
@@ -15,7 +16,9 @@ import {
   initI18n,
   isShipped,
   languageForTag,
+  languageForTags,
   needsRelaunch,
+  refreshDeviceLanguage,
   resolvePreference,
   SHIPPED_LANGUAGES,
   stripIsolates,
@@ -141,6 +144,35 @@ describe("which language is on screen", () => {
   });
 });
 
+describe("a mirrored frame with nothing to fill it", () => {
+  // A first launch on a phone set to Hebrew or Pashto: React Native mirrors
+  // the frame from the device locale, and no shipped language reads right to
+  // left in its place, so English is rendered. Mirrored, it needs the restart
+  // that `applyLayoutDirection` has already queued.
+  const frame = I18nManager as { isRTL: boolean };
+
+  afterEach(() => {
+    frame.isRTL = false;
+    initI18n();
+  });
+
+  it("asks for the restart that straightens English out", () => {
+    frame.isRTL = true;
+    useSettingsStore.setState({ language: "en", frameLanguage: null });
+    initI18n();
+    expect(getLanguage()).toBe("en");
+    expect(needsRelaunch("en")).toBe(true);
+  });
+
+  it("does not ask when a right-to-left language fills it", () => {
+    frame.isRTL = true;
+    useSettingsStore.setState({ language: "ar", frameLanguage: null });
+    initI18n();
+    expect(getLanguage()).toBe("ar");
+    expect(needsRelaunch("ar")).toBe(false);
+  });
+});
+
 describe("layout direction", () => {
   it("pins the next launch's direction whoever changes the language", () => {
     // Reset settings and a panic wipe move the preference without the picker.
@@ -158,6 +190,23 @@ describe("layout direction", () => {
     expect(useSettingsStore.getState().frameLanguage).toBe(
       resolvePreference("system"),
     );
+  });
+
+  it("pins it when the phone's language changes under the system setting", () => {
+    // Otherwise the next launch still boots in the old direction and a second
+    // one is needed, with nothing on screen explaining either.
+    const forceRTL = jest.spyOn(I18nManager, "forceRTL");
+    const locales = jest.mocked(getLocales);
+    initI18n();
+    useSettingsStore.getState().setLanguage("system");
+
+    locales.mockReturnValueOnce([{ languageTag: "ar-EG" }] as never);
+    refreshDeviceLanguage();
+    expect(forceRTL).toHaveBeenLastCalledWith(true);
+    expect(useSettingsStore.getState().frameLanguage).toBe("ar");
+
+    refreshDeviceLanguage();
+    expect(forceRTL).toHaveBeenLastCalledWith(false);
   });
 });
 
@@ -179,6 +228,9 @@ describe("device language", () => {
     ["zh-Hant-TW", "zh-Hant"],
     ["zh-TW", "zh-Hant"],
     ["zh-HK", "zh-Hant"],
+    // A named script outranks the region iOS appends to every tag.
+    ["zh-Hans-HK", "zh-Hans"],
+    ["zh-Hant-HK", "zh-Hant"],
     ["zh-MO", "zh-Hant"],
     ["zh-CN", "zh-Hans"],
     ["zh-SG", "zh-Hans"],
@@ -205,6 +257,21 @@ describe("device language", () => {
     ["", "en"],
   ])("resolves %s to %s", (tag, expected) => {
     expect(languageForTag(tag)).toBe(expected);
+  });
+
+  it.each([
+    // The first shipped language wins, the way both OSes pick a resource.
+    [["ca-ES", "es-ES"], "es"],
+    [["gsw-CH", "de-CH"], "de"],
+    [["be-BY", "ru-RU"], "ru"],
+    // A declined Punjabi tag moves on rather than stopping at English.
+    [["pa-PK", "ur-PK"], "ur"],
+    // English named in the list is a match like any other.
+    [["he-IL", "en-US", "ar-EG"], "en"],
+    [["xx-YY"], "en"],
+    [[], "en"],
+  ])("resolves the list %j to %s", (tags, expected) => {
+    expect(languageForTags(tags)).toBe(expected);
   });
 
   it("never infers the pseudolocale, which is chosen and never detected", () => {
@@ -277,6 +344,19 @@ describe("plurals", () => {
     expect(rendered(1)).toBe("1 peer in range");
     expect(rendered(0)).toBe("0 peers in range");
     expect(rendered(7)).toBe("7 peers in range");
+  });
+
+  it("says exactly one in words only where the catalog has an exact form", () => {
+    // `=1` is for wording that carries no number. CLDR `one` is not that: it
+    // covers 21 in Ukrainian and 5 in Filipino.
+    useSettingsStore.setState({ language: "en" });
+    expect(tPlural("notif.nearby.title", 1)).toBe("Someone nearby");
+    expect(stripIsolates(tPlural("notif.nearby.title", 2))).toBe(
+      "2 people nearby",
+    );
+    expect(stripIsolates(tPlural("mesh.peers_in_range", 1))).toBe(
+      "1 peer in range",
+    );
   });
 
   it("provides {count} without the caller passing it", () => {

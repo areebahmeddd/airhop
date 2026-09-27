@@ -207,13 +207,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Geen internet, geen router, op telefoons die mensen al hebben.",
   "home.features.networking.lan.name": "Lokaal netwerk",
-  "home.features.networking.lan.line": "Gedeelde WiFi of een hotspot, iPhone en Android samen.",
+  "home.features.networking.lan.line": "Gedeelde Wi-Fi of een hotspot, iPhone en Android samen.",
   "home.features.networking.hops.name": "Multi-hop doorgifte",
   "home.features.networking.hops.line": "Elke telefoon geeft berichten door, tot zeven hops.",
   "home.features.networking.bridge.name": "Mesh-brug",
   "home.features.networking.bridge.line":
     "Verbindt je openbare chat met een groep in de buurt buiten bereik.",
-  "home.features.networking.wifi.name": "WiFi-sneltraject",
+  "home.features.networking.wifi.name": "Wi-Fi-sneltraject",
   "home.features.networking.wifi.line": "Snellere overdracht tussen twee Androids of twee iPhones.",
   "home.features.networking.bitchat.name": "bitchat-compatibel",
   "home.features.networking.bitchat.line":

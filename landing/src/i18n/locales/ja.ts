@@ -199,12 +199,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "インターネットもルーターも不要。みんながすでに持っている端末で。",
   "home.features.networking.lan.name": "ローカルネットワーク",
-  "home.features.networking.lan.line": "共有 WiFi やテザリングで、iPhone と Android がいっしょに。",
+  "home.features.networking.lan.line":
+    "共有 Wi-Fi やテザリングで、iPhone と Android がいっしょに。",
   "home.features.networking.hops.name": "マルチホップ中継",
   "home.features.networking.hops.line": "各端末がメッセージを受け渡し、最大 7 ホップ。",
   "home.features.networking.bridge.name": "メッシュブリッジ",
   "home.features.networking.bridge.line": "公開チャットを、圏外にいる近くの集団とつなぎます。",
-  "home.features.networking.wifi.name": "WiFi の高速経路",
+  "home.features.networking.wifi.name": "Wi-Fi の高速経路",
   "home.features.networking.wifi.line": "Android どうし、iPhone どうしなら転送がより速く。",
   "home.features.networking.bitchat.name": "bitchat と互換",
   "home.features.networking.bitchat.line": "どちらのアプリも設定なしで同じメッシュに参加します。",

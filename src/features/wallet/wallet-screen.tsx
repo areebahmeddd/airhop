@@ -88,6 +88,7 @@ import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
 import PixelBird, { BIRD_ROWS } from "@ui/components/pixel-bird";
+import UpperText from "@ui/components/upper-text";
 import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import { useCopy } from "@ui/hooks/use-copy";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
@@ -110,11 +111,13 @@ import {
   amountParts,
   formatAgo,
   formatAmount,
+  formatDuration,
   formatNumber,
   formatUnitAmount,
   parseWholeNumber,
   unitLabel,
 } from "@utils/format";
+import { txErrorText } from "@utils/message-text";
 import { nostrShortLabel, peerIDToUsername } from "@utils/username";
 import * as Clipboard from "expo-clipboard";
 import { useNetworkState } from "expo-network";
@@ -1675,7 +1678,9 @@ export default function WalletScreen({
             />
           </Animated.View>
         </Pressable>
-        <Text style={styles.balanceLabel}>{T("wallet.balance.spendable")}</Text>
+        <UpperText style={styles.balanceLabel}>
+          {T("wallet.balance.spendable")}
+        </UpperText>
         {/* Tap toggles sats and bitcoin. No animation: a balance that morphs
             is one people stop trusting. */}
         <Pressable
@@ -1809,12 +1814,15 @@ export default function WalletScreen({
 
       {/* Always shown, so an empty wallet does not look like a lost history. */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{T("wallet.activity.title")}</Text>
+        <UpperText style={styles.sectionTitle}>
+          {T("wallet.activity.title")}
+        </UpperText>
         {/* Unclaimed sends lead: their proofs are reserved, not spent, and
             this card is the only way back to that value. */}
         {pendingSends.map((tx) => {
           // An unpublished nutzap is locked to the recipient: no reclaim.
           const reclaimable = reserved[tx.id] !== undefined;
+          const errorText = txErrorText(tx);
           return (
             <View key={tx.id} style={styles.pendingCard}>
               <View style={styles.pendingHeader}>
@@ -1830,7 +1838,7 @@ export default function WalletScreen({
                 {reclaimable
                   ? t("wallet.pending.reserved_desc")
                   : t("wallet.pending.locked_desc")}
-                {tx.error ? `\n\n${tx.error}` : ""}
+                {errorText !== null ? `\n\n${errorText}` : ""}
               </Text>
               <View style={styles.pendingActions}>
                 <Pressable
@@ -1918,8 +1926,8 @@ export default function WalletScreen({
                     </Text>
                     {/* Every kind shows its reason, including a melt with no
                         answer whose payment may have gone through. */}
-                    {tx.error !== undefined && tx.error.length > 0 ? (
-                      <Text style={styles.historyError}>{tx.error}</Text>
+                    {txErrorText(tx) !== null ? (
+                      <Text style={styles.historyError}>{txErrorText(tx)}</Text>
                     ) : null}
                     {/* Coins the mint refused, received or reclaimed: no
                         longer counted, but the token is still offered. A
@@ -2173,7 +2181,9 @@ export default function WalletScreen({
                             description: record?.description,
                           }) && (
                             <View style={styles.testBadge}>
-                              <Text style={styles.testBadgeText}>TEST</Text>
+                              <UpperText style={styles.testBadgeText}>
+                                {T("wallet.mint.test_badge")}
+                              </UpperText>
                             </View>
                           )}
                         </View>
@@ -2205,9 +2215,7 @@ export default function WalletScreen({
                   title: T("wallet.mint.consolidate"),
                   detail:
                     lightningBlockedReason ??
-                    T("wallet.mint.split_across", {
-                      count: splitAccounts.length,
-                    }),
+                    TP("wallet.mint.split_across", splitAccounts.length),
                   disabled: lightningBlockedReason !== null,
                   onPress: () =>
                     switchSheet(() => {
@@ -3648,12 +3656,11 @@ function txStatusNote(tx: WalletTx): string | undefined {
   }
 }
 
-// Clamped at zero: a tick past the deadline before the expired branch renders
-// must not flash "-1s".
+// m:ss, which needs no unit abbreviation in any language. Rounded up, so the
+// last second shows "0:01" rather than "0:00" while the invoice still pays;
+// `formatDuration` clamps a tick past the deadline at zero.
 function formatCountdown(remainingMs: number): string {
-  const total = Math.max(0, Math.ceil(remainingMs / 1000));
-  if (total < 60) return `${total}s`;
-  return `${Math.floor(total / 60)}m ${String(total % 60).padStart(2, "0")}s`;
+  return formatDuration(Math.ceil(remainingMs / 1000));
 }
 
 function createStyles(Colors: ReturnType<typeof useThemeColors>) {
@@ -3674,7 +3681,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
       paddingHorizontal: Spacing.xs,
     },
     banner: {
@@ -3723,7 +3729,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textInverse,
       opacity: SECONDARY_ON_ACCENT,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
     },
     balanceRow: {
       flexDirection: "row",

@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "今日",
   "format.yesterday": "昨日",
-  "format.minutes_ago": "{count}分前",
-  "format.hours_ago": "{count}時間前",
-  "format.days_ago": "{count}日前",
   "format.just_now": "たった今",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -72,7 +69,7 @@ export const strings: Strings = {
   "onboarding.welcome.open_terms": "利用規約を開く",
   "onboarding.welcome.open_privacy": "プライバシーポリシーを開く",
   "onboarding.welcome.consent":
-    "{cta}をタップすると、{terms}と{privacy}に同意したことになります。",
+    "「{cta}」をタップすると、{terms}と{privacy}に同意したことになります。",
   "onboarding.welcome.transfer": "別の端末から移行",
 
   // ---- Onboarding: identity generation ----
@@ -108,7 +105,7 @@ export const strings: Strings = {
   "onboarding.transfer.scan_heading":
     "古い端末でこのコードを読み取ってください",
   "onboarding.transfer.step_open": "古い端末でAirhopを開く",
-  "onboarding.transfer.step_go": "{tab}で{row}を開く",
+  "onboarding.transfer.step_go": "「{tab}」タブで「{row}」を開く",
   "onboarding.transfer.step_scan": "このコードにカメラを向ける",
   "onboarding.transfer.network_note":
     "両方の端末を同じWi-Fiかテザリングにつないでください。インターネットは一切通りません。",
@@ -253,6 +250,7 @@ export const strings: Strings = {
   "chat.group_badge": "グループ",
   "chat.more": "その他",
   "chat.no_messages": "メッセージはまだありません",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "近くに誰もいません",
   "chat.presence.active_none": "アクティブな人はいません",
   "chat.you": "あなた",
@@ -330,6 +328,7 @@ export const strings: Strings = {
     "そのセルを開けませんでした。少ししてからもう一度お試しください。",
   "chat.jump.title": "場所へ移動",
   "chat.jump.saved": "保存した場所",
+  "chat.jump.nearby": "周辺",
   "chat.jump.anywhere":
     "自分がいない場所でも、どこの公開位置チャンネルでも開けます。",
   "chat.jump.geohash_note":
@@ -339,7 +338,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level}のセル",
   "chat.jump.already_here":
     "すでにここにいます。「移動」を押すと{name}チャンネルが開きます。",
-  "chat.jump.open_direction": "{direction}のセルを開く",
+  "chat.jump.dir.n": "北",
+  "chat.jump.dir.ne": "北東",
+  "chat.jump.dir.e": "東",
+  "chat.jump.dir.se": "南東",
+  "chat.jump.dir.s": "南",
+  "chat.jump.dir.sw": "南西",
+  "chat.jump.dir.w": "西",
+  "chat.jump.dir.nw": "北西",
+  "chat.jump.open_n": "北のセルを開く",
+  "chat.jump.open_ne": "北東のセルを開く",
+  "chat.jump.open_e": "東のセルを開く",
+  "chat.jump.open_se": "南東のセルを開く",
+  "chat.jump.open_s": "南のセルを開く",
+  "chat.jump.open_sw": "南西のセルを開く",
+  "chat.jump.open_w": "西のセルを開く",
+  "chat.jump.open_nw": "北西のセルを開く",
   "chat.jump.open_place": "{name}を開く",
   "chat.jump.remove_place": "{name}を保存した場所から削除",
   "chat.jump.go": "移動",
@@ -412,8 +426,8 @@ export const strings: Strings = {
   "chat.status.failed": "失敗",
   "chat.status.canceled": "取り消し済み",
   "chat.status.waiting": "待機中",
-  "chat.status.sending_short": "送信",
-  "chat.status.receiving": "受信",
+  "chat.status.sending_short": "送信中",
+  "chat.status.receiving": "受信中",
   "chat.thread.not_available": "ここでは利用できません",
   "chat.thread.private_channel": "プライベートチャンネル",
   "chat.thread.location_channel": "位置チャンネル",
@@ -458,18 +472,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name}をキャンセル",
   "chat.thread.hide_transfer": "進行状況を隠す",
   "chat.thread.hide_transfer_hint": "ファイルは引き続き届きます",
-  "chat.thread.queued_more": "他に{count}件が送信待ちです",
-  "chat.thread.across_bridge": "ブリッジ越しに{count}人",
   "chat.thread.bridged": "ブリッジ経由",
   "chat.thread.invite_body":
     "Airhopの{channel}に来ませんか — インターネットなしで動く、プライベートなメッシュメッセージング。",
-  "chat.thread.go_back_unread": "戻る、未読{count}件",
   "chat.thread.view_info": "{name}の情報を見る",
-  "chat.thread.notices_new": "このチャンネルのお知らせ、新着{count}件",
-  "chat.board.urgent_one": "{author} からの緊急のお知らせ · {content}",
-  "chat.board.urgent_many": "新着の緊急のお知らせ {count} 件 · お知らせを開く",
+  "chat.board.urgent_one": "{author}からの緊急のお知らせ · {content}",
+  "chat.board.urgent_one_anon": "緊急のお知らせ · {content}",
   "chat.thread.say_something": "{channel}で何か話しましょう。",
-  "chat.thread.jump_latest_new": "最新のメッセージへ移動、新着{count}件",
   "chat.thread.unconfirmed_since": "{date}以降、配信の確認が取れていません",
   "chat.thread.no_reach": "近くにピアがいません · まだ誰にも届いていません",
   "chat.thread.channel_needs_internet":
@@ -505,7 +514,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "スクリーンショットを撮りました · 誰にも通知されていません",
   "chat.screenshot.heads_up": "お知らせ",
-  "chat.screenshot.notice": "* {name}がスクリーンショットを撮りました *",
+  "chat.screenshot.peer_took": "{name}がスクリーンショットを撮りました",
   "chat.screenshot.notified_dm":
     "この会話のスクリーンショットを撮ったことが{name}に通知されました。",
   "chat.screenshot.notified":
@@ -551,7 +560,7 @@ export const strings: Strings = {
   "chat.attach.document": "書類",
   "chat.attach.document_desc": "任意のファイルやPDFを送る",
   "chat.attach.voice": "ボイスメモ",
-  "chat.attach.voice_desc": "音声メッセージを録音して送る",
+  "chat.attach.voice_desc": "ボイスメモを録音して送る",
   "chat.attach.ecash": "ecashを送る",
   "chat.attach.ecash_desc": "ウォレットからCashuのサトシを送る",
   "chat.attach.location": "位置情報",
@@ -590,15 +599,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "北西",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "呼び出しました",
+  "chat.ring.sent_summary": "呼び出し済み",
   "chat.ring.received_summary": "呼び出しを受けました",
   "chat.ring.alert.title": "{sender}が呼び出しています",
   "chat.ring.alert.body": "メッセージを確認してください",
   "chat.ring.alert.open": "開く",
   "chat.ring.alert.snooze": "1時間スヌーズ",
-  "chat.ring.sent_snoozed": "呼び出し済み、スヌーズ中",
-  "chat.ring.sent_too_soon": "呼び出し済み、早すぎます",
-  "chat.ring.sent_not_allowed": "呼び出し済み、許可なし",
+  "chat.ring.sent_snoozed": "呼び出し済み · スヌーズ中",
+  "chat.ring.sent_too_soon": "呼び出し済み · 早すぎます",
+  "chat.ring.sent_not_allowed": "呼び出し済み · 許可されていません",
   "chat.attach.send_anyway": "それでも送信",
   "chat.attach.bitchat_too_big": "これは届かないかもしれません",
   "chat.attach.bitchat_too_big_body":
@@ -672,6 +681,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "録音を止めて送信",
   "chat.voice.lift_lock": "上にスライドすると手を離して録音できます",
   "chat.voice.live_speaking": "{name}が話しています",
+  "chat.voice.live_ended": "終了",
   "voice.unavailable": "ライブ通話を使えません",
   "voice.recording_stopped": "録音を停止しました",
 
@@ -731,7 +741,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name}を削除",
   "chat.info.no_addable":
     "追加できるピアがいません。メンバーは近くにいる必要があります。",
-  "chat.info.add_count": "{count}人を追加",
   "chat.info.teleported_tag": "{level}  ·  テレポート中",
   "chat.info.active": "アクティブ",
   "chat.info.members": "メンバー",
@@ -814,8 +823,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3日",
   "chat.notices.7_days": "7日",
   "chat.notices.fading": "消えかけ",
-  "chat.notices.fades_in_hours": "あと{count}時間で消えます",
-  "chat.notices.fades_in_days": "あと{count}日で消えます",
   "chat.notices.scope_geo": "ジオ",
   "chat.notices.scope_mesh": "メッシュ",
   "chat.notices.urgent_short": "緊急",
@@ -832,10 +839,20 @@ export const strings: Strings = {
   "chat.search.links": "リンク",
   "chat.search.ecash": "ecash",
   "chat.search.filter_by": "{filter}で絞り込む",
-  "chat.search.no_matches": "「{query}」に一致する{filter}はありません",
-  "chat.search.no_media": "{filter}はまだありません",
+  "chat.search.no_photos": "写真はまだありません",
+  "chat.search.no_videos": "動画はまだありません",
+  "chat.search.no_audio": "音声はまだありません",
+  "chat.search.no_documents": "書類はまだありません",
+  "chat.search.no_links": "リンクはまだありません",
+  "chat.search.no_ecash": "ecashはまだありません",
+  "chat.search.no_photos_matching": "「{query}」に一致する写真はありません",
+  "chat.search.no_videos_matching": "「{query}」に一致する動画はありません",
+  "chat.search.no_audio_matching": "「{query}」に一致する音声はありません",
+  "chat.search.no_documents_matching": "「{query}」に一致する書類はありません",
+  "chat.search.no_links_matching": "「{query}」に一致するリンクはありません",
+  "chat.search.no_ecash_matching": "「{query}」に一致するecashはありません",
   "chat.search.result_a11y": "{chat}、{sender}からの{kind}",
-  "chat.search.you": "あなた",
+  "chat.search.result_mine_a11y": "{chat}、あなたが送った{kind}",
   "chat.search.section_chats": "チャット",
   "chat.search.section_messages": "メッセージ",
   "chat.search.section_notices": "お知らせ",
@@ -844,15 +861,13 @@ export const strings: Strings = {
   "chat.search.no_results": "「{query}」の結果はありません",
   "chat.search.open_chat": "{name}を開く",
   "chat.search.message_a11y": "{chat}、{sender}からのメッセージ: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}、あなたのメッセージ: {snippet}",
   "chat.search.notice_a11y": "{chat}の{author}からのお知らせ: {snippet}",
   "chat.search.urgent": "緊急 ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "この一覧に{count}件あります。消去してもここから消えるだけで、メッセージは会話の中で未読のまま残ります。すべて既読にすると、両方が片付きます。",
   "chat.notif.mark_all_read": "すべて既読にする",
   "chat.notif.clear_list": "一覧を消去",
-  "chat.notif.clear_all_a11y": "{count}件の通知をすべて消去",
   "chat.notif.title": "通知",
   "chat.notif.clear_short": "消去",
   "chat.notif.close": "通知を閉じる",
@@ -861,7 +876,7 @@ export const strings: Strings = {
     "チャンネルやチャットからのメッセージ、メンション、お知らせがここに表示されます。",
   "chat.notif.new": "新着",
   "chat.notif.notice_in": "{channel}のお知らせ",
-  "chat.notif.in_room": "{room} にて",
+  "chat.notif.in_room": "{room}にて",
 
   // ---- Chats: forward ----
   "chat.forward.title": "転送先…",
@@ -875,6 +890,9 @@ export const strings: Strings = {
   "chat.forward.locations": "場所",
   "chat.forward.dms": "ダイレクトメッセージ",
   "chat.forward.none": "他のチャットはまだありません",
+  "chat.forward.app_row": "転送されません",
+  "chat.forward.app_row_body":
+    "この行は人ではなくAirhopからのものなので、転送するものはありません。",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "メッシュを起動中…",
@@ -882,7 +900,7 @@ export const strings: Strings = {
     "この端末にBluetoothがありません · インターネットのみ",
   "mesh.banner.bluetooth_off": "Bluetoothがオフです · メッシュを使えません",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetoothがオフです · メッシュはWiFiで動作中",
+    "Bluetoothがオフです · メッシュはWi-Fiで動作中",
   "mesh.banner.permission_needed": "Bluetoothの権限が必要です",
   "mesh.banner.blocked":
     "Bluetoothがブロックされています · 設定で許可してください",
@@ -916,8 +934,6 @@ export const strings: Strings = {
     "メッシュブリッジがオン · 公開チャットがつながっています",
   "mesh.banner.background_limits":
     "{brand}はバックグラウンドでメッシュを止めることがあります",
-  "mesh.banner.bridge_across":
-    "メッシュブリッジがオン · ブリッジ越しに{count}人",
   "mesh.banner.action.turn_on": "オンにする",
   "mesh.banner.action.allow": "許可",
   "mesh.banner.action.resume": "再開",
@@ -944,7 +960,8 @@ export const strings: Strings = {
   "mesh.radar.location_off": "位置情報がオフです · スキャンしていません",
   "mesh.radar.hint_rings": "リングは距離ではなくBLEの電波強度を表します",
   "mesh.radar.hint_checking": "Bluetoothと権限を確認しています",
-  "mesh.radar.hint_internet": "メッセージはインターネット経由では届いています",
+  "mesh.radar.hint_internet":
+    "メッセージはインターネット経由で引き続き届きます",
   "mesh.radar.hint_turn_on": "ピアを見つけるにはBluetoothをオンにしてください",
   "mesh.radar.hint_allow": "ピアを見つけるにはBluetoothを許可してください",
   "mesh.radar.hint_allow_settings":
@@ -984,13 +1001,13 @@ export const strings: Strings = {
   "mesh.peer.send_dm": "ダイレクトメッセージを送る",
   "mesh.peer.message": "メッセージ",
   "mesh.peer.send_sats": "ecashを送る",
-  "mesh.peer.amount_placeholder": "サトシで金額",
+  "mesh.peer.amount_placeholder": "金額（サトシ）",
   "mesh.peer.amount_first": "ecashを送るには、先に金額を入力してください",
   "mesh.peer.cancel_send": "ecashの送信をキャンセル",
   "mesh.peer.view_peer_online": "ピア{name}を表示、オンライン",
   "mesh.peer.view_relay_online": "ピア{name}を表示、オンライン、リレーノード",
   "mesh.peer.last_seen_at": "最終確認: {ago}",
-  "mesh.peer.send_amount": "{amount}サトシを送る",
+  "mesh.peer.send_unit_amount": "{amount} {unit}を送る",
   "mesh.peer.direct": "直接接続",
   "mesh.peer.check_distance": "距離を測る",
   "mesh.peer.checking": "測定中",
@@ -1023,27 +1040,27 @@ export const strings: Strings = {
   "wallet.balance.reserved_note": "{amount}は送信中のために確保されています",
   "wallet.balance.other_mint_note": "{amount}は別のミントの口座にあります",
   "wallet.balance.test_mint_note":
-    "テスト用ミントの遊び金が含まれます。ビットコインではなく、出金もできません。",
+    "テスト用ミントの模擬通貨が含まれます。ビットコインではなく、出金もできません。",
   "wallet.token": "トークン",
   "wallet.action.send_disabled":
     "ecashトークンを送る、残高がないため使えません",
   "wallet.action.scan": "スキャン",
-  "wallet.action.scan_a11y": "トークン、請求書、npub をスキャン",
+  "wallet.action.scan_a11y": "トークン、請求書、npubをスキャン",
   "wallet.choose.paste": "トークンを貼り付け",
   "wallet.choose.paste_desc": "オフラインでも使えます",
   "wallet.choose.scan": "QRコードをスキャン",
-  "wallet.choose.scan_desc": "どのウォレットの Cashu トークンでも",
-  "wallet.choose.topup": "Lightning でチャージ",
+  "wallet.choose.scan_desc": "どのウォレットのCashuトークンでも",
+  "wallet.choose.topup": "Lightningでチャージ",
   "wallet.choose.topup_desc":
-    "どの Lightning ウォレットからでも請求書を支払えます",
+    "どのLightningウォレットからでも請求書を支払えます",
   "wallet.choose.token": "トークンを作成",
   "wallet.choose.token_desc":
-    "共有するか QR コードで見せられ、オフラインでも使えます",
-  "wallet.choose.zap": "Nostr の連絡先に zap",
-  "wallet.choose.zap_desc": "相手の npub へ、インターネット経由で",
-  "wallet.choose.invoice": "Lightning の請求書を支払う",
-  "wallet.choose.invoice_desc": "どの Lightning ウォレットへも出金できます",
-  "wallet.choose.tor_paused": "Tor がオンの間は停止中",
+    "共有するかQRコードで見せられ、オフラインでも使えます",
+  "wallet.choose.zap": "Nostrの連絡先にzap",
+  "wallet.choose.zap_desc": "相手のnpubへ、インターネット経由で",
+  "wallet.choose.invoice": "Lightningの請求書を支払う",
+  "wallet.choose.invoice_desc": "どのLightningウォレットへも出金できます",
+  "wallet.choose.tor_paused": "Torがオンの間は停止中",
   "wallet.choose.offline": "インターネットが必要です",
   "wallet.choose.internet_off": "インターネットがオフです",
   "wallet.choose.needs_mint": "先にミントを追加してください",
@@ -1051,7 +1068,7 @@ export const strings: Strings = {
   // ---- Wallet: send ----
   "wallet.send.build_failed": "トークンを作成できませんでした",
   "wallet.send.title": "ecashを送る",
-  "wallet.send.amount_in": "{unit}で金額",
+  "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
     "すでに持っているecashからオフラインで作られます。届いたと確認するまで、残高から完全に出ていくことはありません。",
   "wallet.send.fee_note":
@@ -1063,7 +1080,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "このトークンはコインに細かく分かれすぎていて、QRコードに収まりません。共有かコピーを使ってください。",
   "wallet.send.scan_note":
-    "相手のウォレットからこれを読み取ってもらってください。配信済みにするまでは回収できます。",
+    "相手のウォレットからこれを読み取ってもらってください。受け取り済みにするまでは回収できます。",
   "wallet.send.mesh_note":
     "トークンは暗号化されたDMとしてメッシュ経由で送られます。インターネットは不要です。",
   "wallet.send.no_peers_note":
@@ -1077,14 +1094,14 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount}を送る",
   "wallet.send.sent_to": "{amount} {unit}を{name}に送りました",
   "wallet.send.sent_to_body":
-    "{route} 相手が受け取ったと確認するか、ミントからトークンが引き換え済みと知らされるまで、「履歴」から回収できます。",
+    "{route}相手が受け取ったと確認するか、ミントからトークンが引き換え済みと知らされるまで、「履歴」から回収できます。",
   "wallet.send.copy_token": "トークンをコピー",
   "wallet.send.share_token": "トークンを共有",
   "wallet.send.open_in_wallet": "このトークンを別のウォレットで開く",
   "wallet.send.open_in_wallet_short": "ウォレットで開く",
   "wallet.send.to_peer": "近くのピアにトークンを送る",
   "wallet.send.to_peer_short": "ピアに送る",
-  "wallet.send.mark_delivered": "配信済みにして完了",
+  "wallet.send.mark_delivered": "受け取り済みにする",
   "wallet.send.they_got_it": "受け取られました",
   "wallet.send.keep_pending": "この送信を保留のままにする",
   "wallet.send.decide_later": "あとで決める",
@@ -1108,9 +1125,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n「{memo}」",
   "wallet.receive.redeemed_at":
     "{mint}で引き換えました。これで証明可能にあなたのものとなり、送信者側のこのトークンの控えはもう使えません。",
-  "wallet.receive.stored_pending":
-    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません{dleq}。オンラインになると自動的にミントで確認されます。",
-  "wallet.receive.dleq_inline": "（署名自体は正しいので、トークンは本物です）",
+  "wallet.receive.pending_unconfirmed":
+    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。オンラインになると自動的にミントで確認されます。",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。署名は正しいので、トークンは本物です。オンラインになると自動的にミントで確認されます。",
   "wallet.receive.dleq_ok": "ミントの署名は正しく、トークンは本物です。",
   "wallet.receive.dleq_uncached":
     "ミントの鍵がここに保存されていないため、オフラインでは署名を確認できませんでした。",
@@ -1158,7 +1176,7 @@ export const strings: Strings = {
     "{mint}をウォレットから削除しますか。保存された鍵も一緒に消えるので、このミントのトークンはオフラインで検証できなくなります。",
   "wallet.mint.title": "ミント",
   "wallet.mint.none_desc":
-    "ミントは ecash を発行し、換金します。Lightning でチャージしたり、そのミントのトークンを受け取ったりするには追加してください。",
+    "ミントはecashを発行し、引き換えます。Lightningでチャージしたり、そのミントのトークンを受け取ったりするには追加してください。",
   "wallet.mint.add": "ミントを追加",
   "wallet.mint.add_body":
     "ミントはあなたのecashを裏付けるビットコインを預かるので、そこに置く残高を任せられる相手を選んでください。URLは保存前に検証されます。誰も信頼したくない場合はNutshellで自分のミントを運用できます。",
@@ -1170,10 +1188,8 @@ export const strings: Strings = {
   "wallet.mint.remove": "ミントを削除",
   "wallet.mint.delete_anyway": "それでも削除",
   "wallet.mint.consolidate": "すべての残高を1つのミントへ移動",
-  "wallet.mint.confirm_with": "{mint} で残高を確認",
+  "wallet.mint.confirm_with": "{mint}で残高を確認",
   "wallet.mint.available_amount": "{amount} {unit}が利用可能",
-  "wallet.mint.split_across":
-    "残高が{count}のミントに分かれています。1つにまとめてください。",
   "wallet.mint.move_everything_to": "すべてを{mint}へ移動",
   "wallet.mint.consolidate_title": "1つのミントへ移動",
   "wallet.mint.moving": "移動中…",
@@ -1184,13 +1200,14 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "何も移動しませんでした",
   "wallet.mint.move_pending": "移動中",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} は {mint} から出て {target} へ移動中です。入金が受け取られると届きます。ウォレットは自動で再試行を続けます。",
+    "{amount} {unit}は{mint}から出て{target}へ移動中です。この移動分が受け取られると届きます。ウォレットは自動で再試行を続けます。",
   "wallet.mint.destination": "· 移動先",
   "wallet.mint.will_move": "· 移動されます",
   "wallet.mint.issued_by": "発行元",
+  "wallet.mint.test_badge": "テスト",
 
   // ---- Wallet: Lightning ----
-  "wallet.ln.deposit_memo": "Airhopウォレットへの入金",
+  "wallet.ln.deposit_memo": "Airhopウォレットへのチャージ",
   "wallet.ln.invoice_failed": "請求書を作成できませんでした",
   "wallet.ln.price_failed": "この請求書の金額を計算できませんでした",
   "wallet.ln.paid": "支払い済み",
@@ -1213,8 +1230,8 @@ export const strings: Strings = {
   "wallet.ln.up_to": "最大{amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit}を支払う",
-  "wallet.ln.deposit_title": "Lightningで入金",
-  "wallet.ln.amount_placeholder": "サトシで金額",
+  "wallet.ln.deposit_title": "Lightningでチャージ",
+  "wallet.ln.amount_placeholder": "金額（サトシ）",
   "wallet.ln.requesting": "リクエスト中…",
   "wallet.ln.get_invoice": "請求書を取得",
   "wallet.ln.copy_invoice": "請求書をコピー",
@@ -1336,7 +1353,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "ミントによるとこのトークンはすでに引き換えられているため、{amount} {unit}は相手に届いており、残高には何も戻りませんでした。",
   "wallet.copied.token_body":
-    "トークンをクリップボードにコピーしました。配信済みにするまでここで確保されたままなので、最初の試みが失敗しても貼り直せます。",
+    "トークンをクリップボードにコピーしました。受け取り済みにするまでここで確保されたままなので、最初の試みが失敗しても貼り直せます。",
   "wallet.copied.refused_token_body":
     "トークンをクリップボードにコピーしました。このウォレットではもう計上されないので、送ってくれた人に返すことができます。",
   "wallet.copied.phrase_body":
@@ -1362,8 +1379,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "このトークンをQRコードで表示",
   "wallet.pending.copy_again": "トークンをもう一度コピー",
   "wallet.pending.share_again": "トークンをもう一度共有",
-  "wallet.pending.mark_delivered": "このトークンを配信済みにする",
-  "wallet.pending.delivered": "配信済み",
+  "wallet.pending.mark_delivered": "受け取り済みにする",
+  "wallet.pending.delivered": "受け取り済み",
   "wallet.pending.reclaim_into": "このトークンを残高に回収",
   "wallet.activity.title": "履歴",
   "wallet.activity.none": "まだ何もありません",
@@ -1381,7 +1398,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "失敗",
   "wallet.activity.status_reclaimed": "回収済み",
   "wallet.activity.status_expired": "期限切れ",
-  "wallet.activity.ln_deposit": "Lightningでの入金",
+  "wallet.activity.ln_deposit": "Lightningでのチャージ",
   "wallet.activity.ln_withdrawal": "Lightningでの出金",
   "wallet.activity.nutzap_received": "nutzapを受け取りました",
   "wallet.activity.nutzap_claiming": "nutzapを受け取り中",
@@ -1423,22 +1440,29 @@ export const strings: Strings = {
   "wallet.pay.final":
     "結び付けた支払いは回収できません。このコインを使えるのは相手の鍵だけです。",
   "wallet.pay.reclaimable": "届いたと確認するまで、履歴から回収できます。",
-  "wallet.pay.why": "{reason}ため、この方法で送りました。",
+  "wallet.pay.why_no_relay":
+    "リレーに接続していなかったため、この方法で送りました。",
+  "wallet.pay.why_no_shared_mint":
+    "相手が受け付けるどのミントにも十分な残高がないため、この方法で送りました。",
+  "wallet.pay.why_no_nutzap_info":
+    "受取人がnutzapの情報（NIP-61 kind 10019）を公開していないため、この方法で送りました。",
+  "wallet.pay.result": "{rail}{finality}",
+  "wallet.pay.result_why": "{rail}{reason}{finality}",
   "wallet.pay.sent_title": "{amount} {unit}を{name}へ",
   "wallet.pay.thread_receipt":
     "{amount} {unit}を相手の鍵に結び付けて送りました。",
   "wallet.pay.title": "ecashを送る",
   "wallet.pay.to": "宛先: {name}",
-  "wallet.pay.amount": "サトシで金額",
+  "wallet.pay.amount": "金額（サトシ）",
   "wallet.pay.memo": "メモ（任意、公開されます）",
   "wallet.pay.send": "送信",
   "wallet.pay.sending": "送信中…",
   "wallet.pay.action": "ecashを送る",
-  "wallet.pay.confirm_title": "{name} に {amount} {unit} を送りますか?",
+  "wallet.pay.confirm_title": "{name}に{amount} {unit}を送りますか？",
   "wallet.pay.confirm_final":
     "相手の鍵にロックされます。送信後は取り消せません。",
   "wallet.pay.confirm_reclaimable":
-    "相手が受け取るまでは、履歴から取り戻せます。",
+    "相手が受け取るまでは、履歴から回収できます。",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "カメラへのアクセス",
@@ -1460,9 +1484,9 @@ export const strings: Strings = {
   "wallet.scan.title_invoice": "請求書を読み取る",
   "wallet.scan.title_any": "QRコードをスキャン",
   "wallet.scan.aim_any":
-    "トークン、請求書、npub の QR コードにカメラを向けてください。",
+    "トークン、請求書、npubのQRコードにカメラを向けてください。",
   "wallet.scan.no_any":
-    "その画像にトークン、請求書、npub は見つかりませんでした。",
+    "その画像にトークン、請求書、npubは見つかりませんでした。",
   "wallet.scan.use_camera_a11y": "カメラで読み取る",
   "wallet.scan.use_camera": "カメラを使う",
   "wallet.scan.pick_image_a11y": "保存した画像からQRコードを読み取る",
@@ -1508,7 +1532,7 @@ export const strings: Strings = {
   "wallet.svc.internet_off":
     "インターネットがオフのため、ミントに接続できません。",
   "wallet.svc.internet_off_body":
-    "設定で{setting}をオンにしてください。近くでの ecash の送受信はそのまま使えます。",
+    "設定で{setting}をオンにしてください。近くでのecashの送受信はそのまま使えます。",
   "wallet.svc.keys_uncached": "このミントの鍵はこの端末に保存されていません。",
   "wallet.svc.keys_uncached_body":
     "オンラインのときにウォレットを一度開いて取得してください。",
@@ -1572,19 +1596,19 @@ export const strings: Strings = {
     "何も引かれていません。もう一度試すと、ウォレットが別の組み合わせを選びます。",
   "wallet.svc.no_ecash": "ecashがまだありません。",
   "wallet.svc.no_ecash_body":
-    "ミントを追加してLightningで入金するか、誰かからトークンを受け取ってください。",
+    "ミントを追加してLightningでチャージするか、誰かからトークンを受け取ってください。",
   "wallet.svc.split_across_mints": "残高が複数のミントに分かれています。",
   "wallet.svc.mint_says_spent": "ミントはこのecashを使用済みだと報告しました。",
   "wallet.svc.issue_against_invoice":
     "Lightningの請求書に対してecashを発行する",
   "wallet.svc.pay_invoice": "Lightningの請求書を支払う",
-  "wallet.svc.unknown_deposit": "不明な入金です。",
+  "wallet.svc.unknown_deposit": "不明なチャージです。",
   "wallet.svc.invoice_expired_before":
     "支払われる前に請求書の期限が切れました。",
   "wallet.svc.invoice_expired": "その請求書は期限切れです。",
   "wallet.svc.invoice_unpaid": "請求書はまだ支払われていません。",
-  "wallet.svc.payment_unknown":
-    "支払い状況が不明です。次の更新時に再度確認します。",
+  "wallet.svc.payment_unknown_after":
+    "{reason} 支払い状況が不明です。次の更新時に再度確認します。",
   "wallet.svc.melt_change_pending": "請求書は支払われました。",
   "wallet.svc.melt_change_pending_body":
     "ミントは未使用の経路手数料をまだ返していません。次の更新時に自動で受け取るので、その間に失われるものはありません。",
@@ -1624,23 +1648,19 @@ export const strings: Strings = {
     "その支払いは、あなたが使っていないミントを指しています。",
   "wallet.svc.unknown_mint_body":
     "信頼できるなら、まず自分でそのミントを追加してください。自分で選んでいないミントからは何も引き換えません。",
-  "wallet.svc.no_relay": "リレーに接続していません",
-  "wallet.svc.no_shared_mint": "十分な残高のある共通のミントがありません",
-  "wallet.svc.no_nutzap_info":
-    "受取人がnutzapの情報を公開していません（NIP-61 kind 10019）",
   "wallet.svc.locked_undelivered":
     "相手の鍵に結び付けましたが、まだ届いていません。この取引のトークンを共有して完了してください。",
   "wallet.svc.swap_lost":
     "ミントがこの交換を完了しなかったため、それに対して何も発行されていません。",
   "wallet.svc.mint_lost":
-    "ミントはこの入金を発行しましたが、コインを再構築できませんでした。リカバリーフレーズから復元すると取り戻せます。",
+    "ミントはこのチャージを発行しましたが、コインを再構築できませんでした。復元フレーズから復元すると取り戻せます。",
   "wallet.svc.swap_unreadable":
     "この交換は、このバージョンでは再実行できない形式で保存されています。",
   "wallet.svc.lock_in_doubt": "この支払いが完了したかどうかは不明です。",
   "wallet.svc.lock_in_doubt_body":
     "ほかには何も送られていません。ミントが結果を確認するまでコインは保留されます。完了していれば、ロックされたトークンが履歴に表示されるので相手に渡してください。完了していなければ、コインは戻ります。",
   "wallet.svc.send_spent_by_swap":
-    "このトークンが受け取られる前に、コインはスワップされてウォレットに戻りました。そのため受け取りはできなくなっています。金額は残高に入っています。",
+    "このトークンが受け取られる前に、コインは交換されてウォレットに戻りました。そのため受け取りはできなくなっています。金額は残高に入っています。",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QRコードで検証済み",
@@ -1759,7 +1779,7 @@ export const strings: Strings = {
     "前方秘匿性、署名付きパケット、ブロックしたピア",
   "settings.section.network": "ネットワークとリレー",
   "settings.section.network_desc":
-    "インターネットへの切り替え、nostrリレー、bitchatとの互換性",
+    "インターネットへの切り替え、Nostrリレー、bitchatとの互換性",
   "settings.section.permissions": "権限",
   "settings.section.permissions_desc":
     "Bluetooth、位置情報、通知、カメラ、マイク",
@@ -1788,7 +1808,7 @@ export const strings: Strings = {
   "settings.diag.ble_links": "Bluetooth接続",
   "settings.diag.ble_links_desc": "この端末が直接つながっている端末",
   "settings.diag.lan": "ローカルネットワーク",
-  "settings.diag.lan_desc": "同じ Wi-Fi につながった端末同士",
+  "settings.diag.lan_desc": "同じWi-Fiにつながった端末同士",
   "settings.diag.wifi": "Wi-Fi Aware",
   "settings.diag.wifi_about": "ルーターを使わない端末同士の通信",
   "settings.diag.wifi_active": "動作中",
@@ -1807,12 +1827,10 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "電波強度の値がありません",
   "settings.diag.no_peers": "圏内に誰もいません",
-  "settings.diag.no_peers_desc": "無線リンク{links}本が開いています",
   "settings.diag.gcs_size": "フィルタのサイズ",
   "settings.diag.gcs_size_desc": "電波に載せた最大の同期フィルタ",
   "settings.diag.fpr": "誤検出率",
   "settings.diag.fpr_desc": "手元にないパケットがあるとフィルタが言う頻度",
-  "settings.diag.bytes": "{n}バイト",
   "settings.diag.footnote":
     "ここでは何も変更できません。Airhopがbitchatとの互換性を保つため、これらの値は固定です。",
   "settings.diag.share": "診断情報を共有",
@@ -1832,7 +1850,6 @@ export const strings: Strings = {
   "settings.general.undo": "送信の取り消し",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "ウォレット",
-  "settings.general.undo_seconds": "{count}秒",
   "settings.general.undo_a11y": "送信の取り消し: {value}",
   "settings.general.quality_a11y": "アップロード品質を{value}に設定",
   "settings.general.undo_desc":
@@ -1924,7 +1941,6 @@ export const strings: Strings = {
   "settings.network.custom": "独自のリレー",
   "settings.network.custom_desc":
     "位置チャンネルとメッシュブリッジ用に、自分のリレーを追加します",
-  "settings.network.custom_added": "{max}件中{count}件を追加済み",
   "settings.network.dm_relays": "メッセージ用リレー",
   "settings.network.dm_relays_desc":
     "ダイレクトメッセージとプライベートチャンネルは常にこれらを使います。独自のリレーを追加しても変わりません。",
@@ -1934,18 +1950,16 @@ export const strings: Strings = {
   "settings.network.add_relay": "リレーを追加",
   "settings.network.remove_relay": "{url}を削除",
   "settings.network.add_short": "追加",
-  "settings.network.relay_limit":
-    "追加できるリレーは{count}件です。別のものを追加するには1つ削除してください。",
   "settings.network.relay_duplicate": "そのリレーはすでに一覧にあります。",
   "settings.network.relay_invalid":
     "relay.example.comのような有効なリレーのホスト名を入力してください。ポートは、リレーが既定のポートを使っていない場合にのみ必要です。IPアドレスやローカル名は使えません。",
   "settings.network.lan": "ローカルネットワーク",
   "settings.network.lan_desc":
-    "同じWiFi上の相手に届きます。iPhoneとAndroidの間でも使えます。ネットワーク上の他の端末からは、Airhopを使っていることが見えます。",
+    "同じWi-Fi上の相手に届きます。iPhoneとAndroidの間でも使えます。ネットワーク上の他の端末からは、Airhopを使っていることが見えます。",
   "settings.network.lan_searching":
     "このネットワークにAirhopの端末はありません",
   "settings.network.lan_active": "このネットワークで接続中",
-  "settings.network.lan_unavailable": "WiFiネットワークに接続していません",
+  "settings.network.lan_unavailable": "Wi-Fiネットワークに接続していません",
   "settings.network.lan_permission":
     "Airhopのローカルネットワークアクセスがオフです",
   "settings.network.lan_unsupported": "この端末では利用できません",
@@ -1967,7 +1981,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_find_action": "近くのiPhoneを選ぶ",
   "settings.network.wifi_pair_show_action": "このiPhoneを検出可能にする",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Awareは現在利用できません",
-  "settings.network.wifi_pair_forget": "Settingsアプリでペアリングを解除",
+  "settings.network.wifi_pair_forget": "設定アプリでペアリングを解除",
   "settings.network.bitchat": "bitchatとの互換性",
   "settings.network.bitchat_desc":
     "bitchatと同じBLEメッシュで、完全に相互運用できます。これは常にオンで、無効にはできません。",
@@ -2011,29 +2025,29 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Torはまだ接続されていません。オンのまま試み続けます。中継が始まったか、このネットワークが遮断しているかは、メッシュタブでお知らせします。",
   "settings.conn.tor_failed":
-    "Tor を開始できませんでした。しばらくしてからもう一度お試しください。",
-  "settings.tor.status": "Tor の状態",
+    "Torを開始できませんでした。しばらくしてからもう一度お試しください。",
+  "settings.tor.status": "Torの状態",
   "settings.tor.connection": "接続方法",
   "settings.tor.mode_off": "直接",
   "settings.tor.mode_off_desc":
-    "Tor に直接接続します。最速ですが、このネットワークを見ている人には Tor の利用がわかります。",
+    "Torに直接接続します。最速ですが、このネットワークを見ている人にはTorの利用がわかります。",
   "settings.tor.mode_snowflake": "Snowflake",
   "settings.tor.mode_snowflake_desc":
-    "Tor の利用を隠し、ブリッジが遮断された場所でも動きます。接続は最も遅くなります。",
+    "Torの利用を隠し、ブリッジが遮断された場所でも動きます。接続は最も遅くなります。",
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
-    "Tor の利用を隠します。Snowflake より速いものの、これらのブリッジは公開されており遮断する回線もあります。",
+    "Torの利用を隠します。Snowflakeより速いものの、これらのブリッジは公開されており遮断する回線もあります。",
   "settings.tor.mode_webtunnel": "webtunnel",
   "settings.tor.mode_webtunnel_desc":
-    "通常のウェブサイト閲覧のように見せて、Tor の利用を隠します。他より遮断されにくい方法です。",
+    "通常のウェブサイト閲覧のように見せて、Torの利用を隠します。他より遮断されにくい方法です。",
   "settings.tor.mode_custom": "カスタムブリッジ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org で入手した obfs4 のブリッジ行を使います。他が失敗したときに試してください。",
-  "settings.tor.custom_placeholder": "1 行につき 1 つのブリッジ行を貼り付け",
+    "bridges.torproject.orgで入手したobfs4のブリッジ行を使います。他が失敗したときに試してください。",
+  "settings.tor.custom_placeholder": "1行につき1つのブリッジ行を貼り付け",
   "settings.tor.custom_apply_hint": "接続するにはボックスの外をタップします。",
-  "settings.tor.custom_empty": "まず 1 つ以上のブリッジ行を追加してください。",
+  "settings.tor.custom_empty": "まず1つ以上のブリッジ行を追加してください。",
   "settings.tor.recovered":
-    "前回 Tor の起動が完了しなかったため、インターネット通信を停止しています。もう一度試すか、Tor をオフにして Tor なしでオンラインにしてください。",
+    "前回Torの起動が完了しなかったため、インターネット通信を停止しています。もう一度試すか、TorをオフにしてTorなしでオンラインにしてください。",
   "settings.tor.retry": "もう一度試す",
   "settings.conn.mint_clearnet": "素のネットワークでのミント通信を許可",
   "settings.conn.mint_clearnet_desc":
@@ -2088,7 +2102,7 @@ export const strings: Strings = {
     "ライブラリから写真を送り、受け取ったメディアを保存します。これがなくても、カメラで新しい写真を撮って送れます。",
   "settings.permissions.microphone": "マイク",
   "settings.permissions.microphone_desc":
-    "音声メッセージを録音して送るほか、ライブ通話にも使います。これがないと音声メッセージもライブ通話も使えません。",
+    "ボイスメモを録音して送るほか、ライブ通話にも使います。これがないとボイスメモもライブ通話も使えません。",
   "settings.permissions.allow": "この権限を許可",
   "settings.permissions.open_settings": "システム設定を開いてこの権限を変更",
   "settings.permissions.system": "システム",
@@ -2339,7 +2353,7 @@ export const strings: Strings = {
     "ダウンロードに失敗しました。接続を確認してもう一度お試しください。",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind}は{size}KiBで、{cap}KiBの上限を超えています。",
+  "transfer.too_large": "{kind}は{size}で、{cap}の上限を超えています。",
   "transfer.failed.malformed":
     "添付が壊れた状態で届き、開けませんでした。もう一度送ってもらってください。",
   "transfer.failed.unsupported_type":
@@ -2349,10 +2363,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "添付が届きましたが保存できませんでした。空き容量を確認してください。",
   "transfer.badge.waiting": "待機中 · {name}",
-  "transfer.badge.active_count": "{count}件の転送",
   "transfer.badge.sending": "{name}を送信中",
   "transfer.badge.receiving": "{name}を受信中",
-  "transfer.badge.a11y": "{label}、{percent}パーセント。会話を開きます。",
   "transfer.kind.photo": "写真",
   "transfer.kind.video": "動画",
   "transfer.kind.voice": "ボイスメモ",
@@ -2380,10 +2392,11 @@ export const strings: Strings = {
   "notif.notice": "お知らせ · {content}",
   "notif.incoming_file": "受信中のファイル",
   "notif.preview.photo": "📷 写真",
-  "notif.preview.voice": "🎤 音声メッセージ",
+  "notif.preview.voice": "🎤 ボイスメモ",
   "notif.preview.video": "🎥 動画",
   "notif.preview.document": "📄 書類",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "新しいメッセージ",
   "notif.hidden.channel": "新しい動き",
@@ -2395,6 +2408,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count}分前",
+  },
+  "format.hours_ago": {
+    other: "{count}時間前",
+  },
+  "format.days_ago": {
+    other: "{count}日前",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "他{count}件を表示",
@@ -2435,6 +2459,44 @@ export const plurals: Plurals = {
     other: "{count}人が話しています",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "他に{count}件が送信待ちです",
+  },
+  "chat.thread.across_bridge": {
+    other: "ブリッジ越しに{count}人",
+  },
+  "chat.thread.go_back_unread": {
+    other: "戻る、未読{count}件",
+  },
+  "chat.thread.notices_new": {
+    other: "このチャンネルのお知らせ、新着{count}件",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "最新のメッセージへ移動、新着{count}件",
+  },
+  "chat.board.urgent_many": {
+    other: "新着の緊急のお知らせ{count}件 · お知らせを開く",
+  },
+  "chat.info.add_count": {
+    other: "{count}人を追加",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "あと{count}時間で消えます",
+  },
+  "chat.notices.fades_in_days": {
+    other: "あと{count}日で消えます",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "この一覧に{count}件の通知があります。消去してもここから消えるだけで、メッセージは会話の中で未読のまま残ります。すべて既読にすると、両方が片付きます。",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "{count}件の通知をすべて消去",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "圏内に{count}台のピア",
@@ -2452,15 +2514,24 @@ export const plurals: Plurals = {
     other: "メンバー{count}人",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "メッシュブリッジがオン · ブリッジ越しに{count}人",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint}は{count}枚のコインに{balance} {unit}を保持しています。削除するとそのコインはこの端末から永久に消え、バックアップもありません。先に残高を出金するか送ってください。",
+      "{mint}は{count}枚のコインに{balance} {unit}を保持しています。削除するとその残高はこの端末から永久に消え、バックアップもありません。先に残高を出金するか送ってください。",
+  },
+  "wallet.mint.split_across": {
+    other: "残高が{count}か所のミントに分かれています。1つにまとめてください。",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    other: "{count}件の入金が支払い待ちです。アプリを開くたびに再確認します。",
+    other:
+      "{count}件のチャージが支払い待ちです。アプリを開くたびに再確認します。",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2469,7 +2540,7 @@ export const plurals: Plurals = {
   },
   "wallet.backup.already_spent": {
     other:
-      "{count}枚のコインが見つかりましたが、すでに使用済みだったため、その分は反映されていません。これは正常です。かつて使ったコインは、ミントが持つ記録に残り続けます。",
+      "{count}枚のコインが見つかりましたが、すでに使用済みだったため、何も反映されていません。これは正常です。かつて使ったコインは、ミントが持つ記録に残り続けます。",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2490,8 +2561,32 @@ export const plurals: Plurals = {
     other: "{count}枚のコインはすでに使用済みだったため削除しました。",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "無線リンク{count}本が開いています",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count}秒",
+  },
+  "settings.network.custom_added": {
+    other: "{max}件中{count}件を追加済み",
+  },
+  "settings.network.relay_limit": {
+    other:
+      "追加できるリレーは{count}件です。別のものを追加するには1つ削除してください。",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "{count}件の転送",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}、{count}パーセント。会話を開きます。",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "近くに誰かがいます",
     other: "近くに{count}人",
   },
 };

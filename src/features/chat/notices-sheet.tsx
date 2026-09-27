@@ -8,13 +8,12 @@
 //   Geo   - this location cell (geo board posts + Nostr location notes)
 //   Mesh  - the Bluetooth-local board (geohash "", BLE-only)
 //
-// The two feeds are merged with the board copy winning over its own bridged
-// Nostr note (it carries urgency and supports deletion). Urgent posts sort
-// first, then newest. You can delete your own posts; a signed tombstone
-// outruns stale copies across the mesh and retracts the bridged note.
+// The two feeds are merged (see mergeNotices). Urgent posts sort first, then
+// newest. Deleting your own post sends a signed tombstone that outruns stale
+// copies across the mesh and retracts the bridged note.
 
 import { isUrgent, type BoardPost } from "@core/mesh/wire/board-packet";
-import { t, useT, type TranslationKey } from "@i18n";
+import { t, tPlural, useT, type TranslationKey } from "@i18n";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
@@ -28,6 +27,7 @@ import {
   type LocationNote,
 } from "@store/location-notes-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import {
   FontSize,
   FontWeight,
@@ -127,8 +127,8 @@ function fadeLabel(
   if (s <= 0) return t("chat.notices.fading");
   const h = Math.floor(s / 3600);
   if (h < 1) return t("chat.notices.fades_soon");
-  if (h < 24) return t("chat.notices.fades_in_hours", { count: h });
-  return t("chat.notices.fades_in_days", { count: Math.floor(h / 24) });
+  if (h < 24) return tPlural("chat.notices.fades_in_hours", h);
+  return tPlural("chat.notices.fades_in_days", Math.floor(h / 24));
 }
 
 interface Props {
@@ -155,7 +155,6 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
   const scope: "here" | "mesh" =
     scopeOverride ?? (geohash !== null ? "here" : "mesh");
 
-  // Compose state.
   const [draft, setDraft] = useState("");
   const [urgent, setUrgent] = useState(false);
   const [expiryDays, setExpiryDays] = useState(1);
@@ -165,7 +164,6 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
   // never show an impossible selection and the mesh post gets a valid expiry.
   const effectiveExpiryDays =
     scope !== "here" && expiryDays === 0 ? 1 : expiryDays;
-  // The permanent (∞) step only exists in a location cell.
   const expiryOptions = EXPIRY_OPTIONS.filter(
     (opt) => opt.days !== 0 || scope === "here",
   );
@@ -174,8 +172,8 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!visible) return;
-    const t = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(timer);
   }, [visible]);
 
   const posts = useBoardStore((s) => s.posts);
@@ -295,7 +293,6 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
         </View>
       )}
 
-      {/* Compose */}
       <View style={styles.composer}>
         <TextInput
           style={styles.input}
@@ -311,7 +308,6 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
           maxLength={CONTENT_MAX * 2}
         />
         <View style={styles.composerControls}>
-          {/* Urgent is mesh-only, matching bitchat: not offered in a cell. */}
           {scope === "mesh" && (
             <Pressable
               style={[styles.urgentToggle, urgent && styles.urgentToggleOn]}
@@ -377,7 +373,6 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
         </Pressable>
       </View>
 
-      {/* List */}
       {rows.length === 0 ? (
         <Text style={styles.empty}>{T("chat.notices.none")}</Text>
       ) : (
@@ -398,7 +393,9 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
                         size={10}
                         color={Colors.textInverse}
                       />
-                      <Text style={styles.urgentBadgeText}>URGENT</Text>
+                      <UpperText style={styles.urgentBadgeText}>
+                        {T("chat.notices.urgent_short")}
+                      </UpperText>
                     </View>
                   )}
                   <Text style={styles.rowAuthor} numberOfLines={1}>

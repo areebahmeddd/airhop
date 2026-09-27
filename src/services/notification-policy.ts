@@ -18,7 +18,7 @@ import {
 import { t, tPlural } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
 import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
-import { messageText } from "@utils/message-text";
+import { messagePreviewText } from "@utils/message-preview";
 
 // A DM channel is keyed "dm:<peerID>" (see chat-store). Everything else is a
 // public channel like "#city".
@@ -43,11 +43,12 @@ export function attachmentSummary(attachment: ChatAttachment): string {
   }
 }
 
-// What a message reduces to in a notification body: its text, or a media
-// summary when there is no text.
+// What a message reduces to in a notification body: a media summary for an
+// attachment, otherwise what a list row shows, so an ecash token reads as its
+// amount rather than as the token.
 export function messagePreview(msg: ChatMessage): string {
   if (msg.attachment) return attachmentSummary(msg.attachment);
-  return messageText(msg);
+  return messagePreviewText(msg);
 }
 
 // Title/body for a message notification. DMs read as "<sender>: <preview>";

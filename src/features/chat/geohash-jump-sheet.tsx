@@ -5,7 +5,7 @@
 // appears under Your Rooms and interoperates with bitchat clients in the same
 // cell.
 
-import { t, useT } from "@i18n";
+import { t, useT, type TranslationKey } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   geohashLevelName,
@@ -16,6 +16,7 @@ import { getMeshService } from "@services/mesh-service";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import UpperText from "@ui/components/upper-text";
 import {
   BUTTON_HEIGHT,
   FontFamily,
@@ -27,7 +28,10 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { geohashNeighbours } from "@utils/geohash-grid";
+import {
+  geohashNeighbours,
+  type NeighbourDirection,
+} from "@utils/geohash-grid";
 import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
@@ -41,6 +45,23 @@ import {
 // How long typing has to stop before the cell's name is looked up. Long enough
 // that a six-character geohash costs one lookup rather than six.
 const NAME_LOOKUP_DEBOUNCE_MS = 500;
+
+// Keyed the way `geohashNeighbours` names the eight cells. The chip shows the
+// short point; the label is a whole sentence per direction, since the
+// direction word takes a different case or preposition in most languages.
+const DIRECTION_KEYS: Record<
+  NeighbourDirection,
+  { short: TranslationKey; open: TranslationKey }
+> = {
+  N: { short: "chat.jump.dir.n", open: "chat.jump.open_n" },
+  NE: { short: "chat.jump.dir.ne", open: "chat.jump.open_ne" },
+  E: { short: "chat.jump.dir.e", open: "chat.jump.open_e" },
+  SE: { short: "chat.jump.dir.se", open: "chat.jump.open_se" },
+  S: { short: "chat.jump.dir.s", open: "chat.jump.open_s" },
+  SW: { short: "chat.jump.dir.sw", open: "chat.jump.open_sw" },
+  W: { short: "chat.jump.dir.w", open: "chat.jump.open_w" },
+  NW: { short: "chat.jump.dir.nw", open: "chat.jump.open_nw" },
+};
 
 interface Props {
   visible: boolean;
@@ -139,7 +160,6 @@ export function GeohashJumpSheet({
 
   function handleGo() {
     if (!valid) return;
-    // Already in this cell: open the named channel, don't teleport onto it.
     if (localChannel !== null) {
       reset();
       onJoined(localChannel);
@@ -242,7 +262,9 @@ export function GeohashJumpSheet({
 
       {neighbours.length > 0 && (
         <View style={styles.saved}>
-          <Text style={styles.savedLabel}>NEARBY</Text>
+          <UpperText style={styles.savedLabel}>
+            {T("chat.jump.nearby")}
+          </UpperText>
           <View style={styles.nearbyWrap}>
             {neighbours.map((n) => (
               <Pressable
@@ -250,11 +272,11 @@ export function GeohashJumpSheet({
                 style={styles.nearbyChip}
                 onPress={() => openGeohash(n.geohash)}
                 accessibilityRole="button"
-                accessibilityLabel={T("chat.jump.open_direction", {
-                  direction: n.direction,
-                })}
+                accessibilityLabel={T(DIRECTION_KEYS[n.direction].open)}
               >
-                <Text style={styles.nearbyDir}>{n.direction}</Text>
+                <Text style={styles.nearbyDir}>
+                  {T(DIRECTION_KEYS[n.direction].short)}
+                </Text>
                 <Text style={styles.nearbyHash} numberOfLines={1}>
                   {placeNames[placeNameKey(n.geohash)] ?? `#${n.geohash}`}
                 </Text>
@@ -266,7 +288,9 @@ export function GeohashJumpSheet({
 
       {bookmarks.length > 0 && (
         <View style={styles.saved}>
-          <Text style={styles.savedLabel}>{T("chat.jump.saved")}</Text>
+          <UpperText style={styles.savedLabel}>
+            {T("chat.jump.saved")}
+          </UpperText>
           <ScrollView
             style={styles.savedList}
             showsVerticalScrollIndicator={false}
@@ -331,7 +355,8 @@ export function GeohashJumpSheet({
           disabled={!valid}
           accessibilityRole="button"
           accessibilityLabel={T("chat.jump.go")}
-          // Without this a reader user taps into what sounds like plain text.
+          // Without this a screen reader user taps into what sounds like
+          // plain text.
           accessibilityState={{ disabled: !valid }}
         >
           <Text style={styles.confirmText}>{T("chat.jump.go")}</Text>

@@ -207,13 +207,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Tanpa internet, tanpa router, di ponsel yang sudah dimiliki orang.",
   "home.features.networking.lan.name": "Jaringan lokal",
-  "home.features.networking.lan.line": "WiFi bersama atau hotspot, iPhone dan Android bersama.",
+  "home.features.networking.lan.line": "Wi-Fi bersama atau hotspot, iPhone dan Android bersama.",
   "home.features.networking.hops.name": "Relai multi-hop",
   "home.features.networking.hops.line": "Setiap ponsel meneruskan pesan, hingga tujuh hop.",
   "home.features.networking.bridge.name": "Jembatan mesh",
   "home.features.networking.bridge.line":
     "Menghubungkan obrolan publik Anda dengan kerumunan di dekatnya yang di luar jangkauan.",
-  "home.features.networking.wifi.name": "Jalur cepat WiFi",
+  "home.features.networking.wifi.name": "Jalur cepat Wi-Fi",
   "home.features.networking.wifi.line": "Transfer lebih cepat antara dua Android atau dua iPhone.",
   "home.features.networking.bitchat.name": "Kompatibel dengan bitchat",
   "home.features.networking.bitchat.line":

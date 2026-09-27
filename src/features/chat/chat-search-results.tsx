@@ -6,6 +6,8 @@
 
 import { isUrgent } from "@core/mesh/wire/board-packet";
 import { t, useT, type TranslationKey } from "@i18n";
+import { directionMark } from "@i18n/layout";
+import { fillRichText } from "@i18n/rich-text";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   Feather,
@@ -19,6 +21,7 @@ import { useLocationNotesStore } from "@store/location-notes-store";
 import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import EmptyState from "@ui/components/empty-state";
+import UpperText from "@ui/components/upper-text";
 import {
   FontSize,
   FontWeight,
@@ -58,17 +61,59 @@ import {
 // The filter chips shown above search, one per content kind Airhop supports.
 // Keys, not text: evaluated once at import, so translated strings here would
 // freeze in the language the app started in.
+//
+// Each empty state is its own sentence rather than the label spliced into one:
+// a label is a capitalised plural, and the noun's gender, number and case all
+// change the words around it.
 const MEDIA_FILTERS: {
   key: MediaFilter;
   labelKey: TranslationKey;
+  emptyKey: TranslationKey;
+  noMatchKey: TranslationKey;
   icon: FeatherIconName;
 }[] = [
-  { key: "photos", labelKey: "chat.search.photos", icon: "image" },
-  { key: "videos", labelKey: "chat.search.videos", icon: "video" },
-  { key: "audio", labelKey: "chat.search.audio", icon: "mic" },
-  { key: "documents", labelKey: "chat.search.documents", icon: "file-text" },
-  { key: "links", labelKey: "chat.search.links", icon: "link" },
-  { key: "ecash", labelKey: "chat.search.ecash", icon: "dollar-sign" },
+  {
+    key: "photos",
+    labelKey: "chat.search.photos",
+    emptyKey: "chat.search.no_photos",
+    noMatchKey: "chat.search.no_photos_matching",
+    icon: "image",
+  },
+  {
+    key: "videos",
+    labelKey: "chat.search.videos",
+    emptyKey: "chat.search.no_videos",
+    noMatchKey: "chat.search.no_videos_matching",
+    icon: "video",
+  },
+  {
+    key: "audio",
+    labelKey: "chat.search.audio",
+    emptyKey: "chat.search.no_audio",
+    noMatchKey: "chat.search.no_audio_matching",
+    icon: "mic",
+  },
+  {
+    key: "documents",
+    labelKey: "chat.search.documents",
+    emptyKey: "chat.search.no_documents",
+    noMatchKey: "chat.search.no_documents_matching",
+    icon: "file-text",
+  },
+  {
+    key: "links",
+    labelKey: "chat.search.links",
+    emptyKey: "chat.search.no_links",
+    noMatchKey: "chat.search.no_links_matching",
+    icon: "link",
+  },
+  {
+    key: "ecash",
+    labelKey: "chat.search.ecash",
+    emptyKey: "chat.search.no_ecash",
+    noMatchKey: "chat.search.no_ecash_matching",
+    icon: "dollar-sign",
+  },
 ];
 
 // Debounce so fast typing doesn't recompute the scan on every keystroke.
@@ -255,13 +300,8 @@ export default function ChatSearchResults({
             icon={activeFilter.icon}
             title={
               trimmed.length > 0
-                ? T("chat.search.no_matches", {
-                    filter: T(activeFilter.labelKey).toLowerCase(),
-                    query: trimmed,
-                  })
-                : T("chat.search.no_media", {
-                    filter: T(activeFilter.labelKey).toLowerCase(),
-                  })
+                ? T(activeFilter.noMatchKey, { query: trimmed })
+                : T(activeFilter.emptyKey)
             }
           />
         ) : (
@@ -302,7 +342,7 @@ export default function ChatSearchResults({
                 : `msg-${row.hit.messageId}-${index}`
           }
           renderSectionHeader={({ section }) => (
-            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <UpperText style={styles.sectionTitle}>{section.title}</UpperText>
           )}
           renderItem={({ item }) =>
             item.kind === "chat" ? (
@@ -374,6 +414,43 @@ function ChatResultRow({
   );
 }
 
+// "sender: snippet" with the match picked out. One catalog sentence, so a
+// right-to-left name or message keeps its place on either side of the colon,
+// led by the UI's direction mark for the reason `directionMark` gives.
+function SenderSnippet({
+  lead,
+  sender,
+  hit,
+  styles,
+}: {
+  lead?: string;
+  sender: string;
+  hit: { snippet: string; matchStart: number; matchEnd: number };
+  styles: ReturnType<typeof createStyles>;
+}): React.JSX.Element {
+  const T = useT();
+  return (
+    <Text style={styles.messageSnippet} numberOfLines={2}>
+      {directionMark}
+      {lead !== undefined && (
+        <Text style={styles.messageSender}>{`${lead} `}</Text>
+      )}
+      {fillRichText(T("chat.sender_preview"), {
+        sender: <Text style={styles.messageSender}>{sender}</Text>,
+        preview: (
+          <>
+            {hit.snippet.slice(0, hit.matchStart)}
+            <Text style={styles.messageMatch}>
+              {hit.snippet.slice(hit.matchStart, hit.matchEnd)}
+            </Text>
+            {hit.snippet.slice(hit.matchEnd)}
+          </>
+        ),
+      })}
+    </Text>
+  );
+}
+
 function MessageResultRow({
   hit,
   styles,
@@ -386,19 +463,23 @@ function MessageResultRow({
   onPress: (channel: string, messageId: string) => void;
 }): React.JSX.Element {
   const T = useT();
-  const before = hit.snippet.slice(0, hit.matchStart);
-  const match = hit.snippet.slice(hit.matchStart, hit.matchEnd);
-  const after = hit.snippet.slice(hit.matchEnd);
   return (
     <Pressable
       style={styles.row}
       onPress={() => onPress(hit.channel, hit.messageId)}
       accessibilityRole="button"
-      accessibilityLabel={t("chat.search.message_a11y", {
-        chat: conversationDisplayName(hit.channel),
-        sender: hit.isMine ? t("chat.search.you") : hit.senderNickname,
-        snippet: hit.snippet,
-      })}
+      accessibilityLabel={
+        hit.isMine
+          ? t("chat.search.message_mine_a11y", {
+              chat: conversationDisplayName(hit.channel),
+              snippet: hit.snippet,
+            })
+          : t("chat.search.message_a11y", {
+              chat: conversationDisplayName(hit.channel),
+              sender: hit.senderNickname,
+              snippet: hit.snippet,
+            })
+      }
     >
       <View style={styles.channelIcon}>
         <Feather
@@ -416,14 +497,11 @@ function MessageResultRow({
             {formatListTimestamp(hit.timestampMs)}
           </Text>
         </View>
-        <Text style={styles.messageSnippet} numberOfLines={2}>
-          <Text style={styles.messageSender}>
-            {hit.isMine ? T("chat.you") : hit.senderNickname}:{" "}
-          </Text>
-          {before}
-          <Text style={styles.messageMatch}>{match}</Text>
-          {after}
-        </Text>
+        <SenderSnippet
+          sender={hit.isMine ? T("chat.you") : hit.senderNickname}
+          hit={hit}
+          styles={styles}
+        />
       </View>
     </Pressable>
   );
@@ -443,9 +521,6 @@ function NoticeResultRow({
   onPress: (channel: string) => void;
 }): React.JSX.Element {
   const T = useT();
-  const before = hit.snippet.slice(0, hit.matchStart);
-  const match = hit.snippet.slice(hit.matchStart, hit.matchEnd);
-  const after = hit.snippet.slice(hit.matchEnd);
   return (
     <Pressable
       style={styles.row}
@@ -473,15 +548,12 @@ function NoticeResultRow({
             {formatListTimestamp(hit.timestampMs)}
           </Text>
         </View>
-        <Text style={styles.messageSnippet} numberOfLines={2}>
-          <Text style={styles.messageSender}>
-            {hit.isUrgent ? `${T("chat.search.urgent")} ` : ""}
-            {hit.author}:{" "}
-          </Text>
-          {before}
-          <Text style={styles.messageMatch}>{match}</Text>
-          {after}
-        </Text>
+        <SenderSnippet
+          lead={hit.isUrgent ? T("chat.search.urgent") : undefined}
+          sender={hit.author}
+          hit={hit}
+          styles={styles}
+        />
       </View>
     </Pressable>
   );
@@ -507,19 +579,23 @@ function MediaResultRow({
   // media automatically" is off, and search must not be the way around it.
   const autoDownloadMedia = useSettingsStore((s) => s.autoDownloadMedia);
   const showThumbnail = hit.isMine || autoDownloadMedia;
-  const before = hit.snippet.slice(0, hit.matchStart);
-  const match = hit.snippet.slice(hit.matchStart, hit.matchEnd);
-  const after = hit.snippet.slice(hit.matchEnd);
   return (
     <Pressable
       style={styles.row}
       onPress={() => onPress(hit.channel, hit.messageId)}
       accessibilityRole="button"
-      accessibilityLabel={T("chat.search.result_a11y", {
-        chat: conversationDisplayName(hit.channel),
-        kind: T(filter.labelKey),
-        sender: hit.isMine ? T("chat.search.you") : hit.senderNickname,
-      })}
+      accessibilityLabel={
+        hit.isMine
+          ? T("chat.search.result_mine_a11y", {
+              chat: conversationDisplayName(hit.channel),
+              kind: T(filter.labelKey),
+            })
+          : T("chat.search.result_a11y", {
+              chat: conversationDisplayName(hit.channel),
+              kind: T(filter.labelKey),
+              sender: hit.senderNickname,
+            })
+      }
     >
       <View style={styles.mediaThumb}>
         <Feather name={filter.icon} size={16} color={colors.textSecondary} />
@@ -540,14 +616,11 @@ function MediaResultRow({
             {formatListTimestamp(hit.timestampMs)}
           </Text>
         </View>
-        <Text style={styles.messageSnippet} numberOfLines={2}>
-          <Text style={styles.messageSender}>
-            {hit.isMine ? T("chat.you") : hit.senderNickname}:{" "}
-          </Text>
-          {before}
-          <Text style={styles.messageMatch}>{match}</Text>
-          {after}
-        </Text>
+        <SenderSnippet
+          sender={hit.isMine ? T("chat.you") : hit.senderNickname}
+          hit={hit}
+          styles={styles}
+        />
       </View>
     </Pressable>
   );
@@ -617,7 +690,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.8,
       marginTop: Spacing.base,
       marginBottom: Spacing.xs,

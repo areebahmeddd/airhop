@@ -12,9 +12,9 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 ### Gap 2: Transports Beyond Bluetooth
 
-**bitchat:** Bluetooth only in practice, around 18 KiB/s. bitchat-android has WiFi Aware behind a debug setting that is off by default, bitchat-ios has none, and neither can use an ordinary WiFi network.
+**bitchat:** Bluetooth only in practice, around 18 KiB/s. bitchat-android has Wi-Fi Aware behind a debug setting that is off by default, bitchat-ios has none, and neither can use an ordinary Wi-Fi network.
 
-**Airhop:** Two transports beside Bluetooth, picked per link, with Bluetooth as the fallback that always works. WiFi Aware ships enabled on both platforms as the fast path between two Androids or two iPhones; Apple requires a paired data path Android cannot complete, so it never crosses platforms. LAN closes that gap with mDNS discovery and plain TCP links, carrying the same packets the radio carries. It stays off until the user turns it on, since announcing yourself on a network is visible to everyone on it.
+**Airhop:** Two transports beside Bluetooth, picked per link, with Bluetooth as the fallback that always works. Wi-Fi Aware ships enabled on both platforms as the fast path between two Androids or two iPhones; Apple requires a paired data path Android cannot complete, so it never crosses platforms. LAN closes that gap with mDNS discovery and plain TCP links, carrying the same packets the radio carries. It stays off until the user turns it on, since announcing yourself on a network is visible to everyone on it.
 
 ### Gap 3: Reaching the Network Where Tor Is Blocked
 
@@ -32,7 +32,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** Accepts 1 MiB of any type, checked as a packet is decoded; bitchat-ios keeps the photos and voice notes it sends under 512 KiB. Video crosses the wire but neither platform plays it.
 
-**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file. There is no live video: Bluetooth is too slow, WiFi Aware cannot cross platforms, and LAN needs both peers on one network with it switched on.
+**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file. There is no live video: Bluetooth is too slow, Wi-Fi Aware cannot cross platforms, and LAN needs both peers on one network with it switched on.
 
 ### Gap 6: Cashu Wallet
 
@@ -58,7 +58,7 @@ What each milestone delivered, item by item, is in [PROGRESS.md](../dev/PROGRESS
 | v0.6.0              | Core messaging, bitchat wire-compatible                       | Full offline mesh chat, with Airhop to bitchat delivery verified                                                                              |
 | v0.7.0              | Internet bridge and live voice                                | DMs across a city over Nostr, through embedded Arti on both platforms; live push-to-talk over BLE, interoperating with bitchat                |
 | v0.8.0              | Identity and forward secrecy                                  | Double Ratchet passing its tests; courier mail survives the recipient's long-term key leaking; a scanned card is trusted, a linked one is not |
-| v0.9.0              | Two transports beside Bluetooth, one fast, one cross-platform | Attachments over same-platform WiFi Aware; an iPhone and an Android carrying the mesh over shared WiFi with Bluetooth idle                    |
+| v0.9.0              | Two transports beside Bluetooth, one fast, one cross-platform | Attachments over same-platform Wi-Fi Aware; an iPhone and an Android carrying the mesh over shared Wi-Fi with Bluetooth idle                  |
 | v0.9.5              | 35 languages, with the compiler enforcing completeness        | Every screen reads from the catalogs, and CI cannot regress it                                                                                |
 | v0.9.6              | A real wallet, not a token viewer                             | Ecash sent and received offline over BLE, topped up and cashed out over Lightning, and rebuilt on a new phone from twelve words               |
 | v1.0.0              | Production UI and public release                              | UI complete, accessibility audited, submitted to both stores                                                                                  |
@@ -157,7 +157,7 @@ macOS is the priority: CoreBluetooth has the same API surface as iOS, so the exi
 - [ ] `react-native-macos` target added to the project
 - [ ] `AirhopBLEModule.swift` audited and tested on macOS (CoreBluetooth is identical)
 - [ ] macOS-specific entitlements and sandbox config (`bitchat-macOS.entitlements` as reference)
-- [ ] WiFi Aware enabled on macOS (Mac Catalyst 26 carries the same framework)
+- [ ] Wi-Fi Aware enabled on macOS (Mac Catalyst 26 carries the same framework)
 - [ ] Mac App Store submission
 - [ ] `react-native-windows` target scoped and scheduled
 - [ ] Windows BLE native module via WinRT Bluetooth APIs
@@ -268,7 +268,7 @@ Private communication should be understandable, not merely trusted. v2.0.0 redes
 
 - **Probability:** Medium. OEM BLE stacks differ, and many OEM battery managers kill background apps.
 - **Impact:** Dual-role GATT or the background mesh fails on some devices.
-- **Mitigation:** The foreground service holds the process; the battery optimization flow deep-links to the right setting on 10 OEM skins. Field reports from the Samsung testers drive the WiFi Aware and BLE quirk handling. Device checks stay manual, since the simulation models the OS contract rather than the silicon.
+- **Mitigation:** The foreground service holds the process; the battery optimization flow deep-links to the right setting on 10 OEM skins. Field reports from the Samsung testers drive the Wi-Fi Aware and BLE quirk handling. Device checks stay manual, since the simulation models the OS contract rather than the silicon.
 
 ### Risk 3: Crypto Cost on Old Phones
 

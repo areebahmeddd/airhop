@@ -211,14 +211,14 @@ const strings: Strings = {
     "Kein Internet, kein Router, auf Handys, die die Leute schon haben.",
   "home.features.networking.lan.name": "Lokales Netzwerk",
   "home.features.networking.lan.line":
-    "Geteiltes WiFi oder ein Hotspot, iPhone und Android gemeinsam.",
+    "Geteiltes Wi-Fi oder ein Hotspot, iPhone und Android gemeinsam.",
   "home.features.networking.hops.name": "Multi-Hop-Weiterleitung",
   "home.features.networking.hops.line":
     "Jedes Handy reicht Nachrichten weiter, bis zu sieben Hops.",
   "home.features.networking.bridge.name": "Mesh-Brücke",
   "home.features.networking.bridge.line":
     "Verbindet deinen öffentlichen Chat mit einer Gruppe in der Nähe außerhalb der Reichweite.",
-  "home.features.networking.wifi.name": "WiFi-Schnellweg",
+  "home.features.networking.wifi.name": "Wi-Fi-Schnellweg",
   "home.features.networking.wifi.line":
     "Schnellere Übertragungen zwischen zwei Androids oder zwei iPhones.",
   "home.features.networking.bitchat.name": "bitchat-kompatibel",
