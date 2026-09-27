@@ -123,6 +123,23 @@ describe("with the internet off", () => {
   });
 });
 
+// One sentence from the catalog, so a translator can move the heart and the
+// name wherever their language puts them.
+describe("the credit line", () => {
+  it("renders the catalog sentence around the heart and the author", async () => {
+    const r = await render();
+
+    for (const part of t("settings.version.credit").split(/\{\w+\}/)) {
+      if (part.trim() !== "") expect(shows(r, part)).toBe(true);
+    }
+    expect(
+      r.root.findAll(
+        (n) => n.props.accessibilityLabel === t("settings.version.heart_a11y"),
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+});
+
 describe("the gate", () => {
   it("refuses with the internet off on both platforms", () => {
     useSettingsStore.setState({ internetEnabled: false });

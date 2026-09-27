@@ -233,6 +233,26 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
     ),
   });
 
+  // The same, with the heart drawn inline and the author's name as the link.
+  const credit = useRichText("settings.version.credit", {
+    heart: (
+      <PixelHeart
+        color={Colors.textPrimary}
+        label={T("settings.version.heart_a11y")}
+      />
+    ),
+    author: (
+      <Text
+        style={styles.creditLink}
+        onPress={() => void Linking.openURL(AUTHOR_URL)}
+        accessibilityRole="link"
+        suppressHighlighting
+      >
+        {AUTHOR_NAME}
+      </Text>
+    ),
+  });
+
   const flap = useBirdFlap(Spacing["sm-md"]);
 
   async function checkForUpdates() {
@@ -413,21 +433,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.credit}>
-          <View style={styles.creditRow}>
-            <Text style={styles.creditText}>
-              {T("settings.version.made_with")}
-            </Text>
-            <PixelHeart color={Colors.textPrimary} />
-            <Text style={styles.creditText}>by</Text>
-            <Text
-              style={styles.creditLink}
-              onPress={() => void Linking.openURL(AUTHOR_URL)}
-              accessibilityRole="link"
-              suppressHighlighting
-            >
-              {AUTHOR_NAME}
-            </Text>
-          </View>
+          <Text style={styles.creditText}>{credit}</Text>
           <Text style={styles.creditText}>{license}</Text>
         </View>
       </SettingsScroll>
@@ -541,11 +547,17 @@ const HEART_PIXELS = [
 ];
 const CELL = 2;
 
-function PixelHeart({ color }: { color: string }): React.JSX.Element {
+function PixelHeart({
+  color,
+  label,
+}: {
+  color: string;
+  label: string;
+}): React.JSX.Element {
   return (
     <View
       style={{ width: HEART_PIXELS[0].length * CELL }}
-      accessibilityLabel="love"
+      accessibilityLabel={label}
     >
       {HEART_PIXELS.map((row, y) => (
         <View key={y} style={{ flexDirection: "row" }}>
@@ -649,11 +661,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     credit: {
       marginTop: "auto",
       paddingTop: Spacing["2xl"],
-      alignItems: "center",
-      gap: Spacing.xs,
-    },
-    creditRow: {
-      flexDirection: "row",
       alignItems: "center",
       gap: Spacing.xs,
     },
