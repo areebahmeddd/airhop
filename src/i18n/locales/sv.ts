@@ -123,6 +123,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Din gamla telefon ska visa samma ord. Om den visar andra ord, eller inga alls, avbryt.",
   "onboarding.transfer.confirm_cta": "De stämmer",
+  "onboarding.transfer.waiting_old": "Tryck på {action} på din gamla telefon",
   "onboarding.transfer.receiving": "Tar emot {percent}%",
   "onboarding.transfer.saving": "Sparar på den här telefonen",
   "onboarding.transfer.releasing": "Slutför på din gamla telefon",
@@ -317,7 +318,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Du är redan med i ett annat {name}. Kanalnamn är bara etiketter, så inbjudan öppnade en egen kanal och den du var med i är orörd. Du kan byta namn på båda från kanalinfon.",
   "chat.join.paste_hint":
-    "Klistra in en inbjudan som börjar med airhop://. Att trycka på en länk fungerar också; det här är för en länk du inte kan trycka på.",
+    "En Airhop-länk börjar med airhop://. Klistra in en här, eller kontrollera den som en länk du tryckte på fyllde i.",
   "chat.join.key_note":
     "En inbjudan till en privat kanal bär nyckeln, så det går direkt att gå med och ingen annan behöver tillfrågas.",
   "chat.join.offline_note":
@@ -447,13 +448,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} av {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} kvar",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Avbryt {name}",
+  "chat.thread.hide_transfer": "Dölj förlopp",
+  "chat.thread.hide_transfer_hint": "Filen kommer ändå fram",
   "chat.thread.queued_more": "{count} till väntar på att skickas",
   "chat.thread.across_bridge": "{count} på andra sidan bryggan",
   "chat.thread.bridged": "bryggat",
   "chat.thread.invite_body":
-    "Kom med mig i {channel} på Airhop — privata meshmeddelanden som fungerar offline först.",
+    "Kom med mig i {channel} på Airhop: privata meshmeddelanden som fungerar offline först.",
   "chat.thread.go_back_unread": "Tillbaka, {count} olästa",
   "chat.thread.view_info": "Visa info om {name}",
   "chat.thread.notices_new": "Anslag för den här kanalen, {count} nya",
@@ -607,7 +613,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Videon finns inte på den här enheten",
   "chat.media.gone_voice": "Röstmeddelandet finns inte på den här enheten",
   "chat.media.gone_file": "Filen finns inte på den här enheten",
-  "chat.media.gone_note": "Sparas inte längre på den här enheten",
+  "chat.media.gone_note":
+    "Rensad från den här telefonen, eller inte flyttad från din gamla",
   "chat.media.ask_resend": "Fråga igen",
   "chat.media.resend_draft": "Kan du skicka {kind} en gång till?",
   "chat.media.kind_photo": "det där fotot",
@@ -1453,7 +1460,7 @@ export const strings: Strings = {
     "Gör om ett belopp till ett token du kan lämna över till en peer i närheten via Bluetooth, eller dela som text. Fungerar utan internet. Mynten förblir reserverade tills du bekräftar att det kom fram.",
   "wallet.explain.receive": "Ta emot",
   "wallet.explain.receive_desc":
-    "Klistra in ett token för att lägga till det. Online byts det hos minten direkt, vilket gör det bevisligen ditt. Offline sparas det och märks som obekräftat tills du uppdaterar.",
+    "Klistra in ett token för att lägga till det. Online byts det hos minten direkt, vilket gör det bevisligen ditt. Offline sparas det som obekräftat och bekräftas automatiskt hos minten när du är online igen.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Betalar en Nostr-identitet. Om de publicerar NIP-61-nutzapuppgifter låses ecashen till deras nyckel så att bara de kan använda den. Annars faller det tillbaka på ett krypterat direktmeddelande. Kräver internet.",
@@ -1527,6 +1534,8 @@ export const strings: Strings = {
     "Minten avvisade mynten, så de räknas inte längre. Tokenet sparas här om du vill skicka tillbaka det.",
   "wallet.svc.coins_unredeemable":
     "Mynten kan inte lösas in hos den här minten, så de räknas inte längre. Tokenet sparas här om du vill skicka tillbaka det.",
+  "wallet.svc.reclaim_refused":
+    "Minten ville inte ta tillbaka mynten från den här sändningen, så de räknas inte längre. Tokenet sparas här så att du kan kopiera det.",
   "wallet.svc.locked_ours_offline": "Betalningen är låst till din plånbok.",
   "wallet.svc.locked_ours_offline_body":
     "Hämta den när du är online. Ingen annan kan ta den under tiden.",
@@ -1653,6 +1662,8 @@ export const strings: Strings = {
     "Den bitchat-koden har gått ut. Be dem öppna sin QR igen.",
   "contacts.scan.tampered":
     "QR-koden är ogiltig: dess peer-ID stämmer inte med nycklarna. Den kan ha manipulerats.",
+  "contacts.scan.key_conflict":
+    "Du har redan en annan nyckel för personen, så inget ändrades. Skanna personens kod när ni träffas för att ersätta den.",
   "contacts.scan.already_added": "Finns redan bland dina kontakter",
 
   // ---- Contacts: verifying by QR ----
@@ -1837,7 +1848,7 @@ export const strings: Strings = {
   "settings.general.reset": "Återställ inställningar",
   "settings.general.media_retention": "Behåll media i",
   "settings.general.media_retention_desc":
-    "Foton, videor och röstmeddelanden raderas efter den valda tiden",
+    "Foton, videor, röstmeddelanden och filer raderas efter den valda tiden",
   "settings.general.media_retention_sheet":
     "Välj hur länge media ligger kvar på enheten. Raderad media går inte att få tillbaka.",
   "settings.general.retention_7_desc":
@@ -2220,7 +2231,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR-koden kunde inte sparas. Försök igen.",
   "settings.qr.share_message": "Lägg till mig på Airhop",
   "settings.qr.share_body":
-    "Lägg till mig på Airhop — privata meshmeddelanden som fungerar offline först.",
+    "Lägg till mig på Airhop: privata meshmeddelanden som fungerar offline först.",
   "settings.qr.show_short": "Visa QR",
   "settings.qr.title": "Din QR-kod",
   "settings.qr.note":
@@ -2244,10 +2255,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Rensar",
   "settings.wipe.in_progress_body":
     "Förstör dina nycklar, meddelanden och filer. Det tar några sekunder och slutförs av sig självt även om appen stängs.",
-  "settings.wipe.got_it": "Uppfattat",
   "settings.wipe.keys_failed": "Nycklarna kunde inte förstöras",
   "settings.wipe.keys_failed_body":
-    "Dina meddelanden, kontakter och din plånbok är borta, men enheten vägrade släppa dina nycklar. Lås upp enheten och rensa igen.",
+    "Dina meddelanden, kontakter och din plånbok är borta, men enheten vägrade släppa dina nycklar. Lås upp enheten och öppna sedan Airhop igen för att slutföra rensningen.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Kontakta oss",
@@ -2295,7 +2305,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Söker efter uppdateringar",
   "settings.version.up_to_date": "Du har den senaste versionen.",
   "settings.version.release_notes": "Visa versionsinformation",
-  "settings.version.made_with": "Gjord med",
+  "settings.version.credit": "Gjord med {heart} av {author}",
+  "settings.version.heart_a11y": "kärlek",
   "settings.version.number": "Version {version}",
   "settings.version.update_to": "Uppdatera till {version}",
   "settings.version.update_to_a11y": "Uppdatera till version {version}",

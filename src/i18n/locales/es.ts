@@ -126,6 +126,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Tu teléfono antiguo debería mostrar estas mismas palabras. Si muestra otras palabras, o ninguna, cancela.",
   "onboarding.transfer.confirm_cta": "Coinciden",
+  "onboarding.transfer.waiting_old": "Toca {action} en tu teléfono antiguo",
   "onboarding.transfer.receiving": "Recibiendo {percent}%",
   "onboarding.transfer.saving": "Guardando en este teléfono",
   "onboarding.transfer.releasing": "Terminando en tu teléfono antiguo",
@@ -322,7 +323,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Ya estás en otro {name} distinto. Los nombres de canal son solo etiquetas, así que esta invitación abrió su propio canal y el que ya tenías queda intacto. Puedes renombrar cualquiera de los dos desde su información de canal.",
   "chat.join.paste_hint":
-    "Pega una invitación que empiece por airhop://. Tocar una también funciona; esto es para un enlace que no puedes tocar.",
+    "Un enlace de Airhop empieza por airhop://. Pega uno aquí o revisa el que ha rellenado un enlace que tocaste.",
   "chat.join.key_note":
     "La invitación a un canal privado lleva la clave, así que unirse es inmediato y no se le pide nada a nadie más.",
   "chat.join.offline_note":
@@ -452,13 +453,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} de {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "quedan {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "par",
   "chat.thread.cancel_transfer": "Cancelar {name}",
+  "chat.thread.hide_transfer": "Ocultar progreso",
+  "chat.thread.hide_transfer_hint": "El archivo sigue llegando",
   "chat.thread.queued_more": "{count} más esperando para enviarse",
   "chat.thread.across_bridge": "{count} al otro lado del puente",
   "chat.thread.bridged": "enlazado",
   "chat.thread.invite_body":
-    "Únete a mí en {channel} en Airhop — mensajería en malla privada y con prioridad sin conexión.",
+    "Únete a mí en {channel} en Airhop: mensajería en malla privada y con prioridad sin conexión.",
   "chat.thread.go_back_unread": "Volver, {count} sin leer",
   "chat.thread.view_info": "Ver la información de {name}",
   "chat.thread.notices_new": "Avisos de este canal, {count} nuevos",
@@ -614,7 +620,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "El vídeo no está en este dispositivo",
   "chat.media.gone_voice": "La nota de voz no está en este dispositivo",
   "chat.media.gone_file": "El archivo no está en este dispositivo",
-  "chat.media.gone_note": "Ya no está guardado en este dispositivo",
+  "chat.media.gone_note":
+    "Se borró de este teléfono o no se pasó desde el antiguo",
   "chat.media.ask_resend": "Volver a pedirlo",
   "chat.media.resend_draft": "¿Puedes enviarme otra vez {kind}?",
   "chat.media.kind_photo": "esa foto",
@@ -1478,7 +1485,7 @@ export const strings: Strings = {
     "Convierte una cantidad en un token que puedes entregar a un par cercano por Bluetooth o compartir como texto. Funciona sin internet. Las monedas siguen reservadas hasta que confirmes que llegó.",
   "wallet.explain.receive": "Recibir",
   "wallet.explain.receive_desc":
-    "Pega un token para añadirlo. Con conexión se intercambia en la casa de cambio al momento, lo que lo hace tuyo de forma demostrable. Sin conexión se guarda y se marca como no confirmado hasta que actualices.",
+    "Pega un token para añadirlo. Con conexión se intercambia en la casa de cambio al momento, lo que lo hace tuyo de forma demostrable. Sin conexión se guarda sin confirmar y se confirma con la casa de cambio automáticamente cuando vuelvas a tener conexión.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Paga a una identidad de Nostr. Si publican información de nutzap de NIP-61, el ecash queda bloqueado a su clave para que solo ellos puedan gastarlo. Si no, recurre a un mensaje directo cifrado. Necesita internet.",
@@ -1560,6 +1567,8 @@ export const strings: Strings = {
     "La casa de cambio rechazó estas monedas, así que ya no se cuentan. El token se guarda aquí por si quieres devolverlo.",
   "wallet.svc.coins_unredeemable":
     "Estas monedas no se pueden canjear en esta casa de cambio, así que ya no se cuentan. El token se guarda aquí por si quieres devolverlo.",
+  "wallet.svc.reclaim_refused":
+    "La casa de cambio no aceptó de vuelta las monedas de este envío, así que ya no se cuentan. Su token se guarda aquí para que lo copies.",
   "wallet.svc.locked_ours_offline": "Este pago está bloqueado para tu cartera.",
   "wallet.svc.locked_ours_offline_body":
     "Reclámalo cuando tengas conexión. Mientras tanto, nadie más puede quedárselo.",
@@ -1690,6 +1699,8 @@ export const strings: Strings = {
     "Ese código de bitchat ha caducado. Pídeles que vuelvan a abrir su QR.",
   "contacts.scan.tampered":
     "Este código QR no es válido: su ID de par no coincide con sus claves. Puede que lo hayan manipulado.",
+  "contacts.scan.key_conflict":
+    "Ya tienes otra clave para esta persona, así que no ha cambiado nada. Escanea su código en persona para sustituirla.",
   "contacts.scan.already_added": "Ya está en tus contactos",
 
   // ---- Contacts: verifying by QR ----
@@ -1875,7 +1886,7 @@ export const strings: Strings = {
   "settings.general.reset": "Restablecer los ajustes",
   "settings.general.media_retention": "Conservar los medios durante",
   "settings.general.media_retention_desc":
-    "Las fotos, los vídeos y las notas de voz se eliminan pasado el tiempo elegido",
+    "Las fotos, los vídeos, las notas de voz y los archivos se eliminan pasado el tiempo elegido",
   "settings.general.media_retention_sheet":
     "Elige cuánto tiempo permanecen los medios en este dispositivo. Los medios eliminados no se pueden recuperar.",
   "settings.general.retention_7_desc":
@@ -2265,7 +2276,7 @@ export const strings: Strings = {
     "No se pudo guardar el código QR. Inténtalo de nuevo.",
   "settings.qr.share_message": "Añádeme en Airhop",
   "settings.qr.share_body":
-    "Añádeme en Airhop — mensajería en malla privada y con prioridad sin conexión.",
+    "Añádeme en Airhop: mensajería en malla privada y con prioridad sin conexión.",
   "settings.qr.show_short": "Ver QR",
   "settings.qr.title": "Tu código QR",
   "settings.qr.note":
@@ -2289,10 +2300,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Borrando",
   "settings.wipe.in_progress_body":
     "Destruyendo tus claves, mensajes y archivos. Tarda unos segundos y termina por su cuenta aunque se cierre la app.",
-  "settings.wipe.got_it": "Entendido",
   "settings.wipe.keys_failed": "No se pudieron destruir las claves",
   "settings.wipe.keys_failed_body":
-    "Tus mensajes, contactos y cartera han desaparecido, pero el dispositivo se negó a liberar tus claves. Desbloquéalo y vuelve a borrar.",
+    "Tus mensajes, contactos y cartera han desaparecido, pero el dispositivo se negó a liberar tus claves. Desbloquéalo y vuelve a abrir Airhop para terminar el borrado.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Escríbenos",
@@ -2340,7 +2350,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Buscando actualizaciones",
   "settings.version.up_to_date": "Tienes la última versión.",
   "settings.version.release_notes": "Ver las notas de la versión",
-  "settings.version.made_with": "Hecho con",
+  "settings.version.credit": "Hecho con {heart} por {author}",
+  "settings.version.heart_a11y": "amor",
   "settings.version.number": "Versión {version}",
   "settings.version.update_to": "Actualizar a {version}",
   "settings.version.update_to_a11y": "Actualizar a la versión {version}",

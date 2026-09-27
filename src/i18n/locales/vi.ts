@@ -124,6 +124,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Điện thoại cũ của bạn sẽ hiện đúng những từ này. Nếu nó hiện từ khác, hoặc không hiện gì, hãy hủy.",
   "onboarding.transfer.confirm_cta": "Khớp nhau",
+  "onboarding.transfer.waiting_old": "Chạm “{action}” trên điện thoại cũ",
   "onboarding.transfer.receiving": "Đang nhận {percent}%",
   "onboarding.transfer.saving": "Đang lưu vào điện thoại này",
   "onboarding.transfer.releasing": "Đang hoàn tất trên điện thoại cũ",
@@ -316,7 +317,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Bạn đã ở trong một {name} khác rồi. Tên kênh chỉ là nhãn, nên lời mời này đã mở kênh riêng của nó, còn kênh bạn đang ở vẫn nguyên vẹn. Bạn có thể đổi tên cả hai từ phần thông tin kênh.",
   "chat.join.paste_hint":
-    "Dán một lời mời bắt đầu bằng airhop://. Chạm vào liên kết cũng được; phần này dành cho liên kết không chạm được.",
+    "Liên kết Airhop bắt đầu bằng airhop://. Dán một liên kết vào đây, hoặc kiểm tra liên kết đã được điền sẵn khi bạn chạm vào.",
   "chat.join.key_note":
     "Lời mời vào kênh riêng tư mang sẵn khóa, nên việc tham gia là tức thì và không phải hỏi xin ai điều gì.",
   "chat.join.offline_note":
@@ -444,13 +445,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "còn {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "nút mạng",
   "chat.thread.cancel_transfer": "Hủy {name}",
+  "chat.thread.hide_transfer": "Ẩn tiến trình",
+  "chat.thread.hide_transfer_hint": "Tệp vẫn sẽ được nhận",
   "chat.thread.queued_more": "Còn {count} nữa đang đợi gửi",
   "chat.thread.across_bridge": "{count} ở bên kia cầu nối",
   "chat.thread.bridged": "đã bắc cầu",
   "chat.thread.invite_body":
-    "Vào {channel} với mình trên Airhop — nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
+    "Vào {channel} với mình trên Airhop: nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
   "chat.thread.go_back_unread": "Quay lại, {count} chưa đọc",
   "chat.thread.view_info": "Xem thông tin của {name}",
   "chat.thread.notices_new": "Bản tin của kênh này, {count} mới",
@@ -607,7 +613,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video không còn trên thiết bị này",
   "chat.media.gone_voice": "Tin nhắn thoại không còn trên thiết bị này",
   "chat.media.gone_file": "Tệp không còn trên thiết bị này",
-  "chat.media.gone_note": "Không còn được lưu trên thiết bị này",
+  "chat.media.gone_note":
+    "Đã bị xóa khỏi điện thoại này, hoặc chưa được chuyển từ máy cũ sang",
   "chat.media.ask_resend": "Hỏi lại",
   "chat.media.resend_draft": "Bạn gửi lại {kind} đó được không?",
   "chat.media.kind_photo": "tấm ảnh",
@@ -1458,7 +1465,7 @@ export const strings: Strings = {
     "Biến một khoản tiền thành token bạn có thể trao cho một nút mạng ở gần qua Bluetooth, hoặc chia sẻ dưới dạng văn bản. Chạy được khi không có Internet. Các đồng vẫn được giữ cho tới khi bạn xác nhận nó đã tới nơi.",
   "wallet.explain.receive": "Nhận",
   "wallet.explain.receive_desc":
-    "Dán một token để thêm nó vào. Khi có mạng, nó được hoán đổi ngay tại nhà đúc, nhờ vậy chứng minh được là của bạn. Khi ngoại tuyến, nó được lưu lại và đánh dấu chưa xác nhận cho tới khi bạn làm mới.",
+    "Dán một token để thêm nó vào. Khi có mạng, nó được hoán đổi ngay tại nhà đúc, nhờ vậy chứng minh được là của bạn. Khi ngoại tuyến, nó được lưu ở trạng thái chưa xác nhận và tự động được xác nhận với nhà đúc khi bạn có mạng trở lại.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Trả cho một danh tính Nostr. Nếu họ công bố thông tin nutzap NIP-61, khoản ecash sẽ bị khóa vào khóa của họ nên chỉ họ tiêu được. Nếu không, nó lùi về một tin nhắn riêng được mã hóa. Cần Internet.",
@@ -1533,6 +1540,8 @@ export const strings: Strings = {
     "Nhà đúc đã từ chối các đồng này, nên chúng không còn được tính. Token vẫn được giữ ở đây nếu bạn muốn gửi trả lại.",
   "wallet.svc.coins_unredeemable":
     "Các đồng này không thể đổi tại nhà đúc này, nên chúng không còn được tính. Token vẫn được giữ ở đây nếu bạn muốn gửi trả lại.",
+  "wallet.svc.reclaim_refused":
+    "Nhà đúc không chịu nhận lại các đồng từ lần gửi này, nên chúng không còn được tính. Token vẫn được giữ ở đây để bạn sao chép.",
   "wallet.svc.locked_ours_offline":
     "Khoản thanh toán này đã được khóa vào ví của bạn.",
   "wallet.svc.locked_ours_offline_body":
@@ -1658,6 +1667,8 @@ export const strings: Strings = {
     "Mã bitchat đó đã hết hạn. Hãy nhờ họ mở lại mã QR của mình.",
   "contacts.scan.tampered":
     "Mã QR này không hợp lệ: ID nút mạng của nó không khớp với khóa của nó. Có thể nó đã bị can thiệp.",
+  "contacts.scan.key_conflict":
+    "Bạn đã có một khóa khác cho người này, nên không có gì thay đổi. Hãy quét mã của họ khi gặp trực tiếp để thay thế.",
   "contacts.scan.already_added": "Đã có trong danh bạ của bạn",
 
   // ---- Contacts: verifying by QR ----
@@ -1840,7 +1851,7 @@ export const strings: Strings = {
   "settings.general.reset": "Đặt lại cài đặt",
   "settings.general.media_retention": "Giữ phương tiện trong",
   "settings.general.media_retention_desc":
-    "Ảnh, video và tin nhắn thoại bị xóa sau khoảng thời gian đã chọn",
+    "Ảnh, video, tin nhắn thoại và tệp bị xóa sau khoảng thời gian đã chọn",
   "settings.general.media_retention_sheet":
     "Hãy chọn phương tiện ở lại trên thiết bị này bao lâu. Phương tiện đã xóa thì không khôi phục được.",
   "settings.general.retention_7_desc":
@@ -2224,7 +2235,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Không lưu được mã QR. Hãy thử lại.",
   "settings.qr.share_message": "Thêm tôi trên Airhop",
   "settings.qr.share_body":
-    "Thêm tôi trên Airhop — nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
+    "Thêm tôi trên Airhop: nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
   "settings.qr.show_short": "Hiện QR",
   "settings.qr.title": "Mã QR của bạn",
   "settings.qr.note":
@@ -2246,10 +2257,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Đang xóa",
   "settings.wipe.in_progress_body":
     "Đang hủy khóa, tin nhắn và tệp của bạn. Việc này mất vài giây, và tự hoàn tất kể cả khi ứng dụng bị đóng.",
-  "settings.wipe.got_it": "Đã hiểu",
   "settings.wipe.keys_failed": "Không hủy được khóa",
   "settings.wipe.keys_failed_body":
-    "Tin nhắn, liên hệ và ví của bạn đã mất, nhưng thiết bị từ chối nhả khóa của bạn ra. Hãy mở khóa thiết bị và xóa lại.",
+    "Tin nhắn, liên hệ và ví của bạn đã mất, nhưng thiết bị từ chối nhả khóa của bạn ra. Hãy mở khóa thiết bị, rồi mở lại Airhop để hoàn tất việc xóa.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Liên hệ với chúng tôi",
@@ -2297,7 +2307,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Đang kiểm tra bản cập nhật",
   "settings.version.up_to_date": "Bạn đang dùng phiên bản mới nhất.",
   "settings.version.release_notes": "Xem ghi chú phát hành",
-  "settings.version.made_with": "Làm bằng",
+  "settings.version.credit": "Được làm bằng {heart} bởi {author}",
+  "settings.version.heart_a11y": "tình yêu",
   "settings.version.number": "Phiên bản {version}",
   "settings.version.update_to": "Cập nhật lên {version}",
   "settings.version.update_to_a11y": "Cập nhật lên phiên bản {version}",

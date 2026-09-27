@@ -125,6 +125,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "ძველ ტელეფონზეც ზუსტად ეს სიტყვები უნდა ჩანდეს. თუ სხვა სიტყვები ჩანს ან არცერთი, გააუქმე.",
   "onboarding.transfer.confirm_cta": "ემთხვევა",
+  "onboarding.transfer.waiting_old": "ძველ ტელეფონზე შეეხე „{action}“-ს",
   "onboarding.transfer.receiving": "მიღება {percent}%",
   "onboarding.transfer.saving": "ინახება ამ ტელეფონზე",
   "onboarding.transfer.releasing": "სრულდება ძველ ტელეფონზე",
@@ -319,7 +320,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "შენ უკვე სხვა {name}-ში ხარ. არხის სახელები მხოლოდ იარლიყებია, ამიტომ ამ მოწვევამ საკუთარი არხი გახსნა, ის კი, სადაც იყავი, ხელუხლებელი დარჩა. ორივეს სახელი არხის ინფორმაციიდან შეგიძლია შეცვალო.",
   "chat.join.paste_hint":
-    "ჩასვი მოწვევა, რომელიც airhop://-ით იწყება. ბმულზე შეხებაც მუშაობს; ეს იმ ბმულისთვისაა, რომელსაც ვერ შეეხები.",
+    "Airhop-ის ბმული airhop://-ით იწყება. ჩასვი აქ, ან შეამოწმე ის, რაც ბმულზე შეხებისას ჩაიწერა.",
   "chat.join.key_note":
     "პირადი არხის მოწვევას გასაღები თან მოაქვს, ამიტომ შესვლა მყისიერია და არავის არაფერი ეკითხება.",
   "chat.join.offline_note":
@@ -450,13 +451,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/წმ",
   "chat.transfer.left": "დარჩა {time}",
+  "chat.transfer.title": "{status}: {name}",
+  "chat.transfer.title_peer": "{status}: {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "კვანძი",
   "chat.thread.cancel_transfer": "{name}-ის გაუქმება",
+  "chat.thread.hide_transfer": "პროგრესის დამალვა",
+  "chat.thread.hide_transfer_hint": "ფაილი მაინც მოვა",
   "chat.thread.queued_more": "კიდევ {count} ელოდება გაგზავნას",
   "chat.thread.across_bridge": "{count} ხიდის მიღმა",
   "chat.thread.bridged": "ხიდით გადავიდა",
   "chat.thread.invite_body":
-    "შემომიერთდი {channel}-ში Airhop-ზე — პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
+    "შემომიერთდი {channel}-ში Airhop-ზე: პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
   "chat.thread.go_back_unread": "უკან, {count} წაუკითხავი",
   "chat.thread.view_info": "{name}-ის ინფორმაციის ნახვა",
   "chat.thread.notices_new": "ამ არხის განცხადებები, {count} ახალი",
@@ -611,7 +617,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ვიდეო ამ მოწყობილობაზე არ არის",
   "chat.media.gone_voice": "ხმოვანი ჩანაწერი ამ მოწყობილობაზე არ არის",
   "chat.media.gone_file": "ფაილი ამ მოწყობილობაზე არ არის",
-  "chat.media.gone_note": "ამ მოწყობილობაზე აღარ ინახება",
+  "chat.media.gone_note": "წაიშალა ამ ტელეფონიდან ან ძველიდან არ გადმოტანილა",
   "chat.media.ask_resend": "ხელახლა თხოვნა",
   "chat.media.resend_draft": "შეგიძლია ის {kind} ხელახლა გამომიგზავნო?",
   "chat.media.kind_photo": "ფოტო",
@@ -1461,7 +1467,7 @@ export const strings: Strings = {
     "თანხას აქცევს ტოკენად, რომელსაც ახლომდებარე კვანძს ბლუთუზით გადასცემ, ან ტექსტად გააზიარებ. მუშაობს ინტერნეტის გარეშე. მონეტები დარეზერვებული რჩება, სანამ არ დაადასტურებ, რომ მივიდა.",
   "wallet.explain.receive": "მიღება",
   "wallet.explain.receive_desc":
-    "ჩასვი ტოკენი დასამატებლად. ონლაინ ის მაშინვე იცვლება ზარაფხანაში, რაც მას დამტკიცებულად შენს ხდის. ოფლაინში ინახება და დაუდასტურებლად მოინიშნება, სანამ არ განაახლებ.",
+    "ჩასვი ტოკენი დასამატებლად. ონლაინ ის მაშინვე იცვლება ზარაფხანაში, რაც მას დამტკიცებულად შენს ხდის. ოფლაინში დაუდასტურებლად ინახება და ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ისევ ონლაინ იქნები.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "იხდის Nostr-ის ვინაობისთვის. თუ ის NIP-61 nutzap-ის ინფორმაციას აქვეყნებს, ecash მის გასაღებზე იკეტება, ისე რომ მხოლოდ მას შეუძლია დახარჯოს. თუ არა, უკან იხევს დაშიფრულ პირად შეტყობინებამდე. სჭირდება ინტერნეტი.",
@@ -1540,6 +1546,8 @@ export const strings: Strings = {
     "ზარაფხანამ ეს მონეტები უარყო, ამიტომ ისინი აღარ ითვლება. ტოკენი აქ ინახება, თუ მისი უკან გაგზავნა გინდა.",
   "wallet.svc.coins_unredeemable":
     "ამ მონეტების გამოსყიდვა ამ ზარაფხანაში შეუძლებელია, ამიტომ ისინი აღარ ითვლება. ტოკენი აქ ინახება, თუ მისი უკან გაგზავნა გინდა.",
+  "wallet.svc.reclaim_refused":
+    "ზარაფხანამ ამ გაგზავნის მონეტები უკან არ მიიღო, ამიტომ ისინი აღარ ითვლება. მათი ტოკენი აქ ინახება, რომ დააკოპირო.",
   "wallet.svc.locked_ours_offline": "ეს გადახდა შენს საფულეზეა დაკეტილი.",
   "wallet.svc.locked_ours_offline_body":
     "მიიღე, როცა ონლაინ იქნები. მანამდე მას სხვა ვერავინ წაიღებს.",
@@ -1668,6 +1676,8 @@ export const strings: Strings = {
     "ამ bitchat-ის კოდს ვადა გაუვიდა. სთხოვე, ხელახლა გახსნას თავისი QR.",
   "contacts.scan.tampered":
     "ეს QR კოდი არასწორია: მისი კვანძის ID გასაღებებს არ ემთხვევა. შესაძლოა შეცვლილია.",
+  "contacts.scan.key_conflict":
+    "მისთვის უკვე სხვა გასაღები გაქვს, ამიტომ არაფერი შეცვლილა. მის ჩასანაცვლებლად მისი კოდი პირისპირ დაასკანერე.",
   "contacts.scan.already_added": "უკვე შენს კონტაქტებშია",
 
   // ---- Contacts: verifying by QR ----
@@ -1853,7 +1863,7 @@ export const strings: Strings = {
   "settings.general.reset": "პარამეტრების საწყისზე დაბრუნება",
   "settings.general.media_retention": "მედიის შენახვა",
   "settings.general.media_retention_desc":
-    "ფოტოები, ვიდეოები და ხმოვანი ჩანაწერები არჩეული დროის შემდეგ იშლება",
+    "ფოტოები, ვიდეოები, ხმოვანი ჩანაწერები და ფაილები არჩეული დროის შემდეგ იშლება",
   "settings.general.media_retention_sheet":
     "აირჩიე, რამდენ ხანს დარჩეს მედია ამ მოწყობილობაზე. წაშლილი მედია აღდგენას არ ექვემდებარება.",
   "settings.general.retention_7_desc":
@@ -2237,7 +2247,7 @@ export const strings: Strings = {
     "QR კოდის შენახვა ვერ მოხერხდა. სცადე ხელახლა.",
   "settings.qr.share_message": "დამამატე Airhop-ზე",
   "settings.qr.share_body":
-    "დამამატე Airhop-ზე — პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
+    "დამამატე Airhop-ზე: პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
   "settings.qr.show_short": "QR-ის ჩვენება",
   "settings.qr.title": "შენი QR კოდი",
   "settings.qr.note":
@@ -2261,10 +2271,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "იშლება",
   "settings.wipe.in_progress_body":
     "ნადგურდება შენი გასაღებები, შეტყობინებები და ფაილები. ეს რამდენიმე წამს გრძელდება და თავად სრულდება, მაშინაც კი, თუ აპლიკაცია დაიხურა.",
-  "settings.wipe.got_it": "გასაგებია",
   "settings.wipe.keys_failed": "გასაღებების განადგურება ვერ მოხერხდა",
   "settings.wipe.keys_failed_body":
-    "შენი შეტყობინებები, კონტაქტები და საფულე წაშლილია, მაგრამ მოწყობილობამ შენი გასაღებების გათავისუფლებაზე უარი თქვა. განბლოკე მოწყობილობა და ხელახლა წაშალე.",
+    "შენი შეტყობინებები, კონტაქტები და საფულე წაშლილია, მაგრამ მოწყობილობამ შენი გასაღებების გათავისუფლებაზე უარი თქვა. განბლოკე მოწყობილობა, შემდეგ ხელახლა გახსენი Airhop, რომ წაშლა დასრულდეს.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "დაგვიკავშირდი",
@@ -2312,7 +2321,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "მოწმდება განახლებები",
   "settings.version.up_to_date": "შენ უახლეს ვერსიაზე ხარ.",
   "settings.version.release_notes": "გამოშვების შენიშვნების ნახვა",
-  "settings.version.made_with": "შექმნილია",
+  "settings.version.credit": "შექმნილია {heart}-ით, ავტორი: {author}",
+  "settings.version.heart_a11y": "სიყვარული",
   "settings.version.number": "ვერსია {version}",
   "settings.version.update_to": "განახლება {version}-ზე",
   "settings.version.update_to_a11y": "განახლება ვერსია {version}-ზე",

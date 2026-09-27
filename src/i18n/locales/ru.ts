@@ -122,6 +122,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "На старом телефоне должны быть те же слова. Если там другие слова или их нет, отмените.",
   "onboarding.transfer.confirm_cta": "Совпадают",
+  "onboarding.transfer.waiting_old": "Нажмите {action} на старом телефоне",
   "onboarding.transfer.receiving": "Получение {percent}%",
   "onboarding.transfer.saving": "Сохраняем на этот телефон",
   "onboarding.transfer.releasing": "Завершаем на старом телефоне",
@@ -319,7 +320,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Вы уже состоите в другом {name}. Названия каналов — просто ярлыки, поэтому это приглашение открыло собственный канал, а тот, в котором вы были, не затронут. Переименуйте любой из них в сведениях о канале.",
   "chat.join.paste_hint":
-    "Вставьте приглашение, начинающееся с airhop://. Нажатие на ссылку тоже работает; это для ссылки, на которую нажать нельзя.",
+    "Ссылка Airhop начинается с airhop://. Вставьте её сюда или проверьте ту, что подставилась после нажатия на ссылку.",
   "chat.join.key_note":
     "Приглашение в приватный канал несёт ключ, поэтому вход мгновенный и ни от кого больше ничего не требуется.",
   "chat.join.offline_note":
@@ -448,13 +449,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} из {total}",
   "chat.transfer.speed": "{size}/с",
   "chat.transfer.left": "осталось {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "узел",
   "chat.thread.cancel_transfer": "Отменить {name}",
+  "chat.thread.hide_transfer": "Скрыть прогресс",
+  "chat.thread.hide_transfer_hint": "Файл всё равно придёт",
   "chat.thread.queued_more": "Ещё {count} ждут отправки",
   "chat.thread.across_bridge": "{count} через мост",
   "chat.thread.bridged": "через мост",
   "chat.thread.invite_body":
-    "Присоединяйтесь ко мне в {channel} на Airhop — приватные сообщения по mesh-сети, работающие без интернета.",
+    "Присоединяйтесь ко мне в {channel} на Airhop: приватные сообщения по mesh-сети, работающие без интернета.",
   "chat.thread.go_back_unread": "Назад, {count} непрочитанных",
   "chat.thread.view_info": "Показать сведения о {name}",
   "chat.thread.notices_new": "Объявления этого канала, {count} новых",
@@ -612,7 +618,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Видео нет на этом устройстве",
   "chat.media.gone_voice": "Голосовой заметки нет на этом устройстве",
   "chat.media.gone_file": "Файла нет на этом устройстве",
-  "chat.media.gone_note": "Больше не хранится на этом устройстве",
+  "chat.media.gone_note":
+    "Удалено с этого телефона или не перенесено со старого",
   "chat.media.ask_resend": "Попросить снова",
   "chat.media.resend_draft": "Можешь ещё раз прислать {kind}?",
   "chat.media.kind_photo": "фото",
@@ -1465,7 +1472,7 @@ export const strings: Strings = {
     "Превращает сумму в токен, который можно передать узлу поблизости по Bluetooth или отправить текстом. Работает без интернета. Монеты остаются зарезервированными, пока вы не подтвердите доставку.",
   "wallet.explain.receive": "Приём",
   "wallet.explain.receive_desc":
-    "Вставьте токен, чтобы добавить его. В сети он сразу обменивается у монетного двора, и это делает его доказуемо вашим. Офлайн он сохраняется и помечается неподтверждённым до обновления.",
+    "Вставьте токен, чтобы добавить его. В сети он сразу обменивается у монетного двора, и это делает его доказуемо вашим. Офлайн он сохраняется неподтверждённым и автоматически подтверждается у монетного двора, когда вы снова в сети.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Платит личности в Nostr. Если человек публикует сведения nutzap по NIP-61, ecash привязывается к его ключу, так что потратить может только он. Иначе платёж уходит зашифрованным личным сообщением. Нужен интернет.",
@@ -1545,6 +1552,8 @@ export const strings: Strings = {
     "Монетный двор отклонил эти монеты, поэтому они больше не учитываются. Токен сохранён здесь, если захотите вернуть его.",
   "wallet.svc.coins_unredeemable":
     "Эти монеты нельзя погасить у этого монетного двора, поэтому они больше не учитываются. Токен сохранён здесь, если захотите вернуть его.",
+  "wallet.svc.reclaim_refused":
+    "Монетный двор не принял обратно монеты из этой отправки, поэтому они больше не учитываются. Их токен сохранён здесь, чтобы его можно было скопировать.",
   "wallet.svc.locked_ours_offline": "Этот платёж привязан к вашему кошельку.",
   "wallet.svc.locked_ours_offline_body":
     "Получите его, когда будете в сети. Пока никто другой не сможет его забрать.",
@@ -1671,6 +1680,8 @@ export const strings: Strings = {
     "Срок действия этого кода bitchat истёк. Попросите открыть их QR заново.",
   "contacts.scan.tampered":
     "Этот QR-код недействителен: его идентификатор узла не совпадает с ключами. Возможно, его подменили.",
+  "contacts.scan.key_conflict":
+    "У вас уже есть другой ключ этого человека, поэтому ничего не изменилось. Чтобы заменить его, отсканируйте код при личной встрече.",
   "contacts.scan.already_added": "Уже в ваших контактах",
 
   // ---- Contacts: verifying by QR ----
@@ -1857,7 +1868,7 @@ export const strings: Strings = {
   "settings.general.reset": "Сбросить настройки",
   "settings.general.media_retention": "Хранить медиа",
   "settings.general.media_retention_desc":
-    "Фото, видео и голосовые заметки удаляются по истечении выбранного срока",
+    "Фото, видео, голосовые заметки и файлы удаляются по истечении выбранного срока",
   "settings.general.media_retention_sheet":
     "Выберите, сколько медиа остаётся на этом устройстве. Удалённые медиа восстановить нельзя.",
   "settings.general.retention_7_desc":
@@ -2244,7 +2255,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR-код не сохранился. Попробуйте снова.",
   "settings.qr.share_message": "Добавьте меня в Airhop",
   "settings.qr.share_body":
-    "Добавьте меня в Airhop — приватные сообщения по mesh-сети, работающие без интернета.",
+    "Добавьте меня в Airhop: приватные сообщения по mesh-сети, работающие без интернета.",
   "settings.qr.show_short": "Показать QR",
   "settings.qr.title": "Ваш QR-код",
   "settings.qr.note":
@@ -2267,10 +2278,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Стираем",
   "settings.wipe.in_progress_body":
     "Уничтожаем ваши ключи, сообщения и файлы. Это займёт несколько секунд и завершится само, даже если приложение закрыть.",
-  "settings.wipe.got_it": "Понятно",
   "settings.wipe.keys_failed": "Не удалось уничтожить ключи",
   "settings.wipe.keys_failed_body":
-    "Ваши сообщения, контакты и кошелёк удалены, но устройство отказалось отдать ключи. Разблокируйте устройство и сотрите ещё раз.",
+    "Ваши сообщения, контакты и кошелёк удалены, но устройство отказалось отдать ключи. Разблокируйте устройство и снова откройте Airhop, чтобы завершить стирание.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Свяжитесь с нами",
@@ -2318,7 +2328,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Проверяем обновления",
   "settings.version.up_to_date": "У вас последняя версия.",
   "settings.version.release_notes": "Посмотреть, что нового",
-  "settings.version.made_with": "Сделано с",
+  "settings.version.credit": "Сделано с {heart}. Автор: {author}",
+  "settings.version.heart_a11y": "любовью",
   "settings.version.number": "Версия {version}",
   "settings.version.update_to": "Обновить до {version}",
   "settings.version.update_to_a11y": "Обновить до версии {version}",

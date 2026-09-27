@@ -127,6 +127,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Dapat ipinapakita rin ng luma mong telepono ang parehong mga salitang ito. Kung iba ang mga salita, o wala, kanselahin.",
   "onboarding.transfer.confirm_cta": "Magkatugma",
+  "onboarding.transfer.waiting_old":
+    "I-tap ang “{action}” sa luma mong telepono",
   "onboarding.transfer.receiving": "Tumatanggap {percent}%",
   "onboarding.transfer.saving": "Sine-save sa teleponong ito",
   "onboarding.transfer.releasing": "Tinatapos sa luma mong telepono",
@@ -327,7 +329,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Nasa ibang {name} ka na. Label lang ang mga pangalan ng channel, kaya nagbukas ang imbitasyong ito ng sarili nitong channel at hindi nagalaw ang sinalihan mo. Puwede mong palitan ang pangalan ng alinman mula sa impormasyon ng channel nito.",
   "chat.join.paste_hint":
-    "Idikit ang imbitasyong nagsisimula sa airhop://. Gumagana rin ang pag-tap ng link; para ito sa linkang hindi mo mata-tap.",
+    "Nagsisimula sa airhop:// ang link ng Airhop. Idikit ito rito, o tingnan ang inilagay ng link na na-tap mo.",
   "chat.join.key_note":
     "Dala ng imbitasyon sa pribadong channel ang susi, kaya agad ang pagsali at walang hinihingi kaninuman.",
   "chat.join.offline_note":
@@ -459,13 +461,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} sa {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} na lang",
+  "chat.transfer.title": "{status}: {name}",
+  "chat.transfer.title_peer": "{status}: {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Kanselahin ang {name}",
+  "chat.thread.hide_transfer": "Itago ang progreso",
+  "chat.thread.hide_transfer_hint": "Darating pa rin ang file",
   "chat.thread.queued_more": "{count} pa ang naghihintay maipadala",
   "chat.thread.across_bridge": "{count} sa kabila ng tulay",
   "chat.thread.bridged": "naitulay",
   "chat.thread.invite_body":
-    "Samahan mo ako sa {channel} sa Airhop — pribadong pag-mensahe sa mesh, offline muna.",
+    "Samahan mo ako sa {channel} sa Airhop: pribadong pag-mensahe sa mesh, offline muna.",
   "chat.thread.go_back_unread": "Bumalik, {count} ang hindi pa nababasa",
   "chat.thread.view_info": "Tingnan ang impormasyon para kay {name}",
   "chat.thread.notices_new":
@@ -628,7 +635,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Wala sa device na ito ang video",
   "chat.media.gone_voice": "Wala sa device na ito ang voice note",
   "chat.media.gone_file": "Wala sa device na ito ang file",
-  "chat.media.gone_note": "Hindi na nakaimbak sa device na ito",
+  "chat.media.gone_note":
+    "Nabura sa teleponong ito, o hindi nailipat mula sa luma mong telepono",
   "chat.media.ask_resend": "Humingi ulit",
   "chat.media.resend_draft": "Puwede mong ipadala ulit ang {kind} na iyon?",
   "chat.media.kind_photo": "larawan",
@@ -1507,7 +1515,7 @@ export const strings: Strings = {
     "Ginagawang token ang isang halaga na kaya mong ibigay sa peer sa malapit sa Bluetooth, o ibahagi bilang teksto. Gumagana nang walang internet. Nananatiling nakalaan ang mga barya hangga't hindi mo kinukumpirmang dumating ito.",
   "wallet.explain.receive": "Tumanggap",
   "wallet.explain.receive_desc":
-    "Idikit ang isang token para maidagdag ito. Kapag online, agad itong ipinagpapalit sa mint, na nagpapatunay na sa iyo ito. Kapag offline, iniimbak ito at minamarkahang hindi pa nakumpirma hangga't hindi ka nagre-refresh.",
+    "Idikit ang isang token para maidagdag ito. Kapag online, agad itong ipinagpapalit sa mint, na nagpapatunay na sa iyo ito. Kapag offline, iniimbak ito nang hindi pa nakukumpirma at awtomatikong kinukumpirma sa mint pagbalik mo online.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Nagbabayad sa isang identidad sa Nostr. Kung naglalathala sila ng impormasyong nutzap ng NIP-61, nakakandado ang ecash sa susi nila kaya sila lang ang makakagastos nito. Kung hindi, babalik ito sa naka-encrypt na direktang mensahe. Kailangan ng internet.",
@@ -1587,6 +1595,8 @@ export const strings: Strings = {
     "Tinanggihan ng mint ang mga baryang ito, kaya hindi na binibilang ang mga ito. Nakatago rito ang token kung gusto mo itong ibalik.",
   "wallet.svc.coins_unredeemable":
     "Hindi matutubos sa mint na ito ang mga baryang ito, kaya hindi na binibilang ang mga ito. Nakatago rito ang token kung gusto mo itong ibalik.",
+  "wallet.svc.reclaim_refused":
+    "Hindi tinanggap pabalik ng mint ang mga barya mula sa padalang ito, kaya hindi na binibilang ang mga ito. Nakatago rito ang token nila para makopya mo.",
   "wallet.svc.locked_ours_offline":
     "Nakakandado sa wallet mo ang bayad na ito.",
   "wallet.svc.locked_ours_offline_body":
@@ -1719,6 +1729,8 @@ export const strings: Strings = {
     "Nag-expire na ang code na iyon ng bitchat. Hilingin sa kanilang buksang muli ang QR nila.",
   "contacts.scan.tampered":
     "Hindi wasto ang QR code na ito: hindi tugma ang peer ID nito sa mga susi nito. Maaaring binago ito.",
+  "contacts.scan.key_conflict":
+    "May iba ka nang susi para sa kanila, kaya walang nagbago. I-scan nang harapan ang code nila para palitan ito.",
   "contacts.scan.already_added": "Nasa mga contact mo na",
 
   // ---- Contacts: verifying by QR ----
@@ -1906,7 +1918,7 @@ export const strings: Strings = {
   "settings.general.reset": "I-reset ang mga setting",
   "settings.general.media_retention": "Itago ang media nang",
   "settings.general.media_retention_desc":
-    "Binubura ang mga larawan, video at voice note pagkalipas ng napiling panahon",
+    "Binubura ang mga larawan, video, voice note at file pagkalipas ng napiling panahon",
   "settings.general.media_retention_sheet":
     "Piliin kung gaano katagal mananatili ang media sa device na ito. Hindi na mababawi ang naburang media.",
   "settings.general.retention_7_desc":
@@ -2297,7 +2309,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Hindi na-save ang QR code. Subukan ulit.",
   "settings.qr.share_message": "Idagdag mo ako sa Airhop",
   "settings.qr.share_body":
-    "Idagdag mo ako sa Airhop — pribadong pag-mensahe sa mesh, offline muna.",
+    "Idagdag mo ako sa Airhop: pribadong pag-mensahe sa mesh, offline muna.",
   "settings.qr.show_short": "Ipakita ang QR",
   "settings.qr.title": "Ang QR code mo",
   "settings.qr.note":
@@ -2320,10 +2332,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Naglilinis",
   "settings.wipe.in_progress_body":
     "Winawasak ang mga susi, mensahe at file mo. Ilang segundo lang ito at natatapos nang mag-isa kahit isara ang app.",
-  "settings.wipe.got_it": "Naiintindihan ko",
   "settings.wipe.keys_failed": "Hindi nawasak ang mga susi",
   "settings.wipe.keys_failed_body":
-    "Wala na ang mga mensahe, contact at wallet mo, pero tumanggi ang device na bitawan ang mga susi mo. I-unlock ang device at maglinis ulit.",
+    "Wala na ang mga mensahe, contact at wallet mo, pero tumanggi ang device na bitawan ang mga susi mo. I-unlock ang device, saka buksan ulit ang Airhop para matapos ang paglilinis.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Kontakin kami",
@@ -2372,7 +2383,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Naghahanap ng update",
   "settings.version.up_to_date": "Nasa pinakabagong bersyon ka.",
   "settings.version.release_notes": "Tingnan ang mga tala ng release",
-  "settings.version.made_with": "Ginawa gamit ang",
+  "settings.version.credit": "Ginawa nang may {heart} ni {author}",
+  "settings.version.heart_a11y": "pagmamahal",
   "settings.version.number": "Bersyon {version}",
   "settings.version.update_to": "Mag-update sa {version}",
   "settings.version.update_to_a11y": "Mag-update sa bersyon {version}",

@@ -122,6 +122,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "گوشی قدیمی‌تان باید همین واژه‌ها را نشان دهد. اگر واژه‌های دیگری نشان می‌دهد، یا هیچ واژه‌ای، لغو کنید.",
   "onboarding.transfer.confirm_cta": "یکی هستند",
+  "onboarding.transfer.waiting_old": "روی گوشی قدیمی‌تان «{action}» را بزنید",
   "onboarding.transfer.receiving": "در حال دریافت {percent}%",
   "onboarding.transfer.saving": "در حال ذخیره روی این گوشی",
   "onboarding.transfer.releasing": "در حال پایان کار روی گوشی قدیمی‌تان",
@@ -313,7 +314,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "شما از پیش در یک {name} دیگر هستید. نام کانال‌ها فقط برچسب‌اند، پس این دعوت کانال خودش را باز کرد و آنکه در آن بودید دست‌نخورده ماند. هر کدام را از اطلاعات کانالش می‌توانید تغییر نام دهید.",
   "chat.join.paste_hint":
-    "دعوتی را بچسبانید که با airhop:// آغاز می‌شود. زدن روی پیوند هم کار می‌کند؛ این برای پیوندی است که نمی‌توانید رویش بزنید.",
+    "پیوند Airhop با airhop:// آغاز می‌شود. یکی را اینجا بچسبانید، یا آنچه را زدن روی یک پیوند اینجا پر کرده بررسی کنید.",
   "chat.join.key_note":
     "دعوت یک کانال خصوصی کلید را با خود می‌آورد، پس پیوستن آنی است و از کس دیگری چیزی خواسته نمی‌شود.",
   "chat.join.offline_note":
@@ -443,13 +444,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} از {total}",
   "chat.transfer.speed": "{size}/ث",
   "chat.transfer.left": "{time} مانده",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "همتا",
   "chat.thread.cancel_transfer": "لغو {name}",
+  "chat.thread.hide_transfer": "پنهان کردن پیشرفت",
+  "chat.thread.hide_transfer_hint": "فایل همچنان می‌رسد",
   "chat.thread.queued_more": "{count} مورد دیگر در انتظار ارسال",
   "chat.thread.across_bridge": "{count} نفر آن سوی پل",
   "chat.thread.bridged": "پل‌خورده",
   "chat.thread.invite_body":
-    "در {channel} روی Airhop به من بپیوندید — پیام‌رسان مش خصوصی با اولویت برون‌خط.",
+    "در {channel} روی Airhop به من بپیوندید: پیام‌رسان مش خصوصی با اولویت برون‌خط.",
   "chat.thread.go_back_unread": "بازگشت، {count} خوانده‌نشده",
   "chat.thread.view_info": "دیدن اطلاعات {name}",
   "chat.thread.notices_new": "اعلان‌های این کانال، {count} تازه",
@@ -601,7 +607,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "ویدیو روی این دستگاه نیست",
   "chat.media.gone_voice": "پیام صوتی روی این دستگاه نیست",
   "chat.media.gone_file": "فایل روی این دستگاه نیست",
-  "chat.media.gone_note": "دیگر روی این دستگاه ذخیره نیست",
+  "chat.media.gone_note":
+    "از این گوشی پاک شده، یا از گوشی قدیمی‌تان منتقل نشده است",
   "chat.media.ask_resend": "دوباره بپرس",
   "chat.media.resend_draft": "می‌شود آن {kind} را دوباره بفرستید؟",
   "chat.media.kind_photo": "عکس",
@@ -1445,7 +1452,7 @@ export const strings: Strings = {
     "مبلغی را به توکنی بدل می‌کند که می‌توانید از راه بلوتوث به همتایی نزدیک بسپارید، یا به شکل متن هم‌رسانی کنید. بدون اینترنت کار می‌کند. سکه‌ها تا وقتی رسیدنش را تأیید نکنید کنارگذاشته می‌مانند.",
   "wallet.explain.receive": "گرفتن",
   "wallet.explain.receive_desc":
-    "برای افزودن یک توکن، آن را بچسبانید. برخط که باشید بی‌درنگ در ضراب‌خانه تعویض می‌شود، که آن را به شکل اثبات‌پذیر از آن شما می‌کند. برون‌خط ذخیره می‌شود و تا تازه‌سازی نکنید تأییدنشده می‌ماند.",
+    "برای افزودن یک توکن، آن را بچسبانید. برخط که باشید بی‌درنگ در ضراب‌خانه تعویض می‌شود، که آن را به شکل اثبات‌پذیر از آن شما می‌کند. برون‌خط تأییدنشده ذخیره می‌شود و وقتی دوباره برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.explain.zap": "زپ",
   "wallet.explain.zap_desc":
     "به یک هویت Nostr پرداخت می‌کند. اگر آن‌ها اطلاعات nutzap مطابق NIP-61 منتشر کرده باشند، ecash به کلیدشان قفل می‌شود تا تنها خودشان بتوانند خرجش کنند. وگرنه به یک پیام مستقیم رمزگذاری‌شده برمی‌گردد. به اینترنت نیاز دارد.",
@@ -1522,6 +1529,8 @@ export const strings: Strings = {
     "ضراب‌خانه این سکه‌ها را رد کرد، پس دیگر به حساب نمی‌آیند. اگر بخواهید پسش بفرستید، توکن اینجا نگه داشته می‌شود.",
   "wallet.svc.coins_unredeemable":
     "این سکه‌ها در این ضراب‌خانه بازخریدپذیر نیستند، پس دیگر به حساب نمی‌آیند. اگر بخواهید پسش بفرستید، توکن اینجا نگه داشته می‌شود.",
+  "wallet.svc.reclaim_refused":
+    "ضراب‌خانه سکه‌های این ارسال را پس نگرفت، پس دیگر شمرده نمی‌شوند. توکن آن‌ها برای کپی همین‌جا نگه داشته شده است.",
   "wallet.svc.locked_ours_offline": "این پرداخت به کیف پول شما قفل شده است.",
   "wallet.svc.locked_ours_offline_body":
     "وقتی برخط شدید آن را دریافت کنید. در این میان هیچ‌کس دیگری نمی‌تواند آن را بردارد.",
@@ -1646,6 +1655,8 @@ export const strings: Strings = {
     "آن کد bitchat منقضی شده است. از آن‌ها بخواهید QR خود را دوباره باز کنند.",
   "contacts.scan.tampered":
     "این کد QR نامعتبر است: شناسهٔ همتای آن با کلیدهایش نمی‌خواند. ممکن است دستکاری شده باشد.",
+  "contacts.scan.key_conflict":
+    "شما از قبل کلید دیگری برای آن‌ها دارید، پس چیزی تغییر نکرد. برای جایگزینی آن، کدشان را حضوری اسکن کنید.",
   "contacts.scan.already_added": "از پیش در مخاطبان شماست",
 
   // ---- Contacts: verifying by QR ----
@@ -1829,7 +1840,7 @@ export const strings: Strings = {
   "settings.general.reset": "بازنشانی تنظیمات",
   "settings.general.media_retention": "نگهداری رسانه به مدت",
   "settings.general.media_retention_desc":
-    "عکس‌ها، ویدیوها و پیام‌های صوتی پس از زمان انتخابی حذف می‌شوند",
+    "عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌ها پس از زمان انتخابی حذف می‌شوند",
   "settings.general.media_retention_sheet":
     "انتخاب کنید رسانه چه مدت روی این دستگاه بماند. رسانهٔ حذف‌شده بازیابی نمی‌شود.",
   "settings.general.retention_7_desc":
@@ -2206,7 +2217,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "کد QR ذخیره نشد. دوباره تلاش کنید.",
   "settings.qr.share_message": "من را در Airhop اضافه کنید",
   "settings.qr.share_body":
-    "من را در Airhop اضافه کنید — پیام‌رسان مش خصوصی با اولویت برون‌خط.",
+    "من را در Airhop اضافه کنید: پیام‌رسان مش خصوصی با اولویت برون‌خط.",
   "settings.qr.show_short": "نمایش QR",
   "settings.qr.title": "کد QR شما",
   "settings.qr.note":
@@ -2229,10 +2240,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "در حال پاک کردن",
   "settings.wipe.in_progress_body":
     "کلیدها، پیام‌ها و فایل‌های شما نابود می‌شوند. چند ثانیه طول می‌کشد، و اگر برنامه بسته شود خودش تا پایان می‌رود.",
-  "settings.wipe.got_it": "متوجه شدم",
   "settings.wipe.keys_failed": "کلیدها نابود نشدند",
   "settings.wipe.keys_failed_body":
-    "پیام‌ها، مخاطبان و کیف پول شما رفته‌اند، اما دستگاه از رها کردن کلیدهای شما سر باز زد. قفل دستگاه را باز کنید و دوباره پاک کنید.",
+    "پیام‌ها، مخاطبان و کیف پول شما رفته‌اند، اما دستگاه از رها کردن کلیدهای شما سر باز زد. قفل دستگاه را باز کنید، سپس Airhop را دوباره باز کنید تا پاک‌سازی تمام شود.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "تماس با ما",
@@ -2279,7 +2289,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "در حال بررسی به‌روزرسانی",
   "settings.version.up_to_date": "شما آخرین نسخه را دارید.",
   "settings.version.release_notes": "دیدن یادداشت‌های انتشار",
-  "settings.version.made_with": "ساخته‌شده با",
+  "settings.version.credit": "ساخته‌شده با {heart} توسط {author}",
+  "settings.version.heart_a11y": "عشق",
   "settings.version.number": "نسخهٔ {version}",
   "settings.version.update_to": "به‌روزرسانی به {version}",
   "settings.version.update_to_a11y": "به‌روزرسانی به نسخهٔ {version}",

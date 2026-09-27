@@ -122,6 +122,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "โทรศัพท์เครื่องเก่าควรแสดงคำชุดเดียวกันนี้ หากแสดงคำที่ต่างออกไปหรือไม่แสดงอะไรเลย ให้ยกเลิก",
   "onboarding.transfer.confirm_cta": "ตรงกัน",
+  "onboarding.transfer.waiting_old": "แตะ “{action}” บนโทรศัพท์เครื่องเก่า",
   "onboarding.transfer.receiving": "กำลังรับ {percent}%",
   "onboarding.transfer.saving": "กำลังบันทึกลงโทรศัพท์เครื่องนี้",
   "onboarding.transfer.releasing": "กำลังเสร็จสิ้นบนโทรศัพท์เครื่องเก่า",
@@ -309,7 +310,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "คุณอยู่ใน {name} อีกช่องหนึ่งอยู่แล้ว ชื่อช่องเป็นเพียงป้ายกำกับ คำเชิญนี้จึงเปิดช่องของตัวเองขึ้นมา และช่องที่คุณอยู่ไม่ถูกแตะต้อง เปลี่ยนชื่อช่องใดก็ได้จากข้อมูลช่องของมัน",
   "chat.join.paste_hint":
-    "วางคำเชิญที่ขึ้นต้นด้วย airhop:// การแตะลิงก์ก็ใช้ได้ ส่วนนี้มีไว้สำหรับลิงก์ที่คุณแตะไม่ได้",
+    "ลิงก์ Airhop ขึ้นต้นด้วย airhop:// วางลิงก์ที่นี่ หรือตรวจสอบลิงก์ที่ถูกกรอกไว้ให้เมื่อคุณแตะลิงก์",
   "chat.join.key_note":
     "คำเชิญของช่องส่วนตัวพากุญแจมาด้วย การเข้าร่วมจึงเกิดขึ้นทันทีและไม่ต้องขออะไรจากใครเลย",
   "chat.join.offline_note":
@@ -439,13 +440,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} จาก {total}",
   "chat.transfer.speed": "{size}/วินาที",
   "chat.transfer.left": "เหลือ {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "เพียร์",
   "chat.thread.cancel_transfer": "ยกเลิก {name}",
+  "chat.thread.hide_transfer": "ซ่อนความคืบหน้า",
+  "chat.thread.hide_transfer_hint": "ไฟล์จะยังคงมาถึงตามปกติ",
   "chat.thread.queued_more": "อีก {count} รายการรอส่ง",
   "chat.thread.across_bridge": "{count} คนอีกฝั่งของบริดจ์",
   "chat.thread.bridged": "เชื่อมผ่านบริดจ์",
   "chat.thread.invite_body":
-    "มาร่วมกับฉันใน {channel} บน Airhop — แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
+    "มาร่วมกับฉันใน {channel} บน Airhop: แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
   "chat.thread.go_back_unread": "กลับ ยังไม่อ่าน {count}",
   "chat.thread.view_info": "ดูข้อมูลของ {name}",
   "chat.thread.notices_new": "ประกาศสำหรับช่องนี้ ใหม่ {count}",
@@ -596,7 +602,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "วิดีโอไม่ได้อยู่บนเครื่องนี้",
   "chat.media.gone_voice": "ข้อความเสียงไม่ได้อยู่บนเครื่องนี้",
   "chat.media.gone_file": "ไฟล์ไม่ได้อยู่บนเครื่องนี้",
-  "chat.media.gone_note": "ไม่ได้เก็บไว้บนเครื่องนี้แล้ว",
+  "chat.media.gone_note":
+    "ถูกล้างออกจากโทรศัพท์เครื่องนี้ หรือไม่ได้ย้ายมาจากเครื่องเก่า",
   "chat.media.ask_resend": "ขออีกครั้ง",
   "chat.media.resend_draft": "ช่วยส่ง{kind}นั้นมาอีกครั้งได้ไหม",
   "chat.media.kind_photo": "รูปภาพ",
@@ -1420,7 +1427,7 @@ export const strings: Strings = {
     "เปลี่ยนจำนวนเงินให้เป็นโทเคนที่คุณส่งมอบให้เพียร์ที่อยู่ใกล้ผ่านบลูทูธได้ หรือแชร์เป็นข้อความก็ได้ ใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต เหรียญจะยังถูกกันไว้จนกว่าคุณจะยืนยันว่ามันไปถึงแล้ว",
   "wallet.explain.receive": "รับ",
   "wallet.explain.receive_desc":
-    "วางโทเคนเพื่อเพิ่มเข้ามา เมื่อออนไลน์มันจะถูกสับเปลี่ยนที่มินต์ทันที ซึ่งทำให้มันเป็นของคุณอย่างพิสูจน์ได้ เมื่อออฟไลน์มันจะถูกเก็บไว้และทำเครื่องหมายว่ายังไม่ยืนยันจนกว่าคุณจะรีเฟรช",
+    "วางโทเคนเพื่อเพิ่มเข้ามา เมื่อออนไลน์มันจะถูกสับเปลี่ยนที่มินต์ทันที ซึ่งทำให้มันเป็นของคุณอย่างพิสูจน์ได้ เมื่อออฟไลน์มันจะถูกเก็บไว้ในสถานะยังไม่ยืนยัน และจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณกลับมาออนไลน์",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "จ่ายให้ตัวตนบน Nostr หากพวกเขาเผยแพร่ข้อมูล nutzap ตาม NIP-61 ecash จะถูกล็อกไว้กับกุญแจของพวกเขาเพื่อให้มีเพียงพวกเขาที่ใช้ได้ มิฉะนั้นมันจะย้อนกลับไปใช้ DM ที่เข้ารหัส ต้องใช้อินเทอร์เน็ต",
@@ -1494,6 +1501,8 @@ export const strings: Strings = {
     "มินต์ปฏิเสธเหรียญเหล่านี้ จึงไม่นับรวมอีกต่อไป โทเคนยังเก็บไว้ที่นี่หากคุณต้องการส่งคืน",
   "wallet.svc.coins_unredeemable":
     "เหรียญเหล่านี้แลกที่มินต์นี้ไม่ได้ จึงไม่นับรวมอีกต่อไป โทเคนยังเก็บไว้ที่นี่หากคุณต้องการส่งคืน",
+  "wallet.svc.reclaim_refused":
+    "มินต์ไม่ยอมรับเหรียญจากการส่งครั้งนี้คืน จึงไม่นับรวมอีกต่อไป โทเคนยังเก็บไว้ที่นี่ให้คุณคัดลอกได้",
   "wallet.svc.locked_ours_offline":
     "การชำระเงินนี้ถูกล็อกไว้กับกระเป๋าเงินของคุณ",
   "wallet.svc.locked_ours_offline_body":
@@ -1613,6 +1622,8 @@ export const strings: Strings = {
     "รหัส bitchat นั้นหมดอายุแล้ว ขอให้พวกเขาเปิด QR ขึ้นมาใหม่",
   "contacts.scan.tampered":
     "คิวอาร์โค้ดนี้ใช้ไม่ได้ ID ของเพียร์ไม่ตรงกับกุญแจ อาจถูกดัดแปลง",
+  "contacts.scan.key_conflict":
+    "คุณมีกุญแจอีกอันของพวกเขาอยู่แล้ว จึงไม่มีอะไรเปลี่ยนแปลง หากต้องการแทนที่ ให้สแกนรหัสของพวกเขาเมื่อเจอกันต่อหน้า",
   "contacts.scan.already_added": "อยู่ในผู้ติดต่อของคุณแล้ว",
 
   // ---- Contacts: verifying by QR ----
@@ -1792,7 +1803,7 @@ export const strings: Strings = {
   "settings.general.reset": "รีเซ็ตการตั้งค่า",
   "settings.general.media_retention": "เก็บสื่อไว้เป็นเวลา",
   "settings.general.media_retention_desc":
-    "รูปภาพ วิดีโอ และข้อความเสียงจะถูกลบหลังจากเวลาที่เลือก",
+    "รูปภาพ วิดีโอ ข้อความเสียง และไฟล์จะถูกลบหลังจากเวลาที่เลือก",
   "settings.general.media_retention_sheet":
     "เลือกว่าสื่อจะอยู่บนเครื่องนี้นานเท่าใด สื่อที่ถูกลบแล้วกู้คืนไม่ได้",
   "settings.general.retention_7_desc":
@@ -2165,7 +2176,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "บันทึกคิวอาร์โค้ดไม่สำเร็จ ลองอีกครั้ง",
   "settings.qr.share_message": "เพิ่มฉันบน Airhop",
   "settings.qr.share_body":
-    "เพิ่มฉันบน Airhop — แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
+    "เพิ่มฉันบน Airhop: แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
   "settings.qr.show_short": "แสดง QR",
   "settings.qr.title": "คิวอาร์โค้ดของคุณ",
   "settings.qr.note":
@@ -2187,10 +2198,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "กำลังล้าง",
   "settings.wipe.in_progress_body":
     "กำลังทำลายกุญแจ ข้อความ และไฟล์ของคุณ ใช้เวลาไม่กี่วินาที และจะทำจนเสร็จเองแม้ปิดแอปไปแล้ว",
-  "settings.wipe.got_it": "เข้าใจแล้ว",
   "settings.wipe.keys_failed": "ทำลายกุญแจไม่สำเร็จ",
   "settings.wipe.keys_failed_body":
-    "ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณหายไปแล้ว แต่เครื่องปฏิเสธที่จะปล่อยกุญแจของคุณ ปลดล็อกเครื่องแล้วล้างอีกครั้ง",
+    "ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณหายไปแล้ว แต่เครื่องปฏิเสธที่จะปล่อยกุญแจของคุณ ปลดล็อกเครื่อง แล้วเปิด Airhop ใหม่เพื่อล้างให้เสร็จ",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "ติดต่อเรา",
@@ -2237,7 +2247,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "กำลังตรวจหาการอัปเดต",
   "settings.version.up_to_date": "คุณใช้เวอร์ชันล่าสุดอยู่แล้ว",
   "settings.version.release_notes": "ดูบันทึกประจำรุ่น",
-  "settings.version.made_with": "สร้างด้วย",
+  "settings.version.credit": "สร้างด้วย {heart} โดย {author}",
+  "settings.version.heart_a11y": "ความรัก",
   "settings.version.number": "เวอร์ชัน {version}",
   "settings.version.update_to": "อัปเดตเป็น {version}",
   "settings.version.update_to_a11y": "อัปเดตเป็นเวอร์ชัน {version}",

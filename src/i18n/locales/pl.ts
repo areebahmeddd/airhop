@@ -125,6 +125,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Stary telefon powinien pokazywać te same słowa. Jeśli pokazuje inne słowa albo żadnych, anuluj.",
   "onboarding.transfer.confirm_cta": "Zgadzają się",
+  "onboarding.transfer.waiting_old": "Naciśnij {action} na starym telefonie",
   "onboarding.transfer.receiving": "Odbieranie {percent}%",
   "onboarding.transfer.saving": "Zapisywanie na tym telefonie",
   "onboarding.transfer.releasing": "Kończenie na starym telefonie",
@@ -321,7 +322,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Jesteś już w innym {name}. Nazwy kanałów to tylko etykiety, więc to zaproszenie otworzyło własny kanał, a ten, w którym byłeś, pozostaje nietknięty. Każdy z nich możesz przemianować w jego informacjach.",
   "chat.join.paste_hint":
-    "Wklej zaproszenie zaczynające się od airhop://. Naciśnięcie linku też działa; to jest na wypadek linku, którego nie da się nacisnąć.",
+    "Link Airhop zaczyna się od airhop://. Wklej go tutaj albo sprawdź ten, który wpisał naciśnięty link.",
   "chat.join.key_note":
     "Zaproszenie do kanału prywatnego niesie klucz, więc dołączenie jest natychmiastowe i nikt inny o nic nie jest pytany.",
   "chat.join.offline_note":
@@ -451,13 +452,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} z {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "zostało {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Anuluj {name}",
+  "chat.thread.hide_transfer": "Ukryj postęp",
+  "chat.thread.hide_transfer_hint": "Plik i tak dotrze",
   "chat.thread.queued_more": "jeszcze {count} czeka na wysłanie",
   "chat.thread.across_bridge": "{count} po drugiej stronie mostu",
   "chat.thread.bridged": "przez most",
   "chat.thread.invite_body":
-    "Dołącz do mnie w {channel} na Airhop — prywatne wiadomości w sieci mesh, działające przede wszystkim offline.",
+    "Dołącz do mnie w {channel} na Airhop: prywatne wiadomości w sieci mesh, działające przede wszystkim offline.",
   "chat.thread.go_back_unread": "Wstecz, {count} nieprzeczytanych",
   "chat.thread.view_info": "Pokaż informacje o {name}",
   "chat.thread.notices_new": "Ogłoszenia z tego kanału, {count} nowych",
@@ -617,7 +623,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Filmu nie ma na tym urządzeniu",
   "chat.media.gone_voice": "Notatki głosowej nie ma na tym urządzeniu",
   "chat.media.gone_file": "Pliku nie ma na tym urządzeniu",
-  "chat.media.gone_note": "Nie jest już przechowywane na tym urządzeniu",
+  "chat.media.gone_note":
+    "Usunięte z tego telefonu albo nieprzeniesione ze starego",
   "chat.media.ask_resend": "Poproś ponownie",
   "chat.media.resend_draft": "Możesz wysłać {kind} jeszcze raz?",
   "chat.media.kind_photo": "tamto zdjęcie",
@@ -1477,7 +1484,7 @@ export const strings: Strings = {
     "Zamienia kwotę w token, który wręczysz peerowi w pobliżu przez Bluetooth albo udostępnisz jako tekst. Działa bez internetu. Monety zostają zarezerwowane, dopóki nie potwierdzisz, że dotarło.",
   "wallet.explain.receive": "Odbierz",
   "wallet.explain.receive_desc":
-    "Wklej token, żeby go dodać. Przy internecie wymienia się w mennicy od razu, co czyni go sprawdzalnie twoim. Offline zostaje zapisany i oznaczony jako niepotwierdzony, dopóki nie odświeżysz.",
+    "Wklej token, żeby go dodać. Przy internecie wymienia się w mennicy od razu, co czyni go sprawdzalnie twoim. Offline zostaje zapisany jako niepotwierdzony i automatycznie potwierdzony w mennicy, gdy wrócisz do sieci.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Płaci tożsamości Nostr. Jeśli publikują dane nutzap wedle NIP-61, ecash zostaje przypisany do ich klucza, więc tylko oni mogą go wydać. Inaczej wraca do zaszyfrowanej wiadomości bezpośredniej. Wymaga internetu.",
@@ -1554,6 +1561,8 @@ export const strings: Strings = {
     "Mennica odrzuciła te monety, więc nie są już liczone. Token zostaje tutaj, jeśli chcesz go odesłać.",
   "wallet.svc.coins_unredeemable":
     "Tych monet nie da się zrealizować w tej mennicy, więc nie są już liczone. Token zostaje tutaj, jeśli chcesz go odesłać.",
+  "wallet.svc.reclaim_refused":
+    "Mennica nie przyjęła z powrotem monet z tej wysyłki, więc nie są już liczone. Ich token zostaje tutaj do skopiowania.",
   "wallet.svc.locked_ours_offline":
     "Ta płatność jest zablokowana dla twojego portfela.",
   "wallet.svc.locked_ours_offline_body":
@@ -1679,6 +1688,8 @@ export const strings: Strings = {
     "Ten kod bitchat wygasł. Poproś, żeby otworzyli swój kod QR jeszcze raz.",
   "contacts.scan.tampered":
     "Ten kod QR jest nieprawidłowy: identyfikator peera nie zgadza się z kluczami. Mógł zostać podmieniony.",
+  "contacts.scan.key_conflict":
+    "Masz już inny klucz dla tej osoby, więc nic się nie zmieniło. Aby go zastąpić, zeskanuj jej kod przy spotkaniu.",
   "contacts.scan.already_added": "Już jest w twoich kontaktach",
 
   // ---- Contacts: verifying by QR ----
@@ -1863,7 +1874,7 @@ export const strings: Strings = {
   "settings.general.reset": "Zresetuj ustawienia",
   "settings.general.media_retention": "Przechowuj multimedia przez",
   "settings.general.media_retention_desc":
-    "Zdjęcia, filmy i notatki głosowe są usuwane po wybranym czasie",
+    "Zdjęcia, filmy, notatki głosowe i pliki są usuwane po wybranym czasie",
   "settings.general.media_retention_sheet":
     "Wybierz, jak długo multimedia zostają na tym urządzeniu. Usuniętych nie da się odzyskać.",
   "settings.general.retention_7_desc":
@@ -2254,7 +2265,7 @@ export const strings: Strings = {
     "Nie udało się zapisać kodu QR. Spróbuj ponownie.",
   "settings.qr.share_message": "Dodaj mnie w Airhop",
   "settings.qr.share_body":
-    "Dodaj mnie w Airhop — prywatne wiadomości w sieci mesh, działające przede wszystkim offline.",
+    "Dodaj mnie w Airhop: prywatne wiadomości w sieci mesh, działające przede wszystkim offline.",
   "settings.qr.show_short": "Pokaż QR",
   "settings.qr.title": "Twój kod QR",
   "settings.qr.note":
@@ -2278,10 +2289,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Czyszczenie",
   "settings.wipe.in_progress_body":
     "Niszczenie kluczy, wiadomości i plików. Trwa to kilka sekund i kończy się samo, nawet gdy aplikacja zostanie zamknięta.",
-  "settings.wipe.got_it": "Rozumiem",
   "settings.wipe.keys_failed": "Nie udało się zniszczyć kluczy",
   "settings.wipe.keys_failed_body":
-    "Twoje wiadomości, kontakty i portfel zniknęły, ale urządzenie nie chciało wydać twoich kluczy. Odblokuj urządzenie i wyczyść jeszcze raz.",
+    "Twoje wiadomości, kontakty i portfel zniknęły, ale urządzenie nie chciało wydać twoich kluczy. Odblokuj urządzenie, a potem otwórz Airhop ponownie, żeby dokończyć czyszczenie.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Napisz do nas",
@@ -2331,7 +2341,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Sprawdzanie aktualizacji",
   "settings.version.up_to_date": "Masz najnowszą wersję.",
   "settings.version.release_notes": "Pokaż informacje o wydaniu",
-  "settings.version.made_with": "Zrobione z",
+  "settings.version.credit": "Zrobione z {heart} przez {author}",
+  "settings.version.heart_a11y": "miłością",
   "settings.version.number": "Wersja {version}",
   "settings.version.update_to": "Zaktualizuj do {version}",
   "settings.version.update_to_a11y": "Zaktualizuj do wersji {version}",

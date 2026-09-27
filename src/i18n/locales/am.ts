@@ -119,6 +119,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "አሮጌው ስልክህ እነዚህን ተመሳሳይ ቃላት ማሳየት አለበት። የተለዩ ቃላት ካሳየ ወይም ምንም ካላሳየ ሰርዝ።",
   "onboarding.transfer.confirm_cta": "ይመሳሰላሉ",
+  "onboarding.transfer.waiting_old": "በአሮጌው ስልክህ ላይ «{action}» የሚለውን ንካ",
   "onboarding.transfer.receiving": "በመቀበል ላይ {percent}%",
   "onboarding.transfer.saving": "ወደዚህ ስልክ በማስቀመጥ ላይ",
   "onboarding.transfer.releasing": "በአሮጌው ስልክህ ላይ በማጠናቀቅ ላይ",
@@ -300,7 +301,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "አስቀድሞ በሌላ {name} ውስጥ ነህ። የሰርጥ ስሞች መለያዎች ብቻ ናቸው፤ ስለዚህ ይህ ግብዣ የራሱን ሰርጥ ከፍቷል፤ አንተ የነበርክበትም አልተነካም። ከየትኛውም የሰርጥ መረጃ ስሙን መቀየር ትችላለህ።",
   "chat.join.paste_hint":
-    "በairhop:// የሚጀምር ግብዣ ለጥፍ። አገናኝ መንካትም ይሠራል፤ ይህ ግን ልትነካው ለማትችለው አገናኝ ነው።",
+    "የAirhop አገናኝ በairhop:// ይጀምራል። አንዱን እዚህ ለጥፍ፣ ወይም የተነካ አገናኝ የሞላውን ፈትሽ።",
   "chat.join.key_note":
     "የግል ሰርጥ ግብዣ ቁልፉን ይዞ ይመጣል፤ ስለዚህ መቀላቀሉ ወዲያውኑ ነው፤ ከሌላ ማንም ምንም አይጠየቅም።",
   "chat.join.offline_note":
@@ -419,13 +420,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} ከ{total}",
   "chat.transfer.speed": "{size}/ሰ",
   "chat.transfer.left": "{time} ቀርቷል",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "አቻ",
   "chat.thread.cancel_transfer": "{name} ን ሰርዝ",
+  "chat.thread.hide_transfer": "ሂደቱን ደብቅ",
+  "chat.thread.hide_transfer_hint": "ፋይሉ አሁንም ይደርሳል",
   "chat.thread.queued_more": "{count} ተጨማሪ ለመላክ በመጠባበቅ ላይ",
   "chat.thread.across_bridge": "{count} ከድልድዩ ማዶ",
   "chat.thread.bridged": "በድልድይ የተላከ",
   "chat.thread.invite_body":
-    "በAirhop ላይ በ{channel} ውስጥ ተቀላቀለኝ — ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
+    "በAirhop ላይ በ{channel} ውስጥ ተቀላቀለኝ፦ ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
   "chat.thread.go_back_unread": "ተመለስ፣ {count} ያልተነበቡ",
   "chat.thread.view_info": "የ{name} መረጃን ተመልከት",
   "chat.thread.notices_new": "የዚህ ሰርጥ ማስታወቂያዎች፣ {count} አዲስ",
@@ -571,7 +577,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "ቪዲዮው በዚህ መሣሪያ ላይ የለም",
   "chat.media.gone_voice": "የድምፅ መልእክቱ በዚህ መሣሪያ ላይ የለም",
   "chat.media.gone_file": "ፋይሉ በዚህ መሣሪያ ላይ የለም",
-  "chat.media.gone_note": "ከእንግዲህ በዚህ መሣሪያ ላይ አልተቀመጠም",
+  "chat.media.gone_note": "ከዚህ ስልክ ተሰርዟል፣ ወይም ከአሮጌው ስልክህ አልተላለፈም",
   "chat.media.ask_resend": "እንደገና ጠይቅ",
   "chat.media.resend_draft": "ያንን {kind} እንደገና ልትልክልኝ ትችላለህ?",
   "chat.media.kind_photo": "ፎቶ",
@@ -1366,7 +1372,7 @@ export const strings: Strings = {
     "አንድን መጠን በብሉቱዝ በኩል በአቅራቢያ ላለ አቻ ልታስተላልፈው ወይም እንደ ጽሑፍ ልታጋራው ወደምትችለው ቶከን ይቀይረዋል። ያለ ኢንተርኔት ይሠራል። መድረሱን እስክታረጋግጥ ድረስ ሳንቲሞቹ ተይዘው ይቆያሉ።",
   "wallet.explain.receive": "ተቀበል",
   "wallet.explain.receive_desc":
-    "ለመጨመር ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይለወጣል፤ ይህም በማስረጃ የአንተ ያደርገዋል። ከመስመር ውጭ ሲሆን ተከማችቶ እስክታድስ ድረስ ያልተረጋገጠ ሆኖ ይመዘገባል።",
+    "ለመጨመር ቶከን ለጥፍ። በመስመር ላይ ስትሆን ወዲያውኑ በሚንቱ ይለወጣል፤ ይህም በማስረጃ የአንተ ያደርገዋል። ከመስመር ውጭ ሲሆን ሳይረጋገጥ ይከማቻል፤ ወደ መስመር ስትመለስም ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "ለNostr ማንነት ይከፍላል። የNIP-61 nutzap መረጃ አሳትመው ከሆነ ecash እነሱ ብቻ እንዲያወጡት በቁልፋቸው ይቆለፋል። ካልሆነ ወደ የተመሰጠረ ቀጥተኛ መልእክት ይመለሳል። ኢንተርኔት ይፈልጋል።",
@@ -1436,6 +1442,8 @@ export const strings: Strings = {
     "ሚንቱ እነዚህን ሳንቲሞች ውድቅ አድርጓል፤ ስለዚህ ከእንግዲህ አይቆጠሩም። መልሰህ መላክ ከፈለግህ ቶከኑ እዚህ ተቀምጧል።",
   "wallet.svc.coins_unredeemable":
     "እነዚህ ሳንቲሞች በዚህ ሚንት ሊመነዘሩ አይችሉም፤ ስለዚህ ከእንግዲህ አይቆጠሩም። መልሰህ መላክ ከፈለግህ ቶከኑ እዚህ ተቀምጧል።",
+  "wallet.svc.reclaim_refused":
+    "ሚንቱ ከዚህ መላክ የተገኙትን ሳንቲሞች መልሶ ለመውሰድ ፈቃደኛ አልሆነም፤ ስለዚህ ከእንግዲህ አይቆጠሩም። ቶከናቸው እንድትቀዳው እዚህ ተቀምጧል።",
   "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
@@ -1547,6 +1555,8 @@ export const strings: Strings = {
     "ያ የbitchat ኮድ ጊዜው አልፎበታል። QR ኮዳቸውን እንደገና እንዲከፍቱ ጠይቃቸው።",
   "contacts.scan.tampered":
     "ይህ QR ኮድ ልክ አይደለም፦ የአቻ መለያው ከቁልፎቹ ጋር አይዛመድም። ተበርዞ ሊሆን ይችላል።",
+  "contacts.scan.key_conflict":
+    "ለእነሱ የተለየ ቁልፍ አስቀድመህ ይዘሃል፤ ስለዚህ ምንም አልተለወጠም። ለመተካት ኮዳቸውን በአካል ተገናኝተህ ቃኝ።",
   "contacts.scan.already_added": "አስቀድሞ በእውቂያዎችህ ውስጥ ነው",
 
   // ---- Contacts: verifying by QR ----
@@ -1718,7 +1728,7 @@ export const strings: Strings = {
   "settings.general.reset": "ቅንብሮችን ዳግም አስጀምር",
   "settings.general.media_retention": "ሚዲያን ለዚህን ያህል ጊዜ ያዝ",
   "settings.general.media_retention_desc":
-    "ፎቶዎች፣ ቪዲዮዎችና የድምፅ መልእክቶች ከተመረጠው ጊዜ በኋላ ይሰረዛሉ",
+    "ፎቶዎች፣ ቪዲዮዎች፣ የድምፅ መልእክቶችና ፋይሎች ከተመረጠው ጊዜ በኋላ ይሰረዛሉ",
   "settings.general.media_retention_sheet":
     "ሚዲያ በዚህ መሣሪያ ላይ ለምን ያህል ጊዜ እንደሚቆይ ምረጥ። የተሰረዘ ሚዲያ ሊመለስ አይችልም።",
   "settings.general.retention_7_desc":
@@ -2076,7 +2086,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR ኮዱ ሊቀመጥ አልቻለም። እንደገና ሞክር።",
   "settings.qr.share_message": "በAirhop ላይ ጨምረኝ",
   "settings.qr.share_body":
-    "በAirhop ላይ ጨምረኝ — ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
+    "በAirhop ላይ ጨምረኝ፦ ከመስመር ውጭ ቅድሚያ የሚሰጥ የግል ሜሽ መልእክት መላላኪያ።",
   "settings.qr.show_short": "QR አሳይ",
   "settings.qr.title": "የአንተ QR ኮድ",
   "settings.qr.note":
@@ -2098,10 +2108,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "እየጸዳ ነው",
   "settings.wipe.in_progress_body":
     "ቁልፎችህ፣ መልእክቶችህና ፋይሎችህ እየጠፉ ናቸው። ጥቂት ሰከንዶች ይወስዳል፤ መተግበሪያው ቢዘጋም በራሱ ይጠናቀቃል።",
-  "settings.wipe.got_it": "ገባኝ",
   "settings.wipe.keys_failed": "ቁልፎቹ ሊጠፉ አልቻሉም",
   "settings.wipe.keys_failed_body":
-    "መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ጠፍተዋል፤ መሣሪያው ግን ቁልፎችህን ለመልቀቅ ፈቃደኛ አልሆነም። መሣሪያውን ክፈትና እንደገና አጽዳ።",
+    "መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ጠፍተዋል፤ መሣሪያው ግን ቁልፎችህን ለመልቀቅ ፈቃደኛ አልሆነም። መሣሪያውን ክፈት፣ ከዚያ ማጽዳቱን ለመጨረስ Airhopን እንደገና ክፈት።",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "አግኙን",
@@ -2146,7 +2155,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "ዝመናዎች እየተመረመሩ ነው",
   "settings.version.up_to_date": "የቅርቡን ስሪት እየተጠቀምክ ነው።",
   "settings.version.release_notes": "የልቀት ማስታወሻዎችን ተመልከት",
-  "settings.version.made_with": "የተሠራው በ",
+  "settings.version.credit": "በ{heart} በ{author} የተሠራ",
+  "settings.version.heart_a11y": "ፍቅር",
   "settings.version.number": "ስሪት {version}",
   "settings.version.update_to": "ወደ {version} አዘምን",
   "settings.version.update_to_a11y": "ወደ ስሪት {version} አዘምን",

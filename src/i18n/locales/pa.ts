@@ -121,6 +121,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ ਇਹੀ ਸ਼ਬਦ ਦਿਸਣੇ ਚਾਹੀਦੇ ਹਨ। ਜੇ ਉਹ ਵੱਖਰੇ ਸ਼ਬਦ ਦਿਖਾਏ, ਜਾਂ ਕੋਈ ਵੀ ਨਹੀਂ, ਤਾਂ ਰੱਦ ਕਰੋ।",
   "onboarding.transfer.confirm_cta": "ਇਹ ਮਿਲਦੇ ਹਨ",
+  "onboarding.transfer.waiting_old": "ਆਪਣੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ “{action}” ਦਬਾਓ",
   "onboarding.transfer.receiving": "ਪ੍ਰਾਪਤ ਹੋ ਰਿਹਾ ਹੈ {percent}%",
   "onboarding.transfer.saving": "ਇਸ ਫ਼ੋਨ ’ਤੇ ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ",
   "onboarding.transfer.releasing": "ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ’ਤੇ ਪੂਰਾ ਹੋ ਰਿਹਾ ਹੈ",
@@ -314,7 +315,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਇੱਕ ਵੱਖਰੇ {name} ਵਿੱਚ ਹੋ। ਚੈਨਲ ਦੇ ਨਾਂ ਸਿਰਫ਼ ਲੇਬਲ ਹੁੰਦੇ ਹਨ, ਇਸ ਲਈ ਇਸ ਸੱਦੇ ਨੇ ਆਪਣਾ ਵੱਖਰਾ ਚੈਨਲ ਖੋਲ੍ਹਿਆ ਹੈ ਅਤੇ ਜਿਸ ਵਿੱਚ ਤੁਸੀਂ ਸੀ, ਉਹ ਉਵੇਂ ਹੀ ਹੈ। ਕਿਸੇ ਵੀ ਇੱਕ ਦਾ ਨਾਂ ਉਸ ਦੀ ਚੈਨਲ ਜਾਣਕਾਰੀ ਵਿੱਚੋਂ ਬਦਲੋ।",
   "chat.join.paste_hint":
-    "airhop:// ਨਾਲ ਸ਼ੁਰੂ ਹੋਣ ਵਾਲਾ ਸੱਦਾ ਚਿਪਕਾਓ। ਕਿਸੇ ’ਤੇ ਦਬਾਉਣ ਨਾਲ ਵੀ ਕੰਮ ਹੋ ਜਾਂਦਾ ਹੈ; ਇਹ ਉਸ ਲਿੰਕ ਲਈ ਹੈ ਜਿਸ ’ਤੇ ਤੁਸੀਂ ਦਬਾ ਨਹੀਂ ਸਕਦੇ।",
+    "Airhop ਲਿੰਕ airhop:// ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ। ਇੱਥੇ ਕੋਈ ਚਿਪਕਾਓ, ਜਾਂ ਦਬਾਏ ਗਏ ਲਿੰਕ ਨੇ ਜੋ ਭਰਿਆ ਹੈ ਉਸ ਨੂੰ ਜਾਂਚੋ।",
   "chat.join.key_note":
     "ਨਿੱਜੀ ਚੈਨਲ ਦਾ ਸੱਦਾ ਕੁੰਜੀ ਆਪਣੇ ਨਾਲ ਲੈ ਕੇ ਆਉਂਦਾ ਹੈ, ਇਸ ਲਈ ਜੁੜਨਾ ਤੁਰੰਤ ਹੁੰਦਾ ਹੈ ਅਤੇ ਕਿਸੇ ਹੋਰ ਤੋਂ ਕੁਝ ਨਹੀਂ ਮੰਗਿਆ ਜਾਂਦਾ।",
   "chat.join.offline_note":
@@ -445,13 +446,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{total} ਵਿੱਚੋਂ {done}",
   "chat.transfer.speed": "{size}/ਸਕਿੰਟ",
   "chat.transfer.left": "{time} ਬਾਕੀ",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "ਪੀਅਰ",
   "chat.thread.cancel_transfer": "{name} ਰੱਦ ਕਰੋ",
+  "chat.thread.hide_transfer": "ਪ੍ਰਗਤੀ ਲੁਕਾਓ",
+  "chat.thread.hide_transfer_hint": "ਫ਼ਾਈਲ ਫਿਰ ਵੀ ਆ ਜਾਵੇਗੀ",
   "chat.thread.queued_more": "{count} ਹੋਰ ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
   "chat.thread.across_bridge": "{count} ਪੁਲ ਦੇ ਪਾਰ",
   "chat.thread.bridged": "ਪੁਲ ਕੀਤਾ",
   "chat.thread.invite_body":
-    "Airhop ’ਤੇ {channel} ਵਿੱਚ ਮੇਰੇ ਨਾਲ ਜੁੜੋ — ਆਫ਼ਲਾਈਨ-ਪਹਿਲਾਂ, ਨਿੱਜੀ ਮੈਸ਼ ਸੁਨੇਹੇ।",
+    "Airhop ’ਤੇ {channel} ਵਿੱਚ ਮੇਰੇ ਨਾਲ ਜੁੜੋ: ਆਫ਼ਲਾਈਨ-ਪਹਿਲਾਂ, ਨਿੱਜੀ ਮੈਸ਼ ਸੁਨੇਹੇ।",
   "chat.thread.go_back_unread": "ਵਾਪਸ ਜਾਓ, {count} ਅਣਪੜ੍ਹੇ",
   "chat.thread.view_info": "{name} ਦੀ ਜਾਣਕਾਰੀ ਦੇਖੋ",
   "chat.thread.notices_new": "ਇਸ ਚੈਨਲ ਲਈ ਨੋਟਿਸ, {count} ਨਵੇਂ",
@@ -605,7 +611,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "ਵੀਡੀਓ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਨਹੀਂ ਹੈ",
   "chat.media.gone_voice": "ਵੌਇਸ ਨੋਟ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਨਹੀਂ ਹੈ",
   "chat.media.gone_file": "ਫ਼ਾਈਲ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਨਹੀਂ ਹੈ",
-  "chat.media.gone_note": "ਹੁਣ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਸੰਭਾਲਿਆ ਨਹੀਂ ਹੈ",
+  "chat.media.gone_note":
+    "ਇਸ ਫ਼ੋਨ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ, ਜਾਂ ਤੁਹਾਡੇ ਪੁਰਾਣੇ ਫ਼ੋਨ ਤੋਂ ਨਹੀਂ ਲਿਆਂਦਾ ਗਿਆ",
   "chat.media.ask_resend": "ਦੁਬਾਰਾ ਪੁੱਛੋ",
   "chat.media.resend_draft": "ਕੀ ਤੁਸੀਂ ਉਹ {kind} ਦੁਬਾਰਾ ਭੇਜ ਸਕਦੇ ਹੋ?",
   "chat.media.kind_photo": "ਫ਼ੋਟੋ",
@@ -1445,7 +1452,7 @@ export const strings: Strings = {
     "ਰਕਮ ਨੂੰ ਅਜਿਹੇ ਟੋਕਨ ਵਿੱਚ ਬਦਲਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਬਲੂਟੁੱਥ ’ਤੇ ਕਿਸੇ ਨੇੜਲੇ ਪੀਅਰ ਨੂੰ ਸੌਂਪ ਸਕਦੇ ਹੋ, ਜਾਂ ਲਿਖਤ ਵਜੋਂ ਸਾਂਝਾ ਕਰ ਸਕਦੇ ਹੋ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਚੱਲਦਾ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਸਿੱਕੇ ਰਾਖਵੇਂ ਰਹਿੰਦੇ ਹਨ।",
   "wallet.explain.receive": "ਲਵੋ",
   "wallet.explain.receive_desc":
-    "ਟੋਕਨ ਜੋੜਨ ਲਈ ਉਸ ਨੂੰ ਚਿਪਕਾਓ। ਆਨਲਾਈਨ ਇਹ ਤੁਰੰਤ ਮਿੰਟ ’ਤੇ ਅਦਲਾ-ਬਦਲੀ ਹੋ ਜਾਂਦਾ ਹੈ, ਜਿਸ ਨਾਲ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਬਣ ਜਾਂਦਾ ਹੈ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਇਹ ਸੰਭਾਲ ਲਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਤਾਜ਼ਾ ਕਰਨ ਤੱਕ ਅਪੁਸ਼ਟ ਨਿਸ਼ਾਨਬੱਧ ਰਹਿੰਦਾ ਹੈ।",
+    "ਟੋਕਨ ਜੋੜਨ ਲਈ ਉਸ ਨੂੰ ਚਿਪਕਾਓ। ਆਨਲਾਈਨ ਇਹ ਤੁਰੰਤ ਮਿੰਟ ’ਤੇ ਅਦਲਾ-ਬਦਲੀ ਹੋ ਜਾਂਦਾ ਹੈ, ਜਿਸ ਨਾਲ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਬਣ ਜਾਂਦਾ ਹੈ। ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਇਹ ਅਪੁਸ਼ਟ ਸੰਭਾਲਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਤੁਹਾਡੇ ਮੁੜ ਆਨਲਾਈਨ ਹੁੰਦੇ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ ਆਪ ਪੁਸ਼ਟ ਹੋ ਜਾਂਦਾ ਹੈ।",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "ਕਿਸੇ Nostr ਪਛਾਣ ਨੂੰ ਭੁਗਤਾਨ ਕਰਦਾ ਹੈ। ਜੇ ਉਹ NIP-61 nutzap ਜਾਣਕਾਰੀ ਛਾਪਦੇ ਹਨ ਤਾਂ ecash ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ ਹੋ ਜਾਂਦਾ ਹੈ ਤਾਂ ਜੋ ਇਸ ਨੂੰ ਸਿਰਫ਼ ਉਹੀ ਖ਼ਰਚ ਸਕਣ। ਨਹੀਂ ਤਾਂ ਇਹ ਇਨਕ੍ਰਿਪਟਡ DM ’ਤੇ ਆ ਜਾਂਦਾ ਹੈ। ਇੰਟਰਨੈੱਟ ਚਾਹੀਦਾ ਹੈ।",
@@ -1522,6 +1529,8 @@ export const strings: Strings = {
     "ਮਿੰਟ ਨੇ ਇਹ ਸਿੱਕੇ ਨਾਮਨਜ਼ੂਰ ਕਰ ਦਿੱਤੇ, ਇਸ ਲਈ ਹੁਣ ਇਹ ਗਿਣੇ ਨਹੀਂ ਜਾਂਦੇ। ਜੇ ਤੁਸੀਂ ਇਸ ਨੂੰ ਵਾਪਸ ਭੇਜਣਾ ਚਾਹੋ ਤਾਂ ਟੋਕਨ ਇੱਥੇ ਰੱਖਿਆ ਹੈ।",
   "wallet.svc.coins_unredeemable":
     "ਇਹ ਸਿੱਕੇ ਇਸ ਮਿੰਟ ’ਤੇ ਭੁਨਾਏ ਨਹੀਂ ਜਾ ਸਕਦੇ, ਇਸ ਲਈ ਹੁਣ ਇਹ ਗਿਣੇ ਨਹੀਂ ਜਾਂਦੇ। ਜੇ ਤੁਸੀਂ ਇਸ ਨੂੰ ਵਾਪਸ ਭੇਜਣਾ ਚਾਹੋ ਤਾਂ ਟੋਕਨ ਇੱਥੇ ਰੱਖਿਆ ਹੈ।",
+  "wallet.svc.reclaim_refused":
+    "ਮਿੰਟ ਨੇ ਇਸ ਭੇਜੇ ਗਏ ਭੁਗਤਾਨ ਦੇ ਸਿੱਕੇ ਵਾਪਸ ਲੈਣ ਤੋਂ ਨਾਂਹ ਕਰ ਦਿੱਤੀ, ਇਸ ਲਈ ਹੁਣ ਉਹ ਗਿਣੇ ਨਹੀਂ ਜਾਂਦੇ। ਉਹਨਾਂ ਦਾ ਟੋਕਨ ਨਕਲ ਕਰਨ ਲਈ ਇੱਥੇ ਰੱਖਿਆ ਗਿਆ ਹੈ।",
   "wallet.svc.locked_ours_offline": "ਇਹ ਭੁਗਤਾਨ ਤੁਹਾਡੇ ਵਾਲਿਟ ਨਾਲ ਲਾਕ ਹੈ।",
   "wallet.svc.locked_ours_offline_body":
     "ਆਨਲਾਈਨ ਹੋਣ ’ਤੇ ਇਸ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰੋ। ਉਦੋਂ ਤੱਕ ਕੋਈ ਹੋਰ ਇਸ ਨੂੰ ਨਹੀਂ ਲੈ ਸਕਦਾ।",
@@ -1646,6 +1655,8 @@ export const strings: Strings = {
     "ਉਹ bitchat ਕੋਡ ਬੇਮਿਆਦ ਹੋ ਚੁੱਕਾ ਹੈ। ਉਹਨਾਂ ਨੂੰ ਆਪਣਾ QR ਦੁਬਾਰਾ ਖੋਲ੍ਹਣ ਲਈ ਕਹੋ।",
   "contacts.scan.tampered":
     "ਇਹ QR ਕੋਡ ਅਵੈਧ ਹੈ: ਇਸ ਦੀ ਪੀਅਰ ID ਇਸ ਦੀਆਂ ਕੁੰਜੀਆਂ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ। ਹੋ ਸਕਦਾ ਹੈ ਇਸ ਨਾਲ ਛੇੜਛਾੜ ਹੋਈ ਹੋਵੇ।",
+  "contacts.scan.key_conflict":
+    "ਤੁਹਾਡੇ ਕੋਲ ਉਹਨਾਂ ਦੀ ਇੱਕ ਵੱਖਰੀ ਕੁੰਜੀ ਪਹਿਲਾਂ ਹੀ ਹੈ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਬਦਲਿਆ। ਇਸ ਨੂੰ ਬਦਲਣ ਲਈ ਆਹਮੋ-ਸਾਹਮਣੇ ਉਹਨਾਂ ਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
   "contacts.scan.already_added": "ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਵਿੱਚ",
 
   // ---- Contacts: verifying by QR ----
@@ -1828,7 +1839,7 @@ export const strings: Strings = {
   "settings.general.reset": "ਸੈਟਿੰਗਾਂ ਮੁੜ-ਸੈੱਟ ਕਰੋ",
   "settings.general.media_retention": "ਮੀਡੀਆ ਇੰਨਾ ਚਿਰ ਰੱਖੋ",
   "settings.general.media_retention_desc":
-    "ਚੁਣੇ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਫ਼ੋਟੋਆਂ, ਵੀਡੀਓ ਅਤੇ ਵੌਇਸ ਨੋਟ ਮਿਟਾ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ",
+    "ਚੁਣੇ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਫ਼ੋਟੋਆਂ, ਵੀਡੀਓ, ਵੌਇਸ ਨੋਟ ਅਤੇ ਫ਼ਾਈਲਾਂ ਮਿਟਾ ਦਿੱਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ",
   "settings.general.media_retention_sheet":
     "ਚੁਣੋ ਕਿ ਮੀਡੀਆ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਕਿੰਨਾ ਚਿਰ ਰਹੇ। ਮਿਟਾਇਆ ਮੀਡੀਆ ਵਾਪਸ ਨਹੀਂ ਆ ਸਕਦਾ।",
   "settings.general.retention_7_desc":
@@ -2206,7 +2217,7 @@ export const strings: Strings = {
     "QR ਕੋਡ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
   "settings.qr.share_message": "ਮੈਨੂੰ Airhop ’ਤੇ ਜੋੜੋ",
   "settings.qr.share_body":
-    "ਮੈਨੂੰ Airhop ’ਤੇ ਜੋੜੋ — ਆਫ਼ਲਾਈਨ-ਪਹਿਲਾਂ, ਨਿੱਜੀ ਮੈਸ਼ ਸੁਨੇਹੇ।",
+    "ਮੈਨੂੰ Airhop ’ਤੇ ਜੋੜੋ: ਆਫ਼ਲਾਈਨ-ਪਹਿਲਾਂ, ਨਿੱਜੀ ਮੈਸ਼ ਸੁਨੇਹੇ।",
   "settings.qr.show_short": "QR ਦਿਖਾਓ",
   "settings.qr.title": "ਤੁਹਾਡਾ QR ਕੋਡ",
   "settings.qr.note":
@@ -2229,10 +2240,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "ਸਾਫ਼ ਕਰ ਰਹੇ ਹਾਂ",
   "settings.wipe.in_progress_body":
     "ਤੁਹਾਡੀਆਂ ਕੁੰਜੀਆਂ, ਸੁਨੇਹੇ ਅਤੇ ਫ਼ਾਈਲਾਂ ਤਬਾਹ ਕਰ ਰਹੇ ਹਾਂ। ਇਸ ਨੂੰ ਕੁਝ ਸਕਿੰਟ ਲੱਗਦੇ ਹਨ, ਅਤੇ ਜੇ ਐਪ ਬੰਦ ਹੋ ਜਾਵੇ ਤਾਂ ਇਹ ਆਪੇ ਪੂਰਾ ਹੋ ਜਾਂਦਾ ਹੈ।",
-  "settings.wipe.got_it": "ਸਮਝ ਗਏ",
   "settings.wipe.keys_failed": "ਕੁੰਜੀਆਂ ਤਬਾਹ ਨਹੀਂ ਹੋ ਸਕੀਆਂ",
   "settings.wipe.keys_failed_body":
-    "ਤੁਹਾਡੇ ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਜਾ ਚੁੱਕੇ ਹਨ, ਪਰ ਡੀਵਾਈਸ ਨੇ ਤੁਹਾਡੀਆਂ ਕੁੰਜੀਆਂ ਛੱਡਣ ਤੋਂ ਨਾਂਹ ਕਰ ਦਿੱਤੀ। ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ ਅਤੇ ਦੁਬਾਰਾ ਸਾਫ਼ ਕਰੋ।",
+    "ਤੁਹਾਡੇ ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਜਾ ਚੁੱਕੇ ਹਨ, ਪਰ ਡੀਵਾਈਸ ਨੇ ਤੁਹਾਡੀਆਂ ਕੁੰਜੀਆਂ ਛੱਡਣ ਤੋਂ ਨਾਂਹ ਕਰ ਦਿੱਤੀ। ਡੀਵਾਈਸ ਅਨਲਾਕ ਕਰੋ, ਫਿਰ ਸਫ਼ਾਈ ਪੂਰੀ ਕਰਨ ਲਈ Airhop ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ।",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
@@ -2280,7 +2290,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "ਅੱਪਡੇਟ ਦੇਖ ਰਹੇ ਹਾਂ",
   "settings.version.up_to_date": "ਤੁਸੀਂ ਸਭ ਤੋਂ ਨਵੇਂ ਸੰਸਕਰਣ ’ਤੇ ਹੋ।",
   "settings.version.release_notes": "ਰਿਲੀਜ਼ ਨੋਟ ਦੇਖੋ",
-  "settings.version.made_with": "ਬਣਾਇਆ ਗਿਆ",
+  "settings.version.credit": "{author} ਵੱਲੋਂ {heart} ਨਾਲ ਬਣਾਇਆ ਗਿਆ",
+  "settings.version.heart_a11y": "ਪਿਆਰ",
   "settings.version.number": "ਸੰਸਕਰਣ {version}",
   "settings.version.update_to": "{version} ’ਤੇ ਅੱਪਡੇਟ ਕਰੋ",
   "settings.version.update_to_a11y": "ਸੰਸਕਰਣ {version} ’ਤੇ ਅੱਪਡੇਟ ਕਰੋ",

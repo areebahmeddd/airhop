@@ -127,6 +127,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Simu yako ya zamani inapaswa kuonyesha maneno haya haya. Ikionyesha maneno tofauti, au isionyeshe yoyote, ghairi.",
   "onboarding.transfer.confirm_cta": "Yanalingana",
+  "onboarding.transfer.waiting_old":
+    "Gusa “{action}” kwenye simu yako ya zamani",
   "onboarding.transfer.receiving": "Inapokea {percent}%",
   "onboarding.transfer.saving": "Inahifadhi kwenye simu hii",
   "onboarding.transfer.releasing": "Inakamilisha kwenye simu yako ya zamani",
@@ -322,7 +324,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Tayari upo kwenye {name} tofauti. Majina ya vituo ni lebo tu, kwa hivyo mwaliko huu umefungua kituo chake mwenyewe na kile ulichokuwamo hakijaguswa. Unaweza kubadilisha jina la chochote kati yake kutoka taarifa za kituo chake.",
   "chat.join.paste_hint":
-    "Bandika mwaliko unaoanza na airhop://. Kugusa kiungo pia hufanya kazi; hii ni kwa kiungo usichoweza kukigusa.",
+    "Kiungo cha Airhop huanza na airhop://. Kibandike hapa, au kagua kile ambacho kiungo ulichogusa kimejaza.",
   "chat.join.key_note":
     "Mwaliko wa kituo cha faragha hubeba ufunguo, kwa hivyo kujiunga ni papo hapo na hakuna anayeombwa chochote.",
   "chat.join.offline_note":
@@ -453,13 +455,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} kati ya {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "zimebaki {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "Ghairi {name}",
+  "chat.thread.hide_transfer": "Ficha maendeleo",
+  "chat.thread.hide_transfer_hint": "Faili bado itafika",
   "chat.thread.queued_more": "{count} zaidi zinasubiri kutumwa",
   "chat.thread.across_bridge": "{count} ng'ambo ya daraja",
   "chat.thread.bridged": "imevushwa",
   "chat.thread.invite_body":
-    "Jiunge nami kwenye {channel} kwenye Airhop — jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
+    "Jiunge nami kwenye {channel} kwenye Airhop: jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
   "chat.thread.go_back_unread": "Rudi nyuma, {count} hazijasomwa",
   "chat.thread.view_info": "Tazama taarifa za {name}",
   "chat.thread.notices_new": "Matangazo ya kituo hiki, {count} mapya",
@@ -615,7 +622,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video haipo kwenye kifaa hiki",
   "chat.media.gone_voice": "Noti ya sauti haipo kwenye kifaa hiki",
   "chat.media.gone_file": "Faili haipo kwenye kifaa hiki",
-  "chat.media.gone_note": "Haijahifadhiwa tena kwenye kifaa hiki",
+  "chat.media.gone_note":
+    "Imefutwa kwenye simu hii, au haikuhamishwa kutoka kwenye simu yako ya zamani",
   "chat.media.ask_resend": "Omba tena",
   "chat.media.resend_draft": "Unaweza kutuma {kind} hiyo tena?",
   "chat.media.kind_photo": "picha",
@@ -1481,7 +1489,7 @@ export const strings: Strings = {
     "Hugeuza kiasi kuwa tokeni unayoweza kumkabidhi peer aliye karibu kupitia Bluetooth, au kuishiriki kama maandishi. Hufanya kazi bila intaneti. Sarafu hubaki zimetengwa hadi uthibitishe kuwa imefika.",
   "wallet.explain.receive": "Pokea",
   "wallet.explain.receive_desc":
-    "Bandika tokeni ili kuiongeza. Ukiwa mtandaoni hubadilishwa kwenye mint mara moja, jambo linalofanya iwe yako kwa uthibitisho. Nje ya mtandao huhifadhiwa na kuwekewa alama kuwa haijathibitishwa hadi usasishe.",
+    "Bandika tokeni ili kuiongeza. Ukiwa mtandaoni hubadilishwa kwenye mint mara moja, jambo linalofanya iwe yako kwa uthibitisho. Nje ya mtandao huhifadhiwa bila kuthibitishwa, kisha huthibitishwa na mint kiotomatiki utakaporudi mtandaoni.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Hulipa utambulisho wa Nostr. Kama wanachapisha taarifa za nutzap za NIP-61, ecash hufungwa kwenye ufunguo wao ili wao pekee waweze kuitumia. Vinginevyo hurudi kwenye ujumbe wa moja kwa moja uliosimbwa. Huhitaji intaneti.",
@@ -1558,6 +1566,8 @@ export const strings: Strings = {
     "Mint imekataa sarafu hizi, kwa hivyo hazihesabiwi tena. Tokeni imehifadhiwa hapa ukitaka kuirudisha.",
   "wallet.svc.coins_unredeemable":
     "Sarafu hizi haziwezi kukombolewa kwenye mint hii, kwa hivyo hazihesabiwi tena. Tokeni imehifadhiwa hapa ukitaka kuirudisha.",
+  "wallet.svc.reclaim_refused":
+    "Mint haikukubali kurudisha sarafu za utumaji huu, kwa hivyo hazihesabiwi tena. Tokeni yake imehifadhiwa hapa ili uinakili.",
   "wallet.svc.locked_ours_offline": "Malipo haya yamefungwa kwenye pochi yako.",
   "wallet.svc.locked_ours_offline_body":
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
@@ -1687,6 +1697,8 @@ export const strings: Strings = {
     "Msimbo huo wa bitchat umekwisha muda. Waombe wafungue QR yao tena.",
   "contacts.scan.tampered":
     "Msimbo huu wa QR si sahihi: kitambulisho chake cha peer hakilingani na funguo zake. Huenda umeingiliwa.",
+  "contacts.scan.key_conflict":
+    "Tayari una ufunguo tofauti wa mtu huyu, kwa hivyo hakuna kilichobadilika. Changanua msimbo wake ana kwa ana ili kuubadilisha.",
   "contacts.scan.already_added": "Tayari yuko kwenye anwani zako",
 
   // ---- Contacts: verifying by QR ----
@@ -1874,7 +1886,7 @@ export const strings: Strings = {
   "settings.general.reset": "Weka upya mipangilio",
   "settings.general.media_retention": "Hifadhi midia kwa",
   "settings.general.media_retention_desc":
-    "Picha, video na noti za sauti hufutwa baada ya muda uliochaguliwa",
+    "Picha, video, noti za sauti na faili hufutwa baada ya muda uliochaguliwa",
   "settings.general.media_retention_sheet":
     "Chagua muda ambao midia hubaki kwenye kifaa hiki. Midia iliyofutwa haiwezi kurejeshwa.",
   "settings.general.retention_7_desc":
@@ -2268,7 +2280,7 @@ export const strings: Strings = {
     "Msimbo wa QR haukuweza kuhifadhiwa. Jaribu tena.",
   "settings.qr.share_message": "Niongeze kwenye Airhop",
   "settings.qr.share_body":
-    "Niongeze kwenye Airhop — jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
+    "Niongeze kwenye Airhop: jumbe za mesh zenye faragha, zinazofanya kazi bila mtandao kwanza.",
   "settings.qr.show_short": "Onyesha QR",
   "settings.qr.title": "Msimbo wako wa QR",
   "settings.qr.note":
@@ -2291,10 +2303,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Inafuta",
   "settings.wipe.in_progress_body":
     "Inaharibu funguo, jumbe na faili zako. Huchukua sekunde chache, na hukamilika yenyewe hata programu ikifungwa.",
-  "settings.wipe.got_it": "Nimeelewa",
   "settings.wipe.keys_failed": "Funguo hazikuweza kuharibiwa",
   "settings.wipe.keys_failed_body":
-    "Jumbe, anwani na pochi yako zimekwisha, lakini kifaa kimekataa kuachia funguo zako. Fungua kifaa kisha ufute tena.",
+    "Jumbe, anwani na pochi yako zimekwisha, lakini kifaa kimekataa kuachia funguo zako. Fungua kifaa, kisha ufungue Airhop tena ili kukamilisha ufutaji.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Wasiliana nasi",
@@ -2344,7 +2355,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Inaangalia masasisho",
   "settings.version.up_to_date": "Upo kwenye toleo la hivi punde.",
   "settings.version.release_notes": "Tazama maelezo ya toleo",
-  "settings.version.made_with": "Imetengenezwa kwa",
+  "settings.version.credit": "Imetengenezwa kwa {heart} na {author}",
+  "settings.version.heart_a11y": "upendo",
   "settings.version.number": "Toleo {version}",
   "settings.version.update_to": "Sasisha hadi {version}",
   "settings.version.update_to_a11y": "Sasisha hadi toleo {version}",

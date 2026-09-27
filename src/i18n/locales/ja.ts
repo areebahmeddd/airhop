@@ -122,6 +122,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "古い端末にも同じ単語が表示されているはずです。違う単語が表示されている場合や、何も表示されていない場合はキャンセルしてください。",
   "onboarding.transfer.confirm_cta": "一致しています",
+  "onboarding.transfer.waiting_old":
+    "古い端末で「{action}」をタップしてください",
   "onboarding.transfer.receiving": "受信中 {percent}%",
   "onboarding.transfer.saving": "この端末に保存中",
   "onboarding.transfer.releasing": "古い端末で仕上げ中",
@@ -317,7 +319,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "すでに別の{name}に参加しています。チャンネル名はただのラベルなので、この招待は独自のチャンネルを開き、元のチャンネルはそのまま残っています。どちらもチャンネル情報から名前を変えられます。",
   "chat.join.paste_hint":
-    "airhop://で始まる招待を貼り付けてください。リンクをタップしても参加できます。これはタップできないリンク用です。",
+    "Airhopのリンクはairhop://で始まります。ここに貼り付けるか、タップしたリンクで入力された内容を確認してください。",
   "chat.join.key_note":
     "プライベートチャンネルの招待には鍵が含まれるので、参加はすぐに完了し、ほかの誰にも手間はかかりません。",
   "chat.join.offline_note":
@@ -449,13 +451,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/秒",
   "chat.transfer.left": "残り {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "ピア",
   "chat.thread.cancel_transfer": "{name}をキャンセル",
+  "chat.thread.hide_transfer": "進行状況を隠す",
+  "chat.thread.hide_transfer_hint": "ファイルは引き続き届きます",
   "chat.thread.queued_more": "他に{count}件が送信待ちです",
   "chat.thread.across_bridge": "ブリッジ越しに{count}人",
   "chat.thread.bridged": "ブリッジ経由",
   "chat.thread.invite_body":
-    "Airhopの{channel}に来ませんか — インターネットなしで動く、プライベートなメッシュメッセージング。",
+    "Airhopの{channel}に来ませんか。インターネットなしで動く、プライベートなメッシュメッセージング。",
   "chat.thread.go_back_unread": "戻る、未読{count}件",
   "chat.thread.view_info": "{name}の情報を見る",
   "chat.thread.notices_new": "このチャンネルのお知らせ、新着{count}件",
@@ -609,7 +616,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "この端末に動画はありません",
   "chat.media.gone_voice": "この端末にボイスメモはありません",
   "chat.media.gone_file": "この端末にファイルはありません",
-  "chat.media.gone_note": "この端末にはもう保存されていません",
+  "chat.media.gone_note":
+    "この端末から消去されたか、古い端末から移されていません",
   "chat.media.ask_resend": "もう一度頼む",
   "chat.media.resend_draft": "{kind}をもう一度送ってもらえますか。",
   "chat.media.kind_photo": "その写真",
@@ -1458,7 +1466,7 @@ export const strings: Strings = {
     "金額をトークンに変え、Bluetoothで近くのピアに手渡すか、テキストとして共有できます。インターネットは不要です。届いたと確認するまで、コインは確保されたままです。",
   "wallet.explain.receive": "受け取り",
   "wallet.explain.receive_desc":
-    "トークンを貼り付けて追加します。オンラインならすぐミントで交換され、証明可能にあなたのものになります。オフラインなら保存され、更新するまで未確認として扱われます。",
+    "トークンを貼り付けて追加します。オンラインならすぐミントで交換され、証明可能にあなたのものになります。オフラインなら未確認のまま保存され、オンラインに戻ると自動的にミントで確認されます。",
   "wallet.explain.zap": "zap",
   "wallet.explain.zap_desc":
     "Nostrの相手に支払います。相手がNIP-61のnutzap情報を公開していれば、ecashはその鍵に結び付けられ、相手だけが使えます。そうでなければ暗号化されたDMに切り替わります。インターネットが必要です。",
@@ -1535,6 +1543,8 @@ export const strings: Strings = {
     "ミントがこれらのコインを拒否したため、計上されなくなりました。送り返したい場合に備えて、トークンはここに残してあります。",
   "wallet.svc.coins_unredeemable":
     "これらのコインはこのミントで引き換えられないため、計上されなくなりました。送り返したい場合に備えて、トークンはここに残してあります。",
+  "wallet.svc.reclaim_refused":
+    "ミントがこの送金のコインを引き取らなかったため、計上されなくなりました。トークンはコピーできるようここに残してあります。",
   "wallet.svc.locked_ours_offline":
     "この支払いはあなたのウォレットにロックされています。",
   "wallet.svc.locked_ours_offline_body":
@@ -1660,6 +1670,8 @@ export const strings: Strings = {
     "そのbitchatのコードは期限切れです。QRを開き直してもらってください。",
   "contacts.scan.tampered":
     "このQRコードは無効です。ピアIDが鍵と一致しません。改ざんされている可能性があります。",
+  "contacts.scan.key_conflict":
+    "この相手には別の鍵がすでに登録されているため、何も変更していません。置き換えるには、対面で相手のコードをスキャンしてください。",
   "contacts.scan.already_added": "すでに連絡先にあります",
 
   // ---- Contacts: verifying by QR ----
@@ -1839,7 +1851,7 @@ export const strings: Strings = {
   "settings.general.reset": "設定をリセット",
   "settings.general.media_retention": "メディアの保存期間",
   "settings.general.media_retention_desc":
-    "写真、動画、ボイスメモは選んだ期間のあとに削除されます",
+    "写真、動画、ボイスメモ、ファイルは選んだ期間のあとに削除されます",
   "settings.general.media_retention_sheet":
     "メディアをこの端末にどれだけ残すか選んでください。削除したメディアは元に戻せません。",
   "settings.general.retention_7_desc":
@@ -2223,7 +2235,7 @@ export const strings: Strings = {
     "QRコードを保存できませんでした。もう一度お試しください。",
   "settings.qr.share_message": "Airhopで私を追加してください",
   "settings.qr.share_body":
-    "Airhopで私を追加してください — インターネットなしで動く、プライベートなメッシュメッセージング。",
+    "Airhopで私を追加してください。インターネットなしで動く、プライベートなメッシュメッセージング。",
   "settings.qr.show_short": "QRを表示",
   "settings.qr.title": "あなたのQRコード",
   "settings.qr.note":
@@ -2245,10 +2257,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "消去中",
   "settings.wipe.in_progress_body":
     "鍵、メッセージ、ファイルを破棄しています。数秒かかりますが、アプリを閉じても最後まで実行されます。",
-  "settings.wipe.got_it": "わかりました",
   "settings.wipe.keys_failed": "鍵を破棄できませんでした",
   "settings.wipe.keys_failed_body":
-    "メッセージ、連絡先、ウォレットは消えましたが、端末が鍵の解放を拒みました。端末のロックを解除してもう一度消去してください。",
+    "メッセージ、連絡先、ウォレットは消えましたが、端末が鍵の解放を拒みました。端末のロックを解除してから、Airhopを開き直して消去を完了してください。",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "お問い合わせ",
@@ -2295,7 +2306,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "更新を確認しています",
   "settings.version.up_to_date": "最新のバージョンです。",
   "settings.version.release_notes": "リリースノートを見る",
-  "settings.version.made_with": "使用技術",
+  "settings.version.credit": "{author}が{heart}を込めて制作",
+  "settings.version.heart_a11y": "愛",
   "settings.version.number": "バージョン {version}",
   "settings.version.update_to": "{version}に更新",
   "settings.version.update_to_a11y": "バージョン{version}に更新",

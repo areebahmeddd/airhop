@@ -124,6 +124,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Telefon lama anda sepatutnya memaparkan perkataan yang sama. Jika ia memaparkan perkataan lain, atau tiada langsung, batalkan.",
   "onboarding.transfer.confirm_cta": "Sepadan",
+  "onboarding.transfer.waiting_old": "Ketik “{action}” pada telefon lama anda",
   "onboarding.transfer.receiving": "Menerima {percent}%",
   "onboarding.transfer.saving": "Menyimpan ke telefon ini",
   "onboarding.transfer.releasing": "Menyelesaikan pada telefon lama anda",
@@ -317,7 +318,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Anda sudah berada dalam {name} yang berbeza. Nama saluran hanyalah label, jadi jemputan ini membuka salurannya sendiri dan saluran yang anda sertai tidak disentuh. Anda boleh menamakan semula kedua-duanya daripada maklumat salurannya.",
   "chat.join.paste_hint":
-    "Tampal jemputan yang bermula dengan airhop://. Mengetik pautan juga berfungsi; ini untuk pautan yang tidak boleh anda ketik.",
+    "Pautan Airhop bermula dengan airhop://. Tampal di sini, atau semak pautan yang telah diisi apabila anda mengetik pautan.",
   "chat.join.key_note":
     "Jemputan saluran peribadi membawa kuncinya, jadi penyertaan berlaku serta-merta dan tiada sesiapa lain perlu ditanya apa-apa.",
   "chat.join.offline_note":
@@ -447,13 +448,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} daripada {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} lagi",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "rakan",
   "chat.thread.cancel_transfer": "Batalkan {name}",
+  "chat.thread.hide_transfer": "Sembunyikan kemajuan",
+  "chat.thread.hide_transfer_hint": "Fail itu tetap akan sampai",
   "chat.thread.queued_more": "{count} lagi menunggu untuk dihantar",
   "chat.thread.across_bridge": "{count} di seberang jambatan",
   "chat.thread.bridged": "dijambatani",
   "chat.thread.invite_body":
-    "Sertai saya dalam {channel} pada Airhop — pemesejan mesh peribadi yang mengutamakan luar talian.",
+    "Sertai saya dalam {channel} pada Airhop: pemesejan mesh peribadi yang mengutamakan luar talian.",
   "chat.thread.go_back_unread": "Kembali, {count} belum dibaca",
   "chat.thread.view_info": "Lihat maklumat untuk {name}",
   "chat.thread.notices_new": "Notis untuk saluran ini, {count} baharu",
@@ -609,7 +615,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video itu tiada pada peranti ini",
   "chat.media.gone_voice": "Nota suara itu tiada pada peranti ini",
   "chat.media.gone_file": "Fail itu tiada pada peranti ini",
-  "chat.media.gone_note": "Tidak lagi disimpan pada peranti ini",
+  "chat.media.gone_note":
+    "Dipadam daripada telefon ini, atau tidak dipindahkan dari telefon lama anda",
   "chat.media.ask_resend": "Minta lagi",
   "chat.media.resend_draft": "Boleh hantar {kind} itu sekali lagi?",
   "chat.media.kind_photo": "gambar",
@@ -1471,7 +1478,7 @@ export const strings: Strings = {
     "Menukarkan satu jumlah menjadi token yang boleh anda serahkan kepada rakan berdekatan melalui Bluetooth, atau kongsikan sebagai teks. Berfungsi tanpa internet. Syilingnya kekal disimpan sehingga anda mengesahkan ia sampai.",
   "wallet.explain.receive": "Terima",
   "wallet.explain.receive_desc":
-    "Tampal satu token untuk menambahnya. Dalam talian ia ditukar di mint serta-merta, yang menjadikannya terbukti milik anda. Luar talian ia disimpan dan ditandakan belum disahkan sehingga anda menyegar semula.",
+    "Tampal satu token untuk menambahnya. Dalam talian ia ditukar di mint serta-merta, yang menjadikannya terbukti milik anda. Luar talian ia disimpan sebagai belum disahkan, kemudian disahkan dengan mint secara automatik sebaik sahaja anda kembali dalam talian.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Membayar satu identiti Nostr. Kalau mereka menerbitkan maklumat nutzap NIP-61, ecash itu dikunci kepada kunci mereka supaya hanya mereka boleh membelanjakannya. Kalau tidak, ia kembali kepada mesej terus yang disulitkan. Memerlukan internet.",
@@ -1549,6 +1556,8 @@ export const strings: Strings = {
     "Mint menolak syiling ini, jadi ia tidak lagi dikira. Token itu disimpan di sini jika anda mahu menghantarnya kembali.",
   "wallet.svc.coins_unredeemable":
     "Syiling ini tidak boleh ditebus di mint ini, jadi ia tidak lagi dikira. Token itu disimpan di sini jika anda mahu menghantarnya kembali.",
+  "wallet.svc.reclaim_refused":
+    "Mint tidak mahu menerima semula syiling daripada penghantaran ini, jadi ia tidak lagi dikira. Tokennya disimpan di sini untuk disalin.",
   "wallet.svc.locked_ours_offline": "Bayaran ini dikunci kepada dompet anda.",
   "wallet.svc.locked_ours_offline_body":
     "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
@@ -1677,6 +1686,8 @@ export const strings: Strings = {
     "Kod bitchat itu sudah luput. Minta mereka membuka QR mereka sekali lagi.",
   "contacts.scan.tampered":
     "Kod QR ini tidak sah: ID rakannya tidak sepadan dengan kuncinya. Ia mungkin sudah diubah.",
+  "contacts.scan.key_conflict":
+    "Anda sudah menyimpan kunci lain untuk mereka, jadi tiada apa-apa yang berubah. Imbas kod mereka secara bersemuka untuk menggantikannya.",
   "contacts.scan.already_added": "Sudah ada dalam kenalan anda",
 
   // ---- Contacts: verifying by QR ----
@@ -1865,7 +1876,7 @@ export const strings: Strings = {
   "settings.general.reset": "Tetap semula tetapan",
   "settings.general.media_retention": "Simpan media selama",
   "settings.general.media_retention_desc":
-    "Gambar, video dan nota suara dipadam selepas tempoh yang dipilih",
+    "Gambar, video, nota suara dan fail dipadam selepas tempoh yang dipilih",
   "settings.general.media_retention_sheet":
     "Pilih berapa lama media kekal pada peranti ini. Media yang dipadam tidak boleh dipulihkan.",
   "settings.general.retention_7_desc":
@@ -2255,7 +2266,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Kod QR tidak dapat disimpan. Cuba lagi.",
   "settings.qr.share_message": "Tambah saya pada Airhop",
   "settings.qr.share_body":
-    "Tambah saya pada Airhop — pemesejan mesh peribadi yang mengutamakan luar talian.",
+    "Tambah saya pada Airhop: pemesejan mesh peribadi yang mengutamakan luar talian.",
   "settings.qr.show_short": "Tunjuk QR",
   "settings.qr.title": "Kod QR anda",
   "settings.qr.note":
@@ -2278,10 +2289,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Membersihkan",
   "settings.wipe.in_progress_body":
     "Memusnahkan kunci, mesej dan fail anda. Ia mengambil beberapa saat dan selesai dengan sendirinya walaupun aplikasi ditutup.",
-  "settings.wipe.got_it": "Faham",
   "settings.wipe.keys_failed": "Kunci tidak dapat dimusnahkan",
   "settings.wipe.keys_failed_body":
-    "Mesej, kenalan dan dompet anda sudah hilang, tetapi peranti enggan melepaskan kunci anda. Buka kunci peranti dan bersihkan sekali lagi.",
+    "Mesej, kenalan dan dompet anda sudah hilang, tetapi peranti enggan melepaskan kunci anda. Buka kunci peranti, kemudian buka semula Airhop untuk menyelesaikan pembersihan.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Hubungi kami",
@@ -2329,7 +2339,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Menyemak kemas kini",
   "settings.version.up_to_date": "Anda menggunakan versi terkini.",
   "settings.version.release_notes": "Lihat nota keluaran",
-  "settings.version.made_with": "Dibuat dengan",
+  "settings.version.credit": "Dibuat dengan {heart} oleh {author}",
+  "settings.version.heart_a11y": "cinta",
   "settings.version.number": "Versi {version}",
   "settings.version.update_to": "Kemas kini kepada {version}",
   "settings.version.update_to_a11y": "Kemas kini kepada versi {version}",

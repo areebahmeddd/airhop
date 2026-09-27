@@ -122,6 +122,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "পুরোনো ফোনে ঠিক এই শব্দগুলোই দেখানোর কথা। অন্য শব্দ দেখালে, বা কিছুই না দেখালে, বাতিল করুন।",
   "onboarding.transfer.confirm_cta": "মিলে গেছে",
+  "onboarding.transfer.waiting_old": "পুরোনো ফোনে “{action}” ট্যাপ করুন",
   "onboarding.transfer.receiving": "গ্রহণ করা হচ্ছে {percent}%",
   "onboarding.transfer.saving": "এই ফোনে সংরক্ষণ করা হচ্ছে",
   "onboarding.transfer.releasing": "পুরোনো ফোনে শেষ করা হচ্ছে",
@@ -316,7 +317,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "আপনি ইতিমধ্যে অন্য একটি {name}-এ আছেন। চ্যানেলের নাম কেবল লেবেল, তাই এই আমন্ত্রণ নিজের আলাদা চ্যানেল খুলেছে, আর আপনি যেটিতে ছিলেন সেটি অক্ষত আছে। দুটিরই নাম চ্যানেলের তথ্য থেকে বদলানো যায়।",
   "chat.join.paste_hint":
-    "airhop:// দিয়ে শুরু হওয়া একটি আমন্ত্রণ পেস্ট করুন। লিঙ্কে ট্যাপ করলেও চলে; এটি এমন লিঙ্কের জন্য যাতে ট্যাপ করা যায় না।",
+    "Airhop লিঙ্ক airhop:// দিয়ে শুরু হয়। এখানে একটি পেস্ট করুন, অথবা ট্যাপ করা লিঙ্ক যেটি ভরে দিয়েছে সেটি দেখে নিন।",
   "chat.join.key_note":
     "ব্যক্তিগত চ্যানেলের আমন্ত্রণ কী বহন করে, তাই যোগ দেওয়া তাৎক্ষণিক এবং কারও কাছে কিছু চাইতে হয় না।",
   "chat.join.offline_note":
@@ -446,13 +447,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{total}-এর মধ্যে {done}",
   "chat.transfer.speed": "{size}/সে",
   "chat.transfer.left": "{time} বাকি",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "পিয়ার",
   "chat.thread.cancel_transfer": "{name} বাতিল করুন",
+  "chat.thread.hide_transfer": "অগ্রগতি লুকান",
+  "chat.thread.hide_transfer_hint": "ফাইলটি তবুও আসবে",
   "chat.thread.queued_more": "আরও {count}টি পাঠানোর অপেক্ষায়",
   "chat.thread.across_bridge": "সেতুর ওপারে {count}",
   "chat.thread.bridged": "সেতু পেরিয়েছে",
   "chat.thread.invite_body":
-    "Airhop-এ {channel}-এ আমার সঙ্গে যোগ দিন — অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
+    "Airhop-এ {channel}-এ আমার সঙ্গে যোগ দিন: অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
   "chat.thread.go_back_unread": "ফিরে যান, {count}টি অপঠিত",
   "chat.thread.view_info": "{name}-এর তথ্য দেখুন",
   "chat.thread.notices_new": "এই চ্যানেলের নোটিশ, {count}টি নতুন",
@@ -604,7 +610,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "ভিডিওটি এই ডিভাইসে নেই",
   "chat.media.gone_voice": "ভয়েস নোটটি এই ডিভাইসে নেই",
   "chat.media.gone_file": "ফাইলটি এই ডিভাইসে নেই",
-  "chat.media.gone_note": "এই ডিভাইসে আর রাখা নেই",
+  "chat.media.gone_note":
+    "এই ফোন থেকে সরানো হয়েছে, অথবা পুরোনো ফোন থেকে আনা হয়নি",
   "chat.media.ask_resend": "আবার জিজ্ঞেস করুন",
   "chat.media.resend_draft": "সেই {kind}টি কি আবার পাঠাতে পারবেন?",
   "chat.media.kind_photo": "ছবি",
@@ -1435,7 +1442,7 @@ export const strings: Strings = {
     "একটি অঙ্ককে এমন টোকেনে বদলায় যা ব্লুটুথে কাছের পিয়ারকে দেওয়া যায়, বা লেখা হিসেবে ভাগ করা যায়। ইন্টারনেট ছাড়াই চলে। এটি পৌঁছেছে বলে নিশ্চিত না করা পর্যন্ত মুদ্রাগুলো সরিয়ে রাখাই থাকে।",
   "wallet.explain.receive": "নিন",
   "wallet.explain.receive_desc":
-    "যোগ করতে একটি টোকেন পেস্ট করুন। অনলাইনে থাকলে সেটি সঙ্গে সঙ্গে মিন্টে বদলে যায়, যা এটিকে প্রমাণসহ আপনার করে তোলে। অফলাইনে এটি রাখা হয় আর সতেজ না করা পর্যন্ত অনিশ্চিত চিহ্নিত থাকে।",
+    "যোগ করতে একটি টোকেন পেস্ট করুন। অনলাইনে থাকলে সেটি সঙ্গে সঙ্গে মিন্টে বদলে যায়, যা এটিকে প্রমাণসহ আপনার করে তোলে। অফলাইনে এটি অনিশ্চিত অবস্থায় রাখা হয়, আর আপনি আবার অনলাইনে এলে মিন্টের সঙ্গে নিজে থেকেই নিশ্চিত হয়ে যায়।",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "একটি Nostr পরিচয়কে টাকা দেয়। তারা NIP-61 nutzap তথ্য প্রকাশ করে থাকলে ecash তাদের কী-তে তালাবদ্ধ হয়, তাই কেবল তারাই খরচ করতে পারে। না হলে এটি এনক্রিপ্ট করা ব্যক্তিগত বার্তায় ফিরে যায়। ইন্টারনেট লাগে।",
@@ -1508,6 +1515,8 @@ export const strings: Strings = {
     "মিন্ট এই মুদ্রাগুলো প্রত্যাখ্যান করেছে, তাই এগুলো আর গোনা হয় না। ফেরত পাঠাতে চাইলে টোকেনটি এখানে রাখা আছে।",
   "wallet.svc.coins_unredeemable":
     "এই মুদ্রাগুলো এই মিন্টে ভাঙানো যায় না, তাই এগুলো আর গোনা হয় না। ফেরত পাঠাতে চাইলে টোকেনটি এখানে রাখা আছে।",
+  "wallet.svc.reclaim_refused":
+    "মিন্ট এই পাঠানোর মুদ্রাগুলো ফেরত নিতে রাজি হয়নি, তাই সেগুলো আর গোনা হয় না। কপি করার জন্য এদের টোকেনটি এখানে রাখা আছে।",
   "wallet.svc.locked_ours_offline": "এই পেমেন্ট আপনার ওয়ালেটে তালাবদ্ধ।",
   "wallet.svc.locked_ours_offline_body":
     "অনলাইনে এলে এটি নিন। এর মধ্যে অন্য কেউ এটি নিতে পারবে না।",
@@ -1634,6 +1643,8 @@ export const strings: Strings = {
     "সেই bitchat কোডের মেয়াদ শেষ। তাদের আবার QR খুলতে বলুন।",
   "contacts.scan.tampered":
     "এই QR কোডটি অকেজো: এর পিয়ার আইডি এর কী-র সঙ্গে মেলে না। এটি হয়তো বদলে দেওয়া হয়েছে।",
+  "contacts.scan.key_conflict":
+    "তাদের জন্য আপনার কাছে আগে থেকেই একটি ভিন্ন কী আছে, তাই কিছুই বদলায়নি। সেটি বদলাতে সামনাসামনি তাদের কোড স্ক্যান করুন।",
   "contacts.scan.already_added": "ইতিমধ্যেই আপনার পরিচিতিতে আছে",
 
   // ---- Contacts: verifying by QR ----
@@ -1815,7 +1826,7 @@ export const strings: Strings = {
   "settings.general.reset": "সেটিংস রিসেট করুন",
   "settings.general.media_retention": "মিডিয়া রাখুন",
   "settings.general.media_retention_desc":
-    "বাছাই করা সময়ের পরে ছবি, ভিডিও ও ভয়েস নোট মুছে যায়",
+    "বাছাই করা সময়ের পরে ছবি, ভিডিও, ভয়েস নোট ও ফাইল মুছে যায়",
   "settings.general.media_retention_sheet":
     "মিডিয়া এই ডিভাইসে কতদিন থাকবে বাছুন। মুছে যাওয়া মিডিয়া ফেরানো যায় না।",
   "settings.general.retention_7_desc":
@@ -2192,7 +2203,7 @@ export const strings: Strings = {
     "QR কোডটি সংরক্ষণ করা গেল না। আবার চেষ্টা করুন।",
   "settings.qr.share_message": "Airhop-এ আমাকে যোগ করুন",
   "settings.qr.share_body":
-    "Airhop-এ আমাকে যোগ করুন — অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
+    "Airhop-এ আমাকে যোগ করুন: অফলাইন-প্রথম, ব্যক্তিগত মেশ বার্তা।",
   "settings.qr.show_short": "QR দেখান",
   "settings.qr.title": "আপনার QR কোড",
   "settings.qr.note":
@@ -2215,10 +2226,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "মোছা হচ্ছে",
   "settings.wipe.in_progress_body":
     "আপনার কী, বার্তা ও ফাইল ধ্বংস করা হচ্ছে। এতে কয়েক সেকেন্ড লাগে, আর অ্যাপ বন্ধ হয়ে গেলেও নিজে থেকেই শেষ হয়।",
-  "settings.wipe.got_it": "বুঝেছি",
   "settings.wipe.keys_failed": "কী ধ্বংস করা গেল না",
   "settings.wipe.keys_failed_body":
-    "আপনার বার্তা, পরিচিতি ও ওয়ালেট গেছে, কিন্তু ডিভাইসটি আপনার কী ছাড়তে রাজি হয়নি। ডিভাইসের তালা খুলে আবার মুছুন।",
+    "আপনার বার্তা, পরিচিতি ও ওয়ালেট গেছে, কিন্তু ডিভাইসটি আপনার কী ছাড়তে রাজি হয়নি। ডিভাইসের তালা খুলুন, তারপর মোছা শেষ করতে Airhop আবার খুলুন।",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "আমাদের সঙ্গে যোগাযোগ করুন",
@@ -2264,7 +2274,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "হালনাগাদ খোঁজা হচ্ছে",
   "settings.version.up_to_date": "আপনি সবশেষ সংস্করণেই আছেন।",
   "settings.version.release_notes": "প্রকাশের নোট দেখুন",
-  "settings.version.made_with": "তৈরি হয়েছে",
+  "settings.version.credit": "{author} {heart} দিয়ে তৈরি করেছেন",
+  "settings.version.heart_a11y": "ভালোবাসা",
   "settings.version.number": "সংস্করণ {version}",
   "settings.version.update_to": "{version}-এ হালনাগাদ করুন",
   "settings.version.update_to_a11y": "সংস্করণ {version}-এ হালনাগাদ করুন",

@@ -127,6 +127,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Je oude telefoon zou precies deze woorden moeten tonen. Toont hij andere woorden, of geen, annuleer dan.",
   "onboarding.transfer.confirm_cta": "Ze komen overeen",
+  "onboarding.transfer.waiting_old": "Tik op je oude telefoon op {action}",
   "onboarding.transfer.receiving": "Ontvangen {percent}%",
   "onboarding.transfer.saving": "Opslaan op deze telefoon",
   "onboarding.transfer.releasing": "Afronden op je oude telefoon",
@@ -320,7 +321,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Je zit al in een ander {name}. Kanaalnamen zijn maar labels, dus deze uitnodiging heeft een eigen kanaal geopend en het kanaal waar je in zat blijft ongemoeid. Je kunt beide hernoemen vanuit de kanaalinfo.",
   "chat.join.paste_hint":
-    "Plak een uitnodiging die begint met airhop://. Op een link tikken werkt ook; dit is voor een link waar je niet op kunt tikken.",
+    "Een Airhop-link begint met airhop://. Plak er hier een, of controleer wat een aangetikte link heeft ingevuld.",
   "chat.join.key_note":
     "De uitnodiging voor een privékanaal draagt de sleutel mee, dus deelnemen gaat meteen en er wordt niemand anders iets gevraagd.",
   "chat.join.offline_note":
@@ -450,13 +451,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} van {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "nog {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "peer",
   "chat.thread.cancel_transfer": "{name} annuleren",
+  "chat.thread.hide_transfer": "Voortgang verbergen",
+  "chat.thread.hide_transfer_hint": "Het bestand komt nog steeds binnen",
   "chat.thread.queued_more": "Nog {count} wachten om verstuurd te worden",
   "chat.thread.across_bridge": "{count} aan de overkant van de brug",
   "chat.thread.bridged": "via de brug",
   "chat.thread.invite_body":
-    "Kom bij me in {channel} op Airhop — privé meshberichten, offline-first.",
+    "Kom bij me in {channel} op Airhop: privé meshberichten, offline-first.",
   "chat.thread.go_back_unread": "Terug, {count} ongelezen",
   "chat.thread.view_info": "Info van {name} bekijken",
   "chat.thread.notices_new": "Meldingen van dit kanaal, {count} nieuw",
@@ -614,7 +620,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "De video staat niet op dit toestel",
   "chat.media.gone_voice": "Het spraakbericht staat niet op dit toestel",
   "chat.media.gone_file": "Het bestand staat niet op dit toestel",
-  "chat.media.gone_note": "Niet meer opgeslagen op dit toestel",
+  "chat.media.gone_note":
+    "Gewist van deze telefoon, of niet overgezet van je oude",
   "chat.media.ask_resend": "Opnieuw vragen",
   "chat.media.resend_draft": "Kun je {kind} nog eens sturen?",
   "chat.media.kind_photo": "die foto",
@@ -1470,7 +1477,7 @@ export const strings: Strings = {
     "Zet een bedrag om in een token dat je via Bluetooth aan een peer in de buurt kunt geven, of als tekst kunt delen. Werkt zonder internet. De munten blijven apart gezet tot je bevestigt dat het is aangekomen.",
   "wallet.explain.receive": "Ontvangen",
   "wallet.explain.receive_desc":
-    "Plak een token om het toe te voegen. Online wordt het meteen bij de mint omgeruild, waardoor het aantoonbaar van jou is. Offline wordt het opgeslagen en als onbevestigd gemarkeerd tot je ververst.",
+    "Plak een token om het toe te voegen. Online wordt het meteen bij de mint omgeruild, waardoor het aantoonbaar van jou is. Offline wordt het onbevestigd opgeslagen en automatisch bij de mint bevestigd zodra je weer online bent.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Betaalt een Nostr-identiteit. Als ze NIP-61-nutzapgegevens publiceren, wordt de ecash aan hun sleutel vastgezet zodat alleen zij het kunnen uitgeven. Zo niet, dan valt het terug op een versleuteld direct bericht. Heeft internet nodig.",
@@ -1550,6 +1557,8 @@ export const strings: Strings = {
     "De mint heeft deze munten geweigerd, dus ze tellen niet meer mee. Het token blijft hier bewaard als je het wilt terugsturen.",
   "wallet.svc.coins_unredeemable":
     "Deze munten kunnen niet worden ingewisseld bij deze mint, dus ze tellen niet meer mee. Het token blijft hier bewaard als je het wilt terugsturen.",
+  "wallet.svc.reclaim_refused":
+    "De mint wilde de munten van deze verzending niet terugnemen, dus ze tellen niet meer mee. Het token blijft hier bewaard om te kopiëren.",
   "wallet.svc.locked_ours_offline":
     "Deze betaling is vergrendeld voor jouw portemonnee.",
   "wallet.svc.locked_ours_offline_body":
@@ -1679,6 +1688,8 @@ export const strings: Strings = {
     "Die bitchat-code is verlopen. Vraag ze hun QR opnieuw te openen.",
   "contacts.scan.tampered":
     "Deze QR-code is ongeldig: het peer-ID komt niet overeen met de sleutels. Er is misschien mee geknoeid.",
+  "contacts.scan.key_conflict":
+    "Je hebt al een andere sleutel voor deze persoon, dus er is niets veranderd. Scan hun code persoonlijk om die te vervangen.",
   "contacts.scan.already_added": "Staat al in je contacten",
 
   // ---- Contacts: verifying by QR ----
@@ -1864,7 +1875,7 @@ export const strings: Strings = {
   "settings.general.reset": "Instellingen resetten",
   "settings.general.media_retention": "Media bewaren gedurende",
   "settings.general.media_retention_desc":
-    "Foto’s, video’s en spraakberichten worden na de gekozen tijd verwijderd",
+    "Foto’s, video’s, spraakberichten en bestanden worden na de gekozen tijd verwijderd",
   "settings.general.media_retention_sheet":
     "Kies hoe lang media op dit toestel blijft staan. Verwijderde media is niet terug te halen.",
   "settings.general.retention_7_desc":
@@ -2252,7 +2263,7 @@ export const strings: Strings = {
     "De QR-code kon niet worden opgeslagen. Probeer het opnieuw.",
   "settings.qr.share_message": "Voeg me toe op Airhop",
   "settings.qr.share_body":
-    "Voeg me toe op Airhop — privé meshberichten, offline-first.",
+    "Voeg me toe op Airhop: privé meshberichten, offline-first.",
   "settings.qr.show_short": "QR tonen",
   "settings.qr.title": "Jouw QR-code",
   "settings.qr.note":
@@ -2275,10 +2286,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Bezig met wissen",
   "settings.wipe.in_progress_body":
     "Je sleutels, berichten en bestanden worden vernietigd. Dat duurt een paar seconden en maakt zichzelf af, ook als de app dichtgaat.",
-  "settings.wipe.got_it": "Begrepen",
   "settings.wipe.keys_failed": "De sleutels konden niet worden vernietigd",
   "settings.wipe.keys_failed_body":
-    "Je berichten, contacten en portemonnee zijn weg, maar het toestel weigerde je sleutels los te laten. Ontgrendel het toestel en wis opnieuw.",
+    "Je berichten, contacten en portemonnee zijn weg, maar het toestel weigerde je sleutels los te laten. Ontgrendel het toestel en open Airhop opnieuw om het wissen af te maken.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Neem contact op",
@@ -2326,7 +2336,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Op updates aan het controleren",
   "settings.version.up_to_date": "Je hebt de nieuwste versie.",
   "settings.version.release_notes": "Release-opmerkingen bekijken",
-  "settings.version.made_with": "Gemaakt met",
+  "settings.version.credit": "Gemaakt met {heart} door {author}",
+  "settings.version.heart_a11y": "liefde",
   "settings.version.number": "Versie {version}",
   "settings.version.update_to": "Bijwerken naar {version}",
   "settings.version.update_to_a11y": "Bijwerken naar versie {version}",

@@ -122,6 +122,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "يجب أن يُظهر هاتفك القديم الكلمات نفسها. إن أظهر كلمات مختلفة، أو لم يُظهر شيئًا، فألغِ.",
   "onboarding.transfer.confirm_cta": "متطابقة",
+  "onboarding.transfer.waiting_old": "اضغط «{action}» على هاتفك القديم",
   "onboarding.transfer.receiving": "جارٍ الاستلام {percent}%",
   "onboarding.transfer.saving": "جارٍ الحفظ على هذا الهاتف",
   "onboarding.transfer.releasing": "جارٍ الإنهاء على هاتفك القديم",
@@ -308,7 +309,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "أنت بالفعل في {name} مختلفة. أسماء القنوات مجرد تسميات، لذلك فتحت هذه الدعوة قناتها الخاصة وبقيت التي كنت فيها كما هي. أعد تسمية أي منهما من معلومات القناة.",
   "chat.join.paste_hint":
-    "الصق دعوة تبدأ بـ airhop://. الضغط على الرابط يعمل أيضًا؛ هذا مخصص لرابط لا يمكنك الضغط عليه.",
+    "يبدأ رابط Airhop بـ airhop://. الصق رابطًا هنا، أو راجع ما عبّأه هنا رابطٌ ضغطت عليه.",
   "chat.join.key_note":
     "دعوة القناة الخاصة تحمل المفتاح، لذلك الانضمام فوري ولا يُطلب شيء من أحد آخر.",
   "chat.join.offline_note":
@@ -436,13 +437,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} من {total}",
   "chat.transfer.speed": "{size}/ث",
   "chat.transfer.left": "متبقٍ {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "نظير",
   "chat.thread.cancel_transfer": "إلغاء {name}",
+  "chat.thread.hide_transfer": "إخفاء التقدّم",
+  "chat.thread.hide_transfer_hint": "سيصل الملف رغم ذلك",
   "chat.thread.queued_more": "{count} أخرى بانتظار الإرسال",
   "chat.thread.across_bridge": "{count} عبر الجسر",
   "chat.thread.bridged": "مجسّرة",
   "chat.thread.invite_body":
-    "انضم إليّ في {channel} على Airhop — مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
+    "انضم إليّ في {channel} على Airhop: مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
   "chat.thread.go_back_unread": "رجوع، {count} غير مقروءة",
   "chat.thread.view_info": "عرض معلومات {name}",
   "chat.thread.notices_new": "إعلانات هذه القناة، {count} جديدة",
@@ -593,7 +599,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "الفيديو ليس على هذا الجهاز",
   "chat.media.gone_voice": "الملاحظة الصوتية ليست على هذا الجهاز",
   "chat.media.gone_file": "الملف ليس على هذا الجهاز",
-  "chat.media.gone_note": "لم يعد مخزّنًا على هذا الجهاز",
+  "chat.media.gone_note": "أُزيل من هذا الهاتف، أو لم يُنقل من هاتفك القديم",
   "chat.media.ask_resend": "اسأل مرة أخرى",
   "chat.media.resend_draft": "هل يمكنك إرسال {kind} مرة أخرى؟",
   "chat.media.kind_photo": "الصورة",
@@ -1407,7 +1413,7 @@ export const strings: Strings = {
     "يحوّل مبلغًا إلى توكن تسلّمه إلى نظير قريب عبر البلوتوث، أو تشاركه كنص. يعمل دون إنترنت. تبقى العملات محجوزة حتى تؤكد وصوله.",
   "wallet.explain.receive": "استقبال",
   "wallet.explain.receive_desc":
-    "الصق توكنًا لإضافته. مع الاتصال يُبدَّل عند دار السك فورًا، وهذا ما يجعله لك بشكل مثبت. ودونه يُخزَّن ويوسم كغير مؤكد حتى تحدّثه.",
+    "الصق توكنًا لإضافته. مع الاتصال يُبدَّل عند دار السك فورًا، وهذا ما يجعله لك بشكل مثبت. ودونه يُخزَّن غير مؤكد، ويُؤكَّد مع دار السك تلقائيًا حين تعود متصلًا.",
   "wallet.explain.zap": "زاب",
   "wallet.explain.zap_desc":
     "يدفع لهوية على Nostr. إن نشروا معلومات نَتزاب وفق NIP-61، يُقفل النقد الإلكتروني على مفتاحهم فلا ينفقه سواهم. وإلا فيعود إلى رسالة مباشرة مشفّرة. يحتاج إنترنت.",
@@ -1481,6 +1487,8 @@ export const strings: Strings = {
     "رفضت دار السك هذه العملات، فلم تعد تُحسب. يبقى التوكن هنا إن أردت إعادته.",
   "wallet.svc.coins_unredeemable":
     "لا يمكن صرف هذه العملات عند دار السك هذه، فلم تعد تُحسب. يبقى التوكن هنا إن أردت إعادته.",
+  "wallet.svc.reclaim_refused":
+    "رفضت دار السك استعادة العملات من هذا الإرسال، لذا لم تعد محسوبة. يبقى التوكن الخاص بها هنا لتنسخه.",
   "wallet.svc.locked_ours_offline": "هذه الدفعة مقفلة على محفظتك.",
   "wallet.svc.locked_ours_offline_body":
     "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
@@ -1600,6 +1608,8 @@ export const strings: Strings = {
     "انتهت صلاحية رمز bitchat ذاك. اطلب منهم فتح رمزهم مرة أخرى.",
   "contacts.scan.tampered":
     "رمز الاستجابة السريعة هذا غير صالح: معرّف النظير فيه لا يطابق مفاتيحه. ربما جرى العبث به.",
+  "contacts.scan.key_conflict":
+    "لديك مسبقًا مفتاح مختلف لهم، لذا لم يتغيّر شيء. امسح رمزهم وجهًا لوجه لاستبداله.",
   "contacts.scan.already_added": "موجود في جهات اتصالك بالفعل",
 
   // ---- Contacts: verifying by QR ----
@@ -1779,7 +1789,7 @@ export const strings: Strings = {
   "settings.general.reset": "إعادة ضبط الإعدادات",
   "settings.general.media_retention": "الاحتفاظ بالوسائط لمدة",
   "settings.general.media_retention_desc":
-    "تُحذف الصور ومقاطع الفيديو والملاحظات الصوتية بعد المدة المختارة",
+    "تُحذف الصور ومقاطع الفيديو والملاحظات الصوتية والملفات بعد المدة المختارة",
   "settings.general.media_retention_sheet":
     "اختر كم تبقى الوسائط على هذا الجهاز. الوسائط المحذوفة لا يمكن استردادها.",
   "settings.general.retention_7_desc":
@@ -2149,7 +2159,7 @@ export const strings: Strings = {
     "تعذّر حفظ رمز الاستجابة السريعة. حاول مرة أخرى.",
   "settings.qr.share_message": "أضفني على Airhop",
   "settings.qr.share_body":
-    "أضفني على Airhop — مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
+    "أضفني على Airhop: مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
   "settings.qr.show_short": "عرض الرمز",
   "settings.qr.title": "رمز الاستجابة السريعة الخاص بك",
   "settings.qr.note":
@@ -2171,10 +2181,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "جارٍ المسح",
   "settings.wipe.in_progress_body":
     "يجري تدمير مفاتيحك ورسائلك وملفاتك. يستغرق هذا ثوانٍ قليلة، ويكتمل من تلقاء نفسه إن أُغلق التطبيق.",
-  "settings.wipe.got_it": "فهمت",
   "settings.wipe.keys_failed": "تعذّر تدمير المفاتيح",
   "settings.wipe.keys_failed_body":
-    "ذهبت رسائلك وجهات اتصالك ومحفظتك، لكن الجهاز رفض تسليم مفاتيحك. افتح قفل الجهاز وامسح مرة أخرى.",
+    "ذهبت رسائلك وجهات اتصالك ومحفظتك، لكن الجهاز رفض تسليم مفاتيحك. افتح قفل الجهاز، ثم أعد فتح Airhop لإكمال المسح.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "تواصل معنا",
@@ -2221,7 +2230,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "جارٍ البحث عن تحديثات",
   "settings.version.up_to_date": "أنت على أحدث إصدار.",
   "settings.version.release_notes": "عرض ملاحظات الإصدار",
-  "settings.version.made_with": "صُنع بـ",
+  "settings.version.credit": "صُنع بـ {heart} على يد {author}",
+  "settings.version.heart_a11y": "حب",
   "settings.version.number": "الإصدار {version}",
   "settings.version.update_to": "التحديث إلى {version}",
   "settings.version.update_to_a11y": "التحديث إلى الإصدار {version}",

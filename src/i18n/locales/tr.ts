@@ -127,6 +127,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Eski telefonun da bu kelimelerin aynısını göstermeli. Farklı kelimeler gösteriyorsa ya da hiç göstermiyorsa iptal et.",
   "onboarding.transfer.confirm_cta": "Eşleşiyor",
+  "onboarding.transfer.waiting_old":
+    "Eski telefonunda “{action}” düğmesine dokun",
   "onboarding.transfer.receiving": "Alınıyor {percent}%",
   "onboarding.transfer.saving": "Bu telefona kaydediliyor",
   "onboarding.transfer.releasing": "Eski telefonda tamamlanıyor",
@@ -320,7 +322,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Zaten farklı bir {name} içindesin. Kanal adları yalnızca etikettir, bu yüzden bu davet kendi kanalını açtı ve içinde bulunduğun kanala dokunulmadı. İkisini de kanal bilgisinden yeniden adlandırabilirsin.",
   "chat.join.paste_hint":
-    "airhop:// ile başlayan bir davet yapıştır. Bir bağlantıya dokunmak da çalışır; bu, dokunamadığın bir bağlantı içindir.",
+    "Airhop bağlantıları airhop:// ile başlar. Buraya bir tane yapıştır ya da dokunduğun bağlantının doldurduğunu kontrol et.",
   "chat.join.key_note":
     "Özel kanal daveti anahtarı taşır, bu yüzden katılmak anında olur ve başka kimseye bir şey sorulmaz.",
   "chat.join.offline_note":
@@ -449,13 +451,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} kaldı",
+  "chat.transfer.title": "{status}: {name}",
+  "chat.transfer.title_peer": "{status}: {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "eş",
   "chat.thread.cancel_transfer": "{name} iptal et",
+  "chat.thread.hide_transfer": "İlerlemeyi gizle",
+  "chat.thread.hide_transfer_hint": "Dosya yine de gelir",
   "chat.thread.queued_more": "Gönderilmeyi bekleyen {count} tane daha",
   "chat.thread.across_bridge": "köprünün karşısında {count}",
   "chat.thread.bridged": "köprülendi",
   "chat.thread.invite_body":
-    "Airhop'ta {channel} kanalında bana katıl — önce çevrimdışı çalışan, özel mesh mesajlaşma.",
+    "Airhop'ta {channel} kanalında bana katıl: önce çevrimdışı çalışan, özel mesh mesajlaşma.",
   "chat.thread.go_back_unread": "Geri dön, {count} okunmamış",
   "chat.thread.view_info": "{name} bilgisini görüntüle",
   "chat.thread.notices_new": "Bu kanalın duyuruları, {count} yeni",
@@ -610,7 +617,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Video bu cihazda yok",
   "chat.media.gone_voice": "Sesli not bu cihazda yok",
   "chat.media.gone_file": "Dosya bu cihazda yok",
-  "chat.media.gone_note": "Artık bu cihazda saklanmıyor",
+  "chat.media.gone_note":
+    "Bu telefondan silindi ya da eski telefonundan taşınmadı",
   "chat.media.ask_resend": "Yeniden iste",
   "chat.media.resend_draft": "{kind} yeniden gönderebilir misin?",
   "chat.media.kind_photo": "o fotoğrafı",
@@ -1457,7 +1465,7 @@ export const strings: Strings = {
     "Bir tutarı, Bluetooth üzerinden yakındaki bir eşe verebileceğin ya da metin olarak paylaşabileceğin bir jetona dönüştürür. İnternetsiz çalışır. Ulaştığını onaylayana kadar jetonlar ayrılmış kalır.",
   "wallet.explain.receive": "Al",
   "wallet.explain.receive_desc":
-    "Eklemek için bir jeton yapıştır. Çevrimiçiyken darphanede hemen takas edilir, bu da onu kanıtlanabilir biçimde senin yapar. Çevrimdışıyken kaydedilir ve sen yenileyene kadar onaylanmadı olarak işaretlenir.",
+    "Eklemek için bir jeton yapıştır. Çevrimiçiyken darphanede hemen takas edilir, bu da onu kanıtlanabilir biçimde senin yapar. Çevrimdışıyken onaylanmadan kaydedilir ve yeniden çevrimiçi olduğunda darphanede otomatik olarak onaylanır.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Bir Nostr kimliğine ödeme yapar. NIP-61 nutzap bilgisi yayımlıyorlarsa ecash anahtarlarına kilitlenir, böylece yalnızca onlar harcayabilir. Yayımlamıyorlarsa şifreli bir doğrudan mesaja düşer. İnternet gerektirir.",
@@ -1535,6 +1543,8 @@ export const strings: Strings = {
     "Darphane bu paraları reddetti, bu yüzden artık sayılmıyorlar. Geri göndermek istersen jeton burada saklanıyor.",
   "wallet.svc.coins_unredeemable":
     "Bu paralar bu darphanede bozdurulamaz, bu yüzden artık sayılmıyorlar. Geri göndermek istersen jeton burada saklanıyor.",
+  "wallet.svc.reclaim_refused":
+    "Darphane bu gönderimdeki paraları geri almadı, bu yüzden artık sayılmıyorlar. Jetonu kopyalayabilmen için burada saklanıyor.",
   "wallet.svc.locked_ours_offline": "Bu ödeme senin cüzdanına kilitli.",
   "wallet.svc.locked_ours_offline_body":
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
@@ -1660,6 +1670,8 @@ export const strings: Strings = {
     "O bitchat kodunun süresi dolmuş. QR kodlarını yeniden açmalarını iste.",
   "contacts.scan.tampered":
     "Bu QR kod geçersiz: eş kimliği anahtarlarıyla uyuşmuyor. Kurcalanmış olabilir.",
+  "contacts.scan.key_conflict":
+    "Bu kişi için zaten farklı bir anahtarın var, bu yüzden hiçbir şey değişmedi. Değiştirmek için kodunu yüz yüze tara.",
   "contacts.scan.already_added": "Zaten kişilerinde",
 
   // ---- Contacts: verifying by QR ----
@@ -1841,7 +1853,7 @@ export const strings: Strings = {
   "settings.general.reset": "Ayarları sıfırla",
   "settings.general.media_retention": "Medyayı şu kadar sakla",
   "settings.general.media_retention_desc":
-    "Fotoğraflar, videolar ve sesli notlar seçilen sürenin ardından silinir",
+    "Fotoğraflar, videolar, sesli notlar ve dosyalar seçilen sürenin ardından silinir",
   "settings.general.media_retention_sheet":
     "Medyanın bu cihazda ne kadar kalacağını seç. Silinen medya geri getirilemez.",
   "settings.general.retention_7_desc":
@@ -2222,7 +2234,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "QR kod kaydedilemedi. Yeniden dene.",
   "settings.qr.share_message": "Beni Airhop'ta ekle",
   "settings.qr.share_body":
-    "Beni Airhop'ta ekle — önce çevrimdışı çalışan, özel mesh mesajlaşma.",
+    "Beni Airhop'ta ekle: önce çevrimdışı çalışan, özel mesh mesajlaşma.",
   "settings.qr.show_short": "QR göster",
   "settings.qr.title": "QR kodun",
   "settings.qr.note":
@@ -2245,10 +2257,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Temizleniyor",
   "settings.wipe.in_progress_body":
     "Anahtarların, mesajların ve dosyaların yok ediliyor. Bu birkaç saniye sürer ve uygulama kapansa bile kendiliğinden tamamlanır.",
-  "settings.wipe.got_it": "Anladım",
   "settings.wipe.keys_failed": "Anahtarlar yok edilemedi",
   "settings.wipe.keys_failed_body":
-    "Mesajların, kişilerin ve cüzdanın gitti ama cihaz anahtarlarını bırakmayı reddetti. Cihazın kilidini aç ve yeniden temizle.",
+    "Mesajların, kişilerin ve cüzdanın gitti ama cihaz anahtarlarını bırakmayı reddetti. Cihazın kilidini aç, ardından temizliği tamamlamak için Airhop'u yeniden aç.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Bize yaz",
@@ -2297,7 +2308,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Güncellemeler denetleniyor",
   "settings.version.up_to_date": "En son sürümü kullanıyorsun.",
   "settings.version.release_notes": "Sürüm notlarını gör",
-  "settings.version.made_with": "Şununla yapıldı:",
+  "settings.version.credit": "{author} tarafından {heart} ile yapıldı",
+  "settings.version.heart_a11y": "sevgi",
   "settings.version.number": "Sürüm {version}",
   "settings.version.update_to": "{version} sürümüne güncelle",
   "settings.version.update_to_a11y": "{version} sürümüne güncelle",

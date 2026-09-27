@@ -120,6 +120,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "你的舊手機應該會顯示這組相同的字詞。如果顯示的字詞不同，或什麼都沒顯示，請取消。",
   "onboarding.transfer.confirm_cta": "一致",
+  "onboarding.transfer.waiting_old": "在舊手機上點一下「{action}」",
   "onboarding.transfer.receiving": "正在接收 {percent}%",
   "onboarding.transfer.saving": "正在儲存到這支手機",
   "onboarding.transfer.releasing": "正在舊手機上收尾",
@@ -302,7 +303,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "你已經在另一個 {name} 裡了。頻道名稱只是標籤，所以這個邀請開了它自己的頻道，你原本那個不受影響。可以在各自的頻道資訊裡重新命名。",
   "chat.join.paste_hint":
-    "貼上以 airhop:// 開頭的邀請。直接點連結也可以；這裡是為了那些點不了的連結。",
+    "Airhop 連結以 airhop:// 開頭。在這裡貼上一個，或檢查點連結後自動填入的內容。",
   "chat.join.key_note":
     "私密頻道邀請本身帶著金鑰，所以加入是立即的，也不必向任何人索取什麼。",
   "chat.join.offline_note":
@@ -424,13 +425,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/秒",
   "chat.transfer.left": "剩餘 {time}",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "節點",
   "chat.thread.cancel_transfer": "取消 {name}",
+  "chat.thread.hide_transfer": "隱藏進度",
+  "chat.thread.hide_transfer_hint": "檔案仍會繼續接收",
   "chat.thread.queued_more": "還有 {count} 則等著傳送",
   "chat.thread.across_bridge": "橋接另一端 {count} 位",
   "chat.thread.bridged": "已橋接",
   "chat.thread.invite_body":
-    "來 Airhop 的 {channel} 一起聊吧 — 離線優先的私密網狀網路通訊。",
+    "來 Airhop 的 {channel} 一起聊吧：離線優先的私密網狀網路通訊。",
   "chat.thread.go_back_unread": "返回，{count} 則未讀",
   "chat.thread.view_info": "查看 {name} 的資訊",
   "chat.thread.notices_new": "本頻道的公告，{count} 則新的",
@@ -574,7 +580,7 @@ export const strings: Strings = {
   "chat.media.gone_video": "這台裝置上沒有這段影片",
   "chat.media.gone_voice": "這台裝置上沒有這則語音留言",
   "chat.media.gone_file": "這台裝置上沒有這個檔案",
-  "chat.media.gone_note": "已不再儲存在這台裝置上",
+  "chat.media.gone_note": "已從這支手機清除，或未從舊手機轉移過來",
   "chat.media.ask_resend": "再問一次",
   "chat.media.resend_draft": "可以再傳一次那{kind}嗎？",
   "chat.media.kind_photo": "張照片",
@@ -1368,7 +1374,7 @@ export const strings: Strings = {
     "把一筆金額變成代幣，可以透過藍牙交給附近的節點，也可以當成文字分享。不需要網路。在你確認它已到手之前，這些幣會一直保留著。",
   "wallet.explain.receive": "接收",
   "wallet.explain.receive_desc":
-    "貼上一個代幣就能加進來。連上網路時它會立刻在鑄幣廠換新，因而可以被證明屬於你。離線時它會被存起來並標為未確認，直到你重新整理。",
+    "貼上一個代幣就能加進來。連上網路時它會立刻在鑄幣廠換新，因而可以被證明屬於你。離線時它會先以未確認狀態存起來，等你重新連上網路後自動向鑄幣廠確認。",
   "wallet.explain.zap": "打閃",
   "wallet.explain.zap_desc":
     "付款給一個 Nostr 身分。如果對方公布了 NIP-61 nutzap 資訊，這筆 ecash 會鎖到對方的金鑰上，只有對方花得了。否則會退回到加密私訊的方式。需要網路。",
@@ -1439,6 +1445,8 @@ export const strings: Strings = {
     "鑄幣廠拒絕了這些幣，所以它們不再計入。代幣保留在這裡，方便你退回。",
   "wallet.svc.coins_unredeemable":
     "這些幣無法在這個鑄幣廠兌付，所以它們不再計入。代幣保留在這裡，方便你退回。",
+  "wallet.svc.reclaim_refused":
+    "鑄幣廠不肯收回這筆傳送裡的幣，所以它們不再計入。代幣保留在這裡，方便你複製。",
   "wallet.svc.locked_ours_offline": "這筆付款已鎖到你的錢包。",
   "wallet.svc.locked_ours_offline_body":
     "連上網路後再領取即可。在這段期間，別人無法拿走它。",
@@ -1552,6 +1560,8 @@ export const strings: Strings = {
     "那個 bitchat 代碼已過期。請對方重新開啟自己的 QR 碼。",
   "contacts.scan.tampered":
     "這個 QR 碼無效：它的節點 ID 和它的金鑰對不上。它可能被人動過手腳。",
+  "contacts.scan.key_conflict":
+    "你已經存有這個人的另一把金鑰，所以沒有做任何變更。請當面掃描對方的 QR 碼來替換。",
   "contacts.scan.already_added": "已經在你的聯絡人裡",
 
   // ---- Contacts: verifying by QR ----
@@ -1723,7 +1733,7 @@ export const strings: Strings = {
   "settings.general.reset": "重設設定",
   "settings.general.media_retention": "媒體保留時間",
   "settings.general.media_retention_desc":
-    "照片、影片和語音留言會在所選時間後被刪除",
+    "照片、影片、語音留言和檔案會在所選時間後被刪除",
   "settings.general.media_retention_sheet":
     "選擇媒體在這台裝置上留多久。刪掉的媒體無法復原。",
   "settings.general.retention_7_desc":
@@ -2082,7 +2092,7 @@ export const strings: Strings = {
   "settings.qr.save_failed": "無法儲存",
   "settings.qr.save_failed_body": "QR 碼無法儲存。請再試一次。",
   "settings.qr.share_message": "在 Airhop 上加我",
-  "settings.qr.share_body": "在 Airhop 上加我 — 離線優先的私密網狀網路通訊。",
+  "settings.qr.share_body": "在 Airhop 上加我：離線優先的私密網狀網路通訊。",
   "settings.qr.show_short": "顯示 QR 碼",
   "settings.qr.title": "你的 QR 碼",
   "settings.qr.note":
@@ -2104,10 +2114,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "抹除中",
   "settings.wipe.in_progress_body":
     "正在銷毀你的金鑰、訊息和檔案。這需要幾秒鐘，就算 App 被關掉也會自己完成。",
-  "settings.wipe.got_it": "知道了",
   "settings.wipe.keys_failed": "金鑰無法銷毀",
   "settings.wipe.keys_failed_body":
-    "你的訊息、聯絡人和錢包都已清除，但裝置拒絕釋出你的金鑰。請解鎖裝置後再抹除一次。",
+    "你的訊息、聯絡人和錢包都已清除，但裝置拒絕釋出你的金鑰。請解鎖裝置，然後重新開啟 Airhop 完成抹除。",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "聯絡我們",
@@ -2152,7 +2161,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "正在檢查更新",
   "settings.version.up_to_date": "你用的已經是最新版本。",
   "settings.version.release_notes": "查看發行說明",
-  "settings.version.made_with": "用",
+  "settings.version.credit": "由 {author} 用 {heart} 製作",
+  "settings.version.heart_a11y": "愛",
   "settings.version.number": "版本 {version}",
   "settings.version.update_to": "更新到 {version}",
   "settings.version.update_to_a11y": "更新到版本 {version}",

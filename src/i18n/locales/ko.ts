@@ -121,6 +121,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "이전 휴대폰에도 같은 단어가 표시되어야 합니다. 다른 단어가 표시되거나 아무것도 표시되지 않으면 취소하세요.",
   "onboarding.transfer.confirm_cta": "일치합니다",
+  "onboarding.transfer.waiting_old":
+    "이전 휴대폰에서 “{action}” 버튼을 탭하세요",
   "onboarding.transfer.receiving": "받는 중 {percent}%",
   "onboarding.transfer.saving": "이 휴대폰에 저장하는 중",
   "onboarding.transfer.releasing": "이전 휴대폰에서 마무리하는 중",
@@ -312,7 +314,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "이미 이름이 같은 다른 {name}에 참여해 있습니다. 채널 이름은 그저 이름표라서 이 초대는 별도의 채널을 열었고, 원래 있던 채널은 그대로입니다. 어느 쪽이든 채널 정보에서 이름을 바꿀 수 있습니다.",
   "chat.join.paste_hint":
-    "airhop://로 시작하는 초대를 붙여넣으세요. 링크를 탭해도 되며, 이 방법은 탭할 수 없는 링크를 위한 것입니다.",
+    "Airhop 링크는 airhop://로 시작합니다. 여기에 붙여넣거나, 탭한 링크로 채워진 내용을 확인하세요.",
   "chat.join.key_note":
     "비공개 채널 초대는 키를 함께 담고 있어 참여가 즉시 이루어지며 다른 누구에게도 무언가를 요청하지 않습니다.",
   "chat.join.offline_note":
@@ -441,13 +443,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/초",
   "chat.transfer.left": "{time} 남음",
+  "chat.transfer.title": "{name} {status}",
+  "chat.transfer.title_peer": "{name} {status} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "피어",
   "chat.thread.cancel_transfer": "{name} 취소",
+  "chat.thread.hide_transfer": "진행 상황 숨기기",
+  "chat.thread.hide_transfer_hint": "파일은 그대로 계속 받습니다",
   "chat.thread.queued_more": "{count}개가 더 전송을 기다리는 중",
   "chat.thread.across_bridge": "브리지 건너편에 {count}명",
   "chat.thread.bridged": "브리지됨",
   "chat.thread.invite_body":
-    "Airhop의 {channel}에서 함께해요 — 오프라인 우선 비공개 메시 메시징.",
+    "Airhop의 {channel}에서 함께해요: 오프라인 우선 비공개 메시 메시징.",
   "chat.thread.go_back_unread": "뒤로 가기, 읽지 않음 {count}개",
   "chat.thread.view_info": "{name}의 정보 보기",
   "chat.thread.notices_new": "이 채널의 공지, 새 항목 {count}개",
@@ -599,7 +606,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "동영상이 이 기기에 없습니다",
   "chat.media.gone_voice": "음성 메모가 이 기기에 없습니다",
   "chat.media.gone_file": "파일이 이 기기에 없습니다",
-  "chat.media.gone_note": "더 이상 이 기기에 저장되어 있지 않음",
+  "chat.media.gone_note":
+    "이 휴대폰에서 삭제되었거나 이전 휴대폰에서 옮겨 오지 않음",
   "chat.media.ask_resend": "다시 요청",
   "chat.media.resend_draft": "그 {kind} 다시 보내주실 수 있나요?",
   "chat.media.kind_photo": "사진",
@@ -1436,7 +1444,7 @@ export const strings: Strings = {
     "금액을 토큰으로 바꿔 블루투스로 근처 피어에게 건네거나 텍스트로 공유할 수 있게 합니다. 인터넷 없이 작동합니다. 도착을 확인하기 전까지 코인은 예약된 채로 남습니다.",
   "wallet.explain.receive": "받기",
   "wallet.explain.receive_desc":
-    "토큰을 붙여넣어 추가합니다. 온라인이면 민트에서 즉시 교환되어 증명 가능하게 내 것이 됩니다. 오프라인이면 저장되고 새로 고칠 때까지 미확인으로 표시됩니다.",
+    "토큰을 붙여넣어 추가합니다. 온라인이면 민트에서 즉시 교환되어 증명 가능하게 내 것이 됩니다. 오프라인이면 미확인 상태로 저장되고, 다시 온라인이 되면 자동으로 민트에서 확인됩니다.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Nostr 신원에게 지급합니다. 상대가 NIP-61 nutzap 정보를 게시했다면 ecash가 상대의 키에 잠겨 그들만 쓸 수 있습니다. 그렇지 않으면 암호화된 DM으로 대체됩니다. 인터넷이 필요합니다.",
@@ -1511,6 +1519,8 @@ export const strings: Strings = {
     "민트가 이 코인을 거부해 더 이상 계산하지 않습니다. 돌려보내고 싶을 때를 위해 토큰은 여기에 보관됩니다.",
   "wallet.svc.coins_unredeemable":
     "이 코인은 이 민트에서 교환할 수 없어 더 이상 계산하지 않습니다. 돌려보내고 싶을 때를 위해 토큰은 여기에 보관됩니다.",
+  "wallet.svc.reclaim_refused":
+    "민트가 이 보내기의 코인을 돌려받지 않아 더 이상 계산하지 않습니다. 복사할 수 있도록 토큰은 여기에 보관됩니다.",
   "wallet.svc.locked_ours_offline": "이 결제는 내 지갑에 잠겨 있습니다.",
   "wallet.svc.locked_ours_offline_body":
     "온라인이 되면 받으세요. 그동안 다른 누구도 가져갈 수 없습니다.",
@@ -1634,6 +1644,8 @@ export const strings: Strings = {
     "그 bitchat 코드는 만료되었습니다. 상대방에게 QR을 다시 열어달라고 하세요.",
   "contacts.scan.tampered":
     "이 QR 코드는 유효하지 않습니다. 피어 ID가 키와 일치하지 않습니다. 변조되었을 수 있습니다.",
+  "contacts.scan.key_conflict":
+    "이 사람의 다른 키를 이미 가지고 있어 아무것도 바뀌지 않았습니다. 바꾸려면 직접 만나 상대의 코드를 스캔하세요.",
   "contacts.scan.already_added": "이미 연락처에 있습니다",
 
   // ---- Contacts: verifying by QR ----
@@ -1809,7 +1821,7 @@ export const strings: Strings = {
   "settings.general.reset": "설정 초기화",
   "settings.general.media_retention": "미디어 보관 기간",
   "settings.general.media_retention_desc":
-    "선택한 기간이 지나면 사진, 동영상, 음성 메모가 삭제됩니다",
+    "선택한 기간이 지나면 사진, 동영상, 음성 메모, 파일이 삭제됩니다",
   "settings.general.media_retention_sheet":
     "미디어를 이 기기에 얼마나 둘지 선택하세요. 삭제된 미디어는 복구할 수 없습니다.",
   "settings.general.retention_7_desc":
@@ -2183,7 +2195,7 @@ export const strings: Strings = {
     "QR 코드를 저장하지 못했습니다. 다시 시도하세요.",
   "settings.qr.share_message": "Airhop에서 나를 추가하세요",
   "settings.qr.share_body":
-    "Airhop에서 나를 추가하세요 — 오프라인 우선 비공개 메시 메시징.",
+    "Airhop에서 나를 추가하세요: 오프라인 우선 비공개 메시 메시징.",
   "settings.qr.show_short": "QR 보기",
   "settings.qr.title": "내 QR 코드",
   "settings.qr.note":
@@ -2205,10 +2217,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "삭제하는 중",
   "settings.wipe.in_progress_body":
     "키와 메시지, 파일을 파기하고 있습니다. 몇 초 걸리며, 앱을 닫아도 알아서 끝까지 진행됩니다.",
-  "settings.wipe.got_it": "확인했습니다",
   "settings.wipe.keys_failed": "키를 파기하지 못했습니다",
   "settings.wipe.keys_failed_body":
-    "메시지와 연락처, 지갑은 사라졌지만 기기가 키를 놓아주지 않았습니다. 기기 잠금을 풀고 다시 삭제하세요.",
+    "메시지와 연락처, 지갑은 사라졌지만 기기가 키를 놓아주지 않았습니다. 기기 잠금을 푼 다음 Airhop을 다시 열어 삭제를 마무리하세요.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "문의하기",
@@ -2253,7 +2264,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "업데이트를 확인하는 중",
   "settings.version.up_to_date": "최신 버전을 사용 중입니다.",
   "settings.version.release_notes": "릴리스 노트 보기",
-  "settings.version.made_with": "만든 도구",
+  "settings.version.credit": "{heart}을 담아 {author} 제작",
+  "settings.version.heart_a11y": "사랑",
   "settings.version.number": "버전 {version}",
   "settings.version.update_to": "{version}(으)로 업데이트",
   "settings.version.update_to_a11y": "버전 {version}(으)로 업데이트",

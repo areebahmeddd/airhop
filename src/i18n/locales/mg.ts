@@ -125,6 +125,8 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_body":
     "Tokony hampiseho ireo teny ireo ihany koa ny findinao taloha. Raha teny hafa no asehony, na tsy misy mihitsy, dia foano.",
   "onboarding.transfer.confirm_cta": "Mitovy izy ireo",
+  "onboarding.transfer.waiting_old":
+    "Tsindrio ny “{action}” ao amin'ny findinao taloha",
   "onboarding.transfer.receiving": "Mandray {percent}%",
   "onboarding.transfer.saving": "Mitahiry eto amin'ity findy ity",
   "onboarding.transfer.releasing": "Mamarana amin'ny findinao taloha",
@@ -325,7 +327,7 @@ export const strings: Strings = {
   "chat.join.name_clash_body":
     "Efa ao amin'ny {name} hafa ianao. Marika fotsiny ny anaran'ny fantsona, ka nanokatra ny fantsonany manokana ity fanasana ity, ary tsy voakasika ilay nisy anao. Azonao ovaina anarana izy roa avy amin'ny mombamomba ny fantsona.",
   "chat.join.paste_hint":
-    "Apetaho ny fanasana manomboka amin'ny airhop://. Mety koa ny fitsindriana rohy; ity dia ho an'ny rohy tsy azo tsindriana.",
+    "Manomboka amin'ny airhop:// ny rohy Airhop. Apetaho eto izany, na hamarino ilay nofenoin'ny rohy notsindrianao.",
   "chat.join.key_note":
     "Mitondra ny lakile ny fanasana amin'ny fantsona manokana, ka avy hatrany ny fidirana ary tsy misy angatahina amin'olona.",
   "chat.join.offline_note":
@@ -456,13 +458,18 @@ export const strings: Strings = {
   "chat.transfer.progress": "{done} amin'ny {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} sisa",
+  "chat.transfer.title": "{status} {name}",
+  "chat.transfer.title_peer": "{status} {name} · {peer}",
+  "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "teboka",
   "chat.thread.cancel_transfer": "Foano ny {name}",
+  "chat.thread.hide_transfer": "Afeno ny fandrosoana",
+  "chat.thread.hide_transfer_hint": "Mbola ho tonga ihany ny rakitra",
   "chat.thread.queued_more": "{count} hafa miandry halefa",
   "chat.thread.across_bridge": "{count} any ampitan'ny tetezana",
   "chat.thread.bridged": "nampitaina",
   "chat.thread.invite_body":
-    "Ndao hiaraka amiko ao amin'ny {channel} ao amin'ny Airhop — hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
+    "Ndao hiaraka amiko ao amin'ny {channel} ao amin'ny Airhop: hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
   "chat.thread.go_back_unread": "Miverina, {count} tsy voavaky",
   "chat.thread.view_info": "Jereo ny mombamomba an'i {name}",
   "chat.thread.notices_new": "Filazana amin'ity fantsona ity, {count} vaovao",
@@ -621,7 +628,8 @@ export const strings: Strings = {
   "chat.media.gone_video": "Tsy eto amin'ity fitaovana ity ny horonan-tsary",
   "chat.media.gone_voice": "Tsy eto amin'ity fitaovana ity ny naoty feo",
   "chat.media.gone_file": "Tsy eto amin'ity fitaovana ity ny rakitra",
-  "chat.media.gone_note": "Tsy voatahiry eto amin'ity fitaovana ity intsony",
+  "chat.media.gone_note":
+    "Voafafa tamin'ity findy ity, na tsy nafindra avy amin'ny findinao taloha",
   "chat.media.ask_resend": "Angataho indray",
   "chat.media.resend_draft": "Afaka alefanao indray ve io {kind} io?",
   "chat.media.kind_photo": "sary",
@@ -1500,7 +1508,7 @@ export const strings: Strings = {
     "Manova sanda ho tapakila azonao atolotra amin'ny teboka akaiky amin'ny Bluetooth, na zaraina ho lahatsoratra. Miasa tsy misy Internet. Mijanona voatokana ny vola madinika mandra-panamafisanao fa tonga izy.",
   "wallet.explain.receive": "Mandray",
   "wallet.explain.receive_desc":
-    "Apetaho ny tapakila mba hampidirana azy. Rehefa an-tserasera dia takalozana any amin'ny mpamoaka avy hatrany izy, ka azo porofoina fa anao. Raha tsy misy Internet dia tehirizina ary marihina ho tsy voamarina mandra-panavaozanao.",
+    "Apetaho ny tapakila mba hampidirana azy. Rehefa an-tserasera dia takalozana any amin'ny mpamoaka avy hatrany izy, ka azo porofoina fa anao. Raha tsy misy Internet dia tehirizina tsy voamarina izy, ary hamarinina ho azy amin'ny mpamoaka rehefa tafaverina an-tserasera ianao.",
   "wallet.explain.zap": "Zap",
   "wallet.explain.zap_desc":
     "Mandoa amin'ny maha-izy azy Nostr. Raha mamoaka ny mombamomba ny nutzap NIP-61 izy, dia mihidy amin'ny lakiley ny ecash ka izy irery no afaka mandany azy. Raha tsia, dia miverina amin'ny hafatra mivantana voafono izy. Mila Internet.",
@@ -1582,6 +1590,8 @@ export const strings: Strings = {
     "Nolavin'ny mpamoaka ireto vola madinika ireto, ka tsy isaina intsony. Tehirizina eto ny tapakila raha te hamerina azy ianao.",
   "wallet.svc.coins_unredeemable":
     "Tsy azo vidina amin'ity mpamoaka ity ireto vola madinika ireto, ka tsy isaina intsony. Tehirizina eto ny tapakila raha te hamerina azy ianao.",
+  "wallet.svc.reclaim_refused":
+    "Tsy nety nandray indray ireo vola madinika tamin'ity fandefasana ity ny mpamoaka, ka tsy isaina intsony. Tehirizina eto ny tapakilany mba hadikanao.",
   "wallet.svc.locked_ours_offline":
     "Mihidy amin'ny kitapom-bolanao ity fandoavam-bola ity.",
   "wallet.svc.locked_ours_offline_body":
@@ -1712,6 +1722,8 @@ export const strings: Strings = {
     "Lany daty io kaody bitchat io. Angataho izy hanokatra indray ny QR-ny.",
   "contacts.scan.tampered":
     "Tsy mety ity kaody QR ity: tsy mifanaraka amin'ny lakiley ny ID-n'ny tebony. Mety novàna izy.",
+  "contacts.scan.key_conflict":
+    "Efa manana lakile hafa ho azy ianao, ka tsy nisy niova. Alaivo sary ny kaodiny rehefa mifanatrika aminy ianao mba hanoloana azy.",
   "contacts.scan.already_added": "Efa ao amin'ny fifandraisanao",
 
   // ---- Contacts: verifying by QR ----
@@ -1901,7 +1913,7 @@ export const strings: Strings = {
   "settings.general.reset": "Avereno ny fandrindrana",
   "settings.general.media_retention": "Tehirizo ny media mandritra ny",
   "settings.general.media_retention_desc":
-    "Fafana aorian'ny fotoana voafidy ny sary, ny horonan-tsary ary ny naoty feo",
+    "Fafana aorian'ny fotoana voafidy ny sary, ny horonan-tsary, ny naoty feo ary ny rakitra",
   "settings.general.media_retention_sheet":
     "Fidio hoe mandritra ny hafiriana no hijanonan'ny media eto amin'ity fitaovana ity. Tsy azo averina ny media voafafa.",
   "settings.general.retention_7_desc":
@@ -2303,7 +2315,7 @@ export const strings: Strings = {
   "settings.qr.save_failed_body": "Tsy voatahiry ny kaody QR. Andramo indray.",
   "settings.qr.share_message": "Ampio aho ao amin'ny Airhop",
   "settings.qr.share_body":
-    "Ampio aho ao amin'ny Airhop — hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
+    "Ampio aho ao amin'ny Airhop: hafatra manokana amin'ny harato, natao ho an'ny tsy misy Internet aloha.",
   "settings.qr.show_short": "Asehoy ny QR",
   "settings.qr.title": "Ny kaody QR-nao",
   "settings.qr.note":
@@ -2327,10 +2339,9 @@ export const strings: Strings = {
   "settings.wipe.in_progress": "Fafana",
   "settings.wipe.in_progress_body":
     "Ravana ny lakilenao, ny hafatrao ary ny rakitrao. Maharitra segondra vitsivitsy izany, ary vita ho azy na dia mihidy aza ny rindranasa.",
-  "settings.wipe.got_it": "Azoko",
   "settings.wipe.keys_failed": "Tsy voarava ny lakile",
   "settings.wipe.keys_failed_body":
-    "Lasa ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao, fa nandà tsy hamotsotra ny lakilenao ny fitaovana. Vahao ny fitaovana ary fafao indray.",
+    "Lasa ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao, fa nandà tsy hamotsotra ny lakilenao ny fitaovana. Vahao ny fitaovana, avy eo sokafy indray ny Airhop mba hamitana ny famafana.",
 
   // ---- Settings: help and feedback ----
   "settings.help.contact": "Mifandraisa aminay",
@@ -2381,7 +2392,8 @@ export const strings: Strings = {
   "settings.version.checking_title": "Mitady fanavaozana",
   "settings.version.up_to_date": "Amin'ny kinova farany ianao.",
   "settings.version.release_notes": "Jereo ny fanamarihana famoahana",
-  "settings.version.made_with": "Namboarina tamin'ny",
+  "settings.version.credit": "Noforonin'i {author} tamin'ny {heart}",
+  "settings.version.heart_a11y": "fitiavana",
   "settings.version.number": "Kinova {version}",
   "settings.version.update_to": "Havaozy ho {version}",
   "settings.version.update_to_a11y": "Havaozy ho kinova {version}",
