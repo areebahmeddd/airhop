@@ -670,7 +670,11 @@ function AppContent(): React.JSX.Element {
   const wantedLanguage = useWantedLanguage();
   const noticeShownFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!needsRelaunch(languagePreference)) return;
+    // Cleared once nothing waits, so going back and choosing it again re-asks.
+    if (!needsRelaunch(languagePreference)) {
+      noticeShownFor.current = null;
+      return;
+    }
     const target = resolvePreference(languagePreference);
     if (noticeShownFor.current === target) return;
     noticeShownFor.current = target;

@@ -219,13 +219,7 @@ function deviceTags(): string[] {
 let deviceLanguage: LanguageCode | null = null;
 
 function getDeviceLanguage(): LanguageCode {
-  if (deviceLanguage === null) {
-    try {
-      deviceLanguage = languageForTags(deviceTags());
-    } catch {
-      deviceLanguage = DEFAULT_LANGUAGE;
-    }
-  }
+  deviceLanguage ??= languageForTags(deviceTags());
   return deviceLanguage;
 }
 
