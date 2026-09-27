@@ -17,12 +17,14 @@
 // network.
 
 import {
+  HttpResponseError,
   isMintOperationError,
   MeltChangeError,
   Mint,
   NetworkError,
   OutputData,
   setGlobalRequestOptions,
+  UnknownKeysetError,
   Wallet,
   type CounterSource,
   type GetInfoResponse,
@@ -222,6 +224,31 @@ function isNetworkFailure(err: unknown): boolean {
     current = current instanceof Error ? current.cause : undefined;
   }
   return false;
+}
+
+// Whether a failure before any swap left says nothing about the coins: the
+// radio, a rate limit or a server error (an HTTP failure that is not a NUT
+// error), or a keyset the mint was never successfully asked about. Coins are
+// refused for good only on a NUT error or a local check the mint's own keys
+// disprove; after anything else they wait for the next try.
+function isMintSilent(err: unknown): boolean {
+  let current: unknown = err;
+  // Bounded so a cycle in `cause` cannot hang the error path.
+  for (let depth = 0; current != null && depth < 8; depth += 1) {
+    if (isMintOperationError(current)) return false;
+    if (current instanceof WalletError) {
+      return current.code === "offline" || current.code === "tor-blocked";
+    }
+    if (current instanceof HttpResponseError) return true;
+    if (current instanceof UnknownKeysetError && !current.refreshed) {
+      return true;
+    }
+    const cause = current instanceof Error ? current.cause : undefined;
+    // Several keysets' keys failing to load arrive as one error per keyset.
+    if (Array.isArray(cause)) return cause.some(isMintSilent);
+    current = cause;
+  }
+  return isNetworkFailure(err);
 }
 
 function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
@@ -1979,8 +2006,8 @@ type SwapOutcome =
   | { status: "pending" };
 
 // One staged swap of held coins into fresh proofs of our own. Throws only
-// when the mint is out of reach (or the wallet was wiped), which ends the
-// refresh: nothing after it could reach the mint either.
+// when the mint is out of reach or gives no answer (or the wallet was wiped),
+// which ends the refresh: nothing after it would fare better.
 //   refused  `prepareSwapToReceive` refused them locally (a keyset, unit or
 //            witness the freshly loaded keys disprove), or the mint refused
 //            outright. Either way the inputs are untouched.
@@ -2044,7 +2071,7 @@ async function swapIntoFreshProofs(
     const unreachable =
       walletErr.code === "offline" || walletErr.code === "tor-blocked";
     if (!staged) {
-      if (unreachable) throw walletErr;
+      if (isMintSilent(err)) throw walletErr;
       return { status: "refused", reason: t("wallet.svc.coins_unredeemable") };
     }
     if (isDefiniteRefusal(err)) {
@@ -3732,11 +3759,9 @@ async function redeemNutzapProofs(params: {
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
-    const unreachable =
-      walletErr.code === "offline" || walletErr.code === "tor-blocked";
     if (!staged) {
       // A keyset, unit or witness the mint's keys disprove.
-      if (!unreachable) settle();
+      if (!isMintSilent(err)) settle();
       throw walletErr;
     }
     if (isDefiniteRefusal(err)) {

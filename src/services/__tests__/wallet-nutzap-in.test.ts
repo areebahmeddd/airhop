@@ -281,6 +281,37 @@ describe("a nutzap we cannot take", () => {
   });
 });
 
+describe("a mint that gives no answer about a nutzap", () => {
+  it("leaves it to be tried again on a rate limit", async () => {
+    // Locked under a keyset rotated out, so preparing the swap fetches its
+    // keys, which the mint rate-limits.
+    const event = nutzapEvent(await lockedProofs(8, OUR_PUB));
+    fabric.rotateKeyset();
+    await addMint(fabric.url);
+    const inner = globalThis.fetch;
+    globalThis.fetch = ((input: unknown, init?: unknown) => {
+      if (String(input).startsWith(`${fabric.url}/v1/keys/`)) {
+        return Promise.resolve(new Response("", { status: 429 }));
+      }
+      return inner(input as RequestInfo, init as RequestInit);
+    }) as typeof globalThis.fetch;
+    try {
+      deliver(event);
+      await settle();
+    } finally {
+      globalThis.fetch = inner;
+    }
+    expect(settled(event.id)).toBe(false);
+    expect(held()).toBe(0);
+
+    // The relay replays it on the next subscription.
+    deliver(event);
+    await settle();
+    expect(held()).toBe(8);
+    expect(settled(event.id)).toBe(true);
+  });
+});
+
 describe("a burst of nutzaps", () => {
   it("is redeemed one at a time", async () => {
     const events: Event[] = [];

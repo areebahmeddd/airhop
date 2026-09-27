@@ -295,3 +295,42 @@ describe("settling a reclaim", () => {
     ).toBe(true);
   });
 });
+
+// Answers 429 to every request for one keyset's keys, as a rate-limited mint
+// does, until stopped.
+function rateLimitKeysetKeys(): () => void {
+  const inner = globalThis.fetch;
+  globalThis.fetch = ((input: unknown, init?: unknown) => {
+    if (String(input).startsWith(`${fabric.url}/v1/keys/`)) {
+      return Promise.resolve(new Response("", { status: 429 }));
+    }
+    return inner(input as RequestInfo, init as RequestInit);
+  }) as typeof globalThis.fetch;
+  return () => {
+    globalThis.fetch = inner;
+  };
+}
+
+describe("a mint that gives no answer about a receipt", () => {
+  it("leaves it pending on a rate limit, never refused", async () => {
+    // Coins from a keyset rotated out, so preparing the swap fetches its keys.
+    const token = await strangersToken(8);
+    fabric.rotateKeyset();
+    await addMint(fabric.url);
+    await receiveOffline(token);
+    const receipt = receiptOf(8)!;
+
+    const stop = rateLimitKeysetKeys();
+    try {
+      await expect(refreshAccount(fabric.url, UNIT)).rejects.toBeDefined();
+    } finally {
+      stop();
+    }
+    expect(row(receipt)?.status).toBe("pending");
+    expect(sum(held())).toBe(8);
+
+    const result = await refreshAccount(fabric.url, UNIT);
+    expect(result.receipts[receipt]).toBe("swapped");
+    expect(row(receipt)?.status).toBe("completed");
+  });
+});
