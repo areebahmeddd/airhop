@@ -3,8 +3,8 @@
 // The seam is `globalThis.fetch`, which is what @cashu/cashu-ts uses for every
 // call. Everything above the wire therefore runs for real: real blinding, real
 // unblinding, real proof selection, real fee arithmetic, real DLEQ
-// verification. The mint does real BDHKE too - it is only forty lines of
-// secp256k1 - because a mint that returned made-up signatures would make every
+// verification. The mint does real BDHKE too (it is only forty lines of
+// secp256k1), because a mint that returned made-up signatures would make every
 // DLEQ check pass or fail for the wrong reason, and DLEQ is precisely what
 // stands between a user and a forged token.
 //
@@ -72,15 +72,13 @@ function simInvoiceSats(request: string): number {
 // this wrong would make every signature verify against nothing.
 //
 // The separator is `Secp256k1_HashToCurve_Cashu_`, verified against the NUT-00
-// test vectors in mint-fabric.test.ts. This read `HashToCurvePoint_` for a long
-// time and nothing caught it, because the only consumer was `yFor`, which
-// compares the fabric's own Y against the fabric's own Y: a double-spend was
-// still refused, so W03 passed on a hash the rest of the world disagreed with.
-// What it silently broke was NUT-07 `checkstate`, where the CLIENT computes Y
-// with cashu-ts. Every proof therefore came back UNSPENT no matter what, so any
-// scenario relying on the mint reporting a spent proof - reconcile settling a
-// send, refreshAccount dropping spent proofs - could not have failed if it were
-// wrong, and could not have passed if it were right.
+// test vectors in mint-fabric.test.ts. The fabric's own double-spend check
+// cannot catch a wrong one, since `yFor` compares the fabric's Y against the
+// fabric's Y. NUT-07 `checkstate` can, because the CLIENT computes Y with
+// cashu-ts: under a wrong separator every proof comes back UNSPENT, and any
+// scenario relying on the mint reporting a spent proof (reconcile settling a
+// send, refreshAccount dropping spent proofs) could neither fail when wrong nor
+// pass when right.
 const DOMAIN = new TextEncoder().encode("Secp256k1_HashToCurve_Cashu_");
 
 function hashToCurve(
@@ -112,8 +110,8 @@ export interface MintConditions {
   // returning the outputs. The nastiest real failure: value has moved and the
   // client does not know where.
   swapVanishes: boolean;
-  // The mint completes the swap in full - inputs spent, outputs signed,
-  // response cached - and then the answer never reaches the wallet. Distinct
+  // The mint completes the swap in full (inputs spent, outputs signed,
+  // response cached), and then the answer never reaches the wallet. Distinct
   // from `swapVanishes` in the one way that matters: there IS a successful
   // response, so a NUT-19 mint can hand the same one back to an identical
   // retry. This is the ordinary shape of the failure (a dropped connection, an
@@ -159,7 +157,7 @@ export interface MintConditions {
   // The mint pays the invoice, marks the inputs spent, and then the response
   // never reaches the wallet. The worst melt failure and the realistic one: a
   // dropped connection at exactly the wrong moment. The wallet cannot know
-  // whether it paid, so it must not guess in either direction - releasing the
+  // whether it paid, so it must not guess in either direction: releasing the
   // proofs would double-count money that is gone, dropping them would throw away
   // the unused routing reserve the mint is holding for it.
   meltVanishes: boolean;
@@ -900,9 +898,9 @@ export class MintFabric {
     //
     // NOT merely the unused reserve. Those differ whenever the wallet could not
     // assemble inputs summing exactly to amount + reserve, which is the normal
-    // case for a balance made of powers of two. Getting this wrong made the
+    // case for a balance made of powers of two. Getting this wrong makes the
     // fabric quietly pocket the difference, and a wallet losing money to
-    // over-payment would have looked like a passing test.
+    // over-payment looks like a passing test.
     const reserve = this.conditions.meltFeeReserve;
     const unused = Math.max(
       0,
@@ -945,7 +943,7 @@ export class MintFabric {
     if (quote !== undefined) quote.change = change;
 
     if (this.conditions.meltVanishes) {
-      // Paid, inputs burned, change signed - and the wallet hears nothing. It
+      // Paid, inputs burned, change signed, and the wallet hears nothing. It
       // must not guess. Only the quote can tell it what happened.
       this.world.say("MINT_MELT_VANISHED", "paid, but the answer never landed");
       throw new TypeError("Network request failed");

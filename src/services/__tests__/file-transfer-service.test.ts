@@ -114,9 +114,9 @@ const META = {
   durationMs: 0,
 };
 
-// The transport now answers whether it ACCEPTED the packet, and the pacer waits
-// for that answer before offering the next fragment. `accepted` lets a test play
-// a radio that is refusing writes, which is the case that used to lose files.
+// The transport answers whether it ACCEPTED the packet, and the pacer waits for
+// that answer before offering the next fragment. `accepted` lets a test play a
+// radio that is refusing writes, the case where a file can be lost.
 function makeService(accepted = true, usesBleRadio?: () => boolean) {
   const broadcast = jest.fn().mockResolvedValue(accepted);
   const unicast = jest.fn().mockResolvedValue(accepted);
@@ -164,15 +164,11 @@ describe("outbound pacing", () => {
     return f;
   })();
 
-  // Fragment spacing exists for the Bluetooth radio, which drops writes handed
-  // over faster than it can make them. A link that is not a radio needs no gap,
-  // and pacing one anyway was the whole reason the WiFi fast path moved a file
-  // no faster than Bluetooth did.
-  // A second transfer starting while the first is mid-write used to open a
+  // A second transfer starting while the first is mid-write must not open a
   // parallel drain loop: `drainTimer` is cleared before the transport is
-  // awaited, so nothing stopped a fresh timer being set in that window. Two
-  // loops on one queue hand the radio fragments at twice the spacing, which is
-  // exactly the loss the spacing prevents.
+  // awaited, so a fresh timer could be set in that window. Two loops on one
+  // queue hand the radio fragments at twice the spacing, which is exactly the
+  // loss the spacing prevents.
   it("does not open a second drain while one is with the transport", async () => {
     // Collected in an array rather than a single binding: TypeScript cannot see
     // that a promise executor runs synchronously, so a plain `let` narrows to
@@ -210,6 +206,10 @@ describe("outbound pacing", () => {
     expect(unicast.mock.calls.length).toBeGreaterThan(1);
   });
 
+  // Fragment spacing exists for the Bluetooth radio, which drops writes handed
+  // over faster than it can make them. A link that is not a radio needs no gap,
+  // and pacing one anyway would make the WiFi fast path no faster than
+  // Bluetooth.
   describe("pacing by transport", () => {
     it("waits the Bluetooth gap when the path is Bluetooth", async () => {
       const { service, unicast } = makeService(true, () => true);
@@ -253,7 +253,7 @@ describe("outbound pacing", () => {
 
     service.sendBytes(FILE, META, "#test");
 
-    // The burst is the bug: nothing should have hit the transport yet.
+    // No burst: nothing should have hit the transport yet.
     expect(broadcast).not.toHaveBeenCalled();
     expect(service.pendingCount).toBeGreaterThan(1);
   });
@@ -335,11 +335,11 @@ describe("outbound pacing", () => {
   });
 });
 
-// The bug these guard: two phones sending a photo to each other at the same
-// time. The fragment spacing already sits at what BLE carries one-way, so the
-// second direction fills the stack's write queue and it starts refusing. A refusal
-// that is dropped is a fragment the receiver can never ask for, so its stream
-// stalls at a couple of percent and dies on the idle timeout, while the sender
+// Two phones sending a photo to each other at the same time. The fragment
+// spacing already sits at what BLE carries one-way, so the second direction
+// fills the stack's write queue and it starts refusing. A refusal that is
+// dropped is a fragment the receiver can never ask for, so its stream stalls
+// at a couple of percent and dies on the idle timeout, while the sender
 // marches to 100% and reports "sent". Nothing on this wire acknowledges a
 // fragment, so holding on to a refused one is the only thing that can save it.
 describe("radio backpressure", () => {

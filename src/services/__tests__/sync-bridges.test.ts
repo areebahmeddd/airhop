@@ -1,7 +1,7 @@
 // scripts/sync-bridges.js writes src/data/bridges.ts from Moat's answer, and
 // the file joins its entries with newlines before Arti reads them. An entry
 // that is not exactly one line would split into two bridges at runtime, and
-// only the first would have passed the token checks, so the grammar check
+// only the first would pass the token checks, so the grammar check
 // has to hold for every entry before anything else is looked at.
 
 import { OBFS4_BRIDGE_LINES, SNOWFLAKE_BRIDGE_LINES } from "@data/bridges";

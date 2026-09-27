@@ -5,9 +5,9 @@
 //
 // The wipe most likely to fail is the one that matters. Items are stored
 // AFTER_FIRST_UNLOCK, so a phone that has booted but not been unlocked refuses
-// both deletes and reads - which is exactly the seizure the gesture exists for.
-// Nothing used to try again: the wipe failed once, said so in an alert, and the
-// keys stayed for the life of the device.
+// both deletes and reads, which is exactly the seizure the gesture exists for.
+// Without a retry, the wipe fails once, says so in an alert, and the keys stay
+// for the life of the device.
 //
 // The properties that matter:
 //   * A launch with no identity deletes the secrets that no longer have an
@@ -19,7 +19,7 @@
 //     keychain that refuses everything is unreadable, not dirty, and saying
 //     otherwise would put an alarm about data at rest in front of somebody
 //     whose phone is merely locked.
-//   * A first install - the overwhelmingly common case - is a silent no-op.
+//   * A first install, the overwhelmingly common case, is a silent no-op.
 
 const mockDelete = jest.fn<Promise<void>, [string]>();
 const mockGet = jest.fn<Promise<string | null>, [string]>();
@@ -137,7 +137,7 @@ describe("sweepOrphanedSecrets", () => {
   });
 
   // The locked-phone case. Everything refuses, so we know nothing about what is
-  // on disk - and an alarm we cannot substantiate is the wrong end of the
+  // on disk, and an alarm we cannot substantiate is the wrong end of the
   // trade: it would tell someone their wipe failed when it may well not have.
   it("stays quiet when the keychain refuses reads as well as deletes", async () => {
     mockDelete.mockRejectedValue(new Error("keystore locked"));

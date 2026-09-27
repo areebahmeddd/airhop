@@ -166,7 +166,7 @@ const FRAME_INTERVAL_MS = 64;
 // different emitters means frames are emitted into a listener list that is
 // permanently empty, and the microphone silently produces nothing. Handing the
 // emit function in from inside `jest.isolateModules` removes the ambiguity
-// entirely - the caller there is provably in the phone's own registry.
+// entirely: the caller there is provably in the phone's own registry.
 export function createNativeVoiceMock(): {
   module: unknown;
   record: VoiceRecord;

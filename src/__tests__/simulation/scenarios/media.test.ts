@@ -258,9 +258,8 @@ test("M10 a photo at the send budget arrives, every frame legal", async () => {
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
 
-  // The whole media tier used to top out at 40 KB, which is 88 fragments. Nothing
-  // exercised the hundreds-of-fragments path where a sizing mistake or a stalled
-  // assembly actually shows up.
+  // A full-size photo is hundreds of fragments, the path where a sizing mistake
+  // or a stalled assembly actually shows up. 40 KB is only 88.
   const photo = media.jpeg(MAX_SENT_IMAGE_BYTES);
   const accepted = alice.sendAttachment(channel, photo, {
     type: "image",
@@ -319,8 +318,8 @@ test("M02 three phones sending photos to one receiver at the same time", async (
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
 
-  // All three start on the same tick. This is the case that used to lose files
-  // before the pacer learned to back off on a refused write.
+  // All three start on the same tick, so the radio refuses writes and the
+  // pacer has to back off rather than lose a file.
   const sent = new Map<string, Uint8Array>();
   for (const sender of senders) {
     const bytes = media.jpeg(20_000 + sender.id.charCodeAt(0) * 7);
@@ -477,8 +476,8 @@ test("M04 a voice note is delivered as a playable file", async () => {
 });
 
 test("M08 an attachment cannot be forged, misrouted, or aimed at a room you never joined", async () => {
-  // Attachments carry the same authority as text - they render in a thread with
-  // a sender's name on them - so they need the same three rules text has.
+  // Attachments carry the same authority as text (they render in a thread with
+  // a sender's name on them), so they need the same three rules text has.
   const s = (scenario = new Scenario({
     id: "M08",
     title: "attachment forgery, confused deputy, and channel injection",
@@ -512,8 +511,8 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
     }
   });
 
-  // 1. Unsigned, claiming alice. This is the one that used to work: nothing on
-  //    the attachment path looked at the signature at all.
+  // 1. Unsigned, claiming alice. Only a signature check on the attachment path
+  //    itself stops it.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -554,8 +553,8 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
 
   // 3. Confused deputy: correctly signed by mallory, but addressed to ALICE.
   //    Bob is only a relay here and must forward without ever rendering it.
-  //    Before the fix this landed in bob's thread with mallory, which is how a
-  //    private photo leaked to every node within seven hops of either end.
+  //    Rendered, it would land in bob's thread with mallory, which is how a
+  //    private photo would leak to every node within seven hops of either end.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -580,8 +579,8 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   );
 
   // 4. Channel injection: a genuinely signed broadcast from mallory tagged for
-  //    a room bob never joined. The tag used to be honoured verbatim, and the
-  //    room was created on the spot to hold it.
+  //    a room bob never joined. Honouring the tag verbatim would create the
+  //    room on the spot to hold it.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -922,14 +921,14 @@ test("M06 talking while a file is in flight starves neither", async () => {
 });
 
 test("M09 a private photo is sealed in the session, not signed in the open", async () => {
-  // What this is really about: a DM attachment used to cross the mesh as a
-  // signed FILE_TRANSFER. Signed means a relay cannot forge it - it does NOT
-  // mean a relay cannot read it, and a private photo used to be legible to
-  // every node it passed through. bitchat now classifies that wire form as the
-  // legacy migration fallback and has scheduled its removal.
+  // What this is really about: a DM attachment sent as a signed FILE_TRANSFER.
+  // Signed means a relay cannot forge it; it does NOT mean a relay cannot read
+  // it, so a private photo in that form is legible to every node it passes
+  // through. bitchat classifies that wire form as the legacy migration
+  // fallback and has scheduled its removal.
   //
   // The seal is gated on the recipient having proven capability bit 8 inside a
-  // Noise session (payload 0x21), never on the bit it announced - an announce
+  // Noise session (payload 0x21), never on the bit it announced: an announce
   // is self-signed with a key it carries itself, so gating on that would let
   // anyone in radio range clear the bit for a peer and force every attachment
   // back into the clear.

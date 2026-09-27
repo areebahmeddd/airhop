@@ -225,9 +225,9 @@ describe("enabling Tor on iOS", () => {
     const result = await setTorRouting(true);
 
     // The deadline is a UI answer, not a verdict on the circuit. Arti polls for
-    // longer than this wait allows, so stopping it here used to kill a circuit
-    // that was nearly up, and reverting the socket would have put the user back
-    // on the clear net they had just opted out of. Both are left alone.
+    // longer than this wait allows, so stopping it here would kill a circuit
+    // that is nearly up, and reverting the socket would put the user back on
+    // the clear net they had just opted out of. Both are left alone.
     expect(result).toEqual({ ok: false, reason: "timeout" });
     expect(mockStopTor).not.toHaveBeenCalled();
     // Claiming Tor here would be the whole failure this path exists to avoid.
@@ -407,10 +407,10 @@ describe("startup priming on iOS", () => {
     primeTorRoutingOnStartup();
     await Promise.resolve();
 
-    // The claim drives the "internet traffic onion routed" banner. Asserting it
-    // here asserted it before a single circuit had formed, which is true within
-    // seconds on a good network and never true at all on one that blocks Tor,
-    // where it used to sit green for the whole session.
+    // The claim drives the "internet traffic onion routed" banner. Raising it
+    // here would assert it before a single circuit has formed, which is true
+    // within seconds on a good network and never true at all on one that blocks
+    // Tor, where the banner would sit green for the whole session.
     expect(isTorRoutingActive()).toBe(false);
   });
 
@@ -431,9 +431,9 @@ describe("startup priming on iOS", () => {
     await Promise.resolve();
 
     // Neither ready nor starting, with the preference on, is what a network
-    // that blocks Tor looks like. The native side now emits this terminally;
-    // before, the poll loop simply ended and left `isStarting` true forever, so
-    // this branch was unreachable and the banner was dead code.
+    // that blocks Tor looks like. The native side emits this terminally; a poll
+    // loop that simply ended would leave `isStarting` true forever, and this
+    // branch and its banner would be unreachable.
     emitStatus({ isReady: false, isStarting: false });
 
     expect(isTorRoutingActive()).toBe(false);
@@ -443,7 +443,7 @@ describe("startup priming on iOS", () => {
 
 // The live bootstrap signal, which is what iOS has instead of Android's probe.
 //
-// bitchat/ios reports the same three moments as system messages in
+// bitchat-ios reports the same three moments as system messages in
 // ChatViewModel+Tor: starting, started, and "tor could not connect - this
 // network may be blocking it. mesh messaging still works". Airhop's surface is
 // the Mesh banner, but the states and the honesty are the same.

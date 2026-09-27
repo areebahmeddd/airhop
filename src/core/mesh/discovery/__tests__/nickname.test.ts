@@ -1,9 +1,9 @@
 /**
  * @jest-environment node
  */
-// Nickname canonicalization. The bug these guard against is silent: two valid
-// encodings of one visible name compare unequal, so a mention never fires and
-// one person occupies two rows of a participant list.
+// Nickname canonicalization. The failure these guard against is silent: two
+// valid encodings of one visible name compare unequal, so a mention never fires
+// and one person occupies two rows of a participant list.
 import {
   decodeAnnouncePayload,
   encodeAnnouncePayload,

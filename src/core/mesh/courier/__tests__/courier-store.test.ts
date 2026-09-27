@@ -280,7 +280,7 @@ describe("CourierStore handover", () => {
     expect(store.size).toBe(0);
   });
 
-  // A refused write - a full GATT queue at the busiest moment of a link-up -
+  // A refused write (a full GATT queue at the busiest moment of a link-up)
   // must not destroy the only copy this device holds.
   test("keeps the envelope when the transport refuses it", () => {
     const store = freshStore();
@@ -412,10 +412,10 @@ describe("CourierStore spray", () => {
 
   test("hands an envelope to each peer once, not once per announce", () => {
     // Spraying is driven by announces, which arrive continuously from the same
-    // neighbours. Without a per-peer record the budget was spent re-handing the
-    // same copy to someone who already held it, so an envelope decayed
-    // 4 -> 2 -> 1 without ever reaching a second carrier - the opposite of what
-    // spray-and-wait is for.
+    // neighbours. Without a per-peer record the budget would be spent
+    // re-handing the same copy to someone who already held it, so an envelope
+    // would decay 4 -> 2 -> 1 without ever reaching a second carrier: the
+    // opposite of what spray-and-wait is for.
     const store = freshStore();
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x11);

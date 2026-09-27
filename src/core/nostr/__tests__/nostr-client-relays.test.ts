@@ -1,15 +1,14 @@
 // Which relays NostrClient actually contacts.
 //
-// The bug these cover: a custom relay added while geo-relay discovery was on
-// (the default) was never contacted. mergeGeoRelays appends custom relays after
-// the cell's interop set, and NostrClient re-capped every per-call relay list to
-// the size of the default DM pool (5). A geo set is already exactly 5, so the
-// cap trimmed precisely the user's entries. The settings row read "1 added" and
-// nothing ever opened a socket to it.
+// A custom relay added while geo-relay discovery is on (the default) must be
+// contacted. mergeGeoRelays appends custom relays after the cell's interop set,
+// which is already exactly 5, the size of the default DM pool, so re-capping a
+// per-call relay list to that size trims precisely the user's entries: the
+// settings row reads "1 added" and nothing ever opens a socket to it.
 //
-// mergeGeoRelays was unit-tested and correct (see geo-relay.test.ts, "interop
-// relays never dropped"); the contract broke one layer down. So these assert the
-// relays NostrClient targets, not the ones the caller asked for.
+// mergeGeoRelays is unit-tested on its own (see geo-relay.test.ts, "interop
+// relays never dropped"), but the contract can break one layer down. So these
+// assert the relays NostrClient targets, not the ones the caller asked for.
 
 import type { Event } from "nostr-tools";
 import {
@@ -82,7 +81,7 @@ describe("NostrClient relay targeting", () => {
 
     expect(mockPublishTargets).toHaveLength(1);
     const targets = mockPublishTargets[0];
-    // The regression: this used to be absent, trimmed off the tail.
+    // The one a re-cap would trim off the tail.
     expect(targets).toContain(CUSTOM[0]);
     // And it must not have come at the cost of the rendezvous set.
     for (const relay of NEAREST) expect(targets).toContain(relay);

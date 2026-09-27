@@ -1,16 +1,11 @@
 // Inbound relay traffic must never hold the JS thread.
 //
-// The field report these cover: a fresh install with WiFi on froze on the Mesh
-// screen. The radar's sonar loop pulsed once and stopped, the tab bar answered
-// nothing, and a relaunch sat on a black screen - all of which are what a
-// blocked JS thread looks like from the outside. With WiFi off the same build
-// was fine, because with no relay reachable none of the traffic arrived.
-//
-// Two things caused it, and both are fixed separately. The volume was a
-// deletion filter asking for everything a relay held (geohash-channel-service).
-// The shape was this: handlers ran inline on the socket callback, so however
-// much arrived at once ran as one unbroken block of JS with no frame in
-// between.
+// A blocked JS thread looks, from the outside, like a Mesh screen whose sonar
+// pulses once and stops, a tab bar that answers nothing, and a relaunch that
+// sits on a black screen. Two things decide whether relay traffic can do that:
+// its volume (geohash-channel-service asks for only what it needs) and its
+// shape. Handlers run inline on the socket callback would turn however much
+// arrives at once into one unbroken block of JS with no frame in between.
 //
 // These assert the shape. The properties that matter are that nothing is
 // dispatched synchronously from the socket callback, that a burst is spread

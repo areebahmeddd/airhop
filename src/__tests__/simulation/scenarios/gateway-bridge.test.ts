@@ -3,19 +3,16 @@
  */
 // The internet gateway and the mesh bridge, tested for real.
 //
-// Both features were previously "covered" by scenarios that could not fail: one
-// never sent a message, and the other's key assertion passed when nothing
-// crossed. The cause was the harness, not the app - every simulation file
-// mocked `expo-location` as `{}`, so the named location channels resolved to no
-// geohash cell, so there was nothing to uplink and nowhere to meet. With phones
-// actually placed somewhere (harness/location-fabric.ts) both features come
-// alive and can be held to account.
+// Both need phones actually placed somewhere (harness/location-fabric.ts).
+// With `expo-location` mocked as `{}`, a named location channel resolves to no
+// geohash cell, so there is nothing to uplink and nowhere to meet, and a
+// scenario here would pass with nothing crossing.
 //
 // The distinction that matters throughout: a phone with no internet is NOT a
 // phone with the internet switched off. Turning it off in settings tears down
 // the Nostr transport entirely, and with it the geohash service that asks a
 // gateway for help. The real user is someone whose relays are simply
-// unreachable - no signal, a dead hotel wifi - which is `relay.setOffline`.
+// unreachable (no signal, a dead hotel wifi), which is `relay.setOffline`.
 
 jest.mock("expo-location", () =>
   (
@@ -148,10 +145,9 @@ async function settleIn(s: Scenario, ms = 30_000): Promise<void> {
 // to a real cell.
 //
 // This is setup, not a workaround. A location channel IS a geohash cell, and a
-// phone that has not got a fix yet has no cell to post to - its message stays a
+// phone that has not got a fix yet has no cell to post to: its message stays a
 // plain mesh broadcast and never reaches the gateway or bridge path at all.
-// Racing that is how the earlier versions of these scenarios ended up asserting
-// nothing.
+// Racing that leaves a scenario asserting nothing.
 async function cellsResolved(
   s: Scenario,
   devices: SimDevice[],
@@ -189,7 +185,7 @@ test("N01 a phone with no signal reaches its city channel through a neighbour", 
   }
   s.track(...cast);
 
-  // The stranded phone has no signal. Not "internet off" - no signal.
+  // The stranded phone has no signal. Not "internet off": no signal.
   relay.setOffline("stranded", true);
   for (const d of cast) d.launch();
 
@@ -434,13 +430,13 @@ test("N04 a gateway that loses its connection mid-conversation degrades quietly"
   //
   // The two properties above are the ones that matter and they hold every run:
   // a message gets out while a carrier has signal, and stops going out the
-  // moment none does - it is never published by a gateway that cannot reach a
+  // moment none does: it is never published by a gateway that cannot reach a
   // relay. What is timing-dependent is how quickly the world returns to normal
   // afterwards: the pool reconnects on its own backoff, the geohash
   // subscription re-opens, and the local mesh copy depends on where the flood
   // happened to be when the connection dropped. Asserting a deadline on that
-  // made this scenario flaky depending on which test ran before it, which is
-  // exactly the kind of red that teaches nothing.
+  // would make this scenario flaky depending on which test ran before it, which
+  // is exactly the kind of red that teaches nothing.
   relay.setOffline("gateway", false);
   const reconnected = await waitForCoarse(
     s.world,
@@ -775,9 +771,9 @@ test.each(COMBINED_ROLE_SEEDS)(
 
     // Island A: a phone that both bridges AND acts as a gateway, plus a phone
     // with no signal at all. Island B: an ordinary bridged island.
-    // Deliberately ONE phone carrying both roles. That is the realistic case -
-    // whoever has signal in a group ends up being both the bridge and the
-    // gateway - and it is the combination worth proving, not just each half.
+    // Deliberately ONE phone carrying both roles. That is the realistic case
+    // (whoever has signal in a group ends up being both the bridge and the
+    // gateway), and it is the combination worth proving, not just each half.
     const hub = SimDevice.create(
       s.world,
       { ...android("hub", 11), bridgeEnabled: true, gatewayEnabled: true },
@@ -851,8 +847,8 @@ test.each(COMBINED_ROLE_SEEDS)(
         `cell events=${relay.eventsOfKind(KIND_GEOHASH_MESSAGE).length}`,
     );
 
-    // The other half of the old failure, and the easier one to lose again:
-    // carrying for someone must never cost you your own copy.
+    // The other half, and the easier one to lose: carrying for someone must
+    // never cost you your own copy.
     s.check(
       "the phone doing both jobs still has the message on its own timeline",
       hub.texts(BRIDGE_CHANNEL).includes("from the phone with no signal"),

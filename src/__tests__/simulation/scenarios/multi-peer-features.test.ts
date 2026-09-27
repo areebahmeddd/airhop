@@ -86,7 +86,7 @@ test("F01 a private group is unreadable to the phone standing next to it", async
   );
 
   // No prior conversation. Grouping people you have never messaged is the
-  // ordinary case - you pick them off the radar - and the invite has to survive
+  // ordinary case (you pick them off the radar), and the invite has to survive
   // the handshake it triggers.
   // Dave is in the room and is NOT invited. That is the whole point.
   const groupID = alice.createGroup("south gate crew", [
@@ -249,8 +249,8 @@ test("F03 a message for someone out of range is carried by a third phone", async
 
   const status = alice.send(`dm:${bob.peerID}`, "meet me at the north gate");
   // Alice still has the carrier as a neighbour, so the DM is FLOODED at TTL 7
-  // and reported "sent". That is honest about what happened - it left the
-  // device - but it is not a delivery receipt, and bob is not within those
+  // and reported "sent". That is honest about what happened (it left the
+  // device), but it is not a delivery receipt, and bob is not within those
   // seven hops. What must not happen is the message being forgotten on the
   // strength of that optimism.
   s.check(
@@ -291,23 +291,19 @@ test("F03 a message for someone out of range is carried by a third phone", async
     240_000,
   );
 
-  // This is the acceptance test for the first-contact delivery fix. A DM to a
-  // peer with no Noise session used to report "sent" while the text lived only
-  // in an in-memory handshake slot, so if they walked away before answering it
-  // was gone. It is now queued until something acknowledges it.
   // The acceptance test for first-contact delivery.
   //
-  // Two faults used to make this message disappear for good. Starting a Noise
-  // handshake reported "sent" while the text lived only in an in-memory slot a
-  // 30s reaper could discard. And session completion released queued traffic
-  // BEFORE msg3 reached the far side, so it was decrypted by nobody and dropped
-  // with nothing to say so.
+  // Two faults would make this message disappear for good: reporting "sent"
+  // while the text lives only in an in-memory handshake slot a 30s reaper can
+  // discard, and releasing queued traffic on session completion BEFORE msg3
+  // reaches the far side, where nobody can decrypt it and it is dropped with
+  // nothing to say so.
   //
   // What is asserted is the invariant, not the latency: the message is either
   // delivered, or still queued and owed. It is never silently gone. Delivery
-  // itself can take a couple of minutes of mesh time - a handshake started
+  // itself can take a couple of minutes of mesh time (a handshake started
   // while the peer was unreachable is only abandoned after 30s, and the outbox
-  // sweep runs every 45s - so pinning a deadline here would be asserting an
+  // sweep runs every 45s), so pinning a deadline here would be asserting an
   // immediacy the design never promised.
   const stillOwed = alice.outboxSize() > 0;
   s.check(
@@ -375,7 +371,7 @@ test("F04 Tor refuses to turn on rather than quietly using the clear net", async
   await s.world.advance(5_000);
 
   // The security property is that Tor never reports ON into the clear net.
-  // Either the claim stays down, or it is genuinely routing - never "on" while
+  // Either the claim stays down, or it is genuinely routing: never "on" while
   // traffic goes out unprotected.
   const torActive = phone.meshState().torActive === true;
   s.check(

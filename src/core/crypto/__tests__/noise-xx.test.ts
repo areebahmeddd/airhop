@@ -245,21 +245,21 @@ describe("replay window", () => {
 // have to hold together, and a change to any one silently breaks or weakens
 // every Airhop-to-Airhop DM, so all three are pinned here.
 //
-// The middle one is the reason this block exists in its current form. The seed
-// used to come from `handshakeHash`, on the reasoning that Noise XX mixes both
-// parties' ephemerals into it. It does - but it mixes the ephemeral PUBLIC keys,
-// via mixHash, while the secret DH outputs go into the chaining key via mixKey.
-// Every input to the hash is a byte that went over the air, so an observer who
-// captured the handshake could recompute the root key outright. The old tests
-// checked that the seed was not derivable from the STATIC keys and never checked
-// the transcript itself, which is exactly how it survived.
+// The middle one is the easiest to get wrong. `handshakeHash` looks like a
+// seed, since Noise XX mixes both parties' ephemerals into it. It does, but it
+// mixes the ephemeral PUBLIC keys, via mixHash, while the secret DH outputs go
+// into the chaining key via mixKey. Every input to the hash is a byte that went
+// over the air, so a seed taken from it lets an observer who captured the
+// handshake recompute the root key outright. Checking only that the seed is not
+// derivable from the STATIC keys cannot catch that; the transcript itself has
+// to be checked.
 // The rule that stops a completed handshake being an identity claim.
 //
 // A Noise XX handshake proves possession of a static key. It does NOT prove the
 // peer ID in the packet header belongs to that key, because the header is
 // unauthenticated. mesh-service closes that gap with sessionBindsTo: a session
 // is only filed under a peer ID when SHA-256 of the authenticated remote static
-// key derives to it. Preimage resistance is what makes it work - nobody can
+// key derives to it. Preimage resistance is what makes it work: nobody can
 // produce a key that hashes to somebody else's ID.
 //
 // Pinned here because the check is one `if` guarding two handshake paths, and
@@ -353,8 +353,8 @@ describe("Double Ratchet seeding", () => {
 
     expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(i.handshakeHash));
 
-    // Reconstruct the transcript hash the way an eavesdropper would - protocol
-    // name padded to 32, empty prologue, then each message verbatim - and
+    // Reconstruct the transcript hash the way an eavesdropper would (protocol
+    // name padded to 32, empty prologue, then each message verbatim), and
     // confirm it reproduces the PUBLIC hash but not the seed.
     const name = new TextEncoder().encode("Noise_XX_25519_ChaChaPoly_SHA256");
     let h = new Uint8Array(32);
@@ -369,7 +369,7 @@ describe("Double Ratchet seeding", () => {
 
     // The observer's reconstruction is not asserted equal to handshakeHash here
     // (the real transcript absorbs each message in sub-parts), but it IS built
-    // purely from public bytes - and the seed must not be reachable from them.
+    // purely from public bytes, and the seed must not be reachable from them.
     expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(h));
     expect(bytesToHex(i.exporterSecret)).not.toBe(
       bytesToHex(hkdf(sha256, h, undefined, INFO, 32)),
@@ -411,7 +411,7 @@ describe("Double Ratchet seeding", () => {
   test("asking for a third split output leaves the transport keys unchanged", () => {
     // The exporter secret is the third HKDF output of the same split that makes
     // the Noise transport keys. HKDF chains block N from block N-1, so k1/k2 are
-    // identical to a two-output split - but that is a property of the KDF, not
+    // identical to a two-output split, but that is a property of the KDF, not
     // something the type system enforces, and breaking it would silently end
     // transport interop with bitchat. A round-trip pins it.
     const iKeys = makeKeypair();

@@ -1,7 +1,7 @@
 // Reading bitchat's verification QR.
 //
-// The fixtures are built the way bitchat builds them - canonical bytes signed
-// with the Ed25519 key the QR names - so a change to either side's field order
+// The fixtures are built the way bitchat builds them (canonical bytes signed
+// with the Ed25519 key the QR names), so a change to either side's field order
 // or length prefixing shows up here as a signature that no longer verifies.
 
 import { ed25519 } from "@noble/curves/ed25519.js";

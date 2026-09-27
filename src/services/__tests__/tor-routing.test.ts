@@ -1,4 +1,4 @@
-// The Android half of the Tor decision, now that Airhop owns Arti there too.
+// The Android half of the Tor decision, where Airhop owns Arti too.
 //
 // A separate file from tor-routing-ios.test.ts because `Platform.OS` is read at
 // module import time, so one registry cannot hold both platforms. The model

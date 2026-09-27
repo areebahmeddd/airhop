@@ -340,8 +340,8 @@ describe("computeMeshBanners", () => {
   });
 
   // The battery-saver note is informational, not a fault: the mesh is working,
-  // just looking around less often. It exists because the visible symptom - a
-  // peer taking half a minute to appear - is otherwise indistinguishable from
+  // just looking around less often. It exists because the visible symptom (a
+  // peer taking half a minute to appear) is otherwise indistinguishable from
   // the app being broken.
   it("explains a reduced scan the user would otherwise read as broken", () => {
     const banners = computeMeshBanners({ ...HEALTHY, powerSaving: true });
@@ -349,7 +349,7 @@ describe("computeMeshBanners", () => {
     expect(note).toBeDefined();
     // Muted, not amber: nothing is wrong.
     expect(note?.tone).toBe("neutral");
-    // No button - charging the phone is the fix, and it clears itself.
+    // No button: charging the phone is the fix, and it clears itself.
     expect(note?.action).toBeUndefined();
     // Not dismissible either: it is transient, so hiding it would only mean
     // hiding it again next time.
@@ -404,7 +404,7 @@ describe("computeMeshBanners", () => {
 // A wrong clock is the one failure the freshness window can cause, and it is
 // completely silent from inside the app: every packet is held to a two-minute
 // window, so a drifted phone rejects everyone and is rejected by everyone. The
-// radio is fine, the links are up, and the room is empty - which reads as
+// radio is fine, the links are up, and the room is empty, which reads as
 // "nobody is here" rather than "your clock is wrong".
 describe("clock skew banner", () => {
   it("says what is wrong and what to do about it", () => {

@@ -152,9 +152,9 @@ describe("expiry", () => {
 
     const dropped = state().evictExpired(now);
 
-    // Eviction used to be silent, which left the sender's message under a
-    // "waiting to send" hourglass forever for something that was never going
-    // out again. The caller marks these failed.
+    // A silent eviction would leave the sender's message under a "waiting to
+    // send" hourglass forever for something that is never going out again. The
+    // caller marks these failed.
     expect(dropped.map((m) => m.id)).toEqual(["stale"]);
   });
 

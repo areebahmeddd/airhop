@@ -125,7 +125,7 @@ function androidDevice(os: DeviceOS): AndroidBleModule {
   const native = new AndroidBleModule(os);
   installNativeBle(native);
   // RN calls initialize() once the catalyst instance exists. Constructing the
-  // module no longer registers anything on its own.
+  // module registers nothing on its own.
   native.initialize();
   return native;
 }
@@ -255,10 +255,10 @@ describe("cold start and permissions", () => {
     v.assert();
   });
 
-  // This used to assert the opposite: that picking "Approximate" stopped the
-  // mesh. True while BLUETOOTH_SCAN carried no neverForLocation flag, and the
-  // worst first-run the app had. The manifest now asserts it, so from API 31
-  // the scanner is outside location's reach and this is what must hold.
+  // Picking "Approximate" must not stop the mesh. The manifest gives
+  // BLUETOOTH_SCAN the neverForLocation flag, so from API 31 the scanner is
+  // outside location's reach; without it this is the worst first run the app
+  // can have.
   test("S04 Android 12+ with location refused and the OS toggle off - the mesh is unaffected", async () => {
     const os = new DeviceOS({
       platform: "android",
@@ -273,8 +273,8 @@ describe("cold start and permissions", () => {
     const native = androidDevice(os);
 
     app = new AppShell({ os });
-    // Both halves of the old coupling, refused at once: no location permission
-    // of any accuracy, and the OS-wide toggle off (set above).
+    // Both kinds of location refusal at once: no location permission of any
+    // accuracy, and the OS-wide toggle off (set above).
     os.setPermission("android.permission.ACCESS_FINE_LOCATION", "denied");
     os.setPermission("android.permission.ACCESS_COARSE_LOCATION", "denied");
     app.bootJsRuntime();

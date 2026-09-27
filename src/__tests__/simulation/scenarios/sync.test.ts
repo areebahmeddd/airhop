@@ -91,7 +91,7 @@ function hex(bytes: Uint8Array): string {
 }
 
 // Everything a given phone puts on the air, decoded. The tap is the only
-// honest place to ask "what actually went out" - a device's own state cannot
+// honest place to ask "what actually went out": a device's own state cannot
 // tell you what it chose to relay.
 function watchAir(
   radio: RadioFabric,
@@ -180,11 +180,11 @@ function phones(
 }
 
 test("S01 catching up after a partition does not re-flood the mesh", async () => {
-  // The bug this exists for: sync responses were replayed carrying their
-  // original ttl. The requester's flood router sees each one as new, which it
-  // is, and forwards it to every other neighbour, who forward it again. One
-  // phone rejoining after a partition pushes the entire archive across the
-  // mesh, and the symptom is a room that gets slower the longer it runs.
+  // Sync responses must not carry their original ttl. The requester's flood
+  // router would see each one as new, which it is, and forward it to every
+  // other neighbour, who would forward it again. One phone rejoining after a
+  // partition would push the entire archive across the mesh, and the symptom
+  // is a room that gets slower the longer it runs.
   const s = (scenario = new Scenario({
     id: "S01",
     title: "a rejoining phone catches up without rebroadcasting what it learns",
@@ -247,7 +247,7 @@ test("S01 catching up after a partition does not re-flood the mesh", async () =>
 
   // Give any scheduled relay its chance before judging. A relay is jittered by
   // up to 220ms, so asserting the instant the text appears would race the timer
-  // and pass for the wrong reason - the storm would simply not have started
+  // and pass for the wrong reason: the storm would simply not have started
   // yet. Three seconds is well past the window and past a further sync round.
   await s.world.advance(3_000);
 
@@ -327,7 +327,7 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
   // alice's real key, both injected by a phone that is not alice, into a phone
   // that has met alice but never saw either message. They differ in exactly one
   // field: the timestamp. If only the stale one is refused, the age check is
-  // what refused it - not the signature rule, not dedup, not routing.
+  // what refused it: not the signature rule, not dedup, not routing.
   const s = (scenario = new Scenario({
     id: "S03",
     title: "a matched pair differing only in age",
@@ -382,7 +382,7 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
     `carol thread = [${carol.texts(channel).join(" | ")}]`,
   );
 
-  // The control. Same author, same key, same injector, same link - only the
+  // The control. Same author, same key, same injector, same link: only the
   // timestamp differs. A check that rejected both would pass the assertion
   // above and be worthless.
   const freshAt = s.world.wallClock();

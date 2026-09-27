@@ -135,7 +135,7 @@ describe("unwrapDm error cases", () => {
 });
 
 // The gift wrap's outer timestamp is randomised by design, so the inner rumor's
-// created_at is the only claim about when a DM was sent - and nothing signs it
+// created_at is the only claim about when a DM was sent, and nothing signs it
 // into a window. Threads sort by time, so an unchecked value lets a sender or a
 // relay choose where the message lands in the recipient's conversation.
 describe("rumor timestamp window", () => {

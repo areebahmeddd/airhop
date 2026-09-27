@@ -147,7 +147,7 @@ describe("parseBridgeEvent", () => {
   // public, so anyone could compute a victim's stable ID, publish their own
   // rendezvous event claiming it, and land on that exact row on every far
   // island with different words under the original's identity. Claiming a row
-  // now requires the id to hash the claimant's OWN content.
+  // requires the id to hash the claimant's OWN content.
   test("ignores a stable ID that does not match the event's own content", () => {
     const genuine = createBridgeMeshEvent({
       content: "meet at the north gate",

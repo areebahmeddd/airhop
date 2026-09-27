@@ -6,18 +6,18 @@
 // VISION.md principle 6 says Airhop nodes must talk to bitchat nodes, and
 // principle 7 says that when in doubt we do what bitchat does.
 // packet-frame-vectors.test.ts already pins byte offsets, but against Airhop's
-// own constants,
-// which cannot catch a divergence both sides of the assertion share.
+// own constants, which cannot catch a divergence both sides of the assertion
+// share.
 //
 // Two things here go further:
 //
-//   1. A live mixed mesh. A BitchatActor implements bitchat's rules - its own
-//      type registry, its own signature policy, its own courier ceiling - and
+//   1. A live mixed mesh. A BitchatActor implements bitchat's rules (its own
+//      type registry, its own signature policy, its own courier ceiling) and
 //      stands in the same room as real Airhop phones. Messages have to cross in
 //      both directions, and Airhop's private extensions have to cost it
 //      nothing.
-//   2. A differential read of the ACTUAL bitchat sources, which are vendored in
-//      this repo. Constants are parsed out of the Swift and compared to
+//   2. A differential read of the ACTUAL bitchat sources, from a local
+//      checkout. Constants are parsed out of the Swift and compared to
 //      Airhop's, so an upstream change shows up as a failing test rather than
 //      as a field report.
 
@@ -111,10 +111,10 @@ interface NodePath {
 const fs = require("fs") as NodeFs;
 const path = require("path") as NodePath;
 
-// The vendored checkout lives at <repo>/bitchat/ios. This read `bitchat-ios`
-// for a while, which no longer exists, so `bitchatAvailable()` was always false
-// and every differential check below took the skip branch and asserted true. A
-// green test that cannot fail is worse than no test, because it is counted.
+// The local checkout lives at <repo>/bitchat/ios. Point this anywhere else and
+// `bitchatAvailable()` is always false, so every differential check below
+// takes the skip branch and asserts true. A green test that cannot fail is
+// worse than no test, because it is counted.
 const BITCHAT_IOS = path.join(
   __dirname,
   "..",
@@ -296,7 +296,7 @@ test("X02 Airhop's private extensions cost a bitchat node nothing", async () => 
   // A two-hop peer is only knowable once its ANNOUNCE has been relayed, and a
   // public message from a peer whose signing key you do not hold is refused
   // (that is the point of the signature rule). So wait for the topology to be
-  // known before speaking, and assert that it becomes known at all - which is
+  // known before speaking, and assert that it becomes known at all, which is
   // itself the interesting property here, since the relay in the middle is a
   // bitchat node.
   const learnedAcrossHop = await waitForCoarse(

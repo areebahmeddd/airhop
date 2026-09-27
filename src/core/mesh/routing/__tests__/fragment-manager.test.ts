@@ -88,10 +88,10 @@ describe("fragmentPacket", () => {
     expect(frags.length).toBe(3);
   });
 
-  // The regression that matters. Asserting the payload size was what let a
-  // 557-byte frame ship: the payload was 469 and correct by that measure, while
-  // the header, senderID and a 64-byte signature pushed the encoded frame 45
-  // bytes past what any BLE link can carry. Measure what goes on the wire.
+  // The check that matters. A payload of 469 bytes is correct by the payload's
+  // own measure, while the header, senderID and a 64-byte signature push the
+  // encoded frame to 557, 45 bytes past what any BLE link can carry. Measure
+  // what goes on the wire.
   test("every encoded fragment frame fits one BLE write", () => {
     const packet = makeLargePacket(FRAG_DATA_SIZE * 3, identity);
     const frags = fragmentPacket(packet, identity);
@@ -465,8 +465,8 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
   test("an oversized fragment does not destroy the assembly it targets", () => {
     // A fragment is capped at 467 bytes on the wire, but the outer packet may
     // be compressed and the decoder inflates up to the sender-declared size, so
-    // one small packet can present a huge `data`. This used to delete the whole
-    // assembly: a remote kill switch for any transfer whose stream ID was
+    // one small packet can present a huge `data`. Deleting the whole assembly
+    // over it would be a remote kill switch for any transfer whose stream ID is
     // observable on the air, with no error at either end.
     const identity = makeIdentity();
     const packet = makeLargePacket(FRAG_DATA_SIZE * 4, identity);

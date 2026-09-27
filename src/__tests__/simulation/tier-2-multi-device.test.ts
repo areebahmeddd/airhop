@@ -130,8 +130,8 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
   // relayed hop by hop down the line. Speaking the instant the LINKS are up
   // races that: the far nodes relay the message correctly but cannot yet
   // authenticate it, so they forward without displaying, and nothing re-sends
-  // it. That is the signature rule working as designed - bitchat behaves the
-  // same way - but it makes "did it arrive" a question about announce timing
+  // it. That is the signature rule working as designed (bitchat behaves the
+  // same way), but it makes "did it arrive" a question about announce timing
   // rather than about routing, which is what this scenario is for.
   const chainKnowsSender = await waitForCoarse(
     s.world,
@@ -170,7 +170,7 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
   // sync re-serving the message once the key is known, on its own cadence.
   // Asserting convergence the instant the far end lights up would be asserting
   // that no node is ever one hop behind on identity, which is untrue of any
-  // flood network - and made this scenario flaky rather than wrong.
+  // flood network, and would make this scenario flaky rather than wrong.
   await waitForCoarse(
     s.world,
     () => convergence(devices, channel).length === 0,
@@ -210,7 +210,7 @@ test("B02 a lossy, jittery, duplicating radio still converges", async () => {
 
   // Loss is real: this scenario does NOT assert everyone got everything, which
   // a 20%-loss radio cannot guarantee without retransmission. What it asserts
-  // is the thing that must hold regardless - nobody saw anything twice, and
+  // is the thing that must hold regardless: nobody saw anything twice, and
   // nobody saw anything forged.
   s.expectNone("exactly once", exactlyOnce(devices));
   s.expectNone("no duplicate text", noDuplicateText(devices, channel));
@@ -372,7 +372,7 @@ test("B05 a backgrounded iPhone disappears from Android but keeps its link", asy
   );
 
   // Now drop the link and ask the question that actually matters: which side
-  // can still DISCOVER the other. Asserting on link existence would be wrong -
+  // can still DISCOVER the other. Asserting on link existence would be wrong:
   // iOS keeps its central role in the background, so the iPhone dials out and
   // a link reappears regardless of what Android can see.
   radio.setIsolated("iphone", true);
@@ -486,17 +486,15 @@ test("B07 a crowd forming does not drown itself in control traffic", async () =>
   const prekey = radio.countOfType(0x24);
   const total = radio.packetsDelivered;
 
-  // This scenario exists because of a real defect it found. Every link-up used
-  // to mint a freshly timestamped ANNOUNCE and a freshly timestamped
-  // PREKEY_BUNDLE, and broadcast the bundle to EVERY link rather than the new
-  // one. A fresh timestamp means a fresh packet ID, which means no relay
-  // anywhere in the mesh could deduplicate it, so every one of those packets
-  // flood-filled the whole room at TTL 7. Twelve phones forming a room put
-  // 6,597 prekey bundles and 9,211 announces on the air inside half a second,
-  // and the queue was still growing when the harness gave up.
+  // A link-up must not mint a freshly timestamped ANNOUNCE and PREKEY_BUNDLE
+  // and broadcast the bundle to EVERY link rather than the new one. A fresh
+  // timestamp means a fresh packet ID, which no relay anywhere in the mesh can
+  // deduplicate, so each such packet flood-fills the whole room at TTL 7:
+  // twelve phones forming a room would put thousands of prekey bundles and
+  // announces on the air inside half a second.
   //
   // The numbers below are ceilings with headroom, not targets. They are here to
-  // fail loudly if control traffic ever goes quadratic again.
+  // fail loudly if control traffic goes quadratic.
   s.check(
     "the room settled rather than growing without bound",
     total < 12_000,
@@ -526,9 +524,9 @@ test("B08 a message sent to a peer that just rebooted still arrives, once", asyn
   // links constantly). A crash or a dead battery is a link drop with no LEAVE,
   // so the other side comes back with no session while this one still seals
   // to the old chain. The message is dropped on arrival until the next
-  // handshake, and a direct-link "sent" used to be the one send that was not
-  // queued for retry. Now it stays queued until the receipt, and the retry
-  // reuses the message id so the recipient shows it exactly once.
+  // handshake, so a direct-link "sent" stays queued until the receipt like any
+  // other send, and the retry reuses the message id so the recipient shows it
+  // exactly once.
   const s = (scenario = new Scenario({
     id: "B08",
     title: "a DM into a peer that lost its session",

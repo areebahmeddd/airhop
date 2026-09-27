@@ -140,9 +140,9 @@ describe("relayDisplayHost", () => {
 });
 
 describe("DEFAULT_DM_RELAYS", () => {
-  // The DM pool and the geo fallback are two roles over one list. They used to
-  // be two hand-maintained literals of the same four hosts in two files, so an
-  // edit could land on one and leave the other behind with nothing to catch it.
+  // The DM pool and the geo fallback are two roles over one list. As two
+  // hand-maintained literals of the same four hosts in two files, an edit
+  // could land on one and leave the other behind with nothing to catch it.
   test("is the set the directory itself falls back on", () => {
     const empty = new GeoRelayDirectory();
     const fallback = empty.nearestRelays(0, 0, DEFAULT_DM_RELAYS.length);

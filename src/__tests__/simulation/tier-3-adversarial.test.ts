@@ -4,7 +4,7 @@
 // Tier C: somebody in the room is hostile, or the world is.
 //
 // Everything here is an attack or a failure injected on purpose. The bar is not
-// "the app survives" - it is "the app refuses, and tells the user nothing false
+// "the app survives": it is "the app refuses, and tells the user nothing false
 // while refusing".
 
 jest.mock("expo-location", () => ({}));
@@ -155,7 +155,7 @@ function forgePublicMessage(opts: {
 
 // An ANNOUNCE that claims `claimedPeerID`, carrying whatever key material the
 // caller wants bound to it. This is the packet that decides, for every later
-// packet, WHICH key a claimed sender is checked against - so getting it wrong
+// packet, WHICH key a claimed sender is checked against, so getting it wrong
 // silently defeats the signature rule that C01 pins.
 function forgeAnnounce(opts: {
   claimedPeerID: string;
@@ -197,7 +197,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   //
   // The attack is one packet upstream of C01 and defeats it completely. A peer
   // ID is the first 16 hex of SHA-256(noise pubkey), and that noise key is
-  // broadcast in the clear in every announce - so Mallory can replay Alice's
+  // broadcast in the clear in every announce, so Mallory can replay Alice's
   // real peer ID and real noise key (both public), attach her OWN signing key,
   // and sign the announce with it. It is internally consistent: the derivation
   // matches and the signature verifies against the key inside the packet.
@@ -205,7 +205,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   //
   // The only thing that stops it is refusing to REPLACE a signing key already
   // bound to that peer. Hence the last assertion, which is the real one: after
-  // the attack, genuine traffic from the real Alice must still verify - which
+  // the attack, genuine traffic from the real Alice must still verify, which
   // it can only do if her original key is still the pinned one.
   const s = (scenario = new Scenario({
     id: "C08",
@@ -247,9 +247,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
 
   // Attack 1: an UNSIGNED announce claiming alice's ID.
   //
-  // This used to be accepted outright. Verification ran only `if (SIGNED)`, so
-  // clearing the flag meant the sender opted out of being checked and their
-  // keys were written to the registry unchallenged.
+  // Verification must not run only `if (SIGNED)`: clearing the flag would let
+  // the sender opt out of being checked and write their keys to the registry
+  // unchallenged.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -263,7 +263,7 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   await s.world.advance(2000);
 
-  // Attack 2: a fully self-consistent signed announce - alice's public noise
+  // Attack 2: a fully self-consistent signed announce: alice's public noise
   // key (so the peer ID derivation checks out), mallory's signing key, signed
   // by mallory. Both the derivation check and the signature check PASS. Only
   // the pin refuses it.
@@ -281,8 +281,8 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   await s.world.advance(2000);
 
-  // Attack 3: sender mismatch - claim alice's ID while carrying mallory's own
-  // noise key. Rejected because the ID no longer derives from the key.
+  // Attack 3: sender mismatch, claiming alice's ID while carrying mallory's
+  // own noise key. Rejected because the ID does not derive from the key.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -483,9 +483,9 @@ test("C01 a message claiming a trusted peer's ID is refused unless it is signed 
 
   // Attack 1: no signature at all, claiming alice's peer ID.
   //
-  // This is the one that used to work. The old check was `if (SIGNED &&
-  // haveKey) verify`, so clearing the signature flag skipped verification
-  // entirely and the message rendered as alice.
+  // A check of `if (SIGNED && haveKey) verify` would let clearing the
+  // signature flag skip verification entirely, and the message would render
+  // as alice.
   radio.injectTo(
     bob.id,
     mallory.id,

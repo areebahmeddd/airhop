@@ -251,7 +251,7 @@ describe("setMessageStatus", () => {
   );
 
   // The other half of the same rule. A receipt is proof the message arrived, and
-  // a sender-side give-up is only ever proof that WE stopped trying - usually
+  // a sender-side give-up is only ever proof that WE stopped trying, usually
   // because the ack was lost, not the message.
   it.each(["delivered", "read"] as const)(
     "but never contradicts a %s receipt",
@@ -555,7 +555,7 @@ describe("joinPrivateChannel key clashes", () => {
 // every set(), so one arriving message costs a full JSON encode of every
 // thread. The throttle makes that once per window instead of once per message.
 // What it introduces is a window in which a complete plaintext snapshot lives
-// in a module variable, armed to be written - so the two escape hatches below
+// in a module variable, armed to be written, so the two escape hatches below
 // are part of the feature, not extras.
 describe("chat persistence window", () => {
   beforeEach(() => {
@@ -600,7 +600,7 @@ describe("chat persistence window", () => {
     // Nothing on disk yet: the window is still open.
     expect(readFile()).not.toContain("msg-19");
     jest.advanceTimersByTime(500);
-    // And when it closes, the LAST state lands - not the first, and not each
+    // And when it closes, the LAST state lands: not the first, and not each
     // of the twenty in turn.
     expect(readFile()).toContain("msg-19");
     expect(readFile()).toContain("msg-0");
@@ -738,7 +738,7 @@ describe("mergeChannel", () => {
     expect(st.resolveChannel(NOSTR)).toBe(MESH);
   });
 
-  // The reported bug: the count climbing in a conversation being read.
+  // The unread count must not climb in a conversation being read.
   it("does not make the thread you are reading unread", () => {
     const s = useChatStore.getState();
     s.addChannel(NOSTR);

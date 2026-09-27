@@ -9,9 +9,9 @@
 // the process.
 //
 // That distinction matters more than it looks. A mocked NostrClient would agree
-// with Airhop about what a subscription is. A relay that speaks NIP-01 badly -
-// dropping an OK, never sending EOSE, delivering an event twice, going away
-// mid-subscription - disagrees in exactly the ways real relays do, and those
+// with Airhop about what a subscription is. A relay that speaks NIP-01 badly
+// (dropping an OK, never sending EOSE, delivering an event twice, going away
+// mid-subscription) disagrees in exactly the ways real relays do, and those
 // are the disagreements that produce duplicate messages and stuck spinners.
 
 import type { Prng } from "./prng";

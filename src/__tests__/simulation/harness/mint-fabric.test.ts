@@ -4,14 +4,14 @@
 // The simulated mint has to agree with the real world about hash_to_curve.
 //
 // A fake mint that is merely self-consistent is worse than no fake mint: every
-// scenario written against it passes, and none of them mean anything. That is
-// exactly what happened here. `hashToCurve` used the domain separator
-// `Secp256k1_HashToCurvePoint_Cashu_` instead of NUT-00's
-// `Secp256k1_HashToCurve_Cashu_`, and nothing failed, because the only consumer
-// compared the fabric's Y against the fabric's own Y. Double-spend refusal still
-// worked. What broke was NUT-07 `checkstate`, where the CLIENT computes Y using
-// cashu-ts: every proof came back UNSPENT forever, so no scenario could observe
-// the mint reporting a spent proof.
+// scenario written against it passes, and none of them mean anything. A wrong
+// domain separator in `hashToCurve` (say `Secp256k1_HashToCurvePoint_Cashu_`
+// for NUT-00's `Secp256k1_HashToCurve_Cashu_`) fails nothing inside the
+// fabric, because the only consumer compares the fabric's Y against the
+// fabric's own Y, and double-spend refusal still works. It breaks NUT-07
+// `checkstate`, where the CLIENT computes Y using cashu-ts: every proof comes
+// back UNSPENT forever, so no scenario can observe the mint reporting a spent
+// proof.
 //
 // The assertion that matters is therefore not "matches a constant I typed in"
 // but "matches the library the app actually ships". Comparing against cashu-ts

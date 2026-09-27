@@ -251,10 +251,10 @@ describe("GossipSync: link-local contract", () => {
     ).toBe(PEER);
   });
 
-  // The bug this pins: responses used to go back carrying their ORIGINAL ttl
-  // (5-7, whatever they were heard at). The requester's flood router sees each
-  // one as new - which it is, that is exactly why it was sent - and re-floods
-  // it. One peer catching up after a partition re-floods the whole archive.
+  // Responses must not go back carrying their ORIGINAL ttl (5-7, whatever
+  // they were heard at). The requester's flood router would see each one as
+  // new (which it is, that is exactly why it was sent) and re-flood it, so one
+  // peer catching up after a partition would re-flood the whole archive.
   test("responses come back at ttl 0 and tagged IS_RSR", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.ANNOUNCE, 0, new Uint8Array([1])));
@@ -271,7 +271,7 @@ describe("GossipSync: link-local contract", () => {
   // ttl and isRSR are both normalised out of the signing preimage, so retagging
   // a stored packet must leave its original signature verifiable. If this ever
   // breaks, every sync response becomes an unverifiable packet the requester
-  // drops - a silent, total failure of catch-up.
+  // drops: a silent, total failure of catch-up.
   test("retagging a response does not disturb its signature", () => {
     const signer = makeIdentity();
     const gs = new GossipSync();
@@ -437,9 +437,9 @@ describe("isSyncReplyInWindow", () => {
 describe("GossipSync: sinceTimestamp cursor", () => {
   // The cursor is a disclaimer about filter coverage, not a request boundary.
   // Emitting it when the filter covers everything would tell every peer to
-  // withhold anything older than our oldest packet - which for a device that
-  // just joined is precisely the history it turned up to collect. This is the
-  // regression the F02 latecomer scenario exists to catch.
+  // withhold anything older than our oldest packet, which for a device that
+  // just joined is precisely the history it turned up to collect. The F02
+  // latecomer scenario catches the same thing across real phones.
   test("no cursor is sent when the filter covers everything held", () => {
     const identity = makeIdentity();
     const gs = new GossipSync();
@@ -474,9 +474,9 @@ describe("GossipSync: sinceTimestamp cursor", () => {
     expect(decoded.since!).toBeGreaterThan(Date.now() - 2000);
   });
 
-  // The failure mode this replaces: an overflowing filter used to encode to
-  // nothing, and an empty filter does not read as "I could not tell you" - it
-  // reads as "I have nothing", so the responder replies with its entire store.
+  // An overflowing filter must not encode to nothing: an empty filter does not
+  // read as "I could not tell you", it reads as "I have nothing", so the
+  // responder would reply with its entire store.
   test("an overflowing filter still describes the newest packets", () => {
     const gs = new GossipSync();
     for (let i = 0; i < 2000; i++) {

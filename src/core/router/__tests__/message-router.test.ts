@@ -431,10 +431,10 @@ describe("MessageRouter", () => {
   });
 
   // lastSeenMs is refreshed only by ANNOUNCE, which arrives on a 15-30s jitter.
-  // DIRECT_PEER_TTL_MS was 15s, so a peer on a live link spent a third of every
-  // cycle hidden by `get()` - and the DM path resolved its session through
-  // `get()`. Inbound messages were dropped with no error and no retry, since
-  // sendDm had already returned "sent" and the outbox never queued them.
+  // A DIRECT_PEER_TTL_MS under that ceiling hides a peer on a live link from
+  // `get()` for part of every cycle, and the DM path resolves its session
+  // through `get()`. Messages would then be dropped with no error and no retry,
+  // since sendDm had already returned "sent" and the outbox never queued them.
   describe("a direct peer idling between announces", () => {
     const GAP_MS = 30_000; // the announce ceiling, ANNOUNCE_CONNECTED_MAX_MS
 
@@ -739,7 +739,7 @@ describe("MessageRouter", () => {
   });
 
   test("sendDm hands the packet to the transport callback, which owns WiFi-vs-BLE", () => {
-    // The router no longer has a separate WiFi tier. It emits one unicast and
+    // The router has no separate WiFi tier. It emits one unicast and
     // the injected callback (MeshService in production) decides whether that
     // goes over a WiFi link or BLE. Asserting here that exactly one dispatch
     // happens is what stops a second, duplicate WiFi path being reintroduced.
@@ -870,7 +870,7 @@ describe("message ID (cross-transport dedupe)", () => {
 // Announced state is a claim: an announce is signed with a key carried inside
 // the same announce, so anyone who reads a victim's public Noise key off the
 // air can self-sign a consistent announce under that peer ID. Trust-on-first-use
-// covers the steady state but loses the race - whoever announces first wins the
+// covers the steady state but loses the race: whoever announces first wins the
 // pin, and the real peer can then never correct it.
 //
 // State that arrives inside a completed Noise session is different in kind: a

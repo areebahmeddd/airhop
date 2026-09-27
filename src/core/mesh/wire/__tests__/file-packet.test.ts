@@ -192,8 +192,8 @@ describe("resolveMimeType", () => {
   });
 
   it("never returns an empty type", () => {
-    // A picker that returns no type used to put "" on the wire, which is not on
-    // the allow-list, so the file was dropped on arrival while reporting a
+    // A picker that returns no type must not put "" on the wire: it is not on
+    // the allow-list, so the file would be dropped on arrival while reporting a
     // completed send here.
     expect(resolveMimeType(undefined, "photo.jpg")).toBe("image/jpeg");
     expect(resolveMimeType("", "clip.m4a")).toBe("audio/mp4");
@@ -243,10 +243,10 @@ describe("maxBytesForType", () => {
 
 describe("large payloads", () => {
   it("encodes a photo-sized file without blowing the call stack", () => {
-    // Regression: the encoder used to spread the content into Array.push, which
-    // passes every byte as a function argument. Anything past a few tens of KB
-    // threw a RangeError from inside the encoder, so an attachment big enough
-    // to matter never made it onto the wire at all.
+    // Spreading the content into Array.push passes every byte as a function
+    // argument, and anything past a few tens of KB throws a RangeError from
+    // inside the encoder, so an attachment big enough to matter would never
+    // make it onto the wire at all.
     const big = new Uint8Array(400 * 1024);
     big.set(PNG, 0);
     for (let i = PNG.length; i < big.length; i++) big[i] = i & 0xff;

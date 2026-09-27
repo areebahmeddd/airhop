@@ -2,16 +2,16 @@
 //
 // The problem this file solves: Airhop is full of module-scope singletons, by
 // design. `getMeshService()` returns one mesh. `useChatStore` is one store.
-// `createMMKV({id})` returns one instance per id. That is correct for an app -
-// there is one phone - and fatal for a simulation, where twenty phones have to
-// disagree with each other about the state of the world.
+// `createMMKV({id})` returns one instance per id. That is correct for an app,
+// where there is one phone, and fatal for a simulation, where twenty phones
+// have to disagree with each other about the state of the world.
 //
-// The fix is not to refactor the app. It is `jest.isolateModules`, which builds
-// a fresh module registry: a second copy of mesh-service, of every store, of
-// the MMKV mock, and - critically - of `DeviceEventEmitter`, so native events
-// raised inside one phone cannot be heard by another. Each phone is therefore a
-// closure over its own private copy of the entire app, and NOTHING in src/ had
-// to change to allow it.
+// The answer is not to refactor the app. It is `jest.isolateModules`, which
+// builds a fresh module registry: a second copy of mesh-service, of every
+// store and of the MMKV mock. Native events, which `react-native` would share
+// across every registry, go through the event router instead. Each phone is
+// therefore a closure over its own private copy of the entire app, and nothing
+// in src/ has to change to allow it.
 //
 // Two consequences worth knowing before reading further:
 //
@@ -1663,46 +1663,21 @@ function buildSandbox(
 ): Inner {
   let inner: Inner | null = null;
 
-  // Clear the module registry before isolating.
-  //
-  // `jest.isolateModules` alone does not re-instantiate a module that the
-  // parent registry already holds, and under jest-expo `react-native` is always
-  // already held. The consequence is specific and fatal: `DeviceEventEmitter` is
-  // read through react-native's index getter at CALL time, so every phone's
-  // mesh-service and native module end up talking to whichever emitter was
-  // installed last. Every phone then hears every other phone's native events.
-  // Resetting first forces react-native itself to be rebuilt inside the
-  // isolation window, which is what actually separates the phones.
+  // Clear the module registry before isolating: `jest.isolateModules` alone
+  // does not re-instantiate a module the parent registry already holds.
   jest.resetModules();
 
   jest.isolateModules(() => {
-    // Give this phone its own DeviceEventEmitter, explicitly.
-    //
-    // This is the single most important line in the file, and it exists because
-    // `jest.isolateModules` does NOT reliably re-instantiate `react-native`
-    // under the jest-expo preset: the stores, mesh-service and the native module
-    // are all isolated per sandbox, but they can still resolve to ONE shared
-    // RCTDeviceEventEmitter. When that happens every phone receives every other
-    // phone's native events, and the failure is silent and total - a phone
-    // registers links it is not party to, and a multi-hop delivery "succeeds"
-    // with nothing having relayed it. Every scenario in this directory would
-    // pass for the wrong reason.
-    //
-    // So rather than depend on isolation we cannot verify, the emitter is
-    // replaced with a fresh instance BEFORE this sandbox's modules load. Each
-    // module captures `DeviceEventEmitter` at load time through react-native's
-    // getter, so whatever is installed here is what this phone's mesh-service
-    // listens on and what its native module emits into. Later swaps cannot
-    // disturb a binding that has already been captured.
-    //
-    // smoke.test.ts asserts this holds. If that test ever goes red, nothing
-    // else in this directory means anything.
-    // The DeviceEventEmitter every phone would otherwise share is replaced by
-    // the event router, via a jest.mock in each test file (see
-    // harness/event-router.ts). Nothing needs installing here. What matters is
+    // `react-native` is shared across sandboxes whatever the isolation, so
+    // every phone would hear every other phone's native events: a phone would
+    // register links it is not party to, and a multi-hop delivery would
+    // "succeed" with nothing relaying it. The shared DeviceEventEmitter is
+    // replaced by the event router, via a jest.mock in each test file (see
+    // harness/event-router.ts), so nothing is installed here. What matters is
     // that every entry into THIS phone's code runs inside
-    // `eventRouter().runAs(id, ...)` - done by launch() below for subscription,
-    // and by DeviceOS.runOnThread for every native-to-JS callback.
+    // `eventRouter().runAs(id, ...)`: launch() below does it for subscription,
+    // and DeviceOS.runOnThread for every native-to-JS callback. smoke.test.ts
+    // asserts it holds; if that goes red, nothing else here means anything.
     const androidMod = require(
       P.android,
     ) as typeof import("../../harness/android-native");

@@ -91,10 +91,9 @@ function makeDataPacket(seed: number, seq: number, data?: Uint8Array): Packet {
 
 // A talker who walks out of range mid-sentence sends no END and no CANCELED:
 // the packets simply stop. Nothing arrives to notice that by, so the player's
-// own timeout is the only thing that ends the burst - and it has to say so, or
-// the screen keeps naming somebody who stopped talking seconds ago. This is the
-// same stale-indicator bug we saw from the other side on bitchat, and the
-// timeout matches theirs so both give up together.
+// own timeout is the only thing that ends the burst, and it has to say so, or
+// the screen keeps naming somebody who stopped talking seconds ago. The timeout
+// matches bitchat's so both give up together.
 describe("a talker who stops without saying so", () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => {
@@ -162,9 +161,9 @@ describe("VoicePlayer", () => {
   });
 
   it("starts playing from DATA when the START was missed", () => {
-    // This used to discard the burst, which meant one lost packet at the head
-    // silenced the whole thing, and walking into range mid-sentence got you
-    // nothing until the talker let go and pressed again. The codec is not in
+    // Discarding the burst would let one lost packet at the head silence the
+    // whole thing, and walking into range mid-sentence would get you nothing
+    // until the talker let go and pressed again. The codec is not in
     // doubt (0x01 is the only value the format defines), so a burst can be
     // picked up from any DATA packet. Receive-side only: nothing on the wire
     // changes and a bitchat sender does nothing differently.

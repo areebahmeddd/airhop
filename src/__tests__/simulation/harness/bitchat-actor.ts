@@ -1,20 +1,19 @@
 // A bitchat phone, standing in the same room as the Airhop ones.
 //
-// VISION.md puts wire compatibility among the non-negotiables, and PROGRESS.md
-// is honest that it has never been proven anywhere but on paper. A compat test
+// VISION.md puts wire compatibility among the non-negotiables. A compat test
 // that only checks Airhop against ITSELF cannot find a divergence, because both
 // sides share the bug. So this node is written to bitchat's rules rather than
 // to Airhop's, and its whole job is to disagree when Airhop is wrong:
 //
 //   * It interprets only the packet types bitchat defines. Airhop's own
-//     extensions - DR_ENCRYPTED (0x12), CHANNEL_ENC (0x50), CHANNEL_MSG_AIRHOP
-//     (0x51) - reach no handler, while still being RELAYED like any other
+//     extensions (DR_ENCRYPTED 0x12, CHANNEL_ENC 0x50, CHANNEL_MSG_AIRHOP
+//     0x51) reach no handler, while still being RELAYED like any other
 //     packet (BLEService's type switch logs `case .none` and falls through to
 //     scheduleRelayIfNeeded). Both halves matter: Airhop's extras must cost
 //     bitchat nothing AND must still cross a mesh made of bitchat phones.
 //   * It refuses a courier envelope whose expiry is beyond 24h + 1h slack,
-//     which is what bitchat's CourierStore does and what silently ate every
-//     Airhop envelope before that constant was corrected.
+//     as bitchat's CourierStore does, so an Airhop envelope past that ceiling
+//     is lost on every bitchat phone.
 //   * It verifies signatures before displaying or relaying, and relays with the
 //     TTL decrement and dedup any bitchat node performs.
 //
@@ -806,7 +805,7 @@ export class BitchatActor implements RadioNode {
 
   private onChannelMsg(packet: Packet, senderID: string): void {
     const key = this.peerKeys.get(senderID);
-    // BLEPublicMessageHandler.swift - an absent key is a FAILED check.
+    // BLEPublicMessageHandler.swift: an absent key is a FAILED check.
     if (
       key === undefined ||
       (packet.flags & Flags.SIGNED) === 0 ||
@@ -844,7 +843,7 @@ export class BitchatActor implements RadioNode {
   // The frame SIZE rule is not enforced here: the radio fabric drops an
   // oversized frame before it reaches any node, which is what a real link does.
   // So a sender that frames too large shows up as a stream that never completes,
-  // exactly as it did in the field.
+  // exactly as it does on hardware.
   private onFragment(packet: Packet, senderID: string): void {
     const p = packet.payload;
     if (p.length <= FRAG_HEADER_LEN) return;

@@ -370,7 +370,7 @@ describe("mid-session radio chaos and lifecycle", () => {
 
     const presence = useMeshStateStore.getState().presenceStatus;
     // Stopping the mesh was a deliberate choice, made from outside the app.
-    // Reopening must NOT quietly undo it - that would be the app overruling a
+    // Reopening must NOT quietly undo it: that would be the app overruling a
     // decision the user just made, from an event they did not trigger.
     v.check(
       "reopening does not silently restart a mesh the user stopped",
