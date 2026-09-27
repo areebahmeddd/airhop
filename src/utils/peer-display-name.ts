@@ -1,11 +1,9 @@
 // Single source of truth for how a peer is named in the UI.
 //
-// Three names can exist for one peer and they were being resolved
-// inconsistently: peer-list, radar-view and dm-list all called
-// peerIDToUsername() directly, so a peer who had set a nickname, or whom the
-// user had deliberately added as a contact, still showed as the generated
-// "swift-otter-42". Meanwhile channel-info-sheet did consult the announced
-// nickname, so the SAME peer appeared under two different names on two screens.
+// Several names can exist for one peer, and a screen that calls
+// peerIDToUsername() directly shows the generated "swift-otter-42" where
+// another shows their nickname, so one peer reads as two people. Every screen
+// resolves through here instead.
 //
 // Precedence, most trusted first:
 //   1. Local nickname: a name the user typed for a contact whose keys they

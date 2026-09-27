@@ -354,7 +354,7 @@ async function payAsToken(params: {
   confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
-  // In whichever question is actually asked about this quote.
+  // A stale fee schedule is noted in whichever confirmation this quote gets.
   const staleDays = staleFeeDays(quote.pricedFromCacheAgeMs);
   const staleNote =
     staleDays === null
@@ -578,9 +578,9 @@ export function reclaimTokenSend(txId: string): boolean {
 let followingReclaims = false;
 
 // A reclaimed send turns completed when the mint says the recipient redeemed
-// the token first: at once when the reclaim can ask, or passes later from the
-// reconcile pass, with nobody awaiting it. Either way the thread says it
-// arrived after all. Idempotent; started once, at launch.
+// the token first, either during the reclaim or later from the reconcile pass
+// with nobody awaiting it. Either way the thread says it arrived after all.
+// Idempotent; started once, at launch.
 export function startReclaimFollow(): void {
   if (followingReclaims) return;
   followingReclaims = true;

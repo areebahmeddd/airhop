@@ -179,14 +179,12 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // 1. Destroy all private keys from the OS secure enclave. This also removes
   //    the wallet store's AES key, making step 2's ciphertext unrecoverable.
   //
-  //    Guarded, and the wipe continues either way. This was the one bare await
-  //    in the sequence, and it is the step most likely to fail: the Keychain is
-  //    unreadable on a device that has booted but not been unlocked, which is
-  //    exactly the seizure scenario the panic wipe exists for. A throw here used
-  //    to abandon everything below - every MMKV partition, every store,
-  //    the wallet file and the media cache stayed on disk - and the caller
-  //    surfaced nothing, so the user got a confirmation haptic and a dead app
-  //    over completely intact data.
+  //    Guarded, and the wipe continues either way. This is the step most likely
+  //    to fail: the Keychain is unreadable on a device that has booted but not
+  //    been unlocked, which is exactly the seizure scenario the panic wipe
+  //    exists for. A throw that abandoned everything below would leave every
+  //    MMKV partition, the wallet file and the media cache on disk behind a
+  //    confirmation haptic.
   //
   //    Continuing is strictly better: the data goes even if the keys resist, and
   //    `keysDestroyed` is returned so the UI can tell the user the one thing
@@ -312,31 +310,31 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // same dead key.
   resetWalletStorage();
 
-  // Tray and Tor, moved to LAST on purpose.
+  // Tray and Tor, LAST on purpose.
   //
   // Neither runs before the keys and stores are gone, because both are slow:
   // dismissing the shade is a native round trip, and wiping Arti polls for its
   // process to exit before deleting a directory tree. For a gesture whose threat
-  // model is a phone being taken, running them first spends the seconds that
-  // matter on the notification shade and a Tor consensus cache while the keys and
-  // the message partitions were still on disk. Neither depends on the keys
-  // existing, so both belong after the data is gone.
-  // Dismiss every notification already in the shade.
-  //     Each one carries a sender nickname and a message preview, and they
-  //     survive the process, so a wipe that cleared the database and left the
-  //     lock screen showing the last three conversations has not done what the
-  //     user asked. Best-effort by design.
-  // Time-boxed: both remaining steps are best-effort and run after every byte
-  // is already gone, but the caller holds the confirm sheet until this resolves,
-  // and wipeTorState polls for Arti to exit before deleting its directory.
+  // model is a phone being taken, running them first would spend the seconds
+  // that matter on the notification shade and a Tor consensus cache while the
+  // keys and the message partitions are still on disk. Neither depends on the
+  // keys existing, so both belong after the data is gone.
+  //
+  // Time-boxed: both are best-effort, but the caller holds the confirm sheet
+  // until this resolves.
+  //
+  // Dismiss every notification already in the shade. Each carries a sender
+  // nickname and a message preview and survives the process, so a wipe that
+  // left the lock screen showing the last conversations has not done what the
+  // user asked.
   await settleOr(dismissAllNotifications(), BEST_EFFORT_TIMEOUT_MS, undefined);
 
   // Stop Arti and destroy its data directory, on both platforms.
   //
-  //     Two things survived every wipe here. Arti kept running, holding live
-  //     circuits for an identity that no longer existed. And its state lives
+  //     Two things would otherwise survive the wipe. Arti keeps running, holding
+  //     live circuits for an identity that no longer exists. And its state lives
   //     outside the media cache (Application Support on iOS, the files directory
-  //     on Android), so the media sweep below never reached it: a cached
+  //     on Android), so the media sweep below never reaches it: a cached
   //     consensus, the guard nodes this device chose, directory data and
   //     timestamps. That is on-disk evidence of the shape "this device used
   //     Tor, around here, around then", which is exactly the inference a panic

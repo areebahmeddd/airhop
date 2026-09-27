@@ -9,8 +9,8 @@
 // read. Nothing is written before the match.
 //
 // Reached only from onboarding, on a phone with no identity (or only one a
-// refused wipe condemned), so the answer to
-// a failed install is simply the panic wipe: there is nothing here to keep.
+// refused wipe condemned), so the answer to a failed install is simply the
+// panic wipe: there is nothing here to keep.
 
 import { loadIdentity } from "@core/crypto/identity";
 import { sweepOrphanedSecrets } from "@core/crypto/keychain";

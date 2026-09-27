@@ -323,12 +323,12 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
     setNostrBlocked(false);
     return { ok: true };
   } catch {
-    // Neither Try again from the held state nor a bridge change had a clear net
-    // to go back to: the user asked for Tor and has not been online without it
-    // since, and a user who asked for a bridge is likely somewhere a direct
+    // Neither Try again from the held state nor a bridge change has a clear
+    // net to go back to: the user asked for Tor and has not been online without
+    // it since, and a user who asked for a bridge is likely somewhere a direct
     // connection is unsafe. So both fall back to the held state, and going
-    // direct stays the user's own choice of Tor off. No stopTor, because on Android that routes
-    // the HTTP stack direct before the hold could re-apply.
+    // direct stays the user's own choice (Tor off). No stopTor: on Android that
+    // routes the HTTP stack direct before the hold could re-apply.
     //
     // Only the retry keeps the marker. A refused bridge line is not a crash,
     // and the next launch starts again and is refused the same way.

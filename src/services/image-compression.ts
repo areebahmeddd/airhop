@@ -8,7 +8,7 @@
 //
 // It changes nothing on the wire. The result is an ordinary JPEG in an ordinary
 // FILE_TRANSFER packet, so a bitchat peer sees a photo it already knew how to
-// read. The only difference is that it now arrives.
+// read. The only difference is that it arrives.
 //
 // It is also what strips a photo's metadata. A JPEG or WebP is always
 // re-encoded, however small: the Android picker copies the camera's EXIF, GPS

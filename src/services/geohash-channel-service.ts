@@ -238,8 +238,8 @@ export interface GatewayHooks {
   // gateway it may rebroadcast the event onto the mesh (downlink carrier).
   onRelayEvent(event: NostrEvent, geohash: string): void;
   // Someone in a location channel handed us their durable contact card. The
-  // mesh layer owns what happens next - the peer-ID binding check, the contact
-  // record, the routing registry - because it already does all three for a
+  // mesh layer owns what happens next (the peer-ID binding check, the contact
+  // record, the routing registry) because it already does all three for a
   // scanned QR and a card must not get an easier path for arriving over a wire.
   // Returns the peer ID once accepted, or null if the card does not hold up.
   // `recipientPubkey` is our own cell key in that conversation, which the
@@ -1063,11 +1063,10 @@ export class GeohashChannelService {
 
         // Prefer the sender-assigned cross-transport ID, bound to the text
         // (sharedRowID), so the BLE copy of this same message collapses into
-        // one bubble. In a location channel both
-        // copies arrive, and the Nostr one is signed with a per-geohash key,
-        // so without this the reader sees the message twice, apparently from
-        // two different people. Falls back to the Nostr event id, which still
-        // dedupes copies arriving from several relays.
+        // one bubble. In a location channel both copies arrive, and the Nostr
+        // one is signed with a per-geohash key, so without this the reader sees
+        // the message twice, apparently from two different people. Falls back
+        // to the Nostr event id, which still dedupes copies from several relays.
         const sharedId = event.tags.find(([t]) => t === TAG_MESSAGE_ID)?.[1];
 
         useChatStore.getState().addMessage({

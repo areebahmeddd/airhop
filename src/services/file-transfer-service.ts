@@ -3,9 +3,8 @@
 // Wire model (bitchat-compatible): a whole file is ONE FILE_TRANSFER (0x22)
 // packet whose payload is a BitchatFilePacket TLV. The fragment layer splits it
 // into BLE fragments that each fit one write and reassembles it on the far side,
-// so there is no
-// app-level chunking here. Airhop adds two TLV tags (channel, duration) that
-// bitchat skips.
+// so there is no app-level chunking here. Airhop adds two TLV tags (channel,
+// duration) that bitchat skips.
 //
 //   Send:    file bytes -> BitchatFilePacket TLV -> one FILE_TRANSFER packet
 //            -> fragmentPacket -> paced FRAGMENT writes, one BLE frame each
@@ -121,8 +120,8 @@ export interface AttachmentMeta {
 // image-compression) has to land under the same prefix, or the Storage screen
 // would report a size that its Clear button cannot free.
 //
-// The prefix bounds the ROUTINE sweeps - sweepExpiredAttachments,
-// getAttachmentCacheBytes and clearAttachmentCache - and deliberately not the
+// The prefix bounds the ROUTINE sweeps (sweepExpiredAttachments,
+// getAttachmentCacheBytes and clearAttachmentCache) and deliberately not the
 // panic wipe, which empties the directory outright. Everything sent is adopted
 // under it before it goes (see adoptIntoAttachmentCache), so what sits outside
 // is a picker copy of something never sent, left by a crash, and the saved QR

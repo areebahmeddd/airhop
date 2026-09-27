@@ -239,10 +239,9 @@ interface MessageTarget {
 const FALLBACK_PEER_ID = "0000000000000000";
 
 // The timeouts below are in launch order: show the primer, prompt for
-// permissions, check the grant, then sweep stranded sends (the identity read's
-// is in services/launch-identity). Every one of them is a backstop against a
-// step that can hang rather than fail, since none of these is a state the app
-// can detect from the inside.
+// permissions, then check the grant (the identity read's is in
+// services/launch-identity). Each is a backstop against a step that can hang
+// rather than fail, which the app cannot detect from the inside.
 
 // The primer is a sheet the user dismisses, so this is deliberately long enough
 // to read it twice. It guards against the sheet never appearing at all, and is
@@ -863,13 +862,13 @@ function AppContent(): React.JSX.Element {
           // Android can destroy the Activity while the foreground service keeps
           // the process (and the JS runtime, and the mesh) alive. Reopening then
           // remounts this component with everything already set up, and tearing
-          // that down just to rebuild it is what made a reopen feel like a hang:
-          // a full stop() says goodbye to every peer, drops the relay pool, and
-          // bounces the foreground service, all to arrive back where we started.
+          // that down to rebuild it makes a reopen feel like a hang: a full
+          // stop() says goodbye to every peer, drops the relay pool, and bounces
+          // the foreground service, all to arrive back where it started.
           //
           // So a cold start is exactly: no mesh at all, or one belonging to a
           // different identity (a wipe re-onboarded as someone else). An
-          // existing mesh is left alone whatever state it is in - including
+          // existing mesh is left alone whatever state it is in, including
           // stopped, because the only things that stop it are the user choosing
           // Away and the notification's "Stop mesh". Restarting it here would
           // undo a decision they just made, from an event they didn't trigger.
@@ -903,14 +902,14 @@ function AppContent(): React.JSX.Element {
           }
           if (plan.sweep) {
             // No identity means nothing on this device owns a wallet secret, so
-            // anything still in the keychain is a leftover - in practice, a panic
+            // anything still in the keychain is a leftover: in practice, a panic
             // wipe the Keystore refused while the phone was locked. Sweeping here
             // is what makes that wipe retry itself instead of failing once and
             // staying failed.
             //
             // Deliberately not awaited: it is a keychain round trip and the
             // welcome screen must not wait on it. That is also why the sweep
-            // leaves the identity item alone - the very next thing onboarding does
+            // leaves the identity item alone: the very next thing onboarding does
             // is write one, and a delete still in flight would take it with it.
             // See sweepOrphanedSecrets. A first install finds nothing and this is
             // two no-op deletes.
@@ -918,8 +917,8 @@ function AppContent(): React.JSX.Element {
               .then((leftovers) => {
                 // Only ever raises the banner. Clearing is not this call's to do:
                 // a wipe in THIS session sets the flag from its own result, and it
-                // could still be in flight - the primer, the OS dialogs and the
-                // mesh start all sit between. Every launch re-derives it from
+                // could still be in flight, since the primer, the OS dialogs and
+                // the mesh start all sit between. Every launch re-derives it from
                 // scratch, which is what makes it self-clearing.
                 if (leftovers) {
                   useMeshStateStore.getState().setWipeIncomplete(true);
@@ -1589,10 +1588,8 @@ function AppContent(): React.JSX.Element {
         <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
         <AlertModal />
         <RingAlertSheet />
-        {/* Mounted beside the alert, not inside the onboarding flow: the primer
-            is shown on the first launch that actually needs a permission, which
-            for someone who killed the app mid-onboarding is a launch that skips
-            onboarding entirely. */}
+        {/* Not inside onboarding: the first launch that needs a permission
+            can skip onboarding, if the app was killed partway through it. */}
         <PermissionPrimerSheet
           visible={primerVisible}
           onAcknowledge={acknowledgePermissionPrimer}
@@ -1602,11 +1599,7 @@ function AppContent(): React.JSX.Element {
           onClose={() => setShowActivity(false)}
           onOpenChannel={openChannelFromActivity}
         />
-        {/* Last in the tree, so it paints over the tab bar and every screen
-            under it. Modals render in their own window and mount their own. */}
-
         <View style={styles.flexFill}>
-          {/* Onboarding flow */}
           {onboardingStep !== null && (
             <>
               {onboardingStep === "welcome" && (
@@ -1660,12 +1653,9 @@ function AppContent(): React.JSX.Element {
             </>
           )}
 
-          {/* Main app */}
           {onboardingStep === null && (
             <SafeAreaView style={styles.root}>
-              {/* Header. The "You" tab skips this entirely: ProfileScreen
-                renders its own top row (status-edit pencil), so a second
-                bar that only said "You" was pure redundancy. */}
+              {/* Not on the You tab: ProfileScreen renders its own top row. */}
               {!isInThread && tab !== "profile" && (
                 <View style={styles.header}>
                   {tab === "chats" && chatView.kind === "list" ? (
@@ -1681,11 +1671,8 @@ function AppContent(): React.JSX.Element {
                         {T("nav.tab.chats")}
                       </Text>
                       <View style={styles.headerControls}>
-                        {/* tablist goes on the segmented track itself, not on
-                            headerControls: the outer row also holds the bell and
-                            the + button, and calling those two "tabs" would have
-                            a screen reader announce "tab 3 of 4" for an action
-                            that navigates nowhere. */}
+                        {/* tablist on the track, not headerControls: the bell
+                            and + beside it are actions, not "tab 3 of 4". */}
                         <View
                           style={styles.segmented}
                           accessibilityRole="tablist"
@@ -1808,9 +1795,6 @@ function AppContent(): React.JSX.Element {
                             )}
                           </Pressable>
                         </View>
-                        {/* Bell: notification history, shown on both the Channels
-                            and Direct sub-tabs, badged with unseen activity.
-                            Same filled circle as the + beside it. */}
                         <Pressable
                           style={({ pressed }) => [
                             styles.headerIconBtn,
@@ -1847,9 +1831,8 @@ function AppContent(): React.JSX.Element {
                             </View>
                           )}
                         </Pressable>
-                        {/* Shown on both sub-tabs. What it opens is the same
-                            chooser either way, so the header keeps its shape
-                            when you switch between Channels and Direct. */}
+                        {/* On both sub-tabs, so the header keeps its shape
+                            between Channels and Direct. */}
                         <Pressable
                           style={({ pressed }) => [
                             styles.newChannelPill,
@@ -2019,10 +2002,8 @@ function AppContent(): React.JSX.Element {
                 </View>
               )}
 
-              {/* Search bar: always available at the Chats tab, spans both
-                Channels and Direct. A message doesn't care which sub-tab
-                its chat lives in, so search isn't scoped to one either.
-                Focusing the field is what switches into search mode. */}
+              {/* Spans Channels and Direct: a message's sub-tab does not
+                  scope search. Focusing the field enters search mode. */}
               {!isInThread && tab === "chats" && (
                 <View style={styles.searchRow}>
                   {chatView.kind === "search" && (
@@ -2094,9 +2075,8 @@ function AppContent(): React.JSX.Element {
                   />
                 ))}
 
-              {/* Transport banner. Mesh tab only: that is where an empty screen
-                  needs explaining, and it is where the buttons that fix each
-                  blocker belong. Renders nothing when nothing is wrong. */}
+              {/* Mesh tab only: that is where an empty screen needs
+                  explaining, and where the fix for each blocker belongs. */}
               {!isInThread && tab === "mesh" && (
                 <MeshStatusBar
                   banners={meshBanners}
@@ -2118,8 +2098,6 @@ function AppContent(): React.JSX.Element {
                 />
               )}
 
-              {/* Content: swipe left/right to step through tabs, matching the
-                tab bar's order. */}
               <GestureDetector gesture={swipeGesture}>
                 <View style={styles.content}>
                   {tab === "chats" && chatView.kind === "thread" ? (
@@ -2226,9 +2204,8 @@ function AppContent(): React.JSX.Element {
                 </View>
               </GestureDetector>
 
-              {/* The header "+" flow, mounted beside the Chats list rather than
-                  inside it: both sub-tabs share one copy of the chooser and its
-                  forms. Sheets render in a Modal, so this sits anywhere. */}
+              {/* Beside the Chats list, not inside it: both sub-tabs share
+                  one copy of the chooser and its forms. */}
               {tab === "chats" && chatView.kind === "list" && (
                 <StartNewSheet
                   trigger={startNewTrigger}
@@ -2247,24 +2224,15 @@ function AppContent(): React.JSX.Element {
                 }}
               />
 
-              {/* Floating bottom stack: the ongoing-transfer pill and the tab
-                  bar, both hovering over the content that scrolls beneath.
-                  box-none so taps land on content in the gaps around the pills,
-                  not on the transparent container.
+              {/* box-none so taps in the gaps reach the content beneath.
 
-                  A SafeAreaView rather than a View, for its bottom edge only.
-                  An absolutely positioned child is laid out against its parent's
-                  PADDING box, so `bottom: 0` sits under the outer SafeAreaView's
-                  inset rather than above it. Under gesture navigation that inset
-                  is a few points and the pill's own margin hid the difference;
-                  with three-button navigation it is around 48, and the system
-                  buttons drew straight over the tab bar. Consuming the inset
-                  here puts it back on top.
-
-                  Not the `useSafeAreaInsets` hook: the provider is rendered
-                  inside this component, so a hook call in its body would sit
-                  ABOVE the provider and throw. This element is a descendant, so
-                  it reads the inset correctly. */}
+                  A SafeAreaView for its bottom edge: an absolutely positioned
+                  child is laid out against its parent's PADDING box, so
+                  `bottom: 0` sits within the outer inset rather than above
+                  it, and under three-button navigation (about 48pt) the
+                  system buttons would draw over the tab bar. Not `useSafeAreaInsets`: the
+                  provider renders inside this component, so the hook would
+                  sit above it and throw. */}
               {!isInThread && (
                 <SafeAreaView
                   edges={["bottom"]}
@@ -2272,14 +2240,11 @@ function AppContent(): React.JSX.Element {
                   pointerEvents="box-none"
                 >
                   <TransferBadge onOpen={openTransferChannel} />
-                  {/* Outer wrap carries the shadow + rounding; the bar itself
-                      clips its children to the pill (overflow hidden), and a
-                      clipped view can't cast the shadow itself. */}
+                  {/* The wrap carries the shadow: the bar clips its children
+                      to the pill, and a clipped view cannot cast one. */}
                   <View style={styles.tabBarWrap}>
-                    {/* accessibilityRole="tablist" is what tells VoiceOver and
-                        TalkBack that the four children below are one group of
-                        alternatives ("tab 2 of 4"). Without it each tab was an
-                        unrelated button and the set had no announced size. */}
+                    {/* tablist makes screen readers announce the four as one
+                        group ("tab 2 of 4") rather than unrelated buttons. */}
                     <View style={styles.tabBar} accessibilityRole="tablist">
                       {TABS.map(({ id, labelKey, icon }) => {
                         const active = tab === id;
@@ -2361,8 +2326,8 @@ function AppContent(): React.JSX.Element {
                                 active && styles.tabLabelActive,
                               ]}
                               // The pill is a fixed height, so an uncapped
-                              // label at the largest OS text size pushed the
-                              // icon out of it entirely.
+                              // label at the largest OS text size would push
+                              // the icon out of it.
                               maxFontSizeMultiplier={MaxFontScale.chrome}
                               numberOfLines={1}
                             >
