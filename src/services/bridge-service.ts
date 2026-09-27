@@ -64,9 +64,9 @@ export const DOWNLINK_EVENTS_PER_MINUTE = 20;
 export const UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR = 10;
 // Minimum spacing between our own presence heartbeats.
 const PRESENCE_MIN_INTERVAL_MS = 30_000;
+// Event and radio-copy IDs each loop-prevention set remembers, as bitchat-ios
+// (BridgeService.Limits.maxTrackedEventIDs).
 export const ID_SET_CAP = 512;
-// Event and radio-copy IDs each loop-prevention set remembers.
-const LOOP_CACHE_CAP = 2_000;
 
 // A remote-island message to render into the local #bluetooth timeline.
 export interface BridgeInboundMessage {
@@ -115,10 +115,10 @@ export class BridgeService {
   private readonly identityCache = new Map<string, GeohashIdentity>();
 
   // Loop prevention (mirrors the gateway's three caches).
-  private readonly publishedEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // our own published events
-  private readonly receivedEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // acted-on once
-  private readonly rebroadcastEventIDs = new BoundedIdSet(LOOP_CACHE_CAP); // ferried to mesh once
-  private readonly seenRadioStableIDs = new BoundedIdSet(LOOP_CACHE_CAP); // radio copies present
+  private readonly publishedEventIDs = new BoundedIdSet(ID_SET_CAP); // our own published events
+  private readonly receivedEventIDs = new BoundedIdSet(ID_SET_CAP); // acted-on once
+  private readonly rebroadcastEventIDs = new BoundedIdSet(ID_SET_CAP); // ferried to mesh once
+  private readonly seenRadioStableIDs = new BoundedIdSet(ID_SET_CAP); // radio copies present
 
   // Rate limiting.
   private readonly uplinkDeposits = new SlidingWindowLimiter(
