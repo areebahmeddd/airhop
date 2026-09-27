@@ -657,10 +657,10 @@ describe("cold start and permissions", () => {
   // A Tor start that took the process down leaves its marker. The next launch
   // must neither start Tor again (the crash would replay on every launch) nor
   // quietly go direct (the leak the user turned Tor on to avoid).
-  test("S16 a Tor start that died with the process: held, not retried, mesh unaffected", async () => {
+  test("S34 a Tor start that died with the process: held, not retried, mesh unaffected", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S16",
+      "S34",
       "relaunch with Tor on and a start marker left behind",
       os,
     );
