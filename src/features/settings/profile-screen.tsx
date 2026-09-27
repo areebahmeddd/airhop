@@ -806,7 +806,10 @@ export default function ProfileScreen({
         {/* Share actions: bordered pill buttons below the identity block */}
         <View style={styles.sharePills}>
           <Pressable
-            style={styles.sharePill}
+            style={({ pressed }) => [
+              styles.sharePill,
+              pressed && shared.rowPressed,
+            ]}
             onPress={() => setShowPeerIDModal(true)}
             accessibilityRole="button"
             accessibilityLabel={T("settings.share_peer_id")}
@@ -819,7 +822,10 @@ export default function ProfileScreen({
             </View>
           </Pressable>
           <Pressable
-            style={styles.sharePill}
+            style={({ pressed }) => [
+              styles.sharePill,
+              pressed && shared.rowPressed,
+            ]}
             onPress={() => setShowQRModal(true)}
             accessibilityRole="button"
             accessibilityLabel={T("settings.qr.show")}
@@ -835,7 +841,10 @@ export default function ProfileScreen({
             the two pills for someone who already does. */}
           {Platform.OS === "android" && (
             <Pressable
-              style={styles.sharePill}
+              style={({ pressed }) => [
+                styles.sharePill,
+                pressed && shared.rowPressed,
+              ]}
               onPress={() => void handleShareApk()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.share_app")}
@@ -960,9 +969,10 @@ export default function ProfileScreen({
             <Pressable
               ref={wipeHighlight.ref}
               onLayout={wipeHighlight.onLayout}
-              style={[
+              style={({ pressed }) => [
                 styles.dangerRow,
                 wipeHighlight.active && shared.rowHighlighted,
+                pressed && shared.rowPressed,
               ]}
               onPress={handlePanicPress}
               accessibilityRole="button"
@@ -1031,7 +1041,10 @@ export default function ProfileScreen({
           {/* Above the warning, not below: the same sentence covers the code and
             the QR, which are the same bytes. */}
           <Pressable
-            style={styles.codeBox}
+            style={({ pressed }) => [
+              styles.codeBox,
+              pressed && shared.sheetBtnPressed,
+            ]}
             onPress={handleCopyContactCode}
             accessibilityRole="button"
             accessibilityLabel={T("settings.qr.copy_code")}
@@ -1060,7 +1073,10 @@ export default function ProfileScreen({
           </View>
           <View style={styles.qrActions}>
             <Pressable
-              style={styles.qrShareBtn}
+              style={({ pressed }) => [
+                styles.qrShareBtn,
+                pressed && shared.sheetBtnPrimaryPressed,
+              ]}
               onPress={() => void handleShareQR()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.share")}
@@ -1071,7 +1087,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.qrDownloadBtn}
+              style={({ pressed }) => [
+                styles.qrDownloadBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => void handleDownloadQR()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.download")}
@@ -1096,7 +1115,10 @@ export default function ProfileScreen({
             {T("settings.peer_id_sheet.title")}
           </Text>
           <Pressable
-            style={styles.idBox}
+            style={({ pressed }) => [
+              styles.idBox,
+              pressed && shared.sheetBtnPressed,
+            ]}
             onPress={handleCopyPeerID}
             accessibilityRole="button"
             accessibilityLabel={T("settings.peer_id_sheet.copy")}
@@ -1116,7 +1138,10 @@ export default function ProfileScreen({
           </View>
           <View style={styles.qrActions}>
             <Pressable
-              style={styles.qrShareBtn}
+              style={({ pressed }) => [
+                styles.qrShareBtn,
+                pressed && shared.sheetBtnPrimaryPressed,
+              ]}
               onPress={() => void handleSharePeerID()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.share_peer_id")}
@@ -1127,7 +1152,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.qrDownloadBtn}
+              style={({ pressed }) => [
+                styles.qrDownloadBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => {
                 setShowPeerIDModal(false);
                 setShowQRModal(true);
@@ -1447,7 +1475,10 @@ export default function ProfileScreen({
           <Text style={shared.sheetSubtitle}>{T("settings.wipe.body")}</Text>
           <View style={styles.wipeActions}>
             <Pressable
-              style={styles.wipeConfirmBtn}
+              style={({ pressed }) => [
+                styles.wipeConfirmBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => void handleConfirmWipe()}
               accessibilityRole="button"
               accessibilityLabel={T("settings.wipe.now")}
@@ -1457,7 +1488,10 @@ export default function ProfileScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.wipeCancelBtn}
+              style={({ pressed }) => [
+                styles.wipeCancelBtn,
+                pressed && shared.sheetBtnPressed,
+              ]}
               onPress={() => setShowWipeModal(false)}
               accessibilityRole="button"
               accessibilityLabel={T("common.cancel")}
