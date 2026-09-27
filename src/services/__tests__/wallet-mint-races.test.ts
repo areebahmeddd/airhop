@@ -392,6 +392,67 @@ describe("redeeming a token twice", () => {
   });
 });
 
+describe("claiming again while the first claim is in doubt", () => {
+  const receipts = () =>
+    useWalletStore.getState().history.filter((t) => t.kind === "receive");
+
+  it("swaps nothing twice, and claims once the mint says the first never ran", async () => {
+    const token = await strangersToken(8);
+    // Reachable but failing before the swap runs: the claim is staged, and the
+    // reply says nothing about whether it swapped.
+    fabric.setConditions({ serverError: true });
+    try {
+      await expect(receiveToken(token)).rejects.toBeDefined();
+    } finally {
+      fabric.setConditions({ serverError: false });
+    }
+    expect(receipts()).toHaveLength(1);
+    const swaps = fabric.swapCount;
+
+    // Out of reach, nothing can settle the first claim, so no second starts.
+    fabric.setConditions({ offline: true });
+    try {
+      expect((await receiveToken(token)).outcome).toBe("claiming");
+    } finally {
+      fabric.setConditions({ offline: false });
+    }
+    expect(fabric.swapCount).toBe(swaps);
+    expect(receipts()).toHaveLength(1);
+
+    // Back in reach, the replay closes the first claim and this one swaps.
+    expect((await receiveToken(token)).outcome).toBe("swapped");
+    await reconcile();
+    expect(receipts().map((t) => t.status)).toEqual(["completed", "failed"]);
+    expect(spendable()).toBe(8);
+  });
+
+  it("reads as already claimed once the replay recovers the first", async () => {
+    const token = await strangersToken(8);
+    // The mint swaps, and a proxy in front of it loses the answer.
+    const direct = globalThis.fetch;
+    globalThis.fetch = (async (input: unknown, init?: unknown) => {
+      const response = await direct(input as RequestInfo, init as RequestInit);
+      return String(input).endsWith("/v1/swap")
+        ? new Response(JSON.stringify({ detail: "bad gateway" }), {
+            status: 502,
+          })
+        : response;
+    }) as typeof globalThis.fetch;
+    try {
+      await expect(receiveToken(token)).rejects.toBeDefined();
+    } finally {
+      globalThis.fetch = direct;
+    }
+    const swaps = fabric.swapCount;
+
+    expect((await receiveToken(token)).outcome).toBe("duplicate");
+
+    expect(fabric.swapCount).toBe(swaps);
+    expect(receipts().map((t) => t.status)).toEqual(["completed"]);
+    expect(spendable()).toBe(8);
+  });
+});
+
 describe("restoring a different phrase", () => {
   it("stops counting the coins held now as covered", async () => {
     await fund(16);

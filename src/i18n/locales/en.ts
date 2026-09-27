@@ -1100,6 +1100,9 @@ export const strings = {
   "wallet.receive.already_have": "Already in your wallet",
   "wallet.receive.already_have_body":
     "Everything in this token is already stored here, so nothing was added. Balances are unchanged.",
+  "wallet.receive.claiming": "Still waiting on the mint",
+  "wallet.receive.claiming_body":
+    "An earlier claim of this token has not been confirmed by the mint yet, so nothing new was sent. The wallet settles it automatically. If the mint never took it, you can claim it again.",
   "wallet.receive.stored_unconfirmed":
     "Stored from {mint}, but not yet confirmed with the mint ({reason}).",
   "wallet.receive.offline": "offline",

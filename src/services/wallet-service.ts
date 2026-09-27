@@ -966,6 +966,11 @@ function secretsAwaitingSwapReplay(): Set<string> {
   return secrets;
 }
 
+function awaitsSwapReplay(proofs: ProofLike[]): boolean {
+  const claimed = secretsAwaitingSwapReplay();
+  return proofs.some((p) => claimed.has(p.secret));
+}
+
 // Prepare a swap so losing its answer is survivable. `wallet.receive` and
 // `wallet.send` prepare, request and unblind in one call, so a lost response
 // leaves the inputs spent and the blinding factors gone with the call frame;
@@ -1057,7 +1062,9 @@ export interface ReceiveResult {
   // "stored"      kept offline, unverified: the mint has not confirmed it is
   //               unspent, and `dleq` says whether it is even genuine
   // "duplicate"   every proof was already in the wallet; nothing was credited
-  outcome: "swapped" | "stored" | "duplicate" | "own-pending";
+  // "own-pending" the coins are our own unsettled send; reclaim it instead
+  // "claiming"    an earlier claim of these coins waits on the mint's answer
+  outcome: "swapped" | "stored" | "duplicate" | "own-pending" | "claiming";
   // Why we did not swap, when outcome is "stored".
   offlineReason?: string;
   // The offline DLEQ check, for the receipt UI. "valid" only when every coin
@@ -1310,6 +1317,29 @@ async function receiveTokenOnce(
       mintUrl: url,
       memo: info.memo,
       outcome: "duplicate",
+      ...verdict,
+    };
+  }
+
+  // A claim still in doubt owns these coins until its replay learns what the
+  // mint did. Swapping them again would leave that claim's receipt pending
+  // for good, beside the real one, with nothing its replay could settle. A
+  // tap on Claim again is the moment to ask, so the replay runs first and the
+  // claim is decided afresh on its result.
+  if (awaitsSwapReplay(info.token.proofs)) {
+    await reconcile().catch(() => {
+      // Unreachable: the earlier claim stays in doubt.
+    });
+    assertSameWallet(epoch);
+    if (!awaitsSwapReplay(info.token.proofs)) {
+      return receiveTokenOnce(raw, opts);
+    }
+    return {
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      memo: info.memo,
+      outcome: "claiming",
       ...verdict,
     };
   }
@@ -2610,6 +2640,13 @@ function settleReplayedSwap(
     return;
   }
 
+  // As `markClaimed` does for a claim answered live, so the chat card and a
+  // second Receive see the token as taken in. The preview keeps the token's
+  // order, so its first input is the token's first proof.
+  const first = preview.inputs[0]?.secret;
+  if (tx.kind === "receive" && first !== undefined) {
+    store.markTokenClaimed(first);
+  }
   // Stops the next subscription redeeming a zap already banked.
   if (tx.nutzapEventId !== undefined) {
     store.markNutzapSettled(

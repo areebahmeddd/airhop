@@ -2283,6 +2283,13 @@ export default function MessageThread({
         );
         return;
       }
+      if (result.outcome === "claiming") {
+        showAlert(
+          t("wallet.receive.claiming"),
+          t("wallet.receive.claiming_body"),
+        );
+        return;
+      }
       showAlert(
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"

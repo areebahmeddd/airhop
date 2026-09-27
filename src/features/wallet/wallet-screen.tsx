@@ -551,6 +551,13 @@ export default function WalletScreen({
         );
         return;
       }
+      if (result.outcome === "claiming") {
+        showAlert(
+          t("wallet.receive.claiming"),
+          t("wallet.receive.claiming_body"),
+        );
+        return;
+      }
       const where = hostOf(result.mintUrl);
       if (result.outcome === "swapped") {
         showAlert(

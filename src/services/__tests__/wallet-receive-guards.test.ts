@@ -151,7 +151,12 @@ afterAll(() => {
 beforeEach(async () => {
   fabric.setConditions({ offline: false, latencyMs: 0 });
   resetWalletService();
+  // The NUT-13 cursor survives, as it does in the app: the phrase does, so
+  // starting it over would re-derive outputs an earlier case had signed, and a
+  // replay's NUT-09 query would find them.
+  const counters = useWalletStore.getState().counters;
   useWalletStore.getState().clearAll();
+  useWalletStore.setState({ counters });
   expect(await initWalletService()).toBe(true);
   await addMint(fabric.url);
 });
