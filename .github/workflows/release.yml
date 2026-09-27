@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 env:
-  # SHA-256 of the release signing certificate; changes are reviewed and checked against every signed APK/AAB.
-  # Key rotation requires updating this, README.md, and SECURITY.md in the same commit.
+  # The release certificate's SHA-256, checked against every signed APK and AAB.
+  # Rotating the key changes this, README.md and SECURITY.md in one commit.
   ANDROID_SIGNING_CERT_SHA256: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
 
 concurrency:
@@ -23,7 +23,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # Create the GitHub release; version and changelog are already in the tag.
+    # The version and changelog are already in the tagged commit.
     permissions:
       contents: write
     outputs:
@@ -82,11 +82,10 @@ jobs:
           <details>
           <summary><strong>Verify this download</strong></summary>
 
-          The APK is signed with the Airhop release key (package \`org.onemindlabs.airhop\`). This workflow refuses to publish an APK signed by anything else, so the check below should print exactly one signer with this digest:
+          The APK is signed with the Airhop release key (package \`org.onemindlabs.airhop\`). This workflow refuses to publish an APK signed by anything else, so the check below should print exactly one signer, with the certificate SHA-256 digest \`${ANDROID_SIGNING_CERT_SHA256}\`:
 
           \`\`\`
           apksigner verify --print-certs airhop.apk
-          Signer #1 certificate SHA-256 digest: ${ANDROID_SIGNING_CERT_SHA256}
           \`\`\`
 
           It also carries SLSA build provenance. This checks it was built by this repository's release workflow from tag ${TAG}, on a GitHub-hosted runner:
@@ -173,8 +172,8 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          # abiFilters are merged, so build types can't narrow them.
-          # gradle.properties keeps x86_64 for emulators; shipped builds include only the two ARM ABIs.
+          # abiFilters merge across build types, so the ARM-only set is passed
+          # here; gradle.properties keeps x86_64 for emulators.
           ./gradlew assembleRelease bundleRelease --no-daemon \
             -PreactNativeArchitectures=arm64-v8a,armeabi-v7a \
             -Pairhop.unsignedRelease=true
@@ -290,17 +289,18 @@ jobs:
           set -euo pipefail
           BUILD_TOOLS="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -1)"
 
-          # apksigner prints several "Signer #N" lines per signer, so count the
-          # distinct signers rather than the lines.
+          # Matched on the digest alone, since build-tools 37 renamed the "Signer #1"
+          # prefix. Distinct digests, so a second signer fails the comparison.
           apk="$("${BUILD_TOOLS}/apksigner" verify --print-certs dist/airhop.apk)"
-          signers="$(grep -oE '^Signer #[0-9]+ ' <<<"$apk" | sort -u | wc -l)"
-          if [ "$signers" -ne 1 ] || ! grep -Fxq "Signer #1 certificate SHA-256 digest: ${ANDROID_SIGNING_CERT_SHA256}" <<<"$apk"; then
+          digests="$(sed -n 's/.*certificate SHA-256 digest: //p' <<<"$apk" | sort -u)"
+          if [ "$digests" != "$ANDROID_SIGNING_CERT_SHA256" ]; then
             echo "::error::The APK is not signed by the release certificate alone."
             printf '%s\n' "$apk"
             exit 1
           fi
 
-          "${JAVA_HOME}/bin/jarsigner" -verify dist/airhop.aab > /dev/null
+          # Not silenced: jarsigner reports a failure on stdout.
+          "${JAVA_HOME}/bin/jarsigner" -verify dist/airhop.aab
           aab="$("${JAVA_HOME}/bin/keytool" -printcert -jarfile dist/airhop.aab)"
           digests="$(sed -n 's/^[[:space:]]*SHA256: //p' <<<"$aab" | tr -d ':' | tr 'A-F' 'a-f')"
           if [ "$digests" != "$ANDROID_SIGNING_CERT_SHA256" ]; then
@@ -408,7 +408,6 @@ jobs:
           fi
           bundle exec pod install
 
-      # Distribution certificate and App Store profile, like the Android keystore.
       - name: Decode signing certificate and profile
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
@@ -465,7 +464,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs: release
-    # Publish the release software bill of materials.
     permissions:
       contents: write
 
@@ -495,8 +493,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs: release
-    # Publishes SHA-256 hashes of tracked source files to verify source integrity.
-    # Complements the SBOM by proving the source matches this release.
+    # SHA-256 of every tracked source file, so a checkout can be matched to this release.
     permissions:
       contents: write
       id-token: write

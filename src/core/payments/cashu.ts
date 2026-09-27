@@ -142,6 +142,32 @@ export function mintsOfUnresolvedTokens(
   return out;
 }
 
+// The amount a message that is nothing but one token claims, for a preview that
+// must not show the bearer string itself. Read from the token's metadata, which
+// needs no keyset, so a v2 short id this wallet has not fetched still previews.
+// Unverified: it is a label, and the chat card is what checks the token. Null
+// for anything else, a token with prose around it included, which is how the
+// thread decides between a bare card and a bubble.
+export function pureTokenAmount(
+  text: string,
+): { amount: number; unit: string } | null {
+  const trimmed = text.trim();
+  const first = tokenCandidates(trimmed).next();
+  if (first.done === true || first.value.raw !== trimmed) return null;
+  const tokenStr = bareToken(trimmed);
+  if (tokenStr === null) return null;
+  try {
+    const meta = getTokenMetadata(tokenStr);
+    const amount = meta.amount.toNumber();
+    if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) {
+      return null;
+    }
+    return { amount, unit: sanitizeUnit(meta.unit) };
+  } catch {
+    return null;
+  }
+}
+
 // Distinct token-shaped strings in `text`, bounded in scan window and length.
 function* tokenCandidates(
   text: string,

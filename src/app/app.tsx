@@ -38,6 +38,7 @@ import {
   translatorFor,
   useT,
   useTPlural,
+  useWantedLanguage,
   type TranslationKey,
 } from "@i18n";
 import { arrowBack, isRTLLayout } from "@i18n/layout";
@@ -665,9 +666,15 @@ function AppContent(): React.JSX.Element {
   // Written in the language being waited for, not the one on screen: its reader
   // is by definition somebody who cannot read the current UI language.
   const languagePreference = useSettingsStore((s) => s.language);
+  // Watched too, so a phone-language change under "system" raises it.
+  const wantedLanguage = useWantedLanguage();
   const noticeShownFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!needsRelaunch(languagePreference)) return;
+    // Cleared once nothing waits, so going back and choosing it again re-asks.
+    if (!needsRelaunch(languagePreference)) {
+      noticeShownFor.current = null;
+      return;
+    }
     const target = resolvePreference(languagePreference);
     if (noticeShownFor.current === target) return;
     noticeShownFor.current = target;
@@ -697,7 +704,7 @@ function AppContent(): React.JSX.Element {
           ]
         : undefined,
     );
-  }, [languagePreference]);
+  }, [languagePreference, wantedLanguage]);
 
   // appReady guards against a flash of the welcome screen on every launch.
   // The identity check is async, so we render nothing until it resolves.

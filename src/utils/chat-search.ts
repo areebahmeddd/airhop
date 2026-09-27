@@ -15,6 +15,7 @@ import { formatTokenSummary } from "./format";
 import { messagePreviewText } from "./message-preview";
 import { messageText } from "./message-text";
 import { scoreMatch, searchKey } from "./search-text";
+import { isCharacterBoundary, truncateToCodePoints } from "./utf8-budget";
 
 // Message results are capped so the results view never renders an unbounded
 // list. The underlying scan is cheap (messages are capped per-channel at
@@ -231,8 +232,13 @@ function buildSnippet(
   matchIndex: number,
   matchLength: number,
 ): { snippet: string; matchStart: number; matchEnd: number } {
-  const start = Math.max(0, matchIndex - SNIPPET_RADIUS);
-  const end = Math.min(text.length, matchIndex + matchLength + SNIPPET_RADIUS);
+  const afterMatch = matchIndex + matchLength;
+  // Each edge moves inward to a character boundary, so the window never opens
+  // on half an emoji or a mark cut from its letter.
+  let start = Math.max(0, matchIndex - SNIPPET_RADIUS);
+  while (start < matchIndex && !isCharacterBoundary(text, start)) start++;
+  let end = Math.min(text.length, afterMatch + SNIPPET_RADIUS);
+  while (end > afterMatch && !isCharacterBoundary(text, end)) end--;
   const prefix = start > 0 ? "…" : "";
   const suffix = end < text.length ? "…" : "";
   const snippet = prefix + text.slice(start, end) + suffix;
@@ -302,10 +308,8 @@ export function searchNotices(
     const author = searchable(n.author);
     const authorIndex = author.hay.indexOf(q);
     if (authorIndex === -1) continue;
-    const snippet =
-      n.content.length > SNIPPET_RADIUS * 2
-        ? `${n.content.slice(0, SNIPPET_RADIUS * 2)}…`
-        : n.content;
+    const cut = truncateToCodePoints(n.content, SNIPPET_RADIUS * 2);
+    const snippet = cut === n.content ? cut : `${cut}…`;
     hits.push({
       id: n.id,
       channel: n.channel,

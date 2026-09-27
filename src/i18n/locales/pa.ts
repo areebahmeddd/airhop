@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "ਅੱਜ",
   "format.yesterday": "ਕੱਲ੍ਹ",
-  "format.minutes_ago": "{count} ਮਿੰਟ ਪਹਿਲਾਂ",
-  "format.hours_ago": "{count} ਘੰਟੇ ਪਹਿਲਾਂ",
-  "format.days_ago": "{count} ਦਿਨ ਪਹਿਲਾਂ",
   "format.just_now": "ਹੁਣੇ",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -249,6 +246,7 @@ export const strings: Strings = {
   "chat.group_badge": "ਗਰੁੱਪ",
   "chat.more": "ਹੋਰ",
   "chat.no_messages": "ਹਾਲੇ ਕੋਈ ਸੁਨੇਹਾ ਨਹੀਂ",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "ਨੇੜੇ ਕੋਈ ਨਹੀਂ",
   "chat.presence.active_none": "ਕੋਈ ਸਰਗਰਮ ਨਹੀਂ",
   "chat.you": "ਤੁਸੀਂ",
@@ -326,6 +324,7 @@ export const strings: Strings = {
     "ਉਹ ਸੈੱਲ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ। ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
   "chat.jump.title": "ਕਿਸੇ ਥਾਂ ’ਤੇ ਜਾਓ",
   "chat.jump.saved": "ਸੰਭਾਲੀਆਂ ਥਾਵਾਂ",
+  "chat.jump.nearby": "ਨੇੜੇ",
   "chat.jump.anywhere":
     "ਕਿਤੇ ਵੀ ਜਨਤਕ ਟਿਕਾਣਾ ਚੈਨਲ ਖੋਲ੍ਹੋ, ਭਾਵੇਂ ਉਹ ਥਾਂ ਜਿੱਥੇ ਤੁਸੀਂ ਨਹੀਂ ਹੋ।",
   "chat.jump.geohash_note":
@@ -335,7 +334,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level} ਸੈੱਲ",
   "chat.jump.already_here":
     "ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਇੱਥੇ ਹੋ। ਜਾਓ ਤੁਹਾਡਾ {name} ਚੈਨਲ ਖੋਲ੍ਹਦਾ ਹੈ।",
-  "chat.jump.open_direction": "ਆਪਣੇ {direction} ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.dir.n": "ਉ",
+  "chat.jump.dir.ne": "ਉ-ਪੂ",
+  "chat.jump.dir.e": "ਪੂ",
+  "chat.jump.dir.se": "ਦ-ਪੂ",
+  "chat.jump.dir.s": "ਦ",
+  "chat.jump.dir.sw": "ਦ-ਪ",
+  "chat.jump.dir.w": "ਪ",
+  "chat.jump.dir.nw": "ਉ-ਪ",
+  "chat.jump.open_n": "ਉੱਤਰ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_ne": "ਉੱਤਰ-ਪੂਰਬ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_e": "ਪੂਰਬ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_se": "ਦੱਖਣ-ਪੂਰਬ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_s": "ਦੱਖਣ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_sw": "ਦੱਖਣ-ਪੱਛਮ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_w": "ਪੱਛਮ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
+  "chat.jump.open_nw": "ਉੱਤਰ-ਪੱਛਮ ਵੱਲ ਵਾਲਾ ਸੈੱਲ ਖੋਲ੍ਹੋ",
   "chat.jump.open_place": "{name} ਖੋਲ੍ਹੋ",
   "chat.jump.remove_place": "{name} ਨੂੰ ਸੰਭਾਲੀਆਂ ਥਾਵਾਂ ਵਿੱਚੋਂ ਹਟਾਓ",
   "chat.jump.go": "ਜਾਓ",
@@ -453,18 +467,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name} ਰੱਦ ਕਰੋ",
   "chat.thread.hide_transfer": "ਪ੍ਰਗਤੀ ਲੁਕਾਓ",
   "chat.thread.hide_transfer_hint": "ਫ਼ਾਈਲ ਫਿਰ ਵੀ ਆ ਜਾਵੇਗੀ",
-  "chat.thread.queued_more": "{count} ਹੋਰ ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
-  "chat.thread.across_bridge": "{count} ਪੁਲ ਦੇ ਪਾਰ",
   "chat.thread.bridged": "ਪੁਲ ਕੀਤਾ",
   "chat.thread.invite_body":
     "Airhop ’ਤੇ {channel} ਵਿੱਚ ਮੇਰੇ ਨਾਲ ਜੁੜੋ — ਆਫ਼ਲਾਈਨ-ਪਹਿਲਾਂ, ਨਿੱਜੀ ਮੈਸ਼ ਸੁਨੇਹੇ।",
-  "chat.thread.go_back_unread": "ਵਾਪਸ ਜਾਓ, {count} ਅਣਪੜ੍ਹੇ",
   "chat.thread.view_info": "{name} ਦੀ ਜਾਣਕਾਰੀ ਦੇਖੋ",
-  "chat.thread.notices_new": "ਇਸ ਚੈਨਲ ਲਈ ਨੋਟਿਸ, {count} ਨਵੇਂ",
   "chat.board.urgent_one": "{author} ਵੱਲੋਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · {content}",
-  "chat.board.urgent_many": "{count} ਨਵੇਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · ਨੋਟਿਸ ਖੋਲ੍ਹੋ",
+  "chat.board.urgent_one_anon": "ਜ਼ਰੂਰੀ ਨੋਟਿਸ · {content}",
   "chat.thread.say_something": "{channel} ਵਿੱਚ ਕੁਝ ਕਹੋ।",
-  "chat.thread.jump_latest_new": "ਸਭ ਤੋਂ ਨਵੇਂ ਸੁਨੇਹੇ ’ਤੇ ਜਾਓ, {count} ਨਵੇਂ",
   "chat.thread.unconfirmed_since":
     "{date} ਤੋਂ ਕਿਸੇ ਸੁਨੇਹੇ ਦੇ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ",
   "chat.thread.no_reach": "ਨੇੜੇ ਕੋਈ ਪੀਅਰ ਨਹੀਂ · ਹਾਲੇ ਕਿਸੇ ਨੂੰ ਇਹ ਨਹੀਂ ਮਿਲਿਆ",
@@ -501,7 +510,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "ਤੁਸੀਂ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਿਆ · ਕਿਸੇ ਨੂੰ ਨਹੀਂ ਦੱਸਿਆ ਗਿਆ",
   "chat.screenshot.heads_up": "ਧਿਆਨ ਦਿਓ",
-  "chat.screenshot.notice": "* {name} ਨੇ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਿਆ *",
+  "chat.screenshot.peer_took": "{name} ਨੇ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਿਆ",
   "chat.screenshot.notified_dm":
     "{name} ਨੂੰ ਦੱਸ ਦਿੱਤਾ ਗਿਆ ਕਿ ਤੁਸੀਂ ਇਸ ਗੱਲਬਾਤ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਿਆ ਹੈ।",
   "chat.screenshot.notified":
@@ -546,7 +555,7 @@ export const strings: Strings = {
   "chat.attach.document": "ਦਸਤਾਵੇਜ਼",
   "chat.attach.document_desc": "ਕੋਈ ਵੀ ਫ਼ਾਈਲ ਜਾਂ PDF ਭੇਜੋ",
   "chat.attach.voice": "ਵੌਇਸ ਨੋਟ",
-  "chat.attach.voice_desc": "ਆਵਾਜ਼ੀ ਸੁਨੇਹਾ ਰਿਕਾਰਡ ਕਰ ਕੇ ਭੇਜੋ",
+  "chat.attach.voice_desc": "ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਕਰ ਕੇ ਭੇਜੋ",
   "chat.attach.ecash": "ecash ਭੇਜੋ",
   "chat.attach.ecash_desc": "ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ Cashu sats ਭੇਜੋ",
   "chat.attach.location": "ਟਿਕਾਣਾ",
@@ -554,7 +563,7 @@ export const strings: Strings = {
   "chat.attach.title": "ਨੱਥੀ ਕਰੋ",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "ਟਿਕਾਣਾ ਸਾਂਝਾ ਕੀਤਾ",
+  "chat.location.sent_summary": "ਟਿਕਾਣਾ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ",
   "chat.location.received_summary": "ਆਪਣਾ ਟਿਕਾਣਾ ਸਾਂਝਾ ਕੀਤਾ",
   "chat.location.title": "ਟਿਕਾਣਾ",
   "chat.location.away": "{distance} {direction}",
@@ -585,15 +594,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "ਉੱਤਰ-ਪੱਛਮ",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "ਘੰਟੀ ਵਜਾਈ",
+  "chat.ring.sent_summary": "ਘੰਟੀ ਭੇਜੀ ਗਈ",
   "chat.ring.received_summary": "ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾਈ",
   "chat.ring.alert.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
   "chat.ring.alert.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
   "chat.ring.alert.open": "ਖੋਲ੍ਹੋ",
   "chat.ring.alert.snooze": "1 ਘੰਟੇ ਲਈ ਰੋਕੋ",
-  "chat.ring.sent_snoozed": "ਘੰਟੀ ਵਜਾਈ, ਟਾਲੀ ਗਈ",
-  "chat.ring.sent_too_soon": "ਘੰਟੀ ਵਜਾਈ, ਬਹੁਤ ਜਲਦੀ",
-  "chat.ring.sent_not_allowed": "ਘੰਟੀ ਵਜਾਈ, ਇਜਾਜ਼ਤ ਨਹੀਂ",
+  "chat.ring.sent_snoozed": "ਘੰਟੀ ਭੇਜੀ ਗਈ · ਟਾਲੀ ਹੋਈ",
+  "chat.ring.sent_too_soon": "ਘੰਟੀ ਭੇਜੀ ਗਈ · ਬਹੁਤ ਜਲਦੀ",
+  "chat.ring.sent_not_allowed": "ਘੰਟੀ ਭੇਜੀ ਗਈ · ਇਜਾਜ਼ਤ ਨਹੀਂ",
   "chat.attach.send_anyway": "ਫਿਰ ਵੀ ਭੇਜੋ",
   "chat.attach.bitchat_too_big": "ਸ਼ਾਇਦ ਇਹ ਨਾ ਪਹੁੰਚੇ",
   "chat.attach.bitchat_too_big_body":
@@ -667,6 +676,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "ਰਿਕਾਰਡਿੰਗ ਰੋਕ ਕੇ ਭੇਜੋ",
   "chat.voice.lift_lock": "ਬਿਨਾਂ ਹੱਥ ਲਾਏ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਉੱਪਰ ਖਿਸਕਾਓ",
   "chat.voice.live_speaking": "{name} ਬੋਲ ਰਹੇ ਹਨ",
+  "chat.voice.live_ended": "ਖ਼ਤਮ",
   "voice.unavailable": "ਸਿੱਧੀ ਆਵਾਜ਼ ਉਪਲਬਧ ਨਹੀਂ",
   "voice.recording_stopped": "ਰਿਕਾਰਡਿੰਗ ਰੁਕ ਗਈ",
 
@@ -728,7 +738,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name} ਨੂੰ ਹਟਾਓ",
   "chat.info.no_addable":
     "ਜੋੜਨ ਲਈ ਕੋਈ ਪਹੁੰਚਯੋਗ ਪੀਅਰ ਨਹੀਂ। ਮੈਂਬਰਾਂ ਦਾ ਨੇੜੇ ਹੋਣਾ ਜ਼ਰੂਰੀ ਹੈ।",
-  "chat.info.add_count": "{count} ਜੋੜੋ",
   "chat.info.teleported_tag": "{level}  ·  ਟੈਲੀਪੋਰਟ ਕੀਤਾ",
   "chat.info.active": "ਸਰਗਰਮ",
   "chat.info.members": "ਮੈਂਬਰ",
@@ -813,8 +822,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 ਦਿਨ",
   "chat.notices.7_days": "7 ਦਿਨ",
   "chat.notices.fading": "ਮਿਟ ਰਿਹਾ ਹੈ",
-  "chat.notices.fades_in_hours": "{count} ਘੰਟੇ ਵਿੱਚ ਮਿਟੇਗਾ",
-  "chat.notices.fades_in_days": "{count} ਦਿਨ ਵਿੱਚ ਮਿਟੇਗਾ",
   "chat.notices.scope_geo": "ਭੂ",
   "chat.notices.scope_mesh": "ਮੈਸ਼",
   "chat.notices.urgent_short": "ਜ਼ਰੂਰੀ",
@@ -831,10 +838,21 @@ export const strings: Strings = {
   "chat.search.links": "ਲਿੰਕ",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "{filter} ਨਾਲ ਛਾਣੋ",
-  "chat.search.no_matches": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਕੋਈ {filter} ਨਹੀਂ",
-  "chat.search.no_media": "ਹਾਲੇ ਕੋਈ {filter} ਨਹੀਂ",
+  "chat.search.no_photos": "ਹਾਲੇ ਕੋਈ ਫ਼ੋਟੋ ਨਹੀਂ",
+  "chat.search.no_videos": "ਹਾਲੇ ਕੋਈ ਵੀਡੀਓ ਨਹੀਂ",
+  "chat.search.no_audio": "ਹਾਲੇ ਕੋਈ ਆਡੀਓ ਨਹੀਂ",
+  "chat.search.no_documents": "ਹਾਲੇ ਕੋਈ ਦਸਤਾਵੇਜ਼ ਨਹੀਂ",
+  "chat.search.no_links": "ਹਾਲੇ ਕੋਈ ਲਿੰਕ ਨਹੀਂ",
+  "chat.search.no_ecash": "ਹਾਲੇ ਕੋਈ ecash ਨਹੀਂ",
+  "chat.search.no_photos_matching": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦੀ ਕੋਈ ਫ਼ੋਟੋ ਨਹੀਂ",
+  "chat.search.no_videos_matching": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦੀ ਕੋਈ ਵੀਡੀਓ ਨਹੀਂ",
+  "chat.search.no_audio_matching": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਕੋਈ ਆਡੀਓ ਨਹੀਂ",
+  "chat.search.no_documents_matching":
+    "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਕੋਈ ਦਸਤਾਵੇਜ਼ ਨਹੀਂ",
+  "chat.search.no_links_matching": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਕੋਈ ਲਿੰਕ ਨਹੀਂ",
+  "chat.search.no_ecash_matching": "“{query}” ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਕੋਈ ecash ਨਹੀਂ",
   "chat.search.result_a11y": "{chat}, {sender} ਵੱਲੋਂ {kind}",
-  "chat.search.you": "ਤੁਸੀਂ",
+  "chat.search.result_mine_a11y": "{chat}, ਤੁਹਾਡੇ ਵੱਲੋਂ {kind}",
   "chat.search.section_chats": "ਗੱਲਬਾਤਾਂ",
   "chat.search.section_messages": "ਸੁਨੇਹੇ",
   "chat.search.section_notices": "ਨੋਟਿਸ",
@@ -842,15 +860,13 @@ export const strings: Strings = {
   "chat.search.no_results": "“{query}” ਲਈ ਕੋਈ ਨਤੀਜਾ ਨਹੀਂ",
   "chat.search.open_chat": "{name} ਖੋਲ੍ਹੋ",
   "chat.search.message_a11y": "{chat}, {sender} ਵੱਲੋਂ ਸੁਨੇਹਾ: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ਤੁਹਾਡਾ ਸੁਨੇਹਾ: {snippet}",
   "chat.search.notice_a11y": "{chat} ਵਿੱਚ {author} ਵੱਲੋਂ ਨੋਟਿਸ: {snippet}",
   "chat.search.urgent": "ਜ਼ਰੂਰੀ ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "ਇਸ ਸੂਚੀ ਵਿੱਚ {count}। ਸਾਫ਼ ਕਰਨ ਨਾਲ ਇਹ ਸਿਰਫ਼ ਇੱਥੋਂ ਹਟਦੇ ਹਨ, ਅਤੇ ਸੁਨੇਹੇ ਆਪਣੀਆਂ ਗੱਲਬਾਤਾਂ ਵਿੱਚ ਅਣਪੜ੍ਹੇ ਹੀ ਰਹਿੰਦੇ ਹਨ। ਸਭ ਨੂੰ ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਉਣ ਨਾਲ ਦੋਵੇਂ ਸਾਫ਼ ਹੋ ਜਾਂਦੇ ਹਨ।",
   "chat.notif.mark_all_read": "ਸਭ ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
   "chat.notif.clear_list": "ਸੂਚੀ ਸਾਫ਼ ਕਰੋ",
-  "chat.notif.clear_all_a11y": "ਸਾਰੀਆਂ {count} ਸੂਚਨਾਵਾਂ ਸਾਫ਼ ਕਰੋ",
   "chat.notif.title": "ਸੂਚਨਾਵਾਂ",
   "chat.notif.clear_short": "ਸਾਫ਼ ਕਰੋ",
   "chat.notif.close": "ਸੂਚਨਾਵਾਂ ਬੰਦ ਕਰੋ",
@@ -873,12 +889,15 @@ export const strings: Strings = {
   "chat.forward.locations": "ਟਿਕਾਣੇ",
   "chat.forward.dms": "ਸਿੱਧੇ ਸੁਨੇਹੇ",
   "chat.forward.none": "ਹਾਲੇ ਕੋਈ ਹੋਰ ਗੱਲਬਾਤ ਨਹੀਂ",
+  "chat.forward.app_row": "ਅੱਗੇ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ",
+  "chat.forward.app_row_body":
+    "ਇਹ ਲਾਈਨ ਕਿਸੇ ਵਿਅਕਤੀ ਵੱਲੋਂ ਨਹੀਂ, Airhop ਵੱਲੋਂ ਹੈ, ਇਸ ਲਈ ਅੱਗੇ ਭੇਜਣ ਲਈ ਕੁਝ ਨਹੀਂ।",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "ਮੈਸ਼ ਸ਼ੁਰੂ ਕਰ ਰਹੇ ਹਾਂ…",
   "mesh.banner.no_bluetooth": "ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਬਲੂਟੁੱਥ ਨਹੀਂ · ਸਿਰਫ਼ ਇੰਟਰਨੈੱਟ",
   "mesh.banner.bluetooth_off": "ਬਲੂਟੁੱਥ ਬੰਦ · ਮੈਸ਼ ਉਪਲਬਧ ਨਹੀਂ",
-  "mesh.banner.bluetooth_off_wifi": "ਬਲੂਟੁੱਥ ਬੰਦ · ਮੈਸ਼ WiFi ਉੱਤੇ ਚੱਲ ਰਿਹਾ ਹੈ",
+  "mesh.banner.bluetooth_off_wifi": "ਬਲੂਟੁੱਥ ਬੰਦ · ਮੈਸ਼ Wi-Fi ਉੱਤੇ ਚੱਲ ਰਿਹਾ ਹੈ",
   "mesh.banner.permission_needed": "ਬਲੂਟੁੱਥ ਦੀ ਇਜਾਜ਼ਤ ਚਾਹੀਦੀ ਹੈ",
   "mesh.banner.blocked": "ਬਲੂਟੁੱਥ ਰੋਕਿਆ ਹੋਇਆ · ਸੈਟਿੰਗਾਂ ਵਿੱਚੋਂ ਇਜਾਜ਼ਤ ਦਿਓ",
   "mesh.banner.location_permission": "ਪੀਅਰ ਲੱਭਣ ਲਈ ਟਿਕਾਣਾ ਚਾਹੀਦਾ ਹੈ",
@@ -905,7 +924,6 @@ export const strings: Strings = {
     "ਇੰਟਰਨੈੱਟ ਗੇਟਵੇ ਚਾਲੂ · ਨੇੜਲੇ ਪੀਅਰਾਂ ਲਈ ਅੱਗੇ ਭੇਜ ਰਹੇ ਹਾਂ",
   "mesh.banner.bridge": "ਮੈਸ਼ ਪੁਲ ਚਾਲੂ · ਜਨਤਕ ਗੱਲਬਾਤ ਜੁੜੀ ਹੋਈ",
   "mesh.banner.background_limits": "{brand} ਪਿਛੋਕੜ ਵਿੱਚ ਮੈਸ਼ ਰੋਕ ਸਕਦਾ ਹੈ",
-  "mesh.banner.bridge_across": "ਮੈਸ਼ ਪੁਲ ਚਾਲੂ · {count} ਪੁਲ ਦੇ ਪਾਰ",
   "mesh.banner.action.turn_on": "ਚਾਲੂ ਕਰੋ",
   "mesh.banner.action.allow": "ਇਜਾਜ਼ਤ ਦਿਓ",
   "mesh.banner.action.resume": "ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰੋ",
@@ -979,7 +997,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "ਪੀਅਰ {name} ਦੇਖੋ, ਆਨਲਾਈਨ",
   "mesh.peer.view_relay_online": "ਪੀਅਰ {name} ਦੇਖੋ, ਆਨਲਾਈਨ, ਰਿਲੇ ਨੋਡ",
   "mesh.peer.last_seen_at": "ਆਖਰੀ ਵਾਰ ਦੇਖਿਆ {ago}",
-  "mesh.peer.send_amount": "{amount} sats ਭੇਜੋ",
+  "mesh.peer.send_unit_amount": "{amount} {unit} ਭੇਜੋ",
   "mesh.peer.direct": "ਸਿੱਧਾ ਕਨੈਕਸ਼ਨ",
   "mesh.peer.check_distance": "ਦੂਰੀ ਦੇਖੋ",
   "mesh.peer.checking": "ਦੇਖ ਰਹੇ ਹਾਂ",
@@ -1050,7 +1068,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "ਇਹ ਟੋਕਨ ਇੰਨੇ ਸਿੱਕਿਆਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ ਕਿ QR ਕੋਡ ਵਿੱਚ ਨਹੀਂ ਸਮਾਉਂਦਾ। ਇਸ ਦੀ ਥਾਂ ਇਸ ਨੂੰ ਸਾਂਝਾ ਜਾਂ ਨਕਲ ਕਰੋ।",
   "wallet.send.scan_note":
-    "ਉਹਨਾਂ ਨੂੰ ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ ਇਹ ਸਕੈਨ ਕਰਨ ਲਈ ਕਹੋ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਿਆ ਨਿਸ਼ਾਨ ਨਹੀਂ ਲਾਉਂਦੇ, ਇਹ ਵਾਪਸ ਲਿਆ ਜਾ ਸਕਦਾ ਹੈ।",
+    "ਉਹਨਾਂ ਨੂੰ ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ ਇਹ ਸਕੈਨ ਕਰਨ ਲਈ ਕਹੋ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਮਿਲਿਆ ਨਿਸ਼ਾਨ ਨਹੀਂ ਲਾਉਂਦੇ, ਇਹ ਵਾਪਸ ਲਿਆ ਜਾ ਸਕਦਾ ਹੈ।",
   "wallet.send.mesh_note":
     "ਟੋਕਨ ਮੈਸ਼ ’ਤੇ ਇਨਕ੍ਰਿਪਟਡ DM ਵਜੋਂ ਜਾਂਦਾ ਹੈ। ਇੰਟਰਨੈੱਟ ਦੀ ਲੋੜ ਨਹੀਂ।",
   "wallet.send.no_peers_note":
@@ -1071,7 +1089,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "ਵਾਲਿਟ ਵਿੱਚ ਖੋਲ੍ਹੋ",
   "wallet.send.to_peer": "ਟੋਕਨ ਕਿਸੇ ਨੇੜਲੇ ਪੀਅਰ ਨੂੰ ਭੇਜੋ",
   "wallet.send.to_peer_short": "ਪੀਅਰ ਨੂੰ ਭੇਜੋ",
-  "wallet.send.mark_delivered": "ਪਹੁੰਚਿਆ ਨਿਸ਼ਾਨ ਲਾ ਕੇ ਮੁਕਾਓ",
+  "wallet.send.mark_delivered": "ਮਿਲਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
   "wallet.send.they_got_it": "ਉਹਨਾਂ ਨੂੰ ਮਿਲ ਗਿਆ",
   "wallet.send.keep_pending": "ਇਹ ਭੇਜਣਾ ਬਕਾਇਆ ਰੱਖੋ",
   "wallet.send.decide_later": "ਬਾਅਦ ਵਿੱਚ ਫ਼ੈਸਲਾ ਕਰੋ",
@@ -1095,10 +1113,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "{mint} ’ਤੇ ਭੁਨਾ ਲਿਆ। ਹੁਣ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਹੈ: ਭੇਜਣ ਵਾਲੇ ਕੋਲ ਇਸ ਟੋਕਨ ਦੀ ਕਾਪੀ ਹੁਣ ਕੰਮ ਨਹੀਂ ਕਰਦੀ।",
-  "wallet.receive.stored_pending":
-    "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਮਿੰਟ ਨੇ ਹਾਲੇ ਇਹ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਕਿ ਇਹ ਖ਼ਰਚਿਆ ਨਹੀਂ ਗਿਆ{dleq}। ਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ-ਆਪ ਪੁਸ਼ਟੀ ਹੋ ਜਾਂਦੀ ਹੈ।",
-  "wallet.receive.dleq_inline":
-    " (ਇਸ ਦੇ ਦਸਤਖ਼ਤ ਸਹੀ ਨਿਕਲਦੇ ਹਨ, ਇਸ ਲਈ ਟੋਕਨ ਅਸਲੀ ਹੈ)",
+  "wallet.receive.pending_unconfirmed":
+    "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਮਿੰਟ ਨੇ ਹਾਲੇ ਇਹ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਕਿ ਇਹ ਖ਼ਰਚਿਆ ਨਹੀਂ ਗਿਆ। ਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ-ਆਪ ਪੁਸ਼ਟੀ ਹੋ ਜਾਂਦੀ ਹੈ।",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਮਿੰਟ ਨੇ ਹਾਲੇ ਇਹ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਕਿ ਇਹ ਖ਼ਰਚਿਆ ਨਹੀਂ ਗਿਆ। ਇਸ ਦੇ ਦਸਤਖ਼ਤ ਸਹੀ ਹਨ, ਇਸ ਲਈ ਟੋਕਨ ਅਸਲੀ ਹੈ। ਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ-ਆਪ ਪੁਸ਼ਟੀ ਹੋ ਜਾਂਦੀ ਹੈ।",
   "wallet.receive.dleq_ok": "ਮਿੰਟ ਦੇ ਦਸਤਖ਼ਤ ਸਹੀ ਨਿਕਲਦੇ ਹਨ, ਇਸ ਲਈ ਟੋਕਨ ਅਸਲੀ ਹੈ।",
   "wallet.receive.dleq_uncached":
     "ਮਿੰਟ ਦੀਆਂ ਕੁੰਜੀਆਂ ਇੱਥੇ ਕੈਸ਼ ਨਹੀਂ ਹਨ, ਇਸ ਲਈ ਦਸਤਖ਼ਤ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਜਾਂਚੇ ਨਹੀਂ ਜਾ ਸਕੇ।",
@@ -1161,8 +1179,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "ਸਾਰੇ ਬੈਲੰਸ ਇੱਕ ਮਿੰਟ ’ਤੇ ਲੈ ਜਾਓ",
   "wallet.mint.confirm_with": "{mint} ਨਾਲ ਬਕਾਇਆ ਜਾਂਚੋ",
   "wallet.mint.available_amount": "{amount} {unit} ਉਪਲਬਧ",
-  "wallet.mint.split_across":
-    "ਬੈਲੰਸ {count} ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ। ਇਸ ਨੂੰ ਇੱਕ ’ਤੇ ਲੈ ਜਾਓ।",
   "wallet.mint.move_everything_to": "ਸਭ ਕੁਝ {mint} ’ਤੇ ਲੈ ਜਾਓ",
   "wallet.mint.consolidate_title": "ਇੱਕ ਮਿੰਟ ’ਤੇ ਲੈ ਜਾਓ",
   "wallet.mint.moving": "ਲਿਜਾ ਰਹੇ ਹਾਂ…",
@@ -1173,10 +1189,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "ਕੁਝ ਨਹੀਂ ਹਿੱਲਿਆ",
   "wallet.mint.move_pending": "ਰਾਹ ਵਿੱਚ ਹੈ",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} {mint} ਤੋਂ ਨਿਕਲ ਚੁੱਕੇ ਹਨ ਅਤੇ {target} ਵੱਲ ਰਾਹ ਵਿੱਚ ਹਨ। ਜਮ੍ਹਾਂ ਕਲੇਮ ਹੁੰਦੇ ਹੀ ਪਹੁੰਚ ਜਾਣਗੇ, ਅਤੇ ਵਾਲਿਟ ਕੋਸ਼ਿਸ਼ ਜਾਰੀ ਰੱਖਦਾ ਹੈ।",
+    "{amount} {unit} {mint} ਤੋਂ ਨਿਕਲ ਚੁੱਕੇ ਹਨ ਅਤੇ {target} ਵੱਲ ਰਾਹ ਵਿੱਚ ਹਨ। ਤਬਾਦਲਾ ਪ੍ਰਾਪਤ ਹੁੰਦੇ ਹੀ ਪਹੁੰਚ ਜਾਣਗੇ, ਅਤੇ ਵਾਲਿਟ ਕੋਸ਼ਿਸ਼ ਜਾਰੀ ਰੱਖਦਾ ਹੈ।",
   "wallet.mint.destination": "· ਮੰਜ਼ਿਲ",
   "wallet.mint.will_move": "· ਲਿਜਾਇਆ ਜਾਵੇਗਾ",
   "wallet.mint.issued_by": "ਜਾਰੀ ਕਰਤਾ",
+  "wallet.mint.test_badge": "ਟੈਸਟ",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop ਵਾਲਿਟ ਵਿੱਚ ਪੈਸੇ ਪਾਉਣੇ",
@@ -1195,14 +1212,14 @@ export const strings: Strings = {
   "wallet.ln.pay_invoice_for":
     "{amount} {unit} ਲਈ ਇਹ ਇਨਵੌਇਸ ਭਰੋ। ਵਾਲਿਟ ਭੁਗਤਾਨ ’ਤੇ ਨਜ਼ਰ ਰੱਖ ਰਿਹਾ ਹੈ ਅਤੇ ਤੁਹਾਡਾ ecash ਆਪੇ ਜਾਰੀ ਕਰ ਦੇਵੇਗਾ।",
   "wallet.ln.expired_body":
-    "ਇਹ ਇਨਵੌਇਸ ਬੇਮਿਆਦ ਹੋ ਗਿਆ। ਜੇ ਤੁਸੀਂ ਇਹ ਪਹਿਲਾਂ ਹੀ ਭਰ ਦਿੱਤਾ ਸੀ ਤਾਂ ਬੈਲੰਸ ਆਪੇ ਜੁੜ ਜਾਵੇਗਾ।",
-  "wallet.ln.waiting_expires": "ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ · {countdown} ਵਿੱਚ ਬੇਮਿਆਦ",
+    "ਇਸ ਇਨਵੌਇਸ ਦੀ ਮਿਆਦ ਪੁੱਗ ਗਈ। ਜੇ ਤੁਸੀਂ ਇਹ ਪਹਿਲਾਂ ਹੀ ਭਰ ਦਿੱਤਾ ਸੀ ਤਾਂ ਬੈਲੰਸ ਆਪੇ ਜੁੜ ਜਾਵੇਗਾ।",
+  "wallet.ln.waiting_expires": "ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ · {countdown} ਵਿੱਚ ਮਿਆਦ ਪੁੱਗੇਗੀ",
   "wallet.ln.withdraw_body":
     "bolt11 ਇਨਵੌਇਸ ਚਿਪਕਾਓ ਅਤੇ ਮਿੰਟ ਇਸ ਨੂੰ ਤੁਹਾਡੇ ecash ਵਿੱਚੋਂ ਭਰ ਦਿੰਦਾ ਹੈ। ਪਹਿਲਾਂ ਤੁਹਾਨੂੰ ਰਾਊਟਿੰਗ ਰਾਖਵਾਂ ਦੱਸਿਆ ਜਾਂਦਾ ਹੈ; ਰਾਊਟਿੰਗ ਜੋ ਨਹੀਂ ਵਰਤਦੀ, ਉਹ ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਆ ਜਾਂਦਾ ਹੈ।",
   "wallet.ln.up_to": "{amount} {unit} ਤੱਕ",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} ਭਰੋ",
-  "wallet.ln.deposit_title": "Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰੋ",
+  "wallet.ln.deposit_title": "Lightning ਨਾਲ ਟੌਪ ਅੱਪ",
   "wallet.ln.amount_placeholder": "sats ਵਿੱਚ ਰਕਮ",
   "wallet.ln.requesting": "ਬੇਨਤੀ ਕਰ ਰਹੇ ਹਾਂ…",
   "wallet.ln.get_invoice": "ਇਨਵੌਇਸ ਲਵੋ",
@@ -1234,7 +1251,7 @@ export const strings: Strings = {
     "ਤੁਹਾਡੇ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਹੈ। ਕੋਈ ਵੱਖਰਾ ਬਹਾਲ ਕਰਨ ਨਾਲ ਇਹ ਬਦਲ ਜਾਂਦਾ ਹੈ। ਪੁਰਾਣੇ ਵਾਕੰਸ਼ ਹੇਠ ਆਉਂਦੇ ਸਿੱਕੇ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਖ਼ਰਚਯੋਗ ਰਹਿੰਦੇ ਹਨ, ਪਰ ਉਹ ਬਹਾਲ ਹੋਣ ਯੋਗ ਨਹੀਂ ਰਹਿੰਦੇ, ਇਸ ਲਈ ਅੱਗੇ ਵਧਣ ਤੋਂ ਪਹਿਲਾਂ ਪੱਕਾ ਕਰੋ ਕਿ ਪੁਰਾਣੇ ਸ਼ਬਦ ਲਿਖੇ ਹੋਏ ਹਨ।",
   "wallet.backup.replace": "ਬਦਲੋ",
   "wallet.backup.replace_unseen_body":
-    "ਇਸ ਵਾਲਿਟ ਵਿੱਚ ਪਹਿਲਾਂ ਹੀ ਇੱਕ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਹੈ, ਜੋ ਸੈੱਟਅੱਪ ਵੇਲੇ ਤੁਹਾਡੇ ਲਈ ਬਣਾਇਆ ਗਿਆ ਸੀ, ਅਤੇ ਤੁਹਾਡੇ ਸਿੱਕੇ ਉਸੇ ਨਾਲ ਬਣੇ ਹਨ। ਕੋਈ ਹੋਰ ਵਾਕੰਸ਼ ਰੀਸਟੋਰ ਕਰਨ ਨਾਲ ਉਹ ਹਮੇਸ਼ਾ ਲਈ ਬਦਲ ਜਾਵੇਗਾ। ਸਿੱਕੇ ਇਸ ਡਿਵਾਈਸ ’ਤੇ ਖਰਚਣਯੋਗ ਰਹਿਣਗੇ ਅਤੇ ਹਰ ਮਿੰਟ ਦੇ ਅਗਲੀ ਵਾਰ ਰਿਫ੍ਰੈਸ਼ ਹੋਣ ’ਤੇ ਨਵੇਂ ਵਾਕੰਸ਼ ਹੇਠ ਆ ਜਾਣਗੇ।",
+    "ਇਸ ਵਾਲਿਟ ਵਿੱਚ ਪਹਿਲਾਂ ਹੀ ਇੱਕ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਹੈ, ਜੋ ਸੈੱਟਅੱਪ ਵੇਲੇ ਤੁਹਾਡੇ ਲਈ ਬਣਾਇਆ ਗਿਆ ਸੀ, ਅਤੇ ਤੁਹਾਡੇ ਸਿੱਕੇ ਉਸੇ ਨਾਲ ਬਣੇ ਹਨ। ਕੋਈ ਹੋਰ ਵਾਕੰਸ਼ ਬਹਾਲ ਕਰਨ ਨਾਲ ਉਹ ਹਮੇਸ਼ਾ ਲਈ ਬਦਲ ਜਾਵੇਗਾ। ਸਿੱਕੇ ਇਸ ਡੀਵਾਈਸ ’ਤੇ ਖਰਚਣਯੋਗ ਰਹਿਣਗੇ ਅਤੇ ਹਰ ਮਿੰਟ ਦੇ ਅਗਲੀ ਵਾਰ ਤਾਜ਼ਾ ਹੋਣ ’ਤੇ ਨਵੇਂ ਵਾਕੰਸ਼ ਹੇਠ ਆ ਜਾਣਗੇ।",
   "wallet.backup.invalid_phrase": "ਉਹ ਵਾਕੰਸ਼ ਸਹੀ ਨਹੀਂ ਹੈ",
   "wallet.backup.invalid_phrase_body":
     "ਵਾਕੰਸ਼ ਵਿੱਚ ਆਪਣਾ ਹੀ ਜਾਂਚ-ਅੰਕ ਹੁੰਦਾ ਹੈ ਅਤੇ ਇਹ ਪੂਰਾ ਨਹੀਂ ਉਤਰਦਾ। ਕੋਈ ਗ਼ਲਤ ਲਿਖਿਆ, ਗੁੰਮ ਜਾਂ ਅੱਗੇ-ਪਿੱਛੇ ਹੋਇਆ ਸ਼ਬਦ ਦੇਖੋ।",
@@ -1323,7 +1340,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "ਮਿੰਟ ਮੁਤਾਬਕ ਇਹ ਟੋਕਨ ਪਹਿਲਾਂ ਹੀ ਭੁਨਾਇਆ ਜਾ ਚੁੱਕਾ ਹੈ, ਇਸ ਲਈ {amount} {unit} ਉਹਨਾਂ ਤੱਕ ਪਹੁੰਚ ਗਏ ਅਤੇ ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਕੁਝ ਵਾਪਸ ਨਹੀਂ ਆਇਆ।",
   "wallet.copied.token_body":
-    "ਟੋਕਨ ਤੁਹਾਡੇ ਕਲਿੱਪਬੋਰਡ ’ਤੇ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਿਆ ਨਿਸ਼ਾਨ ਨਹੀਂ ਲਾਉਂਦੇ, ਇਹ ਇੱਥੇ ਰਾਖਵਾਂ ਰਹਿੰਦਾ ਹੈ, ਇਸ ਲਈ ਜੇ ਪਹਿਲੀ ਕੋਸ਼ਿਸ਼ ਅਸਫਲ ਰਹੇ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਦੁਬਾਰਾ ਚਿਪਕਾ ਸਕਦੇ ਹੋ।",
+    "ਟੋਕਨ ਤੁਹਾਡੇ ਕਲਿੱਪਬੋਰਡ ’ਤੇ ਹੈ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਮਿਲਿਆ ਨਿਸ਼ਾਨ ਨਹੀਂ ਲਾਉਂਦੇ, ਇਹ ਇੱਥੇ ਰਾਖਵਾਂ ਰਹਿੰਦਾ ਹੈ, ਇਸ ਲਈ ਜੇ ਪਹਿਲੀ ਕੋਸ਼ਿਸ਼ ਅਸਫਲ ਰਹੇ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਦੁਬਾਰਾ ਚਿਪਕਾ ਸਕਦੇ ਹੋ।",
   "wallet.copied.refused_token_body":
     "ਟੋਕਨ ਤੁਹਾਡੇ ਕਲਿੱਪਬੋਰਡ ’ਤੇ ਹੈ। ਇਹ ਵਾਲਿਟ ਹੁਣ ਇਸ ਨੂੰ ਨਹੀਂ ਗਿਣਦਾ, ਇਸ ਲਈ ਤੁਸੀਂ ਇਸ ਨੂੰ ਭੇਜਣ ਵਾਲੇ ਨੂੰ ਵਾਪਸ ਦੇ ਸਕਦੇ ਹੋ।",
   "wallet.copied.phrase_body":
@@ -1350,8 +1367,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "ਇਹ ਟੋਕਨ QR ਕੋਡ ਵਜੋਂ ਦਿਖਾਓ",
   "wallet.pending.copy_again": "ਟੋਕਨ ਦੁਬਾਰਾ ਨਕਲ ਕਰੋ",
   "wallet.pending.share_again": "ਟੋਕਨ ਦੁਬਾਰਾ ਸਾਂਝਾ ਕਰੋ",
-  "wallet.pending.mark_delivered": "ਇਸ ਟੋਕਨ ਨੂੰ ਪਹੁੰਚਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
-  "wallet.pending.delivered": "ਪਹੁੰਚ ਗਿਆ",
+  "wallet.pending.mark_delivered": "ਮਿਲਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
+  "wallet.pending.delivered": "ਮਿਲ ਗਿਆ",
   "wallet.pending.reclaim_into": "ਇਹ ਟੋਕਨ ਆਪਣੇ ਬੈਲੰਸ ਵਿੱਚ ਵਾਪਸ ਲਵੋ",
   "wallet.activity.title": "ਸਰਗਰਮੀ",
   "wallet.activity.none": "ਹਾਲੇ ਕੁਝ ਨਹੀਂ",
@@ -1368,8 +1385,8 @@ export const strings: Strings = {
   "wallet.activity.status_pending": "ਬਕਾਇਆ",
   "wallet.activity.status_failed": "ਅਸਫਲ",
   "wallet.activity.status_reclaimed": "ਵਾਪਸ ਲਿਆ",
-  "wallet.activity.status_expired": "ਬੇਮਿਆਦ",
-  "wallet.activity.ln_deposit": "Lightning ਜਮ੍ਹਾਂ",
+  "wallet.activity.status_expired": "ਮਿਆਦ ਪੁੱਗੀ",
+  "wallet.activity.ln_deposit": "Lightning ਟੌਪ ਅੱਪ",
   "wallet.activity.ln_withdrawal": "Lightning ਨਿਕਾਸੀ",
   "wallet.activity.nutzap_received": "Nutzap ਮਿਲਿਆ",
   "wallet.activity.nutzap_claiming": "Nutzap, ਪ੍ਰਾਪਤ ਕਰ ਰਹੇ ਹਾਂ",
@@ -1412,14 +1429,20 @@ export const strings: Strings = {
     "ਲਾਕ ਕੀਤੇ ਭੁਗਤਾਨ ਵਾਪਸ ਨਹੀਂ ਲਏ ਜਾ ਸਕਦੇ: ਇਹ ਸਿੱਕੇ ਹੁਣ ਸਿਰਫ਼ ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਹੀ ਖ਼ਰਚ ਸਕਦੀ ਹੈ।",
   "wallet.pay.reclaimable":
     "ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਪਹੁੰਚਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦੇ, ਇਹ ਸਰਗਰਮੀ ਤੋਂ ਵਾਪਸ ਲੈਣਯੋਗ ਰਹਿੰਦਾ ਹੈ।",
-  "wallet.pay.why": "ਇਸ ਤਰੀਕੇ ਭੇਜਿਆ ਕਿਉਂਕਿ {reason}।",
+  "wallet.pay.why_no_relay": "ਇਸ ਤਰੀਕੇ ਭੇਜਿਆ ਕਿਉਂਕਿ ਕੋਈ ਰਿਲੇ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਸੀ।",
+  "wallet.pay.why_no_shared_mint":
+    "ਇਸ ਤਰੀਕੇ ਭੇਜਿਆ ਕਿਉਂਕਿ ਉਹਨਾਂ ਵੱਲੋਂ ਮੰਨੇ ਜਾਂਦੇ ਕਿਸੇ ਵੀ ਮਿੰਟ ’ਤੇ ਤੁਹਾਡੇ ਕੋਲ ਕਾਫ਼ੀ ਰਕਮ ਨਹੀਂ ਹੈ।",
+  "wallet.pay.why_no_nutzap_info":
+    "ਇਸ ਤਰੀਕੇ ਭੇਜਿਆ ਕਿਉਂਕਿ ਲੈਣ ਵਾਲੇ ਨੇ nutzap ਜਾਣਕਾਰੀ ਨਹੀਂ ਛਾਪੀ (NIP-61 kind 10019)।",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} {name} ਨੂੰ",
   "wallet.pay.thread_receipt":
     "ਤੁਸੀਂ {amount} {unit} ਭੇਜੇ, ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ ਕੀਤੇ।",
   "wallet.pay.title": "ecash ਭੇਜੋ",
   "wallet.pay.to": "{name} ਨੂੰ",
   "wallet.pay.amount": "sats ਵਿੱਚ ਰਕਮ",
-  "wallet.pay.memo": "ਨੋਟ (ਵਿਕਲਪਿਕ, ਜਨਤਕ)",
+  "wallet.pay.memo": "ਯਾਦਪੱਤਰ (ਵਿਕਲਪਿਕ, ਜਨਤਕ)",
   "wallet.pay.send": "ਭੇਜੋ",
   "wallet.pay.sending": "ਭੇਜ ਰਹੇ ਹਾਂ…",
   "wallet.pay.action": "ecash ਭੇਜੋ",
@@ -1427,7 +1450,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "ਇਹ ਉਨ੍ਹਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲੌਕ ਹੈ। ਇੱਕ ਵਾਰ ਭੇਜਣ ਤੋਂ ਬਾਅਦ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
   "wallet.pay.confirm_reclaimable":
-    "ਜਦ ਤੱਕ ਉਹ ਇਸਨੂੰ ਕਲੇਮ ਨਹੀਂ ਕਰਦੇ, ਤੁਸੀਂ ਇਸਨੂੰ ਸਰਗਰਮੀ ਤੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
+    "ਜਦ ਤੱਕ ਉਹ ਇਸ ਨੂੰ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕਰਦੇ, ਤੁਸੀਂ ਇਸ ਨੂੰ ਸਰਗਰਮੀ ਤੋਂ ਵਾਪਸ ਲੈ ਸਕਦੇ ਹੋ।",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "ਕੈਮਰੇ ਦੀ ਪਹੁੰਚ",
@@ -1557,19 +1580,19 @@ export const strings: Strings = {
     "ਕੁਝ ਵੀ ਨਹੀਂ ਕੱਟਿਆ ਗਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਅਤੇ ਵਾਲਿਟ ਕੋਈ ਵੱਖਰਾ ਸੈੱਟ ਚੁਣ ਲਵੇਗਾ।",
   "wallet.svc.no_ecash": "ਹਾਲੇ ਕੋਈ ecash ਨਹੀਂ।",
   "wallet.svc.no_ecash_body":
-    "ਮਿੰਟ ਜੋੜੋ ਅਤੇ Lightning ’ਤੇ ਜਮ੍ਹਾਂ ਕਰੋ, ਜਾਂ ਕਿਸੇ ਤੋਂ ਟੋਕਨ ਲਵੋ।",
+    "ਮਿੰਟ ਜੋੜੋ ਅਤੇ Lightning ਨਾਲ ਟੌਪ ਅੱਪ ਕਰੋ, ਜਾਂ ਕਿਸੇ ਤੋਂ ਟੋਕਨ ਲਵੋ।",
   "wallet.svc.split_across_mints": "ਤੁਹਾਡਾ ਬੈਲੰਸ ਕਈ ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ।",
   "wallet.svc.mint_says_spent": "ਮਿੰਟ ਨੇ ਇਹ ecash ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਹੋਇਆ ਦੱਸਿਆ।",
   "wallet.svc.issue_against_invoice":
     "Lightning ਇਨਵੌਇਸ ਦੇ ਬਦਲੇ ecash ਜਾਰੀ ਕਰਨਾ",
   "wallet.svc.pay_invoice": "Lightning ਇਨਵੌਇਸ ਭਰਨਾ",
-  "wallet.svc.unknown_deposit": "ਅਣਜਾਣ ਜਮ੍ਹਾਂ।",
+  "wallet.svc.unknown_deposit": "ਅਣਜਾਣ ਟੌਪ ਅੱਪ।",
   "wallet.svc.invoice_expired_before":
-    "ਇਨਵੌਇਸ ਭਰਨ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਬੇਮਿਆਦ ਹੋ ਗਿਆ।",
-  "wallet.svc.invoice_expired": "ਉਹ ਇਨਵੌਇਸ ਬੇਮਿਆਦ ਹੋ ਗਿਆ।",
+    "ਭਰੇ ਜਾਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਇਨਵੌਇਸ ਦੀ ਮਿਆਦ ਪੁੱਗ ਗਈ।",
+  "wallet.svc.invoice_expired": "ਉਸ ਇਨਵੌਇਸ ਦੀ ਮਿਆਦ ਪੁੱਗ ਗਈ।",
   "wallet.svc.invoice_unpaid": "ਇਨਵੌਇਸ ਹਾਲੇ ਭਰਿਆ ਨਹੀਂ ਗਿਆ।",
-  "wallet.svc.payment_unknown":
-    "ਭੁਗਤਾਨ ਦੀ ਹਾਲਤ ਅਣਜਾਣ; ਅਗਲੀ ਵਾਰ ਤਾਜ਼ਾ ਕਰਨ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖ ਲਿਆ ਜਾਵੇਗਾ।",
+  "wallet.svc.payment_unknown_after":
+    "{reason} ਭੁਗਤਾਨ ਦੀ ਹਾਲਤ ਅਣਜਾਣ; ਅਗਲੀ ਵਾਰ ਤਾਜ਼ਾ ਕਰਨ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖ ਲਿਆ ਜਾਵੇਗਾ।",
   "wallet.svc.melt_change_pending": "ਤੁਹਾਡਾ ਇਨਵੌਇਸ ਭਰ ਦਿੱਤਾ ਗਿਆ।",
   "wallet.svc.melt_change_pending_body":
     "ਮਿੰਟ ਨੇ ਹਾਲੇ ਅਣਵਰਤੀ ਰਾਊਟਿੰਗ ਫ਼ੀਸ ਵਾਪਸ ਨਹੀਂ ਕੀਤੀ। ਅਗਲੀ ਵਾਰ ਤਾਜ਼ਾ ਕਰਨ ’ਤੇ ਇਹ ਆਪੇ ਲੈ ਲਈ ਜਾਂਦੀ ਹੈ, ਅਤੇ ਇਸ ਦੌਰਾਨ ਕੁਝ ਨਹੀਂ ਗੁਆਚਦਾ।",
@@ -1609,23 +1632,19 @@ export const strings: Strings = {
     "ਉਹ ਭੁਗਤਾਨ ਅਜਿਹੇ ਮਿੰਟ ਦਾ ਨਾਂ ਲੈਂਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਵਰਤਦੇ ਨਹੀਂ।",
   "wallet.svc.unknown_mint_body":
     "ਜੇ ਤੁਸੀਂ ਉਸ ’ਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ ਤਾਂ ਪਹਿਲਾਂ ਉਹ ਮਿੰਟ ਖ਼ੁਦ ਜੋੜੋ; ਜੋ ਮਿੰਟ ਤੁਸੀਂ ਨਹੀਂ ਚੁਣਿਆ, ਉਸ ਤੋਂ ਕੁਝ ਨਹੀਂ ਭੁਨਾਇਆ ਜਾਂਦਾ।",
-  "wallet.svc.no_relay": "ਕੋਈ ਰਿਲੇ ਕਨੈਕਸ਼ਨ ਨਹੀਂ",
-  "wallet.svc.no_shared_mint": "ਕਾਫ਼ੀ ਬੈਲੰਸ ਵਾਲਾ ਕੋਈ ਸਾਂਝਾ ਮਿੰਟ ਨਹੀਂ",
-  "wallet.svc.no_nutzap_info":
-    "ਲੈਣ ਵਾਲੇ ਨੇ nutzap ਜਾਣਕਾਰੀ ਨਹੀਂ ਛਾਪੀ (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "ਉਹਨਾਂ ਦੀ ਕੁੰਜੀ ਨਾਲ ਲਾਕ ਪਰ ਹਾਲੇ ਪਹੁੰਚਿਆ ਨਹੀਂ। ਇਸ ਨੂੰ ਪੂਰਾ ਕਰਨ ਲਈ ਇਸ ਲੈਣ-ਦੇਣ ਵਿੱਚੋਂ ਟੋਕਨ ਸਾਂਝਾ ਕਰੋ।",
   "wallet.svc.swap_lost":
     "ਮਿੰਟ ਨੇ ਇਹ ਅਦਲਾ-ਬਦਲੀ ਕਦੇ ਪੂਰੀ ਨਹੀਂ ਕੀਤੀ, ਇਸ ਲਈ ਇਸ ਦੇ ਬਦਲੇ ਕੁਝ ਜਾਰੀ ਨਹੀਂ ਹੋਇਆ।",
   "wallet.svc.mint_lost":
-    "ਮਿੰਟ ਨੇ ਇਹ ਜਮ੍ਹਾਂ ਜਾਰੀ ਕੀਤੀ, ਪਰ ਇਸਦੇ ਸਿੱਕੇ ਦੁਬਾਰਾ ਨਹੀਂ ਬਣ ਸਕੇ। ਆਪਣੇ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਤੋਂ ਬਹਾਲ ਕਰਨ ਨਾਲ ਉਹ ਵਾਪਸ ਮਿਲ ਜਾਂਦੇ ਹਨ।",
+    "ਮਿੰਟ ਨੇ ਇਹ ਟੌਪ ਅੱਪ ਜਾਰੀ ਕੀਤਾ, ਪਰ ਇਸਦੇ ਸਿੱਕੇ ਦੁਬਾਰਾ ਨਹੀਂ ਬਣ ਸਕੇ। ਆਪਣੇ ਰਿਕਵਰੀ ਵਾਕੰਸ਼ ਤੋਂ ਬਹਾਲ ਕਰਨ ਨਾਲ ਉਹ ਵਾਪਸ ਮਿਲ ਜਾਂਦੇ ਹਨ।",
   "wallet.svc.swap_unreadable":
     "ਇਹ ਅਦਲਾ-ਬਦਲੀ ਅਜਿਹੇ ਰੂਪ ਵਿੱਚ ਸੰਭਾਲੀ ਗਈ ਸੀ ਜੋ ਇਹ ਸੰਸਕਰਣ ਦੁਬਾਰਾ ਨਹੀਂ ਚਲਾ ਸਕਦਾ।",
   "wallet.svc.lock_in_doubt": "ਇਹ ਭੁਗਤਾਨ ਹੋਇਆ ਜਾਂ ਨਹੀਂ, ਪੱਕਾ ਨਹੀਂ।",
   "wallet.svc.lock_in_doubt_body":
     "ਹੋਰ ਕੁਝ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ। ਜਦੋਂ ਤੱਕ ਮਿੰਟ ਨਤੀਜੇ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦਾ, ਸਿੱਕੇ ਰੋਕੇ ਗਏ ਹਨ। ਜੇ ਭੁਗਤਾਨ ਹੋ ਗਿਆ, ਤਾਂ ਲੌਕ ਟੋਕਨ ਸੌਂਪਣ ਲਈ ਸਰਗਰਮੀ ਵਿੱਚ ਦਿਖੇਗਾ। ਜੇ ਨਹੀਂ, ਤਾਂ ਸਿੱਕੇ ਵਾਪਸ ਆ ਜਾਣਗੇ।",
   "wallet.svc.send_spent_by_swap":
-    "ਇਹ ਟੋਕਨ ਕਲੇਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਇਹ ਸਿੱਕੇ ਸਵੈਪ ਹੋ ਕੇ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ ਵਾਪਸ ਆ ਗਏ, ਇਸ ਲਈ ਹੁਣ ਇਸਨੂੰ ਕਲੇਮ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਰਕਮ ਤੁਹਾਡੇ ਬੈਲੇਂਸ ਵਿੱਚ ਹੈ।",
+    "ਇਹ ਟੋਕਨ ਪ੍ਰਾਪਤ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਇਹ ਸਿੱਕੇ ਬਦਲ ਕੇ ਤੁਹਾਡੇ ਵਾਲਿਟ ਵਿੱਚ ਵਾਪਸ ਆ ਗਏ, ਇਸ ਲਈ ਹੁਣ ਇਸ ਨੂੰ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਰਕਮ ਤੁਹਾਡੇ ਬੈਲੰਸ ਵਿੱਚ ਹੈ।",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ਰਾਹੀਂ ਪੁਸ਼ਟੀਸ਼ੁਦਾ",
@@ -1666,7 +1685,7 @@ export const strings: Strings = {
   "contacts.scan.no_qr": "ਉਸ ਤਸਵੀਰ ਵਿੱਚ ਕੋਈ Airhop QR ਕੋਡ ਨਹੀਂ ਮਿਲਿਆ।",
   "contacts.scan.unreadable": "ਉਸ ਤਸਵੀਰ ਵਿੱਚੋਂ QR ਕੋਡ ਪੜ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ।",
   "contacts.scan.bitchat_expired":
-    "ਉਹ bitchat ਕੋਡ ਬੇਮਿਆਦ ਹੋ ਚੁੱਕਾ ਹੈ। ਉਹਨਾਂ ਨੂੰ ਆਪਣਾ QR ਦੁਬਾਰਾ ਖੋਲ੍ਹਣ ਲਈ ਕਹੋ।",
+    "ਉਸ bitchat ਕੋਡ ਦੀ ਮਿਆਦ ਪੁੱਗ ਚੁੱਕੀ ਹੈ। ਉਹਨਾਂ ਨੂੰ ਆਪਣਾ QR ਦੁਬਾਰਾ ਖੋਲ੍ਹਣ ਲਈ ਕਹੋ।",
   "contacts.scan.tampered":
     "ਇਹ QR ਕੋਡ ਅਵੈਧ ਹੈ: ਇਸ ਦੀ ਪੀਅਰ ID ਇਸ ਦੀਆਂ ਕੁੰਜੀਆਂ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ। ਹੋ ਸਕਦਾ ਹੈ ਇਸ ਨਾਲ ਛੇੜਛਾੜ ਹੋਈ ਹੋਵੇ।",
   "contacts.scan.key_conflict":
@@ -1744,7 +1763,7 @@ export const strings: Strings = {
     "ਫ਼ਾਰਵਰਡ ਸੀਕ੍ਰੇਸੀ, ਦਸਤਖ਼ਤੀ ਪੈਕਟ, ਬਲਾਕ ਕੀਤੇ ਪੀਅਰ",
   "settings.section.network": "ਨੈੱਟਵਰਕ ਅਤੇ ਰਿਲੇ",
   "settings.section.network_desc":
-    "ਇੰਟਰਨੈੱਟ ਸਹਾਰਾ, nostr ਰਿਲੇ, bitchat ਅਨੁਕੂਲਤਾ",
+    "ਇੰਟਰਨੈੱਟ ਸਹਾਰਾ, Nostr ਰਿਲੇ, bitchat ਅਨੁਕੂਲਤਾ",
   "settings.section.permissions": "ਇਜਾਜ਼ਤਾਂ",
   "settings.section.permissions_desc": "ਬਲੂਟੁੱਥ, ਟਿਕਾਣਾ, ਸੂਚਨਾਵਾਂ, ਕੈਮਰਾ, ਮਾਈਕ",
   "settings.section.storage": "ਭੰਡਾਰ ਅਤੇ ਡਾਟਾ",
@@ -1792,13 +1811,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "ਸਿਗਨਲ ਦਾ ਕੋਈ ਪਾਠ ਨਹੀਂ",
   "settings.diag.no_peers": "ਪਹੁੰਚ ਵਿੱਚ ਕੋਈ ਨਹੀਂ",
-  "settings.diag.no_peers_desc": "{links} ਰੇਡੀਓ ਲਿੰਕ ਖੁੱਲ੍ਹੇ",
   "settings.diag.gcs_size": "ਛਾਣਨੀ ਦਾ ਆਕਾਰ",
   "settings.diag.gcs_size_desc": "ਹਵਾ ’ਤੇ ਪਾਈ ਗਈ ਸਭ ਤੋਂ ਵੱਡੀ ਸਿੰਕ ਛਾਣਨੀ",
   "settings.diag.fpr": "ਝੂਠੇ ਹਾਂ-ਪੱਖੀ ਦੀ ਦਰ",
   "settings.diag.fpr_desc":
     "ਛਾਣਨੀ ਕਿੰਨੀ ਵਾਰ ਸਾਡੇ ਕੋਲ ਨਾ ਹੋਏ ਪੈਕਟ ਦਾ ਦਾਅਵਾ ਕਰਦੀ ਹੈ",
-  "settings.diag.bytes": "{n} ਬਾਈਟ",
   "settings.diag.footnote":
     "ਇੱਥੇ ਕੁਝ ਵੀ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ। ਇਹ ਮੁੱਲ ਪੱਕੇ ਹਨ ਤਾਂ ਜੋ Airhop bitchat ਨਾਲ ਅਨੁਕੂਲ ਰਹੇ।",
   "settings.diag.share": "ਡਾਇਗਨੌਸਟਿਕਸ ਸਾਂਝੇ ਕਰੋ",
@@ -1819,7 +1836,6 @@ export const strings: Strings = {
   "settings.general.undo": "ਭੇਜਣਾ ਵਾਪਸ ਲਵੋ",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "ਵਾਲਿਟ",
-  "settings.general.undo_seconds": "{count} ਸਕਿੰਟ",
   "settings.general.undo_a11y": "ਭੇਜਣਾ ਵਾਪਸ ਲਵੋ: {value}",
   "settings.general.quality_a11y": "ਅੱਪਲੋਡ ਗੁਣਵੱਤਾ {value} ਸੈੱਟ ਕਰੋ",
   "settings.general.undo_desc":
@@ -1911,7 +1927,6 @@ export const strings: Strings = {
   "settings.network.custom": "ਆਪਣੇ ਰਿਲੇ",
   "settings.network.custom_desc":
     "ਟਿਕਾਣਾ ਚੈਨਲਾਂ ਅਤੇ ਮੈਸ਼ ਪੁਲ ਲਈ ਆਪਣੇ ਰਿਲੇ ਜੋੜੋ",
-  "settings.network.custom_added": "{max} ਵਿੱਚੋਂ {count} ਜੋੜੇ",
   "settings.network.dm_relays": "ਸੁਨੇਹਾ ਰਿਲੇ",
   "settings.network.dm_relays_desc":
     "ਸਿੱਧੇ ਸੁਨੇਹੇ ਅਤੇ ਨਿੱਜੀ ਚੈਨਲ ਹਮੇਸ਼ਾ ਇਹੀ ਵਰਤਦੇ ਹਨ। ਆਪਣੇ ਰਿਲੇ ਇਹਨਾਂ ਨੂੰ ਨਹੀਂ ਬਦਲਦੇ।",
@@ -1921,19 +1936,17 @@ export const strings: Strings = {
   "settings.network.add_relay": "ਰਿਲੇ ਜੋੜੋ",
   "settings.network.remove_relay": "{url} ਹਟਾਓ",
   "settings.network.add_short": "ਜੋੜੋ",
-  "settings.network.relay_limit":
-    "ਤੁਸੀਂ {count} ਰਿਲੇ ਜੋੜ ਸਕਦੇ ਹੋ। ਹੋਰ ਜੋੜਨ ਲਈ ਇੱਕ ਹਟਾਓ।",
   "settings.network.relay_duplicate": "ਉਹ ਰਿਲੇ ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੀ ਸੂਚੀ ਵਿੱਚ ਹੈ।",
   "settings.network.relay_invalid":
     "ਸਹੀ ਰਿਲੇ ਹੋਸਟ ਭਰੋ, ਜਿਵੇਂ relay.example.com। ਪੋਰਟ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਚਾਹੀਦਾ ਹੈ ਜੇ ਰਿਲੇ ਮੂਲ ਪੋਰਟ ਨਾ ਵਰਤਦਾ ਹੋਵੇ। IP ਪਤੇ ਅਤੇ ਸਥਾਨਕ ਨਾਂ ਮਨਜ਼ੂਰ ਨਹੀਂ ਹਨ।",
   "settings.network.lan": "ਸਥਾਨਕ ਨੈੱਟਵਰਕ",
   "settings.network.lan_desc":
-    "ਉਸੇ WiFi ਉੱਤੇ ਮੌਜੂਦ ਲੋਕਾਂ ਤੱਕ ਪਹੁੰਚੋ, iPhone ਅਤੇ Android ਵਿਚਕਾਰ ਵੀ। ਨੈੱਟਵਰਕ ਉੱਤੇ ਮੌਜੂਦ ਹੋਰ ਡਿਵਾਈਸ ਦੇਖ ਸਕਦੇ ਹਨ ਕਿ ਤੁਸੀਂ Airhop ਚਲਾ ਰਹੇ ਹੋ।",
-  "settings.network.lan_searching": "ਇਸ ਨੈੱਟਵਰਕ ਉੱਤੇ ਕੋਈ Airhop ਡਿਵਾਈਸ ਨਹੀਂ",
+    "ਉਸੇ Wi-Fi ਉੱਤੇ ਮੌਜੂਦ ਲੋਕਾਂ ਤੱਕ ਪਹੁੰਚੋ, iPhone ਅਤੇ Android ਵਿਚਕਾਰ ਵੀ। ਨੈੱਟਵਰਕ ਉੱਤੇ ਮੌਜੂਦ ਹੋਰ ਡੀਵਾਈਸ ਦੇਖ ਸਕਦੇ ਹਨ ਕਿ ਤੁਸੀਂ Airhop ਚਲਾ ਰਹੇ ਹੋ।",
+  "settings.network.lan_searching": "ਇਸ ਨੈੱਟਵਰਕ ਉੱਤੇ ਕੋਈ Airhop ਡੀਵਾਈਸ ਨਹੀਂ",
   "settings.network.lan_active": "ਇਸ ਨੈੱਟਵਰਕ ਉੱਤੇ ਜੁੜਿਆ",
-  "settings.network.lan_unavailable": "ਕਿਸੇ WiFi ਨੈੱਟਵਰਕ ਉੱਤੇ ਨਹੀਂ",
+  "settings.network.lan_unavailable": "ਕਿਸੇ Wi-Fi ਨੈੱਟਵਰਕ ਉੱਤੇ ਨਹੀਂ",
   "settings.network.lan_permission": "Airhop ਲਈ ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਪਹੁੰਚ ਬੰਦ ਹੈ",
-  "settings.network.lan_unsupported": "ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਉਪਲਬਧ ਨਹੀਂ",
+  "settings.network.lan_unsupported": "ਇਸ ਡੀਵਾਈਸ ਉੱਤੇ ਉਪਲਬਧ ਨਹੀਂ",
   "settings.network.lan_foreground":
     "Airhop ਦੇ ਬੈਕਗਰਾਊਂਡ ਵਿੱਚ ਜਾਣ ਉੱਤੇ ਰੁਕ ਜਾਂਦਾ ਹੈ। ਬਲੂਟੁੱਥ ਚੱਲਦਾ ਰਹਿੰਦਾ ਹੈ।",
   "settings.network.wifi_aware": "Wi-Fi Aware",
@@ -1942,8 +1955,8 @@ export const strings: Strings = {
   "settings.network.wifi_unstable":
     "ਰੋਕਿਆ ਗਿਆ। ਇਹ ਇਸ ਫ਼ੋਨ ’ਤੇ ਵਾਰ-ਵਾਰ Wi-Fi ਵਿੱਚ ਵਿਘਨ ਪਾ ਰਿਹਾ ਸੀ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਲਈ ਬੰਦ ਕਰਕੇ ਚਾਲੂ ਕਰੋ।",
   "settings.network.wifi_pair": "ਜੋੜਾ ਬਣਾਉਣਾ",
-  "settings.network.wifi_paired": "ਜੋੜੇ ਗਏ ਡਿਵਾਈਸ",
-  "settings.network.wifi_pair_find": "ਡਿਵਾਈਸ ਲੱਭੋ",
+  "settings.network.wifi_paired": "ਜੋੜੇ ਗਏ ਡੀਵਾਈਸ",
+  "settings.network.wifi_pair_find": "ਡੀਵਾਈਸ ਲੱਭੋ",
   "settings.network.wifi_pair_find_desc":
     "ਨੇੜਲਾ ਅਜਿਹਾ iPhone ਲੱਭੋ ਜੋ ਆਪਣੇ ਆਪ ਨੂੰ ਦਿਖਾ ਰਿਹਾ ਹੈ। ਦੋਵਾਂ ਫ਼ੋਨਾਂ ਨੂੰ iOS 26 ਜਾਂ ਬਾਅਦ ਵਾਲਾ ਚਾਹੀਦਾ ਹੈ।",
   "settings.network.wifi_pair_show": "ਇਹ iPhone ਦਿਖਾਓ",
@@ -1952,7 +1965,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_find_action": "ਨੇੜਲਾ iPhone ਚੁਣੋ",
   "settings.network.wifi_pair_show_action": "ਇਸ iPhone ਨੂੰ ਲੱਭਣਯੋਗ ਬਣਾਓ",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
-  "settings.network.wifi_pair_forget": "Settings ਐਪ ਵਿੱਚ ਜੋੜ ਹਟਾਓ",
+  "settings.network.wifi_pair_forget": "ਸੈਟਿੰਗਾਂ ਐਪ ਵਿੱਚ ਜੋੜ ਹਟਾਓ",
   "settings.network.bitchat": "bitchat ਅਨੁਕੂਲਤਾ",
   "settings.network.bitchat_desc":
     "bitchat ਵਾਲਾ ਹੀ BLE ਮੈਸ਼, ਪੂਰੀ ਤਰ੍ਹਾਂ ਆਪਸ ਵਿੱਚ ਚੱਲਣ ਯੋਗ। ਇਹ ਹਮੇਸ਼ਾ ਚਾਲੂ ਰਹਿੰਦਾ ਹੈ, ਅਤੇ ਬੰਦ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
@@ -2070,7 +2083,7 @@ export const strings: Strings = {
     "ਆਪਣੀ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚੋਂ ਫ਼ੋਟੋਆਂ ਭੇਜੋ ਅਤੇ ਮਿਲਿਆ ਮੀਡੀਆ ਸੰਭਾਲੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਵੀ ਤੁਸੀਂ ਕੈਮਰੇ ਨਾਲ ਨਵੀਆਂ ਫ਼ੋਟੋਆਂ ਖਿੱਚ ਕੇ ਭੇਜ ਸਕਦੇ ਹੋ।",
   "settings.permissions.microphone": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ",
   "settings.permissions.microphone_desc":
-    "ਆਵਾਜ਼ੀ ਸੁਨੇਹੇ ਰਿਕਾਰਡ ਕਰ ਕੇ ਭੇਜੋ ਜਾਂ ਸਿੱਧੀ ਆਵਾਜ਼ ਵਰਤੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਆਵਾਜ਼ੀ ਸੁਨੇਹੇ ਅਤੇ ਸਿੱਧੀ ਆਵਾਜ਼ ਕੰਮ ਨਹੀਂ ਕਰਨਗੇ।",
+    "ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਕਰ ਕੇ ਭੇਜੋ ਜਾਂ ਸਿੱਧੀ ਆਵਾਜ਼ ਵਰਤੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਵੌਇਸ ਨੋਟ ਅਤੇ ਸਿੱਧੀ ਆਵਾਜ਼ ਕੰਮ ਨਹੀਂ ਕਰਨਗੇ।",
   "settings.permissions.allow": "ਇਹ ਇਜਾਜ਼ਤ ਦਿਓ",
   "settings.permissions.open_settings":
     "ਇਹ ਇਜਾਜ਼ਤ ਬਦਲਣ ਲਈ ਸਿਸਟਮ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ",
@@ -2323,7 +2336,7 @@ export const strings: Strings = {
     "ਡਾਊਨਲੋਡ ਅਸਫਲ ਰਿਹਾ। ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} {size} KiB ਦੀ ਹੈ, {cap} KiB ਦੀ ਹੱਦ ਤੋਂ ਵੱਧ।",
+  "transfer.too_large": "{kind} {size} ਦੀ ਹੈ, {cap} ਦੀ ਹੱਦ ਤੋਂ ਵੱਧ।",
   "transfer.failed.malformed":
     "ਇੱਕ ਅਟੈਚਮੈਂਟ ਖ਼ਰਾਬ ਹਾਲਤ ਵਿੱਚ ਪਹੁੰਚੀ ਅਤੇ ਖੋਲ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕੀ। ਉਹਨਾਂ ਨੂੰ ਦੁਬਾਰਾ ਭੇਜਣ ਲਈ ਕਹੋ।",
   "transfer.failed.unsupported_type":
@@ -2333,10 +2346,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "ਇੱਕ ਅਟੈਚਮੈਂਟ ਪਹੁੰਚੀ ਪਰ ਸੰਭਾਲੀ ਨਹੀਂ ਜਾ ਸਕੀ। ਆਪਣੀ ਖ਼ਾਲੀ ਥਾਂ ਦੇਖੋ।",
   "transfer.badge.waiting": "ਉਡੀਕ ਵਿੱਚ · {name}",
-  "transfer.badge.active_count": "{count} ਤਬਾਦਲੇ",
   "transfer.badge.sending": "{name} ਭੇਜ ਰਹੇ ਹਾਂ",
   "transfer.badge.receiving": "{name} ਲੈ ਰਹੇ ਹਾਂ",
-  "transfer.badge.a11y": "{label}, {percent} ਫ਼ੀਸਦੀ। ਗੱਲਬਾਤ ਖੋਲ੍ਹੋ।",
   "transfer.kind.photo": "ਫ਼ੋਟੋ",
   "transfer.kind.video": "ਵੀਡੀਓ",
   "transfer.kind.voice": "ਵੌਇਸ ਨੋਟ",
@@ -2365,10 +2376,11 @@ export const strings: Strings = {
   "notif.notice": "ਨੋਟਿਸ · {content}",
   "notif.incoming_file": "ਆ ਰਹੀ ਫ਼ਾਈਲ",
   "notif.preview.photo": "📷 ਫ਼ੋਟੋ",
-  "notif.preview.voice": "🎤 ਆਵਾਜ਼ੀ ਸੁਨੇਹਾ",
+  "notif.preview.voice": "🎤 ਵੌਇਸ ਨੋਟ",
   "notif.preview.video": "🎥 ਵੀਡੀਓ",
   "notif.preview.document": "📄 ਦਸਤਾਵੇਜ਼",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "ਨਵਾਂ ਸੁਨੇਹਾ",
   "notif.hidden.channel": "ਨਵੀਂ ਸਰਗਰਮੀ",
@@ -2380,6 +2392,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} ਮਿੰਟ ਪਹਿਲਾਂ",
+    other: "{count} ਮਿੰਟ ਪਹਿਲਾਂ",
+  },
+  "format.hours_ago": {
+    one: "{count} ਘੰਟਾ ਪਹਿਲਾਂ",
+    other: "{count} ਘੰਟੇ ਪਹਿਲਾਂ",
+  },
+  "format.days_ago": {
+    one: "{count} ਦਿਨ ਪਹਿਲਾਂ",
+    other: "{count} ਦਿਨ ਪਹਿਲਾਂ",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "{count} ਹੋਰ ਦਿਖਾਓ",
@@ -2432,6 +2458,55 @@ export const plurals: Plurals = {
     other: "{count} ਬੋਲ ਰਹੇ ਹਨ",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "{count} ਹੋਰ ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
+    other: "{count} ਹੋਰ ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
+  },
+  "chat.thread.across_bridge": {
+    one: "ਪੁਲ ਦੇ ਪਾਰ {count} ਵਿਅਕਤੀ",
+    other: "ਪੁਲ ਦੇ ਪਾਰ {count} ਲੋਕ",
+  },
+  "chat.thread.go_back_unread": {
+    one: "ਵਾਪਸ ਜਾਓ, {count} ਅਣਪੜ੍ਹਿਆ",
+    other: "ਵਾਪਸ ਜਾਓ, {count} ਅਣਪੜ੍ਹੇ",
+  },
+  "chat.thread.notices_new": {
+    one: "ਇਸ ਚੈਨਲ ਲਈ ਨੋਟਿਸ, {count} ਨਵਾਂ",
+    other: "ਇਸ ਚੈਨਲ ਲਈ ਨੋਟਿਸ, {count} ਨਵੇਂ",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "ਸਭ ਤੋਂ ਨਵੇਂ ਸੁਨੇਹੇ ’ਤੇ ਜਾਓ, {count} ਨਵਾਂ",
+    other: "ਸਭ ਤੋਂ ਨਵੇਂ ਸੁਨੇਹੇ ’ਤੇ ਜਾਓ, {count} ਨਵੇਂ",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} ਨਵਾਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · ਨੋਟਿਸ ਖੋਲ੍ਹੋ",
+    other: "{count} ਨਵੇਂ ਜ਼ਰੂਰੀ ਨੋਟਿਸ · ਨੋਟਿਸ ਖੋਲ੍ਹੋ",
+  },
+  "chat.info.add_count": {
+    one: "{count} ਜੋੜੋ",
+    other: "{count} ਜੋੜੋ",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "{count} ਘੰਟੇ ਵਿੱਚ ਮਿਟੇਗਾ",
+    other: "{count} ਘੰਟਿਆਂ ਵਿੱਚ ਮਿਟੇਗਾ",
+  },
+  "chat.notices.fades_in_days": {
+    one: "{count} ਦਿਨ ਵਿੱਚ ਮਿਟੇਗਾ",
+    other: "{count} ਦਿਨਾਂ ਵਿੱਚ ਮਿਟੇਗਾ",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "ਇਸ ਸੂਚੀ ਵਿੱਚ {count} ਸੂਚਨਾ ਹੈ। ਸਾਫ਼ ਕਰਨ ਨਾਲ ਇਹ ਸਿਰਫ਼ ਇੱਥੋਂ ਹਟਦੀ ਹੈ, ਅਤੇ ਸੁਨੇਹਾ ਆਪਣੀ ਗੱਲਬਾਤ ਵਿੱਚ ਅਣਪੜ੍ਹਿਆ ਹੀ ਰਹਿੰਦਾ ਹੈ। ਸਭ ਨੂੰ ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਉਣ ਨਾਲ ਦੋਵੇਂ ਸਾਫ਼ ਹੋ ਜਾਂਦੇ ਹਨ।",
+    other:
+      "ਇਸ ਸੂਚੀ ਵਿੱਚ {count} ਸੂਚਨਾਵਾਂ ਹਨ। ਸਾਫ਼ ਕਰਨ ਨਾਲ ਇਹ ਸਿਰਫ਼ ਇੱਥੋਂ ਹਟਦੀਆਂ ਹਨ, ਅਤੇ ਸੁਨੇਹੇ ਆਪਣੀਆਂ ਗੱਲਬਾਤਾਂ ਵਿੱਚ ਅਣਪੜ੍ਹੇ ਹੀ ਰਹਿੰਦੇ ਹਨ। ਸਭ ਨੂੰ ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਉਣ ਨਾਲ ਦੋਵੇਂ ਸਾਫ਼ ਹੋ ਜਾਂਦੇ ਹਨ।",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "{count} ਸੂਚਨਾ ਸਾਫ਼ ਕਰੋ",
+    other: "ਸਾਰੀਆਂ {count} ਸੂਚਨਾਵਾਂ ਸਾਫ਼ ਕਰੋ",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ",
@@ -2454,18 +2529,28 @@ export const plurals: Plurals = {
     other: "{count} ਮੈਂਬਰ",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "ਮੈਸ਼ ਪੁਲ ਚਾਲੂ · ਪੁਲ ਦੇ ਪਾਰ {count} ਵਿਅਕਤੀ",
+    other: "ਮੈਸ਼ ਪੁਲ ਚਾਲੂ · ਪੁਲ ਦੇ ਪਾਰ {count} ਲੋਕ",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} ਕੋਲ {count} ਸਿੱਕੇ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਸਿੱਕਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
+    one: "{mint} ਕੋਲ {count} ਸਿੱਕੇ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਬੈਲੰਸ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਕੋਈ ਬੈਕਅੱਪ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
     other:
-      "{mint} ਕੋਲ {count} ਸਿੱਕਿਆਂ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਸਿੱਕੇ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਕਿਸੇ ਕਾਪੀ ਕੋਲ ਉਹ ਨਹੀਂ ਹਨ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
+      "{mint} ਕੋਲ {count} ਸਿੱਕਿਆਂ ਵਿੱਚ {balance} {unit} ਹਨ। ਇਸ ਨੂੰ ਹਟਾਉਣ ਨਾਲ ਉਹ ਬੈਲੰਸ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਪੱਕੇ ਤੌਰ ’ਤੇ ਮਿਟ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਕੋਈ ਬੈਕਅੱਪ ਨਹੀਂ ਹੈ। ਪਹਿਲਾਂ ਆਪਣਾ ਬੈਲੰਸ ਕਢਵਾਓ ਜਾਂ ਭੇਜੋ।",
+  },
+  "wallet.mint.split_across": {
+    one: "ਬੈਲੰਸ {count} ਮਿੰਟ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ। ਇਸ ਨੂੰ ਇੱਕ ’ਤੇ ਲੈ ਜਾਓ।",
+    other: "ਬੈਲੰਸ {count} ਮਿੰਟਾਂ ਵਿੱਚ ਵੰਡਿਆ ਹੋਇਆ ਹੈ। ਇਸ ਨੂੰ ਇੱਕ ’ਤੇ ਲੈ ਜਾਓ।",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} ਜਮ੍ਹਾਂ ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ ਵਿੱਚ ਹੈ। ਹਰ ਵਾਰ ਐਪ ਖੁੱਲ੍ਹਣ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖਿਆ ਜਾਂਦਾ ਹੈ।",
+    one: "{count} ਟੌਪ ਅੱਪ ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ ਵਿੱਚ ਹੈ। ਹਰ ਵਾਰ ਐਪ ਖੁੱਲ੍ਹਣ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖਿਆ ਜਾਂਦਾ ਹੈ।",
     other:
-      "{count} ਜਮ੍ਹਾਂ ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ ਵਿੱਚ ਹਨ। ਹਰ ਵਾਰ ਐਪ ਖੁੱਲ੍ਹਣ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖੇ ਜਾਂਦੇ ਹਨ।",
+      "{count} ਟੌਪ ਅੱਪ ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ ਵਿੱਚ ਹਨ। ਹਰ ਵਾਰ ਐਪ ਖੁੱਲ੍ਹਣ ’ਤੇ ਦੁਬਾਰਾ ਦੇਖੇ ਜਾਂਦੇ ਹਨ।",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2474,9 +2559,9 @@ export const plurals: Plurals = {
     other: "{mints} ਵਿੱਚੋਂ {count} ਅਣਖ਼ਰਚੇ ਸਿੱਕੇ ਵਾਪਸ ਮਿਲੇ।",
   },
   "wallet.backup.already_spent": {
-    one: "{count} ਸਿੱਕਾ ਮਿਲਿਆ, ਪਰ ਉਹ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਉਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਇਹ ਆਮ ਗੱਲ ਹੈ: ਤੁਹਾਡਾ ਖ਼ਰਚਿਆ ਹਰ ਸਿੱਕਾ ਮਿੰਟ ਦੇ ਰੱਖੇ ਰਿਕਾਰਡ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
+    one: "{count} ਸਿੱਕਾ ਮਿਲਿਆ, ਪਰ ਉਹ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਸੀ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਇਹ ਆਮ ਗੱਲ ਹੈ: ਤੁਹਾਡਾ ਖ਼ਰਚਿਆ ਹਰ ਸਿੱਕਾ ਮਿੰਟ ਦੇ ਰੱਖੇ ਰਿਕਾਰਡ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
     other:
-      "{count} ਸਿੱਕੇ ਮਿਲੇ, ਪਰ ਉਹ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਸਨ, ਇਸ ਲਈ ਉਹਨਾਂ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਇਹ ਆਮ ਗੱਲ ਹੈ: ਤੁਹਾਡਾ ਖ਼ਰਚਿਆ ਹਰ ਸਿੱਕਾ ਮਿੰਟ ਦੇ ਰੱਖੇ ਰਿਕਾਰਡ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
+      "{count} ਸਿੱਕੇ ਮਿਲੇ, ਪਰ ਉਹ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਸਨ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਜੋੜਿਆ ਗਿਆ। ਇਹ ਆਮ ਗੱਲ ਹੈ: ਤੁਹਾਡਾ ਖ਼ਰਚਿਆ ਹਰ ਸਿੱਕਾ ਮਿੰਟ ਦੇ ਰੱਖੇ ਰਿਕਾਰਡ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2502,9 +2587,38 @@ export const plurals: Plurals = {
     other: "{count} ਸਿੱਕੇ ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚੇ ਜਾ ਚੁੱਕੇ ਸਨ, ਇਸ ਲਈ ਉਹ ਹਟਾ ਦਿੱਤੇ ਗਏ।",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} ਰੇਡੀਓ ਲਿੰਕ ਖੁੱਲ੍ਹਾ",
+    other: "{count} ਰੇਡੀਓ ਲਿੰਕ ਖੁੱਲ੍ਹੇ",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} ਸਕਿੰਟ",
+    other: "{count} ਸਕਿੰਟ",
+  },
+  "settings.network.custom_added": {
+    one: "{max} ਵਿੱਚੋਂ {count} ਜੋੜਿਆ",
+    other: "{max} ਵਿੱਚੋਂ {count} ਜੋੜੇ",
+  },
+  "settings.network.relay_limit": {
+    one: "ਤੁਸੀਂ {count} ਰਿਲੇ ਜੋੜ ਸਕਦੇ ਹੋ। ਹੋਰ ਜੋੜਨ ਲਈ ਇਸ ਨੂੰ ਹਟਾਓ।",
+    other: "ਤੁਸੀਂ {count} ਰਿਲੇ ਜੋੜ ਸਕਦੇ ਹੋ। ਹੋਰ ਜੋੜਨ ਲਈ ਇੱਕ ਹਟਾਓ।",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} ਤਬਾਦਲਾ",
+    other: "{count} ਤਬਾਦਲੇ",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} ਫ਼ੀਸਦੀ। ਗੱਲਬਾਤ ਖੋਲ੍ਹੋ।",
+    other: "{label}, {count} ਫ਼ੀਸਦੀ। ਗੱਲਬਾਤ ਖੋਲ੍ਹੋ।",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "ਕੋਈ ਨੇੜੇ ਹੈ",
+    "=1": "ਕੋਈ ਨੇੜੇ ਹੈ",
+    one: "{count} ਵਿਅਕਤੀ ਨੇੜੇ ਹੈ",
     other: "{count} ਲੋਕ ਨੇੜੇ ਹਨ",
   },
 };

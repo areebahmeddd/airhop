@@ -79,7 +79,7 @@ import {
   recoveryPhraseToSeed,
   storePhrase,
 } from "@core/payments/wallet-seed";
-import { t } from "@i18n";
+import { stripIsolates, t, type CatalogKey, type TranslationVars } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { useSettingsStore } from "@store/settings-store";
@@ -97,6 +97,12 @@ import {
   type StoredProof,
   type WalletTx,
 } from "@store/wallet-store";
+import {
+  translateStored,
+  txFailure,
+  txFailureVerbatim,
+  type TxFailure,
+} from "@utils/message-text";
 import { Platform } from "react-native";
 
 import { internetOff, torClaimed } from "./network-gate";
@@ -166,25 +172,46 @@ export type WalletErrorCode =
   // would be true, hence its own code.
   | "change-pending";
 
+// Airhop's words for a failure, kept as a key because a transaction row that
+// stores them outlives the language they were written in. A plain string is a
+// mint's or the platform's own text, stored as it came.
+interface FailureCopy {
+  key: CatalogKey;
+  vars?: TranslationVars;
+}
+
 export class WalletError extends Error {
   readonly code: WalletErrorCode;
   readonly detail?: string;
   // The mint may have acted and never said. The money is committed until
   // `reconcile` finds out, so a caller must not pay again another way.
   readonly inDoubt: boolean;
+  readonly copy?: FailureCopy;
 
   constructor(
     code: WalletErrorCode,
-    message: string,
+    message: string | FailureCopy,
     detail?: string,
     opts: { inDoubt?: boolean } = {},
   ) {
-    super(message);
+    super(
+      typeof message === "string"
+        ? message
+        : translateStored(message.key, message.vars),
+    );
     this.name = "WalletError";
     this.code = code;
     this.detail = detail;
     this.inDoubt = opts.inDoubt === true;
+    if (typeof message !== "string") this.copy = message;
   }
+}
+
+// What a transaction row stores for this failure.
+function failureOf(err: WalletError): TxFailure {
+  return err.copy === undefined
+    ? txFailureVerbatim(err.message)
+    : txFailure(err.copy.key, err.copy.vars);
 }
 
 // Whether a failure after a swap was staged proves the mint did nothing. Only a
@@ -259,7 +286,7 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
   if (err instanceof StaleKeysetError) {
     return new WalletError(
       "mint-error",
-      t("wallet.svc.keyset_rotated"),
+      { key: "wallet.svc.keyset_rotated" },
       t("wallet.svc.keyset_rotated_body"),
     );
   }
@@ -270,7 +297,7 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
   if (isNetworkFailure(err)) {
     return new WalletError(
       "offline",
-      t("wallet.svc.mint_unreachable"),
+      { key: "wallet.svc.mint_unreachable" },
       message,
     );
   }
@@ -296,7 +323,7 @@ function assertMintNetworkAllowed(): void {
   if (block === "internet-off") {
     throw new WalletError(
       "offline",
-      t("wallet.svc.internet_off"),
+      { key: "wallet.svc.internet_off" },
       t("wallet.svc.internet_off_body", {
         setting: t("settings.network.internet"),
       }),
@@ -305,7 +332,7 @@ function assertMintNetworkAllowed(): void {
   if (block === "tor") {
     throw new WalletError(
       "tor-blocked",
-      t("wallet.svc.tor_ios"),
+      { key: "wallet.svc.tor_ios" },
       t("wallet.svc.tor_ios_body", {
         setting: t("settings.conn.mint_clearnet"),
       }),
@@ -464,7 +491,7 @@ async function getWallet(
     }
     throw new WalletError(
       "offline",
-      t("wallet.svc.keys_uncached"),
+      { key: "wallet.svc.keys_uncached" },
       t("wallet.svc.keys_uncached_body"),
     );
   }
@@ -699,7 +726,7 @@ async function readUsablePhrase(): Promise<string | null> {
   if (stored?.state === "valid") return stored.phrase;
   throw new WalletError(
     "locked",
-    t("wallet.svc.phrase_unreadable"),
+    { key: "wallet.svc.phrase_unreadable" },
     t("wallet.svc.phrase_unreadable_body"),
   );
 }
@@ -752,14 +779,14 @@ export async function restoreFromRecoveryPhrase(params: {
   if (!isValidRecoveryPhrase(phrase)) {
     throw new WalletError(
       "invalid-token",
-      t("wallet.svc.phrase_invalid"),
+      { key: "wallet.svc.phrase_invalid" },
       t("wallet.svc.phrase_invalid_body"),
     );
   }
   if (params.mintUrls.length === 0) {
     throw new WalletError(
       "no-mint",
-      t("wallet.svc.need_mint"),
+      { key: "wallet.svc.need_mint" },
       t("wallet.svc.need_mint_body"),
     );
   }
@@ -884,7 +911,7 @@ function assertUnlocked(): void {
 function lockedError(): WalletError {
   return new WalletError(
     "locked",
-    t("wallet.svc.storage_locked"),
+    { key: "wallet.svc.storage_locked" },
     t("wallet.svc.storage_locked_body"),
   );
 }
@@ -914,10 +941,10 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   try {
     parsed = new URL(url);
   } catch {
-    throw new WalletError("no-mint", t("wallet.svc.bad_url"));
+    throw new WalletError("no-mint", { key: "wallet.svc.bad_url" });
   }
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new WalletError("no-mint", t("wallet.svc.needs_https"));
+    throw new WalletError("no-mint", { key: "wallet.svc.needs_https" });
   }
   // http only for loopback (a local Nutshell); elsewhere proofs go unauthenticated.
   const isLoopback =
@@ -927,7 +954,7 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   if (parsed.protocol === "http:" && !isLoopback) {
     throw new WalletError(
       "no-mint",
-      t("wallet.svc.refuse_http"),
+      { key: "wallet.svc.refuse_http" },
       t("wallet.svc.refuse_http_body"),
     );
   }
@@ -944,7 +971,8 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   cacheWallet(accountKey(url, "sat"), wallet);
 
   const record = storedMint(url);
-  if (!record) throw new WalletError("no-mint", t("wallet.svc.mint_not_saved"));
+  if (!record)
+    throw new WalletError("no-mint", { key: "wallet.svc.mint_not_saved" });
   return { mint: record, units: record.units ?? ["sat"] };
 }
 
@@ -1127,7 +1155,7 @@ async function readUnderFreshKeysets(
     if (walletErr.code !== "offline") throw walletErr;
     throw new WalletError(
       "offline",
-      t("wallet.svc.keyset_unknown"),
+      { key: "wallet.svc.keyset_unknown" },
       t("wallet.svc.keyset_unknown_body"),
     );
   }
@@ -1158,7 +1186,7 @@ function refusalFor(read: Exclude<TokenRead, { ok: true }>): WalletError {
   if (read.reason === "unit-mismatch") {
     return new WalletError(
       "forged-token",
-      t("wallet.svc.unit_mismatch"),
+      { key: "wallet.svc.unit_mismatch" },
       t("wallet.svc.unit_mismatch_body", {
         label: read.label,
         actual: read.actual,
@@ -1172,13 +1200,13 @@ function refusalFor(read: Exclude<TokenRead, { ok: true }>): WalletError {
   ) {
     return new WalletError(
       "no-mint",
-      t("wallet.svc.unknown_mint"),
+      { key: "wallet.svc.unknown_mint" },
       t("wallet.svc.unknown_mint_body"),
     );
   }
   return new WalletError(
     "invalid-token",
-    t("wallet.svc.unreadable_token"),
+    { key: "wallet.svc.unreadable_token" },
     t("wallet.svc.unreadable_token_body"),
   );
 }
@@ -1201,7 +1229,7 @@ async function screenLocks(info: TokenInfo): Promise<{ signingKey?: string }> {
   if (locks.includes("other")) {
     throw new WalletError(
       "forged-token",
-      t("wallet.svc.locked_other"),
+      { key: "wallet.svc.locked_other" },
       t("wallet.svc.locked_other_body"),
     );
   }
@@ -1211,7 +1239,7 @@ async function screenLocks(info: TokenInfo): Promise<{ signingKey?: string }> {
 function lockedToUsOffline(): WalletError {
   return new WalletError(
     "offline",
-    t("wallet.svc.locked_ours_offline"),
+    { key: "wallet.svc.locked_ours_offline" },
     t("wallet.svc.locked_ours_offline_body"),
   );
 }
@@ -1249,7 +1277,7 @@ async function receiveTokenOnce(
   if (record === undefined) {
     throw new WalletError(
       "no-mint",
-      t("wallet.svc.unknown_mint"),
+      { key: "wallet.svc.unknown_mint" },
       t("wallet.svc.unknown_mint_body"),
     );
   }
@@ -1264,10 +1292,10 @@ async function receiveTokenOnce(
   );
   if (dleq.status === "invalid") {
     throw dleq.code === "wrong-unit"
-      ? new WalletError("forged-token", t("wallet.svc.unit_mismatch"))
+      ? new WalletError("forged-token", { key: "wallet.svc.unit_mismatch" })
       : new WalletError(
           "forged-token",
-          t("wallet.svc.wrong_mint"),
+          { key: "wallet.svc.wrong_mint" },
           t("wallet.svc.wrong_mint_body"),
         );
   }
@@ -1401,13 +1429,13 @@ async function receiveTokenOnce(
     // Never clear the preview here, not even on "already spent" (possibly our
     // own first attempt). Only `reconcile` can learn whether the mint took
     // the inputs.
-    if (staged) store.updateTx(txId, { error: walletErr.message });
+    if (staged) store.updateTx(txId, failureOf(walletErr));
     if (walletErr.code === "mint-error" && isAlreadySpentError(walletErr)) {
       // Still reported as spent: nothing is credited yet, and the preview
       // stays for `reconcile` to settle.
       throw new WalletError(
         "already-spent",
-        t("wallet.svc.already_spent"),
+        { key: "wallet.svc.already_spent" },
         t("wallet.svc.already_spent_body"),
       );
     }
@@ -1426,7 +1454,7 @@ async function receiveTokenOnce(
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
     // twice.
-    return storeOffline(url, info, walletErr.message, verdict, {
+    return storeOffline(url, info, walletErr, verdict, {
       counterparty: opts.counterparty,
       ...(staged ? { txId } : {}),
     });
@@ -1439,7 +1467,7 @@ async function receiveTokenOnce(
 function storeOffline(
   mintUrl: string,
   info: TokenInfo,
-  reason: string,
+  cause: WalletError,
   verdict: DleqVerdict,
   opts: { counterparty?: string; txId?: string } = {},
 ): ReceiveResult {
@@ -1464,7 +1492,7 @@ function storeOffline(
     };
   }
   if (opts.txId !== undefined) {
-    store.updateTx(opts.txId, { error: reason });
+    store.updateTx(opts.txId, failureOf(cause));
   } else {
     store.addTx({
       id: receiptTxId,
@@ -1485,7 +1513,7 @@ function storeOffline(
     mintUrl,
     memo: info.memo,
     outcome: "stored",
-    offlineReason: reason,
+    offlineReason: cause.message,
     ...verdict,
   };
 }
@@ -1573,7 +1601,9 @@ export async function quoteSend(params: {
   const unit = params.unit ?? "sat";
   const amount = Math.floor(params.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
-    throw new WalletError("insufficient", t("wallet.svc.amount_positive"));
+    throw new WalletError("insufficient", {
+      key: "wallet.svc.amount_positive",
+    });
   }
 
   const account = pickAccount(amount, unit, params.mintUrl);
@@ -1621,10 +1651,10 @@ export async function quoteSend(params: {
       record?.feePpkByKeysetId,
     );
     if (!selection) {
-      throw new WalletError(
-        "insufficient",
-        t("wallet.svc.insufficient_at_mint", { mint: hostOf(account.mintUrl) }),
-      );
+      throw new WalletError("insufficient", {
+        key: "wallet.svc.insufficient_at_mint",
+        vars: { mint: hostOf(account.mintUrl) },
+      });
     }
     return {
       mintUrl: account.mintUrl,
@@ -1654,10 +1684,13 @@ export async function prepareSend(params: {
   if (!quote.exact && params.allowInexact !== true) {
     throw new WalletError(
       "inexact",
-      t("wallet.svc.inexact_title", {
-        amount: params.amount,
-        unit: quote.unit,
-      }),
+      {
+        key: "wallet.svc.inexact_title",
+        vars: {
+          amount: params.amount,
+          unit: quote.unit,
+        },
+      },
       t("wallet.svc.inexact_detail", {
         spend: quote.spend,
         unit: quote.unit,
@@ -1680,7 +1713,7 @@ export async function prepareSend(params: {
   if (!store.reserveProofs(txId, quote.mintUrl, quote.unit, quote.proofs)) {
     throw new WalletError(
       "insufficient",
-      t("wallet.svc.coins_raced"),
+      { key: "wallet.svc.coins_raced" },
       t("wallet.svc.coins_raced_body"),
     );
   }
@@ -1781,8 +1814,8 @@ export async function settleReclaim(txId: string): Promise<ReclaimOutcome> {
 }
 
 // Keeps the reservation so the token can still be reclaimed or re-shared.
-export function failSend(txId: string, reason: string): void {
-  useWalletStore.getState().updateTx(txId, { error: reason });
+export function failSend(txId: string, reason: TxFailure): void {
+  useWalletStore.getState().updateTx(txId, reason);
 }
 
 // The named mint, or one covering the amount alone: a token cannot combine
@@ -1805,7 +1838,7 @@ function pickAccount(
   if (candidates.length === 0) {
     throw new WalletError(
       "no-mint",
-      t("wallet.svc.no_ecash"),
+      { key: "wallet.svc.no_ecash" },
       t("wallet.svc.no_ecash_body"),
     );
   }
@@ -1814,10 +1847,10 @@ function pickAccount(
     const url = normalizeMintUrl(preferredMint);
     const hit = candidates.find((c) => c.mintUrl === url);
     if (!hit || hit.balance < amount) {
-      throw new WalletError(
-        "insufficient",
-        t("wallet.svc.insufficient_at_mint", { mint: hostOf(url) }),
-      );
+      throw new WalletError("insufficient", {
+        key: "wallet.svc.insufficient_at_mint",
+        vars: { mint: hostOf(url) },
+      });
     }
     return hit;
   }
@@ -1829,14 +1862,14 @@ function pickAccount(
   if (total >= amount) {
     throw new WalletError(
       "insufficient",
-      t("wallet.svc.split_across_mints"),
+      { key: "wallet.svc.split_across_mints" },
       t("wallet.svc.no_single_mint", { amount, unit }),
     );
   }
-  throw new WalletError(
-    "insufficient",
-    t("wallet.svc.have_tried_send", { total, unit, amount }),
-  );
+  throw new WalletError("insufficient", {
+    key: "wallet.svc.have_tried_send",
+    vars: { total, unit, amount },
+  });
 }
 
 // By secret, so a reservation removes exactly the rows cashu-ts chose. Drops
@@ -2002,7 +2035,7 @@ async function refreshAccountOnce(
         unit,
         mintUrl: url,
         spentRemoved: true,
-        error: t("wallet.svc.mint_says_spent"),
+        ...txFailure("wallet.svc.mint_says_spent"),
       });
     }
   }
@@ -2090,7 +2123,7 @@ function feeOf(wallet: Wallet, coins: StoredProof[]): number {
 
 type SwapOutcome =
   | { status: "swapped"; received: number }
-  | { status: "refused"; reason: string }
+  | { status: "refused"; reason: TxFailure }
   | { status: "pending" };
 
 // One staged swap of held coins into fresh proofs of our own. Throws only
@@ -2162,7 +2195,10 @@ async function swapIntoFreshProofs(
       walletErr.code === "offline" || walletErr.code === "tor-blocked";
     if (!staged) {
       if (isMintSilent(err)) throw walletErr;
-      return { status: "refused", reason: t("wallet.svc.coins_unredeemable") };
+      return {
+        status: "refused",
+        reason: txFailure("wallet.svc.coins_unredeemable"),
+      };
     }
     // Says nothing about the coins, and cashu-ts has usually refreshed the
     // keysets for the next pass already.
@@ -2171,10 +2207,13 @@ async function swapIntoFreshProofs(
       return { status: "pending" };
     }
     if (isDefiniteRefusal(err)) {
-      abandonStagedSwap(txId, walletErr.message);
-      return { status: "refused", reason: t("wallet.svc.coins_refused") };
+      abandonStagedSwap(txId, failureOf(walletErr));
+      return {
+        status: "refused",
+        reason: txFailure("wallet.svc.coins_refused"),
+      };
     }
-    store.updateTx(txId, { error: walletErr.message });
+    store.updateTx(txId, failureOf(walletErr));
     if (unreachable) throw walletErr;
     return { status: "pending" };
   }
@@ -2191,7 +2230,7 @@ function refuseReceipt(
   unit: string,
   receipt: string,
   coins: StoredProof[],
-  reason: string,
+  reason: TxFailure,
 ): void {
   const store = useWalletStore.getState();
   const secrets = coins.map((p) => p.secret);
@@ -2207,14 +2246,14 @@ function refuseReceipt(
       amount: face,
       unit,
       mintUrl: url,
-      error: reason,
+      ...reason,
       token,
     });
     return;
   }
   store.updateTx(receipt, {
     status: "failed",
-    error: row.kind === "send" ? t("wallet.svc.reclaim_refused") : reason,
+    ...(row.kind === "send" ? txFailure("wallet.svc.reclaim_refused") : reason),
     token,
   });
 }
@@ -2258,7 +2297,10 @@ function closeReceipts(
         tx.id,
         outcome === "swapped"
           ? { status: "completed", error: undefined }
-          : { status: "failed", error: t("wallet.svc.already_spent_body") },
+          : {
+              status: "failed",
+              ...txFailure("wallet.svc.already_spent_body"),
+            },
       );
     } else if (
       outcome === "spent" &&
@@ -2293,20 +2335,20 @@ function reserveSwapInputs(
   if (!useWalletStore.getState().reserveProofs(txId, mintUrl, unit, inputs)) {
     throw new WalletError(
       "insufficient",
-      t("wallet.svc.coins_raced"),
+      { key: "wallet.svc.coins_raced" },
       t("wallet.svc.coins_raced_body"),
     );
   }
 }
 
 // The mint refused outright, so the inputs are untouched and go back.
-function abandonStagedSwap(txId: string, reason: string): void {
+function abandonStagedSwap(txId: string, reason: TxFailure): void {
   const store = useWalletStore.getState();
   store.releaseReserved(txId);
   store.updateTx(txId, {
     status: "failed",
     swapPreview: undefined,
-    error: reason,
+    ...reason,
   });
 }
 
@@ -2448,7 +2490,7 @@ async function replayLostSwap(tx: WalletTx, pass: PassGuard): Promise<void> {
     store.updateTx(tx.id, {
       status: "failed",
       swapPreview: undefined,
-      error: t("wallet.svc.swap_unreadable"),
+      ...txFailure("wallet.svc.swap_unreadable"),
     });
     return;
   }
@@ -2524,7 +2566,7 @@ async function replayLostSwap(tx: WalletTx, pass: PassGuard): Promise<void> {
   store.updateTx(tx.id, {
     status: "failed",
     swapPreview: undefined,
-    error: t("wallet.svc.swap_lost"),
+    ...txFailure("wallet.svc.swap_lost"),
   });
 }
 
@@ -2598,7 +2640,7 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
     // The token is dead, so the row offers nothing to copy.
     store.updateTx(txId, {
       status: "failed",
-      error: t("wallet.svc.send_spent_by_swap"),
+      ...txFailure("wallet.svc.send_spent_by_swap"),
       token: undefined,
     });
   }
@@ -2635,7 +2677,7 @@ function settleReplayedSwap(
         send.map((p) => toStoredProof(p, { verified: true })),
         tx.unit,
       ),
-      error: t("wallet.svc.locked_undelivered"),
+      ...txFailure("wallet.svc.locked_undelivered"),
     });
     return;
   }
@@ -2850,7 +2892,9 @@ export async function createLightningDeposit(params: {
   const url = normalizeMintUrl(params.mintUrl);
   const amount = Math.floor(params.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
-    throw new WalletError("insufficient", t("wallet.svc.amount_positive"));
+    throw new WalletError("insufficient", {
+      key: "wallet.svc.amount_positive",
+    });
   }
 
   const wallet = await getWallet(url, unit);
@@ -2906,7 +2950,7 @@ export async function claimLightningDeposit(
   assertUnlocked();
   assertMintNetworkAllowed();
   if (claimsInFlight.has(quoteId)) {
-    throw new WalletError("offline", t("wallet.svc.invoice_unpaid"));
+    throw new WalletError("offline", { key: "wallet.svc.invoice_unpaid" });
   }
   claimsInFlight.add(quoteId);
   try {
@@ -2927,7 +2971,8 @@ async function claimLightningDepositOnce(
   const tx = store.history.find(
     (t) => t.quoteId === quoteId && t.kind === "mint",
   );
-  if (!tx) throw new WalletError("mint-error", t("wallet.svc.unknown_deposit"));
+  if (!tx)
+    throw new WalletError("mint-error", { key: "wallet.svc.unknown_deposit" });
 
   const wallet = await getWallet(url, unit);
   let quote: MintQuoteBolt11Response;
@@ -2953,11 +2998,13 @@ async function claimLightningDepositOnce(
     if (expired) {
       store.updateTx(tx.id, {
         status: "expired",
-        error: t("wallet.svc.invoice_expired_before"),
+        ...txFailure("wallet.svc.invoice_expired_before"),
       });
-      throw new WalletError("mint-error", t("wallet.svc.invoice_expired"));
+      throw new WalletError("mint-error", {
+        key: "wallet.svc.invoice_expired",
+      });
     }
-    throw new WalletError("offline", t("wallet.svc.invoice_unpaid"));
+    throw new WalletError("offline", { key: "wallet.svc.invoice_unpaid" });
   }
 
   // Outputs on disk before the request, so the ISSUED branch can replay a lost
@@ -2980,7 +3027,7 @@ async function claimLightningDepositOnce(
   } catch (err) {
     if (walletReplaced(epoch)) throw lockedError();
     const walletErr = asWalletError(err, "mint-error");
-    store.updateTx(tx.id, { error: walletErr.message });
+    store.updateTx(tx.id, failureOf(walletErr));
     throw walletErr;
   }
   assertSameWallet(epoch);
@@ -3017,7 +3064,7 @@ async function recoverMintOutputs(
     store.updateTx(tx.id, {
       status: "completed",
       mintOutputs: undefined,
-      error: t("wallet.svc.mint_lost"),
+      ...txFailure("wallet.svc.mint_lost"),
     });
     return 0;
   }
@@ -3073,7 +3120,7 @@ async function recoverMintOutputs(
     mintOutputs: undefined,
     ...(minted > 0
       ? { amount: minted, error: undefined }
-      : { error: t("wallet.svc.mint_lost") }),
+      : txFailure("wallet.svc.mint_lost")),
   });
   return minted;
 }
@@ -3128,7 +3175,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
     store.releaseReserved(tx.id);
     store.updateTx(tx.id, {
       status: "failed",
-      error: t("wallet.svc.mint_did_not_pay"),
+      ...txFailure("wallet.svc.mint_did_not_pay"),
       meltOutputs: undefined,
     });
     return;
@@ -3204,7 +3251,7 @@ export async function quoteLightningWithdrawal(params: {
   if (!/^ln(bc|tb|bcrt)[0-9a-z]+$/i.test(invoice)) {
     throw new WalletError(
       "invalid-token",
-      t("wallet.svc.not_an_invoice"),
+      { key: "wallet.svc.not_an_invoice" },
       t("wallet.svc.not_an_invoice_body"),
     );
   }
@@ -3227,10 +3274,10 @@ export async function quoteLightningWithdrawal(params: {
     useWalletStore.getState().proofs[accountKey(url, unit)] ?? []
   ).reduce((s, p) => s + p.amount, 0);
   if (balance < total) {
-    throw new WalletError(
-      "insufficient",
-      t("wallet.svc.invoice_needs", { total, unit, balance }),
-    );
+    throw new WalletError("insufficient", {
+      key: "wallet.svc.invoice_needs",
+      vars: { total, unit, balance },
+    });
   }
 
   return {
@@ -3283,10 +3330,9 @@ function selectForMelt(
       storedMint(quote.mintUrl)?.feePpkByKeysetId,
     );
     if (!fallback) {
-      throw new WalletError(
-        "insufficient",
-        t("wallet.svc.insufficient_for_invoice"),
-      );
+      throw new WalletError("insufficient", {
+        key: "wallet.svc.insufficient_for_invoice",
+      });
     }
     selected = fallback.selected;
   }
@@ -3376,9 +3422,9 @@ async function swapDownForMelt(
     }
     const walletErr = asWalletError(err, "mint-error");
     if (isDefiniteRefusal(err)) {
-      abandonStagedSwap(txId, walletErr.message);
+      abandonStagedSwap(txId, failureOf(walletErr));
     } else {
-      store.updateTx(txId, { error: walletErr.message });
+      store.updateTx(txId, failureOf(walletErr));
     }
     throw walletErr;
   }
@@ -3436,7 +3482,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
   ) {
     throw new WalletError(
       "insufficient",
-      t("wallet.svc.coins_raced"),
+      { key: "wallet.svc.coins_raced" },
       t("wallet.svc.coins_raced_invoice_body"),
     );
   }
@@ -3495,7 +3541,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
       if (change.length === 0 && (err.quote.change ?? []).length > 0) {
         throw new WalletError(
           "change-pending",
-          t("wallet.svc.melt_change_pending"),
+          { key: "wallet.svc.melt_change_pending" },
           t("wallet.svc.melt_change_pending_body"),
         );
       }
@@ -3534,17 +3580,19 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
       store.releaseReserved(txId);
       store.updateTx(txId, {
         status: "failed",
-        error: walletErr.message,
+        ...failureOf(walletErr),
         meltOutputs: undefined,
       });
     } else {
       // `change-pending` already knows it paid, so it is not called in doubt.
-      store.updateTx(txId, {
-        error:
-          walletErr.code === "change-pending"
-            ? walletErr.message
-            : `${walletErr.message} ${t("wallet.svc.payment_unknown")}`,
-      });
+      store.updateTx(
+        txId,
+        walletErr.code === "change-pending"
+          ? failureOf(walletErr)
+          : txFailure("wallet.svc.payment_unknown_after", {
+              reason: walletErr.message,
+            }),
+      );
     }
     throw walletErr;
   } finally {
@@ -3595,7 +3643,7 @@ export async function consolidateMints(params: {
   if (from === to) {
     throw new WalletError(
       "no-mint",
-      t("wallet.svc.same_mint"),
+      { key: "wallet.svc.same_mint" },
       t("wallet.svc.same_mint_body"),
     );
   }
@@ -3607,10 +3655,10 @@ export async function consolidateMints(params: {
   const available = store.proofs[accountKey(from, unit)] ?? [];
   const sourceBalance = available.reduce((s, p) => s + p.amount, 0);
   if (sourceBalance <= 0) {
-    throw new WalletError(
-      "insufficient",
-      t("wallet.svc.nothing_to_move", { mint: hostOf(from), unit }),
-    );
+    throw new WalletError("insufficient", {
+      key: "wallet.svc.nothing_to_move",
+      vars: { mint: hostOf(from), unit },
+    });
   }
 
   // First guess: everything, less a buffer for the routing fee.
@@ -3629,7 +3677,11 @@ export async function consolidateMints(params: {
       amount: target,
       mintUrl: to,
       unit,
-      description: t("wallet.svc.consolidate_memo", { mint: hostOf(from) }),
+      // The invoice memo leaves the app, where the isolates `t()` adds are
+      // stray characters.
+      description: stripIsolates(
+        t("wallet.svc.consolidate_memo", { mint: hostOf(from) }),
+      ),
     });
 
     let quote: MeltQuote;
@@ -3640,7 +3692,10 @@ export async function consolidateMints(params: {
         unit,
       });
     } catch (err) {
-      abandonDeposit(deposit.txId, t("wallet.svc.quote_failed_retried"));
+      abandonDeposit(
+        deposit.txId,
+        txFailure("wallet.svc.quote_failed_retried"),
+      );
       const walletErr = asWalletError(err, "mint-error");
       if (walletErr.code !== "insufficient") throw walletErr;
       target = Math.floor(target * 0.95);
@@ -3653,7 +3708,10 @@ export async function consolidateMints(params: {
       storedMint(from)?.feePpkByKeysetId,
     );
     if (quote.total + inputFee > sourceBalance) {
-      abandonDeposit(deposit.txId, t("wallet.svc.amount_unfit_retried"));
+      abandonDeposit(
+        deposit.txId,
+        txFailure("wallet.svc.amount_unfit_retried"),
+      );
       const overshoot = quote.total + inputFee - sourceBalance;
       target -= overshoot;
       continue;
@@ -3695,16 +3753,16 @@ export async function consolidateMints(params: {
 
   throw new WalletError(
     "insufficient",
-    t("wallet.svc.cannot_size"),
+    { key: "wallet.svc.cannot_size" },
     t("wallet.svc.cannot_size_detail", { from: hostOf(from), to: hostOf(to) }),
   );
 }
 
 // Close an unused deposit quote so it does not show as awaiting payment.
-function abandonDeposit(txId: string, reason: string): void {
+function abandonDeposit(txId: string, reason: TxFailure): void {
   useWalletStore.getState().updateTx(txId, {
     status: "expired",
-    error: reason,
+    ...reason,
   });
 }
 
@@ -3717,7 +3775,10 @@ function requireNut(mintUrl: string, nut: number, what: string): void {
   if (nuts.includes(nut)) return;
   throw new WalletError(
     "unsupported",
-    t("wallet.svc.mint_cannot", { mint: hostOf(mintUrl), action: what }),
+    {
+      key: "wallet.svc.mint_cannot",
+      vars: { mint: hostOf(mintUrl), action: what },
+    },
     t("wallet.svc.no_nut", { nut }),
   );
 }
@@ -3841,7 +3902,7 @@ async function redeemNutzapProofs(params: {
     settle();
     throw new WalletError(
       "untrusted-mint",
-      t("wallet.svc.unknown_mint"),
+      { key: "wallet.svc.unknown_mint" },
       t("wallet.svc.unknown_mint_body"),
     );
   }
@@ -3856,7 +3917,7 @@ async function redeemNutzapProofs(params: {
     )
   ) {
     settle();
-    throw new WalletError("forged-token", t("wallet.svc.locked_other"));
+    throw new WalletError("forged-token", { key: "wallet.svc.locked_other" });
   }
   const wallet = await getWallet(url, params.unit);
   const txId = newTxId();
@@ -3912,7 +3973,7 @@ async function redeemNutzapProofs(params: {
     }
     // In doubt: the preview stays for `reconcile`, and the row says the
     // claim is still under way.
-    store.updateTx(txId, { error: walletErr.message });
+    store.updateTx(txId, failureOf(walletErr));
     throw walletErr;
   }
 
@@ -3973,7 +4034,7 @@ async function lockProofsOnce(
     assertSameWallet(epoch);
     const inputs = matchStored(available, preview.inputs);
     if (inputs.length !== preview.inputs.length) {
-      throw new WalletError("insufficient", t("wallet.svc.coins_raced"));
+      throw new WalletError("insufficient", { key: "wallet.svc.coins_raced" });
     }
     reserveSwapInputs(txId, url, params.unit, inputs);
     store.addTx({
@@ -4004,15 +4065,15 @@ async function lockProofsOnce(
       throw err;
     }
     if (isDefiniteRefusal(err)) {
-      abandonStagedSwap(txId, walletErr.message);
+      abandonStagedSwap(txId, failureOf(walletErr));
       throw walletErr;
     }
     // Maybe already locked to the recipient: held for `reconcile`, and flagged
     // in doubt so the caller does not pay twice.
-    store.updateTx(txId, { error: walletErr.message });
+    store.updateTx(txId, failureOf(walletErr));
     throw new WalletError(
       walletErr.code,
-      t("wallet.svc.lock_in_doubt"),
+      { key: "wallet.svc.lock_in_doubt" },
       t("wallet.svc.lock_in_doubt_body"),
       { inDoubt: true },
     );
@@ -4055,7 +4116,8 @@ export type NutzapLookup =
   { ok: true; target: NutzapTarget } | { ok: false; reason: string };
 
 // Whether and where this person can be nutzapped. Never throws: a failure means
-// "try another rail". `reason` is user-facing copy.
+// "try another rail". `reason` is user-facing copy, a whole sentence saying why
+// the payment went another way.
 export async function findNutzapTarget(params: {
   recipientPubkey: string;
   amount: number;
@@ -4068,7 +4130,7 @@ export async function findNutzapTarget(params: {
   } catch {
     info = null;
   }
-  if (!info) return { ok: false, reason: t("wallet.svc.no_nutzap_info") };
+  if (!info) return { ok: false, reason: t("wallet.pay.why_no_nutzap_info") };
 
   // A mint on their list that we fund. No `assertUnlocked`: a locked wallet
   // reads as zero here, and the next rail raises the real "locked" error.
@@ -4083,7 +4145,7 @@ export async function findNutzapTarget(params: {
         ) >= params.amount,
     );
   if (shared === undefined) {
-    return { ok: false, reason: t("wallet.svc.no_shared_mint") };
+    return { ok: false, reason: t("wallet.pay.why_no_shared_mint") };
   }
   return {
     ok: true,
@@ -4144,8 +4206,8 @@ export function settleNutzap(txId: string): void {
 }
 
 // Not reclaimable: locked proofs are the recipient's whatever happens.
-export function failNutzapDelivery(txId: string, reason: string): void {
-  useWalletStore.getState().updateTx(txId, { error: reason });
+export function failNutzapDelivery(txId: string, reason: TxFailure): void {
+  useWalletStore.getState().updateTx(txId, reason);
 }
 
 // ---- Nutzap receive ----

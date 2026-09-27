@@ -185,7 +185,7 @@ export default function PrivacyPage() {
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">
             <h2 className="text-ink text-base font-semibold">Local network (optional)</h2>
             <p className="text-[15px] leading-[1.75]">
-              Airhop can carry the mesh over a WiFi network you are already joined to, which is the
+              Airhop can carry the mesh over a Wi-Fi network you are already joined to, which is the
               only way an iPhone and an Android phone reach each other without Bluetooth. Finding
               other devices uses mDNS, the same mechanism a printer uses to appear on a network.
             </p>
@@ -455,7 +455,7 @@ export default function PrivacyPage() {
                 <strong>Panic wipe.</strong> Erase all local keys, messages, queued mail, cached
                 media, Tor state, notifications, and app data from the Profile screen. Photos you
                 saved to your gallery belong to your phone's photo library and stay there, and on
-                iPhone a WiFi Aware pairing stays in the system's own list until you remove it in
+                iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in
                 the Settings app.
               </li>
               <li>

@@ -15,59 +15,22 @@
 
 import { decodeGeohash } from "@core/nostr/geohash-presence";
 import { internetOff, torClaimed } from "@services/network-gate";
+import { getLocales } from "expo-localization";
 import * as Location from "expo-location";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { getStorage } from "./mmkv";
 
-// The device's language, resolved on first use and then reused.
+// Cache keys fold in the language the name was resolved in, so changing the
+// phone's language re-resolves a cell and keeps both spellings.
 //
-// Read through Intl rather than a localization package: this is the only
-// consumer of it in the app, and Hermes implements DateTimeFormat on both
-// platforms, backed by android.icu and NSFoundation. The value is only ever a
-// cache key, so what matters is that it differs between languages, not that it
-// is a well-formed BCP-47 tag.
-//
-// Resolved lazily rather than at module scope so that importing this store
-// costs nothing. It is imported by the panic wipe, which runs on paths where
-// no place name is ever looked up.
-let deviceLocale: string | null = null;
-
-function getDeviceLocale(): string {
-  if (deviceLocale === null) {
-    try {
-      deviceLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-    } catch {
-      deviceLocale = "en";
-    }
-  }
-  return deviceLocale;
-}
-
-// Cache keys fold in the language the name was resolved in.
-//
-// Reverse geocoding is done by the OS, and both platforms answer in the
-// DEVICE's language rather than the app's: iOS CLGeocoder follows the bundle's
-// preferred localization, Android's Geocoder the default Locale. So a cell
-// resolved in English stays "Kumaraswamy Layout" and one resolved in Hindi comes
-// back in Devanagari.
-//
-// The one surface that does not follow the in-app picker, and a limit of the
-// wrapper rather than the platforms: both native APIs take a locale,
-// `expo-location` exposes neither. A native shim for a room-header label is not
-// worth it, so keying on the language is the fix: a stale spelling cannot
-// outlive the setting that produced it.
-//
-// Keyed on the geohash alone the cache never expires, so changing the phone's
-// language leaves every seen channel labelled in the old one permanently. Keying
-// on the language makes a change re-resolve, and keeps both spellings for the
-// user who switches back and forth.
-//
-// The language is sampled once per process, so a change made while Airhop is
-// running lands on the next launch rather than immediately. That is the cheap
-// end of the trade and still strictly better than never.
+// Reverse geocoding is done by the OS in the DEVICE's first language, not the
+// app's (iOS CLGeocoder and Android Geocoder both take a locale, but
+// `expo-location` exposes neither). So this is the one surface that does not
+// follow the in-app picker, and keying on the language is what stops a stale
+// spelling outliving the setting that produced it.
 export function placeNameKey(geohash: string): string {
-  return `${getDeviceLocale()}|${geohash}`;
+  return `${getLocales()[0]?.languageTag ?? "en"}|${geohash}`;
 }
 
 interface PlaceNamesState {

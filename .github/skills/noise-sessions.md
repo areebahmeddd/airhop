@@ -100,7 +100,7 @@ Pattern `-> e, es, s, ss`. The sender's static key travels inside the ciphertext
 
 ## Sessions Are Per Peer
 
-One session per peer ID, whichever radio carries it: BLE, WiFi Aware or LAN. Sessions live in memory only and are re-established after a restart.
+One session per peer ID, whichever radio carries it: BLE, Wi-Fi Aware or LAN. Sessions live in memory only and are re-established after a restart.
 
 ## What Not to Do
 

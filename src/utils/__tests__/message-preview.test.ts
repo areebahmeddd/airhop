@@ -7,9 +7,11 @@
 // sent with no caption has an empty `text`, so without a fallback the row is an
 // empty line and the conversation looks like nothing happened. Every branch
 // below is a shape that reaches the list in normal use.
+import { getEncodedToken, type Token } from "@cashu/cashu-ts";
+import { toProofLike } from "@core/payments/cashu";
 import { t } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
-import { messagePreviewText } from "../message-preview";
+import { messagePreviewEntry, messagePreviewText } from "../message-preview";
 
 function message(over: Partial<ChatMessage> = {}): ChatMessage {
   return {
@@ -79,5 +81,41 @@ describe("messagePreviewText", () => {
   // for a message that carries either half.
   it("returns empty only when there is neither text nor attachment", () => {
     expect(messagePreviewText(message())).toBe("");
+  });
+
+  // A token is money to whoever reads it, so no preview may show one.
+  describe("an ecash token", () => {
+    const token = getEncodedToken({
+      mint: "https://mint.example.com",
+      unit: "sat",
+      proofs: [16, 4, 1].map((amount, i) =>
+        toProofLike({
+          id: "00ad268c4d1f5826",
+          amount,
+          secret: `secret-${String(i)}`,
+          C: "02" + "ab".repeat(32),
+        }),
+      ),
+    } as unknown as Token);
+
+    it("previews a message that is only a token as its amount", () => {
+      const preview = messagePreviewText(message({ text: token }));
+      expect(preview).toBe(
+        t("notif.preview.ecash", { amount: "21", unit: "sat" }),
+      );
+      expect(preview).not.toContain("cashu");
+    });
+
+    it("logs the bell entry by key, so it re-reads after a switch", () => {
+      const entry = messagePreviewEntry(message({ text: token }));
+      expect(entry.previewKey).toBe("notif.preview.ecash");
+      expect(entry.previewVars).toEqual({ amount: "21", unit: "sat" });
+      expect(entry.preview).not.toContain("cashu");
+    });
+
+    it("leaves a token inside a sentence as the sender's words", () => {
+      const text = `for lunch ${token}`;
+      expect(messagePreviewText(message({ text }))).toBe(text);
+    });
   });
 });

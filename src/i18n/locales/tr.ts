@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Bugün",
   "format.yesterday": "Dün",
-  "format.minutes_ago": "{count} dk önce",
-  "format.hours_ago": "{count} sa önce",
-  "format.days_ago": "{count} g önce",
   "format.just_now": "az önce",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -129,7 +126,7 @@ export const strings: Strings = {
   "onboarding.transfer.confirm_cta": "Eşleşiyor",
   "onboarding.transfer.waiting_old":
     "Eski telefonunda “{action}” düğmesine dokun",
-  "onboarding.transfer.receiving": "Alınıyor {percent}%",
+  "onboarding.transfer.receiving": "Alınıyor %{percent}",
   "onboarding.transfer.saving": "Bu telefona kaydediliyor",
   "onboarding.transfer.releasing": "Eski telefonda tamamlanıyor",
   "onboarding.transfer.keep_open":
@@ -259,6 +256,7 @@ export const strings: Strings = {
   "chat.group_badge": "Grup",
   "chat.more": "Daha fazla",
   "chat.no_messages": "Henüz mesaj yok",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Yakında kimse yok",
   "chat.presence.active_none": "Etkin kimse yok",
   "chat.you": "Sen",
@@ -331,7 +329,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "O hücre açılamadı. Birazdan yeniden dene.",
   "chat.jump.title": "Bir yere git",
-  "chat.jump.saved": "KAYITLI YERLER",
+  "chat.jump.saved": "Kayıtlı yerler",
+  "chat.jump.nearby": "Yakında",
   "chat.jump.anywhere":
     "Herhangi bir yerdeki herkese açık konum kanalını aç, bulunmadığın bir yeri bile.",
   "chat.jump.geohash_note":
@@ -340,7 +339,22 @@ export const strings: Strings = {
     "Yakında değil, ışınlanmış olarak görünürsün. Yalnızca internet üzerinden ulaşır.",
   "chat.jump.level_cell": "{level} düzeyinde hücre",
   "chat.jump.already_here": "Zaten buradasın. Git, {name} kanalını açar.",
-  "chat.jump.open_direction": "{direction} yönündeki hücreyi aç",
+  "chat.jump.dir.n": "K",
+  "chat.jump.dir.ne": "KD",
+  "chat.jump.dir.e": "D",
+  "chat.jump.dir.se": "GD",
+  "chat.jump.dir.s": "G",
+  "chat.jump.dir.sw": "GB",
+  "chat.jump.dir.w": "B",
+  "chat.jump.dir.nw": "KB",
+  "chat.jump.open_n": "Kuzeydeki hücreyi aç",
+  "chat.jump.open_ne": "Kuzeydoğudaki hücreyi aç",
+  "chat.jump.open_e": "Doğudaki hücreyi aç",
+  "chat.jump.open_se": "Güneydoğudaki hücreyi aç",
+  "chat.jump.open_s": "Güneydeki hücreyi aç",
+  "chat.jump.open_sw": "Güneybatıdaki hücreyi aç",
+  "chat.jump.open_w": "Batıdaki hücreyi aç",
+  "chat.jump.open_nw": "Kuzeybatıdaki hücreyi aç",
   "chat.jump.open_place": "{name} aç",
   "chat.jump.remove_place": "{name} kayıtlı yerlerden kaldır",
   "chat.jump.go": "Git",
@@ -367,7 +381,7 @@ export const strings: Strings = {
     "Senin seçtiğin en fazla 16 kişi. Davet bağlantısı yoktur, bu yüzden kimse iletilen bir bağlantıyla katılamaz.",
   "chat.group.bluetooth":
     "Yalnızca Bluetooth. Menzil dışındaki üyeler geri döndüklerinde mesajları alır.",
-  "chat.group.members_label": "ÜYELER",
+  "chat.group.members_label": "Üyeler",
   "chat.group.none_in_range":
     "Menzilde kimse yok. Grubu oluştururken üyelerin yakında olması gerekir.",
   "chat.group.create_title": "Bir grup oluştur",
@@ -455,21 +469,16 @@ export const strings: Strings = {
   "chat.transfer.title_peer": "{status}: {name} · {peer}",
   "chat.transfer.title_from": "{status} · {peer}",
   "chat.thread.peer": "eş",
-  "chat.thread.cancel_transfer": "{name} iptal et",
+  "chat.thread.cancel_transfer": "{name} aktarımını iptal et",
   "chat.thread.hide_transfer": "İlerlemeyi gizle",
   "chat.thread.hide_transfer_hint": "Dosya yine de gelir",
-  "chat.thread.queued_more": "Gönderilmeyi bekleyen {count} tane daha",
-  "chat.thread.across_bridge": "köprünün karşısında {count}",
   "chat.thread.bridged": "köprülendi",
   "chat.thread.invite_body":
     "Airhop'ta {channel} kanalında bana katıl — önce çevrimdışı çalışan, özel mesh mesajlaşma.",
-  "chat.thread.go_back_unread": "Geri dön, {count} okunmamış",
   "chat.thread.view_info": "{name} bilgisini görüntüle",
-  "chat.thread.notices_new": "Bu kanalın duyuruları, {count} yeni",
   "chat.board.urgent_one": "{author} kişisinden acil duyuru · {content}",
-  "chat.board.urgent_many": "{count} yeni acil duyuru · Duyuruları aç",
+  "chat.board.urgent_one_anon": "Acil duyuru · {content}",
   "chat.thread.say_something": "{channel} kanalında bir şeyler söyle.",
-  "chat.thread.jump_latest_new": "En son mesaja atla, {count} yeni",
   "chat.thread.unconfirmed_since": "{date} tarihinden beri teslim onaylanmadı",
   "chat.thread.no_reach": "Yakında eş yok · bunu henüz kimse almadı",
   "chat.thread.channel_needs_internet":
@@ -506,7 +515,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Ekran görüntüsü aldın · kimseye söylenmedi",
   "chat.screenshot.heads_up": "Dikkat",
-  "chat.screenshot.notice": "* {name} ekran görüntüsü aldı *",
+  "chat.screenshot.peer_took": "{name} ekran görüntüsü aldı",
   "chat.screenshot.notified_dm":
     "{name} kişisine bu konuşmanın ekran görüntüsünü aldığın bildirildi.",
   "chat.screenshot.notified":
@@ -551,7 +560,7 @@ export const strings: Strings = {
   "chat.attach.document": "Belge",
   "chat.attach.document_desc": "Herhangi bir dosya ya da PDF gönder",
   "chat.attach.voice": "Sesli not",
-  "chat.attach.voice_desc": "Sesli mesaj kaydet ve gönder",
+  "chat.attach.voice_desc": "Sesli not kaydet ve gönder",
   "chat.attach.ecash": "Ecash gönder",
   "chat.attach.ecash_desc": "Cüzdanından Cashu satı gönder",
   "chat.attach.location": "Konum",
@@ -559,7 +568,7 @@ export const strings: Strings = {
   "chat.attach.title": "Ekle",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Bir konum paylaştı",
+  "chat.location.sent_summary": "Konum paylaşıldı",
   "chat.location.received_summary": "Konumunu paylaştı",
   "chat.location.title": "Konum",
   "chat.location.away": "{distance} {direction}",
@@ -591,15 +600,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "kuzeybatı",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Çaldı",
+  "chat.ring.sent_summary": "Çaldırıldı",
   "chat.ring.received_summary": "Seni aradı",
   "chat.ring.alert.title": "{sender} seni arıyor",
   "chat.ring.alert.body": "Mesajlarını kontrol et",
   "chat.ring.alert.open": "Aç",
   "chat.ring.alert.snooze": "1 saat ertele",
-  "chat.ring.sent_snoozed": "Çaldırıldı, ertelendi",
-  "chat.ring.sent_too_soon": "Çaldırıldı, çok erken",
-  "chat.ring.sent_not_allowed": "Çaldırıldı, izin verilmedi",
+  "chat.ring.sent_snoozed": "Çaldırıldı · ertelendi",
+  "chat.ring.sent_too_soon": "Çaldırıldı · çok erken",
+  "chat.ring.sent_not_allowed": "Çaldırıldı · izin verilmedi",
   "chat.attach.send_anyway": "Yine de gönder",
   "chat.attach.bitchat_too_big": "Bu ulaşmayabilir",
   "chat.attach.bitchat_too_big_body":
@@ -635,7 +644,7 @@ export const strings: Strings = {
   "chat.media.voice_scrub": "O noktaya atlamak için çubuklar boyunca dokun",
   "chat.media.image": "Görüntü",
   "chat.media.tap_load_photo": "Fotoğrafı yüklemek için dokun",
-  "chat.media.open_document": "{name} aç",
+  "chat.media.open_document": "{name} dosyasını aç",
   "chat.media.document": "belge",
   "chat.media.tap_load_video": "Videoyu yüklemek için dokun",
   "chat.media.video": "Video",
@@ -675,6 +684,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Kaydı durdur ve gönder",
   "chat.voice.lift_lock": "Eller serbest kaydetmek için yukarı kaydır",
   "chat.voice.live_speaking": "{name} konuşuyor",
+  "chat.voice.live_ended": "Bitti",
   "voice.unavailable": "Canlı ses kullanılamıyor",
   "voice.recording_stopped": "Kayıt durduruldu",
 
@@ -736,7 +746,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name} çıkar",
   "chat.info.no_addable":
     "Eklenecek ulaşılabilir eş yok. Üyelerin yakında olması gerekir.",
-  "chat.info.add_count": "{count} ekle",
   "chat.info.teleported_tag": "{level}  ·  ışınlandı",
   "chat.info.active": "Etkin",
   "chat.info.members": "Üyeler",
@@ -819,8 +828,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 gün",
   "chat.notices.7_days": "7 gün",
   "chat.notices.fading": "soluyor",
-  "chat.notices.fades_in_hours": "{count} sa içinde solar",
-  "chat.notices.fades_in_days": "{count} g içinde solar",
   "chat.notices.scope_geo": "Coğrafi",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Acil",
@@ -837,10 +844,20 @@ export const strings: Strings = {
   "chat.search.links": "Bağlantılar",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "{filter} ile süz",
-  "chat.search.no_matches": "“{query}” ile eşleşen {filter} yok",
-  "chat.search.no_media": "Henüz {filter} yok",
+  "chat.search.no_photos": "Henüz fotoğraf yok",
+  "chat.search.no_videos": "Henüz video yok",
+  "chat.search.no_audio": "Henüz ses yok",
+  "chat.search.no_documents": "Henüz belge yok",
+  "chat.search.no_links": "Henüz bağlantı yok",
+  "chat.search.no_ecash": "Henüz ecash yok",
+  "chat.search.no_photos_matching": "“{query}” ile eşleşen fotoğraf yok",
+  "chat.search.no_videos_matching": "“{query}” ile eşleşen video yok",
+  "chat.search.no_audio_matching": "“{query}” ile eşleşen ses yok",
+  "chat.search.no_documents_matching": "“{query}” ile eşleşen belge yok",
+  "chat.search.no_links_matching": "“{query}” ile eşleşen bağlantı yok",
+  "chat.search.no_ecash_matching": "“{query}” ile eşleşen ecash yok",
   "chat.search.result_a11y": "{chat}, {sender} kişisinden {kind}",
-  "chat.search.you": "sen",
+  "chat.search.result_mine_a11y": "{chat}, senin gönderdiğin {kind}",
   "chat.search.section_chats": "Sohbetler",
   "chat.search.section_messages": "Mesajlar",
   "chat.search.section_notices": "Duyurular",
@@ -849,16 +866,14 @@ export const strings: Strings = {
   "chat.search.no_results": "“{query}” için sonuç yok",
   "chat.search.open_chat": "{name} aç",
   "chat.search.message_a11y": "{chat}, {sender} kişisinden mesaj: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, senin mesajın: {snippet}",
   "chat.search.notice_a11y":
     "{chat} içinde {author} kişisinden duyuru: {snippet}",
   "chat.search.urgent": "Acil ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "Bu listede {count} tane var. Temizlemek onları yalnızca buradan kaldırır ve mesajlar kendi konuşmalarında okunmamış kalır. Tümünü okundu işaretlemek ikisini birden temizler.",
   "chat.notif.mark_all_read": "Tümünü okundu işaretle",
   "chat.notif.clear_list": "Listeyi temizle",
-  "chat.notif.clear_all_a11y": "{count} bildirimin tümünü temizle",
   "chat.notif.title": "Bildirimler",
   "chat.notif.clear_short": "Temizle",
   "chat.notif.close": "Bildirimleri kapat",
@@ -875,19 +890,22 @@ export const strings: Strings = {
   "chat.forward.cant_send_here": "Buraya iletilemiyor",
   "chat.forward.cant_send_to": "{name} kişisine iletilemiyor",
   "chat.forward.too_long_for_dm":
-    "Doğrudan mesaj için çok uzun. Bunun yerine bir kanala veya gruba iletin.",
+    "Doğrudan mesaj için çok uzun. Bunun yerine bir kanala veya gruba ilet.",
   "chat.forward.channels": "Kanallar",
   "chat.forward.groups": "Gruplar",
   "chat.forward.locations": "Konumlar",
   "chat.forward.dms": "Doğrudan mesajlar",
   "chat.forward.none": "Henüz başka sohbet yok",
+  "chat.forward.app_row": "İletilmedi",
+  "chat.forward.app_row_body":
+    "Bu satır bir kişiden değil, Airhop'tan geliyor, bu yüzden iletilecek bir şey yok.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Mesh başlatılıyor…",
   "mesh.banner.no_bluetooth": "Bu cihazda Bluetooth yok · yalnızca internet",
   "mesh.banner.bluetooth_off": "Bluetooth kapalı · mesh kullanılamıyor",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth kapalı · mesh WiFi üzerinden çalışıyor",
+    "Bluetooth kapalı · mesh Wi-Fi üzerinden çalışıyor",
   "mesh.banner.permission_needed": "Bluetooth izni gerekiyor",
   "mesh.banner.blocked": "Bluetooth engellendi · Ayarlar'dan izin ver",
   "mesh.banner.location_permission": "Eşleri bulmak için konum gerekiyor",
@@ -914,8 +932,6 @@ export const strings: Strings = {
     "İnternet geçidi açık · yakındaki eşler için aktarılıyor",
   "mesh.banner.bridge": "Mesh köprüsü açık · herkese açık sohbet bağlandı",
   "mesh.banner.background_limits": "{brand} arka planda mesh'i duraklatabilir",
-  "mesh.banner.bridge_across":
-    "Mesh köprüsü açık · köprünün karşısında {count}",
   "mesh.banner.action.turn_on": "Aç",
   "mesh.banner.action.allow": "İzin ver",
   "mesh.banner.action.resume": "Sürdür",
@@ -990,7 +1006,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "{name} eşini görüntüle, çevrimiçi, aktarma düğümü",
   "mesh.peer.last_seen_at": "Son görülme {ago}",
-  "mesh.peer.send_amount": "{amount} sat gönder",
+  "mesh.peer.send_unit_amount": "{amount} {unit} gönder",
   "mesh.peer.direct": "Doğrudan bağlantı",
   "mesh.peer.check_distance": "Uzaklığı ölç",
   "mesh.peer.checking": "Ölçülüyor",
@@ -1061,7 +1077,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Bu jeton bir QR koda sığamayacak kadar çok jetona bölünmüş. Bunun yerine paylaş ya da kopyala.",
   "wallet.send.scan_note":
-    "Bunu kendi cüzdanlarından taratsınlar. Teslim edildi olarak işaretleyene kadar geri alınabilir.",
+    "Bunu kendi cüzdanlarından taratsınlar. Alındı olarak işaretleyene kadar geri alınabilir.",
   "wallet.send.mesh_note":
     "Jeton, mesh üzerinden şifreli bir doğrudan mesaj olarak gider. İnternet gerekmez.",
   "wallet.send.no_peers_note":
@@ -1082,7 +1098,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Cüzdanda aç",
   "wallet.send.to_peer": "Jetonu yakındaki bir eşe gönder",
   "wallet.send.to_peer_short": "Eşe gönder",
-  "wallet.send.mark_delivered": "Teslim edildi olarak işaretle ve bitir",
+  "wallet.send.mark_delivered": "Alındı olarak işaretle",
   "wallet.send.they_got_it": "Aldılar",
   "wallet.send.keep_pending": "Bu gönderimi bekliyor olarak bırak",
   "wallet.send.decide_later": "Sonra karar ver",
@@ -1106,9 +1122,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "{mint} darphanesinde bozduruldu. Artık kanıtlanabilir biçimde senin: gönderendeki kopyası artık çalışmıyor.",
-  "wallet.receive.stored_pending":
-    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı{dleq}. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
-  "wallet.receive.dleq_inline": " (imzası tutuyor, yani jeton gerçek)",
+  "wallet.receive.pending_unconfirmed":
+    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. İmzası tutuyor, yani jeton gerçek. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.dleq_ok": "Darphanenin imzası tutuyor, yani jeton gerçek.",
   "wallet.receive.dleq_uncached":
     "Darphanenin anahtarları burada yok, bu yüzden imza çevrimdışı denetlenemedi.",
@@ -1172,8 +1189,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Tüm bakiyeleri tek bir darphaneye taşı",
   "wallet.mint.confirm_with": "{mint} ile bakiyeyi kontrol et",
   "wallet.mint.available_amount": "{amount} {unit} kullanılabilir",
-  "wallet.mint.split_across":
-    "Bakiye {count} darphaneye bölünmüş. Tek bir yere taşı.",
   "wallet.mint.move_everything_to": "Her şeyi {mint} darphanesine taşı",
   "wallet.mint.consolidate_title": "Tek darphaneye taşı",
   "wallet.mint.moving": "Taşınıyor…",
@@ -1184,10 +1199,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Hiçbir şey taşınmadı",
   "wallet.mint.move_pending": "Yolda",
   "wallet.mint.deposit_pending":
-    "{amount} {unit}, {mint} kaynağından çıktı ve {target} hedefine yolda. Yatırma alındığında ulaşır, cüzdan denemeye devam eder.",
+    "{amount} {unit}, {mint} kaynağından çıktı ve {target} hedefine yolda. Aktarım alındığında ulaşır, cüzdan denemeye devam eder.",
   "wallet.mint.destination": "· hedef",
   "wallet.mint.will_move": "· taşınacak",
   "wallet.mint.issued_by": "Çıkaran",
+  "wallet.mint.test_badge": "Test",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop cüzdan yüklemesi",
@@ -1214,7 +1230,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} kadar",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} öde",
-  "wallet.ln.deposit_title": "Lightning üzerinden yatırma",
+  "wallet.ln.deposit_title": "Lightning ile yükle",
   "wallet.ln.amount_placeholder": "Sat cinsinden tutar",
   "wallet.ln.requesting": "İsteniyor…",
   "wallet.ln.get_invoice": "Fatura al",
@@ -1246,7 +1262,7 @@ export const strings: Strings = {
     "Zaten bir kurtarma ifaden var. Farklı bir tanesini geri yüklemek onun yerini alır. Eski ifadenin zaten kapsadığı jetonlar bu cihazda harcanabilir kalır ama geri yüklenebilir olmaktan çıkar, o yüzden devam etmeden önce eski kelimelerin yazılı olduğundan emin ol.",
   "wallet.backup.replace": "Değiştir",
   "wallet.backup.replace_unseen_body":
-    "Bu cüzdanın kurulumda senin için oluşturulmuş bir kurtarma ifadesi zaten var ve paraların onunla oluşturuldu. Farklı bir ifadeyi geri yüklemek onu kalıcı olarak değiştirir. Paralar bu cihazda harcanabilir kalır ve her mint bir sonraki yenilendiğinde yeni ifadenin kapsamına geçer.",
+    "Bu cüzdanın kurulumda senin için oluşturulmuş bir kurtarma ifadesi zaten var ve paraların onunla oluşturuldu. Farklı bir ifadeyi geri yüklemek onu kalıcı olarak değiştirir. Paralar bu cihazda harcanabilir kalır ve her darphane bir sonraki yenilendiğinde yeni ifadenin kapsamına geçer.",
   "wallet.backup.invalid_phrase": "O ifade geçerli değil",
   "wallet.backup.invalid_phrase_body":
     "İfadenin yerleşik bir sağlama toplamı vardır ve bu ondan geçmiyor. Yanlış yazılmış, eksik ya da yeri değişmiş bir kelime ara.",
@@ -1331,13 +1347,13 @@ export const strings: Strings = {
   "wallet.reclaim.title": "Bu jeton geri alınsın mı?",
   "wallet.reclaim.body":
     "{amount} {unit} bakiyene geri döner ve verdiğin jeton, darphaneye ulaşılabildiği anda çalışmayı bırakır. Onlar bundan önce bozdurursa, para onlarda kalır.",
-  "wallet.reclaim.keep": "Bekliyor bırak",
+  "wallet.reclaim.keep": "Beklemede bırak",
   "wallet.reclaim.confirm": "Geri al",
   "wallet.reclaim.claimed_title": "Onlar zaten bozdurmuş",
   "wallet.reclaim.claimed_body":
     "Darphane bu jetonun zaten bozdurulduğunu söylüyor, yani {amount} {unit} onlara ulaştı ve bakiyene hiçbir şey geri dönmedi.",
   "wallet.copied.token_body":
-    "Jeton panonda. Teslim edildi olarak işaretleyene kadar burada ayrılmış kalır, bu yüzden ilk deneme başarısız olursa yeniden yapıştırabilirsin.",
+    "Jeton panonda. Alındı olarak işaretleyene kadar burada ayrılmış kalır, bu yüzden ilk deneme başarısız olursa yeniden yapıştırabilirsin.",
   "wallet.copied.refused_token_body":
     "Jeton panonda. Bu cüzdan onu artık saymıyor, yani gönderen kişiye geri verebilirsin.",
   "wallet.copied.phrase_body":
@@ -1363,8 +1379,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Bu jetonu QR kod olarak göster",
   "wallet.pending.copy_again": "Jetonu yeniden kopyala",
   "wallet.pending.share_again": "Jetonu yeniden paylaş",
-  "wallet.pending.mark_delivered": "Bu jetonu teslim edildi olarak işaretle",
-  "wallet.pending.delivered": "Teslim edildi",
+  "wallet.pending.mark_delivered": "Alındı olarak işaretle",
+  "wallet.pending.delivered": "Alındı",
   "wallet.pending.reclaim_into": "Bu jetonu bakiyene geri al",
   "wallet.activity.title": "Etkinlik",
   "wallet.activity.none": "Henüz bir şey yok",
@@ -1382,7 +1398,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "başarısız",
   "wallet.activity.status_reclaimed": "geri alındı",
   "wallet.activity.status_expired": "süresi doldu",
-  "wallet.activity.ln_deposit": "Lightning yatırma",
+  "wallet.activity.ln_deposit": "Lightning yüklemesi",
   "wallet.activity.ln_withdrawal": "Lightning çekme",
   "wallet.activity.nutzap_received": "Nutzap alındı",
   "wallet.activity.nutzap_claiming": "Nutzap, alınıyor",
@@ -1425,7 +1441,14 @@ export const strings: Strings = {
     "Kilitli ödemeler geri alınamaz: bu jetonları artık yalnızca onların anahtarı harcayabilir.",
   "wallet.pay.reclaimable":
     "Ulaştığını onaylayana kadar Etkinlik'ten geri alınabilir kalır.",
-  "wallet.pay.why": "Bu yolla gönderildi, çünkü {reason}.",
+  "wallet.pay.why_no_relay":
+    "Bu yolla gönderildi, çünkü aktarıcı bağlantısı yoktu.",
+  "wallet.pay.why_no_shared_mint":
+    "Bu yolla gönderildi, çünkü alıcının kabul ettiği hiçbir darphanede yeterli bakiyen yok.",
+  "wallet.pay.why_no_nutzap_info":
+    "Bu yolla gönderildi, çünkü alıcı nutzap bilgisi yayımlamamış (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{name} kişisine {amount} {unit}",
   "wallet.pay.thread_receipt":
     "Anahtarlarına kilitli olarak {amount} {unit} gönderdin.",
@@ -1572,19 +1595,19 @@ export const strings: Strings = {
     "Hiçbir şey düşülmedi. Yeniden dene, cüzdan farklı bir küme seçecek.",
   "wallet.svc.no_ecash": "Henüz ecash yok.",
   "wallet.svc.no_ecash_body":
-    "Bir darphane ekleyip Lightning üzerinden yatır ya da birinden bir jeton al.",
+    "Bir darphane ekleyip Lightning ile yükle ya da birinden bir jeton al.",
   "wallet.svc.split_across_mints": "Bakiyen darphaneler arasında bölünmüş.",
   "wallet.svc.mint_says_spent":
     "Darphane bu ecash'i zaten harcanmış olarak bildirdi.",
   "wallet.svc.issue_against_invoice":
     "bir Lightning faturası karşılığında ecash çıkarmayı",
   "wallet.svc.pay_invoice": "bir Lightning faturası ödemeyi",
-  "wallet.svc.unknown_deposit": "Bilinmeyen yatırma.",
+  "wallet.svc.unknown_deposit": "Bilinmeyen yükleme.",
   "wallet.svc.invoice_expired_before": "Fatura ödenmeden önce süresi doldu.",
   "wallet.svc.invoice_expired": "O faturanın süresi doldu.",
   "wallet.svc.invoice_unpaid": "Fatura henüz ödenmedi.",
-  "wallet.svc.payment_unknown":
-    "Ödeme durumu bilinmiyor; bir sonraki yenilemede yeniden denetlenecek.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Ödeme durumu bilinmiyor; bir sonraki yenilemede yeniden denetlenecek.",
   "wallet.svc.melt_change_pending": "Faturan ödendi.",
   "wallet.svc.melt_change_pending_body":
     "Darphane kullanılmayan yönlendirme ücretini henüz geri vermedi. Bir sonraki yenilemede kendiliğinden alınır ve bu arada hiçbir şey kaybolmaz.",
@@ -1624,23 +1647,19 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "O ödeme, kullanmadığın bir darphane belirtiyor.",
   "wallet.svc.unknown_mint_body":
     "Güveniyorsan darphaneyi önce kendin ekle; seçmediğin bir darphaneden hiçbir şey bozdurulmaz.",
-  "wallet.svc.no_relay": "aktarıcı bağlantısı yok",
-  "wallet.svc.no_shared_mint": "yeterli bakiyesi olan ortak bir darphane yok",
-  "wallet.svc.no_nutzap_info":
-    "alıcı nutzap bilgisi yayımlamamış (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Anahtarlarına kilitlendi ama henüz teslim edilmedi. Tamamlamak için bu işlemdeki jetonu paylaş.",
   "wallet.svc.swap_lost":
     "Darphane bu takası hiç tamamlamadı, bu yüzden karşılığında hiçbir şey çıkarılmadı.",
   "wallet.svc.mint_lost":
-    "Mint bu yatırmayı verdi, ancak paraları yeniden oluşturulamadı. Kurtarma ifadenizden geri yüklemek onları geri getirir.",
+    "Darphane bu yüklemeyi çıkardı, ancak paraları yeniden oluşturulamadı. Kurtarma ifadenden geri yüklemek onları geri getirir.",
   "wallet.svc.swap_unreadable":
     "Bu takas, bu sürümün yeniden oynatamayacağı bir biçimde kaydedilmiş.",
   "wallet.svc.lock_in_doubt": "Bu ödeme gerçekleşmiş de olabilir, olmamış da.",
   "wallet.svc.lock_in_doubt_body":
     "Başka bir şey gönderilmedi. Darphane sonucu onaylayana kadar paralar bekletiliyor. Ödeme gerçekleştiyse kilitli token, teslim etmen için Etkinlik'te görünür. Gerçekleşmediyse paralar geri gelir.",
   "wallet.svc.send_spent_by_swap":
-    "Bu paralar, token alınmadan önce cüzdanına geri takas edildi, bu yüzden artık alınamaz. Tutar bakiyende.",
+    "Bu paralar, jeton alınmadan önce cüzdanına geri takas edildi, bu yüzden artık alınamaz. Tutar bakiyende.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ile doğrulandı",
@@ -1759,7 +1778,7 @@ export const strings: Strings = {
     "Forward secrecy, imzalı paketler, engellenen eşler",
   "settings.section.network": "Ağ ve aktarıcılar",
   "settings.section.network_desc":
-    "İnternet yedeği, nostr aktarıcıları, bitchat uyumluluğu",
+    "İnternet yedeği, Nostr aktarıcıları, bitchat uyumluluğu",
   "settings.section.permissions": "İzinler",
   "settings.section.permissions_desc":
     "Bluetooth, konum, bildirimler, kamera, mikrofon",
@@ -1807,13 +1826,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Sinyal okuması yok",
   "settings.diag.no_peers": "Menzilde kimse yok",
-  "settings.diag.no_peers_desc": "{links} telsiz bağlantısı açık",
   "settings.diag.gcs_size": "Filtre boyutu",
   "settings.diag.gcs_size_desc": "Havaya verilen en büyük eşitleme filtresi",
   "settings.diag.fpr": "Yanlış pozitif oranı",
   "settings.diag.fpr_desc":
     "Filtrenin, bizde olmayan bir paketi var diye göstermesinin sıklığı",
-  "settings.diag.bytes": "{n} bayt",
   "settings.diag.footnote":
     "Buradaki hiçbir şey değiştirilemez. Airhop bitchat ile uyumlu kalsın diye bu değerler sabittir.",
   "settings.diag.share": "Tanılamayı paylaş",
@@ -1833,7 +1850,6 @@ export const strings: Strings = {
   "settings.general.undo": "Göndermeyi geri alma",
   "settings.general.feature_ai": "Yapay zekâ",
   "settings.general.feature_wallet": "Cüzdan",
-  "settings.general.undo_seconds": "{count} saniye",
   "settings.general.undo_a11y": "Göndermeyi geri alma: {value}",
   "settings.general.quality_a11y": "Yükleme kalitesini {value} yap",
   "settings.general.undo_desc":
@@ -1925,7 +1941,6 @@ export const strings: Strings = {
   "settings.network.custom": "Özel aktarıcılar",
   "settings.network.custom_desc":
     "Konum kanalları ve mesh köprüsü için kendi aktarıcılarını ekle",
-  "settings.network.custom_added": "{max} taneden {count} tanesi eklendi",
   "settings.network.dm_relays": "Mesaj aktarıcıları",
   "settings.network.dm_relays_desc":
     "Doğrudan mesajlar ve özel kanallar her zaman bunları kullanır. Özel aktarıcılar bunları değiştirmez.",
@@ -1935,17 +1950,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "Aktarıcı ekle",
   "settings.network.remove_relay": "{url} kaldır",
   "settings.network.add_short": "Ekle",
-  "settings.network.relay_limit":
-    "{count} aktarıcı ekleyebilirsin. Başka bir tane eklemek için birini kaldır.",
   "settings.network.relay_duplicate": "O aktarıcı zaten listende.",
   "settings.network.relay_invalid":
     "Geçerli bir aktarıcı adresi gir, örneğin relay.example.com. Bağlantı noktası yalnızca aktarıcı varsayılanı kullanmıyorsa gerekir. IP adresleri ve yerel adlar kabul edilmez.",
   "settings.network.lan": "Yerel ağ",
   "settings.network.lan_desc":
-    "Aynı WiFi'deki kişilere ulaşın, iPhone ile Android arasında da. Ağdaki diğer cihazlar Airhop kullandığınızı görebilir.",
+    "Aynı Wi-Fi'deki kişilere ulaş, iPhone ile Android arasında da. Ağdaki diğer cihazlar Airhop kullandığını görebilir.",
   "settings.network.lan_searching": "Bu ağda Airhop cihazı yok",
   "settings.network.lan_active": "Bu ağda bağlı",
-  "settings.network.lan_unavailable": "Bir WiFi ağında değilsiniz",
+  "settings.network.lan_unavailable": "Bir Wi-Fi ağında değilsin",
   "settings.network.lan_permission": "Airhop için yerel ağ erişimi kapalı",
   "settings.network.lan_unsupported": "Bu cihazda kullanılamıyor",
   "settings.network.lan_foreground":
@@ -1954,21 +1967,21 @@ export const strings: Strings = {
   "settings.network.wifi_aware_desc":
     "Aynı platformdaki iki telefon arasında daha hızlı fotoğraf ve dosya aktarımı. Bluetooth her durumda her şeyi taşır.",
   "settings.network.wifi_unstable":
-    "Duraklatıldı. Bu telefonda Wi-Fi'yi sürekli bozuyordu. Yeniden denemek için kapatıp açın.",
+    "Duraklatıldı. Bu telefonda Wi-Fi'yi sürekli bozuyordu. Yeniden denemek için kapatıp aç.",
   "settings.network.wifi_pair": "Eşleştirme",
   "settings.network.wifi_paired": "Eşleştirilmiş cihazlar",
   "settings.network.wifi_pair_find": "Cihaz bul",
   "settings.network.wifi_pair_find_desc":
-    "Kendini gösteren yakındaki bir iPhone arayın. İki telefon da iOS 26 veya sonrasını gerektirir.",
+    "Kendini gösteren yakındaki bir iPhone ara. İki telefon da iOS 26 veya sonrasını gerektirir.",
   "settings.network.wifi_pair_show": "Bu iPhone'u göster",
   "settings.network.wifi_pair_show_desc":
-    "Yakındaki bir iPhone'un bunu bulmasına izin verin. Biriniz arar, diğeri kendini gösterir, aynı anda.",
-  "settings.network.wifi_pair_find_action": "Yakındaki bir iPhone seçin",
-  "settings.network.wifi_pair_show_action": "Bu iPhone'u bulunabilir yapın",
+    "Yakındaki bir iPhone'un bunu bulmasına izin ver. Biriniz arar, diğeri kendini gösterir, aynı anda.",
+  "settings.network.wifi_pair_find_action": "Yakındaki bir iPhone seç",
+  "settings.network.wifi_pair_show_action": "Bu iPhone'u bulunabilir yap",
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware şu anda kullanılamıyor",
   "settings.network.wifi_pair_forget":
-    "Settings uygulamasında bir eşleştirmeyi kaldırın",
+    "Ayarlar uygulamasında bir eşleştirmeyi kaldır",
   "settings.network.bitchat": "bitchat uyumluluğu",
   "settings.network.bitchat_desc":
     "bitchat ile aynı BLE mesh ağı, tümüyle birlikte çalışabilir. Bu her zaman açıktır ve kapatılamaz.",
@@ -2015,27 +2028,27 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable": "Tor yönlendirmesi bu yapıda yok.",
   "settings.conn.tor_timeout":
     "Tor henüz bağlanmadı. Açık kalır ve denemeyi sürdürür; Mesh sekmesi yönlendirmenin başladığını ya da bu ağın engellediğini söyleyecek.",
-  "settings.conn.tor_failed": "Tor başlatılamadı. Birazdan yeniden deneyin.",
+  "settings.conn.tor_failed": "Tor başlatılamadı. Birazdan yeniden dene.",
   "settings.tor.status": "Tor durumu",
   "settings.tor.connection": "Bağlantı",
   "settings.tor.mode_off": "Doğrudan",
   "settings.tor.mode_off_desc":
-    "Doğrudan Tor'a bağlanır. En hızlısı, ancak bu ağı izleyen herkes Tor kullandığınızı görür.",
+    "Doğrudan Tor'a bağlanır. En hızlısı, ancak bu ağı izleyen herkes Tor kullandığını görür.",
   "settings.tor.mode_snowflake": "Snowflake",
   "settings.tor.mode_snowflake_desc":
-    "Tor kullandığınızı gizler ve köprülerin engellendiği yerlerde de çalışır. Bağlanması en yavaş olan.",
+    "Tor kullandığını gizler ve köprülerin engellendiği yerlerde de çalışır. Bağlanması en yavaş olan.",
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
-    "Tor kullandığınızı gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
+    "Tor kullandığını gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
   "settings.tor.mode_webtunnel": "webtunnel",
   "settings.tor.mode_webtunnel_desc":
-    "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığınızı gizler. Diğerlerinden daha zor engellenir.",
-  "settings.tor.mode_custom": "Kendi köprüleriniz",
+    "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığını gizler. Diğerlerinden daha zor engellenir.",
+  "settings.tor.mode_custom": "Kendi köprülerin",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org adresinden aldığınız obfs4 köprü satırlarını kullanın. Diğerleri başarısız olduğunda bunu deneyin.",
-  "settings.tor.custom_placeholder": "Her satıra bir köprü satırı yapıştırın",
-  "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokunun.",
-  "settings.tor.custom_empty": "Önce en az bir köprü satırı ekleyin.",
+    "bridges.torproject.org adresinden aldığın obfs4 köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
+  "settings.tor.custom_placeholder": "Her satıra bir köprü satırı yapıştır",
+  "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokun.",
+  "settings.tor.custom_empty": "Önce en az bir köprü satırı ekle.",
   "settings.tor.recovered":
     "Tor geçen sefer başlatmayı tamamlamadı, bu yüzden internet trafiği duraklatıldı. Yeniden dene ya da Tor olmadan çevrimiçi olmak için Tor'u kapat.",
   "settings.tor.retry": "Yeniden dene",
@@ -2090,7 +2103,7 @@ export const strings: Strings = {
     "Galerinden fotoğraf gönderir ve gelen medyayı kaydeder. Bu olmadan da kamerayla yeni fotoğraf çekip gönderebilirsin.",
   "settings.permissions.microphone": "Mikrofon",
   "settings.permissions.microphone_desc":
-    "Sesli mesaj kaydeder ve gönderir ya da canlı sesi çalıştırır. Bu olmadan sesli mesajlar ve canlı ses çalışmaz.",
+    "Sesli not kaydeder ve gönderir ya da canlı sesi çalıştırır. Bu olmadan sesli notlar ve canlı ses çalışmaz.",
   "settings.permissions.allow": "Bu izni ver",
   "settings.permissions.open_settings":
     "Bu izni değiştirmek için sistem ayarlarını aç",
@@ -2212,7 +2225,7 @@ export const strings: Strings = {
   "settings.transfer.connecting": "Yeni telefonuna bağlanılıyor",
   "settings.transfer.connecting_hint":
     "Bu telefon yerel ağdaki cihazları bulmak için izin isterse izin ver.",
-  "settings.transfer.sending": "Taşınıyor {percent}%",
+  "settings.transfer.sending": "Taşınıyor %{percent}",
   "settings.transfer.keep_open":
     "Bu işlem bitene kadar iki telefonda da uygulamayı açık tut.",
   "settings.transfer.finishing": "Yeni telefonda tamamlanıyor",
@@ -2335,13 +2348,13 @@ export const strings: Strings = {
     "İnternet kapalıyken güncellemeler duraklatılır. Ayarlar'da {setting} seçeneğini aç.",
   "settings.version.check_failed":
     "Güncellemeler denetlenemedi. Bağlantını denetleyip yeniden dene.",
-  "settings.version.downloading": "İndiriliyor {percent}%",
+  "settings.version.downloading": "İndiriliyor %{percent}",
   "settings.version.install": "Yükle",
   "settings.version.download_failed":
-    "İndirme başarısız oldu. Bağlantınızı kontrol edip tekrar deneyin.",
+    "İndirme başarısız oldu. Bağlantını denetleyip yeniden dene.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} {size} KiB, {cap} KiB sınırının üzerinde.",
+  "transfer.too_large": "{kind} {size}, {cap} sınırının üzerinde.",
   "transfer.failed.malformed":
     "Bir ek bozuk geldi ve açılamadı. Yeniden göndermelerini iste.",
   "transfer.failed.unsupported_type":
@@ -2351,10 +2364,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Bir ek geldi ama kaydedilemedi. Boş alanını denetle.",
   "transfer.badge.waiting": "Bekliyor · {name}",
-  "transfer.badge.active_count": "{count} aktarım",
   "transfer.badge.sending": "{name} gönderiliyor",
   "transfer.badge.receiving": "{name} alınıyor",
-  "transfer.badge.a11y": "{label}, yüzde {percent}. Konuşmayı aç.",
   "transfer.kind.photo": "Fotoğraf",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Sesli not",
@@ -2383,10 +2394,11 @@ export const strings: Strings = {
   "notif.notice": "Duyuru · {content}",
   "notif.incoming_file": "Gelen dosya",
   "notif.preview.photo": "📷 Fotoğraf",
-  "notif.preview.voice": "🎤 Sesli mesaj",
+  "notif.preview.voice": "🎤 Sesli not",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Belge",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Yeni mesaj",
   "notif.hidden.channel": "Yeni etkinlik",
@@ -2398,6 +2410,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} dakika önce",
+    other: "{count} dakika önce",
+  },
+  "format.hours_ago": {
+    one: "{count} saat önce",
+    other: "{count} saat önce",
+  },
+  "format.days_ago": {
+    one: "{count} gün önce",
+    other: "{count} gün önce",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "{count} tane daha göster",
@@ -2450,6 +2476,55 @@ export const plurals: Plurals = {
     other: "{count} kişi konuşuyor",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "Gönderilmeyi bekleyen {count} tane daha",
+    other: "Gönderilmeyi bekleyen {count} tane daha",
+  },
+  "chat.thread.across_bridge": {
+    one: "köprünün karşısında {count} kişi",
+    other: "köprünün karşısında {count} kişi",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Geri dön, {count} okunmamış",
+    other: "Geri dön, {count} okunmamış",
+  },
+  "chat.thread.notices_new": {
+    one: "Bu kanalın duyuruları, {count} yeni",
+    other: "Bu kanalın duyuruları, {count} yeni",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "En son mesaja atla, {count} yeni",
+    other: "En son mesaja atla, {count} yeni",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} yeni acil duyuru · Duyuruları aç",
+    other: "{count} yeni acil duyuru · Duyuruları aç",
+  },
+  "chat.info.add_count": {
+    one: "{count} ekle",
+    other: "{count} ekle",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "{count} saat içinde solar",
+    other: "{count} saat içinde solar",
+  },
+  "chat.notices.fades_in_days": {
+    one: "{count} gün içinde solar",
+    other: "{count} gün içinde solar",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "Bu listede {count} bildirim var. Temizlemek onu yalnızca buradan kaldırır ve mesaj kendi konuşmasında okunmamış kalır. Tümünü okundu işaretlemek ikisini birden temizler.",
+    other:
+      "Bu listede {count} bildirim var. Temizlemek onları yalnızca buradan kaldırır ve mesajlar kendi konuşmalarında okunmamış kalır. Tümünü okundu işaretlemek ikisini birden temizler.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "{count} bildirimi temizle",
+    other: "{count} bildirimin tümünü temizle",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "menzilde {count} eş",
@@ -2472,18 +2547,28 @@ export const plurals: Plurals = {
     other: "{count} üye",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Mesh köprüsü açık · köprünün karşısında {count} kişi",
+    other: "Mesh köprüsü açık · köprünün karşısında {count} kişi",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak o jetonu bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
+    one: "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak bu bakiyeyi bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
     other:
-      "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak o jetonları bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
+      "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak bu bakiyeyi bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
+  },
+  "wallet.mint.split_across": {
+    one: "Bakiye {count} darphaneye bölünmüş. Tek bir yere taşı.",
+    other: "Bakiye {count} darphaneye bölünmüş. Tek bir yere taşı.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} yatırma ödeme bekliyor. Uygulama her açıldığında yeniden denetleniyor.",
+    one: "{count} yükleme ödeme bekliyor. Uygulama her açıldığında yeniden denetleniyor.",
     other:
-      "{count} yatırma ödeme bekliyor. Uygulama her açıldığında yeniden denetleniyor.",
+      "{count} yükleme ödeme bekliyor. Uygulama her açıldığında yeniden denetleniyor.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2492,9 +2577,9 @@ export const plurals: Plurals = {
     other: "{mints} kaynağından {count} harcanmamış jeton kurtarıldı.",
   },
   "wallet.backup.already_spent": {
-    one: "{count} jeton bulundu ama zaten harcanmıştı, bu yüzden karşılığında hiçbir şey yazılmadı. Bu normaldir: şimdiye kadar harcadığın her jeton darphanenin tuttuğu kayıtlarda görünmeye devam eder.",
+    one: "{count} jeton bulundu ama zaten harcanmıştı, bu yüzden hiçbir şey yazılmadı. Bu normaldir: şimdiye kadar harcadığın her jeton darphanenin tuttuğu kayıtlarda görünmeye devam eder.",
     other:
-      "{count} jeton bulundu ama zaten harcanmıştı, bu yüzden karşılığında hiçbir şey yazılmadı. Bu normaldir: şimdiye kadar harcadığın her jeton darphanenin tuttuğu kayıtlarda görünmeye devam eder.",
+      "{count} jeton bulundu ama zaten harcanmıştı, bu yüzden hiçbir şey yazılmadı. Bu normaldir: şimdiye kadar harcadığın her jeton darphanenin tuttuğu kayıtlarda görünmeye devam eder.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2520,9 +2605,39 @@ export const plurals: Plurals = {
     other: "{count} jeton zaten harcanmıştı ve kaldırıldı.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} telsiz bağlantısı açık",
+    other: "{count} telsiz bağlantısı açık",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} saniye",
+    other: "{count} saniye",
+  },
+  "settings.network.custom_added": {
+    one: "{max} taneden {count} tanesi eklendi",
+    other: "{max} taneden {count} tanesi eklendi",
+  },
+  "settings.network.relay_limit": {
+    one: "{count} aktarıcı ekleyebilirsin. Başka bir tane eklemek için onu kaldır.",
+    other:
+      "{count} aktarıcı ekleyebilirsin. Başka bir tane eklemek için birini kaldır.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} aktarım",
+    other: "{count} aktarım",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, yüzde {count}. Konuşmayı aç.",
+    other: "{label}, yüzde {count}. Konuşmayı aç.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Yakında biri var",
+    "=1": "Yakında biri var",
+    one: "Yakında {count} kişi var",
     other: "Yakında {count} kişi var",
   },
 };

@@ -15,14 +15,14 @@
 // gesture to the user and very different facts about their money.
 
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
-import { t, tPlural } from "@i18n";
+import { t, tPlural, type TranslationKey } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { useWalletStore } from "@store/wallet-store";
 import { amountParts } from "@utils/format";
-import { systemRow } from "@utils/message-text";
+import { systemRow, txFailure } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import { isNostrId, NOSTR_ID_PREFIX } from "@utils/username";
 import { utf8ByteLength } from "@utils/utf8-budget";
@@ -68,7 +68,7 @@ export interface PayResult {
   token?: string;
   // Only the nutzap rails: locked proofs are not ours to reclaim.
   final: boolean;
-  // Why a better rail was not used. User-facing.
+  // Why a better rail was not used, as a whole sentence. User-facing.
   fallbackReason?: string;
   // Said in place of the rail when the rail alone promises too much: a queued
   // token that no queued route can carry. User-facing.
@@ -163,7 +163,7 @@ export async function payPerson(
           payee.fallbackReason = lookup.reason;
         }
       } else {
-        payee.fallbackReason = t("wallet.svc.no_relay");
+        payee.fallbackReason = t("wallet.pay.why_no_relay");
       }
     }
 
@@ -305,7 +305,7 @@ async function payAsNutzap(params: {
   // Queued or couriered: still theirs, still not reclaimable. The tx records
   // why it waits rather than looking abandoned; `reconcile` closes it on
   // delivery.
-  failNutzapDelivery(locked.txId, t("wallet.svc.locked_undelivered"));
+  failNutzapDelivery(locked.txId, txFailure("wallet.svc.locked_undelivered"));
   return { rail: "nutzap-undelivered", ...base, token };
 }
 
@@ -404,7 +404,7 @@ async function payAsToken(params: {
     senderNickname: params.senderNickname,
   });
   const note =
-    route === "queued" ? tooLargeNote(params.peerID, prepared.token) : null;
+    route === "queued" ? tooLargeNoteKey(params.peerID, prepared.token) : null;
 
   return {
     rail: railForRoute(route),
@@ -413,7 +413,7 @@ async function payAsToken(params: {
     mintUrl: prepared.mintUrl,
     txId: prepared.txId,
     ...(route === "queued" ? { token: prepared.token } : {}),
-    ...(note !== null ? { routeNote: note } : {}),
+    ...(note !== null ? { routeNote: t(note) } : {}),
     final: false,
     ...(params.fallbackReason !== undefined
       ? { fallbackReason: params.fallbackReason }
@@ -439,9 +439,18 @@ export function describeRoute(
   peerID: string,
   token: string,
 ): string {
+  return t(routeKey(route, peerID, token));
+}
+
+// A key rather than a sentence, for the pending row that stores it.
+function routeKey(
+  route: DeliveryRoute,
+  peerID: string,
+  token: string,
+): TranslationKey {
   return (
-    (route === "queued" ? tooLargeNote(peerID, token) : null) ??
-    describeRail(railForRoute(route))
+    (route === "queued" ? tooLargeNoteKey(peerID, token) : null) ??
+    railKey(railForRoute(route))
   );
 }
 
@@ -450,33 +459,31 @@ export function describeRoute(
 // Double Ratchet between two Airhop phones on the mesh has no such cap, so a
 // queued token is a promise kept only for an Airhop phone coming back in
 // range, and none at all for anyone else. Null when the queue can carry it.
-function tooLargeNote(peerID: string, token: string): string | null {
+function tooLargeNoteKey(peerID: string, token: string): TranslationKey | null {
   if (utf8ByteLength(token) <= PRIVATE_MESSAGE_MAX_CONTENT_BYTES) return null;
   const airhop =
     !isNostrId(peerID) && getMeshService()?.peerRunsAirhop(peerID) === true;
-  return t(
-    airhop
-      ? "wallet.xfer.route_too_large_airhop"
-      : "wallet.xfer.route_too_large",
-  );
+  return airhop
+    ? "wallet.xfer.route_too_large_airhop"
+    : "wallet.xfer.route_too_large";
 }
 
-function describeRail(rail: PayRail): string {
+function railKey(rail: PayRail): TranslationKey {
   switch (rail) {
     case "mesh":
-      return t("wallet.xfer.route_mesh");
+      return "wallet.xfer.route_mesh";
     case "nutzap":
-      return t("wallet.pay.rail_nutzap");
+      return "wallet.pay.rail_nutzap";
     case "nutzap-dm":
-      return t("wallet.pay.rail_nutzap_dm");
+      return "wallet.pay.rail_nutzap_dm";
     case "nutzap-undelivered":
-      return t("wallet.pay.rail_nutzap_undelivered");
+      return "wallet.pay.rail_nutzap_undelivered";
     case "nostr":
-      return t("wallet.xfer.route_nostr");
+      return "wallet.xfer.route_nostr";
     case "courier":
-      return t("wallet.xfer.route_courier");
+      return "wallet.xfer.route_courier";
     case "queued":
-      return t("wallet.xfer.route_queued");
+      return "wallet.xfer.route_queued";
   }
 }
 
@@ -487,12 +494,19 @@ function describeFinality(final: boolean): string {
 // Rail, why that rail, then whether it can be undone: where the money went and
 // whether the user can still stop it, in one order for every screen. The queued
 // sentences stay honest: "on its way" and "waiting for a route" differ.
+//
+// Joined by the catalog, not by a space here: Chinese and Japanese put none
+// between sentences.
 export function describePayResult(result: PayResult): string {
-  const why =
-    result.fallbackReason !== undefined && result.fallbackReason.length > 0
-      ? ` ${t("wallet.pay.why", { reason: result.fallbackReason })}`
-      : "";
-  return `${result.routeNote ?? describeRail(result.rail)}${why} ${describeFinality(result.final)}`;
+  const rail = result.routeNote ?? t(railKey(result.rail));
+  const finality = describeFinality(result.final);
+  return result.fallbackReason !== undefined && result.fallbackReason.length > 0
+    ? t("wallet.pay.result_why", {
+        rail,
+        reason: result.fallbackReason,
+        finality,
+      })
+    : t("wallet.pay.result", { rail, finality });
 }
 
 // Structural so a relay-refused locked nutzap fits as well as a `PreparedSend`.
@@ -551,7 +565,7 @@ export function deliverTokenToPeer(params: {
   if ((route === "queued" || route === "needs-courier") && !params.final) {
     failSend(
       params.prepared.txId,
-      describeRoute(route, params.peerID, params.prepared.token),
+      txFailure(routeKey(route, params.peerID, params.prepared.token)),
     );
   }
   return route;

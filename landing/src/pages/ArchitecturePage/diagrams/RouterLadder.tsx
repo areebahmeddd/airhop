@@ -5,7 +5,7 @@ export function RouterLadder() {
     {
       n: "1",
       label: "Mesh",
-      note: "BLE, WiFi or LAN, direct or relayed",
+      note: "BLE, Wi-Fi or LAN, direct or relayed",
       cond: "heard recently; a handshake starts if none",
       res: "encrypted in their Noise session and sent",
     },
@@ -81,7 +81,7 @@ export function RouterLadder() {
       })}
       <text x={16} y={306} fontFamily={MONO} fontSize={10} fill={MUTED}>
         Bluetooth is the path that always exists. The transport layer owns the link maps and takes
-        WiFi instead when one is up, and both
+        Wi-Fi instead when one is up, and both
       </text>
       <text x={16} y={322} fontFamily={MONO} fontSize={10} fill={MUTED}>
         carry the same Noise session, so the router never has to know which radio it got.

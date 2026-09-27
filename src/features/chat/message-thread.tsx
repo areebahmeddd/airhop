@@ -20,7 +20,14 @@ import {
   type EmbeddedToken,
 } from "@core/payments/cashu";
 import { newMessageId } from "@core/router/message-router";
-import { stripIsolates, t, useT, useTPlural, type TranslationKey } from "@i18n";
+import {
+  stripIsolates,
+  t,
+  tPlural,
+  useT,
+  useTPlural,
+  type TranslationKey,
+} from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
 import { acknowledged, armed, held, released } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
@@ -80,6 +87,7 @@ import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
 import Toast from "@ui/components/toast";
+import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import { useKeyboardInset } from "@ui/hooks/use-keyboard";
 import {
@@ -103,7 +111,7 @@ import {
 import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
 import { channelInviteLink } from "@utils/deep-link";
 import { unconfirmedSince } from "@utils/delivery-silence";
-import { emoteLine } from "@utils/emote";
+import { emoteLine, screenshotNotice } from "@utils/emote";
 import {
   amountParts,
   formatBytes,
@@ -288,10 +296,6 @@ interface Props {
   backUnreadCount?: number;
 }
 
-// Broadcast wire format for a screenshot notice, matching bitchat's action
-// message convention so both platforms recognize it and render it inline
-// instead of as a regular chat bubble.
-
 // How close to the end of the thread still counts as "at the bottom", in points.
 // Roughly one bubble: near enough that following a new message reads as the list
 // staying put, far enough that a deliberate scroll up is never mistaken for it.
@@ -398,10 +402,6 @@ function systemRowIcon(
   if (key?.startsWith("chat.board.urgent") === true) return "alert-circle";
   if (key?.startsWith("chat.screenshot") === true) return "camera";
   return "info";
-}
-
-function screenshotNoticeText(nickname: string): string {
-  return t("chat.screenshot.notice", { name: nickname });
 }
 
 // Drawn sizes for the compose row's three controls and the jump-to-latest pill.
@@ -779,7 +779,7 @@ function TransferProgressList({
       })}
       {queued > 0 && (
         <Text style={styles.queued}>
-          {t("chat.thread.queued_more", { count: queued })}
+          {tPlural("chat.thread.queued_more", queued)}
         </Text>
       )}
     </View>
@@ -1567,7 +1567,7 @@ export default function MessageThread({
   if (channel === BRIDGE_CHANNEL && bridgeActive) {
     channelSubtitleParts.push(
       bridgePeopleAcross > 0
-        ? t("chat.thread.across_bridge", { count: bridgePeopleAcross })
+        ? tPlural("chat.thread.across_bridge", bridgePeopleAcross)
         : t("chat.thread.bridged"),
     );
   }
@@ -1915,8 +1915,8 @@ export default function MessageThread({
   // something the user just did and has to show up wherever they did it,
   // including over the full-screen photo viewer.
   //
-  // The glyph travels with the line. The pill defaults to a tick, so "Not saved"
-  // and "Can't open file" went out under a checkmark.
+  // The glyph travels with the line. The pill defaults to a tick, which would
+  // put "Not saved" and "Can't open file" under a checkmark.
   const [toast, setToast] = useState<{
     message: string;
     icon: FeatherIconName;
@@ -2309,11 +2309,12 @@ export default function MessageThread({
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"
           ? t("wallet.receive.redeemed_at", { mint: hostOf(result.mintUrl) })
-          : t("wallet.receive.stored_pending", {
-              mint: hostOf(result.mintUrl),
-              dleq:
-                result.dleq === "valid" ? t("wallet.receive.dleq_inline") : "",
-            }),
+          : t(
+              result.dleq === "valid"
+                ? "wallet.receive.pending_unconfirmed_genuine"
+                : "wallet.receive.pending_unconfirmed",
+              { mint: hostOf(result.mintUrl) },
+            ),
       );
     } catch (err) {
       reportWalletError(err);
@@ -2397,7 +2398,10 @@ export default function MessageThread({
   const tellsPeersOnScreenshot = notifiesOnScreenshot(channel, isPrivate);
   useEffect(() => {
     const subscription = ScreenCapture.addScreenshotListener(() => {
-      const text = screenshotNoticeText(localNickname);
+      // bitchat's fixed English, never the sender's language: a bitchat
+      // reader recognises the notice by that wording, and an Airhop reader
+      // turns it into a line in their own (`inboundText`).
+      const text = screenshotNotice(localNickname);
       const service = getMeshService();
       if (service && tellsPeersOnScreenshot) {
         if (isDM) {
@@ -2952,6 +2956,13 @@ export default function MessageThread({
       );
       return false;
     }
+    // A row Airhop wrote (a ring, a notice) is not something anyone said, and
+    // its text is frozen in the language it was saved in, so sending it on would
+    // put the app's words in the forwarder's mouth in that language.
+    if (source.systemKey !== undefined) {
+      showAlert(t("chat.forward.app_row"), t("chat.forward.app_row_body"));
+      return false;
+    }
     if (source.attachment) {
       // Attachments live in a cache that retention, the received-media quota
       // and Clear all empty. The bubble already says the file is gone; say the
@@ -3146,8 +3157,8 @@ export default function MessageThread({
       t("chat.attach.not_sent"),
       t("transfer.too_large", {
         kind: sizeLabel(type),
-        size: (sizeBytes / 1024).toFixed(0),
-        cap: (cap / 1024).toFixed(0),
+        size: formatBytes(sizeBytes, true),
+        cap: formatBytes(cap),
       }),
     );
     return true;
@@ -4169,8 +4180,10 @@ export default function MessageThread({
     const chat = useChatStore.getState();
     const key = chat.channelKeys[channel];
     const overNostr = chat.channelReach[channel] === "ble+nostr";
+    // Stripped: the isolates around the channel name are display machinery,
+    // and in another app's text they break a copied channel name.
     void Share.share({
-      message: `${t("chat.thread.invite_body", { channel })}\n\n${channelInviteLink(channel, key, overNostr)}`,
+      message: `${stripIsolates(t("chat.thread.invite_body", { channel }))}\n\n${channelInviteLink(channel, key, overNostr)}`,
     });
   }
 
@@ -4180,12 +4193,16 @@ export default function MessageThread({
   function askResendFor(attachment: ChatAttachment, isMine: boolean) {
     if (isMine) return undefined;
     return () => {
+      // Stripped: a draft is sent as typed, and the isolates would travel to
+      // every peer, bitchat included.
       setDraft((current) =>
         current.trim().length > 0
           ? current
-          : t("chat.media.resend_draft", {
-              kind: t(RESEND_KIND_KEY[attachment.type]),
-            }),
+          : stripIsolates(
+              t("chat.media.resend_draft", {
+                kind: t(RESEND_KIND_KEY[attachment.type]),
+              }),
+            ),
       );
       composerRef.current?.focus();
     };
@@ -4529,7 +4546,7 @@ export default function MessageThread({
             selecting
               ? T("chat.select.cancel")
               : backUnreadCount > 0
-                ? t("chat.thread.go_back_unread", { count: backUnreadCount })
+                ? tPlural("chat.thread.go_back_unread", backUnreadCount)
                 : T("chat.thread.go_back")
           }
         >
@@ -4615,7 +4632,7 @@ export default function MessageThread({
               accessibilityRole="button"
               accessibilityLabel={
                 unseenNotices > 0
-                  ? t("chat.thread.notices_new", { count: unseenNotices })
+                  ? tPlural("chat.thread.notices_new", unseenNotices)
                   : T("chat.thread.notices")
               }
             >
@@ -4696,15 +4713,11 @@ export default function MessageThread({
             const isFirstFromSender =
               index === 0 ||
               (msgs[index - 1]?.senderID ?? "") !== item.senderID;
-            // Only LOCALLY generated notices render as a system row.
-            //
-            // Never sniff the text for "took a screenshot": any peer could then
-            // forge a system row by typing that phrase, and the branch below
-            // substitutes a canned string for non-mine messages, so an ordinary
-            // sentence like "I took a screenshot of the map" would lose its
-            // content. A peer's screenshot notice renders as the normal message
-            // it is; a trustworthy version needs a protocol signal, not a
-            // substring match on user text.
+            // Only rows this phone wrote render as a system row, never text
+            // sniffed here. A peer's screenshot notice is one of them only
+            // because `inboundText` matched it exactly, naming its sender, when
+            // it was stored: a phrase anyone can type must not become Airhop's
+            // voice, and "I took a screenshot of the map" stays a message.
             const isSystemRow = item.isSystem === true;
 
             if (isSystemRow) {
@@ -4716,9 +4729,9 @@ export default function MessageThread({
                   {needsDateSeparator(index) && (
                     <View style={styles.dateSeparator}>
                       <View style={styles.dateLine} />
-                      <Text style={styles.dateLabel}>
+                      <UpperText style={styles.dateLabel}>
                         {formatDateSeparator(item.timestampMs)}
-                      </Text>
+                      </UpperText>
                       <View style={styles.dateLine} />
                     </View>
                   )}
@@ -4753,9 +4766,9 @@ export default function MessageThread({
                   {needsDateSeparator(index) && (
                     <View style={styles.dateSeparator}>
                       <View style={styles.dateLine} />
-                      <Text style={styles.dateLabel}>
+                      <UpperText style={styles.dateLabel}>
                         {formatDateSeparator(item.timestampMs)}
-                      </Text>
+                      </UpperText>
                       <View style={styles.dateLine} />
                     </View>
                   )}
@@ -4796,9 +4809,9 @@ export default function MessageThread({
                 {needsDateSeparator(index) && (
                   <View style={styles.dateSeparator}>
                     <View style={styles.dateLine} />
-                    <Text style={styles.dateLabel}>
+                    <UpperText style={styles.dateLabel}>
                       {formatDateSeparator(item.timestampMs)}
-                    </Text>
+                    </UpperText>
                     <View style={styles.dateLine} />
                   </View>
                 )}
@@ -4918,7 +4931,7 @@ export default function MessageThread({
             accessibilityRole="button"
             accessibilityLabel={
               newWhileAway > 0
-                ? t("chat.thread.jump_latest_new", { count: newWhileAway })
+                ? tPlural("chat.thread.jump_latest_new", newWhileAway)
                 : T("chat.thread.jump_latest")
             }
           >
@@ -5551,16 +5564,17 @@ export default function MessageThread({
           )}
           {/* A voice note can be cancelled before anyone hears it; a live burst
               already played on the other phone. The sender must tell at once. */}
-          {/* Past the ceiling nothing goes out, so the badge says ENDED and
-              drops the red: letting go is all that is left. */}
+          {/* Past the ceiling nothing goes out, so the badge says it ended and
+              drops the red: letting go is all that is left. LIVE stays
+              untranslated, like the incoming badge. */}
           {isTalkingLive && (
             <View style={[styles.liveBadge, burstEnded && styles.endedBadge]}>
               {!burstEnded && <View style={styles.liveDot} />}
-              <Text
+              <UpperText
                 style={[styles.liveBadgeText, burstEnded && styles.endedText]}
               >
-                {burstEnded ? "ENDED" : "LIVE"}
-              </Text>
+                {burstEnded ? T("chat.voice.live_ended") : "LIVE"}
+              </UpperText>
             </View>
           )}
           {/* Past the ceiling the meter goes muted and flat, like the badge. */}
@@ -5783,9 +5797,9 @@ export default function MessageThread({
                     accessibilityRole="button"
                     accessibilityLabel={T("chat.contact.copy_nostr")}
                   >
-                    <Text style={styles.keyBoxLabel}>
+                    <UpperText style={styles.keyBoxLabel}>
                       {T("chat.thread.nostr_key")}
-                    </Text>
+                    </UpperText>
                     <View style={styles.keyBoxRow}>
                       <Text style={styles.keyBoxValue}>
                         {senderInfoTarget.peerID.slice(NOSTR_ID_PREFIX.length)}
@@ -6072,7 +6086,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.4,
-      textTransform: "uppercase",
     },
     systemRow: {
       flexDirection: "row",
@@ -6723,7 +6736,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
     },
     keyBoxRow: {

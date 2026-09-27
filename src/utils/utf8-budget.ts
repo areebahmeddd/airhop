@@ -1,4 +1,5 @@
-// Fitting text to a wire budget measured in UTF-8 bytes.
+// Fitting text to a wire budget measured in UTF-8 bytes, and cutting it for
+// display, without breaking a character either way.
 //
 // Wire lengths are byte counts; `TextInput`'s `maxLength` is a UTF-16 unit
 // count. They disagree on anything but ASCII, and by a lot: one emoji is one
@@ -41,15 +42,46 @@ export function truncateToUtf8Bytes(text: string, maxBytes: number): string {
   while (codePoints.length > 0) {
     codePoints.pop();
     if (utf8ByteLength(codePoints.join("")) > maxBytes) continue;
-    // Fits. Back off anything that cannot end a string: a mark whose base was
-    // just cut away, or a joiner with nothing left to join. See DANGLING.
-    while (
-      codePoints.length > 0 &&
-      DANGLING.test(codePoints[codePoints.length - 1])
-    ) {
-      codePoints.pop();
-    }
-    return codePoints.join("");
+    return withoutDangling(codePoints);
   }
   return "";
+}
+
+// The first `maxCodePoints` code points of `text`, for a display cut where the
+// limit is a line's worth rather than a wire budget. Same boundary rule, so an
+// ellipsis after it never sits on half a character.
+export function truncateToCodePoints(
+  text: string,
+  maxCodePoints: number,
+): string {
+  const codePoints = [...text];
+  if (codePoints.length <= maxCodePoints) return text;
+  codePoints.length = maxCodePoints;
+  return withoutDangling(codePoints);
+}
+
+// Whether a cut at UTF-16 index `index` lands between two characters: not
+// inside a surrogate pair, not before a mark or joiner that belongs to what
+// precedes it, and not straight after a joiner. For slicing a window out of
+// the middle of text, where each edge moves to the nearest such index.
+export function isCharacterBoundary(text: string, index: number): boolean {
+  if (index <= 0 || index >= text.length) return true;
+  const unit = text.charCodeAt(index);
+  if (unit >= 0xdc00 && unit <= 0xdfff) return false;
+  if (DANGLING.test(String.fromCodePoint(text.codePointAt(index) ?? 0))) {
+    return false;
+  }
+  return text.charCodeAt(index - 1) !== 0x200d;
+}
+
+// Back off anything that cannot end a string: a mark whose base was just cut
+// away, or a joiner with nothing left to join. See DANGLING.
+function withoutDangling(codePoints: string[]): string {
+  while (
+    codePoints.length > 0 &&
+    DANGLING.test(codePoints[codePoints.length - 1])
+  ) {
+    codePoints.pop();
+  }
+  return codePoints.join("");
 }

@@ -67,6 +67,48 @@ function frozenTranslations(files) {
   return found;
 }
 
+// `frozenTranslations` catches `t()` at module scope; this catches
+// `useMemo(() => ({ label: t("x") }), [Colors])`, which reruns only on a listed
+// dependency and so keeps returning the old language after a switch. The
+// module-level `t` is not a reactive value, so exhaustive-deps cannot ask for
+// it. A `useCallback` calling `t` at invocation time is fine and not reported.
+function memoizedTranslations(files) {
+  const found = [];
+  for (const file of files) {
+    const src = fs.readFileSync(file, "utf8");
+    if (!/useMemo/.test(src)) continue;
+    const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true);
+    (function visit(node) {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === "useMemo" &&
+        node.arguments.length === 2 &&
+        ts.isArrayLiteralExpression(node.arguments[1])
+      ) {
+        const body = node.arguments[0].getText(sf);
+        // A translator call, or a helper whose name says it builds a table of
+        // them (`getStatusMeta`).
+        const translates = /(^|[^\w.])[tT]\(/.test(body) || /Meta\(/.test(body);
+        if (translates) {
+          const deps = node.arguments[1].elements.map((e) => e.getText(sf));
+          const keyed = deps.some((d) => /^[tT]$|Plural|[Ll]anguage/.test(d));
+          if (!keyed) {
+            const { line } = sf.getLineAndCharacterOfPosition(
+              node.getStart(sf),
+            );
+            found.push(
+              `${path.relative(ROOT, file)}:${String(line + 1)}  deps=[${deps.join(", ")}]`,
+            );
+          }
+        }
+      }
+      ts.forEachChild(node, visit);
+    })(sf);
+  }
+  return found;
+}
+
 // Files whose strings are never translated. Each needs a reason.
 const SKIP_FILES = [
   // Identity derivation. The word lists are wire-visible: the same peer must
@@ -114,12 +156,20 @@ const IGNORE = new Set([
   // Same rule as the store names above: SPDX identifiers are not localised, and
   // a translated "MIT License" names a license that does not exist.
   "MIT License",
+  // A broadcast marker, read the same everywhere, like "ON AIR". Deliberate:
+  // see the live voice badge in message-thread.tsx.
+  "LIVE",
+  // The code's own name, which every language shipped borrows as is.
+  "QR",
   // Error class names, assigned to `this.name` so a stack trace reads well.
   "WalletError",
   "AttachmentTooLargeError",
   // The transmitted /slap payload, which bitchat matches as an English
   // substring. Extracting it stops the two apps understanding each other.
   "around a bit with a large trout",
+  // The transmitted screenshot notice, which bitchat recognises by the same
+  // English words. The reader's own app renders it in their language.
+  "took a screenshot *",
   // Invariant breaches in the coin selector, thrown at a stack trace and never
   // rendered. Same rule as the `src/core/` skip above.
   "offline selection did not map back to stored proofs (matched",
@@ -127,9 +177,32 @@ const IGNORE = new Set([
   "melt selection did not map back to stored proofs",
 ]);
 
+// Capitalised words that are identifiers, never translated: compared in code,
+// or shown as is like a currency code. Kept narrow on purpose: every entry is a
+// word the audit no longer reads, so a label spelled the same way would slip
+// past.
+const IDENTIFIERS = new Set([
+  // NUT-04 mint quote states.
+  "UNPAID",
+  "PAID",
+  "ISSUED",
+  "PENDING",
+  // A native module's rejection code.
+  "UNSUPPORTED",
+  // The Unicode normalization form passed to `normalize`.
+  "NFC",
+  // The unit label for bitcoin, shown as is like the currency code "USD".
+  "BTC",
+  // Compass codes naming a geohash's neighbours. The chips show catalog keys.
+  "NE",
+  "SE",
+  "SW",
+  "NW",
+]);
+
 // Anchored on the closing tag: without the `</`, a generic annotation
 // (`Record<string, Promise<void>>`) reads as text between angle brackets, and
-// filtering those out afterwards swallowed every single-word label in the app.
+// filtering those out afterwards would swallow every single-word label.
 const JSX_TEXT = />\s*([A-Z][^<>{}\n]{2,200}?)\s*<\//g;
 
 // The literals on a line, plus the line with any trailing `//` comment removed.
@@ -179,7 +252,15 @@ function looksLikeCopy(value) {
   if (!/[A-Za-z]{2}/.test(value)) return false;
   // Identifiers, keys, paths, css-ish values, protocol constants.
   if (/^[a-z0-9_\-./#@:%+*]+$/.test(value)) return false;
-  if (/^[A-Z0-9_]+$/.test(value)) return false;
+  // All capitals is a constant only with a digit or an underscore in it, or
+  // when it is a known identifier. A bare capitalised word such as "URGENT" is
+  // a label someone meant to show.
+  if (
+    /^[A-Z0-9_]+$/.test(value) &&
+    (/[0-9_]/.test(value) || IDENTIFIERS.has(value))
+  ) {
+    return false;
+  }
   // Native event names crossing the bridge: "AirhopBLE.linkConnected".
   if (/^[A-Z]\w*\.\w+$/.test(value)) return false;
   // A bundled font family: "JetBrainsMono_400Regular".
@@ -246,7 +327,6 @@ function collect(file) {
 //
 // Additive: still filtered by looksLikeCopy and SKIP_FILES, and deduped against
 // the line scanner.
-// /
 function collectAst(file) {
   const rel = path.relative(ROOT, file);
   if (shouldSkip(rel)) return [];
@@ -261,8 +341,8 @@ function collectAst(file) {
     if (IGNORE.has(value)) return;
     // `spaced` means whitespace sat against a word, which inside a template
     // only happens when prose is concatenated with an interpolation. Without it
-    // looksLikeCopy's identifier rule discards " unconfirmed", which is how
-    // `${n} unconfirmed` and its siblings shipped untranslated.
+    // looksLikeCopy's identifier rule would discard " unconfirmed" in
+    // `${n} unconfirmed`.
     if (!(spaced && /[A-Za-z]{2}/.test(value)) && !looksLikeCopy(value)) return;
     const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
     hits.push({ line: line + 1, value, file: rel });
@@ -354,19 +434,17 @@ if (unusedOnly) {
   const { readLocale } = require("./i18n-lib");
   const en = readLocale("en");
   const keys = [...Object.keys(en.strings), ...Object.keys(en.plurals)];
-  // The catalog files themselves obviously mention every key, so they are not
-  // evidence of use.
   // A key is used when it appears as a string literal, not when a comment
-  // mentions it, so this walks the AST instead of scanning raw text.
-  //
-  // Not by stripping comments with a regex: one `/*` inside a line comment
-  // makes the block pattern run to the next `*/` anywhere later in the file,
-  // taking live code with it.
+  // mentions it, so this walks the AST instead of scanning raw text. Not by
+  // stripping comments with a regex: one `/*` inside a line comment makes the
+  // block pattern run to the next `*/` anywhere later in the file, taking live
+  // code with it.
   const used = new Set();
   // Keys assembled at runtime (`theme.${mode}`) are matched by prefix, so a
   // dynamic family is not reported as 30 dead keys.
   const prefixes = [];
   for (const file of files) {
+    // The catalogs mention every key, so they are no evidence of use.
     if (file.includes(path.join("i18n", "locales"))) continue;
     const sf = ts.createSourceFile(
       file,
@@ -430,43 +508,6 @@ if (list) {
   }
 }
 
-function memoizedTranslations(files) {
-  const found = [];
-  for (const file of files) {
-    const src = fs.readFileSync(file, "utf8");
-    if (!/useMemo/.test(src)) continue;
-    const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true);
-    (function visit(node) {
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === "useMemo" &&
-        node.arguments.length === 2 &&
-        ts.isArrayLiteralExpression(node.arguments[1])
-      ) {
-        const body = node.arguments[0].getText(sf);
-        // A translator call, or a helper whose name says it builds a table of
-        // them (getStatusMeta was exactly that shape).
-        const translates = /(^|[^\w.])[tT]\(/.test(body) || /Meta\(/.test(body);
-        if (translates) {
-          const deps = node.arguments[1].elements.map((e) => e.getText(sf));
-          const keyed = deps.some((d) => /^[tT]$|Plural|[Ll]anguage/.test(d));
-          if (!keyed) {
-            const { line } = sf.getLineAndCharacterOfPosition(
-              node.getStart(sf),
-            );
-            found.push(
-              `${path.relative(ROOT, file)}:${String(line + 1)}  deps=[${deps.join(", ")}]`,
-            );
-          }
-        }
-      }
-      ts.forEachChild(node, visit);
-    })(sf);
-  }
-  return found;
-}
-
 console.log(
   `\n${String(all.length)} hardcoded string(s) across ${String(byFile.size)} file(s).`,
 );
@@ -484,11 +525,6 @@ if (frozen.length > 0) {
   process.exit(1);
 }
 
-// `frozenTranslations` catches `t()` at module scope; this catches
-// `useMemo(() => ({ label: t("x") }), [Colors])`, which reruns only on a listed
-// dependency and so keeps returning the old language after a switch. The
-// module-level `t` is not a reactive value, so exhaustive-deps cannot ask for
-// it. A `useCallback` calling `t` at invocation time is fine and not reported.
 const memoized = memoizedTranslations(files);
 if (memoized.length > 0) {
   console.error(

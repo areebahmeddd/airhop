@@ -203,14 +203,14 @@ const strings: Strings = {
     "Inget internet, ingen router, på telefoner folk redan äger.",
   "home.features.networking.lan.name": "Lokalt nätverk",
   "home.features.networking.lan.line":
-    "Delat WiFi eller en hotspot, iPhone och Android tillsammans.",
+    "Delat Wi-Fi eller en hotspot, iPhone och Android tillsammans.",
   "home.features.networking.hops.name": "Vidarebefordran i flera hopp",
   "home.features.networking.hops.line":
     "Varje telefon skickar meddelanden vidare, upp till sju hopp.",
   "home.features.networking.bridge.name": "Mesh-brygga",
   "home.features.networking.bridge.line":
     "Kopplar din öppna chatt till en grupp i närheten utanför räckvidd.",
-  "home.features.networking.wifi.name": "Snabb väg via WiFi",
+  "home.features.networking.wifi.name": "Snabb väg via Wi-Fi",
   "home.features.networking.wifi.line":
     "Snabbare överföringar mellan två Android eller två iPhone.",
   "home.features.networking.bitchat.name": "bitchat-kompatibel",

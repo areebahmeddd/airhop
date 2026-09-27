@@ -59,8 +59,8 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | Location channels         | Public rooms scoped to a geohash cell, from a block to a region, bridged over the internet. Jump to any cell to read a place you are not in  |
 |                   | Bulletin board            | Signed notices that outlive chat: pin a post to your mesh or location for 1 to 7 days, with urgent flags                                     |
 | 📎 **Sharing**    | Photos & videos           | Send photos and videos over the mesh. Photos support PNG, JPEG, GIF and WebP up to 512 KiB; videos support MP4 and MOV up to 1 MiB           |
-|                   | Voice messages            | Send a recorded voice message over the mesh in AAC, 16 kHz mono, up to 512 KiB                                                               |
-|                   | Live voice                | Hold the mic to talk to people in range, walkie-talkie style; recordings land in chat as voice messages                                      |
+|                   | Voice notes               | Send a recorded voice note over the mesh in AAC, 16 kHz mono, up to 512 KiB                                                                  |
+|                   | Live voice                | Hold the mic to talk to people in range, walkie-talkie style; recordings land in chat as voice notes                                         |
 |                   | File transfer             | Send any file format over the mesh, including documents and archives, up to 1 MiB per file                                                   |
 |                   | Store-and-forward courier | Messages are delivered automatically when a route becomes available, sealed to a one-time prekey for forward secrecy                         |
 | 🔒 **Identity**   | No-account identity       | Identity is an Ed25519 key pair stored only on your device                                                                                   |
@@ -72,8 +72,8 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 |                   | Panic wipe                | Triple-tap instantly erases keys and local messages (nuke your account)                                                                      |
 | 🕸️ **Networking** | Bluetooth mesh            | Communicate with nearby devices without internet                                                                                             |
 |                   | Mesh bridge               | Link this area's public #bluetooth chat with another out-of-range Bluetooth crowd over the internet                                          |
-|                   | LAN mesh                  | Run the whole mesh over a shared WiFi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike WiFi Aware             |
-|                   | WiFi Aware                | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                      |
+|                   | LAN mesh                  | Run the whole mesh over a shared Wi-Fi network or a phone hotspot, discovered by mDNS. Works iPhone to Android, unlike Wi-Fi Aware           |
+|                   | Wi-Fi Aware               | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                      |
 |                   | Multi-hop routing         | Messages automatically relay across nearby devices (up to 7 hops)                                                                            |
 |                   | Relay nodes               | Third-party [Bitle](https://bitle.org) hardware extends the mesh where nobody stands. Requires an ESP32 board, plus LoRa to link nodes       |
 |                   | bitchat compatibility     | Airhop nodes communicate directly with bitchat on iOS and Android                                                                            |
@@ -99,7 +99,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 | Layer                   | Technology                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Application Framework   | [React Native](https://reactnative.dev) 0.86, [Expo](https://expo.dev) SDK 57 (bare workflow)                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Network Transport       | [Bluetooth LE](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) mesh (all platforms), LAN over [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) + TCP, [WiFi Aware](https://wi-fi.org/discover-wi-fi/wi-fi-aware) (Android and iPhone, same platform only), [Nostr](https://github.com/nostr-protocol/nostr) relay bridge, chosen per message                                                                                                                                                                                                                    |
+| Network Transport       | [Bluetooth LE](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) mesh (all platforms), LAN over [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) + TCP, [Wi-Fi Aware](https://wi-fi.org/discover-wi-fi/wi-fi-aware) (Android and iPhone, same platform only), [Nostr](https://github.com/nostr-protocol/nostr) relay bridge, chosen per message                                                                                                                                                                                                                   |
 | Cryptographic Protocols | [Noise XX](https://noiseprotocol.org/noise.html) handshake, [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) algorithm                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Cryptographic Library   | [`@noble/curves`](https://github.com/paulmillr/noble-curves), [`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers), [`@noble/hashes`](https://github.com/paulmillr/noble-hashes) ([Cure53](https://cure53.de) audited)                                                                                                                                                                                                                                                                                                                                       |
 | Identity & Signatures   | [Ed25519](https://ed25519.cr.yp.to) scheme                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -112,7 +112,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 
 Airhop chooses a transport per message. Bluetooth is the only one that needs no internet and no network at all, which is why it is the default. The others are used when they are available, and courier is what runs when none of them are.
 
-|                   | Bluetooth LE mesh                                                  | LAN (mDNS + TCP)                        | WiFi Aware                        | Nostr relays                     | Courier (store-and-forward)              |
+|                   | Bluetooth LE mesh                                                  | LAN (mDNS + TCP)                        | Wi-Fi Aware                       | Nostr relays                     | Courier (store-and-forward)              |
 | ----------------- | ------------------------------------------------------------------ | --------------------------------------- | --------------------------------- | -------------------------------- | ---------------------------------------- |
 | Carries           | Channel messages, DMs, files, ecash                                | Everything Bluetooth carries            | DMs and files, when a link exists | DMs and geohash channel messages | Sealed text envelopes, up to 16 KiB each |
 | Needs internet    | No                                                                 | No, but everyone must be on one network | No                                | Yes                              | No                                       |
@@ -130,7 +130,7 @@ Notes on the numbers:
 - A 1 MiB file (the per-file cap) takes about 56 seconds to one peer. bitchat rejects anything larger as it decodes the packet, so the cap is not ours to raise and chunking above it was dropped. An Airhop-only path stays possible, but it cannot be the default without losing bitchat compatibility.
 - LAN needs no such pacing, since the 25 ms delay is a Bluetooth requirement rather than a protocol one. The 467-byte fragment size stays regardless: the receiver reassembles by index and a peer may be relaying to Bluetooth next.
 - Wi-Fi Aware doesn’t work across platforms. Apple requires pairing that Android can’t complete, so connections are limited to Android-to-Android (Android 10+) or iPhone-to-iPhone (iOS 26+, paired once).
-- Nostr relays carry small signed events, not file bytes. Files can be shared over Nostr only by uploading them to a separate HTTP host and posting a link ([NIP-96](https://github.com/nostr-protocol/nips/blob/master/96.md)). Airhop does not do this: that host is a central server that can log, throttle, or take down your files, which is exactly what this app avoids. Attachments therefore travel only over Bluetooth, LAN or WiFi.
+- Nostr relays carry small signed events, not file bytes. Files can be shared over Nostr only by uploading them to a separate HTTP host and posting a link ([NIP-96](https://github.com/nostr-protocol/nips/blob/master/96.md)). Airhop does not do this: that host is a central server that can log, throttle, or take down your files, which is exactly what this app avoids. Attachments therefore travel only over Bluetooth, LAN or Wi-Fi.
 - Courier is the fallback when no other transport can reach the recipient. The envelope is sealed to a one-time prekey before it leaves, so the carrier holding it cannot read it, and it is dropped after 24 hours if nobody meets the recipient. Text only: media is never couriered.
 
 Timing intervals:
@@ -150,23 +150,23 @@ Offline and private messengers generally fall into three categories:
 
 - Internet-only messaging apps that rely on online infrastructure and cannot communicate locally without internet access.
 - Radio-based mesh networks that work offline but require dedicated hardware.
-- Phone-to-phone mesh apps that use Bluetooth and WiFi on devices people already own.
+- Phone-to-phone mesh apps that use Bluetooth and Wi-Fi on devices people already own.
 
 Airhop belongs to the third category and extends it with a Nostr-based internet layer for long-distance communication when connectivity is available. The table is grouped in that order, starting with the apps most people already measure private messaging against.
 
-| Project                                | Transport                             | Encryption                | Works offline | Hardware-free | Open source | Platforms                       |
-| -------------------------------------- | ------------------------------------- | ------------------------- | ------------- | ------------- | ----------- | ------------------------------- |
-| [Signal](https://signal.org)           | Centralized servers                   | Signal protocol           | ❌            | ✅            | ✅          | iOS, Android, Desktop           |
-| [Threema](https://threema.ch)          | Centralized servers                   | NaCl + Ibex               | ❌            | ✅            | ⚠️          | iOS, Android, Desktop           |
-| [Session](https://getsession.org)      | Onion routing (service nodes)         | Session protocol          | ❌            | ✅            | ✅          | iOS, Android, Desktop           |
-| [White Noise](https://whitenoise.chat) | Nostr relays                          | MLS (Marmot)              | ❌            | ✅            | ✅          | iOS, Android                    |
-| [Meshtastic](https://meshtastic.org)   | LoRa radio                            | AES-256 + Curve25519 PKI  | ✅            | ❌            | ✅          | iOS, Android, Web + hardware    |
-| [goTenna](https://gotenna.com)         | Proprietary sub-GHz radio             | AES-256 + ECC-384 PKI     | ✅            | ❌            | ❌          | iOS, Android + hardware         |
-| [Bridgefy](https://bridgefy.me)        | Bluetooth + WiFi                      | Signal (libsignal)        | ✅            | ✅            | ❌          | iOS, Android                    |
-| [Berty](https://berty.tech)            | Bluetooth + mDNS                      | Scuttlebutt + Ratchet     | ✅            | ✅            | ✅          | iOS, Android                    |
-| [Briar](https://briarproject.org)      | Bluetooth + WiFi + Tor                | Bramble                   | ✅            | ✅            | ✅          | Android, Desktop                |
-| [bitchat](https://bitchat.free)        | Bluetooth + Nostr + Tor               | Noise XX                  | ✅            | ✅            | ✅          | iOS, Android                    |
-| [Airhop](https://airhop.1mindlabs.org) | Bluetooth + Nostr + mDNS + WiFi + Tor | Noise XX + Double Ratchet | ✅            | ✅            | ✅          | iOS, Android, Desktop, Web, CLI |
+| Project                                | Transport                              | Encryption                | Works offline | Hardware-free | Open source | Platforms                       |
+| -------------------------------------- | -------------------------------------- | ------------------------- | ------------- | ------------- | ----------- | ------------------------------- |
+| [Signal](https://signal.org)           | Centralized servers                    | Signal protocol           | ❌            | ✅            | ✅          | iOS, Android, Desktop           |
+| [Threema](https://threema.ch)          | Centralized servers                    | NaCl + Ibex               | ❌            | ✅            | ⚠️          | iOS, Android, Desktop           |
+| [Session](https://getsession.org)      | Onion routing (service nodes)          | Session protocol          | ❌            | ✅            | ✅          | iOS, Android, Desktop           |
+| [White Noise](https://whitenoise.chat) | Nostr relays                           | MLS (Marmot)              | ❌            | ✅            | ✅          | iOS, Android                    |
+| [Meshtastic](https://meshtastic.org)   | LoRa radio                             | AES-256 + Curve25519 PKI  | ✅            | ❌            | ✅          | iOS, Android, Web + hardware    |
+| [goTenna](https://gotenna.com)         | Proprietary sub-GHz radio              | AES-256 + ECC-384 PKI     | ✅            | ❌            | ❌          | iOS, Android + hardware         |
+| [Bridgefy](https://bridgefy.me)        | Bluetooth + Wi-Fi                      | Signal (libsignal)        | ✅            | ✅            | ❌          | iOS, Android                    |
+| [Berty](https://berty.tech)            | Bluetooth + mDNS                       | Scuttlebutt + Ratchet     | ✅            | ✅            | ✅          | iOS, Android                    |
+| [Briar](https://briarproject.org)      | Bluetooth + Wi-Fi + Tor                | Bramble                   | ✅            | ✅            | ✅          | Android, Desktop                |
+| [bitchat](https://bitchat.free)        | Bluetooth + Nostr + Tor                | Noise XX                  | ✅            | ✅            | ✅          | iOS, Android                    |
+| [Airhop](https://airhop.1mindlabs.org) | Bluetooth + Nostr + mDNS + Wi-Fi + Tor | Noise XX + Double Ratchet | ✅            | ✅            | ✅          | iOS, Android, Desktop, Web, CLI |
 
 ⚠️ Threema's client apps are open source, but its servers are not, and the app is a paid one-time purchase.
 
@@ -185,7 +185,7 @@ With the Android SDK build tools, this must print exactly one signer, with that 
 
 ```bash
 apksigner verify --print-certs airhop.apk
-# Signer #1 certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
+# ... certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
 ```
 
 An APK downloaded from a release also carries build provenance. This checks it was built by this repository's release workflow, on a GitHub-hosted runner, from the tag of the release you downloaded (put it in place of `vX.Y.Z`):

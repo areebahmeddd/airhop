@@ -9,7 +9,7 @@ export function InternetGateway() {
       aria-label="Internet gateway carrying traffic for offline peers"
     >
       <Arrow id="gw-arrow" />
-      <Box x={16} y={92} w={186} h={72} label="Offline phone" sub="no SIM, no WiFi" strong />
+      <Box x={16} y={92} w={186} h={72} label="Offline phone" sub="no SIM, no Wi-Fi" strong />
       <line
         x1={206}
         y1={128}

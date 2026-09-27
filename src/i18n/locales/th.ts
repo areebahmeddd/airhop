@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "วันนี้",
   "format.yesterday": "เมื่อวาน",
-  "format.minutes_ago": "{count} นาทีที่แล้ว",
-  "format.hours_ago": "{count} ชม. ที่แล้ว",
-  "format.days_ago": "{count} วันที่แล้ว",
   "format.just_now": "เมื่อครู่นี้",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -249,6 +246,7 @@ export const strings: Strings = {
   "chat.group_badge": "กลุ่ม",
   "chat.more": "เพิ่มเติม",
   "chat.no_messages": "ยังไม่มีข้อความ",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "ไม่มีใครอยู่ใกล้",
   "chat.presence.active_none": "ไม่มีใครใช้งานอยู่",
   "chat.you": "คุณ",
@@ -320,6 +318,7 @@ export const strings: Strings = {
   "chat.jump.failed": "เปิดเซลล์นั้นไม่ได้ ลองอีกครั้งในอีกสักครู่",
   "chat.jump.title": "ไปยังสถานที่",
   "chat.jump.saved": "สถานที่ที่บันทึกไว้",
+  "chat.jump.nearby": "ใกล้เคียง",
   "chat.jump.anywhere":
     "เปิดช่องตำแหน่งสาธารณะที่ใดก็ได้ แม้แต่ที่ที่คุณไม่ได้อยู่",
   "chat.jump.geohash_note":
@@ -329,7 +328,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "เซลล์ระดับ{level}",
   "chat.jump.already_here":
     "คุณอยู่ที่นี่อยู่แล้ว ปุ่มไปจะเปิดช่อง {name} ของคุณ",
-  "chat.jump.open_direction": "เปิดเซลล์ทาง{direction}ของคุณ",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NE",
+  "chat.jump.dir.e": "E",
+  "chat.jump.dir.se": "SE",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SW",
+  "chat.jump.dir.w": "W",
+  "chat.jump.dir.nw": "NW",
+  "chat.jump.open_n": "เปิดเซลล์ทางทิศเหนือ",
+  "chat.jump.open_ne": "เปิดเซลล์ทางทิศตะวันออกเฉียงเหนือ",
+  "chat.jump.open_e": "เปิดเซลล์ทางทิศตะวันออก",
+  "chat.jump.open_se": "เปิดเซลล์ทางทิศตะวันออกเฉียงใต้",
+  "chat.jump.open_s": "เปิดเซลล์ทางทิศใต้",
+  "chat.jump.open_sw": "เปิดเซลล์ทางทิศตะวันตกเฉียงใต้",
+  "chat.jump.open_w": "เปิดเซลล์ทางทิศตะวันตก",
+  "chat.jump.open_nw": "เปิดเซลล์ทางทิศตะวันตกเฉียงเหนือ",
   "chat.jump.open_place": "เปิด {name}",
   "chat.jump.remove_place": "นำ {name} ออกจากสถานที่ที่บันทึกไว้",
   "chat.jump.go": "ไป",
@@ -447,18 +461,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "ยกเลิก {name}",
   "chat.thread.hide_transfer": "ซ่อนความคืบหน้า",
   "chat.thread.hide_transfer_hint": "ไฟล์จะยังคงมาถึงตามปกติ",
-  "chat.thread.queued_more": "อีก {count} รายการรอส่ง",
-  "chat.thread.across_bridge": "{count} คนอีกฝั่งของบริดจ์",
   "chat.thread.bridged": "เชื่อมผ่านบริดจ์",
   "chat.thread.invite_body":
     "มาร่วมกับฉันใน {channel} บน Airhop — แชทผ่านเมชแบบส่วนตัวที่เน้นการใช้งานออฟไลน์",
-  "chat.thread.go_back_unread": "กลับ ยังไม่อ่าน {count}",
   "chat.thread.view_info": "ดูข้อมูลของ {name}",
-  "chat.thread.notices_new": "ประกาศสำหรับช่องนี้ ใหม่ {count}",
   "chat.board.urgent_one": "ประกาศด่วนจาก {author} · {content}",
-  "chat.board.urgent_many": "ประกาศด่วนใหม่ {count} รายการ · เปิดประกาศ",
+  "chat.board.urgent_one_anon": "ประกาศด่วน · {content}",
   "chat.thread.say_something": "พูดอะไรสักอย่างใน {channel}",
-  "chat.thread.jump_latest_new": "ข้ามไปยังข้อความล่าสุด ใหม่ {count}",
   "chat.thread.unconfirmed_since": "ไม่มีการยืนยันการส่งถึงตั้งแต่ {date}",
   "chat.thread.no_reach": "ไม่มีเพียร์อยู่ใกล้ · ยังไม่มีใครได้รับข้อความนี้",
   "chat.thread.channel_needs_internet":
@@ -494,7 +503,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "คุณถ่ายภาพหน้าจอ",
   "chat.screenshot.you_took_private": "คุณถ่ายภาพหน้าจอ · ไม่มีใครถูกแจ้ง",
   "chat.screenshot.heads_up": "โปรดทราบ",
-  "chat.screenshot.notice": "* {name} ถ่ายภาพหน้าจอ *",
+  "chat.screenshot.peer_took": "{name} ถ่ายภาพหน้าจอ",
   "chat.screenshot.notified_dm":
     "{name} ได้รับแจ้งแล้วว่าคุณถ่ายภาพหน้าจอบทสนทนานี้",
   "chat.screenshot.notified": "ทุกคนในช่องนี้ได้รับแจ้งแล้วว่าคุณถ่ายภาพหน้าจอ",
@@ -551,11 +560,11 @@ export const strings: Strings = {
   "chat.location.title": "ตำแหน่ง",
   "chat.location.away": "{distance} {direction}",
   "chat.location.accuracy": "±{distance}",
-  "chat.location.open_maps": "เปิดใน Maps",
+  "chat.location.open_maps": "เปิดในแอปแผนที่",
   "chat.location.no_forward": "ตำแหน่งไม่ถูกส่งต่อ",
   "chat.location.no_forward_body":
     "ตำแหน่งถูกส่งให้คนเดียว หากคุณอยากให้คนอื่นมีตำแหน่งด้วย ให้แชร์ตำแหน่งของคุณเองแทน",
-  "chat.location.no_fix": "อนุญาตตำแหน่งเพื่อดูว่าที่นี่อยู่ห่างแค่ไหน",
+  "chat.location.no_fix": "อนุญาตตำแหน่งเพื่อดูว่าจุดนี้อยู่ห่างแค่ไหน",
   "chat.location.send_title": "ส่งตำแหน่งของคุณ",
   "chat.location.send_body":
     "{name} จะเห็นจุดเดียว คือที่ที่คุณอยู่ตอนนี้ มันไม่ได้อัปเดตต่อเนื่อง",
@@ -577,16 +586,16 @@ export const strings: Strings = {
   "chat.location.direction.nw": "ทิศตะวันตกเฉียงเหนือ",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "โทรเรียก",
+  "chat.ring.sent_summary": "โทรเรียกแล้ว",
   "chat.ring.received_summary": "โทรเรียกคุณ",
   "chat.ring.alert.title": "{sender} กำลังโทรเรียกคุณ",
   "chat.ring.alert.body": "ตรวจสอบข้อความของคุณ",
   "chat.ring.alert.open": "เปิด",
   "chat.ring.alert.snooze": "เลื่อนออกไป 1 ชั่วโมง",
-  "chat.ring.sent_snoozed": "โทรเรียกแล้ว เลื่อนไว้",
-  "chat.ring.sent_too_soon": "โทรเรียกแล้ว เร็วเกินไป",
-  "chat.ring.sent_not_allowed": "โทรเรียกแล้ว ไม่ได้รับอนุญาต",
-  "chat.attach.send_anyway": "ส่งต่อไป",
+  "chat.ring.sent_snoozed": "โทรเรียกแล้ว · เลื่อนไว้",
+  "chat.ring.sent_too_soon": "โทรเรียกแล้ว · เร็วเกินไป",
+  "chat.ring.sent_not_allowed": "โทรเรียกแล้ว · ไม่ได้รับอนุญาต",
+  "chat.attach.send_anyway": "ส่งเลย",
   "chat.attach.bitchat_too_big": "สิ่งนี้อาจไปไม่ถึง",
   "chat.attach.bitchat_too_big_body":
     "{name} ใช้ bitchat ซึ่งจะล้มเลิกกลางคันกับไฟล์ขนาดใหญ่ ต่ำกว่าราว 350 KiB จะเชื่อถือได้ การส่งให้ผู้ติดต่อที่ใช้ Airhop ไม่มีขีดจำกัดแบบนี้",
@@ -656,6 +665,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "หยุดบันทึกแล้วส่ง",
   "chat.voice.lift_lock": "เลื่อนขึ้นเพื่อบันทึกแบบไม่ต้องกดค้าง",
   "chat.voice.live_speaking": "{name} กำลังพูด",
+  "chat.voice.live_ended": "จบแล้ว",
   "voice.unavailable": "ใช้เสียงสดไม่ได้",
   "voice.recording_stopped": "หยุดบันทึกแล้ว",
 
@@ -714,7 +724,6 @@ export const strings: Strings = {
   "chat.info.message_member": "ส่งข้อความถึง {name}",
   "chat.info.remove_member_a11y": "นำ {name} ออก",
   "chat.info.no_addable": "ไม่มีเพียร์ที่ติดต่อได้ให้เพิ่ม สมาชิกต้องอยู่ใกล้",
-  "chat.info.add_count": "เพิ่ม {count}",
   "chat.info.teleported_tag": "{level}  ·  เทเลพอร์ต",
   "chat.info.active": "ใช้งานอยู่",
   "chat.info.members": "สมาชิก",
@@ -776,7 +785,8 @@ export const strings: Strings = {
     "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
   "chat.contact.ring_action": "โทรเรียก",
   "chat.contact.ringing": "กำลังโทรเรียก…",
-  "chat.contact.ring_hint_nearby": "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ๆ",
+  "chat.contact.ring_hint_nearby":
+    "การโทรเรียกใช้ได้เฉพาะเมื่อพวกเขาอยู่ใกล้ ๆ",
   "chat.contact.ring_hint_not_allowed": "พวกเขายังไม่อนุญาตให้คุณโทรเรียก",
   "chat.contact.ring_hint_snoozed": "พวกเขาเลื่อนการโทรเรียกไว้ชั่วคราว",
   "chat.contact.ring_hint_too_soon": "เพิ่งโทรเรียกพวกเขาไปเมื่อสักครู่",
@@ -795,8 +805,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 วัน",
   "chat.notices.7_days": "7 วัน",
   "chat.notices.fading": "กำลังจางหาย",
-  "chat.notices.fades_in_hours": "จางหายในอีก {count} ชม.",
-  "chat.notices.fades_in_days": "จางหายในอีก {count} วัน",
   "chat.notices.scope_geo": "จีโอ",
   "chat.notices.scope_mesh": "เมช",
   "chat.notices.urgent_short": "ด่วน",
@@ -813,10 +821,20 @@ export const strings: Strings = {
   "chat.search.links": "ลิงก์",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "กรองตาม {filter}",
-  "chat.search.no_matches": "ไม่มี{filter}ที่ตรงกับ “{query}”",
-  "chat.search.no_media": "ยังไม่มี{filter}",
+  "chat.search.no_photos": "ยังไม่มีรูปภาพ",
+  "chat.search.no_videos": "ยังไม่มีวิดีโอ",
+  "chat.search.no_audio": "ยังไม่มีเสียง",
+  "chat.search.no_documents": "ยังไม่มีเอกสาร",
+  "chat.search.no_links": "ยังไม่มีลิงก์",
+  "chat.search.no_ecash": "ยังไม่มี ecash",
+  "chat.search.no_photos_matching": "ไม่มีรูปภาพที่ตรงกับ “{query}”",
+  "chat.search.no_videos_matching": "ไม่มีวิดีโอที่ตรงกับ “{query}”",
+  "chat.search.no_audio_matching": "ไม่มีเสียงที่ตรงกับ “{query}”",
+  "chat.search.no_documents_matching": "ไม่มีเอกสารที่ตรงกับ “{query}”",
+  "chat.search.no_links_matching": "ไม่มีลิงก์ที่ตรงกับ “{query}”",
+  "chat.search.no_ecash_matching": "ไม่มี ecash ที่ตรงกับ “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} จาก {sender}",
-  "chat.search.you": "คุณ",
+  "chat.search.result_mine_a11y": "{chat}, {kind} ที่คุณส่ง",
   "chat.search.section_chats": "แชท",
   "chat.search.section_messages": "ข้อความ",
   "chat.search.section_notices": "ประกาศ",
@@ -824,15 +842,13 @@ export const strings: Strings = {
   "chat.search.no_results": "ไม่พบผลลัพธ์สำหรับ “{query}”",
   "chat.search.open_chat": "เปิด {name}",
   "chat.search.message_a11y": "{chat}, ข้อความจาก {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ข้อความของคุณ: {snippet}",
   "chat.search.notice_a11y": "ประกาศใน {chat} จาก {author}: {snippet}",
   "chat.search.urgent": "ด่วน ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "มี {count} รายการในรายการนี้ การล้างจะนำออกจากที่นี่เท่านั้น และข้อความจะยังไม่ถูกอ่านอยู่ในบทสนทนาของมัน การทำเครื่องหมายว่าอ่านทั้งหมดจะล้างทั้งสองอย่าง",
   "chat.notif.mark_all_read": "ทำเครื่องหมายว่าอ่านทั้งหมด",
   "chat.notif.clear_list": "ล้างรายการ",
-  "chat.notif.clear_all_a11y": "ล้างการแจ้งเตือนทั้งหมด {count} รายการ",
   "chat.notif.title": "การแจ้งเตือน",
   "chat.notif.clear_short": "ล้าง",
   "chat.notif.close": "ปิดการแจ้งเตือน",
@@ -849,18 +865,21 @@ export const strings: Strings = {
   "chat.forward.cant_send_here": "ส่งต่อที่นี่ไม่ได้",
   "chat.forward.cant_send_to": "ส่งต่อไปยัง {name} ไม่ได้",
   "chat.forward.too_long_for_dm":
-    "ยาวเกินไปสำหรับข้อความส่วนตัว ส่งต่อไปยังช่องหรือกลุ่มแทน",
+    "ยาวเกินไปสำหรับข้อความโดยตรง ส่งต่อไปยังช่องหรือกลุ่มแทน",
   "chat.forward.channels": "ช่อง",
   "chat.forward.groups": "กลุ่ม",
   "chat.forward.locations": "ตำแหน่ง",
   "chat.forward.dms": "ข้อความโดยตรง",
   "chat.forward.none": "ยังไม่มีแชทอื่น",
+  "chat.forward.app_row": "ไม่ได้ส่งต่อ",
+  "chat.forward.app_row_body":
+    "บรรทัดนี้มาจาก Airhop ไม่ใช่จากคน จึงไม่มีอะไรให้ส่งต่อ",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "กำลังเริ่มเมช…",
   "mesh.banner.no_bluetooth": "เครื่องนี้ไม่มีบลูทูธ · อินเทอร์เน็ตเท่านั้น",
   "mesh.banner.bluetooth_off": "บลูทูธปิดอยู่ · ใช้เมชไม่ได้",
-  "mesh.banner.bluetooth_off_wifi": "บลูทูธปิดอยู่ · เมชทำงานผ่าน WiFi",
+  "mesh.banner.bluetooth_off_wifi": "บลูทูธปิดอยู่ · เมชทำงานผ่าน Wi-Fi",
   "mesh.banner.permission_needed": "ต้องได้รับอนุญาตให้ใช้บลูทูธ",
   "mesh.banner.blocked": "บลูทูธถูกบล็อก · อนุญาตในการตั้งค่า",
   "mesh.banner.location_permission": "ต้องใช้ตำแหน่งเพื่อค้นหาเพียร์",
@@ -889,8 +908,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "บริดจ์เมชเปิดอยู่ · เชื่อมแชทสาธารณะแล้ว",
   "mesh.banner.background_limits":
     "{brand} อาจหยุดเมชชั่วคราวเมื่ออยู่เบื้องหลัง",
-  "mesh.banner.bridge_across":
-    "บริดจ์เมชเปิดอยู่ · {count} คนอยู่อีกฝั่งของบริดจ์",
   "mesh.banner.action.turn_on": "เปิด",
   "mesh.banner.action.allow": "อนุญาต",
   "mesh.banner.action.resume": "ทำต่อ",
@@ -959,7 +976,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "ดูเพียร์ {name}, ออนไลน์",
   "mesh.peer.view_relay_online": "ดูเพียร์ {name}, ออนไลน์ โหนดรีเลย์",
   "mesh.peer.last_seen_at": "เห็นล่าสุด {ago}",
-  "mesh.peer.send_amount": "ส่ง {amount} sats",
+  "mesh.peer.send_unit_amount": "ส่ง {amount} {unit}",
   "mesh.peer.direct": "การเชื่อมต่อโดยตรง",
   "mesh.peer.check_distance": "ตรวจระยะ",
   "mesh.peer.checking": "กำลังตรวจ",
@@ -1030,7 +1047,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "โทเคนนี้ถูกแบ่งเป็นเหรียญมากเกินกว่าจะใส่ในคิวอาร์โค้ดได้ ใช้การแชร์หรือคัดลอกแทน",
   "wallet.send.scan_note":
-    "ให้พวกเขาสแกนสิ่งนี้จากกระเป๋าเงินของตัวเอง ยังเรียกคืนได้จนกว่าคุณจะทำเครื่องหมายว่าส่งถึงแล้ว",
+    "ให้พวกเขาสแกนสิ่งนี้จากกระเป๋าเงินของตัวเอง ยังเรียกคืนได้จนกว่าคุณจะทำเครื่องหมายว่าได้รับแล้ว",
   "wallet.send.mesh_note":
     "โทเคนจะออกไปเป็น DM ที่เข้ารหัสผ่านเมช ไม่ต้องใช้อินเทอร์เน็ต",
   "wallet.send.no_peers_note":
@@ -1051,7 +1068,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "เปิดในกระเป๋าเงิน",
   "wallet.send.to_peer": "ส่งโทเคนให้เพียร์ที่อยู่ใกล้",
   "wallet.send.to_peer_short": "ส่งให้เพียร์",
-  "wallet.send.mark_delivered": "ทำเครื่องหมายว่าส่งถึงแล้วและจบ",
+  "wallet.send.mark_delivered": "ทำเครื่องหมายว่าได้รับแล้ว",
   "wallet.send.they_got_it": "พวกเขาได้รับแล้ว",
   "wallet.send.keep_pending": "คงการส่งนี้ไว้เป็นรอดำเนินการ",
   "wallet.send.decide_later": "ตัดสินใจภายหลัง",
@@ -1075,10 +1092,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "แลกที่ {mint} แล้ว ตอนนี้มันเป็นของคุณอย่างพิสูจน์ได้ สำเนาโทเคนนี้ของผู้ส่งใช้ไม่ได้อีกต่อไป",
-  "wallet.receive.stored_pending":
-    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้{dleq} ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
-  "wallet.receive.dleq_inline":
-    " (ลายเซ็นของมันตรวจสอบผ่าน โทเคนจึงเป็นของแท้)",
+  "wallet.receive.pending_unconfirmed":
+    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ลายเซ็นของมันตรวจสอบผ่าน โทเคนจึงเป็นของแท้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
   "wallet.receive.dleq_ok": "ลายเซ็นของมินต์ตรวจสอบผ่าน โทเคนจึงเป็นของแท้",
   "wallet.receive.dleq_uncached":
     "กุญแจของมินต์ไม่ได้แคชไว้ที่นี่ จึงตรวจสอบลายเซ็นแบบออฟไลน์ไม่ได้",
@@ -1136,12 +1153,10 @@ export const strings: Strings = {
   "wallet.mint.checking": "กำลังตรวจสอบ…",
   "wallet.mint.remove_with_balance": "นำมินต์ที่มียอดคงเหลือออกหรือไม่",
   "wallet.mint.remove": "นำมินต์ออก",
-  "wallet.mint.delete_anyway": "ลบต่อไป",
+  "wallet.mint.delete_anyway": "ลบเลย",
   "wallet.mint.consolidate": "ย้ายยอดทั้งหมดไปมินต์เดียว",
   "wallet.mint.confirm_with": "ตรวจยอดเงินกับ {mint}",
   "wallet.mint.available_amount": "ใช้ได้ {amount} {unit}",
-  "wallet.mint.split_across":
-    "ยอดคงเหลือกระจายอยู่ใน {count} มินต์ ย้ายไปรวมที่เดียว",
   "wallet.mint.move_everything_to": "ย้ายทุกอย่างไปที่ {mint}",
   "wallet.mint.consolidate_title": "ย้ายไปมินต์เดียว",
   "wallet.mint.moving": "กำลังย้าย…",
@@ -1152,10 +1167,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "ไม่มีอะไรถูกย้าย",
   "wallet.mint.move_pending": "กำลังเดินทาง",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} ออกจาก {mint} แล้วและกำลังไปยัง {target} จะมาถึงเมื่อรับเงินฝากสำเร็จ และกระเป๋าเงินจะลองใหม่ต่อไป",
+    "{amount} {unit} ออกจาก {mint} แล้วและกำลังไปยัง {target} จะมาถึงเมื่อรับการโอนนี้สำเร็จ และกระเป๋าเงินจะลองใหม่ต่อไป",
   "wallet.mint.destination": "· ปลายทาง",
   "wallet.mint.will_move": "· จะถูกย้าย",
   "wallet.mint.issued_by": "ออกโดย",
+  "wallet.mint.test_badge": "ทดสอบ",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "เติมเงินกระเป๋า Airhop",
@@ -1181,7 +1197,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "ไม่เกิน {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "จ่าย {amount} {unit}",
-  "wallet.ln.deposit_title": "ฝากผ่าน Lightning",
+  "wallet.ln.deposit_title": "เติมเงินผ่าน Lightning",
   "wallet.ln.amount_placeholder": "จำนวนเป็น sats",
   "wallet.ln.requesting": "กำลังขอ…",
   "wallet.ln.get_invoice": "ขอใบแจ้งหนี้",
@@ -1213,7 +1229,7 @@ export const strings: Strings = {
     "คุณมีวลีกู้คืนอยู่แล้ว การกู้คืนวลีอื่นจะแทนที่ของเดิม เหรียญที่วลีเดิมครอบคลุมอยู่จะยังใช้จ่ายได้บนเครื่องนี้ แต่จะกู้คืนไม่ได้อีก จึงควรแน่ใจว่าได้จดคำชุดเดิมไว้แล้วก่อนดำเนินการต่อ",
   "wallet.backup.replace": "แทนที่",
   "wallet.backup.replace_unseen_body":
-    "กระเป๋าเงินนี้มีวลีกู้คืนอยู่แล้ว ซึ่งสร้างให้คุณตอนตั้งค่า และเหรียญของคุณสร้างจากวลีนั้น การกู้คืนด้วยวลีอื่นจะแทนที่วลีเดิมอย่างถาวร เหรียญยังใช้จ่ายได้บนอุปกรณ์นี้ และจะย้ายไปอยู่ภายใต้วลีใหม่เมื่อรีเฟรชแต่ละมิ้นท์ครั้งถัดไป",
+    "กระเป๋าเงินนี้มีวลีกู้คืนอยู่แล้ว ซึ่งสร้างให้คุณตอนตั้งค่า และเหรียญของคุณสร้างจากวลีนั้น การกู้คืนด้วยวลีอื่นจะแทนที่วลีเดิมอย่างถาวร เหรียญยังใช้จ่ายได้บนอุปกรณ์นี้ และจะย้ายไปอยู่ภายใต้วลีใหม่เมื่อรีเฟรชแต่ละมินต์ครั้งถัดไป",
   "wallet.backup.invalid_phrase": "วลีนั้นไม่ถูกต้อง",
   "wallet.backup.invalid_phrase_body":
     "วลีมีค่าตรวจสอบในตัวและวลีนี้ไม่ผ่าน ลองตรวจหาคำที่พิมพ์ผิด ตกหล่น หรือสลับที่กัน",
@@ -1300,7 +1316,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "มินต์แจ้งว่าโทเคนนี้ถูกแลกไปแล้ว {amount} {unit} จึงไปถึงพวกเขาและไม่มีอะไรกลับเข้ายอดคงเหลือของคุณ",
   "wallet.copied.token_body":
-    "โทเคนอยู่บนคลิปบอร์ดของคุณแล้ว มันยังถูกกันไว้ที่นี่จนกว่าคุณจะทำเครื่องหมายว่าส่งถึงแล้ว คุณจึงวางซ้ำได้หากครั้งแรกไม่สำเร็จ",
+    "โทเคนอยู่บนคลิปบอร์ดของคุณแล้ว มันยังถูกกันไว้ที่นี่จนกว่าคุณจะทำเครื่องหมายว่าได้รับแล้ว คุณจึงวางซ้ำได้หากครั้งแรกไม่สำเร็จ",
   "wallet.copied.refused_token_body":
     "โทเคนอยู่บนคลิปบอร์ดของคุณแล้ว กระเป๋าเงินนี้ไม่นับรวมมันอีกต่อไป คุณจึงคืนให้ผู้ที่ส่งมาได้",
   "wallet.copied.phrase_body":
@@ -1326,8 +1342,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "แสดงโทเคนนี้เป็นคิวอาร์โค้ด",
   "wallet.pending.copy_again": "คัดลอกโทเคนอีกครั้ง",
   "wallet.pending.share_again": "แชร์โทเคนอีกครั้ง",
-  "wallet.pending.mark_delivered": "ทำเครื่องหมายว่าโทเคนนี้ส่งถึงแล้ว",
-  "wallet.pending.delivered": "ส่งถึงแล้ว",
+  "wallet.pending.mark_delivered": "ทำเครื่องหมายว่าได้รับแล้ว",
+  "wallet.pending.delivered": "ได้รับแล้ว",
   "wallet.pending.reclaim_into": "เรียกคืนโทเคนนี้เข้ายอดคงเหลือของคุณ",
   "wallet.activity.title": "กิจกรรม",
   "wallet.activity.none": "ยังไม่มีอะไร",
@@ -1345,7 +1361,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "ไม่สำเร็จ",
   "wallet.activity.status_reclaimed": "เรียกคืนแล้ว",
   "wallet.activity.status_expired": "หมดอายุ",
-  "wallet.activity.ln_deposit": "ฝากผ่าน Lightning",
+  "wallet.activity.ln_deposit": "เติมเงินผ่าน Lightning",
   "wallet.activity.ln_withdrawal": "ถอนผ่าน Lightning",
   "wallet.activity.nutzap_received": "ได้รับ Nutzap",
   "wallet.activity.nutzap_claiming": "กำลังเคลม Nutzap",
@@ -1388,14 +1404,20 @@ export const strings: Strings = {
     "การชำระเงินที่ล็อกไว้เรียกคืนไม่ได้ ตอนนี้มีเพียงกุญแจของพวกเขาเท่านั้นที่ใช้เหรียญเหล่านี้ได้",
   "wallet.pay.reclaimable":
     "มันยังเรียกคืนได้จากรายการกิจกรรมจนกว่าคุณจะยืนยันว่ามันไปถึงแล้ว",
-  "wallet.pay.why": "ส่งด้วยวิธีนี้เพราะ {reason}",
+  "wallet.pay.why_no_relay": "ส่งด้วยวิธีนี้เพราะไม่มีการเชื่อมต่อรีเลย์",
+  "wallet.pay.why_no_shared_mint":
+    "ส่งด้วยวิธีนี้เพราะคุณมียอดไม่พอในมินต์ใด ๆ ที่ผู้รับยอมรับ",
+  "wallet.pay.why_no_nutzap_info":
+    "ส่งด้วยวิธีนี้เพราะผู้รับยังไม่ได้เผยแพร่ข้อมูล nutzap (NIP-61 kind 10019)",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} ถึง {name}",
   "wallet.pay.thread_receipt":
     "คุณส่ง {amount} {unit} ล็อกไว้กับกุญแจของพวกเขา",
   "wallet.pay.title": "ส่ง ecash",
   "wallet.pay.to": "ถึง {name}",
   "wallet.pay.amount": "จำนวนเป็น sats",
-  "wallet.pay.memo": "หมายเหตุ (ไม่บังคับ เปิดเผยสู่สาธารณะ)",
+  "wallet.pay.memo": "บันทึกย่อ (ไม่บังคับ เปิดเผยสู่สาธารณะ)",
   "wallet.pay.send": "ส่ง",
   "wallet.pay.sending": "กำลังส่ง…",
   "wallet.pay.action": "ส่ง ecash",
@@ -1495,7 +1517,7 @@ export const strings: Strings = {
   "wallet.svc.unreadable_token": "นั่นไม่ใช่โทเคน Cashu ที่อ่านได้",
   "wallet.svc.unreadable_token_body":
     "โทเคนขึ้นต้นด้วย cashuA หรือ cashuB ตรวจสอบว่าไม่มีส่วนใดขาดหายไปตอนคัดลอก",
-  "wallet.svc.keyset_unknown": "โทเค็นนี้ใช้กุญแจใหม่จากมินต์ของมัน",
+  "wallet.svc.keyset_unknown": "โทเคนนี้ใช้กุญแจใหม่จากมินต์ของมัน",
   "wallet.svc.keyset_unknown_body":
     "ขณะนี้ติดต่อมินต์เพื่อดึงกุญแจไม่ได้ ไม่มีอะไรสูญหาย รับอีกครั้งเมื่อออนไลน์",
   "wallet.svc.keyset_rotated": "มินต์เพิ่งเปลี่ยนกุญแจของตน",
@@ -1530,17 +1552,17 @@ export const strings: Strings = {
     "ไม่มีการหักยอดใด ๆ ลองอีกครั้งแล้วกระเป๋าเงินจะเลือกชุดอื่น",
   "wallet.svc.no_ecash": "ยังไม่มี ecash",
   "wallet.svc.no_ecash_body":
-    "เพิ่มมินต์แล้วฝากผ่าน Lightning หรือรับโทเคนจากใครสักคน",
+    "เพิ่มมินต์แล้วเติมเงินผ่าน Lightning หรือรับโทเคนจากใครสักคน",
   "wallet.svc.split_across_mints": "ยอดคงเหลือของคุณกระจายอยู่หลายมินต์",
   "wallet.svc.mint_says_spent": "มินต์รายงานว่า ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.issue_against_invoice": "ออก ecash โดยอิงใบแจ้งหนี้ Lightning",
   "wallet.svc.pay_invoice": "จ่ายใบแจ้งหนี้ Lightning",
-  "wallet.svc.unknown_deposit": "รายการฝากที่ไม่รู้จัก",
+  "wallet.svc.unknown_deposit": "รายการเติมเงินที่ไม่รู้จัก",
   "wallet.svc.invoice_expired_before": "ใบแจ้งหนี้หมดอายุก่อนที่จะถูกชำระ",
   "wallet.svc.invoice_expired": "ใบแจ้งหนี้นั้นหมดอายุแล้ว",
   "wallet.svc.invoice_unpaid": "ใบแจ้งหนี้ยังไม่ได้ถูกชำระ",
-  "wallet.svc.payment_unknown":
-    "ไม่ทราบสถานะการชำระเงิน จะตรวจสอบอีกครั้งในการรีเฟรชครั้งถัดไป",
+  "wallet.svc.payment_unknown_after":
+    "{reason} ไม่ทราบสถานะการชำระเงิน จะตรวจสอบอีกครั้งในการรีเฟรชครั้งถัดไป",
   "wallet.svc.melt_change_pending": "ใบแจ้งหนี้ของคุณถูกชำระแล้ว",
   "wallet.svc.melt_change_pending_body":
     "มินต์ยังไม่ได้คืนค่าธรรมเนียมกำหนดเส้นทางส่วนที่ไม่ได้ใช้ ระบบจะเรียกคืนให้เองในการรีเฟรชครั้งถัดไป และระหว่างนี้ไม่มีอะไรสูญหาย",
@@ -1576,23 +1598,19 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "การชำระเงินนั้นระบุมินต์ที่คุณไม่ได้ใช้",
   "wallet.svc.unknown_mint_body":
     "หากคุณไว้ใจ ให้เพิ่มมินต์นั้นด้วยตัวเองก่อน ไม่มีการแลกใด ๆ จากมินต์ที่คุณไม่ได้เลือก",
-  "wallet.svc.no_relay": "ไม่มีการเชื่อมต่อรีเลย์",
-  "wallet.svc.no_shared_mint": "ไม่มีมินต์ร่วมที่มียอดคงเหลือเพียงพอ",
-  "wallet.svc.no_nutzap_info":
-    "ผู้รับยังไม่ได้เผยแพร่ข้อมูล nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "ล็อกไว้กับกุญแจของพวกเขาแล้วแต่ยังไม่ได้ส่งถึง แชร์โทเคนจากธุรกรรมนี้เพื่อทำให้เสร็จ",
   "wallet.svc.swap_lost":
     "มินต์ไม่เคยทำการสับเปลี่ยนนี้จนเสร็จ จึงไม่มีอะไรถูกออกให้",
   "wallet.svc.mint_lost":
-    "มินต์ออกเงินฝากนี้แล้ว แต่สร้างเหรียญขึ้นใหม่ไม่ได้ การกู้คืนจากวลีกู้คืนของคุณจะนำเหรียญกลับมา",
+    "มินต์ออกรายการเติมเงินนี้แล้ว แต่สร้างเหรียญขึ้นใหม่ไม่ได้ การกู้คืนจากวลีกู้คืนของคุณจะนำเหรียญกลับมา",
   "wallet.svc.swap_unreadable":
     "การสับเปลี่ยนนี้ถูกบันทึกไว้ในรูปแบบที่เวอร์ชันนี้เล่นซ้ำไม่ได้",
   "wallet.svc.lock_in_doubt": "ไม่แน่ชัดว่าการชำระเงินนี้สำเร็จหรือไม่",
   "wallet.svc.lock_in_doubt_body":
     "ไม่มีการส่งอย่างอื่นเพิ่ม เหรียญถูกกันไว้จนกว่ามินต์จะยืนยันผลลัพธ์ หากสำเร็จ โทเคนที่ล็อกไว้จะแสดงในรายการกิจกรรมเพื่อให้คุณส่งต่อ หากไม่สำเร็จ เหรียญจะกลับมา",
   "wallet.svc.send_spent_by_swap":
-    "เหรียญเหล่านี้ถูกแลกกลับเข้ากระเป๋าเงินของคุณก่อนที่จะมีการรับโทเค็นนี้ จึงรับโทเค็นนี้ไม่ได้อีกแล้ว มูลค่าอยู่ในยอดคงเหลือของคุณ",
+    "เหรียญเหล่านี้ถูกแลกกลับเข้ากระเป๋าเงินของคุณก่อนที่จะมีการรับโทเคนนี้ จึงรับโทเคนนี้ไม่ได้อีกแล้ว มูลค่าอยู่ในยอดคงเหลือของคุณ",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "ยืนยันผ่าน QR แล้ว",
@@ -1709,7 +1727,7 @@ export const strings: Strings = {
     "ฟอร์เวิร์ดซีเครซี แพ็กเก็ตที่ลงลายเซ็น เพียร์ที่ถูกบล็อก",
   "settings.section.network": "เครือข่ายและรีเลย์",
   "settings.section.network_desc":
-    "การใช้อินเทอร์เน็ตสำรอง รีเลย์ nostr ความเข้ากันได้กับ bitchat",
+    "การใช้อินเทอร์เน็ตสำรอง รีเลย์ Nostr ความเข้ากันได้กับ bitchat",
   "settings.section.permissions": "สิทธิ์",
   "settings.section.permissions_desc":
     "บลูทูธ ตำแหน่ง การแจ้งเตือน กล้อง ไมโครโฟน",
@@ -1758,17 +1776,15 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "ไม่มีค่าอ่านสัญญาณ",
   "settings.diag.no_peers": "ไม่มีใครอยู่ในระยะ",
-  "settings.diag.no_peers_desc": "เปิดลิงก์วิทยุอยู่ {links} ลิงก์",
   "settings.diag.gcs_size": "ขนาดตัวกรอง",
   "settings.diag.gcs_size_desc": "ตัวกรองซิงค์ที่ใหญ่ที่สุดที่ส่งออกอากาศ",
   "settings.diag.fpr": "อัตราผลบวกลวง",
   "settings.diag.fpr_desc": "ความถี่ที่ตัวกรองอ้างว่ามีแพ็กเก็ตที่เราไม่มี",
-  "settings.diag.bytes": "{n} ไบต์",
   "settings.diag.footnote":
     "ที่นี่เปลี่ยนอะไรไม่ได้ ค่าเหล่านี้ถูกกำหนดตายตัวเพื่อให้ Airhop ยังเข้ากันได้กับ bitchat",
   "settings.diag.share": "แชร์ข้อมูลวินิจฉัย",
   "settings.diag.share_desc":
-    "รายละเอียดการเชื่อมต่อและการตั้งค่าสำหรับรายงานข้อบกพร่อง ไม่รวมข้อความ ชื่อ หรือคีย์",
+    "รายละเอียดการเชื่อมต่อและการตั้งค่าสำหรับรายงานข้อบกพร่อง ไม่รวมข้อความ ชื่อ หรือกุญแจ",
   "settings.section.storage_desc": "การใช้งานและแคช",
   "settings.section.appearance": "รูปลักษณ์",
   "settings.section.appearance_desc": "ธีม แบบอักษร และภาษา",
@@ -1784,7 +1800,6 @@ export const strings: Strings = {
   "settings.general.undo": "เลิกทำการส่ง",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "กระเป๋าเงิน",
-  "settings.general.undo_seconds": "{count} วินาที",
   "settings.general.undo_a11y": "เลิกทำการส่ง: {value}",
   "settings.general.quality_a11y": "ตั้งคุณภาพการอัปโหลดเป็น {value}",
   "settings.general.undo_desc":
@@ -1874,7 +1889,6 @@ export const strings: Strings = {
   "settings.network.custom": "รีเลย์ของคุณเอง",
   "settings.network.custom_desc":
     "เพิ่มรีเลย์ของคุณเองสำหรับช่องตำแหน่งและบริดจ์เมช",
-  "settings.network.custom_added": "เพิ่มแล้ว {count} จาก {max}",
   "settings.network.dm_relays": "รีเลย์ข้อความ",
   "settings.network.dm_relays_desc":
     "ข้อความโดยตรงและช่องส่วนตัวใช้รีเลย์เหล่านี้เสมอ รีเลย์ของคุณเองไม่เปลี่ยนแปลงสิ่งนี้",
@@ -1884,17 +1898,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "เพิ่มรีเลย์",
   "settings.network.remove_relay": "นำ {url} ออก",
   "settings.network.add_short": "เพิ่ม",
-  "settings.network.relay_limit":
-    "คุณเพิ่มรีเลย์ได้ {count} แห่ง นำออกหนึ่งแห่งเพื่อเพิ่มอีกแห่ง",
   "settings.network.relay_duplicate": "รีเลย์นั้นอยู่ในรายการของคุณแล้ว",
   "settings.network.relay_invalid":
     "ใส่โฮสต์รีเลย์ที่ถูกต้อง เช่น relay.example.com พอร์ตจำเป็นเมื่อรีเลย์ไม่ได้ใช้ค่าเริ่มต้นเท่านั้น ไม่อนุญาตให้ใช้ที่อยู่ IP และชื่อภายในเครือข่าย",
   "settings.network.lan": "เครือข่ายภายใน",
   "settings.network.lan_desc":
-    "ติดต่อผู้คนบน WiFi เดียวกัน รวมถึงระหว่าง iPhone กับ Android อุปกรณ์อื่นบนเครือข่ายจะเห็นว่าคุณกำลังใช้ Airhop",
+    "ติดต่อผู้คนบน Wi-Fi เดียวกัน รวมถึงระหว่าง iPhone กับ Android อุปกรณ์อื่นบนเครือข่ายจะเห็นว่าคุณกำลังใช้ Airhop",
   "settings.network.lan_searching": "ไม่มีอุปกรณ์ Airhop บนเครือข่ายนี้",
   "settings.network.lan_active": "เชื่อมต่อบนเครือข่ายนี้",
-  "settings.network.lan_unavailable": "ไม่ได้อยู่บนเครือข่าย WiFi",
+  "settings.network.lan_unavailable": "ไม่ได้อยู่บนเครือข่าย Wi-Fi",
   "settings.network.lan_permission":
     "การเข้าถึงเครือข่ายภายในถูกปิดสำหรับ Airhop",
   "settings.network.lan_unsupported": "ใช้ไม่ได้บนอุปกรณ์นี้",
@@ -1904,7 +1916,7 @@ export const strings: Strings = {
   "settings.network.wifi_aware_desc":
     "โอนรูปภาพและไฟล์ได้เร็วขึ้นระหว่างโทรศัพท์สองเครื่องบนแพลตฟอร์มเดียวกัน บลูทูธยังคงส่งทุกอย่างได้อยู่ดี",
   "settings.network.wifi_unstable":
-    "หยุดชั่วคราว มันรบกวน Wi-Fi บนโทรศัพท์เครื่องนี้ซ้ำๆ ปิดแล้วเปิดใหม่เพื่อลองอีกครั้ง",
+    "หยุดชั่วคราว มันรบกวน Wi-Fi บนโทรศัพท์เครื่องนี้ซ้ำ ๆ ปิดแล้วเปิดใหม่เพื่อลองอีกครั้ง",
   "settings.network.wifi_pair": "การจับคู่",
   "settings.network.wifi_paired": "อุปกรณ์ที่จับคู่แล้ว",
   "settings.network.wifi_pair_find": "ค้นหาอุปกรณ์",
@@ -1917,7 +1929,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action": "ทำให้ iPhone เครื่องนี้ค้นพบได้",
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware ไม่พร้อมใช้งานในขณะนี้",
-  "settings.network.wifi_pair_forget": "ลบการจับคู่ในแอป Settings",
+  "settings.network.wifi_pair_forget": "ลบการจับคู่ในแอปการตั้งค่า",
   "settings.network.bitchat": "ความเข้ากันได้กับ bitchat",
   "settings.network.bitchat_desc":
     "เมช BLE เดียวกันกับ bitchat ทำงานร่วมกันได้อย่างสมบูรณ์ สิ่งนี้เปิดอยู่เสมอและปิดไม่ได้",
@@ -1935,7 +1947,7 @@ export const strings: Strings = {
   "settings.conn.autostart_desc": "เริ่มเมชใหม่หลังโทรศัพท์ของคุณรีสตาร์ท",
   "settings.conn.autostart_on_title": "เริ่ม Airhop หลังรีสตาร์ทหรือไม่",
   "settings.conn.autostart_on_body":
-    "Airhop จะเริ่มทำงานเองและกลับเข้าร่วมเมชอีกครั้งเมื่อโทรศัพท์ของคุณรีสตาร์ทครั้งถัดไป โดยไม่มีการแจ้งเตือนใดๆ จนกว่าจะเกิดขึ้น ผู้ผลิตโทรศัพท์บางรายบล็อกสิ่งนี้ไว้ เว้นแต่คุณจะอนุญาตในการตั้งค่าแบตเตอรี่ของพวกเขาด้วย",
+    "Airhop จะเริ่มทำงานเองและกลับเข้าร่วมเมชอีกครั้งเมื่อโทรศัพท์ของคุณรีสตาร์ทครั้งถัดไป โดยไม่มีการแจ้งเตือนใด ๆ จนกว่าจะเกิดขึ้น ผู้ผลิตโทรศัพท์บางรายบล็อกสิ่งนี้ไว้ เว้นแต่คุณจะอนุญาตในการตั้งค่าแบตเตอรี่ของพวกเขาด้วย",
   "settings.conn.autostart_off_title": "หยุดเริ่มหลังรีสตาร์ทหรือไม่",
   "settings.conn.autostart_off_body":
     "Airhop จะปิดอยู่หลังโทรศัพท์ของคุณรีสตาร์ท จนกว่าคุณจะเปิดเอง",
@@ -2280,7 +2292,7 @@ export const strings: Strings = {
     "ดาวน์โหลดไม่สำเร็จ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} มีขนาด {size} KiB เกินขีดจำกัด {cap} KiB",
+  "transfer.too_large": "{kind} มีขนาด {size} เกินขีดจำกัด {cap}",
   "transfer.failed.malformed":
     "ไฟล์แนบมาถึงในสภาพเสียหายและเปิดไม่ได้ ขอให้พวกเขาส่งมาใหม่",
   "transfer.failed.unsupported_type": "ไฟล์แนบมาถึงในรูปแบบที่แอปนี้เปิดไม่ได้",
@@ -2289,10 +2301,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "ไฟล์แนบมาถึงแต่บันทึกไม่ได้ ตรวจสอบพื้นที่ว่างของคุณ",
   "transfer.badge.waiting": "กำลังรอ · {name}",
-  "transfer.badge.active_count": "{count} การถ่ายโอน",
   "transfer.badge.sending": "กำลังส่ง {name}",
   "transfer.badge.receiving": "กำลังรับ {name}",
-  "transfer.badge.a11y": "{label}, {percent} เปอร์เซ็นต์ เปิดบทสนทนา",
   "transfer.kind.photo": "รูปภาพ",
   "transfer.kind.video": "วิดีโอ",
   "transfer.kind.voice": "ข้อความเสียง",
@@ -2325,6 +2335,7 @@ export const strings: Strings = {
   "notif.preview.video": "🎥 วิดีโอ",
   "notif.preview.document": "📄 เอกสาร",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "ข้อความใหม่",
   "notif.hidden.channel": "กิจกรรมใหม่",
@@ -2336,6 +2347,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count} นาทีที่แล้ว",
+  },
+  "format.hours_ago": {
+    other: "{count} ชั่วโมงที่แล้ว",
+  },
+  "format.days_ago": {
+    other: "{count} วันที่แล้ว",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "แสดงอีก {count} รายการ",
@@ -2376,6 +2398,44 @@ export const plurals: Plurals = {
     other: "{count} คนกำลังพูด",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "อีก {count} รายการรอส่ง",
+  },
+  "chat.thread.across_bridge": {
+    other: "อีกฝั่งของบริดจ์ {count} คน",
+  },
+  "chat.thread.go_back_unread": {
+    other: "กลับ ยังไม่อ่าน {count} รายการ",
+  },
+  "chat.thread.notices_new": {
+    other: "ประกาศสำหรับช่องนี้ ใหม่ {count} รายการ",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "ข้ามไปยังข้อความล่าสุด ใหม่ {count} ข้อความ",
+  },
+  "chat.board.urgent_many": {
+    other: "ประกาศด่วนใหม่ {count} รายการ · เปิดประกาศ",
+  },
+  "chat.info.add_count": {
+    other: "เพิ่ม {count} คน",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "จางหายในอีก {count} ชั่วโมง",
+  },
+  "chat.notices.fades_in_days": {
+    other: "จางหายในอีก {count} วัน",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "มีการแจ้งเตือน {count} รายการในรายการนี้ การล้างจะนำออกจากที่นี่เท่านั้น และข้อความจะยังไม่ถูกอ่านอยู่ในบทสนทนาของมัน การทำเครื่องหมายว่าอ่านทั้งหมดจะล้างทั้งสองอย่าง",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "ล้างการแจ้งเตือนทั้งหมด {count} รายการ",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "อยู่ในระยะ {count} เครื่อง",
@@ -2393,16 +2453,24 @@ export const plurals: Plurals = {
     other: "สมาชิก {count} คน",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "บริดจ์เมชเปิดอยู่ · อีกฝั่งของบริดจ์ {count} คน",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} ถือ {balance} {unit} อยู่ใน {count} เหรียญ การลบออกจะลบเหรียญเหล่านั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
+      "{mint} ถือ {balance} {unit} ในเหรียญ {count} เหรียญ การลบออกจะลบยอดนั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
+  },
+  "wallet.mint.split_across": {
+    other: "ยอดคงเหลือกระจายอยู่ในมินต์ {count} แห่ง ย้ายไปรวมที่เดียว",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
     other:
-      "{count} รายการฝากกำลังรอการชำระเงิน ระบบจะตรวจสอบอีกครั้งทุกครั้งที่เปิดแอป",
+      "รายการเติมเงิน {count} รายการกำลังรอการชำระเงิน ระบบจะตรวจสอบอีกครั้งทุกครั้งที่เปิดแอป",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2432,8 +2500,31 @@ export const plurals: Plurals = {
     other: "เหรียญ {count} เหรียญถูกใช้ไปแล้วและถูกลบออก",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "เปิดลิงก์วิทยุอยู่ {count} ลิงก์",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count} วินาที",
+  },
+  "settings.network.custom_added": {
+    other: "เพิ่มแล้ว {count} จาก {max}",
+  },
+  "settings.network.relay_limit": {
+    other: "คุณเพิ่มรีเลย์ได้ {count} แห่ง นำออกหนึ่งแห่งเพื่อเพิ่มอีกแห่ง",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "การถ่ายโอน {count} รายการ",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}, {count} เปอร์เซ็นต์ เปิดบทสนทนา",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "มีคนอยู่ใกล้",
     other: "มี {count} คนอยู่ใกล้",
   },
 };

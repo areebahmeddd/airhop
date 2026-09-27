@@ -16,9 +16,16 @@
 //                    script's punctuation.
 //   Placeholders     Named (`{count}`), never positional. Anything inside them
 //                    is user content and is never translated.
-//   Plurals          Through `tPlural`, never by appending to a stem. Counts
+//   Plurals          Through `tPlural`, never by appending to a stem, and
+//                    every string that carries a count is one. Counts
 //                    measured in bytes say so: a UTF-8 budget is not characters,
 //                    since one emoji spends four.
+//   Exactly one      `one` always shows `{count}`, since in many languages it
+//                    covers 21 or 5 as well. Wording that means exactly one
+//                    ("Someone nearby") is the `=1` form.
+//   Whole sentences  A value is never a fragment spliced into another string:
+//                    a label lower-cased into a sentence, or a reason clause.
+//                    Give each case its own key.
 //   Never in here    Anything that crosses the wire or derives an identity: the
 //                    username word lists, the transmitted /hug and /slap text
 //                    (bitchat matches it as an English substring), command
@@ -60,9 +67,6 @@ export const strings = {
   // ---- Dates ----
   "format.today": "Today",
   "format.yesterday": "Yesterday",
-  "format.minutes_ago": "{count}m ago",
-  "format.hours_ago": "{count}h ago",
-  "format.days_ago": "{count}d ago",
   "format.just_now": "just now",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -282,6 +286,7 @@ export const strings = {
   "chat.group_badge": "Group",
   "chat.more": "More",
   "chat.no_messages": "No messages yet",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "No one nearby",
   "chat.presence.active_none": "No one active",
   "chat.you": "You",
@@ -353,7 +358,8 @@ export const strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Could not open that cell. Try again in a moment.",
   "chat.jump.title": "Go to a place",
-  "chat.jump.saved": "SAVED PLACES",
+  "chat.jump.saved": "Saved places",
+  "chat.jump.nearby": "Nearby",
   "chat.jump.anywhere":
     "Open a public location channel anywhere, even a place you are not.",
   "chat.jump.geohash_note":
@@ -363,7 +369,22 @@ export const strings = {
   "chat.jump.level_cell": "{level} cell",
   "chat.jump.already_here":
     "You are already here. Go opens your {name} channel.",
-  "chat.jump.open_direction": "Open the cell to your {direction}",
+  "chat.jump.dir.n": "N",
+  "chat.jump.dir.ne": "NE",
+  "chat.jump.dir.e": "E",
+  "chat.jump.dir.se": "SE",
+  "chat.jump.dir.s": "S",
+  "chat.jump.dir.sw": "SW",
+  "chat.jump.dir.w": "W",
+  "chat.jump.dir.nw": "NW",
+  "chat.jump.open_n": "Open the cell to the north",
+  "chat.jump.open_ne": "Open the cell to the north-east",
+  "chat.jump.open_e": "Open the cell to the east",
+  "chat.jump.open_se": "Open the cell to the south-east",
+  "chat.jump.open_s": "Open the cell to the south",
+  "chat.jump.open_sw": "Open the cell to the south-west",
+  "chat.jump.open_w": "Open the cell to the west",
+  "chat.jump.open_nw": "Open the cell to the north-west",
   "chat.jump.open_place": "Open {name}",
   "chat.jump.remove_place": "Remove {name} from saved places",
   "chat.jump.go": "Go",
@@ -392,7 +413,7 @@ export const strings = {
     "Up to 16 people, chosen by you. There is no invite link, so nobody joins by being forwarded one.",
   "chat.group.bluetooth":
     "Bluetooth only. Members out of range receive messages once they are back.",
-  "chat.group.members_label": "MEMBERS",
+  "chat.group.members_label": "Members",
   "chat.group.none_in_range":
     "No one is in range. Members must be nearby when you create the group.",
   "chat.group.create_title": "Create a group",
@@ -481,18 +502,13 @@ export const strings = {
   "chat.thread.cancel_transfer": "Cancel {name}",
   "chat.thread.hide_transfer": "Hide progress",
   "chat.thread.hide_transfer_hint": "The file still arrives",
-  "chat.thread.queued_more": "{count} more waiting to send",
-  "chat.thread.across_bridge": "{count} across bridge",
   "chat.thread.bridged": "bridged",
   "chat.thread.invite_body":
     "Join me in {channel} on Airhop — offline-first, private mesh messaging.",
-  "chat.thread.go_back_unread": "Go back, {count} unread",
   "chat.thread.view_info": "View info for {name}",
-  "chat.thread.notices_new": "Notices for this channel, {count} new",
   "chat.board.urgent_one": "Urgent notice from {author} · {content}",
-  "chat.board.urgent_many": "{count} new urgent notices · open Notices",
+  "chat.board.urgent_one_anon": "Urgent notice · {content}",
   "chat.thread.say_something": "Say something in {channel}.",
-  "chat.thread.jump_latest_new": "Jump to latest message, {count} new",
   "chat.thread.unconfirmed_since": "No delivery confirmed since {date}",
   "chat.thread.no_reach": "No peers nearby · nobody received this yet",
   "chat.thread.channel_needs_internet":
@@ -528,7 +544,7 @@ export const strings = {
   "chat.screenshot.you_took": "You took a screenshot",
   "chat.screenshot.you_took_private": "You took a screenshot · nobody was told",
   "chat.screenshot.heads_up": "Heads up",
-  "chat.screenshot.notice": "* {name} took a screenshot *",
+  "chat.screenshot.peer_took": "{name} took a screenshot",
   "chat.screenshot.notified_dm":
     "{name} was notified that you took a screenshot of this conversation.",
   "chat.screenshot.notified":
@@ -573,7 +589,7 @@ export const strings = {
   "chat.attach.document": "Document",
   "chat.attach.document_desc": "Send any file or PDF",
   "chat.attach.voice": "Voice note",
-  "chat.attach.voice_desc": "Record and send a voice message",
+  "chat.attach.voice_desc": "Record and send a voice note",
   "chat.attach.ecash": "Send ecash",
   "chat.attach.ecash_desc": "Send Cashu sats from your wallet",
   "chat.attach.location": "Location",
@@ -581,7 +597,7 @@ export const strings = {
   "chat.attach.title": "Attach",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Shared a location",
+  "chat.location.sent_summary": "Location shared",
   "chat.location.received_summary": "Shared their location",
   "chat.location.title": "Location",
   "chat.location.away": "{distance} {direction}",
@@ -612,15 +628,15 @@ export const strings = {
   "chat.location.direction.nw": "north-west",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Rang",
+  "chat.ring.sent_summary": "Ring sent",
   "chat.ring.received_summary": "Rang you",
   "chat.ring.alert.title": "{sender} is ringing",
   "chat.ring.alert.body": "Check your messages",
   "chat.ring.alert.open": "Open",
   "chat.ring.alert.snooze": "Snooze for 1 hour",
-  "chat.ring.sent_snoozed": "Rang, snoozed",
-  "chat.ring.sent_too_soon": "Rang, too soon",
-  "chat.ring.sent_not_allowed": "Rang, not allowed",
+  "chat.ring.sent_snoozed": "Ring sent · snoozed",
+  "chat.ring.sent_too_soon": "Ring sent · too soon",
+  "chat.ring.sent_not_allowed": "Ring sent · not allowed",
 
   "chat.attach.send_anyway": "Send anyway",
   "chat.attach.bitchat_too_big": "This may not arrive",
@@ -695,6 +711,7 @@ export const strings = {
   "chat.voice.stop_send": "Stop recording and send",
   "chat.voice.lift_lock": "Slide up to record hands-free",
   "chat.voice.live_speaking": "{name} speaking",
+  "chat.voice.live_ended": "Ended",
   "voice.unavailable": "Live voice not available",
   "voice.recording_stopped": "Recording stopped",
 
@@ -753,7 +770,6 @@ export const strings = {
   "chat.info.message_member": "Message {name}",
   "chat.info.remove_member_a11y": "Remove {name}",
   "chat.info.no_addable": "No reachable peers to add. Members must be nearby.",
-  "chat.info.add_count": "Add {count}",
   "chat.info.teleported_tag": "{level}  ·  teleported",
   "chat.info.active": "Active",
   "chat.info.members": "Members",
@@ -836,8 +852,6 @@ export const strings = {
   "chat.notices.3_days": "3 days",
   "chat.notices.7_days": "7 days",
   "chat.notices.fading": "fading",
-  "chat.notices.fades_in_hours": "fades in {count}h",
-  "chat.notices.fades_in_days": "fades in {count}d",
   "chat.notices.scope_geo": "Geo",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Urgent",
@@ -853,10 +867,20 @@ export const strings = {
   "chat.search.links": "Links",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Filter by {filter}",
-  "chat.search.no_matches": "No {filter} matching “{query}”",
-  "chat.search.no_media": "No {filter} yet",
+  "chat.search.no_photos": "No photos yet",
+  "chat.search.no_videos": "No videos yet",
+  "chat.search.no_audio": "No audio yet",
+  "chat.search.no_documents": "No documents yet",
+  "chat.search.no_links": "No links yet",
+  "chat.search.no_ecash": "No ecash yet",
+  "chat.search.no_photos_matching": "No photos matching “{query}”",
+  "chat.search.no_videos_matching": "No videos matching “{query}”",
+  "chat.search.no_audio_matching": "No audio matching “{query}”",
+  "chat.search.no_documents_matching": "No documents matching “{query}”",
+  "chat.search.no_links_matching": "No links matching “{query}”",
+  "chat.search.no_ecash_matching": "No ecash matching “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} from {sender}",
-  "chat.search.you": "you",
+  "chat.search.result_mine_a11y": "{chat}, {kind} you sent",
   "chat.search.section_chats": "Chats",
   "chat.search.section_messages": "Messages",
   "chat.search.section_notices": "Notices",
@@ -864,15 +888,13 @@ export const strings = {
   "chat.search.no_results": "No results for “{query}”",
   "chat.search.open_chat": "Open {name}",
   "chat.search.message_a11y": "{chat}, message from {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, your message: {snippet}",
   "chat.search.notice_a11y": "Notice in {chat} from {author}: {snippet}",
   "chat.search.urgent": "Urgent ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} in this list. Clearing removes them from here only, and the messages stay unread in their conversations. Marking all read clears both.",
   "chat.notif.mark_all_read": "Mark all read",
   "chat.notif.clear_list": "Clear list",
-  "chat.notif.clear_all_a11y": "Clear all {count} notifications",
   "chat.notif.title": "Notifications",
   "chat.notif.clear_short": "Clear",
   "chat.notif.close": "Close notifications",
@@ -895,12 +917,15 @@ export const strings = {
   "chat.forward.locations": "Locations",
   "chat.forward.dms": "Direct messages",
   "chat.forward.none": "No other chats yet",
+  "chat.forward.app_row": "Not forwarded",
+  "chat.forward.app_row_body":
+    "This line is from Airhop, not from a person, so there is nothing to pass on.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Starting the mesh…",
   "mesh.banner.no_bluetooth": "No Bluetooth on this device · internet only",
   "mesh.banner.bluetooth_off": "Bluetooth off · mesh unavailable",
-  "mesh.banner.bluetooth_off_wifi": "Bluetooth off · mesh running over WiFi",
+  "mesh.banner.bluetooth_off_wifi": "Bluetooth off · mesh running over Wi-Fi",
   "mesh.banner.permission_needed": "Bluetooth permission needed",
   "mesh.banner.blocked": "Bluetooth blocked · allow it in Settings",
   "mesh.banner.location_permission": "Location needed to find peers",
@@ -927,7 +952,6 @@ export const strings = {
   "mesh.banner.bridge": "Mesh bridge on · public chat linked",
   "mesh.banner.background_limits":
     "{brand} may pause the mesh in the background",
-  "mesh.banner.bridge_across": "Mesh bridge on · {count} across the bridge",
   "mesh.banner.action.turn_on": "Turn on",
   "mesh.banner.action.allow": "Allow",
   "mesh.banner.action.resume": "Resume",
@@ -1000,7 +1024,7 @@ export const strings = {
   "mesh.peer.view_peer_online": "View peer {name}, online",
   "mesh.peer.view_relay_online": "View peer {name}, online, relay node",
   "mesh.peer.last_seen_at": "Last seen {ago}",
-  "mesh.peer.send_amount": "Send {amount} sats",
+  "mesh.peer.send_unit_amount": "Send {amount} {unit}",
   "mesh.peer.direct": "Direct connection",
   "mesh.peer.check_distance": "Check distance",
   "mesh.peer.checking": "Checking",
@@ -1070,7 +1094,7 @@ export const strings = {
   "wallet.send.qr_too_big_short":
     "This token is split across too many coins to fit in a QR code. Share or copy it instead.",
   "wallet.send.scan_note":
-    "Have them scan this from their wallet. Still reclaimable until you mark it delivered.",
+    "Have them scan this from their wallet. Still reclaimable until you mark it as received.",
   "wallet.send.mesh_note":
     "The token goes out as an encrypted DM over the mesh. No internet needed.",
   "wallet.send.no_peers_note":
@@ -1091,7 +1115,7 @@ export const strings = {
   "wallet.send.open_in_wallet_short": "Open in wallet",
   "wallet.send.to_peer": "Send token to a nearby peer",
   "wallet.send.to_peer_short": "Send to peer",
-  "wallet.send.mark_delivered": "Mark delivered and finish",
+  "wallet.send.mark_delivered": "Mark as received",
   "wallet.send.they_got_it": "They got it",
   "wallet.send.keep_pending": "Keep this send pending",
   "wallet.send.decide_later": "Decide later",
@@ -1115,10 +1139,10 @@ export const strings = {
   "wallet.receive.memo_quoted": "\n\n\u201c{memo}\u201d",
   "wallet.receive.redeemed_at":
     "Redeemed at {mint}. It is provably yours now: the sender’s copy of this token no longer works.",
-  "wallet.receive.stored_pending":
-    "Stored from {mint}, but the mint has not confirmed it is unspent yet{dleq}. It is confirmed with the mint automatically once you are online.",
-  "wallet.receive.dleq_inline":
-    " (its signature does check out, so the token is genuine)",
+  "wallet.receive.pending_unconfirmed":
+    "Stored from {mint}, but the mint has not confirmed it is unspent yet. It is confirmed with the mint automatically once you are online.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Stored from {mint}, but the mint has not confirmed it is unspent yet. Its signature checks out, so the token is genuine. It is confirmed with the mint automatically once you are online.",
   "wallet.receive.dleq_ok":
     "The mint’s signature checks out, so the token is genuine.",
   "wallet.receive.dleq_uncached":
@@ -1181,8 +1205,6 @@ export const strings = {
   "wallet.mint.consolidate": "Move all balances to one mint",
   "wallet.mint.confirm_with": "Check balance with {mint}",
   "wallet.mint.available_amount": "{amount} {unit} available",
-  "wallet.mint.split_across":
-    "Balance split across {count} mints. Move it to one.",
   "wallet.mint.move_everything_to": "Move everything to {mint}",
   "wallet.mint.consolidate_title": "Move to one mint",
   "wallet.mint.moving": "Moving…",
@@ -1193,10 +1215,11 @@ export const strings = {
   "wallet.mint.nothing_moved": "Nothing moved",
   "wallet.mint.move_pending": "On its way",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} left {mint} and is on its way to {target}. It arrives once the deposit is claimed, which the wallet keeps retrying.",
+    "{amount} {unit} left {mint} and is on its way to {target}. It arrives once the transfer is claimed, which the wallet keeps retrying.",
   "wallet.mint.destination": "· destination",
   "wallet.mint.will_move": "· will be moved",
   "wallet.mint.issued_by": "Issued by",
+  "wallet.mint.test_badge": "Test",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop wallet top-up",
@@ -1222,7 +1245,7 @@ export const strings = {
   "wallet.ln.up_to": "up to {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Pay {amount} {unit}",
-  "wallet.ln.deposit_title": "Deposit over Lightning",
+  "wallet.ln.deposit_title": "Top up over Lightning",
   "wallet.ln.amount_placeholder": "Amount in sats",
   "wallet.ln.requesting": "Requesting…",
   "wallet.ln.get_invoice": "Get invoice",
@@ -1344,7 +1367,7 @@ export const strings = {
   "wallet.reclaim.claimed_body":
     "The mint says this token was already redeemed, so the {amount} {unit} reached them and nothing came back to your balance.",
   "wallet.copied.token_body":
-    "The token is on your clipboard. It stays reserved here until you mark it delivered, so you can paste it again if the first attempt fails.",
+    "The token is on your clipboard. It stays reserved here until you mark it as received, so you can paste it again if the first attempt fails.",
   "wallet.copied.refused_token_body":
     "The token is on your clipboard. This wallet no longer counts it, so you can give it back to whoever sent it.",
   "wallet.copied.phrase_body":
@@ -1371,8 +1394,8 @@ export const strings = {
   "wallet.pending.show_qr": "Show this token as a QR code",
   "wallet.pending.copy_again": "Copy the token again",
   "wallet.pending.share_again": "Share the token again",
-  "wallet.pending.mark_delivered": "Mark this token as delivered",
-  "wallet.pending.delivered": "Delivered",
+  "wallet.pending.mark_delivered": "Mark as received",
+  "wallet.pending.delivered": "Received",
   "wallet.pending.reclaim_into": "Reclaim this token into your balance",
   "wallet.activity.title": "Activity",
   "wallet.activity.none": "Nothing yet",
@@ -1390,7 +1413,7 @@ export const strings = {
   "wallet.activity.status_failed": "failed",
   "wallet.activity.status_reclaimed": "reclaimed",
   "wallet.activity.status_expired": "expired",
-  "wallet.activity.ln_deposit": "Lightning deposit",
+  "wallet.activity.ln_deposit": "Lightning top-up",
   "wallet.activity.ln_withdrawal": "Lightning withdrawal",
   "wallet.activity.nutzap_received": "Nutzap received",
   "wallet.activity.nutzap_claiming": "Nutzap, claiming",
@@ -1433,13 +1456,20 @@ export const strings = {
     "Locked payments cannot be reclaimed: only their key can spend these coins now.",
   "wallet.pay.reclaimable":
     "It stays reclaimable in Activity until you confirm it arrived.",
-  "wallet.pay.why": "Sent this way because {reason}.",
+  "wallet.pay.why_no_relay":
+    "Sent this way because there was no relay connection.",
+  "wallet.pay.why_no_shared_mint":
+    "Sent this way because you do not hold enough at any mint they accept.",
+  "wallet.pay.why_no_nutzap_info":
+    "Sent this way because the recipient has not published nutzap info (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} to {name}",
   "wallet.pay.thread_receipt": "You sent {amount} {unit}, locked to their key.",
   "wallet.pay.title": "Send ecash",
   "wallet.pay.to": "To {name}",
   "wallet.pay.amount": "Amount in sats",
-  "wallet.pay.memo": "Note (optional, public)",
+  "wallet.pay.memo": "Memo (optional, public)",
   "wallet.pay.send": "Send",
   "wallet.pay.sending": "Sending…",
   "wallet.pay.action": "Send ecash",
@@ -1574,19 +1604,19 @@ export const strings = {
     "Nothing was deducted. Try again and the wallet will pick a different set.",
   "wallet.svc.no_ecash": "No ecash yet.",
   "wallet.svc.no_ecash_body":
-    "Add a mint and deposit over Lightning, or receive a token from someone.",
+    "Add a mint and top up over Lightning, or receive a token from someone.",
   "wallet.svc.split_across_mints": "Your balance is split across mints.",
   "wallet.svc.mint_says_spent":
     "The mint reported this ecash as already spent.",
   "wallet.svc.issue_against_invoice": "issue ecash against a Lightning invoice",
   "wallet.svc.pay_invoice": "pay a Lightning invoice",
-  "wallet.svc.unknown_deposit": "Unknown deposit.",
+  "wallet.svc.unknown_deposit": "Unknown top-up.",
   "wallet.svc.invoice_expired_before":
     "The invoice expired before it was paid.",
   "wallet.svc.invoice_expired": "That invoice expired.",
   "wallet.svc.invoice_unpaid": "The invoice has not been paid yet.",
-  "wallet.svc.payment_unknown":
-    "Payment status unknown; checked again on next refresh.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Payment status unknown; checked again on next refresh.",
   "wallet.svc.melt_change_pending": "Your invoice was paid.",
   "wallet.svc.melt_change_pending_body":
     "The mint has not returned the unused routing fee yet. It is claimed automatically on the next refresh, and nothing is lost in the meantime.",
@@ -1625,16 +1655,12 @@ export const strings = {
   "wallet.svc.unknown_mint": "That payment names a mint you do not use.",
   "wallet.svc.unknown_mint_body":
     "Add the mint yourself first if you trust it; nothing is redeemed from a mint you have not chosen.",
-  "wallet.svc.no_relay": "no relay connection",
-  "wallet.svc.no_shared_mint": "no shared mint with enough balance",
-  "wallet.svc.no_nutzap_info":
-    "recipient has not published nutzap info (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Locked to their key but not yet delivered. Share the token from this transaction to complete it.",
   "wallet.svc.swap_lost":
     "The mint never completed this swap, so nothing was issued against it.",
   "wallet.svc.mint_lost":
-    "The mint issued this deposit, but its coins could not be rebuilt. Restoring from your recovery phrase recovers them.",
+    "The mint issued this top-up, but its coins could not be rebuilt. Restoring from your recovery phrase recovers them.",
   "wallet.svc.swap_unreadable":
     "This swap was saved in a form this version cannot replay.",
   "wallet.svc.lock_in_doubt": "This payment may or may not have gone through.",
@@ -1730,10 +1756,10 @@ export const strings = {
   "settings.coming_soon": "Coming soon",
   "settings.opens_externally": "{label}, opens outside the app",
   "settings.peer_id": "Peer ID",
-  "settings.share_peer_id": "Share your Peer ID",
+  "settings.share_peer_id": "Share your peer ID",
   "settings.share_id_short": "Share ID",
   "settings.share_app": "Share the Airhop app",
-  "settings.share_app_short": "Share App",
+  "settings.share_app_short": "Share app",
   "settings.share_app_dialog": "Get Airhop",
   "settings.share_app_unsupported": "Can’t share this install",
   "settings.share_app_unsupported_body":
@@ -1758,7 +1784,7 @@ export const strings = {
     "Forward secrecy, signed packets, blocked peers",
   "settings.section.network": "Network & relays",
   "settings.section.network_desc":
-    "Internet fallback, nostr relays, bitchat compatibility",
+    "Internet fallback, Nostr relays, bitchat compatibility",
   "settings.section.permissions": "Permissions",
   "settings.section.permissions_desc":
     "Bluetooth, location, notifications, camera, mic",
@@ -1805,12 +1831,10 @@ export const strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "No signal reading",
   "settings.diag.no_peers": "Nobody in range",
-  "settings.diag.no_peers_desc": "{links} radio link(s) open",
   "settings.diag.gcs_size": "Filter size",
   "settings.diag.gcs_size_desc": "Largest sync filter put on the air",
   "settings.diag.fpr": "False positive rate",
   "settings.diag.fpr_desc": "How often the filter claims a packet we lack",
-  "settings.diag.bytes": "{n} bytes",
   "settings.diag.footnote":
     "Nothing here can be changed. These values are fixed so Airhop stays compatible with bitchat.",
   "settings.diag.share": "Share diagnostics",
@@ -1830,7 +1854,6 @@ export const strings = {
   "settings.general.undo": "Undo send",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Wallet",
-  "settings.general.undo_seconds": "{count} seconds",
   "settings.general.undo_a11y": "Undo send: {value}",
   "settings.general.quality_a11y": "Set upload quality to {value}",
   "settings.general.undo_desc":
@@ -1920,7 +1943,6 @@ export const strings = {
   "settings.network.custom": "Custom relays",
   "settings.network.custom_desc":
     "Add your own relays for location channels and the mesh bridge",
-  "settings.network.custom_added": "{count} of {max} added",
   "settings.network.dm_relays": "Message relays",
   "settings.network.dm_relays_desc":
     "Direct messages and private channels always use these. Custom relays do not change them.",
@@ -1930,17 +1952,15 @@ export const strings = {
   "settings.network.add_relay": "Add relay",
   "settings.network.remove_relay": "Remove {url}",
   "settings.network.add_short": "Add",
-  "settings.network.relay_limit":
-    "You can add {count} relays. Remove one to add another.",
   "settings.network.relay_duplicate": "That relay is already in your list.",
   "settings.network.relay_invalid":
     "Enter a valid relay host, e.g. relay.example.com. A port is only needed if the relay does not use the default. IP addresses and local names are not allowed.",
   "settings.network.lan": "Local network",
   "settings.network.lan_desc":
-    "Reach people on the same WiFi, including across iPhone and Android. Other devices on the network can see that you are running Airhop.",
+    "Reach people on the same Wi-Fi, including across iPhone and Android. Other devices on the network can see that you are running Airhop.",
   "settings.network.lan_searching": "No Airhop devices on this network",
   "settings.network.lan_active": "Connected on this network",
-  "settings.network.lan_unavailable": "Not on a WiFi network",
+  "settings.network.lan_unavailable": "Not on a Wi-Fi network",
   "settings.network.lan_permission": "Local network access is off for Airhop",
   "settings.network.lan_unsupported": "Not available on this device",
   "settings.network.lan_foreground":
@@ -2080,7 +2100,7 @@ export const strings = {
     "Send photos from your library and save received media. Without it, you can still take and send new photos with the camera.",
   "settings.permissions.microphone": "Microphone",
   "settings.permissions.microphone_desc":
-    "Record and send voice messages or use live voice. Without it, voice messages and live voice won’t work.",
+    "Record and send voice notes or use live voice. Without it, voice notes and live voice won’t work.",
   "settings.permissions.allow": "Allow this permission",
   "settings.permissions.open_settings":
     "Open system settings to change this permission",
@@ -2330,7 +2350,7 @@ export const strings = {
     "Download failed. Check your connection and try again.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} is {size} KiB, over the {cap} KiB limit.",
+  "transfer.too_large": "{kind} is {size}, over the {cap} limit.",
   "transfer.failed.malformed":
     "An attachment arrived damaged and could not be opened. Ask them to send it again.",
   "transfer.failed.unsupported_type":
@@ -2340,10 +2360,8 @@ export const strings = {
   "transfer.failed.storage":
     "An attachment arrived but could not be saved. Check your free space.",
   "transfer.badge.waiting": "Waiting · {name}",
-  "transfer.badge.active_count": "{count} transfers",
   "transfer.badge.sending": "Sending {name}",
   "transfer.badge.receiving": "Receiving {name}",
-  "transfer.badge.a11y": "{label}, {percent} percent. Open conversation.",
   "transfer.kind.photo": "Photo",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Voice note",
@@ -2372,10 +2390,11 @@ export const strings = {
   "notif.notice": "Notice · {content}",
   "notif.incoming_file": "Incoming file",
   "notif.preview.photo": "📷 Photo",
-  "notif.preview.voice": "🎤 Voice message",
+  "notif.preview.voice": "🎤 Voice note",
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Document",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "New message",
   "notif.hidden.channel": "New activity",
@@ -2389,8 +2408,23 @@ export const strings = {
 // Plural forms live apart from the flat strings because plural categories are
 // per-language: English needs one/other, Russian one/few/many/other, Arabic all
 // six. A locale supplies only the categories its language uses, and `other` is
-// required everywhere. See `locales/types.ts`.
+// required everywhere, plus `=1` exactly where English has one. See
+// `locales/types.ts`.
 export const plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} minute ago",
+    other: "{count} minutes ago",
+  },
+  "format.hours_ago": {
+    one: "{count} hour ago",
+    other: "{count} hours ago",
+  },
+  "format.days_ago": {
+    one: "{count} day ago",
+    other: "{count} days ago",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Show {count} more",
@@ -2443,6 +2477,55 @@ export const plurals = {
     other: "{count} speaking",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "{count} more waiting to send",
+    other: "{count} more waiting to send",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} person across the bridge",
+    other: "{count} people across the bridge",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Go back, {count} unread",
+    other: "Go back, {count} unread",
+  },
+  "chat.thread.notices_new": {
+    one: "Notices for this channel, {count} new",
+    other: "Notices for this channel, {count} new",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Jump to latest message, {count} new",
+    other: "Jump to latest message, {count} new",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} new urgent notice · open Notices",
+    other: "{count} new urgent notices · open Notices",
+  },
+  "chat.info.add_count": {
+    one: "Add {count}",
+    other: "Add {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "fades in {count} hour",
+    other: "fades in {count} hours",
+  },
+  "chat.notices.fades_in_days": {
+    one: "fades in {count} day",
+    other: "fades in {count} days",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "{count} notification in this list. Clearing removes it from here only, and the message stays unread in its conversation. Marking all read clears both.",
+    other:
+      "{count} notifications in this list. Clearing removes them from here only, and the messages stay unread in their conversations. Marking all read clears both.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Clear {count} notification",
+    other: "Clear all {count} notifications",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} peer in range",
@@ -2465,18 +2548,28 @@ export const plurals = {
     other: "{count} members",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Mesh bridge on · {count} person across the bridge",
+    other: "Mesh bridge on · {count} people across the bridge",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} holds {balance} {unit} in {count} coin. Removing it deletes that coin from this device permanently and there is no backup. Withdraw or send the balance first.",
+    one: "{mint} holds {balance} {unit} in {count} coin. Removing it deletes that balance from this device permanently and there is no backup. Withdraw or send the balance first.",
     other:
-      "{mint} holds {balance} {unit} in {count} coins. Removing it deletes those coins from this device permanently and there is no backup. Withdraw or send the balance first.",
+      "{mint} holds {balance} {unit} in {count} coins. Removing it deletes that balance from this device permanently and there is no backup. Withdraw or send the balance first.",
+  },
+  "wallet.mint.split_across": {
+    one: "Balance split across {count} mint. Move it to one.",
+    other: "Balance split across {count} mints. Move it to one.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} deposit waiting on payment. Checked again each time the app opens.",
+    one: "{count} top-up waiting on payment. Checked again each time the app opens.",
     other:
-      "{count} deposits waiting on payment. Checked again each time the app opens.",
+      "{count} top-ups waiting on payment. Checked again each time the app opens.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2485,9 +2578,9 @@ export const plurals = {
     other: "Recovered {count} unspent coins from {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "{count} coin was found but already spent, so nothing was credited for it. That is normal: every coin you have ever spent still appears in the records the mint keeps.",
+    one: "{count} coin was found but already spent, so nothing was credited. That is normal: every coin you have ever spent still appears in the records the mint keeps.",
     other:
-      "{count} coins were found but already spent, so nothing was credited for them. That is normal: every coin you have ever spent still appears in the records the mint keeps.",
+      "{count} coins were found but already spent, so nothing was credited. That is normal: every coin you have ever spent still appears in the records the mint keeps.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2513,9 +2606,38 @@ export const plurals = {
     other: "{count} coins were already spent and have been removed.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} radio link open",
+    other: "{count} radio links open",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} second",
+    other: "{count} seconds",
+  },
+  "settings.network.custom_added": {
+    one: "{count} of {max} added",
+    other: "{count} of {max} added",
+  },
+  "settings.network.relay_limit": {
+    one: "You can add {count} relay. Remove it to add another.",
+    other: "You can add {count} relays. Remove one to add another.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} transfer",
+    other: "{count} transfers",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} percent. Open conversation.",
+    other: "{label}, {count} percent. Open conversation.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Someone nearby",
+    "=1": "Someone nearby",
+    one: "{count} person nearby",
     other: "{count} people nearby",
   },
 } as const;

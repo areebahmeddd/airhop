@@ -5,9 +5,10 @@
 // Mesh, Wallet), the way WhatsApp shows an ongoing upload, and tapping it jumps
 // back to the conversation the transfer belongs to.
 
-import { t } from "@i18n";
+import { t, tPlural } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { useTransferStore } from "@store/transfer-store";
+import { formatPercent } from "@utils/format";
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
@@ -30,7 +31,10 @@ export default function TransferBadge({
   const transfers = useTransferStore((s) => s.transfers);
 
   const active = Object.values(transfers)
-    .filter((t) => t.status === "active" || t.status === "stalled")
+    .filter(
+      (transfer) =>
+        transfer.status === "active" || transfer.status === "stalled",
+    )
     .sort((a, b) => b.startedAtMs - a.startedAtMs);
 
   if (active.length === 0) return null;
@@ -47,7 +51,7 @@ export default function TransferBadge({
 
   const label =
     active.length > 1
-      ? t("transfer.badge.active_count", { count: active.length })
+      ? tPlural("transfer.badge.active_count", active.length)
       : stalled
         ? t("transfer.badge.waiting", { name: primary.name })
         : t(
@@ -62,7 +66,7 @@ export default function TransferBadge({
       style={styles.pill}
       onPress={() => onOpen(primary.channel)}
       accessibilityRole="button"
-      accessibilityLabel={t("transfer.badge.a11y", { label, percent: pct })}
+      accessibilityLabel={tPlural("transfer.badge.a11y", pct, { label })}
     >
       <Feather
         name={
@@ -77,7 +81,7 @@ export default function TransferBadge({
       />
       {/* Capped like the tab bar's labels: this is a fixed-height floating pill
           with a filename in it, so at the largest OS text size an uncapped label
-          burst the shape rather than becoming more readable. */}
+          would burst the shape rather than become more readable. */}
       <Text
         style={styles.label}
         numberOfLines={1}
@@ -86,7 +90,7 @@ export default function TransferBadge({
         {label}
       </Text>
       <Text style={styles.pct} maxFontSizeMultiplier={MaxFontScale.chrome}>
-        {pct}%
+        {formatPercent(pct / 100)}
       </Text>
       <View style={styles.track}>
         <View

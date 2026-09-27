@@ -200,13 +200,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "نہ انٹرنیٹ، نہ راؤٹر، انہی فونوں پر جو لوگوں کے پاس پہلے سے ہیں۔",
   "home.features.networking.lan.name": "مقامی نیٹ ورک",
-  "home.features.networking.lan.line": "مشترکہ WiFi یا ہاٹ اسپاٹ، iPhone اور Android ساتھ ساتھ۔",
+  "home.features.networking.lan.line": "مشترکہ Wi-Fi یا ہاٹ اسپاٹ، iPhone اور Android ساتھ ساتھ۔",
   "home.features.networking.hops.name": "ملٹی ہاپ ریلے",
   "home.features.networking.hops.line": "ہر فون پیغامات آگے بڑھاتا ہے، سات ہاپ تک۔",
   "home.features.networking.bridge.name": "میش پل",
   "home.features.networking.bridge.line":
     "آپ کی عوامی گفتگو کو حد سے باہر موجود قریبی ہجوم سے جوڑتا ہے۔",
-  "home.features.networking.wifi.name": "WiFi تیز راستہ",
+  "home.features.networking.wifi.name": "Wi-Fi تیز راستہ",
   "home.features.networking.wifi.line": "دو Android یا دو iPhone کے درمیان تیز منتقلی۔",
   "home.features.networking.bitchat.name": "bitchat کے ساتھ ہم آہنگ",
   "home.features.networking.bitchat.line":

@@ -28,6 +28,7 @@ import { Feather } from "@react-native-vector-icons/feather/static";
 import { internetOff, torClaimed } from "@services/network-gate";
 import PixelBird from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";
+import UpperText from "@ui/components/upper-text";
 import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import {
   FontSize,
@@ -35,7 +36,6 @@ import {
   LineHeight,
   Radius,
   Spacing,
-  TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
 import { File, Paths } from "expo-file-system";
@@ -308,9 +308,8 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   }
 
   const checking = check.status === "checking";
-  // When a newer release exists, the primary button becomes the download CTA:
-  // it opens the release page (notes + downloadable builds). The result line
-  // below still links the notes. Reopening the screen resets to a fresh check.
+  // Once a newer release is found, the primary button carries the update and
+  // the result line below links its notes. Reopening the screen starts over.
   const update = check.status === "update" ? check : null;
   const downloading = download.status === "downloading";
 
@@ -333,9 +332,9 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
             </Text>
             {bird ? (
               <View style={styles.codenameRow}>
-                <Text style={styles.codenameLabel}>
+                <UpperText style={styles.codenameLabel}>
                   {T("settings.version.codename")}
-                </Text>
+                </UpperText>
                 <Text style={styles.codenameName}>{bird}</Text>
               </View>
             ) : null}
@@ -477,7 +476,7 @@ function UpdateResult({
   }
 
   if (check.status === "update") {
-    // The button above is the download CTA; here we just link what's new.
+    // The button above carries the update; this links what is new in it.
     return (
       <Pressable
         style={styles.result}
@@ -534,9 +533,9 @@ function UpdateResult({
 
 const HERO_BIRD_CELL = 3;
 
-// A small black-and-white pixel heart, the same shape as the landing footer's,
-// drawn as a grid of square cells so it stays crisp at any density. Filled
-// cells take the current text color, so it reads correctly in both themes.
+// A small pixel heart, the same shape as the landing footer's, drawn as a grid
+// of square cells so it stays crisp at any density. Filled cells take the text
+// color, so it reads in both themes.
 const HEART_PIXELS = [
   [0, 1, 1, 0, 1, 1, 0],
   [1, 1, 1, 1, 1, 1, 1],
@@ -579,11 +578,6 @@ function PixelHeart({
 
 function createStyles(Colors: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
-    content: {
-      flexGrow: 1,
-      padding: Spacing.base,
-      paddingBottom: TAB_BAR_CLEARANCE,
-    },
     hero: {
       alignItems: "center",
       gap: Spacing.sm,
@@ -616,7 +610,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.5,
-      textTransform: "uppercase",
     },
     codenameName: {
       fontSize: FontSize.sm,

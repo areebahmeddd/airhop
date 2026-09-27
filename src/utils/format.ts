@@ -22,7 +22,7 @@ import {
   type BitcoinUnit,
   type TokenInfo,
 } from "@core/payments/cashu";
-import { getLanguage, t } from "@i18n";
+import { getLanguage, t, tPlural } from "@i18n";
 
 const DAY_MS = 86_400_000;
 
@@ -67,6 +67,14 @@ export function formatClockTime(ms: number): string {
   }).format(ms);
 }
 
+// In the calendar the date is shown in, not the Gregorian one: Persian renders
+// Solar Hijri, whose year turns at Nowruz, so for part of every year a
+// Gregorian comparison would drop the year from last Persian year's dates.
+function sameYear(then: Date, now: Date): boolean {
+  const year = formatter({ year: "numeric" });
+  return year.format(then) === year.format(now);
+}
+
 // Calendar days, so 23:59 and 00:01 the next morning are one day apart.
 function calendarDaysAgo(then: Date, now: Date): number {
   const a = new Date(then.getFullYear(), then.getMonth(), then.getDate());
@@ -86,7 +94,7 @@ export function formatListTimestamp(ms: number): string {
   if (days <= 0) return formatClockTime(ms);
   if (days === 1) return t("format.yesterday");
   if (days < 7) return formatter({ weekday: "short" }).format(then);
-  if (then.getFullYear() === now.getFullYear()) return formatShortDate(ms);
+  if (sameYear(then, now)) return formatShortDate(ms);
   return formatter({
     year: "numeric",
     month: "short",
@@ -94,15 +102,17 @@ export function formatListTimestamp(ms: number): string {
   }).format(then);
 }
 
-// "just now", "5m ago", "2h ago", "3d ago", then the dated form past a week.
+// "just now", "5 minutes ago", "2 hours ago", "3 days ago", then the dated
+// form past a week. Plural keys, since several languages have no abbreviation
+// that reads right after every number.
 export function formatAgo(ms: number, now: number = Date.now()): string {
   const minutes = Math.floor(Math.max(0, now - ms) / 60_000);
   if (minutes < 1) return t("format.just_now");
-  if (minutes < 60) return t("format.minutes_ago", { count: minutes });
+  if (minutes < 60) return tPlural("format.minutes_ago", minutes);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("format.hours_ago", { count: hours });
+  if (hours < 24) return tPlural("format.hours_ago", hours);
   const days = Math.floor(hours / 24);
-  if (days < 7) return t("format.days_ago", { count: days });
+  if (days < 7) return tPlural("format.days_ago", days);
   return formatListTimestamp(ms);
 }
 
@@ -116,7 +126,7 @@ export function formatDateSeparator(ms: number): string {
   if (days <= 0) return t("format.today");
   if (days === 1) return t("format.yesterday");
   if (days < 7) return formatter({ weekday: "long" }).format(then);
-  if (then.getFullYear() === now.getFullYear()) {
+  if (sameYear(then, now)) {
     return formatter({
       weekday: "short",
       month: "short",
@@ -153,13 +163,26 @@ export function formatNumber(value: number): string {
   return numberFormatter({}).format(value);
 }
 
-// IEC units: the divisor is 1024.
-export function formatBytes(bytes: number): string {
+// A share of 1 as a percentage. The sign's side and spacing are the locale's:
+// Turkish writes "%50", French "50 %".
+export function formatPercent(fraction: number): string {
+  return numberFormatter({ style: "percent", maximumFractionDigits: 2 }).format(
+    fraction,
+  );
+}
+
+// IEC units: the divisor is 1024. `roundUp` for a size set against a limit, so
+// a file just over the cap never reads as equal to it ("1.1 MiB, over the
+// 1.0 MiB limit").
+export function formatBytes(bytes: number, roundUp = false): string {
   // Ungrouped: no branch exceeds 1023 before promotion, and "1,023 B" is
   // noise. Latin digits with the locale's decimal separator ("1,4 MiB").
+  const round = roundUp ? Math.ceil : (value: number) => value;
   if (bytes < 1024) return `${formatFixed(bytes, 0)} B`;
-  if (bytes < 1024 * 1024) return `${formatFixed(bytes / 1024, 0)} KiB`;
-  return `${formatFixed(bytes / (1024 * 1024), 1)} MiB`;
+  if (bytes < 1024 * 1024) {
+    return `${formatFixed(round(bytes / 1024), 0)} KiB`;
+  }
+  return `${formatFixed(round((bytes / (1024 * 1024)) * 10) / 10, 1)} MiB`;
 }
 
 function formatFixed(value: number, fractionDigits: number): string {

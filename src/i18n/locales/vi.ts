@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Hôm nay",
   "format.yesterday": "Hôm qua",
-  "format.minutes_ago": "{count} phút trước",
-  "format.hours_ago": "{count} giờ trước",
-  "format.days_ago": "{count} ngày trước",
   "format.just_now": "vừa xong",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -255,6 +252,7 @@ export const strings: Strings = {
   "chat.group_badge": "Nhóm",
   "chat.more": "Thêm",
   "chat.no_messages": "Chưa có tin nhắn nào",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Không có ai ở gần",
   "chat.presence.active_none": "Không có ai đang hoạt động",
   "chat.you": "Bạn",
@@ -326,7 +324,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Không mở được ô đó. Hãy thử lại sau ít phút.",
   "chat.jump.title": "Đến một nơi",
-  "chat.jump.saved": "NƠI ĐÃ LƯU",
+  "chat.jump.saved": "Nơi đã lưu",
+  "chat.jump.nearby": "Lân cận",
   "chat.jump.anywhere":
     "Mở kênh vị trí công khai của bất cứ nơi nào, kể cả nơi bạn không có mặt.",
   "chat.jump.geohash_note":
@@ -335,7 +334,22 @@ export const strings: Strings = {
     "Bạn hiện ra là đến từ xa, không phải ở gần. Kênh chỉ vươn tới qua Internet.",
   "chat.jump.level_cell": "Ô cấp {level}",
   "chat.jump.already_here": "Bạn đã ở đây rồi. Đến sẽ mở kênh {name} của bạn.",
-  "chat.jump.open_direction": "Mở ô ở phía {direction} của bạn",
+  "chat.jump.dir.n": "B",
+  "chat.jump.dir.ne": "ĐB",
+  "chat.jump.dir.e": "Đ",
+  "chat.jump.dir.se": "ĐN",
+  "chat.jump.dir.s": "N",
+  "chat.jump.dir.sw": "TN",
+  "chat.jump.dir.w": "T",
+  "chat.jump.dir.nw": "TB",
+  "chat.jump.open_n": "Mở ô ở phía bắc",
+  "chat.jump.open_ne": "Mở ô ở phía đông bắc",
+  "chat.jump.open_e": "Mở ô ở phía đông",
+  "chat.jump.open_se": "Mở ô ở phía đông nam",
+  "chat.jump.open_s": "Mở ô ở phía nam",
+  "chat.jump.open_sw": "Mở ô ở phía tây nam",
+  "chat.jump.open_w": "Mở ô ở phía tây",
+  "chat.jump.open_nw": "Mở ô ở phía tây bắc",
   "chat.jump.open_place": "Mở {name}",
   "chat.jump.remove_place": "Gỡ {name} khỏi các nơi đã lưu",
   "chat.jump.go": "Đến",
@@ -363,7 +377,7 @@ export const strings: Strings = {
     "Tối đa 16 người, do bạn chọn. Không có liên kết mời, nên không ai vào được nhờ được chuyển tiếp một liên kết.",
   "chat.group.bluetooth":
     "Chỉ Bluetooth. Thành viên ngoài tầm sẽ nhận tin nhắn khi họ quay lại.",
-  "chat.group.members_label": "THÀNH VIÊN",
+  "chat.group.members_label": "Thành viên",
   "chat.group.none_in_range":
     "Không có ai trong tầm. Thành viên phải ở gần khi bạn tạo nhóm.",
   "chat.group.create_title": "Tạo một nhóm",
@@ -452,18 +466,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Hủy {name}",
   "chat.thread.hide_transfer": "Ẩn tiến trình",
   "chat.thread.hide_transfer_hint": "Tệp vẫn sẽ được nhận",
-  "chat.thread.queued_more": "Còn {count} nữa đang đợi gửi",
-  "chat.thread.across_bridge": "{count} ở bên kia cầu nối",
   "chat.thread.bridged": "đã bắc cầu",
   "chat.thread.invite_body":
     "Vào {channel} với mình trên Airhop — nhắn tin qua mạng lưới, riêng tư và ưu tiên ngoại tuyến.",
-  "chat.thread.go_back_unread": "Quay lại, {count} chưa đọc",
   "chat.thread.view_info": "Xem thông tin của {name}",
-  "chat.thread.notices_new": "Bản tin của kênh này, {count} mới",
   "chat.board.urgent_one": "Bản tin khẩn từ {author} · {content}",
-  "chat.board.urgent_many": "{count} bản tin khẩn mới · mở Bản tin",
+  "chat.board.urgent_one_anon": "Bản tin khẩn · {content}",
   "chat.thread.say_something": "Nói gì đó trong {channel} đi.",
-  "chat.thread.jump_latest_new": "Nhảy tới tin nhắn mới nhất, {count} mới",
   "chat.thread.unconfirmed_since":
     "Chưa xác nhận chuyển thành công kể từ {date}",
   "chat.thread.no_reach":
@@ -502,7 +511,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "Bạn đã chụp màn hình · không ai được báo",
   "chat.screenshot.heads_up": "Lưu ý",
-  "chat.screenshot.notice": "* {name} đã chụp màn hình *",
+  "chat.screenshot.peer_took": "{name} đã chụp màn hình",
   "chat.screenshot.notified_dm":
     "{name} đã được báo rằng bạn chụp màn hình cuộc trò chuyện này.",
   "chat.screenshot.notified":
@@ -556,7 +565,7 @@ export const strings: Strings = {
   "chat.attach.title": "Đính kèm",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Đã chia sẻ một vị trí",
+  "chat.location.sent_summary": "Đã chia sẻ vị trí",
   "chat.location.received_summary": "Đã chia sẻ vị trí của họ",
   "chat.location.title": "Vị trí",
   "chat.location.away": "{distance} về phía {direction}",
@@ -593,9 +602,9 @@ export const strings: Strings = {
   "chat.ring.alert.body": "Hãy kiểm tra tin nhắn của bạn",
   "chat.ring.alert.open": "Mở",
   "chat.ring.alert.snooze": "Tạm hoãn 1 giờ",
-  "chat.ring.sent_snoozed": "Đã gọi chuông, tạm hoãn",
-  "chat.ring.sent_too_soon": "Đã gọi chuông, quá sớm",
-  "chat.ring.sent_not_allowed": "Đã gọi chuông, không được phép",
+  "chat.ring.sent_snoozed": "Đã gọi chuông · tạm hoãn",
+  "chat.ring.sent_too_soon": "Đã gọi chuông · quá sớm",
+  "chat.ring.sent_not_allowed": "Đã gọi chuông · không được phép",
   "chat.attach.send_anyway": "Vẫn gửi",
   "chat.attach.bitchat_too_big": "Tệp này có thể không tới nơi",
   "chat.attach.bitchat_too_big_body":
@@ -669,6 +678,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Dừng ghi âm và gửi",
   "chat.voice.lift_lock": "Trượt lên để ghi âm rảnh tay",
   "chat.voice.live_speaking": "{name} đang nói",
+  "chat.voice.live_ended": "Đã kết thúc",
   "voice.unavailable": "Không dùng được thoại trực tiếp",
   "voice.recording_stopped": "Đã dừng ghi âm",
 
@@ -730,7 +740,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Gỡ {name}",
   "chat.info.no_addable":
     "Không có nút mạng nào tới được để thêm. Thành viên phải ở gần.",
-  "chat.info.add_count": "Thêm {count}",
   "chat.info.teleported_tag": "{level}  ·  từ xa",
   "chat.info.active": "Đang hoạt động",
   "chat.info.members": "Thành viên",
@@ -814,8 +823,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 ngày",
   "chat.notices.7_days": "7 ngày",
   "chat.notices.fading": "đang mờ đi",
-  "chat.notices.fades_in_hours": "mờ đi sau {count} giờ",
-  "chat.notices.fades_in_days": "mờ đi sau {count} ngày",
   "chat.notices.scope_geo": "Địa lý",
   "chat.notices.scope_mesh": "Mạng lưới",
   "chat.notices.urgent_short": "Khẩn",
@@ -832,10 +839,21 @@ export const strings: Strings = {
   "chat.search.links": "Liên kết",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "Lọc theo {filter}",
-  "chat.search.no_matches": "Không có {filter} nào khớp với “{query}”",
-  "chat.search.no_media": "Chưa có {filter} nào",
+  "chat.search.no_photos": "Chưa có ảnh nào",
+  "chat.search.no_videos": "Chưa có video nào",
+  "chat.search.no_audio": "Chưa có âm thanh nào",
+  "chat.search.no_documents": "Chưa có tài liệu nào",
+  "chat.search.no_links": "Chưa có liên kết nào",
+  "chat.search.no_ecash": "Chưa có ecash nào",
+  "chat.search.no_photos_matching": "Không có ảnh nào khớp với “{query}”",
+  "chat.search.no_videos_matching": "Không có video nào khớp với “{query}”",
+  "chat.search.no_audio_matching": "Không có âm thanh nào khớp với “{query}”",
+  "chat.search.no_documents_matching":
+    "Không có tài liệu nào khớp với “{query}”",
+  "chat.search.no_links_matching": "Không có liên kết nào khớp với “{query}”",
+  "chat.search.no_ecash_matching": "Không có ecash nào khớp với “{query}”",
   "chat.search.result_a11y": "{chat}, {kind} từ {sender}",
-  "chat.search.you": "bạn",
+  "chat.search.result_mine_a11y": "{chat}, {kind} bạn đã gửi",
   "chat.search.section_chats": "Cuộc trò chuyện",
   "chat.search.section_messages": "Tin nhắn",
   "chat.search.section_notices": "Bản tin",
@@ -844,15 +862,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Không có kết quả cho “{query}”",
   "chat.search.open_chat": "Mở {name}",
   "chat.search.message_a11y": "{chat}, tin nhắn từ {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, tin nhắn của bạn: {snippet}",
   "chat.search.notice_a11y": "Bản tin trong {chat} từ {author}: {snippet}",
   "chat.search.urgent": "Khẩn ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} trong danh sách này. Xóa chỉ gỡ chúng khỏi đây thôi, còn tin nhắn vẫn chưa đọc trong cuộc trò chuyện của chúng. Đánh dấu tất cả đã đọc thì xóa cả hai bên.",
   "chat.notif.mark_all_read": "Đánh dấu tất cả đã đọc",
   "chat.notif.clear_list": "Xóa danh sách",
-  "chat.notif.clear_all_a11y": "Xóa toàn bộ {count} thông báo",
   "chat.notif.title": "Thông báo",
   "chat.notif.clear_short": "Xóa",
   "chat.notif.close": "Đóng thông báo",
@@ -875,13 +891,16 @@ export const strings: Strings = {
   "chat.forward.locations": "Vị trí",
   "chat.forward.dms": "Tin nhắn riêng",
   "chat.forward.none": "Chưa có cuộc trò chuyện nào khác",
+  "chat.forward.app_row": "Không được chuyển tiếp",
+  "chat.forward.app_row_body":
+    "Dòng này do Airhop tạo, không phải của một người, nên không có gì để chuyển tiếp.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Đang khởi động mạng lưới…",
   "mesh.banner.no_bluetooth": "Thiết bị này không có Bluetooth · chỉ Internet",
   "mesh.banner.bluetooth_off": "Bluetooth đã tắt · không dùng được mạng lưới",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth đã tắt · mạng lưới chạy qua WiFi",
+    "Bluetooth đã tắt · mạng lưới chạy qua Wi-Fi",
   "mesh.banner.permission_needed": "Cần quyền Bluetooth",
   "mesh.banner.blocked": "Bluetooth bị chặn · hãy cho phép trong Cài đặt",
   "mesh.banner.location_permission": "Cần vị trí để tìm nút mạng",
@@ -911,8 +930,6 @@ export const strings: Strings = {
     "Cầu nối mạng lưới đang bật · đã nối cuộc trò chuyện công khai",
   "mesh.banner.background_limits":
     "{brand} có thể tạm dừng mạng lưới khi chạy nền",
-  "mesh.banner.bridge_across":
-    "Cầu nối mạng lưới đang bật · {count} ở bên kia cầu",
   "mesh.banner.action.turn_on": "Bật",
   "mesh.banner.action.allow": "Cho phép",
   "mesh.banner.action.resume": "Tiếp tục",
@@ -988,7 +1005,7 @@ export const strings: Strings = {
   "mesh.peer.view_relay_online":
     "Xem nút mạng {name}, đang trực tuyến, nút chuyển tiếp",
   "mesh.peer.last_seen_at": "Thấy lần cuối {ago}",
-  "mesh.peer.send_amount": "Gửi {amount} sat",
+  "mesh.peer.send_unit_amount": "Gửi {amount} {unit}",
   "mesh.peer.direct": "Kết nối trực tiếp",
   "mesh.peer.check_distance": "Đo khoảng cách",
   "mesh.peer.checking": "Đang đo",
@@ -1037,11 +1054,11 @@ export const strings: Strings = {
   "wallet.choose.token": "Tạo token",
   "wallet.choose.token_desc": "Chia sẻ hoặc hiện mã QR, kể cả khi ngoại tuyến",
   "wallet.choose.zap": "Zap một liên hệ Nostr",
-  "wallet.choose.zap_desc": "Tới npub của họ, qua internet",
+  "wallet.choose.zap_desc": "Tới npub của họ, qua Internet",
   "wallet.choose.invoice": "Thanh toán hóa đơn Lightning",
   "wallet.choose.invoice_desc": "Rút về bất kỳ ví Lightning nào",
   "wallet.choose.tor_paused": "Tạm dừng khi Tor đang bật",
-  "wallet.choose.offline": "Cần có internet",
+  "wallet.choose.offline": "Cần có Internet",
   "wallet.choose.internet_off": "Internet đang tắt",
   "wallet.choose.needs_mint": "Hãy thêm một nhà đúc trước",
 
@@ -1060,7 +1077,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Token này bị chia thành quá nhiều đồng để vừa một mã QR. Hãy chia sẻ hoặc sao chép nó.",
   "wallet.send.scan_note":
-    "Hãy để họ quét mã này từ ví của họ. Vẫn thu hồi được cho tới khi bạn đánh dấu là đã chuyển.",
+    "Hãy để họ quét mã này từ ví của họ. Vẫn thu hồi được cho tới khi bạn đánh dấu là đã nhận.",
   "wallet.send.mesh_note":
     "Token đi ra dưới dạng tin nhắn riêng được mã hóa qua mạng lưới. Không cần Internet.",
   "wallet.send.no_peers_note":
@@ -1081,7 +1098,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Mở trong ví",
   "wallet.send.to_peer": "Gửi token cho một nút mạng ở gần",
   "wallet.send.to_peer_short": "Gửi cho nút mạng",
-  "wallet.send.mark_delivered": "Đánh dấu đã chuyển và kết thúc",
+  "wallet.send.mark_delivered": "Đánh dấu là đã nhận",
   "wallet.send.they_got_it": "Họ đã nhận được",
   "wallet.send.keep_pending": "Giữ lần gửi này ở trạng thái đang chờ",
   "wallet.send.decide_later": "Quyết định sau",
@@ -1105,10 +1122,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
-  "wallet.receive.stored_pending":
-    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu{dleq}. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
-  "wallet.receive.dleq_inline":
-    " (chữ ký của nó đúng là hợp lệ, nên token là thật)",
+  "wallet.receive.pending_unconfirmed":
+    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Chữ ký của nó hợp lệ, nên token là thật. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
   "wallet.receive.dleq_ok": "Chữ ký của nhà đúc hợp lệ, nên token là thật.",
   "wallet.receive.dleq_uncached":
     "Khóa của nhà đúc không được lưu sẵn ở đây, nên không kiểm tra được chữ ký khi ngoại tuyến.",
@@ -1171,8 +1188,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Dời toàn bộ số dư về một nhà đúc",
   "wallet.mint.confirm_with": "Kiểm tra số dư với {mint}",
   "wallet.mint.available_amount": "Có sẵn {amount} {unit}",
-  "wallet.mint.split_across":
-    "Số dư trải khắp {count} nhà đúc. Hãy dời về một nơi.",
   "wallet.mint.move_everything_to": "Dời mọi thứ về {mint}",
   "wallet.mint.consolidate_title": "Dời về một nhà đúc",
   "wallet.mint.moving": "Đang dời…",
@@ -1183,10 +1198,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Không dời được gì",
   "wallet.mint.move_pending": "Đang trên đường",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} đã rời {mint} và đang trên đường đến {target}. Số tiền sẽ đến khi khoản nạp được nhận, và ví tiếp tục thử lại.",
+    "{amount} {unit} đã rời {mint} và đang trên đường đến {target}. Số tiền sẽ đến khi khoản chuyển này được nhận, và ví tiếp tục thử lại.",
   "wallet.mint.destination": "· đích đến",
   "wallet.mint.will_move": "· sẽ được dời",
   "wallet.mint.issued_by": "Phát hành bởi",
+  "wallet.mint.test_badge": "Thử nghiệm",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Nạp tiền ví Airhop",
@@ -1244,7 +1260,7 @@ export const strings: Strings = {
     "Bạn đã có một cụm từ khôi phục rồi. Khôi phục một cụm khác sẽ thay thế nó. Những đồng đã được cụm từ cũ bao phủ vẫn tiêu được trên thiết bị này, nhưng không khôi phục lại được nữa, nên hãy chắc rằng các từ cũ đã được ghi lại trước khi tiếp tục.",
   "wallet.backup.replace": "Thay",
   "wallet.backup.replace_unseen_body":
-    "Ví này đã có cụm từ khôi phục, được tạo cho bạn khi thiết lập, và các đồng xu của bạn được tạo bằng nó. Khôi phục một cụm từ khác sẽ thay thế nó vĩnh viễn. Các đồng xu vẫn tiêu được trên thiết bị này và chuyển sang cụm từ mới vào lần làm mới tiếp theo của từng mint.",
+    "Ví này đã có cụm từ khôi phục, được tạo cho bạn khi thiết lập, và các đồng của bạn được tạo bằng nó. Khôi phục một cụm từ khác sẽ thay thế nó vĩnh viễn. Các đồng vẫn tiêu được trên thiết bị này và chuyển sang cụm từ mới vào lần làm mới tiếp theo của từng nhà đúc.",
   "wallet.backup.invalid_phrase": "Cụm từ đó không hợp lệ",
   "wallet.backup.invalid_phrase_body":
     "Cụm từ có sẵn một mã kiểm tra và cụm này không qua được. Hãy tìm xem có từ nào gõ sai, thiếu hay bị đổi chỗ không.",
@@ -1328,13 +1344,13 @@ export const strings: Strings = {
   "wallet.reclaim.title": "Thu hồi token này?",
   "wallet.reclaim.body":
     "{amount} {unit} sẽ quay về số dư của bạn, và token bạn đã trao đi sẽ ngừng hoạt động ngay khi kết nối được với nhà đúc. Nếu họ đổi nó trước lúc đó, số tiền vẫn thuộc về họ.",
-  "wallet.reclaim.keep": "Giữ đang chờ",
+  "wallet.reclaim.keep": "Tiếp tục chờ",
   "wallet.reclaim.confirm": "Thu hồi",
   "wallet.reclaim.claimed_title": "Họ đã đổi nó rồi",
   "wallet.reclaim.claimed_body":
     "Nhà đúc cho biết token này đã được đổi, nên {amount} {unit} đã tới tay họ và không có gì quay về số dư của bạn.",
   "wallet.copied.token_body":
-    "Token đang nằm trên bảng nhớ tạm của bạn. Nó vẫn được giữ ở đây cho tới khi bạn đánh dấu là đã chuyển, nên bạn dán lại được nếu lần đầu không thành.",
+    "Token đang nằm trên bảng nhớ tạm của bạn. Nó vẫn được giữ ở đây cho tới khi bạn đánh dấu là đã nhận, nên bạn dán lại được nếu lần đầu không thành.",
   "wallet.copied.refused_token_body":
     "Token đang nằm trên bảng nhớ tạm của bạn. Ví này không còn tính nó nữa, nên bạn có thể trả lại cho người đã gửi.",
   "wallet.copied.phrase_body":
@@ -1361,8 +1377,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Hiện token này dưới dạng mã QR",
   "wallet.pending.copy_again": "Sao chép lại token",
   "wallet.pending.share_again": "Chia sẻ lại token",
-  "wallet.pending.mark_delivered": "Đánh dấu token này là đã chuyển",
-  "wallet.pending.delivered": "Đã chuyển",
+  "wallet.pending.mark_delivered": "Đánh dấu là đã nhận",
+  "wallet.pending.delivered": "Đã nhận",
   "wallet.pending.reclaim_into": "Thu hồi token này về số dư của bạn",
   "wallet.activity.title": "Hoạt động",
   "wallet.activity.none": "Chưa có gì",
@@ -1395,7 +1411,7 @@ export const strings: Strings = {
     "Dịch vụ mạng lưới không chạy, nên không có nơi nào để giao token. Nó vẫn được giữ trong mục Hoạt động.",
   "wallet.xfer.route_mesh": "Đã giao thẳng tới thiết bị của họ qua mạng lưới.",
   "wallet.xfer.route_nostr":
-    "Họ ở ngoài tầm Bluetooth, nên nó đi qua Internet thay vì vậy.",
+    "Họ ở ngoài tầm Bluetooth, nên thay vào đó nó đi qua Internet.",
   "wallet.xfer.route_courier":
     "Hiện không có đường tới họ. Nó sẽ được các thiết bị khác mang đi và chuyển tới khi có máy nào gặp được họ.",
   "wallet.xfer.route_queued":
@@ -1423,7 +1439,14 @@ export const strings: Strings = {
     "Các khoản thanh toán đã khóa thì không thu hồi được: giờ chỉ khóa của họ mới tiêu được những đồng này.",
   "wallet.pay.reclaimable":
     "Nó vẫn thu hồi được từ mục Hoạt động cho tới khi bạn xác nhận nó đã tới nơi.",
-  "wallet.pay.why": "Được gửi theo cách này vì {reason}.",
+  "wallet.pay.why_no_relay":
+    "Được gửi theo cách này vì không có kết nối tới bộ chuyển tiếp.",
+  "wallet.pay.why_no_shared_mint":
+    "Được gửi theo cách này vì bạn không có đủ số dư ở bất kỳ nhà đúc nào họ chấp nhận.",
+  "wallet.pay.why_no_nutzap_info":
+    "Được gửi theo cách này vì người nhận chưa công bố thông tin nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} cho {name}",
   "wallet.pay.thread_receipt":
     "Bạn đã gửi {amount} {unit}, khóa vào khóa của họ.",
@@ -1438,7 +1461,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "Khoản này được khóa vào khóa của họ. Đã gửi thì không thể lấy lại.",
   "wallet.pay.confirm_reclaimable":
-    "Bạn có thể lấy lại từ mục Hoạt động cho đến khi họ nhận.",
+    "Bạn có thể thu hồi nó từ mục Hoạt động cho tới khi họ nhận.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "Quyền truy cập máy ảnh",
@@ -1580,8 +1603,8 @@ export const strings: Strings = {
   "wallet.svc.invoice_expired_before": "Hóa đơn đã hết hạn trước khi được trả.",
   "wallet.svc.invoice_expired": "Hóa đơn đó đã hết hạn.",
   "wallet.svc.invoice_unpaid": "Hóa đơn này chưa được trả.",
-  "wallet.svc.payment_unknown":
-    "Không rõ trạng thái thanh toán; sẽ kiểm tra lại vào lần làm mới sau.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Không rõ trạng thái thanh toán; sẽ kiểm tra lại vào lần làm mới sau.",
   "wallet.svc.melt_change_pending": "Hóa đơn của bạn đã được trả.",
   "wallet.svc.melt_change_pending_body":
     "Nhà đúc chưa trả lại phần phí định tuyến không dùng tới. Nó được nhận tự động vào lần làm mới sau, và trong lúc đó không mất mát gì.",
@@ -1613,31 +1636,27 @@ export const strings: Strings = {
   "wallet.svc.nothing_to_move": "{mint} không có {unit} nào để dời.",
   "wallet.svc.consolidate_memo": "Gộp từ {mint}",
   "wallet.svc.cannot_size_detail":
-    "Sau phí định tuyến Lightning, {from} không dời nổi một khoản đáng kể sang {to}. Hãy thử dời một khoản nhỏ cụ thể thay vì vậy.",
+    "Sau phí định tuyến Lightning, {from} không dời nổi một khoản đáng kể sang {to}. Thay vào đó, hãy thử dời một khoản nhỏ cụ thể.",
   "wallet.svc.mint_cannot": "{mint} không thể {action}.",
   "wallet.svc.no_nut": "Nhà đúc không công bố hỗ trợ NUT-{nut}.",
   "wallet.svc.unknown_mint":
     "Khoản thanh toán đó nêu tên một nhà đúc bạn không dùng.",
   "wallet.svc.unknown_mint_body":
     "Hãy tự thêm nhà đúc đó trước nếu bạn tin nó; không có gì được đổi từ một nhà đúc bạn chưa chọn.",
-  "wallet.svc.no_relay": "không có kết nối tới bộ chuyển tiếp",
-  "wallet.svc.no_shared_mint": "không có nhà đúc chung nào đủ số dư",
-  "wallet.svc.no_nutzap_info":
-    "người nhận chưa công bố thông tin nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Đã khóa vào khóa của họ nhưng chưa chuyển tới. Hãy chia sẻ token từ giao dịch này để hoàn tất.",
   "wallet.svc.swap_lost":
     "Nhà đúc chưa bao giờ hoàn tất lần hoán đổi này, nên không có gì được phát hành dựa trên nó.",
   "wallet.svc.mint_lost":
-    "Mint đã phát hành khoản nạp này, nhưng không thể dựng lại các đồng xu. Khôi phục từ cụm từ khôi phục sẽ lấy lại chúng.",
+    "Nhà đúc đã phát hành khoản nạp này, nhưng không thể dựng lại các đồng. Khôi phục từ cụm từ khôi phục sẽ lấy lại chúng.",
   "wallet.svc.swap_unreadable":
     "Lần hoán đổi này được lưu ở dạng mà phiên bản hiện tại không phát lại được.",
   "wallet.svc.lock_in_doubt":
     "Khoản thanh toán này có thể đã hoặc chưa thực hiện.",
   "wallet.svc.lock_in_doubt_body":
-    "Không có gì khác được gửi. Các đồng xu được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Hoạt động để bạn trao đi. Nếu không, các đồng xu sẽ quay về.",
+    "Không có gì khác được gửi. Các đồng được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Hoạt động để bạn trao đi. Nếu không, các đồng sẽ quay về.",
   "wallet.svc.send_spent_by_swap":
-    "Các đồng xu này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
+    "Các đồng này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Đã xác minh qua QR",
@@ -1729,7 +1748,7 @@ export const strings: Strings = {
   "settings.share_peer_id": "Chia sẻ ID nút mạng của bạn",
   "settings.share_id_short": "Chia sẻ ID",
   "settings.share_app": "Chia sẻ ứng dụng Airhop",
-  "settings.share_app_short": "Chia sẻ app",
+  "settings.share_app_short": "Chia sẻ ứng dụng",
   "settings.share_app_dialog": "Nhận Airhop",
   "settings.share_app_unsupported": "Không thể chia sẻ bản cài đặt này",
   "settings.share_app_unsupported_body":
@@ -1756,7 +1775,7 @@ export const strings: Strings = {
     "Bí mật chuyển tiếp, gói tin đã ký, nút mạng bị chặn",
   "settings.section.network": "Mạng và bộ chuyển tiếp",
   "settings.section.network_desc":
-    "Dự phòng Internet, bộ chuyển tiếp nostr, tương thích bitchat",
+    "Dự phòng Internet, bộ chuyển tiếp Nostr, tương thích bitchat",
   "settings.section.permissions": "Quyền",
   "settings.section.permissions_desc":
     "Bluetooth, vị trí, thông báo, máy ảnh, micrô",
@@ -1776,7 +1795,7 @@ export const strings: Strings = {
   "settings.group.always_on": "Luôn bật",
   "settings.group.notifications": "Thông báo",
   "settings.group.blocked": "Đã chặn",
-  "settings.group.theme": "Giao diện",
+  "settings.group.theme": "Chủ đề",
   "settings.group.font": "Phông chữ",
   "settings.group.language": "Ngôn ngữ",
   "settings.section.diagnostics_desc": "Trạng thái kết nối và thiết bị ở gần",
@@ -1805,13 +1824,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Không có chỉ số tín hiệu",
   "settings.diag.no_peers": "Không có ai trong tầm",
-  "settings.diag.no_peers_desc": "Đang mở {links} liên kết vô tuyến",
   "settings.diag.gcs_size": "Kích thước bộ lọc",
   "settings.diag.gcs_size_desc": "Bộ lọc đồng bộ lớn nhất từng phát lên sóng",
   "settings.diag.fpr": "Tỉ lệ báo nhầm",
   "settings.diag.fpr_desc":
-    "Bộ lọc bao lâu lại nhận nhầm là ta thiếu một gói tin",
-  "settings.diag.bytes": "{n} byte",
+    "Tần suất bộ lọc báo nhầm là có một gói tin mà ta thực ra còn thiếu",
   "settings.diag.footnote":
     "Không có gì ở đây đổi được. Các giá trị này cố định để Airhop giữ được tính tương thích với bitchat.",
   "settings.diag.share": "Chia sẻ chẩn đoán",
@@ -1832,7 +1849,6 @@ export const strings: Strings = {
   "settings.general.undo": "Hoàn tác gửi",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "Ví",
-  "settings.general.undo_seconds": "{count} giây",
   "settings.general.undo_a11y": "Hoàn tác gửi: {value}",
   "settings.general.quality_a11y": "Đặt chất lượng tải lên thành {value}",
   "settings.general.undo_desc":
@@ -1869,7 +1885,7 @@ export const strings: Strings = {
   "settings.general.media_retention_sheet":
     "Hãy chọn phương tiện ở lại trên thiết bị này bao lâu. Phương tiện đã xóa thì không khôi phục được.",
   "settings.general.retention_7_desc":
-    "Để lại ít dấu vết nhất. Hợp nhất khi chính chiếc điện thoại là rủi ro.",
+    "Để lại ít dấu vết nhất. Phù hợp nhất khi chính chiếc điện thoại là rủi ro.",
   "settings.general.retention_14_desc":
     "Mức trung dung cho một hai tuần xa sóng.",
   "settings.general.retention_30_desc":
@@ -1925,7 +1941,6 @@ export const strings: Strings = {
   "settings.network.custom": "Bộ chuyển tiếp tùy chỉnh",
   "settings.network.custom_desc":
     "Thêm bộ chuyển tiếp của riêng bạn cho kênh vị trí và cầu nối mạng lưới",
-  "settings.network.custom_added": "Đã thêm {count} trên {max}",
   "settings.network.dm_relays": "Bộ chuyển tiếp tin nhắn",
   "settings.network.dm_relays_desc":
     "Tin nhắn riêng và kênh riêng tư luôn dùng những bộ này. Bộ chuyển tiếp tùy chỉnh không thay đổi chúng.",
@@ -1936,19 +1951,17 @@ export const strings: Strings = {
   "settings.network.add_relay": "Thêm bộ chuyển tiếp",
   "settings.network.remove_relay": "Gỡ {url}",
   "settings.network.add_short": "Thêm",
-  "settings.network.relay_limit":
-    "Bạn thêm được {count} bộ chuyển tiếp. Hãy gỡ một cái để thêm cái khác.",
   "settings.network.relay_duplicate":
     "Bộ chuyển tiếp đó đã có trong danh sách của bạn.",
   "settings.network.relay_invalid":
     "Hãy nhập một máy chủ chuyển tiếp hợp lệ, ví dụ relay.example.com. Chỉ cần ghi cổng nếu bộ chuyển tiếp không dùng cổng mặc định. Không cho phép địa chỉ IP và tên cục bộ.",
   "settings.network.lan": "Mạng nội bộ",
   "settings.network.lan_desc":
-    "Kết nối với những người trên cùng WiFi, kể cả giữa iPhone và Android. Các thiết bị khác trên mạng có thể thấy bạn đang chạy Airhop.",
+    "Kết nối với những người trên cùng Wi-Fi, kể cả giữa iPhone và Android. Các thiết bị khác trên mạng có thể thấy bạn đang chạy Airhop.",
   "settings.network.lan_searching":
     "Không có thiết bị Airhop nào trên mạng này",
   "settings.network.lan_active": "Đã kết nối trên mạng này",
-  "settings.network.lan_unavailable": "Không ở trên mạng WiFi nào",
+  "settings.network.lan_unavailable": "Không ở trên mạng Wi-Fi nào",
   "settings.network.lan_permission":
     "Quyền truy cập mạng nội bộ đang tắt cho Airhop",
   "settings.network.lan_unsupported": "Không khả dụng trên thiết bị này",
@@ -1971,7 +1984,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action": "Cho phép tìm thấy iPhone này",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware hiện không khả dụng",
   "settings.network.wifi_pair_forget":
-    "Gỡ một liên kết ghép đôi trong ứng dụng Settings",
+    "Gỡ một liên kết ghép đôi trong ứng dụng Cài đặt",
   "settings.network.bitchat": "Tương thích bitchat",
   "settings.network.bitchat_desc":
     "Cùng một mạng lưới BLE với bitchat, tương thích hoàn toàn. Mục này luôn bật và không tắt được.",
@@ -2001,7 +2014,7 @@ export const strings: Strings = {
     "Giữ micrô sẽ truyền giọng bạn tới mọi người trong tầm Bluetooth ngay khi bạn nói, và giọng họ phát trên điện thoại của bạn. Không có gì được ghi lại.",
   "settings.conn.live_voice_off_title": "Tắt thoại trực tiếp?",
   "settings.conn.live_voice_off_body":
-    "Giữ micrô sẽ ghi một tin nhắn thoại thay vì vậy. Nó gửi khi bạn thả tay, và không ai nghe được cho tới khi họ bấm phát.",
+    "Thay vào đó, giữ micrô sẽ ghi một tin nhắn thoại. Nó gửi khi bạn thả tay, và không ai nghe được cho tới khi họ bấm phát.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Định tuyến qua Tor",
   "settings.conn.tor_desc": "Đưa lưu lượng Nostr qua Tor để riêng tư hơn",
@@ -2341,7 +2354,7 @@ export const strings: Strings = {
     "Tải xuống thất bại. Kiểm tra kết nối và thử lại.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} nặng {size} KiB, vượt giới hạn {cap} KiB.",
+  "transfer.too_large": "{kind} nặng {size}, vượt giới hạn {cap}.",
   "transfer.failed.malformed":
     "Một tệp đính kèm tới nơi trong tình trạng hỏng và không mở được. Hãy nhờ họ gửi lại.",
   "transfer.failed.unsupported_type":
@@ -2351,10 +2364,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Một tệp đính kèm đã tới nơi nhưng không lưu được. Hãy kiểm tra dung lượng trống.",
   "transfer.badge.waiting": "Đang chờ · {name}",
-  "transfer.badge.active_count": "{count} lượt truyền",
   "transfer.badge.sending": "Đang gửi {name}",
   "transfer.badge.receiving": "Đang nhận {name}",
-  "transfer.badge.a11y": "{label}, {percent} phần trăm. Mở cuộc trò chuyện.",
   "transfer.kind.photo": "Ảnh",
   "transfer.kind.video": "Video",
   "transfer.kind.voice": "Tin nhắn thoại",
@@ -2387,6 +2398,7 @@ export const strings: Strings = {
   "notif.preview.video": "🎥 Video",
   "notif.preview.document": "📄 Tài liệu",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Tin nhắn mới",
   "notif.hidden.channel": "Hoạt động mới",
@@ -2398,6 +2410,17 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    other: "{count} phút trước",
+  },
+  "format.hours_ago": {
+    other: "{count} giờ trước",
+  },
+  "format.days_ago": {
+    other: "{count} ngày trước",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     other: "Hiện thêm {count}",
@@ -2438,6 +2461,44 @@ export const plurals: Plurals = {
     other: "{count} người đang nói",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    other: "Còn {count} tin nữa đang đợi gửi",
+  },
+  "chat.thread.across_bridge": {
+    other: "{count} người ở bên kia cầu nối",
+  },
+  "chat.thread.go_back_unread": {
+    other: "Quay lại, {count} tin chưa đọc",
+  },
+  "chat.thread.notices_new": {
+    other: "Bản tin của kênh này, {count} bản tin mới",
+  },
+  "chat.thread.jump_latest_new": {
+    other: "Nhảy tới tin nhắn mới nhất, {count} tin mới",
+  },
+  "chat.board.urgent_many": {
+    other: "{count} bản tin khẩn mới · mở Bản tin",
+  },
+  "chat.info.add_count": {
+    other: "Thêm {count} người",
+  },
+  "chat.notices.fades_in_hours": {
+    other: "mờ đi sau {count} giờ",
+  },
+  "chat.notices.fades_in_days": {
+    other: "mờ đi sau {count} ngày",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    other:
+      "{count} thông báo trong danh sách này. Xóa chỉ gỡ chúng khỏi đây thôi, còn tin nhắn vẫn chưa đọc trong cuộc trò chuyện của chúng. Đánh dấu tất cả đã đọc thì xóa cả hai bên.",
+  },
+  "chat.notif.clear_all_a11y": {
+    other: "Xóa toàn bộ {count} thông báo",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     other: "{count} nút mạng trong tầm",
@@ -2455,10 +2516,18 @@ export const plurals: Plurals = {
     other: "{count} thành viên",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    other: "Cầu nối mạng lưới đang bật · {count} người ở bên kia cầu nối",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
     other:
-      "{mint} giữ {balance} {unit} trong {count} đồng. Gỡ nó đi sẽ hủy vĩnh viễn những đồng đó khỏi thiết bị này, và chúng không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
+      "{mint} giữ {balance} {unit} trong {count} đồng. Gỡ nó đi sẽ hủy vĩnh viễn số dư đó khỏi thiết bị này, và không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
+  },
+  "wallet.mint.split_across": {
+    other: "Số dư nằm rải rác ở {count} nhà đúc. Hãy dời về một nơi.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2473,7 +2542,7 @@ export const plurals: Plurals = {
   },
   "wallet.backup.already_spent": {
     other:
-      "Tìm thấy {count} đồng, nhưng chúng đã bị tiêu rồi nên không có gì được cộng vào cho chúng. Đó là chuyện bình thường: mọi đồng bạn từng tiêu đều nằm mãi trong sổ sách mà nhà đúc lưu giữ.",
+      "Tìm thấy {count} đồng, nhưng chúng đã bị tiêu rồi nên không có gì được cộng vào. Đó là chuyện bình thường: mọi đồng bạn từng tiêu đều nằm mãi trong sổ sách mà nhà đúc lưu giữ.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2494,8 +2563,32 @@ export const plurals: Plurals = {
     other: "{count} đồng đã bị tiêu từ trước, và chúng đã được gỡ đi.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    other: "Đang mở {count} liên kết vô tuyến",
+  },
+  "settings.general.undo_seconds": {
+    other: "{count} giây",
+  },
+  "settings.network.custom_added": {
+    other: "Đã thêm {count} trên {max}",
+  },
+  "settings.network.relay_limit": {
+    other:
+      "Bạn thêm được {count} bộ chuyển tiếp. Hãy gỡ một cái để thêm cái khác.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    other: "{count} lượt truyền",
+  },
+  "transfer.badge.a11y": {
+    other: "{label}, {count} phần trăm. Mở cuộc trò chuyện.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
+    "=1": "Có người ở gần",
     other: "{count} người ở gần",
   },
 };

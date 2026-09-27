@@ -5,10 +5,12 @@
 // hub itself rather than here, one drill-in away, because they are the switches
 // people come to flip. See connectivity-group.tsx.
 
+import { t, useT } from "@i18n";
 import { dismissPreviewNotifications } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useSettingsStore } from "@store/settings-store";
+import UpperText from "@ui/components/upper-text";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import React from "react";
@@ -22,7 +24,6 @@ import {
   useSharedStyles,
 } from "../settings-primitives";
 
-import { t, useT } from "@i18n";
 interface Props {
   onBack: () => void;
 }
@@ -60,9 +61,9 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
       <SubHeader title={T("settings.section.privacy")} onBack={onBack} />
       <SettingsScroll>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.always_on")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               id="forward-secrecy"
@@ -83,9 +84,9 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.notifications")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               id="ring-alerts"
@@ -123,7 +124,9 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("settings.group.blocked")}</Text>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.blocked")}
+          </UpperText>
           <View style={styles.settingsGroup}>
             {blockedPeerIDs.length === 0 ? (
               <SettingRow

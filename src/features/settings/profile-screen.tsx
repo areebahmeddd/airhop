@@ -33,6 +33,7 @@ import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
+import UpperText from "@ui/components/upper-text";
 import { MONO_FONT_ORDER, MONO_FONTS } from "@ui/fonts";
 import { useCopy } from "@ui/hooks/use-copy";
 import {
@@ -796,7 +797,9 @@ export default function ProfileScreen({
           <Text style={styles.username}>{username}</Text>
           <Text style={styles.statusLabel}>{STATUS_META[status].label}</Text>
           <View style={styles.peerIDGroup}>
-            <Text style={styles.peerIDLabel}>{T("settings.peer_id")}</Text>
+            <UpperText style={styles.peerIDLabel}>
+              {T("settings.peer_id")}
+            </UpperText>
             <Text style={styles.peerID}>{shortPubKey}</Text>
           </View>
         </View>
@@ -1227,9 +1230,9 @@ export default function ProfileScreen({
             contentContainerStyle={styles.appearanceScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.appearanceGroupLabel}>
+            <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.theme")}
-            </Text>
+            </UpperText>
             <View style={[shared.settingsGroup, styles.appearanceGroup]}>
               {THEME_ORDER.map((key, i) => {
                 const meta = THEME_META[key];
@@ -1281,9 +1284,9 @@ export default function ProfileScreen({
             </View>
 
             {/* Stays open on select, so the font behind it can be compared. */}
-            <Text style={styles.appearanceGroupLabel}>
+            <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.font")}
-            </Text>
+            </UpperText>
             <View style={[shared.settingsGroup, styles.appearanceGroup]}>
               {MONO_FONT_ORDER.map((key, i) => {
                 const meta = MONO_FONTS[key];
@@ -1339,9 +1342,9 @@ export default function ProfileScreen({
             {/* No "System" row: first launch follows the phone and a choice
                 here pins it. A language with no catalog yet is dimmed, not
                 hidden, and goes live the release its catalog lands. */}
-            <Text style={styles.appearanceGroupLabel}>
+            <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.language")}
-            </Text>
+            </UpperText>
             <View style={[shared.settingsGroup, styles.appearanceGroup]}>
               {PICKER_LANGUAGES.map((code, i) => {
                 const spec = LANGUAGES[code];
@@ -1528,7 +1531,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.8,
-      textTransform: "uppercase",
       paddingHorizontal: Spacing.xs,
       paddingBottom: Spacing.sm,
     },
@@ -1589,7 +1591,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
       letterSpacing: 0.6,
-      textTransform: "uppercase",
       marginTop: Spacing.xs,
     },
     peerID: {

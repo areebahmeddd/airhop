@@ -599,7 +599,7 @@ bitchat/android/app/src/main/java/com/bitchat/android/
 ├── sync/                     # GossipSyncManager
 ├── ui/                       # Jetpack Compose UI
 ├── util/                     # AppConstants, utilities
-└── wifi-aware/               # WiFi Aware transport (off unless enabled in debug settings)
+└── wifi-aware/               # Wi-Fi Aware transport (off unless enabled in debug settings)
 ```
 
 A separate `wear/` module holds the Wear OS companion.
@@ -613,7 +613,7 @@ A separate `wear/` module holds the Wear OS companion.
 | UI             | SwiftUI                         | Jetpack Compose + Material Design 3      |
 | Background BLE | CoreBluetooth state restoration | Foreground service required              |
 | macOS support  | Yes (native macOS target)       | No                                       |
-| WiFi Aware     | No                              | Off unless enabled in debug settings     |
+| Wi-Fi Aware    | No                              | Off unless enabled in debug settings     |
 | Fragment size  | 469 bytes                       | 469 bytes, matching iOS                  |
 
 ### Fragment Size
@@ -812,7 +812,7 @@ No forensic recovery is possible after panic wipe without the Keychain, which is
 | **Nostr path = text only**             | Medium   | Media does not ride Nostr                                               |
 | **Courier forward secrecy is partial** | Medium   | Prekey sealing on bitchat-ios only, static-key Noise X without a bundle |
 | **No offline geohash channels**        | Design   | Geohash = Nostr only; no BLE geohash broadcast                          |
-| **WiFi Aware (Android)**               | Low      | Off unless enabled in debug settings; none on iOS                       |
+| **Wi-Fi Aware (Android)**              | Low      | Off unless enabled in debug settings; none on iOS                       |
 
 ### Operational Gaps
 
@@ -857,7 +857,7 @@ From the whitepaper's "Future Work" section and the code as checked out.
 
 1. **Android Tor integration**: shipped. `ArtiTorManager.kt` brought Android to parity with the iOS Arti integration.
 2. **Rust client compatibility**: changelog mentions Rust as a third platform target.
-3. **WiFi Aware transport (bitchat-android)**: implemented in `wifi-aware/`, off unless enabled in debug settings.
+3. **Wi-Fi Aware transport (bitchat-android)**: implemented in `wifi-aware/`, off unless enabled in debug settings.
 4. **Bulletin board**: shipped on bitchat-ios as `BoardPackets.swift` (`0x23`). Not in the bitchat-android type registry.
 5. **Gateway and bridge**: `GatewayService` and `BridgeService` on bitchat-ios, `TransportBridgeService` on bitchat-android (section 7.4).
 

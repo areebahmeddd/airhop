@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "امروز",
   "format.yesterday": "دیروز",
-  "format.minutes_ago": "{count} دقیقه پیش",
-  "format.hours_ago": "{count} ساعت پیش",
-  "format.days_ago": "{count} روز پیش",
   "format.just_now": "همین حالا",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -251,6 +248,7 @@ export const strings: Strings = {
   "chat.group_badge": "گروه",
   "chat.more": "بیشتر",
   "chat.no_messages": "هنوز پیامی نیست",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "کسی نزدیک نیست",
   "chat.presence.active_none": "کسی فعال نیست",
   "chat.you": "شما",
@@ -324,6 +322,7 @@ export const strings: Strings = {
   "chat.jump.failed": "آن سلول باز نشد. کمی بعد دوباره تلاش کنید.",
   "chat.jump.title": "رفتن به یک جا",
   "chat.jump.saved": "جاهای ذخیره‌شده",
+  "chat.jump.nearby": "اطراف",
   "chat.jump.anywhere":
     "کانال موقعیت عمومی هر جایی را باز کنید، حتی جایی که در آن نیستید.",
   "chat.jump.geohash_note":
@@ -333,7 +332,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "سلول {level}",
   "chat.jump.already_here":
     "شما همین حالا اینجا هستید. «برو» کانال {name} شما را باز می‌کند.",
-  "chat.jump.open_direction": "باز کردن سلول سمت {direction} شما",
+  "chat.jump.dir.n": "شمال",
+  "chat.jump.dir.ne": "شمال‌شرق",
+  "chat.jump.dir.e": "شرق",
+  "chat.jump.dir.se": "جنوب‌شرق",
+  "chat.jump.dir.s": "جنوب",
+  "chat.jump.dir.sw": "جنوب‌غرب",
+  "chat.jump.dir.w": "غرب",
+  "chat.jump.dir.nw": "شمال‌غرب",
+  "chat.jump.open_n": "باز کردن سلول سمت شمال",
+  "chat.jump.open_ne": "باز کردن سلول سمت شمال‌شرق",
+  "chat.jump.open_e": "باز کردن سلول سمت شرق",
+  "chat.jump.open_se": "باز کردن سلول سمت جنوب‌شرق",
+  "chat.jump.open_s": "باز کردن سلول سمت جنوب",
+  "chat.jump.open_sw": "باز کردن سلول سمت جنوب‌غرب",
+  "chat.jump.open_w": "باز کردن سلول سمت غرب",
+  "chat.jump.open_nw": "باز کردن سلول سمت شمال‌غرب",
   "chat.jump.open_place": "باز کردن {name}",
   "chat.jump.remove_place": "برداشتن {name} از جاهای ذخیره‌شده",
   "chat.jump.go": "برو",
@@ -411,7 +425,7 @@ export const strings: Strings = {
   "chat.thread.private_channel": "کانال خصوصی",
   "chat.thread.location_channel": "کانال موقعیت",
   "chat.thread.public_channel": "کانال عمومی",
-  "chat.thread.notices": "اعلان‌های این کانال",
+  "chat.thread.notices": "اطلاعیه‌های این کانال",
   "chat.thread.invite": "دعوت کسی به این کانال",
   "chat.thread.not_in_range": "نزدیک نیست. از راه اینترنت تحویل می‌شود.",
   "chat.thread.not_nearby":
@@ -451,18 +465,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "لغو {name}",
   "chat.thread.hide_transfer": "پنهان کردن پیشرفت",
   "chat.thread.hide_transfer_hint": "فایل همچنان می‌رسد",
-  "chat.thread.queued_more": "{count} مورد دیگر در انتظار ارسال",
-  "chat.thread.across_bridge": "{count} نفر آن سوی پل",
   "chat.thread.bridged": "پل‌خورده",
   "chat.thread.invite_body":
     "در {channel} روی Airhop به من بپیوندید — پیام‌رسان مش خصوصی با اولویت برون‌خط.",
-  "chat.thread.go_back_unread": "بازگشت، {count} خوانده‌نشده",
   "chat.thread.view_info": "دیدن اطلاعات {name}",
-  "chat.thread.notices_new": "اعلان‌های این کانال، {count} تازه",
-  "chat.board.urgent_one": "اعلان فوری از {author} · {content}",
-  "chat.board.urgent_many": "{count} اعلان فوری تازه · اعلان‌ها را باز کنید",
+  "chat.board.urgent_one": "اطلاعیهٔ فوری از {author} · {content}",
+  "chat.board.urgent_one_anon": "اطلاعیهٔ فوری · {content}",
   "chat.thread.say_something": "در {channel} چیزی بگویید.",
-  "chat.thread.jump_latest_new": "پرش به تازه‌ترین پیام، {count} تازه",
   "chat.thread.unconfirmed_since": "از {date} تحویلی تأیید نشده است",
   "chat.thread.no_reach": "همتایی در نزدیکی نیست · هنوز کسی این را نگرفته است",
   "chat.thread.channel_needs_internet":
@@ -497,7 +506,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "شما عکس صفحه گرفتید",
   "chat.screenshot.you_took_private": "شما عکس صفحه گرفتید · به کسی گفته نشد",
   "chat.screenshot.heads_up": "توجه",
-  "chat.screenshot.notice": "* {name} عکس صفحه گرفت *",
+  "chat.screenshot.peer_took": "{name} عکس صفحه گرفت",
   "chat.screenshot.notified_dm":
     "به {name} خبر داده شد که شما از این گفتگو عکس صفحه گرفتید.",
   "chat.screenshot.notified":
@@ -550,7 +559,7 @@ export const strings: Strings = {
   "chat.attach.title": "پیوست",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "یک موقعیت هم‌رسانی شد",
+  "chat.location.sent_summary": "موقعیت هم‌رسانی شد",
   "chat.location.received_summary": "موقعیت خود را هم‌رسانی کرد",
   "chat.location.title": "موقعیت مکانی",
   "chat.location.away": "{distance} {direction}",
@@ -581,15 +590,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "شمال غرب",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "زنگ زد",
+  "chat.ring.sent_summary": "زنگ فرستاده شد",
   "chat.ring.received_summary": "برایتان زنگ زد",
   "chat.ring.alert.title": "{sender} برای شما زنگ می‌زند",
   "chat.ring.alert.body": "پیام‌هایتان را بررسی کنید",
   "chat.ring.alert.open": "باز کردن",
   "chat.ring.alert.snooze": "به تعویق انداختن 1 ساعت",
-  "chat.ring.sent_snoozed": "زنگ زده شد، به تعویق افتاد",
-  "chat.ring.sent_too_soon": "زنگ زده شد، خیلی زود",
-  "chat.ring.sent_not_allowed": "زنگ زده شد، مجاز نیست",
+  "chat.ring.sent_snoozed": "زنگ فرستاده شد · به تعویق افتاده",
+  "chat.ring.sent_too_soon": "زنگ فرستاده شد · خیلی زود",
+  "chat.ring.sent_not_allowed": "زنگ فرستاده شد · مجاز نیست",
   "chat.attach.send_anyway": "به هر حال بفرست",
   "chat.attach.bitchat_too_big": "شاید نرسد",
   "chat.attach.bitchat_too_big_body":
@@ -662,6 +671,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "توقف ضبط و فرستادن",
   "chat.voice.lift_lock": "برای ضبط بدون نگه داشتن، به بالا بکشید",
   "chat.voice.live_speaking": "{name} در حال صحبت",
+  "chat.voice.live_ended": "پایان یافت",
   "voice.unavailable": "صدای زنده در دسترس نیست",
   "voice.recording_stopped": "ضبط متوقف شد",
 
@@ -721,7 +731,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "برداشتن {name}",
   "chat.info.no_addable":
     "همتای در دسترسی برای افزودن نیست. اعضا باید نزدیک باشند.",
-  "chat.info.add_count": "افزودن {count}",
   "chat.info.teleported_tag": "{level}  ·  از راه دور",
   "chat.info.active": "فعال",
   "chat.info.members": "اعضا",
@@ -793,27 +802,25 @@ export const strings: Strings = {
   "chat.contact.ring_hint_again_in": "زنگ دوباره تا {time}",
 
   // ---- Chats: bulletin board notices ----
-  "chat.notices.title": "اعلان‌ها",
-  "chat.notices.post_area": "گذاشتن یک اعلان در این منطقه",
-  "chat.notices.post_mesh": "گذاشتن یک اعلان روی مش",
+  "chat.notices.title": "اطلاعیه‌ها",
+  "chat.notices.post_area": "گذاشتن یک اطلاعیه در این منطقه",
+  "chat.notices.post_mesh": "گذاشتن یک اطلاعیه روی مش",
   "chat.notices.mark_urgent": "نشان‌دار کردن به عنوان فوری",
-  "chat.notices.post": "گذاشتن اعلان",
+  "chat.notices.post": "گذاشتن اطلاعیه",
   "chat.notices.post_short": "بگذار",
-  "chat.notices.delete": "حذف اعلان",
+  "chat.notices.delete": "حذف اطلاعیه",
   "chat.notices.fades_soon": "به‌زودی محو می‌شود",
   "chat.notices.1_day": "1 روز",
   "chat.notices.3_days": "3 روز",
   "chat.notices.7_days": "7 روز",
   "chat.notices.fading": "در حال محو شدن",
-  "chat.notices.fades_in_hours": "تا {count} ساعت دیگر محو می‌شود",
-  "chat.notices.fades_in_days": "تا {count} روز دیگر محو می‌شود",
   "chat.notices.scope_geo": "جغرافیایی",
   "chat.notices.scope_mesh": "مش",
   "chat.notices.urgent_short": "فوری",
   "chat.notices.permanent_warning":
     "هرگز محو نمی‌شود. عمومی است و به این منطقه گره خورده، و نمی‌توانید پسش بگیرید.",
   "chat.notices.none":
-    "هنوز اعلانی نیست. یکی بگذارید تا برای دیگران اینجا بماند.",
+    "هنوز اطلاعیه‌ای نیست. یکی بگذارید تا برای دیگران اینجا بماند.",
 
   // ---- Chats: search results ----
   "chat.search.photos": "عکس‌ها",
@@ -823,35 +830,43 @@ export const strings: Strings = {
   "chat.search.links": "پیوندها",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "پالایش بر پایهٔ {filter}",
-  "chat.search.no_matches": "هیچ {filter} با «{query}» نمی‌خواند",
-  "chat.search.no_media": "هنوز {filter} نیست",
+  "chat.search.no_photos": "هنوز عکسی نیست",
+  "chat.search.no_videos": "هنوز ویدیویی نیست",
+  "chat.search.no_audio": "هنوز صدایی نیست",
+  "chat.search.no_documents": "هنوز سندی نیست",
+  "chat.search.no_links": "هنوز پیوندی نیست",
+  "chat.search.no_ecash": "هنوز ecash‌ای نیست",
+  "chat.search.no_photos_matching": "هیچ عکسی با «{query}» نمی‌خواند",
+  "chat.search.no_videos_matching": "هیچ ویدیویی با «{query}» نمی‌خواند",
+  "chat.search.no_audio_matching": "هیچ صدایی با «{query}» نمی‌خواند",
+  "chat.search.no_documents_matching": "هیچ سندی با «{query}» نمی‌خواند",
+  "chat.search.no_links_matching": "هیچ پیوندی با «{query}» نمی‌خواند",
+  "chat.search.no_ecash_matching": "هیچ ecash‌ای با «{query}» نمی‌خواند",
   "chat.search.result_a11y": "{chat}، {kind} از {sender}",
-  "chat.search.you": "شما",
+  "chat.search.result_mine_a11y": "{chat}، {kind} فرستادهٔ شما",
   "chat.search.section_chats": "گفتگوها",
   "chat.search.section_messages": "پیام‌ها",
-  "chat.search.section_notices": "اعلان‌ها",
+  "chat.search.section_notices": "اطلاعیه‌ها",
   "chat.search.hint":
     "پیام‌ها و گفتگوها را بجویید، یا از بالا یک پالایه برگزینید.",
   "chat.search.no_results": "نتیجه‌ای برای «{query}» نیست",
   "chat.search.open_chat": "باز کردن {name}",
   "chat.search.message_a11y": "{chat}، پیام از {sender}: {snippet}",
-  "chat.search.notice_a11y": "اعلان در {chat} از {author}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}، پیام شما: {snippet}",
+  "chat.search.notice_a11y": "اطلاعیه در {chat} از {author}: {snippet}",
   "chat.search.urgent": "فوری ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} مورد در این فهرست است. پاک کردن تنها آن‌ها را از اینجا برمی‌دارد، و پیام‌ها در گفتگوهایشان خوانده‌نشده می‌مانند. علامت زدن همه به عنوان خوانده‌شده هر دو را پاک می‌کند.",
   "chat.notif.mark_all_read": "همه را خوانده‌شده علامت بزن",
   "chat.notif.clear_list": "پاک کردن فهرست",
-  "chat.notif.clear_all_a11y": "پاک کردن هر {count} اعلان",
   "chat.notif.title": "اعلان‌ها",
   "chat.notif.clear_short": "پاک کن",
   "chat.notif.close": "بستن اعلان‌ها",
   "chat.notif.none": "هنوز اعلانی نیست",
   "chat.notif.none_desc":
-    "پیام‌ها، نام بردن‌ها و اعلان‌های کانال‌ها و گفتگوهای شما اینجا نمایان می‌شوند.",
+    "پیام‌ها، نام بردن‌ها و اطلاعیه‌های کانال‌ها و گفتگوهای شما اینجا نمایان می‌شوند.",
   "chat.notif.new": "تازه",
-  "chat.notif.notice_in": "اعلان در {channel}",
+  "chat.notif.notice_in": "اطلاعیه در {channel}",
   "chat.notif.in_room": "در {room}",
 
   // ---- Chats: forward ----
@@ -866,12 +881,15 @@ export const strings: Strings = {
   "chat.forward.locations": "موقعیت‌ها",
   "chat.forward.dms": "پیام‌های مستقیم",
   "chat.forward.none": "هنوز گفتگوی دیگری نیست",
+  "chat.forward.app_row": "هدایت نشد",
+  "chat.forward.app_row_body":
+    "این خط از طرف Airhop است، نه از طرف یک شخص، پس چیزی برای هدایت وجود ندارد.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "در حال راه‌اندازی مش…",
   "mesh.banner.no_bluetooth": "این دستگاه بلوتوث ندارد · فقط اینترنت",
   "mesh.banner.bluetooth_off": "بلوتوث خاموش · مش در دسترس نیست",
-  "mesh.banner.bluetooth_off_wifi": "بلوتوث خاموش · مش روی WiFi کار می‌کند",
+  "mesh.banner.bluetooth_off_wifi": "بلوتوث خاموش · مش روی Wi-Fi کار می‌کند",
   "mesh.banner.permission_needed": "به اجازهٔ بلوتوث نیاز است",
   "mesh.banner.blocked": "بلوتوث مسدود است · در تنظیمات اجازه دهید",
   "mesh.banner.location_permission":
@@ -900,7 +918,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "پل مش روشن · گفتگوی عمومی پیوند خورد",
   "mesh.banner.background_limits":
     "{brand} ممکن است مش را در پس‌زمینه متوقف کند",
-  "mesh.banner.bridge_across": "پل مش روشن · {count} نفر آن سوی پل",
   "mesh.banner.action.turn_on": "روشن کن",
   "mesh.banner.action.allow": "اجازه بده",
   "mesh.banner.action.resume": "از سر بگیر",
@@ -975,7 +992,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "دیدن همتا {name}، برخط",
   "mesh.peer.view_relay_online": "دیدن همتا {name}، برخط، گرهٔ بازپخش",
   "mesh.peer.last_seen_at": "آخرین بازدید {ago}",
-  "mesh.peer.send_amount": "فرستادن {amount} sats",
+  "mesh.peer.send_unit_amount": "فرستادن {amount} {unit}",
   "mesh.peer.direct": "اتصال مستقیم",
   "mesh.peer.check_distance": "بررسی فاصله",
   "mesh.peer.checking": "در حال بررسی",
@@ -1047,7 +1064,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "این توکن میان سکه‌های بیش از حد زیادی پخش شده و در یک کد QR جا نمی‌شود. به جایش هم‌رسانی یا کپی کنید.",
   "wallet.send.scan_note":
-    "از آن‌ها بخواهید این را از کیف پول خودشان بپویند. تا وقتی رسیده علامتش نزنید همچنان پس‌گرفتنی است.",
+    "از آن‌ها بخواهید این را از کیف پول خودشان بپویند. تا وقتی آن را دریافت‌شده علامت نزنید همچنان پس‌گرفتنی است.",
   "wallet.send.mesh_note":
     "توکن به شکل یک پیام مستقیم رمزگذاری‌شده روی مش می‌رود. نیازی به اینترنت نیست.",
   "wallet.send.no_peers_note":
@@ -1068,7 +1085,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "باز کردن در کیف پول",
   "wallet.send.to_peer": "فرستادن توکن به یک همتای نزدیک",
   "wallet.send.to_peer_short": "فرستادن به همتا",
-  "wallet.send.mark_delivered": "علامت‌گذاری به عنوان رسیده و پایان",
+  "wallet.send.mark_delivered": "علامت‌گذاری به عنوان دریافت‌شده",
   "wallet.send.they_got_it": "گرفتند",
   "wallet.send.keep_pending": "این ارسال را در انتظار نگه دار",
   "wallet.send.decide_later": "بعداً تصمیم می‌گیرم",
@@ -1092,10 +1109,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
-  "wallet.receive.stored_pending":
-    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است{dleq}. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
-  "wallet.receive.dleq_inline":
-    " (امضایش که درست از آب درمی‌آید، پس توکن اصل است)",
+  "wallet.receive.pending_unconfirmed":
+    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. امضایش درست است، پس توکن اصل است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.dleq_ok":
     "امضای ضراب‌خانه درست از آب درمی‌آید، پس توکن اصل است.",
   "wallet.receive.dleq_uncached":
@@ -1159,8 +1176,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "بردن همهٔ موجودی‌ها به یک ضراب‌خانه",
   "wallet.mint.confirm_with": "بررسی موجودی با {mint}",
   "wallet.mint.available_amount": "{amount} {unit} در دسترس",
-  "wallet.mint.split_across":
-    "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
   "wallet.mint.move_everything_to": "بردن همه چیز به {mint}",
   "wallet.mint.consolidate_title": "بردن به یک ضراب‌خانه",
   "wallet.mint.moving": "در حال جابه‌جایی…",
@@ -1171,10 +1186,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "چیزی جابه‌جا نشد",
   "wallet.mint.move_pending": "در راه است",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} از {mint} خارج شد و در راه {target} است. به محض دریافت واریز می‌رسد و کیف پول مدام دوباره تلاش می‌کند.",
+    "{amount} {unit} از {mint} خارج شد و در راه {target} است. به محض دریافت انتقال می‌رسد و کیف پول مدام دوباره تلاش می‌کند.",
   "wallet.mint.destination": "· مقصد",
   "wallet.mint.will_move": "· جابه‌جا خواهد شد",
   "wallet.mint.issued_by": "صادرکننده",
+  "wallet.mint.test_badge": "آزمایشی",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "شارژ کیف پول Airhop",
@@ -1201,7 +1217,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "تا {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "پرداخت {amount} {unit}",
-  "wallet.ln.deposit_title": "واریز از راه Lightning",
+  "wallet.ln.deposit_title": "شارژ با Lightning",
   "wallet.ln.amount_placeholder": "مبلغ به sats",
   "wallet.ln.requesting": "در حال درخواست…",
   "wallet.ln.get_invoice": "گرفتن صورتحساب",
@@ -1233,7 +1249,7 @@ export const strings: Strings = {
     "شما از پیش یک عبارت بازیابی دارید. بازگرداندن عبارتی دیگر جای آن را می‌گیرد. سکه‌هایی که عبارت قدیمی پوشش می‌داد روی این دستگاه همچنان قابل خرج می‌مانند، اما دیگر قابل بازگرداندن نیستند، پس پیش از ادامه مطمئن شوید واژه‌های قدیمی را نوشته‌اید.",
   "wallet.backup.replace": "جایگزین کن",
   "wallet.backup.replace_unseen_body":
-    "این کیف پول از قبل یک عبارت بازیابی دارد که هنگام راه‌اندازی برای شما ساخته شد و سکه‌هایتان با آن ایجاد شده‌اند. بازیابی عبارتی دیگر آن را برای همیشه جایگزین می‌کند. سکه‌ها روی این دستگاه قابل خرج می‌مانند و دفعهٔ بعد که هر ضرابخانه تازه‌سازی شود، زیر عبارت جدید می‌روند.",
+    "این کیف پول از قبل یک عبارت بازیابی دارد که هنگام راه‌اندازی برای شما ساخته شد و سکه‌هایتان با آن ایجاد شده‌اند. بازیابی عبارتی دیگر آن را برای همیشه جایگزین می‌کند. سکه‌ها روی این دستگاه قابل خرج می‌مانند و دفعهٔ بعد که هر ضراب‌خانه تازه‌سازی شود، زیر عبارت جدید می‌روند.",
   "wallet.backup.invalid_phrase": "آن عبارت معتبر نیست",
   "wallet.backup.invalid_phrase_body":
     "عبارت یک کد وارسی درونی دارد و این یکی از آن رد نمی‌شود. دنبال واژه‌ای بگردید که بد تایپ شده، جا افتاده یا جابه‌جا شده باشد.",
@@ -1324,7 +1340,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "ضراب‌خانه می‌گوید این توکن از پیش بازخرید شده است، پس {amount} {unit} به دستشان رسید و چیزی به موجودی شما بازنگشت.",
   "wallet.copied.token_body":
-    "توکن در بریده‌دان شماست. تا وقتی رسیده علامتش نزنید اینجا کنارگذاشته می‌ماند، پس اگر تلاش نخست شکست خورد می‌توانید دوباره بچسبانیدش.",
+    "توکن در بریده‌دان شماست. تا وقتی آن را دریافت‌شده علامت نزنید اینجا کنارگذاشته می‌ماند، پس اگر تلاش نخست شکست خورد می‌توانید دوباره بچسبانیدش.",
   "wallet.copied.refused_token_body":
     "توکن در بریده‌دان شماست. این کیف پول دیگر آن را به حساب نمی‌آورد، پس می‌توانید آن را به فرستنده‌اش برگردانید.",
   "wallet.copied.phrase_body":
@@ -1350,8 +1366,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "نمایش این توکن به شکل یک کد QR",
   "wallet.pending.copy_again": "کپی دوبارهٔ توکن",
   "wallet.pending.share_again": "هم‌رسانی دوبارهٔ توکن",
-  "wallet.pending.mark_delivered": "علامت زدن این توکن به عنوان رسیده",
-  "wallet.pending.delivered": "رسید",
+  "wallet.pending.mark_delivered": "علامت‌گذاری به عنوان دریافت‌شده",
+  "wallet.pending.delivered": "دریافت شد",
   "wallet.pending.reclaim_into": "پس گرفتن این توکن به موجودی شما",
   "wallet.activity.title": "فعالیت",
   "wallet.activity.none": "هنوز چیزی نیست",
@@ -1369,7 +1385,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "ناموفق",
   "wallet.activity.status_reclaimed": "پس گرفته شد",
   "wallet.activity.status_expired": "منقضی شد",
-  "wallet.activity.ln_deposit": "واریز Lightning",
+  "wallet.activity.ln_deposit": "شارژ Lightning",
   "wallet.activity.ln_withdrawal": "برداشت Lightning",
   "wallet.activity.nutzap_received": "Nutzap دریافت شد",
   "wallet.activity.nutzap_claiming": "Nutzap، در حال دریافت",
@@ -1412,7 +1428,13 @@ export const strings: Strings = {
     "پرداخت‌های قفل‌شده پس گرفته نمی‌شوند: اکنون تنها کلید خودشان می‌تواند این سکه‌ها را خرج کند.",
   "wallet.pay.reclaimable":
     "تا وقتی رسیدنش را تأیید کنید از «فعالیت» پس‌گرفتنی می‌ماند.",
-  "wallet.pay.why": "به این شیوه فرستاده شد چون {reason}.",
+  "wallet.pay.why_no_relay": "به این شیوه فرستاده شد چون اتصالی به رله نبود.",
+  "wallet.pay.why_no_shared_mint":
+    "به این شیوه فرستاده شد چون در هیچ ضراب‌خانه‌ای که گیرنده می‌پذیرد موجودی کافی ندارید.",
+  "wallet.pay.why_no_nutzap_info":
+    "به این شیوه فرستاده شد چون گیرنده اطلاعات nutzap منتشر نکرده است (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} به {name}",
   "wallet.pay.thread_receipt":
     "شما {amount} {unit} فرستادید، قفل‌شده به کلید خودشان.",
@@ -1557,19 +1579,19 @@ export const strings: Strings = {
     "چیزی کسر نشد. دوباره تلاش کنید تا کیف پول مجموعه‌ای دیگر برگزیند.",
   "wallet.svc.no_ecash": "هنوز ecash‌ای نیست.",
   "wallet.svc.no_ecash_body":
-    "یک ضراب‌خانه اضافه کنید و از راه Lightning واریز کنید، یا از کسی توکنی بگیرید.",
+    "یک ضراب‌خانه اضافه کنید و با Lightning شارژ کنید، یا از کسی توکنی بگیرید.",
   "wallet.svc.split_across_mints": "موجودی شما میان چند ضراب‌خانه پخش است.",
   "wallet.svc.mint_says_spent":
     "ضراب‌خانه این ecash را از پیش خرج‌شده گزارش کرد.",
   "wallet.svc.issue_against_invoice":
     "صدور ecash در برابر یک صورتحساب Lightning",
   "wallet.svc.pay_invoice": "پرداخت یک صورتحساب Lightning",
-  "wallet.svc.unknown_deposit": "واریز ناشناخته.",
+  "wallet.svc.unknown_deposit": "شارژ ناشناخته.",
   "wallet.svc.invoice_expired_before": "صورتحساب پیش از پرداخت شدن منقضی شد.",
   "wallet.svc.invoice_expired": "آن صورتحساب منقضی شد.",
   "wallet.svc.invoice_unpaid": "صورتحساب هنوز پرداخت نشده است.",
-  "wallet.svc.payment_unknown":
-    "وضعیت پرداخت نامعلوم است؛ در تازه‌سازی بعدی دوباره بررسی می‌شود.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} وضعیت پرداخت نامعلوم است؛ در تازه‌سازی بعدی دوباره بررسی می‌شود.",
   "wallet.svc.melt_change_pending": "صورتحساب شما پرداخت شد.",
   "wallet.svc.melt_change_pending_body":
     "ضراب‌خانه هنوز کارمزد مسیریابی مصرف‌نشده را برنگردانده است. در تازه‌سازی بعدی خودکار مطالبه می‌شود، و در این میان چیزی از دست نمی‌رود.",
@@ -1609,16 +1631,12 @@ export const strings: Strings = {
     "آن پرداخت نام ضراب‌خانه‌ای را می‌برد که شما به کار نمی‌برید.",
   "wallet.svc.unknown_mint_body":
     "اگر به آن اعتماد دارید اول خودتان اضافه‌اش کنید؛ از ضراب‌خانه‌ای که برنگزیده‌اید چیزی بازخرید نمی‌شود.",
-  "wallet.svc.no_relay": "اتصالی به رله نیست",
-  "wallet.svc.no_shared_mint": "ضراب‌خانهٔ مشترکی با موجودی کافی نیست",
-  "wallet.svc.no_nutzap_info":
-    "گیرنده اطلاعات nutzap منتشر نکرده است (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "به کلیدشان قفل شده اما هنوز نرسیده است. برای تکمیلش توکن این تراکنش را هم‌رسانی کنید.",
   "wallet.svc.swap_lost":
     "ضراب‌خانه این تعویض را هرگز کامل نکرد، پس چیزی در برابرش صادر نشد.",
   "wallet.svc.mint_lost":
-    "مینت این واریز را صادر کرده، اما سکه‌هایش بازسازی نشدند. بازیابی از عبارت بازیابی آن‌ها را برمی‌گرداند.",
+    "ضراب‌خانه این شارژ را صادر کرده، اما سکه‌هایش بازسازی نشدند. بازیابی از عبارت بازیابی آن‌ها را برمی‌گرداند.",
   "wallet.svc.swap_unreadable":
     "این تعویض به شکلی ذخیره شده که این نسخه نمی‌تواند دوباره اجرایش کند.",
   "wallet.svc.lock_in_doubt": "ممکن است این پرداخت انجام شده باشد یا نه.",
@@ -1744,7 +1762,7 @@ export const strings: Strings = {
     "رازداری پیش‌رو، بسته‌های امضاشده، همتاهای مسدود",
   "settings.section.network": "شبکه و رله‌ها",
   "settings.section.network_desc":
-    "اینترنت جایگزین، رله‌های nostr، سازگاری با bitchat",
+    "اینترنت جایگزین، رله‌های Nostr، سازگاری با bitchat",
   "settings.section.permissions": "دسترسی‌ها",
   "settings.section.permissions_desc":
     "بلوتوث، موقعیت مکانی، اعلان‌ها، دوربین، میکروفون",
@@ -1793,14 +1811,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "خوانشی از سیگنال نیست",
   "settings.diag.no_peers": "کسی در محدوده نیست",
-  "settings.diag.no_peers_desc": "{links} پیوند رادیویی باز است",
   "settings.diag.gcs_size": "اندازهٔ صافی",
   "settings.diag.gcs_size_desc":
     "بزرگ‌ترین صافی همگام‌سازی که روی آنتن رفته است",
   "settings.diag.fpr": "نرخ مثبت کاذب",
   "settings.diag.fpr_desc":
     "هر چند وقت یک بار صافی بسته‌ای را که نداریم موجود اعلام می‌کند",
-  "settings.diag.bytes": "{n} بایت",
   "settings.diag.footnote":
     "اینجا چیزی قابل تغییر نیست. این مقادیر ثابت‌اند تا Airhop با bitchat سازگار بماند.",
   "settings.diag.share": "هم‌رسانی عیب‌یابی",
@@ -1821,7 +1837,6 @@ export const strings: Strings = {
   "settings.general.undo": "لغو ارسال",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "کیف پول",
-  "settings.general.undo_seconds": "{count} ثانیه",
   "settings.general.undo_a11y": "لغو ارسال: {value}",
   "settings.general.quality_a11y": "کیفیت بارگذاری روی {value} تنظیم شود",
   "settings.general.undo_desc":
@@ -1911,7 +1926,6 @@ export const strings: Strings = {
   "settings.network.custom": "رله‌های دلخواه",
   "settings.network.custom_desc":
     "برای کانال‌های موقعیت و پل مش رله‌های خودتان را اضافه کنید",
-  "settings.network.custom_added": "{count} از {max} افزوده شد",
   "settings.network.dm_relays": "رله‌های پیام",
   "settings.network.dm_relays_desc":
     "پیام‌های مستقیم و کانال‌های خصوصی همیشه از این‌ها استفاده می‌کنند. رله‌های دلخواه آن‌ها را تغییر نمی‌دهند.",
@@ -1921,17 +1935,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "افزودن رله",
   "settings.network.remove_relay": "حذف {url}",
   "settings.network.add_short": "افزودن",
-  "settings.network.relay_limit":
-    "می‌توانید {count} رله اضافه کنید. برای افزودن یکی دیگر، یکی را حذف کنید.",
   "settings.network.relay_duplicate": "آن رله از پیش در فهرست شماست.",
   "settings.network.relay_invalid":
     "یک میزبان رلهٔ معتبر وارد کنید، مثلاً relay.example.com. درگاه تنها وقتی لازم است که رله از مقدار پیش‌فرض استفاده نکند. نشانی‌های IP و نام‌های محلی مجاز نیستند.",
   "settings.network.lan": "شبکه محلی",
   "settings.network.lan_desc":
-    "به افرادی که روی همان WiFi هستند برس، حتی بین iPhone و Android. دستگاه‌های دیگر شبکه می‌توانند ببینند که Airhop را اجرا می‌کنی.",
+    "به افرادی که روی همان Wi-Fi هستند برسید، حتی بین iPhone و Android. دستگاه‌های دیگر شبکه می‌توانند ببینند که Airhop را اجرا می‌کنید.",
   "settings.network.lan_searching": "هیچ دستگاه Airhop روی این شبکه نیست",
   "settings.network.lan_active": "در این شبکه متصل است",
-  "settings.network.lan_unavailable": "به هیچ شبکه WiFi وصل نیستی",
+  "settings.network.lan_unavailable": "به هیچ شبکهٔ Wi-Fi وصل نیستید",
   "settings.network.lan_permission":
     "دسترسی به شبکه محلی برای Airhop خاموش است",
   "settings.network.lan_unsupported": "روی این دستگاه در دسترس نیست",
@@ -1955,7 +1967,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_unavailable":
     "Wi-Fi Aware در حال حاضر در دسترس نیست",
   "settings.network.wifi_pair_forget":
-    "یک جفت‌شدن را در برنامه Settings حذف کنید",
+    "یک جفت‌شدن را در برنامهٔ تنظیمات حذف کنید",
   "settings.network.bitchat": "سازگاری با bitchat",
   "settings.network.bitchat_desc":
     "همان مش BLE که bitchat دارد، با هم‌کارکردی کامل. این همیشه روشن است و نمی‌توان خاموشش کرد.",
@@ -2322,7 +2334,7 @@ export const strings: Strings = {
     "دانلود ناموفق بود. اتصال خود را بررسی کنید و دوباره تلاش کنید.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} برابر {size} KiB است، بیش از حد {cap} KiB.",
+  "transfer.too_large": "{kind} برابر {size} است، بیش از حد {cap}.",
   "transfer.failed.malformed":
     "یک پیوست آسیب‌دیده رسید و باز نشد. از آن‌ها بخواهید دوباره بفرستند.",
   "transfer.failed.unsupported_type":
@@ -2332,10 +2344,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "یک پیوست رسید اما ذخیره نشد. فضای خالی خود را بررسی کنید.",
   "transfer.badge.waiting": "در انتظار · {name}",
-  "transfer.badge.active_count": "{count} انتقال",
   "transfer.badge.sending": "در حال فرستادن {name}",
   "transfer.badge.receiving": "در حال دریافت {name}",
-  "transfer.badge.a11y": "{label}، {percent} درصد. باز کردن گفتگو.",
   "transfer.kind.photo": "عکس",
   "transfer.kind.video": "ویدیو",
   "transfer.kind.voice": "پیام صوتی",
@@ -2360,14 +2370,15 @@ export const strings: Strings = {
   "notif.nearby.body": "همین حالا در محدودهٔ بلوتوث. برای باز کردن مش بزنید.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "کسی",
-  "notif.notice_urgent": "اعلان فوری · {content}",
-  "notif.notice": "اعلان · {content}",
+  "notif.notice_urgent": "اطلاعیهٔ فوری · {content}",
+  "notif.notice": "اطلاعیه · {content}",
   "notif.incoming_file": "فایل ورودی",
   "notif.preview.photo": "📷 عکس",
   "notif.preview.voice": "🎤 پیام صوتی",
   "notif.preview.video": "🎥 ویدیو",
   "notif.preview.document": "📄 سند",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "پیام تازه",
   "notif.hidden.channel": "فعالیت تازه",
@@ -2379,6 +2390,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} دقیقه پیش",
+    other: "{count} دقیقه پیش",
+  },
+  "format.hours_ago": {
+    one: "{count} ساعت پیش",
+    other: "{count} ساعت پیش",
+  },
+  "format.days_ago": {
+    one: "{count} روز پیش",
+    other: "{count} روز پیش",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "نمایش {count} مورد دیگر",
@@ -2431,6 +2456,55 @@ export const plurals: Plurals = {
     other: "{count} نفر در حال صحبت",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "{count} مورد دیگر در انتظار ارسال",
+    other: "{count} مورد دیگر در انتظار ارسال",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} نفر آن سوی پل",
+    other: "{count} نفر آن سوی پل",
+  },
+  "chat.thread.go_back_unread": {
+    one: "بازگشت، {count} خوانده‌نشده",
+    other: "بازگشت، {count} خوانده‌نشده",
+  },
+  "chat.thread.notices_new": {
+    one: "اطلاعیه‌های این کانال، {count} تازه",
+    other: "اطلاعیه‌های این کانال، {count} تازه",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "پرش به تازه‌ترین پیام، {count} تازه",
+    other: "پرش به تازه‌ترین پیام، {count} تازه",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} اطلاعیهٔ فوری تازه · اطلاعیه‌ها را باز کنید",
+    other: "{count} اطلاعیهٔ فوری تازه · اطلاعیه‌ها را باز کنید",
+  },
+  "chat.info.add_count": {
+    one: "افزودن {count}",
+    other: "افزودن {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "تا {count} ساعت دیگر محو می‌شود",
+    other: "تا {count} ساعت دیگر محو می‌شود",
+  },
+  "chat.notices.fades_in_days": {
+    one: "تا {count} روز دیگر محو می‌شود",
+    other: "تا {count} روز دیگر محو می‌شود",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "{count} اعلان در این فهرست است. پاک کردن تنها آن را از اینجا برمی‌دارد، و پیام در گفتگویش خوانده‌نشده می‌ماند. علامت زدن همه به عنوان خوانده‌شده هر دو را پاک می‌کند.",
+    other:
+      "{count} اعلان در این فهرست است. پاک کردن تنها آن‌ها را از اینجا برمی‌دارد، و پیام‌ها در گفتگوهایشان خوانده‌نشده می‌مانند. علامت زدن همه به عنوان خوانده‌شده هر دو را پاک می‌کند.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "پاک کردن {count} اعلان",
+    other: "پاک کردن هر {count} اعلان",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} همتا در محدوده",
@@ -2453,18 +2527,28 @@ export const plurals: Plurals = {
     other: "{count} عضو",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "پل مش روشن · {count} نفر آن سوی پل",
+    other: "پل مش روشن · {count} نفر آن سوی پل",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، آن سکه برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
+    one: "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، این موجودی برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
     other:
-      "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، آن سکه‌ها برای همیشه از این دستگاه پاک می‌شوند و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
+      "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، این موجودی برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
+  },
+  "wallet.mint.split_across": {
+    one: "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
+    other: "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} واریز در انتظار پرداخت است. هر بار که برنامه باز می‌شود دوباره بررسی می‌شود.",
+    one: "{count} شارژ در انتظار پرداخت است. هر بار که برنامه باز می‌شود دوباره بررسی می‌شود.",
     other:
-      "{count} واریز در انتظار پرداخت هستند. هر بار که برنامه باز می‌شود دوباره بررسی می‌شوند.",
+      "{count} شارژ در انتظار پرداخت هستند. هر بار که برنامه باز می‌شود دوباره بررسی می‌شوند.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2501,9 +2585,39 @@ export const plurals: Plurals = {
     other: "{count} سکه قبلاً خرج شده بودند و حذف شدند.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} پیوند رادیویی باز است",
+    other: "{count} پیوند رادیویی باز است",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} ثانیه",
+    other: "{count} ثانیه",
+  },
+  "settings.network.custom_added": {
+    one: "{count} از {max} افزوده شد",
+    other: "{count} از {max} افزوده شد",
+  },
+  "settings.network.relay_limit": {
+    one: "می‌توانید {count} رله اضافه کنید. برای افزودن یکی دیگر، آن را حذف کنید.",
+    other:
+      "می‌توانید {count} رله اضافه کنید. برای افزودن یکی دیگر، یکی را حذف کنید.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} انتقال",
+    other: "{count} انتقال",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}، {count} درصد. باز کردن گفتگو.",
+    other: "{label}، {count} درصد. باز کردن گفتگو.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "یک نفر نزدیک شماست",
+    "=1": "یک نفر نزدیک شماست",
+    one: "{count} نفر نزدیک شماست",
     other: "{count} نفر نزدیک شما هستند",
   },
 };

@@ -201,13 +201,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "بدون اینترنت، بدون روتر، روی گوشی‌هایی که مردم همین حالا دارند.",
   "home.features.networking.lan.name": "شبکهٔ محلی",
-  "home.features.networking.lan.line": "WiFi مشترک یا هات‌اسپات، iPhone و Android با هم.",
+  "home.features.networking.lan.line": "Wi-Fi مشترک یا هات‌اسپات، iPhone و Android با هم.",
   "home.features.networking.hops.name": "رلهٔ چندپرشی",
   "home.features.networking.hops.line": "هر گوشی پیام‌ها را جلو می‌برد، تا هفت پرش.",
   "home.features.networking.bridge.name": "پل مش",
   "home.features.networking.bridge.line":
     "گفت‌وگوی عمومی شما را به جمعی نزدیک اما بیرون از برد وصل می‌کند.",
-  "home.features.networking.wifi.name": "مسیر سریع WiFi",
+  "home.features.networking.wifi.name": "مسیر سریع Wi-Fi",
   "home.features.networking.wifi.line": "انتقال سریع‌تر میان دو Android یا دو iPhone.",
   "home.features.networking.bitchat.name": "سازگار با bitchat",
   "home.features.networking.bitchat.line": "هر دو اپلیکیشن بدون تنظیمات به یک مش می‌پیوندند.",

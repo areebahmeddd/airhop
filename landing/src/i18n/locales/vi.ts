@@ -203,13 +203,13 @@ const strings: Strings = {
     "Không internet, không router, trên những điện thoại mọi người đã có.",
   "home.features.networking.lan.name": "Mạng cục bộ",
   "home.features.networking.lan.line":
-    "WiFi chung hoặc điểm phát sóng, iPhone và Android cùng nhau.",
+    "Wi-Fi chung hoặc điểm phát sóng, iPhone và Android cùng nhau.",
   "home.features.networking.hops.name": "Chuyển tiếp nhiều chặng",
   "home.features.networking.hops.line": "Mỗi điện thoại chuyển tin đi tiếp, tối đa bảy chặng.",
   "home.features.networking.bridge.name": "Cầu mesh",
   "home.features.networking.bridge.line":
     "Nối cuộc trò chuyện công khai của bạn với một nhóm ở gần nhưng ngoài tầm.",
-  "home.features.networking.wifi.name": "Đường nhanh WiFi",
+  "home.features.networking.wifi.name": "Đường nhanh Wi-Fi",
   "home.features.networking.wifi.line": "Truyền nhanh hơn giữa hai máy Android hoặc hai iPhone.",
   "home.features.networking.bitchat.name": "Tương thích bitchat",
   "home.features.networking.bitchat.line":

@@ -208,14 +208,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Tanpa internet, tanpa penghala, pada telefon yang orang sudah miliki.",
   "home.features.networking.lan.name": "Rangkaian setempat",
-  "home.features.networking.lan.line": "WiFi dikongsi atau hotspot, iPhone dan Android bersama.",
+  "home.features.networking.lan.line": "Wi-Fi dikongsi atau hotspot, iPhone dan Android bersama.",
   "home.features.networking.hops.name": "Geganti berbilang lompatan",
   "home.features.networking.hops.line":
     "Setiap telefon menghantar mesej seterusnya, sehingga tujuh lompatan.",
   "home.features.networking.bridge.name": "Jambatan mesh",
   "home.features.networking.bridge.line":
     "Menghubungkan perbualan awam anda dengan kumpulan berdekatan yang di luar jangkauan.",
-  "home.features.networking.wifi.name": "Laluan pantas WiFi",
+  "home.features.networking.wifi.name": "Laluan pantas Wi-Fi",
   "home.features.networking.wifi.line":
     "Pemindahan lebih pantas antara dua Android atau dua iPhone.",
   "home.features.networking.bitchat.name": "Serasi dengan bitchat",

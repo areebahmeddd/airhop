@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "Сьогодні",
   "format.yesterday": "Учора",
-  "format.minutes_ago": "{count} хв тому",
-  "format.hours_ago": "{count} год тому",
-  "format.days_ago": "{count} дн тому",
   "format.just_now": "щойно",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -256,6 +253,7 @@ export const strings: Strings = {
   "chat.group_badge": "Група",
   "chat.more": "Ще",
   "chat.no_messages": "Повідомлень поки немає",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "Нікого поблизу",
   "chat.presence.active_none": "Ніхто не активний",
   "chat.you": "Ви",
@@ -329,7 +327,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Не вдалося відкрити ту комірку. Спробуйте за мить.",
   "chat.jump.title": "Перейти до місця",
-  "chat.jump.saved": "ЗБЕРЕЖЕНІ МІСЦЯ",
+  "chat.jump.saved": "Збережені місця",
+  "chat.jump.nearby": "Поблизу",
   "chat.jump.anywhere":
     "Відкрийте публічний канал місцевості будь-де, навіть там, де вас немає.",
   "chat.jump.geohash_note":
@@ -338,7 +337,22 @@ export const strings: Strings = {
     "Ви показуєтеся як телепортований, а не як поруч. Це дістає лише через інтернет.",
   "chat.jump.level_cell": "Комірка рівня {level}",
   "chat.jump.already_here": "Ви вже тут. Перейти відкриє ваш канал {name}.",
-  "chat.jump.open_direction": "Відкрити комірку на {direction} від вас",
+  "chat.jump.dir.n": "Пн",
+  "chat.jump.dir.ne": "ПнС",
+  "chat.jump.dir.e": "Сх",
+  "chat.jump.dir.se": "ПдС",
+  "chat.jump.dir.s": "Пд",
+  "chat.jump.dir.sw": "ПдЗ",
+  "chat.jump.dir.w": "Зх",
+  "chat.jump.dir.nw": "ПнЗ",
+  "chat.jump.open_n": "Відкрити комірку на північ",
+  "chat.jump.open_ne": "Відкрити комірку на північний схід",
+  "chat.jump.open_e": "Відкрити комірку на схід",
+  "chat.jump.open_se": "Відкрити комірку на південний схід",
+  "chat.jump.open_s": "Відкрити комірку на південь",
+  "chat.jump.open_sw": "Відкрити комірку на південний захід",
+  "chat.jump.open_w": "Відкрити комірку на захід",
+  "chat.jump.open_nw": "Відкрити комірку на північний захід",
   "chat.jump.open_place": "Відкрити {name}",
   "chat.jump.remove_place": "Вилучити {name} зі збережених місць",
   "chat.jump.go": "Перейти",
@@ -367,7 +381,7 @@ export const strings: Strings = {
     "До 16 людей, вибраних вами. Посилання-запрошення немає, тож ніхто не потрапляє сюди через переслане посилання.",
   "chat.group.bluetooth":
     "Лише Bluetooth. Учасники поза радіусом отримають повідомлення, щойно повернуться.",
-  "chat.group.members_label": "УЧАСНИКИ",
+  "chat.group.members_label": "Учасники",
   "chat.group.none_in_range":
     "У радіусі нікого немає. Учасники мають бути поблизу, коли ви створюєте групу.",
   "chat.group.create_title": "Створити групу",
@@ -380,7 +394,7 @@ export const strings: Strings = {
     "Дістає пристрої в радіусі Bluetooth (приблизно від 10 до 100 метрів). Інтернет не потрібен. Ідеально, щоб домовлятися на місці.",
   "chat.scope.block": "Квартал · ~100 м",
   "chat.scope.block_desc":
-    "Охоплення розміром із квартал. Повідомлення мостяться через інтернет, щоб піри трохи за межами радіуса Bluetooth теж могли долучитися.",
+    "Охоплення розміром із квартал. Повідомлення передаються через інтернет, щоб піри трохи за межами радіуса Bluetooth теж могли долучитися.",
   "chat.scope.neighborhood": "Район · ~1 км",
   "chat.scope.neighborhood_desc":
     "Охоплення рівня району. За допомоги релеїв піри по всій окрузі досяжні навіть без прямого зв’язку Bluetooth.",
@@ -389,7 +403,7 @@ export const strings: Strings = {
     "Канал на все місто. Використовує геоприв’язані інтернет-релеї, щоб дістати пірів по всій агломерації.",
   "chat.scope.province": "Область · ~100 км",
   "chat.scope.province_desc":
-    "Охоплення рівня області. Змощене через інтернет для регіонального охоплення в сотні кілометрів.",
+    "Охоплення рівня області. Передається через інтернет для регіонального охоплення в сотні кілометрів.",
   "chat.scope.country": "Країна чи регіон · ~1000 км",
   "chat.scope.country_desc":
     "Охоплення всієї країни. Приєднатися й читати повідомлення може будь-який користувач Airhop чи bitchat у регіоні.",
@@ -456,20 +470,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "Скасувати {name}",
   "chat.thread.hide_transfer": "Сховати прогрес",
   "chat.thread.hide_transfer_hint": "Файл однаково надійде",
-  "chat.thread.queued_more": "Ще {count} чекають на надсилання",
-  "chat.thread.across_bridge": "{count} по той бік мосту",
-  "chat.thread.bridged": "змощено",
+  "chat.thread.bridged": "через міст",
   "chat.thread.invite_body":
     "Приєднуйтеся до мене в {channel} на Airhop — приватні повідомлення через mesh, спершу офлайн.",
-  "chat.thread.go_back_unread": "Назад, {count} непрочитаних",
   "chat.thread.view_info": "Переглянути відомості про {name}",
-  "chat.thread.notices_new": "Оголошення цього каналу, {count} нових",
   "chat.board.urgent_one": "Термінове оголошення від {author} · {content}",
-  "chat.board.urgent_many":
-    "Нових термінових оголошень: {count} · відкрити Оголошення",
+  "chat.board.urgent_one_anon": "Термінове оголошення · {content}",
   "chat.thread.say_something": "Скажіть щось у {channel}.",
-  "chat.thread.jump_latest_new":
-    "Перейти до найновішого повідомлення, {count} нових",
   "chat.thread.unconfirmed_since":
     "Жодного підтвердженого доставлення від {date}",
   "chat.thread.no_reach": "Немає пірів поблизу · це поки ніхто не отримав",
@@ -502,12 +509,12 @@ export const strings: Strings = {
     "Лише поблизу: тримайте це повідомлення осторонь мосту mesh",
   "chat.bridge.nearby_label": "Лише поблизу · лишається на Bluetooth",
   "chat.bridge.bridging_label":
-    "Мостимо до сусідніх місцевостей · торкніться для «лише поблизу»",
+    "Передаємо через міст у сусідні місцевості · торкніться для «лише поблизу»",
   "chat.screenshot.you_took": "Ви зробили знімок екрана",
   "chat.screenshot.you_took_private":
     "Ви зробили знімок екрана · нікому не сказали",
   "chat.screenshot.heads_up": "Увага",
-  "chat.screenshot.notice": "* {name} зробив знімок екрана *",
+  "chat.screenshot.peer_took": "{name} зробив знімок екрана",
   "chat.screenshot.notified_dm":
     "{name} дізнався, що ви зробили знімок екрана цієї розмови.",
   "chat.screenshot.notified":
@@ -527,15 +534,15 @@ export const strings: Strings = {
 
   // ---- Chats: message actions and info ----
   "chat.info.title": "Відомості про повідомлення",
-  "chat.info.delivered_to": "Доставлено {name}",
-  "chat.info.read_by": "Прочитано {name}",
+  "chat.info.delivered_to": "Доставлено: {name}",
+  "chat.info.read_by": "Прочитано: {name}",
   "chat.info.group_reach_desc":
     "Досяжні зараз, це не підтвердження доставлення",
   "chat.info.group_alone": "Інших учасників немає",
   "chat.info.today_at": "Сьогодні {time}",
   "chat.info.sending": "Надсилаємо…",
   "chat.info.failed": "Не вдалося надіслати",
-  "chat.info.courier": "Переніс друг",
+  "chat.info.courier": "Несе друг",
   "chat.info.sent": "Надіслано",
   "chat.info.queued": "Чекає на надсилання",
   "chat.info.waiting": "Чекаємо…",
@@ -555,7 +562,7 @@ export const strings: Strings = {
   "chat.attach.document": "Документ",
   "chat.attach.document_desc": "Надішліть будь-який файл чи PDF",
   "chat.attach.voice": "Голосова нотатка",
-  "chat.attach.voice_desc": "Запишіть і надішліть голосове повідомлення",
+  "chat.attach.voice_desc": "Запишіть і надішліть голосову нотатку",
   "chat.attach.ecash": "Надіслати ecash",
   "chat.attach.ecash_desc": "Надішліть сати Cashu зі свого гаманця",
   "chat.attach.location": "Місцезнаходження",
@@ -563,7 +570,7 @@ export const strings: Strings = {
   "chat.attach.title": "Прикріпити",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "Поділився місцем",
+  "chat.location.sent_summary": "Місцезнаходження надіслано",
   "chat.location.received_summary": "Поділився своїм місцем",
   "chat.location.title": "Місцезнаходження",
   "chat.location.away": "{distance} на {direction}",
@@ -595,15 +602,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "північний захід",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "Подзвонив",
+  "chat.ring.sent_summary": "Дзвінок надіслано",
   "chat.ring.received_summary": "Подзвонив вам",
   "chat.ring.alert.title": "{sender} дзвонить вам",
   "chat.ring.alert.body": "Перевірте свої повідомлення",
   "chat.ring.alert.open": "Відкрити",
   "chat.ring.alert.snooze": "Відкласти на 1 годину",
-  "chat.ring.sent_snoozed": "Подзвонили, відкладено",
-  "chat.ring.sent_too_soon": "Подзвонили, зарано",
-  "chat.ring.sent_not_allowed": "Подзвонили, не дозволено",
+  "chat.ring.sent_snoozed": "Дзвінок надіслано · відкладено",
+  "chat.ring.sent_too_soon": "Дзвінок надіслано · зарано",
+  "chat.ring.sent_not_allowed": "Дзвінок надіслано · не дозволено",
   "chat.attach.send_anyway": "Усе одно надіслати",
   "chat.attach.bitchat_too_big": "Це може не дійти",
   "chat.attach.bitchat_too_big_body":
@@ -680,6 +687,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "Зупинити запис і надіслати",
   "chat.voice.lift_lock": "Проведіть угору, щоб записувати без утримання",
   "chat.voice.live_speaking": "{name} говорить",
+  "chat.voice.live_ended": "Завершено",
   "voice.unavailable": "Живий голос недоступний",
   "voice.recording_stopped": "Запис зупинено",
 
@@ -740,7 +748,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "Вилучити {name}",
   "chat.info.no_addable":
     "Немає досяжних пірів, щоб додати. Учасники мають бути поблизу.",
-  "chat.info.add_count": "Додати {count}",
   "chat.info.teleported_tag": "{level}  ·  телепортовано",
   "chat.info.active": "Активні",
   "chat.info.members": "Учасники",
@@ -801,7 +808,7 @@ export const strings: Strings = {
   "chat.contact.verify": "Підтвердити контакт",
   "chat.contact.allow_ring": "Дозволити сповіщення про дзвінок",
   "chat.contact.allow_ring_desc":
-    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо цю розмову вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
+    "Дозвольте їм змусити ваш телефон дзвонити, щоб привернути вашу увагу, навіть якщо звук цієї розмови вимкнено. Беззвучний режим і «Не турбувати» досі діють.",
   "chat.contact.ring_action": "Подзвонити",
   "chat.contact.ringing": "Дзвонить…",
   "chat.contact.ring_hint_nearby": "Дзвінок працює, лише поки вони поруч",
@@ -823,8 +830,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 дні",
   "chat.notices.7_days": "7 днів",
   "chat.notices.fading": "зникає",
-  "chat.notices.fades_in_hours": "зникне через {count} год",
-  "chat.notices.fades_in_days": "зникне через {count} дн",
   "chat.notices.scope_geo": "Гео",
   "chat.notices.scope_mesh": "Mesh",
   "chat.notices.urgent_short": "Терміново",
@@ -840,11 +845,21 @@ export const strings: Strings = {
   "chat.search.documents": "Документи",
   "chat.search.links": "Посилання",
   "chat.search.ecash": "Ecash",
-  "chat.search.filter_by": "Фільтрувати за {filter}",
-  "chat.search.no_matches": "Немає {filter}, що відповідають «{query}»",
-  "chat.search.no_media": "{filter} поки немає",
+  "chat.search.filter_by": "Фільтр: {filter}",
+  "chat.search.no_photos": "Фото поки немає",
+  "chat.search.no_videos": "Відео поки немає",
+  "chat.search.no_audio": "Аудіо поки немає",
+  "chat.search.no_documents": "Документів поки немає",
+  "chat.search.no_links": "Посилань поки немає",
+  "chat.search.no_ecash": "Ecash поки немає",
+  "chat.search.no_photos_matching": "Немає фото за запитом «{query}»",
+  "chat.search.no_videos_matching": "Немає відео за запитом «{query}»",
+  "chat.search.no_audio_matching": "Немає аудіо за запитом «{query}»",
+  "chat.search.no_documents_matching": "Немає документів за запитом «{query}»",
+  "chat.search.no_links_matching": "Немає посилань за запитом «{query}»",
+  "chat.search.no_ecash_matching": "Немає ecash за запитом «{query}»",
   "chat.search.result_a11y": "{chat}, {kind} від {sender}",
-  "chat.search.you": "ви",
+  "chat.search.result_mine_a11y": "{chat}, {kind}, надіслано вами",
   "chat.search.section_chats": "Чати",
   "chat.search.section_messages": "Повідомлення",
   "chat.search.section_notices": "Оголошення",
@@ -853,15 +868,13 @@ export const strings: Strings = {
   "chat.search.no_results": "Немає результатів для «{query}»",
   "chat.search.open_chat": "Відкрити {name}",
   "chat.search.message_a11y": "{chat}, повідомлення від {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, ваше повідомлення: {snippet}",
   "chat.search.notice_a11y": "Оголошення в {chat} від {author}: {snippet}",
   "chat.search.urgent": "Терміново ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "У цьому списку {count}. Очищення прибирає їх лише звідси, а повідомлення лишаються непрочитаними у своїх розмовах. Позначення всіх прочитаними прибирає й те, й те.",
   "chat.notif.mark_all_read": "Позначити всі прочитаними",
   "chat.notif.clear_list": "Очистити список",
-  "chat.notif.clear_all_a11y": "Очистити всі {count} сповіщень",
   "chat.notif.title": "Сповіщення",
   "chat.notif.clear_short": "Очистити",
   "chat.notif.close": "Закрити сповіщення",
@@ -874,16 +887,19 @@ export const strings: Strings = {
 
   // ---- Chats: forward ----
   "chat.forward.title": "Переслати…",
-  "chat.forward.to": "Переслати {name}",
+  "chat.forward.to": "Переслати: {name}",
   "chat.forward.cant_send_here": "Сюди переслати не можна",
-  "chat.forward.cant_send_to": "Переслати {name} не можна",
+  "chat.forward.cant_send_to": "Переслати не можна: {name}",
   "chat.forward.too_long_for_dm":
-    "Задовге для особистого повідомлення. Перешліть його в канал або групу.",
+    "Задовге для прямого повідомлення. Перешліть його в канал або групу.",
   "chat.forward.channels": "Канали",
   "chat.forward.groups": "Групи",
   "chat.forward.locations": "Місцевості",
   "chat.forward.dms": "Прямі повідомлення",
   "chat.forward.none": "Інших чатів поки немає",
+  "chat.forward.app_row": "Не переслано",
+  "chat.forward.app_row_body":
+    "Цей рядок від Airhop, а не від людини, тож пересилати нічого.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Запускаємо mesh…",
@@ -891,7 +907,7 @@ export const strings: Strings = {
     "На цьому пристрої немає Bluetooth · лише інтернет",
   "mesh.banner.bluetooth_off": "Bluetooth вимкнено · mesh недоступний",
   "mesh.banner.bluetooth_off_wifi":
-    "Bluetooth вимкнено · mesh працює через WiFi",
+    "Bluetooth вимкнено · mesh працює через Wi-Fi",
   "mesh.banner.permission_needed": "Потрібен дозвіл на Bluetooth",
   "mesh.banner.blocked":
     "Bluetooth заблоковано · дозвольте його в Налаштуваннях",
@@ -921,7 +937,6 @@ export const strings: Strings = {
     "Інтернет-шлюз увімкнено · передаємо для пірів поблизу",
   "mesh.banner.bridge": "Міст mesh увімкнено · публічний чат сполучено",
   "mesh.banner.background_limits": "{brand} може призупиняти mesh у фоні",
-  "mesh.banner.bridge_across": "Міст mesh увімкнено · {count} по той бік мосту",
   "mesh.banner.action.turn_on": "Увімкнути",
   "mesh.banner.action.allow": "Дозволити",
   "mesh.banner.action.resume": "Відновити",
@@ -995,7 +1010,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "Переглянути піра {name}, онлайн",
   "mesh.peer.view_relay_online": "Переглянути піра {name}, онлайн, вузол-релей",
   "mesh.peer.last_seen_at": "Востаннє бачили {ago}",
-  "mesh.peer.send_amount": "Надіслати {amount} сатів",
+  "mesh.peer.send_unit_amount": "Надіслати {amount} {unit}",
   "mesh.peer.direct": "Пряме з’єднання",
   "mesh.peer.check_distance": "Перевірити відстань",
   "mesh.peer.checking": "Перевіряємо",
@@ -1067,19 +1082,19 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "Цей токен розбито на забагато монет, щоб він умістився в QR-код. Поділіться ним або скопіюйте.",
   "wallet.send.scan_note":
-    "Хай відсканують це зі свого гаманця. Забрати назад можна, доки ви не позначите його як доставлений.",
+    "Хай одержувач відсканує це у своєму гаманці. Забрати назад можна, доки ви не позначите його як отриманий.",
   "wallet.send.mesh_note":
     "Токен іде як зашифроване пряме повідомлення через mesh. Інтернет не потрібен.",
   "wallet.send.no_peers_note":
     "Відкрийте вкладку Mesh, щоб знайти пристрої поблизу, або поділіться токеном іншим шляхом.",
-  "wallet.send.send_to": "Надіслати {name}",
+  "wallet.send.send_to": "Надіслати: {name}",
   "wallet.send.memo": "Примітка (необов’язкова, мандрує разом із токеном)",
   "wallet.send.building": "Збираємо…",
   "wallet.send.build": "Зібрати токен",
   "wallet.send.inexact_body":
     "Ваші монети не складуть офлайн рівно {amount} {unit}. Найменший токен, який ви можете зібрати, це {spend} {unit}, а офлайн решти не буває: додаткові {extra} {unit} дістануться одержувачу.\n\nОновлення в мінті, поки ви онлайн, розбило б ваші монети на номінали, які складаються рівно.",
   "wallet.send.send_amount": "Надіслати {amount}",
-  "wallet.send.sent_to": "{amount} {unit} надіслано {name}",
+  "wallet.send.sent_to": "{amount} {unit} надіслано: {name}",
   "wallet.send.sent_to_body":
     "{route} Забрати назад можна в розділі Активність, доки ви не підтвердите, що вони це отримали, або доки мінт не скаже нам, що токен викуплено.",
   "wallet.send.copy_token": "Копіювати токен",
@@ -1088,7 +1103,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "Відкрити в гаманці",
   "wallet.send.to_peer": "Надіслати токен піру поблизу",
   "wallet.send.to_peer_short": "Надіслати піру",
-  "wallet.send.mark_delivered": "Позначити доставленим і завершити",
+  "wallet.send.mark_delivered": "Позначити як отримане",
   "wallet.send.they_got_it": "Вони отримали",
   "wallet.send.keep_pending": "Лишити це надсилання в очікуванні",
   "wallet.send.decide_later": "Вирішити пізніше",
@@ -1112,10 +1127,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "Викуплено в {mint}. Тепер це доказово ваше: копія цього токена у відправника більше не працює.",
-  "wallet.receive.stored_pending":
-    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене{dleq}. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
-  "wallet.receive.dleq_inline":
-    " (підпис таки збігається, тож токен справжній)",
+  "wallet.receive.pending_unconfirmed":
+    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене. Підпис збігається, тож токен справжній. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
   "wallet.receive.dleq_ok": "Підпис мінта збігається, тож токен справжній.",
   "wallet.receive.dleq_uncached":
     "Ключів мінта тут немає, тож підпис не вдалося перевірити офлайн.",
@@ -1145,7 +1160,7 @@ export const strings: Strings = {
   "wallet.zap.failed": "Zap не вдався",
   "wallet.zap.body":
     "Якщо вони публікують дані nutzap за NIP-61, ecash прив’язується до їхнього ключа, тож ніхто інший його не витратить, і забрати його назад не вийде. Якщо ні, він піде як токен, який можна забрати. Вам скажуть, що саме сталося.",
-  "wallet.zap.contact": "Надіслати zap {name}",
+  "wallet.zap.contact": "Надіслати zap: {name}",
   "wallet.zap.pubkey_placeholder": "npub1… або 64 шістнадцяткові символи",
   "wallet.zap.sending": "Надсилаємо…",
   "wallet.nostr.copied_body":
@@ -1178,8 +1193,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "Перенести всі баланси в один мінт",
   "wallet.mint.confirm_with": "Перевірити баланс у {mint}",
   "wallet.mint.available_amount": "Доступно {amount} {unit}",
-  "wallet.mint.split_across":
-    "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
   "wallet.mint.move_everything_to": "Перенести все в {mint}",
   "wallet.mint.consolidate_title": "Перенести в один мінт",
   "wallet.mint.moving": "Переносимо…",
@@ -1190,10 +1203,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "Нічого не перенесено",
   "wallet.mint.move_pending": "У дорозі",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} залишили {mint} і вже в дорозі до {target}. Вони надійдуть, щойно депозит буде отримано, а гаманець продовжує спроби.",
+    "{amount} {unit} залишили {mint} і вже в дорозі до {target}. Вони надійдуть, щойно переказ буде отримано, а гаманець продовжує спроби.",
   "wallet.mint.destination": "· призначення",
   "wallet.mint.will_move": "· буде перенесено",
   "wallet.mint.issued_by": "Випущено",
+  "wallet.mint.test_badge": "Тест",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Поповнення гаманця Airhop",
@@ -1219,7 +1233,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "до {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "Оплатити {amount} {unit}",
-  "wallet.ln.deposit_title": "Поповнення через Lightning",
+  "wallet.ln.deposit_title": "Поповнити через Lightning",
   "wallet.ln.amount_placeholder": "Сума в сатах",
   "wallet.ln.requesting": "Запитуємо…",
   "wallet.ln.get_invoice": "Отримати рахунок",
@@ -1309,7 +1323,7 @@ export const strings: Strings = {
   "wallet.backup.write_down": "Запишіть їх",
   "wallet.backup.copy_phrase": "Копіювати фразу відновлення в буфер обміну",
   "wallet.backup.copy_clipboard": "Копіювати в буфер обміну",
-  "wallet.backup.written_down": "Я їх записав",
+  "wallet.backup.written_down": "Слова записано",
   "wallet.backup.check_copy": "Перевірте свою копію",
   "wallet.backup.confirm": "Підтвердити",
   "wallet.backup.restore_title": "Відновлення з фрази",
@@ -1343,7 +1357,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "Мінт повідомляє, що цей токен уже викуплено, тож {amount} {unit} дійшли до них, і на ваш баланс нічого не повернулося.",
   "wallet.copied.token_body":
-    "Токен у вашому буфері обміну. Він лишається відкладеним тут, доки ви не позначите його доставленим, тож ви зможете вставити його знову, якщо перша спроба не вдасться.",
+    "Токен у вашому буфері обміну. Він лишається відкладеним тут, доки ви не позначите його як отриманий, тож ви зможете вставити його знову, якщо перша спроба не вдасться.",
   "wallet.copied.refused_token_body":
     "Токен у вашому буфері обміну. Цей гаманець його більше не враховує, тож ви можете повернути його відправникові.",
   "wallet.copied.phrase_body":
@@ -1369,8 +1383,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "Показати цей токен як QR-код",
   "wallet.pending.copy_again": "Скопіювати токен ще раз",
   "wallet.pending.share_again": "Поділитися токеном ще раз",
-  "wallet.pending.mark_delivered": "Позначити цей токен доставленим",
-  "wallet.pending.delivered": "Доставлено",
+  "wallet.pending.mark_delivered": "Позначити як отримане",
+  "wallet.pending.delivered": "Отримано",
   "wallet.pending.reclaim_into": "Забрати цей токен на ваш баланс",
   "wallet.activity.title": "Активність",
   "wallet.activity.none": "Поки нічого",
@@ -1431,14 +1445,21 @@ export const strings: Strings = {
     "Прив’язані платежі забрати не можна: витратити ці монети тепер здатен лише їхній ключ.",
   "wallet.pay.reclaimable":
     "Забрати це можна в розділі «Активність», доки ви не підтвердите, що воно дійшло.",
-  "wallet.pay.why": "Надіслано цим шляхом, бо {reason}.",
+  "wallet.pay.why_no_relay":
+    "Надіслано цим шляхом, бо не було з’єднання з релеєм.",
+  "wallet.pay.why_no_shared_mint":
+    "Надіслано цим шляхом, бо у вас недостатньо коштів у жодному мінті, який приймає одержувач.",
+  "wallet.pay.why_no_nutzap_info":
+    "Надіслано цим шляхом, бо одержувач не опублікував дані nutzap (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} для {name}",
   "wallet.pay.thread_receipt":
     "Ви надіслали {amount} {unit}, прив’язані до їхнього ключа.",
   "wallet.pay.title": "Надіслати ecash",
   "wallet.pay.to": "Для {name}",
   "wallet.pay.amount": "Сума в сатах",
-  "wallet.pay.memo": "Нотатка (необов’язкова, публічна)",
+  "wallet.pay.memo": "Примітка (необов’язкова, публічна)",
   "wallet.pay.send": "Надіслати",
   "wallet.pay.sending": "Надсилаємо…",
   "wallet.pay.action": "Надіслати ecash",
@@ -1586,11 +1607,11 @@ export const strings: Strings = {
     "Термін дії рахунку минув, перш ніж його оплатили.",
   "wallet.svc.invoice_expired": "Термін дії того рахунку минув.",
   "wallet.svc.invoice_unpaid": "Рахунок ще не оплачено.",
-  "wallet.svc.payment_unknown":
-    "Стан платежу невідомий; перевіримо ще раз під час наступного оновлення.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} Стан платежу невідомий; перевіримо ще раз під час наступного оновлення.",
   "wallet.svc.melt_change_pending": "Ваш рахунок оплачено.",
   "wallet.svc.melt_change_pending_body":
-    "Мінт ще не повернув невикористану комісію за маршрутизацію. Її заберуть самі під час наступного оновлення, і тим часом нічого не втрачається.",
+    "Мінт ще не повернув невикористану комісію за маршрутизацію. Її буде отримано автоматично під час наступного оновлення, і тим часом нічого не втрачається.",
   "wallet.svc.mint_did_not_pay":
     "Мінт не оплатив цей рахунок. Ваш баланс не змінився.",
   "wallet.svc.not_an_invoice": "Це не рахунок Lightning.",
@@ -1628,16 +1649,12 @@ export const strings: Strings = {
     "Той платіж називає мінт, яким ви не користуєтеся.",
   "wallet.svc.unknown_mint_body":
     "Додайте мінт самі, якщо йому довіряєте; нічого не викуповується з мінта, якого ви не вибрали.",
-  "wallet.svc.no_relay": "немає з’єднання з релеєм",
-  "wallet.svc.no_shared_mint": "немає спільного мінта з достатнім балансом",
-  "wallet.svc.no_nutzap_info":
-    "одержувач не опублікував дані nutzap (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "Прив’язано до їхнього ключа, але ще не доставлено. Поділіться токеном із цієї операції, щоб її завершити.",
   "wallet.svc.swap_lost":
     "Мінт так і не завершив цей обмін, тож під нього нічого не випущено.",
   "wallet.svc.mint_lost":
-    "Мінт випустив цей депозит, але його монети не вдалося відновити. Відновлення з фрази відновлення поверне їх.",
+    "Мінт випустив це поповнення, але його монети не вдалося відновити. Відновлення з фрази відновлення поверне їх.",
   "wallet.svc.swap_unreadable":
     "Цей обмін збережено у вигляді, який ця версія не може відтворити.",
   "wallet.svc.lock_in_doubt": "Невідомо, чи пройшов цей платіж.",
@@ -1737,8 +1754,8 @@ export const strings: Strings = {
   "settings.share_peer_id": "Поділитися своїм ідентифікатором піра",
   "settings.share_id_short": "Поділитися ID",
   "settings.share_app": "Поділитися застосунком Airhop",
-  "settings.share_app_short": "Поділитися Airhop",
-  "settings.share_app_dialog": "Отримай Airhop",
+  "settings.share_app_short": "Поділитися застосунком",
+  "settings.share_app_dialog": "Отримайте Airhop",
   "settings.share_app_unsupported": "Не вдається поділитися цим встановленням",
   "settings.share_app_unsupported_body":
     "Ця копія Airhop встановлена кількома частинами, і її не можна надіслати як один файл. Натомість завантажте однофайлову версію з GitHub Releases.",
@@ -1765,7 +1782,7 @@ export const strings: Strings = {
     "Forward secrecy, підписані пакети, заблоковані піри",
   "settings.section.network": "Мережа й релеї",
   "settings.section.network_desc":
-    "Запасний інтернет, релеї nostr, сумісність із bitchat",
+    "Запасний інтернет, релеї Nostr, сумісність із bitchat",
   "settings.section.permissions": "Дозволи",
   "settings.section.permissions_desc":
     "Bluetooth, місцезнаходження, сповіщення, камера, мікрофон",
@@ -1814,14 +1831,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} дБм",
   "settings.diag.no_rssi": "Немає показника сигналу",
   "settings.diag.no_peers": "У радіусі нікого немає",
-  "settings.diag.no_peers_desc": "Відкритих радіозв’язків: {links}",
   "settings.diag.gcs_size": "Розмір фільтра",
   "settings.diag.gcs_size_desc":
     "Найбільший фільтр синхронізації, випущений в ефір",
   "settings.diag.fpr": "Частка хибних збігів",
   "settings.diag.fpr_desc":
     "Як часто фільтр стверджує, що має пакет, якого нам бракує",
-  "settings.diag.bytes": "{n} байтів",
   "settings.diag.footnote":
     "Тут нічого не можна змінити. Ці значення закріплені, щоб Airhop лишався сумісним із bitchat.",
   "settings.diag.share": "Поділитися діагностикою",
@@ -1842,7 +1857,6 @@ export const strings: Strings = {
   "settings.general.undo": "Скасування надсилання",
   "settings.general.feature_ai": "ШІ",
   "settings.general.feature_wallet": "Гаманець",
-  "settings.general.undo_seconds": "{count} секунд",
   "settings.general.undo_a11y": "Скасування надсилання: {value}",
   "settings.general.quality_a11y": "Установити якість вивантаження на {value}",
   "settings.general.undo_desc":
@@ -1932,7 +1946,6 @@ export const strings: Strings = {
   "settings.network.custom": "Власні релеї",
   "settings.network.custom_desc":
     "Додайте власні релеї для каналів місцевості та мосту mesh",
-  "settings.network.custom_added": "Додано {count} із {max}",
   "settings.network.dm_relays": "Релеї повідомлень",
   "settings.network.dm_relays_desc":
     "Прямі повідомлення та приватні канали завжди користуються цими. Власні релеї їх не змінюють.",
@@ -1942,17 +1955,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "Додати релей",
   "settings.network.remove_relay": "Вилучити {url}",
   "settings.network.add_short": "Додати",
-  "settings.network.relay_limit":
-    "Ви можете додати {count} релеїв. Вилучіть один, щоб додати інший.",
   "settings.network.relay_duplicate": "Цей релей уже є у вашому списку.",
   "settings.network.relay_invalid":
     "Введіть дійсний хост релея, наприклад relay.example.com. Порт потрібен, лише якщо релей не використовує типовий. IP-адреси та локальні імена не дозволені.",
   "settings.network.lan": "Локальна мережа",
   "settings.network.lan_desc":
-    "Зв’язуйтеся з людьми в тій самій мережі WiFi, зокрема між iPhone і Android. Інші пристрої в мережі бачать, що ви користуєтеся Airhop.",
+    "Зв’язуйтеся з людьми в тій самій мережі Wi-Fi, зокрема між iPhone і Android. Інші пристрої в мережі бачать, що ви користуєтеся Airhop.",
   "settings.network.lan_searching": "У цій мережі немає пристроїв Airhop",
   "settings.network.lan_active": "Підключено в цій мережі",
-  "settings.network.lan_unavailable": "Ви не в мережі WiFi",
+  "settings.network.lan_unavailable": "Ви не в мережі Wi-Fi",
   "settings.network.lan_permission":
     "Доступ до локальної мережі для Airhop вимкнено",
   "settings.network.lan_unsupported": "Недоступно на цьому пристрої",
@@ -1974,7 +1985,8 @@ export const strings: Strings = {
   "settings.network.wifi_pair_find_action": "Виберіть iPhone поблизу",
   "settings.network.wifi_pair_show_action": "Зробити цей iPhone видимим",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware зараз недоступний",
-  "settings.network.wifi_pair_forget": "Видаліть з’єднання у програмі Settings",
+  "settings.network.wifi_pair_forget":
+    "Видаліть з’єднання в застосунку «Параметри»",
   "settings.network.bitchat": "Сумісність із bitchat",
   "settings.network.bitchat_desc":
     "Той самий BLE-mesh, що й у bitchat, цілком сумісний. Це завжди увімкнено й не вимикається.",
@@ -1992,11 +2004,11 @@ export const strings: Strings = {
     "Повідомлення надходитимуть, лише поки Airhop відкрито, а цей телефон перестане передавати для людей поблизу. Постійне сповіщення зникне.",
   "settings.conn.autostart": "Запускати автоматично",
   "settings.conn.autostart_desc":
-    "Перезапускає мережу після перезавантаження телефону",
+    "Перезапускає mesh після перезавантаження телефону",
   "settings.conn.autostart_on_title":
     "Запускати Airhop після перезавантаження?",
   "settings.conn.autostart_on_body":
-    "Airhop запуститься сам і знову приєднається до мережі під час наступного перезавантаження вашого телефону, без жодного сповіщення, доки це не станеться. Деякі виробники телефонів блокують це, якщо ви також не дозволите це у власних налаштуваннях батареї.",
+    "Airhop запуститься сам і знову приєднається до mesh під час наступного перезавантаження вашого телефону, без жодного сповіщення, доки це не станеться. Деякі виробники телефонів блокують це, якщо ви також не дозволите це у власних налаштуваннях батареї.",
   "settings.conn.autostart_off_title":
     "Припинити запуск після перезавантаження?",
   "settings.conn.autostart_off_body":
@@ -2066,13 +2078,13 @@ export const strings: Strings = {
     "Сполучіть публічний чат #bluetooth цієї місцевості з іншим гуртом у Bluetooth поза радіусом через інтернет",
   "settings.conn.bridge_on_title": "Увімкнути міст mesh?",
   "settings.conn.bridge_on_body":
-    "Ваші публічні повідомлення #bluetooth публікуватимуться у вашому районі через інтернет, тож люди поза радіусом Bluetooth зможуть їх читати. Приватні повідомлення ніколи не мостяться, а «лише поблизу» тримає окреме повідомлення на місці.",
+    "Ваші публічні повідомлення #bluetooth публікуватимуться у вашому районі через інтернет, тож люди поза радіусом Bluetooth зможуть їх читати. Приватні повідомлення ніколи не передаються через міст, а «лише поблизу» тримає окреме повідомлення на місці.",
   "settings.conn.bridge_off_title": "Вимкнути міст mesh?",
   "settings.conn.bridge_off_body":
     "Ваші публічні повідомлення #bluetooth знову лишаються в радіусі Bluetooth, а повідомлення від гурту по той бік перестають сюди надходити.",
   "settings.conn.bridge_needs_location": "Мосту mesh потрібне місцезнаходження",
   "settings.conn.bridge_needs_location_desc":
-    "Він визначає ваш район за координатами. Надайте дозвіл на місцезнаходження, щоб почати мостити.",
+    "Він визначає ваш район за координатами. Надайте дозвіл на місцезнаходження, щоб увімкнути міст.",
   "settings.conn.grant_location": "Надати дозвіл на місцезнаходження",
   "settings.conn.grant_short": "Надати",
   "settings.conn.internet_off": "Інтернет вимкнено",
@@ -2099,7 +2111,7 @@ export const strings: Strings = {
     "Надсилає фото з вашої галереї та зберігає отримане медіа. Без цього ви все одно можете знімати й надсилати нові фото камерою.",
   "settings.permissions.microphone": "Мікрофон",
   "settings.permissions.microphone_desc":
-    "Записує й надсилає голосові повідомлення або вмикає живий голос. Без нього голосові повідомлення та живий голос не працюватимуть.",
+    "Записує й надсилає голосові нотатки або вмикає живий голос. Без нього голосові нотатки та живий голос не працюватимуть.",
   "settings.permissions.allow": "Надати цей дозвіл",
   "settings.permissions.open_settings":
     "Відкрити системні налаштування, щоб змінити цей дозвіл",
@@ -2355,7 +2367,7 @@ export const strings: Strings = {
     "Не вдалося завантажити. Перевірте з’єднання та повторіть спробу.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} має {size} KiB, це понад межу в {cap} KiB.",
+  "transfer.too_large": "{kind} має {size}, це понад межу в {cap}.",
   "transfer.failed.malformed":
     "Вкладення надійшло пошкодженим і не відкрилося. Попросіть надіслати його ще раз.",
   "transfer.failed.unsupported_type":
@@ -2365,10 +2377,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "Вкладення надійшло, але його не вдалося зберегти. Перевірте вільне місце.",
   "transfer.badge.waiting": "Очікує · {name}",
-  "transfer.badge.active_count": "Передач: {count}",
   "transfer.badge.sending": "Надсилаємо {name}",
   "transfer.badge.receiving": "Отримуємо {name}",
-  "transfer.badge.a11y": "{label}, {percent} відсотків. Відкрити розмову.",
   "transfer.kind.photo": "Фото",
   "transfer.kind.video": "Відео",
   "transfer.kind.voice": "Голосова нотатка",
@@ -2398,10 +2408,11 @@ export const strings: Strings = {
   "notif.notice": "Оголошення · {content}",
   "notif.incoming_file": "Вхідний файл",
   "notif.preview.photo": "📷 Фото",
-  "notif.preview.voice": "🎤 Голосове повідомлення",
+  "notif.preview.voice": "🎤 Голосова нотатка",
   "notif.preview.video": "🎥 Відео",
   "notif.preview.document": "📄 Документ",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "Нове повідомлення",
   "notif.hidden.channel": "Нова активність",
@@ -2413,6 +2424,26 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} хвилину тому",
+    few: "{count} хвилини тому",
+    many: "{count} хвилин тому",
+    other: "{count} хвилини тому",
+  },
+  "format.hours_ago": {
+    one: "{count} годину тому",
+    few: "{count} години тому",
+    many: "{count} годин тому",
+    other: "{count} години тому",
+  },
+  "format.days_ago": {
+    one: "{count} день тому",
+    few: "{count} дні тому",
+    many: "{count} днів тому",
+    other: "{count} дня тому",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "Показати ще {count}",
@@ -2489,6 +2520,77 @@ export const plurals: Plurals = {
     other: "{count} говорить",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "Ще {count} чекає на надсилання",
+    few: "Ще {count} чекають на надсилання",
+    many: "Ще {count} чекають на надсилання",
+    other: "Ще {count} чекають на надсилання",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} особа по той бік мосту",
+    few: "{count} особи по той бік мосту",
+    many: "{count} осіб по той бік мосту",
+    other: "{count} особи по той бік мосту",
+  },
+  "chat.thread.go_back_unread": {
+    one: "Назад, {count} непрочитане",
+    few: "Назад, {count} непрочитані",
+    many: "Назад, {count} непрочитаних",
+    other: "Назад, {count} непрочитаного",
+  },
+  "chat.thread.notices_new": {
+    one: "Оголошення цього каналу, {count} нове",
+    few: "Оголошення цього каналу, {count} нові",
+    many: "Оголошення цього каналу, {count} нових",
+    other: "Оголошення цього каналу, {count} нового",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "Перейти до найновішого повідомлення, {count} нове",
+    few: "Перейти до найновішого повідомлення, {count} нові",
+    many: "Перейти до найновішого повідомлення, {count} нових",
+    other: "Перейти до найновішого повідомлення, {count} нового",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} нове термінове оголошення · відкрити Оголошення",
+    few: "{count} нові термінові оголошення · відкрити Оголошення",
+    many: "{count} нових термінових оголошень · відкрити Оголошення",
+    other: "{count} нового термінового оголошення · відкрити Оголошення",
+  },
+  "chat.info.add_count": {
+    one: "Додати {count}",
+    few: "Додати {count}",
+    many: "Додати {count}",
+    other: "Додати {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "зникне через {count} годину",
+    few: "зникне через {count} години",
+    many: "зникне через {count} годин",
+    other: "зникне через {count} години",
+  },
+  "chat.notices.fades_in_days": {
+    one: "зникне через {count} день",
+    few: "зникне через {count} дні",
+    many: "зникне через {count} днів",
+    other: "зникне через {count} дня",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "{count} сповіщення в цьому списку. Очищення прибирає сповіщення лише звідси, а повідомлення лишаються непрочитаними у своїх розмовах. Позначення всіх прочитаними прибирає й те, й те.",
+    few: "{count} сповіщення в цьому списку. Очищення прибирає їх лише звідси, а повідомлення лишаються непрочитаними у своїх розмовах. Позначення всіх прочитаними прибирає й те, й те.",
+    many: "{count} сповіщень у цьому списку. Очищення прибирає їх лише звідси, а повідомлення лишаються непрочитаними у своїх розмовах. Позначення всіх прочитаними прибирає й те, й те.",
+    other:
+      "{count} сповіщення в цьому списку. Очищення прибирає їх лише звідси, а повідомлення лишаються непрочитаними у своїх розмовах. Позначення всіх прочитаними прибирає й те, й те.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "Очистити {count} сповіщення",
+    few: "Очистити всі {count} сповіщення",
+    many: "Очистити всі {count} сповіщень",
+    other: "Очистити всі {count} сповіщення",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} пір у радіусі",
@@ -2521,22 +2623,36 @@ export const plurals: Plurals = {
     other: "{count} учасника",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "Міст mesh увімкнено · {count} особа по той бік мосту",
+    few: "Міст mesh увімкнено · {count} особи по той бік мосту",
+    many: "Міст mesh увімкнено · {count} осіб по той бік мосту",
+    other: "Міст mesh увімкнено · {count} особи по той бік мосту",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} тримає {balance} {unit} в {count} монеті. Видалення назавжди стирає цю монету з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    few: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    many: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    one: "{mint} тримає {balance} {unit} в {count} монеті. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    few: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+    many: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
     other:
-      "{mint} тримає {balance} {unit} у {count} монети. Видалення назавжди стирає ці монети з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+      "{mint} тримає {balance} {unit} у {count} монети. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
+  },
+  "wallet.mint.split_across": {
+    one: "Баланс розкидано по {count} мінту. Перенесіть його в один.",
+    few: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
+    many: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
+    other: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} депозит очікує оплати. Перевіряється щоразу, коли застосунок відкривається.",
-    few: "{count} депозити очікують оплати. Перевіряються щоразу, коли застосунок відкривається.",
-    many: "{count} депозитів очікують оплати. Перевіряються щоразу, коли застосунок відкривається.",
+    one: "{count} поповнення очікує оплати. Перевіряється щоразу, коли застосунок відкривається.",
+    few: "{count} поповнення очікують оплати. Перевіряються щоразу, коли застосунок відкривається.",
+    many: "{count} поповнень очікують оплати. Перевіряються щоразу, коли застосунок відкривається.",
     other:
-      "{count} депозита очікує оплати. Перевіряється щоразу, коли застосунок відкривається.",
+      "{count} поповнення очікує оплати. Перевіряється щоразу, коли застосунок відкривається.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2547,11 +2663,11 @@ export const plurals: Plurals = {
     other: "Відновлено {count} невитраченої монети з {mints}.",
   },
   "wallet.backup.already_spent": {
-    one: "Знайдено {count} монету, але її вже витрачено, тож за неї нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
-    few: "Знайдено {count} монети, але їх уже витрачено, тож за них нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
-    many: "Знайдено {count} монет, але їх уже витрачено, тож за них нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
+    one: "Знайдено {count} вже витрачену монету, тож нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
+    few: "Знайдено {count} монети, але їх уже витрачено, тож нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
+    many: "Знайдено {count} монет, але їх уже витрачено, тож нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
     other:
-      "Знайдено {count} монети, але її вже витрачено, тож за неї нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
+      "Знайдено {count} монети, але їх уже витрачено, тож нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2581,15 +2697,56 @@ export const plurals: Plurals = {
       "Комісії востаннє перевіряли {count} дня тому. Якщо цей мінт відтоді їх підвищив, надсилання може коштувати трохи більше.",
   },
   "wallet.spent_removed_detail": {
-    one: "{count} монету вже було витрачено, і її вилучено.",
-    few: "{count} монети вже було витрачено, і їх вилучено.",
-    many: "{count} монет уже було витрачено, і їх вилучено.",
-    other: "{count} монети вже було витрачено, і їх вилучено.",
+    one: "{count} монету вже було витрачено та вилучено.",
+    few: "{count} монети вже було витрачено та вилучено.",
+    many: "{count} монет уже було витрачено та вилучено.",
+    other: "{count} монети вже було витрачено та вилучено.",
+  },
+
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "Відкрито {count} радіозв’язок",
+    few: "Відкрито {count} радіозв’язки",
+    many: "Відкрито {count} радіозв’язків",
+    other: "Відкрито {count} радіозв’язку",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} секунда",
+    few: "{count} секунди",
+    many: "{count} секунд",
+    other: "{count} секунди",
+  },
+  "settings.network.custom_added": {
+    one: "Додано {count} із {max}",
+    few: "Додано {count} із {max}",
+    many: "Додано {count} із {max}",
+    other: "Додано {count} із {max}",
+  },
+  "settings.network.relay_limit": {
+    one: "Ви можете додати {count} релей. Вилучіть один, щоб додати інший.",
+    few: "Ви можете додати {count} релеї. Вилучіть один, щоб додати інший.",
+    many: "Ви можете додати {count} релеїв. Вилучіть один, щоб додати інший.",
+    other: "Ви можете додати {count} релея. Вилучіть один, щоб додати інший.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} передача",
+    few: "{count} передачі",
+    many: "{count} передач",
+    other: "{count} передачі",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} відсоток. Відкрити розмову.",
+    few: "{label}, {count} відсотки. Відкрити розмову.",
+    many: "{label}, {count} відсотків. Відкрити розмову.",
+    other: "{label}, {count} відсотка. Відкрити розмову.",
   },
 
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "Хтось поблизу",
+    "=1": "Хтось поблизу",
+    one: "{count} особа поблизу",
     few: "{count} особи поблизу",
     many: "{count} осіб поблизу",
     other: "{count} особи поблизу",

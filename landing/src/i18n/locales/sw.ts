@@ -206,13 +206,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Bila intaneti, bila rauta, kwenye simu ambazo watu tayari wanazo.",
   "home.features.networking.lan.name": "Mtandao wa karibu",
-  "home.features.networking.lan.line": "WiFi ya pamoja au hotspot, iPhone na Android pamoja.",
+  "home.features.networking.lan.line": "Wi-Fi ya pamoja au hotspot, iPhone na Android pamoja.",
   "home.features.networking.hops.name": "Upeanaji wa hatua nyingi",
   "home.features.networking.hops.line": "Kila simu hupitisha jumbe, hadi hatua saba.",
   "home.features.networking.bridge.name": "Daraja la mesh",
   "home.features.networking.bridge.line":
     "Huunganisha mazungumzo yako ya wazi na kundi lililo karibu nje ya masafa.",
-  "home.features.networking.wifi.name": "Njia ya haraka ya WiFi",
+  "home.features.networking.wifi.name": "Njia ya haraka ya Wi-Fi",
   "home.features.networking.wifi.line":
     "Uhamishaji wa haraka zaidi kati ya Android mbili au iPhone mbili.",
   "home.features.networking.bitchat.name": "Inaendana na bitchat",

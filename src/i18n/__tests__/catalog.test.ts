@@ -65,9 +65,10 @@ describe.each(CODES)("%s", (code) => {
 
   it("invents no placeholders in any plural form", () => {
     // Deliberately a subset rule, not the exact-match rule used for plain
-    // strings above. A singular form may legitimately drop the count: English
-    // itself says "Someone nearby" for one and "{count} people nearby" for the
-    // rest, and other languages inline the number in different forms again.
+    // strings above. The exact-one form may legitimately drop the count:
+    // English itself says "Someone nearby" for `=1` and "{count} people
+    // nearby" for the rest, and other languages inline the number in different
+    // forms again.
     //
     // What is never legitimate is a placeholder nothing will fill. `count` is
     // always allowed because tPlural injects it whether or not the caller
@@ -144,9 +145,15 @@ describe("plural categories", () => {
   // five up. Checked against `PLURAL_CATEGORIES`, which plurals.test.ts checks
   // against CLDR.
   it.each(CODES)("%s supplies exactly the forms its language uses", (code) => {
-    const expected = [...PLURAL_CATEGORIES[code]].sort();
     const wrong: string[] = [];
     for (const [key, forms] of Object.entries(catalog(code).plurals)) {
+      // The exact-one form is a property of the wording, not the language, so
+      // it follows English key by key.
+      const exact = "=1" in en.plurals[key as keyof typeof en.plurals];
+      const expected = [
+        ...PLURAL_CATEGORIES[code],
+        ...(exact ? ["=1"] : []),
+      ].sort();
       const actual = Object.keys(forms).sort();
       if (actual.join(",") !== expected.join(",")) {
         wrong.push(
@@ -159,8 +166,23 @@ describe("plural categories", () => {
 
   it("English is one and other, which the source catalog is written for", () => {
     for (const [key, forms] of Object.entries(en.plurals)) {
-      expect([key, Object.keys(forms).sort()]).toEqual([key, ["one", "other"]]);
+      const categories = Object.keys(forms).filter((form) => form !== "=1");
+      expect([key, categories.sort()]).toEqual([key, ["one", "other"]]);
     }
+  });
+
+  it.each(CODES)("%s shows the count in every `one` form", (code) => {
+    // CLDR `one` is not "exactly one": Filipino's covers 5 and 10, Ukrainian's
+    // 21 and 31, Hindi's 0. A `one` with no number ("Someone nearby") is
+    // therefore wrong in those languages for counts nobody tested, and the
+    // wording that means exactly one belongs in `=1`.
+    const countless: string[] = [];
+    for (const [key, forms] of Object.entries(catalog(code).plurals)) {
+      if (forms.one !== undefined && !forms.one.includes("{count}")) {
+        countless.push(key);
+      }
+    }
+    expect(countless).toEqual([]);
   });
 });
 

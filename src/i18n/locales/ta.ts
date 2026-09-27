@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "இன்று",
   "format.yesterday": "நேற்று",
-  "format.minutes_ago": "{count} நிமிடம் முன்பு",
-  "format.hours_ago": "{count} மணி முன்பு",
-  "format.days_ago": "{count} நாள் முன்பு",
   "format.just_now": "இப்போதுதான்",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -261,6 +258,7 @@ export const strings: Strings = {
   "chat.group_badge": "குழு",
   "chat.more": "மேலும்",
   "chat.no_messages": "இன்னும் செய்திகள் இல்லை",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "அருகில் யாரும் இல்லை",
   "chat.presence.active_none": "யாரும் செயலில் இல்லை",
   "chat.you": "நீங்கள்",
@@ -338,6 +336,7 @@ export const strings: Strings = {
     "அந்தக் கட்டத்தைத் திறக்க முடியவில்லை. சற்று நேரத்தில் மீண்டும் முயலுங்கள்.",
   "chat.jump.title": "ஓர் இடத்துக்குச் செல்",
   "chat.jump.saved": "சேமித்த இடங்கள்",
+  "chat.jump.nearby": "அருகில்",
   "chat.jump.anywhere":
     "எந்த இடத்தின் பொது இடச் சேனலையும் திறங்கள், நீங்கள் இல்லாத இடத்தையும்கூட.",
   "chat.jump.geohash_note":
@@ -347,7 +346,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level} நிலைக் கட்டம்",
   "chat.jump.already_here":
     "நீங்கள் ஏற்கெனவே இங்கேதான் இருக்கிறீர்கள். செல் என்பது உங்கள் {name} சேனலைத் திறக்கும்.",
-  "chat.jump.open_direction": "உங்கள் {direction} பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.dir.n": "வ",
+  "chat.jump.dir.ne": "வ-கி",
+  "chat.jump.dir.e": "கி",
+  "chat.jump.dir.se": "தெ-கி",
+  "chat.jump.dir.s": "தெ",
+  "chat.jump.dir.sw": "தெ-மே",
+  "chat.jump.dir.w": "மே",
+  "chat.jump.dir.nw": "வ-மே",
+  "chat.jump.open_n": "வடக்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_ne": "வடகிழக்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_e": "கிழக்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_se": "தென்கிழக்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_s": "தெற்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_sw": "தென்மேற்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_w": "மேற்குப் பக்கமுள்ள கட்டத்தைத் திற",
+  "chat.jump.open_nw": "வடமேற்குப் பக்கமுள்ள கட்டத்தைத் திற",
   "chat.jump.open_place": "{name} ஐத் திற",
   "chat.jump.remove_place": "{name} ஐச் சேமித்த இடங்களிலிருந்து அகற்று",
   "chat.jump.go": "செல்",
@@ -426,7 +440,7 @@ export const strings: Strings = {
   "chat.thread.private_channel": "தனிப்பட்ட சேனல்",
   "chat.thread.location_channel": "இடச் சேனல்",
   "chat.thread.public_channel": "பொது சேனல்",
-  "chat.thread.notices": "இந்தச் சேனலின் அறிவிப்புகள்",
+  "chat.thread.notices": "இந்தச் சேனலின் பலகைப் பதிவுகள்",
   "chat.thread.invite": "இந்தச் சேனலுக்கு ஒருவரை அழை",
   "chat.thread.not_in_range":
     "அருகில் இல்லை. இணையம் வழியாகச் சேர்ப்பிக்கப்படுகிறது.",
@@ -468,19 +482,14 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name} ஐ ரத்துசெய்",
   "chat.thread.hide_transfer": "முன்னேற்றத்தை மறை",
   "chat.thread.hide_transfer_hint": "கோப்பு தொடர்ந்து வந்துசேரும்",
-  "chat.thread.queued_more": "மேலும் {count} அனுப்பக் காத்திருக்கின்றன",
-  "chat.thread.across_bridge": "பாலத்துக்கு அப்பால் {count}",
   "chat.thread.bridged": "பாலம் கடந்தது",
   "chat.thread.invite_body":
     "Airhop இல் {channel} இல் என்னுடன் சேருங்கள் — தனிப்பட்ட மெஷ் செய்தியனுப்பல், முதலில் ஆஃப்லைன்.",
-  "chat.thread.go_back_unread": "பின் செல், {count} படிக்கப்படாதவை",
   "chat.thread.view_info": "{name} இன் தகவலைப் பார்",
-  "chat.thread.notices_new": "இந்தச் சேனலின் அறிவிப்புகள், {count} புதியவை",
-  "chat.board.urgent_one": "{author} இடமிருந்து அவசர அறிவிப்பு · {content}",
-  "chat.board.urgent_many":
-    "{count} புதிய அவசர அறிவிப்புகள் · அறிவிப்புகளைத் திறக்கவும்",
+  "chat.board.urgent_one":
+    "{author} இடமிருந்து அவசரப் பலகைப் பதிவு · {content}",
+  "chat.board.urgent_one_anon": "அவசரப் பலகைப் பதிவு · {content}",
   "chat.thread.say_something": "{channel} இல் ஏதேனும் சொல்லுங்கள்.",
-  "chat.thread.jump_latest_new": "சமீபத்திய செய்திக்குச் செல், {count} புதியவை",
   "chat.thread.unconfirmed_since":
     "{date} முதல் சென்றடைந்ததாக உறுதிசெய்யப்படவில்லை",
   "chat.thread.no_reach": "அருகில் பியர் இல்லை · இதை இன்னும் யாரும் பெறவில்லை",
@@ -514,22 +523,22 @@ export const strings: Strings = {
   "chat.bridge.nearby_label": "அருகில் மட்டும் · புளூடூத்திலேயே இருக்கும்",
   "chat.bridge.bridging_label":
     "அருகிலுள்ள பகுதிகளுக்குப் பாலம் அமைக்கிறது · அருகில் மட்டும் என்பதற்குத் தட்டுங்கள்",
-  "chat.screenshot.you_took": "நீங்கள் திரைப்படம் எடுத்தீர்கள்",
+  "chat.screenshot.you_took": "நீங்கள் திரைப்பிடிப்பு எடுத்தீர்கள்",
   "chat.screenshot.you_took_private":
-    "நீங்கள் திரைப்படம் எடுத்தீர்கள் · யாருக்கும் சொல்லப்படவில்லை",
+    "நீங்கள் திரைப்பிடிப்பு எடுத்தீர்கள் · யாருக்கும் சொல்லப்படவில்லை",
   "chat.screenshot.heads_up": "கவனம்",
-  "chat.screenshot.notice": "* {name} திரைப்படம் எடுத்தார் *",
+  "chat.screenshot.peer_took": "{name} திரைப்பிடிப்பு எடுத்தார்",
   "chat.screenshot.notified_dm":
-    "இந்த உரையாடலின் திரைப்படத்தை நீங்கள் எடுத்ததாக {name} க்குத் தெரிவிக்கப்பட்டது.",
+    "இந்த உரையாடலின் திரைப்பிடிப்பை நீங்கள் எடுத்ததாக {name} க்குத் தெரிவிக்கப்பட்டது.",
   "chat.screenshot.notified":
-    "நீங்கள் திரைப்படம் எடுத்ததாக இந்தச் சேனலில் உள்ள அனைவருக்கும் தெரிவிக்கப்பட்டது.",
+    "நீங்கள் திரைப்பிடிப்பு எடுத்ததாக இந்தச் சேனலில் உள்ள அனைவருக்கும் தெரிவிக்கப்பட்டது.",
   "chat.screenshot.not_notified":
-    "யாருக்கும் தெரிவிக்கப்படவில்லை. இந்தச் சேனல் பொதுவானது, எனவே திரைப்படத்தை அறிவிப்பது நீங்கள் இங்கு இருந்ததைப் பதிவு செய்துவிடும்.",
+    "யாருக்கும் தெரிவிக்கப்படவில்லை. இந்தச் சேனல் பொதுவானது, எனவே திரைப்பிடிப்பை அறிவிப்பது நீங்கள் இங்கு இருந்ததைப் பதிவு செய்துவிடும்.",
   "chat.thread.error": "பிழை",
   "chat.thread.go_back": "பின் செல்",
   "chat.bubble.via_bridge": "மெஷ் பாலம் வழியாக",
   "chat.bubble.view_profile": "{name} இன் சுயவிவரத்தைப் பார்",
-  "chat.bubble.forwarded": "அனுப்பப்பட்டது",
+  "chat.bubble.forwarded": "முன்னனுப்பப்பட்டது",
   "chat.bubble.attachment": "இணைப்பு",
   "chat.bubble.a11y":
     "{sender}: {body}. மேலும் தேர்வுகளுக்கு நீண்ட நேரம் அழுத்துங்கள்.",
@@ -552,7 +561,7 @@ export const strings: Strings = {
   "chat.action.info": "செய்தித் தகவல்",
   "chat.action.save_photos": "புகைப்படங்களில் சேமி",
   "chat.action.save_copy": "ஒரு நகலைச் சேமி",
-  "chat.action.forward": "அனுப்பு",
+  "chat.action.forward": "முன்னனுப்பு",
   "chat.action.select": "தேர்ந்தெடு",
   "chat.select.cancel": "தேர்வை ரத்துசெய்",
 
@@ -565,7 +574,7 @@ export const strings: Strings = {
   "chat.attach.document": "ஆவணம்",
   "chat.attach.document_desc": "எந்தக் கோப்பையும் PDF ஐயும் அனுப்புங்கள்",
   "chat.attach.voice": "குரல் குறிப்பு",
-  "chat.attach.voice_desc": "குரல் செய்தியைப் பதிவுசெய்து அனுப்புங்கள்",
+  "chat.attach.voice_desc": "குரல் குறிப்பைப் பதிவுசெய்து அனுப்புங்கள்",
   "chat.attach.ecash": "ecash அனுப்பு",
   "chat.attach.ecash_desc": "உங்கள் பணப்பையிலிருந்து Cashu sat அனுப்புங்கள்",
   "chat.attach.location": "இடம்",
@@ -574,13 +583,13 @@ export const strings: Strings = {
   "chat.attach.title": "இணை",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "ஓர் இடத்தைப் பகிர்ந்தார்",
+  "chat.location.sent_summary": "இடம் பகிரப்பட்டது",
   "chat.location.received_summary": "தன் இடத்தைப் பகிர்ந்தார்",
   "chat.location.title": "இடம்",
   "chat.location.away": "{distance} {direction} நோக்கி",
   "chat.location.accuracy": "±{distance}",
   "chat.location.open_maps": "வரைபடத்தில் திற",
-  "chat.location.no_forward": "இடங்கள் அனுப்பப்படுவதில்லை",
+  "chat.location.no_forward": "இடங்கள் முன்னனுப்பப்படுவதில்லை",
   "chat.location.no_forward_body":
     "ஓர் இடம் ஒருவருக்கு மட்டுமே அனுப்பப்படுகிறது. வேறொருவரிடம் இருக்க வேண்டுமெனில் உங்கள் இடத்தைப் பகிருங்கள்.",
   "chat.location.no_fix":
@@ -606,15 +615,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "வடமேற்கு",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "அழைத்தார்",
+  "chat.ring.sent_summary": "அழைப்பு அனுப்பப்பட்டது",
   "chat.ring.received_summary": "உங்களை அழைத்தார்",
   "chat.ring.alert.title": "{sender} உங்களை அழைக்கிறார்",
   "chat.ring.alert.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
   "chat.ring.alert.open": "திற",
   "chat.ring.alert.snooze": "1 மணிநேரம் ஒத்திவை",
-  "chat.ring.sent_snoozed": "அழைத்தது, ஒத்திவைக்கப்பட்டது",
-  "chat.ring.sent_too_soon": "அழைத்தது, மிக விரைவில்",
-  "chat.ring.sent_not_allowed": "அழைத்தது, அனுமதி இல்லை",
+  "chat.ring.sent_snoozed": "அழைப்பு அனுப்பப்பட்டது · ஒத்திவைக்கப்பட்டது",
+  "chat.ring.sent_too_soon": "அழைப்பு அனுப்பப்பட்டது · மிக விரைவில்",
+  "chat.ring.sent_not_allowed": "அழைப்பு அனுப்பப்பட்டது · அனுமதி இல்லை",
   "chat.attach.send_anyway": "எப்படியும் அனுப்பு",
   "chat.attach.bitchat_too_big": "இது சென்றடையாமல் போகலாம்",
   "chat.attach.bitchat_too_big_body":
@@ -692,6 +701,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "பதிவை நிறுத்தி அனுப்பு",
   "chat.voice.lift_lock": "கை விடுவித்துப் பதிவுசெய்ய மேலே நகர்த்துங்கள்",
   "chat.voice.live_speaking": "{name} பேசுகிறார்",
+  "chat.voice.live_ended": "முடிந்தது",
   "voice.unavailable": "நேரடிக் குரல் கிடைக்கவில்லை",
   "voice.recording_stopped": "பதிவு நிறுத்தப்பட்டது",
 
@@ -710,7 +720,7 @@ export const strings: Strings = {
 
   // ---- Chats: ecash in a thread ----
   "chat.ecash.claimed": "பெறப்பட்டது",
-  "chat.ecash.reclaimed": "மீட்கப்பட்டது",
+  "chat.ecash.reclaimed": "திரும்பப் பெறப்பட்டது",
   "chat.ecash.locked": "வேறொருவருக்குப் பூட்டப்பட்டது",
   "chat.ecash.claiming": "பெறுகிறது…",
   "chat.ecash.claim": "பெறு",
@@ -723,7 +733,7 @@ export const strings: Strings = {
   "chat.info.courier_desc": "இயன்றவரை சேர்ப்பிக்க மெஷிடம் ஒப்படைக்கப்பட்டது",
   "chat.info.queued_desc":
     "அவர்களை அடைய வழி கிடைக்கும் வரை இந்தத் தொலைபேசியிலேயே வைக்கப்பட்டுள்ளது",
-  "chat.info.reclaimed": "மீட்கப்பட்டது",
+  "chat.info.reclaimed": "திரும்பப் பெறப்பட்டது",
   "chat.info.reclaimed_desc":
     "இந்தப் பணப்பரிமாற்றத்தை உங்கள் பணப்பைக்கே திரும்ப எடுத்துக்கொண்டீர்கள், எனவே இது சேர்ப்பிக்கப்படாது",
   "chat.info.about": "பற்றி",
@@ -752,7 +762,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name} ஐ நீக்கு",
   "chat.info.no_addable":
     "சேர்க்க அடையக்கூடிய பியர்கள் இல்லை. உறுப்பினர்கள் அருகில் இருக்க வேண்டும்.",
-  "chat.info.add_count": "{count} ஐச் சேர்",
   "chat.info.teleported_tag": "{level}  ·  தொலைவிலிருந்து",
   "chat.info.active": "செயலில்",
   "chat.info.members": "உறுப்பினர்கள்",
@@ -828,27 +837,25 @@ export const strings: Strings = {
   "chat.contact.ring_hint_again_in": "{time} கழித்து மீண்டும் அழைக்கவும்",
 
   // ---- Chats: bulletin board notices ----
-  "chat.notices.title": "அறிவிப்புகள்",
-  "chat.notices.post_area": "இந்தப் பகுதியில் ஓர் அறிவிப்பை இடு",
-  "chat.notices.post_mesh": "மெஷில் ஓர் அறிவிப்பை இடு",
+  "chat.notices.title": "பலகைப் பதிவுகள்",
+  "chat.notices.post_area": "இந்தப் பகுதியில் ஒரு பலகைப் பதிவை இடு",
+  "chat.notices.post_mesh": "மெஷில் ஒரு பலகைப் பதிவை இடு",
   "chat.notices.mark_urgent": "அவசரம் எனக் குறி",
-  "chat.notices.post": "அறிவிப்பை இடு",
+  "chat.notices.post": "பலகைப் பதிவை இடு",
   "chat.notices.post_short": "இடு",
-  "chat.notices.delete": "அறிவிப்பை நீக்கு",
+  "chat.notices.delete": "பலகைப் பதிவை நீக்கு",
   "chat.notices.fades_soon": "விரைவில் மறையும்",
   "chat.notices.1_day": "1 நாள்",
   "chat.notices.3_days": "3 நாட்கள்",
   "chat.notices.7_days": "7 நாட்கள்",
   "chat.notices.fading": "மறைகிறது",
-  "chat.notices.fades_in_hours": "{count} மணியில் மறையும்",
-  "chat.notices.fades_in_days": "{count} நாளில் மறையும்",
   "chat.notices.scope_geo": "புவி",
   "chat.notices.scope_mesh": "மெஷ்",
   "chat.notices.urgent_short": "அவசரம்",
   "chat.notices.permanent_warning":
     "ஒருபோதும் மறையாது. பொதுவானது, இந்தப் பகுதியுடன் பிணைக்கப்பட்டது, திரும்பப்பெறவும் முடியாது.",
   "chat.notices.none":
-    "இன்னும் அறிவிப்புகள் இல்லை. மற்றவர்களுக்காக இங்கே இருக்க ஒன்றை இடுங்கள்.",
+    "இன்னும் பலகைப் பதிவுகள் இல்லை. மற்றவர்களுக்காக இங்கே இருக்க ஒன்றை இடுங்கள்.",
 
   // ---- Chats: search results ----
   "chat.search.photos": "புகைப்படங்கள்",
@@ -858,49 +865,64 @@ export const strings: Strings = {
   "chat.search.links": "இணைப்புகள்",
   "chat.search.ecash": "ecash",
   "chat.search.filter_by": "{filter} மூலம் வடிகட்டு",
-  "chat.search.no_matches": "”{query}“ உடன் பொருந்தும் {filter} இல்லை",
-  "chat.search.no_media": "இன்னும் {filter} இல்லை",
+  "chat.search.no_photos": "இன்னும் புகைப்படங்கள் இல்லை",
+  "chat.search.no_videos": "இன்னும் வீடியோக்கள் இல்லை",
+  "chat.search.no_audio": "இன்னும் ஒலி எதுவும் இல்லை",
+  "chat.search.no_documents": "இன்னும் ஆவணங்கள் இல்லை",
+  "chat.search.no_links": "இன்னும் இணைப்புகள் இல்லை",
+  "chat.search.no_ecash": "இன்னும் ecash இல்லை",
+  "chat.search.no_photos_matching":
+    "“{query}” உடன் பொருந்தும் புகைப்படங்கள் இல்லை",
+  "chat.search.no_videos_matching":
+    "“{query}” உடன் பொருந்தும் வீடியோக்கள் இல்லை",
+  "chat.search.no_audio_matching":
+    "“{query}” உடன் பொருந்தும் ஒலி எதுவும் இல்லை",
+  "chat.search.no_documents_matching":
+    "“{query}” உடன் பொருந்தும் ஆவணங்கள் இல்லை",
+  "chat.search.no_links_matching": "“{query}” உடன் பொருந்தும் இணைப்புகள் இல்லை",
+  "chat.search.no_ecash_matching": "“{query}” உடன் பொருந்தும் ecash இல்லை",
   "chat.search.result_a11y": "{chat}, {sender} இடமிருந்து {kind}",
-  "chat.search.you": "நீங்கள்",
+  "chat.search.result_mine_a11y": "{chat}, நீங்கள் அனுப்பிய {kind}",
   "chat.search.section_chats": "அரட்டைகள்",
   "chat.search.section_messages": "செய்திகள்",
-  "chat.search.section_notices": "அறிவிப்புகள்",
+  "chat.search.section_notices": "பலகைப் பதிவுகள்",
   "chat.search.hint":
     "செய்திகளிலும் அரட்டைகளிலும் தேடுங்கள், அல்லது மேலே ஒரு வடிகட்டியைத் தேர்ந்தெடுங்கள்.",
-  "chat.search.no_results": "”{query}“ க்கு முடிவுகள் இல்லை",
+  "chat.search.no_results": "“{query}” க்கு முடிவுகள் இல்லை",
   "chat.search.open_chat": "{name} ஐத் திற",
   "chat.search.message_a11y": "{chat}, {sender} இடமிருந்து செய்தி: {snippet}",
-  "chat.search.notice_a11y": "{chat} இல் {author} இன் அறிவிப்பு: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, உங்கள் செய்தி: {snippet}",
+  "chat.search.notice_a11y": "{chat} இல் {author} இன் பலகைப் பதிவு: {snippet}",
   "chat.search.urgent": "அவசரம் ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "இந்தப் பட்டியலில் {count} உள்ளன. அழித்தால் அவை இங்கிருந்து மட்டுமே அகலும், செய்திகள் அவற்றின் உரையாடல்களில் படிக்கப்படாமலேயே இருக்கும். அனைத்தையும் படித்ததாகக் குறித்தால் இரண்டும் சரியாகும்.",
   "chat.notif.mark_all_read": "அனைத்தையும் படித்ததாகக் குறி",
   "chat.notif.clear_list": "பட்டியலை அழி",
-  "chat.notif.clear_all_a11y": "எல்லா {count} அறிவிப்புகளையும் அழி",
   "chat.notif.title": "அறிவிப்புகள்",
   "chat.notif.clear_short": "அழி",
   "chat.notif.close": "அறிவிப்புகளை மூடு",
   "chat.notif.none": "இன்னும் அறிவிப்புகள் இல்லை",
   "chat.notif.none_desc":
-    "உங்கள் சேனல்கள், அரட்டைகளின் செய்திகள், குறிப்பீடுகள், அறிவிப்புகள் இங்கே தோன்றும்.",
+    "உங்கள் சேனல்கள், அரட்டைகளின் செய்திகள், குறிப்பீடுகள், பலகைப் பதிவுகள் இங்கே தோன்றும்.",
   "chat.notif.new": "புதியது",
-  "chat.notif.notice_in": "{channel} இல் அறிவிப்பு",
+  "chat.notif.notice_in": "{channel} இல் பலகைப் பதிவு",
   "chat.notif.in_room": "{room} இல்",
 
   // ---- Chats: forward ----
-  "chat.forward.title": "இதற்கு அனுப்பு…",
-  "chat.forward.to": "{name} க்கு அனுப்பு",
-  "chat.forward.cant_send_here": "இங்கே அனுப்ப முடியாது",
-  "chat.forward.cant_send_to": "{name} க்கு அனுப்ப முடியாது",
+  "chat.forward.title": "இதற்கு முன்னனுப்பு…",
+  "chat.forward.to": "{name} க்கு முன்னனுப்பு",
+  "chat.forward.cant_send_here": "இங்கே முன்னனுப்ப முடியாது",
+  "chat.forward.cant_send_to": "{name} க்கு முன்னனுப்ப முடியாது",
   "chat.forward.too_long_for_dm":
-    "நேரடிச் செய்திக்கு மிக நீளமானது. அதற்குப் பதிலாக ஒரு சேனல் அல்லது குழுவுக்கு அனுப்புங்கள்.",
+    "நேரடிச் செய்திக்கு மிக நீளமானது. அதற்குப் பதிலாக ஒரு சேனல் அல்லது குழுவுக்கு முன்னனுப்புங்கள்.",
   "chat.forward.channels": "சேனல்கள்",
   "chat.forward.groups": "குழுக்கள்",
   "chat.forward.locations": "இடங்கள்",
   "chat.forward.dms": "நேரடிச் செய்திகள்",
   "chat.forward.none": "இன்னும் வேறு அரட்டைகள் இல்லை",
+  "chat.forward.app_row": "முன்னனுப்பப்படவில்லை",
+  "chat.forward.app_row_body":
+    "இந்த வரி ஒரு நபரிடமிருந்து அல்ல, Airhop இடமிருந்து வந்தது, எனவே முன்னனுப்ப எதுவும் இல்லை.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "மெஷ் தொடங்குகிறது…",
@@ -908,7 +930,7 @@ export const strings: Strings = {
     "இந்தச் சாதனத்தில் புளூடூத் இல்லை · இணையம் மட்டும்",
   "mesh.banner.bluetooth_off": "புளூடூத் முடக்கம் · மெஷ் கிடைக்கவில்லை",
   "mesh.banner.bluetooth_off_wifi":
-    "புளூடூத் முடக்கம் · மெஷ் WiFi வழியாக இயங்குகிறது",
+    "புளூடூத் முடக்கம் · மெஷ் Wi-Fi வழியாக இயங்குகிறது",
   "mesh.banner.permission_needed": "புளூடூத் அனுமதி தேவை",
   "mesh.banner.blocked":
     "புளூடூத் தடுக்கப்பட்டுள்ளது · அமைப்புகளில் அனுமதியுங்கள்",
@@ -924,7 +946,7 @@ export const strings: Strings = {
     "அழிப்பு முழுமையடையவில்லை · சில தரவு மிஞ்சியிருக்கலாம், மீண்டும் திறக்கும்போது முயலப்படும்",
   "mesh.banner.identity_elsewhere":
     "உங்கள் அடையாளம் வேறொரு தொலைபேசியிலும் உள்ளது · பயன்படுத்தாததை அழியுங்கள்",
-  "mesh.banner.wifi_off": "வைஃபை முடக்கம் · பெரிய கோப்புகள் மெதுவாகச் செல்லும்",
+  "mesh.banner.wifi_off": "Wi-Fi முடக்கம் · பெரிய கோப்புகள் மெதுவாகச் செல்லும்",
   "mesh.banner.clock_skew":
     "இந்தத் தொலைபேசியின் கடிகாரம் தவறாக உள்ளது · தேதியையும் நேரத்தையும் தானியங்கியாக அமையுங்கள்",
   "mesh.banner.internet_off": "இணையம் முடக்கம் · புளூடூத் மட்டும்",
@@ -939,8 +961,6 @@ export const strings: Strings = {
     "இணைய நுழைவாயில் இயக்கத்தில் · அருகிலுள்ள பியர்களுக்குக் கடத்துகிறது",
   "mesh.banner.bridge": "மெஷ் பாலம் இயக்கத்தில் · பொது அரட்டை இணைக்கப்பட்டது",
   "mesh.banner.background_limits": "{brand} பின்னணியில் மெஷை இடைநிறுத்தலாம்",
-  "mesh.banner.bridge_across":
-    "மெஷ் பாலம் இயக்கத்தில் · பாலத்துக்கு அப்பால் {count}",
   "mesh.banner.action.turn_on": "இயக்கு",
   "mesh.banner.action.allow": "அனுமதி",
   "mesh.banner.action.resume": "தொடர்",
@@ -1017,7 +1037,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "பியர் {name} ஐப் பார், ஆன்லைன்",
   "mesh.peer.view_relay_online": "பியர் {name} ஐப் பார், ஆன்லைன், ரிலே முனை",
   "mesh.peer.last_seen_at": "கடைசியாகப் பார்த்தது {ago}",
-  "mesh.peer.send_amount": "{amount} sat அனுப்பு",
+  "mesh.peer.send_unit_amount": "{amount} {unit} அனுப்பு",
   "mesh.peer.direct": "நேரடி இணைப்பு",
   "mesh.peer.check_distance": "தூரத்தைச் சரிபார்",
   "mesh.peer.checking": "சரிபார்க்கிறது",
@@ -1041,37 +1061,37 @@ export const strings: Strings = {
   "wallet.balance.locked":
     "பணப்பைச் சேமிப்பு பூட்டப்பட்டுள்ளது. உங்கள் ecash ஒரு குறியாக்கக் கோப்பில் வைக்கப்படுகிறது, அதன் சாவி சாதனத்தின் சாவிக்கொத்தில் இருக்கிறது, அந்தக் கோப்பைத் திறக்க முடியவில்லை. உங்கள் சாதனத்தைத் திறந்து Airhop ஐ மீண்டும் திறங்கள்.",
   "wallet.balance.tor_blocked":
-    "Tor இயக்கத்தில் உள்ளது, எனவே நாணயச்சாலைக் கோரிக்கைகள் தடுக்கப்பட்டுள்ளன: அவை திறந்த வலை வழியாகச் சென்று உங்கள் IP ஐ உங்கள் ecash உடன் இணைத்துவிடும். மெஷ் வழியாக அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும். இருந்தாலும் நாணயச்சாலைகளை அடைய அமைப்புகளில் {setting} ஐ இயக்கு.",
+    "Tor இயக்கத்தில் உள்ளது, எனவே நாணயச்சாலைக் கோரிக்கைகள் தடுக்கப்பட்டுள்ளன: அவை திறந்த வலை வழியாகச் சென்று உங்கள் IP ஐ உங்கள் ecash உடன் இணைத்துவிடும். மெஷ் வழியாக அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும். இருந்தாலும் நாணயச்சாலைகளை அடைய அமைப்புகளில் {setting} ஐ இயக்குங்கள்.",
   "wallet.balance.offline":
     "இணைப்பில்லை. அருகிலுள்ளவர்களுக்குப் பணம் செலுத்தவும் டோக்கன் அனுப்பவும் இன்னும் முடியும்.",
   "wallet.balance.internet_off":
-    "இணையம் அணைக்கப்பட்டுள்ளது, எனவே வாலட் அருகில் மட்டுமே இயங்கும். நாணயச்சாலைகளை அடைய அமைப்புகளில் {setting} ஐ இயக்கு.",
+    "இணையம் அணைக்கப்பட்டுள்ளது, எனவே பணப்பை அருகில் மட்டுமே இயங்கும். நாணயச்சாலைகளை அடைய அமைப்புகளில் {setting} ஐ இயக்குங்கள்.",
   "wallet.balance.unconfirmed_note":
     "{amount} இன்னும் நாணயச்சாலையால் உறுதிசெய்யப்படவில்லை",
   "wallet.balance.reserved_note":
     "{amount} வழியில் உள்ள ஓர் அனுப்பலுக்காக ஒதுக்கப்பட்டுள்ளது",
   "wallet.balance.other_mint_note": "{amount} வேறு நாணயச்சாலையில்",
   "wallet.balance.test_mint_note":
-    "இதில் சோதனை நாணயச்சாலையின் விளையாட்டுப் பணம் உள்ளது. இது bitcoin அல்ல, இதைப் பணமாக்க முடியாது.",
+    "இதில் சோதனை நாணயச்சாலையின் விளையாட்டுப் பணம் உள்ளது. இது bitcoin அல்ல, இதை வெளியே எடுக்க முடியாது.",
   "wallet.token": "டோக்கன்",
   "wallet.action.send_disabled":
     "ecash டோக்கனை அனுப்பு, இருப்பு காலியாக இருக்கும்போது கிடைக்காது",
   "wallet.action.scan": "ஸ்கேன்",
-  "wallet.action.scan_a11y": "டோக்கன், இன்வாய்ஸ் அல்லது npub-ஐ ஸ்கேன் செய்",
+  "wallet.action.scan_a11y": "டோக்கன், பட்டியல் அல்லது npub-ஐ ஸ்கேன் செய்",
   "wallet.choose.paste": "டோக்கனை ஒட்டு",
   "wallet.choose.paste_desc": "இணைப்பில்லாமலும் இயங்கும்",
   "wallet.choose.scan": "QR குறியீட்டை ஸ்கேன் செய்",
-  "wallet.choose.scan_desc": "எந்த வாலட்டிலிருந்தும் Cashu டோக்கன்",
+  "wallet.choose.scan_desc": "எந்தப் பணப்பையிலிருந்தும் Cashu டோக்கன்",
   "wallet.choose.topup": "Lightning மூலம் நிரப்பு",
   "wallet.choose.topup_desc":
-    "எந்த Lightning வாலட்டிலிருந்தும் இன்வாய்ஸைச் செலுத்து",
+    "எந்த Lightning பணப்பையிலிருந்தும் பட்டியலைச் செலுத்து",
   "wallet.choose.token": "டோக்கனை உருவாக்கு",
   "wallet.choose.token_desc":
     "பகிர் அல்லது QR குறியீட்டைக் காட்டு, இணைப்பில்லாமலும்",
   "wallet.choose.zap": "ஒரு Nostr தொடர்புக்கு zap அனுப்பு",
   "wallet.choose.zap_desc": "அவர்களின் npub-க்கு, இணையம் வழியாக",
-  "wallet.choose.invoice": "Lightning இன்வாய்ஸைச் செலுத்து",
-  "wallet.choose.invoice_desc": "எந்த Lightning வாலட்டுக்கும் எடு",
+  "wallet.choose.invoice": "Lightning பட்டியலைச் செலுத்து",
+  "wallet.choose.invoice_desc": "எந்த Lightning பணப்பைக்கும் எடு",
   "wallet.choose.tor_paused": "Tor இயங்கும் வரை நிறுத்தப்பட்டுள்ளது",
   "wallet.choose.offline": "இணையம் தேவை",
   "wallet.choose.internet_off": "இணையம் அணைக்கப்பட்டுள்ளது",
@@ -1088,11 +1108,11 @@ export const strings: Strings = {
   "wallet.send.qr_too_big":
     "இந்த டோக்கன் QR குறியீட்டில் அடங்க முடியாத அளவுக்குப் பல நாணயங்களாகப் பிரிந்துள்ளது. மாறாக இதைப் பகிருங்கள் அல்லது நகலெடுங்கள், அல்லது ஒன்றிணைக்க நாணயச்சாலையில் புதுப்பியுங்கள்.",
   "wallet.send.bearer_note":
-    "இந்தச் சரத்தை வைத்திருப்பவரே பணத்துக்கு உரியவர். நாணயங்கள் ஒதுக்கப்பட்டுள்ளன, செலவழிக்கப்படவில்லை: இது யாரையும் சென்றடையவில்லை எனில் செயல்பாடு பகுதியில் அவற்றை மீட்கலாம்.",
+    "இந்தச் சரத்தை வைத்திருப்பவரே பணத்துக்கு உரியவர். நாணயங்கள் ஒதுக்கப்பட்டுள்ளன, செலவழிக்கப்படவில்லை: இது யாரையும் சென்றடையவில்லை எனில் செயல்பாடு பகுதியில் அவற்றைத் திரும்பப் பெறலாம்.",
   "wallet.send.qr_too_big_short":
     "இந்த டோக்கன் QR குறியீட்டில் அடங்க முடியாத அளவுக்குப் பல நாணயங்களாகப் பிரிந்துள்ளது. மாறாக இதைப் பகிருங்கள் அல்லது நகலெடுங்கள்.",
   "wallet.send.scan_note":
-    "இதை அவர்களின் பணப்பையிலிருந்து ஸ்கேன் செய்யச் சொல்லுங்கள். சென்றடைந்தது எனக் குறிக்கும் வரை இதை மீட்க முடியும்.",
+    "இதை அவர்களின் பணப்பையிலிருந்து ஸ்கேன் செய்யச் சொல்லுங்கள். பெறப்பட்டது எனக் குறிக்கும் வரை இதைத் திரும்பப் பெற முடியும்.",
   "wallet.send.mesh_note":
     "டோக்கன் மெஷ் வழியாகக் குறியாக்கம் செய்யப்பட்ட நேரடிச் செய்தியாகச் செல்கிறது. இணையம் தேவையில்லை.",
   "wallet.send.no_peers_note":
@@ -1106,14 +1126,14 @@ export const strings: Strings = {
   "wallet.send.send_amount": "{amount} அனுப்பு",
   "wallet.send.sent_to": "{name} க்கு {amount} {unit} அனுப்பப்பட்டது",
   "wallet.send.sent_to_body":
-    "{route} அவர்கள் பெற்றதாக நீங்கள் உறுதிசெய்யும் வரை, அல்லது டோக்கன் மீட்கப்பட்டதாக நாணயச்சாலை சொல்லும் வரை இது செயல்பாடு பகுதியில் மீட்கக்கூடியதாக இருக்கும்.",
+    "{route} அவர்கள் பெற்றதாக நீங்கள் உறுதிசெய்யும் வரை, அல்லது டோக்கன் பணமாக்கப்பட்டதாக நாணயச்சாலை சொல்லும் வரை இது செயல்பாடு பகுதியில் திரும்பப் பெறக்கூடியதாக இருக்கும்.",
   "wallet.send.copy_token": "டோக்கனை நகலெடு",
   "wallet.send.share_token": "டோக்கனைப் பகிர்",
   "wallet.send.open_in_wallet": "இந்த டோக்கனை வேறொரு பணப்பையில் திற",
   "wallet.send.open_in_wallet_short": "பணப்பையில் திற",
   "wallet.send.to_peer": "டோக்கனை அருகிலுள்ள பியருக்கு அனுப்பு",
   "wallet.send.to_peer_short": "பியருக்கு அனுப்பு",
-  "wallet.send.mark_delivered": "சென்றடைந்தது எனக் குறித்து முடி",
+  "wallet.send.mark_delivered": "பெறப்பட்டது எனக் குறி",
   "wallet.send.they_got_it": "அவர்கள் பெற்றுவிட்டார்கள்",
   "wallet.send.keep_pending": "இந்த அனுப்பலை நிலுவையிலேயே வை",
   "wallet.send.decide_later": "பிறகு முடிவுசெய்",
@@ -1122,7 +1142,7 @@ export const strings: Strings = {
   // ---- Wallet: receive ----
   "wallet.receive.own_payment": "இது உங்களுடைய சொந்தப் பணப்பரிமாற்றம்",
   "wallet.receive.own_payment_body":
-    "இந்த நாணயங்கள் நீங்கள் முடிக்காத ஓர் அனுப்பலுக்காக இன்னும் ஒதுக்கப்பட்டுள்ளன, எனவே கோர எதுவும் இல்லை. அவற்றை நேரடியாக உங்கள் இருப்புக்குத் திருப்ப அந்தப் பணப்பரிமாற்றத்தில் மீட்பு என்பதைப் பயன்படுத்துங்கள்.",
+    "இந்த நாணயங்கள் நீங்கள் முடிக்காத ஓர் அனுப்பலுக்காக இன்னும் ஒதுக்கப்பட்டுள்ளன, எனவே பெற எதுவும் இல்லை. அவற்றை நேரடியாக உங்கள் இருப்புக்குத் திருப்ப அந்தப் பணப்பரிமாற்றத்தில் “திரும்பப் பெறு” என்பதைப் பயன்படுத்துங்கள்.",
   "wallet.receive.already_have": "ஏற்கெனவே உங்கள் பணப்பையில்",
   "wallet.receive.already_have_body":
     "இந்த டோக்கனில் உள்ள அனைத்தும் ஏற்கெனவே இங்கு சேமிக்கப்பட்டுள்ளன, எனவே எதுவும் சேர்க்கப்படவில்லை. இருப்புகள் மாறவில்லை.",
@@ -1133,14 +1153,14 @@ export const strings: Strings = {
     "{mint} இடமிருந்து சேமிக்கப்பட்டது, ஆனால் இன்னும் நாணயச்சாலையால் உறுதிசெய்யப்படவில்லை ({reason}).",
   "wallet.receive.offline": "ஆஃப்லைன்",
   "wallet.receive.redeemed_here":
-    "{mint} இல் மீட்கப்பட்டது. இந்த ecash இப்போது உங்களுக்கு மட்டுமே சொந்தம்: அனுப்பியவரின் நகல் இனி வேலை செய்யாது.",
-  "wallet.receive.memo_quoted": "\n\n”{memo}“",
+    "{mint} இல் பணமாக்கப்பட்டது. இந்த ecash இப்போது உங்களுக்கு மட்டுமே சொந்தம்: அனுப்பியவரின் நகல் இனி வேலை செய்யாது.",
+  "wallet.receive.memo_quoted": "\n\n“{memo}”",
   "wallet.receive.redeemed_at":
-    "{mint} இல் மீட்கப்பட்டது. இப்போது இது நிரூபிக்கக்கூடிய வகையில் உங்களுடையது: அனுப்பியவரிடம் உள்ள இந்த டோக்கனின் நகல் இனி வேலை செய்யாது.",
-  "wallet.receive.stored_pending":
-    "{mint} இடமிருந்து சேமிக்கப்பட்டது, ஆனால் இது செலவழிக்கப்படவில்லை என நாணயச்சாலை இன்னும் உறுதிசெய்யவில்லை{dleq}. நீங்கள் ஆன்லைனுக்கு வந்ததும் இது நாணயச்சாலையுடன் தானாக உறுதிசெய்யப்படும்.",
-  "wallet.receive.dleq_inline":
-    " (அதன் கையொப்பம் பொருந்துகிறது, எனவே டோக்கன் உண்மையானது)",
+    "{mint} இல் பணமாக்கப்பட்டது. இப்போது இது நிரூபிக்கக்கூடிய வகையில் உங்களுடையது: அனுப்பியவரிடம் உள்ள இந்த டோக்கனின் நகல் இனி வேலை செய்யாது.",
+  "wallet.receive.pending_unconfirmed":
+    "{mint} இடமிருந்து சேமிக்கப்பட்டது, ஆனால் இது செலவழிக்கப்படவில்லை என நாணயச்சாலை இன்னும் உறுதிசெய்யவில்லை. நீங்கள் ஆன்லைனுக்கு வந்ததும் இது நாணயச்சாலையுடன் தானாக உறுதிசெய்யப்படும்.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "{mint} இடமிருந்து சேமிக்கப்பட்டது, ஆனால் இது செலவழிக்கப்படவில்லை என நாணயச்சாலை இன்னும் உறுதிசெய்யவில்லை. அதன் கையொப்பம் பொருந்துகிறது, எனவே டோக்கன் உண்மையானது. நீங்கள் ஆன்லைனுக்கு வந்ததும் இது நாணயச்சாலையுடன் தானாக உறுதிசெய்யப்படும்.",
   "wallet.receive.dleq_ok":
     "நாணயச்சாலையின் கையொப்பம் பொருந்துகிறது, எனவே டோக்கன் உண்மையானது.",
   "wallet.receive.dleq_uncached":
@@ -1152,7 +1172,7 @@ export const strings: Strings = {
   "wallet.receive.failed": "பெற முடியவில்லை",
   "wallet.receive.title": "ecash பெறு",
   "wallet.receive.body":
-    "ஒரு Cashu டோக்கனை ஒட்டுங்கள். ஆன்லைனில் அது உடனே நாணயச்சாலையில் மீட்கப்படும்; ஆஃப்லைனில் சேமிக்கப்பட்டு, நீங்கள் மீண்டும் ஆன்லைனுக்கு வந்ததும் நாணயச்சாலையுடன் தானாக உறுதிசெய்யப்படும்.",
+    "ஒரு Cashu டோக்கனை ஒட்டுங்கள். ஆன்லைனில் அது உடனே நாணயச்சாலையில் பணமாக்கப்படும்; ஆஃப்லைனில் சேமிக்கப்பட்டு, நீங்கள் மீண்டும் ஆன்லைனுக்கு வந்ததும் நாணயச்சாலையுடன் தானாக உறுதிசெய்யப்படும்.",
   "wallet.receive.scan": "ecash QR குறியீட்டை ஸ்கேன் செய்",
   "wallet.receive.scan_short": "QR ஸ்கேன்",
   "wallet.receive.receiving": "பெறுகிறது…",
@@ -1160,7 +1180,7 @@ export const strings: Strings = {
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
   "wallet.nutzap.received_body":
-    "{from}… இடமிருந்து nutzap பெறப்பட்டு உங்கள் பணப்பையில் மீட்கப்பட்டது.",
+    "{from}… இடமிருந்து nutzap பெறப்பட்டு உங்கள் பணப்பையில் பணமாக்கப்பட்டது.",
   "wallet.zap.title": "ஒரு Nostr அடையாளத்துக்கு zap அனுப்பு",
   "wallet.zap.not_npub": "npub அல்ல",
   "wallet.zap.bad_key": "தவறான சாவி",
@@ -1170,7 +1190,7 @@ export const strings: Strings = {
   "wallet.zap.sent": "nutzap அனுப்பப்பட்டது",
   "wallet.zap.failed": "zap தோல்வி",
   "wallet.zap.body":
-    "அவர்கள் NIP-61 nutzap தகவலை வெளியிட்டால், ecash அவர்களின் சாவியுடன் பூட்டப்படும், எனவே வேறு யாரும் அதைச் செலவழிக்க முடியாது, திரும்பப்பெறவும் முடியாது. இல்லையெனில் இது மீட்கக்கூடிய டோக்கனாகச் செல்லும். எது நடந்தது என்பது உங்களுக்குச் சொல்லப்படும்.",
+    "அவர்கள் NIP-61 nutzap தகவலை வெளியிட்டால், ecash அவர்களின் சாவியுடன் பூட்டப்படும், எனவே வேறு யாரும் அதைச் செலவழிக்க முடியாது, திரும்பப்பெறவும் முடியாது. இல்லையெனில் இது திரும்பப் பெறக்கூடிய டோக்கனாகச் செல்லும். எது நடந்தது என்பது உங்களுக்குச் சொல்லப்படும்.",
   "wallet.zap.contact": "{name} க்கு zap அனுப்பு",
   "wallet.zap.pubkey_placeholder": "npub1… அல்லது 64 எழுத்து பதினாறடிமானம்",
   "wallet.zap.sending": "அனுப்புகிறது…",
@@ -1190,7 +1210,7 @@ export const strings: Strings = {
     "{mint} ஐ உங்கள் பணப்பையிலிருந்து அகற்றவா? அதன் சேமித்த சாவிகளும் சேர்ந்து போகும், எனவே அதன் டோக்கன்களை இனி ஆஃப்லைனில் சரிபார்க்க முடியாது.",
   "wallet.mint.title": "நாணயச்சாலைகள்",
   "wallet.mint.none_desc":
-    "நாணயச்சாலை உங்கள் ecash-ஐ வெளியிட்டு மீட்கிறது. Lightning மூலம் நிரப்ப அல்லது அதன் டோக்கன்களை ஏற்க ஒன்றைச் சேர்.",
+    "நாணயச்சாலை உங்கள் ecash-ஐ வெளியிட்டுப் பணமாக்குகிறது. Lightning மூலம் நிரப்ப அல்லது அதன் டோக்கன்களை ஏற்க ஒன்றைச் சேருங்கள்.",
   "wallet.mint.add": "நாணயச்சாலையைச் சேர்",
   "wallet.mint.add_body":
     "உங்கள் ecash க்குப் பின்னால் உள்ள Bitcoin ஐ நாணயச்சாலை வைத்திருக்கிறது, எனவே அங்கு வைக்கும் இருப்பை நம்பி ஒப்படைக்கக்கூடிய ஒன்றைத் தேர்ந்தெடுங்கள். சேமிப்பதற்கு முன் URL சரிபார்க்கப்படும். யாரையும் நம்ப விரும்பவில்லை எனில் Nutshell கொண்டு உங்கள் சொந்த நாணயச்சாலையை இயக்குங்கள்.",
@@ -1204,8 +1224,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "எல்லா இருப்புகளையும் ஒரே நாணயச்சாலைக்கு நகர்த்து",
   "wallet.mint.confirm_with": "{mint}-உடன் இருப்பைச் சரிபார்",
   "wallet.mint.available_amount": "{amount} {unit} கிடைக்கிறது",
-  "wallet.mint.split_across":
-    "இருப்பு {count} நாணயச்சாலைகளில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
   "wallet.mint.move_everything_to": "எல்லாவற்றையும் {mint} க்கு நகர்த்து",
   "wallet.mint.consolidate_title": "ஒரே நாணயச்சாலைக்கு நகர்த்து",
   "wallet.mint.moving": "நகர்த்துகிறது…",
@@ -1216,10 +1234,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "எதுவும் நகர்த்தப்படவில்லை",
   "wallet.mint.move_pending": "வழியில் உள்ளது",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} {mint}-இலிருந்து வெளியேறி {target}-க்கு வழியில் உள்ளது. வைப்பு பெறப்பட்டதும் வந்துசேரும், வாலட் தொடர்ந்து முயற்சிக்கிறது.",
+    "{amount} {unit} {mint} இலிருந்து வெளியேறி {target} க்கு வழியில் உள்ளது. பரிமாற்றம் பெறப்பட்டதும் வந்துசேரும், பணப்பை தொடர்ந்து முயற்சிக்கிறது.",
   "wallet.mint.destination": "· சேருமிடம்",
   "wallet.mint.will_move": "· நகர்த்தப்படும்",
   "wallet.mint.issued_by": "வழங்கியவர்",
+  "wallet.mint.test_badge": "சோதனை",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop பணப்பையில் நிரப்புதல்",
@@ -1246,7 +1265,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "{amount} {unit} வரை",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit} செலுத்து",
-  "wallet.ln.deposit_title": "Lightning வழியாகச் செலுத்துதல்",
+  "wallet.ln.deposit_title": "Lightning மூலம் நிரப்பு",
   "wallet.ln.amount_placeholder": "sat இல் தொகை",
   "wallet.ln.requesting": "கோருகிறது…",
   "wallet.ln.get_invoice": "பட்டியலைப் பெறு",
@@ -1278,7 +1297,7 @@ export const strings: Strings = {
     "உங்களிடம் ஏற்கெனவே ஒரு மீட்புச் சொற்றொடர் உள்ளது. வேறொன்றை மீட்டால் அது மாற்றப்படும். பழைய சொற்றொடர் ஏற்கெனவே உள்ளடக்கிய நாணயங்கள் இந்தச் சாதனத்தில் செலவழிக்கக்கூடியவையாகவே இருக்கும், ஆனால் மீட்க முடியாதவையாகிவிடும், எனவே தொடர்வதற்கு முன் பழைய சொற்கள் எழுதி வைக்கப்பட்டுள்ளதா என உறுதிசெய்யுங்கள்.",
   "wallet.backup.replace": "மாற்று",
   "wallet.backup.replace_unseen_body":
-    "இந்த வாலட்டை அமைக்கும்போது உங்களுக்காக உருவாக்கப்பட்ட மீட்பு சொற்றொடர் ஏற்கனவே உள்ளது, உங்கள் நாணயங்கள் அதைக் கொண்டே உருவாக்கப்பட்டன. வேறு சொற்றொடரை மீட்டெடுத்தால் அது நிரந்தரமாக மாற்றப்படும். நாணயங்கள் இந்தச் சாதனத்தில் செலவிடக்கூடியவையாகவே இருக்கும், ஒவ்வொரு மின்டும் அடுத்த முறை புதுப்பிக்கப்படும்போது புதிய சொற்றொடருக்கு மாறும்.",
+    "இந்தப் பணப்பையை அமைக்கும்போது உங்களுக்காக உருவாக்கப்பட்ட மீட்புச் சொற்றொடர் ஏற்கனவே உள்ளது, உங்கள் நாணயங்கள் அதைக் கொண்டே உருவாக்கப்பட்டன. வேறு சொற்றொடரை மீட்டெடுத்தால் அது நிரந்தரமாக மாற்றப்படும். நாணயங்கள் இந்தச் சாதனத்தில் செலவிடக்கூடியவையாகவே இருக்கும், ஒவ்வொரு நாணயச்சாலையும் அடுத்த முறை புதுப்பிக்கப்படும்போது புதிய சொற்றொடருக்கு மாறும்.",
   "wallet.backup.invalid_phrase": "அந்தச் சொற்றொடர் செல்லாதது",
   "wallet.backup.invalid_phrase_body":
     "சொற்றொடருக்குள்ளேயே ஒரு சரிபார்ப்புத் தொகை உள்ளது, இது அதில் தேறவில்லை. தவறாகத் தட்டச்சு செய்யப்பட்ட, விடுபட்ட, அல்லது இடம் மாறிய சொல்லைத் தேடுங்கள்.",
@@ -1323,7 +1342,7 @@ export const strings: Strings = {
   "wallet.backup.restore_body":
     "பன்னிரண்டு சொற்களை உள்ளிடுங்கள். Airhop உங்கள் நாணயங்களை மீண்டும் பெற்று, அவற்றில் எவற்றில் கையொப்பமிட்டது என ஒவ்வொரு நாணயச்சாலையிடமும் கேட்கிறது, எனவே நாணயச்சாலை வைத்திருக்கும் பதிவுகளிலிருந்து இருப்பு திரும்பி வருகிறது.",
   "wallet.backup.warn_secret":
-    "அவற்றைப் படிக்கும் யாரும் உங்கள் இருப்பை எடுத்துக்கொள்ள முடியும். அவற்றைத் திரைப்படமெடுக்காதீர்கள், இந்தத் தொலைபேசியில் சேமிக்காதீர்கள்.",
+    "அவற்றைப் படிக்கும் யாரும் உங்கள் இருப்பை எடுத்துக்கொள்ள முடியும். அவற்றைத் திரைப்பிடிப்பு எடுக்காதீர்கள், இந்தத் தொலைபேசியில் சேமிக்காதீர்கள்.",
   "wallet.backup.warn_paper":
     "அவற்றைத் தாளில் எழுதிப் பாதுகாப்பான இடத்தில் வையுங்கள். தொலைபேசி போய்விட்டால் Airhop ஆல் அவற்றை மீண்டும் காட்ட முடியாது.",
   "wallet.backup.warn_scope":
@@ -1358,21 +1377,21 @@ export const strings: Strings = {
   // ---- Wallet: pending and activity ----
   "wallet.delivered.title": "பெறப்பட்டது எனக் குறிக்கவா?",
   "wallet.delivered.body":
-    "இது {amount} {unit} ஐ நிரந்தரமாக விடுவிக்கிறது. அது உண்மையில் ஒருபோதும் சென்றடையவில்லை எனில், அதை உங்களால் மீட்க முடியாது.",
+    "இது {amount} {unit} ஐ நிரந்தரமாக விடுவிக்கிறது. அது உண்மையில் ஒருபோதும் சென்றடையவில்லை எனில், அதை உங்களால் திரும்பப் பெற முடியாது.",
   "wallet.delivered.body_generic":
-    "இது ஒதுக்கப்பட்ட தொகையை நிரந்தரமாக விடுவிக்கிறது. அது உண்மையில் ஒருபோதும் சென்றடையவில்லை எனில், அதை உங்களால் மீட்க முடியாது.",
+    "இது ஒதுக்கப்பட்ட தொகையை நிரந்தரமாக விடுவிக்கிறது. அது உண்மையில் ஒருபோதும் சென்றடையவில்லை எனில், அதை உங்களால் திரும்பப் பெற முடியாது.",
   "wallet.delivered.cancel": "இன்னும் இல்லை",
   "wallet.delivered.confirm": "அவர்கள் பெற்றுவிட்டார்கள்",
-  "wallet.reclaim.title": "இந்த டோக்கனை மீட்கவா?",
+  "wallet.reclaim.title": "இந்த டோக்கனைத் திரும்பப் பெறவா?",
   "wallet.reclaim.body":
-    "{amount} {unit} உங்கள் இருப்புக்குத் திரும்பும், நாணயச்சாலையை அணுக முடிந்தவுடன் நீங்கள் கொடுத்த டோக்கன் வேலை செய்வது நின்றுவிடும். அதற்கு முன்பே அவர்கள் மீட்டுவிட்டால், பணம் அவர்களுடையதாகவே இருக்கும்.",
+    "{amount} {unit} உங்கள் இருப்புக்குத் திரும்பும், நாணயச்சாலையை அணுக முடிந்தவுடன் நீங்கள் கொடுத்த டோக்கன் வேலை செய்வது நின்றுவிடும். அதற்கு முன்பே அவர்கள் பணமாக்கிவிட்டால், பணம் அவர்களுடையதாகவே இருக்கும்.",
   "wallet.reclaim.keep": "நிலுவையிலேயே வை",
-  "wallet.reclaim.confirm": "மீட்டெடு",
-  "wallet.reclaim.claimed_title": "அவர்கள் ஏற்கெனவே மீட்டுவிட்டார்கள்",
+  "wallet.reclaim.confirm": "திரும்பப் பெறு",
+  "wallet.reclaim.claimed_title": "அவர்கள் ஏற்கெனவே பெற்றுவிட்டார்கள்",
   "wallet.reclaim.claimed_body":
-    "இந்த டோக்கன் ஏற்கெனவே மீட்கப்பட்டதாக நாணயச்சாலை கூறுகிறது, எனவே {amount} {unit} அவர்களைச் சென்றடைந்தது, உங்கள் இருப்புக்கு எதுவும் திரும்பவில்லை.",
+    "இந்த டோக்கன் ஏற்கெனவே பணமாக்கப்பட்டதாக நாணயச்சாலை கூறுகிறது, எனவே {amount} {unit} அவர்களைச் சென்றடைந்தது, உங்கள் இருப்புக்கு எதுவும் திரும்பவில்லை.",
   "wallet.copied.token_body":
-    "டோக்கன் உங்கள் ஒட்டுப்பலகையில் உள்ளது. சென்றடைந்தது எனக் குறிக்கும் வரை இது இங்கேயே ஒதுக்கப்பட்டிருக்கும், எனவே முதல் முயற்சி தோற்றால் மீண்டும் ஒட்டலாம்.",
+    "டோக்கன் உங்கள் ஒட்டுப்பலகையில் உள்ளது. பெறப்பட்டது எனக் குறிக்கும் வரை இது இங்கேயே ஒதுக்கப்பட்டிருக்கும், எனவே முதல் முயற்சி தோற்றால் மீண்டும் ஒட்டலாம்.",
   "wallet.copied.refused_token_body":
     "டோக்கன் உங்கள் ஒட்டுப்பலகையில் உள்ளது. இந்தப் பணப்பை இனி அதைக் கணக்கில் கொள்ளாது, எனவே அதை அனுப்பியவருக்கே திருப்பித் தரலாம்.",
   "wallet.copied.phrase_body":
@@ -1399,9 +1418,10 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "இந்த டோக்கனை QR குறியீடாகக் காட்டு",
   "wallet.pending.copy_again": "டோக்கனை மீண்டும் நகலெடு",
   "wallet.pending.share_again": "டோக்கனை மீண்டும் பகிர்",
-  "wallet.pending.mark_delivered": "இந்த டோக்கனைச் சென்றடைந்தது எனக் குறி",
-  "wallet.pending.delivered": "சென்றடைந்தது",
-  "wallet.pending.reclaim_into": "இந்த டோக்கனை உங்கள் இருப்புக்கு மீட்டெடு",
+  "wallet.pending.mark_delivered": "பெறப்பட்டது எனக் குறி",
+  "wallet.pending.delivered": "பெறப்பட்டது",
+  "wallet.pending.reclaim_into":
+    "இந்த டோக்கனை உங்கள் இருப்புக்குத் திரும்பப் பெறு",
   "wallet.activity.title": "செயல்பாடு",
   "wallet.activity.none": "இன்னும் எதுவும் இல்லை",
   "wallet.activity.none_hint":
@@ -1411,14 +1431,14 @@ export const strings: Strings = {
   "wallet.activity.received_unconfirmed": "பெறப்பட்டது, உறுதிசெய்யப்படவில்லை",
   "wallet.activity.received": "பெறப்பட்டது",
   "wallet.activity.receive_failed": "பெறுவது தோல்வி",
-  "wallet.activity.reclaimed": "மீட்கப்பட்டது",
+  "wallet.activity.reclaimed": "திரும்பப் பெறப்பட்டது",
   "wallet.activity.send_failed": "அனுப்புவது தோல்வி",
   "wallet.activity.sent": "அனுப்பப்பட்டது",
   "wallet.activity.status_pending": "நிலுவையில்",
   "wallet.activity.status_failed": "தோல்வி",
-  "wallet.activity.status_reclaimed": "மீட்கப்பட்டது",
+  "wallet.activity.status_reclaimed": "திரும்பப் பெறப்பட்டது",
   "wallet.activity.status_expired": "காலாவதி",
-  "wallet.activity.ln_deposit": "Lightning செலுத்துதல்",
+  "wallet.activity.ln_deposit": "Lightning நிரப்புதல்",
   "wallet.activity.ln_withdrawal": "Lightning எடுத்தல்",
   "wallet.activity.nutzap_received": "nutzap பெறப்பட்டது",
   "wallet.activity.nutzap_claiming": "nutzap பெறப்படுகிறது",
@@ -1459,10 +1479,17 @@ export const strings: Strings = {
   "wallet.pay.rail_nutzap_undelivered":
     "அவர்களின் சாவியுடன் பூட்டப்பட்டது, ஆனால் இதை இன்னும் எதுவும் சுமந்து செல்ல முடியவில்லை. இது வரிசையில் உள்ளது, டோக்கன் செயல்பாடு பகுதியில் இருக்கிறது.",
   "wallet.pay.final":
-    "பூட்டப்பட்ட பணப்பரிமாற்றங்களை மீட்க முடியாது: இப்போது இந்த நாணயங்களை அவர்களின் சாவியால் மட்டுமே செலவழிக்க முடியும்.",
+    "பூட்டப்பட்ட பணப்பரிமாற்றங்களைத் திரும்பப் பெற முடியாது: இப்போது இந்த நாணயங்களை அவர்களின் சாவியால் மட்டுமே செலவழிக்க முடியும்.",
   "wallet.pay.reclaimable":
-    "இது சென்றடைந்ததாக நீங்கள் உறுதிசெய்யும் வரை செயல்பாடு பகுதியிலிருந்து மீட்கக்கூடியதாக இருக்கும்.",
-  "wallet.pay.why": "{reason} என்பதால் இந்த வழியில் அனுப்பப்பட்டது.",
+    "இது சென்றடைந்ததாக நீங்கள் உறுதிசெய்யும் வரை செயல்பாடு பகுதியிலிருந்து திரும்பப் பெறக்கூடியதாக இருக்கும்.",
+  "wallet.pay.why_no_relay":
+    "ரிலே இணைப்பு இல்லாததால் இந்த வழியில் அனுப்பப்பட்டது.",
+  "wallet.pay.why_no_shared_mint":
+    "அவர்கள் ஏற்கும் எந்த நாணயச்சாலையிலும் உங்களிடம் போதுமான இருப்பு இல்லாததால் இந்த வழியில் அனுப்பப்பட்டது.",
+  "wallet.pay.why_no_nutzap_info":
+    "பெறுநர் nutzap தகவலை வெளியிடாததால் இந்த வழியில் அனுப்பப்பட்டது (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{name} க்கு {amount} {unit}",
   "wallet.pay.thread_receipt":
     "நீங்கள் {amount} {unit} அனுப்பினீர்கள், அவர்களின் சாவியுடன் பூட்டப்பட்டது.",
@@ -1501,9 +1528,9 @@ export const strings: Strings = {
   "wallet.scan.title_invoice": "பட்டியல் ஸ்கேன்",
   "wallet.scan.title_any": "QR குறியீட்டை ஸ்கேன் செய்",
   "wallet.scan.aim_any":
-    "டோக்கன், இன்வாய்ஸ் அல்லது npub QR குறியீட்டில் காட்டுங்கள்.",
+    "டோக்கன், பட்டியல் அல்லது npub QR குறியீட்டில் காட்டுங்கள்.",
   "wallet.scan.no_any":
-    "அந்தப் படத்தில் டோக்கன், இன்வாய்ஸ் அல்லது npub எதுவும் கிடைக்கவில்லை.",
+    "அந்தப் படத்தில் டோக்கன், பட்டியல் அல்லது npub எதுவும் கிடைக்கவில்லை.",
   "wallet.scan.use_camera_a11y": "கேமராவால் ஸ்கேன் செய்",
   "wallet.scan.use_camera": "கேமராவைப் பயன்படுத்து",
   "wallet.scan.pick_image_a11y": "சேமித்த படத்திலிருந்து QR குறியீட்டைப் படி",
@@ -1524,7 +1551,7 @@ export const strings: Strings = {
     "ஒரு Nostr அடையாளத்துக்குப் பணம் செலுத்துகிறது. அவர்கள் NIP-61 nutzap தகவலை வெளியிட்டால், ecash அவர்களின் சாவியுடன் பூட்டப்படும், எனவே அவர்கள் மட்டுமே செலவழிக்க முடியும். இல்லையெனில் இது குறியாக்கம் செய்யப்பட்ட நேரடிச் செய்திக்குத் திரும்பும். இணையம் தேவை.",
   "wallet.explain.add_mint": "நாணயச்சாலை சேர்",
   "wallet.explain.add_mint_desc":
-    "உங்கள் ecash ஐ வழங்கி மீட்கும் நாணயச்சாலையைச் சேமிக்கிறது, அதன் பொதுச் சாவிகளையும் வைத்திருக்கிறது, அதனால் அதன் டோக்கன்களை ஆஃப்லைனில் சரிபார்க்க முடியும். அங்கு வைக்கும் இருப்பை நம்பி ஒப்படைக்கக்கூடிய நாணயச்சாலையைத் தேர்ந்தெடுங்கள்.",
+    "உங்கள் ecash ஐ வழங்கிப் பணமாக்கும் நாணயச்சாலையைச் சேமிக்கிறது, அதன் பொதுச் சாவிகளையும் வைத்திருக்கிறது, அதனால் அதன் டோக்கன்களை ஆஃப்லைனில் சரிபார்க்க முடியும். அங்கு வைக்கும் இருப்பை நம்பி ஒப்படைக்கக்கூடிய நாணயச்சாலையைத் தேர்ந்தெடுங்கள்.",
   "wallet.explain.phrase": "மீட்புச் சொற்றொடர்",
   "wallet.explain.phrase_desc":
     "பணப்பை தொடக்கத்தில் உருவாக்கும் பன்னிரண்டு சொற்களிலிருந்தே உங்கள் நாணயங்கள் பெறப்படுகின்றன, எனவே ஒரு புதிய தொலைபேசி, எந்த நாணயங்களில் கையொப்பமிட்டீர்கள் என உங்கள் நாணயச்சாலைகளிடம் கேட்டு இருப்பை மீண்டும் கட்ட முடியும். அவற்றைப் பார்த்து எழுதி வைக்கும் வரை அவை இந்தத் தொலைபேசியில் மட்டுமே இருக்கும்.",
@@ -1546,11 +1573,11 @@ export const strings: Strings = {
   "wallet.svc.tor_ios":
     "iOS இல் நாணயச்சாலைக் கோரிக்கைகள் Tor வழியாகச் செல்வதில்லை.",
   "wallet.svc.tor_ios_body":
-    "iOS இல் Tor, Nostr ஐ மட்டுமே மூடுகிறது, எனவே இந்தக் கோரிக்கை திறந்த வலை வழியாக நாணயச்சாலையை அடைந்து உங்கள் IP ஐ இந்த ecash உடன் இணைக்கும். அமைப்புகளில் {setting} ஐ இயக்கு, அல்லது முதலில் Tor ஐ முடக்குங்கள். மெஷ் வழியாக ecash அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும்.",
+    "iOS இல் Nostr மட்டுமே Tor வழியாகச் செல்கிறது, எனவே இந்தக் கோரிக்கை திறந்த வலை வழியாக நாணயச்சாலையை அடைந்து உங்கள் IP ஐ இந்த ecash உடன் இணைக்கும். அமைப்புகளில் {setting} ஐ இயக்குங்கள், அல்லது முதலில் Tor ஐ முடக்குங்கள். மெஷ் வழியாக ecash அனுப்புவதும் பெறுவதும் தொடர்ந்து இயங்கும்.",
   "wallet.svc.internet_off":
     "இணையம் அணைக்கப்பட்டுள்ளது, எனவே நாணயச்சாலையை அணுக முடியாது.",
   "wallet.svc.internet_off_body":
-    "அமைப்புகளில் {setting} ஐ இயக்கு. அருகில் ecash அனுப்புவதும் பெறுவதும் இன்னும் இயங்கும்.",
+    "அமைப்புகளில் {setting} ஐ இயக்குங்கள். அருகில் ecash அனுப்புவதும் பெறுவதும் இன்னும் இயங்கும்.",
   "wallet.svc.keys_uncached":
     "இந்த நாணயச்சாலையின் சாவிகள் இந்தச் சாதனத்தில் சேமிக்கப்படவில்லை.",
   "wallet.svc.keys_uncached_body":
@@ -1565,7 +1592,7 @@ export const strings: Strings = {
   "wallet.svc.need_mint": "முதலில் குறைந்தது ஒரு நாணயச்சாலையையாவது சேருங்கள்.",
   "wallet.svc.need_mint_body":
     "உங்களுக்காக எந்த நாணயங்களில் கையொப்பமிட்டது என நாணயச்சாலையிடம் கேட்பதன் மூலமே மீட்பு வேலை செய்கிறது, எனவே எந்த நாணயச்சாலையிடம் கேட்பது என்பது தெரிய வேண்டும்.",
-  "wallet.svc.restored": "மீட்புச் சொற்றொடரிலிருந்து மீட்கப்பட்டது",
+  "wallet.svc.restored": "மீட்புச் சொற்றொடரிலிருந்து மீட்டெடுக்கப்பட்டது",
   "wallet.svc.storage_locked": "பணப்பைச் சேமிப்பு பூட்டப்பட்டுள்ளது.",
   "wallet.svc.storage_locked_body":
     "Airhop, உங்கள் ecash ஐ ஒரு குறியாக்கக் கோப்பில் வைக்கிறது, அதன் சாவி சாதனத்தின் சாவிக்கொத்தில் இருக்கிறது. சாதனத்தைத் திறந்து செயலியை மீண்டும் திறங்கள்.",
@@ -1603,7 +1630,7 @@ export const strings: Strings = {
   "wallet.svc.coins_refused":
     "நாணயச்சாலை இந்த நாணயங்களை மறுத்தது, எனவே அவை இனி கணக்கில் இல்லை. நீங்கள் திருப்பி அனுப்ப விரும்பினால், டோக்கன் இங்கே வைக்கப்பட்டுள்ளது.",
   "wallet.svc.coins_unredeemable":
-    "இந்த நாணயங்களை இந்த நாணயச்சாலையில் மீட்க முடியாது, எனவே அவை இனி கணக்கில் இல்லை. நீங்கள் திருப்பி அனுப்ப விரும்பினால், டோக்கன் இங்கே வைக்கப்பட்டுள்ளது.",
+    "இந்த நாணயங்களை இந்த நாணயச்சாலையில் பணமாக்க முடியாது, எனவே அவை இனி கணக்கில் இல்லை. நீங்கள் திருப்பி அனுப்ப விரும்பினால், டோக்கன் இங்கே வைக்கப்பட்டுள்ளது.",
   "wallet.svc.reclaim_refused":
     "இந்த அனுப்புதலின் நாணயங்களை நாணயச்சாலை திரும்ப ஏற்கவில்லை, எனவே அவை இனி கணக்கில் இல்லை. நகலெடுப்பதற்காக டோக்கன் இங்கே வைக்கப்பட்டுள்ளது.",
   "wallet.svc.locked_ours_offline":
@@ -1612,7 +1639,7 @@ export const strings: Strings = {
     "ஆன்லைனுக்கு வந்ததும் இதைப் பெறுங்கள். அதுவரை வேறு யாரும் இதை எடுக்க முடியாது.",
   "wallet.svc.already_spent": "இந்த ecash ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டது.",
   "wallet.svc.already_spent_body":
-    "இந்த டோக்கனை அனுப்பியவர் அதை முதலில் மீட்டுவிட்டார், அல்லது அதே டோக்கனை வேறு யாருக்கோ அனுப்பியிருக்கிறார்.",
+    "இந்த டோக்கனை அனுப்பியவர் அதை முதலில் பணமாக்கிவிட்டார், அல்லது அதே டோக்கனை வேறு யாருக்கோ அனுப்பியிருக்கிறார்.",
   "wallet.svc.amount_positive": "பூஜ்ஜியத்தைவிடப் பெரிய தொகையை உள்ளிடுங்கள்.",
   "wallet.svc.coins_raced":
     "அந்த நாணயங்களை இப்போதுதான் வேறொரு பணப்பரிமாற்றம் பயன்படுத்திவிட்டது.",
@@ -1620,7 +1647,7 @@ export const strings: Strings = {
     "எதுவும் கழிக்கப்படவில்லை. மீண்டும் முயலுங்கள், பணப்பை வேறு தொகுப்பைத் தேர்ந்தெடுக்கும்.",
   "wallet.svc.no_ecash": "இன்னும் ecash இல்லை.",
   "wallet.svc.no_ecash_body":
-    "ஒரு நாணயச்சாலையைச் சேர்த்து Lightning வழியாகச் செலுத்துங்கள், அல்லது ஒருவரிடமிருந்து டோக்கனைப் பெறுங்கள்.",
+    "ஒரு நாணயச்சாலையைச் சேர்த்து Lightning மூலம் நிரப்புங்கள், அல்லது ஒருவரிடமிருந்து டோக்கனைப் பெறுங்கள்.",
   "wallet.svc.split_across_mints":
     "உங்கள் இருப்பு பல நாணயச்சாலைகளில் பிரிந்துள்ளது.",
   "wallet.svc.mint_says_spent":
@@ -1628,13 +1655,13 @@ export const strings: Strings = {
   "wallet.svc.issue_against_invoice":
     "ஒரு Lightning பட்டியலுக்கு எதிராக ecash வழங்க",
   "wallet.svc.pay_invoice": "ஒரு Lightning பட்டியலைச் செலுத்த",
-  "wallet.svc.unknown_deposit": "தெரியாத செலுத்துதல்.",
+  "wallet.svc.unknown_deposit": "தெரியாத நிரப்புதல்.",
   "wallet.svc.invoice_expired_before":
     "செலுத்தப்படுவதற்கு முன்பே பட்டியலின் காலம் முடிந்தது.",
   "wallet.svc.invoice_expired": "அந்தப் பட்டியலின் காலம் முடிந்தது.",
   "wallet.svc.invoice_unpaid": "பட்டியல் இன்னும் செலுத்தப்படவில்லை.",
-  "wallet.svc.payment_unknown":
-    "பணப்பரிமாற்ற நிலை தெரியவில்லை; அடுத்த புதுப்பிப்பில் மீண்டும் சரிபார்க்கப்படும்.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} பணப்பரிமாற்ற நிலை தெரியவில்லை; அடுத்த புதுப்பிப்பில் மீண்டும் சரிபார்க்கப்படும்.",
   "wallet.svc.melt_change_pending": "உங்கள் பட்டியல் செலுத்தப்பட்டது.",
   "wallet.svc.melt_change_pending_body":
     "பயன்படுத்தப்படாத திசைவழிக் கட்டணத்தை நாணயச்சாலை இன்னும் திருப்பித் தரவில்லை. அடுத்த புதுப்பிப்பில் அது தானாகவே பெறப்படும், இடையில் எதுவும் இழக்கப்படாது.",
@@ -1675,24 +1702,20 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint":
     "அந்தப் பணப்பரிமாற்றம் நீங்கள் பயன்படுத்தாத நாணயச்சாலையைக் குறிப்பிடுகிறது.",
   "wallet.svc.unknown_mint_body":
-    "நம்பினால் நாணயச்சாலையை நீங்களே சேருங்கள்; நீங்கள் தேர்ந்தெடுக்காத நாணயச்சாலையிலிருந்து எதுவும் மீட்கப்படுவதில்லை.",
-  "wallet.svc.no_relay": "ரிலே இணைப்பு இல்லை",
-  "wallet.svc.no_shared_mint": "போதுமான இருப்புள்ள பொதுவான நாணயச்சாலை இல்லை",
-  "wallet.svc.no_nutzap_info":
-    "பெறுநர் nutzap தகவலை வெளியிடவில்லை (NIP-61 kind 10019)",
+    "நம்பினால் நாணயச்சாலையை நீங்களே சேருங்கள்; நீங்கள் தேர்ந்தெடுக்காத நாணயச்சாலையிலிருந்து எதுவும் பணமாக்கப்படுவதில்லை.",
   "wallet.svc.locked_undelivered":
     "அவர்களின் சாவியுடன் பூட்டப்பட்டது ஆனால் இன்னும் சேர்ப்பிக்கப்படவில்லை. இதை முடிக்க இந்தப் பரிவர்த்தனையின் டோக்கனைப் பகிருங்கள்.",
   "wallet.svc.swap_lost":
     "நாணயச்சாலை இந்தப் பரிமாற்றத்தை ஒருபோதும் முடிக்கவில்லை, எனவே அதற்கு எதிராக எதுவும் வழங்கப்படவில்லை.",
   "wallet.svc.mint_lost":
-    "மின்ட் இந்த வைப்பை வெளியிட்டது, ஆனால் அதன் நாணயங்களை மீண்டும் உருவாக்க முடியவில்லை. உங்கள் மீட்பு சொற்றொடரிலிருந்து மீட்டெடுத்தால் அவை திரும்பக் கிடைக்கும்.",
+    "நாணயச்சாலை இந்த நிரப்புதலை வெளியிட்டது, ஆனால் அதன் நாணயங்களை மீண்டும் உருவாக்க முடியவில்லை. உங்கள் மீட்புச் சொற்றொடரிலிருந்து மீட்டெடுத்தால் அவை திரும்பக் கிடைக்கும்.",
   "wallet.svc.swap_unreadable":
     "இந்தப் பரிமாற்றம், இந்தப் பதிப்பால் மீண்டும் இயக்க முடியாத வடிவத்தில் சேமிக்கப்பட்டுள்ளது.",
   "wallet.svc.lock_in_doubt": "இந்தப் பணம் சென்றதா இல்லையா என்பது உறுதியில்லை.",
   "wallet.svc.lock_in_doubt_body":
     "வேறு எதுவும் அனுப்பப்படவில்லை. முடிவை நாணயச்சாலை உறுதிசெய்யும்வரை நாணயங்கள் நிறுத்திவைக்கப்படும். பணம் சென்றிருந்தால், பூட்டிய டோக்கன் ஒப்படைப்பதற்காக செயல்பாடு பகுதியில் தோன்றும். இல்லையெனில் நாணயங்கள் திரும்பும்.",
   "wallet.svc.send_spent_by_swap":
-    "இந்த டோக்கன் பெறப்படுவதற்கு முன்பே இந்த நாணயங்கள் உங்கள் வாலட்டுக்கு மாற்றப்பட்டுவிட்டன, எனவே அதை இனி பெற முடியாது. தொகை உங்கள் இருப்பில் உள்ளது.",
+    "இந்த டோக்கன் பெறப்படுவதற்கு முன்பே இந்த நாணயங்கள் உங்கள் பணப்பைக்கு மாற்றப்பட்டுவிட்டன, எனவே அதை இனி பெற முடியாது. தொகை உங்கள் இருப்பில் உள்ளது.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR வழியாகச் சரிபார்க்கப்பட்டது",
@@ -1779,7 +1802,7 @@ export const strings: Strings = {
   "contacts.verify.codes_match": "இவை பொருந்துகின்றன",
   "contacts.verify.codes_differ": "இவை பொருந்தவில்லை",
   "contacts.verify.compared_body":
-    "நீங்களும் {name} ம் அதே குறியீட்டை உறுதிப்படுத்தினீர்கள். இந்தத் தொடர்பு சரிபார்க்கப்பட்டது.",
+    "நீங்களும் {name} உம் அதே குறியீட்டை உறுதிப்படுத்தினீர்கள். இந்தத் தொடர்பு சரிபார்க்கப்பட்டது.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "பின் செல்",
@@ -1806,7 +1829,7 @@ export const strings: Strings = {
   "settings.search.clear": "தேடலை அழி",
   "settings.search.hint":
     "எந்த அமைப்பையும் அதன் பெயரால் தேடுங்கள், அது எங்கிருந்தாலும்.",
-  "settings.search.no_results": "”{query}“ க்கு பொருந்தும் அமைப்பு இல்லை",
+  "settings.search.no_results": "“{query}” க்கு பொருந்தும் அமைப்பு இல்லை",
 
   // ---- Settings: hub rows ----
   "settings.section.general": "பொது",
@@ -1817,7 +1840,7 @@ export const strings: Strings = {
     "Forward secrecy, கையொப்பமிட்ட பொட்டலங்கள், தடுக்கப்பட்ட பியர்கள்",
   "settings.section.network": "வலையமைப்பும் ரிலேக்களும்",
   "settings.section.network_desc":
-    "இணைய மாற்று, nostr ரிலேக்கள், bitchat உடன் இயைபு",
+    "இணைய மாற்று, Nostr ரிலேக்கள், bitchat உடன் இயைபு",
   "settings.section.permissions": "அனுமதிகள்",
   "settings.section.permissions_desc":
     "புளூடூத், இடம், அறிவிப்புகள், கேமரா, ஒலிவாங்கி",
@@ -1867,14 +1890,12 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "சமிக்ஞை அளவீடு இல்லை",
   "settings.diag.no_peers": "வரம்பில் யாரும் இல்லை",
-  "settings.diag.no_peers_desc": "{links} வானொலி இணைப்புகள் திறந்துள்ளன",
   "settings.diag.gcs_size": "வடிகட்டி அளவு",
   "settings.diag.gcs_size_desc":
     "காற்றில் அனுப்பப்பட்ட மிகப்பெரிய ஒத்திசைவு வடிகட்டி",
   "settings.diag.fpr": "தவறான நேர்மறை விகிதம்",
   "settings.diag.fpr_desc":
     "நம்மிடம் இல்லாத பொட்டலம் இருப்பதாக வடிகட்டி எத்தனை முறை கூறுகிறது",
-  "settings.diag.bytes": "{n} பைட்டுகள்",
   "settings.diag.footnote":
     "இங்கே எதையும் மாற்ற முடியாது. Airhop bitchat உடன் இயைந்திருக்கவே இந்த மதிப்புகள் நிலைநிறுத்தப்பட்டுள்ளன.",
   "settings.diag.share": "கண்டறிதலைப் பகிர்",
@@ -1895,7 +1916,6 @@ export const strings: Strings = {
   "settings.general.undo": "அனுப்பியதைத் திரும்பப்பெறல்",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "பணப்பை",
-  "settings.general.undo_seconds": "{count} விநாடிகள்",
   "settings.general.undo_a11y": "அனுப்பியதைத் திரும்பப்பெறல்: {value}",
   "settings.general.quality_a11y": "பதிவேற்றத் தரத்தை {value} ஆக அமை",
   "settings.general.undo_desc":
@@ -1989,7 +2009,6 @@ export const strings: Strings = {
   "settings.network.custom": "சொந்த ரிலேக்கள்",
   "settings.network.custom_desc":
     "இடச் சேனல்களுக்கும் மெஷ் பாலத்துக்கும் உங்கள் சொந்த ரிலேக்களைச் சேருங்கள்",
-  "settings.network.custom_added": "{max} இல் {count} சேர்க்கப்பட்டது",
   "settings.network.dm_relays": "செய்தி ரிலேக்கள்",
   "settings.network.dm_relays_desc":
     "நேரடிச் செய்திகளும் தனிப்பட்ட சேனல்களும் எப்போதும் இவற்றையே பயன்படுத்தும். உங்கள் சொந்த ரிலேக்கள் இவற்றை மாற்றாது.",
@@ -2000,19 +2019,17 @@ export const strings: Strings = {
   "settings.network.add_relay": "ரிலே சேர்",
   "settings.network.remove_relay": "{url} ஐ அகற்று",
   "settings.network.add_short": "சேர்",
-  "settings.network.relay_limit":
-    "{count} ரிலேக்களைச் சேர்க்கலாம். இன்னொன்றைச் சேர்க்க ஒன்றை அகற்றுங்கள்.",
   "settings.network.relay_duplicate":
     "அந்த ரிலே ஏற்கெனவே உங்கள் பட்டியலில் உள்ளது.",
   "settings.network.relay_invalid":
     "சரியான ரிலே புரவலனை உள்ளிடுங்கள், எடுத்துக்காட்டாக relay.example.com. ரிலே இயல்பு துறையைப் பயன்படுத்தாதபோது மட்டுமே துறை தேவை. IP முகவரிகளும் உள்ளூர்ப் பெயர்களும் அனுமதிக்கப்படவில்லை.",
   "settings.network.lan": "உள்ளூர் நெட்வொர்க்",
   "settings.network.lan_desc":
-    "அதே WiFi-ல் உள்ளவர்களை அடையுங்கள், iPhone மற்றும் Android இடையேயும். நெட்வொர்க்கில் உள்ள மற்ற சாதனங்கள் நீங்கள் Airhop பயன்படுத்துவதைக் காண முடியும்.",
+    "அதே Wi-Fi-ல் உள்ளவர்களை அடையுங்கள், iPhone மற்றும் Android இடையேயும். நெட்வொர்க்கில் உள்ள மற்ற சாதனங்கள் நீங்கள் Airhop பயன்படுத்துவதைக் காண முடியும்.",
   "settings.network.lan_searching":
     "இந்த நெட்வொர்க்கில் Airhop சாதனங்கள் இல்லை",
   "settings.network.lan_active": "இந்த நெட்வொர்க்கில் இணைக்கப்பட்டுள்ளது",
-  "settings.network.lan_unavailable": "எந்த WiFi நெட்வொர்க்கிலும் இல்லை",
+  "settings.network.lan_unavailable": "எந்த Wi-Fi நெட்வொர்க்கிலும் இல்லை",
   "settings.network.lan_permission":
     "Airhop-க்கான உள்ளூர் நெட்வொர்க் அணுகல் அணைக்கப்பட்டுள்ளது",
   "settings.network.lan_unsupported": "இந்த சாதனத்தில் கிடைக்கவில்லை",
@@ -2037,7 +2054,7 @@ export const strings: Strings = {
     "இந்த iPhone-ஐக் கண்டறியக்கூடியதாக்குங்கள்",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware இப்போது கிடைக்கவில்லை",
   "settings.network.wifi_pair_forget":
-    "Settings செயலியில் ஓர் இணைப்பை நீக்குங்கள்",
+    "அமைப்புகள் செயலியில் ஓர் இணைப்பை நீக்குங்கள்",
   "settings.network.bitchat": "bitchat உடன் இயைபு",
   "settings.network.bitchat_desc":
     "bitchat இன் அதே BLE மெஷ், முழுமையாக ஒன்றுடன் ஒன்று இயங்கக்கூடியது. இது எப்போதும் இயக்கத்தில் இருக்கும், முடக்க முடியாது.",
@@ -2130,7 +2147,7 @@ export const strings: Strings = {
     "இந்தப் பகுதியின் பொது #bluetooth அரட்டையை, வரம்புக்கு வெளியே உள்ள மற்றொரு புளூடூத் கூட்டத்துடன் இணையம் வழியாக இணையுங்கள்",
   "settings.conn.bridge_on_title": "மெஷ் பாலத்தை இயக்கவா?",
   "settings.conn.bridge_on_body":
-    "உங்கள் பொது #bluetooth செய்திகள் இணையம் வழியாக உங்கள் அக்கம்பக்கத்தில் வெளியிடப்படும், எனவே புளூடூத் வரம்புக்கு அப்பால் உள்ளவர்களும் படிக்க முடியும். தனிப்பட்ட செய்திகள் ஒருபோதும் பாலம் கடப்பதில்லை, ”அருகில் மட்டும்” என்பது ஒற்றைச் செய்தியை உள்ளூரிலேயே வைக்கும்.",
+    "உங்கள் பொது #bluetooth செய்திகள் இணையம் வழியாக உங்கள் அக்கம்பக்கத்தில் வெளியிடப்படும், எனவே புளூடூத் வரம்புக்கு அப்பால் உள்ளவர்களும் படிக்க முடியும். தனிப்பட்ட செய்திகள் ஒருபோதும் பாலம் கடப்பதில்லை, “அருகில் மட்டும்” என்பது ஒற்றைச் செய்தியை உள்ளூரிலேயே வைக்கும்.",
   "settings.conn.bridge_off_title": "மெஷ் பாலத்தை முடக்கவா?",
   "settings.conn.bridge_off_body":
     "உங்கள் பொது #bluetooth செய்திகள் மீண்டும் புளூடூத் வரம்பிலேயே இருக்கும், பாலத்துக்கு அப்பாலுள்ள கூட்டத்தின் செய்திகள் இங்கு வருவது நின்றுவிடும்.",
@@ -2163,7 +2180,7 @@ export const strings: Strings = {
     "உங்கள் தொகுப்பிலிருந்து புகைப்படங்களை அனுப்புகிறது, வந்த ஊடகத்தைச் சேமிக்கிறது. இது இல்லாமலும் கேமராவால் புதிய புகைப்படங்களை எடுத்து அனுப்பலாம்.",
   "settings.permissions.microphone": "ஒலிவாங்கி",
   "settings.permissions.microphone_desc":
-    "குரல் செய்திகளைப் பதிவுசெய்து அனுப்புகிறது அல்லது நேரடிக் குரலை இயக்குகிறது. இது இல்லாமல் குரல் செய்திகளும் நேரடிக் குரலும் இயங்காது.",
+    "குரல் குறிப்புகளைப் பதிவுசெய்து அனுப்புகிறது அல்லது நேரடிக் குரலை இயக்குகிறது. இது இல்லாமல் குரல் குறிப்புகளும் நேரடிக் குரலும் இயங்காது.",
   "settings.permissions.allow": "இந்த அனுமதியைக் கொடு",
   "settings.permissions.open_settings":
     "இந்த அனுமதியை மாற்ற அமைப்பு அமைவுகளைத் திற",
@@ -2431,8 +2448,7 @@ export const strings: Strings = {
     "பதிவிறக்கம் தோல்வியடைந்தது. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large":
-    "{kind} {size} KiB உள்ளது, இது {cap} KiB வரம்பைத் தாண்டுகிறது.",
+  "transfer.too_large": "{kind} {size} உள்ளது, இது {cap} வரம்பைத் தாண்டுகிறது.",
   "transfer.failed.malformed":
     "ஓர் இணைப்புக் கோப்பு சிதைந்த நிலையில் வந்தது, திறக்க முடியவில்லை. மீண்டும் அனுப்பச் சொல்லுங்கள்.",
   "transfer.failed.unsupported_type":
@@ -2442,10 +2458,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "ஓர் இணைப்புக் கோப்பு வந்தது ஆனால் சேமிக்க முடியவில்லை. உங்கள் காலி இடத்தைச் சரிபாருங்கள்.",
   "transfer.badge.waiting": "காத்திருக்கிறது · {name}",
-  "transfer.badge.active_count": "{count} பரிமாற்றங்கள்",
   "transfer.badge.sending": "{name} அனுப்பப்படுகிறது",
   "transfer.badge.receiving": "{name} பெறப்படுகிறது",
-  "transfer.badge.a11y": "{label}, {percent} சதவீதம். உரையாடலைத் திறங்கள்.",
   "transfer.kind.photo": "புகைப்படம்",
   "transfer.kind.video": "வீடியோ",
   "transfer.kind.voice": "குரல் குறிப்பு",
@@ -2470,14 +2484,15 @@ export const strings: Strings = {
   "notif.nearby.body": "இப்போது புளூடூத் வரம்பில். மெஷைத் திறக்கத் தட்டுங்கள்.",
   "notif.channel_message": "{sender}: {preview}",
   "notif.someone": "யாரோ",
-  "notif.notice_urgent": "அவசர அறிவிப்பு · {content}",
-  "notif.notice": "அறிவிப்பு · {content}",
+  "notif.notice_urgent": "அவசரப் பலகைப் பதிவு · {content}",
+  "notif.notice": "பலகைப் பதிவு · {content}",
   "notif.incoming_file": "வரும் கோப்பு",
   "notif.preview.photo": "📷 புகைப்படம்",
-  "notif.preview.voice": "🎤 குரல் செய்தி",
+  "notif.preview.voice": "🎤 குரல் குறிப்பு",
   "notif.preview.video": "🎥 வீடியோ",
   "notif.preview.document": "📄 ஆவணம்",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "புதிய செய்தி",
   "notif.hidden.channel": "புதிய செயல்பாடு",
@@ -2489,6 +2504,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} நிமிடத்துக்கு முன்பு",
+    other: "{count} நிமிடங்களுக்கு முன்பு",
+  },
+  "format.hours_ago": {
+    one: "{count} மணிநேரத்துக்கு முன்பு",
+    other: "{count} மணிநேரங்களுக்கு முன்பு",
+  },
+  "format.days_ago": {
+    one: "{count} நாளுக்கு முன்பு",
+    other: "{count} நாட்களுக்கு முன்பு",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "மேலும் {count} காட்டு",
@@ -2533,12 +2562,62 @@ export const plurals: Plurals = {
     other: "{count} தேர்ந்தெடுக்கப்பட்டன",
   },
   "chat.select.forward": {
-    one: "{count} செய்தியை அனுப்பு",
-    other: "{count} செய்திகளை அனுப்பு",
+    one: "{count} செய்தியை முன்னனுப்பு",
+    other: "{count} செய்திகளை முன்னனுப்பு",
   },
   "chat.voice.live_speaking_count": {
     one: "{count} பேர் பேசுகிறார்",
     other: "{count} பேர் பேசுகிறார்கள்",
+  },
+
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "மேலும் {count} அனுப்பக் காத்திருக்கிறது",
+    other: "மேலும் {count} அனுப்பக் காத்திருக்கின்றன",
+  },
+  "chat.thread.across_bridge": {
+    one: "பாலத்துக்கு அப்பால் {count} நபர்",
+    other: "பாலத்துக்கு அப்பால் {count} பேர்",
+  },
+  "chat.thread.go_back_unread": {
+    one: "பின் செல், {count} படிக்கப்படாதது",
+    other: "பின் செல், {count} படிக்கப்படாதவை",
+  },
+  "chat.thread.notices_new": {
+    one: "இந்தச் சேனலின் பலகைப் பதிவுகள், {count} புதியது",
+    other: "இந்தச் சேனலின் பலகைப் பதிவுகள், {count} புதியவை",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "சமீபத்திய செய்திக்குச் செல், {count} புதியது",
+    other: "சமீபத்திய செய்திக்குச் செல், {count} புதியவை",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} புதிய அவசரப் பலகைப் பதிவு · பலகைப் பதிவுகளைத் திறக்கவும்",
+    other:
+      "{count} புதிய அவசரப் பலகைப் பதிவுகள் · பலகைப் பதிவுகளைத் திறக்கவும்",
+  },
+  "chat.info.add_count": {
+    one: "{count} ஐச் சேர்",
+    other: "{count} ஐச் சேர்",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "{count} மணிநேரத்தில் மறையும்",
+    other: "{count} மணிநேரங்களில் மறையும்",
+  },
+  "chat.notices.fades_in_days": {
+    one: "{count} நாளில் மறையும்",
+    other: "{count} நாட்களில் மறையும்",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "இந்தப் பட்டியலில் {count} அறிவிப்பு உள்ளது. அழித்தால் அது இங்கிருந்து மட்டுமே அகலும், செய்தி அதன் உரையாடலில் படிக்கப்படாமலேயே இருக்கும். அனைத்தையும் படித்ததாகக் குறித்தால் இரண்டும் அழியும்.",
+    other:
+      "இந்தப் பட்டியலில் {count} அறிவிப்புகள் உள்ளன. அழித்தால் அவை இங்கிருந்து மட்டுமே அகலும், செய்திகள் அவற்றின் உரையாடல்களில் படிக்கப்படாமலேயே இருக்கும். அனைத்தையும் படித்ததாகக் குறித்தால் இரண்டும் அழியும்.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "{count} அறிவிப்பை அழி",
+    other: "எல்லா {count} அறிவிப்புகளையும் அழி",
   },
 
   // ---- Mesh: peer list ----
@@ -2563,18 +2642,29 @@ export const plurals: Plurals = {
     other: "{count} உறுப்பினர்கள்",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "மெஷ் பாலம் இயக்கத்தில் · பாலத்துக்கு அப்பால் {count} நபர்",
+    other: "மெஷ் பாலம் இயக்கத்தில் · பாலத்துக்கு அப்பால் {count} பேர்",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint} இடம் {count} நாணயத்தில் {balance} {unit} உள்ளது. அகற்றினால் அந்த நாணயம் இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
+    one: "{mint} இடம் {count} நாணயத்தில் {balance} {unit} உள்ளது. அகற்றினால் அந்த இருப்பு இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
     other:
-      "{mint} இடம் {count} நாணயங்களில் {balance} {unit} உள்ளது. அகற்றினால் அந்த நாணயங்கள் இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அவற்றுக்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
+      "{mint} இடம் {count} நாணயங்களில் {balance} {unit} உள்ளது. அகற்றினால் அந்த இருப்பு இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
+  },
+  "wallet.mint.split_across": {
+    one: "இருப்பு {count} நாணயச்சாலையில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
+    other:
+      "இருப்பு {count} நாணயச்சாலைகளில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} வைப்பு பணம் வருவதற்குக் காத்திருக்கிறது. செயலி திறக்கும் ஒவ்வொரு முறையும் மீண்டும் சரிபார்க்கப்படுகிறது.",
+    one: "{count} நிரப்புதல் பணம் வருவதற்குக் காத்திருக்கிறது. செயலி திறக்கும் ஒவ்வொரு முறையும் மீண்டும் சரிபார்க்கப்படுகிறது.",
     other:
-      "{count} வைப்புகள் பணம் வருவதற்குக் காத்திருக்கின்றன. செயலி திறக்கும் ஒவ்வொரு முறையும் மீண்டும் சரிபார்க்கப்படுகின்றன.",
+      "{count} நிரப்புதல்கள் பணம் வருவதற்குக் காத்திருக்கின்றன. செயலி திறக்கும் ஒவ்வொரு முறையும் மீண்டும் சரிபார்க்கப்படுகின்றன.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2583,9 +2673,9 @@ export const plurals: Plurals = {
     other: "{mints} இடமிருந்து செலவழிக்கப்படாத {count} நாணயங்கள் மீட்கப்பட்டன.",
   },
   "wallet.backup.already_spent": {
-    one: "{count} நாணயம் கிடைத்தது, ஆனால் அது ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டது, எனவே அதற்காக எதுவும் வரவு வைக்கப்படவில்லை. இது இயல்பானதே: நீங்கள் எப்போதேனும் செலவழித்த ஒவ்வொரு நாணயமும் நாணயச்சாலை வைத்திருக்கும் பதிவுகளில் இருந்துகொண்டே இருக்கும்.",
+    one: "{count} நாணயம் கிடைத்தது, ஆனால் அது ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டது, எனவே எதுவும் வரவு வைக்கப்படவில்லை. இது இயல்பானதே: நீங்கள் எப்போதேனும் செலவழித்த ஒவ்வொரு நாணயமும் நாணயச்சாலை வைத்திருக்கும் பதிவுகளில் இருந்துகொண்டே இருக்கும்.",
     other:
-      "{count} நாணயங்கள் கிடைத்தன, ஆனால் அவை ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டன, எனவே அவற்றுக்காக எதுவும் வரவு வைக்கப்படவில்லை. இது இயல்பானதே: நீங்கள் எப்போதேனும் செலவழித்த ஒவ்வொரு நாணயமும் நாணயச்சாலை வைத்திருக்கும் பதிவுகளில் இருந்துகொண்டே இருக்கும்.",
+      "{count} நாணயங்கள் கிடைத்தன, ஆனால் அவை ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டன, எனவே எதுவும் வரவு வைக்கப்படவில்லை. இது இயல்பானதே: நீங்கள் எப்போதேனும் செலவழித்த ஒவ்வொரு நாணயமும் நாணயச்சாலை வைத்திருக்கும் பதிவுகளில் இருந்துகொண்டே இருக்கும்.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2612,9 +2702,39 @@ export const plurals: Plurals = {
       "{count} நாணயங்கள் ஏற்கெனவே செலவழிக்கப்பட்டிருந்தன, அவை அகற்றப்பட்டுவிட்டன.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "{count} வானொலி இணைப்பு திறந்துள்ளது",
+    other: "{count} வானொலி இணைப்புகள் திறந்துள்ளன",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} விநாடி",
+    other: "{count} விநாடிகள்",
+  },
+  "settings.network.custom_added": {
+    one: "{max} இல் {count} சேர்க்கப்பட்டது",
+    other: "{max} இல் {count} சேர்க்கப்பட்டன",
+  },
+  "settings.network.relay_limit": {
+    one: "{count} ரிலேயைச் சேர்க்கலாம். இன்னொன்றைச் சேர்க்க அதை அகற்றுங்கள்.",
+    other:
+      "{count} ரிலேக்களைச் சேர்க்கலாம். இன்னொன்றைச் சேர்க்க ஒன்றை அகற்றுங்கள்.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} பரிமாற்றம்",
+    other: "{count} பரிமாற்றங்கள்",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} சதவீதம். உரையாடலைத் திறங்கள்.",
+    other: "{label}, {count} சதவீதம். உரையாடலைத் திறங்கள்.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "அருகில் ஒருவர் இருக்கிறார்",
+    "=1": "அருகில் ஒருவர் இருக்கிறார்",
+    one: "அருகில் {count} நபர் இருக்கிறார்",
     other: "அருகில் {count} பேர் இருக்கிறார்கள்",
   },
 };

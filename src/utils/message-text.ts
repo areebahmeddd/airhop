@@ -13,19 +13,35 @@
 // `sendDm`, `sendChannelMessage`, the retry and forward paths.
 
 import {
+  isPluralKey,
   stripIsolates,
   t,
-  type TranslationKey,
+  tPlural,
+  type CatalogKey,
   type TranslationVars,
 } from "@i18n";
 import type { ActivityEntry } from "@store/activity-store";
 import type { ChatMessage } from "@store/chat-store";
+import type { WalletTx } from "@store/wallet-store";
+
+// A row's key names either map. A counted row keeps its number as `count`,
+// which is where `tPlural` takes it from.
+export function translateStored(
+  key: CatalogKey,
+  vars?: TranslationVars,
+): string {
+  if (!isPluralKey(key)) return t(key, vars);
+  // Passed apart from the rest, or the raw number would override the grouped
+  // one `tPlural` renders.
+  const { count, ...rest } = vars ?? {};
+  return tPlural(key, Number(count ?? 0), rest);
+}
 
 export function messageText(message: ChatMessage): string {
   // No key means user content, or a row written before the field existed.
   // Either way `text` is the answer.
   if (message.systemKey === undefined) return message.text;
-  return t(message.systemKey, message.systemVars);
+  return translateStored(message.systemKey, message.systemVars);
 }
 
 // The same rule for the bell. An entry sits in the notification center until a
@@ -33,7 +49,7 @@ export function messageText(message: ChatMessage): string {
 // the same treatment.
 export function activityPreview(entry: ActivityEntry): string {
   if (entry.previewKey === undefined) return entry.preview;
-  return t(entry.previewKey, entry.previewVars);
+  return translateStored(entry.previewKey, entry.previewVars);
 }
 
 // ---- Writing one of these rows ----
@@ -46,11 +62,11 @@ export function activityPreview(entry: ActivityEntry): string {
 // `forwardMessage` puts it on the air and the action sheet copies it.
 
 export function systemRow(
-  key: TranslationKey,
+  key: CatalogKey,
   vars?: TranslationVars,
 ): Pick<ChatMessage, "text" | "systemKey" | "systemVars"> {
   return {
-    text: stripIsolates(t(key, vars)),
+    text: stripIsolates(translateStored(key, vars)),
     systemKey: key,
     systemVars: vars,
   };
@@ -58,12 +74,42 @@ export function systemRow(
 
 // The bell's equivalent, same contract.
 export function systemPreview(
-  key: TranslationKey,
+  key: CatalogKey,
   vars?: TranslationVars,
 ): Pick<ActivityEntry, "preview" | "previewKey" | "previewVars"> {
   return {
-    preview: stripIsolates(t(key, vars)),
+    preview: stripIsolates(translateStored(key, vars)),
     previewKey: key,
     previewVars: vars,
   };
+}
+
+// ---- A wallet transaction's failure ----
+//
+// The same contract for the reason a wallet row gives. Written beside `error`
+// so a row always carries a plain fallback, and so writing one Airhop reason
+// over another, or over a mint's text, leaves no stale key behind.
+
+export type TxFailure = Pick<WalletTx, "error" | "errorKey" | "errorVars">;
+
+export function txFailure(key: CatalogKey, vars?: TranslationVars): TxFailure {
+  return {
+    error: stripIsolates(translateStored(key, vars)),
+    errorKey: key,
+    errorVars: vars,
+  };
+}
+
+// A mint's own words, which are never translated.
+export function txFailureVerbatim(text: string): TxFailure {
+  return { error: text, errorKey: undefined, errorVars: undefined };
+}
+
+// Null when the row has no reason. `error` decides that, since the clears that
+// settle a row write only `error: undefined`.
+export function txErrorText(tx: TxFailure): string | null {
+  if (tx.error === undefined || tx.error.length === 0) return null;
+  return tx.errorKey === undefined
+    ? tx.error
+    : translateStored(tx.errorKey, tx.errorVars);
 }

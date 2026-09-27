@@ -201,13 +201,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "ਨਾ ਇੰਟਰਨੈੱਟ, ਨਾ ਰਾਊਟਰ, ਉਹਨਾਂ ਫ਼ੋਨਾਂ ’ਤੇ ਜੋ ਲੋਕਾਂ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਹਨ।",
   "home.features.networking.lan.name": "ਲੋਕਲ ਨੈੱਟਵਰਕ",
-  "home.features.networking.lan.line": "ਸਾਂਝਾ WiFi ਜਾਂ ਹੌਟਸਪੌਟ, iPhone ਅਤੇ Android ਇਕੱਠੇ।",
+  "home.features.networking.lan.line": "ਸਾਂਝਾ Wi-Fi ਜਾਂ ਹੌਟਸਪੌਟ, iPhone ਅਤੇ Android ਇਕੱਠੇ।",
   "home.features.networking.hops.name": "ਮਲਟੀ-ਹੌਪ ਰੀਲੇ",
   "home.features.networking.hops.line": "ਹਰ ਫ਼ੋਨ ਸੁਨੇਹੇ ਅੱਗੇ ਤੋਰਦਾ ਹੈ, ਸੱਤ ਹੌਪ ਤੱਕ।",
   "home.features.networking.bridge.name": "ਮੈਸ਼ ਪੁਲ",
   "home.features.networking.bridge.line":
     "ਤੁਹਾਡੀ ਜਨਤਕ ਗੱਲਬਾਤ ਨੂੰ ਪਹੁੰਚ ਤੋਂ ਬਾਹਰ ਕਿਸੇ ਨੇੜਲੀ ਭੀੜ ਨਾਲ ਜੋੜਦਾ ਹੈ।",
-  "home.features.networking.wifi.name": "WiFi ਤੇਜ਼ ਰਾਹ",
+  "home.features.networking.wifi.name": "Wi-Fi ਤੇਜ਼ ਰਾਹ",
   "home.features.networking.wifi.line": "ਦੋ Android ਜਾਂ ਦੋ iPhone ਵਿਚਕਾਰ ਤੇਜ਼ ਤਬਾਦਲਾ।",
   "home.features.networking.bitchat.name": "bitchat ਨਾਲ ਮੇਲ",
   "home.features.networking.bitchat.line": "ਦੋਵੇਂ ਐਪਾਂ ਬਿਨਾਂ ਸੈਟਅੱਪ ਇੱਕੋ ਮੈਸ਼ ਵਿੱਚ ਜੁੜ ਜਾਂਦੀਆਂ ਹਨ।",

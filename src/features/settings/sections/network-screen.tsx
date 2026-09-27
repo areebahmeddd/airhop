@@ -2,12 +2,6 @@
 // Aware pairing that the same-platform fast path needs, and the always-on
 // bitchat wire compatibility.
 
-// What the LAN row says, per state the controller can report.
-//
-// "searching" deliberately reads as an empty network rather than as a fault.
-// Most venue WiFi blocks peer-to-peer traffic at the access point, and nothing
-// in the app can tell that apart from nobody being there, so the copy must not
-// claim to know which it is.
 import {
   DEFAULT_DM_RELAYS,
   MAX_CUSTOM_RELAYS,
@@ -15,7 +9,7 @@ import {
   relayDisplayScheme,
   validateRelayUrl,
 } from "@core/nostr/geo-relay";
-import { t, useT } from "@i18n";
+import { t, useT, useTPlural } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { applyInternetAvailability } from "@services/tor-routing";
@@ -27,6 +21,7 @@ import {
   useMeshStateStore,
 } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
+import UpperText from "@ui/components/upper-text";
 import { HIT_SLOP, Spacing, useThemeColors } from "@ui/theme";
 import { formatNumber } from "@utils/format";
 import React, { useState } from "react";
@@ -61,6 +56,12 @@ function wifiStatusText(state: WifiFastPath): string {
   }
 }
 
+// What the LAN row says, per state the controller can report.
+//
+// "searching" deliberately reads as an empty network rather than as a fault.
+// Most venue Wi-Fi blocks peer-to-peer traffic at the access point, and nothing
+// in the app can tell that apart from nobody being there, so the copy must not
+// claim to know which it is.
 function lanStatusText(state: LanState): string {
   switch (state) {
     case "active":
@@ -90,6 +91,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const styles = useSharedStyles();
   const T = useT();
+  const TP = useTPlural();
   // False on Android, and on hardware or an iOS too old for the framework, so
   // the section is absent rather than showing a control that cannot work.
   const pairingSupported = useMeshStateStore((s) => s.wifiPairingSupported);
@@ -120,21 +122,22 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   const [relayInput, setRelayInput] = useState("");
   const [relayError, setRelayError] = useState<RelayError | null>(null);
 
-  // Master internet switch: persist the preference AND build/tear down the Nostr
-  // transport immediately so the change takes effect without a restart. Turning
-  // it OFF disables a lot (relays, Tor, gateway, bridge), so confirm first;
-  // turning it on is harmless and does not prompt. Cancelling leaves the switch
-  // on, because it is driven by the persisted setting we never changed.
+  // The master internet switch: persists the preference and builds or tears
+  // down the Nostr transport at once, so no restart is needed.
   function setInternet(value: boolean): void {
-    // Tor follows the master switch, because the sheet above says it does, and
-    // goes first: the preference builds the relay pool the moment it flips, and
-    // with Tor wanted that pool has to wait behind Tor's gate rather than open
-    // on the direct socket. The Tor preference itself is untouched, so
-    // switching the internet back on restores it.
+    // Tor follows the master switch, as the confirmation says, and goes first:
+    // the preference builds the relay pool the moment it flips, and with Tor
+    // wanted that pool has to wait behind Tor's gate rather than open on the
+    // direct socket. The Tor preference itself is untouched, so switching the
+    // internet back on restores it.
     applyInternetAvailability(value);
     setInternetEnabled(value);
     getMeshService()?.applyInternetEnabled(value);
   }
+
+  // Off disables a lot (relays, Tor, gateway, bridge), so it confirms first; on
+  // does not prompt. Cancelling leaves the switch on, because it is driven by
+  // the persisted setting, which never changed.
   function handleInternetToggle(value: boolean): void {
     if (value) {
       setInternet(true);
@@ -179,7 +182,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   function relayErrorMessage(reason: RelayError): string {
     if (reason === "duplicate") return T("settings.network.relay_duplicate");
     if (reason === "full") {
-      return T("settings.network.relay_limit", { count: MAX_CUSTOM_RELAYS });
+      return TP("settings.network.relay_limit", MAX_CUSTOM_RELAYS);
     }
     return T("settings.network.relay_invalid");
   }
@@ -237,9 +240,9 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
       <SubHeader title={T("settings.section.network")} onBack={onBack} />
       <SettingsScroll>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <UpperText style={styles.sectionTitle}>
             {T("settings.group.internet")}
-          </Text>
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               id="internet"
@@ -289,8 +292,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
                 <Text style={styles.settingDescription}>
                   {customRelays.length === 0
                     ? T("settings.network.custom_desc")
-                    : T("settings.network.custom_added", {
-                        count: customRelays.length,
+                    : TP("settings.network.custom_added", customRelays.length, {
                         max: MAX_CUSTOM_RELAYS,
                       })}
                 </Text>
@@ -469,7 +471,9 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
             phone is carrying Airhop, so the description says that rather than
             selling the speed. */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{T("settings.group.local")}</Text>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.local")}
+          </UpperText>
           <View style={styles.settingsGroup}>
             <SettingRow
               id="wifi-aware"
@@ -536,9 +540,9 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
             behind a button that works half the time. */}
         {pairingSupported && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <UpperText style={styles.sectionTitle}>
               {T("settings.network.wifi_pair")}
-            </Text>
+            </UpperText>
             <View style={styles.settingsGroup}>
               <SettingRow
                 icon="link"

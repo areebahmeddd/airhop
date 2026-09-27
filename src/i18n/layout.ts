@@ -17,6 +17,32 @@ export const isRTLLayout: boolean = I18nManager.isRTL;
 // already resolves the leading edge correctly.
 export const textAlignEnd: "left" | "right" = isRTLLayout ? "left" : "right";
 
+// Letters of the scripts written right to left. A message's direction is its
+// first letter's, the Unicode bidi rule for a paragraph (P2), as Telegram and
+// WhatsApp align each bubble by its own text rather than by the UI's.
+const RTL_LETTER =
+  /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Adlam}\p{Script=Samaritan}\p{Script=Mandaic}]/u;
+const LETTER = /\p{L}/u;
+
+// `textAlign` for text a person wrote, which may run the other way from the
+// UI. iOS aligns such a paragraph to its own start and Android to the layout's,
+// so a multi-line Arabic message in an English thread would hug the left edge
+// on Android only. Naming the edge makes both platforms agree.
+export function contentTextAlign(text: string): "auto" | "left" | "right" {
+  for (const ch of text) {
+    if (!LETTER.test(ch)) continue;
+    return RTL_LETTER.test(ch) !== isRTLLayout ? textAlignEnd : "auto";
+  }
+  return "auto";
+}
+
+// The mark for the layout's direction (RLM or LRM), to lead a line whose
+// template is only isolated values, such as "{sender}: {preview}". Isolates
+// are skipped when a paragraph picks its direction, so such a line has no
+// strong character of its own and falls back to left to right: an Arabic list
+// row would read backwards around its colon. The mark gives it the UI's.
+export const directionMark: string = isRTLLayout ? "\u200F" : "\u200E";
+
 // Neither platform mirrors icon artwork and Feather has no logical names, so a
 // chevron meaning "forward" is picked per direction: otherwise every drill-in
 // row in Arabic points back the way you came. Only glyphs that encode reading
@@ -37,11 +63,10 @@ export const arrowForward: "arrow-left" | "arrow-right" = isRTLLayout
   ? "arrow-left"
   : "arrow-right";
 
-// Mirrors a horizontal offset, for a value that has to stay a number: a
-// translateX, where the sign is the direction and there is no `start`/`end`.
 /**
- * @public No call site yet, kept as the escape hatch for the first animation
- * without a logical form. knip reads the tag, so it stays a JSDoc block.
+ * @public Mirrors a horizontal offset, for a value that has to stay a number: a
+ * translateX, where the sign is the direction and there is no `start`/`end`. No
+ * call site yet, kept for the first animation without a logical form.
  */
 export function mirrorX(value: number): number {
   return isRTLLayout ? -value : value;

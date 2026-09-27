@@ -16,6 +16,8 @@ import type { plurals, strings } from "./en";
 
 export type TranslationKey = keyof typeof strings;
 export type PluralKey = keyof typeof plurals;
+// Either map, for a key stored on a row and translated when it is read.
+export type CatalogKey = TranslationKey | PluralKey;
 
 export type Strings = Record<TranslationKey, string>;
 
@@ -27,7 +29,13 @@ export type Strings = Record<TranslationKey, string>;
 //
 // `other` is required everywhere because it is the category `Intl.PluralRules`
 // falls back to and the only one guaranteed to exist in every language.
+//
+// `=1` is ICU's exact match, for wording that means exactly one and carries no
+// number ("Someone nearby"). A CLDR category cannot hold that: Filipino `one`
+// covers 5 and Ukrainian `one` covers 21. A locale carries it exactly where
+// `en.ts` does, and `catalog.test.ts` holds every `one` to showing the count.
 export interface PluralForms {
+  "=1"?: string;
   zero?: string;
   one?: string;
   two?: string;

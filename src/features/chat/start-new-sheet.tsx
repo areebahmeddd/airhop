@@ -11,6 +11,7 @@ import { Feather } from "@react-native-vector-icons/feather/static";
 import { useChatStore } from "@store/chat-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
+import UpperText from "@ui/components/upper-text";
 import {
   BUTTON_HEIGHT,
   DISABLED_OPACITY,
@@ -215,7 +216,9 @@ export function StartNewSheet({
         {/* Encryption is always on; this picks the send path: mesh only, or
             also sealed over Nostr for members out of range. */}
         <View style={styles.optionGroup}>
-          <Text style={styles.optionLabel}>{T("chat.new.reach")}</Text>
+          <UpperText style={styles.optionLabel}>
+            {T("chat.new.reach")}
+          </UpperText>
           <View style={styles.optionRow}>
             <Pressable
               style={[
@@ -425,7 +428,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.8,
     },
     optionRow: {

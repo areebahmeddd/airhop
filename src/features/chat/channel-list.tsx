@@ -7,8 +7,8 @@
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
 
 import { t, tPlural, useT, useTPlural, type TranslationKey } from "@i18n";
-import { trailingSwipeActions } from "@i18n/layout";
-import { useRichText } from "@i18n/rich-text";
+import { directionMark, trailingSwipeActions } from "@i18n/layout";
+import { fillRichText, useRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
@@ -25,6 +25,7 @@ import { usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import EmptyState from "@ui/components/empty-state";
+import UpperText from "@ui/components/upper-text";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
 import {
   Duration,
@@ -454,7 +455,10 @@ export default function ChannelList({
       draft.length > 0
         ? `${t("chat.draft_prefix")} ${draft}`
         : last
-          ? `${last.isMine ? t("chat.you") : last.senderNickname}: ${messagePreviewText(last)}`
+          ? t("chat.sender_preview", {
+              sender: last.isMine ? t("chat.you") : last.senderNickname,
+              preview: messagePreviewText(last),
+            })
           : t("chat.no_messages"),
       timeLabel,
     ]
@@ -536,10 +540,15 @@ export default function ChannelList({
               </Text>
             ) : last ? (
               <Text style={styles.channelPreview} numberOfLines={1}>
-                <Text style={styles.channelPreviewSender}>
-                  {last.isMine ? t("chat.you") : last.senderNickname}:{" "}
-                </Text>
-                {messagePreviewText(last)}
+                {directionMark}
+                {fillRichText(T("chat.sender_preview"), {
+                  sender: (
+                    <Text style={styles.channelPreviewSender}>
+                      {last.isMine ? T("chat.you") : last.senderNickname}
+                    </Text>
+                  ),
+                  preview: messagePreviewText(last),
+                })}
               </Text>
             ) : (
               <Text style={styles.channelPreviewEmpty}>
@@ -558,9 +567,9 @@ export default function ChannelList({
       </Pressable>
     );
 
-    // Every row (Your channels and Default channels alike) swipes left to
-    // reveal More, the single consistent way to reach chat info, so
-    // there's no separate inline info icon anywhere.
+    // Every row (Your channels and Default channels alike) swipes from the
+    // trailing edge to reveal More, the one way to reach chat info, so there
+    // is no separate inline info icon anywhere.
     return (
       <Animated.View
         layout={LinearTransition.duration(Duration.slow)}
@@ -623,10 +632,10 @@ export default function ChannelList({
               }
               // `expanded` is what makes the chevron mean something to a screen
               // reader. Naming the action instead ("Collapse Your channels")
-              // stated the next tap but never the current state.
+              // would state the next tap but never the current state.
               accessibilityState={{ expanded: !isCollapsed }}
             >
-              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <UpperText style={styles.sectionTitle}>{section.title}</UpperText>
               {section.unread > 0 && (
                 <View
                   style={styles.sectionBadge}
@@ -842,7 +851,6 @@ export default function ChannelList({
         )}
       </BottomSheet>
 
-      {/* Channel info sheet (shared component) */}
       <ChannelInfoSheet
         channel={infoChannel}
         onClose={() => setInfoChannel(null)}
@@ -878,7 +886,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,
       color: Colors.textMuted,
-      textTransform: "uppercase",
     },
     sectionHeaderSpacer: {
       flex: 1,

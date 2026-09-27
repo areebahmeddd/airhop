@@ -136,7 +136,7 @@ export default function PeerList({
     return () => clearInterval(timer);
   }, [evictStale]);
 
-  // Watch the trigger counter from App.tsx header button.
+  // Watch the trigger counter from the App.tsx header button.
   const prevAddTrigger = useRef(addContactTrigger ?? 0);
   useEffect(() => {
     if (
@@ -148,13 +148,11 @@ export default function PeerList({
     }
   }, [addContactTrigger]);
 
-  // Belt-and-suspenders: mesh-service already keeps a blocked peer's
-  // announces out of the store, but filtering here too means a peer
-  // blocked mid-session (already cached before the block) disappears
-  // immediately instead of waiting for TTL eviction.
-  // Memoised: this spread + filter + sort ran on every render, and its result is
-  // handed straight to RadarView, so an unmemoised array also forced the radar
-  // to re-bucket every peer each time.
+  // Belt-and-suspenders: mesh-service already keeps a blocked peer's announces
+  // out of the store, but a peer blocked mid-session is already cached, and
+  // filtering here makes it disappear at once instead of at TTL eviction.
+  // Memoised because the result goes straight to RadarView, and a fresh array
+  // each render would make the radar re-bucket every peer.
   const peerList = useMemo(
     () =>
       [...peers.values()]
@@ -502,7 +500,10 @@ export default function PeerList({
                       accessibilityLabel={
                         parsedSats === null
                           ? T("mesh.peer.amount_first")
-                          : t("mesh.peer.send_amount", { amount: parsedSats })
+                          : t(
+                              "mesh.peer.send_unit_amount",
+                              amountParts(parsedSats, "sat"),
+                            )
                       }
                       accessibilityState={{
                         disabled: parsedSats === null || sendingSats,

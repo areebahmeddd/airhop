@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "დღეს",
   "format.yesterday": "გუშინ",
-  "format.minutes_ago": "{count} წთ წინ",
-  "format.hours_ago": "{count} სთ წინ",
-  "format.days_ago": "{count} დღის წინ",
   "format.just_now": "ახლახან",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -256,6 +253,7 @@ export const strings: Strings = {
   "chat.group_badge": "ჯგუფი",
   "chat.more": "მეტი",
   "chat.no_messages": "ჯერ შეტყობინებები არ არის",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "ახლოს არავინაა",
   "chat.presence.active_none": "აქტიური არავინაა",
   "chat.you": "შენ",
@@ -330,6 +328,7 @@ export const strings: Strings = {
   "chat.jump.failed": "ამ უჯრის გახსნა ვერ მოხერხდა. სცადე ცოტა ხანში.",
   "chat.jump.title": "გადადი ადგილას",
   "chat.jump.saved": "შენახული ადგილები",
+  "chat.jump.nearby": "ახლოს",
   "chat.jump.anywhere":
     "გახსენი ნებისმიერი ადგილის საჯარო მდებარეობის არხი, თუნდაც იმისა, სადაც არ ხარ.",
   "chat.jump.geohash_note":
@@ -339,7 +338,22 @@ export const strings: Strings = {
   "chat.jump.level_cell": "{level} უჯრა",
   "chat.jump.already_here":
     "შენ უკვე აქ ხარ. გადასვლა შენს {name} არხს გახსნის.",
-  "chat.jump.open_direction": "გახსენი უჯრა {direction}-ით",
+  "chat.jump.dir.n": "ჩ",
+  "chat.jump.dir.ne": "ჩა",
+  "chat.jump.dir.e": "ა",
+  "chat.jump.dir.se": "სა",
+  "chat.jump.dir.s": "ს",
+  "chat.jump.dir.sw": "სდ",
+  "chat.jump.dir.w": "დ",
+  "chat.jump.dir.nw": "ჩდ",
+  "chat.jump.open_n": "გახსენი უჯრა ჩრდილოეთით",
+  "chat.jump.open_ne": "გახსენი უჯრა ჩრდილო-აღმოსავლეთით",
+  "chat.jump.open_e": "გახსენი უჯრა აღმოსავლეთით",
+  "chat.jump.open_se": "გახსენი უჯრა სამხრეთ-აღმოსავლეთით",
+  "chat.jump.open_s": "გახსენი უჯრა სამხრეთით",
+  "chat.jump.open_sw": "გახსენი უჯრა სამხრეთ-დასავლეთით",
+  "chat.jump.open_w": "გახსენი უჯრა დასავლეთით",
+  "chat.jump.open_nw": "გახსენი უჯრა ჩრდილო-დასავლეთით",
   "chat.jump.open_place": "{name}-ის გახსნა",
   "chat.jump.remove_place": "{name}-ის წაშლა შენახული ადგილებიდან",
   "chat.jump.go": "გადასვლა",
@@ -458,19 +472,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "{name}-ის გაუქმება",
   "chat.thread.hide_transfer": "პროგრესის დამალვა",
   "chat.thread.hide_transfer_hint": "ფაილი მაინც მოვა",
-  "chat.thread.queued_more": "კიდევ {count} ელოდება გაგზავნას",
-  "chat.thread.across_bridge": "{count} ხიდის მიღმა",
   "chat.thread.bridged": "ხიდით გადავიდა",
   "chat.thread.invite_body":
     "შემომიერთდი {channel}-ში Airhop-ზე — პირადი მეშ-შეტყობინებები, უპირველესად ოფლაინისთვის.",
-  "chat.thread.go_back_unread": "უკან, {count} წაუკითხავი",
   "chat.thread.view_info": "{name}-ის ინფორმაციის ნახვა",
-  "chat.thread.notices_new": "ამ არხის განცხადებები, {count} ახალი",
   "chat.board.urgent_one": "სასწრაფო განცხადება {author}-ისგან · {content}",
-  "chat.board.urgent_many":
-    "{count} ახალი სასწრაფო განცხადება · გახსენით განცხადებები",
+  "chat.board.urgent_one_anon": "სასწრაფო განცხადება · {content}",
   "chat.thread.say_something": "თქვი რამე {channel}-ში.",
-  "chat.thread.jump_latest_new": "უახლეს შეტყობინებაზე გადასვლა, {count} ახალი",
   "chat.thread.unconfirmed_since": "{date}-იდან მიწოდება არ დადასტურებულა",
   "chat.thread.no_reach": "ახლოს კვანძები არ არის · ეს ჯერ არავის მიუღია",
   "chat.thread.channel_needs_internet":
@@ -507,7 +515,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took_private":
     "ეკრანის სურათი გადაიღე · არავის შეუტყვია",
   "chat.screenshot.heads_up": "გაითვალისწინე",
-  "chat.screenshot.notice": "* {name}-მა ეკრანის სურათი გადაიღო *",
+  "chat.screenshot.peer_took": "{name}-მა ეკრანის სურათი გადაიღო",
   "chat.screenshot.notified_dm":
     "{name}-ს ეცნობა, რომ ამ საუბრის ეკრანის სურათი გადაიღე.",
   "chat.screenshot.notified":
@@ -552,7 +560,7 @@ export const strings: Strings = {
   "chat.attach.document": "დოკუმენტი",
   "chat.attach.document_desc": "გააგზავნე ნებისმიერი ფაილი ან PDF",
   "chat.attach.voice": "ხმოვანი ჩანაწერი",
-  "chat.attach.voice_desc": "ჩაწერე და გააგზავნე ხმოვანი შეტყობინება",
+  "chat.attach.voice_desc": "ჩაწერე და გააგზავნე ხმოვანი ჩანაწერი",
   "chat.attach.ecash": "ecash-ის გაგზავნა",
   "chat.attach.ecash_desc": "გააგზავნე Cashu sat-ები შენი საფულიდან",
   "chat.attach.location": "მდებარეობა",
@@ -560,7 +568,7 @@ export const strings: Strings = {
   "chat.attach.title": "მიმაგრება",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "გააზიარა მდებარეობა",
+  "chat.location.sent_summary": "მდებარეობა გაზიარებულია",
   "chat.location.received_summary": "გააზიარა თავისი მდებარეობა",
   "chat.location.title": "მდებარეობა",
   "chat.location.away": "{distance} {direction}",
@@ -591,15 +599,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "ჩრდილო-დასავლეთით",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "დარეკა",
+  "chat.ring.sent_summary": "ზარი გაიგზავნა",
   "chat.ring.received_summary": "შენ დაგირეკა",
   "chat.ring.alert.title": "{sender} გირეკავს",
   "chat.ring.alert.body": "შეამოწმე შენი შეტყობინებები",
   "chat.ring.alert.open": "გახსნა",
   "chat.ring.alert.snooze": "1 საათით გადადება",
-  "chat.ring.sent_snoozed": "დარეკა, გადაიდო",
-  "chat.ring.sent_too_soon": "დარეკა, ძალიან ადრე",
-  "chat.ring.sent_not_allowed": "დარეკა, არ არის დაშვებული",
+  "chat.ring.sent_snoozed": "ზარი გაიგზავნა · გადადებულია",
+  "chat.ring.sent_too_soon": "ზარი გაიგზავნა · ძალიან ადრე",
+  "chat.ring.sent_not_allowed": "ზარი გაიგზავნა · არ არის დაშვებული",
   "chat.attach.send_anyway": "მაინც გაგზავნა",
   "chat.attach.bitchat_too_big": "ეს შეიძლება ვერ მივიდეს",
   "chat.attach.bitchat_too_big_body":
@@ -672,6 +680,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "ჩაწერის შეწყვეტა და გაგზავნა",
   "chat.voice.lift_lock": "გადაასრიალე ზემოთ ხელის აშვებით ჩასაწერად",
   "chat.voice.live_speaking": "{name} საუბრობს",
+  "chat.voice.live_ended": "დასრულდა",
   "voice.unavailable": "პირდაპირი ხმა მიუწვდომელია",
   "voice.recording_stopped": "ჩაწერა შეწყდა",
 
@@ -731,7 +740,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "{name}-ის წაშლა",
   "chat.info.no_addable":
     "დასამატებელი მიღწევადი კვანძები არ არის. წევრები ახლოს უნდა იყვნენ.",
-  "chat.info.add_count": "{count}-ის დამატება",
   "chat.info.teleported_tag": "{level}  ·  შორიდან",
   "chat.info.active": "აქტიური",
   "chat.info.members": "წევრები",
@@ -815,8 +823,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 დღე",
   "chat.notices.7_days": "7 დღე",
   "chat.notices.fading": "ქრება",
-  "chat.notices.fades_in_hours": "ქრება {count} საათში",
-  "chat.notices.fades_in_days": "ქრება {count} დღეში",
   "chat.notices.scope_geo": "გეო",
   "chat.notices.scope_mesh": "მეში",
   "chat.notices.urgent_short": "სასწრაფო",
@@ -833,10 +839,21 @@ export const strings: Strings = {
   "chat.search.links": "ბმულები",
   "chat.search.ecash": "Ecash",
   "chat.search.filter_by": "ფილტრი: {filter}",
-  "chat.search.no_matches": "„{query}“-ს არცერთი {filter} არ ემთხვევა",
-  "chat.search.no_media": "ჯერ {filter} არ არის",
+  "chat.search.no_photos": "ფოტოები ჯერ არ არის",
+  "chat.search.no_videos": "ვიდეოები ჯერ არ არის",
+  "chat.search.no_audio": "აუდიო ჯერ არ არის",
+  "chat.search.no_documents": "დოკუმენტები ჯერ არ არის",
+  "chat.search.no_links": "ბმულები ჯერ არ არის",
+  "chat.search.no_ecash": "ecash ჯერ არ არის",
+  "chat.search.no_photos_matching": "„{query}“-ს არცერთი ფოტო არ ემთხვევა",
+  "chat.search.no_videos_matching": "„{query}“-ს არცერთი ვიდეო არ ემთხვევა",
+  "chat.search.no_audio_matching": "„{query}“-ს არცერთი აუდიო არ ემთხვევა",
+  "chat.search.no_documents_matching":
+    "„{query}“-ს არცერთი დოკუმენტი არ ემთხვევა",
+  "chat.search.no_links_matching": "„{query}“-ს არცერთი ბმული არ ემთხვევა",
+  "chat.search.no_ecash_matching": "„{query}“-ს ecash არ ემთხვევა",
   "chat.search.result_a11y": "{chat}, {kind} {sender}-ისგან",
-  "chat.search.you": "შენ",
+  "chat.search.result_mine_a11y": "{chat}, {kind}, შენ მიერ გაგზავნილი",
   "chat.search.section_chats": "მიმოწერები",
   "chat.search.section_messages": "შეტყობინებები",
   "chat.search.section_notices": "განცხადებები",
@@ -845,15 +862,13 @@ export const strings: Strings = {
   "chat.search.no_results": "„{query}“-ზე შედეგები არ არის",
   "chat.search.open_chat": "{name}-ის გახსნა",
   "chat.search.message_a11y": "{chat}, შეტყობინება {sender}-ისგან: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}, შენი შეტყობინება: {snippet}",
   "chat.search.notice_a11y": "განცხადება {chat}-ში {author}-ისგან: {snippet}",
   "chat.search.urgent": "სასწრაფო ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "ამ სიაში {count}-ია. გასუფთავება მათ მხოლოდ აქედან შლის, შეტყობინებები კი თავიანთ საუბრებში წაუკითხავი რჩება. ყველას წაკითხულად მონიშვნა ორივეს ასუფთავებს.",
   "chat.notif.mark_all_read": "ყველას წაკითხულად მონიშვნა",
   "chat.notif.clear_list": "სიის გასუფთავება",
-  "chat.notif.clear_all_a11y": "ყველა {count} შეტყობინების გასუფთავება",
   "chat.notif.title": "შეტყობინებები",
   "chat.notif.clear_short": "გასუფთავება",
   "chat.notif.close": "შეტყობინებების დახურვა",
@@ -876,13 +891,17 @@ export const strings: Strings = {
   "chat.forward.locations": "მდებარეობები",
   "chat.forward.dms": "პირადი შეტყობინებები",
   "chat.forward.none": "ჯერ სხვა მიმოწერები არ არის",
+  "chat.forward.app_row": "არ გადაიგზავნა",
+  "chat.forward.app_row_body":
+    "ეს ხაზი Airhop-ისგანაა და არა ადამიანისგან, ამიტომ გადასაგზავნი არაფერია.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "მეში ეშვება…",
   "mesh.banner.no_bluetooth":
     "ამ მოწყობილობაზე ბლუთუზი არ არის · მხოლოდ ინტერნეტი",
   "mesh.banner.bluetooth_off": "ბლუთუზი გამორთულია · მეში მიუწვდომელია",
-  "mesh.banner.bluetooth_off_wifi": "ბლუთუზი გამორთულია · მეში მუშაობს WiFi-ით",
+  "mesh.banner.bluetooth_off_wifi":
+    "ბლუთუზი გამორთულია · მეში მუშაობს Wi-Fi-ით",
   "mesh.banner.permission_needed": "საჭიროა ბლუთუზის ნებართვა",
   "mesh.banner.blocked": "ბლუთუზი დაბლოკილია · დაუშვი პარამეტრებში",
   "mesh.banner.location_permission": "კვანძების საპოვნელად საჭიროა მდებარეობა",
@@ -911,7 +930,6 @@ export const strings: Strings = {
   "mesh.banner.bridge": "მეშ-ხიდი ჩართულია · საჯარო მიმოწერა დაკავშირებულია",
   "mesh.banner.background_limits":
     "{brand}-მა შესაძლოა მეში ფონურ რეჟიმში შეაჩეროს",
-  "mesh.banner.bridge_across": "მეშ-ხიდი ჩართულია · {count} ხიდის მიღმა",
   "mesh.banner.action.turn_on": "ჩართვა",
   "mesh.banner.action.allow": "დაშვება",
   "mesh.banner.action.resume": "გაგრძელება",
@@ -988,7 +1006,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "კვანძის {name} ნახვა, ონლაინ",
   "mesh.peer.view_relay_online": "კვანძის {name} ნახვა, ონლაინ, სარელეო კვანძი",
   "mesh.peer.last_seen_at": "ბოლოს ნანახი {ago}",
-  "mesh.peer.send_amount": "{amount} sat-ის გაგზავნა",
+  "mesh.peer.send_unit_amount": "{amount} {unit}-ის გაგზავნა",
   "mesh.peer.direct": "პირდაპირი კავშირი",
   "mesh.peer.check_distance": "მანძილის შემოწმება",
   "mesh.peer.checking": "მოწმდება",
@@ -1061,7 +1079,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "ეს ტოკენი ძალიან ბევრ მონეტადაა დაყოფილი, რომ QR კოდში ჩაეტიოს. სანაცვლოდ გააზიარე ან დააკოპირე.",
   "wallet.send.scan_note":
-    "სთხოვე, თავისი საფულიდან დაასკანეროს ეს. დაბრუნებადი რჩება, სანამ მიწოდებულად არ მონიშნავ.",
+    "სთხოვე, თავისი საფულიდან დაასკანეროს ეს. დაბრუნებადი რჩება, სანამ მიღებულად არ მონიშნავ.",
   "wallet.send.mesh_note":
     "ტოკენი მეშით გადის დაშიფრული პირადი შეტყობინების სახით. ინტერნეტი არ სჭირდება.",
   "wallet.send.no_peers_note":
@@ -1082,7 +1100,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "საფულეში გახსნა",
   "wallet.send.to_peer": "ტოკენის გაგზავნა ახლომდებარე კვანძთან",
   "wallet.send.to_peer_short": "კვანძთან გაგზავნა",
-  "wallet.send.mark_delivered": "მიწოდებულად მონიშვნა და დასრულება",
+  "wallet.send.mark_delivered": "მიღებულად მონიშვნა",
   "wallet.send.they_got_it": "მან მიიღო",
   "wallet.send.keep_pending": "ეს გაგზავნა მოლოდინში დატოვე",
   "wallet.send.decide_later": "მოგვიანებით გადაწყვეტ",
@@ -1106,10 +1124,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n„{memo}“",
   "wallet.receive.redeemed_at":
     "გამოსყიდულია {mint}-ში. ახლა დამტკიცებულად შენია: ამ ტოკენის გამგზავნისეული ასლი აღარ მუშაობს.",
-  "wallet.receive.stored_pending":
-    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია{dleq}. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
-  "wallet.receive.dleq_inline":
-    " (მისი ხელმოწერა მართლაც სწორია, ამიტომ ტოკენი ნამდვილია)",
+  "wallet.receive.pending_unconfirmed":
+    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია. მისი ხელმოწერა სწორია, ამიტომ ტოკენი ნამდვილია. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
   "wallet.receive.dleq_ok":
     "ზარაფხანის ხელმოწერა სწორია, ამიტომ ტოკენი ნამდვილია.",
   "wallet.receive.dleq_uncached":
@@ -1173,8 +1191,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "ყველა ბალანსის ერთ ზარაფხანაში გადატანა",
   "wallet.mint.confirm_with": "ბალანსის შემოწმება {mint}-თან",
   "wallet.mint.available_amount": "ხელმისაწვდომია {amount} {unit}",
-  "wallet.mint.split_across":
-    "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
   "wallet.mint.move_everything_to": "ყველაფრის გადატანა {mint}-ში",
   "wallet.mint.consolidate_title": "ერთ ზარაფხანაში გადატანა",
   "wallet.mint.moving": "გადააქვს…",
@@ -1185,10 +1201,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "არაფერი გადატანილა",
   "wallet.mint.move_pending": "გზაშია",
   "wallet.mint.deposit_pending":
-    "{amount} {unit} გავიდა {mint}-დან და გზაშია {target}-ისკენ. ჩამოვა, როგორც კი შენატანი მიიღება, საფულე კი ცდას განაგრძობს.",
+    "{amount} {unit} გავიდა {mint}-დან და გზაშია {target}-ისკენ. ჩამოვა, როგორც კი გადარიცხვა მიიღება, საფულე კი ცდას განაგრძობს.",
   "wallet.mint.destination": "· დანიშნულება",
   "wallet.mint.will_move": "· გადატანილი იქნება",
   "wallet.mint.issued_by": "გამომცემი",
+  "wallet.mint.test_badge": "ტესტი",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "Airhop-ის საფულის შევსება",
@@ -1214,7 +1231,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "მაქსიმუმ {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "{amount} {unit}-ის გადახდა",
-  "wallet.ln.deposit_title": "შეტანა Lightning-ით",
+  "wallet.ln.deposit_title": "Lightning-ით შევსება",
   "wallet.ln.amount_placeholder": "თანხა sat-ებში",
   "wallet.ln.requesting": "ითხოვს…",
   "wallet.ln.get_invoice": "ინვოისის მიღება",
@@ -1246,7 +1263,7 @@ export const strings: Strings = {
     "შენ უკვე გაქვს აღდგენის ფრაზა. სხვის აღდგენა მას ჩაანაცვლებს. ძველი ფრაზით დაფარული მონეტები ამ მოწყობილობაზე დასახარჯი რჩება, მაგრამ აღდგენადი აღარ იქნება, ამიტომ სანამ გააგრძელებ, დარწმუნდი, რომ ძველი სიტყვები ჩაწერილი გაქვს.",
   "wallet.backup.replace": "ჩანაცვლება",
   "wallet.backup.replace_unseen_body":
-    "ამ საფულეს უკვე აქვს აღდგენის ფრაზა, შექმნილი თქვენთვის დაყენებისას, და თქვენი მონეტები მასით შეიქმნა. სხვა ფრაზის აღდგენა მას სამუდამოდ ჩაანაცვლებს. მონეტები ამ მოწყობილობაზე ხარჯვადი რჩება და ყოველი ზარაფხანის შემდეგი განახლებისას ახალ ფრაზაზე გადავა.",
+    "ამ საფულეს უკვე აქვს აღდგენის ფრაზა, შექმნილი შენთვის დაყენებისას, და შენი მონეტები მასით შეიქმნა. სხვა ფრაზის აღდგენა მას სამუდამოდ ჩაანაცვლებს. მონეტები ამ მოწყობილობაზე ხარჯვადი რჩება და ყოველი ზარაფხანის შემდეგი განახლებისას ახალ ფრაზაზე გადავა.",
   "wallet.backup.invalid_phrase": "ეს ფრაზა არასწორია",
   "wallet.backup.invalid_phrase_body":
     "ფრაზას ჩაშენებული საკონტროლო ჯამი აქვს და ეს მას ვერ გადის. მოძებნე არასწორად აკრეფილი, გამოტოვებული ან ადგილნაცვალი სიტყვა.",
@@ -1338,7 +1355,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "ზარაფხანის თქმით ეს ტოკენი უკვე გამოსყიდულია, ასე რომ {amount} {unit} მათ მიაღწია და შენს ბალანსში არაფერი დაბრუნებულა.",
   "wallet.copied.token_body":
-    "ტოკენი შენს ბუფერშია. ის აქ დარეზერვებული რჩება, სანამ მიწოდებულად არ მონიშნავ, ამიტომ თუ პირველი მცდელობა ჩავარდა, ხელახლა ჩასვამ.",
+    "ტოკენი შენს ბუფერშია. ის აქ დარეზერვებული რჩება, სანამ მიღებულად არ მონიშნავ, ამიტომ თუ პირველი მცდელობა ჩავარდა, ხელახლა ჩასვამ.",
   "wallet.copied.refused_token_body":
     "ტოკენი შენს ბუფერშია. ეს საფულე მას აღარ ითვლის, ამიტომ შეგიძლია დაუბრუნო მას, ვინც გამოგიგზავნა.",
   "wallet.copied.phrase_body":
@@ -1365,8 +1382,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "ამ ტოკენის QR კოდად ჩვენება",
   "wallet.pending.copy_again": "ტოკენის ხელახლა კოპირება",
   "wallet.pending.share_again": "ტოკენის ხელახლა გაზიარება",
-  "wallet.pending.mark_delivered": "ამ ტოკენის მიწოდებულად მონიშვნა",
-  "wallet.pending.delivered": "მიწოდებულია",
+  "wallet.pending.mark_delivered": "მიღებულად მონიშვნა",
+  "wallet.pending.delivered": "მიღებულია",
   "wallet.pending.reclaim_into": "ამ ტოკენის დაბრუნება შენს ბალანსში",
   "wallet.activity.title": "აქტივობა",
   "wallet.activity.none": "ჯერ არაფერია",
@@ -1384,7 +1401,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "ვერ მოხერხდა",
   "wallet.activity.status_reclaimed": "დაბრუნებული",
   "wallet.activity.status_expired": "ვადაგასული",
-  "wallet.activity.ln_deposit": "Lightning-ის შეტანა",
+  "wallet.activity.ln_deposit": "შევსება Lightning-ით",
   "wallet.activity.ln_withdrawal": "Lightning-ის გატანა",
   "wallet.activity.nutzap_received": "Nutzap მიღებულია",
   "wallet.activity.nutzap_claiming": "Nutzap, მიმდინარეობს მიღება",
@@ -1427,7 +1444,13 @@ export const strings: Strings = {
     "დაკეტილი გადახდები არ ბრუნდება: ახლა ამ მონეტების დახარჯვა მხოლოდ მის გასაღებს შეუძლია.",
   "wallet.pay.reclaimable":
     "აქტივობის განყოფილებიდან დაბრუნებადი რჩება, სანამ არ დაადასტურებ, რომ მივიდა.",
-  "wallet.pay.why": "ასე გაიგზავნა, რადგან {reason}.",
+  "wallet.pay.why_no_relay": "ასე გაიგზავნა, რადგან რელესთან კავშირი არ იყო.",
+  "wallet.pay.why_no_shared_mint":
+    "ასე გაიგზავნა, რადგან არცერთ ზარაფხანაში, რომელსაც მიმღები იღებს, საკმარისი თანხა არ გაქვს.",
+  "wallet.pay.why_no_nutzap_info":
+    "ასე გაიგზავნა, რადგან მიმღებს nutzap-ის ინფორმაცია არ გამოუქვეყნებია (NIP-61 kind 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} {name}-ს",
   "wallet.pay.thread_receipt":
     "გააგზავნე {amount} {unit}, დაკეტილი მის გასაღებზე.",
@@ -1442,7 +1465,7 @@ export const strings: Strings = {
   "wallet.pay.confirm_final":
     "ის მათ გასაღებზეა ჩაკეტილი. გაგზავნის შემდეგ უკან ვეღარ დაიბრუნებთ.",
   "wallet.pay.confirm_reclaimable":
-    "სანამ მიიღებენ, შეგიძლიათ დაიბრუნოთ აქტივობის განყოფილებიდან.",
+    "სანამ მიიღებენ, შეგიძლია დაიბრუნო აქტივობის განყოფილებიდან.",
 
   // ---- Wallet: QR scanner ----
   "wallet.scan.camera_label": "კამერასთან წვდომა",
@@ -1574,7 +1597,7 @@ export const strings: Strings = {
     "არაფერი ჩამოჭრილა. სცადე ხელახლა და საფულე სხვა ნაკრებს აირჩევს.",
   "wallet.svc.no_ecash": "ჯერ ecash არ არის.",
   "wallet.svc.no_ecash_body":
-    "დაამატე ზარაფხანა და შეიტანე Lightning-ით, ან მიიღე ტოკენი ვინმესგან.",
+    "დაამატე ზარაფხანა და შეავსე Lightning-ით, ან მიიღე ტოკენი ვინმესგან.",
   "wallet.svc.split_across_mints":
     "შენი ბალანსი რამდენიმე ზარაფხანაშია გაბნეული.",
   "wallet.svc.mint_says_spent":
@@ -1582,12 +1605,12 @@ export const strings: Strings = {
   "wallet.svc.issue_against_invoice":
     "გამოსცეს ecash Lightning ინვოისის საფუძველზე",
   "wallet.svc.pay_invoice": "გადაიხადოს Lightning ინვოისი",
-  "wallet.svc.unknown_deposit": "უცნობი შენატანი.",
+  "wallet.svc.unknown_deposit": "უცნობი შევსება.",
   "wallet.svc.invoice_expired_before": "ინვოისს ვადა გაუვიდა გადახდამდე.",
   "wallet.svc.invoice_expired": "ამ ინვოისს ვადა გაუვიდა.",
   "wallet.svc.invoice_unpaid": "ინვოისი ჯერ არ გადახდილა.",
-  "wallet.svc.payment_unknown":
-    "გადახდის სტატუსი უცნობია; შემოწმდება მომდევნო განახლებისას.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} გადახდის სტატუსი უცნობია; შემოწმდება მომდევნო განახლებისას.",
   "wallet.svc.melt_change_pending": "შენი ინვოისი გადახდილია.",
   "wallet.svc.melt_change_pending_body":
     "ზარაფხანას ჯერ არ დაუბრუნებია გამოუყენებელი მარშრუტიზაციის საკომისიო. ის ავტომატურად მიიღება მომდევნო განახლებისას, და ამასობაში არაფერი იკარგება.",
@@ -1629,24 +1652,19 @@ export const strings: Strings = {
     "ეს გადახდა ისეთ ზარაფხანას ასახელებს, რომელსაც არ იყენებ.",
   "wallet.svc.unknown_mint_body":
     "თუ ენდობი, ჯერ თვითონ დაამატე ეს ზარაფხანა; არაფერი გამოისყიდება იმ ზარაფხანიდან, რომელიც არ აგირჩევია.",
-  "wallet.svc.no_relay": "რელესთან კავშირი არ არის",
-  "wallet.svc.no_shared_mint":
-    "საკმარისი ბალანსის მქონე საერთო ზარაფხანა არ არის",
-  "wallet.svc.no_nutzap_info":
-    "მიმღებს nutzap-ის ინფორმაცია არ გამოუქვეყნებია (NIP-61 kind 10019)",
   "wallet.svc.locked_undelivered":
     "დაკეტილია მის გასაღებზე, მაგრამ ჯერ არ მიწოდებულა. გააზიარე ტოკენი ამ ტრანზაქციიდან დასასრულებლად.",
   "wallet.svc.swap_lost":
     "ზარაფხანამ ეს გაცვლა არასოდეს დაასრულა, ამიტომ მის საფუძველზე არაფერი გამოცემულა.",
   "wallet.svc.mint_lost":
-    "მინტმა ეს შენატანი გასცა, მაგრამ მისი მონეტების აღდგენა ვერ მოხერხდა. აღდგენის ფრაზიდან აღდგენა დააბრუნებს მათ.",
+    "ზარაფხანამ ეს შევსება გასცა, მაგრამ მისი მონეტების აღდგენა ვერ მოხერხდა. აღდგენის ფრაზიდან აღდგენა დააბრუნებს მათ.",
   "wallet.svc.swap_unreadable":
     "ეს გაცვლა ისეთი სახით შეინახა, რომელსაც ეს ვერსია ვერ იმეორებს.",
   "wallet.svc.lock_in_doubt": "ეს გადახდა შესაძლოა შესრულდა, შესაძლოა არა.",
   "wallet.svc.lock_in_doubt_body":
     "სხვა არაფერი გაგზავნილა. მონეტები დაკავებულია, სანამ ზარაფხანა შედეგს დაადასტურებს. თუ გადახდა შესრულდა, ჩაკეტილი ტოკენი გამოჩნდება აქტივობაში გადასაცემად. თუ არა, მონეტები დაბრუნდება.",
   "wallet.svc.send_spent_by_swap":
-    "ეს მონეტები თქვენს საფულეში გადაიცვალა, სანამ ტოკენს მიიღებდნენ, ამიტომ მისი მიღება აღარ შეიძლება. თანხა თქვენს ბალანსშია.",
+    "ეს მონეტები შენს საფულეში გადაიცვალა, სანამ ტოკენს მიიღებდნენ, ამიტომ მისი მიღება აღარ შეიძლება. თანხა შენს ბალანსშია.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "გადამოწმებულია QR-ით",
@@ -1766,7 +1784,7 @@ export const strings: Strings = {
     "წინსვლის საიდუმლოება, ხელმოწერილი პაკეტები, დაბლოკილი კვანძები",
   "settings.section.network": "ქსელი და რელეები",
   "settings.section.network_desc":
-    "ინტერნეტზე გადასვლა, nostr რელეები, bitchat-თან თავსებადობა",
+    "ინტერნეტზე გადასვლა, Nostr რელეები, bitchat-თან თავსებადობა",
   "settings.section.permissions": "ნებართვები",
   "settings.section.permissions_desc":
     "ბლუთუზი, მდებარეობა, შეტყობინებები, კამერა, მიკროფონი",
@@ -1816,13 +1834,11 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "სიგნალის მაჩვენებელი არ არის",
   "settings.diag.no_peers": "მიღწევადობის ზონაში არავინაა",
-  "settings.diag.no_peers_desc": "გახსნილია {links} რადიოკავშირი",
   "settings.diag.gcs_size": "ფილტრის ზომა",
   "settings.diag.gcs_size_desc":
     "ყველაზე დიდი სინქრონიზაციის ფილტრი, რომელიც ეთერში გავიდა",
   "settings.diag.fpr": "ცრუ დადებითის მაჩვენებელი",
   "settings.diag.fpr_desc": "რამდენად ხშირად ამბობს ფილტრი, რომ პაკეტი გვაკლია",
-  "settings.diag.bytes": "{n} ბაიტი",
   "settings.diag.footnote":
     "აქ არაფრის შეცვლა შეიძლება. ეს მნიშვნელობები ფიქსირებულია, რომ Airhop bitchat-თან თავსებადი დარჩეს.",
   "settings.diag.share": "დიაგნოსტიკის გაზიარება",
@@ -1843,7 +1859,6 @@ export const strings: Strings = {
   "settings.general.undo": "გაგზავნის გაუქმება",
   "settings.general.feature_ai": "AI",
   "settings.general.feature_wallet": "საფულე",
-  "settings.general.undo_seconds": "{count} წამი",
   "settings.general.undo_a11y": "გაგზავნის გაუქმება: {value}",
   "settings.general.quality_a11y": "ატვირთვის ხარისხის დაყენება {value}-ზე",
   "settings.general.undo_desc":
@@ -1936,7 +1951,6 @@ export const strings: Strings = {
   "settings.network.custom": "მორგებული რელეები",
   "settings.network.custom_desc":
     "დაამატე შენი რელეები მდებარეობის არხებისა და მეშ-ხიდისთვის",
-  "settings.network.custom_added": "დამატებულია {count} / {max}",
   "settings.network.dm_relays": "შეტყობინებების რელეები",
   "settings.network.dm_relays_desc":
     "პირადი შეტყობინებები და პირადი არხები ყოველთვის ამათ იყენებენ. მორგებული რელეები მათ არ ცვლის.",
@@ -1946,17 +1960,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "რელეს დამატება",
   "settings.network.remove_relay": "{url}-ის წაშლა",
   "settings.network.add_short": "დამატება",
-  "settings.network.relay_limit":
-    "შეგიძლია {count} რელეს დამატება. ერთი წაშალე, რომ სხვა დაამატო.",
   "settings.network.relay_duplicate": "ეს რელე უკვე შენს სიაშია.",
   "settings.network.relay_invalid":
     "შეიყვანე რელეს სწორი ჰოსტი, მაგალითად relay.example.com. პორტი მხოლოდ მაშინაა საჭირო, თუ რელე ნაგულისხმევს არ იყენებს. IP მისამართები და ლოკალური სახელები დაუშვებელია.",
   "settings.network.lan": "ლოკალური ქსელი",
   "settings.network.lan_desc":
-    "მიაღწიე იმავე WiFi-ზე მყოფებს, iPhone-სა და Android-ს შორისაც. ქსელის სხვა მოწყობილობებს შეუძლიათ დაინახონ, რომ Airhop-ს იყენებ.",
+    "მიაღწიე იმავე Wi-Fi-ზე მყოფებს, iPhone-სა და Android-ს შორისაც. ქსელის სხვა მოწყობილობებს შეუძლიათ დაინახონ, რომ Airhop-ს იყენებ.",
   "settings.network.lan_searching": "ამ ქსელში Airhop-ის მოწყობილობა არ არის",
   "settings.network.lan_active": "დაკავშირებულია ამ ქსელში",
-  "settings.network.lan_unavailable": "არ ხარ WiFi ქსელში",
+  "settings.network.lan_unavailable": "არ ხარ Wi-Fi ქსელში",
   "settings.network.lan_permission":
     "ლოკალურ ქსელზე წვდომა Airhop-ისთვის გამორთულია",
   "settings.network.lan_unsupported": "ამ მოწყობილობაზე მიუწვდომელია",
@@ -1966,19 +1978,19 @@ export const strings: Strings = {
   "settings.network.wifi_aware_desc":
     "ფოტოებისა და ფაილების უფრო სწრაფი გადაცემა ერთი პლატფორმის ორ ტელეფონს შორის. Bluetooth ყველაფერს მაინც ატარებს.",
   "settings.network.wifi_unstable":
-    "შეჩერებულია. ამ ტელეფონზე მუდმივად აფერხებდა Wi-Fi-ს. ხელახლა საცდელად გამორთეთ და ჩართეთ.",
+    "შეჩერებულია. ამ ტელეფონზე მუდმივად აფერხებდა Wi-Fi-ს. ხელახლა საცდელად გამორთე და ჩართე.",
   "settings.network.wifi_pair": "დაწყვილება",
   "settings.network.wifi_paired": "დაწყვილებული მოწყობილობები",
   "settings.network.wifi_pair_find": "მოწყობილობის პოვნა",
   "settings.network.wifi_pair_find_desc":
-    "მოძებნეთ ახლომდებარე iPhone, რომელიც თავს აჩვენებს. ორივეს სჭირდება iOS 26 ან უფრო ახალი.",
+    "მოძებნე ახლომდებარე iPhone, რომელიც თავს აჩვენებს. ორივეს სჭირდება iOS 26 ან უფრო ახალი.",
   "settings.network.wifi_pair_show": "ამ iPhone-ის ჩვენება",
   "settings.network.wifi_pair_show_desc":
-    "მიეცით ახლომდებარე iPhone-ს საშუალება იპოვოს ეს. ერთი ეძებს, მეორე თავს აჩვენებს, ერთდროულად.",
-  "settings.network.wifi_pair_find_action": "აირჩიეთ ახლომდებარე iPhone",
-  "settings.network.wifi_pair_show_action": "გახადეთ ეს iPhone აღმოჩენადი",
+    "მიეცი ახლომდებარე iPhone-ს საშუალება იპოვოს ეს. ერთი ეძებს, მეორე თავს აჩვენებს, ერთდროულად.",
+  "settings.network.wifi_pair_find_action": "აირჩიე ახლომდებარე iPhone",
+  "settings.network.wifi_pair_show_action": "გახადე ეს iPhone აღმოჩენადი",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware ამჟამად მიუწვდომელია",
-  "settings.network.wifi_pair_forget": "წაშალეთ დაწყვილება Settings აპში",
+  "settings.network.wifi_pair_forget": "წაშალე დაწყვილება Settings აპში",
   "settings.network.bitchat": "bitchat-თან თავსებადობა",
   "settings.network.bitchat_desc":
     "იგივე BLE მეში, რაც bitchat-ს, სრულად თავსებადი. ეს ყოველთვის ჩართულია და გამორთვა შეუძლებელია.",
@@ -2023,27 +2035,27 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable": "ამ ბილდში Tor-ით მიმართვა მიუწვდომელია.",
   "settings.conn.tor_timeout":
     "Tor ჯერ არ დაკავშირებულა. ის ჩართული რჩება და ცდას აგრძელებს; მეშის ჩანართი გეტყვის, როდის დაიწყო მიმართვა, ან თუ ეს ქსელი მას ბლოკავს.",
-  "settings.conn.tor_failed": "Tor ვერ გაეშვა. სცადეთ ხელახლა ცოტა ხანში.",
+  "settings.conn.tor_failed": "Tor ვერ გაეშვა. სცადე ხელახლა ცოტა ხანში.",
   "settings.tor.status": "Tor-ის სტატუსი",
   "settings.tor.connection": "კავშირი",
   "settings.tor.mode_off": "პირდაპირი",
   "settings.tor.mode_off_desc":
-    "პირდაპირ უკავშირდება Tor-ს. ყველაზე სწრაფი, თუმცა ამ ქსელის დამკვირვებელი დაინახავს, რომ Tor-ს იყენებთ.",
+    "პირდაპირ უკავშირდება Tor-ს. ყველაზე სწრაფი, თუმცა ამ ქსელის დამკვირვებელი დაინახავს, რომ Tor-ს იყენებ.",
   "settings.tor.mode_snowflake": "Snowflake",
   "settings.tor.mode_snowflake_desc":
-    "მალავს, რომ Tor-ს იყენებთ, და მუშაობს იქაც, სადაც ხიდები დაბლოკილია. ყველაზე ნელი დასაკავშირებლად.",
+    "მალავს, რომ Tor-ს იყენებ, და მუშაობს იქაც, სადაც ხიდები დაბლოკილია. ყველაზე ნელი დასაკავშირებლად.",
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
-    "მალავს, რომ Tor-ს იყენებთ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
+    "მალავს, რომ Tor-ს იყენებ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
   "settings.tor.mode_webtunnel": "webtunnel",
   "settings.tor.mode_webtunnel_desc":
     "მალავს Tor-ის გამოყენებას ჩვეულებრივი ვებგვერდის მონახულების იმიტაციით. სხვებზე რთულად დასაბლოკია.",
   "settings.tor.mode_custom": "საკუთარი ხიდები",
   "settings.tor.mode_custom_desc":
-    "გამოიყენეთ obfs4 ხიდის ხაზები bridges.torproject.org-იდან. სცადეთ ეს, როცა დანარჩენები ვერ მუშაობს.",
-  "settings.tor.custom_placeholder": "ჩასვით თითო ხიდის ხაზი თითო სტრიქონში",
-  "settings.tor.custom_apply_hint": "დასაკავშირებლად შეეხეთ ველის გარეთ.",
-  "settings.tor.custom_empty": "ჯერ დაამატეთ ერთი ხიდის ხაზი მაინც.",
+    "გამოიყენე obfs4 ხიდის ხაზები bridges.torproject.org-იდან. სცადე ეს, როცა დანარჩენები ვერ მუშაობს.",
+  "settings.tor.custom_placeholder": "ჩასვი თითო ხიდის ხაზი თითო სტრიქონში",
+  "settings.tor.custom_apply_hint": "დასაკავშირებლად შეეხე ველის გარეთ.",
+  "settings.tor.custom_empty": "ჯერ დაამატე ერთი ხიდის ხაზი მაინც.",
   "settings.tor.recovered":
     "წინა ჯერზე Tor-ის გაშვება არ დასრულდა, ამიტომ ინტერნეტ-ტრაფიკი შეჩერებულია. სცადე ხელახლა ან გამორთე Tor, რომ მის გარეშე გახვიდე ინტერნეტში.",
   "settings.tor.retry": "ხელახლა ცდა",
@@ -2097,7 +2109,7 @@ export const strings: Strings = {
     "აგზავნის ფოტოებს შენი ბიბლიოთეკიდან და ინახავს მიღებულ მედიას. ამის გარეშეც შეგიძლია კამერით ახალი ფოტოები გადაიღო და გააგზავნო.",
   "settings.permissions.microphone": "მიკროფონი",
   "settings.permissions.microphone_desc":
-    "იწერს და აგზავნის ხმოვან შეტყობინებებს ან იყენებს პირდაპირ ხმას. ამის გარეშე ხმოვანი შეტყობინებები და პირდაპირი ხმა არ იმუშავებს.",
+    "იწერს და აგზავნის ხმოვან ჩანაწერებს ან იყენებს პირდაპირ ხმას. ამის გარეშე ხმოვანი ჩანაწერები და პირდაპირი ხმა არ იმუშავებს.",
   "settings.permissions.allow": "ამ ნებართვის დაშვება",
   "settings.permissions.open_settings":
     "სისტემის პარამეტრების გახსნა ამ ნებართვის შესაცვლელად",
@@ -2352,11 +2364,10 @@ export const strings: Strings = {
   "settings.version.downloading": "ჩამოტვირთვა {percent}%",
   "settings.version.install": "დაყენება",
   "settings.version.download_failed":
-    "ჩამოტვირთვა ვერ მოხერხდა. შეამოწმეთ კავშირი და სცადეთ ხელახლა.",
+    "ჩამოტვირთვა ვერ მოხერხდა. შეამოწმე კავშირი და სცადე ხელახლა.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large":
-    "{kind} არის {size} KiB, რაც {cap} KiB-ის ზღვარს აჭარბებს.",
+  "transfer.too_large": "{kind} არის {size}, რაც {cap}-ის ზღვარს აჭარბებს.",
   "transfer.failed.malformed":
     "დანართი დაზიანებული ჩამოვიდა და ვერ გაიხსნა. სთხოვე, ხელახლა გამოგზავნოს.",
   "transfer.failed.unsupported_type":
@@ -2366,10 +2377,8 @@ export const strings: Strings = {
   "transfer.failed.storage":
     "დანართი ჩამოვიდა, მაგრამ ვერ შეინახა. შეამოწმე თავისუფალი ადგილი.",
   "transfer.badge.waiting": "ელოდება · {name}",
-  "transfer.badge.active_count": "{count} გადაცემა",
   "transfer.badge.sending": "იგზავნება {name}",
   "transfer.badge.receiving": "მიიღება {name}",
-  "transfer.badge.a11y": "{label}, {percent} პროცენტი. საუბრის გახსნა.",
   "transfer.kind.photo": "ფოტო",
   "transfer.kind.video": "ვიდეო",
   "transfer.kind.voice": "ხმოვანი ჩანაწერი",
@@ -2398,10 +2407,11 @@ export const strings: Strings = {
   "notif.notice": "განცხადება · {content}",
   "notif.incoming_file": "შემომავალი ფაილი",
   "notif.preview.photo": "📷 ფოტო",
-  "notif.preview.voice": "🎤 ხმოვანი შეტყობინება",
+  "notif.preview.voice": "🎤 ხმოვანი ჩანაწერი",
   "notif.preview.video": "🎥 ვიდეო",
   "notif.preview.document": "📄 დოკუმენტი",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "Ecash · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "ახალი შეტყობინება",
   "notif.hidden.channel": "ახალი აქტივობა",
@@ -2413,6 +2423,20 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    one: "{count} წუთის წინ",
+    other: "{count} წუთის წინ",
+  },
+  "format.hours_ago": {
+    one: "{count} საათის წინ",
+    other: "{count} საათის წინ",
+  },
+  "format.days_ago": {
+    one: "{count} დღის წინ",
+    other: "{count} დღის წინ",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     one: "კიდევ {count}-ის ჩვენება",
@@ -2465,6 +2489,55 @@ export const plurals: Plurals = {
     other: "{count} საუბრობს",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    one: "კიდევ {count} ელოდება გაგზავნას",
+    other: "კიდევ {count} ელოდება გაგზავნას",
+  },
+  "chat.thread.across_bridge": {
+    one: "{count} ადამიანი ხიდის მიღმა",
+    other: "{count} ადამიანი ხიდის მიღმა",
+  },
+  "chat.thread.go_back_unread": {
+    one: "უკან, {count} წაუკითხავი",
+    other: "უკან, {count} წაუკითხავი",
+  },
+  "chat.thread.notices_new": {
+    one: "ამ არხის განცხადებები, {count} ახალი",
+    other: "ამ არხის განცხადებები, {count} ახალი",
+  },
+  "chat.thread.jump_latest_new": {
+    one: "უახლეს შეტყობინებაზე გადასვლა, {count} ახალი",
+    other: "უახლეს შეტყობინებაზე გადასვლა, {count} ახალი",
+  },
+  "chat.board.urgent_many": {
+    one: "{count} ახალი სასწრაფო განცხადება · გახსენი განცხადებები",
+    other: "{count} ახალი სასწრაფო განცხადება · გახსენი განცხადებები",
+  },
+  "chat.info.add_count": {
+    one: "{count}-ის დამატება",
+    other: "{count}-ის დამატება",
+  },
+  "chat.notices.fades_in_hours": {
+    one: "ქრება {count} საათში",
+    other: "ქრება {count} საათში",
+  },
+  "chat.notices.fades_in_days": {
+    one: "ქრება {count} დღეში",
+    other: "ქრება {count} დღეში",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    one: "ამ სიაში {count} შეტყობინებაა. გასუფთავება მას მხოლოდ აქედან შლის, საუბარში კი ის წაუკითხავად რჩება. ყველას წაკითხულად მონიშვნა ორივეს ასუფთავებს.",
+    other:
+      "ამ სიაში {count} შეტყობინებაა. გასუფთავება მათ მხოლოდ აქედან შლის, საუბრებში კი ისინი წაუკითხავად რჩება. ყველას წაკითხულად მონიშვნა ორივეს ასუფთავებს.",
+  },
+  "chat.notif.clear_all_a11y": {
+    one: "{count} შეტყობინების გასუფთავება",
+    other: "ყველა {count} შეტყობინების გასუფთავება",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     one: "{count} კვანძი მიღწევადია",
@@ -2487,18 +2560,28 @@ export const plurals: Plurals = {
     other: "{count} წევრი",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    one: "მეშ-ხიდი ჩართულია · {count} ადამიანი ხიდის მიღმა",
+    other: "მეშ-ხიდი ჩართულია · {count} ადამიანი ხიდის მიღმა",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    one: "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ მონეტას სამუდამოდ შლის ამ მოწყობილობიდან, და მისი სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
+    one: "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ ბალანსს სამუდამოდ შლის ამ მოწყობილობიდან, და სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
     other:
-      "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ მონეტებს სამუდამოდ შლის ამ მოწყობილობიდან, და მათი სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
+      "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ ბალანსს სამუდამოდ შლის ამ მოწყობილობიდან, და სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
+  },
+  "wallet.mint.split_across": {
+    one: "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
+    other: "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    one: "{count} შენატანი გადახდას ელოდება. აპლიკაციის ყოველი გახსნისას ხელახლა მოწმდება.",
+    one: "{count} შევსება გადახდას ელოდება. აპლიკაციის ყოველი გახსნისას ხელახლა მოწმდება.",
     other:
-      "{count} შენატანი გადახდას ელოდება. აპლიკაციის ყოველი გახსნისას ხელახლა მოწმდება.",
+      "{count} შევსება გადახდას ელოდება. აპლიკაციის ყოველი გახსნისას ხელახლა მოწმდება.",
   },
 
   // ---- Wallet: recovery phrase ----
@@ -2507,9 +2590,9 @@ export const plurals: Plurals = {
     other: "{mints}-იდან აღდგა {count} დაუხარჯავი მონეტა.",
   },
   "wallet.backup.already_spent": {
-    one: "მოიძებნა {count} მონეტა, მაგრამ ის უკვე დახარჯულია, ამიტომ მისთვის არაფერი ჩაირიცხა. ეს ნორმალურია: ყოველი მონეტა, რომელიც ოდესმე დახარჯე, რჩება ზარაფხანის ჩანაწერებში.",
+    one: "მოიძებნა {count} მონეტა, მაგრამ ის უკვე დახარჯულია, ამიტომ არაფერი ჩაირიცხა. ეს ნორმალურია: ყოველი მონეტა, რომელიც ოდესმე დახარჯე, რჩება ზარაფხანის ჩანაწერებში.",
     other:
-      "მოიძებნა {count} მონეტა, მაგრამ ისინი უკვე დახარჯულია, ამიტომ მათთვის არაფერი ჩაირიცხა. ეს ნორმალურია: ყოველი მონეტა, რომელიც ოდესმე დახარჯე, რჩება ზარაფხანის ჩანაწერებში.",
+      "მოიძებნა {count} მონეტა, მაგრამ ისინი უკვე დახარჯულია, ამიტომ არაფერი ჩაირიცხა. ეს ნორმალურია: ყოველი მონეტა, რომელიც ოდესმე დახარჯე, რჩება ზარაფხანის ჩანაწერებში.",
   },
 
   // ---- Wallet: pending and activity ----
@@ -2535,9 +2618,38 @@ export const plurals: Plurals = {
     other: "{count} მონეტა უკვე დახარჯული იყო და წაიშალა.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    one: "გახსნილია {count} რადიოკავშირი",
+    other: "გახსნილია {count} რადიოკავშირი",
+  },
+  "settings.general.undo_seconds": {
+    one: "{count} წამი",
+    other: "{count} წამი",
+  },
+  "settings.network.custom_added": {
+    one: "დამატებულია {count} / {max}",
+    other: "დამატებულია {count} / {max}",
+  },
+  "settings.network.relay_limit": {
+    one: "შეგიძლია {count} რელეს დამატება. წაშალე ის, რომ სხვა დაამატო.",
+    other: "შეგიძლია {count} რელეს დამატება. ერთი წაშალე, რომ სხვა დაამატო.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    one: "{count} გადაცემა",
+    other: "{count} გადაცემა",
+  },
+  "transfer.badge.a11y": {
+    one: "{label}, {count} პროცენტი. საუბრის გახსნა.",
+    other: "{label}, {count} პროცენტი. საუბრის გახსნა.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    one: "ახლოს ვიღაცაა",
+    "=1": "ახლოს ვიღაცაა",
+    one: "ახლოს {count} ადამიანია",
     other: "ახლოს {count} ადამიანია",
   },
 };

@@ -201,14 +201,14 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Без інтернету, без роутера, на телефонах, які в людей уже є.",
   "home.features.networking.lan.name": "Локальна мережа",
-  "home.features.networking.lan.line": "Спільний WiFi або точка доступу, iPhone і Android разом.",
+  "home.features.networking.lan.line": "Спільний Wi-Fi або точка доступу, iPhone і Android разом.",
   "home.features.networking.hops.name": "Ретрансляція ланцюжком",
   "home.features.networking.hops.line":
     "Кожен телефон передає повідомлення далі, до семи переходів.",
   "home.features.networking.bridge.name": "Міст між mesh",
   "home.features.networking.bridge.line":
     "Зв’язує ваш публічний чат із групою поблизу поза межами досяжності.",
-  "home.features.networking.wifi.name": "Швидкий шлях через WiFi",
+  "home.features.networking.wifi.name": "Швидкий шлях через Wi-Fi",
   "home.features.networking.wifi.line": "Швидша передача між двома Android або двома iPhone.",
   "home.features.networking.bitchat.name": "Сумісність із bitchat",
   "home.features.networking.bitchat.line": "Обидва застосунки входять в одну mesh без налаштувань.",

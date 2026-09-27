@@ -11,7 +11,12 @@ import {
   PRIVATE_MESSAGE_MAX_CONTENT_BYTES,
   encodePrivateMessagePacket,
 } from "@core/mesh/wire/noise-payload";
-import { truncateToUtf8Bytes, utf8ByteLength } from "../utf8-budget";
+import {
+  isCharacterBoundary,
+  truncateToCodePoints,
+  truncateToUtf8Bytes,
+  utf8ByteLength,
+} from "../utf8-budget";
 
 describe("utf8ByteLength", () => {
   it("counts bytes, not characters", () => {
@@ -134,5 +139,44 @@ describe("truncateToUtf8Bytes cuts on a boundary a script can survive", () => {
   it("leaves text that already fits exactly as written", () => {
     // Backing off runs only after something was dropped.
     expect(truncateToUtf8Bytes(SYLLABLE, 64)).toBe(SYLLABLE);
+  });
+});
+
+describe("truncateToCodePoints", () => {
+  const HA = String.fromCodePoint(0x939);
+  const VIRAMA = String.fromCodePoint(0x94d);
+  const SSA = String.fromCodePoint(0x937);
+
+  it("counts code points, so an emoji is one", () => {
+    const smile = String.fromCodePoint(0x1f600);
+    expect(truncateToCodePoints(smile.repeat(5), 3)).toBe(smile.repeat(3));
+  });
+
+  it("backs off a mark whose conjunct was cut", () => {
+    // HA + VIRAMA + SSA is one conjunct. Cut after the virama, the half-form
+    // would hang off the end; the bare consonant is what stays.
+    expect(truncateToCodePoints(`a${HA}${VIRAMA}${SSA}`, 3)).toBe(`a${HA}`);
+  });
+
+  it("returns text within the limit untouched", () => {
+    expect(truncateToCodePoints(`${HA}${VIRAMA}`, 2)).toBe(`${HA}${VIRAMA}`);
+  });
+});
+
+describe("isCharacterBoundary", () => {
+  it("refuses the middle of a surrogate pair, a mark and a joined emoji", () => {
+    const smile = String.fromCodePoint(0x1f600);
+    expect(isCharacterBoundary(`a${smile}`, 2)).toBe(false);
+    expect(isCharacterBoundary(`a${smile}`, 1)).toBe(true);
+    const syllable = String.fromCodePoint(0x939, 0x940);
+    expect(isCharacterBoundary(syllable, 1)).toBe(false);
+    const family = String.fromCodePoint(0x1f469, 0x200d, 0x1f680);
+    expect(isCharacterBoundary(family, 2)).toBe(false);
+    expect(isCharacterBoundary(family, 3)).toBe(false);
+  });
+
+  it("accepts either end of the text", () => {
+    expect(isCharacterBoundary("abc", 0)).toBe(true);
+    expect(isCharacterBoundary("abc", 3)).toBe(true);
   });
 });

@@ -205,13 +205,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Bez internetu, bez routera, na telefonach, które ludzie już mają.",
   "home.features.networking.lan.name": "Sieć lokalna",
-  "home.features.networking.lan.line": "Wspólne WiFi lub hotspot, iPhone i Android razem.",
+  "home.features.networking.lan.line": "Wspólne Wi-Fi lub hotspot, iPhone i Android razem.",
   "home.features.networking.hops.name": "Przekazywanie wieloskokowe",
   "home.features.networking.hops.line": "Każdy telefon podaje wiadomości dalej, do siedmiu skoków.",
   "home.features.networking.bridge.name": "Most mesh",
   "home.features.networking.bridge.line":
     "Łączy twoją publiczną rozmowę z pobliskim tłumem poza zasięgiem.",
-  "home.features.networking.wifi.name": "Szybka ścieżka WiFi",
+  "home.features.networking.wifi.name": "Szybka ścieżka Wi-Fi",
   "home.features.networking.wifi.line":
     "Szybsze przesyłanie między dwoma Androidami albo dwoma iPhone'ami.",
   "home.features.networking.bitchat.name": "Zgodny z bitchat",

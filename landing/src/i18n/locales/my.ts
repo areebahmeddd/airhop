@@ -208,13 +208,13 @@ const strings: Strings = {
     "အင်တာနက်မလို၊ ရောက်တာမလို၊ လူများလက်ထဲမှာ ရှိပြီးသားဖုန်းများပေါ်တွင်။",
   "home.features.networking.lan.name": "ဒေသတွင်းကွန်ရက်",
   "home.features.networking.lan.line":
-    "မျှဝေ WiFi သို့မဟုတ် hotspot ဖြင့် iPhone နှင့် Android အတူတကွ။",
+    "မျှဝေ Wi-Fi သို့မဟုတ် hotspot ဖြင့် iPhone နှင့် Android အတူတကွ။",
   "home.features.networking.hops.name": "အဆင့်များစွာ ထပ်ဆင့်ပို့ခြင်း",
   "home.features.networking.hops.line": "ဖုန်းတိုင်းက စာများကို ဆက်ပို့ပေးပြီး ခုနစ်ဆင့်အထိ။",
   "home.features.networking.bridge.name": "Mesh တံတား",
   "home.features.networking.bridge.line":
     "သင့်အများပြည်သူစကားပြောခန်းကို အကွာအဝေးပြင်ပရှိ အနီးအနားလူစုနှင့် ချိတ်ဆက်ပေးသည်။",
-  "home.features.networking.wifi.name": "WiFi အမြန်လမ်း",
+  "home.features.networking.wifi.name": "Wi-Fi အမြန်လမ်း",
   "home.features.networking.wifi.line":
     "Android နှစ်လုံး သို့မဟုတ် iPhone နှစ်လုံးကြား ပိုမြန်သောလွှဲပြောင်းမှု။",
   "home.features.networking.bitchat.name": "bitchat နှင့် တွဲသုံးနိုင်",

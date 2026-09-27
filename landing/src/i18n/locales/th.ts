@@ -195,12 +195,12 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "ไม่ต้องมีอินเทอร์เน็ต ไม่ต้องมีเราเตอร์ บนโทรศัพท์ที่ผู้คนมีอยู่แล้ว",
   "home.features.networking.lan.name": "เครือข่ายท้องถิ่น",
-  "home.features.networking.lan.line": "WiFi เดียวกันหรือฮอตสปอต ใช้ได้ทั้ง iPhone และ Android",
+  "home.features.networking.lan.line": "Wi-Fi เดียวกันหรือฮอตสปอต ใช้ได้ทั้ง iPhone และ Android",
   "home.features.networking.hops.name": "ส่งต่อหลายทอด",
   "home.features.networking.hops.line": "ทุกเครื่องช่วยส่งข้อความต่อ ได้ถึงเจ็ดทอด",
   "home.features.networking.bridge.name": "สะพานเมช",
   "home.features.networking.bridge.line": "เชื่อมแชทสาธารณะของคุณกับกลุ่มคนใกล้ ๆ ที่อยู่นอกระยะ",
-  "home.features.networking.wifi.name": "ทางลัด WiFi",
+  "home.features.networking.wifi.name": "ทางลัด Wi-Fi",
   "home.features.networking.wifi.line":
     "โอนถ่ายเร็วขึ้นระหว่าง Android สองเครื่อง หรือ iPhone สองเครื่อง",
   "home.features.networking.bitchat.name": "ใช้ร่วมกับ bitchat ได้",

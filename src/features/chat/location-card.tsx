@@ -17,6 +17,7 @@ import {
   hasLocationPermission,
 } from "@services/location-service";
 import type { ChatMessage } from "@store/chat-store";
+import UpperText from "@ui/components/upper-text";
 import {
   FontFamily,
   FontSize,
@@ -142,7 +143,7 @@ export default function LocationCard({
         </View>
 
         <View style={styles.text}>
-          <Text style={styles.title}>{T("chat.location.title")}</Text>
+          <UpperText style={styles.title}>{T("chat.location.title")}</UpperText>
           {isMine ? null : relative !== null ? (
             <Text style={styles.distance}>
               {t("chat.location.away", {
@@ -224,7 +225,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.medium,
       color: Colors.textMuted,
-      textTransform: "uppercase",
       letterSpacing: 0.6,
     },
     distance: {

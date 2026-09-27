@@ -207,13 +207,13 @@ const strings: Strings = {
   "home.features.networking.mesh.line":
     "Sem Internet, sem router, em telemóveis que as pessoas já têm.",
   "home.features.networking.lan.name": "Rede local",
-  "home.features.networking.lan.line": "WiFi partilhado ou um hotspot, iPhone e Android juntos.",
+  "home.features.networking.lan.line": "Wi-Fi partilhado ou um hotspot, iPhone e Android juntos.",
   "home.features.networking.hops.name": "Retransmissão em vários saltos",
   "home.features.networking.hops.line": "Cada telemóvel passa as mensagens, até sete saltos.",
   "home.features.networking.bridge.name": "Ponte mesh",
   "home.features.networking.bridge.line":
     "Liga a sua conversa pública a um grupo próximo fora de alcance.",
-  "home.features.networking.wifi.name": "Atalho por WiFi",
+  "home.features.networking.wifi.name": "Atalho por Wi-Fi",
   "home.features.networking.wifi.line":
     "Transferências mais rápidas entre dois Androids ou dois iPhones.",
   "home.features.networking.bitchat.name": "Compatível com bitchat",

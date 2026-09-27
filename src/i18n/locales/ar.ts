@@ -28,9 +28,6 @@ export const strings: Strings = {
   // ---- Dates ----
   "format.today": "اليوم",
   "format.yesterday": "أمس",
-  "format.minutes_ago": "قبل {count} د",
-  "format.hours_ago": "قبل {count} س",
-  "format.days_ago": "قبل {count} ي",
   "format.just_now": "الآن",
 
   // ---- App shell: tabs, sub-tabs, search ----
@@ -249,6 +246,7 @@ export const strings: Strings = {
   "chat.group_badge": "مجموعة",
   "chat.more": "المزيد",
   "chat.no_messages": "لا توجد رسائل بعد",
+  "chat.sender_preview": "{sender}: {preview}",
   "chat.presence.nearby_none": "لا أحد بالجوار",
   "chat.presence.active_none": "لا أحد نشط",
   "chat.you": "أنت",
@@ -319,6 +317,7 @@ export const strings: Strings = {
   "chat.jump.failed": "تعذّر فتح تلك الخلية. حاول بعد قليل.",
   "chat.jump.title": "اذهب إلى مكان",
   "chat.jump.saved": "الأماكن المحفوظة",
+  "chat.jump.nearby": "بالجوار",
   "chat.jump.anywhere": "افتح قناة موقع عامة في أي مكان، حتى مكان لست فيه.",
   "chat.jump.geohash_note":
     "أدخل الجيوهاش الخاص به. كل من يقع موقعه في تلك الخلية يشارك القناة.",
@@ -326,7 +325,22 @@ export const strings: Strings = {
     "ستظهر كمنتقل عن بُعد، لا كقريب. وتصل القناة عبر الإنترنت فقط.",
   "chat.jump.level_cell": "خلية {level}",
   "chat.jump.already_here": "أنت هنا بالفعل. اذهب يفتح قناة {name} الخاصة بك.",
-  "chat.jump.open_direction": "افتح الخلية إلى {direction}",
+  "chat.jump.dir.n": "ش",
+  "chat.jump.dir.ne": "ش ق",
+  "chat.jump.dir.e": "ق",
+  "chat.jump.dir.se": "ج ق",
+  "chat.jump.dir.s": "ج",
+  "chat.jump.dir.sw": "ج غ",
+  "chat.jump.dir.w": "غ",
+  "chat.jump.dir.nw": "ش غ",
+  "chat.jump.open_n": "افتح الخلية الواقعة إلى الشمال",
+  "chat.jump.open_ne": "افتح الخلية الواقعة إلى الشمال الشرقي",
+  "chat.jump.open_e": "افتح الخلية الواقعة إلى الشرق",
+  "chat.jump.open_se": "افتح الخلية الواقعة إلى الجنوب الشرقي",
+  "chat.jump.open_s": "افتح الخلية الواقعة إلى الجنوب",
+  "chat.jump.open_sw": "افتح الخلية الواقعة إلى الجنوب الغربي",
+  "chat.jump.open_w": "افتح الخلية الواقعة إلى الغرب",
+  "chat.jump.open_nw": "افتح الخلية الواقعة إلى الشمال الغربي",
   "chat.jump.open_place": "فتح {name}",
   "chat.jump.remove_place": "إزالة {name} من الأماكن المحفوظة",
   "chat.jump.go": "اذهب",
@@ -444,18 +458,13 @@ export const strings: Strings = {
   "chat.thread.cancel_transfer": "إلغاء {name}",
   "chat.thread.hide_transfer": "إخفاء التقدّم",
   "chat.thread.hide_transfer_hint": "سيصل الملف رغم ذلك",
-  "chat.thread.queued_more": "{count} أخرى بانتظار الإرسال",
-  "chat.thread.across_bridge": "{count} عبر الجسر",
   "chat.thread.bridged": "مجسّرة",
   "chat.thread.invite_body":
     "انضم إليّ في {channel} على Airhop — مراسلة خاصة عبر الشبكة تعمل دون إنترنت أولًا.",
-  "chat.thread.go_back_unread": "رجوع، {count} غير مقروءة",
   "chat.thread.view_info": "عرض معلومات {name}",
-  "chat.thread.notices_new": "إعلانات هذه القناة، {count} جديدة",
   "chat.board.urgent_one": "إعلان عاجل من {author} · {content}",
-  "chat.board.urgent_many": "{count} إعلانات عاجلة جديدة · افتح الإعلانات",
+  "chat.board.urgent_one_anon": "إعلان عاجل · {content}",
   "chat.thread.say_something": "قل شيئًا في {channel}.",
-  "chat.thread.jump_latest_new": "الانتقال إلى أحدث رسالة، {count} جديدة",
   "chat.thread.unconfirmed_since": "لم يُؤكَّد أي تسليم منذ {date}",
   "chat.thread.no_reach": "لا نظراء بالجوار · لم يستلمها أحد بعد",
   "chat.thread.channel_needs_internet":
@@ -489,7 +498,7 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "التقطت لقطة شاشة",
   "chat.screenshot.you_took_private": "التقطت لقطة شاشة · لم يُبلَّغ أحد",
   "chat.screenshot.heads_up": "تنبيه",
-  "chat.screenshot.notice": "* التقط {name} لقطة شاشة *",
+  "chat.screenshot.peer_took": "التقط {name} لقطة شاشة",
   "chat.screenshot.notified_dm":
     "أُبلغ {name} بأنك التقطت لقطة شاشة لهذه المحادثة.",
   "chat.screenshot.notified":
@@ -534,7 +543,7 @@ export const strings: Strings = {
   "chat.attach.document": "مستند",
   "chat.attach.document_desc": "أرسل أي ملف أو PDF",
   "chat.attach.voice": "ملاحظة صوتية",
-  "chat.attach.voice_desc": "سجّل رسالة صوتية وأرسلها",
+  "chat.attach.voice_desc": "سجّل ملاحظة صوتية وأرسلها",
   "chat.attach.ecash": "إرسال نقد إلكتروني",
   "chat.attach.ecash_desc": "أرسل ساتس Cashu من محفظتك",
   "chat.attach.location": "الموقع",
@@ -542,7 +551,7 @@ export const strings: Strings = {
   "chat.attach.title": "إرفاق",
 
   // ---- Chat: location pin ----
-  "chat.location.sent_summary": "شاركت موقعًا",
+  "chat.location.sent_summary": "تمت مشاركة الموقع",
   "chat.location.received_summary": "شارك موقعه",
   "chat.location.title": "الموقع",
   "chat.location.away": "{distance} {direction}",
@@ -573,15 +582,15 @@ export const strings: Strings = {
   "chat.location.direction.nw": "شمال غرب",
 
   // ---- Chat: ring ----
-  "chat.ring.sent_summary": "رنّ",
+  "chat.ring.sent_summary": "أُرسل الرنين",
   "chat.ring.received_summary": "رنّ لك",
   "chat.ring.alert.title": "{sender} يرنّ لك",
   "chat.ring.alert.body": "تحقق من رسائلك",
   "chat.ring.alert.open": "فتح",
   "chat.ring.alert.snooze": "تأجيل لمدة ساعة واحدة",
-  "chat.ring.sent_snoozed": "رنّ، مؤجَّل",
-  "chat.ring.sent_too_soon": "رنّ، مبكر جدًا",
-  "chat.ring.sent_not_allowed": "رنّ، غير مسموح",
+  "chat.ring.sent_snoozed": "أُرسل الرنين · مؤجَّل",
+  "chat.ring.sent_too_soon": "أُرسل الرنين · مبكر جدًا",
+  "chat.ring.sent_not_allowed": "أُرسل الرنين · غير مسموح",
   "chat.attach.send_anyway": "أرسل على أي حال",
   "chat.attach.bitchat_too_big": "قد لا يصل هذا",
   "chat.attach.bitchat_too_big_body":
@@ -653,6 +662,7 @@ export const strings: Strings = {
   "chat.voice.stop_send": "إيقاف التسجيل والإرسال",
   "chat.voice.lift_lock": "اسحب لأعلى للتسجيل دون استخدام اليدين",
   "chat.voice.live_speaking": "{name} يتحدث",
+  "chat.voice.live_ended": "انتهى",
   "voice.unavailable": "الصوت المباشر غير متاح",
   "voice.recording_stopped": "توقف التسجيل",
 
@@ -710,7 +720,6 @@ export const strings: Strings = {
   "chat.info.remove_member_a11y": "إزالة {name}",
   "chat.info.no_addable":
     "لا نظراء متاحون للإضافة. يجب أن يكون الأعضاء بالجوار.",
-  "chat.info.add_count": "إضافة {count}",
   "chat.info.teleported_tag": "{level}  ·  عن بُعد",
   "chat.info.active": "نشط",
   "chat.info.members": "الأعضاء",
@@ -791,8 +800,6 @@ export const strings: Strings = {
   "chat.notices.3_days": "3 أيام",
   "chat.notices.7_days": "7 أيام",
   "chat.notices.fading": "يختفي",
-  "chat.notices.fades_in_hours": "يختفي خلال {count} س",
-  "chat.notices.fades_in_days": "يختفي خلال {count} ي",
   "chat.notices.scope_geo": "جغرافي",
   "chat.notices.scope_mesh": "الشبكة",
   "chat.notices.urgent_short": "عاجل",
@@ -808,10 +815,20 @@ export const strings: Strings = {
   "chat.search.links": "الروابط",
   "chat.search.ecash": "النقد الإلكتروني",
   "chat.search.filter_by": "تصفية حسب {filter}",
-  "chat.search.no_matches": "لا {filter} تطابق «{query}»",
-  "chat.search.no_media": "لا {filter} بعد",
+  "chat.search.no_photos": "لا صور بعد",
+  "chat.search.no_videos": "لا مقاطع فيديو بعد",
+  "chat.search.no_audio": "لا مقاطع صوتية بعد",
+  "chat.search.no_documents": "لا مستندات بعد",
+  "chat.search.no_links": "لا روابط بعد",
+  "chat.search.no_ecash": "لا نقد إلكتروني بعد",
+  "chat.search.no_photos_matching": "لا صور تطابق «{query}»",
+  "chat.search.no_videos_matching": "لا مقاطع فيديو تطابق «{query}»",
+  "chat.search.no_audio_matching": "لا مقاطع صوتية تطابق «{query}»",
+  "chat.search.no_documents_matching": "لا مستندات تطابق «{query}»",
+  "chat.search.no_links_matching": "لا روابط تطابق «{query}»",
+  "chat.search.no_ecash_matching": "لا نقد إلكتروني يطابق «{query}»",
   "chat.search.result_a11y": "{chat}، {kind} من {sender}",
-  "chat.search.you": "أنت",
+  "chat.search.result_mine_a11y": "{chat}، {kind} أرسلتها أنت",
   "chat.search.section_chats": "المحادثات",
   "chat.search.section_messages": "الرسائل",
   "chat.search.section_notices": "الإعلانات",
@@ -819,15 +836,13 @@ export const strings: Strings = {
   "chat.search.no_results": "لا نتائج لـ «{query}»",
   "chat.search.open_chat": "فتح {name}",
   "chat.search.message_a11y": "{chat}، رسالة من {sender}: {snippet}",
+  "chat.search.message_mine_a11y": "{chat}، رسالتك: {snippet}",
   "chat.search.notice_a11y": "إعلان في {chat} من {author}: {snippet}",
   "chat.search.urgent": "عاجل ·",
 
   // ---- Chats: notification center ----
-  "chat.notif.actions_body":
-    "{count} في هذه القائمة. المسح يزيلها من هنا فقط، وتبقى الرسائل غير مقروءة في محادثاتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
   "chat.notif.mark_all_read": "وسم الكل كمقروء",
   "chat.notif.clear_list": "مسح القائمة",
-  "chat.notif.clear_all_a11y": "مسح كل الإشعارات البالغة {count}",
   "chat.notif.title": "الإشعارات",
   "chat.notif.clear_short": "مسح",
   "chat.notif.close": "إغلاق الإشعارات",
@@ -850,12 +865,15 @@ export const strings: Strings = {
   "chat.forward.locations": "المواقع",
   "chat.forward.dms": "الرسائل المباشرة",
   "chat.forward.none": "لا محادثات أخرى بعد",
+  "chat.forward.app_row": "لم تتم إعادة التوجيه",
+  "chat.forward.app_row_body":
+    "هذا السطر من Airhop وليس من شخص، فلا يوجد ما يُعاد توجيهه.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "جارٍ تشغيل الشبكة…",
   "mesh.banner.no_bluetooth": "لا بلوتوث على هذا الجهاز · الإنترنت فقط",
   "mesh.banner.bluetooth_off": "البلوتوث معطّل · الشبكة غير متاحة",
-  "mesh.banner.bluetooth_off_wifi": "البلوتوث معطّل · الشبكة تعمل عبر WiFi",
+  "mesh.banner.bluetooth_off_wifi": "البلوتوث معطّل · الشبكة تعمل عبر Wi-Fi",
   "mesh.banner.permission_needed": "إذن البلوتوث مطلوب",
   "mesh.banner.blocked": "البلوتوث محظور · اسمح به من الإعدادات",
   "mesh.banner.location_permission": "الموقع مطلوب للعثور على النظراء",
@@ -870,7 +888,7 @@ export const strings: Strings = {
     "المسح غير مكتمل · قد تبقى بعض البيانات، وتُعاد المحاولة عند إعادة الفتح",
   "mesh.banner.identity_elsewhere":
     "هويتك موجودة على هاتف آخر أيضًا · امسح الهاتف الذي لا تستخدمه",
-  "mesh.banner.wifi_off": "الواي فاي معطّل · الملفات الكبيرة تُرسل أبطأ",
+  "mesh.banner.wifi_off": "Wi-Fi معطّل · الملفات الكبيرة تُرسل أبطأ",
   "mesh.banner.clock_skew":
     "ساعة هذا الهاتف خاطئة · اضبط التاريخ والوقت تلقائيًا",
   "mesh.banner.internet_off": "الإنترنت معطّل · البلوتوث فقط",
@@ -881,7 +899,6 @@ export const strings: Strings = {
   "mesh.banner.gateway": "بوابة الإنترنت مفعّلة · جارٍ تمرير النظراء القريبين",
   "mesh.banner.bridge": "جسر الشبكة مفعّل · المحادثة العامة موصولة",
   "mesh.banner.background_limits": "قد يوقف {brand} الشبكة في الخلفية",
-  "mesh.banner.bridge_across": "جسر الشبكة مفعّل · {count} عبر الجسر",
   "mesh.banner.action.turn_on": "تفعيل",
   "mesh.banner.action.allow": "السماح",
   "mesh.banner.action.resume": "استئناف",
@@ -950,7 +967,7 @@ export const strings: Strings = {
   "mesh.peer.view_peer_online": "عرض النظير {name}، متصل",
   "mesh.peer.view_relay_online": "عرض النظير {name}، متصل، عقدة تمرير",
   "mesh.peer.last_seen_at": "آخر ظهور {ago}",
-  "mesh.peer.send_amount": "إرسال {amount} ساتس",
+  "mesh.peer.send_unit_amount": "إرسال {amount} {unit}",
   "mesh.peer.direct": "اتصال مباشر",
   "mesh.peer.check_distance": "قياس المسافة",
   "mesh.peer.checking": "جارٍ القياس",
@@ -1020,7 +1037,7 @@ export const strings: Strings = {
   "wallet.send.qr_too_big_short":
     "هذا التوكن مقسّم على عملات أكثر من أن تتسع في رمز استجابة سريعة. شاركه أو انسخه بدلًا من ذلك.",
   "wallet.send.scan_note":
-    "اطلب منهم مسحه من محفظتهم. ويبقى قابلًا للاسترجاع حتى تضع علامة أنه سُلّم.",
+    "اطلب منهم مسحه من محفظتهم. ويبقى قابلًا للاسترجاع حتى تَسِمه كمستلَم.",
   "wallet.send.mesh_note":
     "يخرج التوكن كرسالة مباشرة مشفّرة عبر الشبكة. لا حاجة إلى إنترنت.",
   "wallet.send.no_peers_note":
@@ -1041,7 +1058,7 @@ export const strings: Strings = {
   "wallet.send.open_in_wallet_short": "فتح في محفظة",
   "wallet.send.to_peer": "إرسال التوكن إلى نظير قريب",
   "wallet.send.to_peer_short": "إرسال إلى نظير",
-  "wallet.send.mark_delivered": "وسمه كمُسلَّم وإنهاء",
+  "wallet.send.mark_delivered": "وسمه كمستلَم",
   "wallet.send.they_got_it": "وصلهم",
   "wallet.send.keep_pending": "أبقِ هذا الإرسال معلّقًا",
   "wallet.send.decide_later": "قرّر لاحقًا",
@@ -1065,9 +1082,10 @@ export const strings: Strings = {
   "wallet.receive.memo_quoted": "\n\n«{memo}»",
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
-  "wallet.receive.stored_pending":
-    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق{dleq}. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
-  "wallet.receive.dleq_inline": " (توقيعه صحيح فعلًا، فالتوكن أصلي)",
+  "wallet.receive.pending_unconfirmed":
+    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
+  "wallet.receive.pending_unconfirmed_genuine":
+    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. توقيعه صحيح، فالتوكن أصلي. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
   "wallet.receive.dleq_ok": "توقيع دار السك صحيح، فالتوكن أصلي.",
   "wallet.receive.dleq_uncached":
     "مفاتيح دار السك غير مخزّنة هنا، لذا تعذّر فحص التوقيع دون اتصال.",
@@ -1129,8 +1147,6 @@ export const strings: Strings = {
   "wallet.mint.consolidate": "نقل كل الأرصدة إلى دار سك واحدة",
   "wallet.mint.confirm_with": "تحقّق من الرصيد مع {mint}",
   "wallet.mint.available_amount": "{amount} {unit} متاحة",
-  "wallet.mint.split_across":
-    "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
   "wallet.mint.move_everything_to": "نقل كل شيء إلى {mint}",
   "wallet.mint.consolidate_title": "النقل إلى دار سك واحدة",
   "wallet.mint.moving": "جارٍ النقل…",
@@ -1141,10 +1157,11 @@ export const strings: Strings = {
   "wallet.mint.nothing_moved": "لم يُنقل شيء",
   "wallet.mint.move_pending": "في الطريق",
   "wallet.mint.deposit_pending":
-    "غادر {amount} {unit} ‏{mint} وهو في طريقه إلى {target}. يصل بمجرد المطالبة بالإيداع، وتواصل المحفظة المحاولة.",
+    "غادر {amount} {unit} ‏{mint} وهو في طريقه إلى {target}. يصل بمجرد استلام التحويل، وتواصل المحفظة المحاولة.",
   "wallet.mint.destination": "· الوجهة",
   "wallet.mint.will_move": "· ستُنقل",
   "wallet.mint.issued_by": "صادرة عن",
+  "wallet.mint.test_badge": "تجريبية",
 
   // ---- Wallet: Lightning ----
   "wallet.ln.deposit_memo": "شحن محفظة Airhop",
@@ -1170,7 +1187,7 @@ export const strings: Strings = {
   "wallet.ln.up_to": "حتى {amount} {unit}",
   "wallet.ln.amount_unit": "{amount} {unit}",
   "wallet.ln.pay_amount": "دفع {amount} {unit}",
-  "wallet.ln.deposit_title": "الإيداع عبر Lightning",
+  "wallet.ln.deposit_title": "اشحن عبر Lightning",
   "wallet.ln.amount_placeholder": "المبلغ بالساتس",
   "wallet.ln.requesting": "جارٍ الطلب…",
   "wallet.ln.get_invoice": "احصل على فاتورة",
@@ -1202,7 +1219,7 @@ export const strings: Strings = {
     "لديك عبارة استعادة بالفعل. استعادة عبارة مختلفة تستبدلها. العملات التي تغطيها العبارة القديمة تبقى قابلة للإنفاق على هذا الجهاز، لكنها تتوقف عن كونها قابلة للاستعادة، فتأكد من كتابة الكلمات القديمة قبل المتابعة.",
   "wallet.backup.replace": "استبدال",
   "wallet.backup.replace_unseen_body":
-    "لهذه المحفظة عبارة استرداد أُنشئت لك عند إعدادها، وقد صُنعت عملاتك بها. استعادة عبارة مختلفة تستبدلها نهائيًا. تبقى العملات قابلة للإنفاق على هذا الجهاز وتنتقل إلى العبارة الجديدة عند تحديث كل دار سك في المرة القادمة.",
+    "لهذه المحفظة عبارة استعادة أُنشئت لك عند إعدادها، وقد صُنعت عملاتك بها. استعادة عبارة مختلفة تستبدلها نهائيًا. تبقى العملات قابلة للإنفاق على هذا الجهاز وتنتقل إلى العبارة الجديدة عند تحديث كل دار سك في المرة القادمة.",
   "wallet.backup.invalid_phrase": "هذه العبارة غير صالحة",
   "wallet.backup.invalid_phrase_body":
     "للعبارة مجموع تحقق مدمج وهذه لا تجتازه. تحقق من كلمة مكتوبة خطأ أو ناقصة أو مبدّلة.",
@@ -1290,7 +1307,7 @@ export const strings: Strings = {
   "wallet.reclaim.claimed_body":
     "تقول دار السك إن هذا التوكن صُرف بالفعل، لذا وصلتهم الـ {amount} {unit} ولم يعد شيء إلى رصيدك.",
   "wallet.copied.token_body":
-    "التوكن في حافظتك. ويبقى محجوزًا هنا حتى تضع علامة أنه سُلّم، فيمكنك لصقه مرة أخرى إن فشلت المحاولة الأولى.",
+    "التوكن في حافظتك. ويبقى محجوزًا هنا حتى تَسِمه كمستلَم، فيمكنك لصقه مرة أخرى إن فشلت المحاولة الأولى.",
   "wallet.copied.refused_token_body":
     "التوكن في حافظتك. لم تعد هذه المحفظة تحسبه، فيمكنك إعادته إلى من أرسله.",
   "wallet.copied.phrase_body":
@@ -1314,8 +1331,8 @@ export const strings: Strings = {
   "wallet.pending.show_qr": "عرض هذا التوكن كرمز استجابة سريعة",
   "wallet.pending.copy_again": "نسخ التوكن مرة أخرى",
   "wallet.pending.share_again": "مشاركة التوكن مرة أخرى",
-  "wallet.pending.mark_delivered": "وسم هذا التوكن كمُسلَّم",
-  "wallet.pending.delivered": "سُلّم",
+  "wallet.pending.mark_delivered": "وسمه كمستلَم",
+  "wallet.pending.delivered": "استُلم",
   "wallet.pending.reclaim_into": "استرجاع هذا التوكن إلى رصيدك",
   "wallet.activity.title": "النشاط",
   "wallet.activity.none": "لا شيء بعد",
@@ -1333,7 +1350,7 @@ export const strings: Strings = {
   "wallet.activity.status_failed": "فشلت",
   "wallet.activity.status_reclaimed": "مسترجعة",
   "wallet.activity.status_expired": "منتهية",
-  "wallet.activity.ln_deposit": "إيداع Lightning",
+  "wallet.activity.ln_deposit": "شحن Lightning",
   "wallet.activity.ln_withdrawal": "سحب Lightning",
   "wallet.activity.nutzap_received": "وصل نَتزاب",
   "wallet.activity.nutzap_claiming": "Nutzap، جارٍ الاستلام",
@@ -1375,7 +1392,13 @@ export const strings: Strings = {
   "wallet.pay.final":
     "لا يمكن استرجاع المدفوعات المقفلة: مفتاحهم وحده يستطيع إنفاق هذه العملات الآن.",
   "wallet.pay.reclaimable": "تبقى قابلة للاسترجاع من «النشاط» حتى تؤكد وصولها.",
-  "wallet.pay.why": "أُرسلت بهذه الطريقة لأن {reason}.",
+  "wallet.pay.why_no_relay": "أُرسلت بهذه الطريقة لعدم وجود اتصال بمُرحِّل.",
+  "wallet.pay.why_no_shared_mint":
+    "أُرسلت بهذه الطريقة لأنك لا تملك رصيدًا كافيًا في أي دار سك يقبلها المستلم.",
+  "wallet.pay.why_no_nutzap_info":
+    "أُرسلت بهذه الطريقة لأن المستلم لم ينشر معلومات نَتزاب (NIP-61 نوع 10019).",
+  "wallet.pay.result": "{rail} {finality}",
+  "wallet.pay.result_why": "{rail} {reason} {finality}",
   "wallet.pay.sent_title": "{amount} {unit} إلى {name}",
   "wallet.pay.thread_receipt": "أرسلت {amount} {unit}، مقفلة على مفتاحهم.",
   "wallet.pay.title": "إرسال نقد إلكتروني",
@@ -1515,19 +1538,19 @@ export const strings: Strings = {
     "لم يُخصم شيء. حاول مرة أخرى وستختار المحفظة مجموعة مختلفة.",
   "wallet.svc.no_ecash": "لا نقد إلكتروني بعد.",
   "wallet.svc.no_ecash_body":
-    "أضف دار سك وأودع عبر Lightning، أو استقبل توكنًا من أحدهم.",
+    "أضف دار سك واشحن عبر Lightning، أو استقبل توكنًا من أحدهم.",
   "wallet.svc.split_across_mints": "رصيدك موزّع على عدة دور سك.",
   "wallet.svc.mint_says_spent":
     "أبلغت دار السك أن هذا النقد الإلكتروني منفق بالفعل.",
   "wallet.svc.issue_against_invoice":
     "إصدار نقد إلكتروني مقابل فاتورة Lightning",
   "wallet.svc.pay_invoice": "دفع فاتورة Lightning",
-  "wallet.svc.unknown_deposit": "إيداع غير معروف.",
+  "wallet.svc.unknown_deposit": "شحن غير معروف.",
   "wallet.svc.invoice_expired_before": "انتهت صلاحية الفاتورة قبل دفعها.",
   "wallet.svc.invoice_expired": "انتهت صلاحية تلك الفاتورة.",
   "wallet.svc.invoice_unpaid": "لم تُدفع الفاتورة بعد.",
-  "wallet.svc.payment_unknown":
-    "حالة الدفع غير معروفة؛ ستُفحص مرة أخرى عند التحديث القادم.",
+  "wallet.svc.payment_unknown_after":
+    "{reason} حالة الدفع غير معروفة؛ ستُفحص مرة أخرى عند التحديث القادم.",
   "wallet.svc.melt_change_pending": "دُفعت فاتورتك.",
   "wallet.svc.melt_change_pending_body":
     "لم تُعد دار السك رسوم التوجيه غير المستخدمة بعد. تُطلب تلقائيًا عند التحديث القادم، ولا يضيع شيء في هذه الأثناء.",
@@ -1562,23 +1585,19 @@ export const strings: Strings = {
   "wallet.svc.unknown_mint": "تذكر تلك الدفعة دار سك لا تستخدمها.",
   "wallet.svc.unknown_mint_body":
     "أضف دار السك بنفسك أولًا إن كنت تثق بها؛ فلا يُصرف شيء من دار لم تخترها.",
-  "wallet.svc.no_relay": "لا اتصال بمُرحِّل",
-  "wallet.svc.no_shared_mint": "لا دار سك مشتركة برصيد كافٍ",
-  "wallet.svc.no_nutzap_info":
-    "لم ينشر المستلم معلومات نَتزاب (NIP-61 نوع 10019)",
   "wallet.svc.locked_undelivered":
     "مقفلة على مفتاحهم لكنها لم تُسلَّم بعد. شارك التوكن من هذه المعاملة لإتمامها.",
   "wallet.svc.swap_lost":
     "لم تُكمل دار السك هذا التبديل قط، فلم يُصدر شيء مقابله.",
   "wallet.svc.mint_lost":
-    "أصدر المِنت هذا الإيداع، لكن تعذّر إعادة بناء عملاته. الاستعادة من عبارة الاسترداد تعيدها.",
+    "أصدرت دار السك هذا الشحن، لكن تعذّرت إعادة بناء عملاته. تعيدها الاستعادة من عبارة الاستعادة.",
   "wallet.svc.swap_unreadable":
     "حُفظ هذا التبديل بصيغة لا تستطيع هذه النسخة إعادة تشغيلها.",
   "wallet.svc.lock_in_doubt": "قد يكون هذا الدفع قد تم وقد لا يكون.",
   "wallet.svc.lock_in_doubt_body":
-    "لم يُرسل أي شيء آخر. العملات محجوزة حتى تؤكد دار السك النتيجة. إن تمّ الدفع، يظهر الرمز المقفل في «النشاط» لتسلّمه. وإن لم يتم، تعود العملات.",
+    "لم يُرسل أي شيء آخر. العملات محجوزة حتى تؤكد دار السك النتيجة. إن تمّ الدفع، يظهر التوكن المقفل في «النشاط» لتسلّمه. وإن لم يتم، تعود العملات.",
   "wallet.svc.send_spent_by_swap":
-    "استُبدلت هذه العملات عائدةً إلى محفظتك قبل المطالبة بهذا الرمز، فلم يعد بالإمكان المطالبة به. القيمة موجودة في رصيدك.",
+    "استُبدلت هذه العملات عائدةً إلى محفظتك قبل استلام هذا التوكن، فلم يعد بالإمكان استلامه. القيمة موجودة في رصيدك.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "موثّق عبر رمز الاستجابة السريعة",
@@ -1697,7 +1716,7 @@ export const strings: Strings = {
     "السرية المستقبلية، الحزم الموقّعة، النظراء المحظورون",
   "settings.section.network": "الشبكة والمُرحِّلات",
   "settings.section.network_desc":
-    "الرجوع إلى الإنترنت، مُرحِّلات nostr، التوافق مع bitchat",
+    "الرجوع إلى الإنترنت، مُرحِّلات Nostr، التوافق مع bitchat",
   "settings.section.permissions": "الأذونات",
   "settings.section.permissions_desc":
     "البلوتوث، الموقع، الإشعارات، الكاميرا، الميكروفون",
@@ -1744,12 +1763,10 @@ export const strings: Strings = {
   "settings.diag.rssi": "{dbm} ديسيبل مللي",
   "settings.diag.no_rssi": "لا قراءة إشارة",
   "settings.diag.no_peers": "لا أحد ضمن النطاق",
-  "settings.diag.no_peers_desc": "{links} وصلة لاسلكية مفتوحة",
   "settings.diag.gcs_size": "حجم المرشّح",
   "settings.diag.gcs_size_desc": "أكبر مرشّح مزامنة أُرسل عبر الأثير",
   "settings.diag.fpr": "معدّل الإيجابيات الخاطئة",
   "settings.diag.fpr_desc": "كم مرة يدّعي المرشّح وجود حزمة تنقصنا",
-  "settings.diag.bytes": "{n} بايت",
   "settings.diag.footnote":
     "لا شيء هنا قابل للتغيير. هذه القيم ثابتة ليبقى Airhop متوافقًا مع bitchat.",
   "settings.diag.share": "مشاركة بيانات التشخيص",
@@ -1770,7 +1787,6 @@ export const strings: Strings = {
   "settings.general.undo": "التراجع عن الإرسال",
   "settings.general.feature_ai": "الذكاء الاصطناعي",
   "settings.general.feature_wallet": "المحفظة",
-  "settings.general.undo_seconds": "{count} ثانية",
   "settings.general.undo_a11y": "التراجع عن الإرسال: {value}",
   "settings.general.quality_a11y": "ضبط جودة الرفع على {value}",
   "settings.general.undo_desc":
@@ -1860,7 +1876,6 @@ export const strings: Strings = {
   "settings.network.custom": "مُرحِّلات مخصصة",
   "settings.network.custom_desc":
     "أضف مُرحِّلاتك الخاصة لقنوات الموقع وجسر الشبكة",
-  "settings.network.custom_added": "أُضيف {count} من {max}",
   "settings.network.dm_relays": "مُرحِّلات الرسائل",
   "settings.network.dm_relays_desc":
     "تستخدم الرسائل المباشرة والقنوات الخاصة هذه دائمًا. والمُرحِّلات المخصصة لا تغيّرها.",
@@ -1870,17 +1885,15 @@ export const strings: Strings = {
   "settings.network.add_relay": "إضافة مُرحِّل",
   "settings.network.remove_relay": "إزالة {url}",
   "settings.network.add_short": "إضافة",
-  "settings.network.relay_limit":
-    "يمكنك إضافة {count} مُرحِّلات. أزل واحدًا لإضافة آخر.",
   "settings.network.relay_duplicate": "هذا المُرحِّل موجود في قائمتك بالفعل.",
   "settings.network.relay_invalid":
     "أدخل مضيف مُرحِّل صالحًا، مثل relay.example.com. المنفذ مطلوب فقط إن كان المُرحِّل لا يستخدم الافتراضي. عناوين IP والأسماء المحلية غير مسموح بها.",
   "settings.network.lan": "الشبكة المحلية",
   "settings.network.lan_desc":
-    "تواصل مع من هم على شبكة WiFi نفسها، بما في ذلك بين iPhone وAndroid. يمكن للأجهزة الأخرى على الشبكة أن ترى أنك تشغّل Airhop.",
+    "تواصل مع من هم على شبكة Wi-Fi نفسها، بما في ذلك بين iPhone وAndroid. يمكن للأجهزة الأخرى على الشبكة أن ترى أنك تشغّل Airhop.",
   "settings.network.lan_searching": "لا توجد أجهزة Airhop على هذه الشبكة",
   "settings.network.lan_active": "متصل على هذه الشبكة",
-  "settings.network.lan_unavailable": "لست على شبكة WiFi",
+  "settings.network.lan_unavailable": "لست على شبكة Wi-Fi",
   "settings.network.lan_permission":
     "الوصول إلى الشبكة المحلية معطّل لتطبيق Airhop",
   "settings.network.lan_unsupported": "غير متاح على هذا الجهاز",
@@ -1903,7 +1916,7 @@ export const strings: Strings = {
   "settings.network.wifi_pair_show_action":
     "اجعل هذا الـ iPhone قابلاً للاكتشاف",
   "settings.network.wifi_pair_unavailable": "Wi-Fi Aware غير متاح الآن",
-  "settings.network.wifi_pair_forget": "أزل اقتراناً من تطبيق Settings",
+  "settings.network.wifi_pair_forget": "أزل اقترانًا من تطبيق الإعدادات",
   "settings.network.bitchat": "التوافق مع bitchat",
   "settings.network.bitchat_desc":
     "نفس شبكة BLE التي يستخدمها bitchat، بتوافق كامل. هذا مفعّل دائمًا ولا يمكن تعطيله.",
@@ -2019,7 +2032,7 @@ export const strings: Strings = {
     "أرسل الصور من مكتبتك واحفظ الوسائط المستلمة. بدونها ما زال بإمكانك التقاط صور جديدة بالكاميرا وإرسالها.",
   "settings.permissions.microphone": "الميكروفون",
   "settings.permissions.microphone_desc":
-    "سجّل الرسائل الصوتية وأرسلها أو استخدم الصوت المباشر. بدونه لن تعمل الرسائل الصوتية ولا الصوت المباشر.",
+    "سجّل الملاحظات الصوتية وأرسلها أو استخدم الصوت المباشر. بدونه لن تعمل الملاحظات الصوتية ولا الصوت المباشر.",
   "settings.permissions.allow": "منح هذا الإذن",
   "settings.permissions.open_settings": "فتح إعدادات النظام لتغيير هذا الإذن",
   "settings.permissions.system": "النظام",
@@ -2194,7 +2207,7 @@ export const strings: Strings = {
     "سيدمّر هذا فورًا كل مفاتيحك ورسائلك ونقدك الإلكتروني. لا يمكن التراجع عن هذا. الصور التي حفظتها في المعرض تبقى هناك.",
   "settings.wipe.in_progress": "جارٍ المسح",
   "settings.wipe.in_progress_body":
-    "يجري تدمير مفاتيحك ورسائلك وملفاتك. يستغرق هذا ثوانٍ قليلة، ويكتمل من تلقاء نفسه إن أُغلق التطبيق.",
+    "يجري تدمير مفاتيحك ورسائلك وملفاتك. يستغرق هذا ثوانيَ قليلة، ويكتمل من تلقاء نفسه إن أُغلق التطبيق.",
   "settings.wipe.keys_failed": "تعذّر تدمير المفاتيح",
   "settings.wipe.keys_failed_body":
     "ذهبت رسائلك وجهات اتصالك ومحفظتك، لكن الجهاز رفض تسليم مفاتيحك. افتح قفل الجهاز، ثم أعد فتح Airhop لإكمال المسح.",
@@ -2263,7 +2276,7 @@ export const strings: Strings = {
     "فشل التنزيل. تحقق من اتصالك وحاول مرة أخرى.",
 
   // ---- Transfers: attachment kinds and the floating badge ----
-  "transfer.too_large": "{kind} حجمه {size} KiB، أي فوق حد {cap} KiB.",
+  "transfer.too_large": "{kind} حجمه {size}، أي فوق حد {cap}.",
   "transfer.failed.malformed":
     "وصل مرفق تالفًا وتعذّر فتحه. اطلب منهم إرساله مرة أخرى.",
   "transfer.failed.unsupported_type":
@@ -2272,10 +2285,8 @@ export const strings: Strings = {
     "رُفض مرفق: محتواه لا يطابق نوع الملف الذي ادّعاه.",
   "transfer.failed.storage": "وصل مرفق لكن تعذّر حفظه. تحقق من مساحتك الفارغة.",
   "transfer.badge.waiting": "بالانتظار · {name}",
-  "transfer.badge.active_count": "{count} عمليات نقل",
   "transfer.badge.sending": "جارٍ إرسال {name}",
   "transfer.badge.receiving": "جارٍ استقبال {name}",
-  "transfer.badge.a11y": "{label}، {percent} بالمئة. افتح المحادثة.",
   "transfer.kind.photo": "صورة",
   "transfer.kind.video": "فيديو",
   "transfer.kind.voice": "ملاحظة صوتية",
@@ -2304,10 +2315,11 @@ export const strings: Strings = {
   "notif.notice": "إعلان · {content}",
   "notif.incoming_file": "ملف وارد",
   "notif.preview.photo": "📷 صورة",
-  "notif.preview.voice": "🎤 رسالة صوتية",
+  "notif.preview.voice": "🎤 ملاحظة صوتية",
   "notif.preview.video": "🎥 فيديو",
   "notif.preview.document": "📄 مستند",
   "notif.preview.document_named": "📄 {name}",
+  "notif.preview.ecash": "النقد الإلكتروني · {amount} {unit}",
   "notif.hidden.title": "Airhop",
   "notif.hidden.dm": "رسالة جديدة",
   "notif.hidden.channel": "نشاط جديد",
@@ -2319,10 +2331,36 @@ export const strings: Strings = {
 };
 
 export const plurals: Plurals = {
+  // ---- Dates ----
+  "format.minutes_ago": {
+    zero: "قبل {count} دقيقة",
+    one: "قبل {count} دقيقة",
+    two: "قبل دقيقتين",
+    few: "قبل {count} دقائق",
+    many: "قبل {count} دقيقةً",
+    other: "قبل {count} دقيقة",
+  },
+  "format.hours_ago": {
+    zero: "قبل {count} ساعة",
+    one: "قبل {count} ساعة",
+    two: "قبل ساعتين",
+    few: "قبل {count} ساعات",
+    many: "قبل {count} ساعةً",
+    other: "قبل {count} ساعة",
+  },
+  "format.days_ago": {
+    zero: "قبل {count} يوم",
+    one: "قبل {count} يوم",
+    two: "قبل يومين",
+    few: "قبل {count} أيام",
+    many: "قبل {count} يومًا",
+    other: "قبل {count} يوم",
+  },
+
   // ---- Chats: channel list ----
   "chat.channels.show_more": {
     zero: "عرض {count} أخرى",
-    one: "عرض واحدة أخرى",
+    one: "عرض {count} أخرى",
     two: "عرض اثنتين أخريين",
     few: "عرض {count} أخرى",
     many: "عرض {count} أخرى",
@@ -2330,7 +2368,7 @@ export const plurals: Plurals = {
   },
   "chat.channels.show_more_a11y": {
     zero: "عرض {count} قناة افتراضية أخرى",
-    one: "عرض قناة افتراضية أخرى",
+    one: "عرض {count} قناة افتراضية أخرى",
     two: "عرض قناتين افتراضيتين أخريين",
     few: "عرض {count} قنوات افتراضية أخرى",
     many: "عرض {count} قناة افتراضية أخرى",
@@ -2340,7 +2378,7 @@ export const plurals: Plurals = {
   // ---- Chats: vocabulary shared by both lists ----
   "a11y.unread_count": {
     zero: "{label}، {count} غير مقروءة",
-    one: "{label}، واحدة غير مقروءة",
+    one: "{label}، {count} غير مقروءة",
     two: "{label}، اثنتان غير مقروءتين",
     few: "{label}، {count} غير مقروءة",
     many: "{label}، {count} غير مقروءة",
@@ -2348,7 +2386,7 @@ export const plurals: Plurals = {
   },
   "a11y.new_count": {
     zero: "{label}، {count} جديدة",
-    one: "{label}، واحدة جديدة",
+    one: "{label}، {count} جديدة",
     two: "{label}، اثنتان جديدتان",
     few: "{label}، {count} جديدة",
     many: "{label}، {count} جديدة",
@@ -2356,7 +2394,7 @@ export const plurals: Plurals = {
   },
   "chat.a11y.unread": {
     zero: "{count} غير مقروءة",
-    one: "واحدة غير مقروءة",
+    one: "{count} غير مقروءة",
     two: "اثنتان غير مقروءتين",
     few: "{count} غير مقروءة",
     many: "{count} غير مقروءة",
@@ -2364,7 +2402,7 @@ export const plurals: Plurals = {
   },
   "chat.thread.length_left": {
     zero: "بقي {count}",
-    one: "بقي حرف واحد",
+    one: "بقي {count} حرف",
     two: "بقي حرفان",
     few: "بقي {count} أحرف",
     many: "بقي {count} حرفًا",
@@ -2372,23 +2410,23 @@ export const plurals: Plurals = {
   },
   "settings.general.retention_days": {
     zero: "{count} يوم",
-    one: "يوم واحد",
+    one: "{count} يوم",
     two: "يومان",
     few: "{count} أيام",
     many: "{count} يومًا",
     other: "{count} يوم",
   },
   "chat.info.group_reach": {
-    zero: "{reachable} من {count} عضو متاح",
-    one: "{reachable} من عضو واحد متاح",
-    two: "{reachable} من عضوين متاحان",
-    few: "{reachable} من {count} أعضاء متاحون",
-    many: "{reachable} من {count} عضوًا متاحون",
-    other: "{reachable} من {count} عضو متاح",
+    zero: "يمكن الوصول إلى {reachable} من {count} عضو",
+    one: "يمكن الوصول إلى {reachable} من {count} عضو",
+    two: "يمكن الوصول إلى {reachable} من عضوين",
+    few: "يمكن الوصول إلى {reachable} من {count} أعضاء",
+    many: "يمكن الوصول إلى {reachable} من {count} عضوًا",
+    other: "يمكن الوصول إلى {reachable} من {count} عضو",
   },
   "chat.group_members": {
     zero: "مجموعة خاصة  ·  {count} عضو",
-    one: "مجموعة خاصة  ·  عضو واحد",
+    one: "مجموعة خاصة  ·  {count} عضو",
     two: "مجموعة خاصة  ·  عضوان",
     few: "مجموعة خاصة  ·  {count} أعضاء",
     many: "مجموعة خاصة  ·  {count} عضوًا",
@@ -2396,7 +2434,7 @@ export const plurals: Plurals = {
   },
   "chat.select.count": {
     zero: "{count} محددة",
-    one: "واحدة محددة",
+    one: "{count} محددة",
     two: "اثنتان محددتان",
     few: "{count} محددة",
     many: "{count} محددة",
@@ -2404,7 +2442,7 @@ export const plurals: Plurals = {
   },
   "chat.select.forward": {
     zero: "إعادة توجيه {count} رسالة",
-    one: "إعادة توجيه رسالة واحدة",
+    one: "إعادة توجيه {count} رسالة",
     two: "إعادة توجيه رسالتين",
     few: "إعادة توجيه {count} رسائل",
     many: "إعادة توجيه {count} رسالة",
@@ -2412,17 +2450,110 @@ export const plurals: Plurals = {
   },
   "chat.voice.live_speaking_count": {
     zero: "{count} يتحدثون",
-    one: "واحد يتحدث",
+    one: "{count} يتحدث",
     two: "اثنان يتحدثان",
     few: "{count} يتحدثون",
     many: "{count} يتحدثون",
     other: "{count} يتحدثون",
   },
 
+  // ---- Chats: thread ----
+  "chat.thread.queued_more": {
+    zero: "{count} رسالة أخرى بانتظار الإرسال",
+    one: "{count} رسالة أخرى بانتظار الإرسال",
+    two: "رسالتان أخريان بانتظار الإرسال",
+    few: "{count} رسائل أخرى بانتظار الإرسال",
+    many: "{count} رسالةً أخرى بانتظار الإرسال",
+    other: "{count} رسالة أخرى بانتظار الإرسال",
+  },
+  "chat.thread.across_bridge": {
+    zero: "{count} شخص عبر الجسر",
+    one: "{count} شخص عبر الجسر",
+    two: "شخصان عبر الجسر",
+    few: "{count} أشخاص عبر الجسر",
+    many: "{count} شخصًا عبر الجسر",
+    other: "{count} شخص عبر الجسر",
+  },
+  "chat.thread.go_back_unread": {
+    zero: "رجوع، {count} غير مقروءة",
+    one: "رجوع، {count} غير مقروءة",
+    two: "رجوع، {count} غير مقروءة",
+    few: "رجوع، {count} غير مقروءة",
+    many: "رجوع، {count} غير مقروءة",
+    other: "رجوع، {count} غير مقروءة",
+  },
+  "chat.thread.notices_new": {
+    zero: "إعلانات هذه القناة، {count} جديدة",
+    one: "إعلانات هذه القناة، {count} جديد",
+    two: "إعلانات هذه القناة، {count} جديدان",
+    few: "إعلانات هذه القناة، {count} جديدة",
+    many: "إعلانات هذه القناة، {count} جديدًا",
+    other: "إعلانات هذه القناة، {count} جديد",
+  },
+  "chat.thread.jump_latest_new": {
+    zero: "الانتقال إلى أحدث رسالة، {count} جديدة",
+    one: "الانتقال إلى أحدث رسالة، {count} جديدة",
+    two: "الانتقال إلى أحدث رسالة، {count} جديدتان",
+    few: "الانتقال إلى أحدث رسالة، {count} جديدة",
+    many: "الانتقال إلى أحدث رسالة، {count} جديدة",
+    other: "الانتقال إلى أحدث رسالة، {count} جديدة",
+  },
+  "chat.board.urgent_many": {
+    zero: "{count} إعلان عاجل جديد · افتح الإعلانات",
+    one: "{count} إعلان عاجل جديد · افتح الإعلانات",
+    two: "إعلانان عاجلان جديدان · افتح الإعلانات",
+    few: "{count} إعلانات عاجلة جديدة · افتح الإعلانات",
+    many: "{count} إعلانًا عاجلًا جديدًا · افتح الإعلانات",
+    other: "{count} إعلان عاجل جديد · افتح الإعلانات",
+  },
+  "chat.info.add_count": {
+    zero: "إضافة {count}",
+    one: "إضافة {count}",
+    two: "إضافة {count}",
+    few: "إضافة {count}",
+    many: "إضافة {count}",
+    other: "إضافة {count}",
+  },
+  "chat.notices.fades_in_hours": {
+    zero: "يختفي خلال {count} ساعة",
+    one: "يختفي خلال {count} ساعة",
+    two: "يختفي خلال ساعتين",
+    few: "يختفي خلال {count} ساعات",
+    many: "يختفي خلال {count} ساعةً",
+    other: "يختفي خلال {count} ساعة",
+  },
+  "chat.notices.fades_in_days": {
+    zero: "يختفي خلال {count} يوم",
+    one: "يختفي خلال {count} يوم",
+    two: "يختفي خلال يومين",
+    few: "يختفي خلال {count} أيام",
+    many: "يختفي خلال {count} يومًا",
+    other: "يختفي خلال {count} يوم",
+  },
+
+  // ---- Chats: notification center ----
+  "chat.notif.actions_body": {
+    zero: "{count} إشعار في هذه القائمة. المسح يزيلها من هنا فقط، وتبقى الرسائل غير مقروءة في محادثاتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
+    one: "{count} إشعار في هذه القائمة. المسح يزيله من هنا فقط، وتبقى الرسالة غير مقروءة في محادثتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
+    two: "إشعاران في هذه القائمة. المسح يزيلهما من هنا فقط، وتبقى الرسالتان غير مقروءتين في محادثتيهما. وسم الكل كمقروء ينظّف الاثنين معًا.",
+    few: "{count} إشعارات في هذه القائمة. المسح يزيلها من هنا فقط، وتبقى الرسائل غير مقروءة في محادثاتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
+    many: "{count} إشعارًا في هذه القائمة. المسح يزيلها من هنا فقط، وتبقى الرسائل غير مقروءة في محادثاتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
+    other:
+      "{count} إشعار في هذه القائمة. المسح يزيلها من هنا فقط، وتبقى الرسائل غير مقروءة في محادثاتها. وسم الكل كمقروء ينظّف الاثنين معًا.",
+  },
+  "chat.notif.clear_all_a11y": {
+    zero: "مسح كل الإشعارات البالغة {count}",
+    one: "مسح {count} إشعار",
+    two: "مسح الإشعارين كليهما",
+    few: "مسح كل الإشعارات البالغة {count}",
+    many: "مسح كل الإشعارات البالغة {count}",
+    other: "مسح كل الإشعارات البالغة {count}",
+  },
+
   // ---- Mesh: peer list ----
   "mesh.peers_in_range": {
     zero: "{count} نظير ضمن النطاق",
-    one: "نظير واحد ضمن النطاق",
+    one: "{count} نظير ضمن النطاق",
     two: "نظيران ضمن النطاق",
     few: "{count} نظراء ضمن النطاق",
     many: "{count} نظيرًا ضمن النطاق",
@@ -2430,7 +2561,7 @@ export const plurals: Plurals = {
   },
   "mesh.peer.hops_away": {
     zero: "على بعد {count} قفزة",
-    one: "على بعد قفزة واحدة",
+    one: "على بعد {count} قفزة",
     two: "على بعد قفزتين",
     few: "على بعد {count} قفزات",
     many: "على بعد {count} قفزة",
@@ -2438,7 +2569,7 @@ export const plurals: Plurals = {
   },
   "chat.presence.active": {
     zero: "{count} نشط",
-    one: "واحد نشط",
+    one: "{count} نشط",
     two: "اثنان نشطان",
     few: "{count} نشطون",
     many: "{count} نشطًا",
@@ -2446,7 +2577,7 @@ export const plurals: Plurals = {
   },
   "chat.presence.nearby": {
     zero: "{count} بالجوار",
-    one: "واحد بالجوار",
+    one: "{count} بالجوار",
     two: "اثنان بالجوار",
     few: "{count} بالجوار",
     many: "{count} بالجوار",
@@ -2454,58 +2585,76 @@ export const plurals: Plurals = {
   },
   "chat.presence.members": {
     zero: "{count} عضو",
-    one: "عضو واحد",
+    one: "{count} عضو",
     two: "عضوان",
     few: "{count} أعضاء",
     many: "{count} عضوًا",
     other: "{count} عضو",
   },
 
+  // ---- Mesh: status banners ----
+  "mesh.banner.bridge_across": {
+    zero: "جسر الشبكة مفعّل · {count} شخص عبر الجسر",
+    one: "جسر الشبكة مفعّل · {count} شخص عبر الجسر",
+    two: "جسر الشبكة مفعّل · شخصان عبر الجسر",
+    few: "جسر الشبكة مفعّل · {count} أشخاص عبر الجسر",
+    many: "جسر الشبكة مفعّل · {count} شخصًا عبر الجسر",
+    other: "جسر الشبكة مفعّل · {count} شخص عبر الجسر",
+  },
+
   // ---- Wallet: mints ----
   "wallet.mint.remove_body": {
-    zero: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    one: "تحمل {mint} مبلغ {balance} {unit} في عملة واحدة. إزالتها تحذف تلك العملة من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    two: "تحمل {mint} مبلغ {balance} {unit} في عملتين. إزالتها تحذف هاتين العملتين من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    few: "تحمل {mint} مبلغ {balance} {unit} في {count} عملات. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    many: "تحمل {mint} مبلغ {balance} {unit} في {count} عملةً. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    zero: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    one: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    two: "تحمل {mint} مبلغ {balance} {unit} في عملتين. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    few: "تحمل {mint} مبلغ {balance} {unit} في {count} عملات. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+    many: "تحمل {mint} مبلغ {balance} {unit} في {count} عملةً. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
     other:
-      "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف تلك العملات من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+      "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
+  },
+  "wallet.mint.split_across": {
+    zero: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
+    one: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
+    two: "الرصيد موزّع على داري سك. انقله إلى واحدة.",
+    few: "الرصيد موزّع على {count} دور سك. انقله إلى واحدة.",
+    many: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
+    other: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
   },
 
   // ---- Wallet: Lightning ----
   "wallet.ln.pending_deposits": {
-    zero: "{count} إيداع بانتظار الدفع. يُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
-    one: "إيداع واحد بانتظار الدفع. يُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
-    two: "إيداعان بانتظار الدفع. يُفحصان مرة أخرى في كل مرة يُفتح فيها التطبيق.",
-    few: "{count} إيداعات بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
-    many: "{count} إيداعًا بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+    zero: "{count} عملية شحن بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+    one: "{count} عملية شحن بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+    two: "عمليتا شحن بانتظار الدفع. تُفحصان مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+    few: "{count} عمليات شحن بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+    many: "{count} عمليةَ شحن بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
     other:
-      "{count} إيداع بانتظار الدفع. يُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
+      "{count} عملية شحن بانتظار الدفع. تُفحص مرة أخرى في كل مرة يُفتح فيها التطبيق.",
   },
 
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     zero: "استُعيدت {count} عملة غير منفقة من {mints}.",
-    one: "استُعيدت عملة واحدة غير منفقة من {mints}.",
+    one: "استُعيدت {count} عملة غير منفقة من {mints}.",
     two: "استُعيدت عملتان غير منفقتين من {mints}.",
     few: "استُعيدت {count} عملات غير منفقة من {mints}.",
     many: "استُعيدت {count} عملةً غير منفقة من {mints}.",
     other: "استُعيدت {count} عملة غير منفقة من {mints}.",
   },
   "wallet.backup.already_spent": {
-    zero: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
-    one: "عُثر على عملة واحدة لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
-    two: "عُثر على عملتين لكنهما منفقتان بالفعل، فلم يُضَف شيء مقابلهما. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
-    few: "عُثر على {count} عملات لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
-    many: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+    zero: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+    one: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+    two: "عُثر على عملتين لكنهما منفقتان بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+    few: "عُثر على {count} عملات لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+    many: "عُثر على {count} عملةً لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
     other:
-      "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء مقابلها. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
+      "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
   },
 
   // ---- Wallet: pending and activity ----
   "wallet.activity.show_more": {
     zero: "عرض {count} أخرى",
-    one: "عرض واحدة أخرى",
+    one: "عرض {count} أخرى",
     two: "عرض اثنتين أخريين",
     few: "عرض {count} أخرى",
     many: "عرض {count} أخرى",
@@ -2513,7 +2662,7 @@ export const plurals: Plurals = {
   },
   "wallet.activity.show_more_a11y": {
     zero: "عرض {count} دفعة أخرى",
-    one: "عرض دفعة واحدة أخرى",
+    one: "عرض {count} دفعة أخرى",
     two: "عرض دفعتين أخريين",
     few: "عرض {count} دفعات أخرى",
     many: "عرض {count} دفعة أخرى",
@@ -2521,7 +2670,7 @@ export const plurals: Plurals = {
   },
   "wallet.mint.unconfirmed_count": {
     zero: "{count} غير مؤكدة",
-    one: "واحدة غير مؤكدة",
+    one: "{count} غير مؤكدة",
     two: "اثنتان غير مؤكدتين",
     few: "{count} غير مؤكدة",
     many: "{count} غير مؤكدة",
@@ -2529,7 +2678,7 @@ export const plurals: Plurals = {
   },
   "wallet.send.stale_fee_note": {
     zero: "فُحصت الرسوم آخر مرة قبل {count} يوم. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
-    one: "فُحصت الرسوم آخر مرة قبل يوم واحد. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
+    one: "فُحصت الرسوم آخر مرة قبل {count} يوم. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
     two: "فُحصت الرسوم آخر مرة قبل يومين. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
     few: "فُحصت الرسوم آخر مرة قبل {count} أيام. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
     many: "فُحصت الرسوم آخر مرة قبل {count} يومًا. إن رفعت دار السك هذه رسومها منذ ذلك الحين، فقد يكلّف الإرسال أكثر قليلًا.",
@@ -2538,17 +2687,70 @@ export const plurals: Plurals = {
   },
   "wallet.spent_removed_detail": {
     zero: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",
-    one: "عملة واحدة كانت منفقة بالفعل وقد أُزيلت.",
+    one: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",
     two: "عملتان كانتا منفقتين بالفعل وقد أُزيلتا.",
     few: "{count} عملات كانت منفقة بالفعل وقد أُزيلت.",
     many: "{count} عملةً كانت منفقة بالفعل وقد أُزيلت.",
     other: "{count} عملة كانت منفقة بالفعل وقد أُزيلت.",
   },
 
+  // ---- Settings ----
+  "settings.diag.no_peers_desc": {
+    zero: "{count} وصلة لاسلكية مفتوحة",
+    one: "{count} وصلة لاسلكية مفتوحة",
+    two: "وصلتان لاسلكيتان مفتوحتان",
+    few: "{count} وصلات لاسلكية مفتوحة",
+    many: "{count} وصلةً لاسلكية مفتوحة",
+    other: "{count} وصلة لاسلكية مفتوحة",
+  },
+  "settings.general.undo_seconds": {
+    zero: "{count} ثانية",
+    one: "{count} ثانية",
+    two: "ثانيتان",
+    few: "{count} ثوانٍ",
+    many: "{count} ثانيةً",
+    other: "{count} ثانية",
+  },
+  "settings.network.custom_added": {
+    zero: "أُضيف {count} من {max}",
+    one: "أُضيف {count} من {max}",
+    two: "أُضيف {count} من {max}",
+    few: "أُضيف {count} من {max}",
+    many: "أُضيف {count} من {max}",
+    other: "أُضيف {count} من {max}",
+  },
+  "settings.network.relay_limit": {
+    zero: "يمكنك إضافة {count} مُرحِّل. أزل واحدًا لإضافة آخر.",
+    one: "يمكنك إضافة {count} مُرحِّل. أزله لإضافة آخر.",
+    two: "يمكنك إضافة مُرحِّلين. أزل واحدًا لإضافة آخر.",
+    few: "يمكنك إضافة {count} مُرحِّلات. أزل واحدًا لإضافة آخر.",
+    many: "يمكنك إضافة {count} مُرحِّلًا. أزل واحدًا لإضافة آخر.",
+    other: "يمكنك إضافة {count} مُرحِّل. أزل واحدًا لإضافة آخر.",
+  },
+
+  // ---- Transfers ----
+  "transfer.badge.active_count": {
+    zero: "{count} عملية نقل",
+    one: "{count} عملية نقل",
+    two: "عمليتا نقل",
+    few: "{count} عمليات نقل",
+    many: "{count} عمليةَ نقل",
+    other: "{count} عملية نقل",
+  },
+  "transfer.badge.a11y": {
+    zero: "{label}، {count} بالمئة. افتح المحادثة.",
+    one: "{label}، {count} بالمئة. افتح المحادثة.",
+    two: "{label}، {count} بالمئة. افتح المحادثة.",
+    few: "{label}، {count} بالمئة. افتح المحادثة.",
+    many: "{label}، {count} بالمئة. افتح المحادثة.",
+    other: "{label}، {count} بالمئة. افتح المحادثة.",
+  },
+
   // ---- System notifications ----
   "notif.nearby.title": {
-    zero: "{count} أشخاص بالجوار",
-    one: "أحدهم بالجوار",
+    "=1": "أحدهم بالجوار",
+    zero: "{count} شخص بالجوار",
+    one: "{count} شخص بالجوار",
     two: "شخصان بالجوار",
     few: "{count} أشخاص بالجوار",
     many: "{count} شخصًا بالجوار",

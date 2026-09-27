@@ -1,8 +1,9 @@
 /** @jest-environment node */
 
 import type { TokenInfo } from "@core/payments/cashu";
-import { stripIsolates } from "@i18n";
+import { initI18n, stripIsolates } from "@i18n";
 import { useSettingsStore } from "@store/settings-store";
+import { I18nManager } from "react-native";
 import {
   amountParts,
   formatAgo,
@@ -13,6 +14,7 @@ import {
   formatDuration,
   formatListTimestamp,
   formatNumber,
+  formatPercent,
   formatTokenSummary,
   formatUnitAmount,
   parseWholeNumber,
@@ -74,6 +76,31 @@ describe("formatListTimestamp", () => {
       "2025",
     );
   });
+
+  it("decides the year in the calendar the date is shown in", () => {
+    // Persian renders Solar Hijri, whose year turns at Nowruz. 4 March 2026 is
+    // in 1404 and NOW in 1405, though both are 2026: without its year the
+    // date reads as this Persian year's Esfand, eleven months ahead.
+    //
+    // Booted right to left, since a left-to-right process defers Persian and
+    // renders English.
+    const frame = I18nManager as { isRTL: boolean };
+    frame.isRTL = true;
+    useSettingsStore.setState({ language: "fa" });
+    initI18n();
+    try {
+      expect(formatListTimestamp(new Date(2026, 2, 4, 12).getTime())).toContain(
+        "1404",
+      );
+      expect(
+        formatListTimestamp(new Date(2026, 3, 1, 12).getTime()),
+      ).not.toContain("1405");
+    } finally {
+      frame.isRTL = false;
+      useSettingsStore.setState({ language: "system" });
+      initI18n();
+    }
+  });
 });
 
 describe("formatAgo", () => {
@@ -83,9 +110,11 @@ describe("formatAgo", () => {
   it.each([
     [0, "just now"],
     [59_000, "just now"],
-    [5 * MIN, "5m ago"],
-    [2 * 60 * MIN, "2h ago"],
-    [3 * 24 * 60 * MIN, "3d ago"],
+    [MIN, "1 minute ago"],
+    [5 * MIN, "5 minutes ago"],
+    [60 * MIN, "1 hour ago"],
+    [2 * 60 * MIN, "2 hours ago"],
+    [3 * 24 * 60 * MIN, "3 days ago"],
   ])("reads %i ms as %s", (age, label) => {
     expect(stripIsolates(formatAgo(now - age, now))).toBe(label);
   });
@@ -125,6 +154,27 @@ describe("formatBytes", () => {
     expect(formatBytes(1024)).toBe("1 KiB");
     expect(formatBytes(1024 * 1024 - 1)).toContain("KiB");
     expect(formatBytes(1024 * 1024)).toBe("1.0 MiB");
+  });
+
+  it("rounds a size set against a limit up, so it never reads as equal", () => {
+    const cap = 1024 * 1024;
+    expect(formatBytes(cap + 20_000)).toBe(formatBytes(cap));
+    expect(formatBytes(cap + 20_000, true)).toBe("1.1 MiB");
+    expect(formatBytes(cap, true)).toBe("1.0 MiB");
+  });
+});
+
+describe("formatPercent", () => {
+  it("places the sign as the app's language does", () => {
+    expect(formatPercent(0.5)).toBe("50%");
+    expect(formatPercent(0.01)).toBe("1%");
+    const before = useSettingsStore.getState().language;
+    useSettingsStore.setState({ language: "tr" });
+    try {
+      expect(formatPercent(0.5)).toBe("%50");
+    } finally {
+      useSettingsStore.setState({ language: before });
+    }
   });
 });
 

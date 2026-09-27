@@ -192,7 +192,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         a: (
           <>
             No. Chatting, relaying across the mesh, voice notes, images, file transfers, and
-            store-and-forward delivery all work with zero internet, over Bluetooth or over a WiFi
+            store-and-forward delivery all work with zero internet, over Bluetooth or over a Wi-Fi
             network nobody has to be online for, such as a phone hotspot.
             <br />
             <br />
@@ -204,16 +204,16 @@ export const FAQ_SECTIONS: FaqSection[] = [
         ),
       },
       {
-        q: "Can Airhop work over WiFi instead of Bluetooth?",
+        q: "Can Airhop work over Wi-Fi instead of Bluetooth?",
         a: (
           <>
             Yes. Turn on <strong>Local network</strong> in Settings, Network, and phones on the same
-            WiFi find each other and carry the whole mesh between them, iPhone and Android alike. No
-            internet is involved, so a phone hotspot works with no service at all, and a file moves
-            in about a second instead of the minute Bluetooth takes.
+            Wi-Fi find each other and carry the whole mesh between them, iPhone and Android alike.
+            No internet is involved, so a phone hotspot works with no service at all, and a file
+            moves in about a second instead of the minute Bluetooth takes.
             <br />
             <br />
-            WiFi here means the network, not the internet behind it. The router only has to let two
+            Wi-Fi here means the network, not the internet behind it. The router only has to let two
             phones talk to each other, and whether it can reach the internet makes no difference.
             That is the opposite of the internet fallback above, which uses Nostr relays to reach
             somebody who is not nearby at all.
@@ -262,7 +262,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "What media can I send?",
-        a: "Images, voice notes, videos, and any other file format, all over Bluetooth using chunked streaming. Large files are split into fragments, paced so the radio is not overrun, and reassembled on the other side. Videos are sent as files and play inline; they are not live streams. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; photos and voice notes are capped tighter at 512 KiB for the same reason. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over WiFi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
+        a: "Images, voice notes, videos, and any other file format, all over Bluetooth using chunked streaming. Large files are split into fragments, paced so the radio is not overrun, and reassembled on the other side. Videos are sent as files and play inline; they are not live streams. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; photos and voice notes are capped tighter at 512 KiB for the same reason. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
       },
       {
         q: "Why is there no video or voice calling?",
@@ -277,7 +277,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             transports instead.
             <br />
             <br />
-            <strong>The fast transports cannot talk to each other.</strong> They are WiFi Aware on
+            <strong>The fast transports cannot talk to each other.</strong> They are Wi-Fi Aware on
             Android and MultipeerConnectivity on iPhone: different protocols, with no bridge between
             them. A call built on either could only ever connect Android to Android, or iPhone to
             iPhone. A calling feature that fails on half the pairs is worse than none, so the video
@@ -690,7 +690,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <strong>
               Device migration moves your identity, messages, contacts, and wallet to the new phone
             </strong>{" "}
-            over a direct link between the two devices on the same WiFi or hotspot. It works in
+            over a direct link between the two devices on the same Wi-Fi or hotspot. It works in
             either direction between iPhone and Android, and nothing passes through a server,
             because there is none to pass through. The old phone asks for Face ID, a fingerprint or
             its passcode first, and both phones then show the same six words, so you can confirm
@@ -944,15 +944,16 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "How do I get sats in and out?",
         a: (
           <>
-            <strong>In:</strong> tap Deposit, enter an amount, and the mint gives you a{" "}
+            <strong>In:</strong> tap Receive, then Top up over Lightning, enter an amount, and the
+            mint gives you a{" "}
             <TextLink href="https://en.wikipedia.org/wiki/Lightning_Network">Lightning</TextLink>{" "}
             invoice. Pay it from any Lightning wallet and the sats arrive as ecash. If you close the
             app mid-payment, Airhop picks the deposit back up next time it opens.
             <br />
             <br />
-            <strong>Out:</strong> paste any Lightning invoice into Withdraw. You are quoted the
-            amount plus a routing reserve before anything is spent, and whatever routing does not
-            use comes back to your balance.
+            <strong>Out:</strong> tap Send, then Pay a Lightning invoice, and paste it. You are
+            quoted the amount plus a routing reserve before anything is spent, and whatever routing
+            does not use comes back to your balance.
             <br />
             <br />
             These two are the only parts that need the internet, and the only parts that involve
@@ -1043,8 +1044,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
           <>
             Nothing is lost. Building a token does not delete your coins, it{" "}
             <strong>reserves</strong> them: they leave your spendable balance so you cannot spend
-            them twice, and sit under Pending until you confirm delivery or reclaim them. Closing
-            the app, a crash, or a Bluetooth message that never routes all leave the money
+            them twice, and sit under Pending until you mark them as received or reclaim them.
+            Closing the app, a crash, or a Bluetooth message that never routes all leave the money
             recoverable.
             <br />
             <br />
