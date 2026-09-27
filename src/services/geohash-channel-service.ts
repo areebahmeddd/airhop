@@ -873,11 +873,13 @@ export class GeohashChannelService {
     geohash: string,
     recipientPubkey: string,
     card: Uint8Array,
+    onRejected?: () => void,
   ): void {
     this.publishGeoWrap(
       geohash,
       recipientPubkey,
       encodeBitchatCardEnvelope(null, null, card),
+      onRejected,
     );
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
@@ -910,8 +912,8 @@ export class GeohashChannelService {
 
   // Gift-wrap `envelope` from our per-cell identity to `recipientPubkey` and
   // publish it to the default relays (matching bitchat's geo-DM transport).
-  // `onRejected` runs when no relay accepted it; receipts and cards pass none,
-  // since a lost one of those has nothing to retry.
+  // `onRejected` runs when no relay accepted it; receipts pass none, since a
+  // lost one has nothing to retry.
   private publishGeoWrap(
     geohash: string,
     recipientPubkey: string,

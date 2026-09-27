@@ -4662,6 +4662,13 @@ export class MeshService {
         pubkey,
         this.identity.signingPrivKey,
       ),
+      // No relay took it, so nothing was shared and the action is offered
+      // again. Unless the exchange already completed and folded the thread.
+      () => {
+        const chat = useChatStore.getState();
+        if (chat.geoCardExchange[pubkey] === undefined) return;
+        chat.noteGeoCardExchange(pubkey, { sentMine: false });
+      },
     );
     useChatStore.getState().noteGeoCardExchange(pubkey, { sentMine: true });
     this.mergeGeoThreadIfMutual(pubkey);

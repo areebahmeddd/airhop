@@ -152,3 +152,70 @@ test("G01 a geohash DM retried from the outbox still leaves from the cell identi
   s.expectNone("process health", noCrashes([alice]));
   s.assert(true);
 });
+
+test("G02 a contact card no relay took can be shared again", async () => {
+  // "Keep this person" is one tap that survives relaunch as "already shared",
+  // so a card every relay refused must not spend it.
+  const s = (scenario = new Scenario({
+    id: "G02",
+    title: "every relay withholds its OK for the contact card",
+    seed: 902,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(
+    s.world,
+    { id: "alice", platform: "android", seedByte: 11, internetEnabled: true },
+    relay,
+  );
+  radio.add(alice);
+  s.track(alice);
+  alice.launch();
+  s.check(
+    "alice is online",
+    await waitForCoarse(s.world, () => relay.connectionCount("alice") > 0),
+  );
+
+  const cell = "u4pruy";
+  const stranger = deriveGeohashIdentity(
+    deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+    cell,
+  );
+  (
+    alice.store("chatStore").getState().setGeoDmCell as (
+      pubkey: string,
+      geohash: string,
+    ) => void
+  )(stranger.pubKeyHex, cell);
+  const mesh = alice.mesh as unknown as {
+    shareContactCardOverGeoDm: (pubkey: string) => boolean;
+  };
+  const sentMine = (): boolean | undefined =>
+    (
+      alice.store("chatStore").getState().geoCardExchange as Record<
+        string,
+        { sentMine?: boolean } | undefined
+      >
+    )[stranger.pubKeyHex]?.sentMine;
+
+  relay.setAllRelayConditions({ withholdOk: true });
+  s.check(
+    "the card is handed to the relays",
+    mesh.shareContactCardOverGeoDm(stranger.pubKeyHex),
+  );
+  s.check("the action reads shared at once", sentMine() === true);
+  const offered = await waitForCoarse(
+    s.world,
+    () => sentMine() === false,
+    30_000,
+  );
+  s.check("once no relay took it, it is offered again", offered);
+
+  relay.setAllRelayConditions({ withholdOk: false });
+  mesh.shareContactCardOverGeoDm(stranger.pubKeyHex);
+  await s.world.advance(15_000);
+  s.check("a card a relay took stays shared", sentMine() === true);
+
+  s.expectNone("process health", noCrashes([alice]));
+  s.assert(true);
+});
