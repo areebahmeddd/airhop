@@ -1101,6 +1101,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Sudah ada dalam dompet anda",
   "wallet.receive.already_have_body":
     "Semua isi token ini sudah tersimpan di sini, jadi tiada apa-apa ditambah. Baki tidak berubah.",
+  "wallet.receive.claiming": "Masih menunggu mint",
+  "wallet.receive.claiming_body":
+    "Tuntutan terdahulu bagi token ini belum disahkan oleh mint, jadi tiada apa-apa yang baharu dihantar. Dompet akan menyelesaikannya secara automatik. Jika mint tidak pernah menerimanya, anda boleh menuntutnya semula.",
   "wallet.receive.stored_unconfirmed":
     "Disimpan daripada {mint}, tetapi belum disahkan dengan mint ({reason}).",
   "wallet.receive.offline": "luar talian",
@@ -1541,6 +1544,9 @@ export const strings: Strings = {
     "Token ini menggunakan kunci baharu daripada mint-nya.",
   "wallet.svc.keyset_unknown_body":
     "Mint tidak dapat dihubungi sekarang untuk mendapatkannya. Tiada apa yang hilang: terima semula apabila anda dalam talian.",
+  "wallet.svc.keyset_rotated": "Mint baru sahaja menukar kuncinya.",
+  "wallet.svc.keyset_rotated_body":
+    "Ia menolak permintaan itu sebelum apa-apa bergerak, jadi baki anda tidak berubah. Cuba lagi dalam seminit.",
   "wallet.svc.wrong_mint":
     "Token ini tidak ditandatangani oleh mint yang dinamakannya.",
   "wallet.svc.wrong_mint_body":
@@ -2026,7 +2032,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Penghalaan Tor tidak tersedia dalam binaan ini.",
   "settings.conn.tor_timeout":
-    "Tor mengambil masa lebih daripada seminit untuk menyambung. Ia kekal hidup dan terus mencuba; tab Mesh akan memberitahu bila ia mula menghala, atau kalau rangkaian ini menyekatnya.",
+    "Tor belum bersambung. Ia kekal hidup dan terus mencuba; tab Mesh akan memberitahu bila ia mula menghala, atau kalau rangkaian ini menyekatnya.",
   "settings.conn.tor_failed":
     "Tor tidak dapat dimulakan. Cuba lagi sebentar lagi.",
   "settings.tor.status": "Status Tor",
@@ -2179,7 +2185,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Buka semula sekarang",
   "settings.language.rtl_title": "Buka semula Airhop untuk menyelesaikannya",
   "settings.language.rtl_body":
-    "{value} dibaca dari kanan ke kiri, dan Airhop hanya boleh menukar arah semasa ia bermula. Tutup dan bukanya semula untuk menyelesaikan pertukaran. Tiada apa-apa hilang, dan mesh anda kekal bersambung sehingga anda melakukannya.",
+    "Bertukar kepada {value} mengubah arah bacaan, dan Airhop hanya boleh menukar arah semasa ia bermula. Tutup dan bukanya semula untuk menyelesaikan pertukaran. Tiada apa-apa hilang, dan mesh anda kekal bersambung sehingga anda melakukannya.",
   "settings.theme.light": "Cerah",
   "settings.theme.light_desc": "Sentiasa guna palet cerah",
   "settings.theme.dark": "Gelap",

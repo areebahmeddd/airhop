@@ -1088,6 +1088,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Finns redan i din plånbok",
   "wallet.receive.already_have_body":
     "Allt i tokenet ligger redan här, så inget lades till. Saldona är oförändrade.",
+  "wallet.receive.claiming": "Väntar fortfarande på minten",
+  "wallet.receive.claiming_body":
+    "Ett tidigare försök att hämta tokenet har ännu inte bekräftats av minten, så inget nytt skickades. Plånboken reder ut det automatiskt. Om minten aldrig tog emot det kan du hämta det igen.",
   "wallet.receive.stored_unconfirmed":
     "Sparat från {mint}, men ännu inte bekräftat hos minten ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1521,6 +1524,9 @@ export const strings: Strings = {
     "Den här token använder nya nycklar från sin mint.",
   "wallet.svc.keyset_unknown_body":
     "Minten går inte att nå just nu för att hämta dem. Inget går förlorat: ta emot den igen när du är online.",
+  "wallet.svc.keyset_rotated": "Minten har precis bytt nycklar.",
+  "wallet.svc.keyset_rotated_body":
+    "Den avvisade begäran innan något flyttades, så ditt saldo är oförändrat. Försök igen om en minut.",
   "wallet.svc.wrong_mint": "Tokenet är inte signerat av den mint det uppger.",
   "wallet.svc.wrong_mint_body":
     "Minst ett mynts signatur stämmer inte med mintens nycklar. Inget lades till.",
@@ -1994,7 +2000,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Tor-routing finns inte i den här versionen.",
   "settings.conn.tor_timeout":
-    "Tor tar mer än en minut på sig att ansluta. Det förblir påslaget och fortsätter försöka; Mesh-fliken säger till när trafiken dirigeras om, eller om nätverket blockerar det.",
+    "Tor har inte anslutit än. Det förblir påslaget och fortsätter försöka; Mesh-fliken säger till när trafiken dirigeras om, eller om nätverket blockerar det.",
   "settings.conn.tor_failed":
     "Det gick inte att starta Tor. Försök igen om en stund.",
   "settings.tor.status": "Tor-status",
@@ -2145,7 +2151,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Öppna igen nu",
   "settings.language.rtl_title": "Öppna Airhop igen för att slutföra",
   "settings.language.rtl_body":
-    "{value} läses från höger till vänster, och Airhop kan bara byta riktning när appen startar. Stäng den och öppna den igen för att slutföra bytet. Inget går förlorat, och din mesh förblir ansluten tills du gör det.",
+    "Att byta till {value} ändrar läsriktningen, och Airhop kan bara byta riktning när appen startar. Stäng den och öppna den igen för att slutföra bytet. Inget går förlorat, och din mesh förblir ansluten tills du gör det.",
   "settings.theme.light": "Ljust",
   "settings.theme.light_desc": "Använd alltid den ljusa paletten",
   "settings.theme.dark": "Mörkt",

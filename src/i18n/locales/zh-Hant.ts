@@ -1020,6 +1020,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "已經在你的錢包裡",
   "wallet.receive.already_have_body":
     "這個代幣裡的所有內容都已經存在這裡了，所以沒有新增任何東西。餘額沒有變動。",
+  "wallet.receive.claiming": "仍在等待鑄幣廠",
+  "wallet.receive.claiming_body":
+    "這個代幣先前的領取還沒有得到鑄幣廠確認，所以沒有送出新的請求。錢包會自動處理。如果鑄幣廠從未收到它，你可以再領取一次。",
   "wallet.receive.stored_unconfirmed":
     "已從 {mint} 存入，但尚未向鑄幣廠確認（{reason}）。",
   "wallet.receive.offline": "離線",
@@ -1432,6 +1435,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "此代幣使用了其鑄幣廠的新金鑰。",
   "wallet.svc.keyset_unknown_body":
     "現在無法連線鑄幣廠取得金鑰。沒有任何損失：連網後再次接收即可。",
+  "wallet.svc.keyset_rotated": "鑄幣廠剛剛更換了金鑰。",
+  "wallet.svc.keyset_rotated_body":
+    "它在任何資金移動之前就拒絕了請求，所以你的餘額沒有變動。請一分鐘後再試。",
   "wallet.svc.wrong_mint": "這個代幣並不是由它指名的鑄幣廠簽發的。",
   "wallet.svc.wrong_mint_body":
     "至少有一個幣的簽章與鑄幣廠的金鑰不符。沒有新增任何東西。",
@@ -1870,7 +1876,7 @@ export const strings: Strings = {
     "Nostr 流量會回到你原本的連線上，中繼又看得到你的 IP 位址了。不管哪一種，藍牙都不受影響。",
   "settings.conn.tor_unavailable": "這個版本不支援 Tor 路由。",
   "settings.conn.tor_timeout":
-    "Tor 連線已經花了一分多鐘。它會保持開啟並繼續嘗試；網狀網路分頁會告訴你它何時開始轉送，或者這個網路是不是在擋它。",
+    "Tor 還沒有連上。它會保持開啟並繼續嘗試；網狀網路分頁會告訴你它何時開始轉送，或者這個網路是不是在擋它。",
   "settings.conn.tor_failed": "無法啟動 Tor。請稍後再試。",
   "settings.tor.status": "Tor 狀態",
   "settings.tor.connection": "連線方式",
@@ -2017,7 +2023,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "立即重新開啟",
   "settings.language.rtl_title": "重新開啟 Airhop 以完成切換",
   "settings.language.rtl_body":
-    "{value} 是從右往左讀的，而 Airhop 只能在啟動時改變方向。請關掉再開一次以完成切換。什麼都不會遺失，在那之前你的網狀網路也保持連線。",
+    "切換到 {value} 會改變閱讀方向，而 Airhop 只能在啟動時改變方向。請關掉再開一次以完成切換。什麼都不會遺失，在那之前你的網狀網路也保持連線。",
   "settings.theme.light": "淺色",
   "settings.theme.light_desc": "永遠使用淺色配色",
   "settings.theme.dark": "深色",

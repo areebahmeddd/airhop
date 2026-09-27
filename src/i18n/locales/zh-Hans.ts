@@ -1019,6 +1019,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "已经在你的钱包里",
   "wallet.receive.already_have_body":
     "这个代币里的所有内容都已经存在这里了，所以没有新增任何东西。余额没有变化。",
+  "wallet.receive.claiming": "仍在等待铸币厂",
+  "wallet.receive.claiming_body":
+    "这个代币之前的领取还没有得到铸币厂确认，所以没有发送新的请求。钱包会自动处理。如果铸币厂从未收到它，你可以再次领取。",
   "wallet.receive.stored_unconfirmed":
     "已从 {mint} 存入，但尚未与铸币厂确认（{reason}）。",
   "wallet.receive.offline": "离线",
@@ -1431,6 +1434,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "此代币使用了其铸币厂的新密钥。",
   "wallet.svc.keyset_unknown_body":
     "现在无法连接铸币厂获取密钥。没有任何损失：联网后再次接收即可。",
+  "wallet.svc.keyset_rotated": "铸币厂刚刚更换了密钥。",
+  "wallet.svc.keyset_rotated_body":
+    "它在任何资金变动之前就拒绝了请求，所以你的余额没有变化。请一分钟后再试。",
   "wallet.svc.wrong_mint": "这个代币并非由它所指明的铸币厂签发。",
   "wallet.svc.wrong_mint_body":
     "至少有一个币的签名与铸币厂的密钥不符。没有新增任何东西。",
@@ -1867,7 +1873,7 @@ export const strings: Strings = {
     "Nostr 流量会回到你的普通连接上，中继又能看到你的 IP 地址了。无论哪种方式，蓝牙都不受影响。",
   "settings.conn.tor_unavailable": "这个版本不支持 Tor 路由。",
   "settings.conn.tor_timeout":
-    "Tor 连接已经花了一分多钟。它会保持开启并继续尝试；网状网络标签页会告诉你它何时开始转发，或者这个网络是否在拦截它。",
+    "Tor 还没有连上。它会保持开启并继续尝试；网状网络标签页会告诉你它何时开始转发，或者这个网络是否在拦截它。",
   "settings.conn.tor_failed": "无法启动 Tor。请稍后重试。",
   "settings.tor.status": "Tor 状态",
   "settings.tor.connection": "连接方式",
@@ -2013,7 +2019,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "立即重新打开",
   "settings.language.rtl_title": "重新打开 Airhop 以完成切换",
   "settings.language.rtl_body":
-    "{value} 是从右往左读的，而 Airhop 只能在启动时改变方向。请关掉再打开一次以完成切换。什么都不会丢失，在此之前你的网状网络也保持连接。",
+    "切换到 {value} 会改变阅读方向，而 Airhop 只能在启动时改变方向。请关掉再打开一次以完成切换。什么都不会丢失，在此之前你的网状网络也保持连接。",
   "settings.theme.light": "浅色",
   "settings.theme.light_desc": "始终使用浅色配色",
   "settings.theme.dark": "深色",

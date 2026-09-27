@@ -1115,6 +1115,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Déjà dans ton portefeuille",
   "wallet.receive.already_have_body":
     "Tout le contenu de ce jeton est déjà stocké ici, rien n’a donc été ajouté. Les soldes sont inchangés.",
+  "wallet.receive.claiming": "Toujours en attente du mint",
+  "wallet.receive.claiming_body":
+    "Le mint n’a pas encore confirmé un encaissement précédent de ce jeton, rien de nouveau n’a donc été envoyé. Le portefeuille le règle automatiquement. Si le mint ne l’a jamais reçu, tu peux l’encaisser à nouveau.",
   "wallet.receive.stored_unconfirmed":
     "Stocké depuis {mint}, mais pas encore confirmé auprès du mint ({reason}).",
   "wallet.receive.offline": "hors ligne",
@@ -1561,6 +1564,9 @@ export const strings: Strings = {
     "Ce jeton utilise de nouvelles clés de son mint.",
   "wallet.svc.keyset_unknown_body":
     "Le mint est injoignable pour l’instant. Rien n’est perdu : reçois-le à nouveau une fois en ligne.",
+  "wallet.svc.keyset_rotated": "Le mint vient de changer ses clés.",
+  "wallet.svc.keyset_rotated_body":
+    "Il a refusé la demande avant que quoi que ce soit ne bouge, ton solde est donc inchangé. Réessaie dans une minute.",
   "wallet.svc.wrong_mint":
     "Ce jeton n’a pas été signé par le mint qu’il désigne.",
   "wallet.svc.wrong_mint_body":
@@ -2050,7 +2056,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Le routage par Tor n’est pas disponible dans cette version.",
   "settings.conn.tor_timeout":
-    "Tor met plus d’une minute à se connecter. Il reste actif et continue d’essayer ; l’onglet Maillage indiquera quand il route, ou si ce réseau le bloque.",
+    "Tor n’est pas encore connecté. Il reste actif et continue d’essayer ; l’onglet Maillage indiquera quand il route, ou si ce réseau le bloque.",
   "settings.conn.tor_failed":
     "Impossible de démarrer Tor. Réessayez dans un instant.",
   "settings.tor.status": "État de Tor",
@@ -2205,7 +2211,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Rouvrir maintenant",
   "settings.language.rtl_title": "Rouvre Airhop pour terminer",
   "settings.language.rtl_body":
-    "{value} se lit de droite à gauche, et Airhop ne peut changer de sens qu’au démarrage. Ferme-le et rouvre-le pour terminer le changement. Rien n’est perdu, et d’ici là ton maillage reste connecté.",
+    "Passer à {value} change le sens de lecture, et Airhop ne peut changer de sens qu’au démarrage. Ferme-le et rouvre-le pour terminer le changement. Rien n’est perdu, et d’ici là ton maillage reste connecté.",
   "settings.theme.light": "Clair",
   "settings.theme.light_desc": "Toujours utiliser la palette claire",
   "settings.theme.dark": "Sombre",

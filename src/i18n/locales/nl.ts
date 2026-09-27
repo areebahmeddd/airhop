@@ -1100,6 +1100,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Zit al in je portemonnee",
   "wallet.receive.already_have_body":
     "Alles in dit token staat hier al, dus er is niets bijgekomen. De saldo’s zijn onveranderd.",
+  "wallet.receive.claiming": "Wacht nog op de mint",
+  "wallet.receive.claiming_body":
+    "Een eerdere ophaalpoging van dit token is nog niet bevestigd door de mint, dus er is niets nieuws verstuurd. De portemonnee handelt het vanzelf af. Heeft de mint het nooit ontvangen, dan kun je het opnieuw ophalen.",
   "wallet.receive.stored_unconfirmed":
     "Opgeslagen van {mint}, maar nog niet bevestigd bij de mint ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1541,6 +1544,9 @@ export const strings: Strings = {
     "Deze token gebruikt nieuwe sleutels van zijn mint.",
   "wallet.svc.keyset_unknown_body":
     "De mint is nu niet bereikbaar om ze op te halen. Er gaat niets verloren: ontvang hem opnieuw zodra je online bent.",
+  "wallet.svc.keyset_rotated": "De mint heeft net zijn sleutels gewijzigd.",
+  "wallet.svc.keyset_rotated_body":
+    "Het verzoek is geweigerd voordat er iets verplaatst werd, dus je saldo is onveranderd. Probeer het over een minuut opnieuw.",
   "wallet.svc.wrong_mint":
     "Dit token is niet ondertekend door de mint die het noemt.",
   "wallet.svc.wrong_mint_body":
@@ -2021,7 +2027,7 @@ export const strings: Strings = {
     "Nostr-verkeer gaat weer over je gewone verbinding, dus relays zien je IP-adres weer. Bluetooth verandert hoe dan ook niet.",
   "settings.conn.tor_unavailable": "Routeren via Tor zit niet in deze build.",
   "settings.conn.tor_timeout":
-    "Tor doet er langer dan een minuut over om te verbinden. Het blijft aan en blijft proberen; het Mesh-tabblad laat weten wanneer het routeert, of dat dit netwerk het blokkeert.",
+    "Tor is nog niet verbonden. Het blijft aan en blijft proberen; het Mesh-tabblad laat weten wanneer het routeert, of dat dit netwerk het blokkeert.",
   "settings.conn.tor_failed":
     "Tor kon niet worden gestart. Probeer het zo opnieuw.",
   "settings.tor.status": "Tor-status",
@@ -2174,7 +2180,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Nu opnieuw openen",
   "settings.language.rtl_title": "Open Airhop opnieuw om het af te maken",
   "settings.language.rtl_body":
-    "{value} leest van rechts naar links, en Airhop kan de richting alleen bij het starten veranderen. Sluit de app en open hem opnieuw om de overstap af te maken. Er gaat niets verloren, en tot die tijd blijft je mesh verbonden.",
+    "Overschakelen naar {value} verandert de leesrichting, en Airhop kan de richting alleen bij het starten veranderen. Sluit de app en open hem opnieuw om de overstap af te maken. Er gaat niets verloren, en tot die tijd blijft je mesh verbonden.",
   "settings.theme.light": "Licht",
   "settings.theme.light_desc": "Altijd het lichte palet gebruiken",
   "settings.theme.dark": "Donker",

@@ -1102,6 +1102,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Tayari ipo kwenye pochi yako",
   "wallet.receive.already_have_body":
     "Kila kitu kwenye tokeni hii tayari kimehifadhiwa hapa, kwa hivyo hakuna kilichoongezwa. Masalio hayajabadilika.",
+  "wallet.receive.claiming": "Bado tunasubiri mint",
+  "wallet.receive.claiming_body":
+    "Dai la awali la tokeni hii bado halijathibitishwa na mint, kwa hivyo hakuna kipya kilichotumwa. Pochi italishughulikia yenyewe. Ikiwa mint haikuipokea kamwe, unaweza kuidai tena.",
   "wallet.receive.stored_unconfirmed":
     "Imehifadhiwa kutoka {mint}, lakini bado haijathibitishwa na mint ({reason}).",
   "wallet.receive.offline": "nje ya mtandao",
@@ -1551,6 +1554,9 @@ export const strings: Strings = {
     "Tokeni hii inatumia funguo mpya kutoka kwa mint yake.",
   "wallet.svc.keyset_unknown_body":
     "Mint haipatikani sasa hivi ili kuzileta. Hakuna kilichopotea: ipokee tena ukiwa mtandaoni.",
+  "wallet.svc.keyset_rotated": "Mint imebadilisha funguo zake hivi punde.",
+  "wallet.svc.keyset_rotated_body":
+    "Ilikataa ombi kabla chochote hakijahamishwa, kwa hivyo salio lako halijabadilika. Jaribu tena baada ya dakika moja.",
   "wallet.svc.wrong_mint": "Tokeni hii haikutiwa saini na mint inayoitaja.",
   "wallet.svc.wrong_mint_body":
     "Saini ya angalau sarafu moja hailingani na funguo za mint. Hakuna kilichoongezwa.",
@@ -2035,7 +2041,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Uelekezaji wa Tor haupatikani kwenye toleo hili.",
   "settings.conn.tor_timeout":
-    "Tor inachukua zaidi ya dakika moja kuunganisha. Inabaki imewashwa na inaendelea kujaribu; kichupo cha Mesh kitasema itakapokuwa inaelekeza, au kama mtandao huu unaizuia.",
+    "Tor bado haijaunganishwa. Inabaki imewashwa na inaendelea kujaribu; kichupo cha Mesh kitasema itakapokuwa inaelekeza, au kama mtandao huu unaizuia.",
   "settings.conn.tor_failed":
     "Imeshindwa kuanzisha Tor. Jaribu tena baada ya muda mfupi.",
   "settings.tor.status": "Hali ya Tor",
@@ -2188,7 +2194,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Fungua tena sasa",
   "settings.language.rtl_title": "Fungua Airhop tena ili kumaliza",
   "settings.language.rtl_body":
-    "{value} husomwa kutoka kulia kwenda kushoto, na Airhop inaweza kubadilisha mwelekeo tu inapoanza. Ifunge na uifungue tena ili kumaliza kubadili. Hakuna kinachopotea, na mesh yako inabaki imeunganishwa hadi ufanye hivyo.",
+    "Kubadili kwenda {value} hubadilisha mwelekeo wa kusoma, na Airhop inaweza kubadilisha mwelekeo tu inapoanza. Ifunge na uifungue tena ili kumaliza kubadili. Hakuna kinachopotea, na mesh yako inabaki imeunganishwa hadi ufanye hivyo.",
   "settings.theme.light": "Nuru",
   "settings.theme.light_desc": "Daima tumia rangi za nuru",
   "settings.theme.dark": "Giza",

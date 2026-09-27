@@ -1074,6 +1074,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "이미 지갑에 있습니다",
   "wallet.receive.already_have_body":
     "이 토큰의 내용이 모두 이미 여기 저장되어 있어 추가된 것이 없습니다. 잔액은 그대로입니다.",
+  "wallet.receive.claiming": "아직 민트를 기다리는 중",
+  "wallet.receive.claiming_body":
+    "이 토큰의 이전 받기 요청을 민트가 아직 확인하지 않아 새로 보낸 것은 없습니다. 지갑이 자동으로 처리합니다. 민트가 받지 않았다면 다시 받을 수 있습니다.",
   "wallet.receive.stored_unconfirmed":
     "{mint}에서 받아 저장했지만 아직 민트에서 확인되지 않았습니다 ({reason}).",
   "wallet.receive.offline": "오프라인",
@@ -1504,6 +1507,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "이 토큰은 민트의 새 키를 사용합니다.",
   "wallet.svc.keyset_unknown_body":
     "지금은 키를 가져오기 위해 민트에 연결할 수 없습니다. 잃은 것은 없습니다. 온라인이 되면 다시 받으세요.",
+  "wallet.svc.keyset_rotated": "민트가 방금 키를 변경했습니다.",
+  "wallet.svc.keyset_rotated_body":
+    "민트가 아무것도 옮겨지기 전에 요청을 거절해 잔액은 그대로입니다. 1분 뒤에 다시 시도하세요.",
   "wallet.svc.wrong_mint":
     "이 토큰은 스스로 지목한 민트가 서명한 것이 아닙니다.",
   "wallet.svc.wrong_mint_body":
@@ -1965,7 +1971,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "이 빌드에서는 Tor 경로 설정을 사용할 수 없습니다.",
   "settings.conn.tor_timeout":
-    "Tor 연결이 1분 넘게 걸리고 있습니다. 계속 켜진 채로 시도하며, 경로 설정이 되었는지 또는 이 네트워크가 차단하고 있는지는 메시 탭에서 알려줍니다.",
+    "Tor가 아직 연결되지 않았습니다. 계속 켜진 채로 시도하며, 경로 설정이 되었는지 또는 이 네트워크가 차단하고 있는지는 메시 탭에서 알려줍니다.",
   "settings.conn.tor_failed":
     "Tor를 시작할 수 없습니다. 잠시 후 다시 시도하세요.",
   "settings.tor.status": "Tor 상태",
@@ -2112,7 +2118,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "지금 다시 열기",
   "settings.language.rtl_title": "Airhop을 다시 열어 마무리하세요",
   "settings.language.rtl_body":
-    "{value}은(는) 오른쪽에서 왼쪽으로 읽으며, Airhop은 시작할 때만 방향을 바꿀 수 있습니다. 닫았다가 다시 열어 전환을 마치세요. 잃는 것은 없으며, 그때까지 메시 연결도 유지됩니다.",
+    "{value}(으)로 전환하면 읽는 방향이 바뀌며, Airhop은 시작할 때만 방향을 바꿀 수 있습니다. 닫았다가 다시 열어 전환을 마치세요. 잃는 것은 없으며, 그때까지 메시 연결도 유지됩니다.",
   "settings.theme.light": "밝게",
   "settings.theme.light_desc": "항상 밝은 색상표 사용",
   "settings.theme.dark": "어둡게",

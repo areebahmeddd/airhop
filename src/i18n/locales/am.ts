@@ -1017,6 +1017,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "አስቀድሞ በቦርሳህ ውስጥ ነው",
   "wallet.receive.already_have_body":
     "በዚህ ቶከን ውስጥ ያለው ሁሉ አስቀድሞ እዚህ ተከማችቷል፤ ስለዚህ ምንም አልተጨመረም። ቀሪ ሂሳቦች አልተቀየሩም።",
+  "wallet.receive.claiming": "አሁንም ሚንቱን በመጠበቅ ላይ",
+  "wallet.receive.claiming_body":
+    "ይህን ቶከን ቀደም ብሎ የመውሰድ ሙከራ ገና በሚንቱ አልተረጋገጠም፤ ስለዚህ ምንም አዲስ ነገር አልተላከም። ቦርሳው በራሱ ያጠናቅቀዋል። ሚንቱ ፈጽሞ ካልተቀበለው እንደገና ልትወስደው ትችላለህ።",
   "wallet.receive.stored_unconfirmed":
     "ከ{mint} ተከማችቷል፤ ግን ገና ከሚንቱ ጋር አልተረጋገጠም ({reason})።",
   "wallet.receive.offline": "ከመስመር ውጭ",
@@ -1430,6 +1433,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "ይህ ቶከን ከሚንቱ አዳዲስ ቁልፎችን ይጠቀማል።",
   "wallet.svc.keyset_unknown_body":
     "እነሱን ለማምጣት ሚንቱ አሁን ሊደረስበት አይችልም። ምንም አልጠፋም፤ መስመር ላይ ሲሆኑ እንደገና ይቀበሉት።",
+  "wallet.svc.keyset_rotated": "ሚንቱ አሁን ቁልፎቹን ቀይሯል።",
+  "wallet.svc.keyset_rotated_body":
+    "ምንም ነገር ከመንቀሳቀሱ በፊት ጥያቄውን ውድቅ አድርጓል፤ ስለዚህ ቀሪ ሂሳብህ አልተቀየረም። ከአንድ ደቂቃ በኋላ እንደገና ሞክር።",
   "wallet.svc.wrong_mint": "ይህ ቶከን በጠቀሰው ሚንት አልተፈረመም።",
   "wallet.svc.wrong_mint_body":
     "ቢያንስ የአንድ ሳንቲም ፊርማ ከሚንቱ ቁልፎች ጋር አይዛመድም። ምንም አልተጨመረም።",
@@ -1865,7 +1871,7 @@ export const strings: Strings = {
     "የNostr ትራፊክ ወደ ተራው ግንኙነትህ ይመለሳል፤ ስለዚህ አስተላላፊዎች እንደገና የIP አድራሻህን ያያሉ። በሁለቱም መንገድ ብሉቱዝ አይነካም።",
   "settings.conn.tor_unavailable": "በዚህ ስሪት ውስጥ የTor አቅጣጫ አይገኝም።",
   "settings.conn.tor_timeout":
-    "Tor ለመገናኘት ከአንድ ደቂቃ በላይ እየወሰደ ነው። በርቶ ይቀጥላል፤ መሞከሩንም ይቀጥላል፤ የሜሽ ትሩ መቼ እያመራ እንደሆነ ወይም ይህ አውታረ መረብ እያገደው እንደሆነ ይነግርሃል።",
+    "Tor ገና አልተገናኘም። በርቶ ይቀጥላል፤ መሞከሩንም ይቀጥላል፤ የሜሽ ትሩ መቼ እያመራ እንደሆነ ወይም ይህ አውታረ መረብ እያገደው እንደሆነ ይነግርሃል።",
   "settings.conn.tor_failed": "Tor ማስጀመር አልተቻለም። ከጥቂት ጊዜ በኋላ እንደገና ይሞክሩ።",
   "settings.tor.status": "የTor ሁኔታ",
   "settings.tor.connection": "ግንኙነት",
@@ -2011,7 +2017,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "አሁን ክፈት",
   "settings.language.rtl_title": "ለማጠናቀቅ Airhop ን እንደገና ክፈት",
   "settings.language.rtl_body":
-    "{value} ከቀኝ ወደ ግራ ይነበባል፤ Airhop ደግሞ አቅጣጫውን መቀየር የሚችለው ሲጀምር ብቻ ነው። መቀየሩን ለማጠናቀቅ ዝጋውና እንደገና ክፈተው። ምንም አይጠፋም፤ እስከዚያ ድረስም ሜሽህ ተገናኝቶ ይቆያል።",
+    "ወደ {value} መቀየር የንባብ አቅጣጫውን ይቀይራል፤ Airhop ደግሞ አቅጣጫውን መቀየር የሚችለው ሲጀምር ብቻ ነው። መቀየሩን ለማጠናቀቅ ዝጋውና እንደገና ክፈተው። ምንም አይጠፋም፤ እስከዚያ ድረስም ሜሽህ ተገናኝቶ ይቆያል።",
   "settings.theme.light": "ብሩህ",
   "settings.theme.light_desc": "ሁልጊዜ ብሩህ ቀለሞችን ተጠቀም",
   "settings.theme.dark": "ጨለማ",

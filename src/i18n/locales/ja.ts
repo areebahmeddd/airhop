@@ -1093,6 +1093,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "すでにウォレットにあります",
   "wallet.receive.already_have_body":
     "このトークンの中身はすべてここに保存済みのため、何も追加されませんでした。残高は変わりません。",
+  "wallet.receive.claiming": "ミントの確認を待っています",
+  "wallet.receive.claiming_body":
+    "このトークンの以前の受け取りがまだミントで確認されていないため、新たには何も送信していません。ウォレットが自動的に確定させます。ミントが受け付けていなかった場合は、もう一度受け取れます。",
   "wallet.receive.stored_unconfirmed":
     "{mint}から保存しましたが、ミントではまだ確認されていません（{reason}）。",
   "wallet.receive.offline": "オフライン",
@@ -1527,6 +1530,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "このトークンはミントの新しい鍵を使っています。",
   "wallet.svc.keyset_unknown_body":
     "今はミントに接続して鍵を取得できません。何も失われていません。オンラインになったらもう一度受け取ってください。",
+  "wallet.svc.keyset_rotated": "ミントが鍵を変更したところです。",
+  "wallet.svc.keyset_rotated_body":
+    "ミントは何も動かないうちにリクエストを断ったため、残高は変わっていません。1分ほどしてからもう一度お試しください。",
   "wallet.svc.wrong_mint":
     "このトークンは、名乗っているミントが署名したものではありません。",
   "wallet.svc.wrong_mint_body":
@@ -1995,7 +2001,7 @@ export const strings: Strings = {
     "Nostrの通信は通常の接続に戻るので、リレーから再びIPアドレスが見えます。どちらにしてもBluetoothには影響しません。",
   "settings.conn.tor_unavailable": "このビルドではTor経由の通信を使えません。",
   "settings.conn.tor_timeout":
-    "Torの接続に1分以上かかっています。オンのまま試み続けます。中継が始まったか、このネットワークが遮断しているかは、メッシュタブでお知らせします。",
+    "Torはまだ接続されていません。オンのまま試み続けます。中継が始まったか、このネットワークが遮断しているかは、メッシュタブでお知らせします。",
   "settings.conn.tor_failed":
     "Tor を開始できませんでした。しばらくしてからもう一度お試しください。",
   "settings.tor.status": "Tor の状態",
@@ -2147,7 +2153,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "今すぐ開き直す",
   "settings.language.rtl_title": "Airhopを開き直すと完了します",
   "settings.language.rtl_body":
-    "{value}は右から左へ読む言語で、Airhopが表示方向を変えられるのは起動時だけです。いったん閉じて開き直すと切り替えが完了します。失われるものはなく、それまでメッシュはつながったままです。",
+    "{value}に切り替えると読む方向が変わりますが、Airhopが表示方向を変えられるのは起動時だけです。いったん閉じて開き直すと切り替えが完了します。失われるものはなく、それまでメッシュはつながったままです。",
   "settings.theme.light": "ライト",
   "settings.theme.light_desc": "常にライトの配色を使います",
   "settings.theme.dark": "ダーク",

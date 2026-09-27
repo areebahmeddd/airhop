@@ -1104,6 +1104,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Ya está en tu cartera",
   "wallet.receive.already_have_body":
     "Todo lo de este token ya está guardado aquí, así que no se ha añadido nada. Los saldos no cambian.",
+  "wallet.receive.claiming": "Aún esperando a la casa de cambio",
+  "wallet.receive.claiming_body":
+    "La casa de cambio aún no ha confirmado un intento anterior de reclamar este token, así que no se ha enviado nada nuevo. La cartera lo resuelve sola. Si la casa de cambio nunca lo recibió, puedes volver a reclamarlo.",
   "wallet.receive.stored_unconfirmed":
     "Guardado de {mint}, pero aún sin confirmar con la casa de cambio ({reason}).",
   "wallet.receive.offline": "sin conexión",
@@ -1552,6 +1555,9 @@ export const strings: Strings = {
     "Este token usa claves nuevas de su casa de cambio.",
   "wallet.svc.keyset_unknown_body":
     "Ahora no se puede contactar con la casa de cambio para obtenerlas. No se pierde nada: vuelve a recibirlo cuando tengas conexión.",
+  "wallet.svc.keyset_rotated": "La casa de cambio acaba de renovar sus claves.",
+  "wallet.svc.keyset_rotated_body":
+    "Rechazó la solicitud antes de que se moviera nada, así que tu saldo no ha cambiado. Inténtalo de nuevo en un minuto.",
   "wallet.svc.wrong_mint": "Este token no lo firmó la casa de cambio que dice.",
   "wallet.svc.wrong_mint_body":
     "La firma de al menos una moneda no coincide con las claves de la casa de cambio. No se añadió nada.",
@@ -2034,7 +2040,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "El enrutado por Tor no está disponible en esta versión.",
   "settings.conn.tor_timeout":
-    "Tor tarda más de un minuto en conectarse. Sigue activo e intentándolo; la pestaña Malla dirá cuándo está enrutando, o si esta red lo está bloqueando.",
+    "Tor aún no se ha conectado. Sigue activo e intentándolo; la pestaña Malla dirá cuándo está enrutando, o si esta red lo está bloqueando.",
   "settings.conn.tor_failed":
     "No se pudo iniciar Tor. Inténtalo de nuevo en un momento.",
   "settings.tor.status": "Estado de Tor",
@@ -2187,7 +2193,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Reabrir ahora",
   "settings.language.rtl_title": "Vuelve a abrir Airhop para terminar",
   "settings.language.rtl_body":
-    "{value} se lee de derecha a izquierda, y Airhop solo puede cambiar de dirección al arrancar. Ciérrala y vuelve a abrirla para terminar el cambio. No se pierde nada, y hasta entonces tu malla sigue conectada.",
+    "Pasar a {value} cambia la dirección de lectura, y Airhop solo puede cambiar de dirección al arrancar. Ciérrala y vuelve a abrirla para terminar el cambio. No se pierde nada, y hasta entonces tu malla sigue conectada.",
   "settings.theme.light": "Claro",
   "settings.theme.light_desc": "Usar siempre la paleta clara",
   "settings.theme.dark": "Oscuro",

@@ -1125,6 +1125,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Efa ao amin'ny kitapom-bolanao",
   "wallet.receive.already_have_body":
     "Efa voatahiry eto avokoa ny zava-drehetra ao amin'ity tapakila ity, ka tsy nisy nampiana. Tsy niova ny vola.",
+  "wallet.receive.claiming": "Mbola miandry ny mpamoaka",
+  "wallet.receive.claiming_body":
+    "Tsy mbola nohamarinin'ny mpamoaka ny fandraisana teo aloha an'ity tapakila ity, ka tsy nisy zava-baovao nalefa. Ny kitapom-bola no handamina izany ho azy. Raha tsy nahazo azy mihitsy ny mpamoaka, dia azonao raisina indray izy.",
   "wallet.receive.stored_unconfirmed":
     "Voatahiry avy amin'i {mint}, saingy tsy mbola voamarina amin'ny mpamoaka ({reason}).",
   "wallet.receive.offline": "tsy misy Internet",
@@ -1574,6 +1577,9 @@ export const strings: Strings = {
     "Mampiasa lakile vaovao avy amin'ny mpamoaka azy ity token ity.",
   "wallet.svc.keyset_unknown_body":
     "Tsy azo tratrarina izao ny mpamoaka mba haka azy ireo. Tsy misy very: raiso indray rehefa mifandray amin'ny aterineto ianao.",
+  "wallet.svc.keyset_rotated": "Vao avy nanova ny lakileny ny mpamoaka.",
+  "wallet.svc.keyset_rotated_body":
+    "Nolaviny ny fangatahana talohan'ny nisian'ny zavatra nifindra, ka tsy niova ny volanao. Andramo indray afaka iray minitra.",
   "wallet.svc.wrong_mint":
     "Tsy nosoniavin'ny mpamoaka notononiny ity tapakila ity.",
   "wallet.svc.wrong_mint_body":
@@ -2070,7 +2076,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Tsy misy ny fitondrana amin'ny Tor amin'ity kinova ity.",
   "settings.conn.tor_timeout":
-    "Mihoatra ny iray minitra i Tor vao mifandray. Mijanona mandeha izy ary manohy manandrana; hilaza ny takelaka Harato rehefa mitondra izy, na raha misakana azy ity tambajotra ity.",
+    "Tsy mbola mifandray i Tor. Mijanona mandeha izy ary manohy manandrana; hilaza ny takelaka Harato rehefa mitondra izy, na raha misakana azy ity tambajotra ity.",
   "settings.conn.tor_failed":
     "Tsy afaka nanomboka ny Tor. Andramo indray afaka kelikely.",
   "settings.tor.status": "Toetran'ny Tor",
@@ -2225,7 +2231,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Sokafy indray izao",
   "settings.language.rtl_title": "Sokafy indray ny Airhop mba hamitana",
   "settings.language.rtl_body":
-    "Vakiana avy any ankavanana miankavia ny {value}, ary rehefa manomboka ihany ny Airhop no afaka manova lalana. Akatony izy ary sokafy indray mba hamitana ny fiovana. Tsy misy very, ary mifandray hatrany ny haratonao mandra-pahatongan'izany.",
+    "Manova ny lalan'ny famakiana ny fifindrana amin'ny {value}, ary rehefa manomboka ihany ny Airhop no afaka manova lalana. Akatony izy ary sokafy indray mba hamitana ny fiovana. Tsy misy very, ary mifandray hatrany ny haratonao mandra-pahatongan'izany.",
   "settings.theme.light": "Mazava",
   "settings.theme.light_desc": "Mampiasa ny loko mazava foana",
   "settings.theme.dark": "Maizina",

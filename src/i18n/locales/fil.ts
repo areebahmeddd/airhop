@@ -1132,6 +1132,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Nasa wallet mo na",
   "wallet.receive.already_have_body":
     "Nakaimbak na rito ang lahat ng laman ng token na ito, kaya walang naidagdag. Hindi nagbago ang mga balanse.",
+  "wallet.receive.claiming": "Hinihintay pa ang mint",
+  "wallet.receive.claiming_body":
+    "Hindi pa kinukumpirma ng mint ang naunang pag-angkin sa token na ito, kaya walang bagong ipinadala. Awtomatiko itong inaayos ng wallet. Kung hindi ito kailanman tinanggap ng mint, puwede mo itong angkining muli.",
   "wallet.receive.stored_unconfirmed":
     "Nakaimbak mula sa {mint}, pero hindi pa nakukumpirma sa mint ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1579,6 +1582,9 @@ export const strings: Strings = {
     "Gumagamit ang token na ito ng mga bagong susi mula sa mint nito.",
   "wallet.svc.keyset_unknown_body":
     "Hindi maabot ang mint ngayon para kunin ang mga ito. Walang nawala: tanggapin itong muli kapag online ka na.",
+  "wallet.svc.keyset_rotated": "Kapapalit lang ng mint ng mga susi nito.",
+  "wallet.svc.keyset_rotated_body":
+    "Tinanggihan nito ang kahilingan bago may gumalaw, kaya hindi nagbago ang balanse mo. Subukan ulit pagkalipas ng isang minuto.",
   "wallet.svc.wrong_mint":
     "Hindi nilagdaan ng mintong tinutukoy nito ang token na ito.",
   "wallet.svc.wrong_mint_body":
@@ -2069,7 +2075,7 @@ export const strings: Strings = {
     "Babalik ang trapiko ng Nostr sa karaniwan mong koneksyon, kaya makikita ulit ng mga relay ang IP address mo. Hindi apektado ang Bluetooth sa dalawang paraan.",
   "settings.conn.tor_unavailable": "Walang pagruruta sa Tor sa build na ito.",
   "settings.conn.tor_timeout":
-    "Mahigit isang minuto nang kumokonekta ang Tor. Mananatili itong naka-on at patuloy na susubok; sasabihin ng tab na Mesh kung kailan ito nagruruta, o kung hinaharangan ito ng network na ito.",
+    "Hindi pa nakakakonekta ang Tor. Mananatili itong naka-on at patuloy na susubok; sasabihin ng tab na Mesh kung kailan ito nagruruta, o kung hinaharangan ito ng network na ito.",
   "settings.conn.tor_failed":
     "Hindi masimulan ang Tor. Subukan ulit maya-maya.",
   "settings.tor.status": "Katayuan ng Tor",
@@ -2221,7 +2227,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Buksang muli ngayon",
   "settings.language.rtl_title": "Buksang muli ang Airhop para matapos ito",
   "settings.language.rtl_body":
-    "Mula kanan pakaliwa binabasa ang {value}, at kapag nagsisimula lang ito nakakapagpalit ng direksyon ang Airhop. Isara ito at buksang muli para matapos ang paglipat. Walang mawawala, at mananatiling konektado ang mesh mo hangga't hindi mo ito ginagawa.",
+    "Binabago ng paglipat sa {value} ang direksyon ng pagbasa, at kapag nagsisimula lang ito nakakapagpalit ng direksyon ang Airhop. Isara ito at buksang muli para matapos ang paglipat. Walang mawawala, at mananatiling konektado ang mesh mo hangga't hindi mo ito ginagawa.",
   "settings.theme.light": "Maliwanag",
   "settings.theme.light_desc": "Laging gamitin ang maliwanag na palette",
   "settings.theme.dark": "Madilim",

@@ -1097,6 +1097,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Sudah ada di dompetmu",
   "wallet.receive.already_have_body":
     "Semua isi token ini sudah tersimpan di sini, jadi tidak ada yang bertambah. Saldo tidak berubah.",
+  "wallet.receive.claiming": "Masih menunggu mint",
+  "wallet.receive.claiming_body":
+    "Klaim sebelumnya atas token ini belum dikonfirmasi oleh mint, jadi tidak ada yang baru dikirim. Dompet menuntaskannya secara otomatis. Kalau mint ternyata tidak pernah menerimanya, kamu bisa mengklaimnya lagi.",
   "wallet.receive.stored_unconfirmed":
     "Tersimpan dari {mint}, tetapi belum dikonfirmasi oleh mint ({reason}).",
   "wallet.receive.offline": "luring",
@@ -1534,6 +1537,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "Token ini memakai kunci baru dari mint-nya.",
   "wallet.svc.keyset_unknown_body":
     "Mint tidak bisa dihubungi sekarang untuk mengambilnya. Tidak ada yang hilang: terima lagi setelah kamu online.",
+  "wallet.svc.keyset_rotated": "Mint baru saja mengganti kuncinya.",
+  "wallet.svc.keyset_rotated_body":
+    "Mint menolak permintaan itu sebelum ada yang berpindah, jadi saldomu tidak berubah. Coba lagi dalam semenit.",
   "wallet.svc.wrong_mint":
     "Token ini tidak ditandatangani oleh mint yang disebutnya.",
   "wallet.svc.wrong_mint_body":
@@ -2014,7 +2020,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Perutean Tor tidak tersedia di versi rakitan ini.",
   "settings.conn.tor_timeout":
-    "Tor butuh lebih dari semenit untuk menyambung. Ia tetap menyala dan terus mencoba; tab Mesh akan memberi tahu saat perutean berjalan, atau kalau jaringan ini memblokirnya.",
+    "Tor belum tersambung. Ia tetap menyala dan terus mencoba; tab Mesh akan memberi tahu saat perutean berjalan, atau kalau jaringan ini memblokirnya.",
   "settings.conn.tor_failed":
     "Tor tidak dapat dimulai. Coba lagi sebentar lagi.",
   "settings.tor.status": "Status Tor",
@@ -2166,7 +2172,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Buka ulang sekarang",
   "settings.language.rtl_title": "Buka lagi Airhop untuk menuntaskannya",
   "settings.language.rtl_body":
-    "{value} dibaca dari kanan ke kiri, dan Airhop hanya bisa mengubah arah saat mulai berjalan. Tutup lalu buka lagi untuk menuntaskan peralihannya. Tidak ada yang hilang, dan mesh-mu tetap tersambung sampai kamu melakukannya.",
+    "Beralih ke {value} mengubah arah baca, dan Airhop hanya bisa mengubah arah saat mulai berjalan. Tutup lalu buka lagi untuk menuntaskan peralihannya. Tidak ada yang hilang, dan mesh-mu tetap tersambung sampai kamu melakukannya.",
   "settings.theme.light": "Terang",
   "settings.theme.light_desc": "Selalu pakai palet terang",
   "settings.theme.dark": "Gelap",

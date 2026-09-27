@@ -1110,6 +1110,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Bereits in deiner Wallet",
   "wallet.receive.already_have_body":
     "Alles in diesem Token liegt bereits hier, es wurde also nichts hinzugefügt. Die Guthaben bleiben unverändert.",
+  "wallet.receive.claiming": "Wartet noch auf den Mint",
+  "wallet.receive.claiming_body":
+    "Eine frühere Einlösung dieses Tokens hat der Mint noch nicht bestätigt, daher wurde nichts Neues gesendet. Die Wallet schließt sie automatisch ab. Hat der Mint sie nie angenommen, kannst du den Token erneut einlösen.",
   "wallet.receive.stored_unconfirmed":
     "Von {mint} gespeichert, aber noch nicht mit dem Mint bestätigt ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1557,6 +1560,10 @@ export const strings: Strings = {
     "Dieser Token nutzt neue Schlüssel seines Mints.",
   "wallet.svc.keyset_unknown_body":
     "Der Mint ist gerade nicht erreichbar, um sie abzurufen. Nichts geht verloren: Empfange ihn erneut, sobald du online bist.",
+  "wallet.svc.keyset_rotated":
+    "Der Mint hat gerade seine Schlüssel gewechselt.",
+  "wallet.svc.keyset_rotated_body":
+    "Er hat die Anfrage abgelehnt, bevor sich etwas bewegt hat, dein Guthaben ist also unverändert. Versuche es in einer Minute erneut.",
   "wallet.svc.wrong_mint":
     "Dieser Token wurde nicht von dem Mint signiert, den er nennt.",
   "wallet.svc.wrong_mint_body":
@@ -2049,7 +2056,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Tor-Routing ist in diesem Build nicht verfügbar.",
   "settings.conn.tor_timeout":
-    "Tor braucht länger als eine Minute zum Verbinden. Es bleibt an und versucht es weiter; der Mesh-Tab meldet, wenn es leitet, oder wenn dieses Netzwerk es blockiert.",
+    "Tor ist noch nicht verbunden. Es bleibt an und versucht es weiter; der Mesh-Tab meldet, wenn es leitet, oder wenn dieses Netzwerk es blockiert.",
   "settings.conn.tor_failed":
     "Tor konnte nicht gestartet werden. Versuche es gleich noch einmal.",
   "settings.tor.status": "Tor-Status",
@@ -2202,7 +2209,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Jetzt neu öffnen",
   "settings.language.rtl_title": "Öffne Airhop neu, um abzuschließen",
   "settings.language.rtl_body":
-    "{value} wird von rechts nach links gelesen, und Airhop kann die Richtung nur beim Start ändern. Schließe die App und öffne sie erneut, um den Wechsel abzuschließen. Nichts geht verloren, und dein Mesh bleibt bis dahin verbunden.",
+    "Der Wechsel zu {value} ändert die Leserichtung, und Airhop kann die Richtung nur beim Start ändern. Schließe die App und öffne sie erneut, um den Wechsel abzuschließen. Nichts geht verloren, und dein Mesh bleibt bis dahin verbunden.",
   "settings.theme.light": "Hell",
   "settings.theme.light_desc": "Immer die helle Palette verwenden",
   "settings.theme.dark": "Dunkel",

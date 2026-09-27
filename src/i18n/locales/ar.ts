@@ -1050,6 +1050,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "موجود في محفظتك بالفعل",
   "wallet.receive.already_have_body":
     "كل ما في هذا التوكن مخزّن هنا بالفعل، فلم يُضَف شيء. الأرصدة كما هي.",
+  "wallet.receive.claiming": "ما زلنا ننتظر دار السك",
+  "wallet.receive.claiming_body":
+    "لم تؤكّد دار السك بعدُ استلامًا سابقًا لهذا التوكن، فلم يُرسَل شيء جديد. تسوّيه المحفظة تلقائيًا. وإن لم تكن دار السك قد استلمته قط، يمكنك استلامه مرة أخرى.",
   "wallet.receive.stored_unconfirmed":
     "خُزّن من {mint}، لكنه لم يُؤكَّد بعد مع دار السك ({reason}).",
   "wallet.receive.offline": "دون اتصال",
@@ -1473,6 +1476,9 @@ export const strings: Strings = {
     "يستخدم هذا الرمز مفاتيح جديدة من دار السك الخاصة به.",
   "wallet.svc.keyset_unknown_body":
     "تعذّر الوصول إلى دار السك الآن لجلبها. لم يضِع شيء: استلمه مرة أخرى عندما تتصل بالإنترنت.",
+  "wallet.svc.keyset_rotated": "غيّرت دار السك مفاتيحها للتو.",
+  "wallet.svc.keyset_rotated_body":
+    "رفضت الطلب قبل أن يتحرك أي شيء، فلم يتغير رصيدك. حاول مرة أخرى بعد دقيقة.",
   "wallet.svc.wrong_mint": "لم توقّع هذا التوكن دار السك التي يذكرها.",
   "wallet.svc.wrong_mint_body":
     "توقيع عملة واحدة على الأقل لا يطابق مفاتيح دار السك. لم يُضَف شيء.",
@@ -1930,7 +1936,7 @@ export const strings: Strings = {
     "تعود حركة Nostr عبر اتصالك العادي، فترى المُرحِّلات عنوان IP الخاص بك مرة أخرى. والبلوتوث لا يتأثر في الحالتين.",
   "settings.conn.tor_unavailable": "توجيه Tor غير متاح في هذه النسخة.",
   "settings.conn.tor_timeout":
-    "يستغرق Tor أكثر من دقيقة للاتصال. يبقى مفعّلًا ويواصل المحاولة؛ وسيخبرك تبويب الشبكة متى بدأ التوجيه، أو إن كانت هذه الشبكة تحجبه.",
+    "لم يتصل Tor بعد. يبقى مفعّلًا ويواصل المحاولة؛ وسيخبرك تبويب الشبكة متى بدأ التوجيه، أو إن كانت هذه الشبكة تحجبه.",
   "settings.conn.tor_failed": "تعذّر بدء Tor. أعد المحاولة بعد قليل.",
   "settings.tor.status": "حالة Tor",
   "settings.tor.connection": "الاتصال",
@@ -2079,7 +2085,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "إعادة الفتح الآن",
   "settings.language.rtl_title": "أعد فتح Airhop لإتمام التبديل",
   "settings.language.rtl_body":
-    "تُقرأ {value} من اليمين إلى اليسار، ولا يستطيع Airhop تغيير الاتجاه إلا عند بدء تشغيله. أغلقه وافتحه من جديد لإتمام التبديل. لا يضيع شيء، وتبقى شبكتك متصلة حتى تفعل ذلك.",
+    "التبديل إلى {value} يغيّر اتجاه القراءة، ولا يستطيع Airhop تغيير الاتجاه إلا عند بدء تشغيله. أغلقه وافتحه من جديد لإتمام التبديل. لا يضيع شيء، وتبقى شبكتك متصلة حتى تفعل ذلك.",
   "settings.theme.light": "فاتح",
   "settings.theme.light_desc": "استخدم اللوحة الفاتحة دائمًا",
   "settings.theme.dark": "داكن",

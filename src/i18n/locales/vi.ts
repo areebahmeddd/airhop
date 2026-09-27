@@ -1090,6 +1090,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Đã có trong ví của bạn",
   "wallet.receive.already_have_body":
     "Mọi thứ trong token này đã được lưu ở đây, nên không có gì được thêm vào. Số dư không đổi.",
+  "wallet.receive.claiming": "Vẫn đang chờ nhà đúc",
+  "wallet.receive.claiming_body":
+    "Lần nhận token này trước đó vẫn chưa được nhà đúc xác nhận, nên không có gì mới được gửi đi. Ví sẽ tự động xử lý việc này. Nếu nhà đúc chưa từng nhận nó, bạn có thể nhận lại.",
   "wallet.receive.stored_unconfirmed":
     "Đã lưu từ {mint}, nhưng chưa được nhà đúc xác nhận ({reason}).",
   "wallet.receive.offline": "ngoại tuyến",
@@ -1526,6 +1529,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "Token này dùng khóa mới từ nhà đúc của nó.",
   "wallet.svc.keyset_unknown_body":
     "Hiện không thể kết nối tới nhà đúc để lấy khóa. Không mất gì cả: hãy nhận lại khi bạn có mạng.",
+  "wallet.svc.keyset_rotated": "Nhà đúc vừa đổi khóa của mình.",
+  "wallet.svc.keyset_rotated_body":
+    "Nhà đúc đã từ chối yêu cầu trước khi có gì được chuyển đi, nên số dư của bạn không đổi. Hãy thử lại sau một phút.",
   "wallet.svc.wrong_mint": "Token này không do nhà đúc mà nó nêu tên ký.",
   "wallet.svc.wrong_mint_body":
     "Chữ ký của ít nhất một đồng không khớp với khóa của nhà đúc. Không có gì được thêm vào.",
@@ -1999,7 +2005,7 @@ export const strings: Strings = {
     "Lưu lượng Nostr quay về đường kết nối thông thường của bạn, nên các bộ chuyển tiếp lại thấy địa chỉ IP của bạn. Dù thế nào Bluetooth cũng không bị ảnh hưởng.",
   "settings.conn.tor_unavailable": "Bản dựng này không có định tuyến qua Tor.",
   "settings.conn.tor_timeout":
-    "Tor đang mất hơn một phút để kết nối. Nó vẫn bật và tiếp tục thử; thẻ Mạng lưới sẽ báo khi nó bắt đầu định tuyến, hoặc khi mạng này đang chặn nó.",
+    "Tor vẫn chưa kết nối được. Nó vẫn bật và tiếp tục thử; thẻ Mạng lưới sẽ báo khi nó bắt đầu định tuyến, hoặc khi mạng này đang chặn nó.",
   "settings.conn.tor_failed":
     "Không thể khởi động Tor. Hãy thử lại sau giây lát.",
   "settings.tor.status": "Trạng thái Tor",
@@ -2149,7 +2155,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Mở lại ngay",
   "settings.language.rtl_title": "Hãy mở lại Airhop để hoàn tất",
   "settings.language.rtl_body":
-    "{value} đọc từ phải sang trái, và Airhop chỉ đổi được chiều lúc khởi động. Hãy đóng rồi mở lại để hoàn tất việc chuyển. Không mất gì cả, và mạng lưới của bạn vẫn kết nối cho tới lúc đó.",
+    "Chuyển sang {value} sẽ đổi chiều đọc, và Airhop chỉ đổi được chiều lúc khởi động. Hãy đóng rồi mở lại để hoàn tất việc chuyển. Không mất gì cả, và mạng lưới của bạn vẫn kết nối cho tới lúc đó.",
   "settings.theme.light": "Sáng",
   "settings.theme.light_desc": "Luôn dùng bảng màu sáng",
   "settings.theme.dark": "Tối",

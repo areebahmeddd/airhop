@@ -1104,6 +1104,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Já está na sua carteira",
   "wallet.receive.already_have_body":
     "Tudo o que há neste token já está guardado aqui, então nada foi adicionado. Os saldos não mudaram.",
+  "wallet.receive.claiming": "Ainda aguardando a casa de emissão",
+  "wallet.receive.claiming_body":
+    "Um resgate anterior deste token ainda não foi confirmado pela casa de emissão, então nada novo foi enviado. A carteira resolve isso automaticamente. Se a casa de emissão nunca o recebeu, você pode resgatá-lo de novo.",
   "wallet.receive.stored_unconfirmed":
     "Guardado de {mint}, mas ainda não confirmado com a casa de emissão ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1547,6 +1550,10 @@ export const strings: Strings = {
     "Este token usa chaves novas da sua casa de emissão.",
   "wallet.svc.keyset_unknown_body":
     "Não dá para acessar a casa de emissão agora para buscá-las. Nada se perde: receba de novo quando estiver online.",
+  "wallet.svc.keyset_rotated":
+    "A casa de emissão acabou de trocar suas chaves.",
+  "wallet.svc.keyset_rotated_body":
+    "Ela recusou o pedido antes de qualquer movimentação, então seu saldo não mudou. Tente de novo em um minuto.",
   "wallet.svc.wrong_mint":
     "Este token não foi assinado pela casa de emissão que ele cita.",
   "wallet.svc.wrong_mint_body":
@@ -2029,7 +2036,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "O roteamento por Tor não está disponível nesta versão.",
   "settings.conn.tor_timeout":
-    "O Tor está demorando mais de um minuto para conectar. Ele continua ligado e tentando; a aba Malha vai dizer quando estiver roteando, ou se esta rede o estiver bloqueando.",
+    "O Tor ainda não conectou. Ele continua ligado e tentando; a aba Malha vai dizer quando estiver roteando, ou se esta rede o estiver bloqueando.",
   "settings.conn.tor_failed":
     "Não foi possível iniciar o Tor. Tente de novo em instantes.",
   "settings.tor.status": "Status do Tor",
@@ -2182,7 +2189,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Reabrir agora",
   "settings.language.rtl_title": "Abra o Airhop de novo para concluir",
   "settings.language.rtl_body":
-    "{value} se lê da direita para a esquerda, e o Airhop só consegue mudar de direção ao iniciar. Feche e abra de novo para concluir a troca. Nada se perde, e até lá sua malha continua conectada.",
+    "Mudar para {value} altera a direção de leitura, e o Airhop só consegue mudar de direção ao iniciar. Feche e abra de novo para concluir a troca. Nada se perde, e até lá sua malha continua conectada.",
   "settings.theme.light": "Claro",
   "settings.theme.light_desc": "Usar sempre a paleta clara",
   "settings.theme.dark": "Escuro",

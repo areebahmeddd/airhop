@@ -1107,6 +1107,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Już jest w twoim portfelu",
   "wallet.receive.already_have_body":
     "Wszystko z tego tokena już tu leży, więc nic nie przybyło. Salda bez zmian.",
+  "wallet.receive.claiming": "Wciąż czekamy na mennicę",
+  "wallet.receive.claiming_body":
+    "Wcześniejsze odebranie tego tokena nie zostało jeszcze potwierdzone przez mennicę, więc nic nowego nie wysłano. Portfel rozliczy to automatycznie. Jeśli mennica nigdy go nie przyjęła, możesz odebrać go ponownie.",
   "wallet.receive.stored_unconfirmed":
     "Zapisane z {mint}, ale jeszcze niepotwierdzone przez mennicę ({reason}).",
   "wallet.receive.offline": "offline",
@@ -1545,6 +1548,9 @@ export const strings: Strings = {
   "wallet.svc.keyset_unknown": "Ten token używa nowych kluczy swojej mennicy.",
   "wallet.svc.keyset_unknown_body":
     "Nie można teraz połączyć się z mennicą, aby je pobrać. Nic nie przepadło: odbierz go ponownie, gdy będziesz online.",
+  "wallet.svc.keyset_rotated": "Mennica właśnie zmieniła klucze.",
+  "wallet.svc.keyset_rotated_body":
+    "Odrzuciła żądanie, zanim cokolwiek się przesunęło, więc twoje saldo się nie zmieniło. Spróbuj ponownie za minutę.",
   "wallet.svc.wrong_mint":
     "Ten token nie został podpisany przez mennicę, którą wskazuje.",
   "wallet.svc.wrong_mint_body":
@@ -2024,7 +2030,7 @@ export const strings: Strings = {
   "settings.conn.tor_unavailable":
     "Trasowanie przez Tor jest niedostępne w tej kompilacji.",
   "settings.conn.tor_timeout":
-    "Tor łączy się dłużej niż minutę. Zostaje włączony i próbuje dalej; zakładka Mesh powie, kiedy trasuje ruch albo czy ta sieć go blokuje.",
+    "Tor jeszcze się nie połączył. Zostaje włączony i próbuje dalej; zakładka Mesh powie, kiedy trasuje ruch albo czy ta sieć go blokuje.",
   "settings.conn.tor_failed":
     "Nie udało się uruchomić Tor. Spróbuj ponownie za chwilę.",
   "settings.tor.status": "Status Tor",
@@ -2176,7 +2182,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Otwórz ponownie",
   "settings.language.rtl_title": "Otwórz Airhop ponownie, żeby dokończyć",
   "settings.language.rtl_body":
-    "{value} czyta się od prawej do lewej, a Airhop może zmienić kierunek tylko przy starcie. Zamknij aplikację i otwórz ją ponownie, żeby dokończyć zmianę. Nic nie ginie, a twoja sieć mesh zostaje połączona, dopóki tego nie zrobisz.",
+    "Przejście na {value} zmienia kierunek czytania, a Airhop może zmienić kierunek tylko przy starcie. Zamknij aplikację i otwórz ją ponownie, żeby dokończyć zmianę. Nic nie ginie, a twoja sieć mesh zostaje połączona, dopóki tego nie zrobisz.",
   "settings.theme.light": "Jasny",
   "settings.theme.light_desc": "Zawsze używaj jasnej palety",
   "settings.theme.dark": "Ciemny",

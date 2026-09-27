@@ -1091,6 +1091,9 @@ export const strings: Strings = {
   "wallet.receive.already_have": "Zaten cüzdanında",
   "wallet.receive.already_have_body":
     "Bu jetondaki her şey burada zaten var, bu yüzden hiçbir şey eklenmedi. Bakiyeler değişmedi.",
+  "wallet.receive.claiming": "Darphane hâlâ bekleniyor",
+  "wallet.receive.claiming_body":
+    "Bu jetonun önceki alımı darphane tarafından henüz onaylanmadı, bu yüzden yeni bir şey gönderilmedi. Cüzdan bunu kendiliğinden sonuçlandırır. Darphane onu hiç almadıysa yeniden alabilirsin.",
   "wallet.receive.stored_unconfirmed":
     "{mint} kaynağından kaydedildi ama darphanede henüz onaylanmadı ({reason}).",
   "wallet.receive.offline": "çevrimdışı",
@@ -1528,6 +1531,9 @@ export const strings: Strings = {
     "Bu token, darphanesinin yeni anahtarlarını kullanıyor.",
   "wallet.svc.keyset_unknown_body":
     "Onları almak için darphaneye şu anda ulaşılamıyor. Hiçbir şey kaybolmadı: çevrimiçi olduğunda yeniden al.",
+  "wallet.svc.keyset_rotated": "Darphane anahtarlarını az önce değiştirdi.",
+  "wallet.svc.keyset_rotated_body":
+    "İsteği hiçbir şey hareket etmeden reddetti, bu yüzden bakiyen değişmedi. Bir dakika sonra yeniden dene.",
   "wallet.svc.wrong_mint":
     "Bu jeton, belirttiği darphane tarafından imzalanmamış.",
   "wallet.svc.wrong_mint_body":
@@ -2000,7 +2006,7 @@ export const strings: Strings = {
     "Nostr trafiği olağan bağlantına döner, dolayısıyla aktarıcılar IP adresini yeniden görür. Bluetooth her iki durumda da etkilenmez.",
   "settings.conn.tor_unavailable": "Tor yönlendirmesi bu yapıda yok.",
   "settings.conn.tor_timeout":
-    "Tor'un bağlanması bir dakikadan uzun sürüyor. Açık kalır ve denemeyi sürdürür; Mesh sekmesi yönlendirmenin başladığını ya da bu ağın engellediğini söyleyecek.",
+    "Tor henüz bağlanmadı. Açık kalır ve denemeyi sürdürür; Mesh sekmesi yönlendirmenin başladığını ya da bu ağın engellediğini söyleyecek.",
   "settings.conn.tor_failed": "Tor başlatılamadı. Birazdan yeniden deneyin.",
   "settings.tor.status": "Tor durumu",
   "settings.tor.connection": "Bağlantı",
@@ -2152,7 +2158,7 @@ export const strings: Strings = {
   "settings.language.rtl_restart": "Şimdi yeniden aç",
   "settings.language.rtl_title": "Bitirmek için Airhop'u yeniden aç",
   "settings.language.rtl_body":
-    "{value} sağdan sola okunur ve Airhop yönünü yalnızca başlarken değiştirebilir. Geçişi tamamlamak için kapat ve yeniden aç. Hiçbir şey kaybolmaz ve o ana kadar mesh'in bağlı kalır.",
+    "{value} diline geçmek okuma yönünü değiştirir ve Airhop yönünü yalnızca başlarken değiştirebilir. Geçişi tamamlamak için kapat ve yeniden aç. Hiçbir şey kaybolmaz ve o ana kadar mesh'in bağlı kalır.",
   "settings.theme.light": "Açık",
   "settings.theme.light_desc": "Her zaman açık paleti kullan",
   "settings.theme.dark": "Koyu",
