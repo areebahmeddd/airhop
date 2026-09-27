@@ -639,7 +639,7 @@ export const strings = {
   "chat.media.gone_voice": "Voice note not on this device",
   "chat.media.gone_file": "File not on this device",
   "chat.media.gone_note":
-    "Removed after the retention period, to free space, or when the cache was cleared",
+    "Cleared from this phone, or not moved over from your old one",
   "chat.media.ask_resend": "Ask again",
   "chat.media.resend_draft": "Could you send that {kind} again?",
   "chat.media.kind_photo": "photo",
