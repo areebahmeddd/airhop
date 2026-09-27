@@ -3665,6 +3665,9 @@ export class MeshService {
       this.flushOutbox(peerID);
       // And hand them any envelopes we're carrying for third parties.
       this.sprayCourierTo(peerID, isDirectAnnounce);
+      // A new neighbour is also a new carrier for mail we owe people nobody
+      // here reaches, as bitchat-ios's courierBecameAvailable.
+      if (isDirectAnnounce) this.courierQueuedMail();
       // A saved contact on a link we hold gets a session now rather than on
       // the first message, so everything a session proves (signing key, ring
       // grant, private media) holds before either side types. bitchat opens
@@ -6569,6 +6572,19 @@ export class MeshService {
     const chat = useChatStore.getState();
     for (const msg of dropped) {
       chat.setMessageStatus(msg.channel, msg.id, "failed");
+    }
+  }
+
+  // Offer every queued DM for a recipient out of reach to whatever carriers
+  // are in range now. Cheap when it cannot help: sendViaCourier skips carriers
+  // a message already went to, and a relay drop happens once per message.
+  private courierQueuedMail(): void {
+    for (const msg of useOutboxStore.getState().pending) {
+      const peerID = msg.recipientPeerID;
+      if (peerID.startsWith("nostr_") || this.registry.isReachable(peerID)) {
+        continue;
+      }
+      this.sendViaCourier(peerID, msg.text, msg.id);
     }
   }
 

@@ -813,3 +813,60 @@ test("F09 carried mail is not flooded at peers heard only through relays", async
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("F10 mail written with nobody in range goes to the first carrier that arrives", async () => {
+  // Alice writes to bob, who left long ago, while nobody else is around, so
+  // there is no carrier to seal it to. A carrier walking up later is a
+  // delivery opportunity for every recipient alice owes, not only for itself.
+  const s = (scenario = new Scenario({
+    id: "F10",
+    title: "a carrier that arrives late still takes the mail",
+    seed: 610,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const carrier = SimDevice.create(s.world, android("carrier", 22));
+  const bob = SimDevice.create(s.world, android("bob", 33));
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  await s.world.advance(10_000);
+
+  radio.setIsolated("bob", true);
+  radio.setIsolated("carrier", true);
+  await waitForCoarse(
+    s.world,
+    () =>
+      !radio.isLinked("alice", "bob") && !radio.isLinked("alice", "carrier"),
+    20_000,
+  );
+  // Past the registry's minute, so both are gone rather than briefly quiet.
+  await s.world.advance(90_000);
+
+  const status = alice.send(`dm:${bob.peerID}`, "left you a note");
+  s.check(
+    "with nobody around it is only queued",
+    status === "queued",
+    `status=${status}`,
+  );
+
+  radio.setIsolated("carrier", false);
+  const courier = (
+    carrier.mesh as unknown as { courier: { size: number } } | null
+  )?.courier;
+  const carried = await waitForCoarse(
+    s.world,
+    () => (courier?.size ?? 0) > 0,
+    120_000,
+  );
+  s.check("the carrier that arrived holds the envelope", carried);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
