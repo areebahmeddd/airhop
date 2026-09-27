@@ -3433,15 +3433,29 @@ export class MeshService {
   // Covers both the BLE (Double Ratchet / Noise) queue and the Nostr queue, so a
   // DM that arrived over the internet is acknowledged over the internet.
   sendReadReceipts(peerID: string): void {
-    for (const messageId of this.pendingReadAcks.take(peerID)) {
-      this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
-    }
-
     // Nostr read acks: the conversation is keyed either by the sender's Nostr
-    // pubkey (nostr_... thread) or by a real peerID whose contact carries an npub.
+    // pubkey (nostr_... thread) or by a real peerID whose contact, or last
+    // announce, carries an npub.
     const nostrPubkey = peerID.startsWith("nostr_")
       ? peerID.slice("nostr_".length)
-      : useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex;
+      : (useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex ??
+        this.registry.nostrPubkeyFor(peerID));
+
+    // A message read after its sender left range has no mesh route for its
+    // receipt, so it goes over Nostr, as bitchat-ios routes one.
+    const overMesh = this.registry.isReachable(peerID);
+    for (const messageId of this.pendingReadAcks.take(peerID)) {
+      if (overMesh) {
+        this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
+      } else if (nostrPubkey !== undefined && nostrPubkey.length > 0) {
+        this.publishNostrAck(
+          nostrPubkey,
+          NoisePayloadType.READ_RECEIPT,
+          messageId,
+        );
+      }
+    }
+
     if (nostrPubkey !== undefined) {
       // Geohash DMs ack from the per-cell identity; everything else from the
       // main Nostr identity. The two ack queues are disjoint, so flushing both
@@ -4128,9 +4142,10 @@ export class MeshService {
       // definition out of range, and the Nostr one needs their npub and a
       // relay. Whichever lands clears the sender's hourglass.
       this.sendReceipt(fromPeerID, DmPayloadType.DELIVERED, pm.messageID);
+      this.pendingReadAcks.add(fromPeerID, pm.messageID);
       const senderNpub =
-        this.registry.get(fromPeerID)?.nostrPubkey ??
-        useContactsStore.getState().getContact(fromPeerID)?.nostrPubkeyHex;
+        useContactsStore.getState().getContact(fromPeerID)?.nostrPubkeyHex ??
+        this.registry.nostrPubkeyFor(fromPeerID);
       if (senderNpub !== undefined && senderNpub.length > 0) {
         this.publishNostrAck(
           senderNpub,
@@ -6052,7 +6067,7 @@ export class MeshService {
       // resolves to this branch again once relays are reachable. A Nostr-only
       // peer has no mesh key, so nothing can courier it: it is queued, not
       // carried.
-      useOutboxStore.getState().enqueue({
+      this.enqueueOutbox({
         id: msgID,
         recipientPeerID,
         channel: `dm:${recipientPeerID}`,
@@ -6076,7 +6091,7 @@ export class MeshService {
     // id and the recipient collapses the duplicate, which is the same dedupe
     // the courier path relies on.
     if (result === "handshaking" || result === "sent") {
-      useOutboxStore.getState().enqueue({
+      this.enqueueOutbox({
         id: msgID,
         recipientPeerID,
         channel: `dm:${recipientPeerID}`,
@@ -6095,7 +6110,7 @@ export class MeshService {
       // Genuinely queue it. Dropping it here while the UI says "queued for
       // delivery" loses the message for good, even if the peer reappears
       // moments later.
-      useOutboxStore.getState().enqueue({
+      this.enqueueOutbox({
         id: msgID,
         recipientPeerID,
         channel: `dm:${recipientPeerID}`,
@@ -6265,7 +6280,7 @@ export class MeshService {
     const nostrPubkey =
       contactNpub !== undefined && contactNpub.length > 0
         ? contactNpub
-        : this.registry.get(recipientPeerID)?.nostrPubkey;
+        : this.registry.nostrPubkeyFor(recipientPeerID);
     if (
       nostrPubkey !== undefined &&
       nostrPubkey.length > 0 &&
@@ -6309,7 +6324,7 @@ export class MeshService {
       // never runs, so a delivered message is not re-queued; the receiver
       // dedupes by message id if a later resend does land twice.
       if (outboxPeerID !== undefined) {
-        useOutboxStore.getState().enqueue({
+        this.enqueueOutbox({
           id: messageID,
           recipientPeerID: outboxPeerID,
           channel: `dm:${outboxPeerID}`,
@@ -6567,7 +6582,7 @@ export class MeshService {
     const outbox = useOutboxStore.getState();
     for (const msg of outbox.forPeer(`nostr_${nostrPubkeyHex}`)) {
       outbox.resolve(msg.id);
-      outbox.enqueue({
+      this.enqueueOutbox({
         ...msg,
         recipientPeerID: peerID,
         channel: `dm:${peerID}`,
@@ -6589,6 +6604,11 @@ export class MeshService {
   // shape the outbox exists to prevent. A message that is never
   // going out has to say so, the same way a refused send does, so the user can
   // decide to try another way.
+  // Queue a DM, and fail the bubble of anything the per-recipient cap evicts.
+  private enqueueOutbox(msg: Omit<PendingMessage, "attempts">): void {
+    this.reportDroppedMail(useOutboxStore.getState().enqueue(msg));
+  }
+
   private reportDroppedMail(dropped: PendingMessage[]): void {
     // Anything leaving the queue takes its courier record with it, so the map
     // cannot grow for the life of the process.

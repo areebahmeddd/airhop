@@ -837,13 +837,16 @@ export class GeohashChannelService {
     if (envelope === null) return false;
     this.publishGeoWrap(geohash, recipientPubkey, envelope, () => {
       const recipientPeerID = `nostr_${recipientPubkey}`;
-      useOutboxStore.getState().enqueue({
+      const evicted = useOutboxStore.getState().enqueue({
         id: messageID,
         recipientPeerID,
         channel: `dm:${recipientPeerID}`,
         text,
         createdAtMs: queuedAtMs,
       });
+      for (const msg of evicted) {
+        useChatStore.getState().setMessageStatus(msg.channel, msg.id, "failed");
+      }
     });
     this.registerGeoDmPeer(recipientPubkey, geohash);
     return true;

@@ -870,3 +870,65 @@ test("F10 mail written with nobody in range goes to the first carrier that arriv
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("F11 a message read after its sender left still reports read, over Nostr", async () => {
+  // Bob gets alice's DM over Bluetooth but opens it only after she has walked
+  // away. The read receipt owed over the mesh has no route left, and bob still
+  // holds the npub alice announced.
+  const s = (scenario = new Scenario({
+    id: "F11",
+    title: "a read receipt follows its sender onto the internet",
+    seed: 611,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const online = (id: string, seedByte: number): DeviceSpec => ({
+    ...android(id, seedByte),
+    internetEnabled: true,
+  });
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(bob.peerID) &&
+      bob.peers().includes(alice.peerID) &&
+      relay.connectionCount("alice") > 0 &&
+      relay.connectionCount("bob") > 0,
+    30_000,
+  );
+
+  alice.send(`dm:${bob.peerID}`, "read me later");
+  const delivered = await waitForCoarse(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .some((m) => m.text === "read me later" && m.status === "delivered"),
+    120_000,
+  );
+  s.check("it was delivered over Bluetooth", delivered);
+
+  radio.setIsolated("alice", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+  // Past the registry's minute, so alice is gone rather than briefly quiet.
+  await s.world.advance(90_000);
+
+  bob.openThread(`dm:${alice.peerID}`);
+  const read = await waitForCoarse(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .some((m) => m.text === "read me later" && m.status === "read"),
+    60_000,
+  );
+  s.check("alice sees it read", read);
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
