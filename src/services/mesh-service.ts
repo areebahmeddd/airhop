@@ -152,6 +152,7 @@ import {
   verifyPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { MAX_DELIVERED_PUBLIC_BYTES } from "@core/mesh/wire/payload-limits";
 import {
   decodePeerStatePacket,
   encodePeerStatePacket,
@@ -4361,6 +4362,7 @@ export class MeshService {
     // bitchat-ios BLEPublicMessageHandler, which tracks after its signature
     // guard.
     this.gossip.track(packet);
+    if (packet.payload.length > MAX_DELIVERED_PUBLIC_BYTES) return;
 
     // Only accept traffic for channels the user has actually joined.
     //

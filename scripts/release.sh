@@ -64,5 +64,4 @@ git tag -a "${TAG}" -m "${TAG}"
 echo
 echo "Tagged ${TAG} at $(git rev-parse --short HEAD). Review the commit, then:"
 echo "  git push origin main"
-# Qualified, because git refuses a bare name that matches a local branch too.
 echo "  git push origin refs/tags/${TAG}"

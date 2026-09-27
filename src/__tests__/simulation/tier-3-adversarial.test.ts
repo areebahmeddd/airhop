@@ -600,6 +600,26 @@ test("C02 the strict signature rule still lets genuine traffic through", async (
     bob.texts(channel).includes("genuinely alice"),
     `bob thread = [${bob.texts(channel).join(" | ")}]`,
   );
+
+  // Signed and within the decode cap, but past a v1 frame's 65,535 bytes: no
+  // client composes one, so it is shown to nobody, as bitchat-ios drops it.
+  const oversized = "x".repeat(0x10000);
+  radio.injectTo(
+    bob.id,
+    alice.id,
+    forgePublicMessage({
+      claimedPeerID: alice.peerID,
+      channel,
+      text: oversized,
+      timestamp: s.world.wallClock(),
+      signWith: alice.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(2000);
+  s.check(
+    "a signed message past a v1 frame is not displayed",
+    !bob.texts(channel).includes(oversized),
+  );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });
