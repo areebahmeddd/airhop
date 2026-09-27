@@ -17,8 +17,9 @@ import { useSettingsStore } from "@store/settings-store";
 import { getMeshService } from "./mesh-service";
 
 // Move the mesh to `next` and record it. Safe to call with the mesh already in
-// that state, and safe to call before the mesh exists (the state is still
-// recorded, and startup reads it).
+// that state, and safe to call before the mesh exists: the status is recorded
+// either way, but a start replaces it with applyStartupPresence's, so only an
+// Invisible choice carries into the mesh that start builds.
 //
 // The three states, and what each actually does to the radios:
 //   online     advertise + scan. Findable and reachable.
@@ -60,5 +61,25 @@ export function applyPresence(next: PresenceStatus, nickname: string): void {
     mesh?.setDiscoverable(false);
   }
 
+  // Away is left out: it pauses the mesh for this session only, and the next
+  // launch comes back in whichever visibility was chosen last.
+  if (next !== "away") {
+    useSettingsStore.getState().setStayInvisible(next === "invisible");
+  }
   useMeshStateStore.getState().setPresenceStatus(next);
+}
+
+// Put a freshly started mesh in the presence that outlives a launch: Invisible
+// if it was chosen, Online otherwise. Away never does, since opening Airhop
+// means wanting the mesh.
+//
+// Call it on the same tick as initMeshService. A new radio controller starts
+// discoverable, but its first pass reads the device before it reads that, so
+// the Invisible choice lands in time and nothing is advertised even once.
+export function applyStartupPresence(): void {
+  const invisible = useSettingsStore.getState().stayInvisible;
+  getMeshService()?.setDiscoverable(!invisible);
+  useMeshStateStore
+    .getState()
+    .setPresenceStatus(invisible ? "invisible" : "online");
 }

@@ -105,6 +105,11 @@ interface SettingsState {
   gatewayEnabled: boolean;
   // Whether this device bridges public mesh chat to Nostr.
   bridgeEnabled: boolean;
+  // Whether the mesh comes back Invisible after a relaunch. The one presence
+  // choice that outlives a launch: Away pauses the mesh for the session, but
+  // Invisible is about who can see this phone, and a reopen must not quietly
+  // undo it. Carried by a transfer, since it is the identity that is hidden.
+  stayInvisible: boolean;
   // Display unit only: satoshis or bitcoin. No conversion or price feed needed.
   bitcoinUnit: BitcoinUnit;
   // Whether the one-time Bluetooth and Location explanation was shown.
@@ -137,6 +142,7 @@ interface SettingsState {
   setAllowMintOverClearnet: (allowed: boolean) => void;
   setGatewayEnabled: (enabled: boolean) => void;
   setBridgeEnabled: (enabled: boolean) => void;
+  setStayInvisible: (invisible: boolean) => void;
   setBitcoinUnit: (unit: BitcoinUnit) => void;
   markPermissionPrimerSeen: () => void;
   markBackgroundLimitsAcknowledged: () => void;
@@ -172,6 +178,7 @@ const DEFAULTS = {
   allowMintOverClearnet: false,
   gatewayEnabled: false,
   bridgeEnabled: false,
+  stayInvisible: false,
   bitcoinUnit: "sat",
   permissionPrimerSeen: false,
   backgroundLimitsAcknowledged: false,
@@ -307,6 +314,9 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setBridgeEnabled(enabled) {
         set({ bridgeEnabled: enabled });
+      },
+      setStayInvisible(invisible) {
+        set({ stayInvisible: invisible });
       },
       setBitcoinUnit(unit) {
         set({ bitcoinUnit: unit });

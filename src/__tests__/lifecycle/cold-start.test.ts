@@ -95,6 +95,8 @@ function resetStores(): void {
     bridgePeopleAcross: 0,
     presenceStatus: "online",
   });
+  // A start restores a kept Invisible, so Online has to be the saved choice too.
+  useSettingsStore.getState().setStayInvisible(false);
   usePeerStore.getState().clearAll();
 }
 
@@ -649,6 +651,69 @@ describe("cold start and permissions", () => {
       "a second mount does not run them again",
       app.dependentsRuns === 1,
       `runs=${app.dependentsRuns}`,
+    );
+    v.assert();
+  });
+
+  // Invisible is a choice about who can see this phone, so it has to outlive
+  // the process: a reopen, the language restart and a boot start must never
+  // put the advertisement back on air behind the user's back.
+  test("S35 Invisible survives a relaunch and a boot start without advertising", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    os.setPermission("android.permission.BLUETOOTH_SCAN", "granted");
+    os.setPermission("android.permission.BLUETOOTH_ADVERTISE", "granted");
+    os.setPermission("android.permission.BLUETOOTH_CONNECT", "granted");
+    const v = new Verdict("S35", "Invisible, then relaunch, then reboot", os);
+    let native = androidDevice(os);
+
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    await app.startMeshWithPermissions();
+    await os.advance(1000);
+    applyPresence("invisible", "tester");
+    await os.advance(1000);
+    v.check("Invisible stopped advertising", !native.advertising);
+
+    app.killProcess();
+    native.invalidate();
+    useMeshStateStore.setState({ presenceStatus: "online" });
+
+    native = androidDevice(os);
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    await app.mount();
+    await os.advance(2000);
+    v.check("the relaunched mesh scans", native.scanning);
+    v.check(
+      "and never asked to advertise",
+      native.advertiseAttempts === 0,
+      `startAdvertising called ${String(native.advertiseAttempts)} times`,
+    );
+    v.check(
+      "the status still says Invisible",
+      useMeshStateStore.getState().presenceStatus === "invisible",
+      `status: ${useMeshStateStore.getState().presenceStatus}`,
+    );
+
+    app.killProcess();
+    native.invalidate();
+    useMeshStateStore.setState({ presenceStatus: "online" });
+
+    native = androidDevice(os);
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    app.bootStart();
+    await os.advance(2000);
+    v.check("the boot mesh scans", native.scanning);
+    v.check(
+      "and never asked to advertise",
+      native.advertiseAttempts === 0,
+      `startAdvertising called ${String(native.advertiseAttempts)} times`,
+    );
+    v.check(
+      "the status says Invisible when the app is opened",
+      useMeshStateStore.getState().presenceStatus === "invisible",
+      `status: ${useMeshStateStore.getState().presenceStatus}`,
     );
     v.assert();
   });

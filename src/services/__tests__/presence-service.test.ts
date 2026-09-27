@@ -28,13 +28,15 @@ jest.mock("../mesh-service", () => ({
 }));
 
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { applyPresence } from "../presence-service";
+import { useSettingsStore } from "@store/settings-store";
+import { applyPresence, applyStartupPresence } from "../presence-service";
 
 beforeEach(() => {
   mockStart.mockReset();
   mockStop.mockReset();
   mockSetDiscoverable.mockReset();
   useMeshStateStore.getState().setPresenceStatus("online");
+  useSettingsStore.getState().reset();
 });
 
 describe("presence transitions", () => {
@@ -78,5 +80,50 @@ describe("presence transitions", () => {
     applyPresence("invisible", "someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+});
+
+// What the next launch starts in. Invisible is about who can see the phone, so
+// it has to survive a reopen, the language restart and a boot start. Away only
+// pauses this session: opening Airhop again means wanting the mesh.
+describe("presence across a relaunch", () => {
+  test("a start after Invisible comes back Invisible, not advertising", () => {
+    applyPresence("invisible", "someone");
+    mockSetDiscoverable.mockReset();
+    useMeshStateStore.getState().setPresenceStatus("online");
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+
+  test("Online clears the kept Invisible", () => {
+    applyPresence("invisible", "someone");
+    applyPresence("online", "someone");
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+  });
+
+  test("Away is not kept, and leaves the last visibility in place", () => {
+    applyPresence("away", "someone");
+    applyStartupPresence();
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+
+    applyPresence("invisible", "someone");
+    applyPresence("away", "someone");
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+  });
+
+  test("a panic wipe's settings reset comes back Online", () => {
+    applyPresence("invisible", "someone");
+    useSettingsStore.getState().reset();
+
+    applyStartupPresence();
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
   });
 });

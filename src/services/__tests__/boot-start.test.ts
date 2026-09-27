@@ -15,6 +15,7 @@ const mockPrimeTor = jest.fn();
 const mockStartPipeline = jest.fn();
 const mockStartReachability = jest.fn();
 const mockSweepMedia = jest.fn();
+const mockApplyStartupPresence = jest.fn();
 let mockWipePending = false;
 let mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: true };
 
@@ -55,6 +56,9 @@ jest.mock("../reachability", () => ({
 }));
 jest.mock("../media-retention", () => ({
   sweepMediaIfDue: () => mockSweepMedia(),
+}));
+jest.mock("../presence-service", () => ({
+  applyStartupPresence: () => mockApplyStartupPresence(),
 }));
 jest.mock("../wipe-marker", () => ({
   isPanicWipePending: () => mockWipePending,
@@ -105,6 +109,21 @@ describe("bootStartMesh", () => {
     // The mention check reads the name the mesh announces.
     const nickname = mockStartPipeline.mock.calls[0][0] as () => string;
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);
+  });
+
+  test("restores a kept Invisible on the same tick as the start", async () => {
+    await runBoot();
+
+    // Before anything else can reach the radios, so a phone left Invisible
+    // never advertises from a reboot.
+    expect(mockApplyStartupPresence).toHaveBeenCalledTimes(1);
+    const order = (m: jest.Mock): number => m.mock.invocationCallOrder[0];
+    expect(order(mockApplyStartupPresence)).toBeGreaterThan(
+      order(mockInitMeshService),
+    );
+    expect(order(mockApplyStartupPresence)).toBeLessThan(
+      order(mockRetryRadios),
+    );
   });
 
   test("an unfinished panic wipe keeps the identity down, keychain unread", async () => {

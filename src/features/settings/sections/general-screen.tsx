@@ -165,8 +165,11 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
     // was actually on, to avoid a needless Nostr restart); the now-default
     // internet-on state is (re)applied so the transport matches. Gateway and
     // bridge react to their own settings via MeshService subscriptions.
-    const torWasOn = useSettingsStore.getState().torEnabled;
+    const { torEnabled: torWasOn, stayInvisible } = useSettingsStore.getState();
     useSettingsStore.getState().reset();
+    // Status belongs to the Profile picker, not to the preferences this resets,
+    // and the running mesh keeps it, so the next launch has to as well.
+    useSettingsStore.getState().setStayInvisible(stayInvisible);
     if (torWasOn) void setTorRouting(false);
     getMeshService()?.applyInternetEnabled(true);
     // Lives outside this store; AirhopBootReceiver reads it with no JS up.

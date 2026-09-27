@@ -19,6 +19,7 @@ import { AppRegistry, Platform } from "react-native";
 import { sweepMediaIfDue } from "./media-retention";
 import { readMoveMarker } from "./move-marker";
 import { startNotificationPipeline } from "./notification-pipeline";
+import { applyStartupPresence } from "./presence-service";
 import { startReachabilityWatch } from "./reachability";
 import { isPanicWipePending } from "./wipe-marker";
 
@@ -58,6 +59,7 @@ async function bootStartMesh(): Promise<void> {
   }
   const nickname = peerIDToUsername(identity.peerID);
   initMeshService(identity, nickname);
+  applyStartupPresence();
   getMeshService()?.retryRadios();
   // The dependents that need no screen. The rest (wallet, permission prompts)
   // wait for the app to be opened, which runs them for this same mesh.

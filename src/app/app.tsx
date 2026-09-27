@@ -88,7 +88,10 @@ import {
 } from "@services/nutzap-watcher-handle";
 import { panicWipe } from "@services/panic-wipe";
 import { startReclaimFollow } from "@services/payment-router";
-import { applyPresence } from "@services/presence-service";
+import {
+  applyPresence,
+  applyStartupPresence,
+} from "@services/presence-service";
 import { startReachabilityWatch } from "@services/reachability";
 import {
   notifyTorAppForeground,
@@ -342,9 +345,7 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
-  // A fresh mesh starts Online (advertising and scanning), so keep the chosen
-  // presence in step, in case this process last ran one set to Away.
-  useMeshStateStore.getState().setPresenceStatus("online");
+  applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
   syncAutoStartOnBoot(useSettingsStore.getState().autoStartOnBoot);
@@ -2185,7 +2186,8 @@ function AppContent(): React.JSX.Element {
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
                       onResumeMesh={() => {
-                        // Starting the mesh sets Online; keep an earlier Away.
+                        // Starting the mesh restores only Invisible; keep an
+                        // earlier Away.
                         const presence =
                           useMeshStateStore.getState().presenceStatus;
                         loadIdentity()

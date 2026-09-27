@@ -26,6 +26,7 @@ import { useChatStore } from "@store/chat-store";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
+import { useSettingsStore } from "@store/settings-store";
 import { channelInviteLink, parseAirhopLink } from "@utils/deep-link";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
@@ -49,6 +50,8 @@ function resetStores(): void {
     bridgePeopleAcross: 0,
     presenceStatus: "online",
   });
+  // A start restores a kept Invisible, so Online has to be the saved choice too.
+  useSettingsStore.getState().setStayInvisible(false);
   usePeerStore.getState().clearAll();
   useOutboxStore.setState({ pending: [] });
 }

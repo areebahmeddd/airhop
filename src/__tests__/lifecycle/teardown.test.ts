@@ -28,6 +28,7 @@ import {
 import { applyPresence } from "@services/presence-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
+import { useSettingsStore } from "@store/settings-store";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -50,6 +51,8 @@ function resetStores(): void {
     bridgePeopleAcross: 0,
     presenceStatus: "online",
   });
+  // A start restores a kept Invisible, so Online has to be the saved choice too.
+  useSettingsStore.getState().setStayInvisible(false);
   usePeerStore.getState().clearAll();
 }
 

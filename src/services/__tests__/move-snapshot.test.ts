@@ -86,6 +86,7 @@ async function oldPhone() {
     persisted(
       {
         theme: "dark",
+        stayInvisible: true,
         permissionPrimerSeen: true,
         autoStartOnBoot: true,
       },
@@ -147,6 +148,8 @@ describe("transfer snapshot", () => {
       }
     ).state;
     expect(state.theme).toBe("dark");
+    // The identity is what was hidden, so it arrives hidden.
+    expect(state.stayInvisible).toBe(true);
     expect(state).not.toHaveProperty("permissionPrimerSeen");
     expect(state).not.toHaveProperty("autoStartOnBoot");
   });
