@@ -873,6 +873,8 @@ export class MeshService {
       // without one a refused fragment has nowhere to go.
       (recipientPeerID) => this.links.linkFor(recipientPeerID) !== undefined,
       () => this.links.degree(),
+      (senderPeerID, messageID) =>
+        this.sendReceipt(senderPeerID, DmPayloadType.DELIVERED, messageID),
     );
 
     const nostrSendFn: NostrSendFn = async (

@@ -58,6 +58,7 @@ import {
   signPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import { BitchatActor } from "../harness/bitchat-actor";
@@ -1128,6 +1129,82 @@ test("M15 a first photo to a stranger waits for a session instead of going out i
     "no part of it ever crossed the air as a cleartext file packet",
     cleartext.length === 0,
     `${String(cleartext.length)} cleartext file packet(s)`,
+  );
+
+  s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("M16 a private photo shows delivered once the other phone has it", async () => {
+  // bitchat's private media receipt: both ends derive one stable ID from the
+  // sender, the recipient and the file name, the sender's bubble is keyed by
+  // it, and the receiver answers a sealed file with a DELIVERED naming it.
+  const s = (scenario = new Scenario({
+    id: "M16",
+    title: "sealed photo under a stable-ID name, acknowledged end to end",
+    seed: 29,
+  }));
+  const { radio, devices } = room(s, [
+    android("alice", 11),
+    android("bob", 22),
+  ]);
+  const [alice, bob] = devices;
+  await waitFor(
+    s.world,
+    () => alice.isDirectPeer(bob.peerID) && bob.isDirectPeer(alice.peerID),
+    30_000,
+  );
+  const aliceThread = `dm:${bob.peerID}`;
+  const bobThread = `dm:${alice.peerID}`;
+  alice.send(aliceThread, "photo coming");
+  const sealable = await waitFor(
+    s.world,
+    () => alice.mesh?.canSealPrivateMedia(bob.peerID) === true,
+    30_000,
+  );
+  s.check("a session with bob's proof is up", sealable);
+
+  // The composer's row, keyed as message-thread keys it.
+  const name = "img_3f2b8c1e-9d4a-4e7b-a1c2-5d6e7f8a9b0c.jpg";
+  const id = privateMediaStableID(alice.peerID, bob.peerID, name);
+  s.check("the name has a stable ID", id !== null);
+  (
+    alice.store("chatStore").getState() as {
+      addMessage: (m: Record<string, unknown>) => void;
+    }
+  ).addMessage({
+    id,
+    channel: aliceThread,
+    senderID: alice.peerID,
+    senderNickname: "alice",
+    text: "",
+    timestampMs: s.world.wallClock(),
+    isMine: true,
+    attachment: { type: "image", uri: "file:///sent.jpg", name },
+    status: "sending",
+  });
+  alice.sendAttachment(aliceThread, media.jpeg(6_000), {
+    type: "image",
+    name,
+    mimeType: "image/jpeg",
+  });
+
+  const delivered = await waitFor(
+    s.world,
+    () =>
+      alice.messages(aliceThread).find((m) => m.id === id)?.status ===
+      "delivered",
+    60_000,
+  );
+  s.check(
+    "alice's bubble reaches delivered",
+    delivered,
+    `status=${String(alice.messages(aliceThread).find((m) => m.id === id)?.status)}`,
+  );
+  s.check(
+    "bob's row carries the same ID",
+    bob.attachments(bobThread).some((m) => m.id === id),
   );
 
   s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));

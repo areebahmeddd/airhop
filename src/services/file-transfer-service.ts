@@ -38,6 +38,7 @@ import {
   signPacket,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { t } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore, type ChatAttachment } from "@store/chat-store";
@@ -510,6 +511,14 @@ export type UsesBleRadioFn = (
 // can carry.
 export type IsReachableFn = (recipientPeerID: string) => boolean;
 
+// Answer a sealed photo or voice note with a DELIVERED carrying its stable ID,
+// which is what the sender's bubble is keyed by (bitchat's private media
+// receipt). Injected for the same reason as SealFileFn.
+export type AckPrivateFileFn = (
+  senderPeerID: string,
+  messageID: string,
+) => void;
+
 // NOTE: naming lives in wireFileName(), which owns the extension and bitchat's
 // stable-ID shape together. Nothing here may put localized UI copy on the wire:
 // a display word is not a file name, and one without an extension arrives as a
@@ -590,6 +599,7 @@ export class FileTransferService {
   private readonly usesBleRadio?: UsesBleRadioFn;
   private readonly isReachable?: IsReachableFn;
   private readonly getDegree: () => number;
+  private readonly ackPrivateFile?: AckPrivateFileFn;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -605,6 +615,7 @@ export class FileTransferService {
     // Our neighbour count, which a public file's TTL follows (see
     // origin-ttl.ts). 0 (sparse) when not given.
     getDegree: () => number = () => 0,
+    ackPrivateFile?: AckPrivateFileFn,
   ) {
     this.identity = identity;
     this.broadcast = broadcast;
@@ -614,6 +625,7 @@ export class FileTransferService {
     this.usesBleRadio = usesBleRadio;
     this.isReachable = isReachable;
     this.getDegree = getDegree;
+    this.ackPrivateFile = ackPrivateFile;
   }
 
   // Receive a fully reassembled FILE_TRANSFER packet from the fragment layer.
@@ -939,8 +951,8 @@ export class FileTransferService {
     if (tx.remaining <= 0) {
       this.outbound.delete(transferId);
       store.finish(transferId);
-      // Every fragment was accepted by the radio. That is as much as this side
-      // can ever know: files carry no delivery receipt on either app.
+      // Every fragment was accepted by the radio. Only a sealed photo or voice
+      // note hears more, through its stable-ID DELIVERED; nothing else does.
       tx.onOutcome?.(true);
       return;
     }
@@ -1062,6 +1074,23 @@ export class FileTransferService {
     if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
     const type = typeFromMime(fp.mimeType);
 
+    // A sealed photo or voice note is keyed by bitchat's stable ID, the one the
+    // sender's bubble waits to hear back. A second arrival is the sender
+    // retrying after a lost receipt, so it is answered again, not stored twice.
+    const stableID =
+      sealed && isDM
+        ? privateMediaStableID(senderPeerID, this.identity.peerID, fp.fileName)
+        : null;
+    if (
+      stableID !== null &&
+      (useChatStore.getState().messages[channel] ?? []).some(
+        (m) => m.id === stableID,
+      )
+    ) {
+      this.ackPrivateFile?.(senderPeerID, stableID);
+      return;
+    }
+
     // Validated above, so this is what the share sheet and the player are told.
     const mimeType = fp.mimeType?.trim().toLowerCase();
     // The extension follows the validated MIME before writing: the photo
@@ -1098,7 +1127,7 @@ export class FileTransferService {
     // does. A room is never created here: only joined ones get this far.
     if (isDM) useChatStore.getState().addChannel(channel);
     useChatStore.getState().addMessage({
-      id: `ft-${senderPeerID}-${Date.now()}`,
+      id: stableID ?? `ft-${senderPeerID}-${Date.now()}`,
       channel,
       senderID: senderPeerID,
       senderNickname: this.resolveNickname(senderPeerID),
@@ -1121,5 +1150,8 @@ export class FileTransferService {
         sizeBytes: fp.content.length,
       },
     });
+    // After the write, so a file the disk refused is not acknowledged. Also
+    // when a cleared thread dropped the row: it did arrive.
+    if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
   }
 }

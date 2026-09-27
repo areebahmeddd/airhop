@@ -15,6 +15,7 @@ import {
   encodeFilePacket,
 } from "@core/mesh/wire/file-packet";
 import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
 import {
@@ -756,6 +757,77 @@ describe("receiving a file", () => {
     await settle();
     expect(useChatStore.getState().messages[contact] ?? []).toEqual([]);
     expect(globalThis.__cache.size).toBe(0);
+  });
+
+  // bitchat's private media receipt: the row takes the stable ID both ends
+  // derive, and the sender hears it back as a DELIVERED.
+  describe("a sealed photo under bitchat's stable-ID name", () => {
+    const SENDER = "1122334455667788";
+    const NAME = "img_1cc2760d-76aa-40c3-8013-c7faa6c2ef99.jpg";
+    const STABLE_ID = privateMediaStableID(SENDER, IDENTITY.peerID, NAME);
+
+    function stablePhoto(fileName = NAME): Uint8Array {
+      const tlv = encodeFilePacket({
+        fileName,
+        mimeType: "image/jpeg",
+        content: JPEG,
+      });
+      if (tlv === null) throw new Error("no TLV");
+      return tlv;
+    }
+
+    function receiver(): { service: FileTransferService; ack: jest.Mock } {
+      const ack = jest.fn();
+      const service = new FileTransferService(
+        IDENTITY,
+        jest.fn().mockResolvedValue(true),
+        jest.fn().mockResolvedValue(true),
+        (peerID) => peerID,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ack,
+      );
+      return { service, ack };
+    }
+
+    it("keys the row by the stable ID and acknowledges it", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      const rows = useChatStore.getState().messages[`dm:${SENDER}`] ?? [];
+      expect(STABLE_ID).not.toBeNull();
+      expect(rows.map((m) => m.id)).toEqual([STABLE_ID]);
+      expect(ack).toHaveBeenCalledWith(SENDER, STABLE_ID);
+    });
+
+    it("answers a repeat again without storing it twice", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      expect(useChatStore.getState().messages[`dm:${SENDER}`]).toHaveLength(1);
+      expect(globalThis.__cache.size).toBe(1);
+      expect(ack).toHaveBeenCalledTimes(2);
+    });
+
+    it("acknowledges nothing for a name outside bitchat's shapes", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, stablePhoto("photo.jpg"));
+      await settle();
+      expect(useChatStore.getState().messages[`dm:${SENDER}`]).toHaveLength(1);
+      expect(ack).not.toHaveBeenCalled();
+    });
+
+    it("acknowledges nothing the disk refused", async () => {
+      const { service, ack } = receiver();
+      globalThis.__writeFails = true;
+      service.onSealedFile(SENDER, stablePhoto());
+      await settle();
+      expect(ack).not.toHaveBeenCalled();
+    });
   });
 
   it("leaves no half-written file when the disk refuses it", async () => {

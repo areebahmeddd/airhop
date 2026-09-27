@@ -62,7 +62,7 @@ export const MAX_FRAMED_FILE_BYTES =
 // bitchat derives a stable message ID for private media from the file name, and
 // only for two exact shapes: `img_<UUID>.jpg` and `voice_<UUID>.m4a` (it also
 // accepts a 16-hex-digit voice token). Any other name makes
-// BitchatFilePacket.stableID return nil, dropping the transfer onto bitchat's
+// privateMediaStableID (private-media-id.ts) return null, dropping it onto the
 // legacy path: no delivery receipt, no arrival dedup, and repeat arrivals
 // stacking up as "name (1)", "name (2)". Nobody reads the name of a photo or a
 // voice note, since both render as media rather than a file row, so matching

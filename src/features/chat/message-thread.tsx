@@ -13,6 +13,7 @@ import {
   wireMediaName,
 } from "@core/mesh/wire/file-packet";
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
+import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import {
   findTokensInText,
   mayContainToken,
@@ -2780,8 +2781,29 @@ export default function MessageThread({
     // backstop that keeps any future caller from reopening the hole.
     if (!canSendMedia(targetChannel)) return;
     const caption = options?.caption?.trim() ?? "";
+    // A private photo or voice note is keyed by bitchat's stable ID, which is
+    // what the receiver's DELIVERED names. Forwarding one into a thread that
+    // already holds it would reuse the ID, so the copy gets a fresh name.
+    const dmPeer = targetChannel.startsWith("dm:")
+      ? targetChannel.slice(3)
+      : null;
+    let wireName = name;
+    let stableID =
+      dmPeer === null ? null : privateMediaStableID(localPeerID, dmPeer, name);
+    if (
+      dmPeer !== null &&
+      stableID !== null &&
+      (useChatStore.getState().messages[targetChannel] ?? []).some(
+        (m) => m.id === stableID,
+      )
+    ) {
+      wireName = name?.startsWith("voice_")
+        ? wireMediaName("voice", "m4a")
+        : wireMediaName("image", "jpg");
+      stableID = privateMediaStableID(localPeerID, dmPeer, wireName);
+    }
     const msg: ChatMessage = {
-      id: newMessageId(),
+      id: stableID ?? newMessageId(),
       channel: targetChannel,
       senderID: localPeerID,
       senderNickname: localNickname,
@@ -2793,7 +2815,7 @@ export default function MessageThread({
       attachment: {
         type,
         uri,
-        name,
+        name: wireName,
         mimeType,
         durationMs,
         sizeBytes: options?.sizeBytes,
@@ -2831,7 +2853,7 @@ export default function MessageThread({
           bytes,
           {
             type,
-            name: name ?? "",
+            name: wireName ?? "",
             mimeType: mimeType ?? "",
             durationMs: durationMs ?? 0,
             caption: caption || undefined,
