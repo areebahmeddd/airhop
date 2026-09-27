@@ -13,9 +13,9 @@
 //
 // The prologue is mixed into the transcript before the recipient's static key,
 // as Noise always does, and must match on both sides or nothing opens. It is
-// a required argument because bitchat-ios seals with one and the empty default
-// silently never interoperated: callers pass the courier layer's wire
-// constants (COURIER_PROLOGUE, prekeyPrologue).
+// required rather than defaulting to empty because bitchat-ios always seals
+// with one, and an empty prologue fails silently: callers pass the courier
+// layer's wire constants (COURIER_PROLOGUE, prekeyPrologue).
 
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { x25519 } from "@noble/curves/ed25519.js";

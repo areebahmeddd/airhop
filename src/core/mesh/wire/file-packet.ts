@@ -25,7 +25,7 @@ export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 // arrives, not 30 seconds after the last: BLEFragmentAssemblyBuffer stamps its
 // `timestamp` once at startAssemblyIfNeeded and never refreshes it. At the ~20ms
 // pacing both clients use, 512 KiB is around 1,120 frames and 22 seconds, so a
-// photo at the ceiling only landed if the link never made us retry a single
+// photo at the budget only lands if the link never makes us retry a single
 // frame. 256 KiB is about 11 seconds, which leaves room for the backoff a busy
 // link forces. bitchat's own photos are 45 KB at a 448px edge, so this stays
 // generous by comparison, and Airhop-to-Airhop is unaffected either way: our own

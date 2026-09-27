@@ -81,8 +81,8 @@ export async function publishNutzapInfo(params: {
     throw new Error("nutzap info needs at least one mint");
   }
   if (!/^0[23][0-9a-f]{64}$/i.test(params.p2pkPubkey)) {
-    // Whole, so a reader that locks to the tag verbatim still makes a valid
-    // NUT-11 lock.
+    // Published compressed, so a reader that locks to the tag verbatim still
+    // makes a valid NUT-11 lock.
     throw new Error(
       "p2pk pubkey must be a 33-byte compressed secp256k1 key (02/03 prefix)",
     );

@@ -100,11 +100,11 @@ export async function wipeAllSecrets(): Promise<void> {
 // than a scruple. The caller runs this without waiting, on its way to showing
 // the welcome screen, and the very next thing onboarding does is WRITE an
 // identity. A delete still in flight when that lands would destroy the key the
-// user just created, leaving an app that cannot start - a far worse outcome than
-// the one this exists to fix. Nothing is lost by skipping it: the launch runs
-// this only on a confirmed absence, never after a failed read, and an identity
-// still present there is a condemned one that launch-identity already tried
-// to delete.
+// user just created, leaving an app that cannot start, which is far worse than
+// the leftover this exists to fix. Nothing is lost by skipping it: the launch
+// runs this only on a confirmed absence, never after a failed read, and an
+// identity still present there is a condemned one that launch-identity already
+// tried to delete.
 //
 // Nor is the wallet's file key: the wallet partition opens under it at launch
 // on every install, identity or not, and deleting it leaves that partition

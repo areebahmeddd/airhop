@@ -49,9 +49,9 @@ export class SlidingWindowLimiter {
     return (this.hits.get(key) ?? []).filter((t) => t > cutoff);
   }
 
-  // Drop keys with no hit left in the window. Also called on every check, so
-  // it runs at most once a window and its cost stays linear in the keys a
-  // window saw; a caller with a tick of its own calls it too, so keys stop
+  // Drop keys with no hit left in the window. Every check calls it, but it
+  // runs at most once a window, so its cost stays linear in the keys a window
+  // saw. A caller with a tick of its own calls it too, so keys stop
   // accumulating when nobody asks.
   prune(now: number): void {
     if (now - this.lastSweep < this.windowMs) return;

@@ -179,7 +179,7 @@ export function parseBitchatVerifyQr(
       peerID,
       noisePubKey,
       signingPubKey: hexToBytes(sign),
-      // Normalised only now: the signature covers the bytes as sent.
+      // Normalised after verifying: the signature covers the bytes as sent.
       nickname: normalizeNickname(nick),
       nostrPubKey: nostrKeyFromNpub(npub),
     },

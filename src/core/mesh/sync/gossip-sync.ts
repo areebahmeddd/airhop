@@ -95,7 +95,7 @@ const MAX_AGE_ANNOUNCE_MS = 60_000;
 const MAX_AGE_MESSAGE_MS = 6 * 60 * 60 * 1000;
 // Board posts carry their own author-chosen expiry (max 7 days, PROTOCOLS.md
 // section 3) and the board store enforces it on receipt. This is only a
-// backstop against an entry sitting in the LRU forever.
+// backstop against an entry sitting in the sync store forever.
 const MAX_AGE_BOARD_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Group messages, same window public messages get, as in bitchat-ios
@@ -117,16 +117,14 @@ const RESPONSE_LIMIT_WINDOW_MS = 30_000;
 const TYPE_BIT_ANNOUNCE = 0; // bit 0
 const TYPE_BIT_MESSAGE = 1; // bit 1
 const TYPE_BIT_BOARD = 8; // bit 8 (board posts persist and sync until expiry)
-// bit 10 (private group messages). bitchat defines this bit, caches group
-// packets, advertises them and serves them; Airhop defined none of it, so a group
-// had no store-and-forward at all. Airhop-to-Airhop nothing was ever backfilled,
-// and toward bitchat the exchange was one-directional: bitchat filled our gaps
-// and we never answered its requests. The payload stays sealed under the epoch
-// key either way, so a relay learns nothing by carrying it.
+// bit 10 (private group messages). bitchat caches, advertises and serves group
+// packets under this bit, and it is a group's only store-and-forward. The
+// payload stays sealed under the epoch key, so a relay learns nothing by
+// carrying it.
 const TYPE_BIT_GROUP = 10;
-// Airhop's named public channels (CHANNEL_MSG_AIRHOP). Without a bit of their
-// own these messages would have no catch-up at all, since they no longer ride
-// bit 1 with the mesh room.
+// Airhop's named public channels (CHANNEL_MSG_AIRHOP). They do not ride bit 1
+// with the mesh room, so without a bit of their own they would have no
+// catch-up at all.
 //
 // Airhop-only, and safe in both directions: bitchat's SyncTypeFlags masks off
 // bits that map to no known type, so a request carrying this one is answered
@@ -607,7 +605,7 @@ export interface GossipSyncWiring {
   onTick?: (now: number) => void;
 }
 
-// Holds the recent packets seen for gossip reconciliation.
+// Holds the recent accepted packets offered to peers in gossip reconciliation.
 // Only ANNOUNCE, CHANNEL_MSG, CHANNEL_MSG_AIRHOP, BOARD_POST and GROUP_MESSAGE
 // are gossiped; syncBitForType is the single place that decides.
 export class GossipSync {

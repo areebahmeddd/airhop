@@ -55,7 +55,7 @@ const CONNECT_TIMEOUT_MS = 10_000;
 
 // Ceiling on a one-shot read (querySync). Without it a query resolves only
 // once its relay has sent EOSE, which never happens on a connection that went
-// away without closing - the case where you walk out of Wi-Fi range mid-request.
+// away without closing, as when you walk out of Wi-Fi range mid-request.
 // The promise would then never settle, and any UI awaiting it stays in its
 // loading state for the rest of the session with no way back. Returning
 // whatever arrived inside the window is both bounded and honest: these reads
@@ -383,19 +383,17 @@ export class NostrClient {
   // user has opened, and every bridge rendezvous cell. Those are exactly the
   // relays that know the most about where somebody is.
   //
-  // The consequences were all in the wrong direction. Turning the internet off
-  // left them connected while the Mesh tab reported no relay. Going Away left
-  // them connected over a stopped mesh. A panic wipe left them connected. And
-  // enabling Tor rebuilt the DM pool on the Tor socket while those sockets
-  // stayed on the clear net, holding the device's real IP open to the relays it
-  // had just been bridging through, which is the one thing the toggle exists to
-  // stop. nostr-tools closes a relay on its own only after 20 s with no
-  // subscription or publish open on it, and each of those relays holds a
-  // subscription for as long as its cell is in use.
+  // Left open, they would stay connected after the internet is turned off, on
+  // going Away, and after a panic wipe, and enabling Tor would rebuild the DM
+  // pool on the Tor socket while they stayed on the clear net, holding the
+  // device's real IP open to the relays it had just been bridging through.
+  // nostr-tools closes a relay on its own only after 20 s with no subscription
+  // or publish open on it, and each of those relays holds a subscription for as
+  // long as its cell is in use.
   //
-  // `destroy()` closes every relay the pool holds and empties its map, which is
-  // what "close" was always meant to mean here. The client is single-use either
-  // way: every caller builds a fresh one rather than reopening this.
+  // `destroy()` closes every relay the pool holds and empties its map. The
+  // client is single-use either way: every caller builds a fresh one rather
+  // than reopening this.
   close(): void {
     // Stopped first, so a closed client reports no further transition.
     clearInterval(this.connectionPoll);
