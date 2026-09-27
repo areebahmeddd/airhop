@@ -27,6 +27,7 @@ import { World } from "../../__tests__/simulation/harness/world";
 import {
   addMint,
   claimLightningDeposit,
+  confirmSend,
   createLightningDeposit,
   initWalletService,
   prepareSend,
@@ -282,6 +283,30 @@ describe("a receipt worth no more than its fee", () => {
     expect(result.receipts[dust]).toBe("skipped");
     expect(result.stillUnverified).toBe(1);
     expect(row(dust)?.status).toBe("pending");
+  });
+});
+
+describe("a receipt whose coins are paid on", () => {
+  it("closes once they are delivered, with no swap left to confirm it", async () => {
+    await receiveOffline(await strangersToken(8));
+    const receipt = receiptOf(8)!;
+
+    const send = await prepareSend({ amount: 8 });
+    expect(row(receipt)?.status).toBe("pending");
+    confirmSend(send.txId);
+
+    expect(row(receipt)?.status).toBe("completed");
+  });
+
+  it("closes once a reclaim files its coins under the send", async () => {
+    await receiveOffline(await strangersToken(8));
+    const receipt = receiptOf(8)!;
+
+    const send = await prepareSend({ amount: 8 });
+    expect(reclaimSend(send.txId)).toBe(true);
+
+    expect(row(receipt)?.status).toBe("completed");
+    expect(row(send.txId)?.status).toBe("reclaimed");
   });
 });
 

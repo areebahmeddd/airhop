@@ -1623,9 +1623,8 @@ export async function prepareSend(params: {
 }
 
 export function confirmSend(txId: string): void {
-  const store = useWalletStore.getState();
-  store.dropReserved(txId);
-  store.updateTx(txId, { status: "completed" });
+  spendReserved(txId);
+  useWalletStore.getState().updateTx(txId, { status: "completed" });
 }
 
 // Put the proofs back, offline if need be. They come back unverified: the
@@ -1645,6 +1644,8 @@ export function reclaimSend(txId: string): boolean {
     txId,
   );
   store.updateTx(txId, { status: "reclaimed" });
+  // The send is their receipt now, so one they came in under has none left.
+  closeReceipts(receiptsOf(restored));
   return true;
 }
 
@@ -2123,8 +2124,8 @@ function receiptsOf(coins: StoredProof[]): Set<string> {
   );
 }
 
-// Close offline receipts none of whose coins this wallet still holds: all
-// swapped (confirmed), or all spent by someone else first. A row still holding
+// Close offline receipts none of whose coins this wallet still holds: swapped
+// (confirmed) or paid on, or all spent by someone else first. A row still holding
 // a swap preview is `reconcile`'s, and a reclaimed send keeps its own status.
 function closeReceipts(
   receipts: Set<string>,
@@ -2157,6 +2158,16 @@ function closeReceipts(
       );
     }
   }
+}
+
+// The reserved coins went to a recipient or into the mint's hands. An offline
+// receipt they came in under is closed once none of its coins is left, or its
+// row would read unconfirmed for good: no swap of those coins will ever come.
+function spendReserved(txId: string): void {
+  const store = useWalletStore.getState();
+  const receipts = receiptsOf(store.reserved[txId]?.proofs ?? []);
+  store.dropReserved(txId);
+  closeReceipts(receipts);
 }
 
 // Spending coins a concurrent send reserved would kill its token, so losing
@@ -3030,7 +3041,7 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
     }
   }
 
-  store.dropReserved(tx.id);
+  spendReserved(tx.id);
   store.updateTx(tx.id, {
     status: "completed",
     error: undefined,
@@ -3248,7 +3259,7 @@ async function swapDownForMelt(
 
   // `keep` echoes untouched originals; credit only new proofs, or an original
   // spent or reserved meanwhile would come back.
-  store.dropReserved(txId);
+  spendReserved(txId);
   const fresh = [...result.keep, ...result.send].filter(
     (p) => !offered.has(p.secret),
   );
@@ -3373,7 +3384,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     const changeReturned = change.reduce((s, p) => s + p.amount.toNumber(), 0);
     const spent = selection.total - changeReturned;
 
-    store.dropReserved(txId);
+    spendReserved(txId);
     store.updateTx(txId, {
       status: "completed",
       fee: spent - quote.amount,
@@ -3862,7 +3873,7 @@ export async function lockProofsForNutzap(params: {
   }
 
   // `keep` echoes unselected originals; credit only the change.
-  store.dropReserved(txId);
+  spendReserved(txId);
   creditProofs(
     url,
     params.unit,
