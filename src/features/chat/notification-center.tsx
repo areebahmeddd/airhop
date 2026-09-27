@@ -6,9 +6,9 @@
 // a row to jump straight to that conversation or channel. The data comes from
 // activity-store, which logs one entry per inbound message or notice.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
 import { chevronBack, textAlignEnd } from "@i18n/layout";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { useActivityStore, type ActivityEntry } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";

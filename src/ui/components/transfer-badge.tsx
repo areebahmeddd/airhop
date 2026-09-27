@@ -5,8 +5,8 @@
 // Mesh, Wallet), the way WhatsApp shows an ongoing upload, and tapping it jumps
 // back to the conversation the transfer belongs to.
 
-import { Feather } from "@expo/vector-icons";
 import { t } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { useTransferStore } from "@store/transfer-store";
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";

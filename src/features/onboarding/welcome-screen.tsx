@@ -1,10 +1,10 @@
 // Onboarding step 1: Welcome. One sentence, one action, and a quieter way in
 // for someone bringing an identity from another phone.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import PixelBird, { BIRD_COLUMNS, BIRD_ROWS } from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";
 import {

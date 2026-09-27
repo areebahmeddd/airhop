@@ -22,9 +22,9 @@ import {
   LICENSE_URL,
 } from "@data/app-info";
 import { birdForVersion } from "@data/releases";
-import Feather from "@expo/vector-icons/Feather";
 import { t, useT } from "@i18n";
 import { useRichText } from "@i18n/rich-text";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { internetOff, torClaimed } from "@services/network-gate";
 import PixelBird from "@ui/components/pixel-bird";
 import PrimaryButton from "@ui/components/primary-button";

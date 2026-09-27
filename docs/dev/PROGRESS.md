@@ -2,16 +2,15 @@
 
 Where the build stands: what exists and how it is verified, what is in flight, and what is blocked. Read it before starting work. It is updated when a milestone completes, a blocker appears or a decision is made. What comes next, and when, is in [ROADMAP.md](../design/ROADMAP.md); what each release contained is in [CHANGELOG.md](CHANGELOG.md).
 
-## Current State
+## Current Version: v1.0.0
 
-**Latest release:** v1.0.8, 2026-09-21.
+**Verified by tests:** the packet codec (v1 and v2 headers, padding, compression), fragment format and reassembly, Noise XX, the Double Ratchet, courier envelopes (static and prekey-sealed), one-time prekey bundles, gossip filters (including type-aware board rounds), bulletin-board wire and store quotas, private-group wire and epoch keys, the gateway carrier codec, mesh ping and pong, outbox delivery, contact-card binding, geohash derivation and relay determinism, the geohash DM round trip, Nostr gift wrap and the bitchat envelope, and proof selection. Wire decoders are fuzzed, and where bitchat publishes or implies a byte layout a vector test pins it: packet frames, payloads, courier seals ([`courier-seal-vectors.json`](../spec/courier-seal-vectors.json)), private media IDs and Nostr DMs.
 
-**In release: v1.0.9**, on the `v1.0.9` branch. It adds [device transfer](#device-transfer-v109) and the redesigned wallet screen, and carries a hardening pass: a security review of the whole codebase ([SECURITY-REVIEW-1.0.9.md](SECURITY-REVIEW-1.0.9.md), with the ones that mattered [below](#findings-that-mattered)), a pre-merge walk through every feature, and a trace of every in-chat payload through interruptions (a peer walking away, an app kill, a relaunch offline).
+**Verified by the multi-device simulation** (`src/__tests__/simulation/`): multi-hop delivery across a chain of phones that cannot hear each other, a 25-phone room converging on one channel, a live mixed Airhop and bitchat mesh in both directions, parallel attachment transfers, live push-to-talk sharing a radio with a file transfer, offline ecash transfer and double-spend refusal against a real BDHKE mint, recovery from a swap whose answer never came back, replay and Sybil floods, panic wipe, crash recovery, and a seeded soak of hundreds of random events across eight phones. Each simulated phone is a fully isolated copy of the app driven through a modeled OS and radio. `conformance.test.ts` checks Airhop's constants against a local bitchat checkout, and skips when there is none.
 
-**Before v1.0.9 ships:**
+**Still cannot be verified without hardware:** real BLE discovery timing, MTU negotiation, CoreBluetooth on real silicon, OEM battery managers, and real Tor circuits. The simulation models the OS contract; it cannot prove the hardware honors it.
 
-- **Rebuild the native binaries.** Run the Build Native Libraries workflow on the branch. Until it runs, three changes exist only in source: Rust 1.98.1 and rustls 0.23.45 in the Tor client, the pion and `x/text` raises in the pluggable transports, and per-destination circuit isolation on Android.
-- **Device checks** that CI cannot prove: Tor with each bridge mode (plain sockets stay direct, the APK download goes through Tor, an iOS start reads as starting), WiFi Aware on the Samsung testers, iOS LAN with AWDL off, a transfer over each phone's hotspot and over USB tethering, a launch before first unlock on iOS, bitchat-ios interop (DMs, courier mail, sync with board posts, a three-hop chain and a dense room), and the last word of a live voice burst heard on both platforms.
+**Built with:** Claude Opus 5 (1M context) in Claude Code, working against local checkouts of bitchat-ios and bitchat-android as the protocol source of truth. The multi-device simulation, the adversarial scenarios, and the security review below were produced the same way. Every claim here is meant to be checkable against the code rather than taken on trust.
 
 **Blocked:**
 
@@ -27,16 +26,6 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 - A courier hands mail over on any link bound by a direct announce, where bitchat-ios also requires a Noise session made on that link ([PROTOCOLS.md](../spec/PROTOCOLS.md#61-depositing-and-carrying)).
 - The app-switcher snapshot cover needs Android API 33, leaving API 26 to 32 exposed ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
 - A public `#bluetooth` message retried after an app kill can show twice to a neighbor who had the first copy, since those packets carry no message ID.
-
-**Hardware limits:** real BLE discovery timing, MTU negotiation, CoreBluetooth on real silicon, OEM battery managers and real Tor circuits cannot be verified without devices. The simulation models the OS contract; it cannot prove the hardware honors it.
-
-## How It Is Verified
-
-**Unit tests** cover the packet codec (v1 and v2 headers, padding, compression), fragment format and reassembly, Noise XX, the Double Ratchet, courier envelopes (static and prekey-sealed), one-time prekey bundles, gossip filters (including type-aware board rounds), bulletin-board wire and store quotas, private-group wire and epoch keys, the gateway carrier codec, mesh ping and pong, outbox delivery, contact-card binding, geohash derivation and relay determinism, the geohash DM round trip, Nostr gift wrap and the bitchat envelope, and proof selection. Wire decoders are fuzzed. Where bitchat publishes or implies a byte layout, a vector test pins it: packet frames, payloads, courier seals (reference seals from Python `noiseprotocol` in [`docs/spec/courier-seal-vectors.json`](../spec/courier-seal-vectors.json)), private media IDs and Nostr DMs.
-
-**The multi-device simulation** (`src/__tests__/simulation/`) runs fully isolated copies of the app through a modeled OS and radio: multi-hop delivery across a chain of phones that cannot hear each other, 25 phones converging on one channel, a mixed Airhop and bitchat mesh in both directions, parallel attachment transfers, live push-to-talk sharing a radio with a file transfer, offline ecash transfer and double-spend refusal against a real BDHKE mint, recovery from a swap whose answer never came back, replay and Sybil floods, panic wipe, crash recovery, and a seeded soak of hundreds of random events across eight phones. `conformance.test.ts` checks Airhop's constants against a local bitchat checkout and skips when there is none.
-
-**How it was built:** with Claude Opus 5 in Claude Code, against local checkouts of bitchat-ios and bitchat-android as the protocol source of truth. The simulation, the adversarial scenarios and the security review were produced the same way. Every claim here is meant to be checkable against the code rather than taken on trust.
 
 ## What Exists
 
@@ -140,24 +129,6 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] App Store and Play Store submission
 - [x] YouTube demo series
 
-### Device Transfer (v1.0.9)
-
-- [x] Transfer to a new phone ([#8](https://github.com/areebahmeddd/airhop/issues/8)): the new phone shows a code, the old phone scans it, and the identity, contacts, groups, rooms, chat history and wallet cross one TCP connection on the local network. No internet, no server, no backup file
-- [x] A move, not a copy: the old phone erases itself (the panic wipe) once the new one commits, and a transfer that ends unconfirmed freezes it until the person answers
-- [x] `src/core/move/`: the code (`airhop-move:v1/`), a Noise XX handshake pinned to the scanned key with the code's token as prologue, the bundle and its messages ([PROTOCOLS.md section 11](../spec/PROTOCOLS.md#11-device-transfer))
-- [x] `src/services/move-snapshot.ts`: what moves, as a table typed against the panic wipe's registry. One-time prekey private halves never leave the phone; the wallet lands under the new phone's own file key
-- [x] Owner check before any key is read (Face ID, fingerprint or passcode, `expo-local-authentication`)
-- [x] Six matching words on both phones, from the handshake, before anything moves: the old phone freezes only once the new phone's `CONFIRM` and its own Transfer tap are both in, and a declined match replaces the code. A code naming an address off the phone's own subnets is never dialled
-- [x] Crash-safe on both sides through `move-marker.ts`: a half-written install is wiped, an unconfirmed send asks, and an Android boot start waits
-- [x] A Mesh banner when this identity is running on another phone too: an announce under our own peer ID, signed with our key, that this run never sent
-- [x] The wallet's file key survives the launch sweep and follows a reopen in the same process, so a wallet written before a relaunch or after a wipe stays readable
-- [x] Verified end to end by `move-session.test.ts`: two isolated phones over an in-memory socket, with the happy path, a wrong phone, cancels on either side, an older app, a refused keychain, and the link dying mid-stream and after the commit
-- [x] No wire change: the same keys give the same peer ID, name, npub and safety numbers, so contacts stay verified and bitchat peers notice nothing. A verified `LEAVE` drops the ratchet as well as the session, so the first DM to the moved identity re-handshakes
-
-## Next
-
-v1.1.0, the offline AI assistant, then relay hardware, web, CLI, watch, desktop, federated social, the SDK, the external audit and the v2.0.0 interface. Each has its goal, scope and milestone in [ROADMAP.md](../design/ROADMAP.md#2-version-targets).
-
 ## Security Analysis
 
 The findings worth knowing: the ones that were subtle, cross-cutting or would have broken the security model. The full record of every finding, its fix and commit, the accepted risks and the upstream gaps is [SECURITY-REVIEW-1.0.9.md](SECURITY-REVIEW-1.0.9.md).
@@ -188,7 +159,7 @@ Each row is an executable scenario in `src/__tests__/simulation/` (I04 in `src/s
 | W29  | Token taken in a dead zone, then redeemed by someone else who read it    | Secured by the reconcile pass when the internet returns; the later redeemer is refused                             |
 | C06  | Phone taken, panic wipe run                                              | Nothing survives; the rest of the room carries on                                                                  |
 
-### Findings that mattered
+### Code review findings
 
 | Finding                                                                                                                  | Severity | Fix                                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |

@@ -26,11 +26,12 @@ module.exports = defineConfig([
     },
   },
   {
-    // One haptic vocabulary.
+    // Imports with one allowed route.
     //
-    // haptics.ts names each buzz by the user-facing situation,
-    // keeping equivalent call sites from drifting into different feedback.
-    // This only holds while it remains the sole place that talks to the motor.
+    // - Haptics: only haptics.ts talks to the motor, so every buzz is named
+    //   for its situation and equivalent call sites cannot drift apart.
+    // - Icons: only the /static entry points. Their fonts are bundled natively;
+    //   a dynamic import would load a second copy at runtime.
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/platform/haptics.ts"],
     rules: {
@@ -42,6 +43,20 @@ module.exports = defineConfig([
               name: "expo-haptics",
               message:
                 "Import a named verb from @platform/haptics instead (acknowledged, held, released, armed, crossedThreshold, succeeded, rejected, warned). If none of them fits, add one there with a comment saying which situation earns it.",
+            },
+            {
+              name: "@expo/vector-icons",
+              message:
+                "Import the family from @react-native-vector-icons/<family>/static instead.",
+            },
+            {
+              name: "@react-native-vector-icons/feather",
+              message: "Import from @react-native-vector-icons/feather/static.",
+            },
+            {
+              name: "@react-native-vector-icons/material-design-icons",
+              message:
+                "Import from @react-native-vector-icons/material-design-icons/static.",
             },
           ],
         },

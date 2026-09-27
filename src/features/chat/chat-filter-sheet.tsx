@@ -2,8 +2,11 @@
 // choices, the current one ticked. Same sheet and rows as the long-press
 // sheets on both lists.
 
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import BottomSheet from "@ui/components/bottom-sheet";
 import {
   FontSize,
@@ -19,7 +22,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Filter = DmFilter | ChannelFilter;
 
-const ICONS: Record<Filter, React.ComponentProps<typeof Feather>["name"]> = {
+const ICONS: Record<Filter, FeatherIconName> = {
   all: "list",
   unread: "inbox",
   verified: "shield",

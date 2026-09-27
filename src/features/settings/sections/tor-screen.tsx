@@ -10,8 +10,8 @@
 // this device tells the network about itself, and the connectivity group asks
 // before every one of those.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   isTorStartRecovered,
   setTorBridgeMode,

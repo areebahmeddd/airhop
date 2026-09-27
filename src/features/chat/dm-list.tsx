@@ -4,10 +4,11 @@
 // Swipe left on a row for More (clear / delete), the same gesture as the
 // Channels list, so both chat surfaces manage conversations consistently.
 
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, tPlural, useT } from "@i18n";
 import { trailingSwipeActions } from "@i18n/layout";
 import { held } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { getMeshService } from "@services/mesh-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
@@ -335,7 +336,7 @@ export default function DmList({
                       />
                     )}
                     {isPinned && (
-                      <MaterialCommunityIcons
+                      <MaterialDesignIcons
                         name="pin"
                         size={13}
                         color={Colors.textMuted}
@@ -493,7 +494,7 @@ export default function DmList({
                 onPress={() => handlePinDM(moreOptionsDM)}
                 accessibilityRole="button"
               >
-                <MaterialCommunityIcons
+                <MaterialDesignIcons
                   name={
                     pinnedChannels.includes(moreOptionsDM) ? "pin-off" : "pin"
                   }

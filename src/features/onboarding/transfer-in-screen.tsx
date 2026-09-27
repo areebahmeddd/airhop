@@ -4,10 +4,10 @@
 // identity is arriving, whether both phones show the same words, and whether
 // the old phone let go of it.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT, type TranslationKey } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { rejected, succeeded } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { clearMoveMarker } from "@services/move-marker";
 import {
   MoveReceiver,

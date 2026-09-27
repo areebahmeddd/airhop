@@ -5,10 +5,9 @@
 // from this table, so the family string is never duplicated and a new option can
 // never be silently mismapped the way a hand-written ternary would.
 
-import type { Feather } from "@expo/vector-icons";
 import type { TranslationKey } from "@i18n";
+import type { FeatherIconName } from "@react-native-vector-icons/feather/static";
 import type { MonoFont } from "@store/settings-store";
-import type { ComponentProps } from "react";
 
 export interface MonoFontSpec {
   // The React Native `fontFamily` value. "monospace" is the OS built-in; the
@@ -20,7 +19,7 @@ export interface MonoFontSpec {
   // render. "JetBrains Mono" is a product name and stays put.
   labelKey: TranslationKey;
   descriptionKey: TranslationKey;
-  icon: ComponentProps<typeof Feather>["name"];
+  icon: FeatherIconName;
 }
 
 export const MONO_FONTS: Record<MonoFont, MonoFontSpec> = {

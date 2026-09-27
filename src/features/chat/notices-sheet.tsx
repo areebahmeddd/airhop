@@ -14,9 +14,10 @@
 // outruns stale copies across the mesh and retracts the bridged note.
 
 import { isUrgent, type BoardPost } from "@core/mesh/wire/board-packet";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, useT, type TranslationKey } from "@i18n";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { getMeshService } from "@services/mesh-service";
 import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
@@ -244,7 +245,7 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
       scrollable
     >
       <View style={styles.titleRow}>
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="bulletin-board"
           size={18}
           color={Colors.textPrimary}

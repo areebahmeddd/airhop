@@ -6,9 +6,10 @@
 // claimToken) and are handed down as render props.
 
 import type { EmbeddedToken } from "@core/payments/cashu";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { held } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import type {
   ChatAttachment,
   ChatMessage,
@@ -442,7 +443,7 @@ function StatusTick({
   switch (status) {
     case "sending":
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="clock-outline"
           size={SIZE}
           color={Colors.textInverse}
@@ -451,7 +452,7 @@ function StatusTick({
       );
     case "sent":
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="check"
           size={SIZE}
           color={Colors.textInverse}
@@ -460,7 +461,7 @@ function StatusTick({
       );
     case "carried":
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="account-arrow-right"
           size={SIZE}
           color={Colors.textInverse}
@@ -471,7 +472,7 @@ function StatusTick({
       // Held locally, not handed to anyone: an hourglass, distinct from the
       // courier hand-off ("carried") and the transient "sending" clock.
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="timer-sand"
           size={SIZE}
           color={Colors.textInverse}
@@ -480,7 +481,7 @@ function StatusTick({
       );
     case "delivered":
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="check-all"
           size={SIZE}
           color={Colors.textInverse}
@@ -492,7 +493,7 @@ function StatusTick({
       // the universal "they've seen it" signal. Delivered stays monochrome
       // (a dim double-check), so the jump to blue reads as a real state change.
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="check-all"
           size={SIZE}
           color={Colors.verified}
@@ -500,7 +501,7 @@ function StatusTick({
       );
     case "failed":
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="alert-circle-outline"
           size={SIZE}
           color={Colors.danger}
@@ -510,7 +511,7 @@ function StatusTick({
       // An ecash payment the sender pulled back. An undo arrow rather than a
       // tick: no tick would be true of a payment that was taken back.
       return (
-        <MaterialCommunityIcons
+        <MaterialDesignIcons
           name="undo-variant"
           size={SIZE}
           color={Colors.textInverse}

@@ -18,10 +18,10 @@
 
 import { decodeQRContent } from "@core/crypto/contact-exchange";
 import { peerFingerprint, safetyNumber } from "@core/crypto/fingerprint";
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
 import SafetyWords from "@ui/components/safety-words";

@@ -2,9 +2,9 @@
 // (RSSI), or by how recently they were heard when there is none. The compass is
 // decorative: BLE gives proximity, never bearing.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { acknowledged } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { useMeshStateStore, type BleBlocker } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";

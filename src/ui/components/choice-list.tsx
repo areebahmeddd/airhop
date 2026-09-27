@@ -2,7 +2,10 @@
 // choosers). Each row states the one fact that decides it; a disabled row says
 // why in its detail.
 
-import { Feather } from "@expo/vector-icons";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
@@ -15,11 +18,9 @@ import {
   useThemeColors,
 } from "../theme";
 
-type FeatherName = React.ComponentProps<typeof Feather>["name"];
-
 export interface Choice {
   key: string;
-  icon: FeatherName;
+  icon: FeatherIconName;
   title: string;
   detail: string;
   // When the title alone would be ambiguous to a screen reader.

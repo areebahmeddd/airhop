@@ -4,7 +4,7 @@
 // The bar only. Whatever sits beside it (a cancel arrow, a filter row) belongs
 // to the screen, which is where the two surfaces genuinely differ.
 
-import { Feather } from "@expo/vector-icons";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import React, { useMemo } from "react";
 import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import {

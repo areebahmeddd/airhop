@@ -17,7 +17,10 @@
 // empty state is a single sentence to a screen reader, and the icon is
 // decoration that should never be read at all.
 
-import { Feather } from "@expo/vector-icons";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
@@ -33,7 +36,7 @@ import {
 const ICON_OPACITY = 0.4;
 
 interface Props {
-  icon: React.ComponentProps<typeof Feather>["name"];
+  icon: FeatherIconName;
   title: string;
   // Plain string in almost every case. Accepts a node for the one caller that
   // needs an inline accent inside the sentence ("Tap + above to join one").

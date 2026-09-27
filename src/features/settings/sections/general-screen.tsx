@@ -11,9 +11,12 @@
 // disk renders by itself. Neither saves a byte, so neither belongs on a screen
 // that reports usage.
 
-import Feather from "@expo/vector-icons/Feather";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useT, useTPlural, type TranslationKey, type Translator } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { getMeshService } from "@services/mesh-service";
 import { setTorRouting } from "@services/tor-routing";
@@ -125,8 +128,8 @@ const FEATURES: {
   // "Feeds", and none should be forced to.
   labelKey: TranslationKey;
   // Unused for "ai": that row renders a robot glyph from
-  // MaterialCommunityIcons instead, which Feather has no equivalent for.
-  icon: keyof typeof Feather.glyphMap;
+  // MaterialDesignIcons instead, which Feather has no equivalent for.
+  icon: FeatherIconName;
   descriptionKey: TranslationKey;
 }[] = [
   {
@@ -221,7 +224,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   icon={feature.key === "ai" ? undefined : feature.icon}
                   iconOverride={
                     feature.key === "ai" ? (
-                      <MaterialCommunityIcons
+                      <MaterialDesignIcons
                         name="robot-outline"
                         size={18}
                         color={Colors.textSecondary}

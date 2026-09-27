@@ -8,10 +8,13 @@
 // More sheet, not here.
 
 import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { textAlignEnd } from "@i18n/layout";
 import { rejected } from "@platform/haptics";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useChatStore } from "@store/chat-store";
 import {
@@ -282,7 +285,7 @@ export default function ContactInfoSheet({
   // always-on encryption guarantee, then verification (the trust signal).
   const infoRows: {
     key: string;
-    icon: React.ComponentProps<typeof Feather>["name"];
+    icon: FeatherIconName;
     iconColor: string;
     label: string;
     sub?: string;

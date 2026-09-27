@@ -20,11 +20,15 @@ import {
   type EmbeddedToken,
 } from "@core/payments/cashu";
 import { newMessageId } from "@core/router/message-router";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { stripIsolates, t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
 import { acknowledged, armed, held, released } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
   setAudioForPlayback,
   setAudioForRecording,
@@ -200,7 +204,7 @@ interface PendingAttachment {
 
 const ATTACH_OPTIONS: {
   action: AttachAction;
-  icon: React.ComponentProps<typeof Feather>["name"];
+  icon: FeatherIconName;
   labelKey: TranslationKey;
   descKey: TranslationKey;
   // Only offered inside a DM. Ecash to a broadcast channel is not a
@@ -1915,7 +1919,7 @@ export default function MessageThread({
   // and "Can't open file" went out under a checkmark.
   const [toast, setToast] = useState<{
     message: string;
-    icon: React.ComponentProps<typeof Feather>["name"];
+    icon: FeatherIconName;
   } | null>(null);
   const dmStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
@@ -4615,7 +4619,7 @@ export default function MessageThread({
                   : T("chat.thread.notices")
               }
             >
-              <MaterialCommunityIcons
+              <MaterialDesignIcons
                 name="bulletin-board"
                 size={18}
                 color={Colors.textSecondary}

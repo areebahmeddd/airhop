@@ -5,8 +5,8 @@
 // appears under Your Rooms and interoperates with bitchat clients in the same
 // cell.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   geohashLevelName,
   isValidGeohash,

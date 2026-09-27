@@ -7,8 +7,11 @@
 //
 // Each row says what the permission does and what it does not.
 
-import Feather from "@expo/vector-icons/Feather";
 import { useT, type Translator } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import BottomSheet from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
 import {
@@ -28,7 +31,7 @@ interface Props {
 }
 
 interface Reason {
-  icon: keyof typeof Feather.glyphMap;
+  icon: FeatherIconName;
   key: string;
   title: string;
   body: string;

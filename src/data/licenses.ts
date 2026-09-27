@@ -191,9 +191,14 @@ const CATALOG: {
         repo: "https://github.com/expo/google-fonts/tree/main/font-packages/jetbrains-mono",
       },
       {
-        name: "@expo/vector-icons",
+        name: "@react-native-vector-icons/feather",
         license: "MIT",
-        repo: "https://github.com/expo/vector-icons",
+        repo: "https://github.com/oblador/react-native-vector-icons/tree/master/packages/feather",
+      },
+      {
+        name: "@react-native-vector-icons/material-design-icons",
+        license: "MIT",
+        repo: "https://github.com/oblador/react-native-vector-icons/tree/master/packages/material-design-icons",
       },
       {
         name: "expo-asset",

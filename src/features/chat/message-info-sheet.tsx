@@ -11,8 +11,11 @@
 //   Channel sent, and nothing more. A public room has no roster to count
 //           against and no membership to confirm anything with.
 
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, useT, useTPlural } from "@i18n";
+import {
+  MaterialDesignIcons,
+  type MaterialDesignIconsIconName,
+} from "@react-native-vector-icons/material-design-icons/static";
 import { useBlockedStore } from "@store/blocked-store";
 import type { ChatMessage } from "@store/chat-store";
 import { useGroupStore } from "@store/group-store";
@@ -243,7 +246,7 @@ function InfoLine({
   pending,
 }: {
   styles: ReturnType<typeof createStyles>;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialDesignIconsIconName;
   color: string;
   label: string;
   time?: string;
@@ -253,7 +256,7 @@ function InfoLine({
   const T = useT();
   return (
     <View style={styles.line}>
-      <MaterialCommunityIcons name={icon} size={18} color={color} />
+      <MaterialDesignIcons name={icon} size={18} color={color} />
       <View style={styles.lineText}>
         <Text style={styles.lineLabel}>{label}</Text>
         {sub && <Text style={styles.lineSub}>{sub}</Text>}

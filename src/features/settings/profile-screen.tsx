@@ -4,7 +4,6 @@
 // at the very bottom, outside every section.
 
 import { encodeQRContent } from "@core/crypto/contact-exchange";
-import Feather from "@expo/vector-icons/Feather";
 import {
   isShipped,
   LANGUAGES,
@@ -17,6 +16,10 @@ import {
 } from "@i18n";
 import { warned } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { shareApk } from "@services/apk-share";
 import { destroyMeshService, getMeshService } from "@services/mesh-service";
 import { panicWipe } from "@services/panic-wipe";
@@ -128,7 +131,7 @@ function getStatusMeta(
     label: string;
     description: string;
     color: string;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   }
 > {
   return {
@@ -195,7 +198,7 @@ const THEME_META: Record<
   {
     labelKey: TranslationKey;
     descriptionKey: TranslationKey;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   }
 > = {
   light: {

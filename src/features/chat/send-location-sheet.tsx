@@ -6,9 +6,9 @@
 //
 // See core/mesh/wire/location-pin.ts for why one-shot is the whole feature.
 
-import { Feather } from "@expo/vector-icons";
 import { useT } from "@i18n";
 import { rejected, succeeded } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   getPinLocation,
   locationPermissionState,

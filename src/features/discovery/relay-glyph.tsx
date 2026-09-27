@@ -8,7 +8,7 @@
 // Deliberately colourless. Avatar tints itself from the peer ID, which is what
 // makes a crowd of people look like a crowd; equipment should recede instead.
 
-import { Feather } from "@expo/vector-icons";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { useThemeColors } from "@ui/theme";
 import React, { useMemo } from "react";
 import { StyleSheet, View } from "react-native";

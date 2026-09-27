@@ -10,8 +10,8 @@
 // while it is read. "Open in Maps" is a handoff the user chooses. Our own pin
 // has no arrow: the distance to where we just were says nothing.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import {
   getCoarseLocation,
   hasLocationPermission,

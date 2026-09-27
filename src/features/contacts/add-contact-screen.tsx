@@ -25,12 +25,15 @@ import {
   decodeQRContent,
   type ContactCard,
 } from "@core/crypto/contact-exchange";
-import { Feather } from "@expo/vector-icons";
 import { t, useT } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
 import Avatar from "@ui/components/avatar";
@@ -400,7 +403,7 @@ export default function AddContactScreen({
   const confirmPill: {
     label: string;
     color: string;
-    icon: keyof typeof Feather.glyphMap;
+    icon: FeatherIconName;
   } = alreadyContact
     ? {
         label: T("contacts.scan.already_added"),

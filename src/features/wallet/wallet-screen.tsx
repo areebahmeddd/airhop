@@ -27,11 +27,14 @@ import {
   unknownWordsIn,
   verifyPositions,
 } from "@core/payments/wallet-seed";
-import { Feather } from "@expo/vector-icons";
 import { t, tPlural, useT, useTPlural } from "@i18n";
 import { chevronForward, textAlignEnd } from "@i18n/layout";
 import { useRichText } from "@i18n/rich-text";
 import { acknowledged, succeeded } from "@platform/haptics";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import {
   deliverTokenToPeer,
@@ -3366,7 +3369,6 @@ export default function WalletScreen({
 // ---- Small presentational pieces ----
 
 type Styles = ReturnType<typeof createStyles>;
-type FeatherName = React.ComponentProps<typeof Feather>["name"];
 
 // The whole column, label included, is the target, not only the circle.
 function ActionButton({
@@ -3380,7 +3382,7 @@ function ActionButton({
 }: {
   styles: Styles;
   Colors: ReturnType<typeof useThemeColors>;
-  icon: FeatherName;
+  icon: FeatherIconName;
   label: string;
   a11yLabel: string;
   disabled?: boolean;
@@ -3573,7 +3575,7 @@ function isNeutral(tx: WalletTx): boolean {
   return tx.kind === "swap" && tx.status !== "failed";
 }
 
-function txIcon(tx: WalletTx): React.ComponentProps<typeof Feather>["name"] {
+function txIcon(tx: WalletTx): FeatherIconName {
   switch (tx.kind) {
     case "receive":
       return "arrow-down-left";

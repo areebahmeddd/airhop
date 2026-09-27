@@ -9,10 +9,13 @@
 
 import { decodeQRContent } from "@core/crypto/contact-exchange";
 import { decodeMoveInvite, isMoveInvite } from "@core/move/move-invite";
-import Feather from "@expo/vector-icons/Feather";
 import { useT, type TranslationKey } from "@i18n";
 import { confirmDeviceOwner } from "@platform/device-auth";
 import { rejected, succeeded } from "@platform/haptics";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { clearMoveMarker } from "@services/move-marker";
 import {
   MoveSender,
@@ -326,7 +329,7 @@ export default function TransferOutFlow({
 
   // Every non-camera state: glyph, heading, body, actions at the thumb.
   function renderPanel(params: {
-    icon?: keyof typeof Feather.glyphMap;
+    icon?: FeatherIconName;
     danger?: boolean;
     busy?: boolean;
     title: string;

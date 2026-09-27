@@ -6,11 +6,7 @@ import AirhopBLE from "@bridge/NativeAirhopBLE";
 import type { Identity } from "@core/crypto/identity";
 import { loadIdentity } from "@core/crypto/identity";
 import { sweepOrphanedSecrets } from "@core/crypto/keychain";
-import {
-  JetBrainsMono_400Regular,
-  useFonts,
-} from "@expo-google-fonts/jetbrains-mono";
-import { Feather } from "@expo/vector-icons";
+import { JetBrainsMono_400Regular } from "@expo-google-fonts/jetbrains-mono";
 import ChannelList from "@features/chat/channel-list";
 import ChatFilterSheet from "@features/chat/chat-filter-sheet";
 import ChatSearchResults from "@features/chat/chat-search-results";
@@ -52,6 +48,10 @@ import {
   type BlePermissionResult,
 } from "@platform/ble-permissions";
 import { showBlockedAlert } from "@platform/permissions";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import { setAudioForPlayback } from "@services/audio-session";
 import {
   registerBootStartTask,
@@ -159,6 +159,7 @@ import { formatNumber } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
 import { settleOr } from "@utils/with-timeout";
+import { useFonts } from "expo-font";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import React, {
@@ -2276,11 +2277,7 @@ function AppContent(): React.JSX.Element {
                                 />
                               ) : (
                                 <Feather
-                                  name={
-                                    icon as React.ComponentProps<
-                                      typeof Feather
-                                    >["name"]
-                                  }
+                                  name={icon as FeatherIconName}
                                   size={22}
                                   color={
                                     active ? Colors.accent : Colors.textMuted

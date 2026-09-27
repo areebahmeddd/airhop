@@ -6,8 +6,12 @@
 
 import { GROUP_MAX_MEMBERS } from "@core/mesh/rooms/group-protocol";
 import { relayDisplayHost } from "@core/nostr/geo-relay";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, useT, useTPlural, type TranslationKey } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
   geohashLevelName,
   isGeoChannel,
@@ -289,15 +293,14 @@ export default function ChannelInfoSheet({
   // privacy (is it encrypted), reach (which transports carry it), and location
   // (the geohash, for geo channels), in one card rather than spread across
   // paragraph-heavy sections restating the same thing.
-  type IconName = React.ComponentProps<typeof Feather>["name"];
   // "unlock" for public (unencrypted), distinct from the reach row's "globe".
-  const privacyIcon: IconName = encrypted ? "lock" : "unlock";
+  const privacyIcon: FeatherIconName = encrypted ? "lock" : "unlock";
   const privacyColor = encrypted ? Colors.e2ee : Colors.danger;
   const privacyLabel = encrypted
     ? T("chat.info.private_e2ee")
     : T("chat.info.public_plain");
 
-  let reachIcon: IconName = "bluetooth";
+  let reachIcon: FeatherIconName = "bluetooth";
   let reachLabel = T("chat.transport.bluetooth");
   if (isGroup) {
     reachIcon = "bluetooth";
@@ -499,7 +502,7 @@ export default function ChannelInfoSheet({
               : T("chat.info.bookmark")
           }
         >
-          <MaterialCommunityIcons
+          <MaterialDesignIcons
             name={bookmarked ? "bookmark" : "bookmark-outline"}
             size={20}
             color={bookmarked ? Colors.accent : Colors.textMuted}

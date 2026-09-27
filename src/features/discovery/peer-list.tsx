@@ -7,9 +7,9 @@
 // Tapping a peer opens their detail sheet with no separate "add contact" step,
 // since a peer visible here is already reachable.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT, useTPlural } from "@i18n";
 import { arrowForward } from "@i18n/layout";
+import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService, type MeshPingResult } from "@services/mesh-service";
 import { describePayResult, payPerson } from "@services/payment-router";
 import { showAlert } from "@store/alert-store";

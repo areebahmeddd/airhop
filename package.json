@@ -45,10 +45,11 @@
   "dependencies": {
     "@cashu/cashu-ts": "^4.11.0",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
-    "@expo/vector-icons": "^15.1.1",
     "@noble/ciphers": "^2.4.0",
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "^2.4.0",
+    "@react-native-vector-icons/feather": "^13.1.4",
+    "@react-native-vector-icons/material-design-icons": "^13.1.4",
     "@scure/bip39": "^2.4.0",
     "expo": "~57.0.25",
     "expo-asset": "~57.0.18",

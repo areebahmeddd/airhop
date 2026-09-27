@@ -6,11 +6,12 @@
 // Creating a channel lives in start-new-sheet, not here: the header "+" is on
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
 
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { t, tPlural, useT, useTPlural, type TranslationKey } from "@i18n";
 import { trailingSwipeActions } from "@i18n/layout";
 import { useRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
   geohashLevelName,
   isGeoChannel,
@@ -506,7 +507,7 @@ export default function ChannelList({
                 <Feather name="bell-off" size={13} color={Colors.textMuted} />
               )}
               {isPinned && (
-                <MaterialCommunityIcons
+                <MaterialDesignIcons
                   name="pin"
                   size={13}
                   color={Colors.textMuted}
@@ -755,7 +756,7 @@ export default function ChannelList({
                     }}
                     accessibilityRole="button"
                   >
-                    <MaterialCommunityIcons
+                    <MaterialDesignIcons
                       name={
                         pinnedChannels.includes(moreOptionsChannel)
                           ? "pin-off"

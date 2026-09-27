@@ -6,8 +6,11 @@
 // its own bordered box (matching the Appearance sheet): public Channels, private
 // Groups, Location (geohash) cells, and Direct messages.
 
-import { Feather } from "@expo/vector-icons";
 import { t, useT, type TranslationKey } from "@i18n";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
@@ -71,10 +74,7 @@ const SECTION_ORDER: { kind: ForwardKind; titleKey: TranslationKey }[] = [
   { kind: "dm", titleKey: "chat.forward.dms" },
 ];
 
-const ICON_FOR: Record<
-  Exclude<ForwardKind, "dm">,
-  React.ComponentProps<typeof Feather>["name"]
-> = {
+const ICON_FOR: Record<Exclude<ForwardKind, "dm">, FeatherIconName> = {
   channel: "hash",
   group: "users",
   location: "map-pin",
