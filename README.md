@@ -185,7 +185,7 @@ With the Android SDK build tools, this must print exactly one signer, with that 
 
 ```bash
 apksigner verify --print-certs airhop.apk
-# Signer #1 certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
+# ... certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
 ```
 
 An APK downloaded from a release also carries build provenance. This checks it was built by this repository's release workflow, on a GitHub-hosted runner, from the tag of the release you downloaded (put it in place of `vX.Y.Z`):
