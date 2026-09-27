@@ -983,8 +983,10 @@ also running the Bluetooth mesh, the wallet and the courier store. And
 a failure severe enough to end the process is not replayed by the next launch.
 Tor stays on and nothing native starts: the relay pool is held, Android holds
 its HTTP stack on a proxy nothing can listen on, and the Tor screen offers Try
-again beside the switch that turns Tor off. The Mesh banner links to that
-screen. The mesh starts normally. Without the marker, persisting the preference
+again beside the switch that turns Tor off. Only Tor off, or a Try again the
+native client accepts, leaves this state: a refused Try again lands back in
+it, and so does an internet switch turned off and on. The Mesh banner links to
+that screen. The mesh starts normally. Without the marker, persisting the preference
 before the client exists (which is what stops a relaunch mid-bootstrap from
 landing on the clear net) would turn one native crash into an app that cannot
 be opened, whose only remedy is deleting the user's keys.
