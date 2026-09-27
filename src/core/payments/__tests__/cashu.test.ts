@@ -166,8 +166,9 @@ describe("decodeToken", () => {
     expect(decodeToken("")).toBeNull();
   });
 
-  it("strips control characters from an attacker-supplied memo", () => {
-    const info = decodeToken(realToken([1], "line\x00one\x1ftwo"));
+  it("strips controls, bidi overrides and line breaks from an attacker-supplied memo", () => {
+    // U+202E would show the rest of the memo reversed on the chat card.
+    const info = decodeToken(realToken([1], "line\none\u202E two\x00"));
     expect(info?.memo).toBe("line one two");
   });
 });

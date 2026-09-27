@@ -29,6 +29,7 @@ import {
   type Token,
 } from "@cashu/cashu-ts";
 import type { StoredProof } from "@store/wallet-store";
+import { stripInvisibles } from "@utils/strip-invisibles";
 
 // ---- Constants ----
 
@@ -319,11 +320,12 @@ function sanitizeUnit(unit: string | undefined): string {
   return unit.toLowerCase();
 }
 
-// Shown verbatim in the card, so strip control characters and newlines (which
-// would let a sender fake extra UI lines) and cap the length.
+// Shown verbatim in the card, so strip what changes how text reads unseen (a
+// bidi override would reverse it), fold line breaks (which would let a sender
+// fake extra UI lines) and cap the length.
 function sanitizeMemo(memo: string | undefined): string | undefined {
   if (typeof memo !== "string" || memo.length > 512) return undefined;
-  const cleaned = memo.replace(/[\x00-\x1f\x7f]/g, " ").trim();
+  const cleaned = stripInvisibles(memo, { singleLine: true }).trim();
   return cleaned.length > 0 ? cleaned.slice(0, 80) : undefined;
 }
 
