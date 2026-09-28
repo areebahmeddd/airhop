@@ -48,5 +48,3 @@ npm run verify:invisibles
 npm run verify:vendored
 npm run deadcode
 ```
-
-- Match the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) before opening the PR.
