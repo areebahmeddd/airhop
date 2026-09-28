@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Đang tạo danh tính của bạn",
   "onboarding.identity.body":
-    "Đang tạo một cặp khóa Ed25519 trên thiết bị này.\nKhông có gì được gửi đi đâu cả.",
+    "Đang tạo khóa mã hóa của bạn trên thiết bị này.\nKhông có gì được gửi đi đâu cả.",
   "onboarding.identity.failed_heading": "Không tạo được khóa cho bạn",
   "onboarding.identity.failed_body":
     "Thiết bị này không cho Airhop lưu chúng một cách an toàn. Hãy thử lại, hoặc khởi động lại điện thoại rồi mở lại Airhop.",

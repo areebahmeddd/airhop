@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Inatengeneza utambulisho wako",
   "onboarding.identity.body":
-    "Inatengeneza jozi ya funguo za Ed25519 kwenye kifaa hiki.\nHakuna kinachotumwa popote.",
+    "Inatengeneza funguo zako za kriptografia kwenye kifaa hiki.\nHakuna kinachotumwa popote.",
   "onboarding.identity.failed_heading": "Funguo zako hazikuweza kutengenezwa",
   "onboarding.identity.failed_body":
     "Kifaa hiki hakikuruhusu Airhop kuzihifadhi kwa usalama. Jaribu tena, au washa upya simu yako kisha fungua Airhop tena.",

@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Создаём вашу личность",
   "onboarding.identity.body":
-    "На этом устройстве создаётся пара ключей Ed25519.\nНичего никуда не отправляется.",
+    "На этом устройстве создаются ваши криптографические ключи.\nНичего никуда не отправляется.",
   "onboarding.identity.failed_heading": "Не удалось создать ключи",
   "onboarding.identity.failed_body":
     "Устройство не позволило Airhop сохранить их безопасно. Попробуйте снова или перезагрузите телефон и откройте Airhop заново.",

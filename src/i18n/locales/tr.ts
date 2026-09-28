@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Kimliğin oluşturuluyor",
   "onboarding.identity.body":
-    "Bu cihazda bir Ed25519 anahtar çifti oluşturuluyor.\nHiçbir yere hiçbir şey gönderilmiyor.",
+    "Bu cihazda kriptografik anahtarların oluşturuluyor.\nHiçbir yere hiçbir şey gönderilmiyor.",
   "onboarding.identity.failed_heading": "Anahtarların oluşturulamadı",
   "onboarding.identity.failed_body":
     "Bu cihaz, Airhop'un anahtarları güvenli biçimde saklamasına izin vermedi. Yeniden dene ya da telefonu yeniden başlatıp Airhop'u tekrar aç.",

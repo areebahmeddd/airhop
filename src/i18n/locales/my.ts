@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "သင့်အထောက်အထားကို ဖန်တီးနေသည်",
   "onboarding.identity.body":
-    "ဤစက်ပေါ်တွင် Ed25519 သော့တွဲကို ဖန်တီးနေပါသည်။\nဘာမျှ မည်သည့်နေရာသို့မျှ မပို့ပါ။",
+    "ဤစက်ပေါ်တွင် သင့်ကုဒ်ဝှက်သော့များကို ဖန်တီးနေပါသည်။\nဘာမျှ မည်သည့်နေရာသို့မျှ မပို့ပါ။",
   "onboarding.identity.failed_heading": "သင့်သော့များကို ဖန်တီး၍ မရပါ",
   "onboarding.identity.failed_body":
     "ဤစက်သည် Airhop ကို သော့များ လုံခြုံစွာသိမ်းဆည်းခွင့် မပြုခဲ့ပါ။ ထပ်စမ်းကြည့်ပါ၊ သို့မဟုတ် ဖုန်းကို ပြန်ဖွင့်ပြီး Airhop ကို ပြန်ဖွင့်ပါ။",

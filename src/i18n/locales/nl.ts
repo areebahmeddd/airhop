@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Je identiteit wordt aangemaakt",
   "onboarding.identity.body":
-    "Er wordt een Ed25519-sleutelpaar op dit toestel gemaakt.\nEr wordt niets ergens naartoe gestuurd.",
+    "Je cryptografische sleutels worden op dit toestel gemaakt.\nEr wordt niets ergens naartoe gestuurd.",
   "onboarding.identity.failed_heading":
     "Je sleutels konden niet worden gemaakt",
   "onboarding.identity.failed_body":

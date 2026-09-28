@@ -14,6 +14,7 @@ import {
 } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
 import { amountParts } from "./format";
+import { stripFormatting } from "./message-format";
 import { translateStored } from "./message-text";
 
 export interface MessagePreview {
@@ -71,7 +72,10 @@ function resolve(message: ChatMessage): {
   }
   const ecash = ecashPreview(message.text);
   if (ecash !== null) return { ...ecash, literal: "" };
-  if (message.text) return { literal: message.text };
+  // A one-line summary reads *bold* and `code` as stray punctuation rather
+  // than styled text, so the delimiters come off here; the message itself
+  // still renders them in the thread.
+  if (message.text) return { literal: stripFormatting(message.text) };
   if (message.attachment) {
     const key = attachmentPreviewKey(message.attachment);
     return key === undefined

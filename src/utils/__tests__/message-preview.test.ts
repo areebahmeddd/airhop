@@ -37,6 +37,12 @@ describe("messagePreviewText", () => {
     expect(messagePreviewText(message({ text: "hello" }))).toBe("hello");
   });
 
+  it("strips inline formatting, since a preview line is not the thread", () => {
+    expect(messagePreviewText(message({ text: "say *bold* now" }))).toBe(
+      "say bold now",
+    );
+  });
+
   it("prefers the caption over the attachment kind", () => {
     expect(
       messagePreviewText(

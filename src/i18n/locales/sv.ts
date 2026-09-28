@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Skapar din identitet",
   "onboarding.identity.body":
-    "Ett Ed25519-nyckelpar skapas på den här enheten.\nInget skickas någonstans.",
+    "Dina kryptografiska nycklar skapas på den här enheten.\nInget skickas någonstans.",
   "onboarding.identity.failed_heading": "Dina nycklar kunde inte skapas",
   "onboarding.identity.failed_body":
     "Enheten lät inte Airhop lagra dem säkert. Försök igen, eller starta om telefonen och öppna Airhop på nytt.",

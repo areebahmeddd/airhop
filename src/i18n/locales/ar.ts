@@ -75,7 +75,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "جارٍ إنشاء هويتك",
   "onboarding.identity.body":
-    "يجري إنشاء زوج مفاتيح Ed25519 على هذا الجهاز.\nلا يُرسَل أي شيء إلى أي مكان.",
+    "يجري إنشاء مفاتيحك التشفيرية على هذا الجهاز.\nلا يُرسَل أي شيء إلى أي مكان.",
   "onboarding.identity.failed_heading": "تعذّر إنشاء مفاتيحك",
   "onboarding.identity.failed_body":
     "لم يسمح هذا الجهاز لـ Airhop بتخزينها بأمان. حاول مرة أخرى، أو أعد تشغيل هاتفك ثم افتح Airhop من جديد.",

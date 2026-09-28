@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "तपाईंको पहिचान बन्दै छ",
   "onboarding.identity.body":
-    "यो यन्त्रमा Ed25519 कुञ्जी जोडी बन्दै छ।\nकतै केही पठाइँदैन।",
+    "यो यन्त्रमा तपाईंका क्रिप्टोग्राफिक कुञ्जीहरू बन्दै छन्।\nकतै केही पठाइँदैन।",
   "onboarding.identity.failed_heading": "तपाईंका कुञ्जी बन्न सकेनन्",
   "onboarding.identity.failed_body":
     "यो यन्त्रले Airhop लाई तिनलाई सुरक्षित रूपमा राख्न दिएन। फेरि प्रयास गर्नुहोस्, वा फोन पुनः सुरु गरेर Airhop फेरि खोल्नुहोस्।",

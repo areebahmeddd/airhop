@@ -207,7 +207,7 @@ export default function PrivacyScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Privacy Policy"
-      lastUpdated="August 01, 2026"
+      lastUpdated="September 1, 2026"
       sections={SECTIONS}
       onBack={onBack}
     />

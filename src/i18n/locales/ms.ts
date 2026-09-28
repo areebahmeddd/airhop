@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Menjana identiti anda",
   "onboarding.identity.body":
-    "Menjana pasangan kunci Ed25519 pada peranti ini.\nTiada apa-apa dihantar ke mana-mana.",
+    "Menjana kunci kriptografi anda pada peranti ini.\nTiada apa-apa dihantar ke mana-mana.",
   "onboarding.identity.failed_heading": "Kunci anda tidak dapat dicipta",
   "onboarding.identity.failed_body":
     "Peranti ini tidak membenarkan Airhop menyimpannya dengan selamat. Cuba lagi, atau mulakan semula telefon anda dan buka Airhop sekali lagi.",

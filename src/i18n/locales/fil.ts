@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Ginagawa ang iyong pagkakakilanlan",
   "onboarding.identity.body":
-    "Gumagawa ng pares ng susing Ed25519 sa device na ito.\nWalang ipinapadala kahit saan.",
+    "Gumagawa ng iyong mga cryptographic na susi sa device na ito.\nWalang ipinapadala kahit saan.",
   "onboarding.identity.failed_heading": "Hindi nagawa ang iyong mga susi",
   "onboarding.identity.failed_body":
     "Hindi pinayagan ng device na ito ang Airhop na itago ang mga ito nang ligtas. Subukan ulit, o i-restart ang iyong telepono at buksang muli ang Airhop.",

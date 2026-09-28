@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Deine Identität wird erstellt",
   "onboarding.identity.body":
-    "Ein Ed25519-Schlüsselpaar wird auf diesem Gerät erzeugt.\nNichts wird irgendwohin gesendet.",
+    "Deine kryptografischen Schlüssel werden auf diesem Gerät erzeugt.\nNichts wird irgendwohin gesendet.",
   "onboarding.identity.failed_heading":
     "Schlüssel konnten nicht erstellt werden",
   "onboarding.identity.failed_body":

@@ -38,9 +38,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # Every later job checks out this commit rather than the tag's name:
-      # checkout prefers a branch over a tag of the same name, and working
-      # branches here are named like release tags.
       - name: Resolve and validate tag
         id: resolve
         env:
@@ -207,9 +204,8 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  # The only job that sees the signing key. It checks out nothing and runs only
-  # the runner's preinstalled SDK build tools and JDK, so no project or package
-  # code runs beside the key.
+  # The only job that sees the signing key. It checks out nothing and uses only
+  # the runner's preinstalled SDK build tools and JDK.
   android-sign:
     name: Sign and publish Android release
     runs-on: ubuntu-24.04
@@ -361,8 +357,6 @@ jobs:
     timeout-minutes: 60
     needs: release
     # Sign, upload to TestFlight, push the listing. Review submission is manual.
-    # Signing happens in the same job as the build here (fastlane gym), so it
-    # restores no cache a poisoned run could have written.
     permissions:
       contents: read
       id-token: write
@@ -408,6 +402,7 @@ jobs:
           fi
           bundle exec pod install
 
+      # Distribution certificate and App Store profile, like the Android keystore.
       - name: Decode signing certificate and profile
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
@@ -464,6 +459,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs: release
+    # Publish the release software bill of materials.
     permissions:
       contents: write
 
@@ -493,7 +489,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs: release
-    # SHA-256 of every tracked source file, so a checkout can be matched to this release.
+    # Publishes SHA-256 hashes of tracked source files to verify source integrity.
+    # Complements the SBOM by proving the source matches this release.
     permissions:
       contents: write
       id-token: write

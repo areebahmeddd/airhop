@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "আপনার পরিচয় তৈরি হচ্ছে",
   "onboarding.identity.body":
-    "এই ডিভাইসে একটি Ed25519 কী জোড়া তৈরি হচ্ছে।\nকিছুই কোথাও পাঠানো হয় না।",
+    "এই ডিভাইসে আপনার ক্রিপ্টোগ্রাফিক কী তৈরি হচ্ছে।\nকিছুই কোথাও পাঠানো হয় না।",
   "onboarding.identity.failed_heading": "আপনার কী তৈরি করা গেল না",
   "onboarding.identity.failed_body":
     "এই ডিভাইসটি Airhop-কে সেগুলো নিরাপদে রাখতে দেয়নি। আবার চেষ্টা করুন, বা ফোন চালু করে আবার Airhop খুলুন।",

@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "آپ کی شناخت بنائی جا رہی ہے",
   "onboarding.identity.body":
-    "اس آلے پر Ed25519 کلیدوں کا جوڑا بنایا جا رہا ہے۔\nکچھ بھی کہیں نہیں بھیجا جاتا۔",
+    "اس آلے پر آپ کی خفیہ نگارانہ کلیدیں بنائی جا رہی ہیں۔\nکچھ بھی کہیں نہیں بھیجا جاتا۔",
   "onboarding.identity.failed_heading": "آپ کی کلیدیں نہیں بن سکیں",
   "onboarding.identity.failed_body":
     "اس آلے نے Airhop کو انہیں محفوظ طریقے سے رکھنے کی اجازت نہیں دی۔ دوبارہ کوشش کریں، یا اپنا فون دوبارہ چالو کر کے Airhop پھر کھولیں۔",

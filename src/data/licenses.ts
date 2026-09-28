@@ -71,7 +71,7 @@ const CATALOG: {
   {
     category: "Device features",
     description:
-      "The parts of the phone the app uses: camera, microphone, location, files, notifications, network state, languages and the screen lock.",
+      "The parts of the phone the app uses: camera, microphone, location, files, notifications, languages and network state.",
     packages: [
       {
         name: "expo-audio",

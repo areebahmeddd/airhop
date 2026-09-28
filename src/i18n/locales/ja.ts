@@ -75,7 +75,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "あなたの識別情報を作成中",
   "onboarding.identity.body":
-    "この端末でEd25519の鍵ペアを作成しています。\nどこにも送信されません。",
+    "この端末で暗号鍵を作成しています。\nどこにも送信されません。",
   "onboarding.identity.failed_heading": "鍵を作成できませんでした",
   "onboarding.identity.failed_body":
     "この端末がAirhopに安全な保存を許可しませんでした。もう一度試すか、端末を再起動してAirhopを開き直してください。",

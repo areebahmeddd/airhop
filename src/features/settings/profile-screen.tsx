@@ -501,8 +501,6 @@ export default function ProfileScreen({
     }, 400);
   }
 
-  const shortPubKey = peerID.slice(0, 8) + " · " + peerID.slice(8);
-
   function handleSelectStatus(next: Status): void {
     // Shared with the background notification's "Stop mesh" action, so both
     // routes into Away do exactly the same thing. See services/presence.
@@ -796,12 +794,6 @@ export default function ProfileScreen({
           </View>
           <Text style={styles.username}>{username}</Text>
           <Text style={styles.statusLabel}>{STATUS_META[status].label}</Text>
-          <View style={styles.peerIDGroup}>
-            <UpperText style={styles.peerIDLabel}>
-              {T("settings.peer_id")}
-            </UpperText>
-            <Text style={styles.peerID}>{shortPubKey}</Text>
-          </View>
         </View>
 
         <View style={styles.sharePills}>
@@ -1283,7 +1275,6 @@ export default function ProfileScreen({
               })}
             </View>
 
-            {/* Stays open on select, so the font behind it can be compared. */}
             <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.font")}
             </UpperText>
@@ -1300,7 +1291,10 @@ export default function ProfileScreen({
                         selected && styles.optionRowGroupedSelected,
                         pressed && shared.rowPressed,
                       ]}
-                      onPress={() => setMonoFont(key)}
+                      onPress={() => {
+                        setMonoFont(key);
+                        setShowThemeModal(false);
+                      }}
                       accessibilityRole="button"
                       accessibilityLabel={T("settings.font.set_a11y", {
                         value: T(meta.labelKey),
@@ -1370,10 +1364,10 @@ export default function ProfileScreen({
                       disabled={!shipped}
                       onPress={() => {
                         // `@i18n` pins the direction and App raises the restart
-                        // notice, not this row: the language can change without
-                        // anyone touching the list. The "pending" tag below is
-                        // the in-place half.
+                        // notice, not this row. The sheet stays open while a
+                        // relaunch is pending, since the switch has not landed.
                         setLanguage(code);
+                        if (!needsRelaunch(code)) setShowThemeModal(false);
                       }}
                       accessibilityRole={shipped ? "button" : undefined}
                       accessibilityState={
@@ -1581,23 +1575,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: 24,
       alignItems: "center",
       flexShrink: 0,
-    },
-    peerIDGroup: {
-      alignItems: "center",
-      gap: 3,
-      marginTop: Spacing.sm,
-    },
-    peerIDLabel: {
-      fontSize: FontSize.xs,
-      color: Colors.textMuted,
-      letterSpacing: 0.6,
-      marginTop: Spacing.xs,
-    },
-    peerID: {
-      fontSize: FontSize.xs,
-      color: Colors.textSecondary,
-      fontFamily: FontFamily.mono,
-      letterSpacing: 0.8,
     },
     sharePills: {
       flexDirection: "row",

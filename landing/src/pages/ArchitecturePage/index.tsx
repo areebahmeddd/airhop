@@ -688,7 +688,7 @@ export default function ArchitecturePage() {
                     "Speed",
                     "~18 KiB/s",
                     "Network speed, no radio pacing",
-                    "~18 KiB/s",
+                    "Link speed, no radio pacing",
                     "Not used for files",
                     "Not used for files",
                   ],

@@ -75,7 +75,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "正在產生你的身分",
   "onboarding.identity.body":
-    "正在這台裝置上建立一對 Ed25519 金鑰。\n什麼都不會送往別處。",
+    "正在這台裝置上建立你的加密金鑰。\n什麼都不會送往別處。",
   "onboarding.identity.failed_heading": "無法建立你的金鑰",
   "onboarding.identity.failed_body":
     "這台裝置不讓 Airhop 安全地存放它們。請再試一次，或者重新開機後重新開啟 Airhop。",

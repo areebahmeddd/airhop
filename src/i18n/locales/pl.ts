@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Tworzenie tożsamości",
   "onboarding.identity.body":
-    "Na tym urządzeniu powstaje para kluczy Ed25519.\nNic nigdzie nie jest wysyłane.",
+    "Na tym urządzeniu powstają twoje klucze kryptograficzne.\nNic nigdzie nie jest wysyłane.",
   "onboarding.identity.failed_heading": "Nie udało się utworzyć kluczy",
   "onboarding.identity.failed_body":
     "To urządzenie nie pozwoliło Airhop bezpiecznie ich zapisać. Spróbuj ponownie albo uruchom telefon na nowo i otwórz Airhop jeszcze raz.",

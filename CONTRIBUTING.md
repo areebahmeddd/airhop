@@ -67,6 +67,20 @@ Signed-off-by: Your Name <your@email.com>
 
 It certifies that you agree to the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the contribution or have the right to submit it under this project's license.
 
-## 7. Open the Pull Request
+## 7. PR Checklist
 
-Fill in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md). Its checklist is what review expects: every check CI runs, with the commands to run them locally, the documentation to update, and the review agents. Link the issue the change closes, and for any UI change attach before and after screenshots in both themes.
+Before opening any pull request:
+
+- [ ] `npm run verify:invisibles` passes (no literal control, bidirectional, or zero-width characters in source)
+- [ ] `npm run verify:vendored` passes (vendored binaries match their recorded hashes)
+- [ ] `npm run i18n:audit -- --max 0` passes (no hardcoded user-facing strings)
+- [ ] `npm run i18n:native` passes (native language, permission, and service notice strings are in sync)
+- [ ] `npm run deadcode` reports nothing new (unused exports, files, and dependencies)
+- [ ] `npm run typecheck` passes with zero errors
+- [ ] `npm run format:check` passes (no uncommitted format changes)
+- [ ] `npm run lint` passes with zero errors
+- [ ] `npm run coverage` passes with zero failures
+- [ ] `docs/dev/PROGRESS.md` updated if a milestone was completed or a decision was made
+- [ ] `docs/design/ROADMAP.md` updated if a feature was added, removed, or reprioritized
+- [ ] If touching `src/core/` or `android/` or `ios/`: invoke `@architect` agent for review
+- [ ] If touching `src/core/crypto/`, key storage, or packet signing: invoke `@security-review` agent

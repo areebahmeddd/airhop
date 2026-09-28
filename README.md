@@ -172,39 +172,6 @@ Airhop belongs to the third category and extends it with a Nostr-based internet 
 
 Signal and Threema are here as the benchmark rather than as alternatives. Both are excellent at what they do, and neither is trying to work without a network: Signal ties an account to a phone number and Threema to a Threema ID, and both stop entirely when the network does. Airhop is aimed at the moment after that, when there is no network to be excellent on.
 
-## Verifying an APK
-
-Every release APK is signed with one key. An APK a friend sends you, or one shared from another phone over Quick Share, should match it before you install it the first time. After that, Android refuses any update signed by a different key.
-
-| Field           | Value                                                                                             |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| Package         | `org.onemindlabs.airhop`                                                                          |
-| Signing SHA-256 | `60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49` |
-
-With the Android SDK build tools, this must print exactly one signer, with that digest:
-
-```bash
-apksigner verify --print-certs airhop.apk
-# ... certificate SHA-256 digest: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
-```
-
-An APK downloaded from a release also carries build provenance. This checks it was built by this repository's release workflow, on a GitHub-hosted runner, from the tag of the release you downloaded (put it in place of `vX.Y.Z`):
-
-```bash
-gh attestation verify airhop.apk --repo areebahmeddd/airhop \
-  --signer-workflow areebahmeddd/airhop/.github/workflows/release.yml \
-  --source-ref refs/tags/vX.Y.Z --deny-self-hosted-runners
-```
-
-Each release's notes carry the same commands with its tag filled in.
-
-On a phone with no computer to hand, an app verifier such as [AppVerifier](https://github.com/soupslurpr/AppVerifier) takes the package name and digest in this form:
-
-```text
-org.onemindlabs.airhop
-60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49
-```
-
 ## Getting Started
 
 ```bash

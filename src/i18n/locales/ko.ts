@@ -75,7 +75,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "신원을 생성하는 중",
   "onboarding.identity.body":
-    "이 기기에서 Ed25519 키 쌍을 생성하고 있습니다.\n어디로도 전송되지 않습니다.",
+    "이 기기에서 암호화 키를 생성하고 있습니다.\n어디로도 전송되지 않습니다.",
   "onboarding.identity.failed_heading": "키를 생성하지 못했습니다",
   "onboarding.identity.failed_body":
     "이 기기가 Airhop이 키를 안전하게 저장하도록 허용하지 않았습니다. 다시 시도하거나, 휴대폰을 재시작한 뒤 Airhop을 다시 여세요.",

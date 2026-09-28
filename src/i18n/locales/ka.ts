@@ -77,7 +77,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "შენი ვინაობა იქმნება",
   "onboarding.identity.body":
-    "ამ მოწყობილობაზე იქმნება Ed25519 გასაღებების წყვილი.\nარაფერი არსად არ იგზავნება.",
+    "ამ მოწყობილობაზე იქმნება შენი კრიპტოგრაფიული გასაღებები.\nარაფერი არსად არ იგზავნება.",
   "onboarding.identity.failed_heading": "შენი გასაღებების შექმნა ვერ მოხერხდა",
   "onboarding.identity.failed_body":
     "ამ მოწყობილობამ Airhop-ს მათი უსაფრთხოდ შენახვის საშუალება არ მისცა. სცადე ხელახლა, ან გადატვირთე ტელეფონი და ხელახლა გახსენი Airhop.",

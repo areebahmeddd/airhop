@@ -74,7 +74,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "ማንነትህ እየተፈጠረ ነው",
   "onboarding.identity.body":
-    "በዚህ መሣሪያ ላይ የEd25519 ቁልፍ ጥምረት እየተፈጠረ ነው።\nምንም ነገር ወደ የትም አይላክም።",
+    "በዚህ መሣሪያ ላይ የምስጠራ ቁልፎችህ እየተፈጠሩ ናቸው።\nምንም ነገር ወደ የትም አይላክም።",
   "onboarding.identity.failed_heading": "ቁልፎችህ ሊፈጠሩ አልቻሉም",
   "onboarding.identity.failed_body":
     "ይህ መሣሪያ Airhop በአስተማማኝ ሁኔታ እንዲያስቀምጣቸው አልፈቀደም። እንደገና ሞክር፣ ወይም ስልክህን አጥፍተህ አብርተህ Airhop ን እንደገና ክፈት።",

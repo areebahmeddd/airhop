@@ -76,7 +76,7 @@ export const strings: Strings = {
   // ---- Onboarding: identity generation ----
   "onboarding.identity.heading": "Amboarina ny maha-ianao anao",
   "onboarding.identity.body":
-    "Mamorona lakile Ed25519 roa eto amin'ity fitaovana ity.\nTsy misy alefa na aiza na aiza.",
+    "Mamorona ny lakilenao miafina eto amin'ity fitaovana ity.\nTsy misy alefa na aiza na aiza.",
   "onboarding.identity.failed_heading": "Tsy voaforona ny lakilenao",
   "onboarding.identity.failed_body":
     "Tsy navelan'ity fitaovana ity hitahiry azy ireo am-pilaminana ny Airhop. Andramo indray, na avereno alefa ny findainao ary sokafy indray ny Airhop.",

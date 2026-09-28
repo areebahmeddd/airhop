@@ -18,6 +18,7 @@ import type {
 } from "@store/chat-store";
 import Avatar from "@ui/components/avatar";
 import {
+  FontFamily,
   FontSize,
   FontWeight,
   HIT_SLOP,
@@ -27,7 +28,9 @@ import {
   Radius,
   Spacing,
   useThemeColors,
+  withAlpha,
 } from "@ui/theme";
+import { tokenizeFormatting } from "@utils/message-format";
 import { messageText } from "@utils/message-text";
 import React, { useMemo } from "react";
 import {
@@ -323,6 +326,14 @@ function MessageBubble({
                     ? styles.messageMentionMine
                     : styles.messageMentionTheirs,
                   item.isMine ? styles.messageLinkMine : styles.messageLink,
+                  {
+                    bold: styles.messageBold,
+                    italic: styles.messageItalic,
+                    strike: styles.messageStrike,
+                    code: item.isMine
+                      ? styles.messageCodeMine
+                      : styles.messageCodeTheirs,
+                  },
                   handleLongPress,
                 )}
               </Text>
@@ -366,13 +377,64 @@ function MessageBubble({
   );
 }
 
+// Splits on *bold*, _italic_, ~strike~ and `code` first (see
+// message-format.ts for the delimiter rules), then runs the mention/link pass
+// below over each span's own text. Formatting spans do not nest inside one
+// another, so a second marker inside a span is left as plain characters; code
+// is left out of the mention/link pass too, since its content is verbatim.
+// A message with no delimiters at all never leaves the fast path.
+function renderMessageText(
+  text: string,
+  mentionStyle: StyleProp<TextStyle>,
+  linkStyle: StyleProp<TextStyle>,
+  formatStyle: {
+    bold: StyleProp<TextStyle>;
+    italic: StyleProp<TextStyle>;
+    strike: StyleProp<TextStyle>;
+    code: StyleProp<TextStyle>;
+  },
+  onLongPress: () => void,
+): React.ReactNode {
+  const tokens = tokenizeFormatting(text);
+  if (tokens.length === 1 && tokens[0].kind === "text") {
+    return renderInlineTokens(text, mentionStyle, linkStyle, onLongPress);
+  }
+  let key = 0;
+  return tokens.map((token) => {
+    if (token.kind === "text") {
+      return (
+        <React.Fragment key={key++}>
+          {renderInlineTokens(
+            token.value,
+            mentionStyle,
+            linkStyle,
+            onLongPress,
+          )}
+        </React.Fragment>
+      );
+    }
+    if (token.kind === "code") {
+      return (
+        <Text key={key++} style={formatStyle.code}>
+          {token.value}
+        </Text>
+      );
+    }
+    return (
+      <Text key={key++} style={formatStyle[token.kind]}>
+        {renderInlineTokens(token.value, mentionStyle, linkStyle, onLongPress)}
+      </Text>
+    );
+  });
+}
+
 // Render message text with @mentions emphasised and URLs tappable, the way
 // every chat app does. A mention is an "@" at a word start followed by nickname
 // characters; anything else (an email's "@", a lone "@") is left plain.
 // Highlighting is syntactic, so it does not need the roster. A link opens in
 // the system browser; it keeps the bubble's long-press so a message that is
 // nothing but a link can still reach the action sheet.
-function renderMessageText(
+function renderInlineTokens(
   text: string,
   mentionStyle: StyleProp<TextStyle>,
   linkStyle: StyleProp<TextStyle>,
@@ -604,6 +666,21 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     messageLinkMine: {
       color: Colors.textInverse,
       textDecorationLine: "underline",
+    },
+    messageBold: { fontWeight: FontWeight.bold },
+    messageItalic: { fontStyle: "italic" },
+    messageStrike: { textDecorationLine: "line-through" },
+    messageCodeMine: {
+      fontFamily: FontFamily.mono,
+      fontSize: FontSize.sm,
+      backgroundColor: withAlpha(Colors.textInverse, 0.16),
+      borderRadius: Radius.xs,
+    },
+    messageCodeTheirs: {
+      fontFamily: FontFamily.mono,
+      fontSize: FontSize.sm,
+      backgroundColor: withAlpha(Colors.textPrimary, 0.08),
+      borderRadius: Radius.xs,
     },
     metaRow: {
       flexDirection: "row",
