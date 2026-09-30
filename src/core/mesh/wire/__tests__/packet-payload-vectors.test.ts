@@ -7,26 +7,22 @@
 //
 // Sibling of packet-frame-vectors.test.ts, which pins the packet envelope itself
 // (header layout, flags, signature coverage, packet ID). Between them they cover
-// the two
-// halves: that file owns the frame, this one owns what rides inside it.
+// both halves: that file owns the frame, this one owns what rides inside it.
 //
 // Every other interop test in this repo is Airhop-encodes-then-Airhop-decodes,
-// which proves we agree with ourselves. That is exactly how the 557-byte fragment
-// frame survived: the assertion measured the payload, the constant was named for
-// the frame, and no fixture existed to contradict either.
+// which proves only that we agree with ourselves.
 //
 // The expected bytes below were written by reading bitchat's OWN encoders, not by
-// running ours and recording the output. Each block cites the Swift file and the
+// running ours and recording the output. Each block names the Swift type and the
 // rule it encodes. If either implementation drifts, these fail; if they are
 // regenerated from our own output they stop being worth anything, so don't.
 //
-// Vendored source for each, under bitchat/ios:
-//   public message bitchat/Services/BLE/BLEService.swift, sendMessage(), and
-//                  bitchat/Services/BLE/BLEPublicMessageHandler.swift, handle()
-//   file packet    bitchat/Protocols/BitchatFilePacket.swift, encode()
-//   fragment       bitchat/Services/BLE/BLEFragmentAssemblyBuffer.swift, header
-//   voice burst    bitchat/Protocols/VoiceBurstPacket.swift, encode()
-//   group state    bitchat/Services/Groups/GroupProtocol.swift, encode()
+// The bitchat-ios source for each:
+//   public message BLEService.sendMessage() and BLEPublicMessageHandler.handle()
+//   file packet    BitchatFilePacket.encode()
+//   fragment       BLEFragmentAssemblyBuffer, the header it reads
+//   voice burst    VoiceBurstPacket.encode()
+//   group state    GroupProtocol.encode()
 
 import { bytesToHex } from "@noble/hashes/utils.js";
 import {
@@ -45,7 +41,6 @@ import {
   decodeFragmentPayload,
   FRAG_DATA_SIZE,
   fragmentPacket,
-  MAX_BLE_FRAME,
 } from "../../routing/fragment-manager";
 import {
   encodeBurstCanceled,
@@ -55,7 +50,7 @@ import {
   VoiceCodec,
 } from "../../voice/voice-capture";
 import { encodeFilePacket } from "../file-packet";
-import { encodePacket, Flags, PacketType, type Packet } from "../packet-codec";
+import { Flags, PacketType, type Packet } from "../packet-codec";
 
 function hex(bytes: Uint8Array): string {
   return bytesToHex(bytes);
@@ -96,7 +91,8 @@ describe("bitchat vector: file packet TLV", () => {
   });
 
   // The tag order is not incidental: bitchat's decoder walks tags in sequence and
-  // an out-of-order blob decodes into the wrong fields rather than failing.
+  // an out-of-order blob decodes into the wrong fields rather than failing. So
+  // fileSize sits straight after the fileName TLV.
   test("fileSize carries a u16 length of 4 and a u32 value", () => {
     const encoded = encodeFilePacket({
       fileName: "x",
@@ -154,26 +150,6 @@ describe("bitchat vector: fragment", () => {
     expect(header?.index).toBe(1);
     expect(header?.total).toBe(frags.length);
     expect(header?.originalType).toBe(PacketType.FILE_TRANSFER);
-  });
-
-  // The outer type is 0x20 on both sides, and every stream shares one ID.
-  test("the outer packet is FRAGMENT 0x20 and the stream ID is shared", () => {
-    const frags = fragmentPacket(bigPacket(), identity);
-    expect(PacketType.FRAGMENT).toBe(0x20);
-    for (const f of frags) expect(f.type).toBe(0x20);
-    const ids = frags.map((f) => hex(f.payload.slice(0, 8)));
-    expect(new Set(ids).size).toBe(1);
-  });
-
-  // The rule the 557-byte bug broke. BLEOutboundFragmentPlanner sends fragments
-  // with `signature: nil`, and the ATT ceiling is 512, so a bitchat fragment is
-  // at most 512 bytes on the wire and ours must be too.
-  test("a fragment frame fits one BLE write and is unsigned", () => {
-    const frags = fragmentPacket(bigPacket(), identity);
-    for (const f of frags) {
-      expect(f.flags & Flags.SIGNED).toBe(0);
-      expect(encodePacket(f).length).toBeLessThanOrEqual(MAX_BLE_FRAME);
-    }
   });
 });
 

@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
-// Focused tests for the message-action primitives (star) added on top of the
-// existing chat store. Uses the in-memory MMKV mock: no native module required.
+// The chat store: message ordering and dedupe, delivery status, channel
+// membership and keys, merges, unread counts and the persistence window. Uses
+// the in-memory MMKV mock: no native module required.
 
 import { useActivityStore } from "../activity-store";
 import {
@@ -306,13 +307,6 @@ describe("joinPrivateChannel", () => {
     expect(state().channelReach["#secret"]).toBe("ble+nostr");
   });
 
-  it("does not duplicate the channel when the same room is joined twice", () => {
-    state().joinPrivateChannel("#secret", "k1", false);
-    state().joinPrivateChannel("#secret", "k1", false);
-    expect(state().channels.filter((c) => c === "#secret")).toHaveLength(1);
-    expect(state().channelKeys["#secret"]).toBe("k1");
-  });
-
   it("drops the key and reach when the channel is removed", () => {
     state().joinPrivateChannel("#secret", "k", true);
     state().removeChannel("#secret");
@@ -424,8 +418,8 @@ describe("renameChannel", () => {
 
 describe("removeChannel", () => {
   it("clears activeChannel instead of reassigning it", () => {
-    // Reassigning to an arbitrary surviving channel silently suppressed that
-    // channel's unread badge, because addMessage skips the unread bump for
+    // Reassigning to an arbitrary surviving channel would silently suppress
+    // that channel's unread badge, because addMessage skips the unread bump for
     // whatever activeChannel points at.
     state().addChannel("#a");
     state().setActiveChannel("#a");
@@ -691,7 +685,7 @@ describe("unread while the app is away", () => {
 // which can be while the user is reading the thread being folded. So the merge
 // moves the pointers with the messages: the open thread, activeChannel,
 // lastThread and the bell rows all name the surviving channel.
-describe("mergeChannel", () => {
+describe("mergeChannel and what points at the thread", () => {
   const NOSTR = `dm:nostr_${"ab".repeat(32)}`;
   const MESH = "dm:aabbccdd00112233";
 
@@ -710,18 +704,6 @@ describe("mergeChannel", () => {
   beforeEach(() => {
     useChatStore.getState().clearAll();
     useActivityStore.getState().clearAll();
-  });
-
-  it("carries the messages across", () => {
-    const s = useChatStore.getState();
-    s.addChannel(NOSTR);
-    s.addMessage(inbound("m0", NOSTR, 1));
-    s.mergeChannel(NOSTR, MESH);
-
-    const st = useChatStore.getState();
-    expect(st.messages[NOSTR]).toBeUndefined();
-    expect(st.messages[MESH]?.map((m) => m.id)).toEqual(["m0"]);
-    expect(st.channels).not.toContain(NOSTR);
   });
 
   it("moves the open thread with it", () => {

@@ -28,9 +28,9 @@ import {
 import { normalizeNickname } from "./nickname";
 
 // Announce cadence adapts to whether we can currently hear anyone, matching
-// bitchat: broadcast quickly while isolated so a lone pair of devices discovers
-// each other fast, then back off to a jittered 15-30s once connected to keep
-// steady-state traffic (and battery) low.
+// bitchat: a short tick while isolated, so a first link hears from us again
+// within seconds (the announce sent at link-up can be lost), then a jittered
+// 15-30s once connected to keep steady-state traffic (and battery) low.
 const ANNOUNCE_ISOLATED_MS = 4_000;
 const ANNOUNCE_CONNECTED_MIN_MS = 15_000;
 // Exported because ANNOUNCE is the only thing that refreshes a peer's
@@ -409,9 +409,9 @@ export class AnnounceManager {
 
   // Start broadcasting ANNOUNCE packets.
   //
-  // The interval adapts to connectivity: ~4s while isolated (no peers), then a
-  // jittered 15-30s once at least one peer is connected. Pass getPeerCount so
-  // the manager can tell which state it is in on each tick.
+  // The interval adapts to connectivity: ~4s while isolated (no links), then a
+  // jittered 15-30s once at least one link is up. Pass getLinkCount so the
+  // manager can tell which state it is in on each tick.
   //
   // getNeighborIDs fills TLV 0x04 on each tick; Airhop passes none (see
   // buildPacket).
@@ -424,13 +424,16 @@ export class AnnounceManager {
     send: SendPacketFn,
     getNeighborIDs?: () => readonly Uint8Array[],
     nostrPubKey?: Uint8Array,
-    getPeerCount?: () => number,
+    getLinkCount?: () => number,
     getCapabilities?: () => number,
     getBridgeGeohash?: () => string | undefined,
   ): void {
     if (this.timer !== null) this.stop();
 
     const broadcast = (): void => {
+      // No link, so nothing is built or signed: a phone alone spends most of
+      // its day on the isolated tick, and a new link is announced to on connect.
+      if (getLinkCount !== undefined && getLinkCount() === 0) return;
       const neighbors = getNeighborIDs?.() ?? [];
       const capabilities = getCapabilities?.() ?? 0;
       const bridgeGeohash = getBridgeGeohash?.();
@@ -448,7 +451,7 @@ export class AnnounceManager {
     this.broadcastFn = broadcast;
 
     const nextDelay = (): number => {
-      const connected = (getPeerCount?.() ?? 0) > 0;
+      const connected = (getLinkCount?.() ?? 0) > 0;
       if (!connected) return ANNOUNCE_ISOLATED_MS;
       return (
         ANNOUNCE_CONNECTED_MIN_MS +

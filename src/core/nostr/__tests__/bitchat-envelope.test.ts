@@ -23,12 +23,6 @@ describe("bitchat-envelope", () => {
     expect(dec.content).toBe("hello there");
   });
 
-  it("round-trips a message with no embedded recipient (geohash DM form)", () => {
-    const env = encodeBitchatDmEnvelope(SENDER, null, "m2", "geo dm")!;
-    const dec = decodeBitchatEnvelope(env)!;
-    expect(dec.content).toBe("geo dm");
-  });
-
   it("round-trips a delivered receipt", () => {
     const env = encodeBitchatAckEnvelope(
       SENDER,
@@ -55,10 +49,14 @@ describe("bitchat-envelope", () => {
 
 // A contact card handed over inside a location-channel DM, which is how two
 // people who met under per-cell pseudonyms can choose to become durable
-// contacts. The envelope is the existing one; only the payload type is new.
+// contacts. The envelope is the ordinary one; only the payload type differs.
 describe("the contact-card envelope", () => {
   const CARD = Uint8Array.from({ length: 138 }, (_, i) => i & 0xff);
 
+  // It is still a bitchat1 envelope, so a bitchat client parses the packet and
+  // then drops it on the unknown payload type, which is the right outcome for
+  // a client with no concept of keeping someone from a geohash. What must NOT
+  // happen is it being mistaken for a message, which the exact type pins.
   it("round-trips the card bytes untouched", () => {
     const wire = encodeBitchatCardEnvelope("aabbccdd00112233", null, CARD);
     const env = decodeBitchatEnvelope(wire)!;
@@ -67,7 +65,7 @@ describe("the contact-card envelope", () => {
   });
 
   // Not a message: no id, no text. So it renders no bubble and earns no
-  // delivery or read receipt - a card is something you accept, not something
+  // delivery or read receipt: a card is something you accept, not something
   // that arrives in the conversation.
   it("carries no message identity", () => {
     const env = decodeBitchatEnvelope(
@@ -77,19 +75,8 @@ describe("the contact-card envelope", () => {
     expect(env.content).toBe("");
   });
 
-  // It is still a bitchat1 envelope, so a bitchat client parses the packet and
-  // then drops it on the unknown payload type - which is the right outcome for
-  // a client with no concept of keeping someone from a geohash. What must NOT
-  // happen is it being mistaken for a message.
-  it("is never mistaken for a private message", () => {
-    const env = decodeBitchatEnvelope(
-      encodeBitchatCardEnvelope("aabbccdd00112233", null, CARD),
-    )!;
-    expect(env.type).not.toBe(NoisePayloadType.PRIVATE_MESSAGE);
-  });
-
   // The other direction: every existing type must keep reading exactly as it
-  // did, with no stray body attached.
+  // did, with no stray body attached. A null recipient is the geohash DM form.
   it("leaves ordinary messages and receipts alone", () => {
     const msg = decodeBitchatEnvelope(
       encodeBitchatDmEnvelope("aabbccdd00112233", null, "m-1", "hello")!,

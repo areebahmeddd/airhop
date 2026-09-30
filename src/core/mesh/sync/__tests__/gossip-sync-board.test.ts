@@ -72,8 +72,12 @@ describe("board gossip sync", () => {
       data: new Uint8Array(0),
       types,
     });
+    // The last TLV is 0x04, a u16 BE length of 2, then 0x103 little-endian.
+    expect(Array.from(payload.slice(-5))).toEqual([
+      0x04, 0x00, 0x02, 0x03, 0x01,
+    ]);
     const decoded = decodeGossipFilterPayload(payload)!;
-    expect(decoded.types).toBe(types); // 0x103 survives the LE round-trip
+    expect(decoded.types).toBe(types);
   });
 
   it("tracks board posts and offers them on a board-typed request", () => {

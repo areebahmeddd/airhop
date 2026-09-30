@@ -89,13 +89,14 @@ const CLOSE_TIMING = {
 //
 // A React Native Modal is its own window and captures every touch in it, so
 // what the user was left holding was the whole app behind a scrim that ate
-// every tap - an unresponsive tab bar under a grey sheet, indistinguishable
+// every tap: an unresponsive tab bar under a grey sheet, indistinguishable
 // from a hang. It survived returning to the app, because nothing re-drove the
 // animation.
 //
-// JS timers keep running while the activity is paused, which is exactly why the
-// backstop lives here rather than in another animation callback. The grace is
-// generous because beating the animation would cut a healthy close short.
+// A JS timer still fires once the activity resumes, even if a dialog paused it
+// in between, which is exactly why the backstop lives here rather than in
+// another animation callback. The grace is generous because beating the
+// animation would cut a healthy close short.
 const CLOSE_FALLBACK_MS = CLOSE_TIMING.duration + 200;
 
 interface Props {

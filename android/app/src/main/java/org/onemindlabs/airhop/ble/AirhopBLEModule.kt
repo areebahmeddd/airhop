@@ -48,13 +48,17 @@ import android.util.Base64
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.ActivityEventListener
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.BaseActivityEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.jstasks.HeadlessJsTaskConfig
+import com.facebook.react.jstasks.HeadlessJsTaskContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -83,6 +87,13 @@ private const val EVT_SCAN_FAILED = "AirhopBLE.scanFailed"
 // The user tapped "Stop mesh" on the background notification. Handled in JS so
 // the shutdown is the same one the Status picker performs.
 private const val EVT_MESH_STOP_REQUESTED = "AirhopBLE.meshStopRequested"
+
+// Must match TASK_KEY in src/services/keep-alive.ts.
+private const val KEEP_ALIVE_TASK = "Airhop.KeepAlive"
+
+// How long the keep-alive outlives a service that stopped before JS did. Covers
+// the mesh's 150 ms leave grace with room for a busy JS thread.
+private const val KEEP_ALIVE_STOP_GRACE_MS = 2_000L
 
 // Request code for the system "turn Bluetooth on?" dialog, so the Mesh banner
 // can offer a button rather than instructions.
@@ -796,6 +807,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             gattServer = null
             characteristic = null
             AirhopForegroundService.stop(reactContext)
+            stopKeepAlive()
         } catch (e: Exception) {
             Log.w(TAG, "BLE teardown on invalidate failed: ${e.message}")
         }
@@ -1064,8 +1076,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         try {
             if (enabled) {
                 AirhopForegroundService.start(reactContext)
+                startKeepAlive()
             } else {
                 AirhopForegroundService.stop(reactContext)
+                stopKeepAlive()
             }
             promise.resolve(null)
         } catch (e: Exception) {
@@ -1424,6 +1438,55 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         promise.reject("UNKNOWN_LINK", "No active link with ID $linkID")
     }
 
+    // The mesh runs on JS timers: announces, relay jitter, gossip sync, the chat
+    // write and Nostr's inbound queue. React Native pauses them once no Activity
+    // is resumed unless a headless task is running (JavaTimerManager), so the
+    // process the service holds up would receive and notify but never announce,
+    // relay or save. One open-ended task, held exactly as long as the service,
+    // keeps them running; its JS side never settles on its own.
+    //
+    // Touched on the UI thread only. The generation moves on every start, so a
+    // stop that waited out its grace can tell the service came back meanwhile.
+    private var keepAliveTaskId: Int? = null
+    private var keepAliveGeneration = 0
+
+    private fun startKeepAlive() {
+        UiThreadUtil.runOnUiThread {
+            keepAliveGeneration++
+            if (keepAliveTaskId != null || !reactContext.hasActiveReactInstance()) {
+                return@runOnUiThread
+            }
+            try {
+                keepAliveTaskId =
+                    HeadlessJsTaskContext.getInstance(reactContext)
+                        .startTask(
+                            HeadlessJsTaskConfig(KEEP_ALIVE_TASK, Arguments.createMap(), 0, true)
+                        )
+            } catch (e: Exception) {
+                Log.w(TAG, "Keep-alive task refused: ${e.message}")
+            }
+        }
+    }
+
+    // `graceMs` when the service went first: "Stop mesh" destroys it before JS
+    // has run the teardown it asked for, and that teardown waits on a timer.
+    private fun stopKeepAlive(graceMs: Long = 0) {
+        UiThreadUtil.runOnUiThread {
+            val generation = keepAliveGeneration
+            UiThreadUtil.runOnUiThread(
+                {
+                    val id = keepAliveTaskId
+                    if (id == null || keepAliveGeneration != generation) {
+                        return@runOnUiThread
+                    }
+                    keepAliveTaskId = null
+                    HeadlessJsTaskContext.getInstance(reactContext).finishTask(id)
+                },
+                graceMs,
+            )
+        }
+    }
+
     // MARK: - Background notification hand-off
 
     companion object {
@@ -1456,6 +1519,12 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 forceStopRadios()
                 false
             }
+        }
+
+        // The service went away by any route (stopped, refused promotion,
+        // destroyed with the process), so the timers it justified stand down.
+        fun onBackgroundServiceStopped() {
+            live?.stopKeepAlive(KEEP_ALIVE_STOP_GRACE_MS)
         }
 
         // Last-resort teardown, straight against the adapter. Deliberately does

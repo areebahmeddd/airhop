@@ -169,6 +169,17 @@ the same answer would send a returning user through onboarding, which then
 writes a new identity over the old one once the keychain wakes, and iOS gives
 exactly that answer to a background relaunch before the first unlock.
 
+iOS keeps Keychain items when the app is deleted, while the app's own storage
+goes with it, so a reinstall would boot the old identity with none of its
+history. An install records that it has had an identity (on onboarding, on a
+transfer arriving, and on every boot) in a partition the panic wipe leaves alone.
+An identity found by an install with no such record, and none of the long-lived
+stores an install from an earlier build would have, is a leftover: launch wipes
+every keychain item, the wallet's with it, and onboards. The check runs only on
+an identity the keychain actually returned, so a relaunch before the first unlock
+never reaches it. Android removes the Keystore keys with the app, so there it
+never fires.
+
 A panic wipe whose keychain delete was refused marks the identity condemned, in
 the wipe marker's own partition rather than one the wipe clears. Launch deletes
 a condemned identity again and never boots it; the mark clears only when that
@@ -690,8 +701,8 @@ outbox retry:
 1. **Double Ratchet over the mesh**, when a ratchet with a sending chain exists
    and any link reaches the peer, directly or through a neighbour.
 2. **Noise XX handshake**, when the peer is reachable over the mesh but has no
-   session. The text is held against the handshake and goes out the moment the
-   session completes.
+   session. The text waits in the outbox, which the completed handshake
+   flushes at once.
 3. **The Noise session over the mesh**, the path bitchat peers take.
 4. **Nostr gift-wrap**, when no radio reaches the peer and an npub is known: the
    saved contact's first, else the one the peer announced.
@@ -739,13 +750,13 @@ a kill can show twice to a neighbour who had the first copy.
 ### Store-and-forward
 
 When no transport reaches a DM's recipient, the sender seals it with Noise X to
-the recipient's one-time prekey (or static key, when no bundle is held) and
-deposits the envelope with up to four directly linked couriers, and as a drop on
-Nostr when a relay is connected. A courier carries it for at most 24 hours and
-hands it over, or sprays copies to other trusted carriers, as it meets people.
-The recipient dedupes the copies on the sender's message ID and acknowledges it
-like any DM. The deposit, carrying and envelope rules, and the recipient tag's
-known linkability, are in
+the recipient's one-time prekey (or static key, when no bundle under a week old
+is held) and deposits the envelope with up to four directly linked couriers,
+and as a drop on Nostr when a relay is connected. A courier carries it for at
+most 24 hours and hands it over, or sprays copies to other trusted carriers, as
+it meets people. The recipient dedupes the copies on the sender's message ID
+and acknowledges it like any DM. The deposit, carrying and envelope rules, and
+the recipient tag's known linkability, are in
 [PROTOCOLS.md section 6](PROTOCOLS.md#6-store-and-forward-courier-constants).
 
 ## 5. Encryption
@@ -835,7 +846,7 @@ prekey.
 | Live DM session       | Noise XX: mutual auth, forward secrecy per session                                                                                                        |
 | Live DM, Airhop peers | Double Ratchet inside that session: forward secrecy per message                                                                                           |
 | Public channel        | Plaintext plus Ed25519 signature, readable by every peer                                                                                                  |
-| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when none is held                                                             |
+| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when no fresh one is held                                                     |
 | Nostr DM              | bitchat's `nip44-v2` inside a NIP-17-shaped gift-wrap ([PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)) |
 
 ## 6. Channels and Groups
@@ -1149,7 +1160,7 @@ When Tor is wanted but cannot run, the app enters one held state rather than
 going direct: Tor stays on, the relay pool is held, Android holds its HTTP stack
 on a proxy nothing can listen on, the status reads blocked, and the Tor screen
 offers Try again beside the switch that turns Tor off. The Mesh banner links to
-that screen, and the mesh runs normally throughout. Three things lead there:
+that screen, and the mesh runs normally throughout. Four things lead there:
 
 - **A start that crashed the process.** `torStartPending` is written across the
   native start and read back at launch, so a failure severe enough to end the
@@ -1160,8 +1171,12 @@ that screen, and the mesh runs normally throughout. Three things lead there:
 - **A Try again the native client refuses**, which lands back in the state.
 - **A bridge change whose restart is refused**, for a line that does not parse,
   a transport Airhop does not ship, or one whose local proxy did not start.
+- **A start with bridges chosen and no lines to use** (Custom left empty), at
+  launch or when the internet comes back, which would otherwise connect
+  straight to a public relay.
 
-Only turning Tor off, or a Try again the native client accepts, leaves it.
+Only turning Tor off, or a start the native client accepts (Try again, or a
+bridge change), leaves it.
 Turning the internet switch off and on again lands back in it.
 
 #### Bridges
@@ -1652,8 +1667,16 @@ design exists to prevent.
 | iOS      | `UIBackgroundModes: bluetooth-peripheral`           | Keeps advertising, though not visibly to Android   |
 | iOS      | `CBCentralManagerOptionRestoreIdentifierKey`        | Relaunches the app on a BLE event after suspension |
 | Android  | `AirhopForegroundService` (persistent notification) | Survives Doze and battery optimization             |
+| Android  | `Airhop.KeepAlive` headless JS task                 | Keeps JS timers running while that service runs    |
 | Android  | `FOREGROUND_SERVICE_CONNECTED_DEVICE`               | Required for that service on Android 14+           |
 | Android  | `neverForLocation` on `BLUETOOTH_SCAN`              | Delivers scan results without a location grant     |
+
+React Native pauses JS timers on Android once no Activity is resumed, unless
+a headless JS task is running. The mesh is timer-driven (announces, relay
+jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
+`AirhopBLEModule` holds one open-ended task for exactly as long as the
+foreground service runs. Without it a backgrounded phone would still receive
+and notify, but stop announcing, relaying and saving.
 
 The scan flag is what makes the rest deliver. Android treats a BLE scan as a
 location access unless the manifest says otherwise, and an app counts as

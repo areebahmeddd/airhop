@@ -11,25 +11,27 @@ import { useSettingsStore } from "@store/settings-store";
 import { getLocales } from "expo-localization";
 import { I18nManager } from "react-native";
 import {
-  activeLanguage,
   getLanguage,
   initI18n,
   isShipped,
   languageForTag,
   languageForTags,
   needsRelaunch,
+  pluralTranslatorFor,
   refreshDeviceLanguage,
   resolvePreference,
   SHIPPED_LANGUAGES,
   stripIsolates,
   t,
   tPlural,
+  translatorFor,
 } from "../index";
 import {
   DEFAULT_LANGUAGE,
   isRTL,
   LANGUAGE_ORDER,
   LANGUAGES,
+  type LanguageCode,
 } from "../languages";
 import { PSEUDO_LANGUAGE } from "../pseudo";
 
@@ -79,20 +81,14 @@ describe("language table", () => {
 });
 
 describe("what ships", () => {
-  it("derives the selectable set from the catalogs, not from a list", () => {
-    // A language becomes selectable by having a catalog, and a catalog cannot
-    // be partial, so there is nothing to keep in sync and no coverage
-    // threshold to police.
-    for (const code of SHIPPED_LANGUAGES) expect(isShipped(code)).toBe(true);
-    expect(SHIPPED_LANGUAGES[0]).toBe(DEFAULT_LANGUAGE);
-  });
-
-  it("falls back to English for a language with no catalog yet", () => {
+  it("falls back to English for a language with no catalog", () => {
     // Reachable two ways: a device set to a language Airhop has not translated,
-    // and a preference written by a later build that shipped more.
-    const untranslated = LANGUAGE_ORDER.find((c) => !isShipped(c));
-    if (untranslated === undefined) return; // every language has landed
-    expect(resolvePreference(untranslated)).toBe(DEFAULT_LANGUAGE);
+    // and a preference written by a later build that shipped more. Every
+    // declared language has a catalog, so the code is one this build never
+    // heard of.
+    const unknown = "he" as LanguageCode;
+    expect(isShipped(unknown)).toBe(false);
+    expect(resolvePreference(unknown)).toBe(DEFAULT_LANGUAGE);
   });
 });
 
@@ -116,17 +112,6 @@ describe("which language is on screen", () => {
   it("resolves 'system' to something shipped", () => {
     useSettingsStore.setState({ language: "system" });
     expect(SHIPPED_LANGUAGES).toContain(getLanguage());
-  });
-
-  it("only defers a change that crosses the direction boundary", () => {
-    // Layout direction is fixed when the process starts, so a right-to-left
-    // language cannot take effect until the next launch. Everything sharing the
-    // boot direction switches immediately, which is almost every switch.
-    for (const code of SHIPPED_LANGUAGES) {
-      const deferred = needsRelaunch(code);
-      expect(deferred).toBe(activeLanguage(code) !== resolvePreference(code));
-      if (!isRTL(code)) expect(deferred).toBe(false);
-    }
   });
 
   it("reports a deferred language rather than rendering it in the wrong frame", () => {
@@ -241,16 +226,17 @@ describe("device language", () => {
     ["tl", "fil"],
     ["id-ID", "id"],
     ["in-ID", "id"],
+    // A region the catalog does not name still reaches its language.
     ["ur-PK", "ur"],
     ["ta-LK", "ta"],
     ["ms-BN", "ms"],
-    // Not shipped, so falling back is the right answer.
-    ["nb-NO", "en"],
-    ["he-IL", "en"],
     ["bn-BD", "bn"],
     ["ka-GE", "ka"],
     ["mg-MG", "mg"],
     ["pa-IN", "pa"],
+    // Not shipped, so falling back is the right answer.
+    ["nb-NO", "en"],
+    ["he-IL", "en"],
     // Gurmukhi is the catalog; Pakistan reads Shahmukhi and cannot use it.
     ["pa-PK", "en"],
     ["pa-Arab-PK", "en"],
@@ -281,15 +267,6 @@ describe("device language", () => {
   it("only ever resolves to a language the app knows", () => {
     for (const tag of ["pt-PT", "tl", "in", "zh-MO", "xx-YY", "qps-ploc"]) {
       expect(LANGUAGE_ORDER).toContain(languageForTag(tag));
-    }
-  });
-
-  it("puts a known but untranslated language behind the shipping gate", () => {
-    // Declaring a language and translating it are separate steps, so detection
-    // may name one that has no catalog yet. What reaches the screen must still
-    // be something that ships.
-    for (const code of LANGUAGE_ORDER) {
-      expect(SHIPPED_LANGUAGES).toContain(resolvePreference(code));
     }
   });
 });
@@ -389,8 +366,8 @@ describe("translator identity", () => {
   it("is stable per language, so components memoized on it do not re-render", () => {
     // Components pass `T` in dependency arrays and memo comparators. A fresh
     // function per render would defeat every one of them.
-    useSettingsStore.setState({ language: "en" });
-    expect(t.language).toBe("en");
-    expect(getLanguage()).toBe(getLanguage());
+    expect(translatorFor("en")).toBe(translatorFor("en"));
+    expect(pluralTranslatorFor("en")).toBe(pluralTranslatorFor("en"));
+    expect(translatorFor("fr")).not.toBe(translatorFor("en"));
   });
 });

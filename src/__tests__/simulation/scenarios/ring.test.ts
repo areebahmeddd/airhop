@@ -120,10 +120,10 @@ test("R01 a grant made after the first message lights the button on the other ph
   s.assert();
 });
 
-test("R02 the master switch is told to every session, and the grant is per person", async () => {
+test("R02 the master switch hides a granted Ring and restores it", async () => {
   const s = (scenario = new Scenario({
     id: "R02",
-    title: "master switch off then on, third person granted nobody",
+    title: "master switch off then on over a live grant",
   }));
   const { alice, bob } = await acquainted(s);
   bob.allowRing(alice.peerID, true);

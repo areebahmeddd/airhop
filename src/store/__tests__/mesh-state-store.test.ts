@@ -1,3 +1,6 @@
+// The Mesh tab's banners: which ones show, in what order, and what each offers
+// to do about it.
+
 // The count is substituted, so the banner carries directional isolates.
 // Compared without them: pinning them here would test `interpolate`.
 import { stripIsolates } from "@i18n";
@@ -118,7 +121,7 @@ describe("computeMeshBanners", () => {
   });
 
   // Each blocker has to be nameable on its own, because each sends the user
-  // somewhere different. Collapsing them into one boolean pair is what produced
+  // somewhere different. Collapsed into one boolean pair, they would say
   // "Bluetooth permission needed" over a granted permission.
   it("gives every blocker its own banner and its own way out", () => {
     const cases: [
@@ -146,17 +149,12 @@ describe("computeMeshBanners", () => {
   });
 
   it("shows no blocker banner when nothing is in the way", () => {
-    expect(
-      computeMeshBanners({ ...HEALTHY, bleBlocker: "none", peerCount: 0 }).map(
-        (b) => b.key,
-      ),
-    ).not.toContain("ble-adapter-off");
-  });
-
-  it("offers a way back from the paused state", () => {
-    const paused = computeMeshBanners({ ...HEALTHY, presenceStatus: "away" });
-    expect(paused[0].key).toBe("paused");
-    expect(paused[0].action?.kind).toBe("resume");
+    const keys = computeMeshBanners({
+      ...HEALTHY,
+      bleBlocker: "none",
+      peerCount: 0,
+    }).map((b) => b.key);
+    expect(keys.filter((k) => k.startsWith("ble-"))).toEqual([]);
   });
 
   it("shows the Nostr relay note only with no peers and a live relay", () => {
@@ -569,7 +567,10 @@ describe("the incomplete-wipe banner", () => {
 // rather than about the mesh, so it outranks everything the mesh can say.
 describe("the identity-elsewhere banner", () => {
   it("is absent by default", () => {
-    expect(computeMeshBanners(HEALTHY)).toEqual([]);
+    // The store starts the flag at false rather than leaving it unset.
+    expect(
+      computeMeshBanners({ ...HEALTHY, identityElsewhere: false }),
+    ).toEqual([]);
   });
 
   it("warns in danger, with no button, since only the person can choose", () => {

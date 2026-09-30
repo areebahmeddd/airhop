@@ -143,11 +143,6 @@ test("L02 an iPhone and an Android phone meet over the network", async () => {
   a.launch();
   b.launch();
 
-  s.check(
-    "no Bluetooth link exists between them",
-    a.bleLinkCount() === 0 && b.bleLinkCount() === 0,
-  );
-
   const met = await waitFor(
     s.world,
     () => a.peers().includes(b.peerID) && b.peers().includes(a.peerID),
@@ -180,6 +175,11 @@ test("L02 an iPhone and an Android phone meet over the network", async () => {
     "over the LAN fabric, which carried every byte",
     lan.framesCarried > 0 && lan.linkCount() === 1,
     `frames=${lan.framesCarried} links=${lan.linkCount()}`,
+  );
+  s.check(
+    "with no Bluetooth link between them",
+    a.bleLinkCount() === 0 && b.bleLinkCount() === 0,
+    `a=${a.bleLinkCount()} b=${b.bleLinkCount()}`,
   );
 
   s.expectNone("process health", noCrashes(devices));

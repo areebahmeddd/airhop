@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
-// Prekey stores + the forward-secret courier seal/open path they enable.
+// Prekey stores, and the forward-secret courier seal/open path they enable.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { getStorage } from "@store/mmkv";
 import * as SecureStore from "expo-secure-store";
 import { KEYCHAIN_ITEMS } from "../../../crypto/keychain";
@@ -77,6 +78,30 @@ describe("LocalPrekeyStore", () => {
     const second = store.buildBundle(noise.pub, signPriv)!;
     expect(second.prekeys.some((p) => p.id === usedId)).toBe(false);
     expect(second.prekeys).toHaveLength(PREKEY_MAX_PREKEYS);
+  });
+
+  // Unused keys never expire here, so a quiet pool is still good. Re-dating it
+  // keeps senders sealing to it rather than falling back to the static key.
+  it("re-dates an unchanged bundle before senders would call it stale", () => {
+    jest.useFakeTimers();
+    try {
+      const store = new LocalPrekeyStore(memorySlot());
+      const signPriv = ed25519.utils.randomSecretKey();
+      const noise = x25519Keypair();
+      const first = store.buildBundle(noise.pub, signPriv)!;
+
+      jest.setSystemTime(first.generatedAt + 60 * 60 * 1000);
+      expect(store.buildBundle(noise.pub, signPriv)!.generatedAt).toBe(
+        first.generatedAt,
+      );
+
+      jest.setSystemTime(first.generatedAt + 4 * 24 * 60 * 60 * 1000);
+      const later = store.buildBundle(noise.pub, signPriv)!;
+      expect(later.generatedAt).toBeGreaterThan(first.generatedAt);
+      expect(later.prekeys).toEqual(first.prekeys);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("refuses a consumed key once its grace has passed", () => {
@@ -176,7 +201,7 @@ describe("LocalPrekeyStore", () => {
 });
 
 describe("PeerPrekeyStore", () => {
-  it("assigns distinct prekeys and exhausts", () => {
+  it("assigns distinct prekeys until the pool runs out", () => {
     const local = new LocalPrekeyStore(memorySlot());
     const peers = new PeerPrekeyStore(freshId("peers"));
     const signPriv = ed25519.utils.randomSecretKey();
@@ -209,6 +234,27 @@ describe("PeerPrekeyStore", () => {
     expect(peers.assign(noise.pub, "msg-b")!.id).not.toBe(first.id);
   });
 
+  // Past a week the owner may have retired the key, and an envelope sealed to
+  // it would be dropped unread, so the caller falls back to the static seal.
+  it("seals to no prekey from a bundle older than a week", () => {
+    const local = new LocalPrekeyStore(memorySlot());
+    const peers = new PeerPrekeyStore(freshId("peers"));
+    const noise = x25519Keypair();
+    const bundle = local.buildBundle(
+      noise.pub,
+      ed25519.utils.randomSecretKey(),
+    )!;
+    peers.ingest(bundle);
+
+    const week = 7 * 24 * 60 * 60 * 1000;
+    expect(
+      peers.assign(noise.pub, "msg-a", bundle.generatedAt + week),
+    ).not.toBeNull();
+    expect(
+      peers.assign(noise.pub, "msg-b", bundle.generatedAt + week + 1),
+    ).toBeNull();
+  });
+
   // The owner's top-up keeps its unconsumed keys, so a newer bundle must not
   // make a key already sealed to look unused, or re-seal a message elsewhere.
   it("keeps what it sealed across the owner's next bundle", () => {
@@ -236,13 +282,35 @@ describe("PeerPrekeyStore", () => {
     const peers = new PeerPrekeyStore(freshId("peers"));
     const signPriv = ed25519.utils.randomSecretKey();
     const noise = x25519Keypair();
-    const local = new LocalPrekeyStore(memorySlot());
-    const b1 = local.buildBundle(noise.pub, signPriv)!;
-    const older = { ...b1, generatedAt: b1.generatedAt - 1000 };
+    // Two pools under one Noise key, so the prekey handed out shows which
+    // bundle the store is holding.
+    const held = new LocalPrekeyStore(memorySlot()).buildBundle(
+      noise.pub,
+      signPriv,
+    )!;
+    const other = new LocalPrekeyStore(memorySlot()).buildBundle(
+      noise.pub,
+      signPriv,
+    )!;
+    const pubsOf = (b: typeof held): string[] =>
+      b.prekeys.map((k) => bytesToHex(k.publicKey));
 
-    peers.ingest(b1);
-    peers.ingest(older); // ignored (not newer)
-    expect(peers.has(noise.pub)).toBe(true);
+    peers.ingest(held);
+    const first = peers.assign(noise.pub, "msg-1")!;
+
+    peers.ingest({ ...other, generatedAt: held.generatedAt - 1000 });
+    // Ignored: the assignment stands and fresh keys still come from `held`.
+    expect(bytesToHex(peers.assign(noise.pub, "msg-1")!.publicKey)).toBe(
+      bytesToHex(first.publicKey),
+    );
+    expect(pubsOf(held)).toContain(
+      bytesToHex(peers.assign(noise.pub, "msg-2")!.publicKey),
+    );
+
+    peers.ingest({ ...other, generatedAt: held.generatedAt + 1000 });
+    expect(pubsOf(other)).toContain(
+      bytesToHex(peers.assign(noise.pub, "msg-3")!.publicKey),
+    );
   });
 
   // "Newer" is judged by the bundle's own date, and bundles are persisted, so

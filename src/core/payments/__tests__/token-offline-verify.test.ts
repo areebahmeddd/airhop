@@ -123,23 +123,12 @@ function verify(proofs: Proof[], using = cache): DleqResult {
 }
 
 describe("a token the mint signed throughout", () => {
+  // The exact shapes here and below also pin that a result carries no English,
+  // only codes the screen turns into copy.
   it("is genuine when every coin carries a witness that verifies", () => {
     expect(
       verify([signedProof(8, "real-one"), signedProof(2, "real-two")]),
     ).toEqual({ status: "valid" });
-  });
-
-  it("carries no English, only codes the screen turns into copy", () => {
-    const results = [
-      verify([signedProof(8, "real")]),
-      verify([proof()]),
-      verify([proof({ dleq: FORGED_DLEQ })]),
-    ];
-    for (const result of results) {
-      expect(Object.keys(result).sort()).toEqual(
-        result.status === "valid" ? ["status"] : ["code", "status"],
-      );
-    }
   });
 });
 

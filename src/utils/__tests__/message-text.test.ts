@@ -55,7 +55,7 @@ describe("messageText", () => {
     );
   });
 
-  it("falls back to text for rows stored before systemKey existed", () => {
+  it("falls back to the stored text for a system row with no key", () => {
     expect(
       messageText(message({ text: "Shared a place", isSystem: true })),
     ).toBe("Shared a place");
@@ -98,17 +98,6 @@ describe("messageText", () => {
       "1,200 new urgent notices · open Notices",
     );
   });
-
-  it("keeps a user's words inside a translated sentence", () => {
-    // A board notice is Airhop's sentence wrapped around the author's text. The
-    // wrapper may be re-rendered; the content inside it may not.
-    const row = entry({
-      preview: "stale",
-      previewKey: "notif.notice",
-      previewVars: { content: "water at the south stairs" },
-    });
-    expect(activityPreview(row)).toContain("water at the south stairs");
-  });
 });
 
 describe("activityPreview", () => {
@@ -119,6 +108,9 @@ describe("activityPreview", () => {
   });
 
   it("re-renders from the key when there is one", () => {
+    // Airhop's sentence is wrapped around a person's words (a group name, a
+    // board notice's text). The wrapper may be re-rendered; the words inside
+    // it may not.
     const row = entry({
       preview: "stale",
       previewKey: "chat.group.removed_you",
@@ -130,7 +122,7 @@ describe("activityPreview", () => {
 });
 
 // What gets stored, as opposed to what gets shown. `text` is the fallback for a
-// build predating the key fields, and the field the wire reads: `forwardMessage`
+// row without the key fields, and the field the wire reads: `forwardMessage`
 // puts it on the air. So the stored rendering is plain and the shown one carries
 // the isolates.
 describe("systemRow and systemPreview keep storage plain", () => {
@@ -184,7 +176,7 @@ describe("txErrorText", () => {
     expect(txErrorText(tx)).toBe(en.strings["wallet.svc.mint_lost"]);
   });
 
-  it("shows a mint's text, and a row saved before the key, as written", () => {
+  it("shows a mint's text, and a row with no key, as written", () => {
     expect(txErrorText(txFailureVerbatim("Token already spent."))).toBe(
       "Token already spent.",
     );

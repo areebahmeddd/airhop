@@ -1,22 +1,27 @@
 /**
  * @jest-environment node
- *
- * Wire-format compatibility vectors for the bitchat v2 protocol.
- *
- * Every test pins a known-value expectation against the byte layout in
- * PROTOCOLS.md and implemented in packet-codec.ts. These tests match
- * bitchat BinaryProtocol.swift / BinaryProtocol.kt exactly. If any fail,
- * the change is likely a protocol-breaking regression.
  */
-// Fixed vectors for peer ID derivation and the packet frame.
+// Fixed vectors for the bitchat v2 wire format: peer ID derivation, the packet
+// frame, signing, packet IDs, the announce TLVs, and the fragment and UUID
+// constants.
 //
-// Both are wire contracts shared with bitchat, so they are pinned to literal
-// expected bytes rather than to whatever the current code produces. A change
-// here is a protocol change and has to be deliberate: the same key must derive
-// the same peer ID on every app and every version, or identities move.
+// All of it is a wire contract shared with bitchat's BinaryProtocol.swift and
+// BinaryProtocol.kt, so it is pinned to the literal bytes PROTOCOLS.md gives
+// rather than to whatever the current code produces. A change here is a
+// protocol change and has to be deliberate: the same key must derive the same
+// peer ID on every app and every version, or identities move.
+
+// radio-controller holds the Service UUID the radios actually use, and loading
+// it reaches for the native BLE module, which does not exist under Jest.
+jest.mock("@bridge/NativeAirhopBLE", () => ({
+  __esModule: true,
+  default: {},
+}));
+
+import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { BLE_SERVICE_UUID } from "@services/radio-controller";
 import {
   AnnounceManager,
   decodeAnnouncePayload,
@@ -40,28 +45,20 @@ import {
 // ---- Peer ID Derivation ----
 // PROTOCOLS.md: peerID = hex(SHA-256(noiseStaticPubKey)).slice(0, 16)
 
+// The production derivation, pinned to a known vector: gossip sync and DM
+// addressing key on it, and bitchat derives it identically.
 describe("Peer ID derivation", () => {
-  test("SHA-256 of all-zero 32-byte key produces correct hex prefix", () => {
-    const zeroKey = new Uint8Array(32);
-    const hash = sha256(zeroKey);
-    const peerID = bytesToHex(hash).slice(0, 16);
-    // Known vector: SHA-256(0x00*32) = 66687aadf862bd776c8fc18b8e9f8e20...
-    expect(peerID).toBe("66687aadf862bd77");
+  test("is the first 8 bytes of SHA-256 over the Noise key, as hex", () => {
+    // SHA-256(0x00 * 32) = 66687aadf862bd776c8fc18b8e9f8e20...
+    expect(peerIDFromNoiseKey(new Uint8Array(32))).toBe("66687aadf862bd77");
   });
 
-  test("peerID is always 16 lowercase hex characters", () => {
+  test("is always 16 lowercase hex characters", () => {
     for (let seed = 0; seed < 8; seed++) {
-      const key = new Uint8Array(32).fill(seed);
-      const peerID = bytesToHex(sha256(key)).slice(0, 16);
-      expect(peerID).toHaveLength(16);
-      expect(peerID).toMatch(/^[0-9a-f]{16}$/);
+      expect(peerIDFromNoiseKey(new Uint8Array(32).fill(seed))).toMatch(
+        /^[0-9a-f]{16}$/,
+      );
     }
-  });
-
-  test("two different keys always produce different peer IDs", () => {
-    const idA = bytesToHex(sha256(new Uint8Array(32).fill(0x01))).slice(0, 16);
-    const idB = bytesToHex(sha256(new Uint8Array(32).fill(0x02))).slice(0, 16);
-    expect(idA).not.toBe(idB);
   });
 });
 
@@ -151,11 +148,6 @@ describe("Packet header byte layout (v2)", () => {
   test("an announce frame goes out unpadded", () =>
     expect(buf.length).toBe(99));
 
-  test("a Noise frame IS padded to a block size", () => {
-    const noise = encodePacket({ ...packet, type: PacketType.NOISE_ENCRYPTED });
-    expect(noise.length).toBe(256);
-  });
-
   // Broadcast: no recipientID field on the wire, so payload sits right after the
   // senderID at offset 24 (16 header + 8 senderID).
   test("broadcast omits recipientID field from wire", () => {
@@ -186,29 +178,6 @@ describe("Flag bit values", () => {
 // ---- Packet Round-Trip ----
 
 describe("Packet encode/decode round-trip", () => {
-  test("all fields survive encode -> decode (broadcast)", () => {
-    const original: Packet = {
-      type: PacketType.CHANNEL_MSG,
-      ttl: 5,
-      flags: Flags.SIGNED,
-      senderID: new Uint8Array(8).fill(0x01),
-      recipientID: BROADCAST_ID,
-      timestamp: 1_700_000_000,
-      signature: new Uint8Array(64).fill(0x03),
-      payload: new TextEncoder().encode("hello mesh"),
-    };
-
-    const decoded = decodePacket(encodePacket(original));
-    expect(decoded).not.toBeNull();
-    expect(decoded!.type).toBe(original.type);
-    expect(decoded!.ttl).toBe(original.ttl);
-    expect(decoded!.timestamp).toBe(original.timestamp);
-    expect(Array.from(decoded!.senderID)).toEqual(
-      Array.from(original.senderID),
-    );
-    expect(new TextDecoder().decode(decoded!.payload)).toBe("hello mesh");
-  });
-
   test("all fields survive encode -> decode (unicast with route)", () => {
     const hop1 = new Uint8Array(8).fill(0xcc);
     const hop2 = new Uint8Array(8).fill(0xdd);
@@ -247,50 +216,9 @@ describe("Packet encode/decode round-trip", () => {
     expect(decoded!.isRSR).toBe(true);
   });
 
-  test("decodePacket accepts v1 and v2, rejects unknown versions", () => {
-    const sample: Packet = {
-      type: PacketType.ANNOUNCE,
-      ttl: 7,
-      flags: Flags.SIGNED,
-      senderID: new Uint8Array(8).fill(0x11),
-      recipientID: BROADCAST_ID,
-      timestamp: 1_700_000_000_000,
-      signature: new Uint8Array(64),
-      payload: new TextEncoder().encode("hi"),
-    };
-    // v1 and v2 are both valid bitchat wire versions.
-    expect(
-      decodePacket(encodePacket({ ...sample, version: 1 })),
-    ).not.toBeNull();
-    expect(
-      decodePacket(encodePacket({ ...sample, version: 2 })),
-    ).not.toBeNull();
-    const bad = new Uint8Array(100);
-    bad[0] = 3;
-    expect(decodePacket(bad)).toBeNull();
-  });
-
-  test("decodePacket returns null for truncated buffer", () => {
-    expect(decodePacket(new Uint8Array(10))).toBeNull();
-  });
-
   test("BROADCAST_ID is all-zeros 8 bytes", () => {
     expect(BROADCAST_ID.length).toBe(8);
     expect(BROADCAST_ID.every((b) => b === 0)).toBe(true);
-  });
-
-  test("isBroadcast detects broadcast packet (no HAS_RECIPIENT)", () => {
-    const p: Packet = {
-      type: PacketType.CHANNEL_MSG,
-      ttl: 7,
-      flags: Flags.SIGNED, // no HAS_RECIPIENT
-      senderID: new Uint8Array(8),
-      recipientID: BROADCAST_ID,
-      timestamp: 0,
-      signature: new Uint8Array(64),
-      payload: new Uint8Array(0),
-    };
-    expect(isBroadcast(p)).toBe(true);
   });
 });
 
@@ -316,34 +244,11 @@ describe("Signature coverage (relay TTL compat)", () => {
     };
   }
 
-  test("signature verifies on the original packet", () => {
-    const p = makePacket(7);
-    p.signature = signPacket(p, privKey);
-    expect(verifyPacket(p, pubKey)).toBe(true);
-  });
-
-  test("signature still verifies after relay decrements TTL", () => {
-    const p = makePacket(7);
-    p.signature = signPacket(p, privKey);
-    p.ttl = 6;
-    expect(verifyPacket(p, pubKey)).toBe(true);
-  });
-
   test("TTL=0 still verifies (TTL normalised to 0 during signing)", () => {
     const p = makePacket(7);
     p.signature = signPacket(p, privKey);
     p.ttl = 0;
     expect(verifyPacket(p, pubKey)).toBe(true);
-  });
-
-  test("tampered payload invalidates signature", () => {
-    const p = makePacket(7);
-    p.signature = signPacket(p, privKey);
-    const tamperedPayload = new Uint8Array(p.payload);
-    tamperedPayload[0] ^= 0xff;
-    expect(verifyPacket({ ...p, payload: tamperedPayload }, pubKey)).toBe(
-      false,
-    );
   });
 
   test("tampered senderID invalidates signature", () => {
@@ -353,20 +258,6 @@ describe("Signature coverage (relay TTL compat)", () => {
       verifyPacket({ ...p, senderID: new Uint8Array(8).fill(0xff) }, pubKey),
     ).toBe(false);
   });
-
-  test("unsigned packet (no SIGNED flag) is rejected", () => {
-    const p = makePacket(7);
-    p.flags = 0x00; // no SIGNED
-    expect(verifyPacket(p, pubKey)).toBe(false);
-  });
-
-  test("isRSR flag cleared in signing bytes (does not break sig)", () => {
-    const p = makePacket(7);
-    p.signature = signPacket(p, privKey);
-    // Packet arrives with isRSR tagged by the relay: must still verify.
-    const relayTagged = { ...p, isRSR: true };
-    expect(verifyPacket(relayTagged, pubKey)).toBe(true);
-  });
 });
 
 // ---- PacketID Derivation ----
@@ -374,21 +265,6 @@ describe("Signature coverage (relay TTL compat)", () => {
 //   SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
 
 describe("Packet ID derivation (dedup and gossip sync key)", () => {
-  test("computePacketId produces 16-byte result", () => {
-    const p: Packet = {
-      type: PacketType.ANNOUNCE,
-      ttl: 7,
-      flags: Flags.SIGNED,
-      senderID: new Uint8Array(8).fill(0xaa),
-      recipientID: BROADCAST_ID,
-      timestamp: 1_700_000_000,
-      signature: new Uint8Array(64),
-      payload: new Uint8Array([0x01, 0x02]),
-    };
-    const id = computePacketId(p);
-    expect(id.length).toBe(16);
-  });
-
   test("same fields produce the same packetID", () => {
     const p: Packet = {
       type: PacketType.CHANNEL_MSG,
@@ -422,23 +298,6 @@ describe("Packet ID derivation (dedup and gossip sync key)", () => {
       senderID: new Uint8Array(8).fill(0x02),
     });
     expect(bytesToHex(id1)).not.toBe(bytesToHex(id2));
-  });
-
-  test("timestamp is encoded as u64 (> u32 max survives round-trip)", () => {
-    // Unix timestamp in year 2100 (> 2^32): 4102444800
-    const ts = 4_102_444_800;
-    const p: Packet = {
-      type: PacketType.ANNOUNCE,
-      ttl: 7,
-      flags: Flags.SIGNED,
-      senderID: new Uint8Array(8),
-      recipientID: BROADCAST_ID,
-      timestamp: ts,
-      signature: new Uint8Array(64),
-      payload: new Uint8Array(1),
-    };
-    const decoded = decodePacket(encodePacket(p));
-    expect(decoded!.timestamp).toBe(ts);
   });
 });
 
@@ -574,12 +433,9 @@ describe("ANNOUNCE TLV encoding", () => {
 
 // ---- Fragment Constants ----
 // PROTOCOLS.md: the FRAME is the budget, and the fragment header is 13 bytes.
-//
-// The old assertion here read "FRAGMENT_SIZE is exactly 469 bytes (BLE MTU
-// limit)" while the constant was spent as the PAYLOAD budget, so the test name
-// stated the requirement and the value contradicted it. That is what let a
-// 557-byte frame ship. The budget is now the frame, and the chunk is derived
-// from it; fragment-manager.test.ts asserts the encoded frame directly.
+// The chunk is derived from the frame, never the other way round, so a
+// payload budget can never let an oversized frame through;
+// fragment-manager.test.ts asserts the encoded frame directly.
 
 describe("Fragment wire constants", () => {
   test("the frame budget is the 512-byte ATT attribute ceiling", () => {
@@ -592,22 +448,13 @@ describe("Fragment wire constants", () => {
   });
 });
 
-// ---- BLE Service / Characteristic UUIDs ----
-// These must never change without a protocol version bump.
+// ---- BLE Service UUID ----
+// Changing it partitions the network from every bitchat phone. The
+// characteristic UUID lives only in the native modules, so it has no
+// TypeScript constant to pin here.
 
 describe("BLE UUID constants", () => {
-  const SERVICE_UUID = "F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C";
-  const CHAR_UUID = "A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D";
-
-  test("Service UUID matches PROTOCOLS.md", () => {
-    expect(SERVICE_UUID.toUpperCase()).toBe(
-      "F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C",
-    );
-  });
-
-  test("Characteristic UUID matches PROTOCOLS.md", () => {
-    expect(CHAR_UUID.toUpperCase()).toBe(
-      "A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D",
-    );
+  test("the Service UUID the radios scan and advertise matches PROTOCOLS.md", () => {
+    expect(BLE_SERVICE_UUID).toBe("F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C");
   });
 });

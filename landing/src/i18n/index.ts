@@ -125,6 +125,25 @@ export function formatDate(language: LanguageCode, iso: string): string {
   return format.format(date);
 }
 
+const SHORT_DATE_FORMATS = new Map<LanguageCode, Intl.DateTimeFormat>();
+
+export function formatShortDate(language: LanguageCode, iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+
+  let format = SHORT_DATE_FORMATS.get(language);
+  if (!format) {
+    format = new Intl.DateTimeFormat(LANGUAGES[language].intlLocale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+    SHORT_DATE_FORMATS.set(language, format);
+  }
+  return format.format(date);
+}
+
 const TRANSLATORS = new Map<LanguageCode, Translator>();
 
 export function getT(language: LanguageCode): Translator {

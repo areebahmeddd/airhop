@@ -309,10 +309,10 @@ export function nostrShortLabel(id: string): string {
 
 // Derive a human-readable username from a 16-hex-char peer ID.
 //
-// peerID is the first 16 hex chars of SHA-256(noiseStaticPubKey), as produced
-// by identity.ts. A Nostr id ("nostr_<pubkey>") has no such fingerprint, so it
-// returns its npub-style label instead of running the byte math (which would
-// otherwise index the word lists with NaN and yield "undefined-undefined-...").
+// peerID is the 16 hex chars peerIDFromNoiseKey produces. A Nostr id
+// ("nostr_<pubkey>") has no such fingerprint, so it returns its npub-style
+// label instead of running the byte math (which would otherwise index the word
+// lists with NaN and yield "undefined-undefined-...").
 export function peerIDToUsername(peerID: string): string {
   // Nostr-only peer: no mesh fingerprint to map. Name it by its key tail.
   if (isNostrId(peerID)) return nostrShortLabel(peerID);

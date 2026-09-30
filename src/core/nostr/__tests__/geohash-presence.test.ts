@@ -1,5 +1,5 @@
-// Tests for geohash encoding/decoding in geohash-presence.ts.
-// geohash-presence.ts has no native or network dependencies; fully testable in CI.
+// Geohash presence: the geohash encoder and decoder, and which cells a heartbeat
+// may go to, and when.
 
 import {
   decodeGeohash,
@@ -38,10 +38,9 @@ describe("presence", () => {
     });
 
     it("encodes origin (0, 0)", () => {
-      const hash = encodeGeohash(0, 0, 5);
-      // The origin should be in cell 's0000' area
-      expect(hash).toHaveLength(5);
-      expect(typeof hash).toBe("string");
+      // A coordinate on a split line falls into the upper half, so the origin
+      // lands in the north-east cell.
+      expect(encodeGeohash(0, 0, 5)).toBe("s0000");
     });
   });
 
@@ -65,9 +64,13 @@ describe("presence", () => {
 
     it("handles single-character hash (precision 1)", () => {
       const hash = encodeGeohash(0, 0, 1);
+      expect(hash).toBe("s");
+      // Cell "s" spans 0..45 on both axes; the decode is inside it.
       const decoded = decodeGeohash(hash);
-      expect(decoded.lat).toBeDefined();
-      expect(decoded.lng).toBeDefined();
+      expect(decoded.lat).toBeGreaterThan(0);
+      expect(decoded.lat).toBeLessThan(45);
+      expect(decoded.lng).toBeGreaterThan(0);
+      expect(decoded.lng).toBeLessThan(45);
     });
   });
 });

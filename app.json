@@ -2,58 +2,11 @@
   "expo": {
     "name": "Airhop",
     "slug": "airhop",
-    "scheme": "airhop",
     "version": "1.0.9",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
     "icon": "./assets/images/icon.png",
-    "plugins": [
-      [
-        "expo-navigation-bar",
-        {
-          "enforceContrast": false
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Airhop accesses your photo library to share images and videos over the mesh.",
-          "cameraPermission": "Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers."
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers."
-        }
-      ],
-      [
-        "expo-audio",
-        {
-          "microphonePermission": "Airhop uses the microphone to record voice notes and to carry live voice to nearby peers."
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "savePhotosPermission": "Airhop saves photos and videos to your photo library when you choose to save one, and when you download your QR code.",
-          "isAccessMediaLocationEnabled": false
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 26
-          },
-          "ios": {
-            "deploymentTarget": "16.4"
-          }
-        }
-      ],
-      "@react-native-vector-icons/feather",
-      "@react-native-vector-icons/material-design-icons"
-    ],
+    "scheme": "airhop",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "org.onemindlabs.airhop",
@@ -101,8 +54,58 @@
         "RECORD_AUDIO"
       ]
     },
+    "plugins": [
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Airhop accesses your photo library to share images and videos over the mesh.",
+          "cameraPermission": "Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Airhop uses the microphone to record voice notes and to carry live voice to nearby peers."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Airhop saves photos and videos to your photo library when you choose to save one, and when you download your QR code.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          },
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
+        }
+      ],
+      "@react-native-vector-icons/feather",
+      "@react-native-vector-icons/material-design-icons"
+    ],
     "experiments": {
       "typedRoutes": false
+    },
+    "extra": {
+      "releaseDate": "2026-09-27"
     }
   }
 }

@@ -27,12 +27,20 @@ export function held(): void {
   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 }
 
-// An operation completed while the user may not be watching the screen. Scanning
-// is the case that matters: the phone is held up at another display.
+// An operation completed while the user may not be watching the screen: a scan,
+// with the phone held up at another display, or money settling at a mint after
+// a round trip long enough to look away.
 export function succeeded(): void {
   void Haptics.notificationAsync(
     Haptics.NotificationFeedbackType.Success,
   ).catch(() => {});
+}
+
+// A message landed in a conversation other than the one on screen, with the app
+// open: the stand-in for the banner a backgrounded app would get. One firm
+// pulse, not `succeeded`'s pattern, since nothing the user did has completed.
+export function arrived(): void {
+  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 }
 
 // A drag crossed the point where letting go closes rather than springs back.

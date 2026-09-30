@@ -51,12 +51,12 @@ export function WalletStates() {
         markerEnd="url(#ws-arrow)"
       />
       <text x={596} y={216} fontFamily={MONO} fontSize={9} fill={MUTED}>
-        Refresh, NUT-07
+        Swap, NUT-03
       </text>
 
       <text x={16} y={318} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        Sending never deletes a coin, it moves it to Reserved. A crash, a closed app, or a message
-        that never routes all leave the money recoverable.
+        Sending a token never deletes a coin, it moves it to Reserved. A crash, a closed app, or a
+        message that never routes all leave the money recoverable.
       </text>
     </svg>
   );

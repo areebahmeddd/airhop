@@ -41,6 +41,7 @@ import { getStorage } from "@store/mmkv";
 import { useOutboxStore } from "@store/outbox-store";
 import { DEVICE_SETTINGS, useSettingsStore } from "@store/settings-store";
 import { exportWalletState, importWalletState } from "@store/wallet-store";
+import { markInstallHadIdentity } from "./install-marker";
 import { setMoveMarker } from "./move-marker";
 import { MMKV_STORE_IDS } from "./panic-wipe";
 import { clearCondemnedIdentity } from "./wipe-marker";
@@ -347,8 +348,10 @@ export async function applyMove(
   if (identity === null || !sameBytes(identity.noiseStaticPubKey, noiseKey)) {
     throw new MoveApplyError("storage");
   }
-  // A condemned identity from an earlier refused wipe is overwritten now.
+  // A condemned identity from an earlier refused wipe is overwritten now, and
+  // this install owns the one that arrived.
   clearCondemnedIdentity();
+  markInstallHadIdentity();
   setMoveMarker("committed");
   for (const [, policy] of movedPartitions()) policy.reload();
   return identity.peerID;

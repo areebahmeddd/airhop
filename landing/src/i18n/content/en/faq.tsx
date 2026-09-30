@@ -53,10 +53,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             Against <TextLink href="https://bitchat.free">bitchat</TextLink> specifically, Airhop is
             built on top of it and stays wire-compatible, but adds Double Ratchet forward secrecy,
-            Tor on both iOS and Android, offline ecash payments, and an offline AI assistant, none
-            of which bitchat has today. Beyond the protocol itself,{" "}
-            <strong>user experience is everything to us</strong>. Great privacy tools should be easy
-            to use, not something people have to figure out.
+            offline ecash payments, and an offline AI assistant, none of which bitchat has today.
+            Beyond the protocol itself, <strong>user experience is everything to us</strong>. Great
+            privacy tools should be easy to use, not something people have to figure out.
           </>
         ),
       },
@@ -69,9 +68,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <ul className="my-2 list-disc space-y-1 pl-5">
               <li>
                 <strong>No voice or video calling.</strong> The fast transports that could carry a
-                call are different protocols on iPhone and Android with no bridge between them, so
-                it could never work across the two. Holding the mic to talk live is what replaces
-                it.
+                call cannot reach every pair: Wi-Fi Aware never links an iPhone to an Android, and
+                LAN needs a shared network, so a call would fail for many pairs. Holding the mic to
+                talk live is what replaces it.
               </li>
               <li>
                 <strong>Only text crosses the internet.</strong> Photos, files, and voice notes ride
@@ -109,8 +108,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             There are four kinds of room, and what separates them is who can get in.
             <ul className="my-2 list-disc space-y-1 pl-5">
               <li>
-                <strong>Public channels:</strong> anyone in Bluetooth range who types the name is in
-                it. Nothing is registered anywhere, nobody owns it, and it stays on the local mesh.
+                <strong>Public channels:</strong> #bluetooth, the one room for everyone in Bluetooth
+                range. Nothing is registered anywhere, nobody owns it, and it stays on the local
+                mesh unless someone nearby turns on the mesh bridge.
               </li>
               <li>
                 <strong>Location channels:</strong> public as well, but scoped to a map cell instead
@@ -262,7 +262,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "What media can I send?",
-        a: "Images, voice notes, videos, and any other file format, all over Bluetooth using chunked streaming. Large files are split into fragments, paced so the radio is not overrun, and reassembled on the other side. Videos are sent as files and play inline; they are not live streams. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; photos and voice notes are capped tighter at 512 KiB for the same reason. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
+        a: "Images, voice notes, videos, and any other file format, all over Bluetooth. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos are sent as files and play inline; they are not live streams. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
       },
       {
         q: "Why is there no video or voice calling?",
@@ -277,11 +277,12 @@ export const FAQ_SECTIONS: FaqSection[] = [
             transports instead.
             <br />
             <br />
-            <strong>The fast transports cannot talk to each other.</strong> They are Wi-Fi Aware on
-            Android and MultipeerConnectivity on iPhone: different protocols, with no bridge between
-            them. A call built on either could only ever connect Android to Android, or iPhone to
-            iPhone. A calling feature that fails on half the pairs is worse than none, so the video
-            packet type was removed from the protocol rather than shipped half working.
+            <strong>The fast transports cannot reach every pair.</strong> Wi-Fi Aware runs the same
+            protocol on both platforms, but Apple requires a paired data path that Android cannot
+            complete, so it only ever connects Android to Android, or iPhone to iPhone. LAN crosses
+            platforms, but only where both phones share a network. A calling feature that fails on
+            half the pairs is worse than none, so the video packet type was removed from the
+            protocol rather than shipped half working.
             <br />
             <br />
             What you get instead is live push-to-talk voice, which covers what a call on a mesh is
@@ -332,9 +333,10 @@ export const FAQ_SECTIONS: FaqSection[] = [
             Because the fallback carries text, not media. Attachments travel on the Bluetooth
             file-transfer path and are never bridged to Nostr, so the attach button is offered only
             where the file can actually arrive: the public Bluetooth channel, and direct messages
-            with someone reachable over the mesh. It is missing in location channels, in a cell you
-            have teleported into, and in a conversation with someone you only know through a relay,
-            because everyone there is reached over the internet and the file would go nowhere.
+            with someone you know over the mesh, where the file goes only while your phones are
+            directly linked. It is missing in location channels, in a cell you have teleported into,
+            and in a conversation with someone you only know through a relay, because everyone there
+            is reached over the internet and the file would go nowhere.
             <br />
             <br />
             It is missing in private channels and groups for a different reason. A direct attachment
@@ -412,7 +414,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "Does the internet fallback compromise privacy?",
-        a: "No. NIP-17 gift-wrapping encrypts the message content and hides the sender and recipient identities from relay operators. Metadata is minimal. You can also route Nostr traffic through Tor for additional network-level privacy.",
+        a: "No. NIP-17 gift-wrapping encrypts the message content and hides the sender's identity from relay operators. A relay sees only the recipient's key, which it needs to deliver the message. You can also route Nostr traffic through Tor for additional network-level privacy.",
       },
       {
         q: "What is the difference between the internet gateway and the mesh bridge?",
@@ -435,6 +437,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             proxy like Caddy, or a Cloudflare Tunnel) and reach it at wss://your-relay.example.com.
             Plain ws://, IP addresses, and local names are rejected, the same bar other Nostr
             clients and bitchat use. Then add the URL under Network &amp; Relays → Custom relays.
+            Custom relays carry location channels and the mesh bridge; DMs and private channels
+            always use the built-in message relays.
           </>
         ),
       },
@@ -765,10 +769,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
             devices. Relaying for other people costs a little more.{" "}
             <strong>It also works less hard when you are not watching:</strong> put your phone in
             your pocket and Airhop drops to a short look around every half a minute instead of
-            listening continuously, and it turns down further as the battery gets low. Plug the
-            phone in and it goes back to full speed. That is where almost all of a day's saving
-            comes from, and none of it changes how the mesh works: messages still arrive, people are
-            still found, the radio just looks less often.{" "}
+            listening continuously, and it turns down further as the battery gets low. Plugging it
+            in brings back full speed only while the app is open. On an iPhone, iOS throttles
+            background Bluetooth by itself. That is where almost all of a day's saving comes from,
+            and none of it changes how the mesh works: messages still arrive, people are still
+            found, the radio just looks less often.{" "}
             <strong>If you want it to stop entirely, set your status to Away in Profile:</strong>{" "}
             that stops scanning and announcing, and nothing runs until you set it back or restart
             the app.
@@ -779,13 +784,14 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Why does the Mesh tab say Battery saver?",
         a: (
           <>
-            Because your battery is low and Airhop has turned the Bluetooth scan down to short
-            bursts rather than draining what is left. Nothing is broken: people nearby will still
-            appear, they can just take up to half a minute to show up instead of a few seconds. The
-            note exists only so that slowness is explainable, because a radar that takes a while to
-            fill looks identical to one that is not working.{" "}
-            <strong>Charging the phone clears it,</strong> and it disappears on its own once the
-            battery recovers. There is nothing to tap and nothing to fix.
+            Because your battery is low or Android's Battery Saver is on, and Airhop has turned the
+            Bluetooth scan down to short bursts rather than draining what is left. Nothing is
+            broken: people nearby will still appear, they can just take up to half a minute to show
+            up instead of a few seconds. The note exists only so that slowness is explainable,
+            because a radar that takes a while to fill looks identical to one that is not working.{" "}
+            <strong>Charging the phone or turning Battery Saver off clears it,</strong> and it
+            disappears on its own once the battery recovers. There is nothing to tap and nothing to
+            fix.
           </>
         ),
       },
@@ -817,6 +823,13 @@ export const FAQ_SECTIONS: FaqSection[] = [
               <li>
                 <strong>Bluetooth and nearby devices:</strong> to find and talk to peers. The one it
                 cannot work without.
+              </li>
+              <li>
+                <strong>Nearby Wi-Fi devices:</strong> on Android, only for the Wi-Fi Aware fast
+                path.
+              </li>
+              <li>
+                <strong>Local network:</strong> on iPhone, only to reach phones on the same Wi-Fi.
               </li>
               <li>
                 <strong>Notifications:</strong> so a message can reach you when the app is closed.

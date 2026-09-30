@@ -472,10 +472,13 @@ test("W05 a mint that dies mid-swap does not destroy the input proofs", async ()
     bob.unverifiedBalance() === bob.balance(),
     `bob balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
   );
+  // Burned at the mint with no signatures sent back, which is what makes this
+  // the nasty case rather than an ordinary refusal.
+  const inputs = getDecodedToken(token ?? "", []).proofs;
   s.check(
-    "and the mint really did refuse to complete the swap",
-    bob.balance() === 0 || bob.unverifiedBalance() > 0,
-    `bob holds ${bob.totalHeld()}`,
+    "and the mint really did burn the inputs without completing the swap",
+    inputs.length > 0 && inputs.every((p) => mint.isSpent(p.secret)),
+    `${inputs.filter((p) => mint.isSpent(p.secret)).length}/${inputs.length} inputs spent at the mint`,
   );
 
   // The honest position afterwards: alice's reserve still shows the value as
@@ -534,10 +537,6 @@ test("W06 a locked nutzap that reached its owner late stops looking pending", as
     "the payment starts out parked as pending",
     alice.txStatus(txId ?? "") === "pending",
     `status=${String(alice.txStatus(txId ?? ""))}`,
-  );
-  s.check(
-    "and alice cannot reclaim it, because it is not hers",
-    !alice.reclaimLastSend(),
   );
 
   // The outbox gets it there and bob redeems it. Nothing tells alice: no

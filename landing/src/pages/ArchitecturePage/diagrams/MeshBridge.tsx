@@ -9,7 +9,6 @@ export function MeshBridge() {
       aria-label="Two Bluetooth mesh islands linked over the internet by the mesh bridge"
     >
       <Arrow id="mb-arrow" />
-      {/* Two crowds, out of Bluetooth range of each other. */}
       <Box x={16} y={132} w={220} h={76} label="Island A" sub="a Bluetooth crowd" strong />
       <Box x={684} y={132} w={220} h={76} label="Island B" sub="a Bluetooth crowd" strong />
       <line x1={240} y1={170} x2={680} y2={170} stroke={LINE} strokeDasharray="5 4" />
@@ -25,7 +24,6 @@ export function MeshBridge() {
       >
         NO BLUETOOTH
       </text>
-      {/* Both meet at one rendezvous cell on Nostr. */}
       <Box x={350} y={20} w={220} h={76} label="Rendezvous cell" sub="geohash #r on Nostr" />
       <line
         x1={150}

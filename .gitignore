@@ -72,6 +72,14 @@ android/captures/
 landing/node_modules/
 landing/dist/
 press/.build/
+press/film/.claude/
+press/film/.tools/
+press/film/assets/
+press/film/data.js
+press/film/index.html
+press/film/renders/
+press/film/snapshots/
+press/film/vendor/
 deck/
 
 # macOS

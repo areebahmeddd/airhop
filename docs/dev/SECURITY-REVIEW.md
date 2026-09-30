@@ -7,6 +7,7 @@
 | Version         | Airhop 1.0.9, branch `v1.0.9` ([PR #74](https://github.com/areebahmeddd/airhop/pull/74))                                                                                                                                        |
 | Commits         | `a7f2506..469ef37`: the fixes, then a comment-hygiene pass ([`4011635`](https://github.com/areebahmeddd/airhop/commit/4011635) to [`469ef37`](https://github.com/areebahmeddd/airhop/commit/469ef37)) that changes no behaviour |
 | Date            | 2026-09-27                                                                                                                                                                                                                      |
+| Model           | Claude Opus 5.5, with a 1-million-token context window and high-thinking mode                                                                                                                                                   |
 | Code in scope   | `src/`, `android/`, `ios/`, `native/`, `scripts/`, `.github/`, `landing/`                                                                                                                                                       |
 | Source of truth | bitchat-ios (local checkout) for every protocol behaviour. bitchat-android deviations are reported, never accommodated                                                                                                          |
 

@@ -4,7 +4,7 @@ export function ProtectionStack() {
   const rows = [
     ["Direct message", "Noise XX + Double Ratchet", "yes", "yes"],
     ["DM over the internet", "NIP-17 gift wrap", "yes", "yes"],
-    ["Courier envelope", "Noise X to a one-time prekey", "yes", "yes"],
+    ["Courier envelope", "Noise X to a one-time prekey, else the static key", "yes", "yes"],
     ["Private channel", "XChaCha20-Poly1305, key in the link", "yes", "yes"],
     ["Private group", "ChaCha20-Poly1305 under an epoch key", "yes", "yes"],
     ["Public channel", "signed only, readable by design", "no", "yes"],

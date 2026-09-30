@@ -106,8 +106,9 @@ describe("GCS filter build/decode", () => {
     const h64s = [12345678901234n];
     const { p, m, data } = buildGcsFilter(h64s, 400, 0.01);
     const decoded = decodeGcsFilter(p, m, data);
-    // The decoded value is h64 % m, so we check membership
-    expect(decoded.length).toBeGreaterThanOrEqual(0); // no crash
+    // The filter holds h64 % m, with 0 mapped to 1, and nothing else.
+    const x = h64s[0] % BigInt(m);
+    expect(decoded).toEqual([x === 0n ? 1n : x]);
   });
 
   test("known values can be found in decoded filter (membership)", () => {
@@ -331,9 +332,9 @@ describe("GossipSync: candidate age bounds", () => {
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
   });
 
-  // Group messages had no sync bit at all, so a group had no store-and-forward:
-  // nothing was ever cached, advertised, requested or served. bitchat defines
-  // bit 10 and does all four, so the exchange was one-directional as well.
+  // Without a sync bit a group has no store-and-forward: nothing is cached,
+  // advertised, requested or served. bitchat defines bit 10 and does all four,
+  // so leaving it out would make the exchange one-directional as well.
   test("a private group message is a sync candidate on bit 10", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.GROUP_MESSAGE, 60_000, new Uint8Array([1])));
@@ -439,7 +440,7 @@ describe("GossipSync: sinceTimestamp cursor", () => {
   // Emitting it when the filter covers everything would tell every peer to
   // withhold anything older than our oldest packet, which for a device that
   // just joined is precisely the history it turned up to collect. The F02
-  // latecomer scenario catches the same thing across real phones.
+  // latecomer scenario catches the same thing across simulated phones.
   test("no cursor is sent when the filter covers everything held", () => {
     const identity = makeIdentity();
     const gs = new GossipSync();
@@ -788,7 +789,7 @@ describe("GossipSync: one request per round", () => {
     expect(responder.handleFilter(messages)).toHaveLength(0);
   });
 
-  test("the same post was lost behind the cursor of one filter over both", () => {
+  test("one filter over both rounds loses the same post behind its cursor", () => {
     const { requester, responder } = busyRoom();
     const union = requester.buildFilterPacket(
       identity,

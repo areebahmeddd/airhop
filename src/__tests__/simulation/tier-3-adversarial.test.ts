@@ -411,6 +411,28 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
     queuedFor(aliceKey) === 1 && queuedFor(mallory.peerID) === 0,
   );
 
+  // A card claiming alice's ID over mallory's Noise key is refused before
+  // anything is stored, even scanned in person: the ID does not derive from
+  // the key.
+  const forged = (
+    bob.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => string;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: alice.peerID,
+      noisePubKey: mallory.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+    },
+    { inPerson: true },
+  );
+  s.check(
+    "a card whose peer ID does not derive from its key is refused",
+    forged === "unbound",
+    `result = ${forged}`,
+  );
+
   // The positive control: bob scans alice's real card in person.
   (
     bob.mesh as unknown as {
@@ -712,9 +734,9 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
   // Driven through the actual "user goes Away" path rather than an injected
   // packet, because the goodbye has to survive its own shutdown to be worth
   // anything. MeshService.stop() sends the LEAVE before taking the radios
-  // down; with those two the other way round the farewell was handed to a
-  // transport already told to shut, and a departing peer vanished by timeout
-  // instead of by announcement.
+  // down; with those two the other way round the farewell would be handed to a
+  // transport already told to shut, and a departing peer would vanish by
+  // timeout instead of by announcement.
   alice.mesh?.stop();
   const noticed = await waitFor(
     s.world,

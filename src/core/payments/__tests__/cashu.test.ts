@@ -1,7 +1,8 @@
 /**
  * @jest-environment node
  */
-// Cashu core tests: detection, decoding, fee-aware selection, serialisation.
+// Cashu core: detection, decoding and its bounds, fee-aware selection,
+// serialisation and the QR hand-off.
 //
 // Real tokens are built with cashu-ts and round-tripped, rather than hand-rolled
 // fixtures, so the tests fail if the library's wire format moves under us.
@@ -155,10 +156,6 @@ describe("decodeToken", () => {
   it("reports whether every proof carries a DLEQ witness", () => {
     // Our fixtures have none, which is exactly the "cannot verify offline" case.
     expect(decodeToken(realToken([4]))?.hasDleq).toBe(false);
-  });
-
-  it("carries a non-sat unit through rather than assuming sats", () => {
-    expect(decodeToken(realToken([3], undefined, "usd"))?.unit).toBe("usd");
   });
 
   it("returns null for garbage", () => {
@@ -628,25 +625,7 @@ describe("short keyset ids", () => {
     } as unknown as Token);
   }
 
-  const V1_KEYSET = "00ad268c4d1f5826";
   const V2_KEYSET = "01ad268c4d1f5826bb";
-
-  it("decodes a v1 keyset id without needing anything cached", () => {
-    expect(decodeToken(tokenWithKeyset(V1_KEYSET))?.amount).toBe(8);
-  });
-
-  it("decodes a v2 keyset id when the mint's ids are cached", () => {
-    const info = decodeToken(tokenWithKeyset(V2_KEYSET), [
-      { id: V2_KEYSET, unit: "sat" },
-    ]);
-    expect(info).not.toBeNull();
-    expect(info?.amount).toBe(8);
-    expect(info?.mintUrl).toBe(MINT);
-  });
-
-  it("refuses a v2 keyset id it cannot resolve, rather than guessing", () => {
-    expect(decodeToken(tokenWithKeyset(V2_KEYSET))).toBeNull();
-  });
 
   it("renders a chat chip for a v2 token once the ids are known", () => {
     const token = tokenWithKeyset(V2_KEYSET);

@@ -73,9 +73,22 @@ describe("Deduplicator", () => {
     });
 
     it("re-adding a packetID refreshes its position (not double-counted)", () => {
+      const filler = (i: number): Uint8Array => {
+        const n = packetId(0x02);
+        n[1] = (i >> 8) & 0xff;
+        n[2] = i & 0xff;
+        return n;
+      };
       dedup.add(packetId(0x01));
-      dedup.add(packetId(0x01)); // re-add
-      expect(dedup.size).toBe(1);
+      for (let i = 0; i < 999; i++) dedup.add(filler(i));
+      dedup.add(packetId(0x01)); // re-add: now the newest, not the oldest
+      expect(dedup.size).toBe(1000);
+
+      // At capacity the next add evicts the oldest, which is now the first
+      // filler rather than the re-added ID.
+      dedup.add(packetId(0x03));
+      expect(dedup.has(packetId(0x01))).toBe(true);
+      expect(dedup.has(filler(0))).toBe(false);
     });
   });
 

@@ -52,6 +52,8 @@ beforeEach(() => {
 
 describe("sweepOrphanedSecrets", () => {
   it("deletes the orphaned secrets, since none of them has an owner", async () => {
+    // Deleting an absent item resolves, so this is also a first install, the
+    // ordinary launch, which must stay a silent no-op.
     mockDelete.mockResolvedValue(undefined);
 
     await expect(sweepOrphanedSecrets()).resolves.toBe(false);
@@ -67,18 +69,21 @@ describe("sweepOrphanedSecrets", () => {
   // and onboarding writes an identity moments later. A delete landing after that
   // would destroy the key the user just made and leave an app that cannot start.
   it("never touches the identity, which onboarding is about to write", async () => {
-    mockDelete.mockResolvedValue(undefined);
+    // A refused delete sends the sweep down its read-back path too, so both
+    // calls are exercised.
+    mockDelete.mockRejectedValue(new Error("keystore refused"));
     mockGet.mockResolvedValue(null);
 
     await sweepOrphanedSecrets();
 
+    expect(mockGet).toHaveBeenCalled();
     expect(mockDelete).not.toHaveBeenCalledWith(KEYCHAIN_ITEMS.identity);
     expect(mockGet).not.toHaveBeenCalledWith(KEYCHAIN_ITEMS.identity);
   });
 
   // The partition opens at launch under this key whether or not there is an
-  // identity, so deleting it made everything written that session unreadable
-  // on the next launch: a first install lost the coins it received.
+  // identity, so deleting it would make everything written that session
+  // unreadable on the next launch, coins a first install received included.
   it("never touches the wallet's file key, which its open partition needs", async () => {
     mockDelete.mockResolvedValue(undefined);
     mockGet.mockResolvedValue(null);
@@ -112,12 +117,6 @@ describe("sweepOrphanedSecrets", () => {
         : Promise.resolve(null),
     );
 
-    await expect(sweepOrphanedSecrets()).resolves.toBe(false);
-  });
-
-  it("is a silent no-op on a first install", async () => {
-    // Deleting an absent item resolves; this is the ordinary launch.
-    mockDelete.mockResolvedValue(undefined);
     await expect(sweepOrphanedSecrets()).resolves.toBe(false);
   });
 

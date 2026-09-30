@@ -24,6 +24,7 @@ import {
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
+  paymentNotificationContent,
   ringNotificationContent,
   ringVerdict,
   shouldHapticPing,
@@ -79,6 +80,24 @@ describe("shouldSystemNotify", () => {
   });
 });
 
+describe("paymentNotificationContent", () => {
+  it("names the amount and the payer", () => {
+    expect(
+      paymentNotificationContent("1.50", "USD", "npub1abc", false),
+    ).toEqual({
+      title: `+${isolated("1.50")} ${isolated("USD")}`,
+      body: expect.stringContaining(isolated("npub1abc")),
+    });
+  });
+
+  // Money arriving is exactly what a lock screen should not announce.
+  it("says neither with previews hidden", () => {
+    const hidden = paymentNotificationContent("1.50", "USD", "npub1abc", true);
+    expect(hidden.title).toBe("Airhop");
+    expect(`${hidden.title} ${hidden.body}`).not.toMatch(/1\.50|npub1abc/);
+  });
+});
+
 describe("shouldHapticPing", () => {
   const base = {
     isMine: false,
@@ -106,6 +125,7 @@ describe("shouldHapticPing", () => {
 
 describe("notificationContentFor", () => {
   it("shows sender as the title for a DM", () => {
+    // Hiding content is off unless asked for, so the default call shows it.
     expect(notificationContentFor(msg({ text: "yo" }))).toEqual({
       title: "alice",
       body: "yo",
@@ -193,13 +213,6 @@ describe("notificationContentFor with previews hidden", () => {
       true,
     );
     expect(content.body).not.toBe("📷 Photo");
-  });
-
-  it("hiding is off unless asked for, so the default call is unchanged", () => {
-    expect(notificationContentFor(msg({ text: "yo" }))).toEqual({
-      title: "alice",
-      body: "yo",
-    });
   });
 });
 

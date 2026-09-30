@@ -251,10 +251,8 @@ class VirtualSocket {
 export class RelayFabric {
   private readonly relays = new Map<string, Relay>();
   private readonly rng: Prng;
-  // Devices cut off from the internet entirely (aeroplane mode), and devices
-  // cut off from a SUBSET of relays (a partition).
+  // Devices cut off from the internet entirely (aeroplane mode).
   private readonly offline = new Set<string>();
-  private readonly partitions = new Map<string, Set<string>>();
   private disposed = false;
 
   publishCount = 0;
@@ -297,8 +295,6 @@ export class RelayFabric {
   // Which relay, if any, this device can reach at this URL right now.
   relayFor(url: string, deviceID: string): Relay | null {
     if (this.offline.has(deviceID)) return null;
-    const allowed = this.partitions.get(deviceID);
-    if (allowed !== undefined && !allowed.has(url)) return null;
     let relay = this.relays.get(url);
     if (relay === undefined) {
       relay = new Relay(url);
@@ -336,26 +332,6 @@ export class RelayFabric {
     }
   }
 
-  // Restrict a device to a subset of relay URLs. Two disjoint subsets is a
-  // network partition: both halves work, neither sees the other.
-  setPartition(deviceID: string, allowedUrls: string[] | null): void {
-    if (allowedUrls === null) {
-      this.partitions.delete(deviceID);
-    } else {
-      this.partitions.set(deviceID, new Set(allowedUrls));
-      for (const relay of this.relays.values()) {
-        if (allowedUrls.includes(relay.url)) continue;
-        for (const socket of [...relay.sockets]) {
-          if (socket.deviceID === deviceID) socket.killFromRelay();
-        }
-      }
-    }
-    this.world.say(
-      "PARTITION",
-      `${deviceID} -> ${allowedUrls === null ? "all relays" : allowedUrls.join(",")}`,
-    );
-  }
-
   setRelayConditions(url: string, partial: Partial<RelayConditions>): void {
     const relay = this.relayFor(url, "__fabric__");
     if (relay === null) return;
@@ -385,10 +361,6 @@ export class RelayFabric {
 
   relayUrls(): string[] {
     return [...this.relays.keys()];
-  }
-
-  eventsOn(url: string): NostrEventLike[] {
-    return [...(this.relays.get(url)?.events ?? [])];
   }
 
   allEvents(): NostrEventLike[] {

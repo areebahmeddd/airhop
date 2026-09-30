@@ -242,19 +242,19 @@ cd .. && npm run android
 
 ## Documentation
 
-| Document                                                      | Description                                                      |
-| ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [VISION.md](docs/design/VISION.md)                            | Why Airhop exists and what it will never compromise on           |
-| [ROADMAP.md](docs/design/ROADMAP.md)                          | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
-| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)                  | System architecture, design decisions, and stack rationale       |
-| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)                        | Wire format, BLE UUIDs, and protocol specifications              |
-| [BITCHAT.md](docs/dev/BITCHAT.md)                             | Bitchat codebase deep dive and implementation reference          |
-| [PROGRESS.md](docs/dev/PROGRESS.md)                           | Current build, development milestones, and security analysis     |
-| [SECURITY-REVIEW-1.0.9.md](docs/dev/SECURITY-REVIEW-1.0.9.md) | The v1.0.9 security review: every finding, its status and fix    |
-| [GLOSSARY.md](docs/dev/GLOSSARY.md)                           | Definitions of technical terms used throughout the documentation |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                            | Development workflow and pull request guidelines                 |
-| [SECURITY.md](SECURITY.md)                                    | Security policy and vulnerability reporting                      |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)                      | Community standards and expectations                             |
+| Document                                          | Description                                                      |
+| ------------------------------------------------- | ---------------------------------------------------------------- |
+| [VISION.md](docs/design/VISION.md)                | Why Airhop exists and what it will never compromise on           |
+| [ROADMAP.md](docs/design/ROADMAP.md)              | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
+| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)      | System architecture, design decisions, and stack rationale       |
+| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)            | Wire format, BLE UUIDs, and protocol specifications              |
+| [BITCHAT.md](docs/dev/BITCHAT.md)                 | Bitchat codebase deep dive and implementation reference          |
+| [PROGRESS.md](docs/dev/PROGRESS.md)               | Current build, development milestones, and security analysis     |
+| [SECURITY-REVIEW.md](docs/dev/SECURITY-REVIEW.md) | Findings, fixes, accepted risks and upstream gaps                |
+| [GLOSSARY.md](docs/dev/GLOSSARY.md)               | Definitions of technical terms used throughout the documentation |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                | Development workflow and pull request guidelines                 |
+| [SECURITY.md](SECURITY.md)                        | Security policy and vulnerability reporting                      |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)          | Community standards and expectations                             |
 
 ## Acknowledgements
 
