@@ -6,18 +6,25 @@
 // iOS gives exactly that answer to a background relaunch before first unlock.
 // So "unreadable" is its own outcome, and the launch waits for the person.
 //
-// An identity a panic wipe could not delete never boots (see ./wipe-marker):
-// it is deleted again here, with its prekeys, and if the keychain still
+// Two identities never boot. One a panic wipe could not delete (./wipe-marker)
+// is deleted again here, with its prekeys. One a deleted install left behind
+// (./install-marker) is deleted with every other secret. If the keychain still
 // refuses, launch treats it as absent with the keys reported as surviving.
 
 import { type Identity, loadIdentity } from "@core/crypto/identity";
-import { deleteSecret, KEYCHAIN_ITEMS } from "@core/crypto/keychain";
+import {
+  deleteSecret,
+  KEYCHAIN_ITEMS,
+  wipeAllSecrets,
+} from "@core/crypto/keychain";
 import { withTimeout } from "@utils/with-timeout";
+import { isLeftoverIdentity, markInstallHadIdentity } from "./install-marker";
 import { clearCondemnedIdentity, isIdentityCondemned } from "./wipe-marker";
 
 export type LaunchIdentity =
   | { kind: "present"; identity: Identity }
-  // `keysRemain`: a condemned identity refused its delete again.
+  // `keysRemain`: the keychain refused to delete a condemned or leftover
+  // identity.
   | { kind: "absent"; keysRemain: boolean }
   | { kind: "unreadable" };
 
@@ -37,10 +44,13 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
     return { kind: "unreadable" };
   }
   if (identity === undefined) return { kind: "unreadable" };
+  if (identity !== null && isLeftoverIdentity()) {
+    return { kind: "absent", keysRemain: !(await wipeLeftoverSecrets()) };
+  }
   if (!isIdentityCondemned()) {
-    return identity === null
-      ? { kind: "absent", keysRemain: false }
-      : { kind: "present", identity };
+    if (identity === null) return { kind: "absent", keysRemain: false };
+    markInstallHadIdentity();
+    return { kind: "present", identity };
   }
 
   // The one-time prekeys go with it, here and not in the launch sweep: this
@@ -58,6 +68,17 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
   return { kind: "absent", keysRemain: !deleted };
 }
 
+// Every secret goes with a leftover identity, the wallet's keys and recovery
+// phrase included, so a new identity never inherits them. True when the
+// keychain let go of all of it.
+async function wipeLeftoverSecrets(): Promise<boolean> {
+  return withTimeout(
+    wipeAllSecrets().then(() => true),
+    IDENTITY_LOAD_TIMEOUT_MS,
+    false,
+  ).catch(() => false);
+}
+
 // What the launch does with that answer. Pure, so the branching app.tsx acts
 // on is testable without rendering the app.
 export type LaunchPlan =
@@ -65,8 +86,8 @@ export type LaunchPlan =
   // The keychain did not answer: the person is asked, and nothing onboards.
   | { kind: "ask" }
   // `sweep` only on a confirmed absence, since an unanswered read said nothing
-  // about what the keychain holds. `wipeIncomplete`: a condemned identity
-  // refused its delete again.
+  // about what the keychain holds. `wipeIncomplete`: the keychain refused to
+  // delete a condemned or leftover identity.
   | { kind: "welcome"; sweep: boolean; wipeIncomplete: boolean };
 
 // `justWiped`: the person just chose Erase, and asking again could reload an

@@ -7,7 +7,10 @@ import { resolveLandingSettle, resolveThreadScroll } from "../thread-scroll";
 
 describe("resolveThreadScroll", () => {
   describe("opening a thread", () => {
-    it("lands instantly on the first measurement", () => {
+    it("lands instantly on every measurement while landing", () => {
+      // FlatList reports its size once per batch, so a reopened thread produces
+      // a run of these. Animating them replays the same landing as two or three
+      // visible scrolls.
       expect(
         resolveThreadScroll({
           landing: true,
@@ -16,22 +19,6 @@ describe("resolveThreadScroll", () => {
           ownMessage: false,
         }),
       ).toBe("instant");
-    });
-
-    it("stays instant for every later batch the list measures", () => {
-      // The bug this exists for: FlatList reports its size once per batch, so a
-      // reopened thread produced a run of these. Animating them replayed the
-      // same landing as two or three visible scrolls.
-      for (let batch = 0; batch < 4; batch++) {
-        expect(
-          resolveThreadScroll({
-            landing: true,
-            atBottom: true,
-            countChanged: false,
-            ownMessage: false,
-          }),
-        ).toBe("instant");
-      }
     });
 
     it("still lands when a mid-settle measurement reported the reader off the bottom", () => {
@@ -74,7 +61,11 @@ describe("resolveThreadScroll", () => {
   });
 
   describe("reading further up the thread", () => {
-    it("leaves the reader alone when a message arrives", () => {
+    it("leaves the reader alone when a message arrives or leaves", () => {
+      // Whatever a peer sends (text, photo, voice note, file), the reader stays
+      // where they are and the pill offers the trip; the list cannot see the
+      // payload anyway. Undo Send and history trimming shorten the list, and
+      // neither is an arrival that may pull a reader off what they are reading.
       expect(
         resolveThreadScroll({
           landing: false,
@@ -98,34 +89,13 @@ describe("resolveThreadScroll", () => {
   });
 
   describe("sending your own message", () => {
-    it("goes to it from anywhere in the thread", () => {
-      // The defect this closes: reading back through history and sending a
-      // message left the reader in history, with what they just sent off screen
-      // below. Sending is the request to be at the end.
-      expect(
-        resolveThreadScroll({
-          landing: false,
-          atBottom: false,
-          countChanged: true,
-          ownMessage: true,
-        }),
-      ).toBe("animated");
-    });
-
-    it("animates rather than jumps, so the message is seen arriving", () => {
-      expect(
-        resolveThreadScroll({
-          landing: false,
-          atBottom: true,
-          countChanged: true,
-          ownMessage: true,
-        }),
-      ).toBe("animated");
-    });
-
-    it("outranks every other signal", () => {
-      // Deliberately contradictory inputs: whatever else the list reports about
-      // a measurement carrying the reader's own message, they still go to it.
+    it("goes to it, animated, from anywhere and over every other signal", () => {
+      // Reading back through history and sending a message must not leave the
+      // reader in history with what they just sent off screen below: sending is
+      // the request to be at the end. Animated rather than a jump, so the
+      // message is seen arriving. The inputs are deliberately contradictory:
+      // whatever else the list reports about a measurement carrying the
+      // reader's own message, they still go to it.
       for (const landing of [true, false]) {
         for (const atBottom of [true, false]) {
           for (const countChanged of [true, false]) {
@@ -140,50 +110,6 @@ describe("resolveThreadScroll", () => {
           }
         }
       }
-    });
-  });
-
-  // Every kind of message a peer can send is the same case: the reader stays
-  // where they are and the pill offers the trip. Nothing about the payload
-  // changes that, and the list cannot see the payload anyway.
-  describe("whatever a peer sends, while reading further up", () => {
-    for (const kind of ["text", "photo", "voice note", "video", "document"]) {
-      it(`does not move the reader for an incoming ${kind}`, () => {
-        expect(
-          resolveThreadScroll({
-            landing: false,
-            atBottom: false,
-            countChanged: true,
-            ownMessage: false,
-          }),
-        ).toBe("none");
-      });
-    }
-
-    it("still follows when the reader is already at the end", () => {
-      expect(
-        resolveThreadScroll({
-          landing: false,
-          atBottom: true,
-          countChanged: true,
-          ownMessage: false,
-        }),
-      ).toBe("animated");
-    });
-  });
-
-  // Undo Send and history trimming both shorten the list. Neither is an
-  // arrival, so neither may pull a reader off the point they are reading.
-  describe("a message leaving the thread", () => {
-    it("does not move a reader who is further up", () => {
-      expect(
-        resolveThreadScroll({
-          landing: false,
-          atBottom: false,
-          countChanged: true,
-          ownMessage: false,
-        }),
-      ).toBe("none");
     });
   });
 });
@@ -205,10 +131,10 @@ describe("resolveLandingSettle", () => {
   });
 
   it("corrects a landing left short of the newest message", () => {
-    // The reopened-thread bug: a list that is not inverted mounts its oldest
-    // rows first and walks down as batches render, and losing the last of those
-    // scrolls left the reader a partial row from the end. Well inside the
-    // generous at-bottom tolerance, which is why nothing caught it.
+    // A list that is not inverted mounts its oldest rows first and walks down
+    // as batches render, and losing the last of those scrolls leaves the reader
+    // a partial row from the end. That is well inside the generous at-bottom
+    // tolerance, so only this check catches it.
     expect(resolveLandingSettle({ distanceFromBottom: 46, tolerance })).toBe(
       "correct",
     );

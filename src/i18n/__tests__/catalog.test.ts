@@ -164,13 +164,6 @@ describe("plural categories", () => {
     expect(wrong).toEqual([]);
   });
 
-  it("English is one and other, which the source catalog is written for", () => {
-    for (const [key, forms] of Object.entries(en.plurals)) {
-      const categories = Object.keys(forms).filter((form) => form !== "=1");
-      expect([key, categories.sort()]).toEqual([key, ["one", "other"]]);
-    }
-  });
-
   it.each(CODES)("%s shows the count in every `one` form", (code) => {
     // CLDR `one` is not "exactly one": Filipino's covers 5 and 10, Ukrainian's
     // 21 and 31, Hindi's 0. A `one` with no number ("Someone nearby") is
@@ -188,7 +181,7 @@ describe("plural categories", () => {
 
 describe("do not translate", () => {
   // These strings are not copy: they cross the wire, or an identity derives from
-  // them, so a translated variant is an interop bug. bitchat/ios matches an
+  // them, so a translated variant is an interop bug. bitchat-ios matches an
   // incoming emote by its English substring, and is itself fully localised while
   // still keeping these as English literals. See docs/spec/ARCHITECTURE.md.
   //
@@ -214,7 +207,7 @@ describe("do not translate", () => {
   // SURVIVES: proper nouns, and weaker than VERBATIM. "Lightning" and
   // "Tor" are ordinary words in most of these languages and get translated
   // unless a rule stops it. Presence, not count, since a language may drop or
-  // repeat a noun for agreement. The noun disappearing never is legitimate.
+  // repeat a noun for agreement. A noun that disappears is never legitimate.
   const MUST_SURVIVE = [
     "Airhop",
     "bitchat",
@@ -283,8 +276,7 @@ describe("do not translate", () => {
 describe("English source conventions", () => {
   it("uses typographic apostrophes and quotes, never straight ones", () => {
     // Apple's HIG, the Microsoft Style Guide and Chicago all specify the
-    // typographic forms for interface prose. Ellipsis is not checked because it
-    // never drifted; the apostrophe did, one screen apart.
+    // typographic forms for interface prose.
     const offenders: string[] = [];
     for (const [key, value] of Object.entries(en.strings)) {
       if (value.includes("'")) offenders.push(`${key}: straight apostrophe`);

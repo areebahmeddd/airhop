@@ -84,7 +84,7 @@ import {
   type WalletTx,
 } from "@store/wallet-store";
 import Avatar from "@ui/components/avatar";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
 import PixelBird, { BIRD_ROWS } from "@ui/components/pixel-bird";
@@ -173,9 +173,9 @@ const LIST_ICON = 38;
 // One Activity row: a title and a meta line between Spacing.md paddings.
 const ACTIVITY_ROW_HEIGHT = 64;
 
-// How long a bottom sheet takes to slide out. Presenting the camera before it
-// has gone would stack two modals, which iOS refuses.
-const SHEET_EXIT_MS = 260;
+// The scanner's slide-out. Its native Modal reports nothing once unmounted, so
+// the sheet it returns to waits this out rather than stacking on it.
+const SCANNER_EXIT_MS = 260;
 
 // How often to poll a pending Lightning deposit while its sheet is open.
 const DEPOSIT_POLL_MS = 3000;
@@ -566,6 +566,9 @@ export default function WalletScreen({
       }
       const where = hostOf(result.mintUrl);
       if (result.outcome === "swapped") {
+        // The mint confirmed it, which takes a network round trip; an offline
+        // claim below is only stored, so it gets no success buzz.
+        succeeded();
         showAlert(
           `+${formatUnitAmount(result.amount, result.unit)}`,
           t("wallet.receive.redeemed_here", { mint: where }) +
@@ -602,22 +605,21 @@ export default function WalletScreen({
     }
   }
 
-  // iOS shows one modal at a time, so opening the scanner over a sheet
-  // silently does nothing. The sheet closes, its exit finishes, then the camera
-  // opens; every path back restores the sheet the same way.
+  // iOS shows one modal at a time: the camera opens once the sheet has gone,
+  // and every path back restores the sheet once the scanner has.
   function reopenSheetFor(target: ScanTarget): void {
     if (target === "any") return;
     setTimeout(() => {
       if (target === "token") setShowReceive(true);
       else setShowWithdraw(true);
-    }, SHEET_EXIT_MS);
+    }, SCANNER_EXIT_MS);
   }
 
   function openScanner(target: ScanTarget): void {
     setChooser(null);
     if (target === "token") setShowReceive(false);
     else if (target === "invoice") setShowWithdraw(false);
-    setTimeout(() => setScannerTarget(target), SHEET_EXIT_MS);
+    afterSheetsClose(() => setScannerTarget(target));
   }
 
   // Same one-modal-at-a-time rule as the scanner.
@@ -625,7 +627,7 @@ export default function WalletScreen({
     setChooser(null);
     setShowMints(false);
     setShowBackup(false);
-    setTimeout(open, SHEET_EXIT_MS);
+    afterSheetsClose(open);
   }
 
   function closeScanner(): void {
@@ -655,7 +657,7 @@ export default function WalletScreen({
       reopenSheetFor("invoice");
     } else if (kind === "npub") {
       setZapNpub(value);
-      setTimeout(() => setShowZap(true), SHEET_EXIT_MS);
+      setTimeout(() => setShowZap(true), SCANNER_EXIT_MS);
     }
   }
 
@@ -1049,7 +1051,7 @@ export default function WalletScreen({
         text: t("wallet.mint.remove"),
         style: "destructive" as const,
         onPress: () => {
-          setTimeout(() => handleRemoveMint(account), SHEET_EXIT_MS);
+          afterSheetsClose(() => handleRemoveMint(account));
         },
       },
       { text: t("common.cancel"), style: "cancel" as const },
@@ -1414,6 +1416,8 @@ export default function WalletScreen({
     setBusy("withdrawPay");
     try {
       const result = await payLightningInvoice(withdrawQuote);
+      // Settling can take seconds, long enough to look away.
+      succeeded();
       setShowWithdraw(false);
       setWithdrawQuote(null);
       setWithdrawInvoice("");

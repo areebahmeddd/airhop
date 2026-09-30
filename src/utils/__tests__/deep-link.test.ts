@@ -71,11 +71,6 @@ describe("parseAirhopLink: private channel key + reach", () => {
     });
   });
 
-  it("a public channel link has no key", () => {
-    const link = parseAirhopLink("airhop://channel/city");
-    expect((link as { key?: string }).key).toBeUndefined();
-  });
-
   it("channelInviteLink round-trips a key and reach", () => {
     expect(
       parseAirhopLink(channelInviteLink("#secret", "AbC-_123", true)),

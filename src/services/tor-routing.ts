@@ -372,8 +372,11 @@ async function disableTorRouting(restarting = false): Promise<void> {
     writeNostrBlocked(false);
   }
   // The preference goes down first, so anything still racing sees consent
-  // withdrawn and stands down instead of writing over this.
-  useSettingsStore.getState().setTorEnabled(false);
+  // withdrawn and stands down instead of writing over this. Not for a bridge
+  // change: Tor comes straight back, and dropping the preference for the gap
+  // would reopen the iOS mint gate and let a wallet pass go out on the clear
+  // net.
+  if (!restarting) useSettingsStore.getState().setTorEnabled(false);
   setTorActive(false);
   setTorBootstrap("idle");
   // Native puts its HTTP client back on a direct route inside stopTor, after the
@@ -413,6 +416,14 @@ function startTorFromPreference(): void {
     return;
   }
 
+  // Bridges wanted and none configured: Arti would connect straight to a public
+  // relay while the screen says bridges. Refused as enableTorRouting refuses,
+  // and held rather than direct, so adding a line on the Tor screen fixes it.
+  if (needsBridgeLines() && bridgeLinesForStart() === "") {
+    holdAfterFailedStart();
+    return;
+  }
+
   if (NativeAirhopTor == null) {
     // The preference is on but Tor is unavailable in this build. Leave the
     // direct socket in place rather than breaking the internet half entirely;
@@ -442,9 +453,9 @@ function startTorFromPreference(): void {
   });
 }
 
-// The held state after a crashed start. Applied rather than written, like the
-// start above, so a pool built before this ran is torn down. On Android the
-// HTTP stack is held on a proxy nothing listens on, so `fetch` fails too; iOS
+// The held state, for a start that crashed or has no bridge lines to use.
+// Applied rather than written, like the start above, so a pool built before
+// this ran is torn down. On Android the HTTP stack is held on a proxy nothing listens on, so `fetch` fails too; iOS
 // proxies only the Nostr socket, and its wallet and update check already
 // refuse while Tor is on.
 function holdAfterFailedStart(): void {
@@ -454,9 +465,9 @@ function holdAfterFailedStart(): void {
   void NativeAirhopTor?.holdRoute().catch(() => {});
 }
 
-// Whether the held state above is what the user is looking at: Tor wanted, the
-// marker of a start that never answered, and nothing running. A marker alone
-// is also set for the moment a start is in flight, which is not blocked.
+// Whether a crashed start's hold is what the user is looking at: Tor wanted,
+// the marker of a start that never answered, and nothing running. A marker
+// alone is also set for the moment a start is in flight, which is not blocked.
 export function isTorStartRecovered(
   torEnabled: boolean,
   torStartPending: boolean,

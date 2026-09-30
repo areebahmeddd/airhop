@@ -8,7 +8,7 @@
 // every phone must have its own emitter, or each one receives every other one's
 // native events.
 //
-// The obvious answer - `jest.isolateModules` - does not deliver it. Stores,
+// The obvious answer, `jest.isolateModules`, does not deliver it. Stores,
 // mesh-service and the native harness modules ARE isolated per sandbox, but
 // `react-native` is not: it is pinned by the jest-expo preset before any test
 // code runs, and survives `jest.resetModules()`. Worse, Babel compiles
@@ -18,7 +18,7 @@
 // whatever was installed last.
 //
 // The symptom is silent and total. Every phone registers links it is not party
-// to, and every phone receives every packet delivered to anyone - so a four-hop
+// to, and every phone receives every packet delivered to anyone, so a four-hop
 // relay chain "succeeds" with nothing having relayed anything. The suite goes
 // green while testing nothing.
 //
@@ -60,10 +60,6 @@ class DeviceEventRouter {
     }
   }
 
-  get currentDevice(): string | null {
-    return this.current;
-  }
-
   private bucket(deviceID: string | null): Map<string, Set<Listener>> {
     if (deviceID === null) return this.unowned;
     let map = this.byDevice.get(deviceID);
@@ -92,8 +88,8 @@ class DeviceEventRouter {
 
   emit(eventType: string, body?: unknown): void {
     // Deliver only to the phone whose code is running. An emission with no
-    // device context is a harness bug, and is dropped loudly rather than
-    // broadcast to everybody.
+    // device context is a harness bug, and reaches only the unowned bucket
+    // rather than every phone.
     const events = this.bucket(this.current);
     const set = events.get(eventType);
     if (set === undefined) return;
@@ -113,11 +109,6 @@ class DeviceEventRouter {
   // Drop everything a phone subscribed, for teardown.
   forget(deviceID: string): void {
     this.byDevice.delete(deviceID);
-  }
-
-  // Diagnostics for the harness's own tests.
-  deviceCount(): number {
-    return this.byDevice.size;
   }
 
   // Listeners registered with no device context. Anything here is a harness
@@ -144,18 +135,15 @@ class DeviceEventRouter {
 
 // ONE router for the process, parked on globalThis.
 //
-// A module-scope `const router = new DeviceEventRouter()` is NOT enough, and
-// this was the last bug in the chain. Jest evaluates a `jest.mock` factory in
-// whichever registry first requires the mocked module - which, for a sandboxed
-// phone, is that phone's isolated registry. So the factory's
-// `require("./event-router")` and this harness's own import resolve to
-// DIFFERENT copies of this file, each with its own `router`.
-//
-// The result was silent and maddening: mesh-service subscribed on router A,
-// `runAs` set the current device on router B, so router A never had a current
-// device, every listener fell into its "unowned" bucket, and every phone
-// received every other phone's native events. Everything looked correctly wired
-// because it WAS correctly wired - just to two different objects.
+// A module-scope `const router = new DeviceEventRouter()` is NOT enough. Jest
+// evaluates a `jest.mock` factory in whichever registry first requires the
+// mocked module, which for a sandboxed phone is that phone's isolated registry.
+// So the factory's `require("./event-router")` and this harness's own import
+// would resolve to DIFFERENT copies of this file, each with its own router.
+// mesh-service would subscribe on one while `runAs` set the current device on
+// the other, every listener would fall into the unowned bucket, and every phone
+// would receive every other phone's native events, all while looking correctly
+// wired.
 //
 // globalThis is the one namespace no module registry can duplicate.
 const ROUTER_KEY = "__airhopSimEventRouter";
@@ -176,11 +164,11 @@ export function eventRouter(): DeviceEventRouter {
 
 // The module body a test file installs in place of RCTDeviceEventEmitter.
 //
-// `jest.mock` intercepts at RESOLUTION, so every path that reaches the emitter -
-// react-native's index getter, a direct require, whatever the jest-expo preset
-// captured at setup - gets the router. That is what makes this reliable where
-// patching the emitter object after the fact was not: the emitter is reachable
-// as more than one object, and assigning to the wrong one fails silently.
+// `jest.mock` intercepts at RESOLUTION, so every path that reaches the emitter
+// (react-native's index getter, a direct require, whatever the jest-expo preset
+// captured at setup) gets the router. Patching the emitter object after the
+// fact is not reliable: the emitter is reachable as more than one object, and
+// assigning to the wrong one fails silently.
 export function routerModule(): {
   __esModule: true;
   default: DeviceEventRouter;

@@ -48,6 +48,7 @@ import {
   hasBlePermissions,
   type BlePermissionResult,
 } from "@platform/ble-permissions";
+import { succeeded } from "@platform/haptics";
 import { showBlockedAlert } from "@platform/permissions";
 import {
   Feather,
@@ -58,6 +59,7 @@ import {
   registerBootStartTask,
   syncAutoStartOnBoot,
 } from "@services/boot-start";
+import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import { joinSheetPrefill } from "@services/link-router";
 import {
@@ -77,10 +79,13 @@ import {
   configureNotifications,
   dismissNearbyNotification,
   dismissNotificationsFor,
+  dismissPaymentNotifications,
+  isAppActive,
+  notifyPaymentReceived,
   requestNotificationPermission,
-  setMeshNavigator,
   setNotificationNavigator,
   setNotificationsActiveChannel,
+  setTabNavigator,
 } from "@services/notification-service";
 import {
   rebindNutzapWatcher,
@@ -156,7 +161,7 @@ import {
   type ChannelFilter,
   type DmFilter,
 } from "@utils/chat-filter";
-import { formatNumber } from "@utils/format";
+import { amountParts } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
 import { settleOr } from "@utils/with-timeout";
@@ -204,9 +209,10 @@ initI18n();
 // "transfer" replaces "generating" when the identity comes from the old phone.
 type OnboardingStep = "welcome" | "generating" | "transfer" | "reveal";
 type MainTab = "chats" | "mesh" | "wallet" | "profile";
-// A boot-triggered headless launch never mounts AppContent, so this must
+// A boot-triggered headless launch never mounts AppContent, so these must
 // run at module load rather than wait for it.
 registerBootStartTask();
+registerKeepAliveTask();
 
 // "Stop mesh" on the Android background notification. The native service
 // hands it here rather than tearing things down itself, so stopping from the
@@ -481,12 +487,18 @@ function startMeshDependents(): void {
           myPubkey,
           client: live,
           onRedeemed: (amount, unit, from) => {
+            const parts = amountParts(amount, unit);
+            const payer = from.slice(0, 12);
+            // An alert would wait unseen while the app is away, so a
+            // notification says it instead.
+            if (!isAppActive()) {
+              void notifyPaymentReceived(parts.amount, parts.unit, payer);
+              return;
+            }
+            succeeded();
             showAlert(
-              t("wallet.nutzap.received_title", {
-                amount: formatNumber(amount),
-                unit,
-              }),
-              t("wallet.nutzap.received_body", { from: from.slice(0, 12) }),
+              t("wallet.nutzap.received_title", parts),
+              t("wallet.nutzap.received_body", { from: payer }),
             );
           },
         }),
@@ -1168,6 +1180,8 @@ function AppContent(): React.JSX.Element {
     // radio controller turns the scan rate down when backgrounded, and needs
     // the leaving edge as much as the returning one.
     getMeshService()?.setAppForeground(AppState.currentState === "active");
+    // Arti too: a boot start put it to sleep before any screen existed.
+    notifyTorAppForeground(AppState.currentState !== "background");
     const sub = AppState.addEventListener("change", (next) => {
       setAppActive(next === "active");
       // "inactive" is NOT backgrounded, and this is the one consumer that has to
@@ -1241,14 +1255,14 @@ function AppContent(): React.JSX.Element {
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     setNotificationNavigator((channel) => openChannelRef.current(channel));
-    setMeshNavigator(() => navigateToTabRef.current("mesh"));
+    setTabNavigator((tab) => navigateToTabRef.current(tab));
     // Here too, not only with the pipeline, so a cold start from a tapped
     // notification routes it without waiting on the permission conversation
     // that comes before the mesh.
     void configureNotifications();
     return () => {
       setNotificationNavigator(null);
-      setMeshNavigator(null);
+      setTabNavigator(null);
     };
   }, [appReady, onboardingStep]);
 
@@ -1288,6 +1302,12 @@ function AppContent(): React.JSX.Element {
     if (!appActive || onboardingStep !== null || tab !== "mesh") return;
     usePeerStore.getState().markPeersSeen();
   }, [tab, appActive, onboardingStep, meshHasNewPeers]);
+
+  // The Wallet on screen has seen whatever payment notices are in the tray.
+  useEffect(() => {
+    if (!appActive || onboardingStep !== null || tab !== "wallet") return;
+    void dismissPaymentNotifications();
+  }, [tab, appActive, onboardingStep]);
 
   // Airhop deep links: airhop://channel/<name>, airhop://peer/<id> and contact
   // cards. The OS delivers them from any app, including one that fires a link

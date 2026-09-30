@@ -61,9 +61,15 @@ describe("geohashNeighbours", () => {
   });
 
   it("wraps across the date line instead of inventing a cell", () => {
-    // "x" sits against +180; its eastern neighbour belongs on the other side.
+    // "x" (lat 0..45, lon 135..180) sits against +180, so its eastern column
+    // is the cells at lon -180..-135 on the other side. Without the wrap, E
+    // re-encodes to "x" itself and is dropped, and NE / SE clamp to "z" / "r".
     const n = geohashNeighbours("x");
-    expect(n.every((x) => /^[0-9b-hjkmnp-z]$/.test(x.geohash))).toBe(true);
+    expect(n).toHaveLength(8);
+    const at = (d: string) => n.find((x) => x.direction === d)?.geohash;
+    expect(at("NE")).toBe("b");
+    expect(at("E")).toBe("8");
+    expect(at("SE")).toBe("2");
   });
 
   it("drops the neighbour that would be past the pole", () => {

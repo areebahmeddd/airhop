@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-// Byte-parity tests for the NOISE_ENCRYPTED inner payload, matching bitchat's
-// NoisePayload / PrivateMessagePacket / BLENoisePayloadFactory.
+// The NOISE_ENCRYPTED inner payload, matching bitchat's NoisePayload,
+// PrivateMessagePacket and BLENoisePayloadFactory.
 import {
   decodeNoisePayload,
   decodePrivateMessagePacket,
@@ -21,15 +21,9 @@ describe("noise-payload", () => {
     });
   });
 
+  // The byte-for-byte vector is in courier-plaintext.test.ts, alongside the
+  // 255-byte content cap measured through the typed wrapper.
   describe("PrivateMessagePacket TLV", () => {
-    it("encodes as [0x00,len,id][0x01,len,content]", () => {
-      const enc = encodePrivateMessagePacket("id1", "hi")!;
-      // 0x00, len(3), 'i','d','1', 0x01, len(2), 'h','i'
-      expect(Array.from(enc)).toEqual([
-        0x00, 3, 0x69, 0x64, 0x31, 0x01, 2, 0x68, 0x69,
-      ]);
-    });
-
     it("round-trips messageID and content", () => {
       const enc = encodePrivateMessagePacket("abc123", "hello world")!;
       const dec = decodePrivateMessagePacket(enc)!;
@@ -40,10 +34,6 @@ describe("noise-payload", () => {
     it("round-trips UTF-8 content", () => {
       const enc = encodePrivateMessagePacket("x", "日本語 café")!;
       expect(decodePrivateMessagePacket(enc)!.content).toBe("日本語 café");
-    });
-
-    it("returns null when content exceeds 255 bytes (bitchat cap)", () => {
-      expect(encodePrivateMessagePacket("id", "x".repeat(256))).toBeNull();
     });
 
     it("returns null for a malformed TLV buffer", () => {

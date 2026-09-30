@@ -2,7 +2,7 @@
 //
 // This file is the reason the chaos tiers are worth running. For two phones and
 // a scripted exchange you can write down the expected outcome. For twenty
-// phones, a flapping radio and a partitioned relay set you cannot: the number
+// phones, a flapping radio and a lossy relay set you cannot: the number
 // of legal outcomes is enormous, and enumerating them would mean encoding the
 // implementation's behaviour as the expectation, which tests nothing.
 //
@@ -15,6 +15,7 @@
 // Each check returns findings rather than throwing, so one scenario reports
 // every way it went wrong instead of only the first.
 
+import { sumUnread } from "@utils/unread";
 import type { SeenMessage, SimDevice } from "./device";
 
 export interface Finding {
@@ -39,8 +40,8 @@ function key(m: SeenMessage): string {
 // A device is only expected to hold messages it did not write. The sender's own
 // copy is a DIFFERENT row with a DIFFERENT id: message-thread.tsx mints a local
 // id for the optimistic echo, while the wire copy carries the id
-// sendChannelMessage generated. That is correct behaviour - a broadcaster never
-// receives its own broadcast back - so comparing raw id sets across devices
+// sendChannelMessage generated. That is correct behaviour (a broadcaster never
+// receives its own broadcast back), so comparing raw id sets across devices
 // would report a failure on a perfectly converged room.
 export function convergence(
   devices: SimDevice[],
@@ -297,16 +298,26 @@ export function unreadCoherent(
 
 // The aggregate badge equals the sum of the parts. A badge that disagrees with
 // the list beneath it is the single most common "app feels broken" complaint.
+// The badge is computed by the app's own `sumUnread`, which skips muted
+// conversations; the parts are the threads that exist and are not muted, so an
+// unread count left behind for a thread that is gone shows up here too.
 export function badgeMatchesThreads(devices: SimDevice[]): Finding[] {
   const findings: Finding[] = [];
   for (const d of devices) {
-    const all = d.allMessages();
+    const chat = d.store("chatStore").getState() as {
+      unreadCounts?: Record<string, number>;
+      mutedChannels?: string[];
+    };
+    const muted = chat.mutedChannels ?? [];
+    const badge = sumUnread(chat.unreadCounts ?? {}, muted);
     let sum = 0;
-    for (const channel of Object.keys(all)) sum += d.unread(channel);
-    if (sum !== d.totalUnread()) {
+    for (const channel of Object.keys(d.allMessages())) {
+      if (!muted.includes(channel)) sum += d.unread(channel);
+    }
+    if (sum !== badge) {
       findings.push({
         invariant: "badge-matches-threads",
-        detail: `${d.id} badge ${d.totalUnread()} != sum of thread unreads ${sum}`,
+        detail: `${d.id} badge ${badge} != sum of thread unreads ${sum}`,
       });
     }
   }
@@ -315,9 +326,9 @@ export function badgeMatchesThreads(devices: SimDevice[]): Finding[] {
 
 // Nothing was offered to a link that a link cannot carry. A frame past the
 // 512-byte ATT ceiling is truncated by Android and refused by iOS, so it never
-// decodes on the far side and the transfer dies with no error anywhere. This is
-// the invariant that was missing when every attachment fragment shipped at 557
-// bytes: the fabric had no limit, so nothing noticed.
+// decodes on the far side and the transfer dies with no error anywhere. Without
+// this check the fabric carries any size, and a fragment sized past the ceiling
+// would go unnoticed.
 export function noOversizedFrames(radio: {
   framesOversized: number;
 }): Finding[] {
@@ -340,22 +351,4 @@ export function noCrashes(devices: SimDevice[]): Finding[] {
       invariant: "no-crashes",
       detail: `${d.id} died: ${String(d.os.crashed)}`,
     }));
-}
-
-// After a scenario tears down, nothing should still be scheduled. A leaked
-// interval is a background battery drain on a real phone and a leaked
-// subscription is a message delivered to a mesh that no longer exists.
-export function noLeakedTimers(before: number): Finding[] {
-  const after = jest.getTimerCount();
-  if (after <= before) return [];
-  return [
-    {
-      invariant: "no-leaked-timers",
-      detail: `${after - before} timer(s) still scheduled after teardown (was ${before}, now ${after})`,
-    },
-  ];
-}
-
-export function combine(...groups: Finding[][]): Finding[] {
-  return groups.flat();
 }

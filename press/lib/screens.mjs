@@ -1,8 +1,13 @@
 // The app screens, redrawn at 393x852 logical points. Layout, spacing, type and
 // colour come from src/ui/theme.ts and src/features/. Nothing here invents a
-// control the app does not have.
+// control the app does not have, and every string is the app's own, from
+// src/i18n/locales/en.ts.
+//
+// The store panels and the launch film both draw from this file. The film
+// passes `offline` for a status bar with no signal, and finds the parts it
+// animates by their `data-key`.
 
-import { icon } from "./icons.mjs";
+import { icon, pixelBird } from "./icons.mjs";
 import { avatarColor, withAlpha } from "./theme.mjs";
 
 export const SCREEN_W = 393;
@@ -10,32 +15,33 @@ export const SCREEN_H = 852;
 
 // One identity across every screen, so the tab bar avatar, the profile and the
 // "you" side of a conversation agree.
-const SELF = { peerID: "9d3ec41b77a2e058", name: "calm-atlas-9d3e" };
+export const SELF = { id: "9d3ec41b77a2e058", name: "calm-atlas-9d3e" };
+export const MINT = "mint.minibits.cash";
 
 // ---------------------------------------------------------------------------
 // Primitives
 // ---------------------------------------------------------------------------
 
-function avatar(username, peerID, size, presence) {
-  const color = avatarColor(peerID);
-  const initials = username.slice(0, 2).toUpperCase();
+export function avatar(person, size, presence) {
+  const color = avatarColor(person.id);
   const dot = Math.max(8, Math.round(size * 0.1875));
   const presenceDot =
     presence === undefined
       ? ""
       : `<span class="av-dot" style="width:${dot}px;height:${dot}px;background:var(--${presence});border-width:${Math.max(1.5, size * 0.02)}px"></span>`;
   return `<span class="av" style="width:${size}px;height:${size}px;background:${withAlpha(color, 0.13)}">
-    <span class="av-txt" style="font-size:${(size * 0.36).toFixed(1)}px;color:${color}">${initials}</span>${presenceDot}
+    <span class="av-txt" style="font-size:${(size * 0.36).toFixed(1)}px;color:${color}">${person.name.slice(0, 2).toUpperCase()}</span>${presenceDot}
   </span>`;
 }
 
-function statusBar(platform) {
-  const cutout =
-    platform === "android"
-      ? '<span class="punch"></span>'
-      : '<span class="island"></span>';
-  const bars = `<svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5.5" width="3" height="5.5" rx="1"/><rect x="9.2" y="3" width="3" height="8" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>`;
-  const wifi = `<svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 8.55a11 11 0 0 1 14.08 0"/><path d="M1.42 5a16 16 0 0 1 21.16 0"/><path d="M8.53 12.11a6 6 0 0 1 6.95 0"/><path d="M12 16h.01"/></svg>`;
+// `offline` dims the signal bars and drops the Wi-Fi glyph. The bars stay in
+// the markup so a scene can bring them back.
+function statusBar(platform, offline) {
+  const cutout = platform === "android" ? '<span class="punch"></span>' : '<span class="island"></span>';
+  const bars = `<svg class="sb-bars${offline ? " sb-bars-off" : ""}" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5.5" width="3" height="5.5" rx="1"/><rect x="9.2" y="3" width="3" height="8" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>`;
+  const wifi = offline
+    ? ""
+    : `<svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 8.55a11 11 0 0 1 14.08 0"/><path d="M1.42 5a16 16 0 0 1 21.16 0"/><path d="M8.53 12.11a6 6 0 0 1 6.95 0"/><path d="M12 16h.01"/></svg>`;
   const battery = `<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" stroke-opacity="0.4"/><rect x="2" y="2" width="15" height="8" rx="1.5" fill="currentColor"/><path d="M23 4.2v3.6a2 2 0 0 0 0-3.6z" fill="currentColor" fill-opacity="0.5"/></svg>`;
   return `<div class="statusbar">${cutout}
     <span class="sb-time">9:41</span>
@@ -68,7 +74,7 @@ function tabBar(active) {
       const on = tab.id === active;
       const glyph =
         tab.icon === null
-          ? `<span class="tab-av${on ? " tab-av-on" : ""}">${avatar(SELF.name, SELF.peerID, 20)}</span>`
+          ? `<span class="tab-av${on ? " tab-av-on" : ""}">${avatar(SELF, 20)}</span>`
           : icon(tab.icon, 22, on ? "var(--accent)" : "var(--textMuted)");
       return `<span class="tab">
         <span class="tab-ind${on ? " tab-ind-on" : ""}"></span>
@@ -81,14 +87,15 @@ function tabBar(active) {
     <div class="home-indicator"></div>`;
 }
 
-// A message thread hides the tab bar (App.tsx gates it on !isInThread), so the
-// composer owns the bottom of the screen there.
-function shell({ platform, active, header, body, noTabs }) {
-  return `<div class="screen">
-    ${statusBar(platform)}
-    ${header ?? ""}
+// One screen: status bar, optional header, body, then the tab bar, or
+// `footer` in its place. A message thread hides the tab bar (App.tsx gates it
+// on !isInThread), so the composer owns the bottom of the screen there.
+export function shell({ platform = "ios", offline = false, id, active, header = "", body, footer }) {
+  return `<div class="screen"${id ? ` id="${id}"` : ""}>
+    ${statusBar(platform, offline)}
+    ${header}
     <div class="body">${body}</div>
-    ${noTabs ? '<div class="home-indicator"></div>' : tabBar(active)}
+    ${footer ?? tabBar(active)}
   </div>`;
 }
 
@@ -98,13 +105,38 @@ function shell({ platform, active, header, body, noTabs }) {
 
 // Ring labels sit at about -64 degrees, so no peer goes in that arc.
 const RADAR_PEERS = [
-  { name: "amber-bolt-3f0c", id: "3f0c9a1b7d24e5f8", ring: 1, angle: 28, online: true },
-  { name: "arctic-atlas-7a19", id: "7a19b3c0d8e21f45", ring: 1, angle: 196, online: true },
-  { name: "bright-blade-b204", id: "b2045f6a8c13d970", ring: 2, angle: 138, online: true },
-  { name: "binary-ash-e6d1", id: "e6d1207f4b95a3c8", ring: 2, angle: 244, online: false },
+  {
+    name: "amber-bolt-3f0c",
+    id: "3f0c9a1b7d24e5f8",
+    ring: 1,
+    angle: 28,
+    online: true,
+  },
+  {
+    name: "arctic-atlas-7a19",
+    id: "7a19b3c0d8e21f45",
+    ring: 1,
+    angle: 196,
+    online: true,
+  },
+  {
+    name: "bright-blade-b204",
+    id: "b2045f6a8c13d970",
+    ring: 2,
+    angle: 138,
+    online: true,
+  },
+  {
+    name: "binary-ash-e6d1",
+    id: "e6d1207f4b95a3c8",
+    ring: 2,
+    angle: 244,
+    online: false,
+  },
 ];
+export const AMBER = RADAR_PEERS[0];
 
-function radarScreen(platform) {
+function radarScreen(platform, options = {}) {
   const canvas = 358;
   const c = canvas / 2;
   const fr = [0.3, 0.54, 0.78];
@@ -134,7 +166,7 @@ function radarScreen(platform) {
     const top = c + r * Math.sin(rad) - 17;
     const left = c + r * Math.cos(rad) - 17;
     return `<span class="peer-node" style="top:${top}px;left:${left}px">
-      ${avatar(p.name, p.id, 34, p.online ? "online" : "offline")}
+      ${avatar(p, 34, p.online ? "online" : "offline")}
       <span class="peer-label">${p.name.split("-")[0]}</span>
     </span>`;
   }).join("");
@@ -163,103 +195,158 @@ function radarScreen(platform) {
     </div>
   </div>`;
 
-  return shell({ platform, active: "mesh", header, body });
+  return shell({ platform, ...options, active: "mesh", header, body });
 }
 
 // ---------------------------------------------------------------------------
 // Direct message thread
 // ---------------------------------------------------------------------------
 
-function bubble(text, mine, time, tick) {
-  const meta = `<span class="b-meta">${time}${tick ? icon("check", 12, "currentColor", 2.6) : ""}</span>`;
-  return `<div class="row ${mine ? "row-mine" : "row-theirs"}">
-    <div class="bubble ${mine ? "b-mine" : "b-theirs"}">
-      <span class="b-text">${text}</span>${meta}
-    </div>
+const TICKS = { sending: "clock", sent: "check", delivered: "check-all" };
+
+// The timestamp sits under the text, inside the bubble, with the delivery tick
+// after it. `ticks` lists the states a bubble can show; the film stacks all
+// three and reveals one at a time.
+export function bubble({ text, mine, time, ticks = ["delivered"], key, card }) {
+  const glyphs = mine
+    ? `<span class="b-ticks">${ticks.map((state) => `<span class="b-tick b-tick-${state}">${icon(TICKS[state], 13, "currentColor", 2.4)}</span>`).join("")}</span>`
+    : "";
+  const body = card ?? `<span class="b-text" data-layout-allow-overlap>${text}</span>`;
+  return `<div class="row ${mine ? "row-mine" : "row-theirs"}"${key ? ` data-key="${key}"` : ""}>
+    <div class="bubble ${mine ? "b-mine" : "b-theirs"}">${body}<span class="b-meta" data-layout-allow-overlap>${time}${glyphs}</span></div>
   </div>`;
 }
 
-function threadScreen(platform) {
-  const peer = RADAR_PEERS[1];
-  const header = `<div class="header header-thread">
+// Plus, the field, and a mic, which the send arrow replaces once there is a
+// `draft`. `raised` lifts it clear of the part of a store panel that bleeds
+// off the canvas.
+export function composer({ raised = false, draft } = {}) {
+  const field = draft
+    ? `<span class="c-draft">${draft}</span>`
+    : '<span class="c-placeholder" data-layout-allow-overlap>Message…</span>';
+  const action = draft
+    ? `<span class="c-send">${icon("arrow-up", 18, "var(--textInverse)")}</span>`
+    : `<span class="c-mic">${icon("mic", 22, "var(--textMuted)")}</span>`;
+  return `<div class="composer${raised ? " composer-raised" : ""}">
+    <span class="c-plus" data-key="plus">${icon("plus", 20, "var(--textPrimary)")}</span>
+    <span class="c-input">${field}</span>
+    ${action}
+  </div><div class="home-indicator"></div>`;
+}
+
+export function threadHeader(peer) {
+  return `<div class="header header-thread">
     <span class="h-back">${icon("arrow-left", 22, "var(--textPrimary)")}</span>
-    <span class="h-dm">${avatar(peer.name, peer.id, 28, "online")}<span class="h-title">${peer.name}</span></span>
+    <span class="h-dm">${avatar(peer, 28, "online")}<span class="h-title">${peer.name}</span></span>
   </div>`;
+}
 
-  const body = `<div class="thread">
+function threadScreen(platform, options = {}) {
+  const peer = RADAR_PEERS[1];
+  const lines = [
+    ["keep an eye on the board, notices are going up", true, "18:26"],
+    ["already pinned the one about the south gate", false, "18:28"],
+    ["nothing on the phone network since six. this is the only thing still working", true, "18:33"],
+    ["power is out on this side too. you ok?", false, "18:42"],
+    ["fine. sitting it out upstairs", true, "18:42"],
+    ["water station is at the south gate. pass it on", false, "18:44"],
+    ["relaying it to #block now", true, "18:44"],
+  ];
+  const body = `<div class="thread thread-raised">
     <div class="divider"><span>Today</span></div>
-    ${bubble("made it to the hall, it is packed in here", false, "18:24")}
-    ${bubble("keep an eye on the board, notices are going up", true, "18:26", true)}
-    ${bubble("already pinned the one about the south gate", false, "18:28")}
-    ${bubble("you still get anything out there?", false, "18:31")}
-    ${bubble("nothing. no bars since six, this is the only thing still working", true, "18:33", true)}
-    ${bubble("power is out on this side too. you ok?", false, "18:42")}
-    ${bubble("fine. sitting it out upstairs", true, "18:42", true)}
-    ${bubble("water station is at the south gate. pass it on", false, "18:44")}
-    ${bubble("relaying it to #block now", true, "18:44", true)}
-    ${bubble("how many hops is this taking?", false, "18:46")}
-    ${bubble("three. you, someone in the stairwell, then me", true, "18:47", true)}
-  </div>
-  <div class="composer">
-    <span class="c-icon">${icon("paperclip", 20, "var(--textMuted)")}</span>
-    <span class="c-input">Message</span>
-    <span class="c-icon">${icon("mic", 20, "var(--textMuted)")}</span>
-    <span class="c-send">${icon("send", 17, "var(--textInverse)")}</span>
+    ${lines.map(([text, mine, time]) => bubble({ text, mine, time })).join("")}
   </div>`;
-
-  return shell({ platform, active: "chats", header, body, noTabs: true });
+  return shell({
+    platform,
+    ...options,
+    header: threadHeader(peer),
+    body,
+    footer: composer({ raised: true, draft: "on my way" }),
+  });
 }
 
 // ---------------------------------------------------------------------------
-// You
+// You: the settings hub as profile-screen.tsx builds it on iOS, top to bottom.
+// It is taller than the phone. A store panel shows the top; the film scrolls it.
 // ---------------------------------------------------------------------------
 
-function settingRow(iconName, label, desc) {
-  return `<div class="set-row">
-    <span class="set-icon">${icon(iconName, 18, "var(--textSecondary)")}</span>
-    <span class="set-text"><span class="set-label">${label}</span><span class="set-desc">${desc}</span></span>
-    ${icon("chevron-right", 18, "var(--textMuted)")}
-  </div>`;
+export function settingRow({ name, label, desc, control = "chevron", key, value }) {
+  const trailing = {
+    chevron: icon("chevron-right", 18, "var(--textMuted)"),
+    on: `<span class="switch switch-on"${key ? ` data-key="${key}-switch"` : ""}><span class="knob"></span></span>`,
+    off: `<span class="switch"${key ? ` data-key="${key}-switch"` : ""}><span class="knob"></span></span>`,
+    value: `<span class="set-value">${value}</span>${icon("chevron-right", 18, "var(--textMuted)")}`,
+  }[control];
+  return `<div class="set-row"${key ? ` data-key="${key}"` : ""}>
+    <span class="set-icon">${icon(name, 18, "var(--textSecondary)")}</span>
+    <span class="set-text"><span class="set-label" data-layout-allow-overlap>${label}</span><span class="set-desc" data-layout-allow-overlap>${desc}</span></span>
+    ${trailing}</div>`;
 }
 
-function switchRow(label, desc, on) {
-  return `<div class="set-row">
-    <span class="set-text"><span class="set-label">${label}</span><span class="set-desc">${desc}</span></span>
-    <span class="switch${on ? " switch-on" : ""}"><span class="knob"></span></span>
-  </div>`;
-}
+export const CONNECTIVITY = {
+  liveVoice: {
+    name: "mic",
+    label: "Live voice",
+    desc: "Talk to nearby people like a walkie-talkie",
+    control: "on",
+  },
+  bridge: {
+    name: "git-merge",
+    label: "Mesh bridge",
+    desc: "Link this area’s public #bluetooth chat with another out-of-range Bluetooth crowd over the internet",
+    control: "off",
+  },
+  gateway: {
+    name: "cast",
+    label: "Internet gateway",
+    desc: "Lend your connection to a nearby offline phone so it can still reach the location channels",
+    control: "off",
+  },
+  tor: {
+    name: "globe",
+    label: "Tor routing",
+    desc: "Route Nostr traffic through Tor for extra privacy",
+    control: "value",
+    value: "Off",
+  },
+};
 
-function profileScreen(platform) {
-  const body = `<div class="profile">
-    <div class="p-head">${icon("edit-2", 15, "var(--textSecondary)")}</div>
+const SECTIONS = [
+  ["settings", "General", "Optional features, undo send, media, reset"],
+  ["lock", "Privacy &amp; security", "Forward secrecy, signed packets, blocked peers"],
+  ["radio", "Network &amp; relays", "Internet fallback, Nostr relays, bitchat compatibility"],
+  ["hard-drive", "Storage &amp; data", "Usage and cache"],
+  ["key", "Permissions", "Bluetooth, location, notifications, camera, mic"],
+  ["activity", "Diagnostics", "Connection status and nearby devices"],
+  ["sliders", "Appearance", "Theme, font, and language"],
+  ["help-circle", "Help &amp; feedback", "Contact us, report a bug, or read the FAQ"],
+  ["heart", "Support", "Help keep development active"],
+  ["info", "About", "Version, changelog, and source"],
+];
+
+const DIVIDER = '<div class="group-div div-icon"></div>';
+
+function profileScreen(platform, options = {}) {
+  const body = `<div class="you" data-key="scroll">
+    <div class="you-head">${iconBtn("search", 17, "var(--textSecondary)")}${iconBtn("edit-2", 17, "var(--textSecondary)")}</div>
     <div class="p-identity">
-      <span class="p-avatar">${avatar(SELF.name, SELF.peerID, 96)}<span class="p-status"></span></span>
+      <span class="p-avatar">${avatar(SELF, 96)}<span class="p-status"></span></span>
       <span class="p-name">${SELF.name}</span>
       <span class="p-state">Online</span>
-      <span class="p-idlabel">Peer ID</span>
-      <span class="p-id">9d3e c41b 77a2 e058</span>
     </div>
     <div class="p-pills">
-      <span class="p-pill">${icon("share-2", 13, "var(--textSecondary)")}<span>Share ID</span></span>
+      <span class="p-pill">${icon("share", 13, "var(--textSecondary)")}<span>Share ID</span></span>
       <span class="p-pill">${icon("eye", 13, "var(--textSecondary)")}<span>Show QR</span></span>
     </div>
-    <div class="group">
-      ${switchRow("Live voice", "Hold the mic and people in range hear you", true)}
-      <div class="group-div"></div>
-      ${switchRow("Tor routing", "Route Nostr traffic through Tor for extra privacy", true)}
-    </div>
-    <div class="group">
-      ${settingRow("settings", "General", "Optional features, undo send, media, reset")}
-      <div class="group-div"></div>
-      ${settingRow("lock", "Privacy &amp; security", "Forward secrecy, signed packets, blocked peers")}
-      <div class="group-div"></div>
-      ${settingRow("radio", "Network &amp; relays", "Internet fallback, nostr relays, bitchat compatibility")}
-      <div class="group-div"></div>
-      ${settingRow("key", "Permissions", "Bluetooth, location, notifications, camera, mic")}
+    <div class="group">${Object.values(CONNECTIVITY).map(settingRow).join(DIVIDER)}</div>
+    <div class="group">${SECTIONS.map(([name, label, desc]) => settingRow({ name, label, desc })).join(DIVIDER)}</div>
+    <div class="group">${settingRow({ name: "smartphone", label: "Transfer to a new phone", desc: "Move your identity, chats, and wallet to another device", key: "transfer" })}</div>
+    <div class="group panic" data-key="panic">
+      <div class="set-row"><span class="set-icon">${icon("alert-triangle", 18, "var(--danger)")}</span>
+        <span class="set-text"><span class="set-label panic-label">Panic wipe</span><span class="set-desc">Instantly destroy all keys, messages, and ecash</span></span></div>
     </div>
   </div>`;
-
-  return shell({ platform, active: "profile", header: "", body });
+  return shell({ platform, ...options, active: "profile", body });
 }
 
 // ---------------------------------------------------------------------------
@@ -280,7 +367,7 @@ function channelRow({ name, scope, preview, sender, time, unread, pin }) {
   </div>`;
 }
 
-function chatsScreen(platform) {
+function chatsScreen(platform, options = {}) {
   const header = `<div class="header">
     <span class="h-title">Chats</span>
     <span class="h-controls">
@@ -347,83 +434,115 @@ function chatsScreen(platform) {
     })}
   </div>`;
 
-  return shell({ platform, active: "chats", header, body });
+  return shell({ platform, ...options, active: "chats", header, body });
 }
 
 // ---------------------------------------------------------------------------
 // Wallet
 // ---------------------------------------------------------------------------
 
-function walletScreen(platform) {
-  const header = `<div class="header">
-    <span class="h-title">Wallet</span>
-    <span class="h-controls h-controls-tight">
-      ${iconBtn("arrow-up", 16)}${iconBtn("arrow-down", 16)}${iconBtn("zap", 16)}${iconBtn("plus", 16)}
-    </span>
-  </div>`;
+function walletAction(name, label) {
+  return `<span class="wa"><span class="wa-circle">${icon(name, 20, "var(--textInverse)")}</span><span class="wa-label">${label}</span></span>`;
+}
 
+function activityRow({ name, title, sub, amount, debit, key }) {
+  return `<span class="act">
+    ${icon(name, 18, "var(--textSecondary)")}
+    <span class="act-text"><span class="act-title"${key ? ` data-key="${key}-title"` : ""}>${title}</span><span class="act-sub"${key ? ` data-key="${key}-sub"` : ""}>${sub}</span></span>
+    <span class="act-amt ${debit ? "act-debit" : "act-credit"}">${amount}</span>
+  </span>`;
+}
+
+const SETTLED = {
+  balance: "12,480",
+  rows: [
+    {
+      name: "arrow-down-left",
+      title: "Received",
+      sub: `2h · ${MINT}`,
+      amount: "+500",
+    },
+    {
+      name: "arrow-up-right",
+      title: "Sent",
+      sub: `5h · ${MINT}`,
+      amount: "−1,200",
+      debit: true,
+    },
+    {
+      name: "download",
+      title: "Lightning top-up",
+      sub: `2d · ${MINT}`,
+      amount: "+10,000",
+    },
+  ],
+};
+
+// `unconfirmed` is the amount claimed offline that the mint has not seen yet.
+// The app states it under the balance and never folds it in.
+function walletScreen(
+  platform,
+  { balance = SETTLED.balance, rows = SETTLED.rows, unconfirmed, ...options } = {},
+) {
+  const header = `<div class="header"><span class="h-title">Wallet</span>
+    <span class="h-controls">${iconBtn("help-circle")}</span></div>`;
+  const note =
+    unconfirmed === undefined
+      ? ""
+      : `<span class="balance-note" data-key="note">${icon("clock", 12, "var(--textInverse)")}<span>${unconfirmed} sat not yet confirmed with the mint</span></span>`;
   const body = `<div class="wallet">
-    <div class="card">
-      <span class="sec-label">Spendable</span>
-      <span class="amount">12,480<span class="amount-unit"> sat</span></span>
-      <span class="card-sub">1 mint · 34 proofs</span>
-    </div>
-
-    <span class="sec-label sec-label-loose">Mints</span>
-    <div class="card mint-card">
-      <span class="mint-icon">${icon("database", 18, "var(--textSecondary)")}</span>
-      <span class="mint-text">
-        <span class="mint-name">minibits</span>
-        <span class="mint-url">mint.minibits.cash · 34 proofs</span>
-      </span>
-      <span class="mint-right">
-        <span class="mint-amount">12,480<span class="mint-unit"> sat</span></span>
-        <span class="mint-btns">${iconBtn("refresh-cw", 13, "var(--textSecondary)")}${iconBtn("x", 13, "var(--textSecondary)")}</span>
-      </span>
-    </div>
-
-    <span class="sec-label sec-label-loose">Lightning</span>
-    <div class="card">
-      <span class="card-body">Turn Lightning sats into ecash you can spend offline, or cash ecash back out to any Lightning invoice. Both need internet and a mint.</span>
-      <div class="card-actions">
-        <span class="btn">${icon("download", 15, "var(--textPrimary)")}<span>Deposit</span></span>
-        <span class="btn">${icon("upload", 15, "var(--textPrimary)")}<span>Withdraw</span></span>
+    <div class="balance">
+      <span class="balance-mark">${pixelBird(22, "var(--textInverse)")}</span>
+      <span class="balance-label">Spendable</span>
+      <span class="balance-row"><span class="balance-amt" data-key="balance">${balance}</span><span class="balance-unit">sat</span></span>
+      ${note}
+      <div class="wa-row">
+        ${walletAction("arrow-down", "Receive")}${walletAction("arrow-up", "Send")}${walletAction("maximize", "Scan")}${walletAction("database", "Mints")}
       </div>
     </div>
-
+    <span class="backup">${icon("shield", 18, "var(--textSecondary)")}
+      <span class="backup-text"><span class="backup-title">Recovery phrase</span><span class="backup-status">Backup on</span></span>
+      ${icon("chevron-right", 18, "var(--textMuted)")}</span>
     <span class="sec-label sec-label-loose">Activity</span>
-    <div class="card act-card">
-      <span class="act-row">
-        <span class="act-icon">${icon("arrow-down", 14, "var(--online)")}</span>
-        <span class="act-text"><span class="act-title">Received from amber</span><span class="act-sub">Over Bluetooth · offline</span></span>
-        <span class="act-amt">+500</span>
-      </span>
-      <div class="group-div"></div>
-      <span class="act-row">
-        <span class="act-icon">${icon("arrow-up", 14, "var(--textSecondary)")}</span>
-        <span class="act-text"><span class="act-title">Sent to arctic</span><span class="act-sub">Over Bluetooth · offline</span></span>
-        <span class="act-amt act-out">-1,200</span>
-      </span>
-    </div>
+    <div class="act-list">${rows.map(activityRow).join("")}</div>
   </div>`;
-
-  return shell({ platform, active: "wallet", header, body });
+  return shell({ platform, ...options, active: "wallet", header, body });
 }
 
 // ---------------------------------------------------------------------------
 // Mesh, peer list
 // ---------------------------------------------------------------------------
 
-function peerListScreen(platform) {
+function peerListScreen(platform, options = {}) {
   const peers = [
     { ...RADAR_PEERS[0], seen: "now" },
     { ...RADAR_PEERS[1], seen: "now" },
     { ...RADAR_PEERS[2], seen: "now" },
     { ...RADAR_PEERS[3], seen: "2m" },
-    { name: "cold-brace-51ff", id: "51ff8a2c7e04b6d3", online: false, seen: "6m" },
-    { name: "clear-atom-08c7", id: "08c73b91fd526ae4", online: false, seen: "14m" },
-    { name: "bold-beam-2c60", id: "2c6047ab9e1583df", online: false, seen: "21m" },
-    { name: "azure-bone-d7b8", id: "d7b81f34c602ae95", online: false, seen: "33m" },
+    {
+      name: "cold-brace-51ff",
+      id: "51ff8a2c7e04b6d3",
+      online: false,
+      seen: "6m",
+    },
+    {
+      name: "clear-atom-08c7",
+      id: "08c73b91fd526ae4",
+      online: false,
+      seen: "14m",
+    },
+    {
+      name: "bold-beam-2c60",
+      id: "2c6047ab9e1583df",
+      online: false,
+      seen: "21m",
+    },
+    {
+      name: "azure-bone-d7b8",
+      id: "d7b81f34c602ae95",
+      online: false,
+      seen: "33m",
+    },
   ];
 
   const header = `<div class="header">
@@ -440,7 +559,7 @@ function peerListScreen(platform) {
   const rows = peers
     .map(
       (p) => `<div class="peer-row">
-      ${avatar(p.name, p.id, 46, p.online ? "online" : "offline")}
+      ${avatar(p, 46, p.online ? "online" : "offline")}
       <span class="peer-text">
         <span class="peer-name">${p.name}</span>
         <span class="peer-id">${p.id.slice(0, 8)} · ${p.id.slice(8)}</span>
@@ -450,11 +569,19 @@ function peerListScreen(platform) {
     )
     .join('<div class="peer-sep"></div>');
 
-  return shell({ platform, active: "mesh", header, body: `<div class="list">${rows}</div>` });
+  return shell({
+    platform,
+    ...options,
+    active: "mesh",
+    header,
+    body: `<div class="list">${rows}</div>`,
+  });
 }
 
 // ---------------------------------------------------------------------------
 
+// Each takes the platform, then options: `offline`, an `id` for the screen's
+// root, and whatever the screen itself accepts.
 export const SCREENS = {
   radar: radarScreen,
   thread: threadScreen,
@@ -476,6 +603,7 @@ export const SCREEN_CSS = `
   justify-content:space-between;padding:16px 26px 0;color:var(--textPrimary)}
 .sb-time{font-size:15px;font-weight:600;letter-spacing:0.1px}
 .sb-right{display:flex;align-items:center;gap:5px}
+.sb-bars-off{opacity:0.28}
 .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:34px;
   border-radius:999px;background:#000}
 .punch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:13px;height:13px;
@@ -540,30 +668,37 @@ export const SCREEN_CSS = `
 .radar-status-hint{font-size:12px;color:var(--textMuted)}
 
 /* --- Thread ------------------------------------------------------------ */
-.thread{height:100%;padding:12px 16px 116px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
+.thread{height:100%;padding:12px 16px;display:flex;flex-direction:column;justify-content:flex-end}
 .divider{display:flex;justify-content:center;margin-bottom:10px}
 .divider span{font-size:11px;color:var(--textMuted);background:var(--surfaceRaised);
   padding:4px 10px;border-radius:999px}
-.row{display:flex;margin:2px 0}
+.row{display:flex;padding:2px 0;flex:none;overflow:hidden}
 .row-mine{justify-content:flex-end}
 .row-theirs{justify-content:flex-start}
-.bubble{max-width:75%;padding:10px 12px;border-radius:20px;display:flex;align-items:flex-end;gap:8px}
+.bubble{max-width:75%;padding:10px 12px;border-radius:20px;display:flex;flex-direction:column;gap:2px}
 .b-mine{background:var(--myBubble);color:var(--myBubbleText);border-bottom-right-radius:6px}
 .b-theirs{background:var(--theirBubble);color:var(--textPrimary);border-bottom-left-radius:6px}
 .b-text{font-size:15px;line-height:22px}
-.b-meta{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;
-  transform:translateY(2px)}
+.b-meta{align-self:flex-end;display:flex;align-items:center;gap:4px;font-size:11px;line-height:14px}
 .b-theirs .b-meta{color:var(--textMuted)}
 .b-mine .b-meta{color:var(--textInverse);opacity:0.55}
-/* The bottom 46pt fall in the panel's bleed, off the canvas. Chrome that has to
-   stay visible sits above that line. */
-.composer{position:absolute;left:0;right:0;bottom:46px;display:flex;align-items:center;gap:10px;
-  padding:8px 16px 10px;background:var(--bg);border-top:1px solid var(--border)}
-.c-icon{display:flex;flex:none}
-.c-input{flex:1;background:var(--surfaceRaised);border-radius:20px;padding:11px 14px;
-  font-size:15px;color:var(--textMuted)}
-.c-send{width:36px;height:36px;border-radius:999px;background:var(--accent);flex:none;
+.b-ticks{position:relative;width:13px;height:13px}
+.b-tick{position:absolute;left:0;top:0}
+.composer{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px 34px;
+  background:var(--bg);border-top:1px solid var(--border)}
+.c-plus{width:36px;height:36px;border-radius:999px;background:var(--surfaceRaised);flex:none;
   display:flex;align-items:center;justify-content:center}
+.c-input{flex:1;background:var(--surfaceRaised);border-radius:20px;padding:10px 14px;font-size:15px;
+  line-height:20px;min-height:40px}
+.c-placeholder{color:var(--textMuted)}
+.c-draft{color:var(--textPrimary)}
+.c-mic{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center}
+.c-send{width:40px;height:40px;flex:none;border-radius:999px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center}
+/* The bottom 46pt of a store panel fall in its bleed, off the canvas. Chrome
+   that has to stay visible sits above that line. */
+.thread-raised{padding-bottom:58px}
+.composer-raised{padding-bottom:58px}
 
 /* --- Lists ------------------------------------------------------------- */
 .list{height:100%;overflow:hidden;padding-bottom:96px}
@@ -596,56 +731,48 @@ export const SCREEN_CSS = `
 .peer-seen-on{color:var(--online)}
 
 /* --- Wallet ------------------------------------------------------------ */
-.wallet{height:100%;padding:12px 16px 96px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.wallet{height:100%;padding:16px 16px 96px;display:flex;flex-direction:column;gap:12px}
 .sec-label{font-size:11px;color:var(--textMuted);letter-spacing:0.8px;text-transform:uppercase;
   padding:0 4px}
-.sec-label-loose{margin-top:10px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;
-  display:flex;flex-direction:column;gap:6px}
-.amount{font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1.05;
-  font-variant-numeric:tabular-nums;color:var(--textPrimary)}
-.amount-unit{font-size:17px;font-weight:500;color:var(--textMuted);letter-spacing:0}
-.card-sub{font-size:12px;color:var(--textMuted)}
-.card-body{font-size:13px;line-height:19px;color:var(--textSecondary)}
-.card-actions{display:flex;gap:10px;margin-top:8px}
-.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--surfaceRaised);border-radius:12px;padding:12px;font-size:14px;font-weight:500;
-  color:var(--textPrimary)}
-.mint-card{flex-direction:row;align-items:center;gap:12px;padding:14px 16px}
-.mint-icon{width:36px;height:36px;border-radius:999px;background:var(--surfaceRaised);flex:none;
+.sec-label-loose{margin-top:4px}
+/* The accent inverts with the theme, so text on it uses textInverse and dims
+   by opacity: the grey tokens are tuned for the page, not this fill. */
+.balance{position:relative;background:var(--accent);color:var(--textInverse);border-radius:20px;
+  padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.balance-mark{position:absolute;top:20px;right:20px;opacity:0.72;display:flex}
+.balance-label{font-size:11px;letter-spacing:0.8px;text-transform:uppercase;opacity:0.72}
+.balance-row{display:flex;align-items:flex-end;gap:8px}
+.balance-amt{font-size:38px;font-weight:700;line-height:44px;font-variant-numeric:tabular-nums}
+.balance-unit{font-size:20px;font-weight:500;opacity:0.72;margin-bottom:4px}
+.balance-note{display:flex;align-items:center;gap:4px;font-size:13px;opacity:0.72;height:18px;overflow:hidden}
+.wa-row{align-self:stretch;display:flex;justify-content:space-between;margin-top:16px}
+.wa{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0}
+.wa-circle{width:48px;height:48px;border-radius:999px;background:var(--onAccentFill);
   display:flex;align-items:center;justify-content:center}
-.mint-text{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
-.mint-name{font-size:16px;font-weight:600;color:var(--textPrimary)}
-.mint-url{font-family:var(--mono);font-size:10.5px;color:var(--textMuted);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis}
-.mint-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.mint-amount{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
-.mint-unit{font-size:12px;font-weight:400;color:var(--textMuted)}
-.mint-btns{display:flex;gap:6px}
-.mint-btns .icon-btn{width:26px;height:26px}
-.act-card{padding:4px 14px;gap:0}
-.act-row{display:flex;align-items:center;gap:12px;padding:10px 0}
-.act-card .group-div{margin-left:44px}
-.act-icon{width:32px;height:32px;border-radius:999px;flex:none;display:flex;align-items:center;
-  justify-content:center;background:var(--surfaceRaised)}
+.wa-label{font-size:13px;font-weight:500}
+.backup{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;
+  border:1px solid var(--border);background:var(--surface)}
+.backup-text{flex:1;display:flex;flex-direction:column}
+.backup-title{font-size:15px;font-weight:500}
+.backup-status{font-size:13px;color:var(--textMuted)}
+.act-list{display:flex;flex-direction:column}
+.act{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)}
 .act-text{flex:1;display:flex;flex-direction:column;gap:2px}
-.act-title{font-size:14px;font-weight:500}
+.act-title{font-size:13px;font-weight:500}
 .act-sub{font-size:11px;color:var(--textMuted)}
-.act-amt{font-size:15px;font-weight:600;color:var(--online);font-variant-numeric:tabular-nums}
-.act-amt.act-out{color:var(--textPrimary)}
+.act-amt{font-family:var(--mono);font-size:13px;font-weight:600}
+.act-credit{color:var(--online)}
+.act-debit{color:var(--danger)}
 
-/* --- Profile ----------------------------------------------------------- */
-.profile{height:100%;padding:0 16px 96px;display:flex;flex-direction:column;overflow:hidden}
-.p-head{display:flex;justify-content:flex-end;padding:12px 4px 0}
-.p-identity{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0 18px}
+/* --- You --------------------------------------------------------------- */
+.you{padding:0 16px 120px}
+.you-head{display:flex;justify-content:space-between;padding:8px 0 0}
+.p-identity{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 0 16px}
 .p-avatar{position:relative;display:flex}
 .p-status{position:absolute;right:4px;bottom:4px;width:18px;height:18px;border-radius:999px;
   background:var(--online);border:3px solid var(--bg)}
 .p-name{font-size:22px;font-weight:700;letter-spacing:-0.3px;margin-top:6px}
 .p-state{font-size:13px;color:var(--textMuted)}
-.p-idlabel{margin-top:10px;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;
-  color:var(--textMuted)}
-.p-id{font-family:var(--mono);font-size:13px;color:var(--textSecondary);letter-spacing:0.4px}
 .p-pills{display:flex;gap:10px;padding-bottom:18px}
 .p-pill{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
   border:1px solid var(--border);border-radius:999px;padding:10px;font-size:13px;
@@ -653,15 +780,19 @@ export const SCREEN_CSS = `
 .group{background:var(--surface);border:1px solid var(--border);border-radius:14px;
   overflow:hidden;margin-bottom:14px}
 .group-div{height:1px;background:var(--border);margin-left:16px}
+.div-icon{margin-left:46px}
 .set-row{display:flex;align-items:center;gap:12px;padding:13px 16px}
 .set-icon{flex:none;display:flex}
 .set-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
 .set-label{font-size:15px;font-weight:500;color:var(--textPrimary)}
 .set-desc{font-size:11px;line-height:15px;color:var(--textMuted)}
+.set-value{font-size:13px;color:var(--textMuted);margin-right:-6px}
 .switch{width:44px;height:26px;border-radius:999px;background:var(--surfacePressed);flex:none;
   display:flex;align-items:center;padding:3px}
 .switch-on{background:var(--accent);justify-content:flex-end}
 .knob{width:20px;height:20px;border-radius:999px;background:var(--surface);
   box-shadow:0 1px 2px rgba(0,0,0,0.2)}
 .switch-on .knob{background:var(--textInverse)}
+.panic{border-color:var(--danger);background:var(--dangerDim)}
+.panic-label{color:var(--danger)}
 `;

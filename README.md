@@ -40,7 +40,7 @@
 
 Airhop is an iOS + Android app (macOS and Windows coming soon) for private, offline-first peer-to-peer communication over [Bluetooth mesh](https://en.wikipedia.org/wiki/Mesh_networking) networks, with [Nostr](https://nostr.org) internet bridging and [Cashu](https://cashu.space) [ecash](https://en.wikipedia.org/wiki/Ecash) payments. **Our mission is to make censorship-resistant communication available to anyone: during natural disasters, internet blackouts, mass protests, or any situation where networks are unavailable, surveilled, or shut down.**
 
-I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_).
+I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM)
 
 > [!NOTE]
 > Airhop is an independent side project built and maintained by [Areeb Ahmed](https://github.com/areebahmeddd) in his free time. It is not backed by any company or organization, not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.
@@ -242,19 +242,19 @@ cd .. && npm run android
 
 ## Documentation
 
-| Document                                                      | Description                                                      |
-| ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [VISION.md](docs/design/VISION.md)                            | Why Airhop exists and what it will never compromise on           |
-| [ROADMAP.md](docs/design/ROADMAP.md)                          | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
-| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)                  | System architecture, design decisions, and stack rationale       |
-| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)                        | Wire format, BLE UUIDs, and protocol specifications              |
-| [BITCHAT.md](docs/dev/BITCHAT.md)                             | Bitchat codebase deep dive and implementation reference          |
-| [PROGRESS.md](docs/dev/PROGRESS.md)                           | Current build, development milestones, and security analysis     |
-| [SECURITY-REVIEW-1.0.9.md](docs/dev/SECURITY-REVIEW-1.0.9.md) | The v1.0.9 security review: every finding, its status and fix    |
-| [GLOSSARY.md](docs/dev/GLOSSARY.md)                           | Definitions of technical terms used throughout the documentation |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                            | Development workflow and pull request guidelines                 |
-| [SECURITY.md](SECURITY.md)                                    | Security policy and vulnerability reporting                      |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)                      | Community standards and expectations                             |
+| Document                                          | Description                                                      |
+| ------------------------------------------------- | ---------------------------------------------------------------- |
+| [VISION.md](docs/design/VISION.md)                | Why Airhop exists and what it will never compromise on           |
+| [ROADMAP.md](docs/design/ROADMAP.md)              | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
+| [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)      | System architecture, design decisions, and stack rationale       |
+| [PROTOCOLS.md](docs/spec/PROTOCOLS.md)            | Wire format, BLE UUIDs, and protocol specifications              |
+| [BITCHAT.md](docs/dev/BITCHAT.md)                 | Bitchat codebase deep dive and implementation reference          |
+| [PROGRESS.md](docs/dev/PROGRESS.md)               | Current build, development milestones, and security analysis     |
+| [SECURITY-REVIEW.md](docs/dev/SECURITY-REVIEW.md) | Findings, fixes, accepted risks and upstream gaps                |
+| [GLOSSARY.md](docs/dev/GLOSSARY.md)               | Definitions of technical terms used throughout the documentation |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                | Development workflow and pull request guidelines                 |
+| [SECURITY.md](SECURITY.md)                        | Security policy and vulnerability reporting                      |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)          | Community standards and expectations                             |
 
 ## Acknowledgements
 

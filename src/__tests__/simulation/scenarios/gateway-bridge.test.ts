@@ -50,11 +50,13 @@ jest.mock("nostr-tools", () => {
   };
 });
 
+import { base64ToBytes } from "@core/encoding/base64";
 import {
   CarrierDirection,
   encodeNostrCarrier,
 } from "@core/mesh/wire/nostr-carrier";
 import {
+  decodePacket,
   encodePacket,
   Flags,
   PacketType,
@@ -87,6 +89,14 @@ jest.setTimeout(240_000);
 const NOSTR_CARRIER = 0x28;
 // Geohash channel message, the thing a gateway publishes on someone's behalf.
 const KIND_GEOHASH_MESSAGE = 20000;
+
+// The types bitchat has no case for and relays uninterpreted. Anything else it
+// drops as unknown is a registry divergence, not an Airhop extension.
+const AIRHOP_ONLY_TYPES: ReadonlySet<number> = new Set([
+  PacketType.DR_ENCRYPTED,
+  PacketType.CHANNEL_ENC,
+  PacketType.CHANNEL_MSG_AIRHOP,
+]);
 
 const CELL_CHANNEL = "#city";
 // The public Bluetooth room, which is what the bridge stitches across islands.
@@ -303,6 +313,10 @@ test("N02 turning the gateway off stops it carrying for anyone", async () => {
   );
   s.check(
     "and the neighbour never advertised itself as a gateway",
+    !stranded.seesGateway(),
+  );
+  s.check(
+    "so the stranded phone never asked it to carry anything",
     radio.countOfType(NOSTR_CARRIER) === 0,
     `0x28 packets seen: ${radio.countOfType(NOSTR_CARRIER)}`,
   );
@@ -750,10 +764,9 @@ test("N07 a message marked nearby-only is never bridged", async () => {
 // Seeds N08 runs under.
 //
 // One seed is one fixed interleaving, so a single green run proves determinism,
-// not robustness. This scenario was recorded rather than asserted while the
-// crossing succeeded about half the time, so promoting it needed evidence across
-// interleavings it was never tuned for. 720 is the original; the rest are
-// arbitrary.
+// not robustness. Whether the crossing succeeds depends on the interleaving, so
+// it is asserted across several the scenario was never tuned for. 720 is the
+// seed it was written against; the rest are arbitrary.
 //
 // Each seed is its own test, so the hooks above give every run a clean world.
 const COMBINED_ROLE_SEEDS = [720, 101, 202, 303, 404, 505, 606, 707, 808];
@@ -1120,7 +1133,20 @@ test("N10 a bitchat phone relays gateway traffic it is not part of", async () =>
     `gateway=${relay.connectionCount("gateway")} stranded=${relay.connectionCount("stranded")}`,
   );
 
-  const before = middle.seen.relayed;
+  // The stranded phone's own carriers, as the bitchat node writes them onward.
+  // The node's relay counter also counts every announce it forwards, so it
+  // cannot tell a relayed carrier from a quiet room.
+  let carriersRelayed = 0;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== middle.id) return;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (
+      p?.type === PacketType.NOSTR_CARRIER &&
+      bytesToHex(p.senderID) === stranded.peerID
+    ) {
+      carriersRelayed++;
+    }
+  });
   stranded.send(CELL_CHANNEL, "sent from behind an iPhone");
 
   const published = await waitForCoarse(
@@ -1133,18 +1159,22 @@ test("N10 a bitchat phone relays gateway traffic it is not part of", async () =>
     published,
     `published=${relay.publishCount}`,
   );
+  stopTap();
   s.check(
     "the bitchat node relayed rather than dropped the carrier",
-    middle.seen.relayed > before,
-    `relayed ${before} -> ${middle.seen.relayed}`,
+    carriersRelayed > 0,
+    `carriers relayed: ${carriersRelayed}`,
   );
   // The compatibility claim in both directions: nothing Airhop sent looked
-  // like an unknown type to it. A gateway carrier is 0x28, which bitchat
+  // like an unknown type to it beyond Airhop's own extensions (the cell
+  // message itself travels as one). A gateway carrier is 0x28, which bitchat
   // defines, so a drop here would be a registry divergence rather than a
   // policy choice.
   s.check(
-    "and dropped none of it as an unknown type",
-    middle.seen.droppedUnknownTypes.get(0x28) === undefined,
+    "and dropped nothing as unknown but Airhop's own extensions",
+    [...middle.seen.droppedUnknownTypes.keys()].every((t) =>
+      AIRHOP_ONLY_TYPES.has(t),
+    ),
     `dropped=${JSON.stringify([...middle.seen.droppedUnknownTypes])}`,
   );
   s.expectNone("process health", noCrashes(airhops));
@@ -1225,7 +1255,7 @@ test("N11 a bitchat phone in a bridged room neither breaks nor is broken by it",
   // relays, or nothing at all. What it must never do is get counted as junk.
   s.check(
     "nothing the bridge emitted was junk to bitchat",
-    guest.seen.droppedUnknownTypes.get(0x28) === undefined,
+    guest.seen.droppedUnknownTypes.size === 0,
     `dropped=${JSON.stringify([...guest.seen.droppedUnknownTypes])}`,
   );
   s.check(
@@ -1236,21 +1266,6 @@ test("N11 a bitchat phone in a bridged room neither breaks nor is broken by it",
   s.expectNone("process health", noCrashes(airhops));
   s.assert(true);
 });
-
-// N12 was here: it set the gateway's relays offline, sent from a stranded
-// phone, and expected the deposit to be held and flushed. It passed about two
-// runs in three, because it was racing the app rather than testing it.
-//
-// A gateway that loses its connection stops advertising the gateway capability,
-// so a mesh-only peer correctly stops depositing with it. Whether the send
-// became a deposit at all depended on which arrived first: the send, or the
-// withdrawn advertisement. Both outcomes are correct behaviour, which is why
-// the scenario could not assert either.
-//
-// The queue itself is real and kept: it catches exactly the window between a
-// connection dropping and that withdrawal reaching the neighbours, where a
-// directed deposit is already in flight and nobody else holds a copy. It has no
-// deterministic scenario, and a flaky one would only teach people to re-run.
 
 test("N13 an Airhop gateway carries a bitchat phone's message to the internet", async () => {
   const s = (scenario = new Scenario({

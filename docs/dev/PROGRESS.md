@@ -131,7 +131,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 ## Security Analysis
 
-The findings worth knowing: the ones that were subtle, cross-cutting or would have broken the security model. The full record of every finding, its fix and commit, the accepted risks and the upstream gaps is [SECURITY-REVIEW-1.0.9.md](SECURITY-REVIEW-1.0.9.md).
+The findings worth knowing: the ones that were subtle, cross-cutting or would have broken the security model. The full record of every finding, its fix and commit, the accepted risks and the upstream gaps is [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
 
 **Threat model.** Anyone in radio range can transmit anything: forge any plaintext header field, replay captured packets, mint unlimited identities, and drop or corrupt what passes through them. They cannot break Ed25519, Noise XX, or SHA-256 preimage resistance.
 

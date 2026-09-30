@@ -18,8 +18,6 @@ export interface PageSeo {
   breadcrumbKey?: TranslationKey;
   lastmod: string;
   noIndex?: boolean;
-  // Only "/" is localized; keep English-only variants out of hreflang/sitemap and noindex them
-  // to avoid Google folding 35 near-identical URLs together.
   translated?: boolean;
 }
 

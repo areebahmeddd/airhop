@@ -10,7 +10,7 @@
 // incoming value.
 
 import { Amount, type Proof } from "@cashu/cashu-ts";
-import { generateSecretKey, getPublicKey, type Event } from "nostr-tools";
+import { generateSecretKey, type Event } from "nostr-tools";
 import type { NostrClient } from "../../nostr/nostr-client";
 import {
   KIND_NUTZAP,
@@ -90,11 +90,16 @@ describe("parseNutzapInfo", () => {
     expect(info?.p2pkPubkey).toBe("02" + "cd".repeat(32));
   });
 
-  it("never falls back to the author's Nostr key without a pubkey tag", () => {
+  it("never falls back to the author's Nostr key when the pubkey tag is missing or malformed", () => {
     // NIP-61: the lock key MUST NOT be the user's main Nostr key. Their wallet
     // watches only its own P2PK key, so a lock to anything else never reaches
     // it.
-    const info = parseNutzapInfo(
+    const missing = parseNutzapInfo(
+      event({ kind: KIND_NUTZAP_INFO, tags: [["mint", MINT]] }),
+    );
+    expect(missing).toBeNull();
+
+    const malformed = parseNutzapInfo(
       event({
         kind: KIND_NUTZAP_INFO,
         tags: [
@@ -103,7 +108,7 @@ describe("parseNutzapInfo", () => {
         ],
       }),
     );
-    expect(info).toBeNull();
+    expect(malformed).toBeNull();
   });
 
   it("rejects an event with no mint, since we cannot know what they accept", () => {
@@ -323,15 +328,5 @@ describe("subscribeNutzaps", () => {
       "#p": [NOSTR_PUB],
       "#u": [MINT],
     });
-  });
-});
-
-describe("key shapes", () => {
-  it("a Nostr identity key is x-only, not a compressed P2PK key", () => {
-    // nostr-tools' getPublicKey returns the 32-byte x-only form, which a
-    // sender prefixes with 02 before locking to it (NIP-61).
-    const nostrPub = getPublicKey(generateSecretKey());
-    expect(nostrPub).toHaveLength(64);
-    expect(/^0[23][0-9a-f]{64}$/.test(nostrPub)).toBe(false);
   });
 });

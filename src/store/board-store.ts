@@ -74,6 +74,7 @@ interface BoardState {
   postsForGeohash: (geohash: string) => BoardPost[];
   isOwnPost: (post: BoardPost, mySigningKey: Uint8Array) => boolean;
   prune: (now?: number) => void;
+  forgetAuthor: (signingKey: Uint8Array) => void;
   clearAll: () => void;
 }
 
@@ -352,6 +353,17 @@ export const useBoardStore = create<BoardState>((set, get) => {
         set({ posts: pruned.posts, tombstones: pruned.tombstones });
         persist();
       }
+    },
+
+    // A blocked author's posts go with the block, as their messages do
+    // (GossipSync.forgetMessagesFrom): kept, they stay on the board and are
+    // offered to peers by sync until they expire.
+    forgetAuthor(signingKey: Uint8Array): void {
+      const { posts } = get();
+      const kept = posts.filter((p) => !keyEq(p.authorSigningKey, signingKey));
+      if (kept.length === posts.length) return;
+      set({ posts: kept });
+      persist();
     },
 
     clearAll(): void {

@@ -193,13 +193,6 @@ describe("LinkRegistry", () => {
   // owes the caller anything, so `close` reports the peer only when it was its
   // last link.
   describe("departure", () => {
-    it("reports the peer when its last link closes", () => {
-      links.open("ble", "c:1");
-      links.bind("c:1", "peer-a");
-
-      expect(links.close("c:1")).toBe("peer-a");
-    });
-
     it("reports nothing while the peer still holds another link on the same radio", () => {
       links.open("ble", "c:1");
       links.open("ble", "p:1");

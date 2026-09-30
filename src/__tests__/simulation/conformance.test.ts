@@ -71,6 +71,8 @@ import {
   MAX_QUEUED_UPLINKS as GATEWAY_MAX_QUEUED,
   MAX_QUEUED_UPLINKS_PER_DEPOSITOR as GATEWAY_MAX_QUEUED_PER_DEPOSITOR,
   UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR as GATEWAY_UPLINK_PER_DEPOSITOR,
+  MeshService,
+  PTT_FRAME_MAX_AGE_MS,
 } from "@services/mesh-service";
 import { BitchatActor } from "./harness/bitchat-actor";
 import { SimDevice } from "./harness/device";
@@ -111,26 +113,19 @@ interface NodePath {
 const fs = require("fs") as NodeFs;
 const path = require("path") as NodePath;
 
+const REPO_ROOT = path.join(__dirname, "..", "..", "..");
+
 // The local checkout lives at <repo>/bitchat/ios. Point this anywhere else and
-// `bitchatAvailable()` is always false, so every differential check below
-// takes the skip branch and asserts true. A green test that cannot fail is
-// worse than no test, because it is counted.
-const BITCHAT_IOS = path.join(
-  __dirname,
-  "..",
-  "..",
-  "..",
-  "..",
-  "bitchat",
-  "ios",
-);
+// `bitchatAvailable()` is always false.
+const BITCHAT_IOS = path.join(REPO_ROOT, "bitchat", "ios");
 
 function bitchatSource(relative: string): string {
   return fs.readFileSync(path.join(BITCHAT_IOS, relative), "utf8");
 }
 
-// The vendored bitchat checkout is a developer convenience, not a build
-// dependency, so a clone without it must skip rather than fail.
+// The bitchat checkout is a developer convenience, not a build dependency, and
+// CI has none, so a clone without it skips the differential test and says so
+// rather than failing, or passing with nothing compared.
 function bitchatAvailable(): boolean {
   return fs.existsSync(
     path.join(BITCHAT_IOS, "bitchat", "Services", "TransportConfig.swift"),
@@ -160,6 +155,20 @@ function swiftConstant(source: string, name: string): number | null {
   if (match === null) return null;
   return Number(match[1].replace(/_/g, ""));
 }
+
+// The central-link cap lives only in the two native modules, so it is read out
+// of them the same way bitchat's is read out of Swift.
+function airhopSource(relative: string): string {
+  return fs.readFileSync(path.join(REPO_ROOT, relative), "utf8");
+}
+
+function kotlinConstant(source: string, name: string): number | null {
+  const match = new RegExp(`const val ${name}\\s*=\\s*([0-9_]+)`).exec(source);
+  if (match === null) return null;
+  return Number(match[1].replace(/_/g, ""));
+}
+
+const testWithBitchat = bitchatAvailable() ? test : test.skip;
 
 test("X01 an Airhop phone and a bitchat phone talk to each other", async () => {
   const s = (scenario = new Scenario({
@@ -381,10 +390,13 @@ test("X02 Airhop's private extensions cost a bitchat node nothing", async () => 
     droppedTypes.includes(PacketType.CHANNEL_MSG_AIRHOP),
     `dropped types: ${droppedTypes.map((t) => `0x${t.toString(16)}`).join(", ")}`,
   );
+  // bitchat's relay counter also counts every announce it forwards, so it
+  // cannot show this. The far phone reading a type bitchat refused is the
+  // evidence it relayed one.
   s.check(
-    "and stayed healthy: it kept relaying afterwards",
-    bitchat.seen.relayed > 0,
-    `relayed ${bitchat.seen.relayed} packets`,
+    "and still relayed the private-channel message it could not read",
+    b.texts(privateChannel).includes("private, bitchat cannot read this"),
+    `airhopB ${privateChannel} = [${b.texts(privateChannel).join(" | ")}]`,
   );
   s.expectNone("process health", noCrashes([a, b]));
   s.assert(true);
@@ -507,43 +519,51 @@ test("X04 gossip sync crosses both ways with bitchat right after first contact",
   s.assert(true);
 });
 
-test("X03 Airhop's constants still match the vendored bitchat sources", () => {
+testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
   const s = (scenario = new Scenario({
     id: "X03",
     title: "differential read of bitchat-ios, not of our own header file",
     seed: 402,
   }));
 
-  if (!bitchatAvailable()) {
-    s.check(
-      "the vendored bitchat-ios checkout is present to diff against",
-      true,
-      "skipped: bitchat-ios is not in this working tree",
-    );
-    s.assert();
-    return;
-  }
   const transport = bitchatSource("bitchat/Services/TransportConfig.swift");
 
   // Each of these is a number Airhop hard-codes somewhere. Reading it out of
-  // the vendored Swift means an upstream change surfaces here instead of in a
+  // the bitchat-ios Swift means an upstream change surfaces here instead of in a
   // field report about messages not arriving.
   const cases: {
     name: string;
     swift: string;
-    ours: number;
+    ours: number | null;
     note: string;
   }[] = [
     {
-      name: "max concurrent central links",
+      name: "max concurrent central links (Android)",
       swift: "bleMaxCentralLinks",
-      ours: 6,
-      note: "capped in AirhopBLEModule.kt and .swift; a crowded room depends on it",
+      ours: kotlinConstant(
+        airhopSource(
+          "android/app/src/main/java/org/onemindlabs/airhop/ble/AirhopBLEModule.kt",
+        ),
+        "MAX_CENTRAL_LINKS",
+      ),
+      note: "capped in AirhopBLEModule.kt; a crowded room depends on it",
     },
     {
-      name: "forced announce minimum interval (ms)",
+      name: "max concurrent central links (iOS)",
+      swift: "bleMaxCentralLinks",
+      ours: swiftConstant(
+        airhopSource("ios/Airhop/AirhopBLEModule.swift"),
+        "maxCentralLinks",
+      ),
+      note: "capped in AirhopBLEModule.swift; a crowded room depends on it",
+    },
+    {
+      name: "forced announce minimum interval (s)",
       swift: "bleForceAnnounceMinIntervalSeconds",
-      ours: 0.15,
+      // Private to the class, so read at runtime rather than exported for a test.
+      ours:
+        (MeshService as unknown as { FORCE_ANNOUNCE_MIN_INTERVAL_MS: number })
+          .FORCE_ANNOUNCE_MIN_INTERVAL_MS / 1000,
       note: "mesh-service FORCE_ANNOUNCE_MIN_INTERVAL_MS, expressed in seconds upstream",
     },
   ];
@@ -606,8 +626,8 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
   const pttMaxAge = swiftConstant(transport, "pttPublicFrameMaxAgeSeconds");
   s.check(
     "live voice freshness window matches bitchat-ios",
-    pttMaxAge === 30,
-    `bitchat=${String(pttMaxAge)}s airhop=30s`,
+    pttMaxAge !== null && pttMaxAge * 1000 === PTT_FRAME_MAX_AGE_MS,
+    `bitchat=${String(pttMaxAge)}s airhop=${String(PTT_FRAME_MAX_AGE_MS / 1000)}s`,
   );
 
   // Bridge and gateway quotas. These are airtime and abuse budgets shared
@@ -740,14 +760,7 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
   // iPhone silently stops arriving. Upstream needed a line-by-line read of the
   // decoder to find that (#1618); failing the build while both numbers live in
   // one repository is the cheap defence.
-  const iosLimits = bitchatAvailable()
-    ? bitchatSource(
-        "localPackages/BitFoundation/Sources/BitFoundation/FileTransferLimits.swift",
-      )
-    : "";
-  const iosMaxPayload = bitchatAvailable()
-    ? swiftConstantExpr(iosLimits, "maxPayloadBytes")
-    : null;
+  const iosMaxPayload = swiftConstantExpr(limits, "maxPayloadBytes");
   // Their `maxFramedFileBytes` is a computed closure rather than a literal, so
   // it is rebuilt here from the same terms: payload + TLV envelope + binary
   // envelope. Reading `maxPayloadBytes` from source is what keeps it honest; the
@@ -757,7 +770,7 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
     iosMaxPayload === null ? null : iosMaxPayload + 0xffff * 2 + 18 + 96;
   s.check(
     "bitchat-ios file limits were read, not assumed",
-    !bitchatAvailable() || iosMaxPayload !== null,
+    iosMaxPayload !== null,
     `maxPayloadBytes=${String(iosMaxPayload)}`,
   );
   s.check(
@@ -788,13 +801,11 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
   // The margin is what makes this a warning rather than a post-mortem. It fails
   // while bitchat is still approaching, leaving room to move before any build
   // ships on a contested value.
-  const bitchatTypes = bitchatAvailable()
-    ? [
-        ...bitchatSource(
-          "localPackages/BitFoundation/Sources/BitFoundation/MessageType.swift",
-        ).matchAll(/case\s+\w+\s*=\s*0x([0-9a-fA-F]{2})/g),
-      ].map((m) => parseInt(m[1], 16))
-    : [];
+  const bitchatTypes = [
+    ...bitchatSource(
+      "localPackages/BitFoundation/Sources/BitFoundation/MessageType.swift",
+    ).matchAll(/case\s+\w+\s*=\s*0x([0-9a-fA-F]{2})/g),
+  ].map((m) => parseInt(m[1], 16));
   const bitchatMax = Math.max(0, ...bitchatTypes);
   const airhopOnly = [
     PacketType.DR_ENCRYPTED,
@@ -804,7 +815,7 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
   const HEADROOM = 0x10;
   s.check(
     "bitchat's registry was read, not assumed",
-    !bitchatAvailable() || bitchatTypes.length > 10,
+    bitchatTypes.length > 10,
     `parsed ${bitchatTypes.length} types, max 0x${bitchatMax.toString(16)}`,
   );
   // DR_ENCRYPTED is the one exception: 0x12 sits inside bitchat's range but on
@@ -813,10 +824,9 @@ test("X03 Airhop's constants still match the vendored bitchat sources", () => {
   // exemption is visible rather than forgotten.
   s.check(
     "Airhop's extensions clear bitchat's frontier by a safe margin",
-    !bitchatAvailable() ||
-      airhopOnly
-        .filter((t) => t !== PacketType.DR_ENCRYPTED)
-        .every((t) => t > bitchatMax + HEADROOM),
+    airhopOnly
+      .filter((t) => t !== PacketType.DR_ENCRYPTED)
+      .every((t) => t > bitchatMax + HEADROOM),
     `bitchat max=0x${bitchatMax.toString(16)}, airhop=[${airhopOnly
       .map((t) => `0x${t.toString(16)}`)
       .join(", ")}]`,

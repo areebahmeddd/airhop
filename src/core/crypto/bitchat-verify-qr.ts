@@ -26,11 +26,11 @@
 // bounds how long that proof is worth anything.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { decode as decodeBech32 } from "nostr-tools/nip19";
 import { normalizeNickname } from "../mesh/discovery/nickname";
 import type { ContactCard } from "./contact-exchange";
+import { peerIDFromNoiseKey } from "./peer-id";
 
 // Domain separator, byte-identical to VerificationQR.context. Signing without
 // it would let a signature made for one purpose be replayed as another.
@@ -171,7 +171,7 @@ export function parseBitchatVerifyQr(
   // ours does, so it is recomputed rather than trusted. That also means the
   // binding check every card faces on our side is satisfied by construction.
   const noisePubKey = hexToBytes(noise);
-  const peerID = bytesToHex(sha256(noisePubKey)).slice(0, 16);
+  const peerID = peerIDFromNoiseKey(noisePubKey);
 
   return {
     ok: true,

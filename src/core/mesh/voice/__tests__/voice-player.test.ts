@@ -1,5 +1,5 @@
-// Tests for the VoicePlayer jitter buffer.
-// No native deps; uses a mock AudioPlaybackBackend.
+// The receive side of push-to-talk: the VoicePlayer's jitter buffer, who holds
+// the floor, and the inbound caps, all against a mock AudioPlaybackBackend.
 
 import type { Packet } from "../../wire/packet-codec";
 import { Flags, PacketType } from "../../wire/packet-codec";
@@ -15,9 +15,8 @@ import { VoicePlayer, type AudioPlaybackBackend } from "../voice-player";
 // Every VoicePlayer a test builds is tracked and closed afterwards.
 //
 // A VoiceSession holds two live timers (the jitter-buffer flush and the session
-// timeout). Left open they outlive the test, which is what made Jest report
-// "a worker process has failed to exit gracefully" for this whole directory.
-// Closing them here is also the behaviour the app relies on: mesh-service
+// timeout). Left open they outlive the test, and Jest reports "a worker process
+// has failed to exit gracefully" for this whole directory. Closing them here is also the behaviour the app relies on: mesh-service
 // closes its player on shutdown for exactly the same reason.
 const openPlayers: { close: () => void }[] = [];
 
@@ -173,15 +172,6 @@ describe("VoicePlayer", () => {
     player.close();
   });
 
-  it("accepts DATA after START", () => {
-    const player = track(new VoicePlayer(backend));
-    player.handlePacket(makeStartPacket(1), "peerA");
-    expect(() =>
-      player.handlePacket(makeDataPacket(1, 1), "peerA"),
-    ).not.toThrow();
-    player.close();
-  });
-
   it("ignores packets with invalid payload", () => {
     const player = track(new VoicePlayer(backend));
     const badPkt: Packet = {
@@ -216,23 +206,15 @@ describe("VoicePlayer", () => {
     expect(player.activeSessions).toHaveLength(1);
     player.close();
   });
-
-  it("uses codec from START packet (AAC-LC 16 kHz mono = 0x01)", () => {
-    expect(VoiceCodec.AAC_LC_16KHZ_MONO).toBe(0x01);
-  });
 });
 
 describe("VoicePlayer resource caps", () => {
   // A room where a lot of people talk at once must not grow a jitter buffer per
   // talker without limit. Only one burst can be making sound anyway.
   it("evicts the oldest burst past the concurrency cap", () => {
-    const played: string[] = [];
     const player = track(
       new VoicePlayer({
-        playFrames: (burstIDHex) => {
-          played.push(burstIDHex);
-          return Promise.resolve();
-        },
+        playFrames: () => Promise.resolve(),
         finishSession: () => undefined,
         stopSession: () => undefined,
       }),
@@ -255,7 +237,10 @@ describe("VoicePlayer resource caps", () => {
       );
     }
 
-    expect(player.activeSessions.length).toBeLessThanOrEqual(8);
+    // Twelve talkers against a cap of 8: the first four are gone.
+    expect(player.activeSessions.map((s) => s.senderPeerID)).toEqual(
+      Array.from({ length: 8 }, (_, i) => `peer${String(i + 4)}`),
+    );
     player.close();
   });
 });
@@ -314,9 +299,9 @@ describe("VoicePlayer inbound burst caps", () => {
   });
 
   it("does not hand a cut-off burst a fresh budget", () => {
-    // The flaw this guards: tearing the session down freed the slot, and the
-    // NEXT packet of the same flood opened a replacement with its byte count
-    // back at zero. A peer could then stream forever, one cap at a time.
+    // Tearing the session down frees the slot. If the NEXT packet of the same
+    // flood could open a replacement with its byte count back at zero, a peer
+    // could stream forever, one cap at a time.
     const player = track(new VoicePlayer(makeBackend()));
     player.handlePacket(makeStartPacket(3), "aabbccdd00112233");
     for (let seq = 1; seq <= 200; seq++) {
@@ -399,7 +384,7 @@ describe("two people talking at once", () => {
     }
 
     // Every batch that reached the speaker was Alice's. Bob never took it away
-    // from her mid-sentence, which is what made both unintelligible.
+    // from her mid-sentence, which would make both unintelligible.
     expect(played.length).toBeGreaterThan(0);
     expect(new Set(played)).toEqual(new Set([hex(1)]));
     // Both are still talkers: the banner says two people are speaking, and

@@ -5,9 +5,9 @@
 // the Nostr identity. Both private keys live in the OS Keychain/Keystore via
 // ./keychain and never leave the device.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
-import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "./keychain";
+import { peerIDFromNoiseKey } from "./peer-id";
 
 // Not here: the Nostr public key. It is secp256k1, derived by HKDF over the
 // signing PRIVATE key (deriveNostrPrivKey, core/nostr/gift-wrap), so the
@@ -22,7 +22,7 @@ export interface Identity {
   // derived from, not the Nostr identity itself.
   signingPrivKey: Uint8Array;
   signingPubKey: Uint8Array;
-  // First 16 hex chars of SHA-256(noiseStaticPubKey) = 8 bytes
+  // peerIDFromNoiseKey(noiseStaticPubKey)
   peerID: string;
 }
 
@@ -35,7 +35,7 @@ export async function generateIdentity(): Promise<Identity> {
   const signingPriv = crypto.getRandomValues(new Uint8Array(32));
   const signingPub = ed25519.getPublicKey(signingPriv);
 
-  const peerID = bytesToHex(sha256(noisePub)).slice(0, 16);
+  const peerID = peerIDFromNoiseKey(noisePub);
 
   return {
     noiseStaticPrivKey: noisePriv,
@@ -87,7 +87,7 @@ export async function loadIdentity(): Promise<Identity | null> {
     noiseStaticPubKey: noisePub,
     signingPrivKey: signingPriv,
     signingPubKey: signingPub,
-    peerID: bytesToHex(sha256(noisePub)).slice(0, 16),
+    peerID: peerIDFromNoiseKey(noisePub),
   };
 }
 

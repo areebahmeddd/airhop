@@ -35,7 +35,7 @@ export function GossipSync() {
         REQUEST_SYNC + GCS filter
       </text>
       <text x={460} y={144} textAnchor="middle" fontFamily={MONO} fontSize={9.5} fill={MUTED}>
-        ~400 bytes describing 1000 packets
+        ~400 bytes for the newest ~350 packets
       </text>
 
       <line x1={710} y1={206} x2={214} y2={206} stroke={LINE} markerEnd="url(#gs-arrow)" />

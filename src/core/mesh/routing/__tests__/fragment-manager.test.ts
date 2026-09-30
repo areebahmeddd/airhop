@@ -88,10 +88,9 @@ describe("fragmentPacket", () => {
     expect(frags.length).toBe(3);
   });
 
-  // The check that matters. A payload of 469 bytes is correct by the payload's
-  // own measure, while the header, senderID and a 64-byte signature push the
-  // encoded frame to 557, 45 bytes past what any BLE link can carry. Measure
-  // what goes on the wire.
+  // The check that matters. A fragment's data can fit by its own measure while
+  // the header, senderID and a 64-byte signature push the encoded frame past
+  // what a BLE link can carry, so this measures what goes on the wire.
   test("every encoded fragment frame fits one BLE write", () => {
     const packet = makeLargePacket(FRAG_DATA_SIZE * 3, identity);
     const frags = fragmentPacket(packet, identity);
@@ -120,9 +119,10 @@ describe("fragmentPacket", () => {
     for (const f of frags) expect(f.flags & Flags.SIGNED).toBe(0);
   });
 
-  test("all fragments share the same stream ID", () => {
+  test("all fragments are FRAGMENT packets sharing one stream ID", () => {
     const packet = makeLargePacket(FRAG_DATA_SIZE * 2 + 1, identity);
     const frags = fragmentPacket(packet, identity);
+    for (const f of frags) expect(f.type).toBe(PacketType.FRAGMENT);
     const headers = frags.map((f) => decodeFragmentPayload(f.payload)!);
     const streamIds = headers.map((h) => h.streamU64);
     expect(streamIds.every((s) => s === streamIds[0])).toBe(true);
@@ -146,7 +146,7 @@ describe("fragmentPacket", () => {
   });
 });
 
-describe("parseFragmentPayload", () => {
+describe("decodeFragmentPayload", () => {
   test("returns null for payload shorter than header", () => {
     expect(decodeFragmentPayload(new Uint8Array(5))).toBeNull();
   });
@@ -250,17 +250,25 @@ describe("FragmentManager", () => {
   });
 
   test("evictExpired removes stale assemblies", () => {
-    const manager = new FragmentManager();
-    // Feed a partial assembly (one fragment of a two-fragment stream)
-    const packet = makeLargePacket(FRAG_DATA_SIZE + 1, identity);
-    const frags = fragmentPacket(packet, identity);
-    manager.receive(frags[0].senderID, frags[0].payload, () => {});
-    expect(manager.size).toBe(1);
-    // Simulate time passing by calling the JS timer override isn't needed;
-    // evictExpired uses Date.now() internally. We can't travel time here,
-    // so just confirm the slot exists and eviction with fresh data is a no-op.
-    manager.evictExpired();
-    expect(manager.size).toBe(1); // not yet expired (just added)
+    jest.useFakeTimers();
+    try {
+      const manager = new FragmentManager();
+      // Feed a partial assembly (one fragment of a two-fragment stream)
+      const packet = makeLargePacket(FRAG_DATA_SIZE + 1, identity);
+      const frags = fragmentPacket(packet, identity);
+      manager.receive(frags[0].senderID, frags[0].payload, () => {});
+      expect(manager.size).toBe(1);
+
+      manager.evictExpired();
+      expect(manager.size).toBe(1); // fresh, so kept
+
+      // Idle past the 30-second timeout.
+      jest.advanceTimersByTime(30_001);
+      manager.evictExpired();
+      expect(manager.size).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test("reset clears all assemblies", () => {
@@ -322,11 +330,11 @@ describe("FragmentManager reassembly timeout", () => {
   });
 
   test("survives a transfer that runs longer than the timeout", () => {
-    // The case the whole feature exists for: a photo-sized file over Bluetooth.
-    // The sender paces fragments 20ms apart, so a real transfer runs well past
-    // 30 seconds. Timing out on total duration deleted the half-built file
-    // mid-flight and the rest of the fragments started an assembly that could
-    // never complete, losing the file with no error anywhere.
+    // A photo-sized file over Bluetooth, paced 20 ms a fragment, runs well past
+    // 30 seconds. The timeout counts silence, not total duration: timing out on
+    // duration would delete the half-built file mid-flight, and the remaining
+    // fragments would start an assembly that can never complete, losing the
+    // file with no error anywhere.
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
 
@@ -408,8 +416,7 @@ describe("FragmentManager reassembly timeout", () => {
 describe("a spoofed fragment cannot damage somebody else's transfer", () => {
   // Craft a fragment payload by hand rather than through fragmentPacket, so a
   // test can state header fields no honest sender would ever emit. Layout is
-  // the 13-byte header from the top of this file: stream 8, index 2, total 2,
-  // inner type 1.
+  // the 13-byte fragment header: stream 8, index 2, total 2, inner type 1.
   function spoofFragment(
     streamID: Uint8Array,
     index: number,

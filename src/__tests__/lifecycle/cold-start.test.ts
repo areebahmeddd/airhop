@@ -51,11 +51,13 @@ import {
   saveIdentity,
 } from "@core/crypto/identity";
 import { KEYCHAIN_ITEMS, writeSecret } from "@core/crypto/keychain";
+import { markInstallHadIdentity } from "@services/install-marker";
 import {
   IDENTITY_LOAD_TIMEOUT_MS,
   planLaunch,
   readLaunchIdentity,
 } from "@services/launch-identity";
+import { getMeshService } from "@services/mesh-service";
 import { panicWipe } from "@services/panic-wipe";
 import { applyPresence } from "@services/presence-service";
 import { primeTorRoutingOnStartup } from "@services/tor-routing";
@@ -64,6 +66,8 @@ import {
   isIdentityCondemned,
 } from "@services/wipe-marker";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
+import * as mmkv from "@store/mmkv";
+import { getStorage } from "@store/mmkv";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import * as SecureStore from "expo-secure-store";
@@ -259,7 +263,7 @@ describe("cold start and permissions", () => {
   // BLUETOOTH_SCAN the neverForLocation flag, so from API 31 the scanner is
   // outside location's reach; without it this is the worst first run the app
   // can have.
-  test("S04 Android 12+ with location refused and the OS toggle off - the mesh is unaffected", async () => {
+  test("S04 Android 12+ with location refused and the OS toggle off: the mesh is unaffected", async () => {
     const os = new DeviceOS({
       platform: "android",
       apiLevel: 34,
@@ -489,7 +493,7 @@ describe("cold start and permissions", () => {
       `banner: ${JSON.stringify(currentBlockerBanner())}`,
     );
     v.check(
-      "and does not poll a radio that will never exist",
+      "and offers no action, since there is no radio to turn on",
       currentBlockerBanner()?.action === undefined,
     );
     v.assert();
@@ -543,7 +547,7 @@ describe("cold start and permissions", () => {
 
     // Android allows about five scan starts per 30 second window and silently
     // refuses the rest. The duty cycle plus a couple of power-mode changes can
-    // reach that, and before this event the app went blind with the radar
+    // reach that, and without this event the app would go blind with the radar
     // still spinning.
     native.simulateScanFailure(6);
     await os.advance(1000);
@@ -566,13 +570,11 @@ describe("cold start and permissions", () => {
 
   // A chipset that can scan but never advertise must be asked exactly once.
   //
-  // Native answers UNSUPPORTED when bluetoothLeAdvertiser is null, and that used
-  // to be treated as a transient refusal: applyRadios returned false,
-  // reconcileOnce scheduled a retry, the backoff capped at five seconds, and the
-  // app asked again every five seconds for as long as the mesh ran. The answer
-  // cannot change, so the only thing that loop produced was battery and log
-  // spend, plus a user who could see everyone and had no idea why nobody
-  // answered.
+  // Native answers UNSUPPORTED when bluetoothLeAdvertiser is null. Treated as a
+  // transient refusal, it would have reconcileOnce retry on a backoff capped at
+  // five seconds for as long as the mesh ran. The answer cannot change, so that
+  // loop would produce nothing but battery and log spend, plus a user who could
+  // see everyone and had no idea why nobody answered.
   test("S13 a device that cannot advertise is asked once, and told so", async () => {
     const os = new DeviceOS({
       platform: "android",
@@ -629,6 +631,7 @@ describe("cold start and permissions", () => {
     // The reboot: a headless task, no Activity, nothing to prompt on.
     app.bootStart();
     await os.advance(1000);
+    const bootMesh = getMeshService();
     v.check("the boot task brought the radios up", native.scanning);
     v.check(
       "nothing that needs the app ran with no app",
@@ -645,7 +648,10 @@ describe("cold start and permissions", () => {
       app.dependentsRuns === 1,
       `runs=${app.dependentsRuns}`,
     );
-    v.check("the boot mesh was kept, not rebuilt", native.scanning);
+    v.check(
+      "the boot mesh was kept, not rebuilt",
+      bootMesh !== null && getMeshService() === bootMesh,
+    );
 
     await app.mount();
     v.check(
@@ -899,11 +905,15 @@ describe("launch identity: absent, unreadable, condemned", () => {
   beforeEach(() => {
     secureStore.__reset();
     clearCondemnedIdentity();
+    getStorage("install-marker").clearAll();
+    getStorage("chat-store").clearAll();
   });
 
+  // As onboarding stores one: the install records that it has an identity.
   async function storedIdentity(): Promise<Identity> {
     const id = await generateIdentity();
     await saveIdentity(id);
+    markInstallHadIdentity();
     return id;
   }
 
@@ -957,6 +967,48 @@ describe("launch identity: absent, unreadable, condemned", () => {
     expect(found).toEqual({ kind: "unreadable" });
     // No welcome, so no sweep of the wallet secrets beside it.
     expect(planLaunch(found, false)).toEqual({ kind: "ask" });
+  });
+
+  // iOS keeps the keychain when the app is deleted; the app's storage goes.
+  test("K11 an identity a deleted install left behind is wiped, secrets and all", async () => {
+    await saveIdentity(await generateIdentity());
+    await writeSecret(KEYCHAIN_ITEMS.walletRecoveryPhrase, "abandon ability");
+
+    await expect(readLaunchIdentity()).resolves.toEqual({
+      kind: "absent",
+      keysRemain: false,
+    });
+    await expect(loadIdentity()).resolves.toBeNull();
+    await expect(
+      SecureStore.getItemAsync(KEYCHAIN_ITEMS.walletRecoveryPhrase),
+    ).resolves.toBeNull();
+  });
+
+  // An install from a build before the record existed has its stores, and
+  // keeps its identity rather than being taken for a reinstall.
+  test("K12 an identity with this install's data around it boots and is recorded", async () => {
+    const id = await generateIdentity();
+    await saveIdentity(id);
+    getStorage("chat-store").set("chat-store", "{}");
+
+    const found = await readLaunchIdentity();
+    expect(found.kind === "present" && found.identity.peerID).toBe(id.peerID);
+    getStorage("chat-store").clearAll();
+    const again = await readLaunchIdentity();
+    expect(again.kind).toBe("present");
+  });
+
+  // The launch waits on this answer, so a storage failure must still produce one.
+  test("K13 a storage failure during the leftover check still answers", async () => {
+    await storedIdentity();
+    const spy = jest.spyOn(mmkv, "getStorage").mockImplementation(() => {
+      throw new Error("storage unavailable");
+    });
+    try {
+      await expect(readLaunchIdentity()).resolves.toHaveProperty("kind");
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   // What app.tsx does with each answer.

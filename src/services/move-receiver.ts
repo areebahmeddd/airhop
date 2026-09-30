@@ -15,6 +15,7 @@
 import { loadIdentity } from "@core/crypto/identity";
 import { sweepOrphanedSecrets } from "@core/crypto/keychain";
 import type { NoiseSession } from "@core/crypto/noise-xx";
+import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
 import { BundleAssembler } from "@core/move/move-bundle";
 import { MoveHandshake } from "@core/move/move-handshake";
 import { encodeMoveInvite, MOVE_TOKEN_BYTES } from "@core/move/move-invite";
@@ -33,7 +34,6 @@ import {
 import { APP_VERSION } from "@data/app-info";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
 import { safetyNumberWords } from "@utils/username";
 import { settleOr } from "@utils/with-timeout";
 import {
@@ -83,10 +83,6 @@ const RELEASE_TIMEOUT_MS = 60_000;
 const ABORT_SEND_MS = 1_000;
 // Chunks can arrive every few milliseconds; repaints need not.
 const PROGRESS_INTERVAL_MS = 100;
-
-function peerIDOf(noisePub: Uint8Array): string {
-  return bytesToHex(sha256(noisePub)).slice(0, 16);
-}
 
 interface Active {
   connectionID: string;
@@ -293,7 +289,7 @@ export class MoveReceiver {
     this.handshakes.clear();
     if (this.pollTimer !== null) clearInterval(this.pollTimer);
     this.pollTimer = null;
-    const peerID = peerIDOf(session.remoteStaticPubKey);
+    const peerID = peerIDFromNoiseKey(session.remoteStaticPubKey);
     this.active = {
       connectionID,
       session,

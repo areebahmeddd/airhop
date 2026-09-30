@@ -144,6 +144,24 @@ export function shouldHapticPing(p: {
   );
 }
 
+// Title/body for a payment redeemed in the background. `amount` and `unit` come
+// formatted (amountParts), so a fiat mint reads in major units. Hidden previews
+// drop both and the payer: a lock screen should not announce money arriving.
+export function paymentNotificationContent(
+  amount: string,
+  unit: string,
+  from: string,
+  hidePreviews: boolean,
+): { title: string; body: string } {
+  if (hidePreviews) {
+    return { title: t("notif.hidden.title"), body: t("notif.hidden.channel") };
+  }
+  return {
+    title: t("wallet.nutzap.received_title", { amount, unit }),
+    body: t("wallet.nutzap.received_body", { from }),
+  };
+}
+
 // Nearby peers
 
 // The floor between two nearby notices. The mesh finding someone is worth

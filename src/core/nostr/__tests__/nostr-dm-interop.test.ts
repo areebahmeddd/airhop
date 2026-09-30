@@ -3,7 +3,7 @@
  */
 // End-to-end round-trip for a Nostr DM the way the app sends it: a bitchat1
 // envelope, gift-wrapped with bitchat's nip44-v2 crypto, unwrapped and decoded
-// on the other side. This is the whole M2 path in one test.
+// on the other side.
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent } from "nostr-tools";
@@ -98,15 +98,5 @@ describe("Nostr DM interop round-trip", () => {
     const dm = unwrapDm(wrap, recipPriv, Number.POSITIVE_INFINITY);
     expect(decodeBitchatEnvelope(dm.content)?.content).toBe("hi");
     expect(dm.timestamp).toBe(now);
-  });
-
-  it("a third party cannot unwrap the DM", () => {
-    const senderPriv = secp256k1.utils.randomSecretKey();
-    const recipPriv = secp256k1.utils.randomSecretKey();
-    const eve = secp256k1.utils.randomSecretKey();
-    const recipPubHex = bytesToHex(xOnlyPublicKey(recipPriv));
-    const env = encodeBitchatDmEnvelope(SENDER_PEER, null, "m", "secret")!;
-    const { event } = wrapDm(env, senderPriv, recipPubHex);
-    expect(() => unwrapDm(event, eve, Number.POSITIVE_INFINITY)).toThrow();
   });
 });

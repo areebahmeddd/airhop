@@ -92,13 +92,12 @@ describe("Noise X seal/open", () => {
     expect(plaintext.length).toBe(0);
   });
 
-  test("different senders produce different envelopes (ephemeral key randomness)", () => {
+  test("sealing the same message twice produces different envelopes (ephemeral key randomness)", () => {
     const sender = makeKeypair();
     const recipient = makeKeypair();
     const pt = new TextEncoder().encode("same");
     const e1 = noiseXSeal(sender.priv, recipient.pub, pt, P);
     const e2 = noiseXSeal(sender.priv, recipient.pub, pt, P);
-    // Envelopes differ due to random ephemeral key
     expect(bytesToHex(e1)).not.toBe(bytesToHex(e2));
   });
 

@@ -1,6 +1,9 @@
 /**
  * @jest-environment node
  */
+// The settings other code leans on: live voice, the custom relay list and relay
+// discovery, and media retention.
+//
 // Live voice is one switch for two directions: it gates streaming your holds
 // and playing other people's bursts. A user who turns it off should not have a
 // microphone open on their behalf, and should not have a stranger's voice come
@@ -206,15 +209,10 @@ describe("customRelays rehydration", () => {
   });
 });
 
-// Two settings whose defaults are the load-bearing part. Both are the kind of
-// choice where the wrong default silently harms the person least likely to go
-// looking for it, so the defaults are pinned rather than left to be noticed.
+// A setting whose default is the load-bearing part: the wrong one silently
+// harms the person least likely to go looking for it, so it is pinned rather
+// than left to be noticed.
 describe("media retention", () => {
-  it("defaults to seven days, matching bitchat's sweep", () => {
-    useSettingsStore.getState().reset();
-    expect(state().mediaRetentionDays).toBe(7);
-  });
-
   it("offers only bounded windows, never keep-forever", () => {
     // The threat model says an attachment must not outlive its conversation.
     // An unbounded option would retire that quietly for whoever picked it.
@@ -231,10 +229,11 @@ describe("media retention", () => {
     expect(state().mediaRetentionDays).toBe(30);
   });
 
-  it("returns to seven days on a panic wipe", () => {
-    // A wipe leaves a first-run device. Inheriting the previous person's
-    // 30-day window would leave the next one holding media longer than the
-    // default promises, without ever having chosen it.
+  it("returns to the seven-day default on a panic wipe", () => {
+    // Seven days is the default, matching bitchat's sweep. A wipe leaves a
+    // first-run device. Inheriting the previous person's 30-day window would
+    // leave the next one holding media longer than the default promises,
+    // without ever having chosen it.
     useSettingsStore.getState().setMediaRetentionDays(30);
     useSettingsStore.getState().reset();
     expect(state().mediaRetentionDays).toBe(7);

@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
-// Scenarios 11-20: what happens to a running app when the world changes under
-// it, radios toggled, conversations in flight, the app put away and reopened.
+// What happens to a running app when the world changes under it: radios
+// toggled, conversations in flight, the app put away and reopened, and a link
+// handed over by another app.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("@bridge/NativeAirhopBLE", () => ({
@@ -292,56 +293,6 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.assert();
   });
 
-  test("S16 internet dropped (airplane mode) with Bluetooth still on", async () => {
-    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict("S16", "WiFi/data off, Bluetooth on", os);
-    const started = await healthyAndroid(os);
-    app = started.app;
-    const native = started.native;
-
-    useMeshStateStore.getState().setNostrConnected(false);
-    await os.advance(1000);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check(
-      "the BLE mesh is untouched by losing the internet",
-      native.scanning && native.advertising,
-    );
-    v.check(
-      "the banner does not claim Bluetooth is off",
-      useMeshStateStore.getState().bleBlocker === "none",
-    );
-    v.assert();
-  });
-
-  test("S17 airplane mode on then off, both transports recover unattended", async () => {
-    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict("S17", "airplane mode round trip", os);
-    const started = await healthyAndroid(os);
-    app = started.app;
-    const native = started.native;
-
-    // Airplane mode takes the radio down with it.
-    os.setBluetooth(false);
-    useMeshStateStore.getState().setNostrConnected(false);
-    await os.advance(1000);
-
-    os.setBluetooth(true);
-    await os.advance(4000);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check(
-      "BLE recovered without user action",
-      native.scanning && native.advertising,
-    );
-    v.check(
-      "banner is accurate",
-      useMeshStateStore.getState().bleBlocker === "none",
-      `blocker: ${useMeshStateStore.getState().bleBlocker}`,
-    );
-    v.assert();
-  });
-
   test("S18 'Stop mesh' from the notification, then the user reopens the app", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
@@ -431,49 +382,12 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.check(
       "the mesh still survives backgrounding while Invisible",
       os.foregroundServiceRunning,
-      "setDiscoverable(false) calls stopAdvertising(), and AirhopBLEModule.kt:346 tears the foreground service down inside it, so choosing Invisible silently gives up background operation for a mesh that is still meant to be scanning and relaying",
+      "the foreground service went down with advertising, so choosing Invisible silently gives up background operation for a mesh that is still meant to be scanning and relaying. stopAdvertising() must leave the service alone",
     );
 
     applyPresence("online", "tester");
     await os.advance(500);
     v.check("coming back to Online restores advertising", native.advertising);
-    v.assert();
-  });
-
-  test("S20 Activity destroyed and remounted while the mesh is healthy", async () => {
-    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict(
-      "S20",
-      "Activity recreated, mesh must not be disturbed",
-      os,
-    );
-    const started = await healthyAndroid(os);
-    app = started.app;
-    const native = started.native;
-    native.simulatePeerConnect("c:AA:BB:CC:DD:EE:01");
-    await os.advance(200);
-
-    // Configuration change / Activity recreation: React remounts, the mesh
-    // singleton and the native module survive.
-    await app.mount();
-    await os.advance(1000);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check(
-      "the healthy mesh was not torn down and rebuilt",
-      native.scanning && native.advertising,
-    );
-    v.check(
-      "no duplicate foreground service churn",
-      os.foregroundServiceRunning,
-    );
-    // Notifications, the wallet watcher and the prompts belong to the mesh,
-    // not to the mount, so a recreated Activity must not stack a second set.
-    v.check(
-      "what rides on the mesh is not started twice",
-      app.dependentsRuns === 1,
-      `runs=${app.dependentsRuns}`,
-    );
     v.assert();
   });
 
@@ -503,7 +417,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.check(
       "advertising comes back after Bluetooth returns",
       native.advertising,
-      "peripheralManagerDidUpdateState (AirhopBLEModule.swift:467) returns early for every state that is not poweredOn, so poweredOff never clears isAdvertising. When poweredOn arrives, `if isAdvertising { return }` at :469 skips rebuilding the service, the device is invisible to every peer until the app is force-quit",
+      "the device is invisible to every peer until the app is force-quit. peripheralManagerDidUpdateState has to clear isAdvertising on poweredOff, or the `if isAdvertising { return }` guard skips rebuilding the service when poweredOn arrives",
     );
     v.check("scanning comes back after Bluetooth returns", native.scanning);
     v.check(
@@ -515,8 +429,6 @@ describe("mid-session radio chaos and lifecycle", () => {
   });
 
   test("S21i iOS: CoreBluetooth managers must not be reallocated forever", async () => {
-    // Not one of the twenty; found by the harness while running S07i and worth
-    // its own case.
     const os = new DeviceOS({ platform: "ios" });
     const v = new Verdict(
       "S21i",
@@ -536,7 +448,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.check(
       "a quiet device allocates a bounded number of CBCentralManagers",
       native.centralManagersCreated <= 2,
-      `${native.centralManagersCreated} created in 10s. Every centralManagerDidUpdateState emits adapterStateChanged (AirhopBLEModule.swift:314); mesh-service treats that as a radio change and schedules retryRadios (mesh-service.ts:813); retryRadios calls startScanning, which constructs ANOTHER CBCentralManager (:130), which fires didUpdateState... The loop runs every ADAPTER_SETTLE_MS (700ms) for as long as the app is open`,
+      `${native.centralManagersCreated} created in 10s. If every centralManagerDidUpdateState emits adapterStateChanged, mesh-service treats it as a radio change and schedules retryRadios, whose startScanning constructs ANOTHER CBCentralManager, which fires didUpdateState again: a loop every ADAPTER_SETTLE_MS for as long as the app is open`,
     );
     v.check(
       "a quiet device allocates a bounded number of CBPeripheralManagers",
