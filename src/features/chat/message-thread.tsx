@@ -29,7 +29,13 @@ import {
   type TranslationKey,
 } from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
-import { acknowledged, armed, held, released } from "@platform/haptics";
+import {
+  acknowledged,
+  armed,
+  held,
+  released,
+  succeeded,
+} from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
 import {
   Feather,
@@ -2305,6 +2311,8 @@ export default function MessageThread({
         );
         return;
       }
+      // Only a mint-confirmed claim buzzes; one stored offline is not settled.
+      if (result.outcome === "swapped") succeeded();
       showAlert(
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"

@@ -510,8 +510,11 @@ test("B07 a crowd forming does not drown itself in control traffic", async () =>
     announce < 5_000,
     `ANNOUNCE=${announce}`,
   );
+  // The radio fabric enforces the central-link cap itself, so the useful check
+  // here is that a room formed at all: with no links the ceilings above pass on
+  // empty air.
   s.check(
-    "no phone holds more central links than the radio allows",
+    "the room actually formed, so the ceilings measured real traffic",
     radio.linkCount() > 0,
     `links=${radio.linkCount()}`,
   );

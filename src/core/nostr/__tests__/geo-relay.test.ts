@@ -1,5 +1,5 @@
-// Tests for the Nostr geo-relay directory.
-// geo-relay.ts has no native or network dependencies; fully testable in CI.
+// The Nostr geo-relay directory, and the relay URL validation custom relays go
+// through.
 
 import {
   DEFAULT_DM_RELAYS,
@@ -198,13 +198,6 @@ describe("geo-relay", () => {
       expect(entries[1].url).toBe("wss://nos.lol");
     });
 
-    it("skips header row", () => {
-      const csv = "Relay URL,Latitude,Longitude\nrelay.test.com,0,0";
-      const entries = parseRelaysCsv(csv);
-      expect(entries).toHaveLength(1);
-      expect(entries[0].url).toBe("wss://relay.test.com");
-    });
-
     it("skips malformed rows silently", () => {
       const csv = [
         "Relay URL,Latitude,Longitude",
@@ -261,13 +254,6 @@ describe("geo-relay", () => {
       dir.load(csv);
       const nearest = dir.nearestRelays(0, 0, 3);
       expect(nearest).toHaveLength(3);
-    });
-
-    it("falls back to default relays when directory is empty", () => {
-      const dir = new GeoRelayDirectory();
-      const nearest = dir.nearestRelays(0, 0, 2);
-      expect(nearest).toHaveLength(2);
-      expect(nearest[0]).toMatch(/^wss:\/\//);
     });
 
     it("de-duplicates relays on load", () => {

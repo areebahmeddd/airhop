@@ -1,9 +1,10 @@
 /**
  * @jest-environment node
  */
-// Attachment retention. Before this sweep the panic wipe was the only thing
-// that ever deleted media, so a photo outlived the conversation it belonged to
-// by months. These pin what gets deleted, and more importantly what does not.
+// Attachment retention, and the cache clears beside it. Without the sweep only
+// the panic wipe deletes media, and a photo outlives the conversation it
+// belonged to by months. These pin what gets deleted, and more importantly what
+// does not.
 
 interface FakeFile {
   name: string;
@@ -76,6 +77,7 @@ import {
   clearAttachmentCache,
   discardPickerCopy,
   getAttachmentCacheBytes,
+  INCOMING_FILE_PREFIX,
   MEDIA_MAX_AGE_MS,
   sweepExpiredAttachments,
   wipeCacheDirectory,
@@ -203,7 +205,10 @@ describe("sweepExpiredAttachments", () => {
   });
 
   it("sweeps sent and received media alike", () => {
-    const received = put({ name: "airhop_in.jpg", ageMs: 10 * DAY });
+    const received = put({
+      name: `${INCOMING_FILE_PREFIX}1_photo.jpg`,
+      ageMs: 10 * DAY,
+    });
     const sent = put({ name: "airhop_out.jpg", ageMs: 10 * DAY });
     sweepExpiredAttachments(NOW);
     expect([received.deleted, sent.deleted]).toEqual([true, true]);

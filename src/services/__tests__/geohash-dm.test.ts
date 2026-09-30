@@ -23,8 +23,8 @@ import { GeohashChannelService } from "../geohash-channel-service";
 jest.mock("expo-location", () => ({}));
 
 // The position the service resolves cells from. Driven per test so "we have no
-// idea where we are" and "we are definitely somewhere else" stay distinguishable
-// - which is the whole point of the signal under test.
+// idea where we are" and "we are definitely somewhere else" stay
+// distinguishable, which is the whole point of the signal under test.
 let mockCoords: { lat: number; lng: number } | null = null;
 
 jest.mock("../location-service", () => ({
@@ -157,14 +157,14 @@ describe("geohash DM", () => {
 
 // Which identity a reply is written from, and whether that survives a relaunch.
 //
-// The binding from a location-channel peer to the cell we met them in used to
-// live in a Map on the service, so it was gone after a restart. Opening such a
-// thread from the Direct list and sending then fell through to the caller's
-// MAIN Nostr identity: the recipient saw a message from a key they had never
-// seen (a second thread, not a reply), and a person we had only ever met
-// pseudonymously in a location channel was handed our permanent identity.
+// The binding from a location-channel peer to the cell we met them in has to
+// outlive the process. Without it, opening such a thread from the Direct list
+// and sending falls through to the caller's MAIN Nostr identity: the recipient
+// sees a message from a key they have never seen (a second thread, not a
+// reply), and a person we have only ever met pseudonymously in a location
+// channel is handed our permanent identity.
 //
-// It now lives in chat-store, which is persisted, so these pin both halves: the
+// It lives in chat-store, which is persisted, so these pin both halves: the
 // binding outlives the service, and its absence still means "not a geohash DM".
 describe("the geo-DM cell binding", () => {
   const GEOHASH = "u4pruy";
@@ -291,8 +291,8 @@ describe("the live-cell signal", () => {
 
 // Keeping someone met under a location pseudonym.
 //
-// Their cell key and our peer ID are unlinkable by design - that is what stops
-// relays following anyone between neighbourhoods - so nothing but the person
+// Their cell key and our peer ID are unlinkable by design (that is what stops
+// relays following anyone between neighbourhoods), so nothing but the person
 // choosing to say "this is also me" can ever join the two. These pin the wire
 // half of that choice: the card goes out gift-wrapped from our PER-CELL key, so
 // a relay learns nothing new, and it arrives as a card rather than a message.
@@ -381,7 +381,7 @@ describe("handing over a contact card in a location channel", () => {
 // durable one, and the durable inbox files a message by the Nostr key it came
 // from. Until the other side holds our card they cannot know that key is us, so
 // crossing over early lands our messages in a second, unattributed thread on
-// their side - the exact split this feature exists to heal.
+// their side: the exact split this feature exists to heal.
 //
 // These pin the state machine directly on the store, which is where both halves
 // are recorded and where the merge decision reads them from.
@@ -434,8 +434,8 @@ describe("the contact-card exchange state", () => {
     expect(after.geoDmCells[PEER_CELL_KEY]).toBeUndefined();
   });
 
-  // A half-finished exchange is exactly the state that must survive a delete,
-  // since the conversation it belongs to is gone.
+  // A half-finished exchange is exactly the state that must not survive a
+  // delete, since the conversation it belongs to is gone.
   it("is dropped when the conversation is deleted", () => {
     const chat = useChatStore.getState();
     chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
@@ -461,9 +461,10 @@ describe("the contact-card exchange state", () => {
 // Our card takes a relay round trip to reach them, so for a few seconds after we
 // fold the threads together they are still writing on the pseudonymous rail. A
 // message arriving then is addressed to a name that has become an alias, and
-// filing it there would put it in a thread the user can no longer open - a
+// filing it there would put it in a thread the user can no longer open: a
 // message that is received, stored, and invisible.
 describe("messages arriving after a merge", () => {
+  const GEOHASH = "u4pruy";
   const CELL_KEY = "ee".repeat(32);
   const THEIR_PEER_ID = "99887766554433aa";
 
@@ -472,25 +473,43 @@ describe("messages arriving after a merge", () => {
   });
 
   it("follows the merge instead of landing in the folded-away thread", () => {
-    const chat = useChatStore.getState();
-    const from = `dm:nostr_${CELL_KEY}`;
+    const sent: { content: string; pubkey: string }[] = [];
+    const aliceSigning = ed25519.utils.randomSecretKey();
+    const bobSigning = ed25519.utils.randomSecretKey();
+    const alice = new GeohashChannelService(
+      mockClient(sent),
+      aliceSigning,
+      "alice",
+    );
+    const bob = new GeohashChannelService(mockClient([]), bobSigning, "bob");
+    const aliceCell = deriveGeohashIdentity(
+      deriveGeohashSeed(aliceSigning),
+      GEOHASH,
+    );
+    const bobCell = deriveGeohashIdentity(
+      deriveGeohashSeed(bobSigning),
+      GEOHASH,
+    );
+    alice.sendGeoDm(
+      GEOHASH,
+      bobCell.pubKeyHex,
+      "late-1",
+      "still on the old rail",
+    );
+
+    // Bob has already folded the pseudonymous thread into the durable one.
+    useChatStore.getState().clearAll();
+    const from = `dm:nostr_${aliceCell.pubKeyHex}`;
     const to = `dm:${THEIR_PEER_ID}`;
+    const chat = useChatStore.getState();
     chat.addChannel(from);
     chat.addChannel(to);
     chat.mergeChannel(from, to);
 
-    // What handleGeoDm now does with a late arrival on the old rail.
-    expect(useChatStore.getState().resolveChannel(from)).toBe(to);
-
-    useChatStore.getState().addMessage({
-      id: "late-1",
-      channel: useChatStore.getState().resolveChannel(from),
-      senderID: `nostr_${CELL_KEY}`,
-      senderNickname: "them",
-      text: "still on the old rail",
-      timestampMs: Date.now(),
-      isMine: false,
-    });
+    const receive = (
+      bob as unknown as { handleGeoDm: (e: unknown, g: string) => void }
+    ).handleGeoDm.bind(bob);
+    receive(sent[0], GEOHASH);
 
     const after = useChatStore.getState();
     expect(after.messages[to]?.map((m) => m.id)).toContain("late-1");
@@ -508,11 +527,11 @@ describe("messages arriving after a merge", () => {
 
 // One person, one name, wherever their conversation appears.
 //
-// A geohash nickname rides the `n` tag on CHANNEL messages and nothing else - a
-// geo DM carries none - so the pubkey alone can only ever produce "anon#last4".
-// The channel showed "NeverDie#0c08" and every other surface showed
-// "anon#0c08": same person, two names, because the name was only ever on the
-// message rather than anywhere a conversation could reach.
+// A geohash nickname rides the `n` tag on CHANNEL messages and nothing else (a
+// geo DM carries none), so the pubkey alone can only ever produce "anon#last4".
+// Unless the name the channel rendered travels with the conversation, the
+// channel shows "NeverDie#0c08" while every other surface shows "anon#0c08":
+// same person, two names.
 describe("carrying a location peer's name out of the channel", () => {
   const GEOHASH = "u4pruy";
   const PUBKEY = `${"ab".repeat(31)}0c08`;

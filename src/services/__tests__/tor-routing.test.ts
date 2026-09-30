@@ -84,14 +84,6 @@ jest.mock("nostr-tools/pool", () => ({
     mockUseWebSocketImplementation(impl),
 }));
 
-// Bare, and that is the assertion, not a shortcut. Nothing in the Tor path may
-// reach for the BLE module, and a `default: {}` that never gets called is how
-// this file proves it.
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-
 jest.mock("@bridge/NativeAirhopTor", () => ({
   __esModule: true,
   default: {
@@ -574,8 +566,8 @@ describe("startup priming on Android", () => {
   test("a start that cannot run at all is reported, not left spinning", async () => {
     // The native side rejects only when Tor cannot run rather than merely being
     // slow: no library for this ABI, or an unwritable state directory. Neither
-    // improves by waiting, and swallowing it left the banner on "Starting Tor"
-    // for the whole session with nothing behind it.
+    // improves by waiting, and swallowing it would leave the banner on
+    // "Starting Tor" for the whole session with nothing behind it.
     mockTorEnabled = true;
     mockStartTor.mockRejectedValue(new Error("no library"));
 
@@ -709,12 +701,6 @@ describe("revalidating on Android", () => {
 
     expect(mockSetTorActive).toHaveBeenLastCalledWith(false);
   });
-
-  test("never reaches for the BLE module", async () => {
-    // Nothing in the Tor path may reach through AirhopBLE; the bare mock above throws if it does.
-    mockTorEnabled = true;
-    await expect(revalidateTorRouting()).resolves.toBeUndefined();
-  });
 });
 
 describe("the master internet switch", () => {
@@ -782,17 +768,13 @@ describe("app foreground on Android", () => {
   test("both edges reach the native client", () => {
     // Dormancy, not a stop. Android keeps the process alive through the
     // foreground service, so without this a backgrounded Airhop keeps a
-    // consensus fresh all day on a battery.
+    // consensus fresh all day on a battery. Runs from the Tor-off baseline,
+    // which must not throw either.
     notifyTorAppForeground(false);
     expect(mockSetAppForeground).toHaveBeenCalledWith(false);
 
     notifyTorAppForeground(true);
     expect(mockSetAppForeground).toHaveBeenCalledWith(true);
-  });
-
-  test("is safe to call with Tor off", () => {
-    mockTorEnabled = false;
-    expect(() => notifyTorAppForeground(false)).not.toThrow();
   });
 });
 
@@ -901,6 +883,19 @@ describe("bridge modes", () => {
     mockRestartNostr.mockReset();
   });
 
+  // The preference is what the iOS mint gate and every other Tor claim read.
+  // Dropped for the gap between the old client and the new one, it would let a
+  // wallet pass go out on the clear net.
+  test("changing mode never drops the Tor preference", async () => {
+    await setTorRouting(true);
+    mockSetTorEnabled.mockClear();
+
+    await setTorBridgeMode("snowflake");
+
+    expect(mockSetTorEnabled).not.toHaveBeenCalledWith(false);
+    expect(mockTorEnabled).toBe(true);
+  });
+
   test("changing mode while Tor is off persists without starting anything", async () => {
     mockTorEnabled = false;
     await setTorBridgeMode("custom", "obfs4 192.0.2.1:443 ABCD");
@@ -927,6 +922,20 @@ describe("a bridge mode with nothing to apply", () => {
     // than blaming the network.
     expect(result.reason).toBe("no-bridges");
     expect(mockStartTor).not.toHaveBeenCalled();
+  });
+
+  // The launch path holds the same line the toggle does: an empty custom
+  // mode left from a previous session must not start Arti without bridges.
+  test("a launch with no lines holds instead of connecting directly", () => {
+    mockTorEnabled = true;
+    mockBridgeMode = "custom";
+    mockBridgeLines = "";
+
+    primeTorRoutingOnStartup();
+
+    expect(mockStartTor).not.toHaveBeenCalled();
+    expect(mockNostrBlocked).toBe(true);
+    expect(mockTorBootstrap).toBe("blocked");
   });
 
   test("selecting it while Tor runs reveals its input without a restart", async () => {

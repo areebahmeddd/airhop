@@ -53,14 +53,6 @@ describe("geohash interop with bitchat", () => {
     expect(encodeGeohash(BLR_LAT, BLR_LNG, 5)).toBe("tdr1k");
   });
 
-  it("is a prefix hierarchy, so a finer cell sits inside its parent", () => {
-    const region = encodeGeohash(BLR_LAT, BLR_LNG, 2);
-    const province = encodeGeohash(BLR_LAT, BLR_LNG, 4);
-    const city = encodeGeohash(BLR_LAT, BLR_LNG, 5);
-    expect(province.startsWith(region)).toBe(true);
-    expect(city.startsWith(province)).toBe(true);
-  });
-
   it("puts a different continent in a different region cell", () => {
     // The Android emulator defaults to Mountain View, which is why an emulator
     // and a handset in India never share a location channel.

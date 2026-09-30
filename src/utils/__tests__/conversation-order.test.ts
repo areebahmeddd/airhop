@@ -23,7 +23,8 @@ function msg(channel: string, ts: number): ChatMessage {
 
 const messages: Record<string, ChatMessage[]> = {
   "dm:aaa": [msg("dm:aaa", 100)],
-  "dm:bbb": [msg("dm:bbb", 300)],
+  // Stored oldest-first, as chat-store keeps them.
+  "dm:bbb": [msg("dm:bbb", 150), msg("dm:bbb", 300)],
   "dm:ccc": [msg("dm:ccc", 200)],
   "dm:empty": [],
 };

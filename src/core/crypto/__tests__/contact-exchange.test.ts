@@ -57,12 +57,6 @@ describe("ContactCard binary encode/decode", () => {
     expect(decoded.nickname).toBe("");
   });
 
-  test("max-length 32-byte nickname round-trips", () => {
-    const card = makeCard({ nickname: "a".repeat(32) });
-    const decoded = decodeContactCard(encodeContactCard(card));
-    expect(decoded.nickname).toBe("a".repeat(32));
-  });
-
   test("nickname longer than 32 bytes is silently truncated", () => {
     const card = makeCard({ nickname: "a".repeat(60) });
     const buf = encodeContactCard(card);
@@ -120,13 +114,6 @@ describe("ContactCard binary encode/decode", () => {
 describe("ContactCard Nostr pubkey", () => {
   const npub = new Uint8Array(32).fill(0xdd);
 
-  test("round-trips the Nostr key", () => {
-    const decoded = decodeContactCard(
-      encodeContactCard(makeCard({ nostrPubKey: npub })),
-    );
-    expect(Array.from(decoded.nostrPubKey)).toEqual(Array.from(npub));
-  });
-
   test("the npub survives even with a max-length nickname (variable offset)", () => {
     const card = makeCard({ nickname: "a".repeat(32), nostrPubKey: npub });
     const decoded = decodeContactCard(encodeContactCard(card));
@@ -172,6 +159,15 @@ describe("QR content encode/decode", () => {
     expect(Array.from(decoded!.noisePubKey)).toEqual(
       Array.from(card.noisePubKey),
     );
+    expect(Array.from(decoded!.signingPubKey)).toEqual(
+      Array.from(card.signingPubKey),
+    );
+  });
+
+  test("decodeQRContent returns null for a bare peer ID rather than throwing", () => {
+    // The scanner tries card-parsing first and falls back to a plain ID, so
+    // this must fail softly.
+    expect(decodeQRContent("aabbccdd00112233")).toBeNull();
   });
 
   test("decodeQRContent returns null for non-Airhop QR", () => {

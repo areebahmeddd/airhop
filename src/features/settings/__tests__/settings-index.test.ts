@@ -112,9 +112,17 @@ describe("searchSettings", () => {
     searchSettings(q, t).map((h) => t(h.entry.labelKey));
 
   it("ranks a name match above a section match above a description match", () => {
-    const hits = labels("cache");
-    expect(hits[0]).toBe(t("settings.storage.cache"));
-    expect(hits.length).toBeGreaterThan(1);
+    // "relays" lands on all three fields: the section's own row by name, its
+    // rows by section, and Bluetooth by description. Ties sort by label.
+    expect(searchSettings("relays", t).map((h) => h.entry.key)).toEqual([
+      "section-network",
+      "bitchat",
+      "relay-discovery",
+      "internet",
+      "lan",
+      "wifi-aware",
+      "perm-bluetooth",
+    ]);
   });
 
   it("matches every word of a query, in any order", () => {

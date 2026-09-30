@@ -106,6 +106,7 @@ class AirhopForegroundService : Service() {
 
     override fun onDestroy() {
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        AirhopBLEModule.onBackgroundServiceStopped()
         super.onDestroy()
     }
 

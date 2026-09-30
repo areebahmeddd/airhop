@@ -7,8 +7,8 @@
 //
 // Persisted, for the same reason the DM outbox is: "they will get this when they
 // are next in range" has to survive an app restart to mean anything. In memory
-// only, closing the app lost every owed invite and rotation, and the creator saw
-// a working group while the member never learned it existed. bitchat does not
+// only, closing the app would lose every owed invite and rotation, leaving the
+// creator a working group the member never learns exists. bitchat does not
 // queue these at all (ChatGroupCoordinator only sends to currently-connected
 // members and gives up), so this is deliberately better than upstream rather
 // than a divergence from it.
@@ -17,6 +17,7 @@
 // same key group-store already holds for the same group on the same device, so
 // this adds no exposure that was not already there, and panic wipe clears both.
 
+import { decodeGroupState } from "@core/mesh/rooms/group-protocol";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { getStorage } from "./mmkv";
 
@@ -54,6 +55,15 @@ function load(): Owed {
   }
 }
 
+function epochOf(
+  stateBytes: Uint8Array,
+): { groupHex: string; epoch: number } | null {
+  const state = decodeGroupState(stateBytes);
+  return state === null
+    ? null
+    : { groupHex: bytesToHex(state.groupID), epoch: state.epoch };
+}
+
 function save(owed: Owed): void {
   if (Object.keys(owed).length === 0) storage.remove(STORAGE_KEY);
   else storage.set(STORAGE_KEY, JSON.stringify(owed));
@@ -61,6 +71,11 @@ function save(owed: Owed): void {
 
 // Hold a state for a peer. Same (type, bytes) twice is one entry: a retry must
 // not make the member receive the invite twice when they finally connect.
+//
+// Only the newest epoch of a group is owed. An older one is unusable once the
+// newer lands, and sent together over several hops, the two can arrive out of
+// order: a key update landing after the removal that replaced it would put a
+// removed member back into a group nobody else is in.
 export function queueOwedGroupState(
   peerID: string,
   type: number,
@@ -69,9 +84,26 @@ export function queueOwedGroupState(
 ): void {
   const owed = load();
   const stateHex = bytesToHex(stateBytes);
-  const existing = owed[peerID] ?? [];
-  if (existing.some((e) => e.type === type && e.stateHex === stateHex)) return;
-  const next = [...existing, { type, stateHex, queuedAtMs: nowMs }];
+  const held = owed[peerID] ?? [];
+  if (held.some((e) => e.type === type && e.stateHex === stateHex)) return;
+  const incoming = epochOf(stateBytes);
+  // The epoch of an entry for the same group, or null for any other entry.
+  const rival = (e: OwedGroupState): number | null => {
+    if (incoming === null) return null;
+    const other = epochOf(hexToBytes(e.stateHex));
+    return other?.groupHex === incoming.groupHex ? other.epoch : null;
+  };
+  if (
+    incoming !== null &&
+    held.some((e) => (rival(e) ?? -1) > incoming.epoch)
+  ) {
+    return;
+  }
+  const kept = held.filter((e) => {
+    const epoch = rival(e);
+    return epoch === null || incoming === null || epoch >= incoming.epoch;
+  });
+  const next = [...kept, { type, stateHex, queuedAtMs: nowMs }];
   owed[peerID] = next.length > MAX_PER_PEER ? next.slice(-MAX_PER_PEER) : next;
   save(owed);
 }

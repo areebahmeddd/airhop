@@ -93,21 +93,3 @@ export const lanBridge = {
   addListener: (e: string): void => currentLan?.addListener(e),
   removeListeners: (n: number): void => currentLan?.removeListeners(n),
 };
-
-export const inertLanBridge = {
-  startLAN: async (): Promise<void> => undefined,
-  stopLAN: async (): Promise<void> => undefined,
-  connectToPeer: async (): Promise<void> => undefined,
-  writeToLANLink: async (): Promise<void> => undefined,
-  addListener: (): void => undefined,
-  removeListeners: (): void => undefined,
-};
-
-// The original inert form, kept for suites that never install a module.
-export const inertWifiBridge = {
-  startWiFi: async (): Promise<void> => undefined,
-  stopWiFi: async (): Promise<void> => undefined,
-  writeToWiFiLink: async (): Promise<void> => undefined,
-  addListener: (): void => undefined,
-  removeListeners: (): void => undefined,
-};

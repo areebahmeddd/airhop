@@ -12,7 +12,7 @@
 // No mint is involved: the offline path is the subject.
 
 // Imports come first in source; Babel hoists jest.mock() calls above them.
-import { getEncodedToken, type Token } from "@cashu/cashu-ts";
+import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { toProofLike } from "@core/payments/cashu";
 import {
   accountKey,
@@ -162,8 +162,16 @@ describe("preparing a send", () => {
     // The token string is what the recipient actually receives, and it is kept
     // on the transaction so it survives a restart and stays re-shareable.
     const prepared = await prepareSend({ amount: 4 });
-    expect(prepared.token.startsWith("cashu")).toBe(true);
-    expect(prepared.token.length).toBeGreaterThan(12);
+    const decoded = getDecodedToken(prepared.token, [KEYSET]);
+    expect(decoded.mint).toBe(MINT);
+    expect(decoded.unit).toBe(UNIT);
+    expect(
+      decoded.proofs.reduce((sum, p) => sum + p.amount.toNumber(), 0),
+    ).toBe(4);
+    const tx = useWalletStore
+      .getState()
+      .history.find((t) => t.id === prepared.txId);
+    expect(tx?.token).toBe(prepared.token);
   });
 
   it("refuses to overpay silently when no exact amount can be made", async () => {

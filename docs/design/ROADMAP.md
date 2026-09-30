@@ -52,17 +52,16 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 What each milestone delivered, item by item, is in [PROGRESS.md](../dev/PROGRESS.md#what-exists).
 
-| Version             | Goal                                                          | Milestone                                                                                                                                     |
-| ------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| v0.5.0              | Foundation: a BLE mesh between two phones                     | Two phones discover each other and exchange signed announces                                                                                  |
-| v0.6.0              | Core messaging, bitchat wire-compatible                       | Full offline mesh chat, with Airhop to bitchat delivery verified                                                                              |
-| v0.7.0              | Internet bridge and live voice                                | DMs across a city over Nostr, through embedded Arti on both platforms; live push-to-talk over BLE, interoperating with bitchat                |
-| v0.8.0              | Identity and forward secrecy                                  | Double Ratchet passing its tests; courier mail survives the recipient's long-term key leaking; a scanned card is trusted, a linked one is not |
-| v0.9.0              | Two transports beside Bluetooth, one fast, one cross-platform | Attachments over same-platform Wi-Fi Aware; an iPhone and an Android carrying the mesh over shared Wi-Fi with Bluetooth idle                  |
-| v0.9.5              | 35 languages, with the compiler enforcing completeness        | Every screen reads from the catalogs, and CI cannot regress it                                                                                |
-| v0.9.6              | A real wallet, not a token viewer                             | Ecash sent and received offline over BLE, topped up and cashed out over Lightning, and rebuilt on a new phone from twelve words               |
-| v1.0.0              | Production UI and public release                              | UI complete, accessibility audited, submitted to both stores                                                                                  |
-| v1.0.9 (in release) | Device transfer and a hardening pass                          | The identity moves to a new phone with no server, and the security review's findings are fixed and tested                                     |
+| Version | Goal                                                          | Milestone                                                                                                                                     |
+| ------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| v0.5.0  | Foundation: a BLE mesh between two phones                     | Two phones discover each other and exchange signed announces                                                                                  |
+| v0.6.0  | Core messaging, bitchat wire-compatible                       | Full offline mesh chat, with Airhop to bitchat delivery verified                                                                              |
+| v0.7.0  | Internet bridge and live voice                                | DMs across a city over Nostr, through embedded Arti on both platforms; live push-to-talk over BLE, interoperating with bitchat                |
+| v0.8.0  | Identity and forward secrecy                                  | Double Ratchet passing its tests; courier mail survives the recipient's long-term key leaking; a scanned card is trusted, a linked one is not |
+| v0.9.0  | Two transports beside Bluetooth, one fast, one cross-platform | Attachments over same-platform Wi-Fi Aware; an iPhone and an Android carrying the mesh over shared Wi-Fi with Bluetooth idle                  |
+| v0.9.5  | 35 languages, with the compiler enforcing completeness        | Every screen reads from the catalogs, and CI cannot regress it                                                                                |
+| v0.9.6  | A real wallet, not a token viewer                             | Ecash sent and received offline over BLE, topped up and cashed out over Lightning, and rebuilt on a new phone from twelve words               |
+| v1.0.0  | Production UI and public release                              | UI complete, accessibility audited, submitted to both stores                                                                                  |
 
 ### Planned
 

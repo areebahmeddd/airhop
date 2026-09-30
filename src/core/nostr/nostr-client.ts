@@ -91,6 +91,11 @@ const CONNECTION_POLL_MS = 5_000;
 // the queue so it keeps its place in line.
 const EOSE_MARKER = {} as Event;
 
+// Backoff for reopening a subscription a relay dropped, doubling from the first
+// to the cap. Slow on purpose: a relay that refuses Tor exits refuses every try.
+const RESUBSCRIBE_BASE_MS = 15_000;
+const RESUBSCRIBE_MAX_MS = 5 * 60_000;
+
 export interface NostrClientConfig {
   // Relay URLs to connect to (merged with default DM relays).
   relays?: string[];
@@ -118,6 +123,8 @@ export class NostrClient {
   // Inbound handler queue and its drain flag. See the pump below.
   private readonly pending: [EventHandler, Event][] = [];
   private draining = false;
+  private closed = false;
+  private readonly resubscribeTimers = new Set<ReturnType<typeof setTimeout>>();
 
   constructor(config: NostrClientConfig = {}) {
     this.onConnectionChange = config.onConnectionChange;
@@ -240,17 +247,49 @@ export class NostrClient {
             backfilling -= 1;
             if (backfilling === 0) this.enqueue(() => onEose(), EOSE_MARKER);
           };
-    const closers = targets.flatMap((url) =>
-      filters.map((filter) =>
+    // nostr-tools drops a relay whose first connect fails, taking this
+    // subscription with it: its reconnect covers only sockets that opened once.
+    // A relay can also end a subscription itself. Either way nothing would
+    // listen there again while the banner still reads connected, so a closed
+    // subscription is reopened after a backoff until the caller closes it.
+    // Counted once toward EOSE: a reopening is not a second backfill.
+    let active = true;
+    const closers = new Map<string, SubCloser>();
+    const open = (
+      key: string,
+      url: string,
+      filter: Filter,
+      attempt: number,
+    ): void => {
+      closers.set(
+        key,
         this.pool.subscribeMany([url], pinGiftWrapSince({ ...filter }), {
           onevent: deliver,
-          oneose,
+          oneose: attempt === 0 ? oneose : undefined,
           alreadyHaveEvent,
+          onclose: () => {
+            if (!active || this.closed) return;
+            const delay = Math.min(
+              RESUBSCRIBE_BASE_MS * 2 ** attempt,
+              RESUBSCRIBE_MAX_MS,
+            );
+            const timer = setTimeout(() => {
+              this.resubscribeTimers.delete(timer);
+              if (active && !this.closed) open(key, url, filter, attempt + 1);
+            }, delay);
+            this.resubscribeTimers.add(timer);
+          },
         }),
-      ),
+      );
+    };
+    targets.forEach((url) =>
+      filters.forEach((filter, i) => open(`${url}|${i}`, url, filter, 0)),
     );
     return {
-      close: (reason?: string) => closers.forEach((c) => c.close(reason)),
+      close: (reason?: string) => {
+        active = false;
+        closers.forEach((c) => c.close(reason));
+      },
     };
   }
 
@@ -394,8 +433,12 @@ export class NostrClient {
   // client is single-use either way: every caller builds a fresh one rather
   // than reopening this.
   close(): void {
-    // Stopped first, so a closed client reports no further transition.
+    // Stopped first, so a closed client reports no further transition and
+    // reopens no subscription.
+    this.closed = true;
     clearInterval(this.connectionPoll);
+    this.resubscribeTimers.forEach(clearTimeout);
+    this.resubscribeTimers.clear();
     this.pool.destroy();
     // Anything still queued belongs to subscriptions that have just gone away,
     // and its handlers close over a transport this client no longer owns. A

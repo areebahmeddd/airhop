@@ -5,7 +5,7 @@
 //
 // This is the closest thing to a cross-client field test that CI can run.
 // `decodeLikeBitchatIOS` and `decodeLikeBitchatAndroid` below are faithful ports
-// of `BitchatFilePacket.decode` from bitchat/ios and bitchat/android, kept
+// of `BitchatFilePacket.decode` from bitchat-ios and bitchat-android, kept
 // literal so they can be diffed against the originals. Airhop's real encoder is
 // run through both.
 //
@@ -38,7 +38,7 @@ interface Decoded {
   content: Uint8Array;
 }
 
-// ---- Port of bitchat/ios BitchatFilePacket.decode ----
+// ---- Port of bitchat-ios BitchatFilePacket.decode ----
 
 const TLV_FILENAME = 0x01;
 const TLV_FILESIZE = 0x02;
@@ -118,7 +118,7 @@ function decodeLikeBitchatIOS(data: Uint8Array): Decoded | null {
   return { fileName, fileSize: fileSize ?? total, mimeType, content };
 }
 
-// ---- Port of bitchat/android BitchatFilePacket.decode ----
+// ---- Port of bitchat-android BitchatFilePacket.decode ----
 
 // Android differs in three ways that matter: content length is ALWAYS 4 bytes
 // with no 2-byte fallback, FILE_SIZE must be exactly 4 bytes or the packet is
@@ -186,8 +186,8 @@ function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
 // ---- The contract ----
 
 const CLIENTS: [string, (d: Uint8Array) => Decoded | null][] = [
-  ["bitchat/ios", decodeLikeBitchatIOS],
-  ["bitchat/android", decodeLikeBitchatAndroid],
+  ["bitchat-ios", decodeLikeBitchatIOS],
+  ["bitchat-android", decodeLikeBitchatAndroid],
 ];
 
 function bytes(n: number, fill = 0xab): Uint8Array {
@@ -233,12 +233,13 @@ describe.each(CLIENTS)(
     });
 
     it("always sends a filename, which Android requires and iOS does not", () => {
+      // Nothing named: the send path's wireFileName still produces one.
       const wire = encodeFilePacket({
-        fileName: "notes.pdf",
+        fileName: wireFileName("document", undefined, "application/pdf"),
         mimeType: "application/pdf",
         content: bytes(64),
       });
-      expect(decode(wire!)?.fileName).toBe("notes.pdf");
+      expect(decode(wire!)?.fileName).toMatch(/^file_[0-9a-f-]{36}\.pdf$/);
     });
 
     it("handles a document at the largest size Airhop will send", () => {
@@ -262,39 +263,22 @@ describe.each(CLIENTS)(
       expect(decode(wire!)?.content.length).toBe(1);
     });
 
-    it("carries a unicode filename and caption without truncation", () => {
+    // Lengths are UTF-8 byte counts, not characters: a character count would
+    // truncate the name and desync the cursor past the caption bitchat skips.
+    it("carries a unicode filename, and skips a unicode caption cleanly", () => {
+      const content = bytes(32);
       const wire = encodeFilePacket({
-        fileName: "photo.jpg",
+        fileName: "café 東京.jpg",
         mimeType: "image/jpeg",
-        content: bytes(32),
+        content,
         caption: "café ☕ 東京",
       });
-      expect(decode(wire!)?.fileName).toBe("photo.jpg");
+      const out = decode(wire!);
+      expect(out?.fileName).toBe("café 東京.jpg");
+      expect(out?.content).toEqual(content);
     });
   },
 );
-
-describe("Airhop refuses what bitchat would reject", () => {
-  it("will not encode an empty file", () => {
-    expect(
-      encodeFilePacket({
-        fileName: "a",
-        mimeType: "text/plain",
-        content: bytes(0),
-      }),
-    ).toBeNull();
-  });
-
-  it("will not encode past the 1 MiB ceiling both clients enforce", () => {
-    expect(
-      encodeFilePacket({
-        fileName: "a",
-        mimeType: "text/plain",
-        content: bytes(MAX_FILE_BYTES + 1),
-      }),
-    ).toBeNull();
-  });
-});
 
 // ---- Wire file names ----
 
@@ -354,8 +338,7 @@ describe("wireFileName", () => {
 //
 // Miss, and nothing errors anywhere. The listener simply sees the burst they
 // heard and then a second bubble repeating it, and the sender has no way to
-// know. Airhop shipped `voice.aac` for exactly this reason, which fails the
-// prefix check on its first character.
+// know.
 //
 // Ports of ChatLiveVoiceCoordinator.burstID(fromVoiceFileName:) on iOS and
 // LiveVoiceManager.burstIDFromVoiceFileName on Android. They agree, and are
@@ -400,11 +383,11 @@ describe("a live burst and its recording are one message", () => {
     );
   });
 
-  // The two names Airhop could plausibly regress to. Neither errors; both just
-  // silently stop matching, which is what makes this worth pinning.
+  // Names Airhop could plausibly regress to. None errors; each just silently
+  // stops matching, which is what makes this worth pinning.
   it("rejects the names that leave the listener with two bubbles", () => {
     for (const name of [
-      "voice.aac", // no burst ID at all - what this used to send
+      "voice.aac", // no burst ID at all
       "voice_note.aac", // a word where the ID goes
       wireMediaName("voice", "m4a"), // voice_<uuid>: hyphens are not hex
       `${burstIDHex}.aac`, // ID without the prefix

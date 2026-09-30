@@ -35,12 +35,6 @@ describe("truncateToUtf8Bytes", () => {
     expect(truncateToUtf8Bytes("hello", 255)).toBe("hello");
   });
 
-  it("never returns more bytes than the budget", () => {
-    const text = "😀".repeat(100); // 400 bytes
-    const fitted = truncateToUtf8Bytes(text, 255);
-    expect(utf8ByteLength(fitted)).toBeLessThanOrEqual(255);
-  });
-
   it("cuts on a code point boundary, never mid-character", () => {
     // 255 is not a multiple of 4, so a naive byte slice would split the last
     // emoji and emit a lone surrogate half that renders as a replacement

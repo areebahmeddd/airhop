@@ -213,7 +213,7 @@ describe("cancel", () => {
 });
 
 describe("activeCount", () => {
-  it("counts active and stalled transfers, not finished ones", () => {
+  it("counts a transfer still running, not a finished one", () => {
     jest.useFakeTimers();
     begin("a", 100);
     begin("b", 100);
@@ -288,18 +288,22 @@ describe("reconcile (stall watchdog)", () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     begin("done", 100);
+    begin("failed", 100);
     begin("cancelled", 100);
     state().finish("done");
+    state().fail("failed");
     state().cancel("cancelled");
+    const before = state().transfers;
 
     jest.setSystemTime(new Date("2026-01-01T00:02:00Z"));
     state().reconcile();
-    // finish/cancel already scheduled their own dismissals; reconcile must not
-    // resurrect or re-status them.
-    expect(state().transfers["done"]?.status ?? "gone").not.toBe("stalled");
-    expect(state().transfers["cancelled"]?.status ?? "gone").not.toBe(
-      "stalled",
-    );
+    // finish/fail/cancel already scheduled their own dismissals; reconcile must
+    // not resurrect or re-status them. The fake timers have not run, so all
+    // three are still here, and an untouched map is the same object.
+    expect(state().transfers).toBe(before);
+    expect(state().transfers["done"].status).toBe("done");
+    expect(state().transfers["failed"].status).toBe("failed");
+    expect(state().transfers["cancelled"].status).toBe("cancelled");
   });
 });
 

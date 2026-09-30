@@ -138,10 +138,11 @@ export default function PrivacyPage() {
                 members of that group.
               </li>
               <li>
-                Live voice, if you turn it on. Holding the mic streams your voice to everyone in
-                Bluetooth range as you speak. A public burst is signed but not encrypted, the same
-                as a room attachment. In a direct message it stays inside that peer's encrypted
-                session. Nothing is recorded on either device.
+                Live voice, on unless you turn it off. Holding the mic streams your voice to
+                everyone in Bluetooth range as you speak. A public burst is signed but not
+                encrypted, the same as a room attachment. In a direct message it stays inside that
+                peer's encrypted session. When you let go, the same audio is also sent as an
+                ordinary voice note.
               </li>
               <li>
                 A screenshot notice, in private conversations only. Taking a screenshot in a direct
@@ -274,8 +275,9 @@ export default function PrivacyPage() {
               nothing about the payment leaves them.
             </p>
             <p className="text-[15px] leading-[1.75]">
-              Talking to a mint is different, and only happens when you deposit, withdraw, refresh,
-              or claim a token while online.
+              Talking to a mint is different. It happens when you deposit, withdraw, refresh, or
+              claim a token while online, and on its own once you are online, to settle coins you
+              received offline, redeem a nutzap, or fetch a mint's keys to show a token in a chat.
             </p>
             <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
               <li>
@@ -377,6 +379,8 @@ export default function PrivacyPage() {
                 <strong>Forward secrecy.</strong> Provided by Double Ratchet for live conversations,
                 and by single-use prekeys for messages left for someone who is offline, so an
                 undelivered message stays protected even if a long-term key is compromised later.
+                That needs their prekeys from the last week; without them, the message is sealed to
+                their long-term key.
               </li>
               <li>
                 <strong>Private groups.</strong> Group messages use ChaCha20-Poly1305 under a shared
@@ -396,7 +400,7 @@ export default function PrivacyPage() {
                 signed by its mint with no network connection.
               </li>
               <li>
-                <strong>Implementation.</strong> All cryptographic operations use the{" "}
+                <strong>Implementation.</strong> Airhop's own protocol cryptography uses the{" "}
                 <TextLink href="https://github.com/paulmillr/noble-curves" tone="quiet">
                   @noble
                 </TextLink>{" "}

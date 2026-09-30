@@ -298,10 +298,14 @@ export class RadioController {
     }
     this.reconciling = true;
     try {
+      // Disposal ends the loop only once nothing is left to stop: a panic wipe
+      // lands mid-pass as stop() then dispose(), and the pass it interrupts
+      // bails, so the shutdown pass must still run or the radios stay up under
+      // an identity that no longer exists.
       do {
         this.dirty = false;
         await this.reconcileOnce();
-      } while (this.dirty && !this.disposed);
+      } while (this.dirty && (!this.disposed || !this.desired.running));
     } finally {
       this.reconciling = false;
     }

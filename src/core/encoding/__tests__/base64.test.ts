@@ -1,10 +1,9 @@
 /**
  * @jest-environment node
  */
-// Base64 and base64url. These pin the behaviours that differed between the
-// twelve implementations this file replaced, because those differences were the
-// reason to consolidate: a string that decoded in one place and failed in
-// another is a decryption failure that reads as a network problem.
+// Base64 and base64url, shared by every caller in the protocol. A string that
+// decodes in one place and fails in another is a decryption failure that reads
+// as a network problem, so these pin the edges where decoders tend to differ.
 import {
   base64ToBytes,
   base64UrlToBytes,
@@ -17,10 +16,6 @@ import {
 const HELLO = new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f]); // "hello"
 
 describe("standard base64", () => {
-  it("round-trips", () => {
-    expect(base64ToBytes(bytesToBase64(HELLO))).toEqual(HELLO);
-  });
-
   it("matches the known encoding", () => {
     expect(bytesToBase64(HELLO)).toBe("aGVsbG8=");
     expect(base64ToBytes("aGVsbG8=")).toEqual(HELLO);
@@ -48,8 +43,8 @@ describe("standard base64", () => {
 });
 
 describe("base64 error behaviour", () => {
-  // Both behaviours existed in the code this replaced. Keeping them separate
-  // and named is what let every call site migrate without changing meaning.
+  // A throwing decoder and a null-returning one, kept separate and named so a
+  // call site says which failure it expects.
   it("base64ToBytes throws on malformed input", () => {
     expect(() => base64ToBytes("!!!!")).toThrow();
   });
@@ -80,10 +75,9 @@ describe("base64url", () => {
     expect(base64UrlToBytes(bytesToBase64Url(HELLO))).toEqual(HELLO);
   });
 
-  // The drift that motivated this file. One of the three base64url decoders
-  // never restored padding before decoding, so an unpadded string, which is
-  // the only kind the encoder produces, was at the mercy of how forgiving the
-  // engine happened to be.
+  // A decoder that does not restore padding first leaves an unpadded string,
+  // the only kind the encoder produces, at the mercy of how forgiving the
+  // engine happens to be.
   it("decodes unpadded input, which is all the encoder emits", () => {
     expect(base64UrlToBytes("aGVsbG8")).toEqual(HELLO);
   });

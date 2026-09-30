@@ -566,6 +566,9 @@ export default function WalletScreen({
       }
       const where = hostOf(result.mintUrl);
       if (result.outcome === "swapped") {
+        // The mint confirmed it, which takes a network round trip; an offline
+        // claim below is only stored, so it gets no success buzz.
+        succeeded();
         showAlert(
           `+${formatUnitAmount(result.amount, result.unit)}`,
           t("wallet.receive.redeemed_here", { mint: where }) +
@@ -1414,6 +1417,8 @@ export default function WalletScreen({
     setBusy("withdrawPay");
     try {
       const result = await payLightningInvoice(withdrawQuote);
+      // Settling can take seconds, long enough to look away.
+      succeeded();
       setShowWithdraw(false);
       setWithdrawQuote(null);
       setWithdrawInvoice("");

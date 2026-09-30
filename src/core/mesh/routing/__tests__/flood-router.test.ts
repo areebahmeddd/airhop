@@ -12,7 +12,8 @@ import { FloodRouter, relayDecision, relayLimit } from "../flood-router";
 
 const LOCAL = new Uint8Array(8).fill(0xaa);
 
-function makePacket(_nonceByte: number = 0x01, ttl: number = 7): Packet {
+// The nonce byte is the payload, so two nonces are two distinct packet IDs.
+function makePacket(nonceByte: number = 0x01, ttl: number = 7): Packet {
   return {
     type: PacketType.ANNOUNCE,
     ttl,
@@ -21,7 +22,7 @@ function makePacket(_nonceByte: number = 0x01, ttl: number = 7): Packet {
     recipientID: new Uint8Array(8),
     timestamp: Math.floor(Date.now() / 1000),
     signature: new Uint8Array(64),
-    payload: new Uint8Array(0),
+    payload: new Uint8Array([nonceByte]),
   };
 }
 
@@ -51,15 +52,15 @@ describe("FloodRouter", () => {
       expect(router.receive(packet, (p) => sent.push(p))).toBe(false);
     });
 
-    it("schedules relay after jitter (10-220 ms)", () => {
+    it("schedules relay after jitter (10-40 ms at the default degree of 0)", () => {
       const sent: Packet[] = [];
       router.receive(makePacket(0x01, 7), (p) => sent.push(p));
 
       // Nothing sent immediately
       expect(sent.length).toBe(0);
 
-      // After max jitter + 1ms, relay must have fired
-      jest.advanceTimersByTime(221);
+      // By the top of the sparse window, the relay has fired.
+      jest.advanceTimersByTime(40);
       expect(sent.length).toBe(1);
     });
 
@@ -134,8 +135,10 @@ describe("FloodRouter", () => {
       const sent: Packet[] = [];
       router.receive(makePacket(0x01, 7), (p) => sent.push(p));
       router.receive(makePacket(0x02, 7), (p) => sent.push(p));
+      expect(jest.getTimerCount()).toBe(2);
 
       router.flush();
+      expect(jest.getTimerCount()).toBe(0);
       jest.advanceTimersByTime(300);
 
       // Both relays were cancelled
@@ -150,20 +153,9 @@ describe("FloodRouter", () => {
   });
 
   describe("jitter range", () => {
-    it("relay fires by 220 ms (upper bound of jitter window)", () => {
-      const sent: Packet[] = [];
-      router.receive(makePacket(0x03, 7), (p) => sent.push(p));
-
-      // Advance to upper bound of jitter window
-      jest.advanceTimersByTime(220);
-      expect(sent.length).toBe(1);
-    });
-
-    it("relay does not fire in < 10 ms (lower bound of jitter window)", () => {
-      // Spy on Math.random to force maximum jitter (220 ms)
-      const spy = jest
-        .spyOn(Math, "random")
-        .mockReturnValue(1 - Number.EPSILON);
+    it("relay fires no sooner than 10 ms, the bottom of the jitter window", () => {
+      // Math.random at 0 draws the shortest delay the window allows.
+      const spy = jest.spyOn(Math, "random").mockReturnValue(0);
 
       const sent: Packet[] = [];
       const r = new FloodRouter(LOCAL);
@@ -172,7 +164,7 @@ describe("FloodRouter", () => {
       jest.advanceTimersByTime(9);
       expect(sent.length).toBe(0);
 
-      jest.advanceTimersByTime(211);
+      jest.advanceTimersByTime(1);
       expect(sent.length).toBe(1);
 
       spy.mockRestore();

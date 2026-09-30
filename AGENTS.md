@@ -89,7 +89,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
-- Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`). Gossip sync and DM addressing depend on it.
+- Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
 - Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2C`, with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 

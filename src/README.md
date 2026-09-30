@@ -124,7 +124,7 @@ The test suite follows four principles:
 
 | Layer            | Covered                                                                | Excluded                                  |
 | ---------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
-| `core/crypto/`   | Noise XX/X, Double Ratchet, contact binding                            | None                                      |
+| `core/crypto/`   | Noise XX/X, Double Ratchet, keychain, contact cards, verification QR   | None                                      |
 | `core/encoding/` | Base64 round-trips and malformed input                                 | None                                      |
 | `core/mesh/`     | Wire format, routing, gossip, fragments, voice, bulletin board         | Native BLE I/O                            |
 | `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
@@ -133,7 +133,7 @@ The test suite follows four principles:
 | `i18n/`          | Translation catalog completeness                                       | None                                      |
 | `services/`      | Per-service behaviour: payments, geohash channels, transfers, policy   | Physical radios (simulated)               |
 | `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |
-| `platform/`      | OEM battery-settings URI resolution                                    | OS dialogs                                |
+| `platform/`      | OEM battery-settings URI resolution, device-owner authentication       | OS dialogs                                |
 | `utils/`         | Stateless utilities                                                    | None                                      |
 | `__tests__/`     | Whole-app lifecycle and multi-device simulation                        | Physical radios (simulated)               |
 

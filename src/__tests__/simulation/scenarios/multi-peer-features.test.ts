@@ -3,13 +3,13 @@
  */
 // The features that only mean anything with more than two phones in the room.
 //
-// Store-and-forward, private groups, the bulletin board, the internet gateway
-// and the mesh bridge all have unit tests for their wire formats and their
-// stores. None of that says whether the FEATURE works, because every one of
-// them is defined by what a third device does: a courier is a phone carrying
-// somebody else's mail, a gateway is a phone spending its own internet on a
-// neighbour's behalf, a group is meaningful only because a non-member is
-// present and cannot read it.
+// Store-and-forward, private groups and the bulletin board all have unit tests
+// for their wire formats and their stores. None of that says whether the
+// FEATURE works, because every one of them is defined by what a third device
+// does: a courier is a phone carrying somebody else's mail, a group is
+// meaningful only because a non-member is present and cannot read it. The
+// internet gateway and the mesh bridge have their own file,
+// gateway-bridge.test.ts.
 //
 // So each scenario here puts the bystander in the room and asserts what they
 // can and cannot see.
@@ -33,6 +33,8 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { base64ToBytes } from "@core/encoding/base64";
+import { decodePacket, PacketType } from "@core/mesh/wire/packet-codec";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { exactlyOnce, noCrashes, noForgedSenders } from "../harness/invariants";
 import { RadioFabric } from "../harness/radio-fabric";
@@ -388,162 +390,6 @@ test("F04 Tor refuses to turn on rather than quietly using the clear net", async
   s.assert(true);
 });
 
-test("F05 a phone with no internet reaches a location channel through a gateway", async () => {
-  const s = (scenario = new Scenario({
-    id: "F05",
-    title: "the gateway spends its connection on a neighbour's behalf",
-    seed: 604,
-  }));
-  const radio = new RadioFabric(s.world);
-  const relay = new RelayFabric(s.world);
-
-  // The gateway has internet and has opted in. The mesh-only phone has neither
-  // internet nor any way to get it except through a neighbour.
-  const gateway = SimDevice.create(
-    s.world,
-    {
-      ...android("gateway", 11),
-      internetEnabled: true,
-      gatewayEnabled: true,
-    },
-    relay,
-  );
-  const meshOnly = SimDevice.create(s.world, {
-    ...android("meshonly", 22),
-    internetEnabled: false,
-  });
-  const cast = [gateway, meshOnly];
-  for (const d of cast) radio.add(d);
-  s.track(...cast);
-  for (const d of cast) d.launch();
-
-  await waitForCoarse(
-    s.world,
-    () => meshOnly.peers().includes(gateway.peerID),
-    30_000,
-  );
-  s.check("the two phones found each other", meshOnly.peerCount() === 1);
-  s.check(
-    "the gateway is on the internet",
-    relay.connectionCount("gateway") > 0,
-    `${relay.connectionCount("gateway")} relay connections`,
-  );
-  s.check(
-    "the mesh-only phone has no internet of its own",
-    relay.connectionCount("meshonly") === 0,
-    `${relay.connectionCount("meshonly")} relay connections`,
-  );
-
-  // The mesh-only phone advertises nothing about the internet, and must still
-  // learn that a neighbour can carry for it.
-  const sawGateway = await waitForCoarse(
-    s.world,
-    () =>
-      meshOnly.meshState().bridgeActive === true || meshOnly.peerCount() > 0,
-    20_000,
-  );
-  s.check("it can see a neighbour to ask", sawGateway);
-
-  // Whatever the outcome of the uplink, the two invariants that matter are that
-  // the mesh-only phone never opened its own connection, and that nothing
-  // crashed trying.
-  await s.world.settle(30_000);
-  s.check(
-    "the mesh-only phone still never touched a relay directly",
-    relay.connectionCount("meshonly") === 0,
-    `${relay.connectionCount("meshonly")} relay connections`,
-  );
-  s.expectNone("process health", noCrashes(cast));
-  s.assert(true);
-});
-
-test("F06 two mesh islands share one public room across the bridge", async () => {
-  const s = (scenario = new Scenario({
-    id: "F06",
-    title: "islands that cannot hear each other, stitched over the internet",
-    seed: 605,
-  }));
-  const radio = new RadioFabric(s.world);
-  const relay = new RelayFabric(s.world);
-
-  // Island A: one bridging phone with internet, one mesh-only companion.
-  // Island B: the same shape. The two islands are out of radio range.
-  const bridgeA = SimDevice.create(
-    s.world,
-    {
-      ...android("bridgeA", 11),
-      internetEnabled: true,
-      bridgeEnabled: true,
-    },
-    relay,
-  );
-  const localA = SimDevice.create(s.world, android("localA", 22));
-  const bridgeB = SimDevice.create(
-    s.world,
-    {
-      ...android("bridgeB", 33),
-      internetEnabled: true,
-      bridgeEnabled: true,
-    },
-    relay,
-  );
-  const localB = SimDevice.create(s.world, android("localB", 44));
-  const cast = [bridgeA, localA, bridgeB, localB];
-  for (const d of cast) radio.add(d);
-  s.track(...cast);
-  radio.setTopology([
-    ["bridgeA", "localA"],
-    ["bridgeB", "localB"],
-  ]);
-  for (const d of cast) d.launch();
-
-  await waitForCoarse(s.world, () => radio.linkCount() === 2, 30_000);
-  s.check(
-    "the two islands formed and cannot hear each other",
-    radio.linkCount() === 2 && !radio.isLinked("localA", "localB"),
-    `links=[${radio.linkedPairs().join(", ")}]`,
-  );
-
-  const channel = "#bluetooth";
-  for (const d of cast) d.joinChannel(channel);
-  await waitForCoarse(
-    s.world,
-    () => localA.peers().includes(bridgeA.peerID),
-    30_000,
-  );
-
-  localA.send(channel, "anyone on the other side?");
-  await s.world.settle(45_000);
-
-  // Within island A this must simply work.
-  s.check(
-    "the message reached the bridging phone on its own island",
-    bridgeA.texts(channel).includes("anyone on the other side?"),
-    `bridgeA=[${bridgeA.texts(channel).join(" | ")}]`,
-  );
-
-  // Across the bridge is the feature under test. Reported either way, because a
-  // bridged copy must be marked as having come over the internet rather than
-  // presented as a nearby peer.
-  const crossed = bridgeB
-    .messages(channel)
-    .find((m) => m.text === "anyone on the other side?");
-  s.check(
-    "a bridged copy is labelled as arriving over the bridge, not as nearby",
-    crossed === undefined || crossed.viaBridge === true,
-    crossed === undefined
-      ? "nothing crossed in this window"
-      : `viaBridge=${String(crossed.viaBridge)}`,
-  );
-
-  // Whatever crossed, it must not have been duplicated: the same message
-  // arriving by radio and by bridge has to collapse into one row.
-  s.expectNone("exactly once", exactlyOnce(cast));
-  s.expectNone("no forged senders", noForgedSenders(cast));
-  s.expectNone("process health", noCrashes(cast));
-  s.assert(true);
-});
-
 test("F07 a group you left stays left through the creator's next rotation", async () => {
   // Leaving is local: the creator is never told, so its next roster change
   // sends the leaver a key update. That must not bring the group back.
@@ -663,9 +509,9 @@ test("F08 a message for someone long gone is carried, past one frame, from the c
   let envelopeFragments = 0;
   const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== alice.id) return;
-    const bin = globalThis.atob(dataBase64);
-    if (bin.charCodeAt(1) !== 0x20) return;
-    envelopeFragments += bin.includes("\u0004") ? 1 : 0;
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.type !== PacketType.FRAGMENT) return;
+    if (p.payload[12] === PacketType.COURIER_ENV) envelopeFragments++;
   });
 
   // The largest message a courier envelope can carry: sealed, past 512 bytes

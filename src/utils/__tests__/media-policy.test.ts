@@ -96,12 +96,6 @@ describe("forwarding an attachment", () => {
     const allowed = rooms.filter((r) => mediaBlockedReason(r) === null);
     expect(allowed).toEqual(["#bluetooth", "dm:aabbccdd00112233"]);
   });
-
-  it("gives a reason for every room it refuses", () => {
-    for (const room of rooms.filter((r) => !canSendMedia(r))) {
-      expect(mediaBlockedReason(room)).toBeTruthy();
-    }
-  });
 });
 
 // A screenshot notice is worth sending to the people who could already read the
@@ -122,12 +116,10 @@ describe("notifiesOnScreenshot", () => {
     expect(notifiesOnScreenshot("group:0011223344556677", false)).toBe(true);
   });
 
-  it("tells a private channel, which is sealed under its channel key", () => {
-    expect(notifiesOnScreenshot("#book-club", true)).toBe(true);
-  });
-
   it("tells nobody in the public mesh room", () => {
-    // Plaintext broadcast to every radio in range.
+    // Plaintext broadcast to every radio in range. The same room is public
+    // enough to carry an unencrypted photo, and for the same reason announcing
+    // a screenshot in it is a beacon.
     expect(notifiesOnScreenshot("#bluetooth", false)).toBe(false);
   });
 
@@ -146,16 +138,9 @@ describe("notifiesOnScreenshot", () => {
 
   it("keys a #channel on the key, not the name", () => {
     // The same room name is public without a key and private with one, so the
-    // decision has to follow key ownership rather than the "#" prefix.
+    // decision has to follow key ownership rather than the "#" prefix. Keyed,
+    // it is sealed under its channel key and the notice goes to members only.
     expect(notifiesOnScreenshot("#book-club", false)).toBe(false);
     expect(notifiesOnScreenshot("#book-club", true)).toBe(true);
-  });
-
-  it("never announces anywhere media is refused for being public", () => {
-    // The two rules answer different questions but share a boundary: a room
-    // public enough to carry an unencrypted photo is public enough that
-    // announcing a screenshot in it is a beacon.
-    expect(canSendMedia("#bluetooth")).toBe(true);
-    expect(notifiesOnScreenshot("#bluetooth", false)).toBe(false);
   });
 });

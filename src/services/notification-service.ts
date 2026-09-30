@@ -1,4 +1,5 @@
-// Message notifications: local system notifications for inbound messages.
+// Local system notifications: inbound messages, nearby peers, Ring and
+// payments redeemed in the background.
 //
 // "Local" is the whole point. There is no push server and no FCM: notifications
 // are raised by the running app process the moment a message lands over any
@@ -13,7 +14,7 @@
 // foregrounded, and which conversation is currently open.
 
 import { t } from "@i18n";
-import { succeeded } from "@platform/haptics";
+import { arrived } from "@platform/haptics";
 import { stopRingAlert } from "@platform/ring-alert";
 import type { ChatMessage } from "@store/chat-store";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
@@ -26,6 +27,7 @@ import {
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
+  paymentNotificationContent,
   ringNotificationContent,
   shouldHapticPing,
   shouldNotifyNearby,
@@ -45,6 +47,16 @@ const MESSAGES_CHANNEL_ID = "messages";
 const NEARBY_CHANNEL_ID = "nearby";
 // One id, so a later notice replaces the last rather than stacking.
 const NEARBY_NOTIFICATION_ID = "nearby_peers";
+
+// The tabs a notice that is not about a conversation can open.
+type NoticeTab = "mesh" | "wallet";
+
+const PAYMENT_ID_PREFIX = "payment_";
+
+// The floor between two arrival haptics. A busy room while another thread is
+// open would otherwise buzz on every message; one pulse per burst still says
+// something came in.
+const ARRIVED_COOLDOWN_MS = 3_000;
 
 // Own channel, same reason nearby has one: per-category system control, so
 // silencing messages doesn't silence Ring or vice versa. MAX importance for
@@ -71,18 +83,23 @@ const IOS_RING_PULSE_SECONDS = [0, 15, 30];
 let appActive = true;
 let activeChannel = "";
 let navigate: ((channel: string) => void) | null = null;
-let openMesh: (() => void) | null = null;
+let openTab: ((tab: NoticeTab) => void) | null = null;
 // A tap that arrived with no screen to route it to: the mesh (and this module)
 // can outlive the UI on Android, and a boot start runs with none at all. Held
 // until a navigator registers, which is the Activity the tap launched.
 let pendingChannel: string | null = null;
-let pendingMesh = false;
+let pendingTab: NoticeTab | null = null;
 let configured = false;
 let responseSub: Notifications.EventSubscription | null = null;
 // When the last nearby notice went out, for the cooldown. Module state, not
 // persisted: a relaunch is already a rare event, and starting a fresh app run
 // with a clean cooldown is the behaviour a user would expect anyway.
 let lastNearbyNotifiedAtMs: number | null = null;
+let lastArrivedAtMs = 0;
+// One notice per payment, never replacing another: the counter separates two
+// redeemed in the same millisecond (a backlog drained on reconnect), and the
+// time keeps a relaunch's first id off one still in the tray.
+let paymentSeq = 0;
 
 // Stable per-conversation notification id, so repeated messages from the same
 // chat collapse into (and update) one notification rather than stacking, and so
@@ -145,13 +162,15 @@ export function openConversation(channel: string): void {
   navigate?.(channel);
 }
 
-// Where a nearby-peers notice goes when tapped. Separate from the conversation
-// navigator above because it lands on a tab, not in a chat.
-export function setMeshNavigator(fn: (() => void) | null): void {
-  openMesh = fn;
-  if (fn !== null && pendingMesh) {
-    pendingMesh = false;
-    fn();
+// Where a notice that is not about a conversation goes when tapped: the Mesh
+// tab for a nearby notice, the Wallet for a payment. Separate from the
+// conversation navigator above because it lands on a tab, not in a chat.
+export function setTabNavigator(fn: ((tab: NoticeTab) => void) | null): void {
+  openTab = fn;
+  if (fn !== null && pendingTab !== null) {
+    const tab = pendingTab;
+    pendingTab = null;
+    fn(tab);
   }
 }
 
@@ -280,10 +299,11 @@ function routeFromResponse(response: Notifications.NotificationResponse): void {
     void dismissNotificationsFor(channel);
     return;
   }
-  if (data?.screen === "mesh") {
-    if (openMesh !== null) openMesh();
-    else pendingMesh = true;
-    void dismissNearbyNotification();
+  const screen = data?.screen;
+  if (screen === "mesh" || screen === "wallet") {
+    if (openTab !== null) openTab(screen);
+    else pendingTab = screen;
+    if (screen === "mesh") void dismissNearbyNotification();
   }
 }
 
@@ -308,7 +328,11 @@ export async function handleInboundMessage(
       activeChannel,
     })
   ) {
-    succeeded();
+    const nowMs = Date.now();
+    if (nowMs - lastArrivedAtMs >= ARRIVED_COOLDOWN_MS) {
+      lastArrivedAtMs = nowMs;
+      arrived();
+    }
   }
 
   if (
@@ -396,6 +420,49 @@ export async function handleNearbyPeers(
   } catch {
     // Permission denied or the platform refused it. The Mesh tab shows the same
     // peers the moment the app is opened, so nothing is actually lost.
+  }
+}
+
+// A payment redeemed while the app was in the background. On the messages
+// channel rather than one of its own: money arriving is read like a message,
+// and a separate channel would be one more switch to find in system settings.
+export async function notifyPaymentReceived(
+  amount: string,
+  unit: string,
+  from: string,
+): Promise<void> {
+  const { title, body } = paymentNotificationContent(
+    amount,
+    unit,
+    from,
+    useSettingsStore.getState().hideNotificationPreviews,
+  );
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: `${PAYMENT_ID_PREFIX}${String(Date.now())}_${String(++paymentSeq)}`,
+      content: { title, body, data: { screen: "wallet" }, sound: "default" },
+      trigger:
+        Platform.OS === "android" ? { channelId: MESSAGES_CHANNEL_ID } : null,
+    });
+  } catch {
+    // Permission denied or the platform refused it. The wallet shows the
+    // payment in Activity the moment the app is opened.
+  }
+}
+
+// Clear payment notices once the Wallet is on screen, as a conversation's are
+// once it is opened: the payments are in Activity now.
+export async function dismissPaymentNotifications(): Promise<void> {
+  try {
+    const shown = await Notifications.getPresentedNotificationsAsync();
+    await Promise.all(
+      shown
+        .map((n) => n.request.identifier)
+        .filter((id) => id.startsWith(PAYMENT_ID_PREFIX))
+        .map((id) => Notifications.dismissNotificationAsync(id)),
+    );
+  } catch {
+    // Nothing delivered, or the platform has no tray: ignore.
   }
 }
 
@@ -514,10 +581,10 @@ export async function raiseRingNotification(
   }
 }
 
-// Take the delivered message and ring cards out of the shade, for the moment
-// "Hide previews" is switched on. They were rendered with the sender and the
-// text, and the lock screen keeps showing them whatever the setting now says.
-// Only those two kinds: the nearby notice names nobody.
+// Take the delivered message, ring and payment cards out of the shade, for the
+// moment "Hide previews" is switched on. They were rendered with the sender and
+// the text or amount, and the lock screen keeps showing them whatever the
+// setting now says. Not the nearby notice, which names nobody.
 export async function dismissPreviewNotifications(): Promise<void> {
   let presented: Notifications.Notification[];
   try {
@@ -528,7 +595,13 @@ export async function dismissPreviewNotifications(): Promise<void> {
   }
   for (const n of presented) {
     const id = n.request.identifier;
-    if (!id.startsWith("msg_") && !isRingNotification(n)) continue;
+    if (
+      !id.startsWith("msg_") &&
+      !id.startsWith(PAYMENT_ID_PREFIX) &&
+      !isRingNotification(n)
+    ) {
+      continue;
+    }
     try {
       await Notifications.dismissNotificationAsync(id);
     } catch {
@@ -577,7 +650,7 @@ export async function endAllRingAlerts(): Promise<void> {
 export async function dismissAllNotifications(): Promise<void> {
   // A held tap names a conversation the wipe has just destroyed.
   pendingChannel = null;
-  pendingMesh = false;
+  pendingTab = null;
   try {
     await Notifications.dismissAllNotificationsAsync();
   } catch {

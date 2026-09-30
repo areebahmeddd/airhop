@@ -54,15 +54,6 @@ describe("deriveGeohashIdentity", () => {
     );
   });
 
-  it("is UNLINKABLE across geohashes", () => {
-    // The core privacy property: the city cell and the region cell that
-    // contains it must not share a key, or a relay could stitch a user's
-    // movements together.
-    const city = deriveGeohashIdentity(seed, "u4pru");
-    const region = deriveGeohashIdentity(seed, "u4");
-    expect(city.pubKeyHex).not.toBe(region.pubKeyHex);
-  });
-
   it("is unlinkable across users in the same cell", () => {
     const a = deriveGeohashIdentity(deriveGeohashSeed(SIGNING_KEY), "u4pru");
     const b = deriveGeohashIdentity(
@@ -78,7 +69,10 @@ describe("deriveGeohashIdentity", () => {
     );
   });
 
-  it("gives every precision level a distinct key", () => {
+  it("is UNLINKABLE across geohashes: every precision level has a distinct key", () => {
+    // The core privacy property: a city cell and the region cell that
+    // contains it must not share a key, or a relay could stitch a user's
+    // movements together.
     const hashes = ["u", "u4", "u4p", "u4pr", "u4pru", "u4pruy", "u4pruyd"];
     const keys = new Set(
       hashes.map((h) => deriveGeohashIdentity(seed, h).pubKeyHex),

@@ -61,7 +61,7 @@ describe("Double Ratchet", () => {
     }
   });
 
-  test("bidirectional exchange triggers DH ratchet steps", () => {
+  test("bidirectional exchange decrypts across DH ratchet steps", () => {
     const { alice, bob } = makeAliceBob();
 
     const ct1 = ratchetEncrypt(alice, encode("a->b"));
@@ -107,13 +107,13 @@ describe("Double Ratchet", () => {
     expect(() => ratchetDecrypt(bob, tampered)).toThrow();
   });
 
-  test("replayed ciphertext fails (skipped key already consumed)", () => {
+  test("replayed ciphertext fails (its message key is already spent)", () => {
     const { alice, bob } = makeAliceBob();
     const ct = ratchetEncrypt(alice, encode("replay me"));
 
     ratchetDecrypt(bob, ct); // first delivery: succeeds
-    // The MK was deleted from MKSKIPPED on first use; replaying the same
-    // header will not find a key and will fail with a chain error.
+    // The receiving chain has moved past this message and never stored its
+    // key as skipped, so the replay is tried under the next key and fails.
     expect(() => ratchetDecrypt(bob, ct)).toThrow();
   });
 

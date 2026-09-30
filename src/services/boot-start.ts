@@ -11,7 +11,10 @@
 import { loadIdentity } from "@core/crypto/identity";
 import { hasBlePermissions } from "@platform/ble-permissions";
 import { getMeshService, initMeshService } from "@services/mesh-service";
-import { primeTorRoutingOnStartup } from "@services/tor-routing";
+import {
+  notifyTorAppForeground,
+  primeTorRoutingOnStartup,
+} from "@services/tor-routing";
 import { useSettingsStore } from "@store/settings-store";
 import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
@@ -60,6 +63,10 @@ async function bootStartMesh(): Promise<void> {
   const nickname = peerIDToUsername(identity.peerID);
   initMeshService(identity, nickname);
   applyStartupPresence();
+  // No screen: the mesh and Tor start at their off-screen power, as a
+  // backgrounded app does. Opening the app raises both through app.tsx.
+  getMeshService()?.setAppForeground(false);
+  notifyTorAppForeground(false);
   getMeshService()?.retryRadios();
   // The dependents that need no screen. The rest (wallet, permission prompts)
   // wait for the app to be opened, which runs them for this same mesh.
