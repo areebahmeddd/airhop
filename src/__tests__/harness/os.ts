@@ -1,11 +1,11 @@
 // A model of the operating system, not of Airhop.
 //
-// The lifecycle bugs we are chasing all live in the gap between what the app
-// believes about the device and what the device is actually doing. A test that
-// mocks the native module away cannot find them, because the mock agrees with
-// the app by construction. So this file models the OS side of that gap - the
-// rules Android and iOS actually enforce - and the native modules are modelled
-// separately (android-native.ts, ios-native.ts) as code running ON this OS.
+// Lifecycle bugs live in the gap between what the app believes about the
+// device and what the device is actually doing. A test that mocks the native
+// module away cannot find them, because the mock agrees with the app by
+// construction. So this file models the OS side of that gap (the rules Android
+// and iOS actually enforce), and the native modules are modelled separately
+// (android-native.ts, ios-native.ts) as code running ON this OS.
 //
 // Everything the OS enforces here is a real, documented behaviour:
 //
@@ -18,7 +18,7 @@
 //   - Turning the adapter off invalidates every GATT handle the app holds. The
 //     handles stay non-null and look alive; every call through them fails.
 //   - An uncaught exception on any Android thread kills the process. There is no
-//     "it threw but carried on" - a BroadcastReceiver that throws takes the app
+//     "it threw but carried on": a BroadcastReceiver that throws takes the app
 //     with it.
 //   - Reaching JS from native is only legal while a React runtime exists.
 //     Bridgeless RN throws IllegalStateException otherwise.
@@ -26,8 +26,8 @@
 //   - CoreBluetooth reports state asynchronously after a manager is constructed,
 //     and drops any command issued before it reaches poweredOn.
 //
-// The trace this records is the deliverable: it is how we can watch a scenario
-// wedge and see which call was swallowed, without a device in hand.
+// The trace this records is the deliverable: it shows a scenario wedging and
+// which call was swallowed, without a device in hand.
 
 export type Platform = "android" | "ios";
 
@@ -46,8 +46,8 @@ export type AndroidPermission =
 
 export type PermissionState = "undetermined" | "granted" | "denied" | "blocked";
 
-// CBManagerState, in full. Airhop's Swift currently handles exactly one of
-// these; the other five are the bug surface.
+// CBManagerState, in full. Every state but poweredOn is a way for the radio to
+// be unusable, so each one needs its own handling.
 export type CBManagerState =
   | "unknown"
   | "resetting"
@@ -71,15 +71,6 @@ export class SecurityException extends Error {
   constructor(permission: string) {
     super(`SecurityException: missing ${permission}`);
     this.name = "SecurityException";
-  }
-}
-
-// Thrown when native reaches for JS with no live React runtime. This is the
-// bridgeless-mode failure that Airhop's emitEvent() does not guard against.
-export class IllegalStateException extends Error {
-  constructor(message: string) {
-    super(`IllegalStateException: ${message}`);
-    this.name = "IllegalStateException";
   }
 }
 
@@ -119,7 +110,7 @@ export interface DeviceOptions {
   // Label used by the shared sink to say which phone a line came from.
   label?: string;
   // Multi-device simulation only. Wraps every native-to-JS callback so the
-  // event router knows whose code is running; see sim/harness/event-router.ts.
+  // event router knows whose code is running; see simulation/harness/event-router.ts.
   // Without it a phone's native events would be delivered to every phone.
   runAs?: <T>(fn: () => T) => T;
 }
@@ -136,7 +127,7 @@ export class DeviceOS {
   locationServicesEnabled: boolean;
   appForeground = true;
   // Whether a React runtime exists to receive events. False before the bundle
-  // has finished loading and after the instance is destroyed - both windows in
+  // has finished loading and after the instance is destroyed, both windows in
   // which native code can still be invoked by the OS.
   jsRuntimeReady = false;
   // Set when an uncaught exception reaches the top of a thread. Once true the
@@ -156,8 +147,8 @@ export class DeviceOS {
   readonly label: string;
   readonly trace: TraceEvent[] = [];
 
-  // Foreground service state, so we can assert the mesh keeps running when
-  // backgrounded - and notice when advertising quietly takes it down.
+  // Foreground service state, so a scenario can assert the mesh keeps running
+  // when backgrounded, and notice when advertising quietly takes it down.
   foregroundServiceRunning = false;
 
   constructor(opts: DeviceOptions) {
@@ -229,9 +220,8 @@ export class DeviceOS {
 
   // Run a block the way the OS runs it: on a thread with no exception handler
   // above it. Android does not have a concept of a callback that throws and is
-  // ignored - the process dies. Modelling that honestly is what lets the
-  // harness distinguish "swallowed error" from "app crash", which is the exact
-  // difference between the two symptoms we are chasing.
+  // ignored: the process dies. Modelling that honestly is what lets the harness
+  // tell a swallowed error from an app crash.
   runOnThread(name: string, fn: () => void): void {
     if (this.crashed !== null) return;
     try {
@@ -243,17 +233,6 @@ export class DeviceOS {
       const err = e as Error;
       this.crashed = `${err.name}: ${err.message} (on ${name} thread)`;
       this.log("os", "PROCESS_CRASH", this.crashed);
-    }
-  }
-
-  // Native reaching into JS. Throws exactly where bridgeless React Native
-  // throws, so an unguarded emit is fatal here in the same way it is fatal on
-  // a real device.
-  requireJsRuntime(): void {
-    if (!this.jsRuntimeReady) {
-      throw new IllegalStateException(
-        "Tried to access a JS module before the React instance was fully set up or after it was destroyed",
-      );
     }
   }
 
@@ -362,8 +341,7 @@ export class DeviceOS {
     this.log("os", "FGS_STOP");
   }
 
-  // CoreBluetooth's view of the same radio, including the states Airhop's Swift
-  // never inspects.
+  // CoreBluetooth's view of the same radio, in every state it can report.
   cbState(authorized = true): CBManagerState {
     if (!this.hasBluetooth) return "unsupported";
     if (!authorized) return "unauthorized";

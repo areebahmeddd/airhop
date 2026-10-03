@@ -5,6 +5,7 @@
 
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { useT, type TranslationKey } from "@i18n";
+import { markInstallHadIdentity } from "@services/install-marker";
 import { clearCondemnedIdentity } from "@services/wipe-marker";
 import PrimaryButton from "@ui/components/primary-button";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
@@ -121,6 +122,10 @@ export default function IdentityScreen({
     let cancelled = false;
     Promise.all([
       generateIdentity().then(async (id) => {
+        // Recorded before the save, so a crash between the two cannot leave a
+        // new identity that the next launch takes for a reinstall's leftover.
+        // Launch has already cleared any leftover before onboarding shows.
+        markInstallHadIdentity();
         await saveIdentity(id);
         // A refused wipe's condemned flag names the old identity, so the next
         // launch must not delete this one.

@@ -1,0 +1,35 @@
+/* Loaded after src/stage.css, whose vocabulary the trailer shares: the phone,
+   the stacks, the chain, the proof rows, the lockup. This file holds only what
+   the trailer places or sizes differently. */
+
+#trailer{position:relative;width:100%;height:100%;overflow:hidden;background:var(--panelBg)}
+
+/* One claim, centred, the size of the frame. */
+.hit{position:absolute;left:0;top:0;width:1920px;height:1080px;display:flex;align-items:center;
+  justify-content:center;font-size:190px;font-weight:700;letter-spacing:-0.05em;line-height:1;white-space:nowrap}
+.hit-low{top:820px;height:auto;font-size:96px;letter-spacing:-0.035em}
+#free-1,#free-2{font-size:170px}
+
+/* --- Open ------------------------------------------------------------------ */
+#sig{position:absolute;left:790px;top:120px;width:340px;height:220px;color:var(--panelText)}
+#sig-bars .bars{width:340px;height:220px}
+#sig-wifi{position:absolute;left:70px;top:10px;width:200px;height:200px;color:var(--danger)}
+#no-signal,#no-wifi{top:90px}
+
+/* --- Shots ----------------------------------------------------------------- */
+#k-e2e .stack-line:last-child,#k-relay .stack-line:last-child{color:var(--e2ee)}
+#k-relay .stack-line{font-size:112px}
+#k-nostr .stack-line:last-child{color:#8B5CF6}
+#k-pay .stack-line,#k-cashu .stack-line{font-size:112px}
+#k-cashu-sub{top:700px}
+#peer-id{position:absolute;left:0;top:700px;width:1920px;text-align:center;font-family:var(--mono);
+  font-size:44px;color:var(--panelSub);letter-spacing:0.02em}
+.card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:48px}
+.card svg{color:var(--panelMuted)}
+#more-1 svg{color:var(--danger)}
+.card span{font-size:170px;font-weight:700;letter-spacing:-0.05em;line-height:1;white-space:nowrap}
+#proven{top:300px}
+#primitives{left:144px;top:730px}
+#end{justify-content:center}
+#end-lockup{margin-top:0}
+#end-url{margin-top:72px}

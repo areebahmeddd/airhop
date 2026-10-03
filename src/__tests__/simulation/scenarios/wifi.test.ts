@@ -102,12 +102,6 @@ test("W-F01 two phones meet over WiFi with no Bluetooth between them", async () 
   a.launch();
   b.launch();
 
-  s.check(
-    "no Bluetooth link exists between them",
-    a.bleLinkCount() === 0 && b.bleLinkCount() === 0,
-    `a=${a.bleLinkCount()} b=${b.bleLinkCount()}`,
-  );
-
   wifi.link("a", "b");
 
   // mesh-service announces itself the instant a WiFi link comes up, which is

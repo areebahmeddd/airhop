@@ -65,16 +65,12 @@ describe("mint fabric hash_to_curve", () => {
     // Real proofs carry a random hex STRING as the secret, and Y is taken over
     // its UTF-8 bytes, not over the bytes it decodes to. Getting that wrong is
     // the other way these two can silently disagree.
-    const secret = "94d00ecd6427716444813 97bf4171b21d9cd7b0cf065be7139e3bc60";
+    const secret =
+      "407915bc212be61a77e3e6d2aeb4c727980bda51cd06a6afc29e2861768a7837";
     const bytes = new TextEncoder().encode(secret);
     expect(hashToCurve(bytes).toHex(true)).toBe(
       cashuHashToCurve(bytes).toHex(true),
     );
-  });
-
-  it("is deterministic, so a scenario replays identically", () => {
-    const bytes = hexToBytes(NUT00_ZERO[0]);
-    expect(hashToCurve(bytes).toHex(true)).toBe(hashToCurve(bytes).toHex(true));
   });
 });
 

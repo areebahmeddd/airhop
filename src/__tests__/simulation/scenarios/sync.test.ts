@@ -253,10 +253,16 @@ test("S01 catching up after a partition does not re-flood the mesh", async () =>
 
   // The load-bearing half. Catching up is only correct if it stays local: a
   // node that relays what it was just handed turns one catch-up into a storm.
+  // Carol answering dave's own sync request, which may land in this window, is
+  // not a relay: a well-formed answer is IS_RSR at ttl 0 and never forwarded
+  // (S02). Only ttl 0 is excused, since an answer with a live ttl is the
+  // regression this scenario catches.
   const aliceSenderID = alice.peerID;
   const rebroadcast = carolAir.packets.filter(
     (p) =>
-      p.type === PacketType.CHANNEL_MSG && hex(p.senderID) === aliceSenderID,
+      p.type === PacketType.CHANNEL_MSG &&
+      hex(p.senderID) === aliceSenderID &&
+      !(p.isRSR === true && p.ttl === 0),
   );
   carolAir.stop();
   s.check(

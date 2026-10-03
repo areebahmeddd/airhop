@@ -32,6 +32,7 @@ import {
 import type { Identity } from "@core/crypto/identity";
 import { noiseXOpen, noiseXSeal } from "@core/crypto/noise-x";
 import { NoiseHandshake, type NoiseSession } from "@core/crypto/noise-xx";
+import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   candidateTags,
@@ -387,10 +388,13 @@ const HANDSHAKE_TIMEOUT_MS = 30_000;
 // A 32-byte key as stored hex.
 const HEX_32 = /^[0-9a-f]{64}$/;
 
+// Cap on each per-session record of ids seen or sent, dropping the oldest.
+const MAX_REMEMBERED_IDS = 2000;
+
 // How stale a live-voice frame may be before it is treated as a straggler or a
 // replay rather than something anyone should start hearing. Matches bitchat's
 // TransportConfig.pttPublicFrameMaxAgeSeconds (30s).
-const PTT_FRAME_MAX_AGE_MS = 30_000;
+export const PTT_FRAME_MAX_AGE_MS = 30_000;
 
 // How far a packet's timestamp may sit from our clock before we refuse to carry
 // or act on it. Matches bitchat's 2-minute window (REQUEST_SYNC_MANAGER.md).
@@ -440,14 +444,19 @@ interface BoundRatchet {
   ratchet: RatchetState | null;
 }
 
+// When a courier envelope was sealed: its expiry minus the envelope lifetime.
+// Never the hand-over, by a carrier or a relay, which can come hours later: a
+// message parked yesterday sits where it was written, and one the user has
+// since cleared stays cleared (the chat store drops rows older than the clear).
+// Clamped to now, since the expiry is sender-supplied and a future stamp would
+// pin the row to the bottom of the thread.
+function courierSentAtMs(expiryMs: number): number {
+  return Math.min(expiryMs - ENVELOPE_TTL_MS, Date.now());
+}
+
 interface PendingHandshake {
   handshake: NoiseHandshake;
   role: "initiator" | "responder";
-  // Messages queued while the handshake is in progress. The id is carried so the
-  // eventual send keeps the same message id the UI is showing, which is what lets
-  // a delivery receipt find the right bubble. Carried across an initiator->
-  // responder reset so a simultaneous-initiation flip does not drop queued DMs.
-  pendingText: { messageID: string; text: string }[];
   // When this handshake attempt began (ms epoch), for the staleness check above.
   startedAt: number;
 }
@@ -584,6 +593,7 @@ export class MeshService {
   // else retried it. Null when the service is stopped.
   private outboxSweepTimer: ReturnType<typeof setInterval> | null = null;
   private lastOutboxRetryMs = 0;
+  private outboxRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Every link this device holds, over every radio, and the one place that
   // writes bytes to one.
@@ -2334,18 +2344,14 @@ export class MeshService {
   }
 
   // Whether a completed Noise session's authenticated remote static key derives
-  // to the peerID it claims to be. peerID = first 16 hex of SHA-256(staticPub),
-  // the same derivation used everywhere else (identity.ts, prekey ownership). An
-  // attacker cannot forge a key that hashes to a victim's peerID, so this binds
-  // the session to a real identity (bitchat NoiseSessionManager identity binding).
+  // to the peerID it claims to be. An attacker cannot forge a key that hashes to
+  // a victim's peerID, so this binds the session to a real identity (bitchat
+  // NoiseSessionManager identity binding).
   private sessionBindsTo(
     session: NoiseSession,
     claimedPeerID: string,
   ): boolean {
-    return (
-      bytesToHex(sha256(session.remoteStaticPubKey)).slice(0, 16) ===
-      claimedPeerID
-    );
+    return peerIDFromNoiseKey(session.remoteStaticPubKey) === claimedPeerID;
   }
 
   private onNoiseHandshake(packet: Packet): void {
@@ -2391,7 +2397,6 @@ export class MeshService {
       if (!this.handshakeLimiter.allowInboundInitiation(senderID, Date.now())) {
         return;
       }
-      const carriedText = prior?.pendingText ?? [];
       try {
         const hs = NoiseHandshake.createResponder(
           this.identity.noiseStaticPrivKey,
@@ -2401,7 +2406,6 @@ export class MeshService {
         this.storePendingHandshake(senderID, {
           handshake: hs,
           role: "responder",
-          pendingText: carriedText,
           startedAt: Date.now(),
         });
         // Flood the reply back the same way bitchat does: a recipient-addressed
@@ -2471,10 +2475,6 @@ export class MeshService {
       // Then seed the ratchet and release everything that was waiting.
       this.tryInitDR(senderID, "initiator", session);
       this.flushPendingGroupInvites(senderID);
-      // Flush queued messages. Use this.sendDm so they go through DR if ready.
-      for (const q of pending.pendingText) {
-        this.sendDm(senderID, q.text, q.messageID);
-      }
       return;
     }
 
@@ -2497,11 +2497,6 @@ export class MeshService {
     // Seed the Double Ratchet for Airhop-to-Airhop sessions.
     this.tryInitDR(senderID, "responder", session);
     this.flushPendingGroupInvites(senderID);
-    // Flush any DMs carried over from an initiator->responder reset. Normal
-    // responders have none; only a simultaneous-initiation flip queues them.
-    for (const q of pending.pendingText) {
-      this.sendDm(senderID, q.text, q.messageID);
-    }
   }
 
   // File a completed, bound session. A session needs a registry entry, and a
@@ -2567,7 +2562,6 @@ export class MeshService {
       this.storePendingHandshake(peerID, {
         handshake: hs,
         role: "initiator",
-        pendingText: [],
         startedAt: Date.now(),
       });
       const pkt = this.makeHandshakePacket(hexToBytes(peerID), msg1);
@@ -3521,15 +3515,14 @@ export class MeshService {
     const peerID = bytesToHex(packet.senderID);
 
     // The claimed senderID must be the one this announce's Noise key derives
-    // to. peerID = first 16 hex of SHA-256(noiseStaticPubKey), the same
-    // derivation identity.ts uses to mint it and sessionBindsTo uses to bind a
-    // completed Noise session. Without this, senderID is just an unchecked
-    // header field: anyone could announce under a victim's peerID and have the
-    // registry file their own keys under it. Preimage resistance is what makes
-    // the check meaningful: an attacker cannot produce a Noise key hashing to
-    // someone else's ID. bitchat rejects the same case by name in
-    // BLEAnnouncePreflightPolicy: .senderMismatch(derivedPeerID:).
-    if (bytesToHex(sha256(info.noisePubKey)).slice(0, 16) !== peerID) return;
+    // to, as sessionBindsTo requires of a completed Noise session. Without
+    // this, senderID is just an unchecked header field: anyone could announce
+    // under a victim's peerID and have the registry file their own keys under
+    // it. Preimage resistance is what makes the check meaningful: an attacker
+    // cannot produce a Noise key hashing to someone else's ID. bitchat rejects
+    // the same case by name in BLEAnnouncePreflightPolicy:
+    // .senderMismatch(derivedPeerID:).
+    if (peerIDFromNoiseKey(info.noisePubKey) !== peerID) return;
 
     // Ours: an echo, or this identity running on another phone.
     if (peerID === this.identity.peerID) {
@@ -3761,11 +3754,12 @@ export class MeshService {
   // far each copy travels.
   private static readonly MAX_COURIERS_PER_MESSAGE = 4;
 
-  // Message IDs already parked as a kind-1401 drop, so the outbox sweep does
-  // not republish one every time it runs. Cleared on a failed publish so the
-  // next pass retries. Per session: a drop carries its own 24h expiry, and a
-  // duplicate after a relaunch collapses on message id like any courier copy.
-  private readonly droppedToRelay = new Set<string>();
+  // Message IDs parked as a kind-1401 drop, with that drop's expiry, so the
+  // outbox sweep republishes only once the parked copy has lapsed: the outbox
+  // outlives a drop by six days. Cleared on a failed publish so the next pass
+  // retries. A duplicate after a relaunch collapses on message id like any
+  // courier copy.
+  private readonly droppedToRelay = new Map<string, number>();
 
   // The kind-1401 subscription and the UTC day its tag set was built for.
   private courierDropSub: { close: () => void } | null = null;
@@ -3778,13 +3772,18 @@ export class MeshService {
   // the same id instead.
   private readonly openedCourierIDs = new Set<string>();
 
-  // Couriers we have already given each outgoing message to, keyed by message
-  // id. Sealing is randomised and CourierStore.deposit has no content dedupe, so
-  // without this the retry sweep would hand a FRESH envelope for the same
-  // message to the same carriers every pass, exhausting their per-depositor
-  // quota (2 for a non-contact) within a couple of sweeps, after which every
-  // later deposit from this device is refused for every recipient.
-  private readonly courieredTo = new Map<string, Set<string>>();
+  // Couriers each outgoing message was given to, and when that round began,
+  // keyed by message id. Sealing is randomised and CourierStore.deposit has no
+  // content dedupe, so without this the retry sweep would hand a FRESH envelope
+  // to the same carriers every pass, exhausting their per-depositor quota (2
+  // for a non-contact), after which every later deposit from this device is
+  // refused for every recipient. A round lasts one envelope lifetime and takes
+  // at most MAX_COURIERS_PER_MESSAGE carriers; mail still queued after that
+  // starts a fresh round, since every copy of the last one has expired.
+  private readonly courieredTo = new Map<
+    string,
+    { startedAtMs: number; couriers: Set<string> }
+  >();
 
   // Seal a DM to a peer we can't currently reach and hand it to the mesh.
   // Returns false when nothing actually took a copy, so the caller can fall back
@@ -3806,16 +3805,22 @@ export class MeshService {
     // would show "carried by a friend" for a message no friend received.
     // bitchat filters couriers to connected peers and refuses the same way
     // (BLEService.sendCourierMessage).
-    const already = this.courieredTo.get(messageID) ?? new Set<string>();
+    const now = Date.now();
+    const prior = this.courieredTo.get(messageID);
+    const round =
+      prior !== undefined && now - prior.startedAtMs < ENVELOPE_TTL_MS
+        ? prior
+        : { startedAtMs: now, couriers: new Set<string>() };
+    const already = round.couriers;
     const couriers = this.courierCandidates()
       .filter((p) => !already.has(p))
-      .slice(0, MeshService.MAX_COURIERS_PER_MESSAGE);
+      .slice(0, MeshService.MAX_COURIERS_PER_MESSAGE - already.size);
     // A relay drop needs no courier, and matters most when nobody is in range,
     // so it is decided independently of `couriers`. Captured rather than
     // re-read at the publish below, so the two cannot disagree if anything is
     // ever awaited between them.
     const relayClient =
-      this.relaysConnected && !this.droppedToRelay.has(messageID)
+      this.relaysConnected && (this.droppedToRelay.get(messageID) ?? 0) <= now
         ? this.nostrClient
         : null;
     if (couriers.length === 0 && relayClient === null) return false;
@@ -3874,13 +3879,15 @@ export class MeshService {
       };
       const payload = encodeEnvelopePayload(envelope);
       // One directed copy per courier, remembered so a later sweep reaches
-      // somebody new rather than the same carriers. Recorded on ACCEPTANCE, not
-      // intent: marking a peer whose write was refused makes the sweep skip
-      // them forever and the copy is never placed with anybody.
-      this.courieredTo.set(messageID, already);
+      // somebody new rather than the same carriers. Reserved on offer, so a
+      // sweep landing while writes are in flight cannot pick past the cap, and
+      // released on refusal: a peer whose write failed would otherwise be
+      // skipped for the whole round and the copy placed with nobody.
+      this.courieredTo.set(messageID, round);
       for (const courier of couriers) {
+        already.add(courier);
         void this.sendCourierPayloadTo(payload, courier).then((ok) => {
-          if (ok) already.add(courier);
+          if (!ok) already.delete(courier);
         });
       }
 
@@ -3896,7 +3903,14 @@ export class MeshService {
       if (relayClient !== null) {
         // Capped like every other session set here: nothing else removes an
         // entry, and a phone often out of range of its contacts keeps adding.
-        this.rememberEventID(this.droppedToRelay, messageID);
+        // Deleted first so a renewed drop moves to the newest end, and the cap
+        // evicts the oldest drop rather than the one just refreshed.
+        this.droppedToRelay.delete(messageID);
+        this.droppedToRelay.set(messageID, envelope.expiryMs);
+        if (this.droppedToRelay.size > MAX_REMEMBERED_IDS) {
+          const oldest = this.droppedToRelay.keys().next().value;
+          if (oldest !== undefined) this.droppedToRelay.delete(oldest);
+        }
         void publishCourierDrop({ ...envelope, copies: 1 }, relayClient).catch(
           () => {
             // No relay accepted it. Forget the record so the next sweep retries
@@ -3929,7 +3943,7 @@ export class MeshService {
       .getContact(peerID)?.noisePubKeyHex;
     if (noise === undefined || !HEX_32.test(noise)) return undefined;
     const key = hexToBytes(noise);
-    return bytesToHex(sha256(key)).slice(0, 16) === peerID ? key : undefined;
+    return peerIDFromNoiseKey(key) === peerID ? key : undefined;
   }
 
   // Hand one envelope to ONE named peer.
@@ -3977,10 +3991,17 @@ export class MeshService {
 
   // Peers that could carry mail for someone else right now: directly linked,
   // announced, and with a Noise key we can charge a deposit against.
+  // Never a blocked peer: an announce binds their link again after the block
+  // unbinds it, and handing them our mail is the opposite of what was asked.
   private courierCandidates(): string[] {
+    const blocked = useBlockedStore.getState();
     return this.links
       .directPeers()
-      .filter((p) => this.registry.get(p)?.noisePubKey !== undefined);
+      .filter(
+        (p) =>
+          this.registry.get(p)?.noisePubKey !== undefined &&
+          !blocked.isBlocked(p),
+      );
   }
 
   // An envelope arrived. Either it's addressed to us (open and deliver), or we
@@ -4013,7 +4034,7 @@ export class MeshService {
     );
 
     if (isForUs) {
-      this.openCourierEnvelopeForUs(env, packet.timestamp);
+      this.openCourierEnvelopeForUs(env, courierSentAtMs(env.expiryMs));
       return;
     }
 
@@ -4081,7 +4102,7 @@ export class MeshService {
       }
       // Identify the sender from the key the envelope authenticates, not from
       // the packet header, which names whoever relayed it to us.
-      const fromPeerID = bytesToHex(sha256(senderStaticPubKey)).slice(0, 16);
+      const fromPeerID = peerIDFromNoiseKey(senderStaticPubKey);
       if (useBlockedStore.getState().isBlocked(fromPeerID)) return;
 
       // The plaintext is a typed Noise payload, exactly as bitchat seals it.
@@ -4319,8 +4340,7 @@ export class MeshService {
     const noise = contact.noisePubKeyHex;
     if (
       noise.length > 0 &&
-      (!HEX_32.test(noise) ||
-        bytesToHex(sha256(hexToBytes(noise))).slice(0, 16) !== peerID)
+      (!HEX_32.test(noise) || peerIDFromNoiseKey(hexToBytes(noise)) !== peerID)
     ) {
       return undefined;
     }
@@ -5953,7 +5973,7 @@ export class MeshService {
   // Insertion-ordered, capped id set (drop-oldest), matching seenCarrierEventIDs.
   private rememberEventID(set: Set<string>, id: string): void {
     set.add(id);
-    if (set.size > 2000) {
+    if (set.size > MAX_REMEMBERED_IDS) {
       const oldest = set.values().next().value;
       if (oldest !== undefined) set.delete(oldest);
     }
@@ -6224,10 +6244,10 @@ export class MeshService {
     // relay forwards it and only the addressee acts on it; the msg2/msg3 replies
     // flood back the same way (see onNoiseHandshake).
     if (peer !== undefined && peer.session === undefined && canReachMesh) {
-      const existing = this.activeHandshake(recipientPeerID);
-      if (existing) {
-        existing.pendingText.push({ messageID: msgID, text });
-      } else if (this.handshakeLimiter.allow(recipientPeerID, Date.now())) {
+      if (
+        this.activeHandshake(recipientPeerID) === undefined &&
+        this.handshakeLimiter.allow(recipientPeerID, Date.now())
+      ) {
         const hs = NoiseHandshake.createInitiator(
           this.identity.noiseStaticPrivKey,
         );
@@ -6235,23 +6255,18 @@ export class MeshService {
         this.storePendingHandshake(recipientPeerID, {
           handshake: hs,
           role: "initiator",
-          pendingText: [{ messageID: msgID, text }],
           startedAt: Date.now(),
         });
         const pkt = this.makeHandshakePacket(hexToBytes(recipientPeerID), msg1);
         this.unicastFn(recipientPeerID, pkt);
       }
       // NOT "sent". Nothing carrying the user's words has left the device: a
-      // handshake has been started and the text is being held against it, or
-      // the handshake budget refused one and the outbox retries later. The
-      // held text lives only in memory, discarded when a stuck handshake is
-      // reaped after 30s or the process restarts, so a tick here would promise
-      // a delivery nothing keeps.
+      // handshake is running, or the budget refused one.
       //
-      // The caller enqueues on this, so the handshake keeps its fast path (the
-      // pending text goes out the moment the session completes) and the outbox
-      // is the durable backstop. Both carry the same message id, so the
-      // recipient collapses them if both arrive.
+      // The caller enqueues on this, and the outbox is the only copy: a
+      // completed handshake flushes it (tryInitDR), a stuck one leaves it for
+      // the sweep. One copy is what lets a reclaimed payment or a deleted
+      // message stay unsent once the session forms.
       return "handshaking";
     }
 
@@ -6303,10 +6318,16 @@ export class MeshService {
 
   // Publish a gift-wrapped DM to relays, wrapped in bitchat's `bitchat1:`
   // envelope so a bitchat client can parse it (and we can parse theirs). Returns
-  // false when there is no Nostr client (offline) or the content is longer than
-  // one PrivateMessagePacket, so callers fall back to queueing. The single place
-  // the service seals a DM for Nostr, so the nostr_ reply path, the durable
-  // fallback, and any future caller stay identical.
+  // false when no relay is live or the content is longer than one
+  // PrivateMessagePacket, so callers fall back to courier and the outbox. The
+  // single place the service seals a DM for Nostr, so the nostr_ reply path,
+  // the durable fallback, and any future caller stay identical.
+  //
+  // A pool with no live relay is not a route: there is no signal, or Tor is
+  // still building circuits. Claiming "sent" there skips the courier copy and
+  // leaves the bubble ticked for a message still on this phone. The outbox
+  // publishes it when a relay connects, as bitchat-ios does
+  // (NostrTransport.canDeliverPromptly).
   private publishNostrDm(
     recipientPubkeyHex: string,
     messageID: string,
@@ -6314,7 +6335,7 @@ export class MeshService {
     outboxPeerID?: string,
     queuedAtMs = Date.now(),
   ): boolean {
-    if (this.nostrClient === null) return false;
+    if (this.nostrClient === null || !this.relaysConnected) return false;
     // No embedded recipient peer ID: we only know the Nostr pubkey, not the
     // peer's mesh ID, exactly as bitchat's geohash DMs do.
     const envelope = encodeBitchatDmEnvelope(
@@ -6515,7 +6536,7 @@ export class MeshService {
     },
     opts: { inPerson?: boolean } = {},
   ): ContactCardResult {
-    const derived = bytesToHex(sha256(card.noisePubKey)).slice(0, 16);
+    const derived = peerIDFromNoiseKey(card.noisePubKey);
     if (derived !== card.peerID.toLowerCase()) return "unbound";
     // A card that did not come off the other phone may not contradict the key
     // we already hold for them ("conflict"). Accepted, it would pin a registry
@@ -6682,8 +6703,8 @@ export class MeshService {
       // Keep it queued, recording the attempt, whenever the retry did not
       // establish delivery:
       //
-      //   handshaking  the session still does not exist; the text is only
-      //                being held against a handshake that may never answer
+      //   handshaking  the session still does not exist, and the handshake
+      //                may never answer
       //   sent + no direct link  it was flooded at TTL 7 with nothing to
       //                          acknowledge it
       //
@@ -6780,8 +6801,19 @@ export class MeshService {
     // permission dialog, and emits it on both edges of a background round trip,
     // so without this a single pull-down of Control Center re-publishes the
     // whole pending outbox to relays three times. Relay reconnects flap similarly.
+    //
+    // Trailing, not dropped: the opportunity that lands inside the window can
+    // be the one that matters (relays connecting seconds after a foreground
+    // spent the window with no client), so it runs when the window ends.
     const now = Date.now();
-    if (now - this.lastOutboxRetryMs < OUTBOX_RETRY_MIN_INTERVAL_MS) return;
+    const wait = this.lastOutboxRetryMs + OUTBOX_RETRY_MIN_INTERVAL_MS - now;
+    if (wait > 0) {
+      this.outboxRetryTimer ??= setTimeout(() => {
+        this.outboxRetryTimer = null;
+        this.retryQueuedOverInternet();
+      }, wait);
+      return;
+    }
     this.lastOutboxRetryMs = now;
 
     const outbox = useOutboxStore.getState();
@@ -6842,11 +6874,27 @@ export class MeshService {
         blocked.blockAlias(`nostr_${nostrPub}`, peerID);
       }
       this.gossip.forgetMessagesFrom(peerID);
+      // The registry forgets a peer out of range, and a block is often made
+      // from an old thread, so a saved contact's key stands in.
+      const contactKeyHex = useContactsStore
+        .getState()
+        .getContact(peerID)?.signingPubKeyHex;
+      const signingKey =
+        this.registry.get(peerID)?.signingPubKey ??
+        (contactKeyHex !== undefined && contactKeyHex.length > 0
+          ? hexToBytes(contactKeyHex)
+          : undefined);
+      if (signingKey !== undefined) {
+        useBoardStore.getState().forgetAuthor(signingKey);
+      }
     }
     // Drop anything still queued for them: blocking someone must not leave
-    // messages that get delivered the moment they come back into range.
+    // messages that get delivered the moment they come back into range. Shown
+    // as failed, so no bubble waits forever on a delivery this phone gave up.
     const outbox = useOutboxStore.getState();
-    for (const msg of outbox.forPeer(peerID)) outbox.resolve(msg.id);
+    const dropped = outbox.forPeer(peerID);
+    for (const msg of dropped) outbox.resolve(msg.id);
+    this.reportDroppedMail(dropped);
     usePeerStore.getState().removePeer(peerID);
   }
 
@@ -7247,12 +7295,7 @@ export class MeshService {
       // A tag can collide, so this takes the same open path as a mesh envelope,
       // which fails closed on a ciphertext it cannot decrypt.
       //
-      // Timestamped from the seal (expiry minus the envelope lifetime) rather
-      // than from the fetch, so a message parked yesterday sits where it was
-      // written. Clamped to now: expiry is attacker-supplied, and a future
-      // stamp would pin the row to the bottom of the thread.
-      const sentAtMs = Math.min(env.expiryMs - ENVELOPE_TTL_MS, Date.now());
-      this.openCourierEnvelopeForUs(env, sentAtMs);
+      this.openCourierEnvelopeForUs(env, courierSentAtMs(env.expiryMs));
     });
     this.courierDropSub = { close };
   }
@@ -7391,6 +7434,10 @@ export class MeshService {
 
     this.announceManager.stop();
     this.gossip.stop();
+    if (this.outboxRetryTimer !== null) {
+      clearTimeout(this.outboxRetryTimer);
+      this.outboxRetryTimer = null;
+    }
     // Outstanding sync requests do not survive the mesh stopping. Whatever the
     // reason (Away, panic wipe, radio off), a response arriving after this
     // would be answering a question from a session that no longer exists, and

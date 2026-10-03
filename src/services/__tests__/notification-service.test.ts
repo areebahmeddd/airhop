@@ -2,7 +2,8 @@
  * @jest-environment node
  */
 // The tray side of notifications that does not depend on the policy: where a
-// tap goes when no screen is mounted, and what "Hide previews" clears.
+// tap goes, including when no screen is mounted, and what "Hide previews" and
+// opening the Wallet clear.
 
 let mockResponseListener: ((r: unknown) => void) | null = null;
 const mockDismiss = jest.fn<Promise<void>, [string]>(() => Promise.resolve());
@@ -28,7 +29,7 @@ jest.mock("expo-notifications", () => ({
 }));
 jest.mock("react-native", () => ({ Platform: { OS: "android" } }));
 jest.mock("@i18n", () => ({ t: (key: string) => key }));
-jest.mock("@platform/haptics", () => ({ succeeded: jest.fn() }));
+jest.mock("@platform/haptics", () => ({ arrived: jest.fn() }));
 jest.mock("@platform/ring-alert", () => ({
   stopRingAlert: jest.fn(() => Promise.resolve()),
 }));
@@ -49,9 +50,10 @@ jest.mock("../notification-policy", () => ({}));
 import {
   configureNotifications,
   dismissAllNotifications,
+  dismissPaymentNotifications,
   dismissPreviewNotifications,
-  setMeshNavigator,
   setNotificationNavigator,
+  setTabNavigator,
 } from "../notification-service";
 
 function tap(data: Record<string, unknown>): void {
@@ -67,12 +69,13 @@ beforeAll(async () => {
 beforeEach(() => {
   mockDismiss.mockClear();
   setNotificationNavigator(null);
-  setMeshNavigator(null);
+  setTabNavigator(null);
 });
 
-describe("a tapped notification with no screen mounted", () => {
-  // The mesh outlives the UI on Android, and a boot start never had one. The
-  // tap launches the Activity, whose tree registers a navigator moments later.
+describe("a tapped notification", () => {
+  // With no screen mounted it waits: the mesh outlives the UI on Android, and a
+  // boot start never had one. The tap launches the Activity, whose tree
+  // registers a navigator moments later.
   test("is held until a navigator registers, then routed once", () => {
     tap({ channel: "dm:abc" });
 
@@ -84,12 +87,21 @@ describe("a tapped notification with no screen mounted", () => {
     expect(navigate).toHaveBeenCalledTimes(1);
   });
 
-  test("a nearby notice waits for the mesh navigator the same way", () => {
+  test("a nearby notice waits for the tab navigator the same way", () => {
     tap({ screen: "mesh" });
 
-    const openMesh = jest.fn();
-    setMeshNavigator(openMesh);
-    expect(openMesh).toHaveBeenCalledTimes(1);
+    const openTab = jest.fn();
+    setTabNavigator(openTab);
+    expect(openTab).toHaveBeenCalledWith("mesh");
+  });
+
+  test("a payment notice opens the wallet", () => {
+    const openTab = jest.fn();
+    setTabNavigator(openTab);
+
+    tap({ screen: "wallet" });
+
+    expect(openTab).toHaveBeenCalledWith("wallet");
   });
 
   test("goes straight through when a screen is up", () => {
@@ -112,10 +124,11 @@ describe("a tapped notification with no screen mounted", () => {
 });
 
 describe("dismissPreviewNotifications", () => {
-  test("clears message and ring cards, and leaves the nearby notice", async () => {
+  test("clears message, ring and payment cards, and leaves the nearby notice", async () => {
     mockPresented = [
       { request: { identifier: "msg_dm_abc" } },
       { request: { identifier: "ring_dm_abc" } },
+      { request: { identifier: "payment_1_1" } },
       { request: { identifier: "nearby_peers" } },
     ];
 
@@ -123,7 +136,27 @@ describe("dismissPreviewNotifications", () => {
 
     expect(mockDismiss.mock.calls.map((c) => c[0]).sort()).toEqual([
       "msg_dm_abc",
+      "payment_1_1",
       "ring_dm_abc",
+    ]);
+  });
+});
+
+describe("opening the Wallet", () => {
+  // Like a conversation's notices when it opens: once the Wallet is up, the
+  // payments are in its Activity.
+  test("clears payment notices and nothing else", async () => {
+    mockPresented = [
+      { request: { identifier: "payment_1_1" } },
+      { request: { identifier: "payment_1_2" } },
+      { request: { identifier: "msg_dm_abc" } },
+    ];
+
+    await dismissPaymentNotifications();
+
+    expect(mockDismiss.mock.calls.map((c) => c[0]).sort()).toEqual([
+      "payment_1_1",
+      "payment_1_2",
     ]);
   });
 });

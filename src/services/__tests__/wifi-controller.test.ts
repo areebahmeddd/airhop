@@ -1,20 +1,17 @@
 /**
  * @jest-environment node
  */
-// The WiFi fast path used to be one unretried call with its error thrown away.
-// These cases are the three field reports that produced the reconciler, plus
-// the two ways a reconciler can be worse than nothing if it gets the
-// permanent/transient split wrong.
+// The WiFi fast path's reconciler, which retries an attach that can succeed
+// later and stops asking one that never will. A reconciler that gets that
+// permanent/transient split wrong is worse than none.
 //
 // The properties that matter:
 //   * A device that CAN run the fast path eventually does, whatever order the
 //     radio and the permission arrive in.
-//   * A device that CANNOT is asked exactly once. The BLE side learned this the
-//     expensive way, retrying an unsupported advertiser every five seconds for
-//     the life of the process.
-//   * Losing the radio is recoverable. This is the one the old code could not
-//     do at all: native latched itself "started" over a dead session and every
-//     later start resolved instantly having done nothing.
+//   * A device that CANNOT is asked exactly once. Retrying an unsupported radio
+//     on a timer costs battery for the life of the process.
+//   * Losing the radio is recoverable. Latched "started" over a dead session,
+//     every later start would resolve instantly having done nothing.
 
 const mockStartWiFi = jest.fn<Promise<void>, []>();
 const mockStopWiFi = jest.fn<Promise<void>, []>();
@@ -66,6 +63,8 @@ describe("a device that can run the fast path", () => {
 
     wifi.start();
     await settle();
+    // Nothing called setPairedCount, which is every Android build, so the
+    // pairing gate below does not exist and leaves the attach untouched.
     expect(wifi.isStarted).toBe(true);
     expect(mockStartWiFi).toHaveBeenCalledTimes(1);
 
@@ -90,7 +89,7 @@ describe("WiFi switched off when the mesh starts", () => {
     expect(wifi.isStarted).toBe(false);
     expect(wifi.failure).toBe("unavailable");
 
-    // This is the whole bug: the old code stopped here forever.
+    // One failed attach is not the end of it.
     await settle(1_000);
     expect(mockStartWiFi.mock.calls.length).toBeGreaterThan(1);
 
@@ -124,7 +123,7 @@ describe("the permission arriving after the mesh started", () => {
     await settle();
     expect(wifi.failure).toBe("permission");
 
-    // Nothing asks the user to fix this - the fast path has no banner - so the
+    // Nothing asks the user to fix this (the fast path has no banner), so the
     // retry is the only route back, unlike Bluetooth.
     mockStartWiFi.mockResolvedValue(undefined);
     await settle(30_000);
@@ -177,8 +176,9 @@ describe("losing the radio mid-session", () => {
 
 // A framework that keeps ending our discovery sessions reports a drop moments
 // after each attach succeeds. Resetting the ladder on a start that merely
-// resolved pinned every retry to its first rung, so the transport attached, was
-// torn down and re-attached twice a second for as long as the app was open.
+// resolved would pin every retry to its first rung, and the transport would
+// attach, be torn down and re-attach twice a second for as long as the app was
+// open.
 test("backs off when the transport keeps dropping seconds after it starts", async () => {
   mockStartWiFi.mockResolvedValue(undefined);
   const wifi = new WiFiController();
@@ -296,11 +296,11 @@ describe("stopping", () => {
 
 describe("an availability drop during an attach", () => {
   test("does not latch the transport started against a radio that has gone", async () => {
-    // The failure this whole reconciler exists to remove, on the one edge that
-    // still had it. The drop forgets `started` and schedules a retry, then the
-    // stale attach resolves and re-asserts `started` - and from then on every
-    // retry and every refresh returns early at the "already started" guard,
-    // leaving the fast path dead for the rest of the session.
+    // The latch this reconciler exists to prevent. The drop forgets `started`
+    // and schedules a retry; if the stale attach then resolved and re-asserted
+    // `started`, every retry and every refresh would return early at the
+    // "already started" guard, leaving the fast path dead for the rest of the
+    // session.
     let finishAttach: () => void = () => undefined;
     mockStartWiFi.mockImplementation(
       () =>
@@ -328,7 +328,7 @@ describe("an availability drop during an attach", () => {
 
 // What the controller TELLS the rest of the app. The Mesh tab shows a neutral
 // note when the fast path is off, so the reporting has to be honest about which
-// of "off", "never had it" and "we don't know" applies - and quiet when nothing
+// of "off", "never had it" and "we don't know" applies, and quiet when nothing
 // has changed, since the reconciler runs on a retry ladder.
 describe("reporting the fast path's state", () => {
   test("reports it live once native attaches", async () => {
@@ -395,7 +395,7 @@ describe("reporting the fast path's state", () => {
   });
 
   // "Attach failed for some other reason" is not "WiFi is off". Saying so would
-  // send someone to a toggle that is already on, so it reports no reading -
+  // send someone to a toggle that is already on, so it reports no reading,
   // which from a cold start means saying nothing at all.
   test("stays silent on an unnameable failure rather than blaming WiFi", async () => {
     mockStartWiFi.mockImplementation(() =>
@@ -424,7 +424,7 @@ describe("reporting the fast path's state", () => {
       rejectWith("WIFI_AWARE_ATTACH_FAILED"),
     );
     // Losing the radio clears `started`, so the next pass really re-attaches.
-    // The drop itself says nothing - only the re-attach knows why - and what it
+    // The drop itself says nothing (only the re-attach knows why), and what it
     // finds is a failure it cannot name, so the live claim is retracted to "no
     // reading" rather than upgraded into a WiFi-off banner.
     wifi.onAvailabilityChanged(false);
@@ -456,18 +456,6 @@ describe("reporting the fast path's state", () => {
 // removes their last pairing in the Settings app, which is a state change native
 // has no other way to report.
 describe("the pairing gate", () => {
-  test("does not exist until something reports a count, so Android is untouched", async () => {
-    mockStartWiFi.mockResolvedValue(undefined);
-    const wifi = new WiFiController();
-
-    wifi.start();
-    await settle();
-
-    // Nothing called setPairedCount, which is every Android build.
-    expect(wifi.isStarted).toBe(true);
-    expect(mockStartWiFi).toHaveBeenCalledTimes(1);
-  });
-
   test("refuses to attach while nothing is paired", async () => {
     mockStartWiFi.mockResolvedValue(undefined);
     const seen: string[] = [];
@@ -597,8 +585,8 @@ describe("a transport that keeps dying right after it starts", () => {
     expect(seen.at(-1)).toBe("unstable");
     const attempts = mockStartWiFi.mock.calls.length;
 
-    // The radio saying it is back is exactly the edge that restarted the
-    // loop. It no longer does, and neither does a resume.
+    // The radio saying it is back is exactly the edge that would restart the
+    // loop, so it is ignored, and so is a resume.
     wifi.onAvailabilityChanged(true);
     wifi.refresh();
     await settle(60_000);

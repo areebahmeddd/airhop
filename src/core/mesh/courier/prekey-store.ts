@@ -46,6 +46,14 @@ const CONSUMED_GRACE_MS = 48 * 60 * 60 * 1000;
 const MAX_CONSUMED = PREKEY_MAX_PREKEYS;
 // Cap on stored peer bundles (sender-controlled volume via gossip).
 const MAX_PEERS = 200;
+// The oldest bundle a message is sealed to. Past it the owner may have retired
+// the prekey, so the envelope would be dropped unread; the static-key seal
+// always opens. bitchat-ios PrekeyBundleStore.maxBundleAgeForSealingSeconds.
+const MAX_BUNDLE_AGE_FOR_SEALING_MS = 7 * 24 * 60 * 60 * 1000;
+// Our own bundle is re-dated well inside that age. The pool keeps its unused
+// keys indefinitely, so a quiet one is still good, and without this senders
+// would fall back to the static seal and lose forward secrecy after a week.
+const BUNDLE_REDATE_MS = 3 * 24 * 60 * 60 * 1000;
 
 // Blob layout, big-endian: nextId u32, generatedAt u64, then one 44-byte
 // record per key: id u32, private key (32), consumedAt u64 (0 while unused).
@@ -177,7 +185,8 @@ export class LocalPrekeyStore {
 
   // Ensure the pool holds a full batch of unused prekeys, generating fresh
   // Curve25519 keypairs as needed. Bumps generatedAt when the pool changes so a
-  // freshly built bundle supersedes older copies for our noise key.
+  // freshly built bundle supersedes older copies for our noise key, and every
+  // BUNDLE_REDATE_MS, well before senders stop sealing to it.
   private ensure(): void {
     const state = this.state;
     if (state === null) return;
@@ -193,10 +202,11 @@ export class LocalPrekeyStore {
       state.nextId = (state.nextId + 1) >>> 0 || 1;
       minted = true;
     }
-    if (minted) {
+    const stale = Date.now() - state.generatedAt > BUNDLE_REDATE_MS;
+    if (minted || stale) {
       state.generatedAt = Math.max(Date.now(), state.generatedAt + 1);
     }
-    if (minted || pruned || this.unsaved) this.persist();
+    if (minted || stale || pruned || this.unsaved) this.persist();
   }
 
   // A signed bundle over our current unused prekeys, for broadcast/gossip.
@@ -340,14 +350,16 @@ export class PeerPrekeyStore {
   // an unused one, marked used so a later message picks a different one. A
   // message is re-sealed for every courier sweep, and one message spending
   // exactly one prekey is bitchat-ios's rule (assignRecipientPrekey). Null
-  // when we hold no fresh prekey.
+  // when we hold no fresh prekey, or only a bundle too old to trust.
   assign(
     noiseStaticPubKey: Uint8Array,
     messageID: string,
+    now: number = Date.now(),
   ): { id: number; publicKey: Uint8Array } | null {
     const noiseHex = bytesToHex(noiseStaticPubKey);
     const peer = this.peers[noiseHex];
     if (peer === undefined) return null;
+    if (now - peer.generatedAt > MAX_BUNDLE_AGE_FOR_SEALING_MS) return null;
     const assigned = peer.assignments?.[messageID];
     const prior = peer.prekeys.find((p) => p.id === assigned);
     if (prior !== undefined) {

@@ -1,11 +1,13 @@
 /**
  * @jest-environment node
  */
-// Recipient tags, which decide who a stored envelope is offered to.
+// The courier's mailbag: what it accepts, who it offers mail to, how it spends a
+// spray budget, and what survives a restart.
 //
-// The tag has to be stable for a day so a courier can match it repeatedly, and
-// unlinkable across days so the same recipient cannot be tracked over time.
-// Those two pull against each other, and both are asserted here.
+// Recipient tags decide who a stored envelope is offered to. A tag has to be
+// stable for a day so a courier can match it repeatedly, and unlinkable across
+// days so the same recipient cannot be tracked over time. Those two pull
+// against each other, and both are asserted here.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { getStorage } from "@store/mmkv";
@@ -65,9 +67,11 @@ describe("recipientTag", () => {
 
   test("same pubkey + same day -> same tag", () => {
     const keys = makeNoiseKeypair();
-    const nowMs = Date.now();
-    expect(bytesToHex(computeRecipientTag(keys.pub, nowMs))).toBe(
-      bytesToHex(computeRecipientTag(keys.pub, nowMs)),
+    // The first and last millisecond of one UTC day.
+    const morning = Date.UTC(2026, 0, 1, 0, 0, 0, 0);
+    const night = Date.UTC(2026, 0, 1, 23, 59, 59, 999);
+    expect(bytesToHex(computeRecipientTag(keys.pub, morning))).toBe(
+      bytesToHex(computeRecipientTag(keys.pub, night)),
     );
   });
 
@@ -650,15 +654,23 @@ describe("CourierStore persistence", () => {
 });
 
 describe("CourierStore evictExpired", () => {
-  test("removes envelopes with past expiry from deposit if expired immediately", () => {
+  test("removes an envelope once its expiry has passed", () => {
     const store = freshStore();
-    // Deposit something valid, then manually call evictExpired while still fresh
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x30);
+    // makeEnvelopePayload expires a minute from now.
     store.deposit(makeEnvelopePayload(tag), depositor.pub, "verified");
     expect(store.size).toBe(1);
     store.evictExpired();
     expect(store.size).toBe(1); // still valid
+
+    jest.useFakeTimers().setSystemTime(Date.now() + 60_001);
+    try {
+      store.evictExpired();
+      expect(store.size).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 
@@ -696,19 +708,5 @@ describe("envelope round trip", () => {
     // The envelope authenticates its sender internally, which is what lets the
     // receive path attribute a message to a peer the packet header never named.
     expect([...senderStaticPubKey]).toEqual([...sender.pub]);
-  });
-
-  test("the routing tag is the recipient's, so a carrier can match it", () => {
-    const recipient = makeNoiseKeypair();
-    const payload = encodeEnvelopePayload({
-      recipientTag: computeRecipientTag(recipient.pub),
-      expiryMs: Date.now() + 60_000,
-      copies: 4,
-      ciphertext: uniqueCiphertext(),
-    });
-    const env = decodeEnvelopePayload(payload)!;
-    expect(bytesToHex(env.recipientTag)).toBe(
-      bytesToHex(computeRecipientTag(recipient.pub)),
-    );
   });
 });

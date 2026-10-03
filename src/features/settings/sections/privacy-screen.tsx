@@ -55,7 +55,7 @@ const SECTIONS: LegalSection[] = [
           "Public notices you post to the bulletin board, which stay readable until they expire.",
           "A batch of single-use public keys, so someone can leave you a protected message while you are offline. These contain no private information.",
           "Encrypted group traffic, which nearby devices relay but cannot read unless they are members of that group.",
-          "Live voice, if you turn it on. Holding the mic streams your voice to everyone in Bluetooth range as you speak. A public burst is signed but not encrypted, the same as a room attachment. In a direct message it stays inside that peer's encrypted session. Nothing is recorded on either device.",
+          "Live voice, on unless you turn it off. Holding the mic streams your voice to everyone in Bluetooth range as you speak. A public burst is signed but not encrypted, the same as a room attachment. In a direct message it stays inside that peer's encrypted session. When you let go, the same audio is also sent as an ordinary voice note.",
           "A screenshot notice, in private conversations only. Taking a screenshot in a direct message, private group, or private channel tells the people in it that you did, under your display name. In the public mesh room and location channels nothing is sent, because announcing it there would record that you were present. The screenshot itself is never sent.",
           "Approximate Bluetooth signal strength (radio metadata visible to any nearby receiver).",
         ],
@@ -105,7 +105,7 @@ const SECTIONS: LegalSection[] = [
     heading: "Ecash payments (optional)",
     paragraphs: [
       "Payments are off until you add a mint. Sending and receiving ecash over Bluetooth involves no server, no relay, and no mint: the two devices do it themselves, and nothing about the payment leaves them.",
-      "Talking to a mint is different, and only happens when you deposit, withdraw, refresh, or claim a token while online.",
+      "Talking to a mint is different. It happens when you deposit, withdraw, refresh, or claim a token while online, and on its own once you are online, to settle coins you received offline, redeem a nutzap, or fetch a mint's keys to show a token in a chat.",
       {
         bullets: [
           "**What a mint can see.** Your IP address, the amounts you deposit and withdraw, and when. Mints are third parties whose retention and privacy practices are outside this project's control.",
@@ -143,12 +143,12 @@ const SECTIONS: LegalSection[] = [
       {
         bullets: [
           "**Private sessions.** Noise XX with X25519 and ChaCha20-Poly1305.",
-          "**Forward secrecy.** Provided by Double Ratchet for live conversations, and by single-use prekeys for messages left for someone who is offline, so an undelivered message stays protected even if a long-term key is compromised later.",
+          "**Forward secrecy.** Provided by Double Ratchet for live conversations, and by single-use prekeys for messages left for someone who is offline, so an undelivered message stays protected even if a long-term key is compromised later. That needs their prekeys from the last week; without them, the message is sealed to their long-term key.",
           "**Private groups.** Group messages use ChaCha20-Poly1305 under a shared group key. The member list is signed by the group's creator with Ed25519.",
           "**Public notices.** Bulletin-board posts are Ed25519-signed so their author cannot be forged. They are deliberately public, not confidential.",
           "**Nostr events.** secp256k1 Schnorr signatures, with private messages sealed using key agreement, HKDF-SHA256, and XChaCha20-Poly1305.",
           "**Ecash.** Cashu blind signatures, which stop a mint linking issuance to redemption, plus DLEQ proofs that let your device verify a token was genuinely signed by its mint with no network connection.",
-          "**Implementation.** All cryptographic operations use the [@noble](https://github.com/paulmillr/noble-curves) library suite, which has been independently audited by Cure53.",
+          "**Implementation.** Airhop's own protocol cryptography uses the [@noble](https://github.com/paulmillr/noble-curves) library suite, which has been independently audited by Cure53.",
         ],
       },
       "**No cryptographic protection prevents a recipient from copying, screenshotting, or forwarding a message after reading it.** Airhop tells the other side when you screenshot a private conversation, but that is a courtesy notice, not a control.",

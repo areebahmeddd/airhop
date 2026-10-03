@@ -14,7 +14,8 @@
 //   * keyboard avoidance, since a sheet with a text field in it is the single
 //     most common place for the keyboard to swallow the thing you're typing in,
 //   * back-button / backdrop-tap dismissal, and the slide-out animation that
-//     goes with them.
+//     goes with them,
+//   * one sheet at a time, through afterSheetsClose.
 //
 // Callers keep their own `sheetStyle`, so converting a sheet is a matter of
 // deleting its Modal/overlay/handle boilerplate, not restyling it.
@@ -89,14 +90,50 @@ const CLOSE_TIMING = {
 //
 // A React Native Modal is its own window and captures every touch in it, so
 // what the user was left holding was the whole app behind a scrim that ate
-// every tap - an unresponsive tab bar under a grey sheet, indistinguishable
+// every tap: an unresponsive tab bar under a grey sheet, indistinguishable
 // from a hang. It survived returning to the app, because nothing re-drove the
 // animation.
 //
-// JS timers keep running while the activity is paused, which is exactly why the
-// backstop lives here rather than in another animation callback. The grace is
-// generous because beating the animation would cut a healthy close short.
+// A JS timer still fires once the activity resumes, even if a dialog paused it
+// in between, which is exactly why the backstop lives here rather than in
+// another animation callback. The grace is generous because beating the
+// animation would cut a healthy close short.
 const CLOSE_FALLBACK_MS = CLOSE_TIMING.duration + 200;
+
+// Sheets on screen, each from open until slid out, and the handoffs waiting on
+// the last of them.
+let sheetsOnScreen = 0;
+let waitingForClose: (() => void)[] = [];
+let flushQueued = false;
+
+// A frame past the last close, so the platform has removed that Modal before
+// the next one presents.
+function queueFlush(): void {
+  if (flushQueued) return;
+  flushQueued = true;
+  requestAnimationFrame(() => {
+    flushQueued = false;
+    // A sheet opened in that frame; its own close flushes instead.
+    if (sheetsOnScreen > 0) return;
+    const due = waitingForClose;
+    waitingForClose = [];
+    for (const run of due) run();
+  });
+}
+
+// Runs `open` once no sheet is on screen, at once if none is. iOS drops a modal
+// presented over one still sliding out, and a busy UI thread stretches the
+// slide past any fixed delay. Returns a cancel.
+export function afterSheetsClose(open: () => void): () => void {
+  if (sheetsOnScreen === 0 && waitingForClose.length === 0) {
+    open();
+    return () => {};
+  }
+  waitingForClose.push(open);
+  return () => {
+    waitingForClose = waitingForClose.filter((w) => w !== open);
+  };
+}
 
 interface Props {
   visible: boolean;
@@ -140,6 +177,15 @@ export default function BottomSheet({
   // Kept mounted across the slide-out so the exit animation can play even when
   // the parent flips `visible` to false.
   const [mounted, setMounted] = useState(visible);
+  // Counted until slid out, which is what afterSheetsClose waits on.
+  useEffect(() => {
+    if (!mounted) return;
+    sheetsOnScreen += 1;
+    return () => {
+      sheetsOnScreen -= 1;
+      if (sheetsOnScreen === 0) queueFlush();
+    };
+  }, [mounted]);
 
   // Distance the sheet sits below its resting position: 0 is fully open.
   const translateY = useSharedValue(screenHeight);

@@ -12,7 +12,7 @@ Android release APKs for `org.onemindlabs.airhop` are signed with one certificat
 60:D0:94:87:08:7C:3E:A4:C3:FB:B3:25:AE:BD:35:4B:E6:29:BE:99:09:20:20:DC:48:B5:78:06:5C:18:A9:49
 ```
 
-`apksigner verify --print-certs airhop.apk` must print exactly one signer with that digest, and `gh attestation verify` must pass with `--signer-workflow areebahmeddd/airhop/.github/workflows/release.yml --source-ref refs/tags/<tag> --deny-self-hosted-runners`. The [README](README.md#verifying-an-apk) has both commands in full. An APK that fails either is not ours: report where it came from, as below.
+`apksigner verify --print-certs airhop.apk` must print exactly one signer with that digest, and `gh attestation verify` must pass with `--signer-workflow areebahmeddd/airhop/.github/workflows/release.yml --source-ref refs/tags/<tag> --deny-self-hosted-runners`. Every release's notes have both commands in full, under "Verify this download". An APK that fails either is not ours: report where it came from, as below.
 
 ## What to Include
 

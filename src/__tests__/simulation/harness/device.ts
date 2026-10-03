@@ -290,7 +290,6 @@ interface MeshLike {
   cancelVoiceBurst: () => Promise<void>;
   cancelTransfer: (transferId: string) => void;
   retryRadios: () => void;
-  refresh: () => void;
   setDiscoverable: (enabled: boolean) => void;
   stop: () => void;
   dispose: () => void;
@@ -383,10 +382,6 @@ export class SimDevice {
 
   get mesh(): MeshLike | null {
     return this.inner.mesh.getMeshService();
-  }
-
-  get isRunning(): boolean {
-    return this.launched && this.mesh !== null;
   }
 
   // Wire this phone into a WiFi fabric.
@@ -519,23 +514,6 @@ export class SimDevice {
     this.inner.os.setBluetooth(on);
   }
 
-  setLocationServices(on: boolean): void {
-    this.inner.os.locationServicesEnabled = on;
-    this.inner.os.log("os", "LOCATION_SERVICES", on ? "on" : "off");
-    this.mesh?.refresh();
-  }
-
-  revokePermission(p: AndroidPermission): void {
-    this.inner.os.setPermission(p, "denied");
-    this.inner.os.log("user", "PERMISSION_REVOKED", p.split(".").pop());
-    this.mesh?.refresh();
-  }
-
-  grantPermission(p: AndroidPermission): void {
-    this.inner.os.setPermission(p, "granted");
-    this.mesh?.refresh();
-  }
-
   setDiscoverable(enabled: boolean): void {
     this.mesh?.setDiscoverable(enabled);
   }
@@ -554,10 +532,6 @@ export class SimDevice {
     } else {
       this.inner.stores.settingsStore.setState({ [key]: value });
     }
-  }
-
-  getSetting(key: string): unknown {
-    return this.inner.stores.settingsStore.getState()[key];
   }
 
   teardown(): void {

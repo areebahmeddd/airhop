@@ -579,9 +579,12 @@ describe("counters", () => {
 describe("clearAll", () => {
   it("empties proofs, reservations, mints and history", () => {
     state().addMint(MINT);
-    state().addProofs(MINT, "sat", [makeProof(10)]);
+    const held = makeProof(5);
+    state().addProofs(MINT, "sat", [makeProof(10), held]);
     state().addTx(tx());
-    state().reserveProofs("tx-2", MINT, "sat", [makeProof(5)]);
+    // reserveProofs only moves proofs the wallet holds, so reserve one it has.
+    expect(state().reserveProofs("tx-2", MINT, "sat", [held])).toBe(true);
+    expect(Object.keys(state().reserved)).toHaveLength(1);
 
     state().clearAll();
 

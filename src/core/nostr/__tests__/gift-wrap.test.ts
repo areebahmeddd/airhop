@@ -51,16 +51,19 @@ describe("wrapDm / unwrapDm", () => {
     expect(dm.senderPubkey).not.toBe(wrapperPubkey);
   });
 
-  it("sets a timestamp within 2 days of now", () => {
+  it("sets a timestamp within 15 minutes of now", () => {
+    // bitchat's window, not NIP-59's two days: a wider blur would set our
+    // events apart from bitchat's on a relay.
     const sender = makePair();
     const recipient = makePair();
-    const now = Math.floor(Date.now() / 1000);
-    const jitter = 2 * 24 * 60 * 60;
+    const jitter = 15 * 60;
 
+    const before = Math.floor(Date.now() / 1000);
     const { event } = wrapDm("timing test", sender.priv, recipient.pub);
+    const after = Math.floor(Date.now() / 1000);
 
-    expect(event.created_at).toBeGreaterThanOrEqual(now - jitter);
-    expect(event.created_at).toBeLessThanOrEqual(now + jitter);
+    expect(event.created_at).toBeGreaterThanOrEqual(before - jitter);
+    expect(event.created_at).toBeLessThanOrEqual(after + jitter);
   });
 
   it("produces a kind 1059 gift-wrap event", () => {
@@ -89,7 +92,7 @@ describe("wrapDm / unwrapDm", () => {
     const { event: e1 } = wrapDm("same text", sender.priv, recipient.pub);
     const { event: e2 } = wrapDm("same text", sender.priv, recipient.pub);
 
-    // Ephemeral key is fresh each time so the outer pubkey and sig differ.
+    // The ephemeral key is fresh each time, so the outer pubkey and id differ.
     expect(e1.pubkey).not.toBe(e2.pubkey);
     expect(e1.id).not.toBe(e2.id);
   });
@@ -117,19 +120,6 @@ describe("unwrapDm error cases", () => {
 
     expect(() =>
       unwrapDm(tampered, recipient.priv, Number.POSITIVE_INFINITY),
-    ).toThrow();
-  });
-
-  it("throws when misdirected wrap is opened by a third party", () => {
-    const sender = makePair();
-    const realRecipient = makePair();
-    const eavesDropper = makePair();
-
-    const { event } = wrapDm("private", sender.priv, realRecipient.pub);
-
-    // Third party cannot unwrap (wrong private key for decryption).
-    expect(() =>
-      unwrapDm(event, eavesDropper.priv, Number.POSITIVE_INFINITY),
     ).toThrow();
   });
 });

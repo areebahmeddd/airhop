@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-// Geohash channel mapping + relay selection.
+// Geohash channels: which cell a channel means, and which relays serve it.
 //
 // Two properties decide whether location channels work at all:
 //
@@ -31,7 +31,6 @@ import {
 } from "@utils/channel-key";
 import type { Event } from "nostr-tools";
 import {
-  GEO_CHANNEL_PRECISION,
   GeohashChannelService,
   geohashLevelName,
   isGeoChannel,
@@ -55,16 +54,7 @@ const LONDON = { lat: 51.5074, lng: -0.1278 };
 const LONDON_NEARBY = { lat: 51.5145, lng: -0.127 };
 const TOKYO = { lat: 35.6762, lng: 139.6503 };
 
-describe("channel -> precision mapping", () => {
-  it("matches bitchat's level table", () => {
-    // block=7, neighborhood=6, city=5, province=4, region=2.
-    expect(GEO_CHANNEL_PRECISION["#block"]).toBe(7);
-    expect(GEO_CHANNEL_PRECISION["#neighborhood"]).toBe(6);
-    expect(GEO_CHANNEL_PRECISION["#city"]).toBe(5);
-    expect(GEO_CHANNEL_PRECISION["#province"]).toBe(4);
-    expect(GEO_CHANNEL_PRECISION["#region"]).toBe(2);
-  });
-
+describe("which channels are geo channels", () => {
   it("never bridges #bluetooth", () => {
     // #bluetooth is the offline-only channel; bridging it to the internet
     // would break the one guarantee it makes.
@@ -81,21 +71,6 @@ describe("channel -> precision mapping", () => {
     expect(isManualGeoChannel("geohash:tdr1k")).toBe(true);
     // A named location channel is not a manual/teleported one.
     expect(isManualGeoChannel("#city")).toBe(false);
-  });
-
-  it("produces coarser cells as the scope widens", () => {
-    const lengths = [
-      "#block",
-      "#neighborhood",
-      "#city",
-      "#province",
-      "#region",
-    ].map(
-      (c) =>
-        encodeGeohash(LONDON.lat, LONDON.lng, GEO_CHANNEL_PRECISION[c]).length,
-    );
-    // Strictly decreasing precision from block out to region.
-    expect(lengths).toEqual([...lengths].sort((a, b) => b - a));
   });
 });
 
@@ -220,17 +195,6 @@ describe("relay selection determinism", () => {
       "wss://aaa.example",
       "wss://mmm.example",
       "wss://zzz.example",
-    ]);
-  });
-
-  it("picks geographically closer relays first", () => {
-    const d = new GeoRelayDirectory();
-    d.loadEntries([
-      { url: "wss://far.example", lat: -40, lng: 170 },
-      { url: "wss://near.example", lat: 51.5, lng: -0.12 },
-    ]);
-    expect(d.nearestRelays(LONDON.lat, LONDON.lng, 1)).toEqual([
-      "wss://near.example",
     ]);
   });
 

@@ -1,7 +1,9 @@
 /**
  * @jest-environment node
  */
-// Byte-parity tests for the bitchat file-transfer TLV (BitchatFilePacket).
+// The file-transfer TLV (bitchat's BitchatFilePacket): round trips, the MIME
+// allow-list and the size caps. That the bytes decode in both bitchat clients is
+// pinned in file-packet-bitchat-compat.test.ts.
 import {
   decodeFilePacket,
   encodeFilePacket,
@@ -77,22 +79,9 @@ describe("bitchat-file-packet", () => {
       expect(decodeFilePacket(enc)!.caption).toBeUndefined();
     });
 
-    it("uses canonical tags: 0x01 name, 0x02 size(u32), 0x03 mime, 0x04 content(u32)", () => {
-      const enc = encodeFilePacket({
-        fileName: "a",
-        mimeType: "image/png",
-        content: PNG,
-      })!;
-      // 0x01 fileName, u16 len(1), 'a'
-      expect(enc[0]).toBe(0x01);
-      expect(enc[1]).toBe(0);
-      expect(enc[2]).toBe(1);
-      expect(enc[3]).toBe(0x61);
-      // 0x02 fileSize, u16 len(4), u32 value
-      expect(enc[4]).toBe(0x02);
-      expect(enc[6]).toBe(4);
-    });
-
+    // Both bitchat clients reject an empty file and enforce the same 1 MiB
+    // ceiling, so Airhop refuses to encode either rather than send a frame that
+    // decodes nowhere.
     it("rejects empty content", () => {
       expect(encodeFilePacket({ content: new Uint8Array(0) })).toBeNull();
     });
@@ -104,7 +93,7 @@ describe("bitchat-file-packet", () => {
     });
 
     it("skips unknown TLV tags (forward compatible, mirrors bitchat)", () => {
-      // Build: fileSize + an unknown 0x09 tag (u16 len) + content.
+      // An unknown 0x09 tag (u16 len) ahead of a valid packet.
       const enc = encodeFilePacket({ mimeType: "image/png", content: PNG })!;
       const withUnknown = new Uint8Array([
         0x09,
@@ -226,7 +215,7 @@ describe("resolveMimeType", () => {
   });
 
   it("accepts the m4a spelling Android recorders use", () => {
-    // We send audio/mp4; older Airhop builds and some recorders say x-m4a.
+    // We send audio/mp4; some recorders say x-m4a.
     expect(isAllowedMime("audio/x-m4a")).toBe(true);
     expect(typeFromMime("audio/x-m4a")).toBe("voice");
   });

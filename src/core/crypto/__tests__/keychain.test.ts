@@ -87,16 +87,9 @@ describe("wipeAllSecrets", () => {
     expect(asked.sort()).toEqual([...ALL_ITEMS].sort());
   });
 
-  it("throws when an item could not be destroyed", async () => {
-    // panic-wipe turns this into `keysDestroyed: false`.
-    mock.deleteItemAsync.mockImplementation(async (key: string) => {
-      if (key === KEYCHAIN_ITEMS.identity) throw new Error("keychain locked");
-    });
-    await expect(wipeAllSecrets()).rejects.toThrow();
-  });
-
-  it("still attempts the rest after one item fails", async () => {
-    // A keychain that refuses one value may release the next.
+  it("throws when an item could not be destroyed, after attempting the rest", async () => {
+    // panic-wipe turns the throw into `keysDestroyed: false`. A keychain that
+    // refuses one value may release the next, so the rest are still asked.
     mock.deleteItemAsync.mockImplementation(async (key: string) => {
       if (key === KEYCHAIN_ITEMS.identity) throw new Error("keychain locked");
     });

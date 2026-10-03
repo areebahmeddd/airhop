@@ -1,27 +1,27 @@
 // A transcription of android/app/src/main/java/org/onemindlabs/airhop/ble/
 // AirhopBLEModule.kt, running against the OS model.
 //
-// It tracks the Kotlin branch for branch, with the source line on each, so a
-// scenario failure is evidence about the real module rather than about a
-// convenient approximation. What it CANNOT do is prove the Kotlin compiles or
-// that the platform behaves as modelled - that still needs a device build. What
-// it does prove is that the logic, given the OS behaviours in os.ts, produces
-// the right sequence of calls and the right state.
+// It tracks the Kotlin branch for branch, so a scenario failure is evidence
+// about the real module rather than about a convenient approximation. What it
+// CANNOT do is prove the Kotlin compiles or that the platform behaves as
+// modelled; that still needs a device build. What it does prove is that the
+// logic, given the OS behaviours in os.ts, produces the right sequence of calls
+// and the right state.
 //
-// Audit anchors, current file:
-//   :90   lazy, nullable bluetoothManager / adapter
-//   :127  adapterStateReceiver, ON / TURNING_OFF / OFF
-//   :195  initialize() registers the receiver (NOT init{})
-//   :262  releaseRadioState()
-//   :300  emitEvent, hasActiveReactInstance() guard + try/catch
-//   :318  emitAdapterState, change-only
-//   :330  getRadioState
-//   :420  requestEnableBluetooth
-//   :470  openLocationSettings
-//   :490  setBackgroundServiceEnabled
-//   :508  startAdvertising, precondition rejections
-//   :596  stopAdvertising, does NOT touch the foreground service
-//   :620  startScanning, precondition rejections incl. location services
+// Audit anchors, by Kotlin member:
+//   bluetoothManager / adapter   lazy and nullable
+//   adapterStateReceiver         ON / TURNING_OFF / OFF
+//   initialize()                 registers the receiver (NOT init{})
+//   releaseRadioState()
+//   emitEvent                    hasActiveReactInstance() guard + try/catch
+//   emitAdapterState             change-only
+//   getRadioState
+//   requestEnableBluetooth
+//   openLocationSettings
+//   setBackgroundServiceEnabled
+//   startAdvertising             precondition rejections
+//   stopAdvertising              does NOT touch the foreground service
+//   startScanning                precondition rejections incl. location services
 
 import { DeviceEventEmitter } from "react-native";
 import { DeviceOS } from "./os";
@@ -34,27 +34,15 @@ const EVT_PACKET_RECEIVED = "AirhopBLE.packetReceived";
 const EVT_RSSI_UPDATED = "AirhopBLE.rssiUpdated";
 const EVT_SCAN_FAILED = "AirhopBLE.scanFailed";
 
-// How a device is wired into a shared radio medium (see sim/harness/radio-fabric).
-// Without one installed the module behaves exactly as it did for the
-// single-device lifecycle tests: writes resolve into the void.
+// How a device is wired into a shared radio medium (see
+// simulation/harness/radio-fabric.ts). Without one installed, writes resolve
+// into the void, which is all a single-device lifecycle test needs.
 export interface RadioPort {
   // Bytes leaving this device on a link. The medium decides whether, when, and
   // in what condition they arrive.
   write(linkID: string, dataBase64: string): void;
   // Advertising or scanning changed, so who can see whom may have changed.
   radiosChanged(): void;
-}
-
-// The DeviceEventEmitter object THIS module resolved.
-//
-// mesh-service.ts imports the same symbol from the same specifier, so inside a
-// given module registry the two are guaranteed to be the same object. That
-// guarantee is the only reliable way for the multi-device harness to get hold
-// of the emitter a phone actually uses: reaching for it from outside the
-// sandbox can resolve a different copy, and patching the wrong one fails
-// silently. See sim/harness/event-router.ts.
-export function resolvedDeviceEventEmitter(): Record<string, unknown> {
-  return DeviceEventEmitter as unknown as Record<string, unknown>;
 }
 
 export interface RadioStateReport {
@@ -98,7 +86,7 @@ export class AndroidBleModule implements BleNativeModule {
 
   // Reproduced, not transcribed: what the platform advertiser/scanner is
   // actually doing, so the harness can assert on it. The Kotlin holds no such
-  // flags - it calls through to the adapter every time.
+  // flags: it calls through to the adapter every time.
   advertising = false;
   scanning = false;
 
@@ -119,8 +107,8 @@ export class AndroidBleModule implements BleNativeModule {
     );
   }
 
-  // Called once the catalyst instance exists, so the receiver
-  // is not live during the window where reaching JS would throw.
+  // Called once the catalyst instance exists, so the receiver is not live
+  // during the window where reaching JS would throw.
   initialize(): void {
     if (this.receiverRegistered) return;
     this.receiverRegistered = true;
@@ -173,10 +161,9 @@ export class AndroidBleModule implements BleNativeModule {
     this.emitEvent(EVT_ADAPTER_STATE, { enabled });
   }
 
-  //
-  // hasActiveReactInstance() guard AND a try/catch. Callers run on threads the
-  // OS owns - the main thread for the BroadcastReceiver, binder threads for the
-  // GATT callbacks, so an uncaught throw here is process death.
+  // A hasActiveReactInstance() guard AND a try/catch. Callers run on threads
+  // the OS owns (the main thread for the BroadcastReceiver, binder threads for
+  // the GATT callbacks), so an uncaught throw here is process death.
   private emitEvent(name: string, body: Record<string, unknown>): void {
     if (!this.os.jsRuntimeReady) {
       this.os.log("native", "EVENT_DROPPED_NO_JS", name);
@@ -219,9 +206,9 @@ export class AndroidBleModule implements BleNativeModule {
   }
 
   // The effort level native is currently applying. Observable so a scenario can
-  // assert that a pocketed phone actually stopped scanning flat out - the
-  // duty cycle itself lives below the JS boundary and is deliberately invisible
-  // to it, so this is the only thing there is to check.
+  // assert that a pocketed phone actually stopped scanning flat out. The duty
+  // cycle itself lives below the JS boundary and is deliberately invisible to
+  // it, so this is the only thing there is to check.
   powerMode = "balanced";
 
   // Kotlin setPowerMode. Note what it does NOT do: report a link or adapter
@@ -295,11 +282,11 @@ export class AndroidBleModule implements BleNativeModule {
     }
   }
 
-  // Every precondition the platform will not report.
   // How many times JS has asked. A device that can never advertise must be
   // asked once, not on a five-second loop for the life of the process.
   advertiseAttempts = 0;
 
+  // Every precondition the platform will not report.
   async startAdvertising(
     _serviceUUID: string,
     _localName: string,
@@ -311,9 +298,9 @@ export class AndroidBleModule implements BleNativeModule {
     if (this.os.adapter !== "on") {
       return rejectWith("RADIO_OFF", "Bluetooth is switched off");
     }
-    // BluetoothLeAdvertiser is null on a chipset with no
-    // peripheral role. Central still works, so this is a partial capability
-    // rather than a dead radio, and it can never change.
+    // BluetoothLeAdvertiser is null on a chipset with no peripheral role.
+    // Central still works, so this is a partial capability rather than a dead
+    // radio, and it can never change.
     if (!this.os.canAdvertise) {
       return rejectWith("UNSUPPORTED", "This device cannot advertise over BLE");
     }
@@ -526,7 +513,7 @@ export class AndroidBleModule implements BleNativeModule {
   simulatePeerConnect(linkID: string): void {
     if (!this.scanning || this.os.adapter !== "on") return;
     // The OS withholds scan results with location off, but only while a scan
-    // still counts as a location access - which is API <=30 now.
+    // still counts as a location access, which is API <=30.
     if (this.os.apiLevel < 31 && !this.os.locationServicesEnabled) return;
     this.centralLinks.set(linkID, { generation: this.os.gattGeneration });
     this.os.runOnThread("binder", () => {

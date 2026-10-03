@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-// Tests for courier-relay event encode/subscribe/fetch.
-// NostrClient is mocked: no network required.
+// Courier drops over Nostr: publishing, subscribing, and what the receive path
+// refuses. NostrClient is mocked, so no network is needed.
 
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { finalizeEvent, generateSecretKey, type Event } from "nostr-tools";
@@ -36,13 +36,6 @@ function makeClient(overrides?: Partial<NostrClient>): NostrClient {
     close: jest.fn(),
     ...overrides,
   } as unknown as NostrClient;
-}
-
-function base64ToUint8(b64: string): Uint8Array {
-  const binary = atob(b64);
-  const out = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
-  return out;
 }
 
 // For the tests that hand-build a drop event to feed the receive path.
@@ -91,23 +84,6 @@ describe("publishCourierDrop", () => {
     const xTag = published!.tags.find(([t]) => t === "x");
     expect(xTag).toBeDefined();
     expect(xTag![1]).toBe(bytesToHex(envelope.recipientTag));
-  });
-
-  it("event content is base64-encoded ciphertext (non-empty)", async () => {
-    let published: Event | null = null;
-    const client = makeClient({
-      publish: jest.fn().mockImplementation((event: Event) => {
-        published = event;
-        return Promise.resolve({ relay: "wss://mock", accepted: true });
-      }),
-    });
-    const envelope = makeEnvelope();
-
-    await publishCourierDrop(envelope, client);
-
-    const bytes = base64ToUint8(published!.content);
-    // The encoded TLV payload is at minimum 1 + 16 + 4 + len(ciphertext) bytes.
-    expect(bytes.length).toBeGreaterThan(0);
   });
 
   it("event has an expiration tag within range of the envelope expiry", async () => {

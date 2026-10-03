@@ -1,0 +1,23 @@
+{
+  "name": "airhop-film",
+  "private": true,
+  "type": "module",
+  "description": "The Airhop launch film and trailer, as HyperFrames compositions.",
+  "scripts": {
+    "narrate": "node scripts/narrate.mjs",
+    "score": "node scripts/score.mjs",
+    "score:trailer": "node scripts/score-trailer.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs && node scripts/hyperframes.mjs check",
+    "check:trailer": "node scripts/build.mjs && node scripts/hyperframes.mjs check trailer",
+    "preview": "node scripts/build.mjs && node scripts/hyperframes.mjs preview",
+    "preview:trailer": "node scripts/build.mjs && node scripts/hyperframes.mjs preview trailer",
+    "render": "node scripts/render.mjs",
+    "render:trailer": "node scripts/render.mjs --trailer"
+  },
+  "devDependencies": {
+    "@hyperframes/core": "^0.8.97",
+    "feather-icons": "^4.29.2",
+    "gsap": "^3.15.0"
+  }
+}

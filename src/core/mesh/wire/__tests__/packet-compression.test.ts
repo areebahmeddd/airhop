@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-// Tests for raw-DEFLATE payload compression (bitchat CompressionUtil parity).
+// Raw-DEFLATE payload compression, at parity with bitchat's CompressionUtil.
 import { deflateRaw } from "pako";
 import {
   compress,
@@ -49,10 +49,9 @@ describe("packet-compression", () => {
     });
 
     it("returns null when compression would not shrink the data", () => {
-      // 200 unique-ish bytes barely compress; incompressible -> null.
+      // 200 scrambled bytes do not shrink, so compress() declines.
       const big = new Uint8Array(200);
       for (let i = 0; i < big.length; i++) big[i] = (i * 167 + 13) & 0xff;
-      // Not compressible; compress() returns null (result not smaller).
       expect(compress(big)).toBeNull();
     });
 
@@ -174,12 +173,8 @@ describe("decompress bounds a lying size claim", () => {
     expect(BOMB_SIZE / bomb.length).toBeGreaterThan(100);
   });
 
-  it("refuses a stream that expands past its declared size", () => {
-    expect(decompress(bomb, 100)).toBeNull();
-  });
-
-  it("refuses it whatever small size is declared", () => {
-    for (const declared of [1, 64, 1024, 65_536]) {
+  it("refuses a stream that expands past whatever small size it declares", () => {
+    for (const declared of [1, 64, 100, 1024, 65_536]) {
       expect(decompress(bomb, declared)).toBeNull();
     }
   });

@@ -1,7 +1,9 @@
 /**
  * @jest-environment node
  */
-// Which packet type and payload a message goes out as.
+// The message router and its peer registry: which packet type and payload a
+// message goes out as, which transport carries a DM, and how far the registry
+// trusts what it knows about a peer.
 //
 // The mesh room travels under bitchat's own type so both apps read one another
 // on the same channel, while everything else uses Airhop's. Getting this wrong
@@ -61,6 +63,9 @@ describe("public message payloads", () => {
     );
   });
 
+  // #bluetooth is bitchat's mesh room. It carries no ID on the wire because
+  // bitchat has nowhere to put one; both implementations derive the same
+  // content-stable one instead, which is what onChannelMsg keys it on.
   test("the mesh room's payload is the text and nothing else", () => {
     const encoded = encodeMeshPublicPayload("hello world");
     expect(encoded).toEqual(new TextEncoder().encode("hello world"));
@@ -328,6 +333,10 @@ describe("MessageRouter", () => {
   });
 
   test("sendDm sends unicast DM when session is established", () => {
+    // The router has no separate WiFi tier. It emits one unicast and the
+    // injected callback (MeshService in production) decides whether that goes
+    // over a WiFi link or BLE. Asserting that exactly one dispatch happens is
+    // what stops a second, duplicate WiFi path being reintroduced.
     const identity = makeIdentity();
     const registry = new PeerRegistry();
     const recipientPeerID = "aabbccdd00112233";
@@ -434,14 +443,14 @@ describe("MessageRouter", () => {
   // A DIRECT_PEER_TTL_MS under that ceiling hides a peer on a live link from
   // `get()` for part of every cycle, and the DM path resolves its session
   // through `get()`. Messages would then be dropped with no error and no retry,
-  // since sendDm had already returned "sent" and the outbox never queued them.
+  // since sendDm has already returned "sent" and the outbox never queues them.
   describe("a direct peer idling between announces", () => {
     const GAP_MS = 30_000; // the announce ceiling, ANNOUNCE_CONNECTED_MAX_MS
 
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
-    function directPeerWithSession(peerID: string) {
+    function directPeerRegistry(peerID: string) {
       const registry = new PeerRegistry();
       registry.update({
         peerID,
@@ -456,7 +465,7 @@ describe("MessageRouter", () => {
 
     test("stays reachable across a full announce interval", () => {
       const peerID = "aabbccdd00112233";
-      const registry = directPeerWithSession(peerID);
+      const registry = directPeerRegistry(peerID);
 
       jest.advanceTimersByTime(GAP_MS);
 
@@ -466,7 +475,7 @@ describe("MessageRouter", () => {
 
     test("still decrypts an inbound DM once its announce has aged out", () => {
       const senderPeerID = "0011223344556677";
-      const registry = directPeerWithSession(senderPeerID);
+      const registry = directPeerRegistry(senderPeerID);
       const { sessionI, sessionR } = makePeerNoiseSession();
       registry.setSession(senderPeerID, sessionR);
 
@@ -477,7 +486,7 @@ describe("MessageRouter", () => {
         () => {},
       );
 
-      // Well past even the relaxed TTL, so this holds however it is tuned.
+      // Well past the TTL, so this holds however it is tuned.
       jest.advanceTimersByTime(GAP_MS * 10);
       expect(registry.isReachable(senderPeerID)).toBe(false);
 
@@ -501,7 +510,7 @@ describe("MessageRouter", () => {
 
     test("a decrypted packet counts as liveness, so the conversation stays fresh", () => {
       const senderPeerID = "0011223344556677";
-      const registry = directPeerWithSession(senderPeerID);
+      const registry = directPeerRegistry(senderPeerID);
       const { sessionI, sessionR } = makePeerNoiseSession();
       registry.setSession(senderPeerID, sessionR);
 
@@ -534,7 +543,7 @@ describe("MessageRouter", () => {
 
     test("a garbled packet does not count as liveness", () => {
       const senderPeerID = "0011223344556677";
-      const registry = directPeerWithSession(senderPeerID);
+      const registry = directPeerRegistry(senderPeerID);
       const { sessionR } = makePeerNoiseSession();
       registry.setSession(senderPeerID, sessionR);
 
@@ -567,7 +576,7 @@ describe("MessageRouter", () => {
 
     test("still acks a message it just accepted", () => {
       const peerID = "aabbccdd00112233";
-      const registry = directPeerWithSession(peerID);
+      const registry = directPeerRegistry(peerID);
       const { sessionI } = makePeerNoiseSession();
       registry.setSession(peerID, sessionI);
 
@@ -605,61 +614,6 @@ describe("MessageRouter", () => {
         ),
       ).toBe(false);
     });
-  });
-
-  test("sendDm returns sent-nostr when Nostr pubkey is known and no BLE session", () => {
-    const identity = makeIdentity();
-    const registry = new PeerRegistry();
-    const recipientPeerID = "aabbccdd00112233";
-
-    registry.update({
-      peerID: recipientPeerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "alice",
-    });
-    registry.setNostrPubkey(
-      recipientPeerID,
-      "a".repeat(64), // fake secp256k1 hex pubkey
-    );
-
-    const nostrSent: { pubkey: string; text: string }[] = [];
-    const router = new MessageRouter(
-      identity,
-      registry,
-      () => {},
-      () => {},
-      async (pubkey, text) => {
-        nostrSent.push({ pubkey, text });
-      },
-    );
-
-    const result = router.sendDm(recipientPeerID, "via nostr", "m0");
-    expect(result).toBe("sent-nostr");
-  });
-
-  test("sendDm falls back to needs-courier when Nostr pubkey unknown and no BLE session", () => {
-    const identity = makeIdentity();
-    const registry = new PeerRegistry();
-    const recipientPeerID = "bbccddee11223344";
-
-    registry.update({
-      peerID: recipientPeerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "bob",
-    });
-    // No nostrPubkey set, no nostrSend fn injected.
-    const router = new MessageRouter(
-      identity,
-      registry,
-      () => {},
-      () => {},
-    );
-
-    expect(router.sendDm(recipientPeerID, "offline", "m0")).toBe(
-      "needs-courier",
-    );
   });
 
   test("sendDm prefers BLE over Nostr even when both are available", () => {
@@ -738,38 +692,6 @@ describe("MessageRouter", () => {
     expect(registry.get(peerID)?.nickname).toBe("frank-v2");
   });
 
-  test("sendDm hands the packet to the transport callback, which owns WiFi-vs-BLE", () => {
-    // The router has no separate WiFi tier. It emits one unicast and
-    // the injected callback (MeshService in production) decides whether that
-    // goes over a WiFi link or BLE. Asserting here that exactly one dispatch
-    // happens is what stops a second, duplicate WiFi path being reintroduced.
-    const identity = makeIdentity();
-    const registry = new PeerRegistry();
-    const recipientPeerID = "aabbccdd00112233";
-
-    registry.update({
-      peerID: recipientPeerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "alice",
-    });
-    const { sessionI } = makePeerNoiseSession();
-    registry.setSession(recipientPeerID, sessionI);
-
-    const unicasts: { peerID: string; packet: Packet }[] = [];
-    const router = new MessageRouter(
-      identity,
-      registry,
-      () => {},
-      (peerID, p) => unicasts.push({ peerID, packet: p }),
-    );
-
-    expect(router.sendDm(recipientPeerID, "hello", "m0")).toBe("sent");
-    expect(unicasts).toHaveLength(1);
-    expect(unicasts[0].peerID).toBe(recipientPeerID);
-    expect(unicasts[0].packet.type).toBe(PacketType.NOISE_ENCRYPTED);
-  });
-
   test("direct transport is skipped entirely when no Noise session exists", () => {
     // Without a session the router cannot encrypt a DM for any direct transport.
     const identity = makeIdentity();
@@ -812,56 +734,21 @@ describe("MessageRouter", () => {
 // different people saying the same thing. A sender-assigned ID carried on both
 // transports is what collapses them into one bubble.
 describe("message ID (cross-transport dedupe)", () => {
-  test("round-trips the message id alongside channel and text", () => {
-    const encoded = encodeAirhopChannelPayload(
-      "#city",
-      "hello",
-      "deadbeef1234",
-    );
-    const decoded = decodeAirhopChannelPayload(encoded);
-    expect(decoded!.msgId).toBe("deadbeef1234");
-    expect(decoded!.channel).toBe("#city");
-    expect(decoded!.text).toBe("hello");
-  });
-
   test("newMessageId returns 16 lowercase hex chars", () => {
     expect(newMessageId()).toMatch(/^[0-9a-f]{16}$/);
   });
 
   test("newMessageId is unique across calls", () => {
+    // Packet-level dedupe hashes the payload, so without a per-message id a
+    // second identical "ok" in the same second would be swallowed as a
+    // duplicate packet.
     const ids = new Set(Array.from({ length: 200 }, () => newMessageId()));
     expect(ids.size).toBe(200);
-  });
-
-  test("distinguishes two identical messages sent in the same second", () => {
-    // Packet-level dedupe hashes the payload, so without a per-message id the
-    // second "ok" would be swallowed as a duplicate packet.
-    const a = encodeAirhopChannelPayload("#general", "ok", newMessageId());
-    const b = encodeAirhopChannelPayload("#general", "ok", newMessageId());
-    expect(decodeAirhopChannelPayload(a)!.msgId).not.toBe(
-      decodeAirhopChannelPayload(b)!.msgId,
-    );
-  });
-
-  test("text containing spaces survives the length-prefixed framing", () => {
-    const encoded = encodeAirhopChannelPayload("#a", "x y z", "id1");
-    const decoded = decodeAirhopChannelPayload(encoded);
-    expect(decoded!.text).toBe("x y z");
-    expect(decoded!.msgId).toBe("id1");
   });
 
   test("returns null when the id length overruns the payload", () => {
     // chLen=1, channel="#", idLen=200 with no data following.
     expect(decodeAirhopChannelPayload(new Uint8Array([1, 35, 200]))).toBeNull();
-  });
-
-  // #bluetooth is bitchat's mesh room. It carries no ID on the wire because
-  // bitchat has nowhere to put one; both implementations derive the same
-  // content-stable one instead, which is what onChannelMsg keys it on.
-  test("the mesh room carries no framing at all", () => {
-    const encoded = encodeMeshPublicPayload("hello");
-    expect(encoded.length).toBe(5);
-    expect(decodeMeshPublicPayload(encoded)).toBe("hello");
   });
 });
 

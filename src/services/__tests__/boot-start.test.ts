@@ -10,8 +10,14 @@ const mockLoadIdentity = jest.fn();
 const mockHasBlePermissions = jest.fn<Promise<boolean>, []>();
 const mockInitMeshService = jest.fn();
 const mockRetryRadios = jest.fn();
-let mockMesh: { peerID: string; retryRadios: jest.Mock } | null = null;
+const mockSetAppForeground = jest.fn();
+let mockMesh: {
+  peerID: string;
+  retryRadios: jest.Mock;
+  setAppForeground: jest.Mock;
+} | null = null;
 const mockPrimeTor = jest.fn();
+const mockNotifyTorForeground = jest.fn();
 const mockStartPipeline = jest.fn();
 const mockStartReachability = jest.fn();
 const mockSweepMedia = jest.fn();
@@ -36,12 +42,18 @@ jest.mock("@services/mesh-service", () => ({
   getMeshService: () => mockMesh,
   initMeshService: (identity: { peerID: string }, nickname: string) => {
     mockInitMeshService(identity, nickname);
-    mockMesh = { peerID: identity.peerID, retryRadios: mockRetryRadios };
+    mockMesh = {
+      peerID: identity.peerID,
+      retryRadios: mockRetryRadios,
+      setAppForeground: mockSetAppForeground,
+    };
     return mockMesh;
   },
 }));
 jest.mock("@services/tor-routing", () => ({
   primeTorRoutingOnStartup: () => mockPrimeTor(),
+  notifyTorAppForeground: (foreground: boolean) =>
+    mockNotifyTorForeground(foreground),
 }));
 jest.mock("@store/settings-store", () => ({
   useSettingsStore: { getState: () => mockSettings },
@@ -111,6 +123,15 @@ describe("bootStartMesh", () => {
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);
   });
 
+  // No screen exists, so the mesh and Tor start at off-screen power rather
+  // than the on-screen defaults a later foreground raises them to.
+  test("starts the radios and Tor at background power", async () => {
+    await runBoot();
+
+    expect(mockSetAppForeground).toHaveBeenCalledWith(false);
+    expect(mockNotifyTorForeground).toHaveBeenCalledWith(false);
+  });
+
   test("restores a kept Invisible on the same tick as the start", async () => {
     await runBoot();
 
@@ -138,7 +159,11 @@ describe("bootStartMesh", () => {
   });
 
   test("leaves a mesh already running for this identity alone", async () => {
-    mockMesh = { peerID: IDENTITY.peerID, retryRadios: mockRetryRadios };
+    mockMesh = {
+      peerID: IDENTITY.peerID,
+      retryRadios: mockRetryRadios,
+      setAppForeground: mockSetAppForeground,
+    };
 
     await runBoot();
 

@@ -152,6 +152,22 @@ module.exports = defineConfig([
     },
   },
   {
+    // The film's and trailer's page scripts run in Chrome, with GSAP, d3 and the plan as globals.
+    files: ["press/film/src/*.js", "press/film/trailer/*.js"],
+    languageOptions: {
+      sourceType: "script",
+      globals: {
+        ...globals.browser,
+        gsap: "readonly",
+        d3: "readonly",
+        PLAN: "readonly",
+        DATA: "readonly",
+        W: "readonly",
+        WORLD: "readonly",
+      },
+    },
+  },
+  {
     ignores: [
       "node_modules/",
       "bitchat/",
@@ -163,6 +179,10 @@ module.exports = defineConfig([
       "dist/",
       "build/",
       "coverage/",
+      "press/film/.claude/",
+      "press/film/.tools/",
+      "press/film/**/data.js",
+      "press/film/**/vendor/",
     ],
   },
 ]);

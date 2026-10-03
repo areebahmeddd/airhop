@@ -59,6 +59,8 @@ describe("round trip", () => {
     expect(decoded?.lat).toBeCloseTo(PIN.lat, 5);
     expect(decoded?.lng).toBeCloseTo(PIN.lng, 5);
     expect(decoded?.accuracyM).toBe(PIN.accuracyM);
+    // The fix time, not the send time. A pin that waited in a composer is older
+    // than the message carrying it, and the card has to be able to say so.
     expect(decoded?.takenAtMs).toBe(PIN.takenAtMs);
   });
 
@@ -74,13 +76,6 @@ describe("round trip", () => {
       encodeLocationPin({ lat: 1, lng: 2, takenAtMs: 3 }),
     );
     expect(decoded?.accuracyM).toBeUndefined();
-  });
-
-  // The fix time, not the send time. A pin that waited in a composer is older
-  // than the message carrying it, and the card has to be able to say so.
-  it("carries the moment of the fix unchanged", () => {
-    const decoded = decodeLocationPin(encodeLocationPin(PIN));
-    expect(decoded?.takenAtMs).toBe(PIN.takenAtMs);
   });
 });
 

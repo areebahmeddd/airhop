@@ -1,7 +1,9 @@
 /**
  * @jest-environment node
  */
-
+// The panic wipe: what it destroys, in what order, and how it behaves when a
+// step fails or the process dies partway.
+//
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { wipeAllSecrets } from "@core/crypto/keychain";
 import { useChatStore } from "@store/chat-store";
@@ -139,7 +141,7 @@ afterEach(() => {
 });
 
 describe("panicWipe", () => {
-  test("calls identity.panicWipe to clear private keys", async () => {
+  test("wipes the keychain secrets exactly once", async () => {
     await panicWipe();
     expect(mockClearKeys).toHaveBeenCalledTimes(1);
   });
@@ -193,8 +195,8 @@ describe("panicWipe", () => {
   });
 
   test("empties the whole cache directory, not just prefixed attachments", async () => {
-    // Prefix matching missed sent documents, sent videos, in-budget images and
-    // the saved QR card, all of which survived every wipe.
+    // Prefix matching would miss sent documents, sent videos, in-budget images
+    // and the saved QR card.
     await panicWipe();
     expect(wipeCacheDirectory).toHaveBeenCalledTimes(1);
   });
@@ -276,10 +278,9 @@ describe("panicWipe", () => {
   });
 
   test("finishes the wipe even when the keychain refuses, and says so", async () => {
-    // A locked Keychain is the seizure case this gesture exists for. The bare
-    // await here used to abandon every step below it, leaving all thirteen MMKV
-    // partitions, the wallet file and the media cache intact while the caller
-    // surfaced nothing at all.
+    // A locked Keychain is the seizure case this gesture exists for. A refusal
+    // that abandoned the steps after it would leave every MMKV partition, the
+    // wallet file and the media cache intact while the caller surfaced nothing.
     mockClearKeys.mockRejectedValue(new Error("keychain locked"));
 
     const result = await panicWipe();
@@ -355,7 +356,7 @@ describe("panicWipe", () => {
   test("stops the live nutzap subscription", async () => {
     // It holds this identity's Nostr private key in a closure and a relay
     // subscription under its pubkey. Both outlive the wipe unless it is
-    // stopped explicitly - the stores and the keychain are cleared around it,
+    // stopped explicitly: the stores and the keychain are cleared around it,
     // and neither touches a running subscription.
     const stop = jest.fn();
     setNutzapWatcher(stop);

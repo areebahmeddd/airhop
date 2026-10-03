@@ -56,7 +56,7 @@ export function GiftWrap() {
         kind 14 · rumor
       </text>
       <text x={116} y={200} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        the actual message, never signed, so it cannot be proven
+        the actual message, left unsigned
       </text>
 
       <Caption x={624} y={44}>
@@ -71,9 +71,16 @@ export function GiftWrap() {
         sub="from a key it has never seen before"
       />
       <Box x={620} y={114} w={286} h={44} label="a timestamp" sub="randomized to blur timing" />
-      <Box x={620} y={170} w={286} h={44} label="ciphertext" sub="NIP-44, XChaCha20-Poly1305" />
+      <Box
+        x={620}
+        y={170}
+        w={286}
+        h={44}
+        label="ciphertext"
+        sub="bitchat nip44-v2, XChaCha20-Poly1305"
+      />
       <text x={620} y={238} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        Not your identity, not theirs,
+        Their key, to deliver it. Not yours,
       </text>
       <text x={620} y={254} fontFamily={MONO} fontSize={10} fill={MUTED}>
         and not a word of the message.

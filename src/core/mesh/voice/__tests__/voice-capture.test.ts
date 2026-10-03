@@ -1,5 +1,7 @@
-// Tests for voice-capture burst codec.
-// Validates the VOICE_FRAME payload format matches VoiceBurstPacket.swift.
+// The push-to-talk capture side: the VOICE_FRAME burst codec, which matches
+// bitchat-ios's VoiceBurstPacket, and the session that turns a held button into
+// START, DATA, END or CANCELED. The byte-for-byte vectors for each burst kind
+// are in packet-payload-vectors.test.ts.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -63,21 +65,6 @@ describe("encodeBurstStart / decodeBurstPacket (START)", () => {
     expect(bytesToHex(result.burstID)).toBe(bytesToHex(id));
     expect(result.codec).toBe(VoiceCodec.AAC_LC_16KHZ_MONO);
   });
-
-  it("START payload wire layout: burstID[8] | seq u16 BE=0 | flags=0x01 | codec u8", () => {
-    const payload = encodeBurstStart(id, VoiceCodec.AAC_LC_16KHZ_MONO);
-    // Minimum length: 8 (burstID) + 2 (seq) + 1 (flags) + 1 (codec) = 12
-    expect(payload.length).toBe(12);
-    // burstID at [0-7]
-    expect(Array.from(payload.slice(0, 8))).toEqual(Array.from(id));
-    // seq = 0 at [8-9]
-    const view = new DataView(payload.buffer);
-    expect(view.getUint16(8, false)).toBe(0);
-    // flags = START (0x01) at [10]
-    expect(payload[10]).toBe(BurstFlags.START);
-    // codec at [11]
-    expect(payload[11]).toBe(VoiceCodec.AAC_LC_16KHZ_MONO);
-  });
 });
 
 describe("encodeBurstData / decodeBurstPacket (DATA)", () => {
@@ -109,11 +96,6 @@ describe("encodeBurstData / decodeBurstPacket (DATA)", () => {
     expect(Array.from(result.frames[1])).toEqual(Array.from(frame2));
   });
 
-  it("DATA flags byte is 0x00", () => {
-    const payload = encodeBurstData(id, 1, [frame1]);
-    expect(payload[10]).toBe(BurstFlags.DATA);
-  });
-
   it("seq u16 BE is encoded correctly", () => {
     const payload = encodeBurstData(id, 0x0102, [frame1]);
     const view = new DataView(payload.buffer);
@@ -135,11 +117,6 @@ describe("encodeBurstEnd / decodeBurstPacket (END)", () => {
     expect(result.durationMs).toBe(2500);
     expect(bytesToHex(result.burstID)).toBe(bytesToHex(id));
   });
-
-  it("END flags byte is 0x02", () => {
-    const payload = encodeBurstEnd(id, 0, 1, 1000);
-    expect(payload[10]).toBe(BurstFlags.END);
-  });
 });
 
 describe("encodeBurstCanceled / decodeBurstPacket (CANCELED)", () => {
@@ -150,11 +127,6 @@ describe("encodeBurstCanceled / decodeBurstPacket (CANCELED)", () => {
     const result = decodeBurstPacket(payload);
     expect(result!.kind).toBe("canceled");
     expect(bytesToHex(result!.burstID)).toBe(bytesToHex(id));
-  });
-
-  it("CANCELED flags byte is 0x04", () => {
-    const payload = encodeBurstCanceled(id, 0);
-    expect(payload[10]).toBe(BurstFlags.CANCELED);
   });
 });
 
@@ -228,10 +200,9 @@ describe("packetizer budget", () => {
   // same reason (BLEOutboundPacketPolicy).
   //
   // The padding check compares against the frame's own unpadded encoding rather
-  // than against a size limit. A limit is a moving target: when MAX_BLE_FRAME
-  // moved from 469 to 512 a padded voice frame landed on exactly 512 and a
-  // "fits in one frame" assertion started passing with the padding restored.
-  // Comparing a frame to itself cannot drift.
+  // than against a size limit. A limit is a moving target: a padded voice frame
+  // can land exactly on MAX_BLE_FRAME, where a "fits in one frame" assertion
+  // passes with the padding back. Comparing a frame to itself cannot drift.
   it("never emits a FRAME that would need fragmentation", async () => {
     const { packets, session } = collect();
     await session.startPtt();
@@ -303,7 +274,7 @@ describe("DM burst scoping", () => {
     await session.stopPtt();
 
     expect(broadcast).toHaveLength(0);
-    // START, one DATA, END all went through the sealed path.
+    // START, the DATA and END all went through the sealed path.
     expect(sealed.length).toBeGreaterThanOrEqual(3);
   });
 
@@ -327,8 +298,8 @@ describe("DM burst scoping", () => {
   });
 
   // A peer walking off stops the frames, not the burst. The finger is still on
-  // the button, so the microphone stays open - the words keep going into the
-  // note - and whatever the finger does next still has to reach the far side: a
+  // the button, so the microphone stays open (the words keep going into the
+  // note), and whatever the finger does next still has to reach the far side: a
   // peer who dropped out for a moment and came back must be told the burst was
   // retracted, or they keep and play audio the talker took back.
   it("still retracts after the session went away mid-talk", async () => {
@@ -397,7 +368,7 @@ describe("burst close is the talker's decision", () => {
     packets.map((p) => decodeBurstPacket(p.payload)?.kind);
 
   // The hold is a recording as well as a stream, and only the finger ends it.
-  // A link that flaps - which on Bluetooth is often - must cost the frames it
+  // A link that flaps, which on Bluetooth is often, must cost the frames it
   // was down for and nothing else, or the talker loses the second half of a
   // sentence and is told nothing.
   it("keeps recording through a burst whose frames cannot be sent", async () => {
@@ -576,8 +547,8 @@ describe("CANCELED is repeated", () => {
 
   // A burst nobody was told about is a burst nobody has to be told about.
   //
-  // The far side turns a bare START into a live bubble - bitchat opens an
-  // assembly for it, Airhop opens a session - and then shows LIVE for the three
+  // The far side turns a bare START into a live bubble (bitchat opens an
+  // assembly for it, Airhop opens a session) and then shows LIVE for the three
   // seconds its idle timeout takes to give up on audio that is never coming. A
   // microphone that fails to open is not rare (a stale audio session, a call
   // holding the input), so the burst has to stay unannounced until it has

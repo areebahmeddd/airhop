@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Bumps app.json and the iOS project version, regenerates the changelog, and
-# commits + tags the changes in one step. The tag always points to that commit.
+# Bumps app.json (version and release date) and the iOS project version,
+# regenerates the changelog, and commits + tags the changes in one step.
 #
 # Usage: scripts/release.sh X.Y.Z
 set -euo pipefail
@@ -43,6 +43,10 @@ fi
 
 sed -i -E "s/(\"version\": \")[^\"]*(\")/\1${VERSION}\2/" app.json
 grep -q "\"version\": \"${VERSION}\"" app.json
+
+RELEASE_DATE="$(date -u +%F)"
+sed -i -E "s/(\"releaseDate\": \")[^\"]*(\")/\1${RELEASE_DATE}\2/" app.json
+grep -q "\"releaseDate\": \"${RELEASE_DATE}\"" app.json
 
 # Matches the versioning scheme used by Android versionCode.
 IOS_BUILD=$(( ${VERSION%%.*} * 10000 \

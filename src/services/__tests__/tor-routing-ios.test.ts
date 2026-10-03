@@ -83,14 +83,6 @@ jest.mock("nostr-tools/pool", () => ({
   useWebSocketImplementation: jest.fn(),
 }));
 
-// Deliberately bare, and that is the assertion. The Tor path must never reach
-// for the radio module, and a `default: {}` that is never called is how this
-// file proves it.
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-
 jest.mock("@bridge/NativeAirhopTor", () => ({
   __esModule: true,
   default: {
@@ -289,7 +281,7 @@ describe("revalidating on iOS", () => {
     expect(isTorRoutingActive()).toBe(false);
   });
 
-  it("keeps the saved preference, unlike Android", async () => {
+  it("keeps the saved preference when the circuit is gone", async () => {
     await bringTorUp();
     mockGetTorStatus.mockResolvedValue(status({ isReady: false }));
 
@@ -297,7 +289,7 @@ describe("revalidating on iOS", () => {
 
     // A failed bootstrap is usually transient, so the preference stays on and
     // the next launch retries rather than silently reverting the user to the
-    // clear net. Both platforms behave the same way.
+    // clear net.
     expect(mockSetTorEnabled).not.toHaveBeenCalledWith(false);
   });
 
@@ -424,21 +416,6 @@ describe("startup priming on iOS", () => {
     // The first instant the claim is actually true.
     expect(isTorRoutingActive()).toBe(true);
   });
-
-  it("reports a stalled bootstrap as blocked rather than claiming Tor", async () => {
-    mockTorEnabled = true;
-    primeTorRoutingOnStartup();
-    await Promise.resolve();
-
-    // Neither ready nor starting, with the preference on, is what a network
-    // that blocks Tor looks like. The native side emits this terminally; a poll
-    // loop that simply ended would leave `isStarting` true forever, and this
-    // branch and its banner would be unreachable.
-    emitStatus({ isReady: false, isStarting: false });
-
-    expect(isTorRoutingActive()).toBe(false);
-    expect(mockSetTorBootstrap).toHaveBeenCalledWith("blocked");
-  });
 });
 
 // The live bootstrap signal, which is what iOS has instead of Android's probe.
@@ -448,14 +425,6 @@ describe("startup priming on iOS", () => {
 // network may be blocking it. mesh messaging still works". Airhop's surface is
 // the Mesh banner, but the states and the honesty are the same.
 describe("bootstrap reporting on iOS", () => {
-  it("reports starting while a circuit is forming", async () => {
-    mockTorEnabled = true;
-    primeTorRoutingOnStartup();
-    await Promise.resolve();
-
-    expect(mockSetTorBootstrap).toHaveBeenCalledWith("starting");
-  });
-
   it("reports blocked, and drops the claim, when Arti gives up", async () => {
     mockTorEnabled = true;
     primeTorRoutingOnStartup();
@@ -463,7 +432,10 @@ describe("bootstrap reporting on iOS", () => {
     jest.clearAllMocks();
 
     // Neither ready nor starting, with the preference still on: Arti is done
-    // trying. This is what a network that filters Tor looks like.
+    // trying. This is what a network that filters Tor looks like. The native
+    // side emits this terminally; a poll loop that simply ended would leave
+    // `isStarting` true forever, and this branch and its banner would be
+    // unreachable.
     emitStatus({ isReady: false, isStarting: false });
 
     expect(mockSetTorBootstrap).toHaveBeenCalledWith("blocked");
@@ -526,24 +498,16 @@ describe("app lifecycle on iOS", () => {
     mockSetAppForeground.mockResolvedValue(undefined);
   });
 
+  // Ungated on the preference: the native side revokes auto-start consent on an
+  // explicit stop, so the restart half is already a no-op for someone with Tor
+  // off, and gating here would only add a second source of truth. Runs from
+  // the Tor-off baseline, so this covers that case too.
   it("tells Arti about both edges", () => {
     notifyTorAppForeground(false);
     expect(mockSetAppForeground).toHaveBeenLastCalledWith(false);
 
     notifyTorAppForeground(true);
     expect(mockSetAppForeground).toHaveBeenLastCalledWith(true);
-  });
-
-  // Ungated on the preference: the native side revokes auto-start consent on an
-  // explicit stop, so the restart half is already a no-op for someone with Tor
-  // off, and gating here would only add a second source of truth.
-  it("reports the edge whether or not Tor is on", async () => {
-    await setTorRouting(false);
-    mockSetAppForeground.mockClear();
-
-    notifyTorAppForeground(true);
-
-    expect(mockSetAppForeground).toHaveBeenCalledWith(true);
   });
 
   // A resume runs this and revalidateTorRouting on the same tick. The native

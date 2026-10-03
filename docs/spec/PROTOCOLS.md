@@ -961,7 +961,7 @@ observe.
 | Per-envelope size cap             | `16 KiB`       | Ciphertext ceiling; the plaintext rule below caps content far lower |
 | Per-peer deposit quota (favorite) | `5 envelopes`  | Trust tier: favorite                                                |
 | Per-peer deposit quota (verified) | `2 envelopes`  | Trust tier: verified or known                                       |
-| Couriers per message              | `4`            | Directly linked couriers a sender deposits one message with         |
+| Couriers per message              | `4`            | Per envelope lifetime; a message still queued after it gets 4 more  |
 | Initial spray budget              | `4 copies`     | Stamped on each envelope; clamped to `8` on decode                  |
 | Remote handover cooldown          | `10 minutes`   | Per envelope, toward a recipient heard only through relays          |
 
@@ -976,9 +976,15 @@ pin, else the saved contact), not to a reachability-gated lookup, since a
 courier exists for exactly the peer who has left. It deposits whenever no
 transport reaches the recipient now: with up to four directly linked couriers,
 each getting the full spray budget, and, while a relay is connected, as one
-kind 1401 drop on Nostr ([section 8](#8-identity--nostr-constants)). Every
-re-seal of one message, for a new courier or a retry, targets the same one-time
-prekey.
+kind 1401 drop on Nostr ([section 8](#8-identity--nostr-constants)). The
+courier round and the drop are each renewed only once the last one has expired,
+since the outbox outlives an envelope by six days. Every re-seal of one
+message, for a new courier or a retry, targets the same one-time prekey, unless
+the recipient's bundle is over 7 days old, when it seals to their static key
+instead (as bitchat-ios does). Airhop re-dates its own bundle every 3 days, so
+a pool with unused keys never ages into that fallback. A received envelope is
+dated from its seal (expiry less the lifetime), never from its hand-over, so a
+late copy cannot bring back a cleared message.
 
 A carrier acts on each verified announce, as bitchat-ios does:
 

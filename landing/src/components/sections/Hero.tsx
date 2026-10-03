@@ -1,4 +1,4 @@
-import { useT, type TranslationKey } from "@/i18n";
+import { formatShortDate, useLanguage, useT, type TranslationKey } from "@/i18n";
 import { useRichText } from "@/i18n/rich-text";
 import { REPO_LINKS, STORE_LINKS } from "@/lib/links";
 import {
@@ -242,6 +242,7 @@ function HeroBody() {
 
 export default function Hero() {
   const T = useT();
+  const language = useLanguage();
 
   return (
     <section className="px-6 md:px-10">
@@ -269,6 +270,9 @@ export default function Hero() {
               </span>
               {RELEASE_VERSION}
               {RELEASE_BIRD ? <span className="text-secondary">{RELEASE_BIRD}</span> : null}
+            </span>
+            <span className="text-secondary mono text-[10px] tracking-wide whitespace-nowrap">
+              {formatShortDate(language, __RELEASE_DATE__)}
             </span>
             <ArrowRight
               size={11}

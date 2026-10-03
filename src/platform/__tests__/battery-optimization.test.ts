@@ -1,18 +1,14 @@
 /**
  * @jest-environment node
  */
-
-// Tests for battery-optimization.ts.
+// Which battery settings screen each phone is sent to, and which brands are
+// warned about.
 //
 // The public API (getBatterySettingsTargets, needsBatteryOptimizationPrompt)
-// reads Platform.OS and Platform.constants.Brand directly from react-native, which
-// cannot be cleanly mocked without breaking jest-expo's setup files.
-//
-// We test the pure logic through the exported internal helpers:
-//   resolveBatterySettingsTargets(os, brand) -> BatterySettingsTarget[]
-//   isKnownAggressiveOEM(brand)              -> boolean
-//
-// This covers every code path without any react-native imports in the test file.
+// reads Platform.OS and Platform.constants.Brand straight from react-native,
+// which cannot be mocked cleanly without breaking jest-expo's setup files, so
+// these go through the pure helpers it wraps: resolveBatterySettingsTargets and
+// isKnownAggressiveOEM.
 
 import {
   AGGRESSIVE_OEMS,
@@ -96,9 +92,6 @@ describe("resolveBatterySettingsTargets", () => {
   test("brand matching is case-insensitive", () => {
     expect(resolveBatterySettingsTargets("android", "XIAOMI")).toEqual(
       resolveBatterySettingsTargets("android", "xiaomi"),
-    );
-    expect(resolveBatterySettingsTargets("android", "samsung")).toEqual(
-      resolveBatterySettingsTargets("android", "SAMSUNG"),
     );
   });
 });

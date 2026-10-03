@@ -229,62 +229,59 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
           )}
         </View>
 
-        {/* Only once Tor is on, or it is a control that does nothing. */}
-        {torEnabled && (
-          <View style={styles.section}>
-            <UpperText style={styles.sectionTitle}>
-              {T("settings.tor.connection")}
-            </UpperText>
-            <View style={styles.optionGroup}>
-              {MODES.map((mode, i) => {
-                const value = mode.value;
-                const selected = value !== null && value === bridgeMode;
-                const disabled = busy || value === null;
-                return (
-                  <React.Fragment key={mode.labelKey}>
-                    {i > 0 && <GroupDivider />}
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
-                        pressed && styles.rowPressed,
-                      ]}
-                      onPress={() => value !== null && chooseMode(value)}
-                      disabled={disabled}
-                      hitSlop={HIT_SLOP}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected, disabled }}
-                      accessibilityLabel={T(mode.labelKey)}
-                    >
-                      <View style={styles.optionText}>
-                        <Text style={styles.optionLabel}>
-                          {T(mode.labelKey)}
-                        </Text>
-                        <Text style={styles.optionDescription}>
-                          {T(mode.descriptionKey)}
-                        </Text>
-                      </View>
-                      {selected && (
-                        <Feather
-                          name="check"
-                          size={18}
-                          color={Colors.textPrimary}
-                        />
-                      )}
-                      {value === null && (
-                        <Text style={styles.comingSoon}>
-                          {T("settings.coming_soon")}
-                        </Text>
-                      )}
-                    </Pressable>
-                  </React.Fragment>
-                );
-              })}
-            </View>
+        {/* Shown with Tor off too: choosing how to connect comes before
+            connecting, and a mode that cannot start is fixed here. */}
+        <View style={styles.section}>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.tor.connection")}
+          </UpperText>
+          <View style={styles.optionGroup}>
+            {MODES.map((mode, i) => {
+              const value = mode.value;
+              const selected = value !== null && value === bridgeMode;
+              const disabled = busy || value === null;
+              return (
+                <React.Fragment key={mode.labelKey}>
+                  {i > 0 && <GroupDivider />}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.optionRowGrouped,
+                      selected && styles.optionRowGroupedSelected,
+                      pressed && styles.rowPressed,
+                    ]}
+                    onPress={() => value !== null && chooseMode(value)}
+                    disabled={disabled}
+                    hitSlop={HIT_SLOP}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected, disabled }}
+                    accessibilityLabel={T(mode.labelKey)}
+                  >
+                    <View style={styles.optionText}>
+                      <Text style={styles.optionLabel}>{T(mode.labelKey)}</Text>
+                      <Text style={styles.optionDescription}>
+                        {T(mode.descriptionKey)}
+                      </Text>
+                    </View>
+                    {selected && (
+                      <Feather
+                        name="check"
+                        size={18}
+                        color={Colors.textPrimary}
+                      />
+                    )}
+                    {value === null && (
+                      <Text style={styles.comingSoon}>
+                        {T("settings.coming_soon")}
+                      </Text>
+                    )}
+                  </Pressable>
+                </React.Fragment>
+              );
+            })}
           </View>
-        )}
+        </View>
 
-        {torEnabled && bridgeMode === "custom" && (
+        {bridgeMode === "custom" && (
           <View style={styles.section}>
             <UpperText style={styles.sectionTitle}>
               {T("settings.tor.mode_custom")}

@@ -435,7 +435,7 @@ export default function ArchitecturePage() {
                   [
                     "Golomb-Coded Set",
                     "A compressed probabilistic set, smaller than a Bloom filter",
-                    "Packs 1000 packet IDs into about 400 bytes so two phones can compare histories cheaply",
+                    "Packs the newest ~350 packet IDs into about 400 bytes so two phones can compare histories cheaply",
                   ],
                   [
                     "Store-and-forward",
@@ -487,7 +487,7 @@ export default function ArchitecturePage() {
                   [
                     "Prekey",
                     "A single-use public key published ahead of time",
-                    "Broadcast over the mesh as 0x24, so mail left for someone who is away stays forward-secret",
+                    "Broadcast over the mesh as 0x24, so mail left for someone who is away is forward-secret whenever a bundle under a week old is known",
                   ],
                 ]}
               />
@@ -508,13 +508,13 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Gift wrap",
-                    "Nested encryption that hides who sent a message and who it is for",
-                    "Every internet DM, so a relay operator sees only ciphertext from a throwaway key",
+                    "Nested encryption that hides who sent a message and what it says",
+                    "Every internet DM, so a relay operator sees only ciphertext from a throwaway key, plus the recipient's key it delivers to",
                   ],
                   [
                     "Rumor",
                     "The innermost event, left unsigned",
-                    "Gives deniability: a leaked message cannot be proven to have come from you",
+                    "Only the seal around it is signed by you, so the message itself cannot be reposted as a signed note of yours",
                   ],
                   [
                     "Geohash",
@@ -626,10 +626,10 @@ export default function ArchitecturePage() {
                 against the Noise key it claims to derive from.
               </p>
               <p>
-                Your generated nickname is fixed after setup to prevent impersonation. After two
-                people verify each other by scanning QR codes, either person may assign the other a
-                local nickname for their conversations. It changes only the local display label,
-                never the cryptographic identity.
+                Your generated nickname is fixed after setup to prevent impersonation. Once either
+                person holds the other's keys, they may assign the other a local nickname for their
+                conversations. It changes only the local display label, never the cryptographic
+                identity.
               </p>
               <h3 className="text-ink pt-2 text-base font-bold">Moving to a new phone</h3>
               <p>
@@ -662,7 +662,7 @@ export default function ArchitecturePage() {
                     "Carries",
                     "Everything, including live voice",
                     "Everything BLE carries",
-                    "DMs and files",
+                    "Everything BLE carries, same platform only",
                     "DMs, location channels",
                     "Sealed text envelopes",
                   ],
@@ -683,7 +683,7 @@ export default function ArchitecturePage() {
                     "Global",
                     "Wherever the carrier walks",
                   ],
-                  ["Max hops", "7", "1", "1", "1", "1 carrier, but unbounded in time"],
+                  ["Max hops", "7", "1", "1", "1", "4 carriers per round, 24 h per copy"],
                   [
                     "Speed",
                     "~18 KiB/s",
@@ -761,11 +761,11 @@ export default function ArchitecturePage() {
               </p>
 
               <Note label="How they combine">
-                A phone runs every transport it can at once. When a peer is reachable more than one
-                way, a packet takes the fastest link: Wi-Fi Aware, then LAN, then Bluetooth. If that
-                link drops mid-transfer the next one carries on, and the receiver reassembles by
-                index, so a file that started over Wi-Fi and finished over Bluetooth looks the same
-                on arrival.
+                A phone runs every transport it can at once. When a peer is directly linked more
+                than one way, a packet addressed to it takes the fastest link: Wi-Fi Aware, then
+                LAN, then Bluetooth. If that link drops mid-transfer the next one carries on, and
+                the receiver reassembles by index, so a file that started over Wi-Fi and finished
+                over Bluetooth looks the same on arrival.
               </Note>
             </Section>
 
@@ -841,7 +841,7 @@ export default function ArchitecturePage() {
                       Golomb-Coded Set
                     </TextLink>{" "}
                     reconciliation. The filter is a compressed description of a set, not the set
-                    itself, which is how 1000 packet IDs fit in around 400 bytes.
+                    itself, which is how the newest ~350 packet IDs fit in around 400 bytes.
                   </>
                 }
               >
@@ -875,7 +875,8 @@ export default function ArchitecturePage() {
                 until they meet the recipient.{" "}
                 <strong className="text-ink">The carrier cannot read it:</strong> it is encrypted to
                 the recipient before it ever leaves the sender, using a one-way Noise X seal to a
-                one-time prekey so that even a later key compromise does not expose it.
+                one-time prekey so that even a later key compromise does not expose it. That needs a
+                prekey bundle under a week old; without one, the seal is to their long-term key.
               </p>
 
               <Table
@@ -920,7 +921,10 @@ export default function ArchitecturePage() {
                   ["Deduplication", "On packet ID, so a ring of relays forwards each packet once"],
                   ["Fragments", "Passed along individually, only the addressee reassembles"],
                   ["Malformed frame", "Dropped, never fatal. Nobody reboots a box on a pole"],
-                  ["Plaintext", "None. A relay carries what it cannot read"],
+                  [
+                    "Plaintext",
+                    "Decrypts nothing. Private traffic stays sealed, and public posts are readable in range anyway",
+                  ],
                 ]}
               />
 
@@ -1009,7 +1013,7 @@ export default function ArchitecturePage() {
               id="encryption"
               eyebrow="The system · 08"
               title="Encryption"
-              lede="Different things get different protection. Two rows in the grid below say no, and both are trade-offs made on purpose."
+              lede="Different things get different protection. Three rows in the grid below say no, and all three are trade-offs made on purpose."
             >
               <p>
                 Live sessions use{" "}
@@ -1059,10 +1063,14 @@ export default function ArchitecturePage() {
                 rows={[
                   ["Handshake", "Noise_XX_25519_ChaChaPoly_SHA256", "Live DM sessions"],
                   ["One-way seal", "Noise_X_25519_ChaChaPoly_SHA256", "Courier envelopes"],
-                  ["Signatures", "Ed25519", "Every packet, boards, prekeys, groups"],
+                  ["Signatures", "Ed25519", "Signed packets, boards, prekeys, groups"],
                   ["Key agreement", "X25519", "Inside both Noise patterns"],
                   ["AEAD", "ChaCha20-Poly1305", "Noise transport, group messages"],
-                  ["AEAD, long nonce", "XChaCha20-Poly1305", "Private channels, NIP-44"],
+                  [
+                    "AEAD, long nonce",
+                    "XChaCha20-Poly1305",
+                    "Private channels, Nostr DMs (bitchat nip44-v2)",
+                  ],
                   ["Hash", "SHA-256", "Peer IDs, packet IDs, HKDF, GCS"],
                 ]}
               />
@@ -1108,7 +1116,7 @@ export default function ArchitecturePage() {
               id="attachments"
               eyebrow="The system · 10"
               title="Attachments"
-              lede="A photo taken on a modern phone runs to several MiB. The mesh takes 512 KiB and moves it at about 18 KiB/s. Something has to give, and it should not be the send button."
+              lede="A photo taken on a modern phone runs to several MiB. Airhop sends it at 256 KiB or less, and the mesh moves it at about 18 KiB/s. Something has to give, and it should not be the send button."
             >
               <p>
                 Every attachment is <strong className="text-ink">one packet</strong>, not a stream
@@ -1122,7 +1130,7 @@ export default function ArchitecturePage() {
               <Table
                 head={["", "Photo", "Voice note", "Video", "Anything else"]}
                 rows={[
-                  ["Cap", "512 KiB", "512 KiB", "1 MiB", "1 MiB"],
+                  ["Cap", "256 KiB", "512 KiB", "1 MiB", "1 MiB"],
                   ["Resized first", "Yes", "No", "No", "No"],
                   ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4 or MOV", "As-is"],
                 ]}
@@ -1140,7 +1148,7 @@ export default function ArchitecturePage() {
 
               <Note label="What the quality setting actually does">
                 Low, Medium and High do not choose a file size, because every photo lands under the
-                same 512 KiB either way.{" "}
+                same 256 KiB either way.{" "}
                 <strong className="text-ink">They choose where the compression starts.</strong> Low
                 starts lower and reaches a sendable file in one pass, so it gets moving sooner on a
                 weak link. High starts high, keeps more detail, and may take a pass or two to fit.
@@ -1265,9 +1273,10 @@ export default function ArchitecturePage() {
                 distance, connecting to several at once so no single operator is load-bearing.
               </p>
               <p>
-                That choice is not fixed. Any relay can be pinned by hand, and discovery can be
-                turned off entirely so only the pinned ones are used. A relay has to be a public
-                host reached over TLS, and that rule is strict for a reason:{" "}
+                For location channels and the mesh bridge, that choice is not fixed. Any relay can
+                be pinned by hand, and discovery can be turned off entirely so only the pinned ones
+                are used. DMs and private channels always use the built-in message relays. A relay
+                has to be a public host reached over TLS, and that rule is strict for a reason:{" "}
                 <strong className="text-ink">
                   allowing an unencrypted relay would mean allowing unencrypted traffic across the
                   whole app,
@@ -1279,8 +1288,9 @@ export default function ArchitecturePage() {
               <Figure
                 caption={
                   <>
-                    <NIP n="17" /> gift wrap, built on <NIP n="59" /> and encrypted with{" "}
-                    <NIP n="44" />. Three nested layers, of which the relay can read exactly none.
+                    <NIP n="17" /> gift wrap, built on <NIP n="59" /> and encrypted with bitchat's{" "}
+                    <C>nip44-v2</C>, which is XChaCha20-Poly1305 rather than the published NIP-44.
+                    Three nested layers, of which the relay can open none.
                   </>
                 }
               >
@@ -1288,10 +1298,10 @@ export default function ArchitecturePage() {
               </Figure>
 
               <p>
-                The inner rumor carries no signature, and{" "}
-                <strong className="text-ink">that is what gives deniability:</strong> nothing inside
-                the wrap is signed by you, so a leaked message cannot be proven to have come from
-                you.
+                The inner rumor carries no signature.{" "}
+                <strong className="text-ink">The seal around it is signed by you,</strong> so the
+                recipient knows who sent it, but the message itself cannot be reposted as a signed
+                note of yours.
               </p>
 
               <Table
@@ -1326,10 +1336,10 @@ export default function ArchitecturePage() {
                 Location channels show how many people are around. Broadcasting that is a location
                 leak, so it is kept coarse: heartbeats are only sent for cells at geohash precision
                 5 or less, roughly a 5 km square and upward. Finer channels get no presence
-                broadcast at all, and the app shows <C>[? people]</C>, not <C>[0 people]</C> so
-                nobody mistakes silence for an empty room. Heartbeats go out every 40 to 80 seconds,
-                randomized so devices in one cell do not announce in lockstep, and a key stays
-                listed for 5 minutes after its last event.
+                broadcast at all, so they count only people who post, and show <C>No one active</C>{" "}
+                when nobody has. Heartbeats go out every 40 to 80 seconds, randomized so devices in
+                one cell do not announce in lockstep, and a key stays listed for 5 minutes after its
+                last event.
               </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">The internet gateway</h3>
@@ -1410,7 +1420,8 @@ export default function ArchitecturePage() {
                 you picked is refused, the internet half stops and the app says so instead of
                 falling back. If Tor ever crashes while starting, it stays on at the next launch
                 with the internet half held, and the Tor screen offers Try again beside the switch
-                that turns it off. Only one of those two leaves that state.
+                that turns it off. Turning it off leaves that state, and so does a start the client
+                accepts, from Try again or a bridge change.
               </p>
 
               <p>
@@ -1418,8 +1429,7 @@ export default function ArchitecturePage() {
                 direct connection the first hop goes to a publicly listed relay, so the network you
                 are on can see Tor traffic for what it is. A bridge is an entry point that appears
                 on no public list, and a pluggable transport in front of it disguises the connection
-                itself. Settings offers four ways to reach the network, with a fifth listed as
-                coming soon.
+                itself. Settings offers five ways to reach the network.
               </p>
 
               <Table
@@ -1442,9 +1452,9 @@ export default function ArchitecturePage() {
                     "You fetch them yourself, and they are only as good as their source",
                   ],
                   [
-                    "webtunnel (coming soon)",
+                    "WebTunnel",
                     "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
-                    "Not offered yet. Fewer bridges exist, since each needs a real website in front of it",
+                    "Fewer bridges exist, since each needs a real website in front of it",
                   ],
                 ]}
               />
@@ -1458,9 +1468,9 @@ export default function ArchitecturePage() {
                 against.{" "}
                 <TextLink href="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel">
                   webtunnel
-                </TextLink>
-                , once it ships, makes it look like something entirely ordinary, which is harder for
-                a censor to act on because blocking it means blocking real websites.{" "}
+                </TextLink>{" "}
+                makes it look like something entirely ordinary, which is harder for a censor to act
+                on because blocking it means blocking real websites.{" "}
                 <TextLink href="https://snowflake.torproject.org">Snowflake</TextLink> sidesteps the
                 question instead: there is no fixed address to block in the first place.
               </p>
@@ -1508,7 +1518,7 @@ export default function ArchitecturePage() {
               title="The wallet"
               lede="Cashu ecash, chosen because it is the only payment system where the transfer itself needs no network at all. A coin is a bearer instrument, and handing one over is just a message, or a QR code on a screen."
             >
-              <Figure caption="Where a coin can be. The design is built around the fact that sending never deletes anything.">
+              <Figure caption="Where a coin can be. The design is built around the fact that sending a token never deletes anything.">
                 <WalletStates />
               </Figure>
 
@@ -1729,9 +1739,10 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">The bridge is kept tiny</strong>, because anything
                 richer would put protocol knowledge on the native side. TypeScript calls down to
                 start and stop advertising, start and stop scanning, open a network listener, and
-                write bytes to a link. Native calls back up with four events: a packet arrived, a
-                link connected, a link disconnected, a signal reading changed. Bytes cross
-                base64-encoded, because that is the only representation both runtimes agree on
+                write bytes to a link. Native calls back up with eight events: a packet arrived, a
+                link connected, a link disconnected, a signal reading changed, the adapter or power
+                state changed, a scan failed, and the mesh was stopped from the notification. Bytes
+                cross base64-encoded, because that is the only representation both runtimes agree on
                 safely.
               </p>
             </Section>
@@ -1769,17 +1780,17 @@ export default function ArchitecturePage() {
 
               <h3 className="text-ink pt-2 text-base font-bold">Packet types</h3>
               <p>
-                Everything up to <C>0x29</C> is bitchat-defined and shared. bitchat allocates
-                forward and has reached <C>0x2c</C>, so Airhop's own types start at <C>0x50</C>,
-                well clear of the values bitchat is still handing out. A type one side does not
-                recognize is relayed, not read, so an Airhop extension crosses a mesh of bitchat
-                phones without ever being shown to their users.
+                Everything up to <C>0x29</C> except <C>0x12</C> is bitchat-defined and shared.
+                bitchat allocates forward and has reached <C>0x2c</C>, so Airhop's own types start
+                at <C>0x50</C>, well clear of the values bitchat is still handing out. A type one
+                side does not recognize is relayed, not read, so an Airhop extension crosses a mesh
+                of bitchat phones without ever being shown to their users.
               </p>
 
               <Table
                 head={["Type", "Hex", "Purpose"]}
                 rows={[
-                  ["ANNOUNCE", "0x01", "Signed presence, TLV: nickname, keys, direct neighbors"],
+                  ["ANNOUNCE", "0x01", "Signed presence, TLV: nickname, keys, capabilities"],
                   ["CHANNEL_MSG", "0x02", "Public channel message, signed plaintext"],
                   ["LEAVE", "0x03", "Peer departing"],
                   ["COURIER_ENV", "0x04", "Sealed store-and-forward envelope"],
@@ -1871,7 +1882,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Traffic analysis on Nostr",
-                    "NIP-17 gift wrap hides both ends, Tor hides the IP",
+                    "NIP-17 gift wrap hides the sender and the content, Tor hides the IP",
                   ],
                   [
                     "Relay censorship",

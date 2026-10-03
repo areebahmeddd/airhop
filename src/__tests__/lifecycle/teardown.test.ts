@@ -1,8 +1,7 @@
 /**
  * @jest-environment node
  */
-// Scenarios 21-28: the paths where something is being torn down, replaced, or
-// raced. These are where a lifecycle bug is most expensive, because the state
+// The paths where something is being torn down, replaced, or raced. These are where a lifecycle bug is most expensive, because the state
 // being handled is either about to stop existing (a wipe) or has to survive
 // (a conversation, a queued message).
 
@@ -251,6 +250,13 @@ describe("teardown, replacement and races", () => {
     );
     v.check("radios still up", native.scanning && native.advertising);
     v.check("background service still up", os.foregroundServiceRunning);
+    // Notifications, the wallet watcher and the prompts belong to the mesh,
+    // not to the mount, so a recreated Activity must not stack a second set.
+    v.check(
+      "what rides on the mesh is not started twice",
+      app.dependentsRuns === 1,
+      `runs=${app.dependentsRuns}`,
+    );
     v.assert();
   });
 

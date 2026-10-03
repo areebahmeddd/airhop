@@ -1,10 +1,10 @@
 // A scenario: a world, some phones, a story, and a verdict.
 //
-// The reporting style is inherited from the lifecycle harness and is worth
-// keeping: collect every check, then print the whole account against the
-// timeline. For a multi-device failure the interesting question is never "which
-// assertion failed" - it is "what was the sequence across five phones that got
-// us there", and a bare expect() throws that away on the first mismatch.
+// The reporting style matches the lifecycle harness: collect every check, then
+// print the whole account against the timeline. For a multi-device failure the
+// interesting question is never "which assertion failed" but "what was the
+// sequence across five phones that got there", and a bare expect() throws that
+// away on the first mismatch.
 //
 // Every scenario also prints its seed. A red soak run is only useful if it can
 // be re-run identically, and this is where that promise is kept.
@@ -31,21 +31,15 @@ export class Scenario {
   readonly title: string;
   private readonly checks: Check[] = [];
   private readonly devices: SimDevice[] = [];
-  private readonly timersAtStart: number;
 
   constructor(opts: ScenarioOptions) {
     this.id = opts.id;
     this.title = opts.title;
     this.world = new World({ seed: opts.seed ?? 1, name: opts.id });
-    this.timersAtStart = jest.getTimerCount();
   }
 
   track(...devices: SimDevice[]): void {
     this.devices.push(...devices);
-  }
-
-  get tracked(): SimDevice[] {
-    return this.devices;
   }
 
   // `pass` is what SHOULD be true of a correct app. A false here is a defect in
@@ -116,12 +110,10 @@ export class Scenario {
     throw new Error(this.report(tailOnly));
   }
 
-  // Tear the world down, then check nothing was left running. Called from an
-  // afterEach so it runs even when the scenario already failed.
-  close(): { leakedTimers: number } {
+  // Tear the world down. Called from an afterEach so it runs even when the
+  // scenario already failed.
+  close(): void {
     this.world.close();
-    const leaked = Math.max(0, jest.getTimerCount() - this.timersAtStart);
-    return { leakedTimers: leaked };
   }
 }
 
@@ -161,11 +153,4 @@ export async function waitForCoarse(
   budgetMs = 30_000,
 ): Promise<boolean> {
   return waitFor(world, predicate, budgetMs, 100, 25);
-}
-
-// Every device in the list can see every other one on the mesh.
-export function allSeeEachOther(devices: SimDevice[]): boolean {
-  return devices.every((d) =>
-    devices.every((o) => o.id === d.id || d.peers().includes(o.peerID)),
-  );
 }

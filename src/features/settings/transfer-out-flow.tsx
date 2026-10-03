@@ -23,7 +23,7 @@ import {
   type SenderState,
 } from "@services/move-sender";
 import { panicWipe } from "@services/panic-wipe";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
 import SafetyWords from "@ui/components/safety-words";
 import TextButton from "@ui/components/text-button";
@@ -58,10 +58,6 @@ import {
   SettingSwitch,
   useSharedStyles,
 } from "./settings-primitives";
-
-// A sheet's slide-out. Presenting before it has gone stacks two modals, which
-// iOS refuses.
-const SHEET_EXIT_MS = 260;
 
 // Past this, an iOS dial is most likely waiting on the local network prompt.
 const PERMISSION_HINT_MS = 3_000;
@@ -104,16 +100,12 @@ export default function TransferOutFlow({
   const [showPermissionHint, setShowPermissionHint] = useState(false);
   const scannedRef = useRef(false);
   const senderRef = useRef<MoveSender | null>(null);
-  const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelHandoff = useRef<(() => void) | null>(null);
   const authInFlight = useRef(false);
   // One answer to "Did the transfer finish?", however fast the taps.
   const resolved = useRef(false);
 
-  useEffect(() => {
-    return () => {
-      if (handoffTimer.current !== null) clearTimeout(handoffTimer.current);
-    };
-  }, []);
+  useEffect(() => () => cancelHandoff.current?.(), []);
 
   // iOS only: the one platform with a local network prompt.
   const connecting = stage.kind === "run" && stage.state.phase === "connecting";
@@ -152,12 +144,12 @@ export default function TransferOutFlow({
     }
     resetScan();
     onClose();
-    handoffTimer.current = setTimeout(() => {
+    cancelHandoff.current = afterSheetsClose(() => {
       setModalOpen(true);
       if (!permission?.granted && permission?.canAskAgain !== false) {
         void requestPermission();
       }
-    }, SHEET_EXIT_MS);
+    });
   }
 
   function closeModal(): void {

@@ -20,9 +20,8 @@
 //   * Links are ordered but lossy. GATT delivers in order on a given link, so
 //     reordering is OFF by default and has to be asked for; loss, duplication
 //     and corruption are all real and all off by default too.
-//   * Range is not symmetric in general, but it is here unless a scenario says
-//     otherwise, because asymmetric range is a rabbit hole and the bugs we are
-//     hunting do not need it.
+//   * Range is not symmetric in general, but it always is here: asymmetric
+//     range is a rabbit hole, and no scenario needs it.
 
 import { MAX_BLE_FRAME } from "@core/mesh/routing/fragment-manager";
 import type { RadioPort } from "../../harness/android-native";
@@ -106,8 +105,8 @@ interface Link {
 }
 
 // Exact decoded length of a base64 string. `ceil(len * 3 / 4)` over-reports by
-// up to two bytes, because it ignores the "=" padding, and a frame sitting
-// exactly on the 512-byte limit was reported as 513 and dropped.
+// up to two bytes, because it ignores the "=" padding, and would drop a frame
+// sitting exactly on the 512-byte limit as 513.
 function base64ByteLength(b64: string): number {
   const pad = b64.endsWith("==") ? 2 : b64.endsWith("=") ? 1 : 0;
   return (b64.length / 4) * 3 - pad;
@@ -133,7 +132,6 @@ export class RadioFabric {
   // everybody", which is what a small scenario wants.
   private adjacency: Map<string, Set<string>> | null = null;
   private conditions: LinkConditions = { ...DEFAULT_CONDITIONS };
-  private readonly perPair = new Map<string, Partial<LinkConditions>>();
   private readonly rng: Prng;
   // Pending discovery timers, so a device that stops advertising mid-discovery
   // does not connect anyway.
@@ -262,14 +260,6 @@ export class RadioFabric {
     );
   }
 
-  setPairConditions(
-    a: string,
-    b: string,
-    partial: Partial<LinkConditions>,
-  ): void {
-    this.perPair.set(pairKey(a, b), partial);
-  }
-
   // Lose the frames the predicate picks, for a scenario that needs one
   // particular packet to fade rather than a loss rate. Returns an undo.
   private readonly losses: ((fromID: string, dataBase64: string) => boolean)[] =
@@ -281,10 +271,6 @@ export class RadioFabric {
       const i = this.losses.indexOf(fn);
       if (i >= 0) this.losses.splice(i, 1);
     };
-  }
-
-  private conditionsFor(a: string, b: string): LinkConditions {
-    return { ...this.conditions, ...(this.perPair.get(pairKey(a, b)) ?? {}) };
   }
 
   // ---- visibility ----
@@ -389,7 +375,7 @@ export class RadioFabric {
     scanner: string,
     advertiser: string,
   ): void {
-    const cond = this.conditionsFor(scanner, advertiser);
+    const cond = this.conditions;
     const scannerDevice = this.devices.get(scanner);
     const throttled =
       scannerDevice !== undefined &&
@@ -484,7 +470,7 @@ export class RadioFabric {
 
     for (const tap of this.taps) tap(fromID, linkID, dataBase64);
 
-    const cond = this.conditionsFor(fromID, toID);
+    const cond = this.conditions;
     const bytes = base64ByteLength(dataBase64);
     this.bytesOnAir += bytes;
     this.countType(dataBase64);

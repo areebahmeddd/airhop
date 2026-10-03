@@ -53,6 +53,7 @@ const SOCIAL_TARGETS = [
   { id: "instagram-square-1080x1080", px: [1080, 1080] },
   { id: "instagram-story-1080x1920", px: [1080, 1920] },
   { id: "github-social-1280x640", px: [1280, 640] },
+  { id: "youtube-thumbnail-1280x720", px: [1280, 720] },
 ];
 
 const FEATURE_GRAPHIC_PX = [1024, 500];
@@ -88,12 +89,6 @@ html,body{width:${w}px;height:${h}px;overflow:hidden}
 body{background:var(--panelBg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 ${css}
 </style></head><body>${body}</body></html>`;
-}
-
-function dotGrid(w) {
-  const step = Math.max(12, Math.round(w * 0.037));
-  return `background-image:radial-gradient(var(--panelDot) 1.5px,transparent 1.5px);
-    background-size:${step}px ${step}px;`;
 }
 
 // Derived from the canvas so both aspect ratios park the device in the same
@@ -135,7 +130,6 @@ ${SCREEN_CSS}`;
 // Headline and subhead, shared by every panel.
 function copyCss(w, h) {
   return `
-body{${dotGrid(w)}}
 .panel{position:relative;width:${w}px;height:${h}px;overflow:hidden}
 .copy{padding:${Math.round(h * 0.075)}px ${Math.round(w * 0.085)}px 0;text-align:center;
   display:flex;flex-direction:column;align-items:center}
@@ -202,11 +196,6 @@ function globePanel(panel, w, h) {
   return { css, body };
 }
 
-function brandPanel(w, h) {
-  const card = brandCard(w, h);
-  return { css: `body{${dotGrid(w)}}\n${card.css}`, body: card.body };
-}
-
 // Alternate feature graphic, carrying a device instead of the centred mark.
 function featureGraphicDevice(w, h) {
   const scale = 0.235;
@@ -218,7 +207,6 @@ function featureGraphicDevice(w, h) {
     frameH: SCREEN_H * scale + bezel * 2,
   };
   const css = `
-body{${dotGrid(w * 2)}}
 .fg{position:relative;width:${w}px;height:${h}px;display:flex;align-items:center;
   padding:0 44px;overflow:hidden}
 .fg-left{display:flex;flex-direction:column;gap:12px;max-width:350px}
@@ -285,7 +273,7 @@ async function renderScreens(chrome, themes) {
       const h = pxH / 2;
       const dir = `screenshots/${target.id}/${themeId}`;
 
-      const brand = brandPanel(w, h);
+      const brand = brandCard(w, h);
       await shoot(chrome, `${dir}/00-brand.png`, page({ w, h, tokens, ...brand }), target.px);
 
       for (const panel of PANELS) {
@@ -305,7 +293,7 @@ async function renderFeatureGraphics(chrome, themes) {
   const h = pxH / 2;
   for (const [themeId, tokens] of themes) {
     const dir = `graphics/feature-graphic/${themeId}`;
-    const centred = brandPanel(w, h);
+    const centred = brandCard(w, h);
     await shoot(chrome, `${dir}/feature-graphic.png`, page({ w, h, tokens, ...centred }), FEATURE_GRAPHIC_PX);
     const device = featureGraphicDevice(w, h);
     await shoot(
@@ -323,7 +311,7 @@ async function renderSocial(chrome, themes) {
       const [pxW, pxH] = target.px;
       const w = pxW / 2;
       const h = pxH / 2;
-      const built = brandPanel(w, h);
+      const built = brandCard(w, h);
       await shoot(chrome, `social/${themeId}/${target.id}.png`, page({ w, h, tokens, ...built }), target.px);
     }
   }
@@ -368,9 +356,9 @@ async function main() {
   const themes = lightOnly
     ? [["light", LIGHT]]
     : [
-      ["light", LIGHT],
-      ["dark", DARK],
-    ];
+        ["light", LIGHT],
+        ["dark", DARK],
+      ];
 
   rmSync(BUILD, { recursive: true, force: true });
   mkdirSync(BUILD, { recursive: true });

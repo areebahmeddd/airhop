@@ -1,0 +1,319 @@
+/* The stage is 1920x1080 in CSS pixels, whatever the output size: a 4K render
+   is the same page at twice the device scale. Nothing here animates on its
+   own. timeline.js owns every transform and opacity, so a frame depends only on
+   its time. */
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased;color:var(--panelText)}
+#film{position:relative;width:100%;height:100%;overflow:hidden;background:var(--panelBg)}
+/* One soft light from above centre. A flat black field reads as nothing
+   loaded; this gives the phones something to sit in. */
+#backdrop{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 62% at 50% 38%,#1b1b1b 0%,#111 45%,#0b0b0b 100%)}
+#world{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#white,#black,#fade{position:absolute;inset:0;pointer-events:none}
+#white{background:#F8F8F8}
+#black,#fade{background:#0b0b0b}
+#fade{background:#000}
+.mono{font-family:var(--mono)}
+.green{color:var(--e2ee)}
+
+/* --- Type ---------------------------------------------------------------- */
+.line{position:absolute;left:0;width:1920px;top:846px;text-align:center;font-size:76px;
+  font-weight:700;letter-spacing:-0.03em;line-height:1.1}
+.line .w{display:inline-block;white-space:pre}
+.stack{position:absolute;display:flex;flex-direction:column}
+.stack-line{font-weight:700;letter-spacing:-0.045em;line-height:0.98;white-space:nowrap}
+.k-left{left:140px;top:0;height:1080px;justify-content:center}
+.k-left .stack-line{font-size:176px}
+#k-id .stack-line{font-size:132px;line-height:1.04}
+.k-mid .stack-line{font-size:128px}
+.k-top{left:140px;top:110px}
+.k-top .stack-line{font-size:124px}
+.k-wide .stack-line{font-size:112px}
+.k-centre{left:0;top:0;width:1920px;height:1080px;align-items:center;justify-content:center}
+.k-centre .stack-line{font-size:230px}
+.k-right{left:840px;top:150px}
+.k-right .stack-line{font-size:116px}
+.k-col{left:1300px;top:0;height:1080px;justify-content:center}
+.k-col .stack-line{font-size:104px;line-height:1.04}
+.note{position:absolute;font-family:var(--mono);font-size:24px;color:var(--panelMuted);white-space:nowrap;
+  display:flex;align-items:center;gap:14px;letter-spacing:0.02em}
+.note i{display:block;width:60px;height:1.5px;background:var(--borderStrong)}
+.k-sub{left:148px;color:var(--panelSub)}
+
+/* --- The long way round -------------------------------------------------- */
+#longway{position:absolute;inset:0}
+#longway>svg{position:absolute;inset:0;overflow:visible}
+.route-ghost{fill:none;stroke:var(--panelText);stroke-opacity:0.24;stroke-width:2.5;stroke-dasharray:1 12;stroke-linecap:round}
+.route-live{fill:none;stroke:var(--panelText);stroke-opacity:0.9;stroke-width:2.5}
+.rnode{position:absolute;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:999px;
+  background:var(--panelBg);border:2px solid var(--borderStrong);display:flex;align-items:center;
+  justify-content:center;color:var(--panelText)}
+.rnode-dead{position:absolute;inset:-2px;border-radius:999px;border:2px solid var(--danger);
+  background:var(--panelBg);display:flex;align-items:center;justify-content:center;color:var(--danger)}
+.rlabel{position:absolute;width:340px;margin-left:-170px;text-align:center;font-family:var(--mono);
+  font-size:24px;color:var(--panelSub)}
+.rlabel-dead{color:var(--danger)}
+.who{position:absolute;width:200px;margin-left:-100px;text-align:center;font-family:var(--mono);
+  font-size:24px;color:var(--panelSub)}
+.measure{position:absolute;left:790px;top:619px;width:340px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--borderStrong) 12%,var(--borderStrong) 88%,transparent)}
+.measure-label{position:absolute;left:860px;top:572px;width:200px;text-align:center;
+  font-family:var(--mono);font-size:24px;color:var(--panelMuted)}
+.tag{position:absolute;font-family:var(--mono);font-size:24px;color:var(--panelSub);
+  border:1.5px solid var(--border);background:var(--surface);border-radius:999px;padding:10px 22px;white-space:nowrap}
+#pulse{position:absolute;left:0;top:0;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:999px;background:var(--panelText);
+  box-shadow:0 0 0 7px rgba(245,245,245,0.12)}
+
+/* --- Places --------------------------------------------------------------- */
+.place{position:absolute;inset:0}
+.place-col{position:absolute;left:140px;top:0;height:1080px;display:flex;flex-direction:column;justify-content:center;gap:54px}
+.place-text{font-size:236px;font-weight:700;letter-spacing:-0.05em;line-height:0.98;white-space:nowrap}
+.place-text span{display:block}
+#place-text-0{font-size:206px}
+.place-art{position:absolute;left:1390px;top:300px;width:300px;height:300px;color:var(--panelMuted)}
+.place-bars{margin-left:8px;display:flex;align-items:flex-end;gap:30px;color:var(--panelText);
+  font-family:var(--mono);font-size:34px}
+.place-bars .bars{width:176px;height:114px}
+.place-bars span{color:var(--danger);padding-bottom:4px}
+
+/* --- Mark ---------------------------------------------------------------- */
+#word{position:absolute;left:895px;top:425px;font-family:var(--mono);font-size:96px;font-weight:700;
+  letter-spacing:0.34em;line-height:110px;white-space:nowrap}
+#word span{display:inline-block}
+#intro-tag{position:absolute;left:0;width:1920px;top:668px;text-align:center;font-size:54px;
+  font-weight:600;letter-spacing:-0.02em;color:var(--panelSub)}
+
+/* --- Phone and camera ---------------------------------------------------- */
+.cam,.cam-in{position:absolute;inset:0;pointer-events:none}
+.ph{position:absolute;top:540px;width:0;height:0}
+.phone{position:absolute;background:var(--bezel);padding:13px;
+  box-shadow:0 50px 130px rgba(0,0,0,0.6),0 0 0 1.5px var(--bezelEdge)}
+.phone-clip{width:100%;height:100%;overflow:hidden;position:relative;background:var(--bg)}
+.phone-scale{position:absolute;left:0;top:0;width:393px;height:852px}
+.phone-scale>.screen{position:absolute;left:0;top:0}
+#touch{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:999px;
+  background:rgba(255,255,255,0.24);border:2px solid rgba(255,255,255,0.6);
+  box-shadow:0 2px 14px rgba(0,0,0,0.4);pointer-events:none}
+#touch-ring{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:999px;
+  border:2.5px solid rgba(255,255,255,0.65);pointer-events:none}
+
+/* --- The token card, sheets and the alert ------------------------------ */
+.f-pay{margin-top:2px;padding:12px;border-radius:14px;border:1px solid currentColor;
+  display:flex;flex-direction:column;gap:4px;min-width:190px}
+.f-pay-head{display:flex;align-items:center;gap:4px}
+.f-pay-amt{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.f-pay-mint{font-size:11px;opacity:0.62}
+.f-pay-memo{font-size:11px;font-style:italic;opacity:0.8}
+.f-claim{position:relative;display:block;height:24px;margin-top:4px}
+.f-claim-btn{position:absolute;left:0;top:0;border-radius:6px;background:var(--accent);padding:4px 8px;
+  font-size:11px;font-weight:600;color:var(--textInverse);line-height:16px}
+.f-claimed{position:absolute;left:0;top:4px;display:flex;align-items:center;gap:4px;font-size:11px;
+  font-weight:600;color:var(--online)}
+
+.f-scrim{position:absolute;inset:0;background:rgba(0,0,0,0.5)}
+.f-sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;
+  padding:10px 20px 40px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--border)}
+.f-grab{align-self:center;width:36px;height:4px;border-radius:2px;background:var(--borderStrong);margin-bottom:6px}
+.f-sheet-title{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.f-sheet-sub{font-size:13px;color:var(--textSecondary);margin-top:-8px}
+.f-attach-list{display:flex;flex-direction:column}
+.f-attach{display:flex;align-items:center;gap:14px;padding:9px 6px;border-radius:14px}
+.f-attach-icon{width:40px;height:40px;border-radius:999px;background:var(--surfaceRaised);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.f-attach-text{display:flex;flex-direction:column;gap:2px}
+.f-field{position:relative;height:50px;border-radius:10px;background:var(--surfaceRaised);
+  border:1px solid var(--border);display:flex;align-items:center;padding:0 14px;font-size:15px}
+.f-field-hint{color:var(--textMuted)}
+.f-field-value{position:absolute;left:14px;color:var(--textPrimary);white-space:nowrap}
+.f-sheet-actions{display:flex;gap:10px;margin-top:6px}
+.f-btn{flex:1;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:600}
+.f-btn-ghost{border:1px solid var(--borderStrong);color:var(--textPrimary)}
+.f-btn-solid{background:var(--accent);color:var(--textInverse)}
+.f-alert{position:absolute;left:36px;right:36px;top:318px;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:10px}
+.f-alert-title{font-size:17px;font-weight:600;line-height:23px}
+.f-alert-body{font-size:13px;line-height:19px;color:var(--textSecondary)}
+
+/* --- Onboarding ---------------------------------------------------------- */
+.f-onboard{height:100%;display:flex;flex-direction:column;align-items:center;padding:0 24px 60px}
+.f-spinner{position:relative;width:64px;height:64px;margin-top:150px}
+.f-spinner::before{content:"";position:absolute;inset:0;border-radius:999px;border:3px solid var(--border)}
+.f-spinner-arc{position:absolute;inset:0;border-radius:999px;border:3px solid transparent;border-top-color:var(--accent)}
+.f-spinner-dot{position:absolute;left:28px;top:28px;width:8px;height:8px;border-radius:999px;background:var(--accent)}
+.f-ob-title{margin-top:32px;font-size:24px;font-weight:700;letter-spacing:-0.4px;text-align:center}
+.f-ob-sub{margin-top:10px;font-size:15px;line-height:22px;color:var(--textSecondary);text-align:center}
+.f-ob-card{margin-top:36px;align-self:stretch;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.f-ob-line{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--textSecondary)}
+.f-reveal{padding-top:56px}
+.f-rv-card{align-self:stretch;background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:24px 20px 8px;display:flex;flex-direction:column;align-items:center}
+.f-rv-label{margin-top:16px;font-size:11px;letter-spacing:0.8px;text-transform:uppercase;color:var(--textMuted)}
+.f-rv-gap{margin-top:14px}
+.f-rv-name{margin-top:4px;font-size:24px;font-weight:700;letter-spacing:-0.4px}
+.f-rv-id{margin-top:4px;font-family:var(--mono);font-size:13px;color:var(--textSecondary)}
+.f-rv-rows{align-self:stretch;margin-top:18px;border-top:1px solid var(--border)}
+.f-rv-row{display:flex;justify-content:space-between;align-items:center;padding:13px 2px;
+  border-bottom:1px solid var(--border);font-size:13px}
+.f-rv-row:last-child{border-bottom:none}
+.f-rv-k{color:var(--textMuted)}
+.f-rv-v{color:var(--textSecondary);font-weight:500}
+.f-rv-strong{color:var(--accent);font-weight:700}
+.f-rv-note{margin-top:18px;font-size:12px;line-height:18px;color:var(--textMuted);text-align:center;padding:0 8px}
+.f-cta{margin-top:auto;align-self:stretch;height:50px;border-radius:14px;background:var(--accent);
+  color:var(--textInverse);font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.f-cta-outline{margin-top:10px;background:transparent;border:1px solid var(--borderStrong);color:var(--textPrimary)}
+.f-cta-off{opacity:0.4}
+.f-welcome{padding-top:150px}
+.f-wl-word{margin-top:40px;font-size:38px;font-weight:700;letter-spacing:-1.5px}
+.f-wl-tag{margin-top:6px;font-size:15px;color:var(--textSecondary)}
+.f-wl-spacer{flex:1}
+.f-welcome .f-cta{margin-top:0}
+.f-welcome .f-cta-outline{margin-top:10px}
+.f-notice{justify-content:center;padding-bottom:140px}
+.f-notice .f-ob-title{margin-top:0}
+.f-transfer{padding-top:120px}
+.f-transfer .f-ob-title{margin-top:0;padding:0 12px}
+.f-code{margin-top:34px;display:flex;border-radius:18px;overflow:hidden}
+.f-transfer .f-ob-sub{margin-top:30px;font-size:13px;line-height:19px;color:var(--textMuted);padding:0 10px}
+
+/* --- Hops ----------------------------------------------------------------- */
+#chain{position:absolute;inset:0}
+.chain-line{position:absolute;left:360px;top:599px;width:1200px;height:2px;
+  background-image:linear-gradient(90deg,var(--borderStrong) 50%,transparent 50%);background-size:16px 2px}
+.cgroup{position:absolute;inset:0}
+.cnode{position:absolute;top:600px;width:112px;height:196px;margin:-98px 0 0 -56px;border-radius:26px;
+  background:var(--surface);border:2.5px solid var(--borderStrong);display:flex;align-items:center;justify-content:center;
+  color:var(--panelMuted)}
+.cnode-end{border-color:var(--panelText);color:var(--panelText)}
+.clabel{position:absolute;top:722px;width:260px;margin-left:-130px;text-align:center;font-family:var(--mono);
+  font-size:24px;color:var(--panelSub)}
+.csees{position:absolute;top:770px;width:300px;margin-left:-150px;text-align:center;font-family:var(--mono);
+  font-size:19px;line-height:1.5;color:var(--panelMuted);display:flex;flex-direction:column}
+.csees b{font-weight:400;color:var(--panelSub)}
+#packet{position:absolute;left:0;top:600px;height:54px;margin:-27px 0 0 -76px;width:152px;border-radius:999px;
+  background:var(--panelBg);border:2px solid var(--e2ee);color:var(--e2ee);display:flex;align-items:center;
+  justify-content:center;gap:10px;font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:0.04em}
+#hopcount{position:absolute;right:140px;top:118px;font-family:var(--mono);font-size:24px;color:var(--panelMuted);
+  text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+#hopcount b{font-size:150px;line-height:0.95;color:var(--panelText);letter-spacing:-0.05em}
+.k-sealed{position:absolute;left:940px;top:430px;display:flex;align-items:center;gap:26px;color:var(--e2ee);
+  font-size:190px;font-weight:700;letter-spacing:-0.045em;line-height:1}
+
+/* --- The turn -------------------------------------------------------------- */
+.big-bubble{position:absolute;padding:34px 50px;border-radius:70px;font-size:84px;font-weight:600;
+  letter-spacing:-0.025em;line-height:1.1;white-space:nowrap}
+#q-ask{left:330px;top:350px;background:var(--theirBubble);color:var(--textPrimary);border-bottom-left-radius:20px}
+#q-answer{right:330px;top:570px;background:var(--myBubble);color:var(--myBubbleText);border-bottom-right-radius:20px}
+#q-typing{right:330px;top:570px;background:var(--myBubble);display:flex;gap:16px;padding:56px 50px}
+#q-typing i{display:block;width:22px;height:22px;border-radius:999px;background:var(--myBubbleText)}
+
+/* --- Nostr ------------------------------------------------------------------ */
+#k-relays{position:absolute;left:140px;top:300px;display:flex;flex-direction:column;font-family:var(--mono);
+  font-size:30px;color:var(--panelSub);gap:6px}
+#k-relays b{font-family:var(--sans);font-size:260px;font-weight:700;letter-spacing:-0.05em;line-height:0.95;color:var(--panelText);
+  font-variant-numeric:tabular-nums}
+#k-wrap .stack-line{color:var(--e2ee)}
+#k-tor .stack-line{color:#8B5CF6;font-size:230px}
+#k-wrap-sub{top:760px}
+#k-tor-sub{top:690px}
+
+/* --- And more -------------------------------------------------------------- */
+.mcard{position:absolute;inset:0}
+.mcard-title{left:140px;top:0;height:1080px;justify-content:center}
+.mcard-title .stack-line{font-size:140px}
+.mcard-art{position:absolute;inset:0}
+.voice{position:absolute;left:1010px;top:390px;width:790px;display:flex;flex-direction:column;gap:40px;align-items:flex-start}
+.wave{display:flex;align-items:center;gap:8px;height:240px}
+.wave i{display:block;width:10px;height:20px;border-radius:5px;background:var(--danger)}
+.live{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:30px;
+  font-weight:700;letter-spacing:0.14em;color:var(--danger);border:2px solid var(--danger);border-radius:999px;
+  padding:12px 26px}
+.live i{display:block;width:16px;height:16px;border-radius:999px;background:var(--danger)}
+.notice{position:absolute;left:1000px;top:410px;width:780px;background:var(--surface);border:2px solid var(--border);
+  border-radius:32px;padding:38px 42px;display:flex;flex-direction:column;gap:18px}
+.notice-top{display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:24px;color:var(--panelMuted)}
+.notice-urgent{color:var(--danger);font-weight:700;letter-spacing:0.12em}
+.notice-body{font-size:50px;font-weight:600;letter-spacing:-0.02em;line-height:1.12}
+.bigrow{position:absolute;left:900px;top:380px}
+.bigrow .group{margin:0;width:361px;zoom:2.6}
+.tongues{position:absolute;left:1010px;top:330px;width:800px;display:flex;flex-wrap:wrap;gap:26px 50px;
+  font-size:76px;font-weight:600;color:var(--panelSub);align-items:baseline}
+
+/* --- Wallet scene ---------------------------------------------------------- */
+#money{position:absolute;left:0;width:1920px;top:400px;text-align:center;font-size:270px;font-weight:700;
+  letter-spacing:-0.05em;line-height:1}
+#k-wallet-sub{top:820px;font-size:22px}
+#k-cashu-sub{top:770px;font-size:24px;white-space:normal;width:640px;line-height:1.5}
+#token{position:absolute;left:0;top:0;width:118px;height:50px;margin:-25px 0 0 -59px;border-radius:999px;
+  background:var(--panelText);color:var(--textInverse);display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--mono);font-size:20px;font-weight:700;box-shadow:0 0 0 10px rgba(245,245,245,0.1)}
+
+/* --- bitchat ---------------------------------------------------------------- */
+#bitchat,#crypto{position:absolute;inset:0}
+#pair{position:absolute;left:140px;top:250px;display:flex;flex-direction:column;gap:0}
+.pair-a{display:flex;align-items:center;gap:26px;font-family:var(--mono);font-size:56px;font-weight:700;letter-spacing:0.3em}
+.pair-b{font-family:var(--mono);font-size:64px;font-weight:700;letter-spacing:0.04em;color:var(--panelSub);padding-left:4px}
+.pair-link{position:relative;height:250px;display:flex;align-items:center;padding-left:96px}
+.pair-link i{position:absolute;left:41px;top:22px;display:block;width:3px;height:206px;background:var(--panelText);transform-origin:50% 0}
+.pair-link span{font-family:var(--mono);font-size:24px;color:var(--panelMuted)}
+#gains{position:absolute;left:846px;top:430px;display:flex;flex-direction:column;gap:14px}
+.gain{display:flex;align-items:baseline;gap:24px;font-size:56px;font-weight:600;letter-spacing:-0.025em;white-space:nowrap}
+.gain em{font-style:normal;font-family:var(--mono);font-size:25px;font-weight:400;letter-spacing:0;color:var(--panelMuted)}
+.gain b{font-family:var(--mono);font-weight:700;color:var(--e2ee);font-size:52px}
+
+/* --- Cryptography ----------------------------------------------------------- */
+#k-point{position:absolute;left:146px;top:372px;font-size:54px;font-weight:600;color:var(--panelSub);letter-spacing:-0.02em}
+#proven{position:absolute;left:140px;top:500px;width:1640px;display:flex;flex-direction:column}
+.proof{display:flex;align-items:center;gap:40px;height:128px;border-top:1.5px solid var(--border)}
+.proof:last-child{border-bottom:1.5px solid var(--border)}
+.proof-name{font-family:var(--mono);font-size:60px;font-weight:700;letter-spacing:-0.03em;width:900px}
+.proof i{display:block;width:90px;height:2px;background:var(--borderStrong)}
+.proof-from{font-size:54px;font-weight:600;letter-spacing:-0.02em;color:var(--panelSub)}
+#primitives{left:144px;top:924px;font-size:23px}
+#osp{position:absolute;left:0;top:370px;width:1920px;display:flex;justify-content:center;gap:56px;
+  font-size:164px;font-weight:700;letter-spacing:-0.05em;line-height:1}
+#osp span{display:block}
+#k-easy{position:absolute;left:0;top:620px;width:1920px;text-align:center;font-size:72px;font-weight:600;
+  letter-spacing:-0.025em;color:var(--panelSub)}
+
+/* --- Nothing to hand over ------------------------------------------------- */
+#nothing{position:absolute;left:140px;top:0;height:1080px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+#nothing div{font-size:170px;font-weight:700;letter-spacing:-0.05em;line-height:1.04;position:relative;white-space:nowrap}
+#nothing s{position:absolute;left:0;bottom:6px;height:9px;width:100%;background:var(--panelText);
+  transform-origin:left center;text-decoration:none;display:block}
+#k-move-sub{left:1306px;top:700px;font-size:21px;white-space:normal;width:520px;line-height:1.5}
+#k-wipe .stack-line:last-child{color:var(--danger)}
+
+/* --- Not done yet --------------------------------------------------------- */
+#notdone{position:absolute;inset:0}
+#notdone-line{position:absolute;left:0;width:1920px;top:150px;text-align:center;font-family:var(--mono);
+  font-size:100px;font-weight:700;letter-spacing:-0.04em}
+#notdone-line u,#end-lets u{text-decoration:none;display:inline-block;width:0.6em;height:0.09em;background:currentColor;
+  margin-left:0.06em}
+.eyebrow{position:absolute;font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--panelMuted)}
+#soon{left:0;width:1920px;top:318px;text-align:center}
+#roadmap{position:absolute;left:0;top:384px;width:1920px;display:flex;flex-direction:column;align-items:center}
+.rm{font-family:var(--mono);font-size:42px;line-height:72px;color:var(--panelSub)}
+.rm-strong{color:var(--panelText);font-weight:700}
+
+/* --- End -------------------------------------------------------------------- */
+#k-try{position:absolute;left:0;width:1920px;top:690px;text-align:center;font-size:210px;font-weight:700;
+  letter-spacing:-0.05em;line-height:1;color:#111}
+#flybird{position:absolute;left:0;top:0;width:0;height:0}
+#flybird-in{position:absolute;left:-220px;top:-120px;width:440px;height:240px}
+#flybird-in svg{position:absolute;inset:0;width:100%;height:100%}
+#end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center}
+#end-lockup{margin-top:180px;display:flex;align-items:center;gap:48px}
+#end-lockup span{font-family:var(--mono);font-size:56px;font-weight:700;letter-spacing:0.34em;margin-right:-0.34em}
+#end-head{margin-top:80px;font-size:150px;font-weight:700;letter-spacing:-0.05em;line-height:1;white-space:nowrap}
+#end-url{margin-top:64px;font-family:var(--mono);font-size:60px;font-weight:700;letter-spacing:0.01em}
+#end-mail{margin-top:14px;font-family:var(--mono);font-size:34px;color:var(--panelSub)}
+#end-facts{margin-top:30px;font-family:var(--mono);font-size:24px;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--panelSub)}
+#end-lets{margin-top:60px;font-family:var(--mono);font-size:46px;font-weight:700;height:58px}
