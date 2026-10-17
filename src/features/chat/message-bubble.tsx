@@ -294,8 +294,17 @@ function MessageBubble({
                 translated text below, findable at a glance in a thread. */}
             {item.ring === true && (
               <View style={styles.ringTag}>
-                <Feather name="bell" size={11} color={Colors.accent} />
-                <Text style={styles.ringTagText}>
+                <Feather
+                  name="bell"
+                  size={11}
+                  color={item.isMine ? Colors.textInverse : Colors.accent}
+                />
+                <Text
+                  style={[
+                    styles.ringTagText,
+                    item.isMine && styles.ringTagTextMine,
+                  ]}
+                >
                   {T("chat.contact.ring_action")}
                 </Text>
               </View>
@@ -718,6 +727,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.accent,
     },
+    // Your own bubble is filled with the accent, so the tag inverts on it.
+    ringTagTextMine: { color: Colors.textInverse },
   });
 }
 
