@@ -65,6 +65,11 @@ final class AirhopBLEModule: RCTEventEmitter {
   // only ones that can actually carry a write. Retained-but-not-ready links
   // live in centralLinks without appearing here.
   private var readyCentralLinks: Set<String> = []
+  // CoreBluetooth never times out a connect, so a peer that leaves mid-dial
+  // would hold a slot until Bluetooth restarts. bitchat-ios allows 8s.
+  private static let centralReadyTimeoutSec: TimeInterval = 10
+  private var centralAttempts: [String: UInt64] = [:]
+  private var nextCentralAttempt: UInt64 = 0
   // linkID -> CBCentral (peripheral role connections from remote centrals)
   private var peripheralLinks: [String: CBCentral] = [:]
 
@@ -278,8 +283,7 @@ final class AirhopBLEModule: RCTEventEmitter {
     // .advertisementData(), whose entire body is the service UUID under the
     // comment "No Local Name for privacy." Matching it costs the ability to
     // dedup an iPhone before connecting to it, which is a cost bitchat
-    // already accepts and which the link reaper covers: a duplicate under a
-    // rotated address is reclaimed by the 15s first-traffic deadline.
+    // already accepts: the mesh tolerates one peer on two links.
     //
     // The localName parameter stays on the bridge method. Android still
     // uses it, and the two platforms keep one signature.
@@ -664,6 +668,11 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
       for peripheral in centralLinks.values where peripheral.state == .connected {
         peripheral.discoverServices([BLEConst.serviceUUID])
       }
+      // Restored links, pending connects included, get deadlines too.
+      for (linkID, peripheral) in centralLinks
+      where !readyCentralLinks.contains(linkID) && centralAttempts[linkID] == nil {
+        armCentralDeadline(linkID, dialing: peripheral.state != .connected)
+      }
       applyState()
 
     case .poweredOff:
@@ -714,6 +723,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     }
     centralLinks.removeAll()
     readyCentralLinks.removeAll()
+    centralAttempts.removeAll()
     for timer in rssiTimers.values { timer.cancel() }
     rssiTimers.removeAll()
   }
@@ -737,6 +747,29 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     peripheral.delegate = self
     centralLinks[linkID] = peripheral
     central.connect(peripheral, options: nil)
+    armCentralDeadline(linkID, dialing: true)
+  }
+
+  // Armed at the dial and again at connect, so a peer that connects but never
+  // subscribes is freed too. The attempt number stops a stale deadline.
+  private func armCentralDeadline(_ linkID: String, dialing: Bool) {
+    nextCentralAttempt &+= 1
+    let attempt = nextCentralAttempt
+    centralAttempts[linkID] = attempt
+    queue.asyncAfter(deadline: .now() + Self.centralReadyTimeoutSec) { [weak self] in
+      guard let self, self.centralAttempts[linkID] == attempt else { return }
+      guard let peripheral = self.centralLinks[linkID] else { return }
+      // A woken app can see an overdue dial deadline and its connect at once.
+      // didConnect re-arms.
+      if dialing && peripheral.state == .connected { return }
+      self.centralAttempts.removeValue(forKey: linkID)
+      AirhopLog.ble.notice("BLE link timed out before ready (central)")
+      self.centralManager?.cancelPeripheralConnection(peripheral)
+      // A cancelled pending connect may never call back.
+      self.centralLinks.removeValue(forKey: linkID)
+      self.rssiTimers[linkID]?.cancel()
+      self.rssiTimers.removeValue(forKey: linkID)
+    }
   }
 
   func centralManager(
@@ -746,6 +779,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     AirhopLog.ble.notice("BLE link up (central)")
     let linkID = centralLinkID(for: peripheral)
     centralLinks[linkID] = peripheral
+    armCentralDeadline(linkID, dialing: false)
     // linkConnected is deliberately NOT emitted here: the characteristic is
     // not discovered yet, so any write JS makes in response would fail. It
     // is emitted from didUpdateNotificationStateFor once the link can
@@ -778,6 +812,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     let linkID = centralLinkID(for: peripheral)
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
+    centralAttempts.removeValue(forKey: linkID)
   }
 
   func centralManager(
@@ -789,6 +824,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     let linkID = centralLinkID(for: peripheral)
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
+    centralAttempts.removeValue(forKey: linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
     sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
@@ -856,6 +892,7 @@ extension AirhopBLEModule: CBPeripheralDelegate {
 
     guard !readyCentralLinks.contains(linkID) else { return }
     readyCentralLinks.insert(linkID)
+    centralAttempts.removeValue(forKey: linkID)
     sendEvent(
       withName: BLEEvent.linkConnected,
       body: ["linkID": linkID, "role": "central", "rssi": -99])
