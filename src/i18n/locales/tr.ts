@@ -2119,7 +2119,7 @@ export const strings: Strings = {
     "Yakın alan kanallarını açar. Bu olmadan o kanallar kapalı kalır ve Bluetooth mesh'i her zamanki gibi sürer.",
   "settings.permissions.notifications": "Bildirimler",
   "settings.permissions.notifications_desc":
-    "Uygulama kapalıyken bile yeni mesajlar için uyarı al. Bu olmadan onları yalnızca Airhop'u açtığında görürsün.",
+    "Airhop ekranda değilken yeni mesajlar için uyarı al. Bu olmadan onları yalnızca Airhop'u açtığında görürsün.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "QR kodları tarar ve gönderilecek fotoğraf ya da video çeker. Bu olmadan da galerinden medya paylaşabilirsin.",

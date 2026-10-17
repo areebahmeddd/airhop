@@ -2084,7 +2084,7 @@ export const strings: Strings = {
     "근처 지역 채널을 엽니다. 이것이 없으면 해당 채널은 닫힌 채로 있고 블루투스 메시는 평소대로 작동합니다.",
   "settings.permissions.notifications": "알림",
   "settings.permissions.notifications_desc":
-    "앱이 닫혀 있을 때도 새 메시지 알림을 받습니다. 이것이 없으면 Airhop을 열었을 때만 보게 됩니다.",
+    "Airhop이 화면에 없을 때도 새 메시지 알림을 받습니다. 이것이 없으면 Airhop을 열었을 때만 보게 됩니다.",
   "settings.permissions.camera": "카메라",
   "settings.permissions.camera_desc":
     "QR 코드를 스캔하고 보낼 사진이나 동영상을 촬영합니다. 이것이 없어도 라이브러리에서 미디어를 공유할 수 있습니다.",

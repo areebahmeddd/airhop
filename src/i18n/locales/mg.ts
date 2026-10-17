@@ -2194,7 +2194,7 @@ export const strings: Strings = {
     "Manokatra ny fantsonan'ny faritra akaiky. Raha tsy misy izany dia mijanona mihidy ireo fantsona ireo ary manohy toy ny mahazatra ny harato Bluetooth.",
   "settings.permissions.notifications": "Fampandrenesana",
   "settings.permissions.notifications_desc":
-    "Mandray fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Raha tsy misy izany dia rehefa manokatra ny Airhop ianao vao mahita azy ireo.",
+    "Mandray fampandrenesana momba ny hafatra vaovao rehefa tsy eo amin'ny efijery ny Airhop. Raha tsy misy izany dia rehefa manokatra ny Airhop ianao vao mahita azy ireo.",
   "settings.permissions.camera": "Fakan-tsary",
   "settings.permissions.camera_desc":
     "Maka sary kaody QR ary maka sary na horonan-tsary halefa. Raha tsy misy izany dia mbola afaka mizara media avy amin'ny tahirinao ianao.",

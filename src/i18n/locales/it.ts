@@ -2164,7 +2164,7 @@ export const strings: Strings = {
     "Apre i canali delle zone vicine. Senza, quei canali restano chiusi e la mesh Bluetooth prosegue normalmente.",
   "settings.permissions.notifications": "Notifiche",
   "settings.permissions.notifications_desc":
-    "Ricevi avvisi per i nuovi messaggi anche ad app chiusa. Senza, li vedrai solo aprendo Airhop.",
+    "Ricevi avvisi per i nuovi messaggi quando Airhop non è sullo schermo. Senza, li vedrai solo aprendo Airhop.",
   "settings.permissions.camera": "Fotocamera",
   "settings.permissions.camera_desc":
     "Scansiona codici QR e scatta foto o video da inviare. Senza, puoi comunque condividere media dalla galleria.",

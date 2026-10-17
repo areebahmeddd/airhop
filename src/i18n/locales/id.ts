@@ -2141,7 +2141,7 @@ export const strings: Strings = {
     "Membuka kanal wilayah terdekat. Tanpa ini kanal-kanal itu tetap tertutup dan mesh Bluetooth berjalan seperti biasa.",
   "settings.permissions.notifications": "Notifikasi",
   "settings.permissions.notifications_desc":
-    "Terima peringatan untuk pesan baru bahkan saat aplikasi tertutup. Tanpa ini kamu baru melihatnya saat membuka Airhop.",
+    "Terima peringatan untuk pesan baru saat Airhop tidak ada di layar. Tanpa ini kamu baru melihatnya saat membuka Airhop.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "Memindai kode QR dan mengambil foto atau video untuk dikirim. Tanpa ini kamu tetap bisa membagikan media dari galerimu.",

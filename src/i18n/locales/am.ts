@@ -1986,7 +1986,7 @@ export const strings: Strings = {
     "በአቅራቢያ ያሉ የአካባቢ ሰርጦችን ይከፍታል። ያለሱ እነዚያ ሰርጦች ተዘግተው ይቀራሉ፤ የብሉቱዝ ሜሹ ግን እንደተለመደው ይቀጥላል።",
   "settings.permissions.notifications": "ማሳወቂያዎች",
   "settings.permissions.notifications_desc":
-    "መተግበሪያው ተዘግቶም እንኳ ስለ አዲስ መልእክቶች ማሳወቂያ ተቀበል። ያለሱ የምታያቸው Airhop ን ስትከፍት ብቻ ነው።",
+    "Airhop በማያ ገጹ ላይ በሌለበት ጊዜ ስለ አዲስ መልእክቶች ማሳወቂያ ተቀበል። ያለሱ የምታያቸው Airhop ን ስትከፍት ብቻ ነው።",
   "settings.permissions.camera": "ካሜራ",
   "settings.permissions.camera_desc":
     "የQR ኮዶችን ቃኝ፤ ለመላክም ፎቶ ወይም ቪዲዮ አንሳ። ያለሱም ከቤተ-መጻሕፍትህ ሚዲያ ማጋራት ትችላለህ።",

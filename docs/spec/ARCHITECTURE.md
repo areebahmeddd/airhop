@@ -1704,6 +1704,19 @@ jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
 foreground service runs. Without it a backgrounded phone would still receive
 and notify, but stop announcing, relaying and saving.
 
+The service belongs to the mesh, not to Bluetooth (`src/services/radio-controller.ts`).
+It runs while the background preference allows and something local has work:
+Bluetooth scanning, LAN up, or Wi-Fi Aware running. It also holds through what
+the OS hands back unprompted (Bluetooth or location toggled off, airplane mode,
+Aware withdrawn by doze or battery saver), since only a living process can
+resume. A refused permission or missing hardware releases it. The
+`connectedDevice` type is granted against `CHANGE_WIFI_STATE` too, so it starts
+with Bluetooth refused.
+
+With background running off, leaving the screen stands down Bluetooth, Wi-Fi
+Aware and LAN, which would otherwise advertise a frozen phone. Auto-start is
+synced to native as auto-start and background running together.
+
 The scan flag is what makes the rest deliver. Android treats a BLE scan as a
 location access unless the manifest says otherwise, and an app counts as
 foreground for location only with a visible activity or a `location`-typed

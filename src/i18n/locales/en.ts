@@ -2116,7 +2116,7 @@ export const strings = {
     "Opens nearby area channels. Without it, those channels stay closed and the Bluetooth mesh carries on as normal.",
   "settings.permissions.notifications": "Notifications",
   "settings.permissions.notifications_desc":
-    "Receive alerts for new messages even when the app is closed. Without it, you only see them when you open Airhop.",
+    "Receive alerts for new messages when Airhop isn’t on screen. Without it, you only see them when you open Airhop.",
   "settings.permissions.camera": "Camera",
   "settings.permissions.camera_desc":
     "Scan QR codes and capture photos or videos to send. Without it, you can still share media from your library.",

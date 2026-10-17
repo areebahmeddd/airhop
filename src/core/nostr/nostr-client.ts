@@ -261,6 +261,7 @@ export class NostrClient {
       filter: Filter,
       attempt: number,
     ): void => {
+      const openedAtMs = Date.now();
       closers.set(
         key,
         this.pool.subscribeMany([url], pinGiftWrapSince({ ...filter }), {
@@ -269,13 +270,17 @@ export class NostrClient {
           alreadyHaveEvent,
           onclose: () => {
             if (!active || this.closed) return;
+            // One that outlived the longest backoff was healthy, so its close
+            // starts over. Not EOSE, which a relay that never connected sends.
+            const failures =
+              Date.now() - openedAtMs >= RESUBSCRIBE_MAX_MS ? 0 : attempt;
             const delay = Math.min(
-              RESUBSCRIBE_BASE_MS * 2 ** attempt,
+              RESUBSCRIBE_BASE_MS * 2 ** failures,
               RESUBSCRIBE_MAX_MS,
             );
             const timer = setTimeout(() => {
               this.resubscribeTimers.delete(timer);
-              if (active && !this.closed) open(key, url, filter, attempt + 1);
+              if (active && !this.closed) open(key, url, filter, failures + 1);
             }, delay);
             this.resubscribeTimers.add(timer);
           },

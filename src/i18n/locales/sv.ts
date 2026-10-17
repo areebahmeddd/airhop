@@ -2115,7 +2115,7 @@ export const strings: Strings = {
     "Öppnar områdeskanaler i närheten. Utan den förblir de kanalerna stängda, och Bluetooth-meshen fortsätter som vanligt.",
   "settings.permissions.notifications": "Aviseringar",
   "settings.permissions.notifications_desc":
-    "Få aviseringar om nya meddelanden även när appen är stängd. Utan dem ser du dem först när du öppnar Airhop.",
+    "Få aviseringar om nya meddelanden när Airhop inte syns på skärmen. Utan dem ser du dem först när du öppnar Airhop.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "Skanna QR-koder och ta foton eller videor att skicka. Utan den kan du fortfarande dela media från biblioteket.",

@@ -2094,7 +2094,7 @@ export const strings: Strings = {
     "কাছের এলাকার চ্যানেল খোলে। এটি ছাড়া সেই চ্যানেলগুলো বন্ধ থাকে আর ব্লুটুথ মেশ যথারীতি চলে।",
   "settings.permissions.notifications": "বিজ্ঞপ্তি",
   "settings.permissions.notifications_desc":
-    "অ্যাপ বন্ধ থাকলেও নতুন বার্তার খবর পান। এটি ছাড়া কেবল Airhop খুললেই সেগুলো দেখবেন।",
+    "Airhop স্ক্রিনে না থাকলে নতুন বার্তার খবর পান। এটি ছাড়া কেবল Airhop খুললেই সেগুলো দেখবেন।",
   "settings.permissions.camera": "ক্যামেরা",
   "settings.permissions.camera_desc":
     "QR কোড স্ক্যান করে আর পাঠানোর জন্য ছবি বা ভিডিও তোলে। এটি ছাড়াও লাইব্রেরি থেকে মিডিয়া ভাগ করতে পারবেন।",

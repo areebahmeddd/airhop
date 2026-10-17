@@ -2184,7 +2184,7 @@ export const strings: Strings = {
     "Binubuksan ang mga channel ng lugar sa malapit. Kung wala ito, mananatiling sarado ang mga channel na iyon at tuloy lang gaya ng dati ang mesh sa Bluetooth.",
   "settings.permissions.notifications": "Mga Abiso",
   "settings.permissions.notifications_desc":
-    "Tumanggap ng alerto para sa bagong mensahe kahit sarado ang app. Kung wala ito, makikita mo lang ang mga ito kapag binuksan mo ang Airhop.",
+    "Tumanggap ng alerto para sa bagong mensahe kapag wala sa screen ang Airhop. Kung wala ito, makikita mo lang ang mga ito kapag binuksan mo ang Airhop.",
   "settings.permissions.camera": "Camera",
   "settings.permissions.camera_desc":
     "Nag-i-scan ng QR code at kumukuha ng larawan o video na ipapadala. Kung wala ito, puwede ka pa ring magbahagi ng media mula sa gallery mo.",

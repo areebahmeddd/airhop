@@ -2152,7 +2152,7 @@ export const strings: Strings = {
     "Abre os canais das áreas próximas. Sem ela, esses canais ficam fechados e a malha Bluetooth segue normalmente.",
   "settings.permissions.notifications": "Notificações",
   "settings.permissions.notifications_desc":
-    "Receba avisos de mensagens novas mesmo com o app fechado. Sem elas, você só vê ao abrir o Airhop.",
+    "Receba avisos de mensagens novas quando o Airhop não está na tela. Sem elas, você só vê ao abrir o Airhop.",
   "settings.permissions.camera": "Câmera",
   "settings.permissions.camera_desc":
     "Escaneia códigos QR e tira fotos ou vídeos para enviar. Sem ela, você ainda pode compartilhar mídia da galeria.",

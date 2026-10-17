@@ -2118,7 +2118,7 @@ export const strings: Strings = {
     "Mở các kênh khu vực ở gần. Không có nó, những kênh đó vẫn đóng và mạng lưới Bluetooth vẫn chạy như thường.",
   "settings.permissions.notifications": "Thông báo",
   "settings.permissions.notifications_desc":
-    "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Không có nó, bạn chỉ thấy chúng khi mở Airhop.",
+    "Nhận báo tin nhắn mới khi Airhop không ở trên màn hình. Không có nó, bạn chỉ thấy chúng khi mở Airhop.",
   "settings.permissions.camera": "Máy ảnh",
   "settings.permissions.camera_desc":
     "Quét mã QR và chụp ảnh hay quay video để gửi. Không có nó, bạn vẫn chia sẻ được phương tiện từ thư viện.",

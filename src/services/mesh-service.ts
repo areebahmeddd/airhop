@@ -705,6 +705,8 @@ export class MeshService {
   // Bluetooth switched back on) can never bring the radios up behind a user
   // who deliberately went Away.
   private running = false;
+  // As setAppForeground last reported it.
+  private appForeground = true;
   // Owns the BLE radios: what they should be doing, what is stopping them, and
   // the retries in between. See radio-controller.ts.
   private readonly radio: RadioController;
@@ -1431,23 +1433,22 @@ export class MeshService {
     // until it has a paired count on a platform that gates on one, and this is
     // what delivers the first.
     this.wifiPairing.start();
-    this.wifi.setEnabled(useSettingsStore.getState().wifiAwareEnabled);
+    this.applyLocalTransportPrefs();
     this.wifi.start();
     this.wifiPrefUnsub?.();
     this.wifiPrefUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.wifiAwareEnabled === prev.wifiAwareEnabled) return;
-      this.wifi.setEnabled(state.wifiAwareEnabled);
+      this.applyLocalTransportPrefs();
     });
 
     // The LAN transport runs only when the user has asked for it, so its
     // switch is read here and watched below. Unlike the radios, a mesh that is
     // running is not on its own a reason to publish anything.
-    this.lan.setEnabled(useSettingsStore.getState().lanTransportEnabled);
     this.lan.start();
     this.lanPrefUnsub?.();
     this.lanPrefUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.lanTransportEnabled === prev.lanTransportEnabled) return;
-      this.lan.setEnabled(state.lanTransportEnabled);
+      this.applyLocalTransportPrefs();
     });
 
     // The radio controller reads the background preference during reconcile, so
@@ -1458,7 +1459,18 @@ export class MeshService {
     this.backgroundPrefUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.backgroundMeshEnabled === prev.backgroundMeshEnabled) return;
       this.radio.refresh();
+      this.applyLocalTransportPrefs();
     });
+  }
+
+  // Wi-Fi Aware and LAN follow their switches and, with background running off,
+  // the screen: the radio controller's rule for Bluetooth.
+  private applyLocalTransportPrefs(): void {
+    const settings = useSettingsStore.getState();
+    const allowed = this.appForeground || settings.backgroundMeshEnabled;
+    this.wifi.setEnabled(settings.wifiAwareEnabled);
+    this.wifi.setOffScreen(!allowed);
+    this.lan.setEnabled(settings.lanTransportEnabled && allowed);
   }
 
   // Peers whose packets we have rejected as stale since the last one we
@@ -6947,6 +6959,10 @@ export class MeshService {
   // phone spends nearly all of its day.
   setAppForeground(foreground: boolean): void {
     this.radio.setAppForeground(foreground);
+    if (this.appForeground !== foreground) {
+      this.appForeground = foreground;
+      if (this.running) this.applyLocalTransportPrefs();
+    }
     if (!foreground) return;
     // Coming back to the app is the strongest signal we get that the world may
     // have moved, because the usual reason someone left was to change it:
@@ -6975,7 +6991,8 @@ export class MeshService {
   // own connect, and retrying now would find no relay yet spend the throttle.
   onNetworkChanged(networkReplaced: boolean): void {
     if (!this.running) return;
-    this.lan.refresh();
+    if (networkReplaced) this.lan.renew();
+    else this.lan.refresh();
     const client = this.nostrClient;
     if (client !== null && (networkReplaced || !client.isConnected)) {
       this.restartNostr();

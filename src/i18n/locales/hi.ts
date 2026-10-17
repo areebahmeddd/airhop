@@ -2098,7 +2098,7 @@ export const strings: Strings = {
     "आस-पास के क्षेत्र चैनल खोलता है। इसके बिना वे चैनल बंद रहते हैं और ब्लूटूथ मेश सामान्य रूप से चलता रहता है।",
   "settings.permissions.notifications": "सूचनाएँ",
   "settings.permissions.notifications_desc":
-    "ऐप बंद होने पर भी नए संदेशों की सूचना पाएँ। इसके बिना वे तभी दिखेंगे जब आप Airhop खोलेंगे।",
+    "Airhop स्क्रीन पर न होने पर नए संदेशों की सूचना पाएँ। इसके बिना वे तभी दिखेंगे जब आप Airhop खोलेंगे।",
   "settings.permissions.camera": "कैमरा",
   "settings.permissions.camera_desc":
     "QR कोड स्कैन करें और भेजने के लिए फ़ोटो या वीडियो लें। इसके बिना भी आप लाइब्रेरी से मीडिया साझा कर सकते हैं।",

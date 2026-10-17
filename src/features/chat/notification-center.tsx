@@ -9,6 +9,7 @@
 import { t, tPlural, useT } from "@i18n";
 import { chevronBack, textAlignEnd } from "@i18n/layout";
 import { Feather } from "@react-native-vector-icons/feather/static";
+import { dismissNotificationsFor } from "@services/notification-service";
 import { useActivityStore, type ActivityEntry } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
@@ -60,8 +61,10 @@ export default function NotificationCenter({
   // every other irreversible action here.
   function markAllRead(): void {
     const chat = useChatStore.getState();
+    // Their tray entries go too, or read messages stay on the lock screen.
     for (const channel of new Set(entries.map((e) => e.channel))) {
       chat.markChannelRead(channel);
+      void dismissNotificationsFor(channel);
     }
   }
 

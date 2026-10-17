@@ -73,7 +73,7 @@ import { useSettingsStore } from "@store/settings-store";
 import * as SecureStore from "expo-secure-store";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
-import { installNativeBle } from "../harness/bridge-shim";
+import { installNativeBle, installNativeWifi } from "../harness/bridge-shim";
 import { IosBleModule } from "../harness/ios-native";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
@@ -380,11 +380,26 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict("S07", "Bluetooth off at launch", os);
     const native = androidDevice(os);
+    // Nothing else to carry the mesh: a phone without Wi-Fi Aware, and LAN off
+    // by default. S07b is the same launch with Aware running.
+    installNativeWifi({
+      startWiFi: () =>
+        Promise.reject(
+          Object.assign(new Error("no Wi-Fi Aware"), {
+            code: "WIFI_AWARE_UNSUPPORTED",
+          }),
+        ),
+      stopWiFi: async () => undefined,
+      writeToWiFiLink: async () => undefined,
+      addListener: () => undefined,
+      removeListeners: () => undefined,
+    });
 
     app = new AppShell({ os });
     app.bootJsRuntime();
     await app.startMeshWithPermissions();
     await os.advance(1000);
+    installNativeWifi(null);
 
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
     v.check(
@@ -394,8 +409,10 @@ describe("cold start and permissions", () => {
       `banner: ${JSON.stringify(currentBlockerBanner())}`,
     );
     v.check(
-      "no foreground-service notification claiming an active mesh",
-      !os.foregroundServiceRunning,
+      // A quick-settings toggle the OS hands back: the process stays, so the
+      // mesh resumes when Bluetooth does, with the app off screen.
+      "the background service holds on through Bluetooth being off",
+      os.foregroundServiceRunning,
     );
 
     // The user taps the banner's button; Android shows the system dialog and
@@ -406,6 +423,77 @@ describe("cold start and permissions", () => {
     v.check("the in-app button actually turned Bluetooth on", enabled);
     v.check("radios follow", native.scanning && native.advertising);
     v.check("the banner clears", currentBlockerBanner() === null);
+    v.assert();
+  });
+
+  // "Run in background" off: the mesh lives on screen only.
+  test("S07c Background running off stands the radios down off screen", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    const v = new Verdict("S07c", "background running off", os);
+    const native = androidDevice(os);
+    useSettingsStore.getState().setBackgroundMeshEnabled(false);
+
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    await app.startMeshWithPermissions();
+    await os.advance(1000);
+    v.check("the mesh runs on screen", native.scanning && native.advertising);
+    v.check("with no background service", !os.foregroundServiceRunning);
+
+    // app.tsx forwards every AppState edge to the mesh.
+    await app.setAppState("background");
+    getMeshService()?.setAppForeground(false);
+    await os.advance(500);
+    v.check(
+      "leaving the screen stands the radios down",
+      !native.scanning && !native.advertising,
+    );
+
+    await app.setAppState("active");
+    getMeshService()?.setAppForeground(true);
+    await os.advance(1000);
+    v.check(
+      "coming back brings them up",
+      native.scanning && native.advertising,
+    );
+
+    useSettingsStore.getState().setBackgroundMeshEnabled(true);
+    v.assert();
+  });
+
+  // Wi-Fi Aware carries the mesh without Bluetooth, and dies with the process
+  // if nothing holds it up off screen.
+  test("S07b Bluetooth off with Wi-Fi Aware running keeps the mesh alive off screen", async () => {
+    const os = new DeviceOS({
+      platform: "android",
+      apiLevel: 34,
+      adapter: "off",
+    });
+    const v = new Verdict("S07b", "Bluetooth off, Wi-Fi Aware up", os);
+    androidDevice(os);
+
+    app = new AppShell({ os });
+    app.bootJsRuntime();
+    await app.startMeshWithPermissions();
+    await os.advance(1000);
+
+    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
+    v.check(
+      "Wi-Fi Aware is carrying the mesh",
+      useMeshStateStore.getState().wifiFastPath === "active",
+      `wifiFastPath=${useMeshStateStore.getState().wifiFastPath}`,
+    );
+    v.check(
+      "the background service holds the process up for it",
+      os.foregroundServiceRunning,
+    );
+
+    // The user turns the mesh's background running off: the preference wins.
+    useSettingsStore.getState().setBackgroundMeshEnabled(false);
+    getMeshService()?.retryRadios();
+    await os.advance(1000);
+    v.check("the preference still decides", !os.foregroundServiceRunning);
+    useSettingsStore.getState().setBackgroundMeshEnabled(true);
     v.assert();
   });
 

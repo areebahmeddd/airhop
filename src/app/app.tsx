@@ -57,10 +57,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
-import {
-  registerBootStartTask,
-  syncAutoStartOnBoot,
-} from "@services/boot-start";
+import { registerBootStartTask, syncBootStart } from "@services/boot-start";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import {
@@ -365,7 +362,7 @@ async function startMeshWithPermissions(
   applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
-  syncAutoStartOnBoot(useSettingsStore.getState().autoStartOnBoot);
+  syncBootStart(useSettingsStore.getState());
   // The grant may have landed while the mesh was still being built, and the
   // controller stops retrying once it has published a permission blocker. This
   // is the nudge that turns "denied" into a running radio without a relaunch.

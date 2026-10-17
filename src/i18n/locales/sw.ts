@@ -2153,7 +2153,7 @@ export const strings: Strings = {
     "Hufungua vituo vya eneo lililo karibu. Bila hii, vituo hivyo hubaki vimefungwa na mesh ya Bluetooth huendelea kama kawaida.",
   "settings.permissions.notifications": "Arifa",
   "settings.permissions.notifications_desc":
-    "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Bila hii, utaziona tu unapofungua Airhop.",
+    "Pokea taarifa za jumbe mpya wakati Airhop haiko kwenye skrini. Bila hii, utaziona tu unapofungua Airhop.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "Huchanganua misimbo ya QR na kupiga picha au video za kutuma. Bila hii, bado unaweza kushiriki midia kutoka ghala lako.",

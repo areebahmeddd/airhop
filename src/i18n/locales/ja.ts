@@ -2119,7 +2119,7 @@ export const strings: Strings = {
     "近くのエリアチャンネルを開きます。これがないとそれらのチャンネルは閉じたままですが、Bluetoothメッシュは通常どおり動きます。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "アプリを閉じていても新着メッセージの通知を受け取れます。これがないと、Airhopを開いたときにしか気づけません。",
+    "Airhopが画面に表示されていないときも新着メッセージの通知を受け取れます。これがないと、Airhopを開いたときにしか気づけません。",
   "settings.permissions.camera": "カメラ",
   "settings.permissions.camera_desc":
     "QRコードを読み取り、送る写真や動画を撮ります。これがなくても、ライブラリからメディアを共有できます。",

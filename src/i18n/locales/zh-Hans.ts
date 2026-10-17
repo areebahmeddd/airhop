@@ -1985,7 +1985,7 @@ export const strings: Strings = {
     "用于打开附近的区域频道。没有它，那些频道会保持关闭，蓝牙网状网络照常运作。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "即使应用已关闭也能收到新消息提醒。没有它，你只有打开 Airhop 时才看得到。",
+    "Airhop 不在屏幕上时也能收到新消息提醒。没有它，你只有打开 Airhop 时才看得到。",
   "settings.permissions.camera": "相机",
   "settings.permissions.camera_desc":
     "用于扫描二维码、拍摄照片或视频来发送。没有它，你仍然可以从图库分享媒体。",

@@ -2173,7 +2173,7 @@ export const strings: Strings = {
     "Öffnet Kanäle für Gebiete in der Nähe. Ohne das bleiben diese Kanäle geschlossen, und das Bluetooth-Mesh läuft normal weiter.",
   "settings.permissions.notifications": "Mitteilungen",
   "settings.permissions.notifications_desc":
-    "Erhalte Hinweise auf neue Nachrichten, auch wenn die App geschlossen ist. Ohne das siehst du sie erst, wenn du Airhop öffnest.",
+    "Erhalte Hinweise auf neue Nachrichten, wenn Airhop nicht auf dem Bildschirm ist. Ohne das siehst du sie erst, wenn du Airhop öffnest.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "QR-Codes scannen und Fotos oder Videos zum Senden aufnehmen. Ohne das kannst du weiterhin Medien aus deiner Mediathek teilen.",

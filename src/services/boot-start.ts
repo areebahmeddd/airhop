@@ -3,7 +3,7 @@
 // UI. Every step below is a check, never a request: unlike
 // startMeshWithPermissions in app.tsx, nothing here can prompt.
 //
-// syncAutoStartOnBoot lives in ./boot-sync instead: this file pulls in
+// The boot-start sync lives in ./boot-sync instead: this file pulls in
 // mesh-service.ts, which loads the native BLE module at import, and callers
 // that only need to mirror the setting (panic-wipe.ts, settings screens)
 // must not drag that in.
@@ -26,7 +26,7 @@ import { applyStartupPresence } from "./presence-service";
 import { startReachabilityWatch } from "./reachability";
 import { isPanicWipePending } from "./wipe-marker";
 
-export { syncAutoStartOnBoot } from "./boot-sync";
+export { syncBootStart } from "./boot-sync";
 
 // Time for the radio controller to start scanning and hand off to
 // AirhopForegroundService before this task, and AirhopBootService holding

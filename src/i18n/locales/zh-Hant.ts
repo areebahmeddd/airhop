@@ -1988,7 +1988,7 @@ export const strings: Strings = {
     "用來開啟附近的區域頻道。沒有它，那些頻道會保持關閉，藍牙網狀網路照常運作。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "就算 App 關著也能收到新訊息提醒。沒有它，你只有開啟 Airhop 時才看得到。",
+    "Airhop 不在螢幕上時也能收到新訊息提醒。沒有它，你只有開啟 Airhop 時才看得到。",
   "settings.permissions.camera": "相機",
   "settings.permissions.camera_desc":
     "用來掃描 QR 碼、拍攝照片或影片來傳送。沒有它，你仍然可以從圖庫分享媒體。",

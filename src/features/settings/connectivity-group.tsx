@@ -15,7 +15,7 @@
 // lose by turning it off.
 
 import { useT, type TranslationKey } from "@i18n";
-import { syncAutoStartOnBoot } from "@services/boot-sync";
+import { syncBootStart } from "@services/boot-sync";
 import { requestLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
@@ -192,10 +192,11 @@ export default function ConnectivityGroup({
     switch (key) {
       case "background":
         setBackgroundMeshEnabled(next);
+        syncBootStart(useSettingsStore.getState());
         break;
       case "autoStartOnBoot":
         setAutoStartOnBoot(next);
-        syncAutoStartOnBoot(next);
+        syncBootStart(useSettingsStore.getState());
         break;
       case "liveVoice":
         setLiveVoiceEnabled(next);

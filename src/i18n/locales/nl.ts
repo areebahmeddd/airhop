@@ -2142,7 +2142,7 @@ export const strings: Strings = {
     "Opent de kanalen van gebieden dichtbij. Zonder dit blijven die kanalen dicht en draait de Bluetooth-mesh gewoon door.",
   "settings.permissions.notifications": "Meldingen",
   "settings.permissions.notifications_desc":
-    "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Zonder dit zie je ze pas als je Airhop opent.",
+    "Krijg meldingen van nieuwe berichten als Airhop niet in beeld is. Zonder dit zie je ze pas als je Airhop opent.",
   "settings.permissions.camera": "Camera",
   "settings.permissions.camera_desc":
     "Scan QR-codes en maak foto’s of video’s om te versturen. Zonder dit kun je nog steeds media uit je galerij delen.",
