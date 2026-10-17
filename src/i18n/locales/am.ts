@@ -1067,6 +1067,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "የecash QR ኮድ ቃኝ",
   "wallet.receive.scan_short": "QR ቃኝ",
   "wallet.receive.receiving": "እየተቀበለ…",
+  "wallet.receive.paste": "ከቅንጥብ ሰሌዳ ለጥፍ",
+  "wallet.receive.trust_mint_body":
+    "{mint}ን የምታምነው ከሆነ ብቻ ጨምረው፤ ሚንት የecash ህን የሚደግፈውን Bitcoin ይይዛል። መጨመሩ አንድ ጊዜ ኢንተርኔት ይፈልጋል፤ ከዚያ በኋላ ቶከኖቹን ያለ ኢንተርኔት መቀበል ትችላለህ።",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

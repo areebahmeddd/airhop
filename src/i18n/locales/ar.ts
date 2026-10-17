@@ -1100,6 +1100,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "مسح رمز استجابة سريعة لنقد إلكتروني",
   "wallet.receive.scan_short": "مسح الرمز",
   "wallet.receive.receiving": "جارٍ الاستقبال…",
+  "wallet.receive.paste": "لصق من الحافظة",
+  "wallet.receive.trust_mint_body":
+    "لا تُضف {mint} إلا إن كنت تثق بمن يديرها: فدار السك تحتفظ بالبيتكوين الذي يغطي نقدك الإلكتروني. تحتاج إضافتها إلى الإنترنت مرة واحدة، وبعدها يمكن استلام توكناتها دون إنترنت.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

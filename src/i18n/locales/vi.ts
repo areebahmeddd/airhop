@@ -1140,6 +1140,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Quét một mã QR ecash",
   "wallet.receive.scan_short": "Quét QR",
   "wallet.receive.receiving": "Đang nhận…",
+  "wallet.receive.paste": "Dán từ bảng nhớ tạm",
+  "wallet.receive.trust_mint_body":
+    "Chỉ thêm {mint} nếu bạn tin người vận hành nó: nhà đúc giữ số Bitcoin bảo chứng cho ecash của bạn. Thêm nó cần mạng một lần; sau đó, token từ nó có thể nhận được cả khi không có mạng.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

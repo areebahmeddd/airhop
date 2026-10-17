@@ -72,6 +72,21 @@ export interface EmbeddedToken {
   offset: number;
 }
 
+// A token whose v2 short keyset id this wallet cannot expand yet (a mint not
+// held, or a rotation not fetched). Priced from unverified metadata, so its
+// card claims through the full receive.
+export interface UnreadToken {
+  raw: string;
+  offset: number;
+  amount: number;
+  unit: string;
+  mintUrl: string;
+  mintHost: string;
+}
+
+// What a chat card draws: a decoded token, or one only its metadata reads.
+export type ChatToken = EmbeddedToken | UnreadToken;
+
 // Codes, never copy: the caller picks the sentence.
 export type DleqResult =
   // Every proof carries a witness and every witness verifies: the mint signed
@@ -122,6 +137,68 @@ export function findTokensInText(
   return results;
 }
 
+// `findTokensInText` plus the unresolved tokens it drops, so a payment from a
+// mint this wallet has never used still reads as one.
+export function findChatTokens(
+  text: string,
+  keysets: readonly KeysetRef[] = [],
+): ChatToken[] {
+  const results: ChatToken[] = [];
+  for (const { raw, offset } of tokenCandidates(text)) {
+    const read = readToken(raw, keysets);
+    if (read.ok) {
+      results.push({ info: read.info, raw, offset });
+    } else if (read.reason === "unresolved" && isUsableMintUrl(read.mintUrl)) {
+      const meta = metadataOf(raw);
+      if (meta === null) continue;
+      results.push({
+        raw,
+        offset,
+        amount: meta.amount,
+        unit: read.label,
+        mintUrl: read.mintUrl,
+        mintHost: mintHostOf(read.mintUrl),
+      });
+    }
+    if (results.length >= MAX_TOKENS_PER_MESSAGE) break;
+  }
+  return results;
+}
+
+// The mint a token names, read without a keyset.
+export function tokenMintUrl(raw: string): string | null {
+  const tokenStr = bareToken(raw);
+  if (tokenStr === null) return null;
+  try {
+    const mint = getTokenMetadata(tokenStr).mint;
+    return isUsableMintUrl(mint) ? mint : null;
+  } catch {
+    return null;
+  }
+}
+
+function isUsableMintUrl(mintUrl: unknown): mintUrl is string {
+  return (
+    typeof mintUrl === "string" && mintUrl.length > 0 && mintUrl.length <= 512
+  );
+}
+
+// Amount and unit from metadata, bounded like a decoded token's.
+function metadataOf(raw: string): { amount: number; unit: string } | null {
+  const tokenStr = bareToken(raw);
+  if (tokenStr === null) return null;
+  try {
+    const meta = getTokenMetadata(tokenStr);
+    const amount = meta.amount.toNumber();
+    if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) {
+      return null;
+    }
+    return { amount, unit: sanitizeUnit(meta.unit) };
+  } catch {
+    return null;
+  }
+}
+
 // Mints named by tokens in `text` whose keyset ids `keysets` cannot expand: a
 // v2 short id expands only against the mint's current list, so a token under a
 // keyset not fetched yet (after a rotation) reads only as metadata.
@@ -154,18 +231,7 @@ export function pureTokenAmount(
   const trimmed = text.trim();
   const first = tokenCandidates(trimmed).next();
   if (first.done === true || first.value.raw !== trimmed) return null;
-  const tokenStr = bareToken(trimmed);
-  if (tokenStr === null) return null;
-  try {
-    const meta = getTokenMetadata(tokenStr);
-    const amount = meta.amount.toNumber();
-    if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) {
-      return null;
-    }
-    return { amount, unit: sanitizeUnit(meta.unit) };
-  } catch {
-    return null;
-  }
+  return metadataOf(trimmed);
 }
 
 // Distinct token-shaped strings in `text`, bounded in scan window and length.
@@ -685,13 +751,13 @@ export const TOKEN_QR_ERROR_CORRECTION = "L";
 // Callers must check before rendering and offer copy instead: past the format
 // limit the generator throws and takes the sheet down.
 export function canEncodeTokenQr(token: string): boolean {
-  return token.length > 0 && token.length <= TOKEN_QR_MAX_CHARS;
+  return token.length > 0 && tokenQrPayload(token).length <= TOKEN_QR_MAX_CHARS;
 }
 
-// Bare: every wallet reads the bare form, only some the `cashu:` URI, and the
-// prefix spends capacity. Scanning still accepts a scheme (`bareToken`).
+// NUT-00's `cashu:` URI, so a phone's camera hands it to a Cashu wallet rather
+// than to whatever takes text. Scanners strip it: cashu-ts and `bareToken` do.
 export function tokenQrPayload(token: string): string {
-  return bareToken(token) ?? token;
+  return `cashu:${bareToken(token) ?? token}`;
 }
 
 // A denomination, not a currency: 1 BTC is exactly 100,000,000 sats, so this

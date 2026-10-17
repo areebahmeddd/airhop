@@ -1159,6 +1159,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Scansiona un codice QR ecash",
   "wallet.receive.scan_short": "Scansiona QR",
   "wallet.receive.receiving": "Ricezione…",
+  "wallet.receive.paste": "Incolla dagli appunti",
+  "wallet.receive.trust_mint_body":
+    "Aggiungi {mint} solo se ti fidi di chi lo gestisce: un mint custodisce il Bitcoin che garantisce il tuo ecash. Aggiungerlo richiede internet una volta; poi i suoi token si possono ricevere anche offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

@@ -15,9 +15,9 @@ import {
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import {
-  findTokensInText,
+  findChatTokens,
   mayContainToken,
-  type EmbeddedToken,
+  type ChatToken,
 } from "@core/payments/cashu";
 import { newMessageId } from "@core/router/message-router";
 import {
@@ -60,11 +60,13 @@ import {
 import { prepareImageForSend } from "@services/image-compression";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
-import { reportWalletError } from "@services/payment-router";
+import {
+  receiveTrustingMint,
+  reportWalletError,
+} from "@services/payment-router";
 import {
   fetchKeysetsForTokenText,
   hostOf,
-  receiveToken,
   tokenLockedToOthers,
 } from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
@@ -1971,8 +1973,8 @@ export default function MessageThread({
   }, [audioRecorder]);
 
   const msgs = useMemo(() => messages[channel] ?? [], [messages, channel]);
-  // A token under an uncached keyset shows as text until its mint's keysets
-  // are fetched, which updates `mints` and re-renders it as a card.
+  // A token under an uncached keyset reads from its metadata until the fetch
+  // updates `mints` and it decodes in full.
   useEffect(() => {
     for (const m of msgs) {
       if (mayContainToken(m.text)) void fetchKeysetsForTokenText(m.text);
@@ -2282,13 +2284,15 @@ export default function MessageThread({
   // when there is internet (the only thing that proves the token has not
   // already been spent elsewhere), and otherwise stores it as unconfirmed so
   // the balance stays honest about what it does and does not know.
-  async function claimToken(embedded: EmbeddedToken): Promise<void> {
+  async function claimToken(embedded: ChatToken): Promise<void> {
     if (claimingToken !== null) return;
     setClaimingToken(embedded.raw);
     try {
-      const result = await receiveToken(embedded.raw, {
+      const result = await receiveTrustingMint(embedded.raw, {
         counterparty: dmPeerID ?? channel,
       });
+      // Declined adding the mint: nothing was taken, the card stays.
+      if (result === null) return;
       // Our own unsettled send, posted back to us: Activity reclaims it.
       if (result.outcome === "own-pending") {
         showAlert(
@@ -4413,25 +4417,27 @@ export default function MessageThread({
   }
 
   function renderTokenCard(
-    token: EmbeddedToken,
+    token: ChatToken,
     item: ChatMessage,
   ): React.JSX.Element {
     const isMine = item.isMine;
     const paid = isMine && isSendPaid(item.id);
     const reclaimed = isMine && !paid && item.status === "reclaimed";
+    const info = "info" in token ? token.info : null;
+    const face = "info" in token ? token.info : token;
     return (
       <View style={styles.paymentCard}>
         <View style={styles.paymentCardHeader}>
           <Feather name="zap" size={17} color={Colors.accent} />
           <Text style={styles.paymentCardAmount}>
-            {formatUnitAmount(token.info.amount, token.info.unit)}
+            {formatUnitAmount(face.amount, face.unit)}
           </Text>
         </View>
         <Text style={styles.paymentCardMint} numberOfLines={1}>
-          {token.info.mintUrl.replace(/https?:\/\//, "")}
+          {face.mintUrl.replace(/https?:\/\//, "")}
         </Text>
-        {token.info.memo ? (
-          <Text style={styles.paymentCardMemo}>{token.info.memo}</Text>
+        {info?.memo ? (
+          <Text style={styles.paymentCardMemo}>{info.memo}</Text>
         ) : null}
         {/* On the card, not just in message info: the amount is printed right
             above, so it would still read as money the recipient can take. */}
@@ -4461,7 +4467,7 @@ export default function MessageThread({
                 {t("chat.ecash.claimed")}
               </Text>
             </View>
-          ) : tokenLockedToOthers(token.info) ? (
+          ) : info !== null && tokenLockedToOthers(info) ? (
             // Only its owner's key can spend it, so a Claim would only fail.
             <View style={styles.paymentCardVoid}>
               <Feather name="lock" size={13} color={Colors.textMuted} />
@@ -4479,7 +4485,7 @@ export default function MessageThread({
               onPress={() => void claimToken(token)}
               accessibilityRole="button"
               accessibilityLabel={t("chat.ecash.claim_amount", {
-                ...amountParts(token.info.amount, token.info.unit),
+                ...amountParts(face.amount, face.unit),
               })}
             >
               <Text style={styles.paymentCardClaimText}>
@@ -4497,7 +4503,8 @@ export default function MessageThread({
   // Matched on the first proof's secret, which the store records on claim,
   // because after an online swap the proofs themselves are replaced and can no
   // longer be found in the balance.
-  function isTokenClaimed(token: EmbeddedToken): boolean {
+  function isTokenClaimed(token: ChatToken): boolean {
+    if (!("info" in token)) return false;
     const first = token.info.token.proofs[0]?.secret;
     return first !== undefined && claimedTokens.includes(first);
   }
@@ -4790,7 +4797,7 @@ export default function MessageThread({
             // Compute the token list once and suppress raw text when the
             // entire message is a Cashu token (no extra prose).
             const tokens = mayContainToken(item.text)
-              ? findTokensInText(item.text, keysetRefs)
+              ? findChatTokens(item.text, keysetRefs)
               : [];
             const isPureToken =
               tokens.length > 0 && tokens[0]!.raw.trim() === item.text.trim();
@@ -4810,6 +4817,8 @@ export default function MessageThread({
                     ? "paid"
                     : ""
                   : `${claimingToken ?? ""}#${tokens.filter(isTokenClaimed).length}`,
+              // A card priced from metadata redraws once its keyset arrives.
+              String(tokens.filter((token) => "info" in token).length),
             ].join("|");
 
             return (

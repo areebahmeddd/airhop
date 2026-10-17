@@ -1110,6 +1110,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "สแกนคิวอาร์โค้ด ecash",
   "wallet.receive.scan_short": "สแกน QR",
   "wallet.receive.receiving": "กำลังรับ…",
+  "wallet.receive.paste": "วางจากคลิปบอร์ด",
+  "wallet.receive.trust_mint_body":
+    "เพิ่ม {mint} เฉพาะเมื่อคุณไว้ใจผู้ดูแล มินต์ถือ Bitcoin ที่หนุนหลัง ecash ของคุณ การเพิ่มต้องใช้อินเทอร์เน็ตครั้งเดียว หลังจากนั้นจะรับโทเคนจากมินต์นี้แบบออฟไลน์ได้",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

@@ -1128,6 +1128,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "پویش یک کد QR مربوط به ecash",
   "wallet.receive.scan_short": "پویش QR",
   "wallet.receive.receiving": "در حال دریافت…",
+  "wallet.receive.paste": "چسباندن از بریده‌دان",
+  "wallet.receive.trust_mint_body":
+    "{mint} را فقط وقتی اضافه کنید که به گردانندهٔ آن اعتماد دارید: ضراب‌خانه همان Bitcoin پشتوانهٔ ecash شما را نگه می‌دارد. افزودنش یک بار اینترنت می‌خواهد؛ پس از آن توکن‌هایش بدون اینترنت هم دریافت می‌شوند.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

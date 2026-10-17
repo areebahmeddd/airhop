@@ -1143,6 +1143,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecashのQRコードを読み取る",
   "wallet.receive.scan_short": "QRを読み取る",
   "wallet.receive.receiving": "受け取り中…",
+  "wallet.receive.paste": "クリップボードから貼り付け",
+  "wallet.receive.trust_mint_body":
+    "{mint}は、運営者を信頼できる場合にだけ追加してください。ミントはあなたのecashを裏付けるビットコインを預かります。追加には一度だけインターネットが必要で、その後はオフラインでもこのミントのトークンを受け取れます。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

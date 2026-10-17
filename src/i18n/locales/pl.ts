@@ -1155,6 +1155,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Zeskanuj kod QR z ecash",
   "wallet.receive.scan_short": "Skanuj QR",
   "wallet.receive.receiving": "Odbieranie…",
+  "wallet.receive.paste": "Wklej ze schowka",
+  "wallet.receive.trust_mint_body":
+    "Dodaj {mint} tylko wtedy, gdy ufasz temu, kto ją prowadzi: mennica trzyma bitcoiny stojące za twoim ecashem. Dodanie wymaga raz internetu; potem tokeny z niej da się odbierać offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

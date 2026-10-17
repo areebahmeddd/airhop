@@ -148,6 +148,13 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="airhop"/>
       </intent-filter>
+      <!-- Cashu tokens: cashu:<token>, opened in Receive -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="cashu"/>
+      </intent-filter>
     </activity>
     <!-- Keeps the mesh radios running with the app off screen. -->
     <service

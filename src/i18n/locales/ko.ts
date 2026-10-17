@@ -1124,6 +1124,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR 코드 스캔",
   "wallet.receive.scan_short": "QR 스캔",
   "wallet.receive.receiving": "받는 중…",
+  "wallet.receive.paste": "클립보드에서 붙여넣기",
+  "wallet.receive.trust_mint_body":
+    "운영자를 신뢰할 때만 {mint}을(를) 추가하세요. 민트는 ecash를 뒷받침하는 Bitcoin을 보유합니다. 추가할 때 한 번은 인터넷이 필요하고, 그 뒤에는 오프라인에서도 이 민트의 토큰을 받을 수 있습니다.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

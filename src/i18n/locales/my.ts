@@ -1169,6 +1169,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR ကုဒ်တစ်ခု စကန်ဖတ်ပါ",
   "wallet.receive.scan_short": "QR စကန်ဖတ်ပါ",
   "wallet.receive.receiving": "လက်ခံနေသည်…",
+  "wallet.receive.paste": "ကလစ်ဘုတ်မှ ကူးထည့်ပါ",
+  "wallet.receive.trust_mint_body":
+    "၎င်းကို လည်ပတ်သူကို ယုံကြည်မှသာ {mint} ကို ထည့်ပါ။ မင့်သည် သင့် ecash ကို ထောက်ပံ့ထားသော Bitcoin ကို ကိုင်ထားသည်။ ထည့်ရန် အင်တာနက် တစ်ကြိမ် လိုအပ်ပြီး ထို့နောက် ၎င်း၏တိုကင်များကို အင်တာနက်မရှိဘဲ လက်ခံနိုင်ပါသည်။",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

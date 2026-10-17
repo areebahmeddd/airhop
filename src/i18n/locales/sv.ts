@@ -1137,6 +1137,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Skanna en ecash-QR-kod",
   "wallet.receive.scan_short": "Skanna QR",
   "wallet.receive.receiving": "Tar emot…",
+  "wallet.receive.paste": "Klistra in från urklipp",
+  "wallet.receive.trust_mint_body":
+    "Lägg bara till {mint} om du litar på den som driver den: en mint håller de bitcoin som täcker din ecash. Att lägga till den kräver internet en gång; sedan kan dess token tas emot offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

@@ -16,6 +16,7 @@ import {
   canEncodeTokenQr,
   decodeToken,
   feeForProofs,
+  findChatTokens,
   findTokensInText,
   inputFeeFor,
   isLikelyTestMint,
@@ -27,6 +28,7 @@ import {
   selectProofsForAmount,
   TOKEN_QR_MAX_CHARS,
   TOKEN_QR_SIZE,
+  tokenMintUrl,
   tokenQrPayload,
   toProofLike,
 } from "../cashu";
@@ -262,6 +264,65 @@ describe("mintsOfUnresolvedTokens", () => {
   });
 });
 
+// A receiver who has never used the sender's mint cannot expand its keyset,
+// and still has to see a payment rather than raw text.
+describe("findChatTokens", () => {
+  const V2_KEYSET = "01" + "cd".repeat(32);
+  const v2Token = getEncodedToken({
+    mint: MINT,
+    unit: "sat",
+    proofs: proofSet([8, 2]).map((p) => toProofLike({ ...p, id: V2_KEYSET })),
+  } as unknown as Token);
+
+  it("prices an unresolved token from its metadata", () => {
+    const [card] = findChatTokens(`here you go ${v2Token}`);
+    expect(card).toMatchObject({
+      raw: v2Token,
+      amount: 10,
+      unit: "sat",
+      mintUrl: MINT,
+      mintHost: "mint.example.com",
+    });
+    expect(card !== undefined && "info" in card).toBe(false);
+  });
+
+  it("decodes it in full once the keyset is known", () => {
+    const [card] = findChatTokens(v2Token, [{ id: V2_KEYSET, unit: "sat" }]);
+    expect(card !== undefined && "info" in card && card.info.amount).toBe(10);
+  });
+
+  it("finds what findTokensInText finds, in order", () => {
+    const decoded = realToken([4]);
+    const cards = findChatTokens(`${decoded} and ${v2Token}`);
+    expect(cards.map((c) => c.raw)).toEqual([decoded, v2Token]);
+    expect("info" in cards[0]!).toBe(true);
+  });
+
+  it("drops text that is not a token", () => {
+    expect(findChatTokens("cashuB" + "x".repeat(60))).toEqual([]);
+    expect(findChatTokens(encodedToken(MINT, []))).toEqual([]);
+  });
+});
+
+describe("tokenMintUrl", () => {
+  it("names the mint with or without a keyset, URI or bare", () => {
+    const v2Token = getEncodedToken({
+      mint: MINT,
+      unit: "sat",
+      proofs: proofSet([1]).map((p) =>
+        toProofLike({ ...p, id: "01" + "ef".repeat(32) }),
+      ),
+    } as unknown as Token);
+    expect(tokenMintUrl(v2Token)).toBe(MINT);
+    expect(tokenMintUrl(`cashu:${realToken([2])}`)).toBe(MINT);
+  });
+
+  it("is null for anything that is not a token", () => {
+    expect(tokenMintUrl("hello")).toBeNull();
+    expect(tokenMintUrl("cashuB" + "x".repeat(60))).toBeNull();
+  });
+});
+
 // What a preview says in place of a message that is only a token.
 describe("pureTokenAmount", () => {
   it("reads the amount and unit of a message that is one token", () => {
@@ -367,13 +428,18 @@ describe("satsToBtc", () => {
 // ---- QR hand-off ----
 
 describe("token QR", () => {
-  it("encodes the bare token, with no cashu: scheme", () => {
-    // Every Cashu wallet reads the bare form; only some read the URI form, and
-    // the prefix would spend scarce QR capacity on nothing.
+  it("encodes the cashu: URI, once, whatever form it was given", () => {
+    // A phone's camera app routes a URI to the wallet that claims its scheme;
+    // bare text goes to whatever the camera offers for text.
     const token = realToken([8]);
-    expect(tokenQrPayload(token)).toBe(token);
-    expect(tokenQrPayload(`cashu:${token}`)).toBe(token);
-    expect(tokenQrPayload(`cashu://${token}`)).toBe(token);
+    expect(tokenQrPayload(token)).toBe(`cashu:${token}`);
+    expect(tokenQrPayload(`cashu:${token}`)).toBe(`cashu:${token}`);
+    expect(tokenQrPayload(`cashu://${token}`)).toBe(`cashu:${token}`);
+  });
+
+  it("scans back to the same token", () => {
+    const token = realToken([8]);
+    expect(bareToken(tokenQrPayload(token))).toBe(token);
   });
 
   it("accepts an ordinary payment", () => {
@@ -384,8 +450,10 @@ describe("token QR", () => {
   it("refuses a token past the QR capacity rather than throwing at render", () => {
     // The generator throws past its limit, which would take the sheet down
     // with it, so the check has to happen before anything is rendered.
-    expect(canEncodeTokenQr("c".repeat(TOKEN_QR_MAX_CHARS))).toBe(true);
-    expect(canEncodeTokenQr("c".repeat(TOKEN_QR_MAX_CHARS + 1))).toBe(false);
+    // Measured on the payload, scheme included.
+    const room = TOKEN_QR_MAX_CHARS - "cashu:".length;
+    expect(canEncodeTokenQr("c".repeat(room))).toBe(true);
+    expect(canEncodeTokenQr("c".repeat(room + 1))).toBe(false);
   });
 
   it("refuses an empty string", () => {

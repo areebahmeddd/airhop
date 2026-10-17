@@ -1145,6 +1145,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Сканувати QR-код ecash",
   "wallet.receive.scan_short": "Сканувати QR",
   "wallet.receive.receiving": "Отримуємо…",
+  "wallet.receive.paste": "Вставити з буфера обміну",
+  "wallet.receive.trust_mint_body":
+    "Додавайте {mint}, лише якщо довіряєте тим, хто його веде: мінт тримає біткоїн, що стоїть за вашим ecash. Для додавання один раз потрібен інтернет; після цього його токени можна отримувати офлайн.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

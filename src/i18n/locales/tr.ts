@@ -1140,6 +1140,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Bir ecash QR kodu tara",
   "wallet.receive.scan_short": "QR tara",
   "wallet.receive.receiving": "Alınıyor…",
+  "wallet.receive.paste": "Panodan yapıştır",
+  "wallet.receive.trust_mint_body":
+    "{mint} darphanesini yalnızca işletenine güveniyorsan ekle: darphane ecash'ini karşılayan Bitcoin'i tutar. Eklemek bir kez internet ister; sonrasında jetonları internetsiz de alınabilir.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

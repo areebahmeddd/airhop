@@ -1,4 +1,5 @@
-// What an Airhop link does once it has been parsed.
+// What a link does once it has been parsed: Airhop's own, and the `cashu:`
+// payment links Airhop answers as a wallet.
 //
 // There are two ways one arrives: the OS hands it over (app.tsx), or the user
 // pastes it into the Join sheet. Only the second is consent. Any installed app,
@@ -12,10 +13,12 @@
 
 import { decodeQRContent } from "@core/crypto/contact-exchange";
 import { isValidChannelKey } from "@core/mesh/rooms/channel-crypto";
+import { bareToken } from "@core/payments/cashu";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { parseAirhopLink, type DeepLink } from "@utils/deep-link";
+import { Linking, Share } from "react-native";
 import { getMeshService } from "./mesh-service";
 
 // What an OS-delivered link puts in the Join sheet, or null when it is not an
@@ -25,6 +28,53 @@ export function joinSheetPrefill(url: string | null): string | null {
   if (url === null) return null;
   const text = url.trim();
   return parseAirhopLink(text) === null ? null : text;
+}
+
+// The token in an OS-delivered `cashu:` link. Same consent rule as an Airhop
+// link: it only fills in Receive.
+export function cashuLinkToken(url: string | null): string | null {
+  if (url === null) return null;
+  const text = url.trim();
+  if (!/^cashu:/i.test(text)) return null;
+  return bareToken(text);
+}
+
+// Long enough for the OS to bounce our own link back.
+const HANDOFF_ECHO_MS = 5000;
+
+let lastHandoff: { uri: string; atMs: number } | null = null;
+
+// Open a payment link in another wallet, or offer Share where none answers.
+// Try, do not ask: `canOpenURL` says "no" for undeclared schemes, while
+// `openURL` just rejects. Remembered because Airhop claims `cashu:` itself, so
+// with no other wallet the OS hands the link straight back.
+export async function handOffToWallet(uri: string): Promise<void> {
+  lastHandoff = { uri, atMs: Date.now() };
+  try {
+    await Linking.openURL(uri);
+  } catch {
+    lastHandoff = null;
+    await shareInstead(uri);
+  }
+}
+
+// Our own hand-off, returned by an OS that found no other wallet. Share is what
+// was wanted, not a receive of coins that are ours already.
+export function isOwnHandoffEcho(url: string): boolean {
+  const echo =
+    lastHandoff !== null &&
+    lastHandoff.uri === url.trim() &&
+    Date.now() - lastHandoff.atMs < HANDOFF_ECHO_MS;
+  if (echo) lastHandoff = null;
+  return echo;
+}
+
+export async function shareInstead(uri: string): Promise<void> {
+  try {
+    await Share.share({ message: uri });
+  } catch {
+    // Silent: the instrument is on screen with Copy beside it.
+  }
 }
 
 // What a link did: the conversation to open, or why it opened none. "conflict"

@@ -1177,6 +1177,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Alaivo sary ny kaody QR ecash",
   "wallet.receive.scan_short": "Alaivo sary ny QR",
   "wallet.receive.receiving": "Raisina…",
+  "wallet.receive.paste": "Apetaho avy amin'ny takelaka fitehirizana",
+  "wallet.receive.trust_mint_body":
+    "Ampio i {mint} raha matoky ny mpitantana azy ihany ianao: ny mpamoaka no mitana ny Bitcoin manohana ny ecash-nao. Mila Internet indray mandeha ny fampidirana azy; aorian'izay dia azo raisina na tsy misy Internet aza ny tapakila avy aminy.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

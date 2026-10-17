@@ -1151,6 +1151,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Changanua msimbo wa QR wa ecash",
   "wallet.receive.scan_short": "Changanua QR",
   "wallet.receive.receiving": "Inapokea…",
+  "wallet.receive.paste": "Bandika kutoka ubao wa kunakili",
+  "wallet.receive.trust_mint_body":
+    "Ongeza {mint} tu ikiwa unamwamini anayeiendesha: mint hushikilia Bitcoin inayoshikilia thamani ya ecash yako. Kuiongeza kunahitaji intaneti mara moja; baada ya hapo, tokeni zake zinaweza kupokelewa bila intaneti.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

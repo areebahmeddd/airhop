@@ -1068,6 +1068,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "扫描 ecash 二维码",
   "wallet.receive.scan_short": "扫描二维码",
   "wallet.receive.receiving": "接收中…",
+  "wallet.receive.paste": "从剪贴板粘贴",
+  "wallet.receive.trust_mint_body":
+    "只有在你信任其运营者时才添加 {mint}：铸币厂替你的 ecash 保管背后的比特币。添加时需要联网一次，之后即使离线也能收取它的代币。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

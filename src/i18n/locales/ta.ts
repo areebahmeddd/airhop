@@ -1176,6 +1176,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR குறியீட்டை ஸ்கேன் செய்",
   "wallet.receive.scan_short": "QR ஸ்கேன்",
   "wallet.receive.receiving": "பெறுகிறது…",
+  "wallet.receive.paste": "ஒட்டுப்பலகையிலிருந்து ஒட்டு",
+  "wallet.receive.trust_mint_body":
+    "அதை நடத்துபவரை நம்பினால் மட்டும் {mint} ஐச் சேருங்கள்: உங்கள் ecash க்குப் பின்னால் உள்ள Bitcoin ஐ நாணயச்சாலை வைத்திருக்கிறது. சேர்க்க ஒருமுறை இணையம் தேவை; அதன் பிறகு அதன் டோக்கன்களை இணையம் இல்லாமலும் பெறலாம்.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

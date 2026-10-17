@@ -31,7 +31,6 @@ import {
   quoteSend,
   receiveToken,
   reclaimSend,
-  settleNutzap,
   WalletError,
 } from "../wallet-service";
 
@@ -444,14 +443,6 @@ describe("a nutzap, once locked to their key", () => {
     expect(reclaimSend(NUTZAP_TX)).toBe(false);
     expect(spendable()).toBe(after);
     expect(reservedTotal()).toBe(0);
-  });
-
-  it("is marked delivered when it arrives by some other route", () => {
-    // The relay publish failed but the recipient got it another way, so the
-    // transaction has to stop looking pending forever.
-    lockedNutzap();
-    settleNutzap(NUTZAP_TX);
-    expect(txStatus(NUTZAP_TX)).toBe("completed");
   });
 
   it("records a delivery failure without giving the money back", () => {

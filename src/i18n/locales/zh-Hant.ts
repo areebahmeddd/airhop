@@ -1069,6 +1069,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "掃描 ecash QR 碼",
   "wallet.receive.scan_short": "掃描 QR 碼",
   "wallet.receive.receiving": "接收中…",
+  "wallet.receive.paste": "從剪貼簿貼上",
+  "wallet.receive.trust_mint_body":
+    "只有在你信任其營運者時才加入 {mint}：鑄幣廠替你的 ecash 保管背後的比特幣。加入時需要連網一次，之後即使離線也能收取它的代幣。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

@@ -1127,6 +1127,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "कोई ecash QR कोड स्कैन करें",
   "wallet.receive.scan_short": "QR स्कैन करें",
   "wallet.receive.receiving": "लिया जा रहा है…",
+  "wallet.receive.paste": "क्लिपबोर्ड से चिपकाएँ",
+  "wallet.receive.trust_mint_body":
+    "{mint} तभी जोड़ें जब आपको उसे चलाने वाले पर भरोसा हो: मिंट आपके ecash के पीछे का Bitcoin रखता है। इसे जोड़ने के लिए एक बार इंटरनेट चाहिए; उसके बाद इसके टोकन बिना इंटरनेट के भी लिए जा सकते हैं।",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

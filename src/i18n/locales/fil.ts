@@ -1180,6 +1180,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Mag-scan ng QR code ng ecash",
   "wallet.receive.scan_short": "Mag-scan ng QR",
   "wallet.receive.receiving": "Tumatanggap…",
+  "wallet.receive.paste": "Idikit mula sa clipboard",
+  "wallet.receive.trust_mint_body":
+    "Idagdag lang ang {mint} kung pinagkakatiwalaan mo ang nagpapatakbo nito: hawak ng mint ang Bitcoin na sumusuporta sa ecash mo. Kailangan ng internet nang isang beses para maidagdag ito; pagkatapos, matatanggap ang mga token nito kahit offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

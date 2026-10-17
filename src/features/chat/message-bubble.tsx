@@ -5,7 +5,7 @@
 // depend on per-thread interactive state: playingUri, revealedAttachments,
 // claimToken) and are handed down as render props.
 
-import type { EmbeddedToken } from "@core/payments/cashu";
+import type { ChatToken } from "@core/payments/cashu";
 import { useT } from "@i18n";
 import { contentTextAlign } from "@i18n/layout";
 import { held } from "@platform/haptics";
@@ -64,9 +64,9 @@ interface Props {
   item: ChatMessage;
   showAvatar: boolean;
   isFirstFromSender: boolean;
-  tokens: EmbeddedToken[];
+  tokens: ChatToken[];
   isPureToken: boolean;
-  renderToken: (token: EmbeddedToken) => React.ReactNode;
+  renderToken: (token: ChatToken) => React.ReactNode;
   renderAttachment: (attachment: ChatAttachment) => React.ReactNode;
   // This row's interactive state, flattened for the memo comparator: photo
   // revealed, voice note playing, token being claimed.

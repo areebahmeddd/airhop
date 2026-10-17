@@ -1143,6 +1143,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR კოდის სკანირება",
   "wallet.receive.scan_short": "QR-ის სკანირება",
   "wallet.receive.receiving": "მიიღება…",
+  "wallet.receive.paste": "ჩასმა ბუფერიდან",
+  "wallet.receive.trust_mint_body":
+    "{mint} მხოლოდ მაშინ დაამატე, თუ მის მმართველს ენდობი: ზარაფხანა ინახავს ბიტკოინს, რომელიც შენს ecash-ს უზრუნველყოფს. დამატებას ერთხელ სჭირდება ინტერნეტი; ამის შემდეგ მისი ტოკენების მიღება ინტერნეტის გარეშეც შეიძლება.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

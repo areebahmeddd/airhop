@@ -1152,6 +1152,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Imbas kod QR ecash",
   "wallet.receive.scan_short": "Imbas QR",
   "wallet.receive.receiving": "Menerima…",
+  "wallet.receive.paste": "Tampal daripada papan keratan",
+  "wallet.receive.trust_mint_body":
+    "Tambah {mint} hanya jika anda mempercayai pengendalinya: mint memegang Bitcoin yang menyokong ecash anda. Menambahnya memerlukan internet sekali; selepas itu, tokennya boleh diterima tanpa internet.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",

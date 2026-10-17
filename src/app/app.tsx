@@ -61,7 +61,12 @@ import {
 } from "@services/boot-start";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
-import { joinSheetPrefill } from "@services/link-router";
+import {
+  cashuLinkToken,
+  isOwnHandoffEcho,
+  joinSheetPrefill,
+  shareInstead,
+} from "@services/link-router";
 import {
   hasLocationPermission,
   requestLocationPermission,
@@ -132,6 +137,7 @@ import {
 } from "@store/permission-primer-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
+import { useWalletStore } from "@store/wallet-store";
 import AlertModal from "@ui/components/alert-modal";
 import Avatar from "@ui/components/avatar";
 import {
@@ -413,6 +419,13 @@ function applyBlePermissionResult(perm: BlePermissionResult): void {
 // The mesh startMeshDependents last ran for. See below.
 let dependentsStartedFor: MeshService | null = null;
 
+// Follows the mint list for NIP-61; replaced, never stacked, on a restart.
+let stopMintFollow: (() => void) | null = null;
+
+function mintSetKey(mints: Record<string, unknown>): string {
+  return Object.keys(mints).sort().join(" ");
+}
+
 // Everything that rides on a started mesh: notifications, the wallet, and the
 // permission prompts that are not the mesh's own.
 //
@@ -517,6 +530,24 @@ function startMeshDependents(): void {
     });
     if (!isCurrentWipeGeneration(generation)) return;
     rebindNutzapWatcher();
+
+    // The 10019 and the watcher's `#u` filter follow the mint list. Keyed on
+    // the set: records change on every keyset refresh.
+    stopMintFollow?.();
+    stopMintFollow = useWalletStore.subscribe((state, prev) => {
+      if (mintSetKey(state.mints) === mintSetKey(prev.mints)) return;
+      if (!isCurrentWipeGeneration(generation)) return;
+      const live = getMeshService()?.getNostrClient();
+      const key = getMeshService()?.getNostrPrivKey();
+      if (live && key) {
+        void publishOwnNutzapInfo({
+          client: live,
+          privKey: key,
+          relays: live.activeRelays,
+        });
+      }
+      rebindNutzapWatcher();
+    });
   })();
 
   // Remaining permission prompts, sequenced one after another so the OS never
@@ -806,14 +837,14 @@ function AppContent(): React.JSX.Element {
   const [meshViewMode, setMeshViewMode] = useState<"list" | "radar">("radar");
   // Counter-based trigger: incrementing tells PeerList to open the add-contact scanner.
   const [meshAddCounter, setMeshAddCounter] = useState(0);
-  // Counter-based trigger: incrementing (with an action) tells WalletScreen
-  // to open the matching modal, same pattern as startNewTrigger/meshAddCounter.
+  // What WalletScreen is asked to open, cleared once taken, so a request made
+  // before the tab mounts (a `cashu:` link) waits for it.
   const [walletAction, setWalletAction] = useState<WalletAction | null>(null);
+  const clearWalletAction = useCallback(() => setWalletAction(null), []);
   // Selected as a boolean so the tab bar re-renders when the answer flips
   // rather than on every ANNOUNCE.
   const meshHasNewPeers = usePeerStore(hasUnseenPeers);
 
-  const [walletActionTrigger, setWalletActionTrigger] = useState(0);
   // Notification center (bell) visibility, and the count of unseen activity
   // that badges the bell. Subscribing to entries keeps the badge live.
   const [showActivity, setShowActivity] = useState(false);
@@ -1314,9 +1345,22 @@ function AppContent(): React.JSX.Element {
   // on its own, so a link only opens the Join sheet filled in: it says what the
   // link does, and nothing happens until Join. Deferred until past onboarding,
   // so a cold-start link waits for the identity to load.
+  //
+  // `cashu:` links follow the same rule into the Wallet: Receive opens filled
+  // in, and nothing is redeemed until Receive is tapped.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
+      const token = cashuLinkToken(url);
+      if (url !== null && token !== null) {
+        if (isOwnHandoffEcho(url)) {
+          void shareInstead(url);
+          return;
+        }
+        setWalletAction({ kind: "receive", token });
+        navigateToTabRef.current("wallet");
+        return;
+      }
       const prefill = joinSheetPrefill(url);
       if (prefill !== null) setPendingJoinLink(prefill);
     };
@@ -1324,11 +1368,6 @@ function AppContent(): React.JSX.Element {
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));
     return () => sub.remove();
   }, [appReady, onboardingStep]);
-
-  function triggerWalletAction(action: WalletAction): void {
-    setWalletAction(action);
-    setWalletActionTrigger((c) => c + 1);
-  }
 
   function openChannel(requested: string): void {
     // A notification, a bell row or a restored last-thread can name a DM by
@@ -1995,7 +2034,7 @@ function AppContent(): React.JSX.Element {
                             styles.newChannelPill,
                             pressed && styles.headerPillPressed,
                           ]}
-                          onPress={() => triggerWalletAction("help")}
+                          onPress={() => setWalletAction({ kind: "help" })}
                           hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
                           accessibilityRole="button"
                           accessibilityLabel={T("wallet.explain.title")}
@@ -2171,7 +2210,7 @@ function AppContent(): React.JSX.Element {
                   ) : tab === "wallet" ? (
                     <WalletScreen
                       action={walletAction}
-                      actionTrigger={walletActionTrigger}
+                      onActionHandled={clearWalletAction}
                     />
                   ) : (
                     <ProfileScreen
