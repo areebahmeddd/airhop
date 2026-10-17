@@ -12,6 +12,14 @@ export type DeviceAuthResult =
   // No screen lock, so no owner to ask. The caller decides.
   | "no-lock";
 
+// Prompts on screen. On Android one can pause the activity, which reads as
+// backgrounding; the app lock checks this so a prompt is not taken for leaving.
+let promptsInFlight = 0;
+
+export function isDeviceAuthInFlight(): boolean {
+  return promptsInFlight > 0;
+}
+
 export async function confirmDeviceOwner(params: {
   prompt: string;
   cancelLabel: string;
@@ -23,6 +31,7 @@ export async function confirmDeviceOwner(params: {
     return "refused";
   }
   if (level === LocalAuthentication.SecurityLevel.NONE) return "no-lock";
+  promptsInFlight += 1;
   try {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: params.prompt,
@@ -37,5 +46,7 @@ export async function confirmDeviceOwner(params: {
       : "refused";
   } catch {
     return "refused";
+  } finally {
+    promptsInFlight -= 1;
   }
 }

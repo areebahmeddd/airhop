@@ -36,6 +36,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
+import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import {
@@ -58,14 +59,7 @@ import {
 } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import React, { useMemo, useRef, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ---- Types ----
@@ -439,7 +433,7 @@ export default function AddContactScreen({
   // exactly where it left off.
   return (
     <>
-      <Modal
+      <AppModal
         visible={visible && stage === "camera"}
         animationType="slide"
         presentationStyle="fullScreen"
@@ -482,7 +476,7 @@ export default function AddContactScreen({
             <View style={styles.scanBottomBar} />
           </SafeAreaView>
         </View>
-      </Modal>
+      </AppModal>
 
       <BottomSheet
         visible={visible}

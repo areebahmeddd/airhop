@@ -189,6 +189,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Вашу особистість, повідомлення, контакти та гаманець на цьому телефоні буде знищено, і ви почнете заново з новою особистістю. Скасувати це неможливо.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop заблоковано",
+  "lock.body": "Розблокуйте його блокуванням екрана телефона.",
+  "lock.unlock": "Розблокувати",
+  "lock.auth_prompt": "Підтвердьте, що це ви, щоб відкрити Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Типові канали",
   "chat.channels.yours": "Ваші канали",
@@ -1804,6 +1810,7 @@ export const strings: Strings = {
   "settings.group.reset": "Скидання",
   "settings.group.always_on": "Завжди увімкнено",
   "settings.group.notifications": "Сповіщення",
+  "settings.group.lock": "Блокування застосунку",
   "settings.group.blocked": "Заблоковані",
   "settings.group.theme": "Тема",
   "settings.group.font": "Шрифт",
@@ -1928,6 +1935,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Розблокувати {name}",
   "settings.security.unblock_body":
     "{name} знову зможе вам писати і з’явиться на вкладці Mesh, коли буде поблизу.",
+  "settings.security.app_lock": "Блокувати Airhop",
+  "settings.security.app_lock_desc":
+    "Для відкриття Airhop запитується блокування екрана телефона (Face ID, відбиток пальця чи код). Якщо блокування екрана колись приберуть, ця функція вимкнеться сама, а не замкне вас ззовні.",
+  "settings.security.app_lock_auth_prompt":
+    "Підтвердьте, що це ви, щоб увімкнути блокування застосунку",
+  "settings.security.app_lock_after": "Блокувати автоматично",
+  "settings.security.app_lock_after_desc":
+    "Скільки Airhop може пробути у фоні, перш ніж знову попросити розблокування.",
+  "settings.security.lock_immediately": "Одразу",
+  "settings.security.lock_after_1m": "Через 1 хвилину",
+  "settings.security.lock_after_5m": "Через 5 хвилин",
+  "settings.security.lock_after_30m": "Через 30 хвилин",
+  "settings.security.app_lock_no_screen_lock":
+    "Спершу налаштуйте блокування екрана",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Блокування застосунку відкриває Airhop за допомогою блокування екрана самого телефона, а на цьому телефоні його немає. Додайте код, PIN-код або графічний ключ у налаштуваннях телефона, потім увімкніть цю функцію.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Запасний інтернет",

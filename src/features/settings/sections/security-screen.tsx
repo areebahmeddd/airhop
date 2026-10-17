@@ -1,28 +1,44 @@
 // Privacy & Security sub-screen: the always-on Double Ratchet / packet-signing
-// guarantees, and the blocked-peer list.
+// guarantees, the app lock, notification privacy, and the blocked-peer list.
 //
 // The connectivity toggles (live voice, Tor, gateway, bridge) sit on the settings
 // hub itself rather than here, one drill-in away, because they are the switches
 // people come to flip. See connectivity-group.tsx.
 
-import { t, useT } from "@i18n";
+import { t, useT, type TranslationKey } from "@i18n";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { disableAppLock, enableAppLock } from "@services/app-lock";
 import { dismissPreviewNotifications } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { useSettingsStore } from "@store/settings-store";
+import {
+  APP_LOCK_DELAY_OPTIONS,
+  useSettingsStore,
+  type AppLockDelaySeconds,
+} from "@store/settings-store";
+import BottomSheet from "@ui/components/bottom-sheet";
 import UpperText from "@ui/components/upper-text";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import { resolveDisplayName } from "@utils/peer-display-name";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import {
   GroupDivider,
+  SettingLinkRow,
   SettingRow,
   SettingSwitch,
   SettingsScroll,
   SubHeader,
   useSharedStyles,
 } from "../settings-primitives";
+
+// Keys, translated on render.
+const APP_LOCK_DELAY_LABELS: Record<AppLockDelaySeconds, TranslationKey> = {
+  0: "settings.security.lock_immediately",
+  60: "settings.security.lock_after_1m",
+  300: "settings.security.lock_after_5m",
+  1800: "settings.security.lock_after_30m",
+};
 
 interface Props {
   onBack: () => void;
@@ -39,6 +55,30 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
     (s) => s.hideNotificationPreviews,
   );
   const ringAlertsEnabled = useSettingsStore((s) => s.ringAlertsEnabled);
+  const appLockEnabled = useSettingsStore((s) => s.appLockEnabled);
+  const appLockDelaySeconds = useSettingsStore((s) => s.appLockDelaySeconds);
+  const [showDelaySheet, setShowDelaySheet] = useState(false);
+  // The prompt is on screen: a second tap would only queue another.
+  const [arming, setArming] = useState(false);
+
+  async function toggleAppLock(on: boolean): Promise<void> {
+    if (!on) {
+      disableAppLock();
+      return;
+    }
+    setArming(true);
+    try {
+      const result = await enableAppLock();
+      if (result === "no-lock") {
+        showAlert(
+          t("settings.security.app_lock_no_screen_lock"),
+          t("settings.security.app_lock_no_screen_lock_body"),
+        );
+      }
+    } finally {
+      setArming(false);
+    }
+  }
 
   function confirmUnblock(peerID: string): void {
     showAlert(
@@ -80,6 +120,43 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
               description={T("settings.security.signed_packets_desc")}
               control={<SettingSwitch value={true} disabled />}
             />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <UpperText style={styles.sectionTitle}>
+            {T("settings.group.lock")}
+          </UpperText>
+          <View style={styles.settingsGroup}>
+            <SettingRow
+              id="app-lock"
+              icon="lock"
+              label={T("settings.security.app_lock")}
+              description={T("settings.security.app_lock_desc")}
+              control={
+                <SettingSwitch
+                  value={appLockEnabled}
+                  disabled={arming}
+                  onValueChange={(v) => void toggleAppLock(v)}
+                />
+              }
+            />
+            {appLockEnabled && (
+              <>
+                <GroupDivider />
+                <SettingLinkRow
+                  icon="clock"
+                  label={T("settings.security.app_lock_after")}
+                  description={T("settings.security.app_lock_after_desc")}
+                  control={
+                    <Text style={styles.settingValue}>
+                      {T(APP_LOCK_DELAY_LABELS[appLockDelaySeconds])}
+                    </Text>
+                  }
+                  onPress={() => setShowDelaySheet(true)}
+                />
+              </>
+            )}
           </View>
         </View>
 
@@ -171,6 +248,56 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
           </View>
         </View>
       </SettingsScroll>
+
+      <BottomSheet
+        visible={showDelaySheet}
+        onClose={() => setShowDelaySheet(false)}
+        sheetStyle={styles.sheet}
+      >
+        <Text style={styles.sheetTitle}>
+          {T("settings.security.app_lock_after")}
+        </Text>
+        <Text style={styles.sheetSubtitle}>
+          {T("settings.security.app_lock_after_desc")}
+        </Text>
+        <View style={styles.optionGroup}>
+          {APP_LOCK_DELAY_OPTIONS.map((seconds, i) => {
+            const selected = seconds === appLockDelaySeconds;
+            return (
+              <React.Fragment key={seconds}>
+                {i > 0 && <GroupDivider />}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.optionRowGrouped,
+                    selected && styles.optionRowGroupedSelected,
+                    pressed && styles.rowPressed,
+                  ]}
+                  onPress={() => {
+                    useSettingsStore.getState().setAppLockDelaySeconds(seconds);
+                    setShowDelaySheet(false);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={T(APP_LOCK_DELAY_LABELS[seconds])}
+                >
+                  <View style={styles.optionText}>
+                    <Text style={styles.optionLabel}>
+                      {T(APP_LOCK_DELAY_LABELS[seconds])}
+                    </Text>
+                  </View>
+                  {selected && (
+                    <Feather
+                      name="check"
+                      size={18}
+                      color={Colors.textPrimary}
+                    />
+                  )}
+                </Pressable>
+              </React.Fragment>
+            );
+          })}
+        </View>
+      </BottomSheet>
     </View>
   );
 }

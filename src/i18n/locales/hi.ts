@@ -188,6 +188,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "इस फ़ोन पर आपकी पहचान, संदेश, संपर्क और वॉलेट नष्ट हो जाते हैं, और आप किसी नए व्यक्ति के रूप में फिर से शुरू करते हैं। इसे वापस नहीं लिया जा सकता।",
 
+  // ---- App lock ----
+  "lock.title": "Airhop लॉक है",
+  "lock.body": "इसे अपने फ़ोन के स्क्रीन लॉक से खोलें।",
+  "lock.unlock": "अनलॉक करें",
+  "lock.auth_prompt": "Airhop खोलने के लिए पुष्टि करें कि यह आप हैं",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "डिफ़ॉल्ट चैनल",
   "chat.channels.yours": "आपके चैनल",
@@ -1781,6 +1787,7 @@ export const strings: Strings = {
   "settings.group.reset": "रीसेट",
   "settings.group.always_on": "हमेशा चालू",
   "settings.group.notifications": "सूचनाएँ",
+  "settings.group.lock": "ऐप लॉक",
   "settings.group.blocked": "अवरुद्ध",
   "settings.group.theme": "थीम",
   "settings.group.font": "फ़ॉन्ट",
@@ -1904,6 +1911,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} से रोक हटाएँ",
   "settings.security.unblock_body":
     "{name} आपको फिर से संदेश भेज सकेंगे और आस-पास होने पर मेश टैब में दोबारा दिखेंगे।",
+  "settings.security.app_lock": "Airhop लॉक करें",
+  "settings.security.app_lock_desc":
+    "Airhop खोलने के लिए आपके फ़ोन का स्क्रीन लॉक (Face ID, फ़िंगरप्रिंट या पासकोड) माँगा जाएगा। अगर स्क्रीन लॉक कभी हटा दिया जाए, तो यह आपको बाहर रोकने के बजाय अपने आप बंद हो जाता है।",
+  "settings.security.app_lock_auth_prompt":
+    "ऐप लॉक चालू करने के लिए पुष्टि करें कि यह आप हैं",
+  "settings.security.app_lock_after": "अपने आप लॉक करें",
+  "settings.security.app_lock_after_desc":
+    "दोबारा पूछने से पहले Airhop कितनी देर बैकग्राउंड में रह सकता है।",
+  "settings.security.lock_immediately": "तुरंत",
+  "settings.security.lock_after_1m": "1 मिनट बाद",
+  "settings.security.lock_after_5m": "5 मिनट बाद",
+  "settings.security.lock_after_30m": "30 मिनट बाद",
+  "settings.security.app_lock_no_screen_lock": "पहले स्क्रीन लॉक सेट करें",
+  "settings.security.app_lock_no_screen_lock_body":
+    "ऐप लॉक Airhop को आपके फ़ोन के अपने स्क्रीन लॉक से खोलता है, और इस फ़ोन में कोई स्क्रीन लॉक नहीं है। फ़ोन की सेटिंग में पासकोड, पिन या पैटर्न जोड़ें, फिर इसे चालू करें।",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "इंटरनेट फ़ॉलबैक",

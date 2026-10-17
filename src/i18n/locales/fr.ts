@@ -194,6 +194,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Ton identité, tes messages, tes contacts et ton portefeuille sur ce téléphone sont détruits, et tu recommences en tant que quelqu’un d’autre. C’est irréversible.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop est verrouillé",
+  "lock.body": "Déverrouille-le avec le verrouillage d’écran de ton téléphone.",
+  "lock.unlock": "Déverrouiller",
+  "lock.auth_prompt": "Confirme que c’est bien toi pour ouvrir Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Canaux par défaut",
   "chat.channels.yours": "Tes canaux",
@@ -1842,6 +1848,7 @@ export const strings: Strings = {
   "settings.group.reset": "Réinitialisation",
   "settings.group.always_on": "Toujours actif",
   "settings.group.notifications": "Notifications",
+  "settings.group.lock": "Verrouillage de l’app",
   "settings.group.blocked": "Bloqués",
   "settings.group.theme": "Thème",
   "settings.group.font": "Police",
@@ -1969,6 +1976,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Débloquer {name}",
   "settings.security.unblock_body":
     "{name} pourra t’écrire à nouveau et réapparaîtra dans l’onglet Maillage quand il sera à proximité.",
+  "settings.security.app_lock": "Verrouiller Airhop",
+  "settings.security.app_lock_desc":
+    "Demande le verrouillage d’écran de ton téléphone (Face ID, empreinte ou code) pour ouvrir Airhop. Si le verrouillage d’écran est un jour retiré, celui-ci se désactive tout seul au lieu de te bloquer dehors.",
+  "settings.security.app_lock_auth_prompt":
+    "Confirme que c’est bien toi pour activer le verrouillage de l’app",
+  "settings.security.app_lock_after": "Verrouiller automatiquement",
+  "settings.security.app_lock_after_desc":
+    "Combien de temps Airhop peut rester en arrière-plan avant de redemander.",
+  "settings.security.lock_immediately": "Immédiatement",
+  "settings.security.lock_after_1m": "Après 1 minute",
+  "settings.security.lock_after_5m": "Après 5 minutes",
+  "settings.security.lock_after_30m": "Après 30 minutes",
+  "settings.security.app_lock_no_screen_lock":
+    "Configure d’abord un verrouillage d’écran",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Le verrouillage de l’app ouvre Airhop avec le verrouillage d’écran de ton téléphone, et ce téléphone n’en a pas. Ajoute un code, un PIN ou un schéma dans les réglages du téléphone, puis active ceci.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Repli par internet",

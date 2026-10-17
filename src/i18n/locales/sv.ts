@@ -188,6 +188,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Din identitet, dina meddelanden, kontakter och din plånbok på den här telefonen förstörs, och du börjar om som någon ny. Det går inte att ångra.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop är låst",
+  "lock.body": "Lås upp med telefonens skärmlås.",
+  "lock.unlock": "Lås upp",
+  "lock.auth_prompt": "Bekräfta att det är du för att öppna Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Standardkanaler",
   "chat.channels.yours": "Dina kanaler",
@@ -1795,6 +1801,7 @@ export const strings: Strings = {
   "settings.group.reset": "Återställning",
   "settings.group.always_on": "Alltid på",
   "settings.group.notifications": "Aviseringar",
+  "settings.group.lock": "Applås",
   "settings.group.blocked": "Blockerade",
   "settings.group.theme": "Tema",
   "settings.group.font": "Teckensnitt",
@@ -1919,6 +1926,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Avblockera {name}",
   "settings.security.unblock_body":
     "{name} kommer att kunna skriva till dig igen och dyker upp under Mesh när hen är i närheten.",
+  "settings.security.app_lock": "Lås Airhop",
+  "settings.security.app_lock_desc":
+    "Ber om telefonens skärmlås (Face ID, fingeravtryck eller lösenkod) för att öppna Airhop. Om skärmlåset någon gång tas bort stänger det här av sig självt i stället för att låsa ute dig.",
+  "settings.security.app_lock_auth_prompt":
+    "Bekräfta att det är du för att slå på applåset",
+  "settings.security.app_lock_after": "Lås automatiskt",
+  "settings.security.app_lock_after_desc":
+    "Hur länge Airhop får ligga i bakgrunden innan det frågar igen.",
+  "settings.security.lock_immediately": "Direkt",
+  "settings.security.lock_after_1m": "Efter 1 minut",
+  "settings.security.lock_after_5m": "Efter 5 minuter",
+  "settings.security.lock_after_30m": "Efter 30 minuter",
+  "settings.security.app_lock_no_screen_lock": "Ställ in ett skärmlås först",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Applåset öppnar Airhop med telefonens eget skärmlås, och den här telefonen har inget. Lägg till en lösenkod, pinkod eller ett mönster i telefonens inställningar och slå sedan på det här.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Internet som reserv",

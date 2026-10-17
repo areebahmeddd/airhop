@@ -194,6 +194,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Bu telefondaki kimliğin, mesajların, kişilerin ve cüzdanın yok edilir ve yeni biri olarak baştan başlarsın. Geri alınamaz.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop kilitli",
+  "lock.body": "Telefonunun ekran kilidiyle aç.",
+  "lock.unlock": "Kilidi aç",
+  "lock.auth_prompt": "Airhop'u açmak için sen olduğunu doğrula",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Varsayılan kanallar",
   "chat.channels.yours": "Kanalların",
@@ -1800,6 +1806,7 @@ export const strings: Strings = {
   "settings.group.reset": "Sıfırlama",
   "settings.group.always_on": "Her zaman açık",
   "settings.group.notifications": "Bildirimler",
+  "settings.group.lock": "Uygulama kilidi",
   "settings.group.blocked": "Engellenenler",
   "settings.group.theme": "Tema",
   "settings.group.font": "Yazı tipi",
@@ -1922,6 +1929,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} engelini kaldır",
   "settings.security.unblock_body":
     "{name} yeniden sana yazabilecek ve yakındayken Mesh sekmesinde tekrar görünecek.",
+  "settings.security.app_lock": "Airhop'u kilitle",
+  "settings.security.app_lock_desc":
+    "Airhop'u açmak için telefonunun ekran kilidini (Face ID, parmak izi veya parola) ister. Ekran kilidi bir gün kaldırılırsa seni dışarıda bırakmak yerine kendini kapatır.",
+  "settings.security.app_lock_auth_prompt":
+    "Uygulama kilidini açmak için sen olduğunu doğrula",
+  "settings.security.app_lock_after": "Otomatik kilitle",
+  "settings.security.app_lock_after_desc":
+    "Airhop'un yeniden sormadan önce arka planda ne kadar kalabileceği.",
+  "settings.security.lock_immediately": "Hemen",
+  "settings.security.lock_after_1m": "1 dakika sonra",
+  "settings.security.lock_after_5m": "5 dakika sonra",
+  "settings.security.lock_after_30m": "30 dakika sonra",
+  "settings.security.app_lock_no_screen_lock": "Önce bir ekran kilidi ayarla",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Uygulama kilidi Airhop'u telefonunun kendi ekran kilidiyle açar, bu telefonda ise hiç yok. Telefonun ayarlarından bir parola, PIN veya desen ekle, sonra bunu aç.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "İnternet yedeği",

@@ -193,6 +193,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "La tua identità, i messaggi, i contatti e il portafoglio su questo telefono vengono distrutti, e ricominci come una persona nuova. Non si può annullare.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop è bloccato",
+  "lock.body": "Sbloccalo con il blocco schermo del telefono.",
+  "lock.unlock": "Sblocca",
+  "lock.auth_prompt": "Conferma che sei tu per aprire Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Canali predefiniti",
   "chat.channels.yours": "I tuoi canali",
@@ -1833,6 +1839,7 @@ export const strings: Strings = {
   "settings.group.reset": "Ripristino",
   "settings.group.always_on": "Sempre attivo",
   "settings.group.notifications": "Notifiche",
+  "settings.group.lock": "Blocco app",
   "settings.group.blocked": "Bloccati",
   "settings.group.theme": "Tema",
   "settings.group.font": "Carattere",
@@ -1962,6 +1969,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Sblocca {name}",
   "settings.security.unblock_body":
     "{name} potrà scriverti di nuovo e ricomparirà nella scheda Mesh quando sarà nelle vicinanze.",
+  "settings.security.app_lock": "Blocca Airhop",
+  "settings.security.app_lock_desc":
+    "Chiede il blocco schermo del telefono (Face ID, impronta o codice) per aprire Airhop. Se il blocco schermo viene rimosso, questo si disattiva da solo invece di chiuderti fuori.",
+  "settings.security.app_lock_auth_prompt":
+    "Conferma che sei tu per attivare il blocco app",
+  "settings.security.app_lock_after": "Blocca automaticamente",
+  "settings.security.app_lock_after_desc":
+    "Quanto Airhop può restare in background prima di chiederlo di nuovo.",
+  "settings.security.lock_immediately": "Subito",
+  "settings.security.lock_after_1m": "Dopo 1 minuto",
+  "settings.security.lock_after_5m": "Dopo 5 minuti",
+  "settings.security.lock_after_30m": "Dopo 30 minuti",
+  "settings.security.app_lock_no_screen_lock":
+    "Imposta prima un blocco schermo",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Il blocco app apre Airhop con il blocco schermo del telefono stesso, e questo telefono non ne ha uno. Aggiungi un codice, un PIN o una sequenza nelle impostazioni del telefono, poi attiva questa opzione.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Ripiego su internet",

@@ -186,6 +186,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินบนโทรศัพท์เครื่องนี้จะถูกทำลาย และคุณจะเริ่มใหม่ในฐานะคนใหม่ ย้อนกลับไม่ได้",
 
+  // ---- App lock ----
+  "lock.title": "Airhop ถูกล็อกอยู่",
+  "lock.body": "ปลดล็อกด้วยการล็อกหน้าจอของโทรศัพท์",
+  "lock.unlock": "ปลดล็อก",
+  "lock.auth_prompt": "ยืนยันว่าเป็นคุณเพื่อเปิด Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "ช่องเริ่มต้น",
   "chat.channels.yours": "ช่องของคุณ",
@@ -1749,6 +1755,7 @@ export const strings: Strings = {
   "settings.group.reset": "รีเซ็ต",
   "settings.group.always_on": "เปิดอยู่เสมอ",
   "settings.group.notifications": "การแจ้งเตือน",
+  "settings.group.lock": "ล็อกแอป",
   "settings.group.blocked": "ถูกบล็อก",
   "settings.group.theme": "ธีม",
   "settings.group.font": "แบบอักษร",
@@ -1871,6 +1878,20 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "เลิกบล็อก {name}",
   "settings.security.unblock_body":
     "{name} จะส่งข้อความถึงคุณได้อีกครั้ง และจะปรากฏบนแท็บเมชเมื่ออยู่ใกล้",
+  "settings.security.app_lock": "ล็อก Airhop",
+  "settings.security.app_lock_desc":
+    "ขอการล็อกหน้าจอของโทรศัพท์ (Face ID ลายนิ้วมือ หรือรหัสผ่าน) เพื่อเปิด Airhop หากวันหนึ่งการล็อกหน้าจอถูกนำออก ตัวเลือกนี้จะปิดตัวเองแทนที่จะล็อกคุณไว้ข้างนอก",
+  "settings.security.app_lock_auth_prompt": "ยืนยันว่าเป็นคุณเพื่อเปิดล็อกแอป",
+  "settings.security.app_lock_after": "ล็อกอัตโนมัติ",
+  "settings.security.app_lock_after_desc":
+    "ระยะเวลาที่ Airhop อยู่ในเบื้องหลังได้ก่อนจะขออีกครั้ง",
+  "settings.security.lock_immediately": "ทันที",
+  "settings.security.lock_after_1m": "หลังจาก 1 นาที",
+  "settings.security.lock_after_5m": "หลังจาก 5 นาที",
+  "settings.security.lock_after_30m": "หลังจาก 30 นาที",
+  "settings.security.app_lock_no_screen_lock": "ตั้งการล็อกหน้าจอก่อน",
+  "settings.security.app_lock_no_screen_lock_body":
+    "ล็อกแอปเปิด Airhop ด้วยการล็อกหน้าจอของโทรศัพท์เอง และโทรศัพท์เครื่องนี้ยังไม่มี เพิ่มรหัสผ่าน PIN หรือรูปแบบในการตั้งค่าโทรศัพท์ แล้วจึงเปิดตัวเลือกนี้",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "อินเทอร์เน็ตสำรอง",

@@ -192,6 +192,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "ဤဖုန်းပေါ်ရှိ သင့်အထောက်အထား၊ မက်ဆေ့ဂျ်၊ အဆက်အသွယ်နှင့် ပိုက်ဆံအိတ်တို့ကို ဖျက်ဆီးမည်ဖြစ်ပြီး သင်သည် လူသစ်တစ်ယောက်အဖြစ် အစမှ ပြန်စရမည်။ ဤအရာကို ပြန်ပြင်၍ မရပါ။",
 
+  // ---- App lock ----
+  "lock.title": "Airhop ကို လော့ခ်ချထားသည်",
+  "lock.body": "သင့်ဖုန်း၏ မျက်နှာပြင်လော့ခ်ဖြင့် ဖွင့်ပါ။",
+  "lock.unlock": "လော့ခ်ဖွင့်ရန်",
+  "lock.auth_prompt": "Airhop ကိုဖွင့်ရန် သင်ဖြစ်ကြောင်း အတည်ပြုပါ",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "မူလ ချန်နယ်များ",
   "chat.channels.yours": "သင့် ချန်နယ်များ",
@@ -1840,6 +1846,7 @@ export const strings: Strings = {
   "settings.group.reset": "ပြန်လည်သတ်မှတ်ခြင်း",
   "settings.group.always_on": "အမြဲဖွင့်ထား",
   "settings.group.notifications": "အကြောင်းကြားချက်များ",
+  "settings.group.lock": "အက်ပ်လော့ခ်",
   "settings.group.blocked": "ပိတ်ဆို့ထားသည်",
   "settings.group.theme": "အပြင်အဆင်",
   "settings.group.font": "ဖောင့်",
@@ -1970,6 +1977,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} ၏ ပိတ်ဆို့မှုကို ဖြေပါ",
   "settings.security.unblock_body":
     "{name} သည် သင့်ကို ပြန်လည်မက်ဆေ့ဂျ်ပို့နိုင်မည်ဖြစ်ပြီး အနီးအနားရောက်လာလျှင် မက်ရှ်တဘ်တွင် ပြန်ပေါ်လာပါမည်။",
+  "settings.security.app_lock": "Airhop ကို လော့ခ်ချရန်",
+  "settings.security.app_lock_desc":
+    "Airhop ကိုဖွင့်ရန် သင့်ဖုန်း၏ မျက်နှာပြင်လော့ခ် (Face ID၊ လက်ဗွေ သို့မဟုတ် လျှို့ဝှက်ကုဒ်) ကို တောင်းပါမည်။ မျက်နှာပြင်လော့ခ်ကို တစ်ချိန်ချိန်တွင် ဖယ်ရှားလိုက်ပါက သင့်ကို ပိတ်မထားဘဲ ဤဆက်တင်က သူ့အလိုလို ပိတ်သွားပါမည်။",
+  "settings.security.app_lock_auth_prompt":
+    "အက်ပ်လော့ခ်ကိုဖွင့်ရန် သင်ဖြစ်ကြောင်း အတည်ပြုပါ",
+  "settings.security.app_lock_after": "အလိုအလျောက် လော့ခ်ချရန်",
+  "settings.security.app_lock_after_desc":
+    "ထပ်မတောင်းမီ Airhop နောက်ခံတွင် မည်မျှကြာကြာ ရှိနိုင်သည်။",
+  "settings.security.lock_immediately": "ချက်ချင်း",
+  "settings.security.lock_after_1m": "1 မိနစ်အကြာ",
+  "settings.security.lock_after_5m": "5 မိနစ်အကြာ",
+  "settings.security.lock_after_30m": "30 မိနစ်အကြာ",
+  "settings.security.app_lock_no_screen_lock":
+    "မျက်နှာပြင်လော့ခ်ကို အရင်သတ်မှတ်ပါ",
+  "settings.security.app_lock_no_screen_lock_body":
+    "အက်ပ်လော့ခ်သည် Airhop ကို သင့်ဖုန်း၏ ကိုယ်ပိုင် မျက်နှာပြင်လော့ခ်ဖြင့် ဖွင့်ပေးသော်လည်း ဤဖုန်းတွင် မရှိပါ။ ဖုန်းဆက်တင်တွင် လျှို့ဝှက်ကုဒ်၊ PIN သို့မဟုတ် ပုံစံတစ်ခု ထည့်ပြီး ၎င်းကို ဖွင့်ပါ။",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "အင်တာနက်အရန်",

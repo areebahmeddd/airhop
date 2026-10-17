@@ -12,6 +12,7 @@ import { Feather } from "@react-native-vector-icons/feather/static";
 import { useActivityStore, type ActivityEntry } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
+import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
 import EmptyState from "@ui/components/empty-state";
 import {
@@ -29,14 +30,7 @@ import { formatListTimestamp } from "@utils/format";
 import { activityPreview } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useMemo } from "react";
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -88,7 +82,7 @@ export default function NotificationCenter({
   }
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
       animationType="slide"
       onRequestClose={onClose}
@@ -149,7 +143,7 @@ export default function NotificationCenter({
           }
         />
       </SafeAreaView>
-    </Modal>
+    </AppModal>
   );
 }
 

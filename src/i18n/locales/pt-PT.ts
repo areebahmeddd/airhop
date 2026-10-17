@@ -189,6 +189,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "A tua identidade, mensagens, contactos e carteira neste telemóvel são destruídos, e recomeças como outra pessoa. Não é possível anular.",
 
+  // ---- App lock ----
+  "lock.title": "O Airhop está bloqueado",
+  "lock.body": "Desbloqueia-o com o bloqueio de ecrã do teu telemóvel.",
+  "lock.unlock": "Desbloquear",
+  "lock.auth_prompt": "Confirma que és tu para abrir o Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Canais predefinidos",
   "chat.channels.yours": "Os teus canais",
@@ -1829,6 +1835,7 @@ export const strings: Strings = {
   "settings.group.reset": "Reposição",
   "settings.group.always_on": "Sempre ligado",
   "settings.group.notifications": "Notificações",
+  "settings.group.lock": "Bloqueio da app",
   "settings.group.blocked": "Bloqueados",
   "settings.group.theme": "Tema",
   "settings.group.font": "Tipo de letra",
@@ -1956,6 +1963,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Desbloquear {name}",
   "settings.security.unblock_body":
     "{name} vai poder escrever-te de novo e volta a aparecer no separador Malha quando estiver por perto.",
+  "settings.security.app_lock": "Bloquear o Airhop",
+  "settings.security.app_lock_desc":
+    "Pede o bloqueio de ecrã do teu telemóvel (Face ID, impressão digital ou código) para abrir o Airhop. Se o bloqueio de ecrã for alguma vez removido, isto desliga-se sozinho em vez de te deixar de fora.",
+  "settings.security.app_lock_auth_prompt":
+    "Confirma que és tu para ativar o bloqueio da app",
+  "settings.security.app_lock_after": "Bloquear automaticamente",
+  "settings.security.app_lock_after_desc":
+    "Quanto tempo o Airhop pode ficar em segundo plano antes de voltar a pedir.",
+  "settings.security.lock_immediately": "Imediatamente",
+  "settings.security.lock_after_1m": "Após 1 minuto",
+  "settings.security.lock_after_5m": "Após 5 minutos",
+  "settings.security.lock_after_30m": "Após 30 minutos",
+  "settings.security.app_lock_no_screen_lock":
+    "Define primeiro um bloqueio de ecrã",
+  "settings.security.app_lock_no_screen_lock_body":
+    "O bloqueio da app abre o Airhop com o próprio bloqueio de ecrã do teu telemóvel, e este telemóvel não tem nenhum. Adiciona um código, PIN ou padrão nas definições do telemóvel e depois ativa isto.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Recurso à Internet",

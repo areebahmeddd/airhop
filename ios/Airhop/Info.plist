@@ -111,7 +111,7 @@
 	<!-- Face ID confirms the owner before an identity moves to a new phone.
 	     Without this string iOS terminates the app the moment Face ID is asked. -->
 	<key>NSFaceIDUsageDescription</key>
-	<string>Airhop uses Face ID to confirm it is you before moving your identity to a new phone.</string>
+	<string>Airhop uses Face ID to confirm it is you: to open the app when app lock is on, and before showing your recovery phrase or moving your identity to a new phone.</string>
 	<!-- Location resolves which geohash cell the location channels (#block,
 	     #city, #region, and so on) belong to. Raw coordinates never leave the
 	     device; only the truncated geohash is published. -->

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { confirmDeviceOwner } from "../device-auth";
+import { confirmDeviceOwner, isDeviceAuthInFlight } from "../device-auth";
 
 const mockLevel = jest.fn();
 const mockAuthenticate = jest.fn();
@@ -62,5 +62,31 @@ describe("confirmDeviceOwner", () => {
     mockLevel.mockResolvedValue(3);
     mockAuthenticate.mockRejectedValue(new Error("boom"));
     await expect(confirmDeviceOwner(PARAMS)).resolves.toBe("refused");
+  });
+
+  // The app lock reads this so an Android prompt pausing the activity is not
+  // taken for the user leaving the app.
+  test("reports a prompt as in flight only while it is on screen", async () => {
+    mockLevel.mockResolvedValue(3);
+    let answer: (value: { success: boolean }) => void = () => undefined;
+    mockAuthenticate.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    const pending = confirmDeviceOwner(PARAMS);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(isDeviceAuthInFlight()).toBe(true);
+    answer({ success: true });
+    await pending;
+    expect(isDeviceAuthInFlight()).toBe(false);
+  });
+
+  test("clears the flag when the prompt throws", async () => {
+    mockLevel.mockResolvedValue(3);
+    mockAuthenticate.mockRejectedValue(new Error("boom"));
+    await confirmDeviceOwner(PARAMS);
+    expect(isDeviceAuthInFlight()).toBe(false);
   });
 });

@@ -52,6 +52,7 @@ export type SettingId =
   | "reset"
   | "forward-secrecy"
   | "signed-packets"
+  | "app-lock"
   | "hide-previews"
   | "ring-alerts"
   | "internet"
@@ -350,6 +351,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.privacy",
     icon: "check-circle",
     target: { kind: "row", view: "security", id: "signed-packets" },
+  },
+  {
+    key: "app-lock",
+    labelKey: "settings.security.app_lock",
+    descriptionKey: "settings.security.app_lock_desc",
+    sectionKey: "settings.section.privacy",
+    icon: "lock",
+    target: { kind: "row", view: "security", id: "app-lock" },
   },
   {
     key: "hide-previews",

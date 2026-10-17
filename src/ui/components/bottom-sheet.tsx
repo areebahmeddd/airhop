@@ -34,7 +34,6 @@ import { crossedThreshold } from "@platform/haptics";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
-  Modal,
   Pressable,
   StyleSheet,
   View,
@@ -59,6 +58,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
 import { useKeyboardHeight } from "../hooks/use-keyboard";
 import { Duration, Radius, Spacing, useThemeColors } from "../theme";
+import AppModal from "./app-modal";
 
 // Pull further than this share of the sheet's own height and letting go
 // dismisses instead of springing back. A third is the familiar iOS/Material
@@ -410,7 +410,7 @@ export default function BottomSheet({
   );
 
   return (
-    <Modal
+    <AppModal
       visible
       transparent
       // The slide is ours: RN's would fight the drag translation.
@@ -464,12 +464,9 @@ export default function BottomSheet({
           ) : (
             <GestureDetector gesture={pan}>{sheet}</GestureDetector>
           )}
-          {/* A Modal is its own window, so the app-root cover does not reach in
-              here. Every sheet in the app is this component, so one mount
-              covers all of them. */}
         </View>
       </GestureHandlerRootView>
-    </Modal>
+    </AppModal>
   );
 }
 

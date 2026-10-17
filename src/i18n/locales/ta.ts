@@ -195,6 +195,13 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "இந்தத் தொலைபேசியில் உள்ள உங்கள் அடையாளம், செய்திகள், தொடர்புகள், பணப்பை ஆகியவை அழிக்கப்படும், நீங்கள் ஒரு புதிய நபராக மீண்டும் தொடங்குவீர்கள். இதைத் திரும்பப்பெற முடியாது.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop பூட்டப்பட்டுள்ளது",
+  "lock.body": "உங்கள் ஃபோனின் திரைப் பூட்டால் இதைத் திறங்கள்.",
+  "lock.unlock": "திற",
+  "lock.auth_prompt":
+    "Airhop ஐத் திறக்க இது நீங்கள்தான் என உறுதிப்படுத்துங்கள்",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "இயல்பு சேனல்கள்",
   "chat.channels.yours": "உங்கள் சேனல்கள்",
@@ -1862,6 +1869,7 @@ export const strings: Strings = {
   "settings.group.reset": "மீட்டமைப்பு",
   "settings.group.always_on": "எப்போதும் இயக்கத்தில்",
   "settings.group.notifications": "அறிவிப்புகள்",
+  "settings.group.lock": "ஆப் பூட்டு",
   "settings.group.blocked": "தடுக்கப்பட்டவை",
   "settings.group.theme": "தீம்",
   "settings.group.font": "எழுத்துரு",
@@ -1989,6 +1997,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} இன் தடையை நீக்கு",
   "settings.security.unblock_body":
     "{name} மீண்டும் உங்களுக்குச் செய்தி அனுப்ப முடியும், அருகில் இருக்கும்போது மெஷ் தாவலில் மீண்டும் தோன்றுவார்.",
+  "settings.security.app_lock": "Airhop ஐப் பூட்டு",
+  "settings.security.app_lock_desc":
+    "Airhop ஐத் திறக்க உங்கள் ஃபோனின் திரைப் பூட்டு (Face ID, கைரேகை அல்லது கடவுக்குறியீடு) கேட்கப்படும். திரைப் பூட்டு எப்போதாவது நீக்கப்பட்டால், உங்களை வெளியே பூட்டுவதற்குப் பதிலாக இது தானாகவே அணைந்துவிடும்.",
+  "settings.security.app_lock_auth_prompt":
+    "ஆப் பூட்டை இயக்க இது நீங்கள்தான் என உறுதிப்படுத்துங்கள்",
+  "settings.security.app_lock_after": "தானாகப் பூட்டு",
+  "settings.security.app_lock_after_desc":
+    "மீண்டும் கேட்பதற்கு முன் Airhop எவ்வளவு நேரம் பின்னணியில் இருக்கலாம்.",
+  "settings.security.lock_immediately": "உடனடியாக",
+  "settings.security.lock_after_1m": "1 நிமிடத்திற்குப் பிறகு",
+  "settings.security.lock_after_5m": "5 நிமிடங்களுக்குப் பிறகு",
+  "settings.security.lock_after_30m": "30 நிமிடங்களுக்குப் பிறகு",
+  "settings.security.app_lock_no_screen_lock":
+    "முதலில் திரைப் பூட்டை அமையுங்கள்",
+  "settings.security.app_lock_no_screen_lock_body":
+    "ஆப் பூட்டு உங்கள் ஃபோனின் சொந்தத் திரைப் பூட்டால் Airhop ஐத் திறக்கிறது, இந்த ஃபோனில் அது இல்லை. ஃபோனின் அமைப்புகளில் கடவுக்குறியீடு, PIN அல்லது பேட்டர்னைச் சேர்த்து, பிறகு இதை இயக்குங்கள்.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "இணைய மாற்று",

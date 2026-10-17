@@ -188,6 +188,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "यो फोनमा तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नष्ट हुन्छन्, र तपाईं नयाँ व्यक्तिका रूपमा फेरि सुरु गर्नुहुन्छ। यो फिर्ता गर्न सकिँदैन।",
 
+  // ---- App lock ----
+  "lock.title": "Airhop लक गरिएको छ",
+  "lock.body": "यसलाई आफ्नो फोनको स्क्रिन लकले खोल्नुहोस्।",
+  "lock.unlock": "अनलक गर्नुहोस्",
+  "lock.auth_prompt": "Airhop खोल्न यो तपाईं नै हो भनी पुष्टि गर्नुहोस्",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "पूर्वनिर्धारित च्यानल",
   "chat.channels.yours": "तपाईंका च्यानल",
@@ -1773,6 +1779,7 @@ export const strings: Strings = {
   "settings.group.reset": "रिसेट",
   "settings.group.always_on": "सधैँ खुला",
   "settings.group.notifications": "सूचना",
+  "settings.group.lock": "एप लक",
   "settings.group.blocked": "रोकिएका",
   "settings.group.theme": "थिम",
   "settings.group.font": "फन्ट",
@@ -1897,6 +1904,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} को रोक हटाउनुहोस्",
   "settings.security.unblock_body":
     "{name} ले तपाईंलाई फेरि सन्देश पठाउन सक्नेछन् र नजिकै हुँदा मेश ट्याबमा फेरि देखिनेछन्।",
+  "settings.security.app_lock": "Airhop लक गर्नुहोस्",
+  "settings.security.app_lock_desc":
+    "Airhop खोल्न तपाईंको फोनको स्क्रिन लक (Face ID, औँठाछाप वा पासकोड) माग्छ। स्क्रिन लक कहिल्यै हटाइयो भने, यसले तपाईंलाई बाहिर थुन्नुको सट्टा आफैँ बन्द हुन्छ।",
+  "settings.security.app_lock_auth_prompt":
+    "एप लक खोल्न यो तपाईं नै हो भनी पुष्टि गर्नुहोस्",
+  "settings.security.app_lock_after": "आफैँ लक गर्नुहोस्",
+  "settings.security.app_lock_after_desc":
+    "फेरि माग्नुअघि Airhop कति समय ब्याकग्राउन्डमा रहन सक्छ।",
+  "settings.security.lock_immediately": "तुरुन्तै",
+  "settings.security.lock_after_1m": "1 मिनेटपछि",
+  "settings.security.lock_after_5m": "5 मिनेटपछि",
+  "settings.security.lock_after_30m": "30 मिनेटपछि",
+  "settings.security.app_lock_no_screen_lock": "पहिले स्क्रिन लक सेट गर्नुहोस्",
+  "settings.security.app_lock_no_screen_lock_body":
+    "एप लकले Airhop लाई तपाईंको फोनकै स्क्रिन लकले खोल्छ, र यो फोनमा स्क्रिन लक छैन। फोनको सेटिङमा पासकोड, पिन वा प्याटर्न थप्नुहोस्, त्यसपछि यो खोल्नुहोस्।",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "इन्टरनेट विकल्प",

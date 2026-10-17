@@ -195,6 +195,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Mawawasak ang pagkakakilanlan, mga mensahe, contact at wallet mo sa teleponong ito, at magsisimula ka ulit bilang bagong tao. Hindi ito maibabalik.",
 
+  // ---- App lock ----
+  "lock.title": "Naka-lock ang Airhop",
+  "lock.body": "I-unlock ito gamit ang screen lock ng phone mo.",
+  "lock.unlock": "I-unlock",
+  "lock.auth_prompt": "Kumpirmahing ikaw ito para buksan ang Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Mga default na channel",
   "chat.channels.yours": "Mga channel mo",
@@ -1856,6 +1862,7 @@ export const strings: Strings = {
   "settings.group.reset": "I-reset",
   "settings.group.always_on": "Laging naka-on",
   "settings.group.notifications": "Mga Abiso",
+  "settings.group.lock": "Lock ng app",
   "settings.group.blocked": "Naka-block",
   "settings.group.theme": "Tema",
   "settings.group.font": "Font",
@@ -1984,6 +1991,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "I-unblock si {name}",
   "settings.security.unblock_body":
     "Makakapag-mensahe ulit sa iyo si {name} at muling lilitaw sa tab na Mesh kapag nasa malapit.",
+  "settings.security.app_lock": "I-lock ang Airhop",
+  "settings.security.app_lock_desc":
+    "Hihingin ang screen lock ng phone mo (Face ID, fingerprint o passcode) para mabuksan ang Airhop. Kung matanggal man ang screen lock, kusa itong mamamatay sa halip na mai-lock ka sa labas.",
+  "settings.security.app_lock_auth_prompt":
+    "Kumpirmahing ikaw ito para i-on ang lock ng app",
+  "settings.security.app_lock_after": "Awtomatikong i-lock",
+  "settings.security.app_lock_after_desc":
+    "Gaano katagal puwedeng nasa background ang Airhop bago ito magtanong ulit.",
+  "settings.security.lock_immediately": "Kaagad",
+  "settings.security.lock_after_1m": "Pagkalipas ng 1 minuto",
+  "settings.security.lock_after_5m": "Pagkalipas ng 5 minuto",
+  "settings.security.lock_after_30m": "Pagkalipas ng 30 minuto",
+  "settings.security.app_lock_no_screen_lock": "Magtakda muna ng screen lock",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Binubuksan ng lock ng app ang Airhop gamit ang sariling screen lock ng phone mo, at wala nito ang phone na ito. Magdagdag ng passcode, PIN o pattern sa settings ng phone, saka ito i-on.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Fallback sa internet",

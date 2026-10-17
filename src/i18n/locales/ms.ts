@@ -189,6 +189,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Identiti, mesej, kenalan dan dompet anda pada telefon ini dimusnahkan, dan anda bermula semula sebagai orang baharu. Ia tidak boleh dibatalkan.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop dikunci",
+  "lock.body": "Bukanya dengan kunci skrin telefon anda.",
+  "lock.unlock": "Buka kunci",
+  "lock.auth_prompt": "Sahkan bahawa ini anda untuk membuka Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Saluran lalai",
   "chat.channels.yours": "Saluran anda",
@@ -1819,6 +1825,7 @@ export const strings: Strings = {
   "settings.group.reset": "Tetap semula",
   "settings.group.always_on": "Sentiasa hidup",
   "settings.group.notifications": "Pemberitahuan",
+  "settings.group.lock": "Kunci apl",
   "settings.group.blocked": "Disekat",
   "settings.group.theme": "Tema",
   "settings.group.font": "Fon",
@@ -1947,6 +1954,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Nyahsekat {name}",
   "settings.security.unblock_body":
     "{name} akan boleh menghantar mesej kepada anda semula dan muncul kembali dalam tab Mesh apabila berdekatan.",
+  "settings.security.app_lock": "Kunci Airhop",
+  "settings.security.app_lock_desc":
+    "Minta kunci skrin telefon anda (Face ID, cap jari atau kod laluan) untuk membuka Airhop. Jika kunci skrin dibuang suatu hari nanti, kunci ini dimatikan sendiri dan tidak mengunci anda di luar.",
+  "settings.security.app_lock_auth_prompt":
+    "Sahkan bahawa ini anda untuk menghidupkan kunci apl",
+  "settings.security.app_lock_after": "Kunci secara automatik",
+  "settings.security.app_lock_after_desc":
+    "Berapa lama Airhop boleh berada di latar belakang sebelum memintanya semula.",
+  "settings.security.lock_immediately": "Serta-merta",
+  "settings.security.lock_after_1m": "Selepas 1 minit",
+  "settings.security.lock_after_5m": "Selepas 5 minit",
+  "settings.security.lock_after_30m": "Selepas 30 minit",
+  "settings.security.app_lock_no_screen_lock": "Tetapkan kunci skrin dahulu",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Kunci apl membuka Airhop dengan kunci skrin telefon anda sendiri, dan telefon ini tidak mempunyainya. Tambah kod laluan, PIN atau corak dalam tetapan telefon, kemudian hidupkan ini.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Sandaran internet",

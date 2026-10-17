@@ -96,6 +96,7 @@ jest.mock("../notification-service", () => ({
   setNotificationsAppActive: (a: boolean) => mockSetAppActive(a),
 }));
 
+import { useAppLockStore } from "@store/app-lock-store";
 import { useSettingsStore } from "@store/settings-store";
 import {
   startNotificationPipeline,
@@ -151,6 +152,17 @@ describe("startNotificationPipeline", () => {
     expect(mockSetAppActive).toHaveBeenLastCalledWith(false);
 
     for (const fn of mockAppStateSubs) fn("active");
+    expect(mockSetAppActive).toHaveBeenLastCalledWith(true);
+  });
+
+  // A thread under the lock screen is read by nobody: the message gets its
+  // banner, and is not filed as seen.
+  test("counts the app as away while the app lock is up", () => {
+    startNotificationPipeline(() => "alice");
+    for (const fn of mockAppStateSubs) fn("active");
+    useAppLockStore.setState({ phase: "locked" });
+    expect(mockSetAppActive).toHaveBeenLastCalledWith(false);
+    useAppLockStore.setState({ phase: "open" });
     expect(mockSetAppActive).toHaveBeenLastCalledWith(true);
   });
 

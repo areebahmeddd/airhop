@@ -1223,6 +1223,29 @@ to its source; rebuilding it does. The Android container build is reproducible
 (run it twice from clean and `SHA256SUMS.android` must not move), and
 `build-native.yml` rebuilds both platforms in CI.
 
+### App lock
+
+Keys stay readable after first unlock and messages are on disk, so an unlocked
+phone out of its owner's hand opens to everything. The optional app lock (off by
+default, in Privacy & security) closes that gap. Decisions live in
+`src/services/app-lock.ts`, state in `src/store/app-lock-store.ts`.
+
+- **The phone's own screen lock opens it**, through
+  `src/platform/device-auth.ts`. No Airhop PIN, nothing stored.
+- **Never armed without a screen lock**, and turning it on asks once.
+- **Opens and turns itself off if the screen lock is removed**: that takes the
+  passcode, so the owner did it.
+- **Locked from the first frame**, and after the chosen time away: immediately
+  (default), or 1, 5 or 30 minutes. Away is the larger of wall time and the
+  monotonic clock, so sleep counts and a wound-back clock does not dodge it.
+  With a delay the screen is covered on leaving. A system prompt is not leaving.
+- **Above everything.** Every Modal is `AppModal` and stands down while the
+  lock asks. Back leaves the app; screen readers cannot reach beneath.
+- **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
+  and Wallet "seen" states wait, and messages notify as if the app were away.
+
+The app-switcher snapshot stays blank either way (iOS cover, Android recents).
+
 ### Panic wipe
 
 Triggered from the Profile screen (`src/features/settings/profile-screen.tsx`).
@@ -1296,6 +1319,7 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Confused-deputy delivery           | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Group takeover                     | A group keeps the creator it was created with, and a state naming a different creator is refused even at a higher epoch. Enforced in two places, since a group state can either update or delete a group: the store pins it for every write, and `groupStateAction` pins it before the removal branch, which never reaches the store                                                                                                                                                                                                                                                                                                                                                                               |
 | Group eviction by a stranger       | A group ID travels in the clear on every group message so relays can carry it. Without the ordering above, anyone who saw one could craft a self-signed state naming themselves creator with a roster omitting the victim, and the victim's client would destroy its own key and drop the room. The creator pin is checked first                                                                                                                                                                                                                                                                                                                                                                                   |
+| Picked-up unlocked phone           | The optional app lock: the phone's own screen lock before anything shows, from launch and after the chosen time away. Sheets stand down beneath it, and nothing behind it counts as read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Hostile payment source             | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Storage exhaustion                 | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |

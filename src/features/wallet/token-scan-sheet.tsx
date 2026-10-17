@@ -13,6 +13,7 @@ import { t, useT } from "@i18n";
 import { succeeded } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
 import { Feather } from "@react-native-vector-icons/feather/static";
+import AppModal from "@ui/components/app-modal";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import {
@@ -32,7 +33,7 @@ import {
 } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import React, { useMemo, useRef, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Rules live in core/payments/scan.ts; re-exported so callers import one thing.
@@ -156,7 +157,12 @@ export default function TokenScanSheet({
   if (!visible) return null;
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={dismiss}>
+    <AppModal
+      visible
+      transparent
+      animationType="slide"
+      onRequestClose={dismiss}
+    >
       {cameraReady ? (
         <View style={styles.cameraRoot}>
           <CameraView
@@ -238,7 +244,7 @@ export default function TokenScanSheet({
           </Pressable>
         </BottomSheet>
       )}
-    </Modal>
+    </AppModal>
   );
 }
 

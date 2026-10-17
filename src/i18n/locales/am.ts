@@ -181,6 +181,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "በዚህ ስልክ ላይ ያሉት ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ ይጠፋሉ፤ እንደ አዲስ ሰው እንደገና ትጀምራለህ። ይህ ሊመለስ አይችልም።",
 
+  // ---- App lock ----
+  "lock.title": "Airhop ተቆልፏል",
+  "lock.body": "በስልክህ የማያ ገጽ መቆለፊያ ክፈተው።",
+  "lock.unlock": "ክፈት",
+  "lock.auth_prompt": "Airhopን ለመክፈት አንተ መሆንህን አረጋግጥ",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "ነባሪ ሰርጦች",
   "chat.channels.yours": "የአንተ ሰርጦች",
@@ -1682,6 +1688,7 @@ export const strings: Strings = {
   "settings.group.reset": "ዳግም ማስጀመር",
   "settings.group.always_on": "ሁልጊዜ በርቷል",
   "settings.group.notifications": "ማሳወቂያዎች",
+  "settings.group.lock": "የመተግበሪያ መቆለፊያ",
   "settings.group.blocked": "የታገዱ",
   "settings.group.theme": "ገጽታ",
   "settings.group.font": "ቅርጸ ቁምፊ",
@@ -1800,6 +1807,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "የ{name} እገዳ አንሳ",
   "settings.security.unblock_body":
     "{name} እንደገና መልእክት ሊልክልህ ይችላል፤ በአቅራቢያ ሲሆንም በሜሽ ትር ላይ እንደገና ይታያል።",
+  "settings.security.app_lock": "Airhopን ቆልፍ",
+  "settings.security.app_lock_desc":
+    "Airhopን ለመክፈት የስልክህን የማያ ገጽ መቆለፊያ (Face ID፣ የጣት አሻራ ወይም የይለፍ ኮድ) ጠይቅ። የማያ ገጽ መቆለፊያው ከተወገደ፣ አንተን ከመቆለፍ ይልቅ ራሱን ያጠፋል።",
+  "settings.security.app_lock_auth_prompt":
+    "የመተግበሪያ መቆለፊያን ለማብራት አንተ መሆንህን አረጋግጥ",
+  "settings.security.app_lock_after": "በራስ-ሰር ቆልፍ",
+  "settings.security.app_lock_after_desc":
+    "Airhop እንደገና ከመጠየቁ በፊት ከበስተጀርባ ምን ያህል ጊዜ መቆየት እንደሚችል።",
+  "settings.security.lock_immediately": "ወዲያውኑ",
+  "settings.security.lock_after_1m": "ከ1 ደቂቃ በኋላ",
+  "settings.security.lock_after_5m": "ከ5 ደቂቃ በኋላ",
+  "settings.security.lock_after_30m": "ከ30 ደቂቃ በኋላ",
+  "settings.security.app_lock_no_screen_lock": "መጀመሪያ የማያ ገጽ መቆለፊያ አዘጋጅ",
+  "settings.security.app_lock_no_screen_lock_body":
+    "የመተግበሪያ መቆለፊያ Airhopን በስልክህ የራሱ የማያ ገጽ መቆለፊያ ይከፍታል፤ ይህ ስልክ ግን የለውም። በስልኩ ቅንብሮች ውስጥ የይለፍ ኮድ፣ ፒን ወይም ስርዓተ-ጥለት ጨምር፣ ከዚያ ይህን አብራ።",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "የኢንተርኔት አማራጭ",

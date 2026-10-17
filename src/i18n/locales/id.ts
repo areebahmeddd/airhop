@@ -191,6 +191,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Identitas, pesan, kontak, dan dompetmu di ponsel ini dimusnahkan, dan kamu mulai lagi sebagai orang baru. Ini tidak bisa dibatalkan.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop terkunci",
+  "lock.body": "Buka dengan kunci layar ponselmu.",
+  "lock.unlock": "Buka kunci",
+  "lock.auth_prompt": "Pastikan ini kamu untuk membuka Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Kanal bawaan",
   "chat.channels.yours": "Kanalmu",
@@ -1814,6 +1820,7 @@ export const strings: Strings = {
   "settings.group.reset": "Setel ulang",
   "settings.group.always_on": "Selalu menyala",
   "settings.group.notifications": "Notifikasi",
+  "settings.group.lock": "Kunci aplikasi",
   "settings.group.blocked": "Diblokir",
   "settings.group.theme": "Tema",
   "settings.group.font": "Fon",
@@ -1940,6 +1947,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Buka blokir {name}",
   "settings.security.unblock_body":
     "{name} akan bisa mengirimimu pesan lagi dan muncul kembali di tab Mesh saat berada di dekat sini.",
+  "settings.security.app_lock": "Kunci Airhop",
+  "settings.security.app_lock_desc":
+    "Minta kunci layar ponselmu (Face ID, sidik jari, atau kode sandi) untuk membuka Airhop. Kalau kunci layar suatu saat dihapus, kunci ini mati sendiri alih-alih mengunci kamu di luar.",
+  "settings.security.app_lock_auth_prompt":
+    "Pastikan ini kamu untuk menyalakan kunci aplikasi",
+  "settings.security.app_lock_after": "Kunci otomatis",
+  "settings.security.app_lock_after_desc":
+    "Berapa lama Airhop boleh berada di latar belakang sebelum meminta lagi.",
+  "settings.security.lock_immediately": "Langsung",
+  "settings.security.lock_after_1m": "Setelah 1 menit",
+  "settings.security.lock_after_5m": "Setelah 5 menit",
+  "settings.security.lock_after_30m": "Setelah 30 menit",
+  "settings.security.app_lock_no_screen_lock": "Atur kunci layar dulu",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Kunci aplikasi membuka Airhop dengan kunci layar ponselmu sendiri, dan ponsel ini tidak punya. Tambahkan kode sandi, PIN, atau pola di pengaturan ponsel, lalu nyalakan ini.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Cadangan internet",

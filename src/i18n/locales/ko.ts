@@ -188,6 +188,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "이 휴대폰에 있는 신원, 메시지, 연락처, 지갑이 파기되고 새로운 사람으로 다시 시작합니다. 되돌릴 수 없습니다.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop이 잠겨 있습니다",
+  "lock.body": "휴대폰의 화면 잠금으로 잠금을 해제하세요.",
+  "lock.unlock": "잠금 해제",
+  "lock.auth_prompt": "Airhop을 열려면 본인임을 확인하세요",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "기본 채널",
   "chat.channels.yours": "내 채널",
@@ -1771,6 +1777,7 @@ export const strings: Strings = {
   "settings.group.reset": "초기화",
   "settings.group.always_on": "항상 켜짐",
   "settings.group.notifications": "알림",
+  "settings.group.lock": "앱 잠금",
   "settings.group.blocked": "차단됨",
   "settings.group.theme": "테마",
   "settings.group.font": "글꼴",
@@ -1890,6 +1897,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} 차단 해제",
   "settings.security.unblock_body":
     "{name}이(가) 다시 메시지를 보낼 수 있게 되며, 근처에 있으면 메시 탭에 다시 나타납니다.",
+  "settings.security.app_lock": "Airhop 잠그기",
+  "settings.security.app_lock_desc":
+    "Airhop을 열 때 휴대폰의 화면 잠금(Face ID, 지문 또는 암호)을 요구합니다. 화면 잠금을 없애면 사용자를 막는 대신 이 설정이 저절로 꺼집니다.",
+  "settings.security.app_lock_auth_prompt":
+    "앱 잠금을 켜려면 본인임을 확인하세요",
+  "settings.security.app_lock_after": "자동 잠금",
+  "settings.security.app_lock_after_desc":
+    "Airhop이 백그라운드에 머무를 수 있는 시간이며, 이 시간이 지나면 다시 요구합니다.",
+  "settings.security.lock_immediately": "즉시",
+  "settings.security.lock_after_1m": "1분 후",
+  "settings.security.lock_after_5m": "5분 후",
+  "settings.security.lock_after_30m": "30분 후",
+  "settings.security.app_lock_no_screen_lock": "먼저 화면 잠금을 설정하세요",
+  "settings.security.app_lock_no_screen_lock_body":
+    "앱 잠금은 휴대폰 자체의 화면 잠금으로 Airhop을 여는데, 이 휴대폰에는 화면 잠금이 없습니다. 휴대폰 설정에서 암호, PIN 또는 패턴을 추가한 다음 이 설정을 켜세요.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "인터넷 대체 경로",

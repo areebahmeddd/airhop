@@ -71,6 +71,7 @@ import {
 } from "@services/wallet-service";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
+import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import {
@@ -91,6 +92,7 @@ import {
   useTransferStore,
 } from "@store/transfer-store";
 import { keysetRefsOf, useWalletStore } from "@store/wallet-store";
+import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -171,7 +173,6 @@ import {
   AppState,
   FlatList,
   Image,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -2051,14 +2052,17 @@ export default function MessageThread({
     );
     return () => sub.remove();
   }, []);
+  // Nobody reads behind the app lock, so receipts and live audio wait for it.
+  const lockOpen = useAppLockStore(selectLockOpen);
+  const present = appActive && lockOpen;
   useEffect(() => {
-    if (isDM && appActive) {
+    if (isDM && present) {
       const peerID = channel.slice(3);
       getMeshService()?.sendReadReceipts(peerID);
       // Opening the thread also acknowledges any ring waiting in it.
       getMeshService()?.acknowledgeRingsIn(channel, peerID);
     }
-  }, [isDM, channel, msgs, appActive]);
+  }, [isDM, channel, msgs, present]);
 
   // Where the reader is in the thread. Refs, not state: these are read inside
   // scroll handlers on every frame and must never themselves cause a render.
@@ -3967,9 +3971,9 @@ export default function MessageThread({
   useEffect(() => {
     const service = getMeshService();
     if (!service) return;
-    service.setLiveVoiceAudible(appActive ? channel : null);
+    service.setLiveVoiceAudible(present ? channel : null);
     return () => service.setLiveVoiceAudible(null);
-  }, [appActive, channel]);
+  }, [present, channel]);
 
   // Nothing may keep the microphone open once this screen is not in front of
   // the user. Backgrounding the app or taking a call while still holding the
@@ -5119,7 +5123,7 @@ export default function MessageThread({
         </View>
       )}
 
-      <Modal
+      <AppModal
         visible={fullscreenImage !== null}
         transparent
         animationType="fade"
@@ -5188,7 +5192,7 @@ export default function MessageThread({
             bottomOffset={112}
           />
         </Pressable>
-      </Modal>
+      </AppModal>
 
       <Toast
         message={toast?.message ?? null}

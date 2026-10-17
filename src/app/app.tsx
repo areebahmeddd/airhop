@@ -16,6 +16,7 @@ import MessageThread from "@features/chat/message-thread";
 import NotificationCenter from "@features/chat/notification-center";
 import { StartNewSheet } from "@features/chat/start-new-sheet";
 import PeerList from "@features/discovery/peer-list";
+import LockScreen from "@features/lock/lock-screen";
 import IdentityScreen from "@features/onboarding/identity-screen";
 import KeysUnreadableScreen from "@features/onboarding/keys-unreadable-screen";
 import PermissionPrimerSheet from "@features/onboarding/permission-primer-sheet";
@@ -54,6 +55,7 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
+import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
 import {
   registerBootStartTask,
@@ -123,6 +125,7 @@ import {
 import { isPanicWipePending } from "@services/wipe-marker";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
+import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
 import { flushChatPersistence, useChatStore } from "@store/chat-store";
 import {
   useMeshBanners,
@@ -1167,6 +1170,14 @@ function AppContent(): React.JSX.Element {
   const [appActive, setAppActive] = useState(
     AppState.currentState === "active",
   );
+  // Someone could be reading the screen: in front and not behind the app lock.
+  // "Seen" and "read" below are measured against this.
+  const lockOpen = useAppLockStore(selectLockOpen);
+  const present = appActive && lockOpen;
+
+  // Ahead of every launch branch, so a wipe that turns the lock off also
+  // stands it down.
+  useEffect(() => watchAppLock(), []);
 
   // Foreground/background tracking for the screen. Whether a banner is owed is
   // tracked by the notification pipeline itself, since it runs with no screen.
@@ -1312,14 +1323,14 @@ function AppContent(): React.JSX.Element {
   //
   // Coming back marks it read again, which is the same rule as opening it.
   useEffect(() => {
-    const reading = appActive ? openThread : "";
+    const reading = present ? openThread : "";
     setActiveChannel(reading);
     setNotificationsActiveChannel(reading);
     if (reading) {
       markChannelRead(reading);
       void dismissNotificationsFor(reading);
     }
-  }, [openThread, appActive, setActiveChannel, markChannelRead]);
+  }, [openThread, present, setActiveChannel, markChannelRead]);
 
   // The same rule for the Mesh screen: looking at it is what "seen" means, so
   // the gate is the app being in front and past onboarding rather than the tab
@@ -1330,15 +1341,15 @@ function AppContent(): React.JSX.Element {
   // the dot ever being drawn. It settles: the second pass finds nothing changed
   // and markPeersSeen returns the state untouched.
   useEffect(() => {
-    if (!appActive || onboardingStep !== null || tab !== "mesh") return;
+    if (!present || onboardingStep !== null || tab !== "mesh") return;
     usePeerStore.getState().markPeersSeen();
-  }, [tab, appActive, onboardingStep, meshHasNewPeers]);
+  }, [tab, present, onboardingStep, meshHasNewPeers]);
 
   // The Wallet on screen has seen whatever payment notices are in the tray.
   useEffect(() => {
-    if (!appActive || onboardingStep !== null || tab !== "wallet") return;
+    if (!present || onboardingStep !== null || tab !== "wallet") return;
     void dismissPaymentNotifications();
-  }, [tab, appActive, onboardingStep]);
+  }, [tab, present, onboardingStep]);
 
   // Airhop deep links: airhop://channel/<name>, airhop://peer/<id> and contact
   // cards. The OS delivers them from any app, including one that fires a link
@@ -1657,7 +1668,12 @@ function AppContent(): React.JSX.Element {
           onClose={() => setShowActivity(false)}
           onOpenChannel={openChannelFromActivity}
         />
-        <View style={styles.flexFill}>
+        <View
+          style={styles.flexFill}
+          // Out of a screen reader's reach while the lock is drawn over it.
+          importantForAccessibility={lockOpen ? "auto" : "no-hide-descendants"}
+          accessibilityElementsHidden={!lockOpen}
+        >
           {onboardingStep !== null && (
             <>
               {onboardingStep === "welcome" && (
@@ -2395,6 +2411,7 @@ function AppContent(): React.JSX.Element {
             </SafeAreaView>
           )}
         </View>
+        <LockScreen />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
