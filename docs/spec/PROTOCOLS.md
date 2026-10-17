@@ -1109,11 +1109,11 @@ silent at both ends.
 | Constant             | Value                                                                                                                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Nostr public key     | secp256k1 pubkey (hex), derived via HKDF-SHA256 from the Ed25519 signing key (info=`"airhop-nostr-key-v1"`)                                                                            |
-| Nostr channel kind   | `20000` (geohash channel message)                                                                                                                                                      |
-| Nostr presence kind  | `20001` (geohash heartbeat: a `g` tag and an empty body, sent to the cell's geo relays and skipped when it has none)                                                                   |
+| Nostr channel kind   | `20000` (geohash channel message), with a last NIP-13 `nonce` tag committing 8 bits, as bitchat-ios                                                                                    |
+| Nostr presence kind  | `20001` (geohash heartbeat: a `g` tag and an empty body, sent to the cell's geo relays, skipped when it has none, and only while the app is on screen)                                 |
 | Nostr DM rumor kind  | `14` (NIP-17 unsigned inner event; refused unless a well-formed kind 14 whose `pubkey` is the seal's signer)                                                                           |
 | Nostr seal kind      | `13` (NIP-17 seal, signed by the real sender, encrypts the rumor to the recipient)                                                                                                     |
-| Nostr gift wrap kind | `1059` (NIP-17 outer envelope, signed by an ephemeral key). Seal and wrap timestamps are randomized ±15 min, bitchat's window rather than NIP-59's two days                            |
+| Nostr gift wrap kind | `1059` (NIP-17 outer envelope, signed by an ephemeral key). Ours are randomized ±15 min, as bitchat-ios. Inbound `since` reaches 48 h past the rumor lookback (NIP-17 backdating)      |
 | Location note kind   | `1` (a board post mirrored to a cell's relays, with a NIP-40 expiry matching the post; a permanent note has no expiry and no mesh copy)                                                |
 | Nostr courier drop   | `1401` (store-and-forward envelope; `#x` tag = recipient tag hex; NIP-40 expiry). Fetched 24 h back, `limit` 100, as bitchat-ios                                                       |
 | Nutzap event kind    | `9321` (NIP-61; `proof` tag per proof, with `dleq` including `r` when the mint issued one; `u` = mint; `unit`, default sat). Airhop subscribes with `#p` and `#u` (the mints it holds) |
@@ -1123,6 +1123,11 @@ silent at both ends.
 | Bridge cell          | 6 characters (about 1.2 km), the rendezvous a mesh bridge publishes `#bluetooth` into                                                                                                  |
 
 Airhop publishes no NIP-60 wallet events (kinds 17375 and 7375).
+
+Inbound public messages take bitchat-ios's flood limit: per sender 5 at once,
+then 1 a second; per normalized text 3 at once, then one every 2 s. 8 NIP-13
+bits skip the sender bucket. Sync replies and a channel's join replay are
+exempt.
 
 ## 9. bitchat Wire Compatibility Table
 
