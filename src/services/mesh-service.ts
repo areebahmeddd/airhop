@@ -191,7 +191,12 @@ import {
   geoCardProven,
   sealGeoCard,
 } from "@core/nostr/geo-card-proof";
-import { deriveNostrPrivKey, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
+import {
+  deriveNostrPrivKey,
+  giftWrapSince,
+  unwrapDm,
+  wrapDm,
+} from "@core/nostr/gift-wrap";
 import { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
 import { sharedRowID } from "@core/nostr/shared-row-id";
@@ -7174,7 +7179,7 @@ export class MeshService {
         {
           kinds: [1059],
           "#p": [this.nostrPubKeyHex],
-          since: Math.floor(Date.now() / 1000) - INBOX_LOOKBACK_SECONDS,
+          since: giftWrapSince(INBOX_LOOKBACK_SECONDS),
         },
       ],
       (event) => {

@@ -54,7 +54,7 @@ import {
   nextHeartbeatDelayMs,
   TAG_MESSAGE_ID,
 } from "@core/nostr/geohash-presence";
-import { unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
+import { giftWrapSince, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
 import { sharedRowID } from "@core/nostr/shared-row-id";
@@ -165,8 +165,7 @@ export function geohashLevelName(gh: string): string {
   return t("mesh.level.building");
 }
 
-// How far back a per-cell DM inbox looks on (re)subscribe. Matches bitchat's
-// TransportConfig.nostrDMSubscribeLookbackSeconds (24 h).
+// Max age of a per-cell DM, as bitchat's nostrDMSubscribeLookbackSeconds.
 const GEO_DM_LOOKBACK_SECONDS = 24 * 60 * 60;
 
 // How long a sender stays listed as present in a channel after their last post.
@@ -1121,7 +1120,7 @@ export class GeohashChannelService {
         {
           kinds: [1059],
           "#p": [identity.pubKeyHex],
-          since: Math.floor(Date.now() / 1000) - GEO_DM_LOOKBACK_SECONDS,
+          since: giftWrapSince(GEO_DM_LOOKBACK_SECONDS),
         },
       ],
       (event) => this.handleGeoDm(event, geohash),

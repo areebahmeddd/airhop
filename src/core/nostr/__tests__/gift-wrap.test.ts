@@ -9,7 +9,12 @@ import { hexToBytes } from "@noble/hashes/utils.js";
 import type { Event } from "nostr-tools";
 import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
 import { bitchatNip44Encrypt } from "../bitchat-nip44";
-import { deriveNostrPrivKey, unwrapDm, wrapDm } from "../gift-wrap";
+import {
+  deriveNostrPrivKey,
+  giftWrapSince,
+  unwrapDm,
+  wrapDm,
+} from "../gift-wrap";
 
 function makePair(): { priv: Uint8Array; pub: string } {
   const priv = generateSecretKey();
@@ -171,48 +176,90 @@ describe("rumor timestamp window", () => {
   });
 });
 
+// Seals and wraps arbitrary rumor JSON as wrapDm would, at any outer time.
+function wrapRumor(
+  rumor: Record<string, unknown>,
+  sender: { priv: Uint8Array; pub: string },
+  recipientPub: string,
+  wrapCreatedAt?: number,
+): Event {
+  const now = Math.floor(Date.now() / 1000);
+  const recipientX = hexToBytes(recipientPub);
+  const seal = finalizeEvent(
+    {
+      kind: 13,
+      created_at: now,
+      tags: [],
+      content: bitchatNip44Encrypt(
+        JSON.stringify(rumor),
+        recipientX,
+        sender.priv,
+      ),
+    },
+    sender.priv,
+  );
+  const ephemeral = generateSecretKey();
+  return finalizeEvent(
+    {
+      kind: 1059,
+      created_at: wrapCreatedAt ?? now,
+      tags: [["p", recipientPub]],
+      content: bitchatNip44Encrypt(JSON.stringify(seal), recipientX, ephemeral),
+    },
+    ephemeral,
+  );
+}
+
+// A wrap may be backdated two days; the rumor window stays exact.
+describe("gift wrap timestamp window", () => {
+  const HOUR = 3600;
+  const DAY = 24 * HOUR;
+
+  function unwrapAt(wrapAgeSec: number, rumorAgeSec = 0): string {
+    const sender = makePair();
+    const recipient = makePair();
+    const now = Math.floor(Date.now() / 1000);
+    const rumor = {
+      kind: 14,
+      pubkey: sender.pub,
+      created_at: now - rumorAgeSec,
+      tags: [],
+      content: "hi",
+    };
+    const wrap = wrapRumor(rumor, sender, recipient.pub, now - wrapAgeSec);
+    return unwrapDm(wrap, recipient.priv, DAY).content;
+  }
+
+  it("subscribes far enough back for a two-day backdate on a day-old message", () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(giftWrapSince(DAY)).toBeLessThanOrEqual(now - 3 * DAY);
+  });
+
+  it("accepts a fresh message in a wrap backdated by bitchat-android", () => {
+    expect(unwrapAt(22 * HOUR)).toBe("hi");
+  });
+
+  it("accepts a day-old message in a wrap backdated two days", () => {
+    expect(unwrapAt(3 * DAY, DAY - HOUR)).toBe("hi");
+  });
+
+  it("rejects a wrap older than the backdate plus the lookback", () => {
+    expect(() => unwrapAt(3 * DAY + HOUR)).toThrow();
+  });
+
+  it("rejects a wrap dated beyond jitter and skew in the future", () => {
+    expect(() => unwrapAt(-HOUR)).toThrow();
+  });
+
+  it("does not let a fresh wrap revive an old message", () => {
+    expect(() => unwrapAt(0, 2 * DAY)).toThrow();
+  });
+});
+
 // The rumor is unsigned, so its shape is checked by nothing but unwrapDm. A
 // missing or string created_at would pass the window check (every comparison
 // with it is false) and file the message at a NaN time.
 describe("rumor shape", () => {
-  // Seals and wraps arbitrary rumor JSON the way wrapDm would, so the sender
-  // can be the one who shaped it.
-  function wrapRumor(
-    rumor: Record<string, unknown>,
-    sender: { priv: Uint8Array; pub: string },
-    recipientPub: string,
-  ): Event {
-    const now = Math.floor(Date.now() / 1000);
-    const recipientX = hexToBytes(recipientPub);
-    const seal = finalizeEvent(
-      {
-        kind: 13,
-        created_at: now,
-        tags: [],
-        content: bitchatNip44Encrypt(
-          JSON.stringify(rumor),
-          recipientX,
-          sender.priv,
-        ),
-      },
-      sender.priv,
-    );
-    const ephemeral = generateSecretKey();
-    return finalizeEvent(
-      {
-        kind: 1059,
-        created_at: now,
-        tags: [["p", recipientPub]],
-        content: bitchatNip44Encrypt(
-          JSON.stringify(seal),
-          recipientX,
-          ephemeral,
-        ),
-      },
-      ephemeral,
-    );
-  }
-
   function unwrapRumor(overrides: Record<string, unknown>): string {
     const sender = makePair();
     const recipient = makePair();
