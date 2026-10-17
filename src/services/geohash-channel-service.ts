@@ -388,8 +388,11 @@ export class GeohashChannelService {
     // started as a side effect of a cell changing. Leaving every location
     // channel would otherwise leave a heartbeat timer running forever with
     // nothing to announce into.
-    if (this.broadcastableCells().length > 0) this.startPresenceHeartbeat();
-    else this.stopPresenceHeartbeat();
+    if (this.foreground && this.broadcastableCells().length > 0) {
+      this.startPresenceHeartbeat();
+    } else {
+      this.stopPresenceHeartbeat();
+    }
 
     // Every subscribe and unsubscribe above has landed, so this is the one place
     // the answer is settled. Publishing per-channel instead would flap through
@@ -586,6 +589,17 @@ export class GeohashChannelService {
   //   * Cells within a round are spaced 2-5s apart. Distinct keys arriving in
   //     the same instant, round after round, group by timing alone.
   private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Presence only while on screen, as bitchat-ios. Position is re-read only on
+  // refresh, so a pocketed phone would keep claiming a cell it left.
+  private foreground = true;
+
+  setForeground(foreground: boolean): void {
+    if (this.foreground === foreground) return;
+    this.foreground = foreground;
+    if (foreground) void this.refresh();
+    else this.stopPresenceHeartbeat();
+  }
 
   // Spacing inside a round. A plain promise timer rather than a scheduler,
   // because the round is a sequence rather than a set of independent jobs.

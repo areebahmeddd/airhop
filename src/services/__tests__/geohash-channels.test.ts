@@ -278,4 +278,28 @@ describe("presence heartbeat relays", () => {
     expect(published.filter((p) => p.kind === KIND_PRESENCE)).toEqual([]);
     service.stop();
   });
+
+  it("goes quiet in the background and resumes on return", async () => {
+    const published: Published[] = [];
+    const service = newService(published);
+    await service.refresh();
+    service.setForeground(false);
+    await jest.advanceTimersByTimeAsync(HEARTBEAT_ROUND_MS * 3);
+    expect(published.filter((p) => p.kind === KIND_PRESENCE)).toEqual([]);
+
+    service.setForeground(true);
+    await jest.advanceTimersByTimeAsync(HEARTBEAT_ROUND_MS);
+    expect(published.filter((p) => p.kind === KIND_PRESENCE)).toHaveLength(1);
+    service.stop();
+  });
+
+  it("does not start in the background", async () => {
+    const published: Published[] = [];
+    const service = newService(published);
+    service.setForeground(false);
+    await service.refresh();
+    await jest.advanceTimersByTimeAsync(HEARTBEAT_ROUND_MS * 3);
+    expect(published.filter((p) => p.kind === KIND_PRESENCE)).toEqual([]);
+    service.stop();
+  });
 });

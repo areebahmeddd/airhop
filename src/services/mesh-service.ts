@@ -6967,6 +6967,7 @@ export class MeshService {
     if (this.appForeground !== foreground) {
       this.appForeground = foreground;
       if (this.running) this.applyLocalTransportPrefs();
+      this.geoChannels?.setForeground(foreground);
     }
     if (!foreground) return;
     // Coming back to the app is the strongest signal we get that the world may
@@ -7084,6 +7085,7 @@ export class MeshService {
           this.acceptGeoContactCard(body, senderPubkey, recipientPubkey),
       },
     );
+    this.geoChannels.setForeground(this.appForeground);
     void this.geoChannels.refresh();
 
     // Private channels bridged over Nostr (the "Bluetooth + Internet" reach).
