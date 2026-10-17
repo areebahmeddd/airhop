@@ -1135,3 +1135,10 @@ export const useChatStore = create<ChatState>()(
     },
   ),
 );
+
+// A location-channel message arrives over BLE and Nostr; only the first counts.
+export function hasStoredMessage(channel: string, id: string): boolean {
+  return (
+    useChatStore.getState().messages[channel]?.some((m) => m.id === id) ?? false
+  );
+}

@@ -56,12 +56,17 @@ import {
 } from "@core/nostr/geohash-presence";
 import { giftWrapSince, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
+import { validatedDifficulty } from "@core/nostr/nostr-pow";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
 import { sharedRowID } from "@core/nostr/shared-row-id";
+import {
+  publicContentKey,
+  PublicMessageLimiter,
+} from "@core/router/public-message-limiter";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { useChatStore } from "@store/chat-store";
+import { hasStoredMessage, useChatStore } from "@store/chat-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
@@ -185,6 +190,10 @@ const PARTICIPANT_TTL_MS = 5 * 60 * 1000;
 // widest, so no compliant client is cut, and cutting beats dropping: one over
 // the limit is likelier buggy than hostile.
 const MAX_INBOUND_MESSAGE_BYTES = 2000 * 3;
+
+// Cap on the flood-limit pause for a join's history replay, if EOSE never
+// comes.
+const BACKFILL_GRACE_MS = 10_000;
 
 // A bridged note only counts as "new" for the notification bell if it arrived
 // within this window, so a subscription's history replay does not flood it.
@@ -311,15 +320,20 @@ export class GeohashChannelService {
   // and in an internet-only build.
   private readonly gateway?: GatewayHooks;
 
+  // Shared with the mesh room: one budget per text across transports.
+  private readonly publicLimiter: PublicMessageLimiter;
+
   constructor(
     client: NostrClient,
     signingPrivKey: Uint8Array,
     nickname: string,
     gateway?: GatewayHooks,
+    publicLimiter: PublicMessageLimiter = new PublicMessageLimiter(),
   ) {
     this.client = client;
     this.nickname = nickname;
     this.gateway = gateway;
+    this.publicLimiter = publicLimiter;
     this.geohashSeed = deriveGeohashSeed(signingPrivKey);
     // Load the vendored relay directory synchronously. It is kept current by a
     // weekly CI sync from bitchat's reviewed list (see geo-relay-source.ts); we
@@ -1061,6 +1075,8 @@ export class GeohashChannelService {
 
   private subscribeChannel(channel: string, geohash: string): void {
     const selfPubkey = this.identityFor(geohash).pubKeyHex;
+    // A join replays an hour of history at once, which is not a flood.
+    let backfillUntilMs = Date.now() + BACKFILL_GRACE_MS;
 
     const close = this.presenceFor(geohash).subscribeChannel(
       geohash,
@@ -1103,12 +1119,27 @@ export class GeohashChannelService {
         // the message twice, apparently from two different people. Falls back
         // to the Nostr event id, which still dedupes copies from several relays.
         const sharedId = event.tags.find(([t]) => t === TAG_MESSAGE_ID)?.[1];
+        const id =
+          sharedId !== undefined && sharedId.length > 0
+            ? sharedRowID(sharedId, event.content)
+            : `geo-${event.id}`;
+
+        const nowMs = Date.now();
+        if (
+          nowMs >= backfillUntilMs &&
+          !hasStoredMessage(channel, id) &&
+          !this.publicLimiter.allow(
+            `nostr:${event.pubkey}`,
+            publicContentKey(event.content),
+            validatedDifficulty(event.id, event.tags),
+            nowMs,
+          )
+        ) {
+          return;
+        }
 
         useChatStore.getState().addMessage({
-          id:
-            sharedId !== undefined && sharedId.length > 0
-              ? sharedRowID(sharedId, event.content)
-              : `geo-${event.id}`,
+          id,
           channel,
           senderID: `nostr_${event.pubkey}`,
           senderNickname: nickname,
@@ -1122,6 +1153,9 @@ export class GeohashChannelService {
         });
       },
       this.relaysForGeohash(geohash),
+      () => {
+        backfillUntilMs = 0;
+      },
     );
     this.subscriptions.set(channel, close);
 

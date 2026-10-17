@@ -209,6 +209,10 @@ import {
   type NostrSendFn,
   type RouterIdentity,
 } from "@core/router/message-router";
+import {
+  publicContentKey,
+  PublicMessageLimiter,
+} from "@core/router/public-message-limiter";
 import { t } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { equalBytes } from "@noble/curves/utils.js";
@@ -220,7 +224,11 @@ import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { isLivePost, useBoardStore } from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
-import { MAX_PER_CHANNEL, useChatStore } from "@store/chat-store";
+import {
+  hasStoredMessage,
+  MAX_PER_CHANNEL,
+  useChatStore,
+} from "@store/chat-store";
 import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import {
   evictExpiredOwedGroupStates,
@@ -619,6 +627,8 @@ export class MeshService {
   // In-progress Noise XX handshakes keyed by remote peerID.
   private readonly pendingHandshakes = new Map<string, PendingHandshake>();
   private readonly handshakeLimiter = new HandshakeRateLimiter();
+  // Shared with the geohash channels.
+  private readonly publicLimiter = new PublicMessageLimiter();
 
   // Double Ratchet states keyed by peerID, each bound to the Noise session it
   // was seeded from and ignored under any other (see ratchetFor). The ratchet
@@ -4453,11 +4463,26 @@ export class MeshService {
       this.registry.get(senderID)?.nickname,
     );
 
+    // A sync reply is history we asked for, not a flood.
+    const id = rowID(senderID);
+    if (
+      packet.isRSR !== true &&
+      !hasStoredMessage(channel, id) &&
+      !this.publicLimiter.allow(
+        `mesh:${senderID}`,
+        publicContentKey(text),
+        0,
+        Date.now(),
+      )
+    ) {
+      return;
+    }
+
     useChatStore.getState().addMessage({
       // Shared across BLE and Nostr, so two copies of one message arriving over
       // different transports collapse to a single bubble via the chat store's
       // id dedupe.
-      id: rowID(senderID),
+      id,
       channel,
       senderID,
       senderNickname: nickname,
@@ -7084,6 +7109,7 @@ export class MeshService {
         onContactCard: (body, senderPubkey, recipientPubkey) =>
           this.acceptGeoContactCard(body, senderPubkey, recipientPubkey),
       },
+      this.publicLimiter,
     );
     this.geoChannels.setForeground(this.appForeground);
     void this.geoChannels.refresh();

@@ -303,3 +303,64 @@ describe("presence heartbeat relays", () => {
     service.stop();
   });
 });
+
+describe("location channel flood limit", () => {
+  interface Subscription {
+    onEvent: (event: Event) => void;
+    onEose?: () => void;
+    kinds: number[];
+  }
+
+  function newService(subs: Subscription[]): GeohashChannelService {
+    const client = {
+      subscribe: (
+        filters: { kinds: number[] }[],
+        onEvent: (event: Event) => void,
+        onEose?: () => void,
+      ) => {
+        subs.push({ onEvent, onEose, kinds: filters[0].kinds });
+        return { close: () => undefined };
+      },
+      publish: async () => ({ relay: "", ok: true }),
+    } as unknown as NostrClient;
+    return new GeohashChannelService(
+      client,
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+  }
+
+  function chat(n: number, pubkey = "b".repeat(64)): Event {
+    return {
+      id: n.toString(16).padStart(64, "0"),
+      pubkey,
+      created_at: Math.floor(Date.now() / 1000),
+      kind: 20000,
+      tags: [],
+      content: `message ${n}`,
+      sig: "",
+    };
+  }
+
+  beforeEach(() => {
+    useSettingsStore.getState().setGeoRelayDiscovery(true);
+    useChatStore.setState({ channels: ["#city"], messages: {} });
+  });
+
+  it("keeps the whole history replay, then limits a live flood", async () => {
+    const subs: Subscription[] = [];
+    const service = newService(subs);
+    await service.refresh();
+    const room = subs.find((s) => s.kinds.includes(20000));
+    expect(room).toBeDefined();
+
+    for (let i = 0; i < 20; i++) room!.onEvent(chat(i));
+    expect(useChatStore.getState().messages["#city"]).toHaveLength(20);
+
+    room!.onEose?.();
+    for (let i = 20; i < 40; i++) room!.onEvent(chat(i));
+    // bitchat-ios's burst of five.
+    expect(useChatStore.getState().messages["#city"]).toHaveLength(25);
+    service.stop();
+  });
+});

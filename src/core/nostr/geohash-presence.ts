@@ -13,9 +13,10 @@
 // Heartbeat interval: 40-80 s (jittered) matching bitchat-ios behavior.
 
 import type { Event } from "nostr-tools";
-import { finalizeEvent } from "nostr-tools";
+import { finalizeEvent, getPublicKey } from "nostr-tools";
 import { secureRandom } from "../crypto/secure-random";
 import type { EventHandler, NostrClient } from "./nostr-client";
+import { mineNonceTag } from "./nostr-pow";
 
 // Event kind constants per PROTOCOLS.md section 8.
 export const KIND_PRESENCE = 20001;
@@ -141,10 +142,12 @@ export function mayBroadcastPresence(precision: number): boolean {
 
 export class GeohashPresence {
   private readonly privKey: Uint8Array;
+  private readonly pubkey: string;
   private readonly client: NostrClient;
 
   constructor(config: PresenceConfig, client: NostrClient) {
     this.privKey = config.nostrPrivKey;
+    this.pubkey = getPublicKey(config.nostrPrivKey);
     this.client = client;
   }
 
@@ -179,6 +182,7 @@ export class GeohashPresence {
     geohash: string,
     onEvent: EventHandler,
     relays?: string[],
+    onEose?: () => void,
   ): () => void {
     const filter = {
       kinds: [KIND_GEOHASH_CHANNEL, KIND_PRESENCE],
@@ -186,7 +190,7 @@ export class GeohashPresence {
       since: Math.floor(Date.now() / 1000) - CHANNEL_LOOKBACK_SECONDS,
       limit: CHANNEL_INITIAL_LIMIT,
     };
-    const closer = this.client.subscribe([filter], onEvent, undefined, relays);
+    const closer = this.client.subscribe([filter], onEvent, onEose, relays);
     return () => closer.close();
   }
 
@@ -226,10 +230,20 @@ export class GeohashPresence {
     // physically in. bitchat tags the same way (["t","teleport"]) so its
     // participant list shows them as teleported rather than nearby.
     if (teleported) tags.push(["t", "teleport"]);
+    const createdAt = Math.floor(Date.now() / 1000);
+    // Last, as bitchat-ios places it.
+    const nonce = mineNonceTag({
+      pubkey: this.pubkey,
+      created_at: createdAt,
+      kind: KIND_GEOHASH_CHANNEL,
+      tags,
+      content,
+    });
+    if (nonce !== null) tags.push(nonce);
     const event = finalizeEvent(
       {
         kind: KIND_GEOHASH_CHANNEL,
-        created_at: Math.floor(Date.now() / 1000),
+        created_at: createdAt,
         tags,
         content,
       },
