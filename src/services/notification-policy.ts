@@ -18,6 +18,7 @@ import {
 import { t, tPlural } from "@i18n";
 import type { ChatAttachment, ChatMessage } from "@store/chat-store";
 import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
+import { isManualGeoChannel } from "@utils/channel-key";
 import { messagePreviewText } from "@utils/message-preview";
 
 // A DM channel is keyed "dm:<peerID>" (see chat-store). Everything else is a
@@ -127,6 +128,23 @@ export function shouldSystemNotify(p: {
   appActive: boolean;
 }): boolean {
   return !p.isMine && !p.isSystem && !p.appActive;
+}
+
+// Older public-room messages are replayed history (relay lookback, mesh sync),
+// not news. Same window as the notice bell.
+export const ROOM_REPLAY_WINDOW_MS = 5 * 60 * 1000;
+
+// Public rooms only: a late DM, group or private channel message is still news.
+export function isReplayedRoomMessage(p: {
+  channel: string;
+  timestampMs: number;
+  hasChannelKey: boolean;
+  nowMs: number;
+}): boolean {
+  const publicRoom =
+    (p.channel.startsWith("#") || isManualGeoChannel(p.channel)) &&
+    !p.hasChannelKey;
+  return publicRoom && p.nowMs - p.timestampMs > ROOM_REPLAY_WINDOW_MS;
 }
 
 // A soft haptic replaces the banner while the app is open and the user is on a

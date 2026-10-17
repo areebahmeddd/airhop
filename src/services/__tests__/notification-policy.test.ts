@@ -20,6 +20,7 @@ import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
 import {
   attachmentSummary,
   isDirectMessage,
+  isReplayedRoomMessage,
   messagePreview,
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
@@ -27,6 +28,7 @@ import {
   paymentNotificationContent,
   ringNotificationContent,
   ringVerdict,
+  ROOM_REPLAY_WINDOW_MS,
   shouldHapticPing,
   shouldNotifyNearby,
   shouldSystemNotify,
@@ -455,5 +457,31 @@ describe("ringNotificationContent", () => {
     const content = ringNotificationContent("alice", true);
     expect(content.title).not.toContain("alice");
     expect(content.body).not.toContain("alice");
+  });
+});
+
+describe("isReplayedRoomMessage", () => {
+  const nowMs = 1_700_000_000_000;
+  const old = nowMs - ROOM_REPLAY_WINDOW_MS - 1;
+  const replayed = (
+    channel: string,
+    timestampMs = old,
+    hasChannelKey = false,
+  ) => isReplayedRoomMessage({ channel, timestampMs, hasChannelKey, nowMs });
+
+  it("treats old messages in public rooms as replayed", () => {
+    expect(replayed("#bluetooth")).toBe(true);
+    expect(replayed("#city")).toBe(true);
+    expect(replayed("geohash:u4pruy")).toBe(true);
+  });
+
+  it("lets a recent public message through", () => {
+    expect(replayed("#city", nowMs - 1000)).toBe(false);
+  });
+
+  it("never holds back late private mail", () => {
+    expect(replayed("dm:0123456789abcdef")).toBe(false);
+    expect(replayed("group:abc")).toBe(false);
+    expect(replayed("#secret", old, true)).toBe(false);
   });
 });
