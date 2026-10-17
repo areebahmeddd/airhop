@@ -1,3 +1,4 @@
+import { MotionConfig } from "motion/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -20,7 +21,9 @@ void loadCatalog(language).then(() => {
     <StrictMode>
       <BrowserRouter basename={basename}>
         <LanguageContext value={language}>
-          <App />
+          <MotionConfig reducedMotion="user">
+            <App />
+          </MotionConfig>
         </LanguageContext>
       </BrowserRouter>
     </StrictMode>,

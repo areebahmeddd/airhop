@@ -32,7 +32,7 @@
     "@fontsource/jetbrains-mono": "^5.3.0",
     "d3-geo": "^3.1.1",
     "lucide-react": "^1.59.0",
-    "motion": "^13.4.4",
+    "motion": "^14.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4",
