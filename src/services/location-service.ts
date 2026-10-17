@@ -25,6 +25,9 @@ export interface Coords {
 // harder would just drain battery for no behavioural change.
 const REFRESH_MS = 5 * 60 * 1000;
 
+// A live fix that never comes would stall every geohash channel.
+const COARSE_FIX_TIMEOUT_MS = 15_000;
+
 let cached: { coords: Coords; atMs: number } | null = null;
 
 // Ask for foreground location. Safe to call repeatedly: the OS only shows the
@@ -90,15 +93,21 @@ export async function getCoarseLocation(
 
   if (!(await hasLocationPermission())) return null;
 
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const position = await Location.getLastKnownPositionAsync();
     // A last-known fix is instant and plenty accurate for a geohash cell;
     // only pay for a live fix when there's nothing cached on the device.
     const resolved =
       position ??
-      (await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      }));
+      (await Promise.race([
+        Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        }),
+        new Promise<null>((resolve) => {
+          timer = setTimeout(() => resolve(null), COARSE_FIX_TIMEOUT_MS);
+        }),
+      ]));
     if (!resolved) return null;
 
     const coords: Coords = {
@@ -110,6 +119,8 @@ export async function getCoarseLocation(
   } catch {
     // Location services off at the OS level, or no fix available.
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
