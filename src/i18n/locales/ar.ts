@@ -185,6 +185,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "ستُدمَّر هويتك ورسائلك وجهات اتصالك ومحفظتك على هذا الهاتف، وتبدأ من الصفر بهوية جديدة. لا يمكن التراجع عن هذا.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop مقفل",
+  "lock.body": "افتحه بقفل شاشة هاتفك.",
+  "lock.unlock": "فتح القفل",
+  "lock.auth_prompt": "أكّد أنك أنت لفتح Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "القنوات الافتراضية",
   "chat.channels.yours": "قنواتك",
@@ -1100,6 +1106,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "مسح رمز استجابة سريعة لنقد إلكتروني",
   "wallet.receive.scan_short": "مسح الرمز",
   "wallet.receive.receiving": "جارٍ الاستقبال…",
+  "wallet.receive.paste": "لصق من الحافظة",
+  "wallet.receive.trust_mint_body":
+    "لا تُضف {mint} إلا إن كنت تثق بمن يديرها: فدار السك تحتفظ بالبيتكوين الذي يغطي نقدك الإلكتروني. تحتاج إضافتها إلى الإنترنت مرة واحدة، وبعدها يمكن استلام توكناتها دون إنترنت.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1735,6 +1744,7 @@ export const strings: Strings = {
   "settings.group.reset": "إعادة الضبط",
   "settings.group.always_on": "مفعّل دائمًا",
   "settings.group.notifications": "الإشعارات",
+  "settings.group.lock": "قفل التطبيق",
   "settings.group.blocked": "المحظورون",
   "settings.group.theme": "المظهر",
   "settings.group.font": "الخط",
@@ -1855,6 +1865,20 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "إلغاء حظر {name}",
   "settings.security.unblock_body":
     "سيتمكن {name} من مراسلتك مرة أخرى وسيظهر في تبويب الشبكة عند اقترابه.",
+  "settings.security.app_lock": "قفل Airhop",
+  "settings.security.app_lock_desc":
+    "اطلب قفل شاشة هاتفك (Face ID أو البصمة أو رمز المرور) لفتح Airhop. إن أُزيل قفل الشاشة يومًا، يتوقف هذا من تلقاء نفسه بدل أن يحبسك خارج التطبيق.",
+  "settings.security.app_lock_auth_prompt": "أكّد أنك أنت لتشغيل قفل التطبيق",
+  "settings.security.app_lock_after": "القفل تلقائيًا",
+  "settings.security.app_lock_after_desc":
+    "المدة التي يمكن أن يبقى فيها Airhop في الخلفية قبل أن يطلب القفل مجددًا.",
+  "settings.security.lock_immediately": "فورًا",
+  "settings.security.lock_after_1m": "بعد دقيقة واحدة",
+  "settings.security.lock_after_5m": "بعد 5 دقائق",
+  "settings.security.lock_after_30m": "بعد 30 دقيقة",
+  "settings.security.app_lock_no_screen_lock": "اضبط قفلًا للشاشة أولًا",
+  "settings.security.app_lock_no_screen_lock_body":
+    "يفتح قفل التطبيق Airhop بقفل شاشة هاتفك نفسه، وهذا الهاتف بلا قفل. أضف رمز مرور أو رقمًا سريًا أو نمطًا من إعدادات الهاتف، ثم شغّل هذا الخيار.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "الرجوع إلى الإنترنت",
@@ -2023,7 +2047,7 @@ export const strings: Strings = {
     "يفتح قنوات المناطق القريبة. بدونه تبقى تلك القنوات مغلقة وتستمر شبكة البلوتوث كالمعتاد.",
   "settings.permissions.notifications": "الإشعارات",
   "settings.permissions.notifications_desc":
-    "تصلك تنبيهات بالرسائل الجديدة حتى عندما يكون التطبيق مغلقًا. بدونها لا تراها إلا عند فتح Airhop.",
+    "تصلك تنبيهات بالرسائل الجديدة حين لا يكون Airhop على الشاشة. بدونها لا تراها إلا عند فتح Airhop.",
   "settings.permissions.camera": "الكاميرا",
   "settings.permissions.camera_desc":
     "امسح رموز الاستجابة السريعة والتقط صورًا أو مقاطع فيديو لإرسالها. بدونها ما زال بإمكانك مشاركة الوسائط من مكتبتك.",

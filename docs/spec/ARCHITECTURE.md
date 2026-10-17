@@ -1050,6 +1050,8 @@ rate is ever applied.
 - **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
 - **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
 - **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
+- **`cashu:` links.** Airhop registers NUT-00's scheme and token QRs carry it, so a camera scan opens Receive filled in, never claimed. Our own hand-off bounced back (no other wallet) opens Share.
+- **A mint not yet held** is never added silently: Receive and a chat card's Claim ask first, and adding it needs internet once. Until its keysets are cached, a chat card reads the token's metadata.
 - **Recovery phrase row:** the backup's status, opening its sheet.
 - **Activity:** sends still waiting to be claimed lead with their actions, then the latest 3 transactions, expandable.
 
@@ -1221,6 +1223,29 @@ to its source; rebuilding it does. The Android container build is reproducible
 (run it twice from clean and `SHA256SUMS.android` must not move), and
 `build-native.yml` rebuilds both platforms in CI.
 
+### App lock
+
+Keys stay readable after first unlock and messages are on disk, so an unlocked
+phone out of its owner's hand opens to everything. The optional app lock (off by
+default, in Privacy & security) closes that gap. Decisions live in
+`src/services/app-lock.ts`, state in `src/store/app-lock-store.ts`.
+
+- **The phone's own screen lock opens it**, through
+  `src/platform/device-auth.ts`. No Airhop PIN, nothing stored.
+- **Never armed without a screen lock**, and turning it on asks once.
+- **Opens and turns itself off if the screen lock is removed**: that takes the
+  passcode, so the owner did it.
+- **Locked from the first frame**, and after the chosen time away: immediately
+  (default), or 1, 5 or 30 minutes. Away is the larger of wall time and the
+  monotonic clock, so sleep counts and a wound-back clock does not dodge it.
+  With a delay the screen is covered on leaving. A system prompt is not leaving.
+- **Above everything.** Every Modal is `AppModal` and stands down while the
+  lock asks. Back leaves the app; screen readers cannot reach beneath.
+- **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
+  and Wallet "seen" states wait, and messages notify as if the app were away.
+
+The app-switcher snapshot stays blank either way (iOS cover, Android recents).
+
 ### Panic wipe
 
 Triggered from the Profile screen (`src/features/settings/profile-screen.tsx`).
@@ -1294,7 +1319,8 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Confused-deputy delivery           | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Group takeover                     | A group keeps the creator it was created with, and a state naming a different creator is refused even at a higher epoch. Enforced in two places, since a group state can either update or delete a group: the store pins it for every write, and `groupStateAction` pins it before the removal branch, which never reaches the store                                                                                                                                                                                                                                                                                                                                                                               |
 | Group eviction by a stranger       | A group ID travels in the clear on every group message so relays can carry it. Without the ordering above, anyone who saw one could craft a self-signed state naming themselves creator with a roster omitting the victim, and the victim's client would destroy its own key and drop the room. The creator pin is checked first                                                                                                                                                                                                                                                                                                                                                                                   |
-| Hostile payment source             | Ecash is redeemed only from a mint the user already added, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Picked-up unlocked phone           | The optional app lock: the phone's own screen lock before anything shows, from launch and after the chosen time away. Sheets stand down beneath it, and nothing behind it counts as read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Hostile payment source             | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Storage exhaustion                 | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Physical device seizure            | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (General, Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -1677,6 +1703,19 @@ jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
 `AirhopBLEModule` holds one open-ended task for exactly as long as the
 foreground service runs. Without it a backgrounded phone would still receive
 and notify, but stop announcing, relaying and saving.
+
+The service belongs to the mesh, not to Bluetooth (`src/services/radio-controller.ts`).
+It runs while the background preference allows and something local has work:
+Bluetooth scanning, LAN up, or Wi-Fi Aware running. It also holds through what
+the OS hands back unprompted (Bluetooth or location toggled off, airplane mode,
+Aware withdrawn by doze or battery saver), since only a living process can
+resume. A refused permission or missing hardware releases it. The
+`connectedDevice` type is granted against `CHANGE_WIFI_STATE` too, so it starts
+with Bluetooth refused.
+
+With background running off, leaving the screen stands down Bluetooth, Wi-Fi
+Aware and LAN, which would otherwise advertise a frozen phone. Auto-start is
+synced to native as auto-start and background running together.
 
 The scan flag is what makes the rest deliver. Android treats a BLE scan as a
 location access unless the manifest says otherwise, and an app counts as

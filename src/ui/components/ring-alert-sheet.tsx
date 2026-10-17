@@ -141,8 +141,15 @@ export default function RingAlertSheet(): React.JSX.Element {
     answer(current);
   }
 
+  // Silences without answering. On iOS the remaining pulses are booked with the
+  // OS, so closing the overlay alone leaves them to sound.
   function handleDismiss(): void {
-    useIncomingRingStore.getState().dismiss();
+    const current = ringRef.current;
+    if (current === null) {
+      useIncomingRingStore.getState().dismiss();
+      return;
+    }
+    void endRingAlertFor(`dm:${current.peerID}`);
   }
 
   return (

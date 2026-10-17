@@ -136,6 +136,8 @@ export class LANController {
   private attempt = 0;
   private startedAtMs = 0;
   private reconciling = false;
+  // Set by renew, consumed by the next pass.
+  private renewPending = false;
   private dirty = false;
   private disposed = false;
   // Bumped whenever intent changes under an in-flight start, so a resolve that
@@ -168,6 +170,16 @@ export class LANController {
   // the phone joined a different network.
   refresh(): void {
     if (this.unsupported) return;
+    this.attempt = 0;
+    void this.reconcile();
+  }
+
+  // A different network: start over under a fresh name. Native start is
+  // idempotent, so a refresh would keep publishing the old name here, linking
+  // the two networks.
+  renew(): void {
+    if (this.unsupported) return;
+    this.renewPending = true;
     this.attempt = 0;
     void this.reconcile();
   }
@@ -345,6 +357,8 @@ export class LANController {
     }
 
     if (this.unsupported) return;
+    if (this.started && this.renewPending) await this.releaseNative();
+    this.renewPending = false;
     if (this.started) return;
 
     // A fresh name for this session. Anything discovered under the old one is

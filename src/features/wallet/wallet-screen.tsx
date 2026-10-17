@@ -13,6 +13,7 @@
 import {
   bareToken,
   canEncodeTokenQr,
+  findChatTokens,
   isLikelyTestMint,
   TOKEN_QR_ERROR_CORRECTION,
   TOKEN_QR_MAX_CHARS,
@@ -35,12 +36,14 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
+import { handOffToWallet } from "@services/link-router";
 import { getMeshService } from "@services/mesh-service";
 import {
   deliverTokenToPeer,
   describePayResult,
   describeRoute,
   payPerson,
+  receiveTrustingMint,
   reclaimTokenSend,
 } from "@services/payment-router";
 import {
@@ -58,7 +61,6 @@ import {
   prepareSend,
   quoteLightningWithdrawal,
   quoteSend,
-  receiveToken,
   reconcile,
   refreshAccount,
   restoreFromRecoveryPhrase,
@@ -122,17 +124,10 @@ import { nostrShortLabel, peerIDToUsername } from "@utils/username";
 import * as Clipboard from "expo-clipboard";
 import { useNetworkState } from "expo-network";
 import { nip19 } from "nostr-tools";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Linking,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -148,7 +143,10 @@ import { confirmOwnerForPhrase } from "./phrase-access";
 import TokenScanSheet, { type ScanTarget } from "./token-scan-sheet";
 
 // What the App-level header can ask of this screen.
-export type WalletAction = "help";
+// Asked from outside: the header's help button, or a `cashu:` link the OS
+// delivered, which only fills in Receive.
+export type WalletAction =
+  { kind: "help" } | { kind: "receive"; token: string };
 
 // Secondary text on the accent-filled balance card. Measured on both fills:
 // white at this opacity on #111111, and #111111 on #F5F5F5, both clear 4.5:1.
@@ -185,12 +183,13 @@ const ACTIVITY_COLLAPSED_COUNT = 3;
 
 interface Props {
   action?: WalletAction | null;
-  actionTrigger?: number;
+  // Clears `action` once taken, so a repeat request is still a change.
+  onActionHandled?: () => void;
 }
 
 export default function WalletScreen({
   action,
-  actionTrigger,
+  onActionHandled,
 }: Props): React.JSX.Element {
   const T = useT();
   const TP = useTPlural();
@@ -341,20 +340,23 @@ export default function WalletScreen({
   const offline =
     network.isConnected === false || network.isInternetReachable === false;
 
-  // ---- Header action handoff ----
-  const prevActionTrigger = useRef(actionTrigger ?? 0);
+  // ---- Action handoff ----
+  // Taken on mount as well as on change: a link that switched to this tab
+  // arrives before the screen exists.
   useEffect(() => {
-    if (
-      actionTrigger === undefined ||
-      actionTrigger <= prevActionTrigger.current
-    ) {
+    if (action === null || action === undefined) return;
+    onActionHandled?.();
+    if (action.kind === "help") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowHelp(true);
       return;
     }
-    prevActionTrigger.current = actionTrigger;
-    // One-shot handoff from the header's help button, once per press.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (action === "help") setShowHelp(true);
-  }, [action, actionTrigger]);
+    setTokenInput(action.token);
+    // Already open: a queued open would reopen it the moment it closed.
+    if (showReceive) return;
+    setChooser(null);
+    afterSheetsClose(() => setShowReceive(true));
+  }, [action, onActionHandled, showReceive]);
 
   // ---- Derived balances ----
 
@@ -394,6 +396,9 @@ export default function WalletScreen({
         (tx) =>
           tx.status === "pending" &&
           (tx.kind === "send" || tx.kind === "nutzap-out") &&
+          // A lock whose answer was lost: only its replay knows if the coins
+          // moved, so nothing here may act on them.
+          !(tx.kind === "nutzap-out" && tx.swapPreview !== undefined) &&
           (reserved[tx.id] !== undefined || Boolean(tx.token)),
       ),
     [history, reserved],
@@ -539,7 +544,9 @@ export default function WalletScreen({
     if (!raw) return;
     setBusy("receive");
     try {
-      const result = await receiveToken(raw);
+      const result = await receiveTrustingMint(raw);
+      // Declined adding the mint: the token stays in the field.
+      if (result === null) return;
       setShowReceive(false);
       setTokenInput("");
 
@@ -603,6 +610,31 @@ export default function WalletScreen({
     } finally {
       setBusy(null);
     }
+  }
+
+  // The token on the clipboard, bare or inside a copied message. Read only on a
+  // tap that says Paste: iOS asks before every read.
+  async function readClipboardToken(): Promise<string | null> {
+    const text = await Clipboard.getStringAsync().catch(() => "");
+    return bareToken(text) ?? findChatTokens(text)[0]?.raw ?? null;
+  }
+
+  async function openReceiveFromClipboard(): Promise<void> {
+    const token = await readClipboardToken();
+    if (token !== null) setTokenInput(token);
+    switchSheet(() => setShowReceive(true));
+  }
+
+  async function handlePasteToken(): Promise<void> {
+    const token = await readClipboardToken();
+    if (token === null) {
+      showAlert(
+        t("wallet.svc.unreadable_token"),
+        t("wallet.svc.unreadable_token_body"),
+      );
+      return;
+    }
+    setTokenInput(token);
   }
 
   // iOS shows one modal at a time: the camera opens once the sheet has gone,
@@ -685,7 +717,9 @@ export default function WalletScreen({
           setShowSend(false);
           setSendAmount("");
           setSendMemo("");
-          setPending(prepared);
+          // After Send has gone: iOS drops a modal presented over one still
+          // sliding out.
+          afterSheetsClose(() => setPending(prepared));
         } catch (err) {
           reportError(err, t("wallet.send.build_failed"));
         } finally {
@@ -825,14 +859,16 @@ export default function WalletScreen({
     // Handed off, not proven delivered, so it stays pending and reclaimable.
     setShowPeerPicker(false);
     setPending(null);
-    showAlert(
-      t("wallet.send.sent_to", {
-        ...amountParts(amount, unit),
-        name: peerIDToUsername(peerID),
-      }),
-      t("wallet.send.sent_to_body", {
-        route: describeRoute(route, peerID, token),
-      }),
+    afterSheetsClose(() =>
+      showAlert(
+        t("wallet.send.sent_to", {
+          ...amountParts(amount, unit),
+          name: peerIDToUsername(peerID),
+        }),
+        t("wallet.send.sent_to_body", {
+          route: describeRoute(route, peerID, token),
+        }),
+      ),
     );
   }
 
@@ -870,8 +906,8 @@ export default function WalletScreen({
       return;
     }
 
+    // Up through payPerson's confirm, as Send is, so a cancel can retry.
     setBusy("zap");
-    setShowZap(false);
     try {
       // `payPerson` matches the key against contacts first, so a payment to
       // someone with a thread lands there, not in a second conversation.
@@ -883,33 +919,43 @@ export default function WalletScreen({
         recipientName: zapRecipientLabel(recipientPubkey),
       });
       if (!result) return;
+      setShowZap(false);
       setZapNpub("");
       setZapAmount("");
       setZapNote("");
 
-      // Nothing carried it: hand the token back to share by hand, as Send does.
-      if (result.token !== undefined) {
-        setPending({
-          txId: result.txId,
-          token: result.token,
-          amount: result.amount,
-          spend: result.amount,
-          fee: 0,
-          exact: true,
-          unit: result.unit,
-          mintUrl: result.mintUrl,
-          proofs: [],
-        });
-      }
-      showAlert(
-        t("wallet.pay.sent_title", {
-          ...amountParts(result.amount, result.unit),
-          name: zapRecipientLabel(recipientPubkey),
-        }),
-        describePayResult(result),
+      // One sheet at a time: the result, then any token to hand over by hand.
+      const handOver = result.token;
+      afterSheetsClose(() =>
+        showAlert(
+          t("wallet.pay.sent_title", {
+            ...amountParts(result.amount, result.unit),
+            name: zapRecipientLabel(recipientPubkey),
+          }),
+          describePayResult(result),
+          handOver === undefined
+            ? undefined
+            : [
+                {
+                  text: t("common.ok"),
+                  onPress: () =>
+                    afterSheetsClose(() =>
+                      setPending({
+                        txId: result.txId,
+                        token: handOver,
+                        amount: result.amount,
+                        spend: result.amount,
+                        fee: 0,
+                        exact: true,
+                        unit: result.unit,
+                        mintUrl: result.mintUrl,
+                        proofs: [],
+                      }),
+                    ),
+                },
+              ],
+        ),
       );
-    } catch (err) {
-      reportError(err, t("wallet.zap.failed"));
     } finally {
       setBusy(null);
     }
@@ -1050,9 +1096,8 @@ export default function WalletScreen({
       {
         text: t("wallet.mint.remove"),
         style: "destructive" as const,
-        onPress: () => {
-          afterSheetsClose(() => handleRemoveMint(account));
-        },
+        // The alert reopens in place, over the Mints sheet.
+        onPress: () => handleRemoveMint(account),
       },
       { text: t("common.cancel"), style: "cancel" as const },
     ]);
@@ -1319,8 +1364,9 @@ export default function WalletScreen({
 
   // ---- Lightning deposit ----
 
-  async function handleCreateDeposit(): Promise<void> {
-    const amount = parseWholeNumber(depositAmount);
+  // `again`: the amount of an expired invoice being replaced.
+  async function handleCreateDeposit(again?: number): Promise<void> {
+    const amount = again ?? parseWholeNumber(depositAmount);
     const mintUrl = activeMint ?? mintList[0]?.url;
     if (amount === null || !mintUrl) return;
     setBusy("deposit");
@@ -1824,8 +1870,11 @@ export default function WalletScreen({
         {/* Unclaimed sends lead: their proofs are reserved, not spent, and
             this card is the only way back to that value. */}
         {pendingSends.map((tx) => {
-          // An unpublished nutzap is locked to the recipient: no reclaim.
-          const reclaimable = reserved[tx.id] !== undefined;
+          // Only a plain send can be taken back or settled by hand; a nutzap is
+          // the recipient's, and reconcile closes it.
+          const reclaimable =
+            tx.kind === "send" && reserved[tx.id] !== undefined;
+          const token = tx.token;
           const errorText = txErrorText(tx);
           return (
             <View key={tx.id} style={styles.pendingCard}>
@@ -1845,40 +1894,50 @@ export default function WalletScreen({
                 {errorText !== null ? `\n\n${errorText}` : ""}
               </Text>
               <View style={styles.pendingActions}>
-                <Pressable
-                  style={styles.pendingBtn}
-                  onPress={() => setQrToken(tx)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("wallet.pending.show_qr")}
-                >
-                  <Text style={styles.pendingBtnText}>QR</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.pendingBtn}
-                  onPress={() => void handleCopyToken(tx.token ?? "")}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("wallet.pending.copy_again")}
-                >
-                  <Text style={styles.pendingBtnText}>{T("common.copy")}</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.pendingBtn}
-                  onPress={() => handleShareToken(tx.token ?? "")}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("wallet.pending.share_again")}
-                >
-                  <Text style={styles.pendingBtnText}>{T("common.share")}</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.pendingBtn}
-                  onPress={() => markDelivered(tx.id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("wallet.pending.mark_delivered")}
-                >
-                  <Text style={styles.pendingBtnText}>
-                    {t("wallet.pending.delivered")}
-                  </Text>
-                </Pressable>
+                {token !== undefined && (
+                  <>
+                    <Pressable
+                      style={styles.pendingBtn}
+                      onPress={() => setQrToken(tx)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("wallet.pending.show_qr")}
+                    >
+                      <Text style={styles.pendingBtnText}>QR</Text>
+                    </Pressable>
+                    <Pressable
+                      style={styles.pendingBtn}
+                      onPress={() => void handleCopyToken(token)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("wallet.pending.copy_again")}
+                    >
+                      <Text style={styles.pendingBtnText}>
+                        {T("common.copy")}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      style={styles.pendingBtn}
+                      onPress={() => handleShareToken(token)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("wallet.pending.share_again")}
+                    >
+                      <Text style={styles.pendingBtnText}>
+                        {T("common.share")}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+                {reclaimable && (
+                  <Pressable
+                    style={styles.pendingBtn}
+                    onPress={() => markDelivered(tx.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("wallet.pending.mark_delivered")}
+                  >
+                    <Text style={styles.pendingBtnText}>
+                      {t("wallet.pending.delivered")}
+                    </Text>
+                  </Pressable>
+                )}
                 {reclaimable && (
                   <Pressable
                     style={[styles.pendingBtn, styles.pendingBtnDanger]}
@@ -2034,7 +2093,7 @@ export default function WalletScreen({
               icon: "clipboard",
               title: T("wallet.choose.paste"),
               detail: T("wallet.choose.paste_desc"),
-              onPress: () => switchSheet(() => setShowReceive(true)),
+              onPress: () => void openReceiveFromClipboard(),
             },
             {
               key: "topup",
@@ -2366,6 +2425,17 @@ export default function WalletScreen({
         />
         <Pressable
           style={styles.generatedActionBtn}
+          onPress={() => void handlePasteToken()}
+          accessibilityRole="button"
+          accessibilityLabel={T("wallet.receive.paste")}
+        >
+          <Feather name="clipboard" size={18} color={Colors.accent} />
+          <Text style={styles.generatedActionText}>
+            {T("wallet.receive.paste")}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={styles.generatedActionBtn}
           onPress={() => openScanner("token")}
           accessibilityRole="button"
           accessibilityLabel={T("wallet.receive.scan")}
@@ -2549,117 +2619,129 @@ export default function WalletScreen({
         />
       </BottomSheet>
 
-      {/* Generated token: the send has reserved proofs but not spent them. */}
+      {/* Generated token: the send has reserved proofs but not spent them.
+          Taller than a phone once the QR and four hand-offs stack, so the body
+          scrolls and the decision stays pinned where a thumb can reach it. */}
       <BottomSheet
         visible={pending !== null}
         onClose={() => setPending(null)}
-        sheetStyle={styles.modalSheet}
+        sheetStyle={[styles.modalSheet, styles.scrollSheet]}
+        scrollable
       >
-        <View style={styles.generatedHeader}>
-          <Feather name="check-circle" size={28} color={Colors.online} />
-          <View style={styles.generatedAmountRow}>
-            <Text style={styles.generatedAmount}>
-              {pending === null
-                ? ""
-                : amountParts(pending.amount, pending.unit).amount}
-            </Text>
-            <Text style={styles.generatedUnit}>
-              {pending === null ? "" : unitLabel(pending.unit)}
-            </Text>
-          </View>
-          <Text style={styles.generatedMint} numberOfLines={1}>
-            {pending ? hostOf(pending.mintUrl) : ""}
-          </Text>
-          {pending && pending.fee > 0 && (
-            <Text style={styles.generatedMint}>
-              {T("wallet.send.fee_note", {
-                spend: amountParts(pending.spend, pending.unit).amount,
-                unit: unitLabel(pending.unit),
-                fee: amountParts(pending.fee, pending.unit).amount,
-              })}
-            </Text>
-          )}
-          {/* Fees are cached so a send prices offline, but a mint that has
-              raised its input fee since takes more than the quote said.
-              Shown only once the cache is stale, so the usual case is quiet. */}
-          {pendingStaleDays !== null && (
-            <Text style={styles.generatedMint}>
-              {TP("wallet.send.stale_fee_note", pendingStaleDays)}
-            </Text>
-          )}
-        </View>
-        {/* A QR, since every Cashu wallet scans one. Text is the fallback for
-            a token too large to encode (an unusually fragmented balance). */}
-        {pending !== null && canEncodeTokenQr(pending.token) ? (
-          <View style={styles.qrFrame}>
-            <QRCode
-              value={tokenQrPayload(pending.token)}
-              size={qrSize}
-              ecl={TOKEN_QR_ERROR_CORRECTION}
-              color="#000000"
-              backgroundColor="#FFFFFF"
-            />
-          </View>
-        ) : (
-          <>
-            <View style={styles.readonlyValueBox}>
-              <Text
-                style={styles.readonlyValue}
-                selectable
-                numberOfLines={3}
-                ellipsizeMode="tail"
-              >
-                {pending?.token ?? ""}
+        <ScrollView
+          contentContainerStyle={styles.sheetBody}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.generatedHeader}>
+            <Feather name="check-circle" size={28} color={Colors.online} />
+            <View style={styles.generatedAmountRow}>
+              <Text style={styles.generatedAmount}>
+                {pending === null
+                  ? ""
+                  : amountParts(pending.amount, pending.unit).amount}
+              </Text>
+              <Text style={styles.generatedUnit}>
+                {pending === null ? "" : unitLabel(pending.unit)}
               </Text>
             </View>
-            <Text style={styles.generatedHint}>
-              {T("wallet.send.qr_too_big")}
+            <Text style={styles.generatedMint} numberOfLines={1}>
+              {pending ? hostOf(pending.mintUrl) : ""}
             </Text>
-          </>
-        )}
-        <Text style={styles.generatedHint}>{T("wallet.send.bearer_note")}</Text>
-        <View style={styles.generatedActions}>
-          <Pressable
-            style={styles.generatedActionBtn}
-            onPress={() => pending && void handleCopyToken(pending.token)}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.send.copy_token")}
-          >
-            <Feather name="copy" size={18} color={Colors.accent} />
-            <Text style={styles.generatedActionText}>{T("common.copy")}</Text>
-          </Pressable>
-          <Pressable
-            style={styles.generatedActionBtn}
-            onPress={() => pending && handleShareToken(pending.token)}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.send.share_token")}
-          >
-            <Feather name="share" size={18} color={Colors.accent} />
-            <Text style={styles.generatedActionText}>{T("common.share")}</Text>
-          </Pressable>
-          <Pressable
-            style={styles.generatedActionBtn}
-            onPress={() => pending && void openTokenInWallet(pending.token)}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.send.open_in_wallet")}
-          >
-            <Feather name="external-link" size={18} color={Colors.accent} />
-            <Text style={styles.generatedActionText}>
-              {T("wallet.send.open_in_wallet_short")}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.generatedActionBtn}
-            onPress={() => setShowPeerPicker(true)}
-            accessibilityRole="button"
-            accessibilityLabel={T("wallet.send.to_peer")}
-          >
-            <Feather name="radio" size={18} color={Colors.accent} />
-            <Text style={styles.generatedActionText}>
-              {T("wallet.send.to_peer_short")}
-            </Text>
-          </Pressable>
-        </View>
+            {pending && pending.fee > 0 && (
+              <Text style={styles.generatedMint}>
+                {T("wallet.send.fee_note", {
+                  spend: amountParts(pending.spend, pending.unit).amount,
+                  unit: unitLabel(pending.unit),
+                  fee: amountParts(pending.fee, pending.unit).amount,
+                })}
+              </Text>
+            )}
+            {/* Fees are cached so a send prices offline, but a mint that has
+                raised its input fee since takes more than the quote said.
+                Shown only once the cache is stale, so the usual case is quiet. */}
+            {pendingStaleDays !== null && (
+              <Text style={styles.generatedMint}>
+                {TP("wallet.send.stale_fee_note", pendingStaleDays)}
+              </Text>
+            )}
+          </View>
+          {/* A QR, since every Cashu wallet scans one. Text is the fallback for
+              a token too large to encode (an unusually fragmented balance). */}
+          {pending !== null && canEncodeTokenQr(pending.token) ? (
+            <View style={styles.qrFrame}>
+              <QRCode
+                value={tokenQrPayload(pending.token)}
+                size={qrSize}
+                ecl={TOKEN_QR_ERROR_CORRECTION}
+                color="#000000"
+                backgroundColor="#FFFFFF"
+              />
+            </View>
+          ) : (
+            <>
+              <View style={styles.readonlyValueBox}>
+                <Text
+                  style={styles.readonlyValue}
+                  selectable
+                  numberOfLines={3}
+                  ellipsizeMode="tail"
+                >
+                  {pending?.token ?? ""}
+                </Text>
+              </View>
+              <Text style={styles.generatedHint}>
+                {T("wallet.send.qr_too_big")}
+              </Text>
+            </>
+          )}
+          <Text style={styles.generatedHint}>
+            {T("wallet.send.bearer_note")}
+          </Text>
+          <View style={styles.generatedActions}>
+            <Pressable
+              style={styles.generatedActionBtn}
+              onPress={() => pending && void handleCopyToken(pending.token)}
+              accessibilityRole="button"
+              accessibilityLabel={T("wallet.send.copy_token")}
+            >
+              <Feather name="copy" size={18} color={Colors.accent} />
+              <Text style={styles.generatedActionText}>{T("common.copy")}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.generatedActionBtn}
+              onPress={() => pending && handleShareToken(pending.token)}
+              accessibilityRole="button"
+              accessibilityLabel={T("wallet.send.share_token")}
+            >
+              <Feather name="share" size={18} color={Colors.accent} />
+              <Text style={styles.generatedActionText}>
+                {T("common.share")}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.generatedActionBtn}
+              onPress={() => pending && void openTokenInWallet(pending.token)}
+              accessibilityRole="button"
+              accessibilityLabel={T("wallet.send.open_in_wallet")}
+            >
+              <Feather name="external-link" size={18} color={Colors.accent} />
+              <Text style={styles.generatedActionText}>
+                {T("wallet.send.open_in_wallet_short")}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.generatedActionBtn}
+              onPress={() => setShowPeerPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel={T("wallet.send.to_peer")}
+            >
+              <Feather name="radio" size={18} color={Colors.accent} />
+              <Text style={styles.generatedActionText}>
+                {T("wallet.send.to_peer_short")}
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
         <View style={styles.modalActions}>
           <Pressable
             style={styles.modalConfirm}
@@ -2691,7 +2773,8 @@ export default function WalletScreen({
           setShowDeposit(false);
           setDeposit(null);
         }}
-        sheetStyle={styles.modalSheet}
+        sheetStyle={[styles.modalSheet, styles.scrollSheet]}
+        scrollable
       >
         <Text style={styles.modalTitle}>{T("wallet.ln.deposit_title")}</Text>
         {deposit === null ? (
@@ -2733,111 +2816,117 @@ export default function WalletScreen({
           </>
         ) : (
           <>
-            {/* An expired invoice cannot be paid, so none of it is offered:
-                no QR to scan, no text to copy, only a new invoice. */}
-            {!depositExpired && (
-              <>
-                <Text style={styles.modalSubtitle}>
-                  {T("wallet.ln.pay_invoice_for", {
-                    ...amountParts(deposit.amount, deposit.unit),
-                  })}
-                </Text>
-                {/* bech32 uppercases losslessly into QR alphanumeric mode, a
-                denser code. Length checked so a long invoice falls back to
-                text instead of throwing. */}
-                {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
-                  <View style={styles.qrFrame}>
-                    <QRCode
-                      value={deposit.invoice.toUpperCase()}
-                      size={qrSize}
-                      ecl={TOKEN_QR_ERROR_CORRECTION}
-                      backgroundColor="#FFFFFF"
-                      color="#000000"
-                    />
+            <ScrollView
+              contentContainerStyle={styles.sheetBody}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* An expired invoice cannot be paid, so none of it is offered:
+                  no QR to scan, no text to copy, only a new invoice. */}
+              {!depositExpired && (
+                <>
+                  <Text style={styles.modalSubtitle}>
+                    {T("wallet.ln.pay_invoice_for", {
+                      ...amountParts(deposit.amount, deposit.unit),
+                    })}
+                  </Text>
+                  {/* bech32 uppercases losslessly into QR alphanumeric mode, a
+                      denser code. Length checked so a long invoice falls back
+                      to text instead of throwing. */}
+                  {deposit.invoice.length <= TOKEN_QR_MAX_CHARS && (
+                    <View style={styles.qrFrame}>
+                      <QRCode
+                        value={deposit.invoice.toUpperCase()}
+                        size={qrSize}
+                        ecl={TOKEN_QR_ERROR_CORRECTION}
+                        backgroundColor="#FFFFFF"
+                        color="#000000"
+                      />
+                    </View>
+                  )}
+                  {/* Head first: the `lnbc` prefix and amount are all a person
+                      can check by eye. */}
+                  <View style={styles.readonlyValueBox}>
+                    <Text
+                      style={styles.readonlyValue}
+                      selectable
+                      numberOfLines={4}
+                      ellipsizeMode="tail"
+                    >
+                      {deposit.invoice}
+                    </Text>
                   </View>
-                )}
-                {/* Head first: the `lnbc` prefix and amount are all a person can
-                check by eye. */}
-                <View style={styles.readonlyValueBox}>
-                  <Text
-                    style={styles.readonlyValue}
-                    selectable
-                    numberOfLines={4}
-                    ellipsizeMode="tail"
-                  >
-                    {deposit.invoice}
+                  {/* Weighted, not equal: Open finishes the job on this phone
+                      and leads, Copy serves other routes, Close walks away. */}
+                  <View style={styles.generatedActions}>
+                    <Pressable
+                      style={styles.generatedPrimaryBtn}
+                      onPress={() => void openInvoiceInWallet(deposit.invoice)}
+                      accessibilityRole="button"
+                      accessibilityLabel={T("wallet.ln.open_wallet")}
+                    >
+                      <Feather
+                        name="external-link"
+                        size={18}
+                        color={Colors.textInverse}
+                      />
+                      <Text style={styles.generatedPrimaryText}>
+                        {T("wallet.ln.open_wallet_short")}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.generatedActionBtn,
+                        pressed && styles.generatedActionBtnPressed,
+                      ]}
+                      onPress={() => copyInvoice(deposit.invoice)}
+                      accessibilityRole="button"
+                      accessibilityLabel={T("wallet.ln.copy_invoice")}
+                    >
+                      <CopyGlyph
+                        copied={invoiceCopied}
+                        size={18}
+                        color={Colors.accent}
+                      />
+                      <Text style={styles.generatedActionText}>
+                        {invoiceCopied
+                          ? T("common.copied")
+                          : T("wallet.ln.copy_invoice")}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+              {depositExpired ? (
+                <View style={styles.waitingRow}>
+                  <Feather name="clock" size={16} color={Colors.textMuted} />
+                  <Text style={styles.waitingText}>
+                    {T("wallet.ln.expired_body")}
                   </Text>
                 </View>
-                {/* Weighted, not equal: Open finishes the job on this phone and
-                leads, Copy serves other routes, Close walks away. */}
-                <View style={styles.generatedActions}>
-                  <Pressable
-                    style={styles.generatedPrimaryBtn}
-                    onPress={() => void openInvoiceInWallet(deposit.invoice)}
-                    accessibilityRole="button"
-                    accessibilityLabel={T("wallet.ln.open_wallet")}
-                  >
-                    <Feather
-                      name="external-link"
-                      size={18}
-                      color={Colors.textInverse}
-                    />
-                    <Text style={styles.generatedPrimaryText}>
-                      {T("wallet.ln.open_wallet_short")}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.generatedActionBtn,
-                      pressed && styles.generatedActionBtnPressed,
-                    ]}
-                    onPress={() => copyInvoice(deposit.invoice)}
-                    accessibilityRole="button"
-                    accessibilityLabel={T("wallet.ln.copy_invoice")}
-                  >
-                    <CopyGlyph
-                      copied={invoiceCopied}
-                      size={18}
-                      color={Colors.accent}
-                    />
-                    <Text style={styles.generatedActionText}>
-                      {invoiceCopied
-                        ? T("common.copied")
-                        : T("wallet.ln.copy_invoice")}
-                    </Text>
-                  </Pressable>
+              ) : (
+                <View style={styles.waitingRow}>
+                  <ActivityIndicator size="small" color={Colors.textMuted} />
+                  <Text style={styles.waitingText}>
+                    {depositExpiresAtMs === undefined
+                      ? T("wallet.ln.waiting")
+                      : T("wallet.ln.waiting_expires", {
+                          countdown: formatCountdown(
+                            depositExpiresAtMs - depositClock,
+                          ),
+                        })}
+                  </Text>
                 </View>
-              </>
-            )}
-            {depositExpired ? (
-              <View style={styles.waitingRow}>
-                <Feather name="clock" size={16} color={Colors.textMuted} />
-                <Text style={styles.waitingText}>
-                  {T("wallet.ln.expired_body")}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.waitingRow}>
-                <ActivityIndicator size="small" color={Colors.textMuted} />
-                <Text style={styles.waitingText}>
-                  {depositExpiresAtMs === undefined
-                    ? T("wallet.ln.waiting")
-                    : T("wallet.ln.waiting_expires", {
-                        countdown: formatCountdown(
-                          depositExpiresAtMs - depositClock,
-                        ),
-                      })}
-                </Text>
-              </View>
-            )}
+              )}
+            </ScrollView>
             <View style={styles.modalActions}>
               {depositExpired && (
                 <Pressable
                   style={styles.modalConfirm}
                   disabled={busy !== null}
                   onPress={() => {
+                    const amount = deposit.amount;
                     setDeposit(null);
-                    void handleCreateDeposit();
+                    void handleCreateDeposit(amount);
                   }}
                   accessibilityRole="button"
                   accessibilityLabel={T("wallet.ln.new_invoice")}
@@ -3541,29 +3630,13 @@ function QuoteRow({
 
 // ---- Wallet handoff ----
 
-// Try, do not ask: `canOpenURL` says "no" unless the scheme is declared in the
-// Android `queries` and iOS LSApplicationQueriesSchemes, while `openURL` just
-// rejects when nothing handles it. Share is only the fallback: it lists
-// Messages and Drive, not wallets.
-async function handOffToWallet(uri: string): Promise<void> {
-  try {
-    await Linking.openURL(uri);
-  } catch {
-    try {
-      await Share.share({ message: uri });
-    } catch {
-      // Silent: the instrument is on screen with Copy beside it.
-    }
-  }
-}
-
 // For the Lightning wallet the user pays it FROM.
 function openInvoiceInWallet(invoice: string): Promise<void> {
   return handOffToWallet(`lightning:${invoice}`);
 }
 
-// `cashu:` is NUT-00's scheme. Only the handoff wears it; Share passes the bare
-// token, which every wallet reads. `bareToken` prevents `cashu:cashu:`.
+// `cashu:` is NUT-00's scheme. The handoff and the QR wear it; Share passes the
+// bare token, which every wallet reads. `bareToken` prevents `cashu:cashu:`.
 function openTokenInWallet(token: string): Promise<void> {
   return handOffToWallet(`cashu:${bareToken(token) ?? token}`);
 }
@@ -4270,9 +4343,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingBottom: Spacing.xl,
       gap: Spacing.md,
     },
-    // The Mints, backup and help sheets can outgrow the screen.
+    // The Mints, backup, help, token and invoice sheets can outgrow the screen.
     scrollSheet: {
       maxHeight: "80%",
+    },
+    // A scrolling body's own spacing.
+    sheetBody: {
+      gap: Spacing.md,
     },
     sheetList: {
       gap: Spacing.sm,

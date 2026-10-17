@@ -168,11 +168,22 @@ export class RadioController {
 
   constructor(private readonly peerID: string) {}
 
+  // Re-decides the background service as Wi-Fi Aware and LAN come and go.
+  private transportSub: (() => void) | null = null;
+
   // ---- intent ----
 
   start(): void {
     this.desired.running = true;
     this.attempt = 0;
+    this.transportSub ??= useMeshStateStore.subscribe((state, prev) => {
+      if (
+        state.wifiFastPath !== prev.wifiFastPath ||
+        state.lanState !== prev.lanState
+      ) {
+        void this.reconcile();
+      }
+    });
     void this.reconcile();
   }
 
@@ -191,6 +202,8 @@ export class RadioController {
   suspend(): void {
     this.desired.running = false;
     this.clearTimers();
+    this.transportSub?.();
+    this.transportSub = null;
   }
 
   // Bring everything down and stop trying. Distinct from a blocker: this is the
@@ -252,6 +265,8 @@ export class RadioController {
   dispose(): void {
     this.disposed = true;
     this.clearTimers();
+    this.transportSub?.();
+    this.transportSub = null;
   }
 
   // ---- reconciliation ----
@@ -334,6 +349,17 @@ export class RadioController {
       return;
     }
 
+    // Background running off: the mesh lives on screen only. Left up, the radios
+    // would advertise a phone the OS has frozen, visible to peers but deaf.
+    if (
+      !this.appForeground &&
+      !useSettingsStore.getState().backgroundMeshEnabled
+    ) {
+      await this.applyRadios({ scanning: false, advertising: false });
+      await this.setBackgroundService(false);
+      return;
+    }
+
     const facts = await this.readFacts();
     // Reading the device is the one slow step here, and intent can change while
     // it is in flight - the user choosing Away, or a panic wipe, lands as an
@@ -353,10 +379,9 @@ export class RadioController {
 
     if (blocker !== "none") {
       // Nothing we can do about it from here, but the radios must not be left
-      // half-up, and the background notification must not claim an active mesh
-      // over a radio that cannot run.
+      // half-up. Whether the background service stays is backgroundWanted's call.
       this.actual = { scanning: false, advertising: false };
-      await this.setBackgroundService(false);
+      await this.setBackgroundService(this.backgroundWanted(blocker));
       // Whatever the battery is doing, it is not why the mesh is down. Two
       // explanations for one empty radar is one too many.
       useMeshStateStore.getState().setPowerSaving(false);
@@ -400,13 +425,7 @@ export class RadioController {
     // Scanning is that question. A phone that scans is receiving and relaying
     // for everyone around it, which is worth holding the process up for whether
     // or not anybody can see it back. The retry below re-asserts advertising.
-    // Gated on the preference as well as on the radio. Off means the mesh runs
-    // only while the app is in front of the user: no foreground service, no
-    // persistent notification, and no radio work once it is closed. The radios
-    // themselves are untouched, so nothing about this session changes.
-    await this.setBackgroundService(
-      this.actual.scanning && useSettingsStore.getState().backgroundMeshEnabled,
-    );
+    await this.setBackgroundService(this.backgroundWanted("none"));
 
     if (ok) {
       this.attempt = 0;
@@ -592,6 +611,27 @@ export class RadioController {
   // has no peripheral role and never will. Never cleared, because nothing about
   // a device changes that. See applyRadios.
   private advertisingUnsupported = false;
+
+  // Whether the process must outlive the screen. It belongs to the mesh, not to
+  // Bluetooth: Wi-Fi Aware and LAN die with a frozen process too. Kept through
+  // what the OS hands back unprompted (Bluetooth or location toggled off,
+  // airplane mode, Aware withdrawn by doze or battery saver), since only a
+  // living process can resume when it does. A refused permission or missing
+  // hardware waits on the user, so nothing engaged means no notification.
+  private backgroundWanted(blocker: BleBlocker): boolean {
+    if (!useSettingsStore.getState().backgroundMeshEnabled) return false;
+    if (this.actual.scanning) return true;
+    if (blocker === "adapter-off" || blocker === "location-services-off") {
+      return true;
+    }
+    const { wifiFastPath, lanState } = useMeshStateStore.getState();
+    return (
+      wifiFastPath === "active" ||
+      wifiFastPath === "unavailable" ||
+      lanState === "active" ||
+      lanState === "searching"
+    );
+  }
 
   // null means "we do not know", which forces the next reconcile to re-assert.
   private backgroundServiceOn: boolean | null = false;

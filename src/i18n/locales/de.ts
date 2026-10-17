@@ -195,6 +195,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Deine Identität, Nachrichten, Kontakte und Wallet auf diesem Telefon werden vernichtet, und du beginnst als jemand Neues. Das lässt sich nicht rückgängig machen.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop ist gesperrt",
+  "lock.body": "Entsperre es mit der Displaysperre deines Telefons.",
+  "lock.unlock": "Entsperren",
+  "lock.auth_prompt": "Bestätige, dass du es bist, um Airhop zu öffnen",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Standardkanäle",
   "chat.channels.yours": "Deine Kanäle",
@@ -1163,6 +1169,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Einen Ecash-QR-Code scannen",
   "wallet.receive.scan_short": "QR scannen",
   "wallet.receive.receiving": "Wird empfangen…",
+  "wallet.receive.paste": "Aus Zwischenablage einfügen",
+  "wallet.receive.trust_mint_body":
+    "Füge {mint} nur hinzu, wenn du den Betreibern vertraust: Ein Mint hält das Bitcoin, das dein Ecash deckt. Das Hinzufügen braucht einmal Internet; danach lassen sich seine Token auch offline empfangen.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1842,6 +1851,7 @@ export const strings: Strings = {
   "settings.group.reset": "Zurücksetzen",
   "settings.group.always_on": "Immer an",
   "settings.group.notifications": "Mitteilungen",
+  "settings.group.lock": "App-Sperre",
   "settings.group.blocked": "Blockiert",
   "settings.group.theme": "Erscheinungsbild",
   "settings.group.font": "Schrift",
@@ -1967,6 +1977,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} nicht mehr blockieren",
   "settings.security.unblock_body":
     "{name} kann dir wieder schreiben und erscheint wieder im Mesh-Tab, wenn die Person in der Nähe ist.",
+  "settings.security.app_lock": "Airhop sperren",
+  "settings.security.app_lock_desc":
+    "Zum Öffnen von Airhop wird die Displaysperre deines Telefons abgefragt (Face ID, Fingerabdruck oder Code). Wird die Displaysperre je entfernt, schaltet sich diese Sperre selbst ab, statt dich auszusperren.",
+  "settings.security.app_lock_auth_prompt":
+    "Bestätige, dass du es bist, um die App-Sperre einzuschalten",
+  "settings.security.app_lock_after": "Automatisch sperren",
+  "settings.security.app_lock_after_desc":
+    "Wie lange Airhop im Hintergrund bleiben darf, bevor es erneut fragt.",
+  "settings.security.lock_immediately": "Sofort",
+  "settings.security.lock_after_1m": "Nach 1 Minute",
+  "settings.security.lock_after_5m": "Nach 5 Minuten",
+  "settings.security.lock_after_30m": "Nach 30 Minuten",
+  "settings.security.app_lock_no_screen_lock":
+    "Richte zuerst eine Displaysperre ein",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Die App-Sperre öffnet Airhop mit der Displaysperre deines Telefons, und dieses Telefon hat keine. Lege in den Einstellungen des Telefons einen Code, eine PIN oder ein Muster fest und schalte dies dann ein.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Internet-Rückfallebene",
@@ -2147,7 +2173,7 @@ export const strings: Strings = {
     "Öffnet Kanäle für Gebiete in der Nähe. Ohne das bleiben diese Kanäle geschlossen, und das Bluetooth-Mesh läuft normal weiter.",
   "settings.permissions.notifications": "Mitteilungen",
   "settings.permissions.notifications_desc":
-    "Erhalte Hinweise auf neue Nachrichten, auch wenn die App geschlossen ist. Ohne das siehst du sie erst, wenn du Airhop öffnest.",
+    "Erhalte Hinweise auf neue Nachrichten, wenn Airhop nicht auf dem Bildschirm ist. Ohne das siehst du sie erst, wenn du Airhop öffnest.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "QR-Codes scannen und Fotos oder Videos zum Senden aufnehmen. Ohne das kannst du weiterhin Medien aus deiner Mediathek teilen.",

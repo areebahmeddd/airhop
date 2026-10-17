@@ -15,12 +15,13 @@
 // gesture to the user and very different facts about their money.
 
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
+import { tokenMintUrl } from "@core/payments/cashu";
 import { t, tPlural, type TranslationKey } from "@i18n";
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { useOutboxStore } from "@store/outbox-store";
-import { useWalletStore } from "@store/wallet-store";
+import { normalizeMintUrl, useWalletStore } from "@store/wallet-store";
 import { amountParts } from "@utils/format";
 import { systemRow, txFailure } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
@@ -28,18 +29,21 @@ import { isNostrId, NOSTR_ID_PREFIX } from "@utils/username";
 import { utf8ByteLength } from "@utils/utf8-budget";
 import { getMeshService, type MeshService } from "./mesh-service";
 import {
+  addMint,
   failNutzapDelivery,
   failSend,
   findNutzapTarget,
+  hostOf,
   lockProofsForNutzap,
   prepareSend,
   publishLockedNutzap,
   quoteSend,
+  receiveToken,
   reclaimSend,
-  settleNutzap,
   staleFeeDays,
   WalletError,
   type NutzapTarget,
+  type ReceiveResult,
 } from "./wallet-service";
 
 // How the DM actually left the device: "they have it" versus "queued, they
@@ -272,8 +276,9 @@ async function payAsNutzap(params: {
     senderPrivKey: params.privKey,
     client: params.client,
     comment: params.comment,
-    // Their relays (kind 10019), not ours: see NutzapTarget.
+    // Their relays and their spelling of the mint: see NutzapTarget.
     relays: params.target.relays,
+    advertisedMintUrl: params.target.advertisedMintUrl,
   });
 
   const base = {
@@ -296,8 +301,9 @@ async function payAsNutzap(params: {
     senderNickname: params.senderNickname,
     final: true,
   });
+  // Handed off, not received, and the token is unreclaimable money: pending,
+  // token in Pending, until `reconcile` sees the coins redeemed.
   if (route === "sent" || route === "sent-nostr") {
-    settleNutzap(locked.txId);
     // No `fallbackReason`: the rail sentence already says the relay refused.
     return { rail: "nutzap-dm", ...base };
   }
@@ -644,6 +650,34 @@ export function reportWalletError(err: unknown): void {
     return;
   }
   showAlert(t("wallet.xfer.could_not_send"), String(err));
+}
+
+// Receive a token, asking before adding a mint the wallet has never used: never
+// silently (a stranger's token could enrol an unvetted mint), never refused
+// outright (the recipient could not take the payment). Null when declined.
+export async function receiveTrustingMint(
+  raw: string,
+  opts: { counterparty?: string } = {},
+): Promise<ReceiveResult | null> {
+  try {
+    return await receiveToken(raw, opts);
+  } catch (err) {
+    const mintUrl = tokenMintUrl(raw);
+    const unknownMint =
+      err instanceof WalletError &&
+      err.code === "no-mint" &&
+      mintUrl !== null &&
+      useWalletStore.getState().mints[normalizeMintUrl(mintUrl)] === undefined;
+    if (!unknownMint) throw err;
+    const trusted = await confirm(
+      t("wallet.svc.unknown_mint"),
+      t("wallet.receive.trust_mint_body", { mint: hostOf(mintUrl) }),
+      t("wallet.mint.add_short"),
+    );
+    if (!trusted) return null;
+    await addMint(mintUrl);
+    return receiveToken(raw, opts);
+  }
 }
 
 // Every payment asks this before money moves: amount, recipient, finality.

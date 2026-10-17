@@ -11,7 +11,6 @@ permissions:
 
 env:
   # The release certificate's SHA-256, checked against every signed APK and AAB.
-  # Rotating the key changes this, README.md and SECURITY.md in one commit.
   ANDROID_SIGNING_CERT_SHA256: 60d09487087c3ea4c3fbb325aebd354be629be99092020dc48b578065c18a949
 
 concurrency:
@@ -195,7 +194,7 @@ jobs:
           fi
 
       - name: Upload the unsigned build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-unsigned
           path: |
@@ -218,7 +217,7 @@ jobs:
 
     steps:
       - name: Download the unsigned build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: android-unsigned
           path: unsigned
@@ -342,7 +341,7 @@ jobs:
           cp "${BUNDLE_PATH}" dist/airhop.aab.intoto.jsonl
 
       - name: Upload AAB and provenance as build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: airhop-playstore-aab
           path: |
@@ -378,7 +377,7 @@ jobs:
         run: npm run verify:vendored
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
         with:
           ruby-version: "3.4"
           bundler-cache: false
@@ -437,7 +436,7 @@ jobs:
           cp "${BUNDLE_PATH}" ios/build/Airhop.ipa.intoto.jsonl
 
       - name: Upload IPA and provenance as build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: airhop-testflight-ipa
           path: |
@@ -471,7 +470,7 @@ jobs:
           persist-credentials: false
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           format: spdx-json
           output-file: airhop.spdx.json

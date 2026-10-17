@@ -12,3 +12,14 @@ export function syncAutoStartOnBoot(enabled: boolean): void {
     // Best effort; the next toggle or launch resyncs it.
   });
 }
+
+// The effective value: auto-start with background running off would boot the
+// app to do nothing. The user's own choice is kept for when it is back on.
+export function syncBootStart(settings: {
+  autoStartOnBoot: boolean;
+  backgroundMeshEnabled: boolean;
+}): void {
+  syncAutoStartOnBoot(
+    settings.autoStartOnBoot && settings.backgroundMeshEnabled,
+  );
+}

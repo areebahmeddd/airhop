@@ -187,6 +187,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "هویت، پیام‌ها، مخاطبان و کیف پول شما روی این گوشی نابود می‌شوند و از نو، به‌عنوان کسی تازه، شروع می‌کنید. این کار برگشت‌پذیر نیست.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop قفل است",
+  "lock.body": "آن را با قفل صفحهٔ گوشی‌تان باز کنید.",
+  "lock.unlock": "باز کردن قفل",
+  "lock.auth_prompt": "برای باز کردن Airhop تأیید کنید که خودتان هستید",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "کانال‌های پیش‌فرض",
   "chat.channels.yours": "کانال‌های شما",
@@ -1128,6 +1134,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "پویش یک کد QR مربوط به ecash",
   "wallet.receive.scan_short": "پویش QR",
   "wallet.receive.receiving": "در حال دریافت…",
+  "wallet.receive.paste": "چسباندن از بریده‌دان",
+  "wallet.receive.trust_mint_body":
+    "{mint} را فقط وقتی اضافه کنید که به گردانندهٔ آن اعتماد دارید: ضراب‌خانه همان Bitcoin پشتوانهٔ ecash شما را نگه می‌دارد. افزودنش یک بار اینترنت می‌خواهد؛ پس از آن توکن‌هایش بدون اینترنت هم دریافت می‌شوند.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1781,6 +1790,7 @@ export const strings: Strings = {
   "settings.group.reset": "بازنشانی",
   "settings.group.always_on": "همیشه روشن",
   "settings.group.notifications": "اعلان‌ها",
+  "settings.group.lock": "قفل برنامه",
   "settings.group.blocked": "مسدودشده",
   "settings.group.theme": "پوسته",
   "settings.group.font": "قلم",
@@ -1905,6 +1915,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "رفع مسدودی {name}",
   "settings.security.unblock_body":
     "{name} دوباره می‌تواند به شما پیام بدهد و هر وقت نزدیک باشد در زبانهٔ مش نمایان می‌شود.",
+  "settings.security.app_lock": "قفل کردن Airhop",
+  "settings.security.app_lock_desc":
+    "برای باز کردن Airhop قفل صفحهٔ گوشی‌تان (Face ID، اثر انگشت یا رمز عبور) خواسته می‌شود. اگر قفل صفحه روزی برداشته شود، این قفل به‌جای بیرون نگه داشتن شما خودش خاموش می‌شود.",
+  "settings.security.app_lock_auth_prompt":
+    "برای روشن کردن قفل برنامه تأیید کنید که خودتان هستید",
+  "settings.security.app_lock_after": "قفل خودکار",
+  "settings.security.app_lock_after_desc":
+    "مدتی که Airhop می‌تواند در پس‌زمینه بماند تا دوباره بپرسد.",
+  "settings.security.lock_immediately": "بی‌درنگ",
+  "settings.security.lock_after_1m": "پس از 1 دقیقه",
+  "settings.security.lock_after_5m": "پس از 5 دقیقه",
+  "settings.security.lock_after_30m": "پس از 30 دقیقه",
+  "settings.security.app_lock_no_screen_lock": "اول یک قفل صفحه تنظیم کنید",
+  "settings.security.app_lock_no_screen_lock_body":
+    "قفل برنامه Airhop را با قفل صفحهٔ خود گوشی باز می‌کند، و این گوشی قفلی ندارد. در تنظیمات گوشی یک رمز عبور، پین یا الگو بگذارید، سپس این را روشن کنید.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "اینترنت جایگزین",
@@ -2076,7 +2101,7 @@ export const strings: Strings = {
     "کانال‌های منطقهٔ نزدیک را باز می‌کند. بدون آن، آن کانال‌ها بسته می‌مانند و مش بلوتوثی مثل همیشه کار می‌کند.",
   "settings.permissions.notifications": "اعلان‌ها",
   "settings.permissions.notifications_desc":
-    "حتی وقتی برنامه بسته است از پیام‌های تازه باخبر شوید. بدون آن، تنها وقتی Airhop را باز کنید آن‌ها را می‌بینید.",
+    "وقتی Airhop روی صفحه نیست از پیام‌های تازه باخبر شوید. بدون آن، تنها وقتی Airhop را باز کنید آن‌ها را می‌بینید.",
   "settings.permissions.camera": "دوربین",
   "settings.permissions.camera_desc":
     "کدهای QR را بپویید و برای فرستادن عکس یا ویدیو بگیرید. بدون آن هم می‌توانید رسانه را از گالری خود هم‌رسانی کنید.",

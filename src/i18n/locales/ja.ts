@@ -188,6 +188,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "この端末上の識別情報、メッセージ、連絡先、ウォレットは破棄され、新しい人として最初からやり直すことになります。元に戻せません。",
 
+  // ---- App lock ----
+  "lock.title": "Airhopはロックされています",
+  "lock.body": "端末の画面ロックで解除してください。",
+  "lock.unlock": "ロック解除",
+  "lock.auth_prompt": "Airhopを開くため、本人確認をしてください",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "標準チャンネル",
   "chat.channels.yours": "あなたのチャンネル",
@@ -1143,6 +1149,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecashのQRコードを読み取る",
   "wallet.receive.scan_short": "QRを読み取る",
   "wallet.receive.receiving": "受け取り中…",
+  "wallet.receive.paste": "クリップボードから貼り付け",
+  "wallet.receive.trust_mint_body":
+    "{mint}は、運営者を信頼できる場合にだけ追加してください。ミントはあなたのecashを裏付けるビットコインを預かります。追加には一度だけインターネットが必要で、その後はオフラインでもこのミントのトークンを受け取れます。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1798,6 +1807,7 @@ export const strings: Strings = {
   "settings.group.reset": "リセット",
   "settings.group.always_on": "常時オン",
   "settings.group.notifications": "通知",
+  "settings.group.lock": "アプリロック",
   "settings.group.blocked": "ブロック中",
   "settings.group.theme": "テーマ",
   "settings.group.font": "フォント",
@@ -1919,6 +1929,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name}のブロックを解除",
   "settings.security.unblock_body":
     "{name}は再びあなたにメッセージを送れるようになり、近くにいるときはメッシュタブにも表示されます。",
+  "settings.security.app_lock": "Airhopをロック",
+  "settings.security.app_lock_desc":
+    "Airhopを開くときに端末の画面ロック（Face ID、指紋、パスコード）を求めます。画面ロックを外した場合は、締め出す代わりにこの設定が自動でオフになります。",
+  "settings.security.app_lock_auth_prompt":
+    "アプリロックをオンにするため、本人確認をしてください",
+  "settings.security.app_lock_after": "自動ロック",
+  "settings.security.app_lock_after_desc":
+    "Airhopがバックグラウンドにある間、再び確認を求めるまでの時間です。",
+  "settings.security.lock_immediately": "すぐに",
+  "settings.security.lock_after_1m": "1分後",
+  "settings.security.lock_after_5m": "5分後",
+  "settings.security.lock_after_30m": "30分後",
+  "settings.security.app_lock_no_screen_lock":
+    "先に画面ロックを設定してください",
+  "settings.security.app_lock_no_screen_lock_body":
+    "アプリロックは端末自体の画面ロックでAirhopを開きますが、この端末には画面ロックがありません。端末の設定でパスコード、PIN、パターンのいずれかを追加してから、オンにしてください。",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "インターネットへの切り替え",
@@ -2093,7 +2119,7 @@ export const strings: Strings = {
     "近くのエリアチャンネルを開きます。これがないとそれらのチャンネルは閉じたままですが、Bluetoothメッシュは通常どおり動きます。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "アプリを閉じていても新着メッセージの通知を受け取れます。これがないと、Airhopを開いたときにしか気づけません。",
+    "Airhopが画面に表示されていないときも新着メッセージの通知を受け取れます。これがないと、Airhopを開いたときにしか気づけません。",
   "settings.permissions.camera": "カメラ",
   "settings.permissions.camera_desc":
     "QRコードを読み取り、送る写真や動画を撮ります。これがなくても、ライブラリからメディアを共有できます。",

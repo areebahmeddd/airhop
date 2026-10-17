@@ -16,6 +16,7 @@ import MessageThread from "@features/chat/message-thread";
 import NotificationCenter from "@features/chat/notification-center";
 import { StartNewSheet } from "@features/chat/start-new-sheet";
 import PeerList from "@features/discovery/peer-list";
+import LockScreen from "@features/lock/lock-screen";
 import IdentityScreen from "@features/onboarding/identity-screen";
 import KeysUnreadableScreen from "@features/onboarding/keys-unreadable-screen";
 import PermissionPrimerSheet from "@features/onboarding/permission-primer-sheet";
@@ -54,14 +55,17 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
+import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
-import {
-  registerBootStartTask,
-  syncAutoStartOnBoot,
-} from "@services/boot-start";
+import { registerBootStartTask, syncBootStart } from "@services/boot-start";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
-import { joinSheetPrefill } from "@services/link-router";
+import {
+  cashuLinkToken,
+  isOwnHandoffEcho,
+  joinSheetPrefill,
+  shareInstead,
+} from "@services/link-router";
 import {
   hasLocationPermission,
   requestLocationPermission,
@@ -118,6 +122,7 @@ import {
 import { isPanicWipePending } from "@services/wipe-marker";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
+import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
 import { flushChatPersistence, useChatStore } from "@store/chat-store";
 import {
   useMeshBanners,
@@ -132,6 +137,7 @@ import {
 } from "@store/permission-primer-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
+import { useWalletStore } from "@store/wallet-store";
 import AlertModal from "@ui/components/alert-modal";
 import Avatar from "@ui/components/avatar";
 import {
@@ -356,7 +362,7 @@ async function startMeshWithPermissions(
   applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
-  syncAutoStartOnBoot(useSettingsStore.getState().autoStartOnBoot);
+  syncBootStart(useSettingsStore.getState());
   // The grant may have landed while the mesh was still being built, and the
   // controller stops retrying once it has published a permission blocker. This
   // is the nudge that turns "denied" into a running radio without a relaunch.
@@ -412,6 +418,13 @@ function applyBlePermissionResult(perm: BlePermissionResult): void {
 
 // The mesh startMeshDependents last ran for. See below.
 let dependentsStartedFor: MeshService | null = null;
+
+// Follows the mint list for NIP-61; replaced, never stacked, on a restart.
+let stopMintFollow: (() => void) | null = null;
+
+function mintSetKey(mints: Record<string, unknown>): string {
+  return Object.keys(mints).sort().join(" ");
+}
 
 // Everything that rides on a started mesh: notifications, the wallet, and the
 // permission prompts that are not the mesh's own.
@@ -517,6 +530,24 @@ function startMeshDependents(): void {
     });
     if (!isCurrentWipeGeneration(generation)) return;
     rebindNutzapWatcher();
+
+    // The 10019 and the watcher's `#u` filter follow the mint list. Keyed on
+    // the set: records change on every keyset refresh.
+    stopMintFollow?.();
+    stopMintFollow = useWalletStore.subscribe((state, prev) => {
+      if (mintSetKey(state.mints) === mintSetKey(prev.mints)) return;
+      if (!isCurrentWipeGeneration(generation)) return;
+      const live = getMeshService()?.getNostrClient();
+      const key = getMeshService()?.getNostrPrivKey();
+      if (live && key) {
+        void publishOwnNutzapInfo({
+          client: live,
+          privKey: key,
+          relays: live.activeRelays,
+        });
+      }
+      rebindNutzapWatcher();
+    });
   })();
 
   // Remaining permission prompts, sequenced one after another so the OS never
@@ -806,14 +837,14 @@ function AppContent(): React.JSX.Element {
   const [meshViewMode, setMeshViewMode] = useState<"list" | "radar">("radar");
   // Counter-based trigger: incrementing tells PeerList to open the add-contact scanner.
   const [meshAddCounter, setMeshAddCounter] = useState(0);
-  // Counter-based trigger: incrementing (with an action) tells WalletScreen
-  // to open the matching modal, same pattern as startNewTrigger/meshAddCounter.
+  // What WalletScreen is asked to open, cleared once taken, so a request made
+  // before the tab mounts (a `cashu:` link) waits for it.
   const [walletAction, setWalletAction] = useState<WalletAction | null>(null);
+  const clearWalletAction = useCallback(() => setWalletAction(null), []);
   // Selected as a boolean so the tab bar re-renders when the answer flips
   // rather than on every ANNOUNCE.
   const meshHasNewPeers = usePeerStore(hasUnseenPeers);
 
-  const [walletActionTrigger, setWalletActionTrigger] = useState(0);
   // Notification center (bell) visibility, and the count of unseen activity
   // that badges the bell. Subscribing to entries keeps the badge live.
   const [showActivity, setShowActivity] = useState(false);
@@ -1136,6 +1167,14 @@ function AppContent(): React.JSX.Element {
   const [appActive, setAppActive] = useState(
     AppState.currentState === "active",
   );
+  // Someone could be reading the screen: in front and not behind the app lock.
+  // "Seen" and "read" below are measured against this.
+  const lockOpen = useAppLockStore(selectLockOpen);
+  const present = appActive && lockOpen;
+
+  // Ahead of every launch branch, so a wipe that turns the lock off also
+  // stands it down.
+  useEffect(() => watchAppLock(), []);
 
   // Foreground/background tracking for the screen. Whether a banner is owed is
   // tracked by the notification pipeline itself, since it runs with no screen.
@@ -1281,14 +1320,14 @@ function AppContent(): React.JSX.Element {
   //
   // Coming back marks it read again, which is the same rule as opening it.
   useEffect(() => {
-    const reading = appActive ? openThread : "";
+    const reading = present ? openThread : "";
     setActiveChannel(reading);
     setNotificationsActiveChannel(reading);
     if (reading) {
       markChannelRead(reading);
       void dismissNotificationsFor(reading);
     }
-  }, [openThread, appActive, setActiveChannel, markChannelRead]);
+  }, [openThread, present, setActiveChannel, markChannelRead]);
 
   // The same rule for the Mesh screen: looking at it is what "seen" means, so
   // the gate is the app being in front and past onboarding rather than the tab
@@ -1299,24 +1338,37 @@ function AppContent(): React.JSX.Element {
   // the dot ever being drawn. It settles: the second pass finds nothing changed
   // and markPeersSeen returns the state untouched.
   useEffect(() => {
-    if (!appActive || onboardingStep !== null || tab !== "mesh") return;
+    if (!present || onboardingStep !== null || tab !== "mesh") return;
     usePeerStore.getState().markPeersSeen();
-  }, [tab, appActive, onboardingStep, meshHasNewPeers]);
+  }, [tab, present, onboardingStep, meshHasNewPeers]);
 
   // The Wallet on screen has seen whatever payment notices are in the tray.
   useEffect(() => {
-    if (!appActive || onboardingStep !== null || tab !== "wallet") return;
+    if (!present || onboardingStep !== null || tab !== "wallet") return;
     void dismissPaymentNotifications();
-  }, [tab, appActive, onboardingStep]);
+  }, [tab, present, onboardingStep]);
 
   // Airhop deep links: airhop://channel/<name>, airhop://peer/<id> and contact
   // cards. The OS delivers them from any app, including one that fires a link
   // on its own, so a link only opens the Join sheet filled in: it says what the
   // link does, and nothing happens until Join. Deferred until past onboarding,
   // so a cold-start link waits for the identity to load.
+  //
+  // `cashu:` links follow the same rule into the Wallet: Receive opens filled
+  // in, and nothing is redeemed until Receive is tapped.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
+      const token = cashuLinkToken(url);
+      if (url !== null && token !== null) {
+        if (isOwnHandoffEcho(url)) {
+          void shareInstead(url);
+          return;
+        }
+        setWalletAction({ kind: "receive", token });
+        navigateToTabRef.current("wallet");
+        return;
+      }
       const prefill = joinSheetPrefill(url);
       if (prefill !== null) setPendingJoinLink(prefill);
     };
@@ -1324,11 +1376,6 @@ function AppContent(): React.JSX.Element {
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));
     return () => sub.remove();
   }, [appReady, onboardingStep]);
-
-  function triggerWalletAction(action: WalletAction): void {
-    setWalletAction(action);
-    setWalletActionTrigger((c) => c + 1);
-  }
 
   function openChannel(requested: string): void {
     // A notification, a bell row or a restored last-thread can name a DM by
@@ -1618,7 +1665,12 @@ function AppContent(): React.JSX.Element {
           onClose={() => setShowActivity(false)}
           onOpenChannel={openChannelFromActivity}
         />
-        <View style={styles.flexFill}>
+        <View
+          style={styles.flexFill}
+          // Out of a screen reader's reach while the lock is drawn over it.
+          importantForAccessibility={lockOpen ? "auto" : "no-hide-descendants"}
+          accessibilityElementsHidden={!lockOpen}
+        >
           {onboardingStep !== null && (
             <>
               {onboardingStep === "welcome" && (
@@ -1995,7 +2047,7 @@ function AppContent(): React.JSX.Element {
                             styles.newChannelPill,
                             pressed && styles.headerPillPressed,
                           ]}
-                          onPress={() => triggerWalletAction("help")}
+                          onPress={() => setWalletAction({ kind: "help" })}
                           hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
                           accessibilityRole="button"
                           accessibilityLabel={T("wallet.explain.title")}
@@ -2171,7 +2223,7 @@ function AppContent(): React.JSX.Element {
                   ) : tab === "wallet" ? (
                     <WalletScreen
                       action={walletAction}
-                      actionTrigger={walletActionTrigger}
+                      onActionHandled={clearWalletAction}
                     />
                   ) : (
                     <ProfileScreen
@@ -2356,6 +2408,7 @@ function AppContent(): React.JSX.Element {
             </SafeAreaView>
           )}
         </View>
+        <LockScreen />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

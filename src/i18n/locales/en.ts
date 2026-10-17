@@ -225,6 +225,12 @@ export const strings = {
   "launch.start_over_confirm_body":
     "Your identity, messages, contacts and wallet on this phone are destroyed, and you start again as someone new. This cannot be undone.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop is locked",
+  "lock.body": "Unlock it with your phone’s screen lock.",
+  "lock.unlock": "Unlock",
+  "lock.auth_prompt": "Confirm it’s you to open Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Default channels",
   "chat.channels.yours": "Your channels",
@@ -1158,6 +1164,9 @@ export const strings = {
   "wallet.receive.scan": "Scan an ecash QR code",
   "wallet.receive.scan_short": "Scan QR",
   "wallet.receive.receiving": "Receiving…",
+  "wallet.receive.paste": "Paste from clipboard",
+  "wallet.receive.trust_mint_body":
+    "Add {mint} only if you trust whoever runs it: a mint holds the Bitcoin backing your ecash. Adding it needs internet once; after that, its tokens can be received offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1803,6 +1812,7 @@ export const strings = {
   "settings.group.reset": "Reset",
   "settings.group.always_on": "Always on",
   "settings.group.notifications": "Notifications",
+  "settings.group.lock": "App lock",
   "settings.group.blocked": "Blocked",
   "settings.group.theme": "Theme",
   "settings.group.font": "Font",
@@ -1922,6 +1932,21 @@ export const strings = {
   "settings.security.unblock_peer": "Unblock {name}",
   "settings.security.unblock_body":
     "{name} will be able to message you again and will reappear on the Mesh tab when nearby.",
+  "settings.security.app_lock": "Lock Airhop",
+  "settings.security.app_lock_desc":
+    "Ask for your phone’s screen lock (Face ID, fingerprint or passcode) to open Airhop. If the screen lock is ever removed, this turns itself off rather than locking you out.",
+  "settings.security.app_lock_auth_prompt":
+    "Confirm it’s you to turn on app lock",
+  "settings.security.app_lock_after": "Lock automatically",
+  "settings.security.app_lock_after_desc":
+    "How long Airhop can stay in the background before it asks again.",
+  "settings.security.lock_immediately": "Immediately",
+  "settings.security.lock_after_1m": "After 1 minute",
+  "settings.security.lock_after_5m": "After 5 minutes",
+  "settings.security.lock_after_30m": "After 30 minutes",
+  "settings.security.app_lock_no_screen_lock": "Set a screen lock first",
+  "settings.security.app_lock_no_screen_lock_body":
+    "App lock opens Airhop with your phone’s own screen lock, and this phone has none. Add a passcode, PIN or pattern in the phone’s settings, then turn this on.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Internet fallback",
@@ -2091,7 +2116,7 @@ export const strings = {
     "Opens nearby area channels. Without it, those channels stay closed and the Bluetooth mesh carries on as normal.",
   "settings.permissions.notifications": "Notifications",
   "settings.permissions.notifications_desc":
-    "Receive alerts for new messages even when the app is closed. Without it, you only see them when you open Airhop.",
+    "Receive alerts for new messages when Airhop isn’t on screen. Without it, you only see them when you open Airhop.",
   "settings.permissions.camera": "Camera",
   "settings.permissions.camera_desc":
     "Scan QR codes and capture photos or videos to send. Without it, you can still share media from your library.",

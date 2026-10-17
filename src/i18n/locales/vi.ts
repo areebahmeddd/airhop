@@ -190,6 +190,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Danh tính, tin nhắn, liên hệ và ví của bạn trên điện thoại này sẽ bị hủy, và bạn bắt đầu lại như một người mới. Không thể hoàn tác.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop đang bị khóa",
+  "lock.body": "Mở khóa bằng khóa màn hình của điện thoại.",
+  "lock.unlock": "Mở khóa",
+  "lock.auth_prompt": "Xác nhận đó là bạn để mở Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Kênh mặc định",
   "chat.channels.yours": "Kênh của bạn",
@@ -1140,6 +1146,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Quét một mã QR ecash",
   "wallet.receive.scan_short": "Quét QR",
   "wallet.receive.receiving": "Đang nhận…",
+  "wallet.receive.paste": "Dán từ bảng nhớ tạm",
+  "wallet.receive.trust_mint_body":
+    "Chỉ thêm {mint} nếu bạn tin người vận hành nó: nhà đúc giữ số Bitcoin bảo chứng cho ecash của bạn. Thêm nó cần mạng một lần; sau đó, token từ nó có thể nhận được cả khi không có mạng.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1794,6 +1803,7 @@ export const strings: Strings = {
   "settings.group.reset": "Đặt lại",
   "settings.group.always_on": "Luôn bật",
   "settings.group.notifications": "Thông báo",
+  "settings.group.lock": "Khóa ứng dụng",
   "settings.group.blocked": "Đã chặn",
   "settings.group.theme": "Chủ đề",
   "settings.group.font": "Phông chữ",
@@ -1918,6 +1928,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Bỏ chặn {name}",
   "settings.security.unblock_body":
     "{name} sẽ nhắn tin lại cho bạn được và sẽ hiện lại trên thẻ Mạng lưới khi ở gần.",
+  "settings.security.app_lock": "Khóa Airhop",
+  "settings.security.app_lock_desc":
+    "Yêu cầu khóa màn hình của điện thoại (Face ID, vân tay hoặc mật mã) để mở Airhop. Nếu một ngày khóa màn hình bị gỡ bỏ, tính năng này tự tắt thay vì khóa bạn ở ngoài.",
+  "settings.security.app_lock_auth_prompt":
+    "Xác nhận đó là bạn để bật khóa ứng dụng",
+  "settings.security.app_lock_after": "Tự động khóa",
+  "settings.security.app_lock_after_desc":
+    "Airhop được chạy nền trong bao lâu trước khi hỏi lại.",
+  "settings.security.lock_immediately": "Ngay lập tức",
+  "settings.security.lock_after_1m": "Sau 1 phút",
+  "settings.security.lock_after_5m": "Sau 5 phút",
+  "settings.security.lock_after_30m": "Sau 30 phút",
+  "settings.security.app_lock_no_screen_lock": "Hãy đặt khóa màn hình trước",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Khóa ứng dụng mở Airhop bằng chính khóa màn hình của điện thoại, mà điện thoại này chưa có. Hãy thêm mật mã, PIN hoặc hình mở khóa trong cài đặt của điện thoại, rồi bật mục này.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Dự phòng Internet",
@@ -2093,7 +2118,7 @@ export const strings: Strings = {
     "Mở các kênh khu vực ở gần. Không có nó, những kênh đó vẫn đóng và mạng lưới Bluetooth vẫn chạy như thường.",
   "settings.permissions.notifications": "Thông báo",
   "settings.permissions.notifications_desc":
-    "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Không có nó, bạn chỉ thấy chúng khi mở Airhop.",
+    "Nhận báo tin nhắn mới khi Airhop không ở trên màn hình. Không có nó, bạn chỉ thấy chúng khi mở Airhop.",
   "settings.permissions.camera": "Máy ảnh",
   "settings.permissions.camera_desc":
     "Quét mã QR và chụp ảnh hay quay video để gửi. Không có nó, bạn vẫn chia sẻ được phương tiện từ thư viện.",

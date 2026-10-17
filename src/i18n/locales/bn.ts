@@ -187,6 +187,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "এই ফোনে আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট ধ্বংস হয়ে যাবে, আর আপনি নতুন কেউ হিসেবে আবার শুরু করবেন। এটি আর ফেরানো যাবে না।",
 
+  // ---- App lock ----
+  "lock.title": "Airhop লক করা আছে",
+  "lock.body": "আপনার ফোনের স্ক্রিন লক দিয়ে এটি খুলুন।",
+  "lock.unlock": "আনলক করুন",
+  "lock.auth_prompt": "Airhop খুলতে নিশ্চিত করুন যে এটি আপনি",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "ডিফল্ট চ্যানেল",
   "chat.channels.yours": "আপনার চ্যানেল",
@@ -1125,6 +1131,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "একটি ecash QR কোড স্ক্যান করুন",
   "wallet.receive.scan_short": "QR স্ক্যান করুন",
   "wallet.receive.receiving": "নেওয়া হচ্ছে…",
+  "wallet.receive.paste": "ক্লিপবোর্ড থেকে পেস্ট করুন",
+  "wallet.receive.trust_mint_body":
+    "যিনি চালান তাঁকে বিশ্বাস করলেই কেবল {mint} যোগ করুন: মিন্ট আপনার ecash-এর পেছনের Bitcoin ধরে রাখে। যোগ করতে একবার ইন্টারনেট লাগে; এরপর এর টোকেন ইন্টারনেট ছাড়াই নেওয়া যায়।",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1774,6 +1783,7 @@ export const strings: Strings = {
   "settings.group.reset": "রিসেট",
   "settings.group.always_on": "সবসময় চালু",
   "settings.group.notifications": "বিজ্ঞপ্তি",
+  "settings.group.lock": "অ্যাপ লক",
   "settings.group.blocked": "ব্লক করা",
   "settings.group.theme": "থিম",
   "settings.group.font": "ফন্ট",
@@ -1897,6 +1907,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name}-এর ব্লক তুলুন",
   "settings.security.unblock_body":
     "{name} আবার আপনাকে বার্তা পাঠাতে পারবেন আর কাছে থাকলে মেশ ট্যাবে ফিরে আসবেন।",
+  "settings.security.app_lock": "Airhop লক করুন",
+  "settings.security.app_lock_desc":
+    "Airhop খুলতে আপনার ফোনের স্ক্রিন লক (Face ID, আঙুলের ছাপ বা পাসকোড) চাওয়া হবে। স্ক্রিন লক কখনো সরিয়ে ফেললে আপনাকে আটকে না রেখে এটি নিজে থেকেই বন্ধ হয়ে যায়।",
+  "settings.security.app_lock_auth_prompt":
+    "অ্যাপ লক চালু করতে নিশ্চিত করুন যে এটি আপনি",
+  "settings.security.app_lock_after": "স্বয়ংক্রিয়ভাবে লক করুন",
+  "settings.security.app_lock_after_desc":
+    "আবার চাওয়ার আগে Airhop কতক্ষণ ব্যাকগ্রাউন্ডে থাকতে পারবে।",
+  "settings.security.lock_immediately": "সঙ্গে সঙ্গে",
+  "settings.security.lock_after_1m": "1 মিনিট পরে",
+  "settings.security.lock_after_5m": "5 মিনিট পরে",
+  "settings.security.lock_after_30m": "30 মিনিট পরে",
+  "settings.security.app_lock_no_screen_lock": "আগে একটি স্ক্রিন লক সেট করুন",
+  "settings.security.app_lock_no_screen_lock_body":
+    "অ্যাপ লক আপনার ফোনের নিজস্ব স্ক্রিন লক দিয়ে Airhop খোলে, আর এই ফোনে কোনো স্ক্রিন লক নেই। ফোনের সেটিংসে একটি পাসকোড, পিন বা প্যাটার্ন যোগ করুন, তারপর এটি চালু করুন।",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "ইন্টারনেট বিকল্প",
@@ -2069,7 +2094,7 @@ export const strings: Strings = {
     "কাছের এলাকার চ্যানেল খোলে। এটি ছাড়া সেই চ্যানেলগুলো বন্ধ থাকে আর ব্লুটুথ মেশ যথারীতি চলে।",
   "settings.permissions.notifications": "বিজ্ঞপ্তি",
   "settings.permissions.notifications_desc":
-    "অ্যাপ বন্ধ থাকলেও নতুন বার্তার খবর পান। এটি ছাড়া কেবল Airhop খুললেই সেগুলো দেখবেন।",
+    "Airhop স্ক্রিনে না থাকলে নতুন বার্তার খবর পান। এটি ছাড়া কেবল Airhop খুললেই সেগুলো দেখবেন।",
   "settings.permissions.camera": "ক্যামেরা",
   "settings.permissions.camera_desc":
     "QR কোড স্ক্যান করে আর পাঠানোর জন্য ছবি বা ভিডিও তোলে। এটি ছাড়াও লাইব্রেরি থেকে মিডিয়া ভাগ করতে পারবেন।",

@@ -183,6 +183,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "这台手机上的身份、消息、联系人和钱包都会被销毁，你将以一个新身份重新开始。此操作无法撤销。",
 
+  // ---- App lock ----
+  "lock.title": "Airhop 已锁定",
+  "lock.body": "请用手机的屏幕锁解锁。",
+  "lock.unlock": "解锁",
+  "lock.auth_prompt": "请确认是你本人以打开 Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "默认频道",
   "chat.channels.yours": "你的频道",
@@ -1068,6 +1074,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "扫描 ecash 二维码",
   "wallet.receive.scan_short": "扫描二维码",
   "wallet.receive.receiving": "接收中…",
+  "wallet.receive.paste": "从剪贴板粘贴",
+  "wallet.receive.trust_mint_body":
+    "只有在你信任其运营者时才添加 {mint}：铸币厂替你的 ecash 保管背后的比特币。添加时需要联网一次，之后即使离线也能收取它的代币。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1681,6 +1690,7 @@ export const strings: Strings = {
   "settings.group.reset": "重置",
   "settings.group.always_on": "始终开启",
   "settings.group.notifications": "通知",
+  "settings.group.lock": "应用锁",
   "settings.group.blocked": "已屏蔽",
   "settings.group.theme": "主题",
   "settings.group.font": "字体",
@@ -1796,6 +1806,20 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "解除屏蔽 {name}",
   "settings.security.unblock_body":
     "{name} 将可以再次给你发消息，在附近时也会重新出现在网状网络标签页。",
+  "settings.security.app_lock": "锁定 Airhop",
+  "settings.security.app_lock_desc":
+    "打开 Airhop 时需要手机的屏幕锁（Face ID、指纹或密码）。如果屏幕锁被移除，此功能会自动关闭，而不会把你锁在外面。",
+  "settings.security.app_lock_auth_prompt": "请确认是你本人以开启应用锁",
+  "settings.security.app_lock_after": "自动锁定",
+  "settings.security.app_lock_after_desc":
+    "Airhop 在后台停留多久后会再次要求解锁。",
+  "settings.security.lock_immediately": "立即",
+  "settings.security.lock_after_1m": "1 分钟后",
+  "settings.security.lock_after_5m": "5 分钟后",
+  "settings.security.lock_after_30m": "30 分钟后",
+  "settings.security.app_lock_no_screen_lock": "请先设置屏幕锁",
+  "settings.security.app_lock_no_screen_lock_body":
+    "应用锁用手机自身的屏幕锁打开 Airhop，而这台手机没有设置屏幕锁。请在手机设置中添加密码、PIN 码或图案，然后再开启此项。",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "互联网回退",
@@ -1961,7 +1985,7 @@ export const strings: Strings = {
     "用于打开附近的区域频道。没有它，那些频道会保持关闭，蓝牙网状网络照常运作。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "即使应用已关闭也能收到新消息提醒。没有它，你只有打开 Airhop 时才看得到。",
+    "Airhop 不在屏幕上时也能收到新消息提醒。没有它，你只有打开 Airhop 时才看得到。",
   "settings.permissions.camera": "相机",
   "settings.permissions.camera_desc":
     "用于扫描二维码、拍摄照片或视频来发送。没有它，你仍然可以从图库分享媒体。",

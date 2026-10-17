@@ -149,9 +149,10 @@ Haptics come from `@platform/haptics` by name, never `expo-haptics` directly. Th
 | Arithmetic on a token (`FontSize.xs - 1`)                 | Add the missing value to the scale; eslint rejects the arithmetic                                         |
 | A hand-picked inner radius                                | `outer - padding`                                                                                         |
 | Contrast checked against the page                         | Check against the surface the element sits on                                                             |
+| Importing `Colors` or `DarkColors` directly               | `useThemeColors()`, or the screen ignores the theme setting                                               |
 | The same object styled in two files                       | One shared component, or one token                                                                        |
 | `@expo/vector-icons`, or an icon import without `/static` | `@react-native-vector-icons/<family>/static`: the fonts are bundled natively, so nothing loads at runtime |
 | A count or an ID the user has no word for                 | Say what it means, or say nothing                                                                         |
 | `setState` on a timer with no cleanup                     | Ref it and clear on unmount; sheets close fastest right after a tap                                       |
-| Importing `Colors` or `DarkColors` directly               | `useThemeColors()`, or the screen ignores the theme setting                                               |
 | A hand-rolled `Modal` for a sheet                         | `BottomSheet`; it owns the drag, scrim and keyboard avoidance                                             |
+| React Native's `Modal` imported directly                  | `AppModal`, which stands down while the app lock asks; the lock screen cannot cover another window        |

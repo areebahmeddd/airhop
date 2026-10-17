@@ -185,6 +185,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "ਇਸ ਫ਼ੋਨ ’ਤੇ ਤੁਹਾਡੀ ਪਛਾਣ, ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਤਬਾਹ ਹੋ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਤੁਸੀਂ ਕਿਸੇ ਨਵੇਂ ਵਿਅਕਤੀ ਵਜੋਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰਦੇ ਹੋ। ਇਹ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
 
+  // ---- App lock ----
+  "lock.title": "Airhop ਲੌਕ ਹੈ",
+  "lock.body": "ਇਸ ਨੂੰ ਆਪਣੇ ਫ਼ੋਨ ਦੇ ਸਕ੍ਰੀਨ ਲੌਕ ਨਾਲ ਖੋਲ੍ਹੋ।",
+  "lock.unlock": "ਅਨਲੌਕ ਕਰੋ",
+  "lock.auth_prompt": "Airhop ਖੋਲ੍ਹਣ ਲਈ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਇਹ ਤੁਸੀਂ ਹੋ",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "ਮੂਲ ਚੈਨਲ",
   "chat.channels.yours": "ਤੁਹਾਡੇ ਚੈਨਲ",
@@ -1131,6 +1137,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
   "wallet.receive.scan_short": "QR ਸਕੈਨ ਕਰੋ",
   "wallet.receive.receiving": "ਲੈ ਰਹੇ ਹਾਂ…",
+  "wallet.receive.paste": "ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਚਿਪਕਾਓ",
+  "wallet.receive.trust_mint_body":
+    "{mint} ਤਾਂ ਹੀ ਜੋੜੋ ਜੇ ਤੁਸੀਂ ਇਸ ਨੂੰ ਚਲਾਉਣ ਵਾਲੇ ’ਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ: ਮਿੰਟ ਤੁਹਾਡੇ ecash ਦੇ ਪਿੱਛੇ ਦਾ ਬਿਟਕੌਇਨ ਰੱਖਦਾ ਹੈ। ਜੋੜਨ ਲਈ ਇੱਕ ਵਾਰ ਇੰਟਰਨੈੱਟ ਚਾਹੀਦਾ ਹੈ; ਉਸ ਤੋਂ ਬਾਅਦ ਇਸ ਦੇ ਟੋਕਨ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਵੀ ਲਏ ਜਾ ਸਕਦੇ ਹਨ।",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1781,6 +1790,7 @@ export const strings: Strings = {
   "settings.group.reset": "ਮੁੜ-ਸੈੱਟ",
   "settings.group.always_on": "ਹਮੇਸ਼ਾ ਚਾਲੂ",
   "settings.group.notifications": "ਸੂਚਨਾਵਾਂ",
+  "settings.group.lock": "ਐਪ ਲੌਕ",
   "settings.group.blocked": "ਬਲਾਕ ਕੀਤੇ",
   "settings.group.theme": "ਥੀਮ",
   "settings.group.font": "ਫ਼ੌਂਟ",
@@ -1906,6 +1916,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} ਤੋਂ ਬਲਾਕ ਹਟਾਓ",
   "settings.security.unblock_body":
     "{name} ਤੁਹਾਨੂੰ ਦੁਬਾਰਾ ਸੁਨੇਹਾ ਭੇਜ ਸਕਣਗੇ ਅਤੇ ਨੇੜੇ ਹੋਣ ’ਤੇ ਮੈਸ਼ ਟੈਬ ’ਤੇ ਫਿਰ ਦਿਸਣਗੇ।",
+  "settings.security.app_lock": "Airhop ਲੌਕ ਕਰੋ",
+  "settings.security.app_lock_desc":
+    "Airhop ਖੋਲ੍ਹਣ ਲਈ ਤੁਹਾਡੇ ਫ਼ੋਨ ਦਾ ਸਕ੍ਰੀਨ ਲੌਕ (Face ID, ਉਂਗਲ ਦਾ ਨਿਸ਼ਾਨ ਜਾਂ ਪਾਸਕੋਡ) ਮੰਗਿਆ ਜਾਵੇਗਾ। ਜੇ ਸਕ੍ਰੀਨ ਲੌਕ ਕਦੇ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇ, ਤਾਂ ਇਹ ਤੁਹਾਨੂੰ ਬਾਹਰ ਰੋਕਣ ਦੀ ਥਾਂ ਆਪਣੇ ਆਪ ਬੰਦ ਹੋ ਜਾਂਦਾ ਹੈ।",
+  "settings.security.app_lock_auth_prompt":
+    "ਐਪ ਲੌਕ ਚਾਲੂ ਕਰਨ ਲਈ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਇਹ ਤੁਸੀਂ ਹੋ",
+  "settings.security.app_lock_after": "ਆਪਣੇ ਆਪ ਲੌਕ ਕਰੋ",
+  "settings.security.app_lock_after_desc":
+    "ਦੁਬਾਰਾ ਪੁੱਛਣ ਤੋਂ ਪਹਿਲਾਂ Airhop ਕਿੰਨੀ ਦੇਰ ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਰਹਿ ਸਕਦਾ ਹੈ।",
+  "settings.security.lock_immediately": "ਤੁਰੰਤ",
+  "settings.security.lock_after_1m": "1 ਮਿੰਟ ਬਾਅਦ",
+  "settings.security.lock_after_5m": "5 ਮਿੰਟ ਬਾਅਦ",
+  "settings.security.lock_after_30m": "30 ਮਿੰਟ ਬਾਅਦ",
+  "settings.security.app_lock_no_screen_lock": "ਪਹਿਲਾਂ ਸਕ੍ਰੀਨ ਲੌਕ ਸੈੱਟ ਕਰੋ",
+  "settings.security.app_lock_no_screen_lock_body":
+    "ਐਪ ਲੌਕ Airhop ਨੂੰ ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਆਪਣੇ ਸਕ੍ਰੀਨ ਲੌਕ ਨਾਲ ਖੋਲ੍ਹਦਾ ਹੈ, ਅਤੇ ਇਸ ਫ਼ੋਨ ਵਿੱਚ ਕੋਈ ਸਕ੍ਰੀਨ ਲੌਕ ਨਹੀਂ ਹੈ। ਫ਼ੋਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਪਾਸਕੋਡ, ਪਿੰਨ ਜਾਂ ਪੈਟਰਨ ਜੋੜੋ, ਫਿਰ ਇਸ ਨੂੰ ਚਾਲੂ ਕਰੋ।",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "ਇੰਟਰਨੈੱਟ ਸਹਾਰਾ",
@@ -2074,7 +2099,7 @@ export const strings: Strings = {
     "ਨੇੜਲੇ ਇਲਾਕੇ ਦੇ ਚੈਨਲ ਖੋਲ੍ਹਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਉਹ ਚੈਨਲ ਬੰਦ ਰਹਿੰਦੇ ਹਨ ਅਤੇ ਬਲੂਟੁੱਥ ਮੈਸ਼ ਆਮ ਵਾਂਗ ਚੱਲਦਾ ਰਹਿੰਦਾ ਹੈ।",
   "settings.permissions.notifications": "ਸੂਚਨਾਵਾਂ",
   "settings.permissions.notifications_desc":
-    "ਐਪ ਬੰਦ ਹੋਣ ’ਤੇ ਵੀ ਨਵੇਂ ਸੁਨੇਹਿਆਂ ਦੀ ਸੂਚਨਾ ਲਵੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਤੁਹਾਨੂੰ ਇਹ ਉਦੋਂ ਹੀ ਦਿਸਣਗੇ ਜਦੋਂ ਤੁਸੀਂ Airhop ਖੋਲ੍ਹੋਗੇ।",
+    "Airhop ਸਕ੍ਰੀਨ ’ਤੇ ਨਾ ਹੋਣ ’ਤੇ ਨਵੇਂ ਸੁਨੇਹਿਆਂ ਦੀ ਸੂਚਨਾ ਲਵੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਤੁਹਾਨੂੰ ਇਹ ਉਦੋਂ ਹੀ ਦਿਸਣਗੇ ਜਦੋਂ ਤੁਸੀਂ Airhop ਖੋਲ੍ਹੋਗੇ।",
   "settings.permissions.camera": "ਕੈਮਰਾ",
   "settings.permissions.camera_desc":
     "QR ਕੋਡ ਸਕੈਨ ਕਰਦਾ ਹੈ ਅਤੇ ਭੇਜਣ ਲਈ ਫ਼ੋਟੋ ਜਾਂ ਵੀਡੀਓ ਖਿੱਚਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਵੀ ਤੁਸੀਂ ਆਪਣੀ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚੋਂ ਮੀਡੀਆ ਸਾਂਝਾ ਕਰ ਸਕਦੇ ਹੋ।",

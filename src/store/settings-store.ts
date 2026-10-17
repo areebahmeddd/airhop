@@ -41,6 +41,11 @@ export const UPLOAD_QUALITY_VALUES: Record<UploadQuality, number> = {
 export const MEDIA_RETENTION_DAY_OPTIONS = [7, 14, 30] as const;
 export type MediaRetentionDays = (typeof MEDIA_RETENTION_DAY_OPTIONS)[number];
 
+// Seconds in the background before the app lock asks again. Zero locks on
+// leaving; the rest spare a quick trip to another app, as WhatsApp's do.
+export const APP_LOCK_DELAY_OPTIONS = [0, 60, 300, 1800] as const;
+export type AppLockDelaySeconds = (typeof APP_LOCK_DELAY_OPTIONS)[number];
+
 // Which bridge configuration Tor uses.
 //
 // "off" is a direct connection to a public relay: fastest, and what an
@@ -72,6 +77,9 @@ interface SettingsState {
   hideNotificationPreviews: boolean;
   // Master switch for Ring, regardless of each contact's allowRing grant.
   ringAlertsEnabled: boolean;
+  // See services/app-lock.
+  appLockEnabled: boolean;
+  appLockDelaySeconds: AppLockDelaySeconds;
   // Whether the mesh keeps running after the app is closed.
   backgroundMeshEnabled: boolean;
   // Android only: start the mesh automatically after boot.
@@ -127,6 +135,8 @@ interface SettingsState {
   setLiveVoiceEnabled: (enabled: boolean) => void;
   setHideNotificationPreviews: (hide: boolean) => void;
   setRingAlertsEnabled: (enabled: boolean) => void;
+  setAppLockEnabled: (enabled: boolean) => void;
+  setAppLockDelaySeconds: (seconds: AppLockDelaySeconds) => void;
   setBackgroundMeshEnabled: (enabled: boolean) => void;
   setAutoStartOnBoot: (enabled: boolean) => void;
   setLanTransportEnabled: (enabled: boolean) => void;
@@ -164,6 +174,8 @@ const DEFAULTS = {
   liveVoiceEnabled: true,
   hideNotificationPreviews: true,
   ringAlertsEnabled: true,
+  appLockEnabled: false,
+  appLockDelaySeconds: 0 as AppLockDelaySeconds,
   backgroundMeshEnabled: true,
   autoStartOnBoot: false,
   lanTransportEnabled: false,
@@ -241,6 +253,12 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setRingAlertsEnabled(enabled) {
         set({ ringAlertsEnabled: enabled });
+      },
+      setAppLockEnabled(enabled) {
+        set({ appLockEnabled: enabled });
+      },
+      setAppLockDelaySeconds(seconds) {
+        set({ appLockDelaySeconds: seconds });
       },
       setBackgroundMeshEnabled(enabled) {
         set({ backgroundMeshEnabled: enabled });
@@ -358,6 +376,10 @@ export const useSettingsStore = create<SettingsState>()(
           ...state,
           customRelays: customRelays.slice(0, MAX_CUSTOM_RELAYS),
         };
+        // A delay no build offers would never match a row in the picker.
+        if (!APP_LOCK_DELAY_OPTIONS.includes(merged.appLockDelaySeconds)) {
+          merged.appLockDelaySeconds = DEFAULTS.appLockDelaySeconds;
+        }
         if (merged.customRelays.length === 0) merged.geoRelayDiscovery = true;
         return merged;
       },

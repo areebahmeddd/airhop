@@ -35,7 +35,6 @@ jest.mock("../wallet-service", () => ({
   findNutzapTarget: jest.fn(),
   lockProofsForNutzap: jest.fn(),
   publishLockedNutzap: jest.fn(),
-  settleNutzap: jest.fn(),
   failNutzapDelivery: jest.fn(),
   failSend: jest.fn(),
   reclaimSend: jest.fn(),
@@ -58,13 +57,13 @@ import { useContactsStore } from "@store/contacts-store";
 import { getMeshService } from "../mesh-service";
 import { describePayResult, payPerson } from "../payment-router";
 import {
+  failNutzapDelivery,
   failSend,
   findNutzapTarget,
   lockProofsForNutzap,
   prepareSend,
   publishLockedNutzap,
   quoteSend,
-  settleNutzap,
   WalletError,
 } from "../wallet-service";
 
@@ -169,7 +168,12 @@ beforeEach(() => {
   mockedPublish.mockResolvedValue({ published: true, token: "cashuBlocked" });
   mockedFind.mockResolvedValue({
     ok: true,
-    target: { mintUrl: MINT, p2pkPubkey: P2PK, relays: [THEIR_RELAY] },
+    target: {
+      mintUrl: MINT,
+      advertisedMintUrl: MINT,
+      p2pkPubkey: P2PK,
+      relays: [THEIR_RELAY],
+    },
   });
 });
 
@@ -276,7 +280,9 @@ describe("payPerson commits exactly once", () => {
     expect(mockedPrepare).not.toHaveBeenCalled();
     expect(result?.rail).toBe("nutzap-dm");
     expect(result?.final).toBe(true);
-    expect(settleNutzap).toHaveBeenCalledWith("tx-nutzap-1");
+    // Handed off is not received: it stays pending, token and all, until
+    // reconcile sees the coins redeemed.
+    expect(failNutzapDelivery).not.toHaveBeenCalled();
   });
 
   it("keeps a refused nutzap final even when no route carried it either", async () => {
@@ -292,7 +298,6 @@ describe("payPerson commits exactly once", () => {
     expect(result?.rail).toBe("nutzap-undelivered");
     expect(result?.final).toBe(true);
     expect(result?.token).toBe("cashuBlocked");
-    expect(settleNutzap).not.toHaveBeenCalled();
     expect(mockedPrepare).not.toHaveBeenCalled();
   });
 

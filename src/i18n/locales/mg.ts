@@ -192,6 +192,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Ho rava ny maha-izy anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao amin'ity findy ity, ary hanomboka indray ho olona vaovao ianao. Tsy azo averina izany.",
 
+  // ---- App lock ----
+  "lock.title": "Mihidy ny Airhop",
+  "lock.body": "Sokafy amin'ny hidin'ny efijery amin'ny findainao izy.",
+  "lock.unlock": "Sokafy",
+  "lock.auth_prompt": "Hamafiso fa ianao io mba hanokafana ny Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Fantsona mahazatra",
   "chat.channels.yours": "Ny fantsonanao",
@@ -1177,6 +1183,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Alaivo sary ny kaody QR ecash",
   "wallet.receive.scan_short": "Alaivo sary ny QR",
   "wallet.receive.receiving": "Raisina…",
+  "wallet.receive.paste": "Apetaho avy amin'ny takelaka fitehirizana",
+  "wallet.receive.trust_mint_body":
+    "Ampio i {mint} raha matoky ny mpitantana azy ihany ianao: ny mpamoaka no mitana ny Bitcoin manohana ny ecash-nao. Mila Internet indray mandeha ny fampidirana azy; aorian'izay dia azo raisina na tsy misy Internet aza ny tapakila avy aminy.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1852,6 +1861,7 @@ export const strings: Strings = {
   "settings.group.reset": "Famerenana",
   "settings.group.always_on": "Mandeha foana",
   "settings.group.notifications": "Fampandrenesana",
+  "settings.group.lock": "Hidin'ny fampiharana",
   "settings.group.blocked": "Voasakana",
   "settings.group.theme": "Lohahevitra",
   "settings.group.font": "Endri-tsoratra",
@@ -1982,6 +1992,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Esory ny sakana amin'i {name}",
   "settings.security.unblock_body":
     "Ho afaka manoratra aminao indray i {name} ary hiseho indray amin'ny takelaka Harato rehefa akaiky izy.",
+  "settings.security.app_lock": "Hidio ny Airhop",
+  "settings.security.app_lock_desc":
+    "Angatahina ny hidin'ny efijery amin'ny findainao (Face ID, dian-tanana na kaody) mba hanokafana ny Airhop. Raha esorina indray andro ny hidin'ny efijery, dia maty ho azy ity fa tsy hanidy anao any ivelany.",
+  "settings.security.app_lock_auth_prompt":
+    "Hamafiso fa ianao io mba handrehitra ny hidin'ny fampiharana",
+  "settings.security.app_lock_after": "Hidio ho azy",
+  "settings.security.app_lock_after_desc":
+    "Hafiriana no azon'ny Airhop ijanonana any ambadika alohan'ny hanontaniany indray.",
+  "settings.security.lock_immediately": "Avy hatrany",
+  "settings.security.lock_after_1m": "Rehefa afaka 1 minitra",
+  "settings.security.lock_after_5m": "Rehefa afaka 5 minitra",
+  "settings.security.lock_after_30m": "Rehefa afaka 30 minitra",
+  "settings.security.app_lock_no_screen_lock":
+    "Mametraha hidin'ny efijery aloha",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Ny hidin'ny fampiharana dia manokatra ny Airhop amin'ny hidin'ny efijery an'ny findainao ihany, nefa tsy manana izany ity finday ity. Ampio kaody, PIN na sary ao amin'ny fikirakiran'ny finday, avy eo alefaso ity.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Fialana amin'ny Internet",
@@ -2168,7 +2194,7 @@ export const strings: Strings = {
     "Manokatra ny fantsonan'ny faritra akaiky. Raha tsy misy izany dia mijanona mihidy ireo fantsona ireo ary manohy toy ny mahazatra ny harato Bluetooth.",
   "settings.permissions.notifications": "Fampandrenesana",
   "settings.permissions.notifications_desc":
-    "Mandray fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Raha tsy misy izany dia rehefa manokatra ny Airhop ianao vao mahita azy ireo.",
+    "Mandray fampandrenesana momba ny hafatra vaovao rehefa tsy eo amin'ny efijery ny Airhop. Raha tsy misy izany dia rehefa manokatra ny Airhop ianao vao mahita azy ireo.",
   "settings.permissions.camera": "Fakan-tsary",
   "settings.permissions.camera_desc":
     "Maka sary kaody QR ary maka sary na horonan-tsary halefa. Raha tsy misy izany dia mbola afaka mizara media avy amin'ny tahirinao ianao.",

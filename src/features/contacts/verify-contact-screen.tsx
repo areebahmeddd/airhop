@@ -24,6 +24,7 @@ import { rejected, succeeded } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { useContactsStore } from "@store/contacts-store";
+import AppModal from "@ui/components/app-modal";
 import SafetyWords from "@ui/components/safety-words";
 import {
   BUTTON_HEIGHT,
@@ -39,14 +40,7 @@ import {
 import { safetyNumberWords } from "@utils/username";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import React, { useMemo, useRef, useState } from "react";
-import {
-  Linking,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
@@ -201,7 +195,7 @@ export default function VerifyContactScreen({
   const awaitingAnswer = !granted && !denied;
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
@@ -485,7 +479,7 @@ export default function VerifyContactScreen({
           )}
         </SafeAreaView>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

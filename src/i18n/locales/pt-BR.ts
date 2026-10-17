@@ -191,6 +191,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Sua identidade, mensagens, contatos e carteira neste celular são destruídos, e você recomeça como outra pessoa. Não dá para desfazer.",
 
+  // ---- App lock ----
+  "lock.title": "O Airhop está bloqueado",
+  "lock.body": "Desbloqueie com o bloqueio de tela do seu celular.",
+  "lock.unlock": "Desbloquear",
+  "lock.auth_prompt": "Confirme que é você para abrir o Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Canais padrão",
   "chat.channels.yours": "Seus canais",
@@ -1156,6 +1162,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Escanear um código QR de ecash",
   "wallet.receive.scan_short": "Escanear QR",
   "wallet.receive.receiving": "Recebendo…",
+  "wallet.receive.paste": "Colar da área de transferência",
+  "wallet.receive.trust_mint_body":
+    "Adicione {mint} só se você confiar em quem a administra: uma casa de emissão guarda o Bitcoin que lastreia seu ecash. Adicioná-la precisa de internet uma vez; depois disso, os tokens dela podem ser recebidos offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1821,6 +1830,7 @@ export const strings: Strings = {
   "settings.group.reset": "Redefinição",
   "settings.group.always_on": "Sempre ligado",
   "settings.group.notifications": "Notificações",
+  "settings.group.lock": "Bloqueio do app",
   "settings.group.blocked": "Bloqueados",
   "settings.group.theme": "Tema",
   "settings.group.font": "Fonte",
@@ -1947,6 +1957,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Desbloquear {name}",
   "settings.security.unblock_body":
     "{name} poderá escrever para você de novo e vai reaparecer na aba Malha quando estiver por perto.",
+  "settings.security.app_lock": "Bloquear o Airhop",
+  "settings.security.app_lock_desc":
+    "Pede o bloqueio de tela do seu celular (Face ID, digital ou código) para abrir o Airhop. Se o bloqueio de tela for removido algum dia, isto se desliga sozinho em vez de deixar você de fora.",
+  "settings.security.app_lock_auth_prompt":
+    "Confirme que é você para ativar o bloqueio do app",
+  "settings.security.app_lock_after": "Bloquear automaticamente",
+  "settings.security.app_lock_after_desc":
+    "Quanto tempo o Airhop pode ficar em segundo plano antes de pedir de novo.",
+  "settings.security.lock_immediately": "Imediatamente",
+  "settings.security.lock_after_1m": "Após 1 minuto",
+  "settings.security.lock_after_5m": "Após 5 minutos",
+  "settings.security.lock_after_30m": "Após 30 minutos",
+  "settings.security.app_lock_no_screen_lock":
+    "Configure um bloqueio de tela primeiro",
+  "settings.security.app_lock_no_screen_lock_body":
+    "O bloqueio do app abre o Airhop com o próprio bloqueio de tela do seu celular, e este celular não tem nenhum. Adicione um código, PIN ou padrão nas configurações do celular e depois ative isto.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Alternativa por internet",
@@ -2126,7 +2152,7 @@ export const strings: Strings = {
     "Abre os canais das áreas próximas. Sem ela, esses canais ficam fechados e a malha Bluetooth segue normalmente.",
   "settings.permissions.notifications": "Notificações",
   "settings.permissions.notifications_desc":
-    "Receba avisos de mensagens novas mesmo com o app fechado. Sem elas, você só vê ao abrir o Airhop.",
+    "Receba avisos de mensagens novas quando o Airhop não está na tela. Sem elas, você só vê ao abrir o Airhop.",
   "settings.permissions.camera": "Câmera",
   "settings.permissions.camera_desc":
     "Escaneia códigos QR e tira fotos ou vídeos para enviar. Sem ela, você ainda pode compartilhar mídia da galeria.",

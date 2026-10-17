@@ -451,6 +451,91 @@ describe("burst close is the talker's decision", () => {
     expect(session.finalizedRecording()).toBeNull();
   });
 
+  // An encoder emits the last ~200 ms of a hold only on end of stream, which
+  // native delivers while the stop is in flight.
+  describe("the encoder's tail", () => {
+    const TAIL_FRAMES = 3;
+
+    // Native's stop: emits what the encoder still held, then resolves.
+    function flushingSession(packets: Packet[]): {
+      session: VoiceCaptureSession;
+      feed: (f: Uint8Array) => void;
+      releaseStop: () => void;
+    } {
+      let onFrame: ((f: Uint8Array) => void) | null = null;
+      let releaseStop = (): void => undefined;
+      const session = new VoiceCaptureSession(
+        {
+          senderPeerID: "aabbccdd00112233",
+          signingPrivKey: ed25519.utils.randomSecretKey(),
+          onPacket: (p) => packets.push(p),
+        },
+        {
+          startCapture: (cb) => {
+            onFrame = cb;
+            return Promise.resolve();
+          },
+          stopCapture: () =>
+            new Promise<void>((resolve) => {
+              releaseStop = () => {
+                hold((f) => onFrame?.(f), TAIL_FRAMES);
+                resolve();
+              };
+            }),
+        },
+      );
+      return {
+        session,
+        feed: (f) => onFrame?.(f),
+        releaseStop: () => releaseStop(),
+      };
+    }
+
+    it("is kept by a release, ahead of END", async () => {
+      const packets: Packet[] = [];
+      const { session, feed, releaseStop } = flushingSession(packets);
+      await session.startPtt();
+      hold(feed);
+      const stopping = session.stopPtt();
+      releaseStop();
+      await stopping;
+
+      expect(session.recordedDurationMs).toBe(
+        (KEEPABLE_FRAMES + TAIL_FRAMES) * 64,
+      );
+      expect(kinds(packets).at(-1)).toBe("end");
+    });
+
+    it("is dropped by a cancel", async () => {
+      const packets: Packet[] = [];
+      const { session, feed, releaseStop } = flushingSession(packets);
+      await session.startPtt();
+      hold(feed);
+      const cancelling = session.cancelPtt();
+      releaseStop();
+      await cancelling;
+
+      expect(session.finalizedRecording()).toBeNull();
+      expect(kinds(packets)).not.toContain("end");
+    });
+
+    it("stays in its own burst when the next press lands mid-flush", async () => {
+      const packets: Packet[] = [];
+      const { session, feed, releaseStop } = flushingSession(packets);
+      await session.startPtt();
+      hold(feed);
+      const first = session.burstIDHex;
+      const stopping = session.stopPtt();
+      const pressing = session.startPtt();
+      releaseStop();
+      await stopping;
+      await pressing;
+
+      expect(session.burstIDHex).not.toBe(first);
+      expect(session.recordedDurationMs).toBe(0);
+    });
+  });
+
   it("keeps a hold that just clears the minimum", async () => {
     const { packets, session } = collect();
     await session.startPtt();

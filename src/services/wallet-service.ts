@@ -63,6 +63,7 @@ import {
   publishNutzapInfo,
   subscribeNutzaps,
   type NutzapInfo,
+  type ReceivedNutzap,
 } from "@core/payments/nutzap";
 import {
   rebuildSwapPreview,
@@ -187,12 +188,14 @@ export class WalletError extends Error {
   // `reconcile` finds out, so a caller must not pay again another way.
   readonly inDoubt: boolean;
   readonly copy?: FailureCopy;
+  // The mint's NUT-00 error code, when it sent one.
+  readonly mintCode?: number;
 
   constructor(
     code: WalletErrorCode,
     message: string | FailureCopy,
     detail?: string,
-    opts: { inDoubt?: boolean } = {},
+    opts: { inDoubt?: boolean; mintCode?: number } = {},
   ) {
     super(
       typeof message === "string"
@@ -203,6 +206,7 @@ export class WalletError extends Error {
     this.code = code;
     this.detail = detail;
     this.inDoubt = opts.inDoubt === true;
+    this.mintCode = opts.mintCode;
     if (typeof message !== "string") this.copy = message;
   }
 }
@@ -227,8 +231,19 @@ function isDefiniteRefusal(err: unknown): boolean {
 // cashu-ts retries lost requests on NUT-19 mints, so "already spent" may be our
 // own earlier attempt succeeding. It means "the mint has taken these inputs",
 // never "the operation failed"; callers must ask the mint which.
+//
+// By NUT-00 code where sent: 10002 (output already signed) also says "already"
+// but means a reused counter, and reading it as spent drops inputs the mint
+// never took. The text is the fallback for mints that send no code.
+const NUT_TOKEN_SPENT = 11001;
+const NUT_OUTPUT_ALREADY_SIGNED = 10002;
+
 function isAlreadySpentError(err: WalletError): boolean {
-  return /spent|already|TOKEN_ALREADY/i.test(err.detail ?? err.message);
+  if (err.mintCode === NUT_TOKEN_SPENT) return true;
+  if (err.mintCode === NUT_OUTPUT_ALREADY_SIGNED) return false;
+  const text = err.detail ?? err.message;
+  if (/already signed|signed before|blinded/i.test(text)) return false;
+  return /spent|already|TOKEN_ALREADY/i.test(text);
 }
 
 // Whether a failure is the radio rather than the mint, read from the whole
@@ -291,7 +306,9 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
     );
   }
   if (isMintOperationError(err)) {
-    return new WalletError("mint-error", err.message, String(err));
+    return new WalletError("mint-error", err.message, String(err), {
+      mintCode: err.code,
+    });
   }
   const message = err instanceof Error ? err.message : String(err);
   if (isNetworkFailure(err)) {
@@ -2596,6 +2613,16 @@ async function restoreSwapOutputs(
 ): Promise<SendResponse> {
   const outputs = swapPreviewOutputs(preview);
   const keepCount = swapPreviewKeepCount(preview);
+  // Keys first: an inactive keyset arrives without them, and failing after the
+  // restore would read as "no NUT-09" and discard the outputs.
+  try {
+    await wallet.ensureOperableKeysets([preview.keysetId]);
+  } catch (err) {
+    if (isMintSilent(err)) {
+      throw new WalletError("offline", { key: "wallet.svc.keyset_unknown" });
+    }
+    throw err;
+  }
   const response = await wallet.mint.restore({
     outputs: outputs.map((output) => output.blindedMessage),
   });
@@ -2765,9 +2792,18 @@ async function runReconcilePass(): Promise<void> {
   // device can unblind.
   for (const tx of state.history) {
     if (tx.kind !== "melt" || tx.status !== "pending") continue;
-    if (!tx.quoteId || tx.meltOutputs === undefined) continue;
     // Its answer is not late, it is still on its way.
     if (meltsInFlight.has(tx.id)) continue;
+    // No blanks means it died before its request: the mint never saw it.
+    if (tx.meltOutputs === undefined) {
+      useWalletStore.getState().releaseReserved(tx.id);
+      useWalletStore.getState().updateTx(tx.id, {
+        status: "failed",
+        ...txFailure("wallet.svc.mint_did_not_pay"),
+      });
+      continue;
+    }
+    if (!tx.quoteId) continue;
     if (pass.halted()) return;
     try {
       await recoverMeltChange(tx);
@@ -2819,6 +2855,8 @@ async function runReconcilePass(): Promise<void> {
     if (!tx || tx.status !== "pending") continue;
     if (tx.kind === "swap" || tx.kind === "nutzap-out") continue;
     if (tx.swapPreview !== undefined || meltsInFlight.has(txId)) continue;
+    // Only recoverMeltChange closes a melt with blanks: it reads the change.
+    if (tx.meltOutputs !== undefined) continue;
     if (entry.proofs.some((p) => awaitingReplay.has(p.secret))) continue;
     if (pass.halted()) return;
     try {
@@ -3195,8 +3233,10 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
       try {
         await wallet.ensureOperableKeysets(signatures.map((sig) => sig.id));
         persistMintSnapshot(tx.mintUrl, tx.unit, wallet);
-      } catch {
-        // Keys that landed are kept; the rebuild decides.
+      } catch (err) {
+        // Pending while the mint is silent, as on the live path; a keyset it
+        // says it lacks is final and closes below.
+        if (isMintSilent(err)) return;
       }
       if (walletReplaced(epoch)) return;
       const change = wallet.createMeltChangeProofs(outputs, signatures);
@@ -3504,6 +3544,8 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
   // Before the blanks are written, so `reconcile` never sees this quote UNPAID
   // and releases proofs the melt is about to spend.
   meltsInFlight.add(txId);
+  // Until the request may have left, any failure can only release.
+  let requested = false;
   try {
     const wallet = await getWallet(quote.mintUrl, quote.unit);
     assertSameWallet(epoch);
@@ -3524,6 +3566,7 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
 
     let change: Proof[];
     let preimage: string | undefined;
+    requested = true;
     try {
       const result = await withMeltTimeout(() => wallet.completeMelt(preview));
       assertSameWallet(epoch);
@@ -3576,7 +3619,10 @@ export async function payLightningInvoice(quote: MeltQuote): Promise<{
     // our own paid first attempt; releasing on it would show a balance the mint
     // burned and clear the blanks, losing the change for good. `change-pending`
     // is a paid invoice. Both stay with the blanks for the quote to decide.
-    if (walletErr.code === "mint-error" && !isAlreadySpentError(walletErr)) {
+    if (
+      !requested ||
+      (walletErr.code === "mint-error" && !isAlreadySpentError(walletErr))
+    ) {
       store.releaseReserved(txId);
       store.updateTx(txId, {
         status: "failed",
@@ -4104,8 +4150,11 @@ async function lockProofsOnce(
 // same payment.
 
 export interface NutzapTarget {
-  // Where to lock: a mint they listed that we also hold enough value at.
+  // A mint they listed that we hold enough at, keyed as this wallet keys it.
   mintUrl: string;
+  // The same mint as their kind 10019 spells it, for the `u` tag: relays match
+  // `#u` byte for byte.
+  advertisedMintUrl: string;
   // Their 33-byte compressed P2PK key, from the kind 10019.
   p2pkPubkey: string;
   // Their kind 10019 relays. Publish there, not to ours, or they never see it.
@@ -4135,22 +4184,21 @@ export async function findNutzapTarget(params: {
   // A mint on their list that we fund. No `assertUnlocked`: a locked wallet
   // reads as zero here, and the next rail raises the real "locked" error.
   const state = useWalletStore.getState();
-  const shared = info.mintUrls
-    .map(normalizeMintUrl)
-    .find(
-      (url) =>
-        (state.proofs[accountKey(url, params.unit)] ?? []).reduce(
-          (s, p) => s + p.amount,
-          0,
-        ) >= params.amount,
-    );
+  const shared = info.mintUrls.find(
+    (advertised) =>
+      (
+        state.proofs[accountKey(normalizeMintUrl(advertised), params.unit)] ??
+        []
+      ).reduce((s, p) => s + p.amount, 0) >= params.amount,
+  );
   if (shared === undefined) {
     return { ok: false, reason: t("wallet.pay.why_no_shared_mint") };
   }
   return {
     ok: true,
     target: {
-      mintUrl: shared,
+      mintUrl: normalizeMintUrl(shared),
+      advertisedMintUrl: shared,
       p2pkPubkey: info.p2pkPubkey,
       relays: info.relays,
     },
@@ -4171,6 +4219,8 @@ export async function publishLockedNutzap(params: {
   comment?: string;
   // Their kind 10019 relay list. See NutzapTarget.
   relays?: string[];
+  // Their spelling of the mint, for the `u` tag. See NutzapTarget.
+  advertisedMintUrl?: string;
 }): Promise<{ published: boolean; token: string }> {
   const store = useWalletStore.getState();
   const token = buildToken(
@@ -4184,7 +4234,7 @@ export async function publishLockedNutzap(params: {
   try {
     await publishNutzap({
       proofs: params.locked,
-      mintUrl: params.mintUrl,
+      mintUrl: params.advertisedMintUrl ?? params.mintUrl,
       unit: params.unit,
       recipientPubkey: params.recipientPubkey,
       senderPrivKey: params.senderPrivKey,
@@ -4200,11 +4250,6 @@ export async function publishLockedNutzap(params: {
   }
 }
 
-// Delivered by a route other than the relay.
-export function settleNutzap(txId: string): void {
-  useWalletStore.getState().updateTx(txId, { status: "completed" });
-}
-
 // Not reclaimable: locked proofs are the recipient's whatever happens.
 export function failNutzapDelivery(txId: string, reason: TxFailure): void {
   useWalletStore.getState().updateTx(txId, reason);
@@ -4218,11 +4263,14 @@ function isNutzapSettled(eventId: string): boolean {
     .settledNutzaps.some((entry) => entry.id === eventId);
 }
 
+// Retry for a nutzap that failed for a passing reason. A relay hands an event
+// to a subscription once, and the next resubscribe can be days away.
+const NUTZAP_RETRY_MS = 2 * 60_000;
+
 // Redeem incoming nutzaps, one at a time. Anything not settled (unreachable,
-// Tor-blocked, an answer in doubt) is tried again by the next subscription;
-// settled events never are. Serial, so a burst of N events is N requests in a
-// row rather than N at once, and a relay's duplicate of one in flight is
-// dropped. No mints held means nothing to redeem, and no subscription.
+// Tor-blocked, locked, in doubt) is retried; settled events never are. Serial,
+// so a burst is requests in a row, and a duplicate in flight is dropped. No
+// mints held means no subscription.
 export function startNutzapWatcher(params: {
   myPubkey: string;
   client: NostrClient;
@@ -4231,8 +4279,23 @@ export function startNutzapWatcher(params: {
   const mintUrls = Object.keys(useWalletStore.getState().mints);
   if (mintUrls.length === 0) return () => {};
   const inFlight = new Set<string>();
+  const waiting = new Map<string, ReceivedNutzap>();
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let stopped = false;
   let queue: Promise<void> = Promise.resolve();
-  return subscribeNutzaps(params.myPubkey, mintUrls, params.client, (zap) => {
+
+  const armRetry = (): void => {
+    if (retryTimer !== null || stopped) return;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      const due = [...waiting.values()];
+      waiting.clear();
+      for (const zap of due) handle(zap);
+    }, NUTZAP_RETRY_MS);
+  };
+
+  const handle = (zap: ReceivedNutzap): void => {
+    if (stopped) return;
     if (inFlight.has(zap.eventId) || isNutzapSettled(zap.eventId)) return;
     inFlight.add(zap.eventId);
     queue = queue.then(async () => {
@@ -4250,12 +4313,29 @@ export function startNutzapWatcher(params: {
         );
         if (amount > 0) params.onRedeemed?.(amount, zap.unit, zap.senderPubkey);
       } catch {
-        // Refusals are settled inside; the rest waits for a resubscribe.
+        // Refusals are settled inside; anything else is worth another try.
+        if (!isNutzapSettled(zap.eventId)) {
+          waiting.set(zap.eventId, zap);
+          armRetry();
+        }
       } finally {
         inFlight.delete(zap.eventId);
       }
     });
-  });
+  };
+
+  const unsubscribe = subscribeNutzaps(
+    params.myPubkey,
+    mintUrls,
+    params.client,
+    handle,
+  );
+  return () => {
+    stopped = true;
+    if (retryTimer !== null) clearTimeout(retryTimer);
+    waiting.clear();
+    unsubscribe();
+  };
 }
 
 // Our kind 10019, replaceable, so safe on every launch. Needs at least one mint.

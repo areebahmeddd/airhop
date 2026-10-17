@@ -87,6 +87,9 @@ export class WiFiController {
   // The user's switch. Flipping it on is what clears `unstable` short of a
   // relaunch, since it is the one signal that carries intent.
   private enabled = true;
+  // Background running off and the app off screen. Apart from `enabled`, so a
+  // return neither clears the breaker nor reads as the user's choice.
+  private offScreen = false;
   // Paired devices, or null where there is no gate. Null on iOS too until the
   // first report, since attaching earlier would run a radio for devices not
   // yet confirmed to exist.
@@ -126,6 +129,14 @@ export class WiFiController {
     this.enabled = enabled;
     this.generation += 1;
     if (enabled) this.clearUnstable();
+    this.attempt = 0;
+    void this.reconcile();
+  }
+
+  setOffScreen(offScreen: boolean): void {
+    if (this.offScreen === offScreen) return;
+    this.offScreen = offScreen;
+    this.generation += 1;
     this.attempt = 0;
     void this.reconcile();
   }
@@ -265,6 +276,11 @@ export class WiFiController {
     if (!this.enabled) {
       if (this.started) await this.releaseNative();
       this.report("off");
+      return;
+    }
+
+    if (this.offScreen) {
+      if (this.started) await this.releaseNative();
       return;
     }
 

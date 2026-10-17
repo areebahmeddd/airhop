@@ -191,6 +191,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Twoja tożsamość, wiadomości, kontakty i portfel na tym telefonie zostaną zniszczone, a ty zaczniesz od nowa jako ktoś nowy. Nie da się tego cofnąć.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop jest zablokowany",
+  "lock.body": "Odblokuj go blokadą ekranu telefonu.",
+  "lock.unlock": "Odblokuj",
+  "lock.auth_prompt": "Potwierdź, że to ty, aby otworzyć Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Kanały domyślne",
   "chat.channels.yours": "Twoje kanały",
@@ -1155,6 +1161,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Zeskanuj kod QR z ecash",
   "wallet.receive.scan_short": "Skanuj QR",
   "wallet.receive.receiving": "Odbieranie…",
+  "wallet.receive.paste": "Wklej ze schowka",
+  "wallet.receive.trust_mint_body":
+    "Dodaj {mint} tylko wtedy, gdy ufasz temu, kto ją prowadzi: mennica trzyma bitcoiny stojące za twoim ecashem. Dodanie wymaga raz internetu; potem tokeny z niej da się odbierać offline.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1813,6 +1822,7 @@ export const strings: Strings = {
   "settings.group.reset": "Reset",
   "settings.group.always_on": "Zawsze włączone",
   "settings.group.notifications": "Powiadomienia",
+  "settings.group.lock": "Blokada aplikacji",
   "settings.group.blocked": "Zablokowani",
   "settings.group.theme": "Motyw",
   "settings.group.font": "Czcionka",
@@ -1938,6 +1948,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Odblokuj {name}",
   "settings.security.unblock_body":
     "{name} znów będzie mógł do ciebie pisać i pojawi się w zakładce Mesh, gdy będzie w pobliżu.",
+  "settings.security.app_lock": "Blokuj Airhop",
+  "settings.security.app_lock_desc":
+    "Do otwarcia Airhop potrzebna będzie blokada ekranu telefonu (Face ID, odcisk palca lub kod). Jeśli blokada ekranu kiedyś zniknie, ta blokada sama się wyłączy, zamiast odciąć cię od aplikacji.",
+  "settings.security.app_lock_auth_prompt":
+    "Potwierdź, że to ty, aby włączyć blokadę aplikacji",
+  "settings.security.app_lock_after": "Blokuj automatycznie",
+  "settings.security.app_lock_after_desc":
+    "Jak długo Airhop może być w tle, zanim znowu poprosi o odblokowanie.",
+  "settings.security.lock_immediately": "Natychmiast",
+  "settings.security.lock_after_1m": "Po 1 minucie",
+  "settings.security.lock_after_5m": "Po 5 minutach",
+  "settings.security.lock_after_30m": "Po 30 minutach",
+  "settings.security.app_lock_no_screen_lock": "Najpierw ustaw blokadę ekranu",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Blokada aplikacji otwiera Airhop za pomocą blokady ekranu samego telefonu, a ten telefon jej nie ma. Dodaj kod, PIN lub wzór w ustawieniach telefonu, a potem włącz tę opcję.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Internet zapasowo",
@@ -2115,7 +2140,7 @@ export const strings: Strings = {
     "Otwiera kanały okolicy. Bez niej te kanały pozostają zamknięte, a sieć mesh na Bluetooth działa normalnie.",
   "settings.permissions.notifications": "Powiadomienia",
   "settings.permissions.notifications_desc":
-    "Dostajesz alerty o nowych wiadomościach, nawet gdy aplikacja jest zamknięta. Bez nich zobaczysz je dopiero po otwarciu Airhop.",
+    "Dostajesz alerty o nowych wiadomościach, gdy Airhop nie jest na ekranie. Bez nich zobaczysz je dopiero po otwarciu Airhop.",
   "settings.permissions.camera": "Aparat",
   "settings.permissions.camera_desc":
     "Skanuje kody QR i robi zdjęcia albo filmy do wysłania. Bez niego nadal możesz udostępniać multimedia z galerii.",

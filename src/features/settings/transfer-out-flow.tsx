@@ -23,6 +23,7 @@ import {
   type SenderState,
 } from "@services/move-sender";
 import { panicWipe } from "@services/panic-wipe";
+import AppModal from "@ui/components/app-modal";
 import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
 import SafetyWords from "@ui/components/safety-words";
@@ -43,7 +44,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -611,7 +611,7 @@ export default function TransferOutFlow({
   return (
     <>
       {renderSheet()}
-      <Modal
+      <AppModal
         visible={modalOpen}
         animationType="slide"
         presentationStyle="fullScreen"
@@ -628,7 +628,7 @@ export default function TransferOutFlow({
           ) : null}
           {renderModalBody()}
         </View>
-      </Modal>
+      </AppModal>
     </>
   );
 }

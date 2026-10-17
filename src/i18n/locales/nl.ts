@@ -192,6 +192,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Je identiteit, berichten, contacten en portemonnee op deze telefoon worden vernietigd, en je begint opnieuw als iemand anders. Dit kan niet ongedaan worden gemaakt.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop is vergrendeld",
+  "lock.body": "Ontgrendel het met de schermvergrendeling van je telefoon.",
+  "lock.unlock": "Ontgrendelen",
+  "lock.auth_prompt": "Bevestig dat jij het bent om Airhop te openen",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Standaardkanalen",
   "chat.channels.yours": "Jouw kanalen",
@@ -1151,6 +1157,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Een ecash-QR-code scannen",
   "wallet.receive.scan_short": "QR scannen",
   "wallet.receive.receiving": "Bezig met ontvangen…",
+  "wallet.receive.paste": "Plakken vanaf het klembord",
+  "wallet.receive.trust_mint_body":
+    "Voeg {mint} alleen toe als je de beheerder vertrouwt: een mint houdt de Bitcoin die achter je ecash zit. Toevoegen vraagt één keer internet; daarna kun je tokens ervan ook offline ontvangen.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1816,6 +1825,7 @@ export const strings: Strings = {
   "settings.group.reset": "Resetten",
   "settings.group.always_on": "Altijd aan",
   "settings.group.notifications": "Meldingen",
+  "settings.group.lock": "App-vergrendeling",
   "settings.group.blocked": "Geblokkeerd",
   "settings.group.theme": "Thema",
   "settings.group.font": "Lettertype",
@@ -1942,6 +1952,22 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} deblokkeren",
   "settings.security.unblock_body":
     "{name} kan je weer schrijven en verschijnt weer op het Mesh-tabblad zodra die in de buurt is.",
+  "settings.security.app_lock": "Airhop vergrendelen",
+  "settings.security.app_lock_desc":
+    "Vraagt om de schermvergrendeling van je telefoon (Face ID, vingerafdruk of toegangscode) om Airhop te openen. Wordt de schermvergrendeling ooit verwijderd, dan schakelt dit zichzelf uit in plaats van je buiten te sluiten.",
+  "settings.security.app_lock_auth_prompt":
+    "Bevestig dat jij het bent om de app-vergrendeling aan te zetten",
+  "settings.security.app_lock_after": "Automatisch vergrendelen",
+  "settings.security.app_lock_after_desc":
+    "Hoe lang Airhop op de achtergrond mag staan voordat het opnieuw vraagt.",
+  "settings.security.lock_immediately": "Direct",
+  "settings.security.lock_after_1m": "Na 1 minuut",
+  "settings.security.lock_after_5m": "Na 5 minuten",
+  "settings.security.lock_after_30m": "Na 30 minuten",
+  "settings.security.app_lock_no_screen_lock":
+    "Stel eerst een schermvergrendeling in",
+  "settings.security.app_lock_no_screen_lock_body":
+    "De app-vergrendeling opent Airhop met de eigen schermvergrendeling van je telefoon, en deze telefoon heeft er geen. Voeg een toegangscode, pincode of patroon toe in de instellingen van de telefoon en zet dit daarna aan.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Terugval op internet",
@@ -2116,7 +2142,7 @@ export const strings: Strings = {
     "Opent de kanalen van gebieden dichtbij. Zonder dit blijven die kanalen dicht en draait de Bluetooth-mesh gewoon door.",
   "settings.permissions.notifications": "Meldingen",
   "settings.permissions.notifications_desc":
-    "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Zonder dit zie je ze pas als je Airhop opent.",
+    "Krijg meldingen van nieuwe berichten als Airhop niet in beeld is. Zonder dit zie je ze pas als je Airhop opent.",
   "settings.permissions.camera": "Camera",
   "settings.permissions.camera_desc":
     "Scan QR-codes en maak foto’s of video’s om te versturen. Zonder dit kun je nog steeds media uit je galerij delen.",

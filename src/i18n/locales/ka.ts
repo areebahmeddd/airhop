@@ -190,6 +190,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "ამ ტელეფონზე შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე განადგურდება და თავიდან დაიწყებ, როგორც ახალი ადამიანი. ამის დაბრუნება შეუძლებელია.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop დაბლოკილია",
+  "lock.body": "განბლოკე ტელეფონის ეკრანის დაბლოკვით.",
+  "lock.unlock": "განბლოკვა",
+  "lock.auth_prompt": "Airhop-ის გასახსნელად დაადასტურე, რომ შენ ხარ",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "ნაგულისხმევი არხები",
   "chat.channels.yours": "შენი არხები",
@@ -1143,6 +1149,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash QR კოდის სკანირება",
   "wallet.receive.scan_short": "QR-ის სკანირება",
   "wallet.receive.receiving": "მიიღება…",
+  "wallet.receive.paste": "ჩასმა ბუფერიდან",
+  "wallet.receive.trust_mint_body":
+    "{mint} მხოლოდ მაშინ დაამატე, თუ მის მმართველს ენდობი: ზარაფხანა ინახავს ბიტკოინს, რომელიც შენს ecash-ს უზრუნველყოფს. დამატებას ერთხელ სჭირდება ინტერნეტი; ამის შემდეგ მისი ტოკენების მიღება ინტერნეტის გარეშეც შეიძლება.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1803,6 +1812,7 @@ export const strings: Strings = {
   "settings.group.reset": "საწყისზე დაბრუნება",
   "settings.group.always_on": "ყოველთვის ჩართული",
   "settings.group.notifications": "შეტყობინებები",
+  "settings.group.lock": "აპის დაბლოკვა",
   "settings.group.blocked": "დაბლოკილი",
   "settings.group.theme": "თემა",
   "settings.group.font": "შრიფტი",
@@ -1929,6 +1939,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name}-ის განბლოკვა",
   "settings.security.unblock_body":
     "{name} ისევ შეძლებს მოგწეროს და ახლოს ყოფნისას მეშის ჩანართზეც დაბრუნდება.",
+  "settings.security.app_lock": "Airhop-ის დაბლოკვა",
+  "settings.security.app_lock_desc":
+    "Airhop-ის გასახსნელად მოითხოვს ტელეფონის ეკრანის დაბლოკვას (Face ID, თითის ანაბეჭდი ან კოდი). თუ ეკრანის დაბლოკვას ოდესმე მოხსნი, ეს თავისით გაითიშება და გარეთ არ დაგტოვებს.",
+  "settings.security.app_lock_auth_prompt":
+    "აპის დაბლოკვის ჩასართავად დაადასტურე, რომ შენ ხარ",
+  "settings.security.app_lock_after": "ავტომატური დაბლოკვა",
+  "settings.security.app_lock_after_desc":
+    "რამდენ ხანს შეიძლება დარჩეს Airhop ფონურ რეჟიმში, სანამ ხელახლა მოითხოვს.",
+  "settings.security.lock_immediately": "დაუყოვნებლივ",
+  "settings.security.lock_after_1m": "1 წუთის შემდეგ",
+  "settings.security.lock_after_5m": "5 წუთის შემდეგ",
+  "settings.security.lock_after_30m": "30 წუთის შემდეგ",
+  "settings.security.app_lock_no_screen_lock": "ჯერ დააყენე ეკრანის დაბლოკვა",
+  "settings.security.app_lock_no_screen_lock_body":
+    "აპის დაბლოკვა Airhop-ს ტელეფონის საკუთარი ეკრანის დაბლოკვით ხსნის, ამ ტელეფონს კი ის არ აქვს. დაამატე კოდი, PIN ან ნიმუში ტელეფონის პარამეტრებში და მერე ჩართე ეს.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "ინტერნეტზე გადასვლა",
@@ -2100,7 +2125,7 @@ export const strings: Strings = {
     "ხსნის ახლომდებარე ზონის არხებს. ამის გარეშე ის არხები დახურული რჩება, ბლუთუზ-მეში კი ჩვეულებრივ აგრძელებს.",
   "settings.permissions.notifications": "შეტყობინებები",
   "settings.permissions.notifications_desc":
-    "მიიღე ცნობები ახალი შეტყობინებების შესახებ მაშინაც, როცა აპლიკაცია დახურულია. ამის გარეშე მათ მხოლოდ Airhop-ის გახსნისას დაინახავ.",
+    "მიიღე ცნობები ახალი შეტყობინებების შესახებ, როცა Airhop ეკრანზე არ არის. ამის გარეშე მათ მხოლოდ Airhop-ის გახსნისას დაინახავ.",
   "settings.permissions.camera": "კამერა",
   "settings.permissions.camera_desc":
     "სკანერებს QR კოდებს და იღებს ფოტოებსა და ვიდეოებს გასაგზავნად. ამის გარეშეც შეგიძლია მედია ბიბლიოთეკიდან გააზიარო.",

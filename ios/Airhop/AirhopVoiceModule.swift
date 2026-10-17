@@ -152,6 +152,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
   private var captureObservers: [NSObjectProtocol] = []
   // Serialises capture setup/teardown against the render thread's tap.
   private let captureQueue = DispatchQueue(label: "org.onemindlabs.airhop.voice.capture")
+  // The capture's AAC converter, kept so a release can drain it. Set and read
+  // on `captureQueue`, used under `encoderLock`, which the tap holds too.
+  private var captureEncoder: AVAudioConverter?
+  private let encoderLock = NSLock()
 
   // MARK: Playback state
 
@@ -248,7 +252,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     captureQueue.async { [weak self] in
-      self?.teardownCapture()
+      self?.finishCapture()
       resolve(nil)
     }
   }
@@ -316,6 +320,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
       throw VoiceError.format("Cannot convert microphone audio")
     }
     toAAC.bitRate = VoiceConst.bitRate
+    captureEncoder = toAAC
 
     input.installTap(
       onBus: 0,
@@ -449,6 +454,12 @@ final class AirhopVoiceModule: RCTEventEmitter {
     // Encode to AAC. The converter emits one packet per 1024 samples, so a
     // buffer that is not a whole number of frames simply carries the
     // remainder into the next call.
+    //
+    // Under the lock, re-checked inside it: a release drains this converter and
+    // ends the generation while holding it, so nothing follows its end.
+    encoderLock.lock()
+    defer { encoderLock.unlock() }
+    guard captureGeneration.isCurrent(generation) else { return }
     let compressed = AVAudioCompressedBuffer(
       format: toAAC.outputFormat,
       packetCapacity: 8,
@@ -495,8 +506,52 @@ final class AirhopVoiceModule: RCTEventEmitter {
     }
   }
 
+  /// A release. Unlike teardownCapture, what the encoder still holds (the
+  /// last ~200 ms of the hold) is this burst's audio, emitted before the
+  /// generation ends so the caller's END follows it.
+  private func finishCapture() {
+    isCapturing = false
+    let center = NotificationCenter.default
+    captureObservers.forEach { center.removeObserver($0) }
+    captureObservers.removeAll()
+    // Stopped first, so no new buffer arrives; one already in flight still
+    // belongs to this burst and is encoded ahead of the drain.
+    if captureEngineArmed {
+      captureEngineArmed = false
+      if captureEngine.isRunning { captureEngine.stop() }
+      captureEngine.inputNode.removeTap(onBus: 0)
+    }
+    let encoder = captureEncoder
+    captureEncoder = nil
+    encoderLock.lock()
+    if let encoder { drainEncoder(encoder) }
+    captureGeneration.invalidate()
+    encoderLock.unlock()
+  }
+
+  /// Flushes the converter with end of stream. Bounded: an encoder empties in
+  /// a call or two, and a broken one must not spin the capture queue.
+  private func drainEncoder(_ encoder: AVAudioConverter) {
+    for _ in 0..<4 {
+      let compressed = AVAudioCompressedBuffer(
+        format: encoder.outputFormat,
+        packetCapacity: 8,
+        maximumPacketSize: VoiceConst.maxEncodedFrameBytes
+      )
+      var error: NSError?
+      let status = encoder.convert(to: compressed, error: &error) { _, inputStatus in
+        inputStatus.pointee = .endOfStream
+        return nil
+      }
+      if error != nil { return }
+      if compressed.packetCount > 0 { emitPackets(from: compressed) }
+      if status != .haveData { return }
+    }
+  }
+
   private func teardownCapture() {
     isCapturing = false
+    captureEncoder = nil
     // Dropped before the generation bumps. A notification block already on
     // its way to the main queue still runs, and still finds its generation
     // stale, so both halves of the guard hold.

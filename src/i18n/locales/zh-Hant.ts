@@ -183,6 +183,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "這支手機上的身分、訊息、聯絡人和錢包都會被銷毀，你將以新的身分重新開始。此動作無法復原。",
 
+  // ---- App lock ----
+  "lock.title": "Airhop 已鎖定",
+  "lock.body": "請用手機的螢幕鎖解鎖。",
+  "lock.unlock": "解鎖",
+  "lock.auth_prompt": "請確認是你本人以開啟 Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "預設頻道",
   "chat.channels.yours": "你的頻道",
@@ -1069,6 +1075,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "掃描 ecash QR 碼",
   "wallet.receive.scan_short": "掃描 QR 碼",
   "wallet.receive.receiving": "接收中…",
+  "wallet.receive.paste": "從剪貼簿貼上",
+  "wallet.receive.trust_mint_body":
+    "只有在你信任其營運者時才加入 {mint}：鑄幣廠替你的 ecash 保管背後的比特幣。加入時需要連網一次，之後即使離線也能收取它的代幣。",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1683,6 +1692,7 @@ export const strings: Strings = {
   "settings.group.reset": "重設",
   "settings.group.always_on": "永遠開啟",
   "settings.group.notifications": "通知",
+  "settings.group.lock": "App 鎖",
   "settings.group.blocked": "已封鎖",
   "settings.group.theme": "主題",
   "settings.group.font": "字體",
@@ -1799,6 +1809,20 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "解除封鎖 {name}",
   "settings.security.unblock_body":
     "{name} 將可以再次傳訊息給你，在附近時也會重新出現在網狀網路分頁。",
+  "settings.security.app_lock": "鎖定 Airhop",
+  "settings.security.app_lock_desc":
+    "開啟 Airhop 時需要手機的螢幕鎖（Face ID、指紋或密碼）。如果螢幕鎖被移除，此功能會自動關閉，而不會把你鎖在外面。",
+  "settings.security.app_lock_auth_prompt": "請確認是你本人以開啟 App 鎖",
+  "settings.security.app_lock_after": "自動鎖定",
+  "settings.security.app_lock_after_desc":
+    "Airhop 在背景停留多久後會再次要求解鎖。",
+  "settings.security.lock_immediately": "立即",
+  "settings.security.lock_after_1m": "1 分鐘後",
+  "settings.security.lock_after_5m": "5 分鐘後",
+  "settings.security.lock_after_30m": "30 分鐘後",
+  "settings.security.app_lock_no_screen_lock": "請先設定螢幕鎖",
+  "settings.security.app_lock_no_screen_lock_body":
+    "App 鎖用手機本身的螢幕鎖開啟 Airhop，而這支手機沒有設定螢幕鎖。請在手機設定中加入密碼、PIN 碼或圖形，然後再開啟此項。",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "網路備援",
@@ -1964,7 +1988,7 @@ export const strings: Strings = {
     "用來開啟附近的區域頻道。沒有它，那些頻道會保持關閉，藍牙網狀網路照常運作。",
   "settings.permissions.notifications": "通知",
   "settings.permissions.notifications_desc":
-    "就算 App 關著也能收到新訊息提醒。沒有它，你只有開啟 Airhop 時才看得到。",
+    "Airhop 不在螢幕上時也能收到新訊息提醒。沒有它，你只有開啟 Airhop 時才看得到。",
   "settings.permissions.camera": "相機",
   "settings.permissions.camera_desc":
     "用來掃描 QR 碼、拍攝照片或影片來傳送。沒有它，你仍然可以從圖庫分享媒體。",

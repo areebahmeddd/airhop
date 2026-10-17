@@ -190,6 +190,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "اس فون پر آپ کی شناخت، پیغامات، رابطے اور بٹوہ تباہ ہو جاتے ہیں، اور آپ ایک نئے شخص کے طور پر دوبارہ شروع کرتے ہیں۔ اسے واپس نہیں لیا جا سکتا۔",
 
+  // ---- App lock ----
+  "lock.title": "Airhop لاک ہے",
+  "lock.body": "اسے اپنے فون کے اسکرین لاک سے کھولیں۔",
+  "lock.unlock": "ان لاک کریں",
+  "lock.auth_prompt": "Airhop کھولنے کے لیے تصدیق کریں کہ یہ آپ ہی ہیں",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "طے شدہ چینل",
   "chat.channels.yours": "آپ کے چینل",
@@ -1130,6 +1136,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "ecash کا QR کوڈ اسکین کریں",
   "wallet.receive.scan_short": "QR اسکین کریں",
   "wallet.receive.receiving": "وصول ہو رہا ہے…",
+  "wallet.receive.paste": "کلپ بورڈ سے چسپاں کریں",
+  "wallet.receive.trust_mint_body":
+    "{mint} صرف تب شامل کریں جب آپ اسے چلانے والے پر بھروسا کرتے ہوں: ٹکسال وہ Bitcoin رکھتی ہے جو آپ کے ecash کی پشت پر ہے۔ شامل کرنے کے لیے ایک بار انٹرنیٹ چاہیے؛ اس کے بعد اس کے ٹوکن انٹرنیٹ کے بغیر بھی لیے جا سکتے ہیں۔",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1779,6 +1788,7 @@ export const strings: Strings = {
   "settings.group.reset": "دوبارہ ترتیب",
   "settings.group.always_on": "ہمیشہ چالو",
   "settings.group.notifications": "اطلاعات",
+  "settings.group.lock": "ایپ لاک",
   "settings.group.blocked": "مسدود",
   "settings.group.theme": "تھیم",
   "settings.group.font": "فونٹ",
@@ -1902,6 +1912,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "{name} کی بندش ہٹائیں",
   "settings.security.unblock_body":
     "{name} دوبارہ آپ کو پیغام بھیج سکیں گے اور قریب ہونے پر میش ٹیب میں پھر نظر آئیں گے۔",
+  "settings.security.app_lock": "Airhop لاک کریں",
+  "settings.security.app_lock_desc":
+    "Airhop کھولنے کے لیے آپ کے فون کا اسکرین لاک (Face ID، فنگر پرنٹ یا پاس کوڈ) مانگا جائے گا۔ اگر اسکرین لاک کبھی ہٹا دیا جائے تو یہ آپ کو باہر روکنے کے بجائے خود ہی بند ہو جاتا ہے۔",
+  "settings.security.app_lock_auth_prompt":
+    "ایپ لاک آن کرنے کے لیے تصدیق کریں کہ یہ آپ ہی ہیں",
+  "settings.security.app_lock_after": "خودکار طور پر لاک کریں",
+  "settings.security.app_lock_after_desc":
+    "دوبارہ مانگنے سے پہلے Airhop کتنی دیر پس منظر میں رہ سکتی ہے۔",
+  "settings.security.lock_immediately": "فوراً",
+  "settings.security.lock_after_1m": "1 منٹ بعد",
+  "settings.security.lock_after_5m": "5 منٹ بعد",
+  "settings.security.lock_after_30m": "30 منٹ بعد",
+  "settings.security.app_lock_no_screen_lock": "پہلے اسکرین لاک سیٹ کریں",
+  "settings.security.app_lock_no_screen_lock_body":
+    "ایپ لاک Airhop کو آپ کے فون کے اپنے اسکرین لاک سے کھولتا ہے، اور اس فون میں کوئی اسکرین لاک نہیں۔ فون کی سیٹنگز میں پاس کوڈ، پن یا پیٹرن شامل کریں، پھر اسے آن کریں۔",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "انٹرنیٹ کا متبادل",
@@ -2074,7 +2099,7 @@ export const strings: Strings = {
     "قریبی علاقے کے چینل کھولتا ہے۔ اس کے بغیر وہ چینل بند رہتے ہیں اور بلوٹوتھ میش معمول کے مطابق چلتی رہتی ہے۔",
   "settings.permissions.notifications": "اطلاعات",
   "settings.permissions.notifications_desc":
-    "ایپ بند ہونے پر بھی نئے پیغامات کی اطلاع پائیں۔ اس کے بغیر آپ انہیں تبھی دیکھیں گے جب Airhop کھولیں گے۔",
+    "Airhop اسکرین پر نہ ہونے پر نئے پیغامات کی اطلاع پائیں۔ اس کے بغیر آپ انہیں تبھی دیکھیں گے جب Airhop کھولیں گے۔",
   "settings.permissions.camera": "کیمرا",
   "settings.permissions.camera_desc":
     "QR کوڈ اسکین کرتا ہے اور بھیجنے کے لیے تصاویر یا ویڈیوز بناتا ہے۔ اس کے بغیر بھی آپ گیلری سے میڈیا شیئر کر سکتے ہیں۔",

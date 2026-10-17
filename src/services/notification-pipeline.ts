@@ -17,6 +17,7 @@
 
 import { ringPulse } from "@platform/haptics";
 import { useActivityStore } from "@store/activity-store";
+import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
 import { subscribeInboundMessages, useChatStore } from "@store/chat-store";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { countReachablePeers, usePeerStore } from "@store/peer-store";
@@ -52,11 +53,19 @@ export function startNotificationPipeline(nickname: () => string): void {
 
   // Whether a banner is owed depends on the app being in front, and nothing
   // else is guaranteed to be listening to say so: a boot start has no UI, and
-  // the service's own default is "in front".
-  setNotificationsAppActive(AppState.currentState === "active");
+  // the service's own default is "in front". Behind the app lock counts as away.
+  let foreground = AppState.currentState === "active";
+  const syncPresence = (): void => {
+    setNotificationsAppActive(
+      foreground && selectLockOpen(useAppLockStore.getState()),
+    );
+  };
+  syncPresence();
   const appState = AppState.addEventListener("change", (next) => {
-    setNotificationsAppActive(next === "active");
+    foreground = next === "active";
+    syncPresence();
   });
+  const stopLock = useAppLockStore.subscribe(syncPresence);
 
   const stopMessages = subscribeInboundMessages((msg) => {
     const chat = useChatStore.getState();
@@ -162,6 +171,7 @@ export function startNotificationPipeline(nickname: () => string): void {
 
   stops = [
     () => appState.remove(),
+    stopLock,
     stopMessages,
     stopPeers,
     stopRings,

@@ -194,6 +194,12 @@ export const strings: Strings = {
   "launch.start_over_confirm_body":
     "Utambulisho, jumbe, anwani na pochi yako kwenye simu hii vinaharibiwa, na unaanza upya kama mtu mpya. Hili haliwezi kutenduliwa.",
 
+  // ---- App lock ----
+  "lock.title": "Airhop imefungwa",
+  "lock.body": "Ifungue kwa kufuli ya skrini ya simu yako.",
+  "lock.unlock": "Fungua",
+  "lock.auth_prompt": "Thibitisha kuwa ni wewe ili kufungua Airhop",
+
   // ---- Chats: channel list ----
   "chat.channels.default": "Vituo vya kawaida",
   "chat.channels.yours": "Vituo vyako",
@@ -1151,6 +1157,9 @@ export const strings: Strings = {
   "wallet.receive.scan": "Changanua msimbo wa QR wa ecash",
   "wallet.receive.scan_short": "Changanua QR",
   "wallet.receive.receiving": "Inapokea…",
+  "wallet.receive.paste": "Bandika kutoka ubao wa kunakili",
+  "wallet.receive.trust_mint_body":
+    "Ongeza {mint} tu ikiwa unamwamini anayeiendesha: mint hushikilia Bitcoin inayoshikilia thamani ya ecash yako. Kuiongeza kunahitaji intaneti mara moja; baada ya hapo, tokeni zake zinaweza kupokelewa bila intaneti.",
 
   // ---- Wallet: zap ----
   "wallet.nutzap.received_title": "+{amount} {unit}",
@@ -1823,6 +1832,7 @@ export const strings: Strings = {
   "settings.group.reset": "Weka upya",
   "settings.group.always_on": "Daima imewashwa",
   "settings.group.notifications": "Arifa",
+  "settings.group.lock": "Kufuli ya programu",
   "settings.group.blocked": "Waliozuiwa",
   "settings.group.theme": "Mandhari",
   "settings.group.font": "Fonti",
@@ -1951,6 +1961,21 @@ export const strings: Strings = {
   "settings.security.unblock_peer": "Ondoa zuio kwa {name}",
   "settings.security.unblock_body":
     "{name} ataweza kukutumia ujumbe tena na ataonekana upya kwenye kichupo cha Mesh akiwa karibu.",
+  "settings.security.app_lock": "Funga Airhop",
+  "settings.security.app_lock_desc":
+    "Huomba kufuli ya skrini ya simu yako (Face ID, alama ya kidole au nambari ya siri) ili kufungua Airhop. Kufuli ya skrini ikiondolewa siku moja, hii hujizima yenyewe badala ya kukufungia nje.",
+  "settings.security.app_lock_auth_prompt":
+    "Thibitisha kuwa ni wewe ili kuwasha kufuli ya programu",
+  "settings.security.app_lock_after": "Funga kiotomatiki",
+  "settings.security.app_lock_after_desc":
+    "Muda ambao Airhop inaweza kukaa chinichini kabla ya kuomba tena.",
+  "settings.security.lock_immediately": "Mara moja",
+  "settings.security.lock_after_1m": "Baada ya dakika 1",
+  "settings.security.lock_after_5m": "Baada ya dakika 5",
+  "settings.security.lock_after_30m": "Baada ya dakika 30",
+  "settings.security.app_lock_no_screen_lock": "Weka kufuli ya skrini kwanza",
+  "settings.security.app_lock_no_screen_lock_body":
+    "Kufuli ya programu hufungua Airhop kwa kufuli ya skrini ya simu yako yenyewe, na simu hii haina. Ongeza nambari ya siri, PIN au mchoro katika mipangilio ya simu, kisha uwashe hii.",
 
   // ---- Settings: network and relays ----
   "settings.network.internet": "Akiba ya intaneti",
@@ -2128,7 +2153,7 @@ export const strings: Strings = {
     "Hufungua vituo vya eneo lililo karibu. Bila hii, vituo hivyo hubaki vimefungwa na mesh ya Bluetooth huendelea kama kawaida.",
   "settings.permissions.notifications": "Arifa",
   "settings.permissions.notifications_desc":
-    "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Bila hii, utaziona tu unapofungua Airhop.",
+    "Pokea taarifa za jumbe mpya wakati Airhop haiko kwenye skrini. Bila hii, utaziona tu unapofungua Airhop.",
   "settings.permissions.camera": "Kamera",
   "settings.permissions.camera_desc":
     "Huchanganua misimbo ya QR na kupiga picha au video za kutuma. Bila hii, bado unaweza kushiriki midia kutoka ghala lako.",

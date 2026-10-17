@@ -372,6 +372,37 @@ describe("a melt in flight", () => {
   });
 });
 
+describe("a melt that never sent its request", () => {
+  // Blanks are written before the request leaves, so a pending melt without
+  // them never reached the mint.
+  it("is released by reconcile", async () => {
+    await fund(32);
+    const store = useWalletStore.getState();
+    const proofs = store.proofs[key()] ?? [];
+    expect(store.reserveProofs("melt-killed", fabric.url, UNIT, proofs)).toBe(
+      true,
+    );
+    store.addTx({
+      id: "melt-killed",
+      kind: "melt",
+      status: "pending",
+      amount: 16,
+      unit: UNIT,
+      mintUrl: fabric.url,
+      createdAtMs: Date.now(),
+      updatedAtMs: Date.now(),
+      quoteId: "never-sent",
+    });
+    expect(spendable()).toBe(0);
+
+    await reconcile();
+
+    expect(tx("melt-killed")?.status).toBe("failed");
+    expect(reservedTotal()).toBe(0);
+    expect(spendable()).toBe(32);
+  });
+});
+
 describe("redeeming a token twice", () => {
   it("reports the second as a duplicate and opens no receipt for it", async () => {
     const token = await strangersToken(8);
