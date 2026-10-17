@@ -48,6 +48,13 @@ describe("group roster", () => {
     expect(decoded[0].nickname).toBe("alice");
     expect(decoded[1].fingerprint).toBe(b.fingerprint);
   });
+
+  it("cuts an over-long name between characters, never inside an emoji", () => {
+    // 61 bytes leave 3: too few for the emoji, room for a lone surrogate.
+    const long = member(`${"a".repeat(61)}\u{1F985}tail`).member;
+    const decoded = decodeRoster(encodeRoster([long])!)!;
+    expect(decoded[0].nickname).toBe("a".repeat(61));
+  });
 });
 
 describe("group state (invite/key update)", () => {
