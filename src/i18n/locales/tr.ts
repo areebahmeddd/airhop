@@ -813,6 +813,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
   "chat.contact.allow_ring_desc":
     "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
+  "chat.contact.allow_ring_needs_keys":
+    "Seni çağırmasına izin vermek için önce bu kişiyi doğrula.",
   "chat.contact.ring_action": "Çağır",
   "chat.contact.ringing": "Çalıyor…",
   "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",

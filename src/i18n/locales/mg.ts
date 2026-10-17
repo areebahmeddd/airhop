@@ -823,6 +823,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
   "chat.contact.allow_ring_desc":
     "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
+  "chat.contact.allow_ring_needs_keys":
+    "Hamarino aloha ity fifandraisana ity mba hahafahany maneno anao.",
   "chat.contact.ring_action": "Antsoy",
   "chat.contact.ringing": "Miantso…",
   "chat.contact.ring_hint_nearby":

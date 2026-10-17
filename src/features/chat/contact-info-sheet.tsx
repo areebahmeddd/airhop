@@ -509,19 +509,23 @@ export default function ContactInfoSheet({
                   </React.Fragment>
                 ))}
               </View>
-              {/* A permission, not a fact, so it's kept apart from infoCard's
-                  static rows. Offered only with real keys for this person
-                  (renameable is the same hasKeys gate setAllowRing enforces). */}
-              {renameable && (
+              {/* Needs real keys (renameable is setAllowRing's hasKeys gate).
+                  A keyless peer sees it disabled, pointing at Verify. */}
+              {(renameable || canVerify) && (
                 <View style={styles.infoCard}>
                   <SettingRow
                     icon="bell"
                     label={T("chat.contact.allow_ring")}
-                    description={T("chat.contact.allow_ring_desc")}
+                    description={
+                      renameable
+                        ? T("chat.contact.allow_ring_desc")
+                        : T("chat.contact.allow_ring_needs_keys")
+                    }
                     control={
                       <SettingSwitch
                         value={contact?.allowRing === true}
                         onValueChange={handleAllowRingChange}
+                        disabled={!renameable}
                       />
                     }
                   />

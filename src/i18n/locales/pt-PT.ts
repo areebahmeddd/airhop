@@ -815,6 +815,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Permitir alertas de toque",
   "chat.contact.allow_ring_desc":
     "Permite que esta pessoa faça o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifica primeiro este contacto para lhe permitires tocar-te.",
   "chat.contact.ring_action": "Tocar",
   "chat.contact.ringing": "A tocar…",
   "chat.contact.ring_hint_nearby":

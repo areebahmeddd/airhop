@@ -831,6 +831,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
   "chat.contact.allow_ring_desc":
     "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
+  "chat.contact.allow_ring_needs_keys":
+    "I-verify muna ang contact na ito para payagan siyang tawagan ka.",
   "chat.contact.ring_action": "Tumawag",
   "chat.contact.ringing": "Tumatawag…",
   "chat.contact.ring_hint_nearby":

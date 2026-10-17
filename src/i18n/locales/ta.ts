@@ -832,6 +832,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "அழைப்பு எச்சரிக்கைகளை அனுமதி",
   "chat.contact.allow_ring_desc":
     "இந்த உரையாடல் ஒலியடக்கப்பட்டிருந்தாலும், உங்கள் கவனத்தை ஈர்க்க அவர்கள் உங்கள் தொலைபேசியை அழைக்க அனுமதிக்கவும். அமைதி பயன்முறையும் தொந்தரவு செய்ய வேண்டாம் அமைப்பும் தொடர்ந்து பொருந்தும்.",
+  "chat.contact.allow_ring_needs_keys":
+    "உங்களை அழைக்க அனுமதிக்க, முதலில் இந்தத் தொடர்பைச் சரிபாருங்கள்.",
   "chat.contact.ring_action": "அழை",
   "chat.contact.ringing": "அழைக்கிறது…",
   "chat.contact.ring_hint_nearby":

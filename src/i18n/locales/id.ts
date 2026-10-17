@@ -814,6 +814,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Izinkan peringatan bel",
   "chat.contact.allow_ring_desc":
     "Izinkan mereka membunyikan bel ponselmu untuk menarik perhatianmu, meskipun percakapan ini dibisukan. Mode senyap dan Jangan Ganggu tetap berlaku.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifikasi kontak ini dulu agar mereka bisa membunyikan bel untukmu.",
   "chat.contact.ring_action": "Bunyikan bel",
   "chat.contact.ringing": "Membunyikan bel…",
   "chat.contact.ring_hint_nearby":

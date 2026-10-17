@@ -785,6 +785,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
   "chat.contact.allow_ring_desc":
     "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
+  "chat.contact.allow_ring_needs_keys":
+    "وثّق جهة الاتصال هذه أولًا لتسمح لها بالرنين لك.",
   "chat.contact.ring_action": "رنّ",
   "chat.contact.ringing": "يرنّ…",
   "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",

@@ -816,6 +816,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Ruhusu arifa za kengele",
   "chat.contact.allow_ring_desc":
     "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
+  "chat.contact.allow_ring_needs_keys":
+    "Thibitisha anwani hii kwanza ili kuiruhusu ikupigie kengele.",
   "chat.contact.ring_action": "Piga kengele",
   "chat.contact.ringing": "Inapiga kengele…",
   "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",

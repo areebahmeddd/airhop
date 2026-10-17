@@ -759,6 +759,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
   "chat.contact.allow_ring_desc":
     "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
+  "chat.contact.allow_ring_needs_keys": "እንዲደውሉልህ ለመፍቀድ መጀመሪያ ይህን እውቂያ አረጋግጥ።",
   "chat.contact.ring_action": "ደውል",
   "chat.contact.ringing": "እየደወለ ነው…",
   "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",

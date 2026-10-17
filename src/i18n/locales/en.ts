@@ -836,6 +836,8 @@ export const strings = {
   "chat.contact.allow_ring": "Allow ring alerts",
   "chat.contact.allow_ring_desc":
     "Let them ring your phone to get your attention, even if this conversation is muted. Silent mode and Do Not Disturb still apply.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verify this contact first to let them ring you.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringing…",
   "chat.contact.ring_hint_nearby": "Ring works only while they are nearby",

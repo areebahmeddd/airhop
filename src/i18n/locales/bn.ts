@@ -800,6 +800,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
   "chat.contact.allow_ring_desc":
     "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন। নীরব মোড ও বিরক্ত করবেন না তবুও প্রযোজ্য।",
+  "chat.contact.allow_ring_needs_keys":
+    "আপনাকে রিং করার অনুমতি দিতে আগে এই পরিচিতি যাচাই করুন।",
   "chat.contact.ring_action": "রিং করুন",
   "chat.contact.ringing": "রিং হচ্ছে…",
   "chat.contact.ring_hint_nearby": "রিং কেবল তারা কাছে থাকলেই কাজ করে",

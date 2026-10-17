@@ -816,6 +816,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Permitir alertas de llamada",
   "chat.contact.allow_ring_desc":
     "Permite que esta persona haga sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada. El modo silencio y No molestar siguen aplicándose.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifica primero este contacto para permitir que te llame.",
   "chat.contact.ring_action": "Llamar",
   "chat.contact.ringing": "Llamando…",
   "chat.contact.ring_hint_nearby":

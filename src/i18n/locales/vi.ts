@@ -807,6 +807,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
   "chat.contact.allow_ring_desc":
     "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
+  "chat.contact.allow_ring_needs_keys":
+    "Hãy xác minh liên hệ này trước để cho phép họ gọi chuông bạn.",
   "chat.contact.ring_action": "Gọi chuông",
   "chat.contact.ringing": "Đang gọi chuông…",
   "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",

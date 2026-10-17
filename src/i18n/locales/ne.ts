@@ -799,6 +799,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "घण्टी अलर्टलाई अनुमति दिनुहोस्",
   "chat.contact.allow_ring_desc":
     "यो कुराकानी म्यूट भए पनि, तपाईंको ध्यान तान्न उनीहरूलाई तपाईंको फोन बज्न दिनुहोस्। साइलेन्ट मोड र बाधा नपुर्‍याउनुहोस् अझै लागू हुन्छन्।",
+  "chat.contact.allow_ring_needs_keys":
+    "तपाईंलाई घण्टी बजाउन दिन पहिले यो सम्पर्क प्रमाणित गर्नुहोस्।",
   "chat.contact.ring_action": "घण्टी बजाउनुहोस्",
   "chat.contact.ringing": "घण्टी बज्दै छ…",
   "chat.contact.ring_hint_nearby": "घण्टी उनीहरू नजिक हुँदा मात्र काम गर्छ",

@@ -796,6 +796,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "벨 알림 허용",
   "chat.contact.allow_ring_desc":
     "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
+  "chat.contact.allow_ring_needs_keys":
+    "벨을 울리도록 허용하려면 먼저 이 연락처를 확인하세요.",
   "chat.contact.ring_action": "벨 울리기",
   "chat.contact.ringing": "벨을 울리는 중…",
   "chat.contact.ring_hint_nearby":

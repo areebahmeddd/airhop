@@ -807,6 +807,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "ზარის შეტყობინებების დაშვება",
   "chat.contact.allow_ring_desc":
     "მიეცი მათ საშუალება, დარეკონ შენს ტელეფონზე შენი ყურადღების მისაქცევად, მაშინაც კი, თუ ეს საუბარი დადუმებულია. უხმო რეჟიმი და „არ შემაწუხო“ მაინც მოქმედებს.",
+  "chat.contact.allow_ring_needs_keys":
+    "ჯერ გადაამოწმე ეს კონტაქტი, რომ დაგირეკოს.",
   "chat.contact.ring_action": "დარეკვა",
   "chat.contact.ringing": "რეკავს…",
   "chat.contact.ring_hint_nearby":

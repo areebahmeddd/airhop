@@ -798,6 +798,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
   "chat.contact.allow_ring_desc":
     "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
+  "chat.contact.allow_ring_needs_keys":
+    "اول این مخاطب را تأیید کنید تا بتواند برایتان زنگ بزند.",
   "chat.contact.ring_action": "زنگ زدن",
   "chat.contact.ringing": "در حال زنگ زدن…",
   "chat.contact.ring_hint_nearby":

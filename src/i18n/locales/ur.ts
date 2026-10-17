@@ -801,6 +801,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "گھنٹی الرٹس کی اجازت دیں",
   "chat.contact.allow_ring_desc":
     "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو۔ خاموش موڈ اور ڈسٹرب نہ کریں پھر بھی لاگو رہتے ہیں۔",
+  "chat.contact.allow_ring_needs_keys":
+    "انہیں آپ کو گھنٹی بجانے دینے کے لیے پہلے اس رابطے کی تصدیق کریں۔",
   "chat.contact.ring_action": "گھنٹی بجائیں",
   "chat.contact.ringing": "گھنٹی بج رہی ہے…",
   "chat.contact.ring_hint_nearby":

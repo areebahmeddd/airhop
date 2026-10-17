@@ -826,6 +826,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Klingelbenachrichtigungen erlauben",
   "chat.contact.allow_ring_desc":
     "Erlaube der Person, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifiziere diesen Kontakt zuerst, damit er bei dir klingeln darf.",
   "chat.contact.ring_action": "Klingeln",
   "chat.contact.ringing": "Klingelt…",
   "chat.contact.ring_hint_nearby":

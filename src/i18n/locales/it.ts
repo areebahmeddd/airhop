@@ -818,6 +818,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Consenti gli squilli",
   "chat.contact.allow_ring_desc":
     "Consenti a questa persona di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifica prima questo contatto per consentirgli di farti squillare.",
   "chat.contact.ring_action": "Squilla",
   "chat.contact.ringing": "Squillo in corso…",
   "chat.contact.ring_hint_nearby":

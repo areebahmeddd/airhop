@@ -815,6 +815,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Belmeldingen toestaan",
   "chat.contact.allow_ring_desc":
     "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifieer dit contact eerst om ze bij je te laten aanbellen.",
   "chat.contact.ring_action": "Bellen",
   "chat.contact.ringing": "Belt…",
   "chat.contact.ring_hint_nearby":

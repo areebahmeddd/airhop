@@ -818,6 +818,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
   "chat.contact.allow_ring_desc":
     "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
+  "chat.contact.allow_ring_needs_keys":
+    "Najpierw zweryfikuj ten kontakt, aby pozwolić mu do ciebie dzwonić.",
   "chat.contact.ring_action": "Zadzwoń",
   "chat.contact.ringing": "Dzwoni…",
   "chat.contact.ring_hint_nearby":

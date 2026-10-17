@@ -823,6 +823,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "ဖုန်းမြည်သံ သတိပေးချက်များကို ခွင့်ပြုပါ",
   "chat.contact.allow_ring_desc":
     "ဤစကားပြောကို အသံပိတ်ထားသော်လည်း၊ သင့်အာရုံစိုက်မှုရရှိရန် သူတို့ကို သင့်ဖုန်းမြည်စေခွင့်ပြုပါ။ အသံတိတ်မုဒ်နှင့် မနှောင့်ယှက်ရ မုဒ်တို့ကို ဆက်လက်အသုံးပြုသည်။",
+  "chat.contact.allow_ring_needs_keys":
+    "သင့်ကို ဖုန်းမြည်စေခွင့်ပြုရန် ဤအဆက်အသွယ်ကို အရင်အတည်ပြုပါ။",
   "chat.contact.ring_action": "ဖုန်းမြည်စေမည်",
   "chat.contact.ringing": "ဖုန်းမြည်နေသည်…",
   "chat.contact.ring_hint_nearby":

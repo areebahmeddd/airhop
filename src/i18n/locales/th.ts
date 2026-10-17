@@ -789,6 +789,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "อนุญาตการแจ้งเตือนเสียงเรียก",
   "chat.contact.allow_ring_desc":
     "อนุญาตให้พวกเขาทำให้โทรศัพท์ของคุณส่งเสียงเรียกเพื่อดึงความสนใจ แม้ว่าบทสนทนานี้จะถูกปิดเสียงไว้ โหมดเงียบและห้ามรบกวนยังคงมีผล",
+  "chat.contact.allow_ring_needs_keys":
+    "ยืนยันผู้ติดต่อนี้ก่อนเพื่ออนุญาตให้เรียกคุณ",
   "chat.contact.ring_action": "โทรเรียก",
   "chat.contact.ringing": "กำลังโทรเรียก…",
   "chat.contact.ring_hint_nearby":

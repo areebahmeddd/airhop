@@ -806,6 +806,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "呼び出しを許可",
   "chat.contact.allow_ring_desc":
     "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
+  "chat.contact.allow_ring_needs_keys":
+    "呼び出しを許可するには、先にこの連絡先を検証してください。",
   "chat.contact.ring_action": "呼び出す",
   "chat.contact.ringing": "呼び出し中…",
   "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",

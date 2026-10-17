@@ -811,6 +811,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Разрешить уведомления о звонке",
   "chat.contact.allow_ring_desc":
     "Разрешите им заставить ваш телефон звонить, чтобы привлечь ваше внимание, даже если этот разговор заглушён. Беззвучный режим и «Не беспокоить» по-прежнему действуют.",
+  "chat.contact.allow_ring_needs_keys":
+    "Сначала подтвердите этот контакт, чтобы разрешить ему звонить вам.",
   "chat.contact.ring_action": "Позвонить",
   "chat.contact.ringing": "Звонит…",
   "chat.contact.ring_hint_nearby": "Звонок работает, только пока они рядом",

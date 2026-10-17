@@ -809,6 +809,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Tillåt ringsignaler",
   "chat.contact.allow_ring_desc":
     "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
+  "chat.contact.allow_ring_needs_keys":
+    "Verifiera den här kontakten först för att låta den ringa dig.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringer…",
   "chat.contact.ring_hint_nearby":

@@ -821,6 +821,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Autoriser les alertes de sonnerie",
   "chat.contact.allow_ring_desc":
     "Autorise cette personne à faire sonner ton téléphone pour attirer ton attention, même si cette conversation est en sourdine. Le mode silencieux et Ne pas déranger s’appliquent toujours.",
+  "chat.contact.allow_ring_needs_keys":
+    "Vérifie d’abord ce contact pour l’autoriser à te faire sonner.",
   "chat.contact.ring_action": "Sonner",
   "chat.contact.ringing": "Sonnerie en cours…",
   "chat.contact.ring_hint_nearby":

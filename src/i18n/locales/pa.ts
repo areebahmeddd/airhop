@@ -805,6 +805,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "ਘੰਟੀ ਸੂਚਨਾਵਾਂ ਦੀ ਆਗਿਆ ਦਿਓ",
   "chat.contact.allow_ring_desc":
     "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡਾ ਧਿਆਨ ਖਿੱਚਣ ਲਈ ਤੁਹਾਡਾ ਫ਼ੋਨ ਵਜਾਉਣ ਦਿਓ, ਭਾਵੇਂ ਇਹ ਗੱਲਬਾਤ ਮਿਊਟ ਹੋਵੇ। ਸਾਈਲੈਂਟ ਮੋਡ ਅਤੇ ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ ਫਿਰ ਵੀ ਲਾਗੂ ਰਹਿੰਦੇ ਹਨ।",
+  "chat.contact.allow_ring_needs_keys":
+    "ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡੀ ਘੰਟੀ ਵਜਾਉਣ ਦੇਣ ਲਈ ਪਹਿਲਾਂ ਇਸ ਸੰਪਰਕ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ।",
   "chat.contact.ring_action": "ਘੰਟੀ ਵਜਾਓ",
   "chat.contact.ringing": "ਘੰਟੀ ਵੱਜ ਰਹੀ ਹੈ…",
   "chat.contact.ring_hint_nearby":

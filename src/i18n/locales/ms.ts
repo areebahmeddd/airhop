@@ -811,6 +811,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Benarkan makluman dering",
   "chat.contact.allow_ring_desc":
     "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan. Mod senyap dan Jangan Ganggu masih terpakai.",
+  "chat.contact.allow_ring_needs_keys":
+    "Sahkan kenalan ini dahulu untuk membenarkan mereka mendering anda.",
   "chat.contact.ring_action": "Dering",
   "chat.contact.ringing": "Sedang berdering…",
   "chat.contact.ring_hint_nearby":

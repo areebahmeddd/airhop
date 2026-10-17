@@ -803,6 +803,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "घंटी अलर्ट की अनुमति दें",
   "chat.contact.allow_ring_desc":
     "उन्हें अपना ध्यान खींचने के लिए फ़ोन बजाने दें, भले ही यह बातचीत म्यूट हो। साइलेंट मोड और परेशान न करें फिर भी लागू रहते हैं।",
+  "chat.contact.allow_ring_needs_keys":
+    "उन्हें आपको घंटी बजाने देने के लिए पहले यह संपर्क सत्यापित करें।",
   "chat.contact.ring_action": "घंटी बजाएँ",
   "chat.contact.ringing": "घंटी बज रही है…",
   "chat.contact.ring_hint_nearby": "घंटी तभी काम करती है जब वे पास हों",

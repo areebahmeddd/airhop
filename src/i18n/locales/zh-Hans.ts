@@ -762,6 +762,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "允许响铃提醒",
   "chat.contact.allow_ring_desc":
     "让对方响铃提醒你，即使此对话已静音。静音模式和勿扰模式仍然生效。",
+  "chat.contact.allow_ring_needs_keys":
+    "请先验证此联系人，才能允许对方向你响铃。",
   "chat.contact.ring_action": "响铃",
   "chat.contact.ringing": "响铃中…",
   "chat.contact.ring_hint_nearby": "响铃仅在对方在附近时可用",
