@@ -46,7 +46,7 @@ jobs:
 
       # Verify the committed Gradle wrapper matches the official release.
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -229,7 +229,7 @@ jobs:
 
       # CocoaPods and its gems come from Gemfile.lock.
       - name: Set up Ruby and CocoaPods
-        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
         with:
           ruby-version: "3.4"
           bundler-cache: true
