@@ -29,6 +29,7 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaRecorder
+import android.os.SystemClock
 import android.util.Base64
 import android.util.Log
 import com.facebook.react.bridge.Promise
@@ -97,6 +98,10 @@ private val AAC_CSD0 = byteArrayOf(0x14, 0x08)
 // asked to stop.
 private const val CODEC_TIMEOUT_US = 10_000L
 
+// Ceiling on the end-of-stream flush. An AAC encoder answers in milliseconds;
+// this bounds one that never does, so it cannot hold the mic or the stop.
+private const val TAIL_FLUSH_TIMEOUT_MS = 300L
+
 // Cap on frames waiting to be played. At 64 ms a frame this is about two
 // seconds of audio; past that the sender is outrunning the speaker and the
 // oldest audio is already stale, so drop rather than grow without bound.
@@ -129,8 +134,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
 
     private val capturing = AtomicBoolean(false)
 
-    // Which capture a running thread belongs to, bumped on every start and
-    // every stop.
+    // Which capture a running thread belongs to, bumped on every start.
     //
     // A capture thread does not die the moment it is asked to: it finishes the
     // read it is in, flushes the encoder's tail, then stops and releases
@@ -141,9 +145,21 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     // before its first read (the burst opens, reports success, and captures
     // nothing), and its flushed tail frames are delivered to the successor's
     // listener as if they were the new burst's audio.
+    //
+    // Not by a stop: the tail it flushes, the last ~200 ms of the hold, is still
+    // that burst's audio. Only a start arriving first disowns it.
     private val captureGeneration = AtomicInteger(0)
 
     @Volatile private var captureThread: Thread? = null
+
+    // The capture a stop waits on, so its promise resolves once the tail is
+    // out and the caller's END cannot overtake the last frame.
+    private class CaptureRun {
+        val stopWaiters = ArrayList<Promise>()
+        var finished = false
+    }
+
+    @Volatile private var currentRun: CaptureRun? = null
 
     // Loudness of the most recent block of microphone audio, ridden along on the
     // next frame event rather than sent on its own. The frames already cross the
@@ -170,15 +186,27 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         }
         val generation = captureGeneration.incrementAndGet()
         val previous = captureThread
+        val run = CaptureRun()
+        currentRun = run
         val thread =
             Thread(
                 {
-                    // The previous capture may still be releasing the microphone and
-                    // its encoder. Opening AudioRecord on top of it fails to
-                    // initialise, so wait it out: here on the new audio thread, never
-                    // on the caller, which is the mic button's own release path.
-                    runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
-                    runCapture(generation)
+                    try {
+                        // The previous capture may still be releasing the microphone
+                        // and its encoder. Opening AudioRecord on top of it fails to
+                        // initialise, so wait it out: here on the new audio thread,
+                        // never on the caller, which is the mic button's own release
+                        // path.
+                        runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
+                        runCapture(generation)
+                    } finally {
+                        val waiters =
+                            synchronized(run) {
+                                run.finished = true
+                                run.stopWaiters.toList().also { run.stopWaiters.clear() }
+                            }
+                        waiters.forEach { it.resolve(null) }
+                    }
                 },
                 "AirhopVoiceCapture",
             )
@@ -191,15 +219,22 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun stopCapture(promise: Promise) {
-        // Bumped first: the running loop stops on the generation, not on the
-        // flag, so a start that arrives before it notices cannot revive it.
-        captureGeneration.incrementAndGet()
+        // The flag alone: the loop ends after its current read (64 ms at most)
+        // and flushes the encoder as this burst's audio. A start that arrives
+        // before then bumps the generation, which ends the loop just the same.
         capturing.set(false)
-        // Deliberately not joined: the loop notices within one read (64 ms) and
-        // tears itself down. Blocking here would block the caller for that long
-        // on every release of the mic button. `captureThread` is kept so the
-        // next start can wait for this teardown on its own thread.
-        promise.resolve(null)
+        // Resolved by the capture thread once the tail is out, never joined
+        // here: this is the native modules thread every other module shares.
+        // `captureThread` is kept so the next start can wait for the teardown
+        // on its own thread.
+        val run = currentRun
+        val pending =
+            run != null &&
+                synchronized(run) {
+                    if (!run.finished) run.stopWaiters.add(promise)
+                    !run.finished
+                }
+        if (!pending) promise.resolve(null)
     }
 
     private fun runCapture(generation: Int) {
@@ -279,8 +314,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
 
             // Flush what the encoder is still holding so the tail of the burst
             // is not lost, then let the END packet follow it.
-            feedEndOfStream(encoder)
-            drainEncoder(encoder, info, generation)
+            flushEncoder(encoder, info, generation)
         } catch (e: Exception) {
             Log.e(TAG, "capture failed", e)
             failCapture(generation, e.message ?: "Recording failed")
@@ -305,16 +339,36 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         encoder.queueInputBuffer(index, 0, length, 0L, 0)
     }
 
-    private fun feedEndOfStream(encoder: MediaCodec) {
-        val index = encoder.dequeueInputBuffer(CODEC_TIMEOUT_US)
-        if (index < 0) return
-        encoder.queueInputBuffer(index, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+    // Signals end of stream and drains until empty. An encoder emits a frame
+    // only once it has the lookahead after it, so the last frames need this.
+    private fun flushEncoder(encoder: MediaCodec, info: MediaCodec.BufferInfo, generation: Int) {
+        val deadline = SystemClock.elapsedRealtime() + TAIL_FLUSH_TIMEOUT_MS
+        var endQueued = false
+        while (SystemClock.elapsedRealtime() < deadline) {
+            if (!endQueued) endQueued = feedEndOfStream(encoder)
+            val timeoutUs = if (endQueued) CODEC_TIMEOUT_US else 0L
+            if (drainEncoder(encoder, info, generation, timeoutUs)) return
+        }
     }
 
-    private fun drainEncoder(encoder: MediaCodec, info: MediaCodec.BufferInfo, generation: Int) {
+    // Queues end of stream on either codec. False while no input buffer is free.
+    private fun feedEndOfStream(codec: MediaCodec): Boolean {
+        val index = codec.dequeueInputBuffer(CODEC_TIMEOUT_US)
+        if (index < 0) return false
+        codec.queueInputBuffer(index, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+        return true
+    }
+
+    // True once the end-of-stream buffer has come out.
+    private fun drainEncoder(
+        encoder: MediaCodec,
+        info: MediaCodec.BufferInfo,
+        generation: Int,
+        timeoutUs: Long = 0L,
+    ): Boolean {
         while (true) {
-            val index = encoder.dequeueOutputBuffer(info, 0)
-            if (index < 0) return // no output ready, or a format change we ignore
+            val index = encoder.dequeueOutputBuffer(info, timeoutUs)
+            if (index < 0) return false // no output ready, or a format change we ignore
             val output = encoder.getOutputBuffer(index)
             // The codec-config buffer is the AudioSpecificConfig. Receivers
             // rebuild it from the codec byte, so it never goes on the wire.
@@ -326,7 +380,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             // cleanly either way.
             if (captureGeneration.get() != generation) {
                 encoder.releaseOutputBuffer(index, false)
-                if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) return
+                if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) return true
                 continue
             }
             if (output != null && info.size > 0 && !isConfig) {
@@ -336,7 +390,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                 emitFrame(frame)
             }
             encoder.releaseOutputBuffer(index, false)
-            if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) return
+            if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) return true
         }
     }
 

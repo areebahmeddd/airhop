@@ -672,6 +672,9 @@ export class MeshService {
   // the microphone or the speaker, and a device without the native audio
   // module should not pay for machinery it cannot drive.
   private pttCapture: VoiceCaptureSession | null = null;
+  // A release or cancel still flushing its encoder's tail. Bursts share one
+  // native frame stream, so the next waits for it or takes those frames.
+  private pttClosing: Promise<void> | null = null;
   private pttPlayer: VoicePlayer | null = null;
   private pttPlayback: NativeAudioPlayback | null = null;
   // Called when a burst starts or ends, so the UI can show who is talking.
@@ -2033,8 +2036,8 @@ export class MeshService {
         // capture engine, which reads that as the microphone being taken away
         // and ends the burst the user is still holding. This guard is the
         // reason the call lives here rather than beside the native release
-        // that prompts it.
-        if (this.pttCapture !== null) return;
+        // that prompts it. A release still flushing holds the microphone too.
+        if (this.pttCapture !== null || this.pttClosing !== null) return;
         // A burst arriving in this same instant can land after this and pay for
         // one engine rebuild. The player recovers from that on its own, and
         // sequencing it exactly would cost a state machine out of all
@@ -2149,6 +2152,8 @@ export class MeshService {
     ) => void,
   ): Promise<boolean> {
     if (!this.canSendLiveVoice(channel)) return false;
+    // Tens of milliseconds at most; see pttClosing.
+    if (this.pttClosing !== null) await this.pttClosing;
     // Any existing capture, not just an active one: a session that is still
     // opening its microphone counts as the burst in progress.
     //
@@ -2239,7 +2244,7 @@ export class MeshService {
     const capture = this.pttCapture;
     this.pttCapture = null;
     if (!capture) return null;
-    await capture.stopPtt().catch(() => undefined);
+    await this.trackPttClosing(capture.stopPtt());
     const bytes = capture.finalizedRecording();
     if (bytes === null) return null;
     return {
@@ -2255,7 +2260,16 @@ export class MeshService {
   async cancelVoiceBurst(): Promise<void> {
     const capture = this.pttCapture;
     this.pttCapture = null;
-    await capture?.cancelPtt().catch(() => undefined);
+    if (capture) await this.trackPttClosing(capture.cancelPtt());
+  }
+
+  private trackPttClosing(closing: Promise<void>): Promise<void> {
+    const settled = closing.catch(() => undefined);
+    this.pttClosing = settled;
+    void settled.then(() => {
+      if (this.pttClosing === settled) this.pttClosing = null;
+    });
+    return settled;
   }
 
   get isTalking(): boolean {

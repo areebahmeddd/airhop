@@ -138,6 +138,8 @@ export interface VoiceCaptureConfig {
 
 export interface AudioCaptureBackend {
   startCapture(onFrame: (frameData: Uint8Array) => void): Promise<void>;
+  // Resolves once the encoder's tail has been delivered to `onFrame`: the
+  // last ~200 ms of the hold, which an encoder only emits on end of stream.
   stopCapture(): Promise<void>;
 }
 
@@ -160,6 +162,9 @@ export class VoiceCaptureSession {
   // Starts false, so a release or a cancel that arrives before the mic was ever
   // opened is a no-op rather than an END or a CANCELED for a zeroed burst ID.
   private open = false;
+  // A release whose encoder is still flushing the end of what was said, which
+  // belongs to this burst. Never set by a cancel, whose tail must not go out.
+  private flushing: Promise<void> | null = null;
   // Whether this burst has announced itself. Until the first frame is captured
   // nobody has been told the burst exists, so there is nothing to end, nothing
   // to retract, and no bubble anywhere to clean up. See sendStartIfNeeded.
@@ -206,6 +211,9 @@ export class VoiceCaptureSession {
   // on a burst that never announced itself is correctly a no-op.
   async startPtt(): Promise<void> {
     if (this.open) return;
+    // A press right after a release waits for that burst's tail.
+    if (this.flushing !== null) await this.flushing;
+    if (this.open) return;
     this.open = true;
     this.startSent = false;
     this.clearRetractTimers();
@@ -225,7 +233,7 @@ export class VoiceCaptureSession {
     this.recordedBytes = 0;
 
     await this.backend.startCapture((frameData) => {
-      if (this.open) this.addFrame(frameData);
+      if (this.open || this.flushing !== null) this.addFrame(frameData);
     });
   }
 
@@ -233,7 +241,13 @@ export class VoiceCaptureSession {
   async stopPtt(): Promise<void> {
     if (!this.open) return;
     this.open = false;
-    await this.backend.stopCapture();
+    const flushing = this.backend.stopCapture();
+    this.flushing = flushing;
+    try {
+      await flushing;
+    } finally {
+      this.flushing = null;
+    }
 
     // A hold too short to be a message is retracted, not ended. See
     // MIN_BURST_KEEP_MS: the tail is deliberately not flushed first, because

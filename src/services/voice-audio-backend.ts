@@ -26,6 +26,11 @@ const EVT_FRAME = "AirhopVoice.frame";
 const EVT_CAPTURE_ERROR = "AirhopVoice.captureError";
 const EVT_PLAYBACK_LEVEL = "AirhopVoice.playbackLevel";
 
+// Native flushes the encoder's tail well inside this (a 64 ms read, then a
+// 300 ms ceiling). It bounds a native stop that never answers, which would
+// otherwise hold every later press behind it.
+const STOP_FLUSH_TIMEOUT_MS = 1000;
+
 // A loudness reading from native, 0 (silence) to 1 (clipping), or 0 for
 // anything that is not a usable number. Native is trusted to send RMS, but a
 // meter is drawn from this and a stray value would be a bar taller than the row
@@ -100,16 +105,27 @@ export class NativeAudioCapture implements AudioCaptureBackend {
   }
 
   async stopCapture(): Promise<void> {
-    this.frameSub?.remove();
-    this.frameSub = null;
-    this.errorSub?.remove();
-    this.errorSub = null;
+    // Still subscribed while native stops, since it emits the encoder's tail
+    // first. Held locally so a start during the wait keeps its own.
+    const frameSub = this.frameSub;
+    const errorSub = this.errorSub;
+    // Best-effort: the mic is already gone if this throws, and a failure here
+    // must not stop the burst from being closed off cleanly.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([
+      NativeAirhopVoice?.stopCapture().catch(() => undefined),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, STOP_FLUSH_TIMEOUT_MS);
+      }),
+    ]);
+    clearTimeout(timer);
+    frameSub?.remove();
+    errorSub?.remove();
+    if (this.frameSub === frameSub) this.frameSub = null;
+    if (this.errorSub === errorSub) this.errorSub = null;
     // The meter is fed by the frames, so it has to be told the audio stopped;
     // otherwise the bars freeze at whatever the last syllable measured.
     this.onLevel(0);
-    // Best-effort: the mic is already gone if this throws, and a failure here
-    // must not stop the burst from being closed off cleanly.
-    await NativeAirhopVoice?.stopCapture().catch(() => undefined);
   }
 }
 
