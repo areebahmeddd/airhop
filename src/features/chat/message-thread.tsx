@@ -4926,6 +4926,7 @@ export default function MessageThread({
               </Text>
             </View>
           }
+          ListFooterComponent={<View style={styles.listFooter} />}
           contentContainerStyle={styles.list}
         />
 
@@ -6042,7 +6043,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingHorizontal: Spacing.base,
       paddingTop: Spacing.base,
-      paddingBottom: Spacing.sm,
+    },
+    // A footer, not paddingBottom: VirtualizedList.scrollToEnd counts the
+    // footer and ignores the padding, so padding stops every follow short.
+    listFooter: {
+      height: Spacing.sm,
     },
     jumpToLatest: {
       position: "absolute",
