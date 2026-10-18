@@ -1,7 +1,7 @@
 // Airhop deep links.
 //
 // Two shapes, both opened by tapping a shared link (the URL scheme is
-// registered in app.json / Info.plist / AndroidManifest):
+// registered in Info.plist and AndroidManifest.xml):
 //   airhop://channel/<name>   join a public channel by name
 //   airhop://peer/<peerID>    start a DM with a peer (16 hex chars)
 //
