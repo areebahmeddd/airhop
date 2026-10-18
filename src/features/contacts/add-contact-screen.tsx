@@ -20,11 +20,7 @@
 //   the photo roll or out of a chat app is stored as "link": usable for
 //   encryption, never verified, and never allowed to re-pin an existing peer.
 
-import { parseBitchatVerifyQr } from "@core/crypto/bitchat-verify-qr";
-import {
-  decodeQRContent,
-  type ContactCard,
-} from "@core/crypto/contact-exchange";
+import type { ContactCard } from "@core/crypto/contact-exchange";
 import { t, useT } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -61,6 +57,7 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { readContactCode, type ContactCodeRefusal } from "./read-contact-code";
 
 // ---- Types ----
 
@@ -92,34 +89,21 @@ interface ScanResult {
   card: ContactCard | null;
 }
 
-// A code that was recognised and refused, so the caller can say which. Only
-// bitchat QRs produce one: ours carry no expiry and nothing else read here can
-// fail in a way worth reporting rather than ignoring.
-type ScanRefusal = "expired" | "tampered";
-
-// Parse anything this screen accepts, in order of how much it tells us.
-//
-//   airhop:v1/<base64url>   our contact card
-//   bitchat://verify?...    a bitchat verification QR, signed and time-boxed
-//   16 hex / airhop://peer  a bare peer ID
-//
-// The formats are unambiguous, so order is about cost rather than precedence.
-function parseScan(raw: string): ScanResult | ScanRefusal | null {
-  const card = decodeQRContent(raw.trim());
-  if (card) return { peerID: card.peerID.toLowerCase(), card };
-
-  const bitchat = parseBitchatVerifyQr(raw);
-  if (bitchat !== null) {
-    return bitchat.ok
-      ? { peerID: bitchat.card.peerID, card: bitchat.card }
-      : bitchat.reason;
-  }
+// Parse anything this screen accepts: a contact code (readContactCode), else a
+// bare peer ID, as 16 hex or airhop://peer. The formats are unambiguous, so
+// order is about cost rather than precedence.
+function parseScan(raw: string): ScanResult | ContactCodeRefusal | null {
+  const code = readContactCode(raw);
+  if (typeof code === "string") return code;
+  if (code !== null) return { peerID: code.peerID.toLowerCase(), card: code };
 
   const peerID = parsePeerID(raw);
   return peerID ? { peerID, card: null } : null;
 }
 
-function isScanResult(v: ScanResult | ScanRefusal | null): v is ScanResult {
+function isScanResult(
+  v: ScanResult | ContactCodeRefusal | null,
+): v is ScanResult {
   return v !== null && typeof v !== "string";
 }
 

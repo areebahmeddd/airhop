@@ -807,7 +807,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
   "chat.contact.allow_ring_needs_keys":
-    "呼び出しを許可するには、先にこの連絡先を検証してください。",
+    "この連絡先の鍵はまだありません。呼び出しを許可するには、メッセージを送るかコードを読み取ってください。",
   "chat.contact.ring_action": "呼び出す",
   "chat.contact.ringing": "呼び出し中…",
   "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",
@@ -1749,9 +1749,11 @@ export const strings: Strings = {
     "この連絡先の鍵はまだありません。メッセージを送るか、会ったときにコードを読み取ってください。",
   "contacts.verify.compare_title": "お互いに読み上げてください",
   "contacts.verify.compare_body":
-    "{name}にも同じ6語が表示されています。一致すれば、鍵が本物だとお互いに確認できます。",
+    "{name}のAirhopにも同じ6語が表示されています。一致すれば、鍵が本物だとお互いに確認できます。bitchatにはこの言葉がないため、代わりにコードを読み取ってください。",
   "contacts.verify.codes_match": "一致します",
   "contacts.verify.codes_differ": "一致しません",
+  "contacts.verify.codes_differ_body":
+    "この端末の鍵は{name}のものではないかもしれません。このチャットを信頼する前に、直接会ってコードを読み取ってください。",
   "contacts.verify.compared_body":
     "あなたと{name}が同じコードを確認しました。この連絡先は検証済みです。",
 

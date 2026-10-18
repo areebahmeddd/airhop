@@ -814,7 +814,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
   "chat.contact.allow_ring_needs_keys":
-    "Seni çağırmasına izin vermek için önce bu kişiyi doğrula.",
+    "Bu kişi için henüz anahtar yok. Seni çağırmasına izin vermek için onlara yaz ya da kodlarını tara.",
   "chat.contact.ring_action": "Çağır",
   "chat.contact.ringing": "Çalıyor…",
   "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",
@@ -1748,9 +1748,11 @@ export const strings: Strings = {
     "Bu kişi için henüz anahtar yok. Onlara yaz ya da buluştuğunuzda kodlarını tara.",
   "contacts.verify.compare_title": "Bunları birbirinize okuyun",
   "contacts.verify.compare_body":
-    "{name} de aynı altı kelimeyi görüyor. Uyuşuyorsa ikiniz de anahtarların gerçek olduğunu bilirsiniz.",
+    "{name} de Airhop'ta aynı altı kelimeyi görüyor. Uyuşuyorsa ikiniz de anahtarların gerçek olduğunu bilirsiniz. bitchat böyle kelimeler göstermez, bu yüzden onun yerine kodlarını tara.",
   "contacts.verify.codes_match": "Bunlar uyuşuyor",
   "contacts.verify.codes_differ": "Uyuşmuyorlar",
+  "contacts.verify.codes_differ_body":
+    "Bu telefondaki anahtarlar {name} kişisine ait olmayabilir. Bu sohbete güvenmeden önce kodlarını yüz yüze tara.",
   "contacts.verify.compared_body":
     "Sen ve {name} aynı kodu doğruladınız. Bu kişi doğrulandı.",
 

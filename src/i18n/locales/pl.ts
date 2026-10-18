@@ -819,7 +819,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
   "chat.contact.allow_ring_needs_keys":
-    "Najpierw zweryfikuj ten kontakt, aby pozwolić mu do ciebie dzwonić.",
+    "Brak jeszcze kluczy do tego kontaktu. Napisz do nich albo zeskanuj ich kod, aby pozwolić im do ciebie dzwonić.",
   "chat.contact.ring_action": "Zadzwoń",
   "chat.contact.ringing": "Dzwoni…",
   "chat.contact.ring_hint_nearby":
@@ -1763,9 +1763,11 @@ export const strings: Strings = {
     "Brak jeszcze kluczy do tego kontaktu. Napisz do nich albo zeskanuj ich kod, gdy się spotkacie.",
   "contacts.verify.compare_title": "Odczytajcie to sobie nawzajem",
   "contacts.verify.compare_body":
-    "{name} widzi te same sześć słów. Jeśli się zgadzają, oboje wiecie, że klucze są prawdziwe.",
+    "{name} widzi w Airhop te same sześć słów. Jeśli się zgadzają, oboje wiecie, że klucze są prawdziwe. bitchat nie pokazuje takich słów, więc zamiast tego zeskanuj ich kod.",
   "contacts.verify.codes_match": "Zgadzają się",
   "contacts.verify.codes_differ": "Nie zgadzają się",
+  "contacts.verify.codes_differ_body":
+    "Klucze na tym telefonie mogą nie należeć do {name}. Zeskanuj ich kod osobiście, zanim zaufasz tej rozmowie.",
   "contacts.verify.compared_body":
     "Ty i {name} potwierdziliście ten sam kod. Ten kontakt jest zweryfikowany.",
 

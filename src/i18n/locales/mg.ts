@@ -824,7 +824,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
   "chat.contact.allow_ring_needs_keys":
-    "Hamarino aloha ity fifandraisana ity mba hahafahany maneno anao.",
+    "Mbola tsy misy lakile ho an'ity fifandraisana ity. Manorata aminy, na alaivo sary ny kaodiny, mba hahafahany maneno anao.",
   "chat.contact.ring_action": "Antsoy",
   "chat.contact.ringing": "Miantso…",
   "chat.contact.ring_hint_nearby":
@@ -1801,9 +1801,11 @@ export const strings: Strings = {
     "Mbola tsy misy lakile ho an'ity fifandraisana ity. Manorata aminy, na alaivo sary ny kaodiny rehefa mihaona ianareo.",
   "contacts.verify.compare_title": "Vakio amin'ny tsirairay ireto",
   "contacts.verify.compare_body":
-    "Mahita ireo teny enina mitovy i {name}. Raha mifanaraka izy ireo dia samy mahafantatra ianareo fa marina ny lakile.",
+    "Mahita ireo teny enina mitovy ao amin'ny Airhop i {name}. Raha mifanaraka izy ireo dia samy mahafantatra ianareo fa marina ny lakile. Tsy mampiseho teny toy izany ny bitchat, ka alaivo sary ny kaodiny kosa.",
   "contacts.verify.codes_match": "Mifanaraka",
   "contacts.verify.codes_differ": "Tsy mifanaraka",
+  "contacts.verify.codes_differ_body":
+    "Mety tsy an'i {name} ny lakile ao amin'ity finday ity. Alaivo sary mivantana ny kaodiny alohan'ny hitokisanao ity resaka ity.",
   "contacts.verify.compared_body":
     "Nanamafy kaody mitovy ianao sy i {name}. Voamarina ity fifandraisana ity.",
 

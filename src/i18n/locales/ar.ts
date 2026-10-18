@@ -786,7 +786,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
   "chat.contact.allow_ring_needs_keys":
-    "وثّق جهة الاتصال هذه أولًا لتسمح لها بالرنين لك.",
+    "لا مفاتيح لجهة الاتصال هذه بعد. راسلهم، أو امسح رمزهم، لتسمح لهم بالرنين لك.",
   "chat.contact.ring_action": "رنّ",
   "chat.contact.ringing": "يرنّ…",
   "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
@@ -1686,9 +1686,11 @@ export const strings: Strings = {
     "لا مفاتيح لجهة الاتصال هذه بعد. راسلهم، أو امسح رمزهم عند اللقاء.",
   "contacts.verify.compare_title": "اقرآ هذه لبعضكما",
   "contacts.verify.compare_body":
-    "يرى {name} الكلمات الست نفسها. إن تطابقت، فكلاكما يعلم أن المفاتيح حقيقية.",
+    "يرى {name} الكلمات الست نفسها على Airhop. إن تطابقت، فكلاكما يعلم أن المفاتيح حقيقية. لا يعرض bitchat كلمات كهذه، فامسح رمزهم بدلًا من ذلك.",
   "contacts.verify.codes_match": "متطابقة",
   "contacts.verify.codes_differ": "غير متطابقة",
+  "contacts.verify.codes_differ_body":
+    "قد لا تكون المفاتيح على هذا الهاتف لـ {name}. امسح رمزهم وجهًا لوجه قبل أن تثق بهذه المحادثة.",
   "contacts.verify.compared_body":
     "أكدت أنت و{name} الرمز نفسه. جهة الاتصال هذه موثّقة.",
 

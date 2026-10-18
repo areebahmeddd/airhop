@@ -815,7 +815,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Izinkan mereka membunyikan bel ponselmu untuk menarik perhatianmu, meskipun percakapan ini dibisukan. Mode senyap dan Jangan Ganggu tetap berlaku.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifikasi kontak ini dulu agar mereka bisa membunyikan bel untukmu.",
+    "Belum ada kunci untuk kontak ini. Kirimi mereka pesan, atau pindai kode mereka, agar mereka bisa membunyikan bel untukmu.",
   "chat.contact.ring_action": "Bunyikan bel",
   "chat.contact.ringing": "Membunyikan bel…",
   "chat.contact.ring_hint_nearby":
@@ -1760,9 +1760,11 @@ export const strings: Strings = {
     "Belum ada kunci untuk kontak ini. Kirimi mereka pesan, atau pindai kode mereka saat bertemu.",
   "contacts.verify.compare_title": "Bacakan ini satu sama lain",
   "contacts.verify.compare_body":
-    "{name} melihat enam kata yang sama. Kalau cocok, kalian berdua tahu kuncinya asli.",
+    "{name} melihat enam kata yang sama di Airhop. Kalau cocok, kalian berdua tahu kuncinya asli. bitchat tidak menampilkan kata seperti ini, jadi pindai saja kode mereka.",
   "contacts.verify.codes_match": "Ini cocok",
   "contacts.verify.codes_differ": "Tidak cocok",
+  "contacts.verify.codes_differ_body":
+    "Kunci di ponsel ini mungkin bukan milik {name}. Pindai kode mereka secara langsung sebelum memercayai obrolan ini.",
   "contacts.verify.compared_body":
     "Kamu dan {name} memastikan kode yang sama. Kontak ini terverifikasi.",
 

@@ -759,7 +759,8 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
   "chat.contact.allow_ring_desc":
     "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
-  "chat.contact.allow_ring_needs_keys": "እንዲደውሉልህ ለመፍቀድ መጀመሪያ ይህን እውቂያ አረጋግጥ።",
+  "chat.contact.allow_ring_needs_keys":
+    "ለዚህ እውቂያ ገና ቁልፎች የሉም። እንዲደውሉልህ ለመፍቀድ መልእክት ላክላቸው ወይም ኮዳቸውን ቃኝ።",
   "chat.contact.ring_action": "ደውል",
   "chat.contact.ringing": "እየደወለ ነው…",
   "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",
@@ -1632,9 +1633,11 @@ export const strings: Strings = {
     "ለዚህ እውቂያ ገና ቁልፎች የሉም። መልእክት ላክላቸው፣ ወይም ስትገናኙ ኮዳቸውን ቃኝ።",
   "contacts.verify.compare_title": "እነዚህን ለየራሳችሁ አንብቡ",
   "contacts.verify.compare_body":
-    "{name} ተመሳሳዮቹን ስድስት ቃላት ያያል። ከተዛመዱ ሁለታችሁም ቁልፎቹ እውነተኛ መሆናቸውን ታውቃላችሁ።",
+    "{name} በAirhop ላይ ተመሳሳዮቹን ስድስት ቃላት ያያል። ከተዛመዱ ሁለታችሁም ቁልፎቹ እውነተኛ መሆናቸውን ታውቃላችሁ። bitchat እንደዚህ ያሉ ቃላት አያሳይም፤ ስለዚህ በምትኩ ኮዳቸውን ቃኝ።",
   "contacts.verify.codes_match": "እነዚህ ይዛመዳሉ",
   "contacts.verify.codes_differ": "አይዛመዱም",
+  "contacts.verify.codes_differ_body":
+    "በዚህ ስልክ ያሉት ቁልፎች የ{name} ላይሆኑ ይችላሉ። ይህን ውይይት ከማመንህ በፊት ኮዳቸውን በአካል ቃኝ።",
   "contacts.verify.compared_body":
     "አንተና {name} አንድ አይነት ኮድ አረጋግጣችኋል። ይህ እውቂያ ተረጋግጧል።",
 

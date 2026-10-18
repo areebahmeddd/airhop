@@ -837,7 +837,7 @@ export const strings = {
   "chat.contact.allow_ring_desc":
     "Let them ring your phone to get your attention, even if this conversation is muted. Silent mode and Do Not Disturb still apply.",
   "chat.contact.allow_ring_needs_keys":
-    "Verify this contact first to let them ring you.",
+    "No keys for this contact yet. Message them, or scan their code, to let them ring you.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringing…",
   "chat.contact.ring_hint_nearby": "Ring works only while they are nearby",
@@ -1756,9 +1756,11 @@ export const strings = {
     "No keys for this contact yet. Message them, or scan their code when you meet.",
   "contacts.verify.compare_title": "Read these to each other",
   "contacts.verify.compare_body":
-    "{name} sees the same six words. If they match, you both know the keys are real.",
+    "{name} sees the same six words on Airhop. If they match, you both know the keys are real. bitchat shows no such words, so scan their code instead.",
   "contacts.verify.codes_match": "These match",
   "contacts.verify.codes_differ": "They don’t match",
+  "contacts.verify.codes_differ_body":
+    "The keys on this phone may not be {name}’s. Scan their code in person before you trust this chat.",
   "contacts.verify.compared_body":
     "You and {name} confirmed the same code. This contact is verified.",
 

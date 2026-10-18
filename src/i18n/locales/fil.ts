@@ -832,7 +832,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
   "chat.contact.allow_ring_needs_keys":
-    "I-verify muna ang contact na ito para payagan siyang tawagan ka.",
+    "Wala pang susi para sa contact na ito. Mag-mensahe sa kanila, o i-scan ang code nila, para payagan silang tawagan ka.",
   "chat.contact.ring_action": "Tumawag",
   "chat.contact.ringing": "Tumatawag…",
   "chat.contact.ring_hint_nearby":
@@ -1803,9 +1803,11 @@ export const strings: Strings = {
     "Wala pang susi para sa contact na ito. Mag-mensahe sa kanila, o i-scan ang code nila kapag nagkita kayo.",
   "contacts.verify.compare_title": "Basahin ninyo ito sa isa't isa",
   "contacts.verify.compare_body":
-    "Pareho ang anim na salitang nakikita ni {name}. Kung tugma ang mga ito, alam ninyong dalawa na tunay ang mga susi.",
+    "Pareho ang anim na salitang nakikita ni {name} sa Airhop. Kung tugma ang mga ito, alam ninyong dalawa na tunay ang mga susi. Walang ganitong mga salita sa bitchat, kaya i-scan na lang ang code nila.",
   "contacts.verify.codes_match": "Tugma ang mga ito",
   "contacts.verify.codes_differ": "Hindi tugma ang mga ito",
+  "contacts.verify.codes_differ_body":
+    "Maaaring hindi kay {name} ang mga susi sa phone na ito. I-scan nang personal ang code nila bago mo pagkatiwalaan ang chat na ito.",
   "contacts.verify.compared_body":
     "Kinumpirma ninyo ni {name} ang parehong code. Na-verify ang contact na ito.",
 

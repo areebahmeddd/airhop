@@ -822,7 +822,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Autorise cette personne à faire sonner ton téléphone pour attirer ton attention, même si cette conversation est en sourdine. Le mode silencieux et Ne pas déranger s’appliquent toujours.",
   "chat.contact.allow_ring_needs_keys":
-    "Vérifie d’abord ce contact pour l’autoriser à te faire sonner.",
+    "Pas encore de clés pour ce contact. Écris-lui, ou scanne son code, pour l’autoriser à te faire sonner.",
   "chat.contact.ring_action": "Sonner",
   "chat.contact.ringing": "Sonnerie en cours…",
   "chat.contact.ring_hint_nearby":
@@ -1789,9 +1789,11 @@ export const strings: Strings = {
     "Pas encore de clés pour ce contact. Écris-leur, ou scanne leur code quand vous vous verrez.",
   "contacts.verify.compare_title": "Lisez ceci à voix haute",
   "contacts.verify.compare_body":
-    "{name} voit les mêmes six mots. S’ils correspondent, vous savez tous les deux que les clés sont authentiques.",
+    "{name} voit les mêmes six mots dans Airhop. S’ils correspondent, vous savez tous les deux que les clés sont authentiques. bitchat n’affiche pas ces mots, scanne plutôt son code.",
   "contacts.verify.codes_match": "Ils correspondent",
   "contacts.verify.codes_differ": "Ils ne correspondent pas",
+  "contacts.verify.codes_differ_body":
+    "Les clés sur ce téléphone ne sont peut-être pas celles de {name}. Scanne son code en personne avant de faire confiance à ce chat.",
   "contacts.verify.compared_body":
     "{name} et toi avez confirmé le même code. Ce contact est vérifié.",
 

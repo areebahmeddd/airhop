@@ -808,7 +808,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
   "chat.contact.allow_ring_needs_keys":
-    "Hãy xác minh liên hệ này trước để cho phép họ gọi chuông bạn.",
+    "Chưa có khóa cho liên hệ này. Hãy nhắn tin cho họ, hoặc quét mã của họ, để cho phép họ gọi chuông bạn.",
   "chat.contact.ring_action": "Gọi chuông",
   "chat.contact.ringing": "Đang gọi chuông…",
   "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",
@@ -1745,9 +1745,11 @@ export const strings: Strings = {
     "Chưa có khóa cho liên hệ này. Hãy nhắn tin cho họ, hoặc quét mã của họ khi gặp mặt.",
   "contacts.verify.compare_title": "Hãy đọc những từ này cho nhau nghe",
   "contacts.verify.compare_body":
-    "{name} thấy đúng sáu từ đó. Nếu chúng khớp, cả hai bạn đều biết các khóa là thật.",
+    "{name} thấy đúng sáu từ đó trên Airhop. Nếu chúng khớp, cả hai bạn đều biết các khóa là thật. bitchat không hiển thị những từ này, nên hãy quét mã của họ.",
   "contacts.verify.codes_match": "Chúng khớp",
   "contacts.verify.codes_differ": "Chúng không khớp",
+  "contacts.verify.codes_differ_body":
+    "Các khóa trên điện thoại này có thể không phải của {name}. Hãy quét mã của họ trực tiếp trước khi tin cuộc trò chuyện này.",
   "contacts.verify.compared_body":
     "Bạn và {name} đã xác nhận cùng một mã. Liên hệ này đã được xác minh.",
 

@@ -817,7 +817,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Permite que esta persona haga sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada. El modo silencio y No molestar siguen aplicándose.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifica primero este contacto para permitir que te llame.",
+    "Todavía no hay claves de este contacto. Escríbele o escanea su código para permitir que te llame.",
   "chat.contact.ring_action": "Llamar",
   "chat.contact.ringing": "Llamando…",
   "chat.contact.ring_hint_nearby":
@@ -1778,9 +1778,11 @@ export const strings: Strings = {
     "Todavía no hay claves de este contacto. Escríbele o escanea su código cuando se vean.",
   "contacts.verify.compare_title": "Léanse esto en voz alta",
   "contacts.verify.compare_body":
-    "{name} ve las mismas seis palabras. Si coinciden, ambos saben que las claves son auténticas.",
+    "{name} ve las mismas seis palabras en Airhop. Si coinciden, ambos saben que las claves son auténticas. bitchat no muestra estas palabras, así que escanea su código.",
   "contacts.verify.codes_match": "Coinciden",
   "contacts.verify.codes_differ": "No coinciden",
+  "contacts.verify.codes_differ_body":
+    "Puede que las claves de este teléfono no sean de {name}. Escanea su código en persona antes de confiar en este chat.",
   "contacts.verify.compared_body":
     "{name} y tú han confirmado el mismo código. Este contacto está verificado.",
 

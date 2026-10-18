@@ -817,7 +817,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
   "chat.contact.allow_ring_needs_keys":
-    "Thibitisha anwani hii kwanza ili kuiruhusu ikupigie kengele.",
+    "Bado hakuna funguo za anwani hii. Mtumie ujumbe, au changanua msimbo wake, ili kumruhusu akupigie kengele.",
   "chat.contact.ring_action": "Piga kengele",
   "chat.contact.ringing": "Inapiga kengele…",
   "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",
@@ -1773,9 +1773,11 @@ export const strings: Strings = {
     "Bado hakuna funguo za anwani hii. Watumie ujumbe, au changanua msimbo wao mtakapokutana.",
   "contacts.verify.compare_title": "Someni haya kwa kila mmoja",
   "contacts.verify.compare_body":
-    "{name} anaona maneno sita yaleyale. Yakilingana, nyote wawili mnajua funguo ni halisi.",
+    "{name} anaona maneno sita yaleyale kwenye Airhop. Yakilingana, nyote wawili mnajua funguo ni halisi. bitchat haionyeshi maneno kama haya, kwa hivyo changanua msimbo wake badala yake.",
   "contacts.verify.codes_match": "Yanalingana",
   "contacts.verify.codes_differ": "Hayalingani",
+  "contacts.verify.codes_differ_body":
+    "Huenda funguo kwenye simu hii si za {name}. Changanua msimbo wake ana kwa ana kabla ya kuamini gumzo hili.",
   "contacts.verify.compared_body":
     "Wewe na {name} mmethibitisha msimbo uleule. Anwani hii imethibitishwa.",
 

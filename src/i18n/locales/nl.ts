@@ -816,7 +816,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifieer dit contact eerst om ze bij je te laten aanbellen.",
+    "Nog geen sleutels voor dit contact. Schrijf ze, of scan hun code, om ze bij je te laten aanbellen.",
   "chat.contact.ring_action": "Bellen",
   "chat.contact.ringing": "Belt…",
   "chat.contact.ring_hint_nearby":
@@ -1767,9 +1767,11 @@ export const strings: Strings = {
     "Nog geen sleutels voor dit contact. Schrijf ze, of scan hun code als jullie elkaar zien.",
   "contacts.verify.compare_title": "Lees deze aan elkaar voor",
   "contacts.verify.compare_body":
-    "{name} ziet dezelfde zes woorden. Als ze overeenkomen, weten jullie allebei dat de sleutels echt zijn.",
+    "{name} ziet in Airhop dezelfde zes woorden. Als ze overeenkomen, weten jullie allebei dat de sleutels echt zijn. bitchat toont zulke woorden niet, dus scan daar hun code.",
   "contacts.verify.codes_match": "Ze komen overeen",
   "contacts.verify.codes_differ": "Ze komen niet overeen",
+  "contacts.verify.codes_differ_body":
+    "De sleutels op deze telefoon zijn misschien niet van {name}. Scan hun code in persoon voordat je deze chat vertrouwt.",
   "contacts.verify.compared_body":
     "Jij en {name} hebben dezelfde code bevestigd. Dit contact is geverifieerd.",
 

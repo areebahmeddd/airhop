@@ -797,7 +797,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
   "chat.contact.allow_ring_needs_keys":
-    "벨을 울리도록 허용하려면 먼저 이 연락처를 확인하세요.",
+    "이 연락처의 키가 아직 없습니다. 벨을 울리도록 허용하려면 메시지를 보내거나 코드를 스캔하세요.",
   "chat.contact.ring_action": "벨 울리기",
   "chat.contact.ringing": "벨을 울리는 중…",
   "chat.contact.ring_hint_nearby":
@@ -1722,9 +1722,11 @@ export const strings: Strings = {
     "이 연락처의 키가 아직 없습니다. 메시지를 보내거나, 만났을 때 코드를 스캔하세요.",
   "contacts.verify.compare_title": "서로에게 읽어주세요",
   "contacts.verify.compare_body":
-    "{name}에게도 같은 여섯 단어가 보입니다. 일치한다면 두 사람 모두 키가 진짜임을 알 수 있습니다.",
+    "{name}의 Airhop에도 같은 여섯 단어가 보입니다. 일치한다면 두 사람 모두 키가 진짜임을 알 수 있습니다. bitchat에는 이런 단어가 없으니 대신 코드를 스캔하세요.",
   "contacts.verify.codes_match": "일치합니다",
   "contacts.verify.codes_differ": "일치하지 않습니다",
+  "contacts.verify.codes_differ_body":
+    "이 휴대폰의 키가 {name}의 것이 아닐 수 있습니다. 이 채팅을 믿기 전에 직접 만나 코드를 스캔하세요.",
   "contacts.verify.compared_body":
     "{name}과(와) 같은 코드를 확인했습니다. 이 연락처는 확인되었습니다.",
 

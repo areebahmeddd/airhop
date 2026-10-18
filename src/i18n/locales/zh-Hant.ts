@@ -763,7 +763,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "讓對方響鈴提醒你，即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
   "chat.contact.allow_ring_needs_keys":
-    "請先驗證此聯絡人，才能允許對方向你響鈴。",
+    "這位聯絡人還沒有金鑰。傳則訊息給對方，或者掃描對方的 QR 碼，就能允許對方向你響鈴。",
   "chat.contact.ring_action": "響鈴",
   "chat.contact.ringing": "響鈴中…",
   "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
@@ -1638,9 +1638,11 @@ export const strings: Strings = {
     "這位聯絡人還沒有金鑰。傳則訊息給對方，或者見面時掃一下對方的代碼。",
   "contacts.verify.compare_title": "把這些念給彼此聽",
   "contacts.verify.compare_body":
-    "{name} 看到的是同樣的六個字。如果對得上，你們雙方就都知道這些金鑰是真的。",
+    "{name} 在 Airhop 上看到的是同樣的六個字。如果對得上，你們雙方就都知道這些金鑰是真的。bitchat 不顯示這樣的字，所以請改為掃描對方的 QR 碼。",
   "contacts.verify.codes_match": "對得上",
   "contacts.verify.codes_differ": "對不上",
+  "contacts.verify.codes_differ_body":
+    "這支手機上的金鑰可能不屬於 {name}。在信任這段聊天之前，請當面掃描對方的 QR 碼。",
   "contacts.verify.compared_body":
     "你和 {name} 確認了同一段代碼。這位聯絡人已驗證。",
 

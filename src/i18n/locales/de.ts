@@ -827,7 +827,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Erlaube der Person, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifiziere diesen Kontakt zuerst, damit er bei dir klingeln darf.",
+    "Für diesen Kontakt gibt es noch keine Schlüssel. Schreibe der Person oder scanne ihren Code, damit sie bei dir klingeln darf.",
   "chat.contact.ring_action": "Klingeln",
   "chat.contact.ringing": "Klingelt…",
   "chat.contact.ring_hint_nearby":
@@ -1791,9 +1791,11 @@ export const strings: Strings = {
     "Für diesen Kontakt gibt es noch keine Schlüssel. Schreibe der Person, oder scanne ihren Code, wenn ihr euch trefft.",
   "contacts.verify.compare_title": "Lest euch das gegenseitig vor",
   "contacts.verify.compare_body":
-    "{name} sieht dieselben sechs Wörter. Wenn sie übereinstimmen, wisst ihr beide, dass die Schlüssel echt sind.",
+    "{name} sieht in Airhop dieselben sechs Wörter. Wenn sie übereinstimmen, wisst ihr beide, dass die Schlüssel echt sind. bitchat zeigt keine solchen Wörter, scanne dort stattdessen den Code.",
   "contacts.verify.codes_match": "Sie stimmen überein",
   "contacts.verify.codes_differ": "Sie stimmen nicht überein",
+  "contacts.verify.codes_differ_body":
+    "Die Schlüssel auf diesem Telefon gehören vielleicht nicht {name}. Scanne den Code persönlich, bevor du diesem Chat vertraust.",
   "contacts.verify.compared_body":
     "Du und {name} habt denselben Code bestätigt. Dieser Kontakt ist verifiziert.",
 

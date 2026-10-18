@@ -816,7 +816,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Permite que esta pessoa faça o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifica primeiro este contacto para lhe permitires tocar-te.",
+    "Ainda não há chaves deste contacto. Escreve à pessoa, ou lê o código dela, para lhe permitires tocar-te.",
   "chat.contact.ring_action": "Tocar",
   "chat.contact.ringing": "A tocar…",
   "chat.contact.ring_hint_nearby":
@@ -1776,9 +1776,11 @@ export const strings: Strings = {
     "Ainda não há chaves deste contacto. Escreve à pessoa, ou lê o código dela quando se encontrarem.",
   "contacts.verify.compare_title": "Leiam isto um ao outro",
   "contacts.verify.compare_body":
-    "{name} vê as mesmas seis palavras. Se corresponderem, ambos sabem que as chaves são autênticas.",
+    "{name} vê as mesmas seis palavras no Airhop. Se corresponderem, ambos sabem que as chaves são autênticas. O bitchat não mostra estas palavras, por isso lê antes o código da pessoa.",
   "contacts.verify.codes_match": "Correspondem",
   "contacts.verify.codes_differ": "Não correspondem",
+  "contacts.verify.codes_differ_body":
+    "As chaves neste telemóvel podem não ser de {name}. Lê o código da pessoa presencialmente antes de confiares nesta conversa.",
   "contacts.verify.compared_body":
     "Tu e {name} confirmaram o mesmo código. Este contacto está verificado.",
 

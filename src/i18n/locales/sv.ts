@@ -810,7 +810,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifiera den här kontakten först för att låta den ringa dig.",
+    "Inga nycklar för den här kontakten än. Skriv till dem, eller skanna deras kod, för att låta dem ringa dig.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringer…",
   "chat.contact.ring_hint_nearby":
@@ -1742,9 +1742,11 @@ export const strings: Strings = {
     "Inga nycklar för den här kontakten än. Skriv till dem, eller skanna deras kod när ni ses.",
   "contacts.verify.compare_title": "Läs dessa för varandra",
   "contacts.verify.compare_body":
-    "{name} ser samma sex ord. Om de stämmer vet ni båda att nycklarna är äkta.",
+    "{name} ser samma sex ord i Airhop. Om de stämmer vet ni båda att nycklarna är äkta. bitchat visar inga sådana ord, så skanna deras kod i stället.",
   "contacts.verify.codes_match": "De stämmer",
   "contacts.verify.codes_differ": "De stämmer inte",
+  "contacts.verify.codes_differ_body":
+    "Nycklarna på den här telefonen kanske inte tillhör {name}. Skanna deras kod på plats innan du litar på den här chatten.",
   "contacts.verify.compared_body":
     "Du och {name} bekräftade samma kod. Kontakten är verifierad.",
 

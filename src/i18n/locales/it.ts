@@ -819,7 +819,7 @@ export const strings: Strings = {
   "chat.contact.allow_ring_desc":
     "Consenti a questa persona di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
   "chat.contact.allow_ring_needs_keys":
-    "Verifica prima questo contatto per consentirgli di farti squillare.",
+    "Non ci sono ancora chiavi per questo contatto. Scrivigli, oppure scansiona il suo codice, per consentirgli di farti squillare.",
   "chat.contact.ring_action": "Squilla",
   "chat.contact.ringing": "Squillo in corso…",
   "chat.contact.ring_hint_nearby":
@@ -1779,9 +1779,11 @@ export const strings: Strings = {
     "Non ci sono ancora chiavi per questo contatto. Scrivi loro, oppure scansiona il loro codice quando vi incontrate.",
   "contacts.verify.compare_title": "Leggete questi a vicenda",
   "contacts.verify.compare_body":
-    "{name} vede le stesse sei parole. Se corrispondono, entrambi sapete che le chiavi sono autentiche.",
+    "{name} vede le stesse sei parole su Airhop. Se corrispondono, entrambi sapete che le chiavi sono autentiche. bitchat non mostra queste parole, quindi scansiona il suo codice.",
   "contacts.verify.codes_match": "Corrispondono",
   "contacts.verify.codes_differ": "Non corrispondono",
+  "contacts.verify.codes_differ_body":
+    "Le chiavi su questo telefono potrebbero non essere di {name}. Scansiona il suo codice di persona prima di fidarti di questa chat.",
   "contacts.verify.compared_body":
     "Tu e {name} avete confermato lo stesso codice. Questo contatto è verificato.",
 
