@@ -36,7 +36,7 @@
 
 The cryptographic primitives and the wire format were sound on arrival: the Noise XX pattern and split, low-order point rejection, decode caps, the DEFLATE ratio, the freshness window and dedup all match bitchat-ios. The defects sat in the state and wiring around them. A forged packet could permanently desynchronise the Double Ratchet. Signing-key pins, including those of verified contacts, did not survive a restart. Courier mail never opened between Airhop and bitchat-ios. A location-channel stranger could fold themselves into a friend's DM thread. A DM photo could go out in the clear. The release pipeline would have built a same-named branch instead of the tag.
 
-**Verdict.** Every High and Medium finding is fixed on the branch, except SUP-5, a repository setting the owner holds. One Low item is blocked on an upstream release (APP-9). What remains before the release is operational: a green CI run including the iOS build, and the device checks in section 9. The rebuilt native binaries are committed ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)).
+**Verdict.** Every High and Medium finding is fixed on the branch, except SUP-5, a repository setting the owner holds. What remains before the release is operational: a green CI run including the iOS build, and the device checks in section 9. The rebuilt native binaries are committed ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)).
 
 **By severity and status** (164 items):
 
@@ -206,7 +206,7 @@ Rd (round): 1 hardening pass, 2 pre-merge sanity audit, 3 final pre-merge pass, 
 | APP-6  | Received file names and types taken from the sender                            | Low    | 1   | Fixed         | [`3819301`](https://github.com/areebahmeddd/airhop/commit/3819301)                                                                                                                                         |
 | APP-7  | A refused-key wipe followed by a kill reloaded the old identity                | Low    | 1   | Fixed         | [`df6ffcb`](https://github.com/areebahmeddd/airhop/commit/df6ffcb)                                                                                                                                         |
 | APP-8  | Announced nicknames kept bidi and invisible characters                         | Low    | 1   | Fixed in part | [`3819301`](https://github.com/areebahmeddd/airhop/commit/3819301)                                                                                                                                         |
-| APP-9  | Recovery phrase and tokens copied without a sensitive flag                     | Low    | 1   | Blocked       |                                                                                                                                                                                                            |
+| APP-9  | Recovery phrase and tokens copied without a sensitive flag                     | Low    | 1   | Fixed         |                                                                                                                                                                                                            |
 | APP-14 | A refused wipe told the person to wipe again rather than reopen                | Low    | 2   | Fixed         | [`100538b`](https://github.com/areebahmeddd/airhop/commit/100538b)                                                                                                                                         |
 | APP-15 | Transfer refused a condemned identity's phone; cancel left a listener          | Low    | 2   | Fixed         | [`103e69b`](https://github.com/areebahmeddd/airhop/commit/103e69b)                                                                                                                                         |
 | APP-16 | Right-to-left reordered the six safety words                                   | Low    | 2   | Fixed         | [`0ae1115`](https://github.com/areebahmeddd/airhop/commit/0ae1115)                                                                                                                                         |
@@ -471,7 +471,7 @@ Low · Fixed with PAY-14(a). An invalid phrase is kept with its flags and never 
 
 #### PAY-14 · Recovery phrase handling
 
-Low · Fixed in part. (a) A failed keychain read was treated as "no phrase", clearing the backup marks and trying to write a new phrase; only a confirmed absence starts one now. Moving the phrase to the "when unlocked" class was rejected: it breaks locked background relaunch and protects nothing the MMKV key does not already expose. (b) The clipboard flag is APP-9, blocked. (c) Both ways to the words ask for Face ID or the passcode through `confirmDeviceOwner`, as the identity transfer does; a phone with no lock shows them (D7).
+Low · Fixed in part. (a) A failed keychain read was treated as "no phrase", clearing the backup marks and trying to write a new phrase; only a confirmed absence starts one now. Moving the phrase to the "when unlocked" class was rejected: it breaks locked background relaunch and protects nothing the MMKV key does not already expose. (b) The phrase is copied with the clipboard's sensitive flag (APP-9). (c) Both ways to the words ask for Face ID or the passcode through `confirmDeviceOwner`, as the identity transfer does; a phone with no lock shows them (D7).
 
 #### PAY-15 to PAY-31 (later rounds)
 
@@ -657,7 +657,7 @@ Low · Fixed in part (D12). `stripInvisibles` removes bidi controls, zero-width 
 
 #### APP-9 · Recovery phrase and tokens copied without a sensitive flag
 
-Low · Blocked. `expo-clipboard`'s `android.isSensitive` ships with Expo SDK 58, which is still a preview; mixing one SDK 58 module into SDK 57 is ruled out. A native helper was declined as reinvention.
+Low · Fixed. The wallet copies tokens and the recovery phrase with `expo-clipboard`'s `android.isSensitive`, which sets `ClipDescription.EXTRA_IS_SENSITIVE`, so Android 13 and later keep them out of the clipboard preview and keyboard suggestions. iOS has no equivalent flag.
 
 #### APP-10 · What the wipe and hidden previews leave behind
 
