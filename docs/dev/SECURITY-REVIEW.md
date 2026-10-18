@@ -657,7 +657,7 @@ Low · Fixed in part (D12). `stripInvisibles` removes bidi controls, zero-width 
 
 #### APP-9 · Recovery phrase and tokens copied without a sensitive flag
 
-Low · Fixed. The wallet copies tokens and the recovery phrase with `expo-clipboard`'s `android.isSensitive`, which sets `ClipDescription.EXTRA_IS_SENSITIVE`, so Android 13 and later keep them out of the clipboard preview and keyboard suggestions. iOS has no equivalent flag.
+Low · Fixed. The wallet copies tokens and the recovery phrase, and chat copies a message carrying a token, with `expo-clipboard`'s `android.isSensitive`, which sets `ClipDescription.EXTRA_IS_SENSITIVE`, so Android 13 and later keep them out of the clipboard preview and keyboard suggestions. iOS has no equivalent flag.
 
 #### APP-10 · What the wipe and hidden previews leave behind
 

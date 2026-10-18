@@ -31,6 +31,7 @@ import {
 import { t, tPlural, useT, useTPlural } from "@i18n";
 import { chevronForward, textAlignEnd } from "@i18n/layout";
 import { useRichText } from "@i18n/rich-text";
+import { copySecret } from "@platform/clipboard";
 import { acknowledged, succeeded } from "@platform/haptics";
 import {
   Feather,
@@ -180,12 +181,6 @@ const DEPOSIT_POLL_MS = 3000;
 
 // Three rows answer "did that go through"; the rest waits for a tap.
 const ACTIVITY_COLLAPSED_COUNT = 3;
-
-// For bearer secrets, the tokens and the recovery phrase: Android then leaves
-// them out of the clipboard preview and the keyboard's paste suggestions.
-const SECRET_CLIP: Clipboard.SetStringOptions = {
-  android: { isSensitive: true },
-};
 
 interface Props {
   action?: WalletAction | null;
@@ -831,13 +826,13 @@ export default function WalletScreen({
   }
 
   async function handleCopyToken(token: string): Promise<void> {
-    await Clipboard.setStringAsync(token, SECRET_CLIP);
+    await copySecret(token);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.token_body"));
   }
 
   async function handleCopyRefusedToken(token: string): Promise<void> {
-    await Clipboard.setStringAsync(token, SECRET_CLIP);
+    await copySecret(token);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.refused_token_body"));
   }
@@ -845,7 +840,7 @@ export default function WalletScreen({
   // Clipboards leak to other apps and sync, but refusing pushes people to a
   // screenshot, which is worse. Offer it and say to clean up after.
   async function handleCopyPhrase(): Promise<void> {
-    await Clipboard.setStringAsync(phrase, SECRET_CLIP);
+    await copySecret(phrase);
     acknowledged();
     showAlert(T("common.copied"), t("wallet.copied.phrase_body"));
   }

@@ -29,6 +29,7 @@ import {
   type TranslationKey,
 } from "@i18n";
 import { chevronBack, isRTLLayout, textAlignEnd } from "@i18n/layout";
+import { copySecret } from "@platform/clipboard";
 import {
   acknowledged,
   armed,
@@ -5904,9 +5905,13 @@ export default function MessageThread({
           // What is on screen, not what is in the store: for a row Airhop wrote,
           // `text` holds the rendering from the moment it was saved, so copying
           // it hands over the previous language after a switch. Stripped because
-          // a clipboard is somewhere else's input.
-          void Clipboard.setStringAsync(
-            stripIsolates(messageText(actionSheet)),
+          // a clipboard is somewhere else's input. A message carrying an ecash
+          // token is a bearer secret like the wallet's.
+          const text = stripIsolates(messageText(actionSheet));
+          void (
+            mayContainToken(text)
+              ? copySecret(text)
+              : Clipboard.setStringAsync(text)
           ).catch(() => {});
           acknowledged();
         }}
