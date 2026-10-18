@@ -2060,6 +2060,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "¿Detener la malla al cerrar Airhop?",
   "settings.conn.background_off_body":
     "Los mensajes solo llegarán con Airhop abierto, y este teléfono dejará de retransmitir para quienes estén cerca. La notificación permanente desaparece.",
+  "settings.conn.background_notice": "Notificación en segundo plano",
+  "settings.conn.background_notice_desc":
+    "Silénciala u ocúltala. Los avisos de mensajes siguen activos.",
   "settings.conn.autostart": "Iniciar automáticamente",
   "settings.conn.autostart_desc": "Reinicia la malla al reiniciar tu teléfono",
   "settings.conn.autostart_on_title": "¿Iniciar Airhop tras un reinicio?",

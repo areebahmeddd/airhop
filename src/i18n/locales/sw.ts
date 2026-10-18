@@ -2056,6 +2056,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Usimamishe mesh Airhop inapofungwa?",
   "settings.conn.background_off_body":
     "Jumbe zitafika tu wakati Airhop imefunguliwa, na simu hii itaacha kupitisha kwa ajili ya watu walio karibu. Arifa inayoendelea itatoweka.",
+  "settings.conn.background_notice": "Arifa ya chinichini",
+  "settings.conn.background_notice_desc":
+    "Inyamazishe au ifiche. Arifa za ujumbe zinaendelea.",
   "settings.conn.autostart": "Anza kiotomatiki",
   "settings.conn.autostart_desc":
     "Anzisha upya mtandao baada ya simu yako kuwasha upya",

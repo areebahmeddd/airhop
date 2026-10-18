@@ -1969,6 +1969,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "หยุดเมชเมื่อปิด Airhop หรือไม่",
   "settings.conn.background_off_body":
     "ข้อความจะมาถึงเฉพาะตอนที่ Airhop เปิดอยู่ และโทรศัพท์เครื่องนี้จะหยุดส่งต่อให้ผู้คนที่อยู่ใกล้ การแจ้งเตือนค้างจะหายไป",
+  "settings.conn.background_notice": "การแจ้งเตือนเบื้องหลัง",
+  "settings.conn.background_notice_desc":
+    "ปิดเสียงหรือซ่อนไว้ได้ การแจ้งเตือนข้อความยังทำงานอยู่",
   "settings.conn.autostart": "เริ่มโดยอัตโนมัติ",
   "settings.conn.autostart_desc": "เริ่มเมชใหม่หลังโทรศัพท์ของคุณรีสตาร์ท",
   "settings.conn.autostart_on_title": "เริ่ม Airhop หลังรีสตาร์ทหรือไม่",

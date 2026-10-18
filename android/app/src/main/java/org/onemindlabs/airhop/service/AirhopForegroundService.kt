@@ -15,11 +15,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
@@ -42,7 +44,7 @@ class AirhopForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+        ensureChannel(this)
         promoteToForeground()
     }
 
@@ -59,16 +61,22 @@ class AirhopForegroundService : Service() {
     // simply stands down.
     private fun promoteToForeground() {
         try {
+            val shown = peerCount
             ServiceCompat.startForeground(
                 this,
                 NOTIFICATION_ID,
-                buildNotification(),
+                buildNotification(shown),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
                 } else {
                     0
                 },
             )
+            synchronized(lock) {
+                running = this
+                // A count that arrived while this one was being posted.
+                if (peerCount != shown) repost()
+            }
         } catch (e: Exception) {
             if (
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
@@ -91,6 +99,7 @@ class AirhopForegroundService : Service() {
             // anyway: the notification has to disappear the moment it is
             // tapped, whether or not anything answered.
             AirhopBLEModule.requestMeshStop()
+            detach()
             ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
@@ -105,31 +114,29 @@ class AirhopForegroundService : Service() {
     }
 
     override fun onDestroy() {
+        detach()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         AirhopBLEModule.onBackgroundServiceStopped()
         super.onDestroy()
     }
 
-    // MARK: - Notification
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel(
-                        CHANNEL_ID,
-                        getString(R.string.mesh_channel_name),
-                        NotificationManager.IMPORTANCE_LOW, // silent but persistent
-                    )
-                    .apply {
-                        description = getString(R.string.mesh_channel_description)
-                        setShowBadge(false)
-                    }
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(channel)
-        }
+    // Under lock. Skipped once the person swiped the notice away (Android 14+),
+    // which a new count must not undo.
+    private fun repost() {
+        val manager = getSystemService(NotificationManager::class.java)
+        if (manager.activeNotifications.none { it.id == NOTIFICATION_ID }) return
+        manager.notify(NOTIFICATION_ID, buildNotification(peerCount))
     }
 
-    private fun buildNotification(): Notification {
+    // A notice posted after stopForeground would outlive the service, ongoing
+    // with no mesh behind it, so no count may re-post past this.
+    private fun detach() {
+        synchronized(lock) { if (running === this) running = null }
+    }
+
+    // MARK: - Notification
+
+    private fun buildNotification(count: Int): Notification {
         val launchIntent =
             Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -155,7 +162,7 @@ class AirhopForegroundService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.mesh_notification_title))
-            .setContentText(getString(R.string.mesh_notification_text))
+            .setContentText(peerLine(count))
             // The same drawable the manifest points expo-notifications at, so
             // the notice sitting in the shade all day and a notice about a
             // message are recognisably one app.
@@ -163,19 +170,77 @@ class AirhopForegroundService : Service() {
             .setColor(ContextCompat.getColor(this, R.color.notification_icon_color))
             .setOngoing(true)
             .setSilent(true)
+            .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
             .addAction(0, getString(R.string.mesh_notification_stop), stopIntent)
             .build()
     }
 
+    // Zero keeps the default line, which is also what a start shows before the
+    // first count.
+    private fun peerLine(count: Int): String =
+        if (count > 0) {
+            // A string argument keeps the digits Latin, as the app writes them.
+            resources.getQuantityString(R.plurals.mesh_notification_peers, count, count.toString())
+        } else {
+            getString(R.string.mesh_notification_text)
+        }
+
     companion object {
-        fun start(context: Context) {
-            val intent = Intent(context, AirhopForegroundService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+        private val lock = Any()
+        private var running: AirhopForegroundService? = null
+        @Volatile private var peerCount = 0
+
+        // Re-posted under the same ID, which is how Android updates a foreground
+        // notice.
+        fun setPeerCount(count: Int) {
+            synchronized(lock) {
+                if (count == peerCount) return
+                peerCount = count
+                running?.repost()
             }
+        }
+
+        // Also before opening the channel's page, which needs it to exist.
+        fun ensureChannel(context: Context) {
+            val channel =
+                NotificationChannel(
+                        CHANNEL_ID,
+                        context.getString(R.string.mesh_channel_name),
+                        NotificationManager.IMPORTANCE_LOW, // silent but persistent
+                    )
+                    .apply {
+                        description = context.getString(R.string.mesh_channel_description)
+                        setShowBadge(false)
+                    }
+            context
+                .getSystemService(NotificationManager::class.java)
+                .createNotificationChannel(channel)
+        }
+
+        // Message alerts post on their own channels, so this page touches only
+        // the notice. Some OEM builds lack it; the app's page stands in.
+        fun openChannelSettings(context: Context) {
+            ensureChannel(context)
+            val channel =
+                Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_CHANNEL_ID, CHANNEL_ID)
+            try {
+                context.startActivity(forApp(context, channel))
+            } catch (e: ActivityNotFoundException) {
+                context.startActivity(
+                    forApp(context, Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS))
+                )
+            }
+        }
+
+        private fun forApp(context: Context, intent: Intent): Intent =
+            intent
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        fun start(context: Context) {
+            context.startForegroundService(Intent(context, AirhopForegroundService::class.java))
         }
 
         fun stop(context: Context) {

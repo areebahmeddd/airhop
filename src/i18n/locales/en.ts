@@ -2024,6 +2024,9 @@ export const strings = {
   "settings.conn.background_off_title": "Stop the mesh when Airhop closes?",
   "settings.conn.background_off_body":
     "Messages will only arrive while Airhop is open, and this phone stops relaying for people nearby. The ongoing notification goes away.",
+  "settings.conn.background_notice": "Background notification",
+  "settings.conn.background_notice_desc":
+    "Quiet or hide it. Message alerts stay on.",
   "settings.conn.autostart": "Start automatically",
   "settings.conn.autostart_desc": "Restart the mesh after your phone restarts",
   "settings.conn.autostart_on_title": "Start Airhop after a restart?",

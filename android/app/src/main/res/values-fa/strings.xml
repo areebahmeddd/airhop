@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">مش Airhop فعال است</string>
   <string name="mesh_notification_text">یافتن و بازپخش پیام‌های نزدیک</string>
   <string name="mesh_notification_stop">توقف مش</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s همتا در محدوده</item>
+    <item quantity="other">%1$s همتا در محدوده</item>
+  </plurals>
 </resources>

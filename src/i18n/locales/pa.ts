@@ -2006,6 +2006,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ਬੰਦ ਹੋਣ ’ਤੇ ਮੈਸ਼ ਰੋਕ ਦੇਣਾ ਹੈ?",
   "settings.conn.background_off_body":
     "ਸੁਨੇਹੇ ਸਿਰਫ਼ ਉਦੋਂ ਹੀ ਪਹੁੰਚਣਗੇ ਜਦੋਂ Airhop ਖੁੱਲ੍ਹਾ ਹੋਵੇ, ਅਤੇ ਇਹ ਫ਼ੋਨ ਨੇੜਲੇ ਲੋਕਾਂ ਲਈ ਅੱਗੇ ਭੇਜਣਾ ਬੰਦ ਕਰ ਦਿੰਦਾ ਹੈ। ਚੱਲਦੀ ਸੂਚਨਾ ਚਲੀ ਜਾਂਦੀ ਹੈ।",
+  "settings.conn.background_notice": "ਪਿਛੋਕੜ ਸੂਚਨਾ",
+  "settings.conn.background_notice_desc":
+    "ਇਸ ਨੂੰ ਚੁੱਪ ਕਰੋ ਜਾਂ ਲੁਕਾਓ। ਸੁਨੇਹਾ ਚਿਤਾਵਨੀਆਂ ਚਾਲੂ ਰਹਿਣਗੀਆਂ।",
   "settings.conn.autostart": "ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਕਰੋ",
   "settings.conn.autostart_desc":
     "ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਰੀਸਟਾਰਟ ਹੋਣ ਮਗਰੋਂ ਮੈਸ਼ ਨੂੰ ਮੁੜ ਸ਼ੁਰੂ ਕਰਦਾ ਹੈ",

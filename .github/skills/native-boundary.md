@@ -75,6 +75,8 @@ writeToLink(linkID: string, dataBase64: string): Promise<void>
 getRadioState(): Promise<{ supported, poweredOn, authorization, ... }>
 setPowerMode(mode: string): Promise<void>        // no-op on iOS
 setBackgroundServiceEnabled(enabled: boolean): Promise<void>
+setBackgroundPeerCount(count: number): Promise<void>     // no-op on iOS
+openBackgroundNoticeSettings(): Promise<boolean>        // false on iOS
 requestEnableBluetooth(): Promise<boolean>
 openLocationSettings(): Promise<boolean>
 ```

@@ -2093,6 +2093,9 @@ export const strings: Strings = {
     "Ajanona ny harato rehefa mihidy ny Airhop?",
   "settings.conn.background_off_body":
     "Rehefa misokatra ny Airhop ihany no ahatongavan'ny hafatra, ary mitsahatra tsy mampita ho an'ny olona akaiky ity findy ity. Ho lasa ny fampandrenesana maharitra.",
+  "settings.conn.background_notice": "Fampandrenesana any aoriana",
+  "settings.conn.background_notice_desc":
+    "Ampangino na afeno. Mbola mandeha ny fampandrenesana hafatra.",
   "settings.conn.autostart": "Manomboka ho azy",
   "settings.conn.autostart_desc":
     "Manomboka indray ny tambajotra rehefa mi-restart ny findainao",

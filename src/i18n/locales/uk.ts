@@ -2030,6 +2030,9 @@ export const strings: Strings = {
     "Зупиняти mesh, коли Airhop закривається?",
   "settings.conn.background_off_body":
     "Повідомлення надходитимуть, лише поки Airhop відкрито, а цей телефон перестане передавати для людей поблизу. Постійне сповіщення зникне.",
+  "settings.conn.background_notice": "Фонове сповіщення",
+  "settings.conn.background_notice_desc":
+    "Вимкніть звук або приховайте його. Сповіщення про повідомлення залишаться.",
   "settings.conn.autostart": "Запускати автоматично",
   "settings.conn.autostart_desc":
     "Перезапускає mesh після перезавантаження телефону",

@@ -1894,6 +1894,8 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop 关闭时停止网状网络？",
   "settings.conn.background_off_body":
     "只有 Airhop 打开时消息才会送达，这台手机也不再为附近的人做中继。那条常驻通知会消失。",
+  "settings.conn.background_notice": "后台通知",
+  "settings.conn.background_notice_desc": "可静音或隐藏，消息提醒不受影响",
   "settings.conn.autostart": "自动启动",
   "settings.conn.autostart_desc": "手机重启后重新启动网状网络",
   "settings.conn.autostart_on_title": "重启后启动 Airhop？",

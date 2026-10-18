@@ -20,6 +20,7 @@ const mockPrimeTor = jest.fn();
 const mockNotifyTorForeground = jest.fn();
 const mockStartPipeline = jest.fn();
 const mockStartReachability = jest.fn();
+const mockStartNotice = jest.fn();
 const mockSweepMedia = jest.fn();
 const mockApplyStartupPresence = jest.fn();
 let mockWipePending = false;
@@ -62,6 +63,9 @@ jest.mock("../boot-sync", () => ({ syncAutoStartOnBoot: jest.fn() }));
 jest.mock("../notification-pipeline", () => ({
   startNotificationPipeline: (nickname: () => string) =>
     mockStartPipeline(nickname),
+}));
+jest.mock("../background-notice", () => ({
+  startBackgroundNotice: () => mockStartNotice(),
 }));
 jest.mock("../reachability", () => ({
   startReachabilityWatch: () => mockStartReachability(),
@@ -118,6 +122,7 @@ describe("bootStartMesh", () => {
     expect(mockInitMeshService).toHaveBeenCalledTimes(1);
     expect(mockStartPipeline).toHaveBeenCalledTimes(1);
     expect(mockStartReachability).toHaveBeenCalledTimes(1);
+    expect(mockStartNotice).toHaveBeenCalledTimes(1);
     // The mention check reads the name the mesh announces.
     const nickname = mockStartPipeline.mock.calls[0][0] as () => string;
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);

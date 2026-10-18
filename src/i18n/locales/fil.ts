@@ -2087,6 +2087,9 @@ export const strings: Strings = {
     "Itigil ang mesh kapag nagsara ang Airhop?",
   "settings.conn.background_off_body":
     "Darating lang ang mga mensahe habang bukas ang Airhop, at titigil ang teleponong ito sa pagpapasa para sa mga taong malapit. Mawawala ang patuloy na abiso.",
+  "settings.conn.background_notice": "Notification sa background",
+  "settings.conn.background_notice_desc":
+    "Patahimikin o itago ito. Mananatiling bukas ang mga alerto sa mensahe.",
   "settings.conn.autostart": "Awtomatikong simulan",
   "settings.conn.autostart_desc":
     "Simulan muli ang mesh pagkatapos mag-restart ang iyong telepono",

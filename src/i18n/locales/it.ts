@@ -2067,6 +2067,9 @@ export const strings: Strings = {
     "Fermare la mesh alla chiusura di Airhop?",
   "settings.conn.background_off_body":
     "I messaggi arriveranno solo con Airhop aperto, e questo telefono smetterà di inoltrare per chi è nelle vicinanze. La notifica permanente sparisce.",
+  "settings.conn.background_notice": "Notifica in background",
+  "settings.conn.background_notice_desc":
+    "Silenziala o nascondila. Gli avvisi dei messaggi restano attivi.",
   "settings.conn.autostart": "Avvio automatico",
   "settings.conn.autostart_desc":
     "Riavvia la rete mesh dopo il riavvio del telefono",

@@ -57,6 +57,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
+import { startBackgroundNotice } from "@services/background-notice";
 import { registerBootStartTask, syncBootStart } from "@services/boot-start";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
@@ -447,6 +448,7 @@ function startMeshDependents(): void {
   // a boot start may already have started it for this mesh.
   const nickname = peerIDToUsername(mesh.peerID);
   startNotificationPipeline(() => nickname);
+  startBackgroundNotice();
 
   // A network coming back nudges relays, Tor, queued mail and the wallet.
   startReachabilityWatch();

@@ -1990,6 +1990,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop을 닫으면 메시를 중단할까요?",
   "settings.conn.background_off_body":
     "Airhop이 열려 있을 때만 메시지가 도착하며, 이 휴대폰은 근처 사람들을 위한 중계를 중단합니다. 진행 중 알림은 사라집니다.",
+  "settings.conn.background_notice": "백그라운드 알림",
+  "settings.conn.background_notice_desc":
+    "조용히 하거나 숨길 수 있습니다. 메시지 알림은 그대로 켜져 있습니다.",
   "settings.conn.autostart": "자동으로 시작",
   "settings.conn.autostart_desc": "휴대폰이 재부팅되면 메시를 다시 시작합니다",
   "settings.conn.autostart_on_title": "재부팅 후 Airhop을 시작할까요?",

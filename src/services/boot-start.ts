@@ -18,6 +18,7 @@ import {
 import { useSettingsStore } from "@store/settings-store";
 import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
+import { startBackgroundNotice } from "./background-notice";
 
 import { sweepMediaIfDue } from "./media-retention";
 import { readMoveMarker } from "./move-marker";
@@ -71,6 +72,7 @@ async function bootStartMesh(): Promise<void> {
   // The dependents that need no screen. The rest (wallet, permission prompts)
   // wait for the app to be opened, which runs them for this same mesh.
   startNotificationPipeline(() => nickname);
+  startBackgroundNotice();
   startReachabilityWatch();
   sweepMediaIfDue();
 

@@ -1104,6 +1104,24 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    // Kept while the service is down, so a later start opens on the current count.
+    @ReactMethod
+    fun setBackgroundPeerCount(count: Int, promise: Promise) {
+        AirhopForegroundService.setPeerCount(count)
+        promise.resolve(null)
+    }
+
+    @ReactMethod
+    fun openBackgroundNoticeSettings(promise: Promise) {
+        try {
+            AirhopForegroundService.openChannelSettings(reactContext)
+            promise.resolve(true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not open notification settings: ${e.message}")
+            promise.resolve(false)
+        }
+    }
+
     // Periodic RSSI polling. onReadRemoteRssi only fires in response to an
     // explicit readRemoteRssi() call, so without this poller the rssiUpdated
     // event could never be emitted and signal strength stayed unavailable to

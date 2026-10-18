@@ -164,6 +164,25 @@ function readResources(file) {
   return out;
 }
 
+// `<plurals>` as name to { quantity: text }.
+function readPlurals(file) {
+  const out = {};
+  const source = fs.readFileSync(file, "utf8");
+  for (const m of source.matchAll(
+    /<plurals name="([^"]+)"\s*>([\s\S]*?)<\/plurals>/g,
+  )) {
+    out[m[1]] = {};
+    for (const item of m[2].matchAll(
+      /<item quantity="([^"]+)"\s*>([\s\S]*?)<\/item>/g,
+    )) {
+      out[m[1]][item[1]] = item[2];
+    }
+  }
+  return out;
+}
+
+const QUANTITIES = ["zero", "one", "two", "few", "many", "other"];
+
 // aapt2 reads these before the XML parser does, so they fail the build rather
 // than the review.
 const BARE_APOSTROPHE = /(^|[^\\])'/;
@@ -173,6 +192,9 @@ const base = readResources(path.join(RES, "values", "strings.xml"));
 // Only what the app posts: `app_name` is a proper noun and the Expo flag is
 // marked untranslatable.
 const androidKeys = Object.keys(base).filter((k) => k.startsWith("mesh_"));
+const androidPlurals = Object.keys(
+  readPlurals(path.join(RES, "values", "strings.xml")),
+).filter((k) => k.startsWith("mesh_"));
 
 if (androidKeys.length === 0) {
   errors.push("android: values/strings.xml declares no mesh_* strings");
@@ -216,6 +238,36 @@ for (const [dir, code] of wanted) {
       );
     else if (UNESCAPED_XML.test(value))
       errors.push(`android ${code}: unescaped & < or > in ${key}`);
+  }
+  // Quantities follow the language's CLDR rules, which catalog.test.ts already
+  // holds the JS catalog to; here only presence, `other` and escaping.
+  const plurals = readPlurals(file);
+  for (const key of androidPlurals) {
+    const forms = plurals[key];
+    if (forms === undefined) {
+      errors.push(`android ${code}: missing plurals ${key}`);
+      continue;
+    }
+    if (forms.other === undefined)
+      errors.push(`android ${code}: ${key} has no "other" item`);
+    for (const [quantity, value] of Object.entries(forms)) {
+      const where = `${key}[${quantity}]`;
+      if (!QUANTITIES.includes(quantity))
+        errors.push(`android ${code}: unknown quantity ${where}`);
+      else if (value.trim().length === 0)
+        errors.push(`android ${code}: empty ${where}`);
+      else if (BARE_APOSTROPHE.test(value))
+        errors.push(
+          `android ${code}: unescaped apostrophe in ${where}, write \\' instead`,
+        );
+      else if (UNESCAPED_XML.test(value))
+        errors.push(`android ${code}: unescaped & < or > in ${where}`);
+    }
+  }
+  for (const key of Object.keys(plurals)) {
+    if (!androidPlurals.includes(key)) {
+      errors.push(`android ${code}: unknown plurals ${key}`);
+    }
   }
   for (const key of Object.keys(strings)) {
     if (!androidKeys.includes(key)) {
@@ -287,5 +339,5 @@ if (errors.length > 0) {
 
 console.log(
   `${codes.length} languages. iOS: ${plistKeys.length} permission strings each. ` +
-    `Android: ${androidKeys.length} service strings each.`,
+    `Android: ${androidKeys.length + androidPlurals.length} service strings each.`,
 );

@@ -542,6 +542,24 @@ final class AirhopBLEModule: RCTEventEmitter {
     resolve(nil)
   }
 
+  // Android-only, like the service: iOS has no background notice.
+  @objc
+  func setBackgroundPeerCount(
+    _ count: Double,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(nil)
+  }
+
+  @objc
+  func openBackgroundNoticeSettings(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(false)
+  }
+
   // MARK: I/O
 
   @objc

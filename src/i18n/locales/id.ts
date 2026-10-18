@@ -2042,6 +2042,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Hentikan mesh saat Airhop tertutup?",
   "settings.conn.background_off_body":
     "Pesan hanya akan tiba selagi Airhop terbuka, dan ponsel ini berhenti meneruskan untuk orang di dekat sini. Notifikasi berjalannya hilang.",
+  "settings.conn.background_notice": "Notifikasi latar belakang",
+  "settings.conn.background_notice_desc":
+    "Senyapkan atau sembunyikan. Peringatan pesan tetap aktif.",
   "settings.conn.autostart": "Mulai otomatis",
   "settings.conn.autostart_desc":
     "Mulai ulang mesh setelah ponselmu dinyalakan ulang",

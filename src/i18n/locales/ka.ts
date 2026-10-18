@@ -2032,6 +2032,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "შევაჩეროთ მეში Airhop-ის დახურვისას?",
   "settings.conn.background_off_body":
     "შეტყობინებები მხოლოდ Airhop-ის გახსნისას მოვა, და ეს ტელეფონი ახლომდებარეებისთვის გადაცემას შეწყვეტს. მუდმივი შეტყობინება გაქრება.",
+  "settings.conn.background_notice": "ფონური შეტყობინება",
+  "settings.conn.background_notice_desc":
+    "დაადუმეთ ან დამალეთ. შეტყობინებების გაფრთხილებები ჩართული რჩება.",
   "settings.conn.autostart": "ავტომატური გაშვება",
   "settings.conn.autostart_desc":
     "გადატვირთავს ქსელს ტელეფონის გადატვირთვის შემდეგ",

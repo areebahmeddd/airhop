@@ -1999,6 +1999,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop বন্ধ হলে মেশ থামাবেন?",
   "settings.conn.background_off_body":
     "কেবল Airhop খোলা থাকলেই বার্তা পৌঁছাবে, আর এই ফোন কাছের লোকদের জন্য আর পার করবে না। স্থায়ী বিজ্ঞপ্তিটি চলে যাবে।",
+  "settings.conn.background_notice": "পেছনের বিজ্ঞপ্তি",
+  "settings.conn.background_notice_desc":
+    "নীরব করুন বা লুকান। বার্তার সতর্কতা চালু থাকবে।",
   "settings.conn.autostart": "স্বয়ংক্রিয়ভাবে শুরু করুন",
   "settings.conn.autostart_desc":
     "আপনার ফোন রিস্টার্ট হওয়ার পর মেশ আবার চালু করে",

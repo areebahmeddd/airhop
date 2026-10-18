@@ -2023,6 +2023,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhopを閉じたらメッシュを止めますか",
   "settings.conn.background_off_body":
     "メッセージはAirhopを開いている間しか届かなくなり、この端末は近くの人のための中継もやめます。常時表示の通知は消えます。",
+  "settings.conn.background_notice": "バックグラウンド通知",
+  "settings.conn.background_notice_desc":
+    "目立たなくしたり非表示にしたりできます。メッセージ通知はそのまま届きます。",
   "settings.conn.autostart": "自動的に起動",
   "settings.conn.autostart_desc": "端末の再起動後にメッシュを再度起動します",
   "settings.conn.autostart_on_title": "再起動後にAirhopを起動しますか？",

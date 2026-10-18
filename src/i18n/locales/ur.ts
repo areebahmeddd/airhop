@@ -2003,6 +2003,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop بند ہونے پر میش روک دیں؟",
   "settings.conn.background_off_body":
     "پیغام صرف تبھی پہنچیں گے جب Airhop کھلا ہو، اور یہ فون قریبی لوگوں کے لیے پہنچانا بند کر دے گا۔ جاری اطلاع ختم ہو جائے گی۔",
+  "settings.conn.background_notice": "پس منظر کی اطلاع",
+  "settings.conn.background_notice_desc":
+    "اسے خاموش کریں یا چھپائیں۔ پیغام کی اطلاعات چالو رہیں گی۔",
   "settings.conn.autostart": "خودکار آغاز",
   "settings.conn.autostart_desc":
     "آپ کے فون کے دوبارہ شروع ہونے کے بعد میش کو دوبارہ شروع کرتا ہے",

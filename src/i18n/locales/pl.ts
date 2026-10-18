@@ -2044,6 +2044,9 @@ export const strings: Strings = {
     "Zatrzymać sieć mesh po zamknięciu Airhop?",
   "settings.conn.background_off_body":
     "Wiadomości będą docierać tylko wtedy, gdy Airhop jest otwarty, a ten telefon przestanie przekazywać dla ludzi w pobliżu. Stałe powiadomienie znika.",
+  "settings.conn.background_notice": "Powiadomienie w tle",
+  "settings.conn.background_notice_desc":
+    "Wycisz je lub ukryj. Alerty o wiadomościach pozostaną włączone.",
   "settings.conn.autostart": "Uruchamiaj automatycznie",
   "settings.conn.autostart_desc":
     "Uruchamia sieć ponownie po restarcie telefonu",

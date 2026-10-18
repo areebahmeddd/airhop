@@ -4,4 +4,12 @@
   <string name="mesh_notification_title">شبكة Airhop نشطة</string>
   <string name="mesh_notification_text">اكتشاف الرسائل القريبة وترحيلها</string>
   <string name="mesh_notification_stop">إيقاف الشبكة</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="zero">%1$s نظير ضمن النطاق</item>
+    <item quantity="one">%1$s نظير ضمن النطاق</item>
+    <item quantity="two">نظيران ضمن النطاق</item>
+    <item quantity="few">%1$s نظراء ضمن النطاق</item>
+    <item quantity="many">%1$s نظيرًا ضمن النطاق</item>
+    <item quantity="other">%1$s نظير ضمن النطاق</item>
+  </plurals>
 </resources>

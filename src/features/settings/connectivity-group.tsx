@@ -15,6 +15,7 @@
 // lose by turning it off.
 
 import { useT, type TranslationKey } from "@i18n";
+import { openBackgroundNoticeSettings } from "@services/background-notice";
 import { syncBootStart } from "@services/boot-sync";
 import { requestLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
@@ -281,6 +282,18 @@ export default function ConnectivityGroup({
               }
             />
             <GroupDivider />
+            {backgroundMeshEnabled && (
+              <>
+                <SettingLinkRow
+                  icon="bell"
+                  label={T("settings.conn.background_notice")}
+                  description={T("settings.conn.background_notice_desc")}
+                  onPress={() => void openBackgroundNoticeSettings()}
+                  external
+                />
+                <GroupDivider />
+              </>
+            )}
           </>
         )}
         <SettingRow

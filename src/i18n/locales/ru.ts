@@ -2038,6 +2038,9 @@ export const strings: Strings = {
     "Останавливать сеть при закрытии Airhop?",
   "settings.conn.background_off_body":
     "Сообщения будут приходить, только пока Airhop открыт, и этот телефон перестанет передавать для тех, кто рядом. Постоянное уведомление исчезнет.",
+  "settings.conn.background_notice": "Фоновое уведомление",
+  "settings.conn.background_notice_desc":
+    "Сделайте его беззвучным или скройте. Оповещения о сообщениях останутся.",
   "settings.conn.autostart": "Запускать автоматически",
   "settings.conn.autostart_desc":
     "Перезапускает сеть после перезагрузки телефона",

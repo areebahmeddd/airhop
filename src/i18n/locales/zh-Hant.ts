@@ -1897,6 +1897,8 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop 關掉時停止網狀網路嗎？",
   "settings.conn.background_off_body":
     "只有 Airhop 開著時訊息才會送到，這支手機也不再替附近的人做中繼。那則常駐通知會消失。",
+  "settings.conn.background_notice": "背景通知",
+  "settings.conn.background_notice_desc": "可靜音或隱藏，訊息提醒不受影響",
   "settings.conn.autostart": "自動啟動",
   "settings.conn.autostart_desc": "手機重新啟動後重新啟動網狀網路",
   "settings.conn.autostart_on_title": "重新啟動後啟動 Airhop？",

@@ -2008,6 +2008,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "با بسته شدن Airhop مش هم متوقف شود؟",
   "settings.conn.background_off_body":
     "پیام‌ها فقط وقتی می‌رسند که Airhop باز باشد، و این گوشی بازپخش برای اطرافیان را متوقف می‌کند. اعلان پایدار از میان می‌رود.",
+  "settings.conn.background_notice": "اعلان پس‌زمینه",
+  "settings.conn.background_notice_desc":
+    "بی‌صدا یا پنهانش کن. هشدارهای پیام روشن می‌مانند.",
   "settings.conn.autostart": "شروع خودکار",
   "settings.conn.autostart_desc":
     "شبکه را پس از راه‌اندازی مجدد گوشی از نو شروع می‌کند",

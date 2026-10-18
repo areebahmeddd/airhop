@@ -4,4 +4,10 @@
   <string name="mesh_notification_title">Сеть Airhop работает</string>
   <string name="mesh_notification_text">Поиск и передача сообщений поблизости</string>
   <string name="mesh_notification_stop">Остановить сеть</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s узел в зоне действия</item>
+    <item quantity="few">%1$s узла в зоне действия</item>
+    <item quantity="many">%1$s узлов в зоне действия</item>
+    <item quantity="other">%1$s узла в зоне действия</item>
+  </plurals>
 </resources>

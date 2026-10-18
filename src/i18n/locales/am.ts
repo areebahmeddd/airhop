@@ -1894,6 +1894,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ሲዘጋ ሜሹ ይቁም?",
   "settings.conn.background_off_body":
     "መልእክቶች የሚደርሱት Airhop ክፍት ሲሆን ብቻ ነው፤ ይህ ስልክ ደግሞ በአቅራቢያ ላሉ ሰዎች ማስተላለፉን ያቆማል። ቀጣዩ ማሳወቂያ ይጠፋል።",
+  "settings.conn.background_notice": "የጀርባ ማሳወቂያ",
+  "settings.conn.background_notice_desc":
+    "ጸጥ አድርግ ወይም ደብቅ። የመልእክት ማንቂያዎች እንደበሩ ይቆያሉ።",
   "settings.conn.autostart": "በራስ-ሰር ጀምር",
   "settings.conn.autostart_desc": "ስልክህ እንደገና ሲጀምር ሜሹን መልሶ ይጀምራል",
   "settings.conn.autostart_on_title": "እንደገና ከተጀመረ በኋላ Airhop ይጀምር?",

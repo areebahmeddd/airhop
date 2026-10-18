@@ -1650,7 +1650,7 @@ the same surface. Bytes cross base64-encoded, the only representation both
 runtimes agree on safely. The full per-module contract is in
 [`.github/skills/native-boundary.md`](../../.github/skills/native-boundary.md).
 
-`src/bridge/NativeAirhopBLE.ts` is the largest, at ten methods:
+`src/bridge/NativeAirhopBLE.ts` is the largest, at twelve methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
 2. `startScanning` / `stopScanning`: GATT Central
@@ -1659,6 +1659,7 @@ runtimes agree on safely. The full per-module contract is in
 5. `setPowerMode`: how hard to run the radios
 6. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
 7. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
+8. `setBackgroundPeerCount` / `openBackgroundNoticeSettings`: the reachable count on that service's notice, and its system settings page
 
 Nothing about Tor is asked of it. `AirhopTorModule` owns that and answers
 directly; a radio module reporting on Tor would be a boundary violation.
@@ -1720,6 +1721,13 @@ Aware withdrawn by doze or battery saver), since only a living process can
 resume. A refused permission or missing hardware releases it. The
 `connectedDevice` type is granted against `CHANGE_WIFI_STATE` too, so it starts
 with Bluetooth refused.
+
+Its notice shows how many peers are in range
+(`src/services/background-notice.ts`), pushed once a burst settles, since
+Android drops faster updates, and re-posted only while it still shows: one
+swiped away on Android 14+ stays away until the service next starts. It has a
+channel of its own, so Settings opens that channel's system page to quiet or
+hide it while message alerts carry on.
 
 With background running off, leaving the screen stands down Bluetooth, Wi-Fi
 Aware and LAN, which would otherwise advertise a frozen phone. Auto-start is

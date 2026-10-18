@@ -2073,6 +2073,9 @@ export const strings: Strings = {
     "Arrêter le maillage à la fermeture d’Airhop ?",
   "settings.conn.background_off_body":
     "Les messages n’arriveront que quand Airhop est ouvert, et ce téléphone cessera de relayer pour les gens à proximité. La notification permanente disparaît.",
+  "settings.conn.background_notice": "Notification en arrière-plan",
+  "settings.conn.background_notice_desc":
+    "La rendre discrète ou la masquer. Les alertes de messages restent actives.",
   "settings.conn.autostart": "Démarrer automatiquement",
   "settings.conn.autostart_desc":
     "Redémarre le maillage après le redémarrage de ton téléphone",

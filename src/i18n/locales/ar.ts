@@ -1956,6 +1956,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "إيقاف الشبكة عند إغلاق Airhop؟",
   "settings.conn.background_off_body":
     "لن تصل الرسائل إلا وAirhop مفتوح، وسيتوقف هذا الهاتف عن التمرير لمن حوله. ويختفي الإشعار المستمر.",
+  "settings.conn.background_notice": "إشعار الخلفية",
+  "settings.conn.background_notice_desc":
+    "اجعله صامتًا أو أخفِه. تبقى تنبيهات الرسائل مفعّلة.",
   "settings.conn.autostart": "التشغيل التلقائي",
   "settings.conn.autostart_desc": "يعيد تشغيل الشبكة بعد إعادة تشغيل هاتفك",
   "settings.conn.autostart_on_title": "تشغيل Airhop بعد إعادة التشغيل؟",

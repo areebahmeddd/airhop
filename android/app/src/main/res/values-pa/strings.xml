@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop ਮੈਸ਼ ਚਾਲੂ</string>
   <string name="mesh_notification_text">ਨੇੜਲੇ ਸੁਨੇਹੇ ਲੱਭ ਅਤੇ ਅੱਗੇ ਭੇਜ ਰਿਹਾ ਹੈ</string>
   <string name="mesh_notification_stop">ਮੈਸ਼ ਰੋਕੋ</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
+    <item quantity="other">%1$s ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
+  </plurals>
 </resources>

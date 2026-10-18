@@ -2002,6 +2002,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop बंद होते ही मेश रोक दें?",
   "settings.conn.background_off_body":
     "संदेश तभी पहुँचेंगे जब Airhop खुला हो, और यह फ़ोन आस-पास के लोगों के लिए संदेश आगे भेजना बंद कर देगा। चालू सूचना हट जाएगी।",
+  "settings.conn.background_notice": "पृष्ठभूमि सूचना",
+  "settings.conn.background_notice_desc":
+    "इसे शांत करें या छिपाएँ। संदेश अलर्ट चालू रहेंगे।",
   "settings.conn.autostart": "अपने आप शुरू करें",
   "settings.conn.autostart_desc":
     "आपका फ़ोन रीस्टार्ट होने पर मेश को फिर से शुरू करता है",

@@ -2022,6 +2022,9 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop kapanınca mesh dursun mu?",
   "settings.conn.background_off_body":
     "Mesajlar yalnızca Airhop açıkken ulaşır ve bu telefon yakındakiler için aktarmayı bırakır. Kalıcı bildirim kaybolur.",
+  "settings.conn.background_notice": "Arka plan bildirimi",
+  "settings.conn.background_notice_desc":
+    "Sessize al ya da gizle. Mesaj uyarıları açık kalır.",
   "settings.conn.autostart": "Otomatik başlat",
   "settings.conn.autostart_desc":
     "Telefonun yeniden başladığında ağı yeniden başlatır",
