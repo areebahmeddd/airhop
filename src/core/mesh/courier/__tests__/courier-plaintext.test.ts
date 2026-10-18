@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What goes INSIDE a courier envelope.
 //
 // The envelope's own bytes are checked against `courier-test-vectors.json`, but

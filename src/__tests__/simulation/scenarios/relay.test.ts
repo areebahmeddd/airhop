@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier R: bare relay nodes, the ESP32-on-a-pole case.
 //
 // Third-party relays exist (bitle.org, bitchat-esp32, bitchat-relay) and Airhop

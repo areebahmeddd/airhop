@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Bearing, distance and the words the location card puts on them.
 
 import {

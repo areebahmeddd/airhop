@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The module-level listeners that raise notifications with or without a
 // screen. Every path that brings a mesh up starts them, so a second start must
 // not double every banner, and the panic wipe must be able to silence them.

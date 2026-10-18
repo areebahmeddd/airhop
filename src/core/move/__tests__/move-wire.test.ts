@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import {
   canReadVersion,
   decodeMoveMessage,

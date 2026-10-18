@@ -1,7 +1,3 @@
-/**
- * @jest-environment node
- */
-
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";

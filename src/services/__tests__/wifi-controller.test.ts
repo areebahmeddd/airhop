@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The WiFi fast path's reconciler, which retries an attach that can succeed
 // later and stops asking one that never will. A reconciler that gets that
 // permanent/transient split wrong is worse than none.

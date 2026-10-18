@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The rule that stops mDNS turning a room into a full mesh.
 //
 // The properties asserted below are what the rest of the mesh depends on, so

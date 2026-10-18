@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Money, end to end across simulated phones.
 //
 // Scenarios assert conservation rather than outcomes: what everybody holds,

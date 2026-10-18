@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The features that only mean anything with more than two phones in the room.
 //
 // Store-and-forward, private groups and the bulletin board all have unit tests

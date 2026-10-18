@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The power policy decides how hard the radios run. It is a pure function of
 // four facts, which is the whole reason it lives in TypeScript rather than in
 // the native module: the decision is testable here, and native keeps only the

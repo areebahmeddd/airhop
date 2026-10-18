@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Round-trip + structural tests for bitchat's nip44-v2 Nostr DM encryption.
 // Full byte-parity with a real bitchat ciphertext needs a captured vector; these
 // lock in the scheme's shape and self-consistency.

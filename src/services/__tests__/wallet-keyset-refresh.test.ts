@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A token signed under a keyset this wallet has not fetched yet.
 //
 // A `cashuB` token carries a v2 keyset id as its first 8 bytes, which only the

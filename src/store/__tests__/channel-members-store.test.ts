@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Who counts as a member of a private channel.
 //
 // A private channel has no roster on the wire, so membership is possession of

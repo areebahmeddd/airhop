@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A wallet opened while the keychain is locked. iOS relaunches the app in the
 // background before first unlock, the wallet's file key cannot be read, and
 // the same process later carries on once the person unlocks. The wallet must

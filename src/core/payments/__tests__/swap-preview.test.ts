@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A persisted swap preview must replay byte for byte.
 //
 // The mint keys its NUT-19 cache on the request body, so a replay that differs

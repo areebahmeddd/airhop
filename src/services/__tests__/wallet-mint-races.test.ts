@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Two operations wanting the same coins, or a mint answer that goes missing
 // while the wallet carries on.
 //

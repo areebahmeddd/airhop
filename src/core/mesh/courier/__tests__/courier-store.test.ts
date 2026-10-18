@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The courier's mailbag: what it accepts, who it offers mail to, how it spends a
 // spray budget, and what survives a restart.
 //

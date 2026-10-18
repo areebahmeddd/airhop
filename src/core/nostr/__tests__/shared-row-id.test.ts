@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { sharedRowID } from "../shared-row-id";
 
 describe("sharedRowID", () => {

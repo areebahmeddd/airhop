@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The launch sweep that makes a failed panic wipe retry itself.
 //
 // The wipe most likely to fail is the one that matters. Items are stored

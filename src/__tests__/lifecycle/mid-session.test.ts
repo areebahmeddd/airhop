@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What happens to a running app when the world changes under it: radios
 // toggled, conversations in flight, the app put away and reopened, and a link
 // handed over by another app.

@@ -1,10 +1,12 @@
-/**
- * @jest-environment node
- */
 // NIP-13 mining and scoring, checked against the ID nostr-tools computes, which
 // is the one every receiver computes.
 
-import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
+import {
+  finalizeEvent,
+  generateSecretKey,
+  getEventHash,
+  getPublicKey,
+} from "nostr-tools";
 import {
   leadingZeroBits,
   mineNonceTag,

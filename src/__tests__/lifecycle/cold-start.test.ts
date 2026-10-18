@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What happens between tapping the icon and having a mesh: permissions, the
 // radios and the choices a launch restores, then what launch reads from the
 // keychain and what it refuses to boot.

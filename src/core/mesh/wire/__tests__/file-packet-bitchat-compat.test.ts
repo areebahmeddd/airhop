@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // An attachment Airhop sends must decode in bitchat, on both of its clients.
 //
 // This is the closest thing to a cross-client field test that CI can run.

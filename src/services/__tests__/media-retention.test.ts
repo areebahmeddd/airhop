@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Attachment retention, and the cache clears beside it. Without the sweep only
 // the panic wipe deletes media, and a photo outlives the conversation it
 // belonged to by months. These pin what gets deleted, and more importantly what

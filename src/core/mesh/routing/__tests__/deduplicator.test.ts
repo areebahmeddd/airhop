@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The seen-set that stops a flooded packet circulating forever.
 //
 // Every phone rebroadcasts what it has not seen, so without this a packet in a

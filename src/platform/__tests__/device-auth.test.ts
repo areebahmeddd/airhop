@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { confirmDeviceOwner, isDeviceAuthInFlight } from "../device-auth";
 
 const mockLevel = jest.fn();

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Changing the relay preferences has to move a live subscription, not just the
 // next publish.
 //

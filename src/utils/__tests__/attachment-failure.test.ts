@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A refused attachment used to leave no trace at all: the sender's bubble said
 // "sent", the recipient saw nothing, and the two were indistinguishable from a
 // file that was never sent. Saying so is the fix, but the saying itself is a

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Which rail `payPerson` takes, and how many times the money leaves the wallet.
 //
 // Only the nutzap rail is final, and only the token rails reserve proofs that

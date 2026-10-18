@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { PacketType } from "../../wire/packet-codec";
 import { originTtl } from "../origin-ttl";
 

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Ring: rate limiting and snooze state. Covers what
 // notification-policy.ringRefusal depends on (an active snooze, the
 // receive-side cooldown clock) and what the contact sheet reads back on the

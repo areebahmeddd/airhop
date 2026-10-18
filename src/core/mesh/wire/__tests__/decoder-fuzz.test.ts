@@ -1,4 +1,3 @@
-/** @jest-environment node */
 // Every decoder that runs on unauthenticated bytes returns a value or null for
 // any input and never throws. The mesh-service ingress catches a throw, but a
 // decoder that throws is still a parser bug, and this is where it is found.

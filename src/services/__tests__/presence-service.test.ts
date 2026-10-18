@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Presence is the one setting that starts and stops radios, and it is reachable
 // from three places: the Status picker, the Mesh banner's Resume button, and
 // "Stop mesh" on the Android notification. What matters is that the mesh ends up

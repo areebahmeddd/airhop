@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Cross-implementation vectors captured from a real bitchat-ios build.
 //
 // On 2026-07-24 a bitchat handset in Kumaraswamy Layout, Bengaluru displayed

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Geohash bookmarks: the saved cells a user can reopen from the "Go to a place"
 // sheet. Small store, but the properties that matter are that toggling is
 // idempotent per cell, newest saves come first, and a wipe leaves nothing.

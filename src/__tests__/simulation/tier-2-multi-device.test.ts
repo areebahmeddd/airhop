@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier B: more than two people, more than one transport, nothing simple.
 //
 // Tier A proves the app works. This tier proves it works when the room is

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A chat row must never render blank.
 //
 // The list shows `messagePreviewText` under every conversation. An attachment

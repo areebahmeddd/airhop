@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Notification policy: the pure rules for whether and how to notify.
 //
 // These decide when a message pulls the user out of whatever they are doing, so

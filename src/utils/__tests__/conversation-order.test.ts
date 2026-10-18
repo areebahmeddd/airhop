@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Conversation ordering: pinned first, then most recent activity.
 
 import type { ChatMessage } from "@store/chat-store";

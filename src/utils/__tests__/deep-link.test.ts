@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What an airhop:// link is allowed to mean.
 //
 // A link arrives from outside the app, so it is attacker-controlled input that

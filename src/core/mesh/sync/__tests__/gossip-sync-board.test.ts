@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Board gossip sync: board posts (type 0x23) ride the GCS sync machinery with a
 // multi-byte SyncTypeFlags round (bit 8), mutually intelligible with bitchat.
 import { ed25519 } from "@noble/curves/ed25519.js";

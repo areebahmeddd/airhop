@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Fixed vectors for the bitchat v2 wire format: peer ID derivation, the packet
 // frame, signing, packet IDs, the announce TLVs, and the fragment and UUID
 // constants.

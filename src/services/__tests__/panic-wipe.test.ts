@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The panic wipe: what it destroys, in what order, and how it behaves when a
 // step fails or the process dies partway.
 //

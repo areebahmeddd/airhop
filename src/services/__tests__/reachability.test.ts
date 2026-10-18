@@ -1,4 +1,3 @@
-/** @jest-environment node */
 import type * as Network from "expo-network";
 
 const mockOnNetworkChanged = jest.fn();

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Runtime behaviour: catalog resolution, interpolation, plural selection, and
 // the rule that decides which language is actually on screen.
 //

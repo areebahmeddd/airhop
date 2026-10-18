@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // `verifyTokenOffline`: the only check between a forged token and the balance
 // when no mint is reachable. A NUT-12 DLEQ witness proves the mint signed a
 // proof, using its public keys alone.

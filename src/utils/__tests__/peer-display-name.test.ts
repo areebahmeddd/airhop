@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Who a peer is, as shown on four screens.
 //
 // Three names can exist for one person: a label the user typed, the name on the

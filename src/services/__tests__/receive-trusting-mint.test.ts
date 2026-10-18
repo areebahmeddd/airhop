@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Receiving a token from a mint this wallet has never used.
 //
 // The wallet never enrols a mint on a token's say-so, so a stranger cannot make

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A bubble aligns by its own text's direction, not only by the UI's.
 
 import { contentTextAlign } from "../layout";

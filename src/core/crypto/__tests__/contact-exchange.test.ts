@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import {
   decodeContactCard,
   decodeQRContent,

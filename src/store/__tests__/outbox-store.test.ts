@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Outbox tests.
 //
 // This queue is the difference between "queued for delivery" being true and

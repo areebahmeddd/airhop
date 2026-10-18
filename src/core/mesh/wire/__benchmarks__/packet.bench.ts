@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Throughput of the operations that run on every packet on the hot path.
 //
 // Run with `npm run benchmark`. This prints a report and always passes: it is

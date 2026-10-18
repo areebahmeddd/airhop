@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Place names are a best-effort nicety layered on top of a feature that must
 // work with no network at all. These pin the failure behaviour, because that is
 // the behaviour that actually ships in a blackout: a lookup that cannot happen

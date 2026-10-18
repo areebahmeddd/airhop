@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Refreshing an account swaps each offline receipt on its own. A receipt is
 // the unit of refusal, as in CDK and Nutshell: a stranger's forged token can
 // cost only itself, never block the honest receipts beside it or every later

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Incoming NIP-61 nutzaps. Any Nostr key can publish a kind 9321 naming us,
 // so everything checkable offline is checked before a row is written or the
 // mint is asked, a refusal is final (the event is never tried again), and

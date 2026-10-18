@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The headless task Android runs after a reboot, with no Activity and no UI.
 // It may only ever start the identity the user still has, and has to bring up
 // what a running mesh owes the user with nobody looking: notifications.

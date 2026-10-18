@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { HandshakeRateLimiter } from "../handshake-rate-limiter";
 
 describe("HandshakeRateLimiter", () => {

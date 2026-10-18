@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Recovery phrase tests. A phrase accepted but wrong is worse than one
 // rejected, since the user believes they have a backup, so most cases cover
 // rejection. Above all, the same phrase must always derive the same seed.

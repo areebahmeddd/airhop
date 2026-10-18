@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Chaos: the world is actively hostile, and the schedule is chosen by a seed.
 //
 // The scenarios above this file each describe one failure. These describe a

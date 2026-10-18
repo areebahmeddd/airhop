@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { SlidingWindowLimiter } from "../sliding-window-limiter";
 
 describe("SlidingWindowLimiter", () => {

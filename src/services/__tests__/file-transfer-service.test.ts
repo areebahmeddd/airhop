@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Outbound pacing tests for FileTransferService.
 //
 // These exist because the failure they guard against is invisible on one

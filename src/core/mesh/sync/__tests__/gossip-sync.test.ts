@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The filter two phones exchange to work out what each is missing.
 //
 // A Golomb-coded set is compact enough to gossip over BLE, which is the only

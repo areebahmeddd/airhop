@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { BundleAssembler, buildOffer, chunksOf } from "../move-bundle";
 
 const enc = new TextEncoder();

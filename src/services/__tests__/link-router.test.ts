@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What an airhop:// link joins. A private invite must never land in the public
 // room of the same name, where the user would talk in the clear, and a refused
 // contact card has to say why.

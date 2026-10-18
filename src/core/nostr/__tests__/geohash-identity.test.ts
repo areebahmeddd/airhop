@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Per-geohash identity derivation.
 //
 // The property that matters is UNLINKABILITY: posting in #city and #region

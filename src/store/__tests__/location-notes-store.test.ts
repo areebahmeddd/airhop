@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Retracting a geohash notice.
 //
 // A geohash notice exists twice: the signed board post flooded over BLE, and

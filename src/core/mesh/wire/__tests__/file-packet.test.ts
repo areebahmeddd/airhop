@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The file-transfer TLV (bitchat's BitchatFilePacket): round trips, the MIME
 // allow-list and the size caps. That the bytes decode in both bitchat clients is
 // pinned in file-packet-bitchat-compat.test.ts.

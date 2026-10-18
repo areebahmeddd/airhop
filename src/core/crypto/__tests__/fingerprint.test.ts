@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Safety numbers. These properties are what the feature rests on, so they are
 // pinned rather than assumed.
 

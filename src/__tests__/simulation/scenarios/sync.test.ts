@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier S: the gossip sync and replay contract, across real phones.
 //
 // Each scenario pins a property that only appears with more than one device and

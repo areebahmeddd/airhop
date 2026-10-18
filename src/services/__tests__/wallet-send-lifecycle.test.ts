@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The money between "send" and "they got it".
 //
 // A send moves proofs into a reservation and serialises them into a token, all

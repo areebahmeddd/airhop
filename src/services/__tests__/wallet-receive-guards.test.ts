@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What a received token must be before any of it counts as balance: coins in
 // the currency its label names, and coins this wallet can actually spend.
 // Both are decided before anything is stored, because a coin stored as

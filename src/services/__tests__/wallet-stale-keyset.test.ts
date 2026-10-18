@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A mint that rotated its keyset after this phone cached the list.
 //
 // Swaps are prepared offline against the cached snapshot, so the outputs are

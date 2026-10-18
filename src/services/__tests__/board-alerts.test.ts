@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The urgent line is the one place a board post reaches the chat itself, so
 // what gets written, how many times, and for which post is pinned here.
 

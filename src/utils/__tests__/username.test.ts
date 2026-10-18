@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The name shown for a peer who has never told us one.
 //
 // Derived from the peer ID rather than stored, so every device shows the same

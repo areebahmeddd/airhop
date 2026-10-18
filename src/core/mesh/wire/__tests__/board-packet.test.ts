@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Board wire format: byte-compatible signed posts and tombstones (0x23).
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {

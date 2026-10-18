@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The chat store: message ordering and dedupe, delivery status, channel
 // membership and keys, merges, unread counts and the persistence window. Uses
 // the in-memory MMKV mock: no native module required.

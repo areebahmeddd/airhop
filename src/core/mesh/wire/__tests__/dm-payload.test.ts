@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // DM payload envelope: the type + id wrapper that carries delivery and read
 // receipts inside a Double Ratchet DM.
 

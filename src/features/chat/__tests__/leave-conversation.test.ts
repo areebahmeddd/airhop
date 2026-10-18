@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Every Leave and Delete surface goes through leaveConversation, so these pin
 // what it owes each kind of conversation, and what its confirmation says first.
 

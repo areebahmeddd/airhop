@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // @-mention parsing: the composer picker and the "was I mentioned" check both
 // hinge on these, so token boundaries and edge cases are pinned here.
 

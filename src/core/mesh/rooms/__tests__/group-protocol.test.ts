@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Private group wire + crypto (0x25 messages, creator-signed state over Noise).
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The recovery phrase at startup. Only a phrase the keychain confirms is absent
 // may be replaced by a new one: a read that fails (a locked phone, a transient
 // Keystore error) or a stored value that no longer validates still stands for

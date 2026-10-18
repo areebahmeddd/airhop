@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A token Airhop sends must render as money inside bitchat.
 //
 // bitchat has no wallet (it never contacts a mint) and no NIP-61, so

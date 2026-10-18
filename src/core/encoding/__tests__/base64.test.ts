@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Base64 and base64url, shared by every caller in the protocol. A string that
 // decodes in one place and fails in another is a decryption failure that reads
 // as a network problem, so these pin the edges where decoders tend to differ.

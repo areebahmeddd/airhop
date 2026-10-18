@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // bitchat compatibility, tested against bitchat rather than against ourselves.
 //
 // VISION.md principle 6 says Airhop nodes must talk to bitchat nodes, and

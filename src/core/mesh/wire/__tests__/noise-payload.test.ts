@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The NOISE_ENCRYPTED inner payload, matching bitchat's NoisePayload,
 // PrivateMessagePacket and BLENoisePayloadFactory.
 import {

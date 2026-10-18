@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The app lock's whole contract, driven without a real prompt: locked from a
 // cold start, locked again on leaving, opened only by the phone's own screen
 // lock, never by a prompt answered for an earlier lock, and inert while off.

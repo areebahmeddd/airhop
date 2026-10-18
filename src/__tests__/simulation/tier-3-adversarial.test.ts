@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier C: somebody in the room is hostile, or the world is.
 //
 // Everything here is an attack or a failure injected on purpose. The bar is not

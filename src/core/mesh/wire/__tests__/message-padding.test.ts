@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Byte-parity tests for PKCS#7 padding, matching bitchat MessagePadding.swift.
 import { optimalBlockSize, pad, unpad } from "../message-padding";
 

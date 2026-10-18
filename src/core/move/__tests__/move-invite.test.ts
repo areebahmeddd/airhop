@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { encodeQRContent } from "../../crypto/contact-exchange";
 import {
   decodeMoveInvite,

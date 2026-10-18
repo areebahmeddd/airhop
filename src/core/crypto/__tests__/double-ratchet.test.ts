@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Forward secrecy for direct messages.
 //
 // The ratchet's whole value is that a key recovered today cannot read what was

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Courier drops over Nostr: publishing, subscribing, and what the receive path
 // refuses. NostrClient is mocked, so no network is needed.
 

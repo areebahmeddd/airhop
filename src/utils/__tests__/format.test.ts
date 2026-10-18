@@ -1,5 +1,3 @@
-/** @jest-environment node */
-
 import type { TokenInfo } from "@core/payments/cashu";
 import { initI18n, stripIsolates } from "@i18n";
 import { useSettingsStore } from "@store/settings-store";

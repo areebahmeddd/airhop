@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What the camera is allowed to hand the wallet.
 //
 // Too strict, and a good QR from another wallet does nothing, with nowhere to

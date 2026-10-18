@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The message router and its peer registry: which packet type and payload a
 // message goes out as, which transport carries a DM, and how far the registry
 // trusts what it knows about a peer.

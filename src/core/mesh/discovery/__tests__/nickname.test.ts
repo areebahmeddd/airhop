@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Nickname canonicalization. The failure these guard against is silent: two
 // valid encodings of one visible name compare unequal, so a mention never fires
 // and one person occupies two rows of a participant list.

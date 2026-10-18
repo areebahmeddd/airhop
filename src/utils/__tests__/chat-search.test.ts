@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Global chat search, focused on attachment filenames: sending a file should
 // make it findable by its exact name in a DM or a channel.
 

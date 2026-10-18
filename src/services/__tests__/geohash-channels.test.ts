@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Geohash channels: which cell a channel means, and which relays serve it.
 //
 // Two properties decide whether location channels work at all:

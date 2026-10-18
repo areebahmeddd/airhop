@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The tray side of notifications that does not depend on the policy: where a
 // tap goes, including when no screen is mounted, and what "Hide previews" and
 // opening the Wallet clear.

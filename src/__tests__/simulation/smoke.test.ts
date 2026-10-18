@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The first thing the simulation has to prove: two phones, one air, and they
 // find each other on their own. Everything else in this directory depends on
 // this working, so it is kept small and read as the harness's own unit test.

@@ -1,10 +1,7 @@
-/**
- * @jest-environment node
- *
- * Capability advertisement in the ANNOUNCE packet (TLV 0x05). The byte layout
- * must match bitchat PeerCapabilities.encoded() exactly, so a bitchat gateway
- * reads our advertisement and we read its. See PeerCapabilities.swift.
- */
+// Capability advertisement in the ANNOUNCE packet (TLV 0x05). The byte layout
+// must match bitchat PeerCapabilities.encoded() exactly, so a bitchat gateway
+// reads our advertisement and we read its. See PeerCapabilities.swift.
+//
 // Whether a presence announce is fresh enough to trust.
 //
 // Phone clocks disagree, so the window has to be generous in both directions,

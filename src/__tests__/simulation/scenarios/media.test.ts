@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Attachments and voice: the two features whose bugs only show up when
 // something else is happening at the same moment.
 //

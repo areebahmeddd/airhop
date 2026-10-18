@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tests for the durable Nostr-pubkey binding on contacts, the piece that lets a
 // DM fall back to the internet after a peer leaves Bluetooth range. Uses the
 // in-memory MMKV mock: no native module required.

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Wire-format tests for the bitchat-compatible binary codec. These lock in
 // byte-level behavior that must match bitchat-ios and bitchat-android: v1 + v2 headers,
 // PKCS#7 padding, raw-DEFLATE compression, and signing over the padded encoding.

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { confirmOwnerForPhrase } from "../phrase-access";
 
 const mockConfirm = jest.fn();

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier A: the app working, with nothing going wrong.
 //
 // These are the scenarios that must never be red. Every one of them is a thing

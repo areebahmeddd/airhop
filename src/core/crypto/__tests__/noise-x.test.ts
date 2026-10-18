@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // One-way sealing for courier envelopes.
 //
 // A courier carries an envelope for somebody it cannot authenticate to, so the

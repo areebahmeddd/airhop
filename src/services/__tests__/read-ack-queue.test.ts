@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { MAX_PER_CHANNEL } from "@store/chat-store";
 import { ReadAckQueue } from "../read-ack-queue";
 

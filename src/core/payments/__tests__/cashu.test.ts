@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Cashu core: detection, decoding and its bounds, fee-aware selection,
 // serialisation and the QR hand-off.
 //

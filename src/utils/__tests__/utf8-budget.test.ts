@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The composer measures its budget in UTF-8 bytes because the wire does. Every
 // test here is a case where counting characters instead would be wrong, and
 // wrong in the direction that loses a message: a DM that overruns its TLV

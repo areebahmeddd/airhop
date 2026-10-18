@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { Flags, PacketType, type Packet } from "../../wire/packet-codec";
 import { PacketStore } from "../packet-store";
 

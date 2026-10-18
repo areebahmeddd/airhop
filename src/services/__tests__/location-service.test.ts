@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A pin is only offered for a fix precise enough to point at the right place.
 
 import { getPinLocation } from "../location-service";

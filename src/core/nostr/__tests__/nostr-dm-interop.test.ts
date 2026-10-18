@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // End-to-end round-trip for a Nostr DM the way the app sends it: a bitchat1
 // envelope, gift-wrapped with bitchat's nip44-v2 crypto, unwrapped and decoded
 // on the other side.

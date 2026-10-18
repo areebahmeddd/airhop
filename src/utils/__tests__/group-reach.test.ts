@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The counting rules behind "4 of 6 members reachable" in the message info
 // sheet. Both exclusions exist so the number agrees with the member list the
 // reader can open next to it; a count that disagrees with a visible list is

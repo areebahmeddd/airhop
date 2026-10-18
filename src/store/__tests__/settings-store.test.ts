@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The settings other code leans on: live voice, the custom relay list and relay
 // discovery, and media retention.
 //

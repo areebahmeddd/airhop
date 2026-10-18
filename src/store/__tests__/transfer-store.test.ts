@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Transfer-progress store.
 //
 // The store drives the progress card the user watches during a multi-minute

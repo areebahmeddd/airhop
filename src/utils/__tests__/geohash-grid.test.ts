@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A wrong neighbour walks the user somewhere they did not point at, and the
 // cases that break neighbour maths are exactly the ones nobody tests by hand:
 // the poles and the date line. Values below are checked against the published

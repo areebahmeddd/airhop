@@ -1,5 +1,3 @@
-/** @jest-environment node */
-
 import { fillRichText } from "../rich-text";
 
 describe("fillRichText", () => {

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The one table of links the mesh holds.
 //
 // Ordering is asserted rather than assumed: couriers are chosen by taking the

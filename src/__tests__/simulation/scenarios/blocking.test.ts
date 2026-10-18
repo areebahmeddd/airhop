@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Blocking over the internet path, across real phones and a real relay pool.
 //
 // On the mesh a block is one check at one chokepoint. Over Nostr the sender is

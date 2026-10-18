@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Peer store regression tests.
 //
 // These pin two behaviours that are easy to break because the two writers

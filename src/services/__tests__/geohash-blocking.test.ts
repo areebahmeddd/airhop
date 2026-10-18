@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Blocking must mean the same thing in a location channel as on the mesh.
 //
 // On BLE it already did: `routePacket` drops every non-ANNOUNCE packet from a

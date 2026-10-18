@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // When the retention sweep runs. What it deletes is media-retention.test.ts;
 // this pins that a process kept alive for weeks still enforces the window,
 // without listing the cache directory on every app switch.

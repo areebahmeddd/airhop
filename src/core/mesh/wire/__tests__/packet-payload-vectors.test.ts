@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Byte fixtures for the PAYLOAD structures that cross to bitchat: the public
 // channel message, the file packet, the fragment header, the voice burst, and
 // the group state.

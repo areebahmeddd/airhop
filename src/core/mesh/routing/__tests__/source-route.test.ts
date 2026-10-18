@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Following a source route: the relay half of bitchat's v2 routing extension.
 // Airhop follows routes and never originates them; see source-route.ts for why.
 import { Flags, PacketType, type Packet } from "../../wire/packet-codec";

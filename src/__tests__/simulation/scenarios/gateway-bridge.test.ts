@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The internet gateway and the mesh bridge, tested for real.
 //
 // Both need phones actually placed somewhere (harness/location-fabric.ts).

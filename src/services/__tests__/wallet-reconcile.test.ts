@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The background reconcile pass: what it does on its own once the network is
 // back, and what stops it.
 //

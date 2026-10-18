@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { isOnLocalSubnet, type LocalSubnet } from "../local-subnet";
 
 const WIFI: LocalSubnet = { address: "192.168.1.30", prefixLength: 24 };

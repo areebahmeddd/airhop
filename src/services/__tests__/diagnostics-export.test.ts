@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The report is the whole feature: a person reads it before choosing where it
 // goes, and a maintainer reads it instead of asking twelve questions. So what it
 // contains, and what it never contains, is pinned here.

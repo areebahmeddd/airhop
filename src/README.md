@@ -80,7 +80,7 @@ npm test
 npm run test:watch
 
 # Run one area
-npm test -- --testPathPattern=src/core
+npm test -- src/core
 
 # Run with coverage
 npm run coverage
@@ -101,8 +101,9 @@ Suites that exercise the whole app rather than one module live under
 | `lifecycle/`  | Cold start, mid-session transport changes, teardown            |
 | `simulation/` | The multi-device simulator, its world model, and its scenarios |
 
-All tests under `src/core/` run with `@jest-environment node`, so they execute
-without React Native.
+Every suite runs in the Node environment the jest config names
+(`__tests__/harness/node-environment.js`), so `src/core/` tests execute without
+React Native. A `@jest-environment` pragma would bypass it, so none is used.
 
 ### Testing philosophy
 

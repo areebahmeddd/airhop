@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Reclaiming an ecash send has to cancel every copy of it, not just move proofs.
 //
 // A token send is three things at once: reserved proofs in the wallet, a message

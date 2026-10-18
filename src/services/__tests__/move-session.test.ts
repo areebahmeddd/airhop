@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A whole transfer, old phone to new, with nothing between them but a socket.
 //
 // Each phone is its own module registry (jest.isolateModules), so each has its

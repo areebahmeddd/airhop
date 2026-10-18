@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // When a conversation is worth telling the user has gone unconfirmed.
 //
 // The case that produced this: a peer who panic-wiped is, by design, unlinkable

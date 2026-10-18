@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The LAN transport differs from the other two in a way worth pinning down: it
 // does not run because the mesh is running, it runs because somebody asked for
 // it. Publishing an mDNS record tells everyone on the network, and whoever runs

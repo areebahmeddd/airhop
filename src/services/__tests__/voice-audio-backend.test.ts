@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The seam between the platform-agnostic PTT stack and the native audio module.
 //
 // What matters here is the fallback behaviour: every one of these paths is a

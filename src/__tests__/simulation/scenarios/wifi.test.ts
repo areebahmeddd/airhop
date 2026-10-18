@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The same-platform fast path.
 //
 // ARCHITECTURE.md lists WiFi Aware as an accelerator that the mesh engine is

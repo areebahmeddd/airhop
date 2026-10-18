@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Wallet store tests: account keying, proof lifecycle, reservations, history.
 //
 // These cover the invariants that protect real money rather than the plumbing:

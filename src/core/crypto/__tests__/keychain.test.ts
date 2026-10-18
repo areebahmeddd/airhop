@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // expo-secure-store has no clear-all, so the panic wipe destroys exactly the
 // items this registry lists. A secret missing from it survives the wipe, so
 // these pin the properties the wipe depends on.

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Geohash DM: a message sent from one per-cell identity is gift-wrapped so only
 // the recipient's per-cell identity can open it, wrapped in a bitchat1 envelope.
 import { base64UrlToBytes } from "@core/encoding/base64";

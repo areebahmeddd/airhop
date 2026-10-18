@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Who spoke in a cell belongs to that cell. Leaving it forgets them, so the
 // map holds the cells in use, not every cell visited in a session.
 

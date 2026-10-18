@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // When the wallet refuses to talk to a mint.
 //
 // The Internet switch closes the gate on both platforms. Tor closes it on iOS

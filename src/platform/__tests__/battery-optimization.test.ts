@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Which battery settings screen each phone is sent to, and which brands are
 // warned about.
 //

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Byte budgets for captions and forwards. Both are wire lengths in UTF-8 bytes,
 // so every case here is one where counting UTF-16 units gives the wrong answer.
 

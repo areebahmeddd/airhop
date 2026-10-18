@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Deciding whether to rebroadcast a packet, and when.
 //
 // A mesh with no jitter has every phone answer at once and the radio collides

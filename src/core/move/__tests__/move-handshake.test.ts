@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import { x25519 } from "@noble/curves/ed25519.js";
 import { MoveHandshake } from "../move-handshake";
 

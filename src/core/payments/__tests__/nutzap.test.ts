@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // NIP-61 nutzap tests: event shapes and hostile-input parsing.
 //
 // Nutzap events are public, unauthenticated apart from their signature, and
