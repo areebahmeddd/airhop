@@ -14,6 +14,7 @@
 // degrades geohash channels rather than breaking the app.
 
 import { MAX_USEFUL_ACCURACY_M } from "@core/mesh/wire/location-pin";
+import { withTimeout } from "@utils/with-timeout";
 import * as Location from "expo-location";
 
 export interface Coords {
@@ -93,21 +94,19 @@ export async function getCoarseLocation(
 
   if (!(await hasLocationPermission())) return null;
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const position = await Location.getLastKnownPositionAsync();
     // A last-known fix is instant and plenty accurate for a geohash cell;
     // only pay for a live fix when there's nothing cached on the device.
     const resolved =
       position ??
-      (await Promise.race([
+      (await withTimeout<Location.LocationObject | null>(
         Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         }),
-        new Promise<null>((resolve) => {
-          timer = setTimeout(() => resolve(null), COARSE_FIX_TIMEOUT_MS);
-        }),
-      ]));
+        COARSE_FIX_TIMEOUT_MS,
+        null,
+      ));
     if (!resolved) return null;
 
     const coords: Coords = {
@@ -119,8 +118,6 @@ export async function getCoarseLocation(
   } catch {
     // Location services off at the OS level, or no fix available.
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -152,7 +149,6 @@ function pinnable(position: Location.LocationObject | null): boolean {
 // coarse to point at anything.
 export async function getPinLocation(): Promise<PinFix | null> {
   if (!(await hasLocationPermission())) return null;
-  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const lastKnown = await Location.getLastKnownPositionAsync({
       maxAge: PIN_MAX_AGE_MS,
@@ -160,14 +156,13 @@ export async function getPinLocation(): Promise<PinFix | null> {
     // A coarse cached fix (a cell tower's) is worth one live attempt.
     const position = pinnable(lastKnown)
       ? lastKnown
-      : await Promise.race([
+      : await withTimeout<Location.LocationObject | null>(
           Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.Balanced,
           }),
-          new Promise<null>((resolve) => {
-            timer = setTimeout(() => resolve(null), PIN_FIX_TIMEOUT_MS);
-          }),
-        ]);
+          PIN_FIX_TIMEOUT_MS,
+          null,
+        );
     if (position === null || !pinnable(position)) return null;
     return {
       lat: position.coords.latitude,
@@ -177,8 +172,6 @@ export async function getPinLocation(): Promise<PinFix | null> {
     };
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
